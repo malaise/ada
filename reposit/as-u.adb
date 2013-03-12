@@ -357,15 +357,9 @@ package body As.U is
     Found_Occurence : Natural := 0;
   begin
     -- Fix Index
-    if From_Index = 0 then
-      if Forward then
-        Index := 1;
-      else
-        Index := Within.Last;
-      end if;
-    else
-      Index := From_Index;
-    end if;
+    Index := (if From_Index = 0 then
+                (if Forward then 1 else Within.Last)
+              else From_Index);
 
     -- Handle limit or incorrect values
     if Within.Last = 0
@@ -417,11 +411,9 @@ package body As.U is
     Lo : Natural;
   begin
     Check_Index (Position, Source.Last, True);
-    if Position + New_Item.Last - 1 > Source.Last then
-      Lo := Source.Last - Position + 1;
-    else
-      Lo := New_Item.Last;
-    end if;
+    Lo := (if Position + New_Item.Last - 1 > Source.Last then
+             Source.Last - Position + 1
+           else New_Item.Last);
     -- Overwrite by Lo chars from Position
     Source.Ref(Position .. Position + Lo - 1) := New_Item.Ref(1 ..  Lo);
     -- Append others
@@ -435,11 +427,9 @@ package body As.U is
     Lo : Natural;
   begin
     Check_Index (Position, Source.Last, True);
-    if Position + New_Item'Length - 1 > Source.Last then
-      Lo := New_Item'First + Source.Last - Position;
-    else
-      Lo := New_Item'Last;
-    end if;
+    Lo := (if Position + New_Item'Length - 1 > Source.Last then
+             New_Item'First + Source.Last - Position
+           else New_Item'Last);
     -- Overwrite by Lo chars from Position
     Source.Ref(Position .. Position + Lo - New_Item'First) :=
         New_Item(New_Item'First ..  Lo);
@@ -454,13 +444,8 @@ package body As.U is
    Start_Tail : Positive;
   begin
     Check_Indexes (Low, High, Source.Last, False);
-    if Low <= High then
-      -- Replace
-      Start_Tail := High + 1;
-    else
-      -- Insert
-      Start_Tail := Low;
-    end if;
+    -- Replace or insert
+    Start_Tail := (if Low <= High then High + 1 else Low);
     Store (Source, Source.Ref(1 .. Low - 1)
                  & By.Ref(1 .. By.Last)
                  & Source.Ref(Start_Tail .. Source.Last));
@@ -473,13 +458,8 @@ package body As.U is
    Start_Tail : Positive;
   begin
     Check_Indexes (Low, High, Source.Last, False);
-    if Low <= High then
-      -- Replace
-      Start_Tail := High + 1;
-    else
-      -- Insert
-      Start_Tail := Low;
-    end if;
+    -- Replace or insert
+    Start_Tail := (if Low <= High then High + 1 else Low);
     Store (Source, Source.Ref(1 .. Low - 1)
                  & By
                  & Source.Ref(Start_Tail .. Source.Last));

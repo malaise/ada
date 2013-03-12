@@ -83,15 +83,12 @@ package body Queues is
     -- Number of Items in Fifo
     function Length (Queue : Fifo_Type) return Len_Range is
     begin
-      if Queue.Ptr_In > Queue.Ptr_Out then
-        return Queue.Ptr_In - Queue.Ptr_Out;
-      elsif Queue.Ptr_In < Queue.Ptr_Out then
-        return Queue.Ptr_In + Size - Queue.Ptr_Out;
-      elsif Queue.Full then
-        return Size;
-      else
-        return 0;
-      end if;
+      return (if Queue.Ptr_In > Queue.Ptr_Out then
+                Queue.Ptr_In - Queue.Ptr_Out
+              elsif Queue.Ptr_In < Queue.Ptr_Out then
+                Queue.Ptr_In + Size - Queue.Ptr_Out
+              elsif Queue.Full then Size
+              else 0);
     end Length;
 
     -- Push an item
@@ -190,15 +187,12 @@ package body Queues is
     -- Number of Items in Prio
     function Length (Queue : Prio_Type) return Len_Range is
     begin
-      if Queue.Ptr_In > Queue.Ptr_Out then
-        return Queue.Ptr_In - Queue.Ptr_Out;
-      elsif Queue.Ptr_In < Queue.Ptr_Out then
-        return Queue.Ptr_In + Size - Queue.Ptr_Out;
-      elsif Queue.Full then
-        return Size;
-      else
-        return 0;
-      end if;
+      return (if Queue.Ptr_In > Queue.Ptr_Out then
+                Queue.Ptr_In - Queue.Ptr_Out
+              elsif Queue.Ptr_In < Queue.Ptr_Out then
+                Queue.Ptr_In + Size - Queue.Ptr_Out
+              elsif Queue.Full then Size
+              else 0);
     end Length;
 
     -- Push an item
@@ -320,15 +314,12 @@ package body Queues is
     -- Number of Items in Circ
     function Length (Queue : Circ_Type) return Len_Range is
     begin
-      if Queue.Ptr_In > Queue.Ptr_Out then
-        return Queue.Ptr_In - Queue.Ptr_Out;
-      elsif Queue.Ptr_In < Queue.Ptr_Out then
-        return Queue.Ptr_In + Size - Queue.Ptr_Out;
-      elsif Queue.Full then
-        return Size;
-      else
-        return 0;
-      end if;
+      return (if Queue.Ptr_In > Queue.Ptr_Out then
+                Queue.Ptr_In - Queue.Ptr_Out
+              elsif Queue.Ptr_In < Queue.Ptr_Out then
+                Queue.Ptr_In + Size - Queue.Ptr_Out
+              elsif Queue.Full then Size
+              else 0);
     end Length;
 
     -- Push an item

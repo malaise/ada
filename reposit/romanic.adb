@@ -52,38 +52,22 @@ package body Romanic is
     Cur_Index : Positive := R'First;
     function Prev return Character is
     begin
-      if Cur_Index > R'First then
-        return D2C(R(Cur_Index - 1));
-      else
-        return None;
-      end if;
+      return (if Cur_Index > R'First then D2C(R(Cur_Index - 1)) else None);
     end Prev;
 
     function Current return Character is
     begin
-      if Cur_Index <= R'Last then
-        return D2C(R(Cur_Index));
-      else
-        return None;
-      end if;
+      return (if Cur_Index <= R'Last then D2C(R(Cur_Index)) else None);
     end Current;
 
     function Next return Character is
     begin
-      if Cur_Index + 1 <= R'Last then
-        return D2C(R(Cur_Index + 1));
-      else
-        return None;
-      end if;
+      return (if Cur_Index + 1 <= R'Last then D2C(R(Cur_Index + 1)) else None);
     end Next;
 
     function Next_Next return Character is
     begin
-      if Cur_Index + 2 <= R'Last then
-        return D2C(R(Cur_Index + 2));
-      else
-        return None;
-      end if;
+      return (if Cur_Index + 2 <= R'Last then D2C(R(Cur_Index + 2)) else None);
     end Next_Next;
 
     function Value (C : Character) return Natural is

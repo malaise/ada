@@ -41,11 +41,8 @@ package body Trace is
     if Flush then
       File.Flush;
     end if;
-    if Count /= Positive'Last then
-      Count := Positive'Succ(Count);
-    else
-      Count := Positive'First;
-    end if;
+    Count := (if Count /= Positive'Last then Positive'Succ(Count)
+              else Positive'First);
   end Put;
 
 end Trace;

@@ -106,11 +106,9 @@ package body C_Nbres is
   begin
     X_Pol.Module := Sqrt
      (C.Part_Real * C.Part_Real + C.Part_Imag * C.Part_Imag);
-    if (C.Part_Real /= 0.0) then
-      X_Pol.Argument := Reduct (Radian(Arc_Tan (C.Part_Imag / C.Part_Real)));
-    else
-      X_Pol.Argument := Pi / 2.0;
-    end if;
+    X_Pol.Argument := (if C.Part_Real /= 0.0 then
+                         Reduct (Radian(Arc_Tan (C.Part_Imag / C.Part_Real)))
+                       else Pi / 2.0);
     if C.Part_Real < 0.0 then
       X_Pol.Argument := X_Pol.Argument + Pi;
     end if;
@@ -267,11 +265,7 @@ package body C_Nbres is
     Sign : Character;
   begin
     Real_Str := Normalization.Normal_Digits (Part_Real (C), Str_Width, Exp);
-    if (Imag_Part >= 0.0) then
-      Sign := '+';
-    else
-      Sign := '-';
-    end if;
+    Sign := (if Imag_Part >= 0.0 then '+' else '-');
     Imag_Str := Normalization.Normal_Digits (abs (Imag_Part), Str_Width, Exp);
     return Real_Str & ' ' & Sign & " i *" & Imag_Str;
   end Put;

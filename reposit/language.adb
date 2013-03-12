@@ -14,13 +14,9 @@ package body Language is
   procedure Getenv_Lang is
     Lang_Str : constant String := Lower_Str (Environ.Getenv ("LANG"));
   begin
-    if Str_Util.Locate (Lang_Str, "utf8") /= 0 then
-      Lang := Lang_Utf_8;
-    elsif Str_Util.Locate (Lang_Str, "utf-8") /= 0 then
-      Lang := Lang_Utf_8;
-    else
-      Lang := Lang_C;
-    end if;
+    Lang := (if Str_Util.Locate (Lang_Str, "utf8") /= 0 then Lang_Utf_8
+             elsif Str_Util.Locate (Lang_Str, "utf-8") /= 0 then Lang_Utf_8
+             else Lang_C);
     Lang_Set := True;
   exception
     when others =>
@@ -59,11 +55,8 @@ package body Language is
   -- Utf_8.Nb_Char or 1
   function Nb_Chars (Char : Character) return Positive is
   begin
-    if Get_Language /= Lang_Utf_8 then
-      return 1;
-    else
-      return Utf_8.Nb_Chars (Char);
-    end if;
+    return (if Get_Language /= Lang_Utf_8 then 1
+            else Utf_8.Nb_Chars (Char));
   end Nb_Chars;
 
   -- Raw translation from Wide_Character to and from Character
@@ -95,27 +88,18 @@ package body Language is
 
   function Wide_To_Char (W : Wide_Character) return Character is
   begin
-    if W <= Wide_Last_Char then
-      return Character'Val (Wide_Character'Pos (W));
-    else
-      return Default_Char;
-    end if;
+    return (if W <= Wide_Last_Char then Character'Val (Wide_Character'Pos (W))
+            else Default_Char);
   end Wide_To_Char;
   function Unicode_To_Char (U : Unicode_Number) return Character is
   begin
-    if U <= Unicode_Last_Char then
-      return Character'Val (U);
-    else
-      return Default_Char;
-    end if;
+    return (if U <= Unicode_Last_Char then Character'Val (U)
+            else Default_Char);
   end Unicode_To_Char;
   function Unicode_To_Wide (U : Unicode_Number) return Wide_Character is
   begin
-    if U <= Unicode_Last_Wide then
-      return Wide_Character'Val (U);
-    else
-      return Char_To_Wide (Default_Char);
-    end if;
+    return (if U <= Unicode_Last_Wide then Wide_Character'Val (U)
+            else Char_To_Wide (Default_Char));
   end Unicode_To_Wide;
 
   function Copy (W : Wide_String) return String is
@@ -267,6 +251,7 @@ package body Language is
     else
       for I in Str'Range loop
         U := Str(I);
+        -- Optim
         if U <= Unicode_Last_Char then
           -- Optim
           S.Append (Unicode_To_Char (Str(I)));
@@ -307,12 +292,9 @@ package body Language is
         -- Encode the Nb_Chars of this sequence
         begin
           Nb := Utf_8.Nb_Chars (Str(Index));
-          if Nb = 1 then
-            -- Optim
-            U := Char_To_Unicode (Str(Index));
-          else
-            U := Utf_8.Decode (Str(Index .. Index + Nb - 1));
-          end if;
+          -- Optim
+          U := (if Nb = 1 then Char_To_Unicode (Str(Index))
+                else Utf_8.Decode (Str(Index .. Index + Nb - 1)));
         exception
           when Utf_8.Invalid_Sequence =>
             U := Char_To_Unicode (Default_Char);

@@ -26,11 +26,8 @@ package body Computer is
   end Set;
   function Image (Element : Var_Rec) return String is
   begin
-    if Element.Persistent then
-      return "P " & Element.Name.Image;
-    else
-      return "V " & Element.Name.Image;
-    end if;
+    return (if Element.Persistent then "P" else "V")
+           & " " & Element.Name.Image;
   end Image;
   function "=" (Current : Var_Rec ; Criteria : Var_Rec ) return Boolean is
     use type As.U.Asu_Us;
@@ -121,11 +118,9 @@ package body Computer is
     Var.Value := As.U.Tus (Value);
     Var.Modifiable := Modifiable;
     Memory.Var_List.Insert (Var);
-    if Modifiable then
-      Trace ("Inserted variable " & Image (Var) & ", " & Value);
-    else
-      Trace ("Inserted constant " & Image (Var) & ", " & Value);
-    end if;
+    Trace ("Inserted "
+           & (if Modifiable then "variable" else "constant ")
+           & " " & Image (Var) & ", " & Value);
   end Set;
 
   -- Check if a variable is set
@@ -373,11 +368,8 @@ package body Computer is
         elsif (First_Char = '+' or else First_Char = '-')
         and then Must_Be_Binary then
           -- Someting like Y -X or ) -X => parse -X as two members
-          if First_Char = '+' then
-            Members_List.Insert ((Kind => Add));
-          else
-            Members_List.Insert ((Kind => Sub));
-          end if;
+          Members_List.Insert ( if First_Char = '+' then (Kind => Add)
+                                else (Kind => Sub));
           Member := (Kind => Val,
                      Value => Integer'Value (
                         Word (Positive'Succ(Word'First) .. Word'Last)));
@@ -439,12 +431,11 @@ package body Computer is
                         Op : Oper_Kind_List;
                         I2 : Integer) return Integer is
   begin
-    case Op is
-      when Add  => return I1 + I2;
-      when Sub  => return I1 - I2;
-      when Mult => return I1 * I2;
-      when Div  => return I1 / I2;
-    end case;
+    return (case Op is
+              when Add  => I1 + I2,
+              when Sub  => I1 - I2,
+              when Mult => I1 * I2,
+              when Div  => I1 / I2);
   end Compute_One;
 
   -- Compute an expression

@@ -113,11 +113,8 @@ package body Virtual_Time is
   -- Return 1.0 if A_Clock is null
   function Get_Speed (A_Clock : Clock_Access) return Speed_Range is
   begin
-    if A_Clock = null then
-      return 1.0;
-    else
-      return Get_Speed (A_Clock.all);
-    end if;
+    return (if A_Clock = null then 1.0
+           else Get_Speed (A_Clock.all));
   end Get_Speed;
 
   -- Get Virtual time corresponding to a Reference time
@@ -135,11 +132,8 @@ package body Virtual_Time is
   function Virtual_Time_Of (A_Clock : Clock_Access;
                             Reference_Time : Time) return Time is
   begin
-    if A_Clock = null then
-      return Reference_Time;
-    else
-      return Virtual_Time_Of (A_Clock.all, Reference_Time);
-    end if;
+    return (if A_Clock = null then Reference_Time
+           else Virtual_Time_Of (A_Clock.all, Reference_Time));
   end Virtual_Time_Of;
 
   -- Get Reference time corresponding to a Virtual time

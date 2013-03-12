@@ -85,11 +85,8 @@ package body Normalization is
           raise Program_Error;
         end if;
         -- Cat warning char
-        if Right then
-          return Warning_Char & Imi(Fi .. Li);
-        else
-          return Imi(Fi .. Li) & Warning_Char;
-        end if;
+        return (if Right then Warning_Char & Imi(Fi .. Li)
+                else Imi(Fi .. Li) & Warning_Char);
       end;
     else -- L <= Len
       -- Gap with gap_character, in Sm
@@ -324,11 +321,7 @@ package body Normalization is
       Digit_Str.Delete (3, 3);
       Digit_Str.Delete (1, 1);
       Digit_Str.Prepend (As.U."*" (abs(Exp) -1, '0'));
-      if Neg then
-        Digit_Str.Prepend ("-0.");
-      else
-        Digit_Str.Prepend (" 0.");
-      end if;
+      Digit_Str.Prepend ((if Neg then ("-0.") else " 0."));
       Idot := 3;
     else
       Idot := 3;

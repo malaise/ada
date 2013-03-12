@@ -19,11 +19,8 @@ package body Entity_Mng is
     Entity_List_Mng.Search (The_Entities, Entity, Found);
     if Found then
       if Log then
-        if Parameter then
-          Trace ("Parameter entity " & Name.Image & " redefined");
-        else
-          Trace ("Entity " & Name.Image & " redefined");
-        end if;
+        Trace ((if Parameter then "Parameter entity " else "Entity ")
+               & Name.Image & " redefined");
       end if;
       return;
     end if;

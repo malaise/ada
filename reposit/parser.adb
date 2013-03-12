@@ -203,26 +203,18 @@ package body Parser is
                        return Positive is
   begin
     Check (Iter);
-    if Iter.Acc.First > Iter.Acc.Last then
-      return 1;
-    elsif Normalize then
-      return Iter.Acc.First;
-    else
-      return Iter.Acc.First - 1 + Iter.Acc.Start;
-    end if;
+    return (if Iter.Acc.First > Iter.Acc.Last then 1
+            elsif Normalize then Iter.Acc.First
+            else Iter.Acc.First - 1 + Iter.Acc.Start);
   end First_Index;
 
   function Last_Index  (Iter : Iterator; Normalize : Boolean := True)
                        return Natural is
   begin
     Check (Iter);
-    if Iter.Acc.First > Iter.Acc.Last then
-      return 0;
-    elsif Normalize then
-      return Iter.Acc.Last;
-    else
-      return Iter.Acc.Last - 1 + Iter.Acc.Start;
-    end if;
+    return (if Iter.Acc.First > Iter.Acc.Last then 0
+            elsif Normalize then Iter.Acc.Last
+            else Iter.Acc.Last - 1 + Iter.Acc.Start);
   end Last_Index;
 
   -- Return the string Str with which the iterator was created

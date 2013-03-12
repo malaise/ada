@@ -114,15 +114,9 @@ package body Command is
     use type Sys_Calls.File_Desc;
   begin
     if Debug then
-      if Fd = Output_Fd then
-        if Debug then
-          Basic_Proc.Put_Line_Output ("Command: Fd Cb output flow");
-        end if;
-      else
-        if Debug then
-          Basic_Proc.Put_Line_Output ("Command: Fd Cb error flow");
-        end if;
-      end if;
+      Basic_Proc.Put_Line_Output ("Command: Fd Cb "
+        & (if Fd = Output_Fd then "output" else "error")
+        & " flow");
     end if;
     -- Init Text_Line flow
     Flow.Open (Text_Line.In_File, Fd);
@@ -291,11 +285,9 @@ package body Command is
     -- Set "out" values
     Output_Result := null;
     Error_Result := null;
-    if Child_Result.Cause = Sys_Calls.Exited then
-      Exit_Code := Child_Result.Exit_Code;
-    else
-      Exit_Code := Error;
-    end if;
+    Exit_Code := (if Child_Result.Cause = Sys_Calls.Exited then
+                    Child_Result.Exit_Code
+                  else Error);
 
     Mut.Release;
   exception

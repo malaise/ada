@@ -57,13 +57,13 @@ package body Trees is
     procedure Init_Tree (The_Tree : in out Tree_Type;
                          Init_Cell : in Cell_Access) is
     begin
-        -- Set Root and current
-        The_Tree.Root := Init_Cell;
-        The_Tree.Curr := Init_Cell;
-        -- Create the pool of save position at first insertion of root
-        if The_Tree.Save = null then
-          The_Tree.Save := new Saved_Pool.Pool_Type;
-        end if;
+      -- Set Root and current
+      The_Tree.Root := Init_Cell;
+      The_Tree.Curr := Init_Cell;
+      -- Create the pool of save position at first insertion of root
+      if The_Tree.Save = null then
+        The_Tree.Save := new Saved_Pool.Pool_Type;
+      end if;
     end Init_Tree;
 
     -- Link my brothers to me
@@ -179,11 +179,7 @@ package body Trees is
         To.Father.Nb_Children := To.Father.Nb_Children + 1;
         -- Link to brothers
         New_Cell.Brothers := To.Brothers;
-        if Elder then
-          New_Cell.Brothers(Young) := To;
-        else
-          New_Cell.Brothers(Old) := To;
-        end if;
+        New_Cell.Brothers((if Elder then Young else Old)) := To;
       end if;
       -- Link father and brothers to be
       Link_Father (New_Cell);
@@ -262,11 +258,7 @@ package body Trees is
       -- Link to father and brothers
       Cell_Acc.Father := The_Tree.Curr.Father;
       Cell_Acc.Brothers := The_Tree.Curr.Brothers;
-      if Elder then
-        Cell_Acc.Brothers(Young) := The_Tree.Curr;
-      else
-        Cell_Acc.Brothers(Old) := The_Tree.Curr;
-      end if;
+      Cell_Acc.Brothers((if Elder then Young else Old)) := The_Tree.Curr;
       -- Link father and brothers to me
       Link_Father (Cell_Acc);
       Link_Brothers (Cell_Acc);
@@ -652,16 +644,9 @@ package body Trees is
       Copy_Cell (Saved, The_Tree.Curr, Child, Elder);
 
       -- Move to top of copied tree
-      if Elder then
-        Old_Young := Old;
-      else
-        Old_Young := Young;
-      end if;
-      if Child then
-        The_Tree.Curr := The_Tree.Curr.Children(Old_Young);
-      else
-        The_Tree.Curr := The_Tree.Curr.Brothers(Old_Young);
-      end if;
+      Old_Young := (if Elder then Old else Young);
+      The_Tree.Curr := (if Child then The_Tree.Curr.Children(Old_Young)
+                        else The_Tree.Curr.Brothers(Old_Young));
     end Copy_Saved;
 
     -- Move saved pos and its sub tree as (elder or youger) son or brother of
@@ -724,11 +709,7 @@ package body Trees is
     begin
       -- No empty tree
       Check_Empty (The_Tree);
-      if Elder then
-        return The_Tree.Curr.Brothers(Old) /= null;
-      else
-        return The_Tree.Curr.Brothers(Young) /= null;
-      end if;
+      return The_Tree.Curr.Brothers((if Elder then Old else Young)) /= null;
     end Has_Brother;
 
     -- How many children has current cell
@@ -777,11 +758,7 @@ package body Trees is
       -- No empty tree
       Check_Callback (The_Tree);
 
-      if Eldest then
-        Child := Old;
-      else
-        Child := Young;
-      end if;
+      Child := (if Eldest then Old else Young);
 
       if The_Tree.Curr.Children(Child) = null then
         raise No_Cell;
@@ -799,11 +776,7 @@ package body Trees is
       -- No empty tree
       Check_Callback (The_Tree);
 
-      if Elder then
-        Brother := Old;
-      else
-        Brother := Young;
-      end if;
+      Brother := (if Elder then Old else Young);
 
       if The_Tree.Curr.Brothers(Brother) = null then
         raise No_Cell;
@@ -940,17 +913,9 @@ package body Trees is
       Copy_Cell (From_Tree.Curr, To_Tree.Curr, Child, Elder);
 
       -- Move to top of copied tree
-      if Elder then
-        Old_Young := Old;
-      else
-        Old_Young := Young;
-      end if;
-      if Child then
-        To_Tree.Curr := To_Tree.Curr.Children(Old_Young);
-      else
-        To_Tree.Curr := To_Tree.Curr.Brothers(Old_Young);
-      end if;
-      null;
+      Old_Young := (if Elder then Old else Young);
+      To_Tree.Curr := (if Child then To_Tree.Curr.Children(Old_Young)
+                       else To_Tree.Curr.Brothers(Old_Young));
     end Copy_Tree;
 
 
@@ -970,21 +935,13 @@ package body Trees is
       end if;
 
       -- Iterate on children, oldest first if Elder
-      if Elder then
-        Next := Me.Children(Old);
-      else
-        Next := Me.Children(Young);
-      end if;
+      Next := Me.Children((if Elder then Old else Young));
       while Next /= null loop
         Recurs (Next, Level + 1, Do_One_Acc, Elder);
       end loop;
 
       -- Move to younger (if Eldest) older brother
-      if Elder then
-        Me := Me.Brothers(Young);
-      else
-        Me := Me.Brothers(Old);
-      end if;
+      Me := Me.Brothers((if Elder then Young else Old));
     end Recurs;
 
     procedure Iterate (The_Tree   : in out Tree_Type;

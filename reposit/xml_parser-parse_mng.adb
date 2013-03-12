@@ -621,11 +621,7 @@ package body Parse_Mng  is
                       Deallocate : in Boolean := False) is
     Tree : Tree_Acc;
   begin
-    if In_Prologue then
-      Tree := Ctx.Prologue;
-    else
-      Tree := Ctx.Elements;
-    end if;
+    Tree := (if In_Prologue then Ctx.Prologue else Ctx.Elements);
 
     if Ctx.Callback /= null then
       Tree.Delete_Tree (Deallocate);

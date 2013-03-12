@@ -35,16 +35,8 @@ package body Str_Util.Regex is
       return Regular_Expressions.No_Match;
     end if;
     -- Initialise indexes
-    if From_Index = 0 then
-      I1 := Within'First;
-    else
-      I1 := From_Index;
-    end if;
-    if To_Index = 0 then
-      I2 := Within'Last;
-    else
-      I2 := To_Index;
-    end if;
+    I1 := (if From_Index = 0 then Within'First else From_Index);
+    I2 := (if To_Index   = 0 then Within'Last  else To_Index);
     if I1 not in Within'Range
     or else I2 not in Within'Range then
       raise Invalid_Index;
@@ -290,16 +282,8 @@ package body Str_Util.Regex is
       return "";
     end if;
     -- Initialise indexes
-    if From_Index = 0 then
-      I1 := Within'First;
-    else
-      I1 := From_Index;
-    end if;
-    if To_Index = 0 then
-      I2 := Within'Last;
-    else
-      I2 := To_Index;
-    end if;
+    I1 := (if From_Index = 0 then Within'First else From_Index);
+    I2 := (if To_Index   = 0 then Within'Last  else To_Index);
     if I1 not in Within'Range
     or else I2 not in Within'Range then
       raise Invalid_Index;

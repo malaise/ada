@@ -75,11 +75,10 @@ package body Door_Manager is
   begin
     Check_Access (A_Door);
     begin
-      if A_Door.Door_Pointer.Expected + Val >= 1 then
-        A_Door.Door_Pointer.Expected := A_Door.Door_Pointer.Expected + Val;
-      else
-        A_Door.Door_Pointer.Expected := 1;
-      end if;
+      A_Door.Door_Pointer.Expected :=
+          (if A_Door.Door_Pointer.Expected + Val >= 1 then
+             A_Door.Door_Pointer.Expected + Val
+           else 1);
     exception
       -- Overflow
       when Constraint_Error =>

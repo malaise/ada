@@ -41,8 +41,8 @@ package Test with Pure is
   type Typ4 is access procedure (A : in Integer);
 
   -- A private type
-  type Typ5 is private with Type_Invariant => Check(Stack);
-  function Check (S: Stack) return Boolean;
+  type Typ5 is private with Type_Invariant => Check(Typ5);
+  function Check (V: Typ5) return Boolean;
 
   -- A type with comments
   type Typ6 is (

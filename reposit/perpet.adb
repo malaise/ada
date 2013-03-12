@@ -30,25 +30,16 @@ package body Perpet is
     if Month /= 2 then return Last_Day_Array(Month); end if;
 
     -- February
-    if Is_Leap_Year (Year) then
-      -- Leap year
-      return Last_Day_Array(Month) + 1;
-    else
-      -- Non leap year
-      return Last_Day_Array(Month);
-    end if;
+    -- Leap year
+    return (if Is_Leap_Year (Year) then Last_Day_Array(Month) + 1
+            -- Non leap year
+            else Last_Day_Array(Month));
   end Nb_Days_Month;
 
   -- Number of days of a year
   function Nb_Days_Year (Year : Ada.Calendar.Year_Number) return Day_Range is
   begin
-    if Is_Leap_Year (Year) then
-      -- Leap year
-      return 366;
-    else
-      -- Non leap year
-      return 365;
-    end if;
+    return (if Is_Leap_Year (Year) then 366 else 365);
   end Nb_Days_Year;
 
   -- Check date validity

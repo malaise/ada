@@ -1111,20 +1111,19 @@ package body X_Mng is
     end if;
 
     -- Compute final expiration
-    case Timeout.Delay_Kind is
-      when Timers.Delay_Exp =>
-        Final_Exp := (Infinite => False, Time => Timeout.Expiration_Time);
-      when Timers.Delay_Sec =>
-        if Timeout.Delay_Seconds /= Infinite_Timeout then
-          Final_Exp := (Infinite => False,
-                        Time => Ada.Calendar.Clock + Timeout.Delay_Seconds);
-        else
-          Final_Exp := (Infinite => True);
-        end if;
-      when Timers.Delay_Del =>
-        Final_Exp :=  (Infinite => False,
-                       Time => Ada.Calendar.Clock + Timeout.Delay_Delta);
-    end case;
+    Final_Exp :=
+        (case Timeout.Delay_Kind is
+           when Timers.Delay_Exp => (Infinite => False,
+                                     Time => Timeout.Expiration_Time),
+           when Timers.Delay_Sec =>
+             (if Timeout.Delay_Seconds /= Infinite_Timeout then
+                (Infinite => False,
+                 Time => Ada.Calendar.Clock + Timeout.Delay_Seconds)
+              else
+                (Infinite => True)),
+            when Timers.Delay_Del => (Infinite => False,
+                                      Time => Ada.Calendar.Clock
+                                            + Timeout.Delay_Delta));
 
     -- Loop while wake-up events
     loop
@@ -1198,28 +1197,17 @@ package body X_Mng is
       raise X_Failure;
     end if;
     -- check returned coordinates
-    case Loc_Button is
-      when 1 =>
-        Button := Left;
-      when 2 =>
-        Button := Middle;
-      when 3 =>
-        Button := Right;
-      when 4 =>
-        Button := Up;
-      when 5 =>
-        Button := Down;
-      when 6 =>
-        Button := Shift_Up;
-      when 7 =>
-        Button := Shift_Down;
-      when 8 =>
-        Button := Ctrl_Up;
-      when 9 =>
-        Button := Ctrl_Down;
-      when others =>
-        Button := None;
-    end case;
+    Button := (case Loc_Button is
+                 when 1      => Left,
+                 when 2      => Middle,
+                 when 3      => Right,
+                 when 4      => Up,
+                 when 5      => Down,
+                 when 6      => Shift_Up,
+                 when 7      => Shift_Down,
+                 when 8      => Ctrl_Up,
+                 when 9      => Ctrl_Down,
+                 when others => None);
     Row := Row_For_C;
     Column := Col_For_C;
   end X_Read_Tid;

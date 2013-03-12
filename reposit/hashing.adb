@@ -133,26 +133,17 @@ package body Hashing is
         Cu : Cell_Access;
       begin
         if Table.Arr(Index).Current = null then
-          if Direction = Forward then
-            Cu := Table.Arr(Index).First;
-          else
-            Cu := Table.Arr(Index).Last;
-          end if;
+          Cu := (if Direction = Forward then Table.Arr(Index).First
+                 else Table.Arr(Index).Last);
         else
-          if Direction = Forward then
-            Cu := Table.Arr(Index).Current.Next;
-          else
-            Cu := Table.Arr(Index).Current.Prev;
-          end if;
+          Cu := (if Direction = Forward then Table.Arr(Index).Current.Next
+                 else Table.Arr(Index).Current.Prev);
         end if;
 
         Table.Arr(Index).Current := Cu;
 
-        if Cu = null then
-          Found := Not_Found_Rec;
-        else
-          Found := (Found => True, Data => Cu.Data);
-        end if;
+        Found := (if Cu = null then Not_Found_Rec
+                  else (Found => True, Data => Cu.Data));
       end Find_Next;
 
       procedure Find_Next (Table     : in out Hash_Table;
@@ -168,13 +159,12 @@ package body Hashing is
                          Index : in Hash_Range;
                          Found : out Found_Rec) is
       begin
-        if Table.Arr(Index).First = null
-        or else Table.Arr(Index).Current = null then
-          -- Empty or not found
-          Found := Not_Found_Rec;
-        else
-          Found := (Found => True, Data => Table.Arr(Index).Current.Data);
-        end if;
+        Found := (if Table.Arr(Index).First = null
+                  or else Table.Arr(Index).Current = null then
+                    -- Empty or not found
+                    Not_Found_Rec
+                  else
+                    (Found => True, Data => Table.Arr(Index).Current.Data));
       end Re_Read;
 
       procedure Re_Read (Table : in out Hash_Table;
@@ -193,29 +183,18 @@ package body Hashing is
         Ca : Cell_Access := Table.Arr(Index).First;
       begin
         Basic_Proc.Put_Line_Output ("Hash " & Hash_Range'Image(Index));
-        if Direction = Forward then
-          Ca := Table.Arr(Index).First;
-        else
-          Ca := Table.Arr(Index).Last;
-        end if;
+        Ca := (if Direction = Forward then Table.Arr(Index).First
+               else Table.Arr(Index).Last);
         if Ca = null then
           Basic_Proc.Put_Line_Output (" No data found");
         end if;
         while Ca /= null loop
-          Basic_Proc.Put_Output (" Data found ");
-          if Ca = Table.Arr(Index).Current then
-            Basic_Proc.Put_Output (" => ");
-          else
-            Basic_Proc.Put_Output (" -> ");
-          end if;
+          Basic_Proc.Put_Output (" Data found "
+              & (if Ca = Table.Arr(Index).Current then " => " else " -> "));
 
           Put (Ca.Data);
           Basic_Proc.New_Line_Output;
-          if Direction = Forward then
-            Ca := Ca.Next;
-          else
-            Ca := Ca.Prev;
-          end if;
+          Ca := (if Direction = Forward then Ca.Next else Ca.Prev);
         end loop;
       end Dump;
 

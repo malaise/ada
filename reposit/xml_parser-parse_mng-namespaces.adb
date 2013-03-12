@@ -32,16 +32,16 @@ package body Namespaces is
     Occurence : Positive;
     Index : Natural;
   begin
-    if Elt_Attr /= Other
-    or else (Name.Length > Xml_Prefix'Length
-             and then Name.Slice (1, Xml_Prefix'Length) = Xml_Prefix) then
-      -- Element or CDATA or Enumeration or NMTOKEN(s) or "xml:xxx"
-      -- There can be 0 or 1 occurence, not 2, in element or attribute name
-      Occurence := 2;
-    else
-      -- There cannnot be even 1 occurence, in others
-      Occurence := 1;
-    end if;
+    Occurence :=
+        (if Elt_Attr /= Other
+         or else (Name.Length > Xml_Prefix'Length
+                  and then Name.Slice (1, Xml_Prefix'Length) = Xml_Prefix) then
+           -- Element or CDATA or Enumeration or NMTOKEN(s) or "xml:xxx"
+           -- There can be 0 or 1 occurence, not 2, in element or attribute name
+           2
+         else
+           -- There cannnot be even 1 occurence, in others
+           1);
 
     -- If too many ':' => error, if none => ok
     if Str_Util.Locate (Name.Image, ":", Occurence => Occurence) /= 0 then

@@ -260,20 +260,13 @@ package body Event_Mng is
   begin
     Sig := C_Get_Signal;
     Put_Debug ( "Event_Mng.Get_Signal_Kind: C_Get_Signal => " & Sig'Img);
-    case Sig is
-      when C_Sig_Unknown =>
-        return Unknown_Sig;
-      when C_Sig_None =>
-        return No_Sig;
-      when C_Sig_Dummy =>
-        return Dummy_Sig;
-      when C_Sig_Terminate =>
-        return Terminate_Sig;
-      when C_Sig_Child =>
-        return Child_Sig;
-      when others =>
-        return Unknown_Sig;
-    end case;
+    return (case Sig is
+              when C_Sig_Unknown =>   Unknown_Sig,
+              when C_Sig_None =>      No_Sig,
+              when C_Sig_Dummy =>     Dummy_Sig,
+              when C_Sig_Terminate => Terminate_Sig,
+              when C_Sig_Child =>     Child_Sig,
+              when others =>          Unknown_Sig);
   end Get_Signal_Kind;
 
   ------------------------------------------------------------------
@@ -307,21 +300,14 @@ package body Event_Mng is
     end if;
     -- Compute final expiration in virtual time
     Now := Virtual_Time.Current_Time (Delay_Spec.Clock);
-    case Delay_Spec.Delay_Kind is
-      when Timers.Delay_Sec =>
-        if Delay_Spec.Delay_Seconds < 0.0 then
-          Final_Exp := (Infinite => True);
-        else
-          Final_Exp := (Infinite => False,
-                        Time => Now + Delay_Spec.Delay_Seconds);
-        end if;
-      when Timers.Delay_Del =>
-        Final_Exp := (Infinite => False,
-                      Time => Now + Delay_Spec.Delay_Delta);
-      when Timers.Delay_Exp =>
-        Final_Exp := (Infinite => False,
-                      Time => Delay_Spec.Expiration_Time);
-    end case;
+    Final_Exp := (case Delay_Spec.Delay_Kind is
+        when Timers.Delay_Sec =>
+          (if Delay_Spec.Delay_Seconds < 0.0 then (Infinite => True)
+           else (Infinite => False, Time => Now + Delay_Spec.Delay_Seconds)),
+        when Timers.Delay_Del => (Infinite => False,
+                                  Time => Now + Delay_Spec.Delay_Delta),
+        when Timers.Delay_Exp => (Infinite => False,
+                                  Time => Delay_Spec.Expiration_Time));
 
     loop
 
@@ -331,11 +317,10 @@ package body Event_Mng is
         Timeout_Val := Timeval.Infinite_Timeout;
       else
         Now := Virtual_Time.Current_Time (Delay_Spec.Clock);
-        if Now < Next_Exp.Time then
-          Timeout_Val := Timeval.Delta2Timeout (Next_Exp.Time - Now);
-        else
-          Timeout_Val := (0, 0);
-        end if;
+        Timeout_Val := (if Now < Next_Exp.Time then
+                          Timeval.Delta2Timeout (Next_Exp.Time - Now)
+                        else
+                          (0, 0));
       end if;
 
       -- Wait
@@ -388,11 +373,8 @@ package body Event_Mng is
   function Wait (Timeout_Ms : Integer) return Out_Event_List is
     Dur : Duration;
   begin
-    if Timeout_Ms >= 0 then
-      Dur := Duration (Timeout_Ms) / 1_000.0;
-    else
-      Dur := Timers.Infinite_Seconds;
-    end if;
+    Dur := (if Timeout_Ms >= 0 then Duration (Timeout_Ms) / 1_000.0
+            else Timers.Infinite_Seconds);
     return Wait ((Delay_Kind    => Timers.Delay_Sec,
                   Clock         => null,
                   Period        => Timers.No_Period,

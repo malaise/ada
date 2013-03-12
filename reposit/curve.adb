@@ -407,14 +407,10 @@ package body Curve is
         begin
           Screen.Move (Screen.Row_Range_Last - 11,
                        Screen.Col_Range_Last - 18);
-          case Mode is
-            when Init =>
-              Screen.Put ("Point & click L");
-            when Drag =>
-              Screen.Put ("Drag L & release");
-            when Done =>
-              Screen.Put ("L or R click");
-          end case;
+          Screen.Put ( (case Mode is
+                          when Init => "Point & click L",
+                          when Drag => "Drag L & release",
+                          when Done => "L or R click") );
         end Put_Mode;
 
       begin
@@ -736,7 +732,7 @@ package body Curve is
         -- Update and same frame, or update and not in drag
         if Action = Update
         and then (Curr_Zoom_Mode /= Drag
-                      or else Zoom_Bounds = Prev_Frame_Bounds) then
+                  or else Zoom_Bounds = Prev_Frame_Bounds) then
           return;
         end if;
         if Action = None then
@@ -747,8 +743,7 @@ package body Curve is
         Screen.Set_Foreground (Con_Io.Color_Of ("Cyan"));
 
         -- Previous frame to hide : new drag or drag -> done or done -> init
-        if Action = Update
-           or else Curr_Zoom_Mode /= Drag then
+        if Action = Update or else Curr_Zoom_Mode /= Drag then
           Put_Frame (Prev_Frame_Bounds);
         end if;
 

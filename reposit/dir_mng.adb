@@ -6,12 +6,12 @@ package body Dir_Mng is
     use type Directory.File_Kind_List;
   begin
     -- Only one is dir
-    if El1.Kind /= El2.Kind and then
-     (El1.Kind = Directory.Dir or else El2.Kind = Directory.Dir) then
-      return El1.Kind = Directory.Dir;
-    else
-      return El1.Name.Image < El2.Name.Image;
-    end if;
+    return (if El1.Kind /= El2.Kind
+            and then (El1.Kind = Directory.Dir
+                      or else El2.Kind = Directory.Dir) then
+              El1.Kind = Directory.Dir
+            else
+              El1.Name.Image < El2.Name.Image);
   end Less_Than;
 
 
@@ -23,11 +23,7 @@ package body Dir_Mng is
     File_Name : As.U.Asu_Us;
   begin
 
-    if Dir = "" then
-      Dir_Desc.Open (".");
-    else
-      Dir_Desc.Open (Dir);
-    end if;
+    Dir_Desc.Open ((if Dir = "" then "." else Dir));
 
     loop
        Dir_Desc.Next_Entry (File_Name);
@@ -36,12 +32,9 @@ package body Dir_Mng is
       or else Directory.File_Match(File_Name.Image, Template) then
         File_Rec.Name := File_Name;
         begin
-          if Dir = "" then
-            File_Rec.Kind := Directory.File_Kind (File_Name.Image);
-          else
-            File_Rec.Kind := Directory.File_Kind (
-             Dir & Path_Separator & File_Name.Image);
-          end if;
+          File_Rec.Kind := Directory.File_Kind (
+              (if Dir = "" then File_Name.Image
+               else Dir & Path_Separator & File_Name.Image));
         exception
           when Directory.Name_Error | Directory.Access_Error =>
             File_Rec.Kind := Directory.Unknown;

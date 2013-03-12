@@ -108,11 +108,10 @@ package body Autobus is
   begin
     Basic_Proc.Put_Error ("Autobus: Exception " & Exception_Name
                         & " raised in " & Operation);
-    if Message = "" then
-      Basic_Proc.Put_Line_Error (".");
-    else
-      Basic_Proc.Put_Line_Error (", " & Message & '.');
+    if Message /= "" then
+      Basic_Proc.Put_Error (", " & Message);
     end if;
+    Basic_Proc.Put_Line_Error (".");
   end Log_Exception;
 
   -- Log an error
@@ -120,11 +119,10 @@ package body Autobus is
   begin
     Basic_Proc.Put_Error ("Autobus: Error " & Error
                         & " detected in " & Operation);
-    if Message = "" then
-      Basic_Proc.Put_Line_Error (".");
-    else
-      Basic_Proc.Put_Line_Error (", " & Message & '.');
+    if Message /= "" then
+      Basic_Proc.Put_Error (", " & Message);
     end if;
+    Basic_Proc.Put_Line_Error (".");
   end Log_Error;
 
   -- Get tuning
@@ -526,11 +524,8 @@ package body Autobus is
   begin
     Bus_Acc := Bus_Access(Buses.Access_Current);
     Message_Len := Bus_Acc.Addr.Length + 2;
-    if Alive then
-      Message(1 .. Message_Len) := "A/" & Bus_Acc.Addr.Image;
-    else
-      Message(1 .. Message_Len) := "D/" & Bus_Acc.Addr.Image;
-    end if;
+    Message(1 .. Message_Len) := (if Alive then "A/" else "D/")
+                               & Bus_Acc.Addr.Image;
     Ipm_Send (Bus_Acc.Admin, Message, Message_Len);
   end Send_Ipm;
 
@@ -898,11 +893,8 @@ package body Autobus is
     end if;
 
     -- Store in Bus, save position in case we are dispatching
-    if Bus.Acc.Subscribers.Is_Empty then
-      Position := 0;
-    else
-      Position := Bus.Acc.Subscribers.Get_Position;
-    end if;
+    Position := (if Bus.Acc.Subscribers.Is_Empty then 0
+                 else Bus.Acc.Subscribers.Get_Position);
     Bus.Acc.Subscribers.Rewind (False, Subscriber_List_Mng.Next);
     Bus.Acc.Subscribers.Insert (Subs);
     Subscriber.Acc := Bus.Acc.Subscribers.Access_Current;
@@ -910,11 +902,9 @@ package body Autobus is
       Bus.Acc.Subscribers.Move_At (Position);
     end if;
 
-    if Filter = "" then
-      Debug ("Subscriber init ok");
-    else
-      Debug ("Subscriber " & Filter & " init ok");
-    end if;
+    Debug ("Subscriber "
+           & (if Filter /= "" then Filter & " " else "")
+           & "init ok");
   end Init;
 
   -- Is a Subscriber initialised

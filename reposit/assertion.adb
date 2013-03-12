@@ -21,15 +21,10 @@ package body Assertion is
     Len := Action_Str'Last;
     Environ.Get_Str (Action_Name, Action_Str, Len);
     Action_Str := Upper_Str (Action_Str);
-    if Action_Str (1 .. Len) = "IGNORE" then
-      Action := Ignore;
-    elsif Action_Str (1 .. Len) = "TRACE" then
-      Action := Put_Trace;
-    elsif Action_Str (1 .. Len) = "RAISE" then
-      Action := Raise_Exception;
-    else
-      Action := Default_Action;
-    end if;
+    Action := (if    Action_Str (1 .. Len) = "IGNORE" then Ignore
+               elsif Action_Str (1 .. Len) = "TRACE"  then Put_Trace
+               elsif Action_Str (1 .. Len) = "RAISE"  then Raise_Exception
+               else Default_Action);
   end Init;
 
   -- Set/Change action (preempts env variable)
@@ -64,11 +59,8 @@ package body Assertion is
       -- Init is necessary
       Init;
     end if;
-    if Action = Default then
-      To_Do := Assertion.Action;
-    else
-      To_Do := Action_List(Action);
-    end if;
+    To_Do := (if Action = Default then Assertion.Action
+              else Action_List(Action));
     if To_Do = Ignore then
       -- Action is to ignore False assertion
       return;

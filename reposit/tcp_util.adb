@@ -618,10 +618,6 @@ package body Tcp_Util is
       raise;
   end Connect_To;
 
-
-
-
-
   --------------------------------------------------------------------------
 
   -- Accepting connection

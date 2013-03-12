@@ -105,14 +105,11 @@ package body Proc_Family is
            return String is
     Prefix : constant String := "PFamily_";
   begin
-    case Fd_Kind is
-      when In_Fd =>
-        return Prefix & Image (Natural(Proc_Id)) & "_In";
-      when Out_Fd =>
-        return Prefix & Image (Natural(Proc_Id)) & "_Out";
-      when Err_Fd =>
-        return Prefix & Image (Natural(Proc_Id)) & "_Err";
-    end case;
+    return Prefix & Image (Natural(Proc_Id))
+         & (case Fd_Kind is
+              when In_Fd  => "_In",
+              when Out_Fd => "_Out",
+              when Err_Fd => "_Err");
   end Var_Name;
 
   -- Put env Fd in and out variables

@@ -389,15 +389,12 @@ package body Directory is
    -- Get full path of a path
   function Make_Full_Path (Path : String) return String is
   begin
-    if Path = "" then
-      return Normalize_Path (Get_Current & "/");
-    elsif Path(Path'First) = '/' then
-      -- Path is already absolute => Normalize
-      return Normalize_Path (Path);
-    else
-      -- Path is relative, prepend current path & Normalize
-      return Normalize_Path (Get_Current & "/" & Path);
-    end if;
+    return Normalize_Path (
+        (if Path = "" then Get_Current & "/"
+         -- Path is already absolute => Normalize
+         elsif Path(Path'First) = '/' then Path
+         -- Path is relative, prepend current path & Normalize
+         else Get_Current & "/" & Path));
   end Make_Full_Path;
 
   -- File name manipulation
@@ -408,12 +405,8 @@ package body Directory is
     I : Natural;
   begin
     I := Str_Util.Locate (File_Name, Sep, Forward => False);
-    if I = 0 then
-      -- No / in file name => dir name is empty
-      return "";
-    else
-      return File_Name(File_Name'First .. I);
-    end if;
+    -- No / in file name => dir name is empty
+    return (if I = 0 then "" else File_Name(File_Name'First .. I));
   end Dirname;
 
   -- Get file name from a complete file name (from the last / excluded),
@@ -423,18 +416,17 @@ package body Directory is
     Last : constant Natural := File_Name'Last;
   begin
     I := Str_Util.Locate (File_Name, Sep, Forward => False);
-    if I = 0 then
-      -- No / in file name => no dir name
-      return File_Name;
-    elsif Suffix = ""
-    or else Suffix'Length > Last - I
-    or else File_Name(Last - Suffix'Length + 1 .. Last) /= Suffix then
-      -- File name does not match suffix
-      return File_Name(I + 1 .. Last);
-    else
-      -- End of file name matches suffix
-      return File_Name(I + 1 .. Last - Suffix'Length);
-    end if;
+    return (if I = 0 then
+              -- No / in file name => no dir name
+              File_Name
+            elsif Suffix = ""
+            or else Suffix'Length > Last - I
+            or else File_Name(Last - Suffix'Length + 1 .. Last) /= Suffix then
+              -- File name does not match suffix
+              File_Name(I + 1 .. Last)
+            else
+              -- End of file name matches suffix
+              File_Name(I + 1 .. Last - Suffix'Length));
   end Basename;
 
   -- Extract the file name, then its prefix (up to the first . excluded)
@@ -443,12 +435,11 @@ package body Directory is
     File : constant String := Basename (File_Name);
   begin
     I := Str_Util.Locate (File, Dot);
-    if I = 0 then
-      -- No '.', return full file name
-      return File;
-    else
-      return File (File'First .. I - 1);
-    end if;
+    return (if I = 0 then
+              -- No '.', return full file name
+              File
+            else
+              File (File'First .. I - 1));
   end File_Prefix;
 
   -- Extract the file name, then its suffix (from the first . included)
@@ -457,12 +448,8 @@ package body Directory is
     File : constant String := Basename (File_Name);
   begin
     I := Str_Util.Locate (File, Dot);
-    if I = 0 then
-      -- No '.', return no suffix
-      return "";
-    else
-      return File (I .. File'Last);
-    end if;
+    -- No '.', return no suffix
+    return (if I = 0 then "" else File (I .. File'Last));
   end File_Suffix;
 
   -- Build a complete file name
@@ -470,20 +457,13 @@ package body Directory is
            return String is
     function Build_Name return String is
     begin
-      if File_Suffix = "" then
-        return File_Prefix;
-      else
-        return File_Prefix & Dot & File_Suffix;
-      end if;
+      return (if File_Suffix = "" then File_Prefix
+              else File_Prefix & Dot & File_Suffix);
     end Build_Name;
   begin
-    if Dirname = "" then
-      return Build_Name;
-    elsif Dirname(Dirname'Last) = Separator then
-      return Dirname & Build_Name;
-    else
-      return Dirname & Sep & Build_Name;
-    end if;
+    return (if Dirname = "" then Build_Name
+            elsif Dirname(Dirname'Last) = Separator then Dirname & Build_Name
+            else Dirname & Sep & Build_Name);
   end Build_File_Name;
 
 end Directory;

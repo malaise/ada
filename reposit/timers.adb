@@ -56,37 +56,31 @@ package body Timers is
   function Delay_Image (Delay_Spec : Delay_Rec) return String is
     use type Virtual_Time.Time;
   begin
-    if Delay_Spec.Delay_Kind = Delay_Sec then
-      return "delay:" & Delay_Spec.Delay_Seconds'Img
-           & ", period: " & Delay_Spec.Period'Img & " ";
-    else
-      return "exp in: " & Duration'Image (
+    return (if Delay_Spec.Delay_Kind = Delay_Sec then
+              "delay:" & Delay_Spec.Delay_Seconds'Img
+              & ", period: " & Delay_Spec.Period'Img & " "
+            else
+              "exp in: " & Duration'Image (
                    Delay_Spec.Expiration_Time
                    - Virtual_Time.Current_Time (Delay_Spec.Clock))
-           & ", period: " & Delay_Spec.Period'Img & " ";
+              & ", period: " & Delay_Spec.Period'Img & " ");
 
-    end if;
   end Delay_Image;
 
   function Exp_Image (Expiration : Expiration_Rec) return String is
     use type Virtual_Time.Time;
   begin
-    if Expiration.Infinite then
-      return "exp infinite ";
-    else
-      return "exp in: " & Duration'Image (Expiration.Time
-                                          - Ada.Calendar.Clock)
-                        & " ";
-    end if;
+    return (if Expiration.Infinite then
+              "exp infinite "
+            else
+              "exp in: " & Duration'Image (Expiration.Time
+                                           - Ada.Calendar.Clock)
+                         & " ");
   end Exp_Image;
 
   function Cb_Image (Callback : Timer_Callback) return String is
   begin
-    if Callback = null then
-      return ("*** No callback *** ");
-    else
-      return "";
-    end if;
+    return (if Callback = null then "*** No callback *** " else "");
   end Cb_Image;
 
   procedure Put_Debug (Proc : in String; Msg : in String) is
@@ -131,14 +125,10 @@ package body Timers is
         and then T1.Cre < T2.Cre);
     end if;
     -- At least one suspended or frozen
-    if T1_Running and then not T2_Running then
-      return True;
-    elsif not T1_Running and then T2_Running then
-      return False;
-    else
-      -- Both suspended or frozen: sort by remaining time
-      return T1.Remaining < T2.Remaining;
-    end if;
+    return (if T1_Running and then not T2_Running then True
+            elsif not T1_Running and then T2_Running then False
+            -- Both suspended or frozen: sort by remaining time
+            else T1.Remaining < T2.Remaining);
   end "<";
   procedure Sort is new Timer_List_Mng.Sort ("<");
 
@@ -205,32 +195,21 @@ package body Timers is
     -- Compute expiration time or remaining delay (if clock frozen)
     if Timer.Frozen then
       -- Remaining virtual time
-      case Delay_Spec.Delay_Kind is
-        when Delay_Sec =>
-          Timer.Remaining := Perpet.To_Delta_Rec (Delay_Spec.Delay_Seconds);
-        when Delay_Del =>
-          Timer.Remaining := Delay_Spec.Delay_Delta;
-        when Delay_Exp =>
-          if (Delay_Spec.Expiration_Time > Start) then
-            Timer.Remaining := Delay_Spec.Expiration_Time - Start;
-          else
-            Timer.Remaining := Default_Delta;
-          end if;
-      end case;
+      Timer.Remaining := (case Delay_Spec.Delay_Kind is
+          when Delay_Sec => Perpet.To_Delta_Rec (Delay_Spec.Delay_Seconds),
+          when Delay_Del => Delay_Spec.Delay_Delta,
+          when Delay_Exp =>
+             (if (Delay_Spec.Expiration_Time > Start) then
+                Delay_Spec.Expiration_Time - Start
+              else Default_Delta));
       Put_Debug ("Create",
                  "frozen for " & Timer.Remaining.Days'Img & "D +  "
                                & Timer.Remaining.Secs'Img & "s");
     else
-      case Delay_Spec.Delay_Kind is
-        when Delay_Sec =>
-          Timer.Exp.Expiration_Time := Start
-                                     + Delay_Spec.Delay_Seconds;
-        when Delay_Del =>
-          Timer.Exp.Expiration_Time := Start
-                                     + Delay_Spec.Delay_Delta;
-        when Delay_Exp =>
-          Timer.Exp.Expiration_Time := Delay_Spec.Expiration_Time;
-      end case;
+      Timer.Exp.Expiration_Time := (case Delay_Spec.Delay_Kind is
+          when Delay_Sec => Start + Delay_Spec.Delay_Seconds,
+          when Delay_Del => Start + Delay_Spec.Delay_Delta,
+          when Delay_Exp => Delay_Spec.Expiration_Time);
       if Delay_Spec.Clock /= null then
         -- Expiration time in reference time (speed is not null)
         Timer.Exp.Expiration_Time :=
@@ -628,13 +607,9 @@ package body Timers is
   function "<" (E1, E2 : Expiration_Rec) return Boolean is
     use type Virtual_Time.Time;
   begin
-    if E1 = Infinite_Expiration then
-      return False;
-    elsif E2 = Infinite_Expiration then
-      return True;
-    else
-     return E1.Time < E2.Time;
-    end if;
+    return (if E1 = Infinite_Expiration then False
+            elsif E2 = Infinite_Expiration then True
+            else E1.Time < E2.Time);
   end "<";
 
   -- Compute next timeout from Expiration and timers
@@ -649,13 +624,10 @@ package body Timers is
     -- First timer to expire
     Next_Exp := Wait_Until;
 
-    if Next_Exp < Expiration then
-      -- A timer is due before provided expiration
-      Result := Next_Exp;
-    else
-      -- Provided expiration will occure first
-      Result := Expiration;
-    end if;
+    -- A timer is due before provided expiration
+    Result := (if Next_Exp < Expiration then Next_Exp
+               -- Provided expiration will occure first
+               else Expiration);
 
     Put_Debug ("Next_Expiration", "-> " & Exp_Image (Result));
     Release_Mutex;

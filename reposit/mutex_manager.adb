@@ -339,7 +339,7 @@ package body Mutex_Manager is
   overriding procedure Finalize (M : in out Mutex) is
   begin
     case M.Kind is
-      when Simple => Free (M.Mutex_Pointer);
+      when Simple     => Free (M.Mutex_Pointer);
       when Read_Write => Free (M.Rw_Mutex_Pointer);
       when Write_Read => Free (M.Wr_Mutex_Pointer);
     end case;

@@ -37,12 +37,8 @@ package body File_Hash is
           Len := Len - 1;
         end if;
         -- Store word in Storage and its key in H list
-        if Len < Max_Str_Len then
-          List.Insert (As.U.Tus (Word(1 .. Len)));
-       else
-         -- Truncate
-          List.Insert (As.U.Tus (Word(1 .. Max_Str_Len)));
-        end if;
+        List.Insert (As.U.Tus (Word(1 ..
+              (if Len < Max_Str_Len then Len else Max_Str_Len))));
       end;
     end loop;
 

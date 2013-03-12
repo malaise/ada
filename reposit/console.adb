@@ -62,11 +62,7 @@ package body Console is
   -- Switch reverse
   procedure Set_Reverse (On : in Boolean) is
   begin
-    if On then
-      Basic_Proc.Put_Output (Csi & "7m");
-    else
-      Basic_Proc.Put_Output (Csi & "27m");
-    end if;
+    Basic_Proc.Put_Output (Csi & (if On then "7m" else "27m"));
   end Set_Reverse;
 
   -- Save/restore cursor pos

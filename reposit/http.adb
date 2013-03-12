@@ -13,11 +13,7 @@ package body Http is
   procedure Debug (Msg : in String) is
   begin
     if Debug_Status = Unknown then
-      if Environ.Is_Yes (Debug_Var) then
-        Debug_Status := Set;
-      else
-        Debug_Status := Notset;
-      end if;
+      Debug_Status := (if Environ.Is_Yes (Debug_Var) then Set else Notset);
     end if;
     if Debug_Status = Set then
       Basic_Proc.Put_Line_Output (Msg);
@@ -116,8 +112,7 @@ package body Http is
       Debug ("HTTP: No line feed at all");
       return;
     end if;
-    if Ind = 1
-    or else Buffer.Element (Ind - 1) & "" /= Cr then
+    if Ind = 1 or else Buffer.Element (Ind - 1) & "" /= Cr then
       New_Line := As.U.Tus (Lf);
     else
       New_Line := As.U.Tus (Crlf);

@@ -115,11 +115,7 @@ package body My_Math is
       Result := X;
     end if;
 
-    if Neg then
-      return -Result;
-    else
-      return Result;
-    end if;
+    return (if Neg then -Result else Result);
   end Int;
 
   function Frac (X : Real) return Real is
@@ -129,14 +125,8 @@ package body My_Math is
 
   -- Real to inte : round or trunc
   function Round (X : Real) return Inte is
-    Resultat : Inte;
   begin
-    if X > 0.0 then
-      Resultat := Trunc(X + 0.5);
-    else
-      Resultat := Trunc(X - 0.5);
-    end if;
-    return Resultat;
+    return (if X > 0.0 then Trunc(X + 0.5) else Trunc(X - 0.5));
   exception
     when others =>
       raise Math_Error;
@@ -234,11 +224,7 @@ package body My_Math is
                 Mode : Angle_Unit := Radian) return Real is
     Y      : Real;
   begin
-    if Mode = Radian then
-      Y := X;
-    else
-      Y := X * Pi_Hundred_Heighty;
-    end if;
+    Y := (if Mode = Radian then X else X * Pi_Hundred_Heighty);
     return Real(Csin (C_Types.Double(Y)));
   exception
     when others =>
@@ -249,11 +235,7 @@ package body My_Math is
                 Mode : Angle_Unit := Radian) return Real is
     Y      : Real;
   begin
-    if Mode = Radian then
-      Y := X;
-    else
-      Y := X * Pi_Hundred_Heighty;
-    end if;
+    Y := (if Mode = Radian then X else X * Pi_Hundred_Heighty);
     return Real(Ccos (C_Types.Double(Y)));
   exception
     when others =>
@@ -264,11 +246,7 @@ package body My_Math is
                 Mode : Angle_Unit := Radian) return Real is
     Y       : Real;
   begin
-    if Mode = Radian then
-      Y := X;
-    else
-      Y := X * Pi_Hundred_Heighty;
-    end if;
+    Y := (if Mode = Radian then X else X * Pi_Hundred_Heighty);
     return Real(Ctan (C_Types.Double(Y)));
   exception
     when others =>

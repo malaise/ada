@@ -51,11 +51,7 @@ package body Rnd is
 
   begin
     -- 0 <= init <= 1 : Ok, otherwise random
-    if 0.0 <= Init and then Init < 1.0 then
-      F := Init;
-    else
-      F := Init_Aleat;
-    end if;
+    F := (if 0.0 <= Init and then Init < 1.0 then Init else Init_Aleat);
     I := U_Rand.Seed_Range_1 (F * Float(U_Rand.Seed_Range_1'Last - 1) + 1.0);
 
     Ok := Mutex_Manager.Get (Gen.Acc.Lock, -1.0);
@@ -76,11 +72,7 @@ package body Rnd is
     U_Rand.Next (Gen.Acc.Ugen, Val);
     Mutex_Manager.Release (Gen.Acc.Lock);
     -- Here 0 <= Val < 1
-    if Mini >= Maxi then
-      return Val;
-    else
-      return Mini + (Val * (Maxi - Mini) );
-    end if;
+    return (if Mini >= Maxi then Val else Mini + (Val * (Maxi - Mini) ));
   end Random;
 
   function Discr_Random (Gen : Generator;

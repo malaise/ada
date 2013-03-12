@@ -458,11 +458,9 @@ package body Dtd is
           Util.Error (Ctx.Flow, "Invalid Enum definition");
         end if;
         if not Util.Names_Ok (Enum, "|", Allow_Token => Typ_Char = 'E') then
-          if Typ_Char = 'E' then
-            Util.Error (Ctx.Flow, "Invalid nmtoken in Enum definition");
-          else
-            Util.Error (Ctx.Flow, "Invalid name in Notation definition");
-          end if;
+           Util.Error (Ctx.Flow,
+             (if Typ_Char = 'E' then "Invalid nmtoken in Enum definition"
+              else "Invalid name in Notation definition"));
         end if;
         -- Replace '|' by '#' and prepend and append a '#'
         Enum := As.U.Tus (
@@ -509,15 +507,10 @@ package body Dtd is
 
       -- Check supported att defaults
       Util.Skip_Separators (Ctx.Flow);
-      if Try ("#REQUIRED") then
-        Def_Char := 'R';
-      elsif Try ("#IMPLIED") then
-        Def_Char := 'I';
-      elsif Try ("#FIXED ") then
-        Def_Char := 'F';
-      else
-        Def_Char := 'D';
-      end if;
+      Def_Char := (if Try ("#REQUIRED") then 'R'
+                   elsif Try ("#IMPLIED") then 'I'
+                   elsif Try ("#FIXED ") then 'F'
+                   else 'D');
 
       -- Check no default value or get default value
       Util.Skip_Separators (Ctx.Flow);
@@ -1847,12 +1840,10 @@ package body Dtd is
         if Ctx.Namespace then
           -- Attr can be CDATA, Enumeration or NMTOKEN(s) with a ':'
           --  otherwise no ':'
-          if Td(1) = 'S' or else Td(1) = 'E'
-          or else Upper_Char (Td(1)) = 'T' then
-            Namespaces.Validate (Ctx, As.U.Tus (Attr), Namespaces.Attr);
-          else
-            Namespaces.Validate (Ctx, As.U.Tus (Attr), Namespaces.Other);
-          end if;
+          Namespaces.Validate (Ctx, As.U.Tus (Attr),
+              (if Td(1) = 'S' or else Td(1) = 'E'
+               or else Upper_Char (Td(1)) = 'T' then Namespaces.Attr
+               else Namespaces.Other));
         end if;
         Trace ("Dtd checked versus dtd attribute " & Attr & " type " & Td);
       end;

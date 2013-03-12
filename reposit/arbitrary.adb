@@ -104,11 +104,8 @@ package body Arbitrary is
     begin
       D := Basic.Extract (A);
       Basic.Trim (D);
-      if As.U.Asu_Us(A).Element (1) = '+' or else D = "0" then
-        A := Tus ("+" & D.Image);
-      else
-        A := Tus ("-" & D.Image);
-      end if;
+      A := Tus (if As.U.Asu_Us(A).Element (1) = '+' or else D = "0" then "+"
+                else "-") & D.Image;
     end Normalize;
 
     -- Is N positive
@@ -232,16 +229,8 @@ package body Arbitrary is
       end if;
       -- Add digits one by one
       for I in 1 .. L loop
-        if I <= La then
-          Ca := A.Element (La - I + 1);
-        else
-          Ca := '0';
-        end if;
-        if I <= Lb then
-          Cb := B.Element (Lb - I + 1);
-        else
-          Cb := '0';
-        end if;
+        Ca := (if I <= La then A.Element (La - I + 1) else '0');
+        Cb := (if I <= Lb then B.Element (Lb - I + 1) else '0');
         Add_Char (Ca, Cb, C, Cr);
         R.Replace_Element (L - I + 1, Cr);
       end loop;
@@ -266,11 +255,7 @@ package body Arbitrary is
       -- Sub digits one by one
       for I in 1 .. La loop
         Ca := A.Element (La - I + 1);
-        if I <= Lb then
-          Cb := B.Element (Lb - I + 1);
-        else
-          Cb := '0';
-        end if;
+        Cb := (if I <= Lb then B.Element (Lb - I + 1) else '0');
         Sub_Char (Ca, Cb, C, Cr);
         R.Replace_Element (La - I + 1, Cr);
       end loop;
@@ -410,13 +395,9 @@ package body Arbitrary is
     function Les_No_Sign (A, B : As.U.Asu_Us) return Boolean is
       use type As.U.Asu_Us;
     begin
-      if A.Length < B.Length then
-        return True;
-      elsif A.Length > B.Length then
-        return False;
-      else
-        return A < B;
-      end if;
+      return (if A.Length < B.Length then True
+              elsif A.Length > B.Length then False
+              else A < B);
     end Les_No_Sign;
 
   end Basic;
@@ -425,6 +406,11 @@ package body Arbitrary is
   function Set_Uncheck (V : String) return Number is
       use type As.U.Asu_Us;
   begin
+    -----------------------------------------------------------------
+    -- Bug in Gnat GPL 2012: A "(if" expression retuning Asu_Us fails
+    --  (raises Storage_Error or returns Asu_Null)
+    -- Don't use it
+    -----------------------------------------------------------------
     if Syntax.Is_Sign(V(V'First)) then
       return Basic.Make (As.U.Tus (V));
     else
@@ -445,11 +431,8 @@ package body Arbitrary is
 
   function Strip (V : String) return String is
   begin
-    if V(V'First) = ' ' then
-      return V(Natural'Succ(V'First) .. V'Last);
-    else
-      return V;
-    end if;
+    return (if V(V'First) = ' ' then V(Natural'Succ(V'First) .. V'Last)
+            else V);
   end Strip;
 
   function Set (V : Integer) return Number is
@@ -521,11 +504,7 @@ package body Arbitrary is
     if A = Number_Zero then
       return Number_Zero;
     end if;
-    if B.Element(1) = '-' then
-      B.Replace_Element (1, '+');
-    else
-      B.Replace_Element (1, '-');
-    end if;
+      B.Replace_Element (1, (if B.Element(1) = '-' then '+' else '-'));
     return Tus (B.Image);
   end "-";
 
@@ -654,11 +633,7 @@ package body Arbitrary is
       end if;
     end if;
     -- Set sign of result
-    if Pos then
-      return Basic.Make ('+' & C);
-    else
-      return Basic.Make ('-' & C);
-    end if;
+    return Basic.Make ((if Pos then '+' else '-') & C);
   end "+";
 
   function "-" (A, B : Number) return Number is
@@ -676,11 +651,7 @@ package body Arbitrary is
   begin
     C := Basic.Mul_No_Sign (Da, Db);
     -- Set sign of result
-    if Pa = Pb then
-      return Basic.Make ('+' & C);
-    else
-      return Basic.Make ('-' & C);
-    end if;
+    return Basic.Make ((if Pa = Pb then '+' else '-') & C);
   end "*";
 
   function "/" (A, B : Number) return Number is
@@ -725,16 +696,8 @@ package body Arbitrary is
       raise Constraint_Error;
     end if;
     Basic.Div_No_Sign (Da, Db, Dq, Dr);
-    if Pa = Pb then
-      Q := Basic.Make ("+" & Dq);
-    else
-      Q := Basic.Make ("-" & Dq);
-    end if;
-    if Pa then
-      R := Basic.Make ("+" & Dr);
-    else
-      R := Basic.Make ("-" & Dr);
-    end if;
+    Q := Basic.Make ((if Pa = Pb then "+" else "-") & Dq);
+    R := Basic.Make ((if Pa then "+" else "-") & Dr);
   end Div;
 
   function Roundiv (A, B : Number) return Number is

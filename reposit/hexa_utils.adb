@@ -21,11 +21,8 @@ package body Hexa_Utils is
   -- Lower case
   function Hexa_To_Char (H : Hexa_Digit) return Character is
   begin
-    if H < 10 then
-      return Character'Val (Character'Pos('0') + H);
-    else
-      return Character'Val (Character'Pos('a') + H - 10);
-    end if;
+    return (if H < 10 then Character'Val (Character'Pos('0') + H)
+            else Character'Val (Character'Pos('a') + H - 10));
   end Hexa_To_Char;
 
   -- Value of a string representing the hexadecimal image of a natural

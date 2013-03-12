@@ -118,11 +118,8 @@ package body Gets is
     Int_Float : Int_Float_Rec;
   begin
     Int_Float := Get_Int_Float(Str);
-    if Int_Float.Is_Float then
-      return Int_Float.Float_Value;
-    else
-      return Float(Int_Float.Int_Value);
-    end if;
+    return (if Int_Float.Is_Float then Int_Float.Float_Value
+            else Float(Int_Float.Int_Value));
   end Get_Int_Or_Float;
 
 end Gets;

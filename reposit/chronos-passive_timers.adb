@@ -7,13 +7,9 @@ package body Chronos.Passive_Timers is
   -- Timer status, independant from the associated clock status
   function Status (Timer : Passive_Timer) return Timer_Status is
   begin
-    if Timer.Acc = null then
-      return Timers.Deleted;
-    elsif Timer.Acc.Chrono.Get_Status = Stopped then
-      return Timers.Suspended;
-    else
-      return Timers.Running;
-    end if;
+    return (if Timer.Acc = null then Timers.Deleted
+            elsif Timer.Acc.Chrono.Get_Status = Stopped then Timers.Suspended
+            else Timers.Running);
   end Status;
 
   -- True if timer is not Deleted
@@ -42,19 +38,14 @@ package body Chronos.Passive_Timers is
     Timer.Acc.Chrono.Attach (Delay_Spec.Clock);
     Timer.Acc.Chrono.Start (Start_Time);
     -- Initialise timer
-    case Delay_Spec.Delay_Kind is
-      when Timers.Delay_Sec =>
-        Timer.Acc.Next_Expiration :=
-            Perpet.To_Delta_Rec (Delay_Spec.Delay_Seconds);
-      when Timers.Delay_Del =>
-        Timer.Acc.Next_Expiration := Delay_Spec.Delay_Delta;
-      when Timers.Delay_Exp =>
-        if Delay_Spec.Expiration_Time > Start_Time then
-          Timer.Acc.Next_Expiration := Delay_Spec.Expiration_Time - Start_Time;
-        else
-          Timer.Acc.Next_Expiration := Timers.Default_Delta;
-        end if;
-    end case;
+    Timer.Acc.Next_Expiration := (case Delay_Spec.Delay_Kind is
+        when Timers.Delay_Sec => Perpet.To_Delta_Rec (Delay_Spec.Delay_Seconds),
+        when Timers.Delay_Del => Delay_Spec.Delay_Delta,
+        when Timers.Delay_Exp =>
+          (if Delay_Spec.Expiration_Time > Start_Time then
+             Delay_Spec.Expiration_Time - Start_Time
+           else
+             Timers.Default_Delta));
     Timer.Acc.Period := Delay_Spec.Period;
     Timer.Acc.Expired := False;
   end Start;

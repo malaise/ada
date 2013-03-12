@@ -69,11 +69,9 @@ package body Storage is
       Found : Boolean;
     begin
       Term.Rule := Rule;
-      if From_Current then
-        Search_Rule (Term_List, Found, Term, From => Term_List_Mng.From_Current);
-      else
-        Search_Rule (Term_List, Found, Term, From => Term_List_Mng.Absolute);
-      end if;
+      Search_Rule (Term_List, Found, Term,
+          From => (if From_Current then Term_List_Mng.From_Current
+                   else Term_List_Mng.Absolute));
       return Found;
     end Find_Rule;
 
@@ -181,13 +179,9 @@ package body Storage is
     Term.Optio := Optio;
     Term.Repet := Repet;
     Term.Cb := Term_Cb;
-    if In_Prev then
-      Term_List.Insert (Term, Term_List_Mng.Next);
-    else
-      -- Could move before insertion at creation
-      Term_List.Insert (Term, Term_List_Mng.Prev);
-      In_Prev := False;
-    end if;
+    Term_List.Insert (Term, (if In_Prev then Term_List_Mng.Next
+                             -- Could move before insertion at creation
+                             else Term_List_Mng.Prev));
   end Add_Term;
 
   -- Get terms one by one

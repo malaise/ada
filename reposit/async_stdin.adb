@@ -319,11 +319,7 @@ package body Async_Stdin is
       end if;
 
       -- Optim: Set C to character of W or to Nul
-      if U <= Del then
-        C := Language.Unicode_To_Char (U);
-      else
-        C := Latin_1.Nul;
-      end if;
+      C := (if U <= Del then Language.Unicode_To_Char (U) else Latin_1.Nul);
 
       -- Save current searching status
       Saved_Searching := Searching;
@@ -581,13 +577,10 @@ package body Async_Stdin is
           Str(Pos) := C;
           if Pos = Len then
             -- End of sequence
-            if Len = 1 then
-              -- Optim for single characters
-              U := Language.Char_To_Unicode (C);
-            else
-              -- First wide char of string to wide conversion
-              U := Language.String_To_Unicode (Str(1 .. Len))(1);
-            end if;
+            -- Optim for single characters
+            --  or First wide char of string to wide conversion
+            U := (if Len = 1 then Language.Char_To_Unicode (C)
+                  else Language.String_To_Unicode (Str(1 .. Len))(1) );
             Len := 0;
             exit when Line.Add (U);
           end if;
@@ -642,33 +635,29 @@ package body Async_Stdin is
         return;
       else
         Cb := null;
-        if Stdio_Is_A_Tty then
-          Result := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
-                                            Sys_Calls.Canonical);
-        else
-          Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
-        end if;
+        Result :=
+            (if Stdio_Is_A_Tty then
+               Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
+                                       Sys_Calls.Canonical)
+             else
+               Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True));
         if Active then
           Event_Mng.Del_Fd_Callback (Sys_Calls.Stdin, True);
         end if;
       end if;
     else
       if Cb = null then
-        if Stdio_Is_A_Tty then
-          Result := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
-                                            Sys_Calls.Transparent);
-        else
-          Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
-        end if;
+        Result :=
+            (if Stdio_Is_A_Tty then
+               Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
+                                       Sys_Calls.Transparent)
+             else
+               Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False));
       else
         Result := True;
       end if;
       if Result then
-        if Max_Chars /= 0 then
-          Max := Max_Chars;
-        else
-          Max := Max_Chars_Range'Last;
-        end if;
+        Max := (if Max_Chars /= 0 then Max_Chars else Max_Chars_Range'Last);
         Line.Init;
         Line.Clear;
         if Active and then Cb = null then
@@ -760,11 +749,8 @@ package body Async_Stdin is
   -- Strip last character if Str if it is a control char (before space)
   function Strip_Last_Control (Str : String) return String is
   begin
-    if Str'Length = 0 or else Str(Str'Last) >= ' ' then
-      return Str;
-    else
-      return Str (Str'First .. Str'Last - 1);
-    end if;
+    return (if Str'Length = 0 or else Str(Str'Last) >= ' ' then Str
+            else Str (Str'First .. Str'Last - 1));
   end Strip_Last_Control;
 
   -- Put on stdout when in async

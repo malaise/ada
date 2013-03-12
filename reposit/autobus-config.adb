@@ -196,13 +196,11 @@ package body Config is
     Crit.Addr := As.U.Tus ("A-" & Name);
     Bus_Conf_List.Search_Match (Found, Bus_Conf_Match'Access, Crit,
                                 From => Bus_Conf_List_Mng.Absolute);
-    if Found then
-      Debug ("Bus " & Name & " found in config");
-    else
-      Debug ("Bus " & Name & " not found in config");
-    end if;
+    Debug ("Bus " & Name & " "
+           & (if not Found then "not" else "") & " found in config");
 
     -- Get Heartbeat_Period
+    -----------------------
     Dur := 0.0;
     if Found then
       -- In Conf?
@@ -232,14 +230,12 @@ package body Config is
       Dur := Get_Attribute (Root,
                             Heartbeat_Max_Missed_Name, False);
     end if;
-    if Dur = 0.0 then
-      -- Default
-      Heartbeat_Max_Missed := Default_Heartbeat_Max_Missed;
-    else
-      Heartbeat_Max_Missed := Positive (Dur);
-    end if;
+    -- Default or value
+    Heartbeat_Max_Missed := (if Dur = 0.0 then Default_Heartbeat_Max_Missed
+                             else Positive (Dur));
 
     -- Get Timeout
+    --------------
     Dur := 0.0;
     if Found then
       -- In Conf?
@@ -268,12 +264,8 @@ package body Config is
       -- In Root?
       Dur := Get_Attribute (Root, Ttl_Name, False);
     end if;
-    if Dur = 0.0 then
-      -- Default
-      Ttl := Default_Ttl;
-    else
-      Ttl := Positive (Dur);
-    end if;
+    -- Default or value
+    Ttl := (if Dur = 0.0 then Default_Ttl else Positive (Dur));
   end Get_Tuning;
 
 end Config;

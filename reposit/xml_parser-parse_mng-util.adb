@@ -45,23 +45,15 @@ package body Util is
     else
       -- Else restore "<?xml" (4 first bytes of it)
       Unget (Flow, Str'Length);
-      if  C = (0, 0, 0, 16#3C#) then
-        Encoding := Ucs4_Be;
-      elsif C = (16#3C#, 0, 0, 0) then
-        Encoding := Ucs4_Le;
-      elsif C = (0, 0, 16#3C#, 0) or else C = (0, 16#3C#, 0, 0) then
-        Encoding := Ucs4_Unusual;
-      elsif C = (0, 16#3C#, 0, 16#3F#) then
-        Encoding := Utf16_Be;
-      elsif C = (16#3C#, 0, 16#3F#, 0) then
-        Encoding := Utf16_Le;
-      elsif C = (16#3C#, 16#3F#, 16#78#, 16#6D#) then
-        Encoding := Utf8;
-      elsif C = (16#4C#, 16#6F#, 16#A7#, 16#94#) then
-        Encoding := Ebcdic;
-      else
-        Encoding := Other;
-      end if;
+      Encoding := (if  C = (0, 0, 0, 16#3C#) then Ucs4_Be
+                   elsif C = (16#3C#, 0, 0, 0) then Ucs4_Le
+                   elsif C = (0, 0, 16#3C#, 0)
+                     or else C = (0, 16#3C#, 0, 0) then Ucs4_Unusual
+                   elsif C = (0, 16#3C#, 0, 16#3F#) then Utf16_Be
+                   elsif C = (16#3C#, 0, 16#3F#, 0) then Utf16_Le
+                   elsif C = (16#3C#, 16#3F#, 16#78#, 16#6D#) then Utf8
+                   elsif C = (16#4C#, 16#6F#, 16#A7#, 16#94#) then Ebcdic
+                   else Other);
     end if;
 
     -- Check validity of detected encoding and save it
@@ -289,34 +281,18 @@ package body Util is
     Put_Line_No : Natural := 0;
     use type As.U.Asu_Us;
   begin
-    if Line_No = 0 then
-      Put_Line_No := Get_Line_No(Flow);
-    else
-      Put_Line_No := Line_No;
-    end if;
+    Put_Line_No := (if Line_No = 0 then Get_Line_No(Flow) else Line_No);
     Err_Msg := As.U.Tus ("Xml_Parser");
-    if Is_Error then
-      Err_Msg.Append (" error");
-    else
-      Err_Msg.Append (" warning");
-    end if;
+    Err_Msg.Append (if Is_Error then " error" else " warning");
     if Put_Line_No /= 0 then
       Err_Msg.Append (" at line" & Put_Line_No'Img);
     end if;
     -- Xml, Dtd or external entity
-    if Put_Line_No /= 0 then
-      Err_Msg.Append (" of");
-    else
-      Err_Msg.Append (" in");
-    end if;
-    case Flow.Curr_Flow.Kind is
-      when Xml_Flow | Int_Dtd_Flow =>
-        Err_Msg.Append (" xml");
-      when Dtd_Flow =>
-        Err_Msg.Append (" dtd");
-      when Ext_Flow =>
-        Err_Msg.Append (" external entity");
-    end case;
+    Err_Msg.Append (if Put_Line_No /= 0 then " of" else " in");
+    Err_Msg.Append (case Flow.Curr_Flow.Kind is
+                      when Xml_Flow | Int_Dtd_Flow => " xml",
+                      when Dtd_Flow => " dtd",
+                      when Ext_Flow => " external entity");
     if Flow.Curr_Flow.Kind /= Xml_Flow
     and then not Flow.Curr_Flow.Name.Is_Null then
       Err_Msg.Append (" " & Flow.Curr_Flow.Name);
@@ -578,11 +554,9 @@ package body Util is
     Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes + Str'Length;
     -- The inserted characters shall not be recorded (when got/ungot)
     if Flow.Recording then
-      if Flow.Skip_Recording = No_Skip_Rec then
-        Flow.Skip_Recording := Str'Length;
-      else
-        Flow.Skip_Recording := Flow.Skip_Recording + Str'Length;
-      end if;
+      Flow.Skip_Recording :=
+          (if Flow.Skip_Recording = No_Skip_Rec then Str'Length
+           else Flow.Skip_Recording + Str'Length);
     end if;
   end Insert;
 
@@ -750,13 +724,8 @@ package body Util is
     -- Space in Str matches any separator
     Fix_Spaces (Got_Str);
     -- Check if match
-    if Got_Str = Str then
-      -- Got it
-      Ok := True;
-    else
-      -- Got enough chars but not those expected
-      Ok := False;
-    end if;
+    -- Got it, or got enough chars but not those expected
+    Ok := Got_Str = Str;
     if not Ok or else not Consume then
       -- No match or explicit arg to not consume
       Unget (Flow, Str'Length);
@@ -918,11 +887,9 @@ package body Util is
       Entity_Mng.Exists (Dtd.Entity_List,
                            Name, Starter = Ent_Param, Found);
       if not Found then
-        if Starter = Ent_Param then
-          Error (Ctx.Flow, "Unknown entity " & Ent_Param & " " & Name.Image);
-        else
-          Error (Ctx.Flow, "Unknown entity " & Name.Image);
-        end if;
+        Error (Ctx.Flow, "Unknown entity "
+               & (if Starter = Ent_Param then Ent_Param & " " else "")
+               & Name.Image);
       end if;
 
       -- Verify that this entity is not already in the stack

@@ -90,11 +90,7 @@ package body Long_Long_Limited_List is
   -- Next <-> Prev
   function Other_Way (Where : Direction) return Direction is
   begin
-    if Where = Next then
-      return Prev;
-    else
-      return Next;
-    end if;
+    return (if Where = Next then Prev else Next);
   end Other_Way;
 
 
@@ -103,11 +99,8 @@ package body Long_Long_Limited_List is
                        Where : Direction := Next) return Boolean is
   begin
     Check(List);
-    if Where = Next then
-      return List.Current.Next /= null;
-    else
-      return List.Current.Prev /= null;
-    end if;
+    return (if Where = Next then List.Current.Next /= null
+            else List.Current.Prev /= null);
   end Check_Move;
 
 
@@ -245,7 +238,7 @@ package body Long_Long_Limited_List is
     else
       -- Check movement
       if Move = Next then
-        Check_In(List.Current.Next);
+        Check_In (List.Current.Next);
       elsif Move = Prev then
         Check_In (List.Current.Prev);
       end if;
@@ -489,13 +482,9 @@ package body Long_Long_Limited_List is
     end if;
 
     -- Check if current is one the swapped cells
-    if List.Current = Left then
-      Current_Status := Is_Left;
-    elsif List.Current = Right then
-      Current_Status := Is_Right;
-    else
-      Current_Status := Is_None;
-    end if;
+    Current_Status := (if List.Current = Left then Is_Left
+                       elsif List.Current = Right then Is_Right
+                       else Is_None);
 
     Tmp_Prev := Left.Prev;
     Tmp_Next := Left.Next;
@@ -613,11 +602,7 @@ package body Long_Long_Limited_List is
   -- Returns the number of elements in the list (0 if empty)
   function List_Length (List : List_Type) return Long_Longs.Ll_Natural is
   begin
-    if Is_Empty(List) then
-      return 0;
-    else
-      return List.Pos_First + List.Pos_Last - 1;
-    end if;
+    return (if Is_Empty(List) then 0 else List.Pos_First + List.Pos_Last - 1);
   end List_Length;
 
 
@@ -627,12 +612,9 @@ package body Long_Long_Limited_List is
            return Long_Longs.Ll_Positive is
   begin
     Check(List);
-    case From is
-      when From_First =>
-        return List.Pos_First;
-      when From_Last =>
-        return List.Pos_Last;
-    end case;
+    return (case From is
+              when From_First => List.Pos_First,
+             when From_Last => List.Pos_Last);
   end Get_Position;
 
 

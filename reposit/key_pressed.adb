@@ -13,11 +13,8 @@ package body Key_Pressed is
     if not Stdin_Is_A_Tty then
       return;
     end if;
-    if Blocking then
-      Res := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, Sys_Calls.Char_No_Echo);
-    else
-      Res := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, Sys_Calls.Transparent);
-    end if;
+    Res := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
+        (if Blocking then Sys_Calls.Char_No_Echo else Sys_Calls.Transparent));
     if not Res then
       raise Error;
     end if;

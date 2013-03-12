@@ -42,30 +42,19 @@ package body Sys_Calls is
 
   function File_Kind_Of (Mode : Integer) return File_Desc_Kind_List is
     Loc_Mode : Integer;
-    Kind : File_Desc_Kind_List;
     use Bit_Ops;
   begin
     Loc_Mode := Mode and 8#00170000#;
     Loc_Mode := Shr (Loc_Mode, 12);
-    case Loc_Mode is
-      when 8#14# =>
-        Kind := Socket;
-      when 8#12# =>
-        Kind := Link;
-      when 8#10# =>
-        Kind := File;
-      when 8#06# =>
-        Kind := Block_Device;
-      when 8#04# =>
-        Kind := Dir;
-      when 8#02# =>
-        Kind := Character_Device;
-      when 8#01# =>
-        Kind := Pipe;
-      when others =>
-        Kind := Unknown;
-    end case;
-    return Kind;
+    return (case Loc_Mode is
+              when 8#14#  => Socket,
+              when 8#12#  => Link,
+              when 8#10#  => File,
+              when 8#06#  => Block_Device,
+              when 8#04#  => Dir,
+              when 8#02#  => Character_Device,
+              when 8#01#  => Pipe,
+              when others => Unknown);
   end File_Kind_Of;
 
 
@@ -333,15 +322,9 @@ package body Sys_Calls is
     Res : C_Types.Int;
   begin
     Res := C_File_Stat(File_Name4C'Address, Stat4C'Address);
-    if Res = C_Error then
-      if Sys_Calls.Errno = Enoent then
-        return Not_Found;
-      else
-        return Error;
-      end if;
-    else
-      return Found;
-    end if;
+    return (if Res = C_Error then
+              (if Sys_Calls.Errno = Enoent then Not_Found else Error)
+            else Found);
   end File_Status;
 
   -- Check if file exists, Access_Error if Error
@@ -540,11 +523,7 @@ package body Sys_Calls is
                             return C_Types.Int;
     pragma Import (C, C_Set_Blocking, "set_blocking");
   begin
-    if Blocking then
-      return C_Set_Blocking (Integer(Fd), 1) = 0;
-    else
-      return C_Set_Blocking (Integer(Fd), 0) = 0;
-    end if;
+    return C_Set_Blocking (Integer(Fd), (if Blocking then 1 else 0)) = 0;
   end Set_Blocking;
 
   -- Is blocking (for tty or not)

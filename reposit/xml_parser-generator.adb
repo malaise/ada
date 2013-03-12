@@ -458,12 +458,11 @@ package body Xml_Parser.Generator is
   -- Internal op
   function Internal_Kind_Of (Kind : Node_Kind_List) return Internal_Kind_List is
   begin
-    case Kind is
-      when Element => return Element;
-      when Text    => return Text;
-      when Pi      => return Pi;
-      when Comment => return Comment;
-    end case;
+    return (case Kind is
+              when Element => Element,
+              when Text    => Text,
+              when Pi      => Pi,
+              when Comment => Comment);
   end Internal_Kind_Of;
 
   -- Set (change) the name of an element
@@ -1029,11 +1028,7 @@ package body Xml_Parser.Generator is
                  + Attributes(I).Value.Length + 4;
       -- For last attribute, a ">" (if children) or a "/>" will be added
       if I = Attributes'Last then
-        if Has_Children then
-          Att_Width := Att_Width + 1;
-        else
-          Att_Width := Att_Width + 2;
-        end if;
+        Att_Width := Att_Width + (if Has_Children then 1 else 2);
       end if;
       -- New line and Indent if needed
       -- Never new line for first
@@ -1193,11 +1188,8 @@ package body Xml_Parser.Generator is
         -- The Xml directive
         -- Even if one attr per line request, Xml directive attributes
         --  are all on the same line
-        if Format = One_Per_Line then
-          Xml_Attr_Format := Fill_Width;
-        else
-          Xml_Attr_Format := Format;
-        end if;
+        Xml_Attr_Format := (if Format = One_Per_Line then Fill_Width
+                            else Format);
         -- Put the xml directive with attributes if any
         Put (Flow, "<?" & Cell.Name.Image);
         Put_Attributes (Flow, Xml_Attr_Format, Width, Namespace, Element, 0,

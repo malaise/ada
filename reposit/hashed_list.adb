@@ -255,11 +255,10 @@ package body Hashed_List is
     end if;
     Go_On := True;
     loop
-      if From = From_First then
-        List.List.Read (Item, List_Mng.Next, Moved => Moved);
-      else
-        List.List.Read (Item, List_Mng.Prev, Moved => Moved);
-      end if;
+      List.List.Read (
+          Item,
+          (if From = From_First then List_Mng.Next else List_Mng.Prev),
+          Moved => Moved);
       List.In_Cb := True;
       Iteration (Item, Go_On);
       List.In_Cb := False;
@@ -279,11 +278,8 @@ package body Hashed_List is
     if List.List.Is_Empty then
       raise Not_In_List;
     end if;
-    if From = From_First then
-      List.List.Rewind (True, List_Mng.Next);
-    else
-      List.List.Rewind (True, List_Mng.Prev);
-    end if;
+    List.List.Rewind (True, (if From = From_First then List_Mng.Next
+                             else List_Mng.Prev));
   end Rewind;
 
   procedure Read_Next (List : in out List_Type;
@@ -294,11 +290,10 @@ package body Hashed_List is
     if List.List.Is_Empty then
       raise Not_In_List;
     end if;
-    if Direction = Forward then
-      List.List.Read (Item, List_Mng.Next, Moved);
-    else
-      List.List.Read (Item, List_Mng.Prev, Moved);
-    end if;
+    List.List.Read (Item,
+                    (if Direction = Forward then List_Mng.Next
+                     else List_Mng.Prev),
+                    Moved);
   end Read_Next;
 
   overriding procedure Finalize (List : in out List_Type) is

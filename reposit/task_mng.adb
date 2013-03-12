@@ -19,13 +19,10 @@ package body Task_Mng is
     New_Tid : Timers.Timer_Id;
   begin
     -- Set new period
-    if New_Period < Min_Period then
-      Expiration.Period := Min_Period;
-    elsif New_Period > Timers.Period_Range'Last then
-      Expiration.Period := Timers.Period_Range'Last;
-    else
-      Expiration.Period := New_Period;
-    end if;
+    Expiration.Period := (if New_Period < Min_Period then Min_Period
+                          elsif New_Period > Timers.Period_Range'Last then
+                            Timers.Period_Range'Last
+                          else New_Period);
     Expiration.Delay_Seconds := Expiration.Period;
     -- Arm new timer ASAP
     New_Tid.Create (Expiration, Cb_Access);

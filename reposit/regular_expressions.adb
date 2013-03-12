@@ -270,16 +270,9 @@ package body Regular_Expressions is
   -- Returns No_Match or a Match_Cell
   -- May raise No_Criteria if Criteria does not compile
   function Match (Criteria, Str : String) return Match_Cell is
+    Match_Info : constant Match_Array := Match (Criteria, Str, 1);
   begin
-    declare
-      Match_Info : constant Match_Array := Match (Criteria, Str, 1);
-    begin
-      if Match_Info'Length = 0 then
-        return No_Match;
-      else
-        return Match_Info(1);
-      end if;
-    end;
+    return (if Match_Info'Length = 0 then No_Match else Match_Info(1));
   end Match;
 
   -- Compare string Str to Criteria

@@ -155,11 +155,7 @@ package body Xml_Parser is
   end Set;
   function Image (Entity : Entity_Type) return String is
   begin
-    if Entity.Parameter then
-      return "%" & Entity.Name.Image;
-    else
-      return Entity.Name.Image;
-    end if;
+    return (if Entity.Parameter then "%" else "") & Entity.Name.Image;
   end Image;
   -- Entities differ if one is parameter and not the other
   --  or if names differ
@@ -177,11 +173,7 @@ package body Xml_Parser is
   end Set;
   function Image (Unparsed : Unparsed_Type) return String is
   begin
-    if Unparsed.Is_Entity then
-      return "E:" & Unparsed.Name.Image;
-    else
-      return "N:" & Unparsed.Name.Image;
-    end if;
+    return (if Unparsed.Is_Entity then "E:" else "N:") & Unparsed.Name.Image;
   end Image;
   function "=" (Current : Unparsed_Type; Criteria : Unparsed_Type)
                return Boolean is
@@ -292,11 +284,8 @@ package body Xml_Parser is
   begin
     if Debug = Trilean.Maybe then
       -- First call, set debug
-      if Environ.Is_Yes ("XML_PARSER_DEBUG") then
-        Debug := Trilean.True;
-      else
-        Debug := Trilean.False;
-      end if;
+      Debug := (if Environ.Is_Yes ("XML_PARSER_DEBUG") then Trilean.True
+                else Trilean.False);
     end if;
     if Debug = Trilean.True then
       Basic_Proc.Put_Line_Error (Msg);
@@ -596,11 +585,8 @@ package body Xml_Parser is
     Ctx.Callback := Parse_Cb;
     Parse_Mng.Parse_Prologue (Ctx, Dtd);
     -- Update status
-    if Ctx.Callback = null then
-      Ctx.Status := Parsed_Prologue;
-    else
-      Ctx.Status := Parsed_Prologue_Cb;
-    end if;
+    Ctx.Status := (if Ctx.Callback = null then Parsed_Prologue
+                   else Parsed_Prologue_Cb);
     Ok := True;
   exception
     when Status_Error =>
@@ -748,11 +734,7 @@ package body Xml_Parser is
     if Ctx.Magic /= Node.Magic then
       raise Use_Error;
     end if;
-    if Node.In_Prologue then
-      return Ctx.Prologue;
-    else
-      return Ctx.Elements;
-    end if;
+    return (if Node.In_Prologue then Ctx.Prologue else Ctx.Elements);
   end Get_Tree;
 
   function Get_Cell (Tree : Tree_Acc;

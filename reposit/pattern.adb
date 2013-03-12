@@ -113,11 +113,8 @@ package body Pattern is
     -- Init
     Put_Debug ("Set", "Create patern to rule " & Image (Rule) &
                       ", id " & Id'Img);
-    if Id4Cb = Same_Id then
-      Storage.Create_Pattern (Rule, Id, Match_Cb, Id);
-    else
-      Storage.Create_Pattern (Rule, Id, Match_Cb, Id4Cb);
-    end if;
+    Storage.Create_Pattern (Rule, Id, Match_Cb, (if Id4Cb = Same_Id then Id
+                                                 else Id4Cb));
     Parser.Set (Iter, Pattern, Is_Sep'Access);
     First := True;
     Optio := False;
@@ -424,11 +421,8 @@ package body Pattern is
              & " in rule no " & Image (Rule));
 
     -- Init check
-    if Case_Sensitive then
-      Parser.Set (Iter, Str, Is_Sep'Access);
-    else
-      Parser.Set (Iter, Lower_Str (Str), Is_Sep'Access);
-    end if;
+    Parser.Set (Iter, (if Case_Sensitive then Str else Lower_Str (Str)),
+                      Is_Sep'Access);
     Storage.Rewind (Rule);
     Nb_Match := 0;
     Ok := False;

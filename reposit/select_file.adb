@@ -202,11 +202,10 @@ package body Select_File is
     -- Report an internal error
     procedure Error (Msg : in Error_List) is
     begin
-      case Msg is
-        when E_File_Not_Found     => Report_Error ("File not found");
-        when E_Io_Error           => Report_Error ("Error accessing file");
-        when E_File_Name          => Report_Error ("Error invalid file name");
-      end case;
+      Report_Error ((case Msg is
+                       when E_File_Not_Found     => "File not found",
+                       when E_Io_Error           => "Error accessing file",
+                       when E_File_Name          => "Error invalid file name"));
     end Error;
 
     function Is_Dir (File : String) return Boolean is
@@ -238,11 +237,8 @@ package body Select_File is
       -- Change dir
       Directory.Change_Current (New_Dir);
       -- Title
-      if Directory.Get_Current = "/" then
-        Put_File ("/*");
-      else
-        Put_File (Directory.Get_Current & "/*");
-      end if;
+      Put_File (if Directory.Get_Current = "/" then "/*"
+                else Directory.Get_Current & "/*");
 
       -- Set Afpx list
       -- Get list width
@@ -256,23 +252,16 @@ package body Select_File is
       Afpx.Line_List.Delete_List;
       loop
         Dir_List.Read (Dir_Item, Dir_Mng.File_List_Mng.Current);
-        case Dir_Item.Kind is
-          when Directory.File =>
-            Char := ' ';
-          when Directory.Dir =>
-            Char := '/';
-          when Directory.Link =>
-            Char := '@';
-          when Directory.Block_Device | Directory.Character_Device =>
-            Char := '>';
-          when Directory.Pipe =>
-            Char := '|';
-          when Directory.Socket =>
-            Char := '=';
-          when Directory.Unknown =>
-            -- device, fifo ...
-            Char := '?';
-        end case;
+        Char := (case Dir_Item.Kind is
+                   when Directory.File =>             ' ',
+                   when Directory.Dir =>              '/',
+                   when Directory.Link =>             '@',
+                   when Directory.Block_Device
+                      | Directory.Character_Device => '>',
+                   when Directory.Pipe =>             '|',
+                   when Directory.Socket =>           '=',
+                   -- device, fifo ...
+                   when Directory.Unknown =>          '?');
         Afpx_Item.Len := Width;
         Afpx_Item.Str (1 .. Width) :=
             Language.String_To_Unicode (
@@ -383,17 +372,15 @@ package body Select_File is
     -- Title
     Afpx.Clear_Field (Title_Fld);
     if For_Read then
-      if Read_Title = "" or else Read_Title'Length > Get_Title_Width then
-        Afpx.Encode_Field (Title_Fld, (0, 0), "Load a file");
-      else
-        Afpx.Encode_Field (Title_Fld, (0, 0), Read_Title);
-      end if;
+      Afpx.Encode_Field (Title_Fld, (0, 0),
+          (if Read_Title = ""
+           or else Read_Title'Length > Get_Title_Width then "Load a file"
+           else Read_Title));
     else
-      if Write_Title = "" or else Write_Title'Length > Get_Title_Width then
-        Afpx.Encode_Field (Title_Fld, (0, 0), "Save in a file");
-      else
-        Afpx.Encode_Field (Title_Fld, (0, 0), Write_Title);
-      end if;
+      Afpx.Encode_Field (Title_Fld, (0, 0),
+          (if Write_Title = ""
+           or else Write_Title'Length > Get_Title_Width then "Save in a file"
+           else Write_Title));
     end if;
 
     -- Encode current file name in get field
@@ -406,11 +393,7 @@ package body Select_File is
     Afpx.Encode_Field (Get_Fld, (0, 0), Get_Content);
 
     -- Build list
-    if Try_Select then
-      Change_Dir (".", Current_File);
-    else
-      Change_Dir (".", "");
-    end if;
+    Change_Dir (".", (if Try_Select then Current_File else ""));
 
     Cursor_Field := Get_Fld;
     Redisplay := False;

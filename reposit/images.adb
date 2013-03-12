@@ -4,8 +4,8 @@ package body Images is
 
   -- Image of an integer (without leading space)
   function Int_Image (I : Int) return String is
-    begin
-      if I < 0 then
+  begin
+    if I < 0 then
       return I'Img;
     else
       declare

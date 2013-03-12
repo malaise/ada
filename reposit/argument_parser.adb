@@ -23,42 +23,34 @@ package body Argument_Parser is
     use type As.U.Asu_Us;
   begin
     if Key.Key_Can_Option then
-      if not Key.Option_Name.Is_Null then
-        Opt := Key.Option_Name;
-      elsif Key.Key_String /= No_Key_String then
-        Opt := Key.Key_String;
-      else
-        Opt := As.U.Tus ("option");
-      end if;
+      Opt := (if not Key.Option_Name.Is_Null then Key.Option_Name
+              elsif Key.Key_String /= No_Key_String then Key.Key_String
+              else As.U.Tus ("option"));
       Opt := "<" & Opt & ">";
-      if Key.Required then
-        if Key.Key_Char = No_Key_Char then
-          return "--" & Key.Key_String.Image & "=" & Opt.Image;
-        elsif Key.Key_String = No_Key_String then
-          return "-" & Key.Key_Char & " " & Opt.Image;
-        else
-          return "-" & Key.Key_Char & " " & Opt.Image & " | --"
-                     & Key.Key_String.Image & "=" & Opt.Image;
-        end if;
-      else
-        if Key.Key_Char = No_Key_Char then
-          return "--" & Key.Key_String.Image & "[=" & Opt.Image & "]";
-        elsif Key.Key_String = No_Key_String then
-          return "-" & Key.Key_Char & " [" & Opt.Image & "]";
-        else
-          return "-" & Key.Key_Char & " [" & Opt.Image & "] | --"
-                     & Key.Key_String.Image & "[=" & Opt.Image & "]";
-        end if;
-      end if;
+      return (if Key.Required then
+                (if Key.Key_Char = No_Key_Char then
+                   "--" & Key.Key_String.Image & "=" & Opt.Image
+                 elsif Key.Key_String = No_Key_String then
+                   "-" & Key.Key_Char & " " & Opt.Image
+                 else
+                   "-" & Key.Key_Char & " " & Opt.Image & " | --"
+                       & Key.Key_String.Image & "=" & Opt.Image)
+
+              else
+                (if Key.Key_Char = No_Key_Char then
+                   "--" & Key.Key_String.Image & "[=" & Opt.Image & "]"
+                 elsif Key.Key_String = No_Key_String then
+                   "-" & Key.Key_Char & " [" & Opt.Image & "]"
+                 else
+                   "-" & Key.Key_Char & " [" & Opt.Image & "] | --"
+                       & Key.Key_String.Image & "[=" & Opt.Image & "]"));
     else
-    if Key.Key_Char = No_Key_Char then
-        return "--" & Key.Key_String.Image;
-      elsif Key.Key_String = No_Key_String then
-        return "-" & Key.Key_Char;
-      else
-        return "-" & Key.Key_Char & " | --"
-                   & Key.Key_String.Image;
-      end if;
+      return (if Key.Key_Char = No_Key_Char then
+                "--" & Key.Key_String.Image
+              elsif Key.Key_String = No_Key_String then
+                "-" & Key.Key_Char
+              else
+                "-" & Key.Key_Char & " | --" & Key.Key_String.Image);
     end if;
   end Image;
 
@@ -85,11 +77,7 @@ package body Argument_Parser is
   function Get_Option (Pos : Positive) return String is
     Str : constant String := Get_Option (Pos).Image;
   begin
-    if Str = No_Match then
-      return "";
-    else
-      return Str;
-    end if;
+    return (if Str = No_Match then "" else Str);
   end Get_Option;
 
   -- Parse an argument
@@ -460,11 +448,7 @@ package body Argument_Parser is
   --  "Argument <arg> at pos <i> appears shall not have option."
   function Get_Error (Dscr : Parsed_Dscr) return String is
   begin
-    if Dscr.Ok then
-      return "OK.";
-    else
-      return Dscr.Error.Image;
-    end if;
+    return (if Dscr.Ok then "OK." else Dscr.Error.Image);
   end Get_Error;
 
 
@@ -548,42 +532,28 @@ package body Argument_Parser is
       -- String key, look for option
       Len := Str_Util.Locate (Str, "=", 3);
       -- Set Len to last of key string
-      if Len = 0 then
-        Len := Str'Last;
-      else
-        Len := Len - 1;
-      end if;
-      if Str(3 .. Len) /= Key.Key_String.Image then
-        return No_Match;
-      else
+      Len := (if Len = 0 then Str'Last else Len - 1);
+      return (if Str(3 .. Len) /= Key.Key_String.Image then No_Match
         -- Return the option if any
-        return Str (Len + 2 .. Str'Last);
-      end if;
+      else Str (Len + 2 .. Str'Last));
     end if;
 
     -- Char key(s)
     if Str'Length > 2 then
       -- Multiple char keys
       Index := Str_Util.Locate (Str, "" & Key.Key_Char, 2);
-      if Index = 0 then
-        return No_Match;
-      elsif Index /= Str'Last or else not Key.Key_Can_Option then
-        -- No option possible
-        return "";
-      else
-        -- This is then last char of the list and it can have option
-        return Get_Option (Arg_No + 1);
-      end if;
+      return (if Index = 0 then No_Match
+              -- No option possible
+              elsif Index /= Str'Last
+                or else not Key.Key_Can_Option then ""
+              -- This is then last char of the list and it can have option
+              else Get_Option (Arg_No + 1));
     end if;
     -- Single char key
-    if Str(2) /= Key.Key_Char then
-      return No_Match;
-    elsif not Key.Key_Can_Option then
-      return "";
-    else
-      -- Option?
-      return Get_Option (Arg_No + 1);
-    end if;
+    return (if Str(2) /= Key.Key_Char then No_Match
+            elsif not Key.Key_Can_Option then ""
+            -- Option?
+            else Get_Option (Arg_No + 1));
   end Match;
 
   -- Raised anonymous exception when a key/option... shall be found but is

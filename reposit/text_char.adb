@@ -54,13 +54,7 @@ package body Text_Char is
     -- Read next line
     File.Acc.Line_Got := Text_Line.Get (File.Acc.Line_File);
     -- Check end of file
-    if File.Acc.Line_Got.Is_Null then
-      -- End of file
-      File.Acc.Get_Index := 1;
-    else
-      -- Ready to get chars of this line
-      File.Acc.Get_Index := 0;
-    end if;
+    File.Acc.Get_Index := (if File.Acc.Line_Got.Is_Null then 1 else 0);
   exception
     when Text_Line.Io_Error =>
       raise Io_Error;

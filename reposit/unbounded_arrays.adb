@@ -243,13 +243,8 @@ package body Unbounded_Arrays is
     Start_Tail : Positive;
   begin
     Check_Indexes (Low, High, Source.Last, False);
-    if Low <= High then
-      -- Replace
-      Start_Tail := High + 1;
-    else
-      -- Insert
-      Start_Tail := Low;
-    end if;
+    Start_Tail := (if Low <= High then High + 1 -- Replace
+                   else Low);                   -- Insert
     Store (Source, Source.Reference(1 .. Low - 1)
                  & By.Reference(1 .. By.Last)
                  & Source.Reference(Start_Tail .. Source.Last));
@@ -262,13 +257,8 @@ package body Unbounded_Arrays is
     Start_Tail : Positive;
   begin
     Check_Indexes (Low, High, Source.Last, False);
-    if Low <= High then
-      -- Replace
-      Start_Tail := High + 1;
-    else
-      -- Insert
-      Start_Tail := Low;
-    end if;
+    Start_Tail := (if Low <= High then High + 1 -- Replace
+                   else Low);                   -- Insert
     Store (Source, Source.Reference(1 .. Low - 1)
                  & By
                  & Source.Reference(Start_Tail .. Source.Last));

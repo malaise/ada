@@ -620,16 +620,10 @@ package body Con_Io is
     Fg : Effective_Colors;
     Bg : Effective_Colors;
   begin
-    if Foreground = Current then
-      Fg := Win.Current_Foreground;
-    else
-      Fg := Foreground;
-    end if;
-    if Background = Current then
-      Bg := Win.Current_Background;
-    else
-      Bg := Background;
-    end if;
+    Fg := (if Foreground = Current then Win.Current_Foreground
+           else Foreground);
+    Bg := (if Background = Current then Win.Current_Background
+           else Background);
     Set_Attributes (Win.Con,
                     Fg, Bg, Win.Current_Xor_Mode);
   end Set_Attributes_From_Window;
@@ -757,11 +751,8 @@ package body Con_Io is
          Ilast := Ifirst + Win_Last_Col - Acc.Current_Pos.Col;
       end if;
       -- Set Last to last char to put
-      if Ilast /= Indexes'Last then
-        Last := Indexes(Ilast + 1) - 1;
-      else
-        Last := S'Last;
-      end if;
+      Last := (if Ilast /= Indexes'Last then Indexes(Ilast + 1) - 1
+               else S'Last);
       -- Put the chunk
       X_Put (S(Indexes(Ifirst) .. Last));
       -- Update position : last character + one
@@ -1131,13 +1122,9 @@ package body Con_Io is
       Move (Name, First_Pos.Row, First_Pos.Col + Pos - 1);
       Absolute_Pos := To_Absolute (Name, Win.Current_Pos);
       if Show then
-        if Insert then
-          X_Mng.X_Overwrite_Char (Con.Id, 16#5E#,
-                Absolute_Pos.Row, Absolute_Pos.Col);
-        else
-          X_Mng.X_Overwrite_Char (Con.Id, 16#5F#,
-                Absolute_Pos.Row, Absolute_Pos.Col);
-        end if;
+        X_Mng.X_Overwrite_Char (Con.Id,
+          (if Insert then 16#5E# else 16#5F#),
+          Absolute_Pos.Row, Absolute_Pos.Col);
       else
         X_Mng.X_Put_String (Con.Id, Slice(Pos, Pos),
               Absolute_Pos.Row, Absolute_Pos.Col);
@@ -1869,7 +1856,6 @@ package body Con_Io is
     when X_Mng.X_Failure =>
       null;
   end Get_Mouse_Event;
-
 
 end Con_Io;
 

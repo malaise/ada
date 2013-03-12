@@ -323,11 +323,7 @@ procedure Afpx_Bld is
   function Fn_Image is new Images.Int_Image (Afpx_Typ.Absolute_Field_Range);
   function Name_Of (Fn : Afpx_Typ.Absolute_Field_Range) return String is
   begin
-    if Fn = 0 then
-      return "List";
-    else
-      return "Field_" & Fn_Image(Fn);
-    end if;
+    return (if Fn = 0 then "List" else "Field_" & Fn_Image(Fn));
   end Name_Of;
 
   function Color_Image (Color : Con_Io.Effective_Colors) return String is

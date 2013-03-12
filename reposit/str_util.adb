@@ -37,11 +37,7 @@ package body Str_Util is
     Last : Natural;
     C : Character;
   begin
-    if From_Head then
-      Input := From;
-    else
-      Input := Swap (From);
-    end if;
+    Input := (if From_Head then From else Swap (From));
     Last := 0;
     for I in Input'Range loop
       C := Input(I);
@@ -51,11 +47,7 @@ package body Str_Util is
         Used(C) := True;
       end if;
     end loop;
-    if From_Head then
-      return Output(1 .. Last);
-    else
-      return Swap (Output(1 .. Last));
-    end if;
+    return (if From_Head then Output(1 .. Last) else Swap (Output(1 .. Last)));
   end Unique;
 
   -- Overwrite a part of a string by a new one
@@ -74,11 +66,9 @@ package body Str_Util is
     if Position < Source'First or else Position > Source'Last + 1 then
       raise Constraint_Error;
     end if;
-    if Position + New_Str'Length - 1 > Source'Last then
-      Lo := New_Str'First + Source'Last - Position;
-    else
-      Lo := New_Str'Last;
-    end if;
+    Lo := (if Position + New_Str'Length - 1 > Source'Last then
+             New_Str'First + Source'Last - Position
+           else New_Str'Last);
     Result := Source;
     -- Overwrite by Lo chars from Position
     Result(Position - Source'First + 1
@@ -111,13 +101,8 @@ package body Str_Util is
     or else High > Source'Last then
       raise Constraint_Error;
     end if;
-    if Low <= High then
-      -- Replace
-      Start_Tail := High + 1;
-    else
-      -- Insert
-      Start_Tail := Low;
-    end if;
+    Start_Tail := (if Low <= High then High + 1 -- Replace
+                   else Low);                   -- Insert
     return Normalize (Source(Source'First .. Low - 1)
                     & By
                     & Source(Start_Tail .. Source'Last));
@@ -134,13 +119,12 @@ package body Str_Util is
     if Before < Source'First or else Before > Source'Last + 1 then
       raise Constraint_Error;
     end if;
-    if Before = Source'Last + 1 then
-      return Normalize (Source & New_Str);
-    else
-      return Normalize (Source(Source'First .. Before - 1)
-                      & New_Str
-                      & Source(Before .. Source'Last));
-    end if;
+    return Normalize (if Before = Source'Last + 1 then
+                        Source & New_Str
+                      else
+                        Source(Source'First .. Before - 1)
+                        & New_Str
+                        & Source(Before .. Source'Last));
   end Insert;
 
   -- Delete some characters
@@ -162,12 +146,11 @@ package body Str_Util is
     if Source'Last - Source'First = Through - From then
       return "";
     end if;
-    if Through = Source'Last then
-      return Normalize (Source(Source'First .. From - 1));
-    else
-      return Normalize (Source(Source'First .. From - 1)
+    return Normalize (if Through = Source'Last then
+                        Source(Source'First .. From - 1)
+                      else
+                        Source(Source'First .. From - 1)
                       & Source (Through + 1 .. Source'Last));
-    end if;
   end Delete;
 
   -- Remove tailing spaces and tabs
@@ -239,11 +222,8 @@ package body Str_Util is
     function Do_Pad (Nb_Gap : Integer) return String is
       subtype Pad_Str is String (1 .. Nb_Gap);
     begin
-      if Gap = No_Gap or else Nb_Gap <= 0 then
-        return "";
-      else
-        return Pad_Str'( (others => Gap));
-      end if;
+      return (if Gap = No_Gap or else Nb_Gap <= 0 then ""
+              else Pad_Str'( (others => Gap)));
     end Do_Pad;
 
   begin
@@ -257,27 +237,25 @@ package body Str_Util is
 
     if Shift_Left then
       -- Check if Nb_Char can be removed at At_Index
-      if At_Index + Nb_Char - 1 >= From'Last then
-        -- No tail to keep, return head (and pad)
-        return Normalize (From(From'First .. At_Index-1))
-             & Do_Pad(From'Last-At_Index+1);
-      else
-        -- Cat tail to head and return it (and pad)
-        return Normalize (From(From'First .. At_Index-1))
-             & From(At_Index+Nb_Char .. From'Last)
-             & Do_Pad(Nb_Char);
-      end if;
+      return Normalize ((if At_Index + Nb_Char - 1 >= From'Last then
+                           -- No tail to keep, return head (and pad)
+                           From(From'First .. At_Index-1)
+                           & Do_Pad(From'Last-At_Index+1)
+                         else
+                           -- Cat tail to head and return it (and pad)
+                           From(From'First .. At_Index-1))
+                           & From(At_Index+Nb_Char .. From'Last)
+                           & Do_Pad(Nb_Char));
     else
       -- Check if Nb_Char can be removed from At_Index
-      if At_Index <= Nb_Char then
-        -- No head to keep, return head (and pad)
-        return Do_Pad(At_Index-From'First+1)
-             & From(At_Index+1 .. From'Last);
-      else
-        return Do_Pad(Nb_Char)
-             & From(From'First .. At_Index-Nb_Char)
-             & From(At_Index+1 .. From'Last);
-      end if;
+      return Normalize (if At_Index <= Nb_Char then
+                          -- No head to keep, return head (and pad)
+                          Do_Pad(At_Index-From'First+1)
+                          & From(At_Index+1 .. From'Last)
+                        else
+                          Do_Pad(Nb_Char)
+                          & From(From'First .. At_Index-Nb_Char)
+                          & From(At_Index+1 .. From'Last));
     end if;
   end Remove;
 
@@ -314,11 +292,10 @@ package body Str_Util is
       raise Constraint_Error;
     end if;
     -- Extract slice
-    if To_Right then
-      return Normalize (From (At_Index .. At_Index + Nb_Char - 1));
-    else
-      return Normalize (From (At_Index - Nb_Char + 1 .. At_Index));
-    end if;
+    return Normalize ((if To_Right then
+                         From(At_Index .. At_Index + Nb_Char - 1)
+                       else
+                         From(At_Index - Nb_Char + 1 .. At_Index)));
   end Slice;
 
   -- Extract the Nb_Char first (if Head is set to True) or last characters
@@ -503,15 +480,9 @@ package body Str_Util is
     Found_Occurence : Natural := 0;
   begin
     -- Fix Index
-    if From_Index = 0 then
-      if Forward then
-        Index := Within'First;
-      else
-        Index := Within'Last;
-      end if;
-    else
-      Index := From_Index;
-    end if;
+    Index := (if From_Index = 0 then
+               (if Forward then Within'First else Within'Last)
+              else From_Index);
 
     -- Handle limit or incorrect values
     if Within'Length = 0

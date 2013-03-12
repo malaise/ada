@@ -6,46 +6,20 @@ package body Argument is
 
   Path_Separator : constant Character := '/';
 
-  function Not_Key return String is
-  begin
-    return "" & Ada.Characters.Latin_1.Del;
-  end Not_Key;
+  function Not_Key return String is ("" & Ada.Characters.Latin_1.Del);
 
-  function Any_Arg return String is
-  begin
-    return "" & Ada.Characters.Latin_1.Nul;
-  end Any_Arg;
+  function Any_Arg return String is ("" & Ada.Characters.Latin_1.Nul);
 
-  function Any_Key return String is
-  begin
-    return " ";
-  end Any_Key;
+  function Any_Key return String is (" ");
 
   package Loc_Arg is
     -- Return the number of arguments of current program (0 if no argument)
-    function Count return Natural;
-    -- Return the Nth argument of current program (program name if Pos = 0)
-    function Data (Pos : Natural) return String;
-  end Loc_Arg;
-
-  package body Loc_Arg is
-    -- Return the number of arguments of current program (0 if no argument)
-    function Count return Natural is
-    begin
-      return Ada.Command_Line.Argument_Count;
-    end Count;
-
+    function Count return Natural renames  Ada.Command_Line.Argument_Count;
     -- Return the Nth argument of current program (program name if Pos = 0)
     function Data (Pos : Natural) return String is
-    begin
-      if Pos = 0 then
-        return Ada.Command_Line.Command_Name;
-      else
-        return Ada.Command_Line.Argument(Pos);
-      end if;
-    end Data;
+      (if Pos = 0 then Ada.Command_Line.Command_Name
+       else Ada.Command_Line.Argument(Pos));
   end Loc_Arg;
-
   use Loc_Arg;
 
   -- The common "heart" procedure
@@ -61,39 +35,35 @@ package body Argument is
     -- Init result for case of error
     Position := 0;
 
-    -- test if occurence is 0
+    -- Test if occurence is 0
     if Occurence = 0 then
       if Param_Key /= Any_Arg and then Param_Key /= Not_Key then
         raise Argument_Not_Found;
       end if;
-      -- affect string
+      -- Affect string
       Parameter := As.U.Tus (Data(0));
       Position := 0;
       return;
     end if;
 
     -- Compute 1st char of argument to return
-    if Param_Key=Any_Arg or else Param_Key=Not_Key then
-      First_Char := 1;
-    elsif Param_Key = Any_Key then
-      -- any key : start after '-'
-      First_Char := 2;
-    else
-      -- specific key : start after -<key>
-      First_Char := Param_Key'Length + 2;
-    end if;
+    First_Char := (if Param_Key=Any_Arg or else Param_Key=Not_Key then 1
+                   -- Any key : start after '-'
+                   elsif Param_Key = Any_Key then 2
+                   -- Specific key : start after -<key>
+                   else Param_Key'Length + 2);
 
-    -- analyse arguments of command line,
+    -- Analyse arguments of command line,
     for I in 1 .. Count loop
       -- Check if argument conforms
       if Param_Key = Any_Arg then
-        -- any parameter comforms
+        -- Any parameter comforms
         Comform_Occurence := Comform_Occurence + 1;
       elsif Param_Key = Not_Key and then Data(I)(1) /= Key_Prefix then
-        -- any parameter not preceeded by separator comforms
+        -- Any parameter not preceeded by separator comforms
         Comform_Occurence := Comform_Occurence + 1;
       elsif Param_Key = Any_Key and then Data(I)(1) = Key_Prefix then
-        -- any parameter preceeded by separator comforms
+        -- Any parameter preceeded by separator comforms
         Comform_Occurence := Comform_Occurence + 1;
       elsif Data(I)(1) = Key_Prefix
        and then Data(I)'Length >= Param_Key'Length + 1
@@ -267,7 +237,6 @@ package body Argument is
     Str_Util.Copy (Str.Slice (Start, Len), Name);
     Name_Length := Len - Start + 1;
   end Get_Program_Name;
-
 
 end Argument;
 

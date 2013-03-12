@@ -69,11 +69,9 @@ package body Environ is
     Env_Len   : Natural;
   begin
     Sys_Calls.Getenv (Name, Env_Set, Env_Trunc, Str, Env_Len);
-    if Env_Set and then not Env_Trunc then
-      return Integer'Value (Str(1 .. Env_Len));
-    else
-      return Default;
-    end if;
+    return (if Env_Set and then not Env_Trunc then
+              Integer'Value (Str(1 .. Env_Len))
+            else Default);
   exception
     when Constraint_Error =>
       return Default;
@@ -88,11 +86,7 @@ package body Environ is
   function  Get_Nat (Name : String; Default : Natural) return Natural is
     I : constant Integer := Get_Int (Name, Default);
   begin
-    if I in Natural then
-      return I;
-    else
-      return Default;
-    end if;
+    return (if I in Natural then I else Default);
   end Get_Nat;
   procedure Get_Nat (Name : String; Result : in out Natural) is
   begin
@@ -103,11 +97,7 @@ package body Environ is
   function  Get_Pos (Name : String; Default : Positive) return Positive is
     I : constant Integer := Get_Int (Name, Default);
   begin
-    if I in Positive then
-      return I;
-    else
-      return Default;
-    end if;
+    return (if I in Positive then I else Default);
   end Get_Pos;
 
   procedure Get_Pos (Name : String; Result : in out Positive) is
@@ -124,11 +114,9 @@ package body Environ is
     Env_Len   : Natural;
   begin
     Sys_Calls.Getenv (Name, Env_Set, Env_Trunc, Str, Env_Len);
-    if Env_Set and then not Env_Trunc then
-      return Pos_Duration'Value (Str(1 .. Env_Len));
-    else
-      return Default;
-    end if;
+    return (if Env_Set and then not Env_Trunc then
+              Pos_Duration'Value (Str(1 .. Env_Len))
+            else Default);
   exception
     when Constraint_Error =>
       return Default;
@@ -156,8 +144,7 @@ package body Environ is
   begin
     Get_Us (Name, Str);
     Str := As.U.Tus (Lower_Str (Str.Image));
-    return  Str.Image = "yes"
-    or else Str.Image = "y";
+    return  Str.Image = "yes" or else Str.Image = "y";
   end Is_Yes;
 
   -- Is variable set and its lower case is "n" or "no"
@@ -166,8 +153,7 @@ package body Environ is
   begin
     Get_Us (Name, Str);
     Str := As.U.Tus (Lower_Str (Str.Image));
-    return  Str.Image = "no"
-    or else Str.Image = "n";
+    return  Str.Image = "no" or else Str.Image = "n";
   end Is_No;
 
 end Environ;

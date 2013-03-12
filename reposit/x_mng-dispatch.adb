@@ -79,24 +79,15 @@ package body Dispatch is
 
     -- Translate X event
     Next := Boolean (C_Next);
-    if C_Event = C_Xevent_Mouse_Release then
-      Event := Tid_Release;
-    elsif C_Event = C_Xevent_Mouse_Press then
-      Event := Tid_Press;
-    elsif C_Event = C_Xevent_Keyboard then
-      Event := Keyboard;
-    elsif C_Event = C_Xevent_Refresh then
-      Event := Refresh;
-    elsif C_Event = C_Xevent_Mouse_Motion then
-      Event := Tid_Motion;
-    elsif C_Event = C_Xevent_Exit_Request then
-      Event := Exit_Request;
-    elsif C_Event = C_Xevent_Selection then
-      Event := Selection;
-    else
-      -- Discard, or Invalid X event
-      Event := Timeout;
-    end if;
+    Event := (if C_Event = C_Xevent_Mouse_Release then Tid_Release
+              elsif C_Event = C_Xevent_Mouse_Press then Tid_Press
+              elsif C_Event = C_Xevent_Keyboard then Keyboard
+              elsif C_Event = C_Xevent_Refresh then Refresh
+              elsif C_Event = C_Xevent_Mouse_Motion then Tid_Motion
+              elsif C_Event = C_Xevent_Exit_Request then Exit_Request
+              elsif C_Event = C_Xevent_Selection then Selection
+              -- Discard, or Invalid X event
+              else Timeout);
     Log ("Xx_Get_Event", No_Client_No, "-> " & Event'Img);
   end Xx_Get_Event;
 
@@ -187,16 +178,15 @@ package body Dispatch is
       if Handle_Event then
         -- Handle non X nor wakeup event and convert
         Evt_Out := Event_Mng.Handle (Evt_In);
-        case Evt_Out is
-          when Event_Mng.Timer_Event =>
-            Event := (Internal => False, Kind => Timer_Event);
-          when Event_Mng.Fd_Event =>
-            Event := (Internal => False, Kind => Fd_Event);
-          when Event_Mng.Signal_Event =>
-            Event := (Internal => False, Kind => Signal_Event);
-          when Event_Mng.Timeout =>
-            Event := (Internal => False, Kind => Timeout);
-        end case;
+        Event := (case Evt_Out is
+                    when Event_Mng.Timer_Event =>
+                      (Internal => False, Kind => Timer_Event),
+                    when Event_Mng.Fd_Event =>
+                      (Internal => False, Kind => Fd_Event),
+                    when Event_Mng.Signal_Event =>
+                      (Internal => False, Kind => Signal_Event),
+                    when Event_Mng.Timeout =>
+                      (Internal => False, Kind => Timeout));
 
         -- Done on select timeout (No_Event) or an event to report
         exit when Evt_In.Kind = Event_Mng.Timeout
@@ -208,13 +198,10 @@ package body Dispatch is
 
     end loop;
 
-    if Event.Internal then
-      Log ("Xx_Select", No_Client_No,
-           "-> " & Event.Internal_Kind'Img & " " & Next'Img);
-    else
-      Log ("Xx_Select", No_Client_No,
-           "-> " & Event.Kind'Img & " " & Next'Img);
-    end if;
+    Log ("Xx_Select", No_Client_No,
+      "-> " & (if Event.Internal then Event.Internal_Kind'Img
+               else Event.Kind'Img)
+      & " " & Next'Img);
   end Xx_Select;
 
   -------------------------------------
@@ -648,11 +635,9 @@ package body Dispatch is
       Clients(Selected).Running := True;
       Nb_Waiting := Nb_Waiting - 1;
       New_Event := Event;
-      if New_Event.Internal then
-        Log ("Wait_Event", Client, "<- " & New_Event.Internal_Kind'Img);
-      else
-        Log ("Wait_Event", Client, "<- " & New_Event.Kind'Img);
-      end if;
+      Log ("Wait_Event", Client, "<- "
+           & (if New_Event.Internal then New_Event.Internal_Kind'Img
+              else New_Event.Kind'Img));
     end Wait_Event;
 
   end Dispatcher;

@@ -69,19 +69,15 @@ package body Chronos is
   -- Reads the chrono
   -- Chrono can be running or stopped
   function Read (A_Chrono : Chrono_Type) return Time_Rec is
-    Result : Time_Rec;
     use type Perpet.Delta_Rec, Ada.Calendar.Time;
   begin
-    if A_Chrono.Status = Running then
-      -- Compute delta since chrono started + offset
-      Result := Perpet.To_Delta_Rec (
-           A_Chrono.Offset
-         + (Current_Time (A_Chrono) - A_Chrono.Start_Time) );
-    else
-      -- Just Chrono.Offset
-      Result := Perpet.To_Delta_Rec (A_Chrono.Offset);
-    end if;
-    return Result;
+    return Perpet.To_Delta_Rec (
+        if A_Chrono.Status = Running then
+          -- Compute delta since chrono started + offset
+          A_Chrono.Offset + (Current_Time (A_Chrono) - A_Chrono.Start_Time)
+        else
+          -- Just Chrono.Offset
+          A_Chrono.Offset);
   exception
     when others =>
       raise Time_Error;

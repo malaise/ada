@@ -14,12 +14,9 @@ package body Trilean is
 
   function Boo2Tri (Boo : Boolean) return Trilean is
   begin
-    case Boo is
-      when Boolean'(False) =>
-        return False;
-      when Boolean'(True) =>
-        return True;
-    end case;
+    return (case Boo is
+              when Boolean'(False) => False,
+              when Boolean'(True)  => True);
   end Boo2Tri;
 
 end Trilean;

@@ -550,7 +550,7 @@ package body Fifos is
                            Item : in Boolean;
                            Data : in String) is
         pragma Unreferenced (Item);
-        Acc : access Fifo_Rec;
+        Acc : Fifo_Rec_Access;
       begin
         -- Cet record and check
         declare

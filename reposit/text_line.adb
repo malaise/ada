@@ -310,19 +310,17 @@ package body Text_Line is
                       Mode : in File_Mode;
                       File_Name : in String := "") is
     Fd : Sys_Calls.File_Desc;
-    Sys_Mode : Sys_Calls.File_Mode ;
   begin
     if File.Acc /= null then
       raise Status_Error;
     end if;
     if File_Name /= "" then
-      case Mode is
-        when In_File => Sys_Mode := Sys_Calls.In_File;
-        when Out_File => Sys_Mode := Sys_Calls.Out_File;
-        when Inout_File => Sys_Mode := Sys_Calls.Inout_File;
-      end case;
       begin
-        Fd := Sys_Calls.Open (File_Name, Sys_Mode);
+        Fd := Sys_Calls.Open (File_Name,
+            (case Mode is
+               when In_File    => Sys_Calls.In_File,
+               when Out_File   => Sys_Calls.Out_File,
+               when Inout_File => Sys_Calls.Inout_File));
       exception
         when Sys_Calls.Name_Error =>
           raise Name_Error;
