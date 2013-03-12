@@ -52,11 +52,11 @@ package body Test is
   -- type Typ4 is access procedure (A : in Integer);
 
   -- A private type
-  -- type Typ5 is private with Type_Invariant => Check(Stack);
+  -- type Typ5 is private with Type_Invariant => Check(Typ5);
 
-  function Check (S: Stack) return Boolean is
+  function Check (V: Typ5) return Boolean is
   begin
-    return Check (S);
+    return Check (V);
   end Check;
 
   -- A type with comments
