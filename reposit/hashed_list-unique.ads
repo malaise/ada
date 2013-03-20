@@ -19,6 +19,8 @@ package Hashed_List.Unique is
   procedure Search (List : in out Unique_List_Type;
                     Crit : in Element_Type;
                     Found : out Boolean);
+  function  Search (List : in out Unique_List_Type;
+                    Crit : in Element_Type) return Boolean;
 
   -- Check if an element exists in the list
   -- May raise Not_in_List
@@ -48,6 +50,7 @@ package Hashed_List.Unique is
   -- May raise Not_In_List
   procedure Read (List : in out Unique_List_Type;
                   Item : in out Element_Type);
+  function  Read (List : in out Unique_List_Type) return Element_Type;
 
   -- Suppress the element matching in the list
   -- May raise Not_In_List

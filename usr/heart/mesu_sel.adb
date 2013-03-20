@@ -74,7 +74,7 @@ package body Mesu_Sel is
   end Less_Than;
 
 
-  procedure File_Search is new Line_List_Mng.Search (Same_File);
+  function File_Search is new Line_List_Mng.Search (Same_File);
   procedure File_Sort   is new Line_List_Mng.Sort   (Less_Than);
 
 
@@ -91,7 +91,6 @@ package body Mesu_Sel is
     No_S   : Mesu_Nam.File_No_Str;
     Pid_S  : Mesu_Nam.File_Pid_Str;
     Ok     : Boolean;
-    Found  : Boolean;
     Mesure : Mesu_Def.Mesure_Rec;
     Line   : Afpx.Line_Rec;
   begin
@@ -166,9 +165,8 @@ package body Mesu_Sel is
 
         if not Line_List.Is_Empty then
           Pos := Line_List.Get_Position;
-          File_Search (Line_List, Found, Line, Line_List_Mng.Next, 1,
-                       Line_List_Mng.Absolute);
-          Ok := not Found;
+          Ok := not File_Search (Line_List, Line, Line_List_Mng.Next, 1,
+                                 Line_List_Mng.Absolute);
           Line_List.Move_At (Pos);
         end if;
       end if;
@@ -287,7 +285,8 @@ package body Mesu_Sel is
     Pos_Pers : Positive;
     Person : Pers_Def.Person_Rec;
     Mesure : Mesu_Def.Mesure_Rec;
-    Found  : Boolean;
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
 
     Mesu_Nam.Split_File_Name (Name, Date_S, No_S, Pid_S);
@@ -308,8 +307,8 @@ package body Mesu_Sel is
     File_Sort (Line_List);
 
     -- Current set to inserted
-    File_Search (Line_List, Found, Line, Line_List_Mng.Next, 1,
-                 Line_List_Mng.Absolute);
+    Dummy := File_Search (Line_List, Line, Line_List_Mng.Next, 1,
+                          Line_List_Mng.Absolute);
   end Add_Selection;
 
   -- Remove a record from selection
@@ -322,7 +321,6 @@ package body Mesu_Sel is
     Pos_Pers : Positive;
     Person : Pers_Def.Person_Rec;
     Mesure : Mesu_Def.Mesure_Rec;
-    Found  : Boolean;
   begin
     -- Save current position
     if Line_List.Is_Empty then
@@ -347,9 +345,8 @@ package body Mesu_Sel is
     Str_Mng.Format_Mesure_To_List (Person, Mesure, No_S, Line);
 
     -- Search record
-    File_Search (Line_List, Found, Line, Line_List_Mng.Next, 1,
-                 Line_List_Mng.Absolute);
-    if not Found then
+    if not File_Search (Line_List, Line, Line_List_Mng.Next, 1,
+                        Line_List_Mng.Absolute) then
       Line_List.Move_At (Saved_Pos);
       return;
     end if;
@@ -378,7 +375,6 @@ package body Mesu_Sel is
   -- Remove a record from selection
   procedure Rem_Selection (Line : in Afpx.Line_Rec) is
     Saved_Pos, Curr_Pos : Positive;
-    Found  : Boolean;
   begin
     -- Save current position
     if Line_List.Is_Empty then
@@ -391,9 +387,8 @@ package body Mesu_Sel is
     Save_List;
 
     -- Search record
-    File_Search (Line_List, Found, Line, Line_List_Mng.Next, 1,
-                 Line_List_Mng.Absolute);
-    if not Found then
+    if not File_Search (Line_List, Line, Line_List_Mng.Next, 1,
+                        Line_List_Mng.Absolute) then
       Line_List.Move_At (Saved_Pos);
       return;
     end if;

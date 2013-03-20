@@ -45,6 +45,7 @@ package Queues.Timed is
   -- Items are retrieved in the order there where pushed
   -- May raise Timed_Empty
   procedure Pop (Queue : in out Timed_Type; X : out Item);
+  function Pop (Queue : in out Timed_Type) return Item;
 
   -- Retrieve (and also remove) a non expired item
   -- Does not expire items

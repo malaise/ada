@@ -38,6 +38,13 @@ package body Long_Long_Limited_Pool is
     end if;
   end Pop;
 
+  function Pop (Pool : in out Pool_Type) return Data_Type is
+  begin
+    return Data : Data_Type do
+      Pop (Pool, Data);
+    end return;
+  end Pop;
+
   procedure Pop (Pool : in out Pool_Type) is
   begin
     if Pool.Is_Empty then

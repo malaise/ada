@@ -73,7 +73,7 @@ procedure T_Str_Error is
   begin
     return Current.Code = Criteria.Code;
   end Match;
-  procedure Search is new Codes_List_Mng.Search (Match);
+  function Search is new Codes_List_Mng.Search (Match);
   Found : Boolean;
 
 
@@ -284,7 +284,7 @@ begin
     Defs.Read_Next (Def, Moved);
     Code_Crit.Code := Def.Code;
     -- Read code entry if one exists in Codes
-    Search (Codes, Found, Code_Crit, From => Codes_List_Mng.Absolute);
+    Found := Search (Codes, Code_Crit, From => Codes_List_Mng.Absolute);
     if Found then
       Codes.Read (Code_Crit, Codes_List_Mng.Current);
     else
@@ -360,7 +360,7 @@ begin
     end if;
     if Found then
       -- At this point Code_Crit has the code to search
-      Search (Codes, Found, Code_Crit, From => Codes_List_Mng.Absolute);
+      Found := Search (Codes, Code_Crit, From => Codes_List_Mng.Absolute);
       if Found then
         Codes.Read (Code_Crit, Codes_List_Mng.Current);
         -- Put the different mnemonics for this code

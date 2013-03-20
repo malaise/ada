@@ -44,6 +44,11 @@ package body U_Rand is
   end Start;
 
   procedure Next (Gen : in out Generator; Val : out Float) is
+  begin
+    Val := Next (Gen);
+  end Next;
+
+  function Next (Gen : in out Generator) return Float is
     Temp : Float;
   begin
     if not Gen.Started then
@@ -70,7 +75,7 @@ package body U_Rand is
     if Temp < 0.0 then
       Temp := Temp + 1.0;
     end if;
-    Val := Temp;
+    return Temp;
   end Next;
 
 end U_Rand;

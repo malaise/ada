@@ -130,6 +130,14 @@ package body Hashing is
                            Index     : in Hash_Range;
                            Found     : out Found_Rec;
                            Direction : in Direction_List := Forward) is
+      begin
+        Found := Find_Next (Table, Index, Direction);
+      end Find_Next;
+
+      function Find_Next (Table     : in out Hash_Table;
+                          Index     : in Hash_Range;
+                          Direction : in Direction_List := Forward)
+                return Found_Rec is
         Cu : Cell_Access;
       begin
         if Table.Arr(Index).Current = null then
@@ -142,8 +150,8 @@ package body Hashing is
 
         Table.Arr(Index).Current := Cu;
 
-        Found := (if Cu = null then Not_Found_Rec
-                  else (Found => True, Data => Cu.Data));
+        return (if Cu = null then Not_Found_Rec
+                else (Found => True, Data => Cu.Data));
       end Find_Next;
 
       procedure Find_Next (Table     : in out Hash_Table;
@@ -151,7 +159,15 @@ package body Hashing is
                            Found     : out Found_Rec;
                            Direction : in Direction_List := Forward) is
       begin
-        Find_Next (Table, Hash_Func(Key), Found, Direction);
+        Found := Find_Next (Table, Hash_Func(Key), Direction);
+      end Find_Next;
+
+      function Find_Next (Table     : in out Hash_Table;
+                          Key       : in String;
+                          Direction : in Direction_List := Forward)
+               return Found_Rec is
+      begin
+        return Find_Next (Table, Hash_Func(Key), Direction);
       end Find_Next;
 
       -- To re-read data previously found at Index or Key
@@ -159,21 +175,32 @@ package body Hashing is
                          Index : in Hash_Range;
                          Found : out Found_Rec) is
       begin
-        Found := (if Table.Arr(Index).First = null
-                  or else Table.Arr(Index).Current = null then
-                    -- Empty or not found
-                    Not_Found_Rec
-                  else
-                    (Found => True, Data => Table.Arr(Index).Current.Data));
+        Found := Re_Read (Table, Index);
+      end Re_Read;
+
+      function Re_Read (Table : in out Hash_Table;
+                        Index : in Hash_Range) return Found_Rec is
+      begin
+        return (if Table.Arr(Index).First = null
+                or else Table.Arr(Index).Current = null then
+                  -- Empty or not found
+                  Not_Found_Rec
+                else
+                  (Found => True, Data => Table.Arr(Index).Current.Data));
       end Re_Read;
 
       procedure Re_Read (Table : in out Hash_Table;
                          Key   : in String;
                          Found : out Found_Rec) is
       begin
-        Re_Read (Table, Hash_Func(Key), Found);
+        Found := Re_Read (Table, Hash_Func(Key));
       end Re_Read;
 
+      function Re_Read (Table : in out Hash_Table;
+                        Key   : in String) return Found_Rec is
+      begin
+        return Re_Read (Table, Hash_Func(Key));
+      end Re_Read;
 
       -- Dump hash value of key and lists all data found for key
       procedure Dump (Table     : in Hash_Table;

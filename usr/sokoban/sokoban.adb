@@ -23,7 +23,7 @@ begin
       No_Frame := Sok_Types.Frame_Range'First;
     elsif Argument.Get_Nbre_Arg = 1 then
       if Upper_Str (Argument.Get_Parameter) = "RND" then
-        No_Frame := Frame_Random (Rnd.Gen);
+        No_Frame := Frame_Random (Rnd.Gen.all);
       elsif Upper_Str (Argument.Get_Parameter) = "RST" then
         No_Frame := Sok_Types.Restore_Frame;
       else

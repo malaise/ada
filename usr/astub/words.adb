@@ -143,12 +143,10 @@ package body Words is
 
   function Search (Word : Word_Rec;
                    From_Index : Positive := 1) return Natural is
-    Found : Boolean;
   begin
     Words_List.Move_At (From_Index);
-    Words_List.Search_Match (Found, Match'Access, Word,
-                             From => Words_List_Mng.From_Current);
-    if not Found then
+    if not Words_List.Search_Match (Match'Access, Word,
+                                    From => Words_List_Mng.From_Current) then
        return 0;
     else
       return Words_List.Get_Position;

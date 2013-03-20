@@ -5,7 +5,7 @@ package body Arbitrary.Factors is
   Iterator : Arbitrary.Prime_List.Iterator;
 
   -- Search a number
-  procedure Search is new Nb_List_Mng.Search("=");
+  function Search is new Nb_List_Mng.Search("=");
 
   -- Rewind a list
   procedure Rewind (L : in out Nb_List_Mng.List_Type) is
@@ -34,7 +34,7 @@ package body Arbitrary.Factors is
     end if;
     C := N;
     -- Start at 2
-    Iterator.Next (T);
+    T := Iterator.Next;
     loop
       if C rem T = Zero then
         -- Insert this factor and try again with it
@@ -43,7 +43,7 @@ package body Arbitrary.Factors is
         exit when C = One;
       else
         -- Try next factor
-        Iterator.Next (T);
+        T := Iterator.Next;
       end if;
     end loop;
     -- Rewind lists
@@ -56,7 +56,6 @@ package body Arbitrary.Factors is
   procedure Extract_Common (L1, L2 : in out Nb_List_Mng.List_Type;
                             L      : in out Nb_List_Mng.List_Type) is
     N : Positive_Number;
-    Match : Boolean;
     End_Of_List : Boolean;
   begin
     Rewind (L1);
@@ -70,9 +69,7 @@ package body Arbitrary.Factors is
           exit;
       end;
       -- Find in factors of L2
-      Search (L2, Match, N, From => Nb_List_Mng.Absolute);
-
-      if Match then
+      if Search (L2, N, From => Nb_List_Mng.Absolute) then
         -- Found. Add it to L and remove it from L1 and L2
         L.Insert (N);
         Delete (L2, End_Of_List);

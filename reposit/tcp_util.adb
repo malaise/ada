@@ -59,14 +59,14 @@ package body Tcp_Util is
   begin
     return R1.Timer = R2.Timer;
   end Timer_Match;
-  procedure Find_By_Timer is new Con_List_Mng.Search (Timer_Match);
+  function Find_By_Timer is new Con_List_Mng.Search (Timer_Match);
 
   -- Search Connecting_Rec by Host, Port
   function Dest_Match (R1, R2 : Connecting_Rec) return Boolean is
   begin
     return R1.Host = R2.Host and then R1.Port = R2.Port;
   end Dest_Match;
-  procedure Find_By_Dest is new Con_List_Mng.Search (Dest_Match);
+  function Find_By_Dest is new Con_List_Mng.Search (Dest_Match);
 
   -- Search Connecting_Rec by Fd
   function Fd_Match (R1, R2 : Connecting_Rec) return Boolean is
@@ -351,7 +351,7 @@ package body Tcp_Util is
     if Rec.Timer /= Id then
       -- No good. Locate it
       Rec.Timer := Id;
-      Find_By_Timer (Con_List, Go_On, Rec, From => Con_List_Mng.Absolute);
+      Go_On := Find_By_Timer (Con_List, Rec, From => Con_List_Mng.Absolute);
       if not Go_On then
         if Debug_Connect then
           Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Timer_Cb timer rec not found");
@@ -513,8 +513,8 @@ package body Tcp_Util is
   -- May raise No_Such
   procedure Abort_Connect (Host : in Remote_Host;
                            Port : in Remote_Port) is
+    Moved : Boolean;
     Rec : Connecting_Rec;
-    Ok : Boolean;
   begin
     if Debug_Connect then
       Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Connect start");
@@ -522,8 +522,7 @@ package body Tcp_Util is
     -- Find rec
     Rec.Host := Host;
     Rec.Port := Port;
-    Find_By_Dest (Con_List, Ok, Rec, From => Con_List_Mng.Absolute);
-    if not Ok then
+    if not Find_By_Dest (Con_List, Rec, From => Con_List_Mng.Absolute) then
       if Debug_Connect then
         Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Connect rec not found");
       end if;
@@ -552,7 +551,7 @@ package body Tcp_Util is
     if Debug_Connect then
       Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Connect deleting rec");
     end if;
-    Con_List.Delete (Moved => Ok);
+    Con_List.Delete (Moved => Moved);
   end Abort_Connect;
 
   -- Synchronously connect to a remote Host/Port
@@ -646,7 +645,7 @@ package body Tcp_Util is
   begin
     return R1.Protocol = R2.Protocol and then R1.Port = R2.Port;
   end Port_Match;
-  procedure Find_By_Port is new Acc_List_Mng.Search (Port_Match);
+  function Find_By_Port is new Acc_List_Mng.Search (Port_Match);
 
   -- Callback on accept fd
   function Acception_Fd_Cb (Fd : in Event_Mng.File_Desc;
@@ -771,7 +770,7 @@ package body Tcp_Util is
   -- May raise No_Such
   procedure Abort_Accept (Protocol : in Tcp_Protocol_List; Num : in Port_Num) is
     Rec : Accepting_Rec;
-    Ok : Boolean;
+    Moved : Boolean;
   begin
     if Debug_Accept then
       Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Accept start");
@@ -779,8 +778,7 @@ package body Tcp_Util is
     -- Find rec and read
     Rec.Protocol := Protocol;
     Rec.Port := Num;
-    Find_By_Port (Acc_List, Ok, Rec, From => Acc_List_Mng.Absolute);
-    if not Ok then
+    if not Find_By_Port (Acc_List, Rec, From => Acc_List_Mng.Absolute) then
       if Debug_Accept then
         Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Accept rec not found");
       end if;
@@ -794,7 +792,7 @@ package body Tcp_Util is
     -- Del callback, close and delete rec
     Event_Mng.Del_Fd_Callback (Rec.Fd, True);
     Rec.Dscr.Close;
-    Acc_List.Delete (Moved => Ok);
+    Acc_List.Delete (Moved => Moved);
     if Debug_Accept then
       Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Accept socket closed and rec deleted");
     end if;
@@ -821,7 +819,7 @@ package body Tcp_Util is
   begin
     return R1.Dscr = R2.Dscr;
   end Dscr_Match;
-  procedure Find_By_Dscr is new Sen_List_Mng.Search (Dscr_Match);
+  function Find_By_Dscr is new Sen_List_Mng.Search (Dscr_Match);
 
   -- Search Sending_Rec by Fd
   function Fd_Match (R1, R2 : Sending_Rec) return Boolean is
@@ -1041,15 +1039,13 @@ package body Tcp_Util is
   -- Cancel overflow management and closes
   procedure Abort_Send_And_Close (Dscr : in out Socket.Socket_Dscr) is
     Rec : Sending_Rec;
-    Ok : Boolean;
   begin
     if Debug_Overflow then
       Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Send_and_Close start");
     end if;
     -- Find Rec from Dscr and read
     Rec.Dscr := Dscr;
-    Find_By_Dscr (Sen_List, Ok, Rec, From => Sen_List_Mng.Absolute);
-    if not Ok then
+    if not Find_By_Dscr (Sen_List, Rec, From => Sen_List_Mng.Absolute) then
       if Debug_Overflow then
         Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Send_and_Close rec not found");
       end if;
@@ -1100,14 +1096,14 @@ package body Tcp_Util is
     begin
       return R1.Dscr = R2.Dscr;
     end Dscr_Match;
-    procedure Find_Dscr is new Rece_List_Mng.Search (Dscr_Match);
+    function Find_Dscr is new Rece_List_Mng.Search (Dscr_Match);
 
     function Fd_Match (R1, R2 : Rece_Rec) return Boolean is
       use type Event_Mng.File_Desc;
     begin
       return R1.Fd = R2.Fd;
     end Fd_Match;
-    procedure Find_Fd is new Rece_List_Mng.Search (Fd_Match);
+    function Find_Fd is new Rece_List_Mng.Search (Fd_Match);
 
     -- The one to use with Socket
     procedure Read is new Socket.Receive (Message_Type);
@@ -1138,7 +1134,6 @@ package body Tcp_Util is
                      return Boolean is
       use type Event_Mng.File_Desc;
       The_Rec : Rece_Rec;
-      Found : Boolean;
       Msg : Message_Access;
       Len : Natural;
       Result : Boolean;
@@ -1151,8 +1146,7 @@ package body Tcp_Util is
       end if;
       -- Find dscr from Fd
       The_Rec.Fd := Fd;
-      Find_Fd (Rece_List, Found, The_Rec, From => Rece_List_Mng.Absolute);
-      if not Found then
+      if not Find_Fd (Rece_List, The_Rec, From => Rece_List_Mng.Absolute) then
         if Debug_Reception then
           Basic_Proc.Put_Line_Output ("  Tcp_Util.Read_Cb no Dscr for Fd " & Fd'Img);
         end if;
@@ -1232,12 +1226,10 @@ package body Tcp_Util is
     procedure Activate_Callbacks (Dscr   : in Socket.Socket_Dscr;
                                   Active : in Boolean) is
       The_Rec : Rece_Rec;
-      Ok : Boolean;
     begin
       -- Check Dscr is known
       The_Rec.Dscr := Dscr;
-      Find_Dscr (Rece_List, Ok, The_Rec, From => Rece_List_Mng.Absolute);
-      if not Ok then
+      if not Find_Dscr (Rece_List, The_Rec, From => Rece_List_Mng.Absolute) then
         if Debug_Reception then
           Basic_Proc.Put_Line_Output ("  Tcp_Util.Activate_Callbacks Dscr not found");
         end if;
@@ -1254,12 +1246,11 @@ package body Tcp_Util is
 
     function Callbacks_Active (Dscr : Socket.Socket_Dscr) return Boolean is
       The_Rec : Rece_Rec;
-      Ok : Boolean;
     begin
       -- Check Dscr is known
       The_Rec.Dscr := Dscr;
-      Find_Dscr (Rece_List, Ok, The_Rec, From => Rece_List_Mng.Absolute);
-      if not Ok then
+      if not Find_Dscr (Rece_List, The_Rec,
+                        From => Rece_List_Mng.Absolute) then
         if Debug_Reception then
           Basic_Proc.Put_Line_Output ("  Tcp_Util.Callbacks_Active Dscr not found");
         end if;
@@ -1271,11 +1262,11 @@ package body Tcp_Util is
 
     procedure Remove_Callbacks (Dscr : in Socket.Socket_Dscr) is
       The_Rec : Rece_Rec;
-      Ok : Boolean;
+      Moved : Boolean;
     begin
       The_Rec.Dscr := Dscr;
-        Find_Dscr (Rece_List, Ok, The_Rec, From => Rece_List_Mng.Absolute);
-      if not Ok then
+      if not Find_Dscr (Rece_List, The_Rec,
+                        From => Rece_List_Mng.Absolute) then
         if Debug_Reception then
           Basic_Proc.Put_Line_Output ("  Tcp_Util.Remove_Callbacks Dscr not found");
         end if;
@@ -1283,7 +1274,7 @@ package body Tcp_Util is
       end if;
 
       -- Get from list
-      Rece_List.Get (The_Rec, Moved => Ok);
+      Rece_List.Get (The_Rec, Moved => Moved);
       if Debug_Reception then
         Basic_Proc.Put_Line_Output ("  Tcp_Util.Remove_Callbacks on Fd " & The_Rec.Fd'Img);
       end if;
@@ -1293,11 +1284,9 @@ package body Tcp_Util is
     -- Are callbacks set
     function Callbacks_Set (Dscr : Socket.Socket_Dscr) return Boolean is
       The_Rec : Rece_Rec;
-      Ok : Boolean;
     begin
       The_Rec.Dscr := Dscr;
-        Find_Dscr (Rece_List, Ok, The_Rec, From => Rece_List_Mng.Absolute);
-      return Ok;
+      return Find_Dscr (Rece_List, The_Rec, From => Rece_List_Mng.Absolute);
     end Callbacks_Set;
 
   end Reception;

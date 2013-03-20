@@ -50,11 +50,19 @@ package Hashed_List is
                           Crit      : in Element_Type;
                           Found     : out Boolean;
                           Direction : in Direction_List:= Forward);
+  function  Search_First (List      : in out List_Type;
+                          Crit      : in Element_Type;
+                          Direction : in Direction_List:= Forward)
+            return Boolean;
   -- Check if another element matching Crit exists in the list
   procedure Search_Next (List      : in out List_Type;
                          Crit      : in Element_Type;
                          Found     : out Boolean;
                          Direction : in Direction_List:= Forward);
+  function  Search_Next (List      : in out List_Type;
+                         Crit      : in Element_Type;
+                         Direction : in Direction_List:= Forward)
+            return Boolean;
 
   -- Check if an element matching Crit exists in the list
   -- May raise Not_In_List
@@ -77,6 +85,7 @@ package Hashed_List is
   -- May raise Not_In_List
   procedure Read_Current (List : in List_Type;
                           Item : out Element_Type);
+  function  Read_Current (List : List_Type) return Element_Type;
 
   -- Get direct access to the last element searched/found
   -- Of course, changing the key of the accessed element will break the

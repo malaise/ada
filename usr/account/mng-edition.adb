@@ -7,7 +7,7 @@ package body Edition is
   begin
     return Op1.Kind = Op2.Kind and then Op1.Reference = Op2.Reference;
   end Same_Kind_And_Ref;
-  procedure Search_Kind_Ref is new Oper_List_Mng.Search(Same_Kind_And_Ref);
+  function Search_Kind_Ref is new Oper_List_Mng.Search(Same_Kind_And_Ref);
 
 
   -- Affectation of kind and status buttons
@@ -319,7 +319,6 @@ package body Edition is
     Saved_Movement : Oper_List_Mng.Movement;
     Date_Str : Unit_Format.Date_Str;
     Field : Afpx.Absolute_Field_Range := 0;
-    Found : Boolean;
     Pos : Positive;
     use type Oper_Def.Status_List, Oper_Def.Kind_List, Oper_Def.Amount_Range,
              Afpx.Absolute_Field_Range;
@@ -389,9 +388,9 @@ package body Edition is
       end if;
 
       -- Search same kind (cheque) and same reference
-      Search_Kind_Ref(Oper_List, Found, Oper, From => Oper_List_Mng.Absolute);
       -- Found another one?
-      if not Found then
+      if not Search_Kind_Ref(Oper_List, Oper,
+                             From => Oper_List_Mng.Absolute) then
         -- Ok. Ref is unique
         Field := 0;
       end if;

@@ -23,28 +23,28 @@ package body Channels is
   begin
     return D1.Fd = D2.Fd;
   end Fd_Match;
-  procedure Fd_Search is new Dest_List_Mng.Search (Fd_Match);
+  function Fd_Search is new Dest_List_Mng.Search (Fd_Match);
 
   function Host_Id_Match (D1, D2 : Dest_Rec) return Boolean is
     use type Socket.Host_Id;
   begin
     return D1.Host_Id = D2.Host_Id;
   end Host_Id_Match;
-  procedure Host_Id_Search is new Dest_List_Mng.Search (Host_Id_Match);
+  function Host_Id_Search is new Dest_List_Mng.Search (Host_Id_Match);
 
   function Dscr_Match (D1, D2 : Dest_Rec) return Boolean is
     use type Socket.Socket_Dscr;
   begin
     return D1.Dscr = D2.Dscr;
   end Dscr_Match;
-  procedure Dscr_Search is new Dest_List_Mng.Search (Dscr_Match);
+  function Dscr_Search is new Dest_List_Mng.Search (Dscr_Match);
 
   function Host_Name_Match (D1, D2 : Dest_Rec) return Boolean is
     use type Tcp_Util.Remote_Host;
   begin
     return D1.Host_Name = D2.Host_Name;
   end Host_Name_Match;
-  procedure Host_Name_Search is new Dest_List_Mng.Search (Host_Name_Match);
+  function Host_Name_Search is new Dest_List_Mng.Search (Host_Name_Match);
 
   -- Sender
   type Send_Rec is record
@@ -59,14 +59,14 @@ package body Channels is
   begin
     return D1.Fd = D2.Fd;
   end Fd_Match;
-  procedure Fd_Search is new Send_List_Mng.Search (Fd_Match);
+  function Fd_Search is new Send_List_Mng.Search (Fd_Match);
 
   function Dscr_Match (D1, D2 : Send_Rec) return Boolean is
     use type Socket.Socket_Dscr;
   begin
     return D1.Dscr = D2.Dscr;
   end Dscr_Match;
-  procedure Dscr_Search is new Send_List_Mng.Search (Dscr_Match);
+  function Dscr_Search is new Send_List_Mng.Search (Dscr_Match);
 
   -- Reply
   package Reply_Dyn_List_Mng is new Dynamic_List (Socket.Socket_Dscr);
@@ -207,14 +207,12 @@ package body Channels is
       Dscr : Socket.Socket_Dscr;
       Msg : Channel_Message_Type;
       Len : Natural;
-      Found : Boolean;
     begin
       if Sender then
         -- Look for sender. Unhook Fd if not found (bug).
         S_Rec.Fd := Fd;
-        Fd_Search (Channel_Dscr.Sends, Found, S_Rec,
-                   From => Send_List_Mng.Absolute);
-        if not Found then
+        if not Fd_Search (Channel_Dscr.Sends, S_Rec,
+                          From => Send_List_Mng.Absolute) then
           Event_Mng.Del_Fd_Callback (Fd, True);
           return False;
         end if;
@@ -223,9 +221,8 @@ package body Channels is
       else
         -- Look for destination. Unhook Fd if not found (bug).
         D_Rec.Fd := Fd;
-        Fd_Search (Channel_Dscr.Dests, Found, D_Rec,
-                   From => Dest_List_Mng.Absolute);
-        if not Found then
+        if not Fd_Search (Channel_Dscr.Dests, D_Rec,
+                          From => Dest_List_Mng.Absolute) then
           Event_Mng.Del_Fd_Callback (Fd, True);
           return False;
         end if;
@@ -397,13 +394,11 @@ package body Channels is
                           Dscr            : in Socket.Socket_Dscr) is
       pragma Unreferenced (Remote_Port_Num, Connected);
       Dest : Dest_Rec;
-      Found : Boolean;
     begin
       -- Find record
       Dest.Host_Id := Remote_Host_Id;
-      Host_Id_Search (Channel_Dscr.Dests, Found, Dest,
-                      From => Dest_List_Mng.Absolute);
-      if not Found then
+      if not Host_Id_Search (Channel_Dscr.Dests, Dest,
+                      From => Dest_List_Mng.Absolute) then
         -- Bug?
         Dest.Dscr.Close;
         return;
@@ -489,7 +484,6 @@ package body Channels is
       Dest : Dest_Rec;
       Host : Tcp_Util.Remote_Host;
       Port : Tcp_Util.Remote_Port;
-      Result : Boolean;
     begin
       Init;
       -- Build host and port records
@@ -503,9 +497,8 @@ package body Channels is
           raise Unknown_Destination;
       end;
 
-      Host_Id_Search (Channel_Dscr.Dests, Result, Dest,
-                      From => Dest_List_Mng.Absolute);
-      if Result then
+      if Host_Id_Search (Channel_Dscr.Dests, Dest,
+                         From => Dest_List_Mng.Absolute) then
         raise Destination_Already;
       end if;
 
@@ -516,6 +509,9 @@ package body Channels is
       Channel_Dscr.Dests.Insert (Dest);
 
       -- Try to connect each sec indefinitely
+      declare
+        Result : Boolean;
+        pragma Unreferenced (Result);
       begin
         Result := Tcp_Util.Connect_To (Socket.Tcp_Header, Host, Port,
                                        Connect_Cb'Unrestricted_Access,
@@ -565,7 +561,6 @@ package body Channels is
       Dest : Dest_Rec;
       Host : Tcp_Util.Remote_Host;
       Port : Tcp_Util.Remote_Port;
-      Found : Boolean;
     begin
       Init;
       -- Build host and port records
@@ -578,9 +573,8 @@ package body Channels is
         when Socket.Soc_Name_Not_Found =>
           raise Unknown_Destination;
       end;
-      Host_Id_Search (Channel_Dscr.Dests, Found, Dest,
-                      From => Dest_List_Mng.Absolute);
-      if not Found then
+      if not Host_Id_Search (Channel_Dscr.Dests, Dest,
+                             From => Dest_List_Mng.Absolute) then
         raise Unknown_Destination;
       end if;
 
@@ -755,7 +749,6 @@ package body Channels is
       Dscr : Socket.Socket_Dscr;
       D_Rec : Dest_Rec;
       S_Rec : Send_Rec;
-      Found : Boolean;
       use type Socket.Socket_Dscr;
     begin
       -- Get current socket
@@ -767,13 +760,11 @@ package body Channels is
       -- Check it is still known (not closed)
       -- More probably in senders, but maybe in dests (if reply of a reply)
       S_Rec.Dscr := Dscr;
-      Dscr_Search (Channel_Dscr.Sends, Found, S_Rec,
-                   From => Send_List_Mng.Absolute);
-      if not Found then
+      if not Dscr_Search (Channel_Dscr.Sends, S_Rec,
+                          From => Send_List_Mng.Absolute) then
         D_Rec.Dscr := Dscr;
-        Dscr_Search (Channel_Dscr.Dests, Found, D_Rec,
-                     From => Dest_List_Mng.Absolute);
-        if not Found then
+        if not Dscr_Search (Channel_Dscr.Dests, D_Rec,
+                            From => Dest_List_Mng.Absolute) then
           raise Reply_Failed;
         end if;
       end if;
@@ -797,13 +788,11 @@ package body Channels is
                     Message   : in Message_Type;
                     Length    : in Message_Length := 0) is
       D_Rec : Dest_Rec;
-      Found : Boolean;
     begin
       -- Find destination from host name
       D_Rec.Host_Name.Name := As.U.Tus (Host_Name);
-      Host_Name_Search (Channel_Dscr.Dests, Found, D_Rec,
-                        From => Dest_List_Mng.Absolute);
-      if not Found then
+      if not Host_Name_Search (Channel_Dscr.Dests, D_Rec,
+                               From => Dest_List_Mng.Absolute) then
         raise Unknown_Destination;
       end if;
       Channel_Dscr.Dests.Read (D_Rec, Dest_List_Mng.Current);

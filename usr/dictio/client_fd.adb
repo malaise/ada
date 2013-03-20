@@ -15,27 +15,24 @@ package body Client_Fd is
   begin
     return El1.Fd = El2.Fd;
   end Fd_Match;
-  procedure Search_Fd is new Client_List_Mng.Search(Fd_Match);
+  function Search_Fd is new Client_List_Mng.Search(Fd_Match);
 
   function Soc_Match (El1, El2 : Client_Rec) return Boolean is
     use type Socket.Socket_Dscr;
   begin
     return El1.Soc = El2.Soc;
   end Soc_Match;
-  procedure Search_Soc is new Client_List_Mng.Search(Soc_Match);
+  function Search_Soc is new Client_List_Mng.Search(Soc_Match);
 
   procedure Add_Client (Client : in Socket.Socket_Dscr) is
     Rec : Client_Rec;
-    Found : Boolean;
   begin
     Rec.Soc := Client;
     Rec.Fd := Client.Get_Fd;
-    Search_Fd (Client_List, Found, Rec, From => Client_List_Mng.Absolute);
-    if Found then
+    if Search_Fd (Client_List, Rec, From => Client_List_Mng.Absolute) then
       raise Client_Error;
     end if;
-    Search_Soc (Client_List, Found, Rec, From => Client_List_Mng.Absolute);
-    if Found then
+    if Search_Soc (Client_List, Rec, From => Client_List_Mng.Absolute) then
       raise Client_Error;
     end if;
     Client_List.Insert (Rec);
@@ -43,12 +40,11 @@ package body Client_Fd is
 
   procedure Del_Client (Client : in Socket.Socket_Dscr) is
     Rec : Client_Rec;
-    Ok : Boolean;
+    Moved : Boolean;
     use type Event_Mng.File_Desc;
   begin
     Rec.Soc := Client;
-    Search_Soc (Client_List, Ok, Rec, From => Client_List_Mng.Absolute);
-    if not Ok then
+    if not Search_Soc (Client_List, Rec, From => Client_List_Mng.Absolute) then
       raise Client_Error;
     end if;
 
@@ -56,7 +52,7 @@ package body Client_Fd is
     if Rec.Fd /= Client.Get_Fd then
       raise Client_Error;
     end if;
-    Client_List.Delete (Moved => Ok);
+    Client_List.Delete (Moved => Moved);
     Event_Mng.Del_Fd_Callback (Rec.Fd, True);
     Rec.Soc.Close;
   end Del_Client;
@@ -81,11 +77,9 @@ package body Client_Fd is
 
   function Socket_Of (Fd : Event_Mng.File_Desc) return Socket.Socket_Dscr is
     Rec : Client_Rec;
-    Found : Boolean;
   begin
     Rec.Fd := Fd;
-    Search_Fd (Client_List, Found, Rec, From => Client_List_Mng.Absolute);
-    if not Found then
+    if not Search_Fd (Client_List, Rec, From => Client_List_Mng.Absolute) then
       raise Client_Error;
     end if;
     Client_List.Read (Rec, Client_List_Mng.Current);

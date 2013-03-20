@@ -28,7 +28,7 @@ package Ada_Parser is
         procedure (Text : in String;
                    Lexic : in Lexical_Kind_List);
 
-  procedure Parse (File : in Text_Char.File_Type;
+  procedure Parse (File : in out Text_Char.File_Type;
                    Cb : access procedure (
                      Text : in String;
                      Lexic : in Lexical_Kind_List));
@@ -39,7 +39,7 @@ package Ada_Parser is
   --  or raises End_Error
   -- May raise Syntax_Error
   type Parsing_Context is private;
-  procedure Parse_Next (File : in Text_Char.File_Type;
+  procedure Parse_Next (File : in out Text_Char.File_Type;
                         Context : in out Parsing_Context;
                         Text : out As.U.Asu_Us;
                         Lexic : out Lexical_Kind_List;

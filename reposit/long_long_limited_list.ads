@@ -37,6 +37,8 @@ package Long_Long_Limited_List is
   procedure Read (List : in out List_Type;
                   Item : out Element_Type;
                   Move : in Movement := Next);
+  function  Read (List : in out List_Type;
+                  Move : in Movement := Next) return Element_Type;
 
   -- Read anyway. Set Moved to True if movement was possible (and done)
   --  and False otherwise (no movement done)
@@ -75,6 +77,8 @@ package Long_Long_Limited_List is
   procedure Get (List : in out List_Type;
                  Item : out Element_Type;
                  Move : in Direction := Next);
+  function  Get (List : in out List_Type;
+                 Move : in Movement := Next) return Element_Type;
 
   -- Get anyway. Set Moved to True if movement was possible (and done)
   --  or if list becomes empty, and False otherwise (movement done in the
@@ -210,12 +214,11 @@ package Long_Long_Limited_List is
 
 
   -- Search the element that is at the provided access (move to it)
-  -- Found is set to True if the matching item is found, then the current
-  --  position is set to this item, otherwise it is unchanged.
+  -- Return True if the matching item is found, then the current position is
+  --  set to this item, otherwise it is unchanged.
   -- Does not raise Empty_List.
-  procedure Search_Access (List      : in out List_Type;
-                           Found     : out Boolean;
-                           Criteria  : access Element_Type);
+  function Search_Access (List      : in out List_Type;
+                          Criteria  : access Element_Type) return Boolean;
 
 
   -- Three different strategies to search:
@@ -235,15 +238,14 @@ package Long_Long_Limited_List is
   -- Search the Nth occurence of an item matching the provided criteria
   -- Starts from current, skipping it or not (usefull if current is the result
   --  of a previous search), or from begin/end of list
-  -- Found is set to True if a matching item is found, then the current
-  --  position is set to the item found, otherwise it is unchanged.
+  -- Return True if the matching item is found, then the current position is
+  --  set to this item, otherwise it is unchanged.
   -- Does not raise Empty_List.
-  procedure Search_Criteria (List      : in out List_Type;
-                             Found     : out Boolean;
-                             Criteria  : in Criteria_Type;
-                             Where     : in Direction := Next;
-                             Occurence : in Long_Longs.Ll_Positive := 1;
-                             From      : in Search_Kind_List);
+  function Search_Criteria (List      : in out List_Type;
+                            Criteria  : in Criteria_Type;
+                            Where     : in Direction := Next;
+                            Occurence : in Long_Longs.Ll_Positive := 1;
+                            From      : in Search_Kind_List) return Boolean;
 
   -- Search with criteria of Element_Type
   ---------------------------------------
@@ -255,15 +257,14 @@ package Long_Long_Limited_List is
   -- Search the Nth occurence of an item matching the provided criteria
   -- Starts from current, skipping it or not (usefull if current is the result
   --  of a previous search), or from begin/end of list
-  -- Found is set to True if a matching item is found, then the current
-  --  position is set to the item found, otherwise it is unchanged.
+  -- Return True if the matching item is found, then the current position is
+  --  set to this item, otherwise it is unchanged.
   -- Does not raise Empty_List.
-  procedure Search (List      : in out List_Type;
-                    Found     : out Boolean;
-                    Criteria  : in Element_Type;
-                    Where     : in Direction := Next;
-                    Occurence : in Long_Longs.Ll_Positive := 1;
-                    From      : in Search_Kind_List);
+  function Search (List      : in out List_Type;
+                   Criteria  : in Element_Type;
+                   Where     : in Direction := Next;
+                   Occurence : in Long_Longs.Ll_Positive := 1;
+                   From      : in Search_Kind_List) return Boolean;
 
   -- Search with Match access and on Element_Type
   -----------------------------------------------
@@ -274,18 +275,17 @@ package Long_Long_Limited_List is
   -- Match is provided as a callback.
   -- Starts from current, skipping it or not (usefull if current is the result
   --  of a previous search), or from begin/end of list
-  -- Found is set to True if a matching item is found, then the current
-  --  position is set to the item found, otherwise it is unchanged.
+  -- Return True if the matching item is found, then the current position is
+  --  set to this item, otherwise it is unchanged.
   -- If Match is null then any element matches.
   -- Does not raise Empty_List.
-  procedure Search_Match (List      : in out List_Type;
-                          Found     : out Boolean;
-                          Match     : access
-                    function (Current, Criteria : Element_Type) return Boolean;
-                          Criteria  : in Element_Type;
-                          Where     : in Direction := Next;
-                          Occurence : in Long_Longs.Ll_Positive := 1;
-                          From      : in Search_Kind_List);
+  function Search_Match (List      : in out List_Type;
+                         Match     : access
+                   function (Current, Criteria : Element_Type) return Boolean;
+                         Criteria  : in Element_Type;
+                         Where     : in Direction := Next;
+                         Occurence : in Long_Longs.Ll_Positive := 1;
+                         From      : in Search_Kind_List) return Boolean;
 
 
 

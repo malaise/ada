@@ -30,7 +30,7 @@ procedure Prime is
   function Get_Next return Positive_Number is
     N : Positive_Number;
   begin
-    Iterator.Next (N);
+    N := Iterator.Next;
     return N;
   end Get_Next;
 

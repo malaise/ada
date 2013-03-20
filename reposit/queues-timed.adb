@@ -111,13 +111,14 @@ package body Queues.Timed is
     -- Make room first
     Expire (Queue);
     -- Search
+   Found := False;
     Litem.Data := Crit;
-    Queue.List.Search_Match (Found, Lequal'Access, Litem,
-                             From => Item_List_Mng.Absolute);
-    -- Read
-    if Found then
+    if Queue.List.Search_Match (Lequal'Access, Litem,
+                                From => Item_List_Mng.Absolute) then
+      -- Read
       Queue.List.Read (Litem, Item_List_Mng.Current);
       X := Litem.Data;
+      Found := True;
     end if;
     Queue.List.Rewind (False);
   end Read;
@@ -151,6 +152,17 @@ package body Queues.Timed is
     if not Done then
       raise Timed_Empty;
     end if;
+  end Pop;
+
+  function Pop (Queue : in out Timed_Type) return Item is
+    X : Item;
+    Done : Boolean;
+  begin
+    Pop (Queue, X, Done);
+    if not Done then
+      raise Timed_Empty;
+    end if;
+    return X;
   end Pop;
 
   -- Retrieve (and also remove) a non expired item

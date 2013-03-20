@@ -24,6 +24,7 @@ package Limited_Pool is
   -- Get from pool last pushed (Lifo) or first pushed (Fifo)
   Empty_Pool : exception renames My_Pool.Empty_Pool;
   procedure Pop (Pool : in out Pool_Type; Data : out Data_Type);
+  function Pop (Pool : in out Pool_Type) return Data_Type;
   procedure Pop (Pool : in out Pool_Type);
 
   -- Read from pool the next to be popped

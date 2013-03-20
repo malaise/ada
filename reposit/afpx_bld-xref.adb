@@ -78,8 +78,9 @@ package body Xref is
                             Field : in Afpx_Typ.Field_Range;
                             Name  : in Asu_Us;
                             Line  : in Natural) is
-    Found : Boolean;
     Cell : Field_Cell;
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
     Check_Identifier (Name.Image);
     if Name.Image = Dscr_Num then
@@ -88,11 +89,10 @@ package body Xref is
     Cell := (Dscr, Field, As.U.Tus (Mixed_Str (Name.Image)), Line);
     Fields.Insert (Cell);
     -- Check no duplicates
-    Field_Dyn_List_Mng.Search_Match (Fields, Found, Match'Access, Cell,
-                                     Occurence => 2,
-                                     From => Field_Dyn_List_Mng.Absolute);
-    if Found then
-      Field_Dyn_List_Mng.Search_Match (Fields, Found, Match'Access, Cell,
+    if Field_Dyn_List_Mng.Search_Match (Fields, Match'Access, Cell,
+                          Occurence => 2,
+                          From => Field_Dyn_List_Mng.Absolute) then
+      Dummy := Field_Dyn_List_Mng.Search_Match (Fields, Match'Access, Cell,
                                        From => Field_Dyn_List_Mng.Absolute);
       Fields.Read (Cell, Field_Dyn_List_Mng.Current);
       Prev_Line_No := Cell.Line_No;

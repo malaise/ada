@@ -39,7 +39,7 @@ package body History is
   begin
     return Current.Hash = Criteria.Hash;
   end Hash_Match;
-  procedure Hash_Search is new Git_If.Log_Mng.Dyn_List.Search (Hash_Match);
+  function Hash_Search is new Git_If.Log_Mng.Dyn_List.Search (Hash_Match);
 
   -- Handle the history of a file or dir
   procedure Handle (Root, Path, Name : in String;
@@ -60,7 +60,8 @@ package body History is
     Log : Git_If.Log_Entry_Rec;
 
     -- Search found
-    Found : Boolean;
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
 
     -- Init Afpx
     procedure Init is
@@ -233,7 +234,8 @@ package body History is
     if Hash /= Git_If.No_Hash then
       -- Set current to Hash provided
       Log.Hash := Hash;
-      Hash_Search (Logs, Found, Log, From => Git_If.Log_Mng.Dyn_List.Absolute);
+      Dummy := Hash_Search (Logs, Log,
+                            From => Git_If.Log_Mng.Dyn_List.Absolute);
     end if;
     Init_List (Logs);
 

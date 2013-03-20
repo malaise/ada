@@ -118,7 +118,8 @@ package body Arbitrary.Prime_List is
   end Rewind;
 
   -- Get next prime number
-  procedure Next (It : in out Iterator; N : out Positive_Number) is
+  function Next (It : in out Iterator) return Positive_Number is
+    N : Positive_Number;
   begin
     if It.Position <= The_List.List_Length then
       -- Next prime number is known, at pos It.Position
@@ -128,6 +129,7 @@ package body Arbitrary.Prime_List is
       N := Next;
     end if;
     It.Position := It.Position + 1;
+    return N;
   end Next;
 
 end Arbitrary.Prime_List;

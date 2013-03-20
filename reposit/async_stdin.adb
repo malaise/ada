@@ -78,7 +78,7 @@ package body Async_Stdin is
         return Uu.Length (Curr) >= Uu.Length (Crit)
         and then Uu.Unbounded_Slice (Curr, 1, Uu.Length (Crit)) = Crit;
       end Match;
-      procedure Search is new List_Mng.Search (Match);
+      function Search is new List_Mng.Search (Match);
 
 
       -- Searched pattern
@@ -162,12 +162,12 @@ package body Async_Stdin is
         if Init then
           -- Search present buf from last
           Copy_Buf (Searched_Rec);
-          Search (List, Found, Searched_Rec, List_Mng.Prev,
-                  From => List_Mng.Absolute);
+          Found := Search (List, Searched_Rec, List_Mng.Prev,
+                           From => List_Mng.Absolute);
         else
           -- Search second occurence if current record matches
-          Search (List, Found, Searched_Rec, List_Mng.Prev,
-                  From => List_Mng.Skip_Current);
+          Found := Search (List, Searched_Rec, List_Mng.Prev,
+                           From => List_Mng.Skip_Current);
         end if;
 
         if Found then

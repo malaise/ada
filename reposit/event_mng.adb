@@ -73,21 +73,19 @@ package body Event_Mng is
   begin
     return Cb1.Read = Cb2.Read and then Cb1.Fd = Cb2.Fd;
   end Same_Fd;
-  procedure Cb_Search is new Cb_Mng.Search(Same_Fd);
+  function Cb_Search is new Cb_Mng.Search(Same_Fd);
 
   procedure Add_Fd_Callback (Fd : in File_Desc; Read : in Boolean;
                              Callback : in Fd_Callback) is
     Res : Boolean;
     Cb_Searched : Cb_Rec;
-    Found : Boolean;
   begin
     -- Check no cb for this fd yet
     Cb_Searched.Fd := Fd;
     Cb_Searched.Read := Read;
     Cb_Searched.Cb := null;
-    Cb_Search (Cb_List, Found, Cb_Searched, Cb_Mng.Prev,
-               From => Cb_Mng.Absolute);
-    if Found then
+    if Cb_Search (Cb_List, Cb_Searched, Cb_Mng.Prev,
+                  From => Cb_Mng.Absolute) then
       raise Fd_Cb_Error;
     end if;
 
@@ -115,9 +113,8 @@ package body Event_Mng is
     Cb_Searched.Fd := Fd;
     Cb_Searched.Read := Read;
     Cb_Searched.Cb := null;
-    Cb_Search (Cb_List, Res2, Cb_Searched, Cb_Mng.Prev,
-               From => Cb_Mng.Absolute);
-    if not Res2 then
+    if not Cb_Search (Cb_List,  Cb_Searched, Cb_Mng.Prev,
+                      From => Cb_Mng.Absolute) then
       raise Fd_Cb_Error;
     end if;
     Cb_List.Delete (Moved => Res2);
@@ -131,16 +128,14 @@ package body Event_Mng is
 
   function Get_Fd_Callback (Fd : in File_Desc; Read : in Boolean)
            return Fd_Callback is
-    Res : Boolean;
     Cb_Searched : Cb_Rec;
   begin
     -- Get from list
     Cb_Searched.Fd := Fd;
     Cb_Searched.Read := Read;
     Cb_Searched.Cb := null;
-    Cb_Search (Cb_List, Res, Cb_Searched, Cb_Mng.Prev,
-               From => Cb_Mng.Absolute);
-    if not Res then
+    if not Cb_Search (Cb_List, Cb_Searched, Cb_Mng.Prev,
+                      From => Cb_Mng.Absolute) then
       return null;
     end if;
     Cb_List.Read (Cb_Searched, Cb_Mng.Current);
@@ -460,7 +455,6 @@ package body Event_Mng is
   function Handle (Event : Event_Rec) return Out_Event_List is
     Cb_Searched : Cb_Rec;
     Signal_Kind : Signal_Kind_List;
-    Cb_Found : Boolean;
   begin
     Set_Debug;
     Put_Debug ("Event_Mng.Handle event " & Event.Kind'Img);
@@ -471,8 +465,7 @@ package body Event_Mng is
         Cb_Searched.Read := Event.Read;
         Cb_Searched.Cb := null;
         -- Search and read callback
-        Cb_Search (Cb_List, Cb_Found, Cb_Searched, From => Cb_Mng.Absolute);
-        if not Cb_Found then
+        if not Cb_Search (Cb_List, Cb_Searched, From => Cb_Mng.Absolute) then
           Put_Debug ("**** Event_Mng.Handle: "
                    & File_Desc'Image(Event.Fd)
                    & " fd not found ****");

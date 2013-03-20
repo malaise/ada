@@ -1,5 +1,4 @@
 -- Get/unget chars from a file
-with Ada.Finalization;
 with As.U, Sys_Calls, Text_Line;
 package Text_Char is
 
@@ -26,16 +25,16 @@ package Text_Char is
   -- May raise Status_Error if File is not open
   -- May raise End_Error if end of file is reached
   -- May raise Io_Error if IO error
-  function Get (File : File_Type) return Character;
-  procedure Get (File : in File_Type; Char : out Character);
+  function Get (File : in out File_Type) return Character;
+  procedure Get (File : in out File_Type; Char : out Character);
 
   -- Unget a char so that it will be the next got
   -- May raise Status_Error if File is not open
-  procedure Unget (File : in File_Type; Char : in Character);
+  procedure Unget (File : in out File_Type; Char : in Character);
 
   -- Returns if the end of file is reached
   -- May raise Status_Error if File is not open
-  function End_Of_File (File : in File_Type) return Boolean;
+  function End_Of_File (File : in out File_Type) return Boolean;
 
   -- Shortcuts to open/close the fd and the file together
 
@@ -57,7 +56,7 @@ package Text_Char is
   Io_Error : exception;
 
 private
-  type File_Type_Rec is record
+  type File_Type is tagged limited record
     Line_File : Text_Line.File_Type;
 
     -- Line got from Text_Line file and index in Line_Got of last char got
@@ -73,13 +72,6 @@ private
     -- Ungot chars appended one after the other
     Ungot_Chars : As.U.Asu_Us;
   end record;
-
-  type Rec_Access is access File_Type_Rec;
-  type File_Type is limited new Ada.Finalization.Limited_Controlled with record
-    Acc : Rec_Access;
-  end record;
-
-  overriding procedure Finalize (File : in out File_Type);
 
 end Text_Char;
 

@@ -2,7 +2,7 @@ with Basic_Proc, Dynamic_List, Normal, Rnd, Argument;
 procedure T_Dl is
   package My_Dyn_List is new Dynamic_List(Element_Type => Integer);
   package My_List renames My_Dyn_List.Dyn_List;
-  procedure My_Search is new My_List.Search("=");   -- ("=" of Integer)
+  function My_Search is new My_List.Search("=");   -- ("=" of Integer)
   procedure My_Search_Raise is new My_List.Search_Raise("=");
   procedure My_Sort is new My_List.Sort("<");  -- ("<" of Integer)
 
@@ -10,7 +10,6 @@ procedure T_Dl is
   List1 : My_List.List_Type;
   Item : Integer;
   Acc : access Integer;
-  Found : Boolean;
   Moved : Boolean;
   Count : Natural;
 
@@ -126,8 +125,7 @@ begin
 
   -- Move back to saved access and read
   Basic_Proc.Put_Output("Search stored access and read: ");
-  List.Search_Access (Found, Acc);
-  if not Found then
+  if not List.Search_Access (Acc) then
     Basic_Proc.Put_Line_Output ("NOT FOUND");
     -- This is not normal. Abort.
     raise My_List.Not_In_List;
@@ -155,16 +153,14 @@ begin
 
   -- Search 50 from first
   Basic_Proc.Put_Line_Output("Seach 50 from first");
-  My_Search (List, Found, 50, From => My_List.Absolute);
-  if not Found then
+  if not My_Search (List, 50, From => My_List.Absolute) then
     Basic_Proc.Put_Line_Output ("NOT FOUND");
     -- This is not normal. Abort.
     raise My_List.Not_In_List;
   end if;
   -- Search 50 from current, skipping it
   Basic_Proc.Put_Line_Output("Seach 50, skipping current");
-  My_Search (List, Found, 50, From => My_List.Skip_Current);
-  if not Found then
+  if not My_Search (List, 50, From => My_List.Skip_Current) then
     Basic_Proc.Put_Line_Output ("Returns not Found, OK");
   end if;
 

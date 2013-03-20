@@ -27,6 +27,12 @@ package body Queues is
       X := Queue.Pile(Queue.Ptr);
       Queue.Ptr := Queue.Ptr - 1;
     end Pop;
+    function Pop (Queue : in out Lifo_Type) return Item is
+      X : Item;
+    begin
+      Pop (Queue, X);
+      return X;
+    end Pop;
 
     -- Read without popping
     -- 1 gives the first to be popped (ptr)
@@ -42,6 +48,13 @@ package body Queues is
         X := Queue.Pile(Queue.Ptr - No + 1);
       end if;
     end Look_First;
+    function Look_First (Queue : in out Lifo_Type; No : in No_Range := 1)
+                        return Item is
+      X : Item;
+    begin
+      Look_First (Queue, X, No);
+      return X;
+    end Look_First;
 
     -- Read without popping
     -- 1 gives the last to be popped
@@ -56,6 +69,13 @@ package body Queues is
       else
         X := Queue.Pile(No);
       end if;
+    end Look_Last;
+    function Look_Last (Queue : in out Lifo_Type; No : in No_Range := 1)
+                       return Item is
+      X : Item;
+    begin
+      Look_Last (Queue, X, No);
+      return X;
     end Look_Last;
 
     -- Remove first item and shift
@@ -112,6 +132,12 @@ package body Queues is
       X := Queue.File(Queue.Ptr_Out);
       Queue.Full := False;
     end Pop;
+    function Pop (Queue : in out Fifo_Type) return Item is
+      X : Item;
+    begin
+      Pop (Queue, X);
+      return X;
+    end Pop;
 
     -- Read without popping
     -- 1 gives the last pushed
@@ -137,6 +163,13 @@ package body Queues is
         X := Queue.File(Loc);
       end if;
     end Look_Last;
+    function Look_Last (Queue : in out Fifo_Type; No : in No_Range := 1)
+                       return Item is
+      X : Item;
+    begin
+      Look_Last (Queue, X, No);
+      return X;
+    end Look_Last;
 
     -- Read without popping
     -- 1 gives the first to be popped
@@ -161,6 +194,13 @@ package body Queues is
       else
         X := Queue.File(Loc);
       end if;
+    end Look_First;
+    function Look_First (Queue : in out Fifo_Type; No : in No_Range := 1)
+                        return Item is
+      X : Item;
+    begin
+      Look_First (Queue, X, No);
+      return X;
     end Look_First;
 
     -- Discard last pushed
@@ -239,6 +279,12 @@ package body Queues is
       X := Queue.File(Queue.Ptr_Out);
       Queue.Full := False;
     end Pop;
+    function Pop (Queue : in out Prio_Type) return Item is
+      X : Item;
+    begin
+      Pop (Queue, X);
+      return X;
+    end Pop;
 
     -- Read without popping
     -- 1 gives the last to be popped (lowest prio)
@@ -264,6 +310,13 @@ package body Queues is
         X := Queue.File(Loc);
       end if;
     end Look_Last;
+    function Look_Last (Queue : in out Prio_Type; No : in No_Range := 1)
+                       return Item is
+      X : Item;
+    begin
+      Look_Last (Queue, X, No);
+      return X;
+    end Look_Last;
 
     -- Read without popping
     -- 1 gives the first to be popped (highest prio)
@@ -288,6 +341,13 @@ package body Queues is
       else
         X := Queue.File(Loc);
       end if;
+    end Look_First;
+    function Look_First (Queue : in out Prio_Type; No : in No_Range := 1)
+                        return Item is
+      X : Item;
+    begin
+      Look_First (Queue, X, No);
+      return X;
     end Look_First;
 
     -- Remove last item to be popped (lowest prio)
@@ -344,6 +404,12 @@ package body Queues is
       X := Queue.File(Queue.Ptr_Out);
       Queue.Full := False;
     end Pop;
+    function Pop (Queue : in out Circ_Type) return Item is
+      X : Item;
+    begin
+      Pop (Queue, X);
+      return X;
+    end Pop;
 
     -- Read without popping
     -- 1 gives the last pushed
@@ -369,6 +435,13 @@ package body Queues is
         X := Queue.File(Loc);
       end if;
     end Look_Last;
+    function Look_Last (Queue : in out Circ_Type; No : in No_Range := 1)
+                       return Item is
+      X : Item;
+    begin
+      Look_Last (Queue, X, No);
+      return X;
+    end Look_Last;
 
     -- Read without popping
     -- 1 gives the first to be popped
@@ -393,6 +466,13 @@ package body Queues is
       else
         X := Queue.File(Loc);
       end if;
+    end Look_First;
+    function Look_First (Queue : in out Circ_Type; No : in No_Range := 1)
+                        return Item is
+      X : Item;
+    begin
+      Look_First (Queue, X, No);
+      return X;
     end Look_First;
 
     -- Discard last pushed

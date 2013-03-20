@@ -536,9 +536,12 @@ package Con_Io is
   -- has occured outside the screen, then only Button and Status
   -- are significant
   procedure Get_Mouse_Event (
-      Con         : in Console;
-      Mouse_Event : out Mouse_Event_Rec;
+      Con             : in Console;
+      Mouse_Event     : out Mouse_Event_Rec;
       Coordinate_Mode : in Coordinate_Mode_List := Row_Col);
+  function Get_Mouse_Event (
+      Con             : Console;
+      Coordinate_Mode : Coordinate_Mode_List := Row_Col) return Mouse_Event_Rec;
 
   -- Failure when initialising the Con_Io or openging a Console
   Init_Failure : exception;

@@ -743,7 +743,7 @@ package body Util is
   -- List of names of entities expanding to each other, to detect recursion
   package Name_Dyn_List_Mng is new Dynamic_List (As.U.Asu_Us);
   package Name_List_Mng renames Name_Dyn_List_Mng.Dyn_List;
-  procedure Search_Name is new Name_List_Mng.Search (As.U."=");
+  function Search_Name is new Name_List_Mng.Search (As.U."=");
 
   -- INTERNAL: Verify proper nesting of parenths
   function Check_Nesting (Str : String) return Boolean is
@@ -893,9 +893,8 @@ package body Util is
       end if;
 
       -- Verify that this entity is not already in the stack
-      Search_Name (Name_Stack, Found, (Starter & Name),
-                     From => Name_List_Mng.Absolute);
-      if Found then
+      if Search_Name (Name_Stack, (Starter & Name),
+                     From => Name_List_Mng.Absolute) then
         Error (Ctx.Flow, "Recursive reference to entity "
                        & Starter & Name.Image);
       end if;

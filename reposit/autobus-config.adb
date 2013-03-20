@@ -194,8 +194,8 @@ package body Config is
 
     -- See if this bus is described
     Crit.Addr := As.U.Tus ("A-" & Name);
-    Bus_Conf_List.Search_Match (Found, Bus_Conf_Match'Access, Crit,
-                                From => Bus_Conf_List_Mng.Absolute);
+    Found := Bus_Conf_List.Search_Match (Bus_Conf_Match'Access, Crit,
+                                         From => Bus_Conf_List_Mng.Absolute);
     Debug ("Bus " & Name & " "
            & (if not Found then "not" else "") & " found in config");
 

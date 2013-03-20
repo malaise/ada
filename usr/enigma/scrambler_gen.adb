@@ -47,7 +47,7 @@ package body Scrambler_Gen is
           -- Forbid identity if symetric
           loop
             -- Random index in Remain (1 .. Nb_Remain);
-            Id := Id_Random (Rnd.Gen, Maxi => Nb_Remain);
+            Id := Id_Random (Rnd.Gen.all, Maxi => Nb_Remain);
             exit when Remain(Id) /= I;
           end loop;
           -- So I -> Remain(Id)
@@ -83,7 +83,7 @@ package body Scrambler_Gen is
       -- Not symetric
       for I in Id_Range'Range loop
         -- Random index in Remain (1 .. Nb_Remain);
-        Id := Id_Random (Rnd.Gen, Maxi => Nb_Remain);
+        Id := Id_Random (Rnd.Gen.all, Maxi => Nb_Remain);
         -- So I -> Remain(Id)
         Map(I) := Remain(Id);
         -- Remove Id from Remain

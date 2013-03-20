@@ -31,7 +31,7 @@ package body Control_Pool is
   begin
     return Current.Key = Criteria.Key;
   end Same_Key;
-  procedure Search is new Pool_Mng.Search(Same_Key);
+  function Search is new Pool_Mng.Search(Same_Key);
 
 
   -- Pool of free mutexes
@@ -65,8 +65,7 @@ package body Control_Pool is
     Global_Mutex.Get;
     -- Look for this key in pool
     Cell.Key := Key;
-    Search (Pool, Got, Cell, From => Pool_Mng.Absolute);
-    if Got then
+    if Search (Pool, Cell, From => Pool_Mng.Absolute) then
       -- Read cell, increment counter, store
       Pool.Read (Cell, Pool_Mng.Current);
       Cell.Waiters := Cell.Waiters + 1;
@@ -102,16 +101,15 @@ package body Control_Pool is
   end Release;
 
   procedure Release (Key : in Key_Type; Granted : in Boolean) is
-    Got : Boolean;
     Cell : Cell_Type;
+    Moved : Boolean;
   begin
     -- Global lock
     Global_Mutex.Get;
     -- Look for this key in pool
     Cell.Key := Key;
-    Search (Pool, Got, Cell, From => Pool_Mng.Absolute);
-    -- Exception if not found
-    if not Got then
+    if not Search (Pool, Cell, From => Pool_Mng.Absolute) then
+      -- Exception if not found
       raise Key_Not_Got;
     end if;
     -- Decrease counter or remove cell
@@ -120,7 +118,7 @@ package body Control_Pool is
       Cell.Waiters := Cell.Waiters - 1;
       Pool.Modify (Cell, Pool_Mng.Current);
     else
-      Pool.Delete (Moved => Got);
+      Pool.Delete (Moved => Moved);
     end if;
     -- Release data mutex if it was granted
     if Granted then

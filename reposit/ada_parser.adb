@@ -46,7 +46,7 @@ package body Ada_Parser is
   end Get_Text;
 
   -- Read next char, skipping Cr
-  function Text_Char_Get (File : in Text_Char.File_Type)
+  function Text_Char_Get (File : in out Text_Char.File_Type)
                          return Character is
     C : Character;
   begin
@@ -60,7 +60,7 @@ package body Ada_Parser is
   -- C is a letter, so it starts an identifier
   -- so parse and return it
   procedure Parse_Identifier (C : in Character;
-                              File : in Text_Char.File_Type;
+                              File : in out Text_Char.File_Type;
                               Context : in out Parsing_Context;
                               Text : out As.U.Asu_Us;
                               Lexic : out Lexical_Kind_List) is
@@ -120,7 +120,8 @@ package body Ada_Parser is
   -- C is a digit, so it starts a numeric literal
   -- so parse and return it
   function Parse_Numeric (C : Character;
-                          File : Text_Char.File_Type) return As.U.Asu_Us is
+                          File : in out Text_Char.File_Type)
+                         return As.U.Asu_Us is
     -- Current Char
     Cc : Character;
     -- Current text
@@ -164,7 +165,8 @@ package body Ada_Parser is
 
   -- The "--" of comment has been parsed.
   -- Parse the remaining of comment and return full comment (prepending "--")
-  function Parse_Comment (File : in Text_Char.File_Type) return As.U.Asu_Us is
+  function Parse_Comment (File : in out Text_Char.File_Type)
+                         return As.U.Asu_Us is
     Cc : Character;
     Text : As.U.Asu_Us;
   begin
@@ -188,7 +190,7 @@ package body Ada_Parser is
 
   -- Internal parsing of one word
   -- Sets Text to "" (and Lexic to Separator) when end of file
-  procedure Parse_Next (File : in Text_Char.File_Type;
+  procedure Parse_Next (File : in out Text_Char.File_Type;
                         Context : in out Parsing_Context;
                         Text : out As.U.Asu_Us;
                         Lexic : out Lexical_Kind_List;
@@ -316,7 +318,7 @@ package body Ada_Parser is
   end Parse_Next;
 
   -- Parse --
-  procedure Parse (File : in Text_Char.File_Type;
+  procedure Parse (File : in out Text_Char.File_Type;
                    Cb : access
     procedure (Text : in String;
                    Lexic : in Lexical_Kind_List)) is

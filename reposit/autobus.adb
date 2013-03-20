@@ -198,16 +198,14 @@ package body Autobus is
            Chronos.Passive_Timers.Passive_Timer, Timer_Access);
   procedure Remove_Current_Partner (Close : in Boolean) is
     Partner_Acc : Partner_Access;
-    Partner_Found : Boolean;
     Moved : Boolean;
   begin
     -- Find partner ref in Bus
     Partner_Acc := Partner_Access (Partners.Access_Current);
     Debug ("Removing partner " & Partner_Acc.Addr.Image);
-    Partner_Acc.Bus.Partners.Search_Match (
-           Partner_Found, Partner_Match_Acc'Access, Partner_Acc,
-           From => Partner_Access_List_Mng.Absolute);
-    if not Partner_Found then
+    if not Partner_Acc.Bus.Partners.Search_Match (
+             Partner_Match_Acc'Access, Partner_Acc,
+             From => Partner_Access_List_Mng.Absolute) then
       Log_Error ("Remove_Current_Partner", "not found", "in buses list");
       return;
     end if;
@@ -241,7 +239,12 @@ package body Autobus is
     end if;
 
     -- Delete this partner from Partners
-    Partners.Search_Access (Partner_Found, Partner_Acc);
+    declare
+      Partner_Found : Boolean;
+      pragma Unreferenced (Partner_Found);
+    begin
+      Partner_Found := Partners.Search_Access (Partner_Acc);
+    end;
     Partners.Delete (Moved => Moved);
 
   end Remove_Current_Partner;
@@ -275,15 +278,12 @@ package body Autobus is
             Regular_Expressions.Compiled_Pattern, Filter_Access);
   procedure Remove_Current_Subscriber is
     Subscriber_Acc : Subscriber_Access;
-    Subscriber_Found : Boolean;
     Moved : Boolean;
   begin
     -- Get access and move to current
     Subscriber_Acc := Subscriber_Access(
                   Buses.Access_Current.Subscribers.Access_Current);
-    Buses.Access_Current.Subscribers.Search_Access (Subscriber_Found,
-                                                    Subscriber_Acc);
-    if not Subscriber_Found then
+    if not Buses.Access_Current.Subscribers.Search_Access (Subscriber_Acc) then
       Log_Error ("Remove_Current_Subscriber", " subscriber not found",
                  "in bus list");
       return;
@@ -301,13 +301,11 @@ package body Autobus is
 
   procedure Tcp_Disconnection_Cb (Dscr : in Socket.Socket_Dscr) is
     Partner : Partner_Rec;
-    Partner_Found : Boolean;
   begin
     -- Find partner by socket
     Partner.Sock := Dscr;
-    Partners.Search_Match (Partner_Found, Partner_Match_Sock'Access, Partner,
-                           From => Partner_List_Mng.Absolute);
-    if not Partner_Found then
+    if not Partners.Search_Match (Partner_Match_Sock'Access, Partner,
+                                  From => Partner_List_Mng.Absolute) then
       Log_Error ("Tcp_Disconnection_Cb", " partner not found",
                  "in partners list");
       return;
@@ -323,7 +321,6 @@ package body Autobus is
     Bus_Acc : Bus_Access;
     Partner_Acc : Partner_Access;
     Remove : Boolean;
-    Partner_Found : Boolean;
     Moved : Boolean;
   begin
     Bus_Acc := Bus_Access(Buses.Access_Current);
@@ -342,8 +339,7 @@ package body Autobus is
         end if;
       end if;
       if Remove then
-        Partners.Search_Access (Partner_Found, Partner_Acc);
-        if not Partner_Found  then
+        if not Partners.Search_Access (Partner_Acc) then
           Log_Error ("Remove_Partners", "partner not found",
                      "in partners list");
         else
@@ -363,16 +359,15 @@ package body Autobus is
                              Length  : Natural) return Boolean is
     Msg : constant String := Message (1 .. Length);
     Partner : Partner_Rec;
-    Partner_Found : Boolean;
     Partner_Acc : Partner_Access;
-    Bus_Found : Boolean;
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
     use type As.U.Asu_Us;
   begin
     -- Find partner by Socket
     Partner.Sock := Dscr;
-    Partners.Search_Match (Partner_Found, Partner_Match_Sock'Access, Partner,
-                           From => Partner_List_Mng.Absolute);
-    if not Partner_Found then
+    if not Partners.Search_Match (Partner_Match_Sock'Access, Partner,
+                                  From => Partner_List_Mng.Absolute) then
       Log_Error ("Tcp_Reception_Cb", " partner not found",
                  "in partners list");
       return False;
@@ -380,7 +375,7 @@ package body Autobus is
     Partner_Acc := Partner_Access(Partners.Access_Current);
 
     -- Find Bus by access
-    Buses.Search_Access (Bus_Found, Partner_Acc.Bus);
+    Dummy := Buses.Search_Access (Partner_Acc.Bus);
 
     if not Partner_Acc.Addr.Is_Null then
       -- Not the first message, so this is Data => dispatch
@@ -422,7 +417,6 @@ package body Autobus is
                                Connected       : in Boolean;
                                Dscr            : in Socket.Socket_Dscr) is
     Partner : Partner_Rec;
-    Partner_Found : Boolean;
     Partner_Acc : Partner_Access;
     Message : Tcp_Message_Str;
     Message_Length : Natural;
@@ -441,9 +435,8 @@ package body Autobus is
     Partner.Host := Remote_Host_Id;
     Partner.Port := Remote_Port_Num;
     -- Find partner by address
-    Partners.Search_Match (Partner_Found, Partner_Match_Hp'Access, Partner,
-                           From => Partner_List_Mng.Absolute);
-    if not Partner_Found then
+    if not Partners.Search_Match (Partner_Match_Hp'Access, Partner,
+                                  From => Partner_List_Mng.Absolute) then
       Log_Error ("Tcp_Connection_Cb", " partner not found",
                  "in partners list");
       return;
@@ -484,14 +477,12 @@ package body Autobus is
                            New_Dscr        : in Socket.Socket_Dscr) is
     pragma Unreferenced (Local_Port_Num);
     Bus : Bus_Rec;
-    Bus_Found : Boolean;
     Partner : Partner_Rec;
   begin
     -- Find bus and insert partner
     Bus.Accep := Local_Dscr;
-    Buses.Search_Match (Bus_Found, Bus_Match_Accep'Access, Bus,
-                        From => Bus_List_Mng.Absolute);
-    if not Bus_Found then
+    if not Buses.Search_Match (Bus_Match_Accep'Access, Bus,
+                               From => Bus_List_Mng.Absolute) then
       Log_Error ("Accept_Cb", "bus not found", "in buses list");
       return;
     end if;
@@ -570,13 +561,11 @@ package body Autobus is
 
     -- Find bus by admin socket
     declare
-      Bus_Found : Boolean;
       Crit : Bus_Rec;
     begin
       Crit.Admin := Dscr;
-      Buses.Search_Match (Bus_Found, Bus_Match_Admin'Access, Crit,
-                          From => Bus_List_Mng.Absolute);
-      if not Bus_Found then
+      if not Buses.Search_Match (Bus_Match_Admin'Access, Crit,
+                                 From => Bus_List_Mng.Absolute) then
         Log_Error ("Ipm_Reception_Cb", "bus not found", "in buses list");
         return False;
       end if;
@@ -585,8 +574,8 @@ package body Autobus is
     end;
 
     -- Find partner by address
-    Partners.Search_Match (Partner_Found, Partner_Match_Addr'Access, Partner,
-                           From => Partner_List_Mng.Absolute);
+    Partner_Found := Partners.Search_Match (Partner_Match_Addr'Access, Partner,
+                                            From => Partner_List_Mng.Absolute);
 
     -- Handle Death
     if Message(1) = 'D' then
@@ -631,14 +620,12 @@ package body Autobus is
   function Timer_Cb (Id : in Timers.Timer_Id;
                      Data : in Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Data);
-    Bus_Found : Boolean;
     Bus : Bus_Rec;
   begin
     -- Find Bus
     Bus.Timer := Id;
-    Buses.Search_Match (Bus_Found, Bus_Match_Timer'Access, Bus,
-                        From => Bus_List_Mng.Absolute);
-    if not Bus_Found then
+    if not Buses.Search_Match (Bus_Match_Timer'Access, Bus,
+                               From => Bus_List_Mng.Absolute) then
       Log_Error ("Timer_Cb", "bus not found", "in buses list");
       return False;
     end if;
@@ -740,6 +727,7 @@ package body Autobus is
   -- Reset a Bus (make it re-usable)
   procedure Reset (Bus : in out Bus_Type) is
     Bus_Found : Boolean;
+    pragma Unreferenced (Bus_Found);
     Moved : Boolean;
     use type Socket.Socket_Dscr;
   begin
@@ -748,7 +736,7 @@ package body Autobus is
     if Bus.Acc = null then
       raise Status_Error;
     end if;
-    Buses.Search_Access (Bus_Found, Bus.Acc);
+    Bus_Found := Buses.Search_Access (Bus.Acc);
     Debug ("Bus.Reset " & Bus.Acc.Name.Image);
 
     -- Send Death info
@@ -778,7 +766,6 @@ package body Autobus is
     Msg : Tcp_Message_Str;
     Partner_Acc : Partner_Access;
     Moved : Boolean;
-    Partner_Found : Boolean;
     Success : Boolean;
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
@@ -825,7 +812,7 @@ package body Autobus is
       end;
       if not Success then
         -- Remove partner with which error occurs
-        Partners.Search_Access (Partner_Found, Partner_Acc);
+        Dummy := Partners.Search_Access (Partner_Acc);
         Remove_Current_Partner (True);
       end if;
       exit when not Moved;
@@ -855,7 +842,6 @@ package body Autobus is
                   Observer : access Observer_Type'Class;
                   Filter : in String := "";
                   Echo : in Boolean := False) is
-    Bus_Found : Boolean;
     Subs : Subscriber_Rec;
     Ok : Boolean;
     Position : Natural;
@@ -864,8 +850,7 @@ package body Autobus is
     if Bus = null then
       raise Status_Error;
     end if;
-    Buses.Search_Access (Bus_Found, Bus.Acc);
-    if not Bus_Found then
+    if not Buses.Search_Access (Bus.Acc) then
       raise Status_Error;
     end if;
     if Observer = null then
@@ -915,8 +900,6 @@ package body Autobus is
 
   -- Reset a Subscriber (make it re-usable)
   procedure Reset (Subscriber : in out Subscriber_Type) is
-    Bus_Found : Boolean;
-    Subscriber_Found : Boolean;
   begin
     Check_In_Receive;
     if Subscriber.Acc = null then
@@ -926,14 +909,11 @@ package body Autobus is
       raise Status_Error;
     end if;
     -- Find bus
-    Buses.Search_Access (Bus_Found, Subscriber.Acc.Bus);
-    if not Bus_Found then
+    if not Buses.Search_Access (Subscriber.Acc.Bus) then
       raise Status_Error;
     end if;
     -- Find subscriber in bus list
-    Subscriber.Acc.Bus.Subscribers.Search_Access (Subscriber_Found,
-                                                  Subscriber.Acc);
-    if not Subscriber_Found then
+    if not Subscriber.Acc.Bus.Subscribers.Search_Access (Subscriber.Acc) then
       Debug ("Subscriber.Reset subscriber unknown by its bus!");
       raise Status_Error;
     end if;

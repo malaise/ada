@@ -36,6 +36,7 @@ package U_Rand is
   -- First call to Next on a not-started generator starts it with
   --   the default values
   procedure Next (Gen   : in out Generator; Val : out Float);
+  function Next (Gen   : in out Generator) return Float;
 
 private
   M3 : constant := 97;

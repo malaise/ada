@@ -48,20 +48,38 @@ package body Hashed_List is
                           Crit      : in Element_Type;
                           Found     : out Boolean;
                           Direction : in Direction_List := Forward) is
+  begin
+    Found := Search_First (List, Crit, Direction);
+  end Search_First;
+
+  function Search_First (List      : in out List_Type;
+                         Crit      : in Element_Type;
+                         Direction : in Direction_List:= Forward)
+           return Boolean is
     Acc : Element_Access;
   begin
     Locate (List, Crit, True, Acc, Direction);
-    Found := Acc /= null;
+    return Acc /= null;
   end Search_First;
+
   procedure Search_Next (List      : in out List_Type;
                          Crit      : in Element_Type;
                          Found     : out Boolean;
                          Direction : in Direction_List := Forward) is
+  begin
+    Found := Search_Next (List, Crit, Direction);
+  end Search_Next;
+
+  function Search_Next (List      : in out List_Type;
+                        Crit      : in Element_Type;
+                        Direction : in Direction_List := Forward)
+           return Boolean is
     Acc : Element_Access;
   begin
     Locate (List, Crit, False, Acc, Direction);
-    Found := Acc /= null;
+    return  Acc /= null;
   end Search_Next;
+
   procedure Find_First (List : in out List_Type;
                         Crit : in Element_Type;
                         Direction : in Direction_List := Forward) is
@@ -72,6 +90,7 @@ package body Hashed_List is
       raise Not_In_List;
     end if;
   end Find_First;
+
   procedure Find_Next (List : in out List_Type;
                        Crit : in Element_Type;
                        Direction : in Direction_List := Forward) is
@@ -119,6 +138,13 @@ package body Hashed_List is
   begin
     -- Set element or raise Not_In_List
     Set (Item, Get_Access_Current (List).all);
+  end Read_Current;
+
+  function  Read_Current (List : List_Type) return Element_Type is
+  begin
+    return Item : Element_Type do
+      Read_Current (List, Item);
+    end return;
   end Read_Current;
 
   -- Get direct access to element matching in the list
@@ -232,7 +258,6 @@ package body Hashed_List is
   begin
      List.List.Modification_Ack;
   end Modification_Ack;
-
 
   -- Call Iteration on all items
   procedure Iterate (List      : in out List_Type;

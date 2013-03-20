@@ -130,14 +130,13 @@ package body Players is
     end if;
   end Match;
 
-  procedure Search_Match_Action is new Action_List_Mng.Search (Match);
+  function Search_Match_Action is new Action_List_Mng.Search (Match);
 
   function Find_Action (Color : Space.Color_List;
                         From, To : Space.Square_Coordinate;
                         Promote  : in Pieces.Piece_Kind_List) return Action_Rec is
     Ref : Valid_Action_Rec;
     Res : Valid_Action_Rec;
-    Found : Boolean;
   begin
     if Promote in Pieces.Promotion_Piece_List then
       Ref := (Valid => True,
@@ -152,9 +151,8 @@ package body Players is
     end if;
 
     -- Search first occurence
-    Search_Match_Action(Actions(Color), Found, Ref,
-                        From => Action_List_Mng.Absolute);
-    if not Found then
+    if not Search_Match_Action(Actions(Color), Ref,
+                               From => Action_List_Mng.Absolute) then
        -- Not found
        return (Valid => False);
     end if;
@@ -162,9 +160,8 @@ package body Players is
     -- Got one
     Actions(Color).Read(Res, Action_List_Mng.Current);
 
-    Search_Match_Action(Actions(Color), Found, Ref,
-                        From => Action_List_Mng.Skip_Current);
-    if Found then
+    if Search_Match_Action(Actions(Color), Ref,
+                        From => Action_List_Mng.Skip_Current) then
       -- Should be unique
       raise More_Than_One;
     end if;
@@ -177,14 +174,12 @@ package body Players is
     return Action = Ref;
   end Same;
 
-  procedure Search_Same_Action is new Action_List_Mng.Search (Same);
+  function Search_Same_Action is new Action_List_Mng.Search (Same);
 
   function Action_Exists (Color : Space.Color_List; Action : Valid_Action_Rec) return Boolean is
-    Found : Boolean;
   begin
-    Search_Same_Action (Actions(Color), Found, Action,
-                        From => Action_List_Mng.Absolute);
-    return Found;
+    return Search_Same_Action (Actions(Color), Action,
+                               From => Action_List_Mng.Absolute);
   end Action_Exists;
 
 end Players;

@@ -2,7 +2,6 @@
 -- Report the received string (text between separators)
 -- This is the same as Text_Line input except that the input flow is
 --  explicitly pushed by the application
-with Ada.Finalization;
 with As.U, Text_Line;
 package Input_Buffer is
 
@@ -17,14 +16,14 @@ package Input_Buffer is
   type Sentence_Notifier is access procedure (Sentence : in String);
 
   -- A buffer
-  type Buffer is tagged limited private;
+  type Buffer is tagged private;
 
   ----------------------
   -- BASIC OPERATIONS --
   ----------------------
   -- Initialise the buffer Buf with the sentence delimiter and the notifier
   -- Previous content of Buf is overwritten
-  -- May raise Constraint_Error if Delimiter is empty or Notifier is null
+  -- May raise Constraint_Error if Delimiter is empty
   procedure Set (Buf : in out Buffer;
                  Notifier : in Sentence_Notifier;
                  Delimiter : in String := Line_Feed);
@@ -32,8 +31,8 @@ package Input_Buffer is
   -- Push text in buffer Buf
   -- Can lead the notifier to be invoqued once or several times
   -- May raise Status_Error if Buf is not set
-  procedure Push (Buf : in Buffer; Text : in String);
-  procedure Push (Buf : in Buffer; Char : in Character);
+  procedure Push (Buf : in out Buffer; Text : in String);
+  procedure Push (Buf : in out Buffer; Char : in Character);
 
   ----------------------
   -- OTHER OPERATIONS --
@@ -42,19 +41,19 @@ package Input_Buffer is
   -- Beware that there may be Delimiters in the tail if the buffer is
   --  suspended
   -- May raise Status_Error if Buf is not set
-  function Tail (Buf : Buffer) return String;
+  function Tail (Buf : in out Buffer) return String;
 
   -- Suspend the buffer Buf
   -- It will store the text pushed but not notify
   -- No effect if already suspended
   -- May raise Status_Error if Buf is not set
-  procedure Suspend (Buf : in Buffer);
+  procedure Suspend (Buf : in out Buffer);
 
   -- Resume the buffer Buf
   -- Can lead the notifier to be invoqued once or several times
   -- No effect if not suspended
   -- May raise Status_Error if Buf is not set
-  procedure Resume (Buf : in Buffer);
+  procedure Resume (Buf : in out Buffer);
 
   -- Is the buffer Buf suspended?
   -- May raise Status_Error if Buf is not set
@@ -74,31 +73,17 @@ package Input_Buffer is
   -- May raise Status_Error if Buf is not set
   procedure Clean (Buf : in out Buffer);
 
-  -- Copy the buffer Src_Buf to Dest_Buf
-  -- Previous content of Dest_Buf is overwritten
-  -- Src_Buf may not be set, which deletes Dest_Buf
-  procedure Copy (Dest_Buf : in out Buffer; Src_Buf : in Buffer);
-
   Status_Error : exception;
 private
 
-  type Buffer_Rec is record
+  type Buffer is tagged record
     Notif : Sentence_Notifier := null;
     Delim : As.U.Asu_Us;
     Text : As.U.Asu_Us;
     Susp : Boolean := False;
   end record;
 
-  Default_Rec : Buffer_Rec;
-  Init_Rec : constant Buffer_Rec := Default_Rec;
-
-  type Buffer_Rec_Access is access Buffer_Rec;
-  type Buffer is limited new Ada.Finalization.Limited_Controlled with record
-    Acc : Buffer_Rec_Access := null;
-  end record;
-
-   --  Free Acc
-  overriding procedure Finalize (Buf : in out Buffer);
+  Init : constant Buffer := (others => <>);
 
 end Input_Buffer;
 

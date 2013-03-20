@@ -2,12 +2,12 @@
 --  from frozen to 128 times faster than real time
 -- Virtual clocks can be used for Chronos (and associated passive timers)
 --  Timed queues and Timers.
-with Ada.Calendar, Ada.Finalization;
+with Ada.Calendar;
 with Limited_List;
 package Virtual_Time is
 
   type Clock is tagged limited private;
-  type Clock_Access is access constant Clock;
+  type Clock_Access is access all Clock;
 
   subtype Time is Ada.Calendar.Time;
 
@@ -19,7 +19,7 @@ package Virtual_Time is
   -- Set a new synchro point.
   -- The speed of the clock must be 0.0
   --  otherwise the exception Vtime_Error is raised
-  procedure Set_Time (A_Clock : in Clock;
+  procedure Set_Time (A_Clock : in out Clock;
                       Reference_Time : in Time;
                       Virtual_Time : in Time);
 
@@ -34,7 +34,7 @@ package Virtual_Time is
 
   -- Set a new speed, change synchro point to current time
   type Speed_Range is new Duration range 0.0 .. 128.0;
-  procedure Set_Speed (A_Clock : in Clock;
+  procedure Set_Speed (A_Clock : in out Clock;
                        Speed : in Speed_Range);
 
   -- Get current speed
@@ -73,11 +73,11 @@ package Virtual_Time is
                     A_Clock : in Clock_Access) is abstract;
 
   -- Add an observer
-  procedure Add_Observer (A_Clock : Clock;
+  procedure Add_Observer (A_Clock : in out Clock;
                           An_Observer : access Observer'Class);
 
   -- Del an observer
-  procedure Del_Observer (A_Clock : Clock;
+  procedure Del_Observer (A_Clock : in out Clock;
                           An_Observer : access Observer'Class);
 
 private
@@ -87,7 +87,7 @@ private
   procedure Set (To : out Observer_Access; Val : in Observer_Access);
   package List_Mng is new Limited_List (Observer_Access, Set);
 
-  type Clock_Def_Rec is record
+  type Clock is tagged limited record
     -- Synchro point
     Refe_Time : Time := Init;
     Virt_Time : Time := Init;
@@ -96,14 +96,6 @@ private
     -- List of observers
     Observers : List_Mng.List_Type;
   end record;
-
-  type Clock_Def_Access is access Clock_Def_Rec;
-
-  type Clock is limited new Ada.Finalization.Limited_Controlled with record
-    Clock_Access : Clock_Def_Access := new Clock_Def_Rec;
-  end record;
-
-  overriding procedure Finalize (A_Clock : in out Clock);
 
 end Virtual_Time;
 

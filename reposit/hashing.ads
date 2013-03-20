@@ -82,18 +82,32 @@ package Hashing is
                            Index     : in Hash_Range;
                            Found     : out Found_Rec;
                            Direction : in Direction_List := Forward);
+      function  Find_Next (Table     : in out Hash_Table;
+                           Index     : in Hash_Range;
+                           Direction : in Direction_List := Forward)
+                return Found_Rec;
+
       procedure Find_Next (Table     : in out Hash_Table;
                            Key       : in String;
                            Found     : out Found_Rec;
                            Direction : in Direction_List := Forward);
+      function  Find_Next (Table     : in out Hash_Table;
+                           Key       : in String;
+                           Direction : in Direction_List := Forward)
+                return Found_Rec;
 
       -- To re-read data previously found at Index or Key
       procedure Re_Read (Table : in out Hash_Table;
                          Index : in Hash_Range;
                          Found : out Found_Rec);
+      function  Re_Read (Table : in out Hash_Table;
+                         Index : in Hash_Range) return Found_Rec;
+
       procedure Re_Read (Table : in out Hash_Table;
                          Key   : in String;
                          Found : out Found_Rec);
+      function  Re_Read (Table : in out Hash_Table;
+                         Key   : in String) return Found_Rec;
 
       -- To remove last data found at Index or Key
       -- Last found is reset
@@ -143,7 +157,8 @@ package Hashing is
                                  with record
         Arr : Hash_Arr;
       end record;
-      overriding procedure Finalize (Table : in out Hash_Table) renames Clear_All;
+      overriding procedure Finalize (Table : in out Hash_Table)
+                                    renames Clear_All;
 
     end Hash_Mng;
 

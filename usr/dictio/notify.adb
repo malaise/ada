@@ -15,14 +15,14 @@ package body Notify is
   begin
     return Elt1 = Elt2;
   end Full_Match;
-  procedure Full_Search is new Notif_List_Mng.Search (Full_Match);
+  function Full_Search is new Notif_List_Mng.Search (Full_Match);
 
   function Client_Match (Elt1, Elt2 : Notif_Rec) return Boolean is
     use type Socket.Socket_Dscr;
   begin
     return Elt1.Client = Elt2.Client;
   end Client_Match;
-  procedure Client_Search is new Notif_List_Mng.Search (Client_Match);
+  function Client_Search is new Notif_List_Mng.Search (Client_Match);
 
   function Item_Match (Elt1, Elt2 : Notif_Rec) return Boolean is
   begin
@@ -31,7 +31,7 @@ package body Notify is
     return Elt2.Kind = Elt1.Kind
     and then Names.Match (Parse (Elt2.Item), Parse (Elt1.Item));
   end Item_Match;
-  procedure Item_Search is new Notif_List_Mng.Search (Item_Match);
+  function Item_Search is new Notif_List_Mng.Search (Item_Match);
 
 
   procedure Add (Client : in Socket.Socket_Dscr;
@@ -58,11 +58,9 @@ package body Notify is
                  Item   : in Data_Base.Item_Name;
                  Kind   : in Data_Base.Item_Kind) is
     Rec : Notif_Rec;
-    Found : Boolean;
   begin
     Rec := (Client, Item, Kind);
-    Full_Search (Notif_List, Found, Rec, From => Notif_List_Mng.Absolute);
-    if not Found then
+    if not Full_Search (Notif_List, Rec, From => Notif_List_Mng.Absolute) then
       if Dictio_Debug.Level_Array(Dictio_Debug.Client_Notify) then
         Dictio_Debug.Put ("Client-notify.del: not found " & Parse(Item)
              & " kind " & Kind
@@ -81,11 +79,9 @@ package body Notify is
 
   procedure Del_Client (Client : in Socket.Socket_Dscr) is
     Rec : Notif_Rec;
-    Found : Boolean;
   begin
     Rec.Client := Client;
-    Client_Search (Notif_List, Found, Rec, From => Notif_List_Mng.Absolute);
-    if not Found then
+    if not Client_Search (Notif_List, Rec, From => Notif_List_Mng.Absolute) then
       -- No notification
       return;
     end if;
@@ -97,9 +93,8 @@ package body Notify is
                & " on " & Event_Mng.File_Desc'Image(Rec.Client.Get_Fd));
       end if;
       Delete_Current;
-      Client_Search (Notif_List, Found, Rec,
-                     From => Notif_List_Mng.From_Current);
-      exit when not Found;
+      exit when not Client_Search (Notif_List, Rec,
+                                   From => Notif_List_Mng.From_Current);
     end loop;
     -- No more notification
   end Del_Client;
@@ -118,15 +113,13 @@ package body Notify is
     Rec : Notif_Rec;
     Msg : Client_Com.Dictio_Client_Rec;
     Fd : Event_Mng.File_Desc;
-    Found : Boolean;
   begin
     Msg.Action := Client_Com.Notif_On;
     Msg.Item := Item;
     -- Search first notification record
     Rec.Item := Item.Name;
     Rec.Kind := Item.Kind;
-    Item_Search (Notif_List, Found, Rec, From => Notif_List_Mng.Absolute);
-    if not Found then
+    if not Item_Search (Notif_List, Rec, From => Notif_List_Mng.Absolute) then
       -- No notifcation
       return;
     end if;
@@ -154,9 +147,8 @@ package body Notify is
           Client_Fd.Del_Client (Rec.Client);
       end;
       -- Search next
-      Item_Search (Notif_List, Found, Rec,
-                   From => Notif_List_Mng.Skip_Current);
-      exit when not Found;
+      exit when not Item_Search (Notif_List, Rec,
+                                 From => Notif_List_Mng.Skip_Current);
     end loop;
     -- No more notification
   end Send;

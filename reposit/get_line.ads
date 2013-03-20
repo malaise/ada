@@ -44,6 +44,8 @@ package Get_Line is
 
   -- Get the whole line (not parsed)
   procedure Get_Whole_Line (Line : in out Line_Txt);
+  function  Get_Whole_Line return Line_Txt;
+  function  Get_Whole_Line return String;
 
   -- Get the first significant word of the line (not parsed)
   function Get_First_Word return String;

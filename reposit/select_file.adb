@@ -293,12 +293,11 @@ package body Select_File is
       return Current.Kind = Criteria.Kind
       and then Current.Name = Criteria.Name;
     end Match;
-    procedure File_Search is new Dir_Mng.File_List_Mng.Search (Match);
+    function File_Search is new Dir_Mng.File_List_Mng.Search (Match);
 
     -- Reread current directory, try to restore current
     procedure Reread is
       Dir_Item : Dir_Mng.File_Entry_Rec;
-      Found : Boolean;
     begin
       -- Save current entry
       Dir_List.Move_At (Afpx.Line_List.Get_Position);
@@ -306,9 +305,8 @@ package body Select_File is
       -- Rebuild list
       Change_Dir(".", "");
       -- Search position back and move Afpx to it
-      File_Search (Dir_List, Found, Dir_Item,
-                   From => Dir_Mng.File_List_Mng.Absolute);
-      if Found then
+      if File_Search (Dir_List, Dir_Item,
+                      From => Dir_Mng.File_List_Mng.Absolute) then
         Afpx.Line_List.Move_At (Dir_List.Get_Position);
         Afpx.Update_List (Afpx.Center_Selected);
       end if;

@@ -220,11 +220,10 @@ package body Network is
   -- Raises No_Connection if no connection with this key
   procedure Delete_Connection (Of_Node : in out Node_Type;
                                Key : in Connection_Key_Type) is
-    Found : Boolean;
+    Moved : Boolean;
   begin
     -- Search connection matching key
-    Of_Node.Connections.Search_Access (Found, Connection_Access(Key));
-    if not Found then
+    if not Of_Node.Connections.Search_Access (Connection_Access(Key)) then
       raise No_Connection;
     end if;
     -- Delete one partner's connection to us
@@ -232,7 +231,7 @@ package body Network is
       Of_Node.Connections.Access_Current.Node.all,
       Of_Node.Connections.Access_Current);
     -- Delete this connection to partner
-    Of_Node.Connections.Delete (Moved => Found);
+    Of_Node.Connections.Delete (Moved => Moved);
   end Delete_Connection;
 
 

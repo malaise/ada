@@ -1,5 +1,4 @@
 -- Allows to get/unget/re-get items (from a input flow?)
-with Ada.Finalization;
 with Dynamic_List;
 generic
   -- The type of item got
@@ -37,8 +36,8 @@ package Multiget is
   -- Propagates any exception of the Get_Item (error or end of file...)
   -- If recording, copies each Item got in a buffer (for further unget).
   -- When the buffer is full, the oldest got item is overwritten by the new one
-  function Get (Getter : Multigetter; User_Data : User_Data_Type)
-               return Item_Type;
+  function Get (Getter : in out Multigetter; User_Data : in User_Data_Type)
+                return Item_Type;
 
   -- Returns the number of Unget that can be done (0 when recording is
   --  not active)
@@ -78,7 +77,7 @@ private
 
 
   -- The context of a mutiget
-  type Getter_Rec is record
+  type Multigetter is tagged limited record
     -- The buffer, in which current position is the "next to unget"
     --  when offset is 0
     Item_List : Item_List_Mng.List_Type;
@@ -87,14 +86,6 @@ private
     -- Are we recording
     Recording : Boolean := False;
   end record;
-
-  type Getter_Access is access all Getter_Rec;
-  type Multigetter is limited new Ada.Finalization.Limited_Controlled
-                                  with record
-    Acc : Getter_Access := new Getter_Rec;
-  end record;
-
-  overriding procedure Finalize (File : in out Multigetter);
 
 end Multiget;
 

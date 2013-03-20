@@ -28,6 +28,11 @@ package body Limited_Pool is
     Pool.Pool.Pop (Data);
   end Pop;
 
+  function Pop (Pool : in out Pool_Type) return Data_Type is
+  begin
+    return Pool.Pool.Pop;
+  end Pop;
+
   procedure Pop (Pool : in out Pool_Type) is
   begin
     Pool.Pool.Pop;

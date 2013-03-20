@@ -22,6 +22,7 @@ package Long_Long_Limited_Pool is
   -- Get from pool last pushed (Lifo) or first pushed (Fifo)
   Empty_Pool : exception;
   procedure Pop (Pool : in out Pool_Type; Data : out Data_Type);
+  function Pop (Pool : in out Pool_Type) return Data_Type;
   procedure Pop (Pool : in out Pool_Type);
 
   -- Read from pool the next to be popped

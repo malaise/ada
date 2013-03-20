@@ -27,6 +27,7 @@ package Smart_Reference is
   -- Get a copy of handled object
   -- Raise Constraint_Error if Reference is not set or released
   procedure Get (Reference : in Handle; Val : out Object);
+  function Get (Reference : Handle) return Object;
 
   -- Get a direct access to a handled object
   -- Raise Constraint_Error if Reference is not set or released

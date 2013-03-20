@@ -1,10 +1,6 @@
 with System;
-with Ada.Unchecked_Deallocation;
 with C_Types;
 package body Rnd is
-
-  procedure Free is new Ada.Unchecked_Deallocation (Gen_Rec, Gen_Access);
-
 
   function C_Gettimeofday (Tv : System.Address; Tz : System.Address)
   return Integer;
@@ -32,7 +28,7 @@ package body Rnd is
   end To_Int;
 
   -- Initialisation of sequence
-  procedure Randomize (Gen : in Generator; Init : in Float := 1.0) is
+  procedure Randomize (Gen : in out Generator; Init : in Float := 1.0) is
     -- The result of mutex allocation is always true, because infinite waiting
     Ok : Boolean;
     pragma Unreferenced (Ok);
@@ -54,29 +50,30 @@ package body Rnd is
     F := (if 0.0 <= Init and then Init < 1.0 then Init else Init_Aleat);
     I := U_Rand.Seed_Range_1 (F * Float(U_Rand.Seed_Range_1'Last - 1) + 1.0);
 
-    Ok := Mutex_Manager.Get (Gen.Acc.Lock, -1.0);
-    U_Rand.Start (Gen.Acc.Ugen, New_I => I);
-    Mutex_Manager.Release (Gen.Acc.Lock);
+    Ok := Mutex_Manager.Get (Gen.Lock, -1.0);
+    U_Rand.Start (Gen.Ugen, New_I => I);
+    Mutex_Manager.Release (Gen.Lock);
   end Randomize;
 
 
   -- Next element in sequence
-  function Random (Gen : Generator; Mini : Float := 0.0; Maxi : Float := 1.0)
+  function Random (Gen : in out Generator;
+                   Mini : in Float := 0.0; Maxi : in Float := 1.0)
                   return Float is
     -- Returned value
     Val : Float;
     Ok : Boolean;
     pragma Unreferenced (Ok);
   begin
-    Ok := Mutex_Manager.Get (Gen.Acc.Lock, -1.0);
-    U_Rand.Next (Gen.Acc.Ugen, Val);
-    Mutex_Manager.Release (Gen.Acc.Lock);
+    Ok := Mutex_Manager.Get (Gen.Lock, -1.0);
+    U_Rand.Next (Gen.Ugen, Val);
+    Mutex_Manager.Release (Gen.Lock);
     -- Here 0 <= Val < 1
     return (if Mini >= Maxi then Val else Mini + (Val * (Maxi - Mini) ));
   end Random;
 
-  function Discr_Random (Gen : Generator;
-                         Mini : Num := Num'First; Maxi : Num := Num'Last)
+  function Discr_Random (Gen : in out Generator;
+                         Mini : in Num := Num'First; Maxi : in Num := Num'Last)
            return Num is
   begin
     return
@@ -89,7 +86,7 @@ package body Rnd is
       );
   end Discr_Random;
 
-  function Int_Random (Gen : Generator;
+  function Int_Random (Gen : in out Generator;
                        Mini : Integer := 0; Maxi : Integer := 1)
            return Integer is
   begin
@@ -99,26 +96,21 @@ package body Rnd is
       );
   end Int_Random;
 
-  function Float_Random (Gen : Generator;
-                         Mini : Float := 0.0; Maxi : Float := 1.0)
+  function Float_Random (Gen : in out Generator;
+                         Mini : in Float := 0.0; Maxi : in Float := 1.0)
            return Float is
   begin
     return
       Random (Gen, Mini, Maxi);
   end Float_Random;
 
-  function Dur_Random (Gen : Generator;
-                       Mini : Duration := 0.0; Maxi : Duration := 1.0)
+  function Dur_Random (Gen : in out Generator;
+                       Mini : in Duration := 0.0; Maxi : in Duration := 1.0)
            return Duration is
   begin
     return
       Duration (Random (Gen, Float(Mini), Float(Maxi) ) );
   end Dur_Random;
-
-  overriding procedure Finalize (Gen : in out Generator) is
-  begin
-    Free (Gen.Acc);
-  end Finalize;
 
 end Rnd;
 

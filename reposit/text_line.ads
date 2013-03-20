@@ -1,5 +1,5 @@
 -- Get lines (until Lf) of text from file
-with Ada.Characters.Latin_1, Ada.Finalization;
+with Ada.Characters.Latin_1;
 with As.U, Sys_Calls;
 package Text_Line is
 
@@ -48,28 +48,28 @@ package Text_Line is
   -- Further calls after the end of file will return an empty string.
   -- May raise Status_Error if File is not open or Out_File
   -- May raise Io_Error if IO error
-  function Get (File : File_Type) return String;
-  function Get (File : File_Type) return As.U.Asu_Us;
+  function Get (File : in out File_Type) return String;
+  function Get (File : in out File_Type) return As.U.Asu_Us;
 
   -- Put some text in file
   -- This text will either be flushed explicitely
   --  or on close (or each N characters)
   -- May raise Status_Error if File is not open or In_File
   -- May raise Io_Error if IO error
-  procedure Put (File : in File_Type; Text : in String);
+  procedure Put (File : in out File_Type; Text : in String);
 
   -- Put_Line some text
   -- Same as Put (Text & Line_Feed)
-  procedure Put_Line (File : in File_Type; Text : in String);
+  procedure Put_Line (File : in out File_Type; Text : in String);
 
   -- Put a Line_Feed
   -- Same as Put_Line ("")
-  procedure New_Line (File : in File_Type);
+  procedure New_Line (File : in out File_Type);
 
   -- Flush the remaining of text put on file
   -- Does nothing on a In_File file
   -- May raise Io_Error if IO error
-  procedure Flush (File : in File_Type);
+  procedure Flush (File : in out File_Type);
 
   -- If Line ends with Line_Feed_Char then delete it
   procedure Trim (Line : in out As.U.Asu_Us;
@@ -107,7 +107,8 @@ private
   Buffer_Size : constant := 1024;
   subtype Buffer_Index_Range is Natural range 0 .. Buffer_Size;
   subtype Buffer_Array is String (1 .. Buffer_Size);
-  type File_Type_Rec is record
+  type File_Type is tagged limited record
+    Open : Boolean := False;
     Fd : Sys_Calls.File_Desc;
     Mode : File_Mode;
     Line_Feed : As.U.Asu_Us;
@@ -115,13 +116,6 @@ private
     Buffer_Index : Buffer_Index_Range;
     Buffer : Buffer_Array;
   end record;
-
-  type Rec_Access is access File_Type_Rec;
-  type File_Type is limited new Ada.Finalization.Limited_Controlled with record
-    Acc : Rec_Access;
-  end record;
-
-  overriding procedure Finalize (File : in out File_Type);
 
 end Text_Line;
 

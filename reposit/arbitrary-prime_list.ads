@@ -8,7 +8,7 @@ package Arbitrary.Prime_List is
   procedure Rewind (It : in out Iterator);
 
   -- Get next prime number
-  procedure Next (It : in out Iterator; N : out Positive_Number);
+  function Next (It : in out Iterator) return Positive_Number;
 
 private
 

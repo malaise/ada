@@ -20,7 +20,7 @@ package body Nodes is
     return El1.Name = El2.Name;
   end Name_Match;
 
-  procedure Search_Name is new Node_Mng.Search (Name_Match);
+  function Search_Name is new Node_Mng.Search (Name_Match);
 
 
   procedure Init_List is
@@ -33,11 +33,9 @@ package body Nodes is
 
   function Search_Name (Name : Tcp_Util.Host_Name) return Boolean is
     Rec : Node_Rec;
-    Found : Boolean;
   begin
     Rec.Name := Name;
-    Search_Name (Node_List, Found, Rec, From => Node_Mng.Absolute);
-    return Found;
+    return Search_Name (Node_List, Rec, From => Node_Mng.Absolute);
   end Search_Name;
 
   procedure Set (Name : in Tcp_Util.Host_Name;

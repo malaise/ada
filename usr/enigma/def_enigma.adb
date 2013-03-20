@@ -365,8 +365,9 @@ begin
             Rot_Num := Rnd.Gen.Int_Random (1, 2);
           end if;
           Rot_Num := Store (Rot_Num, I);
-          Rotors.Append (To_Letter (Rot_Num) & To_Letter (Id_Random (Rnd.Gen)));
-          Init_Offset.Append (To_Letter (Id_Random (Rnd.Gen)));
+          Rotors.Append (To_Letter (Rot_Num)
+                       & To_Letter (Id_Random (Rnd.Gen.all)));
+          Init_Offset.Append (To_Letter (Id_Random (Rnd.Gen.all)));
         end loop;
       end;
 
@@ -719,7 +720,7 @@ begin
     Basic_Proc.Put_Output (" ");
     -- Key coded onto text
     -- Switch and random separator
-    Separator := To_Letter (Id_Random (Rnd.Gen));
+    Separator := To_Letter (Id_Random (Rnd.Gen.all));
     Basic_Proc.Put_Output (Switch.Image & Separator & Separator);
     for I in 1 .. Rotors.Length loop
       if I rem 2 = 1 then

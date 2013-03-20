@@ -38,7 +38,7 @@ package Exception_Messenger is
   -- The exception occurence can be passed as "in out" or by access, but in
   --  both cases it is necessary to save the original occurence first.
 
-  -- Procedure: Occurence passed in out.
+  -- Procedure or function and Occurence passed in out.
   -- To pass an exception occurrence in out the user must save it in a local
   -- copy. Example:
   -- exception
@@ -48,11 +48,15 @@ package Exception_Messenger is
   --     begin
   --       Ada.Exceptions.Save_Occurrence (Loc_Occ, Error_Occ);
   --       Exception_Messenger.Exception_Message (Loc_Occ, Unb_String);
+  --       -- or
+  --        Str := Exception_Messenger.Exception_Message (Loc_Occ);
   --     end;
   procedure Exception_Message (X : in out Ada.Exceptions.Exception_Occurrence;
                                M : out As.U.Asu_Us);
+  function  Exception_Message (X : in out Ada.Exceptions.Exception_Occurrence)
+            return String;
 
-  -- Function: Occurence passed by access.
+  -- Function and Occurence passed by access.
   -- The only way to obtain an exception access is to use the function
   --  Ada.Exceptions.Save_Occurrence that allocates a copy of the
   --  Exception_Occurence. After passing the reference of the copy to

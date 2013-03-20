@@ -12,7 +12,7 @@ package body Data_Base is
   begin
     return Elt1.Kind = Elt2.Kind and then Elt1.Name = Elt2.Name;
   end Name_Match;
-  procedure Search_Name is new Item_List_Mng.Search (Name_Match);
+  function Search_Name is new Item_List_Mng.Search (Name_Match);
 
   type Item_Access is access all Item_Rec;
   -- Hash on: Item.Kind & Item.Name (not Parsed)
@@ -56,7 +56,6 @@ package body Data_Base is
     end Append_Itm;
 
     Acc : Item_Access;
-    Found : Boolean;
   begin
     -- The one to store
     Itm := Item;
@@ -72,8 +71,7 @@ package body Data_Base is
                       Item_Access(Item_List.Access_Current));
       end if;
     else
-      Search_Name (Item_List, Found, Itm, From => Item_List_Mng.Absolute);
-      if Found then
+      if Search_Name (Item_List, Itm, From => Item_List_Mng.Absolute) then
         Item_List.Modify (Itm, Item_List_Mng.Current);
       else
         Append_Itm;
@@ -93,7 +91,6 @@ package body Data_Base is
   procedure Get (Name : in Item_Name; Kind : in Item_Kind; Item : out Item_Rec) is
     Itm : Item_Rec;
     Acc : Item_Access;
-    Found : Boolean;
   begin
     if H_Use then
       Acc := H_Get (Kind, Name);
@@ -105,8 +102,7 @@ package body Data_Base is
     else
       Itm.Name := Name;
       Itm.Kind := Kind;
-      Search_Name (Item_List, Found, Itm, From => Item_List_Mng.Absolute);
-      if Found then
+      if Search_Name (Item_List, Itm, From => Item_List_Mng.Absolute) then
         Item_List.Read (Item, Item_List_Mng.Current);
       else
         Item := No_Item;

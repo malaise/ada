@@ -95,8 +95,14 @@ package body Smart_Reference is
   begin
     Set (Val, Reference.Box_Access.Obj);
   end Get;
+  function Get (Reference : Handle) return Object is
+  begin
+    return Val : Object do
+      Get (Reference, Val);
+    end return;
+  end Get;
 
--- Get a direct access to a handled object
+  -- Get a direct access to a handled object
   -- Raise Constraint_Error if Reference is not set or released
   -- CARE: Don't use an access outside the scope of the Handle
   --  that was used to get the access

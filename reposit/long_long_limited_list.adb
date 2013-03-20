@@ -116,6 +116,13 @@ package body Long_Long_Limited_List is
       Move_To (List, Move);
     end if;
   end Read;
+  function  Read (List : in out List_Type;
+                  Move : in Movement := Next) return Element_Type is
+  begin
+    return E : Element_Type do
+      Read (List, E, Move);
+    end return;
+  end Read;
 
   procedure Read (List  : in out List_Type;
                   Item  : out Element_Type;
@@ -334,6 +341,13 @@ package body Long_Long_Limited_List is
     Read(List, Item, Current);
     Delete(List, Move);
     -- Modified flag changed by Delete
+  end Get;
+  function  Get (List : in out List_Type;
+                 Move : in Movement := Next) return Element_Type is
+  begin
+    return E : Element_Type do
+      Get (List, E, Move);
+    end return;
   end Get;
 
   procedure Get (List  : in out List_Type;
@@ -686,11 +700,11 @@ package body Long_Long_Limited_List is
   -- Search
 
   -- Search the element that is at the provided access (move to it)
-  procedure Search_Access (List      : in out List_Type;
-                           Found     : out Boolean;
-                           Criteria  : access Element_Type) is
+  function Search_Access (List      : in out List_Type;
+                          Criteria  : access Element_Type) return Boolean is
     New_Pos : Link;
     New_Pos_First : Long_Longs.Ll_Natural;
+    Found : Boolean;
   begin
     Check_Cb(List);
     -- Forbid calls from application
@@ -719,6 +733,7 @@ package body Long_Long_Limited_List is
       List.Modified := True;
     end if;
     List.In_Cb := False;
+    return Found;
   exception
     when others =>
       List.In_Cb := False;
@@ -727,14 +742,14 @@ package body Long_Long_Limited_List is
 
 
   -- Generic search with a Criteria not of Item_Type
-  procedure Search_Criteria (List      : in out List_Type;
-                             Found     : out Boolean;
-                             Criteria  : in Criteria_Type;
-                             Where     : in Direction := Next;
-                             Occurence : in Long_Longs.Ll_Positive := 1;
-                             From      : in Search_Kind_List) is
+  function Search_Criteria (List      : in out List_Type;
+                            Criteria  : in Criteria_Type;
+                            Where     : in Direction := Next;
+                            Occurence : in Long_Longs.Ll_Positive := 1;
+                            From      : in Search_Kind_List) return Boolean is
     New_Pos                     : Link;
     New_Pos_First, New_Pos_Last : Long_Longs.Ll_Natural;
+    Found : Boolean;
 
     function Next_Pos return Boolean is
     begin
@@ -763,7 +778,7 @@ package body Long_Long_Limited_List is
     -- Default
     Found := False;
     if Is_Empty (List) then
-      return;
+      return Found;
     end if;
     -- Forbid calls from application
     List.In_Cb := True;
@@ -820,6 +835,7 @@ package body Long_Long_Limited_List is
       List.Modified := True;
     end if;
     List.In_Cb := False;
+    return Found;
   exception
     when others =>
       List.In_Cb := False;
@@ -827,31 +843,29 @@ package body Long_Long_Limited_List is
   end Search_Criteria;
 
   -- Generic search with Criteria of Element_Type
-  procedure Search (List      : in out List_Type;
-                    Found     : out Boolean;
-                    Criteria  : in Element_Type;
-                    Where     : in Direction := Next;
-                    Occurence : in Long_Longs.Ll_Positive := 1;
-                    From      : in Search_Kind_List) is
+  function Search (List      : in out List_Type;
+                   Criteria  : in Element_Type;
+                   Where     : in Direction := Next;
+                   Occurence : in Long_Longs.Ll_Positive := 1;
+                   From      : in Search_Kind_List) return Boolean is
 
-    procedure Item_Search is new Search_Criteria (Element_Type, Match);
+    function Item_Search is new Search_Criteria (Element_Type, Match);
   begin
-    Item_Search (List, Found, Criteria, Where, Occurence, From);
+    return Item_Search (List, Criteria, Where, Occurence, From);
   end Search;
 
 
   -- Search with Match passed by access
-  procedure Search_Match (List      : in out List_Type;
-                          Found     : out Boolean;
-                          Match     : access
-                    function (Current, Criteria : Element_Type) return Boolean;
-                          Criteria  : in Element_Type;
-                          Where     : in Direction := Next;
-                          Occurence : in Long_Longs.Ll_Positive := 1;
-                          From      : in Search_Kind_List) is
-    procedure Search_Element is new Search (Match.all);
+  function Search_Match (List      : in out List_Type;
+                         Match     : access
+                   function (Current, Criteria : Element_Type) return Boolean;
+                         Criteria  : in Element_Type;
+                         Where     : in Direction := Next;
+                         Occurence : in Long_Longs.Ll_Positive := 1;
+                         From      : in Search_Kind_List) return Boolean is
+    function Search_Element is new Search (Match.all);
   begin
-    Search_Element (List, Found, Criteria, Where, Occurence, From);
+    return Search_Element (List, Criteria, Where, Occurence, From);
   end Search_Match;
 
   -- Search -> exception
@@ -860,15 +874,13 @@ package body Long_Long_Limited_List is
                           Where     : in Direction := Next;
                           Occurence : in Long_Longs.Ll_Positive := 1;
                           From      : in Search_Kind_List) is
-    Found : Boolean;
     function Loc_Match (Current, Criteria : Element_Type) return Boolean is
     begin
       return Match (Current, Criteria);
     end Loc_Match;
   begin
-    Search_Match (List, Found, Loc_Match'Unrestricted_Access,
-                  Criteria, Where, Occurence, From);
-    if not Found then
+    if not Search_Match (List, Loc_Match'Unrestricted_Access,
+                         Criteria, Where, Occurence, From) then
       raise Not_In_List;
     end if;
   end Search_Raise;
@@ -894,7 +906,7 @@ package body Long_Long_Limited_List is
     Go_On := True;
     -- Search first matching item
     if Match /= null then
-      Search_Match (List, Found, Match, Criteria, Where, 1, From);
+      Found := Search_Match (List, Match, Criteria, Where, 1, From);
     else
       Rewind (List, Where => Where);
       Found := True;
@@ -913,7 +925,7 @@ package body Long_Long_Limited_List is
       end if;
       -- Search next matching item
       if Match /= null then
-        Search_Match (List, Found, Match, Criteria, Where, 1, Skip_Current);
+        Found := Search_Match (List, Match, Criteria, Where, 1, Skip_Current);
       else
         if Check_Move (List, Where) then
           Move_To (List, Where);

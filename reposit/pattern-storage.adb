@@ -17,7 +17,7 @@ package body Storage is
            and then Curr.Str_Acc /= null
            and then Curr.Id = Crit.Id;
   end Pattern_Match;
-  procedure Search_Pattern is new Term_List_Mng.Search (Pattern_Match);
+  function Search_Pattern is new Term_List_Mng.Search (Pattern_Match);
 
   -- Search first term of next pattern of same rule
   function Pattern_After (Curr, Crit : Term_Rec) return Boolean is
@@ -26,24 +26,22 @@ package body Storage is
            and then Curr.Str_Acc /= null
            and then Curr.Id > Crit.Id;
   end Pattern_After;
-  procedure Next_Pattern is new Term_List_Mng.Search (Pattern_After);
+  function Next_Pattern is new Term_List_Mng.Search (Pattern_After);
 
   -- Search first term of first pattern of rule
   function Rule_Match (Curr, Crit : Term_Rec) return Boolean is
   begin
     return Curr.Rule = Crit.Rule;
   end Rule_Match;
-  procedure Search_Rule is new Term_List_Mng.Search (Rule_Match);
+  function Search_Rule is new Term_List_Mng.Search (Rule_Match);
 
   -- Return an unused rule
   function Get_Free_Rule return Rule_No is
     Term : Term_Rec;
-    Found : Boolean;
   begin
     for I in Valid_Rule_No_Range loop
       Term.Rule := (No => I);
-      Search_Rule (Term_List, Found, Term, From => Term_List_Mng.Absolute);
-      if not Found then
+      if not Search_Rule (Term_List, Term, From => Term_List_Mng.Absolute) then
         -- This rule does not exist: insert a dummy term
         Term_List.Insert (Term);
         return (No => I);
@@ -66,13 +64,11 @@ package body Storage is
 
     function Find_Rule (From_Current : Boolean) return Boolean is
       Term : Term_Rec;
-      Found : Boolean;
     begin
       Term.Rule := Rule;
-      Search_Rule (Term_List, Found, Term,
+      return Search_Rule (Term_List, Term,
           From => (if From_Current then Term_List_Mng.From_Current
                    else Term_List_Mng.Absolute));
-      return Found;
     end Find_Rule;
 
   begin
@@ -92,21 +88,19 @@ package body Storage is
   The_Rule : Rule_No := No_Rule_No;
   function Pattern_Exists (Rule : in Rule_No; Id : Pattern_Id) return Boolean is
     Term : Term_Rec;
-    Found : Boolean;
   begin
     -- Search this pattern id
     Term.Rule := Rule;
     Term.Id := Id;
-    Search_Pattern (Term_List, Found, Term, From => Term_List_Mng.Absolute);
-    The_End := not Found;
     The_Rule := Rule;
-    return Found;
+    The_End := not Search_Pattern (Term_List, Term,
+                                   From => Term_List_Mng.Absolute);
+    return not The_End;
   end Pattern_Exists;
 
   -- Delete all terms of current pattern
   procedure Delete_Current_Pattern is
     Term : Term_Rec;
-    Found : Boolean;
   begin
     if Term_List.Is_Empty then
       raise Invalid_Pattern;
@@ -119,8 +113,8 @@ package body Storage is
       Free (Term.Str_Acc);
       exit when Del_Term;
       -- Search next term of pattern from current and exit if no more
-      Search_Pattern (Term_List, Found, Term, From => Term_List_Mng.From_Current);
-      exit when not Found;
+      exit when not Search_Pattern (Term_List, Term,
+                                    From => Term_List_Mng.From_Current);
       Term_List.Read (Term, Term_List_Mng.Current);
     end loop;
   end Delete_Current_Pattern;
@@ -136,15 +130,13 @@ package body Storage is
                             Cb    : in Match_Cb_Access;
                             Id4Cb : in Pattern_Id) is
     Term : Term_Rec;
-    Found : Boolean;
   begin
     -- Move to end of previous pattern if posssible
     In_Prev := True;
     if not Term_List.Is_Empty then
       Term.Rule := Rule;
       Term.Id := Id;
-      Next_Pattern (Term_List, Found, Term, From => Term_List_Mng.Absolute);
-      if Found then
+      if Next_Pattern (Term_List, Term, From => Term_List_Mng.Absolute) then
         -- Found a following pattern of this rule
         if Term_List.Check_Move (Term_List_Mng.Prev) then
           -- We can move to prev cell, so next term can appended

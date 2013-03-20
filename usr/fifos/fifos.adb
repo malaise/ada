@@ -107,18 +107,16 @@ package body Fifos is
         and then El1.Len = El2.Len
         and then El1.Name (1 .. El1.Len) = El2.Name (1 .. El2.Len);
       end Same_Name;
-      procedure Search_Name is new Fifo_List_Mng.Search (Same_Name);
+      function Search_Name is new Fifo_List_Mng.Search (Same_Name);
 
       function Search_By_Name (Kind : Fifo_Kind_List;
                                Name : String) return Boolean is
         Rec : Fifo_Rec;
-        Res : Boolean;
       begin
         Rec.Kind := Kind;
         Rec.Len := Name'Length;
         Rec.Name (1 .. Rec.Len) := Name;
-        Search_Name (Fifo_List, Res, Rec, From => Fifo_List_Mng.Absolute);
-        return Res;
+        return Search_Name (Fifo_List, Rec, From => Fifo_List_Mng.Absolute);
       end Search_By_Name;
 
       -- Search by port num
@@ -128,18 +126,16 @@ package body Fifos is
         return   El1.Kind = El2.Kind
         and then El1.Port = El2.Port;
       end Same_Port;
-      procedure Search_Port is new Fifo_List_Mng.Search (Same_Port);
+      function Search_Port is new Fifo_List_Mng.Search (Same_Port);
 
       function Search_By_Port (Kind : Fifo_Kind_List;
                                Port : Tcp_Util.Port_Num) return Boolean is
         Rec : Fifo_Rec;
-        Res : Boolean;
       begin
         Rec.Kind := Kind;
         Rec.Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Port);
 
-        Search_Port (Fifo_List, Res, Rec, From => Fifo_List_Mng.Absolute);
-        return Res;
+        return Search_Port (Fifo_List, Rec, From => Fifo_List_Mng.Absolute);
       end Search_By_Port;
 
       -- Search by socket dscr
@@ -148,15 +144,13 @@ package body Fifos is
       begin
         return El1.Dscr = El2.Dscr;
       end Same_Dscr;
-      procedure Search_Dscr is new Fifo_List_Mng.Search (Same_Dscr);
+      function Search_Dscr is new Fifo_List_Mng.Search (Same_Dscr);
 
       function Search_By_Dscr (Dscr : Socket.Socket_Dscr) return Boolean is
         Rec : Fifo_Rec;
-        Res : Boolean;
       begin
         Rec.Dscr := Dscr;
-        Search_Dscr (Fifo_List, Res, Rec, From => Fifo_List_Mng.Absolute);
-        return Res;
+        return Search_Dscr (Fifo_List, Rec, From => Fifo_List_Mng.Absolute);
       end Search_By_Dscr;
 
       -- Search by saddr
@@ -167,20 +161,18 @@ package body Fifos is
         and then El1.Port = El2.Port
         and then El1.Host = El2.Host;
       end Same_Addr;
-      procedure Search_Addr is new Fifo_List_Mng.Search (Same_Addr);
+      function Search_Addr is new Fifo_List_Mng.Search (Same_Addr);
 
       function Search_By_Addr (Kind : Fifo_Kind_List;
                                Host : Tcp_Util.Host_Id;
                                Port : Tcp_Util.Port_Num) return Boolean is
         Rec : Fifo_Rec;
-        Res : Boolean;
       begin
         Rec.Kind := Kind;
         Rec.Host := (Kind => Tcp_Util.Host_Id_Spec, Id => Host);
         Rec.Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Port);
 
-        Search_Addr (Fifo_List, Res, Rec, From => Fifo_List_Mng.Absolute);
-        return Res;
+        return Search_Addr (Fifo_List, Rec, From => Fifo_List_Mng.Absolute);
       end Search_By_Addr;
     end List;
 

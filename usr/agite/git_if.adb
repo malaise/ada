@@ -145,7 +145,7 @@ package body Git_If is
   begin
     return Current.Name = Criteria.Name;
   end Match;
-  procedure File_Search is new File_Mng.Dyn_List.Search (Match);
+  function File_Search is new File_Mng.Dyn_List.Search (Match);
   function Less_Than (El1, El2 : File_Entry_Rec) return Boolean is
     use type As.U.Asu_Us;
   begin
@@ -174,7 +174,6 @@ package body Git_If is
     Str : As.U.Asu_Us;
     File_Entry : File_Entry_Rec;
     Moved : Boolean;
-    Found : Boolean;
     Dir_List : Dir_Mng.File_List_Mng.List_Type;
     Dir_Entry : Dir_Mng.File_Entry_Rec;
     Redirect : Natural;
@@ -258,9 +257,8 @@ package body Git_If is
             -- This file is in current dir, look for it
             File_Entry.Name := As.U.Tus (Directory.Basename (Str.Image));
             File_Entry.Kind := Char_Of (File_Entry.Name.Image);
-            File_Search (Files, Found, File_Entry,
-                         From => File_Mng.Dyn_List.Absolute);
-            if Found then
+            if File_Search (Files, File_Entry,
+                            From => File_Mng.Dyn_List.Absolute) then
               -- This file is found: overwrite
               Files.Modify (File_Entry, File_Mng.Dyn_List.Current);
             else

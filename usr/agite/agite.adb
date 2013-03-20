@@ -139,7 +139,7 @@ procedure Agite is
   begin
     return Current.Kind = Criteria.Kind and then Current.Name = Criteria.Name;
   end Match;
-  procedure File_Search is new Git_If.File_Mng.Dyn_List.Search (Match);
+  function File_Search is new Git_If.File_Mng.Dyn_List.Search (Match);
 
   -- Encode Afpx list with files, if list has changed or if Force
   procedure Encode_Files (Force : in Boolean) is
@@ -147,7 +147,6 @@ procedure Agite is
     Current_File : Git_If.File_Entry_Rec;
     Prev_Files : Git_If.File_List;
     Changed : Boolean;
-    Found : Boolean;
     use type Git_If.File_Entry_Rec;
   begin
     if List_Width = Afpx.Width_Range'First then
@@ -198,9 +197,8 @@ procedure Agite is
     else
       Init_List (Files);
       -- Search position back and move Afpx to it
-      File_Search (Files, Found, Current_File,
-                   From => Git_If.File_Mng.Dyn_List.Absolute);
-      if Found then
+      if File_Search (Files, Current_File,
+                      From => Git_If.File_Mng.Dyn_List.Absolute) then
         Afpx.Line_List.Move_At (Files.Get_Position);
         Afpx.Update_List (Afpx.Center_Selected);
       else

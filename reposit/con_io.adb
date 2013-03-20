@@ -1857,5 +1857,14 @@ package body Con_Io is
       null;
   end Get_Mouse_Event;
 
+  function Get_Mouse_Event (Con             : Console;
+                            Coordinate_Mode : Coordinate_Mode_List := Row_Col)
+           return Mouse_Event_Rec is
+    Mouse_Event     : Mouse_Event_Rec;
+  begin
+    Get_Mouse_Event (Con, Mouse_Event, Coordinate_Mode);
+    return Mouse_Event;
+  end Get_Mouse_Event;
+
 end Con_Io;
 

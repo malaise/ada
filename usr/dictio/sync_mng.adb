@@ -117,14 +117,13 @@ package body Sync_Mng is
   package Sync_Dyn_List_Mng is new Dynamic_List (Tcp_Util.Host_Name);
   package Sync_List_Mng renames Sync_Dyn_List_Mng.Dyn_List;
   Sync_List : Sync_List_Mng.List_Type;
-  procedure Sync_Search is new Sync_List_Mng.Search (As.U."=");
+  function Sync_Search is new Sync_List_Mng.Search (As.U."=");
 
 
   function Timer_Sen_Cb (Id : Timers.Timer_Id;
                          Data : Timers.Timer_Data) return Boolean;
 
   procedure Send (To : Tcp_Util.Host_Name) is
-    Found : Boolean;
   begin
     if Sending_Status = Send then
       -- Reject new dest if already syncing
@@ -146,8 +145,7 @@ package body Sync_Mng is
     if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
       Dictio_Debug.Put ("Sync: Adding dest " & To.Image);
     end if;
-    Sync_Search (Sync_List, Found, To, From => Sync_List_Mng.Absolute);
-    if not Found then
+    if not Sync_Search (Sync_List, To, From => Sync_List_Mng.Absolute) then
       Sync_List.Insert (To);
     end if;
   end Send;

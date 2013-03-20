@@ -96,7 +96,7 @@ package body Sourcer is
 
   -- Get next significant word (reserved or identifier or delimiter)
   -- (skips comments, separators, literals)
-  procedure Next_Word (Txt : in Text_Char.File_Type;
+  procedure Next_Word (Txt : in out Text_Char.File_Type;
                        Ctx : in out Ada_Parser.Parsing_Context;
                        Word : out As.U.Asu_Us;
                        Lexic : out Ada_Parser.Lexical_Kind_List) is

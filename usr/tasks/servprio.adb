@@ -89,7 +89,7 @@ procedure Servprio is
     N_Loop := Rnd.Gen.Int_Random (1, Max_Loop);
     for I in 1 .. N_Loop loop
       Schedule;
-      Prio := My_Random (Rnd.Gen);
+      Prio := My_Random (Rnd.Gen.all);
       Print ("                           Requete", Prio, No);
 
       Serveur.Service(Prio) (No);

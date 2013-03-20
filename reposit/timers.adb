@@ -34,7 +34,7 @@ package body Timers is
   begin
     return Current.Clock = Criteria.Clock;
   end Match;
-  procedure Search_Clock is new Clocks_List_Mng.Search (Match);
+  function Search_Clock is new Clocks_List_Mng.Search (Match);
 
   procedure Set_Debug is
   begin
@@ -133,7 +133,7 @@ package body Timers is
   procedure Sort is new Timer_List_Mng.Sort ("<");
 
   -- Search Timer by Id
-  procedure Search_Id is new Timer_List_Mng.Search ("=");
+  function Search_Id is new Timer_List_Mng.Search ("=");
 
   -- Timer status, independant from the associated clock status
   function Status (Id : in Timer_Id) return Timer_Status is
@@ -163,7 +163,6 @@ package body Timers is
     Timer : Timer_Rec;
     Start : Virtual_Time.Time;
     Clock : Clock_Rec;
-    Found : Boolean;
     use type Virtual_Time.Time, Virtual_Time.Clock_Access,
              Virtual_Time.Speed_Range, Perpet.Delta_Rec;
   begin
@@ -229,9 +228,8 @@ package body Timers is
     -- Register observer
     if Delay_Spec.Clock /= null then
       Clock.Clock := Delay_Spec.Clock;
-      Search_Clock (Clocks_List, Found, Clock,
-                    From => Clocks_List_Mng.Absolute);
-      if not Found then
+      if not Search_Clock (Clocks_List, Clock,
+                           From => Clocks_List_Mng.Absolute) then
         -- This clock not used so far: insert it and register
         Clock.Nb_Timers := 1;
         Clocks_List.Insert (Clock);
@@ -266,7 +264,6 @@ package body Timers is
   -- May raise Invalid_Timer if timer has expired
   procedure Locate (Id : in Timer_Id) is
     Tid : Timer_Id;
-    Found : Boolean;
   begin
     -- Check validity
     if Id = No_Timer
@@ -280,8 +277,7 @@ package body Timers is
     end if;
 
     -- Search timer
-    Search_Id (Timer_List, Found, Id, From => Timer_List_Mng.Absolute);
-    if not Found then
+    if not Search_Id (Timer_List, Id, From => Timer_List_Mng.Absolute) then
       raise Invalid_Timer;
     end if;
   end Locate;
@@ -307,9 +303,8 @@ package body Timers is
     -- Update clock if any
     if Timer.Clock /= null then
       Clock.Clock := Timer.Clock;
-      Search_Clock (Clocks_List, Found, Clock,
-                    From => Clocks_List_Mng.Absolute);
-      if not Found then
+      if not Search_Clock (Clocks_List, Clock,
+                           From => Clocks_List_Mng.Absolute) then
         -- Abnormal, clock shall be known
         Put_Debug ("Delete", "but its clock is unknown!!!");
         raise Invalid_Timer;

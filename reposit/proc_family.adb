@@ -18,7 +18,7 @@ package body Proc_Family is
   begin
     return E1.Child_Pid = E2.Child_Pid;
   end Same_Pid;
-  procedure Search_Pid is new Child_List_Mng.Search (Same_Pid);
+  function Search_Pid is new Child_List_Mng.Search (Same_Pid);
 
   -- Close a Fd, no exception
   procedure Close (Fd : in Sys_Calls.File_Desc) is
@@ -34,7 +34,6 @@ package body Proc_Family is
     Death_Dscr : Sys_Calls.Death_Rec;
     Child  : Child_Rec;
     Report : Death_Rec;
-    Found  : Boolean;
     Moved  : Boolean;
     use type Sys_Calls.Death_Cause_List;
   begin
@@ -58,8 +57,7 @@ package body Proc_Family is
     end case;
 
     -- Find child in list
-    Search_Pid (Child_List, Found, Child, From => Child_List_Mng.Absolute);
-    if not Found then
+    if not Search_Pid (Child_List, Child, From => Child_List_Mng.Absolute) then
       -- Skip
       return True;
     end if;

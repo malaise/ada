@@ -62,6 +62,12 @@ package body Exception_Messenger is
     M := As.U.Tus (Get_Message (Ada.Exceptions.Exception_Message (X)));
   end Exception_Message;
 
+  function Exception_Message (X : in out Ada.Exceptions.Exception_Occurrence)
+           return String is
+  begin
+    return Get_Message (Ada.Exceptions.Exception_Message (X));
+  end Exception_Message;
+
   function Exception_Message (X : Ada.Exceptions.Exception_Occurrence_Access)
                              return String is
   begin

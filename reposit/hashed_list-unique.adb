@@ -18,6 +18,12 @@ package body Hashed_List.Unique is
     Search_First (List_Type (List), Crit, Found);
   end Search;
 
+  function Search (List : in out Unique_List_Type;
+                   Crit : in Element_Type) return Boolean is
+  begin
+    return Search_First (List_Type (List), Crit);
+  end Search;
+
   procedure Find (List : in out Unique_List_Type;
                   Crit : in Element_Type) is
   begin
@@ -101,6 +107,13 @@ package body Hashed_List.Unique is
     end if;
     -- Read (List, Item);
     Set (Item, Get_Access_Current (List_Type(List)).all);
+  end Read;
+
+  function Read (List : in out Unique_List_Type) return Element_Type is
+  begin
+    return Item : Element_Type do
+      Read (List, Item);
+    end return;
   end Read;
 
   -- Suppress the element matching in the list

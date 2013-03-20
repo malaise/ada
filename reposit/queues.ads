@@ -21,18 +21,23 @@ package Queues is
 
     -- Pop an item
     procedure Pop (Queue : in out Lifo_Type; X : out Item);
+    function Pop (Queue : in out Lifo_Type) return Item;
 
     -- Read without popping an item
     -- 1 gives the first to pop etc...
     -- Lifo_Not if No > number of items in the stack
     procedure Look_First (Queue : in out Lifo_Type;
                           X : out Item; No : in No_Range := 1);
+    function Look_First (Queue : in out Lifo_Type; No : in No_Range := 1)
+                        return Item;
 
     -- Read without popping an item
     -- 1 gives the last to pop etc...
     -- Lifo_Not if No > number of items in the stack
     procedure Look_Last (Queue : in out Lifo_Type;
                          X : out Item; No : in No_Range := 1);
+    function Look_Last (Queue : in out Lifo_Type; No : in No_Range := 1)
+                       return Item;
 
     -- Make room by removing the last to be popped
     procedure Discard_Last (Queue : in out Lifo_Type);
@@ -79,18 +84,23 @@ package Queues is
 
     -- Pop an item
     procedure Pop (Queue : in out Fifo_Type; X : out Item);
+    function Pop (Queue : in out Fifo_Type) return Item;
 
     -- Read without popping an item
     -- 1 gives the last pushed etc...
     -- Fifo_Not if No > number of items in the stack
     procedure Look_Last (Queue : in out Fifo_Type;
                          X : out Item; No : in No_Range := 1);
+    function Look_Last (Queue : in out Fifo_Type; No : in No_Range := 1)
+                       return Item;
 
     -- Read without popping an item
     -- 1 gives the first to be popped etc...
     -- Fifo_Not if No > number of items in the stack
     procedure Look_First (Queue : in out Fifo_Type;
                           X : out Item; No : in No_Range := 1);
+    function Look_First (Queue : in out Fifo_Type; No : in No_Range := 1)
+                        return Item;
 
     -- Make room by removing the last to be popped
     procedure Discard_Last (Queue : in out Fifo_Type);
@@ -145,18 +155,23 @@ package Queues is
 
     -- Pop an item
     procedure Pop (Queue : in out Prio_Type; X : out Item);
+    function Pop (Queue : in out Prio_Type) return Item;
 
     -- Read without popping an item
     -- 1 gives the last to be popped (lowest priority) etc...
     -- Prio_Not if No > number of items in the stack
     procedure Look_Last (Queue : in out Prio_Type;
                          X : out Item; No : in No_Range := 1);
+    function Look_Last (Queue : in out Prio_Type; No : in No_Range := 1)
+                       return Item;
 
     -- Read without popping an item
     -- 1 gives the first to be popped (highest priority) etc...
     -- Prio_Not if No > number of items in the stack
     procedure Look_First (Queue : in out Prio_Type;
                           X : out Item; No : in No_Range := 1);
+    function Look_First (Queue : in out Prio_Type; No : in No_Range := 1)
+                        return Item;
 
     -- Make room by removing the last to be popped
     procedure Discard_Last (Queue : in out Prio_Type);
@@ -207,20 +222,25 @@ package Queues is
     -- Push an item
     procedure Push (Queue : in out Circ_Type; X : in Item);
 
-    -- pop an item
+    -- Pop an item
     procedure Pop (Queue : in out Circ_Type; X : out Item);
+    function Pop (Queue : in out Circ_Type) return Item;
 
     -- Read without popping an item
     -- 1 gives the last pushed etc...
     -- Fifo_Not if No > number of items in the stack
     procedure Look_Last (Queue : in out Circ_Type;
                          X : out Item; No : in No_Range := 1);
+    function Look_Last (Queue : in out Circ_Type; No : in No_Range := 1)
+                       return Item;
 
     -- Read without popping an item
     -- 1 gives the first to be popped etc...
     -- Fifo_Not if No > number of items in the stack
     procedure Look_First (Queue : in out Circ_Type;
                           X : out Item; No : in No_Range := 1);
+    function Look_First (Queue : in out Circ_Type; No : in No_Range := 1)
+                        return Item;
 
     -- Make room by removing the last to be popped
     procedure Discard_Last (Queue : in out Circ_Type);

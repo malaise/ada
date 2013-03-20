@@ -1,7 +1,4 @@
-with Unchecked_Deallocation;
 package body Text_Line is
-
-  procedure Free is new Unchecked_Deallocation (File_Type_Rec, Rec_Access);
 
   -- Associate a file desc to a Txt_Line file
   -- May raise Status_Error if File is already open
@@ -12,13 +9,13 @@ package body Text_Line is
     if Is_Open (File) then
       raise Status_Error;
     end if;
-    File.Acc := new File_Type_Rec'(
-       Fd => Fd,
-       Mode => Mode,
-       Line_Feed => As.U.Tus (Line_Feed_Str),
-       Buffer_Len => 0,
-       Buffer_Index => 0,
-       Buffer => (others => Ada.Characters.Latin_1.Nul) );
+    File.Open := True;
+    File.Fd := Fd;
+    File.Mode := Mode;
+    File.Line_Feed := As.U.Tus (Line_Feed_Str);
+    File.Buffer_Len := 0;
+    File.Buffer_Index := 0;
+    File.Buffer := (others => Ada.Characters.Latin_1.Nul);
   end Open;
 
   -- Dissociate a file desc from a Txt_Line file
@@ -28,10 +25,10 @@ package body Text_Line is
     if not Is_Open (File) then
       raise Status_Error;
     end if;
-    if File.Acc.Mode = Out_File or else File.Acc.Mode = Inout_File then
+    if File.Mode = Out_File or else File.Mode = Inout_File then
       Flush (File);
     end if;
-    Free (File.Acc);
+    File.Open := False;
   exception
     when Io_Error =>
       -- May be raised by Flush, for example if close is called following
@@ -42,36 +39,36 @@ package body Text_Line is
   -- Returns if a file is open
   function Is_Open (File : File_Type) return Boolean is
   begin
-    return File.Acc /= null;
+    return File.Open;
   end Is_Open;
 
   -- Returns the associated file desc
   -- May raise Status_Error if File is not open
   function Get_Fd (File : File_Type) return Sys_Calls.File_Desc is
   begin
-    if File.Acc = null then
+    if not Is_Open (File) then
       raise Status_Error;
     end if;
-    return File.Acc.Fd;
+    return File.Fd;
   end Get_Fd;
 
   procedure Set_Line_Feed (File : in out File_Type; Str : in String) is
   begin
-    if File.Acc = null then
+    if not Is_Open (File) then
       raise Status_Error;
     end if;
     if Str'Length > Max_Line_Feed_Len then
       raise Constraint_Error;
     end if;
-    File.Acc.Line_Feed := As.U.Tus (Str);
+    File.Line_Feed := As.U.Tus (Str);
   end Set_Line_Feed;
 
   function Get_Line_Feed (File : in File_Type) return String is
   begin
-    if File.Acc = null then
+    if not Is_Open (File) then
       raise Status_Error;
     end if;
-    return File.Acc.Line_Feed.Image;
+    return File.Line_Feed.Image;
   end Get_Line_Feed;
 
   -- Read next text line from File
@@ -83,95 +80,94 @@ package body Text_Line is
   --  the end of file has been reached.
   -- May raise Status_Error if File is not open of Out_File
   -- May raise Read_Error if IO error
-  function Get (File : File_Type) return String is
+  function Get (File : in out File_Type) return String is
   begin
     return Get (File).Image;
   end Get;
 
   -- Internal procedure that reads a buffer (or up to end of file)
-  procedure Read (File : in File_Type; Done : out Boolean) is
+  procedure Read (File : in out File_Type; Done : out Boolean) is
     Read_Len : Buffer_Index_Range;
   begin
     Read_Len := Sys_Calls.Read (
-           File.Acc.Fd,
-           File.Acc.Buffer(File.Acc.Buffer_Index + 1)'Address,
-           Buffer_Size - File.Acc.Buffer_Index);
+           File.Fd,
+           File.Buffer(File.Buffer_Index + 1)'Address,
+           Buffer_Size - File.Buffer_Index);
     Done := Read_Len = 0;
-    File.Acc.Buffer_Len := File.Acc.Buffer_Len + Read_Len;
-    File.Acc.Buffer_Index := 0;
+    File.Buffer_Len := File.Buffer_Len + Read_Len;
+    File.Buffer_Index := 0;
   exception
     when Sys_Calls.System_Error =>
       raise Io_Error;
   end Read;
 
 
-  function Get (File : File_Type)
-                return As.U.Asu_Us is
+  function Get (File : in out File_Type) return As.U.Asu_Us is
     Str : As.U.Asu_Us;
     Stop_Index : Buffer_Index_Range;
     Done : Boolean;
   begin
     -- Check file is open and in read mode
-    if File.Acc = null or else File.Acc.Mode = Out_File then
+    if not Is_Open (File) or else File.Mode = Out_File then
       raise Status_Error;
     end if;
 
     -- Specif case of no Line_Feed, read all
-    if File.Acc.Line_Feed.Is_Null then
+    if File.Line_Feed.Is_Null then
       loop
         Read (File, Done);
         -- Done when read -> 0
         exit when Done;
         -- Append read chars to Str
-        Str.Append (File.Acc.Buffer(1 .. File.Acc.Buffer_Len));
-        File.Acc.Buffer_Len := 0;
-        File.Acc.Buffer_Index := 0;
+        Str.Append (File.Buffer(1 .. File.Buffer_Len));
+        File.Buffer_Len := 0;
+        File.Buffer_Index := 0;
       end loop;
       return Str;
     end if;
 
     -- Locate next Line_Feed
     declare
-      Loc_Line_Feed : constant String := File.Acc.Line_Feed.Image;
+      Loc_Line_Feed : constant String := File.Line_Feed.Image;
       Loc_Line_Len : constant Natural := Loc_Line_Feed'Length;
     begin
       loop
         -- Fill buffer if needed
-        if File.Acc.Buffer_Len < Loc_Line_Len then
+        if File.Buffer_Len < Loc_Line_Len then
            Read (File, Done);
            -- Done when read -> 0
            if Done then
               -- Cat remaining of buffer
-              Str.Append (File.Acc.Buffer(1 .. File.Acc.Buffer_Len));
-              File.Acc.Buffer_Index := 0;
-              File.Acc.Buffer_Len := 0;
+              Str.Append (File.Buffer(1 .. File.Buffer_Len));
+              File.Buffer_Index := 0;
+              File.Buffer_Len := 0;
               exit;
            end if;
         end if;
         -- Locate next newline sequence in buffer
         Stop_Index := 0;
-        for I in File.Acc.Buffer_Index + 1
-              .. File.Acc.Buffer_Len - Loc_Line_Len + 1 loop
-          if File.Acc.Buffer(I .. I + Loc_Line_Len - 1) = Loc_Line_Feed then
+        for I in File.Buffer_Index + 1
+              .. File.Buffer_Len - Loc_Line_Len + 1 loop
+          if File.Buffer(I .. I + Loc_Line_Len - 1) = Loc_Line_Feed then
             Stop_Index := I;
             exit;
           end if;
         end loop;
         if Stop_Index /= 0 then
           -- A newline sequence is found: append it and return
-          Str.Append (File.Acc.Buffer(File.Acc.Buffer_Index + 1
+          Str.Append (File.Buffer(File.Buffer_Index + 1
                                    .. Stop_Index + Loc_Line_Len - 1));
-          File.Acc.Buffer_Index := Stop_Index + Loc_Line_Len - 1;
+          File.Buffer_Index := Stop_Index + Loc_Line_Len - 1;
           exit;
         else
           -- No newline was found: append buffer and go on reading
-          Str.Append (File.Acc.Buffer(File.Acc.Buffer_Index + 1
-                                   .. File.Acc.Buffer_Len - Loc_Line_Len + 1));
-          File.Acc.Buffer(1 .. Loc_Line_Len - 1) :=
-              File.Acc.Buffer(File.Acc.Buffer_Len - Loc_Line_Len + 2
-                           .. File.Acc.Buffer_Len);
-          File.Acc.Buffer_Len := Loc_Line_Len - 1;
-          File.Acc.Buffer_Index := Loc_Line_Len - 1;
+          Str.Append (File.Buffer(File.Buffer_Index + 1
+                                   .. File.Buffer_Len - Loc_Line_Len + 1));
+          File.Buffer(1 .. Loc_Line_Len - 1) :=
+              File.Buffer(File.Buffer_Len - Loc_Line_Len + 2
+                           .. File.Buffer_Len);
+          File.Buffer_Len := Loc_Line_Len - 1;
+          File.Buffer_Index := Loc_Line_Len - 1;
         end if;
       end loop;
     end;
@@ -184,19 +180,19 @@ package body Text_Line is
   --  or on close (or each N characters)
   -- May raise Status_Error if File is not open or In_File
   -- May raise Io_Error if IO error
-  procedure Put (File : in File_Type; Text : in String) is
+  procedure Put (File : in out File_Type; Text : in String) is
     Tmp : Natural;
   begin
     -- Check file is open and in write mode
-    if File.Acc = null or else File.Acc.Mode = In_File then
+    if not Is_Open (File) or else File.Mode = In_File then
       raise Status_Error;
     end if;
 
     -- Check that there is enough room in buffer
-    if Buffer_Size - File.Acc.Buffer_Len >= Text'Length then
-      Tmp := File.Acc.Buffer_Len + 1;
-      File.Acc.Buffer_Len := File.Acc.Buffer_Len + Text'Length;
-      File.Acc.Buffer (Tmp .. File.Acc.Buffer_Len) := Text;
+    if Buffer_Size - File.Buffer_Len >= Text'Length then
+      Tmp := File.Buffer_Len + 1;
+      File.Buffer_Len := File.Buffer_Len + Text'Length;
+      File.Buffer (Tmp .. File.Buffer_Len) := Text;
       return;
     end if;
 
@@ -204,13 +200,13 @@ package body Text_Line is
     Flush (File);
     if Buffer_Size >= Text'Length then
       -- The text can be stored in buffer
-      File.Acc.Buffer_Len := Text'Length;
-      File.Acc.Buffer (1 .. Text'Length) := Text;
+      File.Buffer_Len := Text'Length;
+      File.Buffer (1 .. Text'Length) := Text;
       return;
     end if;
 
     -- The text is longer than the buffer, flush it
-    Tmp := Sys_Calls.Write (File.Acc.Fd,
+    Tmp := Sys_Calls.Write (File.Fd,
                             Text'Address,
                             Text'Length);
     if Tmp /= Text'Length then
@@ -220,47 +216,47 @@ package body Text_Line is
 
   -- Put_Line some text
   -- Same as Put (Ada.Characters.Latin_1.Lf)
-  procedure Put_Line (File : in File_Type; Text : in String) is
+  procedure Put_Line (File : in out File_Type; Text : in String) is
   begin
     -- Check file is open and in write mode
-    if File.Acc = null or else File.Acc.Mode = In_File then
+    if not Is_Open (File) or else File.Mode = In_File then
       raise Status_Error;
     end if;
-    Put (File, Text & File.Acc.Line_Feed.Image);
+    Put (File, Text & File.Line_Feed.Image);
   end Put_Line;
 
   -- Put a New_Line
   -- Same as Put_Line ("")
-  procedure New_Line (File : in File_Type) is
+  procedure New_Line (File : in out File_Type) is
   begin
     -- Check file is open and in write mode
-    if File.Acc = null or else File.Acc.Mode = In_File then
+    if not Is_Open (File) or else File.Mode = In_File then
       raise Status_Error;
     end if;
-    Put (File, File.Acc.Line_Feed.Image);
+    Put (File, File.Line_Feed.Image);
   end New_Line;
 
   -- Flush the remaining of text put on file
   -- Does nothing on a In_File file
   -- May raise Io_Error if IO error
-  procedure Flush (File : in File_Type) is
+  procedure Flush (File : in out File_Type) is
     Result : Natural;
   begin
     -- File must be open, Out_File or inout_File, and buffer not empty
-    if File.Acc = null then
+    if not Is_Open (File) then
       raise Status_Error;
     end if;
-    if File.Acc.Mode = In_File or else File.Acc.Buffer_Len = 0 then
+    if File.Mode = In_File or else File.Buffer_Len = 0 then
       return;
     end if;
     -- Write and reset size
-    Result := Sys_Calls.Write (File.Acc.Fd,
-                               File.Acc.Buffer'Address,
-                               File.Acc.Buffer_Len);
-    if Result /= File.Acc.Buffer_Len then
+    Result := Sys_Calls.Write (File.Fd,
+                               File.Buffer'Address,
+                               File.Buffer_Len);
+    if Result /= File.Buffer_Len then
       raise Io_Error;
     end if;
-    File.Acc.Buffer_Len := 0;
+    File.Buffer_Len := 0;
   exception
     when Sys_Calls.System_Error =>
       raise Io_Error;
@@ -311,7 +307,7 @@ package body Text_Line is
                       File_Name : in String := "") is
     Fd : Sys_Calls.File_Desc;
   begin
-    if File.Acc /= null then
+    if Is_Open (File) then
       raise Status_Error;
     end if;
     if File_Name /= "" then
@@ -342,7 +338,7 @@ package body Text_Line is
                         File_Name : in String) is
     Fd : Sys_Calls.File_Desc;
   begin
-    if File.Acc /= null then
+    if Is_Open (File) then
       raise Status_Error;
     end if;
     Fd := Sys_Calls.Create (File_Name);
@@ -355,10 +351,10 @@ package body Text_Line is
     Fd : Sys_Calls.File_Desc;
     use type Sys_Calls.File_Desc;
   begin
-    if File.Acc = null then
+    if not Is_Open (File) then
       raise Status_Error;
     end if;
-    Fd := File.Acc.Fd;
+    Fd := File.Fd;
     Close (File);
     if Fd /= Sys_Calls.Stdin
     and then Fd /= Sys_Calls.Stdout
@@ -371,13 +367,6 @@ package body Text_Line is
       end;
     end if;
   end Close_All;
-
-  overriding procedure Finalize (File : in out File_Type) is
-  begin
-    if File.Acc /= null then
-      Close_All (File);
-    end if;
-  end Finalize;
 
 end Text_Line;
 
