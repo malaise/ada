@@ -95,11 +95,11 @@ package body Xml_Parser is
                              Name, Value : in As.U.Asu_Us;
                              Line : in Natural);
     -- Check if an attribute exists for current element
-    procedure Attribute_Exists (Elements : in out My_Tree.Tree_Type;
-                              Name : in As.U.Asu_Us; Exists : out Boolean);
+    function Attribute_Exists (Elements : in out My_Tree.Tree_Type;
+                               Name : in As.U.Asu_Us) return Boolean;
     -- Get an attribute (if it exists, otherwise "")
-    procedure Get_Attribute (Elements : in out My_Tree.Tree_Type;
-                           Name : in As.U.Asu_Us; Value : out As.U.Asu_Us);
+    function Get_Attribute (Elements : in out My_Tree.Tree_Type;
+                            Name : in As.U.Asu_Us) return As.U.Asu_Us;
     -- Initialise an empty prologue
     procedure Init_Prologue (Prologue : in out My_Tree.Tree_Type);
     -- Set xml directive, add a xml attribute
@@ -115,14 +115,13 @@ package body Xml_Parser is
     pragma Unreferenced (Set_Xml_Attribute);
 
     -- Check xml is set, find an attribute (Index is 0 if not found)
-    procedure Xml_Existst (Prologue : in out My_Tree.Tree_Type;
-                         Exists : out Boolean);
+    function Xml_Existst (Prologue : in out My_Tree.Tree_Type) return Boolean;
     procedure Find_Xml_Attribute (Prologue : in out My_Tree.Tree_Type;
                                   Name : in As.U.Asu_Us;
                                   Index : out Natural;
                                   Value : out As.U.Asu_Us);
-    procedure Get_Nb_Xml_Attributes (Prologue : in out My_Tree.Tree_Type;
-                                     Number : out Natural);
+    function Get_Nb_Xml_Attributes (Prologue : in out My_Tree.Tree_Type)
+                                   return Natural;
     -- Add a processing instruction
     procedure Add_Pi (Tree : in out My_Tree.Tree_Type;
                       Name, Text : in As.U.Asu_Us; Line : in Natural);

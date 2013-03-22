@@ -104,38 +104,38 @@ package body Entity_Mng is
   end Add;
 
   -- Check if an entity exists
-  procedure Exists (The_Entities : in out Entity_List_Mng.Unique_List_Type;
-                    Name : in As.U.Asu_Us;
-                    Parameter : in Boolean;
-                    Found : out Boolean) is
+  function Exists (The_Entities : in out Entity_List_Mng.Unique_List_Type;
+                   Name      : in As.U.Asu_Us;
+                   Parameter : in Boolean) return Boolean is
     Code : Natural;
     pragma Unreferenced (Code);
     Entity : Entity_Type;
+    Found : Boolean;
   begin
     -- Resolve Character reference
     if not Parameter and then not Name.Is_Null
     and then Name.Element (1) = '#' then
       -- To check validity
       Code := Code_Of (Name.Image);
-      Found := True;
-      return;
+      return True;
     end if;
 
     -- Find (parameter) entity with the given name
     Entity.Parameter := Parameter;
     Entity.Name := Name;
     Entity_List_Mng.Search (The_Entities, Entity, Found);
+    return Found;
   end Exists;
 
   -- Get value of an entity. Raises Parse_Error if none
-  procedure Get (Ctx : in out Ctx_Type;
-                 Dtd : in out Dtd_Type;
-                 Context : in Context_List;
-                 Name : in As.U.Asu_Us;
-                 Parameter : in Boolean;
-                 Got : out As.U.Asu_Us) is
+  function Get (Ctx : in out Ctx_Type;
+                Dtd : in out Dtd_Type;
+                Context   : in Context_List;
+                Name      : in As.U.Asu_Us;
+                Parameter : in Boolean) return As.U.Asu_Us is
     Code : Natural;
     Entity : Entity_Type;
+    Result : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
     -- Resolve Character reference
@@ -147,8 +147,7 @@ package body Entity_Mng is
         raise Entity_Forbidden;
       end if;
       Code := Code_Of (Name.Image);
-      Got := As.U.Tus (Utf_8.Encode (Code));
-      return;
+      return As.U.Tus (Utf_8.Encode (Code));
     end if;
 
     -- Read entity with the given name
@@ -162,7 +161,7 @@ package body Entity_Mng is
       Trace ("Read entity name " & Entity.Name.Image
            & " value " & Entity.Value.Image);
     end if;
-    Got := Entity.Value;
+    Result := Entity.Value;
 
     -- Check validity of entity reference v.s. context. May
     --  - Include (leave Got = Value)
@@ -196,7 +195,7 @@ package body Entity_Mng is
           if Entity.Parsed then
             -- Bypass => return the "&name;"
             Trace ("Bypassing entity " & Name.Image);
-            Got := "&" & Entity.Name & ";";
+            Result := "&" & Entity.Name & ";";
           else
             Trace ("Unexpected unparsed entity reference " & Name.Image
                  & " in entity value");
@@ -223,13 +222,14 @@ package body Entity_Mng is
 
     -- Expand the content of external parsed entity
     if Entity.Parsed and then not Entity.Internal then
-      Expand_External_Entity (Ctx, Dtd, Name, Got, Got);
+      Expand_External_Entity (Ctx, Dtd, Name, Result, Result);
     end if;
 
     if Context = Ref_Dtd then
       -- Include as PE => return ' ' & Value & ' '
-      Got := Util.Space & Got & Util.Space;
+      Result := Util.Space & Result & Util.Space;
     end if;
+    return Result;
 
   exception
     when Entity_List_Mng.Not_In_List =>

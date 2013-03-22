@@ -178,23 +178,23 @@ package body Tree_Mng is
     Elements.Replace (Cell);
   end Add_Attribute;
 
-  procedure Attribute_Exists (Elements : in out My_Tree.Tree_Type;
-                              Name : in As.U.Asu_Us;
-                              Exists : out Boolean) is
+  function Attribute_Exists (Elements : in out My_Tree.Tree_Type;
+                             Name : in As.U.Asu_Us) return Boolean is
     Index : Natural;
     Value : As.U.Asu_Us;
   begin
     Find_Attribute (Elements, Name, Index, Value);
-    Exists := Index /= 0;
+    return Index /= 0;
   end Attribute_Exists;
 
   -- Get an attribute (if it exists, otherwise "")
-  procedure Get_Attribute (Elements : in out My_Tree.Tree_Type;
-                           Name : in As.U.Asu_Us;
-                           Value : out As.U.Asu_Us) is
+  function Get_Attribute (Elements : in out My_Tree.Tree_Type;
+                          Name : in As.U.Asu_Us) return As.U.Asu_Us is
     Index : Natural;
+    Result : As.U.Asu_Us;
   begin
-    Find_Attribute (Elements, Name, Index, Value);
+    Find_Attribute (Elements, Name, Index, Result);
+    return Result;
   end Get_Attribute;
 
   --------------
@@ -301,15 +301,14 @@ package body Tree_Mng is
     Prologue.Replace (Pro_Cell);
   end Set_Xml_Attribute;
 
-  procedure Xml_Existst (Prologue : in out My_Tree.Tree_Type;
-                         Exists : out Boolean) is
+  function Xml_Existst (Prologue : in out My_Tree.Tree_Type) return Boolean is
    Cell : My_Tree_Cell;
   begin
     if Prologue.Is_Empty then
-      Exists := False;
+      return False;
     else
       Prologue.Read (Cell);
-      Exists := not Cell.Name.Is_Null;
+      return not Cell.Name.Is_Null;
     end if;
   end Xml_Existst;
 
@@ -321,10 +320,12 @@ package body Tree_Mng is
     Find_Attribute (Prologue, Name, Index, Value);
   end Find_Xml_Attribute;
 
-  procedure Get_Nb_Xml_Attributes (Prologue : in out My_Tree.Tree_Type;
-                                   Number : out Natural) is
+  function Get_Nb_Xml_Attributes (Prologue : in out My_Tree.Tree_Type)
+                                 return Natural is
+    Number : Natural;
   begin
     Nb_Attributes (Prologue, Number);
+    return Number;
   end Get_Nb_Xml_Attributes;
 
   -- Add a processing instruction

@@ -35,19 +35,17 @@ package body Parse_Mng  is
                    Intern_Dtd : in Boolean;
                    Parsed : in Boolean);
     -- Check if an entity exists. May raise Invalid_Char_Code
-    procedure Exists (The_Entities : in out Entity_List_Mng.Unique_List_Type;
-                      Name : in As.U.Asu_Us;
-                      Parameter : in Boolean;
-                      Found : out Boolean);
+    function Exists (The_Entities : in out Entity_List_Mng.Unique_List_Type;
+                     Name      : in As.U.Asu_Us;
+                     Parameter : in Boolean) return Boolean;
 
     -- Get value of an entity. Raises Entity_Not_Found if none
     -- May raise Invalid_Char_Code
-    procedure Get (Ctx : in out Ctx_Type;
-                   Dtd : in out Dtd_Type;
-                   Context : in Context_List;
-                   Name : in As.U.Asu_Us;
-                   Parameter : in Boolean;
-                   Got : out As.U.Asu_Us);
+    function Get (Ctx : in out Ctx_Type;
+                  Dtd : in out Dtd_Type;
+                  Context   : in Context_List;
+                  Name      : in As.U.Asu_Us;
+                  Parameter : in Boolean) return As.U.Asu_Us;
     Invalid_Char_Code : exception;
     Entity_Not_Found : exception;
     Entity_Forbidden : exception;
@@ -96,19 +94,19 @@ package body Parse_Mng  is
     -- Start recording
     procedure Start_Recording (Flow : in out Flow_Type);
     -- Stop recoding and retrieve recorded data
-    procedure Stop_Recording (Flow : in out Flow_Type;
+    procedure Stop_Recording (Flow     : in out Flow_Type;
                               Recorded : out As.U.Asu_Us);
 
     -- Get character and store in queue
     End_Error : exception;
-    procedure Get (Flow : in out Flow_Type; Char : out Character);
+    function Get (Flow : in out Flow_Type) return Character;
 
     -- Get a string
     procedure Get (Flow : in out Flow_Type; Str : out String);
     -- Undo some gets (default 1)
     procedure Unget (Flow : in out Flow_Type; N : in Natural := 1);
     -- Read last char got
-    procedure Read (Flow : in out Flow_Type; Char : out Character);
+    function Read (Flow : in out Flow_Type) return Character;
     -- Read Str'Length chars got
     procedure Read (Flow : in out Flow_Type; Str : out String);
     -- Injects Str in flow so that it will be got
@@ -139,9 +137,8 @@ package body Parse_Mng  is
     -- Skip separators until a significant char (not separator); got
     procedure Skip_Separators (Flow : in out Flow_Type);
     -- Current significant string, loaded by Parse_Until_xxx
-    procedure Get_Curr_Str (Flow : in out Flow_Type;
-                            Str : out As.U.Asu_Us;
-                            Reset : in Boolean := True);
+    function Get_Curr_Str (Flow : in out Flow_Type;
+                           Reset : in Boolean := True) return As.U.Asu_Us;
     -- Reset current string
     procedure Reset_Curr_Str (Flow : in out Flow_Type);
     -- Parse until Criteria found, or until a separator if Criteria = ""
@@ -163,8 +160,9 @@ package body Parse_Mng  is
     -- Optionally does not consume the keyword
     -- Str = " " stands for any separator
     -- If Ok and Consume and Str ends with space, consume all separators
-    procedure Try (Flow : in out Flow_Type; Str : in String; Ok : out Boolean;
-                   Consume : in Boolean := True);
+    function Try (Flow : in out Flow_Type;
+                  Str     : in String;
+                  Consume : in Boolean := True) return Boolean;
     -- Expand entities: %Var; and &#xx; if in dtd
     --                  &Var; and &#xx; if in xml
     -- Stop at '<' when in Xml content
@@ -227,10 +225,9 @@ package body Parse_Mng  is
     -- Get the Namespace of name.
     -- Return default if Element not qualified
     -- return empty if Attribute not qualified or prefix unknown
-    procedure Get (Ctx : in out Ctx_Type;
-                   Name : in As.U.Asu_Us;
-                   Element : in Boolean;
-                   Namespace : out As.U.Asu_Us);
+    function Get (Ctx : in out Ctx_Type;
+                  Name : in As.U.Asu_Us;
+                  Element : in Boolean) return As.U.Asu_Us;
   end Namespaces;
 
   package body Entity_Mng is separate;
@@ -282,7 +279,7 @@ package body Parse_Mng  is
                          Value : out As.U.Asu_Us) is
     Char : Character;
   begin
-    Util.Get (Ctx.Flow, Char);
+    Char := Util.Get (Ctx.Flow);
     if Char = ''' then
       Util.Parse_Until_Char (Ctx.Flow, "'");
     elsif Char = '"' then
@@ -291,7 +288,7 @@ package body Parse_Mng  is
       Util.Error (Ctx.Flow, "Unexpected value delimiter " & Char);
     end if;
     -- Save parsed text
-    Util.Get_Curr_Str (Ctx.Flow, Value);
+    Value := Util.Get_Curr_Str (Ctx.Flow);
     -- Normalize attribute
     if Ctx.Expand and then Ctx.Normalize and then Context = Ref_Attribute then
       Util.Normalize (Value);
@@ -340,17 +337,14 @@ package body Parse_Mng  is
     procedure Check_Attributes (Ctx  : in out Ctx_Type;
                                 Adtd : in out Dtd_Type);
     -- Is this element defined as Mixed
-    procedure Is_Mixed (Adtd : in out Dtd_Type;
-                        Elt  : in As.U.Asu_Us;
-                        Yes  : out Boolean);
+    function Is_Mixed (Adtd : in out Dtd_Type;
+                       Elt  : in As.U.Asu_Us) return Boolean;
     -- Is this element defined in internal dtd or else has not Content def
-    procedure Can_Have_Spaces (Adtd : in out Dtd_Type;
-                               Elt  : in As.U.Asu_Us;
-                               Yes  : out Boolean);
+    function Can_Have_Spaces (Adtd : in out Dtd_Type;
+                              Elt  : in As.U.Asu_Us) return Boolean;
     -- Is this attribute of this element CDATA
-    procedure Is_Cdata (Adtd      : in out Dtd_Type;
-                        Elt, Attr : in As.U.Asu_Us;
-                        Yes       : out Boolean);
+    function Is_Cdata (Adtd      : in out Dtd_Type;
+                       Elt, Attr : in As.U.Asu_Us) return Boolean;
     -- Has this element the xml:spaces=preserve
     function Has_Preserve (Ctx : Ctx_Type; Elt  : As.U.Asu_Us) return Boolean;
 
@@ -378,7 +372,6 @@ package body Parse_Mng  is
     Attribute_Index : Natural;
     Char : Character;
     Line_No : Natural;
-    Attr_Exists, Attr_Cdata : Boolean;
     use type As.U.Asu_Us;
   begin
     -- Loop on several attributes
@@ -389,10 +382,10 @@ package body Parse_Mng  is
       --  or until > or < (no '=' so invalid definition)
       Util.Parse_Until_Char (Ctx.Flow, Util.Equal & Util.Stop & Util.Start
                                      & Util.Slash & Util.Space);
-      Util.Get_Curr_Str (Ctx.Flow, Attribute_Name);
-      Util.Read (Ctx.Flow, Char);
+      Attribute_Name := Util.Get_Curr_Str (Ctx.Flow);
+      Char := Util.Read (Ctx.Flow);
       if Util.Is_Separator (Char) then
-        Util.Get (Ctx.Flow, Char);
+        Char := Util.Get (Ctx.Flow);
       end if;
       if Char /= Util.Equal
       or else not Util.Name_Ok (Attribute_Name) then
@@ -409,11 +402,8 @@ package body Parse_Mng  is
           Util.Error (Ctx.Flow, "Attribute " & Attribute_Name.Image
                     & " already defined for xml");
         end if;
-        Attr_Exists := False;
       else
-        Tree_Mng.Attribute_Exists (Ctx.Elements.all,
-                  Attribute_Name, Attr_Exists);
-        if Attr_Exists then
+        if Tree_Mng.Attribute_Exists (Ctx.Elements.all, Attribute_Name) then
           -- Elt_Name is always set when not Of_Xml
           Util.Error (Ctx.Flow, "Attribute " & Attribute_Name.Image
                     & " already defined for element " & Elt_Name.Image);
@@ -429,8 +419,8 @@ package body Parse_Mng  is
       else
         -- Keep first definition
         -- If expand, then Normalize separators of non CDATA attributes
-        Dtd.Is_Cdata (Adtd, Elt_Name, Attribute_Name, Attr_Cdata);
-        if Ctx.Expand and then Ctx.Normalize and then not Attr_Cdata then
+        if Ctx.Expand and then Ctx.Normalize
+        and then not Dtd.Is_Cdata (Adtd, Elt_Name, Attribute_Name) then
           Trace ("Attribute " & Attribute_Name.Image & " is not CDATA");
           Unnormalized := Attribute_Value;
           Util.Normalize_Spaces (Attribute_Value);
@@ -454,11 +444,11 @@ package body Parse_Mng  is
            & ", " & Attribute_Value.Image);
       -- Skip to new attribute if not end of element start
       Util.Skip_Separators (Ctx.Flow);
-      Util.Get (Ctx.Flow, Char);
+      Char := Util.Get (Ctx.Flow);
       -- Stop when ? in directive, or when /, or > in element
       if Of_Xml then
         if Char = Util.Instruction then
-          Util.Get (Ctx.Flow, Char);
+          Char := Util.Get (Ctx.Flow);
           if Char = Util.Stop then
             -- ?> OK
             exit;
@@ -480,7 +470,6 @@ package body Parse_Mng  is
                                   Of_Xml : in Boolean) is
     Attribute_Value : As.U.Asu_Us;
     Attribute_Index, Next_Index : Natural;
-    Nb_Attrs_Set : Natural;
   begin
     Next_Index := 1;
     -- In XML: Version [ Encode ] [ Standalone ]
@@ -572,8 +561,7 @@ package body Parse_Mng  is
     end if;
 
     -- No more attribute allowed
-    Tree_Mng.Get_Nb_Xml_Attributes (Ctx.Prologue.all, Nb_Attrs_Set);
-    if Nb_Attrs_Set /= Next_Index - 1 then
+    if Tree_Mng.Get_Nb_Xml_Attributes (Ctx.Prologue.all) /= Next_Index - 1 then
       Util.Error (Ctx.Flow, "Unexpecteed xml attribute");
     end if;
   end Check_Xml_Attributes;
@@ -712,9 +700,9 @@ package body Parse_Mng  is
     -- Parse
     Util.Guess_Encoding (Ctx.Flow);
     -- See if this is the "<?xml " directive
-    Util.Try (Ctx.Flow, Util.Start & Util.Instruction & "xml", Ok);
+    Ok := Util.Try (Ctx.Flow, Util.Start & Util.Instruction & "xml");
     if Ok then
-      Util.Get (Ctx.Flow, Char);
+      Char := Util.Get (Ctx.Flow);
       Ok := Util.Is_Separator (Char);
       if not Ok then
         Util.Error (Ctx.Flow, "Invalid text declaration");
@@ -737,7 +725,7 @@ package body Parse_Mng  is
 
     -- Load content in string
     Util.Parse_Until_End (Ctx.Flow);
-    Util.Get_Curr_Str (Ctx.Flow, Text);
+    Text := Util.Get_Curr_Str (Ctx.Flow);
     Trace ("Ext expanded as >" & Text.Image & "<");
 
     -- Done: restore flow
@@ -755,16 +743,12 @@ package body Parse_Mng  is
   -- Check that XML instruction is set, create one
   -- Inherit the Dtd encoding (if any)
   procedure Check_Xml (Ctx : in out Ctx_Type) is
-    Ok : Boolean;
   begin
     Tree_Mng.Move_Root (Ctx.Prologue.all);
-    Tree_Mng.Xml_Existst (Ctx.Prologue.all, Ok);
-    if not Ok then
+    if not Tree_Mng.Xml_Existst (Ctx.Prologue.all) then
       -- Add a 'xml' directive
       Tree_Mng.Set_Xml (Ctx.Prologue.all, Util.Get_Line_No (Ctx.Flow));
-    end if;
-    -- Callback creation if Xml has been created here
-    if not Ok then
+      -- Callback creation if Xml has been created here
       -- In prologue, Creation of the XML directive
       Call_Callback (Ctx, Prologue, True);
       Ctx.Level := 1;
@@ -777,26 +761,23 @@ package body Parse_Mng  is
                                Children : access Children_Desc) is
     Char : Character;
     Name, Value : As.U.Asu_Us;
-    Ok : Boolean;
     Str_Xml : String (1 .. 5);
     In_Prologue : constant Boolean := Tree_Mng.Is_Empty (Ctx.Elements.all);
   begin
     -- See if this is the xml directive
     if In_Prologue then
       -- No element => in prologue
-      Util.Try (Ctx.Flow, "xml ", Ok);
-      if Ok then
+      if Util.Try (Ctx.Flow, "xml ") then
         -- Only one xml declaration allowed
         Tree_Mng.Move_Root (Ctx.Prologue.all);
-        Tree_Mng.Xml_Existst (Ctx.Prologue.all, Ok);
-        if Ok then
+        if Tree_Mng.Xml_Existst (Ctx.Prologue.all) then
           Util.Error (Ctx.Flow, "Late or second declaration of xml");
         end if;
         Trace ("Parsing xml declaration");
         Tree_Mng.Set_Xml (Ctx.Prologue.all, Util.Get_Line_No (Ctx.Flow));
         -- Parse xml attributes
         Util.Skip_Separators (Ctx.Flow);
-        Util.Get (Ctx.Flow, Char);
+        Char := Util.Get (Ctx.Flow);
         Util.Unget (Ctx.Flow);
         if Char /= Util.Instruction then
           Parse_Attributes (Ctx, Adtd, Of_Xml => True);
@@ -828,16 +809,14 @@ package body Parse_Mng  is
 
     -- Parse instruction until ? or separator
     Util.Parse_Until_Char (Ctx.Flow, Util.Instruction & Util.Space);
-    Util.Get_Curr_Str (Ctx.Flow, Name);
+    Name := Util.Get_Curr_Str (Ctx.Flow);
     if not Util.Name_Ok (Name) then
       Util.Error (Ctx.Flow, "Invalid processing instruction name"
                & Name.Image);
     end if;
-    Util.Read (Ctx.Flow, Char);
-    if Char = Util.Instruction then
+    if Util.Read (Ctx.Flow) = Util.Instruction then
       -- Skip to the end
-      Util.Get (Ctx.Flow, Char);
-      if Char /= Util.Stop then
+      if Util.Get (Ctx.Flow) /= Util.Stop then
         Util.Error (Ctx.Flow, "Invalid processing instruction termination");
       end if;
     else
@@ -845,7 +824,7 @@ package body Parse_Mng  is
       Util.Skip_Separators (Ctx.Flow);
       Util.Parse_Until_Str (Ctx.Flow, Util.Instruction & Util.Stop);
       -- Skip "?>"
-      Util.Get_Curr_Str (Ctx.Flow, Value);
+      Value := Util.Get_Curr_Str (Ctx.Flow);
       Value.Delete (Value.Length - 1, Value.Length);
     end if;
 
@@ -897,7 +876,7 @@ package body Parse_Mng  is
     Util.Parse_Until_Char (Ctx.Flow, Util.Space & Util.Stop & '[');
     Util.Unget (Ctx.Flow);
     Util.Skip_Separators (Ctx.Flow);
-    Util.Get_Curr_Str (Ctx.Flow, Doctype_Name);
+    Doctype_Name := Util.Get_Curr_Str (Ctx.Flow);
     if not Util.Name_Ok (Doctype_Name) then
       Util.Error (Ctx.Flow, "Invalid DOCTYPE name " & Doctype_Name.Image);
     end if;
@@ -910,10 +889,10 @@ package body Parse_Mng  is
                        Util.Get_Line_No (Ctx.Flow));
     -- What's next
     Util.Skip_Separators (Ctx.Flow);
-    Util.Try (Ctx.Flow, "PUBLIC ", Ok);
+    Ok := Util.Try (Ctx.Flow, "PUBLIC ");
     if Ok then
       -- A dtd PUBLIC directive: skip public Id
-      Util.Get (Ctx.Flow, Char);
+      Char := Util.Get (Ctx.Flow);
       if Char = ''' then
         Util.Parse_Until_Char (Ctx.Flow, "'");
       elsif Char = '"' then
@@ -922,16 +901,16 @@ package body Parse_Mng  is
         Util.Error (Ctx.Flow, "Unexpected delimiter of DOCTYPE PUBLIC Id");
       end if;
       Ctx.Doctype.Public := True;
-      Util.Get_Curr_Str (Ctx.Flow, Ctx.Doctype.Pub_Id);
+      Ctx.Doctype.Pub_Id := Util.Get_Curr_Str (Ctx.Flow);
       Util.Skip_Separators (Ctx.Flow);
     else
       -- A dtd SYSTEM directive?
-      Util.Try (Ctx.Flow, "SYSTEM ", Ok);
+      Ok := Util.Try (Ctx.Flow, "SYSTEM ");
       Ctx.Doctype.Public := False;
     end if;
     if Ok then
       -- Now at dtd URI: file name expected
-      Util.Get (Ctx.Flow, Char);
+      Char := Util.Get (Ctx.Flow);
       if Char = ''' then
         Util.Parse_Until_Char (Ctx.Flow, "'");
       elsif Char = '"' then
@@ -939,7 +918,7 @@ package body Parse_Mng  is
       else
         Util.Error (Ctx.Flow, "Unexpected delimiter of DOCTYPE external Id");
       end if;
-      Util.Get_Curr_Str (Ctx.Flow, Doctype_File);
+      Doctype_File := Util.Get_Curr_Str (Ctx.Flow);
       Util.Skip_Separators (Ctx.Flow);
       if Ctx.Use_Dtd
       and then Ctx.Dtd_File.Is_Null
@@ -972,8 +951,7 @@ package body Parse_Mng  is
       Ctx.Doctype.File := Doctype_File;
     end if;
     -- Now see if there is an internal definition section
-    Util.Get (Ctx.Flow, Char);
-    if Char = '[' then
+    if Util.Get (Ctx.Flow) = '[' then
       -- Internal definition, record the parsing and copy it in Ctx
       Util.Start_Recording (Ctx.Flow);
       Dtd.Parse (Ctx, Adtd, As.U.Tus (Dtd.Internal_Flow));
@@ -986,7 +964,7 @@ package body Parse_Mng  is
     end if;
     -- Now this should be the end
     Util.Skip_Separators (Ctx.Flow);
-    Util.Get (Ctx.Flow, Char);
+    Char := Util.Get (Ctx.Flow);
     if Char /= Util.Stop then
       Util.Error (Ctx.Flow, "Unexpected character " & Char & " in DOCTYPE");
     end if;
@@ -1015,17 +993,15 @@ package body Parse_Mng  is
                              Context : in Context_List;
                              Children : access Children_Desc) is
     Index : Natural;
-    Ok : Boolean;
     Comment : As.U.Asu_Us;
   begin
 
     -- Comment?
-    Util.Try (Ctx.Flow, Util.Comment, Ok);
-    if Ok then
+    if Util.Try (Ctx.Flow, Util.Comment) then
       -- "<!--", a comment, skip util "-->"
       Util.Parse_Until_Str (Ctx.Flow, "--" & Util.Stop);
       -- Check that no "--" within comment
-      Util.Get_Curr_Str (Ctx.Flow, Comment);
+      Comment := Util.Get_Curr_Str (Ctx.Flow);
       Index := Comment.Locate ("--");
       if Index < Comment.Length - 2 then
         Util.Error (Ctx.Flow, "Invalid ""--"" in comment");
@@ -1065,8 +1041,7 @@ package body Parse_Mng  is
     end if;
 
     -- Doctype?
-    Util.Try (Ctx.Flow, Util.Doctype & " ", Ok);
-    if Ok then
+    if Util.Try (Ctx.Flow, Util.Doctype & " ") then
       if Allow_Dtd then
         -- Allowed DOCTYPE, parse
         Parse_Doctype (Ctx, Adtd);
@@ -1079,7 +1054,7 @@ package body Parse_Mng  is
 
     -- Reject directive
     Util.Parse_Until_Stop (Ctx.Flow);
-    Util.Get_Curr_Str (Ctx.Flow, Comment);
+    Comment := Util.Get_Curr_Str (Ctx.Flow);
     Util.Error (Ctx.Flow, "Invalid directive <!"
          & Comment.Image & Util.Stop);
   exception
@@ -1090,7 +1065,7 @@ package body Parse_Mng  is
   -- Parse the prologue
   procedure Parse_Start_To_Root (Ctx : in out Ctx_Type;
                                  Adtd : in out Dtd_Type) is
-    C1, C2 : Character;
+    Char : Character;
   begin
     -- Autodetect encoding and check
     if Ctx.Flow.Curr_Flow.Is_File then
@@ -1109,14 +1084,14 @@ package body Parse_Mng  is
         when Util.End_Error =>
           exit;
       end;
-      Util.Get (Ctx.Flow, C1);
+      Char := Util.Get (Ctx.Flow);
       -- Shall be '<'
-      if C1 /= Util.Start then
-        Util.Error (Ctx.Flow, "Unexpected character " & C1 & " while expecting "
+      if Char /= Util.Start then
+        Util.Error (Ctx.Flow, "Unexpected character " & Char
+                  & " while expecting "
                   & Util.Start & " in prologue");
       end if;
-      Util.Get (Ctx.Flow, C2);
-      case C2 is
+      case Util.Get (Ctx.Flow) is
         when Util.Instruction =>
           Parse_Instruction (Ctx, Adtd, null);
         when Util.Directive =>
@@ -1171,7 +1146,7 @@ package body Parse_Mng  is
     Texts : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
     Text, Tmp_Text, Cdata, Tail : As.U.Asu_Us;
     Start_Index, Index : Natural;
-    Moved, Cdata_Found, Last_Is_Text, Normalize : Boolean;
+    Moved, Last_Is_Text, Normalize : Boolean;
     Next_Char : Character;
 
     -- Depending on Last_Is_Text, append Txt to last or insert it
@@ -1205,11 +1180,11 @@ package body Parse_Mng  is
         Util.Parse_Until_Char (Ctx.Flow, Util.Start & "");
         Util.Unget (Ctx.Flow);
         -- Save Text
-        Util.Get_Curr_Str (Ctx.Flow, Text);
+        Text := Util.Get_Curr_Str (Ctx.Flow);
       exception
         when Util.End_Error =>
           -- End of flow, save text
-          Util.Get_Curr_Str (Ctx.Flow, Text);
+          Text := Util.Get_Curr_Str (Ctx.Flow);
           if Text.Is_Null then
             -- End of flow and no text
             exit Read_Flow;
@@ -1309,8 +1284,7 @@ package body Parse_Mng  is
       end loop Cdata_In_Text;
 
       -- Check "<![CDATA[" in flow
-      Util.Try (Ctx.Flow, Util.Cdata_Start, Cdata_Found);
-      if Cdata_Found then
+      if Util.Try (Ctx.Flow, Util.Cdata_Start) then
         -- Get Cdata (without markers)
         begin
           Util.Parse_Until_Str (Ctx.Flow, Util.Cdata_End);
@@ -1318,7 +1292,7 @@ package body Parse_Mng  is
           when Util.End_Error =>
             Util.Error (Ctx.Flow, "Unterminated CDATA section");
         end;
-        Util.Get_Curr_Str (Ctx.Flow, Cdata);
+        Cdata := Util.Get_Curr_Str (Ctx.Flow);
         Cdata.Delete (Cdata.Length  - Util.Cdata_End'Length + 1,
                       Cdata.Length);
         Trace ("Txt - Got CDATA >" & Cdata.Image & "<");
@@ -1350,8 +1324,8 @@ package body Parse_Mng  is
       if Tail.Is_Null then
         -- Scan input flow
         begin
-          Util.Get (Ctx.Flow, Next_Char);
-          Util.Get (Ctx.Flow, Next_Char);
+          Next_Char := Util.Get (Ctx.Flow);
+          Next_Char := Util.Get (Ctx.Flow);
           Util.Unget (Ctx.Flow, 2);
         exception
           when Util.End_Error =>
@@ -1477,14 +1451,13 @@ package body Parse_Mng  is
     end Create;
 
     Char : Character;
-    Ok : Boolean;
     Str2 : String (1 .. 2);
   begin
 
     -- Detect children
     loop
       begin
-        Util.Get (Ctx.Flow, Char);
+        Char := Util.Get (Ctx.Flow);
       exception
         when Util.End_Error =>
           if Allow_End then
@@ -1495,7 +1468,7 @@ package body Parse_Mng  is
           end if;
       end;
       if Char = Util.Start then
-        Util.Get (Ctx.Flow, Char);
+        Char := Util.Get (Ctx.Flow);
         if Char = Util.Slash then
           if Children.Created then
             -- Element was created, close it
@@ -1516,8 +1489,7 @@ package body Parse_Mng  is
           -- Must be a comment, DOCTYPE or CDATA
           -- Check "<![CDATA["
           Util.Unget (Ctx.Flow, 2);
-          Util.Try (Ctx.Flow, Util.Cdata_Start, Ok, False);
-          if Ok then
+          if Util.Try (Ctx.Flow, Util.Cdata_Start, False) then
             -- CDATA => Text
             Parse_Text (Ctx, Adtd, Children);
           else
@@ -1565,7 +1537,7 @@ package body Parse_Mng  is
     -- Parse name until /, > or a separator
     Util.Parse_Until_Char (Ctx.Flow, "/> ");
     -- Check and store name
-    Util.Get_Curr_Str (Ctx.Flow, Element_Name);
+    Element_Name := Util.Get_Curr_Str (Ctx.Flow);
     if not Util.Name_Ok (Element_Name) then
       Util.Error (Ctx.Flow, "Invalid element name " & Element_Name.Image);
     end if;
@@ -1589,10 +1561,10 @@ package body Parse_Mng  is
     if not Ctx.Standalone then
       My_Children.Space_Allowed := True;
     else
-      Dtd.Can_Have_Spaces (Adtd, Element_Name, My_Children.Space_Allowed);
+      My_Children.Space_Allowed := Dtd.Can_Have_Spaces (Adtd, Element_Name);
     end if;
     -- Is current element mixed?
-    Dtd.Is_Mixed (Adtd, Element_Name, My_Children.Is_Mixed);
+    My_Children.Is_Mixed := Dtd.Is_Mixed (Adtd, Element_Name);
     if My_Children.Is_Mixed then
       Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, True);
     end if;
@@ -1602,23 +1574,23 @@ package body Parse_Mng  is
     My_Children.Father := Element_Name;
     My_Children.In_Mixed := Parent_Children.Is_Mixed;
     -- See first significant character after name
-    Util.Read (Ctx.Flow, Char);
+    Char := Util.Read (Ctx.Flow);
     if Util.Is_Separator (Char) then
       Util.Skip_Separators (Ctx.Flow);
-      Util.Get (Ctx.Flow, Char);
+      Char := Util.Get (Ctx.Flow);
     end if;
 
     -- If not / nor >, then parse_attributes
     if Char /= Util.Slash and then Char /= Util.Stop then
       Util.Unget (Ctx.Flow);
       Parse_Attributes (Ctx, Adtd, Of_Xml => False, Elt_Name => Element_Name);
-      Util.Read (Ctx.Flow, Char);
+      Char := Util.Read (Ctx.Flow);
     end if;
 
     -- If /, then must be followed by >, return
     if Char = Util.Slash then
       -- <Name [ attributes ]/>
-      Util.Get (Ctx.Flow, Char);
+      Char:= Util.Get (Ctx.Flow);
       if Char /= Util.Stop then
         Util.Error (Ctx.Flow, "Unexpected char " & Char
                             & " after " & Util.Slash);
@@ -1628,7 +1600,7 @@ package body Parse_Mng  is
       Dtd.Check_Attributes (Ctx, Adtd);
       -- Set element namespace
       if Ctx.Namespace then
-        Namespaces.Get (Ctx, Element_Name, True, Namespace);
+        Namespace := Namespaces.Get (Ctx, Element_Name, True);
         Tree_Mng.Set_Namespace (Ctx.Elements.all, Namespace);
       end if;
       Dtd.Check_Element (Ctx, Adtd,  My_Children);
@@ -1641,7 +1613,7 @@ package body Parse_Mng  is
       Dtd.Check_Attributes (Ctx, Adtd);
       -- Set element namespace
       if Ctx.Namespace then
-        Namespaces.Get (Ctx, Element_Name, True, Namespace);
+        Namespace := Namespaces.Get (Ctx, Element_Name, True);
         Tree_Mng.Set_Namespace (Ctx.Elements.all, Namespace);
       end if;
       -- Try to preserve spaces if current element has this tuning
@@ -1661,7 +1633,7 @@ package body Parse_Mng  is
       Trace ("Parsed children of " & Element_Name.Image);
       -- Check Name matches
       Util.Parse_Until_Char (Ctx.Flow, Util.Stop & "");
-      Util.Get_Curr_Str (Ctx.Flow, End_Name);
+      End_Name := Util.Get_Curr_Str (Ctx.Flow);
       if End_Name /= Element_Name then
         Util.Error (Ctx.Flow, "Element name mismatch, expected "
                   & Element_Name.Image
@@ -1683,7 +1655,7 @@ package body Parse_Mng  is
   procedure Parse_Root_To_End (Ctx : in out Ctx_Type;
                                Adtd : in out Dtd_Type) is
     Root_Found : Boolean;
-    C1, C2 : Character;
+    Char : Character;
     My_Children : aliased Children_Desc;
   begin
     -- Loop until end of file
@@ -1693,18 +1665,17 @@ package body Parse_Mng  is
       -- Get until a significant character, if any
       Util.Skip_Separators (Ctx.Flow);
       begin
-        Util.Get (Ctx.Flow, C1);
+        Char := Util.Get (Ctx.Flow);
       exception
         when Util.End_Error =>
           exit;
       end;
       -- Shall be '<'
-      if C1 /= Util.Start then
-        Util.Error (Ctx.Flow, "Unexpected character " & C1 & " while expecting "
-                  & Util.Start & " for root");
+      if Char /= Util.Start then
+        Util.Error (Ctx.Flow, "Unexpected character " & Char
+                  & " while expecting " & Util.Start & " for root");
       end if;
-      Util.Get (Ctx.Flow, C2);
-      case C2 is
+      case Util.Get (Ctx.Flow) is
         when Util.Instruction =>
           -- Instruction in Tail
           Parse_Instruction (Ctx, Adtd, null);

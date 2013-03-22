@@ -170,10 +170,9 @@ package body Namespaces is
 
   -- Get the Namespace of name.
   -- Return default if Element is not qualified
-  procedure Get (Ctx : in out Ctx_Type;
-                 Name : in As.U.Asu_Us;
-                 Element : in Boolean;
-                 Namespace : out As.U.Asu_Us) is
+  function Get (Ctx : in out Ctx_Type;
+                Name : in As.U.Asu_Us;
+                Element : in Boolean) return As.U.Asu_Us is
     Index : Natural;
     Item : Namespace_Type;
     Found : Boolean;
@@ -183,8 +182,7 @@ package body Namespaces is
     if Name.Image = Xmlns
     or else (Index = Xmlns_Prefix'Length
            and then Name.Slice(1, Xmlns_Prefix'Length) = Xmlns_Prefix) then
-      Namespace.Set_Null;
-      return;
+      return As.U.Asu_Null;
     end if;
     if Index = 0 then
       -- Not qualified => Default namespace
@@ -193,8 +191,7 @@ package body Namespaces is
         Item.Prefix.Set_Null;
       else
         -- No default for attributes
-        Namespace.Set_Null;
-        return;
+        return As.U.Asu_Null;
       end if;
     else
       -- Extract prefix
@@ -204,13 +201,14 @@ package body Namespaces is
     Ctx.Namespace_List.Search_First (Item, Found, Namespace_List_Mng.Forward);
     if Found then
       Ctx.Namespace_List.Read_Current (Item);
-      Namespace := Item.Namespace;
-      Trace ("    Got namespace " & Name.Image & " -> " & Namespace.Image);
+      Trace ("    Got namespace " & Name.Image & " -> " & Item.Namespace.Image);
+      return Item.Namespace;
     elsif Index = 0 then
       -- No default namespace
-      Namespace.Set_Null;
+      return As.U.Asu_Null;
     else
       Util.Error (Ctx.Flow, "Unknown namespace " & Name.Image);
+      return As.U.Asu_Null;
     end if;
   end Get;
 

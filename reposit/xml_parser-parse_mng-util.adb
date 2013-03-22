@@ -339,22 +339,23 @@ package body Util is
   end Stop_Recording;
 
   -- Internal: Get one char on current flow - Raw
-  procedure Get_One_Char (Flow : in out Flow_Type; Char : out Character) is
+  function Get_One_Char (Flow : in out Flow_Type) return Character is
   begin
     if Flow.Curr_Flow.Is_File then
-      Char := Flow.Curr_Flow.File.Get;
+      return Flow.Curr_Flow.File.Get;
     else
       if Flow.Curr_Flow.In_Stri = Flow.Curr_Flow.In_Str.Length then
         raise End_Error;
       end if;
       Flow.Curr_Flow.In_Stri := Flow.Curr_Flow.In_Stri + 1;
-      Char := Flow.Curr_Flow.In_Str.Element (Flow.Curr_Flow.In_Stri);
+      return Flow.Curr_Flow.In_Str.Element (Flow.Curr_Flow.In_Stri);
     end if;
   end;
 
   -- Internal: Get one char on current flow - handle encoding
   Decoding_Error : exception;
-  procedure Get_Char (Flow : in out Flow_Type; Char : out Character) is
+  function Get_Char (Flow : in out Flow_Type) return Character is
+    Char : Character;
     Str2 : Utf_8.Sequence(1 .. 2);
     Seq16 : Utf_16.Sequence(1 .. Utf_16.Max_Chars);
     Seq8 : As.U.Asu_Us;
@@ -362,25 +363,24 @@ package body Util is
   begin
     if Flow.Curr_Flow.Encod = Utf8 then
       -- Utf8 => get char
-      Get_One_Char (Flow, Char);
-      return;
+      return Get_One_Char (Flow);
     elsif Flow.Curr_Flow.Nb_Bytes /= 0 then
       -- Utf16 or latin1 but some chars in buffer => get char
-      Get_One_Char (Flow, Char);
+      Char := Get_One_Char (Flow);
       Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes - 1;
-      return;
+      return Char;
     elsif Flow.Curr_Flow.Encod = Latin1 then
       -- Latin 1 <=> Unicode.
-      Get_One_Char (Flow, Char);
+      Char := Get_One_Char (Flow);
       Unicode := Character'Pos(Char);
     elsif Flow.Curr_Flow.Encod = Other then
       -- Other 1 -> Unicode: Use map
-      Get_One_Char (Flow, Char);
+      Char := Get_One_Char (Flow);
       Unicode := Flow.Curr_Flow.Map.Convert(Character'Pos(Char));
     else
       -- Utf16 => read first word
-      Get_One_Char (Flow, Str2(1));
-      Get_One_Char (Flow, Str2(2));
+      Str2(1) := Get_One_Char (Flow);
+      Str2(2) := Get_One_Char (Flow);
 
       -- Decoding of UTF-16, common to all flows, get a Unicode
       Seq16(1 .. 1) := Utf_16.Merge (Str2);
@@ -393,8 +393,8 @@ package body Util is
       else
         -- Need to read second word
         begin
-          Get_One_Char (Flow, Str2(1));
-          Get_One_Char (Flow, Str2(2));
+          Str2(1) := Get_One_Char (Flow);
+          Str2(2) := Get_One_Char (Flow);
         exception
           when End_Error =>
             raise Decoding_Error;
@@ -428,7 +428,7 @@ package body Util is
     end if;
 
     -- Return First Char
-    Char := Seq8.Element (1);
+    return Seq8.Element (1);
   exception
     when End_Error =>
       raise;
@@ -440,15 +440,15 @@ package body Util is
   end Get_Char;
 
   -- Get character and store in queue
-  procedure Get (Flow : in out Flow_Type; Char : out Character) is
-
+  function Get (Flow : in out Flow_Type) return Character is
+    Char : Character;
   begin
-    Get_Char (Flow, Char);
+    Char := Get_Char (Flow);
     -- Skip CRs: Replace CrLf by Lf, or else Cr by Lf
     if Char = Ada.Characters.Latin_1.Lf
     and then Flow.Curr_Flow.Prev_Char_Was_Cr then
       -- Prev Cr already gave a Lf, skip this one
-      Get_Char (Flow, Char);
+      Char := Get_Char (Flow);
     end if;
     if Char = Ada.Characters.Latin_1.Cr then
       Char := Ada.Characters.Latin_1.Lf;
@@ -473,6 +473,7 @@ package body Util is
     if Char = Lf and then not Flow.Curr_Flow.Same_Line then
       Flow.Curr_Flow.Line := Flow.Curr_Flow.Line + 1;
     end if;
+    return Char;
   exception
     when Text_Char.End_Error =>
       raise End_Error;
@@ -480,6 +481,7 @@ package body Util is
       raise File_Error;
     when Decoding_Error =>
       Error (Flow, "Error while decoding character");
+      return ' ';
   end Get;
 
   -- Get a string
@@ -487,7 +489,7 @@ package body Util is
   begin
     Flow.Nb_Got := 0;
     for I in Str'Range loop
-      Get (Flow, Str(I));
+      Str(I) := Get (Flow);
       Flow.Nb_Got := Flow.Nb_Got + 1;
     end loop;
   end Get;
@@ -525,9 +527,11 @@ package body Util is
   end Unget;
 
   -- Read last char got
-  procedure Read (Flow : in out Flow_Type; Char : out Character) is
+  function Read (Flow : in out Flow_Type) return Character is
+    Char : Character;
   begin
     My_Circ.Look_Last (Flow.Circ, Char);
+    return Char;
   end Read;
 
   -- Read Str'Length chars got
@@ -587,7 +591,7 @@ package body Util is
     Char : Character;
   begin
     loop
-      Get (Flow, Char);
+      Char := Get (Flow);
       exit when not Is_Separator (Char);
     end loop;
     Unget (Flow);
@@ -595,15 +599,15 @@ package body Util is
     when End_Error => null;
   end Skip_Separators;
 
-  procedure Get_Curr_Str (Flow : in out Flow_Type;
-                          Str : out As.U.Asu_Us;
-                          Reset : in Boolean := True) is
-
+  function Get_Curr_Str (Flow : in out Flow_Type;
+                         Reset : in Boolean := True) return As.U.Asu_Us is
+    Result : As.U.Asu_Us;
   begin
-    Str := Flow.Curr_Str;
+    Result := Flow.Curr_Str;
     if Reset then
       Flow.Curr_Str.Set_Null;
     end if;
+    return Result;
   end Get_Curr_Str;
 
   procedure Reset_Curr_Str (Flow : in out Flow_Type) is
@@ -632,7 +636,7 @@ package body Util is
       raise Constraint_Error;
     end if;
     loop
-      Get (Flow, Char);
+      Char := Get (Flow);
       if Criteria = "" then
         exit when Is_Separator (Char);
         Flow.Curr_Str.Append (Char);
@@ -659,7 +663,7 @@ package body Util is
     end if;
     This_Char:
     loop
-      Get (Flow, Char);
+      Char := Get (Flow);
       -- Compare to each char of the criteria
       for I in Criteria'Range loop
         if Criteria(I) = Space then
@@ -683,11 +687,9 @@ package body Util is
   -- Parse until end of flow
   -- Sets Curr_Str
   procedure Parse_Until_End (Flow : in out Flow_Type) is
-    Char : Character;
   begin
     loop
-      Get (Flow, Char);
-      Flow.Curr_Str.Append (Char);
+      Flow.Curr_Str.Append (Get (Flow));
     end loop;
   exception
     when End_Error => null;
@@ -702,7 +704,7 @@ package body Util is
     -- One '(' already got
     Nb := 1;
     loop
-      Get (Flow, Char);
+      Char:= Get (Flow);
       -- Count opening and closing parenthesis
       if Char = '(' then
         Nb := Nb + 1;
@@ -715,9 +717,10 @@ package body Util is
   end Parse_Until_Close;
 
   -- Try to parse a keyword, rollback if not
-  procedure Try (Flow : in out Flow_Type; Str : in String; Ok : out Boolean;
-                 Consume : in Boolean := True) is
+  function Try (Flow : in out Flow_Type; Str : in String;
+                Consume : in Boolean := True) return Boolean is
     Got_Str : String (1 .. Str'Length);
+    Ok : Boolean;
   begin
     -- Get same amount of chars as Str
     Get (Flow, Got_Str);
@@ -733,11 +736,12 @@ package body Util is
       -- Consume any separator following Str last separator
       Skip_Separators (Flow);
     end if;
+    return Ok;
   exception
     when End_Error =>
       -- Not enough chars
-      Ok := False;
       Unget (Flow, Flow.Nb_Got);
+      return False;
   end Try;
 
   -- List of names of entities expanding to each other, to detect recursion
@@ -786,8 +790,6 @@ package body Util is
     Char : Character;
     -- Entity name and value
     Name, Val : As.U.Asu_Us;
-    -- Entity found
-    Found : Boolean;
     -- Entity list is empty
     Stack_Empty : Boolean;
 
@@ -884,9 +886,8 @@ package body Util is
       -- Got an entity name: get value if it exists (skip % & ;)
       Name := Result.Uslice (Istart + 1, Istop - 1);
 
-      Entity_Mng.Exists (Dtd.Entity_List,
-                           Name, Starter = Ent_Param, Found);
-      if not Found then
+      if not Entity_Mng.Exists (Dtd.Entity_List,
+                                Name, Starter = Ent_Param) then
         Error (Ctx.Flow, "Unknown entity "
                & (if Starter = Ent_Param then Ent_Param & " " else "")
                & Name.Image);
@@ -899,7 +900,7 @@ package body Util is
                        & Starter & Name.Image);
       end if;
 
-      Entity_Mng.Get (Ctx, Dtd, Context, Name, Starter = Ent_Param, Val);
+      Val := Entity_Mng.Get (Ctx, Dtd, Context, Name, Starter = Ent_Param);
 
       -- Check and expand this entity replacement (recursively)
       -- Skip when this is a character entity or

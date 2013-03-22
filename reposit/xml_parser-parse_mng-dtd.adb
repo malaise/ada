@@ -43,9 +43,9 @@ package body Dtd is
     Dummy : My_Tree_Cell;
   begin
     -- See if this is the xml directive
-    Util.Try (Ctx.Flow, "xml", Ok);
+    Ok := Util.Try (Ctx.Flow, "xml");
     if Ok then
-      Util.Get (Ctx.Flow, Char);
+      Char := Util.Get (Ctx.Flow);
       Ok := Util.Is_Separator (Char);
     end  if;
     if Ok then
@@ -159,7 +159,7 @@ package body Dtd is
   begin
     -- Parse element name
     Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
-    Util.Get_Curr_Str (Ctx.Flow, Info_Name);
+    Info_Name := Util.Get_Curr_Str (Ctx.Flow);
     Util.Expand_Name (Ctx, Adtd, Info_Name, Ref_Dtd_Mark);
     Util.Normalize (Info_Name);
     Util.Normalize_Spaces (Info_Name);
@@ -179,7 +179,7 @@ package body Dtd is
 
     Util.Parse_Until_Stop (Ctx.Flow);
     Util.Unget (Ctx.Flow);
-    Util.Get_Curr_Str (Ctx.Flow, Info.List);
+    Info.List := Util.Get_Curr_Str (Ctx.Flow);
     -- Expand potential parameter entities and re-insert
     Util.Expand_Vars (Ctx, Adtd, Info.List, Ref_Dtd_Content);
     Util.Normalize (Info.List);
@@ -187,18 +187,18 @@ package body Dtd is
     Util.Insert (Ctx.Flow, Info.List.Image);
 
     -- Check possible content: EMPTY, ANY or (<list>)
-    Util.Try (Ctx.Flow, "EMPTY", Found);
+    Found := Util.Try (Ctx.Flow, "EMPTY");
     if Found then
       Info.List := As.U.Tus ("E");
     end if;
     if not Found then
-      Util.Try (Ctx.Flow, "ANY", Found);
+      Found := Util.Try (Ctx.Flow, "ANY");
       if Found then
         Info.List := As.U.Tus ("A");
       end if;
     end if;
     if not Found then
-      Util.Try (Ctx.Flow, "(", Found);
+      Found := Util.Try (Ctx.Flow, "(");
       if not Found then
         Util.Error (Ctx.Flow, "Unexpected character "
                  & Info.List.Element (1)
@@ -212,14 +212,14 @@ package body Dtd is
     if not Found then
       -- A (mixed) list: parse until ')' and remove any seperator
       Util.Parse_Until_Close (Ctx.Flow);
-      Util.Get_Curr_Str (Ctx.Flow, Info.List);
+      Info.List := Util.Get_Curr_Str (Ctx.Flow);
       Util.Remove_Separators (Info.List, "?*+()|,");
       -- Now see if it is mixed or children
       if Info.List.Locate ("#PCDATA") /= 0 then
         -- Mixed
         if Info.List.Image = "#PCDATA" then
           -- Possible '*' after ')', skip it
-          Util.Try (Ctx.Flow, "*", Found);
+          Found := Util.Try (Ctx.Flow, "*");
           Info.List.Set_Null;
         elsif Info.List.Slice (1, 8) = "#PCDATA|" then
           -- Remove heading #PCDATA
@@ -235,8 +235,7 @@ package body Dtd is
             Util.Error (Ctx.Flow, "Invalid Mixed definition");
           end if;
           -- Last ')' must be followed by '*', remove it
-          Util.Get (Ctx.Flow, Char);
-          if Char /= '*' then
+          if Util.Get (Ctx.Flow) /= '*' then
             Util.Error (Ctx.Flow, "Invalid Mixed definition");
           end if;
           -- Replace '|' by '#' and prepend and append a '#'
@@ -269,7 +268,7 @@ package body Dtd is
       else
         -- A regexp of children:
         -- Put into "(" ")" and append "?", "*" or, "+" if needed
-        Util.Get (Ctx.Flow, Char);
+        Char := Util.Get (Ctx.Flow);
         if Char = '?' or else Char = '*' or else Char = '+' then
           Info.List := "(" & Info.List & ")" & Char;
         else
@@ -287,7 +286,7 @@ package body Dtd is
     end if;
     -- Directive must end now
     Util.Skip_Separators (Ctx.Flow);
-    Util.Get (Ctx.Flow, Char);
+    Char := Util.Get (Ctx.Flow);
     if Char /= Util.Stop then
       Util.Error (Ctx.Flow, "Unexpected character " & Char
                           & " at end of ELEMENT");
@@ -329,16 +328,12 @@ package body Dtd is
     Iter : Parser.Iterator;
 
     function Try (Str : String) return Boolean is
-      B : Boolean;
     begin
-      Util.Try (Ctx.Flow, Str, B);
-      return B;
+      return Util.Try (Ctx.Flow, Str);
     end Try;
     function Get return Character is
-      C : Character;
     begin
-      Util.Get (Ctx.Flow, C);
-      return C;
+      return Util.Get (Ctx.Flow);
     end Get;
 
     use type As.U.Asu_Us;
@@ -346,7 +341,7 @@ package body Dtd is
     -- Parse element name
     Util.Parse_Until_Char (Ctx.Flow, Util.Space & Util.Stop);
     Util.Unget (Ctx.Flow);
-    Util.Get_Curr_Str (Ctx.Flow, Elt_Name);
+    Elt_Name := Util.Get_Curr_Str (Ctx.Flow);
     Util.Expand_Name (Ctx, Adtd, Elt_Name, Ref_Dtd_Mark);
     Util.Normalize (Elt_Name);
     Util.Normalize_Spaces (Elt_Name);
@@ -371,7 +366,7 @@ package body Dtd is
 
     Util.Parse_Until_Stop (Ctx.Flow);
     Util.Unget (Ctx.Flow);
-    Util.Get_Curr_Str (Ctx.Flow, Attlist);
+    Attlist := Util.Get_Curr_Str (Ctx.Flow);
     -- Expand potential parameter entities and re-insert
     Util.Expand_Vars (Ctx, Adtd, Attlist, Ref_Dtd_Mark);
     Util.Normalize (Attlist);
@@ -383,11 +378,10 @@ package body Dtd is
     loop
       Util.Skip_Separators (Ctx.Flow);
       -- Name of attribute or end of list
-      Util.Try (Ctx.Flow, Util.Stop & "", Found);
-      exit when Found;
+      exit when Util.Try (Ctx.Flow, Util.Stop & "");
       -- Get attribute name
       Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
-      Util.Get_Curr_Str (Ctx.Flow, Att_Name);
+      Att_Name := Util.Get_Curr_Str (Ctx.Flow);
       Util.Expand_Name (Ctx, Adtd, Att_Name, Ref_Dtd_Mark);
       Util.Normalize (Att_Name);
       Util.Normalize_Spaces (Attlist);
@@ -439,14 +433,14 @@ package body Dtd is
         -- Unknown ATTLIST
         Util.Unget (Ctx.Flow);
         Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
-        Util.Get_Curr_Str (Ctx.Flow, Att_Type);
+        Att_Type := Util.Get_Curr_Str (Ctx.Flow);
         Util.Error (Ctx.Flow, "Invalid attribute type " & Att_Type.Image);
       end if;
 
       -- Parse enumeration for Enum or Notation
       if Typ_Char = 'E' or else Typ_Char = 'N' then
         Util.Parse_Until_Char (Ctx.Flow, ")");
-        Util.Get_Curr_Str (Ctx.Flow, Enum);
+        Enum := Util.Get_Curr_Str (Ctx.Flow);
         Util.Remove_Separators (Enum, "()|");
         if Enum.Is_Null then
           Util.Error (Ctx.Flow, "Empty enumeration");
@@ -666,8 +660,6 @@ package body Dtd is
     -- Is it Internal, and parsed
     Internal : Boolean;
     Parsed : Boolean;
-    -- Is entity found
-    Found : Boolean;
     -- Is it public
     Public : Boolean;
     -- Parameter entity indicator
@@ -678,12 +670,12 @@ package body Dtd is
   begin
     -- See if this is a parameter entity
     Util.Skip_Separators (Ctx.Flow);
-    Util.Get (Ctx.Flow, Char);
+    Char := Util.Get (Ctx.Flow);
     if Char = '%' then
       -- Check if this is "% name" of parameter entity definition
       --  or "%name;" of entity definition of a name that is a reference
       --  to a parameter entity
-      Util.Get (Ctx.Flow, Char);
+      Char := Util.Get (Ctx.Flow);
       if Util.Is_Separator (Char) then
         -- This is the definition of a parameter entity
         Parameter := True;
@@ -703,7 +695,7 @@ package body Dtd is
 
     -- Parse entity name
     Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
-    Util.Get_Curr_Str (Ctx.Flow, Name);
+    Name := Util.Get_Curr_Str (Ctx.Flow);
     Util.Expand_Name (Ctx, Adtd, Name, Ref_Dtd_Mark);
     -- Strip separators
     Util.Normalize (Name);
@@ -717,11 +709,9 @@ package body Dtd is
     -- Is it a public a system or an internal entity
     Internal := False;
     Public := False;
-    Util.Try (Ctx.Flow, "SYSTEM ", Found);
-    if not Found then
+    if not Util.Try (Ctx.Flow, "SYSTEM ") then
       Public := True;
-      Util.Try (Ctx.Flow, "PUBLIC ", Found);
-      if not Found then
+      if not Util.Try (Ctx.Flow, "PUBLIC ") then
         Internal := True;
       end if;
     end if;
@@ -737,7 +727,7 @@ package body Dtd is
         -- ENTITY [ % ] name PUBLIC "PubId" "URI"
         -- Skip PubId
         -- Parse URI or Id
-        Util.Get (Ctx.Flow, Char);
+        Char := Util.Get (Ctx.Flow);
         if Char = ''' then
           Util.Parse_Until_Char (Ctx.Flow, "'");
         elsif Char = '"' then
@@ -745,11 +735,11 @@ package body Dtd is
         else
           Util.Error (Ctx.Flow, "Unexpected delimiter of PUBLIC Id");
         end if;
-        Util.Get_Curr_Str (Ctx.Flow, Public_Id);
+        Public_Id := Util.Get_Curr_Str (Ctx.Flow);
         Util.Skip_Separators (Ctx.Flow);
       end if;
       -- PUBLIC or SYSTEM: get URI
-      Util.Get (Ctx.Flow, Char);
+      Char := Util.Get (Ctx.Flow);
       if Char = ''' then
         Util.Parse_Until_Char (Ctx.Flow, "'");
       elsif Char = '"' then
@@ -757,21 +747,20 @@ package body Dtd is
       else
         Util.Error (Ctx.Flow, "Unexpected delimiter of PUBLIC Id");
       end if;
-      Util.Get_Curr_Str (Ctx.Flow, System_Id);
+      System_Id := Util.Get_Curr_Str (Ctx.Flow);
     end if;
     Util.Skip_Separators (Ctx.Flow);
 
     -- See if Parsed. If not, will store notation
     Parsed := True;
     if not Parameter and then not Internal then
-      Util.Try (Ctx.Flow, "NDATA ", Found);
-      if Found then
+      if Util.Try (Ctx.Flow, "NDATA ") then
         -- Unparsed entity: the value is the notation
         Parsed := False;
         Util.Skip_Separators (Ctx.Flow);
         Util.Parse_Until_Char (Ctx.Flow, Util.Space & Util.Stop);
         Util.Unget (Ctx.Flow);
-        Util.Get_Curr_Str (Ctx.Flow, Value);
+        Value := Util.Get_Curr_Str (Ctx.Flow);
         if not Util.Name_Ok (Value) then
           Util.Error (Ctx.Flow, "Invalid name of NDATA");
         end if;
@@ -787,14 +776,12 @@ package body Dtd is
     Util.Skip_Separators (Ctx.Flow);
 
     -- Must stop now
-    Util.Get (Ctx.Flow, Char);
-    if Char /= Util.Stop then
+    if Util.Get (Ctx.Flow) /= Util.Stop then
       Util.Error (Ctx.Flow, "Unexpected character at end of entity " & Char);
     end if;
 
     -- Check that it does not exist. Discard re-definition
-    Entity_Mng.Exists (Adtd.Entity_List, Name, Parameter, Found);
-    if Found then
+    if Entity_Mng.Exists (Adtd.Entity_List, Name, Parameter) then
       Trace ("Dtd discarding re-definition of entity "
            & Parstr.Image  & Name.Image);
       Util.Warning (Ctx, "Entity " & Parstr.Image & Name.Image
@@ -839,7 +826,7 @@ package body Dtd is
     -- Parse notation name
     Util.Skip_Separators (Ctx.Flow);
     Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
-    Util.Get_Curr_Str (Ctx.Flow, Name);
+    Name := Util.Get_Curr_Str (Ctx.Flow);
     Util.Expand_Name (Ctx, Adtd, Name, Ref_Dtd_Mark);
     -- Strip separators
     Util.Normalize (Name);
@@ -850,16 +837,16 @@ package body Dtd is
     Util.Skip_Separators (Ctx.Flow);
     -- See if SYSTEM or PUBLIC
     Public := False;
-    Util.Try (Ctx.Flow, "SYSTEM ", Found);
+    Found := Util.Try (Ctx.Flow, "SYSTEM ");
     if not Found then
       Public := True;
-      Util.Try (Ctx.Flow, "PUBLIC ", Found);
+      Found := Util.Try (Ctx.Flow, "PUBLIC ");
     end if;
     if not Found then
       Util.Error (Ctx.Flow, "Invalid notation definition");
     end if;
     -- Parse URI or Id
-    Util.Get (Ctx.Flow, Char);
+    Char := Util.Get (Ctx.Flow);
     if Char = ''' then
       Util.Parse_Until_Char (Ctx.Flow, "'");
     elsif Char = '"' then
@@ -867,12 +854,12 @@ package body Dtd is
     else
       Util.Error (Ctx.Flow, "Unexpected delimiter of notation");
     end if;
-    Util.Get_Curr_Str (Ctx.Flow, Public_Id);
+    Public_Id := Util.Get_Curr_Str (Ctx.Flow);
     -- Parse URI if PUBLIC not end
     Util.Skip_Separators (Ctx.Flow);
-    Util.Try (Ctx.Flow, Util.Stop & "", Found, False);
+    Found := Util.Try (Ctx.Flow, Util.Stop & "", False);
     if Public and then not Found then
-      Util.Get (Ctx.Flow, Char);
+      Char := Util.Get (Ctx.Flow);
       if Char = ''' then
         Util.Parse_Until_Char (Ctx.Flow, "'");
       elsif Char = '"' then
@@ -881,11 +868,10 @@ package body Dtd is
         Util.Error (Ctx.Flow, "Invalid notation definition");
       end if;
     end if;
-    Util.Get_Curr_Str (Ctx.Flow, System_Id);
+    System_Id := Util.Get_Curr_Str (Ctx.Flow);
     -- Must stop now
     Util.Skip_Separators (Ctx.Flow);
-    Util.Get (Ctx.Flow, Char);
-    if Char /= Util.Stop then
+    if Util.Get (Ctx.Flow) /= Util.Stop then
       Util.Error (Ctx.Flow, "Unexpected character at end of notation " & Char);
     end if;
 
@@ -908,8 +894,8 @@ package body Dtd is
 
   -- Parse a conditional directive
   procedure Parse_Condition (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
-    Word : As.U.Asu_Us;
     Char : Character;
+    Word : As.U.Asu_Us;
     Nb_Open : Natural;
     Index : Natural;
   begin
@@ -922,14 +908,14 @@ package body Dtd is
     Util.Skip_Separators (Ctx.Flow);
     Util.Parse_Until_Char (Ctx.Flow, Util.Space & "[");
     Util.Unget (Ctx.Flow);
-    Util.Get_Curr_Str (Ctx.Flow, Word);
+    Word := Util.Get_Curr_Str (Ctx.Flow);
 
     -- Expand dtd entities and check keywork and format
     Util.Expand_Name (Ctx, Adtd, Word, Ref_Dtd_Mark);
     Util.Normalize (Word);
     if Word.Image = "IGNORE" or else Word.Image = "INCLUDE" then
       Util.Skip_Separators (Ctx.Flow);
-      Util.Get (Ctx.Flow, Char);
+      Char := Util.Get (Ctx.Flow);
       if Char /= '[' then
         Util.Error (Ctx.Flow, "Unexpected character " & Char & " in condition");
       end if;
@@ -943,7 +929,7 @@ package body Dtd is
       Nb_Open := 1;
       loop
         Util.Parse_Until_Str (Ctx.Flow, "]]" & Util.Stop);
-        Util.Get_Curr_Str (Ctx.Flow, Word);
+        Word := Util.Get_Curr_Str (Ctx.Flow);
         Util.Normalize_Spaces (Word);
         -- Count the number of instances of "<!["
         -- Add to the number of expected "]]>"
@@ -976,17 +962,17 @@ package body Dtd is
     -- Xml instruction not allowed any more
     Adtd.Xml_Found := True;
     -- Check for Comment
-    Util.Try (Ctx.Flow, Util.Comment, Ok, Consume => False);
+    Ok := Util.Try (Ctx.Flow, Util.Comment, Consume => False);
     if not Ok then
       -- Check for DOCTYPE
-      Util.Try (Ctx.Flow, Util.Doctype, Ok, Consume => False);
+      Ok := Util.Try (Ctx.Flow, Util.Doctype, Consume => False);
     end if;
     if Ok then
       Parse_Directive (Ctx, Adtd, False, Ref_Dtd_Mark, null);
       return;
     end if;
     -- Check for conditional directive
-    Util.Get (Ctx.Flow, Char);
+    Char := Util.Get (Ctx.Flow);
     if Char = '[' then
       Parse_Condition (Ctx, Adtd);
       return;
@@ -995,7 +981,7 @@ package body Dtd is
     end if;
     -- Now, expect KEYWORD and a space
     Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
-    Util.Get_Curr_Str (Ctx.Flow, Word);
+    Word := Util.Get_Curr_Str (Ctx.Flow);
     declare
       Str : constant String := Word.Image;
     begin
@@ -1040,25 +1026,25 @@ package body Dtd is
     loop
       Util.Skip_Separators (Ctx.Flow);
       -- Try instruction
-      Util.Try (Ctx.Flow, Util.Start & Util.Instruction, Found);
+      Found := Util.Try (Ctx.Flow, Util.Start & Util.Instruction);
       if Found then
         Parse_Instruction (Ctx, Adtd, External);
       end if;
       if not Found then
         -- Try directive
-        Util.Try (Ctx.Flow, Util.Start & Util.Directive, Found);
+        Found := Util.Try (Ctx.Flow, Util.Start & Util.Directive);
         if Found then
           Parse_Directive (Ctx, Adtd);
         end if;
       end if;
       if not Found then
         -- Try parameter entity '%'
-        Util.Try (Ctx.Flow, Util.Ent_Param & "", Found);
+        Found := Util.Try (Ctx.Flow, Util.Ent_Param & "");
         if Found then
           -- Get entity reference
           Util.Unget (Ctx.Flow);
           Util.Parse_Until_Char (Ctx.Flow, Util.Ent_End & "");
-          Util.Get_Curr_Str (Ctx.Flow, Entity_Value);
+          Entity_Value := Util.Get_Curr_Str (Ctx.Flow);
           Entity_Value := Entity_Value & Util.Ent_End;
           -- Expand
           Trace ("Dtd expanding parameter entity " & Entity_Value.Image);
@@ -1073,7 +1059,7 @@ package body Dtd is
       end if;
       if not Found and then Adtd.Include_Level /= 0 then
         -- Detect end of include
-        Util.Try (Ctx.Flow, "]]" & Util.Stop, Found);
+        Found := Util.Try (Ctx.Flow, "]]" & Util.Stop);
         if Found then
           Trace ("Dtd ending inclusion" & Adtd.Include_Level'Img);
           Adtd.Include_Level := Adtd.Include_Level - 1;
@@ -1082,7 +1068,7 @@ package body Dtd is
       if not Found then
         -- Should be the end: End_Error if external, ']' if internal
         begin
-          Util.Get (Ctx.Flow, Char);
+          Char := Util.Get (Ctx.Flow);
         exception
           when Util.End_Error =>
             if External then
@@ -1680,7 +1666,7 @@ package body Dtd is
                    Info_Sep & Attr & Info_Sep) /= 0;
         if Att_Set then
           -- Get the Xml Attribute
-          Tree_Mng.Get_Attribute (Ctx.Elements.all, As.U.Tus(Attr), Xml_Val);
+          Xml_Val := Tree_Mng.Get_Attribute (Ctx.Elements.all, As.U.Tus(Attr));
         end if;
 
         --  Any Required in dtd must appear in xml
@@ -1734,10 +1720,12 @@ package body Dtd is
                     := Attinfo.List.Slice (2, Sep - 1 );
             Attr_Us : constant As.U.Asu_Us := As.U.Tus (Attr);
             Namespace : As.U.Asu_Us;
+            pragma Unreferenced (Namespace);
           begin
             if Ctx.Expand then
               if Ctx.Namespace then
-                Namespaces.Get (Ctx, Attr_Us, False, Namespace);
+                -- Just to check existance of the Namespace
+                Namespace := Namespaces.Get (Ctx, Attr_Us, False);
               end if;
               Trace ("Dtd adding attribute " & Attr_Us.Image & " type " & Td
                     & " val " & Dtd_Val);
@@ -1950,7 +1938,7 @@ package body Dtd is
           exit;
         end if;
         -- Get namespace for this attribute
-        Namespaces.Get (Ctx, Cell.Name, False, Namespace);
+        Namespace := Namespaces.Get (Ctx, Cell.Name, False);
         -- Check uniqueness of expanded name
         Expanded := Expand_Name (Cell.Name, Namespace);
         if Str_Util.Locate (
@@ -1973,18 +1961,16 @@ package body Dtd is
   end Check_Attributes;
 
   -- Is this element defined as Mixed
-  procedure Is_Mixed (Adtd : in out Dtd_Type;
-                      Elt  : in As.U.Asu_Us;
-                      Yes  : out Boolean) is
+  function Is_Mixed (Adtd : in out Dtd_Type;
+                     Elt  : in As.U.Asu_Us) return Boolean is
     Info : Info_Rec;
     Info_Found : Boolean;
     use type As.U.Asu_Us;
   begin
     -- Default: No (not mixed)
-    Yes := False;
     if not Adtd.Set then
       -- No dtd => not mixed
-      return;
+      return False;
     end if;
     -- Read ELEMENT def of Elt
     Info.Name := As.U.Tus ("Elt" & Info_Sep) & Elt;
@@ -1993,25 +1979,23 @@ package body Dtd is
       Adtd.Info_List.Read (Info);
     else
       -- Not found => Elt not defined
-      return;
+      return False;
     end if;
     -- Element is mixed?
-    Yes := Info.List.Element (1) = 'M';
+    return Info.List.Element (1) = 'M';
   end Is_Mixed;
 
   -- Is this element defined in internal dtd or else has not Content def
-  procedure Can_Have_Spaces (Adtd : in out Dtd_Type;
-                             Elt  : in As.U.Asu_Us;
-                             Yes  : out Boolean) is
+  function Can_Have_Spaces (Adtd : in out Dtd_Type;
+                             Elt  : in As.U.Asu_Us) return Boolean is
     Info : Info_Rec;
     Info_Found : Boolean;
     use type As.U.Asu_Us;
   begin
     -- Default: Yes (not Content or else internal)
-    Yes := True;
     if not Adtd.Set then
       -- No dtd => not Content
-      return;
+      return True;
     end if;
     -- Read ELEMENT def of Elt
     Info.Name := As.U.Tus ("Elt" & Info_Sep) & Elt;
@@ -2020,30 +2004,28 @@ package body Dtd is
       Adtd.Info_List.Read (Info);
     else
       -- Not found => Elt not defined
-      return;
+      return True;
     end if;
     -- Element can have spaces if not Content
     if Info.List.Element (1) /= 'C' then
-      return;
+      return True;
     end if;
     -- The element is defined in internal DTD if there is #@Elt# in Internals
-    Yes := Str_Util.Locate (Adtd.Internals.Image,
-          Info_Sep & "@" & Elt.Image & Info_Sep) /= 0;
+    return Str_Util.Locate (Adtd.Internals.Image,
+                            Info_Sep & "@" & Elt.Image & Info_Sep) /= 0;
   end Can_Have_Spaces;
 
   -- Is this attribute of this element CDATA
-  procedure Is_Cdata (Adtd      : in out Dtd_Type;
-                      Elt, Attr : in As.U.Asu_Us;
-                      Yes       : out Boolean) is
+  function Is_Cdata (Adtd      : in out Dtd_Type;
+                     Elt, Attr : in As.U.Asu_Us) return Boolean is
     Info : Info_Rec;
     Info_Found : Boolean;
     use type As.U.Asu_Us;
   begin
     -- Default: Yes, it is CDATA
-    Yes := True;
     if not Adtd.Set then
       -- No dtd => CDATA
-      return;
+      return True;
     end if;
     -- Read ATTLIST def of Elt
     Info.Name := As.U.Tus ("Atl" & Info_Sep) & Elt;
@@ -2052,7 +2034,7 @@ package body Dtd is
       Adtd.Info_List.Read (Info);
     end if;
     if not Info_Found or else Info.List.Is_Null then
-      return;
+      return True;
     end if;
     -- Locate attribute name in List
     declare
@@ -2063,12 +2045,12 @@ package body Dtd is
                                      & Info_Sep & Info_Sep);
       if Index = 0 then
         -- Not found
-        return;
+        return True;
       end if;
       -- Skip # and attribute name and ##
       Index := Index + Attr.Length + 3;
       -- 'S' for CDATA
-      Yes := Info.List.Element (Index) = 'S';
+      return Info.List.Element (Index) = 'S';
     end;
   end Is_Cdata;
 
@@ -2136,7 +2118,7 @@ package body Dtd is
     end if;
     -- Set Is_Mixed from Dtd in Children
     Ctx.Elements.Read (Cell);
-    Is_Mixed (Adtd, Cell.Name, Children.Is_Mixed);
+    Children.Is_Mixed := Is_Mixed (Adtd, Cell.Name);
     Can_Have_Text := Children.Is_Mixed;
     -- Read current element from tree and make its children lists
     Children.Is_Empty := True;
