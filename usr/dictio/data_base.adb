@@ -88,8 +88,8 @@ package body Data_Base is
     Set (Item);
   end Set_Then_Get_Crc;
 
-  procedure Get (Name : in Item_Name; Kind : in Item_Kind; Item : out Item_Rec) is
-    Itm : Item_Rec;
+  function Get (Name : in Item_Name; Kind : in Item_Kind) return Item_Rec is
+    Item : Item_Rec;
     Acc : Item_Access;
   begin
     if H_Use then
@@ -100,14 +100,15 @@ package body Data_Base is
         Item := Acc.all;
       end if;
     else
-      Itm.Name := Name;
-      Itm.Kind := Kind;
-      if Search_Name (Item_List, Itm, From => Item_List_Mng.Absolute) then
+      Item.Name := Name;
+      Item.Kind := Kind;
+      if Search_Name (Item_List, Item, From => Item_List_Mng.Absolute) then
         Item_List.Read (Item, Item_List_Mng.Current);
       else
         Item := No_Item;
       end if;
     end if;
+    return Item;
   end Get;
 
   procedure Reset is
@@ -125,23 +126,26 @@ package body Data_Base is
 
 
   -- Item_Name is empty when no more item
-  procedure Read_First (Item : out Item_Rec) is
+  function Read_First return Item_Rec is
+    Item : Item_Rec;
   begin
     if Item_List.Is_Empty then
-      Item := No_Item;
-      return;
+      return No_Item;
     end if;
     Item_List.Rewind;
     Item_List.Read (Item, Item_List_Mng.Current);
+    return Item;
   end Read_First;
 
-  procedure Read_Next (Item : out Item_Rec) is
+  function Read_Next return Item_Rec is
+    Item : Item_Rec;
   begin
     Item_List.Move_To;
     Item_List.Read (Item, Item_List_Mng.Current);
+    return Item;
   exception
     when Item_List_Mng.Not_In_List =>
-      Item := No_Item;
+      return No_Item;
   end Read_Next;
 
 
@@ -159,11 +163,11 @@ package body Data_Base is
     end if;
 
     Pos := Item_List.Get_Position;
-    Read_First (Item);
+    Item := Read_First;
     loop
       exit when Item = No_Item;
       Buffer.Add (Item.Crc);
-      Read_Next (Item);
+      Item := Read_Next;
     end loop;
 
     Item_List.Move_At (Pos);

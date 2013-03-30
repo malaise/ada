@@ -41,7 +41,7 @@ package body Alias is
         Look_Item := Data_Base.No_Item;
         Look_Item.Name(1 .. Name.Length) := Name.Image;
 
-        Data_Base.Get (Look_Item.Name, Data_Base.Alias_Kind, Got_Item);
+        Got_Item := Data_Base.Get (Look_Item.Name, Data_Base.Alias_Kind);
         if Got_Item.Data_Len /= 0 then
           -- Got an active alias
           Searching := False;

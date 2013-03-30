@@ -27,7 +27,8 @@ package Screen is
   type S_Action_List is (Data, Read_Points, Write_Points, New_Points,
       Modify_1, Add_1, Suppress_1, Approximate, Sort_Points,
       Get_Degree, Polynom, Y_F_X, Scales, Boundaries, Curve, Exit_Approx);
-  procedure Put_Title (S_Action : in S_Action_List; Option : in Boolean := False);
+  procedure Put_Title (S_Action : in S_Action_List;
+                       Option : in Boolean := False);
 
   -- Truncate head of string:  "> " & truncated head
   -- Or or padds with spaces
@@ -65,11 +66,11 @@ package Screen is
   procedure Put_Point_Status;
 
   -- Init for file search, for get coordinate...
-  procedure Init_For_Get (Cursor_Field : out Afpx.Field_Range;
-                          Subtitle : in Boolean := False);
+  function Init_For_Get (Subtitle : in Boolean := False)
+                        return Afpx.Field_Range;
 
   -- Init screen for main menu1
-  procedure Init_For_Main1 (Cursor_Field : out Afpx.Field_Range);
+  function Init_For_Main1 return Afpx.Field_Range;
 
   -- Store current file_name for further menus
   -- Put stored file
@@ -77,10 +78,10 @@ package Screen is
   procedure Put_File;
 
   -- Init screen for main menu2
-  procedure Init_For_Main2 (Cursor_Field : out Afpx.Field_Range);
+  function Init_For_Main2 return Afpx.Field_Range;
 
   -- Init screen for main submenu21
-  procedure Init_For_Main21 (Cursor_Field : out Afpx.Field_Range);
+  function Init_For_Main21 return Afpx.Field_Range;
 
 end Screen;
 

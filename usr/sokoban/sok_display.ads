@@ -60,7 +60,8 @@ package Sok_Display is
 
   -- get frame number
   type Get_Result_List is (Set, Esc, Refresh);
-  procedure Get_No_Frame (No : out Sok_Types.Frame_Range; Result : out Get_Result_List);
+  procedure Get_No_Frame (No : out Sok_Types.Frame_Range;
+                          Result : out Get_Result_List);
   Format_Error : exception;
 
   -- ring a bell

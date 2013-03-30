@@ -17,7 +17,8 @@ procedure Export is
   Str  : Unit_Format.Oper_Str;
   Oper : Oper_Def.Oper_Rec;
   Oper_List : Oper_List_Mng.List_Type;
-  Can_Write : Boolean;
+  Dummy : Boolean;
+  pragma Unreferenced (Dummy);
   No : Positive;
 
 begin
@@ -44,7 +45,7 @@ begin
 
   -- Load account and rewind
   begin
-    File_Mng.Load(Argument.Get_Parameter(Occurence => 1), Oper_List, Can_Write);
+    Dummy := File_Mng.Load(Argument.Get_Parameter(Occurence => 1), Oper_List);
   exception
     when File_Mng.F_Access_Error =>
       Basic_Proc.Put_Line_Error ("Error. Cannot read from file "

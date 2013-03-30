@@ -20,7 +20,8 @@ package Players is
   function  Next_Action    (Color : Space.Color_List) return Action_Rec;
 
   -- Direct access :  Returns a not Valid Action when not in list
-  function Get_Action (Color : Space.Color_List; Index : Positive) return Action_Rec;
+  function Get_Action (Color : Space.Color_List;
+                       Index : Positive) return Action_Rec;
 
   -- Find an action (Move, Castle, Take, Take_En_Passant, Promote, Take_And_Promote) matching
   --  from and to. Not valid if not found.
@@ -29,10 +30,11 @@ package Players is
   More_Than_One : exception;
   function Find_Action (Color : Space.Color_List;
                         From, To : Space.Square_Coordinate;
-                        Promote  : in Pieces.Piece_Kind_List) return Action_Rec;
+                        Promote  : Pieces.Piece_Kind_List) return Action_Rec;
 
   -- Check that a valid action exists the the list of a player
- function Action_Exists (Color : Space.Color_List; Action : Valid_Action_Rec) return Boolean;
+ function Action_Exists (Color : Space.Color_List;
+                         Action : Valid_Action_Rec) return Boolean;
 
 end Players;
 

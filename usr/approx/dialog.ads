@@ -6,7 +6,7 @@ package Dialog is
   function Confirm_Lost return Boolean;
 
   -- Remove trailing spaces. No heading nor intermediate spaces allowed
-  procedure Parse_Spaces (Txt : in out As.U.Asu_Us; Ok : out Boolean);
+  function Parse_Spaces (Txt : in out As.U.Asu_Us) return Boolean;
 
   -- Get a coordinate
   --  If Set is set in, then a Put_Then_Get is performed, else a get

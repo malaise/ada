@@ -136,9 +136,9 @@ package body Action is
           end if;
         end loop Wait_Event;
         Clicked := not Clicked;
-        Screen.Get_Selected ( Where => (Row => Mouse_Status.Row,
-                                        Col => Mouse_Status.Col),
-                              What => Cur_Selection);
+        Cur_Selection := Screen.Get_Selected (
+           (Row => Mouse_Status.Row,
+            Col => Mouse_Status.Col));
       end;
 
 

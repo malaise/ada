@@ -552,7 +552,7 @@ package body Screen is
   ----------
   -- HELP --
   ----------
-  procedure Put_Help (Help : Help_State) is
+  procedure Put_Help (Help : in Help_State) is
   begin
     Help_Win.Clear;
     case Help is
@@ -665,62 +665,68 @@ package body Screen is
       Con_Io.Row_Range (Common.Max_Number_Propal) - (Row / 2) );
   end To_Propal;
 
-  procedure Get_Selected (
-   Where : in Con_Io.Square;
-   What  : out Selection_Rec) is
+  function Get_Selected (Where : Con_Io.Square) return Selection_Rec is
     Square : Con_Io.Square;
+    Result : Selection_Rec;
     use Common;
   begin
-    What := (Selection_Kind => Nothing, Selection => Nothing);
+    Result := (Selection_Kind => Nothing, Selection => Nothing);
 
     if Propal_Win.In_Window (Where) then
       Square := Propal_Win.To_Relative (Where);
       if Square.Row mod 2 /= 0 then
-        What.Selection := Propal;
-        return;
+        Result.Selection := Propal;
+        return Result;
       end if;
       if Square.Col mod (Propal_Col_Width+1) = Propal_Col_Width then
-        What.Selection := Propal;
-        return;
+        Result.Selection := Propal;
+        return Result;
       end if;
-      What := (Selection_Kind => Propal,
-               Propal_No => To_Propal (Square.Row),
-               Column_No => Common.Level_Range(
-                             (Square.Col / (Propal_Col_Width+1))+1) );
+      Result := (Selection_Kind => Propal,
+                 Propal_No => To_Propal (Square.Row),
+                 Column_No => Common.Level_Range(
+                               (Square.Col / (Propal_Col_Width+1))+1) );
+      return Result;
     elsif Try_Win.In_Window (Where) then
       Square := Try_Win.To_Relative (Where);
       if Square.Row mod 2 /= 0 then
-        What.Selection := Try;
-        return;
+        Result.Selection := Try;
+        return Result;
       end if;
-      What := (Selection_Kind => Try,
-               Try_No => To_Propal (Square.Row) );
+      Result := (Selection_Kind => Try,
+                 Try_No => To_Propal (Square.Row) );
+      return Result;
     elsif Color_Win.In_Window (Where) then
       Square := Color_Win.To_Relative (Where);
       if Square.Row mod 2 /= 0 then
-        What.Selection := Color;
-        return;
+        Result.Selection := Color;
+        return Result;
       end if;
-      What := (
+      Result := (
        Selection_Kind => Color,
        Color_No => Common.Eff_Color_Range (1 + (Square.Row / 2)) );
+      return Result;
     elsif Menu_Win.In_Window (Where) then
       Square := Menu_Win.To_Relative (Where);
-      What := (Selection_Kind => Menu);
+      Result := (Selection_Kind => Menu);
+      return Result;
     elsif Level_Win.In_Window (Where) then
       Square := Level_Win.To_Relative (Where);
-      What.Selection := Level;
+      Result.Selection := Level;
       if (Square.Col) mod 2 /= 0 then
-        return;
+        return Result;
       end if;
-      What := (
+      Result := (
        Selection_Kind => Level,
        Level_No => Common.Last_Level_Range (
         (Square.Col - 2) / 2 + Integer (Common.Last_Level_Range'First)) );
+      return Result;
     elsif Exit_Win.In_Window (Where) then
       Square := Exit_Win.To_Relative (Where);
-      What := (Selection_Kind => Exit_Game);
+      Result := (Selection_Kind => Exit_Game);
+      return Result;
     end if;
+    return Result;
 
   end Get_Selected;
 

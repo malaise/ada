@@ -88,7 +88,8 @@ package body Players is
     return Result;
   end Next_Action;
 
-  function Get_Action (Color : Space.Color_List; Index : Positive) return Action_Rec is
+  function Get_Action (Color : Space.Color_List;
+                       Index : Positive) return Action_Rec is
     Result : Valid_Action_Rec;
     Pos : Positive;
   begin
@@ -134,7 +135,7 @@ package body Players is
 
   function Find_Action (Color : Space.Color_List;
                         From, To : Space.Square_Coordinate;
-                        Promote  : in Pieces.Piece_Kind_List) return Action_Rec is
+                        Promote  : Pieces.Piece_Kind_List) return Action_Rec is
     Ref : Valid_Action_Rec;
     Res : Valid_Action_Rec;
   begin
@@ -176,7 +177,8 @@ package body Players is
 
   function Search_Same_Action is new Action_List_Mng.Search (Same);
 
-  function Action_Exists (Color : Space.Color_List; Action : Valid_Action_Rec) return Boolean is
+  function Action_Exists (Color : Space.Color_List;
+                          Action : Valid_Action_Rec) return Boolean is
   begin
     return Search_Same_Action (Actions(Color), Action,
                                From => Action_List_Mng.Absolute);

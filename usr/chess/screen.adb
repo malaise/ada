@@ -395,7 +395,8 @@ package body Screen is
 
   procedure Put (Disp_Color : in Space.Color_List;
                  Move_Color : in Space.Color_List;
-                 Message : in String; Ack : in Boolean := False) is
+                 Message    : in String;
+                 Ack        : in Boolean := False) is
     Str  : Wide_String (1 .. 0);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;

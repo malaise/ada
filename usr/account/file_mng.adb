@@ -13,15 +13,15 @@ package body File_Mng is
 
 
   -- Overwrites the list from file content
-  procedure Load (File_Name : in String;
-                  Oper_List : in out Oper_List_Mng.List_Type;
-                  Can_Write : out Boolean) is
+  function Load (File_Name : in String;
+                Oper_List : in out Oper_List_Mng.List_Type) return Boolean is
     File : Read_Oper_Io.File_Type;
     -- A record to read
     Loc_Read_Oper : Oper_Def.Read_Oper_Rec;
     Loc_Oper : Oper_Def.Oper_Rec;
     -- A list for tempo read
     Loc_List : Oper_List_Mng.List_Type;
+    Can_Write : Boolean;
     use Oper_Def;
   begin
     -- First test we can access file to read
@@ -75,7 +75,7 @@ package body File_Mng is
         when Read_Oper_Io.End_Error =>
           exit;
       end;
-      Oper_Def.Convert (Loc_Read_Oper, Loc_Oper);
+      Loc_Oper := Oper_Def.Convert (Loc_Read_Oper);
       Loc_List.Insert (Loc_Oper);
     end loop;
 
@@ -86,7 +86,7 @@ package body File_Mng is
     Oper_List.Insert_Copy (Loc_List);
     Loc_List.Delete_List (True);
     Oper_List.Rewind (True, Oper_List_Mng.Prev);
-
+    return Can_Write;
   exception
     when F_Access_Error =>
       raise;

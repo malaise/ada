@@ -30,7 +30,7 @@ package Ios is
   function Wait (Timeout_Ms : Integer) return Event_Type;
 
   -- Read next sentence. Wait up to Timeout
-  function Read (Timeout_Ms : in Integer) return Event_Type;
+  function Read (Timeout_Ms : Integer) return Event_Type;
 
   -- Send a sentence. Disconnection if error
   procedure Send (Text : in As.U.Asu_Us;

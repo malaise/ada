@@ -305,7 +305,7 @@ package body Ios is
   -- If Disconnection, other parameters are not significant
   -- Elsif Timeout, other parameters is not significant
   -- Else Text is significant
-  function Read (Timeout_Ms : in Integer) return Event_Type is
+  function Read (Timeout_Ms : Integer) return Event_Type is
     Loc_Event : Event_Type;
   begin
     Debug.Log ("Read " & Timeout_Ms'Img);

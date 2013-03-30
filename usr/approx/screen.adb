@@ -289,22 +289,22 @@ package body Screen is
 
 
 
-  procedure Init_For_Main1 (Cursor_Field : out Afpx.Field_Range) is
+  function Init_For_Main1 return Afpx.Field_Range is
   begin
     -- Disable Ok & cancel
     Afpx.Set_Field_Activation(Ok_Button_Fld, False);
     Afpx.Set_Field_Activation(Cancel_Button_Fld, False);
     -- Disable Get
     Afpx.Set_Field_Activation(Get_Fld, False);
-    -- So whatever cursor field
-    Cursor_Field := 1;
     Put_Title(Data);
     Put_Point_Status;
+    -- So whatever cursor field
+    return 1;
   end Init_For_Main1;
 
   -- Init for file search
-  procedure Init_For_Get (Cursor_Field : out Afpx.Field_Range;
-                          Subtitle : in Boolean := False) is
+  function Init_For_Get (Subtitle : in Boolean := False)
+                        return Afpx.Field_Range is
   begin
     -- No menu.
     Clear_Menu(Subtitle);
@@ -314,7 +314,7 @@ package body Screen is
     Afpx.Set_Field_Activation(Get_Fld, True);
     Afpx.Set_Field_Activation(Ok_Button_Fld, True);
     Afpx.Set_Field_Activation(Cancel_Button_Fld, True);
-    Cursor_Field := Get_Fld;
+    return Get_Fld;
   end Init_For_Get;
 
   -- Store current file_name for further menus
@@ -335,34 +335,34 @@ package body Screen is
                        Normal (Resol.R_Degree, Max_Degree_Width));
   end Put_Degree;
 
-  procedure Init_For_Main2 (Cursor_Field : out Afpx.Field_Range) is
+  function Init_For_Main2 return Afpx.Field_Range is
   begin
     -- Disable Ok & Cancel
     Afpx.Set_Field_Activation(Ok_Button_Fld, False);
     Afpx.Set_Field_Activation(Cancel_Button_Fld, False);
     -- Disable Get
     Afpx.Set_Field_Activation(Get_Fld, False);
-    -- So whatever cursor field
-    Cursor_Field := 1;
     -- Lock points
     Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
     Put_Title(Approximate);
     Put_Point_Status;
     Put_Degree;
+    -- So whatever cursor field
+    return 1;
   end Init_For_Main2;
 
-  procedure Init_For_Main21 (Cursor_Field : out Afpx.Field_Range) is
+  function Init_For_Main21 return Afpx.Field_Range is
   begin
     -- Disallow Cancel
     Afpx.Set_Field_Activation(Cancel_Button_Fld, False);
     -- Disable Get
     Afpx.Set_Field_Activation(Get_Fld, False);
-    -- So whatever cursor field
-    Cursor_Field := 1;
     -- Lock points
     Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
     Put_Title(Boundaries);
     Put_Point_Status;
+    -- So whatever cursor field
+    return 1;
   end Init_For_Main21;
 
 end Screen;

@@ -72,7 +72,7 @@ private
   end record;
 
   -- Initialize a scrambler
-  procedure Set (Scrambler : out Scrambler_Type; To : String);
+  procedure Set (Scrambler : out Scrambler_Type; To : in String);
 
   Default_Scrambler : constant Scrambler_Type := (Mapping => (others => 0));
 

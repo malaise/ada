@@ -49,10 +49,9 @@ package body Oper_Def is
   end Smaller;
 
   -- To be adapted temporaly when importing
-  procedure Convert (Read_Oper : in Read_Oper_Rec;
-                     Oper      : out Oper_Rec) is
+  function Convert (Read_Oper : in Read_Oper_Rec) return Oper_Rec is
   begin
-    Oper := Oper_Rec (Read_Oper);
+    return Oper_Rec (Read_Oper);
   end Convert;
 
 end Oper_Def;

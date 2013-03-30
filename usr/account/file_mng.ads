@@ -4,9 +4,8 @@ package File_Mng is
   package Oper_List_Mng renames Oper_Dyn_List_Mng.Dyn_List;
 
   -- Overwrites the list from file content
-  procedure Load (File_Name : in String;
-                  Oper_List : in out Oper_List_Mng.List_Type;
-                  Can_Write : out Boolean);
+  function Load (File_Name : in String;
+                 Oper_List : in out Oper_List_Mng.List_Type) return Boolean;
 
   -- Save the list in file
   procedure Save (File_Name : in String;

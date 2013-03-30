@@ -45,18 +45,18 @@ package body Menu2 is
         null;
       when Partial =>
         Afpx.Use_Descriptor(Afpx_Xref.Compute.Dscr_Num, False);
-        Screen.Init_For_Main2 (Cursor_Field);
+        Cursor_Field := Screen.Init_For_Main2;
         Screen.Put_File;
       when List =>
         -- polynom display needs reset of list
         Afpx.Use_Descriptor(Afpx_Xref.Compute.Dscr_Num, False);
         Set_Points_List;
-        Screen.Init_For_Main2 (Cursor_Field);
+        Cursor_Field := Screen.Init_For_Main2;
         Screen.Put_File;
       when Full =>
         Afpx.Use_Descriptor(Afpx_Xref.Compute.Dscr_Num, True);
         Set_Points_List;
-        Screen.Init_For_Main2 (Cursor_Field);
+        Cursor_Field := Screen.Init_For_Main2;
         Screen.Put_File;
     end case;
     -- Activate or not according to curve activity
@@ -233,7 +233,7 @@ package body Menu2 is
       Resol.R_Points_Modification;
       Menu21.Reset_Bounds;
     end if;
-    Screen.Init_For_Main2 (Cursor_Field);
+    Cursor_Field := Screen.Init_For_Main2;
     Screen.Put_File;
 
     -- Update Nb of points and save_status

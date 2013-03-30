@@ -71,7 +71,7 @@ package Fifos is
                    Connection_Cb   : Connection_Callback_Access;
                    Reception_Cb    : Reception_Callback_Access;
                    End_Overflow_Cb : End_Overflow_Callback_Access)
-    return Fifo_Id;
+                  return Fifo_Id;
 
     -- Close a connection to a remote
     --  or close a connection from a remote

@@ -58,8 +58,8 @@ package Oper_Def is
   type Read_Oper_Rec is new Oper_Rec;
 
   -- Convertion from read oper to new (current) one
-  procedure Convert (Read_Oper : in Oper_Def.Read_Oper_Rec;
-                     Oper      : out Oper_Def.Oper_Rec);
+  function Convert (Read_Oper : in Oper_Def.Read_Oper_Rec)
+                   return Oper_Def.Oper_Rec;
 
   -- Criteria for sorting opers by dates
   function Before (Oper_1, Oper_2 : Oper_Rec) return Boolean;

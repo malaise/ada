@@ -21,7 +21,8 @@ package Screen is
   -- Time is erased if Ack
   procedure Put (Disp_Color : in Space.Color_List;
                  Move_Color : in Space.Color_List;
-                 Message : in String; Ack : in Boolean := False);
+                 Message    : in String;
+                 Ack        : in Boolean := False);
 
   -- Put a move
   procedure Put_Move (Color  : in Space.Color_List;

@@ -540,7 +540,7 @@ package body Definition is
   end Read_Last_Byte;
 
   -- Initialize a scrambler
-  procedure Set (Scrambler : out Scrambler_Type; To : String) is
+  procedure Set (Scrambler : out Scrambler_Type; To : in String) is
     use type Types.Lid;
   begin
     if To'Length /= Scrambler.Mapping'Length then

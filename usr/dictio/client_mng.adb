@@ -81,7 +81,7 @@ package body Client_Mng is
         return False;
       when Client_Com.Get =>
         Alias.Resolve (Msg.Item);
-        Data_Base.Get (Msg.Item.Name, Msg.Item.Kind, Msg.Item);
+        Msg.Item := Data_Base.Get (Msg.Item.Name, Msg.Item.Kind);
         begin
           Send_Res := Client_Com.Dictio_Send (Dscr, null, null, 0.0, Msg);
           if Dictio_Debug.Level_Array(Dictio_Debug.Client_Data) then

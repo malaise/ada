@@ -158,7 +158,7 @@ package body Sync_Mng is
   begin
 
 
-    Data_Base.Read_First (Item);
+    Item := Data_Base.Read_First;
     Bytes_Sent := 0;
 
     Items:
@@ -190,7 +190,7 @@ package body Sync_Mng is
       end if;
 
       -- Next item
-      Data_Base.Read_Next (Item);
+      Item := Data_Base.Read_Next;
 
     end loop Items;
 
@@ -207,8 +207,7 @@ package body Sync_Mng is
              Event_Mng.Out_Event_List;
   begin
 
-
-    Data_Base.Read_First (Item);
+    Item := Data_Base.Read_First;
     Bytes_Sent := 0;
 
     Items:
@@ -278,7 +277,7 @@ package body Sync_Mng is
 
       end loop Dests;
 
-      Data_Base.Read_Next (Item);
+      Item := Data_Base.Read_Next;
 
     end loop Items;
 

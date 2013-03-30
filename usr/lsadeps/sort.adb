@@ -53,7 +53,7 @@ package body Sort is
 
   -- store Path with prio
   Current_Prio : Positive := 1;
-  procedure Add_Path (Path : As.U.Asu_Us) is
+  procedure Add_Path (Path : in As.U.Asu_Us) is
     R : Prio_Rec;
     L : Natural;
   begin

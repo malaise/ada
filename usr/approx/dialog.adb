@@ -15,7 +15,7 @@ package body Dialog is
 
 
   -- Remove trailing spaces. No heading nor intermediate spaces allowed
-  procedure Parse_Spaces (Txt : in out As.U.Asu_Us; Ok : out Boolean) is
+  function Parse_Spaces (Txt : in out As.U.Asu_Us) return Boolean is
     Str : constant String := Txt.Image;
     L : Natural;
   begin
@@ -30,14 +30,13 @@ package body Dialog is
         -- space
         if L /= 0 then
           -- Space before significant char
-          Ok := False;
-          return;
+          return False;
         end if;
       end if;
     end loop;
     -- If all spaces, L = 0 => empty
     Txt := As.U.Tus (Str(1 .. L));
-    Ok := True;
+    return True;
   end Parse_Spaces;
 
 
@@ -78,7 +77,7 @@ package body Dialog is
       Ok : Boolean;
     begin
       Afpx.Decode_Field (Screen.Get_Fld, 0, Buff);
-      Parse_Spaces(Buff, Ok);
+      Ok := Parse_Spaces(Buff);
       if Ok then
         begin
           Coordinate := Point_Str.Coordinate_Value (Buff.Image);
@@ -91,13 +90,13 @@ package body Dialog is
         return True;
       else
         Screen.Error (Screen.E_Wrong_Coordinate);
-        Screen.Init_For_Get (Cursor_Field);
+        Cursor_Field := Screen.Init_For_Get;
         return False;
       end if;
     end Decode;
 
   begin
-    Screen.Init_For_Get (Cursor_Field, Subtitle);
+    Cursor_Field := Screen.Init_For_Get (Subtitle);
     if Set then
       Encode;
     else
@@ -169,7 +168,7 @@ package body Dialog is
       Ok : Boolean;
     begin
       Afpx.Decode_Field (Screen.Get_Fld, 0, Buff);
-      Parse_Spaces(Buff, Ok);
+      Ok := Parse_Spaces(Buff);
       if Ok then
         begin
           Degree := Natural'Value(Buff.Image);
@@ -187,13 +186,13 @@ package body Dialog is
         return True;
       else
         Screen.Error (Screen.E_Wrong_Degree);
-        Screen.Init_For_Get (Cursor_Field);
+        Cursor_Field := Screen.Init_For_Get;
         return False;
       end if;
     end Decode;
 
   begin
-    Screen.Init_For_Get (Cursor_Field);
+    Cursor_Field := Screen.Init_For_Get;
     Screen.Put_Title (Screen.Get_Degree);
     Degree := Resol.R_Degree;
     Encode;

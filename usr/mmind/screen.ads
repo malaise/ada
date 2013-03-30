@@ -72,7 +72,7 @@ package Screen is
   ----------
   type Help_State is (Released, Click_Color, Click_Propal, Click_Other,
                       Start, Discarded);
-  procedure Put_Help (Help : Help_State);
+  procedure Put_Help (Help : in Help_State);
 
 
   -----------
@@ -111,9 +111,7 @@ package Screen is
   end record;
 
 
-  procedure Get_Selected (
-   Where : in Con_Io.Square;
-   What  : out Selection_Rec);
+  function Get_Selected (Where : Con_Io.Square) return Selection_Rec;
 
 end Screen;
 

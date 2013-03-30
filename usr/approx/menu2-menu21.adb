@@ -164,7 +164,7 @@ package body Menu21 is
           null;
         when Partial =>
           Afpx.Use_Descriptor(Afpx_Xref.Bounds.Dscr_Num, False);
-          Screen.Init_For_Main21 (Cursor_Field);
+          Cursor_Field := Screen.Init_For_Main21;
           Screen.Put_File;
           Put_Bounds;
       end case;

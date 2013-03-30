@@ -362,7 +362,7 @@ package body Mng is
     if not Loaded_Name.Is_Null then
       -- Load
       begin
-        File_Mng.Load(Loaded_Name.Image, Oper_List, Can_Write);
+        Can_Write := File_Mng.Load(Loaded_Name.Image, Oper_List);
       exception
         when File_Mng.F_Access_Error =>
           Screen.Ack_Error(Screen.File_Access);

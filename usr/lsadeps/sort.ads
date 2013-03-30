@@ -9,7 +9,7 @@ package Sort is
 
   -- Add this path to list with decrescent prio
   -- So that the order of '-I' and -R dirs is preserved in the output
-  procedure Add_Path (Path : As.U.Asu_Us);
+  procedure Add_Path (Path : in As.U.Asu_Us);
 
   -- Sort then get all the paths
   function Get_Paths return As.U.Utils.Asu_Ua.Unb_Array;

@@ -29,15 +29,15 @@ package Data_Base is
   procedure Set_Then_Get_Crc (Item : in out Item_Rec);
 
   -- Get item
-  procedure Get (Name : in Item_Name; Kind : in Item_Kind; Item : out Item_Rec);
+  function Get (Name : in Item_Name; Kind : in Item_Kind) return Item_Rec;
 
   -- Clear all
   procedure Reset;
 
   -- Item is No_Item when no more item
   function Nb_Item return Natural;
-  procedure Read_First (Item : out Item_Rec);
-  procedure Read_Next (Item : out Item_Rec);
+  function Read_First return Item_Rec;
+  function Read_Next  return Item_Rec;
 
   -- Get Crc of all data base
   function Get_Crc return Item_Crc;
