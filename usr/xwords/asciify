@@ -6,8 +6,12 @@ if [ \( "$1" = "" \) -o \( "$2" != "" \) ] ; then
   exit 1
 fi
 
+# Dos2unix
+asubst "\x0d+\x0a" "\n" $1
+asubst -x -D "\x0d" "\x0d" "\x0a" $1
+
 # Separators -> ''
-asubst "\s|\t|\.|,|_|!|̃|̈|̂|̀|'|’|́|/| |\\\\|-|&amp;" '' $1
+asubst "\s|\t|\.|\^|\"|'|\`|,|_|!|̃|̈|̂|̀|'|’|́|/| |\\\\|-|&amp;" '' $1
 
 # Upper case -> lower case
 asubst '([A-Z])' '\l\r11\c' $1
