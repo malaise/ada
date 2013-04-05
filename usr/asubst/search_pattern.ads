@@ -11,10 +11,19 @@ package Search_Pattern is
                    Case_Sensitive, Is_Regex, Dot_All : in Boolean);
   Parse_Error : exception;
 
-  -- Returns the number of regex that are implied by the
-  --  search pattern (one per regex and one per New_Line).
+  -- Returns the number of patterns that are implied by the
+  --  search pattern (one per pattern and one per delimiters).
   -- Raises No_Regex if the pattern was not parsed OK
   function Number return Positive;
+
+  -- Is search pattern a Regex
+  -- Raises No_Regex if the pattern was not parsed OK
+  function Search_Regex return Boolean;
+
+  -- Return the Nts pattern or delimiter
+  -- Raises No_Regex if the pattern was not parsed OK
+  -- Raises Contraint_Error if N > Number;
+  function Get_Pattern (N : Positive) return String;
 
   -- Tells if the search pattern can be applied several times
   --  on one line of input (i.e. does not contain '\n', '^' or '$')
@@ -23,6 +32,9 @@ package Search_Pattern is
 
   -- Get the delimiter
   function Get_Delimiter return String;
+
+  -- Is an exclude pattern set
+  function Has_Exclude return Boolean;
 
   -- Checks if the input string from Start to its end
   --  matches the regex no Regex_Index

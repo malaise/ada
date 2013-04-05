@@ -4,7 +4,7 @@ with As.U.Utils, Environ, Argument, Argument_Parser, Basic_Proc, Language,
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V16.0";
+  Version : constant String  := "V16.1";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -675,13 +675,13 @@ begin
 
   -- Display search pattern and replace string
   if Debug.Set then
-    Basic_Proc.Put_Line_Output ("Search pattern: >"
+    Basic_Proc.Put_Line_Error ("Search pattern: >"
        & Arg_Dscr.Get_Option (No_Key_Index, 1) & "<");
     if Exclude.Image /= "" then
       Basic_Proc.Put_Line_Output ("Exclude pattern: >" & Exclude.Image & "<");
     end if;
     if not Grep then
-      Basic_Proc.Put_Line_Output ("Replace string: >"
+      Basic_Proc.Put_Line_Error ("Replace string: >"
          & Arg_Dscr.Get_Option (No_Key_Index, 2) & "<");
     end if;
   end if;

@@ -436,6 +436,64 @@ package body Substit is
       raise;
   end Do_One_File;
 
+  -- Handle multiple substitutions of a char by a char within one line
+  procedure Subst_Chars (Line         : access As.U.Asu_Us;
+                         Match_Range  : in String;
+                         Search_Char  : in Character;
+                         Replace_Char : in Character;
+                         Verbose      : in Boolean;
+                         Test         : in Boolean;
+                         Nb_Match     : in out Long_Long_Natural;
+                         Loc_Subst    : out Long_Long_Natural) is
+  begin
+    Loc_Subst := 0;
+    for I in 1 .. Line.all.Length loop
+      if Line.all.Element (I) = Search_Char then
+        if Debug.Set then
+          Sys_Calls.Put_Line_Error ("Match in line >"
+             & Line.all.Image & "< at" & I'Img);
+        end if;
+        Nb_Match := Nb_Match + 1;
+        -- Check match range
+        if not Subst_Match.Matches (Nb_Match, Match_Range) then
+          if Debug.Set then
+            Sys_Calls.Put_Line_Error (
+               "Match discarded because out of matching range");
+          end if;
+        else
+          -- Ok, matches all citeria
+          if Loc_Subst = 0 then
+            -- First substitution in this line
+            if Verbose then
+              Basic_Proc.Put_Line_Output (
+                Line_No'Img & " : " & Line.all.Image);
+            end if;
+            Loc_Subst := Loc_Subst + 1;
+          end if;
+          if not Test then
+            -- Real substitution
+            Line.all.Replace_Element (I, Replace_Char);
+          end if;
+        end if;
+      end if;
+    end loop;
+
+    if not Test and then Loc_Subst /= 0 then
+      if Debug.Set then
+        -- A substitution has occured
+        Sys_Calls.Put_Line_Error ("Replacing by " & Line.all.Image);
+      end if;
+    end if;
+
+    -- Put the (modified) line
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Putting >" & Line.all.Image & "<");
+    end if;
+    Out_File.Put (Line.all.Image);
+    -- Delete all
+    Line_List.Delete_List (False);
+  end Subst_Chars;
+
   -- Handle multiple substitutions within one line
   procedure Subst_One_Line (Line           : access As.U.Asu_Us;
                             Match_Range    : in String;
@@ -456,6 +514,25 @@ package body Substit is
     use type Regular_Expressions.Match_Cell;
   begin
     Done_File := False;
+    -- Optimization if simple substit of a char by a char, no regex
+    if not Search_Pattern.Search_Regex
+    and then not Grep
+    and then not Search_Pattern.Has_Exclude
+    and then Search_Pattern.Number = 1 then
+      declare
+        Search_Str : constant String := Search_Pattern.Get_Pattern (1);
+        Replace_Str : constant String := Replace_Pattern.Get;
+      begin
+        if Search_Str'Length = 1 and then Replace_Str'Length = 1 then
+          Subst_Chars (Line, Match_Range,
+                       Search_Str(Search_Str'First),
+                       Replace_Str(Replace_Str'First),
+                       Verbose, Test, Nb_Match, Loc_Subst);
+          return;
+        end if;
+      end;
+    end if;
+
     -- Multiple substitutions in one line
     Current := 1;
     Loc_Subst := 0;

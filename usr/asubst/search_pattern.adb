@@ -123,9 +123,10 @@ package body Search_Pattern is
       List.Insert (Upat);
       return;
     end if;
-    -- Store string if this is not a regex
+    -- Store string anyway
+    Upat.Find_Str := As.U.Tus (Crit);
     if not Is_Regex then
-      Upat.Find_Str := As.U.Tus (Crit);
+      -- Only string if this is not a regex
       Upat.Nb_Substr := 0;
       List.Insert (Upat);
       return;
@@ -322,12 +323,12 @@ package body Search_Pattern is
     end loop;
 
     if Split then
-      -- Locate all Line_Feed and split pattern (one per line)
+      -- Locate all Delimiters and split pattern (one per line)
       Start_Index := 1;
       Prev_Delim := False;
       loop
         Stop_Index := Str_Util.Locate (The_Pattern.Image,
-                                         Line_Feed, Start_Index);
+                                       Delimiter.Image, Start_Index);
         if Stop_Index = Start_Index then
           -- A Delim
           if Prev_Delim then
@@ -416,8 +417,7 @@ package body Search_Pattern is
   end Parse_One;
 
   -- Checks and sets the delimiter
-  -- return True if it is the standard (Line_Feed) delimiter
-  function Parse_Delimiter (Delim : String) return Boolean is
+  procedure Parse_Delimiter (Delim : String) is
     Delim_List  : aliased Unique_Pattern.Unique_List_Type;
     Upat : Line_Pat_Rec;
     Acc : Line_Pat_Acc;
@@ -425,14 +425,14 @@ package body Search_Pattern is
     -- Optim and safe way
     if Delim = Line_Feed then
       Delimiter := As.U.Tus (Line_Feed);
-      return True;
+      return;
     elsif Delim = "" then
       -- Empty delimiter
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search, parsed empty delimiter");
       end if;
       Delimiter.Set_Null;
-      return False;
+      return;
     end if;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search, parsing delimiter");
@@ -452,7 +452,6 @@ package body Search_Pattern is
       Sys_Calls.Put_Line_Error ("Search, parsed delimiter >"
            & Delimiter.Image & "<");
     end if;
-    return False;
   end Parse_Delimiter;
 
 
@@ -463,7 +462,6 @@ package body Search_Pattern is
                    Exclude : in String;
                    Delimiter : in String;
                    Case_Sensitive, Is_Regex, Dot_All : in Boolean) is
-    Std_Delim : Boolean;
     Upat : Line_Pat_Rec;
     Search_Access, Exclude_Access : Line_Pat_Acc;
     use type Language.Language_Set_List;
@@ -472,7 +470,7 @@ package body Search_Pattern is
     Search_Pattern.Is_Regex := Is_Regex;
     Expected_Search := 1;
     -- Parse the delimiter
-    Std_Delim := Parse_Delimiter (Delimiter);
+    Parse_Delimiter (Delimiter);
     -- Parse the search pattern
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search, parsing search pattern");
@@ -481,15 +479,7 @@ package body Search_Pattern is
     -- Parse and check the find pattern
     Pattern_Kind := Search_Kind;
     -- Parse the search pattern
-    --  Don't split if not the standard delimiter
-    Parse_One (Search, Case_Sensitive, Is_Regex, Std_Delim, Dot_All,
-               Search_List);
-    -- If Delimiter is not Line_Feed, then find pattern must be iterative
-    if not Std_Delim and then not Is_Iterative then
-      Pattern_Kind := Delimiter_Kind;
-      Error ("If Delimiter is not ""\n"" then find pattern cannot contain "
-           & """^"" or ""$""");
-    end if;
+    Parse_One (Search, Case_Sensitive, Is_Regex, True, Dot_All, Search_List);
 
     if Exclude = "" then
       -- No exclude
@@ -501,7 +491,7 @@ package body Search_Pattern is
       Sys_Calls.Put_Line_Error ("Search, parsing exclude pattern");
     end if;
     Pattern_Kind := Exclude_Kind;
-    Parse_One (Exclude, Case_Sensitive, Is_Regex, Std_Delim, Dot_All,
+    Parse_One (Exclude, Case_Sensitive, Is_Regex, True, Dot_All,
                Exclude_List);
 
     -- Both patterns must have same length and have delims at same pos
@@ -527,7 +517,6 @@ package body Search_Pattern is
       raise;
   end Parse;
 
-
   -- Returns the number of lines that it covered by the
   --  search pattern (one per regex and one per New_Line.
   -- Raises No_Regex if the pattern was not parsed OK
@@ -541,6 +530,42 @@ package body Search_Pattern is
     end if;
   end Number;
 
+  -- Is search pattern a Regex
+  -- Raises No_Regex if the pattern was not parsed OK
+  function Search_Regex return Boolean is
+  begin
+    if Search_List.List_Length = 0 then
+      raise No_Regex;
+    else
+      return Is_Regex;
+    end if;
+  end Search_Regex;
+
+  -- Return the Nts pattern or delimiter
+  -- Raises No_Regex if the pattern was not parsed OK
+  -- Raises Contraint_Error if N > Number;
+  function Get_Pattern (N : Positive) return String is
+    L : constant Natural := Search_List.List_Length;
+    Upat : Line_Pat_Rec;
+    Upat_Access : Line_Pat_Acc;
+  begin
+    if L = 0 then
+      raise No_Regex;
+    elsif N > L then
+      raise Constraint_Error;
+    end if;
+    -- Get access to the pattern
+    Upat.Num := N;
+    Search_List.Get_Access (Upat, Upat_Access);
+    if Upat_Access.Is_Delim then
+      -- This is a delimiter
+      return Delimiter.Image;
+    else
+      -- This is a String or Regex
+      return Upat_Access.Find_Str.Image;
+    end if;
+  end Get_Pattern;
+
   -- Tells if the search pattern can be applied several times
   --  on one line of input (i.e. does not contain '\n', '^' or '$'
   -- Raises No_Regex if the pattern was not parsed OK
@@ -552,6 +577,12 @@ package body Search_Pattern is
     end if;
     return Is_Iterative;
   end Iterative;
+
+  -- Is an exclude pattern set
+  function Has_Exclude return Boolean is
+  begin
+    return Exclude_List.List_Length /= 0;
+  end Has_Exclude;
 
   -- Returns the number of substrings of one regex
   -- Raises No_Regex if the Regex_Index is higher than

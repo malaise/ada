@@ -1,6 +1,6 @@
 Asubst
 ======
-V16.0
+V16.1
 
 Asubs is a command line tool that finds occurences of text that match a
 pattern (regular expresssion), and replaces these occurences by a given string.
@@ -169,7 +169,6 @@ titi because each matching "to" does not match the exclusion "toto". Same with
 On the other hand, 'echo "toto" | asubst --exclude=to t. ti' and 'echo "toto"
 | asubst --exclude=toto toto titi' will not substitute.
 
-
 Match range
 -----------
 The <range> has the format: i-j,k-l... Example: '"-4,7-9,15-"' means the first 4
@@ -193,11 +192,8 @@ asubst reads sequences of text separated by this delimiter (the whole text if
 delimiter is empty). The delimiter string is not a regular expression but can
 contain "\s", "\t", "\xIJ" (even "\x00") and "\n".
 
-If a delimiter is specified, then the find pattern cannot contain ''^'' or ''$''
-and it applies to each chunk. Still, it can contain ''\n'' to denote line feed
-within a chunk. +
-Option -d (--dotall) can then be used to allow ''.'' in find pattern to match
-''\n'' in the text.
+If a delimiter is specified, then the option -d (--dotall) can be used to allow
+''.'' in find pattern to match ''\n'' in the text.
 
 Examples:
 
@@ -209,6 +205,12 @@ asubst -D '' '<!--([^-]|-[^-])*-->\n?' '' file
 Tag duplicated words in paragraphs (separated by two '\n'):
 --------------------------------------
 asubst -D '\n\n' -- '\b([\M]+)\b[\S]+\1' '->\R01<-' file
+--------------------------------------
+
+Fix line delimiters of a hudge file (see also section 
+xref:XRegexNoRegex[regex and noregex modes]):
+--------------------------------------
+asubst -D '\x0D' -x '\x0D' '\x0A' file
 --------------------------------------
 
 Replace string
@@ -311,6 +313,8 @@ echo -en "*cs add" | asubst -g "^\*([^ ]+) " "Got \r11" -> Got cs
 Regex and noregex modes
 -----------------------
 anchor:XRegexNoRegex[]
+
+.Differences between regex and noregex modes
 In both modes "\x0A" is the same as "\n", and "\s" and "\t" are interpreted.
 
 In regex mode "\x00" is forbidden in find pattern because it is the C string
@@ -325,6 +329,23 @@ In noregex mode, "\rIJ" with J > 0 is forbidden (because there is no
 substring). +
 Similarly, "\iI0", "\aI0" and "\oI0" are allowed in noregex mode, despite not
 very usefull.
+
+.Optimization in noregex mode
+In noregex mode, if the substitution (not grep) has no exclusion and replaces
+one single character by another character, then an internal optimization allows
+a significant improvement of performance.
+
+Example: a reasonably big file, of lines separated by "\x0D", can be read
+all at once and fixed by replacing each "\x0D" character by a line feed.
+--------------------------------------
+asubst -x '\x0D' '\x0A' file
+--------------------------------------
+
+Example: a hudge file, of lines separated by "\x0D", can be read line by line
+and fixed by replacing each "\x0D" character by a line feed.
+--------------------------------------
+asubst -D '\x0D' -x '\x0D' '\x0A' file
+--------------------------------------
 
 File list
 ---------

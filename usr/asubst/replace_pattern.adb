@@ -396,6 +396,12 @@ package body Replace_Pattern is
     return The_Pattern.Is_Null;
   end Is_Empty;
 
+-- Return replace pattern
+  function Get return String is
+  begin
+    return The_Pattern.Image;
+  end Get;
+
   -- Extract a substring of string matching a regex
   function Matchstring (Kind : Extraction_List; Nth : Byte) return String is
     Rth : Positive;

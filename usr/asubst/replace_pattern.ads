@@ -9,6 +9,9 @@ package Replace_Pattern is
   -- Returns if pattern is empty
   function Is_Empty return Boolean;
 
+  -- Return replace pattern
+  function Get return String;
+
   -- Returns the replacing string
   function Replace return String;
   -- If result string is too long?
