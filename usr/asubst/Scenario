@@ -113,9 +113,13 @@
 "Options" "-x"
 "titi to\nto tutu"     "to\nto "                      ""                          "titi tutu"
 "titi to to tutu"      "to "                          ""                          "titi tutu"
-
-"Options" "-x"
 "\n\ntoto\n\ntiti\n\n" "\n\n"                         "\n"                        "\ntoto\ntiti\n"  
+"tototi\ntitata"       "t"                            "l"                         "lololi\nlilala"
+
+"Options" "-x -D +"
+"tototi+titata"       "t"                            "l"                         "lololi+lilala"
+"to+ot+titat+"        "t+"                           "t-"                        "to+ot-titat-"
+"to+ot+titat+"        "+"                            "-"                         "to-ot-titat-"
 
 "Options" "-t"
 "toto"                 "o"                            "i"                         "toto"

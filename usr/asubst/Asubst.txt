@@ -1,6 +1,6 @@
 Asubst
 ======
-V16.1
+V16.2
 
 Asubs is a command line tool that finds occurences of text that match a
 pattern (regular expresssion), and replaces these occurences by a given string.
@@ -191,6 +191,10 @@ However, when an input delimiter is specified (option -D or --delimiter) then
 asubst reads sequences of text separated by this delimiter (the whole text if
 delimiter is empty). The delimiter string is not a regular expression but can
 contain "\s", "\t", "\xIJ" (even "\x00") and "\n".
+
+NOTE: If the delimiter contains a special regex characters (e.g. '+', '?',
+'.'...) and the delimiter appears in the find pattern, these special
+characters must not be backslashed.
 
 If a delimiter is specified, then the option -d (--dotall) can be used to allow
 ''.'' in find pattern to match ''\n'' in the text.

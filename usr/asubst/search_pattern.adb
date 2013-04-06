@@ -13,6 +13,8 @@ package body Search_Pattern is
     Num : Positive;
     -- Is it a Delim (\n) or a string/regex
     Is_Delim : Boolean;
+    -- Are Prev and next patterns delimiters
+    Prev_Delim, Next_Delim : Boolean;
     -- Regex or string to search (depending on Is_regex)
     Pat : Regular_Expressions.Compiled_Pattern;
     Find_Str : As.U.Asu_Us;
@@ -31,7 +33,9 @@ package body Search_Pattern is
     -- Setting a pattern (in Parse) for use in Check
     To.Num := Val.Num;
     To.Is_Delim := Val.Is_Delim;
-    -- Regexp cannot be copied, so it will be assigned
+    To.Prev_Delim := Val.Prev_Delim;
+    To.Next_Delim := Val.Next_Delim;
+    -- Regexp pattern cannot be copied, so it will be assigned
     --  to the Line_Pat_Rec access
     -- To.Pat := Val.Pat;
     To.Find_Str := Val.Find_Str;
@@ -102,9 +106,20 @@ package body Search_Pattern is
     raise Parse_Error;
   end Error;
 
+  -- Get access to pattern num N
+  function Get_Search_Access (N : in Positive) return Line_Pat_Acc is
+    Upat : Line_Pat_Rec;
+    Upat_Access : Line_Pat_Acc;
+  begin
+    Upat.Num := N;
+    Search_List.Get_Access (Upat, Upat_Access);
+    return Upat_Access;
+  end Get_Search_Access;
+
   -- Add a line pattern
   procedure Add (Crit : in String;
-                 Case_Sensitive, Dot_All : in Boolean;
+                 Regex_Mode, Case_Sensitive, Dot_All : in Boolean;
+                 Prev_Delim, Next_Delim : in Boolean;
                  List : in out Unique_Pattern.Unique_List_Type) is
     Upat : Line_Pat_Rec;
     Upat_Access : Line_Pat_Acc;
@@ -113,6 +128,8 @@ package body Search_Pattern is
     -- Compute new pattern number and type
     Upat.Num := List.List_Length + 1;
     Upat.Is_Delim := Crit = Delimiter.Image;
+    Upat.Prev_Delim := Prev_Delim;
+    Upat.Next_Delim := Next_Delim;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search adding regex "
              &  Upat.Num'Img & " >" & Crit & "<");
@@ -123,9 +140,9 @@ package body Search_Pattern is
       List.Insert (Upat);
       return;
     end if;
-    -- Store string anyway
+    -- Store string
     Upat.Find_Str := As.U.Tus (Crit);
-    if not Is_Regex then
+    if not Regex_Mode then
       -- Only string if this is not a regex
       Upat.Nb_Substr := 0;
       List.Insert (Upat);
@@ -327,23 +344,28 @@ package body Search_Pattern is
       Start_Index := 1;
       Prev_Delim := False;
       loop
-        Stop_Index := Str_Util.Locate (The_Pattern.Image,
-                                       Delimiter.Image, Start_Index);
+        if Delimiter.Is_Null then
+          Stop_Index := 0;
+        else
+          Stop_Index := Str_Util.Locate (The_Pattern.Image,
+                                         Delimiter.Image, Start_Index);
+        end if;
         if Stop_Index = Start_Index then
           -- A Delim
           if Prev_Delim then
             -- Two successive Delims
             if Regex_Mode then
-              Add (Start_String (True) & Stop_String (True),
-                   Case_Sensitive, Dot_All, List);
+              Add (Start_String (True) & Stop_String (True), Regex_Mode,
+                   Case_Sensitive, Dot_All, False, False, List);
             else
-              Add ("", Case_Sensitive, False, List);
+              Add ("", Regex_Mode, Case_Sensitive, False, False, False, List);
             end if;
           end if;
-          Add (Delimiter.Image, Case_Sensitive, False, List);
+          Add (Delimiter.Image, Regex_Mode, Case_Sensitive,
+               False, False, False, List);
           Prev_Delim := True;
         else
-          -- A Regex: see if it is followed by a delim (always, except at the
+          -- A pattern: see if it is followed by a delim (always, except at the
           --  end)
           Next_Delim := Stop_Index /= 0;
           -- Make Stop_Index be the last index of regex,
@@ -371,10 +393,10 @@ package body Search_Pattern is
               -- Add this regex with start/stop strings
               Add (Start_String (Needs_Start) & Slice
                  & Stop_String (Needs_Stop),
-                 Case_Sensitive, Dot_All, List);
+                 True, Case_Sensitive, Dot_All, Prev_Delim, Next_Delim, List);
             else
               -- Add this regex with no start/stop strings
-              Add (Slice, True, False, List);
+              Add (Slice, False, True, False, Prev_Delim, Next_Delim, List);
             end if;
           end;
           if Regex_Mode then
@@ -406,10 +428,11 @@ package body Search_Pattern is
     else
       -- No split
       if Regex_Mode then
-        Add (The_Pattern.Image, Case_Sensitive, Dot_All, List);
+        Add (The_Pattern.Image, True, Case_Sensitive, Dot_All,
+             False, False, List);
         Is_Iterative := Check_Iterative (1, The_Pattern.Length);
       else
-        Add (The_Pattern.Image, True, False, List);
+        Add (The_Pattern.Image, False, True, False, False, False, List);
         Is_Iterative := True;
       end if;
     end if;
@@ -544,19 +567,17 @@ package body Search_Pattern is
   -- Return the Nts pattern or delimiter
   -- Raises No_Regex if the pattern was not parsed OK
   -- Raises Contraint_Error if N > Number;
-  function Get_Pattern (N : Positive) return String is
+  function Get_Pattern (Regex_Index : Positive) return String is
     L : constant Natural := Search_List.List_Length;
-    Upat : Line_Pat_Rec;
     Upat_Access : Line_Pat_Acc;
   begin
     if L = 0 then
       raise No_Regex;
-    elsif N > L then
+    elsif Regex_Index > L then
       raise Constraint_Error;
     end if;
     -- Get access to the pattern
-    Upat.Num := N;
-    Search_List.Get_Access (Upat, Upat_Access);
+    Upat_Access := Get_Search_Access (Regex_Index);
     if Upat_Access.Is_Delim then
       -- This is a delimiter
       return Delimiter.Image;
@@ -564,6 +585,10 @@ package body Search_Pattern is
       -- This is a String or Regex
       return Upat_Access.Find_Str.Image;
     end if;
+  exception
+    when Unique_Pattern.Not_In_List =>
+      -- Invalid Regex_Index or empty list
+      raise No_Regex;
   end Get_Pattern;
 
   -- Tells if the search pattern can be applied several times
@@ -588,13 +613,9 @@ package body Search_Pattern is
   -- Raises No_Regex if the Regex_Index is higher than
   --  the number of regex (returned by Number)
   function Nb_Substrings (Regex_Index : Positive) return Nb_Sub_String_Range is
-    Upat : Line_Pat_Rec;
-    Upat_Access : Line_Pat_Acc;
   begin
     -- Get access to the pattern
-    Upat.Num := Regex_Index;
-    Search_List.Get_Access (Upat, Upat_Access);
-    return Upat_Access.Nb_Substr;
+    return Get_Search_Access (Regex_Index).Nb_Substr;
   exception
     when Unique_Pattern.Not_In_List =>
       -- Invalid Regex_Index or empty list
@@ -630,6 +651,7 @@ package body Search_Pattern is
         end if;
       end if;
     end Store_Index;
+
   begin
     -- Search or exclude list?
     if Search then
@@ -707,9 +729,17 @@ package body Search_Pattern is
           -- Not strict matching
           Nmatch := 0;
         end if;
+      elsif Str = "" and then Upat_Access.Find_Str.Image = "" then
+        -- Noregex: Empty string versus empty pattern
+        Match(1) := (Start, 0, 0);
+        Nmatch := 1;
       else
-        -- Not a regex, locate string
-        Nmatch := Str_Util.Locate (Str, Upat_Access.Find_Str.Image, Start);
+        -- Noregex, locate string in tail of Str
+        -- If pattern is followed by a delim then search bawards to find
+        --  last occurence (usefull if pattern is not preceeded by a delim)
+        Nmatch := Str_Util.Locate (Str (Start .. Str'Last),
+                                   Upat_Access.Find_Str.Image,
+                                   0, Forward => not Upat_Access.Next_Delim);
         if Nmatch /= 0 then
           -- Fill matching info as if from a regex
           Match(1) := (
@@ -717,10 +747,22 @@ package body Search_Pattern is
            Last_Offset_Start => Nmatch + Upat_Access.Find_Str.Length - 1,
            Last_Offset_Stop  => Nmatch + Upat_Access.Find_Str.Length - 1);
           Nmatch := 1;
-        elsif Str = "" and then Upat_Access.Find_Str.Image = "" then
-          -- Empty string versus empty pattern
-          Match(1) := (Start, 0, 0);
-          Nmatch := 1;
+          if Search then
+            if Upat_Access.Prev_Delim
+            and then Match(1).First_Offset /= Start then
+              -- If a delim before, then must match from start
+              Nmatch := 0;
+            end if;
+            if Upat_Access.Next_Delim
+            and then Match(1).Last_Offset_Stop /= Str'Last then
+              -- If a delim after the must match up to stop
+              Nmatch := 0;
+            end if;
+          elsif Match(1).First_Offset /= Start
+                or else Match(1).Last_Offset_Stop /= Str'Last then
+            -- For exclusion, the match must be strict
+            Nmatch := 0;
+          end if;
         end if;
       end if;
       if Nmatch >= 1
@@ -764,7 +806,6 @@ package body Search_Pattern is
   function Substring (Regex_Index : Positive;
                       Sub_String_Index : Nb_Sub_String_Range)
            return String is
-    Upat : Line_Pat_Rec;
     Upat_Access : Line_Pat_Acc;
     Cell : Regular_Expressions.Match_Cell;
     use type Regular_Expressions.Match_Cell;
@@ -774,8 +815,7 @@ package body Search_Pattern is
       raise No_Regex;
     end if;
     -- Get access to the pattern
-    Upat.Num := Regex_Index;
-    Search_List.Get_Access (Upat, Upat_Access);
+    Upat_Access := Get_Search_Access (Regex_Index);
     -- Check number of substrings and get cell
     if Sub_String_Index > Upat_Access.Nb_Substr then
       return "";
@@ -819,7 +859,6 @@ package body Search_Pattern is
   -- May raise Substr_Len_Error if Utf8 sequence leads to exceed
   --  string length
   function Str_Indexes return Regular_Expressions.Match_Cell is
-    Upat : Line_Pat_Rec;
     Upat_Access : Line_Pat_Acc;
     Cell : Regular_Expressions.Match_Cell;
     Nbre : Natural;
@@ -830,8 +869,7 @@ package body Search_Pattern is
     end if;
 
     -- Get access to the first pattern
-    Upat.Num := 1;
-    Search_List.Get_Access (Upat, Upat_Access);
+    Upat_Access := Get_Search_Access (1);
 
     -- Get start of string matching first pattern
     Cell.First_Offset := Upat_Access.Substrs(0).First_Offset;
@@ -840,8 +878,7 @@ package body Search_Pattern is
     Nbre := Search_List.List_Length;
     if Nbre /= 1 then
       -- Get access to the last pattern
-      Upat.Num := Nbre;
-      Search_List.Get_Access (Upat, Upat_Access);
+      Upat_Access := Get_Search_Access (Nbre);
     end if;
 
     -- Get end of string matching last pattern

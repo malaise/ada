@@ -23,7 +23,7 @@ package Search_Pattern is
   -- Return the Nts pattern or delimiter
   -- Raises No_Regex if the pattern was not parsed OK
   -- Raises Contraint_Error if N > Number;
-  function Get_Pattern (N : Positive) return String;
+  function Get_Pattern (Regex_Index : Positive) return String;
 
   -- Tells if the search pattern can be applied several times
   --  on one line of input (i.e. does not contain '\n', '^' or '$')

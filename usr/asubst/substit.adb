@@ -462,13 +462,11 @@ package body Substit is
           end if;
         else
           -- Ok, matches all citeria
-          if Loc_Subst = 0 then
-            -- First substitution in this line
-            if Verbose then
-              Basic_Proc.Put_Line_Output (
-                Line_No'Img & " : " & Line.all.Image);
-            end if;
-            Loc_Subst := Loc_Subst + 1;
+          Loc_Subst := Loc_Subst + 1;
+          if Verbose then
+            Basic_Proc.Put_Line_Output (
+                Line_No'Img & " : "
+              & Search_Char & " -> " & Replace_Char);
           end if;
           if not Test then
             -- Real substitution
