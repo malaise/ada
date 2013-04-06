@@ -10,7 +10,7 @@ CLIBS := cutil
 CLIBS_als := posix2pcre pcre
 
 LARGS_als.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
-  $(PCRE)/libpcre.a
+  $(PCRE_LIB)/libpcre.a
 
 TXT := Als
 DOCOPTS_Als := -a toc

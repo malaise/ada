@@ -9,7 +9,7 @@ CLIBS := cutil
 CLIBS_lsadeps := posix2pcre pcre
 
 LARGS_lsadeps.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
-  $(PCRE)/libpcre.a
+  $(PCRE_LIB)/libpcre.a
 
 TXT := Lsadeps
 DOCOPTS_TXT := -a toc

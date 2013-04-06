@@ -12,6 +12,8 @@ OBJS_libcutil := timeval sys_calls wait_evt socket socket_afux
 OBJS_libposix2pcre := posix2pcre
 OBJS_libx_mng := x_color x_font x_line x_export x_file x_key x_screen
 
+CARGS_posix2pcre := $(PCRE_INCL)
+
 LIBS_test_x := libx_mng libcutil 
 LARGS_test_x := -lX11
 

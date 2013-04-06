@@ -26,9 +26,9 @@ LARGS_tcping.stat := $(CPATHD)/libcutil.a
 LARGS_udp_spy.stat := $(CPATHD)/libcutil.a
 LARGS_pingpong.stat := $(CPATHD)/libcutil.a
 LARGS_dtd_checker.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
-  $(PCRE)/libpcre.a
+  $(PCRE_LIB)/libpcre.a
 LARGS_xml_checker.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
-  $(PCRE)/libpcre.a
+  $(PCRE_LIB)/libpcre.a
 
 TXT := Xml_Checker
 DOCOPTS_Xml_Checker := -a toc
