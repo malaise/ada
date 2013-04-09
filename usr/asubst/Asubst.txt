@@ -1,6 +1,6 @@
 Asubst
 ======
-V16.2
+V16.3
 
 Asubs is a command line tool that finds occurences of text that match a
 pattern (regular expresssion), and replaces these occurences by a given string.
@@ -184,20 +184,29 @@ the long option name. Example: don't use '"-m -4"', but '"-m 1-4"' or
 
 Delimiter
 ---------
-Normally, asubst reads the input flow or file, line by line (separated by ''\n'')
-and searches for matches between the input sequences of text and the sequence
-of regex of find_pattern. +
+Normally, asubst reads the input flow or file line by line (separated by
+''\n''), and searches for matches between 
+
+  * the input sequences of text and ''\n''
+  * the sequence of regex an ''\n'' of the find pattern.
+
 However, when an input delimiter is specified (option -D or --delimiter) then
 asubst reads sequences of text separated by this delimiter (the whole text if
-delimiter is empty). The delimiter string is not a regular expression but can
-contain "\s", "\t", "\xIJ" (even "\x00") and "\n".
+delimiter is empty). Asubsts also parses the find and the exclusion patterns
+according to this delimiter.
 
-NOTE: If the delimiter contains a special regex characters (e.g. '+', '?',
-'.'...) and the delimiter appears in the find pattern, these special
-characters must not be backslashed.
+The delimiter string is not a regular expression but can contain "\n", "\s",
+"\t" and "\xIJ" (even "\x00").
 
-If a delimiter is specified, then the option -d (--dotall) can be used to allow
-''.'' in find pattern to match ''\n'' in the text.
+Setting a delimiter to the empty string can be usefull for applying a criteria
+to the whole file, but the file is read and processed all at once (so it must
+not be too large).
+
+Setting a delimiter to a specific string is usefull to process a (big) file line
+by line when the line delimiter of the file is not ''\n''.
+
+NOTE: Special regex characters (e.g. '+', '?', '.', '*'...) must not be
+backslashed in the delimiter, even if it appears in the find pattern.
 
 Examples:
 
@@ -206,7 +215,7 @@ Remove comments (and possible trailing new_line) from a XML file:
 asubst -D '' '<!--([^-]|-[^-])*-->\n?' '' file
 --------------------------------------
 
-Tag duplicated words in paragraphs (separated by two '\n'):
+Tag duplicated words in paragraphs (paragraphs are separated by two '\n'):
 --------------------------------------
 asubst -D '\n\n' -- '\b([\M]+)\b[\S]+\1' '->\R01<-' file
 --------------------------------------
@@ -216,6 +225,9 @@ xref:XRegexNoRegex[regex and noregex modes]):
 --------------------------------------
 asubst -D '\x0D' -x '\x0D' '\x0A' file
 --------------------------------------
+
+If a delimiter is specified, then the option -d (--dotall) can also be used to
+allow ''.'' in find pattern to match ''\n'' in the text.
 
 Replace string
 --------------
@@ -232,7 +244,8 @@ by a byte with the corresponding value.
 
 - "\RIJ" where IJ is an hexadecimal number will be replaced by the string
 matching the regex number IJ, (00 \<= IJ \<= NbOfRegex, 00 means the whole
-string matching all the regexes).
+string matching all the regexes). For regex numbers, each single regex and
+each delimiter counts for one).
 
 - "\rIJ" where IJ is an hexadecimal number will be replaced by the string
 matching the substring J of the regex number I (0 < I), J = 0 for the
@@ -276,6 +289,7 @@ echo -en "\ntoto\ntiti\ntata" | asubst "\n.*" "\R02"    ->  "tototititata"
 echo -en "tito" | asubst "(.i)(.o)"  "\r12<->\r11"      ->  "to<->ti"
 echo -en "tito" | asubst ".*" "\m\R01\c"                ->  "Tito"
 echo -en "toto\ntiti\n" | asubst "to\nti" "\u\R00\c"    ->  "toTO\nTIti\n"
+echo -en "toto\ntiti\n" | asubst "t.\nt(.)" "\ut\r31\c" ->  "toTIti\n"
 echo -en "toto" | asubst "(.)(.)(..)" "\u\r12\c\r11"    ->  "Otto"
 --------------------------------------
 
@@ -318,7 +332,23 @@ Regex and noregex modes
 -----------------------
 anchor:XRegexNoRegex[]
 
-.Differences between regex and noregex modes
+.General principal
+In noregex mode asubst considers the find pattern as a sequence of text chunks
+separated by delimiters.
+
+* if a chunk (in the find pattern) is preceeded by the delimiter then a
+matching text must start with the chunk
+* if a chunk (in the find pattern) is followed by the delimiter then a
+matching text must end with the chunk
+
+Example, in node noregex:
+--------------------------------------
+"\ntoto\n" matches "to" twice
+"\ntoto\n" matches "\nto" or "to\n" once
+"\ntoto\n" does not match "\nto\n"
+
+
+.Others considerations on regex and noregex modes
 In both modes "\x0A" is the same as "\n", and "\s" and "\t" are interpreted.
 
 In regex mode "\x00" is forbidden in find pattern because it is the C string
@@ -326,11 +356,11 @@ terminator and it is used as such by the regex library. It is allowed in
 noregex mode. +
 All other hexadecimal numbers are supported in both modes.
 
-In noregex mode "\A" to "\X" are not interpreted, like other regex specific
+In noregex mode "\A" to "\X" are not interpreted, like all other regex specific
 characters (including "^" and "$").
 
 In noregex mode, "\rIJ" with J > 0 is forbidden (because there is no
-substring). +
+substring). Still "\rI0" can denote the Ith section of text.+
 Similarly, "\iI0", "\aI0" and "\oI0" are allowed in noregex mode, despite not
 very usefull.
 
@@ -339,14 +369,13 @@ In noregex mode, if the substitution (not grep) has no exclusion and replaces
 one single character by another character, then an internal optimization allows
 a significant improvement of performance.
 
-Example: a reasonably big file, of lines separated by "\x0D", can be read
+Example: a reasonably small file, of lines separated by "\x0D", can be read
 all at once and fixed by replacing each "\x0D" character by a line feed.
 --------------------------------------
 asubst -x '\x0D' '\x0A' file
 --------------------------------------
 
-Example: a hudge file, of lines separated by "\x0D", can be read line by line
-and fixed by replacing each "\x0D" character by a line feed.
+Example: If the file is hudge, it can be read line by line and fixed with:
 --------------------------------------
 asubst -D '\x0D' -x '\x0D' '\x0A' file
 --------------------------------------
