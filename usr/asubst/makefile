@@ -11,7 +11,7 @@ CLIBS_asubst := posix2pcre pcre
 LARGS_asubst.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
   $(PCRE_LIB)/libpcre.a
 
-TXT := Asubst History
+TXT := Asubst
 DOCOPTS_Asubst := -a toc
 
 include $(TEMPLATES)/ada.mk

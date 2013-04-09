@@ -70,8 +70,14 @@ package body Search_Pattern is
   -- True if one unique pattern and with no '^' nor '$'
   Is_Iterative : Boolean;
 
+  -- True if milti pattern and first and last patterns are not delimiter
+  Is_Overlapping : Boolean;
+
   -- True if find pattern is regexes
   Is_Regex : Boolean;
+
+  -- Is first char of first pattern, last char of last pattern, a delim
+  First_First_Delim, Last_Last_Delim : Boolean;
 
   -- The official Line Feed
   Line_Feed : constant String := Text_Line.Line_Feed_Str;
@@ -193,6 +199,7 @@ package body Search_Pattern is
                        Regex_Mode : in Boolean;
                        Split : in Boolean;
                        Dot_All : in Boolean;
+                       Search : in Boolean;
                        List : in out Unique_Pattern.Unique_List_Type) is
 
     The_Pattern : As.U.Asu_Us;
@@ -266,12 +273,19 @@ package body Search_Pattern is
       end case;
     end Char_Class_Of;
 
-    -- Return True if Pattern(Start) /= '^' and Patern(Stop) /= '$'
+    -- Return True if Pattern(Start) = '^' and Patern(Stop) = '$' (not "\$")
+    function Check_Start (Start : Positive) return Boolean is
+    begin
+      return The_Pattern.Element (Start) = Start_Char;
+    end Check_Start;
+    function Check_Stop (Stop : Positive) return Boolean is
+    begin
+      return The_Pattern.Element (Stop) = Stop_Char
+        and then not Str_Util.Is_Backslashed (The_Pattern.Image, Stop);
+    end Check_Stop;
     function Check_Iterative (Start, Stop : Positive) return Boolean is
     begin
-      return    The_Pattern.Element (Start) /= Start_Char
-      and then (The_Pattern.Element (Stop) /= Stop_Char
-        or else Str_Util.Is_Backslashed (The_Pattern.Image, Stop));
+      return not Check_Start (Start) and then not Check_Stop (Stop);
     end Check_Iterative;
 
     -- Indexes in Pattern
@@ -281,6 +295,8 @@ package body Search_Pattern is
     Prev_Delim : Boolean;
     -- Is next item a delimiterA (true except at the end)
     Next_Delim : Boolean;
+    -- Are we processing first chunk
+    First_Chunk : Boolean;
   begin
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search parsing pattern >" & Pattern & "<");
@@ -288,7 +304,6 @@ package body Search_Pattern is
     -- Reset pattern characteristics
     The_Pattern := As.U.Tus (Pattern);
     List.Delete_List;
-    Is_Iterative := False;
     Check_Completed := False;
     -- Reject empty pattern
     if Pattern = "" then
@@ -343,6 +358,7 @@ package body Search_Pattern is
       -- Locate all Delimiters and split pattern (one per line)
       Start_Index := 1;
       Prev_Delim := False;
+      First_Chunk := True;
       loop
         if Delimiter.Is_Null then
           Stop_Index := 0;
@@ -383,13 +399,10 @@ package body Search_Pattern is
             if Regex_Mode then
               -- It is not mandatory to avoid ^^toto and toto$$, but cleaner
               -- Add '^' if a delimiter preceeds and no leading '^' yet
-              Needs_Start := Prev_Delim
-                  and then Slice(Slice'First) /= Start_Char;
+              Needs_Start := Prev_Delim and then not Check_Start (Start_Index);
               -- Add '$' if a delimiter follows and no trailing '$' yet
               --  (or if it is "\$")
-              Needs_Stop := Next_Delim
-                  and then (Slice(Slice'Last) /= Stop_Char
-                      or else Str_Util.Is_Backslashed (Slice, Slice'Last) );
+              Needs_Stop := Next_Delim and then not Check_Stop (Stop_Index);
               -- Add this regex with start/stop strings
               Add (Start_String (Needs_Start) & Slice
                  & Stop_String (Needs_Stop),
@@ -399,41 +412,56 @@ package body Search_Pattern is
               Add (Slice, False, True, False, Prev_Delim, Next_Delim, List);
             end if;
           end;
-          if Regex_Mode then
-            -- See if this is a single regex and if it can apply several times
-            --  to one line of input (not start by ^ nor end by $, except "\$")
-            -- Note that ^ or $ cannot be followed by ?, * or +, so no need to
-            --  check "^?"
-            -- Also note that "(^|@)toto(/|$)" is potentially iterative and
-            --  is handled as iterative
-            if not Prev_Delim
-            and then not Next_Delim
-            and then Check_Iterative (Start_Index, Stop_Index) then
-              Is_Iterative := True;
-            end if;
-          else
-            -- Same, but only check delimiters (start and stop strings are
-            --  not interpreted)
-            if not Prev_Delim
-            and then not Next_Delim then
-              Is_Iterative := True;
+          if Search then
+            -- Set global characteristics when parsing search
+            if Regex_Mode then
+              -- See if this is a single regex and if it can apply several times
+              --  to one line of input (not start by ^ nor end by $, except
+              --  "\$")
+              -- Note that ^ or $ cannot be followed by ?, * or +, so no need to
+              --  check "^?"
+              -- Also note that "(^|@)toto(/|$)" is potentially iterative and
+              --  is handled as iterative
+              if Search
+              and then not Prev_Delim
+              and then not Next_Delim
+              and then Check_Iterative (Start_Index, Stop_Index) then
+                Is_Iterative := True;
+              end if;
+            else
+              -- Same, but only check delimiters (start and stop strings are
+              --  not interpreted)
+              if Search
+              and then not Prev_Delim
+              and then not Next_Delim then
+                Is_Iterative := True;
+              end if;
             end if;
           end if;
           Prev_Delim := False;
+        end if;
+        if Search and then First_Chunk then
+          -- Is first chunk a delim or starting by '^'
+          First_First_Delim := Prev_Delim
+                      or else (Regex_Mode and then Check_Start (Start_Index));
+          First_Chunk := False;
         end if;
         -- Done
         exit when Stop_Index = The_Pattern.Length;
         Start_Index := Stop_Index + 1;
       end loop;
+      if Search then
+        -- Is last chunk a delim or ending by '$' (not backslashed)
+        Last_Last_Delim := Prev_Delim
+                          or else (Regex_Mode and then Check_Stop (Stop_Index));
+      end if;
     else
-      -- No split
+      -- No split (delimiter)
       if Regex_Mode then
         Add (The_Pattern.Image, True, Case_Sensitive, Dot_All,
              False, False, List);
-        Is_Iterative := Check_Iterative (1, The_Pattern.Length);
       else
         Add (The_Pattern.Image, False, True, False, False, False, List);
-        Is_Iterative := True;
       end if;
     end if;
     -- Done
@@ -463,7 +491,7 @@ package body Search_Pattern is
 
     -- Parse Delim as a non-regex string, not splitted
     Pattern_Kind := Delimiter_Kind;
-    Parse_One (Delim, False, False, False, False, Delim_List);
+    Parse_One (Delim, False, False, False, False, False,Delim_List);
     -- One string in list: the delimiter
     Upat.Num := 1;
     Delim_List.Get_Access (Upat, Acc);
@@ -501,8 +529,19 @@ package body Search_Pattern is
 
     -- Parse and check the find pattern
     Pattern_Kind := Search_Kind;
-    -- Parse the search pattern
-    Parse_One (Search, Case_Sensitive, Is_Regex, True, Dot_All, Search_List);
+    Is_Iterative := True;
+    Parse_One (Search, Case_Sensitive, Is_Regex, True, Dot_All,
+               True, Search_List);
+
+    -- See if searches need to overlap
+    Is_Overlapping := not First_First_Delim
+             and then not Last_Last_Delim;
+
+    -- Global attributes of find pattern
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Search, Is_Iterative " & Is_Iterative'Img
+                             &  ", Is_Overlapping " & Is_Overlapping'Img);
+    end if;
 
     if Exclude = "" then
       -- No exclude
@@ -515,7 +554,7 @@ package body Search_Pattern is
     end if;
     Pattern_Kind := Exclude_Kind;
     Parse_One (Exclude, Case_Sensitive, Is_Regex, True, Dot_All,
-               Exclude_List);
+               False, Exclude_List);
 
     -- Both patterns must have same length and have delims at same pos
     if Search_List.List_Length /= Exclude_List.List_Length then
@@ -534,7 +573,7 @@ package body Search_Pattern is
       -- Cleanup
       Search_List.Delete_List;
       Exclude_List.Delete_List;
-      Is_Iterative := False;
+      Search_Pattern.Delimiter := As.U.Tus (Line_Feed);
       Check_Completed := False;
       Expected_Search := 1;
       raise;
@@ -602,6 +641,18 @@ package body Search_Pattern is
     end if;
     return Is_Iterative;
   end Iterative;
+
+  -- Tells if the search pattern (if multi regex, otherwise False)
+  --  can re-applied to the last text chunk, i.e. does not start nor stop
+  --  with delimiter
+  function Overlaps return Boolean is
+  begin
+   -- Must be some pattern compiled
+    if Search_List.List_Length = 0 then
+      raise No_Regex;
+    end if;
+    return Is_Overlapping;
+  end Overlaps;
 
   -- Is an exclude pattern set
   function Has_Exclude return Boolean is

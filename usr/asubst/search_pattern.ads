@@ -30,6 +30,11 @@ package Search_Pattern is
   -- Raises No_Regex if the pattern was not parsed OK
   function Iterative return Boolean;
 
+  -- Tells if the search pattern (if multi regex, otherwise False)
+  --  can re-applied to the last text chunk, i.e. does not start nor stop
+  --  with delimiter
+  function Overlaps return Boolean;
+
   -- Get the delimiter
   function Get_Delimiter return String;
 

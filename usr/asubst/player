@@ -53,11 +53,11 @@ while true ; do
     rexpected=`echo -e -n "$expected"`
     # Do test and save exit status
     if [ "$opt1" != "" ] ; then
-    echo "echo \"$input\" | asubst $opt1 $opt2 $opt3 \"$search\" \"$replace\" -> $expected"
-      result=`echo -e -n "$input" | asubst $opt1 $opt2 $opt3 "$search" "$replace"`
+      echo "echo -en \"$input\" | asubst $opt1 $opt2 $opt3 \"$search\" \"$replace\" -> $expected"
+      result=`echo -en "$input" | asubst $opt1 $opt2 $opt3 "$search" "$replace"`
     else
-      echo "echo \"$input\" | asubst $opt \"$search\" \"$replace\" -> $expected"
-      result=`echo -e -n "$input" | asubst "$search" "$replace"`
+      echo "echo -en \"$input\" | asubst $opt \"$search\" \"$replace\" -> $expected"
+      result=`echo -en "$input" | asubst "$search" "$replace"`
     fi
     code=$?
     export result

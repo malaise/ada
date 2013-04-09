@@ -337,7 +337,8 @@ package body Substit is
       end if;
     end loop;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Read line no " &  Line_No'Img);
+      Sys_Calls.Put_Line_Error ("Read up to line no " &  Line_No'Img
+                 & (if Trail_Line_Feed then " & trail" else ""));
     end if;
     return True;
   end Read;
@@ -968,13 +969,21 @@ package body Substit is
           end if;
         end if;
         if not Test then
+          -- Match and not test
           -- Write result
           if Debug.Set then
             Sys_Calls.Put_Line_Error ("Putting >" & Str_Replaced.Image & "<");
           end if;
           Out_File.Put (Str_Replaced.Image);
-          -- Delete all
-          Line_List.Delete_List (False);
+          -- Keep last chunk read if no overlap, else delete all
+          if Search_Pattern.Overlaps then
+            Line_List.Rewind;
+            for I in 1 .. Line_List.List_Length - 1 loop
+              Line_List.Delete;
+            end loop;
+          else
+            Line_List.Delete_List (False);
+          end if;
         end if;
       end;
     end if;
