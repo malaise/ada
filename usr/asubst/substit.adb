@@ -916,10 +916,11 @@ package body Substit is
       Line_List.Rewind (True, Line_List_Mng.Prev);
       Last_Line := Line_List.Access_Current;
       -- Result string is -> Start of first line + Replacing
-      --                   + End of last line
+      --                   + End of last line (if not overlap)
       declare
         Str_Replacing : constant String := Replace_Pattern.Replace;
         Str_Replaced : As.U.Asu_Us;
+        Tail : As.U.Asu_Us;
         use type As.U.Asu_Us;
       begin
         -- Set result: beginning of first line + replacing + end of last line
@@ -928,10 +929,12 @@ package body Substit is
                & Str_Replacing;
         if Match_Res.Last_Offset_Stop < Last_Line.all.Length then
           -- This would raise Constraint_Error if Stop = Length
-          Str_Replaced.Append (
-              Last_Line.all.Slice (
-                  Match_Res.Last_Offset_Stop + 1,
-                  Last_Line.all.Length) );
+          Tail := Last_Line.all.Uslice (Match_Res.Last_Offset_Stop + 1,
+                                        Last_Line.all.Length);
+        end if;
+        if not Search_Pattern.Overlaps then
+          -- If overlap then keep tail for next search
+          Str_Replaced.Append (Tail);
         end if;
         if Verbose then
           -- Display verbose substitution
@@ -975,14 +978,10 @@ package body Substit is
             Sys_Calls.Put_Line_Error ("Putting >" & Str_Replaced.Image & "<");
           end if;
           Out_File.Put (Str_Replaced.Image);
-          -- Keep last chunk read if no overlap, else delete all
+          -- Delete all, and re-insert tail if overlap
+          Line_List.Delete_List (False);
           if Search_Pattern.Overlaps then
-            Line_List.Rewind;
-            for I in 1 .. Line_List.List_Length - 1 loop
-              Line_List.Delete;
-            end loop;
-          else
-            Line_List.Delete_List (False);
+            Line_List.Insert (Tail);
           end if;
         end if;
       end;

@@ -529,7 +529,7 @@ package body Search_Pattern is
 
     -- Parse and check the find pattern
     Pattern_Kind := Search_Kind;
-    Is_Iterative := True;
+    Is_Iterative := False;
     Parse_One (Search, Case_Sensitive, Is_Regex, True, Dot_All,
                True, Search_List);
 

@@ -37,9 +37,11 @@ echo -en "toto\nle" > $FI
 export STEP="Test scenario"
 ./player Scenario
 if [ $? -ne 0 ] ; then
+  rm $FI
   echo "$STEP FAILED."
   exit 1
 fi
+rm $FI
 echo "$STEP OK."
 echo ""
 
