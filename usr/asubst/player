@@ -56,7 +56,7 @@ while true ; do
       echo "echo -en \"$input\" | asubst $opt1 $opt2 $opt3 \"$search\" \"$replace\" -> $expected"
       result=`echo -en "$input" | asubst $opt1 $opt2 $opt3 "$search" "$replace"`
     else
-      echo "echo -en \"$input\" | asubst $opt \"$search\" \"$replace\" -> $expected"
+      echo "echo -en \"$input\" | asubst \"$search\" \"$replace\" -> $expected"
       result=`echo -en "$input" | asubst "$search" "$replace"`
     fi
     code=$?
