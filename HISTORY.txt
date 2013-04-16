@@ -4,6 +4,12 @@ Main changes
 
 [horizontal]
 
+*2013/04/16*:: Fix check of multi-line find pattern when it must re-apply to
+the end of last line after matching (ex: "x\ny") in asubst V16.5
++
+Fix processing of find pattern when it contains a delimiter different from
+the default
+
 *2013/02/08*:: Add option -I (--invertmatch) to asubst V16.0
 
 *2012/11/21*:: Add option -d (--direct) to see direct (first level) dependencies

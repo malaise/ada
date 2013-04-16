@@ -980,7 +980,8 @@ package body Substit is
           Out_File.Put (Str_Replaced.Image);
           -- Delete all, and re-insert tail if overlap
           Line_List.Delete_List (False);
-          if Search_Pattern.Overlaps then
+          if Search_Pattern.Overlaps 
+          and then not Tail.Is_Null then
             Line_List.Insert (Tail);
           end if;
         end if;
