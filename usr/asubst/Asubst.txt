@@ -1,6 +1,6 @@
 Asubst
 ======
-V16.5
+V16.6
 
 Asubs is a command line tool that finds occurences of text that match a
 pattern (regular expresssion), and replaces these occurences by a given string.
@@ -65,7 +65,7 @@ casing) then asubst puts on stderr some debugging information.
 Find pattern
 ------------
 This section describes the find pattern in regex mode. See section
-xref:XRegexNoRegex[regex and noregex modes] for a description of find
+xref:XNoRegex[Noregex modes] for a description of find
 string in noregex mode.
 
 <find_pattern>   ::= <single_regex> | <multiple_regex>
@@ -126,10 +126,11 @@ The following specific ''\'' sequences are also handled by asubst:
 
 - "\xIJ" where IJ is an hexadecimal number (00 to FF or ff) for a byte code.
 +
-"\x00" is forbidden in the find pattern (except in mode "noregex"). Beware also
-that "\xIJ" is replaced before compiling the regex, so it cannot be used to
-avoid a given character. For example "[a\x2Dx]" is exactly the same as "[a-x]",
-and "\x0A" is exactly the same as "\n" (it will be used as regex delimiter).
+"\x00" is forbidden in the find pattern (except in xref:XNoRegex[Noregex] mode).
+Beware also that "\xIJ" is replaced before compiling the regex, so it cannot be
+used to avoid a given character. For example "[a\x2Dx]" is exactly the same as
+"[a-x]", and "\x0A" is exactly the same as "\n" (it will be used as regex
+delimiter).
 
 - The following shortcuts for character classes, to be used in regex mode and
 *within a bracket expression*:
@@ -153,15 +154,19 @@ NOTE: In "regex" mode, other ''\'' expressions are passed to PCRE.
 
 Exclusion pattern
 -----------------
-This option means that the text matching the <find_pattern> but also stricly
-matching the <exclude_regex> will not be replaced.
+This option means that the text matching the find pattern but also stricly
+matching the exclusion pattern will not be replaced.
 
-NOTE: Beware that it applies to the text matching <find_pattern> only. +
+NOTE: Beware that it applies only to the the fragment of text that matches the find
+pattern, not the full input text. +
 'Stricly' means that the full text must match the full pattern, e.g. "to"
 does not strictly match "o" but strictly matches ".o". +
+So in the exlusion regex a leading ''^'' and a tailing ''$'' are meaningless".
+
 If set, the <exclude_regex> must have the same number of regex as the
-<find_pattern>. +
-Exclusion is allowed in noregex mode, despite not very usefull.
+find pattern. +
+Exclusion is allowed in the xref:XNoRegex[noregex] mode, and then interpreted
+as a normal string, which is not very usefull.
 
 For example 'echo "toto" | asubst --exclude=toto to ti' will replace toto by
 titi because each matching "to" does not match the exclusion "toto". Same with
@@ -178,8 +183,8 @@ exclusion) will be substituted.
 
 NOTE: "" means none, "-" means all.
 
-NOTE: Because of the rules for parsing arguments, a <range> starting by ''-'' requires
-the long option name. Example: don't use '"-m -4"', but '"-m 1-4"' or
+NOTE: Because of the rules for parsing arguments, a <range> starting by ''-''
+requires the long option name. Example: don't use '"-m -4"', but '"-m 1-4"' or
 '"--match=-4"'.
 
 Delimiter
@@ -188,7 +193,8 @@ Normally, asubst reads the input flow or file line by line (separated by
 ''\n''), and searches for matches between 
 
   * the input sequences of text and ''\n''
-  * the sequence of regex an ''\n'' of the find pattern.
+  * the sequence of regex (or strings in xref:XNoRegex[noregex] mode) and ''\n''
+of the find pattern.
 
 However, when an input delimiter is specified (option -D or --delimiter) then
 asubst reads sequences of text separated by this delimiter (the whole text if
@@ -221,7 +227,7 @@ asubst -D '\n\n' -- '\b([\M]+)\b[\S]+\1' '->\R01<-' file
 --------------------------------------
 
 Fix line delimiters of a hudge file (see also section 
-xref:XRegexNoRegex[regex and noregex modes]):
+xref:XNoRegex[Noregex modes]):
 --------------------------------------
 asubst -D '\x0D' -x '\x0D' '\x0A' file
 --------------------------------------
@@ -279,7 +285,11 @@ NOTE: Conditions apply first, then replacement, then case conversion.
 NOTE: Substrings are numbered in the order of the opening parenthesis,
 left to right.
 
-NOTE: "\r0i", "\i0i", "\a0i" and "\o0i" are forbidden.
+NOTE: "\r0J", "\i0J", "\a0J" and "\o0J" are forbidden.
+
+NOTE: All these escape sequences of regex mode are supported in
+xref:XNoregex[noregex] mode except "\rIJ", "\iIJ" (thus "\aIJ", "\oIJ", "\e"
+and "\f") because there is no notion of substring in noregex mode.
 
 Examples:
 --------------------------------------
@@ -328,9 +338,9 @@ echo -en "toto" | asubst -g "toto" "found"              -> found
 echo -en "*cs add" | asubst -g "^\*([^ ]+) " "Got \r11" -> Got cs
 --------------------------------------
 
-Regex and noregex modes
------------------------
-anchor:XRegexNoRegex[]
+Noregex mode
+------------
+anchor:XNoRegex[]
 
 .General principal
 In noregex mode asubst considers the find pattern as a sequence of text chunks
@@ -341,11 +351,12 @@ matching text must start with the chunk
 * if a chunk (in the find pattern) is followed by the delimiter then a
 matching text must end with the chunk
 
-Example, in node noregex:
+Example, in noregex mode:
 --------------------------------------
 "\ntoto\n" matches "to" twice
 "\ntoto\n" matches "\nto" or "to\n" once
 "\ntoto\n" does not match "\nto\n"
+--------------------------------------
 
 
 .Others considerations on regex and noregex modes
