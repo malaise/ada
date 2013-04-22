@@ -75,6 +75,9 @@
 "ti"                    "to?|ti"                      "ok"                        "oki"
 "ti"                    "^(to?|ti)$"                  "ok"                        "ok"
 "ti"                    "ti|to?"                      "ok"                        "ok"
+"aa\naa+bb\naa+bb\nbb"  "((.)\2)\n\R01"               "\u\R01\n\R03\c"            "AA\nAA+bb\naa+BB\nBB"
+"aa\naa+aa\nbb+bb\nbb"  "((.)\2)\n\r11"               "\u\R01\n\R03\c"            "AA\nAA+aa\nbb+BB\nBB"
+"aa\naa+aa\nbb+bb"      "((.)\2)\n\r11\+\r11"         "\u\R01\c"                  "AA\nbb+bb"
 
 "Options" "--"
 "aaaa"                  "^(.*)a(.*)$"                 "->\r11<-a->\r12<-\n"         "->aaa<-a-><-"
