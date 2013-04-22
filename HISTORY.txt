@@ -3,6 +3,7 @@ HISTORY
 Main changes
 
 [horizontal]
+*2013/04/22*:: Add back references in search pattern of asubst V17.0
 
 *2013/04/16*:: Fix check of multi-line find pattern when it must re-apply to
 the end of last line after matching (ex: "x\ny") in asubst V16.5

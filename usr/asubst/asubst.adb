@@ -4,7 +4,7 @@ with As.U.Utils, Environ, Argument, Argument_Parser, Basic_Proc, Language,
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V16.6";
+  Version : constant String  := "V17.0";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -107,11 +107,11 @@ procedure Asubst is
     Basic_Proc.Put_Line_Error (
      "    A <regex> can contain ""\t"" (tab), ""\s"" (space), ""\xIJ"" (any hexa byte),");
     Basic_Proc.Put_Line_Error (
-     "     or ""\I"" (I from 1 to 9, a back reference to a matching substring).");
+     "     ""\I"" (I from 1 to 9, a back reference to a matching substring),");
     Basic_Proc.Put_Line_Error (
-     "    A <regex> can't contain ""\n"" (""\n"" matches the new_line character");
+     "     ""\RIJ"" (IJ in hexa), replaced by the input text matching the IJth regex,");
     Basic_Proc.Put_Line_Error (
-     "    and is the delimiter of regexes).");
+     "     ""\rIJ"", replaced by the text matching the Jth substring of the Ith regex.");
     Basic_Proc.Put_Line_Error (
      "    The following shortcuts are provided for use in regex within brakets:");
     Basic_Proc.Put_Line_Error (
@@ -123,11 +123,13 @@ procedure Asubst is
     Basic_Proc.Put_Line_Error (
      "    A <regex> can contain '^' or '$'. If not, it applies several times per line.");
     Basic_Proc.Put_Line_Error (
+     "    A <regex> can't contain the delimiter (default ""\n"").");
+    Basic_Proc.Put_Line_Error (
      "    Each <regex> of <multiple_regex> applies to one line (once).");
     Basic_Proc.Put_Line_Error (
      "    In noregex mode, only ""\t"", ""\s"", ""\xIJ"" and ""\n"" are interpreted");
     Basic_Proc.Put_Line_Error (
-     "    and ""\x00"" is allowed (forbidden in a regex).");
+     "     and ""\x00"" is allowed (forbidden in a regex).");
 
     Basic_Proc.Put_Line_Error (
      "  <replace_string> is a string with the following specific sequences:");

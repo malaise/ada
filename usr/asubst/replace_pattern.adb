@@ -396,7 +396,7 @@ package body Replace_Pattern is
     return The_Pattern.Is_Null;
   end Is_Empty;
 
--- Return replace pattern
+  -- Return replace pattern
   function Get return String is
   begin
     return The_Pattern.Image;
@@ -505,6 +505,7 @@ package body Replace_Pattern is
         end if;
       end loop;
       Sys_Calls.Put_Line_Error ("<");
+      
     end if;
     -- Replace all occurences of replace code, toggle case substitution...
     Start := 1;

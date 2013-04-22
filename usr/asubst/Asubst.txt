@@ -1,6 +1,6 @@
 Asubst
 ======
-V16.6
+V17.0
 
 Asubs is a command line tool that finds occurences of text that match a
 pattern (regular expresssion), and replaces these occurences by a given string.
@@ -144,6 +144,23 @@ expression. For example, "\M" is always replaced by "[:alnum:]". Out of a
 bracket expression this becomes itself a bracket expression (with '':'' ''a''
 ''l'' ''n'' ''u'' ''m'' and '':'' characters), which fortunately is invalid
 for PCRE.
+
+- "\RIJ" where IJ is an hexadecimal number will be replaced by the string
+matching the provious regex number IJ, (00 < IJ < CurrentRegex).
++
+NOTE: For regex numbers, each single regex and each delimiter counts for one.
+
+- "\rIJ" where IJ is an hexadecimal number will be replaced by the string
+matching the substring J of the pevious regex number I (0 < I < CurrentRegex),
+J = 0 for the complete string, (so "\R0x" = "\rx0").
++
+NOTE: Substrings are numbered in the order of the opening parenthesis, left
+to right.
++
+NOTE: Such back reference to a previous match ("\R" and "\r") degrade
+the performance because the regex is re-compiled at each try.
++
+NOTE: For back reference in the current regex, use the standard "\i" notation.
 
 NOTE: Beware that some regex expressions are supposed to match a "new line"
 (example [:blank:] within a bracket expression) but will not match in asubst,

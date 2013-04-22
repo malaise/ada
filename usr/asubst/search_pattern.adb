@@ -1,11 +1,43 @@
 with Ada.Characters.Latin_1;
 with As.U, Sys_Calls, Argument, Hashed_List.Unique, Str_Util, Text_Line,
-     Hexa_Utils, Language;
+     Hexa_Utils, Language, Images, Unbounded_Arrays;
 with Debug;
 package body Search_Pattern is
 
   -- 0 to 16 substring indexes
   subtype Substr_Array is Regular_Expressions.Match_Array (Nb_Sub_String_Range);
+
+  -- Unbounded array of back references (inter-regex)
+  subtype Byte is Natural range 0 .. 255;
+  type Backref_Rec is record
+    -- Regex = 0 for not a backref
+    -- Substring = 0 for text matching all regex
+    Regex : Byte := 0;
+    Substr : Nb_Sub_String_Range := 0;
+  end record;
+  type Backref_Array is array (Positive range <>) of Backref_Rec;
+  package Backref_Mng is new Unbounded_Arrays (Backref_Rec,
+                                               Backref_Array);
+  subtype Backref_Ua is Backref_Mng.Unb_Array;
+
+  -- Add (append) a backref at a given index
+  procedure Add_Backref (To : in out Backref_Ua;
+                         Backref : in Backref_Rec;
+                         Index : in Positive) is
+  begin
+    if To.Length >= Index then
+      -- Normally never here (backrefs are appended one after the other)
+      To.Replace_Element (Index, Backref);
+    else
+      declare
+        -- Gap from Len + 1 to Index - 1
+        Gap : constant Backref_Array (1 .. Index - To.Length - 1)
+            := (others => (0, 0));
+      begin
+        To.Append (Gap & Backref);
+      end;
+    end if;
+  end Add_Backref;
 
   -- Unique list of patterns
   type Line_Pat_Rec is record
@@ -15,9 +47,12 @@ package body Search_Pattern is
     Is_Delim : Boolean;
     -- Are Prev and next patterns delimiters
     Prev_Delim, Next_Delim : Boolean;
-    -- Regex or string to search (depending on Is_regex)
-    Pat : Regular_Expressions.Compiled_Pattern;
+    -- String to search (and Regex depending on Is_regex)
     Find_Str : As.U.Asu_Us;
+    Case_Sensitive, Dot_All : Boolean;
+    Pat : Regular_Expressions.Compiled_Pattern;
+    -- Inter-regex back references
+    Backrefs : Backref_Ua;
     -- The complete string from input flow that matches
     Match_Str : As.U.Asu_Us;
     -- Number of sub-matching strings
@@ -35,10 +70,13 @@ package body Search_Pattern is
     To.Is_Delim := Val.Is_Delim;
     To.Prev_Delim := Val.Prev_Delim;
     To.Next_Delim := Val.Next_Delim;
+    To.Find_Str := Val.Find_Str;
+    To.Case_Sensitive := Val.Case_Sensitive;
+    To.Dot_All := Val.Dot_All;
     -- Regexp pattern cannot be copied, so it will be assigned
     --  to the Line_Pat_Rec access
     -- To.Pat := Val.Pat;
-    To.Find_Str := Val.Find_Str;
+    To.Backrefs := Val.Backrefs;
     -- The following are not required because set by Check and
     --  later on read by Substring... always by access
     To.Match_Str := Val.Match_Str;
@@ -59,9 +97,6 @@ package body Search_Pattern is
   package H_List_Pattern  is new Hashed_List (Line_Pat_Rec, Line_Pat_Acc,
                                             Set, "=", Image);
   package Unique_Pattern  is new H_List_Pattern.Unique;
-  -- True only after Check (Search, Number) called and OK.
-  Check_Completed : Boolean := False;
-  Expected_Search : Positive := 1;
 
   -- The search and exclude patterns
   Search_List  : aliased Unique_Pattern.Unique_List_Type;
@@ -126,6 +161,7 @@ package body Search_Pattern is
   procedure Add (Crit : in String;
                  Regex_Mode, Case_Sensitive, Dot_All : in Boolean;
                  Prev_Delim, Next_Delim : in Boolean;
+                 Backrefs : in Backref_Ua;
                  List : in out Unique_Pattern.Unique_List_Type) is
     Upat : Line_Pat_Rec;
     Upat_Access : Line_Pat_Acc;
@@ -136,6 +172,7 @@ package body Search_Pattern is
     Upat.Is_Delim := Crit = Delimiter.Image;
     Upat.Prev_Delim := Prev_Delim;
     Upat.Next_Delim := Next_Delim;
+    Upat.Backrefs := Backrefs;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search adding regex "
              &  Upat.Num'Img & " >" & Crit & "<");
@@ -148,6 +185,8 @@ package body Search_Pattern is
     end if;
     -- Store string
     Upat.Find_Str := As.U.Tus (Crit);
+    Upat.Case_Sensitive := Case_Sensitive;
+    Upat.Dot_All := Dot_All;
     if not Regex_Mode then
       -- Only string if this is not a regex
       Upat.Nb_Substr := 0;
@@ -155,6 +194,7 @@ package body Search_Pattern is
       return;
     end if;
     -- Regex: Count max number of substrings, i.e. number of '('
+    -- This is a majorant because some may be \( or [(]
     for I in Sub_String_Range loop
       -- Locate succcessive occurences of "("
       exit when Str_Util.Locate (Crit, "(", Occurence => I) = 0;
@@ -205,7 +245,6 @@ package body Search_Pattern is
     The_Pattern : As.U.Asu_Us;
 
     -- Check and get an hexa code from The_Pattern (Index .. Index + 1)
-    subtype Byte is Natural range 0 .. 255;
     function Get_Hexa (Index : Positive) return Byte is
      Result : Byte;
     begin
@@ -291,12 +330,18 @@ package body Search_Pattern is
     -- Indexes in Pattern
     Start_Index : Positive;
     Stop_Index : Natural;
+    Tmp_Index : Natural;
     -- Was previous item a delimiter
     Prev_Delim : Boolean;
     -- Is next item a delimiterA (true except at the end)
     Next_Delim : Boolean;
     -- Are we processing first chunk
     First_Chunk : Boolean;
+    -- Byte read after \R or \r
+    Byt : Byte;
+    -- Array of back references
+    Backref : Backref_Rec;
+    Backrefs : Backref_Ua;
   begin
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search parsing pattern >" & Pattern & "<");
@@ -304,7 +349,6 @@ package body Search_Pattern is
     -- Reset pattern characteristics
     The_Pattern := As.U.Tus (Pattern);
     List.Delete_List;
-    Check_Completed := False;
     -- Reject empty pattern
     if Pattern = "" then
       Error ("Empty pattern");
@@ -313,10 +357,10 @@ package body Search_Pattern is
     -- Replace escape sequences (\n, \t and \xIJ) in the pattern
     Stop_Index := 1;
     loop
-      -- Locate sequence
+      -- Locate sequences (not \R nor \r)
       Stop_Index := Str_Util.Locate_Escape (The_Pattern.Image,
                                Stop_Index,
-                               "\nstxABCDEFGHIJKLMNOPQRSTUVWXYZ");
+                               "\nstxABCDEFGHIJKLMNOPQSTUVWXYZ");
       exit when Stop_Index = 0;
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search, found Esc char >"
@@ -333,13 +377,13 @@ package body Search_Pattern is
         when 't' =>
           -- "\t" replaced by (horiz) tab
           The_Pattern.Replace (Stop_Index - 1, Stop_Index,
-                             Ada.Characters.Latin_1.Ht & "");
+                               Ada.Characters.Latin_1.Ht & "");
         when 'x' =>
-          -- "\xIJ" hexa replaced by byte or "\n"
+          -- "\xIJ" hexa replaced by byte
           The_Pattern.Replace (Stop_Index - 1, Stop_Index + 2,
                              Character'Val (Get_Hexa (Stop_Index + 1)) & "");
-        when 'A' .. 'Z' =>
-          -- Some \A to \Z replaced by [:<CharClass>:]
+        when 'A' .. 'Q' | 'S' .. 'Z' =>
+          -- Some \A to \Z (but not \R) replaced by [:<CharClass>:]
           declare
             Class : constant String := Char_Class_Of (
                     The_Pattern.Element (Stop_Index));
@@ -348,7 +392,7 @@ package body Search_Pattern is
             Stop_Index := Stop_Index + Class'Length - 1;
           end;
         when others =>
-          -- Impossible. Leave sequence as it is, skip it
+          -- "\\" or impossible. Leave sequence as it is, skip it
           Stop_Index := Stop_Index + 1;
       end case;
       exit when Stop_Index >= The_Pattern.Length;
@@ -372,18 +416,20 @@ package body Search_Pattern is
             -- Two successive Delims
             if Regex_Mode then
               Add (Start_String (True) & Stop_String (True), Regex_Mode,
-                   Case_Sensitive, Dot_All, False, False, List);
+                   Case_Sensitive, Dot_All, False, False, Backrefs, List);
             else
-              Add ("", Regex_Mode, Case_Sensitive, False, False, False, List);
+              Add ("", Regex_Mode, Case_Sensitive, False, False, False,
+                   Backrefs, List);
             end if;
           end if;
           Add (Delimiter.Image, Regex_Mode, Case_Sensitive,
-               False, False, False, List);
+               False, False, False, Backrefs, List);
           Prev_Delim := True;
         else
           -- A pattern: see if it is followed by a delim (always, except at the
           --  end)
           Next_Delim := Stop_Index /= 0;
+
           -- Make Stop_Index be the last index of regex,
           if Stop_Index = 0 then
             Stop_Index := The_Pattern.Length;
@@ -391,6 +437,54 @@ package body Search_Pattern is
             -- This delim will be located at next iteration of the loop
             Stop_Index := Stop_Index - 1;
           end if;
+
+          -- Handle back references
+          Tmp_Index := Start_Index;
+          loop
+            -- Tmp is index in full The_Pattern
+            Tmp_Index := Str_Util.Locate_Escape (
+              The_Pattern.Slice (Start_Index, Stop_Index),
+                                 Tmp_Index, "\Rr");
+            exit when Tmp_Index = 0;
+            if The_Pattern.Element (Tmp_Index) /= '/' then
+              if Debug.Set then
+                Sys_Calls.Put_Line_Error ("Search, found Esc char >"
+                                & The_Pattern.Element (Tmp_Index) & "<");
+              end if;
+              -- "\RIJ" or "\rIJ' replaced by 'R' or 'r', and store backref
+              Byt := Get_Hexa (Tmp_Index + 1);
+              The_Pattern.Replace (Tmp_Index - 1, Tmp_Index + 2,
+                                   The_Pattern.Element (Tmp_Index) & "");
+              Stop_Index := Stop_Index - 3;
+              if The_Pattern.Element (Tmp_Index - 1) = 'R' then
+                -- Add backref to full regex Byt
+                Backref := (Byt, 0);
+              else
+                -- Add backref to substr Low_Byt of regex High_Byt
+                Backref := (Byt / 16, Byt mod 16);
+              end if;
+              if Backref.Regex = 0
+              or else Backref.Regex > List.List_Length then
+                Error ("Invalid regex index "
+                     & Images.Integer_Image (Backref.Regex)
+                     & " in back reference");
+              end if;
+              if Backref.Substr /= 0
+              and then Backref.Substr > Nb_Substrings (Backref.Regex) then
+                Error ("Invalid substring index "
+                     & Images.Integer_Image (Backref.Substr)
+                     & " in back reference");
+              end if;
+              if Debug.Set then
+                Sys_Calls.Put_Line_Error ("Search, adding backref "
+                   & Backref.Regex'Img & " :" & Backref.Substr'Img);
+              end if;
+              -- Index in Backrefs is relative to this slice
+              Add_Backref (Backrefs, Backref, Tmp_Index - Start_Index + 1);
+            end if;
+          end loop;
+
+          -- Insert pattern (maybe with ' and '$')
           declare
             Slice : constant String
                   := The_Pattern.Slice (Start_Index, Stop_Index);
@@ -405,13 +499,16 @@ package body Search_Pattern is
               Needs_Stop := Next_Delim and then not Check_Stop (Stop_Index);
               -- Add this regex with start/stop strings
               Add (Start_String (Needs_Start) & Slice
-                 & Stop_String (Needs_Stop),
-                 True, Case_Sensitive, Dot_All, Prev_Delim, Next_Delim, List);
+                   & Stop_String (Needs_Stop),
+                 True, Case_Sensitive, Dot_All, Prev_Delim, Next_Delim,
+                 Backrefs, List);
             else
               -- Add this regex with no start/stop strings
-              Add (Slice, False, True, False, Prev_Delim, Next_Delim, List);
+              Add (Slice, False, True, False, Prev_Delim, Next_Delim, Backrefs,
+                   List);
             end if;
           end;
+
           if Search then
             -- Set global characteristics when parsing search
             if Regex_Mode then
@@ -459,12 +556,17 @@ package body Search_Pattern is
       -- No split (delimiter)
       if Regex_Mode then
         Add (The_Pattern.Image, True, Case_Sensitive, Dot_All,
-             False, False, List);
+             False, False, Backrefs, List);
       else
-        Add (The_Pattern.Image, False, True, False, False, False, List);
+        Add (The_Pattern.Image, False, True, False, False, False, Backrefs,
+             List);
       end if;
     end if;
     -- Done
+  exception
+    when Constraint_Error =>
+      -- Not enough characters after '\'
+      Error ("Invalid pattern " & Pattern);
   end Parse_One;
 
   -- Checks and sets the delimiter
@@ -519,7 +621,6 @@ package body Search_Pattern is
   begin
     -- Init global variables and 'constants'
     Search_Pattern.Is_Regex := Is_Regex;
-    Expected_Search := 1;
     -- Parse the delimiter
     Parse_Delimiter (Delimiter);
     -- Parse the search pattern
@@ -574,8 +675,6 @@ package body Search_Pattern is
       Search_List.Delete_List;
       Exclude_List.Delete_List;
       Search_Pattern.Delimiter := As.U.Tus (Line_Feed);
-      Check_Completed := False;
-      Expected_Search := 1;
       raise;
   end Parse;
 
@@ -677,50 +776,35 @@ package body Search_Pattern is
   --  matches the regex no Regex_Index
   -- Raises No_Regex if the Regex_Index is higher than
   --  the number of regex (retruned by Parse)
+  Upat : aliased Line_Pat_Rec;
   function Check (Str : String; Start : Positive;
                   Search : in Boolean;
                   Regex_Index : Positive) return Boolean is
-    -- The pattern to check with
-    Upat : Line_Pat_Rec;
-    Upat_Access : Line_Pat_Acc;
+    -- The pattern to check with and the one to update
+    Crit_Access, Upat_Access : Line_Pat_Acc;
     -- Check result
     Nmatch : Natural;
     Match : Regular_Expressions.Match_Array
                (1 .. Nb_Sub_String_Range'Last + 1);
-    -- Expected index
-    Expected_Index : Positive;
+    -- Backref, Index of Backref in string, and result of recompilation
+    Backref : Backref_Rec;
+    Str_Index : Positive;
+    Ok : Boolean;
     -- The list
     type List_Access is access all Unique_Pattern.Unique_List_Type;
     List : List_Access;
-    -- Store expected search index
-    procedure Store_Index (I : in Positive; Completed : in Boolean) is
-    begin
-      if Search then
-        Expected_Search := I;
-        if Completed then
-          Check_Completed := True;
-        end if;
-      end if;
-    end Store_Index;
 
   begin
     -- Search or exclude list?
     if Search then
       -- Check match in search list
-      Expected_Index := Expected_Search;
       List := Search_List'Access;
-      -- Check that this index follows previous
-      if Regex_Index /= Expected_Index then
-        raise No_Regex;
-      end if;
       -- Check not completed by default
-      Check_Completed := False;
     elsif Exclude_List.List_Length = 0 then
       -- No exclude list, so Str is OK (does not match)
       return False;
     else
       -- Check match in exclude list
-      Expected_Index := 1;
       List := Exclude_List'Access;
     end if;
     -- Get access to the pattern
@@ -739,18 +823,11 @@ package body Search_Pattern is
         Upat_Access.Nb_Substr := 0;
         Upat_Access.Substrs(0) := (1, 1, 1);
         Upat_Access.Match_Str := Delimiter;
-        if Regex_Index = List.all.List_Length then
-          -- Last pattern and matches
-          Store_Index (1, True);
-        else
-          Store_Index (Expected_Index + 1, False);
-        end if;
         if Debug.Set then
           Sys_Calls.Put_Line_Error ("Search check pattern is delim vs delim");
         end if;
         return True;
       else
-        Store_Index (1, False);
         if Debug.Set then
           Sys_Calls.Put_Line_Error (
                     "Search check pattern is delim vs not delim");
@@ -761,16 +838,62 @@ package body Search_Pattern is
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search check pattern is not delim vs delim");
       end if;
-      Store_Index (1, False);
       return False;
     else
       if Debug.Set then
         Sys_Calls.Put_Line_Error (
                   "Search check pattern is not delim vs not delim");
       end if;
+
+      -- Replace back references in Upat (and compile pattern if regex)
+      if Upat_Access.Backrefs.Is_Null then
+        Crit_Access := Upat_Access;
+        if  Debug.Set then
+          Sys_Calls.Put_Line_Error ("Search pattern is "
+                                  & Crit_Access.Find_Str.Image);
+        end if;
+      else
+        Set (Upat, Upat_Access.all);
+        Crit_Access := Upat'Access;
+        Str_Index := 1;
+        for I in 1 .. Upat.Backrefs.Length loop
+          Backref := Upat.Backrefs.Element (I);
+          if Backref.Regex /= 0 then
+            -- Replace the letter (R or r) by the matching (sub) string
+            declare
+              Rep_Str : constant String := Substring (Backref.Regex,
+                                                      Backref.Substr);
+            begin
+              Upat.Find_Str.Replace (Str_Index, Str_Index, Rep_Str);
+              Str_Index := Str_Index + Rep_Str'Length;
+            end;
+          else
+            -- Keep this char
+            Str_Index := Str_Index + 1;
+          end if;
+        end loop;
+        if  Debug.Set then
+          Sys_Calls.Put_Line_Error ("Search pattern is " & Upat.Find_Str.Image);
+        end if;
+        if Is_Regex then
+          -- Compile regex
+          Regular_Expressions.Compile (Upat.Pat, Ok, Upat.Find_Str.Image,
+                                       Case_Sensitive => Upat.Case_Sensitive,
+                                       Dot_All => Upat.Dot_All);
+          if not Ok then
+            Sys_Calls.Put_Line_Error (
+                Argument.Get_Program_Name
+               & "ERROR: Invalid regex "
+                         & Upat.Find_Str.Image
+                         & " after replacing back reference.");
+            raise Regex_Error;
+          end if;
+        end if;
+      end if;
+
       -- Check. Note that indexes will be relative to Str
       if Is_Regex then
-        Regular_Expressions.Exec (Upat_Access.Pat,
+        Regular_Expressions.Exec (Crit_Access.Pat,
                                   Str(Start .. Str'Last),
                                   Nmatch, Match);
         -- For exclusion, the match must be strict
@@ -780,7 +903,7 @@ package body Search_Pattern is
           -- Not strict matching
           Nmatch := 0;
         end if;
-      elsif Str = "" and then Upat_Access.Find_Str.Image = "" then
+      elsif Str = "" and then Crit_Access.Find_Str.Image = "" then
         -- Noregex: Empty string versus empty pattern
         Match(1) := (Start, 0, 0);
         Nmatch := 1;
@@ -789,22 +912,22 @@ package body Search_Pattern is
         -- If pattern is followed by a delim then search bawards to find
         --  last occurence (usefull if pattern is not preceeded by a delim)
         Nmatch := Str_Util.Locate (Str (Start .. Str'Last),
-                                   Upat_Access.Find_Str.Image,
-                                   0, Forward => not Upat_Access.Next_Delim);
+                                   Crit_Access.Find_Str.Image,
+                                   0, Forward => not Crit_Access.Next_Delim);
         if Nmatch /= 0 then
           -- Fill matching info as if from a regex
           Match(1) := (
            First_Offset => Nmatch,
-           Last_Offset_Start => Nmatch + Upat_Access.Find_Str.Length - 1,
-           Last_Offset_Stop  => Nmatch + Upat_Access.Find_Str.Length - 1);
+           Last_Offset_Start => Nmatch + Crit_Access.Find_Str.Length - 1,
+           Last_Offset_Stop  => Nmatch + Crit_Access.Find_Str.Length - 1);
           Nmatch := 1;
           if Search then
-            if Upat_Access.Prev_Delim
+            if Crit_Access.Prev_Delim
             and then Match(1).First_Offset /= Start then
               -- If a delim before, then must match from start
               Nmatch := 0;
             end if;
-            if Upat_Access.Next_Delim
+            if Crit_Access.Next_Delim
             and then Match(1).Last_Offset_Stop /= Str'Last then
               -- If a delim after the must match up to stop
               Nmatch := 0;
@@ -826,16 +949,9 @@ package body Search_Pattern is
         Upat_Access.Substrs(1 .. Upat_Access.Nb_Substr)
                    := Match(2 .. Nmatch);
         Upat_Access.Match_Str := As.U.Tus (Str);
-        if Regex_Index = List.all.List_Length then
-          -- Last pattern and matches
-          Store_Index (1, True);
-        else
-          Store_Index (Expected_Index + 1, False);
-        end if;
         return True;
       else
         -- Not match
-        Store_Index (1, False);
         return False;
       end if;
     end if;
@@ -861,10 +977,6 @@ package body Search_Pattern is
     Cell : Regular_Expressions.Match_Cell;
     use type Regular_Expressions.Match_Cell;
   begin
-    -- Check that previous check completed
-    if not Check_Completed then
-      raise No_Regex;
-    end if;
     -- Get access to the pattern
     Upat_Access := Get_Search_Access (Regex_Index);
     -- Check number of substrings and get cell
@@ -914,11 +1026,6 @@ package body Search_Pattern is
     Cell : Regular_Expressions.Match_Cell;
     Nbre : Natural;
   begin
-    -- Check that previous check completed
-    if not Check_Completed then
-      raise No_Regex;
-    end if;
-
     -- Get access to the first pattern
     Upat_Access := Get_Search_Access (1);
 

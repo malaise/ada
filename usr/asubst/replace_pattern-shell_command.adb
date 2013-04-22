@@ -13,8 +13,7 @@ begin
   Command.Execute (Many_Strings.Set (Cmd), True, Command.Only_Out,
      Out_Flow'Access, Err_Flow'Access, Code);
   if Code /= 0 then
-    Sys_Calls.Put_Line_Error ("Replace, command exited with code "
-                            & Code_Image (Code));
+    Put_Error ("Command exited with code " & Code_Image (Code));
     raise Command_Error;
   end if;
   if Debug.Set then
@@ -26,7 +25,7 @@ begin
   return Out_Flow.Str.Image;
 exception
   when Command.Spawn_Error =>
-    Put_Error ("Replace, command spawning failed");
+    Put_Error ("Command spawning failed");
     raise Command_Error;
   when Command.Terminate_Request =>
     raise Terminate_Request;

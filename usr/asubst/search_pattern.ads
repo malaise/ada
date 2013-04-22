@@ -46,10 +46,12 @@ package Search_Pattern is
   -- Raises No_Regex if the Regex_Index is higher than
   --  the number of regex (returned by Number)
   --  or if successive calls do not provide crescent indexes
+  -- Raise Regex_Error if regex (after insertion of back reference) is not valid
   function Check (Str : String; Start : Positive;
                   Search      : Boolean;
                   Regex_Index : Positive) return Boolean;
   No_Regex : exception;
+  Regex_Error : exception;
 
   -- Returns the number of substrings of one regex
   -- Raises No_Regex if the Regex_Index is higher than
