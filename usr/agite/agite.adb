@@ -141,6 +141,18 @@ procedure Agite is
   end Match;
   function File_Search is new Git_If.File_Mng.Dyn_List.Search (Match);
 
+  -- Encode current branch
+  procedure Encode_Branch is
+  begin
+    Afpx.Clear_Field (Afpx_Xref.Main.Branch);
+    if Branch.Image = ("(no branch)") then
+      Branch := As.U.Tus ("None.");
+    end if;
+    Afpx.Encode_Field (Afpx_Xref.Main.Branch, (0, 0),
+         Utils.Normalize ("Br: " & Branch.Image, Afpx.Get_Field_Width (9),
+                          False));
+  end Encode_Branch;
+
   -- Encode Afpx list with files, if list has changed or if Force
   procedure Encode_Files (Force : in Boolean) is
     Position : Natural := 0;
@@ -162,10 +174,12 @@ procedure Agite is
       -- Make a copy of files list
       Prev_Files.Insert_Copy (Files);
     end if;
-    -- Refresh list only if it has changed
 
-    -- Update list of files
+
+    -- Refresh list only if it has changed
+    -- Update list of files and branch
     List_Files;
+    Encode_Branch;
 
     -- Check lengths then content
     if not Changed
@@ -308,15 +322,6 @@ procedure Agite is
     Afpx.Clear_Field (Afpx_Xref.Main.Root);
     Afpx.Encode_Field (Afpx_Xref.Main.Root, (0, 0),
        Utils.Normalize (Root.Image, Afpx.Get_Field_Width (Afpx_Xref.Main.Root)));
-
-    -- Encode current branch
-    Afpx.Clear_Field (Afpx_Xref.Main.Branch);
-    if Branch.Image = ("(no branch)") then
-      Branch := As.U.Tus ("None.");
-    end if;
-    Afpx.Encode_Field (Afpx_Xref.Main.Branch, (0, 0),
-         Utils.Normalize ("Br: " & Branch.Image, Afpx.Get_Field_Width (9),
-                          False));
 
     -- De-activate Diff and history if no in Git
     if Root.Is_Null then

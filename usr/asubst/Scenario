@@ -78,6 +78,12 @@
 "aa\naa+bb\naa+bb\nbb"  "((.)\2)\n\R01"               "\u\R01\n\R03\c"            "AA\nAA+bb\naa+BB\nBB"
 "aa\naa+aa\nbb+bb\nbb"  "((.)\2)\n\r11"               "\u\R01\n\R03\c"            "AA\nAA+aa\nbb+BB\nBB"
 "aa\naa+aa\nbb+bb"      "((.)\2)\n\r11\+\r11"         "\u\R01\c"                  "AA\nbb+bb"
+"toto\ntoto"            "((t(.))t\3)\n\r11"           "Found"                     "Found"
+"toto\ntoto"            "((t(.))(\2))\n\r12\r14"      "Found"                     "Found"
+"toto\ntoto"            "((t(.))(\2))\n\R01"          "Found"                     "Found"
+"toto\ntoto\ntoto"      "((t.)(\2))\n\R01\n\R03"      "Found"                     "Found"
+"toto\ntoto\ntoto"      "((t.)(\2))\n(\R01)\n\r31"    "Found"                     "Found"
+"tototo\ntoto\ntoto"    "(to)\1\1\n(\r11\r11)\n\r31"  "Found"                     "Found"
 
 "Options" "--"
 "aaaa"                  "^(.*)a(.*)$"                 "->\r11<-a->\r12<-\n"         "->aaa<-a-><-"
