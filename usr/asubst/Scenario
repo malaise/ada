@@ -83,7 +83,6 @@
 "toto\ntoto"            "((t(.))(\2))\n\R01"          "Found"                     "Found"
 "toto\ntoto\ntoto"      "((t.)(\2))\n\R01\n\R03"      "Found"                     "Found"
 "toto\ntoto\ntoto"      "((t.)(\2))\n(\R01)\n\r31"    "Found"                     "Found"
-"tototo\ntoto\ntoto"    "(to)\1\1\n(\r11\r11)\n\r31"  "Found"                     "Found"
 
 "Options" "--"
 "aaaa"                  "^(.*)a(.*)$"                 "->\r11<-a->\r12<-\n"         "->aaa<-a-><-"

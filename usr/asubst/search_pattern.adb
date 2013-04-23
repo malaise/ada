@@ -438,8 +438,9 @@ package body Search_Pattern is
             Stop_Index := Stop_Index - 1;
           end if;
 
-          -- Handle back references
+          -- Handle back references for this regex
           Tmp_Index := Start_Index;
+          Backrefs.Set_Null;
           loop
             -- Tmp is index in full The_Pattern
             Tmp_Index := Str_Util.Locate_Escape (

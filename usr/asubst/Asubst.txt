@@ -1,6 +1,6 @@
 Asubst
 ======
-V17.0
+V17.1
 
 Asubs is a command line tool that finds occurences of text that match a
 pattern (regular expresssion), and replaces these occurences by a given string.
@@ -432,6 +432,67 @@ Asubst exits with 0 if some matching was found, with 1 if no matching was
 found, with 2 otherwise (e.g. in case of error). It can also exit with code 3
 if stopped (Ctrl-C or SIGTERM) while executing an external command, or with
 the standard code: 128 + signal_number.
+
+Elements of design
+------------------
+This section briefly describes how asubst is decomposed and provides clues on 
+how it behaves.
+
+.Search_Pattern
+This package has two main services:
+
+- parse the delimiter as a string, and parse the search and exclude patterns
+  as follows:
+  * replace all ''\'' sequences except "\R" and "\r",
+  * split the pattern according to the delimiter,
+  * compile the regexes. Prepend a ''\^'' if the regex is preceeded by a delim
+(and does not yet start by a ''^''). Same with a tailing ''$''.
+
+  * store a list of alternated chunks: delimiter(s) and regex, e.g.
+<regex><delim><delim><regex><delim>. There is a list for the search pattern
+and another one for the exclusion pattern.
+
+- check a string versus one chunks (either of search pattern or of exclusion
+pattern) as follows:
+  * a delimiter only matches <delim> and vice versa,
+  * back references are replaced by the matching (sub)strings and the regex is
+recompiled,
+  * the string is checked versus the regex. If it matches, then the string and
+matching substrings are stored together with the chunk.
+
+.Replace_Pattern
+This package has has two main services:
+
+- parse the replace string
+- generate the replacing string by:
+  * processing conditions,
+  * inserting the text of references to matching (sub)strings, the result of
+shell commands or the content of file,
+  * converting the result to upper, lower or mixed char.
+  
+.Substit
+This package is in charge of opening, processing and closing one file.
+
+- In case of iterative search pattern, (a pattern that can apply several
+times to a line, i.e. no delimiter, no ''^'' nor ''$''), it:
+  * reads one line of input,
+  * iterates on each char of the line: If the current tail of the line matches
+the search pattern and does not match the exclusion, then it replaces the
+matching string and jumps to the end of the replaced string.
+- Otherwise it:
+  * reads a number of lines corresponding to the number of chunks
+  * checks each line versus a chunk of the search pattern
+  * if they all match, then checks each line versus the exclusion pattern
+  * if no overall match, then it shifts one line and reads a new line, otherwise
+it replaces the whole matching text and keeps the tail of last line for next
+check if necessary.
+
+.Asusbt
+This is the main procedure, which:
+
+- parses the arguments,
+- iterates the substitution on all the files,
+- consolidates the status.
 
 Troubleshooting
 ---------------

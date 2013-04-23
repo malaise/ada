@@ -505,7 +505,7 @@ package body Replace_Pattern is
         end if;
       end loop;
       Sys_Calls.Put_Line_Error ("<");
-      
+
     end if;
     -- Replace all occurences of replace code, toggle case substitution...
     Start := 1;
