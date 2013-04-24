@@ -178,7 +178,7 @@ procedure Xml_Checker is
     Ple ("Default format is -W" & Xml_Parser.Generator.Default_Width'Img
                          & " on stdout.");
     Ple ("Building the tree is not recommended for big files and forbidden in canonical.");
-    Ple ("Progress bar requires the callback mode (no  tree).");
+    Ple ("Progress bar requires the callback mode (no tree).");
     Ple ("Please also consider increasing the process stack size (ulimit -s) to");
     Ple ("  avoid stack overflow and Storage_Error.");
   end Usage;

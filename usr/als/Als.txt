@@ -2,7 +2,7 @@ Als
 ===
 V10.0
 
-Als lists files, directory contents... It supports several powerfull options
+Als lists files, directory contents... It supports several powerful options
 for the selection of entries, the output format of each entry, and general
 formatting options.
 
@@ -34,16 +34,16 @@ Specify which entry to select
   --depth=<positive>         Scan only to given depth (needs "-R")
 
   --skip_dirs                Skip directories from arguments
-                               (usefull whan calling "asl *")
+                               (useful when calling "asl *")
   --no_name                  Do not show directory names
 
   <match_name> ::= -m <criteria> | --match=<criteria>
     <criteria> ::= <templates> | @<regex>
     <templates> ::= <template> [ { ,<template> } ]
-                             Keep only files that match the ciriteria
+                             Keep only files that match the criteria
                               (one template or the regular expression)
   <exclude_name> ::= -e <criteria> | --exclude=<criteria>
-                             Exclude files that match the ciriteria
+                             Exclude files that match the criteria
   <match_dir> ::= --match_dir=<criteria>
                              Scan only directories that match the criteria
   <exclude_dir> ::= --exclude_dir=<criteria>
@@ -68,15 +68,15 @@ Specify how to show each entry selected
   -H (--human)               Show sizes in friendly format (e.g. 1K, 2G)
   -p (--path)                Show full path of entries
   <separator> ::= -S <string> | --separator=<string>
-                             Insert <string> beween each entry
+                             Insert <string> between each entry
   --follow_links             Show final target of symbolic links
   --date_iso                 Show date in strict ISO format (<date>T<time>)
 
-Specify general formating options
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Specify general formatting options
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  -s (--size)                Sort by decrescent size (see also "-r")
-  -t (--time)                Sort by decrescent time (see also "-r")
+  -s (--size)                Sort by decreasing size (see also "-r")
+  -t (--time)                Sort by decreasing time (see also "-r")
   -r (--reverse)             Sort (by name, size or time) in reverse order
   -N (--no_sort)             Keep order same as in the directory structure
 
@@ -100,7 +100,7 @@ They are accepted and silently ignored when provided alone.
 
 Example:
 
-Option -H is usefull only when -l is provided. So "als -H" is the same as "als".
+Option -H is useful only when -l is provided. So "als -H" is the same as "als".
 
 .Some options are mutually exclusive
 Providing these options together is reported as an error.
@@ -108,7 +108,7 @@ Providing these options together is reported as an error.
 Examples:
 
 * -d and -n are mutually exclusive.
-* -S is not compatible with some other formating options (-l, -1 and -c).
+* -S is not compatible with some other formatting options (-l, -1 and -c).
 
 Als exit codes
 --------------

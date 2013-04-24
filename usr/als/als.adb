@@ -73,10 +73,10 @@ procedure Als is
     Put_Line_Error ("  <match_name>   ::= " & Argument_Parser.Image(Keys(16)));
     Put_Line_Error ("    <criteria>     ::= <templates> | @<regex>");
     Put_Line_Error ("    <templates>    ::= <template> [ { ,<template> } ]");
-    Put_Line_Error ("                     // Keep only files that match the ciriteria (one template");
+    Put_Line_Error ("                     // Keep only files that match the criteria (one template");
     Put_Line_Error ("                     //  or the regular expression)");
     Put_Line_Error ("  <exclude_name> ::= " & Argument_Parser.Image(Keys(17)));
-    Put_Line_Error ("                     // Exclude files that match the ciriteria");
+    Put_Line_Error ("                     // Exclude files that match the criteria");
     Put_Line_Error ("  <match_dir>    ::= " & Argument_Parser.Image(Keys(18)));
     Put_Line_Error ("                     // Scan only directories that match the criteria");
     Put_Line_Error ("  <exclude_dir>  ::= " & Argument_Parser.Image(Keys(19)));
@@ -97,12 +97,12 @@ procedure Als is
     Put_Line_Error ("  " & Key_Img(25) & "// Show sizes in friendly format (e.g. 1K, 2G)");
     Put_Line_Error ("  " & Key_Img(27) & "// Show full path of entries");
     Put_Line_Error ("  <separator> ::= " & Argument_Parser.Image(Keys(20)));
-    Put_Line_Error ("                     // Insert <string> beween each entry");
+    Put_Line_Error ("                     // Insert <string> between each entry");
     Put_Line_Error ("  " & Key_Img(29) & "// Show final target of symlinks");
     Put_Line_Error ("  " & Key_Img(30) & "// Show date in strict ISO format (<date>T<time>)");
     Put_Line_Error ("How to organize entry list:");
-    Put_Line_Error ("  " & Key_Img(08) & "// Sort by decrescent size (see also ""-r"")");
-    Put_Line_Error ("  " & Key_Img(09) & "// Sort by decrescent time (see also ""-r"")");
+    Put_Line_Error ("  " & Key_Img(08) & "// Sort by decreasing size (see also ""-r"")");
+    Put_Line_Error ("  " & Key_Img(09) & "// Sort by decreasing time (see also ""-r"")");
     Put_Line_Error ("  " & Key_Img(06) & "// Sort (by name, size or time) in reverse order");
     Put_Line_Error ("  " & Key_Img(26) & "// Keep same order as in the directory structure");
     Put_Line_Error ("  " & Key_Img(10) & "// Show a global list of entries (without dir names)");

@@ -4,7 +4,7 @@ with As.U.Utils, Environ, Argument, Argument_Parser, Basic_Proc, Language,
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V17.1";
+  Version : constant String  := "V17.2";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -199,7 +199,7 @@ procedure Asubst is
     Basic_Proc.Put_Line_Error (
      "  Exit code is 0 if some matching was found, 1 if no match and 2 on error.");
     Basic_Proc.Put_Line_Error (
-     "  Warning: regex are powerfull (see ""man 3 pcre"" and ""man 1 perlre"") and");
+     "  Warning: regex are powerful (see ""man 3 pcre"" and ""man 1 perlre"") and");
     Basic_Proc.Put_Line_Error (
      "    automatic substitution can be dangerous, so use " & Argument.Get_Program_Name & " with caution:");
     Basic_Proc.Put_Line_Error (

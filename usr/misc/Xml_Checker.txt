@@ -149,8 +149,8 @@ avoid stack overflow and Storage_Error, especially in this mode.
 -v | --version: :: for put versions of the Xml_Parser, the Xml_Parser.Generator
 (see xref:XmlParser[XML parser and generator]) and Xml_checker.
 
-Behaviour
----------
+Behavior
+--------
 
 Inputs
 ~~~~~~
@@ -164,7 +164,7 @@ after another.
 
 Output
 ~~~~~~
-Xml_checker outputs the xref:Dump[dump] or the formated XML text on stdout.
+Xml_checker outputs the xref:Dump[dump] or the formatted XML text on stdout.
 In xref:Silent[silent] mode there is no output at all. In
 xref:Progress[progress] mode there is just a progress bar.
 
@@ -210,10 +210,10 @@ Xml_checker also uses a XML generator that is a child package of Xml_Parser
 (Xml_Parser.Generator) to build the formatted XML output of the tree or of
 each node. The generator is not used in 'Dump' and in 'Canonical' modes.
 
-.Default behaviour
+.Default behavior
 By default xml_checker invokes the XML parser in callback mode (to allow large
 files and specific options), and with options that ensure that the output is
-the same as the input except the formating (indentation of elements
+the same as the input except the formatting (indentation of elements
 and attributes). +
 On the other hand the parser by default provides the caller with a tree, where
 the comments and CDATA markers are removed, where entities are expanded, and
@@ -221,7 +221,7 @@ where attributes are initialized with their default values. This is the most
 convenient for an application that wants to process the content of the XML
 file. +
 The following table summarizes the defaults of Xml_Checker (and Generator) and
-of Xml_Parser. The differents are highlighted:
+of Xml_Parser. The differences are highlighted:
 [width="75%", options="header"]
 |=========================================================
 | Option         | Xml_Parser default   | xml_cheker default
@@ -247,7 +247,7 @@ As explained about xref:Canonical[canonical] option, xml_checker supports
 canonicalization of XML documents. It invokes the XML parser with fixed options:
 'remove CDATA makers', 'expand', 'normalize', 'no namespace' and with a
 specific 'callback'. This callback performs the XML canonicalization, for which
-the outout format is fixed. So xml_checker does not use the generator in this
+the output format is fixed. So xml_checker does not use the generator in this
 mode.
 
 DTD checker

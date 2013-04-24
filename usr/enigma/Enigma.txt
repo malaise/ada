@@ -31,7 +31,7 @@ current. Rotors with no carry can only appear at first position in the command
 line (slowest). Rotors with no carry don't turn except if they are alone
 (the only rotor defined).
 
-For a reflector, the definition must be symetrical and with no identity.
+For a reflector, the definition must be symmetrical and with no identity.
 
 Enigma command line
 -------------------
@@ -75,7 +75,7 @@ for each rotor defined.
 - The switches definition follows the same logic but defines only the
 letters that change in the coding (all other letters are kept
 unchanged), ex: AZBJMGYC. Note that 13 pairs maximum can be defined, with no
-identity and each letter can appear at most once (implicit symetry).
+identity and each letter can appear at most once (implicit symmetry).
 
 - The first_index number defines the offset of input text from which the
 decoding starts (default 1).
@@ -118,12 +118,12 @@ Data flows:;;
      coded (they are put unchanged on stdout).
 
 Turning rules and coding ways:;;
-     Rotors turn before the coding. The Enigma double stepping behaviour
+     Rotors turn before the coding. The Enigma double stepping behavior
      applies.
 
 Coding rule:;;
      The input letter (uppercase) is encoded through the switches, through all
-     the rotors, then through the refelctor (this is called encoding).  It is
+     the rotors, then through the reflector (this is called encoding). It is
      then encoded the other way through all the rotors and the switch (this
      is called decoding). The complete cycle is called coding.
 
@@ -283,7 +283,7 @@ respectively.
 Switches
 ++++++++
 The switches definition is got from the letters of DAYNAME and MONTHNAME, with
-criteria of unicity, no identity and even number (and max 26 letters).
+criteria of uniqueness, no identity and even number (and max 26 letters).
 
 Ex MONDAY DECEMBER -> MONDAYECBR.
 
@@ -306,7 +306,7 @@ Text key
 anchor:XT-TextKey[]
 The default output format is a valid set of arguments for enigma.
 
-If optionnal -text option is provided, the setting (given as argument,
+If optional -text option is provided, the setting (given as argument,
 given in text, computed from random, computed from current date or from
 provided date) is also translated to text:
 

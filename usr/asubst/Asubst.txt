@@ -1,9 +1,9 @@
 Asubst
 ======
-V17.1
+V17.2
 
 Asubs is a command line tool that finds occurences of text that match a
-pattern (regular expresssion), and replaces these occurences by a given string.
+pattern (regular expression), and replaces these occurrences by a given string.
 
 General syntax
 --------------
@@ -16,7 +16,7 @@ Substitutes strings in files.
 If no file is provided or if <file> is "-", then substitutes from stdin to
 stdout.
 
-WARNING: Regular expressions are powerfull and automatic substitution can be
+WARNING: Regular expressions are powerful and automatic substitution can be
 dangerous, so use asubst with caution. Test your pattern with: +
 ++echo string | asubst <search_pattern> <replace_string>++ +
 and use option -s or -tv if unsure.
@@ -84,7 +84,7 @@ echo "toto" | asubst "t" "ti"  ->  "tiotio"
 echo "tito" | asubst "t." "tu" ->  "tutu"
 --------------------------------------
 
-Significant ''^'' and ''$'' (not backslashed nor in brakets) are thus only
+Significant ''^'' and ''$'' (not backslashed nor in brackets) are thus only
 allowed respectively at the beginning and at the end of the regex. +
 Examples:
 --------------------------------------
@@ -107,12 +107,12 @@ Examples:
 r1\nr2\n -> r1$ \n and ^r2$
 r1\nr2   -> r1$ \n and ^r2
 r1\nr2$  -> r1$ \n and ^r2$
-r1$\n     is forbdidden.
+r1$\n     is forbidden.
 --------------------------------------
 
 NOTE: The difference between "r1\n" and "r1$" is that "r1\n" is two regex. With
 "r1\n", the string matching "r1" AND the following newline will be
-substituted. With "r1$", only the string matching "r1" will be subtituted. +
+substituted. With "r1$", only the string matching "r1" will be substituted. +
 In short, "r1\n" means "r1 *and* a newline" while "r1$" means "r1, followed by a
 newline".
 
@@ -151,7 +151,7 @@ matching the provious regex number IJ, (00 < IJ < CurrentRegex).
 NOTE: For regex numbers, each single regex and each delimiter counts for one.
 
 - "\rIJ" where IJ is an hexadecimal number will be replaced by the string
-matching the substring J of the pevious regex number I (0 < I < CurrentRegex),
+matching the substring J of the previous regex number I (0 < I < CurrentRegex),
 J = 0 for the complete string, (so "\R0x" = "\rx0").
 +
 NOTE: Substrings are numbered in the order of the opening parenthesis, left
@@ -165,20 +165,20 @@ NOTE: For back reference in the current regex, use the standard "\i" notation.
 NOTE: Beware that some regex expressions are supposed to match a "new line"
 (example [:blank:] within a bracket expression) but will not match in asubst,
 because the input flow/file is decomposed into lines first (except if a specific
-delimiterer is provided), then each line is compared to a regex expression.
+delimiter is provided), then each line is compared to a regex expression.
 
 NOTE: In "regex" mode, other ''\'' expressions are passed to PCRE.
 
 Exclusion pattern
 -----------------
-This option means that the text matching the find pattern but also stricly
+This option means that the text matching the find pattern but also strictly
 matching the exclusion pattern will not be replaced.
 
-NOTE: Beware that it applies only to the the fragment of text that matches the find
-pattern, not the full input text. +
-'Stricly' means that the full text must match the full pattern, e.g. "to"
+NOTE: Beware that it applies only to the the fragment of text that matches the
+find pattern, not the full input text. +
+'Strictly' means that the full text must match the full pattern, e.g. "to"
 does not strictly match "o" but strictly matches ".o". +
-So in the exlusion regex a leading ''^'' and a tailing ''$'' are meaningless".
+So in the exclusion regex a leading ''^'' and a tailing ''$'' are meaningless".
 
 If set, the <exclude_regex> must have the same number of regex as the
 find pattern. +
@@ -194,8 +194,8 @@ On the other hand, 'echo "toto" | asubst --exclude=to t. ti' and 'echo "toto"
 Match range
 -----------
 The <range> has the format: i-j,k-l... Example: '"-4,7-9,15-"' means the first 4
-matching occurences, the 7th to the 9th and 15th and following occurences.
-Only these occurences of matching (in each file or flow, after applying
+matching occurrences, the 7th to the 9th and 15th and following occurrences.
+Only these occurrences of matching (in each file or flow, after applying
 exclusion) will be substituted.
 
 NOTE: "" means none, "-" means all.
@@ -221,11 +221,11 @@ according to this delimiter.
 The delimiter string is not a regular expression but can contain "\n", "\s",
 "\t" and "\xIJ" (even "\x00").
 
-Setting a delimiter to the empty string can be usefull for applying a criteria
+Setting a delimiter to the empty string can be useful for applying a criteria
 to the whole file, but the file is read and processed all at once (so it must
 not be too large).
 
-Setting a delimiter to a specific string is usefull to process a (big) file line
+Setting a delimiter to a specific string is useful to process a (big) file line
 by line when the line delimiter of the file is not ''\n''.
 
 NOTE: Special regex characters (e.g. '+', '?', '.', '*'...) must not be
@@ -363,7 +363,7 @@ anchor:XNoRegex[]
 In noregex mode asubst considers the find pattern as a sequence of text chunks
 separated by delimiters.
 
-* if a chunk (in the find pattern) is preceeded by the delimiter then a
+* if a chunk (in the find pattern) is preceded by the delimiter then a
 matching text must start with the chunk
 * if a chunk (in the find pattern) is followed by the delimiter then a
 matching text must end with the chunk
@@ -374,7 +374,6 @@ Example, in noregex mode:
 "\ntoto\n" matches "\nto" or "to\n" once
 "\ntoto\n" does not match "\nto\n"
 --------------------------------------
-
 
 .Others considerations on regex and noregex modes
 In both modes "\x0A" is the same as "\n", and "\s" and "\t" are interpreted.
@@ -390,7 +389,7 @@ characters (including "^" and "$").
 In noregex mode, "\rIJ" with J > 0 is forbidden (because there is no
 substring). Still "\rI0" can denote the Ith section of text.+
 Similarly, "\iI0", "\aI0" and "\oI0" are allowed in noregex mode, despite not
-very usefull.
+very useful.
 
 .Optimization in noregex mode
 In noregex mode, if the substitution (not grep) has no exclusion and replaces
@@ -438,6 +437,8 @@ Elements of design
 This section briefly describes how asubst is decomposed and provides clues on 
 how it behaves.
 
+Main units
+~~~~~~~~~~
 .Search_Pattern
 This package has two main services:
 
@@ -445,14 +446,13 @@ This package has two main services:
   as follows:
   * replace all ''\'' sequences except "\R" and "\r",
   * split the pattern according to the delimiter,
-  * compile the regexes. Prepend a ''\^'' if the regex is preceeded by a delim
+  * compile the regexes. Prepend a ''\^'' if the regex is preceded by a delim
 (and does not yet start by a ''^''). Same with a tailing ''$''.
-
   * store a list of alternated chunks: delimiter(s) and regex, e.g.
 <regex><delim><delim><regex><delim>. There is a list for the search pattern
 and another one for the exclusion pattern.
 
-- check a string versus one chunks (either of search pattern or of exclusion
+- check a string versus one chunk (either of search pattern or of exclusion
 pattern) as follows:
   * a delimiter only matches <delim> and vice versa,
   * back references are replaced by the matching (sub)strings and the regex is
@@ -493,6 +493,35 @@ This is the main procedure, which:
 - parses the arguments,
 - iterates the substitution on all the files,
 - consolidates the status.
+
+Multiple-regex find pattern
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.Decomposition of the find pattern
+As seen above, the delimiter (if any) is used to decompose the find pattern
+into a sequence of single regexes, and by definition there is always at least
+one delimiter between two regexes. +
+During the search for a match, asubst checks each input line (that is read
+according to the delimiter) versus one simple regex of the sequence.
+
+.No delimiter in regex
+Because of this logic the delimiter cannot appear in a regex. In other words,
+a string between two delimiters must be a complete valid regex. This prevents
+find pattern like:
+--------------------------------------
+text\n?text
+text(\n|\t)text
+--------------------------------------
+Such expressions are valid only if ''\n'' is not the delimiter.
+
+.Back references
+Because of this logic there are two kinds of back references:
+
+- a back reference to a "local" substring (local to this regex) uses the
+standard notation "\i" and is quite efficiently handled by the regex engine.
+- a back reference to a (sub)string of a previous regex uses the notation
+"\Rij" or "\rij" and is handled by asubst itself. Asubst replaces the
+reference by the corresponding (sub) string and (in regex mode) re-computes
+the regex, which is not very efficient.
 
 Troubleshooting
 ---------------

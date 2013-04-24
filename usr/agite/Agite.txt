@@ -1,6 +1,5 @@
 Agite user guide
 ================
-Pascal MALAISE     <malaise@magic.fr>
 V8.3
 
 General purpose
@@ -26,7 +25,7 @@ This allows restarting Agite in the same directory as when it stopped by
 providing the argument '-p' or '--previous'.
 
 On the other hand this feature is hardly compatible with several instances of
-Agite running in parallel. Onky one instance of the program shall save the
+Agite running in parallel. Only one instance of the program shall save the
 current directory, which is achieved by providing the argument '-n' or
 '--no_history' to all the other instances.
 
@@ -152,7 +151,7 @@ directory.
 to a bookmark
 * History: This shows the Git history of a file or directory, the list of
 commits that have modified the file(s).
-* Details: This shows informations on a commit, including the list of files
+* Details: This shows information on a commit, including the list of files
 modified by the commit.
 
 anchor:XNavigation[]
@@ -168,7 +167,7 @@ The navigation is as follows:
 
 All the screen transitions are based on the 'call-return' scheme.
 So please note the double arrow between 'History' and 'Details': from the
-'History' of a file (or dir) you can select a commit and and see its 'Details'.
+'History' of a file (or dir) you can select a commit and see its 'Details'.
 In this new screen you can select a file and see its 'History'... and so on.
 Once this is done you need to "un-stack" all these menus (by clicking on
 the 'Back' button in each) in order to go back to the 'Directory' menu.
@@ -237,7 +236,7 @@ Quick search::
 On top of the list is a quick search area on two rows.
 Clicking in any character of this area triggers a search of file
 starting with this character. If found, the file becomes selected in the list
-and ath the top of the list area. Otherwise the selection is unchanged. +
+and at the top of the list area. Otherwise the selection is unchanged. +
 A tick box button allows searching for directory (starting with the character
 that will be clicked) instead of file.
 
@@ -247,7 +246,7 @@ in alphabetical order.
 +
 Each directory starts with three spaces then the name then \'/'.
 +
-Each file is preceeded by two characters of its Git status (see
+Each file is preceded by two characters of its Git status (see
 'man git-status') then a space, then the name. Status can be:
 
 * ' ' = unmodified
@@ -468,7 +467,7 @@ anchor:XView[]
 
 .View
 Double click on an entry (a commit) or select an entry and click on the 'View'
-button to view the version of the file that was commited.
+button to view the version of the file that was committed.
 
 When the current history is on a directory this feature is de-activated.
 Still it is possible to list and view one by one the files of a commit with the
@@ -519,7 +518,7 @@ The 'Details' menu shows the details of a commit:
 * The SHA-1 hash of the commit, that you can copy in the clipboard,
 * The date and comment (up to three lines) of the commit, that you can
 also alternatively copy in the clipboard,
-* The list of all the files in the commit, each preceeded by a letter:
+* The list of all the files in the commit, each preceded by a letter:
 ** M Modified,
 ** A Added,
 ** D Deleted.
@@ -533,7 +532,7 @@ the commit).
 For all other entries (files) of the list:
 
 * Double click on the entry or select the entry and click on 'View' allows 
-viewing the file as it was commited,
+viewing the file as it was committed,
 * Clicking on 'Hist' allows viewing the full history of the file,
 * Clicking on 'Diff' allows viewing the differences between the version before
 and after the commit.
@@ -560,8 +559,8 @@ version 1.7.0 or above:
 * A function extracts a given version of a file (in a commit by calling
 'git show <HSA1_hash>:<file>',
 
-* A function lauches the differator on a modified file (versus Head) by calling
-'git difftool -y -x <differator> HEAD \-- <file>',
+* A function launches the differator on a modified file (versus Head) by
+calling 'git difftool -y -x <differator> HEAD \-- <file>',
 
 * A function lauches the differator between two versions of a file (or dir) by
 calling 'git difftool -y -x <differator> <ref_HSA1> <comp_HSA1> \-- <file>',

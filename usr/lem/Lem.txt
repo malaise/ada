@@ -42,11 +42,11 @@ When started with argument "-h" the game is harder because the the landing area
 is thinner.
 
 When started with argument "-g" the mouse pointer is grabbed in the game
-window. It can be grabed / ungrabed at any time by pressing the key ''g''.
+window. It can be grabbed / un-grabbed at any time by pressing the key ''g''.
 
 Commands of the game
 --------------------
-Hit ''g'' at any time to grab or ungrab the mouse pointer in the window (while
+Hit ''g'' at any time to grab or un-grab the mouse pointer in the window (while
 within the window the pointer is hidden).
 
 Hit space while flying to pause or resume the game.
@@ -62,13 +62,13 @@ engine.
 
 Horizontal arrows apply an horizontal thrust for one second. Left arrow
 activates left engine, thus increasing speed to the right. Right arrow
-activates activates right engine, thus increasing speed to the left.
+activates right engine, thus increasing speed to the left.
 
 Control + an horizontal arrow applies a thrust 5 times higher than normal
 arrow (still for one second).
 
 Mouse controls can also be used: left and right click and double click for
-horizontal thrust, and wheel for vertical thurst.
+horizontal thrust, and wheel for vertical thrust.
 
 Playing the game
 ----------------
@@ -101,21 +101,21 @@ At any time, hitting escape aborts the game and quits.
 Weight dynamics
 ~~~~~~~~~~~~~~~
 The quantity of fuel affects the global mass so the effectiveness of thrust
-increases when fuel dicreases. On the long term, the LEM tends to climb (or
-fall slower) and each horzontal thrust burst affects horizontal speed more
+increases when fuel decreases. On the long term, the LEM tends to climb (or
+fall slower) and each horizontal thrust burst affects horizontal speed more
 and more.
 
-The fuel decreases proportionnaly with the vertical thrust and at each burst
+The fuel decreases proportionaly with the vertical thrust and at each burst
 of horizontal thrust.
 
 Hints
 ~~~~~
 Try to always descend: quickly fix vertical rate then spot a landing area and
-move horizontally, fast if needed (more than the gauge limit). Visualise the
+move horizontally, fast if needed (more than the gauge limit). Visualize the
 trajectory, anticipate the approach (what you see is speed, what you change is
 acceleration).
 
-Beware that the horizontal speed is nearly never nul, if needed, swap sides
+Beware that the horizontal speed is nearly never null, if needed, swap sides
 when getting close to a side of the landing area. Also anticipate the changes
 of vertical speeds, always remain on the "safe" side.
 
@@ -126,8 +126,6 @@ it is safe).
 
 Troubleshooting
 ~~~~~~~~~~~~~~~
-Any software has bugs. Please report any bug to malaise-at-magic-dot-fr.
-
 If you think that you landed properly but crashed, please check the speeds and
 the "LAND" indicator before suspecting a bug. If the speeds are not both blue
 or the "LAND" indicator is empty at the time the LEM contacts the ground,
@@ -198,7 +196,7 @@ the delta between points (14m) > width of LEM (10m).
 
 Points are at random height from Hpmin (2m) to Hpmax (50m). One random point
 has its pred and succ forced at the same height => the landing site (28m). In
-hard mode only the pred is forced to the landing height, so the area is thiner
+hard mode only the pred is forced to the landing height, so the area is thinner
 (14m). The landing site is not at the border (right or left) of the space.
 
 The space
@@ -215,7 +213,7 @@ Xspeed | \<= Max_Land_Xspeed \=> landed
 
 The screen
 ~~~~~~~~~~
-Initialises displaying the ground and the LEM at init position.
+Initializes displaying the ground and the LEM at init position.
 
 Displays the LEM each 1/10s
 
@@ -228,9 +226,9 @@ The inputs
 Ctrl with arrows and left and right mouse double-click set a X thrust to
 5 * Max_X_Thrust during 1s.
 
-&#8595; and &#8593; and mouse down and up wheele increase/decrease the Y thrust
+&#8595; and &#8593; and mouse down and up wheel increase/decrease the Y thrust
 by 1/5 of Max_Y_Thrust, +
-Ctrl with arrows set Y thrust to 0 or to the the Max.
+Ctrl with arrows set Y thrust to 0 or to the Max.
 
 Numeric Values
 ~~~~~~~~~~~~~~

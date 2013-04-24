@@ -1,6 +1,5 @@
 Battle Ship
 ===========
-Pascal MALAISE     <malaise@magic.fr>
 V1.0
 
 General purpose
@@ -25,7 +24,7 @@ The game is blocked as long as a client and a server are not connected.
  
 Setting up the fleet
 --------------------
-This step consists in positionning your fleet on the grid.
+This step consists in positioning your fleet on the grid.
 
 Rules
 ~~~~~
@@ -80,14 +79,14 @@ the ships are placed in the grid),
   * The square becomes allocated
   * The other available squares become back to normal
   * The possible other extremities for the ship are enhanced as proposed (up to four
-    possibilities). If no possibility the clisk has no effect.
+    possibilities). If no possibility the click has no effect.
 - Click in one proposed square,
    * The ship is placed, all its squares are allocated,
    * The other available squares become back to normal
    * This is the end of the action: the ship is removed from the 'actions' list
 
 Example: Suppose that in the grid in xref:XGrid[example] all the ships except
-the the cruiser are already set and you now set it in row D.
+the cruiser are already set and you now set it in row D.
 
 - you select the cruiser
 - you click in D8
@@ -179,7 +178,7 @@ Protocol
 ~~~~~~~~
 - When the games starts it shows "connecting".
 - If it is client it periodically sends a "C".
-- When the server recevies a "C" it sends a "Z". Both games enter the set-up
+- When the server receives a "C" it sends a "Z". Both games enter the set-up
   phase.
 - When a game has completed its set-up it sends a "D".
 - When a game has completed its set-up and received a "D" it starts playing:

@@ -2,10 +2,10 @@ lsadeps
 =======
 V7.5
 
-Lsadeps lists ada dependencies between files or units, optionnally in reverse
+Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
 
-Alternatively it checks redundants "with" clauses between specs and bodies.
+Alternatively it checks redundant "with" clauses between specs and bodies.
 
 Command line arguments
 ----------------------
@@ -26,9 +26,9 @@ Usage: lsadeps <version> | <help> | <check> | <depend>
  <dir>         ::= -I <dir> | --include=<dir>
  <recursive>   ::= -R <dir> | --recursive=<dir>
 
-There are two main functions: List dependancies and check redundant "with".
+There are two main functions: List dependencies and check redundant "with".
 
-List dependancies
+List dependencies
 ~~~~~~~~~~~~~~~~~
 This function by default lists units on which <target_unit> depends,
 which are withed units, their body and subunits, units withed by these
@@ -55,7 +55,7 @@ Other options are:
 
 'Specs' and 'revert' modes are mutually exclusive. +
 'Tree' and 'direct' mode are mutually exclusive. +
-'Path mode and 'tree' are mutually exculsive.
+'Path mode and 'tree' are mutually exclusive.
 
 Check redundant "with"
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -69,17 +69,17 @@ Format of output
 
 Results are put on stdout.
 
-List dependancies
+List dependencies
 ~~~~~~~~~~~~~~~~~
-There are 4 different modes of analyse of dependancies (that can be combined)
+There are 4 different modes of analyze of dependencies (that can be combined)
 and 2 options of output:
 
 - default mode: show parent units of target, then withed units, then body
-and subunits... recusively
+and subunits... recursively
 
 - specs mode: same as default but only show units withed by specs
 
-- revert mode: show units withing target, then units withing them... recusively
+- revert mode: show units withing target, then units withing them... recursively
 
 - path mode: shows the units withed by (or withing) each other between two units
 
@@ -90,7 +90,7 @@ and subunits... recusively
 - files option: show file names instead of units
 
 In list mode local units are listed first, then "remote" ones in the order of
-the include directives and they are sorted by alphapbetical order. In tree
+the include directives and they are sorted by alphabetical order. In tree
 and direct modes the units appear in the same order as in the "with" directives.
 
 By default the search is restricted to local directory and target directory
@@ -113,10 +113,10 @@ dependent from current unit).
 
 Check redundant "with"
 ~~~~~~~~~~~~~~~~~~~~~~
-This funtion checks that no redundant "with" clause appear in the body and
+This function checks that no redundant "with" clause appear in the body and
 sub-units of each unit.
 
-It reports redundacy with messages like: +
+It reports redundancy with messages like: +
 "'Unit <unit> withes <withed> already withed by parent <unit>'", +
 - where <unit> is the path of the unit, followed by '#', then either 'US' (Unit
 Spec), 'UB' (Unit Body) or 'SU' (SubUnit) +
@@ -167,7 +167,7 @@ High level design
 -----------------
 Parse and check arguments
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-- in dependancy mode, target is a unit (possibly containing a path). An
+- in dependency mode, target is a unit (possibly containing a path). An
 optional path_unit triggers the path analysis between the target and this unit
 
 - include dirs (recursive or not) must exist
@@ -198,7 +198,7 @@ store in a list:
 - List of subunits names (if body or subunit): @\Name@Name...@
 
 "Path/Unit_Name#Kind" is the unique access key.  A spec, its body and its
-subunits must be colocated in the same directory.
+subunits must be collocated in the same directory.
 
 No check that withed units exist but check that target is listed (as spec or
 standalone body). Also store in a list, for each Unit_Name, the list of
@@ -216,9 +216,9 @@ clause!
 
 Exit program.
 
-Build dependancy tree
+Build dependency tree
 ~~~~~~~~~~~~~~~~~~~~~
-If in normal (not reverse) mode, start from target, process dependancies
+If in normal (not reverse) mode, start from target, process dependencies
 recursively in this order:
 
   unit - ParentUnit

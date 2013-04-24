@@ -19,8 +19,8 @@ It expects to receive one or several sentences (a sentence is one line
 terminated by Lf), it executes some actions and replies by one or several
 sentences.
 
-Chat file and behaviour
-~~~~~~~~~~~~~~~~~~~~~~~
+Chat file and behavior
+~~~~~~~~~~~~~~~~~~~~~~
 .File
 The chats file defines the version and describes several alternative chats.
 
@@ -49,7 +49,7 @@ sentence.
  * If the select has a default entry then this entry is selected when the
 sentence does not match any of the expected strings.
  *  If is has a timeout defined and a timeout entry then this entry is selected
-if no sendence has been received when the timeout expires.
+if no sentence has been received when the timeout expires.
 
 - 'cond': execute a sub-script on condition (if variable matches a criteria,
 elsif...  else...).
@@ -63,12 +63,12 @@ expiration.
 - 'set': Set a variable to the result of an evaluated expression.
 - 'assign': Same as 'set' but catches and handles evaluation error.
 - 'call': Call the shell to execute the command and arguments provided. Send
-the output flow of the command, optionaly catches and handles error.
+the output flow of the command, optionnaly catches and handles error.
 - 'eval': Call the shell to execute the command and arguments provided. Set a
-variable to the output flow of the command, optionaly catches and handles
+variable to the output flow of the command, optionnaly catches and handles
 error.
 - 'chdir': Change current directory until another chdir or until a script ends
-on xref:Close[close] or xref:Failure[failure], optionaly catches and handles
+on xref:Close[close] or xref:Failure[failure], optionnaly catches and handles
 error. With an empty argument, move back to the original directory when
 tcpchat has been launched. 
 - 'log': Report some text on stderr.
@@ -125,7 +125,8 @@ variable only if is not defined yet
   * 'if', 'elsif' and 'while' with the variable not set may raise error or may
 return true or false depending on the "IfUnset" attribute.
 
-Any occurence of "${" or "}" that doesn't denote a variable must be backslashed.
+Any occurrence of "${" or "}" that doesn't denote a variable must be
+backslashed.
 
 It is an error if a variable does not exist when it is referenced in an
 expression. In case of 'assign' statement this error can be caught and handled.
@@ -136,8 +137,8 @@ statement this error can be caught and handled.
 
 .Pattern matching
 The text of 'chat', 'expect' and 'read' statements is by default considered as
-the string  with whitch the input sentence must be equal. On option it can be
-considered as a regular expression pattern whith the input sentence must
+the string  with witch the input sentence must be equal. On option it can be
+considered as a regular expression pattern with the input sentence must
 completely match (i.e. <input_string> matches "^<regex>$").
 
 High level design
@@ -182,7 +183,7 @@ Assign statements are Set statements.
 - Name (Asu_Us): For a chat, its name
 
 - Text (Asu_Us). For a Read the sentence expected, for a Send/Call/ the
-sentence to send, for a Call the command and arguments to invoque.
+sentence to send, for a Call the command and arguments to invoke.
 Chats is a Selec, chat is an expect, expect is mapped as a Read (child
 of a Selec)
 
@@ -191,7 +192,7 @@ failure if it expires (no matching / not matching / nothing received).
 +
 For a chat it's a failure if it expires before the end of the chat. For
 a Wait it is the delay to wait. Note that the chat InputDefaultTimeoutMs
-is not stored in the tree. It is kept in memory (while buildling the
+is not stored in the tree. It is kept in memory (while building the
 tree) and set in the Selec/Read/Skip nodes that have no timeout defined.
 
 - Next: The reference to the node that implements the following of the
@@ -251,7 +252,7 @@ timeout is set to local value if defined, or to the global default.
 After creating a Selec node, its Next is set to its last child if it is the
 statement following the select, and to null otherwise.
 
-Then a second pass calls a recusive operation, passing to it Next initialized
+Then a second pass calls a recursive operation, passing to it Next initialized
 to root. When arriving on a Selec node, the local Next, if null, is set to the
 value received. The local Next is passed recursively when parsing children.
 When arriving on a node with no child, set it Next to the value receive if it

@@ -34,7 +34,7 @@ applications.
 
 Goal
 ----
-Tcpipe can be usefull for multiplexing several TCP connections between several
+Tcpipe can be useful for multiplexing several TCP connections between several
 client applications within one TCP connection, especially through a firewall.
 
  * This reduces the number of TCP connections through the firewall,
