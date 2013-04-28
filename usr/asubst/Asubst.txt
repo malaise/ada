@@ -536,7 +536,7 @@ provided.
 -> Because regex imposes to provide "\\f" for matching "\f", ("\f" matches "f") and the
 shell imposes a "\\" for each "\" transmitted to asubst.
 +
-Note that you can pass to the shell ''\\f'' instead of "\\\\f".
+Note that you can pass to the shell "\\f" instead of "\\\\f".
 +
 Same considerations apply to "\$" or ''$'' in order to pass '$' to asubst.
 
@@ -561,4 +561,12 @@ matching "t" does not match "to", +
 strictly match "o", +
 ++echo toto | asubst -e .o t. v++ does not substitute because each "to" matches
 ".o".
+
+- Optional match at beginning or end of line doesn't work. +
+-> PCRE does no match "toto" with for instance "[\B]?$" or "^[\B]?", so an
+attempt to replace "[\B]?\n[\B]?" by "\n" will not allow detecting
+"toto \ntiti" nor "toto\n titi", because the 3 patterns are tested one after
+the other. +
+Replacing "(.\*)[\B]?\n[\B]?(.*)" by "\r11\nr31" will work, as will a change of
+the delimiter.
 
