@@ -333,11 +333,28 @@ procedure Agite is
     end if;
   end Change_Dir;
 
+  -- Check validity of current directory
+  Lost_Dir : exception;
+  procedure Check_Dir is
+  begin
+    declare
+   -- Check validity of current directory
+    Dummy : constant String := Directory.Get_Current;
+    pragma Unreferenced (Dummy);
+    begin
+      null;
+    end;
+  exception
+    when Directory.Name_Error | Directory.Access_Error =>
+      raise Lost_Dir;
+  end Check_Dir;
+
   -- Refresh list of files
   -- If Set_Dir then change dir to "."
   -- Try to restore current pos
   procedure Reread (Set_Dir : in Boolean) is
   begin
+    Check_Dir;
     -- Re-build list
     if Set_Dir then
       Change_Dir (".");
@@ -876,5 +893,8 @@ exception
         null;
     end;
     Timer.Stop;
+  when Lost_Dir =>
+    Basic_Proc.Put_Line_Error ("Cannot read current directory");
+    Basic_Proc.Set_Error_Exit_Code;
 end Agite;
 

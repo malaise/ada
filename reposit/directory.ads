@@ -5,6 +5,7 @@ package Directory is
   Max_Dir_Name_Len : constant := 1024;
 
   -- Returns current working directory
+  -- May raise Constraint_Error (name too long), Name_Error or Access_Error
   function Get_Current return String;
   procedure Get_Current (Cur_Dir : in out As.U.Asu_Us);
 

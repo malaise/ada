@@ -9,6 +9,8 @@ package body Directory is
 
   -- For Name_Error else Access_Error
   Enoent  : constant := 2;
+  -- For Constraint_Error or else Name_Error else Access_Error
+  Erange  : constant := 34;
   -- For Open_Error else Access_Error
   Einval : constant := 22;
 
@@ -32,8 +34,14 @@ package body Directory is
   begin
     Addr := C_Getcwd (Result(Result'First)'Address, Result'Length);
     if Addr = System.Null_Address then
-      -- Buffer too small
-      raise Constraint_Error;
+      if Sys_Calls.Errno = Erange then
+        -- Buffer too small
+        raise Constraint_Error;
+      elsif Sys_Calls.Errno = Enoent then
+        raise Name_Error;
+      else
+        raise Access_Error;
+      end if;
     end if;
     Len := Natural (C_Strlen (Result(Result'First)'Address));
     return Result (1 .. Len);
