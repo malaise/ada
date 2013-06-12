@@ -31,14 +31,14 @@
       <Init Row="7" Col="2">Each of us at his turn will remove some sticks, as many as we want,</Init>
       <Init Row="8" Col="3">with only two constraints:</Init>
       <Init Row="9" Col="4">- we must take at least one stick at each turn,</Init>
-      <Init Row="10" Col="4">- at each turn, all the sticks we take must be on the same row.</Init>
+      <Init Row="10" Col="4">- at each turn, all the sticks that we take must be on the same row.</Init>
 
       <Init Row="12" Col="2">I always play first at the beginning of a game, which gives you the</Init>
       <Init Row="13" Col="3">possibility to win each game.</Init>
 
       <Init Row="16" Col="2">Two variants are available:</Init>
       <Init Row="17" Col="3">- at Nim, the winner is the one who takes the last stick,</Init>
-      <Init Row="18" Col="3">- at Marienbad, the player who takes the last stick loses.</Init>
+      <Init Row="18" Col="3">- at Marienbad, the player who takes the last stick looses.</Init>
     </Field>
 
     <!-- Buttons -->
