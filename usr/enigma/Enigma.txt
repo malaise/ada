@@ -345,27 +345,30 @@ Coding
 ^^^^^^
 A random key is generated in arguments and text:
 --------------------------------------
-def_enigma rnd -text
+def_enigma -text rnd
 --------------------------------------
-This displays <key_args> and <key_text>.
+This generates 'key_num' and 'key_text'.
 
 The key in text is coded, with a key generated from the given date or today,
 at the beginning of the coded file:
 --------------------------------------
-echo -n "<key_text>" | enigmadef <date>  > <coded_file>
+echo -n $key_text" | enigma `def_enigma <date>  > <coded_file>
 --------------------------------------
 
 The input file is coded with the random key and appended to the coded file
 --------------------------------------
-enigma <key_args>  < <input_file>  >> <coded_file>
+letterator -c | enigma $key_num >> <coded_file>
 --------------------------------------
+
+NOTE: letterator is a tools that ecodes each ASCII chararacter unto a unique
+pair of uppercase letters, and vice versa (ex 'a' <-> "GL").
 
 Decoding
 ^^^^^^^^
-Extract temporary in the decoded file the 67 first characters from the coded
-file, (67 because 26 for switch, 2 for separator, 4 * 7 + 3 (5 is longest
-number in letters e.g. SEVEN) for the 4 max rotors, 5 + 3
-(number+offset twice+"Z") for the reflector.
+Extract temporarily the 67 first characters from the coded file, (67 because
+26 for switch, 2 for separator, 4 * 7 + 3 (5 is longest number in letters
+e.g. SEVEN) for the 4 max rotors, 5 + 3 (number+offset twice+"Z") for the
+reflector.
 
 Use the key generated from the provided date or today:
 --------------------------------------
@@ -373,7 +376,7 @@ datekey=`def_enigma <date>`
 txtkey=`enigma $datekey -l67 < <coded_file>`
 --------------------------------------
 
-Look in the temporary result for a valid text key. Note the offset <offset> of
+Look in the temporary result for a valid text key. Note the offset 'start' of
 the first letter following this sequence.
 --------------------------------------
 numkey=`def_enigma $textkey` ; start=$?
@@ -381,6 +384,6 @@ numkey=`def_enigma $textkey` ; start=$?
 
 Decode the remaining text with the key:
 ------------------------------------------
-enigma <numkey> -f<start>  < <coded_file>  > <decoded_file>
+enigma <numkey> -f$start  < <coded_file> | letterator -d > <decoded_file>
 ------------------------------------------
 

@@ -33,7 +33,7 @@ package body Text is
     Put_Line ("Each of us at his turn will remove some sticks, as many as we");
     Put_Line (" want with only two constraints:");
     Put_Line (" - we must take at least one stick at each turn,");
-    Put_Line (" - at each turn, all the sticks we take must be on the same row.");
+    Put_Line (" - at each turn, all the sticks that we take must be on the same row.");
     New_Line;
 
     Put_Line ("I always play first at the beginning of a game, which gives you");
@@ -42,7 +42,7 @@ package body Text is
 
     Put_Line ("Two variants are available:");
     Put_Line (" - at Nim, the winner is the one who takes the last stick,");
-    Put_Line (" - at Marienbad, the player who takes the last stick loses.");
+    Put_Line (" - at Marienbad, the player who takes the last stick looses.");
     New_Line;
 
     loop
