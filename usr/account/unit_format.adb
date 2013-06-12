@@ -161,7 +161,6 @@ package body Unit_Format is
     else
       Amount_In_Unit := Mef.Euros_To_Francs(Amount_In_Euros);
     end if;
-    Str := (others => ' ');
     Str := Normalization.Normal_Fixed (My_Math.Real (Amount_In_Unit),
                                        Amount_Str'Length, 9, 'O');
     if Align_Left then
