@@ -74,6 +74,9 @@ package body Sok_Input is
                 Mouse_Event := (True, Evt.Status = Con_Io.Pressed,
                                 Evt.Row, Evt.Col);
                 return Mouse;
+              elsif Evt.Valid and then Evt.Button = Con_Io.Right
+              and then Evt.Status = Pressed then
+                return Esc;
               end if;
             end;
           when Selection => null;
