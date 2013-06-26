@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Normal, Upper_Str, Upper_Char, Basic_Proc;
+with Normal, Upper_Str, Upper_Char, Basic_Proc, Images;
 package body Text is
 
   Lf : constant Character := Ada.Characters.Latin_1.Lf;
@@ -82,7 +82,7 @@ package body Text is
   begin
     for Row in Common.Row_Range loop
       Status := Common.Get_Bars (Row);
-      Put (Row_Image (Row) & ": ");
+      Put (Row_Image (Row) & '(' & Images.Integer_Image (Row) & "): ");
       for Col in Common.Bar_Range loop
         if Status(Col) then
           Put ("I ");
@@ -106,10 +106,15 @@ package body Text is
     Put_Title;
     Put_Bars;
     loop
-      Put ("Enter the row and the number to remove (ex a2): ");
+      Put ("Enter the row and the number to remove (ex a2 or 12): ");
       Str := Upper_Str (Get (2));
       -- Check Row is OK
       Ok := False;
+      -- Convert 1 .. 4 into A .. D
+      if Str(1) in '1' .. '4' then
+       Str(1) := Character'Val (Character'Pos (Str(1)) - Character'Pos('1')
+                              + Character'Pos('A'));
+      end if;
       for I in Common.Row_Range loop
         if Row_Image (I) = Upper_Char (Str(1)) then
           Row := I;
