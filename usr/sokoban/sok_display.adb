@@ -1,7 +1,7 @@
 with Normal, Day_Mng, Timers, Language, Basic_Proc;
 with Sok_Input, Sok_Time;
 
--- displaying of sokoban
+-- Displaying of sokoban
 package body Sok_Display is
 
   Len_Moves  : constant := 5;
@@ -132,11 +132,11 @@ package body Sok_Display is
       when others =>
         Help_Win.Move ( (09, 00));
         Help_Win.Put_Line (" Esc");
-        Help_Win.Put ("  to play again");
+        Help_Win.Put ("  to go back play");
     end case;
   end Put_Help;
 
-  -- puts all the frame
+  -- Puts all the frame
   procedure Put_Frame (Frame : in Sok_Types.Frame_Tab) is
   begin
     Console.Clear_Screen;
@@ -154,7 +154,7 @@ package body Sok_Display is
     end loop;
   end Put_Frame;
 
-  -- puts a square
+  -- Puts a square
   Wall_Color : constant Con_Io.Effective_Colors
              := Con_Io.Color_Of ("Light_Grey");
   Target_Color : constant Con_Io.Effective_Colors
@@ -201,7 +201,7 @@ package body Sok_Display is
   end Put_Square;
 
 
-  -- puts the down line
+  -- Puts the down line
   procedure Put_Line (Moves : in Natural; Pushes : in Natural;
                       Boxes_In : in Natural; Nb_Boxes : in Positive;
                       Frame : in Sok_Types.Frame_Range) is
@@ -424,7 +424,7 @@ package body Sok_Display is
     Error_Win.Clear;
   end Clear_Error;
 
-  -- get frame number
+  -- Get frame number
   procedure Get_No_Frame (No : out Sok_Types.Frame_Range;
                           Result : out Get_Result_List) is
 
@@ -433,6 +433,9 @@ package body Sok_Display is
     Stat : Con_Io.Curs_Mvt;
     Pos  : Positive := 1;
     Ins  : Boolean := False;
+    Evt : Con_Io.Mouse_Event_Rec;
+
+    use type Con_Io.Mouse_Button_Status_List, Con_Io.Mouse_Button_List;
   begin
     Get_Win.Set_Background (Con_Io.Color_Of ("Cyan"));
     Get_Win.Set_Foreground (Black);
@@ -493,6 +496,13 @@ package body Sok_Display is
             when Constraint_Error =>
               raise Format_Error;
           end;
+        when Con_Io.Mouse_Button =>
+          Console.Get_Mouse_Event (Evt);
+          if Evt.Valid and then Evt.Button = Con_Io.Right
+          and then Evt.Status = Con_Io.Pressed then
+            Result := Esc;
+            exit;
+          end if;
         when others =>
           null;
         end case;
