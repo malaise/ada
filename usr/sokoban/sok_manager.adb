@@ -118,6 +118,7 @@ package body Sok_Manager is
         Sok_File.Read (Sok_Types.Frame_Range'First, State.Frame);
         Sok_File.Restore (State);
         State.Score := Sok_File.Read_Score(State.No_Frame);
+        Sok_Time.Start_Time;
       exception
         when others =>
           -- Restore failed => init to first
