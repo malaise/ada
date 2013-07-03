@@ -114,29 +114,29 @@ package body Sok_Manager is
     if First_Frame = Sok_Types.Restore_Frame then
       -- Try to restore
       begin
-        -- Check that frame file is readable
+        -- Check that frame file is readable and restore
         Sok_File.Read (Sok_Types.Frame_Range'First, State.Frame);
         Sok_File.Restore (State);
         State.Score := Sok_File.Read_Score(State.No_Frame);
-        Sok_Time.Start_Time;
+        -- Play or end of frame
+        if State.Box_Ok /= State.Nbre_Targets then
+          Step := Playframe;
+          Sok_Time.Start_Time;
+        else
+          Step := Endframe;
+        end if;
       exception
         when others =>
           -- Restore failed => init to first
           State.No_Frame := Sok_Types.Frame_Range'First;
           Init_Frame;
+          Step := Playframe;
       end;
     else
       -- Init to requested frame
       State.No_Frame := First_Frame;
       Init_Frame;
-    end if;
-
-
-    -- Play or end of frame
-    if State.Box_Ok /= State.Nbre_Targets then
       Step := Playframe;
-    else
-      Step := Endframe;
     end if;
 
     loop
