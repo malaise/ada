@@ -1,3 +1,4 @@
+with Ada.Calendar;
 package Sok_Time is
 
   -- Just start and stop the clock
@@ -8,8 +9,8 @@ package Sok_Time is
 
   -- Resets or sets the clock
   procedure Reset_Time;
-  procedure Set_Time (Day : Natural; Dur : Duration);
+  procedure Set_Time (Day : Natural; Dur : Ada.Calendar.Day_Duration);
   -- Get current clock value
-  procedure Get_Time (Day : out Natural; Dur : out Duration);
+  procedure Get_Time (Day : out Natural; Dur : out Ada.Calendar.Day_Duration);
 
 end Sok_Time;

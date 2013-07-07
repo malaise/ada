@@ -45,14 +45,14 @@ package body Sok_Time is
     Day := 0;
   end Reset_Time;
 
-  procedure Set_Time (Day : Natural; Dur : Duration) is
+  procedure Set_Time (Day : Natural; Dur : Ada.Calendar.Day_Duration) is
   begin
     Start_Clock := Ada.Calendar.Clock - Dur;
     Sok_Time.Dur := Dur;
     Sok_Time.Day := Day;
   end Set_Time;
 
-  procedure Get_Time (Day : out Natural; Dur : out Duration) is
+  procedure Get_Time (Day : out Natural; Dur : out Ada.Calendar.Day_Duration) is
   begin
     Day := Sok_Time.Day;
     Dur := Sok_Time.Dur;

@@ -1,4 +1,5 @@
 -- Common types for sokoban
+with Ada.Calendar;
 package Sok_Types is
 
   -- Array of a frame
@@ -41,7 +42,7 @@ package Sok_Types is
   type Score_Rec is record
     Set : Boolean;
     Day : Natural;
-    Dur : Duration;
+    Dur : Ada.Calendar.Day_Duration;
     Moves : Natural;
     Pushes : Natural;
   end record;

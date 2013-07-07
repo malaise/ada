@@ -1,3 +1,4 @@
+with Ada.Calendar;
 with Sok_Display, Sok_Input, Sok_Movement, Sok_Save, Sok_Time, Sok_File;
 package body Sok_Manager is
 
@@ -376,7 +377,7 @@ package body Sok_Manager is
       -- Store each new record
       declare
         Day : Natural;
-        Dur : Duration;
+        Dur : Ada.Calendar.Day_Duration;
       begin
         Sok_Time.Get_Time(Day, Dur);
         if (Day < State.Score.Day )
