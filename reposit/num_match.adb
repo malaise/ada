@@ -31,18 +31,21 @@ package body Num_Match is
     return Index;
   end Range_Sep_Index;
 
-  function Matches (Num : in Natural_Type; Criteria : in String)
+  function Matches (Num : in Integer_Type; Criteria : in String)
                    return Boolean is
     Iter : Parser.Iterator;
     First : Boolean;
     Match : Boolean;
 
   begin
+    -- Check Num
+    if Num <  0 then
+      raise Constraint_Error;
+    end if;
     -- Optim
     if Criteria = Str_Range_Sep then
       return True;
-    end if;
-    if Criteria = "" then
+    elsif Criteria = "" then
       return False;
     end if;
 
@@ -62,7 +65,7 @@ package body Num_Match is
       declare
         Cur_Spec : constant String := Parser.Next_Word (Iter);
         Range_Index : Natural;
-        Range_First, Range_Last : Natural_Type;
+        Range_First, Range_Last : Integer_Type;
       begin
         if First then
           -- First word
@@ -91,12 +94,15 @@ package body Num_Match is
 
         -- Check for range separator
         Range_Index := Range_Sep_Index (Cur_Spec);
-        Range_First := Natural_Type'First;
-        Range_Last  := Natural_Type'Last;
+        Range_First := Integer_Type'First;
+        if Range_First < 0 then
+          Range_First := 0;
+        end if;
+        Range_Last  := Integer_Type'Last;
         -- Set the value(s) or raise Invalid_Criteria
         if Range_Index = 0 then
           -- No range
-          Range_First := Natural_Type'Value(Cur_Spec);
+          Range_First := Integer_Type'Value(Cur_Spec);
           Range_Last  := Range_First;
         elsif Range_Index = Cur_Spec'First
         and then Range_Index = Cur_Spec'Last then
@@ -104,17 +110,17 @@ package body Num_Match is
           null;
         elsif Range_Index = Cur_Spec'First then
           -- Upper limit
-          Range_Last  := Natural_Type'Value (
+          Range_Last  := Integer_Type'Value (
                            Cur_Spec(Range_Index+1 .. Cur_Spec'Last));
         elsif Range_Index = Cur_Spec'Last then
            -- Lower limit
-          Range_First := Natural_Type'Value (
+          Range_First := Integer_Type'Value (
                            Cur_Spec(Cur_Spec'First .. Range_Index-1));
         else
           -- Two limits
-          Range_First := Natural_Type'Value (
+          Range_First := Integer_Type'Value (
                            Cur_Spec(Cur_Spec'First .. Range_Index-1));
-          Range_Last  := Natural_Type'Value (
+          Range_Last  := Integer_Type'Value (
                            Cur_Spec(Range_Index+1 .. Cur_Spec'Last));
         end if;
 

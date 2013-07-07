@@ -240,7 +240,7 @@ procedure Asubst is
   Ok : Boolean;
   Found : Boolean;
   -- Nb subst per file
-  Nb_Subst : Substit.Long_Long_Natural;
+  Nb_Subst : Substit.Subst_Natural;
   -- Language
   Lang : Language.Language_List
        := Language.Get_Env;

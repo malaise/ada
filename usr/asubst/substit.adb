@@ -1,6 +1,6 @@
 with As.U.Utils;
 with Argument, Sys_Calls, Text_Line, Temp_File, Regular_Expressions, Directory,
-     Copy_File, File_Access, Mixed_Str, Images, Basic_Proc;
+     Copy_File, File_Access, Mixed_Str, Images, Basic_Proc, Long_Longs;
 with Search_Pattern, Replace_Pattern, Debug;
 package body Substit is
 
@@ -28,8 +28,8 @@ package body Substit is
   Delimiter : As.U.Asu_Us;
 
   -- Current line number
-  Line_No : Long_Long_Natural;
-  function Line_Image is new Images.Int_Image (Long_Long_Natural);
+  Line_No : Long_Longs.Ll_Natural;
+  function Line_Image is new Images.Int_Image (Long_Longs.Ll_Natural);
 
   -- Display error. If Give_Up then also cleanup and raise Substit_Error
   procedure Error (Msg : in String; Give_Up : in Boolean := True);
@@ -353,8 +353,8 @@ package body Substit is
                          Grep_Line_Nb   : in Boolean;
                          Grep_Invert    : in Boolean;
                          Test           : in Boolean;
-                         Nb_Match       : in out Long_Long_Natural;
-                         Loc_Subst      : out Long_Long_Natural;
+                         Nb_Match       : in out Subst_Natural;
+                         Loc_Subst      : out Subst_Natural;
                          Done_File      : out Boolean);
 
   function Do_One_File (File_Name      : String;
@@ -368,11 +368,11 @@ package body Substit is
                         Grep_File_Name : Boolean;
                         Grep_Line_Nb   : Boolean;
                         Grep_Invert    : Boolean;
-                        Test           : Boolean) return Long_Long_Natural is
+                        Test           : Boolean) return Subst_Natural is
     Done_File : Boolean;
-    Nb_Subst : Long_Long_Natural;
-    Nb_Match : Long_Long_Natural;
-    Loc_Subst : Long_Long_Natural;
+    Nb_Subst : Subst_Natural;
+    Nb_Match : Subst_Natural;
+    Loc_Subst : Subst_Natural;
     Do_Verbose : Boolean;
   begin
     -- Open files: test is set if no need to write
@@ -445,8 +445,8 @@ package body Substit is
                          Replace_Char : in Character;
                          Verbose      : in Boolean;
                          Test         : in Boolean;
-                         Nb_Match     : in out Long_Long_Natural;
-                         Loc_Subst    : out Long_Long_Natural) is
+                         Nb_Match     : in out Subst_Natural;
+                         Loc_Subst    : out Subst_Natural) is
   begin
     Loc_Subst := 0;
     for I in 1 .. Line.all.Length loop
@@ -504,8 +504,8 @@ package body Substit is
                             Grep_Line_Nb   : in Boolean;
                             Grep_Invert    : in Boolean;
                             Test           : in Boolean;
-                            Nb_Match       : in out Long_Long_Natural;
-                            Loc_Subst      : out Long_Long_Natural;
+                            Nb_Match       : in out Subst_Natural;
+                            Loc_Subst      : out Subst_Natural;
                             Done_File      : out Boolean) is
 
     Current : Positive;
@@ -749,8 +749,8 @@ package body Substit is
                          Grep_Line_Nb   : in Boolean;
                          Grep_Invert    : in Boolean;
                          Test           : in Boolean;
-                         Nb_Match       : in out Long_Long_Natural;
-                         Loc_Subst      : out Long_Long_Natural;
+                         Nb_Match       : in out Subst_Natural;
+                         Loc_Subst      : out Subst_Natural;
                          Done_File      : out Boolean) is
     Match_Res : Regular_Expressions.Match_Cell;
     Line, First_Line, Last_Line : access As.U.Asu_Us;
@@ -939,10 +939,7 @@ package body Substit is
         end if;
         if Verbose then
           -- Display verbose substitution
-          Basic_Proc.Put_Output (
-              Long_Long_Natural'Image(Line_No
-                                    - Long_Long_Natural(Nb_Pattern) / 2)
-            & " : ");
+          Basic_Proc.Put_Output (Long_Longs.Ll_Natural'Image(Line_No) & " : ");
           Put_Match (False);
           Basic_Proc.Put_Line_Output (" -> " & Str_Replacing);
         elsif Grep then
