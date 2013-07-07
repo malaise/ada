@@ -41,7 +41,10 @@ function launch {
   echo "$command Done."
 }
 
-if [ "$1" = "-ix" ] ; then
+if [ "$1" = "-clean" ] ; then
+  clean
+  exit 0
+elif [ "$1" = "-ix" ] ; then
   # X11 based => interactive
   launch -n t_x "Click in upper-left corner to stop"
   launch -n t_color "Hit Ctrl-C to stop"
