@@ -1,58 +1,12 @@
-with Ada.Calendar; -- For time
-
-with Sok_Display;
-with Sok_Input;
-with Sok_Movement;
-with Sok_Save;
-with Sok_Time;
+with Sok_Display, Sok_Input, Sok_Movement, Sok_Save, Sok_Time, Sok_File;
 package body Sok_Manager is
 
-  -- Internal state of a frame
-  type State_Rec is record
-    Frame        : Sok_Types.Frame_Tab;
-    No_Frame     : Sok_Types.Frame_Range;
-    Position     : Sok_Types.Coordinate_Rec;
-    Nbre_Targets : Natural;
-    Box_Ok       : Natural;
-    Moves        : Natural;
-    Pushes       : Natural;
-    Score        : Sok_Types.Score_Rec;
-  end record;
-  State : State_Rec;
+  -- Current state of the game
+  State : Sok_File.State_Rec;
 
   -- Menu return : go on with same frame or,
   --  if new frame, reset_all state (read) or update time (restored)
   type Menu_Result_List is (Go_On, Reset_All, Update_Time);
-
-
-  -- Frames reading, saving and restoring.
-  package Sok_File is
-
-    -- Ensure that frames are readable
-    -- Init empty score file if necessary
-    procedure Init;
-
-    -- To read a new frame
-    procedure Read (No_Frame : in  Sok_Types.Frame_Range;
-                    Frame    : out Sok_Types.Frame_Tab);
-    Data_File_Not_Found, Error_Reading_Data : exception;
-
-    -- Save a frame and recover a frame, with saved movements
-    procedure Save (State : in State_Rec);
-    Error_Writing_Frame : exception;
-
-    procedure Restore (State : out State_Rec);
-    Frame_File_Not_Found, Error_Reading_Frame : exception;
-
-    -- Initialise scores, read/update score
-    function Read_Score (No : Sok_Types.Frame_Range) return Sok_Types.Score_Rec;
-    procedure Write_Score (No : in Sok_Types.Frame_Range;
-                           Score : in Sok_Types.Score_Rec);
-    Score_Io_Error : exception;
-
-
-  end Sok_File;
-  package body Sok_File is separate;
 
   -- Body below
   -- Init the frame (reset, find man, count targets)

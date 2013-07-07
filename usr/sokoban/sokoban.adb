@@ -39,7 +39,7 @@ begin
       Ok := False;
   end;
   if Ok then
-    Sok_Manager.Play_Game(First_Frame => No_Frame);
+    Sok_Manager.Play_Game (First_Frame => No_Frame);
   end if;
 exception
   when others =>

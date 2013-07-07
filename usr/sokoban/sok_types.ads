@@ -30,14 +30,14 @@ package Sok_Types is
   subtype Frame_Range is Desired_Frame_Range
                          range 1 .. Desired_Frame_Range'Last;
 
-  -- square position in frame
+  -- Square position in frame
   type Coordinate_Rec is record
     Row : Row_Range;
     Col : Col_Range;
   end record;
 
 
-  -- best score of each frame
+  -- Best score of each frame
   type Score_Rec is record
     Set : Boolean;
     Day : Natural;
@@ -46,3 +46,4 @@ package Sok_Types is
     Pushes : Natural;
   end record;
 end Sok_Types;
+

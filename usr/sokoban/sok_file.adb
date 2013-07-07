@@ -1,7 +1,7 @@
-with Ada.Direct_Io, Ada.Sequential_Io;
+with Ada.Direct_Io, Ada.Sequential_Io, Ada.Calendar;
 with As.B, Sys_Calls, Directory;
+with Sok_Movement, Sok_Time, Sok_Save;
 
-separate (Sok_Manager)
 -- Sokoban frames reading.
 package body Sok_File is
 
@@ -97,12 +97,15 @@ package body Sok_File is
     end loop;
   end From_Frame_To_File;
 
+  No_Score : constant Sok_Types.Score_Rec
+           := (Set => False, Day => 0, Dur => 0.0, Moves => 0, Pushes => 0);
+
   -- Ensure that frames are readable
   -- Init empty score file if necessary
   procedure Init is
     Frame : Sok_Types.Frame_Tab;
-    pragma Unreferenced (Frame);
     Score : Sok_Types.Score_Rec;
+    pragma Unreferenced (Frame, Score);
     Sok_Score_File : Sok_Score_Mng.File_Type;
   begin
     -- Read first and last frames
@@ -118,9 +121,8 @@ package body Sok_File is
     begin
       Sok_Score_Mng.Create (Sok_Score_File, Sok_Score_Mng.Out_File,
          Sok_Score_Name);
-      Score := (Set => False, Day => 0, Dur => 0.0, Moves => 0, Pushes => 0);
       for I in Sok_Types.Frame_Range'Range loop
-        Sok_Score_Mng.Write (Sok_Score_File, Score);
+        Sok_Score_Mng.Write (Sok_Score_File, No_Score);
       end loop;
       Sok_Score_Mng.Close (Sok_Score_File);
     exception
@@ -311,12 +313,17 @@ package body Sok_File is
       raise Error_Reading_Frame;
   end Restore;
 
-  function Read_Score (No : Sok_Types.Frame_Range) return Sok_Types.Score_Rec is
+  function Read_Score (No : Sok_Types.Frame_Range;
+                       Name : String := "") return Sok_Types.Score_Rec is
     Sok_Score_File : Sok_Score_Mng.File_Type;
     Score : Sok_Types.Score_Rec;
   begin
-    Sok_Score_Mng.Open (Sok_Score_File, Sok_Score_Mng.In_File,
-     Sok_Score_Name);
+    if Name = "" then
+      Sok_Score_Mng.Open (Sok_Score_File, Sok_Score_Mng.In_File,
+       Sok_Score_Name);
+    else
+      Sok_Score_Mng.Open (Sok_Score_File, Sok_Score_Mng.In_File, Name);
+    end if;
     Sok_Score_Mng.Read (Sok_Score_File, Score,
       Sok_Score_Mng.Positive_Count(No));
     Sok_Score_Mng.Close (Sok_Score_File);
@@ -339,6 +346,19 @@ package body Sok_File is
     when others =>
       raise Score_Io_Error;
   end Write_Score;
+
+  procedure Reset_Score (No : in Sok_Types.Frame_Range) is
+   Sok_Score_File : Sok_Score_Mng.File_Type;
+  begin
+    Sok_Score_Mng.Open (Sok_Score_File, Sok_Score_Mng.Out_File,
+     Sok_Score_Name);
+    Sok_Score_Mng.Write (Sok_Score_File, No_Score,
+      Sok_Score_Mng.Positive_Count(No));
+    Sok_Score_Mng.Close (Sok_Score_File);
+  exception
+    when others =>
+      raise Score_Io_Error;
+  end Reset_Score;
 
 end Sok_File;
 
