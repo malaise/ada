@@ -1,4 +1,5 @@
-with Argument, Basic_Proc, Sys_Calls, As.U, Num_Match;
+with Ada.Calendar;
+with Argument, Basic_Proc, Sys_Calls, As.U, Num_Match, Normal, Images;
 with Sok_Types, Sok_File;
 procedure Scores is
 
@@ -9,7 +10,7 @@ procedure Scores is
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
       & " <command> [ <frames> ]");
     Basic_Proc.Put_Line_Error (
-      "  <command > ::= --reset | --merge <file> ");
+      "  <command > ::= --reset | --max-time | --merge <file> | --dump");
     Basic_Proc.Put_Line_Error (
       "  <frames> ::= <num_match_criteria>");
   end Help;
@@ -21,7 +22,8 @@ procedure Scores is
   end Error;
 
   -- Current command
-  Reset : Boolean;
+  type Command_List is (Reset, Max_Time, Merge, Dump);
+  Command : Command_List;
   -- Optional file name and frame range
   File : As.U.Asu_Us;
   Frames : As.U.Asu_Us;
@@ -31,6 +33,9 @@ procedure Scores is
   Score1, Score2 : Sok_Types.Score_Rec;
   -- Has score changed due to merge
   Changed : Boolean;
+  -- Max day duration: One day less 1ms
+  Max_Dur : constant Ada.Calendar.Day_Duration
+          := Ada.Calendar.Day_Duration'Last - 0.001;
 
 begin
 
@@ -44,10 +49,13 @@ begin
       Basic_Proc.Set_Error_Exit_Code;
       return;
     elsif Argument.Get_Parameter = "--reset" then
-      Reset := True;
+      Command := Reset;
+      Next_Arg := 2;
+    elsif Argument.Get_Parameter = "--max-time" then
+      Command := Max_Time;
       Next_Arg := 2;
     elsif Argument.Get_Parameter = "--merge" then
-      Reset := False;
+      Command := Merge;
       if Argument.Get_Nbre_Arg < 2 then
         Error ("Missing file name");
         return;
@@ -59,6 +67,9 @@ begin
         return;
       end if;
       Next_Arg := 3;
+    elsif Argument.Get_Parameter = "--dump" then
+      Command := Dump;
+      Next_Arg := 2;
     else
       Error ("Invalid command " & Argument.Get_Parameter);
       return;
@@ -76,17 +87,31 @@ begin
     return;
   end if;
 
+  -- Put title if dump
+  if Command = Dump then
+    Basic_Proc.Put_Line_Output (
+        "No                    Time      Moves      Pushes");
+  end if;
+
+  -- Do command for matching frames
   for Frame in Sok_Types.Frame_Range loop
     if Frame_Match.Matches (Frame, Frames.Image) then
       -- Reset score of matching frames
-      if Reset then
-        Sok_File.Reset_Score (Frame);
-      else
-        -- Keep best time and score of matching frames
-        Score1 := Sok_File.Read_Score (Frame);
-        Score2 := Sok_File.Read_Score (Frame, File.Image);
-        Changed := False;
-        if Score2.Set then
+      case Command is
+        when Reset =>
+          Sok_File.Reset_Score (Frame);
+        when Max_Time =>
+          -- (Re)set time to max
+          Score1 := Sok_File.Read_Score (Frame);
+          Score1.Day := Natural'Last;
+          Score1.Dur := Max_Dur;
+          Sok_File.Write_Score (Frame, Score1);
+        when Merge =>
+          -- Keep best time and score of matching frames
+          Score1 := Sok_File.Read_Score (Frame);
+          Score2 := Sok_File.Read_Score (Frame, File.Image);
+          Changed := False;
+          if Score2.Set then
           if not Score1.Set then
             Score1 := Score2;
             Changed := True;
@@ -108,11 +133,23 @@ begin
               Changed := True;
             end if;
           end if;
-        end if;
-        if Changed then
-          Sok_File.Write_Score (Frame, Score1);
-        end if;
-      end if;
+          end if;
+          if Changed then
+            Sok_File.Write_Score (Frame, Score1);
+          end if;
+        when Dump =>
+          -- Dump score
+          Score1 := Sok_File.Read_Score (Frame);
+          -- Frame on 2 chars + 1 sep
+          Basic_Proc.Put_Output (Normal (Frame, 2, Gap => '0') & " ");
+          -- Time on 23 chars (10+1+12) + 1 sep
+          Basic_Proc.Put_Output (Normal (Score1.Day, 10) & "d"
+                               & Images.Dur_Image (Score1.Dur) & " ");
+          -- Moves and Pushes on 21 chars (10+1+10)
+          Basic_Proc.Put_Output (Normal (Score1.Moves, 10) & " "
+                               & Normal (Score1.Pushes, 10));
+          Basic_Proc.New_Line_Output;
+      end case;
     end if;
   end loop;
 
