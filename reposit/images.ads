@@ -38,6 +38,9 @@ package Images is
   function Dur_Image (Dur : Duration; Nb_Digits : Natural; Plus : Boolean)
                       return String;
 
+  -- Return String image "Hh:Mm:Ss.mmm" (12 Characters) of a day duration
+  function Dur_Image (Dur : Ada.Calendar.Day_Duration) return String;
+
   -- Return String image "YYyy/Mm/Dd Hh:Mm:Ss.mmm" of a time
   -- Alternatively uses  "YYyy-Mm-DdTHh:Mm:Ss.mmm", the ISO 8601 format
   -- 23 characters in both cases

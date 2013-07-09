@@ -119,6 +119,20 @@ package body Images is
     return Str.Image;
   end Dur_Image;
 
+  -- Return String image "Hh:Mm:Ss.mmm" (12 Characters) of a day duration
+  function Dur_Image (Dur : Ada.Calendar.Day_Duration) return String is
+    Hours  : Day_Mng.T_Hours;
+    Mins   : Day_Mng.T_Minutes;
+    Secs   : Day_Mng.T_Seconds;
+    Millis : Day_Mng.T_Millisec;
+  begin
+    Day_Mng.Split (Dur, Hours, Mins, Secs, Millis);
+    return Normal (Hours,  2, Gap => '0') & ':'
+         & Normal (Mins,   2, Gap => '0') & ':'
+         & Normal (Secs,   2, Gap => '0') & '.'
+         & Normal (Millis, 3, Gap => '0');
+  end Dur_Image;
+
   -- Return String image "YYyy/Mm/Dd Hh:Mm:Ss.mmm" of a time
   -- Alternatively uses  "YYyy-Mm-DdTHh:Mm:Ss.mmm", the ISO 8601 format
   -- 23 characters in both cases
@@ -128,17 +142,12 @@ package body Images is
     Month  : Ada.Calendar.Month_Number;
     Day    : Ada.Calendar.Day_Number;
     Dur    : Ada.Calendar.Day_Duration;
-    Hours  : Day_Mng.T_Hours;
-    Mins   : Day_Mng.T_Minutes;
-    Secs   : Day_Mng.T_Seconds;
-    Millis : Day_Mng.T_Millisec;
 
     Sepd : Character := '/';
     Sepdt : Character := ' ';
 
   begin
     Ada.Calendar.Split (Date, Year, Month, Day, Dur);
-    Day_Mng.Split (Dur, Hours, Mins, Secs, Millis);
 
     if Iso then
       Sepd := '-';
@@ -148,10 +157,7 @@ package body Images is
     return Normal (Year,   4, Gap => '0') & Sepd
          & Normal (Month,  2, Gap => '0') & Sepd
          & Normal (Day,    2, Gap => '0') & Sepdt
-         & Normal (Hours,  2, Gap => '0') & ':'
-         & Normal (Mins,   2, Gap => '0') & ':'
-         & Normal (Secs,   2, Gap => '0') & '.'
-         & Normal (Millis, 3, Gap => '0');
+         & Dur_Image (Dur);
   end Date_Image;
 
 end Images;
