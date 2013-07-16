@@ -84,7 +84,6 @@ package body Config is
   type Bus_Conf_Rec is record
     Addr : As.U.Asu_Us;
     Bus : Xml_Parser.Node_Type;
-    Config : Xml_Parser.Node_Type;
   end record;
   function Bus_Conf_Match (Curr, Crit : Bus_Conf_Rec) return Boolean is
     use type As.U.Asu_Us;
@@ -94,6 +93,51 @@ package body Config is
   package Bus_Conf_Dyn_List_Mng is new Dynamic_List (Bus_Conf_Rec);
   package Bus_Conf_List_Mng renames Bus_Conf_Dyn_List_Mng.Dyn_List;
   Bus_Conf_List : Bus_Conf_List_Mng.List_Type;
+
+  -- The list of Bus nodes and aliases, one entry for each (bus, alias)
+  type Bus_Alias_Rec is record
+    Addr : As.U.Asu_Us;
+    Alias_Name : As.U.Asu_Us;
+    Alias_Addr : As.U.Asu_Us;
+  end record;
+  function Bus_Alias_Match (Curr, Crit : Bus_Alias_Rec) return Boolean is
+    use type As.U.Asu_Us;
+  begin
+    return Curr.Addr = Crit.Addr and then Curr.Alias_Name = Crit.Alias_Name;
+  end Bus_Alias_Match;
+  package Bus_Alias_Dyn_List_Mng is new Dynamic_List (Bus_Alias_Rec);
+  package Bus_Alias_List_Mng renames Bus_Alias_Dyn_List_Mng.Dyn_List;
+  Bus_Alias_List : Bus_Alias_List_Mng.List_Type;
+
+  -- Check an IP address format
+  function Check_Address (Str : in String) return Boolean is
+    Host : Tcp_Util.Remote_Host;
+    use type Tcp_Util.Remote_Host_List;
+  begin
+    Host := Ip_Addr.Parse (Str);
+    if Host.Kind /= Tcp_Util.Host_Id_Spec then
+      Log_Error ("Config.Init", "invalid alias address", Str);
+      return False;
+    end if;
+    return True;
+  end Check_Address;
+
+  -- Check a bus name "A-<ip_addr>:<port>"
+  function Check_Bus (Addr : String) return Boolean is
+    Host : Tcp_Util.Remote_Host;
+    Port : Tcp_Util.Remote_Port;
+    use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
+  begin
+    if Addr'Length >= 2 and then Addr(Addr'First .. Addr'First+1) = "A-" then
+      Ip_Addr.Parse (Addr(Addr'First+2 .. Addr'Last), Host, Port);
+      if Host.Kind = Tcp_Util.Host_Id_Spec
+      and then Port.Kind = Tcp_Util.Port_Num_Spec then
+        return True;
+      end if;
+    end if;
+    Log_Error ("Config.Init", "invalid bus name", Addr);
+    return False;
+  end Check_Bus;
 
   -- Init (parse the file)
   procedure Init is
@@ -134,39 +178,60 @@ package body Config is
 
     -- Check all Buses of all configs, check that names are A-<Ip_Address>
     declare
-      Configs : constant Xml_Parser.Nodes_Array
-              := Ctx.Get_Children(Root);
+      Alias_Bus : constant Xml_Parser.Nodes_Array := Ctx.Get_Children(Root);
       Name : As.U.Asu_Us;
     begin
       Ok := True;
       if Check_Attributes (Root) then
-        Debug ("Default config " & Image (Ctx.Get_Attributes (Root)));
+        Debug ("Got default config " & Image (Ctx.Get_Attributes (Root)));
       else
         Ok := False;
       end if;
 
-      for C in Configs'Range loop
-        declare
-          Buses : constant Xml_Parser.Nodes_Array
-              := Ctx.Get_Children(Configs(C));
-        begin
-          if Check_Attributes (Configs(C)) then
-            Debug ("Got config " & Image (Ctx.Get_Attributes (Configs(C))));
+      for Ab in Alias_Bus'Range loop
+        if Ctx.Get_Name (Alias_Bus(Ab)) = "Alias" then
+          -- Alias definition for all Autobus (default)
+          if Check_Address (Ctx.Get_Attribute (Alias_Bus(Ab), "Address")) then
+            Debug ("Got default Alias "
+                 & Image (Ctx.Get_Attributes (Alias_Bus(Ab))));
           else
             Ok := False;
           end if;
-          for B in Buses'Range loop
-            -- Get bus name
-            Name := Ctx.Get_Attribute (Buses(B), 1).Value;
-            if Name.Length > 2 and then Name.Slice (1, 2) = "A-" then
-              Bus_Conf_List.Insert ( (Name, Buses(B), Configs(C)) );
-              Debug ("Bus address " & Name.Image);
+        else
+          -- Bus definition (config and aliases)
+          Name := Ctx.Get_Attribute (Alias_Bus(Ab), 1).Value;
+          if Check_Bus (Name.Image) then
+            Debug ("Got bus " & Name.Image);
+            if Check_Attributes (Alias_Bus(Ab)) then
+              -- Store config for this bus
+              Bus_Conf_List.Insert ( (Name, Alias_Bus(Ab)) );
+              Debug ("  Got config "
+                   & Image (Ctx.Get_Attributes (Alias_Bus(Ab))));
             else
-              Log_Error ("Config.Init", "invalid bus name", Name.Image);
               Ok := False;
             end if;
-          end loop;
-        end;
+          else
+            Ok := False;
+          end if;
+          declare
+            Aliases : constant Xml_Parser.Nodes_Array
+                    := Ctx.Get_Children(Alias_Bus(Ab));
+          begin
+            for Alias in Aliases'Range loop
+              if Check_Address (Ctx.Get_Attribute (Aliases(Alias),
+                                                     "Address")) then
+                -- Store this alias for this bus
+                Debug ("  Got Alias "
+                     & Image (Ctx.Get_Attributes (Aliases(Alias))));
+                Bus_Alias_List.Insert ( (Name,
+                    Ctx.Get_Attribute (Aliases(Alias), "Name"),
+                    Ctx.Get_Attribute (Aliases(Alias), "Address")) );
+              else
+                Ok := False;
+              end if;
+            end loop;
+          end;
+        end if;
       end loop;
       if not Ok then
         raise Config_Error;
@@ -197,14 +262,14 @@ package body Config is
     Found := Bus_Conf_List.Search_Match (Bus_Conf_Match'Access, Crit,
                                          From => Bus_Conf_List_Mng.Absolute);
     Debug ("Bus " & Name & " "
-           & (if not Found then "not" else "") & " found in config");
+           & (if not Found then "not " else "") & "found in config");
 
     -- Get Heartbeat_Period
     -----------------------
     Dur := 0.0;
     if Found then
       -- In Conf?
-      Dur := Get_Attribute (Bus_Conf_List.Access_Current.Config,
+      Dur := Get_Attribute (Bus_Conf_List.Access_Current.Bus,
                             Heartbeat_Period_Name, True);
     end if;
     if Dur = 0.0 then
@@ -222,7 +287,7 @@ package body Config is
     Dur := 0.0;
     if Found then
       -- In Conf?
-      Dur := Get_Attribute (Bus_Conf_List.Access_Current.Config,
+      Dur := Get_Attribute (Bus_Conf_List.Access_Current.Bus,
                             Heartbeat_Max_Missed_Name, False);
     end if;
     if Dur = 0.0 then
@@ -239,7 +304,7 @@ package body Config is
     Dur := 0.0;
     if Found then
       -- In Conf?
-      Dur := Get_Attribute (Bus_Conf_List.Access_Current.Config,
+      Dur := Get_Attribute (Bus_Conf_List.Access_Current.Bus,
                             Timeout_Name, True);
     end if;
     if Dur = 0.0 then
@@ -257,7 +322,7 @@ package body Config is
     Dur := 0.0;
     if Found then
       -- In Conf?
-      Dur := Get_Attribute (Bus_Conf_List.Access_Current.Config,
+      Dur := Get_Attribute (Bus_Conf_List.Access_Current.Bus,
                             Ttl_Name, False);
     end if;
     if Dur = 0.0 then
@@ -267,6 +332,44 @@ package body Config is
     -- Default or value
     Ttl := (if Dur = 0.0 then Default_Ttl else Positive (Dur));
   end Get_Tuning;
+
+  -- Return the IP address aliasing Host, for bus Name or at default level
+  -- Empty string if no aliase host found
+  function Get_Alias (Name : String; Host : String) return String is
+    Crit : Bus_Alias_Rec;
+    Found : Boolean;
+  begin
+    Init;
+
+    -- See if this alias is described for this bus
+    Crit.Addr := As.U.Tus ("A-" & Name);
+    Crit.Alias_Name := As.U.Tus (Host);
+    Found := Bus_Alias_List.Search_Match (Bus_Alias_Match'Access, Crit,
+                                         From => Bus_Alias_List_Mng.Absolute);
+    Debug ("Bus " & Name & " alias " & Host & " "
+           & (if not Found then "not " else "") & "found in config");
+
+    if Found then
+      Bus_Alias_List.Read (Crit, Bus_Alias_List_Mng.Current);
+      return Crit.Alias_Addr.Image;
+    end if;
+
+    -- See if this alias is defined for default bus
+    declare
+      Alias_Bus : constant Xml_Parser.Nodes_Array
+                   := Ctx.Get_Children(Ctx.Get_Root_Element);
+    begin
+      for Ab in Alias_Bus'Range loop
+        if Ctx.Get_Name (Alias_Bus(Ab)) = "Alias"
+        and then Ctx.Get_Attribute (Alias_Bus(Ab), "Name") = Host then
+          -- This host is described in default alias section
+          return Ctx.Get_Attribute (Alias_Bus(Ab), "Address");
+        end if;
+      end loop;
+    end;
+    -- Not found
+    return "";
+  end Get_Alias;
 
 end Config;
 

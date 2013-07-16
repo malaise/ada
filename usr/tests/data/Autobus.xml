@@ -5,19 +5,26 @@
          Heartbeat_Max_Missed="5"
          Timeout="4.0">
   <!-- Broadcast -->
-  <Config Heartbeat_Period="5.0"
-          Heartbeat_Max_Missed="4"
-          Timeout="3.0"
-          TTL="1">
-    <Bus Name="A-192.168.6.255:21022"/>
-    <Bus Name="A-192.168.50.255:21023"/>
-  </Config>
+  <Bus Name="A-192.168.6.255:21022"
+       Heartbeat_Period="5.0"
+       Heartbeat_Max_Missed="4"
+       Timeout="3.0"
+       TTL="1">
+  </Bus>
+  <Bus Name="A-192.168.50.255:21023"
+       Heartbeat_Period="5.0"
+       Heartbeat_Max_Missed="4"
+       Timeout="3.0"
+       TTL="1">
+  </Bus>
   <!-- Multicast -->
-  <Config Heartbeat_Period="1.0"
-          Heartbeat_Max_Missed="3"
-          Timeout="0.5"
-          TTL="5">
-    <Bus Name="A-234.7.6.5:21021"/>
-  </Config>
+  <Bus Name="A-234.7.6.5:21021"
+       Heartbeat_Period="1.0"
+       Heartbeat_Max_Missed="3"
+       Timeout="0.5"
+       TTL="5">
+    <Alias Name="telemaque" Address="192.168.0.5"/>
+    <Alias Name="cofserv" Address="192.168.6.250"/>
+  </Bus>
 </Autobus>
 

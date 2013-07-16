@@ -6,15 +6,21 @@
                    Timeout CDATA #IMPLIED
                    TTL CDATA #IMPLIED">
 
-<!-- This file contains several configurations, each for several buses -->
-<!ELEMENT Autobus (Config*)>
+<!-- This file contains a default configuration and aliases,
+     then possibly several bus, each with a configuration and aliases -->
+<!ELEMENT Autobus (Alias*,Bus*)>
 <!-- A heartbeat setting and connection timeout by default -->
 <!ATTLIST Autobus %Tuning;>
 
-<!-- A heartbeat setting and connection timeout for several buses -->
-<!ELEMENT Config (Bus*)>
-<!ATTLIST Config %Tuning;>
+<!-- Definition of an host alias -->
+<!ELEMENT Alias EMPTY>
+<!ATTLIST Alias Name    CDATA #REQUIRED
+                Address CDATA #REQUIRED>
 
-<!ELEMENT Bus EMPTY>
-<!ATTLIST Bus Name ID #REQUIRED>
+<!-- A Bus Name is make of "A-" then the bus address (<lan>:<port>) -->
+<!-- Example: A-192.168.6.255:21022 -->
+<!-- It defines a config and aliases -->
+<!ELEMENT Bus (Alias*)>
+<!ATTLIST Bus Name ID #REQUIRED
+              %Tuning;>
 

@@ -43,14 +43,16 @@ package body Autobus is
   --  * check the message content versus the filter if any,
   --  * call the observer if the message passes.
   --
-  -- Tuning: The following parameters can be tuned for a Bus:
+  -- Tuning: The following parameters can be tuned for a all or some Bus:
   -- The period for sending Alive message and of checking sudden death), in
   --  seconds (default 1.0).
   -- The max number of missing Alive messages before considering that
   --  a partner is dead (default 3). So by default a silent death is detected
   --  in 3 seconds.
   -- The timeout in seconds for sending messages (default 0.5).
-  -- The TTL for IPM and TCP frames (default 5).
+  -- The TTL for IPM and TCP frames (default 5)
+  -- Some aliases (IP address of hosts to overwrite the local host addressi in
+  --  the Alive message).
 
   --------------
   -- INTERNAL --
@@ -135,6 +137,9 @@ package body Autobus is
                           Heartbeat_Max_Missed : out Positive;
                           Timeout : out Duration;
                           Ttl : out Socket.Ttl_Range);
+    -- Return the IP address aliasing Host, for bus Name or at default level
+    -- Empty string if no aliase host found
+    function Get_Alias (Name : String; Host : String) return String;
   end Config;
   package body Config is separate;
 
@@ -693,7 +698,25 @@ package body Autobus is
                           (Kind => Tcp_Util.Port_Dynamic_Spec),
                           Tcp_Accept_Cb'Access,
                           Rbus.Accep, Port_Num);
-    Rbus.Addr := As.U.Tus (Image (Socket.Local_Host_Id , Port_Num));
+    -- Set host address to alias in config or to local host address
+    declare
+      Local_Addr : constant String
+                 := Config.Get_Alias (Rbus.Name.Image, Socket.Local_Host_Name);
+      Local_Id : Socket.Host_Id;
+    begin
+      if Local_Addr = "" then
+        Local_Id := Socket.Local_Host_Id;
+      else
+        Local_Id := Ip_Addr.Parse (Local_Addr).Id;
+      end if;
+      Rbus.Addr := As.U.Tus (Image (Local_Id, Port_Num));
+    exception
+      when Constraint_Error =>
+        -- Alias did not parse correctly
+        Log_Error ("Bus.Init", "invalid alias",
+                   "for " & Socket.Local_Host_Name);
+        raise Config_Error;
+    end;
 
     -- Set TTL on Admin and Accept sockets
     Rbus.Admin.Set_Ttl (Rbus.Ttl);
