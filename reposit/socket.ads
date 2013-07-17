@@ -27,7 +27,7 @@ package Socket is
 
   -- A host
   type Host_Id is private;
-  No_Host : constant Host_Id;
+  No_Host, All_Host : constant Host_Id;
 
   -- The blocking / non-blocking modes
   --  Blocking emission and reception
@@ -267,7 +267,7 @@ package Socket is
   function Host_Name_Of (Id : Host_Id) return String;
   function Host_Id_Of   (Name : String) return Host_Id;
 
-  -- Get local Host name or id
+  -- Get local Host name and corresponding id
   function Local_Host_Name return String;
   function Local_Host_Id return Host_Id;
 
@@ -284,6 +284,9 @@ package Socket is
 
   -- Get the broadcast address for a given interface (designated by if_host) */
   function Bcast_Of (If_Id : Host_Id) return Host_Id;
+
+  -- Get the id of local Host on a given LAN and netmask
+  function Host_Id_For (Lan, Netmask : Host_Id) return Host_Id;
 
   -- Send a message
   -- If Length is 0 then the full size of Message_Type is sent
@@ -317,6 +320,7 @@ private
   type Host_Id is new C_Types.Uint32;
   for Host_Id'Size use 4 * System.Storage_Unit; -- As Ip_Addr
   No_Host : constant Host_Id := 0;
+  All_Host : constant Host_Id := 16#FFFFFFFF#;
 
   No_Socket : constant Socket_Dscr := (Soc_Addr => System.Null_Address);
 end Socket;

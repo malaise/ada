@@ -19,13 +19,13 @@ begin
     return;
   end if;
 
-  -- Decode arguments 
+  -- Decode arguments
   begin
     Host_Lan := Ip_Addr.Parse (Argument.Get_Parameter (Occurence => 1)).Id;
     if Argument.Get_Nbre_Arg = 2 then
       Mask := Ip_Addr.Parse (Argument.Get_Parameter (Occurence => 2)).Id;
     else
-      Mask := Socket.All_host;
+      Mask := Socket.All_Host;
     end if;
   exception
     when Constraint_Error =>
@@ -35,7 +35,7 @@ begin
   end;
 
   -- Get host info and display, then bcast and display
-  Host_For := Socket.Host_Id_For (Host_Lan, Mask); 
+  Host_For := Socket.Host_Id_For (Host_Lan, Mask);
   Basic_Proc.Put_Line_Output ("Host: " & Ip_Addr.Image (Socket.Id2Addr (Host_For)));
   Bcast := Socket.Bcast_Of (Host_For);
   Basic_Proc.Put_Line_Output ("Bcast: " & Ip_Addr.Image (Socket.Id2Addr (Bcast)));
