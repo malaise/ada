@@ -24,7 +24,7 @@
        Timeout="0.5"
        TTL="5">
     <LANs>
-      <LAN Adress="10.100.12.250" Netmask="255.255.255.0"/>
+      <LAN Address="10.100.12.250" Netmask="255.255.255.0"/>
     </LANs>
     <Aliases>
       <Alias Name="telemaque" Address="192.168.0.5"/>

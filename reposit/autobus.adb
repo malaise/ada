@@ -664,6 +664,7 @@ package body Autobus is
       Rem_Port : Tcp_Util.Remote_Port;
       use type Socket.Host_Id;
     begin
+      Debug ("Bus initalializing on default interface");
       Rbus.Admin.Open (Socket.Udp);
       Ip_Addr.Parse (Address, Rem_Host, Rem_Port);
       Socket_Util.Set_Destination (Rbus.Admin, Lan => True,
@@ -679,6 +680,8 @@ package body Autobus is
       -- Now we need to re-open the IPM socket to set it to the proper
       --  interface before setting dest and linking
       if Rbus.Host_If /= Socket.Local_Host_Id then
+        Debug ("Bus initalializing on interface " &
+               Ip_Addr.Image (Socket.Id2Addr (Rbus.Host_If)));
         Rbus.Admin.Close;
         Rbus.Admin.Open (Socket.Udp);
         Rbus.Admin.Set_Sending_Ipm_Interface (Rbus.Host_If);

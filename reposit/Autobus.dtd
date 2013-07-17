@@ -31,7 +31,7 @@
 <!-- Definition of LAN associations -->
 <!ELEMENT LANs (LAN*)>
 <!ELEMENT LAN EMPTY>
-<!ATTLIST LAN Adress  CDATA #REQUIRED
+<!ATTLIST LAN Address  CDATA #REQUIRED
               Netmask CDATA #REQUIRED>
 
 <!-- Definition of host aliases -->

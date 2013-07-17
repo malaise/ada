@@ -234,6 +234,7 @@ package body Config is
         raise Config_Error;
       end if;
     end;
+    Debug ("Config checked OK");
 
   end Init;
 
@@ -259,7 +260,7 @@ package body Config is
     Found := Bus_Conf_List.Search_Match (Bus_Conf_Match'Access, Crit,
                                          From => Bus_Conf_List_Mng.Absolute);
     Debug ("Bus " & Name & " "
-           & (if not Found then "not " else "") & "found in config");
+           & (if not Found then "not " else "") & "found for config");
 
     -- Get Heartbeat_Period
     -----------------------
@@ -350,7 +351,7 @@ package body Config is
     Found := Bus_Conf_List.Search_Match (Bus_Conf_Match'Access, Crit,
                                          From => Bus_Conf_List_Mng.Absolute);
     Debug ("Bus " & Name & " "
-           & (if not Found then "not " else "") & "found in config");
+           & (if not Found then "not " else "") & "found for LAN or Alias");
 
     if not Found then
       return Socket.Local_Host_Id;
