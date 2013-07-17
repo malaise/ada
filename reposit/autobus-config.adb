@@ -94,21 +94,6 @@ package body Config is
   package Bus_Conf_List_Mng renames Bus_Conf_Dyn_List_Mng.Dyn_List;
   Bus_Conf_List : Bus_Conf_List_Mng.List_Type;
 
-  -- The list of Bus nodes and aliases, one entry for each (bus, alias)
-  type Bus_Alias_Rec is record
-    Addr : As.U.Asu_Us;
-    Alias_Name : As.U.Asu_Us;
-    Alias_Addr : As.U.Asu_Us;
-  end record;
-  function Bus_Alias_Match (Curr, Crit : Bus_Alias_Rec) return Boolean is
-    use type As.U.Asu_Us;
-  begin
-    return Curr.Addr = Crit.Addr and then Curr.Alias_Name = Crit.Alias_Name;
-  end Bus_Alias_Match;
-  package Bus_Alias_Dyn_List_Mng is new Dynamic_List (Bus_Alias_Rec);
-  package Bus_Alias_List_Mng renames Bus_Alias_Dyn_List_Mng.Dyn_List;
-  Bus_Alias_List : Bus_Alias_List_Mng.List_Type;
-
   -- Check an IP address format
   function Check_Address (Str : in String) return Boolean is
     Host : Tcp_Util.Remote_Host;
@@ -176,10 +161,11 @@ package body Config is
     Debug ("File " & Environ.Getenv (Env_File_Name) & " parsed OK");
     Root := Ctx.Get_Root_Element;
 
-    -- Check all Buses of all configs, check that names are A-<Ip_Address>
+    -- Check all Buses, check that names are A-<Ip_Address>
     declare
-      Alias_Bus : constant Xml_Parser.Nodes_Array := Ctx.Get_Children(Root);
+      Buses : constant Xml_Parser.Nodes_Array := Ctx.Get_Children(Root);
       Name : As.U.Asu_Us;
+      Node : Xml_Parser.Element_Type;
     begin
       Ok := True;
       if Check_Attributes (Root) then
@@ -188,50 +174,61 @@ package body Config is
         Ok := False;
       end if;
 
-      for Ab in Alias_Bus'Range loop
-        if Ctx.Get_Name (Alias_Bus(Ab)) = "Alias" then
-          -- Alias definition for all Autobus (default)
-          if Check_Address (Ctx.Get_Attribute (Alias_Bus(Ab), "Address")) then
-            Debug ("Got default Alias "
-                 & Image (Ctx.Get_Attributes (Alias_Bus(Ab))));
+      for Bus in Buses'Range loop
+        -- Get bus config
+        Name := Ctx.Get_Attribute (Buses(Bus), 1).Value;
+        if Check_Bus (Name.Image) then
+          Debug ("Got bus " & Name.Image);
+          if Check_Attributes (Buses(Bus)) then
+            -- Store config for this bus
+            Bus_Conf_List.Insert ( (Name, Buses(Bus)) );
+            Debug ("  Got config "
+                 & Image (Ctx.Get_Attributes (Buses(Bus))));
           else
             Ok := False;
           end if;
         else
-          -- Bus definition (config and aliases)
-          Name := Ctx.Get_Attribute (Alias_Bus(Ab), 1).Value;
-          if Check_Bus (Name.Image) then
-            Debug ("Got bus " & Name.Image);
-            if Check_Attributes (Alias_Bus(Ab)) then
-              -- Store config for this bus
-              Bus_Conf_List.Insert ( (Name, Alias_Bus(Ab)) );
-              Debug ("  Got config "
-                   & Image (Ctx.Get_Attributes (Alias_Bus(Ab))));
-            else
-              Ok := False;
-            end if;
-          else
-            Ok := False;
-          end if;
-          declare
-            Aliases : constant Xml_Parser.Nodes_Array
-                    := Ctx.Get_Children(Alias_Bus(Ab));
-          begin
-            for Alias in Aliases'Range loop
-              if Check_Address (Ctx.Get_Attribute (Aliases(Alias),
-                                                     "Address")) then
-                -- Store this alias for this bus
-                Debug ("  Got Alias "
-                     & Image (Ctx.Get_Attributes (Aliases(Alias))));
-                Bus_Alias_List.Insert ( (Name,
-                    Ctx.Get_Attribute (Aliases(Alias), "Name"),
-                    Ctx.Get_Attribute (Aliases(Alias), "Address")) );
-              else
-                Ok := False;
-              end if;
-            end loop;
-          end;
+          Ok := False;
         end if;
+
+        for I in 1 .. Ctx.Get_Nb_Children (Buses(Bus)) loop
+          Node := Ctx.Get_Child (Buses(Bus), I);
+          if Ctx.Get_Name (Node) = "LANs" then
+            -- Check LAN definitions
+            declare
+              Lans : constant Xml_Parser.Nodes_Array
+                   := Ctx.Get_Children(Node);
+            begin
+              for Lan in Lans'Range loop
+                if not Check_Address (Ctx.Get_Attribute (Lans(Lan),
+                                                         "Address")) then
+                  Ok := False;
+                end if;
+                if not Check_Address (Ctx.Get_Attribute (Lans(Lan),
+                                                         "Netmask")) then
+                  Ok := False;
+                end if;
+              end loop;
+            end;
+          elsif Ctx.Get_Name (Node) = "Aliases" then
+            -- Check Alias definitions
+            declare
+              Aliases : constant Xml_Parser.Nodes_Array
+                      := Ctx.Get_Children(Node);
+            begin
+              for Alias in Aliases'Range loop
+                if not Check_Address (Ctx.Get_Attribute (Aliases(Alias),
+                                                       "Address")) then
+                  Ok := False;
+                end if;
+              end loop;
+            end;
+          else
+            Log_Error ("Config.Init", "Unexpected XML structure",
+                       Ctx.Get_Name (Node));
+            raise Config_Error;
+          end if;
+        end loop;
       end loop;
       if not Ok then
         raise Config_Error;
@@ -333,43 +330,72 @@ package body Config is
     Ttl := (if Dur = 0.0 then Default_Ttl else Positive (Dur));
   end Get_Tuning;
 
-  -- Return the IP address aliasing Host, for bus Name or at default level
-  -- Empty string if no aliase host found
-  function Get_Alias (Name : String; Host : String) return String is
-    Crit : Bus_Alias_Rec;
+  -- Get Host_Id corerspondig to the address that is attribute of a node
+  function Id_Of (Node : Xml_Parser.Element_Type; Attribute : String)
+                 return Socket.Host_Id is
+  begin
+    return Ip_Addr.Parse (Ctx.Get_Attribute (Node, Attribute)).Id;
+  end Id_Of;
+
+  -- Return the Host_Id denoting the interface to use
+  function Get_Interface (Name : String) return Socket.Host_Id is
+    Crit : Bus_Conf_Rec;
     Found : Boolean;
+    Local_Host_Name : constant String := Socket.Local_Host_Name;
+    Bus, Node : Xml_Parser.Element_Type;
   begin
     Init;
-
-    -- See if this alias is described for this bus
+    -- See if this bus is described
     Crit.Addr := As.U.Tus ("A-" & Name);
-    Crit.Alias_Name := As.U.Tus (Host);
-    Found := Bus_Alias_List.Search_Match (Bus_Alias_Match'Access, Crit,
-                                         From => Bus_Alias_List_Mng.Absolute);
-    Debug ("Bus " & Name & " alias " & Host & " "
+    Found := Bus_Conf_List.Search_Match (Bus_Conf_Match'Access, Crit,
+                                         From => Bus_Conf_List_Mng.Absolute);
+    Debug ("Bus " & Name & " "
            & (if not Found then "not " else "") & "found in config");
 
-    if Found then
-      Bus_Alias_List.Read (Crit, Bus_Alias_List_Mng.Current);
-      return Crit.Alias_Addr.Image;
+    if not Found then
+      return Socket.Local_Host_Id;
     end if;
 
-    -- See if this alias is defined for default bus
-    declare
-      Alias_Bus : constant Xml_Parser.Nodes_Array
-                   := Ctx.Get_Children(Ctx.Get_Root_Element);
-    begin
-      for Ab in Alias_Bus'Range loop
-        if Ctx.Get_Name (Alias_Bus(Ab)) = "Alias"
-        and then Ctx.Get_Attribute (Alias_Bus(Ab), "Name") = Host then
-          -- This host is described in default alias section
-          return Ctx.Get_Attribute (Alias_Bus(Ab), "Address");
-        end if;
-      end loop;
-    end;
+    -- See if a LAN or alias
+    Bus := Bus_Conf_List.Access_Current.Bus;
+    for I in 1 .. Ctx.Get_Nb_Children (Bus) loop
+      Node := Ctx.Get_Child (Bus, I);
+      if Ctx.Get_Name (Node) = "LANs" then
+        -- Check LAN definitions
+        declare
+          Lans : constant Xml_Parser.Nodes_Array
+               := Ctx.Get_Children(Node);
+        begin
+          for Lan in Lans'Range loop
+            -- See if current LAN/Netmask is one of current interfaces
+            begin
+              return Socket.Host_Id_For (
+                Lan     => Id_Of (Lans(Lan), "Address"),
+                Netmask => Id_Of (Lans(Lan), "Netmask"));
+            exception
+              when Socket.Soc_Name_Not_Found =>
+                -- LAN not found in local interface, go on
+                null;
+            end;
+          end loop;
+        end;
+      elsif Ctx.Get_Name (Node) = "Aliases" then
+        -- Check Alias definitions
+        declare
+          Aliases : constant Xml_Parser.Nodes_Array
+                  := Ctx.Get_Children(Node);
+        begin
+          for Alias in Aliases'Range loop
+            if Ctx.Get_Attribute (Aliases(Alias), "Name") = Local_Host_Name then
+              return Id_Of (Aliases(Alias), "Address");
+            end if;
+          end loop;
+        end;
+      end if;
+    end loop;
     -- Not found
-    return "";
-  end Get_Alias;
+    return Socket.Local_Host_Id;
+  end Get_Interface;
 
 end Config;
 

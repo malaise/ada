@@ -6,21 +6,37 @@
                    Timeout CDATA #IMPLIED
                    TTL CDATA #IMPLIED">
 
-<!-- This file contains a default configuration and aliases,
-     then possibly several bus, each with a configuration and aliases -->
-<!ELEMENT Autobus (Alias*,Bus*)>
+<!-- This file contains a default configuration, then possibly several bus,
+     each with a configuration, LAN associations and aliases -->
+<!ELEMENT Autobus (Bus*)>
 <!-- A heartbeat setting and connection timeout by default -->
 <!ATTLIST Autobus %Tuning;>
 
-<!-- Definition of an host alias -->
+<!-- A Bus Name is make of "A-" then the bus address (<lan>:<port>) -->
+<!-- Example: A-192.168.6.255:21022 -->
+<!-- It defines a config, then possibly LANs and aliases -->
+<!ELEMENT Bus (LANs?,Aliases?)>
+<!ATTLIST Bus Name ID #REQUIRED
+              %Tuning;>
+
+<!-- The check for Interface selection is done as follows:
+   - Check for LANs one after the other. If one of our interfaces is on a
+     LAN then use this interface,
+   - If no LAN matches then check for Aliases one after the other. If our local
+     host matches an alias name then use the interface associated to the
+     correspondig address,
+   - If no match, then use the interface associated to the local host name.
+-->
+
+<!-- Definition of LAN associations -->
+<!ELEMENT LANs (LAN*)>
+<!ELEMENT LAN EMPTY>
+<!ATTLIST LAN Adress  CDATA #REQUIRED
+              Netmask CDATA #REQUIRED>
+
+<!-- Definition of host aliases -->
+<!ELEMENT Aliases (Alias*)>
 <!ELEMENT Alias EMPTY>
 <!ATTLIST Alias Name    CDATA #REQUIRED
                 Address CDATA #REQUIRED>
-
-<!-- A Bus Name is make of "A-" then the bus address (<lan>:<port>) -->
-<!-- Example: A-192.168.6.255:21022 -->
-<!-- It defines a config and aliases -->
-<!ELEMENT Bus (Alias*)>
-<!ATTLIST Bus Name ID #REQUIRED
-              %Tuning;>
 

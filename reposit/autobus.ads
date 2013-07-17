@@ -144,6 +144,8 @@ private
     Admin : Socket.Socket_Dscr := Socket.No_Socket;
     -- TCP accept socket
     Accep : Socket.Socket_Dscr := Socket.No_Socket;
+    -- Host Id denoting the interface (for TCP and IPM)
+    Host_If : Socket.Host_Id;
     -- Heartbeat period and Max missed number, Timeout on connect and send, TTL
     Heartbeat_Period : Duration := 1.0;
     Heartbeat_Max_Missed : Positive := 3;

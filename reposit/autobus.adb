@@ -137,9 +137,8 @@ package body Autobus is
                           Heartbeat_Max_Missed : out Positive;
                           Timeout : out Duration;
                           Ttl : out Socket.Ttl_Range);
-    -- Return the IP address aliasing Host, for bus Name or at default level
-    -- Empty string if no aliase host found
-    function Get_Alias (Name : String; Host : String) return String;
+    -- Return the Host_Id denoting the interface to use
+    function Get_Interface (Name : String) return Socket.Host_Id;
   end Config;
   package body Config is separate;
 
@@ -663,6 +662,7 @@ package body Autobus is
     declare
       Rem_Host : Tcp_Util.Remote_Host;
       Rem_Port : Tcp_Util.Remote_Port;
+      use type Socket.Host_Id;
     begin
       Rbus.Admin.Open (Socket.Udp);
       Ip_Addr.Parse (Address, Rem_Host, Rem_Port);
@@ -672,6 +672,21 @@ package body Autobus is
       -- Name is "<ip_address>:<port>"
       Rbus.Name := As.U.Tus (Image (Rbus.Admin.Get_Destination_Host,
                                     Rbus.Admin.Get_Destination_Port));
+
+      -- Set host address to match LAN or alias in config, or to local host
+      Rbus.Host_If := Config.Get_Interface (Rbus.Name.Image);
+
+      -- Now we need to re-open the IPM socket to set it to the proper
+      --  interface before setting dest and linking
+      if Rbus.Host_If /= Socket.Local_Host_Id then
+        Rbus.Admin.Close;
+        Rbus.Admin.Open (Socket.Udp);
+        Rbus.Admin.Set_Sending_Ipm_Interface (Rbus.Host_If);
+        Socket_Util.Set_Destination (Rbus.Admin, Lan => True,
+                                     Host => Rem_Host, Port => Rem_Port);
+        Rbus.Admin.Set_Reception_Ipm_Interface (Rbus.Host_If);
+        Socket_Util.Link (Rbus.Admin, Rem_Port);
+      end if;
     exception
       when Ip_Addr.Parse_Error =>
         raise Invalid_Address;
@@ -698,25 +713,9 @@ package body Autobus is
                           (Kind => Tcp_Util.Port_Dynamic_Spec),
                           Tcp_Accept_Cb'Access,
                           Rbus.Accep, Port_Num);
-    -- Set host address to alias in config or to local host address
-    declare
-      Local_Addr : constant String
-                 := Config.Get_Alias (Rbus.Name.Image, Socket.Local_Host_Name);
-      Local_Id : Socket.Host_Id;
-    begin
-      if Local_Addr = "" then
-        Local_Id := Socket.Local_Host_Id;
-      else
-        Local_Id := Ip_Addr.Parse (Local_Addr).Id;
-      end if;
-      Rbus.Addr := As.U.Tus (Image (Local_Id, Port_Num));
-    exception
-      when Constraint_Error =>
-        -- Alias did not parse correctly
-        Log_Error ("Bus.Init", "invalid alias",
-                   "for " & Socket.Local_Host_Name);
-        raise Config_Error;
-    end;
+
+    -- Now we know onwhich host and port we listen
+    Rbus.Addr := As.U.Tus (Image (Rbus.Host_If, Port_Num));
 
     -- Set TTL on Admin and Accept sockets
     Rbus.Admin.Set_Ttl (Rbus.Ttl);

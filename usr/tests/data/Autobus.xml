@@ -23,8 +23,12 @@
        Heartbeat_Max_Missed="3"
        Timeout="0.5"
        TTL="5">
-    <Alias Name="telemaque" Address="192.168.0.5"/>
-    <Alias Name="cofserv" Address="192.168.6.250"/>
+    <LANs>
+      <LAN Adress="10.100.12.250" Netmask="255.255.255.0"/>
+    </LANs>
+    <Aliases>
+      <Alias Name="telemaque" Address="192.168.0.5"/>
+    </Aliases>
   </Bus>
 </Autobus>
 
