@@ -658,38 +658,35 @@ package body Autobus is
       raise Status_Error;
     end if;
 
-    -- Create socket, Parse and check address, Link
+    -- Create socket, parse and check address, configure Socket
     declare
       Rem_Host : Tcp_Util.Remote_Host;
       Rem_Port : Tcp_Util.Remote_Port;
       use type Socket.Host_Id;
     begin
-      Debug ("Bus initalializing on default interface");
+      Debug ("Bus initialializing");
       Rbus.Admin.Open (Socket.Udp);
       Ip_Addr.Parse (Address, Rem_Host, Rem_Port);
-      Socket_Util.Set_Destination (Rbus.Admin, Lan => True,
-                                   Host => Rem_Host, Port => Rem_Port);
-      Socket_Util.Link (Rbus.Admin, Rem_Port);
-      -- Name is "<ip_address>:<port>"
-      Rbus.Name := As.U.Tus (Image (Rbus.Admin.Get_Destination_Host,
-                                    Rbus.Admin.Get_Destination_Port));
-
+      -- Name is "<ip_address>:<port_num>"
+      Rbus.Name := As.U.Tus (Image (Ip_Addr.Resolve (Rem_Host),
+                                    Ip_Addr.Resolve (Rem_Port, Socket.Udp)));
       -- Set host address to match LAN or alias in config, or to local host
       Rbus.Host_If := Config.Get_Interface (Rbus.Name.Image);
 
-      -- Now we need to re-open the IPM socket to set it to the proper
-      --  interface before setting dest and linking
-      if Rbus.Host_If /= Socket.Local_Host_Id then
-        Debug ("Bus initalializing on interface " &
+      -- Now we need to set the socket it to the proper interface for sending
+      --   and receiving, before setting dest and linking
+      if Rbus.Host_If = Socket.Local_Host_Id then
+        Debug ("Bus initialializing on default interface");
+      else
+        Debug ("Bus initialializing on interface " &
                Ip_Addr.Image (Socket.Id2Addr (Rbus.Host_If)));
-        Rbus.Admin.Close;
-        Rbus.Admin.Open (Socket.Udp);
         Rbus.Admin.Set_Sending_Ipm_Interface (Rbus.Host_If);
-        Socket_Util.Set_Destination (Rbus.Admin, Lan => True,
-                                     Host => Rem_Host, Port => Rem_Port);
         Rbus.Admin.Set_Reception_Ipm_Interface (Rbus.Host_If);
-        Socket_Util.Link (Rbus.Admin, Rem_Port);
       end if;
+      -- Set dest and link
+      Socket_Util.Set_Destination (Rbus.Admin, Lan => True,
+                                   Host => Rem_Host, Port => Rem_Port);
+      Socket_Util.Link (Rbus.Admin, Rem_Port);
     exception
       when Ip_Addr.Parse_Error =>
         raise Invalid_Address;

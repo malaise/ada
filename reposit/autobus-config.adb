@@ -155,7 +155,8 @@ package body Config is
     Ctx.Parse (Environ.Getenv (Env_File_Name), Ok);
     if not Ok then
       Log_Error ("Config.Init", Ctx.Get_Parse_Error_Message,
-                   "when parsing config file");
+                   "when parsing config file "
+                 & Environ.Getenv (Env_File_Name));
         raise Config_Error;
     end if;
     Debug ("File " & Environ.Getenv (Env_File_Name) & " parsed OK");
@@ -236,6 +237,12 @@ package body Config is
     end;
     Debug ("Config checked OK");
 
+  exception
+    when Xml_Parser.File_Error =>
+      Log_Error ("Config.Init", "File not found",
+                 "when parsing config file " & Environ.Getenv (Env_File_Name));
+
+      raise Config_Error;
   end Init;
 
   -- Get for the bus the heartbeat period, the heartbeat max missed number
