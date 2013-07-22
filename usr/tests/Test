@@ -59,7 +59,7 @@ elif [ "$1" = "-ix" ] ; then
   echo "Done."
   exit
 elif [ "$1" != "" ] ; then
-  echo "Usage: `basename $0` [ -ix ]" 2>&1
+  echo "Usage: `basename $0` [ -ix | -clean ]" 2>&1
   exit 1
 fi
 
@@ -329,6 +329,7 @@ echo "OK"
 
 # t_autobus
 title t_autobus
+export AUTOBUS_CONFIG=data/Autobus.xm
 t_autobus -a > out1 2> err1 &
 export PID=$!
 sleep 0.7
