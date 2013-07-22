@@ -11,6 +11,9 @@ package Ip_Addr is
   -- Image of an Ip address: "xxx.yyy.zzz.ttt"
   function Image  (Addr : Socket.Ip_Address) return String;
 
+  -- Image of a host Id
+  function Image  (Host : Socket.Host_Id) return String;
+
   -- If Port is a num between 0 and 65535 then
   --   return the Tcp_Util.Remote_Port (Tcp_Util.Port_Num_Spec)
   -- Else
@@ -33,6 +36,20 @@ package Ip_Addr is
                    Port : out Tcp_Util.Remote_Port);
 
   Parse_Error : exception;
+
+  -- Resolve a remote Host (resp. Port)
+  -- If the Host is already a Host_Id_Spec (resp. port_Num_Spec)
+  --  then simply extract the host_Id (resp. Port_Num)
+  --  otherwise use Socket.Host_Id_Of (resp. Port_Num_Of), which may raise
+  --  Name_Error;
+  function Resolve (Host : Tcp_Util.Remote_Host) return Socket.Host_Id;
+  function Resolve (Port : Tcp_Util.Remote_Port;
+                    Protocol : Socket.Protocol_List) return Socket.Port_Num;
+  -- Raises Constraint_Error on a Port_Dynamic_Spec
+  function Resolve (Port : Tcp_Util.Local_Port;
+                    Protocol : Socket.Protocol_List) return Socket.Port_Num;
+
+  Name_Error : exception renames Socket.Soc_Name_Not_Found;
 
 end Ip_Addr;
 

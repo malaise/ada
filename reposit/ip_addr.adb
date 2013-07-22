@@ -83,6 +83,13 @@ package body Ip_Addr is
          & Byte_Image (Addr.D);
   end Image;
 
+  -- Image of a host Id
+  function Image  (Host : Socket.Host_Id) return String is
+  begin
+    return Image (Socket.Id2Addr (Host));
+  end Image;
+
+
   -- If Port is a num between 0 and 65535 then
   --   return the Tcp_Util.Remote_Port (Tcp_Util.Port_Num_Spec)
   -- Else
@@ -155,6 +162,46 @@ package body Ip_Addr is
       Port := Parse (Addr_Port (Colon + 1 .. Addr_Port'Last));
     end if;
   end Parse;
+
+
+  -- Resolve a remote Host (resp. Port)
+  -- If the Host is already a Host_Id_Spec (resp. port_Num_Spec)
+  --  then simply extract the host_Id (resp. Port_Num)
+  --  otherwise use Socket.Host_Id_Of (resp. Port_Num_Of), which may raise
+  --  Name_Error;
+  function Resolve (Host : Tcp_Util.Remote_Host) return Socket.Host_Id is
+    use type Tcp_Util.Remote_Host_List;
+  begin
+    if Host.Kind = Tcp_Util.Host_Id_Spec then
+      return Host.Id;
+    else
+      return Socket.Host_Id_Of (Host.Name.Image);
+    end if;
+  end Resolve;
+
+  function Resolve (Port : Tcp_Util.Remote_Port;
+                    Protocol : Socket.Protocol_List) return Socket.Port_Num is
+    use type Tcp_Util.Remote_Port_List;
+  begin
+    if Port.Kind = Tcp_Util.Port_Num_Spec then
+      return Port.Num;
+    else
+      return Socket.Port_Num_Of (Port.Name.Image, Protocol);
+    end if;
+  end Resolve;
+
+  function Resolve (Port : Tcp_Util.Local_Port;
+                    Protocol : Socket.Protocol_List) return Socket.Port_Num is
+    use type Tcp_Util.Local_Port_List;
+  begin
+    if Port.Kind = Tcp_Util.Port_Num_Spec then
+      return Port.Num;
+    elsif Port.Kind = Tcp_Util.Port_Name_Spec then
+      return Socket.Port_Num_Of (Port.Name.Image, Protocol);
+    else
+      raise Constraint_Error;
+    end if;
+  end Resolve;
 
 end Ip_Addr;
 
