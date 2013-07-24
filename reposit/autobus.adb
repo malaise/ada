@@ -4,28 +4,32 @@ package body Autobus is
   -- Design
   ---------
   -- A Bus is the sharing of an IPM address and port. For each Bus we:
-  --  * bind to this IPM address
-  --  * bind to a dynamic TCP port
-  --  * send periodically an Alive message with local host and the TCP port
+  --  * bind to this IPM address (use the config to set a specific interface)
+  --  * bind to a dynamic TCP port (use the config to set a specific interface)
+  --  * send periodically an Alive message with local host (the interface IP
+  --    address) and the TCP port
   --  * send a Dead message when the Bus is reset
   --  * when discovering a new partner (in an Alive message), the smaller of
   --    local and partner's host address connects to the higher. So if local
   --    host address is the same or larger we connect in TCP to the address
   --    received, otherwise we just send an Alive message and the partner will
-  --    connect to us and will send us a TCP service message with its TCP
-  --    address.
+  --    connect to us
+  --  * when connected to a partner, send him a first TCP (service) message
+  --    with our TCP address.
   --  * keep a list of partners connected in TCP. This list is updated:
-  --   - when receiving an Alive (we update the date of death to
+  --   - when receiving an Alive message (we update the date of death to
   --     current_time + max__to_miss * period)
   --   - when receiving a Dead message (we disconnect and remove partner)
   --   - periodically for detecting silent death of partners (date of death
-  --     reached) and removing them.
+  --     reached) and removing them
+  --   - when the sending of a message to it fails on timeout.
   --
   -- Note: The remote host id that we get when accepting a partner may not be
   --  the local host that it sees itself (and sends in the Alive message),
-  --  for example if it has several LAN inerfaces.
-  --  This is why, after connecting we always send a TCP service message with
-  --  our local host address, and when accepting we always expect this message.
+  --  for example if it has several LAN interfaces.
+  --  This is why, just after getting connected, we always send a TCP service
+  --  message with our local host address, and when accepting we always expect
+  --  this message (the partner address is not set until this reception).
   --  There is no such problem when connecting to a partner because we
   --  connect to the address that we have received in an Alive message.
   -- Note: This mechanism also applies to ourself, so we always see ourself
@@ -34,7 +38,7 @@ package body Autobus is
   --  it).
   --
   -- Sending a message consists in sending it successively to all the partners
-  --  except the passive connection.
+  --  except the passive connection to ourself.
   -- Receiving a TCP message (except the first TCP service message on each
   --  accepted connection) consists in dispatching it on all the observer,
   --  which means for each:
@@ -42,17 +46,6 @@ package body Autobus is
   --    to receive the echo,
   --  * check the message content versus the filter if any,
   --  * call the observer if the message passes.
-  --
-  -- Tuning: The following parameters can be tuned for a all or some Bus:
-  -- The period for sending Alive message and of checking sudden death), in
-  --  seconds (default 1.0).
-  -- The max number of missing Alive messages before considering that
-  --  a partner is dead (default 3). So by default a silent death is detected
-  --  in 3 seconds.
-  -- The timeout in seconds for sending messages (default 0.5).
-  -- The TTL for IPM and TCP frames (default 5)
-  -- Some aliases (IP address of hosts to overwrite the local host addressi in
-  --  the Alive message).
 
   --------------
   -- INTERNAL --
@@ -64,7 +57,7 @@ package body Autobus is
   type Subscriber_Access is access all Subscriber_Rec;
 
   -- Ipm message type
-  -- 'A' or 'D' then '/' then IPM address then ":" then port num
+  -- 'A' or 'D' then '/' then TCP address then ":" then port num
   --  Ex: "A/123.123.123.123:65535"
   -- Message received shall not exceed 23 chars
   -- We read a message of 24 characters to check that it is shorter than 23
@@ -384,11 +377,12 @@ package body Autobus is
     if not Partner_Acc.Addr.Is_Null then
       -- Not the first message, so this is Data => dispatch
       Dispatch (Message (1 .. Length),
-                Partner_Acc.Addr = Buses.Access_Current.Addr);
+                Partner_Acc.Addr = Partner_Acc.Bus.Addr);
       return True;
     end if;
 
-    -- The partner (just connected to us) sends us its accept address
+    -- The partner (that has just connected to us) sends us its accept address
+    --  (the one in its live message)
     declare
       Rem_Host : Tcp_Util.Remote_Host;
       Rem_Port : Tcp_Util.Remote_Port;
@@ -429,7 +423,8 @@ package body Autobus is
   begin
     if not Connected then
       -- This should not occur because the number of connection retries
-      --  is infinite
+      --  is infinite (in the worst case the connection is cancelled on alive
+      --  timeout)
       Log_Error ("Tcp_Connection_Cb", "failure",
                  "shall not occur");
       return;
@@ -448,7 +443,7 @@ package body Autobus is
     Partner_Acc := Partner_Access(Partners.Access_Current);
     Debug ("Connection to partner " & Partner_Acc.Addr.Image);
 
-    -- Set TTL and send identification message
+    -- Set TTL and send identification message: our TCP address
     Partner_Acc.Sock := Dscr;
     Partner_Acc.Sock.Set_Ttl (Partner_Acc.Bus.Ttl);
     Message_Length := Partner_Acc.Bus.Addr.Length;
@@ -528,7 +523,6 @@ package body Autobus is
   function Ipm_Reception_Cb (Dscr    : Socket.Socket_Dscr;
                              Message : Ipm_Message_Str;
                              Length  : Natural) return Boolean is
-    Address : constant String := Message (3 .. Length);
     Rem_Host : Tcp_Util.Remote_Host;
     Rem_Port : Tcp_Util.Remote_Port;
     Partner_Found : Boolean;
@@ -547,6 +541,8 @@ package body Autobus is
     or else Message(2) /= '/' then
       return False;
     end if;
+    declare
+      Address : constant String := Message (3 .. Length);
     begin
       -- Check address IP part
       Ip_Addr.Parse (Address, Rem_Host, Rem_Port);
@@ -596,13 +592,13 @@ package body Autobus is
     if not Partner_Found then
       -- New (unknown yet) partner
       if Partner.Addr < Partner.Bus.Addr then
-        -- Addr < own: we send an live, then the partner will connect to us
+        -- Addr < own: we send a live, then the partner will connect to us
         --  (and we will accept) then it will send its address
         Debug ("Ipm: Waiting for identification of " & Partner.Addr.Image);
         Send_Ipm (True);
         return False;
       end if;
-      -- Addr => own: add partner and start connect
+      -- Addr >= own: add partner and start connect
       Debug ("Ipm: Connecting to new partner " & Partner.Addr.Image);
       Partner.Timer := new Chronos.Passive_Timers.Passive_Timer;
       Insert_Partner (Partner);
@@ -620,7 +616,7 @@ package body Autobus is
     return False;
   end Ipm_Reception_Cb;
 
-  -- Timer Cb
+  -- Cb of the active Timer for the Bus
   function Timer_Cb (Id : in Timers.Timer_Id;
                      Data : in Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Data);
@@ -658,7 +654,7 @@ package body Autobus is
       raise Status_Error;
     end if;
 
-    -- Create socket, parse and check address, configure Socket
+    -- Create socket, parse and check address, configure socket
     declare
       Rem_Host : Tcp_Util.Remote_Host;
       Rem_Port : Tcp_Util.Remote_Port;
@@ -673,8 +669,8 @@ package body Autobus is
       -- Set host address to match LAN or alias in config, or to local host
       Rbus.Host_If := Config.Get_Interface (Rbus.Name.Image);
 
-      -- Now we need to set the socket it to the proper interface for sending
-      --   and receiving, before setting dest and linking
+      -- Now we may need to set the socket to the proper interface
+      --  (for sending and receiving), before setting dest and linking
       if Rbus.Host_If = Socket.Local_Host_Id then
         Debug ("Bus initialializing on default interface");
       else
@@ -683,7 +679,8 @@ package body Autobus is
         Rbus.Admin.Set_Sending_Ipm_Interface (Rbus.Host_If);
         Rbus.Admin.Set_Reception_Ipm_Interface (Rbus.Host_If);
       end if;
-      -- Set dest and link
+
+      -- Set destination and link
       Socket_Util.Set_Destination (Rbus.Admin, Lan => True,
                                    Host => Rem_Host, Port => Rem_Port);
       Socket_Util.Link (Rbus.Admin, Rem_Port);
@@ -714,7 +711,7 @@ package body Autobus is
                           Tcp_Accept_Cb'Access,
                           Rbus.Accep, Port_Num);
 
-    -- Now we know onwhich host and port we listen
+    -- Now we know on which host and port we listen
     Rbus.Addr := As.U.Tus (Image (Rbus.Host_If, Port_Num));
 
     -- Set TTL on Admin and Accept sockets
