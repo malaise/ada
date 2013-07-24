@@ -5,14 +5,65 @@ with Socket, Regular_Expressions, As.U,
      Timers, Chronos.Passive_Timers;
 package Autobus is
 
+  -- Concept
+  -- Several processes connect to a Bus on which they can publish messages.
+  -- Each message is dispatched to observers, according to filters on the
+  --  content of the message.
+
   -- How to use:
-  -- * First, create and initialise a Bus (provide an IPM address and port num)
-  --   You can tune this bus in the file indicated in the ENV variable
-  --    AUTOBUS_CONFIG (see Autobus.dtd).
+  -- * First, create and initialise a Bus (provide an IPM address or LAN name,
+  --    and port num or name).
   --   Then you can send messages (strings) on it.
-  -- * Second, create an observer (with a procedure Receive on it)
-  --    and a Subscriber, and init the subscriber. The procedure Receive
-  --    will be called with messages received on the Bus.
+  --   You can tune this bus in the XML file indicated in the ENV variable
+  --    AUTOBUS_CONFIG (see below).
+  -- * Second, create an Observer (with a procedure Receive on it)
+  --    and a Subscriber.
+  --   Then init the Subscriber, possibly with a filter expression on the
+  --     content of the expected messages.
+  --    The procedure Receive will be called with the messages (received on the
+  --     Bus) that match the filter.
+
+  -- Implementation:
+  -- Each Bus relies on a fixed IPM address (and port) and a random TCP port.
+  -- Each process sends periodically an IPM message with his host and TCP port.
+  -- The other processes on the bus keep a list of known alive partners.
+  -- When a new process starts it declares itself on the Bus and all the
+  --  partners either connects to it or get connected to it.
+  -- Delivering a message consists in sending it in TCP successively to the all
+  --  the partners, each of them dispatching the message to the local observers.
+
+  -- Tuning the Bus:
+  -- A XML file allows the default tuning for all the Buses, and also a specific
+  --  tuning of each Bus.
+  -- For the default and also for each individual Bus:
+  -- - Heartbeat_Period is the period in seconds with which each process on
+  --    the Bus sends the alive message. It is used in combination with
+  --    Heartbeat_Max_Missed. Default 1.
+  -- - Heartbeat_Max_Missed, the number of missing alive messages after which
+  --    the partners consider that a a process is dead (or at least unreachable)
+  --    and discard it from the list of partners. Default 3.
+  -- - Timeout for connecting and sending each TCP message. When it fails the
+  --    corresponding partner is discarded. Default 0.5.
+  --    Note that the Timeout applies to each attempt of TCP connection. After
+  --    each timeout there is a new attempt... likely until the partner is
+  --    finally discarded because of alive timeout.
+  -- - TTL for both IPM and TCP exchanges. Default 5.
+  -- For each Bus, two ways to set a specific network interface for IPM and TCP:
+  -- - LAN defines the IP address and netmask of a LAN to use, if locally
+  --   connected to the local host
+  -- - Alias defines the IP address of the interface to be used by a given host
+  --   ex: Name="telemaque" Address="192.168.0.5" means: if your local host name
+  --   is telemaque then use the local interface with address 192.168.0.5
+  -- LANs and Aliases are tested in the order of declaration. If none matches
+  --  then the bus listens to all the interfaces and sends the IPM messages on
+  --  the default interface.
+  -- See the DTD Autobus.dtd for the format of the XML file.
+
+  -- Note that the exclusion of a partner (because it informs that it is dead,
+  --  or because timeout on alive, connection or sending) is not definitive.
+  --  The partner is re-inserted when it is running and reachable again (i.e.
+  --  when we  receive an alive message from it). It only misses the applicative
+  --  messages that were sent meanwhile.
 
   -------------
   -- The Bus --
