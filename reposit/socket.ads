@@ -125,7 +125,6 @@ package Socket is
 
   -- Set the interface on which receive mutlicast IP (udp_socket).
   -- To be set before linking.
-  -- Set 0 to select back the "appropriate" interface.
   -- May raise Soc_Proto_Err if not udp
   procedure Set_Reception_Ipm_Interface (Socket : in Socket_Dscr;
                                          Host   : in Host_Id);
@@ -185,7 +184,7 @@ package Socket is
 
   -- Set the interface on which send mutlicast IP (udp_socket).
   -- To be set before setting destination.
-  -- Set 0 to select back the "appropriate" interface.
+  -- Set 0 to select back the "default" interface.
   -- Beware that setting the sending interface is not always supported
   --  and may require to be root (Set_Destination will raise Soc_Sys_Err).
   -- May raise Soc_Proto_Err if not udp
