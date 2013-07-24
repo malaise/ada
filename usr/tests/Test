@@ -329,7 +329,7 @@ echo "OK"
 
 # t_autobus
 title t_autobus
-export AUTOBUS_CONFIG=data/Autobus.xm
+export AUTOBUS_CONFIG=data/Autobus.xml
 t_autobus -a > out1 2> err1 &
 export PID=$!
 sleep 0.7
