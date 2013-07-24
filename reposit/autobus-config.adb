@@ -29,6 +29,13 @@ package body Config is
     return Res.Image;
   end Image;
 
+  -- Each bus address is prefixed by "A-" to make it XML ID
+  Bus_Prefix : constant String := "A-";
+  function Bus_Id (Bus_Name : String) return String is
+  begin
+    return Bus_Prefix & Bus_Name;
+  end Bus_Id;
+
   -- Get an attribute, raise Config_Error
   function Get_Attribute (Node : Xml_Parser.Element_Type;
                           Name : String;
@@ -113,7 +120,8 @@ package body Config is
     Port : Tcp_Util.Remote_Port;
     use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
   begin
-    if Addr'Length >= 2 and then Addr(Addr'First .. Addr'First+1) = "A-" then
+    if Addr'Length >= Bus_Prefix'Length
+    and then Addr(Addr'First .. Addr'First+1) = Bus_Prefix then
       Ip_Addr.Parse (Addr(Addr'First+2 .. Addr'Last), Host, Port);
       if Host.Kind = Tcp_Util.Host_Id_Spec
       and then Port.Kind = Tcp_Util.Port_Num_Spec then
@@ -263,7 +271,7 @@ package body Config is
     Root := Ctx.Get_Root_Element;
 
     -- See if this bus is described
-    Crit.Addr := As.U.Tus ("A-" & Name);
+    Crit.Addr := As.U.Tus (Bus_Id (Name));
     Found := Bus_Conf_List.Search_Match (Bus_Conf_Match'Access, Crit,
                                          From => Bus_Conf_List_Mng.Absolute);
     Debug ("Bus " & Name & " "
@@ -354,7 +362,7 @@ package body Config is
   begin
     Init;
     -- See if this bus is described
-    Crit.Addr := As.U.Tus ("A-" & Name);
+    Crit.Addr := As.U.Tus (Bus_Id (Name));
     Found := Bus_Conf_List.Search_Match (Bus_Conf_Match'Access, Crit,
                                          From => Bus_Conf_List_Mng.Absolute);
     Debug ("Bus " & Name & " "
