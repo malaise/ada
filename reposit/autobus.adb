@@ -347,8 +347,10 @@ package body Autobus is
     end loop;
   end Remove_Partners;
 
-  -- Dispatch a message to the Subscribers of current bus
-  procedure Dispatch (Message : in String; Local : in Boolean);
+  -- Dispatch a message to the Subscribers of the given bus
+  procedure Dispatch (Message : in String;
+                      Bus     : in Bus_Access;
+                      Local   : in Boolean);
 
   -- TCP Reception Cb
   function Tcp_Reception_Cb (Dscr    : Socket.Socket_Dscr;
@@ -357,8 +359,6 @@ package body Autobus is
     Msg : constant String := Message (1 .. Length);
     Partner : Partner_Rec;
     Partner_Acc : Partner_Access;
-    Dummy : Boolean;
-    pragma Unreferenced (Dummy);
     use type As.U.Asu_Us;
   begin
     -- Find partner by Socket
@@ -371,12 +371,10 @@ package body Autobus is
     end if;
     Partner_Acc := Partner_Access(Partners.Access_Current);
 
-    -- Find Bus by access
-    Dummy := Buses.Search_Access (Partner_Acc.Bus);
-
     if not Partner_Acc.Addr.Is_Null then
       -- Not the first message, so this is Data => dispatch
       Dispatch (Message (1 .. Length),
+                Partner_Acc.Bus,
                 Partner_Acc.Addr = Partner_Acc.Bus.Addr);
       return True;
     end if;
@@ -942,15 +940,15 @@ package body Autobus is
     Subscriber.Acc := null;
   end Reset;
 
-  -- Dispatch the message to the subscribers of current bus
-  procedure Dispatch (Message : in String; Local : in Boolean) is
-    Bus : Bus_Access;
+  -- Dispatch the message to the subscribers of the provided bus
+  procedure Dispatch (Message : in String;
+                      Bus     : in Bus_Access;
+                      Local   : in Boolean) is
     Subs : Subscriber_Access;
     Match_Info : Regular_Expressions.Match_Array (1 .. 1);
     N_Match : Natural;
     Ok : Boolean;
   begin
-    Bus := Bus_Access(Buses.Access_Current);
 
     -- Notify matching Subscribers
     if Bus.Subscribers.Is_Empty then
