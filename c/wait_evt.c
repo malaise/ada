@@ -41,7 +41,7 @@ int evt_add_fd (int fd, boolean read) {
     highest_fd = last_fd;
   }
 #ifdef DEBUG
-  fprintf (stderr, "Added fd %d, last %d, highest %d\n",
+  fprintf (stderr, "wait_evt.c: Added fd %d, last %d, highest %d\n",
                    fd, last_fd, highest_fd);
 #endif
   return (WAIT_OK);
@@ -78,7 +78,7 @@ int evt_del_fd (int fd, boolean read) {
     }
   }
 #ifdef DEBUG
-  fprintf (stderr, "Deleted fd %d, last %d, highest %d\n",
+  fprintf (stderr, "wait_evt.c: Deleted fd %d, last %d, highest %d\n",
                    fd, last_fd, highest_fd);
 #endif
   return (WAIT_OK);
