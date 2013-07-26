@@ -12,9 +12,9 @@ package Autobus is
 
   -- How to use:
   -- * First, create and initialise a Bus (provide an IPM address or LAN name,
-  --    and port num or name).
-  --   Then you can send messages (strings) on it.
-  --   You can tune this bus in the XML file indicated in the ENV variable
+  --    and a port num or name).
+  --   Then you can send messages (strings) on the Bus.
+  --   You can tune this Bus in the XML file indicated in the ENV variable
   --    AUTOBUS_CONFIG (see below).
   -- * Second, create an Observer (with a procedure Receive on it)
   --    and a Subscriber.
@@ -24,7 +24,7 @@ package Autobus is
   --     Bus) that match the filter.
 
   -- Implementation:
-  -- Each Bus relies on a fixed IPM address (and port) and a random TCP port.
+  -- Each Bus relies on a fixed IPM address and port, and a random TCP port.
   -- Each process sends periodically an IPM message with his host and TCP port.
   -- The other processes on the bus keep a list of known alive partners.
   -- When a new process starts it declares itself on the Bus and all the
@@ -36,34 +36,38 @@ package Autobus is
   -- A XML file allows the default tuning for all the Buses, and also a specific
   --  tuning of each Bus.
   -- For the default and also for each individual Bus:
-  -- - Heartbeat_Period is the period in seconds with which each process on
+  -- - Heartbeat_Period is the period in seconds at which each process on
   --    the Bus sends the alive message. It is used in combination with
   --    Heartbeat_Max_Missed. Default 1.
   -- - Heartbeat_Max_Missed, the number of missing alive messages after which
   --    the partners consider that a a process is dead (or at least unreachable)
   --    and discard it from the list of partners. Default 3.
-  -- - Timeout for connecting and sending each TCP message. When it fails the
-  --    corresponding partner is discarded. Default 0.5.
+  -- - Timeout for connecting and for sending each TCP message. When it fails
+  --    the corresponding partner is discarded. Default 0.5.
   --    Note that the Timeout applies to each attempt of TCP connection. After
   --    each timeout there is a new attempt... likely until the partner is
   --    finally discarded because of alive timeout.
   -- - TTL for both IPM and TCP exchanges. Default 5.
   -- For each Bus, two ways to set a specific network interface for IPM and TCP:
+  -- - Alias defines the IP address of the interface to be used by a given host.
+  --    Ex: Name="telemaque" Address="192.168.0.5" means: if your local host
+  --    name is telemaque then use the local interface with address 192.168.0.5
   -- - LAN defines the IP address and netmask of a LAN to use, if locally
-  --   connected to the local host
-  -- - Alias defines the IP address of the interface to be used by a given host
-  --   ex: Name="telemaque" Address="192.168.0.5" means: if your local host name
-  --   is telemaque then use the local interface with address 192.168.0.5
-  -- LANs and Aliases are tested in the order of declaration. If none matches
-  --  then the bus listens to all the interfaces and sends the IPM messages on
-  --  the default interface.
+  --    connected to the local host. Ex: Address="10.100.12.0"
+  --    Netmask="255.255.255.0" means: if one of the local interfaces is
+  --    10.100.12.*, then use this interface. A LAN directive will apply to all
+  --    all the hosts on the LAN, except for those which are previously defined
+  --    in an Alias.
+  -- Aliases and LANs are tested in the order of declaration. If none matches
+  --  then the bus listens to, and sends the IPM messages on the interface
+  --  associated to the local host name.
   -- See the DTD Autobus.dtd for the format of the XML file.
 
-  -- Note that the exclusion of a partner (because it informs that it is dead,
-  --  or because timeout on alive, connection or sending) is not definitive.
-  --  The partner is re-inserted when it is running and reachable again (i.e.
-  --  when we  receive an alive message from it). It only misses the applicative
-  --  messages that were sent meanwhile.
+  -- Note that the exclusion of a partner (either because it informs that it is
+  --  dead, or because of a timeout of alive message, on connection or on
+  --  sending) is not definitive. The partner is re-inserted when it is running
+  --  and reachable again (i.e. when we receive an alive message from it). It
+  --  only misses the applicative  messages that were sent meanwhile.
 
   -------------
   -- The Bus --
@@ -72,7 +76,7 @@ package Autobus is
   type Bus_Access_Type is access all Bus_Type;
 
   -- Initialise a Bus, may raise:
-  -- On incorrect format (not <lan>:<port>, invalid LAN address or port num)
+  -- On incorrect format (not <lan>:<port>, invalid LAN or port)
   Invalid_Address : exception;
   -- On LAN or port name not found (DNS, networks, services)
   Name_Error : exception;
@@ -94,19 +98,20 @@ package Autobus is
   Message_Too_Long : exception;
   procedure Send (Bus : in out Bus_Type; Message : in String);
 
-  -------------------
-  -- The Subsciber --
-  -------------------
+  --------------------
+  -- The Subscriber --
+  --------------------
   type Subscriber_Type is tagged limited private;
   type Subscriber_Access_Type is access all Subscriber_Type;
 
-  -- The Observer is notified with the Messages (sent on the Bus)
-  --  that pass the Filter
+  -- The Observer is notified with the messages (sent on the Bus)
+  --  that pass the filter
   -- Filter is a PCRE regular expression
   -- Empty filter lets all messages pass through
   -- Echo allows enabling observation of messages sent by own process
-  -- In Receive it is forbidden to reset a Bus or a Subscriber
-  -- Exceptions raised by Receive are caught and hidden
+  -- In Receive it is forbidden to initialise or reset a Bus or a Subscriber,
+  --  this would raise the exception In_Receive
+  -- Exceptions raised by Receive itself are caught and hidden
   type Observer_Type is limited interface;
   procedure Receive (Observer : in out Observer_Type;
                      Subscriber : in Subscriber_Access_Type;
@@ -136,8 +141,8 @@ package Autobus is
   -- If resetting a Subscriber not initialised or reset
   Status_Error : exception;
 
-  -- If resetting a Bus or a Subscriber while in Receive
-  Reset_In_Receive : exception;
+  -- If initialising or resetting a Bus or a Subscriber while in Receive
+  In_Receive : exception;
 
   -- If any system error on any call
   System_Error : exception;

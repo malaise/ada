@@ -372,11 +372,23 @@ package body Config is
       return Socket.Local_Host_Id;
     end if;
 
-    -- See if a LAN or alias
+    -- See if a Alias or LAN for this host
     Bus := Bus_Conf_List.Access_Current.Bus;
     for I in 1 .. Ctx.Get_Nb_Children (Bus) loop
       Node := Ctx.Get_Child (Bus, I);
-      if Ctx.Get_Name (Node) = "LANs" then
+      if Ctx.Get_Name (Node) = "Aliases" then
+        -- Check Alias definitions
+        declare
+          Aliases : constant Xml_Parser.Nodes_Array
+                  := Ctx.Get_Children(Node);
+        begin
+          for Alias in Aliases'Range loop
+            if Ctx.Get_Attribute (Aliases(Alias), "Name") = Local_Host_Name then
+              return Id_Of (Aliases(Alias), "Address");
+            end if;
+          end loop;
+        end;
+      elsif Ctx.Get_Name (Node) = "LANs" then
         -- Check LAN definitions
         declare
           Lans : constant Xml_Parser.Nodes_Array
@@ -395,21 +407,9 @@ package body Config is
             end;
           end loop;
         end;
-      elsif Ctx.Get_Name (Node) = "Aliases" then
-        -- Check Alias definitions
-        declare
-          Aliases : constant Xml_Parser.Nodes_Array
-                  := Ctx.Get_Children(Node);
-        begin
-          for Alias in Aliases'Range loop
-            if Ctx.Get_Attribute (Aliases(Alias), "Name") = Local_Host_Name then
-              return Id_Of (Aliases(Alias), "Address");
-            end if;
-          end loop;
-        end;
       end if;
     end loop;
-    -- Not found
+    -- Not found, return the interface associated to host name
     return Socket.Local_Host_Id;
   end Get_Interface;
 

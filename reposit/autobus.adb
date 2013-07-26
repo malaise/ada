@@ -51,7 +51,7 @@ package body Autobus is
   -- INTERNAL --
   --------------
   -- Static data: List of Buses and Partners,
-  In_Receive : Boolean := False;
+  Calling_Receive : Boolean := False;
 
   -- Access to Subscriber_Rec
   type Subscriber_Access is access all Subscriber_Rec;
@@ -180,11 +180,11 @@ package body Autobus is
     return Curr.Timer = Crit.Timer;
   end Bus_Match_Timer;
 
-  -- Raise Reset_In_Receive if In_Receive
+  -- Raise In_Receive if Calling_Receive
   procedure Check_In_Receive is
   begin
-    if In_Receive then
-      raise Reset_In_Receive;
+    if Calling_Receive then
+      raise In_Receive;
     end if;
   end Check_In_Receive;
 
@@ -647,6 +647,7 @@ package body Autobus is
     Port_Num : Socket.Port_Num;
     Timeout : Timers.Delay_Rec (Timers.Delay_Sec);
   begin
+    Check_In_Receive;
     -- Check that Bus is not already initialised
     if Bus.Acc /= null then
       raise Status_Error;
@@ -664,7 +665,7 @@ package body Autobus is
       -- Name is "<ip_address>:<port_num>"
       Rbus.Name := As.U.Tus (Image (Ip_Addr.Resolve (Rem_Host),
                                     Ip_Addr.Resolve (Rem_Port, Socket.Udp)));
-      -- Set host address to match LAN or alias in config, or to local host
+      -- Set host address to match alias or LAN in config, or to local host
       Rbus.Host_If := Config.Get_Interface (Rbus.Name.Image);
 
       -- Now we may need to set the socket to the proper interface
@@ -672,11 +673,11 @@ package body Autobus is
       if Rbus.Host_If = Socket.Local_Host_Id then
         Debug ("Bus initialializing on default interface");
       else
-        Debug ("Bus initialializing on interface " &
+        Debug ("Bus initialializing on specific interface " &
                Ip_Addr.Image (Socket.Id2Addr (Rbus.Host_If)));
-        Rbus.Admin.Set_Sending_Ipm_Interface (Rbus.Host_If);
-        Rbus.Admin.Set_Reception_Ipm_Interface (Rbus.Host_If);
       end if;
+      Rbus.Admin.Set_Sending_Ipm_Interface (Rbus.Host_If);
+      Rbus.Admin.Set_Reception_Ipm_Interface (Rbus.Host_If);
 
       -- Set destination and link
       Socket_Util.Set_Destination (Rbus.Admin, Lan => True,
@@ -863,6 +864,7 @@ package body Autobus is
     Ok : Boolean;
     Position : Natural;
   begin
+    Check_In_Receive;
     -- Check that this Bus is initialised
     if Bus = null then
       raise Status_Error;
@@ -974,12 +976,12 @@ package body Autobus is
       end if;
       if Ok then
         begin
-          In_Receive := True;
+          Calling_Receive := True;
           Subs.Observer.Receive (Subs.Client, Message);
-          In_Receive := False;
+          Calling_Receive := False;
         exception
           when others =>
-            In_Receive := False;
+            Calling_Receive := False;
         end;
       end if;
       exit when not Bus.Subscribers.Check_Move;
