@@ -179,12 +179,6 @@ package body Autobus is
   begin
     return Curr.Timer = Crit.Timer;
   end Bus_Match_Timer;
-  -- By Address
-  function Bus_Match_Name (Curr, Crit : Bus_Rec) return Boolean is
-    use type As.U.Asu_Us;
-   begin
-    return Curr.Name = Crit.Name;
-  end Bus_Match_Name;
 
   -- Raise In_Receive if Calling_Receive
   procedure Check_In_Receive is
@@ -665,34 +659,27 @@ package body Autobus is
       Rem_Port : Tcp_Util.Remote_Port;
       use type Socket.Host_Id;
     begin
-      -- Name is "<ip_address>:<port_num>"
+      Debug ("Bus initialializing");
+      Rbus.Admin.Open (Socket.Udp);
       Ip_Addr.Parse (Address, Rem_Host, Rem_Port);
+      -- Name is "<ip_address>:<port_num>"
       Rbus.Name := As.U.Tus (Image (Ip_Addr.Resolve (Rem_Host),
                                     Ip_Addr.Resolve (Rem_Port, Socket.Udp)));
-      Debug ("Bus " & Rbus.Name.Image & " initialializing");
-      -- Check that this address is not already associated to a bus
-      if Buses.Search_Match (Bus_Match_Name'Access, Rbus,
-                             From => Bus_List_Mng.Absolute) then
-        Debug ("Bus " & Rbus.Name.Image  & " already in use");
-        raise Address_In_Use;
-      end if;
-
       -- Set host address to match alias or LAN in config, or to local host
       Rbus.Host_If := Config.Get_Interface (Rbus.Name.Image);
 
-      -- Now we set the socket to the proper interface for sending and
-      --  receiving IPM
+      -- Now we may need to set the socket to the proper interface
+      --  (for sending and receiving), before setting dest and linking
       if Rbus.Host_If = Socket.Local_Host_Id then
         Debug ("Bus initialializing on default interface");
       else
         Debug ("Bus initialializing on specific interface " &
                Ip_Addr.Image (Socket.Id2Addr (Rbus.Host_If)));
       end if;
-
-      -- Open the IPM UDP socket and configure it
-      Rbus.Admin.Open (Socket.Udp);
       Rbus.Admin.Set_Sending_Ipm_Interface (Rbus.Host_If);
       Rbus.Admin.Set_Reception_Ipm_Interface (Rbus.Host_If);
+
+      -- Set destination and link
       Socket_Util.Set_Destination (Rbus.Admin, Lan => True,
                                    Host => Rem_Host, Port => Rem_Port);
       Socket_Util.Link (Rbus.Admin, Rem_Port);
@@ -717,20 +704,20 @@ package body Autobus is
     -- Set admin callback
     Ipm_Reception_Mng.Set_Callbacks (Rbus.Admin, Ipm_Reception_Cb'Access, null);
 
-    -- Create the TCP accepting socket, set accep callback
+    -- Create Accep Tcp socket, set accep callback
     Tcp_Util.Accept_From (Socket.Tcp_Header,
                           (Kind => Tcp_Util.Port_Dynamic_Spec),
                           Tcp_Accept_Cb'Access,
                           Rbus.Accep, Port_Num);
 
-    -- Now we know on which host and port we listen (for the Alive message)
+    -- Now we know on which host and port we listen
     Rbus.Addr := As.U.Tus (Image (Rbus.Host_If, Port_Num));
 
-    -- Set TTL on Admin and Accept (IPM and TCP) sockets
+    -- Set TTL on Admin and Accept sockets
     Rbus.Admin.Set_Ttl (Rbus.Ttl);
     Rbus.Accep.Set_Ttl (Rbus.Ttl);
 
-    -- Arm Bus related active timer
+    -- Arm Bus active timer
     Timeout.Delay_Seconds := 0.0;
     Timeout.Period := Rbus.Heartbeat_Period;
     Rbus.Timer.Create (Timeout, Timer_Cb'Access);
@@ -960,7 +947,7 @@ package body Autobus is
                       Bus     : in Bus_Access;
                       Local   : in Boolean) is
     Subs : Subscriber_Access;
-    Match_Info : Regular_Expressions.One_Match_Array;
+    Match_Info : Regular_Expressions.Match_Array (1 .. 1);
     N_Match : Natural;
     Ok : Boolean;
   begin
@@ -978,10 +965,13 @@ package body Autobus is
         if Subs.Filter = null then
           Ok := True;
         else
-          -- See if message strictly matches this Filter
+          -- See if message matches this Filter
           Regular_Expressions.Exec (Subs.Filter.all, Message,
                                     N_Match, Match_Info);
-          Ok := Regular_Expressions.Strict_Match (Message, Match_Info);
+          Ok := N_Match = 1
+             and then Regular_Expressions.Valid_Match (Match_Info(1))
+             and then Match_Info(1).First_Offset = Message'First
+             and then  Match_Info(1).Last_Offset_Stop = Message'Last;
         end if;
       end if;
       if Ok then

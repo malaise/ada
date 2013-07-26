@@ -80,8 +80,6 @@ package Autobus is
   Invalid_Address : exception;
   -- On LAN or port name not found (DNS, networks, services)
   Name_Error : exception;
-  -- If a bus is already init with this Address
-  Address_In_Use : exception;
   -- On error in the tuning configuration file (parsed at Init of first Bus)
   -- See Autobus.dtd for the format of this file
   Config_Error : exception;
