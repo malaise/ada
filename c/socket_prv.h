@@ -8,7 +8,7 @@
 #include "socket_net.h"
 
 typedef enum {tcp_protocol, udp_protocol} protocol_list;
-const char* ns_proto[2] = {"tcp", "udp"};
+const char * ns_proto[2] = {"tcp", "udp"};
 
 typedef enum {tcp_raw, tcp_msg} tcp_list;
 
@@ -57,4 +57,6 @@ typedef struct {
        unsigned int magic_number;
        unsigned int size; /* Size of data */
 }soc_header;
+
+#define MAX_NB_IFACES 255
 

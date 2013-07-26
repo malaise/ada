@@ -66,9 +66,9 @@ package body Socket is
                         Ttl : System.Address) return Result;
   pragma Import (C, Soc_Get_Ttl, "soc_get_ttl");
 
-  function Soc_Set_Rece_Ipm_Interface (S_Addr : System.Address;
-                                       Host   : System.Address) return Result;
-  pragma Import (C, Soc_Set_Rece_Ipm_Interface, "soc_set_rece_ipm_interface");
+  function Soc_Set_Rece_Interface (S_Addr : System.Address;
+                                   Host   : System.Address) return Result;
+  pragma Import (C, Soc_Set_Rece_Interface, "soc_set_rece_interface");
   function Soc_Link_Service (S : System.Address;
                              Service : System.Address) return Result;
   pragma Import (C, Soc_Link_Service, "soc_link_service");
@@ -308,13 +308,13 @@ package body Socket is
   -- RECEPTION PORT - FD - RECEPTION --
   -------------------------------------
 
-  -- Set the receiving IPM interface
-  procedure Set_Reception_Ipm_Interface (Socket : in Socket_Dscr;
-                                         Host   : in Host_Id) is
+  -- Set the receiving interface
+  procedure Set_Reception_Interface (Socket : in Socket_Dscr;
+                                     Host   : in Host_Id) is
   begin
-    Res := Soc_Set_Rece_Ipm_Interface (Socket.Soc_Addr, Host'Address);
+    Res := Soc_Set_Rece_Interface (Socket.Soc_Addr, Host'Address);
     Check_Ok;
-  end Set_Reception_Ipm_Interface;
+  end Set_Reception_Interface;
 
   -- Bind for reception on a port from services, on a port by num
   --  or a dynamical (ephemeral - attributed by the OS) port

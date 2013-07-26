@@ -254,10 +254,9 @@ extern int soc_str2port (const char *str, soc_port *p_port);
 /* Socket must not be connected in tcp */
 /* ------------------------------------*/
 
-/* Set the interface on which receive mutlicast IP (udp_socket). */
+/* Set the interface on which to link, except for afux. */
 /* Set it before linking. */
-/* 0 to reset */
-extern int soc_set_rece_ipm_interface (soc_token token, const soc_host *host);
+extern int soc_set_rece_interface (soc_token token, const soc_host *host);
 
 /* Links the socket to a port specified by the service */
 /* The socket must be open and not already linked */

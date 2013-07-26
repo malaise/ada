@@ -692,10 +692,11 @@ package body Autobus is
       -- Open the IPM UDP socket and configure it
       Rbus.Admin.Open (Socket.Udp);
       Rbus.Admin.Set_Sending_Ipm_Interface (Rbus.Host_If);
-      Rbus.Admin.Set_Reception_Ipm_Interface (Rbus.Host_If);
+      Rbus.Admin.Set_Reception_Interface (Rbus.Host_If);
       Socket_Util.Set_Destination (Rbus.Admin, Lan => True,
                                    Host => Rem_Host, Port => Rem_Port);
       Socket_Util.Link (Rbus.Admin, Rem_Port);
+      Debug ("IPM socket initialialized");
     exception
       when Ip_Addr.Parse_Error =>
         raise Invalid_Address;
@@ -721,7 +722,9 @@ package body Autobus is
     Tcp_Util.Accept_From (Socket.Tcp_Header,
                           (Kind => Tcp_Util.Port_Dynamic_Spec),
                           Tcp_Accept_Cb'Access,
-                          Rbus.Accep, Port_Num);
+                          Rbus.Accep, Port_Num,
+                          Rbus.Host_If);
+    Debug ("TCP socket initialialized");
 
     -- Now we know on which host and port we listen (for the Alive message)
     Rbus.Addr := As.U.Tus (Image (Rbus.Host_If, Port_Num));

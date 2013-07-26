@@ -163,8 +163,8 @@ static int init (soc_ptr *p_soc,
   (*p_soc)->socket_kind = protocol;
   if (protocol == udp_socket) {
     (*p_soc)->protocol = udp_protocol;
+    (*p_soc)->domain = inet_domain;
     (*p_soc)->tcp_kind = tcp_raw;
-    (*p_soc)->domain = unix_domain;
   } else {
     (*p_soc)->protocol = tcp_protocol;
     if ( (protocol == tcp_socket) || (protocol == tcp_header_socket) ) {
@@ -1411,20 +1411,16 @@ static void close_sock (int sock) {
   errno = saved_errno;
 }
 
-/* Get the interface decriptor (struct ifreq) of interface denoted by host and mask */
-static int get_iface (const soc_host *host, const soc_host *mask, struct ifreq *iface) {
+/* Get all the interfaces, return the number or error */
+static int get_all_ifaces (struct ifreq ifreqs[], unsigned nb_ifaces) {
+  struct ifconf ifconf;
   int sock;
   int res;
-  struct ifreq ifreqs[255];
-  struct ifconf ifconf;
-  int  nifaces, i, n;
-  soc_host crit;
-  struct sockaddr_in *addr;
 
   /* Get list of interfaces */
   memset (&ifconf, 0, sizeof(ifconf));
   ifconf.ifc_req = ifreqs;
-  ifconf.ifc_len = sizeof(ifreqs);
+  ifconf.ifc_len = nb_ifaces;
   sock = socket (AF_INET, SOCK_STREAM, 0);
   if (sock < 0) {
     perror("socket for ioctl siocgifconf");
@@ -1436,7 +1432,23 @@ static int get_iface (const soc_host *host, const soc_host *mask, struct ifreq *
     close_sock (sock);
     return (SOC_SYS_ERR);
   }
-  nifaces = ifconf.ifc_len/sizeof(struct ifreq);
+  return ifconf.ifc_len/sizeof(struct ifreq);
+}
+
+/* Get the interface decriptor (struct ifreq) of interface denoted by host
+   and mask */
+static int get_iface (const soc_host *host, const soc_host *mask,
+                      struct ifreq *iface) {
+  struct ifreq ifreqs[MAX_NB_IFACES];
+  int  nifaces, i, n;
+  soc_host crit;
+  struct sockaddr_in *addr;
+
+  /* Get list of interfaces */
+  nifaces = get_all_ifaces (ifreqs, MAX_NB_IFACES);
+  if (nifaces < 0) {
+    return nifaces;
+  }
 
   /* Find if_host in list */
   crit.integer = host->integer & mask->integer;
@@ -1450,7 +1462,6 @@ static int get_iface (const soc_host *host, const soc_host *mask, struct ifreq *
       break;
     }
   }
-  close_sock (sock);
 
   if (n == -1) {
     /* Not found */
@@ -1480,8 +1491,7 @@ extern int soc_get_bcast (const soc_host *if_host, soc_host *p_bcast_host) {
   }
 
   /* Get its broadcast address */
-  /* The field ifr_broadaddr of iface seems filled with local address :-( */
-  /* Get broadcast address of interface explicitly */
+  /* Get the field ifr_broadaddr of the interface */
   sock = socket (AF_INET, SOCK_STREAM, 0);
   if (sock < 0) {
     perror("socket for ioctl siocgifbrdaddr");
@@ -1636,18 +1646,18 @@ extern int soc_str2port (const char *str, soc_port *p_port) {
 /*******************************************************************/
 
 /* Set the IP interface for receiveing */
-extern int soc_set_rece_ipm_interface (soc_token token, const soc_host *host) {
+extern int soc_set_rece_interface (soc_token token, const soc_host *host) {
   soc_ptr soc = (soc_ptr) token;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
   LOCK;
-  if (soc->protocol != udp_protocol) {
+  if (soc->domain != inet_domain) {
     UNLOCK;
     return (SOC_PROTO_ERR);
   }
-  /* Store for further setting (in soc_link) */
-  soc->ipm_rece_if.s_addr = host->integer;
+  /* Store for further setting (in bind_and_co) */
+  soc->rece_struct.sin_addr.s_addr = host->integer;
   UNLOCK;
   return (SOC_OK);
 }
@@ -1660,11 +1670,25 @@ static int bind_and_co (soc_token token, boolean dynamic) {
   soc_port linked_port;
   boolean do_ipm;
 
+  /* Ipm if udp, dest_set with an ipm adress */
+  /*  and same port (if not dynamic) */
+  do_ipm = ( (soc->protocol == udp_protocol)
+           && (soc->dest_set)
+           && (is_ipm(& soc->send_struct) )
+           && ( dynamic || (soc->send_struct.sin_port
+                         == soc->rece_struct.sin_port) ) );
+
   /* Bind */
   if ( (soc->protocol == tcp_protocol) && (soc->domain == unix_domain) ) {
+    /* Afux */
     res = sun_bind (soc->socket_id, (struct sockaddr*) &(soc->rece_struct),
                     socklen);
+  } else if (do_ipm) {
+    /* IPM: bind on the mcast address */
+    res = bind (soc->socket_id, (struct sockaddr*) &(soc->send_struct),
+                socklen);
   } else {
+    /* TCP & UDP: Bind on the interface (set_rece_interface) or INADDR_ANY */
     res  = bind (soc->socket_id, (struct sockaddr*) &(soc->rece_struct),
                  socklen);
   }
@@ -1691,33 +1715,47 @@ static int bind_and_co (soc_token token, boolean dynamic) {
       perror("listen");
       return (SOC_SYS_ERR);
     }
-  }
-
-
-  /* Ipm if udp, dest_set with an ipm adress */
-  /*  and same port (if not dynamic) */
-  do_ipm = ( (soc->protocol == udp_protocol)
-           && (soc->dest_set)
-           && (is_ipm(& soc->send_struct) )
-           && ( dynamic || (soc->send_struct.sin_port
-                         == soc->rece_struct.sin_port) ) );
-
-  if (do_ipm) {
+  } else if (do_ipm) {
     struct ip_mreq ipm_addr;
-
-    /* Add membership of interface: */
-    /*  INADDR_ANY -> appropriate chosen by the system */
     ipm_addr.imr_multiaddr.s_addr = soc->send_struct.sin_addr.s_addr;
-    ipm_addr.imr_interface.s_addr = soc->ipm_rece_if.s_addr;
-    if (setsockopt (soc->socket_id, IPPROTO_IP, IP_ADD_MEMBERSHIP,
-                    (char*) &ipm_addr, sizeof(ipm_addr)) != 0) {
-      perror("setsockopt(ip_add_membership)");
-      return (SOC_SYS_ERR);
+
+    if (soc->rece_struct.sin_addr.s_addr == htonl(INADDR_ANY)) {
+      /* Add membership on all IPM capable interfaces */
+      struct ifreq ifreqs[MAX_NB_IFACES];
+      int  nifaces, i;
+      struct sockaddr_in *addr;
+
+      /* Get list of interfaces and update the flags */
+      nifaces = get_all_ifaces (ifreqs, MAX_NB_IFACES);
+      for (i = 0; i < nifaces; i++) {
+        if (ioctl(soc->socket_id, SIOCGIFFLAGS, &ifreqs[i]) < 0) {
+          perror("ioctl(siocgifflags)");
+          return (SOC_SYS_ERR);
+        }
+        /* Interface must be up and multicast capable */
+        if ( (ifreqs[i].ifr_flags & IFF_UP)
+          && (ifreqs[i].ifr_flags & IFF_MULTICAST) ) {
+          /* Add membership on interface: */
+          addr = (struct sockaddr_in *)&ifreqs[i].ifr_addr;
+          ipm_addr.imr_interface.s_addr = addr->sin_addr.s_addr;
+          if (setsockopt (soc->socket_id, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+                          (char*) &ipm_addr, sizeof(ipm_addr)) != 0) {
+            perror("setsockopt(ip_add_membership)");
+            return (SOC_SYS_ERR);
+          }
+        }
+      }
+    } else {
+      /* Add membership on interface: */
+      ipm_addr.imr_interface.s_addr = soc->rece_struct.sin_addr.s_addr;
+      if (setsockopt (soc->socket_id, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+                      (char*) &ipm_addr, sizeof(ipm_addr)) != 0) {
+        perror("setsockopt(ip_add_membership)");
+        return (SOC_SYS_ERR);
+      }
     }
-    /* Copy for check in Set_For_Reply */
-    soc->rece_struct.sin_addr = soc->send_struct.sin_addr;
-  } else {
-    soc->rece_struct.sin_addr.s_addr = INADDR_ANY;
+    /* Copy the IPM address for check in Set_For_Reply */
+    soc->ipm_rece_if = soc->send_struct.sin_addr;
   }
 
   /* Ok */
@@ -1844,16 +1882,19 @@ extern int soc_get_linked_port  (soc_token token, soc_port *p_port) {
     return (SOC_LINK_ERR);
   }
 
-  /* Get the structure. Not for tcp afux because: */
-  /* - not needed because dynamic is forbidden on afux */
-  /* - this would overwrite the correct port */
-  if ( (soc->protocol != tcp_protocol) || (soc->domain != unix_domain)) {
-    if (getsockname (soc->socket_id,
-     (struct sockaddr*) (&soc->rece_struct), &len) < 0) {
-      perror("getsockname");
-      UNLOCK;
-      return (SOC_SYS_ERR);
-    }
+  /* Get port from structure except if 0 */
+  *p_port = (soc_port) ntohs((uint16_t)soc->rece_struct.sin_port);
+  if (*p_port != htons(0)) {
+    UNLOCK;
+    return (SOC_OK);
+  }
+
+  /* Get the real port from system */
+  if (getsockname (soc->socket_id,
+                   (struct sockaddr*) (&soc->rece_struct), &len) < 0) {
+    perror("getsockname");
+    UNLOCK;
+    return (SOC_SYS_ERR);
   }
 
   /* Ok */
@@ -2096,9 +2137,8 @@ extern int soc_receive (soc_token token,
     if (set_for_reply) {
       /* Copy ipm reception interface (if set) for further emissions */
       if ( set_ipm_iface
-         && (soc->ipm_rece_if.s_addr != INADDR_ANY)
-         && (is_ipm (&soc->rece_struct) )
-         && (soc->ipm_send_if.s_addr != soc->ipm_rece_if.s_addr) ) {
+           && (soc->ipm_rece_if.s_addr != (htonl)INADDR_ANY)
+           && (soc->ipm_send_if.s_addr != soc->ipm_rece_if.s_addr) ) {
         soc->ipm_send_if = soc->ipm_rece_if;
         soc->set_send_if = TRUE;
         if (set_ipm_if(soc, FALSE) != SOC_OK) {

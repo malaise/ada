@@ -205,7 +205,7 @@ package body Tcp_Util is
           Host := Socket.Host_Id_Of (Rec.Host.Name.Image);
         exception
           when others =>
-            Host := Socket.No_Host;
+            Host := Socket.Any_Host;
         end;
       else
         Host := Rec.Host.Id;
@@ -709,7 +709,8 @@ package body Tcp_Util is
                          Port         : in Local_Port;
                          Acception_Cb : in Acception_Callback_Access;
                          Dscr         : out Socket.Socket_Dscr;
-                         Num          : out Port_Num) is
+                         Num          : out Port_Num;
+                         Link_If      : in Socket.Host_Id := Socket.Any_Host) is
     Rec : Accepting_Rec;
   begin
     Init_Debug;
@@ -727,6 +728,7 @@ package body Tcp_Util is
     Dscr.Set_Blocking (Socket.Blocking_Send);
     Rec.Dscr := Dscr;
     Rec.Fd := Rec.Dscr.Get_Fd;
+    Dscr.Set_Reception_Interface (Link_If);
     -- Bind socket
     case Port.Kind is
       when Port_Name_Spec =>

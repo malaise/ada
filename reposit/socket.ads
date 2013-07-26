@@ -13,21 +13,21 @@ package Socket is
   -- Note for Multicast IP (using Udp socket):
   -- For sending IPM, simply Set_Destination to a LAN name
   --  which is defined with a D class address, and a port.
+  --  It is possible to specify a sending IPM interface.
   -- For receiving IPM, first Set_Destination to the LAN name and port,
   --  then Link to the same port as this destination.
   --  It is possible to link dynamically to port (then the destination port
-  --   that was set is not used).
-  -- A specific interface can be specified before setting destination
-  --  / before linking to port. When interface is set for reception,
-  --  then the set_for_reply flag of soc_receive sets the sending interface
-  --  to it.
+  --  that was set is not used).
+  --  It is possible to specify (before linking to port) a a specific receiving
+  --  interface. This is more efficient because  otherwise the multicast address
+  --  is enabled on all the interfaces that are up and multicast-capable.
 
   -- A port
   type Port_Num is new C_Types.Uint16 range 0 .. C_Types.Uint16'Last;
 
   -- A host
   type Host_Id is private;
-  No_Host, All_Host : constant Host_Id;
+  Any_Host : constant Host_Id;
 
   -- The blocking / non-blocking modes
   --  Blocking emission and reception
@@ -123,11 +123,12 @@ package Socket is
   -- RECEPTION PORT - FD - RECEPTION --
   -------------------------------------
 
-  -- Set the interface on which receive mutlicast IP (udp_socket).
+  -- Set the interface on which to link.
+  -- For Tcp not Afux and for Udp (including Ipm)
   -- To be set before linking.
-  -- May raise Soc_Proto_Err if not udp
-  procedure Set_Reception_Ipm_Interface (Socket : in Socket_Dscr;
-                                         Host   : in Host_Id);
+  -- May raise Soc_Proto_Err if Afux
+  procedure Set_Reception_Interface (Socket : in Socket_Dscr;
+                                     Host   : in Host_Id);
   -- Bind for reception or connection accepting,
   --  On a port from services, on a port by num
   --  or a dynamical (ephemeral - attributed by the OS) port
@@ -318,8 +319,7 @@ private
 
   type Host_Id is new C_Types.Uint32;
   for Host_Id'Size use 4 * System.Storage_Unit; -- As Ip_Addr
-  No_Host : constant Host_Id := 0;
-  All_Host : constant Host_Id := 16#FFFFFFFF#;
+  Any_Host : constant Host_Id := 0;
 
   No_Socket : constant Socket_Dscr := (Soc_Addr => System.Null_Address);
 end Socket;

@@ -78,7 +78,7 @@ package Tcp_Util is
       when Host_Name_Spec =>
         Name : Host_Name := As.U.Asu_Null;
       when Host_Id_Spec =>
-        Id : Host_Id := Socket.No_Host;
+        Id : Host_Id := Socket.Any_Host;
     end case;
   end record;
 
@@ -145,7 +145,7 @@ package Tcp_Util is
                       Remote_Port_Num : in Port_Num;
                       New_Dscr        : in Socket.Socket_Dscr);
 
-  -- Accept connections to a local port
+  -- Accept connections to a local port, possibly on a specific interface
   -- Dscr is open in mode Blocking_Send, and set to the accept connections
   -- Num is its port num (usefull when dynamical).
   -- May raise Name_Error if Port.Name is unknown
@@ -153,7 +153,8 @@ package Tcp_Util is
                          Port         : in Local_Port;
                          Acception_Cb : in Acception_Callback_Access;
                          Dscr         : out Socket.Socket_Dscr;
-                         Num          : out Port_Num);
+                         Num          : out Port_Num;
+                         Link_If      : in Socket.Host_Id := Socket.Any_Host);
 
   -- Abort further accepts on port (Af_inet and Af_unix may be on the same port).
   --  and closes the Dscr

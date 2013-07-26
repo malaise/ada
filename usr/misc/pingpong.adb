@@ -250,7 +250,7 @@ begin
     Use_Iface := True;
   else
     -- Default interface
-    Iface := (Kind => Tcp_Util.Host_Id_Spec, Id => Socket.No_Host);
+    Iface := (Kind => Tcp_Util.Host_Id_Spec, Id => Socket.Any_Host);
     Use_Iface := False;
   end if;
 
@@ -364,7 +364,7 @@ begin
       if Send_Mode then
         Soc.Set_Sending_Ipm_Interface (Iface.Id);
       else
-        Soc.Set_Reception_Ipm_Interface (Iface.Id);
+        Soc.Set_Reception_Interface (Iface.Id);
       end if;
     end if;
 

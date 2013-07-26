@@ -342,7 +342,7 @@ package body Channels is
       begin
         Tcp_Util.Accept_From (Socket.Tcp_Header, Port,
                               Accept_Cb'Unrestricted_Access,
-                              Accept_Dscr,  Channel_Dscr.Accept_Num);
+                              Accept_Dscr, Channel_Dscr.Accept_Num);
       exception
         when Socket.Soc_Name_Not_Found =>
           raise Unknown_Channel;

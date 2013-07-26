@@ -235,7 +235,7 @@ begin
     Nb_Options := Nb_Options + 1;
   exception
     when Argument.Argument_Not_Found =>
-      Iface := (Kind => Tcp_Util.Host_Id_Spec, Id => Socket.No_Host);
+      Iface := (Kind => Tcp_Util.Host_Id_Spec, Id => Socket.Any_Host);
     when others =>
       raise Arg_Error;
   end;
@@ -305,8 +305,8 @@ begin
       raise;
     end;
   end if;
-  if Iface.Id /= Socket.No_Host then
-    Soc.Set_Reception_Ipm_Interface (Iface.Id);
+  if Iface.Id /= Socket.Any_Host then
+    Soc.Set_Reception_Interface (Iface.Id);
   end if;
 
   -- Set port num
@@ -344,7 +344,7 @@ begin
   -- Put "Ready on..." end-of-init message
   Basic_Proc.Put_Error (Curr_Date_Image & " listening on ");
   Basic_Proc.Put_Error (Dest_Image (Soc, False));
-  if Iface.Id /= Socket.No_Host then
+  if Iface.Id /= Socket.Any_Host then
     Basic_Proc.Put_Error (" interface "
                         & Ip_Addr.Image(Socket.Id2Addr(Iface.Id)));
   end if;

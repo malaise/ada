@@ -359,6 +359,7 @@ package body Config is
     Found : Boolean;
     Local_Host_Name : constant String := Socket.Local_Host_Name;
     Bus, Node : Xml_Parser.Element_Type;
+    Host_Id : Socket.Host_Id;
   begin
     Init;
     -- See if this bus is described
@@ -384,7 +385,10 @@ package body Config is
         begin
           for Alias in Aliases'Range loop
             if Ctx.Get_Attribute (Aliases(Alias), "Name") = Local_Host_Name then
-              return Id_Of (Aliases(Alias), "Address");
+              Host_Id := Id_Of (Aliases(Alias), "Address");
+              Debug ("Found Alias Name " & Local_Host_Name
+                   & " to " & Ip_Addr.Image (Host_Id));
+              return Host_Id;
             end if;
           end loop;
         end;
@@ -397,9 +401,14 @@ package body Config is
           for Lan in Lans'Range loop
             -- See if current LAN/Netmask is one of current interfaces
             begin
-              return Socket.Host_Id_For (
-                Lan     => Id_Of (Lans(Lan), "Address"),
-                Netmask => Id_Of (Lans(Lan), "Netmask"));
+              Host_Id :=  Socket.Host_Id_For (
+                  Lan     => Id_Of (Lans(Lan), "Address"),
+                  Netmask => Id_Of (Lans(Lan), "Netmask"));
+              Debug ("Found LAN Address "
+                   & Ctx.Get_Attribute (Lans(Lan), "Address")
+                   & " Mask " & Ctx.Get_Attribute (Lans(Lan), "Mask")
+                   & " to " & Ip_Addr.Image (Host_Id));
+              return Host_Id;
             exception
               when Socket.Soc_Name_Not_Found =>
                 -- LAN not found in local interface, go on
@@ -410,6 +419,7 @@ package body Config is
       end if;
     end loop;
     -- Not found, return the interface associated to host name
+    Debug ("No Alias or LAN");
     return Socket.Local_Host_Id;
   end Get_Interface;
 
