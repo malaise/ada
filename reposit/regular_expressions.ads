@@ -91,6 +91,16 @@ package Regular_Expressions is
   -- No_Match and Any_Match are not valid
   function Valid_Match (Cell : Match_Cell) return Boolean;
 
+  -- Check that a Match_Cell or Match_Array (returned by Exec or Match)
+  --  matches strictly the string Str
+  -- Strict means that the complete Str matches the criteria, i.e.
+  --  Cells(1).First_Offset = Str'First and
+  --  Cells(1).Last_Offset_Stop = Str'Last
+  -- Beware that a strict match is not necessarily valid (e.g. Any_Match
+  --  strictly matches "" but is not valid)
+  function Strict_Match (Str : String; Cell  : Match_Cell)  return Boolean;
+  function Strict_Match (Str : String; Cells : Match_Array) return Boolean;
+
   -- Compare string Str to Criteria (Compile and Exec with default values)
   -- If Strict is set, then True is returned if and only if the
   --  complete Str matches the criteria (i.e. First_Offset = Str'First
@@ -103,10 +113,10 @@ package Regular_Expressions is
   --  "^(to?|ti)$" and "ti|to?"
   -- May raise No_Criteria if Criteria does not compile
   function Match (Criteria, Str : String;
-                  Strict : in Boolean) return Boolean;
+                  Strict : Boolean) return Boolean;
 
   -- Get Compilation error
-  function Error (Criteria : in Compiled_Pattern) return String;
+  function Error (Criteria : Compiled_Pattern) return String;
 
   -- Free compiled (or error) pattern
   procedure Free (Criteria : in out Compiled_Pattern);

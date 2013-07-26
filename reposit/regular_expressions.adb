@@ -172,6 +172,29 @@ package body Regular_Expressions is
            and then Cell.Last_Offset_Stop >= Cell.First_Offset;
   end Valid_Match;
 
+  -- Check that a Match_Cell or Match_Array (returned by Exec or Match)
+  --  matches strictly the string Str
+  -- Strict means that the complete Str matches the criteria, i.e.
+  --  Cells(1).First_Offset = Str'First and
+  --  Cells(1).Last_Offset_Stop = Str'Last
+  -- Beware that a strict match is not necessarily valid (e.g. Any_Match
+  --  strictly matches "" but is not valid)
+  function Strict_Match (Str : String; Cell : Match_Cell)  return Boolean is
+  begin
+    return Cell /= No_Match
+           and then Cell.First_Offset = Str'First
+           and then Cell.Last_Offset_Stop = Str'Last;
+  end Strict_Match;
+
+  function Strict_Match (Str : String; Cells : Match_Array) return Boolean is
+  begin
+    if Cells'Length = 0 then
+      return False;
+    else
+      return Strict_Match (Str, Cells(Cells'First));
+    end if;
+  end Strict_Match;
+
   -- Exec regex
   procedure Exec (Criteria : in Compiled_Pattern;
                   To_Check : in String;
@@ -287,10 +310,8 @@ package body Regular_Expressions is
       -- Ok if match
       return Result /= No_Match;
     else
-      -- Ok if match indexes are Str indexes
-      return Result /= No_Match
-      and then Result.First_Offset = Str'First
-      and then Result.Last_Offset_Stop = Str'Last;
+      -- Ok if strict match
+      return Strict_Match (Str, Result);
     end if;
   end Match;
 
