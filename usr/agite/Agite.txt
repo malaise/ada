@@ -441,6 +441,8 @@ In case of a directory the menu shows the name of the directory (relative to
 root) and lists the history of the commits of all the files in the directory
 and in its sub-directories.
 
+This lists follows the renamings of the file or directory.
+
 .List
 The list shows for each entry the date of the commit (format YYMMDD:HHMM)
 a space then the comment of the commit.
@@ -473,6 +475,8 @@ When the current history is on a directory this feature is de-activated.
 Still it is possible to list and view one by one the files of a commit with the
 xref:XDetails[Details] menu.
 
+anchor:XDiff1[]
+
 .Diff
 The 'Diff' button shows the differences between commits. When the history is on
 a directory it applies to all the files of the directory and sub-directories
@@ -502,12 +506,30 @@ with the version before the selection as reference and the selection
 as the target of the difference. If the history is about a directory several
 differators may be started.
 
+anchor:XDetail[]
+
 .Detail
 This button switches to a screen that shows the xref:XDetails[details] of the
 commit currently (left-)selected in the history.
 
 .Back
 This button allows to return to xref:XDir[directory] menu.
+
+*Note:* The history follows the the renamings of the file or directory but the
+reference name (that is displayed above the history list) is used for the
+xref:XView[view] and xref:XDiff1[Diff] operations.
+As a consequence, Agite will fail to show a
+file or a difference from a file if the entry in the history is before a
+renaming. Still, it is possible to view a file that has been renamed with the
+following operations:
+
+* Select the file in the history
+* Show the xref:XDetail[Details] of this commit
+* Select the file in the xref:XDetails[details] of the commit
+* Click on xref:XView[View] the file.
+
+It is not possible to do a xref:XDiff1[Diff] between two versions of a file if
+the file has been renamed or moved between the versions.
 
 anchor:XDetails[]
 

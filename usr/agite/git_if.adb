@@ -452,6 +452,7 @@ package body Git_If is
     -- Git ls-files
     Cmd.Set ("git");
     Cmd.Cat ("log");
+    Cmd.Cat ("--follow");
     Cmd.Cat ("--date=iso");
     Cmd.Cat ("--topo-order");
     Cmd.Cat ("--");
