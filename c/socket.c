@@ -1432,6 +1432,7 @@ static int get_all_ifaces (struct ifreq ifreqs[], unsigned nb_ifaces) {
     close_sock (sock);
     return (SOC_SYS_ERR);
   }
+  close (sock);
   return ifconf.ifc_len/sizeof(struct ifreq);
 }
 
