@@ -1,4 +1,4 @@
-with Con_Io, Afpx, As.U;
+with Con_Io, Afpx, As.U, Str_Util;
 with Afpx_Xref, Communication, Utils, Fleet;
 package body Setup is
 
@@ -18,6 +18,8 @@ package body Setup is
     Afpx.Set_Field_Activation (Afpx_Xref.Setup.Done, False);
 
     -- Initiate connection
+    Afpx.Encode_Field (Afpx_Xref.Setup.Title, (0, 0), "Connecting as " &
+      (if Server then "server" else "client"));
     Communication.Connect (Addr, Server);
 
     -- Init for Afpx Ptg
@@ -123,7 +125,9 @@ package body Setup is
     -- Reset Afpx descriptor
     Afpx.Use_Descriptor (Afpx_Xref.Setup.Dscr_Num);
     Afpx.Clear_Field (Afpx_Xref.Setup.Title);
-    Afpx.Encode_Field (Afpx_Xref.Setup.Title, (0, 3), "Setup");
+    Afpx.Encode_Field (Afpx_Xref.Setup.Title, (0, 3),
+        Str_Util.Center ("Setup",
+                         Afpx.Get_Field_Width (Afpx_Xref.Setup.Title)));
 
     -- Init reception of message from partner
     Partner_Done := False;
@@ -214,7 +218,9 @@ package body Setup is
             Communication.Send ("D");
             -- Waiting for partner completion of setup
             Afpx.Clear_Field (Afpx_Xref.Setup.Title);
-            Afpx.Encode_Field (Afpx_Xref.Setup.Title, (0, 2), "Waiting");
+            Afpx.Encode_Field (Afpx_Xref.Setup.Title, (0,0),
+                Str_Util.Center ("Waiting",
+                                 Afpx.Get_Field_Width (Afpx_Xref.Setup.Title)));
           end if;
         when Afpx.Refresh =>
           Redisplay := True;
