@@ -214,14 +214,16 @@ extern int soc_resend (soc_token token);
 /*---------------------------------------------*/
 /* Search in local host/port/network databases */
 /*---------------------------------------------*/
-/* Get current lan name (computed from local host name) */
-/* lan_name must be large enough */
-extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len);
 
-/* Find name of soc_host and vice versa */
+/* Find name of soc_host host and vice versa */
 extern int soc_host_name_of (const soc_host *p_host, char *host_name,
                              unsigned int host_name_len);
 extern int soc_host_of (const char *host_name, soc_host *p_host);
+
+/* Find name of soc_lan LAN and vice versa */
+extern int soc_lan_name_of (const soc_host *p_lan, char *lan_name,
+                             unsigned int lan_name_len);
+extern int soc_lan_of (const char *lan_name, soc_host *p_lan);
 
 /* Find name of soc_port and vice versa */
 extern int soc_port_name_of (const soc_port port,
@@ -232,10 +234,12 @@ extern int soc_port_of (const char *port_name,
                         const socket_protocol proto,
                         soc_port *p_port);
 
-/* Gets local host */
+/* Gets local host and LAN (computed from local host) */
 extern int soc_get_local_host_name (char *host_name,
                                     unsigned int host_name_len);
 extern int soc_get_local_host_id (soc_host *p_host);
+extern int soc_get_local_lan_name (char *lan_name, unsigned int lan_name_len);
+extern int soc_get_local_lan_id (soc_host *p_lan);
 
 /* Get bcast address for a given interface (designated by if_host) */
 extern int soc_get_bcast (const soc_host *if_host, soc_host *p_bcast_host);

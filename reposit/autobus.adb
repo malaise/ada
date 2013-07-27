@@ -667,7 +667,7 @@ package body Autobus is
     begin
       -- Name is "<ip_address>:<port_num>"
       Ip_Addr.Parse (Address, Rem_Host, Rem_Port);
-      Rbus.Name := As.U.Tus (Image (Ip_Addr.Resolve (Rem_Host),
+      Rbus.Name := As.U.Tus (Image (Ip_Addr.Resolve (Rem_Host, Lan => True),
                                     Ip_Addr.Resolve (Rem_Port, Socket.Udp)));
       Debug ("Bus " & Rbus.Name.Image & " initialializing");
       -- Check that this address is not already associated to a bus

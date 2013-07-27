@@ -37,14 +37,18 @@ package Ip_Addr is
 
   Parse_Error : exception;
 
-  -- Resolve a remote Host (resp. Port)
-  -- If the Host is already a Host_Id_Spec (resp. port_Num_Spec)
-  --  then simply extract the host_Id (resp. Port_Num)
-  --  otherwise use Socket.Host_Id_Of (resp. Port_Num_Of), which may raise
-  --  Name_Error;
-  function Resolve (Host : Tcp_Util.Remote_Host) return Socket.Host_Id;
+  -- Resolve a remote Host or LAN
+  -- If the Host is already a Host_Id_Spec then simply extract the Host_Id
+  --  otherwise use Socket.Host_Id_Of or Socket.Lan_Id_Of, which may raise
+  --  Name_Error
+  function Resolve (Host : Tcp_Util.Remote_Host;
+                    Lan  : Boolean) return Socket.Host_Id;
+  -- Resolve a remote Port
+  -- If the Port is already a Port_Num_Spec then simply extract the Port_Num
+  --  otherwise use Socket.Port_Num_Of, which may raise Name_Error
   function Resolve (Port : Tcp_Util.Remote_Port;
                     Protocol : Socket.Protocol_List) return Socket.Port_Num;
+  -- Same on local port
   -- Raises Constraint_Error on a Port_Dynamic_Spec
   function Resolve (Port : Tcp_Util.Local_Port;
                     Protocol : Socket.Protocol_List) return Socket.Port_Num;

@@ -154,12 +154,24 @@ package body Socket is
   function Soc_Host_Of (Name : System.Address;
                         Id   : System.Address) return Result;
   pragma Import (C, Soc_Host_Of, "soc_host_of");
+  function Soc_Lan_Name_Of (Lan : System.Address; Name : System.Address;
+                            Len  : C_Types.Uint32) return Result;
+  pragma Import (C, Soc_Lan_Name_Of, "soc_lan_name_of");
+  function Soc_Lan_Of (Name : System.Address;
+                       Id   : System.Address) return Result;
+  pragma Import (C, Soc_Lan_Of, "soc_lan_of");
   function Soc_Get_Local_Host_Name (Name : System.Address;
                                     Host_Name_Len : C_Types.Uint32)
            return Result;
   pragma Import (C, Soc_Get_Local_Host_Name, "soc_get_local_host_name");
   function Soc_Get_Local_Host_Id(Id : System.Address) return Result;
   pragma Import (C, Soc_Get_Local_Host_Id, "soc_get_local_host_id");
+  function Soc_Get_Local_Lan_Name (Name : System.Address;
+                                   Lan_Name_Len : C_Types.Uint32) return Result;
+  pragma Import (C, Soc_Get_Local_Lan_Name, "soc_get_local_lan_name");
+  function Soc_Get_Local_Lan_Id(Id : System.Address) return Result;
+  pragma Import (C, Soc_Get_Local_Lan_Id, "soc_get_local_lan_id");
+
   function Soc_Get_Bcast(If_Host, Bcast_Host : System.Address) return Result;
   pragma Import (C, Soc_Get_Bcast, "soc_get_bcast");
   function Soc_Get_Host_Iface (Lan, Netmask, Id : System.Address) return Result;
@@ -540,7 +552,7 @@ package body Socket is
     return Port_Num(Port);
   end Port_Num_Of;
 
-  -- Convert Host_Id to Host_Name and reverse (not for LANs)
+  -- Convert Host_Id to Host Name and reverse (not for LANs)
   function Host_Name_Of (Id : Host_Id) return String is
     Name : String (1 .. 1024);
   begin
@@ -563,6 +575,29 @@ package body Socket is
     return Id;
   end Host_Id_Of;
 
+  -- Convert Host_Id to Lan Name and reverse (not for hosts)
+  function Lan_Name_Of (Id : Host_Id) return String is
+    Name : String (1 .. 1024);
+  begin
+    Res := Soc_Lan_Name_Of (Id'Address, Name'Address, Name'Length);
+    Check_Ok;
+    for I in Name'Range loop
+      if Name(I) = Nul then
+        return Name(1 .. I-1);
+      end if;
+    end loop;
+    raise Soc_Len_Err;
+  end Lan_Name_Of;
+
+  function Lan_Id_Of (Name : String) return Host_Id is
+    Name_For_C : constant String := C_Str (Name);
+    Id : Host_Id;
+  begin
+    Res := Soc_Lan_Of (Name_For_C'Address, Id'Address);
+    Check_Ok;
+    return Id;
+  end Lan_Id_Of;
+
   -- Get local Host name or id
   function Local_Host_Name return String is
     Name : String (1 .. 1024);
@@ -584,6 +619,28 @@ package body Socket is
     Check_Ok;
     return Id;
   end Local_Host_Id;
+
+  -- Get local LAN name or id
+  function Local_Lan_Name return String is
+    Name : String (1 .. 1024);
+  begin
+    Res := Soc_Get_Local_Lan_Name (Name'Address, Name'Length);
+    Check_Ok;
+    for I in Name'Range loop
+      if Name(I) = Nul then
+        return Name(1 .. I-1);
+      end if;
+    end loop;
+    raise Soc_Len_Err;
+  end Local_Lan_Name;
+
+  function Local_Lan_Id return Host_Id is
+    Id : Host_Id;
+  begin
+    Res := Soc_Get_Local_Lan_Id (Id'Address);
+    Check_Ok;
+    return Id;
+  end Local_Lan_Id;
 
   -- Host_Id <-> 4 bytes of Ip address
   function L_Id2Addr is new Ada.Unchecked_Conversion (Host_Id, Ip_Address);

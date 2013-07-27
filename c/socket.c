@@ -604,9 +604,9 @@ extern int soc_set_send_ipm_interface (soc_token token, const soc_host *host) {
 extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
                                       boolean lan, const char *service) {
   soc_ptr soc = (soc_ptr) token;
-  struct hostent *host_name;
-  struct netent  *lan_name;
-  struct servent *serv_name;
+  struct hostent *host_entry;
+  struct netent  *lan_entry;
+  struct servent *serv_entry;
   int res;
 
   /* Check that socket is open */
@@ -625,7 +625,7 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
   }
 
   /* Read port num */
-  if ((serv_name = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
+  if ((serv_entry = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
     errno = ENOENT;
     UNLOCK;
     return (SOC_NAME_NOT_FOUND);
@@ -633,13 +633,13 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
 
   if (! lan) {
     /* Read  IP adress of host */
-    if ((host_name = gethostbyname(host_lan)) == NULL) {
+    if ((host_entry = gethostbyname(host_lan)) == NULL) {
       errno = ENOENT;
       UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
     memcpy((void *) &(soc->send_struct.sin_addr.s_addr),
-     (void *) host_name->h_addr, (size_t) host_name->h_length);
+     (void *) host_entry->h_addr, (size_t) host_entry->h_length);
   } else {
     /* No tcp bcast */
     if (soc->protocol == tcp_protocol) {
@@ -648,15 +648,15 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
     }
 
     /* Read IP prefix of LAN */
-    if ((lan_name = getnetbyname(host_lan)) == NULL) {
+    if ((lan_entry = getnetbyname(host_lan)) == NULL) {
       errno = ENOENT;
       UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
-    soc->send_struct.sin_addr = inet_makeaddr(lan_name->n_net, 0);
+    soc->send_struct.sin_addr = inet_makeaddr(lan_entry->n_net, 0);
   }
 
-  soc->send_struct.sin_port = serv_name->s_port;
+  soc->send_struct.sin_port = serv_entry->s_port;
 
   /* Set ipm sending interface */
   if (set_ipm_if(soc, TRUE) != SOC_OK) {
@@ -688,8 +688,8 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
                                    boolean lan, soc_port port) {
 
   soc_ptr soc = (soc_ptr) token;
-  struct hostent *host_name;
-  struct netent  *lan_name;
+  struct hostent *host_entry;
+  struct netent  *lan_entry;
   int res;
 
   /* Check that socket is open */
@@ -709,13 +709,13 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
 
   if (! lan) {
     /* Read  IP adress of host */
-    if ((host_name = gethostbyname(host_lan)) == NULL) {
+    if ((host_entry = gethostbyname(host_lan)) == NULL) {
       errno = ENOENT;
       UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
     memcpy((void *) &(soc->send_struct.sin_addr.s_addr),
-     (void *) host_name->h_addr, (size_t) host_name->h_length);
+     (void *) host_entry->h_addr, (size_t) host_entry->h_length);
   } else {
     /* No tcp bcast */
     if (soc->protocol == tcp_protocol) {
@@ -724,12 +724,12 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
     }
 
     /* Read IP prefix of LAN */
-    if ((lan_name = getnetbyname(host_lan)) == NULL) {
+    if ((lan_entry = getnetbyname(host_lan)) == NULL) {
       errno = ENOENT;
       UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
-    soc->send_struct.sin_addr = inet_makeaddr(lan_name->n_net, 0);
+    soc->send_struct.sin_addr = inet_makeaddr(lan_entry->n_net, 0);
   }
 
   soc->send_struct.sin_port = htons( (uint16_t)port);
@@ -761,7 +761,7 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
 extern int soc_set_dest_host_service (soc_token token, const soc_host *host,
                                       const char *service) {
   soc_ptr soc = (soc_ptr) token;
-  struct servent *serv_name;
+  struct servent *serv_entry;
   int res;
 
   /* Check that socket is open */
@@ -780,14 +780,14 @@ extern int soc_set_dest_host_service (soc_token token, const soc_host *host,
   }
 
   /* Read port num */
-  if ((serv_name = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
+  if ((serv_entry = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
     errno = ENOENT;
     UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
 
   soc->send_struct.sin_addr.s_addr = host->integer;
-  soc->send_struct.sin_port = serv_name->s_port;
+  soc->send_struct.sin_port = serv_entry->s_port;
 
   /* Set ipm sending interface */
   if (set_ipm_if(soc, TRUE) != SOC_OK) {
@@ -865,8 +865,8 @@ extern int soc_set_dest_host_port (soc_token token, const soc_host *host,
 /* Broadcast if lan */
 extern int soc_change_dest_name (soc_token token, const char *host_lan, boolean lan) {
   soc_ptr soc = (soc_ptr) token;
-  struct hostent *host_name;
-  struct netent  *lan_name;
+  struct hostent *host_entry;
+  struct netent  *lan_entry;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
@@ -883,21 +883,21 @@ extern int soc_change_dest_name (soc_token token, const char *host_lan, boolean 
 
   if (! lan) {
     /* Read  IP adress of host */
-    if ((host_name = gethostbyname(host_lan)) == NULL) {
+    if ((host_entry = gethostbyname(host_lan)) == NULL) {
       errno = ENOENT;
       UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
     memcpy((void *) &(soc->send_struct.sin_addr.s_addr),
-     (void *) host_name->h_addr, (size_t) host_name->h_length);
+     (void *) host_entry->h_addr, (size_t) host_entry->h_length);
   } else {
     /* Read IP prefix of LAN */
-    if ((lan_name = getnetbyname(host_lan)) == NULL) {
+    if ((lan_entry = getnetbyname(host_lan)) == NULL) {
       errno = ENOENT;
       UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
-    soc->send_struct.sin_addr = inet_makeaddr(lan_name->n_net, 0);
+    soc->send_struct.sin_addr = inet_makeaddr(lan_entry->n_net, 0);
   }
 
   /* Set ipm sending interface */
@@ -958,7 +958,7 @@ extern int soc_change_dest_host (soc_token token, const soc_host *host) {
 /* Change destination port (same host) - specify service */
 extern int soc_change_dest_service (soc_token token, const char *service) {
   soc_ptr soc = (soc_ptr) token;
-  struct servent *serv_name;
+  struct servent *serv_entry;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
@@ -977,14 +977,14 @@ extern int soc_change_dest_service (soc_token token, const char *service) {
   }
 
   /* Read IP adress of port */
-  if ((serv_name = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
+  if ((serv_entry = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
     errno = ENOENT;
     UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
 
   /* Init structure */
-  soc->send_struct.sin_port = serv_name->s_port;
+  soc->send_struct.sin_port = serv_entry->s_port;
 
   /* Ok */
   UNLOCK;
@@ -1247,81 +1247,72 @@ extern int soc_resend (soc_token token) {
   return (res);
 }
 
-/* Get current lan name (computed from local host name) */
-/* lan_name must be big enough */
-extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len) {
-
-  char host_name[MAXHOSTNAMELEN];
-  struct hostent *hostentp;
-  struct in_addr host_address;
-  unsigned int net_mask;
-  struct netent  *netentp;
-
-  if (gethostname(host_name, sizeof(host_name)) == -1) {
-    errno = ENOENT;
-    return (SOC_NAME_NOT_FOUND);
-  }
-
-  hostentp = gethostbyname (host_name);
-  if (hostentp ==  (struct hostent *)NULL) {
-    errno = ENOENT;
-    return (SOC_NAME_NOT_FOUND);
-  }
-
-  /* First of aliases */
-  host_address.s_addr = * (unsigned int*) hostentp->h_addr_list[0];
-  net_mask = inet_netof(host_address);
-  if ((int)net_mask == -1) {
-    perror("inet_netof");
-    return (SOC_SYS_ERR);
-  }
-
-  netentp = getnetbyaddr(net_mask, AF_INET);
-  if (netentp == (struct netent *) NULL) {
-    return (SOC_NAME_NOT_FOUND);
-  }
-
-  if (strlen(netentp->n_name) >= lan_name_len) {
-    return (SOC_LEN_ERR);
-  }
-
-  strcpy (lan_name, netentp->n_name);
-  /* Ok */
-  return (SOC_OK);
-}
-
 /* Find name of soc_host and vice versa */
 extern int soc_host_name_of (const soc_host *p_host, char *host_name,
                              unsigned int host_name_len) {
-  struct hostent *host_struct;
+  struct hostent *host_entry;
 
   /* Read name of host */
-  host_struct = gethostbyaddr( (const char*)p_host, sizeof(*p_host), AF_INET);
-  if (host_struct == (struct hostent *)NULL) {
+  host_entry = gethostbyaddr( (const char*)p_host, sizeof(*p_host), AF_INET);
+  if (host_entry == (struct hostent *)NULL) {
     errno = ENOENT;
     return (SOC_NAME_NOT_FOUND);
   }
 
-  if (strlen(host_struct->h_name) >= host_name_len) {
+  if (strlen(host_entry->h_name) >= host_name_len) {
     return (SOC_LEN_ERR);
   }
-  strcpy (host_name, host_struct->h_name);
+  strcpy (host_name, host_entry->h_name);
 
   /* Ok */
   return (SOC_OK);
 }
 
 extern int soc_host_of (const char *host_name, soc_host *p_host) {
-  struct hostent *host_struct;
+  struct hostent *host_entry;
 
   /* Read  IP adress of host */
-  host_struct = gethostbyname(host_name);
-  if (host_struct == (struct hostent *)NULL) {
+  host_entry = gethostbyname(host_name);
+  if (host_entry == (struct hostent *)NULL) {
     errno = ENOENT;
     return (SOC_NAME_NOT_FOUND);
   }
   memcpy((void *) &(p_host->integer),
-     (void *) host_struct->h_addr, sizeof(p_host->integer));
+     (void *) host_entry->h_addr, sizeof(p_host->integer));
+
+  /* Ok */
+  return (SOC_OK);
+}
+
+extern int soc_lan_name_of (const soc_host *p_lan, char *lan_name,
+                             unsigned int lan_name_len) {
+  struct netent *lan_entry;
+
+  lan_entry = getnetbyaddr((uint32_t)(p_lan->integer), AF_INET);
+  if (lan_entry == (struct netent *) NULL) {
+    errno = ENOENT;
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  if (strlen(lan_entry->n_name) >= lan_name_len) {
+    return (SOC_LEN_ERR);
+  }
+  strcpy (lan_name, lan_entry->n_name);
+
+  /* Ok */
+  return (SOC_OK);
+}
+
+extern int soc_lan_of (const char *lan_name, soc_host *p_lan) {
+  struct netent  *lan_entry;
+
+  lan_entry = getnetbyname(lan_name);
+  if (lan_entry == (struct netent *) NULL) {
+    errno = ENOENT;
+    return (SOC_NAME_NOT_FOUND);
+  }
+  memcpy((void *) &(p_lan->integer),
+     (void *) &(lan_entry->n_net), sizeof(p_lan->integer));
 
   /* Ok */
   return (SOC_OK);
@@ -1405,6 +1396,78 @@ extern int soc_get_local_host_id (soc_host *p_host) {
   return (res);
 }
 
+/* Get current lan name (computed from local host name) */
+/* lan_name must be big enough */
+extern int soc_get_local_lan_name (char *lan_name, unsigned int lan_name_len) {
+
+  char host_name[MAXHOSTNAMELEN];
+  struct hostent *hostentp;
+  struct in_addr host_address;
+  unsigned int net_mask;
+  struct netent *netentp;
+
+  if (gethostname(host_name, sizeof(host_name)) == -1) {
+    errno = ENOENT;
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  hostentp = gethostbyname (host_name);
+  if (hostentp ==  (struct hostent *)NULL) {
+    errno = ENOENT;
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  /* First of aliases */
+  host_address.s_addr = * (unsigned int*) hostentp->h_addr_list[0];
+  net_mask = inet_netof(host_address);
+  if ((int)net_mask == -1) {
+    perror("inet_netof");
+    return (SOC_SYS_ERR);
+  }
+
+  netentp = getnetbyaddr(net_mask, AF_INET);
+  if (netentp == (struct netent *) NULL) {
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  if (strlen(netentp->n_name) >= lan_name_len) {
+    return (SOC_LEN_ERR);
+  }
+
+  strcpy (lan_name, netentp->n_name);
+  /* Ok */
+  return (SOC_OK);
+}
+
+extern int soc_get_local_lan_id (soc_host *p_lan) {
+  char host_name[MAXHOSTNAMELEN];
+  struct hostent *hostentp;
+  struct in_addr host_address;
+
+  if (gethostname(host_name, sizeof(host_name)) == -1) {
+    errno = ENOENT;
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  hostentp = gethostbyname (host_name);
+  if (hostentp ==  (struct hostent *)NULL) {
+    errno = ENOENT;
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  /* First of aliases */
+  host_address.s_addr = * (unsigned int*) hostentp->h_addr_list[0];
+  p_lan->integer = inet_netof(host_address);
+  if ((int)p_lan->integer == -1) {
+    perror("inet_netof");
+    return (SOC_SYS_ERR);
+  }
+
+  /* Ok */
+  return (SOC_OK);
+}
+
+/* Close socket preserving errno */
 static void close_sock (int sock) {
   int saved_errno = errno;
   close (sock);
@@ -1769,7 +1832,7 @@ static int bind_and_co (soc_token token, boolean dynamic) {
 /* The socket must be open and not already linked */
 extern int soc_link_service (soc_token token, const char *service) {
   soc_ptr soc = (soc_ptr) token;
-  struct servent *serv_name;
+  struct servent *serv_entry;
   int res;
 
   /* Check that socket is open */
@@ -1788,14 +1851,14 @@ extern int soc_link_service (soc_token token, const char *service) {
   }
 
   /* Read IP adress of port */
-  if ((serv_name = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
+  if ((serv_entry = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
     errno = ENOENT;
     UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
 
   /* Init structure */
-  soc->rece_struct.sin_port = serv_name->s_port;
+  soc->rece_struct.sin_port = serv_entry->s_port;
 
   /* Bind */
   res = bind_and_co (token, FALSE);

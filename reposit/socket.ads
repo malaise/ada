@@ -262,14 +262,22 @@ package Socket is
   function Port_Num_Of  (Name : String; Protocol : Protocol_List)
                         return Port_Num;
 
-  -- Convert Host_Id to Host_Name and reverse (not for LANs)
+  -- Convert Id to Host Name and reverse (not for LANs)
   -- May raise Soc_Name_Not_Found if Name is not found
   function Host_Name_Of (Id : Host_Id) return String;
   function Host_Id_Of   (Name : String) return Host_Id;
 
+  -- Convert Id to LAN Name and reverse (not for hosts)
+  -- May raise Soc_Name_Not_Found if Name is not found
+  function Lan_Name_Of (Id : Host_Id) return String;
+  function Lan_Id_Of   (Name : String) return Host_Id;
+
   -- Get local Host name and corresponding id
   function Local_Host_Name return String;
   function Local_Host_Id return Host_Id;
+  -- Get local LAN name (from local host) and corresponding id
+  function Local_Lan_Name return String;
+  function Local_Lan_Id return Host_Id;
 
   -- Host_Id <-> 4 bytes of Ip address
   type Byte is new Natural range 0 .. 255;

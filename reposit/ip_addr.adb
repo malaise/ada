@@ -164,21 +164,26 @@ package body Ip_Addr is
   end Parse;
 
 
-  -- Resolve a remote Host (resp. Port)
-  -- If the Host is already a Host_Id_Spec (resp. port_Num_Spec)
-  --  then simply extract the host_Id (resp. Port_Num)
-  --  otherwise use Socket.Host_Id_Of (resp. Port_Num_Of), which may raise
-  --  Name_Error;
-  function Resolve (Host : Tcp_Util.Remote_Host) return Socket.Host_Id is
+  -- Resolve a remote Host or LAN
+  -- If the Host is already a Host_Id_Spec then simply extract the Host_Id
+  --  otherwise use Socket.Host_Id_Of or Socket.Lan_Id_Of, which may raise
+  --  Name_Error
+  function Resolve (Host : Tcp_Util.Remote_Host;
+                    Lan  : Boolean) return Socket.Host_Id is
     use type Tcp_Util.Remote_Host_List;
   begin
     if Host.Kind = Tcp_Util.Host_Id_Spec then
       return Host.Id;
+    elsif Lan then
+      return Socket.Lan_Id_Of (Host.Name.Image);
     else
       return Socket.Host_Id_Of (Host.Name.Image);
     end if;
   end Resolve;
 
+  -- Resolve a remote Port
+  -- If the Port is already a Port_Num_Spec then simply extract the Port_Num
+  --  otherwise use Socket.Port_Num_Of, which may raise Name_Error
   function Resolve (Port : Tcp_Util.Remote_Port;
                     Protocol : Socket.Protocol_List) return Socket.Port_Num is
     use type Tcp_Util.Remote_Port_List;
