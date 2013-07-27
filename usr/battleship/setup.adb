@@ -125,7 +125,7 @@ package body Setup is
     -- Reset Afpx descriptor
     Afpx.Use_Descriptor (Afpx_Xref.Setup.Dscr_Num);
     Afpx.Clear_Field (Afpx_Xref.Setup.Title);
-    Afpx.Encode_Field (Afpx_Xref.Setup.Title, (0, 3),
+    Afpx.Encode_Field (Afpx_Xref.Setup.Title, (0, 0),
         Str_Util.Center ("Setup",
                          Afpx.Get_Field_Width (Afpx_Xref.Setup.Title)));
 
@@ -218,7 +218,7 @@ package body Setup is
             Communication.Send ("D");
             -- Waiting for partner completion of setup
             Afpx.Clear_Field (Afpx_Xref.Setup.Title);
-            Afpx.Encode_Field (Afpx_Xref.Setup.Title, (0,0),
+            Afpx.Encode_Field (Afpx_Xref.Setup.Title, (0, 0),
                 Str_Util.Center ("Waiting",
                                  Afpx.Get_Field_Width (Afpx_Xref.Setup.Title)));
           end if;
