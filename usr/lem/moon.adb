@@ -45,19 +45,17 @@ package body Moon is
     Last_Index : Point_Range := Point_Range'Last - 1;
 
   begin
-    -- Check if Hard_Level (-h argument)
-    begin
-      if Argument.Get_Parameter (1, "h") = "" then
-        -- "-h"
-        Hard_Level := True;
-      else
-        -- "-hard"
-        Hard_Level := True;
-      end if;
-    exception
-      when Argument.Argument_Not_Found =>
-        Hard_Level := False;
-    end;
+    -- Check if Hard_Level (-h or --hard argument)
+    Hard_Level := False;
+    if Argument.Is_Set (1, "h")
+    and then Argument.Get_Parameter (1, "h") = "" then
+      -- "-h"
+      Hard_Level := True;
+    elsif Argument.Is_Set (1, "-hard")
+    and then Argument.Get_Parameter (1, "-hard") = "" then
+      -- "--hard"
+      Hard_Level := True;
+    end if;
     -- Raise anonymous (un-catchable) exception
     --  if LEM cannot land between 2 points
     declare

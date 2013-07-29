@@ -1,6 +1,6 @@
 Land the LEM
 ============
-V3.0
+V3.1
 
 The goal of the game is to land the LEM on the Moon.
 
@@ -38,11 +38,15 @@ Below the indicator, a chronometer indicates the duration of the mission.
 
 Arguments of the program
 -------------------------
-When started with argument "-h" the game is harder because the the landing area
-is thinner.
+When started with argument "-h" or --hard the game is harder because the landing
+area is thinner.
 
-When started with argument "-g" the mouse pointer is grabbed in the game
-window. It can be grabbed / un-grabbed at any time by pressing the key ''g''.
+When started with argument "-g" or --grab the mouse pointer is grabbed in the
+game window. It can be grabbed / un-grabbed at any time by pressing the
+key ''g''.
+
+Option --help displays a summary of possible arguments. All other arguments
+are ignored.
 
 Commands of the game
 --------------------

@@ -104,18 +104,16 @@ package body Screen is
       Screen.Set_To_Screen (Console'Access);
     end if;
     Screen.Clear;
-    begin
-      if Argument.Get_Parameter (1, "g") = "" then
-        -- "-g": Grab
-        Pointer_Grabbed := True;
-      else
-        -- "-grab"
-        Pointer_Grabbed := True;
-      end if;
-    exception
-      when Argument.Argument_Not_Found =>
-        Pointer_Grabbed := False;
-    end;
+    Pointer_Grabbed := False;
+    if Argument.Is_Set (1, "g")
+    and then Argument.Get_Parameter (1, "g") = "" then
+      -- "-g"
+      Pointer_Grabbed := True;
+    elsif Argument.Is_Set (1, "-grab")
+    and then Argument.Get_Parameter (1, "-grab") = "" then
+      -- "--grab"
+      Pointer_Grabbed := True;
+    end if;
     Console.Set_Pointer_Shape (Con_Io.None, Pointer_Grabbed);
     -- Clear previous LEM position
     Prev_Pos := No_Pos;
