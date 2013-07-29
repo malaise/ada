@@ -1097,10 +1097,14 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
     } /* Switch */
   } /* while */
 
-  /* Re read number of pending messages */
-  /*  (XNextEvent may flush the buffer) */
-  n_events = XPending (local_server.x_server);
-  *p_next = (n_events > 0);
+  if (prev_event_set) {
+    *p_next = TRUE;
+  } else {
+    /* Re read number of pending messages */
+    /*  (XNextEvent may flush the buffer) */
+    n_events = XPending (local_server.x_server);
+    *p_next = (n_events > 0);
+  }
 
   return (result);
 }
