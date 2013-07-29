@@ -1,3 +1,4 @@
+with Basic_Proc;
 with Ada.Calendar;
 separate (Afpx)
 package body Af_Ptg is
@@ -782,6 +783,13 @@ package body Af_Ptg is
         end loop;
       end if;
 
+      -- Flush if something changed
+      if Need_Redisplay
+      or else Af_List.Modified
+      or else Af_Dscr.Current_Dscr.Modified then
+        Console.Flush;
+      end if;
+
       -- No more forced redisplay
       Need_Redisplay := False;
       Af_Dscr.Current_Dscr.Modified := False;
@@ -1057,9 +1065,6 @@ package body Af_Ptg is
         when Con_Io.Timeout =>
           null;
       end case;
-
-      -- Ensure that changes appear on screen
-      Console.Flush;
 
       -- Notify of change of list because of key
       if List_Scrolled and then List_Change_Cb /= null then
