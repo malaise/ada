@@ -897,7 +897,8 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         }
         result = WAIT_OK;
         /* Discard a following motion event with the same position */
-        if (XPending (local_server.x_server) > 0) {
+        if (win_id->motion_enabled
+          && (XPending (local_server.x_server) > 0) ) {
           XNextEvent (local_server.x_server, &event);
           if ( (event.type != MotionNotify)
                 || (event.xmotion.x != win_id->tid_x)
