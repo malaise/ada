@@ -118,9 +118,9 @@ procedure T_Con is
           when Con_Io.Mouse_Button =>
             Console.Get_Mouse_Event (Mouse_Event);
             if Mouse_Event.Valid then
-              W2.Put (" T");
+              W2.Put (" V");
             else
-              W2.Put (" D");
+              W2.Put (" -");
             end if;
             if Mouse_Event.Status = Con_Io.Pressed then
               W2.Put (" P");
@@ -136,7 +136,7 @@ procedure T_Con is
             elsif Mouse_Event.Button = Con_Io.Right then
               W2.Put (" R");
             elsif Mouse_Event.Button = Con_Io.Motion then
-              W2.Put (" x");
+              W2.Put (" -");
             elsif Mouse_Event.Button = Con_Io.Up then
               W2.Put (" U");
             elsif Mouse_Event.Button = Con_Io.Down then
