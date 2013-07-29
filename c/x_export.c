@@ -54,7 +54,10 @@ extern int x_select (int *p_fd, boolean *p_read, timeout_t *timeout) {
     /* Cannot be set by wait_evt */
     x_fd = X_EVENT;
   } else {
-    XFlush (local_server.x_server);
+    if (local_server.modified) {
+      XFlush (local_server.x_server);
+      local_server.modified = FALSE;
+    }
     x_fd = ConnectionNumber (local_server.x_server);
     /* Don't wait if an event is pending */
     res = XPending (local_server.x_server);
@@ -75,12 +78,10 @@ extern int x_select (int *p_fd, boolean *p_read, timeout_t *timeout) {
 
   for (;; ) {
 
-
     /* Compute select timeout until exp_time */
     if (timeout_is_active) {
       evt_time_remaining (timeout, &exp_time);
     }
-
 
     /* Call the real select */
     res = evt_wait (p_fd, p_read, timeout);
@@ -128,6 +129,7 @@ extern int x_initialise (const char *server_name,
       }
     }
 
+    local_server.modified = TRUE;
     return (result);
 }
 
@@ -164,6 +166,7 @@ extern int x_open_line (int screen_id, int row, int column,
 
     line = lin_open (screen_id, row-1, column-1,
       height, width, background, border, no_font);
+    local_server.modified = TRUE;
     if (line != NULL) {
         *p_line_id = (void*) line;
         return (WAIT_OK);
@@ -178,6 +181,7 @@ extern int x_close_line (void *line_id) {
     int result;
 
     result = (lin_close( (t_window*) line_id) ? WAIT_OK : WAIT_ERR);
+    local_server.modified = TRUE;
 
     return (result);
 }
@@ -195,6 +199,7 @@ extern int x_set_line_name (void *line_id, const char *line_name) {
     (void) XStoreName(local_server.x_server, win_id->x_window, line_name);
     /* Strange: it works but returns error */
     /*    return ((result == Success) ? WAIT_OK : WAIT_ERR); */
+    local_server.modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -209,7 +214,10 @@ extern int x_flush (void) {
     }
 
     /* Flush the outputs */
-    XFlush (local_server.x_server);
+    if (local_server.modified) {
+      XFlush (local_server.x_server);
+      local_server.modified = FALSE;
+    }
 
     return (WAIT_OK);
 }
@@ -220,6 +228,7 @@ extern int x_clear_line (void *line_id) {
 
 
     result = (lin_clear( (t_window*) line_id) ? WAIT_OK : WAIT_ERR);
+    local_server.modified = TRUE;
 
     return(result);
 }
@@ -252,6 +261,7 @@ extern int x_set_attributes (void *line_id, int paper, int ink,
       lin_get_font(win_id), win_id->screen->color_id,
       paper, ink, reverse);
 
+    local_server.modified = TRUE;
     return (WAIT_OK);
 
 }
@@ -273,6 +283,7 @@ extern int x_set_xor_mode (void *line_id, boolean xor_mode) {
                      win_id->x_graphic_context, GXcopy);
     }
     win_id->xor_mode = xor_mode;
+    local_server.modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -311,6 +322,7 @@ extern int x_put_char (void *line_id, int car, int row, int column) {
           win_id->x_graphic_context, win_id->x_window, x, y);
     }
 
+    local_server.modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -344,6 +356,7 @@ extern int x_overwrite_char (void *line_id, int car, int row, int column) {
       win_id->server->x_font_set[lin_get_font(win_id)],
       x, y, (char)car);
 
+    local_server.modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -384,6 +397,7 @@ extern int x_put_string (void *line_id, const char *p_char, int number,
           win_id->x_graphic_context, win_id->x_window, x, y, number);
     }
 
+    local_server.modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -429,6 +443,7 @@ extern int x_draw_area (void *line_id, int width, int height,
       win_id->x_graphic_context,
       win_id->x_window, x_from, y_from, pix_width, pix_height);
 
+    local_server.modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -481,6 +496,7 @@ extern int x_put_char_pixels (void *line_id, int car, int x, int y) {
       win_id->x_window, x, y);
     }
 
+    local_server.modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -495,6 +511,8 @@ extern int x_draw_point (void *line_id, int x, int y) {
 
     XDrawPoint (win_id->server->x_server, win_id->x_window,
                 win_id->x_graphic_context, x, y);
+
+    local_server.modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -512,6 +530,7 @@ extern int x_draw_line (void *line_id, int x1, int y1, int x2, int y2) {
       win_id->x_window,
       win_id->x_graphic_context, x1, y1, x2, y2);
 
+    local_server.modified = TRUE;
     return (WAIT_OK);
 
 }
@@ -549,6 +568,7 @@ extern int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
       win_id->x_window,
       win_id->x_graphic_context, x, y, width, height);
 
+    local_server.modified = TRUE;
     return (WAIT_OK);
 
 }
@@ -586,6 +606,7 @@ extern int x_fill_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
       win_id->x_window,
       win_id->x_graphic_context, x, y, width, height);
 
+    local_server.modified = TRUE;
     return (WAIT_OK);
 
 }
@@ -615,6 +636,7 @@ extern int x_draw_points (void *line_id, int x1, int y1, int width, int height,
         p++;
       }
     }
+    local_server.modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -652,12 +674,14 @@ extern int x_fill_area (void *line_id, int xys[], int nb_points) {
                   win_id->x_graphic_context, p_points, nb_points,
                   Complex, CoordModeOrigin);
     free (p_points);
+    local_server.modified = TRUE;
     return (WAIT_OK);
 }
 
 static void grab_pointer (Window window, Cursor cursor) {
     XGrabPointer(local_server.x_server, window, TRUE, 0, GrabModeAsync,
                  GrabModeAsync, window, cursor, CurrentTime);
+    local_server.modified = TRUE;
 
 }
 
@@ -682,6 +706,7 @@ extern int x_set_graphic_pointer (void *line_id, boolean graphic, boolean grab) 
     } else {
       XUngrabPointer (local_server.x_server, CurrentTime);
     }
+    local_server.modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -719,6 +744,7 @@ extern int x_hide_graphic_pointer (void *line_id, boolean grab) {
     } else {
       XUngrabPointer (local_server.x_server, CurrentTime);
     }
+    local_server.modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -1156,6 +1182,7 @@ extern int x_enable_motion_events (void *line_id, boolean enable_motion) {
        PointerMotionMask | ButtonReleaseMask | ButtonPressMask,
        None, CurrentTime);
     XFlush(win_id->server->x_server);
+    local_server.modified = FALSE;
     win_id->motion_enabled = enable_motion;
     return (WAIT_OK);
 }
@@ -1324,6 +1351,7 @@ extern int x_bell (int nbre_bell) {
         XBell (local_server.x_server, 100);
     }
 
+    local_server.modified = TRUE;
     return (WAIT_OK);
 
 }

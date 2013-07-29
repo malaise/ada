@@ -17,6 +17,7 @@
 
 typedef struct {
     Display *x_server;
+    boolean modified;
     XFontSet x_font_set[NBRE_FONT];
     XFontStruct *x_font[NBRE_FONT];
     XIM xim;
