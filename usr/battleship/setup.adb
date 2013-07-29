@@ -6,8 +6,8 @@ package body Setup is
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
-    Result       : Afpx.Result_Rec;
     Redisplay    : Boolean;
+    Result       : Afpx.Result_Rec;
     use type Afpx.Field_Range, Afpx.Keyboard_Key_List;
   begin
     -- Init Afpx: deactivate grid and actions
@@ -29,7 +29,7 @@ package body Setup is
     Redisplay := False;
 
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Result, Redisplay);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Redisplay, Result);
       case Result.Event is
         when Afpx.Signal_Event =>
           -- Aborted by signal
@@ -112,8 +112,8 @@ package body Setup is
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
-    Result       : Afpx.Result_Rec;
     Redisplay    : Boolean;
+    Result       : Afpx.Result_Rec;
     Ship         : Fleet.Ship_List;
     Ship_Fld     : Afpx.Absolute_Field_Range;
     use type Afpx.Keyboard_Key_List, Afpx.Field_Range;
@@ -198,7 +198,7 @@ package body Setup is
       end if;
 
       -- Get action
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Result, Redisplay);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Redisplay, Result);
       case Result.Event is
         when Afpx.Signal_Event =>
           -- Aborted by signal

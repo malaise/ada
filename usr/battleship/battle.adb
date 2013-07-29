@@ -281,8 +281,8 @@ package body Battle is
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
-    Result       : Afpx.Result_Rec;
     Redisplay    : Boolean;
+    Result       : Afpx.Result_Rec;
     Target : Utils.Coord;
 
     use type Afpx.Keyboard_Key_List, Afpx.Field_Range;
@@ -350,7 +350,7 @@ package body Battle is
       Afpx.Set_Field_Activation (Afpx_Xref.Play.Exitgame, Server and then Done);
 
       -- Get action
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Result, Redisplay);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Redisplay, Result);
       case Result.Event is
         when Afpx.Signal_Event =>
           -- Aborted by signal

@@ -1,4 +1,3 @@
-with Basic_Proc;
 with Ada.Calendar;
 separate (Afpx)
 package body Af_Ptg is
@@ -658,8 +657,8 @@ package body Af_Ptg is
   procedure Ptg (Cursor_Field  : in out Afpx_Typ.Field_Range;
                  Cursor_Col    : in out Con_Io.Col_Range;
                  Insert        : in out Boolean;
+                 Redisplay     : in out Boolean;
                  Result        : out Result_Rec;
-                 Redisplay     : in Boolean;
                  Right_Select  : in Boolean;
                  Get_Active    : in Boolean;
 
@@ -794,6 +793,7 @@ package body Af_Ptg is
       Need_Redisplay := False;
       Af_Dscr.Current_Dscr.Modified := False;
       Af_Dscr.Current_Dscr.Redisplay := False;
+      Af_List.Modified := False;
 
       -- Get field, set colors when field changes
       if New_Field then
@@ -1074,6 +1074,7 @@ package body Af_Ptg is
       exit when Done;
     end loop;
 
+    Redisplay := False;
   end Ptg;
 
 end Af_Ptg;

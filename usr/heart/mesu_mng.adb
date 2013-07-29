@@ -12,6 +12,7 @@ package body Mesu_Mng is
     Cursor_Field : Afpx.Absolute_Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
+    Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
     Ok           : Boolean;
     Criteria     : Mesu_Sel.Criteria_Rec;
@@ -19,7 +20,6 @@ package body Mesu_Mng is
     File_Name    : Mesu_Nam.File_Name_Str;
     Exit_Program : Boolean;
     Current_Date : Str_Mng.Date_Str_Rec;
-    Redisplay    : Boolean;
 
 
     -- Check a field
@@ -208,7 +208,7 @@ package body Mesu_Mng is
     List:
     loop
       Allow_Undo := False;
-      Redisplay := True;
+      Redisplay := False;
 
       Ptg:
       loop
@@ -254,8 +254,7 @@ package body Mesu_Mng is
         Afpx.Encode_Field (Afpx_Xref.Main.Date, (00, 00),
                            Str_Mng.Current_Date_Printed);
         Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                           Ptg_Result, Redisplay);
-        Redisplay := False;
+                           Redisplay, Ptg_Result);
 
         case Ptg_Result.Event is
           when Refresh =>

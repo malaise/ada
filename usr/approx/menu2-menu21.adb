@@ -191,8 +191,7 @@ package body Menu21 is
                                  Activate_No_Curve);
 
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Ptg_Result, Redisplay);
-      Redisplay := False;
+                         Redisplay, Ptg_Result);
       Restore := None;
       case Ptg_Result.Event is
         when Afpx.Keyboard =>

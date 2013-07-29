@@ -173,13 +173,12 @@ package body Screen is
     Cursor_Field : Afpx.Absolute_Field_Range := 1;
     Cursor_Col   : Con_Io.Col_Range := 0;
     Insert       : Boolean := False;
-    Ptg_Result   : Afpx.Result_Rec;
     Redisplay    : Boolean := False;
+    Ptg_Result   : Afpx.Result_Rec;
   begin
     loop
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Ptg_Result, Redisplay);
-      Redisplay := False;
+                         Redisplay, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is

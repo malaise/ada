@@ -136,8 +136,7 @@ package body Screen is
     Afpx.Set_Field_Colors(Get_Fld, Background => Con_Io.Color_Of ("Black"));
     loop
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Ptg_Result, Redisplay);
-      Redisplay := False;
+                         Redisplay, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is

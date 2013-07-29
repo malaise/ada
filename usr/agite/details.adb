@@ -43,6 +43,7 @@ package body Details is
       Cursor_Field := 1;
       Cursor_Col := 0;
       Insert := False;
+      Redisplay := False;
 
       -- Get commit details
       if Cet_Details then
@@ -149,9 +150,7 @@ package body Details is
     -- Main loop
     loop
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Ptg_Result, Redisplay);
-
-      Redisplay := False;
+                         Redisplay, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is

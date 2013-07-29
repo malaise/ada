@@ -12,12 +12,13 @@ package body Screen is
     Cursor_Field : Afpx.Field_Range := Afpx.Field_Range'First;
     Cursor_Col : Con_Io.Col_Range := Con_Io.Col_Range'First;
     Insert : Boolean := False;
+    Redisplay : Boolean := False;
     Result : Afpx.Result_Rec;
     use type Afpx.Event_List, Afpx.Keyboard_Key_List, Afpx.Absolute_Field_Range;
   begin
     Afpx.Use_Descriptor (Afpx_Xref.Intro.Dscr_Num);
     loop
-      Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Insert, Result, True);
+      Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Insert, Redisplay, Result);
       exit when Result.Event = Afpx.Mouse_Button;
       if Result.Event = Afpx.Signal_Event
       or else (Result.Event = Afpx.Keyboard
@@ -85,8 +86,8 @@ package body Screen is
     Cursor_Field : Afpx.Field_Range := Afpx.Field_Range'First;
     Cursor_Col : Con_Io.Col_Range := Con_Io.Col_Range'First;
     Insert : Boolean := False;
-    Result : Afpx.Result_Rec;
     Redisplay : Boolean;
+    Result : Afpx.Result_Rec;
 
     -- The current selection
     Selection_Index : Common.Index_Range;
@@ -111,7 +112,7 @@ package body Screen is
     loop
       -- Activate play
       Afpx.Set_Field_Activation (Afpx_Xref.Game.Remove, Nb_Selected /= 0);
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Result, Redisplay);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Redisplay, Result);
       if Result.Event = Afpx.Signal_Event
       or else (Result.Event = Afpx.Keyboard
                and then Result.Keyboard_Key = Afpx.Break_Key) then
@@ -159,7 +160,6 @@ package body Screen is
           when others =>
             null;
         end case;
-        Redisplay := False;
       else
         Redisplay := True;
       end if;
@@ -206,6 +206,7 @@ package body Screen is
     Cursor_Field : Afpx.Field_Range := Afpx.Field_Range'First;
     Cursor_Col : Con_Io.Col_Range := Con_Io.Col_Range'First;
     Insert : Boolean := False;
+    Redisplay : Boolean := False;
     Ptg_Result : Afpx.Result_Rec;
     use type Common.Played_Result_List;
     use type Afpx.Event_List, Afpx.Absolute_Field_Range;
@@ -223,7 +224,8 @@ package body Screen is
     Afpx.Encode_Field (Afpx_Xref.Game.Remove, (1, 1), "P l a y");
     Afpx.Set_Field_Activation (Afpx_Xref.Game.Play, True);
     loop
-      Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Insert, Ptg_Result, True);
+      Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Insert, Redisplay,
+                        Ptg_Result);
       if Ptg_Result.Event = Afpx.Mouse_Button then
         if Ptg_Result.Field_No = Afpx_Xref.Game.Play then
           Change_Game := True;

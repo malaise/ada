@@ -42,8 +42,8 @@ package body Pers_Lis is
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
-    Ptg_Result   : Afpx.Result_Rec;
     Redisplay    : Boolean;
+    Ptg_Result   : Afpx.Result_Rec;
 
     List_Empty : Boolean;
     type State_List is (In_List, In_Create, In_Edit, In_Delete);
@@ -237,8 +237,7 @@ package body Pers_Lis is
                          Str_Mng.Current_Date_Printed);
 
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Ptg_Result, Redisplay);
-      Redisplay := False;
+                         Redisplay, Ptg_Result);
 
       -- Move in persons list according to Afpx selection
       if not List_Empty then

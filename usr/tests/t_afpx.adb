@@ -12,8 +12,8 @@ procedure T_Afpx is
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
   Insert       : Boolean;
-  Ptg_Result   : Afpx.Result_Rec;
   Redisplay    : Boolean;
+  Ptg_Result   : Afpx.Result_Rec;
   Flip_Flop : Boolean;
 
   Timer_Ss, Timer_Per, Timer_Tmp : Timers.Timer_Id;
@@ -148,18 +148,17 @@ begin
   Cursor_Field := 1;
   Cursor_Col := 0;
   Insert := False;
-  Flip_Flop := True;
   Redisplay := False;
+  Flip_Flop := True;
 
   loop
     Afpx.Set_Field_Activation (5, Flip_Flop);
     Afpx.Set_Field_Protection (0, not Flip_Flop);
 
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay,
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Redisplay, Ptg_Result,
                        Right_Select => True,
                        Cursor_Col_Cb  => Cursor_Col_Cb'Unrestricted_Access,
                        List_Change_Cb => List_Change_Cb'Unrestricted_Access);
-    Redisplay := False;
 
     Afpx.Clear_Field (18);
     Afpx.Encode_Field (18, (0, 0), Ptg_Result.Id_Selected_Right'Img);

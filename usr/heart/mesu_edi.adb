@@ -143,10 +143,10 @@ package body Mesu_Edi is
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
+    Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
 
     Ok : Boolean;
-    Redisplay : Boolean;
 
     use Pers_Def;
 
@@ -393,8 +393,7 @@ package body Mesu_Edi is
       Afpx.Encode_Field (Afpx_Xref.Records.Date, (00, 00),
                          Str_Mng.Current_Date_Printed);
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Ptg_Result, Redisplay);
-      Redisplay := False;
+                         Redisplay, Ptg_Result);
 
       case Ptg_Result.Event is
         when Refresh  =>
@@ -568,8 +567,8 @@ package body Mesu_Edi is
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
-    Ptg_Result   : Afpx.Result_Rec;
     Redisplay    : Boolean;
+    Ptg_Result   : Afpx.Result_Rec;
   begin
 
     -- Load person
@@ -624,8 +623,7 @@ package body Mesu_Edi is
       Afpx.Encode_Field (Afpx_Xref.Records.Date, (00, 00),
                          Str_Mng.Current_Date_Printed);
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Ptg_Result, Redisplay);
-      Redisplay := False;
+                         Redisplay, Ptg_Result);
 
       case Ptg_Result.Event is
         when Refresh =>

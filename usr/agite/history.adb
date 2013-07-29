@@ -70,6 +70,7 @@ package body History is
       Cursor_Field := 1;
       Cursor_Col := 0;
       Insert := False;
+      Redisplay := False;
       -- List characteristics
       Afpx.Get_Field_Size (Afpx.List_Field_No, List_Height, List_Width);
       -- Encode file/dir
@@ -242,10 +243,9 @@ package body History is
     -- Main loop
     loop
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Ptg_Result, Redisplay, True,
+                         Redisplay, Ptg_Result, True,
                          List_Change_Cb => List_Change'Access);
 
-      Redisplay := False;
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is

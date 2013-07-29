@@ -23,8 +23,7 @@ begin
   loop
 
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                       Ptg_Result, Redisplay);
-    Redisplay := False;
+                       Redisplay, Ptg_Result);
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is

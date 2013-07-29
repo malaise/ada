@@ -37,8 +37,8 @@ procedure Xwords is
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
   Insert       : Boolean;
-  Ptg_Result   : Afpx.Result_Rec;
   Redisplay    : Boolean;
+  Ptg_Result   : Afpx.Result_Rec;
   Afpx_Item    : Afpx.Line_Rec;
   type Status_List is (Found, Ok, Error);
   Status       : Status_List;
@@ -507,10 +507,9 @@ begin
     -- Set cursor at last significant char of the Get field
     Cursor_Col := Afpx.Last_Index (Afpx.Decode_Field (Get_Fld, 0), True);
     Debug ("Calling PTG");
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay,
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Redisplay, Ptg_Result,
                        List_Change_Cb => List_Cb 'Unrestricted_Access);
     Debug ("PTG returning");
-    Redisplay := False;
 
     case Ptg_Result.Event is
       when Afpx.Keyboard =>

@@ -9,8 +9,8 @@ procedure Account is
   Cursor_Field : Afpx.Absolute_Field_Range := 1;
   Cursor_Col   : Con_Io.Col_Range := 0;
   Insert       : Boolean := False;
-  Ptg_Result   : Afpx.Result_Rec;
   Redisplay    : Boolean := False;
+  Ptg_Result   : Afpx.Result_Rec;
 
 
   -- Parsing
@@ -77,13 +77,12 @@ begin
   -- Now the main loop
   loop
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                       Ptg_Result, Redisplay);
+                       Redisplay, Ptg_Result);
     if Afpx.Line_List.Is_Empty then
       Mng.Set_Current (0);
     else
       Mng.Set_Current (Afpx.Line_List.Get_Position);
     end if;
-    Redisplay := False;
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is

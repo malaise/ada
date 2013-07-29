@@ -157,8 +157,8 @@ package body Afpx is
     procedure Ptg (Cursor_Field  : in out Afpx_Typ.Field_Range;
                    Cursor_Col    : in out Con_Io.Col_Range;
                    Insert        : in out Boolean;
+                   Redisplay     : in out Boolean;
                    Result        : out Result_Rec;
-                   Redisplay     : in Boolean;
                    Right_Select  : in Boolean;
                    Get_Active    : in Boolean;
                    Cursor_Col_Cb : access
@@ -871,8 +871,8 @@ package body Afpx is
   procedure Put_Then_Get (Cursor_Field  : in out Field_Range;
                           Cursor_Col    : in out Con_Io.Col_Range;
                           Insert        : in out Boolean;
+                          Redisplay     : in out Boolean;
                           Result        : out Result_Rec;
-                          Redisplay     : in Boolean := False;
                           Right_Select  : in Boolean := False;
                           Cursor_Col_Cb : access
        function (Cursor_Field : Field_Range;
@@ -917,7 +917,7 @@ package body Afpx is
       end if;
     end if;
 
-    Af_Ptg.Ptg (Cf, Cursor_Col, Insert, Result, Redisplay, Right_Select,
+    Af_Ptg.Ptg (Cf, Cursor_Col, Insert, Redisplay, Result, Right_Select,
                 Some_Get, Cursor_Col_Cb, List_Change_Cb);
     Cursor_Field := Field_Range(Cf);
     In_Ptg := False;

@@ -201,7 +201,7 @@ package body Menu1 is
 
   procedure Main_Screen (Init_File_Name : in File.F_T_File_Name) is
     Cursor_Col : Con_Io.Col_Range;
-    Insert : Boolean;
+    Insert    : Boolean;
     Redisplay : Boolean;
     Ptg_Result : Afpx.Result_Rec;
     Restore : Restore_List;
@@ -277,8 +277,7 @@ package body Menu1 is
         end if;
 
         Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                           Ptg_Result, Redisplay);
-        Redisplay := False;
+                           Redisplay, Ptg_Result);
         Restore := None;
         Saved_Index := 0;
         case Ptg_Result.Event is

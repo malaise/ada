@@ -59,7 +59,7 @@ package body Dialog is
            Subtitle : in Boolean := False) is
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col : Con_Io.Col_Range := 0;
-    Insert : Boolean := False;
+    Insert    : Boolean := False;
     Redisplay : Boolean := False;
     Ptg_Result : Afpx.Result_Rec;
 
@@ -106,8 +106,7 @@ package body Dialog is
     loop
       Screen.Inform(Kind);
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Ptg_Result, Redisplay);
-      Redisplay := False;
+                         Redisplay, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -152,8 +151,8 @@ package body Dialog is
 
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col : Con_Io.Col_Range := 0;
-    Insert : Boolean := False;
-    Redisplay : Boolean := False;
+    Insert     : Boolean := False;
+    Redisplay  : Boolean := False;
     Ptg_Result : Afpx.Result_Rec;
     Degree : Natural;
 
@@ -200,8 +199,7 @@ package body Dialog is
     loop
       Screen.Inform(Screen.I_Degree);
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Ptg_Result, Redisplay);
-      Redisplay := False;
+                         Redisplay, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is

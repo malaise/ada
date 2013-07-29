@@ -360,7 +360,8 @@ package Afpx is
 
   -- Print the fields and the list (if Redisplay), then gets.
   -- Redisplay should be set if modif of some other screen actions (con_io)
-  --  justify a redisplay, by instance when Result.Event was Refresh.
+  --  justify a redisplay, by instance when Result.Event was Refresh. It is
+  --  always reset to False by Put_Then_Get.
   -- In List: See above section on "User actions on the list".
   --   mouse click changes current list element (or Id_Selected_Right),
   --   Up/Down arrow, Page Up/Down, Ctrl Page Up/Down scrolls the list,
@@ -390,8 +391,8 @@ package Afpx is
   procedure Put_Then_Get (Cursor_Field  : in out Field_Range;
                           Cursor_Col    : in out Con_Io.Col_Range;
                           Insert        : in out Boolean;
+                          Redisplay     : in out Boolean;
                           Result        : out Result_Rec;
-                          Redisplay     : in Boolean := False;
                           Right_Select  : in Boolean := False;
                           Cursor_Col_Cb : access
        function (Cursor_Field : Field_Range;

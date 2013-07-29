@@ -24,6 +24,7 @@ procedure Gc is
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col : Con_Io.Col_Range;
   Insert : Boolean;
+  Redisplay : Boolean;
   Result : Afpx.Result_Rec;
 
   subtype A_Flds is Afpx.Field_Range
@@ -41,7 +42,6 @@ procedure Gc is
   Decode_Ok : Boolean;
   Need_Clean : Boolean := False;
 
-  Redisplay : Boolean;
 
   use type Afpx.Field_Range, Afpx.Event_List, Afpx.Keyboard_Key_List;
 
@@ -243,13 +243,13 @@ begin
   else
     Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
     -- First Get field
-    Redisplay := True;
     Cursor_Field := Afpx.Next_Cursor_Field(0);
     Cursor_Col := 0;
     Insert := False;
+    Redisplay := False;
     loop
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Result, Redisplay, False,
+                         Redisplay, Result, False,
                          Next_Field_Cb'Access);
 
       if (Result.Event = Afpx.Keyboard

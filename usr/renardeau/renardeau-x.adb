@@ -32,9 +32,9 @@ package body X is
   Cursor_Field : Field_Range := 1;
   Cursor_Col   : Con_Io.Col_Range := 0;
   Insert       : Boolean := False;
+  Redisplay    : Boolean := False;
 
   Ptg_Result   : Result_Rec;
-  Redisplay    : Boolean;
 
   Deactivated : constant Con_Io.Colors := Con_Io.Color_Of ("Red");
   Activated : Con_Io.Colors;
@@ -190,7 +190,6 @@ package body X is
     end;
 
     -- Init for loop
-    Redisplay := False;
     Status := B1;
     Prev_Status := Done;
     loop
@@ -199,9 +198,8 @@ package body X is
       Reset := False;
 
       -- Ptg
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result,
-                         Redisplay);
-      Redisplay := False;
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Redisplay,
+                         Ptg_Result);
       case Ptg_Result.Event is
         when Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -239,7 +237,6 @@ package body X is
                 Offset := Bases_Range (Status_List'Pos(Status)
                                      - Status_List'Pos(B1));
                 Clear_Field (Base_Fs + Field_Range(Offset) - 1);
-                Status := Status_List'Pred (Status);
               elsif Status in T2 .. Ready then
                 Clear_Field (Target_F);
                 Status := T1;
@@ -247,7 +244,6 @@ package body X is
             when Clear_F =>
               Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
               Reset := True;
-              Redisplay := False;
               Status := B1;
               Prev_Status := Ready;
             when Enter_F =>
@@ -307,12 +303,12 @@ package body X is
       end loop;
     end if;
 
+    Insert := False;
     Redisplay := False;
     loop
       -- Ptg
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result,
-                         Redisplay);
-      Redisplay := False;
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Redisplay,
+                         Ptg_Result);
       case Ptg_Result.Event is
         when Keyboard =>
           case Ptg_Result.Keyboard_Key is
