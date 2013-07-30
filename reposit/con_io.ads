@@ -547,6 +547,9 @@ package Con_Io is
   Init_Failure : exception;
   -- Failure when opening a window
   Open_Failure        : exception;
+  -- Operation (except Resume and Is_Suspended) on a suspended Console
+  -- Resume a non suspended console
+  Suspended : exception;
   -- Position out of screen (or out of window)
   Invalid_Square      : exception;
   -- Window close to screen limit

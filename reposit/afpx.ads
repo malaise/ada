@@ -46,18 +46,24 @@ package Afpx is
   function Is_Descriptor_Set return Boolean;
 
   -- The Con_Io Console used by Afpx
+  -- The pregram can re-use this Console (e.g. for graphics) as long as it
+  --  doesn't call Afpx during this time, then it can Redisplay and use Afpx
+  --  again.
   -- Exceptions : No_Descriptor (no Descriptor in use)
   function Get_Console return Con_Io.Console;
 
-  -- Suspend and resume a con_io
-  -- If a program wants to open several con_io, (by example a graphical con_io
-  --   after an afpx), there are two options:
-  -- - One task for the con_io, the main uses afpx and the task uses con_io,
-  --   each receives its own events
-  -- - The main opens an afpx and a con_io, only one is active at a time.
-  --   In this case the program must suspend and not use the afpx,
-  --   then open and use the new con_io, then close the new con_io
-  --   then resume and use the afpx.
+  -- Suspend and resume Afpx
+  -- If a program wants to open several Con_Io Console, (by example a graphical
+  --  Console and Afpx), there are two options:
+  -- - One task for the Console: the main uses Afpx and the task uses the
+  --   Console. Each task receives its own events
+  -- - The main opens Afpx and a Console, but only one is active at a time.
+  --   In this case the program must Suspend and not use Afpx,
+  --   then open and use the new Console, then close the new Console
+  --   then Resume, Redisplay and use Afpx again.
+  -- Also, for using Event_Mng.Wait (directly or not) a program
+  --  must Suspend and Resume Afpx (calling Redisplay is not necessary if no
+  --  graphical change has been done meanwhile).
   -- Exceptions : No_Descriptor (no Descriptor in use)
   procedure Suspend;
   procedure Resume;
@@ -394,6 +400,7 @@ package Afpx is
   --               Invalid_Field, Invalid_Col (for cursor),
   --               String_Too_Long (if an item in list is too long),
   --               In_Put_Then_Get (already in Put_Then_Get).
+  --               Suspended (Afpx is currentlky suspended)
   procedure Put_Then_Get (Cursor_Field  : in out Field_Range;
                           Cursor_Col    : in out Con_Io.Col_Range;
                           Insert        : in out Boolean;
@@ -422,7 +429,8 @@ package Afpx is
 
   -- On call
   No_Descriptor, Invalid_Field, Invalid_Square, Invalid_Row, Invalid_Col,
-  String_Too_Long, Invalid_Color, List_In_Put, In_Put_Then_Get : exception;
+  String_Too_Long, Invalid_Color, List_In_Put, In_Put_Then_Get,
+  Suspended : exception;
 
 end Afpx;
 

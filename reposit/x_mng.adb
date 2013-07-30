@@ -38,7 +38,7 @@ package body X_Mng is
   pragma Import(C, X_Initialise, "x_initialise");
 
   ------------------------------------------------------------------
-  -- Suspend processing of X events
+  -- Suspend processing of X events (as long as no Line)
   -- int x_suspend (void)
   ------------------------------------------------------------------
   function X_Suspend return Result;
@@ -453,6 +453,17 @@ package body X_Mng is
   ------------------------ T H E   C A L L S -----------------------
   ------------------------------------------------------------------
 
+  -- Internal check that a X_Mng is initialised, that the Line is open and not
+  -- suspended
+  procedure Check (Line_Id : in Line) is
+    use type System.Address;
+  begin
+    if not Initialised or else Line_Id = No_Client
+    or else Line_Id.Suspended_Line_For_C /= No_Line_For_C then
+      raise X_Failure;
+    end if;
+  end Check;
+
   procedure X_Initialise (Server_Name : in String;
                           Colors      : in Color_Definition;
                           Colors_Set  : in Boolean) is
@@ -574,9 +585,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Close_Line(Line_For_C_Id) = Ok;
     Res := Res and then X_Flush = Ok;
@@ -591,9 +600,7 @@ package body X_Mng is
   ------------------------------------------------------------------
   procedure X_Suspend (Line_Id : in out Line) is
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     -- Call_On to get Line_For_C and save it
     Dispatcher.Call_On (Line_Id.No, Line_Id.Suspended_Line_For_C);
     Dispatcher.Call_Off (Line_Id.No, Line_Id.Suspended_Line_For_C);
@@ -651,9 +658,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Set_Line_Name(Line_For_C_Id,
                        Line_Name_For_C(Line_Name_For_C'First)'Address) = Ok;
@@ -668,9 +673,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Flush = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -684,9 +687,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Clear_Line(Line_For_C_Id) = Ok;
     Res := Res and then X_Flush = Ok;
@@ -706,9 +707,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Set_Attributes(Line_For_C_Id,
                             C_Types.Int(Paper), C_Types.Int(Ink),
@@ -726,9 +725,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Set_Xor_Mode(Line_For_C_Id, For_C(Xor_Mode)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -743,9 +740,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Put_Char (Line_For_C_Id,
                        C_Types.Int(Character'Pos(Car)),
@@ -762,9 +757,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Put_Char (Line_For_C_Id, C_Types.Int(Car),
                        C_Types.Int(Row), C_Types.Int(Column)) = Ok;
@@ -780,9 +773,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Overwrite_Char (Line_For_C_Id, C_Types.Int(Car),
                              C_Types.Int(Row), C_Types.Int(Column)) = Ok;
@@ -799,9 +790,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Put_String (Line_For_C_Id,
                          Str (Str'First)'Address, Str'Length,
@@ -823,9 +812,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Put_Char_Attributes (
                               Line_For_C_Id,
@@ -850,9 +837,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Draw_Area (Line_For_C_Id,
                         C_Types.Int(Width), C_Types.Int(Height),
@@ -870,9 +855,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
        Res := X_Put_Char_Pixels (Line_For_C_Id, C_Types.Int(Car), X, Y) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -896,9 +879,7 @@ package body X_Mng is
     Font_Offset_For_C   : C_Types.Int;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Get_Graphic_Characteristics(Line_For_C_Id,
         Window_Width_For_C'Address, Window_Height_For_C'Address,
@@ -921,9 +902,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Draw_Point(Line_For_C_Id, X, Y) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -938,9 +917,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Draw_Line(Line_For_C_Id, X1, Y1, X2, Y2) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -955,9 +932,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Draw_Rectangle(Line_For_C_Id, X1, Y1, X2, Y2) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -972,9 +947,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Fill_Rectangle(Line_For_C_Id, X1, Y1, X2, Y2) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -991,9 +964,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     if Points'Length /= Width * Height then
        raise X_Failure;
     end if;
@@ -1012,9 +983,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     if Xys'Length rem 2 /= 0 or else Xys'Length < 6 then
       raise X_Failure;
     end if;
@@ -1033,9 +1002,7 @@ package body X_Mng is
     Res : Boolean;
     X_For_C, Y_For_C : C_Types.Int;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Get_Current_Pointer_Position (Line_For_C_Id,
                    X_For_C'Address, Y_For_C'Address) = Ok;
@@ -1054,9 +1021,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Set_Graphic_Pointer(Line_For_C_Id,
                             For_C(Graphic), For_C(Grab)) = Ok;
@@ -1102,9 +1067,7 @@ package body X_Mng is
     use type Ada.Calendar.Time, Timers.Delay_List, Perpet.Delta_Rec,
              Event_Mng.Out_Event_List, Virtual_Time.Clock_Access;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     if Timeout.Clock /= null then
       -- Virtual time is not supported
       raise Invalid_Timeout;
@@ -1184,9 +1147,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Read_Tid (Line_For_C_Id, For_C(Row_Col),
                        Loc_Button'Address,
@@ -1224,9 +1185,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Read_Key (Line_For_C_Id, Control4C'Address, Shift4C'Address,
              Code4C'Address, Loc_Tab'Address, Loc_Nbre'Address) = Ok;
@@ -1249,9 +1208,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Enable_Motion_Events (Line_For_C_Id, For_C(Motion_Enable)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -1268,6 +1225,7 @@ package body X_Mng is
                     := Selection & Ada.Characters.Latin_1.Nul;
     Res : Boolean;
   begin
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Set_Selection (Line_For_C_Id, Selection_For_C'Address) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -1281,6 +1239,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Set_Selection (Line_For_C_Id, System.Null_Address) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -1294,6 +1253,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Request_Selection (Line_For_C_Id) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -1309,6 +1269,7 @@ package body X_Mng is
     Buffer  : String (1 .. Max_Len + 1);
     Res : Boolean;
   begin
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Get_Selection (Line_For_C_Id, Buffer'Address, Buffer'Length) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -1329,9 +1290,7 @@ package body X_Mng is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
+    Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Bell (Integer(Repeat)) = Ok;
     Res := Res and then X_Flush = Ok;

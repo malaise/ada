@@ -559,6 +559,7 @@ package body Mesu_Gra is
     -- Back to Afpx
     Screen.Set_Xor_Mode (Con_Io.Xor_Off);
     Screen.Clear;
+    Afpx.Redisplay;
   exception
     when Error:others =>
       Basic_Proc.Put_Line_Error ("Exception "

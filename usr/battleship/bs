@@ -2,5 +2,7 @@
 export BATTLESHIP_DEBUG_COMM=Y
 export BATTLESHIP_DEBUG_SETUP=Y
 export BATTLESHIP_DEBUG_PLAY=Y
+export AUTOBUS_DEBUG=Y
+# export TCP_UTIL_DEBUG_RECEPTION=Y
 exec ./battleship test_ipm:21210 $*
 

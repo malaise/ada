@@ -220,9 +220,14 @@ package body Con_Io is
       raise Init_Failure;
   end Open;
 
-  procedure Check_Con (Con : in Console) is
+  procedure Check_Con (Con : in Console; Check_Susp : in Boolean := True) is
   begin
-    if Con = Null_Console or else not Con.Get_Access.Initialised then
+    if Check_Susp then
+      -- Calls us (False), which checks for ini
+      if X_Mng.X_Is_Suspended (Con.Get_Access.Id) then
+        raise Suspended;
+      end if;
+    elsif Con = Null_Console or else not Con.Get_Access.Initialised then
       raise Not_Init;
     end if;
   end Check_Con;
@@ -260,14 +265,16 @@ package body Con_Io is
   procedure Resume (Con : in Console) is
   begin
     Debug ("Console resume");
-    Check_Con (Con);
+    if not Is_Suspended (Con) then
+      raise Suspended;
+    end if;
     -- Resume
     X_Mng.X_Resume (Con.Get_Access.Id);
   end Resume;
 
   function Is_Suspended (Con : Console) return Boolean is
   begin
-    Check_Con (Con);
+    Check_Con (Con, False);
     return X_Mng.X_Is_Suspended (Con.Get_Access.Id);
   end Is_Suspended;
 
@@ -399,6 +406,7 @@ package body Con_Io is
     if Name = Null_Window or else not Name.Get_Access.Open then
       raise Window_Not_Open;
     end if;
+    Check_Con (Name.Get_Access.Con);
   end Check_Win;
 
   -- Make window re-usable (have to re_open it)

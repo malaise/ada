@@ -60,6 +60,11 @@ package Event_Mng is
   -- Activate signal handling (capability to catch SigTerm (and Sigint) and
   --  SigChild and report them
   -- Automatically done when setting a signal callback or when calling Pause
+  -- Non interactive programs and stand-alone libraries shall:
+  --  - Check Are_Signals_Handled and store the result
+  --  - If not handled then Activate_Signal_Handling
+  --  - Wait and catch signals...
+  --  - I not handled then Reset_Default_Signals_Policy
   procedure Activate_Signal_Handling;
 
   -- Reset signal handling to default UNIX behaviour
@@ -78,7 +83,7 @@ package Event_Mng is
   -- WARNING: X11 programs shall use the X waiting point
   --   (X_Wait_Event/Put_Then_Get) instead. If they really need to use Wait,
   --   they shall Suspend ALL the X objects (X_Line/Con_Io/Afpx) before calling
-  --   Wait, then Resume the X objects after it returns.
+  --   Wait, then call Wait, then Resume the X objects.
   --
   -- Wait until a Terminate_Sig or Child_Sig with a callback set,
   --   or until a Dummy_Sig,

@@ -173,7 +173,6 @@ procedure Agite is
       Prev_Files.Insert_Copy (Files);
     end if;
 
-
     -- Refresh list only if it has changed
     -- Update list of files and branch
     List_Files;

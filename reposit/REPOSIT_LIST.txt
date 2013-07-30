@@ -13,7 +13,7 @@ Direct input::
 and blocks on it (and puts on stdout/stderr).
 +
 => The program can use 'Basic_Proc' or 'Sys_Calls' (or even Ada.Text_Io) for its
-Ios. It can use 'Key_Pressed' to asynchronously check for keyboard input, while
+Ios. It can use 'Key_Pressed' to check asynchronously for keyboard input while
 processing.
 
 Multiplexed inputs::
@@ -46,13 +46,13 @@ Several tasks can be defined, for example one for each window.
 
 Notes: 
 
-* Using 'Event_Mng' in non interactive programs requires caution (see
-'Event_Mng'.Reset_Default_Signals_Policy and Command).
+* Using 'Event_Mng' in X11 programs requires caution (see 'Event_Mng'.Wait and
+Command).
 
 * Using 'X_Mng' is exclusive with 'Con_Io' and 'Afpx'. 
 
 * Using 'Con_Io' and 'Afpx' simultaneously requires caution (see
-'Afpx'.Suspend).
+'Con_Io'.Suspend/Resume and 'Afpx'.Suspend/Resume).
 
 Notes on X11 resources:
 

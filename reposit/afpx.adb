@@ -304,15 +304,19 @@ package body Afpx is
   procedure Suspend is
   begin
     Af_Dscr.Check;
+    if Is_Suspended then
+      raise Suspended;
+    end if;
     Console.Suspend;
   end Suspend;
 
   procedure Resume is
   begin
     Af_Dscr.Check;
+    if not Is_Suspended then
+      raise Suspended;
+    end if;
     Console.Resume;
-    -- Trigger a complete refresh
-    Redisplay;
   end Resume;
 
   function Is_Suspended return Boolean is
@@ -899,6 +903,10 @@ package body Afpx is
     Cf : Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Cursor_Field);
     use Afpx_Typ;
   begin
+    -- No call to Put_Then_Get while syspended
+    if Is_Suspended then
+      raise Suspended;
+    end if;
     -- No call to Put_Then_Get in a Put_Then_Get callback
     if In_Ptg then
       raise In_Put_Then_Get;
