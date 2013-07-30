@@ -32,7 +32,6 @@ package body X is
   Cursor_Field : Field_Range := 1;
   Cursor_Col   : Con_Io.Col_Range := 0;
   Insert       : Boolean := False;
-  Redisplay    : Boolean := False;
 
   Ptg_Result   : Result_Rec;
 
@@ -198,8 +197,7 @@ package body X is
       Reset := False;
 
       -- Ptg
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Redisplay,
-                         Ptg_Result);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
       case Ptg_Result.Event is
         when Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -255,10 +253,8 @@ package body X is
             when others =>
               null;
           end case;
-        when Fd_Event | Timer_Event | Signal_Event =>
+        when Fd_Event | Timer_Event | Signal_Event | Refresh =>
           null;
-        when Refresh =>
-          Redisplay := True;
       end case;
 
     end loop;
@@ -304,11 +300,9 @@ package body X is
     end if;
 
     Insert := False;
-    Redisplay := False;
     loop
       -- Ptg
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Redisplay,
-                         Ptg_Result);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
       case Ptg_Result.Event is
         when Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -329,10 +323,8 @@ package body X is
             when others =>
               null;
           end case;
-        when Fd_Event | Timer_Event | Signal_Event =>
+        when Fd_Event | Timer_Event | Signal_Event | Refresh =>
           null;
-        when Refresh =>
-          Redisplay := True;
       end case;
 
     end loop;

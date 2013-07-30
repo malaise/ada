@@ -23,7 +23,7 @@ package body Af_List is
     end if;
     -- Start at top
     Reset;
-    Modified := True;
+    Af_Dscr.Fields(Lfn).Modified := True;
     -- Check there is a window in the dscr
     if Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
       List_Window.Open (Console'Access,
@@ -177,7 +177,8 @@ package body Af_List is
   begin
     -- Set status
     Compute (First_Item_Id);
-    Modified := False;
+    Af_Dscr.Fields(Lfn).Modified := False;
+    Af_Ptg.Flush;
 
     if Line_List.Is_Empty then
       Set_Colors;
@@ -389,7 +390,7 @@ package body Af_List is
     else
       -- Recompute and mark modified for next PtG (called by client)
       Compute (First_Item_Id);
-      Modified := True;
+      Af_Dscr.Fields(Lfn).Modified := True;
     end if;
 
     return True;
@@ -414,7 +415,7 @@ package body Af_List is
     end if;
     if Status.Ids_Selected(Button) /= Item_Id then
       Status.Ids_Selected(Button) := Item_Id;
-      Modified := True;
+      Af_Dscr.Fields(Lfn).Modified := True;
     end if;
   end Set_Selected;
 

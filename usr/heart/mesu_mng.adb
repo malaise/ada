@@ -12,7 +12,6 @@ package body Mesu_Mng is
     Cursor_Field : Afpx.Absolute_Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
-    Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
     Ok           : Boolean;
     Criteria     : Mesu_Sel.Criteria_Rec;
@@ -208,7 +207,6 @@ package body Mesu_Mng is
     List:
     loop
       Allow_Undo := False;
-      Redisplay := False;
 
       Ptg:
       loop
@@ -253,13 +251,10 @@ package body Mesu_Mng is
 
         Afpx.Encode_Field (Afpx_Xref.Main.Date, (00, 00),
                            Str_Mng.Current_Date_Printed);
-        Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                           Redisplay, Ptg_Result);
+        Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
 
         case Ptg_Result.Event is
-          when Refresh =>
-            Redisplay := True;
-          when Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
+          when Fd_Event | Timer_Event | Signal_Event | Refresh =>
             null;
           when Keyboard =>
 

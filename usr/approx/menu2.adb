@@ -214,7 +214,6 @@ package body Menu2 is
   procedure Main_Screen (Data_Changed : in Boolean) is
     Cursor_Col : Con_Io.Col_Range;
     Insert : Boolean;
-    Redisplay : Boolean;
     Ptg_Result : Afpx.Result_Rec;
     Restore : Restore_List;
 
@@ -241,15 +240,13 @@ package body Menu2 is
 
     Cursor_Col := 0;
     Insert := False;
-    Redisplay := False;
     Restore := None;
 
     loop
       Do_Restore (Restore);
 
 
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Redisplay, Ptg_Result);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
       Restore := None;
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
@@ -325,10 +322,9 @@ package body Menu2 is
             when others =>
               null;
           end case;
-        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+           | Afpx.Refresh =>
           null;
-        when Afpx.Refresh =>
-          Redisplay := True;
       end case;
     end loop;
 

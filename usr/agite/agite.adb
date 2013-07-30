@@ -42,7 +42,6 @@ procedure Agite is
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
   Insert       : Boolean;
-  Redisplay    : Boolean;
   Ptg_Result   : Afpx.Result_Rec;
   Dir_Field    : constant Afpx.Field_Range := 15;
   use type Afpx.Absolute_Field_Range;
@@ -111,7 +110,6 @@ procedure Agite is
   begin
     -- Get info: Path if needed and list
     Afpx.Suspend;
-    Redisplay := True;
     begin
       if Root.Is_Null then
         Git_If.Get_Root_And_Path (Root, Path);
@@ -408,7 +406,6 @@ procedure Agite is
     Cursor_Field := Afpx.Next_Cursor_Field (0);
     Cursor_Col := 0;
     Insert := False;
-    Redisplay := False;
     Afpx.Encode_Field (Afpx_Xref.Main.Host, (0, 0), Host_Str);
     Change_Dir (Dir);
     if Position /= 0 and then not Afpx.Line_List.Is_Empty then
@@ -766,8 +763,7 @@ begin
     Afpx.Set_Field_Activation (Afpx_Xref.Main.Pushd, Can_Push);
     Afpx.Set_Field_Activation (Afpx_Xref.Main.Popd,  Can_Pop);
 
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                       Redisplay, Ptg_Result);
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is
@@ -870,7 +866,6 @@ begin
         Reread (False);
       when Afpx.Refresh =>
         Reread (False);
-        Redisplay := True;
     end case;
   end loop;
 

@@ -281,7 +281,6 @@ package body Battle is
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
-    Redisplay    : Boolean;
     Result       : Afpx.Result_Rec;
     Target : Utils.Coord;
 
@@ -303,7 +302,6 @@ package body Battle is
     Cursor_Field := 1;
     Cursor_Col := 0;
     Insert := False;
-    Redisplay := False;
 
     -- Init my grid and screen from Fleet
     My_Grid := Empty_Grid;
@@ -350,7 +348,7 @@ package body Battle is
       Afpx.Set_Field_Activation (Afpx_Xref.Play.Exitgame, Server and then Done);
 
       -- Get action
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Redisplay, Result);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Result);
       case Result.Event is
         when Afpx.Signal_Event =>
           -- Aborted by signal
@@ -395,8 +393,6 @@ package body Battle is
             Communication.Send ("S" & Utils.Image (Target));
             Shot := True;
           end if;
-        when Afpx.Refresh =>
-          Redisplay := True;
         when others =>
           -- Other event
           null;

@@ -25,7 +25,6 @@ package body Details is
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
-    Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
     Comment_Height : Afpx.Height_Range;
     Comment_Width  : Afpx.Width_Range;
@@ -43,7 +42,6 @@ package body Details is
       Cursor_Field := 1;
       Cursor_Col := 0;
       Insert := False;
-      Redisplay := False;
 
       -- Get commit details
       if Cet_Details then
@@ -101,7 +99,6 @@ package body Details is
             if Commit.File.Image /= "/" then
               View (Commit.File.Image, Hash);
             end if;
-            Redisplay := True;
           when Show_Hist =>
             History.Handle (Root, Path, File, Commit.File.Image /= "/",
                             Hash);
@@ -149,8 +146,7 @@ package body Details is
 
     -- Main loop
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Redisplay, Ptg_Result);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -196,14 +192,9 @@ package body Details is
               null;
           end case;
 
-        when Afpx.Fd_Event =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+           | Afpx.Refresh =>
           null;
-        when Afpx.Timer_Event =>
-          null;
-        when Afpx.Signal_Event =>
-          null;
-        when Afpx.Refresh =>
-          Redisplay := True;
       end case;
     end loop;
 

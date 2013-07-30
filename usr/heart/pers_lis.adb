@@ -42,7 +42,6 @@ package body Pers_Lis is
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
-    Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
 
     List_Empty : Boolean;
@@ -194,7 +193,6 @@ package body Pers_Lis is
     Cursor_Field := 01;
     Cursor_Col := 0;
     Insert := False;
-    Redisplay := False;
 
     Build_List;
 
@@ -236,8 +234,7 @@ package body Pers_Lis is
       Afpx.Encode_Field (Afpx_Xref.Activity.Date, (00, 00),
                          Str_Mng.Current_Date_Printed);
 
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Redisplay, Ptg_Result);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
 
       -- Move in persons list according to Afpx selection
       if not List_Empty then
@@ -246,9 +243,7 @@ package body Pers_Lis is
 
       case Ptg_Result.Event is
 
-        when Refresh =>
-          Redisplay := True;
-        when Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
+        when Fd_Event | Timer_Event | Signal_Event | Refresh =>
           null;
         when Keyboard =>
 

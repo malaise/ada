@@ -12,7 +12,6 @@ procedure T_Afpx is
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
   Insert       : Boolean;
-  Redisplay    : Boolean;
   Ptg_Result   : Afpx.Result_Rec;
   Flip_Flop : Boolean;
 
@@ -148,14 +147,13 @@ begin
   Cursor_Field := 1;
   Cursor_Col := 0;
   Insert := False;
-  Redisplay := False;
   Flip_Flop := True;
 
   loop
     Afpx.Set_Field_Activation (5, Flip_Flop);
     Afpx.Set_Field_Protection (0, not Flip_Flop);
 
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Redisplay, Ptg_Result,
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result,
                        Right_Select => True,
                        Cursor_Col_Cb  => Cursor_Col_Cb'Unrestricted_Access,
                        List_Change_Cb => List_Change_Cb'Unrestricted_Access);
@@ -226,7 +224,8 @@ begin
         Afpx.Clear_Field (2);
         Encode_Status ("> Signal Event <");
       when Afpx.Refresh =>
-        Redisplay := True;
+        Afpx.Clear_Field (2);
+        Encode_Status ("> Refresh Event <");
     end case;
 
   end loop;

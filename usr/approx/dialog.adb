@@ -60,7 +60,6 @@ package body Dialog is
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col : Con_Io.Col_Range := 0;
     Insert    : Boolean := False;
-    Redisplay : Boolean := False;
     Ptg_Result : Afpx.Result_Rec;
 
     procedure Encode is
@@ -105,8 +104,7 @@ package body Dialog is
 
     loop
       Screen.Inform(Kind);
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Redisplay, Ptg_Result);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -137,10 +135,9 @@ package body Dialog is
             when others =>
               null;
           end case;
-        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+           | Afpx.Refresh =>
           null;
-        when Afpx.Refresh =>
-          Redisplay := True;
       end case;
     end loop;
   end Read_Coordinate;
@@ -152,7 +149,6 @@ package body Dialog is
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col : Con_Io.Col_Range := 0;
     Insert     : Boolean := False;
-    Redisplay  : Boolean := False;
     Ptg_Result : Afpx.Result_Rec;
     Degree : Natural;
 
@@ -198,8 +194,7 @@ package body Dialog is
 
     loop
       Screen.Inform(Screen.I_Degree);
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Redisplay, Ptg_Result);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -226,10 +221,9 @@ package body Dialog is
             when others =>
               null;
           end case;
-        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+           | Afpx.Refresh =>
           null;
-        when Afpx.Refresh =>
-          Redisplay := True;
       end case;
     end loop;
   end Read_Degree;

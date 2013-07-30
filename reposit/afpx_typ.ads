@@ -2,7 +2,7 @@ with As.U, Unicode, Con_Io;
 package Afpx_Typ is
 
   -- Version of Afpx
-  Afpx_Version : constant Float := 7.0;
+  Afpx_Version : constant Float := 8.0;
 
   -- Files path
   Dest_Path : As.U.Asu_Us;
@@ -31,10 +31,8 @@ package Afpx_Typ is
     Version    : Float;
     -- Screen size
     Size : Con_Io.Square;
-    -- To generate refresh. True in file if used
+    -- To generate refresh. True if Dscr is defined
     Modified   : Boolean;
-    -- To generate a complete redisplay of the window
-    Redisplay   : Boolean;
     -- In the file: index of the dscr for fields and init.
     -- In memory, its No
     Dscr_Index : Descriptor_Range;
@@ -72,6 +70,8 @@ package Afpx_Typ is
     --   Set if Kind is Button, and not if Kind is Put
     -- Others are fields
     Kind : Field_Kind_List;
+    -- Modified since last Put_then_get
+    Modified : Boolean;
     -- Field activation
     Activated : Boolean;
     -- Field protection for Get / Button fields

@@ -358,8 +358,14 @@ package Afpx is
   -- Get position in list corresponding to Percent
   function Get_List_Index (Percent : Percent_Range) return Natural;
 
-  -- Print the fields and the list (if Redisplay), then gets.
-  -- Redisplay should be set if modif of some other screen actions (con_io)
+  -- Redisplay can be called before Put_Then_Get to force the redraw
+  --  of all fields. Normally this is not needed because it is automatically
+  --  internally triggered when the list or a field is modified or on Refresh
+  --  event
+  procedure Redisplay;
+
+  -- Print the fields and the list (if Redisplay has been called or is needed),
+  --  then gets.
   --  justify a redisplay, by instance when Result.Event was Refresh. It is
   --  always reset to False by Put_Then_Get.
   -- In List: See above section on "User actions on the list".
@@ -391,7 +397,6 @@ package Afpx is
   procedure Put_Then_Get (Cursor_Field  : in out Field_Range;
                           Cursor_Col    : in out Con_Io.Col_Range;
                           Insert        : in out Boolean;
-                          Redisplay     : in out Boolean;
                           Result        : out Result_Rec;
                           Right_Select  : in Boolean := False;
                           Cursor_Col_Cb : access

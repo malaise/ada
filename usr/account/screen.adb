@@ -173,12 +173,10 @@ package body Screen is
     Cursor_Field : Afpx.Absolute_Field_Range := 1;
     Cursor_Col   : Con_Io.Col_Range := 0;
     Insert       : Boolean := False;
-    Redisplay    : Boolean := False;
     Ptg_Result   : Afpx.Result_Rec;
   begin
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Redisplay, Ptg_Result);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -224,10 +222,9 @@ package body Screen is
             when others =>
               null;
           end case;
-        when Afpx.Refresh =>
-          Redisplay := True;
-        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
-          Redisplay := True;
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+           | Afpx.Refresh =>
+          null;
       end case;
     end loop;
   end My_Ptg;

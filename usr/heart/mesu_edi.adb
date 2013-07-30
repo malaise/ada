@@ -143,7 +143,6 @@ package body Mesu_Edi is
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
-    Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
 
     Ok : Boolean;
@@ -386,19 +385,15 @@ package body Mesu_Edi is
     end if;
     Cursor_Col := 0;
     Insert := False;
-    Redisplay := False;
 
     -- Loop of Ptgs
     loop
       Afpx.Encode_Field (Afpx_Xref.Records.Date, (00, 00),
                          Str_Mng.Current_Date_Printed);
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Redisplay, Ptg_Result);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
 
       case Ptg_Result.Event is
-        when Refresh  =>
-          Redisplay := True;
-        when Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
+        when Fd_Event | Timer_Event | Signal_Event | Refresh =>
           null;
         when Keyboard =>
 
@@ -567,7 +562,6 @@ package body Mesu_Edi is
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
-    Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
   begin
 
@@ -616,19 +610,15 @@ package body Mesu_Edi is
     Cursor_Field := 01;
     Cursor_Col := 0;
     Insert := False;
-    Redisplay := False;
 
     -- Loop of ptgs
     loop
       Afpx.Encode_Field (Afpx_Xref.Records.Date, (00, 00),
                          Str_Mng.Current_Date_Printed);
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Redisplay, Ptg_Result);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
 
       case Ptg_Result.Event is
-        when Refresh =>
-          Redisplay := True;
-        when Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
+        when Fd_Event | Timer_Event | Signal_Event | Refresh =>
           null;
         when Keyboard =>
 

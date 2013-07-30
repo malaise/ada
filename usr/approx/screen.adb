@@ -122,7 +122,6 @@ package body Screen is
     Cursor_Field : Afpx.Field_Range := 1;
     Cursor_Col : Con_Io.Col_Range := 0;
     Insert : Boolean := False;
-    Redisplay : Boolean := False;
     Ptg_Result : Afpx.Result_Rec;
     Get_Prot : Boolean;
     Get_Act : Boolean;
@@ -135,8 +134,7 @@ package body Screen is
     end if;
     Afpx.Set_Field_Colors(Get_Fld, Background => Con_Io.Color_Of ("Black"));
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Redisplay, Ptg_Result);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -162,10 +160,9 @@ package body Screen is
             when others =>
               null;
           end case;
-        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+           | Afpx.Refresh =>
           null;
-        when Afpx.Refresh =>
-          Redisplay := True;
       end case;
     end loop;
     -- Restore Get field

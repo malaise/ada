@@ -202,7 +202,6 @@ package body Menu1 is
   procedure Main_Screen (Init_File_Name : in File.F_T_File_Name) is
     Cursor_Col : Con_Io.Col_Range;
     Insert    : Boolean;
-    Redisplay : Boolean;
     Ptg_Result : Afpx.Result_Rec;
     Restore : Restore_List;
     A_Point : Points.P_T_One_Point;
@@ -236,7 +235,6 @@ package body Menu1 is
 
     Cursor_Col := 0;
     Insert := False;
-    Redisplay := False;
     Data_Changed := True;
     Saved_Index := 0;
     loop
@@ -276,8 +274,7 @@ package body Menu1 is
           Afpx.Set_Field_Activation (Afpx_Xref.Points.Sort, True);
         end if;
 
-        Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                           Redisplay, Ptg_Result);
+        Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
         Restore := None;
         Saved_Index := 0;
         case Ptg_Result.Event is
@@ -393,10 +390,9 @@ package body Menu1 is
               when others =>
                 null;
             end case;
-          when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
+          when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+             | Afpx.Refresh =>
             null;
-          when Afpx.Refresh =>
-            Redisplay := True;
         end case;
       exception
         when Screen.Exit_Requested =>

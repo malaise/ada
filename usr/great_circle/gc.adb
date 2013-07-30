@@ -24,7 +24,6 @@ procedure Gc is
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col : Con_Io.Col_Range;
   Insert : Boolean;
-  Redisplay : Boolean;
   Result : Afpx.Result_Rec;
 
   subtype A_Flds is Afpx.Field_Range
@@ -246,10 +245,8 @@ begin
     Cursor_Field := Afpx.Next_Cursor_Field(0);
     Cursor_Col := 0;
     Insert := False;
-    Redisplay := False;
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Redisplay, Result, False,
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Result, False,
                          Next_Field_Cb'Access);
 
       if (Result.Event = Afpx.Keyboard
@@ -295,9 +292,6 @@ begin
         Sexa_Mode := not Sexa_Mode;
         Reset;
       end if;
-
-      -- Refresh
-      Redisplay := Result.Event = Afpx.Refresh;
 
     end loop;
 

@@ -9,7 +9,6 @@ procedure T_Screen is
   Insert : Boolean;
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
-  Redisplay    : Boolean;
   Ptg_Result   : Afpx.Result_Rec;
 
 
@@ -91,7 +90,6 @@ begin
   end if;
 
   Insert := False;
-  Redisplay := False;
   Cursor_Field := First_Get;
   Cursor_Col := 0;
 
@@ -192,7 +190,7 @@ begin
     end if;
 
 
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Redisplay, Ptg_Result);
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
 
     case Ptg_Result.Event is
 
@@ -237,8 +235,7 @@ begin
                 Afpx.Encode_Field(20, (00, 00),
                    "Remove xxxxx records from the selection");
               end if;
-              Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Redisplay,
-                                 Ptg_Result);
+              Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
               -- Here we can confirm or abort
               if      (    In_Add and then Ptg_Result.Field_No = 15)
               or else (not In_Add and then Ptg_Result.Field_No = 16) then

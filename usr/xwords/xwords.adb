@@ -37,7 +37,6 @@ procedure Xwords is
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
   Insert       : Boolean;
-  Redisplay    : Boolean;
   Ptg_Result   : Afpx.Result_Rec;
   Afpx_Item    : Afpx.Line_Rec;
   type Status_List is (Found, Ok, Error);
@@ -438,7 +437,6 @@ begin
   Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
   Cursor_Field := Get_Fld;
   Insert := False;
-  Redisplay := False;
 
   -- Load Anagram dictio
   Anagram_Loaded.Set (Trilean.Other);
@@ -507,7 +505,7 @@ begin
     -- Set cursor at last significant char of the Get field
     Cursor_Col := Afpx.Last_Index (Afpx.Decode_Field (Get_Fld, 0), True);
     Debug ("Calling PTG");
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Redisplay, Ptg_Result,
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result,
                        List_Change_Cb => List_Cb 'Unrestricted_Access);
     Debug ("PTG returning");
 
@@ -610,8 +608,6 @@ begin
             null;
         end case;
 
-      when Afpx.Refresh =>
-        Redisplay := True;
       when others =>
         null;
     end case;

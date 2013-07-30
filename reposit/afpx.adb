@@ -153,11 +153,16 @@ package body Afpx is
     -- Erase a field (screen_background, screen_background)
     procedure Erase_Field (Field_No : in Afpx_Typ.Absolute_Field_Range);
 
+    -- Force redisplay at next Ptg
+    procedure Redisplay;
+
+    -- Force flush at next Ptg
+    procedure Flush;
+
     -- The put_then get
     procedure Ptg (Cursor_Field  : in out Afpx_Typ.Field_Range;
                    Cursor_Col    : in out Con_Io.Col_Range;
                    Insert        : in out Boolean;
-                   Redisplay     : in out Boolean;
                    Result        : out Result_Rec;
                    Right_Select  : in Boolean;
                    Get_Active    : in Boolean;
@@ -174,9 +179,6 @@ package body Afpx is
   end Af_Ptg;
 
   package Af_List is
-
-    -- Is the list modified since previous Put_Then_Get
-    Modified : Boolean := True;
 
     -- Open / Re-open the list window
     procedure Open;
@@ -263,7 +265,7 @@ package body Afpx is
     end if;
     -- Done at each descriptor
     Af_List.Open;
-    Af_Dscr.Current_Dscr.Modified := True;
+    Redisplay;
     Af_Con_Io.Set_Background (Af_Dscr.Current_Dscr.Background);
     if Clear_Screen then
       Af_Con_Io.Clear;
@@ -310,7 +312,7 @@ package body Afpx is
     Af_Dscr.Check;
     Console.Resume;
     -- Trigger a complete refresh
-    Af_Dscr.Current_Dscr.Redisplay := True;
+    Redisplay;
   end Resume;
 
   function Is_Suspended return Boolean is
@@ -356,6 +358,7 @@ package body Afpx is
       Af_Dscr.Chars(I) := Con_Io.Space;
     end loop;
     Af_Dscr.Current_Dscr.Modified := True;
+    Af_Dscr.Fields(Fn).Modified := True;
    end Clear_Field;
 
   -- Reset the field from initial definition in file
@@ -368,6 +371,7 @@ package body Afpx is
     Af_Dscr.Check(Fn);
     Af_Dscr.Load_Field (Fn, Reset_Colors, Reset_String);
     Af_Dscr.Current_Dscr.Modified := True;
+    Af_Dscr.Fields(Fn).Modified := True;
   end Reset_Field;
 
   -- Field Height
@@ -477,6 +481,7 @@ package body Afpx is
           + From_Pos.Col;
     Af_Dscr.Chars (Init_Index .. Init_Index + Str'Length - 1) := Str;
     Af_Dscr.Current_Dscr.Modified := True;
+    Af_Dscr.Fields(Fn).Modified := True;
   end Encode_Field;
 
   procedure Encode_Field (Field_No : in Field_Range;
@@ -589,17 +594,17 @@ package body Afpx is
 
     -- Copy colors if not current
     if Foreground /= Con_Io.Current then
-      Field.Colors.Foreground := Foreground;
+      Af_Dscr.Fields(Fn).Colors.Foreground := Foreground;
     end if;
     if Background /= Con_Io.Current then
-      Field.Colors.Background := Background;
+      Af_Dscr.Fields(Fn).Colors.Background := Background;
     end if;
     if Selected /= Con_Io.Current then
-      Field.Colors.Selected := Selected;
+      Af_Dscr.Fields(Fn).Colors.Selected := Selected;
     end if;
     -- Affect if fields_array
-    Af_Dscr.Fields(Fn) := Field;
     Af_Dscr.Current_Dscr.Modified := True;
+    Af_Dscr.Fields(Fn).Modified := True;
   end Set_Field_Colors;
 
   -- Activate/Desactivate a field for further put_then_get
@@ -611,6 +616,7 @@ package body Afpx is
     Af_Dscr.Check(Fn);
     Af_Dscr.Fields(Fn).Activated := Activate;
     Af_Dscr.Current_Dscr.Modified := True;
+    Af_Dscr.Fields(Fn).Modified := True;
   end Set_Field_Activation;
 
   function Get_Field_Activation (Field_No : in Absolute_Field_Range)
@@ -638,6 +644,7 @@ package body Afpx is
     end if;
     Af_Dscr.Fields(Fn).Isprotected := Protect;
     Af_Dscr.Current_Dscr.Modified := True;
+    Af_Dscr.Fields(Fn).Modified := True;
   end Set_Field_Protection;
 
   function Get_Field_Protection (Field_No : in Absolute_Field_Range)
@@ -867,11 +874,16 @@ package body Afpx is
   function Get_List_Index (Percent : Percent_Range) return Natural
            renames Af_List.Get_Index;
 
+  -- Force redisplay at next Put_Then_Get
+  procedure Redisplay is
+  begin
+    Af_Ptg.Redisplay;
+  end Redisplay;
+
   -- Print the fields and the list, then gets
   procedure Put_Then_Get (Cursor_Field  : in out Field_Range;
                           Cursor_Col    : in out Con_Io.Col_Range;
                           Insert        : in out Boolean;
-                          Redisplay     : in out Boolean;
                           Result        : out Result_Rec;
                           Right_Select  : in Boolean := False;
                           Cursor_Col_Cb : access
@@ -917,7 +929,7 @@ package body Afpx is
       end if;
     end if;
 
-    Af_Ptg.Ptg (Cf, Cursor_Col, Insert, Redisplay, Result, Right_Select,
+    Af_Ptg.Ptg (Cf, Cursor_Col, Insert, Result, Right_Select,
                 Some_Get, Cursor_Col_Cb, List_Change_Cb);
     Cursor_Field := Field_Range(Cf);
     In_Ptg := False;

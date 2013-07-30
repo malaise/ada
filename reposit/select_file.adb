@@ -56,7 +56,6 @@ package body Select_File is
   function Confirm return Boolean is
     Cursor_Col : Con_Io.Col_Range := 0;
     Insert : Boolean := False;
-    Redisplay : Boolean := False;
     Ptg_Result : Afpx.Result_Rec;
     Get_Prot : Boolean;
     Get_Act : Boolean;
@@ -70,8 +69,7 @@ package body Select_File is
     Afpx.Set_Field_Colors (Get_Fld,
          Background => Con_Io.Color_Of ("Black"));
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Redisplay, Ptg_Result);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -104,7 +102,7 @@ package body Select_File is
         when Afpx.Signal_Event =>
           Signal_Callback;
         when Afpx.Refresh =>
-          Redisplay := True;
+          null;
       end case;
     end loop;
     -- Restore Get field colors
@@ -125,7 +123,6 @@ package body Select_File is
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
-    Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
 
 
@@ -393,11 +390,9 @@ package body Select_File is
     Change_Dir (".", (if Try_Select then Current_File else ""));
 
     Cursor_Field := Get_Fld;
-    Redisplay := False;
     loop
 
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Redisplay,
-                         Ptg_Result);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -483,7 +478,7 @@ package body Select_File is
         when Afpx.Signal_Event =>
           Signal_Callback;
         when Afpx.Refresh =>
-          Redisplay := True;
+          null;
       end case;
     end loop;
 

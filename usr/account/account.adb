@@ -9,7 +9,6 @@ procedure Account is
   Cursor_Field : Afpx.Absolute_Field_Range := 1;
   Cursor_Col   : Con_Io.Col_Range := 0;
   Insert       : Boolean := False;
-  Redisplay    : Boolean := False;
   Ptg_Result   : Afpx.Result_Rec;
 
 
@@ -76,8 +75,7 @@ begin
 
   -- Now the main loop
   loop
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                       Redisplay, Ptg_Result);
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
     if Afpx.Line_List.Is_Empty then
       Mng.Set_Current (0);
     else
@@ -174,9 +172,8 @@ begin
             Screen.Ack_Error(Screen.Internal_Error);
             Mng.Save(Mng.Rescue);
         end case;
-      when Afpx.Refresh =>
-        Redisplay := True;
-      when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
+      when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+         | Afpx.Refresh =>
         null;
     end case;
   end loop;

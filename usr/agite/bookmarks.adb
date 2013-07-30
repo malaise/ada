@@ -72,7 +72,6 @@ package body Bookmarks is
     -- Afpx stuff
     Cursor_Field : Afpx.Field_Range;
     Insert       : Boolean;
-    Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
     use type Afpx.Absolute_Field_Range, Afpx.Descriptor_Range;
 
@@ -94,7 +93,6 @@ package body Bookmarks is
     Cursor_Field := Afpx.Next_Cursor_Field (0);
     Cursor_Col := 0;
     Insert := False;
-    Redisplay := False;
     Dir_Width := Afpx.Get_Field_Width (10);
 
     -- Encode dir
@@ -120,8 +118,7 @@ package body Bookmarks is
         Afpx.Reset_Field (Afpx_Xref.Bookmarks.Del);
       end if;
 
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Redisplay, Ptg_Result);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -208,14 +205,9 @@ package body Bookmarks is
               null;
           end case;
 
-        when Afpx.Fd_Event =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+           | Afpx.Refresh =>
           null;
-        when Afpx.Timer_Event =>
-          null;
-        when Afpx.Signal_Event =>
-          null;
-        when Afpx.Refresh =>
-          Redisplay := True;
       end case;
     end loop;
 

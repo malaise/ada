@@ -472,7 +472,6 @@ package body Edition is
     Cursor_Field : Afpx.Absolute_Field_Range := 0;
     Cursor_Col   : Con_Io.Col_Range := 0;
     Insert       : Boolean := False;
-    Redisplay    : Boolean := False;
     Ptg_Result   : Afpx.Result_Rec;
     -- Current Kind and Status
     Kind : Oper_Def.Kind_List;
@@ -532,7 +531,7 @@ package body Edition is
       One_Edit:
       loop
         Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Insert,
-                          Redisplay, Ptg_Result, False, Set_Cursor'Access);
+                          Ptg_Result, False, Set_Cursor'Access);
         case Ptg_Result.Event is
 
           when Afpx.Keyboard =>
@@ -634,9 +633,8 @@ package body Edition is
                 null;
             end case;
 
-          when Afpx.Refresh =>
-            Redisplay := True;
-          when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
+          when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+             | Afpx.Refresh =>
             null;
         end case;
 

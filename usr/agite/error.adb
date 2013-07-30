@@ -5,7 +5,6 @@ procedure Error (Action, Target, Text : String) is
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
   Insert       : Boolean;
-  Redisplay    : Boolean;
   Ptg_Result   : Afpx.Result_Rec;
 
 begin
@@ -13,7 +12,6 @@ begin
   Cursor_Field := 1;
   Cursor_Col := 0;
   Insert := False;
-  Redisplay := False;
   Afpx.Encode_Field (Afpx_Xref.Error.Action, (0, 0),
       Str_Util.Center (Action, Afpx.Get_Field_Width (Afpx_Xref.Error.Action)));
   Afpx.Encode_Field (Afpx_Xref.Error.Target, (0, 0),
@@ -24,8 +22,7 @@ begin
   -- Main loop
   loop
 
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                       Redisplay, Ptg_Result);
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is
@@ -46,14 +43,9 @@ begin
             null;
         end case;
 
-      when Afpx.Fd_Event =>
+      when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+         | Afpx.Refresh =>
         null;
-      when Afpx.Timer_Event =>
-        null;
-      when Afpx.Signal_Event =>
-        null;
-      when Afpx.Refresh =>
-        Redisplay := True;
     end case;
   end loop;
 

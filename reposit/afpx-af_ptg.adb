@@ -36,6 +36,12 @@ package body Af_Ptg is
   Selection_Insert : Boolean;
   Selection_Col : Con_Io.Col_Range;
 
+  -- Need to flush at next Ptg
+  Need_Flush : Boolean := False;
+
+  -- Need to redisplay at next Ptg
+  Need_Redisplay : Boolean := False;
+
   -- Sets Foreground and background according to state
   procedure Set_Colors (Field : in Afpx_Typ.Field_Rec;
                         State : in State_List;
@@ -652,12 +658,22 @@ package body Af_Ptg is
     end if;
   end Significant_Char;
 
+  -- Force flush at next Ptg
+  procedure Flush is
+  begin
+    Need_Flush := True;
+  end Flush;
+
+  -- Force redisplay at next Ptg
+  procedure Redisplay is
+  begin
+    Need_Redisplay := True;
+  end Redisplay;
 
   -- Print the fields and the list, then gets
   procedure Ptg (Cursor_Field  : in out Afpx_Typ.Field_Range;
                  Cursor_Col    : in out Con_Io.Col_Range;
                  Insert        : in out Boolean;
-                 Redisplay     : in out Boolean;
                  Result        : out Result_Rec;
                  Right_Select  : in Boolean;
                  Get_Active    : in Boolean;
@@ -683,7 +699,6 @@ package body Af_Ptg is
     Foreground : Con_Io.Effective_Colors;
     Background : Con_Io.Effective_Colors;
     Done : Boolean;
-    Need_Redisplay : Boolean;
     Selection_Result : Integer;
     List_Init : Boolean;
     List_Scrolled : Boolean;
@@ -697,9 +712,6 @@ package body Af_Ptg is
 
     -- Reset last selection for double click
     Last_Selected_Id := 0;
-
-    -- Need complete redisplay of window?
-    Need_Redisplay := Redisplay or else Af_Dscr.Current_Dscr.Redisplay;
 
     -- Erase potential garbage and set Dscr background if redisplay
     if Need_Redisplay then
@@ -737,12 +749,14 @@ package body Af_Ptg is
 
       -- Force List to be updated if Line_List has changed
       if Line_List.Is_Modified then
-        Af_List.Modified := True;
+        Af_Dscr.Fields(Lfn).Modified := True;
         Line_List.Modification_Ack;
       end if;
 
+      -- Update list
       if Af_Dscr.Has_List
-      and then (Need_Redisplay or else Af_List.Modified) then
+      and then (Need_Redisplay or else Af_Dscr.Fields(Lfn).Modified) then
+        Need_Flush := True;
         if not Af_Dscr.Has_List then
           -- No list in this Dscr
           null;
@@ -771,29 +785,31 @@ package body Af_Ptg is
       end if;
       List_Init := True;
 
-      -- Redisplay all fields if requested or needed
+      -- Redisplay all fields if requested or modified fields
       if Need_Redisplay or else Af_Dscr.Current_Dscr.Modified then
+        Need_Flush := True;
         for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
-          if Af_Dscr.Fields(I).Activated then
-            Put_Field (I, Normal);
-          else
-            Erase_Field (I);
+          if Need_Redisplay or else Af_Dscr.Fields(I).Modified then
+            Af_Dscr.Fields(I).Modified := False;
+            if Af_Dscr.Fields(I).Activated then
+              Put_Field (I, Normal);
+            else
+              Erase_Field (I);
+            end if;
           end if;
         end loop;
       end if;
 
       -- Flush if something changed
-      if Need_Redisplay
-      or else Af_List.Modified
-      or else Af_Dscr.Current_Dscr.Modified then
+      if Need_Flush then
         Console.Flush;
       end if;
 
-      -- No more forced redisplay
+      -- No more forced redisplay and/or flush
       Need_Redisplay := False;
+      Need_Flush := False;
       Af_Dscr.Current_Dscr.Modified := False;
-      Af_Dscr.Current_Dscr.Redisplay := False;
-      Af_List.Modified := False;
+      Af_Dscr.Fields(Lfn).Modified := False;
 
       -- Get field, set colors when field changes
       if New_Field then
@@ -1037,6 +1053,7 @@ package body Af_Ptg is
           Result := (Id_Selected_Right  =>
                        Af_List.Get_Status.Ids_Selected (List_Right),
                      Event        => Refresh);
+          Need_Redisplay := True;
           Done := True;
         when Con_Io.Fd_Event =>
           if List_Present then
@@ -1074,7 +1091,6 @@ package body Af_Ptg is
       exit when Done;
     end loop;
 
-    Redisplay := False;
   end Ptg;
 
 end Af_Ptg;

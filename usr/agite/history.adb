@@ -49,7 +49,6 @@ package body History is
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
-    Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
     List_Height  : Afpx.Height_Range;
     List_Width   : Afpx.Width_Range;
@@ -70,7 +69,6 @@ package body History is
       Cursor_Field := 1;
       Cursor_Col := 0;
       Insert := False;
-      Redisplay := False;
       -- List characteristics
       Afpx.Get_Field_Size (Afpx.List_Field_No, List_Height, List_Width);
       -- Encode file/dir
@@ -143,7 +141,6 @@ package body History is
       case What is
         when Show_View =>
           View (Path & Name, Log.Hash);
-          Redisplay := True;
         when Show_Details =>
           Details.Handle (Root, Log.Hash);
           Init;
@@ -242,8 +239,7 @@ package body History is
 
     -- Main loop
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Redisplay, Ptg_Result, True,
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, True,
                          List_Change_Cb => List_Change'Access);
 
       case Ptg_Result.Event is
@@ -287,14 +283,9 @@ package body History is
               null;
           end case;
 
-       when Afpx.Fd_Event =>
+       when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+          | Afpx.Refresh =>
           null;
-        when Afpx.Timer_Event =>
-          null;
-        when Afpx.Signal_Event =>
-          null;
-        when Afpx.Refresh =>
-          Redisplay := True;
       end case;
     end loop;
 

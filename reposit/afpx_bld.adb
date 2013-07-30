@@ -616,6 +616,7 @@ procedure Afpx_Bld is
     end if;
     -- In List
     Fields(0).Kind := Afpx_Typ.Button;
+    Fields(0).Modified := False;
     Fields(0).Activated := True;
     Fields(0).Isprotected := False;
     Load_Geometry (Ctx.Get_Child (Node, 1), 0, Screen_Size);
@@ -669,6 +670,7 @@ procedure Afpx_Bld is
         end;
       end if;
     end loop;
+    Fields(No).Modified := True;
     Fields(No).Activated := True;
     Fields(No).Isprotected := False;
     -- Set Field name
@@ -898,7 +900,6 @@ procedure Afpx_Bld is
 
     -- Init dscr and fields array. No list at init
     Descriptors(Dscr_No).Modified := True;
-    Descriptors(Dscr_No).Redisplay := True;
     Descriptors(Dscr_No).Dscr_Index := Dscr_Index;
     Descriptors(Dscr_No).Nb_Fields := 0;
     Init_Index := 1;
