@@ -393,14 +393,18 @@ package Afpx is
   --  Line_List (see Dynamic_List).
   -- If no field is Get (or all protected or desactivated,
   --  then cursor field and col are not significant, otherwise
-  --  they are used at initialisation and set before retrurning.
-  -- No call to Put_Then_Get are allowed while already in Put_Then_Get
-  --  (i.e. from an Event callback or Cursor_Col_Cb or List_Change_Cb).
+  --  they are used at initialisation and set before returning.
+  -- While already in Put_Then_Get (i.e. from an Event callback or
+  --  Cursor_Col_Cb or List_Change_Cb) it is forbidden to call:
+  --  - Put_Then_Get, Erase, Put
+  --  - Use/Release Descriptor, Suspend/Resume
+  --  - Set_Field_Activation/Protection
+  --  This would raise In_Put_Then_Get
   -- Exceptions :  No_Descriptor,
   --               Invalid_Field, Invalid_Col (for cursor),
   --               String_Too_Long (if an item in list is too long),
-  --               In_Put_Then_Get (already in Put_Then_Get).
   --               Suspended (Afpx is currentlky suspended)
+  --               In_Put_Then_Get (already in Put_Then_Get while calling Afpx)
   procedure Put_Then_Get (Cursor_Field  : in out Field_Range;
                           Cursor_Col    : in out Con_Io.Col_Range;
                           Insert        : in out Boolean;

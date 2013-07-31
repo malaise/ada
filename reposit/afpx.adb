@@ -156,9 +156,6 @@ package body Afpx is
     -- Force redisplay at next Ptg
     procedure Redisplay;
 
-    -- Force flush at next Ptg
-    procedure Flush;
-
     -- The put_then get
     procedure Ptg (Cursor_Field  : in out Afpx_Typ.Field_Range;
                    Cursor_Col    : in out Con_Io.Col_Range;
@@ -232,6 +229,13 @@ package body Afpx is
 
   -- No call to Ptg from a Ptg/Event callback.
   In_Ptg : Boolean := False;
+  -- No "active" call in a Put_Then_Get callback
+  procedure Check_Ptg is
+  begin
+    if In_Ptg then
+      raise In_Put_Then_Get;
+    end if;
+  end Check_Ptg;
 
   -- Width and height of the screen
   procedure Get_Screen_Size (Height : out Height_Range;
@@ -245,6 +249,7 @@ package body Afpx is
   procedure Use_Descriptor (Descriptor_No : in Descriptor_Range;
                             Clear_Screen : in Boolean := True) is
   begin
+    Check_Ptg;
     Af_Dscr.Load_Dscr (Afpx_Typ.Descriptor_Range (Descriptor_No));
     if not Console.Is_Open then
       -- Done only once at first descriptor
@@ -282,6 +287,7 @@ package body Afpx is
   -- Close the Console
   procedure Release_Descriptor is
   begin
+    Check_Ptg;
     Af_Dscr.Check;
     Console.Close;
     Af_Dscr.Release_Dscr;
@@ -303,6 +309,7 @@ package body Afpx is
   -- Suspend and resume the descriptor
   procedure Suspend is
   begin
+    Check_Ptg;
     Af_Dscr.Check;
     if Is_Suspended then
       raise Suspended;
@@ -312,6 +319,7 @@ package body Afpx is
 
   procedure Resume is
   begin
+    Check_Ptg;
     Af_Dscr.Check;
     if not Is_Suspended then
       raise Suspended;
@@ -617,6 +625,7 @@ package body Afpx is
     Fn : constant Afpx_Typ.Absolute_Field_Range
        := Afpx_Typ.Absolute_Field_Range(Field_No);
   begin
+    Check_Ptg;
     Af_Dscr.Check(Fn);
     Af_Dscr.Fields(Fn).Activated := Activate;
     Af_Dscr.Current_Dscr.Modified := True;
@@ -642,6 +651,7 @@ package body Afpx is
        := Afpx_Typ.Absolute_Field_Range(Field_No);
     use Afpx_Typ;
   begin
+    Check_Ptg;
     Af_Dscr.Check(Fn);
     if Af_Dscr.Fields(Fn).Kind = Afpx_Typ.Put then
       raise Invalid_Field;
@@ -668,6 +678,7 @@ package body Afpx is
   procedure Erase is
     use Afpx_Typ;
   begin
+    Check_Ptg;
     Af_Dscr.Check;
     -- Check no list active in descriptor
     if Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
@@ -687,6 +698,7 @@ package body Afpx is
   procedure Put is
     use Afpx_Typ;
   begin
+    Check_Ptg;
     Af_Dscr.Check;
     -- Check no list active in descriptor
     if Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
@@ -804,7 +816,7 @@ package body Afpx is
     pragma Unreferenced (Dummy);
   begin
     Af_Dscr.Check(Lfn);
-    Dummy := Af_List.Update(Action, Display => False);
+    Dummy := Af_List.Update (Action, Display => False);
   end Update_List;
 
   -- Returns the index (from 0 to Str'Length-1) of the first character of Str
@@ -907,10 +919,7 @@ package body Afpx is
     if Is_Suspended then
       raise Suspended;
     end if;
-    -- No call to Put_Then_Get in a Put_Then_Get callback
-    if In_Ptg then
-      raise In_Put_Then_Get;
-    end if;
+    Check_Ptg;
     -- Now we are in put then get until the end
     In_Ptg := True;
     Af_Dscr.Check;

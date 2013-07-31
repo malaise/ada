@@ -178,7 +178,6 @@ package body Af_List is
     -- Set status
     Compute (First_Item_Id);
     Af_Dscr.Fields(Lfn).Modified := False;
-    Af_Ptg.Flush;
 
     if Line_List.Is_Empty then
       Set_Colors;

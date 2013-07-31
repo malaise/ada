@@ -36,8 +36,8 @@ package body Af_Ptg is
   Selection_Insert : Boolean;
   Selection_Col : Con_Io.Col_Range;
 
-  -- Need to flush at next Ptg
-  Need_Flush : Boolean := False;
+  -- Cursor field at end of prev Ptg
+  Prev_Cursor_Field : Afpx_Typ.Absolute_Field_Range := Afpx_Typ.List_Field_No;
 
   -- Need to redisplay at next Ptg
   Need_Redisplay : Boolean := False;
@@ -658,12 +658,6 @@ package body Af_Ptg is
     end if;
   end Significant_Char;
 
-  -- Force flush at next Ptg
-  procedure Flush is
-  begin
-    Need_Flush := True;
-  end Flush;
-
   -- Force redisplay at next Ptg
   procedure Redisplay is
   begin
@@ -756,7 +750,6 @@ package body Af_Ptg is
       -- Update list
       if Af_Dscr.Has_List
       and then (Need_Redisplay or else Af_Dscr.Fields(Lfn).Modified) then
-        Need_Flush := True;
         if not Af_Dscr.Has_List then
           -- No list in this Dscr
           null;
@@ -785,11 +778,16 @@ package body Af_Ptg is
       end if;
       List_Init := True;
 
-      -- Redisplay all fields if requested or modified fields
-      if Need_Redisplay or else Af_Dscr.Current_Dscr.Modified then
-        Need_Flush := True;
+      -- Redisplay all fields if requested, or modified fields, or
+      --  cursor field that has changed
+      if Need_Redisplay
+      or else Af_Dscr.Current_Dscr.Modified 
+      or else Cursor_Field /= Prev_Cursor_Field then
         for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
-          if Need_Redisplay or else Af_Dscr.Fields(I).Modified then
+          if Need_Redisplay
+          or else Af_Dscr.Fields(I).Modified
+          or else (Cursor_Field /= Prev_Cursor_Field
+            and then (I = Cursor_Field or else I = Prev_Cursor_Field) ) then
             Af_Dscr.Fields(I).Modified := False;
             if Af_Dscr.Fields(I).Activated then
               Put_Field (I, Normal);
@@ -799,17 +797,8 @@ package body Af_Ptg is
           end if;
         end loop;
       end if;
+      Prev_Cursor_Field := Cursor_Field;
 
-      -- Flush if something changed
-      if Need_Flush then
-        Console.Flush;
-      end if;
-
-      -- No more forced redisplay and/or flush
-      Need_Redisplay := False;
-      Need_Flush := False;
-      Af_Dscr.Current_Dscr.Modified := False;
-      Af_Dscr.Fields(Lfn).Modified := False;
 
       -- Get field, set colors when field changes
       if New_Field then
@@ -817,6 +806,15 @@ package body Af_Ptg is
         Set_Colors (Field, Selected, Foreground, Background);
         New_Field := False;
       end if;
+
+      -- Flush output
+      Console.Flush;
+
+      -- No more forced redisplay and/or flush
+      Need_Redisplay := False;
+      Af_Dscr.Current_Dscr.Modified := False;
+      Af_Dscr.Fields(Lfn).Modified := False;
+
       if Get_Active then
         Pos := Cursor_Col + 1;
         -- Move at beginning of field and put_then_get
