@@ -9,17 +9,19 @@ and must sink the fleet of his opponent.
 
 The game is decomposed in two steps:
 
-- Each player defines his own fleet,
-- The players try to sink the opponent fleet by shooting at it.
+- Setup: Each player defines his own fleet,
+- Battle: The players try to sink the opponent fleet by shooting  alternatively.
 
 Starting the game
 -----------------
 The arguments of the games are:
 
-- <ipm_address>:<port> of the communication channel,
+- <ipm_address>:<port> of the communication channel, (LAN and port names can
+  also be provided),
 - an optional -s flag for the server (also game leader).
 
-The game is blocked as long as a client and a server are not connected.
+The game is blocked as long as a client and a server are not connected. The
+title is 'Connecting as server' or 'Connecting as client' during this time.
 
  
 Setting up the fleet
@@ -36,7 +38,7 @@ Each fleet is composed of:
 - 1 aircraft carrier of 5 cells
 - 1 battleship of 4 cells
 - 1 cruiser of 3 cells
-- 2 submarines of 2 cells
+- 2 submarines of 2 cells eac
 
 Each ship must be in one row or in one column, but not in diagonal. The ships
 cannot overlap nor touch each other by the border. They can touch by the
@@ -62,8 +64,8 @@ anchor:XGrid[] Example:
 
 Graphical interface
 ~~~~~~~~~~~~~~~~~~~
-The screen is decomposed in two areas: the 'grid' (with the ships already placed)
-on the left and the available 'actions' on the right.
+The screen is decomposed in two areas: the 'grid' (with the ships placed so
+far) on the left and the available 'actions' on the right.
 
 Actions are the list of available ships (the ones that are not already in the
 grid), plus a 'Cancel' button while setting a ship, plus a 'Delete' button
@@ -72,21 +74,20 @@ the ships are placed in the grid),
 
 .Setting a ship
 
-- Select an available ship in the 'actions' area
-  * The ship becomes enhanced
-  * A Cancel button appears
+- Select an available ship in the kist of 'actions' area
+  * The ship becomes enhanced and the other ships of the list are masked,
+  * A Cancel button appears.
 - Click in a square in the 'grid'. If it is valid:
-  * The square becomes allocated
-  * The other available squares become back to normal
-  * The possible other extremities for the ship are enhanced as proposed (up to four
-    possibilities). If no possibility the click has no effect.
+  * The square becomes allocated,
+  * The possible other extremities for the ship are enhanced as proposed (up to
+    four possibilities). If there is no possibility then the click is not valid.
 - Click in one proposed square,
    * The ship is placed, all its squares are allocated,
-   * The other available squares become back to normal
-   * This is the end of the action: the ship is removed from the 'actions' list
+   * The other available squares become back to normal,
+   * This is the end of the action: the ship is removed from the 'actions' list.
 
-Example: Suppose that in the grid in xref:XGrid[example] all the ships except
-the cruiser are already set and you now set it in row D.
+Example: Suppose that in the grid in xref:XGrid[example] all the ships are
+already set except the cruiser and you now set it in D6-D8.
 
 - you select the cruiser
 - you click in D8
@@ -97,21 +98,24 @@ the cruiser are already set and you now set it in row D.
 
 .Deleting a ship
 - Select the delete button in the 'actions' area
-  * The delete action becomes enhanced
-  * The ships in the 'grid' are enhanced
-- Select an enhanced square
-  * The selected ship is removed from the 'grid'
-  * It is added in the 'actions' list
+  * The ships of the list are masked,
+  *  A Cancel button appears.
+- Select a ship in the grid
+  * The selected ship is removed from the 'grid',
+  * It is added in the 'actions' list,
   * The delete button becomes back to normal (or is hidden if no more ship is
-    in the grid)
+    in the grid).
 
-Not allocated squares are in light blue, allocated squares are in black and proposed 
-squares are in green.
+Not allocated squares are in light blue, allocated squares are in black and
+proposed squares are in green.
 
 .End of set-up
 As soon as and as long as all the ships are in the grid a 'Done' button allows
-completing the set-up. When both players have set up their fleet they start to 
-play.
+validating the set-up.
+
+The title is 'Setup' as long as you don't validate the
+setup. It becomes 'Waiting' until the opponent validates his setup. When both
+players have validated then they start to play.
 
 Playing the game
 ----------------
@@ -119,40 +123,48 @@ Playing the game
 Rules
 ~~~~~
 The leader starts first by shooting in one cell of his opponent. The result is
-a miss or a hit. Then the other player shoots... and so on. Bothe players see
+a miss or a hit. Then his opponent shoots... and so on. Both players see
 the result of the shoot.
 
 When a ship is sunk both players are notified of the ship sunk.
 
-When all a fleet is sunk the game ends.
+When a player sinks all the fleet of his opponnent then he is the winner of
+the gamei, which ends.
 
 Graphical interface
 ~~~~~~~~~~~~~~~~~~~
 The screen is decomposed in two areas:
 
-- the player's local grid on the left, with the ships and the results of the
+- Your  local grid on the left, with your ships and the results of the
  opponent's shoots,
-- the target grid on the right, with the results of the player's shoot.
+- the target grid on the right, with the results of your shoot.
 
-When it is your opponent go to shoot, your local grid is enhanced. When he shoots,
-if it is a hit the square becomes red otherwise it becomes dark blue. +
+.Waiting for the opponent to play
+When it is your opponent go to shoot, the title is 'Waiting' and your local grid
+is enhanced. When he shoots, if it is a hit then the square becomes red,
+otherwise it becomes dark blue. +
 The square coordinates and result are summarized by a text below the grid, for
 examples:
 
 - A5 missed
 - D4 hit
-- E8 hit, cruiser sunk
-- J10 hit, aircraft carrier sunk, you loose
+- E8 Cruiser sunk
+- J10 Aircraft carrier sunk. You loose
 
 This text is cleared when you play.
 
-When it is your go to shoot your target grid is enhanced. Select a square
-to shoot in it. If it is a hit the square becomes red, otherwise it becomes
-dark blue. +
+.Playing
+When it is your go to shoot the title is 'Shoot' and your target grid is
+enhanced. Select a square to shoot in it. If it is a hit then the square
+becomes black, otherwise it becomes dark blue. When a ship is sunk it becomes
+red. +
 The square coordinates and result are summarized by a text below the grid
 until your opponent plays.
  
-When the game ends the leader has two buttons: Restart and Exit.
+.End of the game
+When the game ends the title becomes 'End' and the leader has two buttons:
+Restart and Exit. If he restarts, then both players enter the setup again...
+then the leader's opponent will start shooting first, and so on.
 
 Design
 ------
@@ -170,13 +182,16 @@ message:
   "SE5"
 - R <row> <column> <result> [ <sink> ]: reply and coordinates, where
   * <result> is M (missed), H (hit), S (sink) or E (end)
-  * <sink> (when <result> is S or E) is the sinked ship name, ex: "RIaM" "RE5H"
-    "RE6Saircraft carrier" "RF7Ecruiser"
+  * <sink> (when <result> is S or E) is the sinked ship name,
+
++
+ex: "RIaM" "RE5H" "RE6SAircraft carrier" "RF7ECruiser"
+
 - E: exit
 
 Protocol
 ~~~~~~~~
-- When the games starts it shows "connecting".
+- When the games starts it shows "connecting as xxx".
 - If it is client it periodically sends a "C".
 - When the server receives a "C" it sends a "Z". Both games enter the set-up
   phase.
@@ -186,7 +201,8 @@ Protocol
   * the client waits for the shoot (displays the shoot received), and replies
 - When the game is ended the server displays the buttons Restart and Exit and
   sends a "Z" or "E" according to the players selection.
-- Both games enter the set-up or exit.
+- Both games enter the set-up then play, or exit. 
+- The first player to start shooting alternates at each game.
 
 States
 ~~~~~~
@@ -202,7 +218,7 @@ Each game knows its current state:
 - Ended (for server: get action Restart or Exit and send it, for client: wait
   for this action from server)
 
-Each cell of the local grid is either Empty, Used or Hit.
+Each cell of the local grid is either Empty, Empty already shot, Used or Hit.
 
 Each cell of the target grid is either Unknown, Missed or Hit.
 

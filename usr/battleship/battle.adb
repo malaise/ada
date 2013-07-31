@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with Con_Io, Afpx, As.U, Str_Util;
 with Afpx_Xref, Utils, Communication, Fleet;
 package body Battle is
@@ -42,7 +43,7 @@ package body Battle is
       Result.Append ("10");
     else
       Result.Append (Lmsg(3));
-  end if;
+    end if;
     Result.Append (' ');
     case Lmsg(4) is
       when 'M' =>
@@ -236,25 +237,25 @@ package body Battle is
       end;
       Cell := My_Grid(C.Row, C.Col);
       -- Show result if new shot
-     if not Op_Grid (C.Row, C.Col).Shot then
-       Op_Grid (C.Row, C.Col).Shot := True;
-       if Message(4) = 'M' then
-         -- Miss
-         Afpx.Set_Field_Colors (Utils.Coord2Fld (Afpx_Xref.Play.Grid2, C),
+      if not Op_Grid (C.Row, C.Col).Shot then
+        Op_Grid (C.Row, C.Col).Shot := True;
+        if Message(4) = 'M' then
+          -- Miss
+          Afpx.Set_Field_Colors (Utils.Coord2Fld (Afpx_Xref.Play.Grid2, C),
                                  Background => Blue);
-       elsif  Message(4) = 'H' then
-         -- Hit
-         Afpx.Set_Field_Colors (Utils.Coord2Fld (Afpx_Xref.Play.Grid2, C),
+        elsif  Message(4) = 'H' then
+          -- Hit
+          Afpx.Set_Field_Colors (Utils.Coord2Fld (Afpx_Xref.Play.Grid2, C),
                                  Background => Black);
-         Op_Grid (C.Row, C.Col).Used := True;
-       else
-         -- Sink
-         Afpx.Set_Field_Colors (Utils.Coord2Fld (Afpx_Xref.Play.Grid2, C),
-                                Background => Red);
-         Op_Grid (C.Row, C.Col).Used := True;
-         Show_Sunk (C);
-       end if;
-     end if;
+          Op_Grid (C.Row, C.Col).Used := True;
+        else
+          -- Sink
+          Afpx.Set_Field_Colors (Utils.Coord2Fld (Afpx_Xref.Play.Grid2, C),
+                                 Background => Red);
+          Op_Grid (C.Row, C.Col).Used := True;
+          Show_Sunk (C);
+        end if;
+      end if;
       -- Update message
       Center (Afpx_Xref.Play.Op_Msg, Decode (Message));
       if Message(4) = 'E' then
@@ -274,6 +275,11 @@ package body Battle is
       raise Protocol_Error;
     end if;
     -- Done
+  exception
+    when Error:others =>
+      Utils.Debug ("Exception in Receive "
+                 & Ada.Exceptions.Exception_Name (Error));
+      raise;
   end Receive;
 
   -- Return true as long as play a new game
