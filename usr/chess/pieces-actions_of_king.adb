@@ -94,7 +94,7 @@ procedure Actions_Of_King (Piece : in King_Piece) is
 
     -- Ok
     King_Way.Delete_List;
-    King_Way.Insert(
+    Action_List.Insert(
             (Kind => Castle,
              Dest => King_Pos.Square,
              Rook_From => (Rook_Col(Small), Piece.Square.Row),
