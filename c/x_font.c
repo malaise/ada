@@ -112,13 +112,13 @@ int fon_get_width (XFontStruct *font) {
 /* Gives the height of the fonts */
 int fon_get_height (XFontStruct *font) {
 
-    return (font->max_bounds.ascent + font->max_bounds.descent);
+    return (font->ascent + font->descent);
 }
 
 /* Gives the vertical reference pixel */
 int fon_get_offset (XFontStruct *font) {
 
-    return (font->max_bounds.ascent);
+    return (font->ascent);
 }
 
 /* Gives the Bold font of a font */
