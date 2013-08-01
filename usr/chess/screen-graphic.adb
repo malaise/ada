@@ -1,3 +1,4 @@
+with Basic_Proc;
 separate (Screen)
 
 package body Graphic is
@@ -7,11 +8,12 @@ package body Graphic is
     Y : Natural;
   end record;
 
+  -- Size of a square and of grid in pixels
   Size : constant Natural := 45;
   Size2 : constant Natural := Size / 2;
   Len  : constant Natural := 8 * Size;
 
-  -- Offsets (middle of square)
+  -- Offsets (of the middle of 1st square)
   X0 : constant Con_Io.X_Range := 60;
   -- Set at init
   Y0 :  Con_Io.Y_Range;
@@ -139,10 +141,12 @@ package body Graphic is
 
     use type Space.Color_List;
   begin
-    -- Y0 = Y_Max - XO - Len + Size is the center if lowest row
+    -- Y0 = Y_Max - XO - Len + Size is the offset of the middle of lowest row
     -- Y0 - Size is the pos of lower text "a b c d .."
     -- Y0 - Size - Height should be the text "Move:"
     -- Y0 - Size - 2 * Height must be positive, otherwise the font is too small
+    -- With current values, this leads to 25*H-1 - 60 - 360 - 2*H > 0
+    --  so H > 18. And H < 45
     if Console.Y_Max < X0 + Len + 2 * Console.Font_Height then
       raise Font_Too_Small;
     end if;
@@ -180,7 +184,13 @@ package body Graphic is
       Pos.Y := Pos.Y + Offset;
       Put (C, Pos);
     end loop;
-
+  exception
+    when Font_Too_Small | Font_Too_Big =>
+      Basic_Proc.Put_Line_Error (
+            "Font name: " & Console.Font_Name
+          & ", Width: " & Console.Font_Width'Img
+          & ", Height: " & Console.Font_Height'Img);
+      raise;
   end Init_Board;
 
   procedure Display_Promotion (Move_Color : in Space.Color_List) is

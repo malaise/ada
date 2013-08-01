@@ -21,6 +21,8 @@ int fon_get_offset(XFontStruct *font);
 
 /* Gives the index of the bold font of a font*/
 int fon_get_bold (int font);
+/* Gives the name of a font*/
+char* fon_get_name (int font);
 
 /* Gives the number of characters of an UTF-8 sequence */
 int fon_nb_chars (char first_char);

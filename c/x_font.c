@@ -112,19 +112,24 @@ int fon_get_width (XFontStruct *font) {
 /* Gives the height of the fonts */
 int fon_get_height (XFontStruct *font) {
 
-    return (font->ascent + font->descent);
+    return (font->max_bounds.ascent + font->max_bounds.descent);
 }
 
 /* Gives the vertical reference pixel */
 int fon_get_offset (XFontStruct *font) {
 
-    return (font->ascent);
+    return (font->max_bounds.ascent);
 }
 
 /* Gives the Bold font of a font */
 int fon_get_bold (int font) {
 
     return (font + 1);
+}
+
+/* Gives the name of a font */
+char* fon_get_name (int font) {
+    return font_name[font];
 }
 
 /* Gives the number of characters of an UTF-8 sequence */

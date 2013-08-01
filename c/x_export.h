@@ -79,6 +79,9 @@ extern int x_draw_area (void *line_id,
 extern int x_get_graph_charact (void *line_id, int *p_w_width, int *p_w_height,
                       int *p_f_width, int *p_f_height, int *p_f_offset);
 
+extern int x_get_font_name (void *line_id, char *font_name, int font_len);
+extern int x_get_bold_name (void *line_id, char *font_name, int font_len);
+
 extern int x_put_char_pixels (void *line_id, int car, int x, int y);
 
 extern int x_draw_point (void *line_id, int x, int y);

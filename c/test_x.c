@@ -46,6 +46,7 @@ static void put(void *line, const char *string, int row, int column) {
 static void title (void *line) {
   unsigned char str[80];
   char tit[80];
+  int ww, wh, fw, fh, fo;
 
   (void) x_clear_line (line);
   (void) x_set_attributes (line, back, 13, 0, 0, 0);
@@ -61,6 +62,14 @@ static void title (void *line) {
   strcpy (tit, "àâéêëèîïôùûüç ");
   strcat (tit, (char*)str);
   put (line, (char*)tit, 0, 30);
+  /* Font names and geo */
+  x_get_font_name (line, tit, sizeof(str));
+  put (line, tit, TITLE_LNE + 7, 2);
+  x_get_bold_name (line, tit, sizeof(str));
+  put (line, tit, TITLE_LNE + 8, 2);
+  x_get_graph_charact (line, &ww, &wh, &fw, &fh, &fo);
+  sprintf (tit, "%dx%d+%d", fw, fh, fo);
+  put (line, tit, TITLE_LNE + 9, 2);
 
 }
 
@@ -99,13 +108,11 @@ boolean read;
     font = 0;
   } else if (argc == 2) {
     strcpy (name, argv[1]);
-    strcat (name, ":0.0");
     back = 0;
     bord = 1;
     font = 0;
   } else if (argc == 5) {
     strcpy (name, argv[1]);
-    strcat (name, ":0.0");
     back = atoi (argv[2]);
     bord = atoi (argv[3]);
     font = atoi (argv[4]);

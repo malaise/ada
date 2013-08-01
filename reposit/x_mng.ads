@@ -202,6 +202,9 @@ package X_Mng is
                                           Font_Height   : out Natural;
                                           Font_Offset   : out Natural);
 
+  -- Get the font name of a window (the normal font name, not the bold)
+  function X_Get_Font_Name (Line_Id : Line) return String;
+
   -- Draw a point with current characteristics
   --  attributes and xor mode
   -- The line_id is the token, previously given by open_line

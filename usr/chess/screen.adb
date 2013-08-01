@@ -1,9 +1,6 @@
 with Ada.Calendar;
-
 with Con_Io, Normal, Lower_Str, Upper_Char, Day_Mng, Timers, Language;
-
 with Pieces, Space.Board, Image;
-
 package body Screen is
 
   -- Text or Graphic

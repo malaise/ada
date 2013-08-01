@@ -21,8 +21,8 @@ static const char *courier[NBRE_FONT] = {
      "-adobe-courier-bold-r-normal--14-140-75-75-m-90-iso10646-*",
    "-adobe-courier-medium-r-normal--18-180-75-75-m-110-iso10646-*",
      "-adobe-courier-bold-r-normal--18-180-75-75-m-110-iso10646-*",
-   "-adobe-courier-medium-r-normal--25-180-100-100-m-150-iso10646-*",
-     "-adobe-courier-bold-r-normal--25-180-100-100-m-150-iso10646-*" };
+   "-adobe-courier-medium-r-normal--24-240-75-75-m-150-iso10646-*",
+     "-adobe-courier-bold-r-normal--24-240-75-75-m-150-iso10646-*"};
 static const char *fixed[NBRE_FONT] = {
    "-misc-fixed-medium-r-normal--13-120-75-75-c-70-iso10646-*",
      "-misc-fixed-bold-r-normal--13-120-75-75-c-70-iso10646-*",
@@ -58,13 +58,13 @@ boolean fil_init (void) {
     }
 
     /* Set to default values */
-    for (i=0; i<NBRE_FONT; i++) {
+    for (i = 0; i < NBRE_FONT; i++) {
         strcpy (font_name[i], default_font_name[i]);
     }
 
     /* Check if env sets font name */
-    for (i=0; i<NBRE_FONT; i++) {
-      sprintf (env_name, "%s%1d", FONT_NAME, i + 1);
+    for (i = 0; i < NBRE_FONT; i++) {
+      sprintf (env_name, "%s%1d", FONT_NAME, i);
       set_from_env(i, env_name);
     }
     return (True);
@@ -75,7 +75,7 @@ void set_from_env (int font_index, char *env_name) {
 
     str = getenv(env_name);
     if ( (str != NULL) && (str[0] != '\0') ) {
-        strcpy (font_name[font_index], str);
+      strcpy (font_name[font_index], str);
     }
 }
 

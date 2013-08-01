@@ -417,6 +417,7 @@ package Con_Io is
   function Y_Max (Con : Console) return Y_Range;
 
   -- Font characteristics
+  function Font_Name   (Con : Console) return String;
   function Font_Width  (Con : Console) return Natural;
   function Font_Height (Con : Console) return Natural;
   function Font_Offset (Con : Console) return Natural;

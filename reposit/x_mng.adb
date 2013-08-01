@@ -7,6 +7,9 @@ package body X_Mng is
 
   Infinite_Timeout : constant Duration := Timers.Infinite_Seconds;
 
+  -- MAximum length of a font name
+  Max_Font_Name_Len : constant := 1024;
+
   -- Debug
   Debug_Var_Name : constant String := "X_MNG_DEBUG";
   Debug : Boolean := False;
@@ -26,6 +29,10 @@ package body X_Mng is
   begin
     return Bool_For_C'Val(Boolean'Pos(Ada_Boolean));
   end For_C;
+
+  function C_Strlen (S : System.Address) return C_Types.Size_T;
+  pragma Import (C, C_Strlen, "strlen");
+
 
   ------------------------------------------------------------------
   -------------------- T H E   I N T E R F A C E -------------------
@@ -199,6 +206,15 @@ package body X_Mng is
                                          Font_Offset   : System.Address)
            return Result;
   pragma Import(C, X_Get_Graphic_Characteristics, "x_get_graph_charact");
+
+  ------------------------------------------------------------------
+  -- Gets the normal font name of the line
+  -- int x_get_font_name (void *line_id, char *font_name, int font_len);
+------------------------------------------------------------------
+  function X_Get_Font_Name (Line_Id : Line_For_C;
+                            Font_Name : System.Address;
+                            Name_Len  : C_Types.Int) return Result;
+  pragma Import(C, X_Get_Font_Name, "x_get_font_name");
 
   ------------------------------------------------------------------
   -- Draw a point with current characteristics
@@ -895,6 +911,24 @@ package body X_Mng is
     Font_Height   := Natural(Font_Height_For_C);
     Font_Offset   := Natural(Font_Offset_For_C);
   end X_Get_Graphic_Characteristics;
+
+  ------------------------------------------------------------------
+  function X_Get_Font_Name (Line_Id : Line) return String is
+    Line_For_C_Id : Line_For_C;
+    Name_For_C : String (1 .. Max_Font_Name_Len);
+    Res : Boolean;
+  begin
+    Check (Line_Id);
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Get_Font_Name (Line_For_C_Id, Name_For_C'Address,
+                            Max_Font_Name_Len) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
+    end if;
+    return Name_For_C (1 ..
+         Integer (C_Strlen (Name_For_C(Name_For_C'First)'Address)));
+  end X_Get_Font_Name;
 
   ------------------------------------------------------------------
   procedure X_Draw_Point(Line_Id       : in Line;

@@ -1541,6 +1541,11 @@ package body Con_Io is
   end Y_Max;
 
   -- Font characteristics
+  function Font_Name (Con : Console) return String is
+  begin
+    Check_Con (Con);
+    return X_Mng.X_Get_Font_Name (Con.Get_Access.Id);
+  end Font_Name;
   function Font_Width (Con : Console) return Natural is
   begin
     Check_Con (Con);

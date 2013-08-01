@@ -447,7 +447,7 @@ extern int x_draw_area (void *line_id, int width, int height,
     return (WAIT_OK);
 }
 
-/* Give graphic characteristics of the windows and its font */
+/* Give graphic characteristics of the window and its font */
 extern int x_get_graph_charact (void *line_id, int *p_w_width, int *p_w_height,
                       int *p_f_width, int *p_f_height, int *p_f_offset) {
 
@@ -468,6 +468,49 @@ extern int x_get_graph_charact (void *line_id, int *p_w_width, int *p_w_height,
 
     return (WAIT_OK);
 }
+
+/* Give font name of a the window */
+extern int x_get_font_name (void *line_id, char *font_name, int font_len) {
+
+    t_window *win_id = (t_window*) line_id;
+    int no_font = win_id->no_font;
+     char *name;
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (WAIT_ERR);
+    }
+    /* Get font name and check len */
+    name = fon_get_name (no_font);
+    if ((int)strlen (name) + 1 > font_len) {
+        return (WAIT_ERR);
+    }
+
+    strcpy (font_name, name);
+    return (WAIT_OK);
+}
+
+/* Give bold font name of a the window */
+extern int x_get_bold_name (void *line_id, char *font_name, int font_len) {
+
+    t_window *win_id = (t_window*) line_id;
+    int no_font = win_id->no_font;
+     char *name;
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (WAIT_ERR);
+    }
+    /* Get font name and check len */
+    name = fon_get_name (fon_get_bold(no_font));
+    if ((int)strlen (name) + 1 > font_len) {
+        return (WAIT_ERR);
+    }
+
+    strcpy (font_name, name);
+    return (WAIT_OK);
+}
+
 
 /* Writes a char on a line (characteristics are previously set) */
 /* x is a number of pixels of vertical position (top down) */
