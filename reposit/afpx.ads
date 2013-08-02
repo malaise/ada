@@ -398,7 +398,7 @@ package Afpx is
   --  Cursor_Col_Cb or List_Change_Cb) it is forbidden to call:
   --  - Put_Then_Get, Erase, Put
   --  - Use/Release Descriptor, Suspend/Resume
-  --  - Set_Field_Activation/Protection of the List or of a Get field
+  --  - Set_Field_Activation/Protection
   --  This would raise In_Put_Then_Get
   -- Exceptions :  No_Descriptor,
   --               Invalid_Field, Invalid_Col (for cursor),
