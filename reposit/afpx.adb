@@ -624,12 +624,8 @@ package body Afpx is
                                   Activate : in Boolean) is
     Fn : constant Afpx_Typ.Absolute_Field_Range
        := Afpx_Typ.Absolute_Field_Range(Field_No);
-    use Afpx_Typ;
   begin
-    if Fn = Afpx_Typ.List_Field_No
-    or else Af_Dscr.Fields(Fn).Kind = Afpx_Typ.Get then
-      Check_Ptg;
-    end if;
+    Check_Ptg;
     Af_Dscr.Check(Fn);
     Af_Dscr.Fields(Fn).Activated := Activate;
     Af_Dscr.Current_Dscr.Modified := True;
@@ -655,10 +651,7 @@ package body Afpx is
        := Afpx_Typ.Absolute_Field_Range(Field_No);
     use Afpx_Typ;
   begin
-    if Fn = Afpx_Typ.List_Field_No
-    or else Af_Dscr.Fields(Fn).Kind = Afpx_Typ.Get then
-      Check_Ptg;
-    end if;
+    Check_Ptg;
     Af_Dscr.Check(Fn);
     if Af_Dscr.Fields(Fn).Kind = Afpx_Typ.Put then
       raise Invalid_Field;

@@ -781,7 +781,7 @@ package body Af_Ptg is
       -- Redisplay all fields if requested, or modified fields, or
       --  cursor field that has changed
       if Need_Redisplay
-      or else Af_Dscr.Current_Dscr.Modified
+      or else Af_Dscr.Current_Dscr.Modified 
       or else Cursor_Field /= Prev_Cursor_Field then
         for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
           if Need_Redisplay
