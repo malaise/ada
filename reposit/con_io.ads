@@ -324,13 +324,13 @@ package Con_Io is
   -- The string must be short enough to be put in 1 line at current position
   --  in the window.
   -- The current cursor position is updated by the call
-  -- The Left and Right arrows, Insert, Del, Backspace, Home, End,
-  --  are managed internaly.
-  --  Ctrl Suppr clears the string.
+  -- The Left and Right arrows, Insert, Suppr, Backspace, Home, End, Ctrl Suppr
+  --  (clear the string) are managed internaly.
   -- The get ends either:
-  --  if an Up/Down arrow, (Ctrl) Page Up/Down is pressed,
+  --  if (Ctrl/Shift) Up/Down arrow, (Ctrl/Shift) Page Up/Down, Ctrl Left/Right
+  --   arrow is pressed
   --  if the cursor leaves the field (Left/Right arrow or character input),
-  --  if Tab, Ctrl Tab, Return(Lf), Escape is pressed
+  --  if Tab, Shift Tab, Return(Lf), Escape is pressed
   --  on CtrlC/CtrlBreak or X event Exit_Request (from window manager)
   --  on mouse click, release (or motion if enabled)
   --  on reception of a selection

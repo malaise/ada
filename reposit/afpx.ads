@@ -380,14 +380,13 @@ package Afpx is
   --   double click terminates Put_Then Get (Mouse_Button, List_Field_No).
   -- In Put fields: nothing.
   -- In Get fields:
-  --    Right/Left arrow, character, Backspace, Delete,
-  --      Home, End, Ctrl Delete or Insert edits the field,
-  --    Tab or Ctrl Tab changes field (like Next:Prev_Cursor_Field),
-  --    Return / Esc / Break terminates Put_Then_Get (Keyboard,
-  --     (Return_Key / Escape_Key / Break_Key)
-  --    mouse click moves to the field.
-  -- In Button fields: mouse click then release terminates Put_Then_Get,
-  --  (Mouse_Button, Field_No).
+  --   A character input, Backspace, Suppr, or Ctrl Suppr edits the field,
+  --   (Ctrl) Right/Left arrow, (Ctrl) Home/End navigates in the field,
+  --   Insert toggles insert/replace mode
+  --   Tab or Ctrl Tab changes field (like Next:Prev_Cursor_Field),
+  --   Only Return, Esc or Break key terminates the Put_Then_Get
+  --   A mouse click moves to the field.
+  -- In Button fields: mouse click then release terminates Put_Then_Get.
   -- This call affects the content of Get fields, the cursor field and col,
   --  and the current element of the list, it calls Modification_Ack on the
   --  Line_List (see Dynamic_List).

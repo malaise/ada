@@ -1067,7 +1067,7 @@ package body Con_Io is
     -- Key of function key (2nd byte)
     Key         : Natural;
     -- Done?
-    Done        :  Boolean;
+    Done        : Boolean;
     Redraw      : Boolean;
     First_Pos   : Square;
     Last_Time   : Delay_Rec;
