@@ -27,7 +27,7 @@ procedure Comp_Vars is
   procedure Usage is
   begin
     Sys_Calls.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
-     & "[ " & Shell_Opt_C & " | " & Shell_Opt_S & " ] [ { <file> } ]");
+     & " [ " & Shell_Opt_C & " | " & Shell_Opt_S & " ] [ { <file> } ]");
   end Usage;
 
   -- Output flow (stdout)
