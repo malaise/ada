@@ -192,7 +192,9 @@ procedure Gc is
         Wstr := Language.String_To_Wide (Str) & Degree_Sign;
         Afpx.Encode_Wide_Field (F, (0, 0), Wstr);
       end;
-Basic_Proc.Put_Line_Error ("Encoded heading");
+      if Debug then
+        Basic_Proc.Put_Line_Error ("Heading encoded");
+      end if;
     end if;
  end Encode_Heading;
 
@@ -279,6 +281,9 @@ begin
           Encode_Heading (Heading_Ab_Field, Heading);
           Afpx.Encode_Field (Distance_Field, (0, 0),
                              String_Util.Dist2Str(Distance));
+          if Debug then
+            Basic_Proc.Put_Line_Error ("Distance encoded");
+          end if;
           Great_Circle.Compute_Route(A => B, B => A,
                                      Heading => Heading,
                                      Distance => Distance);
