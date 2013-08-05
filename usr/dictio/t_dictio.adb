@@ -44,24 +44,44 @@ procedure T_Dictio is
   Id_Q      : constant Pattern.Pattern_Id := 322;
   Id_Error  : constant Pattern.Pattern_Id := 999;
 
+  function Com_Fix_Mult (Rule : in Pattern.Rule_No;
+                         Id   : in Pattern.Pattern_Id;
+                         Nb_Match : in Natural;
+                         Iter : in Parser.Iterator) return Boolean is
+    pragma Unreferenced (Rule, Nb_Match);
+    Arg1 : constant String := Iter.Current_Word;
+    Arg2 : constant String := Iter.Next_Word;
+    use type Pattern.Pattern_Id;
+  begin
+    -- Set <name> [ { <value_word> } ]
+    if Arg1 = "" then
+      Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
+      return False;
+    end if;
+    if Id = Id_Set then
+      Dictio_Lib.Set (Arg1, Arg2 & Iter.Tail);
+    else
+      Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
+    end if;
+    return False;
+  end Com_Fix_Mult;
+
   function Com_Fix_Opt (Rule : in Pattern.Rule_No;
                         Id   : in Pattern.Pattern_Id;
                         Nb_Match : in Natural;
                         Iter : in Parser.Iterator) return Boolean is
     pragma Unreferenced (Rule, Nb_Match);
-    Arg1 : constant String := Parser.Current_Word (Iter);
-    Arg2 : constant String := Parser.Next_Word (Iter);
-    Arg3 : constant String := Parser.Next_Word (Iter);
+    Arg1 : constant String := Iter.Current_Word;
+    Arg2 : constant String := Iter.Next_Word;
+    Arg3 : constant String := Iter.Next_Word;
     use type Pattern.Pattern_Id;
   begin
-    -- Set/Alias <name> [ <data/of_name> ]
+    -- Alias <name> [ <of_name> ]
     if Arg1 = "" or else Arg3 /= "" then
       Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
       return False;
     end if;
-    if Id = Id_Set then
-      Dictio_Lib.Set (Arg1, Arg2);
-    elsif Id = Id_Alias then
+    if Id = Id_Alias then
       Dictio_Lib.Set_Alias (Arg1, Arg2);
     else
       Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
@@ -74,8 +94,8 @@ procedure T_Dictio is
                         Nb_Match : in Natural;
                         Iter : in Parser.Iterator) return Boolean is
     pragma Unreferenced (Rule);
-    Arg1 : constant String := Parser.Current_Word (Iter);
-    Arg2 : constant String := Parser.Next_Word (Iter);
+    Arg1 : constant String := Iter.Current_Word;
+    Arg2 : constant String := Iter.Next_Word;
     Alias_Name : constant String := "alias";
     Alias : Boolean := Nb_Match = 2;
     Name_Is_Alias : Boolean := False;
@@ -136,8 +156,8 @@ procedure T_Dictio is
                     Nb_Match : in Natural;
                     Iter : in Parser.Iterator) return Boolean is
     pragma Unreferenced (Rule, Nb_Match);
-    Arg1 : constant String := Parser.Current_Word (Iter);
-    Arg2 : constant String := Parser.Next_Word (Iter);
+    Arg1 : constant String := Iter.Current_Word;
+    Arg2 : constant String := Iter.Next_Word;
     use type Pattern.Pattern_Id;
   begin
     -- Add/Del <host>
@@ -160,7 +180,7 @@ procedure T_Dictio is
                 Nb_Match : in Natural;
                 Iter : in Parser.Iterator) return Boolean is
     pragma Unreferenced (Rule, Nb_Match);
-    Arg1 : constant String := Parser.Current_Word (Iter);
+    Arg1 : constant String := Iter.Current_Word;
     use type Pattern.Pattern_Id;
   begin
     -- Help/Status/Exit/Quit or error
@@ -188,7 +208,7 @@ procedure T_Dictio is
   begin
     Rule := Pattern.Get_Free_Rule;
     Pattern.Set (Rule, Id_Set, "set",
-                 Com_Fix_Opt'Unrestricted_Access);
+                 Com_Fix_Mult'Unrestricted_Access);
     Pattern.Set (Rule, Id_Alias, "alias",
                  Com_Fix_Opt'Unrestricted_Access);
     Pattern.Set (Rule, Id_Get, "get [ alias ]",
