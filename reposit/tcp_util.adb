@@ -712,6 +712,7 @@ package body Tcp_Util is
                          Num          : out Port_Num;
                          Link_If      : in Socket.Host_Id := Socket.Any_Host) is
     Rec : Accepting_Rec;
+    use type Socket.Host_Id;
   begin
     Init_Debug;
     if Debug_Accept then
@@ -728,7 +729,9 @@ package body Tcp_Util is
     Dscr.Set_Blocking (Socket.Blocking_Send);
     Rec.Dscr := Dscr;
     Rec.Fd := Rec.Dscr.Get_Fd;
-    Dscr.Set_Reception_Interface (Link_If);
+    if Link_If /= Socket.Any_Host then
+      Dscr.Set_Reception_Interface (Link_If);
+    end if;
     -- Bind socket
     case Port.Kind is
       when Port_Name_Spec =>
