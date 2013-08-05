@@ -1,6 +1,9 @@
 #include <stdlib.h>
 #include "x_font.h"
 
+
+#define FONT_DEBUG "X_FONT_DEBUG"
+
 /* Loads the fonts in the server */
 boolean fon_open (Display *x_server, XFontSet font_set[],
                                      XFontStruct *font[]) {
@@ -9,6 +12,7 @@ int i, res, err;
 char **name_list;
 int missing_count;
 boolean debug;
+char *str;
 XFontStruct **fonts;
 
     /* See if debug */
@@ -72,6 +76,7 @@ XFontStruct **fonts;
 
     }
 
+    /* Free on error */
     if (err != -1) {
         for (i = 0; i < err; i++) {
            XFreeFontSet (x_server, font_set[i]);
@@ -80,6 +85,20 @@ XFontStruct **fonts;
             XFreeFont (x_server, font[i]);
         }
         return (False);
+    }
+
+    /* Debug font */
+    str = getenv (FONT_DEBUG); 
+    if (debug
+        || ( (str != NULL) && ( (str[0] == 'y') || (str[0] == 'Y') ) ) ) {
+        printf ("Font summary:\n");
+        for (i = 0; i < NBRE_FONT; i++) {
+            printf ("%s : %dx%d+%d\n",
+                    font_name[i],
+                    fon_get_width(font[i]),
+                    fon_get_height(font[i]),
+                    fon_get_offset(font[i]) );
+        }
     }
     return (True);
 
