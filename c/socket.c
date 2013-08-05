@@ -1765,7 +1765,7 @@ static int bind_and_co (soc_token token, boolean dynamic) {
     }
   }
 
-  /* Set linked port (for the case of link dynamic) */
+  /* Set linked port in rece struct (for the case of link dynamic) */
   soc->linked = TRUE;
   res = soc_get_linked_port (token, &linked_port);
   soc->linked = FALSE;
@@ -1804,7 +1804,7 @@ static int bind_and_co (soc_token token, boolean dynamic) {
           ipm_addr.imr_interface.s_addr = addr->sin_addr.s_addr;
           if (setsockopt (soc->socket_id, IPPROTO_IP, IP_ADD_MEMBERSHIP,
                           (char*) &ipm_addr, sizeof(ipm_addr)) != 0) {
-            perror("setsockopt(ip_add_membership)");
+            perror("setsockopt(ip_add_membership1)");
             return (SOC_SYS_ERR);
           }
         }
@@ -1814,7 +1814,7 @@ static int bind_and_co (soc_token token, boolean dynamic) {
       ipm_addr.imr_interface.s_addr = soc->rece_struct.sin_addr.s_addr;
       if (setsockopt (soc->socket_id, IPPROTO_IP, IP_ADD_MEMBERSHIP,
                       (char*) &ipm_addr, sizeof(ipm_addr)) != 0) {
-        perror("setsockopt(ip_add_membership)");
+        perror("setsockopt(ip_add_membership2)");
         return (SOC_SYS_ERR);
       }
     }
@@ -1935,6 +1935,7 @@ extern int soc_link_dynamic  (soc_token token) {
 extern int soc_get_linked_port  (soc_token token, soc_port *p_port) {
   soc_ptr soc = (soc_ptr) token;
   socklen_t len = (socklen_t)socklen;
+  struct sockaddr_in sock_addr;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
@@ -1955,13 +1956,14 @@ extern int soc_get_linked_port  (soc_token token, soc_port *p_port) {
 
   /* Get the real port from system */
   if (getsockname (soc->socket_id,
-                   (struct sockaddr*) (&soc->rece_struct), &len) < 0) {
+                   (struct sockaddr*) (&sock_addr), &len) < 0) {
     perror("getsockname");
     UNLOCK;
     return (SOC_SYS_ERR);
   }
 
   /* Ok */
+  soc->rece_struct.sin_port = sock_addr.sin_port;
   *p_port = (soc_port) ntohs((uint16_t)soc->rece_struct.sin_port);
   UNLOCK;
   return (SOC_OK);
