@@ -70,11 +70,16 @@ if [ -z "$SOK" ] ; then
   SOK=$PORT
 fi
 SOK=/tmp/.socket_afux/$SOK
-if [ -S $SOK ] ; then
+if [ -S "$SOK" ] ; then
   echo Cleaning afunix socket $SOK
   rm $SOK
 fi
 
-exec ./dictio $CHANNEL -p$PORT -P$DICTIO_PRIO
-# gvd ./dictio --pargs $CHANNEL -p$PORT -P$DICTIO_PRIO
+if [ -z "$DICTIO_LAUNCHER" ] ; then
+  DICTIO_LAUNCHER=exec
+elif [ "$DICTIO_LAUNCHER" = "gvd" ] ; then
+  GVOPT=--pargs
+fi
+
+${DICTIO_LAUNCHER} ./dictio $GVOPT $CHANNEL -p$PORT -P$DICTIO_PRIO
 
