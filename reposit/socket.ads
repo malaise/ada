@@ -156,8 +156,6 @@ package Socket is
 
   -- Receive a message, waiting for it
   -- The socket destination may be set for a reply if not tcp
-  -- In IPM, the interface for sending may also be set but see
-  --  Set_Sending_Ipm_Interface
   -- May raise Soc_Reply_Err if Set_For_Reply and tcp
   -- May raise Soc_Link_Err if socket is linked and tcp
   --                     or if socket is not linked and udp
@@ -172,12 +170,10 @@ package Socket is
     --  Message_Type'Size, which may be wrong with indefinite type.
     type Message_Type (<>) is private;
     Message_Size : Natural := 0;
-  -- If Set_For_Reply is False then Set_Ipm_Iface is not significant.
   procedure Receive (Socket        : in Socket_Dscr;
                      Message       : out Message_Type;
                      Length        : out Natural;
-                     Set_For_Reply : in Boolean := False;
-                     Set_Ipm_Iface : in Boolean := False);
+                     Set_For_Reply : in Boolean := False);
 
   -------------------------------------
   -- DESTINATION PORT/HOST - SENDING --

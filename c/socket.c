@@ -2076,8 +2076,7 @@ static int rec2 (soc_ptr soc, char *buffer, int total_len) {
 
 extern int soc_receive (soc_token token,
                         soc_message message, soc_length length,
-                        boolean set_for_reply,
-                        boolean set_ipm_iface) {
+                        boolean set_for_reply) {
   soc_ptr soc = (soc_ptr) token;
   int result;
   socklen_t addr_len;
@@ -2111,17 +2110,6 @@ extern int soc_receive (soc_token token,
       UNLOCK;
       return (SOC_LINK_ERR);
     }
-  }
-
-  /* Prepare for reply or not */
-  if (set_for_reply) {
-    from_addr = &(soc->send_struct);
-    addr_len = (socklen_t) socklen;
-    /* In case of error */
-    soc->dest_set = FALSE;
-  } else {
-    from_addr = NULL;
-    addr_len = 0;
   }
 
   /* Receive */
@@ -2173,6 +2161,17 @@ extern int soc_receive (soc_token token,
     }
   }
 
+  /* Prepare for reply or not */
+  if (set_for_reply) {
+    from_addr = &(soc->send_struct);
+    addr_len = (socklen_t) socklen;
+    /* In case of error */
+    soc->dest_set = FALSE;
+  } else {
+    from_addr = NULL;
+    addr_len = 0;
+  }
+
   /* Udp */
   do {
     /* Recvfrom. MSG_TRUNC => real packet length returned i.o read length */
@@ -2201,19 +2200,7 @@ extern int soc_receive (soc_token token,
   } else {
     /* A message read, even if empty */
     if (set_for_reply) {
-      /* Copy ipm reception interface (if set) for further emissions */
-      if ( set_ipm_iface
-           && (soc->ipm_rece_if.s_addr != (htonl)INADDR_ANY)
-           && (soc->ipm_send_if.s_addr != soc->ipm_rece_if.s_addr) ) {
-        soc->ipm_send_if = soc->ipm_rece_if;
-        soc->set_send_if = TRUE;
-        if (set_ipm_if(soc, FALSE) != SOC_OK) {
-          /* Address set but not the ipm sending interface */
-          UNLOCK;
-          soc->dest_set = TRUE;
-          return (SOC_REPLY_IFACE);
-        }
-      }
+      /* The send_struct is already set to the sender's address */
       soc->dest_set = TRUE;
     }
     UNLOCK;

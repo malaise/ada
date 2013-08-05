@@ -507,7 +507,7 @@ package body Io_Flow is
     Length : Natural;
   begin
     begin
-      Soc_Receive (Soc, Message, Length, Io_Mode = Udp, False);
+      Soc_Receive (Soc, Message, Length, Io_Mode = Udp);
     exception
       when Socket.Soc_Read_0 =>
         -- Tcp Disconnection: close and accept new

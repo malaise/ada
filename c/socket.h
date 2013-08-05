@@ -282,9 +282,6 @@ extern int soc_get_linked_port (soc_token token, soc_port *p_port);
 /* The socket must be open, linked in udp and not linked in tcp */
 /*  After success, the socket may be ready for a send to reply */
 /* No set_for_reply if tcp */
-/* In IPM, the interface for sending may also be set but see */
-/*  Set_Sending_Ipm_Interface. */
-/*  If set_for_reply is FALSE then set_ipm_iface is not significant. */
 /* Returned values: */
 /*   - the length of bytes read, which is usually the length of the message */
 /*     sent. In tcp no header it may be anything from 0 to length. */
@@ -294,8 +291,7 @@ extern int soc_get_linked_port (soc_token token, soc_port *p_port);
 /*   - any other (fatal) error */
 extern int soc_receive (soc_token token,
                         soc_message message, soc_length length,
-                        boolean set_for_reply,
-                        boolean set_ipm_iface);
+                        boolean set_for_reply);
 
 /*--------------------*/
 /* Tcp specific calls */

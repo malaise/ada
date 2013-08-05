@@ -151,9 +151,7 @@ procedure Udp_Spy is
       Basic_Proc.Put_Line_Error ("Error: read callback on unknown fd.");
       raise Program_Error;
     end if;
-    My_Receive (Soc, Data, Data_Len,
-                Set_For_Reply => True,
-                Set_Ipm_Iface => False);
+    My_Receive (Soc, Data, Data_Len, True);
     Packet_Received := True;
     -- Put header
     if Dump_Mode /= Binary then
