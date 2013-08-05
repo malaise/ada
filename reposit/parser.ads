@@ -65,6 +65,7 @@ package Parser is
   -- Reset Iter and parse first word.
   -- May raise Constraint_Error if Iter is not set.
   function First_Word (Iter : Iterator) return String;
+  procedure First_Word (Iter : in Iterator);
 
   -- Return the indexes of current word.
   -- The Str provided to Set may not have been from 1 to N.
@@ -79,9 +80,18 @@ package Parser is
 
   -- Return the string to which the iterator was set.
   -- If not Normalized, the string returned has the same indexes as the initial,
-  --  otherwise it is from 1 to N, shorter than the initial string.
+  --  otherwise it is from 1 to N
   -- May raise Constraint_Error if Iter is not set.
   function Image (Iter : Iterator; Normalize : Boolean := True)
+                 return String;
+
+  -- Return the tail of string, including all separators after current word
+  -- If parsing is not started then returns Image
+  -- If parsing is finished then returns "",
+  -- Otherwise, if not Normalized, the string returned has the same indexes
+  -- as in the initial, otherwise it is from 1 to N
+  -- May raise Constraint_Error if Iter is not set.
+  function Tail (Iter : Iterator; Normalize : Boolean := True)
                  return String;
 
 private

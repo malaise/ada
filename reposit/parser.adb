@@ -196,6 +196,13 @@ package body Parser is
     return Next_Word (Iter);
   end First_Word;
 
+  procedure First_Word (Iter : in Iterator) is
+  begin
+    Reset (Iter);
+    Next_Word (Iter);
+  end First_Word;
+
+
   -- Return the indexes of current word
   -- 1 .. 0 if parsing not started or finished
   -- May raise Constraint_Error if iterator has not been created
@@ -238,6 +245,36 @@ package body Parser is
       end;
     end if;
   end Image;
+
+  -- Return the tail of string, including all separators after current word
+  -- If parsing is not started then returns Image
+  -- If parsing is finished then returns "",
+  -- Otherwise, if not Normalized, the string returned has the same indexes
+  -- as in the initial, otherwise it is from 1 to N
+  -- May raise Constraint_Error if Iter is not set.
+  function Tail (Iter : Iterator; Normalize : Boolean := True)
+                 return String is
+  begin
+    Check (Iter);
+    if Iter.Acc.State = Finished then
+      return "";
+    end if;
+    if Iter.Current_Word = "" then
+      -- Parsing not started
+      return Image (Iter, Normalize);
+    elsif Normalize then
+      return Iter.Acc.Str.Slice (Iter.Acc.Last+1, Iter.Acc.Len);
+    else
+      -- Return a string from Start to N
+      declare
+        Str : constant String (Iter.Acc.Start+Iter.Acc.Last
+                            .. Iter.Acc.Start+Iter.Acc.Len-1)
+            := Iter.Acc.Str.Slice (Iter.Acc.Last+1, Iter.Acc.Len);
+      begin
+        return Str;
+      end;
+    end if;
+  end Tail;
 
 end Parser;
 
