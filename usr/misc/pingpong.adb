@@ -30,6 +30,7 @@ procedure Pingpong is
   Send_Mode : Boolean;
   Average : Boolean;
   Debug : Boolean;
+  Timeout : Boolean := True;
 
   -- Usage and Error
   procedure Usage is
@@ -76,6 +77,7 @@ procedure Pingpong is
   procedure Signal_Cb is
   begin
     Put ("Aborted.");
+    Timeout := False;
   end Signal_Cb;
 
   -- Message exchanged
@@ -151,8 +153,7 @@ procedure Pingpong is
       Put ("Receiving");
     end if;
     begin
-      My_Receive (Soc, Message, Message_Len, Set_For_Reply => not Send_Mode,
-                  Set_Ipm_Iface => Use_Iface);
+      My_Receive (Soc, Message, Message_Len, Set_For_Reply => not Send_Mode);
     exception
       when Socket.Soc_Conn_Lost =>
         Put ("Receives disconnection");
@@ -208,7 +209,8 @@ procedure Pingpong is
     end if;
     Put (Txt.Image & " of " & Message.Host_Name (1 .. Message.Host_Name_Len)
          & " is " & Images.Dur_Image (Delta_Time, 3, True));
-    return False;
+    Timeout := False;
+    return not Average;
   end Call_Back;
 
   procedure Send_Ping is
@@ -362,13 +364,20 @@ begin
     -- Set interface
     if Use_Iface then
       if Send_Mode then
+        -- We send multicast and and receive unicast
         Soc.Set_Sending_Ipm_Interface (Iface.Id);
       else
+        -- We send unicast (reply mode) and receive multicast
         Soc.Set_Reception_Interface (Iface.Id);
       end if;
     end if;
 
-    -- Always set dest
+    -- If sender, then bind in udp, so before setting dest
+    if Send_Mode then
+      Soc.Link_Port (Port_Num);
+    end if;
+
+    -- Set dest, necessary for multicast emission and reception
     if Lan.Kind = Tcp_Util.Host_Name_Spec then
       begin
         Soc.Set_Destination_Name_And_Port (True, Lan.Name.Image, Port_Num);
@@ -380,8 +389,11 @@ begin
     else
       Soc.Set_Destination_Host_And_Port (Lan.Id, Port_Num);
     end if;
-    -- Bind
-    Soc.Link_Port (Port_Num);
+
+    -- If replyer then bind in multicast, so after setting dest
+    if not Send_Mode then
+      Soc.Link_Port (Port_Num);
+    end if;
   end;
   Put ("Initialized on " & Local_Host_Name);
 
@@ -393,6 +405,10 @@ begin
     exit when Event_Mng.Wait (Integer (Period * 1000.0))
     or else One_Shot;
   end loop;
+
+  if Timeout then
+    Put ("Timeout");
+  end if;
 
   -- Close
   if Event_Mng.Fd_Callback_Set (Fd, True) then
