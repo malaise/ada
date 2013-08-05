@@ -88,7 +88,7 @@ XFontStruct **fonts;
     }
 
     /* Debug font */
-    str = getenv (FONT_DEBUG); 
+    str = getenv (FONT_DEBUG);
     if (debug
         || ( (str != NULL) && ( (str[0] == 'y') || (str[0] == 'Y') ) ) ) {
         printf ("Font summary:\n");
