@@ -43,8 +43,8 @@ despite the filters of the firewall (allowed ports, direction of connection...).
 
 Usage - Example
 ---------------
-On host host1 start "tcpipe -s 50000 -p40000" +
-On host host2 start "tcpipe -c host1:50000 -tclient2" +
+On host host1 start "tcpipe -s 50000 -p 40000" +
+On host host2 start "tcpipe -c host1:50000 -t client2" +
 -> tcpipe on host2 connects to tcpipe on host1, port 50000 +
 On the host client2 that can be reached by host2, start a client that accepts
 connections on port 40000 +
