@@ -40,8 +40,8 @@ function stop_all {
   ssh  $SERVER_HOST "$DIR/$ME kill tcp_spy"
 }
 function clean {
-  rm -f $DIR/server.log $DIR/client.log $DIR/spy.log $DIR/tester.log \
-        obtained expected
+  rm -f $DIR/client.log $DIR/tester.log spy.log obtained expected
+  ssh $SERVER_HOST "rm -f $DIR/server.log $DIR/spy.log" 
 }
 
 function stop_clean_exit {
@@ -57,13 +57,21 @@ trap stop_clean_exit INT TERM
 #  - kill remote server, local client and remote appli
 #  - clean log files
 if [ "$1" = "clean" ]; then
-  if [ -n "$2" ] ;then
+  if [ -z "$2" ] ;then
+    help
+    exit 1
+  else
     export SERVER_HOST=$2
     stop_all
+    clean
+    exit 0
   fi
-  clean
-  exit 0
-elif [ "$1" != "start" ]; then
+elif [ "$1" = "start" ]; then
+  if [ -z "$2" ] ;then
+    help
+    exit 1
+  fi
+else 
   help
   exit 1
 fi
@@ -86,22 +94,27 @@ sleep 1
 echo "Hello" | $DIR/../tests/t_async -c localhost:$CLIENT_PORT > $DIR/tester.log 2>&1
 
 # Stop all
-echo "Sleeping a bit and stopping all"
+echo "Sleeping a bit and stopping all and sleeping a bit"
 sleep 1
 stop_all
+sleep 1
 
 # Verify spy log content
-echo "Sleeping a bit and checking"
-sleep 1
+if [ ! -f spy.log ] ; then
+  echo "Getting log"
+  scp -q $SERVER_HOST:$DIR/spy.log .
+fi
+echo "Checking log"
 cat << EOF > expected 
 Accepting on port 50001 for short dumps.
-Accepted connection from 10.100.11.21 port XXX
+Accepted connection from XXX port YYY
 Got    6 bytes
   48 65 6C 6C 6F 0A                                   Hello.          
 Disconnection.
 Stopped.
 EOF
-cat spy.log | sed -r -e 's/port [0-9]+$/port XXX/' > obtained
+cat spy.log | sed -r -e \
+ 's/from ([0-9]+\.){3}[0-9]+ port [0-9]+$/from XXX port YYY/' > obtained
 cmp -s obtained expected
 res=$?
 
