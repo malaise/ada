@@ -43,6 +43,16 @@ procedure Tcp_Spy is
     return "At " & Date (9 .. Date'Last);
   end Curr_Date_Image;
 
+  -- Log a message
+  Put_Date : Boolean := False;
+  procedure Log (Msg : in String) is
+  begin
+    if Put_Date then
+      Basic_Proc.Put_Error (Curr_Date_Image & " ");
+    end if;
+    Basic_Proc.Put_Line_Error (Msg);
+  end Log;
+
   -- The socket and its fd
   Dscr : Socket.Socket_Dscr;
 
@@ -113,24 +123,18 @@ procedure Tcp_Spy is
     end loop;
   end Dump_Data;
 
-  procedure Dump_Host (Host_Id : in Tcp_Util.Host_Id) is
-    Put_Addr : Boolean;
+  function Host_Image (Host_Id : Tcp_Util.Host_Id) return String is
   begin
     if Put_Host_Name then
       begin
-        Basic_Proc.Put_Error (Socket.Host_Name_Of (Host_Id));
-        Put_Addr := False;
+        return Socket.Host_Name_Of (Host_Id);
       exception
         when Socket.Soc_Name_Not_Found =>
-          Put_Addr := True;
+          null;
       end;
-    else
-      Put_Addr := True;
     end if;
-    if Put_Addr then
-      Basic_Proc.Put_Error (Ip_Addr.Image (Socket.Id2Addr (Host_Id)));
-    end if;
-  end Dump_Host;
+    return Ip_Addr.Image (Socket.Id2Addr (Host_Id));
+  end Host_Image;
 
   -- Acception, reception, and disconnection callbacks
   procedure Acception_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
@@ -155,10 +159,8 @@ procedure Tcp_Spy is
     -- Allow only one connection at a time
     Tcp_Util.Abort_Accept (Protocol, Port_Num);
     -- Put partner address
-    Basic_Proc.Put_Error (Curr_Date_Image);
-    Basic_Proc.Put_Error (" accepted connection from ");
-    Dump_Host (Remote_Host_Id);
-    Basic_Proc.Put_Line_Error (" port " & Port_Image (Remote_Port_Num));
+    Log ("Accepted connection from " & Host_Image (Remote_Host_Id)
+       & " port " & Port_Image (Remote_Port_Num));
     -- Set reception and disconnection callbacks
     Dscr := New_Dscr;
     Data_Reception.Set_Callbacks (Dscr, Reception_Cb'Unrestricted_Access,
@@ -168,9 +170,11 @@ procedure Tcp_Spy is
   -- Callback on disconnection
   procedure Disconnection_Cb (Of_Dscr : in Socket.Socket_Dscr) is
     Dummy_Dscr : Socket.Socket_Dscr;
-    pragma Unreferenced (Of_Dscr, Dummy_Dscr);
+    use type Socket.Socket_Dscr;
   begin
-    Basic_Proc.Put_Line_Error (Curr_Date_Image & " disconnection.");
+    if Of_Dscr /= Socket.No_Socket then
+      Log ("Disconnection.");
+    end if;
     -- Accept again
     Dscr := Socket.No_Socket;
     Tcp_Util.Accept_From (Protocol, Port, Acception_Cb'Unrestricted_Access,
@@ -186,8 +190,7 @@ procedure Tcp_Spy is
     Packet_Received := True;
     -- Put header
     if Dump_Mode /= Binary then
-      Text_Line.Put (File, Curr_Date_Image);
-      Text_Line.Put (File, " got " & Normal (Length, 4) & " bytes");
+      Log ("Got " & Normal (Length, 4) & " bytes");
     end if;
     -- Put data
     if Dump_Mode = Header then
@@ -216,6 +219,12 @@ begin
   if Argument.Get_Nbre_Arg = 0
   or else Argument.Get_Nbre_Arg > 4 then
     raise Arg_Error;
+  end if;
+
+  -- Parse Date option
+  if Argument.Is_Set (1, "D") then
+    Put_Date := True;
+    Nb_Options := Nb_Options + 1;
   end if;
 
   -- Parse Dump mode
@@ -303,21 +312,12 @@ begin
   Disconnection_Cb (Socket.No_Socket);
 
   -- Put "Ready on..." end-of-init message
-  Basic_Proc.Put_Error (Curr_Date_Image & " accepting on port "
-                      & Port_Image (Port_Num));
-
-  Basic_Proc.Put_Error (" for ");
-  case Dump_Mode is
-    when Header =>
-      Basic_Proc.Put_Error ("header");
-    when Short =>
-      Basic_Proc.Put_Error ("short");
-    when Full =>
-      Basic_Proc.Put_Error ("full");
-    when Binary =>
-      Basic_Proc.Put_Error ("binary");
-  end case;
-  Basic_Proc.Put_Line_Error (" dumps.");
+  Log ("Accepting on port " & Port_Image (Port_Num) & " for " &
+    (case Dump_Mode is
+       when Header => ("header"),
+       when Short => ("short"),
+       when Full => ("full"),
+       when Binary => ("binary")) & " dumps.");
 
   -- Main loop until sigterm/sigint or timeout
   loop
@@ -337,11 +337,11 @@ begin
 
   -- Put cause of exit
   if Signal then
-    Basic_Proc.Put_Line_Error (Curr_Date_Image & " stopped.");
+    Log ("Stopped.");
   elsif Timeout then
-    Basic_Proc.Put_Line_Error (Curr_Date_Image & " timed out.");
+    Log ("Timed out.");
   else
-    Basic_Proc.Put_Line_Error (Curr_Date_Image & " aborted?");
+    Log ("Aborted?");
   end if;
 
   -- Set exit code v.s. at least a packet has been received
@@ -354,8 +354,9 @@ begin
 exception
   when Arg_Error =>
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-      & " <port> [ <dump_mode> ] [ <host_name> ] [ <timeout> ]");
+      & " <port> [ <date> ] [ <dump_mode> ] [ <host_name> ] [ <timeout> ]");
     Basic_Proc.Put_Line_Error ("  <port>      ::= <port_name_or_num>");
+     Basic_Proc.Put_Line_Error("  <date>      ::= -D");
     Basic_Proc.Put_Line_Error ("  <dump_mode> ::= -dh | -ds | -df | -db");
     Basic_Proc.Put_Line_Error ("  <host_name> ::= -hn");
     Basic_Proc.Put_Line_Error ("  <timeout> ::= -t<duration>");
