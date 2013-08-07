@@ -1,0 +1,118 @@
+#!/bin/bash
+
+export ME=`basename $0`
+
+function clean {
+  $ME clean
+  sleep 1
+  rm client.log server.log
+}
+
+function help {
+  echo "Usage: $ME [ start | clean ] <server_host>" 2>&1
+}
+
+if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) -o \( -z "$1" \) ] ; then
+  help
+  exit 1
+fi
+
+# With argument "kill <name>", kill process <name> (internal usage)
+if [ "$1" = "kill" ]; then
+  export PID=`ps -C $2 -o 'comm,pid'| awk '($2 != "PID") {print $2}'`
+  if [ -n "$PID" ] ; then
+    echo Killing $2 pid $PID
+    kill $PID
+  fi
+  exit 0
+fi
+
+# Define ports and hosts
+export DIR=${PWD}
+export CLIENT_HOST=`hostname`
+export SERVER_HOST=$2
+export SERVICE_PORT=50000
+export CLIENT_PORT=50001
+
+function stop_all {
+  ssh  $SERVER_HOST "$DIR/$ME kill tcpipe"
+  $DIR/$ME kill tcpipe
+  ssh  $SERVER_HOST "$DIR/$ME kill tcp_spy"
+}
+function clean {
+  rm -f $DIR/server.log $DIR/client.log $DIR/spy.log $DIR/tester.log \
+        obtained expected
+}
+
+function stop_clean_exit {
+  stop_all
+  clean
+  exit 1
+}
+
+# Trap CtrlC
+trap stop_clean_exit INT TERM
+
+# With arguments "clean <server>",
+#  - kill remote server, local client and remote appli
+#  - clean log files
+if [ "$1" = "clean" ]; then
+  if [ -n "$2" ] ;then
+    export SERVER_HOST=$2
+    stop_all
+  fi
+  clean
+  exit 0
+elif [ "$1" != "start" ]; then
+  help
+  exit 1
+fi
+
+# Start remote server
+echo "Starting remote server"
+ssh $SERVER_HOST "$DIR/tcpipe -s $SERVICE_PORT > $DIR/server.log 2>&1" &
+
+# Start local client
+echo "Starting local client"
+$DIR/tcpipe -c $SERVER_HOST:$SERVICE_PORT -p $CLIENT_PORT > $DIR/client.log 2>&1 &
+
+# Start remote spy
+echo "Starting remote spy"
+ssh $SERVER_HOST "$DIR/../misc/tcp_spy $CLIENT_PORT > $DIR/spy.log 2>&1" &
+
+# Start local t_async with an input text
+echo "Sleeping a bit and sending message to client"
+sleep 1
+echo "Hello" | $DIR/../tests/t_async -c localhost:$CLIENT_PORT > $DIR/tester.log 2>&1
+
+# Stop all
+echo "Sleeping a bit and stopping all"
+sleep 1
+stop_all
+
+# Verify spy log content
+echo "Sleeping a bit and checking"
+sleep 1
+cat << EOF > expected 
+Accepting on port 50001 for short dumps.
+Accepted connection from 10.100.11.21 port XXX
+Got    6 bytes
+  48 65 6C 6C 6F 0A                                   Hello.          
+Disconnection.
+Stopped.
+EOF
+cat spy.log | sed -r -e 's/port [0-9]+$/port XXX/' > obtained
+cmp -s obtained expected
+res=$?
+
+# Clean
+if [ $res -eq 0 ] ; then
+  echo "Cleaning"
+  clean
+  echo "Done."
+  exit 0
+else
+  echo "Error: File obtained differs from expected"
+  exit 1
+fi
+
