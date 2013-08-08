@@ -5,9 +5,9 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
 -- Call callback while parsing or provide access to the tree after parsing.
 -- Limitations:
 --  * Only the System Id of the DOCTYPE and of external parsed ENTITY is used,
---    Public Id (if any) is skipped.
---  * Only the local file, the "file://" and the "http://" schemes are supported
---     in URIs (parsing error).
+--    Public Id (if any) is ignored.
+--  * Only the schemes: local file, "file://" and "http://" are supported in
+--     URIs (parsing error).
 --  * Only UTF-8, UTF-16 and ISO-8859-1 encodings are natively supported.
 --    Some other encodings may be handled by defining the environment variable
 --    XML_PARSER_MAP_DIR to where Byte_To_Unicode can find the mapping file
