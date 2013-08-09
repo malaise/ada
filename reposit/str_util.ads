@@ -61,6 +61,13 @@ package Str_Util is
                    From    : Positive;
                    Through : Natural) return String;
 
+  -- Delete Number characters from From included
+  --  or as many characters as possible
+  -- May raise Constraint_Error if From > Source.Length
+  function Delete_Nb (Source : String;
+                      From   : Positive;
+                      Number : Natural) return String;
+
   -- Remove heading / tailing spaces and Htabs
   type Strip_Kind is (Tail, Head, Both);
   function Strip (Str : String; From : Strip_Kind := Tail) return String;

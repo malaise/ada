@@ -46,6 +46,8 @@ Insert 9 before 10
 Replace from 11 to 10 with A, B, C
 Overwrite from 14 with D, E, F
 Image 0123456789ABCDEF
+Delete 2 from 2 then 5 from 11
+Image 03456789AB
 
 Check Finalization
 Array of B, C

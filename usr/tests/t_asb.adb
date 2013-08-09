@@ -114,6 +114,10 @@ begin
   Basic_Proc.Put_Line_Output ("Overwrite from 14 with D, E, F");
   N1.Overwrite (14, Str(404 .. 406)); --> 0123456789ABCDEF
   Basic_Proc.Put_Line_Output ("Image " & N1.Image);
+  Basic_Proc.Put_Line_Output ("Delete 2 from 2 then 5 from 11");
+  N1.Delete_Nb (2, 2);  --> 03456789ABCDEF
+  N1.Delete_Nb (11, 5); --> 03456789AB
+  Basic_Proc.Put_Line_Output ("Image " & N1.Image);
   Basic_Proc.New_Line_Output;
 
   Basic_Proc.Put_Line_Output ("Check Finalization");

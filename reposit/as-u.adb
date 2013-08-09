@@ -512,8 +512,21 @@ package body As.U is
     end if;
   end Delete;
 
+  procedure Delete_Nb (Source : in out Asu_Us;
+                       From   : in Positive;
+                       Number : in Natural) is
+  begin
+    if From + Number - 1 <= Source.Last then
+      -- We can delete Number characters
+      Delete (Source, From, From + Number - 1);
+    else
+      -- We delete from From to Last
+      Delete (Source, From, Source.Last);
+    end if;
+  end Delete_Nb;
+
   procedure Trail (Source : in out Asu_Us;
-                   Number : in Positive) is
+                   Number : in Natural) is
   begin
     if Number >= Source.Last then
       Free(Source.Ref);

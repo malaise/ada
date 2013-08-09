@@ -80,6 +80,10 @@ newl
 11 10 "ABC" strrep
 "Overwrite from 14 with D, E, F" putl
 14 "DEF" strovw
+"Image " put dup putl
+
+"Delete 2 from 2 then 5 from 11" putl
+2 3 strdel dup 11 swap strlen strdel
 "Image " put putl
 newl
 

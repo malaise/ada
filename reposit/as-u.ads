@@ -115,7 +115,7 @@ package As.U is
                     Before   : in Positive;
                     New_Item : in String);
 
-  -- Delete some characters
+  -- Delete characters from From to Through included
   -- Do nothing if Through < From
   -- May raise Index_Error if Through >= From
   --  and From > Source.Length or Through > Source.Length
@@ -123,11 +123,18 @@ package As.U is
                     From    : in Positive;
                     Through : in Natural);
 
+  -- Delete Number characters from From included
+  --  or as many characters as possible
+  -- May raise Index_Error if From > Source.Length
+  procedure Delete_Nb (Source : in out Asu_Us;
+                       From   : in Positive;
+                       Number : in Natural);
+
   -- Delete trailing characters
   -- Delete characters from Source.Length - Number + 1 to Source.Length
   -- Source becomes Asu_Null if Number >= Source.Length
   procedure Trail (Source : in out Asu_Us;
-                   Number : in Positive);
+                   Number : in Natural);
 
   -- Extract Count characters from head or tail of Source
   -- Pad with Pad if Count > Source.Length

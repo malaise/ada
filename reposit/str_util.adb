@@ -153,6 +153,22 @@ package body Str_Util is
                       & Source (Through + 1 .. Source'Last));
   end Delete;
 
+  -- Delete Number characters from From included
+  --  or as many characters as possible
+  -- May raise Constraint_Error if From > Source.Length
+  function Delete_Nb (Source : String;
+                      From   : Positive;
+                      Number : Natural) return String is
+  begin
+    if From + Number - 1 <= Source'Last then
+      -- We can delete Number characters
+      return Delete (Source, From, From + Number - 1);
+    else
+      -- We delete from From to Last
+      return Delete (Source, From, Source'Last);
+    end if;
+  end Delete_Nb;
+
   -- Remove tailing spaces and tabs
   function Strip (Str : String; From : Strip_Kind := Tail) return String is
     -- Parses spaces and tabs (latin_1.Ht) from the head/tail of a string

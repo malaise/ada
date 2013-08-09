@@ -154,6 +154,15 @@ begin
     begin
       Basic_Proc.Put_Line_Output ("Image " & N9);
     end;
+    Basic_Proc.Put_Line_Output ("Delete 2 from 2 then 5 from 11");
+    declare
+      N1 : constant String := "0123456789ABCDEF";
+      N2 : constant String := Str_Util.Delete_Nb (N1, 2, 2);
+      N3 : constant String := Str_Util.Delete_Nb (N2, 11, 5);
+    begin
+      Basic_Proc.Put_Line_Output ("Image " & N3);
+    end;
+
     Basic_Proc.New_Line_Output;
     Basic_Proc.Put_Line_Output ("Check Finalization");
     Basic_Proc.Put_Line_Output ("Array of B, C");
@@ -205,9 +214,10 @@ begin
       Basic_Proc.Put_Line_Output ("24 Replace");
       Basic_Proc.Put_Line_Output ("25 Insert");
       Basic_Proc.Put_Line_Output ("26 Delete");
-      Basic_Proc.Put_Line_Output ("27 Check char is backslashed");
+      Basic_Proc.Put_Line_Output ("26 Delete_nb");
+      Basic_Proc.Put_Line_Output ("28 Check char is backslashed");
 
-      Basic_Proc.Put_Output ("Choice (0 .. 22) ? "); Nat_Get (Action, True);
+      Basic_Proc.Put_Output ("Choice (0 .. 28) ? "); Nat_Get (Action, True);
       Basic_Proc.New_Line_Output;
 
       begin
@@ -536,6 +546,16 @@ begin
                                  Through => Nat1));
 
           when 27 =>
+            Basic_Proc.Put_Line_Output ("26 Delete_Nb");
+            Basic_Proc.Put_Output ("From (Pos)? "); Nat_Get (Pos1, False);
+            Basic_Proc.Put_Output ("Number (Nat)? "); Nat_Get (Nat1, True);
+            Basic_Proc.Put_Line_Output (
+                "Deleted: "
+              & Str_Util.Delete_Nb (Str(1 .. Str_Len),
+                                    From => Pos1,
+                                    Number => Nat1));
+
+          when 28 =>
             Basic_Proc.Put_Line_Output ("27 Check char is backslashed");
             Basic_Proc.Put_Output ("Index (Pos)? "); Nat_Get (Pos1, False);
             Basic_Proc.Put_Line_Output (
