@@ -79,24 +79,6 @@ package body Strings is
     return Res;
   end Strloc;
 
-  function Strrep (S, I, J, Sub : Item_Rec) return Item_Rec is
-    Res : Item_Rec(Chrs);
-  begin
-    Check_Chrs(S);
-    Check_Chrs(Sub);
-    Check_Inte(I);
-    Check_Pos(I);
-    Check_Inte(J);
-
-    Res := S;
-    Res.Val_Text.Replace (Positive (I.Val_Inte), Natural (J.Val_Inte),
-                          Sub.Val_Text.Image);
-    return Res;
-  exception
-    when As.Index_Error =>
-      raise Argument_Mismatch;
-  end Strrep;
-
   function Strins (S, I, Sub : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);
   begin
@@ -147,21 +129,6 @@ package body Strings is
     when As.Index_Error =>
       raise Argument_Mismatch;
   end Strdel;
-
-  function Strtrail (S, N : Item_Rec) return Item_Rec is
-    Res : Item_Rec(Chrs);
-  begin
-    Check_Chrs(S);
-    Check_Inte(N);
-    Check_Pos(N);
-
-    Res := S;
-    Res.Val_Text.Trail (Positive (N.Val_Inte));
-    return Res;
-  exception
-    when As.Index_Error =>
-      raise Argument_Mismatch;
-  end Strtrail;
 
   function Strlen (S : Item_Rec) return Item_Rec is
   begin

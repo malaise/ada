@@ -39,13 +39,24 @@ newl
 "abc" = [ "Check ""="" OK" putl ] [ "Check ""="" FAILED" E pushr call ] ifte call
 newl
 
+# Replace Str(i .. j) by Rep, stack is (from top to bottom): Rep j i Str
+[
+pope swap copye swap strdel
+pushle pushle strins
+] R popr
+# Delete the N last characters of Str, stack is (from top to bottom): N Str
+[
+1 - swap dup strlen 3 Moven -
+swap dup strlen swap2 strdel
+] T popr
+
 "1u5abcde"
 "Replace from 4 to 7 with B, C" putl
-4 7 "BC" strrep
+4 7 "BC" R pushr call
 "Replace from 1 to 3 with a, b, c, d" putl
-1 3 "abcd" strrep
+1 3 "abcd" R pushr call
 "Replace from 5 to 7 with e" putl
-5 7 "e" strrep
+5 7 "e" R pushr call
 "Image " put dup putl
 
 "Overwrite from 4 with 4, 5" putl
@@ -59,25 +70,25 @@ newl
 "Image " put dup putl
 
 "Replace from 1 to 0 with 0" putl
-1 0 "0" strrep
+1 0 "0" R pushr call
 "Replace from 3 to 1 with a, b" putl
-3 1 "ab" strrep
+3 1 "ab" R pushr call
 "Replace from 12 to 11 with y, z" putl
-12 11 "yz" strrep
+12 11 "yz" R pushr call
 "Image " put dup putl
 
 "Delete from 3 to 4, insert a, b, c, d before 4" putl
 3 4 strdel 4 "abcd" strins
 "Replace from 4 to 5 with B, C, D" putl
-4 5 "BCD" strrep
+4 5 "BCD" R pushr call
 "Delete from 4 to 8" putl
 4 8 strdel
 "Trail 2" putl
-2 strtrail
+2 T pushr call
 "Insert 9 before 10" putl
 10 "9" strins
 "Replace from 11 to 10 with A, B, C" putl
-11 10 "ABC" strrep
+11 10 "ABC" R pushr call
 "Overwrite from 14 with D, E, F" putl
 14 "DEF" strovw
 "Image " put dup putl

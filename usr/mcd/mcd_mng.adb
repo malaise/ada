@@ -4,7 +4,7 @@ pragma Elaborate(Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V10.1";
+  Mcd_Version : constant String := "V11.0";
 
   package Stack is
     -- What can we store in stack
@@ -17,6 +17,10 @@ package body Mcd_Mng is
     procedure Read (Item : out Item_Rec; Default_Stack : in Boolean := True);
 
     function Stack_Size (Default_Stack : Boolean := True) return Natural;
+
+    -- Read / Get Nth item of main stack
+    procedure Readn (Item : out Item_Rec; N : in Positive);
+    procedure Getn (Item : out Item_Rec; N : in Positive);
 
     -- Dump last N elements popped or read, if debug history
     procedure Dump_History;
@@ -241,11 +245,9 @@ package body Mcd_Mng is
     function Strcat (S1, S2 : Item_Rec) return Item_Rec;
     function Strsub (S, I1, I2 : Item_Rec) return Item_Rec;
     function Strloc (S, Occ, Pat : Item_Rec) return Item_Rec;
-    function Strrep (S, I, J, Sub : Item_Rec) return Item_Rec;
     function Strins (S, I, Sub : Item_Rec) return Item_Rec;
     function Strovw (S, I, Sub : Item_Rec) return Item_Rec;
     function Strdel (S, I, J : Item_Rec) return Item_Rec;
-    function Strtrail (S, N : Item_Rec) return Item_Rec;
     function Strupp (S : Item_Rec) return Item_Rec;
     function Strlow (S : Item_Rec) return Item_Rec;
     function Strmix (S : Item_Rec) return Item_Rec;
@@ -265,6 +267,8 @@ package body Mcd_Mng is
     procedure Do_Call;
 
     procedure Do_Popn;
+    procedure Do_Readn;
+    procedure Do_Moven;
 
     procedure Do_Clear_Extra;
 
@@ -758,6 +762,9 @@ package body Mcd_Mng is
         when Swap3 =>
           -- push A push B push C
           Pop(A); Pop(B); Pop(C); Push(A); Push(B); Push(C);
+        when Swap2 =>
+          -- push B push C push A
+          Pop(A); Pop(B); Pop(C); Push(B); Push(C); Push(A);
         when Dup =>
           -- push A push A
           Read(A); Push(A);
@@ -773,6 +780,12 @@ package body Mcd_Mng is
         when Popn =>
           -- pop B A times
           Misc.Do_Popn;
+        when Readn =>
+          -- push the Ath element of stack
+          Misc.Do_Readn;
+        when Moven =>
+          -- move on top the Ath element of stack
+          Misc.Do_Moven;
 
         -- Registers and arrays
         when Popr =>
@@ -997,10 +1010,6 @@ package body Mcd_Mng is
           -- push index of Bth occurence of A in C
           Pop(A); Pop(B); Pop(C); Push (Strings.Strloc(C, B, A));
           S := A;
-        when Strrep =>
-          -- push D with its slice C .. B replaced by A
-          Pop(A); Pop(B); Pop(C); Pop(D); Push (Strings.Strrep(D, C, B, A));
-          S := A;
         when Strins =>
           -- push C after inserting A from pos B in it
           Pop(A); Pop(B); Pop(C); Push (Strings.Strins(C, B, A));
@@ -1011,10 +1020,6 @@ package body Mcd_Mng is
         when Strdel =>
           -- push C without C(B..A)
           Pop(A); Pop(B); Pop(C); Push (Strings.Strdel(C, B, A));
-          S := A;
-        when Strtrail =>
-          -- push B without A last chars
-          Pop(A); Pop(B); Push (Strings.Strtrail(B, A));
           S := A;
         when Strupp =>
           -- push A converted to uppercase

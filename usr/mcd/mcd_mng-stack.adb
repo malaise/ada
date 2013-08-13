@@ -1,4 +1,4 @@
-with Dynamic_List, Basic_Proc, Queues;
+with Dynamic_List, Basic_Proc, Queues, Images;
 separate (Mcd_Mng)
 
 package body Stack is
@@ -94,6 +94,57 @@ package body Stack is
       end if;
       raise Empty_Stack;
   end Read;
+
+
+  procedure Readn (Item : out Item_Rec; N : in Positive) is
+    Litem : Item_Rec;
+  begin
+    if Debug.Debug_Level_Array(Debug.Stack) then
+      Async_Stdin.Put_Err ("Stack: Reading "
+                         & Images.Integer_Image (N) & "th ");
+    end if;
+    List.Move_At (N, Stack_List.Prev);
+    List.Read(Litem, Stack_List.Current);
+    History.Push (Litem);
+    Item := Litem;
+    List.Move_At (1, Stack_List.Prev);
+    if Debug.Debug_Level_Array(Debug.Stack) then
+      Debug.Put (Litem);
+      Async_Stdin.New_Line_Err;
+    end if;
+  exception
+    when Stack_List.Not_In_List =>
+      if Debug.Debug_Level_Array(Debug.Stack) then
+        Async_Stdin.Put_Line_Err("raises EMPTY_STACK");
+      end if;
+      raise Empty_Stack;
+  end Readn;
+
+  procedure Getn (Item : out Item_Rec; N : in Positive) is
+    Litem : Item_Rec;
+    Moved : Boolean;
+  begin
+    if Debug.Debug_Level_Array(Debug.Stack) then
+      Async_Stdin.Put_Err ("Stack: Getting "
+                         & Images.Integer_Image (N) & "th ");
+    end if;
+    List.Move_At (N, Stack_List.Prev);
+    List.Get(Litem, Stack_List.Next, Moved);
+    History.Push (Litem);
+    Item := Litem;
+    List.Move_At (1, Stack_List.Prev);
+    if Debug.Debug_Level_Array(Debug.Stack) then
+      Debug.Put (Litem);
+      Async_Stdin.New_Line_Err;
+    end if;
+  exception
+    when Stack_List.Not_In_List =>
+      if Debug.Debug_Level_Array(Debug.Stack) then
+        Async_Stdin.Put_Line_Err("raises EMPTY_STACK");
+      end if;
+      raise Empty_Stack;
+  end Getn;
+
 
   function Stack_Size (Default_Stack : Boolean := True) return Natural is
     Size : Natural;

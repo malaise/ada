@@ -55,6 +55,39 @@ package body Misc is
     end loop;
   end Do_Popn;
 
+  procedure Do_Readn is
+    N : Positive;
+    Rec : Item_Rec;
+  begin
+    Stack.Pop(A);
+    -- Has to be Inte and val positive
+    begin
+      N := Positive(A.Val_Inte);
+    exception
+      when others => raise Invalid_Argument;
+    end;
+    S := A;
+    Stack.Readn (Rec, N);
+    Stack.Push (Rec);
+  end Do_Readn;
+
+  procedure Do_Moven is
+    N : Positive;
+    Rec : Item_Rec;
+  begin
+    Stack.Pop(A);
+    -- Has to be Inte and val positive
+    begin
+      N := Positive(A.Val_Inte);
+    exception
+      when others => raise Invalid_Argument;
+    end;
+    S := A;
+    Stack.Getn (Rec, N);
+    Stack.Push (Rec);
+  end Do_Moven;
+
+
   procedure Do_Clear_Extra is
     Rec : Item_Rec;
   begin

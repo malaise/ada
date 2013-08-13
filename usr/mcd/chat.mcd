@@ -78,7 +78,7 @@ dup R = [ pop b rnd M pushr toreal * trunc 1 + pusha ] ifcall
 # Display start of sentence, in Y + offset
 pushr put " " put
 # Display end of sentence
-a swap pusha 1 2 "" strrep put "." putl
+a swap pusha 1 2 strdel put "." putl
 # Increment counter
 i pushr 1 + i popr
 # Wait a bit
