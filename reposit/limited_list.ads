@@ -139,7 +139,7 @@ package Limited_List is
   --  or last (Direction = Prev).
   -- Equivalent to Move_To (List, Where, Position - 1, False)
   -- May raise Not_In_List (no movement done)
-  --  Example: Move_At (List, Next, 1) goes to FIRST element
+  --  Example: Move_At (List, 1, Next) goes to FIRST element
   procedure Move_At (List     : in out List_Type;
                      Position : in Positive;
                      Where    : in Direction := Next);
