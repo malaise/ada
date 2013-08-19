@@ -177,13 +177,6 @@ begin
 
     loop
       Basic_Proc.New_Line_Output;
-      Basic_Proc.Put_Line_Output (
-       "String: |0        1         2         3         4         5         6");
-      Basic_Proc.Put_Line_Output (
-       "String: |123456789012345678901234567890123456789012345678901234567890");
-      Basic_Proc.Put_Line_Output (
-       "String: |" & Str(1 .. Str_Len) & "|   len: "
-                    & Integer'Image(Str_Len));
 
       Basic_Proc.Put_Line_Output ("Main menu");
       Basic_Proc.Put_Line_Output (" 0 Exit to change String");
@@ -214,9 +207,18 @@ begin
       Basic_Proc.Put_Line_Output ("24 Replace");
       Basic_Proc.Put_Line_Output ("25 Insert");
       Basic_Proc.Put_Line_Output ("26 Delete");
-      Basic_Proc.Put_Line_Output ("26 Delete_nb");
+      Basic_Proc.Put_Line_Output ("27 Delete_nb");
       Basic_Proc.Put_Line_Output ("28 Check char is backslashed");
 
+      Basic_Proc.New_Line_Output;
+      Basic_Proc.Put_Line_Output (
+       "String: |0        1         2         3         4         5         6");
+      Basic_Proc.Put_Line_Output (
+       "String: |123456789012345678901234567890123456789012345678901234567890");
+      Basic_Proc.Put_Line_Output (
+       "String: |" & Str(1 .. Str_Len) & "|   len: "
+                    & Integer'Image(Str_Len));
+      Basic_Proc.New_Line_Output;
       Basic_Proc.Put_Output ("Choice (0 .. 28) ? "); Nat_Get (Action, True);
       Basic_Proc.New_Line_Output;
 
@@ -546,7 +548,7 @@ begin
                                  Through => Nat1));
 
           when 27 =>
-            Basic_Proc.Put_Line_Output ("26 Delete_Nb");
+            Basic_Proc.Put_Line_Output ("27 Delete_Nb");
             Basic_Proc.Put_Output ("From (Pos)? "); Nat_Get (Pos1, False);
             Basic_Proc.Put_Output ("Number (Nat)? "); Nat_Get (Nat1, True);
             Basic_Proc.Put_Line_Output (
@@ -556,7 +558,7 @@ begin
                                     Number => Nat1));
 
           when 28 =>
-            Basic_Proc.Put_Line_Output ("27 Check char is backslashed");
+            Basic_Proc.Put_Line_Output ("28 Check char is backslashed");
             Basic_Proc.Put_Output ("Index (Pos)? "); Nat_Get (Pos1, False);
             Basic_Proc.Put_Line_Output (
                 "Is backslashed: "
