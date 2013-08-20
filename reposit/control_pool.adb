@@ -1,4 +1,4 @@
-with Mutex_Manager, Limited_List, Unlimited_Pool;
+with Mutex_Manager, Long_Long_Limited_List, Long_Long_Limited_Pool;
 package body Control_Pool is
 
   -- The global mutex protecting the pool
@@ -23,7 +23,7 @@ package body Control_Pool is
   end Set_Cell;
 
   -- Pool management
-  package Pool_Mng is new Limited_List (Cell_Type, Set_Cell);
+  package Pool_Mng is new Long_Long_Limited_List (Cell_Type, Set_Cell);
   Pool : Pool_Mng.List_Type;
 
   -- Search in pool for a key
@@ -36,9 +36,14 @@ package body Control_Pool is
 
   -- Pool of free mutexes
   -----------------------
-  package Free_Mutex_Pool_Mng is new Unlimited_Pool (Mutex_Access);
-  package Free_Mutex_Pool renames Free_Mutex_Pool_Mng.Upool;
+  procedure Set (To : out Mutex_Access; Val : in Mutex_Access) is
+  begin
+    To := Val;
+  end Set;
+  package Free_Mutex_Pool is new Long_Long_Limited_Pool
+      (Mutex_Access, Set => Set);
   Free_Mutexes : Free_Mutex_Pool.Pool_Type;
+
   function Get_Mutex return Mutex_Access is
     Mut_Acc : Mutex_Access;
   begin
