@@ -21,7 +21,7 @@ begin
       Str : constant String := Argument.Get_Parameter(I);
     begin
       Loc := Str_Util.Locate (Str, "=");
-      if Loc = 0 or else Loc = 1 or else Loc = Str'Last then
+      if Loc = 0 or else Loc = 1 then
         raise Constraint_Error;
       end if;
       Mem.Set (Str (1 .. Loc - 1), Str (Loc + 1 .. Str'Last),
