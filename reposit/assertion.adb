@@ -76,7 +76,7 @@ package body Assertion is
     Basic_Proc.Put_Line_Error (".");
 
     if To_Do = Put_Trace then
-      -- Action is only to log False assertion
+      -- Action is only to log the "False" assertion
       return;
     end if;
 

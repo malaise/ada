@@ -16,7 +16,11 @@ package As.B is
   function Length (Source : Asb_Bs) return Natural;
 
   -- Conversion from and to string
+  -- Warning: Returns an Asb_Bs with Max=Str'Length
+  --   B : Asb_Bs (3) := Tbs ("Ko"); raises Constraint_Error!!!
   function Tbs (Str : String) return Asb_Bs;
+  -- Warning: Returns an Asb_Bs with Max=1
+  --   B : Asb_Bs (3) := Tbs ('K'); raises Constraint_Error!!!
   function Tbs (Char : Character) return Asb_Bs;
   function Image (Str : Asb_Bs) return String;
   procedure Set (Target : out Asb_Bs; Val : in Asb_Bs);

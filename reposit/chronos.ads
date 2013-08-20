@@ -42,8 +42,8 @@ package Chronos is
   function Read (A_Chrono : Chrono_Type) return Time_Rec;
   function Read (A_Chrono : Chrono_Type) return Date_Rec;
 
-  -- Reset the chrono
-  -- Does not stop it if it is running (but resets it to 0)
+  -- Reset the chrono to 0
+  -- Does not stop it if it is running (but resets it to 0 anyway)
   procedure Reset (A_Chrono : in out Chrono_Type);
 
   -- Raised by Read if chrono has reached a too high value

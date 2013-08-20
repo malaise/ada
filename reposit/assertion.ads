@@ -17,7 +17,7 @@ package Assertion is
   -- Set/Change action (preempts env variable)
   procedure Set (Action : in Action_List);
 
-  -- Get action value
+  -- Get the current value set for Action
   function Get return Action_List;
 
   -- Do nothing if What is True, else do Action
