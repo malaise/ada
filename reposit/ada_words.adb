@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Hash, Lower_Str;
+with As.B, Hash, Lower_Str;
 package body Ada_Words is
 
   -- Ada separators
@@ -80,12 +80,13 @@ package body Ada_Words is
   -------------------------------------------------------------
 
   -- Ada reserved word
-  subtype Word_Len_Range is Natural range 0 .. 15;
+  Word_Max_Len : constant := 12;
   type Word_Rec is record
-    Len : Word_Len_Range;
-    Str : String (1 .. Word_Len_Range'Last);
+    Str : As.B.Asb_Bs (Word_Max_Len);
     -- Some reserved words can be not keyword (ex: access, digits...)
     Must : Boolean;
+    -- Some reserved words were introduced after ADA 83
+    Version : Language_Versions;
   end record;
 
   -- Hash table of Ada reserved words
@@ -93,13 +94,15 @@ package body Ada_Words is
   Hash_Table : Word_Hash.Hash_Table;
 
   -- Adds a reserved Word in the table
-  procedure Store (Word : in String; Must_Be_Keyword : in Boolean := True) is
+  procedure Store (Word : in String;
+                   Must_Be_Keyword : in Boolean := True;
+                   Version : in Language_Versions := Ada83) is
     Low_Word : constant String := Lower_Str (Word);
     Rec : Word_Rec;
   begin
-    Rec.Len := Low_Word'Length;
-    Rec.Str (1 .. Rec.Len) := Low_Word;
+    Rec.Str.Set (Low_Word);
     Rec.Must := Must_Be_Keyword;
+    Rec.Version := Version;
     Word_Hash.Store (Hash_Table, Low_Word, Rec);
   end Store;
 
@@ -114,10 +117,10 @@ package body Ada_Words is
 
     Store ("abort");
     Store ("abs");
-    Store ("abstract");
+    Store ("abstract", Version => Ada95);
     Store ("accept");
     Store ("access", False);
-    Store ("aliased");
+    Store ("aliased", Version => Ada95);
     Store ("all");
     Store ("and");
     Store ("array");
@@ -150,7 +153,7 @@ package body Ada_Words is
 
     Store ("if");
     Store ("in");
-    Store ("interface");
+    Store ("interface", Version => Ada2005);
     Store ("is");
 
     Store ("limited");
@@ -166,36 +169,36 @@ package body Ada_Words is
     Store ("or");
     Store ("others");
     Store ("out");
-    Store ("overriding");
+    Store ("overriding", Version => Ada2005);
 
     Store ("package");
     Store ("pragma");
     Store ("private");
     Store ("procedure");
-    Store ("protected");
+    Store ("protected", Version => Ada95);
 
     Store ("raise");
     Store ("range", False);
     Store ("record");
     Store ("rem");
     Store ("renames");
-    Store ("requeue");
+    Store ("requeue", Version => Ada95);
     Store ("return");
     Store ("reverse");
 
     Store ("select");
     Store ("separate");
-    Store ("some");
+    Store ("some", Version => Ada2012);
     Store ("subtype");
-    Store ("synchronized");
+    Store ("synchronized", Version => Ada2005);
 
-    Store ("tagged");
+    Store ("tagged", Version => Ada95);
     Store ("task");
     Store ("terminate");
     Store ("then");
     Store ("type");
 
-    Store ("until");
+    Store ("until", Version => Ada95);
     Store ("use");
 
     Store ("when");
@@ -208,7 +211,9 @@ package body Ada_Words is
   end Init;
 
   -- Check if word is a reserved keyword
-  function Check_Keyword (Word : String) return Keyword_Res_List is
+  function Check_Keyword (Word : String;
+                          Version : Language_Versions := Default_Version)
+                         return Keyword_Res_List is
     Low_Word : constant String := Lower_Str (Word);
     Result : Word_Hash.Found_Rec;
   begin
@@ -225,16 +230,15 @@ package body Ada_Words is
           -- Word hash not found => not a keyword
           return False;
         when True =>
-          if Result.Data.Str (1 .. Result.Data.Len) = Low_Word then
+          if Result.Data.Str.Image = Low_Word then
             -- Word hash found, and word match otherwise search next word
-            if Result.Data.Must then
+            return (
+              -- Found but in a later version than requested
+              if Result.Data.Version > Version then False
               -- This word is a keyword
-              return True;
-            else
-              -- This word is a keyword except if following a '''
-              --  (like range, digits...)
-              return Maybe;
-            end if;
+              elsif Result.Data.Must then True
+              -- It is a keyword except if following a ''' (ex range, digits...)
+              else Maybe);
           end if;
       end case;
     end loop;
