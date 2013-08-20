@@ -1,7 +1,10 @@
--- Basic computation of a oper b...
--- Where oper is +, -, * or /,
---  a and b are integers or ${Variable}
--- Supports parentheses.
+-- Stores variables and performs evaluation of an expression referencing them
+-- Also performs basic computation of an expression like: a o b...
+--  where operation "o" is an operator +, -, * or /,
+--  and operands "a" or "b" are either integers (num, +num and -num)
+--  or references to internal variables ${Variable}
+--  Supports parentheses
+-- Both support an optional external variable resolver
 with Ada.Finalization;
 with As.U, Hashed_List.Unique;
 package Computer is
@@ -47,20 +50,21 @@ package Computer is
 
   -- External resolver of variables:
   -- If a variable is not Set, then Eval or Compute will call this resolver.
-  -- If this resolver raises any exeption, then Unknown_Variable will be
-  --  raised
+  -- If no resolver is set (null) then Unknown_Variable is raised
+  -- If this resolver raises any exeption, then Unknown_Variable is raised
   type Resolver_Access is access function (Name : String) return String;
   procedure Set_External_Resolver (Memory : in out Memory_Type;
                                    Resolver : in Resolver_Access);
 
   -- Resolve variables of an expresssion
-  -- Variable delimiters may be backslashed for non expansion but then they
-  --  must both be backslashed. Ex: \${Var\}
+  -- Variable delimiters may be backslashed for no expansion but then they
+  --  must be both backslashed. Ex: \${Var\}
   function Eval (Memory : Memory_Type; Expression : String) return String;
 
   -- Computation of expression
-  -- All variables must resolve to a number or empty
-  -- Then only numbers, operators and penthesis are allowed
+  -- First, all variables are got or resolved and must lead to a valid
+  --  operator, operand or a parenthesis
+  -- The the operations are computed in the proper order
   -- May raise Invalid_Expression (space, parentheses, operations, values...)
   function Compute (Memory : Memory_Type; Expression : String) return Integer;
 

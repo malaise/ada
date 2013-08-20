@@ -233,7 +233,9 @@ package body Computer is
 
 
   -- Resolv variables of an expresssion
-  function Eval (Memory : Memory_Type; Expression : String) return String is
+  function Internal_Eval (Memory : Memory_Type;
+                          Expression : String;
+                          Check : Boolean) return String is
     -- Get a variable, invokes external resolver if needed
     function Ext_Get (Name : String) return String is
     begin
@@ -255,15 +257,31 @@ package body Computer is
           raise Unknown_Variable;
       end;
     end Ext_Get;
+    -- Get a variable, check if it is empty or contains spaces
+    function Check_Get (Name : String) return String is
+      Result : constant String := Ext_Get (Name);
+    begin
+      if Check and then
+      (Result = "" or else Str_Util.Locate (Result, " ") /= 0) then
+        raise Invalid_Expression;
+      end if;
+      return Result;
+    end Check_Get;
+
   begin
     return Str_Util.Eval_Variables (
-              Expression, "${", "}", Ext_Get'Access,
+              Expression, "${", "}", Check_Get'Access,
               Muliple_Passes   => True,
               No_Check_Stop    => False,
               Skip_Backslashed => True);
   exception
     when Str_Util.Inv_Delimiter | Str_Util.Delimiter_Mismatch =>
       raise Invalid_Expression;
+  end Internal_Eval;
+
+  function Eval (Memory : Memory_Type; Expression : String) return String is
+  begin
+    return Internal_Eval (Memory, Expression, Check => False);
   end Eval;
 
   -- Fix expression
@@ -285,8 +303,8 @@ package body Computer is
     -- Isolate variables
     Exp := As.U.Tus (Str_Util.Substit (Exp.Image, "${", " ${"));
     Exp := As.U.Tus (Str_Util.Substit (Exp.Image, "}", "} "));
-    -- Expand variables
-    Exp := As.U.Tus (Eval (Memory, Exp.Image));
+    -- Expand all variables
+    Exp := As.U.Tus (Internal_Eval (Memory, Exp.Image, Check => True));
 
     -- +X and -X will be analysed while parsing
     Exp := As.U.Tus (Str_Util.Substit (Exp.Image, "+", " +"));
