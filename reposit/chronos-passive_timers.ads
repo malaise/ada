@@ -6,9 +6,10 @@ package Chronos.Passive_Timers is
 
   -- Timer status, independant from the associated clock status
   subtype Timer_Status is Timers.Timer_Status;
+  Stopped : constant Timer_Status := Timers.Timer_Status'(Timers.Deleted);
 
   function Status (Timer : Passive_Timer) return Timer_Status;
-  -- True if timer is not Deleted
+  -- True if timer is not Deleted (not Stopped)
   function Exists (Timer : Passive_Timer) return Boolean;
 
   -- Arm a passive timer with a given period
@@ -27,11 +28,12 @@ package Chronos.Passive_Timers is
   procedure Suspend (Timer : in out Passive_Timer);
 
   -- Resume a suspended a timer: new expirations are resumed
-  -- No action if timer is not syspended
+  -- No action if timer is not suspended
   procedure Resume (Timer : in out Passive_Timer);
 
   -- Checks if timer expiration time (Prev_Exp + Period) is reached
-  -- If yes, add Period to expiration time
+  -- If yes, and periodical, add Period to expiration time
+  -- If yes and single shot timer, set it to raise Timer_Expired
   function Has_Expired (Timer : Passive_Timer) return Boolean;
 
   -- When a timer has expired once and has no period (0.0) it is not re-armed

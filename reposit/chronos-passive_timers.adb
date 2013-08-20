@@ -7,9 +7,10 @@ package body Chronos.Passive_Timers is
   -- Timer status, independant from the associated clock status
   function Status (Timer : Passive_Timer) return Timer_Status is
   begin
-    return (if Timer.Acc = null then Timers.Deleted
-            elsif Timer.Acc.Chrono.Get_Status = Stopped then Timers.Suspended
-            else Timers.Running);
+    return (
+      if Timer.Acc = null then Timers.Deleted
+      elsif Timer.Acc.Chrono.Get_Status = Chronos.Stopped then Timers.Suspended
+      else Timers.Running);
   end Status;
 
   -- True if timer is not Deleted
