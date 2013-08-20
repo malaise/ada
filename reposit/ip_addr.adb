@@ -144,7 +144,7 @@ package body Ip_Addr is
                    Port : out Tcp_Util.Remote_Port) is
     Colon : Natural;
   begin
-    Colon := Str_Util.Locate (Addr_Port, ":");
+    Colon := Str_Util.Locate (Addr_Port, Sep);
     if Colon = 0 or else Addr_Port'Length = 1 then
       -- Only ":" or no ':'
       raise Parse_Error;
@@ -162,6 +162,18 @@ package body Ip_Addr is
       Port := Parse (Addr_Port (Colon + 1 .. Addr_Port'Last));
     end if;
   end Parse;
+
+  -- Image <addr>:<port> (xxx.yyy.zzz.ttt:pppp) of an Addr and Port
+  function Image  (Addr : Socket.Ip_Address;
+                   Port : Socket.Port_Num) return String is
+  begin
+    return Image (Addr) & Sep & Image (Port);
+  end Image;
+  function Image  (Host : Socket.Host_Id;
+                   Port : Socket.Port_Num) return String is
+  begin
+    return Image (Host) & Sep & Image (Port);
+  end Image;
 
 
   -- Resolve a remote Host or LAN

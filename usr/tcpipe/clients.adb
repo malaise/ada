@@ -79,8 +79,7 @@ package body Clients is
 
     if Debug.Is_Set then
       Basic_Proc.Put_Line_Output ("Tcpipe: accepted client ("
-        & Ip_Addr.Image (Socket.Id2Addr(Remote_Host_Id))
-        & ":" & Ip_Addr.Image (Remote_Port_Num)
+        & Ip_Addr.Image (Remote_Host_Id, Remote_Port_Num)
         & ") on port "
         & Ip_Addr.Image (Local_Port_Num));
     end if;
@@ -180,9 +179,7 @@ package body Clients is
     if Client.Dscr.Is_Open then
       if Debug.Is_Set then
         Basic_Proc.Put_Line_Output ("Tcpipe: connected to client ("
-          & Ip_Addr.Image (Socket.Id2Addr(Target_Host.Id))
-          & ":" & Ip_Addr.Image (Target_Port.Num)
-          & ")");
+          & Ip_Addr.Image (Target_Host.Id, Target_Port.Num) & ")");
       end if;
       -- Insert record and set reception callbacks
       Client.Port := Port;
@@ -193,9 +190,7 @@ package body Clients is
     else
       if Debug.Is_Set then
         Basic_Proc.Put_Line_Output ("Tcpipe: connection failure to client ("
-          & Ip_Addr.Image (Socket.Id2Addr(Target_Host.Id))
-          & ":" & Ip_Addr.Image (Target_Port.Num)
-          & ")");
+          & Ip_Addr.Image (Target_Host.Id, Target_Port.Num) & ")");
       end if;
       -- Send disconnect_local
       Msg.Head.Kind := Partner.Disconnect;

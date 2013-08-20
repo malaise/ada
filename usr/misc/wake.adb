@@ -149,9 +149,8 @@ begin
   -- Done
   Basic_Proc.Put_Line_Output (
       "Sent WOL packet for host " & Image (Mac_Addr)
-    & " on " & Ip_Addr.Image (Socket.Id2Addr (Soc.Get_Destination_Host))
-    & ":" & Ip_Addr.Image (Soc.Get_Destination_Port));
-
+    & " on " & Ip_Addr.Image (Soc.Get_Destination_Host,
+                              Soc.Get_Destination_Port));
   -- Close socket
   Soc.Close;
 

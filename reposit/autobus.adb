@@ -73,14 +73,11 @@ package body Autobus is
   -- Internal inconsistency
   Internal_Error : exception;
 
-  -- Image of a port num
-  function Port_Image is new Images.Int_Image (Socket.Port_Num);
-
   -- Image of a full address
   function Image (Host : Socket.Host_Id; Port : Socket.Port_Num)
                  return String is
   begin
-    return Ip_Addr.Image (Socket.Id2Addr (Host)) & ":" & Port_Image (Port);
+    return Ip_Addr.Image (Host, Port);
   end Image;
 
   -- Debug
@@ -686,7 +683,7 @@ package body Autobus is
         Debug ("Bus initialializing on default interface");
       else
         Debug ("Bus initialializing on specific interface " &
-               Ip_Addr.Image (Socket.Id2Addr (Rbus.Host_If)));
+               Ip_Addr.Image (Rbus.Host_If));
       end if;
 
       -- Open the IPM UDP socket and configure it

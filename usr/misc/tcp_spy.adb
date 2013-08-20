@@ -133,7 +133,7 @@ procedure Tcp_Spy is
           null;
       end;
     end if;
-    return Ip_Addr.Image (Socket.Id2Addr (Host_Id));
+    return Ip_Addr.Image (Host_Id);
   end Host_Image;
 
   -- Acception, reception, and disconnection callbacks

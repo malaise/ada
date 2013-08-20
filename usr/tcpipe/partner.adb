@@ -47,16 +47,15 @@ package body Partner is
   begin
     if Client_Mode then
       if Debug.Is_Set then
-        Basic_Proc.Put_Line_Output ("Tcpipe: connecting to remote"
-         & " host: " & Ip_Addr.Image (Socket.Id2Addr (Rem_Host.Id))
-         & " port: " & Ip_Addr.Image (Rem_Port.Num));
+        Basic_Proc.Put_Line_Output ("Tcpipe: connecting to remote host: "
+            & Ip_Addr.Image (Rem_Host.Id, Rem_Port.Num));
       end if;
       Result := Tcp_Util.Connect_To (Socket.Tcp_Header, Rem_Host, Rem_Port,
                                      Connect_Cb'Access, Nb_Tries => 0);
     else
       if Debug.Is_Set then
-        Basic_Proc.Put_Line_Output ("Tcpipe: accepting on"
-         & " port: " & Ip_Addr.Image (Loc_Port.Num));
+        Basic_Proc.Put_Line_Output ("Tcpipe: accepting on port: "
+            & Ip_Addr.Image (Loc_Port.Num));
       end if;
       Tcp_Util.Accept_From (Socket.Tcp_Header, Loc_Port, Accept_Cb'Access,
                             Dscr, Port);
@@ -157,15 +156,13 @@ package body Partner is
     Set_Callbacks;
     if Connected then
       if Debug.Is_Set then
-        Basic_Proc.Put_Line_Output ("Tcpipe: connected to remote"
-         & " host: " & Ip_Addr.Image (Socket.Id2Addr (Rem_Host.Id))
-         & " port: " & Ip_Addr.Image (Rem_Port.Num));
+        Basic_Proc.Put_Line_Output ("Tcpipe: connected to remote host: "
+            & Ip_Addr.Image (Rem_Host.Id, Rem_Port.Num));
       end if;
     else
       Basic_Proc.Put_Line_Error (
-         "ERROR: Unexpected failure of connection to remote"
-         & " host: " & Ip_Addr.Image (Socket.Id2Addr(Rem_Host.Id))
-         & " port: " & Ip_Addr.Image (Rem_Port.Num));
+          "ERROR: Unexpected failure of connection to remote host: "
+        & Ip_Addr.Image (Rem_Host.Id, Rem_Port.Num));
       raise Common.Fatal_Error;
     end if;
   end Connect_Cb;
@@ -186,9 +183,9 @@ package body Partner is
     Rem_Dscr := New_Dscr;
     Set_Callbacks;
     if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Tcpipe: accepted connection from remote"
-       & " host: " & Ip_Addr.Image (Socket.Id2Addr(Rem_Host.Id))
-       & " port: " & Ip_Addr.Image (Rem_Port.Num));
+      Basic_Proc.Put_Line_Output (
+          "Tcpipe: accepted connection from remote host: "
+        & Ip_Addr.Image (Rem_Host.Id, Rem_Port.Num));
     end if;
   end Accept_Cb;
 
@@ -227,9 +224,9 @@ package body Partner is
     when Error: Socket.Soc_Conn_Lost | Tcp_Util.Timeout_Error =>
       if Debug.Is_Set then
         Basic_Proc.Put_Line_Output ("Tcpipe: Exception "
-         & Ada.Exceptions.Exception_Name(Error) & " when sending to remote"
-         & " host: " & Ip_Addr.Image (Socket.Id2Addr(Rem_Host.Id))
-         & " port: " & Ip_Addr.Image (Rem_Port.Num));
+            & Ada.Exceptions.Exception_Name(Error)
+            & " when sending to remote host: "
+            & Ip_Addr.Image (Rem_Host.Id, Rem_Port.Num));
       end if;
       Close_Restart (True);
   end Send;
@@ -239,9 +236,8 @@ package body Partner is
     pragma Unreferenced (Dscr);
   begin
     if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Tcpipe: disconnection from remote"
-       & " host: " & Ip_Addr.Image (Socket.Id2Addr(Rem_Host.Id))
-       & " port: " & Ip_Addr.Image (Rem_Port.Num));
+      Basic_Proc.Put_Line_Output ("Tcpipe: disconnection from remote host: "
+          & Ip_Addr.Image (Rem_Host.Id, Rem_Port.Num));
     end if;
     Close_Restart (False);
   end Disconnection_Cb;
@@ -260,20 +256,17 @@ package body Partner is
     case Msg.Head.Kind is
       when Connect =>
         if Debug.Is_Set then
-          Basic_Proc.Put_Line_Output ("Tcpipe: Receive a connect request to"
-            & " port: " & Ip_Addr.Image (Msg.Head.Port));
+          Basic_Proc.Put_Line_Output (
+              "Tcpipe: Receive a connect request to port: "
+            & Ip_Addr.Image (Msg.Head.Port));
         end if;
         Clients.Connect_Client (Msg.Head.Port);
       when Disconnect =>
         if Debug.Is_Set then
-          Basic_Proc.Put_Output ("Tcpipe: Receive a disconnect ");
-          if Msg.Head.Local then
-            Basic_Proc.Put_Output ("local ");
-          else
-            Basic_Proc.Put_Output ("remote ");
-          end if;
-          Basic_Proc.Put_Line_Output ("request to "
-            & "port: " & Ip_Addr.Image (Msg.Head.Port));
+          Basic_Proc.Put_Line_Output ("Tcpipe: Receive a disconnect "
+              & (if Msg.Head.Local then "local" else "remote")
+              & " request to port: "
+              & Ip_Addr.Image (Msg.Head.Port));
         end if;
         Clients.Disconnect (Msg.Head.Port, Msg.Head.Local);
       when Data =>

@@ -1,5 +1,7 @@
 with Socket, Tcp_Util;
 package Ip_Addr is
+  -- Separator between addr and port (for parsing an image)
+  Sep : constant String := ":";
 
   -- If Addr is "xxx.yyy.zzz.ttt" where each is between 0 and 255 then
   --   return the Tcp_Util.Remote_Host (Tcp_Util.Host_Id_Spec)
@@ -36,6 +38,12 @@ package Ip_Addr is
                    Port : out Tcp_Util.Remote_Port);
 
   Parse_Error : exception;
+
+  -- Image <addr>:<port> (xxx.yyy.zzz.ttt:pppp) of an Addr and Port
+  function Image  (Addr : Socket.Ip_Address;
+                   Port : Socket.Port_Num) return String;
+  function Image  (Host : Socket.Host_Id;
+                   Port : Socket.Port_Num) return String;
 
   -- Resolve a remote Host or LAN
   -- If the Host is already a Host_Id_Spec then simply extract the Host_Id

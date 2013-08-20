@@ -7,7 +7,6 @@ with As.U, Argument, Basic_Proc, Ip_Addr,
 
 procedure Tcping is
 
-
   -- Usage and error message, put on stderr
   procedure Usage is
   begin
@@ -16,7 +15,7 @@ procedure Tcping is
       & " host on a port.");
     Basic_Proc.Put_Line_Error (
       "Usage: " & Argument.Get_Program_Name &
-      " <host> <port> [ -t<timeout> ] [ -d<delta> ] [ -n<tries> ] [ -c ]"
+      " <host>:<port> [ -t<timeout> ] [ -d<delta> ] [ -n<tries> ] [ -c ]"
       & " [ -s ]");
     Basic_Proc.Put_Line_Error (
           "  <host>      ::= host name or ip address");
@@ -96,13 +95,6 @@ procedure Tcping is
     Basic_Proc.Put_Line_Output (Str);
   end Put_Line;
 
-  -- "xxx.yyy.zzz.ttt" from Host_Id
-  function Image (Id : Socket.Host_Id) return String is
-    Addr : constant Socket.Ip_Address := Socket.Id2Addr (Id);
-  begin
-    return Ip_Addr.Image (Addr);
-  end Image;
-
   -- Cancel immediate timer Cb
   function Cancel_Cb (Id : Timers.Timer_Id;
                       Data : Timers.Timer_Data := Timers.No_Data)
@@ -147,8 +139,7 @@ procedure Tcping is
 
       Loc_Dscr.Close;
       Put_Line (
-         "Connected to " & Image (Remote_Host_Id) &
-         " port" & Socket.Port_Num'Image(Remote_Port_Num) &
+         "Connected to " & Ip_Addr.Image (Remote_Host_Id, Remote_Port_Num) &
          " in" & Int'Img & "." & Normal (Frac, 3, Gap => '0') & "s.");
       Success := True;
     else
@@ -209,8 +200,8 @@ procedure Tcping is
   end Timer_Cb;
 
 begin
-  -- 2 and only 2 no_key, no dup options
-  if Argument.Get_Nbre_Arg < 2 then
+  -- 1 and only 1 no_key, no dup options
+  if Argument.Get_Nbre_Arg < 1 then
     Put_Arg_Error;
   end if;
   begin
@@ -231,16 +222,11 @@ begin
 
   -- Host and port
   begin
-    Host := Ip_Addr.Parse (Argument.Get_Parameter (1, Argument.Not_Key));
+   Ip_Addr.Parse (Argument.Get_Parameter (1, Argument.Not_Key), Host, Port);
   exception
     when others =>
-      Put_Arg_Error ("host" & Argument.Get_Parameter (1, Argument.Not_Key));
-  end;
-  begin
-    Port := Ip_Addr.Parse (Argument.Get_Parameter (2, Argument.Not_Key));
-  exception
-    when others =>
-      Put_Arg_Error ("port" & Argument.Get_Parameter (2, Argument.Not_Key));
+      Put_Arg_Error ("host:port"
+                   & Argument.Get_Parameter (1, Argument.Not_Key));
   end;
 
   -- Options

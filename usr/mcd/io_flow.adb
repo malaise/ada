@@ -144,7 +144,7 @@ package body Io_Flow is
         Async_Stdin.Put_Err ("Flow: Init on ");
         if Is_Ipm then
           Async_Stdin.Put_Err ("ipm LAN " &
-            Ip_Addr.Image (Socket.Id2Addr (Soc.Get_Destination_Host)) & " ");
+            Ip_Addr.Image (Soc.Get_Destination_Host) & " ");
         else
           Async_Stdin.Put_Err ("udp ");
         end if;

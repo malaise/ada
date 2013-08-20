@@ -37,10 +37,10 @@ begin
   -- Get host info and display, then bcast and display
   Host_For := Socket.Host_Id_For (Host_Lan, Mask);
   Basic_Proc.Put_Line_Output ("Host: "
-      & Ip_Addr.Image (Socket.Id2Addr (Host_For)));
+      & Ip_Addr.Image (Host_For));
   Bcast := Socket.Bcast_Of (Host_For);
   Basic_Proc.Put_Line_Output ("Bcast: "
-      & Ip_Addr.Image (Socket.Id2Addr (Bcast)));
+      & Ip_Addr.Image (Bcast));
 
 end T_Iface;
 

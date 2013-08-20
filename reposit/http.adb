@@ -306,7 +306,7 @@ package body Http is
       if Host.Kind = Tcp_Util.Host_Name_Spec then
         Addr := Host.Name;
       else
-        Addr := As.U.Tus (Ip_Addr.Image (Socket.Id2Addr (Host.Id)));
+        Addr := As.U.Tus (Ip_Addr.Image (Host.Id));
       end if;
       Debug ("Server address is " & Addr.Image);
       if Port.Kind = Tcp_Util.Port_Name_Spec then

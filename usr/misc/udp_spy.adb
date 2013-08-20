@@ -33,7 +33,6 @@ procedure Udp_Spy is
   use type Socket.Host_Id;
   use type Tcp_Util.Remote_Port_List, Tcp_Util.Remote_Host_List;
 
-  function Port_Image is new Images.Int_Image (Socket.Port_Num);
   function Inte_Image is new Images.Int_Image (Integer);
 
   -- Put host (name or IP @) that has send last message on socket
@@ -45,7 +44,7 @@ procedure Udp_Spy is
       -- Try to get host name and put it
       begin
         return Socket.Host_Name_Of (Host_Id)
-           & ":" & Port_Image (S.Get_Destination_Port);
+             & Ip_Addr.Sep & Ip_Addr.Image (S.Get_Destination_Port);
       exception
         when Socket.Soc_Name_Not_Found =>
           -- Will put IP address instead of host name
@@ -53,8 +52,7 @@ procedure Udp_Spy is
       end;
     end if;
     -- Put host IP address
-    return Ip_Addr.Image (Socket.Id2Addr (Host_Id))
-         & ":" & Port_Image (S.Get_Destination_Port);
+    return Ip_Addr.Image (Host_Id, S.Get_Destination_Port);
   end Dest_Image;
 
   -- Current date image
@@ -343,8 +341,7 @@ begin
   Basic_Proc.Put_Error (Curr_Date_Image & " listening on ");
   Basic_Proc.Put_Error (Dest_Image (Soc, False));
   if Iface.Id /= Socket.Any_Host then
-    Basic_Proc.Put_Error (" interface "
-                        & Ip_Addr.Image(Socket.Id2Addr(Iface.Id)));
+    Basic_Proc.Put_Error (" interface " & Ip_Addr.Image(Iface.Id));
   end if;
   Basic_Proc.Put_Error (" for ");
   case Dump_Mode is
