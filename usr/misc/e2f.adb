@@ -65,7 +65,7 @@ begin
     end if;
 
     -- Get it in Real format
-    Amount := My_Math.Real(Gets.Get_Int_Or_Float (The_Argument.Image));
+    Amount := My_Math.Real(Gets.Get_Int_Float (The_Argument.Image));
 
   exception
     when others =>

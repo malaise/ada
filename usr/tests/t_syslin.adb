@@ -74,9 +74,9 @@ begin
         -- Parse current line in matrix and vector
         begin
           for J in 1 .. Dim loop
-            Matrix (I, J) := Gets.Get_Int_Or_Float(Line.Element (J).Image);
+            Matrix (I, J) := Gets.Get_Int_Float(Line.Element (J).Image);
           end loop;
-          Vector (I) := Gets.Get_Int_Or_Float(Line.Element (Dim+1).Image);
+          Vector (I) := Gets.Get_Int_Float(Line.Element (Dim+1).Image);
         exception
           when others =>
             Basic_Proc.Put_Line_Output ("ERROR, when reading data at line "

@@ -120,7 +120,7 @@ begin
         end if;
         begin
           V := Val_Range'Value(Str(2 .. 2));
-          D := Duration(Gets.Get_Int_Or_Float (Str(3 .. Len)));
+          D := Duration(Gets.Get_Int_Float (Str(3 .. Len)));
           Val_Queue.Push (Vals, V, (0, D));
         exception
           when Val_Queue.Timed_Full =>

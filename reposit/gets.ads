@@ -8,7 +8,7 @@ package Gets is
   function Get_Dur (Str : String) return Duration;
 
   -- Get a float or an integer
-  type Int_Float_Rec (Is_Float : Boolean := True) is record
+  type Int_Or_Float_Rec (Is_Float : Boolean := True) is record
     case Is_Float is
       when True =>
         Float_Value : Float;
@@ -16,10 +16,10 @@ package Gets is
         Int_Value : Integer;
     end case;
   end record;
-  function Get_Int_Float (Str : String) return Int_Float_Rec;
+  function Get_Int_Or_Float (Str : String) return Int_Or_Float_Rec;
 
   -- Get a float or an integer (convert it to float)
-  function Get_Int_Or_Float (Str : String) return Float;
+  function Get_Int_Float (Str : String) return Float;
 
 end Gets;
 

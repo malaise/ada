@@ -37,7 +37,7 @@ procedure Impot_04 is
   function Get_Real return My_Math.Real is
     Valeur : Float;
   begin
-    Valeur := Gets.Get_Int_Or_Float (Basic_Proc.Get_Line);
+    Valeur := Gets.Get_Int_Float (Basic_Proc.Get_Line);
     return My_Math.Real(Valeur);
   end Get_Real;
 

@@ -90,7 +90,7 @@ package body Gets is
       raise Constraint_Error;
   end Get_Dur;
 
-  function Get_Int_Float (Str : String) return Int_Float_Rec is
+  function Get_Int_Or_Float (Str : String) return Int_Or_Float_Rec is
     Dot_Found : Boolean;
   begin
     Dot_Found := False;
@@ -101,26 +101,21 @@ package body Gets is
       end if;
     end loop;
 
-    if Dot_Found then
-      -- Float format
-      return (Is_Float => True, Float_Value => Get_Float (Str));
-    else
-      -- Int format
-      return (Is_Float => False, Int_Value => Get_Int (Str));
-    end if;
-
+    return (
+      if Dot_Found then (Is_Float => True,  Float_Value => Get_Float (Str))
+                   else (Is_Float => False, Int_Value   => Get_Int (Str)) );
   exception
     when others =>
       raise Constraint_Error;
-  end Get_Int_Float;
+  end Get_Int_Or_Float;
 
-  function Get_Int_Or_Float (Str : String) return Float is
-    Int_Float : Int_Float_Rec;
+  function Get_Int_Float (Str : String) return Float is
+    Int_Float : Int_Or_Float_Rec;
   begin
-    Int_Float := Get_Int_Float(Str);
+    Int_Float := Get_Int_Or_Float (Str);
     return (if Int_Float.Is_Float then Int_Float.Float_Value
             else Float(Int_Float.Int_Value));
-  end Get_Int_Or_Float;
+  end Get_Int_Float;
 
 end Gets;
 
