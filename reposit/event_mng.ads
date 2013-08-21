@@ -95,9 +95,10 @@ package Event_Mng is
   type Out_Event_List is (Timer_Event, Fd_Event, Signal_Event, Timeout);
 
   -- This uses virtual time and allows various specifications of delay
+  --  (in real time)
   function Wait (Delay_Spec : Timers.Delay_Rec) return Out_Event_List;
 
-  -- These are in real time and in Milli seconds
+  -- These are in milliseconds of real time
   -- The Boolean is True if an event and False if Timeout
   Infinite_Ms : constant Integer := -1;
   function Wait (Timeout_Ms : Integer) return Out_Event_List;
@@ -105,9 +106,9 @@ package Event_Mng is
   procedure Wait (Timeout_Ms : Integer);
 
 
-  -- Waits for the specified delay or a signal
+  -- Waits for the specified timeout (in milliseconds of real time) or a signal
   -- Pause returns if either:
-  --  - Expiration of the delay
+  --  - Expiration of the timeout
   --  - A signal (even Dummy) is received
   --  - Another Pause (armed earlier) expires (and we are in a Cb of this Pause)
   -- Usefull to wait a bit and still process timers and Fds transparently
@@ -117,7 +118,7 @@ package Event_Mng is
   -- Event management --
   ----------------------
   -- This low level operation shall not be used by applications
-  -- Event got by another waiting point (X_Wait_Event?)
+  -- Internal event got by another waiting point (X_Wait_Event?)
   subtype In_Event_List is Out_Event_List range Fd_Event .. Timeout;
   type Event_Rec (Kind : In_Event_List := Fd_Event) is record
     case Kind is
@@ -131,7 +132,7 @@ package Event_Mng is
     end case;
   end record;
 
-  -- Handle an event
+  -- Handle an internal event
   function Handle (Event : Event_Rec) return Out_Event_List;
 
   ----------------
@@ -141,7 +142,7 @@ package Event_Mng is
   -- When deleting a Cb on a fd that has no Cb
   Fd_Cb_Error : exception;
 
-  -- When Delay_Spec has a clock
+  -- When Delay_Spec of Wait has a clock (i.e. is not real time)
   Invalid_Delay : exception;
 
 end Event_Mng;

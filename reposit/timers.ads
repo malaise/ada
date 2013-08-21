@@ -15,7 +15,7 @@ package Timers is
   Default_Delta : constant Perpet.Delta_Rec := (0, 0.0);
 
   type Delay_Rec (Delay_Kind : Delay_List := Delay_Sec) is record
-    -- The reference clock of the timer (null for rela time)
+    -- The reference clock of the timer (null for real time)
     Clock  : Virtual_Time.Clock_Access := null;
     -- The period of expirations (No_Period for single shot)
     Period : Period_Range := No_Period;
