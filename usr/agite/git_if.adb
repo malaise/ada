@@ -181,9 +181,10 @@ package body Git_If is
     procedure Init_List is
     begin
       Files.Delete_List;
-      File_Entry := (Name => As.U.Tus ("."),
-                     S2 => ' ', S3 => ' ',
-                     Kind => Char_Of (Sys_Calls.Dir));
+      File_Entry := (S2 => ' ', S3 => ' ',
+                     Name => As.U.Tus ("."),
+                     Kind => Char_Of (Sys_Calls.Dir),
+                     Prev => As.U.Asu_Null);
       Files.Insert (File_Entry);
       File_Entry.Name := As.U.Tus ("..");
       Files.Insert (File_Entry);
@@ -249,8 +250,9 @@ package body Git_If is
           Str.Delete (1, 3);
           Redirect := Str_Util.Locate (Str.Image, "-> ");
           if Redirect /= 0 then
-            -- File is a copy or a move ("<old_name> -> <new_name>")
-            -- Remove "<old_name> -> "
+            -- File is a move (or copy?) ("<old_name> -> <new_name>")
+            -- Split and store Remove "<old_name> -> "
+            File_Entry.Prev := Str.Uslice (1, Redirect - 2);
             Str.Delete (1, Redirect + 2);
           end if;
           if Directory.Dirname (Str.Image) = Current_Path then

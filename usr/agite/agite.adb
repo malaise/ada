@@ -428,7 +428,7 @@ procedure Agite is
     Init (Pos);
   end Do_History;
 
-  procedure Do_Revert (Name : in String) is
+  procedure Do_Revert (Name, Prev : in String) is
     Pos : Natural;
     File : Git_If.File_Entry_Rec;
   begin
@@ -465,6 +465,13 @@ procedure Agite is
                   Directory.Build_File_Name (Path.Image, Name, "")) then
         Git_If.Do_Revert (Name);
       end if;
+    elsif File.Kind = '?' and then File.S2 = 'D' then
+      -- File is deleted in Git, reset and checkout from repository
+      if Confirm ("Ready to reset and revert:",
+                  Directory.Build_File_Name (Path.Image, Name, "")) then
+        Git_If.Do_Reset (Name);
+        Git_If.Do_Revert (Name);
+      end if;
     elsif File.Kind /= ' ' and then File.Kind /= '@' then
       -- Only for regular files or symbolic links
       return;
@@ -476,13 +483,32 @@ procedure Agite is
         Pos := Pos - 1;
       end if;
     elsif File.S2 /= ' ' then
-      -- File is modified in index, reset it
-      if Confirm ("Ready to reset:",
-                  Directory.Build_File_Name (Path.Image, Name, "")) then
-        Git_If.Do_Reset (Name);
+      if File.S2 = 'R' then
+        -- File is renamed (moved) in index, reset it and restore previous
+        if Confirm ("Ready to reset: "
+                       & Directory.Build_File_Name (Path.Image, Name, ""),
+                    "and restore: " & Prev) then
+          Git_If.Do_Reset (Name);
+          -- Prev has the relative path to root
+          Git_If.Do_Reset (Root.Image & Prev);
+          Git_If.Do_Revert (Root.Image & Prev);
+        end if;
+      elsif File.S2 = 'M' then
+        -- File is updated in index, reset the index and restore
+        if Confirm ("Ready to reset and revert:",
+                    Directory.Build_File_Name (Path.Image, Name, "")) then
+          Git_If.Do_Reset (Name);
+          Git_If.Do_Revert (Name);
+        end if;
+      else
+        -- File is updated (A, C or U) in index, just reset the index
+        if Confirm ("Ready to reset:",
+                    Directory.Build_File_Name (Path.Image, Name, "")) then
+          Git_If.Do_Reset (Name);
+        end if;
       end if;
     elsif File.S3 /= ' ' then
-      -- File is modified locally, checkout from repository
+      -- File is modified locally, restore
       if Confirm ("Ready to revert:",
                   Directory.Build_File_Name (Path.Image, Name, "")) then
         Git_If.Do_Revert (Name);
@@ -532,7 +558,7 @@ procedure Agite is
             end if;
           when Revert =>
             if File_Name /= ".." then
-              Do_Revert (File_Name);
+              Do_Revert (File_Name, File.Prev.Image);
             end if;
           when Add =>
             if File_Name /= ".." then
@@ -543,7 +569,7 @@ procedure Agite is
         case Action is
           when Revert =>
             -- File or link deleted in GIT
-            Do_Revert (File_Name);
+            Do_Revert (File_Name, File.Prev.Image);
           when Diff =>
             -- File is deleted: diff from last commit to null
             declare
@@ -568,7 +594,7 @@ procedure Agite is
                Do_Edit (Target.Image);
             end if;
           when Revert =>
-            Do_Revert (File_Name);
+            Do_Revert (File_Name, File.Prev.Image);
           when Add =>
             Do_Add_File (File);
           when others =>
@@ -597,7 +623,7 @@ procedure Agite is
           when History =>
             Do_History (File_Name, True);
           when Revert =>
-            Do_Revert (File_Name);
+            Do_Revert (File_Name, File.Prev.Image);
           when Add =>
             Do_Add_File (File);
         end case;

@@ -246,8 +246,8 @@ in alphabetical order.
 +
 Each directory starts with three spaces then the name then \'/'.
 +
-Each file is preceded by two characters of its Git status (see
-'man git-status') then a space, then the name. Status can be:
+Each file is preceded by two characters of its Git status, local and index (see
+'man git-status') then a space, then the name. Git status can be:
 
 * ' ' = unmodified
 * M = modified
@@ -260,7 +260,7 @@ Each file is preceded by two characters of its Git status (see
 +
 After the name a character represents the kind: 
 
-* \' ' fo a file, 
+* ' ' fo a file, 
 * '@' for a symbolic link, 
 * '/' for a directory,
 * '?' for other/unknown kind.
@@ -342,11 +342,19 @@ Then, depending on the selection:
 - If it is a directory then it will be deleted, which succeeds only if the
 directory is empty.
 - If it is a file or a symbolic link,
- * if unknown by Git, then it will be removed,
- * if just added to Git, then it will become unknown by Git,
- * if known by GIT and modified, then it will be restored to its last committed
+ * if unknown by Git, then it is removed,
+ * if just added to Git, then it becomes unknown by Git,
+ * if just deleted from GIT, then it is restored to its last committed content
+ * if known by GIT and modified, then it is restored to its last committed
 content,
- * if known by GIT and not modified, then the button has no effect.
+ * if known by GIT and deleted, then it is restored to its last committed
+content
+ * if known by GIT and renamed, then the original file is restored to its last
+committed content and the new one is reset as unknown by GIT
+
++
+The Revert button has no effect on a file known by GIT and not modified.
+
 
 .Other actions
 

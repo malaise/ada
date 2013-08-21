@@ -16,11 +16,15 @@ package Git_If is
 
   -- LIST OF FILES AND STATUS
   -- A file entry
+  -- Two letters of GIT status (? A M D R C U)
+  -- The file name (and previous name in case of R)
+  -- ONe letter of file kind
   type File_Entry_Rec is record
-    S2 : Character;
+    S2 : Character;      -- ' ', '?', 'A', 'M', 'D', 'R', 'C' or 'U'
     S3 : Character;
     Name : As.U.Asu_Us;
     Kind : Character;    -- ' ', '@', '/' or '?'
+    Prev : As.U.Asu_Us;
   end record;
   package File_Mng is new Dynamic_List (File_Entry_Rec);
   subtype File_List is File_Mng.Dyn_List.List_Type;
