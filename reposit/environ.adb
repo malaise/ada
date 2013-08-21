@@ -40,7 +40,7 @@ package body Environ is
     Ptr := new String(1 .. Result'Length);
 
     Sys_Calls.Getenv (Name, Env_Set, Env_Trunc, Ptr.all, Env_Len);
-    if Env_Set and then not Env_Trunc and then Env_Len /= 0 then
+    if Env_Set and then not Env_Trunc then
       Str_Util.Copy (Ptr.all(1 .. Env_Len), Result);
       Length := Env_Len;
     end if;
@@ -52,9 +52,7 @@ package body Environ is
     Res : As.U.Asu_Us;
   begin
     Res := As.U.Tus (Sys_Calls.Getenv (Name));
-    if not Res.Is_Null then
-      Result := Res;
-    end if;
+    Result := Res;
   exception
      when Sys_Calls.Env_Not_Set =>
        -- Leave Result unchanged

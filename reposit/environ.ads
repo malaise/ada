@@ -9,12 +9,12 @@ package Environ is
   function Getenv_If_Set (Env_Name : String) return String;
 
   -- Getenv for a String.
-  -- Leave result and length unchanged if not set or trunc or empty
+  -- Leave result and length unchanged if not set or trunc,
   --  otherwise set them.
   procedure Get_Str (Name : in String; Result : in out String;
                                        Length : out Natural);
   -- Getenv for a unbounded string
-  -- Leave result unchanged if not set or trunc or empty otherwise set it.
+  -- Leave result unchanged if not set, otherwise set it.
   procedure Get_Us (Name : in String; Result : in out As.U.Asu_Us);
 
   -- Getenv an Integer
