@@ -2,19 +2,23 @@ with Ada.Calendar;
 with Rnd, Event_Mng, Control_Pool, Sys_Calls;
 procedure T_Control_Pool is
 
+  -- The pool to control resources
   subtype Pool_Range is Positive range 1 .. 5;
-  package Pool is new Control_Pool (Pool_Range);
+  package Cotrol_Pool_Mng is new Control_Pool (Pool_Range);
+  Pool : Cotrol_Pool_Mng.Controlled_Pool_Type;
 
-  subtype Client_Range is Positive range 1 .. 9;
-  task type Client_Task is
-    entry Start (Client_No : in Client_Range; Client_Pid : out Sys_Calls.Pid);
-  end Client_Task;
-
+  -- Detect CtrlC and signal to taksks the of program
   Done : Boolean := False;
   procedure Term_Cb is
   begin
     Done := True;
   end Term_Cb;
+
+  -- The clients of resources
+  subtype Client_Range is Positive range 1 .. 9;
+  task type Client_Task is
+    entry Start (Client_No : in Client_Range; Client_Pid : out Sys_Calls.Pid);
+  end Client_Task;
 
   task body Client_Task is
     My_No : Client_Range;
@@ -28,16 +32,20 @@ procedure T_Control_Pool is
                   Client_Pid : out Sys_Calls.Pid) do
       My_No := Client_No;
       Client_Pid := Sys_Calls.Get_Pid;
+      Sys_Calls.Put_Line_Output (My_No'Img & ": started with pid "
+                               & Client_Pid'Img);
     end Start;
     loop
       -- Get a random pool resource
       Pool_No := Rnd.Gen.Int_Random(Pool_Range'First, Pool_Range'Last);
       T1 := Ada.Calendar.Clock;
       Dur1 := Rnd.Gen.Dur_Random (-0.1, 3.0);
-      Sys_Calls.Put_Line_Output (My_No'Img & ": getting " & Pool_No'Img & " for " & Dur1'Img);
+      Sys_Calls.Put_Line_Output (My_No'Img & ": getting " & Pool_No'Img
+                               & " for " & Dur1'Img);
       Got := Pool.Get(Pool_No, Dur1);
       Dur2 := Ada.Calendar.Clock - T1;
-      Sys_Calls.Put_Line_Output (My_No'Img & ": got " & Pool_No'Img & " " & Got'Img
+      Sys_Calls.Put_Line_Output (My_No'Img & ": got " & Pool_No'Img
+                               & " " & Got'Img
            & " after " & Dur2'Img & " for " & Dur1'Img);
       if Got then
         -- Wait a bit (1 to 5 s) or signal
@@ -65,6 +73,8 @@ begin
   loop
     exit when Event_Mng.Wait (1_000) and then Done;
   end loop;
+
+  Pool.Clear;
 
 end T_Control_Pool;
 
