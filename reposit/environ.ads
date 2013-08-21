@@ -11,31 +11,31 @@ package Environ is
   -- Getenv for a String.
   -- Leave result and length unchanged if not set or trunc or empty
   --  otherwise set them.
-  procedure Get_Str (Name : String; Result : in out String;
-                                    Length : in out Natural);
+  procedure Get_Str (Name : in String; Result : in out String;
+                                       Length : out Natural);
   -- Getenv for a unbounded string
   -- Leave result unchanged if not set or trunc or empty otherwise set it.
-  procedure Get_Us (Name : String; Result : in out As.U.Asu_Us);
+  procedure Get_Us (Name : in String; Result : in out As.U.Asu_Us);
 
   -- Getenv an Integer
   -- First variant returns Default if not set or trunc or empty or if invalid
   --   content
   -- Second variant leaves Result unchanged in these cases
   function  Get_Int (Name : String; Default : Integer) return Integer;
-  procedure Get_Int (Name : String; Result : in out Integer);
+  procedure Get_Int (Name : in String; Result : in out Integer);
 
   -- Getenv a Natural
   function  Get_Nat (Name : String; Default : Natural) return Natural;
-  procedure Get_Nat (Name : String; Result : in out Natural);
+  procedure Get_Nat (Name : in String; Result : in out Natural);
 
   -- Getenv a Positive
   function  Get_Pos (Name : String; Default : Positive) return Positive;
-  procedure Get_Pos (Name : String; Result : in out Positive);
+  procedure Get_Pos (Name : in String; Result : in out Positive);
 
   -- Getenv a Duration (positive or null)
   subtype Pos_Duration is Duration range 0.0 .. Duration'Last;
   function  Get_Dur (Name : String; Default : Pos_Duration) return Pos_Duration;
-  procedure Get_Dur (Name : String; Result : in out Pos_Duration);
+  procedure Get_Dur (Name : in String; Result : in out Pos_Duration);
 
   -- Is variable set
   function Is_Set (Name : String) return Boolean;

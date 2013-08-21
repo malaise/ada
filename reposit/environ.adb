@@ -25,8 +25,8 @@ package body Environ is
   end Getenv_If_Set;
 
   -- Getenv for a String. Leave result unchanged if not set or trunc.
-  procedure Get_Str (Name : String; Result : in out String;
-                                    Length : in out Natural) is
+  procedure Get_Str (Name : in String; Result : in out String;
+                                       Length : out Natural) is
     Ptr : String_Access;
     Env_Set   : Boolean;
     Env_Trunc : Boolean;
@@ -48,7 +48,7 @@ package body Environ is
     Free (Ptr);
   end Get_Str;
 
-  procedure Get_Us (Name : String; Result : in out As.U.Asu_Us) is
+  procedure Get_Us (Name : in String; Result : in out As.U.Asu_Us) is
     Res : As.U.Asu_Us;
   begin
     Res := As.U.Tus (Sys_Calls.Getenv (Name));
@@ -77,7 +77,7 @@ package body Environ is
       return Default;
   end Get_Int;
 
-  procedure Get_Int (Name : String; Result : in out Integer) is
+  procedure Get_Int (Name : in String; Result : in out Integer) is
   begin
     Result := Get_Int (Name, Result);
   end Get_Int;
@@ -88,7 +88,7 @@ package body Environ is
   begin
     return (if I in Natural then I else Default);
   end Get_Nat;
-  procedure Get_Nat (Name : String; Result : in out Natural) is
+  procedure Get_Nat (Name : in String; Result : in out Natural) is
   begin
     Result := Get_Nat (Name, Result);
   end Get_Nat;
@@ -100,7 +100,7 @@ package body Environ is
     return (if I in Positive then I else Default);
   end Get_Pos;
 
-  procedure Get_Pos (Name : String; Result : in out Positive) is
+  procedure Get_Pos (Name : in String; Result : in out Positive) is
   begin
     Result := Get_Pos (Name, Result);
   end Get_Pos;
@@ -122,7 +122,7 @@ package body Environ is
       return Default;
   end Get_Dur;
 
-  procedure Get_Dur (Name : String; Result : in out Pos_Duration) is
+  procedure Get_Dur (Name : in String; Result : in out Pos_Duration) is
   begin
     Result := Get_Dur (Name, Result);
   end Get_Dur;
