@@ -1,7 +1,5 @@
 package body Limited_Pool is
 
-  -- type Pool_Type is tagged limited private;
-
   -- Check if pool is not empty, get number of elements in pool
   function Is_Empty (Pool : in Pool_Type) return Boolean is
   begin
