@@ -1,12 +1,21 @@
 with Ada.Text_Io;
 package body Gets is
-  package Int_Io is new Ada.Text_Io.Integer_Io (Integer);
+  package Llint_Io is new Ada.Text_Io.Integer_Io (Long_Longs.Ll_Integer);
   package Flo_Io is new Ada.Text_Io.Float_Io (Float);
   package Dur_Io is new Ada.Text_Io.Fixed_Io (Duration);
 
   function Get_Int (Str : String) return Integer is
+    L : Long_Longs.Ll_Integer;
+  begin
+    L := Get_Llint (Str);
+   return Integer (L);
+  exception
+    when others =>
+      raise Constraint_Error;
+  end Get_Int;
 
-    I : Integer;
+  function Get_Llint (Str : String) return Long_Longs.Ll_Integer is
+    I : Long_Longs.Ll_Integer;
     L : Positive;
     Str_Len : Natural;
   begin
@@ -21,17 +30,16 @@ package body Gets is
       raise Constraint_Error;
     end if;
 
-    Int_Io.Get (Str, I, L);
+    Llint_Io.Get (Str, I, L);
 
     if L /= Str'Last then
       raise Constraint_Error;
     end if;
     return I;
-
   exception
     when others =>
       raise Constraint_Error;
-  end Get_Int;
+  end Get_Llint;
 
   function Get_Float (Str : String) return Float is
     F : Float;
@@ -55,7 +63,6 @@ package body Gets is
       raise Constraint_Error;
     end if;
     return F;
-
   exception
     when others =>
       raise Constraint_Error;
@@ -84,13 +91,27 @@ package body Gets is
       raise Constraint_Error;
     end if;
     return D;
-
   exception
     when others =>
       raise Constraint_Error;
   end Get_Dur;
 
   function Get_Int_Or_Float (Str : String) return Int_Or_Float_Rec is
+    Llint_Or_Float : Llint_Or_Float_Rec;
+  begin
+    Llint_Or_Float := Get_Llint_Or_Float (Str);
+    return (
+      if Llint_Or_Float.Is_Float then
+        (Is_Float => True,  Float_Value => Llint_Or_Float.Float_Value)
+      else
+        (Is_Float => False, Int_Value   => Integer(Llint_Or_Float.Llint_Value))
+    );
+  exception
+    when others =>
+      raise Constraint_Error;
+  end Get_Int_Or_Float;
+
+  function Get_Llint_Or_Float (Str : String) return Llint_Or_Float_Rec is
     Dot_Found : Boolean;
   begin
     Dot_Found := False;
@@ -103,11 +124,12 @@ package body Gets is
 
     return (
       if Dot_Found then (Is_Float => True,  Float_Value => Get_Float (Str))
-                   else (Is_Float => False, Int_Value   => Get_Int (Str)) );
+                   else (Is_Float => False, Llint_Value => Get_Llint (Str)) );
   exception
     when others =>
       raise Constraint_Error;
-  end Get_Int_Or_Float;
+  end Get_Llint_Or_Float;
+
 
   function Get_Int_Float (Str : String) return Float is
     Int_Float : Int_Or_Float_Rec;

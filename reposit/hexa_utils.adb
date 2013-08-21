@@ -25,24 +25,6 @@ package body Hexa_Utils is
             else Character'Val (Character'Pos('a') + H - 10));
   end Hexa_To_Char;
 
-  -- Value of a string representing the hexadecimal image of a natural
-  -- Raises Constraint_Error if invalid character.
-  function Value (Str : String) return Natural is
-    Res : Natural := 0;
-    Mul : Positive := 1;
-  begin
-    if Str = "" then
-      raise Constraint_Error;
-    end if;
-    for I in reverse Str'Range loop
-      Res := Res + Char_To_Hexa (Str(I)) * Mul;
-      if I /= Str'First then
-        Mul := 16 * Mul;
-      end if;
-    end loop;
-    return Res;
-  end Value;
-
   -- Image in hexadecimal of a Natural
   -- Lower case, no leading space
   function Image (N : Natural) return String is
@@ -56,18 +38,90 @@ package body Hexa_Utils is
     end loop;
     return Res.Image;
   end Image;
+  function Image (N : Long_Longs.Ll_Natural) return String is
+    V : Long_Longs.Ll_Natural := N;
+    Res : As.U.Asu_Us;
+  begin
+    loop
+      Res.Prepend (Hexa_To_Char (Natural (V rem 16)));
+      V := V / 16;
+      exit when V = 0;
+    end loop;
+    return Res.Image;
+  end Image;
 
   -- Image in hexadecimal of a Natural, padded with '0' to fit length
   -- Lower case
   -- Raises Constraint_Error if Image(N) > Len
-  function Image (N : Natural; Len : Positive; Gap : Character := '0')
-           return String is
+  function Image (N : Natural;
+                  Len : Positive; Gap : Character := '0') return String is
     Result : String (1 .. Len) := (others => Gap);
     Imag : constant String := Image (N);
   begin
     Result (Result'Last - Imag'Length + 1 .. Result'Last) := Imag;
     return Result;
   end Image;
+  function Image (N : Long_Longs.Ll_Natural;
+                  Len : Positive; Gap : Character := '0') return String is
+    Result : String (1 .. Len) := (others => Gap);
+    Imag : constant String := Image (N);
+  begin
+    Result (Result'Last - Imag'Length + 1 .. Result'Last) := Imag;
+    return Result;
+  end Image;
+
+  -- Value of an hexadecimal string (without 16#...#)
+  -- Str must be a valid image with no trailing spaces,
+  --  leading spaces are skipped
+  -- May raises Constraint_Error if Str is not valid or result is too large
+  function Value (Str : String) return Natural is
+    Start : Positive;
+    Res : Natural := 0;
+    Mul : Positive := 1;
+  begin
+    if Str = "" then
+      raise Constraint_Error;
+    end if;
+    -- Locate first significant char (skip leading spaces)
+    for I in Str'Range loop
+      if Str(I) /= ' ' then
+        Start := I;
+        exit;
+      end if;
+    end loop;
+    for I in reverse Str'Range loop
+      Res := Res + Char_To_Hexa (Str(I)) * Mul;
+      if I /= Start then
+        Mul := 16 * Mul;
+        exit when Str(I - 1) = ' ';
+      end if;
+    end loop;
+    return Res;
+  end Value;
+  function Value (Str : String) return Long_Longs.Ll_Natural is
+    Start : Positive;
+    Res : Long_Longs.Ll_Natural := 0;
+    Mul : Long_Longs.Ll_Positive := 1;
+  begin
+    if Str = "" then
+      raise Constraint_Error;
+    end if;
+    -- Locate first significant char (skip leading spaces)
+    for I in Str'Range loop
+      if Str(I) /= ' ' then
+        Start := I;
+        exit;
+      end if;
+    end loop;
+    for I in reverse Str'Range loop
+      Res := Res + Long_Longs.Ll_Natural(Char_To_Hexa (Str(I))) * Mul;
+      if I /= Start then
+        Mul := 16 * Mul;
+        exit when Str(I - 1) = ' ';
+      end if;
+    end loop;
+    return Res;
+  end Value;
 
 end Hexa_Utils;
 

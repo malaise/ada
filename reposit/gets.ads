@@ -1,9 +1,11 @@
+with Long_Longs;
 package Gets is
-  -- Get an Integer, a Float, a Duration
+  -- Get an Integer, a LL_Integer, a Float, a Duration
   -- Str must be a valid image with no trailing spaces,
   --  leading spaces are skipped
   -- May raise Constraint_Error
   function Get_Int (Str : String) return Integer;
+  function Get_Llint (Str : String) return Long_Longs.Ll_Integer;
   function Get_Float (Str : String) return Float;
   function Get_Dur (Str : String) return Duration;
 
@@ -18,7 +20,18 @@ package Gets is
   end record;
   function Get_Int_Or_Float (Str : String) return Int_Or_Float_Rec;
 
-  -- Get a float or an integer (convert it to float)
+  -- Get a float or along_long
+  type Llint_Or_Float_Rec (Is_Float : Boolean := True) is record
+    case Is_Float is
+      when True =>
+        Float_Value : Float;
+      when False =>
+        Llint_Value : Long_Longs.Ll_Integer;
+    end case;
+  end record;
+  function Get_Llint_Or_Float (Str : String) return Llint_Or_Float_Rec;
+
+  -- Get a float or a long_long (convert it to float)
   function Get_Int_Float (Str : String) return Float;
 
 end Gets;
