@@ -92,7 +92,8 @@ begin
       if Mac_Str(I).Length /= 2 then
         raise Mac_Error;
       end if;
-      Mac_Addr(I) := Socket.Byte (Hexa_Utils.Value (Mac_Str(I).Image));
+      Mac_Addr(I) := Socket.Byte (Integer'(Hexa_Utils.Value (
+                       Mac_Str(I).Image)));
     end loop;
   exception
     when others =>
