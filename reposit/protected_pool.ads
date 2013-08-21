@@ -1,6 +1,6 @@
 -- Protected pool of objects, each accessed by a unique key
 -- Access and modification of the Pool are protected by a mutex
-with Dynamic_List, Mutex_Manager;
+with Long_Longs, Long_Long_Limited_List, Mutex_Manager;
 generic
 
   type Element_Type is private;
@@ -37,8 +37,8 @@ package Protected_Pool is
   Not_Found : exception;
 private
 
-  -- Access key
-  type Key_Type is mod Positive'Last;
+  -- Access key, cannot be mod because > 2**32
+  type Key_Type is new Long_Longs.Ll_Natural;
   type Key_Access is access Key_Type;
 
   -- Data stored in list
@@ -46,9 +46,9 @@ private
     Key : Key_Type;
     Data : Element_Type;
   end record;
+  procedure Set (To : out Cell_Type; Val : in Cell_Type);
 
-  package Elt_Dyn_List_Mng is new Dynamic_List (Cell_Type);
-  package Elt_List_Mng renames Elt_Dyn_List_Mng.Dyn_List;
+  package Elt_List_Mng is new Long_Long_Limited_List (Cell_Type, Set);
   type Pool_Type is tagged limited record
     Next_Key : Key_Type := Key_Type'First;
     Mutex : Mutex_Manager.Simple_Mutex;

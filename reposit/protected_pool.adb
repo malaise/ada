@@ -1,9 +1,22 @@
 with Images;
 package body Protected_Pool is
 
+  -- Cell affectation
+  procedure Set (To : out Cell_Type; Val : in Cell_Type) is
+  begin
+    To := Val;
+  end Set;
+
+  -- Key incrementation (mod has a max of Max_Int)
+  function Next_Key (Key : Key_Type) return Key_Type is
+  begin
+    return (if Key /= Key_Type'Last then Key_Type'Succ (Key)
+            else Key_Type'First);
+  end Next_Key;
+
   -- Conversion from/to string
-  function Mod_Key_Image is new Images.Mod_Image (Key_Type);
-  function Key_Image (Key : Key_Type) return String renames Mod_Key_Image;
+  function Key_Img is new Images.Int_Image (Key_Type);
+  function Key_Image (Key : Key_Type) return String renames Key_Img;
   function Key_Value (Str : String) return Key_Type is
   begin
     return Key_Type'Value (Str);
@@ -29,7 +42,7 @@ package body Protected_Pool is
     loop
       exit when not Search (Pool.List, Cell,
                             From => Elt_List_Mng.Absolute);
-      Cell.Key := Cell.Key + 1;
+      Cell.Key := Next_Key (Cell.Key);
       if Cell.Key = Pool.Next_Key then
         -- No available key
         Pool.Mutex.Release;
@@ -39,7 +52,7 @@ package body Protected_Pool is
     -- Store
     Pool.List.Insert (Cell);
     -- Update next key
-    Pool.Next_Key := Cell.Key + 1;
+    Pool.Next_Key := Next_Key (Cell.Key);
     -- Release Mutex
     Pool.Mutex.Release;
     -- Done
@@ -112,5 +125,4 @@ package body Protected_Pool is
   end Delete_Pool;
 
 end Protected_Pool;
-
 
