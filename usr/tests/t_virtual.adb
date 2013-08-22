@@ -64,7 +64,7 @@ procedure T_Virtual is
 
   -- The passive timer and check of expiration
   My_Pt : Chronos.Passive_Timers.Passive_Timer;
-  function Check_Pt (Pt : Chronos.Passive_Timers.Passive_Timer)
+  function Check_Pt (Pt : in out Chronos.Passive_Timers.Passive_Timer)
            return Boolean is
     Res : Boolean;
   begin
@@ -78,7 +78,7 @@ procedure T_Virtual is
   end Check_Pt;
 
   Check_Error : exception;
-  procedure Check_Pt (Pt : in Chronos.Passive_Timers.Passive_Timer;
+  procedure Check_Pt (Pt : in out Chronos.Passive_Timers.Passive_Timer;
                       Has_Expired : in Boolean) is
   begin
     if Check_Pt (Pt) /= Has_Expired then
@@ -213,9 +213,11 @@ begin
   Basic_Proc.Put_Line_Output ("Checking passive timer expiration during 3 s");
   for I in 1 .. 3 loop
     Put_Now;
+    pragma Warnings (Off, "variable ""*"" is not modified in loop body");
     while Check_Pt (My_Pt) loop
       null;
     end loop;
+    pragma Warnings (On, "variable ""*"" is not modified in loop body");
     Put_Chrono;
     Basic_Proc.Put_Line_Output ("Waiting 1s");
     Event_Mng.Wait (1_000);
