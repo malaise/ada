@@ -118,6 +118,15 @@ private
   Init_Rec : constant Iter_Rec := (others => <>);
 
   type Iter_Rec_Access is access Iter_Rec;
+
+  -- Can't use the record itself as "in out" parameter of function Next_Word
+  --  because Gnat GPL 2013 fails to compile expressions like:
+  --  Str : constant String := Iter.Next_Word;
+  --  It reports: "conflict of writable function parameter in construct with
+  --  arbitrary order of evaluation"
+  -- Also it does not compile pattern.ads when Match_Cb_Access is access to
+  --  function with "in out" Iterator. It reports
+  --  "functions can only have "in" parameters"
   type Iterator is limited new Ada.Finalization.Limited_Controlled with record
     Acc : Iter_Rec_Access := null;
   end record;
