@@ -8,21 +8,26 @@ package Key_Pressed is
   Error : exception;
 
   -- Prepare stdin for silent input, blocking or not
-  -- Raises Error
+  -- Raises Error in case of error
   procedure Open (Blocking : in Boolean);
 
   -- Restore Stdin for synchronous input with echo
-  -- Raises Error if Check and an error occurs
+  -- Raises Error an error occurs and Check is set
   procedure Close (Check : in Boolean := False);
 
-  -- Check if a key has been pressed,
-  --  return specific characters if not (only if open non blocking) or on error
+  -- Check if a key has been pressed
+  -- If yes then return it
+  -- Otherwise
+  --   If open non blocking then return No_Key,
+  --   Otherwise wait until a key is pressed
+  -- Return Error_Key on error
   No_Key     : constant Character := Ada.Characters.Latin_1.Nul;
   Error_Key  : constant Character := Ada.Characters.Latin_1.Eot;
   function Get_Key return Character;
 
-  -- Check if a key has been pressed or wait until a key is pressed,
-  --  raise exception on error
+  -- If open non blocking then check if a key has been pressed,
+  -- Otherwise wait until a key is pressed and return True
+  -- Raise exception Error on error
   function Key_Pressed return Boolean;
 
 end Key_Pressed;
