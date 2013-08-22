@@ -1,4 +1,3 @@
-with Ada.Unchecked_Deallocation;
 package body Control_Pool is
 
   -- Pool of used mutexes
@@ -23,7 +22,7 @@ package body Control_Pool is
     To := Val;
   end Set;
 
-  function Get_Mutex (Pool : Controlled_Pool_Type) return Mutex_Access is
+  function Get_Mutex (Pool : in out Controlled_Pool_Type) return Mutex_Access is
     Mut_Acc : Mutex_Access;
   begin
     -- Try to get one from the pool
@@ -37,15 +36,15 @@ package body Control_Pool is
   end Get_Mutex;
 
   -- Decrement Nb users of a mutex, access was or not granted
-  procedure Release (Pool : in Controlled_Pool_Type;
+  procedure Release (Pool : in out Controlled_Pool_Type;
                      Key : in Key_Type;
                      Granted : in Boolean);
 
   -- Get exclusive access
   -----------------------
-  function Get (Pool : Controlled_Pool_Type;
-                Key : Key_Type;
-                Waiting_Time : Duration) return Boolean is
+  function Get (Pool : in out Controlled_Pool_Type;
+                Key : in Key_Type;
+                Waiting_Time : in Duration) return Boolean is
     Got : Boolean;
     Cell : Cell_Type;
   begin
@@ -53,7 +52,7 @@ package body Control_Pool is
     Pool.Global_Mutex.Get;
     -- Look for this key in pool
     Cell.Key := Key;
-    if Search (Pool.Used_Mutexes.all, Cell,
+    if Search (Pool.Used_Mutexes, Cell,
                From => Used_Mutex_List.Absolute) then
       -- Read cell, increment counter, store
       Pool.Used_Mutexes.Read (Cell, Used_Mutex_List.Current);
@@ -81,15 +80,14 @@ package body Control_Pool is
     end if;
   end Get;
 
-
   -- Release access
   -----------------
-  procedure Release (Pool : in Controlled_Pool_Type; Key : in Key_Type) is
+  procedure Release (Pool : in out Controlled_Pool_Type; Key : in Key_Type) is
   begin
     Release(Pool, Key, True);
   end Release;
 
-  procedure Release (Pool : in Controlled_Pool_Type;
+  procedure Release (Pool : in out Controlled_Pool_Type;
                      Key : in Key_Type;
                      Granted : in Boolean) is
     Cell : Cell_Type;
@@ -99,8 +97,8 @@ package body Control_Pool is
     Pool.Global_Mutex.Get;
     -- Look for this key in pool
     Cell.Key := Key;
-    if not Search (Pool.Used_Mutexes.all,
-                   Cell, From => Used_Mutex_List.Absolute) then
+    if not Search (Pool.Used_Mutexes, Cell,
+                   From => Used_Mutex_List.Absolute) then
       -- Exception if not found
       raise Key_Not_Got;
     end if;
@@ -122,21 +120,10 @@ package body Control_Pool is
   end Release;
 
   -- Clear (from free list) the unused accesses
-  procedure Clear (Pool : in Controlled_Pool_Type) is
+  procedure Clear (Pool : in out Controlled_Pool_Type) is
   begin
     Pool.Free_Mutexes.Clear;
   end Clear;
-
-  -- Finalization
-  procedure Deallocate is new Ada.Unchecked_Deallocation
-    (Used_Mutex_List.List_Type, Used_Mutex_List_Access);
-  procedure Deallocate is new Ada.Unchecked_Deallocation
-    (Free_Mutex_Pool.Pool_Type, Free_Mutex_List_Access);
-  overriding procedure Finalize   (Pool : in out Controlled_Pool_Type) is
-  begin
-    Deallocate (Pool.Used_Mutexes);
-    Deallocate (Pool.Free_Mutexes);
-  end Finalize;
 
 end Control_Pool;
 
