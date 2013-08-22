@@ -12,7 +12,7 @@ package Environ is
   -- Leave result and length unchanged if not set or trunc,
   --  otherwise set them.
   procedure Get_Str (Name : in String; Result : in out String;
-                                       Length : out Natural);
+                                       Length : in out Natural);
   -- Getenv for a unbounded string
   -- Leave result unchanged if not set, otherwise set it.
   procedure Get_Us (Name : in String; Result : in out As.U.Asu_Us);

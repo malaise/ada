@@ -26,7 +26,7 @@ package body Environ is
 
   -- Getenv for a String. Leave result unchanged if not set or trunc.
   procedure Get_Str (Name : in String; Result : in out String;
-                                       Length : out Natural) is
+                                       Length : in out Natural) is
     Ptr : String_Access;
     Env_Set   : Boolean;
     Env_Trunc : Boolean;
