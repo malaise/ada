@@ -1,23 +1,20 @@
-with Ada.Unchecked_Deallocation;
 with Virtual_Time, Perpet;
 package body Chronos.Passive_Timers is
-
-  procedure Free is new Ada.Unchecked_Deallocation (Timer_Rec, Timer_Access);
 
   -- Timer status, independant from the associated clock status
   function Status (Timer : Passive_Timer) return Timer_Status is
   begin
     return (
-      if Timer.Acc = null then Timers.Deleted
-      elsif Timer.Acc.Chrono.Get_Status = Chronos.Stopped then Timers.Suspended
+      if not Timer.Running then Timers.Deleted
+      elsif Timer.Chrono.Get_Status = Chronos.Stopped then Timers.Suspended
       else Timers.Running);
   end Status;
 
   -- True if timer is not Deleted
-  function Exists (Timer : Passive_Timer) return Boolean is
+  function Running (Timer : Passive_Timer) return Boolean is
   begin
-    return Timer.Acc /= null;
-  end Exists;
+    return Timer.Running;
+  end Running;
 
   -- Arm a passive timer with a given period
   -- Overwrites any previous setting on this timer
@@ -31,15 +28,12 @@ package body Chronos.Passive_Timers is
     and then Delay_Spec.Delay_Seconds < 0.0 then
       raise Invalid_Delay;
     end if;
-    if Timer.Acc = null then
-      Timer.Acc := new Timer_Rec;
-    end if;
     -- (Re) initialize chrono
-    Timer.Acc.Chrono.Stop;
-    Timer.Acc.Chrono.Attach (Delay_Spec.Clock);
-    Timer.Acc.Chrono.Start (Start_Time);
+    Timer.Chrono.Stop;
+    Timer.Chrono.Attach (Delay_Spec.Clock);
+    Timer.Chrono.Start (Start_Time);
     -- Initialise timer
-    Timer.Acc.Next_Expiration := (case Delay_Spec.Delay_Kind is
+    Timer.Next_Expiration := (case Delay_Spec.Delay_Kind is
         when Timers.Delay_Sec => Perpet.To_Delta_Rec (Delay_Spec.Delay_Seconds),
         when Timers.Delay_Del => Delay_Spec.Delay_Delta,
         when Timers.Delay_Exp =>
@@ -47,75 +41,73 @@ package body Chronos.Passive_Timers is
              Delay_Spec.Expiration_Time - Start_Time
            else
              Timers.Default_Delta));
-    Timer.Acc.Period := Delay_Spec.Period;
-    Timer.Acc.Expired := False;
+    Timer.Period := Delay_Spec.Period;
+    Timer.Expired := False;
+    Timer.Running := True;
   end Start;
 
   -- Stop a timer, which becomes unusable until re-armed
   -- Timer_Stopped : exception;
   procedure Stop (Timer : in out Passive_Timer) is
   begin
-    if Timer.Acc = null then
+    if not Timer.Running then
       raise Timer_Stopped;
     end if;
-    -- Deallocate (chrono un-registers...)
-    Free (Timer.Acc);
+    -- Stop chrono and detach it from its clock
+    Timer.Chrono.Stop;
+    Timer.Chrono.Attach (null);
+    Timer.Running := False;
   end Stop;
 
   -- Suspend a timer: pending expirations can still be retrieved
   -- No action is timer is alread syspended
   procedure Suspend (Timer : in out Passive_Timer) is
   begin
-    if Timer.Acc = null then
+    if not Timer.Running then
       raise Timer_Stopped;
     end if;
-    if Timer.Acc.Expired then
+    if Timer.Expired then
       raise Timer_Expired;
     end if;
-    Timer.Acc.Chrono.Stop;
+    Timer.Chrono.Stop;
   end Suspend;
 
   -- Resume a suspended a timer: new expirations are resumed
   -- No action is timer is not syspended
   procedure Resume (Timer : in out Passive_Timer) is
   begin
-    if Timer.Acc = null then
+    if not Timer.Running then
       raise Timer_Stopped;
     end if;
-    if Timer.Acc.Expired then
+    if Timer.Expired then
       raise Timer_Expired;
     end if;
-    Timer.Acc.Chrono.Start;
+    Timer.Chrono.Start;
   end Resume;
 
   -- Checks if timer expiration time (Prev_Exp + Period) is reached
   -- If yes, add Period to expiration time
-  function Has_Expired (Timer : Passive_Timer) return Boolean is
+  function Has_Expired (Timer : in out Passive_Timer) return Boolean is
     use type Chronos.Time_Rec;
   begin
-    if Timer.Acc = null then
+    if not Timer.Running then
       raise Timer_Stopped;
     end if;
-    if Timer.Acc.Expired then
+    if Timer.Expired then
       raise Timer_Expired;
     end if;
-    if Timer.Acc.Chrono.Read < Timer.Acc.Next_Expiration then
+    if Timer.Chrono.Read < Timer.Next_Expiration then
       return False;
     else
-      if Timer.Acc.Period /= 0.0 then
-        Timer.Acc.Next_Expiration :=
-            Timer.Acc.Next_Expiration + Timer.Acc.Period;
+      if Timer.Period /= 0.0 then
+        Timer.Next_Expiration :=
+            Timer.Next_Expiration + Timer.Period;
       else
-        Timer.Acc.Expired := True;
+        Timer.Expired := True;
       end if;
       return True;
     end if;
   end Has_Expired;
-
-  overriding procedure Finalize (Timer : in out Passive_Timer) is
-  begin
-    Free (Timer.Acc);
-  end Finalize;
 
 end Chronos.Passive_Timers;
 

@@ -332,7 +332,7 @@ package body Autobus is
       if Remove_All then
         Remove := True;
       else
-        if Partner_Acc.Timer.Exists and then Partner_Acc.Timer.Has_Expired then
+        if Partner_Acc.Timer.Running and then Partner_Acc.Timer.Has_Expired then
           -- This partner is not alive (alive timeout has expired)
           Debug ("Alive timeout of partner " & Partner_Acc.Addr.Image);
           Remove := True;
@@ -824,7 +824,7 @@ package body Autobus is
       exit when Bus.Acc.Partners.Is_Empty;
       Bus.Acc.Partners.Read (Partner_Acc, Moved => Moved);
       begin
-        if Partner_Acc.Timer.Exists then
+        if Partner_Acc.Timer.Running then
           Dummy := Tcp_Send (Partner_Acc.Sock, null, null,
                              Bus.Acc.Timeout, Msg, Message'Length);
         end if;
