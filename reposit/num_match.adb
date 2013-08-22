@@ -50,7 +50,7 @@ package body Num_Match is
     end if;
 
     -- Init for check
-    Parser.Set (Iter, Criteria, Is_Sep'Unrestricted_Access);
+    Iter.Set (Criteria, Is_Sep'Unrestricted_Access);
     -- First spec
     First := True;
     -- Mach is kept along all specs cause we parse (check) all
@@ -63,7 +63,7 @@ package body Num_Match is
 
       One_Spec:
       declare
-        Cur_Spec : constant String := Parser.Next_Word (Iter);
+        Cur_Spec : constant String := Iter.Next_Word;
         Range_Index : Natural;
         Range_First, Range_Last : Integer_Type;
       begin
@@ -73,20 +73,20 @@ package body Num_Match is
             -- Empty criteria
             exit All_Specs;
           end if;
-          if Parser.Prev_Separators (Iter) /= "" then
+          if Iter.Prev_Separators /= "" then
             -- Criteria starts with Sep(s)
             raise Invalid_Criteria;
           end if;
           First := False;
         elsif Cur_Spec /= "" then
           -- Not first word nor the end shall be separated by one Sep
-          if Parser.Prev_Separators (Iter) /= Str_Spec_Sep then
+          if Iter.Prev_Separators /= Str_Spec_Sep then
             -- Not separated by Sep
             raise Invalid_Criteria;
           end if;
         else
           -- The end, last word shall not be followed by Seps(s)
-          if Parser.Prev_Separators (Iter) /= "" then
+          if Iter.Prev_Separators /= "" then
             raise Invalid_Criteria;
           end if;
           exit All_Specs;
@@ -135,7 +135,7 @@ package body Num_Match is
     end loop All_Specs;
 
     -- Cleanup and Done
-    Parser.Del (Iter);
+    Iter.Del;
     return Match;
   exception
     when others =>
