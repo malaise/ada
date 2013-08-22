@@ -2,7 +2,6 @@
 -- Where oper is +, -, * or /,
 --  a and b are integers or ${Variable}
 -- Supports parentheses.
-with Ada.Unchecked_Deallocation;
 with Environ, Basic_Proc, Str_Util, Dynamic_List, Parser;
 package body Computer is
 
@@ -124,7 +123,8 @@ package body Computer is
   end Set;
 
   -- Check if a variable is set
-  function Is_Set (Memory : Memory_Type; Name : String) return Boolean is
+  function Is_Set (Memory : in out Memory_Type;
+                   Name : in String) return Boolean is
     Crit : Var_Rec;
     Found : Boolean;
   begin
@@ -172,7 +172,8 @@ package body Computer is
 
   -- Read a variable rec (internal)
   -- May raise Unknown_Variable
-  function Read (Memory : Memory_Type; Name : String) return Var_Rec is
+  function Read (Memory : in out Memory_Type;
+                 Name : in String) return Var_Rec is
     Found : Boolean;
     Res : Var_Rec;
   begin
@@ -200,7 +201,8 @@ package body Computer is
   end Read;
 
   -- Get a variable
-  function Get (Memory : Memory_Type; Name : String) return String is
+  function Get (Memory : in out Memory_Type;
+                Name : in String) return String is
     Var : Var_Rec;
   begin
     Trace ("Getting >" & Name & "<");
@@ -209,14 +211,16 @@ package body Computer is
   end Get;
 
    -- Get characteristics
-  function Is_Modifiable (Memory : Memory_Type; Name : String) return Boolean is
+  function Is_Modifiable (Memory : in out Memory_Type;
+                          Name : in String) return Boolean is
     Var : Var_Rec;
   begin
     Var := Read (Memory, Name);
     return Var.Modifiable;
   end Is_Modifiable;
 
-  function Is_Persistent (Memory : Memory_Type; Name : String) return Boolean is
+  function Is_Persistent (Memory : in out Memory_Type;
+                          Name : in String) return Boolean is
     Var : Var_Rec;
   begin
     Var := Read (Memory, Name);
@@ -233,9 +237,9 @@ package body Computer is
 
 
   -- Resolv variables of an expresssion
-  function Internal_Eval (Memory : Memory_Type;
-                          Expression : String;
-                          Check : Boolean) return String is
+  function Internal_Eval (Memory : in out Memory_Type;
+                          Expression : in String;
+                          Check : in Boolean) return String is
     -- Get a variable, invokes external resolver if needed
     function Ext_Get (Name : String) return String is
     begin
@@ -279,13 +283,15 @@ package body Computer is
       raise Invalid_Expression;
   end Internal_Eval;
 
-  function Eval (Memory : Memory_Type; Expression : String) return String is
+  function Eval (Memory : in out Memory_Type;
+                 Expression : in String) return String is
   begin
     return Internal_Eval (Memory, Expression, Check => False);
   end Eval;
 
   -- Fix expression
-  function Fix (Memory : Memory_Type; Expression : String) return String is
+  function Fix (Memory : in out Memory_Type;
+                Expression : in String) return String is
     Exp : As.U.Asu_Us;
   begin
     -- Replace each operator and parenthese 'op' by ' op '
@@ -596,7 +602,8 @@ package body Computer is
   end Compute;
 
   -- Computation of expression
-  function Compute (Memory : Memory_Type; Expression : String) return Integer is
+  function Compute (Memory : in out Memory_Type;
+                    Expression : in String) return Integer is
     Result : Integer;
     Members_List : Members_Mng.List_Type;
     End_Reached : Boolean := False;
@@ -610,18 +617,6 @@ package body Computer is
     -- Done
     return Result;
   end Compute;
-
-  -- Finalization
-  procedure Free is new Ada.Unchecked_Deallocation(
-         Object => Var_Mng.Unique_List_Type,
-         Name   => List_Access);
-  -- Automatic garbage collection
-  overriding procedure Finalize (Memory : in out Memory_Type) is
-  begin
-    if Memory.Var_List /= null then
-      Free (Memory.Var_List);
-    end if;
-  end Finalize;
 
 end Computer;
 

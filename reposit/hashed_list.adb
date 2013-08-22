@@ -321,10 +321,5 @@ package body Hashed_List is
                     Moved);
   end Read_Next;
 
-  overriding procedure Finalize (List : in out List_Type) is
-  begin
-    Delete_List (List, Deallocate => True);
-  end Finalize;
-
 end Hashed_List;
 

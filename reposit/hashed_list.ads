@@ -1,4 +1,3 @@
-with Ada.Finalization;
 with Limited_List, Hashing;
 generic
   -- Type of the element of the list
@@ -182,14 +181,13 @@ private
                   (Element_Access, Hash_Func);
 
   -- A unique list
-  type List_Type is limited new Ada.Finalization.Limited_Controlled with record
+  type List_Type is tagged limited record
     List : List_Mng.List_Type;
     Table : Hash_Mng.Hash_Table;
     Current : Element_Access := null;
     Hash_Index : Hash_Mng.Hash_Range := 0;
     In_Cb : Boolean := False;
   end record;
-  overriding procedure Finalize (List : in out List_Type);
 
   -- For children
   procedure Locate (List      : in out List_Type;

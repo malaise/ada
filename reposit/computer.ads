@@ -5,7 +5,6 @@
 --  or references to internal variables ${Variable}
 --  Supports parentheses
 -- Both support an optional external variable resolver
-with Ada.Finalization;
 with As.U, Hashed_List.Unique;
 package Computer is
 
@@ -30,7 +29,8 @@ package Computer is
                  Persistent : in Boolean);
 
   -- Check if a variable is set
-  function Is_Set (Memory : Memory_Type; Name : String) return Boolean;
+  function Is_Set (Memory : in out Memory_Type;
+                   Name : in String) return Boolean;
 
   -- Unset (delete) a variable
   -- May raise Unknown_Variable
@@ -41,11 +41,14 @@ package Computer is
 
   -- Get a variable
   -- May raise Unknown_Variable
-  function Get (Memory : Memory_Type; Name : String) return String;
+  function Get (Memory : in out Memory_Type;
+                Name : in String) return String;
 
   -- Get characteristics, may raise Unknown_Variable
-  function Is_Modifiable (Memory : Memory_Type; Name : String) return Boolean;
-  function Is_Persistent (Memory : Memory_Type; Name : String) return Boolean;
+  function Is_Modifiable (Memory : in out Memory_Type;
+                          Name : in String) return Boolean;
+  function Is_Persistent (Memory : in out Memory_Type;
+                          Name : in String) return Boolean;
 
 
   -- External resolver of variables:
@@ -59,14 +62,16 @@ package Computer is
   -- Resolve variables of an expresssion
   -- Variable delimiters may be backslashed for no expansion but then they
   --  must be both backslashed. Ex: \${Var\}
-  function Eval (Memory : Memory_Type; Expression : String) return String;
+  function Eval (Memory : in out Memory_Type;
+                 Expression : in String) return String;
 
   -- Computation of expression
   -- First, all variables are got or resolved and must lead to a valid
   --  operator, operand or a parenthesis
   -- The the operations are computed in the proper order
   -- May raise Invalid_Expression (space, parentheses, operations, values...)
-  function Compute (Memory : Memory_Type; Expression : String) return Integer;
+  function Compute (Memory : in out Memory_Type;
+                    Expression : in String) return Integer;
 
   -- On Set, Get or Is_Set if empty name
   Invalid_Variable : exception;
@@ -103,13 +108,11 @@ private
   package Var_List_Mng is new Hashed_List (Var_Rec, Var_Access,
                                            Set, "=", Image);
   package Var_Mng is new Var_List_Mng.Unique;
-  type List_Access is access Var_Mng.Unique_List_Type;
 
-  type Memory_Type is limited new Ada.Finalization.Limited_Controlled with record
-    Var_List : List_Access := new Var_Mng.Unique_List_Type;
+  type Memory_Type is tagged limited record
+    Var_List : Var_Mng.Unique_List_Type;
     External_Resolver : Resolver_Access := null;
   end record;
 
-  overriding procedure Finalize (Memory : in out Memory_Type);
 end Computer;
 

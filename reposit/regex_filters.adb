@@ -7,6 +7,12 @@ package body Regex_Filters is
                 Regular_Expressions.Compiled_Pattern,
                 Pattern_Access);
 
+  procedure Free (Cell : in out Filter_Cell) is
+  begin
+    Regular_Expressions.Free(Cell.Pattern.all);
+    Free(Cell.Pattern);
+  end Free;
+
   -- Append the regex Criteria and the success condition Match to the Filter
   procedure Add_Regex (Filter : in out Regex_Filter;
             Criteria : in String;
@@ -24,8 +30,7 @@ package body Regex_Filters is
       Filter.List.Insert(Cell);
     else
       -- Roll back, free regex pattern
-      Regular_Expressions.Free(Cell.Pattern.all);
-      Free(Cell.Pattern);
+      Free (Cell);
       raise Invalid_Regex;
     end if;
   end Add_Regex;
@@ -35,7 +40,8 @@ package body Regex_Filters is
   --  or if does not match and Match was not set.
   -- If success, then go to next criteria
   -- Return True is success for all criterias
-  function Check (Str : String; Filter : in Regex_Filter) return Boolean is
+  function Check (Str : in String;
+                  Filter : in out Regex_Filter) return Boolean is
     Loc_List : Filter_List_Mng.List_Type;
     Result : Boolean;
     Remains : Boolean;
@@ -77,8 +83,8 @@ package body Regex_Filters is
     return Result;
   end Check;
 
-
   procedure Clear_Filter (Filter : in out Regex_Filter) is
+    Cell : Filter_Cell;
   begin
     -- Done if empty list
     if Filter.List.Is_Empty then
@@ -89,7 +95,8 @@ package body Regex_Filters is
     Filter.List.Rewind;
     -- Loop of Get
     loop
-      Filter.List.Delete;
+      Cell := Filter.List.Get;
+      Free (Cell);
       exit when Filter.List.Is_Empty;
     end loop;
   end Clear_Filter;

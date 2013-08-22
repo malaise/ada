@@ -17,7 +17,7 @@ package Regex_Filters is
   --  or if it does not match and Match was set to False for this Criteria.
   -- If success, then go to next criteria otherwise return False
   -- Return True is success for all criterias or no criteria defined
-  function Check (Str : String; Filter : in Regex_Filter) return Boolean;
+  function Check (Str : in String; Filter : in out Regex_Filter) return Boolean;
 
   -- Remove all criteria
   procedure Clear_Filter (Filter : in out Regex_Filter);
@@ -25,7 +25,7 @@ package Regex_Filters is
 private
   type Pattern_Access is access Regular_Expressions.Compiled_Pattern;
 
-  type Filter_Cell is new Ada.Finalization.Controlled with record
+  type Filter_Cell is record
     Pattern : Pattern_Access;
     Match : Boolean;
   end record;
