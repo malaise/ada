@@ -14,6 +14,7 @@ package Players is
     end case;
   end record;
   subtype Valid_Action_Rec is Action_Rec(True);
+  Valid_Action : constant Valid_Action_Rec := (Valid => True, others => <>);
 
   -- Sequential access : Returns a not Valid Action when end of list
   procedure Rewind_Actions (Color : in Space.Color_List);

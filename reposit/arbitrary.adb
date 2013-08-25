@@ -406,16 +406,9 @@ package body Arbitrary is
   function Set_Uncheck (V : String) return Number is
       use type As.U.Asu_Us;
   begin
-    -----------------------------------------------------------------
-    -- Bug in Gnat GPL 2012: A "(if" expression retuning Asu_Us fails
-    --  (raises Storage_Error or returns Asu_Null)
-    -- Don't use it
-    -----------------------------------------------------------------
-    if Syntax.Is_Sign(V(V'First)) then
-      return Basic.Make (As.U.Tus (V));
-    else
-      return Basic.Make ("+" & As.U.Tus (V));
-    end if;
+    -- Prepend "+" if no sign
+    return Basic.Make (As.U.Tus (
+        (if Syntax.Is_Sign(V(V'First)) then "" else "+") & V) );
   end Set_Uncheck;
 
   Number_Zero : constant Number := Set_Uncheck ("0");

@@ -510,10 +510,18 @@ package body Mng is
         Refresh_Screen(Center);
         return;
     end;
-    Pf.Put_Line("Account: " & Account_Name.Image
-               & "     at: " & Images.Date_Image(Ada.Calendar.Clock) (1 .. 16));
-    Pf.Put_Line(Page_Title);
-    Line := 3;
+    declare
+      -- YYyy/Mm/Dd Hh:Mm:Ss.mmm
+      Date : constant String := Images.Date_Image(Ada.Calendar.Clock);
+    begin
+      Pf.Put_Line("Account: " & Account_Name.Image
+             & "     at: "
+             -- Dd/Mm/YYyy Hh:Mm
+             & Date(9 .. 10) & Date(8) & Date(6 .. 7) & Date(5) & Date (1 .. 4)
+             & Date (11 .. 16));
+      Pf.Put_Line(Page_Title);
+      Line := 3;
+    end;
 
     if not Oper_List.Is_Empty then
       Oper_List.Rewind;

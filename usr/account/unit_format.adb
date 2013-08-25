@@ -8,15 +8,10 @@ package body Unit_Format is
 
   -- Date: 25/10/2001
   function Date_Image(Date : Oper_Def.Date_Rec) return Date_Str is
-    -- Bug in Gnat4.0
-    -- Returning Normal & Normal & Normal produces corrupted string
-    -- Using and intermediate variable solves the Pb.
-    Result : Date_Str;
   begin
-    Result := Normal(Date.Day, 2, Gap => '0') & '/'
-            & Normal(Date.Month, 2, Gap => '0') & '/'
-            & Normal(Date.Year, 4, Gap => '0');
-    return Result;
+    return Normal(Date.Day, 2, Gap => '0') & '/'
+         & Normal(Date.Month, 2, Gap => '0') & '/'
+         & Normal(Date.Year, 4, Gap => '0');
   end Date_Image;
 
   function Date_Value(Str : Date_Str) return Oper_Def.Date_Rec is
@@ -37,15 +32,10 @@ package body Unit_Format is
 
   -- Short date: 25/10/01
   function Short_Date_Image(Date : Oper_Def.Date_Rec) return Short_Date_Str is
-    -- Bug in Gnat4.0
-    -- Returning Normal & Normal & Normal produces corrupted string
-    -- Using and intermediate variable solves the Pb.
-    Result : Short_Date_Str;
   begin
-    Result := Normal(Date.Day, 2, Gap => '0') & '/'
-            & Normal(Date.Month, 2, Gap => '0') & '/'
-            & Normal(Date.Year, 4, Gap => '0')(3..4);
-    return Result;
+    return Normal(Date.Day, 2, Gap => '0') & '/'
+         & Normal(Date.Month, 2, Gap => '0') & '/'
+         & Normal(Date.Year, 4, Gap => '0')(3..4);
   end Short_Date_Image;
 
   -- Short status: Yes No Def

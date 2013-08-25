@@ -219,8 +219,6 @@ package body Lem is
     pragma Unreferenced (Id, Data);
     Fuel_Consumed : Fuel_Range;
     Mass : Mass_Range;
-    New_Position : Position_Rec;
-    New_Speed : Speed_Rec;
   begin
     if Debug.Set_Lem then
       Basic_Proc.Put_Line_Error ("LEM Periodic");
@@ -229,13 +227,9 @@ package body Lem is
     -- Time of computation for further linear interpolation
     Chrono.Reset;
     -- New position
-    -- GNAT Bug? Current_Position is set to 0 before calling Position_At!
-    New_Position := Position_At (Period);
-    Current_Position := New_Position;
+    Current_Position := Position_At (Period);
     -- New speed
-    -- GNAT Bug? Current_Speed is set to 0 before calling Speed_At!
-    New_Speed := Speed_At (Period);
-    Current_Speed := New_Speed;
+    Current_Speed := Speed_At (Period);
     if Debug.Set_Lem then
       Basic_Proc.Put_Line_Error ("LEM Pos is " & Current_Position.X_Pos'Img
                                     & "/" & Current_Position.Y_Pos'Img);

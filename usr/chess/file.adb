@@ -148,14 +148,10 @@ package body File is
     end;
 
     -- Convert
-    -- Bug in Gnat? Constraint_Error is raised at call if Action is not valid
-    --  here.
-    --  This was not the case when kind was not an arg of Move_Value.
-    declare
-      Tmp_Action : Players.Valid_Action_Rec;
     begin
-      Image.Move_Value (Str, Color, Tmp_Action, Result);
-      Action := Tmp_Action;
+      -- Mandatory to avoid Constraint_Error when calling Image.Move_Value
+      Action := Players.Valid_Action;
+      Image.Move_Value (Str, Color, Action, Result);
     exception
       when Image.Value_Error =>
         Log_Error (True, "Invalid format");
