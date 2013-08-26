@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Try to compile $1 and run $2
+function try {
+  echo ""
+  echo $1":"
+  gnatmake $1
+
+  if [ -x $2 ] ; then
+    $2
+  fi
+  rm -f *.o *.ali $2
+}
+
+for suffix in ads adb ; do
+  LIST=`ls *.$suffix 2>/dev/null`
+  for file in $LIST ; do
+    target=`basename $file .$suffix`
+    try $file $target
+  done
+done
+

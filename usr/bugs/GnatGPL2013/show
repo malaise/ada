@@ -1,8 +1,0 @@
-#!/bin/bash
-
-for file in access_func.ads conflict.adb ; do
-  echo ""
-  echo $file
-  gnatmake $file
-done
-
