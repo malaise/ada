@@ -6,7 +6,7 @@ package body State_Machine is
                               Report : in State_Report_Access) is
   begin
     if Machine.State_Cbs(To_State) /= null then
-      raise Event_Already;
+      raise Report_Already;
     end if;
     Machine.State_Cbs(To_State) := Report;
   end Add_State_Report;
@@ -17,7 +17,7 @@ package body State_Machine is
                               Report : in Transition_Report_Access) is
   begin
     if Machine.Event_Cbs(To_Event) /= null then
-      raise Event_Already;
+      raise Report_Already;
     end if;
     Machine.Event_Cbs(To_Event) := Report;
   end Add_Event_Report;

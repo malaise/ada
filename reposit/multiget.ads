@@ -3,7 +3,7 @@ with Dynamic_List;
 generic
   -- The type of item got
   type Item_Type is private;
-  -- The user data passed through Get to Get_Item
+  -- Any user data that can be passed "as is" through Get to Get_Item
   type User_Data_Type is private;
   -- The original function getting Items
   -- At end of input flow, it may return a specific Item or raise an exception
@@ -33,6 +33,7 @@ package Multiget is
   function Is_Recording (Getter : Multigetter) return Boolean;
 
   -- The getting function
+  -- Calls Get_Item (User_Data) and return its result
   -- Propagates any exception of the Get_Item (error or end of file...)
   -- If recording, copies each Item got in a buffer (for further unget).
   -- When the buffer is full, the oldest got item is overwritten by the new one

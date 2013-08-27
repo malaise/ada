@@ -116,9 +116,9 @@ package body Select_File is
     return Res;
   end Confirm;
 
-  function Get_File (Current_File : String;
-                     For_Read     : Boolean;
-                     Try_Select   : Boolean) return String is
+  function Get_File (Current_File   : String;
+                     For_Read       : Boolean;
+                     Select_Current : Boolean) return String is
 
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
@@ -218,7 +218,7 @@ package body Select_File is
       return Kind = Directory.Dir;
     end Is_Dir;
 
-    procedure Change_Dir (New_Dir : in String; Try : in String) is
+    procedure Change_Dir (New_Dir : in String; Current : in String) is
       Height : Afpx.Height_Range;
       Width  : Afpx.Width_Range;
       Dir_Item : Dir_Mng.File_Entry_Rec;
@@ -244,7 +244,7 @@ package body Select_File is
       Dir_Mng.List_Dir (Dir_List, ".");
       Dir_Mng.File_Sort (Dir_List);
       Dir_List.Rewind;
-      -- Clear Afpx list
+      -- Clear Afpx list then build it
       Afpx.Line_List.Delete_List;
       loop
         Dir_List.Read (Dir_Item, Dir_Mng.File_List_Mng.Current);
@@ -264,8 +264,8 @@ package body Select_File is
                 Str_Util.Procuste (
                     Dir_Item.Name.Image & ' ' & Char, Width) );
         Afpx.Line_List.Insert (Afpx_Item);
-        -- A file/dir name cannot be empty, so an empty try will never match
-        if Dir_Item.Name.Image = Try then
+        -- A file/dir name cannot be empty, so empty Current will never match
+        if Dir_Item.Name.Image = Current then
           Selected := Afpx.Line_List.Get_Position;
         end if;
         exit when not Dir_List.Check_Move;
@@ -387,7 +387,7 @@ package body Select_File is
     Afpx.Encode_Field (Get_Fld, (0, 0), Get_Content);
 
     -- Build list
-    Change_Dir (".", (if Try_Select then Current_File else ""));
+    Change_Dir (".", (if Select_Current then Current_File else ""));
 
     Cursor_Field := Get_Fld;
     loop

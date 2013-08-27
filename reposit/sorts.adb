@@ -42,9 +42,9 @@ package body Sorts is
     declare
       First_Index : constant Typ_Index := Slice'First;
       Last_Index  : constant Typ_Index := Slice'Last;
-      -- number of  elements to sort
+      -- Number of  elements to sort
       Array_Length : constant Integer := Slice'Length;
-      -- heap an its indexes
+      -- Heap an its indexes
       subtype Typ_Index_Heap is Integer range 1 .. Array_Length;
       Heap : array (Typ_Index_Heap) of Typ_Object;
       Heap_Index, Son_Index, Father_Index : Typ_Index_Heap;
@@ -57,32 +57,32 @@ package body Sorts is
 
       Build:
       for Array_Index in Typ_Index'Succ(First_Index) .. Last_Index loop
-        -- insert object at the bottom of the heap
+        -- Insert object at the bottom of the heap
         Heap_Index := Heap_Index + 1;
         Heap(Heap_Index) := Slice(Array_Index);
 
-        -- we will insert object at its right place in heap
+        -- We will insert object at its right place in heap
         Son_Index := Heap_Index;
         Father_Index := Son_Index / 2;
 
         Sorting:
         loop
-          -- the father must be greater than its son
+          -- The father must be greater than its son
           if not (Heap(Son_Index) < Heap(Father_Index)) then
             Exchange (Heap(Father_Index), Heap(Son_Index));
-            -- exit if al the heap has been seen
+            -- Exit if al the heap has been seen
             exit Sorting when Father_Index = 1;
-            -- new indexes for father and son
+            -- New indexes for father and son
             Son_Index := Father_Index;
             Father_Index := Son_Index / 2;
           else
-            -- exit as soon as no exchange
+            -- Exit as soon as no exchange
             exit Sorting;
           end if;
         end loop Sorting;
       end loop Build;
 
-      -- destruction of heap by taking the top at each time
+      -- Destruction of heap by taking the top at each time
       Heap_Index := Typ_Index_Heap'Last;
 
       Destruction:
@@ -91,28 +91,28 @@ package body Sorts is
         Slice(Array_Index) := Heap(1);
         -- Put the last heap element at the top
         Heap(1) := Heap(Heap_Index);
-        -- indexes of leaves: (firat_leaf, heap_index-1)
+        -- Indexes of leaves: (firat_leaf, heap_index-1)
         First_Leaf := ( (Heap_Index - 1) / 2) + 1;
         Last_Leaf := Heap_Index - 1;
-        -- re-sort the top
+        -- Re-sort the top
         Father_Index := 1;
 
         Resort:
         while Father_Index < First_Leaf loop
-          -- selection of greatest son or son at left (if equal)
+          -- Selection of greatest son or son at left (if equal)
           Son_Index := 2 * Father_Index;
-          -- if right son exists and if greater
+          -- If right son exists and if greater
           if Son_Index < Last_Leaf and then
            Heap(Son_Index) < Heap(Son_Index + 1) then
-            -- take right son
+            -- Take right son
             Son_Index := Son_Index + 1;
           end if;
-          -- father must be greater that its gretest son
+          -- Father must be greater that its gretest son
           if Heap(Father_Index) < Heap(Son_Index) then
             Exchange (Heap(Father_Index), Heap(Son_Index));
             Father_Index := Son_Index;
           else
-            -- if no exchange, the heap is OK
+            -- If no exchange, the heap is OK
             exit Resort;
           end if;
         end loop Resort;
@@ -129,7 +129,7 @@ package body Sorts is
   end Heap_Sort;
 
   ---------------
-  -- quicksort --
+  -- Quicksort --
   ---------------
   procedure Quick_Sort (Slice : in out Typ_Array) is
   begin
@@ -137,37 +137,37 @@ package body Sorts is
 
     declare
 
-      -- recursive procedure which sorts a slice of the array
+      -- Recursive procedure which sorts a slice of the array
       procedure Quick (Left, Right : in Typ_Index) is
-        -- middle of the slice
+        -- Middle of the slice
         I_Frontier : constant Typ_Index :=
          Typ_Index'Val( (Typ_Index'Pos(Left)+Typ_Index'Pos(Right)) /2);
         Frontier : constant Typ_Object := Slice(I_Frontier);
-        -- indexes in both halfs of the slice
+        -- Indexes in both halfs of the slice
         I_Left, I_Right : Typ_Index;
       begin
         I_Left := Left;
         I_Right := Right;
         loop
 
-          -- first element at left of slice and not positioned ok
+          -- First element at left of slice and not positioned ok
           --  regarding the frontier
           while Slice(I_Left) < Frontier loop
             I_Left := Typ_Index'Succ(I_Left);
           end loop;
-          -- last  element a right of slice and not positioned ok
+          -- Last  element a right of slice and not positioned ok
           --  regarding the frontier
           while Frontier < Slice(I_Right) loop
             I_Right := Typ_Index'Pred(I_Right);
           end loop;
 
-          -- exchange and go to next elements if not both in frontier
+          -- Exchange and go to next elements if not both in frontier
           if I_Left < I_Right then
             Exchange (Slice(I_Left), Slice(I_Right));
             I_Left := Typ_Index'Succ (I_Left);
             I_Right := Typ_Index'Pred (I_Right);
           elsif I_Left = I_Right then
-            -- go to next elements if not crossed and not to end
+            -- Go to next elements if not crossed and not to end
             if I_Left /= Right then
               I_Left := Typ_Index'Succ (I_Left);
             end if;
@@ -176,12 +176,12 @@ package body Sorts is
             end if;
           end if;
 
-          -- leave if crossed now
+          -- Leave if crossed now
           exit when I_Left > I_Right or else
                    (I_Left = Right and then I_Right = Left);
         end loop;
 
-        -- sort both new slices
+        -- Sort both new slices recursively
         if Left   < I_Right then Quick(Left,   I_Right); end if;
         if I_Left < Right   then Quick(I_Left, Right);   end if;
       end Quick;

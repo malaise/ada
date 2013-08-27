@@ -22,7 +22,7 @@ package Pattern is
   --  the Id4Cb of the matching pattern,
   --  the number of words of Str that have matched a term of the pattern,
   --  a Parser iterator in the first remaining word of Str (tail can be
-  --  retrieved by Current_Word, then Next_Word...).
+  --  retrieved by Tail or by Current_Word, then Next_Word...).
   -- A pattern id identifies uniquely a pattern in a rule, so the same
   --  callback can be associated to several patterns.
   -- Patterns are scanned in crescent order of ids.

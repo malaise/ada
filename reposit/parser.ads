@@ -102,16 +102,20 @@ private
   -- While not Finished:
   --   Word is Str (First .. Last)
   --   Separators is Str (Sep .. First - 1);
-  -- If Word is not empty then, Indexes are First and Last
-  --  + Start - 1, else 1 and 0.
+  -- If Word is not empty then, Indexes are First and Last, else 1 and 0.
   type Iter_Rec is record
+    -- Initialised by Sep
+    -- The string, its lenght and first index, and sepration function
     Str : As.U.Asu_Us := As.U.Asu_Null;
     Len : Natural := 0;
     Start : Positive := 1;
     Is_Sep : Separing_Function := null;
+    -- Current parsing state
     State : Iter_State_List := Parsing;
+    -- Indexes of current word
     First : Natural := 1;
     Last  : Natural := 0;
+    -- Index of the first separator (of the chain of seperators) before First
     Sep   : Natural := 1;
   end record;
 

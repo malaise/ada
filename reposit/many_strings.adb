@@ -8,9 +8,8 @@ package body Many_Strings is
     Str.Ustr.Set_Null;
   end Reset;
   function Empty return Many_String is
-    Str : Many_String;
   begin
-    return Str;
+    return Empty_String;
   end Empty;
 
   -- True if Str is really empty (no separator nor string)
@@ -57,7 +56,7 @@ package body Many_Strings is
     use type As.U.Asu_Us;
   begin
     if Str.Ustr.Is_Null then
-      return (Ustr => As.U.Tus (What));
+      return Set (What);
     elsif What = "" then
       return Str;
     else

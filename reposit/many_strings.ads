@@ -1,15 +1,17 @@
 with Ada.Characters.Latin_1;
 with As.U;
--- Store several strings in one, using Ascii Nul as separator.
+-- Store several strings in one, (using a specific character as separator).
 package Many_Strings is
 
   -- Separator of strings in a Many_String image
+  --  (and also used in internal storage)
   Separator : constant Character := Ada.Characters.Latin_1.Nul;
 
   -- A Many_String is a list of strings (possibly empty strings)
   --  separated by Separator
   -- No separator if there is no or one string
   -- <many_strings> ::= <string> [ { <separator> <string> } ]
+  -- <string> ::= [ { <char> } ]
   type Many_String is tagged private;
   Empty_String : constant Many_String;
 
@@ -39,11 +41,12 @@ package Many_Strings is
   procedure Cat (Str : in out Many_String; What : in As.U.Asu_Us);
   procedure Cat (Str : in out Many_String; What : in Many_String);
 
-  -- String image
+  -- String image: Separator is used to separate the strings
   function Image (Str : Many_String) return String;
   function Image (Str : Many_String) return As.U.Asu_Us;
 
   -- Decode (String_Error is raised by Nth if N > Nb)
+  -- Str is parsed at each call
   -- An empty Many_String contains one (empty) string
   function Nb  (Str : Many_String) return Positive;
   function Nth (Str : Many_String; N : Positive) return String;
@@ -57,6 +60,6 @@ private
   type Many_String is tagged record
     Ustr : As.U.Asu_Us;
   end record;
-  Empty_String : constant Many_String := (Ustr => As.U.Asu_Null);
+  Empty_String : constant Many_String := (others => <>);
 end Many_Strings;
 

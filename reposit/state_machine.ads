@@ -21,7 +21,7 @@ package State_Machine is
   -- A machine
   type Machine_Type (Id : Machine_Id) is tagged limited private;
 
-  -- General transition / event / state report
+  -- General transition definition, or event report or state report
   type State_Change_Rec (On_Event : Boolean := True) is record
     Original_State : State_List;
     Destination_State : State_List;
@@ -33,38 +33,38 @@ package State_Machine is
     end case;
   end record;
 
-  -- Procedure to report a new state
-  --  (Callback on state)
+  -- A transition always specifies an event
+  subtype Transition_Rec is State_Change_Rec (On_Event => True);
+
+  -- Procedure to report a new state, on event or not
   type State_Report_Access is
        access procedure (Id : in Machine_Id;
                         State_Change : in State_Change_Rec);
 
-  -- To add a report callback on new state
-  -- May raise Event_Already if this state already has a report callback
+  -- To add a report callback on a specific new state (due to event or not)
+  -- May raise Report_Already if this state already has a report callback
   -- May raise Declaration_Ended if called after End_Declaration;
   procedure Add_State_Report (Machine : in out Machine_Type;
                               To_State : in State_List;
                               Report : in State_Report_Access);
 
 
-  -- A transition or event/transition report
-  subtype Transition_Rec is State_Change_Rec (On_Event => True);
 
-  -- Procedure to report a transition
-  --  (Callback on event or transition)
+  -- Procedure to report a transition, always on event
   type Transition_Report_Access is
        access procedure (Id : in Machine_Id;
                          Transition : in Transition_Rec);
 
-  -- To add a report callback on event occurence
-  -- May raise Event_Already if this event already has a report callback
+  -- To add a report callback on a specific event occurence
+  -- May raise Report_Already if this event already has a report callback
   procedure Add_Event_Report (Machine : in out Machine_Type;
                               To_Event : in Event_List;
                               Report : in Transition_Report_Access);
 
-  -- To add a transition in the state machine
+  -- To add a transition in the state machine and add a report callback
+  --  when this transition occurs
   -- May raise Event_Already if this event is already defined
-  --  from the original state
+  --  from this original state
   -- May raise Declaration_Ended if called after End_Declaration;
   procedure Add_Transition (Machine : in out Machine_Type;
                             Transition : in Transition_Rec;
@@ -102,6 +102,7 @@ package State_Machine is
   Declaration_Ended, Declaration_Not_Ended : exception;
   True_Loop : exception;
   Event_Already : exception;
+  Report_Already : exception;
 private
 
   -- A transition

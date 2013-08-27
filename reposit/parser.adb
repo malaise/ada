@@ -42,9 +42,12 @@ package body Parser is
         raise Constraint_Error;
     end;
     Clear (Iter);
-    Iter.Acc := new Iter_Rec'(As.U.Tus (Str), Str'Length,
-                    Str'First, Is_Sep, Parsing,
-                    Init_Rec.First, Init_Rec.Last, Init_Rec.Sep);
+    Iter.Acc := new Iter_Rec'(
+      Str => As.U.Tus (Str),
+      Len => Str'Length,
+      Start => Str'First,
+      Is_Sep => Is_Sep,
+      others => <>);
   end Set;
 
 
@@ -93,9 +96,9 @@ package body Parser is
       Iter.Acc.Is_Sep := Is_Sep;
     end if;
     Iter.Acc.State := Parsing;
-    Iter.Acc.First := 1;
-    Iter.Acc.Last  := 0;
-    Iter.Acc.Sep   := 1;
+    Iter.Acc.First := Init_Rec.First;
+    Iter.Acc.Last  := Init_Rec.Last;
+    Iter.Acc.Sep   := Init_Rec.Sep;
   end Reset;
 
   -- Parse first then next word of the string
@@ -110,15 +113,15 @@ package body Parser is
       return;
     end if;
     if Iter.Acc.State = Parsed then
-      Iter.Acc.First := 1;
-      Iter.Acc.Last  := 0;
-      Iter.Acc.Sep   := 1;
+      -- Reset state ans set to Finished
+      Reset (Iter, Iter.Acc.Is_Sep);
       Iter.Acc.State := Finished;
       return;
     end if;
 
     -- Check for first call to Next_Word on empty string
     if Iter.Acc.First > Iter.Acc.Len then
+      Reset (Iter, Iter.Acc.Is_Sep);
       Iter.Acc.State := Finished;
       return;
     end if;

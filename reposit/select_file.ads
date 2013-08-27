@@ -27,17 +27,21 @@ generic
   -- Any action to do when a signal_event has occured (see Afpx Signal_Event)
   with procedure Signal_Callback is null;
   -- Title when reading or writting
-  Read_Title  : in String := "";
-  Write_Title : in String := "";
+  Read_Title  : in String := ""; -- Default: "Load a file"
+  Write_Title : in String := ""; -- Default: "Save in a file"
 
 package Select_File is
   -- On Ctrl C, or close window
   Exit_Requested : exception;
 
   -- Get file name
-  function Get_File (Current_File : String;
-                     For_Read     : Boolean;
-                     Try_Select   : Boolean) return String;
+  -- Get field (text) is initialised with Current_File
+  -- Title field is set according to For_Read (and Read_Title and Write_Title)
+  -- If Select_Current, then try to set selected entry in list to Current_File
+  --  and center it
+  function Get_File (Current_File   : String;
+                     For_Read       : Boolean;
+                     Select_Current : Boolean) return String;
 
   -- Report an error
   procedure Report_Error (Message : in String);
