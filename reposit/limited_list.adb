@@ -75,7 +75,7 @@ package body Limited_List is
     List.List.Get (Item, My_List.Direction (Move));
   end Get;
   function  Get (List : in out List_Type;
-                 Move : in Movement := Next) return Element_Type is
+                 Move : in Direction := Next) return Element_Type is
   begin
     return List.List.Get (My_List.Movement (Move));
   end Get;

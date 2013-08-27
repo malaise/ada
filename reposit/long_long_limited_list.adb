@@ -343,7 +343,7 @@ package body Long_Long_Limited_List is
     -- Modified flag changed by Delete
   end Get;
   function  Get (List : in out List_Type;
-                 Move : in Movement := Next) return Element_Type is
+                 Move : in Direction := Next) return Element_Type is
   begin
     return E : Element_Type do
       Get (List, E, Move);

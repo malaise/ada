@@ -78,7 +78,7 @@ package Long_Long_Limited_List is
                  Item : out Element_Type;
                  Move : in Direction := Next);
   function  Get (List : in out List_Type;
-                 Move : in Movement := Next) return Element_Type;
+                 Move : in Direction := Next) return Element_Type;
 
   -- Get anyway. Set Moved to True if movement was possible (and done)
   --  or if list becomes empty, and False otherwise (movement done in the
