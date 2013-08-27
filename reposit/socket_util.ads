@@ -23,6 +23,8 @@ package Socket_Util is
 
   -- Link to a port name or num
   procedure Link (Soc  : in Socket_Dscr;
+                  Port : in Tcp_Util.Local_Port);
+  procedure Link (Soc  : in Socket_Dscr;
                   Port : in Tcp_Util.Remote_Port);
 
 end Socket_Util;

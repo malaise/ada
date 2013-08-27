@@ -55,6 +55,19 @@ package body Socket_Util is
 
   -- Link to a port name or num
   procedure Link (Soc  : in Socket_Dscr;
+                  Port : in Tcp_Util.Local_Port) is
+  begin
+    case Port.Kind is
+      when Tcp_Util.Port_Name_Spec =>
+        Soc.Link_Service (Port.Name.Image);
+      when Tcp_Util.Port_Num_Spec =>
+        Soc.Link_Port (Port.Num);
+      when Tcp_Util.Port_Dynamic_Spec =>
+        Soc.Link_Dynamic;
+    end case;
+  end Link;
+
+  procedure Link (Soc  : in Socket_Dscr;
                   Port : in Tcp_Util.Remote_Port) is
   begin
     case Port.Kind is
@@ -63,7 +76,6 @@ package body Socket_Util is
       when Tcp_Util.Port_Num_Spec =>
         Soc.Link_Port (Port.Num);
     end case;
-
   end Link;
 
 end Socket_Util;
