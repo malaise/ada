@@ -47,6 +47,9 @@ package body My_Math is
     I : Inte;
     Last : Positive;
   begin
+    if From(From'First) <= ' ' then
+      raise Data_Error;
+    end if;
     Inte_Io.Get (From, I, Last);
     if Last /= From'Last then
       raise Data_Error;
@@ -61,6 +64,9 @@ package body My_Math is
     R : Real;
     Last : Positive;
   begin
+    if From(From'First) <= ' ' then
+      raise Data_Error;
+    end if;
     Real_Io.Get (From, R, Last);
     if Last /= From'Last then
       raise Data_Error;

@@ -15,6 +15,7 @@ package My_Math is
   type Angle_Unit is (Radian, Degree);
 
   -- Get an Inte, get a Real from a string
+  -- No leading or trailing separator allowed
   -- raise Data_Error if From is not valid
   Data_Error : exception;
   function Get (From : String) return Inte;
