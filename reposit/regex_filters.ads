@@ -13,11 +13,13 @@ package Regex_Filters is
                        Match : in Boolean);
 
   -- Check Str versus first Criteria.
-  -- Success is if it matches and then Match was set to True for this Criteria,
-  --  or if it does not match and Match was set to False for this Criteria.
-  -- If success, then go to next criteria otherwise return False
-  -- Return True is success for all criterias or no criteria defined
-  function Check (Str : in String; Filter : in out Regex_Filter) return Boolean;
+  -- Success is if it matches and then Match is True for this Criteria,
+  --  or if it does not match and Match is False for this Criteria.
+  -- If success, if     Go_On_Success then go to next criteria else return True
+  -- If failure, if not Go_On_Success then go to next criteria else return False
+  -- Return result of last check, True if no criteria is defined
+  function Check (Str : in String; Filter : in out Regex_Filter;
+                  Go_On_Success : Boolean := True) return Boolean;
 
   -- Remove all criteria
   procedure Clear_Filter (Filter : in out Regex_Filter);
