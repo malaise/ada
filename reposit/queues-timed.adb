@@ -131,13 +131,13 @@ package body Queues.Timed is
     loop
       -- Nothing when list is/becomes empty
       exit when Queue.List.Is_Empty;
-      Queue.List.Read (Litem, Item_List_Mng.Current);
-      -- Delete timer
-      Queue.List.Delete;
+      -- Get and delete entry
+      Queue.List.Get (Litem);
+      -- Stop and deallocate timer
       Litem.Timer.Stop;
       Free_Timer (Litem.Timer);
     end loop;
-    -- Clear and deallocate
+    -- Deallocate
     Queue.List.Delete_List;
   end Clear;
 

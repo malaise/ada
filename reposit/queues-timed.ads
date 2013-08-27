@@ -1,4 +1,5 @@
 -- Queue of items that are kept only for a limited time
+with Ada.Finalization;
 with Perpet, Dynamic_List, Virtual_Time, Chronos.Passive_Timers;
 generic
   -- Size of the queue, 0 for infinite
@@ -10,7 +11,7 @@ package Queues.Timed is
   subtype Len_Range is Natural range 0 .. Size;
 
   -- Assign a virtual clock to the queue (the queue does not register but each
-  --  Item will have a chrono on this clock.
+  --  Item will have a passive timer on this clock.
   -- By default, clock is null (real time).
   -- The Queue must be empty, otherwise the exception Timed_Not_Empty is raised
   procedure Attach (Queue : in out Timed_Type;
@@ -38,6 +39,7 @@ package Queues.Timed is
                   Found  : out Boolean);
 
   -- Remove all items if any (no exception)
+  -- Leave clock if any is already attached
   procedure Clear (Queue : in out Timed_Type);
 
   -- Retrieve (and also remove) a non expired item
@@ -70,10 +72,13 @@ private
   -- List will always have current pos set to first
   package Item_Dyn_List_Mng is new Dynamic_List (Loc_Item);
   package Item_List_Mng renames Item_Dyn_List_Mng.Dyn_List;
-  type Timed_Type is tagged limited record
+  type Timed_Type is new Ada.Finalization.Limited_Controlled with record
     Clock : Virtual_Time.Clock_Access := null;
     List : Item_List_Mng.List_Type;
   end record;
+
+  -- Destructor
+  overriding procedure Finalize (Queue: in out Timed_Type) renames Clear;
 
 end Queues.Timed;
 
