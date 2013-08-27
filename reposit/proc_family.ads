@@ -38,20 +38,15 @@ package Proc_Family is
   end record;
 
   -- Spawn a process (with mutation if mutation /= "")
-  --  if set, Mutation contains the program name and arguments packed
-  --    in a Many_Strings.Many_String
-  --  redirecting standard in/out/err flows if Std_Fds
-  --  opening com channel if New_Fds
-  -- If not empty, Mutation has to follow Many_Strings format for the
-  --  executable and its arguments
-  -- If Death_Report is set, it will be called on child's death
-  -- Spawn relies internally on a Event_Mng callback on Sig_Child, so
-  --  - A Signal_Event is generated on the death of children
-  --  - Programs using Spawn shall not set their own Sig_Child callback
-  --    or they shall save it before Spawn and restore it afterwards
-  --  - X11 programs shall Suspend ALL the X objects X_Line/Con_Io/Afpx
-  --    before calling this function, then Resume the X objects
-
+  --  - if set, Mutation contains the program name and arguments packed
+  --    in a Many_Strings.Many_String,
+  --  - redirecting standard in/out/err flows if Std_Fds,
+  --  - opening com channel if New_Fds.
+  -- If Death_Report is set, it will be called on child's death.
+  -- WARNING: Spawn internally sets its own Event_Mng Sig_Child_Callback, so
+  --  programs using it shall not set their own Sig_Child callback,
+  --  or they shall save it before Spawn and restore it after Death_Report
+  --  has been called.
   type Comm_Kind_List is (None, Std_Fds, New_Fds);
   function Spawn (Mutation     : Many_Strings.Many_String
                                := Many_Strings.Empty_String;
