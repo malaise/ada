@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Basic_Proc, As.B, Perpet, Argument, Day_Mng, Normal, Mixed_Str;
+with Basic_Proc, As.B, Perpet, Argument,Normal, Mixed_Str;
 procedure Day_Of_Week is
 
   Day   : Ada.Calendar.Day_Number;
@@ -40,28 +40,19 @@ procedure Day_Of_Week is
   end Is_Digit;
 
 begin
-
   -- Build time of 00h00 of today
+  Today := Ada.Calendar.Clock;
   declare
     Dummy_Duration : Ada.Calendar.Day_Duration;
   begin
-    Today := Ada.Calendar.Clock;
     Ada.Calendar.Split (Today, Year, Month, Day, Dummy_Duration);
-    Dummy_Duration := 0.0;
-    Today := Ada.Calendar.Time_Of (Year, Month, Day, Dummy_Duration);
+    Today := Ada.Calendar.Time_Of (Year, Month, Day, 0.0);
   end;
 
+  -- Get date from argument or current date, set T and (Day, Month and Year)
   if Argument.Get_Nbre_Arg = 0 then
-    -- Current date
-    T := Ada.Calendar.Clock;
-    declare
-      Dummy_Duration : Ada.Calendar.Day_Duration;
-    begin
-      Ada.Calendar.Split (T, Year, Month, Day, Dummy_Duration);
-    end;
-    Txt.Set (Normal (Day,   2, Gap => '0') & "/"
-           & Normal (Month, 2, Gap => '0') & "/"
-           & Normal (Year,  4, Gap => '0') );
+    -- Day, Month and Year already set when computing Today
+    T := Today;
   elsif Argument.Get_Nbre_Arg = 1 then
     -- Get date from arg 1
     begin
@@ -72,24 +63,26 @@ begin
         Usage;
         return;
     end;
+    -- Sanity checks of input date
     if Txt.Length /= 10
     or else Txt.Element (3) /= '/'
     or else Txt.Element (6) /= '/' then
       Usage;
       return;
     end if;
-
     if not Is_Digit (Txt.Slice (1, 2))
     or else not Is_Digit (Txt.Slice (4, 5))
     or else not Is_Digit (Txt.Slice (7, 10)) then
       Usage;
       return;
     end if;
-
+    -- Convert input into Day, Month and Year
+    -- and build time of 00h00 of date
     begin
       Day   := Ada.Calendar.Day_Number'Value   (Txt.Slice (1, 2));
       Month := Ada.Calendar.Month_Number'Value (Txt.Slice (4, 5));
       Year  := Ada.Calendar.Year_Number'Value  (Txt.Slice (7, 10));
+      T := Ada.Calendar.Time_Of (Year, Month, Day, 0.0);
     exception
       when others =>
         Usage;
@@ -100,20 +93,11 @@ begin
     return;
   end if;
 
-  -- Build time of 00h00 of requested date
-  declare
-    Hour     : constant Day_Mng.T_Hours    := 0;
-    Minute   : constant Day_Mng.T_Minutes  := 0;
-    Second   : constant Day_Mng.T_Seconds  := 0;
-    Millisec : constant Day_Mng.T_Millisec := 0;
-  begin
-    T := Ada.Calendar.Time_Of (Year, Month, Day,
-               Day_Mng.Pack (Hour, Minute, Second, Millisec));
-  exception
-    when others =>
-      Usage;
-      return;
-  end;
+  -- Text format of date
+  Txt.Set (Normal (Day,   2, Gap => '0') & "/"
+         & Normal (Month, 2, Gap => '0') & "/"
+         & Normal (Year,  4, Gap => '0') );
+
 
   -- Compute verb
   declare
