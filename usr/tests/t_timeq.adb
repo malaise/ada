@@ -101,7 +101,7 @@ procedure T_Timeq is
   V : Val_Range;
   D : Ada.Calendar.Day_Duration;
 begin
-    Basic_Proc.Put_Line_Output (
+   Basic_Proc.Put_Line_Output (
       "Insert(Value, Duration) Pop Get(Value) Expire Clear eXit Autotest> ");
   loop
     Basic_Proc.Put_Output ("Ivd | P | Rv | E | C | X | A ? ");
