@@ -1223,11 +1223,21 @@ echo "OK"
 
 # t_regex_filters
 title t_regex_filters
-echo -e "toto\ntiti\nlolo\n" | try t_regex_filters t.t. T .i.i F
+echo -e "toto\ntiti\nlolo\nlili\n" | try t_regex_filters T t.t. T .i.i F
 cat << EOF > exp
 Check toto -> True
 Check titi -> False
 Check lolo -> False
+Check lili -> False
+EOF
+comp out exp
+comp err nul
+echo -e "toto\ntiti\nlolo\nlili\n" | try t_regex_filters F t.t. T .i.i F
+cat << EOF > exp
+Check toto -> True
+Check titi -> True
+Check lolo -> True
+Check lili -> False
 EOF
 comp out exp
 comp err nul
