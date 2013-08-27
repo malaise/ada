@@ -1,10 +1,9 @@
-with Unchecked_Deallocation;
 package body Mutex_Manager is
 
   use type Ada.Task_Identification.Task_Id;
 
   -- The protected object which implements the simple mutex
-  protected body Mutex_Protect is
+  protected body Si_Mutex_Protect is
     -- Gets the lock. Blocking.
     entry Mutex_Get when True is
     begin
@@ -47,7 +46,7 @@ package body Mutex_Manager is
       Owner := Waiting_Queue'Caller;
     end Waiting_Queue;
 
-  end Mutex_Protect;
+  end Si_Mutex_Protect;
 
   ----------------------------------------------------------------------------
 
@@ -239,20 +238,20 @@ package body Mutex_Manager is
 
   ----------------------------------------------------------------------------
 
-  function Get (A_Mutex      : Mutex;
-                Waiting_Time : Duration;
-                Kind         : Access_Kind := Read) return Boolean is
+  function Get (A_Mutex      : in out Mutex;
+                Waiting_Time : in Duration;
+                Kind         : in Access_Kind := Read) return Boolean is
     Result : Boolean;
   begin
     if Waiting_Time < 0.0 then
       -- Negative delay : unconditional waiting
       case A_Mutex.Kind is
         when Simple =>
-          A_Mutex.Mutex_Pointer.Mutex_Get;
+          A_Mutex.Si_Mutex.Mutex_Get;
         when Read_Write =>
-          A_Mutex.Rw_Mutex_Pointer.Mutex_Get (Kind);
+          A_Mutex.Rw_Mutex.Mutex_Get (Kind);
         when Write_Read =>
-          A_Mutex.Wr_Mutex_Pointer.Mutex_Get (Kind);
+          A_Mutex.Wr_Mutex.Mutex_Get (Kind);
       end case;
       Result := True;
     else
@@ -260,7 +259,7 @@ package body Mutex_Manager is
         when Simple =>
           -- Delay
           select
-            A_Mutex.Mutex_Pointer.Mutex_Get;
+            A_Mutex.Si_Mutex.Mutex_Get;
             Result := True;
           or
             delay Waiting_Time;
@@ -268,7 +267,7 @@ package body Mutex_Manager is
           end select;
         when Read_Write =>
           select
-            A_Mutex.Rw_Mutex_Pointer.Mutex_Get (Kind);
+            A_Mutex.Rw_Mutex.Mutex_Get (Kind);
             Result := True;
           or
             delay Waiting_Time;
@@ -276,7 +275,7 @@ package body Mutex_Manager is
           end select;
         when Write_Read =>
           select
-            A_Mutex.Wr_Mutex_Pointer.Mutex_Get (Kind);
+            A_Mutex.Wr_Mutex.Mutex_Get (Kind);
             Result := True;
           or
             delay Waiting_Time;
@@ -287,13 +286,13 @@ package body Mutex_Manager is
     return Result;
   end Get;
 
-  function Get (A_Mutex : Mutex) return Boolean is
+  function Get (A_Mutex : in out Mutex) return Boolean is
   begin
     return Get (A_Mutex, -1.0, Read);
   end Get;
 
   -- Get a mutex : infinite wait
-  procedure Get (A_Mutex      : in Mutex;
+  procedure Get (A_Mutex      : in out Mutex;
                  Kind         : in Access_Kind := Read) is
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
@@ -302,16 +301,16 @@ package body Mutex_Manager is
   end Get;
 
   -- Release a mutex
-  procedure Release (A_Mutex : in Mutex; Fully : in Boolean := False) is
+  procedure Release (A_Mutex : in out Mutex; Fully : in Boolean := False) is
   begin
     -- Request releasing
     case A_Mutex.Kind is
       when Simple =>
-        A_Mutex.Mutex_Pointer.Mutex_Release (Fully);
+        A_Mutex.Si_Mutex.Mutex_Release (Fully);
       when Read_Write =>
-        A_Mutex.Rw_Mutex_Pointer.Mutex_Release (Fully);
+        A_Mutex.Rw_Mutex.Mutex_Release (Fully);
       when Write_Read =>
-        A_Mutex.Wr_Mutex_Pointer.Mutex_Release (Fully);
+        A_Mutex.Wr_Mutex.Mutex_Release (Fully);
     end case;
   end Release;
 
@@ -321,29 +320,13 @@ package body Mutex_Manager is
     -- Request releasing
     case A_Mutex.Kind is
       when Simple =>
-        return A_Mutex.Mutex_Pointer.Mutex_Owns;
+        return A_Mutex.Si_Mutex.Mutex_Owns;
       when Read_Write =>
-        return A_Mutex.Rw_Mutex_Pointer.Mutex_Owns;
+        return A_Mutex.Rw_Mutex.Mutex_Owns;
       when Write_Read =>
-        return A_Mutex.Wr_Mutex_Pointer.Mutex_Owns;
+        return A_Mutex.Wr_Mutex.Mutex_Owns;
     end case;
   end Is_Owner;
-
-  -- Cleanup
-  procedure Free is new Unchecked_Deallocation (Mutex_Protect,
-                                                Mutex_Access);
-  procedure Free is new Unchecked_Deallocation (Rw_Mutex_Protect,
-                                                Rw_Mutex_Access);
-  procedure Free is new Unchecked_Deallocation (Wr_Mutex_Protect,
-                                                Wr_Mutex_Access);
-  overriding procedure Finalize (M : in out Mutex) is
-  begin
-    case M.Kind is
-      when Simple     => Free (M.Mutex_Pointer);
-      when Read_Write => Free (M.Rw_Mutex_Pointer);
-      when Write_Read => Free (M.Wr_Mutex_Pointer);
-    end case;
-  end Finalize;
 
 end Mutex_Manager;
 
