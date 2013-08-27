@@ -76,6 +76,7 @@ package Regular_Expressions is
   -- Compare string Str to Criteria (Compile and Exec with default values)
   -- Return a Match_Array of size between 0 (no match) and the requested
   --  Max_Match depending on how many substrigs have matched
+  --  Max_Match = 10 allows up to 9 substrings
   -- May raise No_Criteria if Criteria does not compile
   function Match (Criteria, Str : String; Max_Match : Positive := 10)
                   return Match_Array;

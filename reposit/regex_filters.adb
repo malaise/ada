@@ -41,9 +41,10 @@ package body Regex_Filters is
   -- If success, then go to next criteria
   -- Return True is success for all criterias
   function Check (Str : in String;
-                  Filter : in out Regex_Filter) return Boolean is
+                  Filter : in out Regex_Filter;
+                  Go_On_Success : Boolean := True) return Boolean is
     Loc_List : Filter_List_Mng.List_Type;
-    Result : Boolean;
+    Success : Boolean;
     Remains : Boolean;
     Cell : Filter_Cell;
     N_Match : Natural;
@@ -59,7 +60,6 @@ package body Regex_Filters is
     Loc_List.Move_To(Number => 0, From_Current => False);
 
     -- Loop of successive tests
-    Result := True;
     loop
       Remains := Loc_List.Check_Move;
       -- Read criteria
@@ -72,15 +72,13 @@ package body Regex_Filters is
       Regular_Expressions.Exec(Cell.Pattern.all, Str, N_Match,
                                Regular_Expressions.No_Match_Array);
       Match := N_Match = 1;
-      if Match /= Cell.Match then
-        -- Failure, end of tests
-        Result := False;
-        exit;
-      end if;
-      -- Success, next test if not last
-      exit when not Remains;
+      Success := Match = Cell.Match;
+      -- Done if Success and then not Go_On_Success
+      --  or else not Success and then Go_On_Success
+      --  or else no more criteria
+      exit when Success /= Go_On_Success or else not Remains;
     end loop;
-    return Result;
+    return Success;
   end Check;
 
   procedure Clear_Filter (Filter : in out Regex_Filter) is
