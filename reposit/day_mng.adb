@@ -1,4 +1,4 @@
-with My_Math, Round_At;
+with My_Math;
 package body Day_Mng is
   use My_Math;
 
@@ -19,7 +19,7 @@ package body Day_Mng is
     S   : T_Seconds;
   begin
     -- Round millisecs
-    Rdur := Round_At (My_Math.Real(Dur), -3);
+    Rdur := My_Math.Round_At (My_Math.Real(Dur), -3);
 
     -- Millisecs
     Millisec := T_Millisec (My_Math.Frac(Rdur) * My_Math.Real(Mil_In_Sec));

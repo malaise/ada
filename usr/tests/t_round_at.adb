@@ -1,4 +1,4 @@
-with Basic_Proc, My_Math, Round_At, Gets, Argument, Normalization;
+with Basic_Proc, My_Math, Gets, Argument, Normalization;
 procedure T_Round_At is
   End_Error : exception;
   procedure Error is
@@ -40,7 +40,7 @@ begin
   Basic_Proc.Put_Line_Output ("Digits: " & D'Img);
 
   -- Round and put
-  Res := Round_At (R, I);
+  Res := My_Math.Round_At (R, My_Math.Inte(I));
   Basic_Proc.Put_Line_Output ("Image -> " & Res'Img);
   Basic_Proc.Put_Output ("Normalization -> ");
   if I >= 0 then

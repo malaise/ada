@@ -1,4 +1,4 @@
-with My_Math, Normal, Round_At;
+with My_Math, Normal;
 -- to convert got strings in data fields, and fields in string to be put
 package body Nav_Format is
 
@@ -12,7 +12,7 @@ package body Nav_Format is
     use type My_Math.Real;
   begin
     if Set then
-      Lspeed := Round_At (My_Math.Real(Speed), -1);
+      Lspeed := My_Math.Round_At (My_Math.Real(Speed), -1);
       Str (1 .. 3) := Normal (Integer (My_Math.Trunc (Lspeed)), 3, True, ' ');
       Str (4) := '.';
       I := Integer (My_Math.Round (My_Math.Frac(Lspeed) * 10.0));

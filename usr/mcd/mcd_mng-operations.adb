@@ -1,4 +1,4 @@
-with Bit_Ops, Round_At;
+with Bit_Ops;
 separate (Mcd_Mng)
 
 package body Operations is
@@ -787,7 +787,7 @@ package body Operations is
     -- Frac of hours -> seconds
     S := S * 3600.0;
     -- Round to micros
-    S := Round_At (S, -6);
+    S := My_Math.Round_At (S, -6);
 
     -- Rounding may lead to next hour
     if S >= 3600.0 then
@@ -1188,7 +1188,8 @@ package body Operations is
     or else  N.Val_Inte > My_Math.Inte (Integer'Last)  then
       raise Invalid_Argument;
     end if;
-    return (Kind => Real, Val_Real => Round_At (X.Val_Real, Integer(N.Val_Inte)));
+    return (Kind => Real,
+            Val_Real => My_Math.Round_At (X.Val_Real, N.Val_Inte));
   end Roundat;
 
 

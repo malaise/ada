@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Con_Io, Afpx.List_Manager, Str_Util, Basic_Proc, Normal, Roundiv;
+with Con_Io, Afpx.List_Manager, Str_Util, Basic_Proc, Normal, Rounds;
 with Utils.X, Config, Details, View, Afpx_Xref;
 package body History is
 
@@ -165,9 +165,8 @@ package body History is
         -- 0 <-> 1% and Height-1 <-> 100%
         -- (Percent-1)/99 = Row/(Height-1)
         Row := Con_Io.Row_Range(
-          Roundiv ((Afpx.Get_Field_Height (Afpx_Xref.History.Scroll) - 1)
-                    * (Percent - 1),
-                   99));
+          Rounds.Roundiv ((Afpx.Get_Field_Height (Afpx_Xref.History.Scroll) - 1)
+                          * (Percent - 1), 99));
         Afpx.Encode_Field (Afpx_Xref.History.Scroll,
                           (Row => Row, Col => 0),
                           "-");
@@ -194,10 +193,10 @@ package body History is
       Saved_Position := Afpx.Line_List.Get_Position;
       -- 0 <-> 1% and Height-1 <-> 100%
       -- (Percent-1)/99 = Row/(Height-1)
-      Percent := Roundiv (
-                   Row * 99,
-                   Afpx.Get_Field_Height (Afpx_Xref.History.Scroll) - 1)
-                 + 1;
+      Percent :=
+          Rounds.Roundiv (Row * 99,
+                          Afpx.Get_Field_Height (Afpx_Xref.History.Scroll) - 1)
+          + 1;
       Position := Afpx.Get_List_Index (Percent);
       if Position = 0 then
         return;

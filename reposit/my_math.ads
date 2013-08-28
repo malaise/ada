@@ -33,6 +33,14 @@ package My_Math is
   -- Divide A by B and return the rounded result
   function Roundiv (A, B : Inte) return Inte;
 
+  -- Round R at N digits.
+  -- If N is positive then it applies to the int part
+  -- else it applies to the frac part.
+  -- Ex R=990.2 N=2 -> 1000
+  --    R=5.118 N=-1 -> 5.1
+  --    R=5.118 N=-2 -> 5.12
+  function Round_At (X : Real; N : Inte) return Real;
+
   -- Power and sqrt
   function "**" (Number, Exponent : Real) return Real;
   function Sqrt (X : Real) return Real;

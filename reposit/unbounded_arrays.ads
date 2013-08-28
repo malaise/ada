@@ -5,10 +5,13 @@ generic
   type Element_Array is array (Positive range <>) of Element_Type;
 
   -- Each time a re-allocation is needed, increment Length by
-  --   Nb_To_Add + Growth_Offset + Curr_Length / Growth_Factor
-  -- so that some further growths will not lead to too many re-allocations
-  Growth_Factor : Natural := 64;
+  --  Nb_To_Add + Growth_Offset + Curr_Length / Growth_Factor
+  --  so that some further growths will not lead to too many re-allocations
+  --  or too large allocations
+  -- Always allocate a little bit more than requested
   Growth_Offset : Natural := 32;
+  -- Allocate even a little bit more if the string becomes large
+  Growth_Factor : Natural := 64;
 
 package Unbounded_Arrays is
 

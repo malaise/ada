@@ -1,4 +1,4 @@
-with Round_At, Str_Util, As.U;
+with Str_Util, As.U;
 package body Normalization is
 
   Warning_Char : constant Character := '!';
@@ -186,7 +186,7 @@ package body Normalization is
 
     -- Floating part on Len - Exp - 2 digits => round at 3 less
     Rea := My_Math.Real'Value (Str(1 .. Ie - 1));
-    Rea := Round_At (Rea, -(Flo_Len - 3));
+    Rea := My_Math.Round_At (Rea, My_Math.Inte (-(Flo_Len - 3)));
     declare
       Image : constant String := Rea'Img;
       Iie : constant Positive := Str_Util.Locate (Image, "E");

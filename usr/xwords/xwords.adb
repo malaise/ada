@@ -2,7 +2,7 @@
 -- Or search anagrams
 with As.U.Utils, Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings,
      Str_Util, Lower_Str, Environ, Images, Event_Mng, Afpx_Xref,
-     Mutex_Manager, Protected_Var, Trilean, Roundiv;
+     Mutex_Manager, Protected_Var, Trilean, Rounds;
 with Cmd, Analist;
 procedure Xwords is
 
@@ -125,8 +125,8 @@ procedure Xwords is
     if Percent /= 0 then
       -- 0 <-> 1% and Height-1 <-> 100%
       -- (Percent-1)/99 = Row/(Height-1)
-      Row := Con_Io.Row_Range(
-        Roundiv ((Afpx.Get_Field_Height (Scroll_Fld) - 1) * (Percent - 1), 99));
+      Row := Con_Io.Row_Range( Rounds.Roundiv (
+         (Afpx.Get_Field_Height (Scroll_Fld) - 1) * (Percent - 1), 99));
       Afpx.Encode_Field (Scroll_Fld, (Row => Row, Col => 0), "-");
     else
       Afpx.Encode_Field (Scroll_Fld, (0, 0), "-");
@@ -178,7 +178,7 @@ procedure Xwords is
     Saved_Position := Afpx.Line_List.Get_Position;
     -- 0 <-> 1% and Height-1 <-> 100%
     -- (Percent-1)/99 = Row/(Height-1)
-    Percent := Roundiv (
+    Percent := Rounds.Roundiv (
                  Row * 99,
                  Afpx.Get_Field_Height (Scroll_Fld) - 1) + 1;
     Position := Afpx.Get_List_Index (Percent);

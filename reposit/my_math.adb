@@ -175,6 +175,38 @@ package body My_Math is
     return My_Math.Round (My_Math.Real(A) / My_Math.Real(B));
   end Roundiv;
 
+  -- Round R at N digits.
+  -- If N is positive then it applies to the int part
+  -- else it applies to the frac part.
+  function Round_At (X : Real; N : Inte) return Real is
+    P, M, T, I, F : Real;
+    Rounded_Frac : Inte;
+  begin
+    P := 10.0 ** Real(N);
+    -- If N < 0, then work with Frac part of R, saving Int part in M
+    -- Else work on R itself
+    if N < 0 then
+      M := Int (X);
+      T := Frac (X);
+    else
+      M := 0.0;
+      T := X;
+    end if;
+    -- Move the "." at position N
+    T := T / P;
+    -- Separate Int and Frac
+    I := Int (T);
+    F := Frac (T);
+    -- Round the Frac part, (this leads to -1, 0 or 1)
+    Rounded_Frac := Round (F);
+    -- Add the result to the Int part
+    I := I + Real(Rounded_Frac);
+    -- Restore the original "." position
+    T := I * P;
+    -- Done
+    return M + T;
+  end Round_At;
+
   -- Power
   function "**" (Number, Exponent : Real) return Real is
   begin

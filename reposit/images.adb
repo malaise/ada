@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with As.U, My_Math, Round_At, Str_Util, Normal, Day_Mng;
+with As.U, My_Math, Str_Util, Normal, Day_Mng;
 package body Images is
 
   -- Image of an integer (without leading space)
@@ -84,7 +84,8 @@ package body Images is
      Dot : Natural;
   begin
     -- Round at Nb_Digits
-    D := Duration (Round_At (My_Math.Real (Dur), -Nb_Digits));
+    D := Duration (My_Math.Round_At (My_Math.Real (Dur),
+                                     My_Math.Inte (-Nb_Digits)));
 
     -- Locate Dot
     Str := As.U.Tus (D'Img);

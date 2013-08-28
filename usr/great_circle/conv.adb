@@ -1,4 +1,3 @@
-with Round_At;
 package body Conv is
   use My_Math;
 
@@ -77,7 +76,7 @@ package body Conv is
   begin
     Rad := Geo2Rad (Coord);
     Deg := C_Nbres.To_Degree (Rad);
-    R := Round_At (My_Math.Real (Deg), -4);
+    R := My_Math.Round_At (My_Math.Real (Deg), -4);
     Dec.Deg := Deg_Range (My_Math.Trunc (R));
 
     I := My_Math.Round (My_Math.Frac(R) * My_Math.Real (Ten_Range'Last + 1));
