@@ -11,6 +11,7 @@ package Xml_Parser.Generator is
   ----------------------------------
   -- PROLOGUE SPECIFIC OPERATIONS --
   ----------------------------------
+  -- Commands valid only on or under the prologue
   -- Set XML version (1.0 or 1.1)
   subtype Major_Range is Positive range 1 .. 1;
   subtype Minor_Range is Natural range 0 .. 1;
@@ -28,8 +29,14 @@ package Xml_Parser.Generator is
   -- Clear Xml information (attributes)
   procedure Clear_Xml (Ctx : in out Ctx_Type);
 
-  -- Set the DOCTYPE text, as the last or next child (if Append_Next)
-  --  or as first or previous child (if not Append_Next) of prologue
+  -- General policy for adding nodes to the prologue:
+  ---------------------------------------------------
+  -- If Node is the prologue then append child as its last child by default,
+  --  or as its first child if not Append_Next.
+  -- If Node is a child of the prologue then append as its next brother by
+  --  default, or as its previous brother if not Append_Next.
+
+  -- Set the DOCTYPE text
   -- May raise Invalid_Node if Node is not of prologue
   -- May raise Invalid_Argument if not Public and Pub_Id is set
   -- May raise Doctype_Already_Set if Doctype already set
@@ -50,8 +57,7 @@ package Xml_Parser.Generator is
                           Dtd_File : in String);
 
 
-  -- Add a processing instruction as the last or next child (if Append_Next)
-  --  of the prologue
+  -- Add a processing instruction in the prologue
   -- Pi shall have the the form "<PITarget> [ <spaces> <Pi_Data> ]"
   -- May raise Invalid_Node if Node is not of prologue
   procedure Add_Pi (Ctx      : in out Ctx_Type;
@@ -60,8 +66,7 @@ package Xml_Parser.Generator is
                     New_Node : out Node_Type;
                     Append_Next : in Boolean := True);
 
-  -- Add a comment in prologue as the last or next child (if Append_Next)
-  --  of the prologue
+  -- Add a comment in prologue, valid only for comments in the prologue
   -- May raise Invalid_Node if Node is not of prologue
   procedure Add_Comment (Ctx      : in out Ctx_Type;
                          Node     : in Node_Type;
