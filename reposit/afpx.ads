@@ -236,6 +236,7 @@ package Afpx is
   procedure Encode_Line (Line : in out Line_Rec;
                          Str  : in Unicode_Sequence);
 
+  -- The list (displayed in List_Field)
   package Line_Dyn_List_Mng is new Dynamic_List (Line_Rec);
   package Line_List_Mng renames Line_Dyn_List_Mng.Dyn_List;
   Line_List : Line_List_Mng.List_Type;
@@ -257,7 +258,7 @@ package Afpx is
   -- When the list is active and not empty there is always one line selected,
   --  which is highlighted with the "Selected" color defined for the list.
   --  Left click on a line sets the left selection to this line.
-  -- On option (Right_Select set to Put_Then_get) it is possible to have a
+  -- On option (Right_Select set to Put_Then_Get) it is possible to have a
   --  second line selected, which is highlighted by reversing the "Foreground"
   --  and "Background" colors defined for the list.
   --  Right click on a line (except the one already left selected) set or unsets
@@ -266,10 +267,10 @@ package Afpx is
 
   -- During Put_Then_Get execution the List_Change_Cb callback reports all the
   --  changes in the list (scroll, selection, change of content).
-  -- When Put_Then_get returns some information can also be obtained but
+  -- When Put_Then_get returns, some information can also be obtained but
   --   nothing about which part of the list was displayed:
   --  - The current element of the Line_List is the one left-selected
-  --  - The right-selected is set in Put_then_get result
+  --  - The right-selected is set in Put_Then_Get result (Id_Selected_Right)
 
   -- Caller actions on the list (caller asking Afpx to modify the list)
   -----------------------------
@@ -313,6 +314,8 @@ package Afpx is
   --  then Str'Length - 1 is used.
   -- If no callback is provided, then cursor is set to end of field if Left and
   --  start of field otherwise.
+  -- WARNING: The call back shall NOT alterate the Line_List, including
+  --  changing the current position.
   type Enter_Field_Cause_List is (Mouse, Right_Full, Left, Tab, Stab);
   type Cursor_Set_Col_Cb is access
        function (Cursor_Field : Field_Range;
@@ -336,10 +339,14 @@ package Afpx is
                        return Con_Io.Col_Range;
 
   -- Call back called by Put_Then_Get when something is changed in the list:
+  --  - Put_Then_Get is first displaying (init) the list
   --  - change of left or right selection
   --  - scroll by keyboard or wheel
-  --  - Put_Then_Get is first displaying (init) the list
-  type List_Change_List is (Left_Selection, Right_Selection, Scroll, Init);
+  -- WARNING: The call back shall NOT alterate the Line_List, including
+  --  changing the current position.
+  -- Note: A double click in a new line tiggers a Left_Selection notification,
+  --  then the end of Put_Then_Get
+  type List_Change_List is (Init, Left_Selection, Right_Selection, Scroll);
   type List_Button_List is (List_Left, List_Right);
   type List_Ids_Selected_Array is array (List_Button_List) of Natural;
   type List_Status_Rec is record
@@ -349,7 +356,7 @@ package Afpx is
     -- First and last items displayed in the window
     Id_Top    : Natural;
     Id_Bottom : Natural;
-    -- Item selected (0 if no selection, if list no active...)
+    -- Item selected (0 if no selection, if list not active...)
     Ids_Selected : List_Ids_Selected_Array;
   end record;
   type List_Change_Cb is access
