@@ -136,6 +136,8 @@ procedure Xwords is
     case Action is
       when Afpx.Left_Selection =>
         -- Set Con_Io selection (inter-window) to the content of Id_Selected
+        -- No need to handle Afpx.Init here because this is done
+        --  when building the list
         Set_Current_Selection;
       when Afpx.Right_Selection => null;
       when Afpx.Init | Afpx.Scroll =>
@@ -279,7 +281,6 @@ procedure Xwords is
     Com, Arg : Many_Strings.Many_String;
     Word : As.U.Asu_Us;
     Command_Ok : Boolean;
-    First : Boolean;
     use type As.U.Asu_Us, Afpx.Field_Range;
   begin
     -- Clear result
@@ -346,25 +347,19 @@ procedure Xwords is
       Basic_Proc.Put_Line_Output (Line.Image);
     end if;
 
-    -- Encode result, set first word as selection
-    First := True;
+    -- Reset selection on error
+    if Status /= Found then
+      Afpx.Set_Selection ("");
+    end if;
+
+    -- Encode result,
     if Result.Is_Empty then
-      if Status = Found then
-        -- Set selection to search word/pattern
-        Afpx.Set_Selection (Lower_Str (Word.Image));
-      else
-        -- Reset selection for case where no result or error
-        Afpx.Set_Selection ("");
-      end if;
+      -- Set selection to search word/pattern if no result
+      Afpx.Set_Selection (Lower_Str (Word.Image));
     else
       Result.Rewind;
       loop
         Result.Read (Line, Moved => Moved);
-        if Status = Found and then First then
-          -- Set selection to first entry
-          Afpx.Set_Selection (Lower_Str (Line.Image));
-          First := False;
-        end if;
         Afpx.Line_List.Insert (Us2Afpx (Line));
         if Log then
           Basic_Proc.Put_Line_Output (Line.Image);
@@ -375,6 +370,9 @@ procedure Xwords is
       -- Move to Top
       Afpx.Line_List.Rewind;
       Afpx.Update_List(Afpx.Top);
+
+      -- Set selection to first entry
+      Set_Current_Selection;
     end if;
 
     -- Make ready for a brand new command
