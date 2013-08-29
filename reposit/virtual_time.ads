@@ -1,11 +1,13 @@
--- A virtual clock can be shift from real time and can have different speed
---  from frozen to 128 times faster than real time
+-- A virtual clock can be shift from the real time and can have a different
+--  speed (from 0 - frozen - to 128 times faster than the real time).
+-- Observer are notified on characteristic changes.
 -- Virtual clocks can be used for Chronos (and associated passive timers)
 --  Timed queues and Timers.
 with Ada.Calendar;
 with Limited_List;
 package Virtual_Time is
 
+  -- A virtual clock
   type Clock is tagged limited private;
   type Clock_Access is access all Clock;
 
@@ -16,7 +18,7 @@ package Virtual_Time is
   -- Use Ada.Calendar.Clock if A_Clock is null
   function Current_Time (A_Clock : Clock_Access) return Time;
 
-  -- Set a new synchro point.
+  -- Set a new synchro point
   -- The speed of the clock must be 0.0
   --  otherwise the exception Vtime_Error is raised
   procedure Set_Time (A_Clock : in out Clock;
@@ -42,11 +44,10 @@ package Virtual_Time is
   -- Return 1.0 if A_Clock is null
   function Get_Speed (A_Clock : Clock_Access) return Speed_Range;
 
-
-  -- Get Virtual time corresponding to a Reference time
+  -- Get the Virtual time corresponding to a Reference time
   function Virtual_Time_Of (A_Clock : Clock;
                             Reference_Time : Time) return Time;
-  -- Return Reference_Time is A_Clock is null
+  -- Return Reference_Time if A_Clock is null
   function Virtual_Time_Of (A_Clock : Clock_Access;
                             Reference_Time : Time) return Time;
 
@@ -64,8 +65,9 @@ package Virtual_Time is
 
   -- Observers interface
   type Observer is limited interface;
-  -- The observer is notified with the clock characteristics before the change
-  --  and with the new clock (from which it can get the new characteristics)
+  -- The observer is notified with the characteristics of the clock before the
+  --  change, and with the new clock (from which it can get the new
+  --  characteristics)
   procedure Notify (An_Observer : in out Observer;
                     Prev_Reference_Time : in Time;
                     Prev_Virtual_Time : in Time;

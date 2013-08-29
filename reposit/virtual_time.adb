@@ -124,7 +124,7 @@ package body Virtual_Time is
            + A_Clock.Virt_Time;
   end Virtual_Time_Of;
 
-  -- Return Reference_Time is A_Clock is null
+  -- Return Reference_Time if A_Clock is null
   function Virtual_Time_Of (A_Clock : Clock_Access;
                             Reference_Time : Time) return Time is
   begin
