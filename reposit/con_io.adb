@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Argument, Environ, Lower_Str, Event_Mng, Str_Util, Basic_Proc;
+with Argument, Environ, Lower_Str, Str_Util, Basic_Proc;
 package body Con_Io is
 
   -- Some constants
@@ -102,8 +102,6 @@ package body Con_Io is
              X_Colors(Xi).Image, "_", " "));
       end loop;
       X_Mng.X_Initialise ("", X_Colors);
-      -- Because we handle Ctrl-C in (Get_Key_Time) we shall handle signals
-      Event_Mng.Activate_Signal_Handling;
       -- Set font offset according to Env
       declare
         Font_Name : constant String

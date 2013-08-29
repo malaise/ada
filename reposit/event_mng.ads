@@ -57,15 +57,14 @@ package Event_Mng is
   procedure Send_Dummy_Signal;
 
 
-  -- Activate signal handling (capability to catch SigTerm (and Sigint) and
-  --  SigChild and report them
-  -- Automatically done when setting a signal callback or when calling Pause
-  -- Non interactive programs and stand-alone libraries shall:
+  -- Signal handling is the capability to catch SigTerm (and Sigint),
+  --  SigChild and dummy signal, and report them
+  -- This is automatically  activated when calling Wait (or Pause)
+  --  or when sending a dummy signal
+  -- Non-interactive programs and stand-alone libraries shall:
   --  - Check Are_Signals_Handled and store the result
-  --  - If not handled then Activate_Signal_Handling
   --  - Wait and catch signals...
   --  - I not handled then Reset_Default_Signals_Policy
-  procedure Activate_Signal_Handling;
 
   -- Reset signal handling to default UNIX behaviour
   -- Returns True if a Sig Term was received but not handled

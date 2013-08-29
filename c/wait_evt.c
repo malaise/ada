@@ -129,6 +129,8 @@ static void signal_handler (int sig) {
 }
 
 extern void send_dummy_signal (void) {
+  /* Activate signal handling if necessary*/
+  activate_signal_handling ();
   (void) kill (getpid(), SIGDUMMY);
 }
 
@@ -283,6 +285,9 @@ extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout) {
   int n;
   ssize_t size;
   char c;
+
+  /* Activate signal handling if necessary*/
+  activate_signal_handling ();
 
   /* Compute exp_time = cur_time + timeout_ms */
   timeout_is_active = (timeout->tv_sec >= 0) && (timeout->tv_usec >= 0);

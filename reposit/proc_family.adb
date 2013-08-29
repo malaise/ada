@@ -136,7 +136,6 @@ package body Proc_Family is
   begin
     -- Init if needed
     Event_Mng.Set_Sig_Child_Callback (Sig_Child_Cb'Access);
-    Event_Mng.Wait (0);
     -- Init Child rec
     Child.Open := Comm /= None;
     Child.Child_Cb := Death_Report;

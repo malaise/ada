@@ -337,7 +337,7 @@ package body Mcd_Mng is
   -- Init the manager
   procedure Init is
   begin
-    Event_Mng.Activate_Signal_Handling;
+    null;
   end Init;
 
   -- Process next item
