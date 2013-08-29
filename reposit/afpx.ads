@@ -314,8 +314,8 @@ package Afpx is
   --  then Str'Length - 1 is used.
   -- If no callback is provided, then cursor is set to end of field if Left and
   --  start of field otherwise.
-  -- WARNING: The call back shall NOT alterate the Line_List, including
-  --  changing the current position.
+  -- Beware that modifying the list (including changing the current position)
+  --  affects the ongoing Put_Then_Get
   type Enter_Field_Cause_List is (Mouse, Right_Full, Left, Tab, Stab);
   type Cursor_Set_Col_Cb is access
        function (Cursor_Field : Field_Range;
@@ -342,8 +342,8 @@ package Afpx is
   --  - Put_Then_Get is first displaying (init) the list
   --  - change of left or right selection
   --  - scroll by keyboard or wheel
-  -- WARNING: The call back shall NOT alterate the Line_List, including
-  --  changing the current position.
+  -- Beware that modifying the list (including changing the current position)
+  --  affects the ongoing Put_Then_Get
   -- Note: A double click in a new line tiggers a Left_Selection notification,
   --  then the end of Put_Then_Get
   type List_Change_List is (Init, Left_Selection, Right_Selection, Scroll);
