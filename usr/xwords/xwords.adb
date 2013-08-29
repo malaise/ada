@@ -101,7 +101,26 @@ procedure Xwords is
     return Str_Util.Strip (Str);
   end Strip;
 
-  -- Callback for scroll of list
+  -- Set Afpx selection to current item in list
+  procedure Set_Current_Selection is
+    Line : Afpx.Line_Rec;
+  begin
+    if Afpx.Line_List.Is_Empty then
+      Afpx.Set_Selection ("");
+    else
+      Line := Afpx.Line_List.Read (Afpx.Line_List_Mng.Current);
+      declare
+        Str : constant String
+            := Language.Unicode_To_String (Line.Str(1 ..  Line.Len));
+      begin
+        Afpx.Set_Selection (Strip (Lower_Str (Str)));
+      end;
+    end if;
+  end Set_Current_Selection;
+
+  -- Callback for change of list
+  -- On scroll, re-encode IdTop and update scroll bar
+  -- Left selection, Set
   procedure List_Cb (Action : in Afpx.List_Change_List;
                      Afpx_Status : in Afpx.List_Status_Rec)  is
     Percent : Afpx.Percent_Range;
@@ -109,28 +128,34 @@ procedure Xwords is
 
     use type Afpx.List_Change_List, Afpx.List_Status_Rec;
   begin
+    -- Nothing if not a valid list of words
     if Status /= Found or else not List_Is_Words then
       return;
     end if;
-    if Action /= Afpx.Init and then Action /= Afpx.Scroll then
-      return;
-    end if;
-    -- Id top
-    Afpx.Clear_Field (Topnum_Fld);
-    Afpx.Encode_Field (Topnum_Fld, (0, 0),
-                       Images.Integer_Image (Afpx_Status.Id_Top));
-    -- Scroll bar index
-    Afpx.Clear_Field (Scroll_Fld);
-    Percent := Afpx.Get_List_Percent;
-    if Percent /= 0 then
-      -- 0 <-> 1% and Height-1 <-> 100%
-      -- (Percent-1)/99 = Row/(Height-1)
-      Row := Con_Io.Row_Range( Rounds.Roundiv (
-         (Afpx.Get_Field_Height (Scroll_Fld) - 1) * (Percent - 1), 99));
-      Afpx.Encode_Field (Scroll_Fld, (Row => Row, Col => 0), "-");
-    else
-      Afpx.Encode_Field (Scroll_Fld, (0, 0), "-");
-    end if;
+
+    case Action is
+      when Afpx.Left_Selection =>
+        -- Set Con_Io selection (inter-window) to the content of Id_Selected
+        Set_Current_Selection;
+      when Afpx.Right_Selection => null;
+      when Afpx.Init | Afpx.Scroll =>
+        -- Encode Id top
+        Afpx.Clear_Field (Topnum_Fld);
+        Afpx.Encode_Field (Topnum_Fld, (0, 0),
+                           Images.Integer_Image (Afpx_Status.Id_Top));
+        -- Scroll bar index
+        Afpx.Clear_Field (Scroll_Fld);
+        Percent := Afpx.Get_List_Percent;
+        if Percent /= 0 then
+          -- 0 <-> 1% and Height-1 <-> 100%
+          -- (Percent-1)/99 = Row/(Height-1)
+          Row := Con_Io.Row_Range( Rounds.Roundiv (
+             (Afpx.Get_Field_Height (Scroll_Fld) - 1) * (Percent - 1), 99));
+          Afpx.Encode_Field (Scroll_Fld, (Row => Row, Col => 0), "-");
+        else
+          Afpx.Encode_Field (Scroll_Fld, (0, 0), "-");
+        end if;
+    end case;
   end List_Cb;
 
   -- Move Afpx list ot first noun (if any)
@@ -336,6 +361,7 @@ procedure Xwords is
       loop
         Result.Read (Line, Moved => Moved);
         if Status = Found and then First then
+          -- Set selection to first entry
           Afpx.Set_Selection (Lower_Str (Line.Image));
           First := False;
         end if;
@@ -522,17 +548,13 @@ begin
       when Afpx.Mouse_Button =>
         case Ptg_Result.Field_No is
 
-          -- Double click in list => Select for copy/paste
+          -- Double click in list, encode in Get field
           when Afpx.List_Field_No =>
-            Afpx.Line_List.Read (Afpx_Item, Afpx.Line_List_Mng.Current);
-            declare
-              Str : constant String
-                  := Language.Unicode_To_String (
-                          Afpx_Item.Str (1 ..  Afpx_Item.Len));
-            begin
-              Afpx.Set_Selection (Strip (Lower_Str (Str)));
-            end;
-
+            Afpx_Item := Afpx.Line_List.Read (Afpx.Line_List_Mng.Current);
+            Afpx.Clear_Field (Get_Fld);
+            Afpx.Encode_Field (Get_Fld, (0, 0),
+                Lower_Str (Language.Unicode_To_String (
+                               Afpx_Item.Str(1 .. Afpx_Item.Len))) );
           -- Scroll bar
           when Scroll_Fld =>
             Do_Scroll (Ptg_Result.Release_Pos.Row);
