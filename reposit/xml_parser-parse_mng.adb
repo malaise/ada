@@ -1862,53 +1862,5 @@ package body Parse_Mng  is
     Dtd.Init (Adtd);
   end Check;
 
-  -- Update the Is_Mixed tag of each element accorting to ALL its
-  --  children
-  procedure Update_Is_Mixed (Ctx : in out Ctx_Type) is
-
-    -- Recursive update of a node, return True if text
-    function Update (Tree : in out My_Tree.Tree_Type) return Boolean is
-      Cell : My_Tree_Cell := Tree.Read;
-      Has_Text : Boolean;
-    begin
-      case Cell.Kind is
-        when Element =>
-          if Tree.Children_Number = 0 then
-            -- No update of no child
-            return False;
-          end if;
-          Has_Text := False;
-          -- Iterate on all children
-          for I in 1 .. Tree.Children_Number loop
-            if I = 1 then
-              Tree.Move_Child;
-            else
-              Tree.Move_Brother (False);
-            end if;
-            -- Update child and Consolidate Has_Text
-            Has_Text := Has_Text or else Update (Tree);
-          end loop;
-          Tree.Move_Father;
-          if not Cell.Is_Mixed and then Has_Text then
-            -- Update this cell
-            Trace ("Updating Is_Mixed of " & Cell.Name.Image);
-            Cell.Is_Mixed := True;
-            Tree.Replace (Cell);
-          end if;
-          return False;
-        when Text =>
-          return True;
-        when Pi | Comment | Attribute =>
-          return False;
-      end case;
-    end Update;
-
-    Dummy : Boolean;
-    pragma Unreferenced (Dummy);
-  begin
-    Ctx.Elements.all.Move_Root;
-    Dummy := Update (Ctx.Elements.all);
-  end Update_Is_Mixed;
-
 end Parse_Mng;
 

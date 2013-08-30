@@ -268,8 +268,6 @@ package body Xml_Parser is
                               Adtd : in out Dtd_Type);
     -- Check the Ctx vs its Dtd, Raises exceptions
     procedure Check (Ctx : in out Ctx_Type);
-    -- Update Is_Mixed of elements from fill set of children
-    procedure Update_Is_Mixed (Ctx : in out Ctx_Type);
   end Parse_Mng;
   package body Parse_Mng is separate;
 
@@ -1307,18 +1305,6 @@ package body Xml_Parser is
   begin
     return Cell.Is_Mixed;
   end Get_Is_Mixed;
-
-  -- Update the Is_Mixed tag of each element accorting to ALL its
-  --  children: If an element hasn't Is_Mixed set and has a child
-  --  of kind Text, then set its tag
-  --  may raise Status_Error if Ctx is not parsed nor checked
-  procedure Update_Is_Mixed (Ctx : in out Ctx_Type) is
-  begin
-    if Ctx.Status /= Parsed_Elements then
-      raise Status_Error;
-    end if;
-    Parse_Mng.Update_Is_Mixed (Ctx);
-  end Update_Is_Mixed;
 
   -----------------------------------
   -- Deallocation and Finalization --
