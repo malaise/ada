@@ -330,7 +330,7 @@ package Xml_Parser is
            return As.U.Asu_Us;
 
   -- Get the line number of the beginning of the declaration of a node
-  -- 0 if not the result of parsing of text
+  -- 0 if not the result of parsing of a file
   function Get_Line_No (Ctx  : Ctx_Type;
                         Node : Node_Type) return Natural;
 
@@ -357,7 +357,8 @@ package Xml_Parser is
   function Get_Attribute (Ctx     : Ctx_Type;
                           Element : Element_Type;
                           Index   : Positive) return Attribute_Rec;
-  -- Search one attribute of an element. May raise Attribute_Not_Found
+  -- Search by name an attribute of an element
+  -- May raise Attribute_Not_Found
   Attribute_Not_Found : exception;
   function Get_Attribute (Ctx     : Ctx_Type;
                           Element : Element_Type;
@@ -448,6 +449,9 @@ package Xml_Parser is
 
   -- Is this element Mixed: either Mixed in Dtd or its first child is Text
   -- Set by the parsing or by calling Check
+  -- Note: Without Dtd and in callback mode, the first child of an element
+  --  is the last opportunity to set the Is_Mixed tag on the father
+  --  For homogeneity, the same criteria applies on tree mode and in Check
   function Get_Is_Mixed (Ctx     : Ctx_Type;
                          Element : Element_Type) return Boolean;
 
