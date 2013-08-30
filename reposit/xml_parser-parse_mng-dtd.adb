@@ -1859,6 +1859,9 @@ package body Dtd is
   begin
     Ctx.Elements.Read (Cell);
     Trace ("Dtd checking attributes of element " & Cell.Name.Image);
+    if Cell.Name.Is_Null then
+      Util.Error (Ctx.Flow, "Empty element name");
+    end if;
 
     -- Make its attribute list
     if Ctx.Elements.Children_Number /= 0 then
@@ -1872,6 +1875,9 @@ package body Dtd is
         if Cell.Kind /= Xml_Parser.Attribute then
           -- Children
           exit;
+        end if;
+        if Cell.Name.Is_Null then
+          Util.Error (Ctx.Flow, "Empty attribute name");
         end if;
         Attributes.Append (Info_Sep & Cell.Name & Info_Sep);
         if Ctx.Namespace then
@@ -2156,39 +2162,56 @@ package body Dtd is
     end if;
   end Build_Children;
 
-  -- INTERNAL Check tail
+  -- Check tail: only comments and PIs
   procedure Check_Tail (Ctx : in out Ctx_Type) is
     Cell : My_Tree_Cell;
   begin
-    if Ctx.Elements.Children_Number = 0 then
-      -- No child
-      return;
+    Ctx.Tail.Move_Root;
+    Ctx.Tail.Read (Cell);
+    -- Check Tail dummy node
+    if Cell.Kind /= Element then
+      Util.Error (Ctx.Flow, "Invalid node type for tail "
+                & Mixed_Str (Cell.Kind'Img));
     end if;
-    Ctx.Elements.Read (Cell);
     if Cell.Nb_Attributes /= 0 then
       Util.Error (Ctx.Flow, "Tail has attributes");
     end if;
+    if not Cell.Name.Is_Null then
+      Util.Error (Ctx.Flow, "Tail has a name");
+    end if;
+    if not Cell.Value.Is_Null then
+      Util.Error (Ctx.Flow, "Tail has a value");
+    end if;
+    if Cell.Put_Empty then
+      Util.Error (Ctx.Flow, "Tail has Put_Empty set");
+    end if;
+    if Cell.Is_Mixed then
+      Util.Error (Ctx.Flow, "Tail has Is_Mixed set");
+    end if;
+
+    if Ctx.Tail.Children_Number = 0 then
+      -- No child
+      return;
+    end if;
 
     -- Only Pis and Comments in tail
-    Ctx.Elements.Move_Child;
+    Ctx.Tail.Move_Child;
     loop
-      Ctx.Elements.Read (Cell);
+      Ctx.Tail.Read (Cell);
       if Cell.Kind /= Pi and then Cell.Kind /= Comment then
          Util.Error (Ctx.Flow, "Invalid node type " & Mixed_Str (Cell.Kind'Img)
                               & " in tail");
       end if;
-      exit when not Ctx.Elements.Has_Brother (False);
-      Ctx.Elements.Move_Brother (False);
+      exit when not Ctx.Tail.Has_Brother (False);
+      Ctx.Tail.Move_Brother (False);
     end loop;
   end Check_Tail;
-
 
   -- Check a whole element tree recursively
   procedure Check_Subtree (Ctx  : in out Ctx_Type;
                            Adtd : in out Dtd_Type) is
     Cell : My_Tree_Cell;
     Children : Children_Desc;
-    Is_Root : constant Boolean := not Ctx.Elements.Has_Father;
   begin
     -- Check current element, attributes then children
     Check_Attributes (Ctx, Adtd);
@@ -2215,13 +2238,8 @@ package body Dtd is
       Ctx.Elements.Read (Cell);
       -- Skip Text, Comments and tail
       if Cell.Kind = Element then
-        if Is_Root and then Cell.Name.Is_Null
-        and then not Ctx.Elements.Has_Brother (False) then
-          Check_Tail (Ctx);
-        else
-          -- Recursive check this sub element
-          Check_Subtree (Ctx, Adtd);
-        end if;
+        -- Recursive check this sub element
+        Check_Subtree (Ctx, Adtd);
       end if;
       exit when not Ctx.Elements.Has_Brother (False);
       Ctx.Elements.Move_Brother (False);

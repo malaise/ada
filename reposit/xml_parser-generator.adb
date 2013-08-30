@@ -4,7 +4,7 @@ with Images, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "0";
+  Minor_Version : constant String := "1";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -68,6 +68,9 @@ package body Xml_Parser.Generator is
       if Ctx.Status = Unparsed then
         Ctx.Unparsed_List.Delete_List;
       end if;
+      -- Init tail: an empty root element
+      Cell.Name.Set_Null;
+      Ctx.Tail.Insert_Father (Cell);
     end if;
     -- Reset to init (in case of error...)
     Ctx.Status := Init;
@@ -1138,30 +1141,29 @@ package body Xml_Parser.Generator is
   end Put_Doctype;
 
   -- Put an element (and its attributes and children)
-  Prologue_Level : constant := -1;
   procedure Put_Element (Flow      : in out Flow_Dscr;
                          Format    : in Format_Kind_List;
                          Width     : in Natural;
                          Namespace : in Boolean;
                          Ctx       : in Ctx_Type;
-                         Element   : in out My_Tree.Tree_Type;
+                         Stage     : in Stage_List;
+                         Tree      : in out My_Tree.Tree_Type;
                          Level     : in Integer;
                          In_Mixed  : in Boolean) is
-    Cell : constant My_Tree_Cell := Element.Read;
-    Cell_Ref : constant My_Tree.Position_Access := Element.Get_Position;
-    Nb_Children : constant Trees.Child_Range := Element.Children_Number;
+    Cell : constant My_Tree_Cell := Tree.Read;
+    Cell_Ref : constant My_Tree.Position_Access := Tree.Get_Position;
+    Nb_Children : constant Trees.Child_Range := Tree.Children_Number;
     Child : My_Tree_Cell;
     Indent : constant String (1 .. 2 * Level) := (others => ' ');
     Indent1 : constant String := Indent & "  ";
     Is_Mixed : constant Boolean := Cell.Is_Mixed;
     Elt_Name : As.U.Asu_Us;
     Xml_Attr_Format : Format_Kind_List;
-    In_Tail : Boolean;
     Closed : Boolean := False;
     -- Terminate tag after children
     procedure Close (Force_No_Indent : in Boolean := False) is
     begin
-      if not In_Tail and then not Closed then
+      if not Closed then
         if not Is_Mixed and then Format /= Raw and then not Force_No_Indent then
           -- Indent the end of this non-mixed element
           Put (Flow, Indent);
@@ -1176,13 +1178,13 @@ package body Xml_Parser.Generator is
     end Close;
     use type My_Tree.Position_Access;
   begin
-    if Level = Prologue_Level then
+    if Stage = Prologue then
       -- A prologue
       -- The Xml directive:  Put it if it has attributes
       if Cell.Nb_Attributes = 0 then
         -- No Xml Directive: move to first child as if after putting attributes
-        if Element.Children_Number /= 0 then
-          Element.Move_Child (True);
+        if Tree.Children_Number /= 0 then
+          Tree.Move_Child (True);
         end if;
       else
         -- The Xml directive
@@ -1192,7 +1194,7 @@ package body Xml_Parser.Generator is
                             else Format);
         -- Put the xml directive with attributes if any
         Put (Flow, "<?" & Cell.Name.Image);
-        Put_Attributes (Flow, Xml_Attr_Format, Width, Namespace, Element, 0,
+        Put_Attributes (Flow, Xml_Attr_Format, Width, Namespace, Tree, 0,
                         2 + Cell.Name.Length, False);
         Put (Flow, "?>");
         if Format /= Raw then
@@ -1200,7 +1202,7 @@ package body Xml_Parser.Generator is
         end if;
       end if;
       -- Any child of prologue?
-      if Element.Get_Position = Cell_Ref then
+      if Tree.Get_Position = Cell_Ref then
         -- No Child (Put_Attributes moved back to current): return
         if Format /= Raw and then Cell.Nb_Attributes /= 0 then
           -- Skip one line between prologue and root if there is
@@ -1213,7 +1215,7 @@ package body Xml_Parser.Generator is
       -- Put prologue children: DOCTYPE, PIs and comments
       -- Put_Attributes remained on first child
       loop
-        Child := Element.Read;
+        Child := Tree.Read;
         case Child.Kind is
           when Attribute =>
             -- Impossibe
@@ -1237,22 +1239,21 @@ package body Xml_Parser.Generator is
           New_Line (Flow);
         end if;
         -- Next child or done
-        exit when not Element.Has_Brother (False);
-        Element.Move_Brother (False);
+        exit when not Tree.Has_Brother (False);
+        Tree.Move_Brother (False);
       end loop;
       -- End of prologue and its children
-      Element.Move_Father;
+      Tree.Move_Father;
       if Format /= Raw then
         -- Skip one line between prologue and root
         New_Line (Flow);
       end if;
+      -- End of processing of Prologue
       return;
     end if;
 
-    -- In Elements or in tail
-    In_Tail := Level = 1 and then Cell.Name.Is_Null;
-
-    if not In_Tail then
+    -- Elements and tail
+    if Stage = Elements then
       -- Put element, attributes and children recursively
       if not In_Mixed and then Format /= Raw then
         -- Indent before the start of this element
@@ -1263,14 +1264,14 @@ package body Xml_Parser.Generator is
     end if;
 
     -- Put attributes and move to first child (if any)
-    Put_Attributes (Flow, Format, Width, Namespace, Element, Level,
+    Put_Attributes (Flow, Format, Width, Namespace, Tree, Level,
                     1 + Cell.Name.Length,
                     Has_Children => Nb_Children > Cell.Nb_Attributes);
 
     -- Any child?
-    if Element.Get_Position = Cell_Ref then
+    if Tree.Get_Position = Cell_Ref then
       -- No Child (Put_Attributes moved back to current): return
-      if not In_Tail then
+      if Stage = Elements then
         if Cell.Put_Empty then
           -- EmptyElementTag now
           Put (Flow, "/>");
@@ -1293,9 +1294,9 @@ package body Xml_Parser.Generator is
       -- Terminate now
       return;
     else
-      -- End Father for child or not (just a tail)
-      Child := Element.Read;
-      if not In_Tail then
+      -- End Father for child
+      Child := Tree.Read;
+      if Stage = Elements then
         if not Child.Name.Is_Null then
           -- There is a significant child
           Put (Flow, ">");
@@ -1317,25 +1318,21 @@ package body Xml_Parser.Generator is
 
     -- Put children
     for I in 1 .. Nb_Children loop
-      Child := Element.Read;
+      Child := Tree.Read;
       case Child.Kind is
         when Attribute =>
           -- Impossibe
           raise Internal_Error;
         when Xml_Parser.Element =>
-          if In_Tail then
+          if Stage = Tail then
             -- Impossibe
             raise Internal_Error;
           end if;
-          if Level = 0 and then Child.Name.Is_Null then
-            -- Start of Tail
-            Close;
-          end if;
           -- Recursive dump child
-          Put_Element (Flow, Format, Width, Namespace, Ctx, Element,
-                         Level + 1, Cell.Is_Mixed and then not In_Tail);
+          Put_Element (Flow, Format, Width, Namespace, Ctx, Stage, Tree,
+                         Level + 1, Cell.Is_Mixed and Stage = Elements);
         when Text =>
-          if In_Tail then
+          if Stage = Tail then
             -- Impossibe
             raise Internal_Error;
           end if;
@@ -1347,7 +1344,7 @@ package body Xml_Parser.Generator is
           end if;
         when Pi =>
           -- Put PI
-          if not In_Tail and then not Is_Mixed and then Format /= Raw then
+          if Stage = Elements and then not Is_Mixed and then Format /= Raw then
             Put (Flow, Indent1);
           end if;
           Put (Flow, "<?" & Child.Name.Image);
@@ -1361,7 +1358,7 @@ package body Xml_Parser.Generator is
           end if;
         when Comment =>
           -- Comment
-          if not In_Tail and then not Is_Mixed and then Format /= Raw then
+          if Stage = Elements and then not Is_Mixed and then Format /= Raw then
             Put (Flow, Indent1);
           end if;
           Put_Comment (Flow, Child.Name.Image);
@@ -1371,12 +1368,15 @@ package body Xml_Parser.Generator is
           end if;
         end case;
         -- Next child or done
-        exit when not Element.Has_Brother (False);
-        Element.Move_Brother (False);
+        exit when not Tree.Has_Brother (False);
+        Tree.Move_Brother (False);
       end loop;
-      Close;
+      -- Close root element after its children
+      if Stage = Elements then
+        Close;
+      end if;
       -- End of this element
-      Element.Move_Father;
+      Tree.Move_Father;
   end Put_Element;
 
   -- Internal procedure to generate the output
@@ -1391,15 +1391,20 @@ package body Xml_Parser.Generator is
     end if;
     -- Put prologue if any
     Ctx.Prologue.Move_Root;
-    Put_Element (Flow, Format, Width, Namespace, Ctx, Ctx.Prologue.all,
-                 Prologue_Level, False);
+    Put_Element (Flow, Format, Width, Namespace, Ctx,
+                 Prologue, Ctx.Prologue.all, 0, False);
     -- Put Elements
     Ctx.Elements.Move_Root;
-    Put_Element (Flow, Format, Width, Namespace, Ctx, Ctx.Elements.all,
-                 0, False);
+    Put_Element (Flow, Format, Width, Namespace, Ctx,
+                 Elements, Ctx.Elements.all, 0, False);
+    -- Put tail
+    Ctx.Tail.Move_Root;
+    Put_Element (Flow, Format, Width, Namespace, Ctx,
+                 Tail, Ctx.Tail.all, 0, False);
     if Format /= Raw then
       New_Line (Flow);
     end if;
+
   end Generate;
 
   -- Put a node update image in a string

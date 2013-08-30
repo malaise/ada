@@ -342,12 +342,6 @@ package body Tree_Mng is
     Tree.Insert_Child (Cell, False);
   end Add_Pi;
 
-  -- Is a tree (elements or prologue) empty
-  function Is_Empty (Tree : My_Tree.Tree_Type) return Boolean is
-  begin
-    return Tree.Is_Empty;
-  end Is_Empty;
-
   -- Add a comment to current cell (of elements or prologue)
   -- remain on current cell
   procedure Add_Text (Tree : in out My_Tree.Tree_Type;

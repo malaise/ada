@@ -207,11 +207,11 @@ procedure Xml_Checker is
   end Dump_Attributes;
 
   procedure Dump_Element (Elt : in Xml_Parser.Element_Type;
-                          Level : in Natural) is
+                          Level : in Natural;
+                          Show_It : in Boolean) is
     Children : Xml_Parser.Nodes_Array := Ctx.Get_Children (Elt);
     Indent : constant String (1 .. Level + 1) := (others => ' ');
     In_Mixed : Boolean;
-    In_Tail : Boolean;
     use type Xml_Parser.Node_Kind_List;
     procedure Put_Mixed (N : in Xml_Parser.Node_Type;
                          Inm : in Boolean) is
@@ -231,10 +231,7 @@ procedure Xml_Checker is
     end Put_Mixed;
 
   begin
-    In_Tail := Level = 1 and then String'(Ctx.Get_Name (Elt)) = "";
-    if In_Tail then
-      Out_Flow.Put_Line ("Tail:");
-    else
+    if Show_It then
        -- Not the tail
       Dump_Line (Elt);
       if Ctx.Is_Root (Elt) then
@@ -261,24 +258,18 @@ procedure Xml_Checker is
       case Children(I).Kind is
         when Xml_Parser.Element =>
           -- Recursive dump child
-          if not In_Tail then
-            Dump_Element (Children(I), Level + 1);
-          else
-            Dump_Element (Children(I), 0);
-          end if;
+          Dump_Element (Children(I), Level + 1, True);
         when Xml_Parser.Text =>
           -- Put text
           Dump_Line (Children(I));
-          if not In_Tail then
-            Put_Mixed (Children(I), In_Mixed);
-            Out_Flow.Put (Indent);
-          end if;
+          Put_Mixed (Children(I), In_Mixed);
+          Out_Flow.Put (Indent);
           Out_Flow.Put_Line (" =>" & Ctx.Get_Text (Children(I)) & "<=");
         when Xml_Parser.Pi =>
           -- Put Pi
           Dump_Line (Children(I));
-          if not In_Tail then
-            Put_Mixed (Children(I), In_Mixed);
+          Put_Mixed (Children(I), In_Mixed);
+          if Show_It then
             Out_Flow.Put (Indent);
           end if;
           Out_Flow.Put (" <?" & Ctx.Get_Target (Children(I)));
@@ -289,8 +280,8 @@ procedure Xml_Checker is
         when Xml_Parser.Comment =>
           -- Put Comment
           Dump_Line (Children(I));
-          if not In_Tail then
-            Put_Mixed (Children(I), In_Mixed);
+          Put_Mixed (Children(I), In_Mixed);
+          if Show_It then
             Out_Flow.Put (Indent);
           end if;
           Out_Flow.Put_Line (" <!--" & Ctx.Get_Comment (Children(I)) & "-->");
@@ -506,7 +497,6 @@ procedure Xml_Checker is
   -- Retrieve comments and don't expand General Entities if output is Xml
   procedure Do_One (Index : in Natural) is
     -- Parsing elements and charactericstics
-    Prologue, Root : Xml_Parser.Element_Type;
     Parse_Ok : Boolean;
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
@@ -580,12 +570,14 @@ procedure Xml_Checker is
 
     -- Dump / put
     if Output_Kind = Dump then
-      Prologue := Ctx.Get_Prologue;
-      Root := Ctx.Get_Root_Element;
       Out_Flow.Put_Line ("Prologue:");
-      Dump_Element (Prologue, 0);
+      Dump_Element (Ctx.Get_Prologue, 0, True);
       Out_Flow.Put_Line ("Elements:");
-      Dump_Element (Root, 0);
+      Dump_Element (Ctx.Get_Root_Element, 0, True);
+      if Ctx.Get_Nb_Children (Ctx.Get_Tail) /= 0 then
+        Out_Flow.Put_Line ("Tail:");
+        Dump_Element (Ctx.Get_Tail, 0, False);
+      end if;
       Out_Flow.Put_Line ("Unparsed entities:");
       Dump_Unparsed_Entities;
       Out_Flow.Flush;

@@ -358,6 +358,8 @@ package body Parse_Mng  is
     -- Check a whole element tree recursively
     procedure Check_Subtree (Ctx  : in out Ctx_Type;
                              Adtd : in out Dtd_Type);
+    -- Check tail: only comments and PIs
+    procedure Check_Tail (Ctx : in out Ctx_Type);
     -- Perform final checks after XML parsing: that IDREF(s) appear as ID
     procedure Final_Check (Ctx  : in out Ctx_Type);
   end Dtd;
@@ -581,11 +583,14 @@ package body Parse_Mng  is
     if Ctx.Callback = null then
       return;
     end if;
-    if Stage = Prologue then
-      Tree_Mng.Build_Update (Ctx.Prologue.all, Upd, Creation);
-    else
-      Tree_Mng.Build_Update (Ctx.Elements.all, Upd, Creation);
-    end if;
+    case Stage is
+      when Prologue =>
+        Tree_Mng.Build_Update (Ctx.Prologue.all, Upd, Creation);
+      when Elements =>
+        Tree_Mng.Build_Update (Ctx.Elements.all, Upd, Creation);
+      when Tail =>
+        Tree_Mng.Build_Update (Ctx.Tail.all, Upd, Creation);
+    end case;
     Upd.Stage := Stage;
     Upd.Has_Children := Has_Children;
     Upd.In_Mixed := In_Mixed;
@@ -605,11 +610,14 @@ package body Parse_Mng  is
   -- Delete current node/tree if callback
   -- Move up if no callback (and not root)
   procedure Move_Del (Ctx : in out Ctx_Type;
-                      In_Prologue : in Boolean;
+                      Stage : in Stage_List;
                       Deallocate : in Boolean := False) is
     Tree : Tree_Acc;
   begin
-    Tree := (if In_Prologue then Ctx.Prologue else Ctx.Elements);
+    Tree := (case Stage is
+         when Prologue => Ctx.Prologue,
+         when Elements => Ctx.Elements,
+         when Tail     => Ctx.Tail);
 
     if Ctx.Callback /= null then
       Tree.Delete_Tree (Deallocate);
@@ -762,10 +770,9 @@ package body Parse_Mng  is
     Char : Character;
     Name, Value : As.U.Asu_Us;
     Str_Xml : String (1 .. 5);
-    In_Prologue : constant Boolean := Tree_Mng.Is_Empty (Ctx.Elements.all);
   begin
     -- See if this is the xml directive
-    if In_Prologue then
+    if Ctx.Stage = Prologue then
       -- No element => in prologue
       if Util.Try (Ctx.Flow, "xml ") then
         -- Only one xml declaration allowed
@@ -830,28 +837,29 @@ package body Parse_Mng  is
 
     -- Add node
     Trace ("Parsed <?" & Name.Image & " " & Value.Image & "?>");
-    if In_Prologue then
-      -- No element => in prologue
-      Tree_Mng.Move_Root (Ctx.Prologue.all);
-      Tree_Mng.Add_Pi (Ctx.Prologue.all, Name, Value,
-                       Util.Get_Line_No(Ctx.Flow));
-      -- In_Prologue, Creation of the PI
-      Call_Callback (Ctx, Prologue, True);
-    else
-      Tree_Mng.Add_Pi (Ctx.Elements.all, Name, Value,
-                       Util.Get_Line_No(Ctx.Flow));
-      -- Add this child
-      if Children /= null then
+    case Ctx.Stage is
+      when Prologue =>
+        -- In prologue
+        Tree_Mng.Move_Root (Ctx.Prologue.all);
+        Tree_Mng.Add_Pi (Ctx.Prologue.all, Name, Value,
+                         Util.Get_Line_No(Ctx.Flow));
+        -- In_Prologue, Creation of the PI
+        Call_Callback (Ctx, Prologue, True);
+      when Elements =>
+        Tree_Mng.Add_Pi (Ctx.Elements.all, Name, Value,
+                         Util.Get_Line_No(Ctx.Flow));
         -- In Elements, Creation of the PI
         Call_Callback (Ctx, Elements, True,
                        In_Mixed => Children.Is_Mixed);
         Add_Child (Ctx, Adtd, Children);
-      else
+        Move_Del (Ctx, Ctx.Stage);
+      when Tail =>
         -- In tail, Creation of the PI
+        Tree_Mng.Add_Pi (Ctx.Tail.all, Name, Value,
+                         Util.Get_Line_No(Ctx.Flow));
         Call_Callback (Ctx, Tail, True);
-      end if;
-      Move_Del (Ctx, In_Prologue);
-    end if;
+        Move_Del (Ctx, Ctx.Stage);
+    end case;
   exception
     when Util.End_Error =>
       Util.Error (Ctx.Flow,
@@ -980,7 +988,7 @@ package body Parse_Mng  is
     end if;
     -- In prologue, Creation of the Doctype
     Call_Callback (Ctx, Prologue, True);
-    Move_Del (Ctx, True);
+    Move_Del (Ctx, Ctx.Stage, True);
     Trace ("Parsed <!DOCTYPE ... >");
   end Parse_Doctype;
 
@@ -1010,28 +1018,26 @@ package body Parse_Mng  is
       Comment.Delete (Index, Index + 2);
       -- Add node
       if not In_Dtd (Context) and then Ctx.Parse_Comments then
-        if Tree_Mng.Is_Empty (Ctx.Elements.all) then
-          -- No element => in prologue
-          Tree_Mng.Move_Root (Ctx.Prologue.all);
-          Tree_Mng.Add_Comment (Ctx.Prologue.all, Comment,
-                                Util.Get_Line_No (Ctx.Flow));
-          -- In prologue, creation of the comment
-          Call_Callback (Ctx, Prologue, True);
-        else
-          Tree_Mng.Add_Comment (Ctx.Elements.all, Comment,
-                                Util.Get_Line_No (Ctx.Flow));
-          -- Add this child
-          if Children /= null then
+        case Ctx.Stage is
+          when Prologue =>
+            Tree_Mng.Move_Root (Ctx.Prologue.all);
+            Tree_Mng.Add_Comment (Ctx.Prologue.all, Comment,
+                                  Util.Get_Line_No (Ctx.Flow));
+            -- In prologue, creation of the comment
+            Call_Callback (Ctx, Prologue, True);
+          when Elements =>
+            Tree_Mng.Add_Comment (Ctx.Elements.all, Comment,
+                                  Util.Get_Line_No (Ctx.Flow));
             -- In elements, creation of the comment
             Call_Callback (Ctx, Elements, True,
                            In_Mixed => Children.Is_Mixed);
             Add_Child (Ctx, Adtd, Children);
-          else
-            -- In tail, creation of the comment
+          when Tail =>
+            Tree_Mng.Add_Comment (Ctx.Tail.all, Comment,
+                                  Util.Get_Line_No (Ctx.Flow));
             Call_Callback (Ctx, Tail, True);
-          end if;
-        end if;
-        Move_Del (Ctx, Tree_Mng.Is_Empty (Ctx.Elements.all));
+        end case;
+        Move_Del (Ctx, Ctx.Stage);
         Trace ("Parsed comment " & Comment.Image);
       else
         -- In Dtd or comments not to be parsed
@@ -1075,6 +1081,7 @@ package body Parse_Mng  is
     end if;
 
     Ctx.Level := 0;
+    Ctx.Stage := Prologue;
     -- Loop until end of prologue (<name>)
     loop
       -- Get until a significant character, if any
@@ -1119,7 +1126,7 @@ package body Parse_Mng  is
     Dtd.Final_Dtd_Check (Ctx, Adtd);
     Tree_Mng.Move_Root (Ctx.Prologue.all);
     -- Delete completely the prologue if callback
-    Move_Del (Ctx, True, True);
+    Move_Del (Ctx, Ctx.Stage, True);
   exception
     when Util.End_Error =>
       Util.Error (Ctx.Flow, "Unexpected end of file");
@@ -1405,7 +1412,7 @@ package body Parse_Mng  is
       -- In elements, Creation of this text element
       Call_Callback (Ctx, Elements, True, False,
                      In_Mixed => Children.Is_Mixed);
-      Move_Del (Ctx, False);
+      Move_Del (Ctx, Ctx.Stage);
       Trace ("Txt processed text child >" & Text.Image & "<");
     end if;
 
@@ -1647,7 +1654,7 @@ package body Parse_Mng  is
                 & " while parsing element");
     end if;
     -- End of element
-    Move_Del (Ctx, False);
+    Move_Del (Ctx, Ctx.Stage);
     Trace ("Parsed element " & Element_Name.Image);
   end Parse_Element;
 
@@ -1661,6 +1668,7 @@ package body Parse_Mng  is
     -- Loop until end of file
     Root_Found := False;
     Ctx.Level := 0;
+    Ctx.Stage := Elements;
     loop
       -- Get until a significant character, if any
       Util.Skip_Separators (Ctx.Flow);
@@ -1690,29 +1698,26 @@ package body Parse_Mng  is
           end if;
           Parse_Element (Ctx, Adtd, My_Children'Access, Root => True);
           Root_Found := True;
-          -- Insert dummy child for tail
-          Tree_Mng.Add_Element (Ctx.Elements.all, As.U.Asu_Null,
-                                Util.Get_Line_No (Ctx.Flow));
+          Trace ("Parsed elements");
+          -- Process tail after root element
+          Ctx.Stage := Tail;
+          Tree_Mng.Add_Element (Ctx.Tail.all, As.U.Asu_Null, 0);
       end case;
     end loop;
     -- One (and only one) root must have been found
     if not Root_Found then
       Util.Error (Ctx.Flow, "No root element found");
     end if;
-    -- Deallocate if in callback mode (at least there is the tail)
+    -- Ensure complete deallocation if in callback mode
     if Ctx.Callback /= null then
-      -- Deallocate
-      Ctx.Elements.Move_Root;
-      Move_Del (Ctx, False, True);
-    else
-      -- Delete Tail if it is empty
-      Ctx.Elements.Move_Root;
-      Ctx.Elements.Move_Child (Eldest =>False);
-      if Ctx.Elements.Children_Number = 0 then
-        Ctx.Elements.Delete_Current;
-      else
+      if not Ctx.Elements.Is_Empty then
+        -- Normally this has already been donne in callback
         Ctx.Elements.Move_Root;
+        Move_Del (Ctx, Elements, True);
       end if;
+      -- At least the dummy node remains
+      Ctx.Tail.Move_Root;
+      Move_Del (Ctx, Tail, True);
     end if;
   exception
     when Util.End_Error =>
@@ -1844,11 +1849,13 @@ package body Parse_Mng  is
     -- Perform final checks on Dtd (unparsed entities v.s. notations)
     Dtd.Final_Dtd_Check (Ctx, Adtd);
     -- There must be one root
-    if Tree_Mng.Is_Empty (Ctx.Elements.all) then
+    if Ctx.Elements.Is_Empty then
       Util.Error (Ctx.Flow, "No root element found");
     end if;
-    -- Check all elements
+    Ctx.Elements.Move_Root;
     Dtd.Check_Subtree (Ctx, Adtd);
+    -- Check tail
+    Dtd.Check_Tail (Ctx);
     -- Perform final checks versus dtd
     Dtd.Final_Check (Ctx);
     -- Clean Dtd before it disapears

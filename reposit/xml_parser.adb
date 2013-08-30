@@ -4,7 +4,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory, Str_Util,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "3";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -126,9 +126,6 @@ package body Xml_Parser is
     procedure Add_Pi (Tree : in out My_Tree.Tree_Type;
                       Name, Text : in As.U.Asu_Us; Line : in Natural);
 
-    -- Is a tree (elements or prologue) empty
-    function Is_Empty (Tree : My_Tree.Tree_Type) return Boolean;
-
     -- Add a text to current cell (of elements or prologue)
     -- remain on current cell
     procedure Add_Text (Tree : in out My_Tree.Tree_Type;
@@ -140,7 +137,7 @@ package body Xml_Parser is
                            Comment : in As.U.Asu_Us; Line : in Natural);
 
     -- Build the Node_Update associated to current Node
-    -- The In_Prologue of the Update is not modified
+    -- The Stage of the Update is not modified
     procedure Build_Update (Tree : in out My_Tree.Tree_Type;
                             Update : in out Node_Update;
                             Creation : in Boolean);
@@ -442,10 +439,16 @@ package body Xml_Parser is
       Ctx.Prologue.Move_Root;
       Ctx.Prologue.Delete_Tree;
     end if;
+    Ctx.Stage := Prologue;
     -- Clean element tree
     if not Ctx.Elements.Is_Empty then
       Ctx.Elements.Move_Root;
       Ctx.Elements.Delete_Tree;
+    end if;
+    -- Clean tail
+    if not Ctx.Tail.Is_Empty then
+      Ctx.Tail.Move_Root;
+      Ctx.Tail.Delete_Tree;
     end if;
     -- Clean Doctype info
     Ctx.Doctype.Line_No := 1;
@@ -607,7 +610,7 @@ package body Xml_Parser is
       raise Internal_Error;
   end Parse_Prologue;
 
-  -- Parse the elements (after the prologue) of a string with a dtd
+  -- Parse the elements (after the prologue) and tail of a string with a dtd
   -- may raise Status_Error if Ctx is clean
   --    End_Error if Ctx has already parsed elements
   --    Parse_Error while parsing the string
@@ -685,10 +688,6 @@ package body Xml_Parser is
     Ok := False;
     if Normalize /= Trilean.Other then
       Ctx.Normalize := Trilean.Tri2Boo (Normalize);
-    end if;
-    -- Check this context
-    if not Ctx.Elements.Is_Empty then
-      Ctx.Elements.Move_Root;
     end if;
     Ctx.Warnings := Warn_Cb;
     Parse_Mng.Check (Ctx);
@@ -840,6 +839,22 @@ package body Xml_Parser is
             In_Prologue => False,
             Tree_Access => Ctx.Elements.Get_Position);
   end Get_Root_Element;
+
+  -- Get tail:
+  function Get_Tail (Ctx : Ctx_Type) return Element_Type is
+  begin
+    Check_For_Get (Ctx.Status);
+    if Ctx.Status /= Parsed_Elements
+    and then Ctx.Status /= Init then
+      raise Status_Error;
+    end if;
+    -- Only prologue or full parsing completed
+    Ctx.Tail.Move_Root;
+    return (Kind => Element,
+            Magic => Ctx.Magic,
+            In_Prologue => False,
+            Tree_Access => Ctx.Tail.Get_Position);
+  end Get_Tail;
 
   -- Line number of start of declaration of node
   function Get_Line_No (Ctx  : Ctx_Type;

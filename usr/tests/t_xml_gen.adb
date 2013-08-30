@@ -4,7 +4,7 @@ procedure T_Xml_Gen is
   Dtd_Name : constant String := "variables.dtd";
   Node : Xml_Parser.Node_Type;
   New_Node : Xml_Parser.Node_Type;
-  Node_1, Path_Node, Fail_Node, Tail_Node : Xml_Parser.Node_Type;
+  Node_1, Path_Node, Fail_Node : Xml_Parser.Node_Type;
   Ok : Boolean;
 
   procedure Warning (Ctx : in  Xml_Parser.Ctx_Type; Msg : in String) is
@@ -115,8 +115,8 @@ begin
 
   -- Add a comment in the tail
   -- Tail indicator is an empty element
-  Dscr.Add_Brother (Fail_Node, "", Xml_Parser.Element, Tail_Node);
-  Dscr.Add_Child (Tail_Node, " A comment in tail ",
+  Node := Dscr.Get_Tail;
+  Dscr.Add_Child (Node, " A comment in tail ",
                   Xml_Parser.Comment, New_Node);
 
   -- Check tree

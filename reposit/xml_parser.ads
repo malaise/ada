@@ -16,7 +16,7 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "31";
+  Major_Version : constant String := "32";
   function Version return String;
 
   -----------
@@ -104,13 +104,6 @@ package Xml_Parser is
   -- The DOCTYPE is parsed during the prologue parsing, it can be retrieved
   --  when the Prologue has a child of type text (empty)
   -- PUBLIC directive is not processed
-
-  -------------------------
-  -- NOTE ABOUT THE TAIL --
-  -------------------------
-  -- The tail (Comments and PIs after the root element) are attached
-  --  to a dummy child of the root element. This child (if any) is the
-  --  last child of root and has no (empty) name
 
   -----------------------------
   -- NOTE ABOUT THE WARNINGS --
@@ -301,10 +294,17 @@ package Xml_Parser is
   --  may raise Parse_Error if Parse was not ok
   function Get_Prologue (Ctx : Ctx_Type) return Element_Type;
 
-  -- Get elements'root after Parse or Parse_Elements
+  -- Get elements'root, after Parse or Parse_Elements
   --  may raise Status_Error if called before Parse_Elements
   --            Parse_Error if Parse was not ok
   function Get_Root_Element (Ctx : Ctx_Type) return Element_Type;
+
+  -- Get tail, after Parse or Parse_Elements
+  -- The tail contains the Comments and PIs after the root element, if any
+  --  returns a dummy element (with empty name) that has them as children
+  --  may raise Status_Error if called before Parse_Elements
+  --            Parse_Error if Parse was not ok
+  function Get_Tail (Ctx : Ctx_Type) return Element_Type;
 
   -- Get Doctype characteristics (prologue must have been parsed)
   --  may raise Parse_Error if Parse was not ok
@@ -391,7 +391,8 @@ package Xml_Parser is
                         Next : Boolean := True) return Node_Type;
 
   -- Get the father of an element
-  -- May raise No_Parent if Element is the Root_Element or the Prologue
+  -- May raise No_Parent if Element is the Prologue, then Root_Element
+  --  or the Tail
   No_Parent : exception;
   function Get_Parent (Ctx  : Ctx_Type;
                        Node : Node_Type) return Element_Type;
@@ -748,8 +749,10 @@ private
     Callback : Parse_Callback_Access := null;
     Level : Natural := 0;
     -- Prologue, parsed elements and tail
+    Stage : Stage_List := Prologue;
     Prologue : Tree_Acc := new My_Tree.Tree_Type;
     Elements : Tree_Acc := new My_Tree.Tree_Type;
+    Tail     : Tree_Acc := new My_Tree.Tree_Type;
     -- Doctype name, file and a tag of internal definitions
     Doctype : Doctype_Type;
     -- Standalone
