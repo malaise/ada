@@ -4,7 +4,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
      Basic_Proc, Text_Line, Sys_Calls, Parser, Bloc_Io, Str_Util;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V17.4";
+  Version : constant String := "V18.0";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -63,6 +63,9 @@ procedure Xml_Checker is
   end Warning;
   Warnings : Xml_Parser.Warning_Callback_Access;
 
+  -- Update Is_Mixed in tree
+  Update_Mix : Boolean;
+
   -- Maximum of options allowed
   Max_Opt : Natural;
 
@@ -85,8 +88,9 @@ procedure Xml_Checker is
    12 => (True,  'd', As.U.Tus ("dtd"),       False, True, As.U.Tus ("Dtd")),
    13 => (False, 'w', As.U.Tus ("warnings"),  False),
    14 => (False, 't', As.U.Tus ("tree"),      False),
-   15 => (False, 'h', As.U.Tus ("help"),      False),
-   16 => (False, 'v', As.U.Tus ("version"),   False)
+   15 => (False, 'm', As.U.Tus ("mixed"),     False),
+   16 => (False, 'h', As.U.Tus ("help"),      False),
+   17 => (False, 'v', As.U.Tus ("version"),   False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -95,6 +99,7 @@ procedure Xml_Checker is
   Names : constant As.U.Utils.Asu_Array (Keys'Range) := (
     11 => As.U.Tus ("normalize"),
     12 => As.U.Tus ("check_dtd"),
+    15 => As.U.Tus ("update_mix"),
     others => As.U.Asu_Null);
 
   Helps : constant As.U.Utils.Asu_Array (Keys'Range) := (
@@ -112,14 +117,15 @@ procedure Xml_Checker is
     12 => As.U.Tus ("Use a specific dtd or none"),
     13 => As.U.Tus ("Check for warnings"),
     14 => As.U.Tus ("Build tree then dump it"),
-    15 => As.U.Tus ("Put this help"),
-    16 => As.U.Tus ("Put versions") );
+    15 => As.U.Tus ("Update Mixed tag in tree"),
+    16 => As.U.Tus ("Put this help"),
+    17 => As.U.Tus ("Put versions") );
 
   -- Program help
   procedure Usage (Full : in Boolean) is
     procedure Pl (Str : in String) renames Basic_Proc.Put_Error;
     procedure Ple (Str : in String) renames Basic_Proc.Put_Line_Error;
-    Tab : constant String (1 .. 34) := (others => ' ');
+    Tab : constant String (1 .. 35) := (others => ' ');
     Ustr, Tstr : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
@@ -130,14 +136,15 @@ procedure Xml_Checker is
     end if;
     Ple (" <option> ::= <silent> | <progress> | <dump> | <raw> | <width> | <one> |");
     Ple ("            | <expand> | <keep> | <namespace> | <canonical> | <normalize>");
-    Ple ("            | <check_dtd> | <warnings> | <tree> | <help> | <version>");
+    Ple ("            | <check_dtd> | <warnings> | <tree> | <update_mix>");
+    Ple ("            | <help> | <version>");
     for I in Keys'Range loop
       if Names(I).Is_Null then
         Ustr := "<" & Keys(I).Key_String & ">";
       else
         Ustr := "<" & Names(I) & ">";
       end if;
-      Ustr := As.U.Tus (" " & Str_Util.Procuste (Ustr.Image, 12) & " ::= ");
+      Ustr := As.U.Tus (" " & Str_Util.Procuste (Ustr.Image, 15) & " ::= ");
       if I /= 8 then
         Ustr := Ustr & Argument_Parser.Image (Keys(I));
       else
@@ -569,6 +576,11 @@ procedure Xml_Checker is
       return;
     end if;
 
+    -- Update tags Is_Mixed in tree
+    if Update_Mix then
+      Ctx.Update_Is_Mixed;
+    end if;
+
     -- Dump / put
     if Output_Kind = Dump then
       Out_Flow.Put_Line ("Prologue:");
@@ -619,7 +631,7 @@ begin
   end if;
 
   -- Process help and version options
-  if Arg_Dscr.Is_Set (15) then
+  if Arg_Dscr.Is_Set (16) then
     -- Help: No file nor other option
     if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0
     or else Arg_Dscr.Get_Number_Keys > 1 then
@@ -628,9 +640,10 @@ begin
     else
       Usage (True);
     end if;
+    Close;
     Basic_Proc.Set_Error_Exit_Code;
     return;
-  elsif Arg_Dscr.Is_Set (16) then
+  elsif Arg_Dscr.Is_Set (17) then
     -- Version: No file nor other option
     if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0
     or else Arg_Dscr.Get_Number_Keys > 1 then
@@ -639,6 +652,7 @@ begin
     Out_Flow.Put_Line ("Parser version:      " & Xml_Parser.Version);
     Out_Flow.Put_Line ("Generator version:   " & Xml_Parser.Generator.Version);
     Out_Flow.Put_Line ("Xml_Checker version: " & Version);
+    Close;
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
@@ -656,6 +670,7 @@ begin
   Dtd_File.Set_Null;
   Callback_Acc := null;
   Namespace := False;
+  Update_Mix := False;
   -- Get options and check max of options
   -- Only one option, one more for each keep, one more if check_dtd,
   --  one more if ontheflow, one more if warnings
@@ -694,6 +709,17 @@ begin
     Expand := True;
     Max_Opt := Max_Opt + 1;
   end if;
+  if Arg_Dscr.Is_Set (15) then
+     -- Update Is_Mixed in tree
+     if not Arg_Dscr.Is_Set (14) then
+      Ae_Re (Arg_Error'Identity,
+             "Incompatible ""callback"" and ""update_mix"" options");
+    end if;
+    Update_Mix := True;
+    Max_Opt := Max_Opt + 1;
+  end if;
+
+  -- Check Nb of options
   if Arg_Dscr.Get_Number_Keys > Max_Opt then
     Ae_Re (Arg_Error'Identity, "Too many or incompatible options");
   end if;
@@ -895,9 +921,11 @@ exception
     Basic_Proc.Put_Line_Error ("Error "
          & Ada.Exceptions.Exception_Message(Error) & ".");
     Usage (False);
+    Close;
     Basic_Proc.Set_Error_Exit_Code;
   when Abort_Error =>
     -- Error already put while parsing file
+    Close;
     Basic_Proc.Set_Error_Exit_Code;
   when Error:others =>
     -- Unexpected or internal error
@@ -905,6 +933,7 @@ exception
         & Ada.Exceptions.Exception_Name (Error)
         & " raised.");
     Usage (False);
+    Close;
     Basic_Proc.Set_Error_Exit_Code;
 end Xml_Checker;
 
