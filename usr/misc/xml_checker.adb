@@ -550,6 +550,7 @@ procedure Xml_Checker is
         Dump_Unparsed_Entities;
       end if;
       if Output_Kind = Progress and then Index /= 0 then
+        -- Terminate progress bar
         for I in Prev_Progress + 1 .. Progress_Factor - 1 loop
           Out_Flow.Put ("=");
         end loop;
