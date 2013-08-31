@@ -368,5 +368,12 @@ package body Text_Line is
     end if;
   end Close_All;
 
+  overriding procedure Finalize (File : in out File_Type) is
+  begin
+    if File.Is_Open then
+      Close_All (File);
+    end if;
+  end Finalize;
+
 end Text_Line;
 

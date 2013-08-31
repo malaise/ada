@@ -1,5 +1,5 @@
 -- Get lines (until Lf) of text from file
-with Ada.Characters.Latin_1;
+with Ada.Characters.Latin_1, Ada.Finalization;
 with As.U, Sys_Calls;
 package Text_Line is
 
@@ -107,7 +107,7 @@ private
   Buffer_Size : constant := 1024;
   subtype Buffer_Index_Range is Natural range 0 .. Buffer_Size;
   subtype Buffer_Array is String (1 .. Buffer_Size);
-  type File_Type is tagged limited record
+  type File_Type is new Ada.Finalization.Limited_Controlled with record
     Open : Boolean := False;
     Fd : Sys_Calls.File_Desc;
     Mode : File_Mode;
@@ -116,6 +116,8 @@ private
     Buffer_Index : Buffer_Index_Range;
     Buffer : Buffer_Array;
   end record;
+
+  overriding procedure Finalize (File : in out File_Type);
 
 end Text_Line;
 

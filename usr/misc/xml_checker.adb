@@ -4,7 +4,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
      Basic_Proc, Text_Line, Sys_Calls, Parser, Bloc_Io, Str_Util;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V18.0";
+  Version : constant String := "V18.1";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -605,14 +605,6 @@ procedure Xml_Checker is
       raise Abort_Error;
   end Do_One;
 
-  -- Close output flow
-  procedure Close is
-  begin
-    if Out_Flow.Is_Open then
-      Out_Flow.Close;
-    end if;
-  end Close;
-
   use type Xml_Parser.Generator.Format_Kind_List;
 begin
   -- Open output flow
@@ -640,7 +632,6 @@ begin
     else
       Usage (True);
     end if;
-    Close;
     Basic_Proc.Set_Error_Exit_Code;
     return;
   elsif Arg_Dscr.Is_Set (17) then
@@ -652,7 +643,6 @@ begin
     Out_Flow.Put_Line ("Parser version:      " & Xml_Parser.Version);
     Out_Flow.Put_Line ("Generator version:   " & Xml_Parser.Generator.Version);
     Out_Flow.Put_Line ("Xml_Checker version: " & Version);
-    Close;
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
@@ -913,19 +903,15 @@ begin
     end loop;
   end if;
 
-  Close;
-
 exception
   when Error:Arg_Error =>
     -- Argument error
     Basic_Proc.Put_Line_Error ("Error "
          & Ada.Exceptions.Exception_Message(Error) & ".");
     Usage (False);
-    Close;
     Basic_Proc.Set_Error_Exit_Code;
   when Abort_Error =>
     -- Error already put while parsing file
-    Close;
     Basic_Proc.Set_Error_Exit_Code;
   when Error:others =>
     -- Unexpected or internal error
@@ -933,7 +919,6 @@ exception
         & Ada.Exceptions.Exception_Name (Error)
         & " raised.");
     Usage (False);
-    Close;
     Basic_Proc.Set_Error_Exit_Code;
 end Xml_Checker;
 
