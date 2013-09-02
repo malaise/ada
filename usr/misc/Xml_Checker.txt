@@ -1,9 +1,9 @@
 Xml_Checker
 ===========
 
-Parser version: V31.2 +
-Generator version: V11.0 +
-Xml_checker version: V17.4
+Parser version: V33.0 +
+Generator version: V13.1 +
+Xml_checker version: V18.0
 
 Xml_checker is a parser of XML file that checks the syntax (versus DTD) and
 formats the output.
@@ -14,7 +14,8 @@ Syntax
 xml_checker[ { <option> } ] [ { <file> } ]
  <option> ::= <silent> | <progress> | <dump> | <raw> | <width> | <one> |
             | <expand> | <keep> | <namespace> | <canonical> | <normalize>
-            | <check_dtd> | <warnings> | <tree> | <help> | <version>
+            | <check_dtd> | <warnings> | <tree> | <update_mix>
+            | <help> | <version>
  <silent>     ::= -s | --silent    : No output, only exit code
  <progress>   ::= -p | --progress  : Only show a progress bar
  <dump>       ::= -D | --dump      : Dump expanded Xml tree
@@ -37,6 +38,7 @@ xml_checker[ { <option> } ] [ { <file> } ]
                                    : Use a specific dtd or none
  <warnings>   ::= -w | --warnings  : Check for warnings
  <tree>       ::= -t | --tree      : Build tree then dump it
+ <update_mix> ::= -m | --mixed     : Update Mixed tag in tree
  <help>       ::= -h | --help      : Put this help
  <version>    ::= -v | --version   : Put versions
 ...................................................
@@ -143,6 +145,17 @@ with canonical mode or progress bar.
 +
 Please also consider increasing the process stack size (ulimit -s) to
 avoid stack overflow and Storage_Error, especially in this mode.
+
+-m | --mixed: :: When there is no Dtd, the XML parser tries to guess if an
+element is mixed by checking if its first child is text. This option forces a
+global scan of the tree so that this information is updated for each element,
+taking into account all its children.
++
+Note that the children of an element re-tagged as mixed, have been parsed
+without the information that they were part of a mixed element, so line-feeds
+and indentation have been skipped. Now they will be displayed with the new
+information that the element is mixed, so line-feeds and indentation will not
+be generated.
 
 -h | --help: :: for put online help.
 
