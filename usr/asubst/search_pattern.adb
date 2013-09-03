@@ -173,10 +173,7 @@ package body Search_Pattern is
     Upat.Prev_Delim := Prev_Delim;
     Upat.Next_Delim := Next_Delim;
     Upat.Backrefs := Backrefs;
-    if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Search adding regex "
-             &  Upat.Num'Img & " >" & Crit & "<");
-    end if;
+    Debug.Log ("Search adding regex " &  Upat.Num'Img & " >" & Crit & "<");
     -- Empty pattern is a delimiter
     if Upat.Is_Delim then
       -- Insert delimiter
@@ -280,10 +277,8 @@ package body Search_Pattern is
              & The_Pattern.Slice (Index, Index + 1)
              & " in pattern");
       end if;
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Search, got hexadecimal sequence "
-                                 & The_Pattern.Slice (Index, Index + 1));
-      end if;
+      Debug.Log ("Search, got hexadecimal sequence "
+               & The_Pattern.Slice (Index, Index + 1));
       return Result;
     end Get_Hexa;
 
@@ -343,9 +338,7 @@ package body Search_Pattern is
     Backref : Backref_Rec;
     Backrefs : Backref_Ua;
   begin
-    if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Search parsing pattern >" & Pattern & "<");
-    end if;
+    Debug.Log ("Search parsing pattern >" & Pattern & "<");
     -- Reset pattern characteristics
     The_Pattern := As.U.Tus (Pattern);
     List.Delete_List;
@@ -362,10 +355,8 @@ package body Search_Pattern is
                                Stop_Index,
                                "\nstxABCDEFGHIJKLMNOPQSTUVWXYZ");
       exit when Stop_Index = 0;
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Search, found Esc char >"
-                                & The_Pattern.Element (Stop_Index) & "<");
-      end if;
+      Debug.Log ("Search, found Esc char >"
+               & The_Pattern.Element (Stop_Index) & "<");
       -- Replace sequence
       case The_Pattern.Element (Stop_Index) is
         when 'n' =>
@@ -448,10 +439,8 @@ package body Search_Pattern is
                                  Tmp_Index, "\Rr");
             exit when Tmp_Index = 0;
             if The_Pattern.Element (Tmp_Index) /= '/' then
-              if Debug.Set then
-                Sys_Calls.Put_Line_Error ("Search, found Esc char >"
-                                & The_Pattern.Element (Tmp_Index) & "<");
-              end if;
+              Debug.Log ("Search, found Esc char >"
+                       & The_Pattern.Element (Tmp_Index) & "<");
               -- "\RIJ" or "\rIJ' replaced by 'R' or 'r', and store backref
               Byt := Get_Hexa (Tmp_Index + 1);
               The_Pattern.Replace (Tmp_Index - 1, Tmp_Index + 2,
@@ -476,10 +465,8 @@ package body Search_Pattern is
                      & Images.Integer_Image (Backref.Substr)
                      & " in back reference");
               end if;
-              if Debug.Set then
-                Sys_Calls.Put_Line_Error ("Search, adding backref "
-                   & Backref.Regex'Img & " :" & Backref.Substr'Img);
-              end if;
+              Debug.Log ("Search, adding backref "
+                       & Backref.Regex'Img & " :" & Backref.Substr'Img);
               -- Index in Backrefs is relative to this slice
               Add_Backref (Backrefs, Backref, Tmp_Index - Start_Index + 1);
             end if;
@@ -582,15 +569,11 @@ package body Search_Pattern is
       return;
     elsif Delim = "" then
       -- Empty delimiter
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Search, parsed empty delimiter");
-      end if;
+      Debug.Log ("Search, parsed empty delimiter");
       Delimiter.Set_Null;
       return;
     end if;
-    if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Search, parsing delimiter");
-    end if;
+    Debug.Log ("Search, parsing delimiter");
 
     -- Parse Delim as a non-regex string, not splitted
     Pattern_Kind := Delimiter_Kind;
@@ -602,10 +585,7 @@ package body Search_Pattern is
     if Delimiter.Length > Text_Line.Max_Line_Feed_Len then
       Error ("Delimiter is too long");
     end if;
-    if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Search, parsed delimiter >"
-           & Delimiter.Image & "<");
-    end if;
+    Debug.Log ("Search, parsed delimiter >" & Delimiter.Image & "<");
   end Parse_Delimiter;
 
 
@@ -625,9 +605,7 @@ package body Search_Pattern is
     -- Parse the delimiter
     Parse_Delimiter (Delimiter);
     -- Parse the search pattern
-    if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Search, parsing search pattern");
-    end if;
+    Debug.Log ("Search, parsing search pattern");
 
     -- Parse and check the find pattern
     Pattern_Kind := Search_Kind;
@@ -640,10 +618,8 @@ package body Search_Pattern is
              and then not Last_Last_Delim;
 
     -- Global attributes of find pattern
-    if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Search, Is_Iterative " & Is_Iterative'Img
-                             &  ", Is_Overlapping " & Is_Overlapping'Img);
-    end if;
+    Debug.Log ("Search, Is_Iterative " & Is_Iterative'Img
+            &  ", Is_Overlapping " & Is_Overlapping'Img);
 
     if Exclude = "" then
       -- No exclude
@@ -651,9 +627,7 @@ package body Search_Pattern is
       return;
     end if;
     -- Parse the exclude pattern
-    if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Search, parsing exclude pattern");
-    end if;
+    Debug.Log ("Search, parsing exclude pattern");
     Pattern_Kind := Exclude_Kind;
     Parse_One (Exclude, Case_Sensitive, Is_Regex, True, Dot_All,
                False, Exclude_List);
@@ -815,44 +789,30 @@ package body Search_Pattern is
     if not Upat_Access.Is_Delim then
       Upat_Access.Substrs := (others => (0, 0, 0));
     end if;
-    if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Search check pattern No " & Regex_Index'Img);
-    end if;
+    Debug.Log ("Search check pattern No " & Regex_Index'Img);
     -- Delimiter matches delimiter
     if Upat_Access.Is_Delim then
       if Str = Delimiter.Image then
         Upat_Access.Nb_Substr := 0;
         Upat_Access.Substrs(0) := (1, 1, 1);
         Upat_Access.Match_Str := Delimiter;
-        if Debug.Set then
-          Sys_Calls.Put_Line_Error ("Search check pattern is delim vs delim");
-        end if;
+        Debug.Log ("Search check pattern is delim vs delim");
         return True;
       else
-        if Debug.Set then
-          Sys_Calls.Put_Line_Error (
-                    "Search check pattern is delim vs not delim");
-        end if;
+        Debug.Log ("Search check pattern is delim vs not delim");
         return False;
       end if;
     elsif Str = Delimiter.Image then
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Search check pattern is not delim vs delim");
-      end if;
+      Debug.Log ("Search check pattern is not delim vs delim");
       return False;
     else
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error (
-                  "Search check pattern is not delim vs not delim");
-      end if;
+      Debug.Log ("Search check pattern is not delim vs not delim");
 
       -- Replace back references in Upat (and compile pattern if regex)
       if Upat_Access.Backrefs.Is_Null then
         Crit_Access := Upat_Access;
-        if  Debug.Set then
-          Sys_Calls.Put_Line_Error ("Search pattern is "
-                                  & Crit_Access.Find_Str.Image);
-        end if;
+        Debug.Log ("Search pattern is "
+                 & Crit_Access.Find_Str.Image);
       else
         Set (Upat, Upat_Access.all);
         Crit_Access := Upat'Access;
@@ -873,9 +833,7 @@ package body Search_Pattern is
             Str_Index := Str_Index + 1;
           end if;
         end loop;
-        if  Debug.Set then
-          Sys_Calls.Put_Line_Error ("Search pattern is " & Upat.Find_Str.Image);
-        end if;
+        Debug.Log ("Search pattern is " & Upat.Find_Str.Image);
         if Is_Regex then
           -- Compile regex
           Regular_Expressions.Compile (Upat.Pat, Ok, Upat.Find_Str.Image,

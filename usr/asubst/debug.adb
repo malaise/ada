@@ -1,17 +1,26 @@
-with Environ;
+with Trace;
 package body Debug is
 
-  Debug_Is_Checked : Boolean := False;
-  Debug_Is_Set : Boolean;
+  Init : Boolean := False;
+  Logger : Trace.Logger;
 
   function Set return Boolean is
   begin
-    if not Debug_Is_Checked then
-      Debug_Is_Set := Environ.Is_Yes ("ASUBST_DEBUG");
-      Debug_Is_Checked := True;
+    if not Init then
+      Logger.Activate;
+      Init := True;
     end if;
-    return Debug_Is_Set;
+    return Logger.Debug_On;
   end Set;
+
+  procedure Log (Str : in String) is
+  begin
+    if not Init then
+      Logger.Activate;
+      Init := True;
+    end if;
+    Logger.Log_Debug (Str);
+  end Log;
 
 end Debug;
 
