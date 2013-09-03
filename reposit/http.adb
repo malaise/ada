@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Calendar;
-with Basic_Proc, Environ, Str_Util, Parser,
+with Trace, Environ, Str_Util, Parser,
      Event_Mng, Timers, Ip_Addr, Socket, Tcp_Util, Mutex_Manager;
 package body Http is
 
@@ -7,18 +7,7 @@ package body Http is
   Mut : Mutex_Manager.Mutex (Mutex_Manager.Simple, True);
 
   -- Debug
-  Debug_Var : constant String := "HTTP_DEBUG";
-  type Debug_Status_List is (Unknown, Set, Notset);
-  Debug_Status : Debug_Status_List := Unknown;
-  procedure Debug (Msg : in String) is
-  begin
-    if Debug_Status = Unknown then
-      Debug_Status := (if Environ.Is_Yes (Debug_Var) then Set else Notset);
-    end if;
-    if Debug_Status = Set then
-      Basic_Proc.Put_Line_Output (Msg);
-    end if;
-  end Debug;
+  Logger : Trace.Logger;
 
   -- Timeout definition
   Timeout_Var : constant String := "HTTP_TIMEOUT_MS";
@@ -66,7 +55,7 @@ package body Http is
                      Data : Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Id, Data);
   begin
-    Debug ("HTTP: Timeout");
+    Logger.Log_Debug ("HTTP: Timeout");
     Result := (Client_Error, Timeout);
     Done := True;
     return True;
@@ -84,7 +73,7 @@ package body Http is
                     Len : Natural) return Boolean is
     pragma Unreferenced (Dscr);
   begin
-    Debug ("HTTP: Reading");
+    Logger.Log_Debug ("HTTP: Reading");
     Buffer.Append (Msg(1 .. Len));
     return False;
   end Read_Cb;
@@ -96,20 +85,20 @@ package body Http is
     Ind : Natural;
     Header : As.U.Asu_Us;
   begin
-    Debug ("HTTP: Checking");
+    Logger.Log_Debug ("HTTP: Checking");
 
     -- Parse buffer, init default result
     Result := (Client_Error, Invalid_Answer);
 
     if Buffer.Is_Null then
-      Debug ("HTTP: No anwser at all");
+      Logger.Log_Debug ("HTTP: No anwser at all");
       return;
     end if;
 
     -- See if line break is Lf or Cr+Lf, set New_Line
     Ind := Str_Util.Locate (Buffer.Image, Lf);
     if Ind = 0 then
-      Debug ("HTTP: No line feed at all");
+      Logger.Log_Debug ("HTTP: No line feed at all");
       return;
     end if;
     if Ind = 1 or else Buffer.Element (Ind - 1) & "" /= Cr then
@@ -128,7 +117,7 @@ package body Http is
       -- Empty Buffer
       Header := Buffer;
       Buffer.Set_Null;
-      Debug ("HTTP: No header delimiter: " & Header.Image);
+      Logger.Log_Debug ("HTTP: No header delimiter: " & Header.Image);
     end if;
     -- CrLf -> Lf in Header
     Header := As.U.Tus (Str_Util.Substit (Header.Image, New_Line.Image, Lf));
@@ -136,7 +125,7 @@ package body Http is
     -- First line of header reply: status
     Ind := Str_Util.Locate (Header.Image, Lf);
     if Ind = 0 then
-      Debug ("HTTP: No header line feed: " & Header.Image);
+      Logger.Log_Debug ("HTTP: No header line feed: " & Header.Image);
       return;
     end if;
     declare
@@ -150,14 +139,14 @@ package body Http is
       if Word.Length < Http_Header'Length
       or else Word.Slice (1, Http_Header'Length) /= Http_Header
       or else Iter.Prev_Separators /= "" then
-        Debug ("HTTP: Invalid reply (http/): " & Iter.Image);
+        Logger.Log_Debug ("HTTP: Invalid reply (http/): " & Iter.Image);
         return;
       end if;
       Result := (Server_Error, 400, As.U.Asu_Null);
       -- Code
       Result.Code := Server_Code_Range'Value (Iter.Next_Word);
       if Iter.Prev_Separators /= " " then
-        Debug ("HTTP: Invalid reply (code): " & Iter.Image);
+        Logger.Log_Debug ("HTTP: Invalid reply (code): " & Iter.Image);
         Result := (Client_Error, Invalid_Answer);
         return;
       end if;
@@ -173,13 +162,13 @@ package body Http is
     end;
 
     -- Check status
-    Debug ("HTTP: Status: " & Result.Code'Img & " " & Result.Message.Image);
+    Logger.Log_Debug ("HTTP: Status: " & Result.Code'Img & " " & Result.Message.Image);
     if Result.Code = 200 and then Result.Message.Image = "OK" then
       -- Ok, continue
       Result := (Ok, As.U.Asu_Null);
     else
       -- Done on server error
-      Debug ("HTTP: Server error:" & Result.Code'Img
+      Logger.Log_Debug ("HTTP: Server error:" & Result.Code'Img
            & " " & Result.Message.Image);
       return;
     end if;
@@ -188,7 +177,7 @@ package body Http is
     Ind := Str_Util.Locate (Header.Image, "Content-Length:");
     if Ind = 0 then
       Result := (Client_Error, Missing_Length);
-      Debug ("HTTP: Invalid reply (no length): " & Header.Image);
+      Logger.Log_Debug ("HTTP: Invalid reply (no length): " & Header.Image);
       return;
     end if;
     declare
@@ -202,15 +191,15 @@ package body Http is
       Word := As.U.Tus (Iter.Next_Word);
       Word := As.U.Tus (Iter.Next_Word);
       Expected_Length := Natural'Value (Word.Image);
-      Debug ("HTTP: Expected length: " & Expected_Length'Img);
+      Logger.Log_Debug ("HTTP: Expected length: " & Expected_Length'Img);
     exception
       when others =>
-        Debug ("HTTP: Invalid length: " & Iter.Image);
+        Logger.Log_Debug ("HTTP: Invalid length: " & Iter.Image);
         Result := (Client_Error, Invalid_Answer);
         return;
     end;
     if Expected_Length > Max_Msg_Len then
-      Debug ("HTTP: Message too long:" & Expected_Length'Img);
+      Logger.Log_Debug ("HTTP: Message too long:" & Expected_Length'Img);
       Result := (Client_Error, Msg_Too_Long);
       return;
     end if;
@@ -221,7 +210,7 @@ package body Http is
 
   procedure Close is
   begin
-    Debug ("HTTP: Closing");
+    Logger.Log_Debug ("HTTP: Closing");
     -- Cancel timer
     Timer_Id.Delete_If_Exists;
     begin
@@ -253,7 +242,7 @@ package body Http is
   procedure Disconnection_Cb (Dscr : in Socket.Socket_Dscr) is
     pragma Unreferenced (Dscr);
   begin
-    Debug ("HTTP: Disconnection");
+    Logger.Log_Debug ("HTTP: Disconnection");
     -- Tcp_Util closes the socket
     Soc := Socket.No_Socket;
     Done := True;
@@ -269,6 +258,8 @@ package body Http is
   function Get (Url : String) return Result_Type is
     use type Ada.Calendar.Time;
   begin
+
+    Logger.Set_Name ("Http");
 
     -- Sanity check on request: Parse Url and set host and port
     declare
@@ -308,13 +299,13 @@ package body Http is
       else
         Addr := As.U.Tus (Ip_Addr.Image (Host.Id));
       end if;
-      Debug ("Server address is " & Addr.Image);
+      Logger.Log_Debug ("Server address is " & Addr.Image);
       if Port.Kind = Tcp_Util.Port_Name_Spec then
         Addr := Port.Name;
       else
         Addr := As.U.Tus (Ip_Addr.Image (Port.Num));
       end if;
-      Debug ("Server port is " & Addr.Image);
+      Logger.Log_Debug ("Server port is " & Addr.Image);
     exception
       when others =>
         return (Client_Error, Invalid_Url);
@@ -348,7 +339,7 @@ package body Http is
       -- Init request and result
       Request := As.U.Tus ("GET " & Url & " HTTP/1.0" & Crlf & Crlf);
       -- Connect: one synchronous try
-      Debug ("HTTP: Connecting during" & Connect_Timeout_Ms'Img);
+      Logger.Log_Debug ("HTTP: Connecting during" & Connect_Timeout_Ms'Img);
       Soc := Tcp_Util.Connect_To (Socket.Tcp, Host, Port,
                                   Duration(Connect_Timeout_Ms) / 1000.0);
       if not Soc.Is_Open then
@@ -366,7 +357,7 @@ package body Http is
     end;
 
     -- Send request (socket is in mode Blocking_Send): slices of Msg'Length
-    Debug ("HTTP: Sending " & Request.Image);
+    Logger.Log_Debug ("HTTP: Sending " & Request.Image);
     declare
       Len : Natural;
       Dummy : Boolean;
@@ -403,7 +394,7 @@ package body Http is
                            Disconnection_Cb'Unrestricted_Access);
 
     -- Loop and wait until Done
-    Debug ("HTTP: Waiting");
+    Logger.Log_Debug ("HTTP: Waiting");
     loop
       Event_Mng.Wait (Event_Mng.Infinite_Ms);
       exit when Done;
@@ -419,7 +410,7 @@ package body Http is
 
     -- Done
     Mut.Release;
-    Debug ("HTTP: Done");
+    Logger.Log_Debug ("HTTP: Done");
     return Result;
   exception
     when others =>

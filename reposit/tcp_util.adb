@@ -1,35 +1,24 @@
 with Unchecked_Deallocation;
 with Ada.Exceptions;
-with Environ, Dynamic_List, Timers, Event_Mng, Basic_Proc, Socket_Util;
+with Dynamic_List, Timers, Event_Mng, Trace, Socket_Util;
 package body Tcp_Util is
 
   -- Debugging
   Debug_Init : Boolean := False;
-  Debug_Connect_Name   : constant String := "TCP_UTIL_DEBUG_CONNECT";
-  Debug_Accept_Name    : constant String := "TCP_UTIL_DEBUG_ACCEPT";
-  Debug_Overflow_Name  : constant String := "TCP_UTIL_DEBUG_OVERFLOW";
-  Debug_Reception_Name : constant String := "TCP_UTIL_DEBUG_RECEPTION";
-  Debug_Connect  : Boolean := False;
-  Debug_Accept   : Boolean := False;
-  Debug_Overflow : Boolean := False;
-  Debug_Reception : Boolean := False;
-  procedure Set_Debug (Name : in String; Var : in out Boolean) is
-  begin
-    Var := Environ.Is_Yes (Name);
-  exception
-    when others =>
-      null;
-  end Set_Debug;
+  Log_Connect : Trace.Logger;
+  Log_Accept : Trace.Logger;
+  Log_Overflow : Trace.Logger;
+  Log_Reception : Trace.Logger;
 
   procedure Init_Debug is
   begin
     if Debug_Init then
       return;
     end if;
-    Set_Debug (Debug_Connect_Name, Debug_Connect);
-    Set_Debug (Debug_Accept_Name, Debug_Accept);
-    Set_Debug (Debug_Overflow_Name, Debug_Overflow);
-    Set_Debug (Debug_Reception_Name, Debug_Reception);
+    Log_Connect.Set_Name ("Tcp_Util_Connect");
+    Log_Connect.Set_Name ("Tcp_Util_Accept");
+    Log_Connect.Set_Name ("Tcp_Util_Overflow");
+    Log_Connect.Set_Name ("Tcp_Util_Connect");
     Debug_Init := True;
   end Init_Debug;
 
@@ -96,18 +85,14 @@ package body Tcp_Util is
     use type  Socket.Socket_Dscr;
   begin
 
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Try_Connect start");
-    end if;
+    Log_Connect.Log_Debug ("Tcp_Util.Try_Connect start");
     -- Open non blocking
     Dscr.Open (Protocol);
     Dscr.Set_Blocking (Socket.Non_Blocking);
     if Ttl /= Default_Ttl then
       Dscr.Set_Ttl (Ttl);
     end if;
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Try_Connect socket open");
-    end if;
+    Log_Connect.Log_Debug ("Tcp_Util.Try_Connect socket open");
 
     -- Connect
     case Host.Kind is
@@ -134,9 +119,7 @@ package body Tcp_Util is
       Dscr.Close;
       Connected := False;
     end if;
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Try_Connect result " & Connected'Img);
-    end if;
+    Log_Connect.Log_Debug ("Tcp_Util.Try_Connect result " & Connected'Img);
   exception
     when Socket.Soc_Conn_Refused =>
       -- Not open or not connected
@@ -144,14 +127,10 @@ package body Tcp_Util is
         Dscr.Close;
       end if;
       Connected := False;
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Try_Connect refused");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.Try_Connect refused");
     when Socket.Soc_Would_Block =>
       Connected := False;
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Try_Connect would block");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.Try_Connect would block");
   end Try_Connect;
 
   -- Handle a connection success/failure according to Rec.Dscr (open or not)
@@ -164,30 +143,22 @@ package body Tcp_Util is
     Host : Host_Id;
     use type Socket.Socket_Dscr, Timers.Timer_Status;
   begin
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Handle_Current_Result start");
-    end if;
+    Log_Connect.Log_Debug ("Tcp_Util.Handle_Current_Result start");
     -- Remove management data
     if Rec.Timer.Status /= Timers.Deleted then
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Handle_Current_Result delete timer");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.Handle_Current_Result delete timer");
       Timers.Delete (Rec.Timer);
     end if;
     Delete_Current_Con;
     if Rec.Dscr.Is_Open then
       -- Connected
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Handle_Current_Result connected");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.Handle_Current_Result connected");
       Host := Rec.Dscr.Get_Destination_Host;
       Port := Rec.Dscr.Get_Destination_Port;
       Rec.Dscr.Set_Blocking (Socket.Blocking_Send);
     else
       -- Giving up
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Handle_Current_Result giving up");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.Handle_Current_Result giving up");
       if Rec.Port.Kind = Port_Name_Spec then
         begin
           -- Services may have changed since Connect_To checks
@@ -214,9 +185,7 @@ package body Tcp_Util is
     -- Inform client
     if Rec.Cb /= null then
       Rec.Cb (Host, Port, Rec.Dscr.Is_Open, Rec.Dscr);
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Handle_Current_Result Cb called");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.Handle_Current_Result Cb called");
     end if;
   end Handle_Current_Result;
 
@@ -229,23 +198,17 @@ package body Tcp_Util is
                                Rec : in out Connecting_Rec;
                                Go_On : out Boolean) is
   begin
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.End_Async_Connect start");
-    end if;
+    Log_Connect.Log_Debug ("Tcp_Util.End_Async_Connect start");
     -- Remove Fd callbacks. Thery are active at this time
     --  either because called by Fd_Cb or by Timer_Cb with open connection
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.End_Async_Connect del Cbs on fd "
+    Log_Connect.Log_Debug ("Tcp_Util.End_Async_Connect del Cbs on fd "
                     & Rec.Fd'Img);
-    end if;
     Event_Mng.Del_Fd_Callback (Rec.Fd, True);
     Event_Mng.Del_Fd_Callback (Rec.Fd, False);
 
     -- Close if failure and still open
     if not Success and then Rec.Dscr.Is_Open then
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.End_Async_Connect closing socket");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.End_Async_Connect closing socket");
       Rec.Dscr.Close;
       Rec.Fd_Set := False;
     end if;
@@ -256,24 +219,18 @@ package body Tcp_Util is
     -- Success or failure
     if Rec.Dscr.Is_Open then
       -- Connection success
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.End_Async_Connect success");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.End_Async_Connect success");
       Handle_Current_Result (Rec);
       Go_On := False;
     else
       -- This try failure
       -- Give up if no more try
       if Rec.Curr_Try = Rec.Nb_Tries then
-        if Debug_Connect then
-          Basic_Proc.Put_Line_Output ("  Tcp_Util.End_Async_Connect last failure");
-        end if;
+        Log_Connect.Log_Debug ("Tcp_Util.End_Async_Connect last failure");
         Handle_Current_Result (Rec);
         Go_On := False;
       else
-        if Debug_Connect then
-          Basic_Proc.Put_Line_Output ("  Tcp_Util.End_Async_Connect this failure");
-        end if;
+        Log_Connect.Log_Debug ("Tcp_Util.End_Async_Connect this failure");
         Go_On := True;
       end if;
     end if;
@@ -286,50 +243,38 @@ package body Tcp_Util is
     Go_On : Boolean;
     use type Socket.Socket_Dscr;
   begin
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Fd_Cb start with fd " & Fd'Img
-                    & "  read " & Read'Img);
-    end if;
+    Log_Connect.Log_Debug ("Tcp_Util.Connection_Fd_Cb start with fd "
+                    & Fd'Img & "  read " & Read'Img);
     -- Find record by fd
     Rec.Fd := Fd;
     Rec.Fd_Set := True;
     Find_By_Fd (Con_List, Rec, From => Con_List_Mng.Absolute);
 
     Con_List.Read (Rec, Con_List_Mng.Current);
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Fd_Cb found rec "
+    Log_Connect.Log_Debug ("Tcp_Util.Connection_Fd_Cb found rec "
                     & Positive'Image (Con_List.Get_Position));
-    end if;
 
     -- This try result?
     if not Rec.Dscr.Is_Connected then
       -- Cancel and close
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Fd_Cb not connected");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.Connection_Fd_Cb not connected");
       End_Async_Connect (False, Rec, Go_On);
     else
       -- Success
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Fd_Cb connected");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.Connection_Fd_Cb connected");
       End_Async_Connect (True, Rec, Go_On);
     end if;
     if Go_On then
       -- Store closed Dscr for timer callback
       Con_List.Modify (Rec, Con_List_Mng.Current);
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Fd_Cb update rec "
+      Log_Connect.Log_Debug ("Tcp_Util.Connection_Fd_Cb update rec "
                       & Positive'Image (Con_List.Get_Position));
-      end if;
     end if;
     -- Propagate event if no Go_On
     return not Go_On;
   exception
     when Con_List_Mng.Not_In_List =>
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Fd_Cb fd rec not found");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.Connection_Fd_Cb fd rec not found");
       raise;
   end Connection_Fd_Cb;
 
@@ -343,9 +288,7 @@ package body Tcp_Util is
     Go_On : Boolean;
     use type Socket.Socket_Dscr, Timers.Timer_Id;
   begin
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Timer_Cb start on timer");
-    end if;
+    Log_Connect.Log_Debug ("Tcp_Util.Connection_Timer_Cb start on timer");
     -- Read rec: Try current
     Con_List.Read (Rec, Con_List_Mng.Current);
     if Rec.Timer /= Id then
@@ -353,17 +296,14 @@ package body Tcp_Util is
       Rec.Timer := Id;
       Go_On := Find_By_Timer (Con_List, Rec, From => Con_List_Mng.Absolute);
       if not Go_On then
-        if Debug_Connect then
-          Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Timer_Cb timer rec not found");
-        end if;
+        Log_Connect.Log_Debug (
+            "Tcp_Util.Connection_Timer_Cb timer rec not found");
         return False;
       end if;
       Con_List.Read (Rec, Con_List_Mng.Current);
     end if;
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Timer_Cb found rec "
+    Log_Connect.Log_Debug ("Tcp_Util.Connection_Timer_Cb found rec "
                     & Positive'Image (Con_List.Get_Position));
-    end if;
 
     -- Either first try, or previous failed (sync or not)
     --  or async connect is pending
@@ -371,9 +311,7 @@ package body Tcp_Util is
 
     -- Cancel pending async connect
     if Rec.Dscr.Is_Open then
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Timer_Cb is open");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.Connection_Timer_Cb is open");
       End_Async_Connect (False, Rec, Go_On);
       if not Go_On then
         return True;
@@ -387,29 +325,23 @@ package body Tcp_Util is
 
     if Rec.Dscr.Is_Open and then Connected then
       -- Connected synchronous success
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Timer_Cb synchronous success");
-      end if;
+      Log_Connect.Log_Debug (
+          "Tcp_Util.Connection_Timer_Cb synchronous success");
       Handle_Current_Result (Rec);
       return True;
     elsif not Rec.Dscr.Is_Open then
       -- Connect synchronous failure: Check number of tries
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Timer_Cb synchronous failure");
-      end if;
+      Log_Connect.Log_Debug (
+          "Tcp_Util.Connection_Timer_Cb synchronous failure");
       if Rec.Curr_Try = Rec.Nb_Tries then
-        if Debug_Connect then
-          Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Timer_Cb last failure");
-        end if;
+        Log_Connect.Log_Debug ("Tcp_Util.Connection_Timer_Cb last failure");
         Handle_Current_Result (Rec);
         return True;
       end if;
     end if;
 
     -- Asynchronous pending
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Timer_Cb pending");
-    end if;
+    Log_Connect.Log_Debug ("Tcp_Util.Connection_Timer_Cb pending");
     if Rec.Dscr.Is_Open then
       -- Connection pending
       -- Save Dscr, Fd and pending status
@@ -418,17 +350,13 @@ package body Tcp_Util is
       -- Add callback on fd
       Event_Mng.Add_Fd_Callback (Rec.Fd, True, Connection_Fd_Cb'Access);
       Event_Mng.Add_Fd_Callback (Rec.Fd, False, Connection_Fd_Cb'Access);
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Timer_Cb asynchronous pending"
+      Log_Connect.Log_Debug ("Tcp_Util.Connection_Timer_Cb asynchronous pending"
                         & " on fd " & Rec.Fd'Img);
-      end if;
     end if;
 
     -- Synchronous failure or pending: arm timer at first try
     if Rec.Curr_Try = 1 then
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Timer_Cb first try");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.Connection_Timer_Cb first try");
       -- First attempt failure: start timer
       Rec.Timer.Create (
           Delay_Spec => (Delay_Kind    => Timers.Delay_Sec,
@@ -436,16 +364,12 @@ package body Tcp_Util is
                          Period        => Rec.Delta_Retry,
                          Delay_Seconds => Rec.Delta_Retry),
           Callback => Connection_Timer_Cb'Access);
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Timer_Cb created timer");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.Connection_Timer_Cb created timer");
     end if;
     -- Store Rec: Fd, Timer_Id, Curr_Try ...
     Con_List.Modify (Rec, Con_List_Mng.Current);
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Connection_Timer_Cb update rec "
+    Log_Connect.Log_Debug ("Tcp_Util.Connection_Timer_Cb update rec "
                     & Positive'Image (Con_List.Get_Position));
-    end if;
     return False;
   end Connection_Timer_Cb;
 
@@ -463,9 +387,7 @@ package body Tcp_Util is
     Rec : Connecting_Rec;
   begin
     Init_Debug;
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Connect_To start");
-    end if;
+    Log_Connect.Log_Debug ("Tcp_Util.Connect_To start");
     -- Check port and host name
     if Port.Kind = Port_Name_Spec then
       declare
@@ -516,41 +438,29 @@ package body Tcp_Util is
     Moved : Boolean;
     Rec : Connecting_Rec;
   begin
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Connect start");
-    end if;
+    Log_Connect.Log_Debug ("Tcp_Util.Abort_Connect start");
     -- Find rec
     Rec.Host := Host;
     Rec.Port := Port;
     if not Find_By_Dest (Con_List, Rec, From => Con_List_Mng.Absolute) then
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Connect rec not found");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.Abort_Connect rec not found");
       raise No_Such;
     end if;
     Con_List.Read (Rec, Con_List_Mng.Current);
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Connect found rec "
-                    & Positive'Image (Con_List.Get_Position));
-    end if;
+    Log_Connect.Log_Debug ("Tcp_Util.Abort_Connect found rec "
+                         & Positive'Image (Con_List.Get_Position));
     if Rec.Fd_Set then
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Connect del Cbs on fd "
-                      & Rec.Fd'Img);
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.Abort_Connect del Cbs on fd "
+                           & Rec.Fd'Img);
       Event_Mng.Del_Fd_Callback (Rec.Fd, True);
       Event_Mng.Del_Fd_Callback (Rec.Fd, False);
       Rec.Dscr.Close;
     end if;
     -- Cancel timer
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Connect deleting timer");
-    end if;
+    Log_Connect.Log_Debug ("Tcp_Util.Abort_Connect deleting timer");
     Rec.Timer.Delete;
     -- Delete rec
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Connect deleting rec");
-    end if;
+    Log_Connect.Log_Debug ("Tcp_Util.Abort_Connect deleting rec");
     Con_List.Delete (Moved => Moved);
   end Abort_Connect;
 
@@ -573,9 +483,7 @@ package body Tcp_Util is
     if Ttl /= Default_Ttl then
       Dscr.Set_Ttl (Ttl);
     end if;
-    if Debug_Connect then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Connect_To sync start");
-    end if;
+    Log_Connect.Log_Debug ("Tcp_Util.Connect_To sync start");
     if Timeout = 0.0 then
       -- Synchronous connect infinite
       Socket_Util.Set_Destination (Dscr, False, Host, Port);
@@ -584,9 +492,7 @@ package body Tcp_Util is
       select
         delay Timeout;
           -- Timeout on connect
-          if Debug_Connect then
-            Basic_Proc.Put_Line_Output ("  Tcp_Util.Connect_To sync timeout");
-          end if;
+          Log_Connect.Log_Debug ("Tcp_Util.Connect_To sync timeout");
           Dscr.Close;
         then abort
           Socket_Util.Set_Destination (Dscr, False, Host, Port);
@@ -595,25 +501,19 @@ package body Tcp_Util is
     return Dscr;
   exception
     when Socket.Soc_Conn_Refused =>
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Connect_To sync refused");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.Connect_To sync refused");
       Dscr.Close;
       return Dscr;
     when Socket.Soc_Name_Not_Found =>
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Connect_To sync name error");
-      end if;
+      Log_Connect.Log_Debug ("Tcp_Util.Connect_To sync name error");
       Dscr.Close;
       raise Name_Error;
     when Error:others =>
       if Dscr.Is_Open then
         Dscr.Close;
       end if;
-      if Debug_Connect then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Connect_To sync exception "
+       Log_Connect.Log_Debug ("Tcp_Util.Connect_To sync exception "
               & Ada.Exceptions.Exception_Name (Error));
-      end if;
       raise;
   end Connect_To;
 
@@ -655,18 +555,14 @@ package body Tcp_Util is
     Port : Port_Num;
     Host : Host_Id;
   begin
-    if Debug_Accept then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Acception_Fd_Cb start with fd " & Fd'Img
-                    & "  read " & Read'Img);
-    end if;
+    Log_Accept.Log_Debug ("Tcp_Util.Acception_Fd_Cb start with fd " & Fd'Img
+                           & "  read " & Read'Img);
     -- Find record by fd
     Rec.Fd := Fd;
     Find_By_Fd (Acc_List, Rec, From => Acc_List_Mng.Absolute);
     Acc_List.Read (Rec, Acc_List_Mng.Current);
-    if Debug_Accept then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Acception_Fd_Cb found rec "
-                    & Positive'Image (Acc_List.Get_Position));
-    end if;
+    Log_Accept.Log_Debug ("Tcp_Util.Acception_Fd_Cb found rec "
+                           & Positive'Image (Acc_List.Get_Position));
 
     -- Accept
     begin
@@ -674,14 +570,11 @@ package body Tcp_Util is
     exception
       when Socket.Soc_Would_Block =>
         -- Connection is not valid any more: discard
-        if Debug_Accept then
-          Basic_Proc.Put_Line_Output ("  Tcp_Util.Acception_Fd_Cb accept would block");
-        end if;
+        Log_Accept.Log_Debug ("Tcp_Util.Acception_Fd_Cb accept would block");
         return False;
     end;
-    if Debug_Accept then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Acception_Fd_Cb connection accepted");
-    end if;
+    Log_Accept.Log_Debug (
+        "Tcp_Util.Acception_Fd_Cb connection accepted");
     -- Set new socket in mode Blocking_Send
     New_Dscr.Set_Blocking (Socket.Blocking_Send);
 
@@ -690,16 +583,12 @@ package body Tcp_Util is
     Port := New_Dscr.Get_Destination_Port;
     if Rec.Cb /= null then
       Rec.Cb (Rec.Port, Rec.Dscr, Host, Port, New_Dscr);
-      if Debug_Accept then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Acception_Fd_Cb Cb called");
-      end if;
+      Log_Accept.Log_Debug ("Tcp_Util.Acception_Fd_Cb Cb called");
     end if;
     return True;
   exception
     when Acc_List_Mng.Not_In_List =>
-      if Debug_Accept then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Acception_Fd_Cb fd rec not found");
-      end if;
+      Log_Accept.Log_Debug ("Tcp_Util.Acception_Fd_Cb fd rec not found");
       raise;
   end Acception_Fd_Cb;
 
@@ -715,9 +604,7 @@ package body Tcp_Util is
     use type Socket.Host_Id;
   begin
     Init_Debug;
-    if Debug_Accept then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Accept_From start");
-    end if;
+    Log_Accept.Log_Debug ("Tcp_Util.Accept_From start");
     -- Initialise Rec
     Rec.Protocol := Protocol;
     Rec.Port := 0;
@@ -748,19 +635,15 @@ package body Tcp_Util is
     end case;
     Rec.Port := Rec.Dscr.Get_Linked_To;
     Num := Rec.Port;
-    if Debug_Accept then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Accept_From linked");
-    end if;
+    Log_Accept.Log_Debug ("Tcp_Util.Accept_From linked");
 
     -- Add callback on fd
     Event_Mng.Add_Fd_Callback (Rec.Fd, True, Acception_Fd_Cb'Access);
 
     -- Store Rec
     Acc_List.Insert (Rec);
-    if Debug_Accept then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Accept_From insert rec "
+    Log_Accept.Log_Debug ("Tcp_Util.Accept_From insert rec "
                     & Positive'Image (Acc_List.Get_Position));
-    end if;
 
   exception
     when others =>
@@ -777,30 +660,23 @@ package body Tcp_Util is
     Rec : Accepting_Rec;
     Moved : Boolean;
   begin
-    if Debug_Accept then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Accept start");
-    end if;
+    Log_Accept.Log_Debug ("Tcp_Util.Abort_Accept start");
     -- Find rec and read
     Rec.Protocol := Protocol;
     Rec.Port := Num;
     if not Find_By_Port (Acc_List, Rec, From => Acc_List_Mng.Absolute) then
-      if Debug_Accept then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Accept rec not found");
-      end if;
+      Log_Accept.Log_Debug ("Tcp_Util.Abort_Accept rec not found");
       raise No_Such;
     end if;
     Acc_List.Read (Rec, Acc_List_Mng.Current);
-    if Debug_Accept then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Accept found rec "
+      Log_Accept.Log_Debug ("Tcp_Util.Abort_Accept found rec "
                     & Positive'Image (Acc_List.Get_Position));
-    end if;
     -- Del callback, close and delete rec
     Event_Mng.Del_Fd_Callback (Rec.Fd, True);
     Rec.Dscr.Close;
     Acc_List.Delete (Moved => Moved);
-    if Debug_Accept then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Accept socket closed and rec deleted");
-    end if;
+    Log_Accept.Log_Debug (
+        "Tcp_Util.Abort_Accept socket closed and rec deleted");
   end Abort_Accept;
 
   --------------------------------------------------------------------------
@@ -859,24 +735,18 @@ package body Tcp_Util is
     Rec.Timer := Id;
     Find_By_Timer (Sen_List, Rec, From => Sen_List_Mng.Absolute);
     Sen_List.Read (Rec, Sen_List_Mng.Current);
-    if Debug_Overflow then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Timer_Cb found rec "
+    Log_Overflow.Log_Debug ("Tcp_Util.Timer_Cb found rec "
                     & Positive'Image (Sen_List.Get_Position));
-    end if;
 
     -- End of processing: unhook callback and del rec
     Event_Mng.Del_Fd_Callback (Rec.Fd, False);
     Delete_Current_Sen;
-    if Debug_Overflow then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Timer_Cb cleaned");
-    end if;
+    Log_Overflow.Log_Debug ("Tcp_Util.Timer_Cb cleaned");
 
     -- Call send error callback and close
     if Rec.Err_Cb /= null then
       Rec.Err_Cb (Rec.Dscr, False);
-      if Debug_Overflow then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Send_Err_Cb Cb called");
-      end if;
+      Log_Overflow.Log_Debug ("Tcp_Util.Send_Err_Cb Cb called");
     end if;
     Rec.Dscr.Close;
     return True;
@@ -889,18 +759,14 @@ package body Tcp_Util is
     type Send_Result_List is (Ok, Timeout, Overflow, Conn_Lost);
     Result : Send_Result_List;
   begin
-    if Debug_Overflow then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Sending_Cb start with fd " & Fd'Img
+    Log_Overflow.Log_Debug ("Tcp_Util.Sending_Cb start with fd " & Fd'Img
                     & "  read " & Read'Img);
-    end if;
     -- Find Rec from Fd and read
     Rec.Fd := Fd;
     Find_By_Fd (Sen_List, Rec, From => Sen_List_Mng.Absolute);
     Sen_List.Read (Rec, Sen_List_Mng.Current);
-    if Debug_Overflow then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Sending_Cb found rec "
+    Log_Overflow.Log_Debug ("Tcp_Util.Sending_Cb found rec "
                     & Positive'Image (Sen_List.Get_Position));
-    end if;
 
     -- See if socket has been changed to blocking meanwhile
     if Rec.Dscr.Is_Blocking (Emission => True) then
@@ -913,14 +779,10 @@ package body Tcp_Util is
       exception
         when Socket.Soc_Would_Block =>
           -- Still in overflow
-          if Debug_Overflow then
-            Basic_Proc.Put_Line_Output ("  Tcp_Util.Sending_Cb still in overflow");
-          end if;
+          Log_Overflow.Log_Debug ("Tcp_Util.Sending_Cb still in overflow");
           return False;
         when Socket.Soc_Conn_Lost =>
-          if Debug_Overflow then
-            Basic_Proc.Put_Line_Output ("  Tcp_Util.Sending_Cb still in overflow");
-          end if;
+          Log_Overflow.Log_Debug ("Tcp_Util.Sending_Cb still in overflow");
           Result := Conn_Lost;
       end;
     end if;
@@ -931,41 +793,29 @@ package body Tcp_Util is
     end if;
     Event_Mng.Del_Fd_Callback (Rec.Fd, False);
     Delete_Current_Sen;
-    if Debug_Overflow then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Sending_Cb cleaned");
-    end if;
+    Log_Overflow.Log_Debug ("Tcp_Util.Sending_Cb cleaned");
 
     if Result = Ok then
       -- Success: Call end of overflow callbak
-      if Debug_Overflow then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Sending_Cb resent OK");
-      end if;
+      Log_Overflow.Log_Debug ("Tcp_Util.Sending_Cb resent OK");
       if Rec.Eoo_Cb /= null then
         Rec.Eoo_Cb (Rec.Dscr);
-        if Debug_Overflow then
-          Basic_Proc.Put_Line_Output ("  Tcp_Util.Sending_Cb Cb called");
-        end if;
+        Log_Overflow.Log_Debug ("Tcp_Util.Sending_Cb Cb called");
       end if;
       return True;
     else
       -- Timeout or Lost_Conn: Call send error callback and close
-      if Debug_Overflow then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Sending_Cb error " & Result'Img);
-      end if;
+      Log_Overflow.Log_Debug ("Tcp_Util.Sending_Cb error " & Result'Img);
       if Rec.Err_Cb /= null then
         Rec.Err_Cb (Rec.Dscr, Result = Conn_Lost);
-        if Debug_Overflow then
-          Basic_Proc.Put_Line_Output ("  Tcp_Util.Send_Err_Cb Cb called");
-        end if;
+        Log_Overflow.Log_Debug ("Tcp_Util.Send_Err_Cb Cb called");
       end if;
       Rec.Dscr.Close;
       return True;
     end if;
   exception
     when Sen_List_Mng.Not_In_List =>
-      if Debug_Overflow then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Sending_Cb fd rec not found");
-      end if;
+      Log_Overflow.Log_Debug ("Tcp_Util.Sending_Cb fd rec not found");
       raise;
     when others =>
       return False;
@@ -1007,17 +857,13 @@ package body Tcp_Util is
       when Socket.Soc_Conn_Lost | Timeout_Error =>
         raise;
       when Error:others =>
-        if Debug_Overflow then
-          Basic_Proc.Put_Line_Output ("  Tcp_Util.Send exception "
+        Log_Overflow.Log_Debug ("Tcp_Util.Send exception "
               & Ada.Exceptions.Exception_Name (Error));
-        end if;
         raise;
     end;
 
     -- Handle overflow : arm timer, build and store rec
-    if Debug_Overflow then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Send oveflow");
-    end if;
+    Log_Overflow.Log_Debug ("Tcp_Util.Send oveflow");
     Rec.Dscr := Dscr;
     Rec.Fd := Dscr.Get_Fd;
     if Timeout /= 0.0 then
@@ -1027,17 +873,13 @@ package body Tcp_Util is
     Rec.Eoo_Cb := End_Of_Overflow_Cb;
     Rec.Err_Cb := Send_Error_Cb;
     Sen_List.Insert (Rec);
-    if Debug_Overflow then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Send rec with fd " & Rec.Fd'Img
+    Log_Overflow.Log_Debug ("Tcp_Util.Send rec with fd " & Rec.Fd'Img
                     & " inserted at "
                     & Positive'Image (Sen_List.Get_Position));
-    end if;
 
     -- Hook our callback in write
     Event_Mng.Add_Fd_Callback (Rec.Fd, False, Sending_Cb'Access);
-    if Debug_Overflow then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Send Cb hooked");
-    end if;
+    Log_Overflow.Log_Debug ("Tcp_Util.Send Cb hooked");
     return False;
   end Send;
 
@@ -1045,22 +887,16 @@ package body Tcp_Util is
   procedure Abort_Send_And_Close (Dscr : in out Socket.Socket_Dscr) is
     Rec : Sending_Rec;
   begin
-    if Debug_Overflow then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Send_and_Close start");
-    end if;
+    Log_Overflow.Log_Debug ("Tcp_Util.Abort_Send_and_Close start");
     -- Find Rec from Dscr and read
     Rec.Dscr := Dscr;
     if not Find_By_Dscr (Sen_List, Rec, From => Sen_List_Mng.Absolute) then
-      if Debug_Overflow then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Send_and_Close rec not found");
-      end if;
+      Log_Overflow.Log_Debug ("Tcp_Util.Abort_Send_and_Close rec not found");
       raise No_Such;
     end if;
     Sen_List.Read (Rec, Sen_List_Mng.Current);
-    if Debug_Overflow then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Send_and_Close found rec "
+    Log_Overflow.Log_Debug ("Tcp_Util.Abort_Send_and_Close found rec "
                     & Positive'Image (Sen_List.Get_Position));
-    end if;
 
     -- Cancel timer, unhook callback and del rec
     if Rec.Timer.Exists then
@@ -1071,9 +907,7 @@ package body Tcp_Util is
 
     -- Close
     Dscr.Close;
-    if Debug_Overflow then
-      Basic_Proc.Put_Line_Output ("  Tcp_Util.Abort_Send_and_Close done");
-    end if;
+    Log_Overflow.Log_Debug ("Tcp_Util.Abort_Send_and_Close done");
   end Abort_Send_And_Close;
 
   --------------------------------------------------------------------------
@@ -1144,17 +978,13 @@ package body Tcp_Util is
       Result : Boolean;
     begin
       if not For_Read then
-        if Debug_Reception then
-          Basic_Proc.Put_Line_Output ("  Tcp_Util.Read_Cb on writting fd " & Fd'Img);
-        end if;
+        Log_Reception.Log_Debug ("Tcp_Util.Read_Cb on writting fd " & Fd'Img);
         return False;
       end if;
       -- Find dscr from Fd
       The_Rec.Fd := Fd;
       if not Find_Fd (Rece_List, The_Rec, From => Rece_List_Mng.Absolute) then
-        if Debug_Reception then
-          Basic_Proc.Put_Line_Output ("  Tcp_Util.Read_Cb no Dscr for Fd " & Fd'Img);
-        end if;
+        Log_Reception.Log_Debug ("Tcp_Util.Read_Cb no Dscr for Fd " & Fd'Img);
         Event_Mng.Del_Fd_Callback (Fd, True);
         return False;
       end if;
@@ -1168,31 +998,27 @@ package body Tcp_Util is
       exception
         when Socket.Soc_Would_Block =>
           -- Data is not completely ready
-          if Debug_Reception then
-            Basic_Proc.Put_Line_Output ("  Tcp_Util.Read_Cb soc would block on fd " & Fd'Img);
-          end if;
+          Log_Reception.Log_Debug ("Tcp_Util.Read_Cb soc would block on fd "
+                                & Fd'Img);
           return False;
         when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
           -- Remote has diconnected
-          if Debug_Reception then
-            Basic_Proc.Put_Line_Output ("  Tcp_Util.Read_Cb disconnection on fd " & Fd'Img);
-          end if;
+          Log_Reception.Log_Debug ("Tcp_Util.Read_Cb disconnection on fd "
+                                & Fd'Img);
           -- Notify and close
           Close_Current;
           Free_Message (Msg);
           return True;
         when Socket.Soc_Len_Err =>
           -- Invalid length
-          if Debug_Reception then
-            Basic_Proc.Put_Line_Output ("  Tcp_Util.Read_Cb invalid length on fd " & Fd'Img);
-          end if;
+          Log_Reception.Log_Debug ("Tcp_Util.Read_Cb invalid length on fd "
+                                & Fd'Img);
           Close_Current;
           Free_Message (Msg);
           return True;
       end;
-      if Debug_Reception then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Read_Cb len " & Len'Img & " on fd " & Fd'Img);
-      end if;
+      Log_Reception.Log_Debug ("Tcp_Util.Read_Cb len " & Len'Img & " on fd "
+                             & Fd'Img);
       -- Call appli callback
       if The_Rec.Read_Cb /= null then
         Result := The_Rec.Read_Cb (The_Rec.Dscr, Msg.all, Len);
@@ -1223,9 +1049,7 @@ package body Tcp_Util is
       Event_Mng.Add_Fd_Callback (Dscr.Get_Fd, True,
                  Read_Cb'Unrestricted_Access);
 
-      if Debug_Reception then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Set_Callbacks on Fd " & The_Rec.Fd'Img);
-      end if;
+      Log_Reception.Log_Debug ("Tcp_Util.Set_Callbacks on Fd " & The_Rec.Fd'Img);
     end Set_Callbacks;
 
     procedure Activate_Callbacks (Dscr   : in Socket.Socket_Dscr;
@@ -1235,9 +1059,7 @@ package body Tcp_Util is
       -- Check Dscr is known
       The_Rec.Dscr := Dscr;
       if not Find_Dscr (Rece_List, The_Rec, From => Rece_List_Mng.Absolute) then
-        if Debug_Reception then
-          Basic_Proc.Put_Line_Output ("  Tcp_Util.Activate_Callbacks Dscr not found");
-        end if;
+        Log_Reception.Log_Debug ("Tcp_Util.Activate_Callbacks Dscr not found");
         raise No_Such;
       end if;
 
@@ -1256,9 +1078,7 @@ package body Tcp_Util is
       The_Rec.Dscr := Dscr;
       if not Find_Dscr (Rece_List, The_Rec,
                         From => Rece_List_Mng.Absolute) then
-        if Debug_Reception then
-          Basic_Proc.Put_Line_Output ("  Tcp_Util.Callbacks_Active Dscr not found");
-        end if;
+        Log_Reception.Log_Debug ("Tcp_Util.Callbacks_Active Dscr not found");
         raise No_Such;
       end if;
 
@@ -1272,17 +1092,14 @@ package body Tcp_Util is
       The_Rec.Dscr := Dscr;
       if not Find_Dscr (Rece_List, The_Rec,
                         From => Rece_List_Mng.Absolute) then
-        if Debug_Reception then
-          Basic_Proc.Put_Line_Output ("  Tcp_Util.Remove_Callbacks Dscr not found");
-        end if;
+        Log_Reception.Log_Debug ("Tcp_Util.Remove_Callbacks Dscr not found");
         raise No_Such;
       end if;
 
       -- Get from list
       Rece_List.Get (The_Rec, Moved => Moved);
-      if Debug_Reception then
-        Basic_Proc.Put_Line_Output ("  Tcp_Util.Remove_Callbacks on Fd " & The_Rec.Fd'Img);
-      end if;
+      Log_Reception.Log_Debug ("Tcp_Util.Remove_Callbacks on Fd "
+                            & The_Rec.Fd'Img);
       Event_Mng.Del_Fd_Callback (Dscr.Get_Fd, True);
     end Remove_Callbacks;
 

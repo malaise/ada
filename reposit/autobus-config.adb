@@ -16,6 +16,8 @@ package body Config is
   Default_Timeout : constant Duration := 0.5;
   Default_Ttl : constant Socket.Ttl_Range := 5;
 
+  Log_Cfg : Trace.Logger;
+
   -- For Debug
   function Image (Attrs : Xml_Parser.Attributes_Array) return String is
      Res : As.U.Asu_Us;
@@ -142,6 +144,7 @@ package body Config is
     if Ctx.Get_Status /= Xml_Parser.Clean then
       return;
     end if;
+    Log_Cfg.Set_Name ("AutobusConfig");
 
     -- Make dummy tree if env variable is set
     if not Environ.Is_Set (Env_File_Name)
@@ -155,7 +158,7 @@ package body Config is
                    "on out dummy tree");
         raise Internal_Error;
       end if;
-      Debug ("Dummy tree cause no Env");
+      Log_Cfg.Log_Debug ("Dummy tree cause no Env");
       return;
     end if;
 
@@ -167,7 +170,7 @@ package body Config is
                  & Environ.Getenv (Env_File_Name));
         raise Config_Error;
     end if;
-    Debug ("File " & Environ.Getenv (Env_File_Name) & " parsed OK");
+    Log_Cfg.Log_Debug ("File " & Environ.Getenv (Env_File_Name) & " parsed OK");
     Root := Ctx.Get_Root_Element;
 
     -- Check all Buses, check that names are A-<Ip_Address>
@@ -178,7 +181,7 @@ package body Config is
     begin
       Ok := True;
       if Check_Attributes (Root) then
-        Debug ("Got default config " & Image (Ctx.Get_Attributes (Root)));
+        Log_Cfg.Log_Debug ("Got default config " & Image (Ctx.Get_Attributes (Root)));
       else
         Ok := False;
       end if;
@@ -187,11 +190,11 @@ package body Config is
         -- Get bus config
         Name := Ctx.Get_Attribute (Buses(Bus), 1).Value;
         if Check_Bus (Name.Image) then
-          Debug ("Got bus " & Name.Image);
+          Log_Cfg.Log_Debug ("Got bus " & Name.Image);
           if Check_Attributes (Buses(Bus)) then
             -- Store config for this bus
             Bus_Conf_List.Insert ( (Name, Buses(Bus)) );
-            Debug ("  Got config "
+            Log_Cfg.Log_Debug ("  Got config "
                  & Image (Ctx.Get_Attributes (Buses(Bus))));
           else
             Ok := False;
@@ -243,7 +246,7 @@ package body Config is
         raise Config_Error;
       end if;
     end;
-    Debug ("Config checked OK");
+    Log_Cfg.Log_Debug ("Config checked OK");
 
   exception
     when Xml_Parser.File_Error =>
@@ -274,7 +277,7 @@ package body Config is
     Crit.Addr := As.U.Tus (Bus_Id (Name));
     Found := Bus_Conf_List.Search_Match (Bus_Conf_Match'Access, Crit,
                                          From => Bus_Conf_List_Mng.Absolute);
-    Debug ("Bus " & Name & " "
+    Log_Cfg.Log_Debug ("Bus " & Name & " "
            & (if not Found then "not " else "") & "found for config");
 
     -- Get Heartbeat_Period
@@ -366,7 +369,7 @@ package body Config is
     Crit.Addr := As.U.Tus (Bus_Id (Name));
     Found := Bus_Conf_List.Search_Match (Bus_Conf_Match'Access, Crit,
                                          From => Bus_Conf_List_Mng.Absolute);
-    Debug ("Bus " & Name & " "
+    Log_Cfg.Log_Debug ("Bus " & Name & " "
            & (if not Found then "not " else "") & "found for LAN or Alias");
 
     if not Found then
@@ -386,7 +389,7 @@ package body Config is
           for Alias in Aliases'Range loop
             if Ctx.Get_Attribute (Aliases(Alias), "Name") = Local_Host_Name then
               Host_Id := Id_Of (Aliases(Alias), "Address");
-              Debug ("Found Alias Name " & Local_Host_Name
+              Log_Cfg.Log_Debug ("Found Alias Name " & Local_Host_Name
                    & " to " & Ip_Addr.Image (Host_Id));
               return Host_Id;
             end if;
@@ -404,7 +407,7 @@ package body Config is
               Host_Id :=  Socket.Host_Id_For (
                   Lan     => Id_Of (Lans(Lan), "Address"),
                   Netmask => Id_Of (Lans(Lan), "Netmask"));
-              Debug ("Found LAN Address "
+              Log_Cfg.Log_Debug ("Found LAN Address "
                    & Ctx.Get_Attribute (Lans(Lan), "Address")
                    & " Mask " & Ctx.Get_Attribute (Lans(Lan), "Mask")
                    & " to " & Ip_Addr.Image (Host_Id));
@@ -419,7 +422,7 @@ package body Config is
       end if;
     end loop;
     -- Not found, return the interface associated to host name
-    Debug ("No Alias or LAN");
+    Log_Cfg.Log_Debug ("No Alias or LAN");
     return Socket.Local_Host_Id;
   end Get_Interface;
 

@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Characters.Latin_1;
-with C_Types, Basic_Proc, Address_Ops, Environ, Perpet, Event_Mng, Virtual_Time;
+with C_Types, Trace, Address_Ops, Perpet, Event_Mng, Virtual_Time;
 package body X_Mng is
 
   -- Maximum successive X events
@@ -11,8 +11,7 @@ package body X_Mng is
   Max_Font_Name_Len : constant := 1024;
 
   -- Debug
-  Debug_Var_Name : constant String := "X_MNG_DEBUG";
-  Debug : Boolean := False;
+  Logger : Trace.Logger;
 
   -- Result of a call to C
   subtype Result is C_Types.Int;
@@ -500,9 +499,7 @@ package body X_Mng is
       for I in Colors'Range loop
         Len :=Colors(I).Length;
         if Len = 0 then
-          if Debug then
-            Basic_Proc.Put_Line_Output ("X_Initialise, incorrect empty color at " & I'Img);
-          end if;
+          Logger.Log_Debug ("X_Initialise, incorrect empty color at " & I'Img);
           raise X_Failure;
         elsif Len > Max_Len then
           Max_Len := Len;
@@ -530,7 +527,7 @@ package body X_Mng is
       raise X_Failure;
     end if;
     Dispatcher.Initialize;
-    Debug := Environ.Is_Yes (Debug_Var_Name);
+    Logger.Set_Name ("X_Mng");
     Initialised := True;
   end X_Initialise;
   procedure X_Initialise (Server_Name : in String;
@@ -583,10 +580,8 @@ package body X_Mng is
                         Line_Definition.Border,
                         Line_Definition.No_Font,
                         Line_For_C_Id'Address) = Ok;
-    if Debug then
-      Basic_Proc.Put_Line_Output ("X_Open_Line " & Line_Id.No'Img
+    Logger.Log_Debug ("X_Open_Line " & Line_Id.No'Img
                     & " -> " & Address_Ops.Image(Line_For_C_Id));
-    end if;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
 
     if not Res then
@@ -1128,13 +1123,9 @@ package body X_Mng is
       Dispatcher.Prepare(Line_Id.No, Final_Exp);
 
       -- Get an event
-      if Debug then
-        Basic_Proc.Put_Line_Output ("X_Wait_Event: " & Line_Id.No'Img & " waiting");
-      end if;
+      Logger.Log_Debug ("X_Wait_Event: " & Line_Id.No'Img & " waiting");
       Dispatcher.Wait_Event(Line_Id.No) (Internal_Event);
-      if Debug then
-        Basic_Proc.Put_Line_Output ("X_Wait_Event: " & Line_Id.No'Img & " released");
-      end if;
+      Logger.Log_Debug ("X_Wait_Event: " & Line_Id.No'Img & " released");
       -- An event to report?
       if not Internal_Event.Internal then
         Kind := Internal_Event.Kind;
@@ -1146,9 +1137,7 @@ package body X_Mng is
       exit when Kind /= X_Mng.Timeout;
     end loop;
 
-    if Debug then
-      Basic_Proc.Put_Line_Output ("X_Wait_Event: " & Line_Id.No'Img & " got " & Kind'Img);
-    end if;
+    Logger.Log_Debug ("X_Wait_Event: " & Line_Id.No'Img & " got " & Kind'Img);
 
     -- Compute remaining time
     case Timeout.Delay_Kind is

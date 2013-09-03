@@ -4,14 +4,14 @@ with As.U;
 package Trace is
 
   -- Log traces through a logger
-  -- All logers trage in a given flow set in environment variable
-  --  <PROCESS>_DEBUGFILE="file", default stderr
+  -- All logers trace in a given flow set in environment variable
+  --  <PROCESS>_TRACEFILE="file", default stderr
   --  where <PROCESS> is the process name in UPPERCASE (no path)
   --        file is "stdout", "stderr" or any file name, possibly with
   --          ${PID}, ${CMD}, ${HOST} or ${DATE}, which are expanded
   -- Each logger has a name and each trace has a severity (maybe several)
   -- Activate traces by environment variables
-  --   <PROCESS>_DEBUG[_<LOGGER>]="<severities>"
+  --   <PROCESS>_TRACE[_<LOGGER>]="<severities>"
   --   Where <PROCESS> is the process name in UPPERCASE (no path)
   --         <LOGGER> is the logger name in UPPERCASE, "ALL" for all loggers,
   --         <PROCESS>_DEBUG for loggers with no name
@@ -22,6 +22,7 @@ package Trace is
   --  Ex: "Fatal|0|Error" => "Error"
   -- Parsing error on a severity leads to default severity, except for numeric
   --  values too high, which are discarded.
+  -- Fatal | Error are also sent to stderr by default
 
   -- The logger of traces
   -- Trace output is:
@@ -69,6 +70,15 @@ package Trace is
   procedure Add_Mask (A_Logger : in out Logger; Mask : in Severities);
   function Get_Mask  (A_Logger : in out Logger) return Severities;
 
+  -- Check if a severity is active
+  function Is_On (A_Logger : in out Logger;
+                  Severity : in Severities) return Boolean;
+  function Fatal_On   (A_Logger : in out Logger) return Boolean;
+  function Error_On   (A_Logger : in out Logger) return Boolean;
+  function Warning_On (A_Logger : in out Logger) return Boolean;
+  function Info_On    (A_Logger : in out Logger) return Boolean;
+  function Debug_On   (A_Logger : in out Logger) return Boolean;
+
   -- Log a message of a give severity (note that it can have several severities)
   procedure Log (A_Logger : in out Logger;
                  Severity : in Severities;
@@ -79,7 +89,7 @@ package Trace is
   procedure Log_Info    (A_Logger : in out Logger; Message  : in String);
   procedure Log_Debug   (A_Logger : in out Logger; Message  : in String);
 
-  -- Configure logger to flush each message
+  -- Configure logger to flush each message (true by default)
   procedure Set_Flush (A_Logger : in out Logger; Each : in Boolean);
 
   -- Flush logs of a logger
@@ -96,7 +106,7 @@ private
     Init : Boolean := False;
     Name : As.U.Asu_Us;
     Mask : Severities := 0;
-    Flush : Boolean := False;
+    Flush : Boolean := True;
   end record;
   overriding procedure Finalize (A_Logger : in out Logger);
 

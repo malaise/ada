@@ -1,10 +1,9 @@
 with Ada.Calendar;
-with Dynamic_List, Environ, Images, Mutex_Manager, Basic_Proc;
+with Dynamic_List, Trace, Images, Mutex_Manager;
 package body Timers is
 
   -- Debugging
-  Debug_Var_Name : constant String := "TIMERS_DEBUG";
-  Debug : Boolean := False;
+  Logger : Trace.Logger;
   Debug_Set : Boolean := False;
 
   -- The mutex that protect the whole
@@ -41,7 +40,7 @@ package body Timers is
     if Debug_Set then
       return;
     end if;
-    Debug := Environ.Is_Yes (Debug_Var_Name);
+    Logger.Set_Name ("Timers");
     Debug_Set := True;
   exception
     when others =>
@@ -85,13 +84,7 @@ package body Timers is
 
   procedure Put_Debug (Proc : in String; Msg : in String) is
   begin
-    if not Debug then
-      return;
-    end if;
-    Basic_Proc.Put_Line_Output (
-        Images.Date_Image (Ada.Calendar.Clock)(12 .. 23)
-      & " Timers." & Proc
-      & ": " & Msg);
+    Logger.Log_Debug (Proc & ": " & Msg);
   end Put_Debug;
 
   package Timer_Dyn_List_Mng is new Dynamic_List (Timer_Id);

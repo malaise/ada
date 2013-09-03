@@ -7,10 +7,8 @@ package body Dispatch is
                  Client : in Line_Range;
                  Message : in String) is
   begin
-    if Debug then
-      Basic_Proc.Put_Line_Output ("X_Mng.Dispatcher." & Operation & ":"
+    Logger.Log_Debug ("Dispatcher:" & Operation & "-"
                     & Client'Img & " " & Message);
-    end if;
   end Log;
 
   ------------------------------------------------------------------

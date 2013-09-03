@@ -1,5 +1,5 @@
 with Ada.Unchecked_Deallocation, Ada.Exceptions;
-with Basic_Proc, Environ, Images, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng;
+with Environ, Images, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng, Trace;
 package body Autobus is
   -- Design
   ---------
@@ -80,41 +80,24 @@ package body Autobus is
     return Ip_Addr.Image (Host, Port);
   end Image;
 
-  -- Debug
-  Debug_Got : Boolean := False;
-  Debug_Set : Boolean := False;
-  Debug_Str : constant String := "AUTOBUS_DEBUG";
-  procedure Debug (Message : in String) is
-  begin
-    if not Debug_Got then
-      Debug_Set := Environ.Is_Yes (Debug_Str);
-      Debug_Got := True;
-    end if;
-    if Debug_Set then
-      Basic_Proc.Put_Line_Output ("Autobus: " & Message);
-    end if;
-  end Debug;
+  -- Traces
+  Logger : Trace.Logger;
+  Finalizations : constant Trace.Severities := 16#20#;
 
   -- Log an exception
   procedure Log_Exception (Operation, Exception_Name, Message : in String) is
   begin
-    Basic_Proc.Put_Error ("Autobus: Exception " & Exception_Name
-                        & " raised in " & Operation);
-    if Message /= "" then
-      Basic_Proc.Put_Error (", " & Message);
-    end if;
-    Basic_Proc.Put_Line_Error (".");
+
+    Logger.Log_Error ("Exception " & Exception_Name
+                    & " raised in " & Operation
+                    & (if Message /= "" then ", " & Message else "") & ".");
   end Log_Exception;
 
   -- Log an error
   procedure Log_Error (Operation, Error, Message : in String) is
   begin
-    Basic_Proc.Put_Error ("Autobus: Error " & Error
-                        & " detected in " & Operation);
-    if Message /= "" then
-      Basic_Proc.Put_Error (", " & Message);
-    end if;
-    Basic_Proc.Put_Line_Error (".");
+    Logger.Log_Error ("Error " & Error & " in " & Operation
+                    & (if Message /= "" then ", " & Message else "") & ".");
   end Log_Error;
 
   -- Get tuning
@@ -202,7 +185,7 @@ package body Autobus is
   begin
     -- Find partner ref in Bus
     Partner_Acc := Partner_Access (Partners.Access_Current);
-    Debug ("Removing partner " & Partner_Acc.Addr.Image);
+    Logger.Log_Debug ("Removing partner " & Partner_Acc.Addr.Image);
     if not Partner_Acc.Bus.Partners.Search_Match (
              Partner_Match_Acc'Access, Partner_Acc,
              From => Partner_Access_List_Mng.Absolute) then
@@ -218,13 +201,13 @@ package body Autobus is
     if Partner_Acc.Sock.Is_Open then
       -- This partner is connected
       if Close then
-        Debug ("Removing partner -> Closing socket");
+        Logger.Log_Debug ("Removing partner -> Closing socket");
         Tcp_Reception_Mng.Remove_Callbacks (Partner_Acc.Sock);
         Partner_Acc.Sock.Close;
       end if;
     else
       -- There is a pending connection attempt to this partner
-      Debug ("Removing partner -> Aborting connection");
+      Logger.Log_Debug ("Removing partner -> Aborting connection");
       begin
         -- Connection was requested with host and port Ids
         Tcp_Util.Abort_Connect (
@@ -311,7 +294,8 @@ package body Autobus is
       return;
     end if;
     -- Don't close socket (Tcp_Util will do it when we return)
-    Debug ("Disconnection of partner " & Partners.Access_Current.Addr.Image);
+    Logger.Log_Debug ("Disconnection of partner "
+                    & Partners.Access_Current.Addr.Image);
     Remove_Current_Partner (False);
   end Tcp_Disconnection_Cb;
 
@@ -334,7 +318,8 @@ package body Autobus is
       else
         if Partner_Acc.Timer.Running and then Partner_Acc.Timer.Has_Expired then
           -- This partner is not alive (alive timeout has expired)
-          Debug ("Alive timeout of partner " & Partner_Acc.Addr.Image);
+          Logger.Log_Debug ("Alive timeout of partner "
+                          & Partner_Acc.Addr.Image);
           Remove := True;
         end if;
       end if;
@@ -398,13 +383,14 @@ package body Autobus is
     end;
     Partner_Acc.Addr := As.U.Tus (Msg);
     if Partner_Acc.Addr = Buses.Access_Current.Addr then
-      Debug ("Reception of own identification");
+      Logger.Log_Debug ("Reception of own identification");
       -- A stopped timer identifies the unique connection to ourself
       --  (amoung both) that is passive: no alive timeout check and
       --  no sending of message
       Partner_Acc.Timer.Stop;
     else
-      Debug ("Reception of identification from " & Partner_Acc.Addr.Image);
+      Logger.Log_Debug ("Reception of identification from "
+                      & Partner_Acc.Addr.Image);
     end if;
     return False;
   end Tcp_Reception_Cb;
@@ -442,7 +428,7 @@ package body Autobus is
       return;
     end if;
     Partner_Acc := Partner_Access(Partners.Access_Current);
-    Debug ("Connection to partner " & Partner_Acc.Addr.Image);
+    Logger.Log_Debug ("Connection to partner " & Partner_Acc.Addr.Image);
 
     -- Set TTL and send identification message: our TCP address
     Partner_Acc.Sock := Dscr;
@@ -461,11 +447,12 @@ package body Autobus is
   exception
     when Socket.Soc_Conn_Lost =>
       -- Not working
-      Debug ("Sending ident to partner raises Conn_Lost, closing");
+      Logger.Log_Debug ("Sending ident to partner raises Conn_Lost, closing");
       Partner_Acc.Sock.Close;
     when Tcp_Util.Timeout_Error =>
       -- Not working
-      Debug ("Sending ident to partner raises Timeout_Error, closing");
+      Logger.Log_Debug ("Sending ident to partner raises Timeout_Error,"
+                      & " closing");
       Partner_Acc.Sock.Close;
   end Tcp_Connection_Cb;
 
@@ -495,7 +482,7 @@ package body Autobus is
     Partner.Bus := Bus_Access(Buses.Access_Current);
     -- Insert in Bus a reference to this partner
     Insert_Partner (Partner);
-    Debug ("Acception of partner " & Partner.Addr.Image);
+    Logger.Log_Debug ("Acception of partner " & Partner.Addr.Image);
     Start_Partner_Timer (Partner.Bus);
     -- Set reception callback
     New_Dscr.Set_Ttl (Partner.Bus.Ttl);
@@ -582,7 +569,7 @@ package body Autobus is
     if Message(1) = 'D' then
       if Partner_Found then
         -- Death of a known partner, remove it and close connection
-        Debug ("Ipm: Death of partner " & Partner.Addr.Image);
+        Logger.Log_Debug ("Ipm: Death of partner " & Partner.Addr.Image);
         Remove_Current_Partner (True);
       end if;
       -- End of processing of a death message
@@ -595,12 +582,13 @@ package body Autobus is
       if Partner.Addr < Partner.Bus.Addr then
         -- Addr < own: we send a live, then the partner will connect to us
         --  (and we will accept) then it will send its address
-        Debug ("Ipm: Waiting for identification of " & Partner.Addr.Image);
+        Logger.Log_Debug ("Ipm: Waiting for identification of "
+                        & Partner.Addr.Image);
         Send_Ipm (True);
         return False;
       end if;
       -- Addr >= own: add partner and start connect
-      Debug ("Ipm: Connecting to new partner " & Partner.Addr.Image);
+      Logger.Log_Debug ("Ipm: Connecting to new partner " & Partner.Addr.Image);
       Partner.Timer := new Chronos.Passive_Timers.Passive_Timer;
       Insert_Partner (Partner);
       -- The callback can be called synchronously
@@ -650,6 +638,7 @@ package body Autobus is
     Port_Num : Socket.Port_Num;
     Timeout : Timers.Delay_Rec (Timers.Delay_Sec);
   begin
+    Logger.Set_Name ("Autobus");
     Check_In_Receive;
     -- Check that Bus is not already initialised
     if Bus.Acc /= null then
@@ -666,11 +655,11 @@ package body Autobus is
       Ip_Addr.Parse (Address, Rem_Host, Rem_Port);
       Rbus.Name := As.U.Tus (Image (Ip_Addr.Resolve (Rem_Host, Lan => True),
                                     Ip_Addr.Resolve (Rem_Port, Socket.Udp)));
-      Debug ("Bus " & Rbus.Name.Image & " initialializing");
+      Logger.Log_Debug ("Bus " & Rbus.Name.Image & " initialializing");
       -- Check that this address is not already associated to a bus
       if Buses.Search_Match (Bus_Match_Name'Access, Rbus,
                              From => Bus_List_Mng.Absolute) then
-        Debug ("Bus " & Rbus.Name.Image  & " already in use");
+        Logger.Log_Debug ("Bus " & Rbus.Name.Image  & " already in use");
         raise Address_In_Use;
       end if;
 
@@ -680,9 +669,9 @@ package body Autobus is
       -- Now we set the socket to the proper interface for sending and
       --  receiving IPM
       if Rbus.Host_If = Socket.Local_Host_Id then
-        Debug ("Bus initialializing on default interface");
+        Logger.Log_Debug ("Bus initialializing on default interface");
       else
-        Debug ("Bus initialializing on specific interface " &
+        Logger.Log_Debug ("Bus initialializing on specific interface " &
                Ip_Addr.Image (Rbus.Host_If));
       end if;
 
@@ -693,7 +682,7 @@ package body Autobus is
       Socket_Util.Set_Destination (Rbus.Admin, Lan => True,
                                    Host => Rem_Host, Port => Rem_Port);
       Socket_Util.Link (Rbus.Admin, Rem_Port);
-      Debug ("IPM socket initialialized");
+      Logger.Log_Debug ("IPM socket initialialized");
     exception
       when Ip_Addr.Parse_Error =>
         raise Invalid_Address;
@@ -721,7 +710,7 @@ package body Autobus is
                           Tcp_Accept_Cb'Access,
                           Rbus.Accep, Port_Num,
                           Rbus.Host_If);
-    Debug ("TCP socket initialialized");
+    Logger.Log_Debug ("TCP socket initialialized");
 
     -- Now we know on which host and port we listen (for the Alive message)
     Rbus.Addr := As.U.Tus (Image (Rbus.Host_If, Port_Num));
@@ -739,8 +728,10 @@ package body Autobus is
     Buses.Rewind (False, Bus_List_Mng.Next);
     Buses.Insert (Rbus);
     Bus.Acc := Buses.Access_Current;
-    Debug ("Bus " & Rbus.Name.Image & " created at " & Rbus.Addr.Image);
-    Debug (" with Period: " & Images.Dur_Image (Rbus.Heartbeat_Period, 1, False)
+    Logger.Log_Debug ("Bus " & Rbus.Name.Image
+                    & " created at " & Rbus.Addr.Image);
+    Logger.Log_Debug (" with Period: "
+       & Images.Dur_Image (Rbus.Heartbeat_Period, 1, False)
        & ", MaxMissed: " & Images.Integer_Image(Rbus.Heartbeat_Max_Missed)
        & " and Timeout: " &  Images.Dur_Image (Rbus.Timeout, 1, False));
 
@@ -768,7 +759,7 @@ package body Autobus is
       raise Status_Error;
     end if;
     Bus_Found := Buses.Search_Access (Bus.Acc);
-    Debug ("Bus.Reset " & Bus.Acc.Name.Image);
+    Logger.Log_Debug ("Bus.Reset " & Bus.Acc.Name.Image);
 
     -- Send Death info
     Send_Ipm (False);
@@ -831,10 +822,11 @@ package body Autobus is
         Success := True;
       exception
         when Socket.Soc_Conn_Lost =>
-          Debug ("Lost connection to " & Partner_Acc.Addr.Image);
+          Logger.Log_Debug ("Lost connection to " & Partner_Acc.Addr.Image);
           Success := False;
         when Tcp_Util.Timeout_Error =>
-          Debug ("Timeout while sending to " & Partner_Acc.Addr.Image);
+          Logger.Log_Debug ("Timeout while sending to "
+                          & Partner_Acc.Addr.Image);
           Success := False;
         when Except:others =>
           Log_Exception ("Tcp_Send", Ada.Exceptions.Exception_Name (Except),
@@ -901,8 +893,8 @@ package body Autobus is
       Subs.Filter := new Regular_Expressions.Compiled_Pattern;
       Regular_Expressions.Compile (Subs.Filter.all, Ok, Filter);
       if not Ok then
-        Debug ("Subscriber.Init regexp error "
-             & Regular_Expressions.Error (Subs.Filter.all));
+        Logger.Log_Debug ("Subscriber.Init regexp error "
+                        & Regular_Expressions.Error (Subs.Filter.all));
         Regular_Expressions.Free (Subs.Filter.all);
         Deallocate (Subs.Filter);
         raise Invalid_Filter;
@@ -919,9 +911,9 @@ package body Autobus is
       Bus.Acc.Subscribers.Move_At (Position);
     end if;
 
-    Debug ("Subscriber "
-           & (if Filter /= "" then Filter & " " else "")
-           & "init ok");
+    Logger.Log_Debug ("Subscriber "
+                    & (if Filter /= "" then Filter & " " else "")
+                    & "init ok");
   end Init;
 
   -- Is a Subscriber initialised
@@ -946,11 +938,11 @@ package body Autobus is
     end if;
     -- Find subscriber in bus list
     if not Subscriber.Acc.Bus.Subscribers.Search_Access (Subscriber.Acc) then
-      Debug ("Subscriber.Reset subscriber unknown by its bus!");
+      Logger.Log_Debug ("Subscriber.Reset subscriber unknown by its bus!");
       raise Status_Error;
     end if;
 
-    Debug ("Subscriber.Reset " & Subscriber.Acc.Bus.Name.Image);
+    Logger.Log_Debug ("Subscriber.Reset " & Subscriber.Acc.Bus.Name.Image);
     Remove_Current_Subscriber;
     Subscriber.Acc := null;
   end Reset;
@@ -1023,28 +1015,20 @@ package body Autobus is
   -- Internal: Finalizations
   overriding procedure Finalize (Bus : in out Bus_Type) is
   begin
-    if Debug_Set then
-      Basic_Proc.Put_Line_Output ("Autobus: finalizing Bus");
-    end if;
+    Logger.Log (Finalizations, "Finalizing Bus");
     if Bus.Acc /= null then
       Reset (Bus);
     end if;
-    if Debug_Set then
-      Basic_Proc.Put_Line_Output ("Autobus: Bus finalized");
-    end if;
+    Logger.Log (Finalizations, "Bus finalized");
   end Finalize;
 
   overriding procedure Finalize (Subscriber : in out Subscriber_Type) is
   begin
-    if Debug_Set then
-      Basic_Proc.Put_Line_Output ("Autobus: finalizing Subscriber");
-    end if;
+    Logger.Log (Finalizations, "Finalizing Subscriber");
     if Subscriber.Acc /= null then
       Reset (Subscriber);
     end if;
-    if Debug_Set then
-      Basic_Proc.Put_Line_Output ("Autobus: Subscriber finalized");
-    end if;
+    Logger.Log (Finalizations, "Subscriber finalized");
   end Finalize;
 
 end Autobus;

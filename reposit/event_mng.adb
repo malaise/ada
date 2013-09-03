@@ -1,6 +1,6 @@
-with System, Ada.Io_Exceptions;
-with C_Types, Null_Procedure, Dynamic_List, Environ, Timeval, Perpet,
-     Any_Def, My_Math, Virtual_Time, Basic_Proc;
+with System;
+with C_Types, Null_Procedure, Dynamic_List, Trace, Timeval, Perpet,
+     Any_Def, My_Math, Virtual_Time;
 package body Event_Mng is
 
   -------------
@@ -15,32 +15,9 @@ package body Event_Mng is
     return Boolean'Val(C_Types.Bool'Pos(C_Boolean));
   end For_Ada;
 
-  Debug_Var_Name : constant String := "EVENT_MNG_DEBUG";
-  Debug : Boolean := False;
-  Debug_Set : Boolean := False;
-
-  procedure Set_Debug is
-  begin
-    if Debug_Set then
-      return;
-    end if;
-    Debug := Environ.Is_Yes (Debug_Var_Name);
-    Debug_Set := True;
-  exception
-    when others =>
-      null;
-  end Set_Debug;
-
-
-  procedure Put_Debug (Msg : in String) is
-  begin
-    if Debug then
-      Basic_Proc.Put_Line_Output (Msg);
-    end if;
-  exception
-    when Ada.Io_Exceptions.Device_Error =>
-      null;
-  end Put_Debug;
+  -- Logger for debug
+  Logger : Trace.Logger;
+  Logger_Name : constant String := "Event_Mng";
 
   ------------------------------------------------------------------
 
@@ -80,6 +57,7 @@ package body Event_Mng is
     Res : Boolean;
     Cb_Searched : Cb_Rec;
   begin
+    Logger.Set_Name (Logger_Name);
     -- Check no cb for this fd yet
     Cb_Searched.Fd := Fd;
     Cb_Searched.Read := Read;
@@ -97,7 +75,7 @@ package body Event_Mng is
     if not Res then
       raise Fd_Cb_Error;
     end if;
-    Put_Debug ("Event_Mng.Add_Fd_Callback " & Fd'Img & " " & Read'Img);
+    Logger.Log_Debug ("Event_Mng.Add_Fd_Callback " & Fd'Img & " " & Read'Img);
   exception
     when others =>
       raise Fd_Cb_Error;
@@ -123,13 +101,14 @@ package body Event_Mng is
       raise Fd_Cb_Error;
     end if;
 
-    Put_Debug ("Event_Mng.Del_Fd_Callback " & Fd'Img & " " & Read'Img);
+    Logger.Log_Debug ("Event_Mng.Del_Fd_Callback " & Fd'Img & " " & Read'Img);
   end Del_Fd_Callback;
 
   function Get_Fd_Callback (Fd : in File_Desc; Read : in Boolean)
            return Fd_Callback is
     Cb_Searched : Cb_Rec;
   begin
+    Logger.Set_Name (Logger_Name);
     -- Get from list
     Cb_Searched.Fd := Fd;
     Cb_Searched.Read := Read;
@@ -210,7 +189,8 @@ package body Event_Mng is
 
   procedure Send_Dummy_Signal is
   begin
-    Put_Debug ("Event_Mng.Send_Dummy_Signal");
+    Logger.Set_Name (Logger_Name);
+    Logger.Log_Debug ("Event_Mng.Send_Dummy_Signal");
     C_Send_Dummy_Signal;
   end Send_Dummy_Signal;
 
@@ -240,7 +220,7 @@ package body Event_Mng is
     Sig : Integer;
   begin
     Sig := C_Get_Signal;
-    Put_Debug ( "Event_Mng.Get_Signal_Kind: C_Get_Signal => " & Sig'Img);
+    Logger.Log_Debug ( "Event_Mng.Get_Signal_Kind: C_Get_Signal => " & Sig'Img);
     return (case Sig is
               when C_Sig_Unknown =>   Unknown_Sig,
               when C_Sig_None =>      No_Sig,
@@ -275,7 +255,7 @@ package body Event_Mng is
              Virtual_Time.Time, Virtual_Time.Speed_Range,
              Timers.Expiration_Rec, Perpet.Delta_Rec;
   begin
-    Set_Debug;
+    Logger.Set_Name (Logger_Name);
     if Delay_Spec.Clock /= null then
       raise Invalid_Delay;
     end if;
@@ -305,13 +285,13 @@ package body Event_Mng is
       end if;
 
       -- Wait
-      Put_Debug ("Event_Mng.Wait timeout " & Timeval.Image(Timeout_Val));
+      Logger.Log_Debug ("Event_Mng.Wait timeout " & Timeval.Image(Timeout_Val));
       C_Res := C_Wait (Fd'Address, Read'Address, Timeout_Val'Address);
       if C_Res /= Ok then
-        Put_Debug ("Event_Mng.Wait.C_Wait -> ERROR");
+        Logger.Log_Debug ("Event_Mng.Wait.C_Wait -> ERROR");
         return Timeout;
       else
-        Put_Debug ("Event_Mng.Wait.C_Wait -> "
+        Logger.Log_Debug ("Event_Mng.Wait.C_Wait -> "
                  & Integer'Image(Fd)
                  & " " & C_Types.Bool'Image(Read));
       end if;
@@ -334,9 +314,9 @@ package body Event_Mng is
         end if;
       else
         Handle_Res := Timeout;
-        Put_Debug ("Event_Mng.Wait Invalid fd");
+        Logger.Log_Debug ("Event_Mng.Wait Invalid fd");
       end if;
-      Put_Debug ("Event_Mng.Wait Handle -> " & Handle_Res'Img);
+      Logger.Log_Debug ("Event_Mng.Wait Handle -> " & Handle_Res'Img);
 
       -- Done on event or timeout
       if Handle_Res /= Timeout then
@@ -389,7 +369,7 @@ package body Event_Mng is
       -- Pop up to current level
       Pause_Level.Inte := Data.Inte - 1;
     end if;
-    Put_Debug ("Event_Mng.Pause.Cb " & Any_Def.Image (Data));
+    Logger.Log_Debug ("Event_Mng.Pause.Cb " & Any_Def.Image (Data));
     return True;
   end Pause_Cb;
 
@@ -401,17 +381,17 @@ package body Event_Mng is
     pragma Unreferenced (Dummy);
     use type My_Math.Inte;
   begin
-    Set_Debug;
+    Logger.Set_Name (Logger_Name);
 
     -- Increment global pause level and store ours
     Pause_Level.Inte := Pause_Level.Inte + 1;
     Loc_Level := Pause_Level;
-    Put_Debug ("Event_Mng.Pause Push " & Any_Def.Image (Loc_Level));
+    Logger.Log_Debug ("Event_Mng.Pause Push " & Any_Def.Image (Loc_Level));
 
     -- Arm or simulate timer
     if Timeout_Ms < 0 then
       Wait_Timeout := Infinite_Ms;
-      Put_Debug ("Event_Mng.Pause.Infinite");
+      Logger.Log_Debug ("Event_Mng.Pause.Infinite");
     elsif Timeout_Ms = 0 then
       Dummy := Pause_Cb (Timers.No_Timer, Pause_Level);
       Wait_Timeout := 0;
@@ -442,8 +422,8 @@ package body Event_Mng is
     Cb_Searched : Cb_Rec;
     Signal_Kind : Signal_Kind_List;
   begin
-    Set_Debug;
-    Put_Debug ("Event_Mng.Handle event " & Event.Kind'Img);
+    Logger.Set_Name (Logger_Name);
+    Logger.Log_Debug ("Event_Mng.Handle event " & Event.Kind'Img);
     case Event.Kind is
       when Fd_Event =>
         -- A FD event
@@ -452,12 +432,12 @@ package body Event_Mng is
         Cb_Searched.Cb := null;
         -- Search and read callback
         if not Cb_Search (Cb_List, Cb_Searched, From => Cb_Mng.Absolute) then
-          Put_Debug ("**** Event_Mng.Handle: "
+          Logger.Log_Debug ("**** Event_Mng.Handle: "
                    & File_Desc'Image(Event.Fd)
                    & " fd not found ****");
         else
           Cb_List.Read (Cb_Searched,  Cb_Mng.Current);
-          Put_Debug ("Event_Mng.Handle calling Cb on fd "
+          Logger.Log_Debug ("Event_Mng.Handle calling Cb on fd "
                    & Event.Fd'Img & " " & Event.Read'Img);
           -- Call it and propagate event if callback returns true
           if Cb_Searched.Cb /= null then
@@ -468,7 +448,7 @@ package body Event_Mng is
         end if;
       when Signal_Event =>
         Signal_Kind := Get_Signal_Kind;
-        Put_Debug ("Event_Mng.Handle " & Signal_Kind'Img
+        Logger.Log_Debug ("Event_Mng.Handle " & Signal_Kind'Img
                  & " with term cb: " & Boolean'Image(Cb_Term_Sig /= null)
                  & " and child cb: " & Boolean'Image(Cb_Child_Sig /= null));
         case Signal_Kind is
@@ -494,7 +474,7 @@ package body Event_Mng is
       when Timeout =>
         -- Nothing. Expire timers or return timeout
         if Timers.Expire then
-          Put_Debug ("Event_Mng.Handle: No_Event -> Timer_Event");
+          Logger.Log_Debug ("Event_Mng.Handle: No_Event -> Timer_Event");
           return Timer_Event;
         end if;
     end case;

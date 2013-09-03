@@ -169,9 +169,9 @@ package body Trace is
                 False, True);
 
     Name := As.U.Tus (Upper_Str (Process.Image));
-    Mask := Parse (Environ.Getenv (Name.Image & "_DEBUG_ALL"));
+    Mask := Parse (Environ.Getenv (Name.Image & "_TRACE_ALL"));
 
-    File := As.U.Tus (Environ.Getenv (Name.Image & "_DEBUGFILE"));
+    File := As.U.Tus (Environ.Getenv (Name.Image & "_TRACEFILE"));
     if File.Image = Stdout_Name then
       -- Stdout
       File := As.U.Tus (Stdout_Name);
@@ -212,13 +212,19 @@ package body Trace is
   procedure Set_Name (A_Logger : in out Logger; Name : in String) is
   begin
     -- Init if necessary
+    if A_Logger.Init and then A_Logger.Name.Image = Name then
+      return;
+    end if;
+
+    -- Global init if necessary
     Init;
+
     -- Store new name  or default
     A_Logger.Name := As.U.Tus (Name);
-    -- Get ENV severity Proc_DEBUG[_Name], or global one
+    -- Get ENV severity Proc_TRACE[_Name], or global one
     declare
       Env : constant String
-          := Upper_Str (Process.Image) & "_DEBUG"
+          := Upper_Str (Process.Image) & "_TRACE"
            & Upper_Str (if A_Logger.Name.Is_Null
                         then ""
                         else "_" & A_Logger.Name.Image);
@@ -269,6 +275,54 @@ package body Trace is
     return A_Logger.Mask;
   end Get_Mask;
 
+  -- Check if a severity is active
+  function Is_On (A_Logger : in out Logger;
+                  Severity : in Severities) return Boolean is
+  begin
+    if not A_Logger.Init then
+      Activate (A_Logger);
+    end if;
+    return (A_Logger.Mask and Severity) /= 0;
+  end Is_On;
+
+  function Fatal_On (A_Logger : in out Logger) return Boolean is
+  begin
+   if not A_Logger.Init then
+      Activate (A_Logger);
+    end if;
+    return (A_Logger.Mask and Fatal) /= 0;
+  end Fatal_On;
+
+  function Error_On (A_Logger : in out Logger) return Boolean is
+  begin
+   if not A_Logger.Init then
+      Activate (A_Logger);
+    end if;
+    return (A_Logger.Mask and Error) /= 0;
+  end Error_On;
+  function Warning_On (A_Logger : in out Logger) return Boolean is
+  begin
+   if not A_Logger.Init then
+      Activate (A_Logger);
+    end if;
+    return (A_Logger.Mask and Warning) /= 0;
+  end Warning_On;
+  function Info_On (A_Logger : in out Logger) return Boolean is
+  begin
+   if not A_Logger.Init then
+      Activate (A_Logger);
+    end if;
+    return (A_Logger.Mask and Info) /= 0;
+  end Info_On;
+  function Debug_On (A_Logger : in out Logger) return Boolean is
+  begin
+   if not A_Logger.Init then
+      Activate (A_Logger);
+    end if;
+    return (A_Logger.Mask and Debug) /= 0;
+  end Debug_On;
+
+
   -- Logging
   ----------
   procedure Log (A_Logger : in out Logger;
@@ -293,6 +347,7 @@ package body Trace is
            & " " & (if A_Logger.Name.Is_Null then "-" else A_Logger.Name.Image)
            & " " & Image (Severity)
            & " -> " & Message);
+    -- Put on flow
     Flow.Put_Line (Txt.Image);
     -- Flush if set on logger
     if A_Logger.Flush then
@@ -300,14 +355,14 @@ package body Trace is
     end if;
 
     -- Put on stderr if needed
-    if (Severity or Errors) /= 0
+    if (Severity and Errors) /= 0
     and then not Flow_Is_Stderr
     and then Errors_On_Stderr then
       Stderr.Put_Line (Txt.Image);
-    end if;
-    -- Flush if set on logger
-    if A_Logger.Flush then
-      Stderr.Flush;
+      -- Flush if set on logger
+      if A_Logger.Flush then
+        Stderr.Flush;
+      end if;
     end if;
   end Log;
 

@@ -1,4 +1,4 @@
-with Utf_8, Utf_16, Sys_Calls, Str_Util.Regex;
+with Environ, Utf_8, Utf_16, Sys_Calls, Str_Util.Regex;
 separate (Xml_Parser.Parse_Mng)
 package body Util is
   -- Autodetect encoding family

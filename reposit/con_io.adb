@@ -1,9 +1,8 @@
 with Ada.Calendar;
-with Argument, Environ, Lower_Str, Str_Util, Basic_Proc;
+with Argument, Environ, Lower_Str, Str_Util, Trace;
 package body Con_Io is
 
   -- Some constants
-  Debug_Env_Name : constant String := "CON_IO_DEBUG";
   Font_Env_Name : constant String := "CON_IO_FONT";
   Font_Env_Small : constant String := "small";
   Font_Env_Large : constant String := "large";
@@ -21,18 +20,13 @@ package body Con_Io is
   Lfs : constant String := Lf & "";
 
   -- Some global variables, set at Initialize (or before Set_Colors)
-  Debug_On : Boolean := False;
   X_Init_Done : Boolean := False;
   The_Color_Names : Colors_Definition := Default_Colors;
   subtype Font_No_Offset_Range is Integer range -1 .. 1;
   Font_No_Offset : Font_No_Offset_Range := 0;
 
-  procedure Debug (Msg : in String) is
-  begin
-    if Debug_On then
-      Basic_Proc.Put_Line_Error ("Con_Io: " & Msg);
-    end if;
-  end Debug;
+  -- Trace logger
+  Logger : Trace.Logger;
 
   -- Smart reference of Console and Window
   procedure Set (Dest : in out Console_Data; Val : in Console_Data) is
@@ -48,7 +42,7 @@ package body Con_Io is
     if not Con.Initialised then
       return;
     end if;
-    Debug ("Console finalization closing line");
+    Logger.Log_Debug ("Console finalization closing line");
     X_Mng.X_Close_Line(Id);
     -- Close all windows of current console
     if not Windows.Is_Empty then
@@ -60,7 +54,7 @@ package body Con_Io is
           -- Deallocate i.o. delete so that this smart reference is destroyed
           --  otherwise the window remains allocated until a new window is
           --  created
-          Debug ("  closing window");
+          Logger.Log_Debug ("  closing window");
           Win.Get_Access.Open := False;
           Windows.Deallocate (Moved => Moved);
           exit when not Moved;
@@ -79,7 +73,7 @@ package body Con_Io is
   procedure Finalize (Win : in Window_Data) is
     pragma Unreferenced (Win);
   begin
-    Debug ("Window finalization");
+    Logger.Log_Debug ("Window finalization");
   end Finalize;
 
 
@@ -91,8 +85,8 @@ package body Con_Io is
     Xi : X_Mng.Color;
   begin
     if not X_Init_Done then
-      Debug_On := Environ.Is_Yes (Debug_Env_Name);
-      Debug ("Con_Io initialisation");
+      Logger.Set_Name ("Con_Io");
+      Logger.Log_Debug ("Con_Io initialisation");
       for I in The_Color_Names'Range loop
          Xi := Colors'Pos(I) - Colors'Pos(Color01);
          X_Colors(Xi) := The_Color_Names(I);
@@ -125,7 +119,7 @@ package body Con_Io is
     if X_Init_Done then
       raise Already_Init;
     end if;
-    Debug ("Con_Io setting colors");
+    Logger.Log_Debug ("Con_Io setting colors");
     The_Color_Names := Color_Names;
   end Set_Colors;
 
@@ -179,7 +173,7 @@ package body Con_Io is
     Con_Data : Console_Data;
     Screen : Window;
   begin
-    Debug ("Console opening");
+    Logger.Log_Debug ("Console opening");
     Initialise;
     Con_Data.Font_No := Font_No;
     Con_Data.Row_Range_Last := Row_Last;
@@ -232,7 +226,7 @@ package body Con_Io is
 
   procedure Close (Con : in out Console) is
   begin
-    Debug ("Console destruction");
+    Logger.Log_Debug ("Console destruction");
     Check_Con (Con);
     Finalize (Con.Get_Access.all);
     -- Prevent double finalization
@@ -254,7 +248,7 @@ package body Con_Io is
   -- Suspend and resume con_io
   procedure Suspend (Con : in Console) is
   begin
-    Debug ("Console suspension");
+    Logger.Log_Debug ("Console suspension");
     Check_Con (Con);
     -- Clear window and suspend
     X_Mng.X_Suspend (Con.Get_Access.Id);
@@ -262,7 +256,7 @@ package body Con_Io is
 
   procedure Resume (Con : in Console) is
   begin
-    Debug ("Console resume");
+    Logger.Log_Debug ("Console resume");
     if not Is_Suspended (Con) then
       raise Suspended;
     end if;
@@ -330,7 +324,7 @@ package body Con_Io is
     Con_Acc : access Console_Data;
     Scr_Acc : access Window_Data;
   begin
-    Debug ("Console reset term");
+    Logger.Log_Debug ("Console reset term");
     Check_Con (Con);
     Con_Acc := Con.Get_Access;
     Scr_Acc := Con_Acc.Screen_Window.Get_Access;
@@ -374,7 +368,7 @@ package body Con_Io is
     Win_Data : Window_Data;
     Acc : access Console_Data;
   begin
-    Debug ("Window opening");
+    Logger.Log_Debug ("Window opening");
     if Con = null then
       raise Not_Init;
     end if;
@@ -410,7 +404,7 @@ package body Con_Io is
   -- Make window re-usable (have to re_open it)
   procedure Close (Name : in out Window) is
   begin
-    Debug ("Window closing");
+    Logger.Log_Debug ("Window closing");
     Check_Win (Name);
     -- Check that Name is not Screen
     if Name.Get_Access =

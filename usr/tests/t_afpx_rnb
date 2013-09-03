@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export AFPX_RNB_TRACEFILE=afpx_rnb.log
+
 if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then
   echo "Usage: `basename $0` [ <nb_fields> ]"
   exit 1
@@ -215,6 +217,6 @@ if [ $do_cop -eq 1 ] ; then
   echo ""
 fi
 
-rm -f err Afpx.ref Afpx.tmp Afpx.res
+rm -f err Afpx.ref Afpx.tmp Afpx.res afpx_rnb.log
 echo "Test Ok."
 

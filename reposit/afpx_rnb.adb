@@ -1,7 +1,7 @@
 -- Insert or remove fields in a Afpx.xml file
 -- Update other field number and references to them
 with Ada.Exceptions;
-with Basic_Proc, Argument, Argument_Parser, Environ, Lower_Str,
+with Basic_Proc, Argument, Argument_Parser, Trace, Lower_Str,
      As.U, Images, Unbounded_Arrays, Str_Util, Text_Line,
      Afpx_Typ, Xml_Parser.Generator;
 procedure Afpx_Rnb is
@@ -72,8 +72,8 @@ procedure Afpx_Rnb is
     raise Abort_Error;
   end Error;
 
-  -- Debug option
-  Debug : Boolean;
+  -- Trace
+  Logger : Trace.Logger;
 
   -- Afpx descriptor
   Dscr : Afpx_Typ.Descriptor_Range;
@@ -133,18 +133,17 @@ procedure Afpx_Rnb is
       --  (e.g. only a list)
       Node := Prev_Node;
     end if;
-    if Debug and then Xml_Parser.Is_Valid (Node) then
-      Basic_Proc.Put_Output ("Start_Node is " & Node.Kind'Img);
-      if Node.Kind = Xml_Parser.Element then
-        Basic_Proc.Put_Output (" Name " & Xml.Get_Name (Node));
-        if Xml.Get_Name (Node) = Field_Name then
-          Basic_Proc.Put_Line_Output (" Num "
-                                    & Xml.Get_Attribute (Node, Field_Num_Name));
-        else
-          Basic_Proc.New_Line_Output;
-        end if;
+    if Logger.Debug_On then
+      if Xml_Parser.Is_Valid (Node) then
+        Logger.Log_Debug ("Start_Node is " & Node.Kind'Img
+            & (if Node.Kind = Xml_Parser.Element then
+                 " Name " & Xml.Get_Name (Node)
+                 & (if Xml.Get_Name (Node) = Field_Name then
+                      " Num " & Xml.Get_Attribute (Node, Field_Num_Name)
+                    else "")
+               else ""));
       else
-        Basic_Proc.New_Line_Output;
+        Logger.Log_Debug ("Start_Node is first node of dscr");
       end if;
     end if;
 
@@ -154,10 +153,8 @@ procedure Afpx_Rnb is
           & " does not exist in descriptor "
           & Images.Integer_Image (Positive (Dscr)));
     end if;
-    if Debug then
-      Basic_Proc.Put_Line_Output ("Got "
+    Logger.Log_Debug ("Got "
           & Images.Integer_Image (Natural (Nb_Fields)) & " fields");
-    end if;
     return Node;
   end Find_Field;
 
@@ -255,9 +252,7 @@ procedure Afpx_Rnb is
                      Next => False);
     -- Set Field num
     Fld_Attrs(1).Value := As.U.Tus (Images.Integer_Image (Positive (Fld_Num)));
-    if Debug then
-      Basic_Proc.Put_Line_Output ("Insert Field " & Fld_Attrs(1).Value.Image);
-    end if;
+    Logger.Log_Debug ("Insert Field " & Fld_Attrs(1).Value.Image);
     if Xml_Parser.Is_Valid (Copy_From) then
       -- Set field Num attribute with provided Num
       Xml.Set_Attribute (Field, Fld_Attrs(1).Name.Image,
@@ -301,6 +296,7 @@ procedure Afpx_Rnb is
                     Field_Array);
   Field_Map : Field_Map_Mng.Unb_Array;
   Old_Num, New_Num : Afpx_Typ.Absolute_Field_Range;
+  Map_Txt : As.U.Asu_Us;
 
   -- Ok so far (mainly about unresolved references)
   Ok : Boolean;
@@ -410,9 +406,7 @@ procedure Afpx_Rnb is
       -- Get next field and delete current field
       Next_Node := Next_Field (Curr_Node);
       Xml.Delete_Node (Curr_Node, Curr_Node);
-      if Debug then
-        Basic_Proc.Put_Line_Output ("Delete Field");
-      end if;
+      Logger.Log_Debug ("Delete Field");
 
       -- Move to next field if any
       exit when I = Number;
@@ -427,10 +421,11 @@ procedure Afpx_Rnb is
 
 begin
 
+  Logger.Activate;
+
   ------------------
   -- Parse arguments
   ------------------
-  Debug := Environ.Is_Yes ("AFPX_RNB_DEBUG");
   Args := Argument_Parser.Parse (Keys);
   if not Args.Is_Ok then
     Error ("Invalid arguments: " & Args.Get_Error);
@@ -587,6 +582,7 @@ begin
       Error ("Cannot parse file " & Input_File_Name.Image
         & ": " & Xml.Get_Parse_Error_Message, False);
     end if;
+    Logger.Log_Debug ("File " & Input_File_Name.Image & " parsed OK");
   exception
     when Xml_Parser.File_Error =>
       Error ("Cannot read XML file " & Input_File_Name.Image);
@@ -619,12 +615,14 @@ begin
     end if;
     Dscr_Elt := Tmp_Node;
   end;
+  Logger.Log_Debug ("Descriptor found OK");
 
   -- Find fields
   if Action /= Delete then
     -- Insert or Move: Find start node, also counts fields
     Start_Nodei := Find_Field (Field_Numi);
   end if;
+  Logger.Log_Debug ("Field " & Field_Numi'Img & " found OK");
 
   if Action /= Insert then
     -- Delete, Move or Copy: Find node to delete, also counts fields
@@ -638,6 +636,7 @@ begin
             & Images.Integer_Image (Positive (Field_Numd))
             & " in descriptor " & Images.Integer_Image (Positive (Dscr)) );
     end if;
+    Logger.Log_Debug ("Field " & Field_Numd'Img & " found OK");
   end if;
 
 
@@ -691,13 +690,14 @@ begin
         end if;
       end loop;
   end case;
-  if Debug then
-    Basic_Proc.Put_Output ("Translation map is: " );
+   Logger.Log_Debug ("Translation map made OK");
+  if Logger.Debug_On then
+    Map_Txt.Set ("Translation map is: " );
     for I in 1 .. Field_Map.Length loop
-      Basic_Proc.Put_Output (Images.Integer_Image (Positive (I)) & "->"
+      Map_Txt.Append (Images.Integer_Image (Positive (I)) & "->"
           & Images.Integer_Image (Natural (Field_Map.Element(I))) & ", ");
     end loop;
-    Basic_Proc.New_Line_Output;
+    Logger.Log_Debug (Map_Txt.Image);
   end if;
 
 
@@ -750,11 +750,9 @@ begin
         Num_Read := Afpx_Typ.Absolute_Field_Range'Value (
             Xml.Get_Attribute (Field, Field_Num_Name));
 
-        if Debug then
-           Basic_Proc.Put_Line_Output (
+        Logger.Log_Debug (
                Images.Integer_Image (Positive (Num_Read)) & "->"
              & Images.Integer_Image (Positive (Num_Comp)));
-        end if;
        if Num_Read /= Num_Comp then
           Xml.Set_Attribute (Field, Field_Num_Name,
             Images.Integer_Image(Positive(Num_Comp)));
@@ -784,8 +782,8 @@ begin
         for I in Geometry'Range loop
           Update (Geometry(I).Value, Xml.Get_Line_No (Tmp_Node), Updated);
           Changed := Changed or else Updated;
-          if Debug and then Updated then
-            Basic_Proc.Put_Line_Output ("Update Geometry " &
+          if Updated then
+            Logger.Log_Debug ("Update Geometry " &
               Geometry(I).Name.Image & " to " & Geometry(I).Value.Image);
           end if;
         end loop;
@@ -813,10 +811,7 @@ begin
               Update (Txt, Xml.Get_Line_No (Tmp_Node), Updated);
               if Updated then
                 Xml.Set_Text (Tmp_Node, Txt.Image);
-                if Debug then
-                  Basic_Proc.Put_Line_Output ("Update Init text to " &
-                     Txt.Image);
-                end if;
+                Logger.Log_Debug ("Update Init text to " & Txt.Image);
               end if;
             end if;
           end loop;
@@ -833,11 +828,9 @@ begin
         Update (Txt, Xml.Get_Line_No (Field), Updated);
         if Updated then
           Xml.Set_Attribute (Field, "Value", Txt.Image);
-          if Debug then
-            Basic_Proc.Put_Line_Output ("Update Var "
+          Logger.Log_Debug ("Update Var "
                 & Xml.Get_Attribute (Field, "Name")
                 & " to " & Txt.Image);
-          end if;
         end if;
 
       end if;

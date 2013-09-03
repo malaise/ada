@@ -1,6 +1,5 @@
 with Ada.Exceptions, Ada.Unchecked_Deallocation;
-with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory, Str_Util,
-     Regular_Expressions;
+with Trace, Rnd, Exception_Messenger, Directory, Str_Util, Regular_Expressions;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
@@ -30,7 +29,7 @@ package body Xml_Parser is
   end "=";
 
   -- Trace debug message
-  Debug : Trilean.Trilean := Trilean.Maybe;
+  Logger : Trace.Logger;
   procedure Trace (Msg : in String);
   function Debug_On return Boolean;
 
@@ -276,24 +275,28 @@ package body Xml_Parser is
   -----------
   -- DEBUG --
   -----------
+  Debug_Set : Boolean := False;
   -- Trace debug message
   procedure Trace (Msg : in String) is
     use type Trilean.Trilean;
   begin
-    if Debug = Trilean.Maybe then
+    if not Debug_Set then
       -- First call, set debug
-      Debug := (if Environ.Is_Yes ("XML_PARSER_DEBUG") then Trilean.True
-                else Trilean.False);
+      Logger.Set_Name ("Xml_Parser");
+      Debug_Set := True;
     end if;
-    if Debug = Trilean.True then
-      Basic_Proc.Put_Line_Error (Msg);
-    end if;
+    Logger.Log_Debug (Msg);
   end Trace;
 
   function Debug_On return Boolean is
     use type Trilean.Trilean;
   begin
-    return Debug = Trilean.True;
+    if not Debug_Set then
+      -- First call, set debug
+      Logger.Set_Name ("Xml_Parser");
+      Debug_Set := True;
+    end if;
+    return Logger.Debug_On;
   end Debug_On;
 
   function Get_Magic return Float is
