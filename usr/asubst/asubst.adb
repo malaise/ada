@@ -1,10 +1,10 @@
 with Ada.Exceptions;
 with As.U.Utils, Environ, Argument, Argument_Parser, Basic_Proc, Language,
      Mixed_Str, Text_Line, Regular_Expressions;
-with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
+with Search_Pattern, Replace_Pattern, Substit, File_Mng, Log;
 procedure Asubst is
 
-  Version : constant String  := "V17.2";
+  Version : constant String  := "V17.3";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -317,10 +317,10 @@ begin
   -- Superseed by ASUBST_UTF8 variable if set
   if Environ.Is_Yes (Utf8_Var_Name) then
     Lang := Language.Lang_Utf_8;
-    Debug.Log ("Environ set to UTF-8");
+    Log.Def ("Environ set to UTF-8");
   elsif Environ.Is_No (Utf8_Var_Name) then
     Lang := Language.Lang_C;
-    Debug.Log ("Environ set to NO UTF-8");
+    Log.Def ("Environ set to NO UTF-8");
   end if;
 
   -- Parse keys and options
@@ -366,7 +366,7 @@ begin
   -- Parse options
   if Arg_Dscr.Is_Set (01) then
     -- Force ASCII processing even if ENV was set
-    Debug.Log ("Option ascii");
+    Log.Def ("Option ascii");
     Lang := Language.Lang_C;
   end if;
   if Arg_Dscr.Is_Set (02) then
@@ -383,7 +383,7 @@ begin
         Error;
         return;
     end;
-    Debug.Log ("Option delimiter = " & Delimiter.Image);
+    Log.Def ("Option delimiter = " & Delimiter.Image);
   end if;
   if Arg_Dscr.Is_Set (03) then
     -- Allow dot to match all characters
@@ -392,7 +392,7 @@ begin
          & ": Syntax ERROR. Option -d requires option -D.");
       Error;
     end if;
-    Debug.Log ("Option dot all");
+    Log.Def ("Option dot all");
     Dot_All := True;
   end if;
   if Arg_Dscr.Is_Set (04) then
@@ -409,37 +409,37 @@ begin
         Error;
         return;
     end;
-    Debug.Log ("Option exclude = " & Exclude.Image);
+    Log.Def ("Option exclude = " & Exclude.Image);
   end if;
   if Arg_Dscr.Is_Set (05) then
     -- The file will be a list of files
-    Debug.Log ("Option file of files");
+    Log.Def ("Option file of files");
     File_Of_Files := True;
   end if;
   if Arg_Dscr.Is_Set (06) then
     -- Put file name
-    Debug.Log ("Option file name");
+    Log.Def ("Option file name");
     Grep_File_Name := True;
   end if;
   if Arg_Dscr.Is_Set (07) then
     -- Put matching text like grep would do
-    Debug.Log ("Option grep mode");
+    Log.Def ("Option grep mode");
     Grep := True;
     Grep_List := False;
   end if;
   if Arg_Dscr.Is_Set (08) then
     -- Case insensitive match
-    Debug.Log ("Option ignore case");
+    Log.Def ("Option ignore case");
     Case_Sensitive := False;
   end if;
   if Arg_Dscr.Is_Set (09) then
     -- Invert grep matching
-    Debug.Log ("Option invert matching");
+    Log.Def ("Option invert matching");
     Grep_Invert := True;
   end if;
   if Arg_Dscr.Is_Set (10) then
     -- Put matching file like grep -l would do
-    Debug.Log ("Option file mode");
+    Log.Def ("Option file mode");
     if Arg_Dscr.Is_Set (6) then
       Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
          & ": Syntax ERROR. Incompatible options -L and -f.");
@@ -451,7 +451,7 @@ begin
   end if;
   if Arg_Dscr.Is_Set (11) then
     -- Put line no
-    Debug.Log ("Option line no");
+    Log.Def ("Option line no");
     Grep_Line_Nb := True;
   end if;
   if Arg_Dscr.Is_Set (12) then
@@ -469,14 +469,14 @@ begin
         Error;
         return;
     end;
-    Debug.Log ("Option match =" & Match_Range.Image);
+    Log.Def ("Option match =" & Match_Range.Image);
   else
     -- No criteria
     Match_Range := As.U.Tus ("-");
   end if;
   if Arg_Dscr.Is_Set (13) then
     -- Put number of substitutions
-    Debug.Log ("Option put numbers");
+    Log.Def ("Option put numbers");
     if not Check_Verbose then
       return;
     end if;
@@ -496,11 +496,11 @@ begin
         Error;
         return;
     end;
-    Debug.Log ("Option tmp_dir = " & Tmp_Dir.Image);
+    Log.Def ("Option tmp_dir = " & Tmp_Dir.Image);
   end if;
   if Arg_Dscr.Is_Set (15) then
     -- Quiet mode
-    Debug.Log ("Option quiet");
+    Log.Def ("Option quiet");
     if not Check_Verbose then
       return;
     end if;
@@ -508,12 +508,12 @@ begin
   end if;
   if Arg_Dscr.Is_Set (16) then
     -- Make backup
-    Debug.Log ("Option make backup");
+    Log.Def ("Option make backup");
     Backup := True;
   end if;
   if Arg_Dscr.Is_Set (17) then
     -- Test mode
-    Debug.Log ("Option test");
+    Log.Def ("Option test");
     Test := True;
   end if;
   if Arg_Dscr.Is_Set (18) then
@@ -524,12 +524,12 @@ begin
       Error;
       return;
     end if;
-    Debug.Log ("Option utf8");
+    Log.Def ("Option utf8");
     Lang := Language.Lang_Utf_8;
   end if;
   if Arg_Dscr.Is_Set (19) then
     -- Verbose put each substit
-    Debug.Log ("Option verbose");
+    Log.Def ("Option verbose");
     if not Check_Verbose then
       return;
     end if;
@@ -537,13 +537,13 @@ begin
   end if;
   if Arg_Dscr.Is_Set (20) then
     -- Find pattern is not a regex
-    Debug.Log ("Option noregex");
+    Log.Def ("Option noregex");
     Is_Regex := False;
   end if;
 
   -- Set language (for regexp)
   Language.Set_Language (Lang);
-    Debug.Log ("Regex assumes language to be "
+    Log.Def ("Regex assumes language to be "
        & Mixed_Str (Language.Language_List'Image(
                 Language.Get_Language)));
 
@@ -630,13 +630,13 @@ begin
   end if;
 
   -- Display search pattern and replace string
-  Debug.Log ("Search pattern: >"
+  Log.Def ("Search pattern: >"
        & Arg_Dscr.Get_Option (No_Key_Index, 1) & "<");
   if Exclude.Image /= "" then
-    Debug.Log ("Exclude pattern: >" & Exclude.Image & "<");
+    Log.Def ("Exclude pattern: >" & Exclude.Image & "<");
   end if;
   if not Grep then
-    Debug.Log ("Replace string: >"
+    Log.Def ("Replace string: >"
        & Arg_Dscr.Get_Option (No_Key_Index, 2) & "<");
   end if;
 

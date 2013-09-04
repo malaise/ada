@@ -1,6 +1,6 @@
 Asubst
 ======
-V17.2
+V17.3
 
 Asubs is a command line tool that finds occurences of text that match a
 pattern (regular expression), and replaces these occurrences by a given string.

@@ -1,7 +1,7 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
 with As.U, Argument, Sys_Calls, Str_Util, Text_Line, Hashed_List.Unique,
      Hexa_Utils, Upper_Str, Lower_Str, Mixed_Str, Command, Images;
-with Search_Pattern, Debug;
+with Search_Pattern, Log;
 package body Replace_Pattern is
 
   function Code_Image is new Images.Int_Image (Command.Exit_Code_Range);
@@ -117,8 +117,8 @@ package body Replace_Pattern is
              & The_Pattern.Slice (Index, Index + 1)
              & " in replace pattern");
     end;
-    Debug.Log ("Replace, got " & Error_Msg.Image & " "
-                               & The_Pattern.Slice (Index, Index + 1));
+    Log.Rep ("Replace, got " & Error_Msg.Image & " "
+                             & The_Pattern.Slice (Index, Index + 1));
     return Result;
   end Get_Hexa;
 
@@ -159,7 +159,7 @@ package body Replace_Pattern is
     In_Command, In_File : Boolean;
 
   begin
-    Debug.Log ("Replace parsing pattern >" & Pattern & "<");
+    Log.Rep ("Replace parsing pattern >" & Pattern & "<");
     -- Store pattern
     The_Pattern := As.U.Tus (Pattern);
     -- Replace escape sequences by coding chars
@@ -191,7 +191,7 @@ package body Replace_Pattern is
         --  is not in the case statement below
         Esc_Char := Subst_Char;
       else
-        Debug.Log ("Replace, found Esc char >" & Esc_Char & "<");
+        Log.Rep ("Replace, found Esc char >" & Esc_Char & "<");
       end if;
       -- In all case of replacement of \... by a char:
       Start := Got;
@@ -378,8 +378,8 @@ package body Replace_Pattern is
     if In_Command then
       Error ("Un-terminated command");
     end if;
-    Debug.Log ("Replace stored pattern >"
-             & The_Pattern.Image & "<");
+    Log.Rep ("Replace stored pattern >"
+           & The_Pattern.Image & "<");
   end Parse;
 
   -- Returns if pattern is empty
@@ -418,8 +418,8 @@ package body Replace_Pattern is
     end if;
   exception
     when Error:others =>
-      Debug.Log ("Replace.Matchstring: exception "
-               & Ada.Exceptions.Exception_Name (Error));
+      Log.Rep ("Replace.Matchstring: exception "
+             & Ada.Exceptions.Exception_Name (Error));
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
                 & " INTERNAL ERROR. Cannot find matching (sub)string "
                 & Rth'Img & "," & Sth'Img);
@@ -485,7 +485,7 @@ package body Replace_Pattern is
   begin
     -- Init result with replace pattern
     Result := The_Pattern;
-    if Debug.Set then
+    if Log.Rep_Debug then
       Txt.Set ("Replace, working with >");
       for I in 1 .. Result.Length loop
         if Result.Element (I) = Subst_Char then
@@ -495,7 +495,7 @@ package body Replace_Pattern is
         end if;
       end loop;
       Txt.Append ("<");
-      Debug.Log (Txt.Image);
+      Log.Rep (Txt.Image);
     end if;
     -- Replace all occurences of replace code, toggle case substitution...
     Start := 1;
@@ -542,13 +542,11 @@ package body Replace_Pattern is
             Offset := Offset - 1;
             if Subst.Action = End_If_Match_Substring
             or else Subst.Action = Else_Match_Substring then
-              Debug.Log (
-                  "Replace, got 'if' action " & Subst.Action'Img);
+              Log.Rep ("Replace, got 'if' action " & Subst.Action'Img);
             else
-              Debug.Log (
-                  "Replace, got 'if' action " & Subst.Action'Img
-                  & " on string >"
-                  & Matchstring (Subst.Action, Subst.Info) & "<");
+              Log.Rep ("Replace, got 'if' action " & Subst.Action'Img
+                     & " on string >"
+                     & Matchstring (Subst.Action, Subst.Info) & "<");
             end if;
             case If_Status is
               when None =>
@@ -665,8 +663,8 @@ package body Replace_Pattern is
                 Sub_Str : constant String
                         := Matchstring (Subst.Action, Subst.Info);
               begin
-                Debug.Log ("Replace, got match string >"
-                                          & Sub_Str & "<");
+                Log.Rep ("Replace, got match string >"
+                       & Sub_Str & "<");
                 Result.Replace (Got, Got, Sub_Str);
                 -- Restart locate from first char after replacement
                 Start := Got + Sub_Str'Length;
@@ -681,9 +679,9 @@ package body Replace_Pattern is
             if Start_Skip = 0 then
               if Case_Index /= 0 then
                 -- End of a casing: apply
-                Debug.Log ("Replace, converting >"
-                         & Result.Slice (Case_Index, Got - 1) & "< to "
-                         & Mixed_Str(Case_Mode'Img));
+                Log.Rep ("Replace, converting >"
+                       & Result.Slice (Case_Index, Got - 1) & "< to "
+                       & Mixed_Str(Case_Mode'Img));
                 -- New or stop casing: replace from Start to Subst_Char
                 -- This is compatible with utf8 without explicit checks
                 declare
@@ -706,9 +704,9 @@ package body Replace_Pattern is
                 Case_Index := Got;
                 Case_Mode := Subst.Action;
               end if;
-              Debug.Log ("Replace, marking start case at"
-                         & Case_Index'Img
-                         & " with " & Subst.Action'Img);
+              Log.Rep ("Replace, marking start case at"
+                     & Case_Index'Img
+                     & " with " & Subst.Action'Img);
               -- Restart locate from first char after case switch
               Start := Got;
               Offset := Offset - 1;
@@ -722,7 +720,7 @@ package body Replace_Pattern is
         Start := Got + 1;
       end if;
     end loop;
-    Debug.Log ("Replace, replacing by >" & Result.Image & "<");
+    Log.Rep ("Replace, replacing by >" & Result.Image & "<");
     return Result.Image;
   exception
     when Replace_Error =>

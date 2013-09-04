@@ -14,16 +14,14 @@ function File_Content (Path : String) return String is
   end Close;
 
 begin
-  if Debug.Set then
-    Sys_Calls.Put_Line_Error ("Replace, inserting file: >" & Path & "<");
-  end if;
+  Log.Rep ("Inserting file: >" & Path & "<");
 
   -- Open
   begin
     Fd := Sys_Calls.Open (Path, Sys_Calls.In_File);
   exception
     when others =>
-      Put_Error ("Replace, opening file " & Path & " has failed");
+      Put_Error ("Opening file " & Path & " has failed");
       raise File_Error;
   end;
   File.Open (Text_Line.In_File, Fd);
@@ -44,7 +42,7 @@ exception
     Close;
     raise;
   when others =>
-    Sys_Calls.Put_Line_Error ("Replace, file insertion failed");
+    Put_Error ("File insertion failed");
     Close;
     raise File_Error;
 end File_Content;

@@ -4,10 +4,7 @@ separate (Replace_Pattern)
 function Shell_Command (Cmd : String) return String is
   Code : Command.Exit_Code_Range;
 begin
-  if Debug.Set then
-    Sys_Calls.Put_Line_Error ("Replace, launching command: >"
-      & Cmd & "<");
-  end if;
+  Log.Rep ("Launching command: >" & Cmd & "<");
 
   -- Execute command and check exit code
   Command.Execute (Many_Strings.Set (Cmd), True, Command.Only_Out,
@@ -16,10 +13,7 @@ begin
     Put_Error ("Command exited with code " & Code_Image (Code));
     raise Command_Error;
   end if;
-  if Debug.Set then
-    Sys_Calls.Put_Line_Error ("Replace, command returned: >"
-      & Out_Flow.Str.Image & "<");
-  end if;
+  Log.Rep ("Command returned: >" & Out_Flow.Str.Image & "<");
 
   -- Return result
   return Out_Flow.Str.Image;

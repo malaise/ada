@@ -1,7 +1,7 @@
 with As.U.Utils;
 with Argument, Sys_Calls, Text_Line, Temp_File, Regular_Expressions, Directory,
      Copy_File, File_Access, Mixed_Str, Images, Basic_Proc, Long_Longs;
-with Search_Pattern, Replace_Pattern, Debug;
+with Search_Pattern, Replace_Pattern, Log;
 package body Substit is
 
   -- List of strings
@@ -294,14 +294,14 @@ package body Substit is
       Line_List.Insert (Line_Feed);
       Trail_Line_Feed := False;
       Nb_To_Read := Nb_To_Read - 1;
-      Debug.Log ("Read added trailing line feed");
+      Log.Sub ("Read added trailing line feed");
     end if;
 
     -- Read and append remaining amount, save trailing newline
     while Nb_To_Read /= 0 loop
       Line := In_File.Get;
       Len := Line.Length;
-      Debug.Log ("Read >" &  Line.Image & "<");
+      Log.Sub ("Read >" &  Line.Image & "<");
       if Len = 0 then
         -- We reached the end of file
         return False;
@@ -332,7 +332,7 @@ package body Substit is
         Line_No := Line_No + 1;
       end if;
     end loop;
-    Debug.Log ("Read up to line no " &  Line_No'Img
+    Log.Sub ("Read up to line no " &  Line_No'Img
              & (if Trail_Line_Feed then " & trail" else ""));
     return True;
   end Read;
@@ -405,7 +405,7 @@ package body Substit is
       Flush_Lines;
     end if;
     -- Close and cleanup files
-    Debug.Log ("Done.");
+    Log.Sub ("Done.");
     Close;
     -- After close, comit or clean
     if not Is_Stdin
@@ -443,11 +443,11 @@ package body Substit is
     Loc_Subst := 0;
     for I in 1 .. Line.all.Length loop
       if Line.all.Element (I) = Search_Char then
-        Debug.Log ("Match in line >" & Line.all.Image & "< at" & I'Img);
+        Log.Sub ("Match in line >" & Line.all.Image & "< at" & I'Img);
         Nb_Match := Nb_Match + 1;
         -- Check match range
         if not Subst_Match.Matches (Nb_Match, Match_Range) then
-          Debug.Log ("Match discarded because out of matching range");
+          Log.Sub ("Match discarded because out of matching range");
         else
           -- Ok, matches all citeria
           Loc_Subst := Loc_Subst + 1;
@@ -466,11 +466,11 @@ package body Substit is
 
     if not Test and then Loc_Subst /= 0 then
       -- A substitution has occured
-      Debug.Log ("Replacing by " & Line.all.Image);
+      Log.Sub ("Replacing by " & Line.all.Image);
     end if;
 
     -- Put the (modified) line
-    Debug.Log ("Putting >" & Line.all.Image & "<");
+    Log.Sub ("Putting >" & Line.all.Image & "<");
     Out_File.Put (Line.all.Image);
     -- Delete all
     Line_List.Delete_List (False);
@@ -527,10 +527,10 @@ package body Substit is
       -- Found a match
       if Matches then
         Match_Res := Search_Pattern.Str_Indexes;
-        Debug.Log ("Match in end of line >"
-             & Line.all.Slice (Current, Line.all.Length)
-             & "< from" & Match_Res.First_Offset'Img
-             & " to" & Match_Res.Last_Offset_Stop'Img);
+        Log.Sub ("Match in end of line >"
+               & Line.all.Slice (Current, Line.all.Length)
+               & "< from" & Match_Res.First_Offset'Img
+               & " to" & Match_Res.Last_Offset_Stop'Img);
       else
         Match_Res := Regular_Expressions.No_Match;
       end if;
@@ -543,9 +543,9 @@ package body Substit is
             Start => Match_Res.First_Offset,
             Search => False, Regex_Index => 1) then
           -- Str matches the find criteria but also the exclude criteria: skip
-          Debug.Log ("Match >" & Line.all.Slice (Match_Res.First_Offset,
+          Log.Sub ("Match >" & Line.all.Slice (Match_Res.First_Offset,
                                                  Match_Res.Last_Offset_Stop)
-                   & "< discarded because matching exclusion");
+                 & "< discarded because matching exclusion");
           Matches := False;
         end if;
       end if;
@@ -554,9 +554,9 @@ package body Substit is
       if Matches then
         Nb_Match := Nb_Match + 1;
         if not Subst_Match.Matches (Nb_Match, Match_Range) then
-          Debug.Log ("Match >" & Line.all.Slice (Match_Res.First_Offset,
-                                                 Match_Res.Last_Offset_Stop)
-                   & "< discarded because out of matching range");
+          Log.Sub ("Match >" & Line.all.Slice (Match_Res.First_Offset,
+                                               Match_Res.Last_Offset_Stop)
+                 & "< discarded because out of matching range");
           Matches := False;
         end if;
       end if;
@@ -566,16 +566,16 @@ package body Substit is
         if Line.all.Image = In_File.Get_Line_Feed then
           Matches := False;
           Match_Res := Regular_Expressions.No_Match;
-          Debug.Log ("Match delimiter discarded because grep inversion");
+          Log.Sub ("Match delimiter discarded because grep inversion");
         elsif Line.all.Is_Null then
           Matches := False;
           Match_Res := Regular_Expressions.No_Match;
-          Debug.Log ("Match empty discarded because grep inversion");
+          Log.Sub ("Match empty discarded because grep inversion");
         elsif Matches then
           -- Line matching becomes not matching
           Matches := False;
-          Debug.Log ("Match >" & Line.all.Slice (Match_Res.First_Offset,
-                                             Match_Res.Last_Offset_Stop)
+          Log.Sub ("Match >" & Line.all.Slice (Match_Res.First_Offset,
+                                               Match_Res.Last_Offset_Stop)
                    & "< discarded because grep inversion");
           Match_Res := Regular_Expressions.No_Match;
         else
@@ -583,8 +583,8 @@ package body Substit is
           Matches := True;
           Match_Res.First_Offset := 1;
           Match_Res.Last_Offset_Stop := Line.all.Length;
-          Debug.Log ("Match >" & Line.all.Slice (Match_Res.First_Offset,
-                                                 Match_Res.Last_Offset_Stop)
+          Log.Sub ("Match >" & Line.all.Slice (Match_Res.First_Offset,
+                                               Match_Res.Last_Offset_Stop)
                    & "< matches because grep inversion");
         end if;
       end if;
@@ -640,10 +640,10 @@ package body Substit is
           end if;
           if not Test then
             -- Substitute from start to stop
-            Debug.Log ("Replacing by "
-                & Line.all.Slice (Match_Res.First_Offset,
-                                       Match_Res.Last_Offset_Stop)
-                & " -> " & Replacing);
+            Log.Sub ("Replacing by "
+                    & Line.all.Slice (Match_Res.First_Offset,
+                                      Match_Res.Last_Offset_Stop)
+                    & " -> " & Replacing);
             Line.all.Replace (Match_Res.First_Offset,
                               Match_Res.Last_Offset_Stop,
                               Replacing);
@@ -660,7 +660,7 @@ package body Substit is
 
     if not Grep then
       -- Put the (modified) line
-      Debug.Log ("Putting >" & Line.all.Image & "<");
+      Log.Sub ("Putting >" & Line.all.Image & "<");
       Out_File.Put (Line.all.Image);
     end if;
     -- Delete all
@@ -680,7 +680,7 @@ package body Substit is
       Line_List.Rewind;
       while not Line_List.Is_Empty loop
         Out_File.Put (Line_List.Access_Current.all.Image);
-        Debug.Log ("Flushing >" & Line_List.Access_Current.all.Image & "<");
+        Log.Sub ("Flushing >" & Line_List.Access_Current.all.Image & "<");
         Line_List.Delete;
       end loop;
     end if;
@@ -769,12 +769,12 @@ package body Substit is
                  Search => True, Regex_Index => I);
       if not Matches then
         -- This one does not match
-        Debug.Log ("Not match " & I'Img
-                 & " with >" & Line.all.Image & "<");
+        Log.Sub ("Not match " & I'Img
+               & " with >" & Line.all.Image & "<");
         exit;
       end if;
-      Debug.Log ("Line >" & Line.all.Image
-               & "< matches pattern No" & I'Img);
+      Log.Sub ("Line >" & Line.all.Image
+             & "< matches pattern No" & I'Img);
       -- Move to next input line
       if I /= Nb_Pattern then
         Line_List.Move_To;
@@ -808,8 +808,8 @@ package body Substit is
           Excluded := False;
           exit;
         end if;
-        Debug.Log ("Line >" & Line.all.Image
-                 & "< matches exclusion No" & I'Img);
+        Log.Sub ("Line >" & Line.all.Image
+               & "< matches exclusion No" & I'Img);
         -- Move to next input line
         if I /= Nb_Pattern then
           Line_List.Move_To;
@@ -817,10 +817,10 @@ package body Substit is
       end loop;
 
       if Excluded then
-        if Debug.Set then
+        if Log.Sub_debug then
           Line_List.Rewind;
           Line := Line_List.Access_Current;
-          Debug.Log ("Line >" & Line.all.Image & "< is excluded");
+          Log.Sub ("Line >" & Line.all.Image & "< is excluded");
         end if;
         Matches := False;
       else
@@ -834,8 +834,8 @@ package body Substit is
       Matches := Subst_Match.Matches (Nb_Match, Match_Range);
 
       if not Matches then
-        Debug.Log ("Line >" & Line.all.Image
-                 & "< discarded because out of matching range");
+        Log.Sub ("Line >" & Line.all.Image
+               & "< discarded because out of matching range");
       end if;
     end if;
 
@@ -843,11 +843,11 @@ package body Substit is
     if Grep_Invert then
       Matches := not Matches;
       if not Matches then
-        Debug.Log ("Line >" & Line.all.Image
-                 & "< discarded because grep inversion");
+        Log.Sub ("Line >" & Line.all.Image
+               & "< discarded because grep inversion");
       else
-        Debug.Log ("Line >" & Line.all.Image
-                 & "< matches because grep inversion");
+        Log.Sub ("Line >" & Line.all.Image
+               & "< matches because grep inversion");
       end if;
     end if;
 
@@ -916,7 +916,7 @@ package body Substit is
         if not Test then
           -- Match and not test
           -- Write result
-          Debug.Log ("Putting >" & Str_Replaced.Image & "<");
+          Log.Sub ("Putting >" & Str_Replaced.Image & "<");
           Out_File.Put (Str_Replaced.Image);
           -- Delete all, and re-insert tail if overlap
           Line_List.Delete_List (False);
@@ -932,7 +932,7 @@ package body Substit is
       Line_List.Rewind;
       Line := Line_List.Access_Current;
       if not Grep then
-        Debug.Log ("Putting >" & Line.all.Image & "<");
+        Log.Sub ("Putting >" & Line.all.Image & "<");
         Out_File.Put (Line.all.Image);
       end if;
       Line_List.Delete;
