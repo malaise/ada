@@ -7,11 +7,11 @@
 
 with Ada.Calendar;
 with As.B, Perpet, Argument, Day_Mng, Normal, Upper_Str, Rnd,
-     Num_Letters, Basic_Proc, Str_Util, Parser;
+     Num_Letters, Basic_Proc, Str_Util, Parser, Trace;
 with Types, Scrambler_Gen, Definition;
 procedure Def_Enigma is
 
-  Debug : constant Boolean := False;
+  Logger : Trace.Logger;
 
   package Xml is
     -- Parse the Xml config file
@@ -673,13 +673,10 @@ begin
   end if;
 
   -- Put setting in internal format
-  if Debug then
-    Basic_Proc.Put_Line_Error (
-                 Reflector.Image
-       & " r=" & Rotors.Image
-       & " i=" & Init_Offset.Image
-       & " s=" & Switch.Image);
-  end if;
+  Logger.Log_Debug (Reflector.Image
+                  & " r=" & Rotors.Image
+                  & " i=" & Init_Offset.Image
+                  & " s=" & Switch.Image);
 
   -- Result
   -- Put normal enigma keys

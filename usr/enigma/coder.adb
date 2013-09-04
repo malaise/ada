@@ -1,5 +1,5 @@
-with Images, Environ;
-with Definition, Io_Manager;
+with Images, As.U, Trace;
+with Definition;
 package body Coder is
 
   function Limage (L : Types.Lid) return String is
@@ -12,19 +12,19 @@ package body Coder is
   end Image;
 
   -- Debug
-  Debug :  Boolean := False;
+  Logger : Trace.Logger;
+  Text : As.U.Asu_Us;
   procedure Put (Str : in String) is
   begin
-    if Debug then
-      Io_Manager.Put_Error (Str);
+    if Logger.Debug_On then
+      Text.Append (Str);
     end if;
   end Put;
 
   procedure Putl (Str : in String) is
   begin
-    if Debug then
-      Io_Manager.Put_Line_Error (Str);
-    end if;
+    Logger.Log_Debug (Text.Image & Str);
+    Text.Set_Null;
   end Putl;
 
   -- The machine
@@ -42,7 +42,7 @@ package body Coder is
     use type Definition.Carries_Array;
   begin
     -- Init debug
-    Debug := Environ.Is_Yes ("ENIGMA_DEBUG");
+    Logger.Init;
     -- Init definition
     Definition.Read_Definition (Machine);
     -- Optim: Store if last rotor has no carry (=> it does not turn)
