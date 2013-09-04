@@ -1,22 +1,23 @@
-with Rnd, Sorts, Basic_Proc, Normal;
-with Debug;
+with As.U, Rnd, Sorts, Basic_Proc, Normal, Trace;
 
 package body Euristic is
+  Logger : Trace.Logger;
+  Line : As.U.Asu_Us;
 
   -- Dump Mattrix
   procedure Put_Mattrix (Mattrix : in Types.Mattrix_Rec) is
     subtype Index_Range is Types.Index_Range range 1 .. Mattrix.Dim;
   begin
     for Row in Index_Range loop
+      Line.Set_Null;
       for Col in Index_Range loop
         if Mattrix.Notes(Row, Col) / 100 = 100 then
-          Basic_Proc.Put_Output ("** ");
+          Line.Append ("** ");
         else
-          Basic_Proc.Put_Output (Normal(Mattrix.Notes(Row, Col) / 100, 2)
-                                 & " ");
+          Line.Append (Normal(Mattrix.Notes(Row, Col) / 100, 3) & " ");
         end if;
       end loop;
-      Basic_Proc.New_Line_Output;
+      Logger.Log_Debug (Line.Image);
     end loop;
   end Put_Mattrix;
 
@@ -112,9 +113,7 @@ package body Euristic is
     end "<";
 
   begin
-    if Debug.On then
-      Basic_Proc.Put_Line_Output ("Euristic search start.");
-    end if;
+    Logger.Log_Debug ("Euristic search start.");
 
     Init_Zeros:
     declare
@@ -186,7 +185,8 @@ package body Euristic is
 
         -- Count the number of zeros which are free and have the Sigma minimum
         for I in 2 .. Nb_Zero loop
-          exit when Zero_Desc(I).State /= Free or else Zero_Desc(I).Sigma /= Zero_Desc(1).Sigma;
+          exit when Zero_Desc(I).State /= Free
+            or else Zero_Desc(I).Sigma /= Zero_Desc(1).Sigma;
           Nb_Min_Zero := I;
         end loop;
 
@@ -197,13 +197,13 @@ package body Euristic is
         -- Propagate the choice
         -- Sigma of slashed and squared zeros are not used
         -- Slash all zero of the same row and keep up to date the sigma of zeros of their columns
-        if Debug.On then
-          Basic_Proc.Put_Output (
+        if Logger.Debug_On then
+          Line.Set (
                      "Square " & Normal(Zero_Desc(Selected_Zero).Sigma, 4)
                    & " at "
-                   & Normal(Zero_Desc(Selected_Zero).Row, 2)
+                   & Normal(Zero_Desc(Selected_Zero).Row, 3)
                    & "-"
-                   & Normal(Zero_Desc(Selected_Zero).Col, 2)
+                   & Normal(Zero_Desc(Selected_Zero).Col, 3)
                    & ", Slash: ");
         end if;
         for Col in Index_Range loop
@@ -211,9 +211,9 @@ package body Euristic is
           if Index_Desc /= 0 and then Zero_Desc(Index_Desc).State = Free then
             Zero_Desc(Index_Desc).State := Slashed;
             Col_Tmp := Zero_Desc(Index_Desc).Col;
-            if Debug.On then
-              Basic_Proc.Put_Output (Normal(Zero_Desc(Index_Desc).Row, 2)
-                 & "-" & Normal(Zero_Desc(Index_Desc).Col, 2) & ",");
+            if Logger.Debug_On then
+              Line.Append (Normal(Zero_Desc(Index_Desc).Row, 3)
+                   & "-" & Normal(Zero_Desc(Index_Desc).Col, 3) & ",");
             end if;
             for Row in Index_Range loop
               Index_Desc := Cross_Ref(Row, Col_Tmp);
@@ -229,9 +229,9 @@ package body Euristic is
           if Index_Desc /= 0 and then Zero_Desc(Index_Desc).State = Free then
             Zero_Desc(Index_Desc).State := Slashed;
             Row_Tmp := Zero_Desc(Index_Desc).Row;
-            if Debug.On then
-              Basic_Proc.Put_Output (Normal(Zero_Desc(Index_Desc).Row, 2)
-                 & "-" & Normal(Zero_Desc(Index_Desc).Col, 2) & ",");
+            if Logger.Debug_On then
+              Line.Append (Normal(Zero_Desc(Index_Desc).Row, 3)
+                   & "-" & Normal(Zero_Desc(Index_Desc).Col, 3) & ",");
             end if;
             for Col in Index_Range loop
               Index_Desc := Cross_Ref(Row_Tmp, Col);
@@ -241,9 +241,7 @@ package body Euristic is
             end loop;
           end if;
         end loop;
-        if Debug.On then
-          Basic_Proc.New_Line_Output;
-        end if;
+        Logger.Log_Debug (Line.Image);
 
         -- Count nb of free zero remaining.
         Zero_Free_Remaining := False;
@@ -273,11 +271,9 @@ package body Euristic is
         end if;
       end loop;
       Done := Nb_Squared_Zeros = Mattrix.Dim;
-      if Debug.On then
-        Basic_Proc.Put_Line_Output ("Nb zeros "
-                       & Types.Index_Range'Image(Nb_Squared_Zeros)
-                       & "/" & Types.Index_Range'Image(Nb_Zero));
-      end if;
+      Logger.Log_Debug ("Nb zeros "
+                      & Types.Index_Range'Image(Nb_Squared_Zeros)
+                      & "/" & Types.Index_Range'Image(Nb_Zero));
     end Test_Done;
 
     -- Dump Rows and Cols with no squared zero
@@ -285,7 +281,7 @@ package body Euristic is
     declare
       Found : Boolean;
     begin
-      if not Done and then Debug.On then
+      if not Done and then Logger.Debug_On then
         for Row in Index_Range loop
           Found := False;
           for I in 1 .. Nb_Zero loop
@@ -294,10 +290,7 @@ package body Euristic is
               exit;
             end if;
           end loop;
-          if not Found then
-            Basic_Proc.Put_Line_Output
-                ("Row " & Index_Range'Image(Row) & " has no zero");
-          end if;
+          Logger.Log_Debug ("Row " & Index_Range'Image(Row) & " has no zero");
         end loop;
         for Col in Index_Range loop
           Found := False;
@@ -308,8 +301,7 @@ package body Euristic is
             end if;
           end loop;
           if not Found then
-            Basic_Proc.Put_Line_Output
-                ("Col " & Index_Range'Image(Col) & " has no zero");
+            Logger.Log_Debug ("Col " & Index_Range'Image(Col) & " has no zero");
           end if;
         end loop;
       end if;
@@ -323,23 +315,24 @@ package body Euristic is
     end loop;
 
     -- Dump transfer tab
-    if Debug.On then
-      Basic_Proc.Put_Line_Output ("End of search.");
-      Basic_Proc.Put_Line_Output ("Mattrix:");
+    if Logger.Debug_On then
+      Logger.Log_Debug ("End of search.");
+      Logger.Log_Debug ("Mattrix:");
       Put_Mattrix(Mattrix);
-      Basic_Proc.Put_Line_Output ("Zero transfer tab:");
+      Logger.Log_Debug ("Zero transfer tab:");
       for Row in Index_Range loop
+        Line.Set_Null;
         for Col in Index_Range loop
           case Transfer(Row, Col) is
             when Squared =>
-              Basic_Proc.Put_Output ("*");
+              Line.Append ("*");
             when Slashed =>
-              Basic_Proc.Put_Output ("/");
+              Line.Append ("/");
             when Free =>
-              Basic_Proc.Put_Output (".");
+              Line.Append (".");
           end case;
         end loop;
-        Basic_Proc.New_Line_Output;
+        Logger.Log_Debug (Line.Image);
       end loop;
     end if;
 
@@ -356,9 +349,8 @@ package body Euristic is
     -- At least one mark should be done
     Nb_Mark : Natural;
   begin
-    if Debug.On then
-      Basic_Proc.Put_Line_Output ("Reduction starts.");
-    end if;
+    Logger.Log_Debug ("Reduction starts.");
+    Line.Set_Null;
     -- Mark rows with no squared zero
     for Row in Index_Range loop
       -- No squared zero ?
@@ -372,14 +364,12 @@ package body Euristic is
       end loop;
       if Ok then
         Marked_Row(Row) := True;
-        if Debug.On then
-          Basic_Proc.Put_Output (" Mark Row " & Index_Range'Image(Row));
+        if Logger.Debug_On then
+          Line.Append (" Mark Row " & Index_Range'Image(Row));
         end if;
       end if;
     end loop;
-    if Debug.On then
-      Basic_Proc.New_Line_Output;
-    end if;
+    Logger.Log_Debug (Line.Image);
 
     -- Iterative marking of rows and cols
     Marking:
@@ -388,6 +378,7 @@ package body Euristic is
       Nb_Mark := 0;
 
       -- For each marked row, mark each col with a slashed zero in this row
+      Line.Set_Null;
       for Row in Index_Range loop
         if Marked_Row(Row) then
           -- Mark each col with a slashed zero in this row
@@ -395,8 +386,8 @@ package body Euristic is
             if Transfer(Row, Col) = Slashed and then not Marked_Col(Col) then
               Marked_Col(Col) := True;
               Nb_Mark := Nb_Mark + 1;
-              if Debug.On then
-                Basic_Proc.Put_Output (" Mark Col " & Index_Range'Image(Col));
+              if Logger.Debug_On then
+                Line.Append (" Mark Col " & Index_Range'Image(Col));
               end if;
             end if;
           end loop;
@@ -411,35 +402,34 @@ package body Euristic is
             if Transfer(Row, Col) = Squared and then not Marked_Row(Row) then
               Marked_Row(Row) := True;
               Nb_Mark := Nb_Mark + 1;
-              if Debug.On then
-                Basic_Proc.Put_Output (" Mark Row " & Index_Range'Image(Row));
+              if Logger.Debug_On then
+                Line.Append (" Mark Row " & Index_Range'Image(Row));
               end if;
             end if;
           end loop;
         end if;
       end loop;
-      if Debug.On then
-        Basic_Proc.Put_Line_Output (" --- Nb_Mark " & Natural'Image(Nb_Mark));
-      end if;
+      Logger.Log_Debug (Line.Image);
+      Logger.Log_Debug (" --- Nb_Mark " & Natural'Image(Nb_Mark));
 
       exit Marking when Nb_Mark = 0;
     end loop Marking;
 
-    if Debug.On then
-      Basic_Proc.Put_Output ("Not marked rows: ");
+    if Logger.Debug_On then
+      Line.Set ("Not marked rows: ");
       for Row in Index_Range loop
         if not Marked_Row(Row) then
-          Basic_Proc.Put_Output (Index_Range'Image(Row));
+          Line.Append (Index_Range'Image(Row));
         end if;
       end loop;
-      Basic_Proc.New_Line_Output;
-      Basic_Proc.Put_Output ("Not marked cols: ");
+      Logger.Log_Debug (Line.Image);
+      Line.Set ("Not marked cols: ");
       for Col in Index_Range loop
         if not Marked_Col(Col) then
-          Basic_Proc.Put_Output (Index_Range'Image(Col));
+          Line.Append (Index_Range'Image(Col));
         end if;
       end loop;
-      Basic_Proc.New_Line_Output;
+      Logger.Log_Debug (Line.Image);
     end if;
 
     Sub_Lowest:
@@ -458,53 +448,50 @@ package body Euristic is
           end loop;
         end if;
       end loop;
-      if Debug.On then
-        Basic_Proc.Put_Line_Output ("Lowest is " & Types.Cell_Range'Image(Lowest));
-      end if;
+      Logger.Log_Debug ("Lowest is " & Types.Cell_Range'Image(Lowest));
 
       -- Substract Lowest from cells which row     marked and col not marked
       -- Add       Lowest to   cells which row not marked and col     marked
+      Line.Set_Null;
       for Row in Index_Range loop
         for Col in Index_Range loop
           if Marked_Row(Row) and then not Marked_Col(Col) then
             Nb_Change := Nb_Change + 1;
             Mattrix.Notes(Row, Col) := Mattrix.Notes(Row, Col) - Lowest;
-            if Debug.On then
-              Basic_Proc.Put_Output ("S ");
+            if Logger.Debug_On then
+              Line.Append ("S ");
             end if;
           elsif not Marked_Row(Row) and then Marked_Col(Col) then
             Nb_Change := Nb_Change + 1;
             -- Add only if Mattrix.Notes(Row, Col) + Lowest <= Cell_Range'Last
             if Types.Cell_Range'Last - Mattrix.Notes(Row, Col) >= Lowest then
               Mattrix.Notes(Row, Col) := Mattrix.Notes(Row, Col) + Lowest;
-              if Debug.On then
-                Basic_Proc.Put_Output ("A ");
+              if Logger.Debug_On then
+                Line.Append ("A ");
               end if;
             else
               Mattrix.Notes(Row, Col) := Types.Cell_Range'Last;
-              if Debug.On then
-                Basic_Proc.Put_Output ("M ");
+              if Logger.Debug_On then
+                Line.Append ("M ");
               end if;
             end if;
           else
-            if Debug.On then
-              Basic_Proc.Put_Output ("U ");
+            if Logger.Debug_On then
+              Line.Append ("U ");
             end if;
 
           end if;
         end loop;
-        if Debug.On then
-          Basic_Proc.New_Line_Output;
-        end if;
+        Logger.Log_Debug (Line.Image);
       end loop;
 
-      if Debug.On then
-        Basic_Proc.Put_Line_Output ("End of reduction.");
-        if Nb_Change = 0 then
-          Basic_Proc.Put_Line_Output ("No Change:");
-        else
-          Basic_Proc.Put_Line_Output ("Mattrix reduced:");
-        end if;
+      Logger.Log_Debug ("End of reduction.");
+      if Nb_Change = 0 then
+        Logger.Log_Debug ("No Change:");
+      else
+        Logger.Log_Debug ("Mattrix reduced:");
+      end if;
+      if Logger.Debug_On then
         Put_Mattrix(Mattrix);
       end if;
 
@@ -520,9 +507,11 @@ package body Euristic is
     Max_Loop : constant Positive := Mattrix.Dim * Mattrix.Dim + 1;
   begin
     -- Init for search : one zero/row and / col
+    Logger.Init;
     Init_Search (Mattrix);
     loop
-       if not Debug.On then
+       if not Logger.Debug_On then
+         -- Progress bar
          Basic_Proc.Put_Output (".");
          Basic_Proc.Flush_Output;
        end if;
