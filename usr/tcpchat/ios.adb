@@ -49,7 +49,7 @@ package body Ios is
   -- Handle signal
   procedure Signal_Cb is
   begin
-    Debug.Log ("Signal");
+    Debug.Logger.Log_Debug ("Signal");
     Event := (Kind => Exit_Requested);
   end Signal_Cb;
 
@@ -58,7 +58,7 @@ package body Ios is
                      Data : Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Id, Data);
   begin
-    Debug.Log ("Global timeout");
+    Debug.Logger.Log_Debug ("Global timeout");
     if Event.Kind /= Exit_Requested
     and then Event.Kind /= Disconnection then
       Event := (Kind => Global_Timeout);
@@ -79,7 +79,7 @@ package body Ios is
   procedure Sentence_Cb (Sentence : in String) is
   begin
     -- Store sentence without Lf
-    Debug.Log ("Got sentence " & Sentence);
+    Debug.Logger.Log_Debug ("Got sentence " & Sentence);
     Sentences.Push (As.U.Tus (Str_Util.Substit (Sentence, Lf, "")));
   end Sentence_Cb;
 
@@ -91,7 +91,7 @@ package body Ios is
                     Len  : Natural) return Boolean is
     pragma Unreferenced (Dscr);
   begin
-    Debug.Log ("Read " & Msg(1 .. Len));
+    Debug.Logger.Log_Debug ("Read " & Msg(1 .. Len));
     Buffer.Push (Str_Util.Substit (Msg(1 .. Len), Crlf, Lf));
     return True;
   end Read_Cb;
@@ -100,7 +100,7 @@ package body Ios is
   procedure Discon_Cb (Dscr : in Socket.Socket_Dscr) is
     pragma Unreferenced (Dscr);
   begin
-    Debug.Log ("Disconnected");
+    Debug.Logger.Log_Debug ("Disconnected");
     -- Tcp_Util closes the socket
     Tcp_Soc := Socket.No_Socket;
     -- Signal
@@ -123,7 +123,7 @@ package body Ios is
     Tcp_Soc.Set_Blocking (Socket.Blocking_Send);
     My_Rece.Set_Callbacks (Tcp_Soc, Read_Cb'Unrestricted_Access,
                                   Discon_Cb'Unrestricted_Access);
-    Debug.Log ("Connected");
+    Debug.Logger.Log_Debug ("Connected");
     -- Only one connection at a time
     Tcp_Util.Abort_Accept (Socket.Tcp, Port_Num);
   end Accept_Cb;
@@ -164,7 +164,7 @@ package body Ios is
         exit;
       exception
         when Socket.Soc_Addr_In_Use =>
-          Debug.Log ("Cannot accept, maybe close-wait. Waiting.");
+          Debug.Logger.Log_Debug ("Cannot accept, maybe close-wait. Waiting.");
           Event_Mng.Wait (20_000);
       end;
     end loop;
@@ -230,11 +230,12 @@ package body Ios is
       exit when Evt = Event_Mng.Timeout;
     end loop;
     if Event /= No_Event then
-      Debug.Log ("Wait event exiting cause event is " & Event.Kind'Img);
+      Debug.Logger.Log_Debug ("Wait event exiting cause event is "
+                            & Event.Kind'Img);
     elsif Stop_On_Sentence and then not Sentences.Is_Empty then
-      Debug.Log ("Wait event exiting cause sentence got");
+      Debug.Logger.Log_Debug ("Wait event exiting cause sentence got");
     else
-      Debug.Log ("Wait event exiting cause Evt is " & Evt'Img);
+      Debug.Logger.Log_Debug ("Wait event exiting cause Evt is " & Evt'Img);
     end if;
   end Wait_Event;
 
@@ -264,7 +265,7 @@ package body Ios is
     Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Access);
     Open;
 
-    Debug.Log ("Ios open OK");
+    Debug.Logger.Log_Debug ("Ios open OK");
   exception
     when others =>
       raise Init_Error;
@@ -289,7 +290,7 @@ package body Ios is
   function Wait (Timeout_Ms : Integer) return Event_Type is
     Loc_Event : Event_Type;
   begin
-    Debug.Log ("Wait " & Timeout_Ms'Img);
+    Debug.Logger.Log_Debug ("Wait " & Timeout_Ms'Img);
     Wait_Event (Timeout_Ms, False);
     if Event /= No_Event then
       -- Something occured
@@ -308,7 +309,7 @@ package body Ios is
   function Read (Timeout_Ms : Integer) return Event_Type is
     Loc_Event : Event_Type;
   begin
-    Debug.Log ("Read " & Timeout_Ms'Img);
+    Debug.Logger.Log_Debug ("Read " & Timeout_Ms'Img);
     Wait_Event (0, False);
     if Event /= No_Event then
       -- Something occured
@@ -341,7 +342,8 @@ package body Ios is
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
   begin
-    Debug.Log ("Send " & Str_Util.Substit (Text.Image, Lf, "[LF]"));
+    Debug.Logger.Log_Debug ("Send "
+                          & Str_Util.Substit (Text.Image, Lf, "[LF]"));
     if Stdio then
       Async_Stdin.Put_Out (Text.Image);
       Disconnection := False;
@@ -366,10 +368,10 @@ package body Ios is
     end loop;
   exception
     when Socket.Soc_Conn_Lost =>
-      Debug.Log ("Lost connection");
+      Debug.Logger.Log_Debug ("Lost connection");
       Disconnection := True;
     when Tcp_Util.Timeout_Error =>
-      Debug.Log ("Timeout");
+      Debug.Logger.Log_Debug ("Timeout");
       Disconnection := True;
   end Send;
 

@@ -55,7 +55,7 @@ package body Variables is
   -- Reset all variables
   procedure Reset is
   begin
-    Debug.Log ("Resetting variables");
+    Debug.Logger.Log_Debug ("Resetting variables");
     Memory.Reset (Only_Volatile => False);
   end Reset;
 
@@ -112,7 +112,7 @@ package body Variables is
 
   procedure Clear_Volatiles is
   begin
-    Debug.Log ("Resetting volatiles");
+    Debug.Logger.Log_Debug ("Resetting volatiles");
     Memory.Reset (Only_Volatile => True);
   end Clear_Volatiles;
 

@@ -39,6 +39,7 @@ procedure Tcpchat is
   File : As.U.Asu_Us;
 
 begin
+  Debug.Logger.Init;
 
   -- Parse keys and options
   Arg_Dscr := Argument_Parser.Parse (Keys);
@@ -83,11 +84,11 @@ begin
     Error ("Invalid arguments");
     return;
   end if;
-  Debug.Log ("Arguments parsed OK.");
+  Debug.Logger.Log_Debug ("Arguments parsed OK.");
 
   -- Parse file
   Tree.Parse (File);
-  Debug.Log ("Tree file parsed OK.");
+  Debug.Logger.Log_Debug ("Tree file parsed OK.");
 
   -- Check version
   if Tree.Get_Version /= Version then
@@ -98,12 +99,12 @@ begin
 
   -- Init Ios
   Ios.Init (Port);
-  Debug.Log ("Init OK.");
+  Debug.Logger.Log_Debug ("Init OK.");
 
   -- Handle events
   Events.Handle;
 
-  Debug.Log ("Done.");
+  Debug.Logger.Log_Debug ("Done.");
 
 exception
   when Tree.Parse_Error =>

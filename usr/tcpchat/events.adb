@@ -88,7 +88,7 @@ package body Events is
       begin
         -- Where are we?
         Node := Chats.Read;
-        Debug.Log ("Node is " & Mixed_Str (Node.Kind'Img));
+        Debug.Logger.Log_Debug ("Node is " & Mixed_Str (Node.Kind'Img));
         case Node.Kind is
           when Nop =>
             -- no operation (empty "if" or "expect"
@@ -118,7 +118,7 @@ package body Events is
                 Put_Line ("Timeout on chat script");
                 Reset;
               when Ios.Local_Timeout =>
-                Debug.Log ("Select: timeout");
+                Debug.Logger.Log_Debug ("Select: timeout");
                 Next := Node.Next.all;
                 -- For reset if no timeout
                 Children_Number := Chats.Children_Number;
@@ -139,21 +139,21 @@ package body Events is
                   end if;
 
                   if In_Chat and then Child.Kind = Timeout then
-                    Debug.Log ("Selec timeout");
+                    Debug.Logger.Log_Debug ("Selec timeout");
                     -- Move to the child of this select entry
                     Set_Position (Child.Next.all);
                   end if;
                 end if;
                 if not In_Chat then
                   -- No timeout found
-                  Debug.Log ("No timeout on select");
+                  Debug.Logger.Log_Debug ("No timeout on select");
                   Put_Line ("Timeout on select");
                   Reset;
                 end if;
 
               when Ios.Got_Sentence =>
                 -- Dispatch to child, avoid Next
-                Debug.Log ("Selec got: " & Event.Sentence.Image);
+                Debug.Logger.Log_Debug ("Selec got: " & Event.Sentence.Image);
                 Next := Node.Next.all;
                 Selec_Children:
                 for I in 1 .. Chats.Children_Number loop
@@ -163,7 +163,7 @@ package body Events is
                     Chats.Move_Brother (False);
                   end if;
                   Child := Chats.Read;
-                  Debug.Log ("Selec trying: " & Child.Text.Image);
+                  Debug.Logger.Log_Debug ("Selec trying: " & Child.Text.Image);
                   if Position_Access(Chats.Get_Position) = Next then
                     -- Current (last) child is Next => no match
                     Put_Line ("No match on select");
@@ -173,9 +173,10 @@ package body Events is
                   or else (Child.Kind = Read and then
                            Matcher.Match (Child, Event.Sentence) ) then
                     if Child.Kind = Default then
-                      Debug.Log ("Selec default");
+                      Debug.Logger.Log_Debug ("Selec default");
                     else
-                      Debug.Log ("Selec match: " & Child.Text.Image);
+                      Debug.Logger.Log_Debug ("Selec match: "
+                                            & Child.Text.Image);
                     end if;
                     -- This read child matches (or is default)
                     if Child.Kind = Read
@@ -212,35 +213,35 @@ package body Events is
               -- Resolv variable
               if Child.Next.all = Next then
                 -- Last child is Next => no match
-                Debug.Log ("Cond no match");
+                Debug.Logger.Log_Debug ("Cond no match");
                 Set_Position (Next);
                 exit Cond_Children;
               elsif Child.Kind = Condif then
                 Variable := Child.Assign(Child.Assign'First).Name;
-                Debug.Log ("Condif trying: " & Variable.Image
-                         & " match " & Child.Text.Image);
+                Debug.Logger.Log_Debug ("Condif trying: " & Variable.Image
+                                      & " match " & Child.Text.Image);
                 if Matcher.Match (Child, Variable) then
-                  Debug.Log ("Condif match");
+                  Debug.Logger.Log_Debug ("Condif match");
                   -- Move to the child of this select entry
                   Set_Position (Child.Next.all);
                   exit Cond_Children;
                 elsif Chats.Has_Brother (False) then
                   -- The only case when we continue
-                  Debug.Log ("Condif not match");
+                  Debug.Logger.Log_Debug ("Condif not match");
                 else
                   -- No more child
-                  Debug.Log ("Cond no match");
+                  Debug.Logger.Log_Debug ("Cond no match");
                   Set_Position (Next);
                   exit Cond_Children;
                 end if;
               elsif Child.Kind = Condelse then
-                Debug.Log ("Condelse");
+                Debug.Logger.Log_Debug ("Condelse");
                 -- Move to the child of this select entry
                 Set_Position (Child.Next.all);
                 exit Cond_Children;
               else
                 -- This child is the next
-                Debug.Log ("Cond no match");
+                Debug.Logger.Log_Debug ("Cond no match");
                 Set_Position (Next);
                 exit Cond_Children;
               end if;
@@ -257,10 +258,10 @@ package body Events is
             -- See if variable content matches
             if Matcher.Match (Node, Variable) then
               -- Match, go to the first child of the loop
-              Debug.Log ("Repeat true: " & Node.Text.Image);
+              Debug.Logger.Log_Debug ("Repeat true: " & Node.Text.Image);
               Chats.Move_Child (True);
             else
-              Debug.Log ("Repeat false: " & Node.Text.Image);
+              Debug.Logger.Log_Debug ("Repeat false: " & Node.Text.Image);
               -- No mach, move to end of loop
               Chats.Move_Child (False);
             end if;
@@ -281,7 +282,7 @@ package body Events is
                 Put_Line ("Timeout on Read");
                 Reset;
               when Ios.Got_Sentence =>
-                Debug.Log ("Read got: " & Event.Sentence.Image);
+                Debug.Logger.Log_Debug ("Read got: " & Event.Sentence.Image);
                 -- Check match
                 if Matcher.Match (Node, Event.Sentence) then
                   Set_Position (Node.Next.all);
@@ -312,7 +313,7 @@ package body Events is
                 Reset;
               when Ios.Got_Sentence =>
                 -- Skip
-                Debug.Log ("Skip got: " & Event.Sentence.Image);
+                Debug.Logger.Log_Debug ("Skip got: " & Event.Sentence.Image);
                 Set_Position (Node.Next.all);
             end case;
 
@@ -359,7 +360,7 @@ package body Events is
                 Exit_Code => Exit_Code);
               if Exit_Code = 0 then
                 -- Command OK, send its out flow
-                Debug.Log ("Call got: " & Flow.Str.Image);
+                Debug.Logger.Log_Debug ("Call got: " & Flow.Str.Image);
                 Ios.Send (Flow.Str, Disconnection);
                 if Disconnection then
                   Put_Line ("Disconnection");
@@ -370,7 +371,7 @@ package body Events is
                 end if;
               elsif Has_Error_Handler (Node) then
                 -- First child is error handler
-                Debug.Log ("Call handling error");
+                Debug.Logger.Log_Debug ("Call handling error");
                 Chats.Move_Child;
               else
                 Put_Line ("Command error");
@@ -399,7 +400,7 @@ package body Events is
                   Err_Flow => null,
                   Exit_Code => Exit_Code);
                 if Exit_Code = 0 then
-                  Debug.Log ("Eval got: " & Flow.Str.Image);
+                  Debug.Logger.Log_Debug ("Eval got: " & Flow.Str.Image);
                   -- Command OK, load the variable
                   if Matcher.Match (Node, Flow.Str) then
                     Set_Position (Node.Next.all);
@@ -408,7 +409,7 @@ package body Events is
                   end if;
                 elsif Has_Error_Handler (Node) then
                   -- First child is error handler
-                  Debug.Log ("Eval handling error");
+                  Debug.Logger.Log_Debug ("Eval handling error");
                   Chats.Move_Child;
                 else
                   Put_Line ("Command error");
@@ -446,7 +447,8 @@ package body Events is
             exception
               when Variables.Expand_Error | Matcher.Match_Error =>
                 if Has_Error_Handler (Node) then
-                  Debug.Log ("Invalid evaluation " & Node.Text.Image);
+                  Debug.Logger.Log_Debug ("Invalid evaluation "
+                                        & Node.Text.Image);
                   Chats.Move_Child;
                 else
                   Put_Line ("Invalid evaluation");
@@ -470,7 +472,7 @@ package body Events is
             exception
               when Directory.Name_Error | Directory.Access_Error =>
                 if Has_Error_Handler (Node) then
-                  Debug.Log ("Chdir handling error");
+                  Debug.Logger.Log_Debug ("Chdir handling error");
                   Chats.Move_Child;
                 else
                   Put_Line ("ERROR changing current directory");

@@ -41,7 +41,8 @@ package body Matcher is
             raise Match_Error;
           end if;
         end if;
-        Debug.Log ("Variable " & Expanded.Image & " set to " & Result.Image);
+        Debug.Logger.Log_debug ("Variable " & Expanded.Image
+                              & " set to " & Result.Image);
         Variables.Set (Expanded, Result);
       end if;
       return True;
@@ -81,7 +82,8 @@ package body Matcher is
     end if;
 
     if not Check_Only then
-      Debug.Log ("Matching " & Result.Image & " with " & Expanded.Image);
+      Debug.Logger.Log_Debug ("Matching " & Result.Image
+                            & " with " & Expanded.Image);
     end if;
 
     -- Pure string comparison or regexp?
@@ -97,15 +99,15 @@ package body Matcher is
         & " : " & Regular_Expressions.Error (Compiled));
       raise Match_Error;
     end if;
-    Debug.Log ("Regex compiled " & Expanded.Image);
+    Debug.Logger.Log_Debug ("Regex compiled " & Expanded.Image);
 
     -- Execute the regexp
     Regular_Expressions.Exec (Compiled, Result.Image, N_Matched, Match_Info);
     if Match_Info(1) = Regular_Expressions.No_Match then
-      Debug.Log ("Regex no match");
+      Debug.Logger.Log_Debug ("Regex no match");
       return False;
     end if;
-    Debug.Log ("Regex match " & N_Matched'Img);
+    Debug.Logger.Log_Debug ("Regex match " & N_Matched'Img);
 
     -- Case of the Cond or Repeat: One variable to compare
     if Node.Kind = Tree.Condif
@@ -128,7 +130,8 @@ package body Matcher is
           Expanded.Set_Null;
         end if;
         Variables.Set_Volatile (Expanding, Expanded);
-        Debug.Log ("Volatile " & Expanding.Image & "=" & Expanded.Image);
+        Debug.Logger.Log_Debug ("Volatile " & Expanding.Image
+                              & "=" & Expanded.Image);
       end loop;
       -- Assign variables
       for I in Node.Assign'Range loop
@@ -140,8 +143,8 @@ package body Matcher is
           raise Match_Error;
         end if;
         Variables.Set (Node.Assign(I).Name, Expanded);
-        Debug.Log ("Assigned " & Node.Assign(I).Name.Image
-                 & "=" & Expanded.Image);
+        Debug.Logger.Log_Debug ("Assigned " & Node.Assign(I).Name.Image
+                              & "=" & Expanded.Image);
       end loop;
       Variables.Clear_Volatiles;
     end if;
@@ -195,8 +198,8 @@ package body Matcher is
            & Node.Assign(I).Value.Str.Image);
       raise Match_Error;
     end if;
-    Debug.Log ("Parsed assignement " & Node.Assign(I).Name.Image
-             & "=" & Node.Assign(I).Value.Str.Image);
+    Debug.Logger.Log_Debug ("Parsed assignement " & Node.Assign(I).Name.Image
+                          & "=" & Node.Assign(I).Value.Str.Image);
   end Parse_Assign;
 
   -- Expand Node.Text in mode check
@@ -239,8 +242,9 @@ package body Matcher is
       Statements : constant As.U.Utils.Asu_Array
                  := Str_Util.Regex.Split_Sep (Assign.Image, "[\n\t ]+");
     begin
-      Debug.Log ("Found " & Images.Integer_Image (Statements'Length)
-               & " assignments");
+      Debug.Logger.Log_Debug ("Found "
+                            & Images.Integer_Image (Statements'Length)
+                            & " assignments");
       if Statements'Length = 0 then
         -- No separator => Parse the whole Assign string
         Parse_Assign (Node, 1, Assign);

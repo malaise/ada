@@ -2,9 +2,9 @@
 -- Remove sticks alternatively with the computer
 -- Remove the last stick (in NIM) or oblige the computer to do so (Marienbad)
 with As.U, Argument, Argument_Parser, Basic_Proc;
-with Common, Screen, Text, Compute;
+with Common, Screen, Text, Compute, Trace;
 procedure Nimmari is
-  Debug : constant Boolean := False;
+  Logger : Trace.Logger;
   Graphic_Mode : Boolean := False;
 
   -- Result of computation
@@ -35,19 +35,24 @@ procedure Nimmari is
   end Usage;
 
   procedure Put (Bars : Common.Bar_Status_Array) is
+    Txt : As.U.Asu_Us;
   begin
+    if not Logger.Debug_On then
+      return;
+    end if;
     for I in Bars'Range loop
       if Bars(I) then
-        Basic_Proc.Put_Output ("I ");
+        Txt.Append ("I ");
       else
-        Basic_Proc.Put_Output ("- ");
+        Txt.Append ("- ");
       end if;
     end loop;
+    Logger.Log_Debug (Txt.Image);
   end Put;
 
   use type Common.Result_List;
 begin
-
+  Logger.Init;
   -- Parse arguments
   Arg_Dscr := Argument_Parser.Parse (Keys);
   if not Arg_Dscr.Is_Ok then
@@ -100,11 +105,9 @@ begin
     loop
       -- Compute game, check end
       Compute.Play(Row, Remove, Result);
-      if Debug then
-        Basic_Proc.Put_Output ("Machine played: Row" & Row'Img & " ");
-        Put (Remove);
-        Basic_Proc.Put_Line_Output (" Result -> " & Result'Img);
-      end if;
+      Logger.Log_Debug ("Machine played: Row" & Row'Img & " ");
+      Put (Remove);
+      Logger.Log_Debug (" Result -> " & Result'Img);
 
       if Result in Common.Played_Result_List then
         -- Update bars
@@ -125,11 +128,8 @@ begin
       else
         Text.Play (Row, Remove);
       end if;
-      if Debug then
-        Basic_Proc.Put_Output ("Human played: Row" & Row'Img & " ");
-        Put (Remove);
-        Basic_Proc.New_Line_Output;
-      end if;
+      Logger.Log_Debug ("Human played: Row" & Row'Img & " ");
+      Put (Remove);
       Common.Remove_Bars (Row, Remove);
 
     end loop One_Go;

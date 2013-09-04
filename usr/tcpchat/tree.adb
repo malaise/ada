@@ -136,63 +136,71 @@ package body Tree is
       Error (Xnode, "Invalid expresssion");
   end Get_Text;
 
-  -- For dump of our tree
-  function Dump (Node : Node_Rec; Level : Natural) return Boolean is
+  -- For dump of a node with some text before
+  function Dump (Init_Str : String;
+                 Node : Node_Rec; Level : Natural) return Boolean is
     Tab : constant String (1 .. 2 * Level) := (others => ' ');
+    Text : As.U.Asu_Us;
     use type Any_Def.Any_Kind_List, Trilean.Trilean;
   begin
-    Basic_Proc.Put_Error (Tab & Mixed_Str (Node.Kind'Img) & ": " );
+    Text.Set (Init_Str);
+    Text.Append (Tab & Mixed_Str (Node.Kind'Img) & ": " );
     if not Node.Name.Is_Null then
-      Basic_Proc.Put_Error (Node.Name.Image & " ");
+      Text.Append (Node.Name.Image & " ");
     end if;
     case Node.Kind is
       when Condif | Repeat | Read | Call | Eval | Set | Chdir =>
-        Basic_Proc.Put_Error ("Text: >" & Node.Text.Image & "< ");
+        Text.Append ("Text: >" & Node.Text.Image & "< ");
       when Send | Log =>
-        Basic_Proc.Put_Error ("Text: >" &
-          Str_Util.Substit (Node.Text.Image, Line_Feed, "[LF]") &  "< ");
+        Text.Append ("Text: >" &
+            Str_Util.Substit (Node.Text.Image, Line_Feed, "[LF]") &  "< ");
       when others =>
         null;
     end case;
     case Node.Kind is
       when Selec | Read | Skip | Wait =>
-        Basic_Proc.Put_Error ("Timeout: " & Node.Timeout'Img & " ");
+        Text.Append ("Timeout: " & Node.Timeout'Img & " ");
       when Condif | Repeat | Eval | Set =>
-        Basic_Proc.Put_Error ("Variable: " );
-          Basic_Proc.Put_Error (Node.Assign(Node.Assign'First).Name.Image
-                              & " ");
+        Text.Append ("Variable: " );
+        Text.Append (Node.Assign(Node.Assign'First).Name.Image & " ");
       when others =>
         null;
     end case;
     if Node.Compute then
-      Basic_Proc.Put_Error ("Compute ");
+      Text.Append ("Compute ");
     end if;
     case Node.Kind is
       when Set | Eval =>
         if Node.Ifunset = Trilean.True then
-          Basic_Proc.Put_Error ("IfUnset ");
+          Text.Append ("IfUnset ");
         end if;
       when Condif =>
         if Node.Ifunset /= Trilean.Other then
-          Basic_Proc.Put_Error ("IfUnset: " & Mixed_Str (Node.Ifunset'Img));
+          Text.Append ("IfUnset: " & Mixed_Str (Node.Ifunset'Img));
         end if;
       when others =>
         null;
     end case;
     if Node.Regexp then
-      Basic_Proc.Put_Error ("Regexp ");
+      Text.Append ("Regexp ");
       if Node.Kind /= Condif and then Node.Kind /= Repeat then
-        Basic_Proc.Put_Error ("Assign: " );
+        Text.Append ("Assign: " );
         for I in Node.Assign'Range loop
           exit when Node.Assign(I).Value.Kind = Any_Def.None_Kind;
-          Basic_Proc.Put_Error (Node.Assign(I).Name.Image & "="
-                              & Node.Assign(I).Value.Str.Image);
+          Text.Append (Node.Assign(I).Name.Image & "="
+                     & Node.Assign(I).Value.Str.Image);
         end loop;
       end if;
     end if;
-    Basic_Proc.New_Line_Error;
+    Debug.Logger.Log_debug (Text.image);
     return True;
   end Dump;
+  -- For dump of the tree (iterator)
+  function Dump (Node : Node_Rec; Level : Natural) return Boolean is
+  begin
+    return Dump ("", Node, Level);
+  end Dump;
+  
 
   -----------------------
   -- Building own tree --
@@ -224,7 +232,7 @@ package body Tree is
     end Link_Next;
   begin
     -- Fill new node
-    Debug.Log ("Getting node " & Name);
+    Debug.Logger.Log_Debug ("Getting node " & Name);
     -- Init Node's next
     Init_Next (Node);
     -- Propagate default timeout from father
@@ -379,7 +387,7 @@ package body Tree is
         Chats.Insert_Child (Node, False);
       end if;
 
-      if Debug.Is_On then
+      if Debug.Logger.Debug_On then
         Dummy := Dump (Node, 1);
       end if;
     end if;
@@ -390,13 +398,15 @@ package body Tree is
               or else Node.Kind = Cond
               or else Node.Kind = Repeat) then
       -- Insert each entry
-      Debug.Log ("  Inserting entries of " & Mixed_Str (Node.Kind'Img));
+      Debug.Logger.Log_Debug ("  Inserting entries of "
+                             & Mixed_Str (Node.Kind'Img));
       for I in 1 .. Ctx.Get_Nb_Children (Xnode) loop
         if In_Chats then
           -- Chats is made of version then (expect, script) pairs:
           -- insert "expect"
           if I = 1 or else I rem 2 = 0 then
-            Debug.Log ("    Inserting entry of " & Mixed_Str (Node.Kind'Img));
+            Debug.Logger.Log_Debug ("    Inserting entry of "
+                                  & Mixed_Str (Node.Kind'Img));
             Xchild := Ctx.Get_Child (Xnode, I);
             Insert_Node (Xchild, Default_Timeout);
           end if;
@@ -406,13 +416,15 @@ package body Tree is
           -- Cond is made of (if/elsif/else, script) pairs:
           --   insert "if/elsif/else"
           if I rem 2 = 1 then
-            Debug.Log ("    Inserting entry of " & Mixed_Str (Node.Kind'Img));
+            Debug.Logger.Log_Debug ("    Inserting entry of "
+                                  & Mixed_Str (Node.Kind'Img));
             Xchild := Ctx.Get_Child (Xnode, I);
             Insert_Node (Xchild, Default_Timeout);
           end if;
         end if;
       end loop;
-      Debug.Log ("  End of entries of " & Mixed_Str (Node.Kind'Img));
+      Debug.Logger.Log_Debug ("  End of entries of "
+                             & Mixed_Str (Node.Kind'Img));
     elsif Node.Kind = Set or else Node.Kind = Call
     or else Node.Kind = Eval or else Node.Kind = Chdir then
       -- Assign is an expression then a handler (error+script)
@@ -420,8 +432,8 @@ package body Tree is
       -- (error+script)
       -- Insert error handler if any
       if Ctx.Get_Nb_Children (Xnode) = 3 then
-        Debug.Log ("    Inserting error handler of "
-                 & Mixed_Str (Node.Kind'Img));
+        Debug.Logger.Log_Debug ("    Inserting error handler of "
+                              & Mixed_Str (Node.Kind'Img));
         Xchild := Ctx.Get_Child (Xnode, 2);
         Insert_Node (Xchild, Default_Timeout);
       end if;
@@ -435,14 +447,16 @@ package body Tree is
       -- Jump in it if not empty, else insert a Nop node
       -- In all cases except error, there is no next instruction
       if Ctx.Get_Nb_Children (Ctx.Get_Brother (Xnode)) /= 0 then
-        Debug.Log ("  Inserting child of " & Mixed_Str (Node.Kind'Img));
+        Debug.Logger.Log_Debug ("  Inserting child of "
+                               & Mixed_Str (Node.Kind'Img));
         Xchild := Ctx.Get_Child (Ctx.Get_Brother (Xnode), 1);
         Insert_Node (Xchild, Default_Timeout);
         if not Dummy_Node then
           Link_Next (Node);
         end if;
       else
-        Debug.Log ("  Inserting Nop child of " & Mixed_Str (Node.Kind'Img));
+        Debug.Logger.Log_Debug ("  Inserting Nop child of "
+                              & Mixed_Str (Node.Kind'Img));
         Init_Next (Nop_Node);
         Chats.Insert_Child (Nop_Node, False);
         Chats.Move_Father;
@@ -454,7 +468,8 @@ package body Tree is
       -- Normal (non script) instruction : jump to Xml brother if any
       Xchild := Ctx.Get_Brother (Xnode);
       -- Insert next statement
-      Debug.Log ("  Inserting next of " & Mixed_Str (Node.Kind'Img));
+      Debug.Logger.Log_Debug ("  Inserting next of "
+                            & Mixed_Str (Node.Kind'Img));
       Insert_Node (Xchild, Default_Timeout);
       Link_Next (Node);
     end if;
@@ -477,7 +492,7 @@ package body Tree is
   begin
     if Next = No_Position then
       -- We are root, everything will ultimately arrive here
-      Debug.Log ("On root");
+      Debug.Logger.Log_Debug ("On root");
       Pnext := Position_Access (Chats.Get_Position);
     else
       Pnext := Next;
@@ -488,27 +503,24 @@ package body Tree is
     if Node.Next.all = No_Position then
       Node.Next.all := Pnext;
       Chats.Replace (Node);
-      if Debug.Is_On then
+      if Debug.Logger.Debug_On then
         Chats.Save_Position;
         Set_Position (Pnext);
         Chats.Read (Ref_Node);
         Chats.Restore_Position;
-        Debug.Log ("Updating Next of ", False);
-        Dummy := Dump (Node, 0);
-        Debug.Log ("  to ", False);
-        Dummy := Dump (Ref_Node, 0);
+        Dummy := Dump ("Updating Next of ", Node, 0);
+        Dummy := Dump (" to ", Ref_Node, 0);
       end if;
     else
       -- Don't change current Next if already set
-      if Debug.Is_On then
+      if Debug.Logger.Debug_On then
         Chats.Save_Position;
         Set_Position (Node.Next.all);
         Chats.Read (Ref_Node);
         Chats.Restore_Position;
-        Debug.Log ("Next is OK for ", False);
-        Dummy := Dump (Node, 0);
-        Debug.Log ("  to ", False);
-        Dummy := Dump (Ref_Node, 0);
+        Dummy := Dump ("Next is OK for ", Node, 0);
+        Debug.Logger.Log_Debug ("  to ");
+        Dummy := Dump (" to ", Ref_Node, 0);
       end if;
     end if;
 
@@ -533,7 +545,7 @@ package body Tree is
     if Chats.Children_Number = 1 then
       -- Single child = next instruction
       Chats.Move_Child (True);
-      Debug.Log ("Updating single child");
+      Debug.Logger.Log_Debug ("Updating single child");
       Dummy := Update_Next (Pnext);
     elsif Chats.Children_Number > 1 then
       -- Selec, Cond or Repeat
@@ -541,11 +553,11 @@ package body Tree is
       loop
         if Node.Next.all /= Position_Access(Chats.Get_Position) then
           -- Any intermediate child
-          Debug.Log ("Updating intermediate child");
+          Debug.Logger.Log_Debug ("Updating intermediate child");
           exit when not Update_Next (Inext);
         else
           -- Last child of a Selec/Cond/Repeat, any single child
-          Debug.Log ("Updating last child");
+          Debug.Logger.Log_Debug ("Updating last child");
           exit when not Update_Next (Pnext);
         end if;
       end loop;
@@ -553,13 +565,13 @@ package body Tree is
 
     -- Move to brother if any
     if Chats.Has_Brother (False) then
-      Debug.Log ("Moving to brother");
+      Debug.Logger.Log_Debug ("Moving to brother");
       Chats.Move_Brother (False) ;
       return True;
     else
       -- No more brother => back to father
       if Chats.Has_Father then
-        Debug.Log ("Moving up");
+        Debug.Logger.Log_Debug ("Moving up");
         Chats.Move_Father;
       end if;
       return False;
@@ -587,21 +599,21 @@ package body Tree is
           & File_Name.Image & ".");
         raise Parse_Error;
     end;
-    Debug.Log ("File " & File_Name.Image & " parsed OK.");
+    Debug.Logger.Log_Debug ("File " & File_Name.Image & " parsed OK.");
 
     -- Build Tree
-    Debug.Log ("Building tree:");
+    Debug.Logger.Log_Debug ("Building tree:");
     Xnode := Ctx.Get_Root_Element;
     Insert_Node (Xnode, Infinite_Ms);
     Chats.Move_Root;
-    Debug.Log ("Updating Next:");
+    Debug.Logger.Log_Debug ("Updating Next:");
     Dummy := Update_Next (No_Position);
     Chats.Move_Root;
     Variables.Reset;
 
     -- Dump
-    Debug.Log ("Dump:");
-    if Debug.Is_On then
+    Debug.Logger.Log_Debug ("Dump:");
+    if Debug.Logger.Debug_On then
       Chats.Iterate (Dump'Access);
     end if;
 
