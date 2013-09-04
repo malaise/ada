@@ -169,7 +169,7 @@ package body Command is
     use type Sys_Calls.Death_Cause_List;
   begin
     Mut.Get;
-    Logger.Set_Name ("Command");
+    Logger.Init ("Command");
 
     -- Init results and 'global' exchange variables
     if Mix_Policy /= None then

@@ -259,7 +259,7 @@ package body Http is
     use type Ada.Calendar.Time;
   begin
 
-    Logger.Set_Name ("Http");
+    Logger.Init ("Http");
 
     -- Sanity check on request: Parse Url and set host and port
     declare

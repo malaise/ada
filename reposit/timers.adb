@@ -4,7 +4,6 @@ package body Timers is
 
   -- Debugging
   Logger : Trace.Logger;
-  Debug_Set : Boolean := False;
 
   -- The mutex that protect the whole
   -- Must be recursive because timer Cb can call Timers
@@ -37,11 +36,7 @@ package body Timers is
 
   procedure Set_Debug is
   begin
-    if Debug_Set then
-      return;
-    end if;
-    Logger.Set_Name ("Timers");
-    Debug_Set := True;
+    Logger.Init ("Timers");
   exception
     when others =>
       null;

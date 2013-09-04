@@ -6,13 +6,9 @@ package body Smart_Reference is
                                                     Object_Box_Access);
 
   Logger : Trace.Logger;
-  Initialized : Boolean := False;
   procedure Trace (Ref : in Handle; Str : in String) is
   begin
-    if not Initialized then
-      Logger.Set_Name ("Smart_Reference");
-      Initialized := True;
-    end if;
+    Logger.Init ("Smart_Reference");
     if Logger.Debug_On and then Ref.Box_Access /= null then
       Logger.Log_Debug ("Smart_Ref: " & Str
          & " of " & Address_Ops.Image (Ref.Box_Access.all'Address));

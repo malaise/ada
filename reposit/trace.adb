@@ -47,19 +47,37 @@ package body Trace is
   -- Parsing error on a severity leads to default severity, except for
   --  numeric values too high, which are discarded.
   Default : constant Severities := Error + Fatal;
-  Zero    : constant Severities := 0;
   function Sep (C : Character) return Boolean is
   begin
     return C = '|';
   end Sep;
-  function Parse (Str : String) return Severities is
+  function Parse (Str : String; Log : Boolean) return Severities is
     Valid : Boolean;
     Result : Severities := Default;
     Iter : Parser.Iterator;
-  begin
 
+    procedure Dbg (Msg : in String) is
+    begin
+      if not Log then
+        return;
+      end if;
+      Log_Debug (Me, Msg);
+    end Dbg;
+    procedure Err (Msg : in String) is
+    begin
+      if not Log then
+        return;
+      end if;
+      Log_Error (Me, Msg);
+    end Err;
+
+  begin
+    -- Optim
+    if Str = "" then
+      return Default;
+    end if;
     Iter.Set (Str, Sep'Access);
-    Log_Debug (Me, "Parsing mask " & Str);
+    Dbg ("Parsing mask " & Str);
   loop
     declare
         Word : constant String
@@ -74,10 +92,10 @@ package body Trace is
           if N = 0 then
             -- Reset result
             Result := 0;
-            Log_Debug (Me, "- Resetting mask");
+            Dbg ("- Resetting mask");
           else
             Result := Result or Severities(N);
-            Log_Debug (Me, "- Oring" & N'Img);
+            Dbg ("- Oring" & N'Img);
           end if;
         exception
           when Constraint_Error =>
@@ -87,7 +105,8 @@ package body Trace is
         if not Valid then
           -- At least INFO, which also ensures 16##
           if Word'Length < 4 then
-            return Zero;
+            Err ("Invalid mask " & Word);
+            return Default;
           end if;
           if Word(1..3) = "16#" and then Word(Word'Last) = '#' then
             -- Discard invalid value, including empty
@@ -95,40 +114,40 @@ package body Trace is
             if N = 0 then
               -- Reset result
               Result := 0;
-              Log_Debug (Me, "- Resetting mask");
+              Dbg ("- Resetting mask");
             elsif N < Natural(Severities'Last) then
               -- Skip if too large
               Result := Result or Severities(N);
-              Log_Debug (Me, "- Oring" & N'Img);
+              Dbg ("- Oring" & N'Img);
             end if;
           -- Predefined severities
           elsif Word = "FATAL" then
             Result := Result or Fatal;
-            Log_Debug (Me, "- Oring Fatal");
+            Dbg ("- Oring Fatal");
           elsif Word = "ERROR" then
              Result := Result or Error;
-            Log_Debug (Me, "- Oring Error");
+            Dbg ("- Oring Error");
           elsif Word = "WARNING"
             then Result := Result or Warning;
-            Log_Debug (Me, "- Oring Warning");
+            Dbg ("- Oring Warning");
           elsif Word = "INFO" then
             Result := Result or Info;
-            Log_Debug (Me, "- Oring Info");
+            Dbg ("- Oring Info");
           elsif Word = "DEBUG" then
             Result := Result or Debug;
-            Log_Debug (Me, "- Oring Debug");
+            Dbg ("- Oring Debug");
           else
-            Log_Error (Me, "Invalid mask " & Word);
+            Err ("Invalid mask " & Word);
             return Default;
           end if;
         end if;
       end;
     end loop;
-    Log_Debug (Me, "Returning mask" & Image (Result));
+    Dbg ("Returning mask" & Image (Result));
     return Result;
   exception
     when Error:others =>
-      Log_Debug (Me, "Exception " & Ada.Exceptions.Exception_Name (Error));
+      Dbg ("Exception " & Ada.Exceptions.Exception_Name (Error));
       return Default;
   end Parse;
 
@@ -136,13 +155,13 @@ package body Trace is
   -- Global initialisation
   ------------------------
   -- Init once :
-  Is_Init : Boolean := False;
+  All_Init : Boolean := False;
   -- - Process name
   Process : As.U.Asu_Us;
   -- - Variables PID CMD HOST DATE
   Memory : Computer.Memory_Type;
   -- - Global severity mask
-  Mask : Severities;
+  Mask : Severities := Default;
   -- - Common flow
   Stdout_Name : constant String := "stdout";
   Stderr_Name : constant String := "stderr";
@@ -150,16 +169,42 @@ package body Trace is
   Flow : Text_Line.File_Type;
   Stderr : Text_Line.File_Type;
 
-  -- Global flag of trace activity: True as soon as a logger has a Mask /= 0
-  Active  : Boolean := False;
+  -- INTERNAL: Init the logger fields (even if no global init)
+  procedure Internal_Init (A_Logger : in out Logger;
+                           Name : in String;
+                           Log : in Boolean) is
+  begin
+    -- Store new name or anonymous
+    A_Logger.Name := As.U.Tus (Name);
+    -- Get ENV severity Proc_TRACE[_Name], or global one
+    declare
+      Env : constant String
+          := Upper_Str (Process.Image) & "_TRACE"
+           & Upper_Str (if A_Logger.Name.Is_Null
+                        then ""
+                        else "_" & A_Logger.Name.Image);
+    begin
+      if Environ.Is_Set (Env) then
+        A_Logger.Mask := Parse (Environ.Getenv (Env), Log);
+      else
+        A_Logger.Mask := Mask;
+      end if;
+    end;
+    A_Logger.Init := True;
+    Log_Info (Me, "Init logger name " & Name
+                & " mask " & Image (A_Logger.Mask));
+  end Internal_Init;
 
-  procedure Init is
+  procedure Init_All is
     Name, File : As.U.Asu_Us;
   begin
-    if Is_Init then
+    if All_Init then
       return;
     end if;
 
+    -- No log until local logger is init
+    ------------------------------------
+    -- Get process name and set variables
     Process := As.U.Tus (Argument.Get_Program_Name);
 
     Memory.Set ("PID", Pid_Image (Sys_Calls.Get_Pid), False, True);
@@ -168,9 +213,7 @@ package body Trace is
     Memory.Set ("DATE", Images.Date_Image (Ada.Calendar.Clock, Iso => True),
                 False, True);
 
-    Name := As.U.Tus (Upper_Str (Process.Image));
-    Mask := Parse (Environ.Getenv (Name.Image & "_TRACE_ALL"));
-
+    -- Get flow name and init flow
     File := As.U.Tus (Environ.Getenv (Name.Image & "_TRACEFILE"));
     if File.Image = Stdout_Name then
       -- Stdout
@@ -199,79 +242,79 @@ package body Trace is
        Stderr.Open (Text_Line.Out_File, Sys_Calls.Stderr);
     end if;
 
-    Is_Init := True;
-    Set_Name (Me, "Trace");
+    -- Init local logger with no log
+    Internal_Init (Me, "Trace", False);
     Log_Info (Me, "Init done with mask " & Image (Mask)
                 & " on flow " & File.Image);
-  end Init;
+
+    -- Get global mask
+    Name := As.U.Tus (Upper_Str (Process.Image));
+    Mask := Parse (Environ.Getenv (Name.Image & "_TRACE_ALL"), True);
+
+    All_Init := True;
+  end Init_All;
 
   -- Logger
   ---------
+
   -- Set logger name, retrieve severity
   -- Set / change the logger name
-  procedure Set_Name (A_Logger : in out Logger; Name : in String) is
+  procedure Init (A_Logger : in out Logger; Name : in String := "") is
   begin
     -- Init if necessary
-    if A_Logger.Init and then A_Logger.Name.Image = Name then
+    if A_Logger.Init then
       return;
     end if;
-
     -- Global init if necessary
-    Init;
+    Init_All;
+    -- Init the logger
+    Internal_Init (A_Logger, Name, True);
+  end Init;
 
-    -- Store new name  or default
-    A_Logger.Name := As.U.Tus (Name);
-    -- Get ENV severity Proc_TRACE[_Name], or global one
-    declare
-      Env : constant String
-          := Upper_Str (Process.Image) & "_TRACE"
-           & Upper_Str (if A_Logger.Name.Is_Null
-                        then ""
-                        else "_" & A_Logger.Name.Image);
-    begin
-      if Environ.Is_Set (Env) then
-        A_Logger.Mask := Parse (Environ.Getenv (Env));
-      else
-        A_Logger.Mask := Mask;
-      end if;
-    end;
-    A_Logger.Init := True;
-    if A_Logger.Mask /= 0 then
-      Active := True;
-      Log_Info (Me, "Activating traces");
-    end if;
-    Log_Info (Me, "Set logger name " & Name & " mask " & Image (A_Logger.Mask));
-  end Set_Name;
-
-  procedure Activate (A_Logger : in out Logger) is
+  procedure Reset (A_Logger : in out Logger; Name : in String) is
   begin
-    Log_Info (Me, "Activating logger " & A_Logger.Name.Image);
-    Set_Name (A_Logger, A_Logger.Name.Image);
-  end Activate;
+    A_Logger.Init := False;
+    Init (A_Logger, Name);
+    Set_Flush (A_Logger, True);
+  end Reset;
 
+  function Is_Init (A_Logger : Logger) return Boolean is
+  begin
+    return A_Logger.Init;
+  end Is_Init;
+
+  -- INTERNAL: raise Not_Init if not init
+  procedure Check_Init (A_Logger : in Logger) is
+  begin
+    if not A_Logger.Init then
+      raise Not_Init;
+    end if;
+  end Check_Init;
+
+  function Name (A_Logger : Logger) return String is
+  begin
+    Check_Init (A_Logger);
+    return A_Logger.Name.Image;
+  end Name;
 
   -- Severities
   ----------
   procedure Set_Mask (A_Logger : in out Logger; Mask : in Severities) is
   begin
-    Init;
+    Check_Init (A_Logger);
     A_Logger.Mask := Mask;
   end Set_Mask;
 
   procedure Add_Mask (A_Logger : in out Logger; Mask : in Severities) is
   begin
-    if not A_Logger.Init then
-      Activate (A_Logger);
-    end if;
+    Check_Init (A_Logger);
     A_Logger.Mask := Severities(Bit_Ops."Or" (Natural(A_Logger.Mask),
                                               Natural(Mask)));
   end Add_Mask;
 
   function Get_Mask (A_Logger : in out Logger) return Severities is
   begin
-    if not A_Logger.Init then
-      Activate (A_Logger);
-    end if;
+    Check_Init (A_Logger);
     return A_Logger.Mask;
   end Get_Mask;
 
@@ -279,46 +322,34 @@ package body Trace is
   function Is_On (A_Logger : in out Logger;
                   Severity : in Severities) return Boolean is
   begin
-    if not A_Logger.Init then
-      Activate (A_Logger);
-    end if;
+    Check_Init (A_Logger);
     return (A_Logger.Mask and Severity) /= 0;
   end Is_On;
 
   function Fatal_On (A_Logger : in out Logger) return Boolean is
   begin
-   if not A_Logger.Init then
-      Activate (A_Logger);
-    end if;
+    Check_Init (A_Logger);
     return (A_Logger.Mask and Fatal) /= 0;
   end Fatal_On;
 
   function Error_On (A_Logger : in out Logger) return Boolean is
   begin
-   if not A_Logger.Init then
-      Activate (A_Logger);
-    end if;
+    Check_Init (A_Logger);
     return (A_Logger.Mask and Error) /= 0;
   end Error_On;
   function Warning_On (A_Logger : in out Logger) return Boolean is
   begin
-   if not A_Logger.Init then
-      Activate (A_Logger);
-    end if;
+    Check_Init (A_Logger);
     return (A_Logger.Mask and Warning) /= 0;
   end Warning_On;
   function Info_On (A_Logger : in out Logger) return Boolean is
   begin
-   if not A_Logger.Init then
-      Activate (A_Logger);
-    end if;
+    Check_Init (A_Logger);
     return (A_Logger.Mask and Info) /= 0;
   end Info_On;
   function Debug_On (A_Logger : in out Logger) return Boolean is
   begin
-   if not A_Logger.Init then
-      Activate (A_Logger);
-    end if;
+    Check_Init (A_Logger);
     return (A_Logger.Mask and Debug) /= 0;
   end Debug_On;
 
@@ -327,16 +358,13 @@ package body Trace is
   ----------
   procedure Log (A_Logger : in out Logger;
                  Severity : in Severities;
-                 Message  : in String) is
+                 Message  : in String;
+                 Name     : in String := "") is
     Txt : As.U.Asu_Us;
   begin
-    -- Optim
-    if not Active then
-      return;
-    end if;
+    -- Init as anonymous if needed
     if not A_Logger.Init then
-      -- Ensure logger is init (and global init is done)
-      Activate (A_Logger);
+      Init (A_Logger, Name);
     end if;
     -- Check severity
     if Bit_Ops."And" (Natural(Severity), Natural(A_Logger.Mask)) = 0 then
@@ -366,29 +394,39 @@ package body Trace is
     end if;
   end Log;
 
-  procedure Log_Fatal   (A_Logger : in out Logger; Message  : in String) is
+  procedure Log_Fatal   (A_Logger : in out Logger;
+                         Message  : in String;
+                         Name     : in String := "") is
   begin
-    Log (A_Logger, Fatal, Message);
+    Log (A_Logger, Fatal, Message, Name);
   end Log_Fatal;
 
-  procedure Log_Error   (A_Logger : in out Logger; Message  : in String) is
+  procedure Log_Error   (A_Logger : in out Logger;
+                         Message  : in String;
+                         Name     : in String := "") is
   begin
-    Log (A_Logger, Error, Message);
+    Log (A_Logger, Error, Message, Name);
   end Log_Error;
 
-  procedure Log_Warning (A_Logger : in out Logger; Message  : in String) is
+  procedure Log_Warning (A_Logger : in out Logger;
+                         Message  : in String;
+                         Name     : in String := "") is
   begin
-    Log (A_Logger, Warning, Message);
+    Log (A_Logger, Warning, Message, Name);
   end Log_Warning;
 
-  procedure Log_Info    (A_Logger : in out Logger; Message  : in String) is
+  procedure Log_Info    (A_Logger : in out Logger;
+                         Message  : in String;
+                         Name     : in String := "") is
   begin
-    Log (A_Logger, Info, Message);
+    Log (A_Logger, Info, Message, Name);
   end Log_Info;
 
-  procedure Log_Debug   (A_Logger : in out Logger; Message  : in String) is
+  procedure Log_Debug   (A_Logger : in out Logger;
+                         Message  : in String;
+                         Name     : in String := "") is
   begin
-    Log (A_Logger, Debug, Message);
+    Log (A_Logger, Debug, Message, Name);
   end Log_Debug;
 
 

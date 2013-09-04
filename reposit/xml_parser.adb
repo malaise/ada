@@ -275,26 +275,19 @@ package body Xml_Parser is
   -----------
   -- DEBUG --
   -----------
-  Debug_Set : Boolean := False;
   -- Trace debug message
   procedure Trace (Msg : in String) is
     use type Trilean.Trilean;
   begin
-    if not Debug_Set then
-      -- First call, set debug
-      Logger.Set_Name ("Xml_Parser");
-      Debug_Set := True;
-    end if;
-    Logger.Log_Debug (Msg);
+    Logger.Log_Debug (Msg, "Xml_Parser");
   end Trace;
 
   function Debug_On return Boolean is
     use type Trilean.Trilean;
   begin
-    if not Debug_Set then
+    if not Logger.Is_Init then
       -- First call, set debug
-      Logger.Set_Name ("Xml_Parser");
-      Debug_Set := True;
+      Logger.Init ("Xml_Parser");
     end if;
     return Logger.Debug_On;
   end Debug_On;

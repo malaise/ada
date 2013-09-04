@@ -4,7 +4,6 @@ with Dynamic_List, Timers, Event_Mng, Trace, Socket_Util;
 package body Tcp_Util is
 
   -- Debugging
-  Debug_Init : Boolean := False;
   Log_Connect : Trace.Logger;
   Log_Accept : Trace.Logger;
   Log_Overflow : Trace.Logger;
@@ -12,14 +11,13 @@ package body Tcp_Util is
 
   procedure Init_Debug is
   begin
-    if Debug_Init then
+    if Log_Connect.Is_Init then
       return;
     end if;
-    Log_Connect.Set_Name ("Tcp_Util_Connect");
-    Log_Connect.Set_Name ("Tcp_Util_Accept");
-    Log_Connect.Set_Name ("Tcp_Util_Overflow");
-    Log_Connect.Set_Name ("Tcp_Util_Connect");
-    Debug_Init := True;
+    Log_Connect.Init ("Tcp_Util_Connect");
+    Log_Connect.Init ("Tcp_Util_Accept");
+    Log_Connect.Init ("Tcp_Util_Overflow");
+    Log_Connect.Init ("Tcp_Util_Connect");
   end Init_Debug;
 
   -- Connecting connection

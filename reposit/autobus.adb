@@ -638,7 +638,7 @@ package body Autobus is
     Port_Num : Socket.Port_Num;
     Timeout : Timers.Delay_Rec (Timers.Delay_Sec);
   begin
-    Logger.Set_Name ("Autobus");
+    Logger.Init ("Autobus");
     Check_In_Receive;
     -- Check that Bus is not already initialised
     if Bus.Acc /= null then

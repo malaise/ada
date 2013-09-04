@@ -85,7 +85,7 @@ package body Con_Io is
     Xi : X_Mng.Color;
   begin
     if not X_Init_Done then
-      Logger.Set_Name ("Con_Io");
+      Logger.Init ("Con_Io");
       Logger.Log_Debug ("Con_Io initialisation");
       for I in The_Color_Names'Range loop
          Xi := Colors'Pos(I) - Colors'Pos(Color01);

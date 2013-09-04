@@ -527,7 +527,7 @@ package body X_Mng is
       raise X_Failure;
     end if;
     Dispatcher.Initialize;
-    Logger.Set_Name ("X_Mng");
+    Logger.Init ("X_Mng");
     Initialised := True;
   end X_Initialise;
   procedure X_Initialise (Server_Name : in String;

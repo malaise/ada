@@ -144,7 +144,7 @@ package body Config is
     if Ctx.Get_Status /= Xml_Parser.Clean then
       return;
     end if;
-    Log_Cfg.Set_Name ("AutobusConfig");
+    Log_Cfg.Init ("AutobusConfig");
 
     -- Make dummy tree if env variable is set
     if not Environ.Is_Set (Env_File_Name)

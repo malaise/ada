@@ -57,7 +57,7 @@ package body Event_Mng is
     Res : Boolean;
     Cb_Searched : Cb_Rec;
   begin
-    Logger.Set_Name (Logger_Name);
+    Logger.Init (Logger_Name);
     -- Check no cb for this fd yet
     Cb_Searched.Fd := Fd;
     Cb_Searched.Read := Read;
@@ -108,7 +108,7 @@ package body Event_Mng is
            return Fd_Callback is
     Cb_Searched : Cb_Rec;
   begin
-    Logger.Set_Name (Logger_Name);
+    Logger.Init (Logger_Name);
     -- Get from list
     Cb_Searched.Fd := Fd;
     Cb_Searched.Read := Read;
@@ -189,7 +189,7 @@ package body Event_Mng is
 
   procedure Send_Dummy_Signal is
   begin
-    Logger.Set_Name (Logger_Name);
+    Logger.Init (Logger_Name);
     Logger.Log_Debug ("Event_Mng.Send_Dummy_Signal");
     C_Send_Dummy_Signal;
   end Send_Dummy_Signal;
@@ -255,7 +255,7 @@ package body Event_Mng is
              Virtual_Time.Time, Virtual_Time.Speed_Range,
              Timers.Expiration_Rec, Perpet.Delta_Rec;
   begin
-    Logger.Set_Name (Logger_Name);
+    Logger.Init (Logger_Name);
     if Delay_Spec.Clock /= null then
       raise Invalid_Delay;
     end if;
@@ -381,7 +381,7 @@ package body Event_Mng is
     pragma Unreferenced (Dummy);
     use type My_Math.Inte;
   begin
-    Logger.Set_Name (Logger_Name);
+    Logger.Init (Logger_Name);
 
     -- Increment global pause level and store ours
     Pause_Level.Inte := Pause_Level.Inte + 1;
@@ -422,7 +422,7 @@ package body Event_Mng is
     Cb_Searched : Cb_Rec;
     Signal_Kind : Signal_Kind_List;
   begin
-    Logger.Set_Name (Logger_Name);
+    Logger.Init (Logger_Name);
     Logger.Log_Debug ("Event_Mng.Handle event " & Event.Kind'Img);
     case Event.Kind is
       when Fd_Event =>

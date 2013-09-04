@@ -44,7 +44,7 @@ procedure T_Proc_Child is
   end Fd_Cb;
 
 begin
-  Logger.Activate;
+  Logger.Init;
   Logger.Log_Debug ("Starting");
   begin
     Proc_Family.Child_Get_Fds (Fd_In, Fd_Out, Fd_Err);

@@ -91,7 +91,7 @@ package body Pattern is
 
 
   begin
-    Logger.Set_Name ("Pattern");
+    Logger.Init ("Pattern");
     Check_Rule (Rule);
     if Storage.Pattern_Exists (Rule, Id) then
       raise Pattern_Exists;
@@ -203,7 +203,7 @@ package body Pattern is
   -- May raise Invalid_Pattern if the Id is not set
   procedure Del (Rule : in Rule_No; Id : in Pattern_Id) is
   begin
-    Logger.Set_Name ("Pattern");
+    Logger.Init ("Pattern");
     Check_Rule (Rule);
     if Storage.Pattern_Exists (Rule, Id) then
       Put_Debug ("Del", "Delete pattern rule " & Image (Rule)
@@ -225,7 +225,7 @@ package body Pattern is
     Index : Natural;
     use type Storage.Str_Access;
   begin
-    Logger.Set_Name ("Pattern");
+    Logger.Init ("Pattern");
     Check_Rule (Rule);
     if not Storage.Pattern_Exists (Rule, Id) then
       raise Invalid_Pattern;
@@ -300,7 +300,7 @@ package body Pattern is
   function Get_Id4Cb (Rule : Rule_No; Id : Pattern_Id) return Pattern_Id is
     Term : Storage.Term_Rec;
   begin
-    Logger.Set_Name ("Pattern");
+    Logger.Init ("Pattern");
     Check_Rule (Rule);
     if not Storage.Pattern_Exists (Rule, Id) then
       raise Invalid_Pattern;
@@ -401,7 +401,7 @@ package body Pattern is
     end Conclude;
 
   begin
-    Logger.Set_Name ("Pattern");
+    Logger.Init ("Pattern");
     Check_Rule (Rule);
     Put_Debug ("Check", "Checking string " & Str
              & " in rule no " & Image (Rule));
@@ -536,7 +536,7 @@ package body Pattern is
   function Get_Free_Rule return Rule_No is
     Rule : Rule_No;
   begin
-    Logger.Set_Name ("Pattern");
+    Logger.Init ("Pattern");
     Rule := Storage.Get_Free_Rule;
     Put_Debug ("Get_Free_Rule", "Allocating " & Image (Rule));
     return Rule;
@@ -545,7 +545,7 @@ package body Pattern is
   -- Delete all patterns of a rule
   procedure Del_Rule (Rule : in Rule_No) is
   begin
-    Logger.Set_Name ("Pattern");
+    Logger.Init ("Pattern");
     Check_Rule (Rule);
     Put_Debug ("Del_Rule", "Deleting " & Image (Rule));
     Storage.Del_Rule (Rule);

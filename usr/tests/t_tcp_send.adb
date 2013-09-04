@@ -182,7 +182,7 @@ procedure T_Tcp_Send is
   end Send;
 
 begin
-  Logger.Activate;
+  Logger.Init;
   Logger.Add_Mask (Trace.Infos);
   Logger.Log_Debug ("Init");
   -- General init

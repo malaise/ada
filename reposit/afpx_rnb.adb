@@ -421,7 +421,7 @@ procedure Afpx_Rnb is
 
 begin
 
-  Logger.Activate;
+  Logger.Init;
 
   ------------------
   -- Parse arguments

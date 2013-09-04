@@ -9,12 +9,13 @@ package Trace is
   --  where <PROCESS> is the process name in UPPERCASE (no path)
   --        file is "stdout", "stderr" or any file name, possibly with
   --          ${PID}, ${CMD}, ${HOST} or ${DATE}, which are expanded
-  -- Each logger has a name and each trace has a severity (maybe several)
+  -- Each logger is anonymous or has a name, and each trace has a severity
+  --  (possibly several)
   -- Activate traces by environment variables
   --   <PROCESS>_TRACE[_<LOGGER>]="<severities>"
   --   Where <PROCESS> is the process name in UPPERCASE (no path)
   --         <LOGGER> is the logger name in UPPERCASE, "ALL" for all loggers,
-  --         <PROCESS>_DEBUG for loggers with no name
+  --         <PROCESS>_TRACE for anonymous loggers
   --         <severities> is a list of severity names of values,
   --           separated by '|', ex: "7|DEBUG|16#30#"
   -- Default severity is Fatal | Error
@@ -24,7 +25,6 @@ package Trace is
   --  values too high, which are discarded.
   -- Fatal | Error are also sent to stderr by default
 
-  -- The logger of traces
   -- Trace output is:
   -- "Date Process Logger Severity -> Message"
   -- Where Date     ::= YYyy/Mm/DdTHh:Mm:Ss.mmm
@@ -32,18 +32,29 @@ package Trace is
   --       Logger   ::= the name of the logger, default "-"
   --       Severity ::= FATAL ERROR INFO WARNING DEBUG or a number
   --       Message  ::= the text of the log message
+
+  -- The logger of traces
   type Logger is tagged private;
 
-  -- Activate / Set / change the logger name and set its maks from ENV
+  -- Initialize the logger, with a name or anonymous
+  --  and set its mask from ENV
   -- Setting a name (even empty) activates the logger
-  -- If Name is not empty and <proc>_DEBUG_<Name> is set
-  -- or Name is empty and <proc>_DEBUG is set, then the mask is set to
+  -- If Name is not empty and <proc>_TRACE_<Name> is set
+  -- or Name is empty and <proc>_TRACE is set, then the mask is set to
   --  Fatal|Error|value
   -- If none is set then the mask is set to the global value got from
-  --  <proc>_DEBUG_ALL if set, or Fatal|Error by default
-  -- Each call to Activate or Set_Name re-initilaises the severity mask
-  procedure Activate (A_Logger : in out Logger);
-  procedure Set_Name (A_Logger : in out Logger; Name : in String);
+  --  <proc>_TRACE_ALL if set, or Fatal|Error by default
+  -- Each further call to Init have no effect,
+  procedure Init (A_Logger : in out Logger; Name : in String := "");
+  -- Set (init) or change the name of the logger
+  -- Also reset its flush mode
+  procedure Reset (A_Logger : in out Logger; Name : in String);
+
+  -- Return True if logger is init
+  function Is_Init (A_Logger : Logger) return Boolean;
+  -- Return name of logger, raise Not_Init if is not init
+  Not_Init : exception;
+  function Name (A_Logger : Logger) return String;
 
 
   -- A trace severity, one bit for each
@@ -66,11 +77,13 @@ package Trace is
 
 
   -- Set / get / add severities
+  -- Raise Not_Init if logger is not init
   procedure Set_Mask (A_Logger : in out Logger; Mask : in Severities);
   procedure Add_Mask (A_Logger : in out Logger; Mask : in Severities);
-  function Get_Mask  (A_Logger : in out Logger) return Severities;
+  function  Get_Mask (A_Logger : in out Logger) return Severities;
 
   -- Check if a severity is active
+  -- Raise Not_Init if logger is not init
   function Is_On (A_Logger : in out Logger;
                   Severity : in Severities) return Boolean;
   function Fatal_On   (A_Logger : in out Logger) return Boolean;
@@ -79,17 +92,31 @@ package Trace is
   function Info_On    (A_Logger : in out Logger) return Boolean;
   function Debug_On   (A_Logger : in out Logger) return Boolean;
 
-  -- Log a message of a give severity (note that it can have several severities)
+  -- Log a message of a given severity (note that it can have several
+  --  severities)
+  -- Calling it on a logger not initialized implicitly init it with Name
   procedure Log (A_Logger : in out Logger;
                  Severity : in Severities;
-                 Message  : in String);
-  procedure Log_Fatal   (A_Logger : in out Logger; Message  : in String);
-  procedure Log_Error   (A_Logger : in out Logger; Message  : in String);
-  procedure Log_Warning (A_Logger : in out Logger; Message  : in String);
-  procedure Log_Info    (A_Logger : in out Logger; Message  : in String);
-  procedure Log_Debug   (A_Logger : in out Logger; Message  : in String);
+                 Message  : in String;
+                 Name     : in String := "");
+  procedure Log_Fatal   (A_Logger : in out Logger;
+                         Message  : in String;
+                         Name     : in String := "");
+  procedure Log_Error   (A_Logger : in out Logger;
+                         Message  : in String;
+                         Name     : in String := "");
+  procedure Log_Warning (A_Logger : in out Logger;
+                         Message  : in String;
+                         Name     : in String := "");
+  procedure Log_Info    (A_Logger : in out Logger;
+                         Message  : in String;
+                         Name     : in String := "");
+  procedure Log_Debug   (A_Logger : in out Logger;
+                         Message  : in String;
+                         Name     : in String := "");
 
-  -- Configure logger to flush each message (true by default)
+  -- Configure logger to flush each message (True by default)
+  -- Set_Flush is independant from logger initialisation
   procedure Set_Flush (A_Logger : in out Logger; Each : in Boolean);
 
   -- Flush logs of a logger
