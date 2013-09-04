@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Autobus, Timers, Event_Mng, Basic_Proc;
+with Autobus, Timers, Event_Mng;
 with Utils;
 package body Communication is
 
@@ -29,9 +29,7 @@ package body Communication is
                      Message : in String) is
     pragma Unreferenced (Observer, Subscriber);
   begin
-    if Utils.Debug_Comm then
-      Utils.Debug ("Received " & Message);
-    end if;
+    Utils.Dbg_Comm ("Received " & Message);
     if Message = "E" then
       raise Utils.Abort_Game;
     end if;
@@ -68,13 +66,11 @@ package body Communication is
       Bus.Init (Addr);
     exception
       when Error:others =>
-        Basic_Proc.Put_Line_Output ("Cannot init Bus at address " & Addr
+        Utils.Err_Comm  ("Cannot init Bus at address " & Addr
             & ", exception: " & Ada.Exceptions.Exception_Name (Error));
         raise Init_Error;
     end;
-    if Utils.Debug_Comm then
-      Utils.Debug ("Bus initialised");
-    end if;
+    Utils.Dbg_Comm ("Bus initialised");
 
     -- Init connection observer
     Communication.Server := Server;
@@ -99,9 +95,7 @@ package body Communication is
         Tid.Delete;
       end if;
       Subs.Reset;
-      if Utils.Debug_Comm then
-        Utils.Debug ("Connection completed");
-      end if;
+      Utils.Dbg_Comm ("Connection completed");
     end if;
     return Connected;
   end Is_Connected;
@@ -114,9 +108,7 @@ package body Communication is
                      Message : in String) is
     pragma Unreferenced (Observer, Subscriber);
   begin
-    if Utils.Debug_Comm then
-      Utils.Debug ("Received " & Message);
-    end if;
+    Utils.Dbg_Comm ("Received " & Message);
     if Reception /= null then
       Reception (Message);
     end if;
@@ -142,17 +134,13 @@ package body Communication is
   -- Send a message to partner
   procedure Send (Msg : in String) is
   begin
-    if Utils.Debug_Comm then
-      Utils.Debug ("Sending >" & Msg & "<");
-    end if;
+    Utils.Dbg_Comm ("Sending >" & Msg & "<");
     Bus.Send (Msg);
   end Send;
 
   procedure Close is
   begin
-    if Utils.Debug_Comm then
-      Utils.Debug ("Closing communications");
-    end if;
+    Utils.Dbg_Comm ("Closing communications");
     if Subs.Is_Init then
       Subs.Reset;
     end if;

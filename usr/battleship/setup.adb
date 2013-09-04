@@ -63,15 +63,11 @@ package body Setup is
 
     if Msg = "D" then
       -- Partner has completed its setup
-      if Utils.Debug_Setup then
-        Utils.Debug ("Partner has completed setup");
-      end if;
+      Utils.Dbg_Setup ("Partner has completed setup");
       Partner_Done := True;
     elsif Msg = "E" then
       -- Aborted by partner
-      if Utils.Debug_Setup then
-        Utils.Debug ("Partner has aborted setup");
-      end if;
+      Utils.Dbg_Setup ("Partner has aborted setup");
       Abort_Game := True;
     end if;
   end Receive;
@@ -113,9 +109,7 @@ package body Setup is
     Ship_Fld     : Afpx.Absolute_Field_Range;
     use type Afpx.Keyboard_Key_List, Afpx.Field_Range;
   begin
-    if Utils.Debug_Setup then
-      Utils.Debug ("Start of setup");
-    end if;
+    Utils.Dbg_Setup ("Start of setup");
 
     -- Reset Afpx descriptor
     Afpx.Use_Descriptor (Afpx_Xref.Setup.Dscr_Num);
@@ -226,9 +220,7 @@ package body Setup is
       end if;
       exit when Action = Done and then Partner_Done;
     end loop;
-    if Utils.Debug_Setup then
-      Utils.Debug ("End of setup");
-    end if;
+    Utils.Dbg_Setup ("End of setup");
   end Define;
 
   -- Is a cell allowed: no ship in Cell nor in in adjacent cells
@@ -286,9 +278,7 @@ package body Setup is
             return Start;
           end if;
         end loop;
-        if Utils.Debug_Setup then
-          Utils.Debug ("Up is valid");
-        end if;
+        Utils.Dbg_Setup ("Up is valid");
         return (Erow, Start.Col);
       when Down =>
         -- From Start, Len rows down
@@ -301,9 +291,7 @@ package body Setup is
             return Start;
           end if;
         end loop;
-        if Utils.Debug_Setup then
-          Utils.Debug ("Down is valid");
-        end if;
+        Utils.Dbg_Setup ("Down is valid");
         return (Erow, Start.Col);
       when Left =>
         -- From Start, Len cols left
@@ -316,9 +304,7 @@ package body Setup is
             return Start;
           end if;
         end loop;
-        if Utils.Debug_Setup then
-          Utils.Debug ("Left is valid");
-        end if;
+        Utils.Dbg_Setup ("Left is valid");
         return (Start.Row, Ecol);
       when Right =>
         -- From Start, Len cols right
@@ -331,9 +317,7 @@ package body Setup is
             return Start;
           end if;
         end loop;
-        if Utils.Debug_Setup then
-          Utils.Debug ("Right is valid");
-        end if;
+        Utils.Dbg_Setup ("Right is valid");
         return (Start.Row, Ecol);
     end case;
   end Get_Valid;
@@ -405,17 +389,13 @@ package body Setup is
             -- Store Coordinate
             Start := Utils.Fld2Coord (Afpx_Xref.Setup.Grid, Fld);
             Fleet.My_Ships(Curr_Ship)(1) := Start;
-            if Utils.Debug_Setup then
-              Utils.Debug ("Selected Cell is " & Utils.Image (Start));
-            end if;
+            Utils.Dbg_Setup ("Selected Cell is " & Utils.Image (Start));
             -- Propose valid extremities
             Valid_Nb := 0;
             for Dir in Dir_List loop
               Stop := Get_Valid (Curr_Ship, Start, Dir);
               if Stop /= Start then
-                if Utils.Debug_Setup then
-                  Utils.Debug ("Got " & Utils.Image (Stop));
-                end if;
+                Utils.Dbg_Setup ("Got " & Utils.Image (Stop));
                 Valid_Nb := Valid_Nb + 1;
                 Valids(Valid_Nb) := Stop;
               end if;
@@ -450,9 +430,9 @@ package body Setup is
               end loop;
               -- Store ship and update grid
               Store_Ship (Curr_Ship, Start, Stop);
-              if Utils.Debug_Setup then
+              if Utils.Dbg_Setup then
                 for I in 1 .. Fleet.Length (Curr_Ship) loop
-                  Utils.Debug ("Ship is in "
+                  Utils.Dbg_Setup ("Ship is in "
                               & Utils.Image (Fleet.My_Ships(Curr_Ship)(I)));
                 end loop;
               end if;
@@ -496,10 +476,8 @@ package body Setup is
                     Utils.Coord2Fld (Afpx_Xref.Setup.Grid,
                                      Fleet.My_Ships(Del_Ship)(I)),
                     Reset_String => False);
-                if Utils.Debug_Setup then
-                  Utils.Debug ("Deleting ship in "
-                              & Utils.Image (Fleet.My_Ships(Del_Ship)(I)));
-                end if;
+                Utils.Dbg_Setup ("Deleting ship in "
+                               & Utils.Image (Fleet.My_Ships(Del_Ship)(I)));
               end loop;
               Ships(Del_Ship) := False;
               -- Move Sub1 as Sub2 if first submarine
@@ -516,18 +494,14 @@ package body Setup is
       when Afpx_Xref.Setup.Cancel =>
         -- Cancel proposed cells
         if Action = Positionning then
-          if Utils.Debug_Setup then
-            Utils.Debug ("Cancelling "
-                       & Utils.Image (Fleet.My_Ships(Curr_Ship)(1)));
-          end if;
+          Utils.Dbg_Setup ("Cancelling "
+                         & Utils.Image (Fleet.My_Ships(Curr_Ship)(1)));
           Afpx.Reset_Field (
             Utils.Coord2Fld (Afpx_Xref.Setup.Grid,
                              Fleet.My_Ships(Curr_Ship)(1)),
             Reset_String => False);
           for I in 1 .. Valid_Nb loop
-            if Utils.Debug_Setup then
-              Utils.Debug ("Cancelling " & Utils.Image (Valids(I)));
-            end if;
+            Utils.Dbg_Setup ("Cancelling " & Utils.Image (Valids(I)));
             Afpx.Reset_Field (
               Utils.Coord2Fld (Afpx_Xref.Setup.Grid, Valids(I)),
               Reset_String => False);
@@ -536,9 +510,7 @@ package body Setup is
         Action := Idle;
       when Afpx_Xref.Setup.Done =>
         -- Store setup
-        if Utils.Debug_Setup then
-          Utils.Debug ("Local setup completed");
-        end if;
+        Utils.Dbg_Setup ("Local setup completed");
         -- Done
         Action := Done;
         return True;

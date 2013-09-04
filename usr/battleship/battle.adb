@@ -34,9 +34,7 @@ package body Battle is
     Lmsg : constant String := Msg;
     Result : As.U.Asu_Us;
   begin
-    if Utils.Debug_Play then
-      Utils.Debug ("Decoding: >" & Msg & "<");
-    end if;
+    Utils.Dbg_Play ("Decoding: >" & Msg & "<");
     -- Row and Col
     Result := As.U.Tus (Lmsg(2));
     if Lmsg(3) = 'a' then
@@ -152,22 +150,15 @@ package body Battle is
     Reply : As.U.Asu_Us;
     Message : constant String (1 .. Msg'Length) := Msg;
   begin
-    if Utils.Debug_Play then
-      Utils.Debug ("Handling message >" & Message & "<");
-      if Shoot then
-        Utils.Debug ("while shooting");
-      else
-        Utils.Debug ("while waiting");
-      end if;
+    Utils.Dbg_Play ("Handling message >" & Message & "<");
+    if Shoot then
+      Utils.Dbg_Play ("while shooting");
+    else
+      Utils.Dbg_Play ("while waiting");
     end if;
     if Message = "E" then
       -- Aborted by partner
-      if Utils.Debug_Play then
-        Utils.Debug ("Received message: " & Message);
-      end if;
-      if Utils.Debug_Play then
-        Utils.Debug ("Partner has aborted game");
-      end if;
+      Utils.Dbg_Play ("Partner has aborted game");
       Abort_Game := True;
       return;
     end if;
@@ -184,9 +175,7 @@ package body Battle is
         C := Utils.Value (Message(2 .. 3));
       exception
         when others =>
-          if Utils.Debug_Play then
-            Utils.Debug ("Error decoding shoot request");
-          end if;
+          Utils.Dbg_Play ("Error decoding shoot request");
           raise Protocol_Error;
       end;
       Cell := My_Grid(C.Row, C.Col);
@@ -230,9 +219,7 @@ package body Battle is
         C := Utils.Value (Message(2 .. 3));
       exception
         when others =>
-          if Utils.Debug_Play then
-            Utils.Debug ("Error decoding shoot reply");
-          end if;
+          Utils.Dbg_Play ("Error decoding shoot reply");
           raise Protocol_Error;
       end;
       Cell := My_Grid(C.Row, C.Col);
@@ -277,8 +264,8 @@ package body Battle is
     -- Done
   exception
     when Error:others =>
-      Utils.Debug ("Exception in Receive "
-                 & Ada.Exceptions.Exception_Name (Error));
+      Utils.Err_Play ("Exception in Receive "
+                    & Ada.Exceptions.Exception_Name (Error));
       raise;
   end Receive;
 
@@ -292,9 +279,7 @@ package body Battle is
 
     use type Afpx.Keyboard_Key_List, Afpx.Field_Range;
   begin
-    if Utils.Debug_Play then
-      Utils.Debug ("Start of play");
-    end if;
+    Utils.Dbg_Play ("Start of play");
 
     -- Init Afpx and colors
     Afpx.Use_Descriptor (Afpx_Xref.Play.Dscr_Num);
@@ -372,15 +357,11 @@ package body Battle is
           -- Shoot or end of game choice
           if Result.Field_No = Afpx_Xref.Play.Exitgame then
             Communication.Send ("E");
-            if Utils.Debug_Play then
-              Utils.Debug ("End of play");
-            end if;
+            Utils.Dbg_Play ("End of play");
             return False;
           elsif Result.Field_No = Afpx_Xref.Play.Restart then
             Communication.Send ("Z");
-            if Utils.Debug_Play then
-              Utils.Debug ("End of play");
-            end if;
+            Utils.Dbg_Play ("End of play");
             return True;
           end if;
           -- Shoot?
@@ -390,9 +371,7 @@ package body Battle is
           and then Result.Field_No in Afpx_Xref.Play.Grid2
                                    .. Afpx_Xref.Play.Grid2 + 99 then
             Target := Utils.Fld2Coord (Afpx_Xref.Play.Grid2, Result.Field_No);
-            if Utils.Debug_Play then
-              Utils.Debug ("Shooting at " & Utils.Image (Target));
-            end if;
+            Utils.Dbg_Play ("Shooting at " & Utils.Image (Target));
             -- Clear message of last reply sent
             Afpx.Clear_Field (Afpx_Xref.Play.My_Msg);
             -- Send shoot request
@@ -406,9 +385,7 @@ package body Battle is
       -- Received a shoot or reply or end message
       if Abort_Game then
         if Done then
-          if Utils.Debug_Play then
-            Utils.Debug ("End of play");
-          end if;
+          Utils.Dbg_Play ("End of play");
           return False;
         else
           raise Utils.Abort_Game;

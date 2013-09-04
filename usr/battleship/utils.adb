@@ -1,38 +1,56 @@
-with Environ, Basic_Proc;
+with Trace;
 package body Utils is
 
 
   -- Debug modes
-  Dbg_Comm : Boolean := False;
-  Dbg_Setup : Boolean := False;
-  Dbg_Play : Boolean := False;
+  Comm_Logger : Trace.Logger;
+  Setup_Logger : Trace.Logger;
+  Play_Logger : Trace.Logger;
   procedure Init is
   begin
-    Dbg_Comm := Environ.Is_Yes ("BATTLESHIP_DEBUG_COMM");
-    Dbg_Setup := Environ.Is_Yes ("BATTLESHIP_DEBUG_SETUP");
-    Dbg_Play := Environ.Is_Yes ("BATTLESHIP_DEBUG_PLAY");
+    Comm_Logger.Init ("Communication");
+    Setup_Logger.Init ("Setup");
+    Play_Logger.Init ("Play");
   end Init;
 
-  function Debug_Comm return Boolean is
+  -- Debug
+  procedure Dbg_Comm  (Msg : in String) is
   begin
-    return Dbg_Comm;
-  end Debug_Comm;
+    Comm_Logger.Log_Debug (Msg);
+  end Dbg_Comm;
+  procedure Dbg_Setup  (Msg : in String) is
+  begin
+    Setup_Logger.Log_Debug (Msg);
+  end Dbg_Setup;
+  procedure Dbg_Play  (Msg : in String) is
+  begin
+    Play_Logger.Log_Debug (Msg);
+  end Dbg_Play;
+  procedure Err_Comm  (Msg : in String) is
+  begin
+    Comm_Logger.Log_Error (Msg);
+  end Err_Comm;
+  procedure Err_Setup  (Msg : in String) is
+  begin
+    Setup_Logger.Log_Error (Msg);
+  end Err_Setup;
+  procedure Err_Play  (Msg : in String) is
+  begin
+    Play_Logger.Log_Error (Msg);
+  end Err_Play;
 
-  function Debug_Setup return Boolean is
+  function Dbg_Comm return Boolean is
   begin
-    return Dbg_Setup;
-  end Debug_Setup;
-
-  function Debug_Play return Boolean is
+    return Comm_Logger.Debug_On;
+  end Dbg_Comm;
+  function Dbg_Setup return Boolean is
   begin
-    return Dbg_Play;
-  end Debug_Play;
-
-  -- Debug message
-  procedure Debug (Msg : in String) is
+    return Setup_Logger.Debug_On;
+  end Dbg_Setup;
+  function Dbg_Play return Boolean is
   begin
-    Basic_Proc.Put_Line_Output (Msg & ".");
-  end Debug;
+    return Play_Logger.Debug_On;
+  end Dbg_Play;
 
   -- Image in 2 chars (10 -> a)
   function Image (C : Coord) return Str2 is

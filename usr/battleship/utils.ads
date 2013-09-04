@@ -4,14 +4,20 @@ package Utils is
   -- Exception on CtrlC or SigTerm to abort the game
   Abort_Game : exception;
 
-  -- Debug modes
   procedure Init;
-  function Debug_Comm return Boolean;
-  function Debug_Setup return Boolean;
-  function Debug_Play return Boolean;
+  -- Debug traces
+  procedure Dbg_Comm  (Msg : in String);
+  procedure Dbg_Setup (Msg : in String);
+  procedure Dbg_Play  (Msg : in String);
+  -- Error traces
+  procedure Err_Comm  (Msg : in String);
+  procedure Err_Setup (Msg : in String);
+  procedure Err_Play  (Msg : in String);
 
-  -- Debug message
-  procedure Debug (Msg : in String);
+  -- Is debug set
+  function Dbg_Comm return Boolean;
+  function Dbg_Setup return Boolean;
+  function Dbg_Play return Boolean;
 
   -- A Coordinate
   type Row_Range is (A, B, C, D, E, F, G, H, I, J);
