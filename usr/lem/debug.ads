@@ -1,10 +1,10 @@
 with Trace;
 package Debug is
   procedure Init;
-  
-  Lem : Trace.logger;
-  Game : Trace.logger;
-  Flight : Trace.logger;
+
+  Lem : Trace.Logger;
+  Game : Trace.Logger;
+  Flight : Trace.Logger;
 
 end Debug;
 

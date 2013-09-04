@@ -44,7 +44,7 @@ package body Game is
   begin
     -- Start (new) game
     if New_Game then
-      Debug.Game.Log_debug ("GAME: Starting new");
+      Debug.Game.Log_Debug ("GAME: Starting new");
       -- Init Moon ground
       Moon.Init;
       -- Get a new random Lem position
@@ -66,18 +66,18 @@ package body Game is
     Screen.Init;
     Flight_Status := Flight.Get_Status;
     Screen.Update (Flight_Status, Chrono.Read, True);
-    Debug.Game.Log_debug ("GAME: Init done");
+    Debug.Game.Log_Debug ("GAME: Init done");
 
     -- Play
     loop
       -- Get flying status
       Flight_Status := Flight.Get_Status;
-      Debug.Game.Log_debug ("GAME: Status is "
+      Debug.Game.Log_Debug ("GAME: Status is "
                           & Flight_Status.Status'Img);
-      Debug.Game.Log_debug ("GAME: Pos is "
+      Debug.Game.Log_Debug ("GAME: Pos is "
                           & Flight_Status.Pos.X_Pos'Img
                           & "/" & Flight_Status.Pos.Y_Pos'Img);
-      Debug.Game.Log_debug ("GAME: Speed is "
+      Debug.Game.Log_Debug ("GAME: Speed is "
                           & Flight_Status.Speed.X_Speed'Img
                           & "/" & Flight_Status.Speed.Y_Speed'Img);
 

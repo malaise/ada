@@ -817,7 +817,7 @@ package body Substit is
       end loop;
 
       if Excluded then
-        if Log.Sub_debug then
+        if Log.Sub_Debug then
           Line_List.Rewind;
           Line := Line_List.Access_Current;
           Log.Sub ("Line >" & Line.all.Image & "< is excluded");
