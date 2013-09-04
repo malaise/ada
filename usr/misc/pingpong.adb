@@ -4,7 +4,7 @@
 with Ada.Exceptions, Ada.Calendar;
 with As.U,
      Argument, Argument_Parser,
-     Basic_Proc,
+     Basic_Proc, Trace,
      Images, Str_Util, Mixed_Str,
      Socket, Tcp_Util, Ip_Addr, Event_Mng, Timers,
      Hashed_List.Unique;
@@ -29,7 +29,6 @@ procedure Pingpong is
   Period : Timers.Period_Range;
   Send_Mode : Boolean;
   Average : Boolean;
-  Debug : Boolean;
   Timeout : Boolean := True;
 
   -- Usage and Error
@@ -58,25 +57,20 @@ procedure Pingpong is
         "  <port>       ::= <udp_port_name> | <port_num>");
   end Usage;
 
+  Logger : Trace.Logger;
   Abort_Error : exception;
   procedure Error (Msg : in String) is
   begin
-    Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
+    Logger.Log_Error (Msg);
     Usage;
     Basic_Proc.Set_Error_Exit_Code;
     raise Abort_Error;
   end Error;
 
-  procedure Put (Message : in String) is
-  begin
-    Basic_Proc.Put_Line_Output ("PingPong at "
-      & Images.Date_Image (Ada.Calendar.Clock) & ": " & Message);
-  end Put;
-
   -- Signal callback
   procedure Signal_Cb is
   begin
-    Put ("Aborted.");
+    Logger.Log_Info ("Aborted.");
     Timeout := False;
   end Signal_Cb;
 
@@ -146,33 +140,27 @@ procedure Pingpong is
     Txt : As.U.Asu_Us;
   begin
     if F /= Fd then
-      Put ("Not same Fd");
+      Logger.Log_Info ("Not same Fd");
       raise Program_Error;
     end if;
-    if Debug then
-      Put ("Receiving");
-    end if;
+    Logger.Log_Debug ("Receiving");
     begin
       My_Receive (Soc, Message, Message_Len, Set_For_Reply => not Send_Mode);
     exception
       when Socket.Soc_Conn_Lost =>
-        Put ("Receives disconnection");
+        Logger.Log_Info ("Receives disconnection");
         return False;
     end;
     if Message.Host_Id = Local_Host_Id then
       -- No answer nor log of our own ping or pong
      return False;
     end if;
-    if Debug then
-      Put ("Receives: " & Mixed_Str (Message.Kind'Img) & " from "
-         & Message.Host_Name (1 .. Message.Host_Name_Len));
-    end if;
+    Logger.Log_Debug ("Receives: " & Mixed_Str (Message.Kind'Img) & " from "
+                    & Message.Host_Name (1 .. Message.Host_Name_Len));
     if Message.Kind = Ping then
       if not Send_Mode then
         -- Reply mode: answer to Ping if not only Send_mode
-        if Debug then
-          Put ("Sends Pong");
-        end if;
+        Logger.Log_Debug ("Sends Pong");
         Message.Kind := Pong;
         Fill_Host (Message);
         Message.Pong_Stamp := Ada.Calendar.Clock;
@@ -207,7 +195,8 @@ procedure Pingpong is
     else
       Txt := As.U.Tus ("Current delta");
     end if;
-    Put (Txt.Image & " of " & Message.Host_Name (1 .. Message.Host_Name_Len)
+    Logger.Log_Info (Txt.Image & " of "
+         & Message.Host_Name (1 .. Message.Host_Name_Len)
          & " is " & Images.Dur_Image (Delta_Time, 3, True));
     Timeout := False;
     return not Average;
@@ -216,9 +205,7 @@ procedure Pingpong is
   procedure Send_Ping is
     Message : Message_Type;
   begin
-    if Debug then
-      Put ("Sends Ping");
-    end if;
+    Logger.Log_Debug ("Sends Ping");
     Message.Kind := Ping;
     Fill_Host (Message);
     Message.Ping_Stamp := Ada.Calendar.Clock;
@@ -228,6 +215,8 @@ procedure Pingpong is
   use type Tcp_Util.Remote_Host_List;
 
 begin
+  Logger.Init;
+  Logger.Add_Mask (Trace.Info);
 
   -- Parse arguments
   Arg_Dscr := Argument_Parser.Parse (Keys);
@@ -304,7 +293,10 @@ begin
     Error ("Average requires non null period");
   end if;
 
-  Debug := Arg_Dscr.Is_Set (7);
+  -- Activate debug
+  if Arg_Dscr.Is_Set (7) then
+    Logger.Add_Mask (Trace.Debug);
+  end if;
 
   -- No other options are supported
   --  only one extra arg, the address that is parsed here after
@@ -395,7 +387,7 @@ begin
       Soc.Link_Port (Port_Num);
     end if;
   end;
-  Put ("Initialized on " & Local_Host_Name);
+  Logger.Log_Info ("Initialized on " & Local_Host_Name);
 
   -- Main loop
   loop
@@ -407,7 +399,7 @@ begin
   end loop;
 
   if Timeout then
-    Put ("Timeout");
+    Logger.Log_Info ("Timeout");
   end if;
 
   -- Close

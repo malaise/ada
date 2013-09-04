@@ -18,10 +18,10 @@
 
 with Ada.Direct_Io, Ada.Exceptions, Ada.Characters.Latin_1;
 with As.U, Argument, Bloc_Io, Ada_Words, Lower_Str, Mixed_Str, Upper_Str,
-     Basic_Proc;
+     Basic_Proc, Trace;
 procedure Alook is
 
-  Debug : Boolean := False;
+  Logger : Trace.Logger;
 
   package Reading is
 
@@ -333,17 +333,15 @@ procedure Alook is
           Reading.Update_Str (New_Str, Word_Index);
         end if;
         Modified := True;
-        if Debug then
-          Basic_Proc.Put_Line_Output ("In file " & File_Name
-                              & " at line" & Line_No'Img
-                              & ": " & Str
-                              & "->" & New_Str);
-        end if;
+        Logger.Log_Debug ("In file " & File_Name
+                        & " at line" & Line_No'Img
+                        & ": " & Str
+                        & "->" & New_Str);
       end Change_Word;
 
     begin
-      -- Uncoment this to trace words:
-      -- Basic_Proc.Put_Line_Output (Str);
+      -- Log at lower debug level
+      Logger.Log (16#20#, Str);
       if Str(1) >= '0' and then Str(1) <= '9' then
         -- Convert numeric in upper case
         if Str /= Upper_Str (Str) then
@@ -390,12 +388,12 @@ procedure Alook is
       Reading.Open(File_Name, not Do_It);
     exception
       when Reading.Name_Error =>
-        Basic_Proc.Put_Line_Error("Error. Cannot open file " & File_Name
+        Basic_Proc.Put_Line_Error ("Error. Cannot open file " & File_Name
            & " for writting. Skipping.");
         Exit_Code := Problem;
         return False;
       when Error : others =>
-        Basic_Proc.Put_Line_Error("Error. Cannot open file " & File_Name
+        Basic_Proc.Put_Line_Error ("Error. Cannot open file " & File_Name
            & " for writting, exception "
            & Ada.Exceptions.Exception_Name (Error)
            & ". Skipping.");
@@ -560,11 +558,9 @@ procedure Alook is
     if Char /= Reading.New_Line and then Do_It then
       Reading.Append_New_Line (File_Name);
       Modified := True;
-      if Debug then
-        Basic_Proc.Put_Line_Output ("In file " & File_Name
-                            & " at line" & Line_No'Img
-                            & ": New_Line appended");
-      end if;
+      Logger.Log_Debug ("In file " & File_Name
+                      & " at line" & Line_No'Img
+                      & ": New_Line appended");
     end if;
 
     return Modified;
@@ -598,6 +594,7 @@ procedure Alook is
 
 begin
 
+  Logger.Init;
   -- Help
   if Argument.Get_Nbre_Arg = 0
   or else Argument.Get_Parameter = "-h" then
@@ -614,7 +611,7 @@ begin
 
     -- Change verbose level?
     if Argument.Get_Parameter (I) = "-d" then
-      Debug := True;
+      Logger.Add_Mask (Trace.Debug);
     elsif Argument.Get_Parameter (I) = "-v" then
       Verbose_Level := Verbose;
     elsif Argument.Get_Parameter (I) = "-s" then
