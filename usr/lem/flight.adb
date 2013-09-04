@@ -1,4 +1,4 @@
-with Rnd, Basic_Proc;
+with Rnd;
 with Moon, Debug, Screen;
 package body Flight is
 
@@ -112,14 +112,13 @@ package body Flight is
     P1 := Locate.Get_Index (Left, Right, Ground);
     P2 := P1 + 1;
     P3 := P2 + 1;
-    if Debug.Set_Flight then
-      Basic_Proc.Put_Line_Error ("FLIGHT Lem is "
-         & Left.X_Pos'Img & " - " & Right.X_Pos'Img & " / " & Left.Y_Pos'Img);
-      Basic_Proc.Put_Line_Error ("P" & P1'Img & " is " & Ground(P1).X_Pos'Img
+    Debug.Flight.Log_Debug ("Lem is "
+                          & Left.X_Pos'Img & " - " & Right.X_Pos'Img
+                          & " / " & Left.Y_Pos'Img);
+    Debug.Flight.Log_Debug ("P" & P1'Img & " is " & Ground(P1).X_Pos'Img
                           & " / " & Ground(P1).Y_Pos'Img);
-      Basic_Proc.Put_Line_Error ("P" & P2'Img & " is " & Ground(P2).X_Pos'Img
+    Debug.Flight.Log_Debug ("P" & P2'Img & " is " & Ground(P2).X_Pos'Img
                           & " / " & Ground(P2).Y_Pos'Img);
-    end if;
 
     -- Check if ground is flat (at least as it is displayed on screen)
     -- For i in P1 to Pn (while Xi <= RX), Yi must be "=" to Y1
@@ -128,9 +127,7 @@ package body Flight is
     loop
       -- Check current (Iter) is at same visual height as P1
       if not Screen.Same_Height (Ground(Iter).Y_Pos, Ground(P1).Y_Pos) then
-        if Debug.Set_Flight then
-          Basic_Proc.Put_Line_Error ("FLIGHT Ground not flat for " & Iter'Img);
-        end if;
+        Debug.Flight.Log_Debug ("Ground not flat for " & Iter'Img);
         Flat_Index := 0;
         exit;
       end if;
@@ -164,52 +161,40 @@ package body Flight is
       if Ground(P1).Y_Pos <= Ground(P2).Y_Pos then
         -- Ground is climbing: check right corner is above (not equal)
         if Check_Above (Right, Ground(P1), Ground(P2)) then
-          if Debug.Set_Flight then
-            Basic_Proc.Put_Line_Error ("FLIGHT Above P1 <= P2");
-          end if;
+          Debug.Flight.Log_Debug ("Above P1 <= P2");
           return;
         end if;
       else
         -- Ground is descending: check left corner is above (not equal)
         if Check_Above (Left, Ground(P1), Ground(P2)) then
-          if Debug.Set_Flight then
-            Basic_Proc.Put_Line_Error ("FLIGHT Above P1 > P2");
-          end if;
+          Debug.Flight.Log_Debug ("Above P1 > P2");
           return;
         end if;
       end if;
     else
-      if Debug.Set_Flight then
-        Basic_Proc.Put_Line_Error ("FLIGHT P" & P3'Img & " is "
-                     & Ground(P3).X_Pos'Img
-             & " / " & Ground(P3).Y_Pos'Img);
-      end if;
+      Debug.Flight.Log_Debug ("P" & P3'Img & " is "
+                            & Ground(P3).X_Pos'Img
+                            & " / " & Ground(P3).Y_Pos'Img);
       -- P2 is between L and R: check depends on P1, P2 and P3
       if Ground(P1).Y_Pos <= Ground(P2).Y_Pos
       and then Ground(P2).Y_Pos <= Ground(P3).Y_Pos then
         -- P1 P2 P3 climbing: check right > (P2, P3)
         if Check_Above (Right, Ground(P2), Ground(P3)) then
-          if Debug.Set_Flight then
-            Basic_Proc.Put_Line_Error ("FLIGHT Above P1 <= P2 <= P3");
-          end if;
+          Debug.Flight.Log_Debug ("Above P1 <= P2 <= P3");
           return;
         end if;
       elsif Ground(P1).Y_Pos >= Ground(P2).Y_Pos
       and then Ground(P2).Y_Pos >= Ground(P3).Y_Pos then
         -- P1 P2 P3 climbing: check left > (P1, P2)
         if Check_Above (Left, Ground(P1), Ground(P2)) then
-          if Debug.Set_Flight then
-            Basic_Proc.Put_Line_Error ("FLIGHT Above P1 >= P2 >= P3");
-          end if;
+          Debug.Flight.Log_Debug ("Above P1 >= P2 >= P3");
           return;
         end if;
       elsif Ground(P1).Y_Pos <= Ground(P2).Y_Pos
       and then Ground(P2).Y_Pos >= Ground(P3).Y_Pos then
         -- P2 above P1 and P3: check P2 < Lem
         if Ground(P2).Y_Pos < Right.Y_Pos then
-          if Debug.Set_Flight then
-            Basic_Proc.Put_Line_Error ("FLIGHT Above P1 <= P2 >= P3");
-          end if;
+          Debug.Flight.Log_Debug ("Above P1 <= P2 >= P3");
           return;
         end if;
       elsif Ground(P1).Y_Pos >= Ground(P2).Y_Pos
@@ -217,9 +202,7 @@ package body Flight is
         -- P2 below P1 and P3: check left > (P1, P2) and right > (P2, P3)
         if Check_Above (Left, Ground(P1), Ground(P2))
         and then Check_Above (Right, Ground(P2), Ground(P3)) then
-          if Debug.Set_Flight then
-            Basic_Proc.Put_Line_Error ("FLIGHT Above P1 >= P2 <= P3");
-          end if;
+          Debug.Flight.Log_Debug ("Above P1 >= P2 <= P3");
           return;
         end if;
       end if;
@@ -230,27 +213,20 @@ package body Flight is
     Result.Status := Crashed;
     -- Check ground is flat
     if Flat_Index = 0 then
-      if Debug.Set_Flight then
-        Basic_Proc.Put_Line_Error ("FLIGHT Crashed not flat");
-      end if;
+      Debug.Flight.Log_Debug ("Crashed not flat");
       return;
     end if;
     -- Check Speeds (|X| and Y) are below minima, else crash
     if abs Result.Speed.X_Speed > Max_Horiz_Speed
     or else (Result.Speed.Y_Speed < 0.0
              and then abs Result.Speed.Y_Speed > Max_Verti_Speed) then
-      if Debug.Set_Flight then
-        Basic_Proc.Put_Line_Error ("FLIGHT Crashed speed "
-                                 & Result.Speed.X_Speed'Img
-                         & " / " & Result.Speed.Y_Speed'Img);
-      end if;
+      Debug.Flight.Log_Debug ("Crashed speed " & Result.Speed.X_Speed'Img
+                            & " / " & Result.Speed.Y_Speed'Img);
       return;
     end if;
     -- Speed must be negative or nul, otherwise approaching
     if Result.Speed.Y_Speed > 0.0 then
-      if Debug.Set_Flight then
-        Basic_Proc.Put_Line_Error ("FLIGHT On ground but climbing");
-      end if;
+      Debug.Flight.Log_Debug ("On ground but climbing");
       Result.Status := Close;
       return;
     end if;
@@ -259,11 +235,8 @@ package body Flight is
     -- Return the Lem landing position
     --  (LX + Lem.Width / 2.0, Yfalt + Lem.Height / 2.0)
     -- Flat_Index has been set to the lowest of the "flat" points
-    if Debug.Set_Flight then
-      Basic_Proc.Put_Line_Error ("FLIGHT Landed with speeds "
-                                 & Result.Speed.X_Speed'Img
-                         & " / " & Result.Speed.Y_Speed'Img);
-    end if;
+    Debug.Flight.Log_Debug ("Landed with speeds " & Result.Speed.X_Speed'Img
+                          & " / " & Result.Speed.Y_Speed'Img);
     -- Safe or normal landing?
     if abs Result.Speed.Y_Speed <= Max_Verti_Speed * Safe_Ratio
     and then abs Result.Speed.X_Speed <= Max_Horiz_Speed * Safe_Ratio then
@@ -296,18 +269,14 @@ package body Flight is
     if Left.X_Pos < Space.X_Range'First
     or else Right.X_Pos > Space.X_Range'Last
     or else Result.Pos.Y_Pos + Lem.Height / 2.0 > Space.Y_Range'Last then
-      if Debug.Set_Flight then
-        Basic_Proc.Put_Line_Error ("FLIGHT Lost at "
-                      & Result.Pos.X_Pos'Img & "/" & Result.Pos.Y_Pos'Img);
-      end if;
+      Debug.Flight.Log_Debug ("Lost at " & Result.Pos.X_Pos'Img
+                            & "/" & Result.Pos.Y_Pos'Img);
       Result.Status := Lost;
       return Result;
     end if;
     if Left.Y_Pos < Space.Y_Range'First then
-      if Debug.Set_Flight then
-        Basic_Proc.Put_Line_Error ("FLIGHT Crashed at "
-                      & Result.Pos.X_Pos'Img & "/" & Result.Pos.Y_Pos'Img);
-      end if;
+      Debug.Flight.Log_Debug ("Crashed at " & Result.Pos.X_Pos'Img
+                            & "/" & Result.Pos.Y_Pos'Img);
       Result.Status := Crashed;
       return Result;
     end if;

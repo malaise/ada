@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with My_Math, Normal, Argument, Con_Io, Basic_Proc;
+with My_Math, Normal, Argument, Con_Io;
 with Moon, Debug, Lem;
 package body Screen is
 
@@ -480,11 +480,9 @@ package body Screen is
   --  (to be used as a "flat" ground criteria)
   function Same_Height (A, B : Space.Position_Range) return Boolean is
   begin
-    if Debug.Set_Flight then
-      Basic_Proc.Put_Line_Error ("SCREEN same height " &
+    Debug.Flight.Log_Debug ("Same height " &
         Con_Io.Y_Range'Image (Y_To_Screen (A)) & " and " &
         Con_Io.Y_Range'Image (Y_To_Screen (B)));
-    end if;
     return abs (Y_To_Screen (A) - Y_To_Screen (B)) <= 1;
   end Same_Height;
 

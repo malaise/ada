@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Timers, Rnd, Chronos, Basic_Proc;
+with Timers, Rnd, Chronos;
 with Moon, Debug;
 package body Lem is
 
@@ -199,9 +199,7 @@ package body Lem is
   function Get_Position return Position_Rec is
     Delta_Time : constant Duration := Read_Chrono;
   begin
-    if Debug.Set_Lem then
-      Basic_Proc.Put_Line_Error ("LEM Delta time is " & Delta_Time'Img);
-    end if;
+    Debug.Lem.Log_Debug ("Delta time is " & Delta_Time'Img);
     return Position_At (Delta_Time);
   end Get_Position;
 
@@ -220,9 +218,7 @@ package body Lem is
     Fuel_Consumed : Fuel_Range;
     Mass : Mass_Range;
   begin
-    if Debug.Set_Lem then
-      Basic_Proc.Put_Line_Error ("LEM Periodic");
-    end if;
+    Debug.Lem.Log_Debug ("Periodic");
     -- Compute LEM characteristics
     -- Time of computation for further linear interpolation
     Chrono.Reset;
@@ -230,13 +226,11 @@ package body Lem is
     Current_Position := Position_At (Period);
     -- New speed
     Current_Speed := Speed_At (Period);
-    if Debug.Set_Lem then
-      Basic_Proc.Put_Line_Error ("LEM Pos is " & Current_Position.X_Pos'Img
-                                    & "/" & Current_Position.Y_Pos'Img);
-      Basic_Proc.Put_Line_Error ("LEM Speed is "
-                        & Current_Speed.X_Speed'Img
-                  & "/" & Current_Speed.Y_Speed'Img);
-    end if;
+    Debug.Lem.Log_Debug ("Pos is " & Current_Position.X_Pos'Img
+                                   & "/" & Current_Position.Y_Pos'Img);
+    Debug.Lem.Log_Debug ("Speed is "
+                       & Current_Speed.X_Speed'Img
+                       & "/" & Current_Speed.Y_Speed'Img);
 
     -- And for next time
     -- Fuel consumed during the Period
@@ -254,25 +248,19 @@ package body Lem is
     -- New acceleration
     Current_Acceleration := (X_Acc => Current_X_Thrust / Mass,
                              Y_Acc => Current_Y_Thrust / Mass + Moon.Acceleration);
-    if Debug.Set_Lem then
-      Basic_Proc.Put_Line_Error ("LEM Acc is " & Current_Acceleration.X_Acc'Img
-                                    & "/" & Current_Acceleration.Y_Acc'Img);
-    end if;
+    Debug.Lem.Log_Debug ("Acc is " & Current_Acceleration.X_Acc'Img
+                       & "/" & Current_Acceleration.Y_Acc'Img);
     -- Check if lem is landed
     if Landed then
       Current_X_Thrust := 0;
       if Current_Acceleration.Y_Acc < 0.0 then
         -- Don't go down when landed
         Current_Acceleration.Y_Acc := 0.0;
-        if Debug.Set_Lem then
-          Basic_Proc.Put_Line_Error ("LEM is landed. Accel 0.");
-        end if;
+        Debug.Lem.Log_Debug ("Landed, accel set to 0.");
       else
         -- Takin' off
         Landed := False;
-        if Debug.Set_Lem then
-          Basic_Proc.Put_Line_Error ("LEM is taking off.");
-        end if;
+        Debug.Lem.Log_Debug ("Taking off.");
       end if;
     end if;
     return False;
@@ -337,9 +325,7 @@ package body Lem is
       raise Invalid_Mode;
     end if;
     -- Landed at position
-    if Debug.Set_Lem then
-      Basic_Proc.Put_Line_Error ("LEM has just landed.");
-    end if;
+    Debug.Lem.Log_Debug ("Just landed.");
     Landed := True;
     Current_Position := Position;
     Current_Speed := (0.0, 0.0);

@@ -1,11 +1,12 @@
 with Rnd, Argument, Basic_Proc;
-with Game;
+with Game, Debug;
 procedure Land_Lem is
   -- Result of a game
   -- Trigger a new environment at startup (as if prev game succeeded)
   Result : Game.Result_List := Game.Landed;
   use type Game.Result_List;
 begin
+  Debug.Init;
   if Argument.Get_Nbre_Arg = 1
   and then Argument.Get_Parameter(1) = "--help" then
     Basic_Proc.Put_Line_Error ("Usage : " & Argument.Get_Program_Name

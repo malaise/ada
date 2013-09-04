@@ -1,4 +1,4 @@
-with Chronos, Basic_Proc;
+with Chronos;
 with Space, Screen, Flight, Moon, Lem, Debug;
 package body Game is
 
@@ -44,9 +44,7 @@ package body Game is
   begin
     -- Start (new) game
     if New_Game then
-      if Debug.Set_Game then
-        Basic_Proc.Put_Line_Error ("GAME: Starting new");
-      end if;
+      Debug.Game.Log_debug ("GAME: Starting new");
       -- Init Moon ground
       Moon.Init;
       -- Get a new random Lem position
@@ -68,24 +66,20 @@ package body Game is
     Screen.Init;
     Flight_Status := Flight.Get_Status;
     Screen.Update (Flight_Status, Chrono.Read, True);
-    if Debug.Set_Game then
-      Basic_Proc.Put_Line_Error ("GAME: Init done");
-    end if;
+    Debug.Game.Log_debug ("GAME: Init done");
 
     -- Play
     loop
       -- Get flying status
       Flight_Status := Flight.Get_Status;
-      if Debug.Set_Game then
-        Basic_Proc.Put_Line_Error ("GAME: Status is "
-                                        & Flight_Status.Status'Img);
-        Basic_Proc.Put_Line_Error ("GAME: Pos is "
-                                        & Flight_Status.Pos.X_Pos'Img
-                                        & "/" & Flight_Status.Pos.Y_Pos'Img);
-        Basic_Proc.Put_Line_Error ("GAME: Speed is "
-                        & Flight_Status.Speed.X_Speed'Img
-                  & "/" & Flight_Status.Speed.Y_Speed'Img);
-      end if;
+      Debug.Game.Log_debug ("GAME: Status is "
+                          & Flight_Status.Status'Img);
+      Debug.Game.Log_debug ("GAME: Pos is "
+                          & Flight_Status.Pos.X_Pos'Img
+                          & "/" & Flight_Status.Pos.Y_Pos'Img);
+      Debug.Game.Log_debug ("GAME: Speed is "
+                          & Flight_Status.Speed.X_Speed'Img
+                          & "/" & Flight_Status.Speed.Y_Speed'Img);
 
       -- Fly while flying or landed but still Y thrust
       if Is_Failed (Flight_Status.Status) then
