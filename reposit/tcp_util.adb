@@ -14,10 +14,10 @@ package body Tcp_Util is
     if Log_Connect.Is_Init then
       return;
     end if;
-    Log_Connect.Init ("Tcp_Util_Connect");
-    Log_Connect.Init ("Tcp_Util_Accept");
-    Log_Connect.Init ("Tcp_Util_Overflow");
-    Log_Connect.Init ("Tcp_Util_Connect");
+    Log_Connect.Init   ("Tcp_Util_Connect");
+    Log_Accept.Init    ("Tcp_Util_Accept");
+    Log_Overflow.Init  ("Tcp_Util_Overflow");
+    Log_Reception.Init ("Tcp_Util_Reception");
   end Init_Debug;
 
   -- Connecting connection

@@ -14,9 +14,7 @@ package body Dispatch is
 
   procedure Signal is
   begin
-    if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
-      Dictio_Debug.Put ("Dispatch: signal received");
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Fight, "Dispatch: signal received");
     raise Errors.Exit_Signal;
   end Signal;
 
@@ -66,10 +64,8 @@ package body Dispatch is
       if Diff and then Stat /= Status.Master
               and then Stat /= Status.Slave
               and then Stat /= Status.Dead then
-        if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
-          Dictio_Debug.Put ("Dispatch: reply status to: " & From.Image
-                   & "/" & Stat'Img & "-" & Prio);
-        end if;
+        Dictio_Debug.Put (Dictio_Debug.Fight, "Dispatch: reply status to: "
+                   & From.Image & "/" & Stat'Img & "-" & Prio);
         Intra_Dictio.Reply_Status (Intra_Dictio.Extra_Ver & Versions.Intra);
       end if;
       case Status.Get is
@@ -83,17 +79,15 @@ package body Dispatch is
                             Item.Data(1 .. Item.Data_Len));
       end case;
     elsif Kind = Intra_Dictio.Sync_Kind then
-      if Dictio_Debug.Level_Array(Dictio_Debug.Client_Data) then
-        Dictio_Debug.Put ("Dispatch: receive sync " & Parse(Item.Name));
-      end if;
+      Dictio_Debug.Put (Dictio_Debug.Client_Data,
+                        "Dispatch: receive sync " & Parse(Item.Name));
       -- Sync: Store and notify
       Sync_Mng.Sync_Received;
       Client_Mng.Modified (Item);
     else
       -- Data: Store and notify
-      if Dictio_Debug.Level_Array(Dictio_Debug.Client_Data) then
-        Dictio_Debug.Put ("Dispatch: receive data " & Parse(Item.Name));
-      end if;
+      Dictio_Debug.Put (Dictio_Debug.Client_Data,
+                        "Dispatch: receive data " & Parse(Item.Name));
       Client_Mng.Modified (Item);
     end if;
   end New_Intra;

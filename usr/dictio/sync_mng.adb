@@ -50,9 +50,8 @@ package body Sync_Mng is
       Sync_Has_Been_Received := False;
     else
       Cancel_Timer;
-      if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-        Dictio_Debug.Put ("Sync: End, received " & Nb_Syn_Received'Img & " sync");
-      end if;
+      Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: End, received "
+                                         & Nb_Syn_Received'Img & " sync");
     end if;
     return False;
   end Timer_Rec_Cb;
@@ -68,9 +67,7 @@ package body Sync_Mng is
                        Sync_Init_Timeout),
                          Timer_Rec_Cb'Access);
     Sync_Has_Been_Received := False;
-    if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-      Dictio_Debug.Put ("Sync: Start");
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: Start");
   end Start;
 
 
@@ -109,9 +106,8 @@ package body Sync_Mng is
       when others =>
         Delay_Per_Kb := Default_Delay_Per_Kb;
     end;
-    if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-      Dictio_Debug.Put ("Sync.Init: Delay per Kb set to " & Delay_Per_Kb'Img & " ms");
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Sync, "Sync.Init: Delay per Kb set to "
+                                       & Delay_Per_Kb'Img & " ms");
   end Init;
 
   package Sync_Dyn_List_Mng is new Dynamic_List (Tcp_Util.Host_Name);
@@ -127,10 +123,8 @@ package body Sync_Mng is
   begin
     if Sending_Status = Send then
       -- Reject new dest if already syncing
-      if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-        Dictio_Debug.Put ("Sync: Rejecting dest " & To.Image
-                        & " cause sending");
-      end if;
+      Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: Rejecting dest " & To.Image
+                                         & " cause sending");
       return;
     end if;
     if Sync_List.Is_Empty then
@@ -142,9 +136,7 @@ package body Sync_Mng is
                       Timer_Sen_Cb'Access);
       Sending_Status := Init;
     end if;
-    if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-      Dictio_Debug.Put ("Sync: Adding dest " & To.Image);
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: Adding dest " & To.Image);
     if not Sync_Search (Sync_List, To, From => Sync_List_Mng.Absolute) then
       Sync_List.Insert (To);
     end if;
@@ -167,9 +159,8 @@ package body Sync_Mng is
       -- Send item
       Reply_Result := Intra_Dictio.Send_Sync_Data ("", Item);
       if Reply_Result /= Intra_Dictio.Ok then
-        if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-          Dictio_Debug.Put ("Sync: Bus send error " & Reply_Result'Img);
-        end if;
+        Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: Bus send error "
+                                           & Reply_Result'Img);
       end if;
 
       -- Flow limitation
@@ -183,9 +174,7 @@ package body Sync_Mng is
 
       -- Check if not cancelled
       if Sending_Status /= Send then
-        if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-          Dictio_Debug.Put ("Sync: Sending cancelled");
-        end if;
+        Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: Sending cancelled");
         exit Items;
       end if;
 
@@ -227,9 +216,8 @@ package body Sync_Mng is
             Curr_Timeout := Ovf_Timeout;
             -- Increase timeout for next retry
             Ovf_Timeout := Ovf_Timeout * Timeout_Factor;
-            if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-              Dictio_Debug.Put ("Sync: Overflow to " & Dest.Image);
-            end if;
+            Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: Overflow to "
+                                               & Dest.Image);
           else
             -- Ok or error
             Curr_Timeout := 0;
@@ -238,9 +226,7 @@ package body Sync_Mng is
           Event_Mng.Pause (Curr_Timeout);
 
           if Sending_Status /= Send then
-            if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-              Dictio_Debug.Put ("Sync: Sending cancelled");
-            end if;
+            Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: Sending cancelled");
             exit Items;
           end if;
 
@@ -251,10 +237,8 @@ package body Sync_Mng is
 
         if Reply_Result /= Intra_Dictio.Ok then
           -- Give up with this destination if too many overflows or other error
-          if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-            Dictio_Debug.Put ("Sync: Giving up " & Dest.Image & " due to "
-                     & Reply_Result'Img);
-          end if;
+          Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: Giving up " & Dest.Image
+                                             & " due to " & Reply_Result'Img);
           Sync_List.Delete (Sync_List_Mng.Prev, Moved);
           exit Items when Sync_List.Is_Empty;
         else
@@ -291,16 +275,14 @@ package body Sync_Mng is
 
     -- Check sync not cancelled during init
     if Sending_Status /= Init then
-      if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-        Dictio_Debug.Put ("Sync: cancelling due to " & Sending_Status'Img);
-      end if;
+      Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: cancelling due to "
+                                         & Sending_Status'Img);
       return False;
     end if;
 
-    if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-      Dictio_Debug.Put ("Sync: Sending " & Natural'Image(Data_Base.Nb_Item)
-               & " items");
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: Sending "
+                                       & Natural'Image(Data_Base.Nb_Item)
+                                       & " items");
 
     -- Send items
     Sending_Status := Send;
@@ -314,9 +296,7 @@ package body Sync_Mng is
     if not Sync_List.Is_Empty then
       Sync_List.Delete_List (True);
     end if;
-    if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-      Dictio_Debug.Put ("Sync: Done");
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: Done");
     Sending_Status := Stop;
     return False;
   end Timer_Sen_Cb;
@@ -330,10 +310,8 @@ package body Sync_Mng is
 
   procedure Cancel is
   begin
-    if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-      if Timer_Active or else Sending_Status /= Stop then
-        Dictio_Debug.Put ("Sync: Cancel");
-      end if;
+    if Timer_Active or else Sending_Status /= Stop then
+      Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: Cancel");
     end if;
     Cancel_Timer;
     if Sending_Status = Init then

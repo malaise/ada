@@ -1,5 +1,5 @@
 with Argument, Normal;
-with Errors, Dictio_Debug;
+with Errors, Basic_Proc;
 package body Args is
 
   Mode_Set : Boolean := False;
@@ -10,10 +10,11 @@ package body Args is
 
   procedure Usage is
   begin
-    Dictio_Debug.Put_Error ("Usage: "
-                   & Argument.Get_Program_Name
-                   & " -n<channel/bus name> -p<service_port> -P<prio> <dest_spec>");
-    Dictio_Debug.Put_Error ("  <dest_spec> ::= -b<bus_lan> | -c<channel_file>");
+    Basic_Proc.Put_Line_Error ("Usage: "
+        & Argument.Get_Program_Name
+        & " -n<channel/bus name> -p<service_port> -P<prio> <dest_spec>");
+    Basic_Proc.Put_Line_Error (
+          "  <dest_spec> ::= -b<bus_lan> | -c<channel_file>");
     raise Errors.Exit_Error;
   end Usage;
 
@@ -33,10 +34,10 @@ package body Args is
     end;
   exception
     when Argument.Argument_Not_Found =>
-      Dictio_Debug.Put_Error ("ERROR. Argument not found");
+      Basic_Proc.Put_Line_Error ("ERROR. Argument not found");
       Usage;
     when others =>
-      Dictio_Debug.Put_Error ("ERROR. Invalid argument");
+      Basic_Proc.Put_Line_Error ("ERROR. Invalid argument");
       Usage;
   end Init;
 

@@ -86,9 +86,8 @@ package body Alias is
       return;
     end if;
 
-    if Dictio_Debug.Level_Array(Dictio_Debug.Client_Alias) then
-      Dictio_Debug.Put ("Client-alias.resolve: " & Parse(Item.Name));
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Client_Alias, "Resolve: "
+                                               & Parse(Item.Name));
 
     -- Resolve aliases one by one
     Ini_Txt.Set (Parse(Item.Name));
@@ -101,15 +100,15 @@ package body Alias is
       exit when Got_Txt.Is_Null;
       -- Loop detected
       if Got_Txt = Ini_Txt then
-        Dictio_Debug.Put ("Client-alias.resolving loop: " & Ini_Txt.Image);
+        Dictio_Debug.Put (Dictio_Debug.Client_Alias, "Resolving loop: "
+                                                   & Ini_Txt.Image);
         Cur_Txt.Set_Null;
         exit;
       end if;
       -- Switch to this one
       Cur_Txt.Set (Got_Txt);
-      if Dictio_Debug.Level_Array(Dictio_Debug.Client_Alias) then
-        Dictio_Debug.Put ("Client-alias.resolving: " & Cur_Txt.Image);
-      end if;
+      Dictio_Debug.Put (Dictio_Debug.Client_Alias, "Resolving: "
+                                                 & Cur_Txt.Image);
     end loop;
 
     -- Accept final alias if one got and not too long
@@ -119,16 +118,14 @@ package body Alias is
       Item.Name(1 .. Cur_Txt.Length) := Cur_Txt.Image;
     end if;
 
-    if Dictio_Debug.Level_Array(Dictio_Debug.Client_Alias) then
-      Dictio_Debug.Put ("Client-alias.resolved: " & Parse(Item.Name));
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Client_Alias, "Resolved: "
+                                               & Parse(Item.Name));
 
   exception
     when Len_Error =>
       -- Keep Item unchanged
-      if Dictio_Debug.Level_Array(Dictio_Debug.Client_Alias) then
-        Dictio_Debug.Put ("Client-alias.resolve len error on: " & Parse(Item.Name));
-      end if;
+      Dictio_Debug.Put (Dictio_Debug.Client_Alias, "Resolve len error on: "
+                                                 & Parse(Item.Name));
   end Resolve;
 
 end Alias;

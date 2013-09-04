@@ -26,9 +26,7 @@ package body Fight_Mng is
     T : Timers.Delay_Rec;
     use type Status.Status_List;
   begin
-    if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
-      Dictio_Debug.Put ("Fight: start");
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Fight, "Start");
 
     -- Init
     Nodes.Init_List;
@@ -61,9 +59,7 @@ package body Fight_Mng is
     use type Status.Status_List;
   begin
     if not In_Fight then
-      if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
-        Dictio_Debug.Put ("Fight.Event: Not in fight");
-      end if;
+      Dictio_Debug.Put (Dictio_Debug.Fight, "Not in fight");
       return;
     end if;
     declare
@@ -71,17 +67,16 @@ package body Fight_Mng is
            := Intra_Dictio.Extra_Of (Extra, Intra_Dictio.Extra_Ver);
     begin
       if Vers /= "" and then Vers /= Versions.Intra then
-        Dictio_Debug.Put_Error ("ERROR. Fight: version mismatch. Received "
-                       & Vers & " while being " & Versions.Intra);
+        Dictio_Debug.Put_Fatal (Dictio_Debug.Fight,
+            "Version mismatch. Received "
+          & Vers & " while being " & Versions.Intra);
         raise Errors.Exit_Error;
       end if;
     end;
 
     Nodes.Set (From, Stat, Sync, Prio);
-    if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
-      Dictio_Debug.Put ("Fight: received status from: " & From.Image
-               & "/" & Stat'Img & "-" & Prio);
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Fight, "Received status from: " & From.Image
+                                        & "/" & Stat'Img & "-" & Prio);
   end Event;
 
 
@@ -91,9 +86,7 @@ package body Fight_Mng is
     Result : Nodes.Check_Result_List;
   begin
     Result := Nodes.Check;
-    if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
-      Dictio_Debug.Put ("Fight: ends " & Result'Img);
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Fight, "Ends " & Result'Img);
     Per.Delete_If_Exists;
 
     -- This may restart a fight
@@ -107,9 +100,7 @@ package body Fight_Mng is
     use type Status.Status_List;
   begin
     if In_Fight and then Last_Status /= Status.Fight then
-      if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
-        Dictio_Debug.Put ("Fight: send status " & Last_Status'Img);
-      end if;
+      Dictio_Debug.Put (Dictio_Debug.Fight, "Send status " & Last_Status'Img);
       Intra_Dictio.Send_Status (Last_Status);
     end if;
     return False;

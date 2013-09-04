@@ -32,50 +32,38 @@ package body Client_Mng is
   begin
     Dscr := Client_Fd.Socket_Of (Fd);
     if Dscr = Socket.No_Socket then
-      if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
-        Dictio_Debug.Put ("Client: ERROR unknown fd " & Fd'Img);
-      end if;
+      Dictio_Debug.Put_Error (Dictio_Debug.Client, "Unknown fd " & Fd'Img);
       return False;
     end if;
     begin
       Client_Com.Dictio_Receive (Dscr, Msg, Len);
     exception
       when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
-        if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
-          Dictio_Debug.Put ("Client: disconnection of " & Fd'Img);
-        end if;
+        Dictio_Debug.Put (Dictio_Debug.Client, "Disconnection of " & Fd'Img);
         Notify.Del_Client (Dscr);
         Client_Fd.Del_Client (Dscr);
         return False;
       when Socket.Soc_Len_Err =>
-        if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
-          Dictio_Debug.Put ("Client: invalid size from " & Fd'Img);
-        end if;
+        Dictio_Debug.Put (Dictio_Debug.Client, "Invalid size from " & Fd'Img);
         Notify.Del_Client (Dscr);
         Client_Fd.Del_Client (Dscr);
         return False;
     end;
-    if Dictio_Debug.Level_Array(Dictio_Debug.Client_Data) then
-      Dictio_Debug.Put ("Client: request " & Msg.Action'Img & " >"
-               & Parse (Msg.Item.Name) & "<");
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Client, "Request " & Msg.Action'Img & " >"
+                                         & Parse (Msg.Item.Name) & "<");
     case Msg.Action is
       when Client_Com.Version =>
         if Parse (Msg.Item.Name) /= Versions.Lib then
-          if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
-            Dictio_Debug.Put ("Client: received invalid version: "
-                     & Parse (Msg.Item.Name)
+          Dictio_Debug.Put (Dictio_Debug.Client, "Received invalid version: "
+                                               & Parse (Msg.Item.Name)
                      & " being: " & Versions.Lib);
-          end if;
           Notify.Del_Client (Dscr);
           Client_Fd.Del_Client (Dscr);
         end if;
         return False;
       when Client_Com.State =>
-        if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
-          Dictio_Debug.Put ("Client: received status. "
-                   & Parse (Msg.Item.Name));
-        end if;
+        Dictio_Debug.Put (Dictio_Debug.Client, "Received status. "
+                                             & Parse (Msg.Item.Name));
         Notify.Del_Client (Dscr);
         Client_Fd.Del_Client (Dscr);
         return False;
@@ -84,21 +72,18 @@ package body Client_Mng is
         Msg.Item := Data_Base.Get (Msg.Item.Name, Msg.Item.Kind);
         begin
           Send_Res := Client_Com.Dictio_Send (Dscr, null, null, 0.0, Msg);
-          if Dictio_Debug.Level_Array(Dictio_Debug.Client_Data) then
-            Dictio_Debug.Put ("Client: get reply result " & Send_Res'Img);
-          end if;
+          Dictio_Debug.Put (Dictio_Debug.Client, "Get reply result "
+                                               & Send_Res'Img);
         exception
           when Socket.Soc_Tail_Err =>
-            if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
-              Dictio_Debug.Put ("Client: get lost cause client in overflow");
-            end if;
+            Dictio_Debug.Put (Dictio_Debug.Client,
+                             "Get lost cause client in overflow");
             Notify.Del_Client (Dscr);
             Client_Fd.Del_Client (Dscr);
             return False;
         when Socket.Soc_Conn_Lost =>
-          if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
-            Dictio_Debug.Put ("Client: lost connection with " & Fd'Img);
-          end if;
+          Dictio_Debug.Put (Dictio_Debug.Client,
+                           "Lost connection with " & Fd'Img);
           Notify.Del_Client (Dscr);
           Client_Fd.Del_Client (Dscr);
           return False;
@@ -120,9 +105,7 @@ package body Client_Mng is
       when Client_Com.Del_Host =>
         Intra_Dictio.Del_Host (Msg.Item.Data(1 .. Msg.Item.Data_Len));
     end case;
-    if Dictio_Debug.Level_Array(Dictio_Debug.Client_Data) then
-      Dictio_Debug.Put ("Client: request done");
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Client, "Request done");
     return False;
   end Read_Cb;
 
@@ -135,9 +118,7 @@ package body Client_Mng is
     use type Tcp_Util.Port_Num;
   begin
     if Local_Port_Num /= Accept_Port then
-      if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
-        Dictio_Debug.Put ("Client: ERROR unexpected accept");
-      end if;
+      Dictio_Debug.Put_Error (Dictio_Debug.Client, "Unexpected accept");
       declare
         Close_Dscr : Socket.Socket_Dscr := New_Dscr;
       begin
@@ -145,10 +126,8 @@ package body Client_Mng is
       end;
       return;
     end if;
-    if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
-      Dictio_Debug.Put ("Client: new client accepted -> "
-               & Event_Mng.File_Desc'Image(New_Dscr.Get_Fd));
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Client,
+        "New client accepted -> " & Event_Mng.File_Desc'Image(New_Dscr.Get_Fd));
     Client_Fd.Add_Client (New_Dscr);
     Event_Mng.Add_Fd_Callback (New_Dscr.Get_Fd, True, Read_Cb'Access);
 
@@ -171,10 +150,8 @@ package body Client_Mng is
       when Socket.Soc_Tail_Err =>
         null;
       when Socket.Soc_Conn_Lost =>
-        if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
-          Dictio_Debug.Put ("Client: lost connection with "
+        Dictio_Debug.Put (Dictio_Debug.Client, "Lost connection with "
                    & Event_Mng.File_Desc'Image(New_Dscr.Get_Fd));
-        end if;
         Client_Fd.Del_Client (New_Dscr);
     end;
   end Accept_Cb;
@@ -195,9 +172,8 @@ package body Client_Mng is
         Stable_Delay := Default_Stable_Delay;
         Val_Ms := Positive(Default_Stable_Delay * 1000);
     end;
-    if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
-      Dictio_Debug.Put ("Client: Stable delay set to " & Val_Ms'Img & " ms");
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Client, "Stable delay set to " & Val_Ms'Img
+                                         & " ms");
   end Set_Delay;
 
 
@@ -210,9 +186,7 @@ package body Client_Mng is
     if Init then
       return;
     end if;
-    if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
-      Dictio_Debug.Put ("Client: start");
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Client, "Start");
     Port.Name := As.U.Tus (Port_Name);
     Tcp_Util.Accept_From (Socket.Tcp_Header, Port, Accept_Cb'Access,
                           Dscr, Accept_Port);
@@ -225,9 +199,7 @@ package body Client_Mng is
 
   procedure Quit is
   begin
-    if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
-      Dictio_Debug.Put ("Client: quit");
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Client, "Quit");
     if not Init then
       return;
     end if;
@@ -263,9 +235,7 @@ package body Client_Mng is
           := Status.Stable_Status_List'Image(Dictio_Status);
 
   begin
-    if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
-      Dictio_Debug.Put ("Client: sending dictio status: " & State);
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Client, "Sending dictio status: " & State);
     Msg.Action := Client_Com.State;
     Msg.Item.Name := (others => ' ');
     Msg.Item.Name(1 .. State'Length) := State;

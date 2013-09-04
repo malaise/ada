@@ -39,7 +39,7 @@ package Trace is
   -- Initialize the logger, with a name or anonymous
   --  and set its mask from ENV
   -- Setting a name (even empty) activates the logger
-  -- If Name is not empty and <proc>_TRACE_<Name> is set
+  -- If Name is not empty and <proc>_TRACE_<Name> is set (even empty)
   -- or Name is empty and <proc>_TRACE is set, then the mask is set to
   --  Fatal|Error|value
   -- If none is set then the mask is set to the global value got from

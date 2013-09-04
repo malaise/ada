@@ -25,9 +25,7 @@ package body Dictio_Lib is
 
   procedure Close is
   begin
-    if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-      Dictio_Debug.Put ("Dictio_Lib: closing");
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Lib, "Closing");
     if Dictio_Dscr.Is_Open then
       Event_Mng.Del_Fd_Callback (Dictio_Dscr.Get_Fd, True);
       Dictio_Dscr.Close;
@@ -63,9 +61,7 @@ package body Dictio_Lib is
       Client_Com.Dictio_Receive (Dictio_Dscr, Msg, Len);
     exception
       when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
-        if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-          Dictio_Debug.Put ("Dictio_Lib: disconnected");
-        end if;
+        Dictio_Debug.Put (Dictio_Debug.Lib, "Disconnected");
         Close;
         begin
           Connect_To_Dictio;
@@ -75,9 +71,8 @@ package body Dictio_Lib is
         end;
         return Fd = Sys_Calls.Stdin;
       when Socket.Soc_Len_Err =>
-        if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-          Dictio_Debug.Put ("Dictio_Lib: received invalid size, givig up");
-        end if;
+        Dictio_Debug.Put_Warning (Dictio_Debug.Lib,
+                                  "Received invalid size, givig up");
         Close;
         return Fd = Sys_Calls.Stdin;
     end Read_Msg;
@@ -85,34 +80,29 @@ package body Dictio_Lib is
     case Msg.Action is
       when Client_Com.Version =>
         if Parse (Msg.Item.Name) /= Versions.Lib then
-          if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-            Dictio_Debug.Put ("Dictio_Lib: received invalid version: "
-                     & Parse (Msg.Item.Name)
-                     & " being: " & Versions.Lib);
-          end if;
+          Dictio_Debug.Put_Warning (Dictio_Debug.Lib,
+                                    "Received invalid version: "
+                                  & Parse (Msg.Item.Name)
+                                  & " being: " & Versions.Lib);
           Close;
         end if;
-        if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-          Dictio_Debug.Put ("Dictio_Lib: received lib version: "
-                   & Parse(Msg.Item.Name));
-        end if;
+        Dictio_Debug.Put (Dictio_Debug.Lib,
+                          "received lib version: "
+                        & Parse(Msg.Item.Name));
         return False;
       when Client_Com.State =>
         begin
           State := Status.Stable_Status_List'Value(Parse(Msg.Item.Name));
         exception
           when others =>
-            if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-              Dictio_Debug.Put ("Dictio_Lib: received invalid status: "
-                     & Parse (Msg.Item.Name));
-            end if;
+            Dictio_Debug.Put_Warning (Dictio_Debug.Lib,
+                                      "Received invalid status: "
+                                    & Parse (Msg.Item.Name));
             Close;
             return False;
         end;
-        if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-          Dictio_Debug.Put ("Dictio_Lib: received dictio status: "
-                   & Parse(Msg.Item.Name));
-        end if;
+        Dictio_Debug.Put (Dictio_Debug.Lib, "Received dictio status: "
+                                          & Parse(Msg.Item.Name));
         case State is
           when Status.Slave =>
             New_Dictio_State := Slave;
@@ -129,18 +119,14 @@ package body Dictio_Lib is
         end if;
         return False;
       when Client_Com.Get =>
-        if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-          Dictio_Debug.Put ("Dictio_Lib: received get reply:"
-                   & Parse(Msg.Item.Data));
-        end if;
+          Dictio_Debug.Put (Dictio_Debug.Lib, "Received get reply:"
+                                            & Parse(Msg.Item.Data));
         return True;
       when Client_Com.Notif_On =>
-        if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-          Dictio_Debug.Put ("Dictio_Lib: received notify on: "
-                   & Parse(Msg.Item.Name) & " "
-                   & Msg.Item.Kind & " "
-                   & Msg.Item.Data(1 .. Msg.Item.Data_Len));
-        end if;
+        Dictio_Debug.Put (Dictio_Debug.Lib,
+                          "Received notify on: " & Parse(Msg.Item.Name) & " "
+                        & Msg.Item.Kind & " "
+                        & Msg.Item.Data(1 .. Msg.Item.Data_Len));
         if Msg.Item.Kind /= Data_Base.Data_Kind
         and then Msg.Item.Kind /= Data_Base.Alias_Kind then
           return False;
@@ -153,10 +139,9 @@ package body Dictio_Lib is
         return False;
       when Client_Com.Set | Client_Com.Notif_Off
          | Client_Com.Add_Host | Client_Com.Del_Host =>
-        if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-          Dictio_Debug.Put ("Dictio_Lib: received invalid kind: "
-                   & Msg.Action'Img & ", giving up");
-        end if;
+        Dictio_Debug.Put_Warning (Dictio_Debug.Lib,
+                                  "Received invalid kind: "
+                                & Msg.Action'Img & ", giving up");
         Close;
         return False;
      end case;
@@ -169,14 +154,10 @@ package body Dictio_Lib is
     pragma Unreferenced (Remote_Port_Num, Remote_Host_Id);
   begin
     if not Connected then
-      if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-        Dictio_Debug.Put ("Dictio_Lib: ERROR, Connection_Cb(not connected)");
-      end if;
+      Dictio_Debug.Put_Error (Dictio_Debug.Lib, "Connection_Cb(not connected)");
       return;
     end if;
-    if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-      Dictio_Debug.Put ("Dictio_Lib: connected");
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Lib, "Connected");
     Dictio_Dscr := Dscr;
     Event_Mng.Add_Fd_Callback (Dictio_Dscr.Get_Fd, True, Read_Cb'Access);
 
@@ -195,10 +176,8 @@ package body Dictio_Lib is
                                       Connection_Cb'Access, 1.0, 0);
   exception
     when Error:others =>
-      if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-        Dictio_Debug.Put ("Dictio_Lib: connect fails on exception "
+      Dictio_Debug.Put (Dictio_Debug.Lib, "Connect fails on exception "
           & Ada.Exceptions.Exception_Name(Error));
-      end if;
   end Connect_To_Dictio;
 
   procedure Check_Available is
@@ -258,10 +237,8 @@ package body Dictio_Lib is
       Port.Name := As.U.Tus (Default_Port);
     end if;
 
-    if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-      Dictio_Debug.Put ("Dictio_Lib: init to " & Host.Name.Image
-               & " / " & Port.Name.Image);
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Lib, "Init to " & Host.Name.Image
+                                      & " / " & Port.Name.Image);
 
     Connect_To_Dictio;
 
@@ -284,10 +261,9 @@ package body Dictio_Lib is
     Init_Done := True;
   exception
     when Error:others =>
-      if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-        Dictio_Debug.Put ("Dictio_Lib: init fails on exception "
-                 & Ada.Exceptions.Exception_Name(Error));
-      end if;
+      Dictio_Debug.Put_Error (Dictio_Debug.Lib,
+                              "Init fails on exception "
+                            & Ada.Exceptions.Exception_Name(Error));
       raise No_Dictio;
   end Init;
 
@@ -297,10 +273,9 @@ package body Dictio_Lib is
     Lib_Send (Dictio_Dscr, Msg);
   exception
     when Error:others =>
-      if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-        Dictio_Debug.Put ("Dictio_Lib: send fails on exception "
-                 & Ada.Exceptions.Exception_Name(Error));
-      end if;
+      Dictio_Debug.Put_Error (Dictio_Debug.Lib,
+                              "Send fails on exception "
+                            & Ada.Exceptions.Exception_Name(Error));
       Close;
       raise No_Dictio;
   end Send_Request;
@@ -340,9 +315,7 @@ package body Dictio_Lib is
   -- May raise Name_Too_Long or Data_Too_Long
   procedure Set (Name : in String; Data : in String) is
   begin
-    if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-      Dictio_Debug.Put ("Dictio_Lib: set " & Name & " " & Data);
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Lib, "Set " & Name & " " & Data);
     Check_Available;
     Check_Name (Name);
     Check_Data (Data);
@@ -361,16 +334,13 @@ package body Dictio_Lib is
   function Get (Name : in String) return String is
     use type Data_Base.Item_Rec;
   begin
-    if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-      Dictio_Debug.Put ("Dictio_Lib: get " & Name);
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Lib, "Get " & Name);
     Set_Msg_To (Name, Data_Base.Data_Kind);
     if Msg.Item = Data_Base.No_Item then
       raise No_Item;
     end if;
-    if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-      Dictio_Debug.Put ("Dictio_Lib: get -> " & Msg.Item.Data(1 .. Msg.Item.Data_Len));
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Lib, "Get -> "
+                                      & Msg.Item.Data(1 .. Msg.Item.Data_Len));
     return Msg.Item.Data(1 .. Msg.Item.Data_Len);
   end Get;
 
@@ -378,10 +348,8 @@ package body Dictio_Lib is
   -- May raise Name_Too_Long
   procedure Notify (Name : in String; Item : in Boolean; On : in Boolean) is
   begin
-    if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-      Dictio_Debug.Put ("Dictio_Lib: notify " & Name
-               & " item: " & Item'Img & " on: " & On'Img);
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Lib, "Notify " & Name & " item: "
+                                      & Item'Img & " on: " & On'Img);
     Check_Available;
     if Name'Length > Max_Name_Len then
       raise Name_Too_Long;
@@ -408,9 +376,7 @@ package body Dictio_Lib is
   -- May raise Name_Too_Long or Data_Too_Long
   procedure Set_Alias (Alias : in String; What : in String) is
   begin
-    if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-      Dictio_Debug.Put ("Dictio_Lib: set alias" & Alias & " " & What);
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Lib, "Set alias" & Alias & " " & What);
     Check_Available;
     Check_Name (Alias);
     if What /= "" then
@@ -430,22 +396,17 @@ package body Dictio_Lib is
   -- May raise Name_Too_Long
   function Get_Alias (Alias : in String) return String is
   begin
-    if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-      Dictio_Debug.Put ("Dictio_Lib: get_alias " & Alias);
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Lib, "Get_alias " & Alias);
     Set_Msg_To (Alias, Data_Base.Alias_Kind);
-    if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-      Dictio_Debug.Put ("Dictio_Lib: get_alias -> " & Msg.Item.Data(1 .. Msg.Item.Data_Len));
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Lib, "Get_alias -> "
+                                      & Msg.Item.Data(1 .. Msg.Item.Data_Len));
     return Msg.Item.Data(1 .. Msg.Item.Data_Len);
   end Get_Alias;
 
   -- Add/Del host
   procedure Add_Host (Host : in String) is
   begin
-    if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-      Dictio_Debug.Put ("Dictio_Lib: add host " & Host);
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Lib, "Add host " & Host);
     Check_Available;
     Check_Data (Host);
     Msg.Action := Client_Com.Add_Host;
@@ -457,9 +418,7 @@ package body Dictio_Lib is
 
   procedure Del_Host (Host : in String) is
   begin
-    if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-      Dictio_Debug.Put ("Dictio_Lib: del host " & Host);
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Lib, "Del host " & Host);
     Check_Available;
     Check_Data (Host);
     Msg.Action := Client_Com.Del_Host;

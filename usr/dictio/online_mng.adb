@@ -63,9 +63,8 @@ package body Online_Mng is
       Client_Mng.Start;
     end if;
 
-    if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
-      Dictio_Debug.Put ("Online: start as " & Status.Get'Img & " " & First'Img);
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Online, "Start as " & Status.Get'Img
+                                         & " " & First'Img);
   end Start;
 
   procedure Start_Fight is
@@ -94,28 +93,24 @@ package body Online_Mng is
         if Crc /= "" and then not Sync_Mng.In_Sync then
           if not Ever_Synced then
             -- Never synced and not syncing (init). Sync.
-            if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
-              Dictio_Debug.Put ("Online: Syncing from: " & From.Image);
-            end if;
+            Dictio_Debug.Put (Dictio_Debug.Online, "Syncing from: "
+                                                 & From.Image);
             Data_Base.Reset;
             Status.Sync := False;
             Ever_Synced := True;
             Sync_Mng.Start;
           elsif Crc /= Data_Base.Get_Crc then
             -- Invalid Crc. Re-sync.
-            if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
-              Dictio_Debug.Put ("Online: Crc error. Received " & Crc
+            Dictio_Debug.Put (Dictio_Debug.Online, "Crc error. Received "
+                       & Crc
                        & " from: " & From.Image
                        & ", got " & Data_Base.Get_Crc);
-            end if;
             Data_Base.Reset;
             Status.Sync := False;
             Sync_Mng.Start;
           elsif not Status.Sync then
             -- Crc Ok and not synced
-            if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
-              Dictio_Debug.Put ("Online: Crc OK, synced");
-            end if;
+            Dictio_Debug.Put (Dictio_Debug.Online, "Crc OK, synced");
             Status.Sync := True;
             Client_Mng.Start;
           end if;
@@ -125,19 +120,15 @@ package body Online_Mng is
         Start_Slave_Timeout;
       elsif Stat = Status.Dead then
         -- Receive a Dead while slave, start Fight
-        if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
-          Dictio_Debug.Put ("Online: fight due to death of: "
-                   & From.Image );
-        end if;
+        Dictio_Debug.Put (Dictio_Debug.Online, "Fight due to death of: "
+                                             & From.Image );
         Start_Fight;
         return;
       else
         -- Receive other status, check that this is not from previously known master
         if Current_Master /= No_Master and then From = Current_Master then
-          if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
-            Dictio_Debug.Put ("Online: fight due to master new status "
-                       & From.Image & "/" & Stat'Img);
-          end if;
+          Dictio_Debug.Put (Dictio_Debug.Online,
+              "Fight due to master new status " & From.Image & "/" & Stat'Img);
           Start_Fight;
           return;
         end if;
@@ -148,28 +139,22 @@ package body Online_Mng is
       if Stat = Status.Master
       and then Intra_Dictio.Extra_Of (Extra, Intra_Dictio.Extra_Crc) /= "" then
         -- An alive message (not a fight reply nor fight info)
-        if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
-          Dictio_Debug.Put ("Online: fight cause another master: "
-                          & From.Image );
-        end if;
+        Dictio_Debug.Put (Dictio_Debug.Online, "Fight cause another master: "
+                                             & From.Image );
         Start_Fight;
         return;
       elsif Stat = Status.Slave and then not Sync
       and then not Sync_Mng.In_Sync then
         -- Synchronise slave which is not Synchronised
-        if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
-          Dictio_Debug.Put ("Online: syncing " & From.Image );
-        end if;
+        Dictio_Debug.Put (Dictio_Debug.Online, "Syncing " & From.Image );
         Sync_Mng.Send (From);
       end if;
 
     end if;
 
     if Stat = Status.Fight then
-      if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
-        Dictio_Debug.Put ("Online: fight cause fight from: "
+      Dictio_Debug.Put (Dictio_Debug.Online, "Fight cause fight from: "
                  & From.Image );
-      end if;
       Start_Fight;
       return;
     end if;
@@ -191,9 +176,7 @@ package body Online_Mng is
       end if;
     elsif Status.Get /= Status.Dead then
       -- No alive message
-      if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
-        Dictio_Debug.Put ("Online: fight due to alive timeout");
-      end if;
+      Dictio_Debug.Put (Dictio_Debug.Online, "Fight due to alive timeout");
       Start_Fight;
     end if;
     return False;

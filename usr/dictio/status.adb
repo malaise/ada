@@ -22,18 +22,17 @@ package body Status is
       New_Status := Status_List'Val(Data.Inte);
     exception
       when others =>
-        if Dictio_Debug.Level_Array(Dictio_Debug.Status) then
-          Dictio_Debug.Put ("Status: Cb with invalid status "
-                          & Any_Def.Image (Data));
-        end if;
+        Dictio_Debug.Put (Dictio_Debug.Status,
+                          "Status: Cb with invalid status "
+                        & Any_Def.Image (Data));
         return False;
     end;
 
     -- Handle status change
     if Current_Status /= Dead and then New_Status /= Current_Status then
-      if Dictio_Debug.Level_Array(Dictio_Debug.Status) then
-        Dictio_Debug.Put ("Status: " & Prev_Status'Img & " -> " & New_Status'Img);
-      end if;
+      Dictio_Debug.Put (Dictio_Debug.Status,
+                        "Status: " & Prev_Status'Img & " -> "
+                      & New_Status'Img);
       Current_Status := New_Status;
       case Current_Status is
         when Starting | Init | Dead =>

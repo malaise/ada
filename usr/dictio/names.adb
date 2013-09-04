@@ -172,10 +172,9 @@ package body Names is
       end;
     end loop;
 
-    if Dictio_Debug.Level_Array(Dictio_Debug.Client_Notify) then
-      Dictio_Debug.Put ("Client-notify-names: " & Name & " match " & Criteria
-               & " : " & Ok'Img);
-    end if;
+    Dictio_Debug.Put (Dictio_Debug.Client_Notify,
+                      "Client-notify-names: " & Name & " match " & Criteria
+                    & " : " & Ok'Img);
 
     Parser.Del (Iter_Name);
     Parser.Del (Iter_Crit);

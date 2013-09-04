@@ -129,11 +129,9 @@ package body Nodes is
     Will_Be_Master := Rec.Name = Own_Name;
 
     loop
-      if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
-        Dictio_Debug.Put ("Fight.Check: " & Rec.Name.Image
-                 & "/" & Rec.Stat'Img & "-" & Rec.Prio
-                 & " Sync: " & Rec.Sync'Img);
-      end if;
+      Dictio_Debug.Put (Dictio_Debug.Fight, "Fight.Check: " & Rec.Name.Image
+                                          & "/" & Rec.Stat'Img & "-" & Rec.Prio
+                                          & " Sync: " & Rec.Sync'Img);
       if Rec.Stat = Status.Master then
         -- One master found
         if Result /= One_Master_Slave
