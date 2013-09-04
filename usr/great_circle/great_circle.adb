@@ -1,8 +1,5 @@
-with My_Math, C_Nbres, Basic_Proc;
-
+with My_Math, C_Nbres;
 package body Great_Circle is
-
-  Debug : constant Boolean := False;
 
   use type Conv.Rad_Range;
 
@@ -94,24 +91,18 @@ package body Great_Circle is
     -- Handle specific cases
     if Distance < Epsilon then
       Heading := Conv.Zero;
-      if Debug then
-        Basic_Proc.Put_Line_Error ("Distance is 0");
-      end if;
+      Logger.Log_Debug ("Distance is 0");
       return;
     elsif abs (Angle_Result - Conv.Pi) < Epsilon then
       -- From and To are opposite (antipodes)
       Heading := Conv.Zero;
-      if Debug then
-        Basic_Proc.Put_Line_Error ("Antipodes");
-      end if;
+      Logger.Log_Debug ("Antipodes");
       return;
     end if;
 
-    if Debug then
-      Basic_Proc.Put_Line_Error ("Delta Lat: " & Lat_Lon_Rad_Delta.Y'Img);
-      Basic_Proc.Put_Line_Error ("Delta Lon: " & Lat_Lon_Rad_Delta.X'Img);
-      Basic_Proc.Put_Line_Error ("Gamma : " & Angle_Result'Img);
-    end if;
+    Logger.Log_Debug ("Delta Lat: " & Lat_Lon_Rad_Delta.Y'Img);
+    Logger.Log_Debug ("Delta Lon: " & Lat_Lon_Rad_Delta.X'Img);
+    Logger.Log_Debug ("Gamma : " & Angle_Result'Img);
 
     -- Compute heading
     -- cos H = (cos colatB - cos colatA * cos Angle) / (sin colatA * sin Angle)
@@ -122,9 +113,7 @@ package body Great_Circle is
                * My_Math.Cos(My_Math.Real(Angle_Result)))
             / My_Math.Cos(My_Math.Real(Lat_Lon_Rad_A.Y))
             / My_Math.Sin(My_Math.Real(Angle_Result)) ;
-    if Debug then
-      Basic_Proc.Put_Line_Error ("Cos H : " & Cos_H'Img);
-    end if;
+    Logger.Log_Debug ("Cos H : " & Cos_H'Img);
 
     -- Round to 0 or 180 if cos between 1+Epsilon and -1-Epsilon
     if abs Cos_H > 1.0 and then abs Cos_H - 1.0 < Epsilon then
@@ -136,20 +125,14 @@ package body Great_Circle is
     else
       Heading_Rad_Angle := C_Nbres.Reduct(C_Nbres.Radian(
                               My_Math.Arc_Cos(Cos_H)));
-      if Debug then
-        Basic_Proc.Put_Line_Error ("Raw H : " & Heading_Rad_Angle'Img);
-      end if;
+      Logger.Log_Debug ("Raw H : " & Heading_Rad_Angle'Img);
       -- Set heading < 0 if B is at west of A
       if Lat_Lon_Rad_Delta.X > Conv.Pi then
         Heading_Rad_Angle := C_Nbres.Reduct(-Heading_Rad_Angle);
-        if Debug then
-          Basic_Proc.Put_Line_Error ("West correction");
-        end if;
+        Logger.Log_Debug ("West correction");
       end if;
     end if;
-    if Debug then
-      Basic_Proc.Put_Line_Error ("H : " & Heading_Rad_Angle'Img);
-    end if;
+    Logger.Log_Debug ("H : " & Heading_Rad_Angle'Img);
 
     -- In degrees
     Heading := Conv.Rad2Geo(Heading_Rad_Angle);

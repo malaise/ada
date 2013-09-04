@@ -13,8 +13,6 @@ procedure Gc is
     Basic_Proc.Put_Line_Error (" where a is N or S and o is E or W.");
   end Usage;
 
-  Debug : constant Boolean := False;
-
   Use_Afpx : Boolean;
 
   A, B : Lat_Lon.Lat_Lon_Geo_Rec;
@@ -132,38 +130,28 @@ procedure Gc is
     for Field in First_Fld .. Last_Fld loop
       Point_Txt.Append (Afpx.Decode_Field(Field, 0, False));
     end loop;
-    if Debug then
-      Basic_Proc.Put_Line_Error ("Decoded point: " & Point_Txt.Image);
-    end if;
+    Great_Circle.Logger.Log_Debug ("Decoded point: " & Point_Txt.Image);
     if Sexa_Mode then
       -- Replace Ndd°mm'ss"/Eddd°mm'ss" by Ndd.mm.ss/Eddd.mm.ss
       -- "°" has already been replaced by " " in Afpx.Decode_Field
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, "°", "."));
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, "'", "."));
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, """", ""));
-      if Debug then
-        Basic_Proc.Put_Line_Error ("Parsed point: " & Point_Txt.Image);
-      end if;
+      Great_Circle.Logger.Log_Debug ("Parsed point: " & Point_Txt.Image);
       Point := String_Util.Str2Geo(Point_Txt.Image);
     else
       -- Replace Ndd.ij kl°/Eddd.ij kl° by Ndd.ijkl/Eddd.ijkl
       -- "°" has already been replaced by " " in Afpx.Decode_Field
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, "°", ""));
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, " ", ""));
-      if Debug then
-        Basic_Proc.Put_Line_Error ("Parsed point: " & Point_Txt.Image);
-      end if;
+      Great_Circle.Logger.Log_Debug ("Parsed point: " & Point_Txt.Image);
       Point := Lat_Lon.Dec2Geo (String_Util.Str2Dec(Point_Txt.Image));
     end if;
-    if Debug then
-      Basic_Proc.Put_Line_Error ("Got point OK: " & Point_Txt.Image);
-    end if;
+    Great_Circle.Logger.Log_Debug ("Got point OK: " & Point_Txt.Image);
     Ok := True;
   exception
     when others =>
-      if Debug then
-        Basic_Proc.Put_Line_Error ("Decode point Exception");
-      end if;
+      Great_Circle.Logger.Log_Debug ("Decode point Exception");
       Ok := False;
       Cursor := First_Fld;
   end Decode_Point;
@@ -192,9 +180,7 @@ procedure Gc is
         Wstr := Language.String_To_Wide (Str) & Degree_Sign;
         Afpx.Encode_Wide_Field (F, (0, 0), Wstr);
       end;
-      if Debug then
-        Basic_Proc.Put_Line_Error ("Heading encoded");
-      end if;
+      Great_Circle.Logger.Log_Debug ("Heading encoded");
     end if;
  end Encode_Heading;
 
@@ -281,9 +267,7 @@ begin
           Encode_Heading (Heading_Ab_Field, Heading);
           Afpx.Encode_Field (Distance_Field, (0, 0),
                              String_Util.Dist2Str(Distance));
-          if Debug then
-            Basic_Proc.Put_Line_Error ("Distance encoded");
-          end if;
+          Great_Circle.Logger.Log_Debug ("Distance encoded");
           Great_Circle.Compute_Route(A => B, B => A,
                                      Heading => Heading,
                                      Distance => Distance);
