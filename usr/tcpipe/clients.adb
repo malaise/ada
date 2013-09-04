@@ -77,12 +77,10 @@ package body Clients is
     Msg.Head.Port := Local_Port_Num;
     Partner.Send (Msg, 0);
 
-    if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Tcpipe: accepted client ("
+    Debug.Logger.Log_Debug ("Accepted client ("
         & Ip_Addr.Image (Remote_Host_Id, Remote_Port_Num)
         & ") on port "
         & Ip_Addr.Image (Local_Port_Num));
-    end if;
   end Accept_Cb;
 
   -- Accept on a local port
@@ -177,10 +175,8 @@ package body Clients is
                                  Timeout => 0.2);
 
     if Client.Dscr.Is_Open then
-      if Debug.Is_Set then
-        Basic_Proc.Put_Line_Output ("Tcpipe: connected to client ("
+      Debug.Logger.Log_Debug ("Connected to client ("
           & Ip_Addr.Image (Target_Host.Id, Target_Port.Num) & ")");
-      end if;
       -- Insert record and set reception callbacks
       Client.Port := Port;
       Client.Local := False;
@@ -188,10 +184,8 @@ package body Clients is
       Connecteds(False, Port) := Client.Dscr;
       Set_Callbacks (Client.Dscr, False);
     else
-      if Debug.Is_Set then
-        Basic_Proc.Put_Line_Output ("Tcpipe: connection failure to client ("
+      Debug.Logger.Log_Debug ("Connection failure to client ("
           & Ip_Addr.Image (Target_Host.Id, Target_Port.Num) & ")");
-      end if;
       -- Send disconnect_local
       Msg.Head.Kind := Partner.Disconnect;
       Msg.Head.Local := True;
@@ -257,9 +251,7 @@ package body Clients is
     Client : Client_Rec;
     Moved : Boolean;
   begin
-    if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Tcpipe: disconnecting all clients");
-    end if;
+    Debug.Logger.Log_Debug ("Disconnecting all clients");
     if Client_List.Is_Empty then
       return;
     end if;
@@ -301,15 +293,10 @@ package body Clients is
     Res := My_Send (Dscr, null, null, 0.1, Data, Len);
   exception
     when Tcp_Util.Timeout_Error | Socket.Soc_Conn_Lost =>
-      if Debug.Is_Set then
-        Basic_Proc.Put_Output ("Tcpipe: sending failure to ");
-        if Local then
-          Basic_Proc.Put_Output ("local ");
-        else
-          Basic_Proc.Put_Output ("remote ");
-        end if;
-        Basic_Proc.Put_Line_Output ("client  port " & Ip_Addr.Image (Port));
-      end if;
+      Debug.Logger.Log_Debug ("Sending failure to "
+          & (if Local then "local "
+             else "remote ")
+          & "client  port " & Ip_Addr.Image (Port));
       -- On error disconnect client and send to partner a symetric disconnect
       Disconnect (Port, Local);
       Msg.Head.Kind := Partner.Disconnect;

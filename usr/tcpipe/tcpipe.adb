@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with As.U, Basic_Proc, Argument, Argument_Parser, Parser, Event_Mng;
-with Clients, Partner;
+with Debug, Clients, Partner;
 procedure Tcpipe is
 
   -- The keys and descriptor of parsed keys
@@ -58,7 +58,9 @@ procedure Tcpipe is
   end Break_Cb;
 
 begin
-   -- Parse keys and options
+  Debug.Logger.Init;
+
+  -- Parse keys and options
   Arg_Dscr := Argument_Parser.Parse (Keys);
   if not Arg_Dscr.Is_Ok then
     Error (Arg_Dscr.Get_Error);
