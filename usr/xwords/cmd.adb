@@ -1,14 +1,11 @@
 with Ada.Characters.Latin_1;
-with As.U, Environ, Many_Strings, Str_Util, Basic_Proc;
+with As.U, Environ, Many_Strings, Str_Util;
 package body Cmd is
 
   -- Path to Words
   Words_Path_Env_Name : constant String := "WORDS_PATH";
   Words_Path_Init : Boolean := False;
   Words_Path : As.U.Asu_Us;
-  -- Debug option
-  Xwords_Debug_Name : constant String := "XWORDS_DEBUG";
-  Debug : Boolean := False;
 
   -- Outputs of execution
   Output_Flow : aliased Command.Flow_Rec (Command.List);
@@ -56,15 +53,11 @@ package body Cmd is
       if Environ.Is_Set (Words_Path_Env_Name) then
         Words_Path := As.U.Tus (Environ.Getenv (Words_Path_Env_Name) & "/");
       end if;
-      Debug := Environ.Is_Yes (Xwords_Debug_Name);
       Words_Path_Init := True;
     end if;
 
     -- Spawn
-    if Debug then
-      Basic_Proc.Put_Line_Output ("Executing >" & Words_Path.Image & Com
-                                & "<>" & Arg & "<");
-    end if;
+    Logger.Log_Debug ("Executing >" & Words_Path.Image & Com & "<>" & Arg & "<");
     Cmd.Set (Words_Path & Com);
     Cmd.Cat (Arg);
     -- Words needs bash
@@ -72,9 +65,7 @@ package body Cmd is
         Output_Flow'Access, Error_Flow'Access, Exit_Code, "/bin/bash");
 
     if Exit_Code = Words_Error then
-      if Debug then
-        Basic_Proc.Put_Line_Output ("Words error");
-      end if;
+      Logger.Log_Debug ("Words error");
       if Error_Flow.Str.Is_Null then
         Res.Insert (As.U.Tus ("Words error"));
       else
@@ -87,9 +78,7 @@ package body Cmd is
 
     -- Set "out" values: Copy list of output lines and append
     --  error string
-    if Debug then
-      Basic_Proc.Put_Line_Output ("Copying result");
-    end if;
+    Logger.Log_Debug ("Copying result");
     Res.Insert_Copy (Output_Flow.List);
     if not Error_Flow.Str.Is_Null then
       Res.Insert (Error_Flow.Str);
@@ -99,9 +88,7 @@ package body Cmd is
 
   exception
     when Command.Spawn_Error =>
-      if Debug then
-        Basic_Proc.Put_Line_Output ("Adding spwan error");
-      end if;
+      Logger.Log_Error ("Spwan error");
       Res.Insert (As.U.Tus ("Spawn error"));
       Normalize (Res);
       Ok := False;

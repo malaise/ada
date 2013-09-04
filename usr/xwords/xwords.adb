@@ -19,20 +19,6 @@ procedure Xwords is
   -- Log option
   Log : Boolean := False;
 
-  -- Debug (anagram loading)
-  Debug_Set : Boolean := False;
-  Debug_On : Boolean := False;
-  procedure Debug (Message : in String) is
-  begin
-    if not Debug_Set then
-      Debug_On := Environ.Is_Yes ("XWORDS_DEBUG");
-      Debug_Set := True;
-    end if;
-    if Debug_On then
-      Basic_Proc.Put_Line_Error (Message);
-    end if;
-  end Debug;
-
   -- Afpx stuff
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
@@ -408,7 +394,7 @@ procedure Xwords is
     select
       -- Load: Get file name
       accept Start (File_Name : in String) do
-        Debug ("Loading");
+        Cmd.Logger.Log_Debug ("Loading");
         Load_Anagrams.File_Name := As.U.Tus (File_Name);
       end Start;
       Load := True;
@@ -430,13 +416,13 @@ procedure Xwords is
         when Analist.Init_Error =>
           Ok := False;
       end;
-      Debug ("Loaded");
+      Cmd.Logger.Log_Debug ("Loaded");
       -- Report completion: Ok or failure
       Anagram_Loaded.Set (Trilean.Boo2Tri (Ok));
-      Debug ("Reported");
+      Cmd.Logger.Log_Debug ("Reported");
       -- Wake up main task
       Event_Mng.Send_Dummy_Signal;
-      Debug ("Signaled");
+      Cmd.Logger.Log_Debug ("Signaled");
 
    end if;
    -- Done
@@ -485,7 +471,7 @@ begin
       case Anagram_Loaded.Get is
         when Trilean.True =>
           -- Dictio loaded OK, enable
-          Debug ("Activated");
+          Cmd.Logger.Log_Debug ("Activated");
           Afpx.Set_Field_Activation (Anagrams_Fld, True);
           Loading_Anagrams := False;
         when Trilean.False =>
@@ -528,10 +514,10 @@ begin
 
     -- Set cursor at last significant char of the Get field
     Cursor_Col := Afpx.Last_Index (Afpx.Decode_Field (Get_Fld, 0), True);
-    Debug ("Calling PTG");
+    Cmd.Logger.Log_Debug ("Calling PTG");
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result,
                        List_Change_Cb => List_Cb 'Unrestricted_Access);
-    Debug ("PTG returning");
+    Cmd.Logger.Log_Debug ("PTG returning");
 
     case Ptg_Result.Event is
       when Afpx.Keyboard =>

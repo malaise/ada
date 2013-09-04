@@ -1,5 +1,7 @@
-with Command;
+with Trace, Command;
 package Cmd is
+  -- A common logger
+  Logger : Trace.Logger;
 
   package Res_Mng renames Command.Res_Mng;
   subtype Res_List is Res_Mng.Dyn_List.List_Type;
