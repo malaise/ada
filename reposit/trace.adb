@@ -196,7 +196,7 @@ package body Trace is
   end Internal_Init;
 
   procedure Init_All is
-    Name, File : As.U.Asu_Us;
+    Upper_Name, File : As.U.Asu_Us;
   begin
     if All_Init then
       return;
@@ -206,6 +206,7 @@ package body Trace is
     ------------------------------------
     -- Get process name and set variables
     Process := As.U.Tus (Argument.Get_Program_Name);
+    Upper_Name := As.U.Tus (Upper_Str (Process.Image));
 
     Memory.Set ("PID", Pid_Image (Sys_Calls.Get_Pid), False, True);
     Memory.Set ("CMD", Process.Image, False, True);
@@ -214,7 +215,7 @@ package body Trace is
                 False, True);
 
     -- Get flow name and init flow
-    File := As.U.Tus (Environ.Getenv (Name.Image & "_TRACEFILE"));
+    File := As.U.Tus (Environ.Getenv (Upper_Name.Image & "_TRACEFILE"));
     if File.Image = Stdout_Name then
       -- Stdout
       File := As.U.Tus (Stdout_Name);
@@ -242,14 +243,13 @@ package body Trace is
        Stderr.Open (Text_Line.Out_File, Sys_Calls.Stderr);
     end if;
 
-    -- Init local logger with no log
+    -- Init local logger with no log and default mask if not set
     Internal_Init (Me, "Trace", False);
-    Log_Info (Me, "Init done with mask " & Image (Mask)
+    Log_Info (Me, "Global init done with mask " & Image (Mask)
                 & " on flow " & File.Image);
 
     -- Get global mask
-    Name := As.U.Tus (Upper_Str (Process.Image));
-    Mask := Parse (Environ.Getenv (Name.Image & "_TRACE_ALL"), True);
+    Mask := Parse (Environ.Getenv (Upper_Name.Image & "_TRACE_ALL"), True);
 
     All_Init := True;
   end Init_All;
@@ -268,12 +268,14 @@ package body Trace is
     -- Global init if necessary
     Init_All;
     -- Init the logger
+    Log_Info (Me, "Init of logger " & Name);
     Internal_Init (A_Logger, Name, True);
   end Init;
 
   procedure Reset (A_Logger : in out Logger; Name : in String) is
   begin
     A_Logger.Init := False;
+    Log_Info (Me, "Reset of logger " & A_Logger.Name.Image & " to " & Name);
     Init (A_Logger, Name);
     Set_Flush (A_Logger, True);
   end Reset;
@@ -303,6 +305,8 @@ package body Trace is
   begin
     Check_Init (A_Logger);
     A_Logger.Mask := Mask;
+    Log_Info (Me, "Set_Mask " & Image (Mask) &
+                  " to logger " & A_Logger.Name.Image);
   end Set_Mask;
 
   procedure Add_Mask (A_Logger : in out Logger; Mask : in Severities) is
@@ -310,6 +314,9 @@ package body Trace is
     Check_Init (A_Logger);
     A_Logger.Mask := Severities(Bit_Ops."Or" (Natural(A_Logger.Mask),
                                               Natural(Mask)));
+    Log_Info (Me, "Add_Mask " & Image (Mask)
+                & " to logger " & A_Logger.Name.Image
+                & " -> " & Image (A_Logger.Mask));
   end Add_Mask;
 
   function Get_Mask (A_Logger : in out Logger) return Severities is
