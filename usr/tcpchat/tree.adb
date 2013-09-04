@@ -192,7 +192,7 @@ package body Tree is
         end loop;
       end if;
     end if;
-    Debug.Logger.Log_debug (Text.image);
+    Debug.Logger.Log_Debug (Text.Image);
     return True;
   end Dump;
   -- For dump of the tree (iterator)
@@ -200,7 +200,7 @@ package body Tree is
   begin
     return Dump ("", Node, Level);
   end Dump;
-  
+
 
   -----------------------
   -- Building own tree --

@@ -41,7 +41,7 @@ package body Matcher is
             raise Match_Error;
           end if;
         end if;
-        Debug.Logger.Log_debug ("Variable " & Expanded.Image
+        Debug.Logger.Log_Debug ("Variable " & Expanded.Image
                               & " set to " & Result.Image);
         Variables.Set (Expanded, Result);
       end if;
