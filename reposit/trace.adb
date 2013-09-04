@@ -179,10 +179,9 @@ package body Trace is
     -- Get ENV severity Proc_TRACE[_Name], or global one
     declare
       Env : constant String
-          := Upper_Str (Process.Image) & "_TRACE"
-           & Upper_Str (if A_Logger.Name.Is_Null
-                        then ""
-                        else "_" & A_Logger.Name.Image);
+          := Upper_Str (Process.Image & "_TRACE"
+                      & (if A_Logger.Name.Is_Null then ""
+                         else "_" & A_Logger.Name.Image));
     begin
       if Environ.Is_Set (Env) then
         A_Logger.Mask := Parse (Environ.Getenv (Env), Log);
