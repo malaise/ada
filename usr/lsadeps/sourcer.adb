@@ -193,9 +193,7 @@ package body Sourcer is
     Dscr.Unit := As.U.Tus (Mixed_Str (Dscr.Unit.Image));
     Dscr.Witheds.Set_Null;
 
-    if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Parsing file " & Full_File_Name.Image);
-    end if;
+    Debug.Logger.Log_Debug ("Parsing file " & Full_File_Name.Image);
 
     -- Open
     begin
@@ -330,7 +328,7 @@ package body Sourcer is
     List.Insert_If_New (Dscr);
     Txt.Close_All;
 
-    if Debug.Is_Set then
+    if Debug.Logger.Debug_On then
       Dump (Dscr);
     end if;
 
@@ -393,14 +391,10 @@ package body Sourcer is
   begin
     -- Process paths one by one
     for I in 1 .. Paths.Length loop
-      if Debug.Is_Set then
-        Basic_Proc.Put_Line_Output ("Parsing dir " & Paths.Element (I).Image);
-      end if;
+      Debug.Logger.Log_Debug ("Parsing dir " & Paths.Element (I).Image);
       Parse_Dir (Paths.Element (I).Image);
     end loop;
-    if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Parsing completed.");
-    end if;
+    Debug.Logger.Log_Debug ("Parsing completed.");
     if List.Is_Empty then
       return;
     end if;
@@ -486,34 +480,32 @@ package body Sourcer is
           end if;
           Crit.Subunits.Append (Dscr.Unit & Separator);
           List.Insert (Crit);
-          if Debug.Is_Set then
-            Basic_Proc.Put_Line_Output ("Adding subunit " & Image (Dscr)
-                     & " to " & Image (Crit));
-          end if;
+          Debug.Logger.Log_Debug ("Adding subunit " & Image (Dscr)
+                                & " to " & Image (Crit));
         end if;
       end if;
 
       exit when not Moved;
     end loop;
 
-    if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Checks completed.");
+    Debug.Logger.Log_Debug ("Checks completed.");
 
-      -- Dumpt Names (not empty) and Withings if any
-      Basic_Proc.Put_Line_Output ("Names:");
+    -- Dumpt Names (not empty) and Withings if any
+    if Debug.Logger.Debug_On then
+      Debug.Logger.Log_Debug ("Names:");
       Name_List.Rewind;
       loop
         Name_List.Read_Next (Name, Moved);
-        Basic_Proc.Put_Line_Output (Name.Unit.Image & " = "
+        Debug.Logger.Log_Debug (Name.Unit.Image & " = "
                                   & Name.Paths.Image);
         exit when not Moved;
       end loop;
-      Basic_Proc.Put_Line_Output ("Withings:");
+      Debug.Logger.Log_Debug ("Withings:");
       if not Withing_List.Is_Empty then
         Withing_List.Rewind;
         loop
           Withing_List.Read_Next (Withing, Moved);
-          Basic_Proc.Put_Line_Output (Withing.Unit.Image & " <- "
+          Debug.Logger.Log_Debug (Withing.Unit.Image & " <- "
                                     & Withing.Withings.Image);
           exit when not Moved;
         end loop;

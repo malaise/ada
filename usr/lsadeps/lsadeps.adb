@@ -138,10 +138,7 @@ procedure Lsadeps is
     if Dscr.Unit.Is_Null or else Dscr.Kind = Sourcer.Subunit then
       Error (Kind & " unit " & Sort.Make_Path (Path, Name) & " not found");
     end if;
-    if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output (Kind & " unit checked: "
-                                & Sourcer.Image (Dscr));
-    end if;
+    Debug.Logger.Log_Debug (Kind & " unit checked: " & Sourcer.Image (Dscr));
     return Dscr;
   end Check_Unit;
 
@@ -152,7 +149,7 @@ begin
   ---------------------
   -- PARSE ARGUMENTS --
   ---------------------
-
+  Debug.Logger.Init;
   -- Parse keys and options
   Arg_Dscr := Argument_Parser.Parse (Keys);
   if not Arg_Dscr.Is_Ok then
@@ -280,10 +277,8 @@ begin
         Error ("Cannot change to target directory " & Target_Dir.Image);
     end;
   end if;
-  if Debug.Is_Set then
-    Basic_Proc.Put_Line_Output ("In " &
+  Debug.Logger.Log_Debug ("In " &
       Directory.Make_Full_Path (Directory.Get_Current));
-  end if;
 
   -----------------
   -- CHECK UNITS --

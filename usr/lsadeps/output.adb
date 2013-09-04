@@ -224,32 +224,24 @@ package body Output is
     Moved : Boolean;
   begin
     -- Build unique list of entries
-    if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Scanning tree");
-    end if;
+    Debug.Logger.Log_Debug ("Scanning tree");
     if File_Mode then
       Tree_Mng.Tree.Iterate (List_File_Iterator'Access);
     else
       Tree_Mng.Tree.Iterate (List_Unit_Iterator'Access);
     end if;
     -- Sort this list
-    if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Copying list");
-    end if;
+    Debug.Logger.Log_Debug ("Copying list");
     Ulist.Rewind;
     loop
       Ulist.Read_Next (Str, Moved);
       Dlist.Insert (Str);
       exit when not Moved;
     end loop;
-    if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Sorting list");
-    end if;
+    Debug.Logger.Log_Debug ("Sorting list");
     Sort.Sort (Dlist);
     -- Put entries
-    if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Listing:");
-    end if;
+    Debug.Logger.Log_Debug ("Listing:");
     Dlist.Rewind;
     loop
       Dlist.Read (Str, Moved => Moved);
@@ -364,9 +356,7 @@ package body Output is
   procedure Put_Path (File_Mode : in Boolean) is
   begin
     -- Build unique list of entries
-    if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Scanning tree");
-    end if;
+    Debug.Logger.Log_Debug ("Scanning tree");
     if File_Mode then
       Tree_Mng.Tree.Iterate (Path_File_Iterator'Access);
     else

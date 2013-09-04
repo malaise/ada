@@ -1,4 +1,5 @@
+with Trace;
 package Debug is
-  function Is_Set return Boolean;
+  Logger : Trace.Logger;
 end Debug;
 

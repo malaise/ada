@@ -8,7 +8,7 @@ package body Tree_Mng is
   Error_Raised : exception renames Sourcer.Error_Raised;
   procedure Error (Msg : in String) is
   begin
-    Basic_Proc.Put_Line_Error ("INTERNAL ERROR: " & Msg & ".");
+    Debug.Logger.Log_Fatal ("INTERNAL ERROR: " & Msg & ".");
     raise Error_Raised;
   end Error;
 
@@ -308,7 +308,7 @@ package body Tree_Mng is
     if Dscr.Looping then
       Str.Append (" -->X");
     end if;
-    Basic_Proc.Put_Line_Output (Str.Image);
+    Debug.Logger.Log_Debug (Str.Image);
     return True;
   end Dump_One;
 
@@ -317,8 +317,8 @@ package body Tree_Mng is
                    Specs_Mode, Revert_Mode : in Boolean) is
   begin
     Build_Node (Origin, Specs_Mode, Revert_Mode);
-    if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Dumping tree:");
+    Debug.Logger.Log_Debug ("Dumping tree:");
+    if Debug.Logger.Debug_On then
       Tree.Iterate (Dump_One'Access, False);
     end if;
   end Build;
