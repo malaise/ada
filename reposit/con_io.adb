@@ -116,10 +116,11 @@ package body Con_Io is
 
   procedure Set_Colors (Color_Names : in Colors_Definition) is
   begin
+    Logger.Init ("Con_Io");
+    Logger.Log_Debug ("Con_Io setting colors");
     if X_Init_Done then
       raise Already_Init;
     end if;
-    Logger.Log_Debug ("Con_Io setting colors");
     The_Color_Names := Color_Names;
   end Set_Colors;
 
@@ -173,6 +174,7 @@ package body Con_Io is
     Con_Data : Console_Data;
     Screen : Window;
   begin
+    Logger.Init ("Con_Io");
     Logger.Log_Debug ("Console opening");
     Initialise;
     Con_Data.Font_No := Font_No;
@@ -368,6 +370,7 @@ package body Con_Io is
     Win_Data : Window_Data;
     Acc : access Console_Data;
   begin
+    Logger.Init ("Con_Io");
     Logger.Log_Debug ("Window opening");
     if Con = null then
       raise Not_Init;
