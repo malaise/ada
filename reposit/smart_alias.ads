@@ -1,9 +1,10 @@
 -- Allow several object to have references to a common object and
---  automatically inform when last user releases its reference
+--  automatically inform when a user releases its reference
 with Ada.Finalization;
 generic
   type Object is limited private;
-  with procedure Finalize (Dest : access Object) is null;
+  with procedure Released (Dest : access Object;
+                           Nb_Access : in Natural) is null;
 package Smart_Alias is
   type Object_Access is access all Object;
 

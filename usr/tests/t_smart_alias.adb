@@ -2,14 +2,17 @@ with Basic_Proc, Smart_Alias;
 with T_Smart_Int;
 procedure T_Smart_Alias is
 
-  procedure Fin (Acc : access T_Smart_Int.Lim) is
+  procedure Rel (Acc : access T_Smart_Int.Lim;
+                 Nb  : in Natural) is
   begin
-    Basic_Proc.Put_Line_Output ("Finalization of"
-        & T_Smart_Int.Image (Acc.all));
-  end Fin;
+    if Nb = 0 then
+      Basic_Proc.Put_Line_Output ("Finalization of"
+          & T_Smart_Int.Image (Acc.all));
+    end if;
+  end Rel;
 
   package Int_Alias is new Smart_Alias
-      (T_Smart_Int.Lim, Fin);
+      (T_Smart_Int.Lim, Rel);
 
   R1, R2, R3 : Int_Alias.Handle;
   I, J :  aliased T_Smart_Int.Lim;

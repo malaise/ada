@@ -23,9 +23,9 @@ package body Smart_Alias is
     if Ref.Box_Access /= null then
       Ref.Box_Access.Nb_Access := Ref.Box_Access.Nb_Access - 1;
       Trace (Ref, "Decr ->" & Ref.Box_Access.Nb_Access'Img);
+      Released (Ref.Box_Access.Obj, Ref.Box_Access.Nb_Access);
       if Ref.Box_Access.Nb_Access = 0 then
         Trace (Ref, "Free");
-        Finalize (Ref.Box_Access.Obj);
         Free (Ref.Box_Access);
       end if;
     end if;
