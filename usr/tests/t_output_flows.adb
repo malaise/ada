@@ -21,7 +21,7 @@ begin
   begin
     F3 := Output_Flows.Get (File_Name);
     F3.Put_Line (Str);
-   end;
+  end;
   Cmd.Set ("cat");
   Cmd.Cat (File_Name);
   Command.Execute (Cmd, True, Command.Only_Out,
