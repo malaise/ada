@@ -9,9 +9,11 @@ package body Smart_Reference is
   procedure Trace (Ref : in Handle; Str : in String) is
   begin
     Logger.Init ("Smart_Reference");
-    if Logger.Debug_On and then Ref.Box_Access /= null then
-      Logger.Log_Debug ("Smart_Ref: " & Str
-         & " of " & Address_Ops.Image (Ref.Box_Access.all'Address));
+    if Logger.Debug_On then
+      Logger.Log_Debug (Str &
+          (if Ref.Box_Access /= null then
+            " of " & Address_Ops.Image (Ref.Box_Access.all'Address)
+           else ""));
     end if;
   end Trace;
 
