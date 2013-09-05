@@ -3,16 +3,17 @@
 with Ada.Finalization;
 generic
   type Object is limited private;
-  with procedure Finalize (Dest : in Object) is null;
+  with procedure Finalize (Dest : access Object) is null;
 package Smart_Alias is
+  type Object_Access is access all Object;
 
   -- The handle that points to an Object
   type Handle is tagged private;
   Null_Handle : constant Handle;
 
   -- Initialise a Handle to an object
-  procedure Init (Reference : in out Handle; Val : aliased in Object);
-  function Init (Val : aliased Object) return Handle;
+  procedure Init (Reference : in out Handle; Val : access Object);
+  function Init (Val : access Object) return Handle;
 
   -- Release handle (which becomes null)
   procedure Release (Reference : in out Handle);
@@ -27,7 +28,6 @@ package Smart_Alias is
   function Is_Set (Reference : Handle) return Boolean;
 
 private
-  type Object_Access is access all Object;
 
   type Handle is new Ada.Finalization.Controlled with record
     Obj_Access : Object_Access := null;

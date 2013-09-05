@@ -21,27 +21,27 @@ begin
   Basic_Proc.Put_Line_Output ("Test: Dereferencing R3");
   R3.Get (I);
   Basic_Proc.Put_Line_Output ("Test: Dereferenced R3, Got"
-                      & T_Smart_int.image (I)
+                      & T_Smart_Int.Image (I)
                       & " - Dereferencing R2");
   R2.Get (I);
   Basic_Proc.Put_Line_Output ("Test: Dereferenced R2, Got"
-                      & T_Smart_int.image (I)
+                      & T_Smart_Int.Image (I)
                       & " - Dereferencing R1");
   R1.Get (I);
   Basic_Proc.Put_Line_Output ("Test: Dereferenced R1, Got"
-                      & T_Smart_int.image (I)
+                      & T_Smart_Int.Image (I)
                       & " - Releasing R2 and Dereferencing R1");
   R2.Release;
   R1.Get (I);
   Basic_Proc.Put_Line_Output ("Test: Dereferenced R1. Got"
-                      & T_Smart_int.image (I)
+                      & T_Smart_Int.Image (I)
                       & " - Setting R1 to R3");
   R1 := R3;
   R1.Get (I);
   R3.Get (J);
   Basic_Proc.Put_Line_Output ("Test: Set R1 to R3. Got R1="
-                      & T_Smart_int.image (I)
-                      & " and R3=" & T_Smart_int.image (J)
+                      & T_Smart_Int.Image (I)
+                      & " and R3=" & T_Smart_Int.Image (J)
                       & " - Releasing R3");
   R3.Release;
   Basic_Proc.Put_Line_Output (

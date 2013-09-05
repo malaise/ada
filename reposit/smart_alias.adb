@@ -19,7 +19,7 @@ package body Smart_Alias is
       Trace (Ref, "Decr ->" & Ref.Nb_Access'Img);
       if Ref.Nb_Access = 0 then
         Trace (Ref, "Free");
-        Finalize (Ref.Obj_Access.all);
+        Finalize (Ref.Obj_Access);
       end if;
     end if;
   end Decrement_Ref;
@@ -54,17 +54,17 @@ package body Smart_Alias is
   end Finalize;
 
   -- Initialize handle
-  procedure Init (Reference : in out Handle; Val : aliased in Object) is
+  procedure Init (Reference : in out Handle; Val : access Object) is
   begin
     Decrement_Ref (Reference);
-    Reference.Obj_Access := Val'Unrestricted_Access;
+    Reference.Obj_Access := Object_Access(Val);
     Trace (Reference, "New");
     Increment_Ref (Reference);
   end Init;
-  function Init (Val : aliased Object) return Handle is
+  function Init (Val : access Object) return Handle is
   begin
     return Reference : Handle do
-      Reference.Obj_Access := Val'Unrestricted_Access;
+      Reference.Obj_Access := Object_Access(Val);
       Trace (Reference, "New");
       Increment_Ref (Reference);
     end return;
