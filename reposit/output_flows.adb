@@ -38,8 +38,8 @@ package body Output_Flows is
       end if;
       -- Release handle and Delete it
       Logger.Log_Debug ("Deleting " & Cell_Acc.Name.Image);
-      Flows.Access_Current.Release;
-      Flows.Delete (Moved => Dummy);
+      Flows.Deallocate (Moved => Dummy);
+      Logger.Log_Debug ("Deleted");
     elsif Nb_Access = 0 then
       Logger.Log_Debug ("Finalizing " & Cell_Acc.Name.Image);
       -- No more reference
@@ -47,9 +47,10 @@ package body Output_Flows is
         -- Close and free file
         Cell_Acc.File.Close_All;
         Free_File (Cell_Acc.File);
-        -- Free Cell
-        Free_Cell (Cell_Acc);
       end if;
+      -- Free Cell
+      Free_Cell (Cell_Acc);
+      Logger.Log_Debug ("Finalized");
     end if;
   end Released;
 

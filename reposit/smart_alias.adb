@@ -19,12 +19,17 @@ package body Smart_Alias is
 
   -- Decrement reference to object and free object if no more reference
   procedure Decrement_Ref (Ref : in out Handle) is
+    Free_Ref : Boolean;
   begin
     if Ref.Box_Access /= null then
       Ref.Box_Access.Nb_Access := Ref.Box_Access.Nb_Access - 1;
       Trace (Ref, "Decr ->" & Ref.Box_Access.Nb_Access'Img);
+      -- Released may call ourself, which may already free Ref
+      -- The free must be done if Nb_Access is 0 before calling Released,
+      --  not after
+      Free_Ref := Ref.Box_Access.Nb_Access = 0;
       Released (Ref.Box_Access.Obj, Ref.Box_Access.Nb_Access);
-      if Ref.Box_Access.Nb_Access = 0 then
+      if Free_Ref then
         Trace (Ref, "Free");
         Free (Ref.Box_Access);
       end if;
