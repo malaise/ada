@@ -4,7 +4,7 @@ procedure T_Smart_Alias is
 
   procedure Fin (Acc : access T_Smart_Int.Lim) is
   begin
-    Basic_Proc.Put_Line_Output ("Finalization of "
+    Basic_Proc.Put_Line_Output ("Finalization of"
         & T_Smart_Int.Image (Acc.all));
   end Fin;
 
