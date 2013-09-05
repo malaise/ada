@@ -70,7 +70,6 @@ private
   type Output_Flow is new Ada.Finalization.Controlled with record
     Handle : Flow_Aliases.Handle;
   end record;
-  overriding procedure Finalize (Flow : in out Output_Flow);
 
 end Output_Flows;
 

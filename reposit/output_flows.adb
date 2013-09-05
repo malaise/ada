@@ -148,10 +148,5 @@ package body Output_Flows is
       raise Status_Error;
   end Flush;
 
-  overriding procedure Finalize (Flow : in out Output_Flow) is
-  begin
-    Flow.Handle.Release;
-  end Finalize;
-
 end Output_Flows;
 
