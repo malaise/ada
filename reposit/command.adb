@@ -209,7 +209,7 @@ package body Command is
       Cmd_Line := Cmd;
     end if;
     -- Spawn
-    Logger.Log_Debug ("Command: Spwaning >" & Cmd_Line.Image & "<");
+    Logger.Log_Debug ("Command: Spawning >" & Cmd_Line.Image('#') & "<");
     Spawn_Result := Proc_Family.Spawn (Cmd_Line,
                                        Proc_Family.Std_Fds,
                                        Death_Cb'Access);
