@@ -1,4 +1,3 @@
-with Ada.Finalization;
 with As.U, Dynamic_List, Text_Line, Smart_Alias;
 package Output_Flows is
 
@@ -49,7 +48,7 @@ private
   type File_Access is access Text_Line.File_Type;
 
   type Flow_Kinds is (File, Async_Stdout, Async_Stderr);
-  type Cell (Kind : Flow_Kinds := File) is record
+  type Cell_Type (Kind : Flow_Kinds := File) is record
     Name : As.U.Asu_Us;
     case Kind is
       when File =>
@@ -58,18 +57,19 @@ private
         null;
     end case;
   end record;
-  type Cell_Access is access all Cell;
+  type Cell_Access is access all Cell_Type;
 
-  package Flow_List_Mng is new  Dynamic_List (Cell);
-  package Flows_Mng renames Flow_List_Mng.Dyn_List;
-  Flows : Flows_Mng.List_Type;
 
-  procedure Finalize (Dest : access Cell);
-  package Flow_Aliases is new Smart_Alias (Cell, Finalize);
+  procedure Released (Cell : access Cell_Type; Nb_Access : in Natural);
+  package Flow_Aliases is new Smart_Alias (Cell_Type, Released);
 
-  type Output_Flow is new Ada.Finalization.Controlled with record
+  type Output_Flow is tagged record
     Handle : Flow_Aliases.Handle;
   end record;
+
+  package Flow_List_Mng is new  Dynamic_List (Flow_Aliases.Handle);
+  package Flows_Mng renames Flow_List_Mng.Dyn_List;
+  Flows : Flows_Mng.List_Type;
 
 end Output_Flows;
 

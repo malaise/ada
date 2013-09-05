@@ -1,6 +1,6 @@
 with Basic_Proc, Many_Strings, Command, Output_Flows, Text_Line, Sys_Calls;
 procedure T_Output_Flows is
-  F1, F2 : Output_Flows.Output_Flow;
+  F1, F2, F3 : Output_Flows.Output_Flow;
   File_Name : constant String := "t_output_flows.dat";
   Str : constant String := "File OK";
   Cmd : Many_Strings.Many_String;
@@ -17,10 +17,10 @@ begin
   F2.Flush;
 
   declare
-    F3 : Output_Flows.Output_Flow;
+    F4 : Output_Flows.Output_Flow;
   begin
-    F3 := Output_Flows.Get (File_Name);
-    F3.Put_Line (Str);
+    F4 := Output_Flows.Get (File_Name);
+    F4.Put_Line (Str);
   end;
   Cmd.Set ("cat");
   Cmd.Cat (File_Name);
@@ -40,6 +40,7 @@ begin
   F1.Put_Line ("File OK");
   Sys_Calls.Unlink (File_Name);
 
-  F1.Put_Line ("Test OK");
+  F3 := Output_Flows.Get (Output_Flows.Stdout_Name);
+  F3.Put_Line ("Test OK");
 end T_Output_Flows;
 

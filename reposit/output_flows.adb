@@ -1,40 +1,57 @@
 with Ada.Unchecked_Deallocation;
-with Async_Stdin, Sys_Calls;
+with Async_Stdin, Sys_Calls, Trace;
 package body Output_Flows is
+
+  Logger : Trace.Logger;
 
   procedure Free_File is new Ada.Unchecked_Deallocation
       (Text_Line.File_Type, File_Access);
+  procedure Free_Cell is new Ada.Unchecked_Deallocation
+      (Cell_Type, Cell_Access);
 
   -- Find a flow
-  function Match (Current, Criteria : Cell) return Boolean is
+  function Match (Current : Flow_Aliases.Handle;
+                  Criteria : As.U.Asu_Us) return Boolean is
     use type As.U.Asu_Us;
   begin
-    return Current.Name = Criteria.Name;
+    return Current.Get_Access.Name = Criteria;
   end Match;
-  function Search is new Flows_Mng.Search (Match);
+  function Search is new Flows_Mng.Search_Criteria (As.U.Asu_Us, Match);
   function Search (Name : String) return Boolean is
-    Criteria : Cell;
   begin
-    Criteria.Name := As.U.Tus (Name);
-    return Search (Flows, Criteria, From => Flows_Mng.Absolute);
+    return Search (Flows, As.U.Tus (Name), From => Flows_Mng.Absolute);
   end Search;
 
-  -- Finalize a handle, when last reference is destroyed
-  procedure Finalize (Dest : access Cell) is
+  -- A cell is released, when there is one reference it is the list
+  procedure Released (Cell : access Cell_Type;
+                      Nb_Access : in Natural) is
+    Cell_Acc : Cell_Access := Cell_Access (Cell);
     Dummy : Boolean;
   begin
-    if not Flows.Search_Access (Dest) then
-      -- This shall not occur
-      raise Program_Error;
-    end if;
-    if Dest.Kind = File then
-      -- Close and free file
-      Dest.File.Close_All;
-      Free_File (Dest.File);
-      -- Delete cell
+    Logger.Log_Debug ("Released of " & Cell_Acc.Name.Image
+                    & " to" & Nb_Access'Img);
+    if Nb_Access = 1 then
+      -- The last reference is the list
+      if not Search (Cell_Acc.Name.Image) then
+        Logger.Log_Error ("Flow " & Cell_Acc.Name.Image & " not found in list");
+        return;
+      end if;
+      -- Release handle and Delete it
+      Logger.Log_Debug ("Deleting " & Cell_Acc.Name.Image);
+      Flows.Access_Current.Release;
       Flows.Delete (Moved => Dummy);
+    elsif Nb_Access = 0 then
+      Logger.Log_Debug ("Finalizing " & Cell_Acc.Name.Image);
+      -- No more reference
+      if Cell_Acc.Kind = File then
+        -- Close and free file
+        Cell_Acc.File.Close_All;
+        Free_File (Cell_Acc.File);
+        -- Free Cell
+        Free_Cell (Cell_Acc);
+      end if;
     end if;
-  end Finalize;
+  end Released;
 
   -- Get a flow
   function Get (Name : String) return Output_Flow is
@@ -46,34 +63,39 @@ package body Output_Flows is
 
   procedure Set (Flow : out Output_Flow; Name : in String) is
     File_Acc : File_Access;
-    New_Cell : Cell;
+    New_Cell : Cell_Access;
+    New_Handle : Flow_Aliases.Handle;
   begin
+    Logger.Init ("Output_Flows");
     if not Search (Name) then
+      Logger.Log_Debug ("Creating " & Name);
       -- This flow does not exist in list, create it
       -- Init Cell
       if Name = Stdout_Name then
         File_Acc := new Text_Line.File_Type;
         File_Acc.Open (Text_Line.Out_File, Sys_Calls.Stdout);
-        New_Cell := (File, As.U.Tus (Name), File_Acc);
+        New_Cell := new Cell_Type'(File, As.U.Tus (Name), File_Acc);
       elsif Name = Stderr_Name then
         File_Acc := new Text_Line.File_Type;
         File_Acc.Open (Text_Line.Out_File, Sys_Calls.Stderr);
-        New_Cell := (File, As.U.Tus (Name), File_Acc);
+        New_Cell:= new Cell_Type'(File, As.U.Tus (Name), File_Acc);
       elsif Name = Async_Stdout_Name then
-        New_Cell := (Async_Stdout, As.U.Tus (Name));
+        New_Cell := new Cell_Type'(Async_Stdout, As.U.Tus (Name));
       elsif Name = Async_Stderr_Name then
-        New_Cell := (Async_Stderr, As.U.Tus (Name));
+        New_Cell := new Cell_Type'(Async_Stderr, As.U.Tus (Name));
       else
         File_Acc := new Text_Line.File_Type;
         File_Acc.Create_All (Name);
-        New_Cell := (File, As.U.Tus (Name), File_Acc);
+        New_Cell := new Cell_Type'(File, As.U.Tus (Name), File_Acc);
       end if;
-      -- Insert cell
-      Flows.Insert (New_Cell);
+      -- Set handle and insert in list
+      New_Handle.Init (New_Cell);
+      Flows.Insert (New_Handle);
     end if;
 
     -- Now current cell is the correct one
-    Flow.Handle.Init (Flows.Access_Current);
+    Flows.Read (Flow.Handle, Flows_Mng.Current);
+    Logger.Log_Debug ("Setting " & Flow.Handle.Get_Access.Name.Image);
   exception
     when Text_Line.Name_Error =>
       Free_File (File_Acc);
@@ -86,6 +108,9 @@ package body Output_Flows is
   -- Release access to a flow, which becomes unset
   procedure Release (Flow : in out Output_Flow) is
   begin
+    Logger.Log_Debug ("Releasing " &
+        (if Flow.Handle.Is_Set then Flow.Handle.Get_Access.Name.Image
+         else " not set") );
     Flow.Handle.Release;
   end Release;
 
@@ -98,7 +123,7 @@ package body Output_Flows is
   -- Get the name of a flow
   function Get_Name (Flow : Output_Flow) return String is
   begin
-    return Flow.Handle.Get_Access.all.Name.Image;
+    return Flow.Handle.Get_Access.Name.Image;
   exception
     when Constraint_Error =>
       raise Status_Error;
