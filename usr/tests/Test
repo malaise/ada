@@ -1288,6 +1288,25 @@ comp out exp
 comp err nul
 echo "OK"
 
+# t_smart_alias
+title t_smart_alias
+try t_smart_alias
+cat << EOF > exp
+Test: Begin - Initializing R1 to 21 and R3 to 23
+Test: R1 and R3 set - Setting R2 to R1
+Test: Dereferencing R3
+Test: Dereferenced R3, Got 23 - Dereferencing R2
+Test: Dereferenced R2, Got 21 - Dereferencing R1
+Test: Dereferenced R1, Got 21 - Releasing R2 and Dereferencing R1
+Test: Dereferenced R1. Got 21 - Setting R1 to R3
+Finalization of 21
+Test: Set R1 to R3. Got R1= 23 and R3= 23 - Releasing R3
+Test: R3 released - The end: garbage collecting
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
 # t_smart_ref
 title t_smart_ref
 try t_smart_ref
@@ -1299,8 +1318,10 @@ Test: Dereferenced R3, Got 23 - Dereferencing R2
 Test: Dereferenced R2, Got 21 - Dereferencing R1
 Test: Dereferenced R1, Got 21 - Releasing R2 and Dereferencing R1
 Test: Dereferenced R1. Got 21 - Setting R1 to R3
+Finalization of 21
 Test: Set R1 to R3. Got R1= 23 and R3= 23 - Releasing R3
 Test: R3 released - The end: garbage collecting
+Finalization of 23
 EOF
 comp out exp
 comp err nul
