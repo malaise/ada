@@ -95,6 +95,22 @@ package body Many_Strings is
     return Str.Ustr;
   end Image;
 
+  function Image (Str : Many_String; Separator : in Character) return String is
+    Result : String (1 .. Str.Ustr.Length) := Str.Ustr.Image;
+  begin
+    for I in Result'Range loop
+      if Result(I) = Many_Strings.Separator then
+        Result(I) := Separator;
+      end if;
+    end loop;
+    return Result;
+  end Image;
+  function Image (Str : Many_String; Separator : in Character)
+           return As.U.Asu_Us is
+  begin
+    return As.U.Tus (Image (Str, Separator));
+  end Image;
+
   -- Decode
   function Nb (Str : Many_String) return Positive is
     N : Natural;

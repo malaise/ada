@@ -45,6 +45,11 @@ package Many_Strings is
   function Image (Str : Many_String) return String;
   function Image (Str : Many_String) return As.U.Asu_Us;
 
+  -- String image, using another separator to show the strings
+  function Image (Str : Many_String; Separator : in Character) return String;
+  function Image (Str : Many_String; Separator : in Character)
+           return As.U.Asu_Us;
+
   -- Decode (String_Error is raised by Nth if N > Nb)
   -- Str is parsed at each call
   -- An empty Many_String contains one (empty) string
