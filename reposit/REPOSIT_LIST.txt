@@ -449,6 +449,9 @@ num_letters (1)::
 num_match (1)::
      Checks if a number matches a range based criteria.
 
+output_flows (2)::
+     Pool of shared ans standardized output flows
+
 parser parser.all_in_one (2)::
      Parse a string, separate words and separators.
 
@@ -502,6 +505,9 @@ schedule (1)::
 
 select_file (2)::
      Afpx-based file selection in a dir.
+
+smart_alias (2)::
+     Smart aliases to global objects.
 
 smart_reference (2)::
      Smart reference (automatic free).
