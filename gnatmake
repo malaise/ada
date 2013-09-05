@@ -41,7 +41,7 @@ mkflags -aO $LIB
 if [ "$COMMAND" = "ada" ] ; then
   # Specific mapping ada -> gcc
   export COMMAND="gcc -c"
-  export GNATFLAGS="-gnat05"
+  export GNATFLAGS="-gnat2012"
   mkflags -I
 elif [ "$COMMAND" = "gnatstub" ] ; then
   # PATH and args for gnatstub
