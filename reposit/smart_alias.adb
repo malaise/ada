@@ -1,25 +1,32 @@
+with Ada.Unchecked_Deallocation;
 with Trace, Address_Ops;
 package body Smart_Alias is
+
+  procedure Free is new Ada.Unchecked_Deallocation (Object_Box,
+                                                    Object_Box_Access);
 
   Logger : Trace.Logger;
   procedure Trace (Ref : in Handle; Str : in String) is
   begin
     Logger.Init ("Smart_Alias");
-    if Logger.Debug_On and then Ref.Obj_Access /= null then
-      Logger.Log_Debug ("Smart_Alias: " & Str
-         & " of " & Address_Ops.Image (Ref.Obj_Access.all'Address));
+    if Logger.Debug_On then
+      Logger.Log_Debug (Str &
+          (if Ref.Box_Access /= null then
+            " of " & Address_Ops.Image (Ref.Box_Access.all'Address)
+           else ""));
     end if;
   end Trace;
 
   -- Decrement reference to object and free object if no more reference
   procedure Decrement_Ref (Ref : in out Handle) is
   begin
-    if Ref.Obj_Access /= null then
-      Ref.Nb_Access := Ref.Nb_Access - 1;
-      Trace (Ref, "Decr ->" & Ref.Nb_Access'Img);
-      if Ref.Nb_Access = 0 then
+    if Ref.Box_Access /= null then
+      Ref.Box_Access.Nb_Access := Ref.Box_Access.Nb_Access - 1;
+      Trace (Ref, "Decr ->" & Ref.Box_Access.Nb_Access'Img);
+      if Ref.Box_Access.Nb_Access = 0 then
         Trace (Ref, "Free");
-        Finalize (Ref.Obj_Access);
+        Finalize (Ref.Box_Access.Obj);
+        Free (Ref.Box_Access);
       end if;
     end if;
   end Decrement_Ref;
@@ -27,9 +34,9 @@ package body Smart_Alias is
   -- Increment reference to object
   procedure Increment_Ref (Ref : in out Handle) is
   begin
-    if Ref.Obj_Access /= null then
-      Ref.Nb_Access := Ref.Nb_Access + 1;
-      Trace (Ref, "Incr ->" & Ref.Nb_Access'Img);
+    if Ref.Box_Access /= null then
+      Ref.Box_Access.Nb_Access := Ref.Box_Access.Nb_Access + 1;
+      Trace (Ref, "Incr ->" & Ref.Box_Access.Nb_Access'Img);
     end if;
   end Increment_Ref;
 
@@ -57,15 +64,17 @@ package body Smart_Alias is
   procedure Init (Reference : in out Handle; Val : access Object) is
   begin
     Decrement_Ref (Reference);
-    Reference.Obj_Access := Object_Access(Val);
+    Reference.Box_Access := new Object_Box;
     Trace (Reference, "New");
+    Reference.Box_Access.Obj := Object_Access(Val);
     Increment_Ref (Reference);
   end Init;
   function Init (Val : access Object) return Handle is
   begin
     return Reference : Handle do
-      Reference.Obj_Access := Object_Access(Val);
+      Reference.Box_Access := new Object_Box;
       Trace (Reference, "New");
+      Reference.Box_Access.Obj := Object_Access(Val);
       Increment_Ref (Reference);
     end return;
   end Init;
@@ -73,7 +82,8 @@ package body Smart_Alias is
   -- Release handle
   procedure Release (Reference : in out Handle) is
   begin
-    Reference.Obj_Access := null;
+    Finalize (Reference);
+    Reference.Box_Access := null;
   end Release;
 
   -- Get a direct access to a handled object
@@ -82,13 +92,13 @@ package body Smart_Alias is
   --  that was used to get the access
   function Get_Access (Reference : Handle) return access Object is
   begin
-    return Reference.Obj_Access;
+    return Reference.Box_Access.Obj;
   end Get_Access;
 
   -- Is a Handle set
   function Is_Set (Reference : Handle) return Boolean is
   begin
-    return Reference.Obj_Access /= null;
+    return Reference.Box_Access /= null;
   end Is_Set;
 
 end Smart_Alias;

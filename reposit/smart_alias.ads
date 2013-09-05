@@ -29,9 +29,15 @@ package Smart_Alias is
 
 private
 
-  type Handle is new Ada.Finalization.Controlled with record
-    Obj_Access : Object_Access := null;
+  type Object_Box is record
+    Obj : Object_Access := null;
     Nb_Access : Natural := 0;
+  end record;
+  type Object_Box_Access is access Object_Box;
+
+
+  type Handle is new Ada.Finalization.Controlled with record
+    Box_Access : Object_Box_Access := null;
   end record;
   overriding procedure Initialize (Ref : in out Handle);
   overriding procedure Adjust     (Ref : in out Handle);
