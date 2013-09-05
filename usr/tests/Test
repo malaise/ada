@@ -1110,6 +1110,22 @@ comp out exp
 comp err nul
 echo "OK"
 
+# t_output_flows
+title t_output_flows
+try t_output_flows
+cat << EOF > exp
+Got stdout
+Got async stderr
+File OK
+Test OK
+EOF
+cat << EOF > exp1
+Stderr OK
+EOF
+comp out exp
+comp err exp1
+echo "OK"
+
 # t_parser
 title t_parser
 try t_parser , toto,titi,ta,ta,,
@@ -1302,6 +1318,7 @@ Test: Dereferenced R1. Got 21 - Setting R1 to R3
 Finalization of 21
 Test: Set R1 to R3. Got R1= 23 and R3= 23 - Releasing R3
 Test: R3 released - The end: garbage collecting
+Finalization of 23
 EOF
 comp out exp
 comp err nul
