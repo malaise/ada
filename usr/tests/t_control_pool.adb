@@ -18,6 +18,7 @@ procedure T_Control_Pool is
   subtype Client_Range is Positive range 1 .. 9;
   task type Client_Task is
     entry Start (Client_No : in Client_Range; Client_Pid : out Sys_Calls.Pid);
+    entry Stop;
   end Client_Task;
 
   task body Client_Task is
@@ -50,13 +51,22 @@ procedure T_Control_Pool is
       if Got then
         -- Wait a bit (1 to 5 s) or signal
         Sys_Calls.Put_Line_Output (My_No'Img & ": working on " & Pool_No'Img);
-        exit when Event_Mng.Wait(Rnd.Gen.Int_Random(1_000, 5_000));
+        select
+          accept Stop;
+        or
+          delay Rnd.Gen.Dur_Random (1.0, 5.0);
+        end select;
         Sys_Calls.Put_Line_Output (My_No'Img & ": releasing " & Pool_No'Img);
         Pool.Release (Pool_No);
       end if;
       exit when Done;
     end loop;
     Sys_Calls.Put_Line_Output (My_No'Img & ": exit");
+    select
+      accept Stop;
+    or
+      terminate;
+    end select;
   end Client_Task;
 
   Clients : array (Client_Range) of Client_Task;
@@ -72,6 +82,10 @@ begin
 
   loop
     exit when Event_Mng.Wait (1_000) and then Done;
+  end loop;
+
+  for I in Client_Range loop
+    Clients(I).Stop;
   end loop;
 
   Pool.Clear;

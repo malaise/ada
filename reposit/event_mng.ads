@@ -83,6 +83,8 @@ package Event_Mng is
   --   (X_Wait_Event/Put_Then_Get) instead. If they really need to use Wait,
   --   they shall Suspend ALL the X objects (X_Line/Con_Io/Afpx) before calling
   --   Wait, then call Wait, then Resume the X objects.
+  -- WARNING: This opeation is supposed to be called only by the main task.
+  --          It shall NOT be called by tasks (use delay).
   --
   -- Wait until a Terminate_Sig or Child_Sig with a callback set,
   --   or until a Dummy_Sig,
