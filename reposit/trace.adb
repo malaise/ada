@@ -478,7 +478,7 @@ package body Trace is
   overriding procedure Finalize (A_Logger : in out Logger) is
     pragma Unreferenced (A_Logger);
   begin
-    if Flow.Is_Open then
+    if Flow /= null and then Flow.Is_Open then
       Flow.Flush;
     end if;
   end Finalize;
