@@ -5,12 +5,13 @@ package body Smart_Reference is
   procedure Free is new Ada.Unchecked_Deallocation (Object_Box,
                                                     Object_Box_Access);
 
-  Logger : Trace.Logger;
+  package Logger is new Trace.Basic_Logger ("Smart_Reference");
+
   procedure Trace (Ref : in Handle; Str : in String) is
   begin
-    Logger.Init ("Smart_Reference");
-    if Logger.Debug_On then
-      Logger.Log_Debug (Str &
+    if Logger.Is_On (Standard.Trace.Debug) then
+      Logger.Log (Standard.Trace.Debug,
+          Str &
           (if Ref.Box_Access /= null then
             " of " & Address_Ops.Image (Ref.Box_Access.all'Address)
            else ""));
@@ -57,7 +58,9 @@ package body Smart_Reference is
   overriding procedure Finalize (Ref : in out Handle) is
   begin
     Trace (Ref, "Finalization");
-    Decrement_Ref(Ref);
+    if Ref.Box_Access /= null then
+      Decrement_Ref(Ref);
+    end if;
   end Finalize;
 
   -- Initialize handle

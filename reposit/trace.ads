@@ -5,19 +5,19 @@ package Trace is
 
   -- Log traces through a logger
   -- All logers trace in a given flow set in environment variable
-  --  <PROCESS>_TRACEFILE="file", default stderr
-  --  where <PROCESS> is the process name in UPPERCASE (no path)
+  --  <Process>_TRACEFILE="file", default stderr
+  --  where <Process> is the process name (no path)
   --        file is "stdout", "stderr" or any file name, possibly with
   --          ${PID}, ${CMD}, ${HOST} or ${DATE}, which are expanded
   -- Each logger is anonymous or has a name, and each trace has a severity
   --  (possibly several)
   -- Activate traces by environment variables
-  --   <PROCESS>_TRACE[_<LOGGER>]="<severities>"
-  --   Where <PROCESS> is the process name in UPPERCASE (no path)
-  --         <LOGGER> is the logger name in UPPERCASE, "ALL" for all loggers,
-  --         <PROCESS>_TRACE for anonymous loggers
+  --   <Process>_TRACE[_<Logger>]="<severities>"
+  --   Where <PROCESS> is the process name (no path)
+  --         <Logger> is the logger name , "ALL" for all loggers,
+  --         <Process>_TRACE for anonymous loggers
   --         <severities> is a list of severity names of values,
-  --           separated by '|', ex: "7|DEBUG|16#30#"
+  --           separated by '|', ex: "7|Debug|16#30#"
   -- Default severity is Fatal | Error
   -- Any value 0 leads to reset the current severity (further values are ORed)
   --  Ex: "Fatal|0|Error" => "Error"
@@ -30,7 +30,7 @@ package Trace is
   -- Where Date     ::= YYyy/Mm/DdTHh:Mm:Ss.mmm
   --       Process  ::= the basename of current process
   --       Logger   ::= the name of the logger, default "-"
-  --       Severity ::= FATAL ERROR INFO WARNING DEBUG or a number
+  --       Severity ::= Fatal Error Info Warning Debug or a number
   --       Message  ::= the text of the log message
 
   -- The logger of traces
@@ -43,7 +43,7 @@ package Trace is
   -- or Name is empty and <proc>_TRACE is set, then the mask is set to
   --  Fatal|Error|value
   -- If none is set then the mask is set to the global value got from
-  --  <proc>_TRACE_ALL if set, or Fatal|Error by default
+  --  <Process>_TRACE_ALL if set, or Fatal|Error by default
   -- Each further call to Init have no effect,
   procedure Init (A_Logger : in out Logger; Name : in String := "");
   -- Set (init) or change the name of the logger
@@ -125,6 +125,22 @@ package Trace is
   -- By default, Errors (Fatal & Error) are also logged on stderr if the
   --  file is not already stderr
   Errors_On_Stderr : Boolean := True;
+
+
+  generic
+    Name : String;
+  package Basic_Logger is
+    -- A basic logger has the same maks policy as a normal logger but
+    --  - this mask is fixed
+    --  - the flush mode is set
+    --  - The output flow is stderr
+    -- It is not an object so it can be used by low-level packages
+    --  (no cross dependancy, no finalization)
+    procedure Log (Severity : in Severities;
+                 Message  : in String);
+    -- Is a level on
+    function Is_On (Severity : in Severities) return Boolean;
+  end Basic_Logger;
 
 private
 

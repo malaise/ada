@@ -2,7 +2,7 @@ with Ada.Unchecked_Deallocation;
 with Async_Stdin, Sys_Calls, Trace;
 package body Output_Flows is
 
-  Logger : Trace.Logger;
+  package Logger is new Trace.Basic_Logger ("Output_Flows");
 
   procedure Free_File is new Ada.Unchecked_Deallocation
       (Text_Line.File_Type, File_Access);
@@ -28,20 +28,21 @@ package body Output_Flows is
     Cell_Acc : Cell_Access := Cell_Access (Cell);
     Dummy : Boolean;
   begin
-    Logger.Log_Debug ("Released of " & Cell_Acc.Name.Image
+    Logger.Log (Trace.Debug, "Released of " & Cell_Acc.Name.Image
                     & " to" & Nb_Access'Img);
     if Nb_Access = 1 then
       -- The last reference is the list
       if not Search (Cell_Acc.Name.Image) then
-        Logger.Log_Error ("Flow " & Cell_Acc.Name.Image & " not found in list");
+        Logger.Log (Trace.Error,
+                    "Flow " & Cell_Acc.Name.Image & " not found in list");
         return;
       end if;
       -- Release handle and Delete it
-      Logger.Log_Debug ("Deleting " & Cell_Acc.Name.Image);
+      Logger.Log (Trace.Debug, "Deleting " & Cell_Acc.Name.Image);
       Flows.Deallocate (Moved => Dummy);
-      Logger.Log_Debug ("Deleted");
+      Logger.Log (Trace.Debug, "Deleted");
     elsif Nb_Access = 0 then
-      Logger.Log_Debug ("Finalizing " & Cell_Acc.Name.Image);
+      Logger.Log (Trace.Debug, "Finalizing " & Cell_Acc.Name.Image);
       -- No more reference
       if Cell_Acc.Kind = File then
         -- Close and free file
@@ -50,7 +51,7 @@ package body Output_Flows is
       end if;
       -- Free Cell
       Free_Cell (Cell_Acc);
-      Logger.Log_Debug ("Finalized");
+      Logger.Log (Trace.Debug, "Finalized");
     end if;
   end Released;
 
@@ -67,9 +68,8 @@ package body Output_Flows is
     New_Cell : Cell_Access;
     New_Handle : Flow_Aliases.Handle;
   begin
-    Logger.Init ("Output_Flows");
     if not Search (Name) then
-      Logger.Log_Debug ("Creating " & Name);
+      Logger.Log (Trace.Debug, "Creating " & Name);
       -- This flow does not exist in list, create it
       -- Init Cell
       if Name = Stdout_Name then
@@ -96,7 +96,7 @@ package body Output_Flows is
 
     -- Now current cell is the correct one
     Flows.Read (Flow.Handle, Flows_Mng.Current);
-    Logger.Log_Debug ("Setting " & Flow.Handle.Get_Access.Name.Image);
+    Logger.Log (Trace.Debug, "Setting " & Flow.Handle.Get_Access.Name.Image);
   exception
     when Text_Line.Name_Error =>
       Free_File (File_Acc);
@@ -109,7 +109,7 @@ package body Output_Flows is
   -- Release access to a flow, which becomes unset
   procedure Release (Flow : in out Output_Flow) is
   begin
-    Logger.Log_Debug ("Releasing " &
+    Logger.Log (Trace.Debug, "Releasing " &
         (if Flow.Handle.Is_Set then Flow.Handle.Get_Access.Name.Image
          else " not set") );
     Flow.Handle.Release;
