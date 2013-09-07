@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Calendar;
-with Trace, Environ, Str_Util, Parser,
+with Trace.Loggers, Environ, Str_Util, Parser,
      Event_Mng, Timers, Ip_Addr, Socket, Tcp_Util, Mutex_Manager;
 package body Http is
 
@@ -7,7 +7,7 @@ package body Http is
   Mut : Mutex_Manager.Mutex (Mutex_Manager.Simple, True);
 
   -- Debug
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
 
   -- Timeout definition
   Timeout_Var : constant String := "HTTP_TIMEOUT_MS";

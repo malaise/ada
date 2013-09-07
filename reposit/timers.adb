@@ -1,9 +1,9 @@
 with Ada.Calendar;
-with Dynamic_List, Trace, Images, Mutex_Manager;
+with Dynamic_List, Trace.Loggers, Images, Mutex_Manager;
 package body Timers is
 
   -- Debugging
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
 
   -- The mutex that protect the whole
   -- Must be recursive because timer Cb can call Timers

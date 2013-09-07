@@ -1,5 +1,5 @@
 with Ada.Unchecked_Deallocation, Ada.Exceptions;
-with Environ, Images, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng, Trace;
+with Environ, Images, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng, Trace.Loggers;
 package body Autobus is
   -- Design
   ---------
@@ -81,7 +81,7 @@ package body Autobus is
   end Image;
 
   -- Traces
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
   Finalizations : constant Trace.Severities := 16#20#;
 
   -- Log an exception

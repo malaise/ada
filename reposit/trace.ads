@@ -1,29 +1,23 @@
--- Log messages in a file named _trace_<pid>
-with Ada.Finalization;
-with As.U;
+with As.U, Text_Line;
+-- Log messages in a file or flow
 package Trace is
 
-  -- Log traces through a logger
-  -- All logers trace in a given flow set in environment variable
-  --  <Process>_TRACEFILE="file", default stderr
-  --  where <Process> is the process name (no path)
-  --        file is "stdout", "stderr" or any file name, possibly with
-  --          ${PID}, ${CMD}, ${HOST} or ${DATE}, which are expanded
+  -- Log traces through a basic logger
+  -- All logers trace in stderr
   -- Each logger is anonymous or has a name, and each trace has a severity
   --  (possibly several)
   -- Activate traces by environment variables
-  --   <Process>_TRACE[_<Logger>]="<severities>"
+  --   <Process>_TRACE[_<Logger>]="<mask>"
   --   Where <PROCESS> is the process name (no path)
   --         <Logger> is the logger name , "ALL" for all loggers,
   --         <Process>_TRACE for anonymous loggers
-  --         <severities> is a list of severity names of values,
+  --         <mask> is a list of severity names of values,
   --           separated by '|', ex: "7|Debug|16#30#"
-  -- Default severity is Fatal | Error
-  -- Any value 0 leads to reset the current severity (further values are ORed)
-  --  Ex: "Fatal|0|Error" => "Error"
+  -- Default mask is Fatal | Error
+  -- Any value 0 in the mask leads to reset the current mask (further values
+  --  are ORed) --  Ex: "Fatal|0|Error" => "Error"
   -- Parsing error on a severity leads to default severity, except for numeric
   --  values too high, which are discarded.
-  -- Fatal | Error are also sent to stderr by default
 
   -- Trace output is:
   -- "Date Process Logger Severity -> Message"
@@ -33,32 +27,14 @@ package Trace is
   --       Severity ::= Fatal Error Info Warning Debug or a number
   --       Message  ::= the text of the log message
 
-  -- The logger of traces
-  type Logger is tagged private;
 
-  -- Initialize the logger, with a name or anonymous
-  --  and set its mask from ENV
-  -- Setting a name (even empty) activates the logger
-  -- If Name is not empty and <proc>_TRACE_<Name> is set (even empty)
-  -- or Name is empty and <proc>_TRACE is set, then the mask is set to
-  --  Fatal|Error|value
-  -- If none is set then the mask is set to the global value got from
-  --  <Process>_TRACE_ALL if set, or Fatal|Error by default
-  -- Each further call to Init have no effect,
-  procedure Init (A_Logger : in out Logger; Name : in String := "");
-  -- Set (init) or change the name of the logger
-  -- Also reset its flush mode
-  procedure Reset (A_Logger : in out Logger; Name : in String);
-
-  -- Return True if logger is init
-  function Is_Init (A_Logger : Logger) return Boolean;
-  -- Return name of logger, raise Not_Init if is not init
-  Not_Init : exception;
-  function Name (A_Logger : Logger) return String;
-
-
+  -- SEVERITIES
+  -------------
   -- A trace severity, one bit for each
   type Severities is new Natural range 0 .. 255;
+
+  function "And" (L, R : Severities) return Severities;
+  function "Or"  (L, R : Severities) return Severities;
 
   -- Predefined severities
   Fatal   : constant Severities := 16#01#;
@@ -67,91 +43,80 @@ package Trace is
   Info    : constant Severities := 16#08#;
   Debug   : constant Severities := 16#10#;
 
-  function "And" (L, R : Severities) return Severities;
-  function "Or"  (L, R : Severities) return Severities;
-
   -- Fatal or Error
   function Errors return Severities;
   -- Warnings or Info
   function Infos return Severities;
 
 
-  -- Set / get / add severities
-  -- Raise Not_Init if logger is not init
-  procedure Set_Mask (A_Logger : in out Logger; Mask : in Severities);
-  procedure Add_Mask (A_Logger : in out Logger; Mask : in Severities);
-  function  Get_Mask (A_Logger : in out Logger) return Severities;
-
-  -- Check if a severity is active
-  -- Raise Not_Init if logger is not init
-  function Is_On (A_Logger : in out Logger;
-                  Severity : in Severities) return Boolean;
-  function Fatal_On   (A_Logger : in out Logger) return Boolean;
-  function Error_On   (A_Logger : in out Logger) return Boolean;
-  function Warning_On (A_Logger : in out Logger) return Boolean;
-  function Info_On    (A_Logger : in out Logger) return Boolean;
-  function Debug_On   (A_Logger : in out Logger) return Boolean;
-
-  -- Log a message of a given severity (note that it can have several
-  --  severities)
-  -- Calling it on a logger not initialized implicitly init it with Name
-  procedure Log (A_Logger : in out Logger;
-                 Severity : in Severities;
-                 Message  : in String;
-                 Name     : in String := "");
-  procedure Log_Fatal   (A_Logger : in out Logger;
-                         Message  : in String;
-                         Name     : in String := "");
-  procedure Log_Error   (A_Logger : in out Logger;
-                         Message  : in String;
-                         Name     : in String := "");
-  procedure Log_Warning (A_Logger : in out Logger;
-                         Message  : in String;
-                         Name     : in String := "");
-  procedure Log_Info    (A_Logger : in out Logger;
-                         Message  : in String;
-                         Name     : in String := "");
-  procedure Log_Debug   (A_Logger : in out Logger;
-                         Message  : in String;
-                         Name     : in String := "");
-
-  -- Configure logger to flush each message (True by default)
-  -- Set_Flush is independant from logger initialisation
-  procedure Set_Flush (A_Logger : in out Logger; Each : in Boolean);
-
-  -- Flush logs of a logger
-  procedure Flush (A_Logger : in out Logger);
-
-  -- By default, Errors (Fatal & Error) are also logged on stderr if the
-  --  file is not already stderr
-  Errors_On_Stderr : Boolean := True;
-
-
+  -- BASIC LOGGER
+  ---------------
+  -- Initialize the logger, with a name or anonymous
+  --  and set its mask from ENV
+  -- If Name is not empty and <proc>_TRACE_<Name> is set (even empty)
+  -- or Name is empty and <proc>_TRACE is set, then the mask is set to
+  --  Fatal|Error|mask
+  -- If none is set then the mask is set to the global value got from
+  --  <Process>_TRACE_ALL if set, or Fatal|Error by default
   generic
     Name : String;
   package Basic_Logger is
-    -- A basic logger has the same maks policy as a normal logger but
-    --  - this mask is fixed
-    --  - the flush mode is set
-    --  - The output flow is stderr
-    -- It is not an object so it can be used by low-level packages
-    --  (no cross dependancy, no finalization)
-    procedure Log (Severity : in Severities;
-                 Message  : in String);
-    -- Is a level on
+
+    -- Set / get / add severities
+    procedure Set_Mask (Mask : in Severities);
+    procedure Add_Mask (Mask : in Severities);
+    function  Get_Mask return Severities;
+
+    -- Check if a severity is active
+    -- Raise Not_Init if logger is not init
     function Is_On (Severity : in Severities) return Boolean;
+    function Fatal_On   return Boolean;
+    function Error_On   return Boolean;
+    function Warning_On return Boolean;
+    function Info_On    return Boolean;
+    function Debug_On   return Boolean;
+
+    -- Log a message of a given severity (note that it can have several
+    --  severities)
+    procedure Log (Severity : in Severities;
+                   Message  : in String);
+    procedure Log_Fatal   (Message  : in String);
+    procedure Log_Error   (Message  : in String);
+    procedure Log_Warning (Message  : in String);
+    procedure Log_Info    (Message  : in String);
+    procedure Log_Debug   (Message  : in String);
+
+    -- Flush logs of a logger
+    procedure Flush;
+
+    -- Configure logger to flush each message (True by default)
+    procedure Set_Flush (Each : in Boolean);
+
   end Basic_Logger;
 
 private
+  -- Utilities for child packages
 
-  -- Logger
-  type Logger is new Ada.Finalization.Controlled with record
-    Init : Boolean := False;
-    Name : As.U.Asu_Us;
-    Mask : Severities := 0;
-    Flush : Boolean := True;
-  end record;
-  overriding procedure Finalize (A_Logger : in out Logger);
+  -- Global basic init
+  procedure Basic_Init;
+    -- - Process name
+  Process : As.U.Asu_Us;
+  -- - Global severity mask
+  Default : constant Severities := Error + Fatal;
+  Global_Mask : Severities := Default;
 
+  -- Common format of the output
+  function Format (Name     : in String;
+                   Severity : in Severities;
+                   Message  : in String) return String;
+
+  -- Get mask for a logger
+  function Get_Mask (Name : in String) return Severities;
+
+  -- Image of a severity mask (for debug)
+  function Image (Severity : Severities) return String;
+
+  -- Stderr output flow
+  Stderr : aliased Text_Line.File_Type;
 end Trace;
 

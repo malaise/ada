@@ -1,7 +1,7 @@
 -- Insert or remove fields in a Afpx.xml file
 -- Update other field number and references to them
 with Ada.Exceptions;
-with Basic_Proc, Argument, Argument_Parser, Trace, Lower_Str,
+with Basic_Proc, Argument, Argument_Parser, Trace.Loggers, Lower_Str,
      As.U, Images, Unbounded_Arrays, Str_Util, Text_Line,
      Afpx_Typ, Xml_Parser.Generator;
 procedure Afpx_Rnb is
@@ -73,7 +73,7 @@ procedure Afpx_Rnb is
   end Error;
 
   -- Trace
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
 
   -- Afpx descriptor
   Dscr : Afpx_Typ.Descriptor_Range;

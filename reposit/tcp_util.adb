@@ -1,13 +1,13 @@
 with Unchecked_Deallocation;
 with Ada.Exceptions;
-with Dynamic_List, Timers, Event_Mng, Trace, Socket_Util;
+with Dynamic_List, Timers, Event_Mng, Trace.Loggers, Socket_Util;
 package body Tcp_Util is
 
   -- Debugging
-  Log_Connect : Trace.Logger;
-  Log_Accept : Trace.Logger;
-  Log_Overflow : Trace.Logger;
-  Log_Reception : Trace.Logger;
+  Log_Connect : Trace.Loggers.Logger;
+  Log_Accept : Trace.Loggers.Logger;
+  Log_Overflow : Trace.Loggers.Logger;
+  Log_Reception : Trace.Loggers.Logger;
 
   procedure Init_Debug is
   begin

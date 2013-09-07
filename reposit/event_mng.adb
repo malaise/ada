@@ -1,5 +1,5 @@
 with System;
-with C_Types, Null_Procedure, Dynamic_List, Trace, Timeval, Perpet,
+with C_Types, Null_Procedure, Dynamic_List, Trace.Loggers, Timeval, Perpet,
      Any_Def, My_Math, Virtual_Time;
 package body Event_Mng is
 
@@ -16,7 +16,7 @@ package body Event_Mng is
   end For_Ada;
 
   -- Logger for debug
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
   Logger_Name : constant String := "Event_Mng";
 
   ------------------------------------------------------------------
