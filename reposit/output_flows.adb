@@ -45,11 +45,11 @@ package body Output_Flows is
       Logger.Log (Trace.Debug, "Finalizing " & Cell_Acc.Name.Image);
       -- No more reference
       if Cell_Acc.Kind = File then
-        -- Close file if needed and free file
+        -- Close and free file if we created it
         if Cell_Acc.Close then
           Cell_Acc.File.Close_All;
+          Free_File (Cell_Acc.File);
         end if;
-        Free_File (Cell_Acc.File);
       end if;
       -- Free Cell
       Free_Cell (Cell_Acc);
