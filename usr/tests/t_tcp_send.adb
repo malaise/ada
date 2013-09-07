@@ -1,7 +1,6 @@
 with Ada.Exceptions;
 with Basic_Proc, Argument, Mixed_Str, Images,
-     Event_Mng, Ip_Addr, Socket, Tcp_Util;
-with Trace;
+     Event_Mng, Ip_Addr, Socket, Tcp_Util, Trace.Loggers;
 procedure T_Tcp_Send is
   Arg_Error : exception;
 
@@ -27,7 +26,7 @@ procedure T_Tcp_Send is
   function Image is new Images.Mod_Image (Sequence_Number);
 
   -- Trace logger
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
 
   -- Signal callback
   Sig : Boolean := False;

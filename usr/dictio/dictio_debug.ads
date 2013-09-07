@@ -1,10 +1,10 @@
-with Trace;
+with Trace.Loggers;
 package Dictio_Debug is
 
   type Level_List is (Status, Intra, Fight, Online,
                       Client, Client_Data, Client_Notify, Client_Alias,
                       Sync, Lib);
-  Loggers : array (Level_List) of Trace.Logger;
+  Loggers : array (Level_List) of Trace.Loggers.Logger;
 
   -- Init all the loggers
   procedure Init;

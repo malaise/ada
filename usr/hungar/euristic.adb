@@ -1,7 +1,7 @@
-with As.U, Rnd, Sorts, Basic_Proc, Normal, Trace;
+with As.U, Rnd, Sorts, Basic_Proc, Normal, Trace.Loggers;
 
 package body Euristic is
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
   Line : As.U.Asu_Us;
 
   -- Dump Mattrix

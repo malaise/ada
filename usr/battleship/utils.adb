@@ -1,11 +1,11 @@
-with Trace;
+with Trace.Loggers;
 package body Utils is
 
 
   -- Debug modes
-  Comm_Logger : Trace.Logger;
-  Setup_Logger : Trace.Logger;
-  Play_Logger : Trace.Logger;
+  Comm_Logger : Trace.Loggers.Logger;
+  Setup_Logger : Trace.Loggers.Logger;
+  Play_Logger : Trace.Loggers.Logger;
   procedure Init is
   begin
     Comm_Logger.Init ("Communication");

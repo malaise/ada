@@ -18,10 +18,10 @@
 
 with Ada.Direct_Io, Ada.Exceptions, Ada.Characters.Latin_1;
 with As.U, Argument, Bloc_Io, Ada_Words, Lower_Str, Mixed_Str, Upper_Str,
-     Basic_Proc, Trace;
+     Basic_Proc, Trace.Loggers;
 procedure Alook is
 
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
 
   package Reading is
 

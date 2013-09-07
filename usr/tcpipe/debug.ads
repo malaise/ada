@@ -1,5 +1,5 @@
-with Trace;
+with Trace.Loggers;
 package Debug is
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
 end Debug;
 

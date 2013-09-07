@@ -1,9 +1,10 @@
+with Trace.Loggers;
 package body Log is
 
-  Def_Logger : Trace.Logger;
-  Sub_Logger : Trace.Logger;
-  Sea_Logger : Trace.Logger;
-  Rep_Logger : Trace.Logger;
+  Def_Logger : Trace.Loggers.Logger;
+  Sub_Logger : Trace.Loggers.Logger;
+  Sea_Logger : Trace.Loggers.Logger;
+  Rep_Logger : Trace.Loggers.Logger;
 
   procedure Init is
   begin
