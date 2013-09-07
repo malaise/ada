@@ -221,18 +221,56 @@ package body Async_Stdin is
     function Ls2U (Str : String) return Unicode_Sequence
              renames Language.String_To_Unicode;
     -- Supported sequences
-    Arrow_Left_Seq    : constant Unicode_Sequence := Ls2U ("[D");
-    Arrow_Right_Seq   : constant Unicode_Sequence := Ls2U ("[C");
-    Arrow_Up_Seq      : constant Unicode_Sequence := Ls2U ("[A");
-    Arrow_Down_Seq    : constant Unicode_Sequence := Ls2U ("[B");
-    Home_Seq          : constant Unicode_Sequence := Ls2U ("[1~");
-    End_Seq           : constant Unicode_Sequence := Ls2U ("[4~");
-    Home1_Seq         : constant Unicode_Sequence := Ls2U ("OH");
-    End1_Seq          : constant Unicode_Sequence := Ls2U ("OF");
-    Delete_Seq        : constant Unicode_Sequence := Ls2U ("[3~");
-    Page_Up_Seq       : constant Unicode_Sequence := Ls2U ("[5~");
-    Page_Down_Seq     : constant Unicode_Sequence := Ls2U ("[6~");
-    Insert_Seq        : constant Unicode_Sequence := Ls2U ("[2~");
+    -- Avoid constants because this would set the language during
+    --  elaboration
+    function Arrow_Left_Seq return Unicode_Sequence is
+    begin
+      return Ls2U ("[D");
+    end Arrow_Left_Seq;
+    function Arrow_Right_Seq return Unicode_Sequence is
+    begin
+      return Ls2U ("[C");
+    end Arrow_Right_Seq;
+    function Arrow_Up_Seq return Unicode_Sequence is
+    begin
+      return Ls2U ("[A");
+    end Arrow_Up_Seq;
+    function Arrow_Down_Seq return Unicode_Sequence is
+    begin
+      return Ls2U ("[B");
+    end Arrow_Down_Seq;
+    function Home_Seq return Unicode_Sequence is
+    begin
+      return Ls2U ("[1~");
+    end Home_Seq;
+    function End_Seq return Unicode_Sequence is
+    begin
+      return Ls2U ("[4~");
+    end End_Seq;
+    function Home1_Seq return Unicode_Sequence is
+    begin
+      return Ls2U ("OH");
+    end Home1_Seq;
+    function End1_Seq return Unicode_Sequence is
+    begin
+      return Ls2U ("OF");
+    end End1_Seq;
+    function Delete_Seq return Unicode_Sequence is
+    begin
+      return Ls2U ("[3~");
+    end Delete_Seq;
+    function Page_Up_Seq return Unicode_Sequence is
+    begin
+      return Ls2U ("[5~");
+    end Page_Up_Seq;
+    function Page_Down_Seq return Unicode_Sequence is
+    begin
+      return Ls2U ("[6~");
+    end Page_Down_Seq;
+    function Insert_Seq return Unicode_Sequence is
+    begin
+      return Ls2U ("[2~");
+    end Insert_Seq;
 
     -- Copy Buf and move to end of line
     procedure Update is
@@ -257,9 +295,20 @@ package body Async_Stdin is
     end Store;
 
     -- Some usefull definitions
-    Esc : constant Unicode_Number := Language.Char_To_Unicode (Latin_1.Esc);
-    Del : constant Unicode_Number := Language.Char_To_Unicode (Latin_1.Del);
-    Space : constant Unicode_Number := Language.Char_To_Unicode (' ');
+    -- Avoid constants because this would set the language during
+    --  elaboration
+    function Esc return Unicode_Number is
+    begin
+      return Language.Char_To_Unicode (Latin_1.Esc);
+    end Esc;
+    function Del return Unicode_Number is
+    begin
+      return Language.Char_To_Unicode (Latin_1.Del);
+    end Del;
+    function Space return Unicode_Number is
+    begin
+      return Language.Char_To_Unicode (' ');
+    end Space;
     Uu_Null : constant Uu.Unbounded_Array := Uu.Null_Unbounded_Array;
     function Uu_Is_Null (Str : Uu.Unbounded_Array) return Boolean is
       use type Uu.Unbounded_Array;
