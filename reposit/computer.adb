@@ -2,21 +2,11 @@
 -- Where oper is +, -, * or /,
 --  a and b are integers or ${Variable}
 -- Supports parentheses.
-with Environ, Basic_Proc, Str_Util, Dynamic_List, Parser;
+with Str_Util, Dynamic_List, Parser, Trace;
 package body Computer is
 
-  Debug_Read : Boolean := False;
-  Debug_On : Boolean := False;
-  procedure Trace (Msg : in String) is
-  begin
-    if not Debug_Read then
-      Debug_On := Environ.Is_Yes ("COMPUTER_DEBUG");
-      Debug_Read := True;
-    end if;
-    if Debug_On then
-      Basic_Proc.Put_Line_Error ("COMP:  " & Msg);
-    end if;
-  end Trace;
+  package Logger is new Trace.Basic_Logger ("Computer");
+  procedure Trace (Msg : in String) renames Logger.Log_Debug;
 
   -- Operation on stored variables
   procedure Set (To : out Var_Rec; Val : in Var_Rec) is
