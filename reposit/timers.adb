@@ -1,9 +1,9 @@
 with Ada.Calendar;
-with Dynamic_List, Trace.Loggers, Images, Mutex_Manager;
+with Dynamic_List, Trace, Images, Mutex_Manager;
 package body Timers is
 
   -- Debugging
-  Logger : Trace.Loggers.Logger;
+  package Logger is new Trace.Basic_Logger ("Timers");
 
   -- The mutex that protect the whole
   -- Must be recursive because timer Cb can call Timers
@@ -33,14 +33,6 @@ package body Timers is
     return Current.Clock = Criteria.Clock;
   end Match;
   function Search_Clock is new Clocks_List_Mng.Search (Match);
-
-  procedure Set_Debug is
-  begin
-    Logger.Init ("Timers");
-  exception
-    when others =>
-      null;
-  end Set_Debug;
 
   procedure Set (Dest : in out Timer_Rec; Val : in Timer_Rec) is
   begin
@@ -162,7 +154,6 @@ package body Timers is
     end if;
 
     Get_Mutex;
-    Set_Debug;
     -- Init status and copy period and callback
     Timer.Status := Running;
     Timer.Exp.Period := Delay_Spec.Period;
@@ -316,7 +307,6 @@ package body Timers is
   procedure Delete (Id : in out Timer_Id) is
   begin
     Get_Mutex;
-    Set_Debug;
     -- Search timer
     Locate (Id);
     -- Delete timer
@@ -359,7 +349,6 @@ package body Timers is
              Virtual_Time.Speed_Range, Perpet.Delta_Rec;
   begin
     Get_Mutex;
-    Set_Debug;
     -- Get access to timer
     Timer := Id.Get_Access;
     if Timer.Status = Deleted then
@@ -398,7 +387,6 @@ package body Timers is
     use type Virtual_Time.Time, Perpet.Delta_Rec;
   begin
     Get_Mutex;
-    Set_Debug;
     -- Get access to timer
     Timer := Id.Get_Access;
     if Timer.Status = Deleted then
@@ -435,7 +423,6 @@ package body Timers is
     use type Virtual_Time.Time, Virtual_Time.Speed_Range, Perpet.Delta_Rec;
   begin
     Get_Mutex;
-    Set_Debug;
     -- Get access to timer
     Timer := Id.Get_Access;
     if Timer.Status = Deleted then
@@ -481,7 +468,6 @@ package body Timers is
     use type Virtual_Time.Time;
   begin
     Get_Mutex;
-    Set_Debug;
     One_True := False;
     loop
       -- Search first timer, exit when no more timer
@@ -538,7 +524,6 @@ package body Timers is
     Timer : access Timer_Rec;
   begin
     Get_Mutex;
-    Set_Debug;
       -- Search first timer and read it
     if not First then
       -- No more timer
@@ -603,7 +588,6 @@ package body Timers is
     use type Virtual_Time.Time;
   begin
     Get_Mutex;
-    Set_Debug;
     -- First timer to expire
     Next_Exp := Wait_Until;
 
@@ -676,7 +660,6 @@ package body Timers is
 
   begin
     Get_Mutex;
-    Set_Debug;
     if not First then
       Put_Debug ("Notify", "No timer!!!");
       Release_Mutex;

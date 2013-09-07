@@ -1,5 +1,5 @@
 with System;
-with C_Types, Null_Procedure, Dynamic_List, Trace.Loggers, Timeval, Perpet,
+with C_Types, Null_Procedure, Dynamic_List, Trace, Timeval, Perpet,
      Any_Def, My_Math, Virtual_Time;
 package body Event_Mng is
 
@@ -16,8 +16,7 @@ package body Event_Mng is
   end For_Ada;
 
   -- Logger for debug
-  Logger : Trace.Loggers.Logger;
-  Logger_Name : constant String := "Event_Mng";
+  package Logger is new Trace.Basic_Logger ("Event_Mng");
 
   ------------------------------------------------------------------
 
@@ -57,7 +56,6 @@ package body Event_Mng is
     Res : Boolean;
     Cb_Searched : Cb_Rec;
   begin
-    Logger.Init (Logger_Name);
     -- Check no cb for this fd yet
     Cb_Searched.Fd := Fd;
     Cb_Searched.Read := Read;
@@ -108,7 +106,6 @@ package body Event_Mng is
            return Fd_Callback is
     Cb_Searched : Cb_Rec;
   begin
-    Logger.Init (Logger_Name);
     -- Get from list
     Cb_Searched.Fd := Fd;
     Cb_Searched.Read := Read;
@@ -189,7 +186,6 @@ package body Event_Mng is
 
   procedure Send_Dummy_Signal is
   begin
-    Logger.Init (Logger_Name);
     Logger.Log_Debug ("Event_Mng.Send_Dummy_Signal");
     C_Send_Dummy_Signal;
   end Send_Dummy_Signal;
@@ -255,7 +251,6 @@ package body Event_Mng is
              Virtual_Time.Time, Virtual_Time.Speed_Range,
              Timers.Expiration_Rec, Perpet.Delta_Rec;
   begin
-    Logger.Init (Logger_Name);
     if Delay_Spec.Clock /= null then
       raise Invalid_Delay;
     end if;
@@ -381,8 +376,6 @@ package body Event_Mng is
     pragma Unreferenced (Dummy);
     use type My_Math.Inte;
   begin
-    Logger.Init (Logger_Name);
-
     -- Increment global pause level and store ours
     Pause_Level.Inte := Pause_Level.Inte + 1;
     Loc_Level := Pause_Level;
@@ -422,7 +415,6 @@ package body Event_Mng is
     Cb_Searched : Cb_Rec;
     Signal_Kind : Signal_Kind_List;
   begin
-    Logger.Init (Logger_Name);
     Logger.Log_Debug ("Event_Mng.Handle event " & Event.Kind'Img);
     case Event.Kind is
       when Fd_Event =>
