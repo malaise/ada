@@ -398,6 +398,9 @@ package body Af_Ptg is
           List_Status := Af_List.Get_Status;
           Last_Selected_Id := List_Status.Ids_Selected(List_Left);
           Last_Selection_Time := Click_Time;
+          if List_Change_Cb /= null then
+            List_Change_Cb (Left_Selection, Af_List.Get_Status);
+          end if;
         else
           -- Valid right click on selected: flip/flop => Unselect
           Af_List.Set_Selected (Click_But, 0);
