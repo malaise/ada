@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Regular_Expressions, Basic_Proc, Sys_Calls;
+with Regular_Expressions, Basic_Proc, Sys_Calls, Trace;
 
 separate (Mcd_Mng)
 package body Misc is
@@ -9,9 +9,7 @@ package body Misc is
 
   procedure Do_Call is
   begin
-    if Debug.Debug_Level_Array(Debug.Oper) then
-      Async_Stdin.Put_Line_Err("Mng: Do_call");
-    end if;
+    Debug.Log (Debug.Oper, "Do_call");
     Stack.Pop(A);
     if A.Kind /= Prog then
       raise Invalid_Argument;
@@ -164,7 +162,13 @@ package body Misc is
     if Set.Kind /= Bool then
       raise Invalid_Argument;
     end if;
-    Debug.Debug_Level_Array := (others => Set.Val_Bool);
+    for L in Debug.Loggers'Range loop
+      if Set.Val_Bool then
+        Debug.Loggers(L).Add_Mask (Trace.Debug);
+      else
+        Debug.Loggers(L).Del_Mask (Trace.Debug);
+      end if;
+    end loop;
   end Set_Debug;
 
   function Reg_Match (Pattern, Str : Item_Rec) return Item_Rec is

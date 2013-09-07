@@ -1,40 +1,49 @@
-with Trace.Loggers, Arbitrary.Fractions, Async_Stdin, Mixed_Str;
+with As.U, Arbitrary.Fractions, Mixed_Str;
 package body Debug is
 
   procedure Init is
-    -- Loggers, used only to detect if DEBUG is set
-    Loggers : array (Debug_Level_List) of Trace.Loggers.Logger;
   begin
-    for Level in Debug_Level_List loop
+    for Level in Level_List loop
       Loggers(Level).Init (Mixed_Str (Level'Img));
-      Debug_Level_Array(Level) := Loggers(Level).Debug_On;
     end loop;
   end Init;
 
-  procedure Put (Item : in Mcd_Mng.Item_Rec) is
+  procedure Log (Level : in Level_List; Message : in String) is
+  begin
+    Loggers(Level).Log_Debug (Message);
+  end Log;
+
+  procedure Log (Level   : in Level_List;
+                 Item    : in Mcd_Mng.Item_Rec;
+                 Message : in String := "") is
+    Text : As.U.Asu_Us;
     use Mcd_Mng;
   begin
+    if Message /= "" then
+      Text.Set (Message & " ");
+    end if;
     case Item.Kind is
       when Arbi =>
-        Async_Stdin.Put_Err ("@" & Arbitrary.Image(Item.Val_Arbi));
+        Text.Append ("@" & Arbitrary.Image(Item.Val_Arbi));
       when Frac =>
-        Async_Stdin.Put_Err ("@" & Arbitrary.Fractions.Image(Item.Val_Frac));
+        Text.Append ("@" & Arbitrary.Fractions.Image(Item.Val_Frac));
       when Inte =>
-        Async_Stdin.Put_Err (Item.Val_Inte'Img);
+        Text.Append (Item.Val_Inte'Img);
       when Real =>
-        Async_Stdin.Put_Err (Item.Val_Real'Img);
+        Text.Append (Item.Val_Real'Img);
       when Bool =>
-        Async_Stdin.Put_Err (Item.Val_Bool'Img);
+        Text.Append (Item.Val_Bool'Img);
       when Chrs =>
-        Async_Stdin.Put_Err ("""" & Item.Val_Text.Image & """");
+        Text.Append ("""" & Item.Val_Text.Image & """");
       when Prog =>
-        Async_Stdin.Put_Err ("[ " & Item.Val_Text.Image & " ]");
+        Text.Append ("[ " & Item.Val_Text.Image & " ]");
       when Regi =>
-        Async_Stdin.Put_Err (Item.Val_Regi & "");
+        Text.Append (Item.Val_Regi & "");
       when Oper =>
-        Async_Stdin.Put_Err (Operator_List'Image(Item.Val_Oper));
+        Text.Append (Operator_List'Image(Item.Val_Oper));
     end case;
-  end Put;
+    Loggers(Level).Log_Debug (Text.Image);
+  end Log;
 
 end Debug;
 

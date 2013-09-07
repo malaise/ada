@@ -1,4 +1,4 @@
-with Random, Async_Stdin, As.U.Utils, Event_Mng;
+with Random, As.U.Utils, Event_Mng;
 with Debug, Input_Dispatcher, Mcd_Parser;
 pragma Elaborate(Random);
 package body Mcd_Mng is
@@ -350,9 +350,7 @@ package body Mcd_Mng is
       Call_Stack_Level : Natural;
       Ret_All : Boolean;
     begin
-      if Debug.Debug_Level_Array(Debug.Oper) then
-        Async_Stdin.Put_Line_Err("Mng: Do_ret");
-      end if;
+      Debug.Log (Debug.Oper, "Do_ret");
       Call_Stack_Level := Call_Stack.Level;
       if not All_Levels then
         -- Has to be Inte and val NaturaL
@@ -377,9 +375,7 @@ package body Mcd_Mng is
           Ret_All := True;
           L := Call_Stack_Level;
           if Breaking then
-            if Debug.Debug_Level_Array(Debug.Oper) then
-              Async_Stdin.Put_Line_Err("Mng: Return from Break ");
-            end if;
+            Debug.Log (Debug.Oper, "Return from Break");
             The_End := Exit_Break;
           else
             The_End := Exit_Return;
@@ -412,9 +408,7 @@ package body Mcd_Mng is
 
     procedure Handle_Break is
     begin
-      if Debug.Debug_Level_Array(Debug.Oper) then
-        Async_Stdin.Put_Line_Err("Mng: Handle_Break");
-      end if;
+      Debug.Log (Debug.Oper, "Handle_Break");
       -- Pop all stacks
       Do_Retall;
       for I in 1 .. Stack.Stack_Size loop
@@ -425,9 +419,7 @@ package body Mcd_Mng is
         return;
       end if;
       -- Call break program
-      if Debug.Debug_Level_Array(Debug.Oper) then
-        Async_Stdin.Put_Line_Err("Mng: Breaking");
-      end if;
+      Debug.Log (Debug.Oper, "Breaking");
       Breaking := True;
       -- This is not the end yet (despite Do_Retall)
       The_End := Continue;
@@ -458,11 +450,7 @@ package body Mcd_Mng is
       -- Push operand
       Push(Item);
     else -- Operator
-      if Debug.Debug_Level_Array(Debug.Oper) then
-        Async_Stdin.Put_Err("Mng: ");
-        Debug.Put(Item);
-        Async_Stdin.New_Line_Err;
-      end if;
+      Debug.Log (Debug.Oper, Item);
       -- The big case on all operations
       case Item.Val_Oper is
 

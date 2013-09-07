@@ -82,15 +82,13 @@ package body Io_Flow is
         Async_Stdin.Put_Line_Err ("Missing autobus address.");
         raise Init_Error;
       end if;
-      if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: Init on autobus " & Bus_Addr.Image);
-      end if;
+      Debug.Log (Debug.Flow, "Init on autobus " & Bus_Addr.Image);
       begin
         Bus.Init (Bus_Addr.Image);
       exception
         when Autobus.Invalid_Address =>
           Async_Stdin.Put_Line_Err ("Invalid autobus address "
-                                  & Bus_Addr.Image & ".");
+                               & Bus_Addr.Image & ".");
           raise Init_Error;
         when Autobus.Name_Error =>
           Async_Stdin.Put_Line_Err ("Name not found in autobus address "
@@ -116,10 +114,8 @@ package body Io_Flow is
           raise Init_Error;
       end;
       Open_Tcp_Socket (True);
-      if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: Init on tcp port " &
-          Ip_Addr.Image (Accepting_Soc.Get_Linked_To));
-      end if;
+      Debug.Log (Debug.Flow, "Init on tcp port "
+                           & Ip_Addr.Image (Accepting_Soc.Get_Linked_To));
       Io_Mode := Tcp;
     end if;
 
@@ -140,18 +136,12 @@ package body Io_Flow is
       end;
       Open_Udp_Sockets (Argument.Is_Set (1, "U"));
       Io_Mode := Udp;
-      if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Err ("Flow: Init on ");
-        if Is_Ipm then
-          Async_Stdin.Put_Err ("ipm LAN " &
-            Ip_Addr.Image (Soc.Get_Destination_Host) & " ");
-        else
-          Async_Stdin.Put_Err ("udp ");
-        end if;
-        Async_Stdin.Put_Err ("port " & Ip_Addr.Image (Soc.Get_Linked_To));
-        Async_Stdin.Put_Line_Err (" sending on port "
-           & Ip_Addr.Image (Send_Soc.Get_Destination_Port));
-      end if;
+      Debug.Log (Debug.Flow, "Init on "
+        & (if Is_Ipm then "ipm LAN " & Ip_Addr.Image (Soc.Get_Destination_Host)
+           else "udp"
+        & " port " & Ip_Addr.Image (Soc.Get_Linked_To)
+        & " sending on port "
+        & Ip_Addr.Image (Send_Soc.Get_Destination_Port)));
     end if;
 
     -- If no arg => Stdin
@@ -170,22 +160,16 @@ package body Io_Flow is
     end if;
 
     -- Stdin
-    if Debug.Debug_Level_Array(Debug.Flow) then
-      Async_Stdin.Put_Line_Err ("Flow: Init on stdio");
-    end if;
+    Debug.Log (Debug.Flow, "Init on stdio");
     -- Set stdin/out asynchronous if it is a Tty
     if Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin)  = Sys_Calls.Tty
     and then Sys_Calls.File_Desc_Kind (Sys_Calls.Stdout) = Sys_Calls.Tty then
       Io_Mode := Stdio_Tty;
       Async_Stdin.Set_Async (Stdin_Cb'Access, 0);
-      if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: Stdio is a tty");
-      end if;
+      Debug.Log (Debug.Flow, "Stdio is a tty");
     else
       Init_Default;
-      if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: Stdio is a not a tty");
-      end if;
+      Debug.Log (Debug.Flow, "Stdio is a not a tty");
     end if;
 
   end Init;
@@ -245,23 +229,17 @@ package body Io_Flow is
         if Evt = Event_Mng.Signal_Event then
           -- Give up on signal
           Input_Data.Set_Null;
-          if Debug.Debug_Level_Array(Debug.Flow) then
-            Async_Stdin.Put_Line_Err ("Flow: Got signal");
-          end if;
+          Debug.Log (Debug.Flow, "Got signal");
           exit;
         else
-          if Debug.Debug_Level_Array(Debug.Flow) then
-            Async_Stdin.Put_Line_Err ("Flow: Got event " & Evt'Img);
-          end if;
+          Debug.Log (Debug.Flow, "Got event " & Evt'Img);
         end if;
       end loop;
     else
       -- Get next data on async stdin, socket
       loop
         Input_Data.Set_Null;
-        if Debug.Debug_Level_Array(Debug.Flow) then
-          Async_Stdin.Put_Line_Err ("Flow: Waiting on bus/socket/tty");
-        end if;
+        Debug.Log (Debug.Flow, "Waiting on bus/socket/tty");
         Evt := Event_Mng.Wait (Event_Mng.Infinite_Ms);
 
         if Evt = Event_Mng.Fd_Event
@@ -271,14 +249,10 @@ package body Io_Flow is
         elsif Evt = Event_Mng.Signal_Event then
           -- Give up on signal
           Input_Data.Set_Null;
-          if Debug.Debug_Level_Array(Debug.Flow) then
-            Async_Stdin.Put_Line_Err ("Flow: Got signal");
-          end if;
+          Debug.Log (Debug.Flow, "Got signal");
           exit;
         else
-          if Debug.Debug_Level_Array(Debug.Flow) then
-            Async_Stdin.Put_Line_Err ("Flow: Got event " & Evt'Img);
-          end if;
+          Debug.Log (Debug.Flow, "Got event " & Evt'Img);
         end if;
       end loop;
     end if;
@@ -294,9 +268,7 @@ package body Io_Flow is
       when others =>
         null;
     end case;
-    if Debug.Debug_Level_Array(Debug.Flow) then
-      Async_Stdin.Put_Line_Err ("Flow: Next_Line -> " & Str.Image);
-    end if;
+    Debug.Log (Debug.Flow, "Next_Line -> " & Str.Image);
   end Next_Line;
 
   ----------------------------------------------------
@@ -352,13 +324,9 @@ package body Io_Flow is
           if L > Str'Last then
             L := Str'Last;
           end if;
-          if Debug.Debug_Level_Array(Debug.Flow) then
-            Async_Stdin.Put_Line_Err ("Flow: Sending -> " & Str(F .. L) & "<");
-          end if;
+          Debug.Log (Debug.Flow, "Sending -> " & Str(F .. L) & "<");
           Send_Message (Str(F .. L));
-          if Debug.Debug_Level_Array(Debug.Flow) then
-            Async_Stdin.Put_Line_Err ("Flow: Sent -> " & Str(F .. L) & "<");
-          end if;
+          Debug.Log (Debug.Flow, "Sent -> " & Str(F .. L) & "<");
           exit when L = Str'Last;
           F := L + 1;
         end loop;
@@ -391,9 +359,7 @@ package body Io_Flow is
         Bus_Subscriber.Reset;
         Bus.Reset;
       when Udp =>
-        if Debug.Debug_Level_Array(Debug.Flow) then
-          Async_Stdin.Put_Line_Err ("Flow: Closing udp");
-        end if;
+        Debug.Log (Debug.Flow, "Closing udp");
         if Soc.Is_Open then
           if Socket_Is_Active then
             Activate_Socket (False);
@@ -401,9 +367,7 @@ package body Io_Flow is
           Soc.Close;
         end if;
       when Tcp =>
-        if Debug.Debug_Level_Array(Debug.Flow) then
-          Async_Stdin.Put_Line_Err ("Flow: Closing tcp");
-        end if;
+        Debug.Log (Debug.Flow, " Closing tcp");
         if Soc.Is_Open then
           Activate_Socket (False);
           Soc.Close;
@@ -437,10 +401,7 @@ package body Io_Flow is
       Tmp_Data.Set_Null;
       Messages.Rewind (False, As.U.Utils.Asu_Dyn_List_Mng.Next);
       Messages.Insert (Input_Data);
-      if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: Bus reception of >"
-                             & Input_Data.Image & "<");
-      end if;
+      Debug.Log (Debug.Flow, " Bus reception of >" & Input_Data.Image & "<");
     end if;
   end Receive;
 
@@ -458,10 +419,7 @@ package body Io_Flow is
     end if;
     -- Prevent overwritting of Input_Data by freezing Stdin
     Async_Stdin.Activate (False);
-    if Debug.Debug_Level_Array(Debug.Flow) then
-      Async_Stdin.Put_Line_Err ("Flow: Stdin_Cb set >"
-                           & Input_Data.Image & "<");
-    end if;
+    Debug.Log (Debug.Flow, "Stdin_Cb set >" & Input_Data.Image & "<");
     return True;
   end Stdin_Cb;
 
@@ -482,14 +440,9 @@ package body Io_Flow is
     if Tcp_Active then
       Activate_Socket (True);
     end if;
-    if Debug.Debug_Level_Array(Debug.Flow) then
-      Async_Stdin.Put_Err ("Flow: Tcp socket accepted and ");
-      if Tcp_Active then
-        Async_Stdin.Put_Line_Err ("active");
-      else
-        Async_Stdin.Put_Line_Err ("inactive");
-      end if;
-    end if;
+    Debug.Log (Debug.Flow, "Tcp socket accepted and "
+        & (if Tcp_Active then "active"
+           else "inactive"));
     return False;
   end Socket_Connect_Cb;
 
@@ -511,9 +464,7 @@ package body Io_Flow is
     exception
       when Socket.Soc_Read_0 =>
         -- Tcp Disconnection: close and accept new
-        if Debug.Debug_Level_Array(Debug.Flow) then
-          Async_Stdin.Put_Line_Err ("Flow: Socket_Rece_Cb disconnection");
-        end if;
+        Debug.Log (Debug.Flow, "Socket_Rece_Cb disconnection");
         Disconnect_Socket;
         return False;
     end;
@@ -525,9 +476,7 @@ package body Io_Flow is
     and then Length = 1
     and then Message(1) = Ada.Characters.Latin_1.Eot then
       -- Tcp Disconnection: close and accept new
-      if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: Socket_Rece_Cb disconnecting");
-      end if;
+      Debug.Log (Debug.Flow, "Socket_Rece_Cb disconnecting");
       Disconnect_Socket;
       return False;
     end if;
@@ -540,10 +489,7 @@ package body Io_Flow is
       Tmp_Data.Set_Null;
       -- Freeze fifo to prevent Input_Data to be overwritten
       Activate_Socket (False);
-      if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: Socket_Rece_Cb set >"
-                             & Input_Data.Image & "<");
-      end if;
+      Debug.Log (Debug.Flow, "Socket_Rece_Cb set >" & Input_Data.Image & "<");
       return True;
     else
       return False;
@@ -583,14 +529,9 @@ package body Io_Flow is
                                Socket_Connect_Cb'Access);
     -- Remember activation of the accepted socket
     Tcp_Active := And_Activate;
-    if Debug.Debug_Level_Array(Debug.Flow) then
-      Async_Stdin.Put_Err ("Flow: Tcp socket open and ");
-      if And_Activate then
-        Async_Stdin.Put_Line_Err ("active");
-      else
-        Async_Stdin.Put_Line_Err ("inactive");
-      end if;
-    end if;
+    Debug.Log (Debug.Flow, "Tcp socket open and "
+        & (if And_Activate then "active"
+           else "inactive"));
   end Open_Tcp_Socket;
 
   procedure Open_Udp_Sockets (Send_Next : in Boolean) is
@@ -623,9 +564,7 @@ package body Io_Flow is
     end if;
     Socket_Util.Set_Destination (Send_Soc, True, Host, Send_Port);
     -- Done
-    if Debug.Debug_Level_Array(Debug.Flow) then
-      Async_Stdin.Put_Err ("Flow: Udp sockets open");
-    end if;
+    Debug.Log (Debug.Flow, "Udp sockets open");
   end Open_Udp_Sockets;
 
 end Io_Flow;

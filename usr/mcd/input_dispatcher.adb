@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1;
 with As.U;
-with Debug, Io_Flow, Async_Stdin;
+with Debug, Io_Flow;
 package body Input_Dispatcher is
 
   -- Current input flow
@@ -60,10 +60,7 @@ package body Input_Dispatcher is
     Tmp_Index : Natural;
     Sd : Character;
   begin
-    if Debug.Debug_Level_Array(Debug.Input) then
-      Async_Stdin.Put_Line_Err ("Input_dispacher: parsing substring >"
-                              & Str & "<");
-    end if;
+    Debug.Log (Debug.Input, "Parsing substring >" & Str & "<");
     -- Check first and last are delimiters
     if Str'Length < 2
     or else Str(Str'First) /= Str(Str'Last)
@@ -75,9 +72,7 @@ package body Input_Dispatcher is
 
     -- Empty string?
     if Str'Length = 2 then
-      if Debug.Debug_Level_Array(Debug.Input) then
-        Async_Stdin.Put_Line_Err ("Input_dispacher: empty substring");
-      end if;
+      Debug.Log (Debug.Input, "Empty substring");
       return "";
     end if;
     Tmp_Str (1 .. Str'Length-2) := Str(Str'First+1 .. Str'Last-1);
@@ -100,10 +95,8 @@ package body Input_Dispatcher is
     end loop;
 
     -- Done
-    if Debug.Debug_Level_Array(Debug.Input) then
-      Async_Stdin.Put_Line_Err ("Input_dispacher: parsed substring >"
-                              & Tmp_Str (1 .. Tmp_Len) & "<");
-    end if;
+    Debug.Log (Debug.Input, "Parsed substring >"
+                          & Tmp_Str (1 .. Tmp_Len) & "<");
     return Tmp_Str(1 .. Tmp_Len);
   end Parse_Substring;
 
@@ -216,10 +209,7 @@ package body Input_Dispatcher is
   -- Handle specific jump from and back to stdin
   procedure Set_Input (Str : in String) is
   begin
-    if Debug.Debug_Level_Array(Debug.Input) then
-      Async_Stdin.Put_Line_Err ("Input_dispacher: Setting input to >"
-       & Str & "<");
-    end if;
+    Debug.Log (Debug.Input, "Setting input to >" & Str & "<");
     if Str = "" then
       Curr_Is_Stdin := True;
       if Str_Stdin.Length /= 0 then
@@ -237,11 +227,9 @@ package body Input_Dispatcher is
       Cur_Str := As.U.Tus (Str);
       Str_Parsed := False;
     end if;
-    if Debug.Debug_Level_Array(Debug.Input) then
-      Async_Stdin.Put_Line_Err ("Input_dispacher: Input set to >"
-       & Cur_Str.Image & "< at " & Integer'Image(Cur_Index)
-       & " len " & Natural'Image(Cur_Str.Length));
-    end if;
+    Debug.Log (Debug.Input, "Input set to >"
+                          & Cur_Str.Image & "< at " & Integer'Image(Cur_Index)
+                          & " len " & Natural'Image(Cur_Str.Length));
   end Set_Input;
 
   -- Get the ungot words of current string
@@ -250,24 +238,17 @@ package body Input_Dispatcher is
   function Get_Remaining return String is
   begin
     if Curr_Is_Stdin then
-      if Debug.Debug_Level_Array(Debug.Input) then
-        Async_Stdin.Put_Line_Err ("Input_dispacher: Remaining on stdin.");
-      end if;
+      Debug.Log (Debug.Input, "Remaining on stdin.");
       raise Program_Error;
     end if;
     if not Curr_Is_Stdin and then not Str_Parsed then
       -- Current string is not be parsed (retacal) return all
-      if Debug.Debug_Level_Array(Debug.Input) then
-        Async_Stdin.Put_Line_Err ("Input_dispacher: Remaining is >"
-         & Cur_Str.Image & "<");
-      end if;
+      Debug.Log (Debug.Input, "Remaining is >" & Cur_Str.Image & "<");
       return Cur_Str.Image;
     else
       -- Return remaining
-      if Debug.Debug_Level_Array(Debug.Input) then
-        Async_Stdin.Put_Line_Err ("Input_dispacher: Remaining is >"
-         & Cur_Str.Slice (Cur_Index, Cur_Str.Length) & "<");
-      end if;
+      Debug.Log (Debug.Input, "Remaining is >"
+                            & Cur_Str.Slice (Cur_Index, Cur_Str.Length) & "<");
       return Cur_Str.Slice (Cur_Index, Cur_Str.Length);
     end if;
   end Get_Remaining;

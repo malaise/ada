@@ -62,11 +62,7 @@ package body Registers is
       raise Invalid_Argument;
     end if;
     Registers_Array(Reg2Ind(To_Reg)) := Val;
-    if Debug.Debug_Level_Array(Debug.Register) then
-      Async_Stdin.Put_Err ("Register: Storing in " & To_Reg.Val_Regi & ": ");
-      Debug.Put (Val);
-      Async_Stdin.New_Line_Err;
-    end if;
+    Debug.Log (Debug.Register, Val, "Storing in " & To_Reg.Val_Regi & ": ");
   end Store;
 
   function  Retrieve (From_Reg : Item_Rec) return Item_Rec is
@@ -76,11 +72,8 @@ package body Registers is
     if Val.Kind not in Register_Content_List then
       raise Empty_Register;
     end if;
-    if Debug.Debug_Level_Array(Debug.Register) then
-      Async_Stdin.Put_Err ("Register: Retrieving from " & From_Reg.Val_Regi & ": ");
-      Debug.Put (Val);
-      Async_Stdin.New_Line_Err;
-    end if;
+    Debug.Log (Debug.Register, Val,
+               "Retrieving from " & From_Reg.Val_Regi & ": ");
     return Val;
   end Retrieve;
 

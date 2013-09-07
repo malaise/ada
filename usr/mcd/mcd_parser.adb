@@ -1,5 +1,5 @@
 with As.U, My_Math, Queues, Basic_Proc, Lower_Str, Argument,
-     Arbitrary.Fractions, Async_Stdin, Str_Util;
+     Arbitrary.Fractions, Str_Util;
 with Debug, Input_Dispatcher, Inte_Io, Real_Io, Bool_Io, Io_Flow;
 package body Mcd_Parser is
   use type As.U.Asu_Us;
@@ -230,24 +230,18 @@ package body Mcd_Parser is
       Txt := As.U.Tus (Input_Dispatcher.Next_Word);
     exception
       when Input_Dispatcher.String_Error =>
-        if Debug.Debug_Level_Array(Debug.Parser) then
-          Async_Stdin.Put_Line_Err ("Parser: Getting String_Error");
-        end if;
+        Debug.Log (Debug.Parser, "Getting String_Error");
         -- Impossible to parse a word
         Item_Chrs.Val_Text := As.U.Tus (Input_Dispatcher.Current_String);
         Instr_Stack.Push (Stack, Item_Chrs);
       raise Parsing_Error;
     end;
-    if Debug.Debug_Level_Array(Debug.Parser) then
-      Async_Stdin.Put_Line_Err ("Parser: Getting >" & Txt.Image  & "<");
-    end if;
+    Debug.Log (Debug.Parser, "Getting >" & Txt.Image  & "<");
     Item_Chrs.Val_Text := Txt;
 
     -- Eof
     if Txt.Length = 0 then
-      if Debug.Debug_Level_Array(Debug.Parser) then
-        Async_Stdin.Put_Line_Err ("Parser: Eof");
-      end if;
+      Debug.Log (Debug.Parser, "Eof");
       Item_Chrs.Val_Text := As.U.Tus ("EOF");
       Instr_Stack.Push (Stack, Item_Chrs);
       return (Kind => Oper, Val_Oper => Ret);
@@ -296,10 +290,7 @@ package body Mcd_Parser is
         Level := 1;
         while Level /= 0 loop
           Txt := As.U.Tus (Input_Dispatcher.Next_Word);
-          if Debug.Debug_Level_Array(Debug.Parser) then
-            Async_Stdin.Put_Line_Err ("Parser: Getting >"
-                     & Txt.Image  & "<");
-          end if;
+          Debug.Log (Debug.Parser, "Getting >" & Txt.Image  & "<");
           if Txt.Image = "[" then
             Level := Level + 1;
           elsif Txt.Image = "]" then
@@ -480,21 +471,21 @@ package body Mcd_Parser is
 
   procedure Dump_Stack is
     Item_Chrs : Item_Chrs_Rec;
+    Text : As.U.Asu_Us;
   begin
-    if not Debug.Debug_Level_Array(Debug.History) then
+    if not Debug.Loggers(Debug.History).Debug_On then
       return;
     end if;
-    Basic_Proc.Put_Line_Error ("History:");
     loop
       begin
         Instr_Stack.Pop (Stack, Item_Chrs);
-        Basic_Proc.Put_Error (Item_Chrs.Val_Text.Image & " ");
+        Text.Append (Item_Chrs.Val_Text.Image & " ");
       exception
         when Instr_Stack.Circ_Empty =>
          exit;
       end;
     end loop;
-    Basic_Proc.New_Line_Error;
+    Debug.Log (Debug.History, "History: " & Text.Image);
   end Dump_Stack;
 
 end Mcd_Parser;
