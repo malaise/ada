@@ -35,6 +35,7 @@ package Trace is
 
   function "And" (L, R : Severities) return Severities;
   function "Or"  (L, R : Severities) return Severities;
+  function "Xor" (L, R : Severities) return Severities;
 
   -- Predefined severities
   Fatal   : constant Severities := 16#01#;
@@ -62,10 +63,11 @@ package Trace is
     Name : String;
   package Basic_Logger is
 
-    -- Set / get / add severities
+    -- Set / get / add / del severities
     procedure Set_Mask (Mask : in Severities);
-    procedure Add_Mask (Mask : in Severities);
     function  Get_Mask return Severities;
+    procedure Add_Mask (Mask : in Severities);
+    procedure Del_Mask (Mask : in Severities);
 
     -- Check if a severity is active
     -- Raise Not_Init if logger is not init

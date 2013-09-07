@@ -14,6 +14,10 @@ package body Trace is
   begin
     return Severities(Bit_Ops."Or" (Natural(L), Natural(R)));
   end "Or";
+  function "Xor" (L, R : Severities) return Severities is
+  begin
+    return Severities(Bit_Ops."Xor" (Natural(L), Natural(R)));
+  end "Xor";
 
   function Errors return Severities is
   begin
@@ -183,18 +187,21 @@ package body Trace is
       Do_Init;
       Basic_Logger.Mask := Mask;
     end Set_Mask;
-
-    procedure Add_Mask (Mask : in Severities) is
-    begin
-      Do_Init;
-      Basic_Logger.Mask := Basic_Logger.Mask or Mask;
-    end Add_Mask;
-
     function Get_Mask return Severities is
     begin
       Do_Init;
       return Basic_Logger.Mask;
     end Get_Mask;
+    procedure Add_Mask (Mask : in Severities) is
+    begin
+      Do_Init;
+      Basic_Logger.Mask := Basic_Logger.Mask or Mask;
+    end Add_Mask;
+    procedure Del_Mask (Mask : in Severities) is
+    begin
+      Do_Init;
+      Basic_Logger.Mask := Basic_Logger.Mask xor Mask;
+    end Del_Mask;
 
     -- Check if a severity is active
     function Is_On (Severity : in Severities) return Boolean is

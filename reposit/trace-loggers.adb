@@ -132,6 +132,12 @@ package body Trace.Loggers is
                    " to logger " & A_Logger.Name.Image);
   end Set_Mask;
 
+  function Get_Mask (A_Logger : in out Logger) return Severities is
+  begin
+    Check_Init (A_Logger);
+    return A_Logger.Mask;
+  end Get_Mask;
+
   procedure Add_Mask (A_Logger : in out Logger; Mask : in Severities) is
   begin
     Check_Init (A_Logger);
@@ -142,11 +148,16 @@ package body Trace.Loggers is
                  & " -> " & Image (A_Logger.Mask));
   end Add_Mask;
 
-  function Get_Mask (A_Logger : in out Logger) return Severities is
+  procedure Del_Mask (A_Logger : in out Logger; Mask : in Severities) is
   begin
     Check_Init (A_Logger);
-    return A_Logger.Mask;
-  end Get_Mask;
+    A_Logger.Mask := Severities(Bit_Ops."Xor" (Natural(A_Logger.Mask),
+                                              Natural(Mask)));
+    Me.Log (Debug, "Del_Mask " & Image (Mask)
+                 & " to logger " & A_Logger.Name.Image
+                 & " -> " & Image (A_Logger.Mask));
+  end Del_Mask;
+
 
   -- Check if a severity is active
   function Is_On (A_Logger : in out Logger;

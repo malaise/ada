@@ -34,11 +34,12 @@ package Trace.Loggers is
   Not_Init : exception;
   function Name (A_Logger : Logger) return String;
 
-  -- Set / get / add severities
+  -- Set / get / add / del severities
   -- Raise Not_Init if logger is not init
   procedure Set_Mask (A_Logger : in out Logger; Mask : in Severities);
-  procedure Add_Mask (A_Logger : in out Logger; Mask : in Severities);
   function  Get_Mask (A_Logger : in out Logger) return Severities;
+  procedure Add_Mask (A_Logger : in out Logger; Mask : in Severities);
+  procedure Del_Mask (A_Logger : in out Logger; Mask : in Severities);
 
   -- Check if a severity is active
   -- Raise Not_Init if logger is not init
