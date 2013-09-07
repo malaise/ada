@@ -45,8 +45,10 @@ package body Output_Flows is
       Logger.Log (Trace.Debug, "Finalizing " & Cell_Acc.Name.Image);
       -- No more reference
       if Cell_Acc.Kind = File then
-        -- Close and free file
-        Cell_Acc.File.Close_All;
+        -- Close file if needed and free file
+        if Cell_Acc.Close then
+          Cell_Acc.File.Close_All;
+        end if;
         Free_File (Cell_Acc.File);
       end if;
       -- Free Cell
@@ -71,15 +73,15 @@ package body Output_Flows is
     if not Search (Name) then
       Logger.Log (Trace.Debug, "Creating " & Name);
       -- This flow does not exist in list, create it
-      -- Init Cell
+      -- Init Cell with info to close file
       if Name = Stdout_Name then
         File_Acc := new Text_Line.File_Type;
         File_Acc.Open (Text_Line.Out_File, Sys_Calls.Stdout);
-        New_Cell := new Cell_Type'(File, As.U.Tus (Name), File_Acc);
+        New_Cell := new Cell_Type'(File, As.U.Tus (Name), True, File_Acc);
       elsif Name = Stderr_Name then
         File_Acc := new Text_Line.File_Type;
         File_Acc.Open (Text_Line.Out_File, Sys_Calls.Stderr);
-        New_Cell:= new Cell_Type'(File, As.U.Tus (Name), File_Acc);
+        New_Cell:= new Cell_Type'(File, As.U.Tus (Name), True, File_Acc);
       elsif Name = Async_Stdout_Name then
         New_Cell := new Cell_Type'(Async_Stdout, As.U.Tus (Name));
       elsif Name = Async_Stderr_Name then
@@ -87,7 +89,7 @@ package body Output_Flows is
       else
         File_Acc := new Text_Line.File_Type;
         File_Acc.Create_All (Name);
-        New_Cell := new Cell_Type'(File, As.U.Tus (Name), File_Acc);
+        New_Cell := new Cell_Type'(File, As.U.Tus (Name), True, File_Acc);
       end if;
       -- Set handle and insert in list
       New_Handle.Init (New_Cell);
@@ -104,6 +106,30 @@ package body Output_Flows is
     when Text_Line.Io_Error =>
       Free_File (File_Acc);
       raise Io_Error;
+  end Set;
+
+  -- Set a new flow on an already open File
+  -- May raise Already_Error if a flow with the same name
+  --  is already set
+  procedure Set (Flow : out Output_Flow; Name : in String;
+                 File_Acc : access Text_Line.File_Type) is
+    New_Cell : Cell_Access;
+    New_Handle : Flow_Aliases.Handle;
+  begin
+    if Search (Name) then
+      -- This flow already exists in list => Error
+      raise Already_Error;
+    end if;
+    -- Create new cell on file with info to keep it open
+    New_Cell:= new Cell_Type'(File, As.U.Tus (Name), False,
+                              File_Access (File_Acc));
+    -- Set handle and insert in list
+    New_Handle.Init (New_Cell);
+    Flows.Insert (New_Handle);
+    -- Done
+    Flows.Read (Flow.Handle, Flows_Mng.Current);
+    Logger.Log (Trace.Debug, "Setting on open "
+                           & Flow.Handle.Get_Access.Name.Image);
   end Set;
 
   -- Release access to a flow, which becomes unset

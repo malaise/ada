@@ -16,6 +16,12 @@ package Output_Flows is
   function Get (Name : String) return Output_Flow;
   procedure Set (Flow : out Output_Flow; Name : in String);
 
+  -- Set a new flow on an already open File
+  -- May raise Already_Error if a flow with the same name
+  --  is already set
+  procedure Set (Flow : out Output_Flow; Name : in String;
+                 File_Acc : access Text_Line.File_Type);
+
   -- Release access to a flow, which becomes unset
   -- No effect if it is already unset
   procedure Release (Flow : in out Output_Flow);
@@ -42,16 +48,18 @@ package Output_Flows is
   Status_Error : exception;
   Name_Error : exception;
   Io_Error : exception;
+  Already_Error : exception;
 
 private
 
-  type File_Access is access Text_Line.File_Type;
+  type File_Access is access all Text_Line.File_Type;
 
   type Flow_Kinds is (File, Async_Stdout, Async_Stderr);
   type Cell_Type (Kind : Flow_Kinds := File) is record
     Name : As.U.Asu_Us;
     case Kind is
       when File =>
+        Close : Boolean := True;
         File : File_Access;
       when Async_Stdout | Async_Stderr =>
         null;
