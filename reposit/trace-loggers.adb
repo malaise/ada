@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Environ, Sys_Calls, Images, Bit_Ops, Socket, Computer;
+with Environ, Sys_Calls, Images, Bit_Ops, Socket, Computer, Output_Flows;
 package body Trace.Loggers is
 
 
@@ -10,11 +10,8 @@ package body Trace.Loggers is
   -- - Variables PID CMD HOST DATE
   Memory : Computer.Memory_Type;
   -- - Common flow
-  Stdout_Name : constant String := "stdout";
-  Stderr_Name : constant String := "stderr";
   Flow_Is_Stderr : Boolean;
-  File : aliased Text_Line.File_Type;
-  Flow : access Text_Line.File_Type;
+  Flow : Output_Flows.Output_Flow;
 
   -- Image of our pid
   function Pid_Image is new Images.Int_Image (Sys_Calls.Pid);
@@ -44,33 +41,32 @@ package body Trace.Loggers is
 
     -- Get flow name and init flow
     File_Name := As.U.Tus (Environ.Getenv (Process.Image & "_TRACEFILE"));
-    if File_Name.Image = Stdout_Name then
-      -- Stdout
-      File_Name := As.U.Tus (Stdout_Name);
-      File.Open (Text_Line.Out_File, Sys_Calls.Stdout);
-      Flow_Is_Stderr := False;
-    elsif File_Name.Is_Null or else File_Name.Image = Stderr_Name then
-      -- Stderr
-      File_Name := As.U.Tus (Stderr_Name);
-      Flow_Is_Stderr := True;
-    else
-      -- Given name, expand variables
+
+    if not File_Name.Is_Null
+    and then File_Name.Image /= Output_Flows.Stderr_Name then
+      -- Try to open regular file
       begin
-        File.Create_All (Memory.Eval (File_Name.Image));
+        Flow.Set (File_Name.Image);
         Flow_Is_Stderr := False;
       exception
         when others =>
           -- File cannot be created, use stderr
-          File_Name := As.U.Tus (Stderr_Name);
-          Flow.Open (Text_Line.Out_File, Sys_Calls.Stderr);
-          Flow_Is_Stderr := True;
+          File_Name.Set_Null;
       end;
     end if;
-    -- Set File
-    if Flow_Is_Stderr then
-      Flow := Stderr'Access;
-    else
-      Flow := File'Access;
+
+    if File_Name.Is_Null
+    or else File_Name.Image = Output_Flows.Stderr_Name then
+      -- Open Stderr
+      begin
+        Flow_Is_Stderr := True;
+        File_Name := As.U.Tus (Output_Flows.Stderr_Name);
+        Flow.Set (File_Name.Image, Stderr'Access);
+      exception
+        when Output_Flows.Already_Error =>
+          -- Stderr is already registered, cannot use the File access provided
+          Flow.Set (File_Name.Image);
+      end;
     end if;
 
     Me.Log (Debug, "Global init done with mask " & Image (Global_Mask)
@@ -281,7 +277,7 @@ package body Trace.Loggers is
   overriding procedure Finalize (A_Logger : in out Logger) is
     pragma Unreferenced (A_Logger);
   begin
-    if Flow /= null and then Flow.Is_Open then
+    if Flow.Is_Set then
       Flow.Flush;
     end if;
   end Finalize;

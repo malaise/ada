@@ -3,11 +3,13 @@ with Ada.Finalization;
 with As.U;
 package Trace.Loggers is
 
-  -- All logers trace in a given flow set in environment variable
-  --  <Process>_TRACEFILE="file", default stderr
+  -- All the logers trace in a given flow, set in environment variable
+  --  <Process>_TRACEFILE="file"
   --  where <Process> is the process name (no path)
-  --        file is "stdout", "stderr" or any file name, possibly with
-  --          ${PID}, ${CMD}, ${HOST} or ${DATE}, which are expanded
+  --        file is "stdout", "stderr", "async_stdout", "async_stderr",
+  --        or any file name (see Output_Flows), possibly with
+  --        ${PID}, ${CMD}, ${HOST} or ${DATE}, which are expanded.
+  --        Default is stderr.
 
   -- A logger of traces
   type Logger is tagged private;
