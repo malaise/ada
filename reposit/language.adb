@@ -10,7 +10,7 @@ package body Language is
   Lang_Set : Boolean := False;
   Lang : Language_Set_List;
 
-  -- Gess Lang from Environ
+  -- Guess Lang from Environ
   procedure Getenv_Lang is
     Lang_Str : constant String := Lower_Str (Environ.Getenv ("LANG"));
   begin
