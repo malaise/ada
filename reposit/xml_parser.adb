@@ -1,5 +1,6 @@
 with Ada.Exceptions, Ada.Unchecked_Deallocation;
-with Trace, Rnd, Exception_Messenger, Directory, Str_Util, Regular_Expressions;
+with Trace.Loggers, Rnd, Exception_Messenger, Directory, Str_Util,
+     Regular_Expressions;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
@@ -29,7 +30,7 @@ package body Xml_Parser is
   end "=";
 
   -- Trace debug message
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
   procedure Trace (Msg : in String);
   function Debug_On return Boolean;
 

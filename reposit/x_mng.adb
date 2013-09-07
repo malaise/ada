@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Characters.Latin_1;
-with C_Types, Trace, Address_Ops, Perpet, Event_Mng, Virtual_Time;
+with C_Types, Trace.Loggers, Address_Ops, Perpet, Event_Mng, Virtual_Time;
 package body X_Mng is
 
   -- Maximum successive X events
@@ -11,7 +11,7 @@ package body X_Mng is
   Max_Font_Name_Len : constant := 1024;
 
   -- Debug
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
 
   -- Result of a call to C
   subtype Result is C_Types.Int;

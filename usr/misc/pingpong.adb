@@ -4,7 +4,7 @@
 with Ada.Exceptions, Ada.Calendar;
 with As.U,
      Argument, Argument_Parser,
-     Basic_Proc, Trace,
+     Basic_Proc, Trace.Loggers,
      Images, Str_Util, Mixed_Str,
      Socket, Tcp_Util, Ip_Addr, Event_Mng, Timers,
      Hashed_List.Unique;
@@ -57,7 +57,7 @@ procedure Pingpong is
         "  <port>       ::= <udp_port_name> | <port_num>");
   end Usage;
 
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
   Abort_Error : exception;
   procedure Error (Msg : in String) is
   begin

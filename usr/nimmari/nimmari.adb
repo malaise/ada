@@ -2,9 +2,9 @@
 -- Remove sticks alternatively with the computer
 -- Remove the last stick (in NIM) or oblige the computer to do so (Marienbad)
 with As.U, Argument, Argument_Parser, Basic_Proc;
-with Common, Screen, Text, Compute, Trace;
+with Common, Screen, Text, Compute, Trace.Loggers;
 procedure Nimmari is
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
   Graphic_Mode : Boolean := False;
 
   -- Result of computation

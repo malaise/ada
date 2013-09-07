@@ -1,11 +1,11 @@
-with Sys_Calls, Proc_Family, Event_Mng, Text_Line, Mutex_Manager, Trace;
+with Sys_Calls, Proc_Family, Event_Mng, Text_Line, Mutex_Manager, Trace.Loggers;
 package body Command is
 
   -- The Mutex of exclusive execution
   Mut : Mutex_Manager.Mutex (Mutex_Manager.Simple, True);
 
   -- Debug option
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
 
   -- Output fd (to distinguish Error flow) and policy
   Mix_Policy : Flow_Mixing_Policies;

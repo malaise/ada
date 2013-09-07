@@ -1,8 +1,8 @@
 with Ada.Characters.Latin_1;
-with Trace, Lower_Str;
+with Trace.Loggers, Lower_Str;
 package body Pattern is
 
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
   procedure Put_Debug (Proc: in String; Msg : in String) is
   begin
     Logger.Log_Debug (Proc & ": " & Msg);

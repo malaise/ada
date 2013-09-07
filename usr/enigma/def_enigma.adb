@@ -7,11 +7,11 @@
 
 with Ada.Calendar;
 with As.B, Perpet, Argument, Day_Mng, Normal, Upper_Str, Rnd,
-     Num_Letters, Basic_Proc, Str_Util, Parser, Trace;
+     Num_Letters, Basic_Proc, Str_Util, Parser, Trace.Loggers;
 with Types, Scrambler_Gen, Definition;
 procedure Def_Enigma is
 
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
 
   package Xml is
     -- Parse the Xml config file

@@ -1,9 +1,9 @@
-with Trace, Arbitrary.Fractions, Async_Stdin, Mixed_Str;
+with Trace.Loggers, Arbitrary.Fractions, Async_Stdin, Mixed_Str;
 package body Debug is
 
   procedure Init is
     -- Loggers, used only to detect if DEBUG is set
-    Loggers : array (Debug_Level_List) of Trace.Logger;
+    Loggers : array (Debug_Level_List) of Trace.Loggers.Logger;
   begin
     for Level in Debug_Level_List loop
       Loggers(Level).Init (Mixed_Str (Level'Img));

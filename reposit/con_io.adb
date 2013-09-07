@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Argument, Environ, Lower_Str, Str_Util, Trace;
+with Argument, Environ, Lower_Str, Str_Util, Trace.Loggers;
 package body Con_Io is
 
   -- Some constants
@@ -26,7 +26,7 @@ package body Con_Io is
   Font_No_Offset : Font_No_Offset_Range := 0;
 
   -- Trace logger
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
 
   -- Smart reference of Console and Window
   procedure Set (Dest : in out Console_Data; Val : in Console_Data) is

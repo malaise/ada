@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Sys_Calls, Proc_Family, Event_Mng, Trace;
+with Sys_Calls, Proc_Family, Event_Mng, Trace.Loggers;
 
 procedure T_Proc_Child is
 
@@ -7,7 +7,7 @@ procedure T_Proc_Child is
   Fd_In, Fd_Out, Fd_Err : Sys_Calls.File_Desc;
   Res : Natural;
   First : Boolean := True;
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
 
   function Fd_Cb (Fd : in Sys_Calls.File_Desc;
                   Read : in Boolean) return Boolean is

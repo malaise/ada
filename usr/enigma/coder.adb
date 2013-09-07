@@ -1,4 +1,4 @@
-with Images, As.U, Trace;
+with Images, As.U, Trace.Loggers;
 with Definition;
 package body Coder is
 
@@ -12,7 +12,7 @@ package body Coder is
   end Image;
 
   -- Debug
-  Logger : Trace.Logger;
+  Logger : Trace.Loggers.Logger;
   Text : As.U.Asu_Us;
   procedure Put (Str : in String) is
   begin

@@ -16,7 +16,7 @@ package body Config is
   Default_Timeout : constant Duration := 0.5;
   Default_Ttl : constant Socket.Ttl_Range := 5;
 
-  Log_Cfg : Trace.Logger;
+  Log_Cfg : Trace.Loggers.Logger;
 
   -- For Debug
   function Image (Attrs : Xml_Parser.Attributes_Array) return String is
