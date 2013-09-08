@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V8.4
+V9.0
 
 General purpose
 ---------------
@@ -520,6 +520,14 @@ anchor:XDetail[]
 This button switches to a screen that shows the xref:XDetails[details] of the
 commit currently (left-)selected in the history.
 
+anchor:XRestore[]
+
+.Restore
+This button causes Agite to check that the current file is not locally
+modified. If not, Agite asks for confirmation then restores the file into the
+version currently (left-)selected in the history. This function is not active on
+the history of a directory.
+
 .Back
 This button allows to return to xref:XDir[directory] menu.
 
@@ -566,6 +574,9 @@ viewing the file as it was committed,
 * Clicking on 'Hist' allows viewing the full history of the file,
 * Clicking on 'Diff' allows viewing the differences between the version before
 and after the commit.
+* Clicking on 'Restore' allows restoring the file from the commit. As in the
+xref:XRestore[Restore] from the history, there first a check that the file is not locally
+modified, then a confirmation.
 
 Note: Clicking on 'Hist' calls a new function to show the history, as explained
 in the section on xref:XNavigation[navigation].

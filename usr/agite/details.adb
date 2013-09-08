@@ -1,7 +1,10 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
 with As.U, Con_Io, Afpx.List_Manager, Str_Util, Directory, Basic_Proc;
-with Utils.X, View, History, Config, Afpx_Xref;
+with Utils.X, View, History, Config, Afpx_Xref, Restore;
 package body Details is
+
+  -- The current list of Commit entires
+  Commits : Git_If.Commit_List;
 
   List_Width : Afpx.Width_Range;
   procedure Set (Line : in out Afpx.Line_Rec;
@@ -33,9 +36,8 @@ package body Details is
     -- Commit details
     Date : Git_If.Iso_Date;
     Comment : Git_If.Comment_Array(1 .. 10);
-    Commits : Git_If.Commit_List;
 
-    procedure Init (Cet_Details : in Boolean) is
+    procedure Init (Get_Details : in Boolean) is
     begin
       -- Init Afpx
       Afpx.Use_Descriptor (Afpx_Xref.Details.Dscr_Num);
@@ -44,7 +46,7 @@ package body Details is
       Insert := False;
 
       -- Get commit details
-      if Cet_Details then
+      if Get_Details then
         Afpx.Suspend;
         begin
           Git_If.List_Commit (Hash, Date, Comment, Commits);
@@ -80,6 +82,30 @@ package body Details is
       List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
       Init_List (Commits);
     end Init;
+
+    -- Do a restore
+    procedure Do_Restore is
+      Pos : Positive;
+      Commit : Git_If.Commit_Entry_Rec;
+      Dummy : Boolean;
+      pragma Unreferenced (Dummy);
+    begin
+      -- Save position in List and read it
+      Pos := Afpx.Line_List.Get_Position;
+      if Pos = 1 then
+        -- First entry is /, discard action
+        return;
+      end if;
+      Commits.Move_At (Pos);
+      Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
+      -- Restore file
+      Restore (Root, Commit.File.Image, Hash);
+      -- Restore screen
+      Init (False);
+      Afpx.Line_List.Move_At (Pos);
+      Afpx.Update_List (Afpx.Center_Selected);
+    end Do_Restore;
+
 
     -- Launch viewer on current file, or history on current dir or file
     type Show_List is (Show_View, Show_Hist, Show_Diff);
@@ -178,6 +204,9 @@ package body Details is
             when Afpx_Xref.Details.Diff =>
               -- Diff
               Show (Show_Diff);
+            when Afpx_Xref.Details.Restore =>
+              -- Restore
+              Do_Restore;
             when Afpx_Xref.Details.Back =>
               -- Back
               return;

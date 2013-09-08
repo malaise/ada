@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V8.7"/>
+  <Var Name="Version" Value="V9.0"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -152,14 +152,14 @@
       <Init Row="1" Col="0">abcdefghijklmnopqrstuvwxyz !#+-.:=[{</Init>
     </Field>
     <Field Num="23" Kind="Put">
-      <Geometry Up="${Field_21.Up}+1" Left="${Field_21.Left}"
-                Height="1" Width="3"/>
+      <Geometry Up="${Field_21.Up}+1" Left="${Field_21.Left}" Height="1"
+                Width="3"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Dir</Init>
     </Field>
     <Field Num="24" Kind="Button" Name="Search_Dir">
-      <Geometry Up="${Field_23.Up}" Left="${Field_23.Right}+2"
-                Height="1" Width="1"/>
+      <Geometry Up="${Field_23.Up}" Left="${Field_23.Right}+2" Height="1"
+                Width="1"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="0"> </Init>
     </Field>
@@ -390,7 +390,7 @@
 
     <!-- List management -->
     <Var Name="LmLeft" Value="${List.Right}+${LmHOffset}"/>
-    <Var Name="LmUp" Value="${List.Up}+13"/>
+    <Var Name="LmUp" Value="${List.Up}+16"/>
     <Var Name="LmSta" Value="1"/>
 
     <Field Num="2" Kind="Button">
@@ -486,7 +486,7 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
-    <!-- View, Diff, Details, Back -->
+    <!-- View, Diff, Details, Restore, Back -->
     <Field Num="18" Kind="Button" Name="View">
       <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -504,8 +504,14 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Detail</Init>
     </Field>
+    <Field Num="21" Kind="Button" Name="Restore">
+      <Geometry Up="${Field_20.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="0">Restore</Init>
+    </Field>
 
-    <Field Num="21" Kind="Button" Name="Back">
+    <Field Num="22" Kind="Button" Name="Back">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -534,7 +540,7 @@
 
     <!-- List management -->
     <Var Name="LmLeft" Value="${List.Right}+${LmHOffset}"/>
-    <Var Name="LmUp" Value="${List.Up}+8"/>
+    <Var Name="LmUp" Value="${List.Up}+10"/>
     <Var Name="LmSta" Value="1"/>
 
     <Field Num="2" Kind="Button">
@@ -601,7 +607,7 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
-    <!-- View, History, Back -->
+    <!-- View, History, Diff, Restore, Back -->
     <Field Num="13" Kind="Button" Name="View">
       <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -619,7 +625,13 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Diff</Init>
     </Field>
-    <Field Num="16" Kind="Button" Name="Back">
+    <Field Num="16" Kind="Button" Name="Restore">
+      <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="0">Restore</Init>
+    </Field>
+    <Field Num="17" Kind="Button" Name="Back">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -627,13 +639,13 @@
     </Field>
 
     <!-- Copy Hash / date and comment -->
-    <Field Num="17" Kind="Button" Name="Copyhash">
+    <Field Num="18" Kind="Button" Name="Copyhash">
       <Geometry Up="${Field_10.Up}" Height="1" Width="8"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Copy</Init>
     </Field>
-    <Field Num="18" Kind="Button" Name="Copy">
+    <Field Num="19" Kind="Button" Name="Copy">
       <Geometry Up="${Field_11.Up}" Height="1" Width="8"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>

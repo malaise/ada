@@ -33,8 +33,11 @@ package Git_If is
   procedure List_Files (Current_Path : in String;
                         Files : in out File_List);
 
-  -- The character Kins associated to a kind
+  -- The character Kinds associated to a kind
   function Char_Of (Kind : Sys_Calls.File_Kind_List) return Character;
+
+  -- Is a file (full path) locally modified
+  function Is_Modified (File : String) return Boolean;
 
   -- A comment of commit
   type Comment_Array is array (Positive range <>) of As.U.Asu_Us;
@@ -88,7 +91,7 @@ package Git_If is
   procedure Launch_Delta (Differator, File_Name : in String;
                           Ref_Rev, Comp_Rev : in String);
 
-  -- Launch a revert (checkout) synchronous
+  -- Launch a revert (checkout HEAD) synchronous
   procedure Do_Revert (File : in String);
 
   -- Launch a reset of index synchronous

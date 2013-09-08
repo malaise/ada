@@ -207,7 +207,7 @@ package body Git_If is
       return;
     end if;
 
-    -- Git status --uno --porcelain"
+    -- Git status --porcelain"
     Cmd.Set ("git");
     Cmd.Cat ("status");
     Cmd.Cat ("--porcelain");
@@ -308,6 +308,32 @@ package body Git_If is
     Files.Rewind;
 
   end List_Files;
+
+  -- Is a file (full path) locally modified
+  function Is_Modified (File : String) return Boolean is
+    Cmd : Many_Strings.Many_String;
+    Line : As.U.Asu_Us;
+  begin
+    -- Git status --porcelain"
+    Cmd.Set ("git");
+    Cmd.Cat ("status");
+    Cmd.Cat ("--porcelain");
+    Cmd.Cat (File);
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      return False;
+    end if;
+    if Out_Flow_1.List.Is_Empty then
+      -- File unknown
+      return False;
+    end if;
+    -- Read first line
+    Out_Flow_1.List.Rewind;
+    Out_Flow_1.List.Read (Line, Command.Res_Mng.Dyn_List.Current);
+    return Line.Element (1) /= ' ' or else Line.Element (2) /= ' ';
+  end Is_Modified;
 
   -- Assert
   Log_Error : exception;

@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Con_Io, Afpx.List_Manager, Str_Util, Basic_Proc, Normal, Rounds;
-with Utils.X, Config, Details, View, Afpx_Xref;
+with Utils.X, Config, Details, View, Afpx_Xref, Restore;
 package body History is
 
   -- Cut string if too long for list
@@ -87,8 +87,9 @@ package body History is
           Afpx.Encode_Field (Afpx_Xref.History.File, (0, 0),
                  Utils.Normalize ("/" , Afpx.Get_Field_Width (10)));
         end if;
-        -- Lock button View
+        -- Lock button View and restore
         Utils.X.Protect_Field (Afpx_Xref.History.View);
+        Utils.X.Protect_Field (Afpx_Xref.History.Restore);
       end if;
     end Init;
 
@@ -128,6 +129,25 @@ package body History is
                              Ref_Hash, Comp_Hash);
       end if;
     end Show_Delta;
+
+    -- Do a restore
+    procedure Do_Restore is
+      Pos : Positive;
+      Dummy : Boolean;
+      pragma Unreferenced (Dummy);
+    begin
+      -- Save position in List and read it
+      Pos := Afpx.Line_List.Get_Position;
+      Logs.Move_At (Pos);
+      Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
+      -- Restore file
+      Restore (Root, Path & Name, Log.Hash);
+      -- Restore screen
+      Init;
+      Init_List (Logs);
+      Afpx.Line_List.Move_At (Pos);
+      Afpx.Update_List (Afpx.Center_Selected);
+    end Do_Restore;
 
     -- View file or commit details
     type Show_List is (Show_View, Show_Details);
@@ -274,6 +294,9 @@ package body History is
             when Afpx_Xref.History.Details =>
               -- Details
               Show (Show_Details);
+            when Afpx_Xref.History.Restore =>
+              -- Restore
+              Do_Restore;
             when Afpx_Xref.History.Back =>
               -- Back
               return;
