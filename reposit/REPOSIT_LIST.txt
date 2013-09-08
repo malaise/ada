@@ -264,6 +264,9 @@ argument_parser (2)::
 as as.b as.u as.u.utils (2)::
      Bounded and unbounded strings and associated containers.
 
+aski::
+     Strict ANSI characters definition and conversions
+
 assertion(1)::
      Raise exception or trace when assertion fails.
 
