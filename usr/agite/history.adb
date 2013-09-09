@@ -141,7 +141,7 @@ package body History is
       Logs.Move_At (Pos);
       Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
       -- Restore file
-      Restore (Root, Path & Name, Log.Hash);
+      Restore (Root, Path & Name, Log.Hash, null);
       -- Restore screen
       Init;
       Init_List (Logs);

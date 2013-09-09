@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V9.0
+V9.1
 
 General purpose
 ---------------
@@ -562,21 +562,26 @@ also alternatively copy in the clipboard,
 ** D Deleted.
 
 A specific entry '/' is added on top of the list, which represents the root of
-the current sandbox. When it is selected you can click on the button 'History'
-to get the full history of the sandbox or click on the button 'Diff' to get
-the differator called on all the files of the commit (differences brought by
-the commit).
+the current sandbox.
 
 For all other entries (files) of the list:
 
-* Double click on the entry or select the entry and click on 'View' allows 
+* double click on the entry or select the entry and click on 'View' allows 
 viewing the file as it was committed,
-* Clicking on 'Hist' allows viewing the full history of the file,
-* Clicking on 'Diff' allows viewing the differences between the version before
+* clicking on 'Hist' allows viewing the full history of the file,
+* clicking on 'Diff' allows viewing the differences between the version before
 and after the commit.
-* Clicking on 'Restore' allows restoring the file from the commit. As in the
-xref:XRestore[Restore] from the history, there first a check that the file is not locally
-modified, then a confirmation.
+* clicking on 'Restore' allows restoring the file from the commit. As in the
+xref:XRestore[Restore] from the history, there first a check that the file is
+not locally modified, then a confirmation.
+
+When the "/" entry is selected you can:
+
+* click on the button 'History' to get the full history of the sandbox,
+* click on the button 'Diff' to launch the differator on each file of
+the commit (differences brought by the commit),
+* click on the button 'Restore' to restore all the files of the commit,
+if none of them is locally modified, and after a confirmation.
 
 Note: Clicking on 'Hist' calls a new function to show the history, as explained
 in the section on xref:XNavigation[navigation].

@@ -50,7 +50,7 @@ package body Console is
   -- Erase from beginning of line to cursor
   procedure Erase_Begin_Line is
   begin
-    Basic_Proc.Put_Output (Csi & "0K");
+    Basic_Proc.Put_Output (Csi & "1K");
   end Erase_Begin_Line;
 
   -- Erase from cursor to end of line

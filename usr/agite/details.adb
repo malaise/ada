@@ -4,7 +4,7 @@ with Utils.X, View, History, Config, Afpx_Xref, Restore;
 package body Details is
 
   -- The current list of Commit entires
-  Commits : Git_If.Commit_List;
+  Commits : aliased Git_If.Commit_List;
 
   List_Width : Afpx.Width_Range;
   procedure Set (Line : in out Afpx.Line_Rec;
@@ -92,14 +92,10 @@ package body Details is
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
-      if Pos = 1 then
-        -- First entry is /, discard action
-        return;
-      end if;
       Commits.Move_At (Pos);
       Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
       -- Restore file
-      Restore (Root, Commit.File.Image, Hash);
+      Restore (Root, Commit.File.Image, Hash, Commits'Access);
       -- Restore screen
       Init (False);
       Afpx.Line_List.Move_At (Pos);
