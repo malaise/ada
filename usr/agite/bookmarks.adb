@@ -12,12 +12,11 @@ package body Bookmarks is
   procedure Insert_List (Str : in String) is
     Line : Afpx.Line_Rec;
   begin
-    Afpx.Encode_Line (Line,
-         Utils.Normalize (Str, Afpx.Get_Field_Width (Afpx.List_Field_No)) );
+    Afpx.Encode_Line (Line, Str);
     Afpx.Line_List.Insert (Line);
   end Insert_List;
 
-  -- Image of a bookmark
+  -- Image of a bookmark, normalize if necessary
   function Image (Bookmark : Config.Bookmark_Rec) return String is
     Res : As.U.Asu_Us;
     use type As.U.Asu_Us;
@@ -25,11 +24,16 @@ package body Bookmarks is
     if not Bookmark.Path.Is_Null then
       -- Regular bookmark
       if not Bookmark.Name.Is_Null then
-        -- Regular bookmark with name
-        Res := "(" & Bookmark.Name & ") " & Bookmark.Path;
+        -- Regular bookmark with name, normalize path
+        Res := "(" & Bookmark.Name & ") "
+             & Utils.Normalize (
+               Bookmark.Path.Image,
+               Afpx.Get_Field_Width (Afpx.List_Field_No)
+                 - Bookmark.Name.Length - 3);
       else
-        -- Regular bookmark without name
-        Res := Bookmark.Path;
+        -- Regular bookmark without name, normalize path
+        Res := As.U.Tus (Utils.Normalize (Bookmark.Path.Image,
+                             Afpx.Get_Field_Width (Afpx.List_Field_No)));
       end if;
     elsif not Bookmark.Name.Is_Null then
       -- Separator with name
