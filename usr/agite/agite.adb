@@ -849,9 +849,6 @@ begin
             else
               Afpx.Clear_Field (Afpx_Xref.Main.Search_Dir);
             end if;
-          when Afpx_Xref.Main.Gui =>
-            -- GUI
-            Utils.Launch ("git gui", True);
           when Afpx_Xref.Main.Xterm =>
             -- XTerm
             Utils.Launch (Config.Xterminal);
@@ -864,6 +861,9 @@ begin
           when Afpx_Xref.Main.Diff =>
             -- Diff
             List_Action (Diff);
+          when Afpx_Xref.Main.Commit =>
+            -- Commit screen
+            null;
           when Afpx_Xref.Main.History =>
             -- History
             List_Action (History);

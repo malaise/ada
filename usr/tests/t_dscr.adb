@@ -1,4 +1,4 @@
-with Basic_Proc, Argument, Con_Io, Afpx, Normal, Mixed_Str, Language;
+with Basic_Proc, Argument, Con_Io, Afpx, Normal, Mixed_Str, Language, Images;
 procedure T_Dscr is
   Dscr_No : Afpx.Descriptor_Range;
   Cursor_Field : Afpx.Absolute_Field_Range;
@@ -14,6 +14,8 @@ procedure T_Dscr is
   end Usage;
 
   procedure Set_Dscr(No : in Afpx.Descriptor_Range) is
+    Start : Afpx.Absolute_Field_Range;
+    use type Afpx.Absolute_Field_Range;
   begin
     Afpx.Use_Descriptor(No);
     Cursor_Field := Afpx.Next_Cursor_Field(0);
@@ -22,15 +24,21 @@ procedure T_Dscr is
     Basic_Proc.Put_Output ("Descriptor" & No'Img & " has");
     if Afpx.Has_List then
       Basic_Proc.Put_Output (" a");
+      Start := Afpx.List_Field_No;
     else
       Basic_Proc.Put_Output (" no");
+      Start := Afpx.Field_Range'First;
     end if;
     Basic_Proc.Put_Line_Output (" list and"
       & Afpx.Absolute_Field_Range'Image (Afpx.Nb_Fields)
       & " fields.");
-    for I in 1 .. Afpx.Nb_Fields loop
-      Basic_Proc.Put_Line_Output ("Field No" & I'Img & " is of kind "
-         & Mixed_Str (Afpx.Field_Kind_List'Image(Afpx.Get_Field_Kind (I))));
+    for I in Start .. Afpx.Nb_Fields loop
+      Basic_Proc.Put_Line_Output (
+         (if I = Afpx.List_Field_No then "List"
+          else "Field No" & I'Img & " is of kind "
+             & Mixed_Str (Afpx.Field_Kind_List'Image(Afpx.Get_Field_Kind (I))) )
+         & ", " & Images.Integer_Image (Afpx.Get_Field_Width (I))
+         & "x" & Images.Integer_Image (Afpx.Get_Field_Height (I)));
     end loop;
     Basic_Proc.Put_Line_Output ("Cursor field is" & Cursor_Field'Img);
 
