@@ -744,7 +744,7 @@ package body Git_If is
   end Do_Rm;
 
   -- Launch a commit synchronous
-  procedure Do_Commit (Comment : in String) is
+  function Do_Commit (Comment : String) return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
@@ -756,11 +756,13 @@ package body Git_If is
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git commit: " & Err_Flow.Str.Image);
+      return Err_Flow.Str.Image;
     end if;
+    return "";
   end Do_Commit;
 
   -- Launch a push synchronous
-  procedure Do_Push (Remote : in String) is
+  function Do_Push (Remote : String) return Boolean is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
@@ -771,7 +773,9 @@ package body Git_If is
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git push: " & Err_Flow.Str.Image);
+      return False;
     end if;
+    return True;
   end Do_Push;
 
   -- Get current branch name

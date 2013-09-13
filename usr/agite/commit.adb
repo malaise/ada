@@ -1,6 +1,7 @@
 with Ada.Exceptions;
-with Directory, Con_Io, Afpx.List_Manager, Str_Util, Basic_Proc, Aski, Unicode;
-with Git_If, Utils.X, Afpx_Xref;
+with As.U, Directory, Con_Io, Afpx.List_Manager, Str_Util, Basic_Proc,
+     Aski, Unicode;
+with Git_If, Utils.X, Afpx_Xref, Error;
 package body Commit is
 
   -- Cut string if too long for list
@@ -171,14 +172,24 @@ package body Commit is
 
   -- Decode comments and commit
   procedure Do_Commit is
+    Result : As.U.Asu_Us;
   begin
-    null;
-    -- @@@
-    -- Decode comment, remove trailing spaces, skip trailing empty lines
+    for Field in Afpx_Xref.Commit.Comment1 .. Afpx_Xref.Commit.Comment7 loop
+      -- Decode comment, remove trailing spaces,
+      Result.Append (Str_Util.Strip (Afpx.Decode_Field (Field, 0)) & Aski.Lf);
+    end loop;
+    -- Skip trailing empty lines
+    for I in reverse 1 .. Result.Length loop
+      exit when Result.Element (I) /= Aski.Lf;
+      Result.Trail (1);
+    end loop;
     -- Git_If.Commit
-    -- if Error then
-    --   Error screen
-    --   Restore
+    Result := As.U.Tus (Git_If.Do_Commit (Result.Image));
+    if Result.Is_Null then
+      return;
+    end if;
+    -- Show error
+    Error ("Commit", "", Result.Image);
   end Do_Commit;
 
   -- Handle the commits
@@ -188,24 +199,26 @@ package body Commit is
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
-    List_Height  : Afpx.Height_Range;
-    List_Width   : Afpx.Width_Range;
     use type Afpx.Absolute_Field_Range;
+
+    procedure Init is
+    begin
+      Afpx.Use_Descriptor (Afpx_Xref.Commit.Dscr_Num);
+      Cursor_Field := Afpx.Next_Cursor_Field (0);
+      Cursor_Col := 0;
+      Insert := False;
+      -- Encode Root
+      Afpx.Encode_Field (Afpx_Xref.Commit.Root, (0, 0),
+          Utils.Normalize (Root, Afpx.Get_Field_Width (Afpx_Xref.Commit.Root)));
+    end Init;
+
 
   begin
     -- Move to root
     Directory.Change_Current (Root);
 
     -- Init Afpx
-    Afpx.Use_Descriptor (Afpx_Xref.Commit.Dscr_Num);
-    Cursor_Field := Afpx.Next_Cursor_Field (0);
-    Cursor_Col := 0;
-    Insert := False;
-    -- List characteristics
-    Afpx.Get_Field_Size (Afpx.List_Field_No, List_Height, List_Width);
-    -- Encode Root
-    Afpx.Encode_Field (Afpx_Xref.Commit.Root, (0, 0),
-        Utils.Normalize (Root, Afpx.Get_Field_Width (Afpx_Xref.Commit.Root)));
+    Init;
 
     -- Width after 3 chars: Staged, Change and a space
     Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 3;
@@ -250,6 +263,8 @@ package body Commit is
             when Afpx_Xref.Commit.Commit =>
               -- Commit button
               Do_Commit;
+              Init;
+              Reread;
             when Afpx_Xref.Commit.Push =>
               -- Push button
               -- @@@

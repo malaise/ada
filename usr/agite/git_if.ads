@@ -109,11 +109,11 @@ package Git_If is
   -- Launch a rm to index synchronous
   procedure Do_Rm (File : in String);
 
-  -- Launch a commit synchronous
-  procedure Do_Commit (Comment : in String);
+  -- Launch a commit synchronous, return "" if OK, else the error
+  function Do_Commit (Comment : String) return String;
 
-  -- Launch a push synchronous
-  procedure Do_Push (Remote : in String);
+  -- Launch a push synchronous, return True if OK
+  function Do_Push (Remote : String) return Boolean;
 
   -- Get current branch name
   function Current_Branch return String;
