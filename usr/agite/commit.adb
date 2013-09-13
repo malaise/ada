@@ -51,6 +51,8 @@ package body Commit is
 
   -- The changes
   Changes : Git_If.File_List;
+  -- The text of the comment
+  Comment : As.U.Asu_Us;
 
   procedure Reread is
     Line : Afpx.Line_Rec;
@@ -174,17 +176,22 @@ package body Commit is
   procedure Do_Commit is
     Result : As.U.Asu_Us;
   begin
+    Comment.Set_Null;
     for Field in Afpx_Xref.Commit.Comment1 .. Afpx_Xref.Commit.Comment7 loop
       -- Decode comment, remove trailing spaces,
-      Result.Append (Str_Util.Strip (Afpx.Decode_Field (Field, 0)) & Aski.Lf);
+      Comment.Append (Str_Util.Strip (Afpx.Decode_Field (Field, 0)) & Aski.Lf);
     end loop;
     -- Skip trailing empty lines
-    for I in reverse 1 .. Result.Length loop
-      exit when Result.Element (I) /= Aski.Lf;
-      Result.Trail (1);
+    for I in reverse 1 .. Comment.Length loop
+      exit when Comment.Element (I) /= Aski.Lf;
+      Comment.Trail (1);
     end loop;
+    -- Append the last Lf
+    if Comment.Element (Comment.Length) /= Aski.Lf then
+      Comment.Append (Aski.Lf);
+    end if;
     -- Git_If.Commit
-    Result := As.U.Tus (Git_If.Do_Commit (Result.Image));
+    Result := As.U.Tus (Git_If.Do_Commit (Comment.Image));
     if Result.Is_Null then
       return;
     end if;
@@ -202,6 +209,8 @@ package body Commit is
     use type Afpx.Absolute_Field_Range;
 
     procedure Init is
+      Prev : Positive;
+      Field : Afpx.Field_Range;
     begin
       Afpx.Use_Descriptor (Afpx_Xref.Commit.Dscr_Num);
       Cursor_Field := Afpx.Next_Cursor_Field (0);
@@ -210,12 +219,29 @@ package body Commit is
       -- Encode Root
       Afpx.Encode_Field (Afpx_Xref.Commit.Root, (0, 0),
           Utils.Normalize (Root, Afpx.Get_Field_Width (Afpx_Xref.Commit.Root)));
+      -- Encode text of (current) comment
+      if not Comment.Is_Null then
+        Prev := 1;
+        Field := Afpx_Xref.Commit.Comment1;
+        for I in 2 .. Comment.Length loop
+          if Comment.Element (I) = Aski.Lf then
+            Afpx.Encode_Field (Field, (0, 0), Comment.Slice (Prev, I-1));
+            Field := Field + 1;
+            Prev := I + 1;
+          end if;
+        end loop;
+      end if;
     end Init;
-
 
   begin
     -- Move to root
     Directory.Change_Current (Root);
+
+    -- Reset comment
+    Comment.Set_Null;
+
+    -- Reset Afpx list
+    Afpx.Line_List.Delete_List (False);
 
     -- Init Afpx
     Init;
@@ -224,7 +250,6 @@ package body Commit is
     Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 3;
 
     -- Encode Changes
-    Afpx.Line_List.Delete_List (False);
     Reread;
 
     -- Main loop
