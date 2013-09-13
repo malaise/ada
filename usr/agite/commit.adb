@@ -60,68 +60,68 @@ package body Commit is
     -- Get list of changes, ensure that each entry is fully staged or not
     --  staged at all, add those that are both,
     --  if still in both then try to reset
-     Afpx.Suspend;
-     if not Afpx.Line_List.Is_Empty then
-       Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
-     else
-       Line.Len := 0;
-     end if;
-     Git_If.List_Changes (Changes);
-     Reread := False;
-     if not Changes.Is_Empty then
-       Changes.Rewind;
-       loop
-         Changes.Read (Change, Moved => Moved);
-         if Change.S2 /= ' ' and then Change.S3 /= ' '
-         and then (Change.S2 /= '?' or else Change.S3 /= '?') then
-           -- This entry has somme changes staged and some others not, add all
-           Git_If.Do_Add (Change.Name.Image);
-           -- Reread and check
-           Change := Git_If.Get_Status (Change.Name.Image);
-           if Change.S2 /= ' ' and then Change.S3 /= ' '
-           and then (Change.S2 /= '?' or else Change.S3 /= '?') then
-             -- This entry still has somme changes staged and some others not,
-             --  try to reset
-             Git_If.Do_Reset (Change.Name.Image);
-           end if;
-           Reread := True;
-         end if;
-         exit when not Moved;
-       end loop;
-       if Reread then
-         Git_If.List_Changes (Changes);
-       end if;
-       -- Encode the list
-       Init_List (Changes);
-       -- Move back to the same entry as before (if possible)
-       if not Changes.Is_Empty then
-         if Search (Afpx.Line_List, Line,
-                    From => Afpx.Line_List_Mng.Absolute) then
-           Changes.Move_At (Afpx.Line_List.Get_Position);
-         else
-           Changes.Rewind;
-         end if;
-       end if;
-       -- Center
-       Afpx.Update_List (Afpx.Center_Selected);
-       -- Encode current branch
-       Afpx.Clear_Field (Afpx_Xref.Commit.Branch);
-       Afpx.Encode_Field (Afpx_Xref.Commit.Branch, (0, 0),
-           Utils.X.Branch_Image (Git_If.Current_Branch,
-               Afpx.Get_Field_Width (Afpx_Xref.Commit.Branch)));
-       -- Set field activity
-       if Afpx.Line_List.Is_Empty then
-         Afpx.Set_Field_Activation (Afpx_Xref.Commit.Switch, False);
-         Afpx.Set_Field_Activation (Afpx_Xref.Commit.Stage_All, False);
-         Afpx.Set_Field_Activation (Afpx_Xref.Commit.Commit, False);
-       else
-         Afpx.Set_Field_Activation (Afpx_Xref.Commit.Switch, True);
-         Afpx.Set_Field_Activation (Afpx_Xref.Commit.Stage_All, True);
-         Afpx.Set_Field_Activation (Afpx_Xref.Commit.Commit, True);
-       end if;
-       -- Done
-       Afpx.Resume;
-     end if;
+    Afpx.Suspend;
+    if not Afpx.Line_List.Is_Empty then
+      Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
+    else
+      Line.Len := 0;
+    end if;
+    Git_If.List_Changes (Changes);
+    Reread := False;
+    if not Changes.Is_Empty then
+      Changes.Rewind;
+      loop
+        Changes.Read (Change, Moved => Moved);
+        if Change.S2 /= ' ' and then Change.S3 /= ' '
+        and then (Change.S2 /= '?' or else Change.S3 /= '?') then
+          -- This entry has somme changes staged and some others not, add all
+          Git_If.Do_Add (Change.Name.Image);
+          -- Reread and check
+          Change := Git_If.Get_Status (Change.Name.Image);
+          if Change.S2 /= ' ' and then Change.S3 /= ' '
+          and then (Change.S2 /= '?' or else Change.S3 /= '?') then
+            -- This entry still has somme changes staged and some others not,
+            --  try to reset
+            Git_If.Do_Reset (Change.Name.Image);
+          end if;
+          Reread := True;
+        end if;
+        exit when not Moved;
+      end loop;
+      if Reread then
+        Git_If.List_Changes (Changes);
+      end if;
+    end if;
+    -- Encode the list
+    Init_List (Changes);
+    -- Move back to the same entry as before (if possible)
+    if not Changes.Is_Empty then
+      if Search (Afpx.Line_List, Line,
+                 From => Afpx.Line_List_Mng.Absolute) then
+        Changes.Move_At (Afpx.Line_List.Get_Position);
+      else
+        Changes.Rewind;
+      end if;
+    end if;
+    -- Center
+    Afpx.Update_List (Afpx.Center_Selected);
+    Afpx.Resume;
+
+    -- Encode current branch
+    Afpx.Clear_Field (Afpx_Xref.Commit.Branch);
+    Afpx.Encode_Field (Afpx_Xref.Commit.Branch, (0, 0),
+        Utils.X.Branch_Image (Git_If.Current_Branch,
+            Afpx.Get_Field_Width (Afpx_Xref.Commit.Branch)));
+    -- Set field activity
+    if Afpx.Line_List.Is_Empty then
+      Afpx.Set_Field_Activation (Afpx_Xref.Commit.Switch, False);
+      Afpx.Set_Field_Activation (Afpx_Xref.Commit.Stage_All, False);
+      Afpx.Set_Field_Activation (Afpx_Xref.Commit.Commit, False);
+    else
+      Afpx.Set_Field_Activation (Afpx_Xref.Commit.Switch, True);
+      Afpx.Set_Field_Activation (Afpx_Xref.Commit.Stage_All, True);
+      Afpx.Set_Field_Activation (Afpx_Xref.Commit.Commit, True);
+    end if;
    exception
      when others =>
        Afpx.Resume;
