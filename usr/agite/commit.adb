@@ -149,6 +149,7 @@ package body Commit is
   procedure Do_Commit is
   begin
     null;
+    -- @@@
     -- Decode comment
     -- Git_If.Commit
     -- if Error then
@@ -197,7 +198,8 @@ package body Commit is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
             when Afpx.Return_Key =>
-              Do_Commit;
+              -- Move to next line of comment
+              -- @@@
             when Afpx.Escape_Key =>
               -- Back
               return;
@@ -215,6 +217,7 @@ package body Commit is
               Do_Switch;
             when Afpx_Xref.Commit.Stage_All =>
               -- StageAll button
+              -- @@@
               null;
             when Afpx_Xref.Commit.Commit =>
               -- Commit button
