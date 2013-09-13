@@ -696,7 +696,7 @@
       <Init Row="0" Col="0">A G I T E</Init>
     </Field>
     <Field Num="2" Kind="Put">
-      <Geometry Up="${Field_1.Low}+2" Left="24" Height="1" Width="5"/>
+      <Geometry Up="${Field_1.Low}+2" Left="25" Height="1" Width="5"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">ERROR</Init>
     </Field>
