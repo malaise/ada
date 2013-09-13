@@ -19,7 +19,7 @@ begin
     loop
       exit when not Commits.Check_Move;
       Commits.Move_To;
-      Commits.Read (Commit);
+      Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
       Modified := Modified
           or else Git_If.Is_Modified (Root & Commit.File.Image);
     end loop;
@@ -45,10 +45,11 @@ begin
               (if File = "/"  then "Full commit" else File)) then
     Afpx.Suspend;
     if File = "/" then
+      Commits.Rewind;
       loop
         exit when not Commits.Check_Move;
         Commits.Move_To;
-        Commits.Read (Commit);
+        Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
         Modified := Git_If.Cat (Commit.File.Image, Hash,
                                 Root & Commit.File.Image);
       end loop;
@@ -58,5 +59,10 @@ begin
     Afpx.Resume;
   end if;
 
+exception
+  when others =>
+    if Afpx.Is_Suspended then
+      Afpx.Resume;
+    end if;
 end Restore;
 
