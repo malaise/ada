@@ -106,6 +106,9 @@ package Git_If is
   -- Launch a add to index synchronous
   procedure Do_Add (File : in String);
 
+  -- Launch a rm to index synchronous
+  procedure Do_Rm (File : in String);
+
   -- Launch a commit synchronous
   procedure Do_Commit (Comment : in String);
 

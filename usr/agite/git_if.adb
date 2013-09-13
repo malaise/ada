@@ -727,6 +727,22 @@ package body Git_If is
     end if;
   end Do_Add;
 
+   -- Launch a rm to index synchronous
+  procedure Do_Rm (File : in String) is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("rm");
+    Cmd.Cat ("--");
+    Cmd.Cat (File);
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git rm: " & Err_Flow.Str.Image);
+    end if;
+  end Do_Rm;
+
   -- Launch a commit synchronous
   procedure Do_Commit (Comment : in String) is
     Cmd : Many_Strings.Many_String;

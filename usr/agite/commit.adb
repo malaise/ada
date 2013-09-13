@@ -145,12 +145,36 @@ package body Commit is
     end if;
   end Do_Switch;
 
+  -- Stage all known by unstaged changes
+  procedure Do_Stage_All is
+    Change : Git_If.File_Entry_Rec;
+    Moved : Boolean;
+  begin
+    -- Get list of changes,
+    Afpx.Suspend;
+    Git_If.List_Changes (Changes);
+    if not Changes.Is_Empty then
+      Changes.Rewind;
+      loop
+        Changes.Read (Change, Moved => Moved);
+        if Change.S2 = ' ' and then Change.S3 = 'M' then
+          Git_If.Do_Add (Change.Name.Image);
+        elsif Change.S2 = ' ' and then Change.S3 = 'D' then
+          Git_If.Do_Rm (Change.Name.Image);
+        end if;
+        exit when not Moved;
+      end loop;
+    end if;
+    Afpx.Resume;
+    Reread;
+  end Do_Stage_All;
+
   -- Decode comments and commit
   procedure Do_Commit is
   begin
     null;
     -- @@@
-    -- Decode comment
+    -- Decode comment, remove trailing spaces, skip trailing empty lines
     -- Git_If.Commit
     -- if Error then
     --   Error screen
@@ -199,8 +223,12 @@ package body Commit is
           case Ptg_Result.Keyboard_Key is
             when Afpx.Return_Key =>
               -- Move to next line of comment
-              -- @@@
-              null;
+              if Cursor_Field = Afpx_Xref.Commit.Comment7 then
+                Cursor_Field := Afpx_Xref.Commit.Comment1;
+              else
+                Cursor_Field := Afpx.Next_Cursor_Field (Cursor_Field);
+              end if;
+              Cursor_Col := 0;
             when Afpx.Escape_Key =>
               -- Back
               return;
@@ -218,8 +246,7 @@ package body Commit is
               Do_Switch;
             when Afpx_Xref.Commit.Stage_All =>
               -- StageAll button
-              -- @@@
-              null;
+              Do_Stage_All;
             when Afpx_Xref.Commit.Commit =>
               -- Commit button
               Do_Commit;
