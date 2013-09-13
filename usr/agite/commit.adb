@@ -200,6 +200,7 @@ package body Commit is
             when Afpx.Return_Key =>
               -- Move to next line of comment
               -- @@@
+              null;
             when Afpx.Escape_Key =>
               -- Back
               return;
