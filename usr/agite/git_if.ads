@@ -29,9 +29,15 @@ package Git_If is
   package File_Mng is new Dynamic_List (File_Entry_Rec);
   subtype File_List is File_Mng.Dyn_List.List_Type;
 
-  -- List the files and status
+  -- List the files of Current_Path and status
   procedure List_Files (Current_Path : in String;
                         Files : in out File_List);
+
+  -- List all the files modified in the current repository
+  procedure List_Changes (Files : in out File_List);
+
+  -- Status of a file
+  function Get_Status (File : String) return File_Entry_Rec;
 
   -- The character Kinds associated to a kind
   function Char_Of (Kind : Sys_Calls.File_Kind_List) return Character;
@@ -99,6 +105,12 @@ package Git_If is
 
   -- Launch a add to index synchronous
   procedure Do_Add (File : in String);
+
+  -- Launch a commit synchronous
+  procedure Do_Commit (Comment : in String);
+
+  -- Launch a push synchronous
+  procedure Do_Push (Remote : in String);
 
   -- Get current branch name
   function Current_Branch return String;

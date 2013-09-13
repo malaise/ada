@@ -10,5 +10,17 @@ package body Utils.X is
           Background => Afpx.Get_Descriptor_Background);
   end Protect_Field;
 
+  -- Image of a Git branch
+  function Branch_Image (Git_Branch : String; Width : Afpx.Width_Range)
+                        return String is
+  begin
+    if Git_Branch = ("(no branch)") then
+      return "None.";
+    else
+      return "Br: " & Normalize (Git_Branch, Width - 4);
+    end if;
+  end Branch_Image;
+
+
 end Utils.X;
 

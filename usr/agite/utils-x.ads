@@ -9,5 +9,9 @@ package Utils.X is
   -- Protect a field and "revert" its colors
   procedure Protect_Field (Field_No : in Afpx.Absolute_Field_Range);
 
+  -- Image of a Git branch
+  function Branch_Image (Git_Branch : String; Width : Afpx.Width_Range)
+                        return String;
+
 end Utils.X;
 

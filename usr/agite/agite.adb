@@ -1,6 +1,7 @@
 with As.U, Con_Io, Afpx.List_Manager, Basic_Proc, Images, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Str_Util;
-with Utils.X, Git_If, Config, Bookmarks, History, Confirm, Error, Afpx_Xref;
+with Utils.X, Git_If, Config, Bookmarks, History, Commit, Confirm, Error,
+     Afpx_Xref;
 procedure Agite is
 
   -- Options
@@ -60,6 +61,9 @@ procedure Agite is
 
   -- Quick search dir or file
   Search_Dir : Boolean;
+
+  -- Position in list
+  Position : Positive;
 
   -- List width and encoding
   List_Width : Afpx.Width_Range := Afpx.Width_Range'First;
@@ -143,17 +147,14 @@ procedure Agite is
   procedure Encode_Branch is
   begin
     Afpx.Clear_Field (Afpx_Xref.Main.Branch);
-    if Branch.Image = ("(no branch)") then
-      Branch := As.U.Tus ("None.");
-    end if;
     Afpx.Encode_Field (Afpx_Xref.Main.Branch, (0, 0),
-         Utils.Normalize ("Br: " & Branch.Image, Afpx.Get_Field_Width (9),
-                          False));
+         Utils.X.Branch_Image (Branch.Image,
+             Afpx.Get_Field_Width (Afpx_Xref.Main.Branch)));
   end Encode_Branch;
 
   -- Encode Afpx list with files, if list has changed or if Force
   procedure Encode_Files (Force : in Boolean) is
-    Position : Natural := 0;
+    Pos : Natural := 0;
     Current_File : Git_If.File_Entry_Rec;
     Prev_Files : Git_If.File_List;
     Changed : Boolean;
@@ -166,8 +167,8 @@ procedure Agite is
     -- Save current position and entry
     if not Force and then not Files.Is_Empty
     and then not Afpx.Line_List.Is_Empty then
-      Position := Afpx.Line_List.Get_Position;
-      Files.Move_At (Position);
+      Pos := Afpx.Line_List.Get_Position;
+      Files.Move_At (Pos);
       Files.Read (Current_File, Git_If.File_Mng.Dyn_List.Current);
       -- Make a copy of files list
       Prev_Files.Insert_Copy (Files);
@@ -201,7 +202,7 @@ procedure Agite is
     if not Changed then
       -- No change: nothing
       return;
-    elsif Position = 0 then
+    elsif Pos = 0 then
       -- Initial list was empty
       Init_List (Files);
       Afpx.Update_List (Afpx.Top);
@@ -398,7 +399,7 @@ procedure Agite is
   end Host_Str;
 
   -- Init Afpx
-  procedure Init (Position : in Natural; Dir : in String := "") is
+  procedure Init (Pos : in Natural; Dir : in String := "") is
   begin
     Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
     Afpx.Get_Console.Set_Name ("Agite (on " & Socket.Local_Host_Name & ")");
@@ -407,8 +408,8 @@ procedure Agite is
     Insert := False;
     Afpx.Encode_Field (Afpx_Xref.Main.Host, (0, 0), Host_Str);
     Change_Dir (Dir);
-    if Position /= 0 and then not Afpx.Line_List.Is_Empty then
-      Afpx.Line_List.Move_At (Position);
+    if Pos /= 0 and then not Afpx.Line_List.Is_Empty then
+      Afpx.Line_List.Move_At (Pos);
     end if;
     Afpx.Update_List (Afpx.Center_Selected);
   end Init;
@@ -420,21 +421,27 @@ procedure Agite is
   end Do_Edit;
 
   procedure Do_History (Name : in String; Is_File : in Boolean) is
-    Pos : Positive;
   begin
     -- Call history and restore current entry
-    Pos := Afpx.Line_List.Get_Position;
+    Position := Afpx.Line_List.Get_Position;
     History.Handle (Root.Image, Path.Image, Name, Is_File);
-    Init (Pos);
+    Init (Position);
   end Do_History;
 
+  procedure Do_Commit is
+    Curr_Dir : constant String := Directory.Get_Current;
+  begin
+    Position := Afpx.Line_List.Get_Position;
+    Commit.Handle (Root.Image);
+    Init (Position, Curr_Dir);
+  end Do_Commit;
+
   procedure Do_Revert (Name, Prev : in String) is
-    Pos : Natural;
     File : Git_If.File_Entry_Rec;
   begin
     -- Call Confirm and restore current entry
-    Pos := Afpx.Line_List.Get_Position;
-    Files.Move_At (Pos);
+    Position := Afpx.Line_List.Get_Position;
+    Files.Move_At (Position);
     Files.Read (File, Git_If.File_Mng.Dyn_List.Current);
 
     if File.Kind = '/' then
@@ -447,7 +454,7 @@ procedure Agite is
                   Directory.Build_File_Name (Path.Image, Name, "")) then
         begin
           Directory.Remove (Name);
-          Pos := Pos - 1;
+          Position := Position - 1;
         exception
           when Directory.Access_Error =>
             -- Directory not empty
@@ -459,18 +466,27 @@ procedure Agite is
             null;
         end;
       end if;
-    elsif File.Kind = '?' and then File.S3 = 'D' then
-      -- File is deleted locally, checkout from repository
-      if Confirm ("Ready to revert:",
-                  Directory.Build_File_Name (Path.Image, Name, "")) then
-        Git_If.Do_Revert (Name);
-      end if;
-    elsif File.Kind = '?' and then File.S2 = 'D' then
-      -- File is deleted in Git, reset and checkout from repository
-      if Confirm ("Ready to reset and revert:",
-                  Directory.Build_File_Name (Path.Image, Name, "")) then
-        Git_If.Do_Reset (Name);
-        Git_If.Do_Revert (Name);
+    elsif File.Kind = '?' then
+      if File.S2 = ' ' and then File.S3 = 'D' then
+        -- File is deleted locally, checkout from repository
+        if Confirm ("Ready to revert:",
+                    Directory.Build_File_Name (Path.Image, Name, "")) then
+          Git_If.Do_Revert (Name);
+        end if;
+      elsif File.S2 = 'D' and then File.S3 = ' ' then
+        -- File is deleted in Git, reset and checkout from repository
+        if Confirm ("Ready to reset and revert:",
+                    Directory.Build_File_Name (Path.Image, Name, "")) then
+          Git_If.Do_Reset (Name);
+          Git_If.Do_Revert (Name);
+        end if;
+      elsif File.S3 = 'D' then
+        -- File is staged and has unstaged deletion, reset
+        if Confirm ("Ready to reset:",
+                    Directory.Build_File_Name (Path.Image, Name, "")) then
+          Git_If.Do_Reset (Name);
+          Position := Position - 1;
+        end if;
       end if;
     elsif File.Kind /= ' ' and then File.Kind /= '@' then
       -- Only for regular files or symbolic links
@@ -480,7 +496,7 @@ procedure Agite is
       if Confirm ("Ready to remove:",
                   Directory.Build_File_Name (Path.Image, Name, "")) then
         Sys_Calls.Unlink (Name);
-        Pos := Pos - 1;
+        Position := Position - 1;
       end if;
     elsif File.S2 /= ' ' then
       if File.S2 = 'R' then
@@ -513,8 +529,14 @@ procedure Agite is
                   Directory.Build_File_Name (Path.Image, Name, "")) then
         Git_If.Do_Revert (Name);
       end if;
+    else
+      -- File is staged and has unstaged changes, reset
+      if Confirm ("Ready to reset:",
+                    Directory.Build_File_Name (Path.Image, Name, "")) then
+          Git_If.Do_Reset (Name);
+      end if;
     end if;
-    Init (Pos);
+    Init (Position);
   end Do_Revert;
 
   -- Add a dir or file
@@ -863,7 +885,7 @@ begin
             List_Action (Diff);
           when Afpx_Xref.Main.Commit =>
             -- Commit screen
-            null;
+            Do_Commit;
           when Afpx_Xref.Main.History =>
             -- History
             List_Action (History);

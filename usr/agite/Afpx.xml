@@ -767,11 +767,11 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Switch</Init>
     </Field>
-    <Field Num="7" Kind="Button" Name="Add_All">
+    <Field Num="7" Kind="Button" Name="Stage_All">
       <Geometry Up="${Field_5.Low}" Left="${Field_6.Right}+2" Height="1"
-                Width="8"/>
+                Width="10"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">AddAll</Init>
+      <Init Row="0" Col="1">StageAll</Init>
     </Field>
     <Field Num="8" Kind="Button" Name="Commit">
       <Geometry Up="${Field_5.Low}" Left="${Field_7.Right}+2" Height="1"

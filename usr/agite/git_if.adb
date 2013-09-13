@@ -167,6 +167,29 @@ package body Git_If is
   procedure File_Sort is new File_Mng.Dyn_List.Sort (Less_Than);
 
 
+  -- Internal: parse a line of "git status --porcelain"
+  function Parse (Line : As.U.Asu_Us) return File_Entry_Rec is
+    Str : As.U.Asu_Us;
+    File_Entry : File_Entry_Rec;
+    Redirect : Natural;
+  begin
+    Str := Line;
+    File_Entry.S2 := Str.Element(1);
+    File_Entry.S3 := Str.Element(2);
+    -- Remove "XY "
+    Str.Delete (1, 3);
+    Redirect := Str_Util.Locate (Str.Image, "-> ");
+    if Redirect /= 0 then
+      -- File is a move (or copy?) ("<old_name> -> <new_name>")
+      -- Split and store Remove "<old_name> -> "
+      File_Entry.Prev := Str.Uslice (1, Redirect - 2);
+      Str.Delete (1, Redirect + 2);
+    end if;
+    File_Entry.Name := Str;
+    File_Entry.Kind := Char_Of (File_Entry.Name.Image);
+    return File_Entry;
+  end Parse;
+
   -- List the files and status
   procedure List_Files (Current_Path : in String;
                         Files : in out File_List) is
@@ -176,7 +199,6 @@ package body Git_If is
     Moved : Boolean;
     Dir_List : Dir_Mng.File_List_Mng.List_Type;
     Dir_Entry : Dir_Mng.File_Entry_Rec;
-    Redirect : Natural;
 
     procedure Init_List is
     begin
@@ -241,32 +263,21 @@ package body Git_If is
       Out_Flow_2.List.Rewind;
       loop
         Out_Flow_2.List.Read (Str, Moved => Moved);
-        File_Entry.S2 := Str.Element (1);
-        File_Entry.S3 := Str.Element (2);
-        if Str.Element (Str.Length) /= '/'
-        and then (File_Entry.S2 /= ' ' or else File_Entry.S3 /= ' ') then
-          -- This is a file, and in 2nd or 3rd stage or untracked
-          -- Remove "XY "
-          Str.Delete (1, 3);
-          Redirect := Str_Util.Locate (Str.Image, "-> ");
-          if Redirect /= 0 then
-            -- File is a move (or copy?) ("<old_name> -> <new_name>")
-            -- Split and store Remove "<old_name> -> "
-            File_Entry.Prev := Str.Uslice (1, Redirect - 2);
-            Str.Delete (1, Redirect + 2);
-          end if;
-          if Directory.Dirname (Str.Image) = Current_Path then
-            -- This file is in current dir, look for it
-            File_Entry.Name := As.U.Tus (Directory.Basename (Str.Image));
-            File_Entry.Kind := Char_Of (File_Entry.Name.Image);
-            if File_Search (Files, File_Entry,
-                            From => File_Mng.Dyn_List.Absolute) then
-              -- This file is found: overwrite
-              Files.Modify (File_Entry, File_Mng.Dyn_List.Current);
-            else
-              -- This file is not found (deleted?), insert
-              Files.Insert (File_Entry);
-            end if;
+        File_Entry := Parse (Str);
+        if File_Entry.Name.Element (File_Entry.Name.Length) /= '/'
+        and then (File_Entry.S2 /= ' ' or else File_Entry.S3 /= ' ')
+        and then Directory.Dirname (File_Entry.Name.Image) = Current_Path then
+          -- This file is in current dir, look for it
+          File_Entry.Name := As.U.Tus (Directory.Basename (
+              File_Entry.Name.Image));
+          File_Entry.Kind := Char_Of (File_Entry.Name.Image);
+          if File_Search (Files, File_Entry,
+            From => File_Mng.Dyn_List.Absolute) then
+            -- This file is found: overwrite
+            Files.Modify (File_Entry, File_Mng.Dyn_List.Current);
+          else
+            -- This file is not found (deleted?), insert
+            Files.Insert (File_Entry);
           end if;
         end if;
         exit when not Moved;
@@ -309,11 +320,53 @@ package body Git_If is
 
   end List_Files;
 
-  -- Is a file (full path) locally modified
-  function Is_Modified (File : String) return Boolean is
+  -- List all the files modified in the current repository
+  procedure List_Changes (Files : in out File_List) is
+    Cmd : Many_Strings.Many_String;
+    Str : As.U.Asu_Us;
+    File_Entry : File_Entry_Rec;
+    Moved : Boolean;
+
+  begin
+    -- Init result
+    Files.Delete_List;
+
+    -- Git status --porcelain"
+    Cmd.Set ("git");
+    Cmd.Cat ("status");
+    Cmd.Cat ("--porcelain");
+    Cmd.Cat (".");
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      return;
+    end if;
+
+    if Out_Flow_1.List.Is_Empty then
+      return;
+    end if;
+
+    -- Copy status and name
+    Out_Flow_1.List.Rewind;
+    loop
+      Out_Flow_1.List.Read (Str, Moved => Moved);
+      File_Entry := Parse (Str);
+      Files.Insert (File_Entry);
+      exit when not Moved;
+    end loop;
+
+  end List_Changes;
+
+  -- Status of a file
+  function Get_Status (File : String) return File_Entry_Rec is
     Cmd : Many_Strings.Many_String;
     Line : As.U.Asu_Us;
+    Result : File_Entry_Rec;
   begin
+    Result.S2 := ' ';
+    Result.S3 := ' ';
+    Result.Kind := ' ';
     -- Git status --porcelain"
     Cmd.Set ("git");
     Cmd.Cat ("status");
@@ -323,16 +376,25 @@ package body Git_If is
         Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      return False;
+      return Result;
     end if;
     if Out_Flow_1.List.Is_Empty then
       -- File unknown
-      return False;
+      return Result;
     end if;
     -- Read first line
     Out_Flow_1.List.Rewind;
     Out_Flow_1.List.Read (Line, Command.Res_Mng.Dyn_List.Current);
-    return Line.Element (1) /= ' ' or else Line.Element (2) /= ' ';
+    Result := Parse (Line);
+    return Result;
+  end Get_Status;
+
+  -- Is a file (full path) locally modified
+  function Is_Modified (File : String) return Boolean is
+    File_Entry : File_Entry_Rec;
+  begin
+    File_Entry := Get_Status (File);
+    return File_Entry.S2 /= ' ' or else File_Entry.S3 /= ' ';
   end Is_Modified;
 
   -- Assert
@@ -664,6 +726,38 @@ package body Git_If is
       Basic_Proc.Put_Line_Error ("git add: " & Err_Flow.Str.Image);
     end if;
   end Do_Add;
+
+  -- Launch a commit synchronous
+  procedure Do_Commit (Comment : in String) is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("commit");
+    Cmd.Cat ("-m");
+    Cmd.Cat ("'" & Comment & "'");
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git commit: " & Err_Flow.Str.Image);
+    end if;
+  end Do_Commit;
+
+  -- Launch a push synchronous
+  procedure Do_Push (Remote : in String) is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("push");
+    Cmd.Cat (Remote);
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git push: " & Err_Flow.Str.Image);
+    end if;
+  end Do_Push;
+
   -- Get current branch name
   function Current_Branch return String is
     Cmd : Many_Strings.Many_String;
