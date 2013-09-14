@@ -1,21 +1,11 @@
 with Ada.Exceptions;
 with As.U, Directory, Con_Io, Afpx.List_Manager, Str_Util, Basic_Proc,
      Aski, Unicode;
-with Git_If, Utils.X, Config, Afpx_Xref, Error;
+with Git_If, Utils.X, Config, Push, Afpx_Xref, Error;
 package body Commit is
 
-  -- Cut string if too long for list
+  -- List width minus 4 ("CSU ")
   Width : Afpx.Width_Range;
-  function Procuste (Str : String) return String is
-  begin
-  if Str'Length <= Width then
-    -- String fits. OK
-    return Str;
-  else
-    -- Trunk head and show "> " at the beginning
-    return Str_Util.Procuste (Str, Width, Trunc_Head => True);
-  end if;
-  end Procuste;
 
   function Is_Staged (C : Character) return Boolean is
   begin
@@ -28,7 +18,7 @@ package body Commit is
     Afpx.Encode_Line (Line,
       (if Is_Staged (From.S2) then '*' else ' ')
       & From.S2 & From.S3
-      & ' ' & Procuste (From.Name.Image) );
+      & ' ' & Utils.Normalize (From.Name.Image, Width) );
   exception
     when Error:others =>
       Basic_Proc.Put_Line_Error ("Exception "
@@ -111,12 +101,12 @@ package body Commit is
     -- Encode the list
     Init_List (Changes);
     -- Move back to the same entry as before (if possible)
-    if not Changes.Is_Empty then
+    if not Afpx.Line_List.Is_Empty then
       if Search (Afpx.Line_List, Line,
                  From => Afpx.Line_List_Mng.Absolute) then
-        Changes.Move_At (Afpx.Line_List.Get_Position);
+        Afpx.Line_List.Move_At (Afpx.Line_List.Get_Position);
       else
-        Changes.Rewind;
+        Afpx.Line_List.Rewind;
       end if;
     end if;
     -- Center
@@ -253,6 +243,7 @@ package body Commit is
     end Init;
 
   begin
+    -- Init differator
     Differator := As.U.Tus (Config.Differator);
 
     -- Move to root
@@ -267,8 +258,8 @@ package body Commit is
     -- Init Afpx
     Init;
 
-    -- Width after 3 chars: Staged, Change and a space
-    Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 3;
+    -- Width after 4 chars of Commit, Staged, Unstaged and a space
+    Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 4;
 
     -- Encode Changes
     Reread;
@@ -315,8 +306,9 @@ package body Commit is
               Reread;
             when Afpx_Xref.Commit.Push =>
               -- Push button
-              -- @@@
-              null;
+              Push.Handle (Root);
+              Init;
+              Reread;
             when Afpx_Xref.Commit.Back =>
               -- Back button
               return;

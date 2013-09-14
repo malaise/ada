@@ -641,8 +641,35 @@ package body Git_If is
       Commit.Rewind;
       Commit.Insert ((' ', As.U.Tus ("/")), Commit_File_Mng.Dyn_List.Prev);
     end if;
-
   end List_Commit;
+
+  -- List references
+  procedure List_References (References : in out Reference_Mng.List_Type) is
+    Cmd : Many_Strings.Many_String;
+    Line : As.U.Asu_Us;
+    Moved : Boolean;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("remote");
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git remote: " & Err_Flow.Str.Image);
+      return;
+    end if;
+
+    -- Encode info
+    References.Delete_List;
+    if not Out_Flow_1.List.Is_Empty then
+      Out_Flow_1.List.Rewind;
+      loop
+        Out_Flow_1.List.Read (Line, Moved => Moved);
+        References.Insert (Line);
+        exit when not Moved;
+      end loop;
+    end if;
+  end List_References;
 
   -- Cat a file at a Hash in a file
   function Cat (Name : String; Hash : String; File : String;

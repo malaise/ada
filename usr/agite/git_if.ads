@@ -1,4 +1,4 @@
-with As.U, Dynamic_List, Sys_Calls;
+with As.U.Utils, Dynamic_List, Sys_Calls;
 package Git_If is
 
   -- Git version
@@ -85,6 +85,10 @@ package Git_If is
                          Date : out Iso_Date;
                          Comment : out Comment_Array;
                          Commit : in out Commit_List);
+
+  -- List references
+  package Reference_Mng renames As.U.Utils.Asu_Dyn_List_Mng;
+  procedure List_References (References : in out Reference_Mng.List_Type);
 
   -- Cat a file at a Hash in a file, Ok if success
   function Cat (Name : String; Hash : String; File : String;
