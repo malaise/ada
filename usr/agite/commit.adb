@@ -1,7 +1,7 @@
 with Ada.Exceptions;
 with As.U, Directory, Con_Io, Afpx.List_Manager, Str_Util, Basic_Proc,
      Aski, Unicode;
-with Git_If, Utils.X, Afpx_Xref, Error;
+with Git_If, Utils.X, Config, Afpx_Xref, Error;
 package body Commit is
 
   -- Cut string if too long for list
@@ -45,6 +45,9 @@ package body Commit is
 
   procedure Init_List is new Afpx.List_Manager.Init_List (
     Git_If.File_Entry_Rec, Git_If.File_Mng, Set);
+
+  -- Differator
+  Differator : As.U.Asu_Us;
 
   -- The changes
   Changes : Git_If.File_List;
@@ -127,6 +130,8 @@ package body Commit is
     -- Set field activity
     Afpx.Set_Field_Activation (Afpx_Xref.Commit.Switch,
                                not Afpx.Line_List.Is_Empty);
+    Afpx.Set_Field_Activation (Afpx_Xref.Commit.Diff,
+                               not Afpx.Line_List.Is_Empty);
     Afpx.Set_Field_Activation (Afpx_Xref.Commit.Stage_All,
                                not Afpx.Line_List.Is_Empty);
     Afpx.Set_Field_Activation (Afpx_Xref.Commit.Commit, To_Commit);
@@ -135,6 +140,14 @@ package body Commit is
        Afpx.Resume;
        raise;
   end Reread;
+
+  -- Diff
+  procedure Do_Diff is
+  begin
+    Changes.Move_At (Afpx.Line_List.Get_Position);
+    Git_If.Launch_Diff (Differator.Image,
+                        Changes.Access_Current.Name.Image);
+  end Do_Diff;
 
   -- Switch staged status of current file
   procedure Do_Switch is
@@ -192,7 +205,8 @@ package body Commit is
       Comment.Trail (1);
     end loop;
     -- Append the last Lf
-    if Comment.Element (Comment.Length) /= Aski.Lf then
+    if not Comment.Is_Null
+    and then Comment.Element (Comment.Length) /= Aski.Lf then
       Comment.Append (Aski.Lf);
     end if;
     -- Git_If.Commit
@@ -239,6 +253,8 @@ package body Commit is
     end Init;
 
   begin
+    Differator := As.U.Tus (Config.Differator);
+
     -- Move to root
     Directory.Change_Current (Root);
 
@@ -284,6 +300,8 @@ package body Commit is
             when Afpx_Xref.Commit.Reread =>
               -- Reread button
               Reread;
+            when Afpx_Xref.Commit.Diff =>
+              Do_Diff;
             when Afpx.List_Field_No | Afpx_Xref.Commit.Switch =>
               -- Double click or Switch button
               Do_Switch;
