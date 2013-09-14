@@ -17,15 +17,18 @@ package body Commit is
   end if;
   end Procuste;
 
+  function Is_Staged (C : Character) return Boolean is
+  begin
+    return C /= ' ' and then C /= '?';
+  end Is_Staged;
+
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in  Git_If.File_Entry_Rec) is
   begin
     Afpx.Encode_Line (Line,
-        (if    From.S2 = ' ' then " " & From.S3                -- unstaged
-         elsif From.S3 = ' ' then "*" & From.S2                -- staged
-         elsif From.S2 = '?' and then From.S3 = '?' then " ?"  -- unknown
-         else  "xx")                                           -- Both!!!
-      & " " & Procuste (From.Name.Image) );
+      (if Is_Staged (From.S2) then '*' else ' ')
+      & From.S2 & From.S3
+      & ' ' & Procuste (From.Name.Image) );
   exception
     when Error:others =>
       Basic_Proc.Put_Line_Error ("Exception "
@@ -40,12 +43,6 @@ package body Commit is
   end Match;
   function Search is new Afpx.Line_List_Mng.Search (Match);
 
-  subtype Str2 is String(1 .. 2);
-  function Get_Status (Line : Afpx.Line_Rec) return Str2 is
-  begin
-    return Aski.Encode (Line.Str(1 .. 2));
-  end Get_Status;
-
   procedure Init_List is new Afpx.List_Manager.Init_List (
     Git_If.File_Entry_Rec, Git_If.File_Mng, Set);
 
@@ -59,6 +56,7 @@ package body Commit is
     Change : Git_If.File_Entry_Rec;
     Reread : Boolean;
     Moved : Boolean;
+    To_Commit : Boolean;
   begin
     -- Get list of changes, ensure that each entry is fully staged or not
     --  staged at all, add those that are both,
@@ -71,12 +69,13 @@ package body Commit is
     end if;
     Git_If.List_Changes (Changes);
     Reread := False;
+    To_Commit := False;
     if not Changes.Is_Empty then
       Changes.Rewind;
       loop
         Changes.Read (Change, Moved => Moved);
         if Change.S2 /= ' ' and then Change.S3 /= ' '
-        and then (Change.S2 /= '?' or else Change.S3 /= '?') then
+        and then Is_Staged (Change.S2) then
           -- This entry has somme changes staged and some others not, add all
           Git_If.Do_Add (Change.Name.Image);
           -- Reread and check
@@ -94,7 +93,18 @@ package body Commit is
       if Reread then
         Git_If.List_Changes (Changes);
       end if;
+      -- See if at least one entry to commit
+      Changes.Rewind;
+      loop
+        Changes.Read (Change, Moved => Moved);
+        if Is_Staged (Change.S2) then
+          To_Commit := True;
+        end if;
+        exit when not Moved;
+      end loop;
     end if;
+    Afpx.Resume;
+
     -- Encode the list
     Init_List (Changes);
     -- Move back to the same entry as before (if possible)
@@ -108,7 +118,6 @@ package body Commit is
     end if;
     -- Center
     Afpx.Update_List (Afpx.Center_Selected);
-    Afpx.Resume;
 
     -- Encode current branch
     Afpx.Clear_Field (Afpx_Xref.Commit.Branch);
@@ -116,15 +125,11 @@ package body Commit is
         Utils.X.Branch_Image (Git_If.Current_Branch,
             Afpx.Get_Field_Width (Afpx_Xref.Commit.Branch)));
     -- Set field activity
-    if Afpx.Line_List.Is_Empty then
-      Afpx.Set_Field_Activation (Afpx_Xref.Commit.Switch, False);
-      Afpx.Set_Field_Activation (Afpx_Xref.Commit.Stage_All, False);
-      Afpx.Set_Field_Activation (Afpx_Xref.Commit.Commit, False);
-    else
-      Afpx.Set_Field_Activation (Afpx_Xref.Commit.Switch, True);
-      Afpx.Set_Field_Activation (Afpx_Xref.Commit.Stage_All, True);
-      Afpx.Set_Field_Activation (Afpx_Xref.Commit.Commit, True);
-    end if;
+    Afpx.Set_Field_Activation (Afpx_Xref.Commit.Switch,
+                               not Afpx.Line_List.Is_Empty);
+    Afpx.Set_Field_Activation (Afpx_Xref.Commit.Stage_All,
+                               not Afpx.Line_List.Is_Empty);
+    Afpx.Set_Field_Activation (Afpx_Xref.Commit.Commit, To_Commit);
    exception
      when others =>
        Afpx.Resume;
@@ -133,15 +138,15 @@ package body Commit is
 
   -- Switch staged status of current file
   procedure Do_Switch is
-    Status : Str2;
+    Status : Character;
   begin
-    Status := Get_Status (Afpx.Line_List.Access_Current.all);
     Changes.Move_At (Afpx.Line_List.Get_Position);
-    if Status(1) = ' ' then
+    Status := Changes.Access_Current.S2;
+    if Status = ' ' or else Status = '?' then
       -- File is not staged, add
       Git_If.Do_Add (Changes.Access_Current.Name.Image);
       Reread;
-    elsif Status(1) = '*' then
+    else
       -- File is staged, reset
       Git_If.Do_Reset (Changes.Access_Current.Name.Image);
       Reread;
