@@ -8,10 +8,8 @@ Agite (Ada GIT Editor) is a graphical front end of the 'Git' configuration
 management tool.
 It is directory-oriented.
 
-Major functions are navigation in directories and history, file status and
-graphical diff.
-
-It relies on 'git gui' for committing and pushing local changes.
+Major functions are navigation in directories and history, file status, 
+graphical diff, commit and push.
 
 anchor:XCommandLine[]
 
@@ -110,8 +108,8 @@ anchor:XConfPeriod[]
 
 period::
 Agite refreshes the current status of files in the xref:Xdir[directory] screen
-when it starts xref:XGui[Git GUI] or xref:XEdit[Editor] and when they exit.
-This is because these tools can modify the current status of local files. Still,
+when it starts the xref:XEdit[Editor] and when it exit.
+This is because this tool can modify the current status of local files. Still,
 it is possible from a stand-alone program to also modify the list or status of
 local files. This is why Agite periodically checks and redisplays the status of
 local files. This parameter defines the period in seconds of this automatic
@@ -147,7 +145,9 @@ Agite is based on four main menus:
 
 * Directory: This is the first menu at start-up. It shows the content of a
 directory.
-* Bookmarks:  This menu allows bookmarking directories and quickly jumping
+* Commit: This menu allows staging and commiting the local changes
+* Push: This menu allows pushing loca commits to a remote repository
+* Bookmarks: This menu allows bookmarking directories and quickly jumping
 to a bookmark
 * History: This shows the Git history of a file or directory, the list of
 commits that have modified the file(s).
@@ -157,13 +157,15 @@ modified by the commit.
 anchor:XNavigation[]
 The navigation is as follows:
 
-                        +-----------+
-                /------>| Bookmarks |
-  +---------- +/        +-----------+
-  | Directory |
-  +---------- +\        +---------+       +---------+
-                \------>| History |<----->| Details |
-                        +---------+       +---------+
+                         +--------+       +------+
+                 /------>| Commit |------>| Push |
+                /        +--------+       +------+
+  +---------- +/         +-----------+
+  | Directory |--------->| Bookmarks |
+  +---------- +\         +-----------+
+                \        +---------+       +---------+
+                 \------>| History |<----->| Details |
+                         +---------+       +---------+
 
 All the screen transitions are based on the 'call-return' scheme.
 So please note the double arrow between 'History' and 'Details': from the
@@ -326,6 +328,12 @@ History::
 This button switches to the screen that shows the xref:XHist[history] of a
 file or directory.
 
+anchor:XCommit[]
+
+Commit::
+This button switches to the screen of xref:XCommi[commit] that allows commiting the the local
+modifications.
+
 anchor:XAdd[]
 
 Add::
@@ -358,12 +366,6 @@ The Revert button has no effect on a file known by GIT and not modified.
 
 .Other actions
 
-anchor:XGui[]
-
-GitGUI::
-This button launches the 'git gui' command for committing and pushing local
-changes.
-
 anchor:XXterm[]
 
 Xterm::
@@ -378,6 +380,110 @@ in the xref:XConfMake[make] entry of the configuration file.
 
 Exit::
 A button makes Agite exit.
+
+anchor:XCommi[]
+
+Commit
+~~~~~~
+For this menu works on the global repository, not on local directory.
+
+Agite first sorts the files either as unstaged or staged. For files that have
+both staged and unstaged changes, agite tries to fully stage them, either for
+addition, modification or deletion.
+
+The screen shows the following information:
+
+.Current branch and root
+
+This shows the actual branch and path of the root of current repository.
+
+.Actions
+
+The possible actions are:
+
+Reread::
+
+Re-read the current branch and the list of local changes.
+
+Diff::
+
+Show the difference between the current change and the Head for the current file
+(selected in list).
+
+Switch::
+
+Alternatively stage or unstage the current file (selected in list).
+
+StageAll::
+
+Stage all the changes that are unstaged, but not the new files. The new files
+need to be explicitly added (switched) one by one.
+
+Commit::
+
+Commit the staged changes. +
+*Note: Ensure to enter a comment before committing.* +
+If the commit succeeds then the list of changes is updated, otherwise
+the error is reported through a specific screen.
+
+NOTE: The Switch and StageAll buttons are active only if there are local changes.
+The Commit button is active only if there are staged changes.
+
+
+.Comment
+
+You can enter up to 7 lines of comment. Comment must not be empty when
+committing.
+
+.List of changes
+
+This list shows all the current changes, with 3 letters of status for each
+file:
+
+* The first column ('C') shows a '''*''' if the file will be committed, and is
+empty otherwise,
+* The second column ('S') shows the staged changes (that will be committed),
+* The third column ('U') shows the unstaged changes (that will not be
+committed).
+
+You can select a file and show its local differences or switch its staged
+status.
+
+.Push
+
+This button activates the xref:XPush[Push] menu.
+
+.Back
+
+This button returns to the xref:XDir[Directory] menu.
+
+anchor:XPush[]
+
+Push
+~~~~
+
+The 'Push' menu allows pushing the local changes to a given remote
+ repository. +
+It shows:
+
+.Current branch and root
+
+This shows the actual branch and path of the root of current repository.
+
+.List of known repositories
+
+This lists the known remote repositories from which you can select the target. +
+If the remote ''orign'' is defined then it is selected by default.
+
+.Push
+
+Pushes the local commits to the selected remote repository. +
+If there is no error then agite returns back to the xref:XCommi[Commit] menu,
+otherwise the error is reported through a specific screen.
+
+.Back
+
+Moves back to the xref:XCommi[Commit] menu without pushing.
 
 anchor:XBook[]
 
@@ -591,19 +697,29 @@ Interfaces with Git
 This section lists the commands and arguments passed to Git. This requires git
 version 1.7.0 or above:
 
-* A function get Git version by calling 'git --version',
+* A function gets Git version by calling 'git --version',
 
-* A function list local files by calling 'git ls-files' and
+* A function lists local files by calling 'git ls-files' and
 'git status \-- porcelain .',
 
+* A function lists all changes by calling 'git status \-- porcelain .',
+
+* A function lists the status of a file by calling 'git status \-- porcelain
+<file>',
+
 * A function lists the commits on local dir by calling
-'git log --date=iso --topo-order \-- <pwd>',
+'git log --follow --date=iso --topo-order \-- <pwd>',
+
+* A functions gets the hash of the last commit by calling 'git log
+--pretty=format:"%H" -n -1 -- <pwd>'
 
 * A function gets the details of a commit by calling
 'git log --name-status --date=iso -n 1 <HSA1_hash>',
 
+* A function lists the remote repositories by calling 'git remote',
+
 * A function extracts a given version of a file (in a commit by calling
-'git show <HSA1_hash>:<file>',
+'git show <HSA1_hash>:<file> > <file>',
 
 * A function launches the differator on a modified file (versus Head) by
 calling 'git difftool -y -x <differator> HEAD \-- <file>',
@@ -612,9 +728,19 @@ calling 'git difftool -y -x <differator> HEAD \-- <file>',
 calling 'git difftool -y -x <differator> <ref_HSA1> <comp_HSA1> \-- <file>',
 
 * A function reverts the local changes of a file by calling
-'git checkout HEAD \-- <file>' or 'git reset \-- <file>',
+'git checkout HEAD \-- <file>' 
 
-* A function gets the name of current branch by calling 'git branch',
+* A function resets the staged sgtatus of a file by calling 'git reset \--
+<file>',
 
-* Finally, Agite also launches 'git gui'.
+* A function stages a change of a file by calling 'git add \-- <file>',
+
+* A function removes a file from the index by 'git rm \-- <file>',
+
+* A function commits the local changes by calling 'git commit -m
+"<comment>"',
+
+* A function pushes the local commits by calling 'git push <remote>',
+
+* A function gets the name of current branch by calling 'git branch'.
 
