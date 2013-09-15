@@ -7,6 +7,9 @@ procedure T_Dscr is
   Ptg_Result : Afpx.Result_Rec;
   Line : Afpx.Line_Rec;
 
+  Height : Afpx.Height_Range;
+  Width : Afpx.Width_Range;
+
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Output("ERROR. Usage " & Argument.Get_Program_Name
@@ -37,8 +40,8 @@ procedure T_Dscr is
          (if I = Afpx.List_Field_No then "List"
           else "Field No" & I'Img & " is of kind "
              & Mixed_Str (Afpx.Field_Kind_List'Image(Afpx.Get_Field_Kind (I))) )
-         & ", " & Images.Integer_Image (Afpx.Get_Field_Width (I))
-         & "x" & Images.Integer_Image (Afpx.Get_Field_Height (I)));
+         & ", " & Images.Integer_Image (Afpx.Get_Field_Height (I))
+         & "x"  & Images.Integer_Image (Afpx.Get_Field_Width (I)));
     end loop;
     Basic_Proc.Put_Line_Output ("Cursor field is" & Cursor_Field'Img);
 
@@ -50,7 +53,6 @@ procedure T_Dscr is
     Cursor_Col := 0;
     Insert := False;
   end Set_Dscr;
-
 
   use Afpx;
 begin
@@ -72,6 +74,7 @@ begin
     Dscr_No := 1;
   end if;
 
+  -- Fill list
   for I in 1 .. 999 loop
     Line.Str(1 .. 3) := Language.Copy (Normal(I, 3, Gap => '0'));
     Line.Len := 3;
@@ -79,8 +82,18 @@ begin
   end loop;
   Afpx.Line_List.Rewind;
 
+  -- Set a first dscr to get screen size
+  Afpx.Use_Descriptor(Dscr_No);
+
+  -- Get and prind screen size
+  Afpx.Get_Screen_Size (Height, Width);
+  Basic_Proc.Put_Line_Output ("Screen is " & Images.Integer_Image (Height)
+                                     & "x" & Images.Integer_Image (Width));
+
+  -- Set first descriptor
   Set_Dscr(Dscr_No);
 
+  -- Show
   One_Dscr:
   loop
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
