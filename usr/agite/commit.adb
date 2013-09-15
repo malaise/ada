@@ -46,33 +46,22 @@ package body Commit is
 
   -- The changes
   Changes : Git_If.File_List;
+
   -- The text of the comment
   Comment : As.U.Asu_Us;
 
-  -- Init screen
-  procedure Init is
-    Prev : Positive;
-    Field : Afpx.Field_Range;
-    use type Afpx.Absolute_Field_Range;
+  -- Afpx Ptg stuff
+  Cursor_Field : Afpx.Field_Range;
+  Cursor_Col   : Con_Io.Col_Range;
+  Insert       : Boolean;
+
+  -- Reset Ptg stuff
+  procedure Reset_Ptg is
   begin
-    Afpx.Use_Descriptor (Afpx_Xref.Commit.Dscr_Num);
-    -- Encode Root
-    Afpx.Encode_Field (Afpx_Xref.Commit.Root, (0, 0),
-        Utils.Normalize (Root.Image,
-                         Afpx.Get_Field_Width (Afpx_Xref.Commit.Root)));
-    -- Encode text of (current) comment
-    if not Comment.Is_Null then
-      Prev := 1;
-      Field := Afpx_Xref.Commit.Comment1;
-      for I in 2 .. Comment.Length loop
-        if Comment.Element (I) = Aski.Lf then
-          Afpx.Encode_Field (Field, (0, 0), Comment.Slice (Prev, I-1));
-          Field := Field + 1;
-          Prev := I + 1;
-        end if;
-      end loop;
-    end if;
-  end Init;
+    Cursor_Field := Afpx.Next_Cursor_Field (0);
+    Cursor_Col := 0;
+    Insert := False;
+  end Reset_Ptg;
 
   -- Decode Comment fields
   procedure Decode_Comment is
@@ -93,6 +82,44 @@ package body Commit is
       Comment.Append (Aski.Lf);
     end if;
   end Decode_Comment;
+
+  -- Encode Comment fields
+  procedure Encode_Comment is
+    Prev : Positive;
+    Field : Afpx.Field_Range;
+    use type Afpx.Absolute_Field_Range;
+  begin
+    -- Encode text of (current) comment
+    for F in Afpx_Xref.Commit.Comment1 .. Afpx_Xref.Commit.Comment7 loop
+      -- Decode comment, remove trailing spaces,
+      Afpx.Clear_Field (F);
+    end loop;
+    if not Comment.Is_Null then
+      Prev := 1;
+      Field := Afpx_Xref.Commit.Comment1;
+      for I in 2 .. Comment.Length loop
+        if Comment.Element (I) = Aski.Lf then
+          Afpx.Encode_Field (Field, (0, 0), Comment.Slice (Prev, I-1));
+          Field := Field + 1;
+          Prev := I + 1;
+        end if;
+      end loop;
+    end if;
+  end Encode_Comment;
+
+  -- Init screen
+  procedure Init is
+  begin
+    Afpx.Use_Descriptor (Afpx_Xref.Commit.Dscr_Num);
+    -- Encode Root
+    Afpx.Encode_Field (Afpx_Xref.Commit.Root, (0, 0),
+        Utils.Normalize (Root.Image,
+                         Afpx.Get_Field_Width (Afpx_Xref.Commit.Root)));
+    -- Encode comment
+    Encode_Comment;
+    -- Reset Ptg stuff
+    Reset_Ptg;
+  end Init;
 
   -- Re assess the status of changes
   procedure Reread is
@@ -257,10 +284,6 @@ package body Commit is
 
   -- Handle the commits
   procedure Handle (Root : in String) is
-    -- Afpx stuff
-    Cursor_Field : Afpx.Field_Range;
-    Cursor_Col   : Con_Io.Col_Range;
-    Insert       : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
     use type Afpx.Field_Range;
   begin
@@ -273,11 +296,6 @@ package body Commit is
 
     -- Init Afpx
     Init;
-
-    -- Afpx put then get
-    Cursor_Field := Afpx.Next_Cursor_Field (0);
-    Cursor_Col := 0;
-    Insert := False;
 
     -- Reset Afpx list
     Afpx.Line_List.Delete_List (False);
@@ -329,7 +347,8 @@ package body Commit is
             when Afpx_Xref.Commit.Clear =>
               -- StageAll button
               Comment.Set_Null;
-              Reread;
+              Encode_Comment;
+              Reset_Ptg;
             when Afpx_Xref.Commit.Commit =>
               -- Commit button
               Do_Commit;
