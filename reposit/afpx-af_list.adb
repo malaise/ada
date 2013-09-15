@@ -398,16 +398,20 @@ package body Af_List is
       raise Afpx_Internal_Error;
   end Update;
 
-  -- Set the current item (selected_color) of the lis
+  -- Set the current item (selected_color) of the list
   procedure Set_Selected (Button : in List_Button_List; Item_Id : in Natural) is
   begin
     if not Opened then
       raise Not_Opened;
     end if;
-    if Line_List.Is_Empty then
+    if Line_List.Is_Empty
+    or else not Af_Dscr.Fields(Afpx_Typ.List_Field_No).Activated then
+      -- List is empty or not active
       if Item_Id /= 0 then
         raise Line_List_Mng.Not_In_List;
       end if;
+      Status.Ids_Selected(Button) := Item_Id;
+      return;
     elsif Item_Id > Line_List.List_Length
     or else (Button = List_Left and then Item_Id = 0) then
       raise Line_List_Mng.Not_In_List;

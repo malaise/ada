@@ -738,7 +738,7 @@ package body Af_Ptg is
             Af_List.Set_Selected (List_Right, 0);
           end if;
         end if;
-      elsif Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
+      elsif Af_Dscr.Has_List then
         -- List exists but is empty or inactive
         Af_List.Set_Selected (List_Left, 0);
         Af_List.Set_Selected (List_Right, 0);

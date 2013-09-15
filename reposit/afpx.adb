@@ -69,8 +69,8 @@ package body Afpx is
     loop
       if Ret_No /= Af_Dscr.Current_Dscr.Nb_Fields then
         Ret_No := Ret_No + 1;
-      elsif Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
-        Ret_No := 0;
+      elsif Af_Dscr.Has_List then
+        Ret_No := Afpx_Typ.List_Field_No;
       else
         Ret_No := 1;
       end if;
@@ -90,8 +90,8 @@ package body Afpx is
         Ret_No := Af_Dscr.Current_Dscr.Nb_Fields;
       elsif Ret_No /= 1 then
         Ret_No := Ret_No - 1;
-      elsif Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
-        Ret_No := 0;
+      elsif Af_Dscr.Has_List then
+        Ret_No := Afpx_Typ.List_Field_No;
       else
         Ret_No := Af_Dscr.Current_Dscr.Nb_Fields;
       end if;
@@ -688,7 +688,7 @@ package body Afpx is
     Check_Ptg;
     Af_Dscr.Check;
     -- Check no list active in descriptor
-    if Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
+    if Af_Dscr.Has_List then
       if Af_Dscr.Fields (Lfn).Activated then
         raise List_In_Put;
       else
@@ -708,7 +708,7 @@ package body Afpx is
     Check_Ptg;
     Af_Dscr.Check;
     -- Check no list active in descriptor
-    if Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
+    if Af_Dscr.Has_List then
       if Af_Dscr.Fields (Lfn).Activated then
         raise List_In_Put;
       else
