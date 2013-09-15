@@ -16,7 +16,9 @@ package body Commit is
                  From : in  Git_If.File_Entry_Rec) is
   begin
     Afpx.Encode_Line (Line,
-      (if Is_Staged (From.S2) then '*' else ' ')
+      (if    not Is_Staged (From.S2) then ' '
+       elsif not Is_staged (From.S3) then '+'
+       else '*')
       & From.S2 & From.S3
       & ' ' & Utils.Normalize (From.Name.Image, Width) );
   exception
@@ -44,48 +46,25 @@ package body Commit is
   -- The text of the comment
   Comment : As.U.Asu_Us;
 
+  -- re assess the status of changes
   procedure Reread is
     Line : Afpx.Line_Rec;
     Change : Git_If.File_Entry_Rec;
-    Reread : Boolean;
     Moved : Boolean;
     To_Commit : Boolean;
   begin
-    -- Get list of changes, ensure that each entry is fully staged or not
-    --  staged at all, add those that are both,
-    --  if still in both then try to reset
-    Afpx.Suspend;
+    -- Save current selection
     if not Afpx.Line_List.Is_Empty then
       Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
     else
       Line.Len := 0;
     end if;
+
+    -- Get list of changes
+    Afpx.Suspend;
     Git_If.List_Changes (Changes);
-    Reread := False;
     To_Commit := False;
     if not Changes.Is_Empty then
-      Changes.Rewind;
-      loop
-        Changes.Read (Change, Moved => Moved);
-        if Change.S2 /= ' ' and then Change.S3 /= ' '
-        and then Is_Staged (Change.S2) then
-          -- This entry has somme changes staged and some others not, add all
-          Git_If.Do_Add (Change.Name.Image);
-          -- Reread and check
-          Change := Git_If.Get_Status (Change.Name.Image);
-          if Change.S2 /= ' ' and then Change.S3 /= ' '
-          and then (Change.S2 /= '?' or else Change.S3 /= '?') then
-            -- This entry still has somme changes staged and some others not,
-            --  try to reset
-            Git_If.Do_Reset (Change.Name.Image);
-          end if;
-          Reread := True;
-        end if;
-        exit when not Moved;
-      end loop;
-      if Reread then
-        Git_If.List_Changes (Changes);
-      end if;
       -- See if at least one entry to commit
       Changes.Rewind;
       loop
@@ -118,7 +97,9 @@ package body Commit is
         Utils.X.Branch_Image (Git_If.Current_Branch,
             Afpx.Get_Field_Width (Afpx_Xref.Commit.Branch)));
     -- Set field activity
-    Afpx.Set_Field_Activation (Afpx_Xref.Commit.Switch,
+    Afpx.Set_Field_Activation (Afpx_Xref.Commit.Stage,
+                               not Afpx.Line_List.Is_Empty);
+    Afpx.Set_Field_Activation (Afpx_Xref.Commit.Unstage,
                                not Afpx.Line_List.Is_Empty);
     Afpx.Set_Field_Activation (Afpx_Xref.Commit.Diff,
                                not Afpx.Line_List.Is_Empty);
@@ -139,22 +120,24 @@ package body Commit is
                         Changes.Access_Current.Name.Image);
   end Do_Diff;
 
-  -- Switch staged status of current file
-  procedure Do_Switch is
+  -- Staged / Unstage current file
+  procedure Do_Stage (Stage : Boolean)  is
     Status : Character;
   begin
     Changes.Move_At (Afpx.Line_List.Get_Position);
     Status := Changes.Access_Current.S2;
-    if Status = ' ' or else Status = '?' then
-      -- File is not staged, add
-      Git_If.Do_Add (Changes.Access_Current.Name.Image);
-      Reread;
+    if Stage then
+      if Status = ' ' or else Status = '?' then
+        -- File is not staged, add
+        Git_If.Do_Add (Changes.Access_Current.Name.Image);
+        Reread;
+      end if;
     else
       -- File is staged, reset
       Git_If.Do_Reset (Changes.Access_Current.Name.Image);
       Reread;
     end if;
-  end Do_Switch;
+  end Do_Stage;
 
   -- Stage all known by unstaged changes
   procedure Do_Stage_All is
@@ -168,9 +151,9 @@ package body Commit is
       Changes.Rewind;
       loop
         Changes.Read (Change, Moved => Moved);
-        if Change.S2 = ' ' and then Change.S3 = 'M' then
+        if Change.S3 = 'M' then
           Git_If.Do_Add (Change.Name.Image);
-        elsif Change.S2 = ' ' and then Change.S3 = 'D' then
+        elsif Change.S3 = 'D' then
           Git_If.Do_Rm (Change.Name.Image);
         end if;
         exit when not Moved;
@@ -293,9 +276,12 @@ package body Commit is
               Reread;
             when Afpx_Xref.Commit.Diff =>
               Do_Diff;
-            when Afpx.List_Field_No | Afpx_Xref.Commit.Switch =>
-              -- Double click or Switch button
-              Do_Switch;
+            when Afpx.List_Field_No | Afpx_Xref.Commit.Stage =>
+              -- Double click or Stage button
+              Do_Stage (True);
+            when Afpx_Xref.Commit.Unstage =>
+              -- Unstage button
+              Do_Stage (False);
             when Afpx_Xref.Commit.Stage_All =>
               -- StageAll button
               Do_Stage_All;

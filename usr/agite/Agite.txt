@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V10.0
+V10.1
 
 General purpose
 ---------------
@@ -167,6 +167,9 @@ The navigation is as follows:
                  \------>| History |<----->| Details |
                          +---------+       +---------+
 
+There are also a confirmation screen and an error screen that are called when
+necessary.
+
 All the screen transitions are based on the 'call-return' scheme.
 So please note the double arrow between 'History' and 'Details': from the
 'History' of a file (or dir) you can select a commit and see its 'Details'.
@@ -248,7 +251,7 @@ in alphabetical order.
 +
 Each directory starts with three spaces then the name then \'/'.
 +
-Each file is preceded by two characters of its Git status, local and index (see
+Each file is preceded by two characters of its Git status, index and local (see
 'man git-status') then a space, then the name. Git status can be:
 
 * ' ' = unmodified
@@ -328,10 +331,8 @@ History::
 This button switches to the screen that shows the xref:XHist[history] of a
 file or directory.
 
-anchor:XCommit[]
-
 Commit::
-This button switches to the screen of xref:XCommi[commit] that allows commiting the the local
+This button switches to the screen of xref:XCommit[commit] that allows commiting the the local
 modifications.
 
 anchor:XAdd[]
@@ -381,15 +382,11 @@ in the xref:XConfMake[make] entry of the configuration file.
 Exit::
 A button makes Agite exit.
 
-anchor:XCommi[]
+anchor:XCommit[]
 
 Commit
 ~~~~~~
-For this menu works on the global repository, not on local directory.
-
-Agite first sorts the files either as unstaged or staged. For files that have
-both staged and unstaged changes, agite tries to fully stage them, either for
-addition, modification or deletion.
+This menu works on the global repository, not on local directory.
 
 The screen shows the following information:
 
@@ -410,9 +407,13 @@ Diff::
 Show the difference between the current change and the Head for the current file
 (selected in list).
 
-Switch::
+Stage::
 
-Alternatively stage or unstage the current file (selected in list).
+Stage the current file (selected in list).
+
+Unstage::
+
+Unstage the current file (selected in list).
 
 StageAll::
 
@@ -426,8 +427,8 @@ Commit the staged changes. +
 If the commit succeeds then the list of changes is updated, otherwise
 the error is reported through a specific screen.
 
-NOTE: The Switch and StageAll buttons are active only if there are local changes.
-The Commit button is active only if there are staged changes.
+NOTE: The Stage, Unstage and StageAll buttons are active only if there are local
+changes. The Commit button is active only if there are staged changes.
 
 
 .Comment
@@ -440,14 +441,17 @@ committing.
 This list shows all the current changes, with 3 letters of status for each
 file:
 
-* The first column ('C') shows a '''*''' if the file will be committed, and is
-empty otherwise,
-* The second column ('S') shows the staged changes (that will be committed),
-* The third column ('U') shows the unstaged changes (that will not be
-committed).
+* The first column ('S') shows the summary of the status:
+ - a '''+''' if all the changes of the file are staged,
+ - a '''*''' if some changes are staged and some others are not,
+ - empty if no changes are staged (e.g. locally modified, new or unchanged).
+* The second column ('I') shows the changes in the index (that will be
+committed),
+* The third column ('L') shows the changes local to the worktree (that will not
+be committed).
 
-You can select a file and show its local differences or switch its staged
-status.
+You can select a file and show its local differences, staged or unstage its
+changes.
 
 .Push
 
@@ -478,12 +482,12 @@ If the remote ''orign'' is defined then it is selected by default.
 .Push
 
 Pushes the local commits to the selected remote repository. +
-If there is no error then agite returns back to the xref:XCommi[Commit] menu,
+If there is no error then agite returns back to the xref:XCommit[Commit] menu,
 otherwise the error is reported through a specific screen.
 
 .Back
 
-Moves back to the xref:XCommi[Commit] menu without pushing.
+Moves back to the xref:XCommit[Commit] menu without pushing.
 
 anchor:XBook[]
 

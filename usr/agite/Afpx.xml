@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V10.0"/>
+  <Var Name="Version" Value="V10.1"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -767,75 +767,81 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Diff</Init>
     </Field>
-    <Field Num="7" Kind="Button" Name="Switch">
+    <Field Num="7" Kind="Button" Name="Stage">
       <Geometry Up="${Field_5.Low}" Left="${Field_6.Right}+2" Height="1"
-                Width="8"/>
+                Width="7"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">Switch</Init>
+      <Init Row="0" Col="1">Stage</Init>
     </Field>
-    <Field Num="8" Kind="Button" Name="Stage_All">
+    <Field Num="8" Kind="Button" Name="Unstage">
       <Geometry Up="${Field_5.Low}" Left="${Field_7.Right}+2" Height="1"
+                Width="9"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Unstage</Init>
+    </Field>
+    <Field Num="9" Kind="Button" Name="Stage_All">
+      <Geometry Up="${Field_5.Low}" Left="${Field_8.Right}+2" Height="1"
                 Width="10"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">StageAll</Init>
     </Field>
-    <Field Num="9" Kind="Button" Name="Commit">
-      <Geometry Up="${Field_5.Low}" Left="${Field_8.Right}+2" Height="1"
+    <Field Num="10" Kind="Button" Name="Commit">
+      <Geometry Up="${Field_5.Low}" Left="${Field_9.Right}+2" Height="1"
                 Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Commit</Init>
     </Field>
 
     <!-- Comment -->
-    <Field Num="10" Kind="Put">
+    <Field Num="11" Kind="Put">
       <Geometry Up="${Field_5.Low}+2" Left="1" Height="1" Width="8"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Comment:</Init>
     </Field>
-    <Field Num="11" Kind="Get" Name="Comment1">
-      <Geometry Up="${Field_10.Low}+1" Left="1" Height="1" Width="53"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
-    </Field>
-    <Field Num="12" Kind="Get" Name="Comment2">
+    <Field Num="12" Kind="Get" Name="Comment1">
       <Geometry Up="${Field_11.Low}+1" Left="1" Height="1" Width="53"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
-    <Field Num="13" Kind="Get" Name="Comment3">
+    <Field Num="13" Kind="Get" Name="Comment2">
       <Geometry Up="${Field_12.Low}+1" Left="1" Height="1" Width="53"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
-    <Field Num="14" Kind="Get" Name="Comment4">
+    <Field Num="14" Kind="Get" Name="Comment3">
       <Geometry Up="${Field_13.Low}+1" Left="1" Height="1" Width="53"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
-    <Field Num="15" Kind="Get" Name="Comment5">
+    <Field Num="15" Kind="Get" Name="Comment4">
       <Geometry Up="${Field_14.Low}+1" Left="1" Height="1" Width="53"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
-    <Field Num="16" Kind="Get" Name="Comment6">
+    <Field Num="16" Kind="Get" Name="Comment5">
       <Geometry Up="${Field_15.Low}+1" Left="1" Height="1" Width="53"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
-    <Field Num="17" Kind="Get" Name="Comment7">
+    <Field Num="17" Kind="Get" Name="Comment6">
       <Geometry Up="${Field_16.Low}+1" Left="1" Height="1" Width="53"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
+    </Field>
+    <Field Num="18" Kind="Get" Name="Comment7">
+      <Geometry Up="${Field_17.Low}+1" Left="1" Height="1" Width="53"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
 
     <!-- List Title -->
-    <Field Num="18" Kind="Put">
+    <Field Num="19" Kind="Put">
       <Geometry Up="${List.Up}-1" Left="1" Height="1" Width="8"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">CSU Name</Init>
+      <Init Row="0" Col="0">SIL Name</Init>
     </Field>
 
     <!-- Push and back -->
-    <Field Num="19" Kind="Button" Name="Push">
+    <Field Num="20" Kind="Button" Name="Push">
       <Geometry Up="${List.Low}+2" Left="1" Height="3" Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Push</Init>
     </Field>
-    <Field Num="20" Kind="Button" Name="Back">
-      <Geometry Up="${Field_19.Up}" Height="3" Right="${Screen.Width}-2"
+    <Field Num="21" Kind="Button" Name="Back">
+      <Geometry Up="${Field_20.Up}" Height="3" Right="${Screen.Width}-2"
                 Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Back</Init>
