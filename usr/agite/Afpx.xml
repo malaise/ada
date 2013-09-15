@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V10.2"/>
+  <Var Name="Version" Value="V10.3"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -653,6 +653,10 @@
 
   <!-- Confirmation screen -->
   <Descriptor Num="5" Background="Light_Grey" Name="Confirm">
+    <List>
+      <Geometry Up="6" Left="1" Height="10" Width="${Screen.Width}-2"/>
+      <Colors Foreground="Black" Background="Dark_Grey" Selected="Lime_Green"/>
+    </List>
 
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="23" Height="1" Width="9"/>
@@ -672,7 +676,7 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="4" Kind="Button" Name="Ok">
-      <Geometry Up="${Field_3.Low}+3" Left="20" Height="3" Width="6"/>
+      <Geometry Up="${List.Low}+2" Left="20" Height="3" Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">OK</Init>
     </Field>

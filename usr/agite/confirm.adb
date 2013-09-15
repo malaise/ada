@@ -1,7 +1,8 @@
 with Con_Io, Afpx, Str_Util;
 with Utils, Afpx_Xref;
 function Confirm (Title, Msg : String;
-                  Ok_Cancel : Boolean := True) return Boolean is
+                  Ok_Cancel : Boolean := True;
+                  Show_List : Boolean := False) return Boolean is
   -- Afpx stuff
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
@@ -23,6 +24,14 @@ begin
     Afpx.Clear_Field (Afpx_Xref.Confirm.Cancel);
     Afpx.Encode_Field (Afpx_Xref.Confirm.Ok, (1, 1), "Yes");
     Afpx.Encode_Field (Afpx_Xref.Confirm.Cancel, (1, 3), "No");
+  end if;
+  -- Show/Hide list
+  if Show_List then
+    -- Show list protected
+    Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+  else
+    -- Hide list
+    Afpx.Set_Field_Activation (Afpx.List_Field_No, False);
   end if;
 
   -- Main loop

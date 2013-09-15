@@ -217,13 +217,12 @@ package body Commit is
   -- Stage all unstaged changes
   procedure Do_Stage_All is
     Change : Git_If.File_Entry_Rec;
-    Untracked : Natural;
+    Untracked : Git_If.File_List;
     Moved : Boolean;
   begin
     -- Get list of changes,
     Afpx.Suspend;
     Git_If.List_Changes (Changes);
-    Untracked := 0;
     if not Changes.Is_Empty then
       Changes.Rewind;
       loop
@@ -233,33 +232,31 @@ package body Commit is
         elsif Change.S3 = 'D' then
           Git_If.Do_Rm (Change.Name.Image);
         elsif Change.S3 = '?' then
-          Untracked := Untracked + 1;
+          Untracked.Insert (Change);
         end if;
         exit when not Moved;
       end loop;
     end if;
     Afpx.Resume;
 
-    if Untracked /= 0 then
+    if not Untracked.Is_Empty then
+      Untracked.Rewind;
+      Init_List (Untracked);
       Decode_Comment;
       if Confirm ("Staging all",
-                  "Stage " & Images.Integer_Image (Untracked)
+                  "Stage " & Images.Integer_Image (Untracked.List_Length)
                            & " untracked file"
-                           & (if Untracked = 1 then "" else "s") & "?",
-                  Ok_Cancel => False) then
+                           & (if Untracked.List_Length = 1 then "" else "s")
+                           & "?",
+                  Ok_Cancel => False,
+                  Show_List => True) then
         -- Add untracked files
         Afpx.Suspend;
-        Git_If.List_Changes (Changes);
-        if not Changes.Is_Empty then
-          Changes.Rewind;
-          loop
-            Changes.Read (Change, Moved => Moved);
-            if Change.S3 = '?' then
-              Git_If.Do_Add (Change.Name.Image);
-            end if;
-            exit when not Moved;
-          end loop;
-        end if;
+        loop
+          Untracked.Read (Change, Moved => Moved);
+          Git_If.Do_Add (Change.Name.Image);
+          exit when not Moved;
+        end loop;
         Afpx.Resume;
       end if;
       Init;
