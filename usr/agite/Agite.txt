@@ -388,7 +388,8 @@ Commit
 ~~~~~~
 This menu works on the global repository, not on local directory.
 
-The screen shows the following information:
+The screen shows the list of changes and allows entering a comment for the
+commit:
 
 .Current branch and root
 
@@ -396,7 +397,7 @@ This shows the actual branch and path of the root of current repository.
 
 .Actions
 
-The possible actions are:
+The possible actions on the list of changes or the comment are:
 
 Reread::
 
@@ -417,24 +418,20 @@ Unstage the current file (selected in list).
 
 StageAll::
 
-Stage all the changes that are unstaged, but not the new files. The new files
-need to be explicitly added (switched) one by one.
+Stage all the changes that are unstaged. Also proposes to add the untracked
+(new) files.
 
-Commit::
+Clear::
 
-Commit the staged changes. +
-*Note: Ensure to enter a comment before committing.* +
-If the commit succeeds then the list of changes is updated, otherwise
-the error is reported through a specific screen.
+Clear the comment fields.
 
 NOTE: The Stage, Unstage and StageAll buttons are active only if there are local
-changes. The Commit button is active only if there are staged changes.
-
+changes.
 
 .Comment
 
-You can enter up to 7 lines of comment. Comment must not be empty when
-committing.
+You can enter up to 7 lines of comment. +
+Comment must not be empty when committing.
 
 .List of changes
 
@@ -450,8 +447,17 @@ committed),
 * The third column ('L') shows the changes local to the worktree (that will not
 be committed).
 
-You can select a file and show its local differences, staged or unstage its
+You can select a file and show its local differences, stage or unstage its
 changes.
+
+.Commit
+
+Commit the staged changes. +
+*Note: Ensure to enter a comment before committing.* +
+If the commit succeeds then the list of changes is updated, otherwise
+the error is reported through a specific screen.
+
+NOTE: The Commit button is active only if there are staged changes.
 
 .Push
 
