@@ -1,6 +1,7 @@
 with Con_Io, Afpx, Str_Util;
 with Utils, Afpx_Xref;
-function Confirm (Title, Msg : String) return Boolean is
+function Confirm (Title, Msg : String;
+                  Ok_Cancel : Boolean := True) return Boolean is
   -- Afpx stuff
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
@@ -16,6 +17,13 @@ begin
       Str_Util.Center (Title, Afpx.Get_Field_Width (Afpx_Xref.Confirm.Action)));
   Afpx.Encode_Field (Afpx_Xref.Confirm.Name, (0, 0),
       Str_Util.Center (Msg, Afpx.Get_Field_Width (Afpx_Xref.Confirm.Name)));
+  -- Yes / No
+  if not Ok_Cancel then
+    Afpx.Clear_Field (Afpx_Xref.Confirm.Ok);
+    Afpx.Clear_Field (Afpx_Xref.Confirm.Cancel);
+    Afpx.Encode_Field (Afpx_Xref.Confirm.Ok, (1, 1), "Yes");
+    Afpx.Encode_Field (Afpx_Xref.Confirm.Cancel, (1, 3), "No");
+  end if;
 
   -- Main loop
   loop

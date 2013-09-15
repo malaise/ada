@@ -1,7 +1,7 @@
 with Ada.Exceptions;
 with As.U, Directory, Con_Io, Afpx.List_Manager, Str_Util, Basic_Proc,
-     Aski, Unicode;
-with Git_If, Utils.X, Config, Push, Afpx_Xref, Error;
+     Aski, Unicode, Images;
+with Git_If, Utils.X, Config, Push, Afpx_Xref, Confirm, Error;
 package body Commit is
 
   -- List width minus 4 ("CSU ")
@@ -17,7 +17,7 @@ package body Commit is
   begin
     Afpx.Encode_Line (Line,
       (if    not Is_Staged (From.S2) then ' '
-       elsif not Is_staged (From.S3) then '+'
+       elsif not Is_Staged (From.S3) then '+'
        else '*')
       & From.S2 & From.S3
       & ' ' & Utils.Normalize (From.Name.Image, Width) );
@@ -41,12 +41,60 @@ package body Commit is
   -- Differator
   Differator : As.U.Asu_Us;
 
+  -- Root path
+  Root : As.U.Asu_Us;
+
   -- The changes
   Changes : Git_If.File_List;
   -- The text of the comment
   Comment : As.U.Asu_Us;
 
-  -- re assess the status of changes
+  -- Init screen
+  procedure Init is
+    Prev : Positive;
+    Field : Afpx.Field_Range;
+    use type Afpx.Absolute_Field_Range;
+  begin
+    Afpx.Use_Descriptor (Afpx_Xref.Commit.Dscr_Num);
+    -- Encode Root
+    Afpx.Encode_Field (Afpx_Xref.Commit.Root, (0, 0),
+        Utils.Normalize (Root.Image,
+                         Afpx.Get_Field_Width (Afpx_Xref.Commit.Root)));
+    -- Encode text of (current) comment
+    if not Comment.Is_Null then
+      Prev := 1;
+      Field := Afpx_Xref.Commit.Comment1;
+      for I in 2 .. Comment.Length loop
+        if Comment.Element (I) = Aski.Lf then
+          Afpx.Encode_Field (Field, (0, 0), Comment.Slice (Prev, I-1));
+          Field := Field + 1;
+          Prev := I + 1;
+        end if;
+      end loop;
+    end if;
+  end Init;
+
+  -- Decode Comment fields
+  procedure Decode_Comment is
+  begin
+    Comment.Set_Null;
+    for Field in Afpx_Xref.Commit.Comment1 .. Afpx_Xref.Commit.Comment7 loop
+      -- Decode comment, remove trailing spaces,
+      Comment.Append (Str_Util.Strip (Afpx.Decode_Field (Field, 0)) & Aski.Lf);
+    end loop;
+    -- Skip trailing empty lines
+    for I in reverse 1 .. Comment.Length loop
+      exit when Comment.Element (I) /= Aski.Lf;
+      Comment.Trail (1);
+    end loop;
+    -- Append the last Lf
+    if not Comment.Is_Null
+    and then Comment.Element (Comment.Length) /= Aski.Lf then
+      Comment.Append (Aski.Lf);
+    end if;
+  end Decode_Comment;
+
+  -- Re assess the status of changes
   procedure Reread is
     Line : Afpx.Line_Rec;
     Change : Git_If.File_Entry_Rec;
@@ -139,14 +187,16 @@ package body Commit is
     end if;
   end Do_Stage;
 
-  -- Stage all known by unstaged changes
+  -- Stage all unstaged changes
   procedure Do_Stage_All is
     Change : Git_If.File_Entry_Rec;
+    Untracked : Natural;
     Moved : Boolean;
   begin
     -- Get list of changes,
     Afpx.Suspend;
     Git_If.List_Changes (Changes);
+    Untracked := 0;
     if not Changes.Is_Empty then
       Changes.Rewind;
       loop
@@ -155,11 +205,39 @@ package body Commit is
           Git_If.Do_Add (Change.Name.Image);
         elsif Change.S3 = 'D' then
           Git_If.Do_Rm (Change.Name.Image);
+        elsif Change.S3 = '?' then
+          Untracked := Untracked + 1;
         end if;
         exit when not Moved;
       end loop;
     end if;
     Afpx.Resume;
+
+    if Untracked /= 0 then
+      Decode_Comment;
+      if Confirm ("Staging all",
+                  "Stage " & Images.Integer_Image (Untracked)
+                           & " untracked file"
+                           & (if Untracked = 1 then "" else "s") & "?",
+                  Ok_Cancel => False) then
+        -- Add untracked files
+        Afpx.Suspend;
+        Git_If.List_Changes (Changes);
+        if not Changes.Is_Empty then
+          Changes.Rewind;
+          loop
+            Changes.Read (Change, Moved => Moved);
+            if Change.S3 = '?' then
+              Git_If.Do_Add (Change.Name.Image);
+            end if;
+            exit when not Moved;
+          end loop;
+        end if;
+        Afpx.Resume;
+      end if;
+      Init;
+    end if;
+
     Reread;
   end Do_Stage_All;
 
@@ -167,21 +245,7 @@ package body Commit is
   procedure Do_Commit is
     Result : As.U.Asu_Us;
   begin
-    Comment.Set_Null;
-    for Field in Afpx_Xref.Commit.Comment1 .. Afpx_Xref.Commit.Comment7 loop
-      -- Decode comment, remove trailing spaces,
-      Comment.Append (Str_Util.Strip (Afpx.Decode_Field (Field, 0)) & Aski.Lf);
-    end loop;
-    -- Skip trailing empty lines
-    for I in reverse 1 .. Comment.Length loop
-      exit when Comment.Element (I) /= Aski.Lf;
-      Comment.Trail (1);
-    end loop;
-    -- Append the last Lf
-    if not Comment.Is_Null
-    and then Comment.Element (Comment.Length) /= Aski.Lf then
-      Comment.Append (Aski.Lf);
-    end if;
+    Decode_Comment;
     -- Git_If.Commit
     Result := As.U.Tus (Git_If.Do_Commit (Comment.Image));
     if Result.Is_Null then
@@ -198,48 +262,25 @@ package body Commit is
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
-    use type Afpx.Absolute_Field_Range;
-
-    procedure Init is
-      Prev : Positive;
-      Field : Afpx.Field_Range;
-    begin
-      Afpx.Use_Descriptor (Afpx_Xref.Commit.Dscr_Num);
-      Cursor_Field := Afpx.Next_Cursor_Field (0);
-      Cursor_Col := 0;
-      Insert := False;
-      -- Encode Root
-      Afpx.Encode_Field (Afpx_Xref.Commit.Root, (0, 0),
-          Utils.Normalize (Root, Afpx.Get_Field_Width (Afpx_Xref.Commit.Root)));
-      -- Encode text of (current) comment
-      if not Comment.Is_Null then
-        Prev := 1;
-        Field := Afpx_Xref.Commit.Comment1;
-        for I in 2 .. Comment.Length loop
-          if Comment.Element (I) = Aski.Lf then
-            Afpx.Encode_Field (Field, (0, 0), Comment.Slice (Prev, I-1));
-            Field := Field + 1;
-            Prev := I + 1;
-          end if;
-        end loop;
-      end if;
-    end Init;
-
+    use type Afpx.Field_Range;
   begin
     -- Init differator
     Differator := As.U.Tus (Config.Differator);
 
     -- Move to root
+    Commit.Root := As.U.Tus (Root);
     Directory.Change_Current (Root);
-
-    -- Reset comment
-    Comment.Set_Null;
-
-    -- Reset Afpx list
-    Afpx.Line_List.Delete_List (False);
 
     -- Init Afpx
     Init;
+
+    -- Afpx put then get
+    Cursor_Field := Afpx.Next_Cursor_Field (0);
+    Cursor_Col := 0;
+    Insert := False;
+
+    -- Reset Afpx list
+    Afpx.Line_List.Delete_List (False);
 
     -- Width after 4 chars of Commit, Staged, Unstaged and a space
     Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 4;
@@ -285,6 +326,10 @@ package body Commit is
             when Afpx_Xref.Commit.Stage_All =>
               -- StageAll button
               Do_Stage_All;
+            when Afpx_Xref.Commit.Clear =>
+              -- StageAll button
+              Comment.Set_Null;
+              Reread;
             when Afpx_Xref.Commit.Commit =>
               -- Commit button
               Do_Commit;
@@ -297,6 +342,7 @@ package body Commit is
               Reread;
             when Afpx_Xref.Commit.Back =>
               -- Back button
+              Decode_Comment;
               return;
             when others =>
               null;
