@@ -200,18 +200,20 @@ package body Commit is
     Status : Character;
   begin
     Changes.Move_At (Afpx.Line_List.Get_Position);
-    Status := Changes.Access_Current.S2;
+    Status := Changes.Access_Current.S3;
     if Stage then
-      if Status = ' ' or else Status = '?' then
-        -- File is not staged, add
+      if Status = '?' or else Status = 'M' then
+        -- Stage new file or modif
         Git_If.Do_Add (Changes.Access_Current.Name.Image);
-        Reread;
+      elsif Status = 'D' then
+        -- Stage deletion of file
+        Git_If.Do_Rm (Changes.Access_Current.Name.Image);
       end if;
     else
       -- File is staged, reset
       Git_If.Do_Reset (Changes.Access_Current.Name.Image);
-      Reread;
     end if;
+    Reread;
   end Do_Stage;
 
   -- Stage all unstaged changes
@@ -327,6 +329,13 @@ package body Commit is
 
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
+            when Utils.X.List_Scroll_Fld_Range'First ..
+                 Utils.X.List_Scroll_Fld_Range'Last =>
+              -- Scroll list
+              Afpx.List_Manager.Scroll(
+                  Ptg_Result.Field_No
+                - Utils.X.List_Scroll_Fld_Range'First
+                + 1);
             when Afpx_Xref.Commit.Reread =>
               -- Reread button
               Reread;

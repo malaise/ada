@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with As.U.Utils, Con_Io, Afpx.List_Manager, Basic_Proc, Unicode;
-with Utils, Git_If, Afpx_Xref, Error;
+with Utils.X, Git_If, Afpx_Xref, Error;
 package body Push is
 
   procedure Set (Line : in out Afpx.Line_Rec;
@@ -61,6 +61,12 @@ package body Push is
       -- Encode Root
       Afpx.Encode_Field (Afpx_Xref.Push.Root, (0, 0),
           Utils.Normalize (Root, Afpx.Get_Field_Width (Afpx_Xref.Push.Root)));
+      -- Encode current branch
+      Afpx.Clear_Field (Afpx_Xref.Push.Branch);
+      Afpx.Encode_Field (Afpx_Xref.Push.Branch, (0, 0),
+          Utils.X.Branch_Image (Git_If.Current_Branch,
+              Afpx.Get_Field_Width (Afpx_Xref.Push.Branch)));
+
       -- Get list of references
       Git_If.List_References (References);
       Init_List (References);
