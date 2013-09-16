@@ -840,5 +840,53 @@ package body Git_If is
       return "ERROR.";
   end Current_Branch;
 
+  -- Get current user email
+  function Get_User return String is
+    Cmd : Many_Strings.Many_String;
+    Line : As.U.Asu_Us;
+    Result : As.U.Asu_Us;
+    use type As.U.Asu_Us;
+  begin
+    -- Get name
+    Cmd.Set ("git");
+    Cmd.Cat ("config");
+    Cmd.Cat ("user.name");
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git config user.name: " & Err_Flow.Str.Image);
+      return "";
+    end if;
+    -- Read first line
+    if not Out_Flow_1.List.Is_Empty then
+      Out_Flow_1.List.Rewind;
+      Out_Flow_1.List.Read (Line, Command.Res_Mng.Dyn_List.Current);
+      Result := Line;
+    end if;
+
+    -- Get email
+    Cmd.Set ("git");
+    Cmd.Cat ("config");
+    Cmd.Cat ("user.email");
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git config user.email: "
+                               & Err_Flow.Str.Image);
+      return "";
+    end if;
+    -- Read first line
+    if not Out_Flow_1.List.Is_Empty then
+      Out_Flow_1.List.Rewind;
+      Out_Flow_1.List.Read (Line, Command.Res_Mng.Dyn_List.Current);
+      if not Line.Is_Null then
+        Result.Append (" <" & Line & ">");
+      end if;
+    end if;
+    return Result.Image;
+  end Get_User;
+
 end Git_If;
 

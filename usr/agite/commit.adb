@@ -100,6 +100,7 @@ package body Commit is
       for I in 2 .. Comment.Length loop
         if Comment.Element (I) = Aski.Lf then
           Afpx.Encode_Field (Field, (0, 0), Comment.Slice (Prev, I-1));
+          exit when Field = Afpx_Xref.Commit.Comment7;
           Field := Field + 1;
           Prev := I + 1;
         end if;
@@ -267,6 +268,24 @@ package body Commit is
     Reread;
   end Do_Stage_All;
 
+  -- Sign the comment
+  procedure Do_Sign is
+    Line : As.U.Asu_Us;
+    use type As.U.Asu_Us;
+  begin
+    -- Get user name and email
+    Afpx.Suspend;
+    Line := As.U.Tus (Git_If.Get_User);
+    Afpx.Resume;
+
+    -- Decode current comment
+    Decode_Comment;
+    -- Append signature
+    Comment.Append (Line & Aski.Lf);
+    -- Re-encode
+    Encode_Comment;
+  end Do_Sign;
+
   -- Decode comments and commit
   procedure Do_Commit is
     Result : As.U.Asu_Us;
@@ -350,8 +369,11 @@ package body Commit is
             when Afpx_Xref.Commit.Stage_All =>
               -- StageAll button
               Do_Stage_All;
+            when Afpx_Xref.Commit.Sign =>
+              -- Sign button
+              Do_Sign;
             when Afpx_Xref.Commit.Clear =>
-              -- StageAll button
+              -- Clear button
               Comment.Set_Null;
               Encode_Comment;
               Reset_Ptg;

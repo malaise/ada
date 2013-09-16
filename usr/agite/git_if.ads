@@ -122,5 +122,8 @@ package Git_If is
   -- Get current branch name
   function Current_Branch return String;
 
+  -- Get current user name and email
+  function Get_User return String;
+
 end Git_If;
 
