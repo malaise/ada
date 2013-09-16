@@ -805,7 +805,26 @@ package body Git_If is
     return True;
   end Do_Push;
 
+  -- Launch a pull synchronous, return True if OK
+  function Do_Pull (Remote : String; Branch : String) return Boolean is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("pull");
+    Cmd.Cat (Remote);
+    Cmd.Cat (Branch);
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git pull: " & Err_Flow.Str.Image);
+      return False;
+    end if;
+    return True;
+  end Do_Pull;
+
   -- Get current branch name
+  No_Branch : constant String := "(no branch)";
   function Current_Branch return String is
     Cmd : Many_Strings.Many_String;
     Branch : As.U.Asu_Us;
@@ -827,13 +846,16 @@ package body Git_If is
         Out_Flow_1.List.Read (Branch, Moved => Moved);
         if Branch.Length > 2
         and then Branch.Slice (1, 2) = "* " then
-          return Branch.Slice (3, Branch.Length);
+          -- Current branch
+          Branch.Delete (1, 2);
+          return (if Branch.Image = No_Branch then ""
+                  else Branch.Image);
         end if;
         exit when not Moved;
       end loop;
     end if;
     -- No active branch???
-    -- Even in the middle of a rebase there is a "* " and "(no branch)"
+    -- Even in the middle of a rebase there is a "* (no branch)"
     return "ERROR.";
   exception
     when others =>

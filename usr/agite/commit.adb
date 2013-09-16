@@ -384,9 +384,13 @@ package body Commit is
               Reread;
             when Afpx_Xref.Commit.Push =>
               -- Push button
-              Push.Handle (Root);
-              Init;
-              Reread;
+              Decode_Comment;
+              if Push.Handle (Root, Pull => False) then
+                return;
+              else
+                Init;
+                Reread;
+              end if;
             when Afpx_Xref.Commit.Back =>
               -- Back button
               Decode_Comment;

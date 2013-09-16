@@ -43,29 +43,60 @@ package body Push is
     end if;
   end Do_Push;
 
+  -- Pull current branch
+  function Do_Pull return Boolean is
+    Branch : As.U.Asu_Us;
+  begin
+    -- Get current branch
+    Afpx.Suspend;
+    Branch := As.U.Tus (Git_If.Current_Branch);
+    Afpx.Resume;
+
+    -- Pulll current branch from current remote
+    References.Move_At (Afpx.Line_List.Get_Position);
+    if Git_If.Do_Pull (References.Access_Current.Image, Branch.Image) then
+      return True;
+    else
+      Error ("Pulling from", References.Access_Current.Image, Branch.Image);
+      return False;
+    end if;
+  end Do_Pull;
+
   -- Handle the Push
-  procedure Handle (Root : in String) is
+  function Handle (Root : String; Pull : Boolean) return Boolean is
     -- Afpx stuff
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
+    -- Result of Push or Pull
+    Result : Boolean;
     use type Afpx.Absolute_Field_Range;
 
     procedure Init is
     begin
+      -- Afpx stuff
       Afpx.Use_Descriptor (Afpx_Xref.Push.Dscr_Num);
       Cursor_Field := 1;
       Cursor_Col := 0;
       Insert := False;
+
       -- Encode Root
       Afpx.Encode_Field (Afpx_Xref.Push.Root, (0, 0),
           Utils.Normalize (Root, Afpx.Get_Field_Width (Afpx_Xref.Push.Root)));
+
       -- Encode current branch
       Afpx.Clear_Field (Afpx_Xref.Push.Branch);
       Afpx.Encode_Field (Afpx_Xref.Push.Branch, (0, 0),
           Utils.X.Branch_Image (Git_If.Current_Branch,
               Afpx.Get_Field_Width (Afpx_Xref.Push.Branch)));
+
+      -- Change title and Push pbutton if Pull
+      if Pull then
+        Afpx.Encode_Field (Afpx_Xref.Push.Title, (0, 0), "Pull");
+        Afpx.Encode_Field (Afpx_Xref.Push.Push, (1, 1), "Pull");
+      end if;
+
 
       -- Get list of references
       Git_If.List_References (References);
@@ -101,7 +132,7 @@ package body Push is
               null;
             when Afpx.Escape_Key =>
               -- Back
-              return;
+              return False;
             when Afpx.Break_Key =>
               raise Utils.Exit_Requested;
           end case;
@@ -116,16 +147,21 @@ package body Push is
                 - Utils.X.List_Scroll_Fld_Range'First
                 + 1);
             when Afpx_Xref.Push.Push =>
-              if Do_Push then
-                -- Push OK
-                return;
+              if Pull then
+                Result := Do_Pull;
               else
-                -- Push KO
+                Result := Do_Push;
+              end if;
+              if Result then
+                -- Push/Pull OK
+                return True;
+              else
+                -- Push/Pull KO
                 Init;
               end if;
             when Afpx_Xref.Push.Back =>
               -- Back button
-              return;
+              return False;
             when others =>
               null;
           end case;

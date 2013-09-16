@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V10.5
+V11.0
 
 General purpose
 ---------------
@@ -146,7 +146,8 @@ Agite is based on four main menus:
 * Directory: This is the first menu at start-up. It shows the content of a
 directory.
 * Commit: This menu allows staging and commiting the local changes
-* Push: This menu allows pushing loca commits to a remote repository
+* Pull: This menu allows pulling the current branch from a remote repository
+* Push: This menu allows pushing local commits to a remote repository
 * Bookmarks: This menu allows bookmarking directories and quickly jumping
 to a bookmark
 * History: This shows the Git history of a file or directory, the list of
@@ -165,7 +166,10 @@ The navigation is as follows:
   +---------- +\         +-----------+
                 \        +---------+       +---------+
                  \------>| History |<----->| Details |
-                         +---------+       +---------+
+                  \      +---------+       +---------+
+                   \     +------+
+                    \--->| Pull |
+                         +------+
 
 There are also a confirmation screen and an error screen that are called when
 necessary.
@@ -179,8 +183,8 @@ the 'Back' button in each) in order to go back to the 'Directory' menu.
 
 anchor:XDir[]
 
-Directory status
-~~~~~~~~~~~~~~~~
+Directory menu
+~~~~~~~~~~~~~~
 The 'Directory' menu lists the git content, subdirectories and files, of
 of current directory. Starting from top, the fields are:
 
@@ -331,10 +335,6 @@ History::
 This button switches to the screen that shows the xref:XHist[history] of a
 file or directory.
 
-Commit::
-This button switches to the screen of xref:XCommit[commit] that allows commiting the the local
-modifications.
-
 anchor:XAdd[]
 
 Add::
@@ -367,6 +367,7 @@ The Revert button has no effect on a file known by GIT and not modified.
 
 .Other actions
 
+
 anchor:XXterm[]
 
 Xterm::
@@ -378,6 +379,14 @@ anchor:XMake[]
 Make::
 This button makes a local compilation by launching the command defined
 in the xref:XConfMake[make] entry of the configuration file.
+
+Commit::
+This button switches to the screen of xref:XCommit[commit] that allows commiting the the local
+modifications.
+
+Pull::
+This button switches to the screen of xref:XPull[pull] that allows pulling the
+current branch from a remote repository;
 
 Exit::
 A button makes Agite exit.
@@ -420,6 +429,10 @@ StageAll::
 
 Stage all the changes that are unstaged. Also proposes to add the untracked
 (new) files.
+
+Sign::
+
+Append the user name and email address to the comment.
 
 Clear::
 
@@ -488,7 +501,7 @@ If the remote ''orign'' is defined then it is selected by default.
 .Push
 
 Pushes the local commits to the selected remote repository. +
-If there is no error then agite returns back to the xref:XCommit[Commit] menu,
+If there is no error then agite returns back to the xref:XDir[Directory] menu,
 otherwise the error is reported through a specific screen.
 
 .Back
@@ -702,6 +715,35 @@ if none of them is locally modified, and after a confirmation.
 Note: Clicking on 'Hist' calls a new function to show the history, as explained
 in the section on xref:XNavigation[navigation].
 
+
+anchor:XPull[]
+
+Pull
+~~~~
+
+The 'Pull' menu allows pulling the current branch from a given remote
+repository. +
+It shows:
+
+.Current branch and root
+
+This shows the actual branch and path of the root of current repository.
+
+.List of known repositories
+
+This lists the known remote repositories from which you can select the source. +
+If the remote ''orign'' is defined then it is selected by default.
+
+.Pull
+
+Pulls the current branch from the selected remote repository. +
+If there is no error then agite returns back to the xref:XDir[Directory] menu,
+otherwise the error is reported through a specific screen.
+
+.Back
+
+Moves back to the xref:XCommit[Commit] menu without pulling.
+
 Interfaces with Git
 -------------------
 This section lists the commands and arguments passed to Git. This requires git
@@ -751,6 +793,11 @@ calling 'git difftool -y -x <differator> <ref_HSA1> <comp_HSA1> \-- <file>',
 "<comment>"',
 
 * A function pushes the local commits by calling 'git push <remote>',
+
+* A function pulls the current branch by calling 'git pull <remote> <branch>',
+
+* A function gets the user name and email by calling 'git config user.name'
+and 'git config user.email',
 
 * A function gets the name of current branch by calling 'git branch'.
 

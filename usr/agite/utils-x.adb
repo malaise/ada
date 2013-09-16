@@ -14,7 +14,7 @@ package body Utils.X is
   function Branch_Image (Git_Branch : String; Width : Afpx.Width_Range)
                         return String is
   begin
-    if Git_Branch = ("(no branch)") then
+    if Git_Branch = "" then
       return "None.";
     else
       return "Br: " & Normalize (Git_Branch, Width - 4);

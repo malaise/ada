@@ -1,6 +1,6 @@
 with As.U, Con_Io, Afpx.List_Manager, Basic_Proc, Images, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Str_Util;
-with Utils.X, Git_If, Config, Bookmarks, History, Commit, Confirm, Error,
+with Utils.X, Git_If, Config, Bookmarks, History, Commit, Push, Confirm, Error,
      Afpx_Xref;
 procedure Agite is
 
@@ -428,13 +428,15 @@ procedure Agite is
     Init (Position);
   end Do_History;
 
-  procedure Do_Commit is
-    Curr_Dir : constant String := Directory.Get_Current;
+  -- Add a dir or file
+  procedure Do_Add_File (File : in Git_If.File_Entry_Rec) is
   begin
-    Position := Afpx.Line_List.Get_Position;
-    Commit.Handle (Root.Image);
-    Init (Position, Curr_Dir);
-  end Do_Commit;
+    if File.S2 = '?' or else File.S2 = ' ' then
+      -- Untracked or not in index
+      Git_If.Do_Add (File.Name.Image);
+      Encode_Files (Force => False);
+    end if;
+  end Do_Add_File;
 
   procedure Do_Revert (Name, Prev : in String) is
     File : Git_If.File_Entry_Rec;
@@ -539,15 +541,23 @@ procedure Agite is
     Init (Position);
   end Do_Revert;
 
-  -- Add a dir or file
-  procedure Do_Add_File (File : in Git_If.File_Entry_Rec) is
+  procedure Do_Commit is
+    Curr_Dir : constant String := Directory.Get_Current;
   begin
-    if File.S2 = '?' or else File.S2 = ' ' then
-      -- Untracked or not in index
-      Git_If.Do_Add (File.Name.Image);
-      Encode_Files (Force => False);
-    end if;
-  end Do_Add_File;
+    Position := Afpx.Line_List.Get_Position;
+    Commit.Handle (Root.Image);
+    Init (Position, Curr_Dir);
+  end Do_Commit;
+
+  procedure Do_Pull is
+    Curr_Dir : constant String := Directory.Get_Current;
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
+  begin
+    Position := Afpx.Line_List.Get_Position;
+    Dummy := Push.Handle (Root.Image, Pull => True);
+    Init (Position, Curr_Dir);
+  end Do_Pull;
 
   -- List action on File or Dir:
   --  Launch the diff depending on file kind and status
@@ -883,18 +893,21 @@ begin
           when Afpx_Xref.Main.Diff =>
             -- Diff
             List_Action (Diff);
-          when Afpx_Xref.Main.Commit =>
-            -- Commit screen
-            Do_Commit;
           when Afpx_Xref.Main.History =>
             -- History
             List_Action (History);
-          when Afpx_Xref.Main.Revert =>
-            -- Revert
-            List_Action (Revert);
           when Afpx_Xref.Main.Add =>
             -- Add
             List_Action (Add);
+          when Afpx_Xref.Main.Revert =>
+            -- Revert
+            List_Action (Revert);
+          when Afpx_Xref.Main.Commit =>
+            -- Commit screen
+            Do_Commit;
+          when Afpx_Xref.Main.Pull =>
+            -- Pull screen
+            Do_Pull;
           when Afpx_Xref.Main.Quit =>
             -- Exit
             raise Utils.Exit_Requested;
