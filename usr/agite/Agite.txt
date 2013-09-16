@@ -183,8 +183,8 @@ the 'Back' button in each) in order to go back to the 'Directory' menu.
 
 anchor:XDir[]
 
-Directory menu
-~~~~~~~~~~~~~~
+Directory
+~~~~~~~~~
 The 'Directory' menu lists the git content, subdirectories and files, of
 of current directory. Starting from top, the fields are:
 
@@ -491,7 +491,7 @@ It shows:
 
 .Current branch and root
 
-This shows the actual branch and path of the root of current repository.
+This shows the actual branch and path of the root of the current workspace.
 
 .List of known repositories
 
@@ -537,7 +537,7 @@ parentheses before the path of the bookmark. Example:
 
  (Reposit) /home/user/ada/reposit
 
-* Separators are created by setting a name (in 'Name to Add') and clicking
+* Separators are created by setting a name (in 'Name to add') and clicking
 in xref:XAdd[AddSep]. This creates a line with dashes and the name. Example:
 
  ----- Ada -----
@@ -547,7 +547,7 @@ separators, created by clicking in xref:XAdd[AddSep] with no name set.
 
 anchor:XAdd[]
 The buttons 'AddCur' and 'AddSep' insert a named or anonymous entry (depending
-on the field 'Name to add') below current entry.
+on the field 'Name to add') below the current entry.
 
 anchor:XGoto[]
 The 'Goto' button allows changing current dir to the bookmark currently
@@ -556,7 +556,8 @@ Double clicking on the entry has the same effect. It has no effect on a
 separator.
 
 Bookmarks and separators can be organised with the buttons 'MovUp', 'MovDwn' and
-can be deleted with the button 'Del', with no confirmation.
+can be deleted with the button 'Del', after confirmation when deleting a
+bookmark.
 
 Navigation in the list is the same as the xref:XNavig[navigation] in the
 directory menu, with the mouse wheel, the keyboard and buttons.
@@ -727,7 +728,7 @@ It shows:
 
 .Current branch and root
 
-This shows the actual branch and path of the root of current repository.
+This shows the actual branch and path of the root of the current workspace.
 
 .List of known repositories
 
@@ -742,7 +743,7 @@ otherwise the error is reported through a specific screen.
 
 .Back
 
-Moves back to the xref:XCommit[Commit] menu without pulling.
+Moves back to the xref:XDir[Directory] menu without pulling.
 
 Interfaces with Git
 -------------------
