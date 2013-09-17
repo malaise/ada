@@ -17,7 +17,9 @@ begin
   Afpx.Encode_Field (Afpx_Xref.Error.Target, (0, 0),
       Str_Util.Center (Target, Afpx.Get_Field_Width (Afpx_Xref.Error.Target)));
   Afpx.Encode_Field (Afpx_Xref.Error.Text, (0, 0),
-      Str_Util.Center (Text, Afpx.Get_Field_Width (Afpx_Xref.Error.Text)));
+      Str_Util.Center (
+        Utils.Normalize (Text, Afpx.Get_Field_Width (Afpx_Xref.Error.Text)),
+        Afpx.Get_Field_Width (Afpx_Xref.Error.Text)) );
 
   -- Main loop
   loop

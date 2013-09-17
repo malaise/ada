@@ -773,11 +773,13 @@ package body Git_If is
   -- Launch a commit synchronous
   function Do_Commit (Comment : String) return String is
     Cmd : Many_Strings.Many_String;
+    Lcomment : As.U.Asu_Us;
   begin
+    Lcomment := As.U.Tus (Str_Util.Substit (Comment, """", "''", True));
     Cmd.Set ("git");
     Cmd.Cat ("commit");
     Cmd.Cat ("-m");
-    Cmd.Cat ("'" & Comment & "'");
+    Cmd.Cat ("""" & Lcomment.Image & """");
     Command.Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
