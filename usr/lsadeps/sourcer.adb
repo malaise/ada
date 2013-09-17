@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Basic_Proc, Directory, Sys_Calls, Text_Char, Ada_Parser, Str_Util,
-     Mixed_Str, As.U.Utils, Parser;
+     Mixed_Str, As.U.Utils, Parser, Text_Line;
 with Debug, Sort;
 package body Sourcer is
 
@@ -66,14 +66,15 @@ package body Sourcer is
 
   -- Dump a unit dscr
   procedure Dump (Dscr : in Src_Dscr) is
+    Lf : constant Character := Text_Line.Line_Feed_Char;
   begin
-    Basic_Proc.Put_Output ("  " & Image (Dscr));
-    Basic_Proc.Put_Output (", standalone: "
-           & Mixed_Str (Dscr.Standalone'Img));
-    Basic_Proc.Put_Line_Output (", parent: " & Dscr.Parent.Image);
-    Basic_Proc.Put_Line_Output ("  withed: " & Dscr.Witheds.Image);
-    Basic_Proc.Put_Line_Output ("  withPa: " & Dscr.Witheds_Parents.Image);
-    Basic_Proc.Put_Line_Output ("  used  : " & Dscr.Useds.Image);
+    Debug.Logger.Log_Debug (
+            "  " & Image (Dscr)
+          & ", standalone: " & Mixed_Str (Dscr.Standalone'Img)
+          & ", parent: " & Dscr.Parent.Image & Lf
+          & "  withed: " & Dscr.Witheds.Image & Lf
+          & "  withPa: " & Dscr.Witheds_Parents.Image & Lf
+          & "  used  : " & Dscr.Useds.Image);
   end Dump;
 
   -- Report an error and raise exception
@@ -490,7 +491,7 @@ package body Sourcer is
 
     Debug.Logger.Log_Debug ("Checks completed.");
 
-    -- Dumpt Names (not empty) and Withings if any
+    -- Dump Names (not empty) and Withings if any
     if Debug.Logger.Debug_On then
       Debug.Logger.Log_Debug ("Names:");
       Name_List.Rewind;

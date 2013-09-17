@@ -20,7 +20,7 @@ package Tree_Mng is
 
   -- Build the tree of source dependencies of Origin
   procedure Build (Origin : in Sourcer.Src_Dscr;
-                   Specs_Mode, Revert_Mode : in Boolean);
+                   Specs_Mode, Revert_Mode, Tree_Mode : in Boolean);
 
 end Tree_Mng;
 

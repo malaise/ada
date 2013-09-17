@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V7.5";
+  Version : constant String := "V8.0";
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -228,9 +228,6 @@ begin
     if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) > 2
     or else Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) = 0 then
       Error ("At least one target and most one path required");
-    elsif Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) = 2
-    and then Tree_Mode then
-      Error ("Path mode and tree are mutually exculsive");
     elsif Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
       Error ("Invalid argument");
     end if;
@@ -302,7 +299,7 @@ begin
   ----------------------------
   -- BUILD TREE OF SOURCES --
   ----------------------------
-  Tree_Mng.Build (Target_Dscr, Specs_Mode, Revert_Mode);
+  Tree_Mng.Build (Target_Dscr, Specs_Mode, Revert_Mode, Tree_Mode);
 
   -------------------
   -- PUT LIST/TREE --

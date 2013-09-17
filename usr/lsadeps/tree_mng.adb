@@ -1,4 +1,4 @@
-with As.U, Dynamic_List, Str_Util, Basic_Proc, Parser;
+with As.U.Utils, Dynamic_List, Str_Util, Basic_Proc, Parser;
 with Debug;
 package body Tree_Mng is
 
@@ -11,6 +11,12 @@ package body Tree_Mng is
     Debug.Logger.Log_Fatal ("INTERNAL ERROR: " & Msg & ".");
     raise Error_Raised;
   end Error;
+
+  -- Do we build full tree or do we optimize
+  Full_Tree : Boolean;
+
+  -- Optimization: unique list of <Path><File>
+  List : As.U.Utils.Asu_Unique_List_Mng.Unique_List_Type;
 
   -- List of direct With from first Origin to current
   Rope : Sourcer.Src_List_Mng.Unique_List_Type;
@@ -219,6 +225,7 @@ package body Tree_Mng is
     Found : Boolean;
     Child : Sourcer.Src_Dscr;
     Kind : As.U.Asu_Us;
+    use type As.U.Asu_Us;
   begin
     -- Insert ourself
     if Tree.Is_Empty then
@@ -226,6 +233,19 @@ package body Tree_Mng is
       Tree.Insert_Father ((Origin, False));
       Rope.Insert (Origin);
     else
+      if not Full_Tree then
+        -- Optim: locate and store <path><file>
+        List.Search (Origin.Path & Origin.File, Found);
+        if Found then
+          -- This unit already exists
+          Debug.Logger.Log_Debug ("Optim skip "
+                                & Origin.Path.Image & Origin.File.Image);
+          return;
+        end if;
+        Debug.Logger.Log_Debug ("Optim insert "
+                              & Origin.Path.Image & Origin.File.Image);
+        List.Insert (Origin.Path & Origin.File);
+      end if;
       Rope.Search (Origin, Found);
       if Found then
         -- Current Origin already exists => Looping
@@ -314,8 +334,9 @@ package body Tree_Mng is
 
   -- Build the tree of source dependencies of Origin
   procedure Build (Origin : in Sourcer.Src_Dscr;
-                   Specs_Mode, Revert_Mode : in Boolean) is
+                   Specs_Mode, Revert_Mode, Tree_Mode : in Boolean) is
   begin
+    Full_Tree := Tree_Mode;
     Build_Node (Origin, Specs_Mode, Revert_Mode);
     Debug.Logger.Log_Debug ("Dumping tree:");
     if Debug.Logger.Debug_On then

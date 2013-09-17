@@ -1,6 +1,6 @@
 lsadeps
 =======
-V7.5
+V8.0
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -52,10 +52,13 @@ Other options are:
  - 'include' to add some directories or some directory trees to the search path
    (default is current and target directories).
 
-
 'Specs' and 'revert' modes are mutually exclusive. +
-'Tree' and 'direct' mode are mutually exclusive. +
-'Path mode and 'tree' are mutually exclusive.
+'Tree' and 'direct' modes are mutually exclusive. +
+
+NOTE: When the 'tree' option is not set, the tree of dependencies is
+optimized so that the same unit is not analyzed several times, which
+significantly improves the performance. +
+Comparatively, the 'tree' option might be very time-consuming.
 
 Check redundant "with"
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -226,9 +229,16 @@ recursively in this order:
        - WithsOfBody
        - WithsOfSububits
 
-If in "specs only" mode don't insert body and subunits. If in reverse mode,
-build a unique list of units that list targets, of units that list these
-units. Stop recursive search when reaching a non-standalone body or a subunit.
+If in "specs only" mode don't insert body and subunits.
+
+If in reverse mode, build a tree of:
+
+  unit - WihtingUnit
+
+If not in tree mode, keep a list of the PathUnit found so far and skip the processing
+of a unit if it is already known.
+
+Stop recursive search when reaching a non-standalone body or a subunit.
 
 Display output
 ~~~~~~~~~~~~~~
