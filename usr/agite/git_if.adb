@@ -775,7 +775,7 @@ package body Git_If is
     Cmd : Many_Strings.Many_String;
     Lcomment : As.U.Asu_Us;
   begin
-    Lcomment := As.U.Tus (Str_Util.Substit (Comment, """", "''", True));
+    Lcomment := As.U.Tus (Str_Util.Substit (Comment, """", "\""", True));
     Cmd.Set ("git");
     Cmd.Cat ("commit");
     Cmd.Cat ("-m");
