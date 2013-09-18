@@ -24,7 +24,7 @@ package body Afpx.List_Manager is
     Line : Line_Rec;
   begin
     -- Delete Afpx list
-    Line_List.Delete_List;
+    Line_List.Delete_List (Deallocate);
     -- Done if empty list
     if From.Is_Empty then
       return;
