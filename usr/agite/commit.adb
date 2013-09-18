@@ -4,8 +4,8 @@ with As.U, Directory, Con_Io, Afpx.List_Manager, Str_Util, Basic_Proc,
 with Git_If, Utils.X, Config, Push, Afpx_Xref, Confirm, Error;
 package body Commit is
 
-  -- List width minus 4 ("CSU ")
-  Width : Afpx.Width_Range;
+  -- List width
+  List_Width : Afpx.Width_Range;
 
   function Is_Staged (C : Character) return Boolean is
   begin
@@ -15,12 +15,12 @@ package body Commit is
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in  Git_If.File_Entry_Rec) is
   begin
-    Afpx.Encode_Line (Line,
-      (if    not Is_Staged (From.S2) then ' '
-       elsif not Is_Staged (From.S3) then '+'
-       else '*')
-      & From.S2 & From.S3
-      & ' ' & Utils.Normalize (From.Name.Image, Width) );
+    Utils.X.Encode_Line (
+        (if    not Is_Staged (From.S2) then ' '
+         elsif not Is_Staged (From.S3) then '+'
+         else '*')
+      & From.S2 & From.S3 & ' ',
+        From.Name.Image, "", List_Width, Line);
   exception
     when Error:others =>
       Basic_Proc.Put_Line_Error ("Exception "
@@ -99,7 +99,7 @@ package body Commit is
       Field := Afpx_Xref.Commit.Comment1;
       for I in 2 .. Comment.Length loop
         if Comment.Element (I) = Aski.Lf then
-          Afpx.Encode_Field (Field, (0, 0), Comment.Slice (Prev, I-1));
+          Utils.X.Encode_Field (Comment.Slice (Prev, I - 1), Field);
           exit when Field = Afpx_Xref.Commit.Comment7;
           Field := Field + 1;
           Prev := I + 1;
@@ -113,9 +113,7 @@ package body Commit is
   begin
     Afpx.Use_Descriptor (Afpx_Xref.Commit.Dscr_Num);
     -- Encode Root
-    Afpx.Encode_Field (Afpx_Xref.Commit.Root, (0, 0),
-        Utils.Normalize (Root.Image,
-                         Afpx.Get_Field_Width (Afpx_Xref.Commit.Root)));
+    Utils.X.Encode_Field (Root.Image, Afpx_Xref.Commit.Root);
     -- Encode comment
     Encode_Comment;
     -- Reset Ptg stuff
@@ -168,10 +166,8 @@ package body Commit is
     Afpx.Update_List (Afpx.Center_Selected);
 
     -- Encode current branch
-    Afpx.Clear_Field (Afpx_Xref.Commit.Branch);
-    Afpx.Encode_Field (Afpx_Xref.Commit.Branch, (0, 0),
-        Utils.X.Branch_Image (Git_If.Current_Branch,
-            Afpx.Get_Field_Width (Afpx_Xref.Commit.Branch)));
+    Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
+                          Afpx_Xref.Commit.Branch);
     -- Set field activity
     Afpx.Set_Field_Activation (Afpx_Xref.Commit.Stage,
                                not Afpx.Line_List.Is_Empty);
@@ -318,8 +314,8 @@ package body Commit is
     -- Reset Afpx list
     Afpx.Line_List.Delete_List (False);
 
-    -- Width after 4 chars of Commit, Staged, Unstaged and a space
-    Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 4;
+    -- List width
+    List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
 
     -- Encode Changes
     Reread;

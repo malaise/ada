@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V11.1"/>
+  <Var Name="Version" Value="V11.2"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -103,7 +103,7 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Go</Init>
     </Field>
-    <Field Num="15" Kind="Get">
+    <Field Num="15" Kind="Get" Name="Dir">
       <Geometry Up="${Field_14.Up}" Left="${Field_14.Right}+2" Height="1"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>

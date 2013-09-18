@@ -1,5 +1,5 @@
-with Ada.Characters.Latin_1, Ada.Exceptions;
-with As.U, Con_Io, Afpx.List_Manager, Str_Util, Directory, Basic_Proc;
+with Ada.Characters.Latin_1;
+with As.U, Con_Io, Afpx.List_Manager, Directory;
 with Utils.X, View, History, Config, Afpx_Xref, Restore;
 package body Details is
 
@@ -10,10 +10,8 @@ package body Details is
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in Git_If.Commit_Entry_Rec) is
   begin
-    Afpx.Encode_Line (Line, Str_Util.Procuste (
-          From.Status & " " & From.File.Image,
-          List_Width,
-          Trunc_Head => False));
+    Utils.X.Encode_Line (From.Status & " ", From.File.Image, "",
+                         List_Width, Line);
   exception
     when others => null;
   end Set;
@@ -44,6 +42,9 @@ package body Details is
       Cursor_Field := 1;
       Cursor_Col := 0;
       Insert := False;
+      Afpx.Get_Field_Size (Afpx_Xref.Details.Comment,
+                           Comment_Height, Comment_Width);
+      List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
 
       -- Get commit details
       if Get_Details then
@@ -59,27 +60,13 @@ package body Details is
       end if;
 
       -- Encode info
-      Afpx.Encode_Field (Afpx_Xref.Details.Hash, (0, 0), Hash);
-      Afpx.Encode_Field (Afpx_Xref.Details.Date, (0, 0), Date);
-      Afpx.Get_Field_Size (Afpx_Xref.Details.Comment,
-                           Comment_Height, Comment_Width);
+      Utils.X.Encode_Field (Hash, Afpx_Xref.Details.Hash);
+      Utils.X.Encode_Field (Date, Afpx_Xref.Details.Date);
       Afpx.Clear_Field (Afpx_Xref.Details.Comment);
       for I in 1 .. Comment_Height loop
-        begin
-          Afpx.Encode_Field (Afpx_Xref.Details.Comment, (I - 1, 0),
-               Str_Util.Procuste (Comment(I).Image,
-                                    Comment_Width,
-                                    Trunc_Head => False));
-        exception
-          when Error:others =>
-            -- Just trace
-            Basic_Proc.Put_Line_Error ("Exception "
-                & Ada.Exceptions.Exception_Name (Error)
-                & " raised on details of " & Hash);
-        end;
+        Utils.X.Encode_Field (Comment(I).Image, Afpx_Xref.Details.Comment);
       end loop;
       -- Encode list
-      List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
       Init_List (Commits);
     end Init;
 

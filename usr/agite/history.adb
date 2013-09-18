@@ -1,35 +1,17 @@
-with Ada.Exceptions;
-with Con_Io, Afpx.List_Manager, Str_Util, Basic_Proc, Normal, Rounds;
+with Con_Io, Afpx.List_Manager, Normal, Rounds;
 with Utils.X, Config, Details, View, Afpx_Xref, Restore;
 package body History is
 
-  -- Cut string if too long for list
-  -- Width after "YY-MM-DD HH:MM:SS "
-  Width : Afpx.Width_Range;
-  function Procuste (Str : String) return String is
-  begin
-  if Str'Length <= Width then
-    -- String fits. OK
-    return Str;
-  else
-    -- Trunk tail and show " <" at the end
-    return Str_Util.Procuste (Str, Width, Trunc_Head => False);
-  end if;
-  end Procuste;
-
+  -- List Width
+  List_Width : Afpx.Width_Range;
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in  Git_If.Log_Entry_Rec) is
   begin
-    Afpx.Encode_Line (Line,
+    Utils.X.Encode_Line (
         -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD HH:MM "
         From.Date(03 .. 04) & From.Date(06 .. 07) & From.Date(09 .. 10) & '-'
-      & From.Date(12 .. 13) & From.Date(15 .. 16) & ' '
-      & Procuste (From.Comment(1).Image) );
-  exception
-    when Error:others =>
-      Basic_Proc.Put_Line_Error ("Exception "
-          & Ada.Exceptions.Exception_Name (Error)
-          & " raised on history of " & From.Hash);
+      & From.Date(12 .. 13) & From.Date(15 .. 16) & ' ',
+        From.Comment(1).Image, "", List_Width, Line, False);
   end Set;
   procedure Init_List is new Afpx.List_Manager.Init_List (
     Git_If.Log_Entry_Rec, Git_If.Log_Mng, Set);
@@ -51,7 +33,6 @@ package body History is
     Insert       : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
     List_Height  : Afpx.Height_Range;
-    List_Width   : Afpx.Width_Range;
     use type Afpx.Absolute_Field_Range;
 
     -- The log
@@ -72,21 +53,12 @@ package body History is
       -- List characteristics
       Afpx.Get_Field_Size (Afpx.List_Field_No, List_Height, List_Width);
       -- Encode file/dir
-      Afpx.Clear_Field (Afpx_Xref.History.File);
-      if Is_File then
-        Afpx.Encode_Field (Afpx_Xref.History.File, (0, 0),
-               Utils.Normalize (Path & Name, Afpx.Get_Field_Width (10)));
-      else
-        if Name /= "" then
-          Afpx.Encode_Field (Afpx_Xref.History.File, (0, 0),
-                 Utils.Normalize (Path & Name & "/", Afpx.Get_Field_Width (10)));
-        elsif Path /= "" then
-          Afpx.Encode_Field (Afpx_Xref.History.File, (0, 0),
-                 Utils.Normalize (Path , Afpx.Get_Field_Width (10)));
-        else
-          Afpx.Encode_Field (Afpx_Xref.History.File, (0, 0),
-                 Utils.Normalize ("/" , Afpx.Get_Field_Width (10)));
-        end if;
+      Utils.X.Encode_Field ((if Is_File then Path & Name
+                            elsif Name /= "" then Path & Name & "/"
+                            elsif Path /= "" then Path
+                            else "/"),
+                            Afpx_Xref.History.File);
+      if not Is_File then
         -- Lock button View and restore
         Utils.X.Protect_Field (Afpx_Xref.History.View);
         Utils.X.Protect_Field (Afpx_Xref.History.Restore);
@@ -229,9 +201,6 @@ package body History is
   begin
     -- Init Afpx
     Init;
-
-    -- Width after "YY-MM-DD HH:MM:SS "
-    Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 13;
 
     -- Get history
     Afpx.Suspend;

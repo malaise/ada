@@ -8,42 +8,27 @@ package body Bookmarks is
     return As.U.Image (Config.Get_Bookmarks (Index).Path);
   end Dir_Of;
 
-  -- Insert in Afpx list
-  procedure Insert_List (Str : in String) is
+  -- Insert in Afpx list the image of a bookmark (normalized if necessary)
+  List_Width : Afpx.Width_Range;
+  procedure Insert_List (Bookmark : Config.Bookmark_Rec) is
     Line : Afpx.Line_Rec;
-  begin
-    Afpx.Encode_Line (Line, Str);
-    Afpx.Line_List.Insert (Line);
-  end Insert_List;
-
-  -- Image of a bookmark, normalize if necessary
-  function Image (Bookmark : Config.Bookmark_Rec) return String is
-    Res : As.U.Asu_Us;
+    Head, Text : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
     if not Bookmark.Path.Is_Null then
       -- Regular bookmark
       if not Bookmark.Name.Is_Null then
-        -- Regular bookmark with name, normalize path
-        Res := "(" & Bookmark.Name & ") "
-             & Utils.Normalize (
-               Bookmark.Path.Image,
-               Afpx.Get_Field_Width (Afpx.List_Field_No)
-                 - Bookmark.Name.Length - 3);
-      else
-        -- Regular bookmark without name, normalize path
-        Res := As.U.Tus (Utils.Normalize (Bookmark.Path.Image,
-                             Afpx.Get_Field_Width (Afpx.List_Field_No)));
+        -- Regular bookmark with name
+        Head := "(" & Bookmark.Name & ") ";
       end if;
+      Text := Bookmark.Path;
     elsif not Bookmark.Name.Is_Null then
       -- Separator with name
-      Res := "----- " & Bookmark.Name & " -----";
-    else
-      -- Empty separator
-      null;
+      Text := "----- " & Bookmark.Name & " -----";
     end if;
-    return Res.Image;
-  end Image;
+    Utils.X.Encode_Line (Head.Image, Text.Image, "", List_Width, Line);
+    Afpx.Line_List.Insert (Line);
+  end Insert_List;
 
   -- Re- set the list of bookmarks
   procedure Load_List is
@@ -51,7 +36,7 @@ package body Bookmarks is
   begin
     Afpx.Line_List.Delete_List;
     for I in Bookmarks'Range loop
-      Insert_List (Image (Bookmarks(I)));
+      Insert_List (Bookmarks(I));
     end loop;
     if not Afpx.Line_List.Is_Empty then
       Afpx.Line_List.Rewind;
@@ -81,7 +66,6 @@ package body Bookmarks is
 
     -- Current dir
     Curr_Dir : constant String := Directory.Get_Current;
-    Dir_Width : Afpx.Width_Range;
 
     -- Current position in Afpx list
     Position : Positive;
@@ -97,12 +81,10 @@ package body Bookmarks is
     Cursor_Field := Afpx.Next_Cursor_Field (0);
     Cursor_Col := 0;
     Insert := False;
-    Dir_Width := Afpx.Get_Field_Width (10);
+    List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
 
     -- Encode dir
-    Afpx.Clear_Field (Afpx_Xref.Bookmarks.Dir);
-    Afpx.Encode_Field (Afpx_Xref.Bookmarks.Dir, (0, 0),
-                       Utils.Normalize (Curr_Dir, Dir_Width));
+    Utils.X.Encode_Field (Curr_Dir, Afpx_Xref.Bookmarks.Dir);
 
     -- Encode Bookmarks
     Load_List;
@@ -160,7 +142,7 @@ package body Bookmarks is
               else
                 Config.Add_Bookmark (Afpx.Line_List.Get_Position, Bookmark);
               end if;
-              Insert_List (Image (Bookmark));
+              Insert_List (Bookmark);
             when Afpx_Xref.Bookmarks.Addsep =>
               -- Add separator
               Bookmark := (As.U.Tus (Get_Name), As.U.Asu_Null);
@@ -169,7 +151,7 @@ package body Bookmarks is
               else
                 Config.Add_Bookmark (Afpx.Line_List.Get_Position, Bookmark);
               end if;
-              Insert_List (Image (Bookmark));
+              Insert_List (Bookmark);
 
             when Afpx_Xref.Bookmarks.Moveup =>
               -- Move bookmark up
@@ -193,7 +175,7 @@ package body Bookmarks is
               Bookmark := Config.Get_Bookmark (Afpx.Line_List.Get_Position);
               -- Confirm bookmark deletion (no confirmation for separators)
               if Bookmark.Path.Is_Null
-              or else Confirm ("Remove bookmark", Image (Bookmark)) then
+              or else Confirm ("Remove bookmark", Bookmark.Path.Image) then
                 Config.Del_Bookmark (Afpx.Line_List.Get_Position);
                 Afpx.Line_List.Delete (Moved => Dummy);
               end if;

@@ -1,19 +1,12 @@
-with Ada.Exceptions;
-with As.U.Utils, Con_Io, Afpx.List_Manager, Basic_Proc, Unicode;
+with As.U.Utils, Con_Io, Afpx.List_Manager, Unicode;
 with Utils.X, Git_If, Afpx_Xref, Error;
 package body Push is
 
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in As.U.Asu_Us) is
   begin
-    Afpx.Encode_Line (Line,
-         Utils.Normalize (From.Image,
-            Afpx.Get_Field_Width (Afpx.List_Field_No)) );
-  exception
-    when Error:others =>
-      Basic_Proc.Put_Line_Error ("Exception "
-          & Ada.Exceptions.Exception_Name (Error)
-          & " raised in push on " & From.Image);
+    Utils.X.Encode_Line ("", From.Image, "",
+                         Afpx.Get_Field_Width (Afpx.List_Field_No), Line);
   end Set;
 
   procedure Init_List is new Afpx.List_Manager.Init_List (
@@ -82,21 +75,17 @@ package body Push is
       Insert := False;
 
       -- Encode Root
-      Afpx.Encode_Field (Afpx_Xref.Push.Root, (0, 0),
-          Utils.Normalize (Root, Afpx.Get_Field_Width (Afpx_Xref.Push.Root)));
+      Utils.X.Encode_Field (Root, Afpx_Xref.Push.Root);
 
       -- Encode current branch
-      Afpx.Clear_Field (Afpx_Xref.Push.Branch);
-      Afpx.Encode_Field (Afpx_Xref.Push.Branch, (0, 0),
-          Utils.X.Branch_Image (Git_If.Current_Branch,
-              Afpx.Get_Field_Width (Afpx_Xref.Push.Branch)));
+      Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
+                            Afpx_Xref.Push.Branch);
 
       -- Change title and Push pbutton if Pull
       if Pull then
-        Afpx.Encode_Field (Afpx_Xref.Push.Title, (0, 0), "Pull");
-        Afpx.Encode_Field (Afpx_Xref.Push.Push, (1, 1), "Pull");
+        Utils.X.Center_Field ("Pull", Afpx_Xref.Push.Title);
+        Utils.X.Center_Field ("Pull", Afpx_Xref.Push.Push);
       end if;
-
 
       -- Get list of references
       Git_If.List_References (References);

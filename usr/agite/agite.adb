@@ -1,5 +1,5 @@
 with As.U, Con_Io, Afpx.List_Manager, Basic_Proc, Images, Directory,
-     Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Str_Util;
+     Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket;
 with Utils.X, Git_If, Config, Bookmarks, History, Commit, Push, Confirm, Error,
      Afpx_Xref;
 procedure Agite is
@@ -44,7 +44,7 @@ procedure Agite is
   Cursor_Col   : Con_Io.Col_Range;
   Insert       : Boolean;
   Ptg_Result   : Afpx.Result_Rec;
-  Dir_Field    : constant Afpx.Field_Range := 15;
+  Dir_Field    : Afpx.Field_Range;
   use type Afpx.Absolute_Field_Range;
 
   -- Current Git root and path referred to Git root
@@ -70,9 +70,9 @@ procedure Agite is
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in Git_If.File_Entry_Rec) is
   begin
-    Afpx.Encode_Line (Line,
-        From.S2 & From.S3 & ' '
-      & Utils.Normalize (From.Name.Image, List_Width) & From.Kind);
+    Utils.X.Encode_Line (From.S2 & From.S3 & ' ',
+                         From.Name.Image & From.Kind, "",
+                         List_Width, Line);
   end Set;
   procedure Init_List is new Afpx.List_Manager.Init_List (
     Git_If.File_Entry_Rec, Git_If.File_Mng, Set);
@@ -143,15 +143,6 @@ procedure Agite is
   end Match;
   function File_Search is new Git_If.File_Mng.Dyn_List.Search (Match);
 
-  -- Encode current branch
-  procedure Encode_Branch is
-  begin
-    Afpx.Clear_Field (Afpx_Xref.Main.Branch);
-    Afpx.Encode_Field (Afpx_Xref.Main.Branch, (0, 0),
-         Utils.X.Branch_Image (Branch.Image,
-             Afpx.Get_Field_Width (Afpx_Xref.Main.Branch)));
-  end Encode_Branch;
-
   -- Encode Afpx list with files, if list has changed or if Force
   procedure Encode_Files (Force : in Boolean) is
     Pos : Natural := 0;
@@ -160,9 +151,6 @@ procedure Agite is
     Changed : Boolean;
     use type Git_If.File_Entry_Rec;
   begin
-    if List_Width = Afpx.Width_Range'First then
-      List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 4;
-    end if;
     Changed := Force;
     -- Save current position and entry
     if not Force and then not Files.Is_Empty
@@ -177,7 +165,8 @@ procedure Agite is
     -- Refresh list only if it has changed
     -- Update list of files and branch
     List_Files;
-    Encode_Branch;
+    Utils.X.Encode_Field (Utils.X.Branch_Image (Branch.Image),
+                          Afpx_Xref.Main.Branch);
 
     -- Check lengths then content
     if not Changed
@@ -296,9 +285,7 @@ procedure Agite is
     Afpx.Clear_Field (Afpx_Xref.Main.Search_Dir);
 
     -- Encode current dir (get field)
-    Afpx.Clear_Field (Dir_Field);
-    Afpx.Encode_Field (Dir_Field, (0, 0),
-           Utils.Normalize (Directory.Get_Current, Width));
+    Utils.X.Encode_Field (Directory.Get_Current, Dir_Field);
     -- Move cursor col on last significant char
     Cursor_Col := 0;
     declare
@@ -317,9 +304,7 @@ procedure Agite is
     end if;
 
     -- Encode root dir
-    Afpx.Clear_Field (Afpx_Xref.Main.Root);
-    Afpx.Encode_Field (Afpx_Xref.Main.Root, (0, 0),
-       Utils.Normalize (Root.Image, Afpx.Get_Field_Width (Afpx_Xref.Main.Root)));
+    Utils.X.Encode_Field (Root.Image, Afpx_Xref.Main.Root);
 
     -- De-activate Diff and history if no in Git
     if Root.Is_Null then
@@ -388,13 +373,8 @@ procedure Agite is
     elsif Local_Host.Length + 2 <= Len then
       Local_Host := "(" & Local_Host & ")";
     end if;
-    Local_Host := As.U.Tus (Str_Util.Procuste (
-        Local_Host.Image,
-        Len,
-        Align_Left => False,
-        Gap => ' ',
-        Trunc_Head => True,
-        Show_Trunc => True));
+    Local_Host := As.U.Tus (Utils.Normalize (Local_Host.Image, Len,
+                                             Align_Left => False));
     return Local_Host.Image;
   end Host_Str;
 
@@ -402,11 +382,13 @@ procedure Agite is
   procedure Init (Pos : in Natural; Dir : in String := "") is
   begin
     Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
+    List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
+    Dir_Field := Afpx_Xref.Main.Dir;
     Afpx.Get_Console.Set_Name ("Agite (on " & Socket.Local_Host_Name & ")");
     Cursor_Field := Afpx.Next_Cursor_Field (0);
     Cursor_Col := 0;
     Insert := False;
-    Afpx.Encode_Field (Afpx_Xref.Main.Host, (0, 0), Host_Str);
+    Utils.X.Encode_Field (Host_Str, Afpx_Xref.Main.Host);
     Change_Dir (Dir);
     if Pos /= 0 and then not Afpx.Line_List.Is_Empty then
       Afpx.Line_List.Move_At (Pos);

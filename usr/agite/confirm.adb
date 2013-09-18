@@ -1,5 +1,5 @@
-with Con_Io, Afpx, Str_Util;
-with Utils, Afpx_Xref;
+with Con_Io, Afpx;
+with Utils.X, Afpx_Xref;
 function Confirm (Title, Msg : String;
                   Ok_Cancel : Boolean := True;
                   Show_List : Boolean := False) return Boolean is
@@ -14,16 +14,12 @@ begin
   Cursor_Field := 1;
   Cursor_Col := 0;
   Insert := False;
-  Afpx.Encode_Field (Afpx_Xref.Confirm.Action, (0, 0),
-      Str_Util.Center (Title, Afpx.Get_Field_Width (Afpx_Xref.Confirm.Action)));
-  Afpx.Encode_Field (Afpx_Xref.Confirm.Name, (0, 0),
-      Str_Util.Center (Msg, Afpx.Get_Field_Width (Afpx_Xref.Confirm.Name)));
+  Utils.X.Center_Field (Title, Afpx_Xref.Confirm.Action);
+  Utils.X.Center_Field (Msg, Afpx_Xref.Confirm.Name);
   -- Yes / No
   if not Ok_Cancel then
-    Afpx.Clear_Field (Afpx_Xref.Confirm.Ok);
-    Afpx.Clear_Field (Afpx_Xref.Confirm.Cancel);
-    Afpx.Encode_Field (Afpx_Xref.Confirm.Ok, (1, 1), "Yes");
-    Afpx.Encode_Field (Afpx_Xref.Confirm.Cancel, (1, 3), "No");
+    Utils.X.Center_Field ("Yes", Afpx_Xref.Confirm.Ok);
+    Utils.X.Center_Field ("No",  Afpx_Xref.Confirm.Cancel);
   end if;
   -- Show/Hide list
   if Show_List then

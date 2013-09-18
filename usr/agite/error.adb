@@ -1,5 +1,5 @@
-with Con_Io, Afpx, Str_Util;
-with Utils, Afpx_Xref;
+with Con_Io, Afpx;
+with Utils.X, Afpx_Xref;
 procedure Error (Action, Target, Text : String) is
   -- Afpx stuff
   Cursor_Field : Afpx.Field_Range;
@@ -12,14 +12,9 @@ begin
   Cursor_Field := 1;
   Cursor_Col := 0;
   Insert := False;
-  Afpx.Encode_Field (Afpx_Xref.Error.Action, (0, 0),
-      Str_Util.Center (Action, Afpx.Get_Field_Width (Afpx_Xref.Error.Action)));
-  Afpx.Encode_Field (Afpx_Xref.Error.Target, (0, 0),
-      Str_Util.Center (Target, Afpx.Get_Field_Width (Afpx_Xref.Error.Target)));
-  Afpx.Encode_Field (Afpx_Xref.Error.Text, (0, 0),
-      Str_Util.Center (
-        Utils.Normalize (Text, Afpx.Get_Field_Width (Afpx_Xref.Error.Text)),
-        Afpx.Get_Field_Width (Afpx_Xref.Error.Text)) );
+  Utils.X.Center_Field (Action, Afpx_Xref.Error.Action);
+  Utils.X.Center_Field (Target, Afpx_Xref.Error.Target);
+  Utils.X.Center_Field (Text,   Afpx_Xref.Error.Text);
 
   -- Main loop
   loop
