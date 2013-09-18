@@ -36,7 +36,7 @@ package body Commit is
   function Search is new Afpx.Line_List_Mng.Search (Match);
 
   procedure Init_List is new Afpx.List_Manager.Init_List (
-    Git_If.File_Entry_Rec, Git_If.File_Mng, Set);
+    Git_If.File_Entry_Rec, Git_If.File_Mng, Set, False);
 
   -- Differator
   Differator : As.U.Asu_Us;

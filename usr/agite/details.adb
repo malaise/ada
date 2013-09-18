@@ -17,7 +17,7 @@ package body Details is
   end Set;
 
   procedure Init_List is new Afpx.List_Manager.Init_List (
-    Git_If.Commit_Entry_Rec, Git_If.Commit_File_Mng, Set);
+    Git_If.Commit_Entry_Rec, Git_If.Commit_File_Mng, Set, False);
 
 
   procedure Handle (Root : in String; Hash : in Git_If.Git_Hash) is

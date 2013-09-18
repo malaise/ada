@@ -14,7 +14,7 @@ package body History is
         From.Comment(1).Image, "", List_Width, Line, False);
   end Set;
   procedure Init_List is new Afpx.List_Manager.Init_List (
-    Git_If.Log_Entry_Rec, Git_If.Log_Mng, Set);
+    Git_If.Log_Entry_Rec, Git_If.Log_Mng, Set, False);
 
   -- To search matching hash in Log
   function Hash_Match (Current, Criteria : Git_If.Log_Entry_Rec) return Boolean is

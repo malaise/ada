@@ -10,7 +10,7 @@ package body Push is
   end Set;
 
   procedure Init_List is new Afpx.List_Manager.Init_List (
-    As.U.Asu_Us, As.U.Utils.Asu_List_Mng, Set);
+    As.U.Asu_Us, As.U.Utils.Asu_List_Mng, Set, False);
 
   -- Afpx line list with "origin"
   Origin : Afpx.Line_Rec;

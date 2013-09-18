@@ -75,7 +75,7 @@ procedure Agite is
                          List_Width, Line);
   end Set;
   procedure Init_List is new Afpx.List_Manager.Init_List (
-    Git_If.File_Entry_Rec, Git_If.File_Mng, Set);
+    Git_If.File_Entry_Rec, Git_If.File_Mng, Set, False);
 
 
   -- List files of dir
