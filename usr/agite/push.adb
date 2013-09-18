@@ -94,6 +94,7 @@ package body Push is
         Afpx.Set_Field_Activation (Afpx_Xref.Push.Push, False);
       else
         -- Move to "origin" or top
+        Afpx.Encode_Line (Origin, "origin");
         if not Search (Afpx.Line_List, Origin,
                        From => Afpx.Line_List_Mng.Absolute) then
           Afpx.Line_List.Rewind;
@@ -104,8 +105,6 @@ package body Push is
 
   begin
     -- Reset Afpx list
-    Afpx.Line_List.Delete_List (False);
-    Afpx.Encode_Line (Origin, "origin");
 
     -- Init Afpx
     Init;
