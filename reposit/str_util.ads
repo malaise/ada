@@ -165,9 +165,13 @@ package Str_Util is
   return String;
 
   -- Center a String Str in a fixed size
-  -- if Str <= Size pad with Gap before then after Str
+  -- if Str <= Size pad with Gap before then after Str,
+  --  then after then before, then after then before...
   -- if Str > Size  raise Constraint_Error
-  -- Example: Center ("TOTO", 7, '+') -> "++TOTO+"
+  -- Examples:
+  --  Center ("TOTO", 5, '+') -> "+TOTO"
+  --  Center ("TOTO", 7, '+') -> "+TOTO++"
+  --  Center ("TOTO", 9, '+') -> "++TOTO+++"
   function Center (Str : String;
                    Len : Positive;
                    Gap : Character := ' ') return String;

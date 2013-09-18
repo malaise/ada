@@ -456,7 +456,7 @@ package body Str_Util is
   end Truncate;
 
   -- Center a String Str in a fixed size
-  -- if Str <= Size pad with Gap before then after Str
+  -- if Str <= Size pad with Gap before then after Str then after then before
   -- if Str > Size  raise Constraint_Error
   function Center (Str : String;
                    Len : Positive;
@@ -468,8 +468,8 @@ package body Str_Util is
     end if;
     -- Start position
     Start := (Len - Str'Length) / 2 + 1;
-    -- Pad before first rather than after last
-    if (Len - Str'Length) rem 2 = 1 then
+    -- Pad before first rather than after last when only one gap
+    if Len - Str'Length = 1 then
       Start := Start + 1;
     end if;
     -- Copy
