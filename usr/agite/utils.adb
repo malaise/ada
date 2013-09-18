@@ -2,7 +2,7 @@ with Ada.Characters.Latin_1;
 with Many_Strings, Proc_Family;
 package body Utils is
 
-  -- If Str fits Width then return Str padded by spaces
+  -- If Str fits Width then return Str, padded by spaces if not Align_Left
   -- else return ">>" & tail to match Width (if Tail)
   --   or return head to match Width and "<<" (if not Tail)
   function Normalize (Str : String;
@@ -13,11 +13,11 @@ package body Utils is
   begin
     if Str'Length <= Width then
       if Align_Left then
-        Result (1 .. Str'Length) := Str;
+        return Str;
       else
         Result (Width - Str'Length + 1 .. Width) := Str;
+        return Result;
       end if;
-      return Result;
     end if;
     if Keep_Tail then
       return ">>" & Str (Str'Last - Width + 3 .. Str'Last);

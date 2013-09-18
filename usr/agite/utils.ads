@@ -1,6 +1,6 @@
 package Utils is
 
-  -- If Str fits Width then return Str
+  -- If Str fits Width then return Str, padded with space if no Align_Left
   -- else return ">>" & tail to match Width (if Keep_Tail)
   --   or return head to match Width and "<<" (if not Keep_Tail)
   function Normalize (Str : String;
