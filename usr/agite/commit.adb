@@ -400,7 +400,6 @@ package body Commit is
        when Afpx.Refresh =>
          -- Reread branch and changes
          Reread;
-         Init_List (Changes);
       end case;
     end loop;
 
