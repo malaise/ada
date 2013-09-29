@@ -14,9 +14,9 @@ package body Utils.X is
   function Branch_Image (Git_Branch : String) return String is
   begin
     if Git_Branch = "" then
-      return "None.";
+      return "?";
     else
-      return "Br: " & Git_Branch;
+      return Git_Branch;
     end if;
   end Branch_Image;
 
@@ -45,8 +45,8 @@ package body Utils.X is
   begin
     Afpx.Clear_Field (Field);
     Afpx.Encode_Field (Field, (Row (Field), 0),
-        Normalize (Text, 
-                   (if Afpx.Is_get_Kind (Field) then Afpx.Get_Data_Len (Field)
+        Normalize (Text,
+                   (if Afpx.Is_Get_Kind (Field) then Afpx.Get_Data_Len (Field)
                     else Afpx.Get_Field_Width (Field)),
                    Keep_Tail));
   end Encode_Field;

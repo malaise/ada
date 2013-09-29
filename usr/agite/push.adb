@@ -154,9 +154,12 @@ package body Push is
               null;
           end case;
 
-       when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
-          | Afpx.Refresh =>
+       when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
          null;
+      when Afpx.Refresh =>
+        -- Encode current branch
+        Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
+                              Afpx_Xref.Push.Branch);
       end case;
     end loop;
 

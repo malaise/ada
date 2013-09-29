@@ -46,6 +46,11 @@ package body Details is
                            Comment_Height, Comment_Width);
       List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
 
+      -- Encode current branch
+      Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
+                            Afpx_Xref.Details.Branch);
+
+
       -- Get commit details
       if Get_Details then
         Afpx.Suspend;
@@ -204,9 +209,12 @@ package body Details is
               null;
           end case;
 
-        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
-           | Afpx.Refresh =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
           null;
+        when Afpx.Refresh =>
+          -- Encode current branch
+          Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
+                                Afpx_Xref.Details.Branch);
       end case;
     end loop;
 

@@ -58,6 +58,10 @@ package body History is
                             elsif Path /= "" then Path
                             else "/"),
                             Afpx_Xref.History.File);
+    -- Encode current branch
+    Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
+                          Afpx_Xref.History.Branch);
+
       if not Is_File then
         -- Lock button View and restore
         Utils.X.Protect_Field (Afpx_Xref.History.View);
@@ -274,9 +278,12 @@ package body History is
               null;
           end case;
 
-       when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
-          | Afpx.Refresh =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
           null;
+        when Afpx.Refresh =>
+          -- Encode current branch
+          Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
+                               Afpx_Xref.History.Branch);
       end case;
     end loop;
 
