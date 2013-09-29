@@ -418,6 +418,20 @@ package body Afpx is
     Width  := Af_Dscr.Fields(Fn).Width;
   end Get_Field_Size;
 
+  -- Data len
+  function Get_Data_Len (Field_No : Absolute_Field_Range)
+                         return Width_Range is
+    Fn : constant Afpx_Typ.Absolute_Field_Range
+       := Afpx_Typ.Absolute_Field_Range(Field_No);
+    use type Afpx_Typ.Field_Kind_List;
+  begin
+    Af_Dscr.Check(Fn);
+    if Af_Dscr.Fields(Fn).Kind /= Afpx_Typ.Get then
+      raise Invalid_Field;
+    end if;
+    return Af_Dscr.Fields(Fn).Data_Len;
+  end Get_Data_Len;
+
   -- Get field kind
   -- Exceptions : No_Descriptor, Invalid_Field
   -- type Field_Kind_List is (Put, Button, Get);
@@ -511,7 +525,7 @@ package body Afpx is
         := Language.Unicode_To_String (Decode_Field (Field_No, Row));
     Fn : constant Afpx_Typ.Absolute_Field_Range
        := Afpx_Typ.Absolute_Field_Range(Field_No);
-    Width : constant Width_Range := Af_Dscr.Fields(Fn).Width;
+    Width : constant Width_Range := Af_Dscr.Fields(Fn).Data_Len;
   begin
     if not Adjust or else Str'Length = Width then
       return Str;
@@ -549,11 +563,11 @@ package body Afpx is
       raise Invalid_Row;
     end if;
     -- Copy in init string
-    Init_Index := Field.Char_Index + Row * Field.Width;
+    Init_Index := Field.Char_Index + Row * Field.Data_Len;
     -- Return characters in a String (1 .. N)
     declare
-      Str : constant Unicode_Sequence (1 .. Field.Width)
-           := Af_Dscr.Chars (Init_Index .. Init_Index + Field.Width - 1);
+      Str : constant Unicode_Sequence (1 .. Field.Data_Len)
+           := Af_Dscr.Chars (Init_Index .. Init_Index + Field.Data_Len - 1);
     begin
       return Str;
     end;

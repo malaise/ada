@@ -106,6 +106,7 @@
     <Field Num="15" Kind="Get" Name="Dir">
       <Geometry Up="${Field_14.Up}" Left="${Field_14.Right}+2" Height="1"
                 Right="${Screen.Width}-2"/>
+      <Get_Tuning Data_Len="255"/>
       <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
     </Field>
     <Field Num="16" Kind="Button" Name="Reread">

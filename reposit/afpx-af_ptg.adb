@@ -803,7 +803,6 @@ package body Af_Ptg is
       end if;
       Prev_Cursor_Field := Cursor_Field;
 
-
       -- Get field, set colors when field changes
       if New_Field then
         Field := Af_Dscr.Fields(Cursor_Field);
@@ -893,30 +892,41 @@ package body Af_Ptg is
             List_Scrolled := Af_List.Update (Bottom, True);
           end if;
         when Con_Io.Right | Con_Io.Full =>
-          if Get_Active and then Field.Move_Next then
-            -- End (right) of previous field
-            -- Restore normal color of previous field
-            Put_Field (Cursor_Field, Normal);
-            Cursor_Field := Next_Get_Field (Cursor_Field);
-            Cursor_Col := Get_Cursor_Col (Cursor_Field,
-                                          True,
-                                          Con_Io.Col_Range'First,
-                                          Right_Full, Cursor_Col_Cb);
-            New_Field := True;
-            Insert := False;
+          if Get_Active then
+            if Field.Move_Next then
+              -- End (right) of previous field
+              -- Restore normal color of previous field
+              Put_Field (Cursor_Field, Normal);
+              Cursor_Field := Next_Get_Field (Cursor_Field);
+              Cursor_Col := Get_Cursor_Col (Cursor_Field,
+                                            True,
+                                            Con_Io.Col_Range'First,
+                                            Right_Full, Cursor_Col_Cb);
+              New_Field := True;
+              Insert := False;
+            elsif Field.Offset + Field.Width < Field.Data_Len then
+              -- Offset + Width must remain <= Data_Len
+              Field.Offset := Field.Offset + 1;
+              Af_Dscr.Fields(Cursor_Field).Offset := Field.Offset;
+            end if;
           end if;
         when Con_Io.Left =>
-          if Get_Active and then Field.Move_Prev then
-            -- Left on previous field
-            -- Restore normal color of previous field
-            Put_Field (Cursor_Field, Normal);
-            Cursor_Field := Prev_Get_Field (Cursor_Field);
-            Cursor_Col := Get_Cursor_Col (Cursor_Field,
-                                          True,
-                                          Con_Io.Col_Range'First,
-                                          Left, Cursor_Col_Cb);
-            New_Field := True;
-            Insert := False;
+          if Get_Active then
+            if Field.Move_Prev then
+              -- Left on previous field
+              -- Restore normal color of previous field
+              Put_Field (Cursor_Field, Normal);
+              Cursor_Field := Prev_Get_Field (Cursor_Field);
+              Cursor_Col := Get_Cursor_Col (Cursor_Field,
+                                            True,
+                                            Con_Io.Col_Range'First,
+                                            Left, Cursor_Col_Cb);
+              New_Field := True;
+              Insert := False;
+            elsif Field.Offset /= 0 then
+              Field.Offset := Field.Offset - 1;
+              Af_Dscr.Fields(Cursor_Field).Offset := Field.Offset;
+            end if;
           end if;
         when Con_Io.Tab =>
           if Get_Active then

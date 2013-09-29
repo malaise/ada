@@ -45,7 +45,10 @@ package body Utils.X is
   begin
     Afpx.Clear_Field (Field);
     Afpx.Encode_Field (Field, (Row (Field), 0),
-        Normalize (Text, Afpx.Get_Field_Width (Field), Keep_Tail));
+        Normalize (Text, 
+                   (if Afpx.Is_get_Kind (Field) then Afpx.Get_Data_Len (Field)
+                    else Afpx.Get_Field_Width (Field)),
+                   Keep_Tail));
   end Encode_Field;
 
   -- Center Text in 1st column of Field, procuste, preserve head
