@@ -89,11 +89,12 @@
 <!--  text in it. -->
 <!-- If a Name is set then a a variable is defined (e.g. Field_2.Name) and -->
 <!--  a constant Name will be generated in the cross-reference package. -->
-<!ATTLIST Field Num NMTOKEN #REQUIRED Kind (Put|Button|Get) #REQUIRED
-                                      Name CDATA #IMPLIED>
+<!ATTLIST Field Num NMTOKEN #REQUIRED
+                Kind (Put|Button|Get) #REQUIRED
+                Name CDATA #IMPLIED>
 <!-- Field are defined by a geometry and colors -->
 <!-- Fields also allow defining an initial content (several rows and cols). -->
-<!ELEMENT Field (Geometry,Colors,Init*)>
+<!ELEMENT Field (Geometry,Get_Tuning?,Colors,Init*)>
 
 <!-- Geometry must define at least one row and one col. -->
 <!-- In each direction it must define an absolute position, and an absolute -->
@@ -111,6 +112,17 @@
 <!--  Field_2.Low, Field_21.Width). When all geometry is parsed for a list -->
 <!--  or field, the two missing constants (e.g. List.Width, -->
 <!--  Field_21.Up) are also defined. -->
+
+<!-- A Get field can be customized with: -->
+<!--  - Data_Len: the length of string to input, by default and at least the -->
+<!--     width computed from the geometry. -->
+<!--  - Move_Prev / Move_Next: Move to previous/next field on arrow or -->
+<!--     on character input, when in the first/last char of data input. -->
+<!-- If a Data_Len is set, then Move_Prev and Move_Next must be False -->
+<!ELEMENT Get_Tuning EMPTY>
+<!ATTLIST Get_Tuning Move_Prev (True|False) "False"
+                     Move_Next (True|False) "False"
+                     Data_Len CDATA #IMPLIED>
 
 <!-- Any field must have a Foreground and Background color. -->
 <!-- Get fields and List must also have a Selected color. -->

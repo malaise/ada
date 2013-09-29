@@ -62,32 +62,33 @@ package body Af_Ptg is
     end case;
   end Set_Colors;
 
-  -- Put a whole field in attribute
+  -- Put a whole field
   procedure Put_Field (Field_No : in Afpx_Typ.Field_Range;
                        State    : in State_List) is
     Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
-    Char_Index : Afpx_Typ.Char_Str_Range;
-    Foreground : Con_Io.Effective_Colors;
-    Background : Con_Io.Effective_Colors;
+    Char_Index  : Afpx_Typ.Char_Str_Range;
+    Foreground  : Con_Io.Effective_Colors;
+    Background  : Con_Io.Effective_Colors;
   begin
     -- Set colors
     Set_Colors (Field, State, Foreground, Background);
 
-    -- Set index to start of field's data
-    Char_Index := Field.Char_Index;
+    -- Set index to start of field's data and to first char to put
+    Char_Index := Field.Char_Index + Field.Offset;
     -- Put spaces in each row
     for I in 1 .. Field.Height loop
       -- Go to row, left of field
       Af_Con_Io.Move (Field.Upper_Left.Row + I - 1, Field.Upper_Left.Col);
+      -- Put Field.Width chars, starting at Char_Index + Field.Offset
       Af_Con_Io.Putu (
-         S          => Af_Dscr.Chars(Char_Index
-                                      .. Char_Index + Field.Width - 1),
+         S          => Af_Dscr.Chars(Char_Index ..
+                                     Char_Index + Field.Width - 1),
          Foreground => Foreground,
          Background => Background,
          Move       => False);
       -- Update Char_Index to first char of next row (except after last row)
       if I /= Field.Height then
-        Char_Index := Char_Index + Field.Width;
+        Char_Index := Char_Index + Field.Data_Len;
       end if;
     end loop;
   end Put_Field;
@@ -824,7 +825,8 @@ package body Af_Ptg is
         Af_Con_Io.Move (Field.Upper_Left.Row, Field.Upper_Left.Col);
         Af_Con_Io.Put_Then_Get (
          Str    => Af_Dscr.Chars
-                    (Field.Char_Index .. Field.Char_Index + Field.Width - 1),
+                    (Field.Char_Index + Field.Offset ..
+                     Field.Char_Index + Field.Offset + Field.Width - 1),
          Last   => Last,
          Stat   => Stat,
          Pos    => Pos,
@@ -891,7 +893,7 @@ package body Af_Ptg is
             List_Scrolled := Af_List.Update (Bottom, True);
           end if;
         when Con_Io.Right | Con_Io.Full =>
-          if Get_Active then
+          if Get_Active and then Field.Move_Next then
             -- End (right) of previous field
             -- Restore normal color of previous field
             Put_Field (Cursor_Field, Normal);
@@ -904,7 +906,7 @@ package body Af_Ptg is
             Insert := False;
           end if;
         when Con_Io.Left =>
-          if Get_Active then
+          if Get_Active and then Field.Move_Prev then
             -- Left on previous field
             -- Restore normal color of previous field
             Put_Field (Cursor_Field, Normal);

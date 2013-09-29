@@ -834,30 +834,37 @@
     </Field>
     <Field Num="15" Kind="Get" Name="Comment1">
       <Geometry Up="${Field_14.Low}+1" Left="1" Height="1" Width="53"/>
+      <Get_Tuning Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="16" Kind="Get" Name="Comment2">
       <Geometry Up="${Field_15.Low}+1" Left="1" Height="1" Width="53"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="17" Kind="Get" Name="Comment3">
       <Geometry Up="${Field_16.Low}+1" Left="1" Height="1" Width="53"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="18" Kind="Get" Name="Comment4">
       <Geometry Up="${Field_17.Low}+1" Left="1" Height="1" Width="53"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="19" Kind="Get" Name="Comment5">
       <Geometry Up="${Field_18.Low}+1" Left="1" Height="1" Width="53"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="20" Kind="Get" Name="Comment6">
       <Geometry Up="${Field_19.Low}+1" Left="1" Height="1" Width="53"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="21" Kind="Get" Name="Comment7">
       <Geometry Up="${Field_20.Low}+1" Left="1" Height="1" Width="53"/>
+      <Get_Tuning Move_Prev="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
 

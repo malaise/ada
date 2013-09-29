@@ -527,6 +527,45 @@ procedure Afpx_Bld is
       File_Error (Node, "Invalid geometry");
   end Load_Geometry;
 
+  procedure Load_Get_Tuning (Node : in Xp.Node_Type;
+                             Fn : in Afpx_Typ.Absolute_Field_Range) is
+  begin
+    if Node.Kind /= Xp.Element
+    or else not Match (Ctx.Get_Name (Node), "Get_Tuning")
+    or else Ctx.Get_Nb_Children (Node) /= 0 then
+      File_Error (Node, "Invalid get tuning " & String'(Ctx.Get_Name (Node)));
+    end if;
+    declare
+      Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
+      Err_Val : Asu_Us;
+    begin
+      for I in Attrs'Range loop
+        Err_Val := Attrs(I).Value;
+        if Match (Attrs(I).Name, "Move_Prev") then
+          Fields(Fn).Move_Prev := Boolean'Value (
+                 Memory.Eval (Attrs(I).Value.Image));
+        elsif Match (Attrs(I).Name, "Move_Next") then
+          Fields(Fn).Move_Next := Boolean'Value (
+                 Memory.Eval (Attrs(I).Value.Image));
+        elsif Match (Attrs(I).Name, "Data_Len") then
+          Fields(Fn).Data_Len := Afpx_Typ.Width_Range'Value (
+                 Memory.Eval (Attrs(I).Value.Image));
+        else
+          File_Error (Node, "Invalid get tuning " & Attrs(I).Name);
+        end if;
+      end loop;
+
+    exception
+      when File_Syntax_Error =>
+        raise;
+      when Computer.Unknown_Variable =>
+        File_Error (Node, "Unknown variable when evaluating "
+                        & Err_Val.Image);
+      when others =>
+        File_Error (Node, "Invalid get tuning");
+    end;
+  end Load_Get_Tuning;
+
   procedure Load_Colors (Node : in Xp.Node_Type;
                          Fn : in Afpx_Typ.Absolute_Field_Range) is
     Foreground, Background, Selected : Boolean := False;
@@ -619,7 +658,11 @@ procedure Afpx_Bld is
     Fields(0).Modified := False;
     Fields(0).Activated := True;
     Fields(0).Isprotected := False;
+    Fields(0).Offset := 0;
     Load_Geometry (Ctx.Get_Child (Node, 1), 0, Screen_Size);
+    Fields(0).Move_Prev := False;
+    Fields(0).Move_Next := False;
+    Fields(0).Data_Len := Fields(0).Width;
     Load_Colors (Ctx.Get_Child (Node, 2), 0);
     Fields(0).Char_Index := 1;
   end Load_List;
@@ -633,6 +676,8 @@ procedure Afpx_Bld is
     First_Init : Boolean;
     Prev_Init_Square : Con_Io.Square;
     Name : Asu_Us;
+    -- Index of first Init child
+    Start_Init : Xml_Parser.Child_Index;
     -- Location in field of init string
     Finit_Square : Con_Io.Square;
     -- Init string
@@ -641,6 +686,10 @@ procedure Afpx_Bld is
     -- Index in Char_Str of beginning of Init string
     Finit_Index : Afpx_Typ.Char_Str_Range;
   begin
+    Fields(No).Modified := True;
+    Fields(No).Activated := True;
+    Fields(No).Isprotected := False;
+    Fields(No).Offset := 0;
     for I in Attrs'Range loop
       if Match (Attrs(I).Name, "Num") then
         begin
@@ -670,9 +719,6 @@ procedure Afpx_Bld is
         end;
       end if;
     end loop;
-    Fields(No).Modified := True;
-    Fields(No).Activated := True;
-    Fields(No).Isprotected := False;
     -- Set Field name
     if not Name.Is_Null then
       Add_Variable (Node, Name_Of (No) & ".Name", Name.Image, False, False);
@@ -687,12 +733,31 @@ procedure Afpx_Bld is
           & Images.Integer_Image (Xref.Prev_Name_Line));
       end;
     end if;
+
+    -- Get geometry
     Load_Geometry (Ctx.Get_Child (Node, 1), No, Screen_Size);
-    Load_Colors (Ctx.Get_Child (Node, 2), No);
+
+    -- Parse optional Get tuning
+    Start_Init := 2;
+    Fields(No).Move_Prev := False;
+    Fields(No).Move_Next := False;
+    Fields(No).Data_Len := Fields(No).Width;
+    Child := Ctx.Get_Child (Node, Start_Init);
+    if Match (Ctx.Get_Name (Child), "Get_Tuning") then
+      if Fields(No).Kind /= Afpx_Typ.Get then
+        File_Error (Node, "Unexpected Get tuning for a non Get field");
+      end if;
+      Load_Get_Tuning (Child, No);
+      Start_Init := Start_Init + 1;
+    end if;
+
+    -- Parse colors
+    Load_Colors (Ctx.Get_Child (Node, Start_Init), No);
+    Start_Init := Start_Init + 1;
 
     -- Check global number of characters for the field
     Fields(No).Char_Index := Init_Index;
-    Finit_Length := Fields(No).Height * Fields(No).Width;
+    Finit_Length := Fields(No).Height * Fields(No).Data_Len;
     begin
       Init_Index := Init_Index + Finit_Length + 1;
     exception
@@ -702,7 +767,7 @@ procedure Afpx_Bld is
 
     First_Init := True;
     Prev_Init_Square := (0, 0);
-    for I in 3 .. Ctx.Get_Nb_Children (Node) loop
+    for I in Start_Init .. Ctx.Get_Nb_Children (Node) loop
       Child := Ctx.Get_Child (Node, I);
       if not Match (Ctx.Get_Name (Child), "Init")
       or else Ctx.Get_Nb_Attributes (Child) < 2
@@ -711,7 +776,8 @@ procedure Afpx_Bld is
       end if;
 
       declare
-        Child_Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Child);
+        Child_Attrs : constant Xp.Attributes_Array
+                    := Ctx.Get_Attributes (Child);
         Err_Val : Asu_Us;
       begin
         for I in Child_Attrs'Range loop

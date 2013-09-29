@@ -390,7 +390,8 @@ package Afpx is
   --   A character input, Backspace, Suppr, or Ctrl Suppr edits the field,
   --   (Ctrl) Right/Left arrow, (Ctrl) Home/End navigates in the field,
   --   Insert toggles insert/replace mode
-  --   Tab or Ctrl Tab changes field (like Next:Prev_Cursor_Field),
+  --   Tab or Shift Tab changes field (like Next/Prev_Cursor_Field), a character
+  --    input or left/right arrow can also lead to change field
   --   Only Return, Esc or Break key terminates the Put_Then_Get
   --   A mouse click moves to the field.
   -- In Button fields: mouse click then release terminates Put_Then_Get.

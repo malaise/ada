@@ -2,7 +2,7 @@ with As.U, Unicode, Con_Io;
 package Afpx_Typ is
 
   -- Version of Afpx
-  Afpx_Version : constant Float := 8.0;
+  Afpx_Version : constant Float := 9.0;
 
   -- Files path
   Dest_Path : As.U.Asu_Us;
@@ -59,6 +59,9 @@ package Afpx_Typ is
   subtype Height_Range is Positive range 1 .. Con_Io.Last_Row + 1;
   subtype Width_Range  is Positive range 1 .. Con_Io.Last_Col + 1;
 
+  -- Offset of the displayed part of an unbounded (get) field
+  subtype Offset_Range is Natural range 0 .. Con_Io.Last_Col;
+
   -- Characters of the fields
   Max_Init_Len : constant Integer :=
    (Con_Io.Last_Row + 1) * (Con_Io.Last_Col + 1);
@@ -78,6 +81,10 @@ package Afpx_Typ is
     Isprotected : Boolean;
     -- Upper left, lower_right corners of the field
     Upper_Left, Lower_Right : Con_Io.Square;
+    -- Get field tuning
+    Move_Prev, Move_Next : Boolean;
+    Data_Len : Width_Range;
+    Offset : Offset_Range;
     -- Width, height
     Height : Height_Range;
     Width  : Width_Range;
@@ -94,10 +101,12 @@ package Afpx_Typ is
   subtype Char_Str is Unicode.Unicode_Sequence (Char_Str_Range);
 
   -- Check is square (relative to field) is in field
+  -- Considers unbounded (get) fields
   function In_Field (Field  : in Field_Rec;
                      Square : in Con_Io.Square) return Boolean;
 
   -- Check is square (absolute) is in field
+  -- Consders strict field width
   function In_Field_Absolute (Field  : in Field_Rec;
                               Square : in Con_Io.Square) return Boolean;
 

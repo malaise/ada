@@ -1,15 +1,15 @@
 with Str_Util;
 package body Afpx_Typ is
 
-  -- Check is square (relative to field) is in field
+  -- Check if square (relative to field) is in field
   function In_Field (Field  : in Field_Rec;
                      Square : in Con_Io.Square) return Boolean is
   begin
     return   Square.Row < Field.Height
-    and then Square.Col < Field.Width;
+    and then Square.Col < Field.Data_Len;
   end In_Field;
 
-  -- Check is square (absolute) is in field
+  -- Check if square (absolute) is in field
   function In_Field_Absolute (Field  : in Field_Rec;
                               Square : in Con_Io.Square) return Boolean is
   begin
