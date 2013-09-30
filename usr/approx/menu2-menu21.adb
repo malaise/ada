@@ -3,7 +3,7 @@ separate(Menu2)
 package body Menu21 is
 
   type Restore_List is (None, Partial);
-  Cursor_Field : Afpx.Field_Range;
+  Get_Handle : Afpx.Get_Handle_Rec;
 
   The_Bounds_Set : Boolean := False;
   The_Bounds : Curve.T_Boundaries;
@@ -139,8 +139,6 @@ package body Menu21 is
 
 
   procedure Main_Screen is
-    Cursor_Col : Con_Io.Col_Range;
-    Insert : Boolean;
     Ptg_Result : Afpx.Result_Rec;
     Restore : Restore_List;
     Activate_No_Curve : Boolean;
@@ -150,8 +148,7 @@ package body Menu21 is
   begin
     Afpx.Use_Descriptor(Afpx_Xref.Bounds.Dscr_Num);
 
-    Cursor_Col := 0;
-    Insert := False;
+    Get_Handle := (others => <>);
     Restore := Partial;
 
     loop
@@ -162,7 +159,7 @@ package body Menu21 is
           null;
         when Partial =>
           Afpx.Use_Descriptor(Afpx_Xref.Bounds.Dscr_Num, False);
-          Cursor_Field := Screen.Init_For_Main21;
+          Get_Handle.Cursor_Field := Screen.Init_For_Main21;
           Screen.Put_File;
           Put_Bounds;
       end case;
@@ -188,7 +185,7 @@ package body Menu21 is
       Afpx.Set_Field_Activation (Afpx_Xref.Bounds.Xyd_Normed,
                                  Activate_No_Curve);
 
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
       Restore := None;
       case Ptg_Result.Event is
         when Afpx.Keyboard =>

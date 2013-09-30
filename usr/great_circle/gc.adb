@@ -19,9 +19,7 @@ procedure Gc is
   Heading  : Conv.Geo_Coord_Rec;
   Distance : Lat_Lon.Distance;
 
-  Cursor_Field : Afpx.Field_Range;
-  Cursor_Col : Con_Io.Col_Range;
-  Insert : Boolean;
+  Get_Handle : Afpx.Get_Handle_Rec;
   Result : Afpx.Result_Rec;
 
   subtype A_Flds is Afpx.Field_Range
@@ -86,9 +84,9 @@ procedure Gc is
     else
       Afpx.Encode_Field (Switch_Field, (1, 8), "Sexa");
     end if;
-    Cursor_Field := A_Flds'First;
-    Cursor_Col := 0;
-    Insert := False;
+    Get_Handle.Cursor_Field := A_Flds'First;
+    Get_Handle.Cursor_Col := 0;
+    Get_Handle.Insert := False;
   end Reset;
 
   -- Clear result fields during input
@@ -229,13 +227,9 @@ begin
     end;
   else
     Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
-    -- First Get field
-    Cursor_Field := Afpx.Next_Cursor_Field(0);
-    Cursor_Col := 0;
-    Insert := False;
+    Get_Handle := (others => <>);
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Result, False,
-                         Next_Field_Cb'Access);
+      Afpx.Put_Then_Get (Get_Handle, Result, False, Next_Field_Cb'Access);
 
       if (Result.Event = Afpx.Keyboard
           and then Result.Keyboard_Key = Afpx.Break_Key)
@@ -252,13 +246,15 @@ begin
       or else (Result.Event = Afpx.Mouse_Button
                and then Result.Field_No = Compute_Field) then
         -- Compute
-        Cursor_Field := A_Flds'First;
-        Cursor_Col := 0;
-        Insert := False;
+        Get_Handle.Cursor_Field := A_Flds'First;
+        Get_Handle.Cursor_Col := 0;
+        Get_Handle.Insert := False;
         Clear_Result;
-        Decode_Point (A_Flds'First, A_Flds'Last, A, Decode_Ok, Cursor_Field);
+        Decode_Point (A_Flds'First, A_Flds'Last, A, Decode_Ok,
+                      Get_Handle.Cursor_Field);
         if Decode_Ok then
-          Decode_Point (B_Flds'First, B_Flds'Last, B, Decode_Ok, Cursor_Field);
+          Decode_Point (B_Flds'First, B_Flds'Last, B, Decode_Ok,
+                        Get_Handle.Cursor_Field);
         end if;
         if Decode_Ok then
           Great_Circle.Compute_Route(A => A, B => B,

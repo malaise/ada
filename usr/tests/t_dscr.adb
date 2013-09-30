@@ -1,9 +1,7 @@
-with Basic_Proc, Argument, Con_Io, Afpx, Normal, Mixed_Str, Language, Images;
+with Basic_Proc, Argument, Afpx, Normal, Mixed_Str, Language, Images;
 procedure T_Dscr is
   Dscr_No : Afpx.Descriptor_Range;
-  Cursor_Field : Afpx.Absolute_Field_Range;
-  Cursor_Col : Con_Io.Col_Range;
-  Insert : Boolean;
+  Get_Handle : Afpx.Get_Handle_Rec;
   Ptg_Result : Afpx.Result_Rec;
   Line : Afpx.Line_Rec;
 
@@ -18,10 +16,10 @@ procedure T_Dscr is
 
   procedure Set_Dscr(No : in Afpx.Descriptor_Range) is
     Start : Afpx.Absolute_Field_Range;
-    use type Afpx.Absolute_Field_Range;
+    use type Afpx.Field_Kind_List, Afpx.Absolute_Field_Range;
   begin
     Afpx.Use_Descriptor(No);
-    Cursor_Field := Afpx.Next_Cursor_Field(0);
+    Get_Handle.Cursor_Field := Afpx.Next_Cursor_Field(0);
 
     -- Dump descriptor
     Basic_Proc.Put_Output ("Descriptor" & No'Img & " has");
@@ -41,17 +39,22 @@ procedure T_Dscr is
           else "Field No" & I'Img & " is of kind "
              & Mixed_Str (Afpx.Field_Kind_List'Image(Afpx.Get_Field_Kind (I))) )
          & ", " & Images.Integer_Image (Afpx.Get_Field_Height (I))
-         & "x"  & Images.Integer_Image (Afpx.Get_Field_Width (I)));
+         & "x"  & Images.Integer_Image (Afpx.Get_Field_Width (I))
+         & (if I in Afpx.Field_Range
+            and then Afpx.Get_Field_Kind (I) = Afpx.Get then
+              "-" & Images.Integer_Image (Afpx.Get_Data_Len (I))
+            else "") );
     end loop;
-    Basic_Proc.Put_Line_Output ("Cursor field is" & Cursor_Field'Img);
+    Basic_Proc.Put_Line_Output ("Cursor field is"
+                              & Get_Handle.Cursor_Field'Img);
 
     -- Fix Cursor_Field for Put_Then_Get
-    if Cursor_Field not in Afpx.Field_Range then
+    if Get_Handle.Cursor_Field not in Afpx.Field_Range then
       -- No get field
-      Cursor_Field := Afpx.Field_Range'First;
+      Get_Handle.Cursor_Field := Afpx.Field_Range'First;
     end if;
-    Cursor_Col := 0;
-    Insert := False;
+    Get_Handle.Cursor_Col := 0;
+    Get_Handle.Insert := False;
   end Set_Dscr;
 
   use Afpx;
@@ -96,7 +99,7 @@ begin
   -- Show
   One_Dscr:
   loop
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+    Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is

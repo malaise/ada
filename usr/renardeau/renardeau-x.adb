@@ -28,12 +28,9 @@ package body X is
   -- Exit
   Exit_F : constant Field_Range := Afpx_Xref.Main.Exit_F;
 
-  -- For PTG Get field (there is none here)
-  Cursor_Field : Field_Range := 1;
-  Cursor_Col   : Con_Io.Col_Range := 0;
-  Insert       : Boolean := False;
-
-  Ptg_Result   : Result_Rec;
+  -- For PTG
+  Get_Handle : Afpx.Get_Handle_Rec;
+  Ptg_Result : Result_Rec;
 
   Deactivated : constant Con_Io.Colors := Con_Io.Color_Of ("Red");
   Activated : Con_Io.Colors;
@@ -197,7 +194,7 @@ package body X is
       Reset := False;
 
       -- Ptg
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
       case Ptg_Result.Event is
         when Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -299,10 +296,9 @@ package body X is
       end loop;
     end if;
 
-    Insert := False;
     loop
       -- Ptg
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
       case Ptg_Result.Event is
         when Keyboard =>
           case Ptg_Result.Keyboard_Key is

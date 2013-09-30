@@ -6,10 +6,8 @@ procedure T_Screen is
 
   Dscr : Afpx.Descriptor_Range;
 
-  Insert : Boolean;
-  Cursor_Field : Afpx.Field_Range;
-  Cursor_Col   : Con_Io.Col_Range;
-  Ptg_Result   : Afpx.Result_Rec;
+  Get_Handle : Afpx.Get_Handle_Rec;
+  Ptg_Result : Afpx.Result_Rec;
 
 
   Curr_Date  : Afpx.Absolute_Field_Range;
@@ -89,9 +87,7 @@ begin
     Curr_Date := 02;
   end if;
 
-  Insert := False;
-  Cursor_Field := First_Get;
-  Cursor_Col := 0;
+  Get_Handle.Cursor_Field := First_Get;
 
   -- Encode date
   declare
@@ -190,7 +186,7 @@ begin
     end if;
 
 
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+    Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
 
     case Ptg_Result.Event is
 
@@ -204,8 +200,9 @@ begin
             null;
           when Escape_Key =>
             -- Clear current field
-            Afpx.Clear_Field (Cursor_Field);
-            Cursor_Col := 0;
+            Afpx.Clear_Field (Get_Handle.Cursor_Field);
+            Get_Handle.Cursor_Col := 0;
+            Get_Handle.Insert := False;
             Allow_Undo := False;
         end case;
 
@@ -235,7 +232,7 @@ begin
                 Afpx.Encode_Field(20, (00, 00),
                    "Remove xxxxx records from the selection");
               end if;
-              Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+              Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
               -- Here we can confirm or abort
               if      (    In_Add and then Ptg_Result.Field_No = 15)
               or else (not In_Add and then Ptg_Result.Field_No = 16) then
@@ -262,7 +259,7 @@ begin
               -- Create, edit
               In_Edit := True;
               In_Valid := False;
-              Cursor_Field := First_Get;
+              Get_Handle.Cursor_Field := First_Get;
             when 07 =>
               -- Delete
               In_Edit := False;

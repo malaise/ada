@@ -140,10 +140,8 @@ package body Mesu_Edi is
     Valid_Date : Boolean;
     Space_Found : Boolean;
 
-    Cursor_Field : Afpx.Field_Range;
-    Cursor_Col   : Con_Io.Col_Range;
-    Insert       : Boolean;
-    Ptg_Result   : Afpx.Result_Rec;
+    Get_Handle : Afpx.Get_Handle_Rec;
+    Ptg_Result : Afpx.Result_Rec;
 
     Ok : Boolean;
 
@@ -333,8 +331,8 @@ package body Mesu_Edi is
 
       end case;
 
-      Cursor_Col := 0;
-      Insert := False;
+      Get_Handle.Cursor_Col := 0;
+      Get_Handle.Insert := False;
       Ok := Locok;
 
     end Check_Field;
@@ -378,19 +376,19 @@ package body Mesu_Edi is
 
     if In_Create then
       -- Person name
-      Cursor_Field := Afpx_Xref.Records.Person;
+      Get_Handle.Cursor_Field := Afpx_Xref.Records.Person;
     else
       -- Date
-      Cursor_Field := Afpx_Xref.Records.Day;
+      Get_Handle.Cursor_Field := Afpx_Xref.Records.Day;
     end if;
-    Cursor_Col := 0;
-    Insert := False;
+    Get_Handle.Cursor_Col := 0;
+    Get_Handle.Insert := False;
 
     -- Loop of Ptgs
     loop
       Afpx.Encode_Field (Afpx_Xref.Records.Date, (00, 00),
                          Str_Mng.Current_Date_Printed);
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
 
       case Ptg_Result.Event is
         when Fd_Event | Timer_Event | Signal_Event | Refresh =>
@@ -400,27 +398,27 @@ package body Mesu_Edi is
           case Ptg_Result.Keyboard_Key is
             when Return_Key =>
               -- Check field and go to next if Ok
-              Check_Field (Cursor_Field, False, Ok);
+              Check_Field (Get_Handle.Cursor_Field, False, Ok);
             when Escape_Key =>
               -- Clear current field
-              if Cursor_Field = Afpx_Xref.Records.Person then
+              if Get_Handle.Cursor_Field = Afpx_Xref.Records.Person then
                 Afpx.Clear_Field (Afpx_Xref.Records.Person);
                 Afpx.Clear_Field (Afpx_Xref.Records.Activity);
-                Cursor_Field := Afpx_Xref.Records.Person;
-              elsif Cursor_Field = Afpx_Xref.Records.Activity then
+                Get_Handle.Cursor_Field := Afpx_Xref.Records.Person;
+              elsif Get_Handle.Cursor_Field = Afpx_Xref.Records.Activity then
                 Afpx.Clear_Field (Afpx_Xref.Records.Activity);
-              elsif Cursor_Field = Afpx_Xref.Records.Day
-              or else Cursor_Field = Afpx_Xref.Records.Month
-              or else Cursor_Field = Afpx_Xref.Records.Year then
+              elsif Get_Handle.Cursor_Field = Afpx_Xref.Records.Day
+              or else Get_Handle.Cursor_Field = Afpx_Xref.Records.Month
+              or else Get_Handle.Cursor_Field = Afpx_Xref.Records.Year then
                 Afpx.Clear_Field (Afpx_Xref.Records.Day);
                 Afpx.Clear_Field (Afpx_Xref.Records.Month);
                 Afpx.Clear_Field (Afpx_Xref.Records.Year);
-                Cursor_Field := Afpx_Xref.Records.Day;
+                Get_Handle.Cursor_Field := Afpx_Xref.Records.Day;
               else
-                Afpx.Clear_Field (Cursor_Field);
+                Afpx.Clear_Field (Get_Handle.Cursor_Field);
               end if;
-              Cursor_Col := 0;
-              Insert := False;
+              Get_Handle.Cursor_Col := 0;
+              Get_Handle.Insert := False;
             when Break_Key =>
               Exit_Program := True;
               exit;
@@ -433,8 +431,8 @@ package body Mesu_Edi is
             exit;
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Import then
             -- Import samples
-            Cursor_Field := Afpx_Xref.Records.Import_File;
-            Check_Field (Cursor_Field, False, Ok);
+            Get_Handle.Cursor_Field := Afpx_Xref.Records.Import_File;
+            Check_Field (Get_Handle.Cursor_Field, False, Ok);
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Cancel then
             -- Cancel
             File_Name := Mesu_Nam.File_Name_Str'((others => ' '));
@@ -445,16 +443,18 @@ package body Mesu_Edi is
             Afpx.Clear_Field (Afpx_Xref.Records.Import_Title);
 
             -- Valid check all fields but import_file one by one
-            Cursor_Field := Afpx_Xref.Records.Person;
+            Get_Handle.Cursor_Field := Afpx_Xref.Records.Person;
             loop
-              Check_Field (Cursor_Field, True, Ok);
-              exit when not Ok or else Cursor_Field = Afpx_Xref.Records.Person;
+              Check_Field (Get_Handle.Cursor_Field, True, Ok);
+              exit when not Ok
+              or else Get_Handle.Cursor_Field = Afpx_Xref.Records.Person;
             end loop;
 
             -- Check no hole in Tz, crescent
             if Ok then
               for I in Pers_Def.Person_Tz_Array'Range loop
-                Cursor_Field := Afpx_Xref.Records.Tz1 + Afpx.Field_Range(I) - 1;
+                Get_Handle.Cursor_Field := Afpx_Xref.Records.Tz1
+                                         + Afpx.Field_Range(I) - 1;
                 if Pers_Def."=" (Mesure.Tz(I), Pers_Def.Bpm_Range'First) then
                   Ok := False;
                   exit;
@@ -471,8 +471,8 @@ package body Mesu_Edi is
             if Ok then
               Space_Found := False;
               for I in Mesu_Def.Sample_Nb_Range loop
-                Cursor_Field := Afpx_Xref.Records.Rate_001
-                              + Afpx.Field_Range(I) - 1;
+                Get_Handle.Cursor_Field := Afpx_Xref.Records.Rate_001
+                                         + Afpx.Field_Range(I) - 1;
                 if Pers_Def."=" (Mesure.Samples(I), Pers_Def.Bpm_Range'First)
                 then
                   Space_Found := True;
@@ -517,28 +517,32 @@ package body Mesu_Edi is
             end if;
 
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Ins
-                and then Cursor_Field >= Afpx_Xref.Records.Rate_001
-                and then Cursor_Field <= Afpx_Xref.Records.Rate_100 then
+                and then Get_Handle.Cursor_Field >= Afpx_Xref.Records.Rate_001
+                and then Get_Handle.Cursor_Field <= Afpx_Xref.Records.Rate_100
+          then
             -- Insert a sample
-            for I in reverse Cursor_Field + 1 .. Afpx_Xref.Records.Rate_100 loop
+            for I in reverse Get_Handle.Cursor_Field + 1
+                          .. Afpx_Xref.Records.Rate_100 loop
               Afpx.Encode_Field (I, (0, 0),
                  Afpx.Unicode_Sequence'(Afpx.Decode_Field(I - 1, 0)));
             end loop;
-            Afpx.Clear_Field(Cursor_Field);
+            Afpx.Clear_Field(Get_Handle.Cursor_Field);
 
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Del
-                and then Cursor_Field >= Afpx_Xref.Records.Rate_001
-                and then Cursor_Field <= Afpx_Xref.Records.Rate_100 then
+                and then Get_Handle.Cursor_Field >= Afpx_Xref.Records.Rate_001
+                and then Get_Handle.Cursor_Field <= Afpx_Xref.Records.Rate_100
+          then
             -- Suppress a sample
-            for I in Cursor_Field .. Afpx_Xref.Records.Rate_100 - 1 loop
+            for I in Get_Handle.Cursor_Field
+                  .. Afpx_Xref.Records.Rate_100 - 1 loop
               Afpx.Encode_Field (I, (0, 0),
                  Afpx.Unicode_Sequence'(Afpx.Decode_Field(I + 1, 0)));
             end loop;
             Afpx.Clear_Field(Afpx_Xref.Records.Rate_100);
 
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Reset
-                and then Cursor_Field >=  Afpx_Xref.Records.Tz1
-                and then Cursor_Field <= Afpx_Xref.Records.Tz6 then
+                and then Get_Handle.Cursor_Field >=  Afpx_Xref.Records.Tz1
+                and then Get_Handle.Cursor_Field <= Afpx_Xref.Records.Tz6 then
             -- Reset of Tz from Person (if any, if not => clear)
             Encode_Tz;
           end if; -- Ptg_Result.Field_No = valid or cancel
@@ -559,10 +563,8 @@ package body Mesu_Edi is
     Pid_S  : Mesu_Nam.File_Pid_Str;
     Mesure : Mesu_Def.Mesure_Rec;
 
-    Cursor_Field : Afpx.Field_Range;
-    Cursor_Col   : Con_Io.Col_Range;
-    Insert       : Boolean;
-    Ptg_Result   : Afpx.Result_Rec;
+    Get_Handle : Afpx.Get_Handle_Rec;
+    Ptg_Result : Afpx.Result_Rec;
   begin
 
     -- Load person
@@ -607,15 +609,12 @@ package body Mesu_Edi is
     Afpx.Set_Field_Activation (Afpx_Xref.Records.Del, False);
     Afpx.Set_Field_Activation (Afpx_Xref.Records.Reset, False);
 
-    Cursor_Field := 01;
-    Cursor_Col := 0;
-    Insert := False;
 
     -- Loop of ptgs
     loop
       Afpx.Encode_Field (Afpx_Xref.Records.Date, (00, 00),
                          Str_Mng.Current_Date_Printed);
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
 
       case Ptg_Result.Event is
         when Fd_Event | Timer_Event | Signal_Event | Refresh =>

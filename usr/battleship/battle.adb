@@ -271,11 +271,9 @@ package body Battle is
 
   -- Return true as long as play a new game
   function Play (Server, Start : Boolean) return Boolean is
-    Cursor_Field : Afpx.Field_Range;
-    Cursor_Col   : Con_Io.Col_Range;
-    Insert       : Boolean;
-    Result       : Afpx.Result_Rec;
-    Target : Utils.Coord;
+    Get_Handle : Afpx.Get_Handle_Rec;
+    Result     : Afpx.Result_Rec;
+    Target     : Utils.Coord;
 
     use type Afpx.Keyboard_Key_List, Afpx.Field_Range;
   begin
@@ -288,11 +286,6 @@ package body Battle is
     Red := Con_Io.Color_Of ("Red");
     Afpx.Set_Field_Activation (Afpx_Xref.Play.Win, False);
     Afpx.Set_Field_Activation (Afpx_Xref.Play.Loose, False);
-
-    -- Init for Afpx Ptg
-    Cursor_Field := 1;
-    Cursor_Col := 0;
-    Insert := False;
 
     -- Init my grid and screen from Fleet
     My_Grid := Empty_Grid;
@@ -339,7 +332,7 @@ package body Battle is
       Afpx.Set_Field_Activation (Afpx_Xref.Play.Exitgame, Server and then Done);
 
       -- Get action
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Result);
+      Afpx.Put_Then_Get (Get_Handle, Result);
       case Result.Event is
         when Afpx.Signal_Event =>
           -- Aborted by signal

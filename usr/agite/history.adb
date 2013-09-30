@@ -28,11 +28,9 @@ package body History is
                     Is_File : in Boolean;
                     Hash : in Git_If.Git_Hash := Git_If.No_Hash) is
     -- Afpx stuff
-    Cursor_Field : Afpx.Field_Range;
-    Cursor_Col   : Con_Io.Col_Range;
-    Insert       : Boolean;
-    Ptg_Result   : Afpx.Result_Rec;
-    List_Height  : Afpx.Height_Range;
+    Get_Handle  : Afpx.Get_Handle_Rec;
+    Ptg_Result  : Afpx.Result_Rec;
+    List_Height : Afpx.Height_Range;
     use type Afpx.Absolute_Field_Range;
 
     -- The log
@@ -47,9 +45,7 @@ package body History is
     procedure Init is
     begin
       Afpx.Use_Descriptor (Afpx_Xref.History.Dscr_Num);
-      Cursor_Field := 1;
-      Cursor_Col := 0;
-      Insert := False;
+      Get_Handle := (others => <>);
       -- List characteristics
       Afpx.Get_Field_Size (Afpx.List_Field_No, List_Height, List_Width);
       -- Encode file/dir
@@ -231,7 +227,7 @@ package body History is
 
     -- Main loop
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, True,
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result, True,
                          List_Change_Cb => List_Change'Access);
 
       case Ptg_Result.Event is

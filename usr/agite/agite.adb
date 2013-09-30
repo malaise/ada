@@ -1,4 +1,4 @@
-with As.U, Con_Io, Afpx.List_Manager, Basic_Proc, Images, Directory,
+with As.U, Afpx.List_Manager, Basic_Proc, Images, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket;
 with Utils.X, Git_If, Config, Bookmarks, History, Commit, Push, Confirm, Error,
      Afpx_Xref;
@@ -40,9 +40,7 @@ procedure Agite is
   Incorrect_Version : exception;
 
   -- Afpx stuff
-  Cursor_Field : Afpx.Field_Range;
-  Cursor_Col   : Con_Io.Col_Range;
-  Insert       : Boolean;
+  Get_Handle : Afpx.Get_Handle_Rec;
   Ptg_Result   : Afpx.Result_Rec;
   Dir_Field    : Afpx.Field_Range;
   use type Afpx.Absolute_Field_Range;
@@ -287,20 +285,20 @@ procedure Agite is
     -- Encode current dir (get field)
     Utils.X.Encode_Field (Directory.Get_Current, Dir_Field);
     -- Move cursor col on last significant char
-    Cursor_Col := 0;
+    Get_Handle.Cursor_Col := 0;
     declare
       Wstr : constant Wide_String := Afpx.Decode_Wide_Field (Dir_Field, 0);
     begin
       for I in reverse Wstr'Range loop
         if Wstr(I) /= ' ' then
-          Cursor_Col := I;
+          Get_Handle.Cursor_Col := I;
           exit;
         end if;
       end loop;
     end;
     -- Full field => last col
-    if Cursor_Col >= Width then
-      Cursor_Col := Width - 1;
+    if Get_Handle.Cursor_Col >= Width then
+      Get_Handle.Cursor_Col := Width - 1;
     end if;
 
     -- Encode root dir
@@ -385,9 +383,7 @@ procedure Agite is
     List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
     Dir_Field := Afpx_Xref.Main.Dir;
     Afpx.Get_Console.Set_Name ("Agite (on " & Socket.Local_Host_Name & ")");
-    Cursor_Field := Afpx.Next_Cursor_Field (0);
-    Cursor_Col := 0;
-    Insert := False;
+    Get_Handle := (others => <>);
     Utils.X.Encode_Field (Host_Str, Afpx_Xref.Main.Host);
     Change_Dir (Dir);
     if Pos /= 0 and then not Afpx.Line_List.Is_Empty then
@@ -802,7 +798,7 @@ begin
     Afpx.Set_Field_Activation (Afpx_Xref.Main.Pushd, Can_Push);
     Afpx.Set_Field_Activation (Afpx_Xref.Main.Popd,  Can_Pop);
 
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+    Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is

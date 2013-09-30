@@ -3,10 +3,8 @@ with Afpx_Xref, Communication, Utils, Fleet;
 package body Setup is
 
   function Init (Addr : String; Server : Boolean) return Boolean is
-    Cursor_Field : Afpx.Field_Range;
-    Cursor_Col   : Con_Io.Col_Range;
-    Insert       : Boolean;
-    Result       : Afpx.Result_Rec;
+    Get_Handle : Afpx.Get_Handle_Rec;
+    Result     : Afpx.Result_Rec;
     use type Afpx.Field_Range, Afpx.Keyboard_Key_List;
   begin
     -- Init Afpx: deactivate grid and actions
@@ -21,13 +19,8 @@ package body Setup is
       (if Server then "server" else "client"));
     Communication.Connect (Addr, Server);
 
-    -- Init for Afpx Ptg
-    Cursor_Field := 1;
-    Cursor_Col := 0;
-    Insert := False;
-
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Result);
+      Afpx.Put_Then_Get (Get_Handle, Result);
       case Result.Event is
         when Afpx.Signal_Event =>
           -- Aborted by signal
@@ -101,12 +94,10 @@ package body Setup is
 
   -- Define Setup
   procedure Define is
-    Cursor_Field : Afpx.Field_Range;
-    Cursor_Col   : Con_Io.Col_Range;
-    Insert       : Boolean;
-    Result       : Afpx.Result_Rec;
-    Ship         : Fleet.Ship_List;
-    Ship_Fld     : Afpx.Absolute_Field_Range;
+    Get_Handle : Afpx.Get_Handle_Rec;
+    Result     : Afpx.Result_Rec;
+    Ship       : Fleet.Ship_List;
+    Ship_Fld   : Afpx.Absolute_Field_Range;
     use type Afpx.Keyboard_Key_List, Afpx.Field_Range;
   begin
     Utils.Dbg_Setup ("Start of setup");
@@ -122,11 +113,6 @@ package body Setup is
     Partner_Done := False;
     Abort_Game := False;
     Communication.Set_Callback (Receive'Access);
-
-    -- Init for Afpx Ptg
-    Cursor_Field := 1;
-    Cursor_Col := 0;
-    Insert := False;
 
     -- Init ship names
     Ship := Fleet.Ship_List'First;
@@ -186,7 +172,7 @@ package body Setup is
       end if;
 
       -- Get action
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Result);
+      Afpx.Put_Then_Get (Get_Handle, Result);
       case Result.Event is
         when Afpx.Signal_Event =>
           -- Aborted by signal

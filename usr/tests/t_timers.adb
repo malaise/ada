@@ -7,14 +7,12 @@
 -- Escape suspends the Periodic and the Single (if not expired)
 -- Return resumes them
 
-with Basic_Proc, Afpx, Con_Io, Timers, Rnd, Event_Mng, Mixed_Str;
+with Basic_Proc, Afpx, Timers, Rnd, Event_Mng, Mixed_Str;
 procedure T_Timers is
 
   -- Afpx stuff
-  Cursor_Field : Afpx.Field_Range;
-  Cursor_Col   : Con_Io.Col_Range;
-  Insert       : Boolean;
-  Ptg_Result   : Afpx.Result_Rec;
+  Get_Handle : Afpx.Get_Handle_Rec;
+  Ptg_Result : Afpx.Result_Rec;
 
   -- Row Management
   F : constant Afpx.Field_Range := 1;
@@ -137,13 +135,10 @@ begin
 
   -- Afpx init
   Afpx.Use_Descriptor (6);
-  Cursor_Field := 1;
-  Cursor_Col := 0;
-  Insert := False;
 
 
   loop
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+    Afpx.Put_Then_Get (Get_Handle,Ptg_Result);
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
 

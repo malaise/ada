@@ -1,19 +1,14 @@
-with Con_Io, Afpx;
+with Afpx;
 with Utils.X, Afpx_Xref;
 function Confirm (Title, Msg : String;
                   Ok_Cancel : Boolean := True;
                   Show_List : Boolean := False) return Boolean is
   -- Afpx stuff
-  Cursor_Field : Afpx.Field_Range;
-  Cursor_Col   : Con_Io.Col_Range;
-  Insert       : Boolean;
+  Get_Handle : Afpx.Get_Handle_Rec;
   Ptg_Result   : Afpx.Result_Rec;
 
 begin
   Afpx.Use_Descriptor (Afpx_Xref.Confirm.Dscr_Num);
-  Cursor_Field := 1;
-  Cursor_Col := 0;
-  Insert := False;
   Utils.X.Center_Field (Title, Afpx_Xref.Confirm.Action);
   Utils.X.Center_Field (Msg, Afpx_Xref.Confirm.Name);
   -- Yes / No
@@ -33,7 +28,7 @@ begin
   -- Main loop
   loop
 
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+    Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is

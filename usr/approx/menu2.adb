@@ -1,9 +1,9 @@
-with Con_Io, Afpx, Curve, My_Math;
+with Afpx, Curve, My_Math;
 with Points, Screen, Set_Points_List, Dialog, Resol, Afpx_Xref;
 package body Menu2 is
 
   type Restore_List is (None, Partial, List, Full);
-  Cursor_Field : Afpx.Field_Range;
+  Get_Handle : Afpx.Get_Handle_Rec;
 
   package Curve_Data is
     Nb_Points : Natural;
@@ -45,18 +45,18 @@ package body Menu2 is
         null;
       when Partial =>
         Afpx.Use_Descriptor(Afpx_Xref.Compute.Dscr_Num, False);
-        Cursor_Field := Screen.Init_For_Main2;
+        Get_Handle.Cursor_Field := Screen.Init_For_Main2;
         Screen.Put_File;
       when List =>
         -- polynom display needs reset of list
         Afpx.Use_Descriptor(Afpx_Xref.Compute.Dscr_Num, False);
         Set_Points_List;
-        Cursor_Field := Screen.Init_For_Main2;
+        Get_Handle.Cursor_Field := Screen.Init_For_Main2;
         Screen.Put_File;
       when Full =>
         Afpx.Use_Descriptor(Afpx_Xref.Compute.Dscr_Num, True);
         Set_Points_List;
-        Cursor_Field := Screen.Init_For_Main2;
+        Get_Handle.Cursor_Field := Screen.Init_For_Main2;
         Screen.Put_File;
     end case;
     -- Activate or not according to curve activity
@@ -212,8 +212,6 @@ package body Menu2 is
 
 
   procedure Main_Screen (Data_Changed : in Boolean) is
-    Cursor_Col : Con_Io.Col_Range;
-    Insert : Boolean;
     Ptg_Result : Afpx.Result_Rec;
     Restore : Restore_List;
 
@@ -232,21 +230,21 @@ package body Menu2 is
       Resol.R_Points_Modification;
       Menu21.Reset_Bounds;
     end if;
-    Cursor_Field := Screen.Init_For_Main2;
+    Get_Handle.Cursor_Field := Screen.Init_For_Main2;
     Screen.Put_File;
 
     -- Update Nb of points and save_status
     Screen.Put_Point_Status;
 
-    Cursor_Col := 0;
-    Insert := False;
+    Get_Handle.Cursor_Col := 0;
+    Get_Handle.Insert := False;
     Restore := None;
 
     loop
       Do_Restore (Restore);
 
 
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
       Restore := None;
       case Ptg_Result.Event is
         when Afpx.Keyboard =>

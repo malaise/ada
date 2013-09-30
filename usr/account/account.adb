@@ -1,16 +1,13 @@
 -- Usage: account [ -e | -f ] [ <file> ]
 --  (default is euros)
 with Ada.Exceptions;
-with Basic_Proc, Argument, Con_Io, Afpx;
+with Basic_Proc, Argument, Afpx;
 with Unit_Format, Screen, Mng;
 procedure Account is
 
   -- Afpx put_then_get stuff
-  Cursor_Field : Afpx.Absolute_Field_Range := 1;
-  Cursor_Col   : Con_Io.Col_Range := 0;
-  Insert       : Boolean := False;
+  Get_Handle : Afpx.Get_Handle_Rec;
   Ptg_Result   : Afpx.Result_Rec;
-
 
   -- Parsing
   Usage_Error : exception;
@@ -75,7 +72,7 @@ begin
 
   -- Now the main loop
   loop
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+    Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
     if Afpx.Line_List.Is_Empty then
       Mng.Set_Current (0);
     else

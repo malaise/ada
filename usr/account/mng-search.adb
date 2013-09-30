@@ -133,10 +133,8 @@ procedure Search is
   end Unsel_All;
 
   -- Afpx put_then_get stuff
-  Cursor_Field : Afpx.Absolute_Field_Range := 0;
-  Cursor_Col   : Con_Io.Col_Range := 0;
-  Insert       : Boolean := False;
-  Ptg_Result   : Afpx.Result_Rec;
+  Get_Handle : Afpx.Get_Handle_Rec;
+  Ptg_Result : Afpx.Result_Rec;
   -- The search criteria
   Criteria : Criteria_Rec;
 
@@ -179,7 +177,8 @@ procedure Search is
     if not Criteria.Reference_Set then
      Criteria.Reference := (others => ' ');
      Afpx.Clear_Field (Afpx_Xref.Search.Reference);
-     Cursor_Col := 0;
+     Get_Handle.Cursor_Col := 0;
+     Get_Handle.Insert := False;
     end if;
     Afpx.Set_Field_Activation (Afpx_Xref.Search.All_Dates,
                                Criteria.Date /= All_Dates);
@@ -240,7 +239,6 @@ begin
   Screen.Encode_Nb_Oper(Oper_List.List_Length, Sel_List.List_Length);
   Afpx.Set_Field_Activation(Screen.Selected_Fld, True);
   Screen.Encode_Saved(Account_Saved);
-  Cursor_Field := Afpx.Next_Cursor_Field(0);
 
   -- Arm timer
   Dummy_Bool := Set_Today (Timers.No_Timer);
@@ -258,7 +256,7 @@ begin
   Update_Fields;
 
   loop
-    Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+    Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
     case Ptg_Result.Event is
 
       when Afpx.Keyboard =>

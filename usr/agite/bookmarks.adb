@@ -1,4 +1,4 @@
-with As.U, Directory, Con_Io, Afpx.List_Manager;
+with As.U, Directory, Afpx.List_Manager;
 with Utils.X, Config, Afpx_Xref, Confirm;
 package body Bookmarks is
 
@@ -44,14 +44,15 @@ package body Bookmarks is
   end Load_List;
 
   -- Bookmark name (from Get field)
-  Cursor_Col : Con_Io.Col_Range;
+  Get_Handle : Afpx.Get_Handle_Rec;
   function Get_Name return String is
     Str : constant String
         := Utils.Parse_Spaces (Afpx.Decode_Field (Afpx_Xref.Bookmarks.Name,
                                0, False));
   begin
     Afpx.Clear_Field (Afpx_Xref.Bookmarks.Name);
-    Cursor_Col := 0;
+    Get_Handle.Cursor_Col := 0;
+    Get_Handle.Insert := False;
     return Str;
   end Get_Name;
 
@@ -59,8 +60,6 @@ package body Bookmarks is
   -- Returns new dir to change to, or "" if unchanged
   function Handle return String is
     -- Afpx stuff
-    Cursor_Field : Afpx.Field_Range;
-    Insert       : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
     use type Afpx.Absolute_Field_Range, Afpx.Descriptor_Range;
 
@@ -78,9 +77,7 @@ package body Bookmarks is
   begin
     -- Init Afpx
     Afpx.Use_Descriptor (Afpx_Xref.Bookmarks.Dscr_Num);
-    Cursor_Field := Afpx.Next_Cursor_Field (0);
-    Cursor_Col := 0;
-    Insert := False;
+    Get_Handle := (others => <>);
     List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
 
     -- Encode dir
@@ -104,7 +101,7 @@ package body Bookmarks is
         Afpx.Reset_Field (Afpx_Xref.Bookmarks.Del);
       end if;
 
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is

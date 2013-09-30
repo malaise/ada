@@ -170,13 +170,11 @@ package body Screen is
 
   function My_Ptg return Boolean is
     -- Afpx put_then_get stuff
-    Cursor_Field : Afpx.Absolute_Field_Range := 1;
-    Cursor_Col   : Con_Io.Col_Range := 0;
-    Insert       : Boolean := False;
+    Get_Handle : Afpx.Get_Handle_Rec;
     Ptg_Result   : Afpx.Result_Rec;
   begin
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is

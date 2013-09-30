@@ -1,4 +1,4 @@
-with As.U.Utils, Con_Io, Afpx.List_Manager, Unicode;
+with As.U.Utils, Afpx.List_Manager, Unicode;
 with Utils.X, Git_If, Afpx_Xref, Error;
 package body Push is
 
@@ -58,9 +58,7 @@ package body Push is
   -- Handle the Push
   function Handle (Root : String; Pull : Boolean) return Boolean is
     -- Afpx stuff
-    Cursor_Field : Afpx.Field_Range;
-    Cursor_Col   : Con_Io.Col_Range;
-    Insert       : Boolean;
+    Get_Handle : Afpx.Get_Handle_Rec;
     Ptg_Result   : Afpx.Result_Rec;
     -- Result of Push or Pull
     Result : Boolean;
@@ -70,9 +68,7 @@ package body Push is
     begin
       -- Afpx stuff
       Afpx.Use_Descriptor (Afpx_Xref.Push.Dscr_Num);
-      Cursor_Field := 1;
-      Cursor_Col := 0;
-      Insert := False;
+      Get_Handle := (others => <>);
 
       -- Encode Root
       Utils.X.Encode_Field (Root, Afpx_Xref.Push.Root);
@@ -111,7 +107,7 @@ package body Push is
 
     -- Main loop
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, True);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result, True);
 
       case Ptg_Result.Event is
         when Afpx.Keyboard =>

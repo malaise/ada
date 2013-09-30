@@ -1,17 +1,12 @@
-with Con_Io, Afpx;
+with Afpx;
 with Utils.X, Afpx_Xref;
 procedure Error (Action, Target, Text : String) is
   -- Afpx stuff
-  Cursor_Field : Afpx.Field_Range;
-  Cursor_Col   : Con_Io.Col_Range;
-  Insert       : Boolean;
+  Get_Handle : Afpx.Get_Handle_Rec;
   Ptg_Result   : Afpx.Result_Rec;
 
 begin
   Afpx.Use_Descriptor (Afpx_Xref.Error.Dscr_Num);
-  Cursor_Field := 1;
-  Cursor_Col := 0;
-  Insert := False;
   Utils.X.Center_Field (Action, Afpx_Xref.Error.Action);
   Utils.X.Center_Field (Target, Afpx_Xref.Error.Target);
   Utils.X.Center_Field (Text,   Afpx_Xref.Error.Text);
@@ -19,7 +14,7 @@ begin
   -- Main loop
   loop
 
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+    Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is

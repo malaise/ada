@@ -60,7 +60,7 @@ package Afpx_Typ is
   subtype Width_Range  is Positive range 1 .. Con_Io.Last_Col + 1;
 
   -- Offset of the displayed part of an unbounded (get) field
-  subtype Offset_Range is Natural range 0 .. Con_Io.Last_Col;
+  subtype Offset_Range is Con_Io.Col_Range;
 
   -- Characters of the fields
   Max_Init_Len : constant Integer :=

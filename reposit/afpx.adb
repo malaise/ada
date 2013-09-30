@@ -157,9 +157,7 @@ package body Afpx is
     procedure Redisplay;
 
     -- The put_then get
-    procedure Ptg (Cursor_Field  : in out Afpx_Typ.Field_Range;
-                   Cursor_Col    : in out Con_Io.Col_Range;
-                   Insert        : in out Boolean;
+    procedure Ptg (Get_Handle    : in out Get_Handle_Rec;
                    Result        : out Result_Rec;
                    Right_Select  : in Boolean;
                    Get_Active    : in Boolean;
@@ -918,9 +916,7 @@ package body Afpx is
   end Redisplay;
 
   -- Print the fields and the list, then gets
-  procedure Put_Then_Get (Cursor_Field  : in out Field_Range;
-                          Cursor_Col    : in out Con_Io.Col_Range;
-                          Insert        : in out Boolean;
+  procedure Put_Then_Get (Get_Handle    : in out Get_Handle_Rec;
                           Result        : out Result_Rec;
                           Right_Select  : in Boolean := False;
                           Cursor_Col_Cb : access
@@ -933,7 +929,7 @@ package body Afpx is
        procedure (Action : in List_Change_List;
                   Status : in List_Status_Rec) := null) is
     Some_Get : Boolean;
-    Cf : Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Cursor_Field);
+    Cf : Afpx_Typ.Field_Range;
     use Afpx_Typ;
   begin
     -- No call to Put_Then_Get while syspended
@@ -956,20 +952,27 @@ package body Afpx is
     end loop;
     -- Check cursor pos if some get field active
     if Some_Get then
+      if Get_Handle.Cursor_Field = List_Field_No then
+        Cf := Afpx_Typ.Field_Range(Next_Cursor_Field (List_Field_No));
+      else
+        Cf := Afpx_Typ.Field_Range(Get_Handle.Cursor_Field);
+      end if;
       Af_Dscr.Check (Cf);
       if Af_Dscr.Fields(Cf).Kind /= Afpx_Typ.Get
           or else  not Af_Dscr.Fields(Cf).Activated
           or else      Af_Dscr.Fields(Cf).Isprotected then
         raise Invalid_Field;
       end if;
-      if Cursor_Col >= Af_Dscr.Fields(Cf).Width then
+      if Get_Handle.Cursor_Col >= Af_Dscr.Fields(Cf).Width then
         raise Invalid_Col;
       end if;
+    else
+      Cf := 1;
     end if;
+    Get_Handle.Cursor_Field := Field_Range(Cf);
 
-    Af_Ptg.Ptg (Cf, Cursor_Col, Insert, Result, Right_Select,
+    Af_Ptg.Ptg (Get_Handle, Result, Right_Select,
                 Some_Get, Cursor_Col_Cb, List_Change_Cb);
-    Cursor_Field := Field_Range(Cf);
     In_Ptg := False;
   exception
     when others =>

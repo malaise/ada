@@ -1,4 +1,4 @@
-with Con_Io, Afpx, Normal, Dir_Mng;
+with Afpx, Normal, Dir_Mng;
 with Mesu_Edi, Pers_Mng, Mesu_Def, Mesu_Sel, Mesu_Nam, Pers_Lis, Mesu_Fil,
      Mesu_Prt, Mesu_Gra, Afpx_Xref;
 use Afpx;
@@ -9,9 +9,7 @@ package body Mesu_Mng is
     List_Empty   : Boolean;
     Allow_Undo   : Boolean;
     Allow_Draw   : Boolean;
-    Cursor_Field : Afpx.Absolute_Field_Range;
-    Cursor_Col   : Con_Io.Col_Range;
-    Insert       : Boolean;
+    Get_Handle   : Afpx.Get_Handle_Rec;
     Ptg_Result   : Afpx.Result_Rec;
     Ok           : Boolean;
     Criteria     : Mesu_Sel.Criteria_Rec;
@@ -167,17 +165,17 @@ package body Mesu_Mng is
           null;
       end case;
 
-      Cursor_Col := 0;
-      Insert := False;
+      Get_Handle.Cursor_Col := 0;
+      Get_Handle.Insert := False;
       Ok := Locok;
 
     end Check_Field;
 
   begin
     Afpx.Use_Descriptor(Afpx_Xref.Main.Dscr_Num);
-    Cursor_Field := Afpx_Xref.Main.Person;
-    Cursor_Col := 0;
-    Insert := False;
+    Get_Handle.Cursor_Field := Afpx_Xref.Main.Person;
+    Get_Handle.Cursor_Col := 0;
+    Get_Handle.Insert := False;
     Mesu_Sel.Load;
     Afpx.Update_List (Afpx.Center_Selected);
 
@@ -251,7 +249,7 @@ package body Mesu_Mng is
 
         Afpx.Encode_Field (Afpx_Xref.Main.Date, (00, 00),
                            Str_Mng.Current_Date_Printed);
-        Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+        Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
 
         case Ptg_Result.Event is
           when Fd_Event | Timer_Event | Signal_Event | Refresh =>
@@ -261,34 +259,34 @@ package body Mesu_Mng is
             case Ptg_Result.Keyboard_Key is
               when Return_Key =>
                 -- Check field and go to next if Ok
-                Check_Field (Cursor_Field, False, Ok);
+                Check_Field (Get_Handle.Cursor_Field, False, Ok);
               when Escape_Key =>
                 -- Clear current field
-                if Cursor_Field = Afpx_Xref.Main.Person  then
+                if Get_Handle.Cursor_Field = Afpx_Xref.Main.Person  then
                   Afpx.Clear_Field (Afpx_Xref.Main.Person);
                   Afpx.Clear_Field (Afpx_Xref.Main.Activity);
-                  Cursor_Field := Afpx_Xref.Main.Person;
-                elsif Cursor_Field = Afpx_Xref.Main.Activity then
+                  Get_Handle.Cursor_Field := Afpx_Xref.Main.Person;
+                elsif Get_Handle.Cursor_Field = Afpx_Xref.Main.Activity then
                   Afpx.Clear_Field (Afpx_Xref.Main.Activity);
-                elsif Cursor_Field = Afpx_Xref.Main.Day_After
-                or else Cursor_Field = Afpx_Xref.Main.Month_After
-                or else Cursor_Field = Afpx_Xref.Main.Year_After then
+                elsif Get_Handle.Cursor_Field = Afpx_Xref.Main.Day_After
+                or else Get_Handle.Cursor_Field = Afpx_Xref.Main.Month_After
+                or else Get_Handle.Cursor_Field = Afpx_Xref.Main.Year_After then
                   Afpx.Clear_Field (Afpx_Xref.Main.Day_After);
                   Afpx.Clear_Field (Afpx_Xref.Main.Month_After);
                   Afpx.Clear_Field (Afpx_Xref.Main.Year_After);
-                  Cursor_Field := Afpx_Xref.Main.Day_After;
-                elsif Cursor_Field = Afpx_Xref.Main.Day_Before
-                or else Cursor_Field = Afpx_Xref.Main.Month_Before
-                or else Cursor_Field = Afpx_Xref.Main.Year_Before then
+                  Get_Handle.Cursor_Field := Afpx_Xref.Main.Day_After;
+                elsif Get_Handle.Cursor_Field = Afpx_Xref.Main.Day_Before
+                or else Get_Handle.Cursor_Field = Afpx_Xref.Main.Month_Before
+                or else Get_Handle.Cursor_Field = Afpx_Xref.Main.Year_Before then
                   Afpx.Clear_Field (Afpx_Xref.Main.Day_Before);
                   Afpx.Clear_Field (Afpx_Xref.Main.Month_Before);
                   Afpx.Clear_Field (Afpx_Xref.Main.Year_Before);
-                  Cursor_Field := Afpx_Xref.Main.Day_Before;
+                  Get_Handle.Cursor_Field := Afpx_Xref.Main.Day_Before;
                 else
-                  Afpx.Clear_Field (Cursor_Field);
+                  Afpx.Clear_Field (Get_Handle.Cursor_Field);
                 end if;
-                Cursor_Col := 0;
-                Insert := False;
+                Get_Handle.Cursor_Col := 0;
+                Get_Handle.Insert := False;
               when Break_Key =>
                 exit List;
             end case;
@@ -298,10 +296,11 @@ package body Mesu_Mng is
             if Ptg_Result.Field_No = Afpx_Xref.Main.Add
             or else Ptg_Result.Field_No = Afpx_Xref.Main.Remove then
               -- Add/Rem selec : check all fields one by one
-              Cursor_Field := Afpx_Xref.Main.Person;
+              Get_Handle.Cursor_Field := Afpx_Xref.Main.Person;
               loop
-                Check_Field (Cursor_Field, True, Ok);
-                exit when not Ok or else Cursor_Field = Afpx_Xref.Main.Person;
+                Check_Field (Get_Handle.Cursor_Field, True, Ok);
+                exit when not Ok
+                or else Get_Handle.Cursor_Field = Afpx_Xref.Main.Person;
               end loop;
               if Ok then
                 if Ptg_Result.Field_No = Afpx_Xref.Main.Add then

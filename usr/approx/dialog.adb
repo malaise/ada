@@ -57,9 +57,7 @@ package body Dialog is
   procedure Read_Coordinate (Kind : in D_Coordinate_List;
            Set : in out Boolean; Coordinate : in out Points.P_T_Coordinate;
            Subtitle : in Boolean := False) is
-    Cursor_Field : Afpx.Field_Range;
-    Cursor_Col : Con_Io.Col_Range := 0;
-    Insert    : Boolean := False;
+    Get_Handle : Afpx.Get_Handle_Rec;
     Ptg_Result : Afpx.Result_Rec;
 
     procedure Encode is
@@ -89,13 +87,13 @@ package body Dialog is
         return True;
       else
         Screen.Error (Screen.E_Wrong_Coordinate);
-        Cursor_Field := Screen.Init_For_Get;
+        Get_Handle.Cursor_Field := Screen.Init_For_Get;
         return False;
       end if;
     end Decode;
 
   begin
-    Cursor_Field := Screen.Init_For_Get (Subtitle);
+    Get_Handle.Cursor_Field := Screen.Init_For_Get (Subtitle);
     if Set then
       Encode;
     else
@@ -104,7 +102,7 @@ package body Dialog is
 
     loop
       Screen.Inform(Kind);
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -146,9 +144,7 @@ package body Dialog is
   -- Get a new degree
   procedure Read_Degree is
 
-    Cursor_Field : Afpx.Field_Range;
-    Cursor_Col : Con_Io.Col_Range := 0;
-    Insert     : Boolean := False;
+    Get_Handle : Afpx.Get_Handle_Rec;
     Ptg_Result : Afpx.Result_Rec;
     Degree : Natural;
 
@@ -181,20 +177,20 @@ package body Dialog is
         return True;
       else
         Screen.Error (Screen.E_Wrong_Degree);
-        Cursor_Field := Screen.Init_For_Get;
+        Get_Handle.Cursor_Field := Screen.Init_For_Get;
         return False;
       end if;
     end Decode;
 
   begin
-    Cursor_Field := Screen.Init_For_Get;
+    Get_Handle.Cursor_Field := Screen.Init_For_Get;
     Screen.Put_Title (Screen.Get_Degree);
     Degree := Resol.R_Degree;
     Encode;
 
     loop
       Screen.Inform(Screen.I_Degree);
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is

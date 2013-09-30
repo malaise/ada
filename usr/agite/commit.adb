@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with As.U, Directory, Con_Io, Afpx.List_Manager, Str_Util, Basic_Proc,
+with As.U, Directory, Afpx.List_Manager, Str_Util, Basic_Proc,
      Aski, Unicode, Images;
 with Git_If, Utils.X, Config, Push, Afpx_Xref, Confirm, Error;
 package body Commit is
@@ -51,16 +51,12 @@ package body Commit is
   Comment : As.U.Asu_Us;
 
   -- Afpx Ptg stuff
-  Cursor_Field : Afpx.Field_Range;
-  Cursor_Col   : Con_Io.Col_Range;
-  Insert       : Boolean;
+  Get_Handle : Afpx.Get_Handle_Rec;
 
   -- Reset Ptg stuff
   procedure Reset_Ptg is
   begin
-    Cursor_Field := Afpx.Next_Cursor_Field (0);
-    Cursor_Col := 0;
-    Insert := False;
+    Get_Handle := (others => <>);
   end Reset_Ptg;
 
   -- Decode Comment fields
@@ -322,19 +318,20 @@ package body Commit is
 
     -- Main loop
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, True);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result, True);
 
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
             when Afpx.Return_Key =>
               -- Move to next line of comment
-              if Cursor_Field = Afpx_Xref.Commit.Comment7 then
-                Cursor_Field := Afpx_Xref.Commit.Comment1;
+              if Get_Handle.Cursor_Field = Afpx_Xref.Commit.Comment7 then
+                Get_Handle.Cursor_Field := Afpx_Xref.Commit.Comment1;
               else
-                Cursor_Field := Afpx.Next_Cursor_Field (Cursor_Field);
+                Get_Handle.Cursor_Field := Afpx.Next_Cursor_Field (
+                    Get_Handle.Cursor_Field);
               end if;
-              Cursor_Col := 0;
+              Get_Handle.Cursor_Col := 0;
             when Afpx.Escape_Key =>
               -- Back
               return;

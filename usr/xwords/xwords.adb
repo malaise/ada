@@ -20,13 +20,11 @@ procedure Xwords is
   Log : Boolean := False;
 
   -- Afpx stuff
-  Cursor_Field : Afpx.Field_Range;
-  Cursor_Col   : Con_Io.Col_Range;
-  Insert       : Boolean;
-  Ptg_Result   : Afpx.Result_Rec;
-  Afpx_Item    : Afpx.Line_Rec;
+  Get_Handle : Afpx.Get_Handle_Rec;
+  Ptg_Result : Afpx.Result_Rec;
+  Afpx_Item  : Afpx.Line_Rec;
   type Status_List is (Found, Ok, Error);
-  Status       : Status_List;
+  Status     : Status_List;
 
   -- Fields
   Clear_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Clear;
@@ -445,8 +443,8 @@ begin
 
   -- Init Afpx
   Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
-  Cursor_Field := Get_Fld;
-  Insert := False;
+  Get_Handle:= (others => <>);
+  Get_Handle.Cursor_Field := Get_Fld;
 
   -- Load Anagram dictio
   Anagram_Loaded.Set (Trilean.Other);
@@ -513,9 +511,10 @@ begin
     end case;
 
     -- Set cursor at last significant char of the Get field
-    Cursor_Col := Afpx.Last_Index (Afpx.Decode_Field (Get_Fld, 0), True);
+    Get_Handle.Cursor_Col := Afpx.Last_Index (Afpx.Decode_Field (Get_Fld, 0),
+                                              True);
     Cmd.Logger.Log_Debug ("Calling PTG");
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result,
+    Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
                        List_Change_Cb => List_Cb 'Unrestricted_Access);
     Cmd.Logger.Log_Debug ("PTG returning");
 

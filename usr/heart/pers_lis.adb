@@ -37,12 +37,10 @@ package body Pers_Lis is
 
   procedure List (Exit_Program : out Boolean) is
 
-    First_Field  : Afpx.Field_Range;
+    First_Field : Afpx.Field_Range;
 
-    Cursor_Field : Afpx.Field_Range;
-    Cursor_Col   : Con_Io.Col_Range;
-    Insert       : Boolean;
-    Ptg_Result   : Afpx.Result_Rec;
+    Get_Handle : Afpx.Get_Handle_Rec;
+    Ptg_Result : Afpx.Result_Rec;
 
     List_Empty : Boolean;
     type State_List is (In_List, In_Create, In_Edit, In_Delete);
@@ -138,8 +136,8 @@ package body Pers_Lis is
           null;
       end case;
 
-      Cursor_Col := 0;
-      Insert := False;
+      Get_Handle.Cursor_Col := 0;
+      Get_Handle.Insert := False;
       Ok := Locok;
 
     end Check_Field;
@@ -151,9 +149,9 @@ package body Pers_Lis is
     begin
       -- Last field must not be empty and valid
       -- Other fields can be filled
-      Cursor_Field := Afpx_Xref.Activity.Tz6;
-      Cursor_Col := 0;
-      Insert := False;
+      Get_Handle.Cursor_Field := Afpx_Xref.Activity.Tz6;
+      Get_Handle.Cursor_Col := 0;
+      Get_Handle.Insert := False;
       Tzm_S := Afpx.Decode_Field (Afpx_Xref.Activity.Tz6, 00);
       Person.Tz(6) := Str_Mng.To_Bpm(Tzm_S);
       if Person.Tz(6) = Pers_Def.Bpm_Range'First then
@@ -190,9 +188,7 @@ package body Pers_Lis is
 
     State := In_List;
 
-    Cursor_Field := 01;
-    Cursor_Col := 0;
-    Insert := False;
+    Get_Handle := (others => <>);
 
     Build_List;
 
@@ -234,7 +230,7 @@ package body Pers_Lis is
       Afpx.Encode_Field (Afpx_Xref.Activity.Date, (00, 00),
                          Str_Mng.Current_Date_Printed);
 
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
 
       -- Move in persons list according to Afpx selection
       if not List_Empty then
@@ -250,18 +246,18 @@ package body Pers_Lis is
           case Ptg_Result.Keyboard_Key is
             when Return_Key =>
               -- Check field and go to next if Ok
-              Check_Field (Cursor_Field, Ok);
+              Check_Field (Get_Handle.Cursor_Field, Ok);
             when Escape_Key =>
               -- Clear current field
-              if Cursor_Field = Afpx_Xref.Activity.Person  then
+              if Get_Handle.Cursor_Field = Afpx_Xref.Activity.Person  then
                 Afpx.Clear_Field (Afpx_Xref.Activity.Person);
                 Afpx.Clear_Field (Afpx_Xref.Activity.Activity);
-                Cursor_Field := Afpx_Xref.Activity.Person;
+                Get_Handle.Cursor_Field := Afpx_Xref.Activity.Person;
               else
-                Afpx.Clear_Field (Cursor_Field);
+                Afpx.Clear_Field (Get_Handle.Cursor_Field);
               end if;
-              Cursor_Col := 0;
-              Insert := False;
+              Get_Handle.Cursor_Col := 0;
+              Get_Handle.Insert := False;
             when Break_Key =>
               Exit_Program := True;
               exit;
@@ -281,9 +277,9 @@ package body Pers_Lis is
               -- Create
               State := In_Create;
               First_Field := Afpx_Xref.Activity.Person;
-              Cursor_Field := First_Field;
-              Cursor_Col := 0;
-              Insert := False;
+              Get_Handle.Cursor_Field := First_Field;
+              Get_Handle.Cursor_Col := 0;
+              Get_Handle.Insert := False;
               Person.Name := (others => ' ');
               Person.Activity := (others => ' ');
               Person.Tz := (others => Pers_Def.Bpm_Range'First);
@@ -292,9 +288,9 @@ package body Pers_Lis is
               -- Edit
               State := In_Edit;
               First_Field := Afpx_Xref.Activity.Tz1;
-              Cursor_Field := First_Field;
-              Cursor_Col := 0;
-              Insert := False;
+              Get_Handle.Cursor_Field := First_Field;
+              Get_Handle.Cursor_Col := 0;
+              Get_Handle.Insert := False;
               Read (Pers_Def.The_Persons, Person,
                     Pers_Def.Person_List_Mng.Current);
               Encode_Person;
@@ -309,22 +305,23 @@ package body Pers_Lis is
               Ok := Compute;
               if Ok then
                 -- Decode name & activity, then rencode all
-                Cursor_Field := 11;
-                Check_Field (Cursor_Field, Ok);
-                Cursor_Field := 13;
-                Check_Field (Cursor_Field, Ok);
+                Get_Handle.Cursor_Field := 11;
+                Check_Field (Get_Handle.Cursor_Field, Ok);
+                Get_Handle.Cursor_Field := 13;
+                Check_Field (Get_Handle.Cursor_Field, Ok);
                 Encode_Person;
-                Cursor_Field := 17;
-                Cursor_Col := 0;
-                Insert := False;
+                Get_Handle.Cursor_Field := 17;
+                Get_Handle.Cursor_Col := 0;
+                Get_Handle.Insert := False;
               end if;
             when Afpx_Xref.Activity.Valid =>
               -- Valid
               if State /= In_Delete then
-                Cursor_Field := First_Field;
+                Get_Handle.Cursor_Field := First_Field;
                 loop
-                  Check_Field (Cursor_Field, Ok);
-                  exit when not Ok or else Cursor_Field = First_Field;
+                  Check_Field (Get_Handle.Cursor_Field, Ok);
+                  exit when not Ok
+                  or else Get_Handle.Cursor_Field = First_Field;
                 end loop;
               else
                 Ok := True;
@@ -337,7 +334,7 @@ package body Pers_Lis is
                     Build_List;
                   exception
                     when others =>
-                      Cursor_Field := First_Field;
+                      Get_Handle.Cursor_Field := First_Field;
                       Ok := False;
                   end;
                 elsif State = In_Edit then

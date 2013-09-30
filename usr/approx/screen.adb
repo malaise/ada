@@ -119,9 +119,7 @@ package body Screen is
 
   -- Ptg on Ok (and Cancel) buttons
   function S_Confirm return Boolean is
-    Cursor_Field : Afpx.Field_Range := 1;
-    Cursor_Col : Con_Io.Col_Range := 0;
-    Insert : Boolean := False;
+    Get_Handle : Afpx.Get_Handle_Rec;
     Ptg_Result : Afpx.Result_Rec;
     Get_Prot : Boolean;
     Get_Act : Boolean;
@@ -134,7 +132,7 @@ package body Screen is
     end if;
     Afpx.Set_Field_Colors(Get_Fld, Background => Con_Io.Color_Of ("Black"));
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is

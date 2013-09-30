@@ -9,9 +9,7 @@ procedure T_Afpx is
   Height : Afpx.Height_Range;
   Width  : Afpx.Width_Range;
   Background   : Con_Io.Effective_Colors;
-  Cursor_Field : Afpx.Field_Range;
-  Cursor_Col   : Con_Io.Col_Range;
-  Insert       : Boolean;
+  Get_Handle   : Afpx.Get_Handle_Rec;
   Ptg_Result   : Afpx.Result_Rec;
   Flip_Flop : Boolean;
 
@@ -144,16 +142,13 @@ begin
 
   Encode_Status (Afpx_Item.Str (1 .. Afpx_Item.Len));
 
-  Cursor_Field := 1;
-  Cursor_Col := 0;
-  Insert := False;
   Flip_Flop := True;
 
   loop
     Afpx.Set_Field_Activation (5, Flip_Flop);
     Afpx.Set_Field_Protection (0, not Flip_Flop);
 
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result,
+    Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
                        Right_Select => True,
                        Cursor_Col_Cb  => Cursor_Col_Cb'Unrestricted_Access,
                        List_Change_Cb => List_Change_Cb'Unrestricted_Access);
@@ -164,23 +159,26 @@ begin
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is
           when Afpx.Return_Key =>
-            if Afpx.Decode_Field(Cursor_Field, 0)(1 .. 4) = "exit" then
-              Afpx.Set_Field_Activation (Cursor_Field, False);
+            if Afpx.Decode_Field(Get_Handle.Cursor_Field, 0)(1 .. 4)
+                = "exit" then
+              Afpx.Set_Field_Activation (Get_Handle.Cursor_Field, False);
               Afpx.Clear_Field (2);
-              Encode_Status (U => Afpx.Decode_Field(Cursor_Field, 0));
-              Next_Field (Cursor_Field);
-              Cursor_Col := 0;
-              Insert := False;
+              Encode_Status (U => Afpx.Decode_Field(
+                  Get_Handle.Cursor_Field, 0));
+              Next_Field (Get_Handle.Cursor_Field);
+              Get_Handle.Cursor_Col := 0;
+              Get_Handle.Insert := False;
             else
               Afpx.Clear_Field (2);
-              Encode_Status (U => Afpx.Decode_Field(Cursor_Field, 0));
+              Encode_Status (U => Afpx.Decode_Field(
+                  Get_Handle.Cursor_Field, 0));
             end if;
           when Afpx.Escape_Key =>
-            Afpx.Clear_Field (Cursor_Field);
+            Afpx.Clear_Field (Get_Handle.Cursor_Field);
             Afpx.Clear_Field (2);
-            Encode_Status (U => Afpx.Decode_Field(Cursor_Field, 0));
-            Cursor_Col := 0;
-            Insert := False;
+            Encode_Status (U => Afpx.Decode_Field(Get_Handle.Cursor_Field, 0));
+            Get_Handle.Cursor_Col := 0;
+            Get_Handle.Insert := False;
           when Afpx.Break_Key =>
             exit;
         end case;

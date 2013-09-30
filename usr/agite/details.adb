@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with As.U, Con_Io, Afpx.List_Manager, Directory;
+with As.U, Afpx.List_Manager, Directory;
 with Utils.X, View, History, Config, Afpx_Xref, Restore;
 package body Details is
 
@@ -23,10 +23,8 @@ package body Details is
   procedure Handle (Root : in String; Hash : in Git_If.Git_Hash) is
 
     -- Afpx stuff
-    Cursor_Field : Afpx.Field_Range;
-    Cursor_Col   : Con_Io.Col_Range;
-    Insert       : Boolean;
-    Ptg_Result   : Afpx.Result_Rec;
+    Get_Handle     : Afpx.Get_Handle_Rec;
+    Ptg_Result     : Afpx.Result_Rec;
     Comment_Height : Afpx.Height_Range;
     Comment_Width  : Afpx.Width_Range;
     use type Afpx.Absolute_Field_Range;
@@ -39,9 +37,7 @@ package body Details is
     begin
       -- Init Afpx
       Afpx.Use_Descriptor (Afpx_Xref.Details.Dscr_Num);
-      Cursor_Field := 1;
-      Cursor_Col := 0;
-      Insert := False;
+      Get_Handle := (others => <>);
       Afpx.Get_Field_Size (Afpx_Xref.Details.Comment,
                            Comment_Height, Comment_Width);
       List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
@@ -160,7 +156,7 @@ package body Details is
 
     -- Main loop
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is

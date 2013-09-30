@@ -16,9 +16,6 @@ package body Select_File is
   Ok_Fld       : constant Afpx.Field_Range := 15;
   Cancel_Fld   : constant Afpx.Field_Range := 16;
 
-  -- Cursor_Field;
-  Cursor_Field : Afpx.Field_Range := 1;
-
   -- Use Afpx descriptor
   procedure Use_Descriptor is
     use type Afpx.Descriptor_Range;
@@ -54,8 +51,7 @@ package body Select_File is
 
   -- Ptg on Ok (and cancel) buttons
   function Confirm return Boolean is
-    Cursor_Col : Con_Io.Col_Range := 0;
-    Insert : Boolean := False;
+    Handle : Afpx.Get_Handle_Rec;
     Ptg_Result : Afpx.Result_Rec;
     Get_Prot : Boolean;
     Get_Act : Boolean;
@@ -69,7 +65,7 @@ package body Select_File is
     Afpx.Set_Field_Colors (Get_Fld,
          Background => Con_Io.Color_Of ("Black"));
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+      Afpx.Put_Then_Get (Handle, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -116,14 +112,14 @@ package body Select_File is
     return Res;
   end Confirm;
 
+  -- Handle for getting file
+  Get_Handle  : Afpx.Get_Handle_Rec;
+
   function Get_File (Current_File   : String;
                      For_Read       : Boolean;
                      Select_Current : Boolean) return String is
 
-    Cursor_Field : Afpx.Field_Range;
-    Cursor_Col   : Con_Io.Col_Range;
-    Insert       : Boolean;
-    Ptg_Result   : Afpx.Result_Rec;
+    Ptg_Result  : Afpx.Result_Rec;
 
 
     type Error_List is (E_File_Not_Found, E_Io_Error, E_File_Name);
@@ -227,8 +223,8 @@ package body Select_File is
       Selected : Natural := 0;
     begin
       -- Clear get field
-      Cursor_Col := 0;
-      Insert := False;
+      Get_Handle.Cursor_Col := 0;
+      Get_Handle.Insert := False;
 
       -- Change dir
       Directory.Change_Current (New_Dir);
@@ -357,7 +353,6 @@ package body Select_File is
 
   begin
     Use_Descriptor;
-    Cursor_Field := 1;
 
     -- Call client specific init
     Init_Procedure;
@@ -389,10 +384,10 @@ package body Select_File is
     -- Build list
     Change_Dir (".", (if Select_Current then Current_File else ""));
 
-    Cursor_Field := Get_Fld;
+    Get_Handle.Cursor_Field := Get_Fld;
     loop
 
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -511,7 +506,7 @@ package body Select_File is
     Afpx.Set_Field_Activation (Reread_Fld, True);
     Afpx.Set_Field_Activation (Center_Fld, True);
     Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
-    Cursor_Field := Get_Fld;
+    Get_Handle.Cursor_Field := Get_Fld;
   end Report_Error;
 
 end Select_File;

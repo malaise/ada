@@ -469,9 +469,7 @@ package body Edition is
               := Unit_Format.Get_Current_Unit;
     Oper : Oper_Def.Oper_Rec;
     -- Afpx put_then_get stuff
-    Cursor_Field : Afpx.Absolute_Field_Range := 0;
-    Cursor_Col   : Con_Io.Col_Range := 0;
-    Insert       : Boolean := False;
+    Get_Handle : Afpx.Get_Handle_Rec;
     Ptg_Result   : Afpx.Result_Rec;
     -- Current Kind and Status
     Kind : Oper_Def.Kind_List;
@@ -517,31 +515,23 @@ package body Edition is
       Kind := Oper.Kind;
       Status := Oper.Status;
       -- Prepare Ptg
-      Cursor_Field := Afpx.Next_Cursor_Field(0);
-      if Cursor_Field = 0 then
-        -- No get field
-        Cursor_Field := 1;
-      else
-        Cursor_Col := 0;
-      end if;
-      -- Protect movements
+      Get_Handle.Cursor_Field := 0;
       Protect_Movements(Edit_Type);
 
       -- Ptgs
       One_Edit:
       loop
-        Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Insert,
-                          Ptg_Result, False, Set_Cursor'Access);
+        Afpx.Put_Then_Get(Get_Handle, Ptg_Result, False, Set_Cursor'Access);
         case Ptg_Result.Event is
 
           when Afpx.Keyboard =>
             case Ptg_Result.Keyboard_Key is
               when Afpx.Return_Key =>
                 -- Ok and back or next
-                Cursor_Field := Validate(Edit_Type, Kind, Status);
-                Cursor_Col := 0;
-                Insert := False;
-                if Cursor_Field = 0 then
+                Get_Handle.Cursor_Field := Validate(Edit_Type, Kind, Status);
+                Get_Handle.Cursor_Col := 0;
+                Get_Handle.Insert := False;
+                if Get_Handle.Cursor_Field = 0 then
                   -- Check that Ok_And_Next button is active
                   if not Afpx.Get_Field_Activation(42) then
                     -- Ok and back
@@ -578,17 +568,18 @@ package body Edition is
                 -- Kind and status buttons
                 Update_Buttons(Ptg_Result.Field_No, Kind, Status);
                 if Edit_Type = Create then
-                  Cursor_Field := Afpx.Next_Cursor_Field(Ptg_Result.Field_No);
-                  Cursor_Col := 0;
-                  Insert := False;
+                  Get_Handle.Cursor_Field := Afpx.Next_Cursor_Field(
+                      Ptg_Result.Field_No);
+                  Get_Handle.Cursor_Col := 0;
+                  Get_Handle.Insert := False;
                 end if;
 
               when Afpx_Xref.Edition.Ok_Prev =>
                 -- Ok and prev
-                Cursor_Field := Validate(Edit_Type, Kind, Status);
-                Cursor_Col := 0;
-                Insert := False;
-                if Cursor_Field = 0 then
+                Get_Handle.Cursor_Field := Validate(Edit_Type, Kind, Status);
+                Get_Handle.Cursor_Col := 0;
+                Get_Handle.Insert := False;
+                if Get_Handle.Cursor_Field = 0 then
                   -- Prev oper
                   Sel_List.Move_To(Sel_List_Mng.Prev);
                   exit One_Edit;
@@ -601,10 +592,10 @@ package body Edition is
                 exit One_Edit;
               when Afpx_Xref.Edition.Ok =>
                 -- Ok and back
-                Cursor_Field := Validate(Edit_Type, Kind, Status);
-                Cursor_Col := 0;
-                Insert := False;
-                exit All_Edit when Cursor_Field = 0;
+                Get_Handle.Cursor_Field := Validate(Edit_Type, Kind, Status);
+                Get_Handle.Cursor_Col := 0;
+                Get_Handle.Insert := False;
+                exit All_Edit when Get_Handle.Cursor_Field = 0;
                 Screen.Ring(True);
               when Afpx_Xref.Edition.Quit =>
                 -- Cancel and back
@@ -612,10 +603,10 @@ package body Edition is
                 exit All_Edit;
               when Afpx_Xref.Edition.Ok_Next =>
                 -- Ok and next
-                Cursor_Field := Validate(Edit_Type, Kind, Status);
-                Cursor_Col := 0;
-                Insert := False;
-                if Cursor_Field = 0 then
+                Get_Handle.Cursor_Field := Validate(Edit_Type, Kind, Status);
+                Get_Handle.Cursor_Col := 0;
+                Get_Handle.Insert := False;
+                if Get_Handle.Cursor_Field = 0 then
                   if Edit_Type /= Create and then Edit_Type /= Copy then
                     -- Next oper
                     Sel_List.Move_To;

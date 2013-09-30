@@ -1,9 +1,9 @@
-with As.U, Con_Io, Afpx, Directory, Select_File, Normal;
+with As.U, Afpx, Directory, Select_File, Normal;
 with Points, Screen, Set_Points_List, Dialog, Point_Str, Menu2, Afpx_Xref;
 package body Menu1 is
 
   type Restore_List is (None, Partial, Full);
-  Cursor_Field : Afpx.Field_Range;
+  Get_Handle : Afpx.Get_Handle_Rec;
   File_Name_Txt : As.U.Asu_Us;
 
   -- Update of point status during file selection
@@ -40,7 +40,7 @@ package body Menu1 is
     Screen.Error(Msg);
     -- Restore screen
     Afpx.Use_Descriptor(Afpx_Xref.Points.Dscr_Num, False);
-    Cursor_Field := Screen.Init_For_Main1;
+    Get_Handle.Cursor_Field := Screen.Init_For_Main1;
   end Error;
 
   function Exit_Prog return Boolean is
@@ -151,7 +151,7 @@ package body Menu1 is
     -- Restore (for errors)
     Afpx.Use_Descriptor(Afpx_Xref.Points.Dscr_Num);
     Set_Points_List;
-    Cursor_Field := Screen.Init_For_Main1;
+    Get_Handle.Cursor_Field := Screen.Init_For_Main1;
     Screen.Put_File (File_Name_Txt.Image);
     Encode_File_In_Get (Tmp_File_Name.Image);
     Restore := Partial;
@@ -200,8 +200,6 @@ package body Menu1 is
   end Read_Point;
 
   procedure Main_Screen (Init_File_Name : in File.F_T_File_Name) is
-    Cursor_Col : Con_Io.Col_Range;
-    Insert    : Boolean;
     Ptg_Result : Afpx.Result_Rec;
     Restore : Restore_List;
     A_Point : Points.P_T_One_Point;
@@ -214,7 +212,7 @@ package body Menu1 is
 
   begin
     Afpx.Use_Descriptor(Afpx_Xref.Points.Dscr_Num);
-    Cursor_Field := Screen.Init_For_Main1;
+    Get_Handle.Cursor_Field := Screen.Init_For_Main1;
     File_Name_Txt.Set_Null;
     Screen.Put_File ("");
 
@@ -233,8 +231,8 @@ package body Menu1 is
     -- Update Nb of points and save_status
     Screen.Put_Point_Status;
 
-    Cursor_Col := 0;
-    Insert := False;
+    Get_Handle.Cursor_Col := 0;
+    Get_Handle.Insert := False;
     Data_Changed := True;
     Saved_Index := 0;
     loop
@@ -248,7 +246,7 @@ package body Menu1 is
               Afpx.Line_List.Move_At (Saved_Index);
               Afpx.Update_List (Afpx.Center_Selected);
             end if;
-            Cursor_Field := Screen.Init_For_Main1;
+            Get_Handle.Cursor_Field := Screen.Init_For_Main1;
             Screen.Put_File (File_Name_Txt.Image);
           when Full =>
             Afpx.Use_Descriptor(Afpx_Xref.Points.Dscr_Num);
@@ -257,7 +255,7 @@ package body Menu1 is
               Afpx.Line_List.Move_At (Saved_Index);
               Afpx.Update_List (Afpx.Center_Selected);
             end if;
-            Cursor_Field := Screen.Init_For_Main1;
+            Get_Handle.Cursor_Field := Screen.Init_For_Main1;
             Screen.Put_File (File_Name_Txt.Image);
         end case;
 
@@ -274,7 +272,7 @@ package body Menu1 is
           Afpx.Set_Field_Activation (Afpx_Xref.Points.Sort, True);
         end if;
 
-        Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
+        Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
         Restore := None;
         Saved_Index := 0;
         case Ptg_Result.Event is

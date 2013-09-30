@@ -382,6 +382,16 @@ package Afpx is
   --  event
   procedure Redisplay;
 
+  -- The 'in out' token of Get status between successive calls to Put_Then_Get
+  -- If Cursor_Field is List_Field_No (0) then the cursor will be in the
+  --  first cursor field: Next_Cursor_Field(0)
+  type Get_Handle_Rec is record
+    Cursor_Field : Absolute_Field_Range :=  List_Field_No;
+    Cursor_Col   : Con_Io.Col_Range := Con_Io.Col_Range_First;
+    Insert       : Boolean := False;
+    Offset       : Con_Io.Col_Range := Con_Io.Col_Range_First;
+  end record;
+
   -- Print the fields and the list (if Redisplay has been called or is needed),
   --  then gets.
   --  justify a redisplay, by instance when Result.Event was Refresh. It is
@@ -393,6 +403,8 @@ package Afpx is
   -- In Put fields: nothing.
   -- In Get fields:
   --   A character input, Backspace, Suppr, or Ctrl Suppr edits the field,
+  --   A character input or arrow can also shit the field (by an Offset)
+  --    if the data len is larger than the field width
   --   (Ctrl) Right/Left arrow, (Ctrl) Home/End navigates in the field,
   --   Insert toggles insert/replace mode
   --   Tab or Shift Tab changes field (like Next/Prev_Cursor_Field), a character
@@ -404,22 +416,20 @@ package Afpx is
   --  and the current element of the list, it calls Modification_Ack on the
   --  Line_List (see Dynamic_List).
   -- If no field is Get (or all protected or desactivated,
-  --  then cursor field and col are not significant, otherwise
-  --  they are used at initialisation and set before returning.
+  --  then the Get_Handle is not significant, otherwise it is used at
+  --  initialisation and set before returning.
   -- While already in Put_Then_Get (i.e. from an Event callback or
   --  Cursor_Col_Cb or List_Change_Cb) it is forbidden to call:
   --  - Put_Then_Get, Erase, Put
   --  - Use/Release Descriptor, Suspend/Resume
   --  - Set_Field_Activation/Protection of the List or of a Get field
-  --  This would raise In_Put_Then_Get
+  --  This would raise the exception In_Put_Then_Get
   -- Exceptions :  No_Descriptor,
   --               Invalid_Field, Invalid_Col (for cursor),
   --               String_Too_Long (if an item in list is too long),
   --               Suspended (Afpx is currentlky suspended)
   --               In_Put_Then_Get (already in Put_Then_Get while calling Afpx)
-  procedure Put_Then_Get (Cursor_Field  : in out Field_Range;
-                          Cursor_Col    : in out Con_Io.Col_Range;
-                          Insert        : in out Boolean;
+  procedure Put_Then_Get (Get_Handle    : in out Get_Handle_Rec;
                           Result        : out Result_Rec;
                           Right_Select  : in Boolean := False;
                           Cursor_Col_Cb : access
