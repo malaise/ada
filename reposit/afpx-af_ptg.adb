@@ -1117,6 +1117,7 @@ package body Af_Ptg is
 
     if Get_Active then
       Get_Handle.Cursor_Field := Field_Range (Cursor_Field);
+      Get_Handle.Offset := Af_Dscr.Fields(Cursor_Field).Offset;
     end if;
   end Ptg;
 
