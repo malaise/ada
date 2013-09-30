@@ -912,5 +912,82 @@ package body Git_If is
     return Result.Image;
   end Get_User;
 
+  -- List the stashes
+  procedure List_Stashes (Stashes : in out Stash_List) is
+    Cmd : Many_Strings.Many_String;
+    Moved : Boolean;
+    Line : As.U.Asu_Us;
+    Stash : Stash_Entry_Rec;
+    I1, I2 : Positive;
+  begin
+    Stashes.Delete_List;
+    -- Git stash list
+    Cmd.Set ("git");
+    Cmd.Cat ("stash");
+    Cmd.Cat ("list");
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git stasj list: " & Err_Flow.Str.Image);
+      return;
+    end if;
+    -- Read lines
+    if Out_Flow_1.List.Is_Empty then
+      return;
+    end if;
+    Out_Flow_1.List.Rewind;
+    loop
+      Out_Flow_1.List.Read (Line, Moved => Moved);
+      -- stash@{<Num>}: On <Branch>: <Name>
+      begin
+       -- "{" <num> "}"
+       I1 := Str_Util.Locate (Line.Image, "{");
+       I2 := Str_Util.Locate (Line.Image, "}");
+       Stash.Num := Stash_Number'Value (Line.Slice (I1 + 1, I2 - 1));
+       -- "}: On " <branch> ":"
+       I1 := I2 + 5;
+       I2 := Str_Util.Locate (Line.Image, ":", I1);
+       Stash.Branch := Line.Uslice (I1 + 1, I2 - 1);
+       -- ": " <Name>"
+       Stash.Name := Line.Uslice (I2 + 2, Line.Length);
+       Stashes.Insert (Stash);
+      exception
+        when Error:others =>
+          Basic_Proc.Put_Line_Error ("Error "
+              & Ada.Exceptions.Exception_Name (Error)
+              & " when parsing stash " & Line.Image);
+          Stashes.Delete_List;
+          return;
+      end;
+      exit when not Moved;
+    end loop;
+    Stashes.Rewind;
+  end List_Stashes;
+
+  -- Stash current context, return True is Ok
+  function Add_Stash (Name : String) return Boolean is
+  begin
+    return True;
+  end Add_Stash;
+
+  -- Apply a stash, return True is Ok
+  function Apply_Stash (Num : Stash_Number) return Boolean is
+  begin
+    return True;
+  end Apply_Stash;
+
+  -- Pop (apply & delete) a stash, return True is Ok
+  function Pop_Stash (Num : Stash_Number) return Boolean is
+  begin
+    return True;
+  end Pop_Stash;
+
+  -- Delete a stash, return True is Ok
+  function Del_Stash (Num : Stash_Number) return Boolean is
+  begin
+    return True;
+  end Del_Stash;
+
 end Git_If;
 

@@ -176,7 +176,9 @@ package body Commit is
     Afpx.Set_Field_Activation (Afpx_Xref.Commit.Commit, To_Commit);
    exception
      when others =>
-       Afpx.Resume;
+       if Afpx.Is_Suspended then
+         Afpx.Resume;
+       end if;
        raise;
   end Reread;
 

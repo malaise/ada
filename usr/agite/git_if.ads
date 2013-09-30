@@ -128,5 +128,30 @@ package Git_If is
   -- Get current user name and email
   function Get_User return String;
 
+  -- Stash management
+  subtype Stash_Number is Natural;
+  type Stash_Entry_Rec is record
+    Num : Stash_Number;
+    Branch : As.U.Asu_Us;
+    Name : As.U.Asu_Us;
+  end record;
+  package Stash_Mng is new Dynamic_List (Stash_Entry_Rec);
+  subtype Stash_List is Stash_Mng.Dyn_List.List_Type;
+
+  -- List the stashes
+  procedure List_Stashes (Stashes : in out Stash_List);
+
+  -- Stash current context, return True is Ok
+  function Add_Stash (Name : String) return Boolean;
+
+  -- Apply a stash, return True is Ok
+  function Apply_Stash (Num : Stash_Number) return Boolean;
+
+  -- Pop (apply & delete) a stash, return True is Ok
+  function Pop_Stash (Num : Stash_Number) return Boolean;
+
+  -- Delete a stash, return True is Ok
+  function Del_Stash (Num : Stash_Number) return Boolean;
+
 end Git_If;
 

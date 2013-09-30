@@ -1,7 +1,7 @@
 with As.U, Afpx.List_Manager, Basic_Proc, Images, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket;
 with Utils.X, Git_If, Config, Bookmarks, History, Commit, Push, Confirm, Error,
-     Afpx_Xref;
+     Stash, Afpx_Xref;
 procedure Agite is
 
   -- Options
@@ -531,6 +531,14 @@ procedure Agite is
     Init (Position, Curr_Dir);
   end Do_Commit;
 
+  procedure Do_Stash is
+    Curr_Dir : constant String := Directory.Get_Current;
+  begin
+    Position := Afpx.Line_List.Get_Position;
+    Stash.Handle (Root.Image);
+    Init (Position, Curr_Dir);
+  end Do_Stash;
+
   procedure Do_Pull is
     Curr_Dir : constant String := Directory.Get_Current;
     Dummy : Boolean;
@@ -878,6 +886,9 @@ begin
           when Afpx_Xref.Main.History =>
             -- History
             List_Action (History);
+          when Afpx_Xref.Main.Stash =>
+            -- Stash
+            Do_Stash;
           when Afpx_Xref.Main.Add =>
             -- Add
             List_Action (Add);
