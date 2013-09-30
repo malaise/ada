@@ -1,5 +1,5 @@
 with As.U.Utils, Argument, Basic_Proc, Parser, Str_Util;
-package body Command is
+package body Cmd is
 
   -- Pexec options definitions
   type Opt_Key_Array is array (Positive range <>) of Character;
@@ -237,5 +237,5 @@ package body Command is
     return Command.Image;
   end Nth_Command;
 
-end Command;
+end Cmd;
 

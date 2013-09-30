@@ -4,7 +4,7 @@
 --  each command can contain spaces
 with Ada.Exceptions;
 with As.U, Directory, Recurs, Sys_Calls, Basic_Proc;
-with Command;
+with Cmd;
 procedure Pexec is
 
   No_Action : Boolean;
@@ -30,16 +30,16 @@ procedure Pexec is
   function Execute return Boolean is
     Exec_Return : Integer;
   begin
-    for I in 1 .. Command.Nbre_Commands loop
+    for I in 1 .. Cmd.Nbre_Commands loop
       if not No_Action then
-        Basic_Proc.Put_Line_Output ("--> " & Command.Nth_Command (I));
+        Basic_Proc.Put_Line_Output ("--> " & Cmd.Nth_Command (I));
       end if;
 
-      Exec_Return := Sys_Calls.Call_System (Command.Nth_Command (I));
+      Exec_Return := Sys_Calls.Call_System (Cmd.Nth_Command (I));
 
       if Exec_Return /= 0 then
         Basic_Proc.Put_Line_Error ("Error executing command "
-                      & Command.Nth_Command (I));
+                      & Cmd.Nth_Command (I));
         return False;
       end if;
 
@@ -50,7 +50,7 @@ procedure Pexec is
 begin
 
   -- Parse command line
-  Command.Parse (No_Action, No_Name_Of_Dir, Not_In_Current, First_Level_Only,
+  Cmd.Parse (No_Action, No_Name_Of_Dir, Not_In_Current, First_Level_Only,
                  Leaves_Only, No_Stop_On_Error, Follow_Links);
 
   -- Save current dir, Recurs, restore current dir
@@ -65,20 +65,20 @@ begin
   Restore;
 
 exception
-  when Command.No_Command =>
+  when Cmd.No_Command =>
     Basic_Proc.New_Line_Error;
     Basic_Proc.Put_Line_Error ("No command line to pexec.");
-    Command.Print_Usage;
+    Cmd.Print_Usage;
     Restore;
     Basic_Proc.Set_Error_Exit_Code;
-  when Command.Help =>
-    Command.Print_Usage;
+  when Cmd.Help =>
+    Cmd.Print_Usage;
     Restore;
   when Err:others =>
     Basic_Proc.New_Line_Error;
     Basic_Proc.Put_Line_Error ("Unexpected error "
                              & Ada.Exceptions.Exception_Name (Err) & ".");
-    Command.Print_Usage;
+    Cmd.Print_Usage;
     Restore;
     Basic_Proc.Set_Error_Exit_Code;
     raise;

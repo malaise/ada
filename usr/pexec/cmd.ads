@@ -1,4 +1,4 @@
-package Command is
+package Cmd is
 
   -- Print command line syntax
   procedure Print_Usage;
@@ -22,5 +22,5 @@ package Command is
   No_Command : exception;
   Help : exception;
 
-end Command;
+end Cmd;
 
