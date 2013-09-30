@@ -362,7 +362,7 @@ package body Afpx is
   begin
     Af_Dscr.Check(Fn);
     Field := Af_Dscr.Fields(Fn);
-    Field_Size := Field.Height * Field.Width;
+    Field_Size := Field.Height * Field.Data_Len;
     -- Copy the nb_chars from init_str to char_str
     for I in Field.Char_Index .. Field.Char_Index + Field_Size - 1 loop
       Af_Dscr.Chars(I) := Con_Io.Space;
