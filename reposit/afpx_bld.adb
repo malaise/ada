@@ -535,6 +535,7 @@ procedure Afpx_Bld is
     or else Ctx.Get_Nb_Children (Node) /= 0 then
       File_Error (Node, "Invalid get tuning " & String'(Ctx.Get_Name (Node)));
     end if;
+
     declare
       Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
       Err_Val : Asu_Us;
@@ -554,7 +555,6 @@ procedure Afpx_Bld is
           File_Error (Node, "Invalid get tuning " & Attrs(I).Name);
         end if;
       end loop;
-
     exception
       when File_Syntax_Error =>
         raise;
@@ -564,6 +564,16 @@ procedure Afpx_Bld is
       when others =>
         File_Error (Node, "Invalid get tuning");
     end;
+
+    if Fields(Fn).Data_Len < Fields(Fn).Width then
+      File_Error (Node, "Invalid get tuning: Data_Len must be greater or"
+                      & " equal to Width");
+    end if;
+    if Fields(Fn).Data_Len /= Fields(Fn).Width
+    and then (Fields(Fn).Move_Prev or else Fields(Fn).Move_Next) then
+      File_Error (Node, "Invalid get tuning: Move_Prev and Move_Next are"
+                      & " forbidden when Data_Len is different from Width");
+    end if;
   end Load_Get_Tuning;
 
   procedure Load_Colors (Node : in Xp.Node_Type;
