@@ -286,6 +286,8 @@ procedure Agite is
     Utils.X.Encode_Field (Directory.Get_Current, Dir_Field);
     -- Move cursor col on last significant char
     Get_Handle.Cursor_Col := 0;
+    Get_Handle.Offset := 0;
+    Get_Handle.Insert := False;
     declare
       Wstr : constant Wide_String := Afpx.Decode_Wide_Field (Dir_Field, 0);
     begin
@@ -296,8 +298,10 @@ procedure Agite is
         end if;
       end loop;
     end;
-    -- Full field => last col
+    -- String is longer that field width
     if Get_Handle.Cursor_Col >= Width then
+      -- Width + Offset = Data_Len
+      Get_Handle.Offset := Get_Handle.Cursor_Col - Width;
       Get_Handle.Cursor_Col := Width - 1;
     end if;
 
