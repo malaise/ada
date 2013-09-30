@@ -1,12 +1,19 @@
 #!/bin/bash
 export src=~malaise/ada/usr/account
+export bin=/usr/local/bin
 
 cp $src/account.stat account
 cp $src/Afpx.xml $src/AFPX.* .
-cp $src/account_lpr $src/launch_account $src/save_accounts .
+cp $src/account_lpr $src/launch_account $src/save_accounts $src/update_account .
 
 chmod a+r *
 chmod a+x account account_lpr launch_account save_accounts
 
 cp $src/backup_accounts /etc/cron.weekly
 chmod a+x /etc/cron.weekly/backup_accounts
+ 
+curdir=$PWD
+cd $bin
+ln -fs $curdir/save_accounts .
+ln -fs $curdir/account .
+
