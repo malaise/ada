@@ -146,16 +146,16 @@ Agite is based on the following main menus:
 * Directory: This is the first menu at start-up. It shows the content of a
 directory.
 * Bookmarks: This menu allows bookmarking directories and quickly jumping
-to a bookmark
+to a bookmark.
 * History: This shows the Git history of a file or directory, the list of
 commits that have modified the file(s).
 * Details: This shows information on a commit, including the list of files
 modified by the commit.
 * Stash: This menu allows stashing the local worktree and managing the stack
-of stashes
-* Commit: This menu allows staging and commiting the local changes
-* Push: This menu allows pushing local commits to a remote repository
-* Pull: This menu allows pulling the current branch from a remote repository
+of stashes.
+* Commit: This menu allows staging and commiting the local changes.
+* Push: This menu allows pushing local commits to a remote repository.
+* Pull: This menu allows pulling the current branch from a remote repository.
 
 anchor:XNavigation[]
 The navigation is as follows:
@@ -600,6 +600,7 @@ in the section on xref:XNavigation[navigation].
 
 Stash
 ~~~~~
+anchor:XStash[]
 This menu works on the global repository, not on local directory. +
 The screen shows the list of stashes, whith, for each entry, the stash number,
 the branch and the text of the message.
@@ -628,16 +629,16 @@ Pop::
 After confirmation, applies the stash currently selected in the list, removes
 it from the list and returns to the xref:XDir[Directory] menu.
 
-Del::
+Drop::
 
-After confirmation, deletes the stash currently selected in the list.
+After confirmation, drops (deletes) the stash currently selected in the list.
 
 NOTE: With the 'stash' menu you can perform a 'git reset --hard' in 5 clicks
-from the xref:XDir[Directory] menu:
-- Stash (go to stash menu)
-- Add (add a new anonymous stash)
-- Del (delete the newest stash)
-- Ok (to confirm deletion)
+from the xref:XDir[Directory] menu: +
+- Stash (go to stash menu) +
+- Add (add a new anonymous stash) +
+- Drop (delete the newest stash) +
+- Ok (to confirm deletion) +
 - Back (to the xref:XDir[Directory] menu)
 
 .Back
@@ -841,5 +842,12 @@ calling 'git difftool -y -x <differator> <ref_HSA1> <comp_HSA1> \-- <file>',
 * A function gets the user name and email by calling 'git config user.name'
 and 'git config user.email',
 
-* A function gets the name of current branch by calling 'git branch'.
+* A function gets the name of current branch by calling 'git branch',
+
+* A function gets the list of stashes by calling 'git stash list',
+
+* A function saves the current stash by calling 'git stash save -q <message>',
+
+* Three functions apply/pop/drop a stash by calling 'git stash apply/pop/drop
+-q stash@{<num>}'.
 
