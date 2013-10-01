@@ -519,10 +519,13 @@ socket (3)::
      Socket (Udp/Tpc/Tcp_Header, Ipm, Afunix) operations.
 
 socket_util (1)::
-     General Set_Dest and Link of socket
+     General Set_Dest and Link of socket.
 
 sorts (2)::
      Sort array.
+
+split_lines (1)::
+     Split a string into several lines.
 
 state_machine (2)::
      Generic state machine manager.
