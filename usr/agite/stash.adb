@@ -116,20 +116,22 @@ package body Stash is
         Index : constant Positive := Str_Util.Locate (Str, " ");
       begin
         Num := Git_If.Stash_Number'Value (Str(1 .. Index));
-        -- Confirm
-        Result := Confirm ("Stash",
-            "Ready to "
-          & (case Oper is
-              when Stash_Add => "",
-              when Stash_Apl => "apply",
-              when Stash_Pop => "apply and delete",
-              when Stash_Del => "delete")
-          & " stash: " & Str);
-        Init;
-        Reread (True);
-        if not Result then
-          -- Cancel
-          return False;
+        -- Confirm except for apply
+        if Oper /= Stash_Apl then
+          Result := Confirm ("Stash",
+              "Ready to "
+            & (case Oper is
+                when Stash_Add => "",
+                when Stash_Apl => "apply",
+                when Stash_Pop => "apply and delete",
+                when Stash_Del => "delete")
+            & " stash: " & Str);
+          Init;
+          Reread (True);
+          if not Result then
+            -- Cancel
+            return False;
+          end if;
         end if;
         Name := As.U.Tus (Images.Integer_Image (Num));
       end;
