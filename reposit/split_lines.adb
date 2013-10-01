@@ -1,16 +1,13 @@
--- Given a Parser.Iterator, extract the successive Next_Words and append
---  them (separated by space) as long as <word> { ' ' <word> } does not exceed
---  Len, then append a new Asu_Us
--- If a <word> is longer than Len, then append it alone in a As_Us
--- with Parser, As.U.Utils;
-
-function Split_Lines (Iter : Parser.Iterator; Len : Positive)
-               return As.U.Utils.Asu_Ua.Unb_Array is
+function Split_Lines (Iter : Parser.Iterator;
+                      Len  : Positive;
+                      Max : Natural := 0) return As.U.Utils.Asu_Ua.Unb_Array is
   Result : As.U.Utils.Asu_Ua.Unb_Array;
   Line : As.U.Asu_Us;
   Needed : Positive;
+  Num : Positive;
 begin
   -- Iterate on each word
+  Num := 1;
   loop
     declare
       Word : constant String := Iter.Next_Word;
@@ -24,7 +21,7 @@ begin
       end if;
 
       -- Check if we can append
-      if Line.Length + Needed <= Len then
+      if Line.Length + Needed <= Len or else Num = Max then
         -- Append Word to Line, with a space except if first word of line
         if not Line.Is_Null then
           Line.Append (" ");
@@ -34,6 +31,7 @@ begin
         -- New line, store previous
         if not Line.Is_Null then
           Result.Append (Line);
+          Num := Num + 1;
         end if;
         Line.Set (Word);
       end if;
