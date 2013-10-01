@@ -16,6 +16,9 @@ package Utils is
   type Client_Callback is access procedure;
   procedure Launch (Command : in String; Set_Callback : in Boolean := False);
 
+  -- Separator to split output text
+  function Separator (C : Character) return Boolean;
+
   -- Exception on Ctrl C
   Exit_Requested : exception;
 

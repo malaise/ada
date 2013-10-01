@@ -1,15 +1,28 @@
-with Afpx;
+with Afpx, As.U.Utils, Parser, Split_Lines;
 with Utils.X, Afpx_Xref;
 procedure Error (Action, Target, Text : String) is
   -- Afpx stuff
   Get_Handle : Afpx.Get_Handle_Rec;
   Ptg_Result   : Afpx.Result_Rec;
 
+  -- To split text
+  Iter : Parser.Iterator;
+  Texts : As.U.Utils.Asu_Ua.Unb_Array;
+  Fld : Afpx.Field_Range;
+
 begin
+  -- Use descriptor en encode action and target
   Afpx.Use_Descriptor (Afpx_Xref.Error.Dscr_Num);
   Utils.X.Center_Field (Action, Afpx_Xref.Error.Action);
   Utils.X.Center_Field (Target, Afpx_Xref.Error.Target);
-  Utils.X.Center_Field (Text,   Afpx_Xref.Error.Text);
+  -- Split text and encode
+  Iter.Set (Text, Utils.Separator'Access);
+  Texts := Split_Lines (Iter, Afpx.Get_Field_Width (Afpx_Xref.Error.Text1), 4);
+  Fld := Afpx_Xref.Error.Text1;
+  for I in 1 .. Texts.Length loop
+    Utils.X.Center_Field (Texts.Element(I).Image, Fld);
+    Fld := Afpx.Field_Range'Succ (Fld);
+  end loop;
 
   -- Main loop
   loop

@@ -68,5 +68,11 @@ package body Utils is
     end if;
   end Launch;
 
+  -- Separator to split output text
+  function Separator (C : Character) return Boolean is
+  begin
+    return C <= ' ' or else C > '~';
+  end Separator;
+
 end Utils;
 
