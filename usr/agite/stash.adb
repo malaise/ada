@@ -100,6 +100,7 @@ package body Stash is
   function Do_Stash (Oper : in Stash_Oper_List) return Boolean is
     Name : As.U.Asu_Us;
     Num : Git_If.Stash_Number;
+    Message : As.U.Asu_Us;
     Result : Boolean;
   begin
     -- Recover argument
@@ -123,7 +124,7 @@ package body Stash is
               when Stash_Apl => "apply",
               when Stash_Pop => "apply and delete",
               when Stash_Del => "delete")
-          & " stash " & Str);
+          & " stash: " & Str);
         Init;
         Reread (True);
         if not Result then
@@ -137,16 +138,18 @@ package body Stash is
     -- Do stash operation
     Afpx.Suspend;
     case Oper is
-      when Stash_Add => Result := Git_If.Add_Stash (Name.Image);
-      when Stash_Apl => Result := Git_If.Apply_Stash (Num);
-      when Stash_Pop => Result := Git_If.Pop_Stash (Num);
-      when Stash_Del => Result := Git_If.Del_Stash (Num);
+      when Stash_Add => Message := As.U.Tus (Git_If.Add_Stash (Name.Image));
+      when Stash_Apl => Message := As.U.Tus (Git_If.Apply_Stash (Num));
+      when Stash_Pop => Message := As.U.Tus (Git_If.Pop_Stash (Num));
+      when Stash_Del => Message := As.U.Tus (Git_If.Del_Stash (Num));
     end case;
     Afpx.Resume;
 
     -- Handle error
-    if Result then
+    if Message.Is_Null then
+      -- OK
       Reread (False);
+      return True;
     else
       Error ("Stash "
         & (case Oper is
@@ -154,11 +157,11 @@ package body Stash is
               when Stash_Apl => "applying",
               when Stash_Pop => "applying and deleting",
               when Stash_Del => "deleting"),
-        Name.Image, "");
+        Name.Image, Message.Image);
       Init;
       Reread (True);
+      return False;
     end if;
-    return Result;
   end Do_Stash;
 
   procedure Do_Stash (Oper : in Stash_Oper_List) is
@@ -198,7 +201,8 @@ package body Stash is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
             when Afpx.Return_Key =>
-              null;
+              -- Add stash
+              Do_Stash (Stash_Add);
             when Afpx.Escape_Key =>
               -- Back
               return;

@@ -141,17 +141,17 @@ package Git_If is
   -- List the stashes
   procedure List_Stashes (Stashes : in out Stash_List);
 
-  -- Stash current context, return True is Ok
-  function Add_Stash (Name : String) return Boolean;
+  -- Stash current context, return "" if Ok
+  function Add_Stash (Name : String) return String;
 
-  -- Apply a stash, return True is Ok
-  function Apply_Stash (Num : Stash_Number) return Boolean;
+  -- Apply a stash, return "" if Ok
+  function Apply_Stash (Num : Stash_Number) return String;
 
-  -- Pop (apply & delete) a stash, return True is Ok
-  function Pop_Stash (Num : Stash_Number) return Boolean;
+  -- Pop (apply & delete) a stash, return "" if Ok
+  function Pop_Stash (Num : Stash_Number) return String;
 
-  -- Delete a stash, return True is Ok
-  function Del_Stash (Num : Stash_Number) return Boolean;
+  -- Delete a stash, return "" if Ok
+  function Del_Stash (Num : Stash_Number) return String;
 
 end Git_If;
 

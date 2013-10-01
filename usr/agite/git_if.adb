@@ -972,8 +972,8 @@ package body Git_If is
     Stashes.Rewind;
   end List_Stashes;
 
-  -- Stash current context, return True is Ok
-  function Add_Stash (Name : String) return Boolean is
+  -- Stash current context, return "" if OK
+  function Add_Stash (Name : String) return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
@@ -985,14 +985,14 @@ package body Git_If is
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git stash save: " & Err_Flow.Str.Image);
-      return False;
+      return Err_Flow.Str.Image;
+    else
+      return "";
     end if;
-    return True;
   end Add_Stash;
 
-  -- Apply a stash, return True is Ok
-  function Apply_Stash (Num : Stash_Number) return Boolean is
+  -- Apply a stash, return "" if OK
+  function Apply_Stash (Num : Stash_Number) return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
@@ -1004,14 +1004,14 @@ package body Git_If is
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git stash apply: " & Err_Flow.Str.Image);
-      return False;
+      return Err_Flow.Str.Image;
+    else
+      return "";
     end if;
-    return True;
   end Apply_Stash;
 
-  -- Pop (apply & delete) a stash, return True is Ok
-  function Pop_Stash (Num : Stash_Number) return Boolean is
+  -- Pop (apply & delete) a stash, return "" if OK
+  function Pop_Stash (Num : Stash_Number) return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
@@ -1023,14 +1023,14 @@ package body Git_If is
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git stash pop: " & Err_Flow.Str.Image);
-      return False;
+      return Err_Flow.Str.Image;
+    else
+      return "";
     end if;
-    return True;
   end Pop_Stash;
 
-  -- Delete a stash, return True is Ok
-  function Del_Stash (Num : Stash_Number) return Boolean is
+  -- Delete a stash, return "" if OK
+  function Del_Stash (Num : Stash_Number) return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
@@ -1042,10 +1042,10 @@ package body Git_If is
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git stash del: " & Err_Flow.Str.Image);
-      return False;
+      return Err_Flow.Str.Image;
+    else
+      return "";
     end if;
-    return True;
   end Del_Stash;
 
 end Git_If;
