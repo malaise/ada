@@ -835,6 +835,9 @@ package body Afpx is
     pragma Unreferenced (Dummy);
   begin
     Af_Dscr.Check(Lfn);
+    if not Af_Dscr.Fields(Lfn).Activated then
+      raise Invalid_Field;
+    end if;
     Dummy := Af_List.Update (Action, Display => False);
   end Update_List;
 

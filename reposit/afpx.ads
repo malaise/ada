@@ -287,7 +287,7 @@ package Afpx is
                             Top_Selected, Center_Selected, Bottom_Selected);
 
   -- Update the list due to an action (e.g. a button)
-  -- Exceptions : Invalid_Field if no list in current descriptor.
+  -- Exceptions : Invalid_Field if no list in current descriptor or not active.
   procedure Update_List (Action : in List_Action_List);
 
   -- Result of Put_Then_Get:
