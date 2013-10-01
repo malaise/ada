@@ -1,5 +1,6 @@
 with Ada.Exceptions, Ada.Characters.Latin_1;
-with Environ, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng, Str_Util;
+with Environ, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng, Str_Util,
+     Images;
 with Utils;
 package body Git_If is
 
@@ -939,14 +940,20 @@ package body Git_If is
     Out_Flow_1.List.Rewind;
     loop
       Out_Flow_1.List.Read (Line, Moved => Moved);
+      -- stash@{<Num>}: WIP on <Branch>: <Name>
       -- stash@{<Num>}: On <Branch>: <Name>
       begin
        -- "{" <num> "}"
        I1 := Str_Util.Locate (Line.Image, "{");
        I2 := Str_Util.Locate (Line.Image, "}");
        Stash.Num := Stash_Number'Value (Line.Slice (I1 + 1, I2 - 1));
+       -- "}: WIP on " <branch> ":"
        -- "}: On " <branch> ":"
-       I1 := I2 + 5;
+       if Line.Slice (I2 + 3, I2 + 5) = "WIP" then
+         I1 := I2 + 9;
+       else
+         I1 := I2 + 5;
+       end if;
        I2 := Str_Util.Locate (Line.Image, ":", I1);
        Stash.Branch := Line.Uslice (I1 + 1, I2 - 1);
        -- ": " <Name>"
@@ -967,25 +974,77 @@ package body Git_If is
 
   -- Stash current context, return True is Ok
   function Add_Stash (Name : String) return Boolean is
+    Cmd : Many_Strings.Many_String;
   begin
+    Cmd.Set ("git");
+    Cmd.Cat ("stash");
+    Cmd.Cat ("save");
+    Cmd.Cat ("-q");
+    Cmd.Cat (Name);
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git stash save: " & Err_Flow.Str.Image);
+      return False;
+    end if;
     return True;
   end Add_Stash;
 
   -- Apply a stash, return True is Ok
   function Apply_Stash (Num : Stash_Number) return Boolean is
+    Cmd : Many_Strings.Many_String;
   begin
+    Cmd.Set ("git");
+    Cmd.Cat ("stash");
+    Cmd.Cat ("apply");
+    Cmd.Cat ("-q");
+    Cmd.Cat ("stash@{" & Images.Integer_Image (Num) & "}");
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git stash apply: " & Err_Flow.Str.Image);
+      return False;
+    end if;
     return True;
   end Apply_Stash;
 
   -- Pop (apply & delete) a stash, return True is Ok
   function Pop_Stash (Num : Stash_Number) return Boolean is
+    Cmd : Many_Strings.Many_String;
   begin
+    Cmd.Set ("git");
+    Cmd.Cat ("stash");
+    Cmd.Cat ("pop");
+    Cmd.Cat ("-q");
+    Cmd.Cat ("stash@{" & Images.Integer_Image (Num) & "}");
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git stash pop: " & Err_Flow.Str.Image);
+      return False;
+    end if;
     return True;
   end Pop_Stash;
 
   -- Delete a stash, return True is Ok
   function Del_Stash (Num : Stash_Number) return Boolean is
+    Cmd : Many_Strings.Many_String;
   begin
+    Cmd.Set ("git");
+    Cmd.Cat ("stash");
+    Cmd.Cat ("drop");
+    Cmd.Cat ("-q");
+    Cmd.Cat ("stash@{" & Images.Integer_Image (Num) & "}");
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git stash del: " & Err_Flow.Str.Image);
+      return False;
+    end if;
     return True;
   end Del_Stash;
 

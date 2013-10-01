@@ -1,7 +1,7 @@
 with Ada.Exceptions;
 with As.U, Directory, Afpx.List_Manager, Str_Util, Basic_Proc,
-     Aski, Unicode, Images;
-with Git_If, Utils.X, Config, Push, Afpx_Xref, Confirm, Error;
+     Language, Images;
+with Git_If, Utils.X, Afpx_Xref, Confirm, Error;
 package body Stash is
 
   -- List width
@@ -12,7 +12,8 @@ package body Stash is
   begin
     Utils.X.Encode_Line ("",
         Images.Integer_Image (From.Num)
-      & " " & From.Branch.Image & " " & From.Name.Image, "", List_Width, Line);
+      & " " & From.Branch.Image & " " & From.Name.Image, "", List_Width, Line,
+        False);
   exception
     when Error:others =>
       Basic_Proc.Put_Line_Error ("Exception "
@@ -43,11 +44,11 @@ package body Stash is
   Stashes : Git_If.Stash_List;
 
   -- Re assess the list of stashes
-  procedure Reread is
+  procedure Reread (Keep : in Boolean) is
     Pos : Natural;
   begin
     -- Save current selection
-    if not Afpx.Line_List.Is_Empty then
+    if Keep and then not Afpx.Line_List.Is_Empty then
       Pos := Afpx.Line_List.Get_Position;
     else
       Pos := 0;
@@ -60,6 +61,7 @@ package body Stash is
 
     -- Encode the list
     Init_List (Stashes);
+
     -- Move back to the same entry as before (if possible)
     if not  Afpx.Line_List.Is_Empty then
       if Pos /= 0 then
@@ -93,6 +95,79 @@ package body Stash is
        raise;
   end Reread;
 
+  -- Stash operations
+  type Stash_Oper_List is (Stash_Add, Stash_Apl, Stash_Pop, Stash_Del);
+  function Do_Stash (Oper : in Stash_Oper_List) return Boolean is
+    Name : As.U.Asu_Us;
+    Num : Git_If.Stash_Number;
+    Result : Boolean;
+  begin
+    -- Recover argument
+    if Oper = Stash_Add then
+       -- Recover name from Get field
+       Afpx.Decode_Field (Afpx_Xref.Stash.Name, 0, Name);
+    else
+      -- Recover num
+      declare
+        Line : constant Afpx.Line_Rec := Afpx.Line_List.Access_Current.all;
+        Str : constant String := Language.Unicode_To_String (
+          Line.Str(1 .. Line.Len));
+        Index : constant Positive := Str_Util.Locate (Str, " ");
+      begin
+        Num := Git_If.Stash_Number'Value (Str(1 .. Index));
+        -- Confirm
+        Result := Confirm ("Stash",
+            "Ready to "
+          & (case Oper is
+              when Stash_Add => "",
+              when Stash_Apl => "apply",
+              when Stash_Pop => "apply and delete",
+              when Stash_Del => "delete")
+          & " stash " & Str);
+        Init;
+        Reread (True);
+        if not Result then
+          -- Cancel
+          return False;
+        end if;
+        Name := As.U.Tus (Images.Integer_Image (Num));
+      end;
+    end if;
+
+    -- Do stash operation
+    Afpx.Suspend;
+    case Oper is
+      when Stash_Add => Result := Git_If.Add_Stash (Name.Image);
+      when Stash_Apl => Result := Git_If.Apply_Stash (Num);
+      when Stash_Pop => Result := Git_If.Pop_Stash (Num);
+      when Stash_Del => Result := Git_If.Del_Stash (Num);
+    end case;
+    Afpx.Resume;
+
+    -- Handle error
+    if Result then
+      Reread (False);
+    else
+      Error ("Stash "
+        & (case Oper is
+              when Stash_Add => "adding",
+              when Stash_Apl => "applying",
+              when Stash_Pop => "applying and deleting",
+              when Stash_Del => "deleting"),
+        Name.Image, "");
+      Init;
+      Reread (True);
+    end if;
+    return Result;
+  end Do_Stash;
+
+  procedure Do_Stash (Oper : in Stash_Oper_List) is
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
+  begin
+    Dummy := Do_Stash (Oper);
+  end Do_Stash;
+
   -- Handle the commits
   procedure Handle (Root : in String) is
     Ptg_Result   : Afpx.Result_Rec;
@@ -113,7 +188,7 @@ package body Stash is
     List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
 
     -- Encode Changes
-    Reread;
+    Reread (False);
 
     -- Main loop
     loop
@@ -140,6 +215,22 @@ package body Stash is
                   Ptg_Result.Field_No
                 - Utils.X.List_Scroll_Fld_Range'First
                 + 1);
+
+            -- Stash operations
+            when Afpx_Xref.Stash.Add =>
+              Do_Stash (Stash_Add);
+            when Afpx_Xref.Stash.Apply =>
+              if Do_Stash (Stash_Apl) then
+                return;
+              end if;
+            when Afpx_Xref.Stash.Pop =>
+              if Do_Stash (Stash_Pop) then
+                return;
+              end if;
+            when Afpx_Xref.Stash.Del =>
+              Do_Stash (Stash_Del);
+              Reread (False);
+
             when Afpx_Xref.Stash.Back =>
               -- Back button
               return;
@@ -151,7 +242,7 @@ package body Stash is
           null;
        when Afpx.Refresh =>
          -- Reread branch and stashes
-         Reread;
+         Reread (True);
       end case;
     end loop;
 
