@@ -143,19 +143,22 @@ Agite screens
 -------------
 Agite is based on the following main menus:
 
-* Directory: This is the first menu at start-up. It shows the content of a
-directory.
-* Bookmarks: This menu allows bookmarking directories and quickly jumping
-to a bookmark.
-* History: This shows the Git history of a file or directory, the list of
-commits that have modified the file(s).
-* Details: This shows information on a commit, including the list of files
-modified by the commit.
-* Stash: This menu allows stashing the local worktree and managing the stack
-of stashes.
-* Commit: This menu allows staging and commiting the local changes.
-* Push: This menu allows pushing local commits to a remote repository.
-* Pull: This menu allows pulling the current branch from a remote repository.
+* xref:XDir[Directory]: This is the first menu at start-up. It shows the content
+of a directory.
+* xref:XBook[Bookmarks]: This menu allows bookmarking directories and quickly
+jumping to a bookmark.
+* xref:XHist[History]: This shows the Git history of a file or directory, the
+list of commits that have modified the file(s).
+* xref:XDetails[Details]: This shows information on a commit, including the list
+of files modified by the commit.
+* xref:XStash[Stash]: This menu allows stashing the local worktree and managing
+the stack of stashes.
+* xref:XCommit[Commit]: This menu allows staging and commiting the local
+changes.
+* xref:XPush[Push]: This menu allows pushing local commits to a remote
+repository.
+* xref:XPull[Pull]: This menu allows pulling the current branch from a remote
+repository.
 
 anchor:XNavigation[]
 The navigation is as follows:
