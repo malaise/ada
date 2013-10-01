@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V11.6
+V12.0
 
 General purpose
 ---------------
@@ -136,37 +136,42 @@ Agite stores the xref:XBook[bookmarks] in this section:
 * separators have a 'Name' and no content,
 * bookmarks have a content and possibly a 'Name'.
 
-*Note: The DTD file 'agite.dtd' must be located according to the ''DOCTYPE''
-directive of the Agite XML configuration file.*
+NOTE: The DTD file 'agite.dtd' must be located according to the ''DOCTYPE''
+directive of the Agite XML configuration file.
 
 Agite screens
 -------------
-Agite is based on four main menus:
+Agite is based on the following main menus:
 
 * Directory: This is the first menu at start-up. It shows the content of a
 directory.
-* Commit: This menu allows staging and commiting the local changes
-* Pull: This menu allows pulling the current branch from a remote repository
-* Push: This menu allows pushing local commits to a remote repository
 * Bookmarks: This menu allows bookmarking directories and quickly jumping
 to a bookmark
 * History: This shows the Git history of a file or directory, the list of
 commits that have modified the file(s).
 * Details: This shows information on a commit, including the list of files
 modified by the commit.
+* Stash: This menu allows stashing the local worktree and managing the stack
+of stashes
+* Commit: This menu allows staging and commiting the local changes
+* Push: This menu allows pushing local commits to a remote repository
+* Pull: This menu allows pulling the current branch from a remote repository
 
 anchor:XNavigation[]
 The navigation is as follows:
 
-                         +--------+       +------+
-                 /------>| Commit |------>| Push |
-                /        +--------+       +------+
-  +---------- +/         +-----------+
-  | Directory |--------->| Bookmarks |
-  +---------- +\         +-----------+
-                \        +---------+       +---------+
-                 \------>| History |<----->| Details |
-                  \      +---------+       +---------+
+                         +-----------+
+                    /--->| Bookmarks |
+                   /     +-----------+
+                  /      +---------+       +---------+
+                 /------>| History |<----->| Details |
+                /        +---------+       +---------+
+  +---------- +/         +-------+
+  | Directory |--------->| Stash |
+  +---------- +\         +-------+
+                \        +--------+       +------+
+                 \------>| Commit |------>| Push |
+                  \      +--------+       +------+
                    \     +------+
                     \--->| Pull |
                          +------+
@@ -181,10 +186,10 @@ In this new screen you can select a file and see its 'History'... and so on.
 Once this is done you need to "un-stack" all these menus (by clicking on
 the 'Back' button in each) in order to go back to the 'Directory' menu.
 
-anchor:XDir[]
 
 Directory
 ~~~~~~~~~
+anchor:XDir[]
 The 'Directory' menu lists the git content, subdirectories and files, of
 of current directory. Starting from top, the fields are:
 
@@ -367,7 +372,6 @@ The Revert button has no effect on a file known by GIT and not modified.
 
 .Other actions
 
-
 anchor:XXterm[]
 
 Xterm::
@@ -391,128 +395,9 @@ current branch from a remote repository;
 Exit::
 A button makes Agite exit.
 
-anchor:XCommit[]
-
-Commit
-~~~~~~
-This menu works on the global repository, not on local directory.
-
-The screen shows the list of changes and allows entering a comment for the
-commit:
-
-.Current branch and root
-
-This shows the actual branch and path of the root of current repository.
-
-.Actions
-
-The possible actions on the list of changes or the comment are:
-
-Reread::
-
-Re-read the current branch and the list of local changes.
-
-Diff::
-
-Show the difference between the current change and the Head for the current file
-(selected in list).
-
-Stage::
-
-Stage the current file (selected in list).
-
-Unstage::
-
-Unstage the current file (selected in list).
-
-StageAll::
-
-Stage all the changes that are unstaged. Also proposes to add the untracked
-(new) files.
-
-Sign::
-
-Append the user name and email address to the comment.
-
-Clear::
-
-Clear the comment fields.
-
-NOTE: The Stage, Unstage and StageAll buttons are active only if there are local
-changes.
-
-.Comment
-
-You can enter up to 7 lines of comment. +
-Comment must not be empty when committing.
-
-.List of changes
-
-This list shows all the current changes, with 3 letters of status for each
-file:
-
-* The first column ('S') shows the summary of the status:
- - a '''+''' if all the changes of the file are staged,
- - a '''*''' if some changes are staged and some others are not,
- - empty if no changes are staged (e.g. locally modified, new or unchanged).
-* The second column ('I') shows the changes in the index (that will be
-committed),
-* The third column ('L') shows the changes local to the worktree (that will not
-be committed).
-
-You can select a file and show its local differences, stage or unstage its
-changes.
-
-.Commit
-
-Commit the staged changes. +
-*Note: Ensure to enter a comment before committing.* +
-If the commit succeeds then the list of changes is updated, otherwise
-the error is reported through a specific screen.
-
-NOTE: The Commit button is active only if there are staged changes.
-
-.Push
-
-This button activates the xref:XPush[Push] menu.
-
-.Back
-
-This button returns to the xref:XDir[Directory] menu.
-
-anchor:XPush[]
-
-Push
-~~~~
-
-The 'Push' menu allows pushing the local changes to a given remote
- repository. +
-It shows:
-
-.Current branch and root
-
-This shows the actual branch and path of the root of the current workspace.
-
-.List of known repositories
-
-This lists the known remote repositories from which you can select the target. +
-If the remote ''orign'' is defined then it is selected by default.
-
-.Push
-
-Pushes the local commits to the selected remote repository. +
-If there is no error then agite returns back to the xref:XDir[Directory] menu,
-otherwise the error is reported through a specific screen.
-
-.Back
-
-Moves back to the xref:XCommit[Commit] menu without pushing.
-
-anchor:XBook[]
-
 Bookmarks
 ~~~~~~~~~
-
+anchor:XBook[]
 Locations (directories) can be bookmarked. To bookmark a directory, first move
 to it in the xref:XDir[directory] menu, then go in the 'bookmark' menu, then
 click in the button xref:XAdd[AddCur]. This adds the current directory in the list.
@@ -566,10 +451,8 @@ anchor:XBookBack[]
 The button 'Back' switches back to  the xref:XDir[directory] menu without
 changing current directory.
 
-
 History
 ~~~~~~~
-
 anchor:XHist[]
 This menu shows the name of the selected file and lists the history of all the
 commits on current branch that have affected this file. +
@@ -661,7 +544,7 @@ the history of a directory.
 .Back
 This button allows to return to xref:XDir[directory] menu.
 
-*Note:* The history follows the the renamings of the file or directory but the
+NOTE: The history follows the the renamings of the file or directory but the
 reference name (that is displayed above the history list) is used for the
 xref:XView[view] and xref:XDiff1[Diff] operations.
 As a consequence, Agite will fail to show a
@@ -677,10 +560,9 @@ following operations:
 It is not possible to do a xref:XDiff1[Diff] between two versions of a file if
 the file has been renamed or moved between the versions.
 
-anchor:XDetails[]
-
 Details
 ~~~~~~~
+anchor:XDetails[]
 The 'Details' menu shows the details of a commit:
 
 * The SHA-1 hash of the commit, that you can copy in the clipboard,
@@ -713,15 +595,174 @@ the commit (differences brought by the commit),
 * click on the button 'Restore' to restore all the files of the commit,
 if none of them is locally modified, and after a confirmation.
 
-Note: Clicking on 'Hist' calls a new function to show the history, as explained
+NOTE: Clicking on 'Hist' calls a new function to show the history, as explained
 in the section on xref:XNavigation[navigation].
 
+Stash
+~~~~~
+This menu works on the global repository, not on local directory. +
+The screen shows the list of stashes, whith, for each entry, the stash number,
+the branch and the text of the message.
 
-anchor:XPull[]
+.Current branch and root
+
+This shows the actual branch and path of the root of current repository.
+
+.Actions
+
+The possible actions on the list of stashes are:
+
+Add::
+
+Enter a message /  name for the stash and click in the 'Add' button or press
+the Return key. Agit stashes the current worktree (which performs a 'git reset
+--hard'). The new stash appears in the list.
+
+Apply::
+
+Applies the stash currently selected in the list and returns to the
+xref:XDir[Directory] menu.
+
+Pop::
+
+After confirmation, applies the stash currently selected in the list, removes
+it from the list and returns to the xref:XDir[Directory] menu.
+
+Del::
+
+After confirmation, deletes the stash currently selected in the list.
+
+NOTE: With the 'stash' menu you can perform a 'git reset --hard' in 5 clicks
+from the xref:XDir[Directory] menu:
+- Stash (go to stash menu)
+- Add (add a new anonymous stash)
+- Del (delete the newest stash)
+- Ok (to confirm deletion)
+- Back (to the xref:XDir[Directory] menu)
+
+.Back
+
+This button returns to the xref:XDir[Directory] menu.
+
+Commit
+~~~~~~
+anchor:XCommit[]
+This menu works on the global repository, not on local directory.
+
+The screen shows the list of changes and allows entering a comment for the
+commit:
+
+.Current branch and root
+
+This shows the actual branch and path of the root of current repository.
+
+.Actions
+
+The possible actions on the list of changes or the comment are:
+
+Reread::
+
+Re-read the current branch and the list of local changes.
+
+Diff::
+
+Show the difference between the current change and the Head for the current file
+(selected in list).
+
+Stage::
+
+Stage the current file (selected in list).
+
+Unstage::
+
+Unstage the current file (selected in list).
+
+StageAll::
+
+Stage all the changes that are unstaged. Also proposes to add the untracked
+(new) files.
+
+Sign::
+
+Append the user name and email address to the comment.
+
+Clear::
+
+Clear the comment fields.
+
+NOTE: The Stage, Unstage and StageAll buttons are active only if there are local
+changes.
+
+.Comment
+
+You can enter up to 7 lines of comment. +
+Comment must not be empty when committing.
+
+.List of changes
+
+This list shows all the current changes, with 3 letters of status for each
+file:
+
+* The first column ('S') shows the summary of the status:
+ - a '''+''' if all the changes of the file are staged,
+ - a '''*''' if some changes are staged and some others are not,
+ - empty if no changes are staged (e.g. locally modified, new or unchanged).
+* The second column ('I') shows the changes in the index (that will be
+committed),
+* The third column ('L') shows the changes local to the worktree (that will not
+be committed).
+
+You can select a file and show its local differences, stage or unstage its
+changes.
+
+.Commit
+
+Commit the staged changes.
+
+NOTE: Ensure to enter a comment before committing.
+
+If the commit succeeds then the list of changes is updated, otherwise
+the error is reported through a specific screen.
+
+NOTE: The Commit button is active only if there are staged changes.
+
+.Push
+
+This button activates the xref:XPush[Push] menu.
+
+.Back
+
+This button returns to the xref:XDir[Directory] menu.
+
+Push
+~~~~
+anchor:XPush[]
+The 'Push' menu allows pushing the local changes to a given remote
+ repository. +
+It shows:
+
+.Current branch and root
+
+This shows the actual branch and path of the root of the current workspace.
+
+.List of known repositories
+
+This lists the known remote repositories from which you can select the target. +
+If the remote ''orign'' is defined then it is selected by default.
+
+.Push
+
+Pushes the local commits to the selected remote repository. +
+If there is no error then agite returns back to the xref:XDir[Directory] menu,
+otherwise the error is reported through a specific screen.
+
+.Back
+
+Moves back to the xref:XCommit[Commit] menu without pushing.
 
 Pull
 ~~~~
-
+anchor:XPull[]
 The 'Pull' menu allows pulling the current branch from a given remote
 repository. +
 It shows:
