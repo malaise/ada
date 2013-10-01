@@ -139,7 +139,7 @@ package Afpx is
                           Str      : in As.U.Asu_Us);
 
   -- Decode the content of a row of a field
-  -- If Adjust is set, then only Width string characters are
+  -- If Adjust is set, then only Data_Len characters are
   --  returned, which may lead to skip last (in)put characters
   --  and possibly pad with a space
   -- Exceptions : No_Descriptor, Invalid_Field, Invalid_Row
