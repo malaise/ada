@@ -1191,11 +1191,11 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Pop</Init>
     </Field>
-    <Field Num="18" Kind="Button" Name="Del">
+    <Field Num="18" Kind="Button" Name="Drop">
       <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="2">Del</Init>
+      <Init Row="1" Col="2">Drop</Init>
     </Field>
 
     <Field Num="19" Kind="Button" Name="Back">

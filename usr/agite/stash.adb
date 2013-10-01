@@ -81,7 +81,7 @@ package body Stash is
     Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
                           Afpx_Xref.Commit.Branch);
     -- Set field activity
-    Afpx.Set_Field_Activation (Afpx_Xref.Stash.Del,
+    Afpx.Set_Field_Activation (Afpx_Xref.Stash.Drop,
                                not Afpx.Line_List.Is_Empty);
     Afpx.Set_Field_Activation (Afpx_Xref.Stash.Apply,
                                not Afpx.Line_List.Is_Empty);
@@ -96,7 +96,7 @@ package body Stash is
   end Reread;
 
   -- Stash operations
-  type Stash_Oper_List is (Stash_Add, Stash_Apl, Stash_Pop, Stash_Del);
+  type Stash_Oper_List is (Stash_Add, Stash_Apl, Stash_Pop, Stash_Drp);
   function Do_Stash (Oper : in Stash_Oper_List) return Boolean is
     Name : As.U.Asu_Us;
     Num : Git_If.Stash_Number;
@@ -124,7 +124,7 @@ package body Stash is
                 when Stash_Add => "",
                 when Stash_Apl => "apply",
                 when Stash_Pop => "apply and delete",
-                when Stash_Del => "delete")
+                when Stash_Drp => "drop")
             & " stash: " & Str);
           Init;
           Reread (True);
@@ -143,7 +143,7 @@ package body Stash is
       when Stash_Add => Message := As.U.Tus (Git_If.Add_Stash (Name.Image));
       when Stash_Apl => Message := As.U.Tus (Git_If.Apply_Stash (Num));
       when Stash_Pop => Message := As.U.Tus (Git_If.Pop_Stash (Num));
-      when Stash_Del => Message := As.U.Tus (Git_If.Del_Stash (Num));
+      when Stash_Drp => Message := As.U.Tus (Git_If.Drop_Stash (Num));
     end case;
     Afpx.Resume;
 
@@ -158,7 +158,7 @@ package body Stash is
               when Stash_Add => "adding",
               when Stash_Apl => "applying",
               when Stash_Pop => "applying and deleting",
-              when Stash_Del => "deleting"),
+              when Stash_Drp => "dropping"),
         Name.Image, Message.Image);
       Init;
       Reread (True);
@@ -233,8 +233,8 @@ package body Stash is
               if Do_Stash (Stash_Pop) then
                 return;
               end if;
-            when Afpx_Xref.Stash.Del =>
-              Do_Stash (Stash_Del);
+            when Afpx_Xref.Stash.Drop =>
+              Do_Stash (Stash_Drp);
               Reread (False);
 
             when Afpx_Xref.Stash.Back =>

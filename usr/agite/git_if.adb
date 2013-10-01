@@ -1030,7 +1030,7 @@ package body Git_If is
   end Pop_Stash;
 
   -- Delete a stash, return "" if OK
-  function Del_Stash (Num : Stash_Number) return String is
+  function Drop_Stash (Num : Stash_Number) return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
@@ -1046,7 +1046,7 @@ package body Git_If is
     else
       return "";
     end if;
-  end Del_Stash;
+  end Drop_Stash;
 
 end Git_If;
 

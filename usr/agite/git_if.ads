@@ -150,8 +150,8 @@ package Git_If is
   -- Pop (apply & delete) a stash, return "" if Ok
   function Pop_Stash (Num : Stash_Number) return String;
 
-  -- Delete a stash, return "" if Ok
-  function Del_Stash (Num : Stash_Number) return String;
+  -- Drop a stash, return "" if Ok
+  function Drop_Stash (Num : Stash_Number) return String;
 
 end Git_If;
 
