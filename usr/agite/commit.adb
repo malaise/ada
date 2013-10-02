@@ -196,6 +196,7 @@ package body Commit is
   begin
     Changes.Move_At (Afpx.Line_List.Get_Position);
     Status := Changes.Access_Current.S3;
+    Afpx.Suspend;
     if Stage then
       if Status = '?' or else Status = 'M' then
         -- Stage new file or modif
@@ -208,6 +209,7 @@ package body Commit is
       -- File is staged, reset
       Git_If.Do_Reset (Changes.Access_Current.Name.Image);
     end if;
+    Afpx.Resume;
     Reread;
   end Do_Stage;
 
@@ -286,7 +288,9 @@ package body Commit is
   begin
     Decode_Comment;
     -- Git_If.Commit
+    Afpx.Suspend;
     Result := As.U.Tus (Git_If.Do_Commit (Comment.Image));
+    Afpx.Resume;
     if Result.Is_Null then
       return;
     end if;

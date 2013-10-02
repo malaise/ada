@@ -78,8 +78,10 @@ package body Stash is
     Afpx.Update_List (Afpx.Center_Selected);
 
     -- Encode current branch
+    Afpx.Suspend;
     Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
                           Afpx_Xref.Commit.Branch);
+    Afpx.Resume;
     -- Set field activity
     Afpx.Set_Field_Activation (Afpx_Xref.Stash.Drop,
                                not Afpx.Line_List.Is_Empty);

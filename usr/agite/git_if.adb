@@ -785,14 +785,13 @@ package body Git_If is
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git commit: " & Err_Flow.Str.Image);
       return Err_Flow.Str.Image;
     end if;
     return "";
   end Do_Commit;
 
   -- Launch a push synchronous
-  function Do_Push (Remote : String) return Boolean is
+  function Do_Push (Remote : String) return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
@@ -802,14 +801,14 @@ package body Git_If is
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git push: " & Err_Flow.Str.Image);
-      return False;
+      return Err_Flow.Str.Image;
+    else
+      return "";
     end if;
-    return True;
   end Do_Push;
 
-  -- Launch a pull synchronous, return True if OK
-  function Do_Pull (Remote : String; Branch : String) return Boolean is
+  -- Launch a pull synchronous
+  function Do_Pull (Remote : String; Branch : String) return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
@@ -820,10 +819,10 @@ package body Git_If is
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git pull: " & Err_Flow.Str.Image);
-      return False;
+      return Err_Flow.Str.Image;
+    else
+      return "";
     end if;
-    return True;
   end Do_Pull;
 
   -- Get current branch name
@@ -832,6 +831,7 @@ package body Git_If is
     Cmd : Many_Strings.Many_String;
     Branch : As.U.Asu_Us;
     Moved : Boolean;
+    Error : constant String := "ERROR:!";
   begin
     Cmd.Set ("git");
     Cmd.Cat ("branch");
@@ -840,7 +840,7 @@ package body Git_If is
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git branch: " & Err_Flow.Str.Image);
-      return "ERROR.";
+      return Error;
     end if;
     -- Look for "* "
     if not Out_Flow_1.List.Is_Empty then
@@ -859,10 +859,10 @@ package body Git_If is
     end if;
     -- No active branch???
     -- Even in the middle of a rebase there is a "* (no branch)"
-    return "ERROR.";
+    return Error;
   exception
     when others =>
-      return "ERROR.";
+      return Error;
   end Current_Branch;
 
   -- Get current user email

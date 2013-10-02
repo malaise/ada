@@ -116,11 +116,11 @@ package Git_If is
   -- Launch a commit synchronous, return "" if OK, else the error
   function Do_Commit (Comment : String) return String;
 
-  -- Launch a push synchronous, return True if OK
-  function Do_Push (Remote : String) return Boolean;
+  -- Launch a push synchronous, return "" if OK, else the error
+  function Do_Push (Remote : String) return String;
 
-  -- Launch a pull synchronous, return True if OK
-  function Do_Pull (Remote : String; Branch : String) return Boolean;
+  -- Launch a pull synchronous, "" if OK, else the error
+  function Do_Pull (Remote : String; Branch : String) return String;
 
   -- Get current branch name
   function Current_Branch return String;
@@ -141,16 +141,16 @@ package Git_If is
   -- List the stashes
   procedure List_Stashes (Stashes : in out Stash_List);
 
-  -- Stash current context, return "" if Ok
+  -- Stash current context, return "" if Ok else the error
   function Add_Stash (Name : String) return String;
 
-  -- Apply a stash, return "" if Ok
+  -- Apply a stash, return "" if Ok else the error
   function Apply_Stash (Num : Stash_Number) return String;
 
-  -- Pop (apply & delete) a stash, return "" if Ok
+  -- Pop (apply & delete) a stash, return "" if Ok else the error
   function Pop_Stash (Num : Stash_Number) return String;
 
-  -- Drop a stash, return "" if Ok
+  -- Drop a stash, return "" if Ok else the error
   function Drop_Stash (Num : Stash_Number) return String;
 
 end Git_If;

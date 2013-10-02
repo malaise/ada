@@ -26,12 +26,16 @@ package body Push is
 
   -- Push
   function Do_Push return Boolean is
+    Log : As.U.Asu_Us;
   begin
     References.Move_At (Afpx.Line_List.Get_Position);
-    if Git_If.Do_Push (References.Access_Current.Image) then
+    Afpx.Suspend;
+    Log := As.U.Tus (Git_If.Do_Push (References.Access_Current.Image));
+    Afpx.Resume;
+    if Log.Is_Null then
       return True;
     else
-      Error ("Pushing to", References.Access_Current.Image, "");
+      Error ("Pushing to", References.Access_Current.Image, Log.Image);
       return False;
     end if;
   end Do_Push;
@@ -39,6 +43,7 @@ package body Push is
   -- Pull current branch
   function Do_Pull return Boolean is
     Branch : As.U.Asu_Us;
+    Log : As.U.Asu_Us;
   begin
     -- Get current branch
     Afpx.Suspend;
@@ -47,10 +52,15 @@ package body Push is
 
     -- Pulll current branch from current remote
     References.Move_At (Afpx.Line_List.Get_Position);
-    if Git_If.Do_Pull (References.Access_Current.Image, Branch.Image) then
+    Afpx.Suspend;
+    Log := As.U.Tus (Git_If.Do_Pull (References.Access_Current.Image,
+                                     Branch.Image));
+    Afpx.Resume;
+    if Log.Is_Null then
       return True;
     else
-      Error ("Pulling from", References.Access_Current.Image, Branch.Image);
+      Error ("Pulling from", References.Access_Current.Image
+                           & "/" & Branch.Image, Log.Image);
       return False;
     end if;
   end Do_Pull;
@@ -74,8 +84,10 @@ package body Push is
       Utils.X.Encode_Field (Root, Afpx_Xref.Push.Root);
 
       -- Encode current branch
+      Afpx.Suspend;
       Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
                             Afpx_Xref.Push.Branch);
+      Afpx.Resume;
 
       -- Change title and Push pbutton if Pull
       if Pull then
@@ -84,7 +96,9 @@ package body Push is
       end if;
 
       -- Get list of references
+      Afpx.Suspend;
       Git_If.List_References (References);
+      Afpx.Resume;
       Init_List (References);
       if References.Is_Empty then
         Afpx.Set_Field_Activation (Afpx_Xref.Push.Push, False);
@@ -154,8 +168,10 @@ package body Push is
          null;
       when Afpx.Refresh =>
         -- Encode current branch
+        Afpx.Suspend;
         Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
                               Afpx_Xref.Push.Branch);
+        Afpx.Resume;
       end case;
     end loop;
 
