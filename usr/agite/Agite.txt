@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V12.3
+V12.4
 
 General purpose
 ---------------
@@ -387,9 +387,13 @@ Make::
 This button makes a local compilation by launching the command defined
 in the xref:XConfMake[make] entry of the configuration file.
 
+Stash::
+This button switches to the screen of xref:XStash[stash] that allows managing the
+the list of stashes.
+
 Commit::
-This button switches to the screen of xref:XCommit[commit] that allows commiting the the local
-modifications.
+This button switches to the screen of xref:XCommit[commit] that allows
+commiting the the local modifications.
 
 Pull::
 This button switches to the screen of xref:XPull[pull] that allows pulling the
