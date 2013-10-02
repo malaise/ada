@@ -250,10 +250,18 @@ package body Git_If is
         Out_Flow_1.List.Read (Str, Moved => Moved);
         if Directory.Dirname (Str.Image) = "" then
           File_Entry.Name := Str;
-          File_Entry.S2 := ' ';
-          File_Entry.S3 := ' ';
-          File_Entry.Kind := Char_Of (Str.Image);
-          Files.Insert (File_Entry);
+          -- Only one entry per name
+          --  (ls-files lists unresolved conflicts 3 times)
+          if not File_Search (Files, File_Entry,
+                              From => File_Mng.Dyn_List.Absolute) then
+            File_Entry.S2 := ' ';
+            File_Entry.S3 := ' ';
+            File_Entry.Kind := Char_Of (Str.Image);
+            Files.Insert (File_Entry);
+          else
+            -- Skip and be ready to append next entry
+            Files.Rewind (False, File_Mng.Dyn_List.Prev);
+          end if;
         end if;
         exit when not Moved;
       end loop;
