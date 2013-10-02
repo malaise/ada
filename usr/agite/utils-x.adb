@@ -1,4 +1,4 @@
-with Str_Util, Con_Io;
+with Str_Util;
 package body Utils.X is
 
   -- Protect a field and "revert" its colors
@@ -38,7 +38,8 @@ package body Utils.X is
     return (if Afpx.Get_Field_Height (Field) = 1 then 0 else 1);
   end Row;
 
-  -- Encode Text in 1st column of Field, procuste, preserve Tail or head
+  -- Clear field and encode Text in 1st column of Field (row 0)
+  --  procuste, preserve tail or head
   procedure Encode_Field (Text : in String;
                           Field : in Afpx.Field_Range;
                           Keep_Tail : in Boolean := True) is
@@ -51,7 +52,22 @@ package body Utils.X is
                    Keep_Tail));
   end Encode_Field;
 
-  -- Center Text in 1st column of Field, procuste, preserve head
+-- Encode Text in 1st column of Row of Field, procuste
+  --  preserve Tail or head
+  procedure Encode_Row (Text : in String;
+                        Field : in Afpx.Field_Range;
+                        Row : Con_Io.Row_Range;
+                        Keep_Tail : in Boolean := True) is
+  begin
+    Afpx.Encode_Field (Field, (Row, 0),
+        Normalize (Text,
+                   (if Afpx.Is_Get_Kind (Field) then Afpx.Get_Data_Len (Field)
+                    else Afpx.Get_Field_Width (Field)),
+                   Keep_Tail));
+  end Encode_Row;
+
+  -- CLear field and Center Text in 1st column of Field (row 0 or 1)
+  --  procuste, preserve head
   procedure Center_Field (Text : in String;
                           Field : in Afpx.Field_Range) is
   begin

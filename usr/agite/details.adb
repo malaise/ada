@@ -65,7 +65,7 @@ package body Details is
       Utils.X.Encode_Field (Date, Afpx_Xref.Details.Date);
       Afpx.Clear_Field (Afpx_Xref.Details.Comment);
       for I in 1 .. Comment_Height loop
-        Utils.X.Encode_Field (Comment(I).Image, Afpx_Xref.Details.Comment);
+        Utils.X.Encode_Row (Comment(I).Image, Afpx_Xref.Details.Comment, I - 1);
       end loop;
       -- Encode list
       Init_List (Commits);

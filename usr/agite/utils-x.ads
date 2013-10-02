@@ -1,4 +1,4 @@
-with Afpx;
+with Con_Io, Afpx;
 with Afpx_Xref;
 package Utils.X is
 
@@ -18,12 +18,21 @@ package Utils.X is
                          Line : in out Afpx.Line_Rec;
                          Keep_Tail : in Boolean := True);
 
-  -- Encode Text in 1st column of Field, procuste, preserve Tail or head
+  -- Clear field and encode Text in 1st column of Field (row 0 or 1)
+  --  procuste, preserve tail or head
   procedure Encode_Field (Text : in String;
                           Field : in Afpx.Field_Range;
                           Keep_Tail : in Boolean := True);
 
-  -- Center Text in 1st column of Field, procuste, preserve head
+  -- Encode Text in 1st column of Row of Field, procuste
+  --  preserve Tail or head
+  procedure Encode_Row (Text : in String;
+                        Field : in Afpx.Field_Range;
+                        Row : Con_Io.Row_Range;
+                        Keep_Tail : in Boolean := True);
+
+  -- CLear field and Center Text in 1st column of Field (row 0 or 1)
+  --  procuste, preserve head
   procedure Center_Field (Text : in String;
                           Field : in Afpx.Field_Range);
 
