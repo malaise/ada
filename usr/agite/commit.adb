@@ -165,15 +165,12 @@ package body Commit is
     Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
                           Afpx_Xref.Commit.Branch);
     -- Set field activity
-    Afpx.Set_Field_Activation (Afpx_Xref.Commit.Stage,
+    Utils.X.Protect_Field (Afpx_Xref.Commit.Stage,
                                not Afpx.Line_List.Is_Empty);
-    Afpx.Set_Field_Activation (Afpx_Xref.Commit.Unstage,
-                               not Afpx.Line_List.Is_Empty);
-    Afpx.Set_Field_Activation (Afpx_Xref.Commit.Diff,
-                               not Afpx.Line_List.Is_Empty);
-    Afpx.Set_Field_Activation (Afpx_Xref.Commit.Stage_All,
-                               not Afpx.Line_List.Is_Empty);
-    Afpx.Set_Field_Activation (Afpx_Xref.Commit.Commit, To_Commit);
+    Utils.X.Protect_Field (Afpx_Xref.Commit.Unstage, Afpx.Line_List.Is_Empty);
+    Utils.X.Protect_Field (Afpx_Xref.Commit.Diff, Afpx.Line_List.Is_Empty);
+    Utils.X.Protect_Field (Afpx_Xref.Commit.Stage_All, Afpx.Line_List.Is_Empty);
+    Utils.X.Protect_Field (Afpx_Xref.Commit.Commit, not To_Commit);
    exception
      when others =>
        if Afpx.Is_Suspended then

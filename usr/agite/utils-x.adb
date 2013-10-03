@@ -2,12 +2,17 @@ with Str_Util;
 package body Utils.X is
 
   -- Protect a field and "revert" its colors
-  procedure Protect_Field (Field_No : in Afpx.Absolute_Field_Range) is
+  procedure Protect_Field (Field_No : in Afpx.Absolute_Field_Range;
+                           Protect  : in Boolean) is
   begin
-    Afpx.Set_Field_Protection (Field_No, True);
-    Afpx.Set_Field_Colors (Field_No,
-          Foreground => Con_Io.Color_Of ("Black"),
-          Background => Afpx.Get_Descriptor_Background);
+    if Protect then
+      Afpx.Set_Field_Protection (Field_No, True);
+      Afpx.Set_Field_Colors (Field_No,
+            Foreground => Con_Io.Color_Of ("Black"),
+            Background => Afpx.Get_Descriptor_Background);
+    else
+      Afpx.Reset_Field (Field_No, Reset_String => False);
+    end if;
   end Protect_Field;
 
   -- Image of a Git branch

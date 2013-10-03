@@ -54,15 +54,13 @@ package body History is
                             elsif Path /= "" then Path
                             else "/"),
                             Afpx_Xref.History.File);
-    -- Encode current branch
-    Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
-                          Afpx_Xref.History.Branch);
+      -- Encode current branch
+      Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
+                            Afpx_Xref.History.Branch);
 
-      if not Is_File then
-        -- Lock button View and restore
-        Utils.X.Protect_Field (Afpx_Xref.History.View);
-        Utils.X.Protect_Field (Afpx_Xref.History.Restore);
-      end if;
+      -- Suppress button View and restore on dirs
+      Afpx.Set_Field_Activation (Afpx_Xref.History.View, not Is_File);
+      Afpx.Set_Field_Activation (Afpx_Xref.History.Restore, not Is_File);
     end Init;
 
     -- Show delta from current in list to comp

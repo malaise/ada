@@ -89,17 +89,14 @@ package body Bookmarks is
     -- Main loop
     loop
       -- No Goto nor Del nor Move if no Bookmark
-      if Afpx.Line_List.Is_Empty then
-        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Go);
-        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Moveup);
-        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Movedown);
-        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Del);
-      else
-        Afpx.Reset_Field (Afpx_Xref.Bookmarks.Go);
-        Afpx.Reset_Field (Afpx_Xref.Bookmarks.Moveup);
-        Afpx.Reset_Field (Afpx_Xref.Bookmarks.Movedown);
-        Afpx.Reset_Field (Afpx_Xref.Bookmarks.Del);
-      end if;
+      Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Go,
+                             Afpx.Line_List.Is_Empty);
+      Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Moveup,
+                             Afpx.Line_List.Is_Empty);
+      Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Movedown,
+                             Afpx.Line_List.Is_Empty);
+      Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Del,
+                             Afpx.Line_List.Is_Empty);
 
       Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
       case Ptg_Result.Event is

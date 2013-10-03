@@ -308,14 +308,14 @@ procedure Agite is
     -- Encode root dir
     Utils.X.Encode_Field (Root.Image, Afpx_Xref.Main.Root);
 
-    -- De-activate Diff and history if no in Git
-    if Root.Is_Null then
-      Utils.X.Protect_Field (Afpx_Xref.Main.Diff);
-      Utils.X.Protect_Field (Afpx_Xref.Main.History);
-    else
-      Afpx.Reset_Field (Afpx_Xref.Main.Diff);
-      Afpx.Reset_Field (Afpx_Xref.Main.History);
-    end if;
+    -- Protect Git functions if not in Git
+    Utils.X.Protect_Field (Afpx_Xref.Main.Diff, Root.Is_Null);
+    Utils.X.Protect_Field (Afpx_Xref.Main.History, Root.Is_Null);
+    Utils.X.Protect_Field (Afpx_Xref.Main.Add, Root.Is_Null);
+    Utils.X.Protect_Field (Afpx_Xref.Main.Revert, Root.Is_Null);
+    Utils.X.Protect_Field (Afpx_Xref.Main.Stash, Root.Is_Null);
+    Utils.X.Protect_Field (Afpx_Xref.Main.Commit, Root.Is_Null);
+    Utils.X.Protect_Field (Afpx_Xref.Main.Pull, Root.Is_Null);
   end Change_Dir;
 
   -- Check validity of current directory
@@ -806,9 +806,9 @@ begin
 
   -- Main loop
   loop
-    -- Activate PushD and PopD
-    Afpx.Set_Field_Activation (Afpx_Xref.Main.Pushd, Can_Push);
-    Afpx.Set_Field_Activation (Afpx_Xref.Main.Popd,  Can_Pop);
+    -- Protect PushD and PopD
+    Utils.X.Protect_Field (Afpx_Xref.Main.Pushd, not Can_Push);
+    Utils.X.Protect_Field (Afpx_Xref.Main.Popd,  not Can_Pop);
 
     Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
     case Ptg_Result.Event is

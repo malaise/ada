@@ -83,12 +83,9 @@ package body Stash is
                           Afpx_Xref.Commit.Branch);
     Afpx.Resume;
     -- Set field activity
-    Afpx.Set_Field_Activation (Afpx_Xref.Stash.Drop,
-                               not Afpx.Line_List.Is_Empty);
-    Afpx.Set_Field_Activation (Afpx_Xref.Stash.Apply,
-                               not Afpx.Line_List.Is_Empty);
-    Afpx.Set_Field_Activation (Afpx_Xref.Stash.Pop,
-                               not Afpx.Line_List.Is_Empty);
+    Utils.X.Protect_Field (Afpx_Xref.Stash.Drop, Afpx.Line_List.Is_Empty);
+    Utils.X.Protect_Field (Afpx_Xref.Stash.Apply, Afpx.Line_List.Is_Empty);
+    Utils.X.Protect_Field (Afpx_Xref.Stash.Pop, Afpx.Line_List.Is_Empty);
    exception
      when others =>
        if Afpx.Is_Suspended then

@@ -100,9 +100,8 @@ package body Push is
       Git_If.List_References (References);
       Afpx.Resume;
       Init_List (References);
-      if References.Is_Empty then
-        Afpx.Set_Field_Activation (Afpx_Xref.Push.Push, False);
-      else
+      Utils.X.Protect_Field (Afpx_Xref.Push.Push, References.Is_Empty);
+      if not References.Is_Empty then
         -- Move to "origin" or top
         Afpx.Encode_Line (Origin, "origin");
         if not Search (Afpx.Line_List, Origin,
