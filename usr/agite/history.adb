@@ -1,5 +1,5 @@
-with Con_Io, Afpx.List_Manager, Normal, Rounds;
-with Utils.X, Config, Details, View, Afpx_Xref, Restore;
+with As.U, Con_Io, Afpx.List_Manager, Normal, Rounds, Language;
+with Utils.X, Config, Details, View, Afpx_Xref, Restore, Confirm, Error;
 package body History is
 
   -- List Width
@@ -59,8 +59,11 @@ package body History is
                             Afpx_Xref.History.Branch);
 
       -- Suppress button View and restore on dirs
-      Afpx.Set_Field_Activation (Afpx_Xref.History.View, not Is_File);
-      Afpx.Set_Field_Activation (Afpx_Xref.History.Restore, not Is_File);
+      Afpx.Set_Field_Activation (Afpx_Xref.History.View, Is_File);
+      Afpx.Set_Field_Activation (Afpx_Xref.History.Restore, Is_File);
+      -- Suppress button Checkout except on root dir
+      Afpx.Set_Field_Activation (Afpx_Xref.History.Checkout,
+          not Is_File and then Path = "");
     end Init;
 
     -- Show delta from current in list to comp
@@ -103,8 +106,6 @@ package body History is
     -- Do a restore
     procedure Do_Restore is
       Pos : Positive;
-      Dummy : Boolean;
-      pragma Unreferenced (Dummy);
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
@@ -118,6 +119,44 @@ package body History is
       Afpx.Line_List.Move_At (Pos);
       Afpx.Update_List (Afpx.Center_Selected);
     end Do_Restore;
+
+    -- Do a checkout
+    function Do_Checkout return Boolean is
+      Pos : Positive;
+      Commit : As.U.Asu_Us;
+      Result : As.U.Asu_Us;
+    begin
+      -- Save position in List and read it
+      Pos := Afpx.Line_List.Get_Position;
+      Logs.Move_At (Pos);
+      Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
+      Commit := As.U.Tus (Language.Unicode_To_String (
+          Afpx.Line_List.Access_Current.Str(
+              1 .. Afpx.Line_List.Access_Current.Len)));
+
+      -- Confirm
+      if Confirm ("Checkout", Commit.Image) then
+        -- Checkout this Hash
+        Result := As.U.Tus (Git_If.Do_Checkout (Log.Hash));
+        -- Handle error
+        if not Result.Is_Null then
+          Error ("Checkout", Commit.Image, Result.Image);
+          -- Restore screen, (success will lead to return to Directory)
+          Init;
+          Init_List (Logs);
+          Afpx.Line_List.Move_At (Pos);
+          Afpx.Update_List (Afpx.Center_Selected);
+        end if;
+        return Result.Is_Null;
+      else
+        -- Restore screen
+        Init;
+        Init_List (Logs);
+        Afpx.Line_List.Move_At (Pos);
+        Afpx.Update_List (Afpx.Center_Selected);
+        return False;
+      end if;
+    end Do_Checkout;
 
     -- View file or commit details
     type Show_List is (Show_View, Show_Details);
@@ -264,6 +303,11 @@ package body History is
             when Afpx_Xref.History.Restore =>
               -- Restore
               Do_Restore;
+            when Afpx_Xref.History.Checkout =>
+              -- Checkout
+              if Do_Checkout then
+                return;
+              end if;
             when Afpx_Xref.History.Back =>
               -- Back
               return;

@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V12.5
+V12.6
 
 General purpose
 ---------------
@@ -548,6 +548,15 @@ modified. If not, Agite asks for confirmation then restores the file into the
 version currently (left-)selected in the history. This function is not active on
 the history of a directory.
 
+.Checkout
+This button is active only on the history of the root directory. It asks
+confirmation then checks out the currently selected commit. Beware that the
+current worktree then becomes in 'detached HEAD' state. "You can look around,
+make experimental changes and commit them, and you can discard any commits you
+make in this state without impacting any branches by performing another
+checkout" (another commit earlier in the same branch or the HEAD of another
+branch).
+
 .Back
 This button allows to return to xref:XDir[directory] menu.
 
@@ -830,7 +839,10 @@ calling 'git difftool -y -x <differator> HEAD \-- <file>',
 calling 'git difftool -y -x <differator> <ref_HSA1> <comp_HSA1> \-- <file>',
 
 * A function reverts the local changes of a file by calling
-'git checkout HEAD \-- <file>' 
+'git checkout HEAD \-- <file>',
+
+* A function globally checks out a given commit by calling 'git checkout
+<HSA1>',
 
 * A function resets the staged sgtatus of a file by calling 'git reset \--
 <file>',

@@ -747,6 +747,23 @@ package body Git_If is
     --  remain
   end Do_Reset;
 
+-- Launch a global checkout, return "" if OK, else the error
+  function Do_Checkout (Rev : in String) return String is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("checkout");
+    Cmd.Cat (Rev);
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      return Err_Flow.Str.Image;
+    else
+      return "";
+    end if;
+  end Do_Checkout;
+
    -- Launch a add to index synchronous
   procedure Do_Add (File : in String) is
     Cmd : Many_Strings.Many_String;

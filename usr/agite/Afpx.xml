@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V12.5"/>
+  <Var Name="Version" Value="V12.6"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -538,8 +538,20 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="0">Restore</Init>
     </Field>
+    <Field Num="24" Kind="Button" Name="Checkout">
+      <Geometry Up="${Field_23.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="0">Checkout</Init>
+    </Field>
+    <Field Num="25" Kind="Put">
+      <Geometry Up="${Field_24.Low}+1" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">--------</Init>
+    </Field>
 
-    <Field Num="24" Kind="Button" Name="Back">
+    <Field Num="26" Kind="Button" Name="Back">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
