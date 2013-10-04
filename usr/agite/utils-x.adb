@@ -57,7 +57,7 @@ package body Utils.X is
                    Keep_Tail));
   end Encode_Field;
 
--- Encode Text in 1st column of Row of Field, procuste
+  -- Encode Text in 1st column of Row of Field, procuste
   --  preserve Tail or head
   procedure Encode_Row (Text : in String;
                         Field : in Afpx.Field_Range;

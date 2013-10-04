@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V12.6"/>
+  <Var Name="Version" Value="V12.7"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -992,8 +992,8 @@
     </Field>
   </Descriptor>
 
-  <!-- Push -->
-  <Descriptor Num="8" Background="Light_Grey" Name="Push">
+  <!-- Push_Pull -->
+  <Descriptor Num="8" Background="Light_Grey" Name="Push_Pull">
 
     <!-- List management setup -->
     <Var Name="LmWidth" Value="8"/>
@@ -1081,8 +1081,8 @@
     </Field>
 
     <!-- List Title -->
-    <Field Num="13" Kind="Put">
-      <Geometry Up="${List.Up}-1" Left="1" Height="1" Width="10"/>
+    <Field Num="13" Kind="Put" Name="Entries">
+      <Geometry Up="${List.Up}-1" Left="1" Height="1" Width="20"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">References</Init>
     </Field>

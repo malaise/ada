@@ -658,6 +658,7 @@ package body Git_If is
     Line : As.U.Asu_Us;
     Moved : Boolean;
   begin
+    References.Delete_List;
     Cmd.Set ("git");
     Cmd.Cat ("remote");
     Command.Execute (Cmd, True, Command.Both,
@@ -669,7 +670,6 @@ package body Git_If is
     end if;
 
     -- Encode info
-    References.Delete_List;
     if not Out_Flow_1.List.Is_Empty then
       Out_Flow_1.List.Rewind;
       loop
@@ -747,7 +747,7 @@ package body Git_If is
     --  remain
   end Do_Reset;
 
--- Launch a global checkout, return "" if OK, else the error
+  -- Launch a global checkout, return "" if OK, else the error
   function Do_Checkout (Rev : in String) return String is
     Cmd : Many_Strings.Many_String;
   begin
@@ -780,7 +780,7 @@ package body Git_If is
     end if;
   end Do_Add;
 
-   -- Launch a rm to index synchronous
+  -- Launch a rm to index synchronous
   procedure Do_Rm (File : in String) is
     Cmd : Many_Strings.Many_String;
   begin
@@ -841,10 +841,15 @@ package body Git_If is
     Cmd.Cat (Remote);
     Cmd.Cat (Branch);
     Command.Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+        Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      return Err_Flow.Str.Image;
+      -- The last line of output seems the most significant
+      if not Out_Flow_1.List.Is_Empty then
+        return Out_Flow_1.List.Access_Current.all.Image;
+      else
+        return Err_Flow.Str.Image;
+      end if;
     else
       return "";
     end if;
@@ -889,6 +894,43 @@ package body Git_If is
     when others =>
       return Error;
   end Current_Branch;
+
+  -- List local or remote branches
+  -- package Branches_Mng renames As.U.Utils.Asu_Dyn_List_Mng;
+  procedure List_Branches (Local : in Boolean;
+                           Branches : in out Branches_Mng.List_Type) is
+    Cmd : Many_Strings.Many_String;
+    Line : As.U.Asu_Us;
+    Moved : Boolean;
+  begin
+    Branches.Delete_List;
+    Cmd.Set ("git");
+    Cmd.Cat ("branch");
+    if not Local then
+      Cmd.Cat ("-r");
+    end if;
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git remote: " & Err_Flow.Str.Image);
+      return;
+    end if;
+
+    -- Encode info
+    if not Out_Flow_1.List.Is_Empty then
+      Out_Flow_1.List.Rewind;
+      loop
+        Out_Flow_1.List.Read (Line, Moved => Moved);
+        -- Replace "* <branch>" or "  <branch>" by "<branch>"
+        if Line.Length > 2 then
+          Line.Delete (1, 2);
+        end if;
+        Branches.Insert (Line);
+        exit when not Moved;
+      end loop;
+    end if;
+  end List_Branches;
 
   -- Get current user email
   function Get_User return String is

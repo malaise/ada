@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V12.6
+V12.7
 
 General purpose
 ---------------
@@ -157,8 +157,7 @@ the stack of stashes.
 changes.
 * xref:XPush[Push]: This menu allows pushing local commits to a remote
 repository.
-* xref:XPull[Pull]: This menu allows pulling the current branch from a remote
-repository.
+* xref:XPull[Pull]: This menu allows pulling a branch from a remote repository.
 
 anchor:XNavigation[]
 The navigation is as follows:
@@ -396,8 +395,8 @@ This button switches to the screen of xref:XCommit[commit] that allows
 commiting the the local modifications.
 
 Pull::
-This button switches to the screen of xref:XPull[pull] that allows pulling the
-current branch from a remote repository;
+This button switches to the screen of xref:XPull[pull] that allows pulling a
+branch from a remote repository;
 
 Exit::
 A button makes Agite exit.
@@ -780,8 +779,7 @@ Moves back to the xref:XCommit[Commit] menu without pushing.
 Pull
 ~~~~
 anchor:XPull[]
-The 'Pull' menu allows pulling the current branch from a given remote
-repository. +
+The 'Pull' menu allows pulling a given branch from remote repository. +
 It shows:
 
 .Current branch and root
@@ -790,12 +788,14 @@ This shows the actual branch and path of the root of the current workspace.
 
 .List of known repositories
 
-This lists the known remote repositories from which you can select the source. +
-If the remote ''orign'' is defined then it is selected by default.
+This lists the known remote branches in form <remote>/<branch>, from which you
+can select the branch to pull. +
+If the remote ''orign''/<current_branch> is defined then it is selected by
+default.
 
 .Pull
 
-Pulls the current branch from the selected remote repository. +
+Pulls the branch selected repository. +
 If there is no error then agite returns back to the xref:XDir[Directory] menu,
 otherwise the error is reported through a specific screen.
 

@@ -1,7 +1,7 @@
 with As.U, Afpx.List_Manager, Basic_Proc, Images, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket;
-with Utils.X, Git_If, Config, Bookmarks, History, Commit, Push, Confirm, Error,
-     Stash, Afpx_Xref;
+with Utils.X, Git_If, Config, Bookmarks, History, Commit, Push_Pull,
+     Confirm, Error, Stash, Afpx_Xref;
 procedure Agite is
 
   -- Options
@@ -545,7 +545,7 @@ procedure Agite is
     pragma Unreferenced (Dummy);
   begin
     Position := Afpx.Line_List.Get_Position;
-    Dummy := Push.Handle (Root.Image, Pull => True);
+    Dummy := Push_Pull.Handle (Root.Image, Pull => True);
     Init (Position, Curr_Dir);
   end Do_Pull;
 

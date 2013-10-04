@@ -1,7 +1,7 @@
 with Ada.Exceptions;
 with As.U, Directory, Afpx.List_Manager, Str_Util, Basic_Proc,
      Aski, Unicode, Images;
-with Git_If, Utils.X, Config, Push, Afpx_Xref, Confirm, Error;
+with Git_If, Utils.X, Config, Push_Pull, Afpx_Xref, Confirm, Error;
 package body Commit is
 
   -- List width
@@ -380,7 +380,7 @@ package body Commit is
             when Afpx_Xref.Commit.Push =>
               -- Push button
               Decode_Comment;
-              if Push.Handle (Root, Pull => False) then
+              if Push_Pull.Handle (Root, Pull => False) then
                 return;
               else
                 Init;
