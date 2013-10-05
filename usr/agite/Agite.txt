@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V12.7
+V14.0
 
 General purpose
 ---------------
@@ -145,6 +145,7 @@ Agite is based on the following main menus:
 
 * xref:XDir[Directory]: This is the first menu at start-up. It shows the content
 of a directory.
+* xref:XBranches[Branches]: This menu allows managing local branches.
 * xref:XBook[Bookmarks]: This menu allows bookmarking directories and quickly
 jumping to a bookmark.
 * xref:XHist[History]: This shows the Git history of a file or directory, the
@@ -162,32 +163,38 @@ repository.
 anchor:XNavigation[]
 The navigation is as follows:
 
-                         +-----------+
-                    /--->| Bookmarks |
-                   /     +-----------+
-                  /      +---------+       +---------+
-                 /------>| History |<----->| Details |
-                /        +---------+       +---------+
-  +---------- +/         +-------+
-  | Directory |--------->| Stash |
-  +---------- +\         +-------+
-                \        +--------+       +------+
-                 \------>| Commit |------>| Push |
-                  \      +--------+       +------+
-                   \     +------+
-                    \--->| Pull |
-                         +------+
+
+                           +----------+
+                       /-> | Branches |
+                      /    +----------+
+                     /     +-----------+
+                    /----->| Bookmarks |
+                   /       +-----------+
+                  /        +---------+       +---------+
+                 /-------->| History |<----->| Details |
+                /          +---------+       +---------+
+  +---------- +/           +-------+
+  | Directory |----------->| Stash |
+  +---------- +\           +-------+
+                \          +--------+       +------+
+                 \-------->| Commit |------>| Push |
+                  \        +--------+       +------+
+                   \       +------+
+                    \----->| Pull |
+                           +------+
 
 There are also a confirmation screen and an error screen that are called when
 necessary.
 
-All the screen transitions are based on the 'call-return' scheme.
+NOTE: All the screen transitions are based on the 'call-return' scheme. +
 So please note the double arrow between 'History' and 'Details': from the
 'History' of a file (or dir) you can select a commit and see its 'Details'.
 In this new screen you can select a file and see its 'History'... and so on.
 Once this is done you need to "un-stack" all these menus (by clicking on
-the 'Back' button in each) in order to go back to the 'Directory' menu.
-
+the 'Back' button in each) in order to go back to the 'Directory' menu. +
+Also please note that sometimes a successuful action in a menu leads to
+automatically go back to the ancestor of this menu, sometimes directly back to
+the Directory menu.
 
 Directory
 ~~~~~~~~~
@@ -199,7 +206,8 @@ of current directory. Starting from top, the fields are:
 Title::
 The first line shows in the middle the name and current version of Agite.
 +
-On the left is the indication of current Git branch.
+On the left is the indication of current Git branch. Cliking on the branch
+name launches the xref:XBranches[Branches] menu.
 +
 On the right is the indication of current host (which normally is also
 indicated in title of the X window of Agite).
@@ -400,6 +408,44 @@ branch from a remote repository;
 
 Exit::
 A button makes Agite exit.
+
+Branches
+~~~~~~~~
+anchor:XBranches[]
+The screen shows the list of local bracnhes and allows modifying or checking
+out a branch.
+
+.Current branch and root
+
+This shows the actual branch and path of the root of current repository.
+
+.Actions
+
+The possible actions on the list of branches:
+
+Create::
+
+Enter a name in the text field and click in the 'Create' button or hit Return
+to create a new branch.
+
+Rename::
+
+Enter a new name in the text field and click in the 'Rename' button to rename
+the branch selected in the list.
+
+Delete::
+
+Click in the 'Delete' button to delete, after confirmation, the branch selected
+in the list.
+
+Checkout::
+
+Click in the 'Chekout' button to checkout, after confirmation, the branch
+selected in the list.
+
+.Back
+
+This button returns to the xref:XDir[Directory] menu.
 
 Bookmarks
 ~~~~~~~~~
@@ -841,8 +887,8 @@ calling 'git difftool -y -x <differator> <ref_HSA1> <comp_HSA1> \-- <file>',
 * A function reverts the local changes of a file by calling
 'git checkout HEAD \-- <file>',
 
-* A function globally checks out a given commit by calling 'git checkout
-<HSA1>',
+* A function globally checks out a given commit or branch by calling
+'git checkout <ref>',
 
 * A function resets the staged sgtatus of a file by calling 'git reset \--
 <file>',
@@ -868,5 +914,8 @@ and 'git config user.email',
 * A function saves the current stash by calling 'git stash save -q <message>',
 
 * Three functions apply/pop/drop a stash by calling 'git stash apply/pop/drop
--q stash@{<num>}'.
+-q stash@{<num>}',
+
+* Three functions create/rename/delete a branch by calling 'git branch
+[ -m | -d ] <name> [<new_name>]'.
 

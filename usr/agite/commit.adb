@@ -145,6 +145,9 @@ package body Commit is
         exit when not Moved;
       end loop;
     end if;
+    -- Encode current branch
+    Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
+                          Afpx_Xref.Commit.Branch);
     Afpx.Resume;
 
     -- Encode the list
@@ -161,9 +164,6 @@ package body Commit is
     -- Center
     Afpx.Update_List (Afpx.Center_Selected);
 
-    -- Encode current branch
-    Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
-                          Afpx_Xref.Commit.Branch);
     -- Set field activity
     Utils.X.Protect_Field (Afpx_Xref.Commit.Stage, Afpx.Line_List.Is_Empty);
     Utils.X.Protect_Field (Afpx_Xref.Commit.Unstage, Afpx.Line_List.Is_Empty);

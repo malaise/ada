@@ -932,6 +932,60 @@ package body Git_If is
     end if;
   end List_Branches;
 
+  -- Create a branch, return "" if Ok else the error
+  function Create_Branch (Name : String) return String is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("branch");
+    Cmd.Cat (Name);
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      return Err_Flow.Str.Image;
+    else
+      return "";
+    end if;
+  end Create_Branch;
+
+  -- Rename a branch, return "" if Ok else the error
+  function Rename_Branch (Name, New_Name : String) return String is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("branch");
+    Cmd.Cat ("-m");
+    Cmd.Cat (Name);
+    Cmd.Cat (New_Name);
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      return Err_Flow.Str.Image;
+    else
+      return "";
+    end if;
+  end Rename_Branch;
+
+  -- Delete a branch, return "" if Ok else the error
+  function Delete_Branch (Name : String) return String is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("branch");
+    Cmd.Cat ("-d");
+    Cmd.Cat (Name);
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      return Err_Flow.Str.Image;
+    else
+      return "";
+    end if;
+  end Delete_Branch;
+
   -- Get current user email
   function Get_User return String is
     Cmd : Many_Strings.Many_String;

@@ -1,7 +1,7 @@
 with As.U, Afpx.List_Manager, Basic_Proc, Images, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket;
 with Utils.X, Git_If, Config, Bookmarks, History, Commit, Push_Pull,
-     Confirm, Error, Stash, Afpx_Xref;
+     Confirm, Error, Stash, Branch, Afpx_Xref;
 procedure Agite is
 
   -- Options
@@ -55,7 +55,7 @@ procedure Agite is
 
   -- Files list and current branch
   Files : Git_If.File_List;
-  Branch : As.U.Asu_Us;
+  Curr_Branch : As.U.Asu_Us;
 
   -- Quick search dir or file
   Search_Dir : Boolean;
@@ -116,7 +116,7 @@ procedure Agite is
       if Root.Is_Null then
         Git_If.Get_Root_And_Path (Root, Path);
       end if;
-      Branch := As.U.Tus (Git_If.Current_Branch);
+      Curr_Branch := As.U.Tus (Git_If.Current_Branch);
       Git_If.List_Files (Path.Image, Files);
       Afpx.Resume;
     exception
@@ -163,7 +163,7 @@ procedure Agite is
     -- Refresh list only if it has changed
     -- Update list of files and branch
     List_Files;
-    Utils.X.Encode_Field (Utils.X.Branch_Image (Branch.Image),
+    Utils.X.Encode_Field (Utils.X.Branch_Image (Curr_Branch.Image),
                           Afpx_Xref.Main.Branch);
 
     -- Check lengths then content
@@ -523,6 +523,14 @@ procedure Agite is
     Init (Position);
   end Do_Revert;
 
+  procedure Do_Branch is
+    Curr_Dir : constant String := Directory.Get_Current;
+  begin
+    Position := Afpx.Line_List.Get_Position;
+    Branch.Handle (Root.Image);
+    Init (Position, Curr_Dir);
+  end Do_Branch;
+
   procedure Do_Commit is
     Curr_Dir : constant String := Directory.Get_Current;
   begin
@@ -833,6 +841,9 @@ begin
             -- Scroll list
             Afpx.List_Manager.Scroll(
                 Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
+          when Afpx_Xref.Main.Branch =>
+            -- Branches menu
+            Do_Branch;
           when Afpx_Xref.Main.Root =>
             -- Root (change dir to)
             Change_Dir (Root.Image);

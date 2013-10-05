@@ -77,10 +77,10 @@
       <Colors Foreground="Black" Background="light_Grey"/>
       <Init Row="0" Col="0">Br:</Init>
     </Field>
-    <Field Num="10" Kind="Put" Name="Branch">
+    <Field Num="10" Kind="Button" Name="Branch">
       <Geometry Up="0" Left="${Field_9.Right}+2" Height="1"
                 Right="${Field_1.Left}-2"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
     </Field>
     <Field Num="11" Kind="Put">
       <Geometry Up="0" Left="${Field_1.Right}+3" Height="1" Width="6"/>
@@ -1323,9 +1323,9 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="11" Kind="Put">
-      <Geometry Up="${Field_1.Low}+2" Left="21" Height="1" Width="6"/>
+      <Geometry Up="${Field_1.Low}+2" Left="20" Height="1" Width="8"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">Stash</Init>
+      <Init Row="0" Col="0">Branches</Init>
     </Field>
     <Field Num="12" Kind="Put" Name="Root">
       <Geometry Up="${Field_11.Low}+2" Left="1" Height="1"
