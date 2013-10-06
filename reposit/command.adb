@@ -1,4 +1,5 @@
-with Sys_Calls, Proc_Family, Event_Mng, Text_Line, Mutex_Manager, Trace.Loggers;
+with Sys_Calls, Proc_Family, Event_Mng, Text_Line, Mutex_Manager, Trace.Loggers,
+     Input_Buffer;
 package body Command is
 
   -- The Mutex of exclusive execution
@@ -11,11 +12,14 @@ package body Command is
   Mix_Policy : Flow_Mixing_Policies;
   Output_Fd : Sys_Calls.File_Desc;
 
-  -- The result of out/err flow
-  Output_Done : Boolean;
-  Output_Result : Flow_Access;
-  Error_Done : Boolean;
-  Error_Result : Flow_Access;
+  -- Result, Text files and Buffers of stdout/stderr to insert complete lines
+  type Dscr_Rec is record
+    Flow : Flow_Access;
+    Done : Boolean;
+    File : Text_Line.File_Type;
+    Buff : Input_Buffer.Buffer;
+  end record;
+  Dscrs : array (Boolean) of Dscr_Rec;
 
   -- The result child execution
   Child_Done : Boolean;
@@ -32,7 +36,7 @@ package body Command is
   procedure Term_Cb is
     use type Event_Mng.Sig_Callback;
   begin
-    Logger.Log_Debug ("Command: Sigterm received");
+    Logger.Log_Debug ("Sigterm received");
     Aborted := True;
     if Prev_Term_Cb /= null then
       Prev_Term_Cb.all;
@@ -46,20 +50,20 @@ package body Command is
     case Death_Report.Cause is
       when Sys_Calls.Exited =>
         if Death_Report.Exited_Pid /= Current_Pid then
-          Logger.Log_Debug ("Command: Death Cb bad exit pid");
+          Logger.Log_Debug ("Death Cb bad exit pid");
           return;
         end if;
       when Sys_Calls.Signaled  =>
         if Death_Report.Signaled_Pid /= Current_Pid then
-          Logger.Log_Debug ("Command: Death Cb bad signal pid");
+          Logger.Log_Debug ("Death Cb bad signal pid");
           return;
         end if;
     end case;
     if Logger.Debug_On then
-      Logger.Log_Debug ("Command: Death Cb "
+      Logger.Log_Debug ("Death Cb "
                       & Death_Report.Cause'Img);
       if Death_Report.Cause = Sys_Calls.Exited then
-        Logger.Log_Debug ("Command: Exit code "
+        Logger.Log_Debug ("Exit code "
                             & Death_Report.Exit_Code'Img);
       end if;
     end if;
@@ -67,23 +71,26 @@ package body Command is
     Child_Done := True;
   end Death_Cb;
 
-  -- Add a string of flow to a out flow
-  procedure Add_Flow (Flow : in out Flow_Rec; Line : in As.U.Asu_Us) is
-    Loc_Line : As.U.Asu_Us := Line;
-    Len : Natural;
+  -- Add a string to a list flow
+  procedure Insert_Line (Is_Output : in Boolean; Line : in String) is
+    Loc_Line : As.U.Asu_Us := As.U.Tus (Line);
+    Len : constant Natural := Loc_Line.Length;
   begin
-    if Flow.Kind = Str then
-      Flow.Str.Append (Loc_Line);
-    else
-      Len := Loc_Line.Length;
-      -- Remove trailing Line_Feed
-      if Len /= 0
-      and then Loc_Line.Element (Len) = Text_Line.Line_Feed_Char then
-        Loc_Line.Delete (Len, Len);
-      end if;
-      Flow.List.Insert (Loc_Line);
+    -- Remove trailing Line_Feed
+    if Len /= 0
+    and then Loc_Line.Element (Len) = Text_Line.Line_Feed_Char then
+      Loc_Line.Delete (Len, Len);
     end if;
-  end Add_Flow;
+    Dscrs(Is_Output).Flow.List.Insert (Loc_Line);
+  end Insert_Line;
+  procedure Insert_Out (Line : in String) is
+  begin
+    Insert_Line (True, Line);
+  end Insert_Out;
+  procedure Insert_Err (Line : in String) is
+  begin
+    Insert_Line (False, Line);
+  end Insert_Err;
 
   -- Reset a flow
   procedure Reset_Flow (Flow : in out Flow_Rec) is
@@ -99,56 +106,63 @@ package body Command is
   function Fd_Cb (Fd : in Sys_Calls.File_Desc;
                   Read : in Boolean) return Boolean is
     pragma Unreferenced (Read);
-    Flow : Text_Line.File_Type;
+    Is_Output : Boolean;
     Line : As.U.Asu_Us;
     Got : Boolean;
+    List : Boolean;
     use type Sys_Calls.File_Desc;
   begin
-    Logger.Log_Debug ("Command: Fd Cb "
+    Logger.Log_Debug ("Fd Cb "
         & (if Fd = Output_Fd then "output" else "error")
         & " flow");
     -- Init Text_Line flow
-    Flow.Open (Text_Line.In_File, Fd);
+    Is_Output := Fd = Output_Fd;
+    if not Dscrs(Is_Output).File.Is_Open then
+      Dscrs(Is_Output).File.Open (Text_Line.In_File, Fd);
+    end if;
     Got := False;
     -- Read lines and store in Output/Error_Result
     loop
-      Line := Flow.Get;
+      Line := Dscrs(Is_Output).File.Get;
       exit when Line.Is_Null;
       -- Got at least an event
+      Logger.Log_Debug ("Fd Cb got >" & Line.Image & "<");
       Got := True;
+      List := False;
       -- Apply policy to flow
-      if Fd = Output_Fd then
-        if Mix_Policy = None then
-          -- Stdout -> Stdout
-          Sys_Calls.Put_Output (Line.Image);
-        else
-          -- Stdout -> Output
-          Add_Flow (Output_Result.all, Line);
-        end if;
+      if Is_Output and then Mix_Policy = None then
+        -- Stdout -> Stdout
+        Sys_Calls.Put_Output (Line.Image);
+      elsif not Is_Output and then Mix_Policy /= Both then
+        -- Stderr -> Stderr
+        Sys_Calls.Put_Error (Line.Image);
+      elsif Dscrs(Is_Output).Flow.Kind = Str then
+        -- String
+        Dscrs(Is_Output).Flow.Str.Append (Line);
       else
-        if Mix_Policy /= Both then
-          -- Stderr -> Stderr
-          Sys_Calls.Put_Error (Line.Image);
-        else
-          -- Stderr -> Error
-          Add_Flow (Error_Result.all, Line);
-        end if;
+        -- List
+        Dscrs(True).Buff.Push (Line.Image);
+        List := True;
       end if;
-      Logger.Log_Debug ("Command: Fd Cb got >" & Line.Image & "<");
     end loop;
-    Flow.Close;
-    if not Got then
-      Logger.Log_Debug ("Command: Fd Cb end of flow");
+    -- Enf of this Cb. End of flow?
+    if Sys_Calls.Is_Blocking (Fd) or else not Got then
       -- We were awaken but nothing to read -> End of flow
-      if Fd = Output_Fd then
-        Output_Done := True;
-      else
-        Error_Done := True;
+      Logger.Log_Debug ("Fd Cb end of flow");
+      if List then
+        -- Insert Tail
+        Line := As.U.Tus (Dscrs(Is_Output).Buff.Tail);
+        Dscrs(Is_Output).Buff.Clean;
+        if not Line.Is_Null then
+          Dscrs(Is_Output).Flow.List.Insert (Line);
+        end if;
       end if;
+      Dscrs(Is_Output).Done := True;
+      Dscrs(Is_Output).File.Close;
       Event_Mng.Del_Fd_Callback (Fd, True);
       Sys_Calls.Close (Fd);
     end if;
-    Logger.Log_Debug ("Command: Fd Cb Done");
+    Logger.Log_Debug ("Fd Cb Done");
     return True;
   end Fd_Cb;
 
@@ -166,6 +180,8 @@ package body Command is
     Spawn_Result : Proc_Family.Spawn_Result_Rec;
     Prev_Child_Cb : aliased Event_Mng.Sig_Callback;
     Signals_Handled : Boolean;
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
     use type Sys_Calls.Death_Cause_List;
   begin
     Mut.Get;
@@ -178,11 +194,12 @@ package body Command is
     if Mix_Policy = Both then
       Reset_Flow (Err_Flow.all);
     end if;
-    Output_Done := False;
-    Output_Result := Out_Flow;
-    Error_Done := False;
-    Error_Result := Err_Flow;
-    Child_Done := False;
+    Dscrs(True).Done := False;
+    Dscrs(True).Flow := Out_Flow;
+    Dscrs(True).Buff.Set (Insert_Out'Access);
+    Dscrs(False).Done := False;
+    Dscrs(False).Flow := Err_Flow;
+    Dscrs(False).Buff.Set (Insert_Err'Access);
     Exit_Code := Error;
 
     -- Ready for sigterm and sigchild
@@ -209,12 +226,12 @@ package body Command is
       Cmd_Line := Cmd;
     end if;
     -- Spawn
-    Logger.Log_Debug ("Command: Spawning >" & Cmd_Line.Image('#') & "<");
+    Logger.Log_Debug ("Spawning >" & Cmd_Line.Image('#') & "<");
     Spawn_Result := Proc_Family.Spawn (Cmd_Line,
                                        Proc_Family.Std_Fds,
                                        Death_Cb'Access);
     if not Spawn_Result.Ok or else not Spawn_Result.Open then
-      Logger.Log_Debug ("Command: Spawn error: "
+      Logger.Log_Debug ("Spawn error: "
                       & Spawn_Result.Ok'Img
                       & " " & Spawn_Result.Open'Img);
       Mut.Release;
@@ -225,9 +242,11 @@ package body Command is
     Current_Pid := Spawn_Result.Child_Pid;
     Output_Fd := Spawn_Result.Fd_Out;
     Command.Mix_Policy := Mix_Policy;
+    Dummy := Sys_Calls.Set_Blocking (Spawn_Result.Fd_Out, False);
+    Dummy := Sys_Calls.Set_Blocking (Spawn_Result.Fd_Err, False);
     Event_Mng.Add_Fd_Callback (Spawn_Result.Fd_Out, True, Fd_Cb'Access);
     Event_Mng.Add_Fd_Callback (Spawn_Result.Fd_Err, True, Fd_Cb'Access);
-    Logger.Log_Debug ("Command: Fds are: "
+    Logger.Log_Debug ("Fds are: "
                & Spawn_Result.Fd_Out'Img
                & " and " & Spawn_Result.Fd_Err'Img);
 
@@ -235,7 +254,7 @@ package body Command is
     --  or aborted by sigterm
     loop
       Event_Mng.Wait (Event_Mng.Infinite_Ms);
-      exit when Child_Done and then Output_Done and then Error_Done;
+      exit when Child_Done and then Dscrs(True).Done and then Dscrs(False).Done;
       if Aborted then
         Mut.Release;
         raise Terminate_Request;
@@ -243,7 +262,7 @@ package body Command is
     end loop;
 
     -- Unset Cbs and close
-    Logger.Log_Debug ("Command: Cleaning");
+    Logger.Log_Debug ("Cleaning");
     Event_Mng.Set_Sig_Term_Callback (Prev_Term_Cb);
     Event_Mng.Set_Sig_Child_Callback (Prev_Child_Cb);
     -- Restore default signal policy if this was the case initially
@@ -254,8 +273,8 @@ package body Command is
     Sys_Calls.Close (Spawn_Result.Fd_In);
 
     -- Set "out" values
-    Output_Result := null;
-    Error_Result := null;
+    Dscrs(True).Flow := null;
+    Dscrs(False).Flow := null;
     Exit_Code := (if Child_Result.Cause = Sys_Calls.Exited then
                     Child_Result.Exit_Code
                   else Error);

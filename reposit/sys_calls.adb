@@ -604,6 +604,7 @@ package body Sys_Calls is
   end Open;
 
   -- Read / write on File_Desc
+  Eagain : constant := 11;
   function Read  (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
            return Natural is
     function C_Fd_Int_Read  (Fd     : C_Types.Int;
@@ -616,6 +617,8 @@ package body Sys_Calls is
     Res := C_Fd_Int_Read (Integer(Fd), Buffer, Nbytes);
     if Res >= 0 then
       return Res;
+    elsif Errno = Eagain then
+      return 0;
     else
       raise System_Error;
     end if;
@@ -633,6 +636,8 @@ package body Sys_Calls is
     Res := C_Fd_Int_Write (Integer(Fd), Buffer, Nbytes);
     if Res >= 0 then
       return Res;
+    elsif Errno = Eagain then
+      return 0;
     else
       raise System_Error;
     end if;

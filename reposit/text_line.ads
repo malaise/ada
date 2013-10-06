@@ -46,6 +46,8 @@ package Text_Line is
   --  Or the string does not end with Line_Feed (or is empty) and
   --   the end of file has been reached.
   -- Further calls after the end of file will return an empty string.
+  -- If the Fd is not blocking, then the end of file can be detected by
+  --  select returning the Fd and Get returning an empty string.
   -- May raise Status_Error if File is not open or Out_File
   -- May raise Io_Error if IO error
   function Get (File : in out File_Type) return String;
