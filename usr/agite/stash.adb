@@ -106,6 +106,7 @@ package body Stash is
     if Oper = Stash_Add then
        -- Recover name from Get field
        Afpx.Decode_Field (Afpx_Xref.Stash.Name, 0, Name);
+       Afpx.Clear_Field (Afpx_Xref.Stash.Name);
     else
       -- Recover num
       declare
