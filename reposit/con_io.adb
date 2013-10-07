@@ -1030,6 +1030,13 @@ package body Con_Io is
 
   end Get_Key_Time;
 
+  -- Internal: return a string of N spaces
+  function Spaces (N : Natural) return String is
+    Str : constant String (1 .. N) := (others => ' ');
+  begin
+    return Str;
+  end Spaces;
+
   -- Idem but the get is initialised with the initial content of the string
   --  and cursor's initial location can be set
   procedure Put_Then_Get (Name       : in Window;
@@ -1078,6 +1085,7 @@ package body Con_Io is
       Last_Char_Nb := Language.Nb_Chars (Lstr.Element (Indexes(Position)));
       return Indexes(Position) + Last_Char_Nb - 1;
     end End_Index_Of;
+
     -- Return index of last significant char of Str
     function Parse return Natural is
     begin
@@ -1405,15 +1413,19 @@ package body Con_Io is
             -- Insert
             Insert := not Insert;
           when 16#FF# =>
-            if not Ctrl then
-              -- Suppr
-              Overwrite (Pos, Slice (Pos + 1, Width) & String'(" "));
-              Redraw := True;
-            else
+            if Ctrl then
               -- Ctrl Suppr : clear field + home
               Pos := 1;
               Lstr := Width * ' ';
               Indexes := Language.All_Indexes_Of (Lstr.Image);
+              Redraw := True;
+            elsif Shift then
+              -- Shift Suppr : clear to end
+              Overwrite (Pos, Spaces (Width - Pos + 1));
+              Redraw := True;
+            else
+              -- Suppr
+              Overwrite (Pos, Slice (Pos + 1, Width) & String'(" "));
               Redraw := True;
             end if;
           when others =>

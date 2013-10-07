@@ -325,7 +325,8 @@ package Con_Io is
   --  in the window.
   -- The current cursor position is updated by the call
   -- The Left and Right arrows, Insert, Suppr, Backspace, Home, End, Ctrl Suppr
-  --  (clear the string) are managed internaly.
+  --  (clear the string), Shift Suppr (clear to end of string) are managed
+  --  internaly.
   -- The get ends either:
   --  if (Ctrl/Shift) Up/Down arrow, (Ctrl/Shift) Page Up/Down, Ctrl Left/Right
   --   arrow is pressed
