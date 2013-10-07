@@ -145,8 +145,8 @@ package body Command is
         List := True;
       end if;
     end loop;
-    -- Enf of this Cb. End of flow?
-    if Sys_Calls.Is_Blocking (Fd) or else not Got then
+    -- End of this Cb. End of flow?
+    if not Got then
       -- We were awaken but nothing to read -> End of flow
       Logger.Log_Debug ("Fd Cb end of flow");
       if List then
