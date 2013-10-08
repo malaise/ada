@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V14.1
+V14.2
 
 General purpose
 ---------------
@@ -821,33 +821,66 @@ otherwise the error is reported through a specific screen.
 .Back
 
 Moves back to the xref:XCommit[Commit] menu without pushing.
+anchor:XSelBranch[]
 
 Pull
 ~~~~
 anchor:XPull[]
-The 'Pull' menu allows pulling a given branch from remote repository. +
-It shows:
+The 'Pull' menu allows pulling a given branch from a remote repository. +
+This is achieved through two successive screens.
+
+Branch selection
+^^^^^^^^^^^^^^^^
+anchor:XSelBranch[]
+This screen allows selecting the branch to pull. It shows:
 
 .Current branch and root
 
 This shows the actual branch and path of the root of the current workspace.
 
-.List of known repositories
+.List of local branches
 
-This lists the known remote branches in form <remote>/<branch>, from which you
-can select the branch to pull. +
-If the remote ''orign''/<current_branch> is defined then it is selected by
-default.
+This lists the known branches, from which you can select the branch to pull. +
+The current branch is selected by default.
+
+.OK
+
+Validates the branch selection and switches to the second menu for the
+xref:XSelReference[reference selection].
+
+.Back
+
+Moves back to the xref:XDir[Directory] menu without pulling.
+
+Reference selection
+^^^^^^^^^^^^^^^^^^^
+anchor:XSelReference[]
+This screen allows selecting the branch to pull. It shows:
+
+.Current branch and root
+
+This shows the actual branch and path of the root of the current workspace.
+
+.Selected banch to pull
+
+Below the title is displayed the branch (previously selected) that will be
+pulled.
+
+.List of references
+
+This lists the known references from which you can select the one to pull the
+branch from. +
+If the remote ''orign'' is defined then it is selected by default.
 
 .Pull
 
-Pulls the branch selected repository. +
+Pulls the branch from the selected remote. +
 If there is no error then agite returns back to the xref:XDir[Directory] menu,
 otherwise the error is reported through a specific screen.
 
 .Back
 
-Moves back to the xref:XDir[Directory] menu without pulling.
+Moves back to the xref:XSelBranch[branch selection] menu without pulling.
 
 Interfaces with Git
 -------------------

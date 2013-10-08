@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V14.1"/>
+  <Var Name="Version" Value="V14.2"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -1002,7 +1002,7 @@
     <!-- Title and list -->
     <Var Name="LWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
     <List>
-      <Geometry Up="7" Left="1" Low="${Screen.Low}-5" Width="${LWidth}"/>
+      <Geometry Up="8" Left="1" Low="${Screen.Low}-5" Width="${LWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey" Selected="Lime_Green"/>
     </List>
     <Field Num="1" Kind="Put">
@@ -1070,31 +1070,36 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="11" Kind="Put" Name="Title">
-      <Geometry Up="${Field_1.Low}+2" Left="22" Height="1" Width="5"/>
+      <Geometry Up="${Field_1.Low}+2" Left="1" Height="1"
+                Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">Push</Init>
     </Field>
-    <Field Num="12" Kind="Put" Name="Root">
-      <Geometry Up="${Field_11.Low}+2" Left="1" Height="1"
+    <Field Num="12" Kind="Put" Name="Sub_Title">
+      <Geometry Up="${Field_11.Low}+1" Left="1" Height="1"
+                Right="${Screen.Width}-2"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
+    <Field Num="13" Kind="Put" Name="Root">
+      <Geometry Up="${Field_12.Low}+2" Left="1" Height="1"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
     <!-- List Title -->
-    <Field Num="13" Kind="Put" Name="Entries">
+    <Field Num="14" Kind="Put" Name="Entries">
       <Geometry Up="${List.Up}-1" Left="1" Height="1" Width="20"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">References</Init>
     </Field>
 
     <!-- Push and back -->
-    <Field Num="14" Kind="Button" Name="Push">
+    <Field Num="15" Kind="Button" Name="Push">
       <Geometry Up="${List.Low}+2" Left="1" Height="3" Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Push</Init>
     </Field>
-    <Field Num="15" Kind="Button" Name="Back">
-      <Geometry Up="${Field_14.Up}" Height="3" Left="${LmLeft}"
+    <Field Num="16" Kind="Button" Name="Back">
+      <Geometry Up="${Field_15.Up}" Height="3" Left="${LmLeft}"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Back</Init>
@@ -1335,8 +1340,7 @@
 
     <!-- Get and Actions on list entries -->
     <Field Num="13" Kind="Get" Name="Name">
-      <Geometry Up="${Field_12.Low}+3" Left="1" Height="1"
-                Right="${LmLeft}-2"/>
+      <Geometry Up="${Field_12.Low}+3" Left="1" Height="1" Right="${LmLeft}-2"/>
       <Get_Tuning Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>

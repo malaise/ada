@@ -2,6 +2,12 @@ with As.U.Utils, Afpx.List_Manager, Unicode;
 with Utils.X, Git_If, Afpx_Xref, Error;
 package body Push_Pull is
 
+  type Menu_List is (Push, Pull_Branch, Pull);
+  -- Handle the Push, the Pull_Branch and the Pull
+  function Do_Handle (Root : String;
+                      Menu : Menu_List;
+                      Branch : String) return Boolean;
+
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in As.U.Asu_Us) is
   begin
@@ -24,7 +30,7 @@ package body Push_Pull is
   -- The references
   References : Git_If.Reference_Mng.List_Type;
 
-  -- Push
+  -- Get remote and push
   function Do_Push return Boolean is
     Log : As.U.Asu_Us;
   begin
@@ -40,8 +46,8 @@ package body Push_Pull is
     end if;
   end Do_Push;
 
-  -- Pull current branch
-  function Do_Pull return Boolean is
+  -- Get branch and call Do_Handle (Pull, Branch);
+  function Do_Pull_Branch (Root : String) return Boolean is
     Branch : As.U.Asu_Us;
     Index : Natural;
     Log : As.U.Asu_Us;
@@ -51,34 +57,46 @@ package body Push_Pull is
     Branch := As.U.Tus (Git_If.Current_Branch);
     Afpx.Resume;
 
-    -- Pull current branch:remote
+    -- Get current selected branch
     References.Move_At (Afpx.Line_List.Get_Position);
     References.Read (Branch, Git_If.Reference_Mng.Current);
     Index := Branch.Locate (Git_If.Separator & "");
     if Index < 2 or else Index > Branch.Length - 1 then
-      Log.Set ("Invalid remote brach format");
+      Log.Set ("Invalid remote branch format");
+      return False;
     else
-      Afpx.Suspend;
-      Log := As.U.Tus (
-          Git_If.Do_Pull (Branch.Slice (1, Index - 1),
-                          Branch.Slice (Index + 1, Branch.Length)));
-      Afpx.Resume;
+      return Do_Handle (Root, Pull, Branch.Slice (Index + 1, Branch.Length));
     end if;
+  end Do_Pull_Branch;
+
+  -- Get remote and pull (remote branch)
+  function Do_Pull (Branch : String) return Boolean is
+    Log : As.U.Asu_Us;
+  begin
+    References.Move_At (Afpx.Line_List.Get_Position);
+    Afpx.Suspend;
+    Log := As.U.Tus (
+          Git_If.Do_Pull (References.Access_Current.Image, Branch));
+    Afpx.Resume;
     if Log.Is_Null then
       return True;
     else
-      Error ("Pulling branch", References.Access_Current.Image, Log.Image);
+      Error ("Pulling branch",
+             References.Access_Current.Image & Git_If.Separator & Branch,
+             Log.Image);
       return False;
     end if;
   end Do_Pull;
 
-  -- Handle the Push
-  function Handle (Root : String; Pull : Boolean) return Boolean is
+  -- Handle the Push, the Pull_Branch and the Pull
+  function Do_Handle (Root : String;
+                      Menu : Menu_List;
+                      Branch : String) return Boolean is
     -- Afpx stuff
     Get_Handle : Afpx.Get_Handle_Rec;
     Ptg_Result   : Afpx.Result_Rec;
     -- Current branch
-    Branch : As.U.Asu_Us;
+    Curr_Branch : As.U.Asu_Us;
     -- Result of Push or Pull
     Result : Boolean;
     use type Afpx.Absolute_Field_Range;
@@ -94,23 +112,33 @@ package body Push_Pull is
 
       -- Encode current branch
       Afpx.Suspend;
-        Branch := As.U.Tus (Git_If.Current_Branch);
+      Curr_Branch := As.U.Tus (Git_If.Current_Branch);
       Afpx.Resume;
-      Utils.X.Encode_Field (Utils.X.Branch_Image (Branch.Image),
+      Utils.X.Encode_Field (Utils.X.Branch_Image (Curr_Branch.Image),
                             Afpx_Xref.Push_Pull.Branch);
 
-      -- Change title and Push button if Pull
-      if Pull then
-        Utils.X.Center_Field ("Pull", Afpx_Xref.Push_Pull.Title);
-        Utils.X.Center_Field ("Pull", Afpx_Xref.Push_Pull.Push);
-        Afpx.Clear_Field (Afpx_Xref.Push_Pull.Entries);
-        Afpx.Encode_Field (Afpx_Xref.Push_Pull.Entries, (0, 0),
-                           "remote branches");
-      end if;
+      -- Change title and Push button if Pull_Branch or Pull
+      case Menu is
+        when Push =>
+          Utils.X.Center_Field ("Push", Afpx_Xref.Push_Pull.Title);
+          null;
+        when Pull_Branch =>
+          Utils.X.Center_Field ("Pull", Afpx_Xref.Push_Pull.Title);
+          Utils.X.Center_Field ("Select branch", Afpx_Xref.Push_Pull.Sub_Title);
+          Utils.X.Center_Field ("OK", Afpx_Xref.Push_Pull.Push);
+          Afpx.Clear_Field (Afpx_Xref.Push_Pull.Entries);
+          Afpx.Encode_Field (Afpx_Xref.Push_Pull.Entries, (0, 0),
+                             "branches");
+        when Pull =>
+          Utils.X.Center_Field ("Pull branch", Afpx_Xref.Push_Pull.Title);
+          Utils.X.Center_Field (Branch, Afpx_Xref.Push_Pull.Sub_Title);
+          Utils.X.Center_Field ("Pull", Afpx_Xref.Push_Pull.Push);
+          Afpx.Clear_Field (Afpx_Xref.Push_Pull.Entries);
+      end case;
 
       -- Get list of references
       Afpx.Suspend;
-      if Pull then
+      if Menu = Pull_Branch then
         Git_If.List_Branches (Local => False, Branches => References);
       else
         Git_If.List_References (References);
@@ -120,12 +148,13 @@ package body Push_Pull is
 
       Utils.X.Protect_Field (Afpx_Xref.Push_Pull.Push, References.Is_Empty);
       if not References.Is_Empty then
-        -- Move to "origin" for push, or "origin":<branch> for pull, or top
-        if not Pull then
+        -- Move to "origin" for push and pull,
+        --  or "origin":<branch> for pull branch, or top
+        if Menu /= Pull_Branch  then
           Afpx.Encode_Line (Origin, "origin");
-        elsif not Branch.Is_Null then
+        elsif not Curr_Branch.Is_Null then
           Afpx.Encode_Line (Origin,
-                            "origin" & Git_If.Separator & Branch.Image);
+                            "origin" & Git_If.Separator & Curr_Branch.Image);
         end if;
         if not Search (Afpx.Line_List, Origin,
                        From => Afpx.Line_List_Mng.Absolute) then
@@ -136,8 +165,6 @@ package body Push_Pull is
     end Init;
 
   begin
-    -- Reset Afpx list
-
     -- Init Afpx
     Init;
 
@@ -167,11 +194,14 @@ package body Push_Pull is
                 - Utils.X.List_Scroll_Fld_Range'First
                 + 1);
             when Afpx.List_Field_No | Afpx_Xref.Push_Pull.Push =>
-              if Pull then
-                Result := Do_Pull;
-              else
-                Result := Do_Push;
-              end if;
+              case Menu is
+                when Pull_Branch =>
+                  Result := Do_Pull_Branch (Root);
+                when Pull =>
+                  Result := Do_Pull (Branch);
+                when Push =>
+                  Result := Do_Push;
+              end case;
               if Result then
                 -- Push/Pull OK
                 return True;
@@ -197,7 +227,17 @@ package body Push_Pull is
       end case;
     end loop;
 
-  end Handle;
+  end Do_Handle;
 
+  -- Public interface
+  -- Handle the Push or pull
+  function Handle (Root : String; Pull : Boolean) return Boolean is
+  begin
+    if Pull then
+      return Do_Handle (Root, Pull_Branch, "");
+    else
+      return Do_Handle (Root, Push, "");
+    end if;
+  end Handle;
 end Push_Pull;
 
