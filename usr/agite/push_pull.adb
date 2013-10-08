@@ -121,19 +121,17 @@ package body Push_Pull is
       case Menu is
         when Push =>
           Utils.X.Center_Field ("Push", Afpx_Xref.Push_Pull.Title);
-          null;
         when Pull_Branch =>
           Utils.X.Center_Field ("Pull", Afpx_Xref.Push_Pull.Title);
           Utils.X.Center_Field ("Select branch", Afpx_Xref.Push_Pull.Sub_Title);
           Utils.X.Center_Field ("OK", Afpx_Xref.Push_Pull.Push);
           Afpx.Clear_Field (Afpx_Xref.Push_Pull.Entries);
-          Afpx.Encode_Field (Afpx_Xref.Push_Pull.Entries, (0, 0),
-                             "branches");
+          Afpx.Encode_Field (Afpx_Xref.Push_Pull.Entries, (0, 0), "Branches:");
         when Pull =>
           Utils.X.Center_Field ("Pull branch", Afpx_Xref.Push_Pull.Title);
           Utils.X.Center_Field (Branch, Afpx_Xref.Push_Pull.Sub_Title);
           Utils.X.Center_Field ("Pull", Afpx_Xref.Push_Pull.Push);
-          Afpx.Clear_Field (Afpx_Xref.Push_Pull.Entries);
+          Afpx.Reset_Field (Afpx_Xref.Push_Pull.Entries);
       end case;
 
       -- Get list of references

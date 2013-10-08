@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V14.2"/>
+  <Var Name="Version" Value="V14.3"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -1089,7 +1089,7 @@
     <Field Num="14" Kind="Put" Name="Entries">
       <Geometry Up="${List.Up}-1" Left="1" Height="1" Width="20"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">References</Init>
+      <Init Row="0" Col="0">References:</Init>
     </Field>
 
     <!-- Push and back -->
