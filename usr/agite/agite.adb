@@ -121,7 +121,7 @@ procedure Agite is
       Afpx.Resume;
     exception
       when Git_If.No_Git =>
-        -- This dir is not GIT
+        -- This dir is not Git
         Root.Set_Null;
         Path.Set_Null;
         -- List dir content the normal way
@@ -598,7 +598,7 @@ procedure Agite is
       elsif File.Kind = '?' then
         case Action is
           when Revert =>
-            -- File or link deleted in GIT
+            -- File or link deleted in Git
             Do_Revert (File_Name, File.Prev.Image);
           when Diff =>
             -- File is deleted: diff from last commit to null
@@ -941,7 +941,7 @@ exception
       & Images.Integer_Image (Ref_Version.Minor) );
     Basic_Proc.Set_Error_Exit_Code;
   when Config.Invalid_Config =>
-    Basic_Proc.Put_Line_Error ("Invalid configuration");
+    Basic_Proc.Put_Line_Error ("Invalid configuration.");
     Basic_Proc.Set_Error_Exit_Code;
   when Utils.Exit_Requested =>
     begin
@@ -952,7 +952,7 @@ exception
     end;
     Timer.Stop;
   when Lost_Dir =>
-    Basic_Proc.Put_Line_Error ("Cannot read current directory");
+    Basic_Proc.Put_Line_Error ("Cannot read current directory.");
     Basic_Proc.Set_Error_Exit_Code;
 end Agite;
 

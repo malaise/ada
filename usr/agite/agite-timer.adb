@@ -2,7 +2,7 @@ with Timers;
 separate (Agite)
 package body Timer is
 
-  -- We don't make a real periodic because if Agite makes a long GIT
+  -- We don't make a real periodic because if Agite makes a long Git
   -- operation we don't want a burst of executions
  Period : Timers.Period_Range := Timers.No_Period;
  Tid : Timers.Timer_Id := Timers.No_Timer;

@@ -1,15 +1,15 @@
 Agite user guide
 ================
-V14.3
+V14.4
 
 General purpose
 ---------------
 Agite (Ada GIT Editor) is a graphical front end of the 'Git' configuration
 management tool.
-It is directory-oriented.
+It is more directory-oriented than Git itself.
 
-Major functions are navigation in directories and history, file status, 
-graphical diff, commit and push.
+The major functions are the navigation in directories, history, file status, 
+graphical diff, commit, push, pull and stash.
 
 anchor:XCommandLine[]
 
@@ -19,26 +19,25 @@ Command line
 
 By default Agite continuously stores the current directory in its
 xref:XConfig[configuration file].
-This allows restarting Agite in the same directory as when it stopped by
-providing the argument '-p' or '--previous'.
+This allows restarting Agite, in the same directory as when it was stopped, by
+providing the argument '-p' or '--previous' at start-up.
 
 On the other hand this feature is hardly compatible with several instances of
 Agite running in parallel. Only one instance of the program shall save the
 current directory, which is achieved by providing the argument '-n' or
 '--no_history' to all the other instances.
 
-Instead of previous directory the start-up directory can be explicitly
+Instead of the previous directory, the start-up directory can be explicitly
 specified in the command line with '<path>'. If no path nor '--previous' is
-specified then by default Agite starts in the current directory.
+specified, then by default Agite starts in the current directory.
 
 Environment variables
 ---------------------
 AFPX_DATA_DIR::
 Agite is based on Afpx screen manager, which reads the configuration files
 AFPX.DSC, AFPX.FLD and AFPX.INI. Either theses files are in the current
-directory at startup or the environment variable 'AFPX_DATA_DIR' must be
-set to the directory containing these files.
-+
+directory from which Agite is launched, or the environment variable
+'AFPX_DATA_DIR' must be set to the directory containing these files. +
 Note: Agite unsets AFPX_DATA_DIR at start-up so its children don't inherit
 from this setting.
 
@@ -47,15 +46,16 @@ Agite allows several settings to be defined in a
 xref:XConfig[configuration file]. By default this file is 
 '$\{HOME}/.agite/agite.xml' but this can be overridden by setting the
 environment variable 'AGITE_CONF_FILE' to the full path and name of the
-configuration file. At least 'HOME' or 'AGITE_CONF_FILE' must be set in the
-environment.
+configuration file. +
+Note: At least the variable 'HOME' or 'AGITE_CONF_FILE' must be set in the
+environment, otherwise Agite won't start.
 
 GIT_DIR::
-Agite needs to know the root directory of the current Git sandbox (if any). It
-finds it by locating, in current directory or above, the Git technical
+Agite needs to know the root directory of the current Git worktree (if any). It
+finds it by locating, in the current directory or above, the Git technical
 directory.
 By default it is named '.git' but this can be overridden by setting the
-environment variable 'GIT_DIR' to the name of the Git directory.
+environment variable 'GIT_DIR' to the name (without path) of the Git directory.
 
 anchor:XConfig[] 
 
@@ -80,8 +80,8 @@ concatenated to this string.
 +
 Note: This command shall start a GUI of editor like 'gedit' or a 'xterm -e vi'.
 +
-Note: The editor should not return until completion so that Agite
-properly refreshes the status of files when it exits.
+Note: The editor should not return until completion, so that Agite
+properly refreshes the status of files when the editor exits.
 
 viewer::
 This defines the command to be launched for viewing a file (for example
@@ -91,24 +91,24 @@ GUI, for example 'xterm -e cat' or 'xterm -e vi -M'.
 anchor:XConfDiff[]
 
 differator::
-This defines the command to be launched for performing a xref:XDiff[Diff]
+This defines the command to be launched for performing a xref:XDiff[diff]
 between two versions of a file. Agite will launch 'git difftool -y -x
-<differator> HEAD -- <file>' for the diff between current file and GIT
+<differator> HEAD -- <file>' for the diff between current file and the Git
 repository and 'git difftool -y -x <differator> <ref_rev> <comp_rev> -- <file>'
 for the diff between two revisions of a file.
 
 anchor:XConfMake[]
 
 make::
-This defines the command to be launched for local compilation with the
+This defines the command to be launched for the local compilation with the
 xref:XMake[Make] button. It shall launch a GUI. +
 Example: '#xterm -e 'sh -c "make; echo -n Done.; read a"'#'
 
 anchor:XConfPeriod[]
 
 period::
-Agite refreshes the current status of files in the xref:Xdir[directory] screen
-when it starts the xref:XEdit[Editor] and when it exit.
+Agite refreshes the current status of files in the xref:Xdir[directory] menu
+when it starts the xref:XEdit[editor] and when the editor exit.
 This is because this tool can modify the current status of local files. Still,
 it is possible from a stand-alone program to also modify the list or status of
 local files. This is why Agite periodically checks and redisplays the status of
@@ -200,28 +200,29 @@ Directory
 ~~~~~~~~~
 anchor:XDir[]
 The 'Directory' menu lists the git content, subdirectories and files, of
-of current directory. Starting from top, the fields are:
+the current directory. Starting from top, the fields are:
 
 .Environment
 Title::
 The first line shows in the middle the name and current version of Agite.
 +
 On the left is the indication of current Git branch. Cliking on the branch
-name launches the xref:XBranches[Branches] menu.
+name launches the xref:XBranches[branches] menu.
 +
 On the right is the indication of current host (which normally is also
 indicated in title of the X window of Agite).
 
 .Directories
 Root::
-This line shows the root directory of the current Git sandbox. Clicking in this
-fields moves current directory to the root.
+This line shows the root directory of the current Git worktree. Clicking in this
+field changes the current directory to the root.
 
 anchor:XGo[]
 
 Go::
-This line shows the current directory. It also allows entering a path and going
-to it by hitting the key 'Return' or clicking in th 'Go' button.
+This line shows the current directory. It also allows entering a path and then
+going to it by hitting the key 'Return' or clicking in the 'Go' button. This
+text field can scroll horizontally to accomodate to long paths.
 
 anchor:XReread[]
 
@@ -229,28 +230,28 @@ Reread::
 Normally Agite re-scans the current directory and refreshes the list and status
 when necessary, and also periodically if the feature is enabled (see
 xref:XConfPeriod[period] configuration option). This button explicitly refreshes
-the current display.
+the current list and status of files.
 
 Dir Up::
 This button allows moving up to parent directory.
 
 Bookmarks::
-This button activates the xref:XBook[Bookmarks] menu.
+This button activates the xref:XBook[bookmarks] menu.
 
 PushD and PopD::
-These buttons allows storing the current directory ('PushD') then
-allows moving back to it later on ('PopD').
+The 'Pushd' button allows storing the current directory and the
+'Popd' button then allows moving back to it.
 +
 How it works: Agite keeps a cache of two paths, D1 and D2.
-'PushD' saves D1 as D2 and pushes current directory as D1,
+'PushD' saves D1 as D2 and pushes the current directory as D1,
 while 'PopD' swaps D1 and D2 and moves to the new D1 (if D2 is empty then 'PopD'
-makes a 'PushD' first. Note that PopD is disabled if it would lead to move to
-current directory.
+makes a 'PushD' first). Note that PopD is disabled if it would lead to move to
+the current directory.
 +
-How to use it: At start-up current directory is automatically pushed and 'PopD'
-is disabled. As soon as you move to another directory 'PopD' allows moving
-back to the original one. Clicking on 'PusD' allows swapping between the
-new pushed and the last pushed.
+How to use it: At start-up current the directory is automatically pushed and
+'PopD' is disabled. As soon as you move to another directory, 'PopD' allows
+moving back to the original one. Clicking on 'PusD' allows swapping between the
+new pushed and the last pushed directory.
 
 .List
 
@@ -258,17 +259,17 @@ anchor:XQuickSearch[]
 
 Quick search::
 On top of the list is a quick search area on two rows.
-Clicking in any character of this area triggers a search of file
+Clicking in any character of this area triggers a search of the first file
 starting with this character. If found, the file becomes selected in the list
 and at the top of the list area. Otherwise the selection is unchanged. +
-A tick box button allows searching for directory (starting with the character
-that will be clicked) instead of file.
+A tick box button allows searching for the directory (starting with the
+character that will be clicked) instead of a file.
 
 The list::
-The list shows the directories then the files of xref:XGo[current directory],
+The list shows the directories then the files of the xref:XGo[current directory],
 in alphabetical order.
 +
-Each directory starts with three spaces then the name then \'/'.
+Each directory starts with three spaces then the name then a \'/'.
 +
 Each file is preceded by two characters of its Git status, index and local (see
 'man git-status') then a space, then the name. Git status can be:
@@ -282,21 +283,21 @@ Each file is preceded by two characters of its Git status, index and local (see
 * U = updated but unmerged
 
 +
-After the name a character represents the kind: 
+After the name, a character represents the kind of entry:
 
 * ' ' fo a file, 
 * '@' for a symbolic link, 
 * '/' for a directory,
-* '?' for other/unknown kind.
+* '?' for other/unknown kind (of a deleted entry).
 
 +
-Only one entry is selected (in green) at a time.
+Only one entry is selected at a time (in green).
 +
 A sigle click selects an entry for xref:XEdit[edition], 
-xref:XDiff[difference] from Git reference, xref:XHistory[history] or
-xref:XRevert[revert] operation.
+xref:XDiff[difference] from the Git reference, xref:XHistory[history],
+xref:XAdd[add] or xref:XRevert[revert] operation.
 +
-A double click on a directory changes current directory to it. +
+A double click on a directory changes the current directory to it. +
 A double click on a file launches the xref:XEdit[editor] on it. +
 A double click on a symbolic link makes one or the other (or nothing),
 depending on the target of the link.
@@ -316,17 +317,19 @@ selected entry is as most as possible in the middle of the list area.
 Another way is to use the keyboard: Up and Down arrows, Page Up, Page Down,
 Ctrl + Page Up (for Top) and Ctrl + Page Down (for Bottom).
 +
-Keep in mind that the xref:XQuickSearch[quick search] is also a good way to
+All the lists of Agite screens have the same means for navigation.
+
+NOTE: Keep in mind that the xref:XQuickSearch[quick search] is also a good way to
 quickly find a file.
 
-.Actions on current list selection
+.Actions on the current selection in the list
 anchor:XEdit[]
 
 Edit::
 This button launches the editor (defined in the xref:XConfEditor[editor] entry
 of the configuration file) on the file currently selected in the list, as a
 double click on this file would do. +
-It has no effect if current list selection is a directory.
+It has no effect if current entry is a directory.
 
 anchor:XDiff[]
 
@@ -347,8 +350,8 @@ or if there is no modified file under the selected directory.
 anchor:XHistory[]
 
 History::
-This button switches to the screen that shows the xref:XHist[history] of a
-file or directory.
+This button activates the xref:XHist[history] menu that shows the history of
+the current file or directory.
 
 anchor:XAdd[]
 
@@ -359,26 +362,25 @@ symbolic link.
 anchor:XRevert[]
 
 Revert::
-This button reverts the local change on the current list selection. +
+This button reverts the local change on the current entry. +
 First, a simple screen asks to confirm or cancel the operation. +
-Then, depending on the selection:
+Then, depending on the type of the current entry:
 
 - If it is a directory then it will be deleted, which succeeds only if the
 directory is empty.
 - If it is a file or a symbolic link,
  * if unknown by Git, then it is removed,
  * if just added to Git, then it becomes unknown by Git,
- * if just deleted from GIT, then it is restored to its last committed content
- * if known by GIT and modified, then it is restored to its last committed
+ * if just deleted from Git, then it is restored to its last committed content
+ * if known by Git and modified, then it is restored to its last committed
 content,
- * if known by GIT and deleted, then it is restored to its last committed
+ * if known by Git and deleted, then it is restored to its last committed
 content
- * if known by GIT and renamed, then the original file is restored to its last
-committed content and the new one is reset as unknown by GIT
+ * if known by Git and renamed, then the original file is restored to its last
+committed content and the new one is reset as unknown by Git
 
 +
-The Revert button has no effect on a file known by GIT and not modified.
-
+Note: The Revert button has no effect on a file known by Git and not modified.
 
 .Other actions
 
@@ -395,15 +397,15 @@ This button makes a local compilation by launching the command defined
 in the xref:XConfMake[make] entry of the configuration file.
 
 Stash::
-This button switches to the screen of xref:XStash[stash] that allows managing the
+This button activates the xref:XStash[stash] screen that allows managing the
 the list of stashes.
 
 Commit::
-This button switches to the screen of xref:XCommit[commit] that allows
+This button activates the xref:XCommit[commit] screen that allows
 commiting the the local modifications.
 
 Pull::
-This button switches to the screen of xref:XPull[pull] that allows pulling a
+This button activates the xref:XPull[pull] screen that allows pulling a
 branch from a remote repository;
 
 Exit::
@@ -412,8 +414,7 @@ A button makes Agite exit.
 Branches
 ~~~~~~~~
 anchor:XBranches[]
-The screen shows the list of local bracnhes and allows modifying or checking
-out a branch.
+This menu allows adding, modifying or checking out a branch. +
 
 .Current branch and root
 
@@ -421,7 +422,7 @@ This shows the actual branch and path of the root of current repository.
 
 .Actions
 
-The possible actions on the list of branches:
+The possible actions on the list of local branches:
 
 Create::
 
@@ -440,22 +441,22 @@ in the list.
 
 Checkout::
 
-Click in the 'Chekout' button to checkout, after confirmation, the branch
+Click in the 'Checkout' button to checkout, after confirmation, the branch
 selected in the list.
 
 .Back
 
-This button returns to the xref:XDir[Directory] menu.
+This button returns to the xref:XDir[directory] menu.
 
 Bookmarks
 ~~~~~~~~~
 anchor:XBook[]
 Locations (directories) can be bookmarked. To bookmark a directory, first move
 to it in the xref:XDir[directory] menu, then go in the 'bookmark' menu, then
-click in the button xref:XAdd[AddCur]. This adds the current directory in the list.
+click in the button xref:XAddCurr[AddCur]. This adds the current directory in the list.
 Click in xref:XBookBack[Back] to go back to the xref:XDir[directory] menu.
 Later on you can open the bookmark menu and double click on the entry, or
-select it and click on xref:XGoto[Goto] to go back to this directory.
+select it and click on xref:XGoto[Goto], to go back to this directory.
 
 Bookmarks are saved in the xref:XConfig[configuration file] so that they 
 are persistent from one session to another.
@@ -469,20 +470,21 @@ directory. Example:
  /home/user/ada
 
 * Named bookmarks are created like anonymous ones but with a name set in the
-'Name to add' field when clicking in xref:XAdd[AddCur]. The name appears in
+'Name to add' field when clicking in xref:XAddCurr[AddCur]. The name appears in
 parentheses before the path of the bookmark. Example:
 
  (Reposit) /home/user/ada/reposit
 
 * Separators are created by setting a name (in 'Name to add') and clicking
-in xref:XAdd[AddSep]. This creates a line with dashes and the name. Example:
+in xref:XAddSep[AddSep]. This creates a line with dashes and the name. Example:
 
  ----- Ada -----
 
 * Blank lines can also be used to separate bookmarks. They are anonymous 
-separators, created by clicking in xref:XAdd[AddSep] with no name set.
+separators, created by clicking in xref:XAddSep[AddSep] with no name set.
 
-anchor:XAdd[]
+anchor:XAddCurr[]
+anchor:XAddSep[]
 The buttons 'AddCur' and 'AddSep' insert a named or anonymous entry (depending
 on the field 'Name to add') below the current entry.
 
@@ -500,24 +502,24 @@ Navigation in the list is the same as the xref:XNavig[navigation] in the
 directory menu, with the mouse wheel, the keyboard and buttons.
 
 anchor:XBookBack[]
-The button 'Back' switches back to  the xref:XDir[directory] menu without
-changing current directory.
+The button 'Back' returns to the xref:XDir[directory] menu without
+changing the current directory.
 
 History
 ~~~~~~~
 anchor:XHist[]
-This menu shows the name of the selected file and lists the history of all the
-commits on current branch that have affected this file. +
+This menu shows the relative path of the selected file and lists the history of
+all the commits on current branch that have affected this file. +
 The newest release (Head) is on top.
 
-In case of a directory the menu shows the name of the directory (relative to
-root) and lists the history of the commits of all the files in the directory
+In case of a directory the menu shows the relative path of the directory
+and lists the history of the commits of all the files in the directory
 and in its sub-directories.
 
 This lists follows the renamings of the file or directory.
 
 .List
-The list shows for each entry the date of the commit (format YYMMDD:HHMM)
+The list shows for each entry the date of the commit (format YYMMDD:HHMM),
 a space then the comment of the commit.
 
 Navigation in the list is the same as the xref:XNavig[navigation] in the
@@ -526,17 +528,17 @@ directory menu, with the mouse wheel, the keyboard and buttons.
 The list can be very long, so there are several extra features on the history
 list:
 
-* The position of current page, in term of percentage of the history, is
+* The position of the current page, in term of percentage of the history, is
 displayed above the list,
 
-* The indexes of left and right selection are also displayed above the list,
+* The indexes of the left and right selection are also displayed above the list,
 
 * A hyphen ('-') on the left side of the list indicates the current position
 of the current page, as a scroll bar would do,
 
 * You can click at a given row in this "scroll bar". The list will be moved
 at the page corresponding to where you *release* the mouse button (and the
-hyphen be will at this position).
+hyphen will be at this position).
 
 anchor:XView[]
 
@@ -546,7 +548,7 @@ button to view the version of the file that was committed.
 
 When the current history is on a directory this feature is de-activated.
 Still it is possible to list and view one by one the files of a commit with the
-xref:XDetails[Details] menu.
+xref:XDetails[details] menu.
 
 anchor:XDiff1[]
 
@@ -582,7 +584,7 @@ differators may be started.
 anchor:XDetail[]
 
 .Detail
-This button switches to a screen that shows the xref:XDetails[details] of the
+This button activates the xref:XDetails[details] menu on the
 commit currently (left-)selected in the history.
 
 anchor:XRestore[]
@@ -603,22 +605,21 @@ checkout" (another commit earlier in the same branch or the HEAD of another
 branch).
 
 .Back
-This button allows to return to xref:XDir[directory] menu.
+This button returns to the xref:XDir[directory] menu.
 
 NOTE: The history follows the the renamings of the file or directory but the
 reference name (that is displayed above the history list) is used for the
-xref:XView[view] and xref:XDiff1[Diff] operations.
-As a consequence, Agite will fail to show a
-file or a difference from a file if the entry in the history is before a
-renaming. Still, it is possible to view a file that has been renamed with the
-following operations:
+xref:XView[view] and xref:XDiff1[diff] operations.
+As a consequence, Agite will fail to show a file or a difference from a file
+if the entry in the history is before a renaming. Still, it is possible to view
+a file that has been renamed with the following operations:
 
 * Select the file in the history
-* Show the xref:XDetail[Details] of this commit
+* Show the xref:XDetail[details] of this commit
 * Select the file in the xref:XDetails[details] of the commit
 * Click on xref:XView[View] the file.
 
-It is not possible to do a xref:XDiff1[Diff] between two versions of a file if
+It is not possible to do a xref:XDiff1[diff] between two versions of a file if
 the file has been renamed or moved between the versions.
 
 Details
@@ -627,7 +628,7 @@ anchor:XDetails[]
 The 'Details' menu shows the details of a commit:
 
 * The SHA-1 hash of the commit, that you can copy in the clipboard,
-* The date and comment (up to three lines) of the commit, that you can
+* The date and comment (up to seven lines) of the commit, that you can
 also alternatively copy in the clipboard,
 * The list of all the files in the commit, each preceded by a letter:
 ** M Modified,
@@ -635,7 +636,7 @@ also alternatively copy in the clipboard,
 ** D Deleted.
 
 A specific entry '/' is added on top of the list, which represents the root of
-the current sandbox.
+the current worktree.
 
 For all other entries (files) of the list:
 
@@ -643,14 +644,14 @@ For all other entries (files) of the list:
 viewing the file as it was committed,
 * clicking on 'Hist' allows viewing the full history of the file,
 * clicking on 'Diff' allows viewing the differences between the version before
-and after the commit.
+and in the commit.
 * clicking on 'Restore' allows restoring the file from the commit. As in the
-xref:XRestore[Restore] from the history, there first a check that the file is
+xref:XRestore[restore] from the history, there is first a check that the file is
 not locally modified, then a confirmation.
 
 When the "/" entry is selected you can:
 
-* click on the button 'History' to get the full history of the sandbox,
+* click on the button 'History' to get the full history of the worktree,
 * click on the button 'Diff' to launch the differator on each file of
 the commit (differences brought by the commit),
 * click on the button 'Restore' to restore all the files of the commit,
@@ -683,28 +684,28 @@ the Return key. Agit stashes the current worktree (which performs a 'git reset
 Apply::
 
 Applies the stash currently selected in the list and returns to the
-xref:XDir[Directory] menu.
+xref:XDir[directory] menu.
 
 Pop::
 
 After confirmation, applies the stash currently selected in the list, removes
-it from the list and returns to the xref:XDir[Directory] menu.
+it from the list and returns to the xref:XDir[directory] menu.
 
 Drop::
 
 After confirmation, drops (deletes) the stash currently selected in the list.
 
 NOTE: With the 'stash' menu you can perform a 'git reset --hard' in 5 clicks
-from the xref:XDir[Directory] menu: +
+from the xref:XDir[directory] menu: +
 - Stash (go to stash menu) +
 - Add (add a new anonymous stash) +
 - Drop (delete the newest stash) +
 - Ok (to confirm deletion) +
-- Back (to the xref:XDir[Directory] menu)
+- Back (to the xref:XDir[directory] menu)
 
 .Back
 
-This button returns to the xref:XDir[Directory] menu.
+This button returns to the xref:XDir[directory] menu.
 
 Commit
 ~~~~~~
@@ -790,11 +791,11 @@ NOTE: The Commit button is active only if there are staged changes.
 
 .Push
 
-This button activates the xref:XPush[Push] menu.
+This button activates the xref:XPush[push] menu.
 
 .Back
 
-This button returns to the xref:XDir[Directory] menu.
+This button returns to the xref:XDir[directory] menu.
 
 Push
 ~~~~
@@ -815,12 +816,13 @@ If the remote ''orign'' is defined then it is selected by default.
 .Push
 
 Pushes the local commits to the selected remote repository. +
-If there is no error then agite returns back to the xref:XDir[Directory] menu,
+If there is no error then agite returns back to the xref:XDir[directory] menu,
 otherwise the error is reported through a specific screen.
 
 .Back
 
-Moves back to the xref:XCommit[Commit] menu without pushing.
+Moves back to the xref:XCommit[commit] menu without pushing.
+
 anchor:XSelBranch[]
 
 Pull
@@ -850,7 +852,7 @@ xref:XSelReference[reference selection].
 
 .Back
 
-Moves back to the xref:XDir[Directory] menu without pulling.
+Moves back to the xref:XDir[directory] menu without pulling.
 
 Reference selection
 ^^^^^^^^^^^^^^^^^^^
@@ -875,7 +877,7 @@ If the remote ''orign'' is defined then it is selected by default.
 .Pull
 
 Pulls the branch from the selected remote. +
-If there is no error then agite returns back to the xref:XDir[Directory] menu,
+If there is no error then agite returns back to the xref:XDir[directory] menu,
 otherwise the error is reported through a specific screen.
 
 .Back

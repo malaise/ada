@@ -16,7 +16,7 @@ package Git_If is
 
   -- LIST OF FILES AND STATUS
   -- A file entry
-  -- Two letters of GIT status (? A M D R C U)
+  -- Two letters of Git status (? A M D R C U)
   -- The file name (and previous name in case of R)
   -- ONe letter of file kind
   type File_Entry_Rec is record
