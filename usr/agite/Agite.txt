@@ -414,11 +414,12 @@ A button makes Agite exit.
 Branches
 ~~~~~~~~
 anchor:XBranches[]
-This menu allows adding, modifying or checking out a branch. +
+This menu works on the global worktree, not on the local directory. +
+It allows adding, modifying or checking out a branch. +
 
 .Current branch and root
 
-This shows the actual branch and path of the root of current repository.
+This shows the current branch and path of the root of current worktree.
 
 .Actions
 
@@ -663,13 +664,13 @@ in the section on xref:XNavigation[navigation].
 Stash
 ~~~~~
 anchor:XStash[]
-This menu works on the global repository, not on local directory. +
-The screen shows the list of stashes, whith, for each entry, the stash number,
-the branch and the text of the message.
+This menu works on the global worktree, not on the local directory. +
+The screen shows the list of stashes. Each entry has a stash number,
+the branch on which the stash was done and the text of the message.
 
 .Current branch and root
 
-This shows the actual branch and path of the root of current repository.
+This shows the current branch and path of the root of current worktree.
 
 .Actions
 
@@ -677,7 +678,7 @@ The possible actions on the list of stashes are:
 
 Add::
 
-Enter a message /  name for the stash and click in the 'Add' button or press
+Enter a message (or name) for the stash and click in the 'Add' button or press
 the Return key. Agit stashes the current worktree (which performs a 'git reset
 --hard'). The new stash appears in the list.
 
@@ -695,6 +696,10 @@ Drop::
 
 After confirmation, drops (deletes) the stash currently selected in the list.
 
+.Back
+
+This button returns to the xref:XDir[directory] menu.
+
 NOTE: With the 'stash' menu you can perform a 'git reset --hard' in 5 clicks
 from the xref:XDir[directory] menu: +
 - Stash (go to stash menu) +
@@ -703,21 +708,46 @@ from the xref:XDir[directory] menu: +
 - Ok (to confirm deletion) +
 - Back (to the xref:XDir[directory] menu)
 
-.Back
-
-This button returns to the xref:XDir[directory] menu.
-
 Commit
 ~~~~~~
 anchor:XCommit[]
-This menu works on the global repository, not on local directory.
-
-The screen shows the list of changes and allows entering a comment for the
-commit:
+This menu works on the global worktree, not on the local directory. +
+It shows the list of changes and allows entering a comment for the commit:
 
 .Current branch and root
 
-This shows the actual branch and path of the root of current repository.
+This shows the current branch and path of the root of current worktree.
+
+.Sign
+
+Append the user name and email address to the comment.
+
+.Clear
+
+Clear the comment fields.
+
+.Comment
+
+You can enter up to 7 lines of comment.
+
+NOTE: Comment must not be empty when committing.
+
+.List of changes
+
+This list shows all the current changes in the worktree, with 3 letters of
+status for each file:
+
+* The first column ('S') shows the summary of the status:
+ - a '''+''' if all the changes of the file are staged,
+ - a '''*''' if some changes are staged and some others are not,
+ - empty if no changes are staged (e.g. locally modified or new).
+* The second column ('I') shows the changes in the index (that will be
+committed),
+* The third column ('L') shows the changes local to the worktree (that will not
+be committed).
+
+You can select a file and show its local differences, stage or unstage its
+changes.
 
 .Actions
 
@@ -729,7 +759,7 @@ Re-read the current branch and the list of local changes.
 
 Diff::
 
-Show the difference between the current change and the Head for the current file
+Show the difference between the current change and the HEAD for the current file
 (selected in list).
 
 Stage::
@@ -745,37 +775,7 @@ StageAll::
 Stage all the changes that are unstaged. Also proposes to add the untracked
 (new) files.
 
-Sign::
-
-Append the user name and email address to the comment.
-
-Clear::
-
-Clear the comment fields.
-
 NOTE: The Stage, Unstage and StageAll buttons are active only if there are local
-changes.
-
-.Comment
-
-You can enter up to 7 lines of comment. +
-Comment must not be empty when committing.
-
-.List of changes
-
-This list shows all the current changes, with 3 letters of status for each
-file:
-
-* The first column ('S') shows the summary of the status:
- - a '''+''' if all the changes of the file are staged,
- - a '''*''' if some changes are staged and some others are not,
- - empty if no changes are staged (e.g. locally modified, new or unchanged).
-* The second column ('I') shows the changes in the index (that will be
-committed),
-* The third column ('L') shows the changes local to the worktree (that will not
-be committed).
-
-You can select a file and show its local differences, stage or unstage its
 changes.
 
 .Commit
@@ -801,16 +801,16 @@ Push
 ~~~~
 anchor:XPush[]
 The 'Push' menu allows pushing the local changes to a given remote
- repository. +
+repository. +
 It shows:
 
 .Current branch and root
 
-This shows the actual branch and path of the root of the current workspace.
+This shows the current branch and path of the root of the current workspace.
 
-.List of known repositories
+.List of references
 
-This lists the known remote repositories from which you can select the target. +
+This lists the known remote references, from which you can select the target. +
 If the remote ''orign'' is defined then it is selected by default.
 
 .Push
@@ -834,11 +834,12 @@ This is achieved through two successive screens.
 Branch selection
 ^^^^^^^^^^^^^^^^
 anchor:XSelBranch[]
-This screen allows selecting the branch to pull. It shows:
+This screen allows selecting the branch to pull. +
+It shows:
 
 .Current branch and root
 
-This shows the actual branch and path of the root of the current workspace.
+This shows the current branch and path of the root of the current workspace.
 
 .List of local branches
 
@@ -847,8 +848,9 @@ The current branch is selected by default.
 
 .OK
 
-Validates the branch selection and switches to the second menu for the
-xref:XSelReference[reference selection].
+Validates the branch selection and activates the 
+xref:XSelReference[reference selection] for selecting the remote reference and
+pulling from it.
 
 .Back
 
@@ -857,13 +859,14 @@ Moves back to the xref:XDir[directory] menu without pulling.
 Reference selection
 ^^^^^^^^^^^^^^^^^^^
 anchor:XSelReference[]
-This screen allows selecting the branch to pull. It shows:
+This screen allows selecting the remote repository from which to pull. +
+It shows:
 
 .Current branch and root
 
-This shows the actual branch and path of the root of the current workspace.
+This shows the current branch and path of the root of the current workspace.
 
-.Selected banch to pull
+.Selected branch to pull
 
 Below the title is displayed the branch (previously selected) that will be
 pulled.
@@ -876,7 +879,7 @@ If the remote ''orign'' is defined then it is selected by default.
 
 .Pull
 
-Pulls the branch from the selected remote. +
+Pulls the branch from the selected remote repository. +
 If there is no error then agite returns back to the xref:XDir[directory] menu,
 otherwise the error is reported through a specific screen.
 
