@@ -141,7 +141,7 @@ package body Command is
         Dscrs(Is_Output).Flow.Str.Append (Line);
       else
         -- List
-        Dscrs(True).Buff.Push (Line.Image);
+        Dscrs(Is_Output).Buff.Push (Line.Image);
         List := True;
       end if;
     end loop;
