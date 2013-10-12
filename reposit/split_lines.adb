@@ -1,13 +1,15 @@
 function Split_Lines (Iter : Parser.Iterator;
                       Len  : Positive;
-                      Max : Natural := 0) return As.U.Utils.Asu_Ua.Unb_Array is
+                      Max  : Integer := 0;
+                      Cut  : Boolean := True)
+                      return As.U.Utils.Asu_Ua.Unb_Array is
   Result : As.U.Utils.Asu_Ua.Unb_Array;
   Line : As.U.Asu_Us;
   Needed : Positive;
-  Num : Positive;
+  use type As.U.Asu_Us;
 begin
+  -- Split input into lines of fixed max len
   -- Iterate on each word
-  Num := 1;
   loop
     declare
       Word : constant String := Iter.Next_Word;
@@ -21,7 +23,7 @@ begin
       end if;
 
       -- Check if we can append
-      if Line.Length + Needed <= Len or else Num = Max then
+      if Line.Length + Needed <= Len then
         -- Append Word to Line, with a space except if first word of line
         if not Line.Is_Null then
           Line.Append (" ");
@@ -31,7 +33,6 @@ begin
         -- New line, store previous
         if not Line.Is_Null then
           Result.Append (Line);
-          Num := Num + 1;
         end if;
         Line.Set (Word);
       end if;
@@ -43,6 +44,40 @@ begin
      Result.Append (Line);
   end if;
 
+  if Max = 0 or else Result.Length <= abs Max then
+    -- Merge/Cut head or tail only if necessary
+    return Result;
+  end if;
+
+  if not Cut then
+    -- Merge
+    if Max > 0 then
+      -- Merge tailing lines
+      Line := Result.Element (Max);
+      for I in Max + 1 .. Result.Length loop
+        Line.Append (" " & Result.Element (I));
+      end loop;
+      Result.Replace_Element (Max, Line);
+    else
+      -- Merge heading lines (keep in mind that Max < 0)
+      Line := Result.Element (Result.Length + Max + 1);
+      for I in reverse 1 .. Result.Length + Max loop
+        Line.Prepend (Result.Element (I) & " ");
+      end loop;
+      Result.Replace_Element (Result.Length + Max + 1, Line);
+    end if;
+  end if;
+
+  -- Cut anyway
+  if Max > 0 then
+    -- Cut tailing lines
+    Result.Delete (Max + 1, Result.Length);
+  else
+    -- Cut heading lines (keep in mind that Max < 0)
+    Result.Delete (1, Result.Length + Max);
+  end if;
+
+  -- Done
   return Result;
 end Split_Lines;
 
