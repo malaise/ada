@@ -35,7 +35,8 @@ package Utils.X is
   -- CLear field and Center Text in 1st column of Field (row 0 or 1)
   --  procuste, preserve head
   procedure Center_Field (Text : in String;
-                          Field : in Afpx.Field_Range);
+                          Field : in Afpx.Field_Range;
+                          Keep_Head : in Boolean := True);
 
 end Utils.X;
 

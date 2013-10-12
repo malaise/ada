@@ -74,7 +74,8 @@ package body Utils.X is
   -- CLear field and Center Text in 1st column of Field (row 0 or 1)
   --  procuste, preserve head
   procedure Center_Field (Text : in String;
-                          Field : in Afpx.Field_Range) is
+                          Field : in Afpx.Field_Range;
+                          Keep_Head : in Boolean := True) is
   begin
     Afpx.Clear_Field (Field);
     if Text'Length <= Afpx.Get_Field_Width (Field) then
@@ -82,7 +83,8 @@ package body Utils.X is
           Str_Util.Center (Text, Afpx.Get_Field_Width (Field)));
     else
       Afpx.Encode_Field (Field, (Row (Field), 0),
-          Normalize (Text, Afpx.Get_Field_Width (Field), Keep_Tail => False));
+          Normalize (Text, Afpx.Get_Field_Width (Field),
+                     Keep_Tail => not Keep_Head));
     end if;
   end Center_Field;
 
