@@ -17,7 +17,7 @@ begin
   Utils.X.Center_Field (Target, Afpx_Xref.Error.Target);
   -- Split text and encode
   Iter.Set (Text, Utils.Separator'Access);
-  Texts := Split_Lines (Iter, Afpx.Get_Field_Width (Afpx_Xref.Error.Text1), 4);
+  Texts := Split_Lines (Iter, Afpx.Get_Field_Width (Afpx_Xref.Error.Text1), -4);
   Fld := Afpx_Xref.Error.Text1;
   for I in 1 .. Texts.Length loop
     Utils.X.Center_Field (Texts.Element(I).Image, Fld);

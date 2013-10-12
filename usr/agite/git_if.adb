@@ -1,6 +1,6 @@
 with Ada.Exceptions, Ada.Characters.Latin_1;
 with Environ, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng, Str_Util,
-     Images, Aski;
+     Images;
 with Utils;
 package body Git_If is
 
@@ -11,8 +11,6 @@ package body Git_If is
   Out_Flow_3 : aliased Command.Flow_Rec(Command.Str);
   -- One Error flow as string
   Err_Flow_1 : aliased Command.Flow_Rec(Command.Str);
-  -- One Error flow as list
-  Err_Flow_2 : aliased Command.Flow_Rec(Command.List);
   -- Exit code
   Exit_Code : Command.Exit_Code_Range;
 
@@ -840,17 +838,19 @@ package body Git_If is
   begin
     Cmd.Set ("git");
     Cmd.Cat ("pull");
+    Cmd.Cat ("-q");
     Cmd.Cat (Remote);
     Cmd.Cat (Branch);
     Command.Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      -- The last line of output seems the most significant
-      if not Out_Flow_1.List.Is_Empty then
-        return Out_Flow_1.List.Access_Current.all.Image;
-      else
+      if not Err_Flow_1.Str.Is_Null then
+        -- Something in Err flow
         return Err_Flow_1.Str.Image;
+      else
+        -- Output flow
+        return Out_Flow_3.Str.Image;
       end if;
     else
       return "";
@@ -1098,7 +1098,6 @@ package body Git_If is
   -- Stash current context, return "" if OK
   function Add_Stash (Name : String) return String is
     Cmd : Many_Strings.Many_String;
-    Res : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
     Cmd.Set ("git");
@@ -1107,21 +1106,15 @@ package body Git_If is
     Cmd.Cat ("-q");
     Cmd.Cat (Name);
     Command.Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_2'Access, Exit_Code);
+        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      if Err_Flow_2.List.Is_Empty then
-        return Out_Flow_3.Str.Image;
+      if not Err_Flow_1.Str.Is_Null then
+        -- Something in Err flow
+        return Err_Flow_1.Str.Image;
       else
-        -- Last 2 lines
-        Err_Flow_2.List.Rewind (Where => Command.Res_Mng.Dyn_List.Prev);
-        if Err_Flow_2.List.List_Length >= 2 then
-          Err_Flow_2.List.Move_To (Command.Res_Mng.Dyn_List.Prev);
-          Res.Set (Err_Flow_2.List.Access_Current.all & Aski.Lf);
-          Err_Flow_2.List.Move_To;
-        end if;
-        Res.Append (Err_Flow_2.List.Access_Current.all & Aski.Lf);
-        return Res.Image;
+        -- Output flow
+        return Out_Flow_3.Str.Image;
       end if;
     else
       return "";

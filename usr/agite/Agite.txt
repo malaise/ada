@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V14.5
+V14.6
 
 General purpose
 ---------------
@@ -154,8 +154,8 @@ list of commits that have modified the file(s).
 of files modified by the commit.
 * xref:XStash[Stash]: This menu allows stashing the local worktree and managing
 the stack of stashes.
-* xref:XCommit[Commit]: This menu allows staging and commiting the local
-changes.
+* xref:XCommit[Commit]: This menu shows all the local modifications of the
+worktree and allows staging and commiting them.
 * xref:XPush[Push]: This menu allows pushing local commits to a remote
 repository.
 * xref:XPull[Pull]: This menu allows pulling a branch from a remote repository.
@@ -712,7 +712,8 @@ Commit
 ~~~~~~
 anchor:XCommit[]
 This menu works on the global worktree, not on the local directory. +
-It shows the list of changes and allows entering a comment for the commit:
+It shows the list of all the local changes, allows (un)staging them and allows
+entering a comment for the commit:
 
 .Current branch and root
 

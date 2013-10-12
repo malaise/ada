@@ -69,6 +69,7 @@ package body Utils is
   end Launch;
 
   -- Separator to split output text
+  -- Space and any non-printable character (Htab, Lf...)
   function Separator (C : Character) return Boolean is
   begin
     return C <= ' ' or else C > '~';
