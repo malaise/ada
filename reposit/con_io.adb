@@ -42,6 +42,10 @@ package body Con_Io is
     if not Con.Initialised then
       return;
     end if;
+    if X_Mng.X_Is_Suspended (Id) then
+      Logger.Log_Debug ("Console finalization resuming line");
+      X_Mng.X_Resume (Id);
+    end if;
     Logger.Log_Debug ("Console finalization closing line");
     X_Mng.X_Close_Line(Id);
     -- Close all windows of current console
