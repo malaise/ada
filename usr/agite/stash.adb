@@ -107,6 +107,7 @@ package body Stash is
        -- Recover name from Get field
        Afpx.Decode_Field (Afpx_Xref.Stash.Name, 0, Name);
        Afpx.Clear_Field (Afpx_Xref.Stash.Name);
+       Afpx.Reset (Get_Handle);
     else
       -- Recover num
       declare

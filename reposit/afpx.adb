@@ -918,6 +918,14 @@ package body Afpx is
     Af_Ptg.Redisplay;
   end Redisplay;
 
+  -- Reset Handle (all fields except Cursor_Field)
+  procedure Reset (Handle : in out Get_Handle_Rec) is
+    Cursor_Field : constant Absolute_Field_Range := Handle.Cursor_Field;
+  begin
+    Handle := (others => <>);
+    Handle.Cursor_Field := Cursor_Field;
+  end Reset;
+
   -- Print the fields and the list, then gets
   procedure Put_Then_Get (Get_Handle    : in out Get_Handle_Rec;
                           Result        : out Result_Rec;

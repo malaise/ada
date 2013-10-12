@@ -391,6 +391,8 @@ package Afpx is
     Insert       : Boolean := False;
     Offset       : Con_Io.Col_Range := Con_Io.Col_Range_First;
   end record;
+  -- Reset Handle (all fields except Cursor_Field)
+  procedure Reset (Handle : in out Get_Handle_Rec);
 
   -- Print the fields and the list (if Redisplay has been called or is needed),
   --  then gets.

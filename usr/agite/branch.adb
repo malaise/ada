@@ -109,6 +109,7 @@ package body Branch is
     if Action = Create or else Action = Rename then
       Afpx.Decode_Field (Afpx_Xref.Branches.Name, 0, New_Name);
       Afpx.Clear_Field (Afpx_Xref.Branches.Name);
+      Afpx.Reset (Get_Handle);
     end if;
 
     -- Cancel if not confirm

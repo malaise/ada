@@ -51,8 +51,7 @@ package body Bookmarks is
                                0, False));
   begin
     Afpx.Clear_Field (Afpx_Xref.Bookmarks.Name);
-    Get_Handle.Cursor_Col := 0;
-    Get_Handle.Insert := False;
+    Afpx.Reset (Get_Handle);
     return Str;
   end Get_Name;
 

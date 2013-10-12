@@ -276,6 +276,7 @@ package body Commit is
     Comment.Append (Line & Aski.Lf);
     -- Re-encode
     Encode_Comment;
+    Reset_Ptg;
   end Do_Sign;
 
   -- Decode comments and commit
