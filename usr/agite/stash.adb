@@ -83,7 +83,7 @@ package body Stash is
                           Afpx_Xref.Commit.Branch);
     Afpx.Resume;
     -- Set field activity
-    Utils.X.Protect_Field (Afpx_Xref.Stash.Drop, Afpx.Line_List.Is_Empty);
+    Utils.X.Protect_Field (Afpx_Xref.Stash.Del, Afpx.Line_List.Is_Empty);
     Utils.X.Protect_Field (Afpx_Xref.Stash.Apply, Afpx.Line_List.Is_Empty);
     Utils.X.Protect_Field (Afpx_Xref.Stash.Pop, Afpx.Line_List.Is_Empty);
    exception
@@ -95,11 +95,12 @@ package body Stash is
   end Reread;
 
   -- Stash operations
-  type Stash_Oper_List is (Stash_Add, Stash_Apl, Stash_Pop, Stash_Drp);
+  type Stash_Oper_List is (Stash_Add, Stash_Apl, Stash_Pop, Stash_Del);
   function Do_Stash (Oper : in Stash_Oper_List) return Boolean is
     Name : As.U.Asu_Us;
     Num : Git_If.Stash_Number;
     Message : As.U.Asu_Us;
+    Local_Oper : Stash_Oper_List := Oper;
     Result : Boolean;
   begin
     -- Recover argument
@@ -117,15 +118,15 @@ package body Stash is
         Index : constant Positive := Str_Util.Locate (Str, " ");
       begin
         Num := Git_If.Stash_Number'Value (Str(1 .. Index));
-        -- Confirm except for apply
-        if Oper /= Stash_Apl then
+        -- Confirm except for add
+        if Oper /= Stash_Add then
           Result := Confirm ("Stash",
               "Ready to "
             & (case Oper is
                 when Stash_Add => "",
                 when Stash_Apl => "apply",
                 when Stash_Pop => "apply and delete",
-                when Stash_Drp => "drop")
+                when Stash_Del => "del")
             & " stash: " & Str);
           Init;
           Reread (True);
@@ -141,10 +142,15 @@ package body Stash is
     -- Do stash operation
     Afpx.Suspend;
     case Oper is
-      when Stash_Add => Message := As.U.Tus (Git_If.Add_Stash (Name.Image));
+      when Stash_Add => 
+        Message := As.U.Tus (Git_If.Add_Stash (Name.Image));
+        if Message.Is_Null then
+          Local_oper := Stash_Apl;
+          Message := As.U.Tus (Git_If.Apply_Stash (0));
+        end if;
       when Stash_Apl => Message := As.U.Tus (Git_If.Apply_Stash (Num));
       when Stash_Pop => Message := As.U.Tus (Git_If.Pop_Stash (Num));
-      when Stash_Drp => Message := As.U.Tus (Git_If.Drop_Stash (Num));
+      when Stash_Del => Message := As.U.Tus (Git_If.Drop_Stash (Num));
     end case;
     Afpx.Resume;
 
@@ -155,11 +161,11 @@ package body Stash is
       return True;
     else
       Error ("Stash "
-        & (case Oper is
+        & (case Local_Oper is
               when Stash_Add => "adding",
               when Stash_Apl => "applying",
               when Stash_Pop => "applying and deleting",
-              when Stash_Drp => "dropping"),
+              when Stash_Del => "deleting"),
         Name.Image, Message.Image);
       Init;
       Reread (True);
@@ -225,7 +231,9 @@ package body Stash is
 
             -- Stash operations
             when Afpx_Xref.Stash.Add =>
-              Do_Stash (Stash_Add);
+              if Do_Stash (Stash_Add) then
+                return;
+              end if;
             when Afpx_Xref.Stash.Apply =>
               if Do_Stash (Stash_Apl) then
                 return;
@@ -234,8 +242,8 @@ package body Stash is
               if Do_Stash (Stash_Pop) then
                 return;
               end if;
-            when Afpx_Xref.Stash.Drop =>
-              Do_Stash (Stash_Drp);
+            when Afpx_Xref.Stash.Del =>
+              Do_Stash (Stash_Del);
               Reread (False);
 
             when Afpx_Xref.Stash.Back =>

@@ -430,12 +430,14 @@ procedure Agite is
 
     if File.Kind = '/' then
       -- Handle Dir
-      if File.Name.Image = "."
-      or else File.Name.Image = ".." then
+      if File.Name.Image = "." then
+        if Confirm ("Ready to reset --hard the whole worktree", "") then
+          Git_If.Do_Reset_Hard;
+        end if;
+      elsif File.Name.Image = ".." then
         return;
-      end if;
-      if Confirm ("Ready to remove directory:",
-                  Directory.Build_File_Name (Path.Image, Name, "")) then
+      elsif Confirm ("Ready to remove directory:",
+                     Directory.Build_File_Name (Path.Image, Name, "")) then
         begin
           Directory.Remove (Name);
           Position := Position - 1;
@@ -446,7 +448,7 @@ procedure Agite is
                     Directory.Build_File_Name (Path.Image, Name, ""),
                    "Access error (not empty?)");
           when Directory.Name_Error =>
-            -- Very unlikely mut maybe the dir has disappeared meanwhile
+            -- Very unlikely but maybe the dir has disappeared meanwhile
             null;
         end;
       end if;

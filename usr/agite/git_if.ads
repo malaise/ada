@@ -107,6 +107,9 @@ package Git_If is
   -- Launch a reset of index synchronous
   procedure Do_Reset (File : in String);
 
+  -- Launch a reset --hard
+  procedure Do_Reset_Hard;
+
   -- Launch a global checkout, return "" if OK, else the error
   function Do_Checkout (Rev : in String) return String;
 

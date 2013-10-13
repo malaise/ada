@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V14.7
+V14.8
 
 General purpose
 ---------------
@@ -366,7 +366,9 @@ This button reverts the local change on the current entry. +
 First, a simple screen asks to confirm or cancel the operation. +
 Then, depending on the type of the current entry:
 
-- If it is a directory then it will be deleted, which succeeds only if the
+- If it is \'./' then, after confirmation, Agite performs a 'git reset
+--hard'.
+- If it is a directory then it is deleted, which succeeds only if the
 directory is empty.
 - If it is a file or a symbolic link,
  * if unknown by Git, then it is removed,
@@ -680,7 +682,8 @@ Add::
 
 Enter a message (or name) for the stash and click in the 'Add' button or press
 the Return key. Agit stashes the current worktree (which performs a 'git reset
---hard'). The new stash appears in the list.
+--hard'), then applies it, then returns to the xref:XDir[directory] menu. +
+The new stash has been inserted in the list.
 
 Apply::
 
@@ -699,14 +702,6 @@ After confirmation, drops (deletes) the stash currently selected in the list.
 .Back
 
 This button returns to the xref:XDir[directory] menu.
-
-NOTE: With the 'stash' menu you can perform a 'git reset --hard' in 5 clicks
-from the xref:XDir[directory] menu: +
-- Stash (go to stash menu) +
-- Add (add a new anonymous stash) +
-- Drop (delete the newest stash) +
-- Ok (to confirm deletion) +
-- Back (to the xref:XDir[directory] menu)
 
 Commit
 ~~~~~~

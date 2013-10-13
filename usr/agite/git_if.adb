@@ -733,7 +733,7 @@ package body Git_If is
     end if;
   end Do_Revert;
 
-   -- Launch a reset of index synchronous
+  -- Launch a reset of index synchronous
   procedure Do_Reset (File : in String) is
     Cmd : Many_Strings.Many_String;
   begin
@@ -746,6 +746,17 @@ package body Git_If is
     -- Don't handle error because git exits with 1 if some unstaged changes
     --  remain
   end Do_Reset;
+
+  -- Launch a reset --hard
+  procedure Do_Reset_Hard is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("reset");
+    Cmd.Cat ("--hard");
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+  end Do_Reset_Hard;
 
   -- Launch a global checkout, return "" if OK, else the error
   function Do_Checkout (Rev : in String) return String is
