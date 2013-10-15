@@ -486,18 +486,22 @@ begin
       end case;
     end if;
 
-    -- Color and protection of result list according to status
-    Afpx.Clear_Field (Topof_Fld);
     if Status = Found and then List_Is_Words then
       -- Get position of top and encode field
       Afpx.Encode_Field (Topof_Fld, (0, 0),
                          Images.Integer_Image (Afpx.Line_List.List_Length));
-      Afpx.Set_Field_Activation (Nouns_Fld, True);
+      Afpx.Set_Field_Protection (Nouns_Fld, False);
+      Afpx.Reset_Field  (Nouns_Fld, Reset_String => False);
     else
       Afpx.Clear_Field (Scroll_Fld);
-      Afpx.Clear_Field (Topnum_Fld);
-      Afpx.Set_Field_Activation (Nouns_Fld, False);
+      Afpx.Set_Field_Protection (Nouns_Fld, True);
+      Afpx.Set_Field_Colors (Nouns_Fld,
+           Foreground => Con_Io.Color_Of ("Dark_Grey"),
+           Background => Con_Io.Color_Of ("Light_Grey") );
     end if;
+
+    -- Color and protection of result list according to status
+    Afpx.Clear_Field (Topof_Fld);
     case Status is
       when Found =>
         Afpx.Reset_Field (Afpx.List_Field_No, Reset_String => False);
