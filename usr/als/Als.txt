@@ -1,6 +1,6 @@
 Als
 ===
-V10.0
+V11.0
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, the output format of each entry, and general
@@ -77,7 +77,8 @@ Specify general formatting options
 
   -s (--size)                Sort by decreasing size (see also "-r")
   -t (--time)                Sort by decreasing time (see also "-r")
-  -r (--reverse)             Sort (by name, size or time) in reverse order
+  --len_alpha                Sort by increasing name lenght (see also "-r")
+  -r (--reverse)             Sort (by name, size, time, or len) in reverse order
   -N (--no_sort)             Keep order same as in the directory structure
 
   -M (--merge)               Show a global list of entries (without dir names)
@@ -90,6 +91,11 @@ Other options
 ~~~~~~~~~~~~~
   -h (--help)                Show online help
   -v (--version)             Show current version of Als
+
+Environment Varaibles
+~~~~~~~~~~~~~~~~~~~~~
+The variable 'ALS_MAX_TO_SORT' can be set to define the number of entries above
+which als does not apply the sorting options anymore. The default is 5000.
 
 Notes on compatibility between options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,6 +113,7 @@ Providing these options together is reported as an error.
 
 Examples:
 
+* Sorting criterai are mutually exclusive.
 * -d and -n are mutually exclusive.
 * -S is not compatible with some other formatting options (-l, -1 and -c).
 

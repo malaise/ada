@@ -132,6 +132,17 @@ package body Output is
         else
           return C1.Size > C2.Size;
         end if;
+      when Len =>
+        -- Name len then Name then Time then Size
+        if C1.Name.Length /= C2.Name.Length then
+          return C1.Name.Length < C2.Name.Length;
+        elsif C1.Name /= C2.Name then
+          return C1.Name < C2.Name;
+        elsif C1.Modif_Time /= C2.Modif_Time then
+          return  C1.Modif_Time > C2.Modif_Time;
+        else
+          return C1.Size > C2.Size;
+        end if;
       when Time =>
         -- Time then Size then Name
         if C1.Modif_Time /= C2.Modif_Time then

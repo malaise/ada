@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister, Exit_Code, Str_Util;
 procedure Als is
-  Version : constant String  := "V10.0";
+  Version : constant String  := "V11.0";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -40,7 +40,8 @@ procedure Als is
    31 => (False, Nkc, As.U.Tus ("skip_dirs"),    False),
    32 => (False, 'O', As.U.Tus ("others"),       False),
    33 => (False, Nkc, As.U.Tus ("no_name"),      False),
-   34 => (False, 'U', As.U.Tus ("utc"),          False) );
+   34 => (False, 'U', As.U.Tus ("utc"),          False),
+   35 => (False, Nkc, As.U.Tus ("len_alpha"),    False) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Usage
@@ -103,7 +104,8 @@ procedure Als is
     Put_Line_Error ("How to organize entry list:");
     Put_Line_Error ("  " & Key_Img(08) & "// Sort by decreasing size (see also ""-r"")");
     Put_Line_Error ("  " & Key_Img(09) & "// Sort by decreasing time (see also ""-r"")");
-    Put_Line_Error ("  " & Key_Img(06) & "// Sort (by name, size or time) in reverse order");
+    Put_Line_Error ("  " & Key_Img(35) & "// Sort by increasing name length (see also ""-r"")");
+    Put_Line_Error ("  " & Key_Img(06) & "// Sort (by name, size, time or len) in reverse order");
     Put_Line_Error ("  " & Key_Img(26) & "// Keep same order as in the directory structure");
     Put_Line_Error ("  " & Key_Img(10) & "// Show a global list of entries (without dir names)");
     Put_Line_Error ("  " & Key_Img(12) & "// Also show total size of listed entries");
@@ -137,6 +139,7 @@ procedure Als is
   Recursive : Boolean;
   Sort_By_Size : Boolean;
   Sort_By_Time : Boolean;
+  Sort_By_Len : Boolean;
   No_Sorting : Boolean;
   Merge_Lists : Boolean;
   Date1, Date2 : Entities.Date_Spec_Rec;
@@ -228,14 +231,18 @@ begin
   List_Only_Others := Arg_Dscr.Is_Set (32);
   No_Name := Arg_Dscr.Is_Set (33);
   Utc := Arg_Dscr.Is_Set (34);
+  Sort_By_Len := Arg_Dscr.Is_Set (35);
   Depth := 0;
 
   -- Check sorting
-  if Sort_By_Time and then Sort_By_Size then
-    Error ("-s (--size) and -t (--time) are mutually exclusive");
+  if          (Sort_By_Time and then Sort_By_Size)
+      or else (Sort_By_Time and then Sort_By_Len)
+      or else (Sort_By_Size and then Sort_By_Len) then
+    Error ("-s (--size), -t (--time) and --alpha_len are mutually exclusive");
   end if;
   if No_Sorting and then
-  (Sort_By_Size or else Sort_By_Time or else Sort_Reverse) then
+      (Sort_By_Size or else Sort_By_Time
+       or else Sort_By_Len or else Sort_Reverse) then
     Error ("-n (--no_sort) is exclusive with other sorting options");
   end if;
 
@@ -343,6 +350,8 @@ begin
       Sort_Kind := Output.Time;
     elsif Sort_By_Size then
       Sort_Kind := Output.Size;
+    elsif Sort_By_Len then
+      Sort_Kind := Output.Len;
     else
       Sort_Kind := Output.Alpha;
     end if;
