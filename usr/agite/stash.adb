@@ -142,10 +142,10 @@ package body Stash is
     -- Do stash operation
     Afpx.Suspend;
     case Oper is
-      when Stash_Add => 
+      when Stash_Add =>
         Message := As.U.Tus (Git_If.Add_Stash (Name.Image));
         if Message.Is_Null then
-          Local_oper := Stash_Apl;
+          Local_Oper := Stash_Apl;
           Message := As.U.Tus (Git_If.Apply_Stash (0));
         end if;
       when Stash_Apl => Message := As.U.Tus (Git_If.Apply_Stash (Num));
