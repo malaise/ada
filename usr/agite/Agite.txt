@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V14.8
+V14.9
 
 General purpose
 ---------------
@@ -200,15 +200,17 @@ Directory
 ~~~~~~~~~
 anchor:XDir[]
 The 'Directory' menu lists the git content, subdirectories and files, of
-the current directory. Starting from top, the fields are:
+the current directory. Starting from top, the areas and fields are:
 
 .Environment
 Title::
 The first line shows in the middle the name and current version of Agite.
-+
+
+Branch::
 On the left is the indication of current Git branch. Cliking on the branch
 name launches the xref:XBranches[branches] menu.
-+
+
+Host::
 On the right is the indication of current host (which normally is also
 indicated in title of the X window of Agite).
 
@@ -239,19 +241,25 @@ Bookmarks::
 This button activates the xref:XBook[bookmarks] menu.
 
 PushD and PopD::
-The 'Pushd' button allows storing the current directory and the
-'Popd' button then allows moving back to it.
+The 'PushD' button allows storing the current directory and the
+'PopD' button then allows moving back to it.
 +
-How it works: Agite keeps a cache of two paths, D1 and D2.
+* [underline]#How it works#: Agite keeps a cache of two paths, D1 and D2.
 'PushD' saves D1 as D2 and pushes the current directory as D1,
 while 'PopD' swaps D1 and D2 and moves to the new D1 (if D2 is empty then 'PopD'
-makes a 'PushD' first). Note that PopD is disabled if it would lead to move to
+makes a 'PushD' first). Note that 'PopD' is disabled if it would lead to move to
 the current directory.
 +
-How to use it: At start-up current the directory is automatically pushed and
-'PopD' is disabled. As soon as you move to another directory, 'PopD' allows
-moving back to the original one. Clicking on 'PusD' allows swapping between the
-new pushed and the last pushed directory.
+* [underline]#How to use it#: At start-up current the directory is automatically
+pushed and 'PopD' is disabled. As soon as you move to another directory, 'PopD'
+allows moving back to the original one. Clicking on 'PopD' allows swapping
+between the new pushed and the last pushed directory.
++
+* [underline]#Warning#: Keep in mind that only the first directory (where Agite
+starts) is automatically pushed. Changing to a new directory doesn't make it
+automatically pushed. For example, if you start in directory A, then change to B
+(and do not explicitly push it), then change to C, then 'PopD', Agite will
+change to directory A (not B).
 
 .List
 
@@ -265,7 +273,7 @@ and at the top of the list area. Otherwise the selection is unchanged. +
 A tick box button allows searching for the directory (starting with the
 character that will be clicked) instead of a file.
 
-The list::
+The list itself::
 The list shows the directories then the files of the xref:XGo[current directory],
 in alphabetical order.
 +
@@ -320,7 +328,7 @@ Ctrl + Page Up (for Top) and Ctrl + Page Down (for Bottom).
 All the lists of Agite screens have the same means for navigation.
 
 NOTE: Keep in mind that the xref:XQuickSearch[quick search] is also a good way to
-quickly find a file.
+quickly find a file or directory.
 
 .Actions on the current selection in the list
 anchor:XEdit[]
