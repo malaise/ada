@@ -3,7 +3,7 @@
 # Arg error
 [
 "Error. Usage: entry <entry_time> [ { <leave_time> <entry_time> } ]"
-putl "<time> ::= h[.ms]    and times must be crescent" putl
+putl "<time> ::= h[.mn]    and times must be crescent" putl
 ssize popn 1 setexit retall
 ] E popr
 
