@@ -365,6 +365,10 @@ package body Commit is
             when Afpx_Xref.Commit.Stage_All =>
               -- StageAll button
               Do_Stage_All;
+            when Afpx_Xref.Commit.Copy =>
+              -- Copy button
+              Decode_Comment;
+              Afpx.Set_Selection (Comment.Image);
             when Afpx_Xref.Commit.Sign =>
               -- Sign button
               Do_Sign;
