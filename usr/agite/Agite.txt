@@ -730,6 +730,15 @@ Append the user name and email address to the comment.
 
 Clear the comment fields.
 
+.Copy
+Copy the text of the Comment in the X11 selection buffer (for paste using
+the middle mouse button). Note that this X11 selection buffer is different from
+the clipboard of the window manager.
+
+NOTE: The clipboard of the window manager, (which can be accessed in some
+applications by Ctrl-C, Ctrl-V and the right mouse button opening a pop-up
+menu), is not available in Agite, neither for copy nor for paste.
+
 .Comment
 
 You can enter up to 7 lines of comment.
