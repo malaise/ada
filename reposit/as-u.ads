@@ -76,7 +76,7 @@ package As.U is
                    Occurence  : Positive := 1) return Natural;
 
   -- Count occurences of a fragment
-  function Count (Source   : Asu_Us;
+  function Count (Source  : Asu_Us;
                   Pattern : String) return Natural;
 
   -- Overwrite a part of a string by a new one
@@ -85,10 +85,10 @@ package As.U is
   -- Extend Source if Position + New_Item.Length - 1 > Source.Length
   -- May raise Index_Error if Position > Source.Length + 1
   procedure Overwrite (Source   : in out Asu_Us;
-                       Position   : in Positive;
+                       Position : in Positive;
                        New_Item : in Asu_Us);
   procedure Overwrite (Source   : in out Asu_Us;
-                       Position   : in Positive;
+                       Position : in Positive;
                        New_Item : in String);
 
   -- Replace a slice by a new string
@@ -144,9 +144,9 @@ package As.U is
           return Asu_Us;
 
   -- Initialize from a repeated pattern
-  function "*" (Left  : Natural; Right : Character) return Asu_Us;
-  function "*" (Left  : Natural; Right : String) return Asu_Us;
-  function "*" (Left  : Natural; Right : Asu_Us) return Asu_Us;
+  function "*" (Left : Natural; Right : Character) return Asu_Us;
+  function "*" (Left : Natural; Right : String) return Asu_Us;
+  function "*" (Left : Natural; Right : Asu_Us) return Asu_Us;
 
 private
   type String_Access is access all String;

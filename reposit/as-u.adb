@@ -392,7 +392,7 @@ package body As.U is
       return 0;
   end Locate;
 
-  function Count (Source   : Asu_Us;
+  function Count (Source  : Asu_Us;
                   Pattern : String) return Natural is
     Result : Natural := 0;
   begin
@@ -405,7 +405,7 @@ package body As.U is
   end Count;
 
   procedure Overwrite (Source   : in out Asu_Us;
-                       Position   : in Positive;
+                       Position : in Positive;
                        New_Item : in Asu_Us) is
     -- Index in New_Item of last overwritting char (others are appended)
     Lo : Natural;
@@ -421,7 +421,7 @@ package body As.U is
   end Overwrite;
 
   procedure Overwrite (Source   : in out Asu_Us;
-                       Position   : in Positive;
+                       Position : in Positive;
                        New_Item : in String) is
     -- Index in New_Item of last overwritting char (others are appended)
     Lo : Natural;
@@ -568,7 +568,7 @@ package body As.U is
     return Result;
   end Tail;
 
-  function "*" (Left  : Natural; Right : Character) return Asu_Us is
+  function "*" (Left : Natural; Right : Character) return Asu_Us is
     Result : Asu_Us;
   begin
     Init (Result, Left);
@@ -578,7 +578,7 @@ package body As.U is
     return Result;
   end "*";
 
-  function "*" (Left  : Natural; Right : String) return Asu_Us is
+  function "*" (Left : Natural; Right : String) return Asu_Us is
     Result : Asu_Us;
     Ptr    : Integer := 1;
   begin
@@ -590,7 +590,7 @@ package body As.U is
      return Result;
   end "*";
 
-  function "*" (Left  : Natural; Right : Asu_Us) return Asu_Us is
+  function "*" (Left : Natural; Right : Asu_Us) return Asu_Us is
     Result : Asu_Us;
     Ptr    : Integer := 1;
   begin

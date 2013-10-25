@@ -338,7 +338,7 @@ package body As.B is
       return 0;
   end Locate;
 
-  function Count (Source   : Asb_Bs;
+  function Count (Source  : Asb_Bs;
                   Pattern : String) return Natural is
     Result : Natural := 0;
   begin
@@ -351,7 +351,7 @@ package body As.B is
   end Count;
 
   procedure Overwrite (Source   : in out Asb_Bs;
-                       Position   : in Positive;
+                       Position : in Positive;
                        New_Item : in Asb_Bs) is
    -- Index in New_Item of last overwritting char (others are appended)
    Lo : Natural;
@@ -367,7 +367,7 @@ package body As.B is
   end Overwrite;
 
   procedure Overwrite (Source   : in out Asb_Bs;
-                       Position   : in Positive;
+                       Position : in Positive;
                        New_Item : in String) is
     -- Index in New_Item of last overwritting char (others are appended)
     Lo : Natural;
@@ -510,7 +510,7 @@ package body As.B is
     return Result;
   end Tail;
 
-  function "*" (Left  : Natural; Right : Character) return Asb_Bs is
+  function "*" (Left : Natural; Right : Character) return Asb_Bs is
     Result : Asb_Bs(Left);
   begin
     for I in 1 .. Left loop
@@ -519,7 +519,7 @@ package body As.B is
     return Result;
   end "*";
 
-  function "*" (Left  : Natural; Right : String) return Asb_Bs is
+  function "*" (Left : Natural; Right : String) return Asb_Bs is
     Result : Asb_Bs(Left * Right'Length);
     Ptr    : Integer := 1;
   begin
@@ -530,7 +530,7 @@ package body As.B is
      return Result;
   end "*";
 
-  function "*" (Left  : Natural; Right : Asb_Bs) return Asb_Bs is
+  function "*" (Left : Natural; Right : Asb_Bs) return Asb_Bs is
     Result : Asb_Bs(Right.Last);
     Ptr    : Integer := 1;
   begin

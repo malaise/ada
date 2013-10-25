@@ -81,7 +81,7 @@ package As.B is
                    Occurence  : Positive := 1) return Natural;
 
   -- Count occurences of a fragment
-  function Count (Source   : Asb_Bs;
+  function Count (Source  : Asb_Bs;
                   Pattern : String) return Natural;
 
   -- Overwrite a part of a string by a new one
@@ -90,10 +90,10 @@ package As.B is
   -- Extend Source if Position + New_Item.Length - 1 > Source.Length
   -- May raise Index_Error if Position > Source.Length + 1
   procedure Overwrite (Source   : in out Asb_Bs;
-                       Position   : in Positive;
+                       Position : in Positive;
                        New_Item : in Asb_Bs);
   procedure Overwrite (Source   : in out Asb_Bs;
-                       Position   : in Positive;
+                       Position : in Positive;
                        New_Item : in String);
 
   -- Replace a slice by a new string
@@ -149,9 +149,9 @@ package As.B is
           return Asb_Bs;
 
   -- Initialize from a repeated pattern
-  function "*" (Left  : Natural; Right : Character) return Asb_Bs;
-  function "*" (Left  : Natural; Right : String) return Asb_Bs;
-  function "*" (Left  : Natural; Right : Asb_Bs) return Asb_Bs;
+  function "*" (Left : Natural; Right : Character) return Asb_Bs;
+  function "*" (Left : Natural; Right : String) return Asb_Bs;
+  function "*" (Left : Natural; Right : Asb_Bs) return Asb_Bs;
 
 private
 
