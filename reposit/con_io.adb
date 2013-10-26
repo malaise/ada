@@ -1282,6 +1282,9 @@ package body Con_Io is
     if Width > Win.Lower_Right.Col - Win.Upper_Left.Col  + 1 then
       raise String_Too_Long;
     end if;
+    if Pos > Width then
+      raise Constraint_Error;
+    end if;
 
     -- Put the string
     Move (Name, First_Pos);
