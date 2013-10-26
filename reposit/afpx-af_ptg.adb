@@ -150,7 +150,8 @@ package body Af_Ptg is
       -- Handle wheele here: Click 4/5 in list
       if List_Present
       and then In_Field_Absolute(Lfn, Click_Pos)
-      and then Mouse_Status.Status = Con_Io.Pressed then
+      and then Mouse_Status.Status = Con_Io.Pressed
+      and then Mouse_Status.Button /= Con_Io.Middle then
         case Mouse_Status.Button is
           when Con_Io.Up =>
             List_Scrolled := Af_List.Update (Up, True);
@@ -525,22 +526,23 @@ package body Af_Ptg is
                         .. Field.Char_Index + Field.Data_Len - 1));
     -- New content inserted before / overwritting from current pos
     if Handle.Insert then
-      Str.Insert (Column + 1, Selection);
+      Str.Insert (1, Selection);
     else
-      Str.Overwrite (Column + 1, Selection);
+      Str.Overwrite (1, Selection);
     end if;
 
-    -- Trunk at end of field
+    -- Trunk at end of field, Str must be Len length
     Len := Field.Data_Len - Column;
     if Str.Length > Len then
-      Result := Sel_New_Field;
-      Str.Delete (Str.Length + 1, Len);
-    else
-      Result := Result + Selection'Length;
+      Str.Delete (Len + 1, Str.Length);
     end if;
-
-    -- Update offset if necessary
-    -- @@@
+    if Column + Selection'Length < Field.Data_Len then
+      -- Update offset if necessary
+      -- @@@
+      Result := Column + Selection'Length;
+    else
+      Result := Sel_New_Field;
+    end if;
 
     -- 'Encode' new content
     Af_Dscr.Chars(Field.Char_Index + Column
@@ -1074,6 +1076,11 @@ package body Af_Ptg is
           null;
       end case;
 
+      if Get_Active then
+        Get_Handle.Cursor_Field := Field_Range (Cursor_Field);
+        Get_Handle.Offset := Af_Dscr.Fields(Cursor_Field).Offset;
+      end if;
+
       -- Notify of change of list because of key
       if List_Scrolled and then List_Change_Cb /= null then
         List_Change_Cb (Scroll, Af_List.Get_Status);
@@ -1082,10 +1089,6 @@ package body Af_Ptg is
       exit when Done;
     end loop;
 
-    if Get_Active then
-      Get_Handle.Cursor_Field := Field_Range (Cursor_Field);
-      Get_Handle.Offset := Af_Dscr.Fields(Cursor_Field).Offset;
-    end if;
   end Ptg;
 
 end Af_Ptg;
