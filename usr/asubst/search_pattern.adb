@@ -255,13 +255,12 @@ package body Search_Pattern is
       exception
         when Constraint_Error =>
           Error ("Invalid hexadecimal sequence "
-               & The_Pattern.Slice (Index, Index + 1)
+               & The_Pattern.Slice (Index, Index)
                & " in pattern");
       end;
       -- First digit: 1 * C
       if Index + 1 > The_Pattern.Length then
         Error ("Uncomplete hexadecimal sequence at the end of pattern");
-        raise Parse_Error;
       end if;
       begin
         Result := Result
@@ -438,7 +437,7 @@ package body Search_Pattern is
               The_Pattern.Slice (Start_Index, Stop_Index),
                                  Tmp_Index, "\Rr");
             exit when Tmp_Index = 0;
-            if The_Pattern.Element (Tmp_Index) /= '/' then
+            if The_Pattern.Element (Tmp_Index) /= '\' then
               Log.Sea ("Search, found Esc char >"
                      & The_Pattern.Element (Tmp_Index) & "<");
               -- "\RIJ" or "\rIJ' replaced by 'R' or 'r', and store backref
