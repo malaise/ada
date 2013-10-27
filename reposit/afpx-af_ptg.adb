@@ -511,8 +511,9 @@ package body Af_Ptg is
                      Console.Get_Selection (Af_Con_Io.Col_Range_Last + 1));
     -- Cursor (Get) field and its initial content
     Field : constant Afpx_Typ.Field_Rec
-          := Af_Dscr.Fields(Afpx_Typ.Absolute_Field_Range(Handle.Cursor_Field));
+          := Af_Dscr.Fields(Afpx_Typ.Field_Range(Handle.Cursor_Field));
     Column : constant  Con_Io.Col_Range := Handle.Cursor_Col;
+    Offset : Con_Io.Col_Range;
     Str : Unicode.Unbounded_Unicode.Unbounded_Array;
     Len : Natural;
     Result : Integer;
@@ -536,13 +537,28 @@ package body Af_Ptg is
     if Str.Length > Len then
       Str.Delete (Len + 1, Str.Length);
     end if;
-    if Column + Selection'Length < Field.Data_Len then
-      -- Update offset if necessary
-      -- @@@
-      Result := Column + Selection'Length;
+
+    -- See if result is within Data_Len
+    if Column + Selection'Length >= Field.Data_Len then
+      -- Cursor would move out of field
+      if Field.Move_Next then
+        Result := Sel_New_Field;
+      else
+        Result := Field.Width - 1;
+      end if;
+      -- Max offset
+      Offset := Field.Data_Len - Field.Width;
     else
-      Result := Sel_New_Field;
+      Result := Column + Selection'Length;
+      if Result >= Field.Width then
+        Offset := Result - Field.Width + 1;
+      else
+        Offset := 0;
+      end if;
     end if;
+
+    -- Update offset
+    Af_Dscr.Fields(Afpx_Typ.Field_Range(Handle.Cursor_Field)).Offset := Offset;
 
     -- 'Encode' new content
     Af_Dscr.Chars(Field.Char_Index + Column
@@ -866,7 +882,11 @@ package body Af_Ptg is
           end if;
         when Con_Io.Right | Con_Io.Full =>
           if Get_Active then
-            if Field.Move_Next then
+            if Field.Offset + Field.Width < Field.Data_Len then
+              -- Offset + Width must remain <= Data_Len
+              Field.Offset := Field.Offset + 1;
+              Af_Dscr.Fields(Cursor_Field).Offset := Field.Offset;
+            elsif Field.Move_Next then
               -- End (right) of previous field
               -- Restore normal color of previous field
               Put_Field (Cursor_Field, Normal);
@@ -878,15 +898,14 @@ package body Af_Ptg is
                   Right_Full, Cursor_Col_Cb);
               New_Field := True;
               Get_Handle.Insert := False;
-            elsif Field.Offset + Field.Width < Field.Data_Len then
-              -- Offset + Width must remain <= Data_Len
-              Field.Offset := Field.Offset + 1;
-              Af_Dscr.Fields(Cursor_Field).Offset := Field.Offset;
             end if;
           end if;
         when Con_Io.Left =>
           if Get_Active then
-            if Field.Move_Prev then
+            if Field.Offset /= 0 then
+              Field.Offset := Field.Offset - 1;
+              Af_Dscr.Fields(Cursor_Field).Offset := Field.Offset;
+            elsif Field.Move_Prev then
               -- Left on previous field
               -- Restore normal color of previous field
               Put_Field (Cursor_Field, Normal);
@@ -898,9 +917,6 @@ package body Af_Ptg is
                   Left, Cursor_Col_Cb);
               New_Field := True;
               Get_Handle.Insert := False;
-            elsif Field.Offset /= 0 then
-              Field.Offset := Field.Offset - 1;
-              Af_Dscr.Fields(Cursor_Field).Offset := Field.Offset;
             end if;
           end if;
         when Con_Io.Tab =>
@@ -980,6 +996,7 @@ package body Af_Ptg is
             elsif Selection_Result /= Sel_No_Change then
               -- Selection moved the cursor
               Get_Handle.Cursor_Col := Selection_Result;
+              Get_Handle.Offset := Af_Dscr.Fields(Cursor_Field).Offset;
             end if;
           end if;
         when Con_Io.Mouse_Button =>
