@@ -413,8 +413,8 @@ procedure Agite is
   -- Add a dir or file
   procedure Do_Add_File (File : in Git_If.File_Entry_Rec) is
   begin
-    if File.S2 = '?' or else File.S2 = ' ' then
-      -- Untracked or not in index
+    if File.S2 = '?' or else File.S2 = ' ' or else File.S2 = 'U' then
+      -- Untracked or not in index or unmerged
       Git_If.Do_Add (File.Name.Image);
       Encode_Files (Force => False);
     end if;
