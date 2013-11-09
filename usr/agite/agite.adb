@@ -390,8 +390,10 @@ procedure Agite is
     Get_Handle := (others => <>);
     Utils.X.Encode_Field (Host_Str, Afpx_Xref.Main.Host);
     Change_Dir (Dir);
-    if Pos /= 0 and then not Afpx.Line_List.Is_Empty then
+    if Pos /= 0 and then Pos >= Afpx.Line_List.List_Length then
       Afpx.Line_List.Move_At (Pos);
+    else
+      Afpx.Line_List.Rewind;
     end if;
     Afpx.Update_List (Afpx.Center_Selected);
   end Init;
