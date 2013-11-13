@@ -6,10 +6,23 @@ This README file describes briefly the main directories of the Ada contrib.
 The software compiles with Ada 2012 (Gnat GPL 2012) and runs on Unix (Linux).
 
 Some programs depend on anchor:XPCRE[] PCRE (Perl Compatible Regular Expressions) and work
-with version 7.8 or above (8.21 is OK).
+with version 7.8 or above (8.21 is OK) and require the PCRE developpement
+package.
 
-The graphical library is based on X11 and needs the font packages 75dpi and
-100dpi and the corresponding transcoded (from ISO 10646-1) versions.
+The 'asciidoc' suite is used for the generation of the documentation.
+
+The graphical library is based on X11 and needs:
+
+* the X11 developpement package,
+* the font packages 75dpi and 100dpi and the corresponding transcoded (from
+  ISO 10646-1) versions.
+
+Finally, a C libray needs the lib gdbm developpement package.
+
+NOTE: Some C includes and libraries are installed in '/usr/local'. The first
+time, you may need to install them as root then change their owner.
+You may also need to add '/usr/local/lib' in '/etc/ld.so.conf' (and do a
+'ldconfig').
 
 Programs are rated from 1 (simple) to 3 (very complex), on subjective
 criteria.
