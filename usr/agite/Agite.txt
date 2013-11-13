@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V14.12
+V14.13
 
 General purpose
 ---------------
@@ -388,6 +388,7 @@ content,
 content
  * if known by Git and renamed, then the original file is restored to its last
 committed content and the new one is reset as unknown by Git
+ * if up to date in Git, then it is removed from Git
 
 +
 Note: The Revert button has no effect on a file known by Git and not modified.

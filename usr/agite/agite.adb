@@ -435,6 +435,7 @@ procedure Agite is
       if File.Name.Image = "." then
         if Confirm ("Ready to reset --hard the whole worktree", "") then
           Git_If.Do_Reset_Hard;
+          Position := 1;
         end if;
       elsif File.Name.Image = ".." then
         return;
@@ -453,6 +454,7 @@ procedure Agite is
             -- Very unlikely but maybe the dir has disappeared meanwhile
             null;
         end;
+        Position := 1;
       end if;
     elsif File.Kind = '?' then
       if File.S2 = ' ' and then File.S3 = 'D' then
@@ -460,6 +462,7 @@ procedure Agite is
         if Confirm ("Ready to revert:",
                     Directory.Build_File_Name (Path.Image, Name, "")) then
           Git_If.Do_Revert (Name);
+          Position := 1;
         end if;
       elsif File.S2 = 'D' and then File.S3 = ' ' then
         -- File is deleted in Git, reset and checkout from repository
@@ -467,13 +470,13 @@ procedure Agite is
                     Directory.Build_File_Name (Path.Image, Name, "")) then
           Git_If.Do_Reset (Name);
           Git_If.Do_Revert (Name);
+          Position := 1;
         end if;
       elsif File.S3 = 'D' then
         -- File is staged and has unstaged deletion, reset
         if Confirm ("Ready to reset:",
                     Directory.Build_File_Name (Path.Image, Name, "")) then
           Git_If.Do_Reset (Name);
-          Position := Position - 1;
         end if;
       end if;
     elsif File.Kind /= ' ' and then File.Kind /= '@' then
@@ -496,6 +499,7 @@ procedure Agite is
           -- Prev has the relative path to root
           Git_If.Do_Reset (Root.Image & Prev);
           Git_If.Do_Revert (Root.Image & Prev);
+          Position := Position - 1;
         end if;
       elsif File.S2 = 'M' then
         -- File is updated in index, reset the index and restore
@@ -516,6 +520,13 @@ procedure Agite is
       if Confirm ("Ready to revert:",
                   Directory.Build_File_Name (Path.Image, Name, "")) then
         Git_If.Do_Revert (Name);
+      end if;
+    elsif File.S2 = ' ' and then File.S3 = ' ' then
+      -- File is up to date, remove it from Git
+      if Confirm ("Ready to remove for Git:",
+                  Directory.Build_File_Name (Path.Image, Name, "")) then
+        Git_If.Do_Rm (Name);
+        Position := 1;
       end if;
     else
       -- File is staged and has unstaged changes, reset
@@ -567,102 +578,99 @@ procedure Agite is
   type Action_List is (Default, Edit, Diff, History, Revert, Add);
   procedure List_Action (Action : in Action_List) is
     File : constant Git_If.File_Entry_Rec := Get_Current_File;
+    File_Name : constant String := File.Name.Image;
     Target : As.U.Asu_Us;
     Kind : Character;
   begin
-    declare
-      File_Name : constant String := File.Name.Image;
-    begin
-      if File.Kind = '/' then
-        -- Dir
-        case Action is
-          when Default =>
-            Change_Dir (File_Name);
-          when Edit  =>
-            null;
-          when Diff =>
-            if File_Name /= ".." then
-              Git_If.Launch_Diff (Differator.Image, File_Name);
-            end if;
-          when History =>
-            if File_Name = "." then
-              Do_History ("", False);
-            elsif File_Name /= ".." then
-              Do_History (File_Name, False);
-            end if;
-          when Revert =>
-            if File_Name /= ".." then
-              Do_Revert (File_Name, File.Prev.Image);
-            end if;
-          when Add =>
-            if File_Name /= ".." then
-              Git_If.Do_Add (File_Name);
-            end if;
-        end case;
-      elsif File.Kind = '?' then
-        case Action is
-          when Revert =>
-            -- File or link deleted in Git
+    if File.Kind = '/' then
+      -- Dir
+      case Action is
+        when Default =>
+          Change_Dir (File_Name);
+        when Edit  =>
+          null;
+        when Diff =>
+          if File_Name /= ".." then
+            Git_If.Launch_Diff (Differator.Image, File_Name);
+          end if;
+        when History =>
+          if File_Name = "." then
+            Do_History ("", False);
+          elsif File_Name /= ".." then
+            Do_History (File_Name, False);
+          end if;
+        when Revert =>
+          if File_Name /= ".." then
             Do_Revert (File_Name, File.Prev.Image);
-          when Diff =>
-            -- File is deleted: diff from last commit to null
+          end if;
+        when Add =>
+          if File_Name /= ".." then
+            Git_If.Do_Add (File_Name);
+          end if;
+      end case;
+    elsif File.Kind = '?' then
+      case Action is
+        when Revert =>
+          -- File or link deleted in Git
+          Do_Revert (File_Name, File.Prev.Image);
+        when Diff =>
+          -- File is deleted: diff from last commit to null
+          declare
+            Hash : constant Git_If.Git_Hash := Git_If.Last_Hash (File_Name);
+          begin
+            if Hash /= Git_If.No_Hash then
+              Git_If.Launch_Delta (Differator.Image, File_Name,
+                                   Hash, "");
+            end if;
+          end;
+        when others =>
+          null;
+      end case;
+    elsif File.Kind = '@' then
+      case Action is
+        -- Link
+        when Default =>
+          Link_Target (File_Name, Target, Kind);
+          if Kind = '/' then
+            Change_Dir (Target.Image);
+          elsif Kind = ' ' then
+             Do_Edit (Target.Image);
+          end if;
+        when Revert =>
+          Do_Revert (File_Name, File.Prev.Image);
+        when Add =>
+          Do_Add_File (File);
+        when others =>
+          null;
+      end case;
+    else
+      -- Regular tracked file
+      case Action is
+        when Edit | Default =>
+          Do_Edit (File_Name);
+        when Diff =>
+          if File.S2 = ' ' and then File.S3 = ' ' then
+            -- File is unmodified: diff on last commit of it
             declare
               Hash : constant Git_If.Git_Hash := Git_If.Last_Hash (File_Name);
             begin
               if Hash /= Git_If.No_Hash then
                 Git_If.Launch_Delta (Differator.Image, File_Name,
-                                     Hash, "");
+                                     Hash & "^", Hash);
               end if;
             end;
-          when others =>
-            null;
-        end case;
-      elsif File.Kind = '@' then
-        case Action is
-          -- Link
-          when Default =>
-            Link_Target (File_Name, Target, Kind);
-            if Kind = '/' then
-              Change_Dir (Target.Image);
-            elsif Kind = ' ' then
-               Do_Edit (Target.Image);
-            end if;
-          when Revert =>
-            Do_Revert (File_Name, File.Prev.Image);
-          when Add =>
-            Do_Add_File (File);
-          when others =>
-            null;
-        end case;
-      else
-        -- Regular tracked file
-        case Action is
-          when Edit | Default =>
-            Do_Edit (File_Name);
-          when Diff =>
-            if File.S2 = ' ' and then File.S3 = ' ' then
-              -- File is unmodified: diff on last commit of it
-              declare
-                Hash : constant Git_If.Git_Hash := Git_If.Last_Hash (File_Name);
-              begin
-                if Hash /= Git_If.No_Hash then
-                  Git_If.Launch_Delta (Differator.Image, File_Name,
-                                       Hash & "^", Hash);
-                end if;
-              end;
-            else
-              -- File is "modified"
-              Git_If.Launch_Diff (Differator.Image, File_Name);
-            end if;
-          when History =>
-            Do_History (File_Name, True);
-          when Revert =>
-            Do_Revert (File_Name, File.Prev.Image);
-          when Add =>
-            Do_Add_File (File);
-        end case;
-      end if;
-    end;
+          else
+            -- File is "modified"
+            Git_If.Launch_Diff (Differator.Image, File_Name);
+          end if;
+        when History =>
+          Do_History (File_Name, True);
+        when Revert =>
+          Do_Revert (File_Name, File.Prev.Image);
+        when Add =>
+          Do_Add_File (File);
+      end case;
+    end if;
   end List_Action;
 
   -- Locate a file that has its first letter = Key
