@@ -271,7 +271,8 @@ procedure Xwords is
     Afpx.Line_List.Delete_List (Deallocate => False);
 
     -- Build command
-    Word := As.U.Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
+    Word := As.U.Tus (Lower_Str (Strip (
+              Afpx.Decode_Field (Get_Fld, 0, False))));
     Com.Set ("words");
     case Num is
       when Search_Fld | Research_Fld =>
@@ -316,7 +317,7 @@ procedure Xwords is
       end if;
     end if;
 
-    -- Store in history and selection if search
+    -- Store in history if search
     if (Num = Search_Fld or else Num = Research_Fld)
     and then not Arg.Image.Is_Null then
       History.Insert (Word);
@@ -353,10 +354,24 @@ procedure Xwords is
 
       -- Move to Top
       Afpx.Line_List.Rewind;
-      Afpx.Update_List(Afpx.Top);
 
-      -- Set selection to first entry
-      Set_Current_Selection;
+      if (Num = Search_Fld or else Num = Research_Fld) then
+        -- Set selection to first entry
+        Set_Current_Selection;
+      else
+        if Afpx.Line_List.List_Length < 2 then
+          -- Add/del with no result
+          Afpx.Set_Selection (Lower_Str (Word.Image));
+        else
+          -- Add/del with result: word added/deleted is at second line
+          Afpx.Line_List.Move_To;
+          Set_Current_Selection;
+          Afpx.Line_List.Rewind;
+        end if;
+      end if;
+
+      -- Move to top
+      Afpx.Update_List(Afpx.Top);
     end if;
 
     -- Make ready for a brand new command
@@ -486,7 +501,8 @@ begin
       end case;
     end if;
 
-    if Status = Found and then List_Is_Words then
+    if Status = Found and then List_Is_Words
+    and then not Afpx.Line_List.Is_Empty then
       -- Get position of top and encode field
       Afpx.Encode_Field (Topof_Fld, (0, 0),
                          Images.Integer_Image (Afpx.Line_List.List_Length));
