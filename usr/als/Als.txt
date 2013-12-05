@@ -1,6 +1,6 @@
 Als
 ===
-V11.0
+V12.0
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, the output format of each entry, and general
@@ -48,6 +48,7 @@ Specify which entry to select
                              Scan only directories that match the criteria
   <exclude_dir> ::= --exclude_dir=<criteria>
                              Don't scan directories that match the criteria
+  --follow_links             Consider final target of symbolic links
 
   <date_spec> [ <date_spec> ]
     <date_spec> ::= -d <date_comp><date> | --date=<date_comp><date>
@@ -69,7 +70,6 @@ Specify how to show each entry selected
   -p (--path)                Show full path of entries
   <separator> ::= -S <string> | --separator=<string>
                              Insert <string> between each entry
-  --follow_links             Show final target of symbolic links
   --date_iso                 Show date in strict ISO format (<date>T<time>)
 
 Specify general formatting options
@@ -92,7 +92,7 @@ Other options
   -h (--help)                Show online help
   -v (--version)             Show current version of Als
 
-Environment Varaibles
+Environment Variables
 ~~~~~~~~~~~~~~~~~~~~~
 The variable 'ALS_MAX_TO_SORT' can be set to define the number of entries above
 which als does not apply the sorting options anymore. The default is 5000.

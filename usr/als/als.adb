@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister, Exit_Code, Str_Util;
 procedure Als is
-  Version : constant String  := "V11.0";
+  Version : constant String  := "V12.0";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;

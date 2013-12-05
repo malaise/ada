@@ -486,14 +486,34 @@ package body Lister is
       -- Check if it is a directory and matches
       declare
         Lstr : constant String := Str.Image;
+        Kind : Directory.File_Kind_List;
+        Link_Target : As.U.Asu_Us;
       begin
         if Lstr /= "."
-        and then Lstr /= ".."
-        and then Directory.File_Kind (
-            Directory.Build_File_Name (Dir, Lstr, "")) = Directory.Dir
-        and then Dir_Matches (Lstr) then
-          -- Append entity to list
-          List.Insert (Str);
+        and then Lstr /= ".." then
+          Kind := Directory.File_Kind (
+              Directory.Build_File_Name (Dir, Lstr, ""));
+          if Kind = Directory.Dir and then Dir_Matches (Lstr) then
+            -- Directory matches: Append entity to list
+            List.Insert (Str);
+          elsif Follow_Links and then Kind = Directory.Link
+          and then Dir_Matches (Lstr) then
+            -- Follow_Link and link matches, check it is a directory
+            begin
+              Link_Target := As.U.Tus (Directory.Read_Link (
+                  File_Name => Lstr, Recursive => True));
+              Kind := Directory.File_Kind_List(Sys_Calls.File_Stat
+                  (Link_Target.Image).Kind);
+            exception
+              when others =>
+                -- Skip unreadable link
+                raise Directory.Access_Error;
+            end;
+            if Kind = Directory.Dir then
+              -- Link points to a dir: Append entity to list
+              List.Insert (Link_Target);
+            end if;
+          end if;
         end if;
       exception
         when Directory.Access_Error =>

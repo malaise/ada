@@ -3,7 +3,7 @@ with Entities;
 package Targets is
 
   -- List according to selection criteria
-  -- Return True is a matching file dir was found
+  -- Return True if a matching file dir was found
   function List (Dots : Entities.Dots_Kind_List;
                  Recursive : Boolean;
                  Depth : Natural;

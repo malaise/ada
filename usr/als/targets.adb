@@ -54,9 +54,13 @@ package body Targets is
       Subdirs.Rewind;
       loop
         Subdirs.Read (Subdir, Moved => Moved);
+        if Subdir.Is_Null or else Subdir.Element (1) /= '/' then
+          -- Relative path to Dir
+          Subdir := As.U.Tus (Directory.Build_File_Name (
+              Dir, Subdir.Image, ""));
+        end if;
         -- Recursive invocation
-        Found := Found or Do_Dir (Directory.Build_File_Name (
-             Dir, Subdir.Image, ""), Put_Dir_Names, Level + 1);
+        Found := Found or Do_Dir (Subdir.Image, Put_Dir_Names, Level + 1);
         exit when not Moved;
       end loop;
       Subdirs.Delete_List (Deallocate => False);
