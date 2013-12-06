@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister, Exit_Code, Str_Util;
 procedure Als is
-  Version : constant String  := "V12.0";
+  Version : constant String  := "V13.0";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -41,7 +41,8 @@ procedure Als is
    32 => (False, 'O', As.U.Tus ("others"),       False),
    33 => (False, Nkc, As.U.Tus ("no_name"),      False),
    34 => (False, 'U', As.U.Tus ("utc"),          False),
-   35 => (False, Nkc, As.U.Tus ("len_alpha"),    False) );
+   35 => (False, Nkc, As.U.Tus ("len_alpha"),    False),
+   36 => (False, 'q', As.U.Tus ("quiet"),        False) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Usage
@@ -108,8 +109,9 @@ procedure Als is
     Put_Line_Error ("  " & Key_Img(06) & "// Sort (by name, size, time or len) in reverse order");
     Put_Line_Error ("  " & Key_Img(26) & "// Keep same order as in the directory structure");
     Put_Line_Error ("  " & Key_Img(10) & "// Show a global list of entries (without dir names)");
-    Put_Line_Error ("  " & Key_Img(12) & "// Also show total size of listed entries");
+    Put_Line_Error ("  " & Key_Img(21) & "// Also show number and total size of listed entries");
     Put_Line_Error ("  " & Key_Img(34) & "// Use UTC i.o. local time for date spec and output");
+    Put_Line_Error ("  " & Key_Img(36) & "// Do not show entries");
     Put_Line_Error ("Exits with 0 if a result, 1 if none and 2 on error.");
   end Usage;
   Error_Exception : exception;
@@ -153,6 +155,7 @@ procedure Als is
   List_Only_Others : Boolean;
   No_Name : Boolean;
   Utc : Boolean;
+  Quiet : Boolean;
 
   -- Parse a date argument
   function Parse_Date (Str : String) return Entities.Date_Spec_Rec is separate;
@@ -233,6 +236,7 @@ begin
   Utc := Arg_Dscr.Is_Set (34);
   Sort_By_Len := Arg_Dscr.Is_Set (35);
   Depth := 0;
+  Quiet := Arg_Dscr.Is_Set (36);
 
   -- Check sorting
   if          (Sort_By_Time and then Sort_By_Size)
@@ -368,7 +372,7 @@ begin
       Format_Kind := Output.Simple;
     end if;
     Output.Set_Style (Sort_Kind, Sort_Reverse, Format_Kind, Merge_Lists,
-                      Full_Path, Classify, Date_Iso, Separator);
+                      Full_Path, Classify, Date_Iso, Quiet, Separator);
   end;
 
   -- Depth
@@ -415,8 +419,7 @@ begin
   end if;
 
   if Put_Total then
-    Output.Put_Size (Lister.Get_Total);
-    Output.New_Line;
+    Output.Put_Line_Size (Lister.Get_Number, Lister.Get_Total);
   end if;
 
 exception

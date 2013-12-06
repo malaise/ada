@@ -12,6 +12,7 @@ package Output is
                        Full_Path   : in Boolean;
                        Classify    : in Boolean;
                        Date_Iso    : in Boolean;
+                       Quiet       : in Boolean;
                        Separator   : in As.U.Asu_Us);
 
   -- Sort list and put according to style
@@ -25,7 +26,7 @@ package Output is
   procedure New_Line;
 
   -- Put Total size, no new lin
-  procedure Put_Size (Size : in Lister.Size_Type);
+  procedure Put_Line_Size (Number : in Natural; Size : in Lister.Size_Type);
 
 end Output;
 

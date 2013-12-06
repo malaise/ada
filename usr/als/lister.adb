@@ -18,7 +18,8 @@ package body Lister is
   -- Total size
   Total_Active : Boolean := False;
   Total_Size : Size_Type := 0;
-  procedure Add_Size (Size : in Sys_Calls.Off_T);
+  Total_Number : Natural := 0;
+  procedure Add_Size (Size : in Sys_Calls.Off_T; Count : in Boolean);
 
   -- Slection criteria
   Only_Dirs, Only_Files, Only_Others : Boolean := False;
@@ -277,7 +278,7 @@ package body Lister is
     -- Insert entity
     Ent_List.Insert (Ent);
     -- Update size
-    Add_Size (Ent.Size);
+    Add_Size (Ent.Size, True);
   end List;
 
   -- List content of Dir, possibly dots, matching criteria
@@ -312,7 +313,7 @@ package body Lister is
     -- Add current dir size
     if Total_Active then
       Stat := Sys_Calls.File_Stat (Dir);
-      Add_Size (Stat.Size);
+      Add_Size (Stat.Size, False);
     end if;
 
     -- For each entry
@@ -379,7 +380,7 @@ package body Lister is
         -- Append entity to list
         Ent_List.Insert (Ent);
         -- Update size
-        Add_Size (Ent.Size);
+        Add_Size (Ent.Size, True);
       exception
         when Discard =>
           -- Discard this file
@@ -537,14 +538,31 @@ package body Lister is
     return Total_Size;
   end Get_Total;
 
-  procedure Add_Size (Size : in Sys_Calls.Off_T) is
+  function Get_Number return Natural is
   begin
-    if Total_Active then
-      Total_Size := Total_Size + Size_Type(Size);
+    return Total_Number;
+  end Get_Number;
+
+  procedure Add_Size (Size : in Sys_Calls.Off_T; Count : in Boolean) is
+  begin
+    if not Total_Active then
+      return;
     end if;
-  exception
-    when Constraint_Error =>
-      Total_Size := Size_Type'Last;
+    begin
+      Total_Size := Total_Size + Size_Type(Size);
+    exception
+      when Constraint_Error =>
+        Total_Size := Size_Type'Last;
+    end;
+    if not Count then
+      return;
+    end if;
+    begin
+      Total_Number := Total_Number + 1;
+    exception
+      when Constraint_Error =>
+        Total_Number := Natural'Last;
+    end;
   end Add_Size;
 end Lister;
 

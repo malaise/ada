@@ -24,6 +24,7 @@ package body Output is
   Separator : As.U.Asu_Us;
   Classify : Boolean;
   Date_Iso : Boolean;
+  Quiet : Boolean;
   Default_Separator : constant String := "  ";
 
   -- Current directory path
@@ -38,6 +39,7 @@ package body Output is
              Full_Path   : in Boolean;
              Classify    : in Boolean;
              Date_Iso    : in Boolean;
+             Quiet       : in Boolean;
              Separator   : in As.U.Asu_Us) is
   begin
     Output.Sort_Kind := Sort_Kind;
@@ -48,6 +50,7 @@ package body Output is
     Output.Separator := Separator;
     Output.Classify := Classify;
     Output.Date_Iso := Date_Iso;
+    Output.Quiet := Quiet;
     Environ.Get_Nat (Env_Max_To_Sort, Max_To_Sort);
   end Set_Style;
 
@@ -306,66 +309,68 @@ package body Output is
   -- Put an entity in full mode
   procedure Put_Long (Entity : in Entities.Entity;
                       Human : in Boolean) is
-   Suid, Sgid, Tbit : Boolean;
-   Date : String (1 .. 23);
-   -- Max length of fields user, group and size, for padding
-   Max_Name_Len : constant := 8;
-   Max_Group_Len : constant := 6;
-   Max_Size_Len : constant := 10;
-   use Bit_Ops;
-   use type Directory.File_Kind_List;
-   function Id_Image (Id : Natural) return String is
-     Str : constant String := Nat_Image (Id);
-   begin
-     if Str'Length >= Max_Name_Len then
-       return Str;
-     else
-       return Normal (Id, Max_Name_Len);
-     end if;
-   end Id_Image;
-
-  -- Size on human readable format (xxxx or y.zM or yyM or yyyM)
-  -- or on N digits or more
-  function Size_Image (Size : Sys_Calls.Off_T; Human : Boolean) return String is
-    Multipliers : constant array (1 .. 4) of Character := ('k', 'M', 'G', 'T');
-    Kilos : Lister.Size_Type;
-    Kilosi, Kilosf : Lister.Size_Type;
-  begin
-    if Human then
-      if Size < 1024 then
-        return Normal (Natural(Size), 4);
+    Suid, Sgid, Tbit : Boolean;
+    Date : String (1 .. 23);
+    -- Max length of fields user, group and size, for padding
+    Max_Name_Len : constant := 8;
+    Max_Group_Len : constant := 6;
+    Max_Size_Len : constant := 10;
+    use Bit_Ops;
+    use type Directory.File_Kind_List;
+    function Id_Image (Id : Natural) return String is
+      Str : constant String := Nat_Image (Id);
+    begin
+      if Str'Length >= Max_Name_Len then
+        return Str;
+      else
+        return Normal (Id, Max_Name_Len);
       end if;
-      Kilos := Lister.Size_Type(Size);
-      for I in Multipliers'Range loop
-        Split (Kilos, Kilosi, Kilosf);
-        if Kilosi < 10 then
-          -- This is the proper multiplier
-          -- y.zM
-          return Total_Image (Kilosi) & '.'
-               & Total_Image (Kilosf) & Multipliers(I);
-        else
-          if Kilosf > 5 then
-            -- Round
-            Kilosi := Kilosi + 1;
-          end if;
-          if Kilosi < 1000 then
-            -- yyM or yyyM
-            return Normal (Natural(Kilosi), 3) & Multipliers(I);
-          end if;
+    end Id_Image;
+
+    -- Size on human readable format (xxxx or y.zM or yyM or yyyM)
+    -- or on N digits or more
+    function Size_Image (Size : Sys_Calls.Off_T; Human : Boolean)
+             return String is
+      Multipliers : constant array (1 .. 4) of Character
+                  := ('k', 'M', 'G', 'T');
+      Kilos : Lister.Size_Type;
+      Kilosi, Kilosf : Lister.Size_Type;
+    begin
+      if Human then
+        if Size < 1024 then
+          return Normal (Natural(Size), 4);
         end if;
-        Kilos := Kilosi;
-      end loop;
-      return Total_Image (Kilos) & Multipliers(Multipliers'Last);
-    else
-      declare
-        Str : constant String := Size_Image (Entity.Size);
-        Pad : constant String (1 .. Max_Size_Len - Str'Length)
-            := (others => ' ');
-      begin
-        return Pad & Str;
-      end;
-    end if;
-  end Size_Image;
+        Kilos := Lister.Size_Type(Size);
+        for I in Multipliers'Range loop
+          Split (Kilos, Kilosi, Kilosf);
+          if Kilosi < 10 then
+            -- This is the proper multiplier
+            -- y.zM
+            return Total_Image (Kilosi) & '.'
+                 & Total_Image (Kilosf) & Multipliers(I);
+          else
+            if Kilosf > 5 then
+              -- Round
+              Kilosi := Kilosi + 1;
+            end if;
+            if Kilosi < 1000 then
+              -- yyM or yyyM
+              return Normal (Natural(Kilosi), 3) & Multipliers(I);
+            end if;
+          end if;
+          Kilos := Kilosi;
+        end loop;
+        return Total_Image (Kilos) & Multipliers(Multipliers'Last);
+      else
+        declare
+          Str : constant String := Size_Image (Entity.Size);
+          Pad : constant String (1 .. Max_Size_Len - Str'Length)
+              := (others => ' ');
+        begin
+          return Pad & Str;
+        end;
+      end if;
+    end Size_Image;
 
   begin
     -- Put kind
@@ -530,7 +535,7 @@ package body Output is
     Moved : Boolean;
     Ent : Entities.Entity;
   begin
-    if List.Is_Empty then
+    if List.Is_Empty or else Quiet then
       return;
     end if;
     -- Sort (rewinds) if less than a max
@@ -569,22 +574,30 @@ package body Output is
 
   procedure Put_Dir (Name : in String) is
   begin
+    if Quiet then
+      return;
+    end if;
     Basic_Proc.Put_Line_Output (Name & ":");
   end Put_Dir;
 
   procedure New_Line is
   begin
+    if Quiet then
+      return;
+    end if;
     Basic_Proc.New_Line_Output;
   end New_Line;
 
   -- Put Total size, no new_line
-  procedure Put_Size (Size : in Lister.Size_Type) is
+  procedure Put_Size (Number : in Natural; Size : in Lister.Size_Type) is
     Kilos : Lister.Size_Type;
     Kilosi, Kilosf : Lister.Size_Type;
 
   begin
+    Basic_Proc.Put_Output (Images.Integer_Image (Number)
+                         & " entries for a total size: ");
     -- Bytes
-    Basic_Proc.Put_Output ("Total size: " & Total_Image (Size) & "B");
+    Basic_Proc.Put_Output (Total_Image (Size) & "B");
     -- kBytes rounded
     Split (Size, Kilosi, Kilosf);
     if Kilosf < 5 then
@@ -628,6 +641,13 @@ package body Output is
     Basic_Proc.Put_Output (" " & Total_Image (Kilosi)
                    & "." & Total_Image (Kilosf) & "TB");
   end Put_Size;
+
+  -- Put Total size, then a new_line
+  procedure Put_Line_Size (Number : in Natural; Size : in Lister.Size_Type) is
+  begin
+    Put_Size (Number, Size);
+    Basic_Proc.New_Line_Output;
+  end Put_Line_Size;
 
 end Output;
 

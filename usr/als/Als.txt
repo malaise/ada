@@ -1,6 +1,6 @@
 Als
 ===
-V12.0
+V13.0
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, the output format of each entry, and general
@@ -80,12 +80,10 @@ Specify general formatting options
   --len_alpha                Sort by increasing name lenght (see also "-r")
   -r (--reverse)             Sort (by name, size, time, or len) in reverse order
   -N (--no_sort)             Keep order same as in the directory structure
-
   -M (--merge)               Show a global list of entries (without dir names)
-
-  -T (--total)               Also show total size of listed entries
-
+  -T (--total)               Also show number and total size of listed entries
   -U (--utc)                 Use UTC i.o. local time for date spec and output
+  -q (--quiet)               Do not show entries
 
 Other options
 ~~~~~~~~~~~~~
@@ -107,6 +105,15 @@ They are accepted and silently ignored when provided alone.
 Example:
 
 Option -H is useful only when -l is provided. So "als -H" is the same as "als".
+
+.Some options are ignored when combined with som other options
+Some options are meaningless when some other option is provided.
+They are accepted and silently ignored in thses cases.
+
+Example:
+
+Many formating options ares meaningless when option -q is provided. So
+"als -qlr" is the same as "als -q".
 
 .Some options are mutually exclusive
 Providing these options together is reported as an error.
