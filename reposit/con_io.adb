@@ -644,14 +644,14 @@ package body Con_Io is
       Win.Current_Pos.Col := Col_Range'Succ(Win.Current_Pos.Col);
     else
       -- 1st col
-      Win.Current_Pos.Col := Col_Range'First;
+      Win.Current_Pos.Col := Win.Upper_Left.Col;
       if Win.Current_Pos.Row /=
          Win.Lower_Right.Row - Win.Upper_Left.Row then
         -- Next line
         Win.Current_Pos.Row := Row_Range'Succ(Win.Current_Pos.Row);
       else
         -- No scroll :-( first row
-        Win.Current_Pos.Row := Row_Range'First;
+        Win.Current_Pos.Row := Win.Upper_Left.Row;
       end if;
     end if;
   end Move_1;
