@@ -1,5 +1,5 @@
 with Ada.Direct_Io;
-with As.U,
+with As.U, Aski,
      Con_Io, Normal, Argument,
      Mixed_Str, Basic_Proc, Xml_Parser,
      Ada_Words, Parser, Str_Util, Computer, Images,
@@ -844,6 +844,9 @@ procedure Afpx_Bld is
           end if;
           Finit_String := As.U.Tus (Memory.Eval (
                    Ctx.Get_Text (Child_Child)));
+          if Finit_String.Locate (Aski.Lf_Str) /= 0 then
+            File_Error (Child_Child, "Invalid Line Feed in init string");
+          end if;
           -- Length in term of put positions (also in term of wide characters)
           Finit_Length := Language.Put_Length (Finit_String.Image);
           -- Check Finit col + string length compatible with field width

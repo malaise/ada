@@ -1,4 +1,5 @@
 with Ada.Calendar;
+with Aski;
 separate (Afpx)
 package body Af_Ptg is
 
@@ -506,9 +507,8 @@ package body Af_Ptg is
   Sel_New_Field : constant Integer := -1;
   function Handle_Selection (Handle : Get_Handle_Rec) return Integer is
     -- The selection retrived from the Console
-    Selection : constant Unicode_Sequence
-              := Language.String_To_Unicode (
-                     Console.Get_Selection (Af_Con_Io.Col_Range_Last + 1));
+    Sel_Txt : As.U.Asu_Us;
+    Sel_Len : Natural;
     -- Cursor (Get) field and its initial content
     Field : constant Afpx_Typ.Field_Rec
           := Af_Dscr.Fields(Afpx_Typ.Field_Range(Handle.Cursor_Field));
@@ -518,19 +518,35 @@ package body Af_Ptg is
     Len : Natural;
     Result : Integer;
   begin
-    if Selection'Length = 0 then
+     -- Get selection and replace Line_Feed by Space
+    Sel_Txt := As.U.Tus (Console.Get_Selection (Af_Con_Io.Col_Range_Last + 1));
+    if Sel_Txt.Length = 0 then
       -- No selection
       return Sel_No_Change;
     end if;
+    for I  in 1 .. Sel_Txt.Length loop
+      if Sel_Txt.Element (I) = Aski.Lf_Char then
+        Sel_Txt.Replace_Element (I, ' ');
+      end if;
+    end loop;
     -- Current content of field from cursor (included) to end
     Str.Set (Af_Dscr.Chars(Field.Char_Index + Column
                         .. Field.Char_Index + Field.Data_Len - 1));
-    -- New content inserted before / overwritting from current pos
-    if Handle.Insert then
-      Str.Insert (1, Selection);
-    else
-      Str.Overwrite (1, Selection);
-    end if;
+    declare
+      Selection : constant Unicode_Sequence
+                := Language.String_To_Unicode (Sel_Txt.Image);
+    begin
+      Sel_Len := Selection'Length;
+      if Sel_Len = 0 then
+        return Sel_No_Change;
+      end if;
+      -- New content inserted before / overwritting from current pos
+      if Handle.Insert then
+        Str.Insert (1, Selection);
+      else
+        Str.Overwrite (1, Selection);
+      end if;
+    end;
 
     -- Trunk at end of field, Str must be Len length
     Len := Field.Data_Len - Column;
@@ -539,7 +555,7 @@ package body Af_Ptg is
     end if;
 
     -- See if result is within Data_Len
-    if Column + Selection'Length >= Field.Data_Len then
+    if Column + Sel_Len >= Field.Data_Len then
       -- Cursor would move out of field
       if Field.Move_Next then
         Result := Sel_New_Field;
@@ -549,7 +565,7 @@ package body Af_Ptg is
       -- Max offset
       Offset := Field.Data_Len - Field.Width;
     else
-      Result := Column + Selection'Length;
+      Result := Column + Sel_Len;
       if Result >= Field.Width then
         Offset := Result - Field.Width + 1;
       else

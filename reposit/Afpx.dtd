@@ -144,7 +144,8 @@
 <!--  List.Foreground and Field_1.Background). -->
 
 <!-- Init row and col have to be compatible with the geometry of the field. -->
-<!-- Init string has to be compatible with the geometry and the init col. -->
+<!-- Init string must contain Line Feed and must be compatible with the -->
+<!-- geometry and the init col. -->
 <!ELEMENT Init (#PCDATA)>
 <!ATTLIST Init Row CDATA #REQUIRED Col CDATA #REQUIRED
                xml:space (default|preserve) "preserve">
