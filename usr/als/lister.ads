@@ -24,7 +24,8 @@ package Lister is
   -- List content of Dir, possibly dots, matching criteria
   procedure List (Ent_List : in out Entities.Entity_List;
                   Dir : in String;
-                  Dots : in Entities.Dots_Kind_List);
+                  Dots : in Entities.Dots_Kind_List;
+                  Count_Dot : in Boolean);
 
   -- Add a file if it matches criteria
   procedure List (Ent_List : in out Entities.Entity_List;

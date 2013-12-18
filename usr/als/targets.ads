@@ -10,8 +10,8 @@ package Targets is
                  Merge : Boolean;
                  Skip_Dirs : Boolean;
                  Put_Dir_Names : Boolean;
+                 Follow_Links : Boolean;
                  Args : Argument_Parser.Parsed_Dscr) return Boolean;
-
 
 end Targets;
 

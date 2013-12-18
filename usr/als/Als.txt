@@ -1,6 +1,6 @@
 Als
 ===
-V13.0
+V13.1
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, the output format of each entry, and general

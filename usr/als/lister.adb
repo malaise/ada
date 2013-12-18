@@ -284,7 +284,8 @@ package body Lister is
   -- List content of Dir, possibly dots, matching criteria
   procedure List (Ent_List : in out Entities.Entity_List;
                   Dir : in String;
-                  Dots : in Entities.Dots_Kind_List) is
+                  Dots : in Entities.Dots_Kind_List;
+                  Count_Dot : in Boolean) is
     Desc : Directory.Dir_Desc;
     Ent : Entities.Entity;
     Stat : Sys_Calls.File_Stat_Rec;
@@ -311,7 +312,7 @@ package body Lister is
         return;
     end;
     -- Add current dir size
-    if Total_Active then
+    if Total_Active and then Count_Dot then
       Stat := Sys_Calls.File_Stat (Dir);
       Add_Size (Stat.Size, False);
     end if;
@@ -487,13 +488,13 @@ package body Lister is
       -- Check if it is a directory and matches
       declare
         Lstr : constant String := Str.Image;
+        Fstr : constant String := Directory.Build_File_Name (Dir, Lstr, "");
         Kind : Directory.File_Kind_List;
         Link_Target : As.U.Asu_Us;
       begin
         if Lstr /= "."
         and then Lstr /= ".." then
-          Kind := Directory.File_Kind (
-              Directory.Build_File_Name (Dir, Lstr, ""));
+          Kind := Directory.File_Kind (Fstr);
           if Kind = Directory.Dir and then Dir_Matches (Lstr) then
             -- Directory matches: Append entity to list
             List.Insert (Str);
@@ -502,7 +503,7 @@ package body Lister is
             -- Follow_Link and link matches, check it is a directory
             begin
               Link_Target := As.U.Tus (Directory.Read_Link (
-                  File_Name => Lstr, Recursive => True));
+                  File_Name => Fstr, Recursive => True));
               Kind := Directory.File_Kind_List(Sys_Calls.File_Stat
                   (Link_Target.Image).Kind);
             exception

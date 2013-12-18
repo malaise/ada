@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister, Exit_Code, Str_Util;
 procedure Als is
-  Version : constant String  := "V13.0";
+  Version : constant String  := "V13.1";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -412,7 +412,7 @@ begin
 
   -- List each target
   if Targets.List (Dots, Recursive, Depth, Merge_Lists, Skip_Dirs, not No_Name,
-                   Arg_Dscr) then
+                   Follow_Links, Arg_Dscr) then
     Exit_Code.Update (Exit_Code.Found);
   else
     Exit_Code.Update (Exit_Code.Empty);
