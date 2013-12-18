@@ -555,8 +555,8 @@ Basename /tools/toto.a .ad: toto.a
 File_Prefix /tools/toto.ads: toto
 File_Suffix /tools/toto.ads: .ads
 Normalize /root/dir1/../dirok/./dir3/../toto.ads: /root/dirok/toto.ads
-Make_Full "": /home/malaise/ada/usr/tests/
-Make_Full ".": /home/malaise/ada/usr/tests/
+Make_Full "": /home/malaise/ada/usr/tests
+Make_Full ".": /home/malaise/ada/usr/tests
 Make_Full dir1/../dirok/./dir3/../toto.ads: /home/malaise/ada/usr/tests/dirok/toto.ads
 EOF
 comp out exp

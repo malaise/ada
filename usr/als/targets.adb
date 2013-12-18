@@ -36,8 +36,7 @@ package body Targets is
     begin
       Found := False;
       -- Make full path of current dir ('.' or relative or absolute path)
-      -- Ensure that it ends with '/' in all cases
-      Curdir := As.U.Tus (Directory.Make_Full_Path (Dir & "/"));
+      Curdir := As.U.Tus (Directory.Make_Full_Path (Dir));
       if Recursive and then Follow_Links then
         if Rope.Search (Curdir) then
           -- Current directory already listed (due to recursive symbolic links)

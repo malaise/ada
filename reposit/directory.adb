@@ -389,6 +389,11 @@ package body Directory is
       end if;
     end loop;
 
+    -- Remove tailing '/' except if only "/"
+    if Res.Length > 1 and then Res.Element (Res.Length) = '/' then
+      Res.Trail (1);
+    end if;
+
     -- Done
     return Res.Image;
 
