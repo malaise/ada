@@ -2,7 +2,7 @@
 -- Or search anagrams
 with As.U.Utils, Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings,
      Str_Util, Lower_Str, Environ, Images, Event_Mng, Afpx_Xref,
-     Mutex_Manager, Protected_Var, Trilean, Rounds;
+     Mutex_Manager, Protected_Var, Trilean, Rounds, Normal;
 with Cmd, Analist;
 procedure Xwords is
 
@@ -34,6 +34,7 @@ procedure Xwords is
   Scroll_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Scroll;
   Topnum_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Topnum;
   Topof_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Topof;
+  Percent_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Percent;
   Anagrams_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Anagrams;
   Search_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Search;
   Research_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Re_Search;
@@ -127,19 +128,29 @@ procedure Xwords is
       when Afpx.Init | Afpx.Scroll =>
         -- Encode Id top
         Afpx.Clear_Field (Topnum_Fld);
-        Afpx.Encode_Field (Topnum_Fld, (0, 0),
-                           Images.Integer_Image (Afpx_Status.Id_Top));
+        if not Afpx.Line_List.Is_Empty then
+          Afpx.Encode_Field (Topnum_Fld, (0, 0),
+                             Images.Integer_Image (Afpx_Status.Id_Top));
+        end if;
         -- Scroll bar index
         Afpx.Clear_Field (Scroll_Fld);
         Percent := Afpx.Get_List_Percent;
         if Percent /= 0 then
           -- 0 <-> 1% and Height-1 <-> 100%
           -- (Percent-1)/99 = Row/(Height-1)
-          Row := Con_Io.Row_Range( Rounds.Roundiv (
+          Row := Con_Io.Row_Range(Rounds.Roundiv (
              (Afpx.Get_Field_Height (Scroll_Fld) - 1) * (Percent - 1), 99));
           Afpx.Encode_Field (Scroll_Fld, (Row => Row, Col => 0), "-");
         else
           Afpx.Encode_Field (Scroll_Fld, (0, 0), "-");
+        end if;
+        -- Encode percent
+        Afpx.Clear_Field (Percent_Fld);
+        if not Afpx.Line_List.Is_Empty then
+          if Percent = 0 then
+            Percent := 1;
+          end if;
+          Afpx.Encode_Field (Percent_Fld, (0, 0), Normal (Percent, 3));
         end if;
     end case;
   end List_Cb;
@@ -501,6 +512,7 @@ begin
       end case;
     end if;
 
+    Afpx.Clear_Field (Topof_Fld);
     if Status = Found and then List_Is_Words
     and then not Afpx.Line_List.Is_Empty then
       -- Get position of top and encode field
@@ -517,7 +529,6 @@ begin
     end if;
 
     -- Color and protection of result list according to status
-    Afpx.Clear_Field (Topof_Fld);
     case Status is
       when Found =>
         Afpx.Reset_Field (Afpx.List_Field_No, Reset_String => False);
