@@ -31,7 +31,7 @@ package body Address_Ops is
 
   function Image (Addr : System.Address) return String is
     -- "16#<Image>#    "
-    S : String (1 .. Addr_Io.Default_Base + 4);
+    S : String (1 .. Readable_Address'Width + 4);
   begin
     Addr_Io.Put (S, To_Readable(Addr), 16);
     -- Strip trailing spaces
