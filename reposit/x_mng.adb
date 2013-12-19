@@ -571,6 +571,7 @@ package body X_Mng is
 
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     -- Open window
+    Logger.Log_Debug ("X_Open_Line opening");
     Res := X_Open_Line (Line_Definition.Screen_Id,
                         Line_Definition.Row,
                         Line_Definition.Column,

@@ -1,4 +1,4 @@
-with Ada.Calendar;
+with Ada.Calendar, Ada.Exceptions;
 with Argument, Environ, Lower_Str, Str_Util, Trace.Loggers;
 package body Con_Io is
 
@@ -114,7 +114,9 @@ package body Con_Io is
       X_Init_Done := True;
     end if;
   exception
-    when others =>
+    when Error:others =>
+      Logger.Log_Debug ("Con_Io initialization failure "
+                      & Ada.Exceptions.Exception_Name (Error));
       raise Init_Failure;
   end Initialise;
 
@@ -195,26 +197,35 @@ package body Con_Io is
     Line.Height := Row_Last - Row_Range_First + 1;
     Line.Width  := Col_Last - Col_Range_First + 1;
     X_Mng.X_Open_Line (Line, Con_Data.Id);
+    Logger.Log_Debug ("Console opened");
     X_Mng.X_Set_Line_Name (Con_Data.Id, Argument.Get_Program_Name);
+    Logger.Log_Debug ("Console name set");
     Con_Data.Mouse_Status := Mouse_Discard;
     X_Mng.X_Get_Graphic_Characteristics(Con_Data.Id,
           Con_Data.X_Max, Con_Data.Y_Max,
           Con_Data.Font_Width, Con_Data.Font_Height, Con_Data.Font_Offset);
+    Logger.Log_Debug ("Console characteristics retrieved");
     -- Max is width - 1 so that range is 0 .. max
     Con_Data.X_Max := Con_Data.X_Max - 1;
     Con_Data.Y_Max := Con_Data.Y_Max - 1;
     -- Create console
     Con_Data.Initialised := True;
     Con.Init (Con_Data);
+    Logger.Log_Debug ("Console initialized");
     -- Create, store Screen window (access to Window in Windows), clear screen
     Open (Screen, Con'Unrestricted_Access,
          (Row_Range_First, Col_Range_First),
          (Con_Data.Row_Range_Last, Con_Data.Col_Range_Last));
+    Logger.Log_Debug ("Screen window opened");
     Con.Get_Access.Screen_Window := Window_Access(Windows.Access_Current);
     Clear (Con.Get_Access.Screen_Window.all);
+    Logger.Log_Debug ("Screen cleared");
     Flush (Con);
+    Logger.Log_Debug ("Console window flushed");
   exception
-    when others =>
+    when Error:others =>
+      Logger.Log_Debug ("Console opening failure "
+                      & Ada.Exceptions.Exception_Name (Error));
       raise Init_Failure;
   end Open;
 

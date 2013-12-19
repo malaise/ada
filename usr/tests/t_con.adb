@@ -1,9 +1,10 @@
 with Ada.Exceptions, Ada.Calendar;
-with Basic_Proc, Normal, Argument, Timers, Language;
+with Basic_Proc, Normal, Argument, Timers, Language, Trace.Loggers;
 with Con_Io;
 
 procedure T_Con is
 
+  Logger : Trace.Loggers.Logger;
 
   task type Task_T is
     pragma Storage_Size (1024 * 1024);
@@ -70,7 +71,9 @@ procedure T_Con is
     end;
     accept Start(I : in Positive) do
       Me := I;
+      Logger.Log_Debug ("Task " & Me'Img & " opening console");
       Console.Open;
+      Logger.Log_Debug ("Task " & Me'Img & " console openend");
     end Start;
 
     Console.Enable_Motion_Events(True);
@@ -209,11 +212,16 @@ procedure T_Con is
 
 begin
   -- Force Con_Io init on main stack
+  Basic_Proc.Put_Line_Output ("Main starting");
+  Logger.Init ("T_Con");
+  Logger.Log_Debug ("Starting");
   Con_Io.Initialise;
+  Logger.Log_Debug ("Con_Io initialized, starting tasks");
   for I in T'Range loop
     T(I).Start(I);
     delay 1.0;
   end loop;
+  Logger.Log_Debug ("Waiting for termination");
   Basic_Proc.Put_Line_Output ("Main Terminated");
 end T_Con;
 
