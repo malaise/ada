@@ -214,6 +214,7 @@ package body Trace.Loggers is
     Txt := As.U.Tus (Format (A_Logger.Name.Image, Severity, Message));
 
     -- Put on flow
+    Lock.Get;
     Flow.Put_Line (Txt.Image);
     -- Flush if set on logger
     if A_Logger.Flush then
@@ -230,6 +231,7 @@ package body Trace.Loggers is
         Stderr.Flush;
       end if;
     end if;
+    Lock.Release;
   end Log;
 
   procedure Log_Fatal   (A_Logger : in out Logger;

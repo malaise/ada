@@ -246,10 +246,12 @@ package body Trace is
         return;
       end if;
       -- Put message and flush
+      Lock.Get;
       Stderr.Put_Line (Format (Name, Severity, Message));
       if Flus then
         Stderr.Flush;
       end if;
+      Lock.Release;
     end Log;
 
     procedure Log_Fatal   (Message  : in String) is

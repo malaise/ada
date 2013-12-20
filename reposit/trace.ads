@@ -1,4 +1,4 @@
-with As.U, Text_Line;
+with As.U, Text_Line, Mutex_Manager;
 -- Log messages in a file or flow
 package Trace is
 
@@ -27,6 +27,8 @@ package Trace is
   --       Severity ::= Fatal Error Info Warning Debug or a number
   --       Message  ::= the text of the log message
 
+  -- The output of trace is protected by a mutex (but not the other
+  --  operations on loggers).
 
   -- SEVERITIES
   -------------
@@ -98,6 +100,7 @@ package Trace is
 
 private
   -- Utilities for child packages
+  Lock : Mutex_Manager.Simple_Mutex;
 
   -- Global basic init
   procedure Basic_Init;
