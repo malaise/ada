@@ -69,12 +69,16 @@ procedure T_Con is
     exception
       when Argument.Argument_Not_Found => null;
     end;
-    accept Start(I : in Positive) do
-      Me := I;
-      Logger.Log_Debug ("Task " & Me'Img & " opening console");
-      Console.Open;
-      Logger.Log_Debug ("Task " & Me'Img & " console openend");
-    end Start;
+    select
+      accept Start(I : in Positive) do
+        Me := I;
+        Logger.Log_Debug ("Task " & Me'Img & " opening console");
+        Console.Open;
+        Logger.Log_Debug ("Task " & Me'Img & " console openend");
+      end Start;
+    or
+      terminate;
+    end select;
 
     Console.Enable_Motion_Events(True);
     -- fenetre de saisie, fenetre d'affichage
