@@ -12,6 +12,7 @@ procedure Elab_If_Unb is
   Val : constant Ada.Strings.Unbounded.Unbounded_String := Init (True);
 
 begin
+  -- Bug results into an empty string or Storage_Error
   Ada.Text_Io.Put_Line (">" &  Ada.Strings.Unbounded.To_String (Val) & "<");
 end Elab_If_Unb;
 

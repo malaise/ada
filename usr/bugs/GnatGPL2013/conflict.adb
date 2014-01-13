@@ -12,6 +12,7 @@ procedure Conflict is
 
   procedure P is
     I : Integer := 0;
+    -- Call to F here is rejected by the compiler
     S : constant String := F (I);
   begin
     null;
