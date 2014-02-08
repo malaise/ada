@@ -17,14 +17,14 @@ procedure Resolve_Uri (Ctx : in out Ctx_Type;
   Result : Http.Result_Type;
   function Code_Image is new Images.Int_Image (Http.Server_Code_Range);
 begin
-  Trace ("URI expanding " & Uri.Image);
+  Debug ("URI expanding " & Uri.Image);
   -- See if first '/' (if any) is ":/"
   Ind1 := Str_Util.Locate (Uri.Image, "/");
   Ind2 := Str_Util.Locate (Uri.Image, "://");
   if Ind2 = 0 or else Ind1 /= Ind2 + 1 then
     Content := Build_Full_Name (Uri, Ctx.Flow.Curr_Flow.Name);
     Is_File := True;
-    Trace ("URI is file " & Content.Image);
+    Debug ("URI is file " & Content.Image);
     return;
   end if;
   -- Now its is xxx://
@@ -36,9 +36,9 @@ begin
     Luri.Delete (1, File_Scheme'Length + 3);
     Content := Build_Full_Name (Luri, Ctx.Flow.Curr_Flow.Name);
     Is_File := True;
-    Trace ("URI expanded as file " & Content.Image);
+    Debug ("URI expanded as file " & Content.Image);
   elsif Scheme.Image = Http_Scheme then
-    Trace ("URI fetching through http " & Uri.Image);
+    Debug ("URI fetching through http " & Uri.Image);
     -- Handle "http" scheme
     Result := Http.Get (Uri.Image);
     case Result.Kind is

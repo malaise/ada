@@ -4,6 +4,13 @@ separate (Xml_Parser)
 
 package body Parse_Mng  is
 
+  -- Logger to debug time spent in various steps
+  Steps_Logger : Trace.Loggers.Logger;
+  procedure Init_Steps_Logger is
+  begin
+    Steps_Logger.Init ("Xml_Parser_Steps");
+  end Init_Steps_Logger;
+
   -- Context where a reference to entity is resolved
   -- In Xml content, in attribute value, in entity value,
   --  in dtd (outside or inside markup or inside content description)
@@ -423,7 +430,7 @@ package body Parse_Mng  is
         -- If expand, then Normalize separators of non CDATA attributes
         if Ctx.Expand and then Ctx.Normalize
         and then not Dtd.Is_Cdata (Adtd, Elt_Name, Attribute_Name) then
-          Trace ("Attribute " & Attribute_Name.Image & " is not CDATA");
+          Debug ("Attribute " & Attribute_Name.Image & " is not CDATA");
           Unnormalized := Attribute_Value;
           Util.Normalize_Spaces (Attribute_Value);
           if Ctx.Standalone and then Unnormalized /= Attribute_Value then
@@ -438,11 +445,11 @@ package body Parse_Mng  is
         if Attribute_Name.Image = Tree_Mng.Xml_Space
         and then Attribute_Value.Image = Tree_Mng.Preserve then
           Tree_Mng.Add_Tuning (Ctx.Elements.all, Tree_Mng.Xml_Space_Preserve);
-          Trace ("Added tuning " & Tree_Mng.Xml_Space_Preserve);
+          Debug ("Added tuning " & Tree_Mng.Xml_Space_Preserve);
         end if;
       end if;
 
-      Trace ("Parsed attribute " & Attribute_Name.Image
+      Debug ("Parsed attribute " & Attribute_Name.Image
            & ", " & Attribute_Value.Image);
       -- Skip to new attribute if not end of element start
       Util.Skip_Separators (Ctx.Flow);
@@ -602,7 +609,7 @@ package body Parse_Mng  is
       Ctx.Callback (Ctx, Upd);
     exception
       when Error:others =>
-        Trace ("Callback raised " & Ada.Exceptions.Exception_Name (Error));
+        Debug ("Callback raised " & Ada.Exceptions.Exception_Name (Error));
         raise Callback_Error;
     end;
   end Call_Callback;
@@ -648,7 +655,7 @@ package body Parse_Mng  is
         -- Is_Empty is False
         null;
       when Attribute =>
-        Trace ("Adding current attribute as element list");
+        Debug ("Adding current attribute as element list");
         raise Internal_Error;
     end case;
   end Add_Child;
@@ -666,7 +673,7 @@ package body Parse_Mng  is
     Is_File : Boolean;
     use type As.U.Asu_Us;
   begin
-    Trace ("Ext expanding external entity " & Name.Image & " with URI "
+    Debug ("Ext expanding external entity " & Name.Image & " with URI "
          & Uri.Image);
     if Uri.Is_Null then
       Util.Error (Ctx.Flow, "Invalid external entity URI " & Uri.Image
@@ -688,12 +695,12 @@ package body Parse_Mng  is
       Ctx.Flow.Curr_Flow.File := null;
       Ctx.Flow.Curr_Flow.In_Str := Full_File;
       Ctx.Flow.Curr_Flow.In_Stri := 0;
-      Trace ("Ext parsing http result");
+      Debug ("Ext parsing http result");
     else
       Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
       Ctx.Flow.Files.Push (Ctx.Flow.Curr_Flow.File);
       File_Mng.Open (Full_File.Image, Ctx.Flow.Curr_Flow.File.all);
-      Trace ("Ext parsing file");
+      Debug ("Ext parsing file");
     end if;
     Ctx.Flow.Curr_Flow.Is_File := Is_File;
     Ctx.Flow.Curr_Flow.Kind := Ext_Flow;
@@ -727,14 +734,14 @@ package body Parse_Mng  is
       Parse_Attributes (Ctx, Adtd, Of_Xml => True);
       Check_Xml_Attributes (Ctx, False);
       Ctx.Prologue.Delete_Tree;
-      Trace ("Ext parsed xml instruction");
+      Debug ("Ext parsed xml instruction");
       Util.Skip_Separators (Ctx.Flow);
     end if;
 
     -- Load content in string
     Util.Parse_Until_End (Ctx.Flow);
     Text := Util.Get_Curr_Str (Ctx.Flow);
-    Trace ("Ext expanded as >" & Text.Image & "<");
+    Debug ("Ext expanded as >" & Text.Image & "<");
 
     -- Done: restore flow
     if Is_File then
@@ -780,7 +787,7 @@ package body Parse_Mng  is
         if Tree_Mng.Xml_Existst (Ctx.Prologue.all) then
           Util.Error (Ctx.Flow, "Late or second declaration of xml");
         end if;
-        Trace ("Parsing xml declaration");
+        Debug ("Parsing xml declaration");
         Tree_Mng.Set_Xml (Ctx.Prologue.all, Util.Get_Line_No (Ctx.Flow));
         -- Parse xml attributes
         Util.Skip_Separators (Ctx.Flow);
@@ -793,7 +800,7 @@ package body Parse_Mng  is
         -- In prologue, Creation of the XML directive
         Call_Callback (Ctx, Prologue, True);
         Ctx.Level := 1;
-        Trace ("Parsed xml declaration");
+        Debug ("Parsed xml declaration");
         return;
       else
         -- A PI in prologue => insert Xml if it is missing
@@ -836,7 +843,7 @@ package body Parse_Mng  is
     end if;
 
     -- Add node
-    Trace ("Parsed <?" & Name.Image & " " & Value.Image & "?>");
+    Debug ("Parsed <?" & Name.Image & " " & Value.Image & "?>");
     case Ctx.Stage is
       when Prologue =>
         -- In prologue
@@ -888,7 +895,7 @@ package body Parse_Mng  is
     if not Util.Name_Ok (Doctype_Name) then
       Util.Error (Ctx.Flow, "Invalid DOCTYPE name " & Doctype_Name.Image);
     end if;
-    Trace ("Parsing doctype " & Doctype_Name.Image);
+    Debug ("Parsing doctype " & Doctype_Name.Image);
     Ctx.Doctype.Line_No := Util.Get_Line_No (Ctx.Flow);
     Ctx.Doctype.Name := Doctype_Name;
     -- Insert an empty text in prologue
@@ -951,7 +958,7 @@ package body Parse_Mng  is
           Ctx.Flow.Curr_Flow.In_Str := Full_File;
           Ctx.Flow.Curr_Flow.In_Stri := 0;
           Full_File := As.U.Tus (Dtd.String_Flow);
-          Trace ("Parsing http dtd");
+          Debug ("Parsing http dtd");
         end if;
         Dtd.Parse (Ctx, Adtd, Full_File);
         Util.Pop_Flow (Ctx.Flow);
@@ -978,7 +985,7 @@ package body Parse_Mng  is
     end if;
     if not Ctx.Use_Dtd then
       -- Reset dtd info
-      Trace ("Dtd reset cause not to be used");
+      Debug ("Dtd reset cause not to be used");
       Dtd.Init (Adtd);
     end if;
     if Ctx.Expand or else not Ctx.Use_Dtd then
@@ -989,7 +996,7 @@ package body Parse_Mng  is
     -- In prologue, Creation of the Doctype
     Call_Callback (Ctx, Prologue, True);
     Move_Del (Ctx, Ctx.Stage, True);
-    Trace ("Parsed <!DOCTYPE ... >");
+    Debug ("Parsed <!DOCTYPE ... >");
   end Parse_Doctype;
 
   -- Parse a directive (<!xxx>)
@@ -1038,10 +1045,10 @@ package body Parse_Mng  is
             Call_Callback (Ctx, Tail, True);
         end case;
         Move_Del (Ctx, Ctx.Stage);
-        Trace ("Parsed comment " & Comment.Image);
+        Debug ("Parsed comment " & Comment.Image);
       else
         -- In Dtd or comments not to be parsed
-        Trace ("Skipped comment <!--" & Comment.Image & "-->");
+        Debug ("Skipped comment <!--" & Comment.Image & "-->");
       end if;
       return;
     end if;
@@ -1197,7 +1204,7 @@ package body Parse_Mng  is
             exit Read_Flow;
           end if;
       end;
-      Trace ("Txt - Got text >" & Text.Image & "<");
+      Debug ("Txt - Got text >" & Text.Image & "<");
 
       -- Loop as long as expansion does not generate a '<'
       --  or as long as this is a "<![CDATA["
@@ -1260,10 +1267,10 @@ package body Parse_Mng  is
             end case;
             -- Insert the expanded text and the CDATA section
             Insert_Text (Text.Uslice (1, Start_Index - 1));
-            Trace ("Txt -- appended text >" & Text.Slice (1, Start_Index - 1)
+            Debug ("Txt -- appended text >" & Text.Slice (1, Start_Index - 1)
                  & "<");
             Texts.Insert (Cdata);
-            Trace ("Txt -- appended CDATA >" & Cdata.Image & "<");
+            Debug ("Txt -- appended CDATA >" & Cdata.Image & "<");
             -- Text is the remaining unexpanded text, fixed
             Text.Delete (1, Index + Util.Cdata_End'Length - 1);
             Last_Is_Text := False;
@@ -1273,9 +1280,9 @@ package body Parse_Mng  is
             -- There is a '<' but not CDATA: prepend it to the tail
             Tail := Text.Slice (Index, Text.Length) & Tail;
             Insert_Text (Text.Uslice (1, Index - 1));
-            Trace ("Txt -- appended text >" & Text.Slice (1, Index - 1) & "<");
+            Debug ("Txt -- appended text >" & Text.Slice (1, Index - 1) & "<");
             Last_Is_Text := True;
-            Trace ("Txt -- tail >" & Tail.Image & "<");
+            Debug ("Txt -- tail >" & Tail.Image & "<");
             -- And done (completely)
             exit Read_Flow;
           end if;
@@ -1283,7 +1290,7 @@ package body Parse_Mng  is
          -- There is no '<' in expanded text
           -- Store the expanded text
           Insert_Text (Text);
-          Trace ("Txt -- appended text >" & Text.Image & "<");
+          Debug ("Txt -- appended text >" & Text.Image & "<");
           Last_Is_Text := True;
           -- Nothing more to expand => Need to read from flow
           exit Cdata_In_Text;
@@ -1302,7 +1309,7 @@ package body Parse_Mng  is
         Cdata := Util.Get_Curr_Str (Ctx.Flow);
         Cdata.Delete (Cdata.Length  - Util.Cdata_End'Length + 1,
                       Cdata.Length);
-        Trace ("Txt - Got CDATA >" & Cdata.Image & "<");
+        Debug ("Txt - Got CDATA >" & Cdata.Image & "<");
         -- Apply policy
         case Ctx.Cdata_Policy is
           when Keep_Cdata_Section =>
@@ -1316,7 +1323,7 @@ package body Parse_Mng  is
           Texts.Insert (As.U.Asu_Null);
         end if;
         Texts.Insert (Cdata);
-        Trace ("Txt - appended CDATA >" & Cdata.Image & "<");
+        Debug ("Txt - appended CDATA >" & Cdata.Image & "<");
         Last_Is_Text := False;
       else
         -- Text is got and is followed by '<' but not CDATA
@@ -1346,7 +1353,7 @@ package body Parse_Mng  is
       end if;
       if Next_Char /= Util.Slash then
         -- This is the beginning of a brother, a directive or Pi
-        Trace ("Txt not only text child");
+        Debug ("Txt not only text child");
         Children.First_Child := False;
       end if;
     end if;
@@ -1360,7 +1367,7 @@ package body Parse_Mng  is
         -- We know by parsing that there is not only a text child
         -- Or we know by dtd that there cannot be text here
         Normalize := True;
-        Trace ("Txt normalizing");
+        Debug ("Txt normalizing");
       end if;
     end if;
 
@@ -1385,7 +1392,7 @@ package body Parse_Mng  is
         exit when not Moved;
       end loop;
     end if;
-    Trace ("Parsed text >" & Text.Image & "<");
+    Debug ("Parsed text >" & Text.Image & "<");
 
     -- If there are only separators and if we are allowed, skip them
     if not Text.Is_Null then
@@ -1395,7 +1402,7 @@ package body Parse_Mng  is
         -- In elements, Creation of element that has children
         Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, True);
         Children.Is_Mixed := True;
-        Trace ("Txt setting mixed on father");
+        Debug ("Txt setting mixed on father");
         Call_Callback (Ctx, Elements, True, True,
                        In_Mixed => Children.In_Mixed);
         Ctx.Level := Ctx.Level + 1;
@@ -1404,16 +1411,16 @@ package body Parse_Mng  is
       -- Insert and notify this child
       Tree_Mng.Add_Text (Ctx.Elements.all, Text, Util.Get_Line_No (Ctx.Flow));
       if Add_Text (Ctx, Text) then
-        Trace ("Txt adding text child");
+        Debug ("Txt adding text child");
         Add_Child (Ctx, Adtd, Children);
       else
-        Trace ("Txt skipping text child");
+        Debug ("Txt skipping text child");
       end if;
       -- In elements, Creation of this text element
       Call_Callback (Ctx, Elements, True, False,
                      In_Mixed => Children.Is_Mixed);
       Move_Del (Ctx, Ctx.Stage);
-      Trace ("Txt processed text child >" & Text.Image & "<");
+      Debug ("Txt processed text child >" & Text.Image & "<");
     end if;
 
     -- Now handle tail if not empty
@@ -1429,9 +1436,9 @@ package body Parse_Mng  is
     Ctx.Flow.Curr_Flow.In_Str := Tail;
     Ctx.Flow.Curr_Flow.In_Stri := 0;
     -- Parse new flow as xml content
-    Trace ("Txt switching input to " & Tail.Image);
+    Debug ("Txt switching input to " & Tail.Image);
     Parse_Children (Ctx, Adtd, Children, Allow_End => True);
-    Trace ("Txt switching back");
+    Debug ("Txt switching back");
     -- Restore flow
     Util.Pop_Flow (Ctx.Flow);
 
@@ -1575,7 +1582,7 @@ package body Parse_Mng  is
     if My_Children.Is_Mixed then
       Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, True);
     end if;
-    Trace ("Parsing element " & Element_Name.Image
+    Debug ("Parsing element " & Element_Name.Image
          & ", allowing space: " & Mixed_Str (My_Children.Space_Allowed'Img)
          & ", mixed: " & Mixed_Str (My_Children.Is_Mixed'Img));
     My_Children.Father := Element_Name;
@@ -1633,11 +1640,11 @@ package body Parse_Mng  is
       My_Children.Preserve := My_Children.Preserve
                               or else Dtd.Has_Preserve (Ctx, Element_Name);
       if My_Children.Preserve then
-        Trace ("Preserving spaces of the texts of " & Element_Name.Image);
+        Debug ("Preserving spaces of the texts of " & Element_Name.Image);
       end if;
-      Trace ("Parsing children of " & Element_Name.Image);
+      Debug ("Parsing children of " & Element_Name.Image);
       Parse_Children (Ctx, Adtd, My_Children'Access);
-      Trace ("Parsed children of " & Element_Name.Image);
+      Debug ("Parsed children of " & Element_Name.Image);
       -- Check Name matches
       Util.Parse_Until_Char (Ctx.Flow, Util.Stop & "");
       End_Name := Util.Get_Curr_Str (Ctx.Flow);
@@ -1655,7 +1662,7 @@ package body Parse_Mng  is
     end if;
     -- End of element
     Move_Del (Ctx, Ctx.Stage);
-    Trace ("Parsed element " & Element_Name.Image);
+    Debug ("Parsed element " & Element_Name.Image);
   end Parse_Element;
 
   -- Parse the root element and until end of file
@@ -1698,7 +1705,7 @@ package body Parse_Mng  is
           end if;
           Parse_Element (Ctx, Adtd, My_Children'Access, Root => True);
           Root_Found := True;
-          Trace ("Parsed elements");
+          Debug ("Parsed elements");
           -- Process tail after root element
           Ctx.Stage := Tail;
           Tree_Mng.Add_Element (Ctx.Tail.all, As.U.Asu_Null, 0);
@@ -1728,6 +1735,9 @@ package body Parse_Mng  is
   procedure Parse_Xml (Ctx : in out Ctx_Type) is
     Adtd : Dtd_Type;
   begin
+    Init_Steps_Logger;
+    Steps_Logger.Log_Info ("Starting Parse_XML");
+    Steps_Logger.Log_Info ("Initializing namespaces, prologue and DTD");
     Namespaces.Init (Ctx);
     if Ctx.Flow.Curr_Flow.Is_File then
       File_Mng.Open (Ctx.Flow.Curr_Flow.Name.Image,
@@ -1738,16 +1748,20 @@ package body Parse_Mng  is
     -- Reset Dtd
     Dtd.Init (Adtd);
     -- Parse prologue, allow Dtd
+    Steps_Logger.Log_Info ("Parsing prologue");
     Parse_Start_To_Root (Ctx, Adtd);
     -- Parse elements
+    Steps_Logger.Log_Info ("Parsing elements");
     Parse_Root_To_End (Ctx, Adtd);
     -- Perform final checks versus dtd
+    Steps_Logger.Log_Info ("Checking versus DTD");
     Dtd.Final_Check (Ctx);
     -- Clean Dtd before it disapears
     Dtd.Init (Adtd);
     if Ctx.Flow.Curr_Flow.Is_File then
       File_Mng.Close (Ctx.Flow.Curr_Flow.File.all);
     end if;
+    Steps_Logger.Log_Info ("Done Parse_XML");
   end Parse_Xml;
 
   -- Propagate Dtd convention
@@ -1762,23 +1776,33 @@ package body Parse_Mng  is
   begin
     -- If File_Name is a file name, then a Name_Error on it
     --  will be propagated as such
+    Init_Steps_Logger;
+    Steps_Logger.Log_Info ("Starting Parse_Dtd");
+    Steps_Logger.Log_Info ("Parsing Dtd");
     Dtd.Parse (Ctx, Adtd, Ctx.Flow.Curr_Flow.Name,
                Name_Raise_Parse => False);
     -- Perform final checks on Dtd (unparsed entities v.s. notations)
+    Steps_Logger.Log_Info ("Checking DTD");
     Dtd.Final_Dtd_Check (Ctx, Adtd);
+    Steps_Logger.Log_Info ("Done Parse_Dtd");
   end Parse_Dtd;
 
    -- Parse the prologue
   procedure Parse_Prologue (Ctx : in out Ctx_Type;
                             Adtd : in out Dtd_Type) is
   begin
+    Init_Steps_Logger;
+    Steps_Logger.Log_Info ("Starting Parse_Prologue");
+    Steps_Logger.Log_Info ("Initializing namespaces, prologue and DTD");
     Namespaces.Init (Ctx);
     -- Init Prologue with an empty root
     Tree_Mng.Init_Prologue (Ctx.Prologue.all);
     -- Reset Dtd, it will not be used
     Dtd.Init (Adtd);
     -- Parse prologue, disallow Dtd
+    Steps_Logger.Log_Info ("Parsing prologue");
     Parse_Start_To_Root (Ctx, Adtd);
+    Steps_Logger.Log_Info ("Done Parse_Prologue");
   end Parse_Prologue;
 
   -- Parse the elements
@@ -1786,9 +1810,14 @@ package body Parse_Mng  is
                             Adtd : in out Dtd_Type) is
   begin
     -- Parse root element
+    Init_Steps_Logger;
+    Steps_Logger.Log_Info ("Start Parse_Elements");
+    Steps_Logger.Log_Info ("Parsing elements");
     Parse_Root_To_End (Ctx, Adtd);
     -- Perform final checks versus dtd
+    Steps_Logger.Log_Info ("Checking versus DTD");
     Dtd.Final_Check (Ctx);
+    Steps_Logger.Log_Info ("Done Parse_Elements");
   end Parse_Elements;
 
   -- Check a Ctx versus its Dtd
@@ -1798,10 +1827,13 @@ package body Parse_Mng  is
     Is_File : Boolean;
   begin
     -- Reset Ctx info
+    Init_Steps_Logger;
+    Steps_Logger.Log_Info ("Starting Check");
     Ctx.Preserved := As.U.Asu_Null;
     Ctx.Ids.Delete_List;
     Ctx.Idrefs.Delete_List;
     Ctx.Unparsed_List.Delete_List;
+    Steps_Logger.Log_Info ("Initializing namespaces and DTD");
     Namespaces.Init (Ctx);
     -- Reset Dtd
     Dtd.Init (Adtd);
@@ -1809,6 +1841,7 @@ package body Parse_Mng  is
     -- Parse Dtd
     if not Ctx.Dtd_File.Is_Null then
       -- Parse alternate Dtd provided by caller
+      Steps_Logger.Log_Info ("Parsing DTD");
       Dtd.Parse (Ctx, Adtd, Ctx.Dtd_File);
     elsif not Ctx.Doctype.Name.Is_Null then
       if not Ctx.Doctype.File.Is_Null then
@@ -1820,6 +1853,7 @@ package body Parse_Mng  is
           Util.Error (Ctx.Flow, "Invalid Dtd file name");
         end if;
         -- Expand URI
+        Steps_Logger.Log_Info ("Resolving DTD URI");
         Resolve_Uri (Ctx, Ctx.Doctype.File, Is_File, Full_File);
         if not Is_File then
           -- Full_File is the content of the Dtd fetched (by http)
@@ -1829,13 +1863,15 @@ package body Parse_Mng  is
           Ctx.Flow.Curr_Flow.In_Str := Full_File;
           Ctx.Flow.Curr_Flow.In_Stri := 0;
           Full_File := As.U.Tus (Dtd.String_Flow);
-          Trace ("Parsing http dtd");
+          Debug ("Parsing http dtd");
         end if;
+        Steps_Logger.Log_Info ("Parsing DTD");
         Dtd.Parse (Ctx, Adtd, Full_File);
       end if;
     end if;
     if not Ctx.Doctype.Int_Def.Is_Null then
       -- Parse internal defs
+      Steps_Logger.Log_Info ("Parsing internal ");
       Ctx.Flow.Curr_Flow.Is_File := False;
       Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
       Ctx.Flow.Curr_Flow.In_Str := Ctx.Doctype.Int_Def;
@@ -1847,19 +1883,24 @@ package body Parse_Mng  is
     -- Restore flow
     Util.Pop_Flow (Ctx.Flow);
     -- Perform final checks on Dtd (unparsed entities v.s. notations)
+    Steps_Logger.Log_Info ("Checking DTD");
     Dtd.Final_Dtd_Check (Ctx, Adtd);
     -- There must be one root
     if Ctx.Elements.Is_Empty then
       Util.Error (Ctx.Flow, "No root element found");
     end if;
     Ctx.Elements.Move_Root;
+    Steps_Logger.Log_Info ("Checking elements");
     Dtd.Check_Subtree (Ctx, Adtd);
     -- Check tail
+    Steps_Logger.Log_Info ("Checking tail");
     Dtd.Check_Tail (Ctx);
     -- Perform final checks versus dtd
+    Steps_Logger.Log_Info ("Checking versus DTD");
     Dtd.Final_Check (Ctx);
     -- Clean Dtd before it disapears
     Dtd.Init (Adtd);
+    Steps_Logger.Log_Info ("Done Check");
   end Check;
 
   -- Update the Is_Mixed tag of each element accorting to ALL its
@@ -1891,7 +1932,7 @@ package body Parse_Mng  is
           Tree.Move_Father;
           if not Cell.Is_Mixed and then Has_Text then
             -- Update this cell
-            Trace ("Updating Is_Mixed of " & Cell.Name.Image);
+            Debug ("Updating Is_Mixed of " & Cell.Name.Image);
             Cell.Is_Mixed := True;
             Tree.Replace (Cell);
           end if;

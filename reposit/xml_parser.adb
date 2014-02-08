@@ -4,7 +4,7 @@ with Trace.Loggers, Rnd, Exception_Messenger, Directory, Str_Util,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "0";
+  Minor_Version : constant String := "1";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -29,9 +29,9 @@ package body Xml_Parser is
     return Current.Name = Criteria.Name;
   end "=";
 
-  -- Trace debug message
+  -- Trace a debug message
   Logger : Trace.Loggers.Logger;
-  procedure Trace (Msg : in String);
+  procedure Debug (Msg : in String);
   function Debug_On return Boolean;
 
   -- File management
@@ -276,12 +276,12 @@ package body Xml_Parser is
   -----------
   -- DEBUG --
   -----------
-  -- Trace debug message
-  procedure Trace (Msg : in String) is
+  -- Debug debug message
+  procedure Debug (Msg : in String) is
     use type Trilean.Trilean;
   begin
     Logger.Log_Debug (Msg, "Xml_Parser");
-  end Trace;
+  end Debug;
 
   function Debug_On return Boolean is
     use type Trilean.Trilean;
@@ -377,7 +377,7 @@ package body Xml_Parser is
     when Storage_Error =>
       raise;
     when Error_Occ:others =>
-      Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
+      Debug ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
       raise Internal_Error;
   end Parse;
 
@@ -491,7 +491,7 @@ package body Xml_Parser is
         Exception_Messenger.Exception_Message (Loc_Occ, Error);
       end;
     when Error_Occ:others =>
-      Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
+      Debug ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
       raise Internal_Error;
   end Parse_Dtd_Internal;
 
@@ -605,7 +605,7 @@ package body Xml_Parser is
     when Storage_Error =>
       raise;
     when Error_Occ:others =>
-      Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
+      Debug ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
       raise Internal_Error;
   end Parse_Prologue;
 
@@ -648,7 +648,7 @@ package body Xml_Parser is
       raise;
     when Loc_Parse_Error =>
       -- Raising Parse_Error because previous parsing detected error
-      Trace ("Parse error because prologue did not parse");
+      Debug ("Parse error because prologue did not parse");
       raise Parse_Error;
     when Error_Occ:Parse_Error =>
       -- Retrieve and store parsing error message
@@ -660,7 +660,7 @@ package body Xml_Parser is
     when Storage_Error =>
       raise;
     when Error_Occ:others =>
-      Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
+      Debug ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
       raise Internal_Error;
   end Parse_Elements;
 
@@ -705,7 +705,7 @@ package body Xml_Parser is
     when Storage_Error =>
       raise;
     when Error_Occ:others =>
-      Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
+      Debug ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
       raise Internal_Error;
   end Check;
 
@@ -930,7 +930,7 @@ package body Xml_Parser is
       end if;
       Tree.Read (Cell);
       if Cell.Kind /= Attribute then
-        Trace ("Expecting kind attribute, found " & Cell.Kind'Img);
+        Debug ("Expecting kind attribute, found " & Cell.Kind'Img);
         raise Internal_Error;
       end if;
       A(I).Name := Cell.Name;
@@ -968,7 +968,7 @@ package body Xml_Parser is
     end loop;
     Tree.Read (Cell);
     if Cell.Kind /= Attribute then
-      Trace ("Expecting kind attribute, found " & Cell.Kind'Img);
+      Debug ("Expecting kind attribute, found " & Cell.Kind'Img);
       raise Internal_Error;
     end if;
     return (Cell.Name, Cell.Namespace, Cell.Value, Cell.Unparsed);
@@ -1051,7 +1051,7 @@ package body Xml_Parser is
                    Tree_Access => Tree.Get_Position);
           when Xml_Parser.Attribute =>
             -- Attribute
-            Trace ("Expecting kind text or element or comment, found attribute");
+            Debug ("Expecting kind text or element or comment, found attribute");
             raise Internal_Error;
         end case;
       end if;
@@ -1117,7 +1117,7 @@ package body Xml_Parser is
               Tree_Access => Tree.Get_Position);
       when  Xml_Parser.Attribute =>
         -- Attribute
-        Trace ("Expecting kind element or text or comment, found attribute");
+        Debug ("Expecting kind element or text or comment, found attribute");
         raise Internal_Error;
     end case;
     return N;
@@ -1168,7 +1168,7 @@ package body Xml_Parser is
               Tree_Access => Tree.Get_Position);
       when Xml_Parser.Attribute =>
         -- Attribute
-        Trace ("Expecting kind element or text or comment, found attribute");
+        Debug ("Expecting kind element or text or comment, found attribute");
         raise Internal_Error;
     end case;
     return N;
@@ -1194,7 +1194,7 @@ package body Xml_Parser is
             Tree_Access => Tree.Get_Position);
     else
       -- Attribute or text or comment as parent of something!
-      Trace ("Expecting kind element, found " & Cell.Kind'Img);
+      Debug ("Expecting kind element, found " & Cell.Kind'Img);
       raise Internal_Error;
     end if;
     return Element_Type (N);
@@ -1220,7 +1220,7 @@ package body Xml_Parser is
          := Get_Cell (Get_Tree (Ctx, Text), Text);
   begin
     if Cell.Kind /= Xml_Parser.Text then
-      Trace ("Expecting kind text, found " & Cell.Kind'Img);
+      Debug ("Expecting kind text, found " & Cell.Kind'Img);
       raise Internal_Error;
     end if;
     return Cell.Name;
@@ -1239,7 +1239,7 @@ package body Xml_Parser is
          := Get_Cell (Get_Tree (Ctx, Comment), Comment);
   begin
     if Cell.Kind /= Xml_Parser.Comment then
-      Trace ("Expecting kind Comment, found " & Cell.Kind'Img);
+      Debug ("Expecting kind Comment, found " & Cell.Kind'Img);
       raise Internal_Error;
     end if;
     return Cell.Name;

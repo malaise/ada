@@ -56,7 +56,7 @@ package body Dtd is
         Util.Error (Ctx.Flow, "Late or second declaration of xml in dtd");
       end if;
       -- Add a dummy prologue root or a dummy child to prologue root
-      Trace ("Dtd parsing xml instruction");
+      Debug ("Dtd parsing xml instruction");
       Dummy.Line_No := 0;
       if Ctx.Prologue.Is_Empty then
         Ctx.Prologue.Insert_Father (Dummy);
@@ -68,7 +68,7 @@ package body Dtd is
       -- Delete this dummy child
       Ctx.Prologue.Delete_Tree;
       -- Done
-      Trace ("Dtd parsed xml instruction");
+      Debug ("Dtd parsed xml instruction");
     else
       -- Skip processing instruction
       Util.Parse_Until_Str (Ctx.Flow, Util.Instruction & Util.Stop);
@@ -130,7 +130,7 @@ package body Dtd is
         exit when Index = 0;
         C := Str(Index - 1);
         if C /= '(' and then C /= '|' and then C /= ',' then
-          Trace ("Dtd missing seperator in >" & Res.Image
+          Debug ("Dtd missing seperator in >" & Res.Image
                & "< at index " & Line_Image (Index));
           Util.Error (Ctx.Flow, "Invalid children definition");
         end if;
@@ -140,7 +140,7 @@ package body Dtd is
     Res := As.U.Tus (Str_Util.Substit (Res.Image, ",", ""));
     -- Now compile to check it
     if not Regular_Expressions.Check (Res.Image) then
-      Trace ("Dtd regex does node compile >" & Res.Image & "<");
+      Debug ("Dtd regex does node compile >" & Res.Image & "<");
       Util.Error (Ctx.Flow, "Invalid children definition");
     end if;
     -- Done
@@ -301,7 +301,7 @@ package body Dtd is
     end if;
     -- Store element
     Adtd.Info_List.Insert (Info);
-    Trace ("Dtd parsed directive ELEMENT -> " & Info.Name.Image
+    Debug ("Dtd parsed directive ELEMENT -> " & Info.Name.Image
          & " " & Info.List.Image);
   end Parse_Element;
 
@@ -354,7 +354,7 @@ package body Dtd is
     Adtd.Info_List.Search (Info, Found);
     if Found then
       Adtd.Info_List.Read (Info);
-      Trace ("Dtd retrieved previous ATTLIST -> " & Info.Name.Image
+      Debug ("Dtd retrieved previous ATTLIST -> " & Info.Name.Image
            & " " & Info.List.Image);
       Util.Warning (Ctx, "Attlist already defined at line "
            & Line_Image (Info.Line)
@@ -485,7 +485,7 @@ package body Dtd is
                 -- Store this info appart in Ctx for when the Dtd is cleared
                 --  (no expand)
                 Ctx.Preserved.Append (Info_Sep & Elt_Name);
-                Trace ("Dtd saving preserve of " & Elt_Name.Image);
+                Debug ("Dtd saving preserve of " & Elt_Name.Image);
               end if;
             end if;
           end;
@@ -586,12 +586,12 @@ package body Dtd is
         if Typ_Char = 'E' or else Typ_Char = 'N' then
           Attinfo.List := Enum;
           Adtd.Info_List.Insert (Attinfo);
-          Trace ("Dtd stored attribute type -> " & Attinfo.Name.Image
+          Debug ("Dtd stored attribute type -> " & Attinfo.Name.Image
            & " " & Attinfo.List.Image);
         elsif Def_Char = 'F' or else Def_Char = 'D' then
           Attinfo.List := Info_Sep & Def_Val & Info_Sep;
           Adtd.Info_List.Insert (Attinfo);
-          Trace ("Dtd stored attribute type -> " & Attinfo.Name.Image
+          Debug ("Dtd stored attribute type -> " & Attinfo.Name.Image
            & " " & Attinfo.List.Image);
         end if;
         -- Verify Notation is not used twice (##N) for this element
@@ -636,7 +636,7 @@ package body Dtd is
         end if;
       else
         -- This attribute is already defined (for this element)
-        Trace ("Dtd discarding duplicate ATTLIST -> " & Info.Name.Image
+        Debug ("Dtd discarding duplicate ATTLIST -> " & Info.Name.Image
              & " " & Att_Name.Image & Info_Sep & Info_Sep
              & Typ_Char & Def_Char);
         Util.Warning (Ctx, "Attribute " & Att_Name.Image
@@ -645,7 +645,7 @@ package body Dtd is
     end loop;
     -- Attlist is ended: store
     Adtd.Info_List.Insert (Info);
-    Trace ("Dtd parsed directive ATTLIST -> " & Info.Name.Image
+    Debug ("Dtd parsed directive ATTLIST -> " & Info.Name.Image
          & " " & Info.List.Image);
   end Parse_Attlist;
 
@@ -782,7 +782,7 @@ package body Dtd is
 
     -- Check that it does not exist. Discard re-definition
     if Entity_Mng.Exists (Adtd.Entity_List, Name, Parameter) then
-      Trace ("Dtd discarding re-definition of entity "
+      Debug ("Dtd discarding re-definition of entity "
            & Parstr.Image  & Name.Image);
       Util.Warning (Ctx, "Entity " & Parstr.Image & Name.Image
            & " already defined");
@@ -804,7 +804,7 @@ package body Dtd is
     -- Store entity
     Entity_Mng.Add (Adtd.Entity_List, Name, Value, Parameter, Internal,
                     Ctx.Flow.Curr_Flow.Kind = Int_Dtd_Flow, Parsed);
-    Trace ("Dtd parsed directive ENTITY -> " &  Parstr.Image & Name.Image
+    Debug ("Dtd parsed directive ENTITY -> " &  Parstr.Image & Name.Image
          & " " & Value.Image & " " & Mixed_Str (Internal'Img)
          & " " & Mixed_Str (Parsed'Img) );
   end Parse_Entity;
@@ -889,7 +889,7 @@ package body Dtd is
     Unparsed_Rec.Public_Id := Public_Id;
     Unparsed_Rec.Notation.Set_Null;
     Ctx.Unparsed_List.Insert (Unparsed_Rec);
-    Trace ("Dtd parsed directive NOTATION -> " &  Name.Image);
+    Debug ("Dtd parsed directive NOTATION -> " &  Name.Image);
   end Parse_Notation;
 
   -- Parse a conditional directive
@@ -940,7 +940,7 @@ package body Dtd is
           exit when Index = 0;
           Nb_Open := Nb_Open + 1;
         end loop;
-        Trace ("Dtd ignored " & Word.Image);
+        Debug ("Dtd ignored " & Word.Image);
         exit when Nb_Open = 1;
         Nb_Open := Nb_Open - 1;
       end loop;
@@ -949,7 +949,7 @@ package body Dtd is
       -- INCLUDE directive
       -- Go on parsing, knowing that we are in an Include directive
       Adtd.Include_Level := Adtd.Include_Level + 1;
-      Trace ("Dtd starting inclusion" & Adtd.Include_Level'Img);
+      Debug ("Dtd starting inclusion" & Adtd.Include_Level'Img);
     end if;
   end Parse_Condition;
 
@@ -1019,7 +1019,7 @@ package body Dtd is
     if External then
       -- Autodetect encoding and check
       Util.Guess_Encoding (Ctx.Flow);
-      Trace ("Detected dtd encoding format "
+      Debug ("Detected dtd encoding format "
            & Ctx.Flow.Curr_Flow.Encod'Img);
     end if;
 
@@ -1047,7 +1047,7 @@ package body Dtd is
           Entity_Value := Util.Get_Curr_Str (Ctx.Flow);
           Entity_Value := Entity_Value & Util.Ent_End;
           -- Expand
-          Trace ("Dtd expanding parameter entity " & Entity_Value.Image);
+          Debug ("Dtd expanding parameter entity " & Entity_Value.Image);
           Util.Expand_Name (Ctx, Adtd, Entity_Value, Ref_Dtd);
           -- Suspend recording for the entity replacement
           Is_Recorded := Ctx.Flow.Recording;
@@ -1061,7 +1061,7 @@ package body Dtd is
         -- Detect end of include
         Found := Util.Try (Ctx.Flow, "]]" & Util.Stop);
         if Found then
-          Trace ("Dtd ending inclusion" & Adtd.Include_Level'Img);
+          Debug ("Dtd ending inclusion" & Adtd.Include_Level'Img);
           Adtd.Include_Level := Adtd.Include_Level - 1;
         end if;
       end if;
@@ -1102,7 +1102,7 @@ package body Dtd is
     Ctx.Flow.Curr_Flow.In_Stri := 0;
     Ctx.Flow.Curr_Flow.Same_Line := True;
     -- Parse new flow as dtd
-    Trace ("Switching input to " & Text.Image);
+    Debug ("Switching input to " & Text.Image);
     Parse (Ctx, Adtd, External => True);
     -- Restore flow
     Util.Pop_Flow (Ctx.Flow);
@@ -1121,20 +1121,20 @@ package body Dtd is
   begin
     if File_Name = String_Flow then
       -- String of Ctx
-      Trace ("Dtd parsing string");
+      Debug ("Dtd parsing string");
       Ctx.Flow.Curr_Flow.Is_File := False;
       Ctx.Flow.Curr_Flow.File := null;
       Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
       Parse (Ctx, Adtd, True);
     elsif File_Name = Internal_Flow then
       -- Internal declarations (string or file) of Ctx
-      Trace ("Dtd parsing internal definition");
+      Debug ("Dtd parsing internal definition");
       Ctx.Flow.Curr_Flow.Kind := Int_Dtd_Flow;
       Parse (Ctx, Adtd, False);
       Ctx.Flow.Curr_Flow.Kind := Xml_Flow;
     else
       -- File name
-      Trace ("Dtd parsing file " & File_Name.Image);
+      Debug ("Dtd parsing file " & File_Name.Image);
       Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
       Ctx.Flow.Files.Push (Ctx.Flow.Curr_Flow.File);
       File_Mng.Open (File_Name.Image, Ctx.Flow.Curr_Flow.File.all);
@@ -1151,12 +1151,12 @@ package body Dtd is
       Ctx.Preserved.Append (Info_Sep);
     end if;
     -- Dtd is now valid
-    Trace ("Dtd parsed dtd");
+    Debug ("Dtd parsed dtd");
     Adtd.Set := True;
     if Ctx.Warnings /= null then
-      Trace ("Dtd checking warnings");
+      Debug ("Dtd checking warnings");
       Check_Warnings (Ctx, Adtd);
-      Trace ("Dtd checked warnings");
+      Debug ("Dtd checked warnings");
     end if;
     if Close_File then
       File_Mng.Close (Ctx.Flow.Curr_Flow.File.all);
@@ -1193,7 +1193,7 @@ package body Dtd is
     use type As.U.Asu_Us;
   begin
     -- All unparsed entities have a notation associated
-    Trace ("Dtd final: All unparsed entities have a notation");
+    Debug ("Dtd final: All unparsed entities have a notation");
     if not Ctx.Unparsed_List.Is_Empty then
       -- Make a string list of notations used by unparsed entities
       Ctx.Unparsed_List.Rewind;
@@ -1216,7 +1216,7 @@ package body Dtd is
           Notation : constant String := Iter2.Next_Word;
         begin
           exit when Notation = "";
-          Trace ("Checking notation " & Notation
+          Debug ("Checking notation " & Notation
                & " for unparsed entity " & Entity);
           -- Name must appear in notations
           Unparsed_Rec.Is_Entity := False;
@@ -1236,8 +1236,8 @@ package body Dtd is
 
     -- All ATTLIST NOTATION values shall refer to a NOTATION
     -- Any element having a notation is not EMPTY
-    Trace ("Dtd final: All notation attlist values have a notation");
-    Trace ("       and elements with notation attlist are not empty");
+    Debug ("Dtd final: All notation attlist values have a notation");
+    Debug ("       and elements with notation attlist are not empty");
     -- For all Elt#Att of Notation_Attrs
     Iter.Set (Adtd.Notation_Attrs.Image, Is_Sep'Access);
     loop
@@ -1249,7 +1249,7 @@ package body Dtd is
         exit when Elt = "";
 
         -- Read info with the list of enum values
-       Trace ("Checking notation attribute " & Att & " of element " & Elt);
+       Debug ("Checking notation attribute " & Att & " of element " & Elt);
         Info.Name := As.U.Tus ("Att" & Info_Sep & Elt & Info_Sep & Att);
         Adtd.Info_List.Read (Info);
         Iter1.Set (Info.List.Image, Is_Sep'Access);
@@ -1257,7 +1257,7 @@ package body Dtd is
           Val : constant String := Iter1.Next_Word;
         begin
           exit when Val = "";
-          Trace ("  Checking definition of notation " & Val
+          Debug ("  Checking definition of notation " & Val
                & " of attribute " & Att
                & " of element " & Elt);
           -- Each value must be defined by a notation
@@ -1420,7 +1420,7 @@ package body Dtd is
     Only : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
-    Trace ("Dtd check Xml children list " & Children.Children.Image
+    Debug ("Dtd check Xml children list " & Children.Children.Image
          & " Empty: " & Children.Is_Empty'Img
          & " Text : " & Children.Has_Text'Img);
     -- Remove tail from root (Info_Sep & Info_Sep) if any
@@ -1438,12 +1438,12 @@ package body Dtd is
     exception
       when Info_Mng.Not_In_List =>
         -- Should have been detected by Check_Attributes
-        Trace ("Dtd check children. Element name " & Name.Image
+        Debug ("Dtd check children. Element name " & Name.Image
               & " does not exist");
         raise Internal_Error;
     end;
     -- Check children
-    Trace ("Dtd check Dtd element " & Name.Image
+    Debug ("Dtd check Dtd element " & Name.Image
          & " with infolist " & Info.List.Image);
     -- Separate element type
     Char := Info.List.Element (1);
@@ -1482,7 +1482,7 @@ package body Dtd is
                         & " does not allow child " & Child,
                           Line_No);
             end if;
-            Trace ("Dtd checked mixed child " & Child
+            Debug ("Dtd checked mixed child " & Child
                  & " versus " & Info.List.Image);
           end;
         end loop;
@@ -1501,10 +1501,10 @@ package body Dtd is
                     & " allows children " & Strip_Sep (Info.List)
                     & " but has children " & Strip_Sep (Childstr));
         end if;
-        Trace ("Dtd checked children " & Strip_Sep (Childstr)
+        Debug ("Dtd checked children " & Strip_Sep (Childstr)
              & " versus " & Strip_Sep (Info.List));
       when others =>
-        Trace ("Dtd check: Unexpected element type " & Char);
+        Debug ("Dtd check: Unexpected element type " & Char);
         raise Internal_Error;
     end case;
 
@@ -1516,7 +1516,7 @@ package body Dtd is
   exception
     when Regular_Expressions.No_Criteria =>
       -- Normally it was checks at parsing
-      Trace ("Dtd regex does not compile for check " & Info.List.Image);
+      Debug ("Dtd regex does not compile for check " & Info.List.Image);
       raise Internal_Error;
   end Check_Children;
 
@@ -1527,7 +1527,7 @@ package body Dtd is
     Cell : My_Tree_Cell;
     use type As.U.Asu_Us;
   begin
-    Trace ("Dtd setting unparsed on attribute " & Attr.Image);
+    Debug ("Dtd setting unparsed on attribute " & Attr.Image);
     -- Read current element from tree and make its attribute list
     for I in 1 .. Ctx.Elements.Children_Number loop
       if I = 1 then
@@ -1577,7 +1577,7 @@ package body Dtd is
     Unparsed_Rec : Unparsed_Type;
     use type As.U.Asu_Us;
   begin
-    Trace ("Dtd check Xml attributes list " & Attributes.Image);
+    Debug ("Dtd check Xml attributes list " & Attributes.Image);
     -- Read element def
     Info.Name := "Elt" & Info_Sep & Name;
     Adtd.Info_List.Search (Info, Info_Found);
@@ -1594,7 +1594,7 @@ package body Dtd is
     if not Info_Found or else Info.List.Is_Null then
       -- No or empty ATTLIST for this element
       if Attributes.Is_Null then
-        Trace ("Dtd checked element " & Name.Image
+        Debug ("Dtd checked element " & Name.Image
              & " with no attributes, versus no or empty attlist");
         return;
       else
@@ -1605,7 +1605,7 @@ package body Dtd is
       end if;
     end if;
     -- Check attributes
-    Trace ("Dtd check Dtd attlist with infolist " & Info.List.Image);
+    Debug ("Dtd check Dtd attlist with infolist " & Info.List.Image);
     -- Check attributes xml vs dtd
     -- First extract list of dtd attribute names
     Iter_Dtd.Set (Info.List.Image, Is_Sep'Access);
@@ -1727,7 +1727,7 @@ package body Dtd is
                 -- Just to check existance of the Namespace
                 Namespace := Namespaces.Get (Ctx, Attr_Us, False);
               end if;
-              Trace ("Dtd adding attribute " & Attr_Us.Image & " type " & Td
+              Debug ("Dtd adding attribute " & Attr_Us.Image & " type " & Td
                     & " val " & Dtd_Val);
               Tree_Mng.Add_Attribute (Ctx.Elements.all,
                   Attr_Us, As.U.Tus (Dtd_Val), Line_No);
@@ -1737,7 +1737,7 @@ package body Dtd is
             and then Dtd_Val = Tree_Mng.Preserve then
               Tree_Mng.Add_Tuning (Ctx.Elements.all,
                                    Tree_Mng.Xml_Space_Preserve);
-              Trace (" Check, added tuning " & Tree_Mng.Xml_Space_Preserve);
+              Debug (" Check, added tuning " & Tree_Mng.Xml_Space_Preserve);
             end if;
           end;
         elsif Att_Set then
@@ -1778,13 +1778,13 @@ package body Dtd is
                  Line_No);
             end if;
             Ctx.Ids.Insert (Idcell);
-            Trace (" Check, added ID " & Xml_Val.Image);
+            Debug (" Check, added ID " & Xml_Val.Image);
           elsif Td(1) = 'R' then
             -- Store this IDREF and line_no to list of IDREFs
             Idcell.Name := Xml_Val;
             Idcell.Line_No := Line_No;
             Ctx.Idrefs.Insert (Idcell);
-            Trace (" Check, added IDREF " & Xml_Val.Image);
+            Debug (" Check, added IDREF " & Xml_Val.Image);
           elsif Td(1) = 'r' then
             Idcell.Line_No := Line_No;
             -- Store these IDREFs and line_no to list of IDREFs
@@ -1792,12 +1792,12 @@ package body Dtd is
             -- Split IDREFS and insert each IDREF
             Iter_Xml.Set (Xml_Val.Image,
                         Parser.Is_Space_Or_Htab_Function'Access);
-            Trace (" Check, adding IDREFs " & Xml_Val.Image);
+            Debug (" Check, adding IDREFs " & Xml_Val.Image);
             loop
               Idcell.Name := As.U.Tus (Iter_Xml.Next_Word);
               exit when Idcell.Name.Is_Null;
               Ctx.Idrefs.Insert (Idcell);
-              Trace (" Check, added IDREF " & Idcell.Name.Image);
+              Debug (" Check, added IDREF " & Idcell.Name.Image);
             end loop;
             Iter_Xml.Del;
           end if;
@@ -1813,7 +1813,7 @@ package body Dtd is
               Entity : constant String := Iter.Next_Word;
             begin
               exit when Entity = "";
-              Trace (" Check, unparsed entity " & Entity);
+              Debug (" Check, unparsed entity " & Entity);
               Unparsed_Rec.Is_Entity := True;
               Unparsed_Rec.Name := As.U.Tus (Entity);
               Ctx.Unparsed_List.Search (Unparsed_Rec, Found);
@@ -1833,13 +1833,13 @@ package body Dtd is
                or else Upper_Char (Td(1)) = 'T' then Namespaces.Attr
                else Namespaces.Other));
         end if;
-        Trace ("Dtd checked versus dtd attribute " & Attr & " type " & Td);
+        Debug ("Dtd checked versus dtd attribute " & Attr & " type " & Td);
       end;
     end loop;
     Iter_Dtd.Del;
   exception
     when Info_Mng.Not_In_List =>
-      Trace ("Dtd check: Cannot find info " & Error_Name.Image);
+      Debug ("Dtd check: Cannot find info " & Error_Name.Image);
       Iter_Dtd.Del;
       raise Internal_Error;
   end Check_Attributes;
@@ -1858,7 +1858,7 @@ package body Dtd is
     use type As.U.Asu_Us;
   begin
     Ctx.Elements.Read (Cell);
-    Trace ("Dtd checking attributes of element " & Cell.Name.Image);
+    Debug ("Dtd checking attributes of element " & Cell.Name.Image);
     if Cell.Name.Is_Null then
       Util.Error (Ctx.Flow, "Empty element name");
     end if;
@@ -2269,7 +2269,7 @@ package body Dtd is
     Idref, Prev_Ref : Id_Cell;
     Found : Boolean;
   begin
-    Trace ("Checking final");
+    Debug ("Checking final");
     -- Each IDREF must exist in IDs
     if not Ctx.Idrefs.Is_Empty then
       Id_Sort (Ctx.Idrefs.all);
@@ -2288,7 +2288,7 @@ package body Dtd is
         exit when not Moved;
       end loop;
     end if;
-    Trace ("Checked final");
+    Debug ("Checked final");
   end Final_Check;
 
 end Dtd;

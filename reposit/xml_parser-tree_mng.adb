@@ -263,7 +263,7 @@ package body Tree_Mng is
     -- Read root and check
     Prologue.Read (Pro_Cell);
     if Index > Pro_Cell.Nb_Attributes + 1 then
-       Trace ("Inserting/replacing XML attribute " & Name.Image
+       Debug ("Inserting/replacing XML attribute " & Name.Image
             & " at index " & Index'Img & " while having "
             & Pro_Cell.Nb_Attributes'Img & " attributes");
       raise Internal_Error;
@@ -395,7 +395,7 @@ package body Tree_Mng is
       when Comment =>
         Update.Kind := Comment;
       when Attribute =>
-        Trace ("Building a node update from an attribute " & Cell.Name.Image);
+        Debug ("Building a node update from an attribute " & Cell.Name.Image);
         raise Internal_Error;
     end case;
     Deallocate (Update.Attributes);
@@ -403,7 +403,7 @@ package body Tree_Mng is
     -- Case of deletion, no build of attribtues
     if not Creation then
       if Cell.Kind /= Element then
-        Trace ("Building deletion but not of element " & Cell.Name.Image);
+        Debug ("Building deletion but not of element " & Cell.Name.Image);
         raise Internal_Error;
       end if;
       return;

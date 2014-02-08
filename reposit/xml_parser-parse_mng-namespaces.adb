@@ -131,7 +131,7 @@ package body Namespaces is
 
     -- Insert or replace
     Item.Namespace := Namespace;
-    Trace ("    Adding namespace " & Item.Prefix.Image
+    Debug ("    Adding namespace " & Item.Prefix.Image
          & " -> " & Item.Namespace.Image);
     Ctx.Namespace_List.Insert (Item, Namespace_List_Mng.First);
   end Add;
@@ -158,12 +158,12 @@ package body Namespaces is
     if Found then
       if Debug_On then
         Ctx.Namespace_List.Read_Current (Item);
-        Trace ("    Deleting namespace " & Item.Prefix.Image
+        Debug ("    Deleting namespace " & Item.Prefix.Image
              & " -> " & Item.Namespace.Image);
       end if;
       Ctx.Namespace_List.Delete_Current;
     else
-      Trace ("Deleting Unknonw namespace " & Name.Image);
+      Debug ("Deleting Unknonw namespace " & Name.Image);
       raise Internal_Error;
     end if;
   end Del;
@@ -201,7 +201,7 @@ package body Namespaces is
     Ctx.Namespace_List.Search_First (Item, Found, Namespace_List_Mng.Forward);
     if Found then
       Ctx.Namespace_List.Read_Current (Item);
-      Trace ("    Got namespace " & Name.Image & " -> " & Item.Namespace.Image);
+      Debug ("    Got namespace " & Name.Image & " -> " & Item.Namespace.Image);
       return Item.Namespace;
     elsif Index = 0 then
       -- No default namespace

@@ -41,7 +41,7 @@ package body Util is
     end if;
 
     if Encoding /= Other then
-      Trace ("Got a Byte Order Marker");
+      Debug ("Got a Byte Order Marker");
     else
       -- Else restore "<?xml" (4 first bytes of it)
       Unget (Flow, Str'Length);
@@ -73,7 +73,7 @@ package body Util is
     -- So the Nb_Bytes_xxx must be Adjusted. Reset is acceptable
     --  because this is for sure the beginning of the flow.
     -- Store for flow
-    Trace ("Guessed encoding " & Encod'Img);
+    Debug ("Guessed encoding " & Encod'Img);
     Flow.Curr_Flow.Encod := Encod;
     Flow.Curr_Flow.Nb_Bytes := 0;
   end Guess_Encoding;
@@ -94,7 +94,7 @@ package body Util is
         Error (Flow, "Unsupported encoding (only UTF-8, UTF-16 "
                           & "and ISO-8859-1 are natively supported)");
       end if;
-      Trace ("Loading map " & Name & " from file " & File_Name);
+      Debug ("Loading map " & Name & " from file " & File_Name);
       Flow.Curr_Flow.Map.Load (File_Name);
       Flow.Curr_Flow.Encod := Other;
     exception
@@ -308,7 +308,7 @@ package body Util is
   begin
     -- The error message is attached to the exception
     -- Xml_parser will copy it in the Flow.
-    Trace ("Raising Parse_Error with " & Err_Msg);
+    Debug ("Raising Parse_Error with " & Err_Msg);
     Exception_Messenger.Raise_Exception (Parse_Error'Identity, Err_Msg);
   end Error;
   procedure Warning (Ctx     : in out Ctx_Type;
@@ -319,7 +319,7 @@ package body Util is
     if Ctx.Warnings = null then
       return;
     end if;
-    Trace ("Calling Warning with " & Err_Msg);
+    Debug ("Calling Warning with " & Err_Msg);
     Ctx.Warnings (Ctx, Err_Msg);
   end Warning;
 
@@ -435,7 +435,7 @@ package body Util is
     when Text_Char.End_Error =>
       raise End_Error;
     when Error:others =>
-      Trace ("Decoding error " & Ada.Exceptions.Exception_Name (Error));
+      Debug ("Decoding error " & Ada.Exceptions.Exception_Name (Error));
       raise Decoding_Error;
   end Get_Char;
 
@@ -632,7 +632,7 @@ package body Util is
     Char : Character;
   begin
     if Criteria'Length > Max_Buf_Len then
-      Trace ("Parsing until Str with a too long criteria");
+      Debug ("Parsing until Str with a too long criteria");
       raise Constraint_Error;
     end if;
     loop
@@ -913,9 +913,9 @@ package body Util is
           Name_Stack.Rewind;
         end if;
         Name_Stack.Insert ( (Starter & Name), Name_List_Mng.Prev);
-        Trace ("Expanding >" & Val.Image & "<");
+        Debug ("Expanding >" & Val.Image & "<");
         Expand_Internal (Ctx, Dtd, Val, Context, Start_Index, Name_Stack);
-        Trace ("Expanded >" & Name.Image & "< as >" & Val.Image & "<");
+        Debug ("Expanded >" & Name.Image & "< as >" & Val.Image & "<");
         -- Pop this entity name from the stack
         Name_Stack.Rewind;
         Name_Stack.Delete;
