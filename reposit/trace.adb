@@ -1,6 +1,6 @@
 with Ada.Calendar;
-with Environ, Argument, Sys_Calls,
-     Images, Hexa_Utils, Bit_Ops, Upper_Str, Str_Util, Gets, Parser;
+with Environ, Argument, Sys_Calls, Images, Hexa_Utils, Bit_Ops, Upper_Str,
+     Str_Util, Gets, Parser, Ada_Words;
 package body Trace is
 
   -- Public utilities
@@ -139,6 +139,9 @@ package body Trace is
   function Get_Mask (Name : in String) return Severities is
   begin
     Basic_Init;
+    if not Ada_Words.Is_Identifier (Name) then
+      return Severities'First;
+    end if;
     declare
       Env : constant String
           := Process.Image & "_TRACE" & (if Name = "" then ""

@@ -56,6 +56,8 @@ package Trace is
   ---------------
   -- Initialize the logger, with a name or anonymous
   --  and set its mask from ENV
+  -- If name is not valid (i.e. not and Ada identifier) then the logger
+  --  is disabled (Mask=0).
   -- If Name is not empty and <proc>_TRACE_<Name> is set (even empty)
   -- or Name is empty and <proc>_TRACE is set, then the mask is set to
   --  Fatal|Error|mask
