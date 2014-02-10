@@ -3,7 +3,7 @@ Xml_Checker
 
 Parser version: V33.0 +
 Generator version: V13.1 +
-Xml_checker version: V18.0
+Xml_checker version: V18.2
 
 Xml_checker is a parser of XML file that checks the syntax (versus DTD) and
 formats the output.
@@ -55,8 +55,13 @@ anchor:Progress[]-p | --progress: :: for only output a progress bar like this:
   |-------------------------------------------------|
   |=================================
 +
-then exit. +
-It is not possible to monitor the progress in "xref:Tree[tree]" mode,
+then exit.
++
+Note that after the parsing and the completion of the progress bar,
+xml_checker performs the check that all the IDREFs are defined as IDs, which
+may take a significant time that is not monitored.
++
+Note that it is not possible to monitor the progress in "xref:Tree[tree]" mode,
 so these options are exclusive.
 
 anchor:Dump[]-D | --dump: :: for a dump of the line numbers, of XML structure and "Mixed"
@@ -110,9 +115,9 @@ It expands, removes CDATA markers, does xref:Normalize[not normalize], does not
 expand namespaces and by default removes comments; it is not supported in
 xref:Tree[tree] mode).
 
-anchor:Normalize[]--no-normalize: :: for no normalization of attributes and text. By default the
-text is normalized and, if the xref:Expand[expand] option is set, the attributes
-are normalized as well. +
+anchor:Normalize[]--no-normalize: :: for no normalization of attributes and
+text. By default the text is normalized and, if the xref:Expand[expand] option
+is set, the attributes are normalized as well. +
 This option forces no normalization of the text and of the expanded attributes.
 
 Checks
