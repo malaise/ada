@@ -4,7 +4,7 @@ with Trace.Loggers, Rnd, Exception_Messenger, Directory, Str_Util,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "2";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;

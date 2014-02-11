@@ -1629,6 +1629,7 @@ package body Dtd is
         Attr : constant String := Iter_Xml.Next_Word;
       begin
         exit when Attr = "";
+        Debug ("Dtd check xml attribute " & Attr);
         -- Attribute must appear in list of attributes from dtd
         if Str_Util.Locate (Att_Names.Image,
                               Info_Sep & Attr & Info_Sep) = 0 then
@@ -1653,6 +1654,7 @@ package body Dtd is
       begin
         -- Read all necessary info
         exit when Attr = "";
+        Debug ("Dtd check dtd attribute " & Attr);
         Td := Iter_Dtd.Next_Word;
         -- Corresponding attribute info from dtd if any
         if Td(1) = 'E' or else Td(1) = 'N'
@@ -1724,6 +1726,8 @@ package body Dtd is
           begin
             if Ctx.Expand then
               if Ctx.Namespace then
+                -- Add namespace of default or fixed attribute
+                Namespaces.Add (Ctx, Attr_Us, As.U.Tus (Dtd_Val));
                 -- Just to check existance of the Namespace
                 Namespace := Namespaces.Get (Ctx, Attr_Us, False);
               end if;
