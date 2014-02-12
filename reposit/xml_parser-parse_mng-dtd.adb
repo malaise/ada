@@ -1728,8 +1728,6 @@ package body Dtd is
               if Ctx.Namespace then
                 -- Add namespace of default or fixed attribute
                 Namespaces.Add (Ctx, Attr_Us, As.U.Tus (Dtd_Val));
-                -- Just to check existance of the Namespace
-                Namespace := Namespaces.Get (Ctx, Attr_Us, False);
               end if;
               Debug ("Dtd adding attribute " & Attr_Us.Image & " type " & Td
                     & " val " & Dtd_Val);
