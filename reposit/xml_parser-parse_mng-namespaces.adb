@@ -177,13 +177,8 @@ package body Namespaces is
     Item : Namespace_Type;
     Found : Boolean;
   begin
-    -- Don't resolve a declaration of NS
+    -- Resolve all namespaces, including xml: and xmlns:
     Index := Str_Util.Locate (Name.Image, ":");
-    if Name.Image = Xmlns
-    or else (Index = Xmlns_Prefix'Length
-           and then Name.Slice(1, Xmlns_Prefix'Length) = Xmlns_Prefix) then
-      return As.U.Asu_Null;
-    end if;
     if Index = 0 then
       -- Not qualified => Default namespace
       if Element then
