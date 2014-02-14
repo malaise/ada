@@ -24,7 +24,10 @@ if [ ! -p $PIPE ] ; then
   mknod $PIPE p
 fi
 
-# Send text (on the pipe) / and sleep...
+# Send text $1 (on the pipe) then sleep $2...
+# If last arg is a $1 (odd Nb of arg) then sleep a bit before returning
+# If called with ... cmd 0 then we add a sleep 1 otherwise tcpchat
+#  is likely to die on SIGPIPE before completing the processing
 function send {
   sleep 1
   while [ "$1" != "" ] ; do
@@ -35,10 +38,17 @@ function send {
     echo -e "$str"
     shift
     if [ "$1" = "" ] ; then
+      # Wait a bit before returning (which will SIGPIPE tcpchat)
+      sleep 1
       return
     fi
     sleep $1
+    prevsleep=$1
     shift
+    if [ \( "$1" = "" \) -a \( "$prevsleep" = "0" \) ] ; then
+      # Called with ... cmd 0
+      sleep 1
+    fi
   done
 }
 
@@ -50,6 +60,7 @@ function clean {
 # A test.
 # $1 is the file with expected result
 # Other args are series of sentences to send and delay to wait
+#  see function "send"
 function try {
   local expected="$1"
   shift
@@ -58,10 +69,10 @@ function try {
   tcpchat -p - -f chats.xml <$PIPE >$RES 2>$DEBUG &
   PID=$!
 
-  # Send stimulus and stop
+  # Send stimulus
   send $@ > $PIPE
-  kill $PID
-  sleep 1
+  # Normally not necessary because tcpchat has got sigpipe at end of send
+  kill $PID 2>/dev/null
 
   # Compare with expected
   cmp -s $RES "$expected"
@@ -139,7 +150,7 @@ try $EXPECTED testMulti 0 login 0 PASSWORD 2
 # Multi 3
 echo -n "Test Multi 3: "
 echo -en "\nme\n" > $EXPECTED
-try $EXPECTED testMulti 0 login 0 Password
+try $EXPECTED testMulti 0 login 0 Password 2
 
 # Multi 4
 echo -n "Test Multi 4: "
@@ -149,7 +160,7 @@ try $EXPECTED testMulti 0 LOGIN 0 PASSWORD 2
 # Multi 5
 echo -n "Test Multi 5: "
 echo -en "\n" > $EXPECTED
-try $EXPECTED testMulti 0 Login
+try $EXPECTED testMulti 0 Login 2
 
 # Login OK
 echo -n "Test login ok: "
