@@ -40,6 +40,9 @@ begin
       when Ios.Exit_Requested =>
         Basic_Proc.Put_Line_Output ("Exiting");
         return;
+      when Ios.Fatal_Error =>
+        Basic_Proc.Put_Line_Output ("Fatal error");
+        return;
     end case;
   end loop;
 

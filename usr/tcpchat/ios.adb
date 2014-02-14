@@ -91,7 +91,7 @@ package body Ios is
                     Len  : Natural) return Boolean is
     pragma Unreferenced (Dscr);
   begin
-    Debug.Logger.Log_Debug ("Read " & Msg(1 .. Len));
+    Debug.Logger.Log_Debug ("Read_Cb >" & Msg(1 .. Len) & "<");
     Buffer.Push (Str_Util.Substit (Msg(1 .. Len), Crlf, Lf));
     return True;
   end Read_Cb;
@@ -130,7 +130,16 @@ package body Ios is
 
   function Async_Cb (Str : String) return Boolean is
   begin
-    Buffer.Push (Str);
+    if Str = "" then
+      -- Async_Stdin error
+      Debug.Logger.Log_Debug ("Async_Cb error");
+      if Event.Kind /= Exit_Requested then
+        Event := (Kind => Fatal_Error);
+      end if;
+    else
+      Debug.Logger.Log_Debug ("Async_Cb >" & Str & "<");
+      Buffer.Push (Str);
+    end if;
     return True;
   end Async_Cb;
 
@@ -225,6 +234,7 @@ package body Ios is
       -- Wait until timeout or an event
       exit when Event /= No_Event;
       -- On option wait until sentence ready
+      -- Event = No_Event so Evnt_Type = Got_Sentence
       exit when Stop_On_Sentence and then not Sentences.Is_Empty;
       Evt := Event_Mng.Wait (Wait_Def);
       exit when Evt = Event_Mng.Timeout;
@@ -310,11 +320,12 @@ package body Ios is
     Loc_Event : Event_Type;
   begin
     Debug.Logger.Log_Debug ("Read " & Timeout_Ms'Img);
-    Wait_Event (0, False);
+    Wait_Event (0, True);
     if Event /= No_Event then
       -- Something occured
       Loc_Event := Event;
       Reset_Event;
+      Debug.Logger.Log_Debug ("Read past event " & Loc_Event.Kind'Img);
       return Loc_Event;
     end if;
     Wait_Event (Timeout_Ms, True);
@@ -329,6 +340,7 @@ package body Ios is
       Loc_Event := (Kind => Local_Timeout);
     end if;
     Reset_Event;
+    Debug.Logger.Log_Debug ("Read new event " & Loc_Event.Kind'Img);
     return Loc_Event;
   end Read;
 

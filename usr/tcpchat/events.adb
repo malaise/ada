@@ -109,6 +109,9 @@ package body Events is
               when Ios.Exit_Requested =>
                 Put_Line ("Exit requested");
                 exit Main;
+              when Ios.Fatal_Error =>
+                Put_Line ("Fatal error");
+                exit Main;
               when Ios.Disconnection =>
                 if In_Chat then
                   Put_Line ("Disconnection");
@@ -272,6 +275,9 @@ package body Events is
               when Ios.Exit_Requested =>
                 Put_Line ("Exit requested");
                 exit Main;
+              when Ios.Fatal_Error =>
+                Put_Line ("Fatal error");
+                exit Main;
               when Ios.Disconnection =>
                 Put_Line ("Disconnection");
                 Reset;
@@ -302,6 +308,9 @@ package body Events is
               when Ios.Exit_Requested =>
                 Put_Line ("Exit requested");
                 exit Main;
+              when Ios.Fatal_Error =>
+                Put_Line ("Fatal error");
+                exit Main;
               when Ios.Disconnection =>
                 Put_Line ("Disconnection");
                 Reset;
@@ -322,6 +331,9 @@ package body Events is
             case Event.Kind is
               when Ios.Exit_Requested =>
                 Put_Line ("Exit requested");
+                exit Main;
+              when Ios.Fatal_Error =>
+                Put_Line ("Fatal error");
                 exit Main;
               when Ios.Disconnection =>
                 Put_Line ("Disconnection");
