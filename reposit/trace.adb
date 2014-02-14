@@ -139,7 +139,7 @@ package body Trace is
   function Get_Mask (Name : in String) return Severities is
   begin
     Basic_Init;
-    if not Ada_Words.Is_Identifier (Name) then
+    if Name /= "" and then not Ada_Words.Is_Identifier (Name) then
       return Severities'First;
     end if;
     declare
