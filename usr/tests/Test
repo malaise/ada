@@ -4,10 +4,11 @@
 
 # Cleanup
 function clean {
-  rm -f out out? err err? exp exp? tmp tmp? nul
+  rm -f out out? err err? exp exp? tmp tmp? nul pipe
 }
 
-trap clean SIGINT SIGTERM
+trap 'echo ""; clean; exit 1' SIGINT SIGTERM
+
 
 # Error message
 function error {

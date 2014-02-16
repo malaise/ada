@@ -3,13 +3,19 @@ export FILE=code.adb
 export TMP=tmpfile
 export PASSWD=Melusine
 
+function clean {
+  rm -f $TMP.cod $TMP.dec $TMP.ini
+}
+trap 'echo ""; clean; exit 1' SIGINT SIGTERM
+
+
 function compare {
   echo Comparing
   cmp -s $TMP.ini $TMP.dec
   if [ $? -eq 0 ] ; then
     echo "Test OK."
     echo ""
-    rm -f $TMP.cod $TMP.dec $TMP.ini
+    clean
   else
     echo "Test is not OK. Please check the files."
     exit 1

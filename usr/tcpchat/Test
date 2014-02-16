@@ -5,6 +5,7 @@ export VERS="V"`tcpchat -v`
 
 export DBG=1
 
+
 if [ $DBG -eq 1 ] ; then
   export TCPCHAT_DEBUG=Y
   export DEBUG=debug
@@ -23,6 +24,12 @@ export EXPECTED=expected
 if [ ! -p $PIPE ] ; then
   mknod $PIPE p
 fi
+
+# Clean
+function clean {
+  rm -f $PIPE -f $DEBUG $RES $EXPECTED
+}
+trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
 # Send text $1 (on the pipe) then sleep $2...
 # If last arg is a $1 (odd Nb of arg) then sleep a bit before returning
@@ -52,10 +59,6 @@ function send {
   done
 }
 
-# Clean
-function clean {
-  rm $PIPE
-}
 
 # A test.
 # $1 is the file with expected result
@@ -209,8 +212,5 @@ try $EXPECTED error2
 
 # Clean
 clean
-if [ $DBG  -eq 1 ] ; then
-  rm $DEBUG
-fi
 echo "OK."
 

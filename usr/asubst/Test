@@ -23,12 +23,7 @@ export FG=tstfile.got
 function clean {
   rm -rf $FR $FT $FS $FE $FL $FI $FD $FG
 }
-function sighandler {
-  clean
-  exit 1
-}
-
-trap sighandler SIGINT SIGTERM
+trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
 # Prepare inserted file
 echo -en "toto\nle" > $FI

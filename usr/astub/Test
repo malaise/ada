@@ -1,7 +1,12 @@
 #!/bin/bash
+function clean {
+  rm -f test.adb
+}
+trap 'echo ""; clean; exit 1' SIGINT SIGTERM
+
 if [ -f test.adb ] ; then
   echo "Removing previous test.adb"
-  rm test.adb
+  clean
 fi
 make test.adb
 if [ $? -ne 0 ] ; then
@@ -10,7 +15,7 @@ fi
 cmp -s test.adb test.adb.ref
 res=$?
 if [ $res -eq 0 ] ; then
-  rm test.adb
+  clean
   echo Ok.
   exit 0
 elif [ $res -eq 1 ] ; then
@@ -21,3 +26,4 @@ else
   echo "An error occured while comparing."
   exit 1
 fi
+

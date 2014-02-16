@@ -9,8 +9,8 @@ echo -n > nul
 function clean {
   rm -f out err exp nul
 }
+trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
-trap clean SIGINT SIGTERM
 
 # Title of a test
 function title {

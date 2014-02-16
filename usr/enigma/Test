@@ -4,6 +4,12 @@
 export ENIGMA_CONF_FILE=enigma.xml
 export DATA=data
 
+function clean {
+  rm -f tmp tmpc tmpd
+}
+trap 'echo ""; clean; exit 1' SIGINT SIGTERM
+
+
 # For loops
 export LIST="A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"
 

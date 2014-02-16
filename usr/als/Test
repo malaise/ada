@@ -3,6 +3,11 @@ export N0=0
 export N1=0
 export NE=0
 
+function clean {
+  rm -f BrokenLink exp res1 NewFile
+}
+trap 'echo ""; clean; exit 1' SIGINT SIGTERM
+
 function error {
   echo ""
   echo "ERROR: $*." 1>&2
@@ -131,7 +136,6 @@ if [ "$res" != "$exp" ] ; then
   error "als -lU --date_iso is $res i.o. $exp"
 fi
 echo "OK"
-
 
 # Sort by size
 title "In ., reverse sort by size"
