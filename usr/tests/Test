@@ -1563,6 +1563,44 @@ comp out exp
 comp err nul
 echo "OK"
 
+# t_trace
+title t_trace
+cat << EOF > out1
+Starting
+Done
+EOF
+try t_trace
+comp out out1
+comp err nul
+function strip_date {
+  cat $1 | cut -d ' ' -f 2- > tmp
+  mv tmp $1
+}
+
+export t_trace_TRACE=Info
+cat << EOF > err1
+t_trace - Info -> Bloga Info
+t_trace - Info -> Loga Info
+EOF
+try t_trace
+strip_date err
+comp out out1
+comp err err1
+
+export t_trace_TRACE_Logn='Debug|Info'
+cat << EOF > err1
+t_trace - Info -> Bloga Info
+t_trace - Info -> Loga Info
+t_trace Logn Info -> Logn Info
+t_trace Logn Debug -> Logn Debug
+EOF
+try t_trace
+strip_date err
+comp out out1
+comp err err1
+
+echo "OK"
+
 # t_trees
 title t_trees
 try t_trees
