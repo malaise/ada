@@ -206,6 +206,10 @@ package body Commit is
       Git_If.Do_Reset (Changes.Access_Current.Name.Image);
     end if;
     Afpx.Resume;
+    -- Move to next entry
+    if Afpx.Line_List.Get_Position (Afpx.Line_List_Mng.From_Last) /= 1 then
+      Afpx.Line_List.Move_To;
+    end if;
     Reread;
   end Do_Stage;
 

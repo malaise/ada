@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V14.13
+V14.14
 
 General purpose
 ---------------
@@ -778,11 +778,11 @@ Show the difference between the current change and the HEAD for the current file
 
 Stage::
 
-Stage the current file (selected in list).
+Stage the current file (selected in list) and move to next.
 
 Unstage::
 
-Unstage the current file (selected in list).
+Unstage the current file (selected in list) and move to next.
 
 StageAll::
 
