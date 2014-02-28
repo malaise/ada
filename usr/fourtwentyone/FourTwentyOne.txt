@@ -28,17 +28,17 @@ The tokens are exchanged among players according to the scores obtained with
 the dices. The table below lists the combinations from the highest to the lowest
 and indicates the value of each combination.
 
-[width="50%",options="header"]
+[width="75%",options="header"]
 |=========================================================
 |Name            |Combination |Value
 |Four Twenty One |421         | 10
 |All Aces        |111         |  7
-|Triple Six      |666         |  6
+|All Six         |666         |  6
 3+^e| ...
-|Triple Two      |222         |  2
+|All Two         |222         |  2
 |Ace Six         |116         |  6
 3+^e| ...
-|Ace Two         |112         |  6
+|Ace Two         |112         |  2
 |Suite Six       |654         |  2
 3+^e| ...
 |Suite Three     |321         |  2
@@ -52,16 +52,16 @@ The load
 ^^^^^^^^
 .Who starts the load?
 
-Each player throws a dice. The player with the lowest value (1 is lower than
+Each player throws one dice. The player with the lowest value (1 is lower than
 6) starts the load.
 
 .Course of a turn
 
-The first player starts the turn. He throws the 3 dices and annouces the
+The first player starts the turn. He throws the 3 dices and announces the
 combination and the value, ex: "Ace two for two".
 
-The player at his left throws the 3 dices. He annouces the combination and the
-total so far for the turn, ex: "Ace three for five". And so on until all
+The player at his left throws the 3 dices. He announces the best combination and
+the total so far for the turn, ex: "Ace three for five". And so on until all
 players have thrown.
 
 If two or more players have the same lowest combination this is a
@@ -83,65 +83,78 @@ all).
 
 The unload
 ^^^^^^^^^^
-The loads ends and the unload starts when the kitty is empty.
+The load step ends and the unload starts when the kitty is empty.
 
 .Start of the turn
 The player who has got the last tokens from the kitty starts the first turn. He
-throws the dices up to three times. He annouces each combination and the total
-so far for the turn. The first player stop after the first, second or third
-throw, when he want. He annouces the combination, the number ot throws and the
-total so far for the turn, ex: "Ace six in two for eight".
+throws the dices up to three times. After each throw he announces the
+combination and the total so far for the turn, ex "Ace two for six".
+The first player stops after the first, the second or the third throw, as he
+wants. He announces the last combination, the number ot throws and the total
+so far for the turn, ex: "Ace six in two for eight".
 
 .Other players, number of throws
 During the turn the remaining players try to make the highest combination in the
-same number of throws as the first player. Before each throw a player can
-decide that he stops: this will be the last throw of his go. Hi annouces this
-decision before throwing by hitting the table with the dices that he has in
-hand.
+same number of throws as the first player. Before each throw, a player can
+decide that he will stop after this throw (this is to be the last throw of his
+go). He announces this decision, before throwing, by hitting the table with the
+dices that he has in hand and that he will throw. +
+After throwing, each player announces the curren combination and the total
+so far for the turn. At the end of his go, if a player has obtained the best
+combination, he announces it, taking into account the possibly new max number
+of throws. ex:
+
+* Player 1 throws 521 then 113 then 112, he announces "Five twenty one for
+none", "Ace three for three" and "Ace two in three for five"
+* Player 2 throws 123, announces "three two one for seven", hits and throws 
+114, and announces "Ace four in two for nine".
 
 .Throwing and saving dices
-After the first and after the second throw a player can leave some dices on the
-table and take the others for another throw. He can change his mind (at third
-throw he can take some dices that he had left after first throw). If a dice
-thrown hits a dice left on the table the the new value of the dice is taken into
-account!
+After the first and after the second throw, a player can leave some dices on the
+table and take the others for another throw. He can change his mind and
+rethrow a dice that he previously left on the table. +
+If a dice thrown hits a dice left on the table then the new value of the dice is
+taken into account.
 
 .Paying
-At the end of the turn (including playing xref:XRampo[rampo] for the highest
+At the end of the turn (including playing a xref:XRampo[rampo] for the highest
 combination and a xref:XRampo[rampo] for the lowest combination) the player with
 the highest combination gives to the one with the lowest the number of tokens
-scored during the whole turn (or as many token as he has). The player who has
-lost the turn starts the new one.
+scored during the whole turn (or as many token as he has), including the
+scores of the xref:XRampo[rampos]. +
+The player who has lost this turn starts the new turn.
 
 .End of the set
-When a player has no more token he is out of the set (and cannot loos it). The
-looser of the set is the player who has collected all the token at the end of
-the set.
+When a player has no more token, he is out of the set (and cannot loose it).
+The looser of the set is the player who has collected all the token at the
+end of the set.
 
 The rampo
 ^^^^^^^^^
 .When
-anchor:XRampo[]The rampo is the situation when several players have the same
+anchor:XRampo[]The rampo is the situation where several players have the same
 combination and when one must loose or win. This occurs when:
 
 - several players have the same lowest combination during the load or during
-the unload. The looser of the rampo will be the looser of the turn.
+the unload. The looser of the rampo will loose the turn.
 - several players have the same highest combination during the unload. The
-winner of the rampo will be the winner of the turn.
+winner of the rampo will win the turn.
 
 .Announces
-Each time a player makes a combination in the situation above he annouces
-"Rampo". When each player has played his turn then the last Rampo announces
-"hot hand". If there is a rampo for lowest and a rampo for highest scores,
+Each time a player makes a combination in one of the situations above, he
+announces "rampo". When each player has played his turn and if the rampo is
+still significant for the turn, then the last rampo announces "hot hand" and
+starts to play the rampo.
+If there is a rampo for lowest and a rampo for highest scores,
 then the lowest hot hand is announced and the corresponding rampo is played
-before the hot hand and rampo for highest.
+before the hot hand and rampo for highest is played.
 
 .Playing the rampo
 The rampo is played like the load. Each player throws the dices once and
-annouces the combination and the total so far for the turn, except that the
+announces the combination and the total so far for the turn, except that the
 players play in reverse order: The hot hand first, then the player at his right,
 and so on.
-There can be a new rampo within the rampo. It is annouced as usual and
+There can be a new rampo within the rampo. It is announced as usual and
 then played, back in the "normal" order, and so on.
 
 Design of the software
