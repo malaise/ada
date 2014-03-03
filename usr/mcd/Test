@@ -172,7 +172,16 @@ comp err nul
 echo "OK"
 
 title day_of_week
-launch day_of_week
+export DAY_OF_WEEK="../day_of_week/day_of_week"
+if [ -x $DAY_OF_WEEK ] ; then
+  # Ensure that both are launched on same date
+  DATE=`$DAY_OF_WEEK | head -1 | cut -d ' ' -f1`
+  launch day_of_week ":${DATE}:"
+  $DAY_OF_WEEK $DATE > exp
+  comp out exp
+else
+  launch day_of_week
+fi
 comp err nul
 echo "OK"
 
@@ -491,10 +500,11 @@ comp err nul
 echo "OK"
 
 title regex
-launch regex :t.t.: :toto:
+launch regex :t.t.: :toto: :lolo:
 cat << EOF > exp
 Checking with pattern: t.t.
 toto =>     1
+lolo =>     0
 Done.
 EOF
 comp out exp

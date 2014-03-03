@@ -6,7 +6,6 @@ ssize 1 /= E pushr ifcall
 dup isinte ~ E pushr ifcall
 dup ispos ~ E pushr ifcall
 
-
 n popr
 
 # Add stack to extra_stack (display) push results

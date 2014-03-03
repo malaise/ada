@@ -1,4 +1,5 @@
 # Test A+B A-B A*B A/B A%B for random arbitraries A and B in -999 .. 999
+# Verify the arbi results match the corresponding integer ones
 ssize isnotnul [ "No argument expected." putl 1 setexit ssize popn retall ]
 ifcall
 

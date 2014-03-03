@@ -1,4 +1,10 @@
 # Display, for each dimension of a magic square, the sum to expect
+# If n is the dim of the square, then the number of cells is N = n * n
+#  and the sum of all squares is S = (N * (N + 1)) / 2
+#  and the sum in each line, row, diag is s = S / n
+# So s = n * n * (n * n + 1) / 2 / n
+#      = ( (n * n * n) + n) / 2
+
 
 # No argument
 [ "Error. One optional size accepted." putl ssize popn 1 setexit retall ] E popr
