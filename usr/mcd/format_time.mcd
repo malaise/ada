@@ -1,5 +1,5 @@
 # Format a time into [-][Dd]HHhMMmSSsmmm
-# TOS is either a real (HH.xxyy) or a clock (ms)
+# TOS is either a real (HH.xxyy, fractions of hours) or a clock (ms)
 
 # If input is real, transform it into milliseconds
 dup isreal [ 3600.0 * 1000.0 * round ] ifcall
