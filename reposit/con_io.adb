@@ -400,7 +400,7 @@ package body Con_Io is
     Win_Data.Open := True;
     Win_Data.Upper_Left := Upper_Left;
     Win_Data.Lower_Right := Lower_Right;
-    Win_Data.Current_Pos := Home;
+    Win_Data.Current_Pos := Upper_Left;
     Win_Data.Current_Foreground := Acc.Def_Foreground;
     Win_Data.Current_Background := Acc.Def_Background;
     Win_Data.Current_Xor_Mode   := Acc.Def_Xor_Mode;
@@ -655,14 +655,14 @@ package body Con_Io is
       Win.Current_Pos.Col := Col_Range'Succ(Win.Current_Pos.Col);
     else
       -- 1st col
-      Win.Current_Pos.Col := Win.Upper_Left.Col;
+      Win.Current_Pos.Col := Col_Range'First;
       if Win.Current_Pos.Row /=
          Win.Lower_Right.Row - Win.Upper_Left.Row then
         -- Next line
         Win.Current_Pos.Row := Row_Range'Succ(Win.Current_Pos.Row);
       else
         -- No scroll :-( first row
-        Win.Current_Pos.Row := Win.Upper_Left.Row;
+        Win.Current_Pos.Row := Row_Range'First;
       end if;
     end if;
   end Move_1;
