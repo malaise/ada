@@ -80,8 +80,8 @@ identity and each letter can appear at most once (implicit symmetry).
 - The first_index number defines the offset of input text from which the
 decoding starts (default 1).
 
-- The last_index number defines the last offset of input text after which the
-decoding stops (default none).
+- The last_index number defines the offset of input text after which the
+decoding stops (default none, offset of last character of input).
 
 Examples:
 
@@ -97,7 +97,7 @@ For initial position of the rotors above:
 --------------------------------
 -iDIV
 --------------------------------
-For switches a<->L, B<->E and C<->W:
+For switches a<-->L, B<-->E and C<-->W:
 --------------------------------
 -sALBECW
 --------------------------------
@@ -111,15 +111,17 @@ Cthin
 Enigma behaviour
 ----------------
 Data flows:;;
-     The program reads a byte flow to code from stdin and puts the
+     The program reads from stdin a flow of bytes to code and outputs the
      corresponding coded flow on stdout. Uppercase letters are coded the
-     standard enigma way (see below). Lower letters are converted to
-     uppercase, codded, then converted to lowercase. Other bytes are not
-     coded (they are put unchanged on stdout).
+     standard enigma way (see xref:XCodingRule[coding rule] below). Lower
+     letters are converted to uppercase, codded, then converted to lowercase.
+     Other bytes are not coded (they are output unchanged on stdout).
 
 Turning rules and coding ways:;;
      Rotors turn before the coding. The Enigma double stepping behavior
      applies.
+
+anchor:XCodingRule[]
 
 Coding rule:;;
      The input letter (uppercase) is encoded through the switches, through all
@@ -133,8 +135,8 @@ Coding rule:;;
 
 Coding and decoding algorithm
 -----------------------------
-Letters are represented by a modulus 0 .. 25, the Id (A->0, B->1, .. Z->25).
-Coding X through a rotor or through the reflector means:
+Letters are represented by a modulus 0 .. 25, which is called the Id (A->0,
+B->1, .. Z->25).  Coding X through a rotor or through the reflector means:
 
 - The current offset O of the rotor is the 'number of increments' - 'ring
 setting' and the offset O of the reflector is constant
@@ -235,9 +237,9 @@ reflector (A to Cthin).
 If <date>, generates a switch sequence, 3 rotors and the reflector from the
 date.
 
-If today arg, same with current date.
+If "today", same with current date.
 
-If <text_key>, parses the text key and displeys the corresponding settings (see
+If <text_key>, parses the text key and displays the corresponding settings (see
 xref:XT-TextKey[Text Key]).
 
 If <enigma_setting>, check and displays these enigma arguments.
@@ -361,7 +363,7 @@ letterator -c | enigma $key_num >> <coded_file>
 --------------------------------------
 
 NOTE: letterator is a tools that ecodes each ASCII chararacter unto a unique
-pair of uppercase letters, and vice versa (ex 'a' <-> "GL").
+pair of uppercase letters, and vice versa (ex 'a' <--> "GL").
 
 Decoding
 ^^^^^^^^

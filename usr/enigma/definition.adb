@@ -82,7 +82,7 @@ package body Definition is
     return Ctx.Get_Text (Child);
   end Get_Def;
 
-  -- Check no dup in string
+  -- Check no dup in string, return True if OK
   function Check_Dup (Str : String) return Boolean is
     Set : Carries_Array := (others => False);
     Id : Types.Lid;

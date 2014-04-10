@@ -3,8 +3,8 @@
   <!ELEMENT Enigma (Rotor*, Reflector+)>
 
   <!ELEMENT Rotor (#PCDATA)>
-  <!ATTLIST Rotor Name ID #REQUIRED>
-  <!ATTLIST Rotor Carries CDATA #REQUIRED>
+  <!ATTLIST Rotor Name ID #REQUIRED
+                  Carries CDATA #REQUIRED>
 
   <!ELEMENT Reflector (#PCDATA)>
   <!ATTLIST Reflector Name ID #REQUIRED>
@@ -12,11 +12,12 @@
 
 <Enigma>
 
-  <!-- All these rotors and reflectors have the wiring used in WW2, except:
+  <!-- All these rotors and reflectors have the wiring used during WW2,
+       except:
        - Test<i> rotors and reflectors, which are used for test 
-       - Rotor IX and X that are random, used by def_enigma that assumes that
-         there are 10 rotors with no carry restriction (and Beta and Gamma
-         have some) -->
+       - Rotor IX and X, which are random, used by def_enigma that assumes
+         that there are 10 rotors with no carry restriction, and Beta and
+         Gamma have some (i.e. no carry) -->
   
   <!-- A Rotor. No dup in Carries (max 26 letters),
        no dup in scramble (26 letters) -->
