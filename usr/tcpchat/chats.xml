@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE chats SYSTEM "chats.dtd">
-<!-- Example of TCP chat script -->
+<!-- Example of TCP chat script, used for testing -->
 
 <chats>
   <version Version="&Version;"/>
@@ -77,10 +77,11 @@
     <close/>
   </script>
 
-  <!-- Tcping: Send pong and remain connected -->
-  <chat Name="tcping" TimeoutMs="1_000" Regexp="true">(tc)?ping</chat>
+  <!-- Tcping: Send pong or tcpong. Remain connected -->
+  <chat Name="tcping" TimeoutMs="1_000" Regexp="true"
+        Assign="TC=${1}">(tc)?ping</chat>
   <script>
-    <send NewLine="false">pong</send>
+    <send NewLine="false">${TC}pong</send>
   </script>
 
   <!-- TEST wait then close -->

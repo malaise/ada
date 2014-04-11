@@ -94,6 +94,11 @@ echo -n "Test ping: "
 echo -n "pong" > $EXPECTED
 try $EXPECTED ping 1
 
+# Tcping
+echo -n "Test tcping: "
+echo -n "tcpong" > $EXPECTED
+try $EXPECTED tcping 1
+
 # HTTP 0.9 ok
 echo -n "Test http 0.9 ok: "
 cp chats.xml $EXPECTED

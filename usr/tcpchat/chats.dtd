@@ -3,36 +3,44 @@
 
 <!ENTITY Version "2.4">
 
+<!-- Common attributes -->
+<!-- A Boolean -->
 <!ENTITY % boolean "(true|false)">
-
-<!ENTITY None "None">
-
+<!-- A timeout definition -->
 <!ENTITY % TimeoutMs "TimeoutMs CDATA #IMPLIED">
-
+<!-- No timeout -->
+<!ENTITY None "None">
+<!-- Is a check of match a Regexp or not -->
 <!ENTITY % Regexp "Regexp %boolean; 'false'">
-
-<!ENTITY % IfUnset "(true|false|error) 'error'">
-
-<!ENTITY % Variable_Set "Variable CDATA #REQUIRED">
-<!ENTITY % Variable_Ref "Variable CDATA #REQUIRED
-                        %Regexp; IfUnset %IfUnset;">
-
+<!-- What to do if a boolean variable is not set -->
+<!ENTITY % IfBooleanUnset "(true|false|error) 'error'">
+<!-- Set a variable -->
+<!ENTITY % VariableSet "Variable CDATA #REQUIRED">
+<!-- Reference a variable -->
+<!ENTITY % VariableRef "Variable CDATA #REQUIRED
+                       %Regexp; IfUnset %IfBooleanUnset;">
+<!-- Set a variable to the value read -->
 <!ENTITY % ReadDef "%Regexp; Assign CDATA #IMPLIED">
-
+<!-- What to do on error -->
 <!ENTITY % error "(error,script)">
 
+<!-- The chats script -->
 <!ELEMENT chats (version,(chat,script)+)>
+<!-- The version of the chats script -->
 <!ELEMENT version EMPTY>
 <!ATTLIST version Version CDATA #REQUIRED>
 
+<!-- A chat -->
 <!ELEMENT chat (#PCDATA)>
 <!ATTLIST chat Name ID #REQUIRED
                %TimeoutMs;
                InputDefaultTimeoutMs CDATA #IMPLIED
                %ReadDef;>
+<!-- The chat script -->
 <!ELEMENT script ((select|cond|repeat|read|skip|wait|send|call|set|assign
-                   |eval|chdir |log)*,close?)>
+                  |eval|chdir |log)*,close?)>
 
+<!-- The select statement (select a subscript depending on input) -->
 <!ELEMENT select ((expect,script)+,(default,script)?,(timeout, script)?)>
 <!ATTLIST select %TimeoutMs;>
 <!ELEMENT expect (#PCDATA)>
@@ -40,40 +48,63 @@
 <!ELEMENT default EMPTY>
 <!ELEMENT timeout EMPTY>
 
+<!-- The cond statement (if then else) -->
 <!ELEMENT cond ((if,script),(elsif,script)*,(else,script)?)>
 <!ELEMENT if (#PCDATA)>
-<!ATTLIST if %Variable_Ref;>
+<!ATTLIST if %VariableRef;>
 <!ELEMENT elsif (#PCDATA)>
-<!ATTLIST elsif %Variable_Ref;>
+<!ATTLIST elsif %VariableRef;>
 <!ELEMENT else EMPTY>
 
+<!-- The repeat statement (repeat while condition a script) -->
 <!ELEMENT repeat (while,script)>
 <!ELEMENT while (#PCDATA)>
-<!ATTLIST while %Variable_Ref;>
+<!ATTLIST while %VariableRef;>
 
+<!-- The read statement (read from input) -->
 <!ELEMENT read (#PCDATA)>
 <!ATTLIST read %TimeoutMs;
                %ReadDef;>
+
+<!-- The skip statement (skip an input) -->
 <!ELEMENT skip EMPTY>
 <!ATTLIST skip %TimeoutMs;>
+
+<!-- The wait statement (wait some tome) -->
 <!ELEMENT wait EMPTY>
 <!ATTLIST wait DelayMs CDATA #REQUIRED>
+
+<!-- The send statement (write on output) -->
 <!ELEMENT send (#PCDATA)>
 <!ATTLIST send NewLine %boolean; "true">
+
+<!-- The call statement (call shell) -->
 <!ELEMENT call (command,%error;?)>
 <!ELEMENT command (#PCDATA)>
 <!ELEMENT error EMPTY>
+
+<!-- The eval statement (set variable from shell output) -->
 <!ELEMENT eval (command,%error;?)>
-<!ATTLIST eval %Variable_Set; OnlyIfNotSet %boolean; "false">
+<!ATTLIST eval %VariableSet; OnlyIfNotSet %boolean; "false">
+
+<!-- The set statement (set variable to value) -->
 <!ELEMENT set (#PCDATA)>
-<!ATTLIST set %Variable_Set; Compute %boolean; "false"
+<!ATTLIST set %VariableSet; Compute %boolean; "false"
               OnlyIfNotSet %boolean; "false">
+
+<!-- The assign statement (same as set but catches evaluation errors) -->
 <!ELEMENT assign (expression,%error;)>
 <!ELEMENT expression (#PCDATA)>
-<!ATTLIST expression %Variable_Set; Compute %boolean; "false"
+<!ATTLIST expression %VariableSet; Compute %boolean; "false"
               OnlyIfNotSet %boolean; "false">
+
+<!-- The chdir statement (change current dir) -->
 <!ELEMENT chdir (dir,%error;?)>
 <!ELEMENT dir (#PCDATA)>
+
+<!-- The log statement (log some trace) -->
 <!ELEMENT log (#PCDATA)>
+
+<!-- The close statement (close current chat script) -->
 <!ELEMENT close EMPTY>
 
