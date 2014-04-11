@@ -272,5 +272,5 @@ Average autonomy is 152 s.
 
 .Practically,
 starting at full mass and applying a (decreasing) Y thrust to stay at a constant
-level the mission duration is around 150 s.
+level, the mission duration is around 150 s.
 

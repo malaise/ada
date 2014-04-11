@@ -1,12 +1,12 @@
 Agite user guide
 ================
-V14.15
+V14.16
 
 General purpose
 ---------------
 Agite (Ada GIT Editor) is a graphical front end of the 'Git' configuration
 management tool.
-It is more directory-oriented than Git itself.
+It proposes a view directory-oriented of the files and history.
 
 The major functions are the navigation in directories, history, file status, 
 graphical diff, commit, push, pull and stash.
@@ -22,7 +22,7 @@ xref:XConfig[configuration file].
 This allows restarting Agite, in the same directory as when it was stopped, by
 providing the argument '-p' or '--previous' at start-up.
 
-On the other hand this feature is hardly compatible with several instances of
+On the other hand this feature is not compatible with several instances of
 Agite running in parallel. Only one instance of the program shall save the
 current directory, which is achieved by providing the argument '-n' or
 '--no_history' to all the other instances.
@@ -78,7 +78,7 @@ This defines the command to be launched for editing a file (for example
 with the xref:XEdit[Edit] button). A space and the file name will be
 concatenated to this string.
 +
-Note: This command shall start a GUI of editor like 'gedit' or a 'xterm -e vi'.
+Note: This command shall start a GUI editor like 'gedit' or a 'xterm -e vi'.
 +
 Note: The editor should not return until completion, so that Agite
 properly refreshes the status of files when the editor exits.
@@ -91,10 +91,10 @@ GUI, for example 'xterm -e cat' or 'xterm -e vi -M'.
 anchor:XConfDiff[]
 
 differator::
-This defines the command to be launched for performing a xref:XDiff[diff]
+This defines the command to be launched for performing a xref:XDiff[Diff]
 between two versions of a file. Agite will launch 'git difftool -y -x
-<differator> HEAD -- <file>' for the diff between current file and the Git
-repository and 'git difftool -y -x <differator> <ref_rev> <comp_rev> -- <file>'
+<differator> HEAD \-- <file>' for the diff between current file and the Git
+repository and 'git difftool -y -x <differator> <ref_rev> <comp_rev> \-- <file>'
 for the diff between two revisions of a file.
 
 anchor:XConfMake[]
@@ -107,10 +107,10 @@ Example: '#xterm -e 'sh -c "make; echo -n Done.; read a"'#'
 anchor:XConfPeriod[]
 
 period::
-Agite refreshes the current status of files in the xref:Xdir[directory] menu
-when it starts the xref:XEdit[editor] and when the editor exit.
-This is because this tool can modify the current status of local files. Still,
-it is possible from a stand-alone program to also modify the list or status of
+Agite refreshes the current status of files in the xref:XDir[directory] menu
+when it starts the xref:XEdit[editor] and when the editor exits.
+This is because the edition can modify the current status of local files. Still,
+it also is possible from a stand-alone program to modify the status of
 local files. This is why Agite periodically checks and redisplays the status of
 local files. This parameter defines the period in seconds of this automatic
 check.
@@ -199,7 +199,7 @@ the Directory menu.
 Directory
 ~~~~~~~~~
 anchor:XDir[]
-The 'Directory' menu lists the git content, subdirectories and files, of
+The 'Directory' menu lists the content, subdirectories and files, of
 the current directory. Starting from top, the areas and fields are:
 
 .Environment
@@ -207,7 +207,7 @@ Title::
 The first line shows in the middle the name and current version of Agite.
 
 Branch::
-On the left is the indication of current Git branch. Cliking on the branch
+On the left is the indication of the current Git branch. Cliking on the branch
 name launches the xref:XBranches[branches] menu.
 
 Host::
@@ -260,6 +260,11 @@ starts) is automatically pushed. Changing to a new directory doesn't make it
 automatically pushed. For example, if you start in directory A, then change to B
 (and do not explicitly push it), then change to C, then 'PopD', Agite will
 change to directory A (not B).
++
+* [underline]#Warning#: Keep in mind that 'PopD' swaps D1 and D2 before going
+to D1.  For example, if you start in directory A, then change to B, then push it,
+then change to C, then 'PopD', Agite will change to directory A (not B). A
+second 'PopD', will change to B.
 
 .List
 
@@ -271,11 +276,12 @@ Clicking in any character of this area triggers a search of the first file
 starting with this character. If found, the file becomes selected in the list
 and at the top of the list area. Otherwise the selection is unchanged. +
 A tick box button allows searching for the directory (starting with the
-character that will be clicked) instead of a file.
+character that will be clicked) instead of a file. You need to tick the box
+first, then click on a character.
 
 The list itself::
-The list shows the directories then the files of the xref:XGo[current directory],
-in alphabetical order.
+The list shows the directories then the files of the
+xref:XGo[current directory], in alphabetical order.
 +
 Each directory starts with three spaces then the name then a \'/'.
 +
@@ -296,12 +302,12 @@ After the name, a character represents the kind of entry:
 * ' ' fo a file, 
 * '@' for a symbolic link, 
 * '/' for a directory,
-* '?' for other/unknown kind (of a deleted entry).
+* '?' for other or unknown kind (of a deleted entry).
 
 +
 Only one entry is selected at a time (in green).
 +
-A sigle click selects an entry for xref:XEdit[edition], 
+A single click selects an entry for xref:XEdit[edition], 
 xref:XDiff[difference] from the Git reference, xref:XHistory[history],
 xref:XAdd[add] or xref:XRevert[revert] operation.
 +
@@ -337,7 +343,7 @@ Edit::
 This button launches the editor (defined in the xref:XConfEditor[editor] entry
 of the configuration file) on the file currently selected in the list, as a
 double click on this file would do. +
-It has no effect if current entry is a directory.
+It has no effect if the current entry is a directory.
 
 anchor:XDiff[]
 
@@ -375,7 +381,8 @@ First, a simple screen asks to confirm or cancel the operation. +
 Then, depending on the type of the current entry:
 
 - If it is \'./' then, after confirmation, Agite performs a 'git reset
---hard'.
+--hard', which resets the local changes in the *whole worktree* (root and
+subtree), not only the current directory.
 - If it is a directory then it is deleted, which succeeds only if the
 directory is empty.
 - If it is a file or a symbolic link,
@@ -397,7 +404,7 @@ Note: The Revert button has no effect on a file known by Git and not modified.
 
 anchor:XXterm[]
 
-Xterm::
+XTerm::
 This button starts a X terminal by launching the command defined
 in the xref:XConfXterm[xterm] entry of the configuration file.
 
@@ -468,7 +475,7 @@ to it in the xref:XDir[directory] menu, then go in the 'bookmark' menu, then
 click in the button xref:XAddCurr[AddCur]. This adds the current directory in the list.
 Click in xref:XBookBack[Back] to go back to the xref:XDir[directory] menu.
 Later on you can open the bookmark menu and double click on the entry, or
-select it and click on xref:XGoto[Goto], to go back to this directory.
+select it and click on xref:XGoto[Goto], in order to go back to this directory.
 
 Bookmarks are saved in the xref:XConfig[configuration file] so that they 
 are persistent from one session to another.
@@ -528,7 +535,7 @@ In case of a directory the menu shows the relative path of the directory
 and lists the history of the commits of all the files in the directory
 and in its sub-directories.
 
-This lists follows the renamings of the file or directory.
+This lists follows the renaming of files and directories.
 
 .List
 The list shows for each entry the date of the commit (format YYMMDD:HHMM),
@@ -545,12 +552,12 @@ displayed above the list,
 
 * The indexes of the left and right selection are also displayed above the list,
 
-* A hyphen ('-') on the left side of the list indicates the current position
+* A hyphen ('-') on the left side of the list indicates the position
 of the current page, as a scroll bar would do,
 
-* You can click at a given row in this "scroll bar". The list will be moved
+* You can click at a given row in this "scroll bar". The list will move
 at the page corresponding to where you *release* the mouse button (and the
-hyphen will be at this position).
+hyphen will be set to this position).
 
 anchor:XView[]
 
@@ -572,9 +579,9 @@ that were affected by the commit(s).
 'Diff' can compare two arbitrary commits or show the changes of one commit:
 
 * Diff between two commits. 
-** Left click on an a entry of the list. It becomes green and the 'LeftSel'
+** Left click on an entry of the list. It becomes green and the 'LeftSel'
 above  the list shows the index of this entry from the Head.
-** Right click on an a entry of the list. It becomes black and the 'RightSel'
+** Right click on an entry of the list. It becomes black and the 'RightSel'
 above the list shows the index of this entry from the Head.
 ** Click on the 'Diff' button. This starts the xref:XConfDiff[differator] 
 with the right (black) selection as reference and the left (green) selection
@@ -586,7 +593,7 @@ differators may be started.
 'RightSel'= 0).
 If there is one then find it and de-select it (by a right click). Alternatively 
 you can right-select any entry and de-select it with a second right click on it.
-** Left click on an the entry of the list. It becomes green and the 'LeftSel'
+** Left click on an entry of the list. It becomes green and the 'LeftSel'
 above the list shows the index of this entry from the Head.
 ** Click on the 'Diff' button. This starts the xref:XConfDiff[differator]
 with the version before the selection as reference and the selection
@@ -619,16 +626,16 @@ branch).
 .Back
 This button returns to the xref:XDir[directory] menu.
 
-NOTE: The history follows the the renamings of the file or directory but the
+NOTE: The history follows the renaming of the file or directory but the
 reference name (that is displayed above the history list) is used for the
 xref:XView[view] and xref:XDiff1[diff] operations.
-As a consequence, Agite will fail to show a file or a difference from a file
+As a consequence, Agite will fail to show a file, or a difference from a file,
 if the entry in the history is before a renaming. Still, it is possible to view
-a file that has been renamed with the following operations:
-
-* Select the file in the history
-* Show the xref:XDetail[details] of this commit
-* Select the file in the xref:XDetails[details] of the commit
+a file that has been committed, then renamed later on, with the following
+operations: +
+* Select the commit in the history +
+* Show the xref:XDetail[details] of this commit +
+* Select the file in the xref:XDetails[details] of the commit (previous name) +
 * Click on xref:XView[View] the file.
 
 It is not possible to do a xref:XDiff1[diff] between two versions of a file if
@@ -639,9 +646,9 @@ Details
 anchor:XDetails[]
 The 'Details' menu shows the details of a commit:
 
-* The SHA-1 hash of the commit, that you can copy in the clipboard,
+* The SHA-1 hash of the commit, that you can copy into the clipboard,
 * The date and comment (up to seven lines) of the commit, that you can
-also alternatively copy in the clipboard,
+also alternatively copy into the clipboard,
 * The list of all the files in the commit, each preceded by a letter:
 ** M Modified,
 ** A Added,
@@ -669,8 +676,8 @@ the commit (differences brought by the commit),
 * click on the button 'Restore' to restore all the files of the commit,
 if none of them is locally modified, and after a confirmation.
 
-NOTE: Clicking on 'Hist' calls a new function to show the history, as explained
-in the section on xref:XNavigation[navigation].
+NOTE: Clicking on 'Hist' leads to call a new function that show the history, as
+explained in the section on xref:XNavigation[navigation].
 
 Stash
 ~~~~~
@@ -691,8 +698,14 @@ Add::
 
 Enter a message (or name) for the stash and click in the 'Add' button or press
 the Return key. Agit stashes the current worktree (which performs a 'git reset
---hard'), then applies it, then returns to the xref:XDir[directory] menu. +
-The new stash has been inserted in the list.
+--hard'), then applies this stash, then returns to the xref:XDir[directory]
+menu. +
+The new stash has been inserted in the list. +
+
+NOTE: You can un-apply this stash ('git reset --hard') by selecting the entry
+'/' of the xref:XDir[directory] list and cliking on the xref:XRevert[revert]
+button.
+
 
 Apply::
 
@@ -704,9 +717,9 @@ Pop::
 After confirmation, applies the stash currently selected in the list, removes
 it from the list and returns to the xref:XDir[directory] menu.
 
-Drop::
+Del::
 
-After confirmation, drops (deletes) the stash currently selected in the list.
+After confirmation, deletes (drops) the stash currently selected in the list.
 
 .Back
 
@@ -742,7 +755,9 @@ menu), is not available in Agite, neither for copy nor for paste.
 
 .Comment
 
-You can enter up to 7 lines of comment.
+You can enter up to 7 lines of comment. +
+You can paste the content of the X11 selection buffer into a line of the
+comment, by middle-clicking on this line.
 
 NOTE: Comment must not be empty when committing.
 
