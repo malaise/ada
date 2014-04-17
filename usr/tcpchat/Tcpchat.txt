@@ -1,6 +1,6 @@
 tcpchat
 =======
-V2.4
+V2.5
 
 Tcpchat accepts connections on a TCP port, expects specific sentences and
 executes specified actions depending on what it receives.
@@ -34,13 +34,14 @@ input is expected: 'select', 'read' and 'skip' (default is infinite).
 
 A chat defines a pattern that will lead it to be selected (and the script
 to be executed) if the input string matches the pattern (string comparison or
-regular expression matching).
+regular expression matching). The input is tested versus each patterns
+successively until one matches.
 
-In case of regexp some xref:Variables[Variables] can be defined from the content
-of the input string or from part of it.
+In case of a regexp, some xref:Variables[Variables] can be defined and
+initialized from the content (or a part) of the input string.
 
 .Statements
-Once the chat is selected tcpchat executes one after the other the statements
+Once the chat is selected, tcpchat executes one after the other the statements
 of the script:
 
 - 'select': A select is like a sub-chat but with no name. It
@@ -51,9 +52,9 @@ sentence does not match any of the expected strings.
  *  If is has a timeout defined and a timeout entry then this entry is selected
 if no sentence has been received when the timeout expires.
 
-- 'cond': execute a sub-script on condition (if variable matches a criteria,
+- 'cond': execute a sub-script on condition (if a variable matches a criteria,
 elsif...  else...).
-- 'repeat': loop executing a script while a condition is true.
+- 'repeat': loop executing a sub-script while a condition is true.
 - 'read': Read next sentence and check that it matches the one provided. 
 On option, fails on timeout if no input is received before a timeout
 expiration.
