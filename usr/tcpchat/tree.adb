@@ -405,7 +405,7 @@ package body Tree is
           -- Chats is made of version then (expect, script) pairs:
           -- insert "expect"
           if I = 1 or else I rem 2 = 0 then
-            Debug.Logger.Log_Debug ("    Inserting entry of "
+            Debug.Logger.Log_Debug ("    Inserting chat entry of "
                                   & Mixed_Str (Node.Kind'Img));
             Xchild := Ctx.Get_Child (Xnode, I);
             Insert_Node (Xchild, Default_Timeout);
@@ -415,6 +415,8 @@ package body Tree is
           --   insert "expect/default/timeout"
           -- Cond is made of (if/elsif/else, script) pairs:
           --   insert "if/elsif/else"
+          -- Repeat is made of (while, script) pairs:
+          --   insert "while"
           if I rem 2 = 1 then
             Debug.Logger.Log_Debug ("    Inserting entry of "
                                   & Mixed_Str (Node.Kind'Img));
@@ -519,7 +521,6 @@ package body Tree is
         Chats.Read (Ref_Node);
         Chats.Restore_Position;
         Dummy := Dump ("Next is OK for ", Node, 0);
-        Debug.Logger.Log_Debug ("  to ");
         Dummy := Dump (" to ", Ref_Node, 0);
       end if;
     end if;
