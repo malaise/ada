@@ -91,7 +91,7 @@ package body Events is
         Debug.Logger.Log_Debug ("Node is " & Mixed_Str (Node.Kind'Img));
         case Node.Kind is
           when Nop =>
-            -- no operation (empty "if" or "expect"
+            -- No operation (empty "if" or "expect"
             Set_Position (Node.Next.all);
 
           when Selec =>
