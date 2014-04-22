@@ -13,9 +13,13 @@ export HOSTIP=`gawk -v HOSTNAME=$HOSTNAME '
 
 export TCPCHAT_DEBUG=""
 export PORT="http"
+export DBG=""
 while [ "$1" != "" ] ; do
   if [ "$1" = "-d" ] ; then
     export tcpchat_TRACE=debug
+    shift
+  elif [ "$1" = "-g" ] ; then
+    export DBG=gvd
     shift
   elif [ "$1" = "-p" ] ; then
     export PORT="$2"
@@ -35,13 +39,14 @@ if [ -f "$1.xml" ] ; then
   FILE="$1.xml"
   echo "Chats $FILE on $PORT_NAME"
 else
-  echo "Usage: `basename $0` [ -d ] [ -p <port> ]  <chats_file>"
-  echo " -d             for tcpchat debug"
+  echo "Usage: `basename $0` [ -d ] [ -g] [ -p <port> ]  <chats_file>"
+  echo " -d             for tcpchat debug traces"
+  echo " -g             for launching debugger"
   echo " -p <port>      for specific port or stdin if \"-\" (default \"http\")"
   echo " http, rsh, chats or other xml file name"
   echo "Note that using the port http requires root priviledges."
   exit 1
 fi
 
-exec tcpchat -p $PORT -f $FILE
+exec $DBG tcpchat -p $PORT -f $FILE
 
