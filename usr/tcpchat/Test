@@ -5,12 +5,9 @@ export VERS="V"`tcpchat -v`
 
 export DBG=1
 
-
+export DEBUG=debug
 if [ $DBG -eq 1 ] ; then
-  export TCPCHAT_DEBUG=Y
-  export DEBUG=debug
-else
-  export DEBUG=/dev/null
+  export tcpchat_TRACE=debug
 fi
 
 # Prepare env
@@ -27,7 +24,7 @@ fi
 
 # Clean
 function clean {
-  rm -f $PIPE -f $DEBUG $RES $EXPECTED
+  rm -f $PIPE $DEBUG $RES $EXPECTED
 }
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
@@ -81,12 +78,11 @@ function try {
   cmp -s $RES "$expected"
   if [ $? -ne 0 ] ; then
     echo "ERROR: Result $RES differs from expected $expected" 2>&1
-    clean
     exit 1
   else
+    rm -f $RES "$expected"
     echo "OK"
   fi
-  rm $RES $EXPECTED
 }
 
 # Ping
@@ -214,6 +210,21 @@ try $EXPECTED error1
 echo -n "Test error2: "
 echo -en "error-handler-2\nafter-error-2\n" > $EXPECTED
 try $EXPECTED error2
+
+# Parse 1
+echo -n "Test parse 1: "
+echo -en "toto\n" > $EXPECTED
+try $EXPECTED parse${SPACE}toto
+
+# Parse 3
+echo -n "Test parse 3: "
+echo -en "toto\ntiti\ntata\n" > $EXPECTED
+try $EXPECTED parse${SPACE}toto${SPACE}titi${SPACE}tata
+
+# Parse 6
+echo -n "Test parse 6: "
+echo -en "toto\ntiti\ntata\ntutu\ntete\n" > $EXPECTED
+try $EXPECTED parse${SPACE}toto${SPACE}titi${SPACE}tata${SPACE}tutu${SPACE}tete${SPACE}nene
 
 # Clean
 clean
