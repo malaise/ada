@@ -7,24 +7,24 @@
   <!-- HTTP 0.9: Send file -->
   <!-- HTTP 1.0 or 1.1: Skip noise, send header + file -->
   <chat Name="http" TimeoutMs="&None;" Regexp="true"
-        Assign="FILE=${4} VERS=${5}"
+        Assign="File=${4} Vers=${5}"
         >GET ((http:/)?/(localhost|${$HOSTNAME}))?([^ ]+)( +HTTP/1\.(0|1))?</chat>
   <script>
     <cond>
-      <if Variable="VERS"></if>
+      <if Variable="Vers"></if>
       <!-- No vers => 0.9 -->
       <script></script>
       <else/>
       <script>
         <!-- Vers 1.x => skip inputs until empty line -->
-        <set Variable="DONE">false</set>
+        <set Variable="Done">false</set>
         <repeat>
-          <while Variable="DONE">false</while>
+          <while Variable="Done">false</while>
           <script>
             <select TimeoutMs="1000">
               <expect></expect>
               <script>
-                <set Variable="DONE">true</set>
+                <set Variable="Done">true</set>
               </script>
               <default/>
               <script></script>
@@ -32,40 +32,40 @@
           </script>
         </repeat>
         <!-- And send header -->
-        <eval Variable="SIZE">
-          <command>ls -al ${FILE} | awk '{printf "%s",$5\}'</command>
+        <eval Variable="Size">
+          <command>ls -al ${File} | awk '{printf "%s",$5\}'</command>
           <error/>
           <script>
-            <set Variable="SIZE"></set>
+            <set Variable="Size"></set>
           </script>
         </eval>
         <cond>
-          <if Variable="SIZE"></if>
+          <if Variable="Size"></if>
           <script>
             <send>HTTP/1.0 404 Not Found</send>
             <close/>
           </script>
         </cond>
-        <eval Variable="DATE">
+        <eval Variable="Date">
           <command>echo -n `date "+%a, %d %b %Y %H:%M:00 %Z"`</command>
         </eval>
-        <set Variable="SERVER_ID">tcpchat/V&Version;</set>
+        <set Variable="Server_Id">tcpchat/V&Version;</set>
         <send>HTTP/1.0 200 OK</send>
-        <send>Date: ${DATE}</send>
-        <send>Server: ${SERVER_ID}</send>
+        <send>Date: ${Date}</send>
+        <send>Server: ${Server_Id}</send>
         <send>Connection: close</send>
         <send>Accept-Ranges: bytes</send>
-        <send>Content-Length: ${SIZE}</send>
+        <send>Content-Length: ${Size}</send>
         <send>Content-Type: text/plain</send>
         <send></send>
       </script>
     </cond>
     <call>
-      <command>cat ${FILE}</command>
+      <command>cat ${File}</command>
       <error/>
       <script>
         <cond>
-          <if Variable="VERS"></if>
+          <if Variable="Vers"></if>
           <script></script>
           <else/>
           <script>
@@ -79,9 +79,9 @@
 
   <!-- Tcping: Send pong or tcpong. Remain connected -->
   <chat Name="tcping" TimeoutMs="1_000" Regexp="true"
-        Assign="TC=${1}">(tc)?ping</chat>
+        Assign="Tc=${1}">(tc)?ping</chat>
   <script>
-    <send NewLine="false">${TC}pong</send>
+    <send NewLine="false">${Tc}pong</send>
   </script>
 
   <!-- TEST wait then close -->
@@ -181,36 +181,36 @@
   <!-- TEST a login -->
   <chat Name="login" TimeoutMs="60_000">login</chat>
   <script>
-    <set Variable="COUNT">0</set>
-    <set Variable="RES">try</set>
+    <set Variable="Count">0</set>
+    <set Variable="Res">try</set>
     <repeat>
-      <while Variable="RES">try</while>
+      <while Variable="Res">try</while>
       <script>
         <!-- Get login and password, set RES=loggedin if OK -->
         <send>login:</send>
-        <read Regexp="true" Assign="USER=${0}">.*</read>
+        <read Regexp="true" Assign="User=${0}">.*</read>
         <send>password:</send>
-        <read Regexp="true" Assign="PASSWD=${0}">.*</read>
+        <read Regexp="true" Assign="Passwd=${0}">.*</read>
         <cond>
-          <if Variable="USER">malaise</if>
+          <if Variable="User">malaise</if>
           <script>
             <cond>
-              <if Variable="PASSWD">${$PASSWORD}</if>
+              <if Variable="Passwd">${$PASSWORD}</if>
               <script>
-                <set Variable="RES">success</set>
+                <set Variable="Res">success</set>
               </script>
             </cond>
           </script>
         </cond>
         <!-- Increment counter if not OK, failed if maximum reached -->
         <cond>
-          <if Variable="RES">try</if>
+          <if Variable="Res">try</if>
           <script>
-            <set Variable="COUNT" Compute="true">${COUNT}+1</set>
+            <set Variable="Count" Compute="true">${Count}+1</set>
             <cond>
-              <if Variable="COUNT">5</if>
+              <if Variable="Count">5</if>
               <script>
-                <set Variable="RES">failure</set>
+                <set Variable="Res">failure</set>
               </script>
             </cond>
           </script>
@@ -219,16 +219,16 @@
     </repeat>
     <!-- Put result -->
     <cond>
-      <if Variable="RES">success</if>
+      <if Variable="Res">success</if>
       <script>
-        <send>User ${USER} logged in</send>
-        <log>User ${USER} logged in</log>
+        <send>User ${User} logged in</send>
+        <log>User ${User} logged in</log>
       </script>
       <else/>
       <script>
         <send>Login failed</send>
         <log>Login failed</log>
-        <set Variable="USER"></set>
+        <set Variable="User"></set>
          <close/>
       </script>
     </cond>
@@ -238,12 +238,12 @@
   <chat Name="logout">logout</chat>
   <script>
     <cond>
-      <if Variable="USER" IfUnset="true"></if>
+      <if Variable="User" IfUnset="true"></if>
       <script></script>
       <else/>
       <script>
-        <send>User ${USER} logged out</send>
-        <log>User ${USER} logged out</log>
+        <send>User ${User} logged out</send>
+        <log>User ${User} logged out</log>
       </script>
     </cond>
     <wait DelayMs="500"/>
