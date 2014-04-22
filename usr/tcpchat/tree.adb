@@ -118,6 +118,10 @@ package body Tree is
       elsif Attrs(I).Name.Image = "NewLine"
       and then Attrs(I).Value.Image = "true" then
         Node.Text.Append (Line_Feed);
+      elsif Attrs(I).Name.Image = "Expr" then
+        -- For parse, store the expression to parse
+        Node.Regexp := True;
+        Node.Expression := Attrs(I).Value;
       end if;
     end loop;
     if Node.Kind /= Eval
@@ -176,11 +180,14 @@ package body Tree is
         end if;
       when Condif =>
         if Node.Ifunset /= Trilean.Other then
-          Text.Append ("IfUnset: " & Mixed_Str (Node.Ifunset'Img));
+          Text.Append ("IfUnset: " & Mixed_Str (Node.Ifunset'Img) & " ");
         end if;
       when others =>
         null;
     end case;
+    if Node.Kind = Parse then
+     Text.Append ("Expression: " & Node.Expression.Image & " ");
+    end if;
     if Node.Regexp then
       Text.Append ("Regexp ");
       if Node.Kind /= Condif and then Node.Kind /= Repeat then
@@ -250,8 +257,6 @@ package body Tree is
       In_Chats := True;
     elsif Name = "version" then
       Version := Ctx.Get_Attribute (Xnode, 1).Value;
-      Xchild := Ctx.Get_Brother (Xnode);
-      Insert_Node (Xchild, Current_Timeout);
       return;
     elsif Name = "chat" then
       -- Chat is a Read. Get name, timeout and default timeout
@@ -358,6 +363,12 @@ package body Tree is
       Node.Compute := Get_Attribute (Xchild, "Compute") = "true";
       Node.Ifunset := Trilean.Boo2Tri (
                Get_Attribute (Xchild, "OnlyIfNotSet") = "true");
+    elsif Name = "parse" then
+      Node.Kind := Parse;
+      -- Get text, the regexp
+      Get_Text (Xnode, Node, True);
+      -- Get_Attribute Compute
+      Node.Compute := Get_Attribute (Xnode, "Compute") = "true";
     elsif Name = "chdir" then
       Node.Kind := Chdir;
       -- Move to "dir" to get text
@@ -427,7 +438,7 @@ package body Tree is
       end loop;
       Debug.Logger.Log_Debug ("  End of entries of "
                              & Mixed_Str (Node.Kind'Img));
-    elsif Node.Kind = Set or else Node.Kind = Call
+    elsif Node.Kind = Set or else Node.Kind = Parse or else Node.Kind = Call
     or else Node.Kind = Eval or else Node.Kind = Chdir then
       -- Assign is an expression then a handler (error+script)
       -- Call, Eval and Chdir are a command or target, then an opt handler
@@ -531,6 +542,7 @@ package body Tree is
     or else Node.Kind = Call
     or else Node.Kind = Eval
     or else Node.Kind = Set
+    or else Node.Kind = Parse
     or else Node.Kind = Chdir then
       -- For leaf children of entries of a Selec, Next is the next of Selec
       -- For leaf children of if/else of a Cond, Next is the next of Cond

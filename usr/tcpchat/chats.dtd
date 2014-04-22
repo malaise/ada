@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- DTD of a chats file of tcpchat -->
 
-<!ENTITY Version "2.5">
+<!ENTITY Version "3.1">
 
 <!-- Common attributes -->
 <!-- A Boolean -->
@@ -38,7 +38,7 @@
                %ReadDef;>
 <!-- The chat script -->
 <!ELEMENT script ((select|cond|repeat|read|skip|wait|send|call|set|assign
-                  |eval|chdir |log)*,close?)>
+                  |parse|eval|chdir |log)*,close?)>
 
 <!-- The select statement (select a subscript depending on input) -->
 <!ELEMENT select ((expect,script)+,(default,script)?,(timeout, script)?)>
@@ -97,6 +97,12 @@
 <!ELEMENT expression (#PCDATA)>
 <!ATTLIST expression %VariableSet; Compute %boolean; "false"
               OnlyIfNotSet %boolean; "false">
+
+<!-- The parse statement (parse an expression into variables) -->
+<!ELEMENT parse (#PCDATA)>
+<!ATTLIST parse Compute %boolean; "false"
+                Expr CDATA #REQUIRED
+                Assign CDATA #REQUIRED>
 
 <!-- The chdir statement (change current dir) -->
 <!ELEMENT chdir (dir,%error;?)>

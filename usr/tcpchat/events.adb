@@ -81,6 +81,8 @@ package body Events is
     Event : Ios.Event_Type;
     Disconnection : Boolean;
     Variable : As.U.Asu_Us;
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
     use type Ios.Event_Kind_List;
   begin
     Put_Line (Argument.Get_Program_Name & " V" & Tree.Get_Version & " ready");
@@ -467,6 +469,10 @@ package body Events is
                   Reset;
                 end if;
             end;
+
+          when Parse =>
+            Dummy := Matcher.Match (Node, Node.Expression);
+            Set_Position (Node.Next.all);
 
           when Chdir =>
             declare

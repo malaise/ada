@@ -1,6 +1,6 @@
 tcpchat
 =======
-V2.5
+V3.1
 
 Tcpchat accepts connections on a TCP port, expects specific sentences and
 executes specified actions depending on what it receives.
@@ -63,6 +63,8 @@ expiration.
 - 'send': Send the sentence provided, on option with a line feed.
 - 'set': Set a variable to the result of an evaluated expression.
 - 'assign': Same as 'set' but catches and handles evaluation error.
+- 'parse': Evaluate an expression, parse it accordig to a regexp and assign
+variables.
 - 'call': Call the shell to execute the command and arguments provided. Send
 the output flow of the command, optionnaly catches and handles error.
 - 'eval': Call the shell to execute the command and arguments provided. Set a
@@ -111,7 +113,8 @@ The text of sentences that are expected, read or sent, the text of commands that
 are called or executed, and the text of expressions that evaluated, can
 reference variables. Variables obey to the following rules:
 
-- Assignments (after 'chat', 'read' or 'expect') have the form "VAR=... VAR=..."
+- Assignments (after 'chat', 'read', 'expect' or 'parse') have the form
+"VAR=... VAR=..."
 - 'set', 'assign' and 'eval' statements directly assign a variable
 - References have the form $\{name} where:
   * $\{0} denotes the full string matching the regexp
@@ -133,7 +136,7 @@ It is an error if a variable does not exist when it is referenced in an
 expression. In case of 'assign' statement this error can be caught and handled.
 
 A computed expression must be a valid combination of variables, values,
- operations and parentheses, otherwise this is an error. In case of 'assign'
+operations and parentheses, otherwise this is an error. In case of 'assign'
 statement this error can be caught and handled.
 
 .Pattern matching
@@ -287,6 +290,8 @@ node or reset.
 - Set: Evaluate the variable. Jump to next node.
 
 - Assign: Evaluate the variable. Jump to next node.
+
+- Parse: Parse the expression. Jump to next node.
 
 - Chdir: Change current directory. Jump to next node.
 

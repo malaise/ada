@@ -8,8 +8,8 @@ package Tree is
 
   -- Kind of node
   type Node_Kind is (Nop, Selec, Cond, Condif, Condelse, Repeat, Read, Default,
-                     Timeout, Skip, Wait, Send, Call, Eval, Set, Chdir, Log,
-                     Close);
+                     Timeout, Skip, Wait, Send, Call, Eval, Set, Parse,
+                     Chdir, Log, Close);
 
   -- Infinite timeout
   Infinite_Ms : constant Integer := Event_Mng.Infinite_Ms;
@@ -30,13 +30,15 @@ package Tree is
     Text : As.U.Asu_Us;
     -- For Selec, Read, Skip, Wait
     Timeout : Integer := Infinite_Ms;
-    -- For chat, cond, read
+    -- For chat, cond, parse, read
     Regexp : Boolean := False;
+    -- For Parse
+    Expression : As.U.Asu_Us;
     -- For Set
     Compute : Boolean := False;
     -- For Set, Eval, Condif
     Ifunset : Trilean.Trilean := Trilean.False;
-    -- For chat, cond, read, eval
+    -- For chat, cond, parse, read, eval
     Assign : Assignments;
     -- Next statement
     Next : Node_Access := null;

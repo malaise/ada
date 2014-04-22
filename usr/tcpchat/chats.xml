@@ -118,6 +118,7 @@
       </script>
     </select>
   </script>
+
   <!-- TEST simulate a ppp login chat modem side -->
   <chat Name="testPpp2">ppp2</chat>
   <script>
@@ -232,6 +233,8 @@
       </script>
     </cond>
   </script>
+
+  <!-- TEST a logout -->
   <chat Name="logout">logout</chat>
   <script>
     <cond>
@@ -247,6 +250,7 @@
     <close/>
   </script>
 
+  <!-- TEST an indirection ($$) -->
   <chat Name="Indirect">indirect</chat>
   <script>
     <set Variable="V1">Content1</set>
@@ -286,6 +290,7 @@
     <close/>
   </script>
 
+  <!-- TEST an error handler of chdir -->
   <chat Name="error1">error1</chat>
   <script>
     <chdir>
@@ -298,6 +303,8 @@
     <wait DelayMs="500"/>
     <close/>
   </script>
+
+  <!-- TEST an error handler of chdir -->
   <chat Name="error2">error2</chat>
   <script>
     <chdir>
@@ -309,6 +316,45 @@
     </chdir>
     <send>after-error-2</send>
     <wait DelayMs="500"/>
+    <close/>
+  </script>
+
+  <!-- TEST the parse instruction -->
+  <chat Name="parse" Regexp="true" Assign="STR=${1}">parse ?(.*)</chat>
+  <script>
+    <parse Compute="true"
+           Expr="${STR}"
+           Assign="V1=${1} V2=${3} V3=${5} V4=${7} V5=${9}"
+           >([^ ]*)( ([^ ]*))?( ([^ ]*))?( ([^ ]*))?( ([^ ]*))?.*</parse>
+    <!-- Loop on all non empty Vi or up to V5 -->
+    <set Variable="Index">0</set>
+    <set Variable="Max">5</set>
+    <set Variable="Done">false</set>
+    <repeat>
+      <while Variable="Done">false</while>
+      <script>
+        <set Variable="Index" Compute="true">${Index}+1</set>
+        <set Variable="Res">${V${Index}}</set>
+        <cond>
+          <if Variable="Res"></if>
+          <script>
+            <!-- Vi is empty -->
+            <set Variable="Done">true</set>
+          </script>
+          <else/>
+          <script>
+            <send>${Res}</send>
+          </script>
+        </cond>
+        <cond>
+          <if Variable="Index">${Max}</if>
+          <script>
+            <!-- Max is reached -->
+            <set Variable="Done">true</set>
+          </script>
+        </cond>
+      </script>
+    </repeat>
     <close/>
   </script>
 
