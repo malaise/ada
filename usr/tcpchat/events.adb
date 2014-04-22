@@ -111,8 +111,8 @@ package body Events is
               when Ios.Exit_Requested =>
                 Put_Line ("Exit requested");
                 exit Main;
-              when Ios.Fatal_Error =>
-                Put_Line ("Fatal error");
+              when Ios.Input_Error =>
+                Put_Line ("Input error");
                 exit Main;
               when Ios.Disconnection =>
                 if In_Chat then
@@ -277,8 +277,8 @@ package body Events is
               when Ios.Exit_Requested =>
                 Put_Line ("Exit requested");
                 exit Main;
-              when Ios.Fatal_Error =>
-                Put_Line ("Fatal error");
+              when Ios.Input_Error =>
+                Put_Line ("Input error");
                 exit Main;
               when Ios.Disconnection =>
                 Put_Line ("Disconnection");
@@ -310,8 +310,8 @@ package body Events is
               when Ios.Exit_Requested =>
                 Put_Line ("Exit requested");
                 exit Main;
-              when Ios.Fatal_Error =>
-                Put_Line ("Fatal error");
+              when Ios.Input_Error =>
+                Put_Line ("Input error");
                 exit Main;
               when Ios.Disconnection =>
                 Put_Line ("Disconnection");
@@ -334,8 +334,8 @@ package body Events is
               when Ios.Exit_Requested =>
                 Put_Line ("Exit requested");
                 exit Main;
-              when Ios.Fatal_Error =>
-                Put_Line ("Fatal error");
+              when Ios.Input_Error =>
+                Put_Line ("Input error");
                 exit Main;
               when Ios.Disconnection =>
                 Put_Line ("Disconnection");

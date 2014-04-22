@@ -1,6 +1,6 @@
 tcpchat
 =======
-V3.1
+V3.2
 
 Tcpchat accepts connections on a TCP port, expects specific sentences and
 executes specified actions depending on what it receives.

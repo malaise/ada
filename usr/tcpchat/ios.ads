@@ -8,7 +8,7 @@ package Ios is
   -- Kind of event
   type Event_Kind_List is (
     Exit_Requested, -- User has hit Ctrl C
-    Fatal_Error,    -- Unrecoverable error (e.g. Async_Stdin)
+    Input_Error,    -- Unrecoverable input error (e.g. end of stdin)
     Disconnection,  -- Tcp connection broken
     Global_Timeout, -- Global timeout has expired without sentence
     Local_Timeout,  -- Read timeout without sentence, or end of Wait

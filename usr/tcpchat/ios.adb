@@ -131,10 +131,10 @@ package body Ios is
   function Async_Cb (Str : String) return Boolean is
   begin
     if Str = "" then
-      -- Async_Stdin error
+      -- Async_Stdin error: likely end of input
       Debug.Logger.Log_Debug ("Async_Cb error");
       if Event.Kind /= Exit_Requested then
-        Event := (Kind => Fatal_Error);
+        Event := (Kind => Input_Error);
       end if;
     else
       Debug.Logger.Log_Debug ("Async_Cb >" & Str & "<");
