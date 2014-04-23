@@ -3,7 +3,7 @@
 
 export VERS="V"`tcpchat -v`
 
-export DBG=1
+export DBG=0
 
 export DEBUG=debug
 if [ $DBG -eq 1 ] ; then
@@ -57,6 +57,19 @@ function send {
 }
 
 
+# Check that result $1 matches expected $2
+function check {
+  # Compare with expected
+  cmp -s $1 $2
+  if [ $? -ne 0 ] ; then
+    echo "ERROR: Result $1 differs from expected $2" 2>&1
+    exit 1
+  else
+    rm -f $1 $2
+    echo "OK"
+  fi
+}
+
 # A test.
 # $1 is the file with expected result
 # Other args are series of sentences to send and delay to wait
@@ -75,16 +88,18 @@ function try {
   kill $PID 2>/dev/null
 
   # Compare with expected
-  cmp -s $RES "$expected"
-  if [ $? -ne 0 ] ; then
-    echo "ERROR: Result $RES differs from expected $expected" 2>&1
-    exit 1
-  else
-    rm -f $RES "$expected"
-    echo "OK"
-  fi
+  check $RES "$expected"
 }
 
+# Command ls and exit of rsh.xml
+echo -n "Test rsh: "
+tcpchat -p - -f rsh.xml <$PIPE >$RES 2>$DEBUG &
+sleep 0.5
+ls > $EXPECTED
+send ls 0 exit 0 > $PIPE
+check $RES $EXPECTED
+
+# Various chats of chats.xml
 # Ping
 echo -n "Test ping: "
 echo -n "pong" > $EXPECTED
