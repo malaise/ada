@@ -310,7 +310,6 @@ package body Tree is
       Xchild := Ctx.Get_Child (Xnode, 1);
       Get_Text (Xchild, Node, True);
       Node.Ifunset := Get_Ifunset (Xchild);
-
     elsif Name = "while" then
       Node.Kind := Repeat;
       -- There is no "while" node: the criteria is attached to the Repeat
@@ -405,10 +404,11 @@ package body Tree is
       end if;
     end if;
 
-    -- Now insert entries of Select or Cond
+    -- Now insert entries of Select, Cond or Repeat
     if not Dummy_Node
     and then (Node.Kind = Selec
-              or else Node.Kind = Cond) then
+              or else Node.Kind = Cond
+              or else Node.Kind = Repeat) then
       -- Insert each entry
       Debug.Logger.Log_Debug ("  Inserting entries of "
                              & Mixed_Str (Node.Kind'Img));
@@ -427,6 +427,7 @@ package body Tree is
           --   insert "expect/default/timeout"
           -- Cond is made of (if/elsif/else, script) pairs:
           --   insert "if/elsif/else"
+          -- Repeat is made of a (while, script) pair: insert "while"
           if I rem 2 = 1 then
             Debug.Logger.Log_Debug ("    Inserting entry of "
                                   & Mixed_Str (Node.Kind'Img));
@@ -436,12 +437,7 @@ package body Tree is
         end if;
       end loop;
       Debug.Logger.Log_Debug ("  End of entries of "
-                             & Mixed_Str (Node.Kind'Img));
-    elsif not Dummy_Node and then Node.Kind = Repeat then
-      -- Repeat is inserted, process while
-      Debug.Logger.Log_Debug ("  Inserting while");
-      Xchild := Ctx.Get_Child (Xnode, 1);
-      Insert_Node (Xchild, Default_Timeout);
+                            & Mixed_Str (Node.Kind'Img));
     elsif Node.Kind = Set or else Node.Kind = Parse or else Node.Kind = Call
     or else Node.Kind = Eval or else Node.Kind = Chdir then
       -- Assign is an expression then a handler (error+script)
@@ -548,17 +544,16 @@ package body Tree is
     -- Set Inext depending on kind of multiplexor
     if Node.Kind = Selec
     or else Node.Kind = Cond
+    or else Node.Kind = Set
     or else Node.Kind = Call
     or else Node.Kind = Eval
-    or else Node.Kind = Set
-    or else Node.Kind = Parse
     or else Node.Kind = Chdir then
       -- For leaf children of entries of a Selec, Next is the next of Selec
       -- For leaf children of if/else of a Cond, Next is the next of Cond
       -- For leaf children of Set, Call, Eval or Chdir, Next is the next of
-      --  Call/Eval/Chdir
+      --  Set/Call/Eval/Chdir
       Inext := Node.Next.all;
-      Debug.Logger.Log_Debug ("Setting next to next");
+      Debug.Logger.Log_Debug ("Setting next to same as current");
     elsif Node.Kind = Repeat then
       -- For the leaf child of a Repeat, Next is the Repeat
       Inext := Position_Access(Chats.Get_Position);

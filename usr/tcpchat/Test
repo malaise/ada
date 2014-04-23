@@ -81,6 +81,7 @@ function try {
   # Start tcpchat
   tcpchat -p - -f chats.xml <$PIPE >$RES 2>$DEBUG &
   PID=$!
+  sleep 1
 
   # Send stimulus
   send $@ > $PIPE
@@ -93,10 +94,10 @@ function try {
 
 # Command ls and exit of rsh.xml
 echo -n "Test rsh: "
+touch $RES $EXPECTED $DEBUG
 tcpchat -p - -f rsh.xml <$PIPE >$RES 2>$DEBUG &
-sleep 0.5
 ls > $EXPECTED
-send ls 0 exit 0 > $PIPE
+send ls 0 exit 0 >$PIPE
 check $RES $EXPECTED
 
 # Various chats of chats.xml
