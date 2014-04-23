@@ -1,6 +1,6 @@
 tcpchat
 =======
-V3.2
+V3.3
 
 Tcpchat accepts connections on a TCP port, expects specific sentences and
 executes specified actions depending on what it receives.
@@ -227,6 +227,13 @@ the first child is the first instruction handling the error.
 
 - A Call or Chdir node have 2 children, the first of which is the
 first instruction handling the error.
+
+- A Repeat node has a first child that is is the first instruction of the
+repeated block, then possibly a second child: the next statement following
+the repeat (in this case, Next points to it).
+
+- A Cond node has a child for each Condif and Condelse, then possibly another
+child: the next statement following the Cond  (in this case, Next points to it).
 
 - Other nodes may have one child: the statement following current (in this
 case, Next points to it) or no child (in this case, Next points to the

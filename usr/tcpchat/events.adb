@@ -264,11 +264,11 @@ package body Events is
             if Matcher.Match (Node, Variable) then
               -- Match, go to the first child of the loop
               Debug.Logger.Log_Debug ("Repeat true: " & Node.Text.Image);
-              Chats.Move_Child (True);
+              Chats.Move_Child;
             else
               Debug.Logger.Log_Debug ("Repeat false: " & Node.Text.Image);
               -- No mach, move to end of loop
-              Chats.Move_Child (False);
+              Set_Position (Node.Next.all);
             end if;
 
           when Read =>

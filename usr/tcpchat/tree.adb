@@ -142,7 +142,8 @@ package body Tree is
 
   -- For dump of a node with some text before
   function Dump (Init_Str : String;
-                 Node : Node_Rec; Level : Natural) return Boolean is
+                 Node : Node_Rec;
+                 Level : Natural) return Boolean is
     Tab : constant String (1 .. 2 * Level) := (others => ' ');
     Text : As.U.Asu_Us;
     use type Any_Def.Any_Kind_List, Trilean.Trilean;
@@ -199,6 +200,7 @@ package body Tree is
         end loop;
       end if;
     end if;
+
     Debug.Logger.Log_Debug (Text.Image);
     return True;
   end Dump;
@@ -207,7 +209,6 @@ package body Tree is
   begin
     return Dump ("", Node, Level);
   end Dump;
-
 
   -----------------------
   -- Building own tree --
@@ -309,6 +310,7 @@ package body Tree is
       Xchild := Ctx.Get_Child (Xnode, 1);
       Get_Text (Xchild, Node, True);
       Node.Ifunset := Get_Ifunset (Xchild);
+
     elsif Name = "while" then
       Node.Kind := Repeat;
       -- There is no "while" node: the criteria is attached to the Repeat
@@ -403,11 +405,10 @@ package body Tree is
       end if;
     end if;
 
-    -- Now insert entries of Select, Cond or Repeat
+    -- Now insert entries of Select or Cond
     if not Dummy_Node
     and then (Node.Kind = Selec
-              or else Node.Kind = Cond
-              or else Node.Kind = Repeat) then
+              or else Node.Kind = Cond) then
       -- Insert each entry
       Debug.Logger.Log_Debug ("  Inserting entries of "
                              & Mixed_Str (Node.Kind'Img));
@@ -426,8 +427,6 @@ package body Tree is
           --   insert "expect/default/timeout"
           -- Cond is made of (if/elsif/else, script) pairs:
           --   insert "if/elsif/else"
-          -- Repeat is made of (while, script) pairs:
-          --   insert "while"
           if I rem 2 = 1 then
             Debug.Logger.Log_Debug ("    Inserting entry of "
                                   & Mixed_Str (Node.Kind'Img));
@@ -438,6 +437,11 @@ package body Tree is
       end loop;
       Debug.Logger.Log_Debug ("  End of entries of "
                              & Mixed_Str (Node.Kind'Img));
+    elsif not Dummy_Node and then Node.Kind = Repeat then
+      -- Repeat is inserted, process while
+      Debug.Logger.Log_Debug ("  Inserting while");
+      Xchild := Ctx.Get_Child (Xnode, 1);
+      Insert_Node (Xchild, Default_Timeout);
     elsif Node.Kind = Set or else Node.Kind = Parse or else Node.Kind = Call
     or else Node.Kind = Eval or else Node.Kind = Chdir then
       -- Assign is an expression then a handler (error+script)
@@ -493,9 +497,20 @@ package body Tree is
     end if;
   end Insert_Node;
 
+  -- Read next node of a node
+  function Read_Next (Node : Node_Rec) return Node_Rec is
+    Next_Node : Node_Rec;
+  begin
+    Chats.Save_Position;
+    Set_Position (Node.Next.all);
+    Chats.Read (Next_Node);
+    Chats.Restore_Position;
+    return Next_Node;
+  end Read_Next;
+
   -- Recursive update of Next for the leafs
   function Update_Next (Next : in Position_Access) return Boolean is
-    Node, Ref_Node : Node_Rec;
+    Node, Next_Node : Node_Rec;
     -- The Next comming from parent
     Pnext : Position_Access;
     -- The Next of all intermediate children (not the following statement)
@@ -517,23 +532,17 @@ package body Tree is
       Node.Next.all := Pnext;
       Chats.Replace (Node);
       if Debug.Logger.Debug_On then
-        Chats.Save_Position;
-        Set_Position (Pnext);
-        Chats.Read (Ref_Node);
-        Chats.Restore_Position;
         Dummy := Dump ("Updating Next of ", Node, 0);
-        Dummy := Dump (" to ", Ref_Node, 0);
       end if;
     else
       -- Don't change current Next if already set
       if Debug.Logger.Debug_On then
-        Chats.Save_Position;
-        Set_Position (Node.Next.all);
-        Chats.Read (Ref_Node);
-        Chats.Restore_Position;
         Dummy := Dump ("Next is OK for ", Node, 0);
-        Dummy := Dump (" to ", Ref_Node, 0);
       end if;
+    end if;
+    if Debug.Logger.Debug_On then
+      Next_Node := Read_Next (Node);
+      Dummy := Dump ("  set to ", Next_Node, 0);
     end if;
 
     -- Set Inext depending on kind of multiplexor
@@ -549,23 +558,30 @@ package body Tree is
       -- For leaf children of Set, Call, Eval or Chdir, Next is the next of
       --  Call/Eval/Chdir
       Inext := Node.Next.all;
+      Debug.Logger.Log_Debug ("Setting next to next");
     elsif Node.Kind = Repeat then
-      -- For leaf child of a Repeat, Next is the Repeat
+      -- For the leaf child of a Repeat, Next is the Repeat
       Inext := Position_Access(Chats.Get_Position);
+      Debug.Logger.Log_Debug ("Setting next to repeat");
     end if;
 
     -- Iterate on all children
     if Chats.Children_Number = 1 then
-      -- Single child = next instruction
       Chats.Move_Child (True);
       Debug.Logger.Log_Debug ("Updating single child");
-      Dummy := Update_Next (Pnext);
+      if Node.Kind = Repeat then
+        -- Single child of repeat = repeat
+        Dummy := Update_Next (Inext);
+      else
+        -- Any other single child = next instruction
+        Dummy := Update_Next (Pnext);
+      end if;
     elsif Chats.Children_Number > 1 then
       -- Selec, Cond or Repeat
       Chats.Move_Child (True);
       loop
         if Node.Next.all /= Position_Access(Chats.Get_Position) then
-          -- Any intermediate child
+          -- Any intermediate child, first child of a repeat
           Debug.Logger.Log_Debug ("Updating intermediate child");
           exit when not Update_Next (Inext);
         else
