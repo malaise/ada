@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V14.16"/>
+  <Var Name="Version" Value="V14.17"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -1099,7 +1099,7 @@
 
     <!-- Push and back -->
     <Field Num="15" Kind="Button" Name="Push">
-      <Geometry Up="${List.Low}+2" Left="1" Height="3" Width="6"/>
+      <Geometry Up="${List.Low}+2" Left="1" Height="3" Width="7"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Push</Init>
     </Field>

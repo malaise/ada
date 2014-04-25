@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V14.16
+V14.17
 
 General purpose
 ---------------
@@ -158,7 +158,8 @@ the stack of stashes.
 worktree and allows staging and commiting them.
 * xref:XPush[Push]: This menu allows pushing local commits to a remote
 repository.
-* xref:XPull[Pull]: This menu allows pulling a branch from a remote repository.
+* xref:XPull[Pull]: This menu allows fetching or pulling a branch from a
+remote repository.
 
 anchor:XNavigation[]
 The navigation is as follows:
@@ -423,8 +424,8 @@ This button activates the xref:XCommit[commit] screen that allows
 commiting the the local modifications.
 
 Pull::
-This button activates the xref:XPull[pull] screen that allows pulling a
-branch from a remote repository;
+This button activates the xref:XPull[pull] screen that allows fetching or 
+pulling a branch from a remote repository;
 
 Exit::
 A button makes Agite exit.
@@ -857,7 +858,8 @@ anchor:XSelBranch[]
 Pull
 ~~~~
 anchor:XPull[]
-The 'Pull' menu allows pulling a given branch from a remote repository. +
+The 'Pull' menu allows pulling the current branch (fetching and merging) or
+fetching only another branch from a remote repository. +
 This is achieved through two successive screens.
 
 Branch selection
@@ -906,9 +908,11 @@ This lists the known references from which you can select the one to pull the
 branch from. +
 If the remote ''orign'' is defined then it is selected by default.
 
-.Pull
+.Pull or Fetch
 
-Pulls the branch from the selected remote repository. +
+This button shows 'Pull' if the selected remote branch is the same as current
+branch, otherwise it shows 'Fetch'. It pulls or fetches the remote branch from
+the selected remote repository. +
 If there is no error then agite returns back to the xref:XDir[directory] menu,
 otherwise the error is reported through a specific screen.
 
@@ -969,7 +973,8 @@ calling 'git difftool -y -x <differator> <ref_HSA1> <comp_HSA1> \-- <file>',
 
 * A function pushes the local commits by calling 'git push <remote>',
 
-* A function pulls the current branch by calling 'git pull <remote> <branch>',
+* A function fetches or pulls the current branch by calling 'git fetch
+* <remote> <branch>:<branch>' or 'git pull * <remote> <branch>:<branch>',
 
 * A function gets the user name and email by calling 'git config user.name'
 and 'git config user.email',
@@ -982,6 +987,8 @@ and 'git config user.email',
 
 * Three functions apply/pop/drop a stash by calling 'git stash apply/pop/drop
 -q stash@{<num>}',
+
+* A function lists the local or remote branches by calling 'git branch (-r)',
 
 * Three functions create/rename/delete a branch by calling 'git branch
 [ -m | -d ] <name> [<new_name>]'.

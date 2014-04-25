@@ -844,14 +844,19 @@ package body Git_If is
   end Do_Push;
 
   -- Launch a pull synchronous
-  function Do_Pull (Remote : String; Branch : String) return String is
+  function Do_Fetch (Remote : String; Branch : String; Pull : Boolean)
+           return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
-    Cmd.Cat ("pull");
+    if Pull then
+      Cmd.Cat ("pull");
+    else
+      Cmd.Cat ("fetch");
+    end if;
     Cmd.Cat ("-q");
     Cmd.Cat (Remote);
-    Cmd.Cat (Branch);
+    Cmd.Cat (Branch & ":" & Branch);
     Command.Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -866,7 +871,7 @@ package body Git_If is
     else
       return "";
     end if;
-  end Do_Pull;
+  end Do_Fetch;
 
   -- Get current branch name
   No_Branch : constant String := "(no branch)";
@@ -916,6 +921,12 @@ package body Git_If is
     Line : As.U.Asu_Us;
     Moved : Boolean;
   begin
+    if not Local then
+      Cmd.Set ("git");
+      Cmd.Cat ("fetch");
+      Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    end if;
     Branches.Delete_List;
     Cmd.Set ("git");
     Cmd.Cat ("branch");
@@ -926,7 +937,7 @@ package body Git_If is
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git remote: " & Err_Flow_1.Str.Image);
+      Basic_Proc.Put_Line_Error ("git branch (-r): " & Err_Flow_1.Str.Image);
       return;
     end if;
 

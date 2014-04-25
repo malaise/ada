@@ -125,8 +125,9 @@ package Git_If is
   -- Launch a push synchronous, return "" if OK, else the error
   function Do_Push (Remote : String) return String;
 
-  -- Launch a pull synchronous, "" if OK, else the error
-  function Do_Pull (Remote : String; Branch : String) return String;
+  -- Launch a fetch (or pull) synchronous, "" if OK, else the error
+  function Do_Fetch (Remote : String; Branch : String; Pull : Boolean)
+                    return String;
 
   -- Get current branch name
   function Current_Branch return String;

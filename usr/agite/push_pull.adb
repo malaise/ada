@@ -69,14 +69,14 @@ package body Push_Pull is
     end if;
   end Do_Pull_Branch;
 
-  -- Get remote and pull (remote branch)
-  function Do_Pull (Branch : String) return Boolean is
+  -- Fetch or pull (remote branch)
+  function Do_Fetch (Branch : String; Pull : Boolean) return Boolean is
     Log : As.U.Asu_Us;
   begin
     References.Move_At (Afpx.Line_List.Get_Position);
     Afpx.Suspend;
     Log := As.U.Tus (
-          Git_If.Do_Pull (References.Access_Current.Image, Branch));
+          Git_If.Do_Fetch (References.Access_Current.Image, Branch, Pull));
     Afpx.Resume;
     if Log.Is_Null then
       return True;
@@ -86,7 +86,7 @@ package body Push_Pull is
              Log.Image);
       return False;
     end if;
-  end Do_Pull;
+  end Do_Fetch;
 
   -- Handle the Push, the Pull_Branch and the Pull
   function Do_Handle (Root : String;
@@ -99,7 +99,7 @@ package body Push_Pull is
     Curr_Branch : As.U.Asu_Us;
     -- Result of Push or Pull
     Result : Boolean;
-    use type Afpx.Absolute_Field_Range;
+    use type Afpx.Absolute_Field_Range, As.U.Asu_Us;
 
     procedure Init is
     begin
@@ -128,9 +128,14 @@ package body Push_Pull is
           Afpx.Clear_Field (Afpx_Xref.Push_Pull.Entries);
           Afpx.Encode_Field (Afpx_Xref.Push_Pull.Entries, (0, 0), "Branches:");
         when Pull =>
-          Utils.X.Center_Field ("Pull branch", Afpx_Xref.Push_Pull.Title);
           Utils.X.Center_Field (Branch, Afpx_Xref.Push_Pull.Sub_Title);
-          Utils.X.Center_Field ("Pull", Afpx_Xref.Push_Pull.Push);
+          if Branch = Curr_Branch then
+            Utils.X.Center_Field ("Pull branch", Afpx_Xref.Push_Pull.Title);
+            Utils.X.Center_Field ("Pull", Afpx_Xref.Push_Pull.Push);
+          else
+            Utils.X.Center_Field ("Fetch branch", Afpx_Xref.Push_Pull.Title);
+            Utils.X.Center_Field ("Fetch", Afpx_Xref.Push_Pull.Push);
+          end if;
           Afpx.Reset_Field (Afpx_Xref.Push_Pull.Entries);
       end case;
 
@@ -196,7 +201,7 @@ package body Push_Pull is
                 when Pull_Branch =>
                   Result := Do_Pull_Branch (Root);
                 when Pull =>
-                  Result := Do_Pull (Branch);
+                  Result := Do_Fetch (Branch, Branch = Curr_Branch);
                 when Push =>
                   Result := Do_Push;
               end case;
