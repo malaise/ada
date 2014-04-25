@@ -2,45 +2,54 @@
 <!DOCTYPE chats SYSTEM "chats.dtd">
 <!-- TCP chat script for handling rsh -->
 
-<chats Version="&Version;">
+<chats>
+  <version Version="&Version;"/>
 
   <!-- Empty: discard -->
-  <chat Name="empty" Crit="">
-  </chat>
+  <chat Name="empty"></chat>
+  <script>
+  </script>
 
   <!-- cd: change dir -->
-  <chat Name="chdir" Crit="cd( +(.*))?" Regexp="true" Assign="TARGET=${2}">
-    <set Variable="OK" Expr="true"/>
-    <chdir Dir="${TARGET}">
-      <error>
-        <set Variable="OK" Expr="false"/>
+  <chat Name="chdir" Regexp="true" Assign="TARGET=${2}">cd( +(.*))?</chat>
+  <script>
+    <set Variable="OK">true</set>
+    <chdir>
+      <dir>${TARGET}</dir>
+      <error/>
+      <script>
+        <set Variable="OK">false</set>
         <send>ERROR changing dir to ${TARGET}</send>
-      </error>
+      </script>
     </chdir>
     <cond>
-      <if Expr="${OK}" Crit="true">
+      <if Variable="OK">true</if>
+      <script>
         <eval Variable="PWD">
           <command>pwd</command>
         </eval>
         <send NewLine="false">${PWD}</send>
-      </if>
+      </script>
     </cond>
-  </chat>
+  </script>
 
   <!-- exit: close -->
-  <chat Name="close" Crit="exit">
+  <chat Name="close">exit</chat>
+  <script>
     <close/>
-  </chat>
+  </script>
 
   <!-- Other: execude command -->
-  <chat Name="rsh" Crit=".*" Regexp="true" Assign="COMMAND=${0}">
+  <chat Name="rsh" Regexp="true" Assign="COMMAND=${0}">.*</chat>
+  <script>
     <call>
       <command>${COMMAND}</command>
-      <error>
+      <error/>
+      <script>
         <send>ERROR executing command ${COMMAND}</send>
-      </error>
+      </script>
     </call>
-  </chat>
+  </script>
 
 </chats>
 

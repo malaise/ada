@@ -1,6 +1,6 @@
 tcpchat
 =======
-V4.0
+V3.4
 
 Tcpchat accepts connections on a TCP port, expects specific sentences and
 executes specified actions depending on what it receives.
@@ -22,8 +22,7 @@ sentences.
 Chat file and behavior
 ~~~~~~~~~~~~~~~~~~~~~~
 .File
-The chats file defines the version and describes several alternative chats
-scripts.
+The chats file defines the version and describes several alternative chats.
 
 .Chat
 Each chat starts with one expected sentence followed by a script of expected
@@ -34,9 +33,9 @@ A chat has a unique name. It can define a global timeout for its execution
 input is expected: 'select', 'read' and 'skip' (default is infinite).
 
 A chat defines a pattern that will lead it to be selected (and the script
-to be executed) if the input string matches the pattern (string comparison, 
-regular expression matching or integer comparison). The input is tested versus
-each pattern successively until one matches.
+to be executed) if the input string matches the pattern (string comparison or
+regular expression matching). The input is tested versus each patterns
+successively until one matches.
 
 In case of a regexp, some xref:Variables[Variables] can be defined and
 initialized from the content (or a part) of the input string.
@@ -55,7 +54,7 @@ if no sentence has been received when the timeout expires.
 
 - 'cond': execute a sub-script on condition (if a variable matches a criteria,
 elsif...  else...).
-- 'while': loop executing a sub-script while a condition is true.
+- 'repeat': loop executing a sub-script while a condition is true.
 - 'read': Read next sentence and check that it matches the one provided. 
 On option, fails on timeout if no input is received before a timeout
 expiration.
@@ -140,18 +139,11 @@ A computed expression must be a valid combination of variables, values,
 operations and parentheses, otherwise this is an error. In case of 'assign'
 statement this error can be caught and handled.
 
-.Pattern matching and integer matching
-The criteria of 'chat', 'expect', 'read', 'if', 'elsif', 'while' and 'read'
-statements is by default considered as the string  with witch the input
-sentence or expression must be equal ('Oper'="=") or from which it must be
-different ('Oper'="/="). +
-On option it can be considered as as the regular expression pattern with 
-which the input sentence must completely match (i.e. <input_string>
-matches "^<regex>"") ('Oper'="=") or with which it  must not match
-('Oper'="/="). +
-Alternatively, on option, the criteria and the input (or the expression) are
-computed and compared through the operator ("=", "/=", "<", ">", "<=" or
-">=").
+.Pattern matching
+The text of 'chat', 'expect' and 'read' statements is by default considered as
+the string  with witch the input sentence must be equal. On option it can be
+considered as a regular expression pattern with the input sentence must
+completely match (i.e. <input_string> matches "^<regex>$").
 
 High level design
 -----------------
