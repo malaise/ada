@@ -2,54 +2,47 @@
 <!DOCTYPE chats SYSTEM "chats.dtd">
 <!-- Example of TCP chat script, used for testing -->
 
-<chats>
-  <version Version="&Version;"/>
+<chats Version="&Version;">
   <!-- HTTP 0.9: Send file -->
   <!-- HTTP 1.0 or 1.1: Skip noise, send header + file -->
-  <chat Name="http" TimeoutMs="&None;" Regexp="true"
+  <chat Name="http"
+        Crit="GET ((http:/)?/(localhost|${$HOSTNAME}))?([^ ]+)( +HTTP/1\.(0|1))?"
+        Regexp="true"
         Assign="File=${4} Vers=${5}"
-        >GET ((http:/)?/(localhost|${$HOSTNAME}))?([^ ]+)( +HTTP/1\.(0|1))?</chat>
-  <script>
+        TimeoutMs="&None;">
     <cond>
-      <if Variable="Vers"></if>
-      <!-- No vers => 0.9 -->
-      <script></script>
-      <else/>
-      <script>
+      <if Expr="${Vers}" Crit="">
+        <!-- No vers => 0.9 -->
+      </if>
+      <else>
         <!-- Vers 1.x => skip inputs until empty line -->
-        <set Variable="Done">false</set>
-        <repeat>
-          <while Variable="Done">false</while>
-          <script>
-            <select TimeoutMs="1000">
-              <expect></expect>
-              <script>
-                <set Variable="Done">true</set>
-              </script>
-              <default/>
-              <script></script>
-            </select>
-          </script>
-        </repeat>
+        <set Variable="Done" Expr="false"/>
+        <while Expr="${Done}" Crit="false">
+          <select TimeoutMs="1000">
+            <expect Crit="">
+              <set Variable="Done" Expr="true"/>
+            </expect>
+            <default>
+            </default>
+          </select>
+        </while>
         <!-- And send header -->
         <eval Variable="Size">
           <command>ls -al ${File} | awk '{printf "%s",$5\}'</command>
-          <error/>
-          <script>
-            <set Variable="Size"></set>
-          </script>
+          <error>
+            <set Variable="Size" Expr=""/>
+          </error>
         </eval>
         <cond>
-          <if Variable="Size"></if>
-          <script>
+          <if Expr="${Size}" Crit="">
             <send>HTTP/1.0 404 Not Found</send>
             <close/>
-          </script>
+          </if>
         </cond>
         <eval Variable="Date">
           <command>echo -n `date "+%a, %d %b %Y %H:%M:00 %Z"`</command>
         </eval>
-        <set Variable="Server_Id">tcpchat/V&Version;</set>
+        <set Variable="Server_Id" Expr="tcpchat/V&Version;"/>
         <send>HTTP/1.0 200 OK</send>
         <send>Date: ${Date}</send>
         <send>Server: ${Server_Id}</send>
@@ -58,305 +51,260 @@
         <send>Content-Length: ${Size}</send>
         <send>Content-Type: text/plain</send>
         <send></send>
-      </script>
+      </else>
     </cond>
     <call>
       <command>cat ${File}</command>
-      <error/>
-      <script>
+      <error>
         <cond>
-          <if Variable="Vers"></if>
-          <script></script>
-          <else/>
-          <script>
+          <if Expr="${Vers}" Crit="">
+          </if>
+          <else>
             <send>HTTP/1.0 404 Not Found</send>
-          </script>
-      </cond>
-      </script>
+          </else>
+        </cond>
+      </error>
     </call>
     <close/>
-  </script>
+  </chat>
 
   <!-- Tcping: Send pong or tcpong. Remain connected -->
-  <chat Name="tcping" TimeoutMs="1_000" Regexp="true"
-        Assign="Tc=${1}">(tc)?ping</chat>
-  <script>
+  <chat Name="tcping" Crit="(tc)?ping" Regexp="true" Assign="Tc=${1}"
+        TimeoutMs="1_000">
     <send NewLine="false">${Tc}pong</send>
-  </script>
+  </chat>
 
   <!-- TEST wait then close -->
-  <chat Name="testWaitClose">close</chat>
-  <script>
+  <chat Name="testWaitClose" Crit="close">
     <wait DelayMs="1000"/>
     <close/>
-  </script>
+  </chat>
 
   <!-- TEST simulate a ppp login chat user side -->
-  <chat Name="testPpp1">ppp1</chat>
-  <script>
+  <chat Name="testPpp1" Crit="ppp1">
     <send>AT</send>
-    <read TimeoutMs="5_000">OK</read>
+    <read TimeoutMs="5_000" Crit="OK"/>
     <send>ATQ0 V1 E1 S0=0 &amp;C1 &amp;D2 +FCLASS=0</send>
-    <read TimeoutMs="5_000">OK</read>
+    <read TimeoutMs="5_000" Crit="OK"/>
     <send>ATDT0860922000</send>
     <select TimeoutMs="60_000">
-      <expect Regexp="true">BUSY|ERROR|NO CARRIER|VOICE|NO DIAL ?TONE|NO ANSWER|DELAYED</expect>
-      <script>
+      <expect Crit="BUSY|ERROR|NO CARRIER|VOICE|NO DIAL ?TONE|NO ANSWER|DELAYED"
+              Regexp="true">
         <close/>
-      </script>
-      <expect Regexp="true">CONNECT( [0-9]+)?</expect>
-      <script>
-        <read TimeoutMs="30_000"Regexp="true">.ogin</read>
+      </expect>
+      <expect Crit="CONNECT( [0-9]+)?" Regexp="true">
+        <read TimeoutMs="30_000" Crit=".ogin" Regexp="true"/>
         <send>malaise</send>
-        <read TimeoutMs="10_000" Regexp="true">.{4\}word</read>
+        <read TimeoutMs="10_000" Crit=".{4\}word" Regexp="true"/>
         <send>${$PASSWORD}</send>
         <send>Working: Please wait...</send>
         <wait DelayMs="5_000"/>
         <send>Done. Please logout.</send>
-        <read TimeoutMs="10_000">logout</read>
+        <read TimeoutMs="10_000" Crit="logout"/>
         <close/>
-      </script>
+      </expect>
     </select>
-  </script>
+  </chat>
 
   <!-- TEST simulate a ppp login chat modem side -->
-  <chat Name="testPpp2">ppp2</chat>
-  <script>
-    <read>AT</read>
+  <chat Name="testPpp2" Crit="ppp2">
+    <read Crit="AT"/>
     <send>OK</send>
-    <read>ATQ0 V1 E1 S0=0 &amp;C1 &amp;D2 +FCLASS=0</read>
+    <read Crit="ATQ0 V1 E1 S0=0 &amp;C1 &amp;D2 +FCLASS=0"/>
     <send>OK</send>
-    <read>ATDT0860922000</read>
+    <read Crit="ATDT0860922000"/>
     <wait DelayMs="21_000"/>
     <send>CONNECT 56000</send>
     <wait DelayMs="10_000"/>
     <send>login</send>
-    <read>malaise</read>
+    <read Crit="malaise"/>
     <send>password</send>
-    <read>${$PASSWORD}</read>
+    <read Crit="${$PASSWORD}"/>
     <send>Working: Please wait...</send>
     <wait DelayMs="5_000"/>
     <send>Done. Please logout.</send>
-    <read TimeoutMs="10_000">logout</read>
+    <read TimeoutMs="10_000" Crit="logout"/>
     <close/>
-  </script>
+  </chat>
 
   <!-- TEST multiple select -->
-  <chat Name="testMulti"
-        InputDefaultTimeoutMs="None">testMulti</chat>
-  <script>
+  <chat Name="testMulti" Crit="testMulti"
+        InputDefaultTimeoutMs="None">
     <send></send>
     <select>
-      <expect>login</expect>
-      <script>
+      <expect Crit="login">
         <send>me</send>
         <select>
-          <expect>password</expect>
-          <script>
+          <expect Crit="password">
             <send>pass</send>
-          </script>
-          <expect>PASSWORD</expect>
-          <script>
+          </expect>
+          <expect Crit="PASSWORD">
             <send>PASS</send>
-          </script>
-          <default/>
-          <script>
+          </expect>
+          <default>
             <close/>
-          </script>
+          </default>
         </select>
         <wait DelayMs="10"/>
         <send>ls</send>
-      </script>
-      <expect>LOGIN</expect>
-      <script>
+      </expect>
+      <expect Crit="LOGIN">
         <send>ME</send>
-        <read>PASSWORD</read>
+        <read Crit="PASSWORD"/>
         <send>PASS</send>
-      </script>
+      </expect>
     </select>
     <wait DelayMs="1_000"/>
     <close/>
-  </script>
+  </chat>
 
   <!-- TEST a login -->
-  <chat Name="login" TimeoutMs="60_000">login</chat>
-  <script>
-    <set Variable="Count">0</set>
-    <set Variable="Res">try</set>
-    <repeat>
-      <while Variable="Res">try</while>
-      <script>
-        <!-- Get login and password, set RES=loggedin if OK -->
-        <send>login:</send>
-        <read Regexp="true" Assign="User=${0}">.*</read>
-        <send>password:</send>
-        <read Regexp="true" Assign="Passwd=${0}">.*</read>
-        <cond>
-          <if Variable="User">malaise</if>
-          <script>
-            <cond>
-              <if Variable="Passwd">${$PASSWORD}</if>
-              <script>
-                <set Variable="Res">success</set>
-              </script>
-            </cond>
-          </script>
-        </cond>
-        <!-- Increment counter if not OK, failed if maximum reached -->
-        <cond>
-          <if Variable="Res">try</if>
-          <script>
-            <set Variable="Count" Compute="true">${Count}+1</set>
-            <cond>
-              <if Variable="Count">5</if>
-              <script>
-                <set Variable="Res">failure</set>
-              </script>
-            </cond>
-          </script>
-        </cond>
-      </script>
-    </repeat>
+  <chat Name="login" Crit="login" TimeoutMs="60_000">
+    <set Variable="Count" Expr="0"/>
+    <set Variable="Res" Expr="try"/>
+    <while Expr="${Res}" Crit="try">
+      <!-- Get login and password, set RES=loggedin if OK -->
+      <send>login:</send>
+      <read Crit=".*" Regexp="true" Assign="User=${0}"/>
+      <send>password:</send>
+      <read Crit=".*" Regexp="true" Assign="Passwd=${0}"/>
+      <cond>
+        <if Expr="${User}" Crit="malaise">
+          <cond>
+            <if Expr="${Passwd}" Crit="${$PASSWORD}">
+              <set Variable="Res" Expr="success"/>
+            </if>
+          </cond>
+        </if>
+      </cond>
+      <!-- Increment counter if not OK, failed if maximum reached -->
+      <cond>
+        <if Expr="${Res}" Crit="try">
+          <set Variable="Count" Expr="{Count}+1" Compute="true"/>
+          <cond>
+            <if Expr="${Count}" Crit="5">
+              <set Variable="Res" Expr="failure"/>
+            </if>
+          </cond>
+        </if>
+      </cond>
+    </while>
     <!-- Put result -->
     <cond>
-      <if Variable="Res">success</if>
-      <script>
+      <if Expr="${Res}" Crit="success">
         <send>User ${User} logged in</send>
         <log>User ${User} logged in</log>
-      </script>
-      <else/>
-      <script>
+      </if>
+      <else>
         <send>Login failed</send>
         <log>Login failed</log>
-        <set Variable="User"></set>
-         <close/>
-      </script>
+        <set Variable="User" Expr=""/>
+        <close/>
+      </else>
     </cond>
-  </script>
+  </chat>
 
   <!-- TEST a logout -->
-  <chat Name="logout">logout</chat>
-  <script>
+  <chat Name="logout" Crit="logout">
+    <set Variable="User" Expr="" OnlyIfNotSet="true"/>
     <cond>
-      <if Variable="User" IfUnset="true"></if>
-      <script></script>
-      <else/>
-      <script>
+      <if Expr="${User}" Crit="">
+      </if>
+      <else>
         <send>User ${User} logged out</send>
         <log>User ${User} logged out</log>
-      </script>
+      </else>
     </cond>
     <wait DelayMs="500"/>
     <close/>
-  </script>
+  </chat>
 
   <!-- TEST an indirection ($$) -->
-  <chat Name="Indirect">indirect</chat>
-  <script>
-    <set Variable="V1">Content1</set>
-    <set Variable="V2">Content2</set>
+  <chat Name="Indirect" Crit="indirect">
+    <set Variable="V1" Expr="Content1"/>
+    <set Variable="V2" Expr="Content2"/>
     <select TimeoutMs="1_000">
-      <expect Regexp="true" Assign="Index=${0}">.*</expect>
-      <script>
-        <assign>
-          <expression Variable="Index" Compute="true">${Index}+1</expression>
-          <error/>
-          <script>
+      <expect Crit=".*" Regexp="true" Assign="Index=${0}">
+        <assign Variable="Index" Expr="${Index}+1" Compute="true">
+          <error>
             <send>ERROR</send>
             <wait DelayMs="100"/>
             <close/>
-          </script>
+          </error>
         </assign>
-        <assign>
-          <expression Variable="Result">${V${Index}}</expression>
-          <error/>
-          <script>
+        <assign Variable="Result" Expr="${V${Index}}">
+          <error>
             <send>ERROR</send>
             <wait DelayMs="100"/>
             <close/>
-          </script>
+          </error>
         </assign>
         <send>${Result}</send>
-      </script>
-      <default/>
-      <script>
+      </expect>
+      <default>
         <send>IMPOSSIBLE</send>
-      </script>
-      <timeout/>
-      <script>
+      </default>
+      <timeout>
         <send>TIMEOUT</send>
-      </script>
+      </timeout>
     </select>
     <close/>
-  </script>
+  </chat>
 
   <!-- TEST an error handler of chdir -->
-  <chat Name="error1">error1</chat>
-  <script>
-    <chdir>
-      <dir>Unknown</dir>
-      <error/>
-      <script>
+  <chat Name="error1" Crit="error1">
+    <chdir Dir="Unknown">
+      <error>
         <send>error-handler-1</send>
-      </script>
+      </error>
     </chdir>
     <wait DelayMs="500"/>
     <close/>
-  </script>
+  </chat>
 
   <!-- TEST an error handler of chdir -->
-  <chat Name="error2">error2</chat>
-  <script>
-    <chdir>
-      <dir>Unknown</dir>
-      <error/>
-      <script>
+  <chat Name="error2" Crit="error2">
+    <chdir Dir="Unknown">
+      <error>
         <send>error-handler-2</send>
-      </script>
+      </error>
     </chdir>
     <send>after-error-2</send>
     <wait DelayMs="500"/>
     <close/>
-  </script>
+  </chat>
 
   <!-- TEST the parse instruction -->
-  <chat Name="parse" Regexp="true" Assign="STR=${1}">parse ?(.*)</chat>
-  <script>
+  <chat Name="parse" Crit="parse ?(.*)" Regexp="true" Assign="STR=${1}">
     <parse Compute="true"
            Expr="${STR}"
            Assign="V1=${1} V2=${3} V3=${5} V4=${7} V5=${9}"
            >([^ ]*)( ([^ ]*))?( ([^ ]*))?( ([^ ]*))?( ([^ ]*))?.*</parse>
     <!-- Loop on all non empty Vi or up to V5 -->
-    <set Variable="Index">0</set>
-    <set Variable="Max">5</set>
-    <set Variable="Done">false</set>
-    <repeat>
-      <while Variable="Done">false</while>
-      <script>
-        <set Variable="Index" Compute="true">${Index}+1</set>
-        <set Variable="Res">${V${Index}}</set>
-        <cond>
-          <if Variable="Res"></if>
-          <script>
-            <!-- Vi is empty -->
-            <set Variable="Done">true</set>
-          </script>
-          <else/>
-          <script>
-            <send>${Res}</send>
-          </script>
+    <set Variable="Index" Expr="0"/>
+    <set Variable="Max" Expr="5"/>
+    <set Variable="Done" Expr="false"/>
+    <while Expr="${Done}" Crit="false">
+      <set Variable="Index" Compute="true" Expr="${Index}+1"/>
+      <set Variable="Res" Expr="${V${Index}}"/>
+      <cond>
+        <if Expr="${Res}" Crit="">
+          <!-- Vi is empty -->
+          <set Variable="Done" Expr="true"/>
+        </if>
+        <else>
+          <send>${Res}</send>
+        </else>
+      </cond>
+      <cond>
+        <if Expr="${Index}" Crit="${Max}">
+          <!-- Max is reached -->
+          <set Variable="Done" Expr="true"/>
+        </if>
         </cond>
-        <cond>
-          <if Variable="Index">${Max}</if>
-          <script>
-            <!-- Max is reached -->
-            <set Variable="Done">true</set>
-          </script>
-        </cond>
-      </script>
-    </repeat>
+    </while>
     <close/>
-  </script>
+  </chat>
 
 </chats>
 

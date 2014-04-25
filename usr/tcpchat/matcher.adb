@@ -51,7 +51,7 @@ package body Matcher is
     -- Other case of assign (chat/expect/read => tree kind Read)
     --  or Condif or Repeat
     -- Expand expression
-    Expanding := Node.Text;
+    Expanding := Node.Critext;
     if Check_Only then
       Expanded := Variables.Expand (Expanding, Variables.Check_Only);
     else
@@ -151,7 +151,7 @@ package body Matcher is
     return True;
   exception
     when Variables.Expand_Error =>
-      Error ("Cannot expand expression " & Node.Text.Image);
+      Error ("Cannot expand expression " & Node.Critext.Image);
       raise Match_Error;
   end Compute;
 
