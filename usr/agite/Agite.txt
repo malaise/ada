@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V14.17
+V14.18
 
 General purpose
 ---------------
@@ -434,7 +434,8 @@ Branches
 ~~~~~~~~
 anchor:XBranches[]
 This menu works on the global worktree, not on the local directory. +
-It allows adding, modifying or checking out a branch. +
+It allows adding, modifying, checking out a branch or merging a branch into
+current. +
 
 .Current branch and root
 
@@ -463,6 +464,12 @@ Checkout::
 
 Click in the 'Checkout' button to checkout, after confirmation, the branch
 selected in the list.
+
+Merge::
+
+anchor:XMerge[]
+Click in the 'Merge' button to merge into current, after confirmation, the
+branch selected in the list.
 
 .Back
 
@@ -872,10 +879,13 @@ It shows:
 
 This shows the current branch and path of the root of the current workspace.
 
-.List of local branches
+.List of remote branches
 
-This lists the known branches, from which you can select the branch to pull. +
-The current branch is selected by default.
+This lists the known remote branches, from which you can select the branch to
+fetch. +
+The current branch is selected by default and will be pulled. If you select
+another branch it will only be fetched and you will have to xref:XMerge[merge]
+it explicitly if you want.
 
 .OK
 
@@ -988,8 +998,11 @@ and 'git config user.email',
 * Three functions apply/pop/drop a stash by calling 'git stash apply/pop/drop
 -q stash@{<num>}',
 
-* A function lists the local or remote branches by calling 'git branch (-r)',
+* A function lists the local branches by calling 'git branch ' or lists the
+remote branches by calling 'git fetch' then 'git branch -r',
 
 * Three functions create/rename/delete a branch by calling 'git branch
-[ -m | -d ] <name> [<new_name>]'.
+[ -m | -d ] <name> [<new_name>]',
+
+* A function merges a branch into current by calling 'git merge <branch>'.
 

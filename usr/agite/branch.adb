@@ -96,7 +96,7 @@ package body Branch is
   end Reread;
 
   -- Actions on branches
-  type Action_List is (Create, Rename, Delete, Checkout);
+  type Action_List is (Create, Rename, Delete, Checkout, Merge);
   function Do_Action (Action : in Action_List) return Boolean is
     Curr_Name, New_Name : As.U.Asu_Us;
     Message, Result : As.U.Asu_Us;
@@ -113,9 +113,12 @@ package body Branch is
     end if;
 
     -- Cancel if not confirm
-    if Action = Delete or else Action = Checkout then
+    if Action = Delete or else Action = Checkout or else Action = Merge then
       if not Confirm (
-          (if Action = Delete then "Delete" else "Checkout") & " branch",
+          (if Action = Delete then "Delete"
+           elsif Action = Checkout then "Checkout"
+           elsif Action = Merge then "Merge"
+           else "???") & " branch",
           Curr_Name.Image) then
         Init;
         Reread (True);
@@ -144,8 +147,11 @@ package body Branch is
         Message := As.U.Tus ("Deleting branch " & Curr_Name.Image);
         Result := As.U.Tus (Git_If.Delete_Branch (Curr_Name.Image));
       when Checkout =>
-        Message := As.U.Tus ("Cehcking out branch " & Curr_Name.Image);
+        Message := As.U.Tus ("Checking out branch " & Curr_Name.Image);
         Result := As.U.Tus (Git_If.Do_Checkout (Curr_Name.Image));
+      when Merge =>
+        Message := As.U.Tus ("Merging branch " & Curr_Name.Image);
+        Result := As.U.Tus (Git_If.Merge_Branch (Curr_Name.Image));
     end case;
     Afpx.Resume;
 
@@ -159,8 +165,8 @@ package body Branch is
 
     -- Done
     Reread (False);
-    -- Successful checkout leads to return
-    return Action = Checkout;
+    -- Successful checkout or merge lead to return
+    return Action = Checkout or else Action = Merge;
   end Do_Action;
 
   -- Handle the Branches
@@ -231,6 +237,10 @@ package body Branch is
               end if;
             when Afpx_Xref.Branches.Delete =>
               if Do_Action (Delete) then
+                return;
+              end if;
+            when Afpx_Xref.Branches.Merge =>
+              if Do_Action (Merge) then
                 return;
               end if;
             when Afpx_Xref.Branches.Back =>

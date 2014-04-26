@@ -918,26 +918,30 @@ package body Git_If is
   procedure List_Branches (Local : in Boolean;
                            Branches : in out Branches_Mng.List_Type) is
     Cmd : Many_Strings.Many_String;
-    Line : As.U.Asu_Us;
+    Line, Remotestr : As.U.Asu_Us;
     Moved : Boolean;
   begin
+    Branches.Delete_List;
     if not Local then
+      -- For remote branches, first fetch them
       Cmd.Set ("git");
       Cmd.Cat ("fetch");
       Command.Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     end if;
-    Branches.Delete_List;
+    -- List branches
     Cmd.Set ("git");
     Cmd.Cat ("branch");
     if not Local then
       Cmd.Cat ("-r");
+      Remotestr := As.U.Tus (" -r");
     end if;
     Command.Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git branch (-r): " & Err_Flow_1.Str.Image);
+      Basic_Proc.Put_Line_Error ("git branch " & Remotestr.Image
+                               & ": " & Err_Flow_1.Str.Image);
       return;
     end if;
 
@@ -1009,6 +1013,23 @@ package body Git_If is
       return "";
     end if;
   end Delete_Branch;
+
+  -- Merge a branch, return "" if Ok else the error
+  function Merge_Branch (Name : String) return String is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("merge");
+    Cmd.Cat (Name);
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      return Err_Flow_1.Str.Image;
+    else
+      return "";
+    end if;
+  end Merge_Branch;
 
   -- Get current user email
   function Get_User return String is
