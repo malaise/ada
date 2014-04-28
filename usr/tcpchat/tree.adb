@@ -88,20 +88,20 @@ package body Tree is
     -- Get Text from child
     if Ctx.Get_Nb_Children (Text_Node) = 0 then
       -- No child => Empty text
-      Node.Text.Set_Null;
+      Node.Critext.Set_Null;
     else
       -- Text child
       Tnode := Ctx.Get_Child (Text_Node, 1);
-      Node.Text := Ctx.Get_Text (Tnode);
+      Node.Critext := Ctx.Get_Text (Tnode);
       -- No Line feed accepted
-      if Str_Util.Locate (Node.Text.Image, Line_Feed) /= 0 then
+      if Str_Util.Locate (Node.Critext.Image, Line_Feed) /= 0 then
         Error (Xnode, "Invalid line-feed character in text");
         raise Parse_Error;
       end if;
     end if;
 
     -- Empty text forbidden
-    if not Empty_Allowed and then Node.Text.Is_Null then
+    if not Empty_Allowed and then Node.Critext.Is_Null then
       Error (Xnode, "Empty text");
       raise Parse_Error;
     end if;
@@ -117,7 +117,7 @@ package body Tree is
         Assign := Attrs(I).Value;
       elsif Attrs(I).Name.Image = "NewLine"
       and then Attrs(I).Value.Image = "true" then
-        Node.Text.Append (Line_Feed);
+        Node.Critext.Append (Line_Feed);
       elsif Attrs(I).Name.Image = "Expr" then
         -- For parse, store the expression to parse
         Node.Regexp := True;
@@ -155,10 +155,10 @@ package body Tree is
     end if;
     case Node.Kind is
       when Condif | Repeat | Read | Call | Eval | Set | Chdir =>
-        Text.Append ("Text: >" & Node.Text.Image & "< ");
+        Text.Append ("Text: >" & Node.Critext.Image & "< ");
       when Send | Log =>
         Text.Append ("Text: >" &
-            Str_Util.Substit (Node.Text.Image, Line_Feed, "[LF]") &  "< ");
+            Str_Util.Substit (Node.Critext.Image, Line_Feed, "[LF]") &  "< ");
       when others =>
         null;
     end case;
@@ -227,15 +227,12 @@ package body Tree is
     Next_Is_Script : Boolean;
     procedure Init_Next (N : in out Node_Rec) is
     begin
-      N.Next := new Position_Access'(Position_Access(Tree_Mng.No_Position));
+      null;
     end Init_Next;
     procedure Link_Next (Node : in out Node_Rec) is
-      Child_Pos : Tree_Mng.Position_Access;
     begin
       Chats.Move_Child (False);
-      Child_Pos := Chats.Get_Position;
       Chats.Move_Father;
-      Node.Next.all := Position_Access(Child_Pos);
       Chats.Replace (Node);
     end Link_Next;
   begin
@@ -493,115 +490,6 @@ package body Tree is
     end if;
   end Insert_Node;
 
-  -- Read next node of a node
-  function Read_Next (Node : Node_Rec) return Node_Rec is
-    Next_Node : Node_Rec;
-  begin
-    Chats.Save_Position;
-    Set_Position (Node.Next.all);
-    Chats.Read (Next_Node);
-    Chats.Restore_Position;
-    return Next_Node;
-  end Read_Next;
-
-  -- Recursive update of Next for the leafs
-  function Update_Next (Next : in Position_Access) return Boolean is
-    Node, Next_Node : Node_Rec;
-    -- The Next comming from parent
-    Pnext : Position_Access;
-    -- The Next of all intermediate children (not the following statement)
-    Inext : Position_Access;
-    Dummy : Boolean;
-    pragma Unreferenced (Dummy);
-  begin
-    if Next = No_Position then
-      -- We are root, everything will ultimately arrive here
-      Debug.Logger.Log_Debug ("On root");
-      Pnext := Position_Access (Chats.Get_Position);
-    else
-      Pnext := Next;
-    end if;
-
-    -- If not set, update current Next to the one comming from parent
-    Chats.Read (Node);
-    if Node.Next.all = No_Position then
-      Node.Next.all := Pnext;
-      Chats.Replace (Node);
-      if Debug.Logger.Debug_On then
-        Dummy := Dump ("Updating Next of ", Node, 0);
-      end if;
-    else
-      -- Don't change current Next if already set
-      if Debug.Logger.Debug_On then
-        Dummy := Dump ("Next is OK for ", Node, 0);
-      end if;
-    end if;
-    if Debug.Logger.Debug_On then
-      Next_Node := Read_Next (Node);
-      Dummy := Dump ("  set to ", Next_Node, 0);
-    end if;
-
-    -- Set Inext depending on kind of multiplexor
-    if Node.Kind = Selec
-    or else Node.Kind = Cond
-    or else Node.Kind = Set
-    or else Node.Kind = Call
-    or else Node.Kind = Eval
-    or else Node.Kind = Chdir then
-      -- For leaf children of entries of a Selec, Next is the next of Selec
-      -- For leaf children of if/else of a Cond, Next is the next of Cond
-      -- For leaf children of Set, Call, Eval or Chdir, Next is the next of
-      --  Set/Call/Eval/Chdir
-      Inext := Node.Next.all;
-      Debug.Logger.Log_Debug ("Setting next to same as current");
-    elsif Node.Kind = Repeat then
-      -- For the leaf child of a Repeat, Next is the Repeat
-      Inext := Position_Access(Chats.Get_Position);
-      Debug.Logger.Log_Debug ("Setting next to repeat");
-    end if;
-
-    -- Iterate on all children
-    if Chats.Children_Number = 1 then
-      Chats.Move_Child (True);
-      Debug.Logger.Log_Debug ("Updating single child");
-      if Node.Kind = Repeat then
-        -- Single child of repeat = repeat
-        Dummy := Update_Next (Inext);
-      else
-        -- Any other single child = next instruction
-        Dummy := Update_Next (Pnext);
-      end if;
-    elsif Chats.Children_Number > 1 then
-      -- Selec, Cond or Repeat
-      Chats.Move_Child (True);
-      loop
-        if Node.Next.all /= Position_Access(Chats.Get_Position) then
-          -- Any intermediate child, first child of a repeat
-          Debug.Logger.Log_Debug ("Updating intermediate child");
-          exit when not Update_Next (Inext);
-        else
-          -- Last child of a Selec/Cond/Repeat, any single child
-          Debug.Logger.Log_Debug ("Updating last child");
-          exit when not Update_Next (Pnext);
-        end if;
-      end loop;
-    end if;
-
-    -- Move to brother if any
-    if Chats.Has_Brother (False) then
-      Debug.Logger.Log_Debug ("Moving to brother");
-      Chats.Move_Brother (False) ;
-      return True;
-    else
-      -- No more brother => back to father
-      if Chats.Has_Father then
-        Debug.Logger.Log_Debug ("Moving up");
-        Chats.Move_Father;
-      end if;
-      return False;
-    end if;
-  end Update_Next;
-
   -------------------------------
   -- Parse file and build tree --
   -------------------------------
@@ -631,7 +519,6 @@ package body Tree is
     Insert_Node (Xnode, Infinite_Ms);
     Chats.Move_Root;
     Debug.Logger.Log_Debug ("Updating Next:");
-    Dummy := Update_Next (No_Position);
     Chats.Move_Root;
     Variables.Reset;
 
@@ -648,11 +535,6 @@ package body Tree is
   -------------
   -- Utility --
   -------------
-  procedure Set_Position (Position : in Position_Access) is
-  begin
-    Chats.Set_Position (Tree_Mng.Position_Access(Position));
-  end Set_Position;
-
   function Get_Version return String is
   begin
     return Version.Image;
