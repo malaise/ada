@@ -10,16 +10,16 @@
 
   <!-- cd: change dir -->
   <chat Name="chdir" Crit="cd( +(.*))?" Regexp="true" Assign="TARGET=${2}">
-    <set Variable="OK" Expr="true"/>
+    <set Var="OK" Expr="true"/>
     <chdir Dir="${TARGET}">
       <error>
-        <set Variable="OK" Expr="false"/>
+        <set Var="OK" Expr="false"/>
         <send>ERROR changing dir to ${TARGET}</send>
       </error>
     </chdir>
     <cond>
       <if Expr="${OK}" Crit="true">
-        <eval Variable="PWD">
+        <eval Var="PWD">
           <command>pwd</command>
         </eval>
         <send NewLine="false">${PWD}</send>

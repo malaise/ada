@@ -10,26 +10,26 @@
         Regexp="true"
         Assign="File=${5} Httpvers=${7}"
         TimeoutMs="&None;">
-    <set Variable="Server_Vers" Expr="V&Version;"/>
+    <set Var="Server_Vers" Expr="V&Version;"/>
     <cond>
       <if Expr="${Httpvers}" Crit="" Oper="/=">
         <!-- No vers => 0.9 => no more input, no header -->
         <!-- Vers 1.x => skip inputs until empty line -->
-        <set Variable="Done" Expr="false"/>
+        <set Var="Done" Expr="false"/>
         <while Expr="${Done}" Crit="false">
           <select TimeoutMs="1000">
             <expect Crit="">
-              <set Variable="Done" Expr="true"/>
+              <set Var="Done" Expr="true"/>
             </expect>
             <default>
             </default>
           </select>
         </while>
         <!-- And send header -->
-        <eval Variable="Size">
+        <eval Var="Size">
           <command>ls -al ${FILE} | awk '{printf "%s",$5\}'</command>
           <error>
-            <set Variable="Size" Expr=""/>
+            <set Var="Size" Expr=""/>
           </error>
         </eval>
         <cond>
@@ -38,10 +38,10 @@
             <close/>
           </if>
         </cond>
-        <eval Variable="Date">
+        <eval Var="Date">
           <command>echo -n `date "+%a, %d %b %Y %H:%M:00 %Z"`</command>
         </eval>
-        <set Variable="Server_Id" Expr="tcpchat/${Server_Vers}"/>
+        <set Var="Server_Id" Expr="tcpchat/${Server_Vers}"/>
         <!-- <send>HTTP/${HTTPVERS} 200 OK</send> -->
         <send>HTTP/1.0 200 OK</send>
         <send>Date: ${Date}</send>

@@ -65,13 +65,9 @@ package body Matcher is
       -- Expand variable name => Var
       Expanding := Variables.Expand (Str, Variables.Local_Only);
       if not Variables.Is_Set (Expanding) then
-        if Node.Ifunset = Trilean.Other then
-          -- Var is not set and IfUnset is Error
-          Error ("Unknown variable " & Expanding.Image & " in cond or repeat");
-          raise Match_Error;
-        end if;
-        -- Var is not set and IfUnset is set True or False
-        return Trilean.Tri2Boo (Node.Ifunset);
+        -- Var is not set
+        Error ("Unknown variable " & Expanding.Image & " in cond or repeat");
+        raise Match_Error;
       else
         -- Var is set : Expand content of var
         Result := Variables.Expand ("${" & Expanding & "}",

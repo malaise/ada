@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with As.U, Basic_Proc, Command, Many_Strings, Images, Mixed_Str, Trilean,
+with As.U, Basic_Proc, Command, Many_Strings, Images, Mixed_Str,
      Directory, Argument, Trees;
 with Variables, Tree, Ios, Matcher, Debug;
 package body Events is
@@ -37,7 +37,7 @@ package body Events is
     Name : As.U.Asu_Us;
   begin
     -- On Set and Eval Ifunset is in fact a boolean
-    if not Trilean.Tri2Boo (Node.Ifunset) then
+    if not Node.Ifunset then
       -- IfUnset = flase => always set var
       return True;
     end if;

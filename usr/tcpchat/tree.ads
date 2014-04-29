@@ -1,4 +1,4 @@
-with As.U, Trilean;
+with As.U;
 with Trees, Event_Mng, Property_Def;
 package Tree is
 
@@ -19,21 +19,26 @@ package Tree is
   subtype Assignments_Range is Positive range 1 .. Max_Assignments;
   subtype Assignments is Property_Def.Properties (Assignments_Range);
 
+  -- Operation list
+  type Oper_List is (Equal, Noteq, Greater, Smaller, Greatereq, Smallereq);
+
   -- Node
   type Node_Rec is record
     Kind : Node_Kind := Close;
-    -- For chat (kind Read)
+    -- For chat (kind Expect)
     Name : As.U.Asu_Us;
     -- The criteria to match or the text
     Critext : As.U.Asu_Us;
     -- The timeout for read or expect
     Timeout : Integer := Infinite_Ms;
-    -- Ho to interprete the condition
+    -- How to interprete the condition
     Regexp : Boolean := False;
     Compute : Boolean := False;
     -- The expression to check
     Expression : As.U.Asu_Us;
-    Ifunset : Trilean.Trilean := Trilean.False;
+    -- The operation
+    Oper : Oper_List;
+    Ifunset : Boolean := False;
     -- The assignements
     Assign : Assignments;
   end record;

@@ -16,21 +16,21 @@
       </if>
       <else>
         <!-- Vers 1.x => skip inputs until empty line -->
-        <set Variable="Done" Expr="false"/>
+        <set Var="Done" Expr="false"/>
         <while Expr="${Done}" Crit="false">
           <select TimeoutMs="1000">
             <expect Crit="">
-              <set Variable="Done" Expr="true"/>
+              <set Var="Done" Expr="true"/>
             </expect>
             <default>
             </default>
           </select>
         </while>
         <!-- And send header -->
-        <eval Variable="Size">
+        <eval Var="Size">
           <command>ls -al ${File} | awk '{printf "%s",$5\}'</command>
           <error>
-            <set Variable="Size" Expr=""/>
+            <set Var="Size" Expr=""/>
           </error>
         </eval>
         <cond>
@@ -39,10 +39,10 @@
             <close/>
           </if>
         </cond>
-        <eval Variable="Date">
+        <eval Var="Date">
           <command>echo -n `date "+%a, %d %b %Y %H:%M:00 %Z"`</command>
         </eval>
-        <set Variable="Server_Id" Expr="tcpchat/V&Version;"/>
+        <set Var="Server_Id" Expr="tcpchat/V&Version;"/>
         <send>HTTP/1.0 200 OK</send>
         <send>Date: ${Date}</send>
         <send>Server: ${Server_Id}</send>
@@ -160,8 +160,8 @@
 
   <!-- TEST a login -->
   <chat Name="login" Crit="login" TimeoutMs="60_000">
-    <set Variable="Count" Expr="0"/>
-    <set Variable="Res" Expr="try"/>
+    <set Var="Count" Expr="0"/>
+    <set Var="Res" Expr="try"/>
     <while Expr="${Res}" Crit="try">
       <!-- Get login and password, set RES=loggedin if OK -->
       <send>login:</send>
@@ -172,7 +172,7 @@
         <if Expr="${User}" Crit="malaise">
           <cond>
             <if Expr="${Passwd}" Crit="${$PASSWORD}">
-              <set Variable="Res" Expr="success"/>
+              <set Var="Res" Expr="success"/>
             </if>
           </cond>
         </if>
@@ -180,10 +180,10 @@
       <!-- Increment counter if not OK, failed if maximum reached -->
       <cond>
         <if Expr="${Res}" Crit="try">
-          <set Variable="Count" Expr="{Count}+1" Compute="true"/>
+          <set Var="Count" Expr="{Count}+1" Compute="true"/>
           <cond>
             <if Expr="${Count}" Crit="5">
-              <set Variable="Res" Expr="failure"/>
+              <set Var="Res" Expr="failure"/>
             </if>
           </cond>
         </if>
@@ -198,7 +198,7 @@
       <else>
         <send>Login failed</send>
         <log>Login failed</log>
-        <set Variable="User" Expr=""/>
+        <set Var="User" Expr=""/>
         <close/>
       </else>
     </cond>
@@ -206,7 +206,7 @@
 
   <!-- TEST a logout -->
   <chat Name="logout" Crit="logout">
-    <set Variable="User" Expr="" OnlyIfNotSet="true"/>
+    <set Var="User" Expr="" OnlyIfNotSet="true"/>
     <cond>
       <if Expr="${User}" Crit="">
       </if>
@@ -221,18 +221,18 @@
 
   <!-- TEST an indirection ($$) -->
   <chat Name="Indirect" Crit="indirect">
-    <set Variable="V1" Expr="Content1"/>
-    <set Variable="V2" Expr="Content2"/>
+    <set Var="V1" Expr="Content1"/>
+    <set Var="V2" Expr="Content2"/>
     <select TimeoutMs="1_000">
       <expect Crit=".*" Regexp="true" Assign="Index=${0}">
-        <assign Variable="Index" Expr="${Index}+1" Compute="true">
+        <assign Var="Index" Expr="${Index}+1" Compute="true">
           <error>
             <send>ERROR</send>
             <wait DelayMs="100"/>
             <close/>
           </error>
         </assign>
-        <assign Variable="Result" Expr="${V${Index}}">
+        <assign Var="Result" Expr="${V${Index}}">
           <error>
             <send>ERROR</send>
             <wait DelayMs="100"/>
@@ -276,21 +276,20 @@
 
   <!-- TEST the parse instruction -->
   <chat Name="parse" Crit="parse ?(.*)" Regexp="true" Assign="STR=${1}">
-    <parse Compute="true"
-           Expr="${STR}"
-           Assign="V1=${1} V2=${3} V3=${5} V4=${7} V5=${9}"
-           >([^ ]*)( ([^ ]*))?( ([^ ]*))?( ([^ ]*))?( ([^ ]*))?.*</parse>
+    <parse Expr="${STR}"
+           Crit="([^ ]*)( ([^ ]*))?( ([^ ]*))?( ([^ ]*))?( ([^ ]*))?.*"
+           Assign="V1=${1} V2=${3} V3=${5} V4=${7} V5=${9}"/>
     <!-- Loop on all non empty Vi or up to V5 -->
-    <set Variable="Index" Expr="0"/>
-    <set Variable="Max" Expr="5"/>
-    <set Variable="Done" Expr="false"/>
+    <set Var="Index" Expr="0"/>
+    <set Var="Max" Expr="5"/>
+    <set Var="Done" Expr="false"/>
     <while Expr="${Done}" Crit="false">
-      <set Variable="Index" Compute="true" Expr="${Index}+1"/>
-      <set Variable="Res" Expr="${V${Index}}"/>
+      <set Var="Index" Compute="true" Expr="${Index}+1"/>
+      <set Var="Res" Expr="${V${Index}}"/>
       <cond>
         <if Expr="${Res}" Crit="">
           <!-- Vi is empty -->
-          <set Variable="Done" Expr="true"/>
+          <set Var="Done" Expr="true"/>
         </if>
         <else>
           <send>${Res}</send>
@@ -299,7 +298,7 @@
       <cond>
         <if Expr="${Index}" Crit="${Max}">
           <!-- Max is reached -->
-          <set Variable="Done" Expr="true"/>
+          <set Var="Done" Expr="true"/>
         </if>
         </cond>
     </while>

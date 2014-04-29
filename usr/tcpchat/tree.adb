@@ -19,20 +19,13 @@ package body Tree is
     raise Parse_Error;
   end Error;
 
-  -- Get attribute if set, else return default
-  function Get_Attribute (Xnode   : Xml_Parser.Element_Type;
-                          Name    : String) return String is
-  begin
-    return Ctx.Get_Attribute (Xnode, Name);
-  end Get_Attribute;
-
   -- Get TimeoutMs or Name if set, else default
   function Get_Timeout (Xnode : Xml_Parser.Element_Type;
                         Default_Timeout : Integer;
                         Name : String := "TimeoutMs") return Integer is
     Val : As.U.Asu_Us;
   begin
-    Val := As.U.Tus (Get_Attribute (Xnode, Name));
+    Val := As.U.Tus (Ctx.Get_Attribute (Xnode, Name));
     if Val.Image = "None" then
       return Infinite_Ms;
     else
@@ -46,91 +39,124 @@ package body Tree is
       raise Parse_Error;
   end Get_Timeout;
 
-  -- Get IfUnset Trilean
-  function Get_Ifunset (Xnode : Xml_Parser.Element_Type)
-                       return Trilean.Trilean is
-    Txt : constant As.U.Asu_Us := As.U.Tus (Get_Attribute (Xnode, "IfUnset"));
-  begin
-    if Txt.Image = "error" then
-      return Trilean.Other;
-    elsif Txt.Image = "false" then
-      return Trilean.False;
-    elsif Txt.Image = "true" then
-      return Trilean.True;
-    else
-      raise Constraint_Error;
-    end if;
-  end Get_Ifunset;
-
-  -- Get text (PCDATA) of a node
-  -- Get other attributes (Regexp, Assign)
+  -- Node Kind, Name are already set if needed
+  -- Timeout is initialised to default
+  -- Get all other attributes
   -- Check consistency
   -- Allow empty text or not
-  -- Look for text in child (command) of current node or in current node
-  procedure Get_Text (Xnode : in Xml_Parser.Element_Type;
-                      Node : in out Node_Rec;
-                      Empty_Allowed : in Boolean;
-                      Command : in Boolean := False) is
-    Text_Node : Xml_Parser.Element_Type;
-    Tnode : Xml_Parser.Text_Type;
+  procedure Get_Attributes (Xnode : in Xml_Parser.Element_Type;
+                            Node : in out Node_Rec) is
+    Tnode : Xml_Parser.Node_Type;
     Attrs : constant Xml_Parser.Attributes_Array
           := Ctx.Get_Attributes (Xnode);
+    Oper_Index : Natural;
     Assign : As.U.Asu_Us;
+
   begin
-    -- Current node hosts the attributes
-    if Command then
-      -- A child "command" of current node hosts the text
-      Text_Node := Ctx.Get_Child (Xnode, 1);
-    else
-      -- Current node hosts the text
-      Text_Node := Xnode;
-    end if;
-    -- Get Text from child
-    if Ctx.Get_Nb_Children (Text_Node) = 0 then
-      -- No child => Empty text
-      Node.Critext.Set_Null;
-    else
-      -- Text child
-      Tnode := Ctx.Get_Child (Text_Node, 1);
-      Node.Critext := Ctx.Get_Text (Tnode);
-      -- No Line feed accepted
-      if Str_Util.Locate (Node.Critext.Image, Line_Feed) /= 0 then
-        Error (Xnode, "Invalid line-feed character in text");
-        raise Parse_Error;
-      end if;
-    end if;
+    -- Set Critext
+    case Node.Kind is
+      when Expect | Condif | Repeat | Read | Set =>
+        -- chat, expect, if, elsif, while, read, set:
+        --  Critext is in attribute Crit
+        Node.Critext := Ctx.Get_Attribute (Xnode, "Crit");
+      when Send | Log =>
+        -- send, log: A text child is the text
+        Tnode := Ctx.Get_Child (Xnode, 1);
+        Node.Critext := Ctx.Get_Text (Tnode);
+      when Call | Eval =>
+        -- call, eval: A child "command" of current node hosts the text
+        Tnode := Ctx.Get_Child (Xnode, 1);
+        Tnode := Ctx.Get_Child (Xnode, 1);
+        Node.Critext := Ctx.Get_Text (Tnode);
+        -- Empty command forbidden
+        if Node.Critext.Is_Null then
+          Error (Xnode, "Empty command");
+          raise Parse_Error;
+        end if;
+      when others =>
+        Node.Critext.Set_Null ;
+    end case;
 
-    -- Empty text forbidden
-    if not Empty_Allowed and then Node.Critext.Is_Null then
-      Error (Xnode, "Empty text");
-      raise Parse_Error;
-    end if;
+   -- Set Expression
+    case Node.Kind is
+      -- if, elsif, while, parse: attribute Expr
+      when Condif | Repeat | Parse =>
+        Node.Expression := Ctx.Get_Attribute (Xnode, "Expr");
+      when Set =>
+        -- set: variable name attribute Var
+        Node.Expression := Ctx.Get_Attribute (Xnode, "Var");
+        -- Empty expression forbidden
+        if Node.Critext.Is_Null then
+          Error (Xnode, "Empty variable name");
+          raise Parse_Error;
+        end if;
+      when others =>
+        Node.Expression.Set_Null ;
+    end case;
 
-    -- Get Regexp, Assign, Variable and NewLine attributes
+    -- Get Timeout, Regexp, Compute, Assign, NewLine, IfUnset attributes
+    -- Set inder of Oper attribute
+    Oper_Index := 0;
     for I in Attrs'Range loop
-      if Attrs(I).Name.Image = "Regexp" then
+      if Attrs(I).Name.Image = "Timeout" then
+        Node.Timeout := Integer'Value (Attrs(I).Value.Image);
+      elsif Attrs(I).Name.Image = "Regexp" then
         if Attrs(I).Value.Image = "true" then
           Node.Regexp := True;
         end if;
+      elsif Attrs(I).Name.Image = "Compute" then
+        if Attrs(I).Value.Image = "true" then
+          Node.Compute := True;
+        end if;
       elsif Attrs(I).Name.Image = "Assign"
       or else Attrs(I).Name.Image = "Variable" then
-        Assign := Attrs(I).Value;
+        -- Remove heading and trailing spaces
+        Assign := As.U.Tus (Str_Util.Strip (Attrs(I).Value.Image,
+                                            Str_Util.Both));
       elsif Attrs(I).Name.Image = "NewLine"
       and then Attrs(I).Value.Image = "true" then
         Node.Critext.Append (Line_Feed);
-      elsif Attrs(I).Name.Image = "Expr" then
-        -- For parse, store the expression to parse
-        Node.Regexp := True;
-        Node.Expression := Attrs(I).Value;
+      elsif Attrs(I).Name.Image = "OnlyIfNotSet"
+      and then Attrs(I).Value.Image = "true" then
+        Node.Ifunset := True;
+      elsif Attrs(I).Name.Image = "Oper" then
+        Oper_Index := I;
       end if;
     end loop;
-    if Node.Kind /= Eval
-    and then Node.Kind /= Set
-    and then Node.Kind /= Condif
-    and then Node.Kind /= Repeat
-    and then not Node.Regexp
-    and then not Assign.Is_Null then
-      Error (Xnode, "Assignment is only allowed with Regex expressions");
+    -- Set Regexp for Parse
+    if Node.Kind = Parse then
+      Node.Regexp := True;
+    end if;
+
+    -- Check Assign versus Regexp
+    if not Node.Regexp and then not Assign.Is_Null
+    and then Assign.Image /= "${0}" then
+      Error (Xnode, "Assignment must be ""${0}"" if not Regex expression");
+    end if;
+
+    -- Set Oper
+    Node.Oper := Equal;
+    if Oper_Index /= 0 then
+      declare
+        Oper : constant String
+             := Ctx.Get_Attribute (Xnode, Oper_Index).Value.Image;
+      begin
+        if Oper = "=" then
+          Node.Oper := Equal;
+        elsif Oper = "/=" then
+          Node.Oper := Noteq;
+        elsif Oper = ">" then
+          Node.Oper := Greater;
+        elsif Oper = "<" then
+          Node.Oper := Smaller;
+        elsif Oper = ">=" then
+          Node.Oper := Greatereq;
+        elsif Oper = "<=" then
+          Node.Oper := Smallereq;
+        else
+          Error (Xnode, "Invalid operation ""Oper""");
+        end if;
+      end;
     end if;
 
     -- Check expansion and maybe Regexp
@@ -138,7 +164,7 @@ package body Tree is
   exception
     when Matcher.Match_Error =>
       Error (Xnode, "Invalid expresssion");
-  end Get_Text;
+  end Get_Attributes;
 
   -- For dump of a node with some text before
   function Dump (Init_Str : String;
@@ -146,7 +172,7 @@ package body Tree is
                  Level : Natural) return Boolean is
     Tab : constant String (1 .. 2 * Level) := (others => ' ');
     Text : As.U.Asu_Us;
-    use type Any_Def.Any_Kind_List, Trilean.Trilean;
+    use type Any_Def.Any_Kind_List;
   begin
     Text.Set (Init_Str);
     Text.Append (Tab & Mixed_Str (Node.Kind'Img) & ": " );
@@ -175,13 +201,9 @@ package body Tree is
       Text.Append ("Compute ");
     end if;
     case Node.Kind is
-      when Set | Eval =>
-        if Node.Ifunset = Trilean.True then
+      when Set | Eval | Condif =>
+        if Node.Ifunset then
           Text.Append ("IfUnset ");
-        end if;
-      when Condif =>
-        if Node.Ifunset /= Trilean.Other then
-          Text.Append ("IfUnset: " & Mixed_Str (Node.Ifunset'Img) & " ");
         end if;
       when others =>
         null;
@@ -225,21 +247,9 @@ package body Tree is
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
     Next_Is_Script : Boolean;
-    procedure Init_Next (N : in out Node_Rec) is
-    begin
-      null;
-    end Init_Next;
-    procedure Link_Next (Node : in out Node_Rec) is
-    begin
-      Chats.Move_Child (False);
-      Chats.Move_Father;
-      Chats.Replace (Node);
-    end Link_Next;
   begin
     -- Fill new node
     Debug.Logger.Log_Debug ("Getting node " & Name);
-    -- Init Node's next
-    Init_Next (Node);
     -- Propagate default timeout from father
     Default_Timeout := Current_Timeout;
     -- Default flags: Dummy is for "repeat" and "error"
@@ -259,15 +269,12 @@ package body Tree is
     elsif Name = "chat" then
       -- Chat is a Read. Get name, timeout and default timeout
       Node.Kind := Read;
-      Next_Is_Script := True;
-      Node.Name := As.U.Tus (Get_Attribute (Xnode, "Name"));
+      Node.Name := As.U.Tus (Ctx.Get_Attribute (Xnode, "Name"));
       if Node.Name.Is_Null then
         Error (Xnode, "Empty chat name");
       end if;
       -- This is the overall timeout of the chat script
       Node.Timeout := Get_Timeout (Xnode, Infinite_Ms);
-      -- Get expect text
-      Get_Text (Xnode, Node, True);
       -- Set default timeout for children
       Default_Timeout := Get_Timeout (Xnode, Infinite_Ms,
                                       "InputDefaultTimeoutMs");
@@ -278,8 +285,6 @@ package body Tree is
       -- The expect of a select => Read without timeout
       Node.Kind := Read;
       Next_Is_Script := True;
-      -- Get expect text
-      Get_Text (Xnode, Node, True);
     elsif Name = "default" then
       -- The default of a select
       Node.Kind := Default;
@@ -294,8 +299,6 @@ package body Tree is
     elsif Name = "if"
     or else Name = "elsif" then
       Node.Kind := Condif;
-      Get_Text (Xnode, Node, True);
-      Node.Ifunset := Get_Ifunset (Xnode);
       Next_Is_Script := True;
     elsif Name = "else" then
       Node.Kind := Condelse;
@@ -305,8 +308,6 @@ package body Tree is
       Node.Kind := Repeat;
       -- Move to "while" to get Variable name and text
       Xchild := Ctx.Get_Child (Xnode, 1);
-      Get_Text (Xchild, Node, True);
-      Node.Ifunset := Get_Ifunset (Xchild);
     elsif Name = "while" then
       Node.Kind := Repeat;
       -- There is no "while" node: the criteria is attached to the Repeat
@@ -317,7 +318,6 @@ package body Tree is
       Node.Kind := Read;
       Node.Timeout := Get_Timeout (Xnode, Current_Timeout);
       -- Get text
-      Get_Text (Xnode, Node, True);
     elsif Name = "skip" then
       Node.Kind := Skip;
       Node.Timeout := Get_Timeout (Xnode, Current_Timeout);
@@ -330,52 +330,28 @@ package body Tree is
       end if;
     elsif Name = "send" then
       Node.Kind := Send;
-      -- Get text
-      Get_Text (Xnode, Node, True);
     elsif Name = "call" then
       Node.Kind := Call;
       -- Move to "command" to get text
       Xchild := Ctx.Get_Child (Xnode, 1);
-      Get_Text (Xchild, Node, False);
     elsif Name = "eval" then
       Node.Kind := Eval;
-      -- Get text of child "command" and current attributes
-      Get_Text (Xnode, Node, False, Command => True);
       -- Get_Attribute OnlyIfNotSset
-      Node.Ifunset := Trilean.Boo2Tri (
-               Get_Attribute (Xnode, "OnlyIfNotSet") = "true");
     elsif Name = "set" then
       Node.Kind := Set;
-      -- Get text
-      Get_Text (Xnode, Node, True);
-      -- Get_Attributes Compute and OnlyIfNotSset
-      Node.Compute := Get_Attribute (Xnode, "Compute") = "true";
-      Node.Ifunset := Trilean.Boo2Tri (
-               Get_Attribute (Xnode, "OnlyIfNotSet") = "true");
     elsif Name = "assign" then
       Node.Kind := Set;
       -- Move to "statement" to get text
       Xchild := Ctx.Get_Child (Xnode, 1);
-      Get_Text (Xchild, Node, True);
-      -- Get_Attributes Compute and OnlyIfNotSset
-      Node.Compute := Get_Attribute (Xchild, "Compute") = "true";
-      Node.Ifunset := Trilean.Boo2Tri (
-               Get_Attribute (Xchild, "OnlyIfNotSet") = "true");
     elsif Name = "parse" then
       Node.Kind := Parse;
-      -- Get text, the regexp
-      Get_Text (Xnode, Node, True);
       -- Get_Attribute Compute
-      Node.Compute := Get_Attribute (Xnode, "Compute") = "true";
     elsif Name = "chdir" then
       Node.Kind := Chdir;
       -- Move to "dir" to get text
       Xchild := Ctx.Get_Child (Xnode, 1);
-      Get_Text (Xchild, Node, True);
     elsif Name = "log" then
       Node.Kind := Log;
-      -- Get text
-      Get_Text (Xnode, Node, False);
     elsif Name = "error" then
       -- Begin of error handling block
       Node := Chats.Read;
@@ -461,18 +437,11 @@ package body Tree is
                                & Mixed_Str (Node.Kind'Img));
         Xchild := Ctx.Get_Child (Ctx.Get_Brother (Xnode), 1);
         Insert_Node (Xchild, Default_Timeout);
-        if not Dummy_Node then
-          Link_Next (Node);
-        end if;
       else
         Debug.Logger.Log_Debug ("  Inserting Nop child of "
                               & Mixed_Str (Node.Kind'Img));
-        Init_Next (Nop_Node);
         Chats.Insert_Child (Nop_Node, False);
         Chats.Move_Father;
-        if not Dummy_Node then
-          Link_Next (Node);
-        end if;
       end if;
     elsif Ctx.Has_Brother (Xnode) then
       -- Normal (non script) instruction : jump to Xml brother if any
@@ -481,7 +450,6 @@ package body Tree is
       Debug.Logger.Log_Debug ("  Inserting next of "
                             & Mixed_Str (Node.Kind'Img));
       Insert_Node (Xchild, Default_Timeout);
-      Link_Next (Node);
     end if;
 
     -- Move back to father
@@ -518,8 +486,6 @@ package body Tree is
     Xnode := Ctx.Get_Root_Element;
     Insert_Node (Xnode, Infinite_Ms);
     Chats.Move_Root;
-    Debug.Logger.Log_Debug ("Updating Next:");
-    Chats.Move_Root;
     Variables.Reset;
 
     -- Dump
@@ -532,9 +498,6 @@ package body Tree is
     Ctx.Clean;
   end Parse;
 
-  -------------
-  -- Utility --
-  -------------
   function Get_Version return String is
   begin
     return Version.Image;
