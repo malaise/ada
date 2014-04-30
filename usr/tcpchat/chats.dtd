@@ -100,7 +100,7 @@
 <!ELEMENT eval (command,error?)>
 <!ATTLIST eval %SetVar;>
 
-<!-- The set statement (set variable to value, optional catch error) -->
+<!-- The set statement (set variable to value) -->
 <!ELEMENT set EMPTY>
 <!ATTLIST set %SetVar; %Expression;>
 
