@@ -20,7 +20,11 @@ package Tree is
   subtype Assignments is Property_Def.Properties (Assignments_Range);
 
   -- Operation list
-  type Oper_List is (Equal, Noteq, Greater, Smaller, Greatereq, Smallereq);
+  type Oper_List is (Equal, Noteq, Match, Notmatch,
+                     Greater, Less, Greatereq, Lesseq);
+
+  -- Evaluations rule
+  type Eval_List is (None, Resolve, Compute);
 
   -- Node
   type Node_Rec is record
@@ -32,12 +36,11 @@ package Tree is
     -- The timeout for read or expect
     Timeout : Integer := Infinite_Ms;
     -- How to interprete the condition
-    Regexp : Boolean := False;
-    Compute : Boolean := False;
+    Eval : Eval_List := Resolve;
     -- The expression to check
     Expression : As.U.Asu_Us;
     -- The operation
-    Oper : Oper_List;
+    Oper : Oper_List := Equal;
     Ifunset : Boolean := False;
     -- The assignements
     Assign : Assignments;

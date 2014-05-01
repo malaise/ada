@@ -6,15 +6,13 @@
   <!-- HTTP 0.9: Send file -->
   <!-- HTTP 1.0 or 1.1: Skip noise, send header + file -->
   <chat Name="http"
+        Oper="match"
         Crit="GET ((http:/)?/(localhost|${$HOSTNAME}))?([^ ]+)( +HTTP/1\.(0|1))?"
-        Regexp="true"
         Assign="File=${4} Vers=${5}"
         TimeoutMs="&None;">
     <cond>
-      <if Expr="${Vers}" Crit="">
-        <!-- No vers => 0.9 -->
-      </if>
-      <else>
+      <if Expr="${Vers}" Oper="not_equal" Crit="">
+        <!-- No vers => 0.9 => nothing else expected -->
         <!-- Vers 1.x => skip inputs until empty line -->
         <set Var="Done" Expr="false"/>
         <while Expr="${Done}" Crit="false">
@@ -51,17 +49,15 @@
         <send>Content-Length: ${Size}</send>
         <send>Content-Type: text/plain</send>
         <send></send>
-      </else>
+      </if>
     </cond>
     <call>
       <command>cat ${File}</command>
       <error>
         <cond>
-          <if Expr="${Vers}" Crit="">
-          </if>
-          <else>
+          <if Expr="${Vers}" Oper="not_equal" Crit="">
             <send>HTTP/1.0 404 Not Found</send>
-          </else>
+          </if>
         </cond>
       </error>
     </call>
@@ -69,7 +65,7 @@
   </chat>
 
   <!-- Tcping: Send pong or tcpong. Remain connected -->
-  <chat Name="tcping" Crit="(tc)?ping" Regexp="true" Assign="Tc=${1}"
+  <chat Name="tcping" Crit="(tc)?ping" Oper="match" Assign="Tc=${1}"
         TimeoutMs="1_000">
     <send NewLine="false">${Tc}pong</send>
   </chat>
@@ -89,13 +85,13 @@
     <send>ATDT0860922000</send>
     <select TimeoutMs="60_000">
       <expect Crit="BUSY|ERROR|NO CARRIER|VOICE|NO DIAL ?TONE|NO ANSWER|DELAYED"
-              Regexp="true">
+              Oper="match">
         <close/>
       </expect>
-      <expect Crit="CONNECT( [0-9]+)?" Regexp="true">
-        <read TimeoutMs="30_000" Crit=".ogin" Regexp="true"/>
+      <expect Crit="CONNECT( [0-9]+)?" Oper="match">
+        <read TimeoutMs="30_000" Crit=".ogin" Oper="match"/>
         <send>malaise</send>
-        <read TimeoutMs="10_000" Crit=".{4\}word" Regexp="true"/>
+        <read TimeoutMs="10_000" Crit=".{4\}word" Oper="match"/>
         <send>${$PASSWORD}</send>
         <send>Working: Please wait...</send>
         <wait DelayMs="5_000"/>
@@ -165,9 +161,9 @@
     <while Expr="${Res}" Crit="try">
       <!-- Get login and password, set RES=loggedin if OK -->
       <send>login:</send>
-      <read Crit=".*" Regexp="true" Assign="User=${0}"/>
+      <read Crit=".*" Oper="match" Assign="User=${0}"/>
       <send>password:</send>
-      <read Crit=".*" Regexp="true" Assign="Passwd=${0}"/>
+      <read Crit=".*" Oper="match" Assign="Passwd=${0}"/>
       <cond>
         <if Expr="${User}" Crit="malaise">
           <cond>
@@ -180,7 +176,7 @@
       <!-- Increment counter if not OK, failed if maximum reached -->
       <cond>
         <if Expr="${Res}" Crit="try">
-          <set Var="Count" Expr="{Count}+1" Compute="true"/>
+          <set Var="Count" Expr="{Count}+1" Eval="compute"/>
           <cond>
             <if Expr="${Count}" Crit="5">
               <set Var="Res" Expr="failure"/>
@@ -208,12 +204,10 @@
   <chat Name="logout" Crit="logout">
     <set Var="User" Expr="" OnlyIfNotSet="true"/>
     <cond>
-      <if Expr="${User}" Crit="">
-      </if>
-      <else>
+      <if Expr="${User}" Oper="not_equal" Crit="">
         <send>User ${User} logged out</send>
         <log>User ${User} logged out</log>
-      </else>
+      </if>
     </cond>
     <wait DelayMs="500"/>
     <close/>
@@ -224,8 +218,8 @@
     <set Var="V1" Expr="Content1"/>
     <set Var="V2" Expr="Content2"/>
     <select TimeoutMs="1_000">
-      <expect Crit=".*" Regexp="true" Assign="Index=${0}">
-        <assign Var="Index" Expr="${Index}+1" Compute="true">
+      <expect Crit=".*" Oper="match" Assign="Index=${0}">
+        <assign Var="Index" Expr="${Index}+1" Eval="compute">
           <error>
             <send>ERROR</send>
             <wait DelayMs="100"/>
@@ -275,7 +269,7 @@
   </chat>
 
   <!-- TEST the parse instruction -->
-  <chat Name="parse" Crit="parse ?(.*)" Regexp="true" Assign="STR=${1}">
+  <chat Name="parse" Crit="parse ?(.*)" Oper="match" Assign="STR=${1}">
     <parse Expr="${STR}"
            Crit="([^ ]*)( ([^ ]*))?( ([^ ]*))?( ([^ ]*))?( ([^ ]*))?.*"
            Assign="V1=${1} V2=${3} V3=${5} V4=${7} V5=${9}"/>
@@ -284,7 +278,7 @@
     <set Var="Max" Expr="5"/>
     <set Var="Done" Expr="false"/>
     <while Expr="${Done}" Crit="false">
-      <set Var="Index" Compute="true" Expr="${Index}+1"/>
+      <set Var="Index" Expr="${Index}+1" Eval="compute"/>
       <set Var="Res" Expr="${V${Index}}"/>
       <cond>
         <if Expr="${Res}" Crit="">

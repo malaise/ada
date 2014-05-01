@@ -10,32 +10,31 @@
 <!ENTITY % TimeoutMs "TimeoutMs CDATA #IMPLIED">
 <!-- No timeout -->
 <!ENTITY None "None">
-<!-- Is a check of match a Regexp or not -->
-<!ENTITY % Regexp "Regexp %boolean; 'false'">
-<!-- Is a check of match a computed expression or not -->
-<!ENTITY % Compute "Compute %boolean; 'false'">
+
+<!-- Checks: An expression or input is checked versus a criteria -->
+<!-- Possible evaluation of expression and criteria (input strings are -->
+<!--  never evaluated): no expansion, variable resolution or integer -->
+<!-- computation -->
+<!ENTITY % Evaluate "(none|resolve|compute) 'resolve'">
+<!-- Possible operations: equal or not, regex match or not, less than... -->
+<!-- Equality and matching for strings and resolution, equality and -->
+<!-- relative comparisons for computed expressions -->
+<!ENTITY % Operations "(equal|not_equal|match|not_match|less|greater
+                       |less_equal|greater_equal)">
+<!ENTITY % Operation "%Operations; 'equal'">
 <!-- A condition, for selection of a chat, select, read, -->
 <!--  or for comparision with an expression -->
-<!-- What to do if a boolean variable is not set -->
-   <!-- Crit is the criteria: string, computed expression or regexp -->
-   <!-- Compute and Regexp are mutually exclusive -->
-   <!-- Oper is the comparison operation: = or /= for string or regexp, -->
-   <!--  =, /=, <, <=, >, >= for computed expression -->
-   <!--  default is = -->
-   <!-- Regexp: Is the comparison a regex match (=) or unmatch (/=) -->
-   <!-- Xomput: Is the comparison between computed (integer) expressions -->
 <!ENTITY % Condition "
    Crit CDATA #REQUIRED
-   Oper CDATA #IMPLIED
-   %Regexp;
-   %Compute;">
+   Oper %Operation;
+   Eval %Evaluate;">
 <!-- Assign variables from regexp substrings -->
 <!ENTITY % Assign "Assign CDATA #IMPLIED">
 <!-- An expression, possibly containing reference to variables -->
 <!ENTITY % Expression "Expr CDATA #REQUIRED">
 <!-- Assign a variable -->
 <!ENTITY % SetVar "Var CDATA #REQUIRED
-                   Compute %boolean; 'false'
+                   Eval %Evaluate;
                    OnlyIfNotSet %boolean; 'false'">
 <!-- A subscript -->
 <!ENTITY % Script "((select|cond|while|read|skip|wait|send|call|set|assign
@@ -110,7 +109,10 @@
 
 <!-- The parse statement (parse an expression into variables) -->
 <!ELEMENT parse EMPTY>
-<!ATTLIST parse %Expression; %Condition; Assign CDATA #REQUIRED>
+<!ATTLIST parse %Expression;
+                Crit CDATA #REQUIRED
+                Eval %Evaluate;
+                Assign CDATA #REQUIRED>
 
 <!-- The chdir statement (change current dir) -->
 <!ELEMENT chdir (error?)>

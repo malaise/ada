@@ -118,19 +118,17 @@ package body Tree is
         Node.Expression.Set_Null ;
     end case;
 
-    -- Get Timeout, Regexp, Compute, Assign, NewLine, IfUnset attributes
-    -- Set inder of Oper attribute
+    -- Get Timeout, Assign, NewLine, IfUnset and Oper attributes
+    -- Set index of Oper attribute
     Oper_Index := 0;
     for I in Attrs'Range loop
       if Attrs(I).Name.Image = "Timeout" then
         Node.Timeout := Integer'Value (Attrs(I).Value.Image);
-      elsif Attrs(I).Name.Image = "Regexp" then
-        if Attrs(I).Value.Image = "true" then
-          Node.Regexp := True;
-        end if;
-      elsif Attrs(I).Name.Image = "Compute" then
-        if Attrs(I).Value.Image = "true" then
-          Node.Compute := True;
+      elsif Attrs(I).Name.Image = "Eval" then
+        if Attrs(I).Value.Image = "none" then
+          Node.Eval := None;
+        elsif Attrs(I).Value.Image = "compute" then
+          Node.Eval := Compute;
         end if;
       elsif Attrs(I).Name.Image = "Assign"
       or else Attrs(I).Name.Image = "Variable" then
@@ -146,16 +144,6 @@ package body Tree is
         Oper_Index := I;
       end if;
     end loop;
-    -- Set Regexp for Parse
-    if Node.Kind = Parse then
-      Node.Regexp := True;
-    end if;
-
-    -- Check Assign versus Regexp
-    if not Node.Regexp and then not Assign.Is_Null
-    and then Assign.Image /= "${0}" then
-      Error (Xnode, "Assignment must be ""${0}"" if expression is not a Regex");
-    end if;
 
     -- Set Oper
     Node.Oper := Equal;
@@ -164,25 +152,34 @@ package body Tree is
         Oper : constant String
              := Ctx.Get_Attribute (Xnode, Oper_Index).Value.Image;
       begin
-        if Oper = "=" then
-          Node.Oper := Equal;
-        elsif Oper = "/=" then
+        if Oper = "not_equal" then
           Node.Oper := Noteq;
-        elsif Oper = ">" then
+        elsif Oper = "match" then
+          Node.Oper := Match;
+        elsif Oper = "not_match" then
+          Node.Oper := Notmatch;
+        elsif Oper = "greater" then
           Node.Oper := Greater;
-        elsif Oper = "<" then
-          Node.Oper := Smaller;
-        elsif Oper = ">=" then
+        elsif Oper = "less" then
+          Node.Oper := Less;
+        elsif Oper = "greater_equal" then
           Node.Oper := Greatereq;
-        elsif Oper = "<=" then
-          Node.Oper := Smallereq;
-        else
-          Error (Xnode, "Invalid operation ""Oper""");
+        elsif Oper = "less_equal" then
+          Node.Oper := Lesseq;
         end if;
       end;
     end if;
 
-    -- Check expansion and maybe Regexp
+    -- Parse requires Match
+    if Node.Kind = Parse then
+      Node.Oper := Match;
+    end if;
+    -- Assign requires Match
+    if not Assign.Is_Null and then Node.Oper /= Match then
+      Error (Xnode, "Assignment requires Match operation");
+    end if;
+
+    -- Check oper v.s. evaluation, check resolution
     Matcher.Check (Node, Assign);
   exception
     when Matcher.Match_Error =>
@@ -200,35 +197,43 @@ package body Tree is
     Text.Set (Init_Str);
     Text.Append (Tab & Mixed_Str (Node.Kind'Img) & ": " );
     if not Node.Name.Is_Null then
-      Text.Append (Node.Name.Image & " ");
+      Text.Append ("""" & Node.Name.Image & """ ");
     end if;
     case Node.Kind is
-      when Condif | Repeat | Parse | Set | Eval =>
-        Text.Append ("Expr: " & Node.Expression.Image & " ");
+      when Condif | Repeat | Set | Eval | Parse =>
+        Text.Append ("Expr> " & Node.Expression.Image & "< ");
       when others =>
         null;
     end case;
     case Node.Kind is
-      when Expect | Condif | Repeat | Read | Set | Call | Eval | Chdir =>
-        Text.Append ("Text: >" & Node.Critext.Image & "< ");
+      when Expect | Condif | Repeat | Read =>
+        Text.Append (Mixed_Str (Node.Oper'Img) & " ");
+      when others =>
+        null;
+    end case;
+    case Node.Kind is
+      when Expect | Condif | Repeat | Read | Set | Call | Eval | Chdir
+         | Parse =>
+        Text.Append ("Text>" & Node.Critext.Image & "< ");
       when Send | Log =>
-        Text.Append ("Text: >" &
+        Text.Append ("Text>" &
             Str_Util.Substit (Node.Critext.Image, Line_Feed, "[LF]") &  "< ");
       when others =>
         null;
     end case;
     case Node.Kind is
-      when Selec | Read | Skip | Wait =>
-        Text.Append ("Timeout: " & Node.Timeout'Img & " ");
+      when Expect | Condif | Repeat | Read | Set | Call | Eval | Chdir
+         | Parse =>
+        Text.Append ("Eval=" & Mixed_Str (Node.Eval'Img) & " ");
       when others =>
         null;
     end case;
-    if Node.Regexp then
-      Text.Append ("Regexp ");
-    end if;
-    if Node.Compute then
-      Text.Append ("Compute ");
-    end if;
+    case Node.Kind is
+      when Selec | Read | Skip | Wait =>
+        Text.Append ("Timeout=" & Node.Timeout'Img & " ");
+      when others =>
+        null;
+    end case;
     case Node.Kind is
       when Set | Eval =>
         if Node.Ifunset then

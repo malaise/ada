@@ -9,7 +9,7 @@
   </chat>
 
   <!-- cd: change dir -->
-  <chat Name="chdir" Crit="cd( +(.*))?" Regexp="true" Assign="TARGET=${2}">
+  <chat Name="chdir" Crit="cd( +(.*))?" Oper="match" Assign="TARGET=${2}">
     <set Var="OK" Expr="true"/>
     <chdir Dir="${TARGET}">
       <error>
@@ -33,7 +33,7 @@
   </chat>
 
   <!-- Other: execude command -->
-  <chat Name="rsh" Crit=".*" Regexp="true" Assign="COMMAND=${0}">
+  <chat Name="rsh" Crit=".*" Oper="match" Assign="COMMAND=${0}">
     <call>
       <command>${COMMAND}</command>
       <error>

@@ -1,5 +1,5 @@
 with As.U.Utils;
-with Regular_Expressions, Str_Util.Regex, Any_Def, Images, Trilean;
+with Regular_Expressions, Str_Util.Regex, Any_Def, Images;
 with Variables, Debug, Error;
 package body Matcher is
 
@@ -15,7 +15,7 @@ package body Matcher is
     N_Matched : Natural;
     Match_Info : Regular_Expressions.Match_Array (1 .. 10);
     use type Regular_Expressions.Match_Cell, Any_Def.Any_Kind_List,
-             Tree.Node_Kind, Trilean.Trilean, As.U.Asu_Us;
+             Tree.Node_Kind, Tree.Oper_List, Tree.Eval_List, As.U.Asu_Us;
   begin
     -- Case of the Eval/Set statement: One variable to assign
     if Node.Kind = Tree.Eval
@@ -32,7 +32,7 @@ package body Matcher is
         Result := Variables.Expand (Str, Variables.Check_Only);
       else
         -- Set variable
-        if Node.Compute then
+        if Node.Eval = Tree.Compute then
           Result := Variables.Compute (Str);
         else
           Result := Variables.Expand (Str, Variables.Local_Env);
@@ -83,7 +83,7 @@ package body Matcher is
     end if;
 
     -- Pure string comparison or regexp?
-    if not Node.Regexp then
+    if Node.Oper /= Tree.Match and then Node.Oper /= Tree.Notmatch then
       return Result = Expanded;
     end if;
 
@@ -226,10 +226,6 @@ package body Matcher is
     -- Other case of assign (chat/expect/read => tree kind Read)
     if Assign.Is_Null then
       return;
-    end if;
-    if not Node.Regexp then
-      Error ("Assignment only allowed with regexp");
-      raise Match_Error;
     end if;
 
     -- Check and compute Assign
