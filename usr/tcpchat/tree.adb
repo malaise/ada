@@ -174,10 +174,6 @@ package body Tree is
     if Node.Kind = Parse then
       Node.Oper := Match;
     end if;
-    -- Assign requires Match
-    if not Assign.Is_Null and then Node.Oper /= Match then
-      Error (Xnode, "Assignment requires Match operation");
-    end if;
 
     -- Check oper v.s. evaluation, check resolution
     Matcher.Check (Node, Assign);

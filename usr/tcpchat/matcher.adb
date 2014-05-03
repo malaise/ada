@@ -1,11 +1,17 @@
 with As.U.Utils;
-with Regular_Expressions, Str_Util.Regex, Any_Def, Images;
+with Regular_Expressions, Str_Util.Regex, Any_Def, Images, Mixed_Str;
 with Variables, Debug, Error;
 package body Matcher is
 
-  -- Expand Node.Text (maybe Check_Only)
-  -- See if Str matches Node.Text: string comparison if not Node.Regex
-  --  or Regular_Expressions.Exec)
+  -- If Node.Eval is Resolve or Compute, then
+  -- - Expand Node.Critext. If Compute and Node.Oper is not Match nor Notmatch
+  --   then compute it
+  -- - If Node.Kind leads to define Node.Expression
+  --   (Condif | Repeat | Parse | Set | Eval), then expand or compute it
+  --   otherwide do the same for Str
+  -- See if Critext matches the expression: string comparison, Regex match
+  --  or integer comparison
+  -- Assign variables
   function Compute (Node : Tree.Node_Rec;
                     Str : As.U.Asu_Us;
                     Check_Only : Boolean) return Boolean is
@@ -17,6 +23,7 @@ package body Matcher is
     use type Regular_Expressions.Match_Cell, Any_Def.Any_Kind_List,
              Tree.Node_Kind, Tree.Oper_List, Tree.Eval_List, As.U.Asu_Us;
   begin
+    
     -- Case of the Eval/Set statement: One variable to assign
     if Node.Kind = Tree.Eval
     or else Node.Kind = Tree.Set then
@@ -198,27 +205,34 @@ package body Matcher is
                           & "=" & Node.Assign(I).Value.Str.Image);
   end Parse_Assign;
 
-  -- Expand Node.Text in mode check
-  -- Compile and test regex with a Dummy text
+  -- If Node.Eval is Resolve or Compute, then
+  -- - Expand Node.Critext in mode check
+  -- - If Node.Kind leads to define Node.Expression
+  --   (Condif | Repeat | Parse | Set | Eval),
+  --    then expand it in mode check
   -- Compute Node.Assign properties from Assign string
   procedure Check (Node : in out Tree.Node_Rec;
                    Assign : in As.U.Asu_Us) is
     Dummy : Boolean;
     Assign_Index : Positive;
     pragma Unreferenced (Dummy);
-    use type Tree.Node_Kind;
+    use type Tree.Node_Kind, Tree.Oper_List;
   begin
     -- Check
     Dummy := Compute (Node, As.U.Tus ("Dummy"), True);
 
-    -- Case of the Eval/Set/Cond/Repeat statement: One variable to assign
+    -- Assign requires Match
+    if not Assign.Is_Null and then Node.Oper /= Tree.Match then
+      Error ("Assignment " & Assign.Image & " requires Match operation, got "
+           & Mixed_Str (Node.Oper'Img));
+    end if;
+
+    -- Case of the Eval/Set statement: One variable to assign
     if Node.Kind = Tree.Eval
-    or else Node.Kind = Tree.Set
-    or else Node.Kind = Tree.Condif
-    or else Node.Kind = Tree.Repeat then
+    or else Node.Kind = Tree.Set then
       -- Set it as first assign name
       Node.Assign(Node.Assign'First) := (
-         Name => Assign,
+         Name => Node.Expression,
          Value => (Kind => Any_Def.None_Kind) );
       return;
     end if;
@@ -255,9 +269,7 @@ package body Matcher is
     end;
   end Check;
 
-  -- Expand Node.Text
-  -- See if Str matches Node.Text: string comparison if not Node.Regex
-  --  or Regular_Expressions.Exec)
+  -- Do the real test
   function Match (Node : Tree.Node_Rec;
                   Str : As.U.Asu_Us) return Boolean is
   begin
