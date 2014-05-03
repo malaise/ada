@@ -65,7 +65,7 @@ package body Tree is
         -- chat, expect, if, elsif, while, read: Critext is in attribute Crit
         Node.Critext := Ctx.Get_Attribute (Xnode, "Crit");
       when Set =>
-        -- set: Critext is in attribute Var
+        -- set: Critext is in attribute Expr
         Node.Critext := Strip (Ctx.Get_Attribute (Xnode, "Expr"));
       when Send | Log =>
         -- send, log: A text child is the text

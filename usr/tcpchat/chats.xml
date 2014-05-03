@@ -176,7 +176,7 @@
       <!-- Increment counter if not OK, failed if maximum reached -->
       <cond>
         <if Expr="${Res}" Crit="try">
-          <set Var="Count" Expr="{Count}+1" Eval="compute"/>
+          <set Var="Count" Expr="${Count}+1" Eval="compute"/>
           <cond>
             <if Expr="${Count}" Crit="5">
               <set Var="Res" Expr="failure"/>
