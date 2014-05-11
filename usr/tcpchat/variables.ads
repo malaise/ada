@@ -17,7 +17,7 @@ package Variables is
   -- Expansion can be either
   -- Check_Only : check syntax (replace only local vars that are set)
   -- Local_Only : replace local vars, forbid env vars
-  -- Local_Env  : replace local and envviron vars
+  -- Local_Env  : replace local and environ vars
   type Exp_Mode_List is (Check_Only, Local_Only, Local_Env);
 
 

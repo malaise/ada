@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- DTD of a chats file of tcpchat -->
 
-<!ENTITY Version "3.4">
+<!ENTITY Version "4.0">
 
 <!-- Common attributes -->
 <!-- A Boolean -->
@@ -10,61 +10,73 @@
 <!ENTITY % TimeoutMs "TimeoutMs CDATA #IMPLIED">
 <!-- No timeout -->
 <!ENTITY None "None">
-<!-- Is a check of match a Regexp or not -->
-<!ENTITY % Regexp "Regexp %boolean; 'false'">
-<!-- What to do if a boolean variable is not set -->
-<!ENTITY % IfBooleanUnset "(true|false|error) 'error'">
-<!-- Set a variable -->
-<!ENTITY % VariableSet "Variable CDATA #REQUIRED">
-<!-- Reference a variable -->
-<!ENTITY % VariableRef "Variable CDATA #REQUIRED
-                       %Regexp; IfUnset %IfBooleanUnset;">
-<!-- Set a variable to the value read -->
-<!ENTITY % ReadDef "%Regexp; Assign CDATA #IMPLIED">
-<!-- What to do on error -->
-<!ENTITY % error "(error,script)">
 
-<!-- The chats script -->
-<!ELEMENT chats (version,(chat,script)+)>
+<!-- Checks: An expression or input is checked versus a criteria -->
+<!-- Possible evaluation of expression and criteria (input strings are -->
+<!--  never evaluated): no expansion, variable resolution or integer -->
+<!-- computation -->
+<!ENTITY % Evaluate "(none|resolve|compute) 'resolve'">
+<!-- Possible operations: equal or not, regex match or not, less than... -->
+<!-- Equality and matching for strings and resolution, equality and -->
+<!-- relative comparisons for computed expressions -->
+<!ENTITY % Operations "(equal|not_equal|match|not_match|less|greater
+                       |less_equal|greater_equal)">
+<!ENTITY % Operation "%Operations; 'equal'">
+<!-- A condition, for selection of a chat, select, read, -->
+<!--  or for comparision with an expression -->
+<!ENTITY % Condition "
+   Crit CDATA #REQUIRED
+   Oper %Operation;
+   Eval %Evaluate;">
+<!-- Assign variables from regexp substrings -->
+<!ENTITY % Assign "Assign CDATA #IMPLIED">
+<!-- An expression, possibly containing reference to variables -->
+<!ENTITY % Expression "Expr CDATA #REQUIRED">
+<!-- Assign a variable -->
+<!ENTITY % SetVar "Var CDATA #REQUIRED
+                   Eval %Evaluate;
+                   OnlyIfNotSet %boolean; 'false'">
+<!-- A subscript -->
+<!ENTITY % Script "((select|cond|while|read|skip|wait|send|call|set|assign
+                    |parse|eval|chdir|log)*,close?)">
+
+
+<!-- The chats set -->
+<!ELEMENT chats (chat+)>
 <!-- The version of the chats script -->
-<!ELEMENT version EMPTY>
-<!ATTLIST version Version CDATA #REQUIRED>
+<!ATTLIST chats Version CDATA #REQUIRED>
 
 <!-- A chat -->
-<!ELEMENT chat (#PCDATA)>
+<!ELEMENT chat %Script;>
 <!ATTLIST chat Name ID #REQUIRED
+               %Condition;
+               %Assign;
                %TimeoutMs;
-               InputDefaultTimeoutMs CDATA #IMPLIED
-               %ReadDef;>
-<!-- The chat script -->
-<!ELEMENT script ((select|cond|repeat|read|skip|wait|send|call|set|assign
-                  |parse|eval|chdir |log)*,close?)>
+               InputDefaultTimeoutMs CDATA #IMPLIED>
 
 <!-- The select statement (select a subscript depending on input) -->
-<!ELEMENT select ((expect,script)+,(default,script)?,(timeout, script)?)>
+<!ELEMENT select (expect+,default?,timeout?)>
 <!ATTLIST select %TimeoutMs;>
-<!ELEMENT expect (#PCDATA)>
-<!ATTLIST expect %ReadDef;>
-<!ELEMENT default EMPTY>
-<!ELEMENT timeout EMPTY>
+<!ELEMENT expect %Script;>
+<!ATTLIST expect %Condition; %Assign;>
+<!ELEMENT default %Script;>
+<!ELEMENT timeout %Script;>
 
-<!-- The cond statement (if then else) -->
-<!ELEMENT cond ((if,script),(elsif,script)*,(else,script)?)>
-<!ELEMENT if (#PCDATA)>
-<!ATTLIST if %VariableRef;>
-<!ELEMENT elsif (#PCDATA)>
-<!ATTLIST elsif %VariableRef;>
-<!ELEMENT else EMPTY>
+<!-- The cond statement (if, elsif... else) -->
+<!ELEMENT cond (if,elsif*,else?)>
+<!ELEMENT if %Script;>
+<!ATTLIST if %Expression; %Condition;>
+<!ELEMENT elsif %Script;>
+<!ATTLIST elsif %Expression; %Condition;>
+<!ELEMENT else %Script;>
 
-<!-- The repeat statement (repeat while condition a script) -->
-<!ELEMENT repeat (while,script)>
-<!ELEMENT while (#PCDATA)>
-<!ATTLIST while %VariableRef;>
+<!-- The while statement (repeat while condition) -->
+<!ELEMENT while %Script;>
+<!ATTLIST while %Expression; %Condition;>
 
 <!-- The read statement (read from input) -->
-<!ELEMENT read (#PCDATA)>
-<!ATTLIST read %TimeoutMs;
-               %ReadDef;>
+<!ELEMENT read EMPTY>
+<!ATTLIST read %TimeoutMs; %Condition; %Assign;>
 
 <!-- The skip statement (skip an input) -->
 <!ELEMENT skip EMPTY>
@@ -79,34 +91,32 @@
 <!ATTLIST send NewLine %boolean; "true">
 
 <!-- The call statement (call shell) -->
-<!ELEMENT call (command,%error;?)>
+<!ELEMENT call (command,error?)>
 <!ELEMENT command (#PCDATA)>
-<!ELEMENT error EMPTY>
+<!ELEMENT error %Script;>
 
 <!-- The eval statement (set variable from shell output) -->
-<!ELEMENT eval (command,%error;?)>
-<!ATTLIST eval %VariableSet; OnlyIfNotSet %boolean; "false">
+<!ELEMENT eval (command,error?)>
+<!ATTLIST eval %SetVar;>
 
 <!-- The set statement (set variable to value) -->
-<!ELEMENT set (#PCDATA)>
-<!ATTLIST set %VariableSet; Compute %boolean; "false"
-              OnlyIfNotSet %boolean; "false">
+<!ELEMENT set EMPTY>
+<!ATTLIST set %SetVar; %Expression;>
 
 <!-- The assign statement (same as set but catches evaluation errors) -->
-<!ELEMENT assign (expression,%error;)>
-<!ELEMENT expression (#PCDATA)>
-<!ATTLIST expression %VariableSet; Compute %boolean; "false"
-              OnlyIfNotSet %boolean; "false">
+<!ELEMENT assign (error?)>
+<!ATTLIST assign %SetVar; %Expression;>
 
 <!-- The parse statement (parse an expression into variables) -->
-<!ELEMENT parse (#PCDATA)>
-<!ATTLIST parse Compute %boolean; "false"
-                Expr CDATA #REQUIRED
+<!ELEMENT parse EMPTY>
+<!ATTLIST parse %Expression;
+                Crit CDATA #REQUIRED
+                Eval %Evaluate;
                 Assign CDATA #REQUIRED>
 
 <!-- The chdir statement (change current dir) -->
-<!ELEMENT chdir (dir,%error;?)>
-<!ELEMENT dir (#PCDATA)>
+<!ELEMENT chdir (error?)>
+<!ATTLIST chdir Dir CDATA #REQUIRED>
 
 <!-- The log statement (log some trace) -->
 <!ELEMENT log (#PCDATA)>
