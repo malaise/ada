@@ -101,9 +101,7 @@ skip, or on a select when it has no 'timeout' entry.
  * The failure of 'call' or 'eval' of an external command if there is no
 'error' entry to handle the failure.
  * An invalid expression (including invalid computation, reference to an
- undefined variable...) in a 'set' statement
- * An undefined variable in a statement 'if', 'elsif', 'while' with the IfUnset
-attribute set (or left) to "error".
+ undefined variable...) in a statement
  * Error of 'chdir' when changing current directory if there is no 'error'
 entry to handle the failure.
 
@@ -126,9 +124,7 @@ reference variables. Variables obey to the following rules:
 (possibly referring to variables) to an integer and back to a string stored in
 a variable
   * 'set', 'assign' and 'eval' with the "OnlyIfNotSet" attribute set, assign the
-variable only if is not defined yet
-  * 'if', 'elsif' and 'while' with the variable not set may raise error or may
-return true or false depending on the "IfUnset" attribute.
+variable only if is not defined so far.
 
 Any occurrence of "${" or "}" that doesn't denote a variable must be
 backslashed.
@@ -188,16 +184,16 @@ Design of the tree
 ~~~~~~~~~~~~~~~~~~
 Each node of the tree contains:
 
-- Kind (Enum): Selec, Read, Default, Timeout, Skip, Wait, Send, Call, Close.
-Chat and expect statements are mapped as Read nodes, children of a Selec.
-Assign statements are Set statements.
+- Kind (Enum): Selec, Expect, Default, Timeout, Cond...
+Chats statment is the only Selec node with no father. Chat statements are
+Expect nodes with A name.
 
 - Name (Asu_Us): For a chat, its name
 
-- Text (Asu_Us). For a Read the sentence expected, for a Send/Call/ the
+- Critext (Asu_Us). For a Read the sentence expected, for a Send/Call/ the
 sentence to send, for a Call the command and arguments to invoke.
-Chats is a Selec, chat is an expect, expect is mapped as a Read (child
-of a Selec)
+
+- Expression. For a Condif, Repeat, Set or Assign, the expression to compute.
 
 - Timeout (Ms). For a Selec (including chats) a read or skip it's a
 failure if it expires (no matching / not matching / nothing received).
@@ -207,75 +203,41 @@ a Wait it is the delay to wait. Note that the chat InputDefaultTimeoutMs
 is not stored in the tree. It is kept in memory (while building the
 tree) and set in the Selec/Read/Skip nodes that have no timeout defined.
 
-- Next: The reference to the node that implements the following of the
-script: It is the statement following the current statement if there is
-one.  Otherwise, it is the statement following ancestor select...  Close
-has no Next. Other nodes have at least Next pointing to the chats node
-(root).
-+
-Ex: Selec1 has 2 Expects and is followed by a Read. Expect1 leads to
-Select11 that is not followed. Expect2 leads to Select21 that is
-followed by a Wait. Branches of Select11 end with Next=Read, while
-branches of Selec21 end with Next=Wait. Branch of the Read ends with
-Next=Root.
-
 Nodes, children, Next:
 
 - Root is a Selec node (the chats statement) with no Next
 
 - A node of kind Close has no child and no Next
 
-- A Selec node has one (Read) child for each of its chat or expect, then
+- A Selec node has one Expect child for each of its chat or expect, then
 possibly one (Default) child for the default, then possibly one (Timeout) child
-for handling the timeout, then possibly a child: the next statement following
-the select (in this case, Next points to it).
+for handling the timeout.
 
-- A Set node can have 2 children (when it is an assign statement). In this case
-the first child is the first instruction handling the error.
+- A Set node can have  children (when it is an assign statement). In this case
+they are the instructions handling the error.
 
-- A Call or Chdir node have 2 children, the first of which is the
-first instruction handling the error.
+- A Call or Chdir node can have children, the instructions handling the error.
 
-- A Repeat node has a first child that is is the first instruction of the
-repeated block, then possibly a second child: the next statement following
-the repeat (in this case, Next points to it).
+- A Repeat node usually has children that are the instructions of the
+repeated block.
 
-- A Cond node has a child for each Condif and Condelse, then possibly another
-child: the next statement following the Cond  (in this case, Next points to it).
+- A Cond node has a child for each Condif and Condelse. Each of them usually
+has children that are the instructions of the alternative block.
 
-- Other nodes may have one child: the statement following current (in this
-case, Next points to it) or no child (in this case, Next points to the
-same node as the first non null Next of a parent Selec, or ultimately to
-root).
 
-- Statements chat and expect are mapped as Read nodes.
-
-- Statement assign is mapped as Set nodes.
+- Other nodes have no child.
 
 Parsing of the tree
 ~~~~~~~~~~~~~~~~~~~
 First the Xml file is parser with Xml_Parser.
 
 Then the tree is build by navigating through the XML tree with a recursive
-operation that creates nodes with Kind, Text, and Timeout.
+operation that creates nodes with Kind, Critext, Expression and attributes.
 
-- Kind: see above
-
-- Name: see above
-
-- Text: ENV variables are expanded, possibly leading to error.
+- 
 When parsing a "chat" XML node, a global variable is set to the default
 timeout it defines or infinite. When parsing a select, read or skip, local
 timeout is set to local value if defined, or to the global default.
-+
-After creating a Selec node, its Next is set to its last child if it is the
-statement following the select, and to null otherwise.
-
-Then a second pass calls a recursive operation, passing to it Next initialized
-to root. When arriving on a Selec node, the local Next, if null, is set to the
-value received. The local Next is passed recursively when parsing children.
-When arriving on a node with no child, set it Next to the value receive if it
-type is not Close.
 
 Main loop
 ~~~~~~~~~
@@ -313,5 +275,4 @@ node or reset.
 - Log: Log message on stderr. Jump to next node.
 
 - Close: Reset connection and jump to the root of the tree.
-
 
