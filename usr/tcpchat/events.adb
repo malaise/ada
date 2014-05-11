@@ -18,6 +18,7 @@ package body Events is
   --  applies. If not, no need to reset connection when no chat selected
   In_Chat : Boolean := False;
 
+
   -- Initial directory
   Home_Dir : constant As.U.Asu_Us := As.U.Tus (Directory.Get_Current);
 
@@ -42,16 +43,58 @@ package body Events is
       return True;
     end if;
     -- See if Var is set
-    Name := Variables.Expand (Node.Assign(Node.Assign'First).Name,
-                              Variables.Local_Only);
+    Name := Variables.Expand (Node.Expression, Variables.Local_Only);
     return not Variables.Is_Set (Name);
   end Set_Var;
 
+  -- Find next valid node
+  procedure Find_Next is
+    use type Tree.Node_Kind;
+    Node : Tree.Node_Rec;
+    Try_Brother : Boolean;
+    First_Is_Repeat : Boolean := Tree.Chats.Read.Kind = Tree.Repeat;
+  begin
+    loop
+      -- Except when initial node is a repeat,
+      -- stop returning when reaching a repeat, so that it can check and loop
+      Node := Tree.Chats.Read;
+      exit when not First_Is_Repeat
+                and then Node.Kind = Tree.Repeat;
+      First_Is_Repeat := False;
+
+      -- Go to our brother if any, and not expect, condif...
+      --  otherwise go to father
+      Try_Brother := (
+         case Node.Kind is
+           when Tree.Expect | Tree.Default | Tree.Timeout
+              | Tree.Condif | Tree.Condelse => False,
+           when others => True);
+      if Try_Brother and then Tree.Chats.Has_Brother (False) then
+        Tree.Chats.Move_Brother (False);
+        exit;
+      elsif Tree.Chats.Has_Father then
+        Tree.Chats.Move_Father;
+      else
+        -- Root
+        exit;
+      end if;
+    end loop;
+  end Find_Next;
+
+  -- Go to first child if any, otherwise Find_Next
+  procedure Try_Child is
+  begin
+    if Tree.Chats.Children_Number /= 0 then
+      Tree.Chats.Move_Child;
+    else
+      Find_Next;
+    end if;
+  end Try_Child;
+
   -- Handle events
-  Internal_Error : exception;
   procedure Handle is
-    use Tree;
-    Node, Child : Node_Rec;
+    -- Current node and next child
+    Node, Child : Tree.Node_Rec;
     Current_Timeout : Integer;
     Children_Number : Trees.Child_Range;
     Event : Ios.Event_Type;
@@ -59,22 +102,24 @@ package body Events is
     Variable : As.U.Asu_Us;
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
-    use type Ios.Event_Kind_List;
+    use type Tree.Node_Kind, Ios.Event_Kind_List;
   begin
     Put_Line (Argument.Get_Program_Name & " V" & Tree.Get_Version & " ready");
     Main : loop
       begin
         -- Where are we?
-        Node := Chats.Read;
+        Node := Tree.Chats.Read;
+
         Debug.Logger.Log_Debug ("Node is " & Mixed_Str (Node.Kind'Img));
         case Node.Kind is
-          when Selec =>
+
+          when Tree.Selec =>
             -- If we are root
             --  Keep previous chat timeout if we are in chat
             --  No select timeout if we are not in chat (no useless reset)
             Current_Timeout := Node.Timeout;
-            if not Chats.Has_Father and then not In_Chat then
-              Current_Timeout := Infinite_Ms;
+            if not Tree.Chats.Has_Father and then not In_Chat then
+              Current_Timeout := Tree.Infinite_Ms;
             end if;
 
             -- Read a sentence
@@ -97,25 +142,18 @@ package body Events is
               when Ios.Local_Timeout =>
                 Debug.Logger.Log_Debug ("Select: timeout");
                 -- For reset if no timeout
-                Children_Number := Chats.Children_Number;
+                Children_Number := Tree.Chats.Children_Number;
                 if Children_Number <= 1 then
                   -- 0! or 1 (expect) entry
                   In_Chat := False;
                 else
                   -- See if last child is a timeout
-                  Chats.Move_Child (False);
-                  Child := Chats.Read;
-                  if Children_Number > 2 then
-                    -- last child is next, go to prev if any
-                    Chats.Move_Brother;
-                    Child := Chats.Read;
-                  else
-                    In_Chat := False;
-                  end if;
+                  Tree.Chats.Move_Child (False);
+                  Child := Tree.Chats.Read;
 
-                  if In_Chat and then Child.Kind = Timeout then
+                  if In_Chat and then Child.Kind = Tree.Timeout then
                     Debug.Logger.Log_Debug ("Selec timeout");
-                    -- Move to the child of this select entry
+                    -- Remain in this timeout entry
                   end if;
                 end if;
                 if not In_Chat then
@@ -126,34 +164,33 @@ package body Events is
                 end if;
 
               when Ios.Got_Sentence =>
-                -- Dispatch to child, avoid Next
+                -- Dispatch to a child, there is at least one Expect
                 Debug.Logger.Log_Debug ("Selec got: " & Event.Sentence.Image);
                 Selec_Children:
-                for I in 1 .. Chats.Children_Number loop
+                for I in 1 .. Tree.Chats.Children_Number loop
                   if I = 1 then
-                    Chats.Move_Child;
+                    Tree.Chats.Move_Child;
                   else
-                    Chats.Move_Brother (False);
+                    Tree.Chats.Move_Brother (False);
                   end if;
-                  Child := Chats.Read;
+                  Child := Tree.Chats.Read;
                   Debug.Logger.Log_Debug ("Selec trying: "
                                         & Child.Critext.Image);
-                  if Child.Kind = Default then
-                    -- Current (last) child is Next => no match
+                  if Child.Kind = Tree.Timeout then
+                    -- Current (last) child is Timeout => no match
                     Put_Line ("No match on select");
                     Reset;
                     exit Selec_Children;
-                  elsif Child.Kind = Default
-                  or else (Child.Kind = Read and then
+                  elsif Child.Kind = Tree.Default
+                  or else (Child.Kind = Tree.Expect and then
                            Matcher.Match (Child, Event.Sentence) ) then
-                    if Child.Kind = Default then
-                      Debug.Logger.Log_Debug ("Selec default");
-                    else
-                      Debug.Logger.Log_Debug ("Selec match: "
-                                            & Child.Critext.Image);
+                    if Child.Kind = Tree.Default then
+                      Debug.Logger.Log_Debug ("Select "
+                         & (if Child.Kind = Tree.Default then "default"
+                            else "match: " & Child.Critext.Image));
                     end if;
-                    -- This read child matches (or is default)
-                    if Child.Kind = Read
+                    -- This Expect child matches (or is default)
+                    if Child.Kind = Tree.Expect
                     and then not Child.Name.Is_Null then
                       -- This is the start of a new chat
                       Put_Line ("Starting chat " & Child.Name.Image);
@@ -161,9 +198,9 @@ package body Events is
                       Ios.Stop_Global_Timer;
                       Ios.Start_Global_Timer (Child.Timeout);
                     end if;
-                    -- Move to the child of this select entry
+                    -- Remain on this select entry
                     exit Selec_Children;
-                  elsif not Chats.Has_Brother (False) then
+                  elsif not Tree.Chats.Has_Brother (False) then
                     -- No more child
                     Put_Line ("No match on select");
                     Reset;
@@ -172,71 +209,58 @@ package body Events is
                 end loop Selec_Children;
             end case;
 
-          when Expect =>
-            -- Move to first statement
-            null;
-
-          when Cond =>
-            -- Dispatch to child, avoid Next
+          when Tree.Cond =>
+            -- Dispatch to a child
             Cond_Children:
-            for I in 1 .. Chats.Children_Number loop
+            for I in 1 .. Tree.Chats.Children_Number loop
               if I = 1 then
-                Chats.Move_Child;
+                Tree.Chats.Move_Child;
               else
-                Chats.Move_Brother (False);
+                Tree.Chats.Move_Brother (False);
               end if;
-              Child := Chats.Read;
+              Child := Tree.Chats.Read;
               -- Resolv variable
-              if Child.Kind = Condif then
-                -- Last child is Next => no match
-                Debug.Logger.Log_Debug ("Cond no match");
-                exit Cond_Children;
-              elsif Child.Kind = Condif then
-                Variable := Child.Assign(Child.Assign'First).Name;
+              if Child.Kind = Tree.Condif then
+                Variable := Child.Expression;
                 Debug.Logger.Log_Debug ("Condif trying: " & Variable.Image
                                       & " match " & Child.Critext.Image);
-                if Matcher.Match (Child, Variable) then
+                if Matcher.Match (Child) then
                   Debug.Logger.Log_Debug ("Condif match");
-                  -- Move to the child of this select entry
+                  -- Remain on this matching Condif child
                   exit Cond_Children;
-                elsif Chats.Has_Brother (False) then
+                elsif Tree.Chats.Has_Brother (False) then
                   -- The only case when we continue
                   Debug.Logger.Log_Debug ("Condif not match");
                 else
                   -- No more child
                   Debug.Logger.Log_Debug ("Cond no match");
+                  Find_Next;
                   exit Cond_Children;
                 end if;
-              elsif Child.Kind = Condelse then
+              elsif Child.Kind = Tree.Condelse then
                 Debug.Logger.Log_Debug ("Condelse");
-                -- Move to the child of this select entry
-                exit Cond_Children;
-              else
-                -- This child is the next
-                Debug.Logger.Log_Debug ("Cond no match");
+                -- Remain on this matching Condelse child
                 exit Cond_Children;
               end if;
             end loop Cond_Children;
-          when Condif | Condelse =>
-            -- Should not occur
-            raise Internal_Error;
 
-          when Repeat =>
+          when Tree.Repeat =>
             -- Resolv variable
-            Variable := Node.Assign(Node.Assign'First).Name;
-            -- Repeat has 2 children, the first instruction of the loop
-            --  and the next instruction after the loop
+            Variable := Node.Expression;
+            Debug.Logger.Log_Debug ("Repeat checking: " & Variable.Image
+                                      & " match " & Node.Critext.Image);
             -- See if variable content matches
-            if Matcher.Match (Node, Variable) then
+            if Matcher.Match (Node) then
               -- Match, go to the first child of the loop
-              Debug.Logger.Log_Debug ("Repeat true: " & Node.Critext.Image);
-              Chats.Move_Child;
+              Debug.Logger.Log_Debug ("Repeat yes");
+              Tree.Chats.Move_Child;
             else
-              Debug.Logger.Log_Debug ("Repeat false: " & Node.Critext.Image);
-              -- No mach, move to end of loop
+              Debug.Logger.Log_Debug ("Repeat no");
+              -- No match, move to next instruction
+              Find_Next;
             end if;
 
-          when Read =>
+          when Tree.Read =>
             Event := Ios.Read (Node.Timeout);
             case Event.Kind is
               when Ios.Exit_Requested =>
@@ -258,18 +282,14 @@ package body Events is
                 Debug.Logger.Log_Debug ("Read got: " & Event.Sentence.Image);
                 -- Check match
                 if Matcher.Match (Node, Event.Sentence) then
-                  null;
+                  Find_Next;
                 else
                   Put_Line ("Read mismatch");
                   Reset;
                 end if;
             end case;
 
-          when Default | Timeout =>
-            -- Should not occur
-            raise Internal_Error;
-
-          when Skip =>
+          when Tree.Skip =>
             Event := Ios.Read (Node.Timeout);
             case Event.Kind is
               when Ios.Exit_Requested =>
@@ -290,9 +310,10 @@ package body Events is
               when Ios.Got_Sentence =>
                 -- Skip
                 Debug.Logger.Log_Debug ("Skip got: " & Event.Sentence.Image);
+                Find_Next;
             end case;
 
-          when Wait =>
+          when Tree.Wait =>
             Event := Ios.Wait (Node.Timeout);
             case Event.Kind is
               when Ios.Exit_Requested =>
@@ -308,23 +329,23 @@ package body Events is
                 Put_Line ("Timeout on chat script");
                 Reset;
               when Ios.Local_Timeout =>
-                null;
+                Find_Next;
               when Ios.Got_Sentence =>
                 -- Should not occur
                 null;
             end case;
 
-          when Send =>
+          when Tree.Send =>
             Ios.Send (Variables.Expand (Node.Critext, Variables.Local_Env),
                       Disconnection);
             if Disconnection then
               Put_Line ("Disconnection");
               Reset;
             else
-              null;
+              Find_Next;
             end if;
 
-          when Call =>
+          when Tree.Call =>
             declare
               Exit_Code : Command.Exit_Code_Range;
             begin
@@ -345,12 +366,12 @@ package body Events is
                   Reset;
                 else
                   -- Call and send OK
-                  null;
+                  Find_Next;
                 end if;
-              elsif Chats.Children_Number /= 0 then
+              elsif Tree.Chats.Children_Number /= 0 then
                 -- First child is error handler
                 Debug.Logger.Log_Debug ("Call handling error");
-                Chats.Move_Child;
+                Tree.Chats.Move_Child;
               else
                 Put_Line ("Command error");
                 Reset;
@@ -364,7 +385,7 @@ package body Events is
                 Reset;
             end;
 
-          when Eval =>
+          when Tree.Eval =>
             if Set_Var (Node) then
               declare
                 Exit_Code : Command.Exit_Code_Range;
@@ -380,15 +401,14 @@ package body Events is
                 if Exit_Code = 0 then
                   Debug.Logger.Log_Debug ("Eval got: " & Flow.Str.Image);
                   -- Command OK, load the variable
-                  if Matcher.Match (Node, Flow.Str) then
-                    null;
-                  else
+                  if not Matcher.Match (Node, Flow.Str) then
                     Put_Line ("Invalid evaluation");
                   end if;
-                elsif Chats.Children_Number /= 0 then
+                  Find_Next;
+                elsif Tree.Chats.Children_Number /= 0 then
                   -- First child is error handler
                   Debug.Logger.Log_Debug ("Eval handling error");
-                  Chats.Move_Child;
+                  Tree.Chats.Move_Child;
                 else
                   Put_Line ("Command error");
                   Reset;
@@ -403,42 +423,40 @@ package body Events is
               end;
             else
               -- Skip
-              null;
+              Find_Next;
             end if;
 
-          when Set =>
+          when Tree.Set =>
             -- Set or Assign
             begin
               if Set_Var (Node) then
                 -- Load the variable
-                if Matcher.Match (Node,
-                                  Variables.Expand (Node.Critext,
-                                                    Variables.Local_Env)) then
-                  null;
+                if Matcher.Match (Node) then
+                  Find_Next;
                 else
                   raise Matcher.Match_Error;
                 end if;
               else
                 -- Skip
-                null;
+                Find_Next;
               end if;
             exception
               when Variables.Expand_Error | Matcher.Match_Error =>
-                if Chats.Children_Number /= 0 then
+                if Tree.Chats.Children_Number /= 0 then
                   Debug.Logger.Log_Debug ("Invalid evaluation "
                                         & Node.Critext.Image);
-                  Chats.Move_Child;
+                  Tree.Chats.Move_Child;
                 else
                   Put_Line ("Invalid evaluation");
                   Reset;
                 end if;
             end;
 
-          when Parse =>
-            Dummy := Matcher.Match (Node, Node.Expression);
-            null;
+          when Tree.Parse =>
+            Dummy := Matcher.Match (Node);
+            Find_Next;
 
-          when Chdir =>
+          when Tree.Chdir =>
             declare
               Target : constant String
                      := Variables.Expand (Node.Critext, Variables.Local_Env);
@@ -450,27 +468,33 @@ package body Events is
                 -- Go to target dir
                 Directory.Change_Current (Target);
               end if;
-              null;
+              Find_Next;
             exception
               when Directory.Name_Error | Directory.Access_Error =>
-                if Chats.Children_Number /= 0 then
+                if Tree.Chats.Children_Number /= 0 then
                   Debug.Logger.Log_Debug ("Chdir handling error");
-                  Chats.Move_Child;
+                  Tree.Chats.Move_Child;
                 else
                   Put_Line ("ERROR changing current directory");
                   Reset;
                 end if;
             end;
 
-          when Log =>
+          when Tree.Log =>
             Put_Line ("Log: " & Variables.Expand (Node.Critext,
                                                   Variables.Local_Env));
-            null;
+            Find_Next;
 
-          when Close =>
+          when Tree.Close =>
             Reset;
             Put_Line ("Closed");
+
+          when Tree.Expect | Tree.Default | Tree.Timeout
+             | Tree.Condif | Tree.Condelse =>
+            -- Move to next instruction
+            Try_Child;
         end case;
+
       exception
         when Matcher.Match_Error =>
           Put_Line ("ERROR matching expression");

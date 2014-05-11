@@ -19,7 +19,7 @@ package Matcher is
   --  or integer comparison
   -- Assign variables
   function Match (Node : Tree.Node_Rec;
-                  Str : As.U.Asu_Us) return Boolean;
+                  Str : As.U.Asu_Us := As.U.Asu_Null) return Boolean;
 
   Match_Error : exception;
 

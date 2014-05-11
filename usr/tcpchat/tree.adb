@@ -45,12 +45,13 @@ package body Tree is
     return As.U.Tus (Str_Util.Strip (Txt.Image, Str_Util.Both));
   end Strip;
 
-  -- Node Kind s already set, Name as well if needed
+  -- Node Kind is already set, Name as well if needed
   -- Timeout is initialised to default
   -- Get all other attributes
   -- Check consistency
   -- Allow empty text or not
   procedure Get_Attributes (Xnode : in Xml_Parser.Element_Type;
+                            Default_Timeout : in Integer;
                             Node : in out Node_Rec) is
     Tnode : Xml_Parser.Node_Type;
     Attrs : constant Xml_Parser.Attributes_Array
@@ -122,8 +123,8 @@ package body Tree is
     -- Set index of Oper attribute
     Oper_Index := 0;
     for I in Attrs'Range loop
-      if Attrs(I).Name.Image = "Timeout" then
-        Node.Timeout := Integer'Value (Attrs(I).Value.Image);
+      if Attrs(I).Name.Image = "TimeoutMs" then
+        Node.Timeout := Get_Timeout (Xnode, Default_Timeout);
       elsif Attrs(I).Name.Image = "Eval" then
         if Attrs(I).Value.Image = "none" then
           Node.Eval := None;
@@ -356,7 +357,7 @@ package body Tree is
     end if;
 
     -- Get Crit, Expr and all attributes
-    Get_Attributes (Xnode, Node);
+    Get_Attributes (Xnode, Default_Timeout, Node);
 
     -- Insert and dump node
     if Chats.Is_Empty then

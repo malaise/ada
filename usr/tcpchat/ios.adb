@@ -66,7 +66,7 @@ package body Ios is
     return True;
   end Timer_Cb;
 
-  -- Reset event if not exit requested and not diconnection
+  -- Reset event if not exit requested and not disconnection
   procedure Reset_Event is
   begin
     if Event.Kind /= Exit_Requested

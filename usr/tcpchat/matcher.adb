@@ -30,6 +30,7 @@ package body Matcher is
     Ok : Boolean;
     N_Matched : Natural;
     Match_Info : Regular_Expressions.Match_Array (1 .. 10);
+    Assign : Boolean;
     V1, V2 : Integer;
     use type Regular_Expressions.Match_Cell, Any_Def.Any_Kind_List,
              Tree.Node_Kind, Tree.Oper_List, Tree.Eval_List, As.U.Asu_Us;
@@ -52,8 +53,8 @@ package body Matcher is
           Result := Expand (Expanding, Node.Eval);
         end if;
         Variables.Set (Expanded, Result);
-        Debug.Logger.Log_Debug ("Variable " & Expanded.Image
-                              & " set to " & Result.Image);
+        Debug.Logger.Log_Debug ("Variable >" & Expanded.Image
+                              & "< set to >" & Result.Image & "<");
         -- Done
         return True;
 
@@ -76,7 +77,7 @@ package body Matcher is
           return True;
         end if;
         Expanding :=
-          (if Node.Kind = Tree.Expect or else Node.Kind /= Tree.Read then Str
+          (if Node.Kind = Tree.Expect or else Node.Kind = Tree.Read then Str
            else Node.Expression);
         -- Var is set : Expand content of var
         Result := Expand (Expanding, Node.Eval);
@@ -86,10 +87,12 @@ package body Matcher is
     end case;
 
     -- Now we check if Result  matches Expanded
-    Debug.Logger.Log_Debug ("Matching " & Result.Image
-                            & " with " & Expanded.Image);
+    Debug.Logger.Log_Debug ("Matching >" & Result.Image
+                            & "< oper " & Mixed_Str (Node.Oper'Img)
+                            & " with >" & Expanded.Image & "<");
 
     -- Pure string comparison or regexp?
+    Assign := False;
     case Node.Eval is
       when Tree.None =>
         -- No assignement possible, so we have done
@@ -117,6 +120,7 @@ package body Matcher is
           if Match_Info(1) /= Regular_Expressions.No_Match then
             Debug.Logger.Log_Debug ("Regex match " & N_Matched'Img);
             Ok := Node.Oper = Tree.Match;
+            Assign := True;
           else
             Debug.Logger.Log_Debug ("Regex no match");
             Ok := Node.Oper = Tree.Notmatch;
@@ -137,8 +141,11 @@ package body Matcher is
           when others => False);
     end case;
 
-    -- No Assign when Condif or Repeat or when Oper /= Match
-    if Node.Kind = Tree.Condif or else Node.Kind = Tree.Repeat
+    -- No Assign when not Ok or Condif or Repeat or when Oper /= Match
+    if not Ok
+    or else not Assign
+    or else Node.Kind = Tree.Condif
+    or else Node.Kind = Tree.Repeat
     or else Node.Oper /= Tree.Match
     or else Node.Assign(1).Value.Kind = Any_Def.None_Kind then
       return Ok;
@@ -159,6 +166,7 @@ package body Matcher is
       Debug.Logger.Log_Debug ("Volatile " & Expanding.Image
                             & "=" & Expanded.Image);
     end loop;
+
     -- Assign variables
     for I in Node.Assign'Range loop
       exit when Node.Assign(I).Value.Kind = Any_Def.None_Kind;
@@ -169,8 +177,8 @@ package body Matcher is
         raise Match_Error;
       end if;
       Variables.Set (Node.Assign(I).Name, Expanded);
-      Debug.Logger.Log_Debug ("Assigned " & Node.Assign(I).Name.Image
-                            & "=" & Expanded.Image);
+      Debug.Logger.Log_Debug ("Assigned >" & Node.Assign(I).Name.Image
+                            & "< = >" & Expanded.Image & "<");
     end loop;
     Variables.Clear_Volatiles;
     return Ok;
@@ -296,7 +304,7 @@ package body Matcher is
 
   -- Do the real test
   function Match (Node : Tree.Node_Rec;
-                  Str : As.U.Asu_Us) return Boolean is
+                  Str : As.U.Asu_Us := As.U.Asu_Null) return Boolean is
   begin
     return Compute (Node, Str, False);
   end Match;

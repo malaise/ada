@@ -27,7 +27,7 @@
         </while>
         <!-- And send header -->
         <eval Var="Size">
-          <command>ls -al ${FILE} | awk '{printf "%s",$5\}'</command>
+          <command>ls -al ${File} | awk '{printf "%s",$5\}'</command>
           <error>
             <set Var="Size" Expr=""/>
           </error>
