@@ -287,6 +287,9 @@ package body Matcher is
       if Statements'Length = 0 then
         -- No separator => Parse the whole Assign string
         Parse_Assign (Node, 1, Assign);
+      elsif Statements'Length > Tree.Max_Assignments then
+        Error ("Too many assignments");
+        raise Match_Error;
       else
         -- Parse each assignment
         Assign_Index := 1;
