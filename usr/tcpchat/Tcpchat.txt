@@ -1,6 +1,6 @@
 tcpchat
 =======
-V4.0
+V4.1
 
 Tcpchat accepts connections on a TCP port, expects specific sentences and
 executes specified actions depending on what it receives.
@@ -10,121 +10,140 @@ Presentation
 
 General description
 ~~~~~~~~~~~~~~~~~~~
-tcpchat takes 2 arguments: a TCP port name or number and a chats file name.
 
-It listens on the port and accepts one TCP connection at a time: new
+  Usage: tcpchat <tcp_port> <chat_file>
+  <tcp_port>  ::= -p <port> | --port=<port>
+  <chat_file> ::= -f <file> | --file=<file>
+
+The <port> can be a TCP port name or number, or "-" for stdin. +
+tcpchat listens on the port and accepts one TCP connection at a time: new
 connections are not accepted while one client is connected.
 
-It expects to receive one or several sentences (a sentence is one line
-terminated by Lf), it executes some actions and replies by one or several
+The chat <file> defines the expected inputs and the actions to perform. +
+tcpchat expects to receive one or several sentences (a sentence is one line
+terminated by Lf), it executes some actions and can reply by one or several
 sentences.
 
 Chat file and behavior
 ~~~~~~~~~~~~~~~~~~~~~~
 .File
-The chats file defines the version and describes several alternative chats
+The chats file defines the version and describes several alternative 'chat'
 scripts.
 
 .Chat
-Each chat starts with one expected sentence followed by a script of expected
-sentences and/or actions.
+Each 'chat' starts with one expected intput, followed by a script of expected
+inputs and/or actions.
 
-A chat has a unique name. It can define a global timeout for its execution
-(default is infinite) and a default timeout for all its statements where an
+A 'chat' has a unique name. It can define a global timeout for its execution
+(default is infinite) and a default timeout for all the statements where an
 input is expected: 'select', 'read' and 'skip' (default is infinite).
 
-A chat defines a pattern that will lead it to be selected (and the script
-to be executed) if the input string matches the pattern (string comparison, 
-regular expression matching or integer comparison). The input is tested versus
-each pattern successively until one matches.
-
-In case of a regexp, some xref:Variables[Variables] can be defined and
+A 'chat' defines a criteria that will lead it to be selected (and the script
+to be executed) if the input string matches the pattern. Matching can rely on
+string comparison, regular expression matching or integer comparison. 
+This is called an [underline]#input condition#. +
+The input is tested versus each criteria successively (one for each 'chat')
+until it matches. Then the corresponding 'chat' is selected. +
+In case of a regexp matching, some xref:Variables[Variables] can be defined and
 initialized from the content (or a part) of the input string.
 
 .Statements
-Once the chat is selected, tcpchat executes one after the other the statements
-of the script:
+Once the 'chat' is selected, tcpchat executes the statements of the script, one
+after the other. A statement can be:
 
-- 'select': A select is like a sub-chat but with no name. It
-allows selecting a subscript according to the reception of a matching
-sentence. 
- * If the select has a default entry then this entry is selected when the
-sentence does not match any of the expected strings.
- *  If is has a timeout defined and a timeout entry then this entry is selected
-if no sentence has been received when the timeout expires.
+- 'select': allow selecting a subscript according to input conditions.
+It defines some 'expect' entries, each with a criteria and a
+sub-script. It behaves like the 'chat' selection except that the 'expect'
+entries are anonymous and that two optinal specific entries are possible after
+the list of 'expect':
 
-- 'cond': execute a sub-script on condition (if a variable matches a criteria,
-elsif...  else...).
-- 'while': loop executing a sub-script while a condition is true.
-- 'read': Read next sentence and check that it matches the one provided. 
-On option, fails on timeout if no input is received before a timeout
+ * a 'default' entry, which is selected if the input does not match any of the
+'expect' criteria.
+ * a 'timeout' entry, which is selected if no input has been received when the
+input timeout expires.
+
+- 'cond': execute a sub-script depending on conditions. A
+[underline]#condition# checks wether a given expression (as opposed to an input)
+matches a criteria. The 'cond' statement takes the form:
+'if' <condition> sub-script 'elsif' <condition> sub-script..., 'else'
+sub-script).
+- 'while': loop executing a sub-script while a [underline]#condition# is true.
+- 'read': Read next input and check that it matches the [underline]#input
+condition# provided. Optionally fail on timeout if no input is received before a timeout
 expiration.
 - 'skip': Read next sentence, whatever it is, with an optional timeout.
-- 'wait': Wait the specified delay.
+- 'wait': Wait during the specified delay.
 - 'send': Send the sentence provided, on option with a line feed.
-- 'set': Set a variable to the result of an evaluated expression.
-- 'assign': Same as 'set' but catches and handles evaluation error.
+- 'call': Call the shell to execute the command and arguments provided. Send
+the output flow of the command. Optionally catch and handle error.
+- 'eval': Call the shell to execute the command and arguments provided. Set a
+variable to the output flow of the command. Optionally catch and handle
+error.
+- 'set': Set a variable to the result of an expression.
+- 'assign': Same as 'set' but catch and handle evaluation error.
 - 'parse': Evaluate an expression, parse it accordig to a regexp and assign
 variables.
-- 'call': Call the shell to execute the command and arguments provided. Send
-the output flow of the command, optionnaly catches and handles error.
-- 'eval': Call the shell to execute the command and arguments provided. Set a
-variable to the output flow of the command, optionnaly catches and handles
-error.
 - 'chdir': Change current directory until another chdir or until a script ends
-on xref:Close[close] or xref:Failure[failure], optionnaly catches and handles
+on xref:Close[close] or xref:Failure[failure]. Optionally catch and handle
 error. With an empty argument, move back to the original directory when
 tcpchat has been launched. 
 - 'log': Report some text on stderr.
-- 'close': Close current chat, go back to chat selection.
-
-.Script end
-When a subscript reaches its end, the execution continues at the statement
-following the one that lead to this subscript (if any).
+- 'close': Close current 'chat', go back to 'chat' selection.
 
 A chat script ends on either:
 
-- nothing else to do: Keep connection open and go back expecting a chat
-selection. Variables and current dir are not reset. The chat
+- nothing else to do: leave the connection open and go back to 'chats'
+(expecting an input and selecting a new 'chat' script). The
+xref:Variables[variables] and current dir are not reset. The chat
 timeout, if any, remains active until a new chat is selected.
 - anchor:Close[]a 'close' statement: Close current connection, reset variables
-and current dir, and go back expecting a chat selection.
+and current dir, and go back to 'chats'.
 - anchor:Failure[]a failure: one of the following situations, which leads to
 the closure (as on statement 'xref:Close[close]') of current script:
  * The expiration of the timeout global to the chat script.
- * The expiration of the timeout on the whole chats selection, on a read, on a
-skip, or on a select when it has no 'timeout' entry.
+ * The expiration of the timeout on the whole chats selection, or on a read or a
+skip, or on select without a 'timeout' entry.
  * The reception of a non expected string by a 'read'.
  * The reception of a non expected string by a 'expect' (for 'chats' or
 'select') when it has no 'default' entry.
  * A transmission error (closure, overflow).
  * The failure of 'call' or 'eval' of an external command if there is no
-'error' entry to handle the failure.
+'error' bloc to handle the failure.
  * An invalid expression (including invalid computation, reference to an
  undefined variable...) in a statement
  * Error of 'chdir' when changing current directory if there is no 'error'
-entry to handle the failure.
+bloc to handle the failure.
 
 anchor:Variables[]
 
 .Variables
 The text of sentences that are expected, read or sent, the text of commands that
-are called or executed, and the text of expressions that evaluated, can
+are called or executed, and the text of expressions that are evaluated, can
 reference variables. Variables obey to the following rules:
 
 - Assignments (after 'chat', 'read', 'expect' or 'parse') have the form
-"VAR=... VAR=..."
-- 'set', 'assign' and 'eval' statements directly assign a variable
+"VAR=... VAR=...", separated by spaces,
+- 'set', 'assign' and 'eval' statements directly assign a variable,
 - References have the form $\{name} where:
-  * $\{0} denotes the full string matching the regexp
-  * $\{1} to $\{9} denote the substrings (matching "(...)" in the regexp)
-  * ${$name} denotes a ENV variable
-  * Internal variables names cannot be numbers nor start by "$" nor contain "="
-  * 'set' and 'assign' with the "Compute" attribute set convert an expression
-(possibly referring to variables) to an integer and back to a string stored in
-a variable
-  * 'set', 'assign' and 'eval' with the "OnlyIfNotSet" attribute set, assign the
-variable only if is not defined so far.
+  * $\{0} denotes the full string matching the regexp,
+  * $\{1} to $\{9} denote the substrings (matching "(...)" in the regexp),
+  * ${$name} denotes an external ENV variable,
+  * Internal variables names cannot be numbers nor start by "$" nor contain
+"=",
+  * When the "Eval" attribute is set to "compute", then the expressions
+(possibly referring to variables) are resolved, then computed into an integer,
+then converted back into a string.
+  * 'set', 'assign' and 'eval' with the "OnlyIfNotSet" attribute, assign the
+variable only if is not defined so far,
+  * The expression and criteria of 'chats', 'select', 'cond', 'while', 'read', 
+'eval', 'set', 'assign' and 'parse' can be evaluated or not:
+    ** "none": do no evaluate. Allows string comparison ("equal" or
+"not_equal"),
+    ** "resolve': evaluate. Allows string comparison or regexp matching
+("equal", "not_equal", "match" or "not_match"),
+    ** "compute': evaluate and compute. Allows integer comparison ("equal",
+"not_equal", "less", "greater", "less_equal" or "greater_equal"),
+ * The expression of 'send', 'chdir' and 'log' is always evaluated.
 
 Any occurrence of "${" or "}" that doesn't denote a variable must be
 backslashed.
@@ -135,19 +154,13 @@ expression. In case of 'assign' statement this error can be caught and handled.
 A computed expression must be a valid combination of variables, values,
 operations and parentheses, otherwise this is an error. In case of 'assign'
 statement this error can be caught and handled.
+==========================
+  Example, with V1="1" and V2="2":
+  "${V1}${V2}" is a valid evaluated expression, leading to "12", but not a valid computed expression.
+  "${V1}+${V2}" is a valid evaluated expression, leading to "1+2", and also a valid computed expression, leading to "3".
+==========================
 
-.Pattern matching and integer matching
-The criteria of 'chat', 'expect', 'read', 'if', 'elsif', 'while' and 'read'
-statements is by default considered as the string  with witch the input
-sentence or expression must be equal ('Oper'="=") or from which it must be
-different ('Oper'="/="). +
-On option it can be considered as as the regular expression pattern with 
-which the input sentence must completely match (i.e. <input_string>
-matches "^<regex>"") ('Oper'="=") or with which it  must not match
-('Oper'="/="). +
-Alternatively, on option, the criteria and the input (or the expression) are
-computed and compared through the operator ("=", "/=", "<", ">", "<=" or
-">=").
+
 
 High level design
 -----------------
@@ -156,8 +169,8 @@ General design
 There are 4 main modules:
 
 - IOs in charge of managing the TCP connections (accepting, closing,
-sending, receiving). Reception is coupled with an input buffer to
-provide sentences.
+sending, receiving) or Async_Stdin. Reception is coupled with an input buffer
+in roder to provide sentences.
 +
 Cr are removed if sentence ends with CrLf.
 +
@@ -167,7 +180,7 @@ Timeouts can be infinite. Wait, read and send can raise/return Disconnection.
 
 - Tree in charge of storing the tree of chat scripts events and actions.
 
-- Matcher in charge of checking if an event matches a node of the tree.
+- Matcher in charge of checking if an input or expression matches a criteria.
 
 - Events in charge of navigating in the tree, waiting for events and
 executing the actions.
@@ -182,97 +195,147 @@ c. Main loop: Event => action
 
 Design of the tree
 ~~~~~~~~~~~~~~~~~~
+.Nodes of the tree
 Each node of the tree contains:
 
-- Kind (Enum): Selec, Expect, Default, Timeout, Cond...
-Chats statment is the only Selec node with no father. Chat statements are
-Expect nodes with A name.
+- Kind (Enum): Selec, Expect, Default, Timeout, Cond, Condif, Condelse,
+Repeat, Read, Skip, Wait, Send, Log, Call, Eval, Set, Parse, Chdir, Close. +
+The 'chats' statement is mapped as a Selec node. It is the only Selec node
+with no father. +
+The 'chat' statements are mapped as Expect nodes.  They are the only nodes with
+a name.
 
 - Name (Asu_Us): For a chat, its name
 
-- Critext (Asu_Us). For a Read the sentence expected, for a Send/Call/ the
-sentence to send, for a Call the command and arguments to invoke.
+- Critext (Asu_Us) the main criteria or text:
+  * For Expect, Condif, Repeat, Read or Parse, the matching criteria (Crit),
+  * For Set the expression (Expr) to set,
+  * For Send and Log, the text to output,
+  * For Call and Eval, the command to launch,
+  * For Chdir, the new path (Dir).
 
-- Expression. For a Condif, Repeat, Set or Assign, the expression to compute.
+- Expression (Asu_Us) the expression:
+  * For Condif, Repeat and Parse, the expression (Expr) to compute,
+  * For Set and Eval, the expression (Var) of the name or the variable to set,
 
-- Timeout (Ms). For a Selec (including chats) a read or skip it's a
+- Timeout (Ms):
+  * For a Selec (including chats), a Read or a Skip, it's a
 failure if it expires (no matching / not matching / nothing received).
+  * For a chat it's a failure if it expires before the end of the chat. For
+a Wait it is the delay to wait.
+
 +
-For a chat it's a failure if it expires before the end of the chat. For
-a Wait it is the delay to wait. Note that the chat InputDefaultTimeoutMs
+Note that the chat InputDefaultTimeoutMs
 is not stored in the tree. It is kept in memory (while building the
 tree) and set in the Selec/Read/Skip nodes that have no timeout defined.
 
-Nodes, children, Next:
+- Eval (None, Resolve, Compute). The way to resolve or not the criteria and
+the input (or expression).
 
-- Root is a Selec node (the chats statement) with no Next
+- Oper (Equal, Noteq, Match, Notmatch, Greater, Less, Greatereq, Lesseq), the
+matching operation between the input (or expression) and the criteria.
 
-- A node of kind Close has no child and no Next
+- Ifunset, boolean, for Eval and Set. If set to True, then the expression will
+be evaluated (and the variable set) only if the variable is not set so far.
 
-- A Selec node has one Expect child for each of its chat or expect, then
-possibly one (Default) child for the default, then possibly one (Timeout) child
-for handling the timeout.
+- Assign, array of 1 to 9 assignments, the variables to set to the substrings
+matching the criteria.
 
-- A Set node can have  children (when it is an assign statement). In this case
-they are the instructions handling the error.
+NOTE: Due to the limitation to 9 assignments, you may need to set basic
+variables in the 'Assign', then set more complex variables later on.
+=========================
+  Example:
+  You cannot do:
+  Assign="V1=${1} V2=${2} V3=${3} V4=${4} ...  V9=${9} V12=${1}${2}"
+  But you can do:
+  Assign="V1=${1} V2=${2} V3=${3} V4=${4} ...  V9=${9}"
+  <set Var="V12" Expr="${1}${2}"/>
+=========================
 
-- A Call or Chdir node can have children, the instructions handling the error.
+NOTE: Assignments are performed in the order. If you define twice the same
+variable then the second definition will remain.
 
-- A Repeat node usually has children that are the instructions of the
-repeated block.
+.Structure of the tree
 
-- A Cond node has a child for each Condif and Condelse. Each of them usually
-has children that are the instructions of the alternative block.
+- Root is a Selec node (the 'chats' statement)
 
+- A Selec node has one Expect child for each of its 'chat' or 'expect', then,
+in the case of a 'select', it has possibly one Default child for the 'default',
+then possibly one Timeout child for handling the 'timeout'.
 
-- Other nodes have no child.
+- A Cond node has at least one Condif, possibly several other Condif, then
+possibly a Condelse node.
+
+- Expect, Default, Timeout, Condif or Condelse nodes have children that are the
+statements to execute in case of match.
+
+- A Repeat node has children that are the statements to iterate on.
+
+- A Set node (when it is an 'assign'), a Call, Eval or Chdir node can have
+children that are the instructions handling the error.
+
+- Other nodes (Read, Skip, Wait, Send, Log, Parse) have no child.
+
 
 Parsing of the tree
 ~~~~~~~~~~~~~~~~~~~
-First the Xml file is parser with Xml_Parser.
+First, the Xml file is parsed with Xml_Parser.
 
 Then the tree is build by navigating through the XML tree with a recursive
-operation that creates nodes with Kind, Critext, Expression and attributes.
+operation that creates nodes with Name, Kind, Critext, Expression and other
+attributes.
 
-- 
 When parsing a "chat" XML node, a global variable is set to the default
-timeout it defines or infinite. When parsing a select, read or skip, local
-timeout is set to local value if defined, or to the global default.
+timeout that it defines or to infinite. When parsing a select, read or skip,
+the local timeout is set to local value if defined, or to the default timeout
+inherited from our father.
 
 Main loop
 ~~~~~~~~~
 Depending on the type of current node:
 
-- Select (including root): Read text. Check if it matches a child or default.
-Jump to it.
+- Select (including root): Read text. Check if it matches a Expect or Default.
+Go to to it.
 
-- Condition: Check if it matches a child. Jump to it.
+- Condition: Check if it matches a child. Go to to it.
 
-- Repeat: Check if it matches a child. Jump to first statement to repeat
+- Repeat: Check if it matches a child. Go to to the first statement to repeat
 or to the next node after the loop.
 
-- Read: Read text. Check that it matches the expected text. Jump to next
+- Read: Read text. Check that it matches the expected text. Go to to next
 node or reset.
 
-- Skip: Read text and discard. Jump to next node.
+- Skip: Read text and discard. Go to to next node.
 
-- Wait: Wait the delay. Jump to next node.
+- Wait: Wait during the delay. Go to to next node.
 
-- Send: Expand the text and send it. Jump to next node.
+- Send: Expand the text and send it. Go to to next node.
 
-- Call: Issue the command. Jump to next node.
+- Call: Issue the command. Go to to next node.
 
-- Eval: Issue the command and evaluate the result. Jump to next node.
+- Eval: Issue the command and evaluate the result. Go to to next node.
 
-- Set: Evaluate the variable. Jump to next node.
+- Set: Evaluate the variable. Go to to next node.
 
-- Assign: Evaluate the variable. Jump to next node.
+- Assign: Evaluate the variable. Go to to next node.
 
-- Parse: Parse the expression. Jump to next node.
+- Parse: Parse the expression. Go to to next node.
 
-- Chdir: Change current directory. Jump to next node.
+- Chdir: Change the current directory. Go to to next node.
 
-- Log: Log message on stderr. Jump to next node.
+- Log: Log the message on stderr. Go to to next node.
 
-- Close: Reset connection and jump to the root of the tree.
+- Close: Reset the connection and go to the root of the tree.
+
+Going to a child ('expect', 'default', 'timeout', 'while', 'error') consists
+in checking that there is at least one statement, otherwise going to next
+node.
+
+Going to next node consists in looking for a brother (next statement), and
+otherwise moving up to our father...and so on. Except when:
+
+- reaching a Repeat. Let it evaluate if it goes on looping or goes to next
+node,
+
+- on a Expect, Default, Timeout, Condif or Condelse. Don't look for a brother.
 

@@ -114,9 +114,9 @@ package body Events is
         case Node.Kind is
 
           when Tree.Selec =>
-            -- If we are root
-            --  Keep previous chat timeout if we are in chat
-            --  No select timeout if we are not in chat (no useless reset)
+            -- If we are root (chats)
+            --  Keep previous chat timeout only if we are in chat,
+            --  otherwise reset
             Current_Timeout := Node.Timeout;
             if not Tree.Chats.Has_Father and then not In_Chat then
               Current_Timeout := Tree.Infinite_Ms;
