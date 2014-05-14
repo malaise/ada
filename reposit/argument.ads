@@ -69,6 +69,7 @@ package Argument is
    Param_Key : in String := Any_Arg) return String;
 
   -- Same but with string and length
+  -- May raise Argument_Too_Long
   procedure Get_Parameter (
    Parameter : out String;
    Param_Length : out Natural;
@@ -82,6 +83,7 @@ package Argument is
    Param_Key : in String := Any_Arg);
 
   -- Result is string and position
+  -- May raise Argument_Too_Long
   procedure Get_Param_And_Pos (
    Parameter : out String;
    Param_Length : out Natural;
