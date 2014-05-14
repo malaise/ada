@@ -283,20 +283,6 @@ package body Argument_Parser is
       end;
     end loop;
 
-    -- Detect Argument_Too_Long
-    for I in 1 .. Argument.Get_Nbre_Arg loop
-      begin
-        if Argument.Get_Parameter (I) = "" then
-          null;
-        end if;
-      exception
-        when Argument.Argument_Too_Long =>
-          Dscr.Error := As.U.Tus ("Argument at pos "
-             & Images.Integer_Image(I) & " is too long");
-          return Dscr;
-      end;
-    end loop;
-
     -- Parse all the arguments
     Dscr.Ok := False;
     Is_Option := False;
