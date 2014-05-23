@@ -1,6 +1,6 @@
 tcpchat
 =======
-V4.1
+V4.2
 
 Tcpchat accepts connections on a TCP port, expects specific sentences and
 executes specified actions depending on what it receives.
@@ -255,6 +255,10 @@ variables in the 'Assign', then set more complex variables later on.
 NOTE: Assignments are performed in the order. If you define twice the same
 variable then the second definition will remain.
 
+- Next, the reference to next node: either next statement (brother in the
+tree) if any, or inherited from the father. For the children of Repeat, the
+next is the brother if any, otherwise the Repeat node itself.
+
 .Structure of the tree
 
 - Root is a Selec node (the 'chats' statement)
@@ -328,11 +332,8 @@ node or reset.
 - Close: Reset the connection and go to the root of the tree.
 
 Going to a child ('expect', 'default', 'timeout', 'while', 'error') consists
-in checking that there is at least one statement, otherwise going to next
+in checking that there is at least one child statement, otherwise going to next
 node.
-
-Going to next node consists in looking for a brother (next statement), and
-otherwise moving up to our father...and so on. Except when:
 
 - reaching a Repeat. Let it evaluate if it goes on looping or goes to next
 node,

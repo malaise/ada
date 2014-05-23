@@ -27,6 +27,8 @@ package Tree is
   type Eval_List is (None, Resolve, Compute);
 
   -- Node
+  type Position_Access;
+  type Node_Access is access Position_Access;
   type Node_Rec is record
     Kind : Node_Kind := Close;
     -- For chat (kind Expect)
@@ -44,11 +46,22 @@ package Tree is
     Ifunset : Boolean := False;
     -- The assignements
     Assign : Assignments;
+    -- Next statement
+    Next : Node_Access := null;
   end record;
 
+  -- The tree of chats
   package Tree_Mng is new Trees.Tree (Node_Rec);
   Chats : Tree_Mng.Tree_Type;
+  type Position_Access is new Tree_Mng.Position_Access;
+  No_Position : constant Position_Access
+              := Position_Access (Tree_Mng.No_Position);
 
+  -- Get the version of chats file
   function Get_Version return String;
+
+  -- Set current node of Chats to a new position
+  procedure Set_Position (Position : in Position_Access);
+
 end Tree;
 

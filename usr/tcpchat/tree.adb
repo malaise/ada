@@ -407,6 +407,64 @@ package body Tree is
 
   end Insert_Node;
 
+  -- Recursive update of Next for the leafs
+  procedure Update_Next (Next : in Position_Access) is
+    Lnext : Position_Access;
+    Node : Node_Rec;
+    Children_Nb : Trees.Child_Range;
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
+  begin
+    -- Inherit Next or set it to current (when root)
+    if Next /= No_Position then
+      Lnext := Next;
+    else
+      Lnext := Position_Access (Chats.Get_Position);
+    end if;
+    Chats.Read (Node);
+    Dummy := Dump (Node, 0);
+    case Node.Kind is
+      when Tree.Expect | Tree.Default | Tree.Timeout
+              | Tree.Condif | Tree.Condelse =>
+        -- Next (in case of no child) is father's next
+        Debug.Logger.Log_Debug ("Next set from father");
+      when others =>
+        -- Set to Brother if any
+        if Chats.Has_Brother (False) then
+          Chats.Move_Brother (False);
+          Lnext := Position_Access(Chats.Get_Position);
+          Chats.Move_Brother (True);
+          Debug.Logger.Log_Debug ("Next set to brother");
+        else
+          Debug.Logger.Log_Debug ("Next set from father");
+        end if;
+    end case;
+    -- Update node
+    Node.Next := new Position_Access'(Lnext);
+    Chats.Replace (Node);
+
+    -- Set children of Repeat to Repeat, otherwise they inherit
+    if Node.Kind = Tree.Repeat then
+      Lnext := Position_Access(Chats.Get_Position);
+      Debug.Logger.Log_Debug ("Next set to Repeat for children of Repeat");
+    end if;
+
+    -- Iterate on children
+    Children_Nb := Chats.Children_Number;
+    if Children_Nb /= 0 then
+      for I in 1 .. Children_Nb loop
+        if I = 1 then
+          Chats.Move_Child;
+        else
+          Chats.Move_Brother (False);
+        end if;
+        Update_Next (Lnext);
+      end loop;
+      Chats.Move_Father;
+    end if;
+
+  end Update_Next;
+
   -------------------------------
   -- Parse file and build tree --
   -------------------------------
@@ -436,10 +494,16 @@ package body Tree is
     Insert_Node (Xnode, Infinite_Ms, As_Child => True);
     -- Clean up
     Ctx.Clean;
+    Variables.Reset;
+    Chats.Move_Root;
+
+    -- Update Next
+    Debug.Logger.Log_Debug ("Updating next:");
+    Update_Next (No_Position);
+    Chats.Move_Root;
 
     -- Done
     Chats.Move_Root;
-    Variables.Reset;
 
     -- Dump
     Debug.Logger.Log_Debug ("Dump:");
@@ -449,9 +513,18 @@ package body Tree is
 
   end Parse;
 
+  -------------
+  -- Utility --
+  -------------
   function Get_Version return String is
   begin
     return Version.Image;
   end Get_Version;
+
+  procedure Set_Position (Position : in Position_Access) is
+  begin
+    Chats.Set_Position (Tree_Mng.Position_Access(Position));
+  end Set_Position;
+
 end Tree;
 

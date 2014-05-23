@@ -49,36 +49,10 @@ package body Events is
 
   -- Find next valid node
   procedure Find_Next is
-    use type Tree.Node_Kind;
     Node : Tree.Node_Rec;
-    Try_Brother : Boolean;
-    First_Is_Repeat : Boolean := Tree.Chats.Read.Kind = Tree.Repeat;
   begin
-    loop
-      -- Except when initial node is a repeat,
-      -- stop returning when reaching a repeat, so that it can check and loop
-      Node := Tree.Chats.Read;
-      exit when not First_Is_Repeat
-                and then Node.Kind = Tree.Repeat;
-      First_Is_Repeat := False;
-
-      -- Go to our brother if any, and not expect, condif...
-      --  otherwise go to father
-      Try_Brother := (
-         case Node.Kind is
-           when Tree.Expect | Tree.Default | Tree.Timeout
-              | Tree.Condif | Tree.Condelse => False,
-           when others => True);
-      if Try_Brother and then Tree.Chats.Has_Brother (False) then
-        Tree.Chats.Move_Brother (False);
-        exit;
-      elsif Tree.Chats.Has_Father then
-        Tree.Chats.Move_Father;
-      else
-        -- Root
-        exit;
-      end if;
-    end loop;
+    Node := Tree.Chats.Read;
+    Tree.Set_Position (Node.Next.all);
   end Find_Next;
 
   -- Go to first child if any, otherwise Find_Next
@@ -110,7 +84,8 @@ package body Events is
         -- Where are we?
         Node := Tree.Chats.Read;
 
-        Debug.Logger.Log_Debug ("Node is " & Mixed_Str (Node.Kind'Img));
+        Debug.Logger.Log_Debug ("Node is " & Mixed_Str (Node.Kind'Img)
+                              & " Critext " & Node.Critext.Image);
         case Node.Kind is
 
           when Tree.Selec =>
@@ -152,7 +127,7 @@ package body Events is
                   Child := Tree.Chats.Read;
 
                   if In_Chat and then Child.Kind = Tree.Timeout then
-                    Debug.Logger.Log_Debug ("Selec timeout");
+                    Debug.Logger.Log_Debug ("Select timeout");
                     -- Remain in this timeout entry
                   end if;
                 end if;
@@ -165,7 +140,7 @@ package body Events is
 
               when Ios.Got_Sentence =>
                 -- Dispatch to a child, there is at least one Expect
-                Debug.Logger.Log_Debug ("Selec got: " & Event.Sentence.Image);
+                Debug.Logger.Log_Debug ("Select got: " & Event.Sentence.Image);
                 Selec_Children:
                 for I in 1 .. Tree.Chats.Children_Number loop
                   if I = 1 then
@@ -174,7 +149,7 @@ package body Events is
                     Tree.Chats.Move_Brother (False);
                   end if;
                   Child := Tree.Chats.Read;
-                  Debug.Logger.Log_Debug ("Selec trying: "
+                  Debug.Logger.Log_Debug ("Select trying: "
                                         & Child.Critext.Image);
                   if Child.Kind = Tree.Timeout then
                     -- Current (last) child is Timeout => no match
