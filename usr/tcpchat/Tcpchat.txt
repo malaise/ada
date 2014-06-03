@@ -1,6 +1,6 @@
 tcpchat
 =======
-V4.2
+V5.0
 
 Tcpchat accepts connections on a TCP port, expects specific sentences and
 executes specified actions depending on what it receives.
@@ -67,7 +67,9 @@ input timeout expires.
 matches a criteria. The 'cond' statement takes the form:
 'if' <condition> sub-script 'elsif' <condition> sub-script..., 'else'
 sub-script).
-- 'while': loop executing a sub-script while a [underline]#condition# is true.
+- 'while': loop executing a sub-script while a [underline]#condition# is true
+or until a 'exit' statement is reached.
+- 'loop': loop executing a sub-script until a 'exit' statement is reached.
 - 'read': Read next input and check that it matches the [underline]#input
 condition# provided. Optionally fail on timeout if no input is received before a timeout
 expiration.
@@ -198,8 +200,9 @@ Design of the tree
 .Nodes of the tree
 Each node of the tree contains:
 
-- Kind (Enum): Selec, Expect, Default, Timeout, Cond, Condif, Condelse,
-Repeat, Read, Skip, Wait, Send, Log, Call, Eval, Set, Parse, Chdir, Close. +
+- Kind (Enum): Selectn, Expect, Default, Timeout, Cond, Condif, Condelse,
+Repeat, Loopn, Exitn, Read, Skip, Wait, Send, Log, Call, Eval, Set, Parse,
+Chdir, Close. +
 The 'chats' statement is mapped as a Selec node. It is the only Selec node
 with no father. +
 The 'chat' statements are mapped as Expect nodes.  They are the only nodes with
@@ -256,8 +259,9 @@ NOTE: Assignments are performed in the order. If you define twice the same
 variable then the second definition will remain.
 
 - Next, the reference to next node: either next statement (brother in the
-tree) if any, or inherited from the father. For the children of Repeat, the
-next is the brother if any, otherwise the Repeat node itself.
+tree) if any, or inherited from the father. For the children of Repeat or Loop,
+the next is the brother if any, otherwise the Repeat or Loop node itself. For
+an Exit, the Next is inherited from the innermost enclosing Repeat or Loop.
 
 .Structure of the tree
 
@@ -289,6 +293,8 @@ Then the tree is build by navigating through the XML tree with a recursive
 operation that creates nodes with Name, Kind, Critext, Expression and other
 attributes.
 
+Then the tree is updated to set the Next of each node
+
 When parsing a "chat" XML node, a global variable is set to the default
 timeout that it defines or to infinite. When parsing a select, read or skip,
 the local timeout is set to local value if defined, or to the default timeout
@@ -305,6 +311,10 @@ Go to to it.
 
 - Repeat: Check if it matches a child. Go to to the first statement to repeat
 or to the next node after the loop.
+
+- Loop: Go to to the first statement to repeat.
+
+- Exit: Go to to the first statement after Repeat or Loop
 
 - Read: Read text. Check that it matches the expected text. Go to to next
 node or reset.
@@ -331,9 +341,9 @@ node or reset.
 
 - Close: Reset the connection and go to the root of the tree.
 
-Going to a child ('expect', 'default', 'timeout', 'while', 'error') consists
-in checking that there is at least one child statement, otherwise going to next
-node.
+Going to a child ('expect', 'default', 'timeout', 'while', 'loop', 'error')
+consists in checking that there is at least one child statement, otherwise going
+to next node.
 
 - reaching a Repeat. Let it evaluate if it goes on looping or goes to next
 node,

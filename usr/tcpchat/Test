@@ -4,6 +4,9 @@
 export VERS="V"`tcpchat -v`
 
 export DBG=0
+if [ "$1" = "-d" ] ; then
+  DBG=1
+fi
 
 export DEBUG=debug
 if [ $DBG -eq 1 ] ; then

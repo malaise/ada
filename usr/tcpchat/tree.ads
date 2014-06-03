@@ -7,9 +7,9 @@ package Tree is
   Parse_Error : exception;
 
   -- Kind of node
-  type Node_Kind is (Selec, Expect, Default, Timeout, Cond, Condif, Condelse,
-                     Repeat, Read, Skip, Wait, Send, Log, Call, Eval,
-                     Set, Parse, Chdir, Close);
+  type Node_Kind is (Selectn, Expect, Default, Timeout, Cond, Condif, Condelse,
+                     Repeat, Loopn, Exitn, Read, Skip, Wait, Send, Log, Call,
+                     Eval, Set, Parse, Chdir, Close);
 
   -- Infinite timeout
   Infinite_Ms : constant Integer := Event_Mng.Infinite_Ms;

@@ -14,16 +14,15 @@
       <if Expr="${Vers}" Oper="not_equal" Crit="">
         <!-- No vers => 0.9 => nothing else expected -->
         <!-- Vers 1.x => skip inputs until empty line -->
-        <set Var="Done" Expr="false"/>
-        <while Expr="${Done}" Crit="false">
+        <loop>
           <select TimeoutMs="1000">
             <expect Crit="">
-              <set Var="Done" Expr="true"/>
+              <exit/>
             </expect>
             <default>
             </default>
           </select>
-        </while>
+        </loop>
         <!-- And send header -->
         <eval Var="Size">
           <command>ls -al ${File} | awk '{printf "%s",$5\}'</command>
@@ -169,6 +168,7 @@
           <cond>
             <if Expr="${Passwd}" Crit="${$PASSWORD}">
               <set Var="Res" Expr="success"/>
+              <exit/>
             </if>
           </cond>
         </if>
@@ -276,14 +276,13 @@
     <!-- Loop on all non empty Vi or up to V5 -->
     <set Var="Index" Expr="0"/>
     <set Var="Max" Expr="5"/>
-    <set Var="Done" Expr="false"/>
-    <while Expr="${Done}" Crit="false">
+    <loop>
       <set Var="Index" Expr="${Index}+1" Eval="compute"/>
       <set Var="Res" Expr="${V${Index}}"/>
       <cond>
         <if Expr="${Res}" Crit="">
           <!-- Vi is empty -->
-          <set Var="Done" Expr="true"/>
+          <exit/>
         </if>
         <else>
           <send>${Res}</send>
@@ -292,10 +291,10 @@
       <cond>
         <if Expr="${Index}" Crit="${Max}">
           <!-- Max is reached -->
-          <set Var="Done" Expr="true"/>
+          <exit/>
         </if>
         </cond>
-    </while>
+    </loop>
     <close/>
   </chat>
 

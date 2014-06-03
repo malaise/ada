@@ -83,7 +83,9 @@ package body Matcher is
         Result := Expand (Expanding, Node.Eval);
       when others =>
         -- No expansion
-        null;
+        if Check_Only then
+          return True;
+        end if;
     end case;
 
     -- Now we check if Result  matches Expanded

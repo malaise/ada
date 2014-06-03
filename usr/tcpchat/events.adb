@@ -85,10 +85,10 @@ package body Events is
         Node := Tree.Chats.Read;
 
         Debug.Logger.Log_Debug ("Node is " & Mixed_Str (Node.Kind'Img)
-                              & " Critext " & Node.Critext.Image);
+                              & " with Critext " & Node.Critext.Image);
         case Node.Kind is
 
-          when Tree.Selec =>
+          when Tree.Selectn =>
             -- If we are root (chats)
             --  Keep previous chat timeout only if we are in chat,
             --  otherwise reset
@@ -234,6 +234,12 @@ package body Events is
               -- No match, move to next instruction
               Find_Next;
             end if;
+
+          when Tree.Loopn =>
+            Tree.Chats.Move_Child;
+
+          when Tree.Exitn =>
+            Find_Next;
 
           when Tree.Read =>
             Event := Ios.Read (Node.Timeout);

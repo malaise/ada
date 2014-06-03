@@ -226,7 +226,7 @@ package body Tree is
         null;
     end case;
     case Node.Kind is
-      when Selec | Read | Skip | Wait =>
+      when Selectn | Read | Skip | Wait =>
         Text.Append ("Timeout=" & Node.Timeout'Img & " ");
       when others =>
         null;
@@ -270,12 +270,14 @@ package body Tree is
   -- Recursive insertion of a node
   procedure Insert_Node (Xnode : in Xml_Parser.Element_Type;
                          Current_Timeout : in Integer;
-                         As_Child : in Boolean) is
+                         As_Child : in Boolean;
+                         Loop_Depth : in Natural) is
     Name : constant String := Ctx.Get_Name (Xnode);
     Node : Node_Rec;
     Default_Timeout : Integer;
     Xchild, Xtmp : Xml_Parser.Element_Type;
     Nb_Children : Natural;
+    Ldepth : Natural;
 
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
@@ -284,12 +286,14 @@ package body Tree is
     Debug.Logger.Log_Debug ("Getting node " & Name);
     -- Propagate default timeout from father
     Default_Timeout := Current_Timeout;
+    -- Current loop depth
+    Ldepth := Loop_Depth;
 
     -- Set Kind, Name if needed. Get specific attributes
     Node.Timeout := Default_Timeout;
     if Name = "chats" then
-      -- Chats is a Selec
-      Node.Kind := Selec;
+      -- Chats is a Seletnc
+      Node.Kind := Selectn;
       Version := Ctx.Get_Attribute (Xnode, "Version");
     elsif Name = "chat" then
       -- Chat is an Expect
@@ -302,7 +306,7 @@ package body Tree is
       Default_Timeout := Get_Timeout (Xnode, Infinite_Ms,
                                       "InputDefaultTimeoutMs");
     elsif Name = "select" then
-      Node.Kind := Selec;
+      Node.Kind := Selectn;
     elsif Name = "expect" then
       Node.Kind := Expect;
     elsif Name = "default" then
@@ -320,6 +324,15 @@ package body Tree is
 
     elsif Name = "while" then
       Node.Kind := Repeat;
+      Ldepth := Ldepth + 1;
+    elsif Name = "loop" then
+      Node.Kind := Loopn;
+      Ldepth := Ldepth + 1;
+    elsif Name = "exit" then
+      Node.Kind := Exitn;
+      if Ldepth = 0 then
+        Error (Xnode, """exit"" statement out of ""while"" or ""loop""");
+      end if;
 
     elsif Name = "read" then
       Node.Kind := Read;
@@ -398,7 +411,9 @@ package body Tree is
         Xchild := Ctx.Get_Child (Xtmp, I);
         Debug.Logger.Log_Debug ("    Inserting child of "
                               & Mixed_Str (Node.Kind'Img));
-        Insert_Node (Xchild, Default_Timeout, As_Child => I = 1);
+        Insert_Node (Xchild, Default_Timeout,
+                     As_Child => I = 1,
+                     Loop_Depth => Ldepth);
       end loop;
       Chats.Move_Father;
       Debug.Logger.Log_Debug ("  End of entries of "
@@ -408,8 +423,9 @@ package body Tree is
   end Insert_Node;
 
   -- Recursive update of Next for the leafs
-  procedure Update_Next (Next : in Position_Access) is
-    Lnext : Position_Access;
+  procedure Update_Next (Next : in Position_Access;
+                         Exit_Next : in Position_Access) is
+    Lnext, Lexitnext : Position_Access;
     Node : Node_Rec;
     Children_Nb : Trees.Child_Range;
     Dummy : Boolean;
@@ -421,6 +437,7 @@ package body Tree is
     else
       Lnext := Position_Access (Chats.Get_Position);
     end if;
+    Lexitnext := Exit_Next;
     Chats.Read (Node);
     Dummy := Dump (Node, 0);
     case Node.Kind is
@@ -428,6 +445,9 @@ package body Tree is
               | Tree.Condif | Tree.Condelse =>
         -- Next (in case of no child) is father's next
         Debug.Logger.Log_Debug ("Next set from father");
+      when Tree.Exitn =>
+        Debug.Logger.Log_Debug ("Next set to Exit_Next");
+        Lnext := Lexitnext;
       when others =>
         -- Set to Brother if any
         if Chats.Has_Brother (False) then
@@ -443,8 +463,9 @@ package body Tree is
     Node.Next := new Position_Access'(Lnext);
     Chats.Replace (Node);
 
-    -- Set children of Repeat to Repeat, otherwise they inherit
-    if Node.Kind = Tree.Repeat then
+    -- Set children of Repeat to Repeat or Loop, otherwise they inherit
+    if Node.Kind = Tree.Repeat or else Node.Kind = Tree.Loopn then
+      Lexitnext := Lnext;
       Lnext := Position_Access(Chats.Get_Position);
       Debug.Logger.Log_Debug ("Next set to Repeat for children of Repeat");
     end if;
@@ -458,7 +479,7 @@ package body Tree is
         else
           Chats.Move_Brother (False);
         end if;
-        Update_Next (Lnext);
+        Update_Next (Lnext, Lexitnext);
       end loop;
       Chats.Move_Father;
     end if;
@@ -491,7 +512,7 @@ package body Tree is
     -- Build Tree
     Debug.Logger.Log_Debug ("Building tree:");
     Xnode := Ctx.Get_Root_Element;
-    Insert_Node (Xnode, Infinite_Ms, As_Child => True);
+    Insert_Node (Xnode, Infinite_Ms, As_Child => True, Loop_Depth => 0);
     -- Clean up
     Ctx.Clean;
     Variables.Reset;
@@ -499,7 +520,7 @@ package body Tree is
 
     -- Update Next
     Debug.Logger.Log_Debug ("Updating next:");
-    Update_Next (No_Position);
+    Update_Next (No_Position, No_Position);
     Chats.Move_Root;
 
     -- Done

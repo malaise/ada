@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- DTD of a chats file of tcpchat -->
 
-<!ENTITY Version "4.2">
+<!ENTITY Version "5.0">
 
 <!-- Common attributes -->
 <!-- A Boolean -->
@@ -37,8 +37,8 @@
                    Eval %Evaluate;
                    OnlyIfNotSet %boolean; 'false'">
 <!-- A subscript -->
-<!ENTITY % Script "((select|cond|while|read|skip|wait|send|call|set|assign
-                    |parse|eval|chdir|log)*,close?)">
+<!ENTITY % Script "((select|cond|while|loop|exit|read|skip|wait|send|call
+                    |set|assign|parse|eval|chdir|log)*,close?)">
 
 
 <!-- The chats set -->
@@ -70,9 +70,11 @@
 <!ATTLIST elsif %Expression; %Condition;>
 <!ELEMENT else %Script;>
 
-<!-- The while statement (repeat while condition) -->
+<!-- The while statement (repeat while condition), loop and exit -->
 <!ELEMENT while %Script;>
 <!ATTLIST while %Expression; %Condition;>
+<!ELEMENT loop %Script;>
+<!ELEMENT exit EMPTY>
 
 <!-- The read statement (read from input) -->
 <!ELEMENT read EMPTY>

@@ -15,16 +15,15 @@
       <if Expr="${Httpvers}" Crit="" Oper="not_equal">
         <!-- No vers => 0.9 => no more input, no header -->
         <!-- Vers 1.x => skip inputs until empty line -->
-        <set Var="Done" Expr="false"/>
-        <while Expr="${Done}" Crit="false">
+        <loop>
           <select TimeoutMs="1000">
             <expect Crit="">
-              <set Var="Done" Expr="true"/>
+              <exit/>
             </expect>
             <default>
             </default>
           </select>
-        </while>
+        </loop>
         <!-- And send header -->
         <eval Var="Size">
           <command>ls -al ${File} | awk '{printf "%s",$5\}'</command>
