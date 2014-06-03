@@ -306,6 +306,12 @@
   <!-- Eval or compute an expression -->
   <chat Name="eval" Crit="(resolve|compute|leave)" Oper="match"
         Assign="Command=${1}">
+    <!-- Get the arg, give up on timeout -->
+    <get TimeoutMs="10000" Var="Arg" Eval="none">
+      <error>
+        <close/>
+      </error>
+    </get>
     <cond>
       <if Expr="${Command}" Crit="resolve">
         <set Var="Result" Expr="${Arg}" Eval="resolve"/>

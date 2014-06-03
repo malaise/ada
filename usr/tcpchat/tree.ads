@@ -8,8 +8,8 @@ package Tree is
 
   -- Kind of node
   type Node_Kind is (Selectn, Expect, Default, Timeout, Cond, Condif, Condelse,
-                     Repeat, Loopn, Exitn, Read, Skip, Wait, Send, Log, Call,
-                     Eval, Set, Parse, Chdir, Close);
+                     Repeat, Loopn, Exitn, Read, Skip, Get, Wait, Send, Log,
+                     Call, Eval, Set, Parse, Chdir, Close);
 
   -- Infinite timeout
   Infinite_Ms : constant Integer := Event_Mng.Infinite_Ms;

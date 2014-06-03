@@ -270,6 +270,53 @@ package body Events is
                 end if;
             end case;
 
+          when Tree.Get =>
+            Event := Ios.Read (Node.Timeout);
+            case Event.Kind is
+              when Ios.Exit_Requested =>
+                Put_Line ("Exit requested");
+                exit Main;
+              when Ios.Input_Error =>
+                Put_Line ("Input error");
+                exit Main;
+              when Ios.Disconnection =>
+                Put_Line ("Disconnection");
+                Reset;
+              when Ios.Global_Timeout =>
+                Put_Line ("Timeout on chat script");
+                Reset;
+              when Ios.Local_Timeout =>
+                Put_Line ("Timeout on Read");
+                Reset;
+              when Ios.Got_Sentence =>
+                -- Get
+                Debug.Logger.Log_Debug ("Get got: " & Event.Sentence.Image);
+                -- Assign
+                begin
+                  if Set_Var (Node) then
+                    -- Load the variable
+                    if Matcher.Match (Node, Event.Sentence) then
+                      Find_Next;
+                    else
+                      raise Matcher.Match_Error;
+                    end if;
+                  else
+                    -- Skip
+                    Find_Next;
+                  end if;
+                exception
+                  when Variables.Expand_Error | Matcher.Match_Error =>
+                    if Tree.Chats.Children_Number /= 0 then
+                      Debug.Logger.Log_Debug ("Invalid evaluation "
+                                            & Node.Critext.Image);
+                      Tree.Chats.Move_Child;
+                    else
+                      Put_Line ("Invalid evaluation");
+                      Reset;
+                    end if;
+                end;
+            end case;
+
           when Tree.Skip =>
             Event := Ios.Read (Node.Timeout);
             case Event.Kind is

@@ -107,7 +107,7 @@ package body Tree is
       -- if, elsif, while, parse: attribute Expr
       when Condif | Repeat | Parse =>
         Node.Expression := Ctx.Get_Attribute (Xnode, "Expr");
-      when Set | Eval =>
+      when Set | Eval | Get =>
         -- set: variable name attribute Var
         Node.Expression := Strip (Ctx.Get_Attribute (Xnode, "Var"));
         -- Empty expression forbidden
@@ -119,7 +119,7 @@ package body Tree is
         Node.Expression.Set_Null ;
     end case;
 
-    -- Get Timeout, Assign, NewLine, IfUnset and Oper attributes
+    -- Get Timeout, Eval, Assign, NewLine, IfUnset and Oper attributes
     -- Set index of Oper attribute
     Oper_Index := 0;
     for I in Attrs'Range loop
@@ -197,7 +197,7 @@ package body Tree is
       Text.Append ("""" & Node.Name.Image & """ ");
     end if;
     case Node.Kind is
-      when Condif | Repeat | Set | Eval | Parse =>
+      when Condif | Repeat | Get | Set | Eval | Parse =>
         Text.Append ("Expr> " & Node.Expression.Image & "< ");
       when others =>
         null;
@@ -264,9 +264,9 @@ package body Tree is
   -- The instructions that have no child (except text)
   Has_Child : constant array (Node_Kind) of Boolean :=
     (Read | Skip | Wait | Send | Log | Parse => False, others => True);
-  -- The instructions tha have a (optional) "error" block of instructions
+  -- The instructions that have a (optional) "error" block of instructions
   Has_Error : constant array (Node_Kind) of Boolean :=
-    (Call | Eval | Set | Chdir => True, others => False);
+    (Call | Eval | Get | Set | Chdir => True, others => False);
   -- Recursive insertion of a node
   procedure Insert_Node (Xnode : in Xml_Parser.Element_Type;
                          Current_Timeout : in Integer;
@@ -338,6 +338,8 @@ package body Tree is
       Node.Kind := Read;
     elsif Name = "skip" then
       Node.Kind := Skip;
+    elsif Name = "get" then
+      Node.Kind := Get;
     elsif Name = "wait" then
       Node.Kind := Wait;
       -- Delay is mandatory

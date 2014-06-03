@@ -37,14 +37,14 @@ package body Matcher is
   begin
 
     case Node.Kind is
-      when Tree.Eval | Tree.Set =>
-        -- Eval or Set statement: One variable to assign to Str or Critext
+      when Tree.Eval | Tree.Set | Tree.Get =>
+        -- Eval, Set or Get statement: One variable to assign to Str or Critext
         -- Expand Variable name and do None/Resolve/Compute of expression
         -- Expand variable name (check or local vars only)
         Expanded := Variables.Expand (Node.Expression,
           (if Check_Only then Variables.Check_Only else Variables.Local_Only));
         -- None/Resolve/Compute Str or Critext
-        Expanding := (if Node.Kind = Tree.Eval then Str else Node.Critext);
+        Expanding := (if Node.Kind = Tree.Set then Node.Critext else Str);
         if Check_Only and then Node.Eval /= Tree.None then
           -- Check that content expands OK
           Result := Variables.Expand (Expanding, Variables.Check_Only);

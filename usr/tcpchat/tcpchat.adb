@@ -4,7 +4,7 @@ with As.U, Basic_Proc, Argument, Argument_Parser;
 with Debug, Ios, Tree, Events;
 procedure Tcpchat is
 
-  Version : constant String := "5.1";
+  Version : constant String := "5.2";
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (

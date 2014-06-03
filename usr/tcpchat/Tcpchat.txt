@@ -1,6 +1,6 @@
 tcpchat
 =======
-V5.1
+V5.2
 
 Tcpchat accepts connections on a TCP port, expects specific sentences and
 executes specified actions depending on what it receives.
@@ -72,8 +72,11 @@ or until a 'exit' statement is reached.
 - 'loop': loop executing a sub-script until a 'exit' statement is reached.
 - 'read': Read next input and check that it matches the [underline]#input
 condition# provided. Optionally fail on timeout if no input is received before a timeout
-expiration.
+expiration. 
 - 'skip': Read next sentence, whatever it is, with an optional timeout.
+- 'get': Read next sentence, whatever it is, and assign it to a variable.
+Optionally fail on timeout if no input is received before expiration.
+Optionally catch and handle error.
 - 'wait': Wait during the specified delay.
 - 'send': Send the sentence provided, on option with a line feed.
 - 'call': Call the shell to execute the command and arguments provided. Send
@@ -167,7 +170,6 @@ statement this error can be caught and handled.
 ==========================
 
 
-
 High level design
 -----------------
 General design
@@ -205,7 +207,7 @@ Design of the tree
 Each node of the tree contains:
 
 - Kind (Enum): Selectn, Expect, Default, Timeout, Cond, Condif, Condelse,
-Repeat, Loopn, Exitn, Read, Skip, Wait, Send, Log, Call, Eval, Set, Parse,
+Repeat, Loopn, Exitn, Read, Skip, Get, Wait, Send, Log, Call, Eval, Set, Parse,
 Chdir, Close. +
 The 'chats' statement is mapped as a Selec node. It is the only Selec node
 with no father. +

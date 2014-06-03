@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- DTD of a chats file of tcpchat -->
 
-<!ENTITY Version "5.1">
+<!ENTITY Version "5.2">
 
 <!-- Common attributes -->
 <!-- A Boolean -->
@@ -37,7 +37,7 @@
                    Eval %Evaluate;
                    OnlyIfNotSet %boolean; 'false'">
 <!-- A subscript -->
-<!ENTITY % Script "((select|cond|while|loop|exit|read|skip|wait|send|call
+<!ENTITY % Script "((select|cond|while|loop|exit|read|skip|get|wait|send|call
                     |set|assign|parse|eval|chdir|log)*,close?)">
 
 
@@ -82,7 +82,12 @@
 
 <!-- The skip statement (skip an input) -->
 <!ELEMENT skip EMPTY>
-<!ATTLIST skip %TimeoutMs;>
+<!ATTLIST skip %TimeoutMs; %SetVar;>
+
+<!-- The get statement (take any input and set a variable) -->
+<!ELEMENT get (error?)>
+<!ATTLIST get %TimeoutMs; %SetVar;>
+<!ELEMENT error %Script;>
 
 <!-- The wait statement (wait some time) -->
 <!ELEMENT wait EMPTY>
@@ -95,7 +100,6 @@
 <!-- The call statement (call shell) -->
 <!ELEMENT call (command,error?)>
 <!ELEMENT command (#PCDATA)>
-<!ELEMENT error %Script;>
 
 <!-- The eval statement (set variable from shell output) -->
 <!ELEMENT eval (command,error?)>
