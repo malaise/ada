@@ -63,9 +63,10 @@
             <send>HTTP/1.0 404 Not Found</send>
           </else>
         </cond>
+        <close/>
       </error>
     </call>
-    <!-- Close -->
+    <!-- Done -->
     <close/>
   </chat>
 

@@ -1,6 +1,6 @@
 tcpchat
 =======
-V5.0
+V5.1
 
 Tcpchat accepts connections on a TCP port, expects specific sentences and
 executes specified actions depending on what it receives.
@@ -30,7 +30,7 @@ Chat file and behavior
 The chats file defines the version and describes several alternative 'chat'
 scripts.
 
-.Chat
+.Chat selection
 Each 'chat' starts with one expected intput, followed by a script of expected
 inputs and/or actions.
 
@@ -92,22 +92,26 @@ tcpchat has been launched.
 - 'log': Report some text on stderr.
 - 'close': Close current 'chat', go back to 'chat' selection.
 
+.End of chat
 A chat script ends on either:
 
-- nothing else to do: leave the connection open and go back to 'chats'
-(expecting an input and selecting a new 'chat' script). The
+- no more statement in the chat: leave the connection open and go back to
+'chats' (expecting an input to select a new 'chat' script). The
 xref:Variables[variables] and current dir are not reset. The chat
-timeout, if any, remains active until a new chat is selected.
+timeout, if any, remains active until a new chat is selected. The connection
+is closed in case of xref:Failure[failure] (chat timeout, unexpected input or
+transmission error).
 - anchor:Close[]a 'close' statement: Close current connection, reset variables
 and current dir, and go back to 'chats'.
 - anchor:Failure[]a failure: one of the following situations, which leads to
-the closure (as on statement 'xref:Close[close]') of current script:
+the closure (as on statement 'xref:Close[close]') of the current chat:
  * The expiration of the timeout global to the chat script.
- * The expiration of the timeout on the whole chats selection, or on a read or a
-skip, or on select without a 'timeout' entry.
+ * The expiration of the timeout of a 'read', of a 'skip', or of a 'select'
+that has no 'timeout' entry.
  * The reception of a non expected string by a 'read'.
- * The reception of a non expected string by a 'expect' (for 'chats' or
-'select') when it has no 'default' entry.
+ * The reception of a string not matching any 'expect' of a 'select' that
+has no 'default' entry.
+ * The reception of a string not matching any 'chat' of the 'chats'.
  * A transmission error (closure, overflow).
  * The failure of 'call' or 'eval' of an external command if there is no
 'error' bloc to handle the failure.

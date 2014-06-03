@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- DTD of a chats file of tcpchat -->
 
-<!ENTITY Version "5.0">
+<!ENTITY Version "5.1">
 
 <!-- Common attributes -->
 <!-- A Boolean -->
@@ -84,7 +84,7 @@
 <!ELEMENT skip EMPTY>
 <!ATTLIST skip %TimeoutMs;>
 
-<!-- The wait statement (wait some tome) -->
+<!-- The wait statement (wait some time) -->
 <!ELEMENT wait EMPTY>
 <!ATTLIST wait DelayMs CDATA #REQUIRED>
 

@@ -88,7 +88,7 @@ package body Matcher is
         end if;
     end case;
 
-    -- Now we check if Result  matches Expanded
+    -- Now we check if Result matches Expanded
     Debug.Logger.Log_Debug ("Matching >" & Result.Image
                             & "< oper " & Mixed_Str (Node.Oper'Img)
                             & " with >" & Expanded.Image & "<");
@@ -261,12 +261,14 @@ package body Matcher is
     if not Result then
       Error ("Operation " & Mixed_Str (Node.Oper'Img)
            & " incompatible with Evaluation " & Mixed_Str (Node.Eval'Img));
+      raise Match_Error;
     end if;
 
     -- Assign requires Match
     if not Assign.Is_Null and then Node.Oper /= Tree.Match then
       Error ("Assignment " & Assign.Image & " requires Match operation, got "
            & Mixed_Str (Node.Oper'Img));
+      raise Match_Error;
     end if;
 
     -- Check

@@ -35,16 +35,20 @@ else
   export PORT_NAME="port $PORT"
 fi
 
-if [ -f "$1.xml" ] ; then
-  FILE="$1.xml"
-  echo "Chats $FILE on $PORT_NAME"
-else
+if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then
   echo "Usage: `basename $0` [ -d ] [ -g] [ -p <port> ]  <chats_file>"
   echo " -d             for tcpchat debug traces"
   echo " -g             for launching debugger"
   echo " -p <port>      for specific port or stdin if \"-\" (default \"http\")"
   echo " http, rsh, chats or other xml file name"
   echo "Note that using the port http requires root priviledges."
+  exit 1
+fi
+if [ -f "$1.xml" ] ; then
+  FILE="$1.xml"
+  echo "Chats $FILE on $PORT_NAME"
+else
+  echo "File "$1.xml" not found."
   exit 1
 fi
 
