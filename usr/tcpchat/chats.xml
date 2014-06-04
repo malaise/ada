@@ -98,7 +98,7 @@
         <read TimeoutMs="10_000" Crit=".{4\}word" Oper="match"/>
         <send>${$PASSWORD}</send>
         <send>Working: Please wait...</send>
-        <wait DelayMs="5_000"/>
+        <wait DelayMs="2_100"/>
         <send>Done. Please logout.</send>
         <read TimeoutMs="10_000" Crit="logout"/>
         <close/>
@@ -113,15 +113,15 @@
     <read Crit="ATQ0 V1 E1 S0=0 &amp;C1 &amp;D2 +FCLASS=0"/>
     <send>OK</send>
     <read Crit="ATDT0860922000"/>
-    <wait DelayMs="21_000"/>
+    <wait DelayMs="2_100"/>
     <send>CONNECT 56000</send>
-    <wait DelayMs="10_000"/>
+    <wait DelayMs="1_000"/>
     <send>login</send>
     <read Crit="malaise"/>
     <send>password</send>
     <read Crit="${$PASSWORD}"/>
     <send>Working: Please wait...</send>
-    <wait DelayMs="5_000"/>
+    <wait DelayMs="2_100"/>
     <send>Done. Please logout.</send>
     <read TimeoutMs="10_000" Crit="logout"/>
     <close/>
