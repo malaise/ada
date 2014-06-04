@@ -21,10 +21,14 @@ export PASSWORD="userpass"
 export PIPE=pipe
 export RES=result
 export EXPECTED=expected
+export SLEEPSTART=0.3
+export SLEEPEND=0.3
 if [ ! -p $PIPE ] ; then
   mknod $PIPE p
 fi
 
+# UTILITIES
+# ---------
 # Clean
 function clean {
   rm -f $PIPE $DEBUG $RES $EXPECTED
@@ -46,7 +50,7 @@ function send {
     shift
     if [ "$1" = "" ] ; then
       # Wait a bit before returning (which will SIGPIPE tcpchat)
-      sleep 1
+      sleep ${SLEEPEND}
       return
     fi
     sleep $1
@@ -54,7 +58,7 @@ function send {
     shift
     if [ \( "$1" = "" \) -a \( "$prevsleep" = "0" \) ] ; then
       # Called with ... cmd 0
-      sleep 1
+      sleep ${SLEEPEND}
     fi
   done
 }
@@ -84,7 +88,7 @@ function try {
   # Start tcpchat
   tcpchat -p - -f chats.xml <$PIPE >$RES 2>$DEBUG &
   PID=$!
-  sleep 1
+  sleep ${SLEEPSTART}
 
   # Send stimulus
   send $@ > $PIPE
@@ -94,6 +98,9 @@ function try {
   # Compare with expected
   check $RES "$expected"
 }
+
+# START tests
+# -----------
 
 # Command ls and exit of rsh.xml
 echo -n "Test rsh: "
@@ -244,6 +251,17 @@ try $EXPECTED parse${SPACE}toto${SPACE}titi${SPACE}tata
 echo -n "Test parse 6: "
 echo -en "toto\ntiti\ntata\ntutu\ntete\n" > $EXPECTED
 try $EXPECTED parse${SPACE}toto${SPACE}titi${SPACE}tata${SPACE}tutu${SPACE}tete${SPACE}nene
+
+# Eval compute, resolve and none
+echo -n "Test eval compute: "
+echo "21" > $EXPECTED
+try $EXPECTED "compute 0 3*7"
+echo -n "Test eval resolve: "
+echo "${PWD}" > $EXPECTED
+try $EXPECTED "resolve 0 \${\$PWD}"
+echo -n "Test eval none: "
+echo "none" > $EXPECTED
+try $EXPECTED "none 0 \${Command}"
 
 # Clean
 clean

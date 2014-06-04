@@ -1,6 +1,6 @@
 tcpchat
 =======
-V5.2
+V5.3
 
 Tcpchat accepts connections on a TCP port, expects specific sentences and
 executes specified actions depending on what it receives.
@@ -24,13 +24,13 @@ tcpchat expects to receive one or several sentences (a sentence is one line
 terminated by Lf), it executes some actions and can reply by one or several
 sentences.
 
-Chat file and behavior
-~~~~~~~~~~~~~~~~~~~~~~
-.File
+Chats file
+~~~~~~~~~~
 The chats file defines the version and describes several alternative 'chat'
 scripts.
 
-.Chat selection
+Chat selection
+~~~~~~~~~~~~~~
 Each 'chat' starts with one expected intput, followed by a script of expected
 inputs and/or actions.
 
@@ -47,7 +47,8 @@ until it matches. Then the corresponding 'chat' is selected. +
 In case of a regexp matching, some xref:Variables[Variables] can be defined and
 initialized from the content (or a part) of the input string.
 
-.Statements
+Statements
+~~~~~~~~~~~
 Once the 'chat' is selected, tcpchat executes the statements of the script, one
 after the other. A statement can be:
 
@@ -95,7 +96,8 @@ tcpchat has been launched.
 - 'log': Report some text on stderr.
 - 'close': Close current 'chat', go back to 'chat' selection.
 
-.End of chat
+End of chat
+~~~~~~~~~~~
 A chat script ends on either:
 
 - no more statement in the chat: leave the connection open and go back to
@@ -125,7 +127,8 @@ bloc to handle the failure.
 
 anchor:Variables[]
 
-.Variables
+Variables
+~~~~~~~~~
 The text of sentences that are expected, read or sent, the text of commands that
 are called or executed, and the text of expressions that are evaluated, can
 reference variables. Variables obey to the following rules:
@@ -148,9 +151,9 @@ variable only if is not defined so far,
 'eval', 'set', 'assign' and 'parse' can be evaluated or not:
     ** "none": do no evaluate. Allows string comparison ("equal" or
 "not_equal"),
-    ** "resolve': evaluate. Allows string comparison or regexp matching
+    ** "resolve": evaluate. Allows string comparison or regexp matching
 ("equal", "not_equal", "match" or "not_match"),
-    ** "compute': evaluate and compute. Allows integer comparison ("equal",
+    ** "compute": evaluate and compute. Allows integer comparison ("equal",
 "not_equal", "less", "greater", "less_equal" or "greater_equal"),
  * The expression of 'send', 'chdir' and 'log' is always evaluated.
 
@@ -169,6 +172,11 @@ statement this error can be caught and handled.
   "${V1}+${V2}" is a valid evaluated expression, leading to "1+2", and also a valid computed expression, leading to "3".
 ==========================
 
+NOTE: There are three ways to set variables from input: 'chat' or 'expect' with
+Assign, 'read' with Assign, and 'get'. Because Assign relies on variable
+resolution (e.g. $\{1}) it requires that Eval="resolve". As a
+consequence, the only way to set a variable from input without resolving the
+content of this input is a 'get' with Eval="none".
 
 High level design
 -----------------

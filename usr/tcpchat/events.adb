@@ -73,6 +73,7 @@ package body Events is
     Children_Number : Trees.Child_Range;
     Event : Ios.Event_Type;
     Disconnection : Boolean;
+    Select_Chats : As.U.Asu_Us;
     Variable : As.U.Asu_Us;
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
@@ -96,6 +97,8 @@ package body Events is
             if not Tree.Chats.Has_Father and then not In_Chat then
               Current_Timeout := Tree.Infinite_Ms;
             end if;
+            Select_Chats := As.U.Tus (if Tree.Chats.Has_Father then "select"
+                                      else "chats");
 
             -- Read a sentence
             Event := Ios.Read (Current_Timeout);
@@ -134,7 +137,7 @@ package body Events is
                 if not In_Chat then
                   -- No timeout found
                   Debug.Logger.Log_Debug ("No timeout on select");
-                  Put_Line ("Timeout on select");
+                  Put_Line ("Timeout on " & Select_Chats.Image);
                   Reset;
                 end if;
 
@@ -153,7 +156,7 @@ package body Events is
                                         & Child.Critext.Image);
                   if Child.Kind = Tree.Timeout then
                     -- Current (last) child is Timeout => no match
-                    Put_Line ("No match on select");
+                    Put_Line ("No match on " & Select_Chats.Image);
                     Reset;
                     exit Selec_Children;
                   elsif Child.Kind = Tree.Default
@@ -177,7 +180,7 @@ package body Events is
                     exit Selec_Children;
                   elsif not Tree.Chats.Has_Brother (False) then
                     -- No more child
-                    Put_Line ("No match on select");
+                    Put_Line ("No match on " & Select_Chats.Image);
                     Reset;
                     exit Selec_Children;
                   end if;
@@ -286,7 +289,7 @@ package body Events is
                 Put_Line ("Timeout on chat script");
                 Reset;
               when Ios.Local_Timeout =>
-                Put_Line ("Timeout on Read");
+                Put_Line ("Timeout on Get");
                 Reset;
               when Ios.Got_Sentence =>
                 -- Get

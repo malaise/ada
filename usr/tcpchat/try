@@ -44,11 +44,14 @@ if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then
   echo "Note that using the port http requires root priviledges."
   exit 1
 fi
-if [ -f "$1.xml" ] ; then
-  FILE="$1.xml"
+if [ -z "$1" ] ; then
+  echo "Missing file name."
+  exit 1
+elif [ -f "$1" ] ; then
+  FILE="$1"
   echo "Chats $FILE on $PORT_NAME"
 else
-  echo "File "$1.xml" not found."
+  echo "File "$1" not found."
   exit 1
 fi
 

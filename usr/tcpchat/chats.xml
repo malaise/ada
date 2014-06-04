@@ -303,12 +303,13 @@
     <close/>
   </chat>
 
-  <!-- Eval or compute an expression -->
-  <chat Name="eval" Crit="(resolve|compute|leave)" Oper="match"
+  <!-- Eval an expression -->
+  <chat Name="eval" Crit="(resolve|compute|none)" Oper="match"
         Assign="Command=${1}">
     <!-- Get the arg, give up on timeout -->
     <get TimeoutMs="10000" Var="Arg" Eval="none">
       <error>
+        <send>ERROR</send>
         <close/>
       </error>
     </get>
