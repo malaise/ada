@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V14.18
+V14.19
 
 General purpose
 ---------------
@@ -112,8 +112,8 @@ when it starts the xref:XEdit[editor] and when the editor exits.
 This is because the edition can modify the current status of local files. Still,
 it also is possible from a stand-alone program to modify the status of
 local files. This is why Agite periodically checks and redisplays the status of
-local files. This parameter defines the period in seconds of this automatic
-check.
+local files in in the xref:XDir[directory] and in the xref:XCommit[commit]
+menus. This parameter defines the period in seconds of this automatic check.
 +
 Setting the value to 0.0 disables the feature.
 +
@@ -792,7 +792,11 @@ The possible actions on the list of changes or the comment are:
 
 Reread::
 
-Re-read the current branch and the list of local changes.
+Reread::
+Normally Agite re-scans the current directory and refreshes the list and status
+when necessary, and also periodically if the feature is enabled (see
+xref:XConfPeriod[period] configuration option). This button explicitly refreshes
+the current list and status of changes.
 
 Diff::
 

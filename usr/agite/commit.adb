@@ -219,7 +219,7 @@ package body Commit is
     Untracked : Git_If.File_List;
     Moved : Boolean;
   begin
-    -- Get list of changes,
+    -- Reread and update changes
     Afpx.Suspend;
     Git_If.List_Changes (Changes);
     if not Changes.Is_Empty then
@@ -403,7 +403,10 @@ package body Commit is
               null;
           end case;
 
-       when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
+       when Afpx.Timer_Event =>
+         Reread;
+
+       when Afpx.Fd_Event | Afpx.Signal_Event =>
           null;
        when Afpx.Refresh =>
          -- Reread branch and changes
