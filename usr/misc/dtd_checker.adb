@@ -2,6 +2,8 @@
 with Ada.Exceptions;
 with As.U, Argument, Basic_Proc, Xml_Parser;
 procedure Dtd_Checker is
+  -- Current version
+  Version : constant String := "V4.0";
 
   -- Xml Parser dtd
   File : As.U.Asu_Us;
@@ -11,9 +13,11 @@ procedure Dtd_Checker is
   -- Program help
   procedure Usage is
   begin
-    Basic_Proc.Put_Line_Error (
- "Usage: " & Argument.Get_Program_Name & " [ -w | --warnings ] [ <dtd_file> ]");
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+                             & " [ -w | --warnings ] [ <dtd_file> ]");
     Basic_Proc.Put_Line_Error ("  Default: only checks for errors on stdin.");
+    Basic_Proc.Put_Line_Error ("or " & Argument.Get_Program_Name
+                             & "  -h | --help | -v | --version");
   end Usage;
 
   Abort_Error : exception;
@@ -41,6 +45,15 @@ begin
   and then (Argument.Get_Parameter (1) = "-h"
     or else Argument.Get_Parameter (1) = "--help") then
     Usage;
+    Basic_Proc.Set_Error_Exit_Code;
+    return;
+  end if;
+
+  if Argument.Get_Nbre_Arg = 1
+  and then (Argument.Get_Parameter (1) = "-v"
+    or else Argument.Get_Parameter (1) = "--version") then
+    Basic_Proc.Put_Line_Output ("Parser version:      " & Xml_Parser.Version);
+    Basic_Proc.Put_Line_Output ("Dtd_Checker version: " & Version);
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;

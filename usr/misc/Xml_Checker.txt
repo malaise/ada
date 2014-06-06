@@ -3,10 +3,11 @@ Xml_Checker
 
 Parser version: V33.3 +
 Generator version: V13.1 +
-Xml_checker version: V18.2
+Xml_checker version: V18.2 +
+Dtd_checker version: V4.0
 
-Xml_checker is a parser of XML file that checks the syntax (versus DTD) and
-formats the output.
+Xml_checker is a XML parser who checks the syntax (versus DTD) and formats the
+output.
 
 Syntax
 ------
@@ -112,8 +113,8 @@ anchor:Canonical[]-C | --canonical: :: for canonicalization of the XML (see
 http://www.w3.org/TR/xml-c14n). This option only allows options dtd, warnings
 and keep-comments. +
 It expands, removes CDATA markers, does xref:Normalize[not normalize], does not
-expand namespaces and by default removes comments; it is not supported in
-xref:Tree[tree] mode).
+expand namespaces and by default removes comments. It is not supported in
+xref:Tree[tree] mode.
 
 anchor:Normalize[]--no-normalize: :: for no normalization of attributes and
 text. By default the text is normalized and, if the xref:Expand[expand] option
