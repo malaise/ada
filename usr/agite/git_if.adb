@@ -811,12 +811,15 @@ package body Git_If is
   function Do_Commit (Comment : String) return String is
     Cmd : Many_Strings.Many_String;
     Lcomment : As.U.Asu_Us;
+    use type As.U.Asu_Us;
   begin
-    Lcomment := As.U.Tus (Str_Util.Substit (Comment, """", "\""", True));
+    -- Replace ' by '\'' in comment, then protect commend in quotes
+    Lcomment := As.U.Tus (Str_Util.Substit (Comment, "'", "'\''", True));
+    Lcomment := "'" & Lcomment & "'";
     Cmd.Set ("git");
     Cmd.Cat ("commit");
     Cmd.Cat ("-m");
-    Cmd.Cat ("""" & Lcomment.Image & """");
+    Cmd.Cat (Lcomment.Image);
     Command.Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
