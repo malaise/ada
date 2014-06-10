@@ -115,6 +115,7 @@ package body Input_Dispatcher is
       end loop;
       if Cur_Index > Cur_Str.Length then
         -- No more word
+        Debug.Log (Debug.Input, "Next empty 1");
         return As.U.Asu_Null;
       end if;
 
@@ -123,6 +124,7 @@ package body Input_Dispatcher is
       Lf_Index := Cur_Str.Locate (Lf, Cur_Index);
       if Lf_Index = 0 then
         -- No end of line (so nothing after it) => done
+        Debug.Log (Debug.Input, "Next empty 2");
         return As.U.Asu_Null;
       else
         -- Start at Lf (it will be skipped as a separator)
@@ -177,12 +179,15 @@ package body Input_Dispatcher is
       Stop_Index := Stop_Index - 1;
     end if;
 
+    Debug.Log (Debug.Input, "Next > "
+                          & Cur_Str.Slice (Tmp_Index, Stop_Index) & "<");
     return As.U.Tus (Cur_Str.Slice (Tmp_Index, Stop_Index));
 
   exception
     when String_Error =>
       -- Prevent infinite loop if String_Error is handled (ex: on stdin)
       Cur_Index := Cur_Index + 1;
+      Debug.Log (Debug.Input, "Next error");
       raise;
   end Next_Str_Word;
 
@@ -212,11 +217,9 @@ package body Input_Dispatcher is
     Debug.Log (Debug.Input, "Setting input to >" & Str & "<");
     if Str = "" then
       Curr_Is_Stdin := True;
-      if Str_Stdin.Length /= 0 then
-        -- Restore Cur_Index to Ind_Stdin when back from prog to stdin
-        Cur_Index := Ind_Stdin;
-        Cur_Str := Str_Stdin;
-      end if;
+      -- Restore Cur_Index to Ind_Stdin when back from prog to stdin
+      Cur_Index := Ind_Stdin;
+      Cur_Str := Str_Stdin;
     else
       if Curr_Is_Stdin then
         -- If leaving stdin for a prog, save Cur_Index in Ind_Stdin
@@ -291,7 +294,6 @@ package body Input_Dispatcher is
 
     return Word.Image;
   end Next_Word;
-
 
 end Input_Dispatcher;
 

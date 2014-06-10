@@ -207,6 +207,7 @@ package body Io_Flow is
         Input_Data := Input_Flow.Get;
         -- End of flow when got an empty line
         Len := Input_Data.Length;
+        Debug.Log (Debug.Flow, "Got" & Len'Img & " bytes");
         exit when Len = 0;
         -- Remove trailing Line_Feed
         if Input_Data.Element (Len) = Text_Line.Line_Feed_Char then

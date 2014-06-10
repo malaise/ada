@@ -319,8 +319,6 @@ package body Mcd_Mng is
        := (Kind => Oper, Val_Oper => Operator_List'First);
   S : Item_Rec := Invalid_Item;
 
-  -- Subprogram called
-  Call_Entry : As.U.Asu_Us;
 
   -- Subprogram to call when Break
   Breaking : Boolean := False;
@@ -349,13 +347,17 @@ package body Mcd_Mng is
       L : Integer;
       Call_Stack_Level : Natural;
       Ret_All : Boolean;
+      -- Subprogram called
+      Call_Entry : As.U.Asu_Us;
     begin
-      Debug.Log (Debug.Oper, "Do_ret");
+      Ret_All := False;
       Call_Stack_Level := Call_Stack.Level;
+      Debug.Log (Debug.Oper, "Do_ret from" & Call_Stack_Level'Img);
       if not All_Levels then
         -- Has to be Inte and val NaturaL
         begin
           L := Natural(Levels.Val_Inte);
+          Debug.Log (Debug.Oper, "Do_ret" & L'Img);
         exception
           when others => raise Invalid_Argument;
         end;
@@ -364,6 +366,7 @@ package body Mcd_Mng is
         end if;
       else
         -- Return all
+        Debug.Log (Debug.Oper, "Do_ret all");
         L := Call_Stack_Level + 1;
       end if;
       -- Can return by one more than level
@@ -378,6 +381,7 @@ package body Mcd_Mng is
             Debug.Log (Debug.Oper, "Return from Break");
             The_End := Exit_Break;
           else
+            Debug.Log (Debug.Oper, "Return to exit");
             The_End := Exit_Return;
           end if;
         else
@@ -391,19 +395,19 @@ package body Mcd_Mng is
         Call_Entry := Call_Stack.Pop;
       end loop;
       if not Ret_All then
-        Input_Dispatcher.Set_Input(Call_Entry.Image);
+        Input_Dispatcher.Set_Input (Call_Entry.Image);
       end if;
     end Do_Retn;
 
     procedure Do_Retall is
     begin
-      Do_Retn(True, A, True);
+      Do_Retn (True, A, True);
     end Do_Retall;
 
     procedure Do_Ret (Allow_Level_0 : in Boolean := True) is
     begin
-      Stack.Pop(A);
-      Do_Retn(False, A, Allow_Level_0);
+      Stack.Pop (A);
+      Do_Retn (False, A, Allow_Level_0);
     end Do_Ret;
 
     procedure Handle_Break is

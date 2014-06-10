@@ -27,10 +27,10 @@ while [ $# -ne 0 ] ; do
       echo "Error. File "$2" not found." >&2
       exit 3
     fi
-    cat "$2" >> $com
+    cat "$2" >>$com
     shift; shift
   elif [ ! -z "$1" ] ; then
-    echo "$1" >> $com
+    echo "$1" >>$com
     shift
   else
     shift

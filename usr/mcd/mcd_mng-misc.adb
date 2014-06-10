@@ -8,8 +8,9 @@ package body Misc is
   Max_Env_Len : constant := 10240;
 
   procedure Do_Call is
+    Call_Entry : As.U.Asu_Us;
   begin
-    Debug.Log (Debug.Oper, "Do_call");
+    Debug.Log (Debug.Oper, "Do_call from" & Call_Stack.Level'Img);
     Stack.Pop(A);
     if A.Kind /= Prog then
       raise Invalid_Argument;
