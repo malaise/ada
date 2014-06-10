@@ -1,9 +1,15 @@
 #!/bin/bash
+if [ -n "$1" ] ; then
+  export PROG="$*"
+else
+  export PROG="./Test"
+fi
+
 res=0
 let n=0+1
 while [ $res -eq 0 ] ; do
   echo "Iteration "$n"."
-  ./Test
+  $PROG
   if [ $? -ne 0 ] ; then
     exit 1
   fi
