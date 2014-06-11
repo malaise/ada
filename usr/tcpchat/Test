@@ -22,7 +22,7 @@ export PIPE=pipe
 export RES=result
 export EXPECTED=expected
 export SLEEPSTART=0.1
-export SLEEPEND=0.1
+export SLEEPEND=0.3
 if [ ! -p $PIPE ] ; then
   mknod $PIPE p
 fi
