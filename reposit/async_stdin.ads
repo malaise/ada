@@ -39,6 +39,8 @@ package Async_Stdin is
 
   -- Set an internal callback (overwritting any Async callback set)
   --  and wait until it is called, then unset it and return the result
+  -- Raise Io_Error in case of error
+  -- Return empty string in case of event (timer, signal....)
   function Get_Line (Max_Chars : Max_Chars_Range := 0;
                      First_Col : Max_Chars_Range := 1) return String;
 
@@ -47,7 +49,6 @@ package Async_Stdin is
   function Strip_Last_Control (Str : String) return String;
 
   -- Put on stdout when in async
-  Io_Error : exception renames Sys_Calls.Io_Error;
   procedure Put_Out (Str : in String);
   procedure Put_Line_Out (Str : in String);
   procedure New_Line_Out;
@@ -61,6 +62,9 @@ package Async_Stdin is
 
   -- Error in Set_Async
   Error : exception;
+
+  -- Error when putting or getting
+  Io_Error : exception renames Sys_Calls.Io_Error;
 
 end Async_Stdin;
 

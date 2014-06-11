@@ -727,20 +727,22 @@ package body Async_Stdin is
   function Get_Line_Cb (Buffer : String) return Boolean is
   begin
     Get_Line_Buffer.Set (Buffer);
+    -- Signal error condition
+    if Buffer'Length = 0 then
+      raise Io_Error;
+    end if;
     return True;
   end Get_Line_Cb;
 
   function Get_Line (Max_Chars : Max_Chars_Range := 0;
                      First_Col : Max_Chars_Range := 1) return String is
+    use type Event_Mng.Out_Event_List;
   begin
     -- Set callback
     Get_Line_Buffer.Set_Null;
     Set_Async (Get_Line_Cb'Access, Max_Chars, First_Col);
-    -- Wait until it is called
-    loop
-      Event_Mng.Wait (Event_Mng.Infinite_Ms);
-      exit when not Get_Line_Buffer.Is_Null;
-    end loop;
+    -- Wait until an event
+    Event_Mng.Wait (Event_Mng.Infinite_Ms);
     -- Unset callback
     Set_Async;
     return Get_Line_Buffer.Image;
