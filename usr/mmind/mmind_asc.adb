@@ -29,7 +29,11 @@ begin
           -- Allow up to 80 of input line
           Str : constant String := Async_Stdin.Get_Line (80, 5);
         begin
-          if Str'Length /= Len  + 1
+          if Str'Length = 0 then
+            -- Error, Ctrl-C?
+            Async_Stdin.New_Line_Out;
+            return;
+          elsif Str'Length /= Len  + 1
           or else Str(Str'Length) /= Ada.Characters.Latin_1.Lf then
             -- Validated input line must have 3/4/5 chars
             raise Constraint_Error;
