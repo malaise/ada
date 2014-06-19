@@ -1,6 +1,6 @@
 tcpchat
 =======
-V5.3
+V5.4
 
 Tcpchat accepts connections on a TCP port, expects specific sentences and
 executes specified actions depending on what it receives.
@@ -15,7 +15,7 @@ General description
   <tcp_port>  ::= -p <port> | --port=<port>
   <chat_file> ::= -f <file> | --file=<file>
 
-The <port> can be a TCP port name or number, or "-" for stdin. +
+The <port> can be a TCP port name or number, or "-" for stdin/stdout. +
 tcpchat listens on the port and accepts one TCP connection at a time: new
 connections are not accepted while one client is connected.
 

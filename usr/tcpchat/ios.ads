@@ -33,7 +33,9 @@ package Ios is
   -- Read next sentence. Wait up to Timeout
   function Read (Timeout_Ms : Integer) return Event_Type;
 
-  -- Send a sentence. Disconnection if error
+  -- Send a sentence. Disconnection if TCP error
+  -- Raises Output_Error if Stdout error
+  Output_Error : exception;
   procedure Send (Text : in As.U.Asu_Us;
                   Disconnection : out Boolean);
 

@@ -367,15 +367,20 @@ package body Events is
             end case;
 
           when Tree.Send =>
-            Ios.Send (Variables.Expand (Node.Critext, Variables.Local_Env),
-                      Disconnection);
-            if Disconnection then
-              Put_Line ("Disconnection");
-              Reset;
-            else
-              Find_Next;
-            end if;
-
+            begin
+              Ios.Send (Variables.Expand (Node.Critext, Variables.Local_Env),
+                        Disconnection);
+              if Disconnection then
+                Put_Line ("Disconnection");
+                Reset;
+              else
+                Find_Next;
+              end if;
+            exception
+              when Ios.Output_Error =>
+                Put_Line ("Output error");
+                Reset;
+            end;
           when Tree.Call =>
             declare
               Exit_Code : Command.Exit_Code_Range;

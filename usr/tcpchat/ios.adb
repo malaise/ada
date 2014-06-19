@@ -385,6 +385,8 @@ package body Ios is
     when Tcp_Util.Timeout_Error =>
       Debug.Logger.Log_Debug ("Timeout");
       Disconnection := True;
+    when Async_Stdin.Io_Error =>
+      raise Output_Error;
   end Send;
 
   -- Clear and re-open
