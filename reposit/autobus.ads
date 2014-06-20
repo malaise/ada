@@ -7,8 +7,8 @@ package Autobus is
 
   -- Concept
   -- Several processes connect to a Bus on which they can publish messages.
-  -- Each message is dispatched to observers, according to filters on the
-  --  content of the message.
+  -- Each message is dispatched to observers, according to filters that they
+  --  can set on the content of the messages.
 
   -- How to use:
   -- * First, create and initialise a Bus (provide an IPM address or LAN name,
@@ -18,8 +18,8 @@ package Autobus is
   --    AUTOBUS_CONFIG (see below).
   -- * Second, create an Observer (with a procedure Receive on it)
   --    and a Subscriber.
-  --   Then init the Subscriber, possibly with a filter expression on the
-  --     content of the expected messages.
+  --   Then init the Subscriber, possibly with a filter (regular expression) on
+  --     the content of the expected messages.
   --    The procedure Receive will be called with the messages (received on the
   --     Bus) that match the filter.
 
@@ -34,7 +34,7 @@ package Autobus is
 
   -- Tuning the Bus:
   -- A XML file allows the default tuning for all the Buses, and also a specific
-  --  tuning of each Bus.
+  --  tuning for each Bus.
   -- For the default and also for each individual Bus:
   -- - Heartbeat_Period is the period in seconds at which each process on
   --    the Bus sends the alive message. It is used in combination with
@@ -56,17 +56,17 @@ package Autobus is
   --    connected to the local host. Ex: Address="10.100.12.0"
   --    Netmask="255.255.255.0" means: if one of the local interfaces is
   --    10.100.12.*, then use this interface. A LAN directive will apply to all
-  --    all the hosts on the LAN, except for those which are previously defined
+  --    the hosts on the LAN, except for those which are previously defined
   --    in an Alias.
   -- Aliases and LANs are tested in the order of declaration. If none matches
   --  then the bus listens to, and sends the IPM messages on the interface
   --  associated to the local host name.
   -- See the DTD Autobus.dtd for the format of the XML file.
 
-  -- Note that the exclusion of a partner (either because it informs that it is
-  --  dead, or because of a timeout of alive message, on connection or on
-  --  sending) is not definitive. The partner is re-inserted when it is running
-  --  and reachable again (i.e. when we receive an alive message from it). It
+  -- Note that the exclusion of a partner (either because it informs that it
+  --  dyes, or because of a timeout of alive message, or on timeout while
+  --  connecting or sending) is not definitive. The partner is re-inserted when
+  --  it is reachable again (i.e. when we receive an alive message from it). It
   --  only misses the applicative  messages that were sent meanwhile.
 
   -------------
@@ -146,7 +146,7 @@ package Autobus is
   -- If initialising or resetting a Bus or a Subscriber while in Receive
   In_Receive : exception;
 
-  -- If any system error on any call
+  -- Ob any unexpected system error on any call
   System_Error : exception;
 
 private

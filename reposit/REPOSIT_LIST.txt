@@ -370,6 +370,9 @@ file_hash (1)::
 forker (2)::
      API to a standalone (in C) forker process.
 
+get_line (2)::
+     Parse a file ans split its lines into words.
+
 gets (1)::
      Get an integer, float or duration from a string.
 
@@ -494,14 +497,8 @@ rnd (1)::
 romanic (1)::
      Decimal to romanic conversion (11 <--> XI).
 
-round (1)::
-     Round a float to nearest integer
-
-roundiv (1)::
-     Divide float of A by float of B and return rounded result.
-
-round_at (1)::
-     Round a float at a given position, before or after decimal.
+rounds (1)::
+     Round / trunc a float
 
 schedule (1)::
      Allow task schduling (delay 0.0).
@@ -560,8 +557,8 @@ timers (2)::
 timeval (1)::
      Conversion from and to timeval structure.
 
-trace (1)::
-     Tracing utility library.
+trace trace.logger (2)::
+     Tracing utility library and logger object.
 
 trees (2)::
      Tree of items (father/children) management.
