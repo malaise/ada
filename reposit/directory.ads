@@ -48,7 +48,8 @@ package Directory is
   type File_Kind_List is new Sys_Calls.File_Kind_List;
   function File_Kind (File_Name : String) return File_Kind_List;
 
-  -- Is it a directory, a symbolic link
+  -- Is it a file, a directory, a symbolic link
+  function Is_File (File_Name : String) return Boolean;
   function Is_Dir  (File_Name : String) return Boolean;
   function Is_Link (File_Name : String) return Boolean;
 

@@ -199,7 +199,13 @@ package body Directory is
       raise Access_Error;
   end File_Kind;
 
-  -- Is it a dir, a symbolic link
+  -- Is it a file, a dir, a symbolic link
+  function Is_File (File_Name : String) return Boolean is
+    use type Sys_Calls.File_Kind_List;
+  begin
+    return Sys_Calls.File_Stat (File_Name).Kind = Sys_Calls.File;
+  end Is_File;
+
   function Is_Dir (File_Name : String) return Boolean is
     use type Sys_Calls.File_Kind_List;
   begin
