@@ -99,8 +99,13 @@ package Sourcer is
   function Get_Unit (Path, Unit : in As.U.Asu_Us) return Src_Dscr;
   function Get_Unit (Path_Unit : in As.U.Asu_Us) return Src_Dscr;
 
-  -- Get Unit_Body of a subunit
+  -- Get Unit_Body of a spec if any
+  -- Return a Dscr with empty Unit if standalone spec
   function Get_Body (Sub : in Src_Dscr) return Src_Dscr;
+
+  -- Get Unit_Body of a subunit
+  function Get_Root_Body (Sub : in Src_Dscr) return Src_Dscr;
+
 
 end Sourcer;
 

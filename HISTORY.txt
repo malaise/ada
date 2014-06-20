@@ -4,7 +4,9 @@ Main changes
 
 [horizontal]
 
-*2014/06/11*:: Simplify syntax of tcpchat, V4.0
+*2014/06/20*:: Add option -l | --list to lsadeps, V9.0
+
+*2014/06/11*:: Simplify syntax and add new statements to tcpchat, V4.0
 
 *2013/10/11*:: Add Branches menu to agite, V14.0
 

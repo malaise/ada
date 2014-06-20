@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V8.0";
+  Version : constant String := "V9.0";
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -16,7 +16,8 @@ procedure Lsadeps is
    07 => (False, 'd', As.U.Tus ("direct"),  False),
    08 => (False, 'f', As.U.Tus ("files"),   False),
    09 => (True,  'I', As.U.Tus ("include"),   True, True, As.U.Tus ("dir")),
-   10 => (True,  'R', As.U.Tus ("recursive"), True, True, As.U.Tus ("dir")));
+   10 => (True,  'R', As.U.Tus ("recursive"), True, True, As.U.Tus ("dir")),
+   11 => (False, 'l', As.U.Tus ("list"),  False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   Include_Index : constant Argument_Parser.The_Keys_Range := 9;
   Recursive_Index : constant Argument_Parser.The_Keys_Range := 10;
@@ -56,6 +57,8 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <recursive>   ::= " & Argument_Parser.Image (Keys(10)));
     Basic_Proc.Put_Line_Error (
+     " <list>        ::= " & Argument_Parser.Image (Keys(11))  & " [ <path_unit> ]");
+    Basic_Proc.Put_Line_Error (
      "Check function shows redundant ""with"" clauses in a dir (default: current dir).");
     Basic_Proc.Put_Line_Error (
      "Dependency function by default lists units on which <target_unit> depends,");
@@ -81,6 +84,8 @@ procedure Lsadeps is
      " <include> to add some directories or some directory trees to the search path");
     Basic_Proc.Put_Line_Error (
      "   (default is current and target directories),");
+    Basic_Proc.Put_Line_Error (
+     " <list> lists the units of current dir, or a unit and its subunits.");
   end Usage;
 
   Error_Raised : exception renames Sourcer.Error_Raised;
@@ -93,6 +98,7 @@ procedure Lsadeps is
 
 
   -- Option management
+  List_Mode : Boolean := False;
   Check_Mode : Boolean := False;
   Specs_Mode : Boolean := False;
   Revert_Mode : Boolean := False;
@@ -101,6 +107,7 @@ procedure Lsadeps is
   Files_Mode : Boolean := False;
   Target, Target_Dir : As.U.Asu_Us;
   Path, Path_Dir : As.U.Asu_Us;
+  List_Path : As.U.Asu_Us;
 
   -- Current directory
   Current_Dir : As.U.Asu_Us;
@@ -205,6 +212,26 @@ begin
     Check_Mode := True;
   end if;
 
+  -- List mode
+  if Arg_Dscr.Is_Set (11) then
+    -- No option except File
+    if Specs_Mode or else Revert_Mode or else Tree_Mode
+    or else Direct_Mode then
+      Error ("List mode only supports file option");
+    end if;
+    -- No include
+    if Arg_Dscr.Get_Nb_Occurences (9) /= 0
+    or else Arg_Dscr.Get_Nb_Occurences (10) /= 0 then
+      Error ("List mode is exclusive with simple or recursive includes");
+    end if;
+    List_Mode := True;
+  end if;
+
+  -- Check not check and list
+  if Check_Mode and then List_Mode then
+    Error ("Check and list modes are mutually exclusive");
+  end if;
+
   -- Check not tree and direct
   if Tree_Mode and then Direct_Mode then
     Error ("Tree and Direct mode are mutually exclusive");
@@ -212,7 +239,9 @@ begin
 
   -- Save current dir and add it to paths (top prio)
   Directory.Get_Current (Current_Dir);
-  Sort.Add_Path (Current_Dir);
+  if not List_Mode then
+    Sort.Add_Path (Current_Dir);
+  end if;
 
   if Check_Mode then
     -- An optional target directory
@@ -223,6 +252,48 @@ begin
       Error ("At most one target accepted");
     end if;
     Check_Dir (Target_Dir.Image);
+  elsif List_Mode then
+    if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) > 1 then
+      Error ("At most one path or unit accepted");
+    elsif Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) = 1 then
+      Target := As.U.Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index, 1));
+      Target_Dir := As.U.Tus (Directory.Make_Full_Path (Target.Image));
+      List_Path := As.U.Tus (Directory.Dirname (Target.Image));
+      begin
+        -- See if Target_Dir is a file or dir
+        if Directory.Is_File (Target_Dir.Image)
+        or else Directory.Is_Link (Target_Dir.Image) then
+          Debug.Logger.Log_Debug ("List file " & Target_Dir.Image);
+          -- Store path in Target_Dir, and target in Target
+          Target := As.U.Tus (Mixed_Str (Directory.Basename (Target_Dir.Image)));
+          Target_Dir := As.U.Tus (Directory.Make_Full_Path (Directory.Dirname
+            (Target_Dir.Image)));
+        elsif Directory.Is_Dir (Target_Dir.Image) then
+          -- Keep path in Target_Dir
+          Target.Set_Null;
+          Debug.Logger.Log_Debug ("List dir " & Target_Dir.Image);
+        else
+          -- Block, pipe...
+          raise Constraint_Error;
+        end if;
+      exception
+        when Directory.Name_Error =>
+          -- Unit
+          Debug.Logger.Log_Debug ("List unit " & Target_Dir.Image);
+          -- Store path in Target_Dir, and target in Target
+          Target := As.U.Tus (Mixed_Str (Directory.Basename (Target_Dir.Image)));
+          Target_Dir := As.U.Tus (Directory.Make_Full_Path (Directory.Dirname
+            (Target_Dir.Image)));
+        when others =>
+          Error ("Invalid path_dir " & Target.Image);
+      end;
+    end if;
+    -- Add target or current dir
+    if Target_Dir.Is_Null then
+      Sort.Add_Path (Current_Dir);
+    else
+      Sort.Add_Path (Target_Dir);
+    end if;
   else
     -- Target and path: at most 2 and at the end
     if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) > 2
@@ -291,9 +362,19 @@ begin
   ------------------
   -- CHECK TARGET --
   ------------------
-  Target_Dscr := Check_Unit (Target_Dir, Target, "Target");
+  if not Target.Is_Null then
+    Target_Dscr := Check_Unit (Target_Dir, Target, "Target");
+  end if;
   if not Path.Is_Null then
     Path_Dscr := Check_Unit (Path_Dir, Path, "Path");
+  end if;
+
+  -----------------
+  -- LIST TARGET --
+  -----------------
+  if List_Mode then
+    Output.List (Target.Image, Target_Dir.Image, List_Path.Image, Files_Mode);
+    return;
   end if;
 
   ----------------------------

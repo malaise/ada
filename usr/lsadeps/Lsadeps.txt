@@ -1,6 +1,6 @@
 lsadeps
 =======
-V8.0
+V9.0
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -9,11 +9,10 @@ Alternatively it checks redundant "with" clauses between specs and bodies.
 
 Command line arguments
 ----------------------
-Usage: lsadeps <version> | <help> | <check> | <depend>
+Usage: lsadeps <version> | <help> | <depend> | <list> | <check>
 
  <version>     ::= -v | --version
  <help>        ::= -h | --help
- <check>       ::= -c | --check  [ <target_dir> ]
  <depend>      ::= <options> <target_unit> [ <path_unit> ]
  <target_unit> ::=  [<path>/]<unit>
  <options>     ::=  [ <specs> | <revert> ] [ <tree> | <direct> ] [ <files> ] [ <include> ]
@@ -25,12 +24,15 @@ Usage: lsadeps <version> | <help> | <check> | <depend>
  <include>     ::= { <dir> | <recursive> }
  <dir>         ::= -I <dir> | --include=<dir>
  <recursive>   ::= -R <dir> | --recursive=<dir>
+ <list>        ::= [ <file> ] -l | --list [ <path_unit> ]
+ <check>       ::= -c | --check  [ <target_dir> ]
 
-There are two main functions: List dependencies and check redundant "with".
+There are three main functions: Show dependencies, list units, and check
+redundant "with".
 
-List dependencies
+Show dependencies
 ~~~~~~~~~~~~~~~~~
-This function by default lists units on which <target_unit> depends,
+This function by default lists the units on which <target_unit> depends,
 which are withed units, their body and subunits, units withed by these
 units... recursively. +
 Alternative modes are:
@@ -60,6 +62,15 @@ optimized so that the same unit is not analyzed several times, which
 significantly improves the performance. +
 Comparatively, the 'tree' option might be very time-consuming.
 
+List units
+~~~~~~~~~~
+This function lists the units of the current directory, or the units
+of the directory specified by <path> oa the unit <path_unit> and its subunits.
+
+The only possible option is:
+
+ - 'file' to show the file names (instead of unit names),
+
 Check redundant "with"
 ~~~~~~~~~~~~~~~~~~~~~~
 This function shows redundant "with" clauses in a dir (default: current
@@ -72,7 +83,7 @@ Format of output
 
 Results are put on stdout.
 
-List dependencies
+Show dependencies
 ~~~~~~~~~~~~~~~~~
 There are 4 different modes of analyze of dependencies (that can be combined)
 and 2 options of output:
@@ -113,6 +124,15 @@ another unit U co-located with W.
 - if there is no co-located unit then all the remote units with the same name
 are processed identically (they are all considered to depend on or to be
 dependent from current unit).
+
+List units
+~~~~~~~~~~
+If path_target does not denote a unit, then the units of the directory are
+listed, one per line, in alphabetical order (not the subunits).
+Otherwise the specified unit and its subunits are listed.
+
+Alternatively, the corresponding files, specification then body then subunits,
+are listed.
 
 Check redundant "with"
 ~~~~~~~~~~~~~~~~~~~~~~

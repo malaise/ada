@@ -1,4 +1,4 @@
-with As.U.Utils, Basic_Proc, Directory, Unbounded_Arrays;
+with As.U.Utils, Basic_Proc, Directory, Unbounded_Arrays, Parser;
 with Debug, Tree_Mng, Sort;
 package body Output is
 
@@ -13,6 +13,9 @@ package body Output is
 
   -- Unit to show Path to/from
   Path_Unit_Full : As.U.Asu_Us;
+
+  -- Path for list
+  List_Path : As.U.Asu_Us;
 
   -- Strip path of Str if current dir
   function Strip (Str : String) return String is
@@ -92,7 +95,7 @@ package body Output is
         else
           -- Put unit name, body ancestor of the subunit
           if Dscr.Dscr.Kind = Sourcer.Subunit then
-            Name := Sourcer.Get_Body (Dscr.Dscr).Unit;
+            Name := Sourcer.Get_Root_Body (Dscr.Dscr).Unit;
           else
             Name := Dscr.Dscr.Unit;
           end if;
@@ -171,7 +174,7 @@ package body Output is
   Ulist : As.U.Utils.Asu_Unique_List_Mng.Unique_List_Type;
   -- Dynamic list of sorted entries (units or files)
   Dlist : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
-  -- List Units of tree
+  -- Store unit of tree
   function List_Unit_Iterator (Dscr : Tree_Mng.Src_Dscr;
                                Level : Natural) return Boolean is
     pragma Unreferenced (Level);
@@ -193,7 +196,7 @@ package body Output is
     else
       -- Put unit name, body ancestor of the subunit
       if Dscr.Dscr.Kind = Sourcer.Subunit then
-        Name := Sourcer.Get_Body (Dscr.Dscr).Unit;
+        Name := Sourcer.Get_Root_Body (Dscr.Dscr).Unit;
       else
         Name := Dscr.Dscr.Unit;
       end if;
@@ -203,7 +206,7 @@ package body Output is
     return True;
   end List_Unit_Iterator;
 
-  -- Dump files of tree
+  -- Store file of tree
   function List_File_Iterator (Dscr : Tree_Mng.Src_Dscr;
                                Level : Natural) return Boolean is
     pragma Unreferenced (Level);
@@ -218,17 +221,46 @@ package body Output is
     return True;
   end List_File_Iterator;
 
+  -- Store unit of list
+  procedure Src_Unit_Iterator (Dscr  : in Sourcer.Src_Dscr;
+                               Go_On : in out Boolean) is
+    use type Sourcer.Src_Kind_List;
+  begin
+    -- Skip subunits, store each unit once
+    if Dscr.Kind /= Sourcer.Subunit then
+      Ulist.Insert_If_New (Sort.Make_Path (List_Path, Dscr.Unit));
+    end if;
+    Go_On := True;
+  end Src_Unit_Iterator;
+
+  -- Store unit of list
+  procedure Src_File_Iterator (Dscr  : in Sourcer.Src_Dscr;
+                               Go_On : in out Boolean) is
+  begin
+    Ulist.Insert (Sort.Make_Path (List_Path, Dscr.File));
+    Go_On := True;
+  end Src_File_Iterator;
+
   -- Put list of units or files
-  procedure Put_List (File_Mode : in Boolean) is
+  procedure Put_List (File_Mode : in Boolean; From_Tree : in Boolean) is
     Str : As.U.Asu_Us;
     Moved : Boolean;
   begin
     -- Build unique list of entries
-    Debug.Logger.Log_Debug ("Scanning tree");
-    if File_Mode then
-      Tree_Mng.Tree.Iterate (List_File_Iterator'Access);
+    if From_Tree then
+      Debug.Logger.Log_Debug ("Scanning tree");
+      if File_Mode then
+        Tree_Mng.Tree.Iterate (List_File_Iterator'Access);
+      else
+        Tree_Mng.Tree.Iterate (List_Unit_Iterator'Access);
+      end if;
     else
-      Tree_Mng.Tree.Iterate (List_Unit_Iterator'Access);
+      Debug.Logger.Log_Debug ("Scanning list");
+      if File_Mode then
+        Sourcer.List.Iterate (Src_File_Iterator'Access);
+      else
+        Sourcer.List.Iterate (Src_Unit_Iterator'Access);
+      end if;
     end if;
     -- Sort this list
     Debug.Logger.Log_Debug ("Copying list");
@@ -308,7 +340,7 @@ package body Output is
     else
       -- Put unit name, body ancestor of the subunit
       if Dscr.Dscr.Kind = Sourcer.Subunit then
-        Name := Sourcer.Get_Body (Dscr.Dscr).Unit;
+        Name := Sourcer.Get_Root_Body (Dscr.Dscr).Unit;
       else
         Name := Dscr.Dscr.Unit;
       end if;
@@ -364,7 +396,6 @@ package body Output is
     end if;
   end Put_Path;
 
-
   -- Put list/tree, normal/revert of units/files
   procedure Put (Revert_Mode, Tree_Mode, Direct_Mode, File_Mode : in Boolean;
                  Path_Unit : in Sourcer.Src_Dscr) is
@@ -388,9 +419,76 @@ package body Output is
       Put_Tree (File_Mode);
     else
       -- List from Root or reverse
-     Put_List (File_Mode);
+     Put_List (File_Mode, True);
     end if;
   end Put;
+
+  -- Add a unit and its subunits
+  -- For parsing list of subunits
+  function Is_Sep (C : Character) return Boolean is
+  begin
+    return C = Sourcer.Separator;
+  end Is_Sep;
+  procedure Add_Unit (Str : in As.U.Asu_Us; File_Mode : Boolean) is
+    Dscr : Sourcer.Src_Dscr;
+    Iter : Parser.Iterator;
+    Subunit : As.U.Asu_Us;
+    use type As.U.Asu_Us, Sourcer.Src_Kind_List;
+  begin
+    -- Get unit
+    Dscr := Sourcer.Get_Unit (Str);
+    if Dscr.Unit.Is_Null then
+      -- Unit not found
+      return;
+    end if;
+    -- Add this unit or file
+    if File_Mode then
+      Dlist.Insert (Sort.Make_Path (List_Path, Dscr.File));
+    else
+      Dlist.Insert (Sort.Make_Path (List_Path, Dscr.Unit));
+    end if;
+
+    -- Get the body of a spec (if any), add file
+    if Dscr.Kind = Sourcer.Unit_Spec and then not Dscr.Standalone then
+      Dscr := Sourcer.Get_Body (Dscr);
+      if File_Mode then
+        Dlist.Insert (Sort.Make_Path (List_Path, Dscr.File));
+      end if;
+    end if;
+
+    -- Iterate on its subunits
+    Iter.Set (Dscr.Subunits.Image, Is_Sep'Access);
+    loop
+      Subunit := As.U.Tus (Iter.Next_Word);
+      exit when Subunit.Is_Null;
+      Add_Unit (Dscr.Path & Subunit, File_Mode);
+    end loop;
+  end Add_Unit;
+
+  -- List a unit or all
+  procedure List (Target, Dir, Path : in String; File_Mode : in Boolean) is
+    Str : As.U.Asu_Us;
+    Moved : Boolean;
+  begin
+    List_Path := As.U.Tus (Path);
+    if Target = "" then
+      Debug.Logger.Log_Debug ("Listing dir: " & Path);
+      Put_List (File_Mode, False);
+    else
+      Str := Sort.Make_Path (Dir, Target);
+      Debug.Logger.Log_Debug ("Listing unit: " & Str.Image);
+      -- Put unit and subunits of Target
+      -- Insert it and its subunits
+      Add_Unit (Str, File_Mode);
+      -- Put entries
+      Dlist.Rewind;
+      loop
+        Dlist.Read (Str, Moved => Moved);
+        Put_Line_Stripped (Str.Image);
+        exit when not Moved;
+      end loop;
+    end if;
+  end List;
 
 end Output;
 

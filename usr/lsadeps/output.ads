@@ -5,5 +5,8 @@ package Output is
   procedure Put (Revert_Mode, Tree_Mode, Direct_Mode, File_Mode : in Boolean;
                  Path_Unit : in Sourcer.Src_Dscr);
 
+  -- List a unit or all
+  procedure List (Target, Dir, Path: in String; File_Mode : in Boolean);
+
 end Output;
 

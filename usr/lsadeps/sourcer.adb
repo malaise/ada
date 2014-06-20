@@ -597,9 +597,30 @@ package body Sourcer is
                      As.U.Tus (Directory.Basename (Path_Unit.Image)));
   end Get_Unit;
 
+  -- Get Unit_Body of a spec if any
+  -- Return a Dscr with empty Unit if standalone spec
+  function Get_Body (Sub : in Src_Dscr) return Src_Dscr is
+    Crit : Src_Dscr;
+    Found : Boolean;
+  begin
+    -- Try to get a body
+    if Sub.Kind /= Unit_Spec then
+      Error ("Cannot get body of " & Image (Sub));
+      return Sub;
+    end if;
+    Crit := Sub;
+    Crit.Kind := Unit_Body;
+    List.Search (Crit, Found);
+    if Found then
+      List.Read (Crit);
+    else
+      Crit.Unit.Set_Null;
+    end if;
+    return Crit;
+  end Get_Body;
 
   -- Get Unit_Body of a subunit
-  function Get_Body (Sub : in Src_Dscr) return Src_Dscr is
+  function Get_Root_Body (Sub : in Src_Dscr) return Src_Dscr is
     Parent : Src_Dscr;
   begin
     if Sub.Kind /= Subunit then
@@ -613,7 +634,7 @@ package body Sourcer is
       exit when Parent.Kind = Unit_Body;
     end loop;
     return Parent;
-  end Get_Body;
+  end Get_Root_Body;
 
 end Sourcer;
 
