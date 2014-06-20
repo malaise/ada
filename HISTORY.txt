@@ -3,6 +3,21 @@ HISTORY
 Main changes
 
 [horizontal]
+
+*2014/06/11*:: Simplify syntax of tcpchat, V4.0
+
+*2013/10/11*:: Add Branches menu to agite, V14.0
+
+*2013/10/01*:: Add Stash menu to agite, V12.0
+
+*2013/09/29*:: Add Commit Push and Pull menus to agite, V11.0
+
+*2013/09/07*:: Add a package for tracing
+
+*2013/07/29*:: Add LAN in Autobus
+
+*2013/07/16*:: Add host alias in Autobus
+
 *2013/04/22*:: Add back references in search pattern of asubst V17.0
 
 *2013/04/16*:: Fix check of multi-line find pattern when it must re-apply to
