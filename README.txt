@@ -77,8 +77,8 @@ This lib gathers several low level utility libraries:
 
 - 'timeval', used by other C libraries, for struct timeval operations,
 
-- 'socket', interfaced by the Ada 'Socket' package, interfaces socket (tcp, udp,
-ipm, message on tcp, afinet or afux) calls,
+- 'socket', interfaced by the Ada 'Socket' package, interfaces socket calls
+(tcp, udp, ipm, message on tcp, afinet or afux),
 
 - 'sys_calls', interfaced by the Ada 'Sys_Calls' and some other Ada packages,
 for several operating system calls,

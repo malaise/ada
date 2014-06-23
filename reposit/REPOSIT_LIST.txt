@@ -27,7 +27,7 @@ allows dispatching the FD events, timers and signals to the proper callbacks).
 
  * 'Timers' allows defining timers, expiration and callback,
 
- * 'Socket' allows sending and reading on socket FDs,
+ * 'Socket' and 'Tcp_Util' allow sending and reading on socket FDs,
 
  * 'Async_Stdin' allows defining a callback on stdin,
 
@@ -264,7 +264,7 @@ argument_parser (2)::
 as as.b as.u as.u.utils (2)::
      Bounded and unbounded strings and associated containers.
 
-aski::
+aski(1)::
      Strict ANSI characters definition and conversions
 
 assertion(1)::
@@ -355,7 +355,7 @@ environ (2)::
 euro_franc (1)::
      Euro <--> Franc convertion.
 
-event_mng (3)::
+event_mng (2)::
      Multiplex reception of events (timers, fd, signals).
 
 exception_messenger (1)::
@@ -512,8 +512,9 @@ smart_alias (2)::
 smart_reference (2)::
      Smart reference (automatic free).
 
-socket (3)::
-     Socket (Udp/Tpc/Tcp_Header, Ipm, Afunix) operations.
+socket (2)::
+     Socket (Udp/Tpc/Tcp_Header, Ipm, Afunix) operations. Relies on a quite
+complex C library.
 
 socket_util (1)::
      General Set_Dest and Link of socket.
@@ -675,7 +676,7 @@ Text_Line:: trail_spaces
 
 Timers:: lem, tcpchat
 
-Trees:: Xml_Parser
+Trees:: Xml_Parser, lsadeps, tcpchat
 
 Unbounded_Arrays:: renardeau
 

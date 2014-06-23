@@ -5,7 +5,6 @@ package Timers is
   --  specific time
   type Delay_List is (Delay_Sec, Delay_Del, Delay_Exp);
 
-
   -- How to specify a period for a timer
   subtype Period_Range is Duration range 0.0 .. Duration'Last;
   -- Timer with No_Period will expire only once and is called single-shot

@@ -12,7 +12,7 @@ package Key_Pressed is
   procedure Open (Blocking : in Boolean);
 
   -- Restore Stdin for synchronous input with echo
-  -- Raises Error an error occurs and Check is set
+  -- Raises Error if an error occurs and Check is set
   procedure Close (Check : in Boolean := False);
 
   -- Check if a key has been pressed
