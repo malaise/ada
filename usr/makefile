@@ -1,4 +1,4 @@
-include $(HOME)/Makefiles/common.mk
+include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 SUBDIRS := dictio fifos pipe \
  account agite als approx astub asubst battleship c_magic chess code \
  day_of_week enigma fl \

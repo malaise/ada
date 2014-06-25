@@ -1,4 +1,4 @@
-include $(HOME)/Makefiles/common.mk
+include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 
 LIBS := libcutil libx_mng libposix2pcre
 DBM := $(wildcard /usr/include/gdbm/ndbm.h /usr/include/gdbm-ndbm.h)

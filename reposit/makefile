@@ -1,4 +1,4 @@
-include $(HOME)/Makefiles/common.mk
+include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 
 SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg afpx_bld-xref \
   autobus-config channels-file pattern-storage \

@@ -46,12 +46,13 @@ Several examples of usage can be found in the source directories.
 
 Relocation of the Makefiles directory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-If the Makefiles installation directory is not '$(HOME)/Makefiles', then
+If the Makefiles installation directory is not '$(HOME)/Makefiles', then the
+new location can be set must be set in the environment variable 'MAKFILES_DIR'. Otherwise:
 
-- the definition of TEMPLATES in 'common.mk' has to be adapted,
+- the definition of 'TEMPLATES' in 'common.mk' has to be adapted,
 
 - all makefiles must have their first include directive of 'common.mk' adapted
-with the new path.
+with the new location.
 
 Relocation of C or Repository
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
