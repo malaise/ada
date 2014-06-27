@@ -17,6 +17,9 @@ package body Output is
   -- Path for list
   List_Path : As.U.Asu_Us;
 
+  -- List or not the subunits. Sourcer iterators need it
+  List_Subunits : Boolean := False;
+
   -- Strip path of Str if current dir
   function Strip (Str : String) return String is
   begin
@@ -187,7 +190,8 @@ package body Output is
     end if;
     if not Revert then
       -- Keep only spec or standalone body
-      if Dscr.Dscr.Kind = Sourcer.Subunit
+      if (Dscr.Dscr.Kind = Sourcer.Subunit
+          and then not List_Subunits)
          or else (Dscr.Dscr.Kind = Sourcer.Unit_Body
                   and then not Dscr.Dscr.Standalone) then
         return True;
@@ -227,7 +231,7 @@ package body Output is
     use type Sourcer.Src_Kind_List;
   begin
     -- Skip subunits, store each unit once
-    if Dscr.Kind /= Sourcer.Subunit then
+    if Dscr.Kind /= Sourcer.Subunit or else List_Subunits then
       Ulist.Insert_If_New (Sort.Make_Path (List_Path, Dscr.Unit));
     end if;
     Go_On := True;
@@ -236,8 +240,12 @@ package body Output is
   -- Store unit of list
   procedure Src_File_Iterator (Dscr  : in Sourcer.Src_Dscr;
                                Go_On : in out Boolean) is
+    use type Sourcer.Src_Kind_List;
   begin
-    Ulist.Insert (Sort.Make_Path (List_Path, Dscr.File));
+    -- Skip subunits
+    if Dscr.Kind /= Sourcer.Subunit or else List_Subunits then
+      Ulist.Insert (Sort.Make_Path (List_Path, Dscr.File));
+    end if;
     Go_On := True;
   end Src_File_Iterator;
 
@@ -264,6 +272,9 @@ package body Output is
     end if;
     -- Sort this list
     Debug.Logger.Log_Debug ("Copying list");
+    if Ulist.Is_Empty then
+      raise Error_Raised;
+    end if;
     Ulist.Rewind;
     loop
       Ulist.Read_Next (Str, Moved);
@@ -457,27 +468,32 @@ package body Output is
     end if;
 
     -- Iterate on its subunits
-    Iter.Set (Dscr.Subunits.Image, Is_Sep'Access);
-    loop
-      Subunit := As.U.Tus (Iter.Next_Word);
-      exit when Subunit.Is_Null;
-      Add_Unit (Dscr.Path & Subunit, File_Mode);
-    end loop;
+    if List_Subunits then
+      Iter.Set (Dscr.Subunits.Image, Is_Sep'Access);
+      loop
+        Subunit := As.U.Tus (Iter.Next_Word);
+        exit when Subunit.Is_Null;
+        Add_Unit (Dscr.Path & Subunit, File_Mode);
+      end loop;
+    end if;
   end Add_Unit;
 
   -- List a unit or all
-  procedure List (Target, Dir, Path : in String; File_Mode : in Boolean) is
+  procedure List (Target, Dir, Path : in String;
+                  File_Mode, All_Mode : in Boolean) is
     Str : As.U.Asu_Us;
     Moved : Boolean;
   begin
     List_Path := As.U.Tus (Path);
+    Revert := False;
+    List_Subunits := All_Mode;
     if Target = "" then
       Debug.Logger.Log_Debug ("Listing dir: " & Path);
       Put_List (File_Mode, False);
     else
       Str := Sort.Make_Path (Dir, Target);
       Debug.Logger.Log_Debug ("Listing unit: " & Str.Image);
-      -- Put unit and subunits of Target
+      -- Put unit and maybe subunits of Target
       -- Insert it and its subunits
       Add_Unit (Str, File_Mode);
       -- Put entries

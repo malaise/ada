@@ -6,7 +6,9 @@ package Output is
                  Path_Unit : in Sourcer.Src_Dscr);
 
   -- List a unit or all
-  procedure List (Target, Dir, Path: in String; File_Mode : in Boolean);
+  Error_raised : exception renames Sourcer.Error_raised;
+  procedure List (Target, Dir, Path: in String;
+                  File_Mode, All_Mode : in Boolean);
 
 end Output;
 

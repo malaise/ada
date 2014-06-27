@@ -1,6 +1,6 @@
 lsadeps
 =======
-V9.0
+V9.1
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -24,7 +24,8 @@ Usage: lsadeps <version> | <help> | <depend> | <list> | <check>
  <include>     ::= { <dir> | <recursive> }
  <dir>         ::= -I <dir> | --include=<dir>
  <recursive>   ::= -R <dir> | --recursive=<dir>
- <list>        ::= [ <file> ] -l | --list [ <path_unit> ]
+ <list>        ::= -l | --list  [ <file> ] [ <all> ] [ <path_unit> ]
+ <all>         ::= -a | --all
  <check>       ::= -c | --check  [ <target_dir> ]
 
 There are three main functions: Show dependencies, list units, and check
@@ -65,11 +66,12 @@ Comparatively, the 'tree' option might be very time-consuming.
 List units
 ~~~~~~~~~~
 This function lists the units of the current directory, or the units
-of the directory specified by <path> oa the unit <path_unit> and its subunits.
+of the directory specified by <path_unit> or the unit <path_unit>.
 
-The only possible option is:
+The possible options are:
 
  - 'file' to show the file names (instead of unit names),
+ - 'all' to also list the subunits (of all or of the specified unit).
 
 Check redundant "with"
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -125,14 +127,21 @@ another unit U co-located with W.
 are processed identically (they are all considered to depend on or to be
 dependent from current unit).
 
+lsadeps exits with 1 on error, and with 0 otherwise.
+
 List units
 ~~~~~~~~~~
-If path_target does not denote a unit, then the units of the directory are
-listed, one per line, in alphabetical order (not the subunits).
-Otherwise the specified unit and its subunits are listed.
+If <path_unit> denotes a directory, then all the units of the directory are
+listed, one per line, in alphabetical order (by default not the subunits).
+Otherwise the specified unit is listed (by default not its subunits).
 
-Alternatively, the corresponding files, specification then body then subunits,
-are listed.
+Optionally the subunits are listed after each unit.
+
+Alternatively, the corresponding files, specification then body (then,
+if specified, the files of the subunits), are listed.
+
+lsadeps exits with 1 on error, including when no unit could be found,
+and with 0 otherwise.
 
 Check redundant "with"
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -149,8 +158,8 @@ Example:
 
   Unit lsadeps/Output#UB withes Sourcer already withed by parent lsadeps/Output#US
 
-lsadeps then exits with 1 if at least one redundant "with" is detected and
-with 0 otherwise.
+lsadeps exits with 1 if at least one redundant "with" is detected or on
+error, and with 0 otherwise.
 
 Examples
 --------
