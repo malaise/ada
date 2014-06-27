@@ -1,6 +1,6 @@
 lsadeps
 =======
-V9.1
+V9.2
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -185,14 +185,24 @@ How does 'Unit1' need 'Unit2'
 --------------------
 
 What are all the units that will be re-compiled due to a modification of
-Unit spec
+'Unit' spec
 --------------------
   lsadeps -r -R ~/ada/usr Unit
 --------------------
 
-Check redundant "with" in current directory
+Check redundant "with" in the current directory
 --------------------
   lsadeps -c
+--------------------
+
+Check if the unit 'Unit' exists in current dir
+--------------------
+  lsadeps -l Unit >/dev/null 2>&1; echo $?
+--------------------
+
+List all files of '../ada/Unit' and its subunits
+--------------------
+  lsadeps -lfa ../ada/Unit
 --------------------
 
 High level design
