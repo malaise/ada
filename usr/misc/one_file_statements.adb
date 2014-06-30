@@ -1,4 +1,4 @@
-with Normal, Sys_Calls, Text_Line, As.U, My_Math;
+with Normal, Basic_Proc, Sys_Calls, Text_Line, Text_Char, My_Math;
 
 -- Count Ada statements
 package body One_File_Statements is
@@ -14,59 +14,47 @@ package body One_File_Statements is
   File_Error : exception;
   function Count_Statements_Of_File (File_Name : String) return Metrics is
 
-    File  : Text_Line.File_Type;
+    File  : Text_Char.File_Type;
     -- Comment "--" or "//"
     Comment_Char : Character;
-    -- Reause character already read head
-    Next_Set : Boolean := False;
     -- Current Nb of statements
     Current : Metrics;
     -- Parentheses
     Levels : Natural := 0;
 
-    -- Cache of line
-    Line : As.U.Asu_Us;
-    Len : Natural := 0;
-    Index : Positive := 1;
-
-    End_Error : exception;
-
     -- Current and prev chars
-    C, Prev_C : Character := ' ';
+    C, Prev_C : Character;
     procedure Get is
     begin
-      if Index > Len then
-        Line := File.Get;
-        if Line.Is_Null then
-          raise End_Error;
-        end if;
-        Len := Line.Length;
-        Index := 1;
-      end if;
       Prev_C := C;
-      C := Line.Element (Index);
-      Index := Index + 1;
-
+      C := File.Get;
       if C = Text_Line.Line_Feed_Char then
         Current.Lines := Current.Lines + 1;
       end if;
    exception
-      when End_Error =>
+      when Text_Char.End_Error =>
         raise;
       when others =>
-        Sys_Calls.Put_Line_Error ("Exception when reading line "
+        Basic_Proc.Put_Line_Error ("Exception when reading line "
           & Current.Lines'Img & " of file " & File_Name);
         raise File_Error;
     end Get;
 
+    procedure Unget is
+    begin
+      if C = Text_Line.Line_Feed_Char then
+        Current.Lines := Current.Lines - 1;
+      end if;
+      File.Unget (C);
+      C := Prev_C;
+    end Unget;
+
     procedure Skip_Line is
     begin
-      if Index <= Len then
-        Current.Lines := Current.Lines + 1;
-        -- Force reading of next line
-        Len := 0;
-        Index := 1;
-      end if;
+      loop
+        Get;
+        exit when C = Text_Line.Line_Feed_Char;
+      end loop;
     end Skip_Line;
 
     procedure Close is
@@ -93,10 +81,10 @@ package body One_File_Statements is
   begin
 
     begin
-      File.Open_All (Text_Line.In_File, File_Name);
+      File.Open_All (File_Name);
     exception
       when others =>
-        Sys_Calls.Put_Line_Error ("Exception when opening file "
+        Basic_Proc.Put_Line_Error ("Exception when opening file "
                                 & File_Name);
         raise File_Error;
     end;
@@ -108,12 +96,7 @@ package body One_File_Statements is
     C := ' ';
 
     loop
-      -- Has a char been read ahead with previous char
-      if Next_Set then
-        Next_Set := False;
-      else
-        Get;
-      end if;
+      Get;
 
       -- Check for comment on the line
       if C = Comment_Char then
@@ -125,7 +108,7 @@ package body One_File_Statements is
           Current.Comments := Current.Comments + 1;
         else
           -- Restore char
-          Next_Set := True;
+          Unget;
         end if;
       elsif Java_Syntax and then C = '*' and then Prev_C = '/' then
         -- Java comment "/*", skip until "*/"
@@ -148,7 +131,7 @@ package body One_File_Statements is
         if Levels /= 0 then
           Levels := Levels - 1;
         else
-          Sys_Calls.Put_Line_Error (
+          Basic_Proc.Put_Line_Error (
                   "Warning: Reaching negative parenthesis level"
                 & " at line" & Line_No'Img);
         end if;
@@ -185,17 +168,17 @@ package body One_File_Statements is
               -- Qualifier'(...
               Levels := Levels + 1;
             end if;
-            Next_Set := True;
+            Unget;
           end if;
         end if;
       end if;
     end loop;
 
   exception
-    when End_Error =>
+    when Text_Char.End_Error =>
       Close;
       if Levels /= 0 then
-        Sys_Calls.Put_Line_Error ("Warning: Ending file with parenthesis level"
+        Basic_Proc.Put_Line_Error ("Warning: Ending file with parenthesis level"
                             & Levels'Img & ".");
       end if;
       if Current.Lines >= 2 then
@@ -207,7 +190,7 @@ package body One_File_Statements is
       raise;
     when others =>
       Close;
-      Sys_Calls.Put_Line_Error ("Exception when processing line "
+      Basic_Proc.Put_Line_Error ("Exception when processing line "
           & Current.Lines'Img & " of file " & File_Name);
       raise;
   end Count_Statements_Of_File;
@@ -276,7 +259,7 @@ package body One_File_Statements is
       -- Statements of file
       begin
         Ok := True;
-        Current := One_File_Statements.Count_Statements_Of_File(File_Name);
+        Current := One_File_Statements.Count_Statements_Of_File (File_Name);
       exception
         when others =>
           Ok := False;
