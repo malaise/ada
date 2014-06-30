@@ -3,10 +3,10 @@ Ada notes
 
 This README file describes briefly the main directories of the Ada contrib.
 
-The software compiles with Ada 2012 (Gnat GPL 2012) and runs on Unix (Linux).
+The software compiles with Ada 2014 (Gnat GPL 2014) and runs on Unix (Linux).
 
 Some programs depend on anchor:XPCRE[] PCRE (Perl Compatible Regular Expressions) and work
-with version 7.8 or above (8.21 is OK) and require the PCRE developpement
+with version 7.8 or above (8.35 is OK) and require the PCRE developpement
 package.
 
 The 'asciidoc' suite is used for the generation of the documentation.
@@ -36,8 +36,8 @@ Similarly, the commands 'ada' and 'gnatlink' can be in the path and be this
 same gnatmake script (you can copy it or make links from '$HOME/bin/ada' and
 '$HOME/bin/gnatlink' to it).
 
-Automatic generation by make (see next section) doesn't use them but these
-scripts are convenient for manual compilation.
+The automatic generation by make (see next section) doesn't use them but these
+scripts are useful for manual compilation.
 
 Makefiles project (MANDATORY)
 -----------------------------
@@ -47,7 +47,7 @@ Several examples of usage can be found in the source directories.
 Relocation of the Makefiles directory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If the Makefiles installation directory is not '$(HOME)/Makefiles', then the
-new location can be set must be set in the environment variable 'MAKFILES_DIR'. Otherwise:
+new location can be set in the environment variable 'MAKFILES_DIR'. Otherwise:
 
 - the definition of 'TEMPLATES' in 'common.mk' has to be adapted,
 
@@ -64,10 +64,10 @@ Recursive make
 The content of the makefile for applying make to subdirectories is:
 
   SUBDIRS := c reposit usr
-  include $(HOME)/Makefiles/dir.mk
+  include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 
-Other directives can be added if something has also to be compiled in current
-dir.
+Other directives can be added if something has also to be compiled in the
+current directory.
 
 C directory (MANDATORY)
 -----------------------
@@ -82,9 +82,9 @@ This lib gathers several low level utility libraries:
 (tcp, udp, ipm, message on tcp, afinet or afux),
 
 - 'sys_calls', interfaced by the Ada 'Sys_Calls' and some other Ada packages,
-for several operating system calls,
+for several calls to the operating system,
 
-- 'wait_evt', interfaced by the Ada "Even_Mng" package, waits (with "select") on
+- 'wait_evt', interfaced by the Ada 'Even_Mng' package, waits (with "select") on
 several fds, catches signals...
 
 .X11 management ('xmng')
@@ -118,7 +118,7 @@ Each directory under 'usr' hosts a standalone project, except 'misc'
 (miscellaneous small programs), 'tests' (test programs of repository packages)
 and 'tasks' (simple task examples).
 
-They all depend on C and Reposit and are independant from the others (except
+They all depend on C and Reposit and are independant one from the others (except
 'pipe' -> 'fifos' -> 'dictio').
 
 The more usefull are 'udp_spy' and 'xml_checker' (in directory 'misc'), 'agite',
@@ -135,8 +135,8 @@ Account (3)::
      cheque, credit card (defered) and transfer operations.
 
 Agite (3)::
-     GUI for Git on 'Afpx', directory oriented. Access to history and external
-     diff tool.
+     GUI for Git on 'Afpx', directory oriented. Implements all basic actions
+     with GIT.
 
 Als (2)::
      Lists, more or less the "ls" way, files and directories. Allow selection
@@ -147,10 +147,10 @@ Approx (3)::
      polynomial approximation of a set of points in the plan.
 
 Astub (3)::
-     Ada05 stubber (makes compilable empty body from spec).
+     Ada2012 stubber (makes compilable empty body from spec).
 
 Asubst (3)::
-     Substitutes in files the strings matching a regexp by new strings.
+     Substitutes in files by new strings the strings that match a regexp.
 
 Battleship (2)::
      Battleship game for two players through the network (with 'Autobus').
@@ -166,8 +166,8 @@ C_Magic (1)::
      CPU despite many optims :-)
 
 Code (1)::
-     Simple programs that codes (crypts) and decodes a text. The crypting algo
-     are old and not secure.
+     Simple programs that codes (encrypts) and decodes a text. The crypting
+     algo are old and not secure.
 
 Day_Of_Week (1)::
      Simple program that tells everything on today (or on another day).
@@ -179,7 +179,7 @@ Dictio (3)::
      (presently it resends all).
 
 Enigma (2)::
-     Encodes/decodes text like german enigma machines did in ww2.
+     Encodes/decodes text like the german enigma machines did in ww2.
 
 Fifos (2)::
      Use 'dictio' to make distributed point to point connections (logical
@@ -210,12 +210,12 @@ Mcd (3)::
 
 Misc::
      Many simple programs here. The most interesting are:
-- Alook (1) properly formats the words of a (valid) Ada05 source file.
+- Alook (1) properly formats the words of a (valid) Ada2012 source file.
+- Astat (1) counts the number of instruction of (valid) Ada source files.
 - Dtd_Checker (1) checks a DTD file (of a xml).
 - G (1) is a game where to find the remaining of division by 3.
 - Prime (1) searches prime numbers.
 - Renamer (1) is a 'Afpx' based HMI to rename files.
-- Stat (1) counts the number of instruction of (valid) Ada source files.
 - Status (1) evaluates if a target file needs to be rebuilt.
 - Tcping (1) pings in tcp a host:port.
 - Tcp_spy (1) accepts a TCP connection and dumps data received on it.
