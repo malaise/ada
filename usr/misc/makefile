@@ -11,8 +11,8 @@ EXES := adand add_nums alook arbipas astat beep comp_vars ddir \
  mlbx_overflow one_of_arg pascal pingpong prime \
  random relay rndsok renamer \
  second statfile status strcase tcping trail_spaces udp_spy \
- wait wake xml_checker pingpong.stat tcping.stat tcp_spy udp_spy.stat \
- xml_checker.stat
+ wait wake xml_checker astat.stat pingpong.stat tcping.stat tcp_spy \
+ udp_spy.stat xml_checker.stat
 
 CLIBS := cutil
 CLIBS_renamer := x_mng X11
@@ -22,6 +22,7 @@ CLIBS_relay := posix2pcre pcre
 CLIBS_wake := posix2pcre pcre
 CLIBS_xml_checker := posix2pcre pcre
 
+LARGS_astat.stat := $(CPATHD)/libcutil.a
 LARGS_tcping.stat := $(CPATHD)/libcutil.a
 LARGS_udp_spy.stat := $(CPATHD)/libcutil.a
 LARGS_pingpong.stat := $(CPATHD)/libcutil.a
