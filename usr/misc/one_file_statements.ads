@@ -3,19 +3,18 @@
 
 package One_File_Statements is
 
-  -- Java comments ("//") instead of Ada ("--")
-  -- Java comments ("//") instead of Ada ("--")
+  -- Java comments ("//" or /*.. */) instead of Ada ("--")
   Java_Syntax : Boolean := False;
 
   -- If File_Name is empty,
-  --  if Put_It put formated total so far and reset it
+  --  if Summary put formated total so far and reset it
   --  else put total of statements so far and reset it
   -- Else
   --   add numbers of this file to total
-  --   if Put_It put formated numbers for this file
+  --   if Summary put formated numbers for this file
   procedure Print_Statements_Of_File (
              File_Name : String;
-             Put_It : in Boolean := True);
+             Summary : in Boolean := True);
 
 end One_File_Statements;
 

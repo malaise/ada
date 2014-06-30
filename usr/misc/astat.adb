@@ -1,21 +1,28 @@
 -- For each file provided as argument format and put the number of Ada
 --   statements of this file, then put the formated total
 -- If -s, only put the total not formated
-with Argument;
+with Argument, Basic_Proc;
 with One_File_Statements;
 
 procedure Astat is
   First : Positive := 1;
   Put_It : Boolean := True;
 begin
+  if Argument.Get_Nbre_Arg = 1
+  and then (Argument.Get_Parameter (1) = "--help"
+            or else Argument.Get_Parameter (1) = "-h") then
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
+      & " [ -s | --silent ] [ -j | --java] { <file_name> }");
+    return;
+  end if;
 
   for I in 1 .. Argument.Get_Nbre_Arg loop
-    if Argument.Get_Parameter(I) = "--silent"
-    or else Argument.Get_Parameter(I) = "-s" then
+    if Argument.Get_Parameter (I) = "--silent"
+    or else Argument.Get_Parameter (I) = "-s" then
       Put_It := False;
       First := First + 1;
-    elsif Argument.Get_Parameter(I) = "--java"
-    or else Argument.Get_Parameter(I) = "-j" then
+    elsif Argument.Get_Parameter (I) = "--java"
+    or else Argument.Get_Parameter (I) = "-j" then
       One_File_Statements.Java_Syntax := True;
       First := First + 1;
     else
@@ -26,12 +33,12 @@ begin
   -- Store all files
   for Arg in First .. Argument.Get_Nbre_Arg loop
     -- One stat on each file
-    One_File_Statements.Print_Statements_Of_File(Argument.Get_Parameter(Arg),
-                                                 Put_It);
+    One_File_Statements.Print_Statements_Of_File (Argument.Get_Parameter (Arg),
+                                                  Put_It);
   end loop;
 
   -- Total
-  One_File_Statements.Print_Statements_Of_File("", Put_It);
+  One_File_Statements.Print_Statements_Of_File ("", Put_It);
 
 end Astat;
 

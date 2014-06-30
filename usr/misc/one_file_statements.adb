@@ -179,7 +179,7 @@ package body One_File_Statements is
       Close;
       if Levels /= 0 then
         Basic_Proc.Put_Line_Error ("Warning: Ending file with parenthesis level"
-                            & Levels'Img & ".");
+                                 & Levels'Img & ".");
       end if;
       if Current.Lines >= 2 then
         Current.Lines := Current.Lines - 1;
@@ -212,15 +212,15 @@ package body One_File_Statements is
                                        / My_Math.Real (Vals.Statements)));
       Lines := Vals.Lines;
     end if;
-    Text_Line.Put_Line (File, Gap & Normal(Vals.Statements, Max_Dig)
-                            & Gap & Normal(Percent, 4)
-                            & Gap & Normal(Lines, Max_Dig));
+    Text_Line.Put_Line (File, Gap & Normal (Vals.Statements, Max_Dig)
+                            & Gap & Normal (Percent, 4)
+                            & Gap & Normal (Lines, Max_Dig));
   end Put_Vals;
 
   -- If File_Name is empty, put total so far and reset it
   procedure Print_Statements_Of_File (
              File_Name : String;
-             Put_It : in Boolean := True) is
+             Summary : in Boolean := True) is
 
     File : Text_Line.File_Type;
     File_Name_Len : constant Natural := File_Name'Length;
@@ -232,10 +232,12 @@ package body One_File_Statements is
     Text_Line.Open (File, Text_Line.Out_File, Sys_Calls.Stdout);
     if File_Name = "" then
       -- Summary so far
-      if Put_It then
+      if Summary then
         -- Put formatted output
-        for I in Integer range 1 .. Max_Tab + 1
-                   + Gap'Length + Max_Dig + Gap'Length + 4 + Gap'Length + Max_Dig loop
+        for I in Integer range 1 ..
+            Max_Tab + 1
+            + Gap'Length + Max_Dig
+            + Gap'Length + 4 + Gap'Length + Max_Dig loop
           Text_Line.Put (File, "-");
         end loop;
         Text_Line.New_Line (File);
@@ -265,7 +267,7 @@ package body One_File_Statements is
           Ok := False;
       end;
 
-      if Put_It then
+      if Summary then
         -- Put formatted output
         Text_Line.Put (File, File_Name);
         if File_Name_Len < Max_Tab then

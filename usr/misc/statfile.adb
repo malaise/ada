@@ -26,7 +26,7 @@ procedure Statfile is
       begin
         exit when Name = "";
         if Name'Length /= 1 then
-          One_File_Statements.Print_Statements_Of_File(Text_Line.Trim (Name));
+          One_File_Statements.Print_Statements_Of_File (Text_Line.Trim (Name));
         end if;
       exception
         when others =>
@@ -42,21 +42,31 @@ procedure Statfile is
 
 begin
 
+  if Argument.Get_Nbre_Arg >= 1
+  and then (Argument.Get_Parameter (1) = "--help"
+            or else Argument.Get_Parameter (1) = "-h") then
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
+      & " [ -j | --java] { <file_name> }");
+    return;
+  end if;
+
+  -- Parse option -j | --java
   First_File := 1;
   if Argument.Get_Nbre_Arg >= 1
-  and then (Argument.Get_Parameter(1) = "--java"
-            or else Argument.Get_Parameter(1) = "-j") then
+  and then (Argument.Get_Parameter (1) = "--java"
+            or else Argument.Get_Parameter (1) = "-j") then
     One_File_Statements.Java_Syntax := True;
     First_File := First_File + 1;
   end if;
 
+  -- Process files of files
   for Arg in First_File .. Argument.Get_Nbre_Arg loop
     Basic_Proc.Put_Line_Output ("Processing list file "
-        & String'(Argument.Get_Parameter(Arg)));
-    Stat_One_File(Argument.Get_Parameter(Arg));
+        & String'(Argument.Get_Parameter (Arg)));
+    Stat_One_File (Argument.Get_Parameter (Arg));
   end loop;
 
-  One_File_Statements.Print_Statements_Of_File("");
+  One_File_Statements.Print_Statements_Of_File ("");
 
 end Statfile;
 
