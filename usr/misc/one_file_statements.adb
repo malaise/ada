@@ -15,10 +15,9 @@ package body One_File_Statements is
   function Count_Statements_Of_File (File_Name : String) return Metrics is
 
     File  : Text_Line.File_Type;
-    -- Current and prev chars
-    C, Prev_C : Character := ' ';
-    -- Character read head
-    Next_C  : Character := ' ';
+    -- Comment "--" or "//"
+    Comment_Char : Character;
+    -- Reause character already read head
     Next_Set : Boolean := False;
     -- Current Nb of statements
     Current : Metrics;
@@ -32,7 +31,9 @@ package body One_File_Statements is
 
     End_Error : exception;
 
-    procedure Get (C : out Character) is
+    -- Current and prev chars
+    C, Prev_C : Character := ' ';
+    procedure Get is
     begin
       if Index > Len then
         Line := File.Get;
@@ -42,7 +43,7 @@ package body One_File_Statements is
         Len := Line.Length;
         Index := 1;
       end if;
-
+      Prev_C := C;
       C := Line.Element (Index);
       Index := Index + 1;
 
@@ -79,7 +80,7 @@ package body One_File_Statements is
     procedure Skip_Until (Upto : in Character) is
     begin
       loop
-        Get (C);
+        Get;
         exit when C = Upto;
       end loop;
     end Skip_Until;
@@ -99,30 +100,40 @@ package body One_File_Statements is
                                 & File_Name);
         raise File_Error;
     end;
+    if Java_Syntax then
+      Comment_Char := '/';
+    else
+      Comment_Char := '-';
+    end if;
+    C := ' ';
 
     loop
       -- Has a char been read ahead with previous char
       if Next_Set then
-        C := Next_C;
         Next_Set := False;
       else
-        Get (C);
+        Get;
       end if;
 
       -- Check for comment on the line
-      if C = '-' then
-        Get (C);
+      if C = Comment_Char then
+        Get;
         -- Which is signaled by the '-' following a '-'
-        if C = '-' then
+        if C = Comment_Char then
           -- Then just skip the rest of the line and go to the next
           Skip_Line;
           Current.Comments := Current.Comments + 1;
         else
           -- Restore char
-          Next_C := C;
           Next_Set := True;
         end if;
-
+      elsif Java_Syntax and then C = '*' and then Prev_C = '/' then
+        -- Java comment "/*", skip until "*/"
+        loop
+          Skip_Until ('/');
+          exit when Prev_C = '*';
+        end loop;
+        Current.Comments := Current.Comments + 1;
       elsif C = ';' then
         -- Any ';' that can be found at this point after all exclusions
         -- must be a valid "statement terminator"
@@ -141,27 +152,41 @@ package body One_File_Statements is
                   "Warning: Reaching negative parenthesis level"
                 & " at line" & Line_No'Img);
         end if;
-      elsif C = '"' or else C = '%' then
-        -- Now, check for string brackets of either kind, " or %
+      elsif not Java_Syntax and then (C = '"' or else C = '%') then
+        -- Check for string brackets of either kind, " or %
         -- This works even if there is '""' in string
         Skip_Until (C);
+      elsif Java_Syntax and then C = '"' and then Prev_C /= '\' then
+        -- Check for string bracket '"' not preceeded by '\'
+        loop
+          Skip_Until ('"');
+          exit when Prev_C /= '\';
+        end loop;
       elsif C = ''' then
-        -- Character literals are just three characters long including '
-        -- Attributes are skipped the same way because longer than one char
-        Get (Prev_C);
-        Get (C);
-        -- Handle specific Qualifier'(...
-        if C /= ''' then
-          -- This is not a char literal
-          -- Should restore Prev_C and C but in fact, Prev_C can only
-          --  be '(' or an attribute or a separator.
-          -- So handle Prev_C = '(' and restore C
-          if Prev_C = '(' then
-            -- Qualifier'(...
-            Levels := Levels + 1;
+        if Java_Syntax then
+          -- Get 'C' or '\C'
+          Get;
+          if C = '\' then
+             Get;
+           end if;
+           Get;
+        else
+          -- Character literals are just three characters long including '
+          -- Attributes are skipped the same way because longer than one char
+          Get;
+          Get;
+          -- Handle specific Qualifier'(...
+          if C /= ''' then
+            -- This is not a char literal
+            -- Should restore Prev_C and C but in fact, Prev_C can only
+            --  be '(' or an attribute or a separator.
+            -- So handle Prev_C = '(' and restore C
+            if Prev_C = '(' then
+              -- Qualifier'(...
+              Levels := Levels + 1;
+            end if;
+            Next_Set := True;
           end if;
-          Next_C := C;
-          Next_Set := True;
         end if;
       end if;
     end loop;

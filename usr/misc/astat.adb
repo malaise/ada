@@ -9,11 +9,19 @@ procedure Astat is
   Put_It : Boolean := True;
 begin
 
-  if Argument.Get_Nbre_Arg >= 1
-  and then Argument.Get_Parameter(1) = "-s" then
-    First := 2;
-    Put_It := False;
-  end if;
+  for I in 1 .. Argument.Get_Nbre_Arg loop
+    if Argument.Get_Parameter(I) = "--silent"
+    or else Argument.Get_Parameter(I) = "-s" then
+      Put_It := False;
+      First := First + 1;
+    elsif Argument.Get_Parameter(I) = "--java"
+    or else Argument.Get_Parameter(I) = "-j" then
+      One_File_Statements.Java_Syntax := True;
+      First := First + 1;
+    else
+      exit;
+    end if;
+  end loop;
 
   -- Store all files
   for Arg in First .. Argument.Get_Nbre_Arg loop

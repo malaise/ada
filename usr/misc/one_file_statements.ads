@@ -3,6 +3,10 @@
 
 package One_File_Statements is
 
+  -- Java comments ("//") instead of Ada ("--")
+  -- Java comments ("//") instead of Ada ("--")
+  Java_Syntax : Boolean := False;
+
   -- If File_Name is empty,
   --  if Put_It put formated total so far and reset it
   --  else put total of statements so far and reset it

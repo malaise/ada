@@ -6,6 +6,8 @@ with One_File_Statements;
 
 procedure Statfile is
 
+  First_File : Positive;
+
   procedure Stat_One_File (List_File_Name : in String) is
     List_File : Text_Line.File_Type;
   begin
@@ -40,7 +42,15 @@ procedure Statfile is
 
 begin
 
-  for Arg in 1 .. Argument.Get_Nbre_Arg loop
+  First_File := 1;
+  if Argument.Get_Nbre_Arg >= 1
+  and then (Argument.Get_Parameter(1) = "--java"
+            or else Argument.Get_Parameter(1) = "-j") then
+    One_File_Statements.Java_Syntax := True;
+    First_File := First_File + 1;
+  end if;
+
+  for Arg in First_File .. Argument.Get_Nbre_Arg loop
     Basic_Proc.Put_Line_Output ("Processing list file "
         & String'(Argument.Get_Parameter(Arg)));
     Stat_One_File(Argument.Get_Parameter(Arg));
