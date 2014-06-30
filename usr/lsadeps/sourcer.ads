@@ -30,6 +30,8 @@ package Sourcer is
     Useds : As.U.Asu_Us;
     -- List of subunits (if Body or subunit) - @unit@unit...@unit@
     Subunits : As.U.Asu_Us;
+    -- List of child units  - @unit@unit...@unit@
+    Children : As.U.Asu_Us;
   end record;
 
   -- Unique list of parsed source descriptors (Kind, Unit and Path)
@@ -77,8 +79,6 @@ package Sourcer is
                                            Set, "=" , Image);
   package Withing_List_Mng is new H_Withing_List_Mng.Unique;
   Withing_List : Withing_List_Mng.Unique_List_Type;
-
-
 
   -- Parse sources and build lists
   -- Reports errors on stderr and raises Error

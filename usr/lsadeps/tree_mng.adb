@@ -219,6 +219,44 @@ package body Tree_Mng is
     end if;
   end Build_Withings;
 
+  -- Build children from list of children
+  procedure Build_Children (Path, Children : As.U.Asu_Us) is
+    Iter : Parser.Iterator;
+    Dscr : Sourcer.Src_Dscr;
+    List : Src_Dyn_List_Mng.List_Type;
+    Moved : Boolean;
+    use type As.U.Asu_Us;
+
+  begin
+    -- Scan all children units
+    Iter.Set (Children.Image, Is_Sep'Access);
+    loop
+      declare
+        -- Path/Name of the child unit
+        Str : constant String := Iter.Next_Word;
+      begin
+        exit when Str = "";
+        -- Get spec of child
+        Dscr := Sourcer.Get_Unit (Path, As.U.Tus (Str));
+        if Dscr.Unit.Is_Null then
+          Basic_Proc.Put_Line_Error ("INTERNAL ERROR: with " & Str & ".");
+          raise Sourcer.Src_List_Mng.Not_In_List;
+        end if;
+        List.Insert (Dscr);
+      end;
+    end loop;
+
+    -- Insert in the tree each node of the list
+    if not List.Is_Empty then
+      List.Rewind;
+      loop
+        List.Read (Dscr, Moved => Moved);
+        Build_Node (Dscr, True, True);
+        exit when not Moved;
+      end loop;
+    end if;
+  end Build_Children;
+
   -- Build a node
   procedure Build_Node (Origin : in Sourcer.Src_Dscr;
                         Specs_Mode,  Revert_Mode : in Boolean) is
@@ -270,6 +308,8 @@ package body Tree_Mng is
                    and then Origin.Standalone) then
       Kind :=  As.U.Tus ("withing");
       Build_Withings (Origin.Path.Image, Origin.Unit.Image);
+      -- Also our children are dependent from us
+      Build_Children (Origin.Path, Origin.Children);
     end if;
 
     -- A Child (spec or standalone body): Insert parent spec if not revert

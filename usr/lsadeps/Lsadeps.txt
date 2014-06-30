@@ -1,6 +1,6 @@
 lsadeps
 =======
-V9.2
+V9.3
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -95,7 +95,8 @@ and subunits... recursively
 
 - specs mode: same as default but only show units withed by specs
 
-- revert mode: show units withing target, then units withing them... recursively
+- revert mode: show units withing target and child units of target, then units
+withing them... recursively
 
 - path mode: shows the units withed by (or withing) each other between two units
 

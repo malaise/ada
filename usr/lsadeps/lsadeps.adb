@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V9.2";
+  Version : constant String := "V9.3";
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -160,6 +160,7 @@ procedure Lsadeps is
   -- Add the paths of -I and -R dirtectives in the proper order
   procedure Add_Paths is separate;
 
+  use type As.U.Asu_Us;
 begin
   ---------------------
   -- PARSE ARGUMENTS --
@@ -332,13 +333,13 @@ begin
       Check_Dir (Target_Dir.Image);
       Path := As.U.Tus (Mixed_Str (Directory.Basename (Path.Image)));
     end if;
-
     -- Include target dir in paths (just after current dir)
-    if not Target_Dir.Is_Null then
+    if not Target_Dir.Is_Null and then Target_Dir /= Current_Dir then
       Sort.Add_Path (Target_Dir);
     end if;
     -- Include path dir in paths (just after target dir)
-    if not Path_Dir.Is_Null then
+    if not Path_Dir.Is_Null and then Path_Dir /= Target_Dir
+    and then Path_Dir /= Current_Dir then
       Sort.Add_Path (Path_Dir);
     end if;
     -- Include dirs of -I and -R options

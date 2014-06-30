@@ -209,6 +209,7 @@ package body Sourcer is
       -- Get next keywork or identifier
       Next_Word (Txt, Context, Word, Lexic);
       if Lexic = Ada_Parser.Reserved_Word then
+        Prev_Dot := False;
         if Word.Image = "with" then
           In_With := True;
         elsif Word.Image = "use" then
@@ -324,6 +325,7 @@ package body Sourcer is
     if not Dscr.Useds.Is_Null then
       Dscr.Useds.Append (Separator);
     end if;
+
     -- Done: store and close
     -- Drop new version of this unit if one already exists
     List.Insert_If_New (Dscr);
@@ -474,7 +476,7 @@ package body Sourcer is
           Error ("Unit " & Image (Dscr)
                      & " not in same dir as its parent");
         end if;
-        -- Update list of subunits of parent
+        -- Update list of subunits or of children of parent
         if Dscr.Kind = Subunit then
           if Crit.Subunits.Is_Null then
             Crit.Subunits := As.U.Tus (Separator & "");
@@ -483,6 +485,15 @@ package body Sourcer is
           List.Insert (Crit);
           Debug.Logger.Log_Debug ("Adding subunit " & Image (Dscr)
                                 & " to " & Image (Crit));
+        else
+          if Crit.Children.Is_Null then
+            Crit.Children := As.U.Tus (Separator & "");
+          end if;
+          Crit.Children.Append (Dscr.Unit & Separator);
+          List.Insert (Crit);
+          Debug.Logger.Log_Debug ("Adding child " & Image (Dscr)
+                                & " to " & Image (Crit));
+
         end if;
       end if;
 
