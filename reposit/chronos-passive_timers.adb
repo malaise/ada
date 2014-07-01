@@ -1,4 +1,3 @@
-with Virtual_Time, Perpet;
 package body Chronos.Passive_Timers is
 
   -- Timer status, independant from the associated clock status

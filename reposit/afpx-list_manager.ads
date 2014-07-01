@@ -1,4 +1,3 @@
-with Dynamic_List;
 package Afpx.List_Manager is
 
   -- Scroll the list according to button

@@ -1,6 +1,6 @@
 -- Generates a Xml file (or stdout), or string from a tree
 with Ada.Characters.Latin_1;
-with Images, Text_Line, Sys_Calls, Trees;
+with Images, Text_Line, Sys_Calls;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change

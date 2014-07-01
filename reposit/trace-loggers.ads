@@ -1,6 +1,5 @@
 -- Log messages in a flow or file
 with Ada.Finalization;
-with As.U;
 package Trace.Loggers is
 
   -- All the logers trace in a given flow, set in environment variable
