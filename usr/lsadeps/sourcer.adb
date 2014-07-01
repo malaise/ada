@@ -564,6 +564,20 @@ package body Sourcer is
     return Crit;
   end Get_Parent;
 
+   -- Get parent spec of a child package
+  -- Return a Dscr with empty Unit if current is not a child package
+  function Get_Parent_Of_Child (Dscr : Src_Dscr) return Src_Dscr is
+    Dot : Natural;
+    Res : Src_Dscr;
+  begin
+    Dot := Str_Util.Locate (Dscr.Unit.Image, ".", Forward => False);
+    if Dot /= 0 then
+      -- Get parent (otherwise default)
+      Res := Get_Unit (Dscr.Path, Dscr.Unit.Uslice (1, Dot - 1));
+    end if;
+    return Res;
+  end Get_Parent_Of_Child;
+
   -- Get root Unit of a path/unit
   -- Return a spec or else a standalone body
   function Get_Unit (Path, Unit : in As.U.Asu_Us) return Src_Dscr is

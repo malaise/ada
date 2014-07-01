@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V9.3";
+  Version : constant String := "V9.4";
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -330,7 +330,7 @@ begin
       Path := As.U.Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index, 2));
       Path_Dir := As.U.Tus (Directory.Make_Full_Path (Directory.Dirname
           (Path.Image)));
-      Check_Dir (Target_Dir.Image);
+      Check_Dir (Path_Dir.Image);
       Path := As.U.Tus (Mixed_Str (Directory.Basename (Path.Image)));
     end if;
     -- Include target dir in paths (just after current dir)
@@ -344,6 +344,11 @@ begin
     end if;
     -- Include dirs of -I and -R options
     Add_Paths;
+  end if;
+
+  -- Path_Dir prevents Direct
+  if not Path_Dir.Is_Null and then Direct_Mode then
+    Error ("Path_Unit and Direct mode are mutually exclusive");
   end if;
 
   ----------------------------

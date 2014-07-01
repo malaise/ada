@@ -42,7 +42,16 @@ package body Checker is
               or else (Parent.Kind = Sourcer.Unit_Body
                        and then Parent.Standalone);
         end loop Store_All_Parents;
+      else
+        Parent := Current;
       end if;
+      -- Now parent is the spec or standalone body of current
+      -- Store its parents if it is a child
+      loop
+        Parent := Sourcer.Get_Parent_Of_Child (Parent);
+        exit when Parent.Unit.Is_Null;
+        Parents.Insert (Parent);
+      end loop;
 
       -- Extract each with of current unit
       Iter.Set (Current.Witheds.Image, Is_Sep'Access);

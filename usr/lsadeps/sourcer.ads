@@ -93,6 +93,10 @@ package Sourcer is
   -- Return Dscr itself if it is a spec or a standalone body
   function Get_Parent (Dscr : in Src_Dscr) return Src_Dscr;
 
+  -- Get parent spec of a child package
+  -- Return a Dscr with empty Unit if current is not a child package
+  function Get_Parent_Of_Child (Dscr : Src_Dscr) return Src_Dscr;
+
   -- Get root Unit of a path/unit
   -- Return a spec or a standalone body or subunit
   -- Return a Dscr with empty Unit if not found
@@ -105,7 +109,6 @@ package Sourcer is
 
   -- Get Unit_Body of a subunit
   function Get_Root_Body (Sub : in Src_Dscr) return Src_Dscr;
-
 
 end Sourcer;
 

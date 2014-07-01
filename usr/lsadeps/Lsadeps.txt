@@ -1,6 +1,6 @@
 lsadeps
 =======
-V9.3
+V9.4
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -38,11 +38,12 @@ which are withed units, their body and subunits, units withed by these
 units... recursively. +
 Alternative modes are:
 
- - 'specs' to show only units withed by specs and standalone bodies,
+ - 'specs' to show only units withed by specs and standalone bodies.
 
- - 'revert' to show units withing <target_unit>... recursively.
+ - 'revert' to show units depending on <target_unit>, which are its child
+units and the units withing <target_unit>... recursively.
 
- - 'path_unit' to show dependency paths between two units.
+ - 'path_unit' to show dependency paths between <target_unit> and <path_unit>.
 
 Other options are:
 
@@ -53,15 +54,18 @@ Other options are:
  - 'file' to show the file names (instead of unit names),
 
  - 'include' to add some directories or some directory trees to the search path
-   (default is current and target directories).
+   (default is only the current directory and the target directory if any).
 
 'Specs' and 'revert' modes are mutually exclusive. +
 'Tree' and 'direct' modes are mutually exclusive. +
+'path_unit' and 'direct' modes are mutually exclusive. +
 
-NOTE: When the 'tree' option is not set, the tree of dependencies is
-optimized so that the same unit is not analyzed several times, which
-significantly improves the performance. +
-Comparatively, the 'tree' option might be very time-consuming.
+NOTE: Building the whole tree of dependancies might be very time-consuming.
+This is why, when the 'tree' option is not set, the analysis of dependencies
+is optimized so that the same unit is not analyzed several times. +
+On the other hand this leads to display only one path (not necessarily the
+shortest) with the option 'path_unit'. Adding the 'tree' option with a
+'path_unit' leads to display all the possible paths between the specified units.
 
 List units
 ~~~~~~~~~~
@@ -76,7 +80,15 @@ The possible options are:
 Check redundant "with"
 ~~~~~~~~~~~~~~~~~~~~~~
 This function shows redundant "with" clauses in a dir (default: current
-dir). +
+dir), which are:
+
+ - A body that withs a unit while this unit or a child is already withed by
+the spec,
+ - A subunit that withs a unit while this unit or a child is already withed by
+the spec or the body,
+ - A child unit that withs a unit while this unit or a child is already withed
+by one of its parents. +
+
 It does not support any option (even includes), only one optional 'target'
 directory.
 
@@ -240,6 +252,8 @@ store in a list:
 
 - List of subunits names (if body or subunit): @\Name@Name...@
 
+- List of the child units of this unit
+
 "Path/Unit_Name#Kind" is the unique access key.  A spec, its body and its
 subunits must be collocated in the same directory.
 
@@ -249,8 +263,9 @@ paths where such unit exists.
 
 Check redundant "with"
 ~~~~~~~~~~~~~~~~~~~~~~
-For each unit build the tree of its parents (sub-unit -> body -> spec) and for
-each unit make the list of its withed units.
+For each unit build the tree of its parents (sub-unit -> body -> spec and if
+spec is a child, list its praent units) and for each unit make the list of its
+withed units.
 
 For each unit U check that no withed unit W is withed twice by U or by a
 parent of U, including indirect with of a child of W. Note that a redundant
