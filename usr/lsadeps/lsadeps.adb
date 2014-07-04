@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V9.4";
+  Version : constant String := "V9.5";
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -18,7 +18,8 @@ procedure Lsadeps is
    09 => (True,  'I', As.U.Tus ("include"),   True, True, As.U.Tus ("dir")),
    10 => (True,  'R', As.U.Tus ("recursive"), True, True, As.U.Tus ("dir")),
    11 => (False, 'l', As.U.Tus ("list"),  False),
-   12 => (False, 'a', As.U.Tus ("all"),  False));
+   12 => (False, 'a', As.U.Tus ("all"),  False),
+   13 => (False, 'C', As.U.Tus ("children"),  False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   Include_Index : constant Argument_Parser.The_Keys_Range := 9;
   Recursive_Index : constant Argument_Parser.The_Keys_Range := 10;
@@ -58,9 +59,14 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <recursive>   ::= " & Argument_Parser.Image (Keys(10)));
     Basic_Proc.Put_Line_Error (
-     " <list>        ::= [ <files> ] [ <all> ] " & Argument_Parser.Image (Keys(11))  & " [ <path_unit> ]");
+     " <list>        ::= [ <files> ] [ <all> ] [ <children> ] "
+                           & Argument_Parser.Image (Keys(11)));
+    Basic_Proc.Put_Line_Error (
+     "                   [ <path_unit> ]");
     Basic_Proc.Put_Line_Error (
      " <all>         ::= " & Argument_Parser.Image (Keys(12)));
+    Basic_Proc.Put_Line_Error (
+     " <children>    ::= " & Argument_Parser.Image (Keys(13)));
     Basic_Proc.Put_Line_Error (
      " <check>       ::= " & Argument_Parser.Image (Keys(3)) & " [ <target_dir> ]");
     Basic_Proc.Put_Line_Error (
@@ -99,7 +105,8 @@ procedure Lsadeps is
   procedure Error (Msg : in String) is
   begin
     Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
-    Usage;
+    Basic_Proc.Put_Line_Error ("See: " & Argument.Get_Program_Name & " "
+                             & Argument_Parser.Image (Keys(1)));
     raise Error_Raised;
   end Error;
 
@@ -107,6 +114,7 @@ procedure Lsadeps is
   -- Option management
   List_Mode : Boolean := False;
   All_Mode : Boolean := False;
+  Children_Mode : Boolean := False;
   Check_Mode : Boolean := False;
   Specs_Mode : Boolean := False;
   Revert_Mode : Boolean := False;
@@ -208,6 +216,9 @@ begin
   if Arg_Dscr.Is_Set (12) then
     All_Mode := True;
   end if;
+  if Arg_Dscr.Is_Set (13) then
+    Children_Mode := True;
+  end if;
 
   -- Check mode
   if Arg_Dscr.Is_Set (3) then
@@ -229,7 +240,7 @@ begin
     -- No option except File and all
     if Specs_Mode or else Revert_Mode or else Tree_Mode
     or else Direct_Mode then
-      Error ("List mode only supports file and all options");
+      Error ("List mode only supports file, all or children options");
     end if;
     -- No include
     if Arg_Dscr.Get_Nb_Occurences (9) /= 0
@@ -252,6 +263,10 @@ begin
   -- Check all in list
   if All_Mode and then not List_Mode then
     Error ("All option is valid only in list mode");
+  end if;
+  -- Check children in list
+  if Children_Mode and then not List_Mode then
+    Error ("Children option is valid only in list mode");
   end if;
 
   -- Save current dir and add it to paths (top prio)
@@ -351,6 +366,11 @@ begin
     Error ("Path_Unit and Direct mode are mutually exclusive");
   end if;
 
+  -- Children requires a target unit
+  if Children_Mode and then Target.Is_Null then
+    Error ("Children option requires a target unit");
+  end if;
+
   ----------------------------
   -- BUILD LISTS OF SOURCES --
   ----------------------------
@@ -396,7 +416,7 @@ begin
   -----------------
   if List_Mode then
     Output.List (Target.Image, Target_Dir.Image, List_Path.Image, Files_Mode,
-                 All_Mode);
+                 All_Mode, Children_Mode);
     return;
   end if;
 

@@ -1,6 +1,6 @@
 lsadeps
 =======
-V9.4
+V9.5
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -24,8 +24,9 @@ Usage: lsadeps <version> | <help> | <depend> | <list> | <check>
  <include>     ::= { <dir> | <recursive> }
  <dir>         ::= -I <dir> | --include=<dir>
  <recursive>   ::= -R <dir> | --recursive=<dir>
- <list>        ::= -l | --list  [ <file> ] [ <all> ] [ <path_unit> ]
+ <list>        ::= -l | --list  [ <file> ] [ <all> ] [ <children> [ <path_unit> ]
  <all>         ::= -a | --all
+ <children>    ::= -C | --children
  <check>       ::= -c | --check  [ <target_dir> ]
 
 There are three main functions: Show dependencies, list units, and check
@@ -74,6 +75,7 @@ of the directory specified by <path_unit> or the unit <path_unit>.
 
 The possible options are:
 
+ - 'children' to list the children of the specified unit.
  - 'file' to show the file names (instead of unit names),
  - 'all' to also list the subunits (of all or of the specified unit).
 
@@ -147,6 +149,8 @@ List units
 If <path_unit> denotes a directory, then all the units of the directory are
 listed, one per line, in alphabetical order (by default not the subunits).
 Otherwise the specified unit is listed (by default not its subunits).
+
+If <path_unit> denotes a unit, option -C lists it and its child units.
 
 Optionally the subunits are listed after each unit.
 

@@ -485,7 +485,8 @@ package body Sourcer is
           List.Insert (Crit);
           Debug.Logger.Log_Debug ("Adding subunit " & Image (Dscr)
                                 & " to " & Image (Crit));
-        else
+        elsif Dscr.Kind = Unit_Spec
+        or else Dscr.Standalone then
           if Crit.Children.Is_Null then
             Crit.Children := As.U.Tus (Separator & "");
           end if;
