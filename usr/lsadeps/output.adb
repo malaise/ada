@@ -513,6 +513,8 @@ package body Output is
       -- Put unit and maybe subunits of Target
       -- Insert it and its subunits
       Add_Unit (Str, File_Mode);
+      -- Sort
+      Sort.Sort (Dlist);
       -- Put entries
       Dlist.Rewind;
       loop

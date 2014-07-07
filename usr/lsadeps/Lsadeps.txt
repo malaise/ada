@@ -1,6 +1,6 @@
 lsadeps
 =======
-V9.5
+V9.6
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -220,6 +220,11 @@ Check if the unit 'Unit' exists in current dir
 List all files of '../ada/Unit' and its subunits
 --------------------
   lsadeps -lfa ../ada/Unit
+--------------------
+
+List Unit and all its child units
+--------------------
+  lsadeps -lC Unit
 --------------------
 
 High level design
