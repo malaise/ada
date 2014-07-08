@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V14.20
+V14.21
 
 General purpose
 ---------------
@@ -790,26 +790,27 @@ changes.
 
 The possible actions on the list of changes or the comment are:
 
-Reread::
+Double click::
+
+A double click on a change toggles the stage status of the entry:
+ - if all the modifications of the file are staged (S='''+''') then unstage
+these changes,
+ - otherwise stage all the changes.
 
 Reread::
+
 Normally Agite re-scans the current directory and refreshes the list and status
 when necessary, and also periodically if the feature is enabled (see
 xref:XConfPeriod[period] configuration option). This button explicitly refreshes
 the current list and status of changes.
 
-Diff::
-
-Show the difference between the current change and the HEAD for the current file
-(selected in list).
-
 Stage::
 
-Stage the current file (selected in list) and move to next.
+Stage (add/rm) the current file (selected in list) or change, and move to next.
 
 Unstage::
 
-Unstage the current file (selected in list) and move to next.
+Unstage (reset) the current file (selected in list) or change and move to next.
 
 StageAll::
 
@@ -818,6 +819,11 @@ Stage all the changes that are unstaged. Also proposes to add the untracked
 
 NOTE: The Stage, Unstage and StageAll buttons are active only if there are local
 changes.
+
+Diff::
+
+Show the difference between the current change and the HEAD for the current file
+(selected in list).
 
 .Commit
 

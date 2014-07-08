@@ -187,7 +187,7 @@ package body Commit is
   end Do_Diff;
 
   -- Staged / Unstage current file
-  procedure Do_Stage (Stage : Boolean)  is
+  procedure Do_Stage (Stage : in Boolean; Move : in Boolean) is
     Status : Character;
   begin
     Changes.Move_At (Afpx.Line_List.Get_Position);
@@ -207,11 +207,27 @@ package body Commit is
     end if;
     Afpx.Resume;
     -- Move to next entry
-    if Afpx.Line_List.Get_Position (Afpx.Line_List_Mng.From_Last) /= 1 then
+    if Move
+    and then Afpx.Line_List.Get_Position (Afpx.Line_List_Mng.From_Last) /= 1
+    then
       Afpx.Line_List.Move_To;
     end if;
     Reread;
   end Do_Stage;
+
+  -- Switch stage
+  procedure Switch_Stage is
+  begin
+    Changes.Move_At (Afpx.Line_List.Get_Position);
+    if Is_Staged (Changes.Access_Current.S2)
+    and then not Is_Staged (Changes.Access_Current.S3) then
+      -- File is fully staged
+      Do_Stage (False, False);
+    else
+      -- File is not staged (at least some changes are not)
+      Do_Stage (True, False);
+    end if;
+  end Switch_Stage;
 
   -- Stage all unstaged changes
   procedure Do_Stage_All is
@@ -348,6 +364,9 @@ package body Commit is
 
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
+            when Afpx.List_Field_No =>
+              -- Double click: stage or unstage
+              Switch_Stage;
             when Utils.X.List_Scroll_Fld_Range'First ..
                  Utils.X.List_Scroll_Fld_Range'Last =>
               -- Scroll list
@@ -360,12 +379,12 @@ package body Commit is
               Reread;
             when Afpx_Xref.Commit.Diff =>
               Do_Diff;
-            when Afpx.List_Field_No | Afpx_Xref.Commit.Stage =>
-              -- Double click or Stage button
-              Do_Stage (True);
+            when Afpx_Xref.Commit.Stage =>
+              -- Stage button
+              Do_Stage (True, True);
             when Afpx_Xref.Commit.Unstage =>
               -- Unstage button
-              Do_Stage (False);
+              Do_Stage (False, True);
             when Afpx_Xref.Commit.Stage_All =>
               -- StageAll button
               Do_Stage_All;
