@@ -1,0 +1,77 @@
+#!/bin/bash
+
+function error {
+  echo "ERROR: $1" 1>&2
+  exit 1
+}
+
+function check {
+
+  lsadeps $1 > res1
+  if [ -n "$2" ] ; then
+    lsadeps $2 > res2
+    expected="res2 of $2"
+  else
+    expected=expected
+  fi
+  cmp -s res1 res2
+  if [ $? -ne 0 ] ; then
+    error "Result res1 of $1 differs from $expected"
+  else
+    echo "lsadeps $1 and $expected OK."
+    rm res1 res2
+  fi
+
+}
+
+# Simple options
+check "lsadeps" "-l"
+
+# Files
+check "-f lsadeps" "-laf"
+
+# Dependancy between 2 units
+cat << EOF > res2
+Lsadeps
+  Sourcer
+    Sort
+EOF
+check "lsadeps sort"
+
+# Unit that exists
+cat << EOF > res2
+Lsadeps
+EOF
+check "-l lsadeps"
+
+# Unit that does no exist
+echo -n "lsadeps -l Toto"
+lsadeps -l Toto >/dev/null 2>&1
+res=$?
+if [ $res -ne 1 ] ; then
+  echo
+  error "Exit code $res differs from expected 1"
+fi
+echo " exit code OK."
+
+# List files and subunits
+cat << EOF > res2
+lsadeps.adb
+lsadeps-add_paths.adb
+EOF
+check "-lfa lsadeps"
+
+# List Unit and child units
+cat << EOF > res2
+Lsadeps
+EOF
+check "-lC lsadeps"
+
+# revert dependancies
+cat << EOF > res2
+Lsadeps
+Output
+Sort
+Sourcer
+EOF
+check "-r sort"
