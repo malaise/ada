@@ -7,7 +7,8 @@ with Cmd, Analist;
 procedure Xwords is
 
   -- Name of ENV variable for anagrams dictionary
-  Dictio_Env_Name : constant String := "DICTIO_FILE";
+  Words_Env_Name : constant String := "DICTIO_WORDS_FILE";
+  Nouns_Env_Name : constant String := "DICTIO_NOUNS_FILE";
 
   procedure Error is
   begin
@@ -36,6 +37,7 @@ procedure Xwords is
   Topof_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Topof;
   Percent_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Percent;
   Anagrams_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Anagrams;
+  Ananouns_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Ananouns;
   Search_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Search;
   Research_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Re_Search;
   Add_Word_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Add_Word;
@@ -55,7 +57,7 @@ procedure Xwords is
   Line : As.U.Asu_Us;
 
   -- Dictio init status
-  Dictio_File_Name : As.U.Asu_Us;
+  Words_File_Name, Nouns_File_Name : As.U.Asu_Us;
   Loading_Anagrams : Boolean;
 
   -- List is words or history
@@ -213,6 +215,12 @@ procedure Xwords is
 
   end Do_Scroll;
 
+  -- Is Ananouns set
+  function Ananouns_Set return Boolean is
+  begin
+    return Afpx.Decode_Field (Ananouns_Fld, 0) /= " ";
+  end Ananouns_Set;
+
   -- List anagrams of word
   procedure Do_Anagrams is
     Anagrams : As.U.Utils.Asu_Ua.Unb_Array;
@@ -240,6 +248,7 @@ procedure Xwords is
 
     -- Get list
     Analist.List (Strip (Afpx.Decode_Field (Get_Fld, 0, False)),
+                  Ananouns_Set,
                   Anagrams);
     History.Insert (Word);
 
@@ -322,9 +331,13 @@ procedure Xwords is
     -- Add/del normal word to anagram list
     if Status = Ok then
       if Num = Add_Word_Fld then
-        Analist.Add (Word);
+        Analist.Add (Word, False);
+      elsif Num = Add_Noun_Fld then
+        Analist.Add (Word, True);
       elsif Num = Del_Word_Fld then
-        Analist.Del (Word);
+        Analist.Del (Word, False);
+      elsif Num = Del_Noun_Fld then
+        Analist.Del (Word, True);
       end if;
     end if;
 
@@ -402,7 +415,7 @@ procedure Xwords is
 
   -- Task to load anagrams in background
   task Load_Anagrams is
-    entry Start (File_Name : in String);
+    entry Start (Words_File_Name, Nouns_File_Name : in As.U.Asu_Us);
     entry Stop;
   end Load_Anagrams;
 
@@ -410,16 +423,17 @@ procedure Xwords is
   package Protected_Trilean is new Protected_Var (Trilean.Trilean);
   Anagram_Loaded : Protected_Trilean.Protected_T(Mutex_Manager.Simple);
   task body Load_Anagrams is
-    File_Name : As.U.Asu_Us;
+    Words_Name, Nouns_Name : As.U.Asu_Us;
     Load : Boolean;
     Ok : Boolean;
   begin
 
     select
       -- Load: Get file name
-      accept Start (File_Name : in String) do
+      accept Start (Words_File_Name, Nouns_File_Name : in As.U.Asu_Us) do
         Cmd.Logger.Log_Debug ("Loading");
-        Load_Anagrams.File_Name := As.U.Tus (File_Name);
+        Words_Name := Words_File_Name;
+        Nouns_Name := Nouns_File_Name;
       end Start;
       Load := True;
     or
@@ -434,7 +448,7 @@ procedure Xwords is
     if Load then
       -- Load dictionnary
       begin
-        Analist.Init (File_Name.Image);
+        Analist.Init (Words_Name.Image, Nouns_Name.Image);
         Ok := True;
       exception
         when Analist.Init_Error =>
@@ -477,8 +491,9 @@ begin
   begin
     -- Button is inactive until dictio is loaded OK
     Afpx.Set_Field_Activation (Anagrams_Fld, False);
-    Dictio_File_Name := As.U.Tus (Environ.Getenv_If_Set (Dictio_Env_Name));
-    Load_Anagrams.Start (Dictio_File_Name.Image);
+    Words_File_Name := As.U.Tus (Environ.Getenv_If_Set (Words_Env_Name));
+    Nouns_File_Name := As.U.Tus (Environ.Getenv_If_Set (Nouns_Env_Name));
+    Load_Anagrams.Start (Words_File_Name, Nouns_File_Name);
     Loading_Anagrams := True;
   exception
     when Environ.Name_Error =>
@@ -501,8 +516,9 @@ begin
         when Trilean.False =>
           -- Dictio loading failed
           Basic_Proc.Put_Line_Error (
-                 "Error while loading anagrams dictionary: "
-                & Dictio_File_Name.Image & ".");
+                 "Error while loading anagrams dictionaries: "
+                & Words_File_Name.Image & " and "
+                & Nouns_File_Name.Image & ".");
 
           Basic_Proc.Set_Error_Exit_Code;
           return;
@@ -593,6 +609,10 @@ begin
           -- Search anagrams
           when Anagrams_Fld =>
             Do_Anagrams;
+          when Ananouns_Fld =>
+            -- Flip flop
+            Afpx.Encode_Field (Ananouns_Fld, (0, 0),
+              (if Ananouns_Set then " " else "X"));
 
           -- Words commands
           when Search_Fld .. Del_Noun_Fld =>

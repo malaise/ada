@@ -1,16 +1,17 @@
 with Sys_Calls, Text_Line;
 package body Analist is
 
-  Data_Base : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
+  Words_Db, Nouns_Db : aliased As.U.Utils.Asu_Dyn_List_Mng.List_Type;
+  type Db_Access is access all As.U.Utils.Asu_Dyn_List_Mng.List_Type;
 
-  -- Init database from a dictionnary (file with one word per line)
-  -- Reset it if already init
-  procedure Init (File_Name : in String) is
+  -- Local: init a data base
+  procedure Init_Db (File_Name : in String;
+                     Db : in out As.U.Utils.Asu_Dyn_List_Mng.List_Type) is
     Fd : Sys_Calls.File_Desc;
     File : Text_Line.File_Type;
   begin
     -- Clear
-    Data_Base.Delete_List;
+    Db.Delete_List;
     -- Load file
     Fd := Sys_Calls.Open (File_Name, Sys_Calls.In_File);
     File.Open (Text_Line.In_File, Fd);
@@ -26,7 +27,7 @@ package body Analist is
         end if;
         -- Store word in Data_Base
         if Len < Max_Len then
-          Data_Base.Insert (As.U.Tus (Word(1 .. Len)));
+          Db.Insert (As.U.Tus (Word(1 .. Len)));
         end if;
       end;
     end loop;
@@ -38,21 +39,35 @@ package body Analist is
   exception
     when Sys_Calls.Name_Error | Sys_Calls.System_Error =>
       raise Init_Error;
+  end Init_Db;
+
+  -- Init database from a dictionnary (file with one word per line)
+  -- Reset it if already init
+  procedure Init (Words_File, Nouns_File : in String) is
+  begin
+    Init_Db (Words_File, Words_Db);
+    Init_Db (Nouns_File, Nouns_Db);
   end Init;
 
   -- Add a word in the database if does not exist
-  procedure Add (Word : in As.U.Asu_Us) is
+  procedure Add (Word : in As.U.Asu_Us; Noun : in Boolean) is
     Moved : Boolean;
     Uword : As.U.Asu_Us;
+    Dba : Db_Access;
     use type As.U.Asu_Us;
   begin
+    if Noun then
+      Dba := Nouns_Db'Access;
+    else
+      Dba := Words_Db'Access;
+    end if;
     -- Verify that word does not exist
-    if not Data_Base.Is_Empty then
+    if not Dba.Is_Empty then
       -- Iterate on all words
-      Data_Base.Rewind;
+      Dba.Rewind;
       loop
         -- Get the Word
-        Data_Base.Read (Uword, Moved => Moved);
+        Dba.Read (Uword, Moved => Moved);
         if Word = Uword then
           -- This word already exists
           return;
@@ -61,27 +76,34 @@ package body Analist is
       end loop;
     end if;
     -- Insert word
-    Data_Base.Insert (Word);
+    Dba.Insert (Word);
   end Add;
 
   -- Delete a word from the database if it exists
-  procedure Del (Word : in As.U.Asu_Us) is
+  procedure Del (Word : in As.U.Asu_Us; Noun : in Boolean) is
     Moved : Boolean;
     Uword : As.U.Asu_Us;
+    Dba : Db_Access;
     use type As.U.Asu_Us;
   begin
+    if Noun then
+      Dba := Nouns_Db'Access;
+    else
+      Dba := Words_Db'Access;
+    end if;
+
     -- Find the word if it exists
-    if Data_Base.Is_Empty then
+    if Dba.Is_Empty then
       return;
     end if;
     -- Iterate on all words
-    Data_Base.Rewind;
+    Dba.Rewind;
     loop
       -- Get the word
-      Data_Base.Read (Uword, Moved => Moved);
+      Dba.Read (Uword, Moved => Moved);
       if Word = Uword then
         -- The word exists
-        Data_Base.Delete (Moved => Moved);
+        Dba.Delete (Moved => Moved);
       end if;
       exit when not Moved;
     end loop;
@@ -104,24 +126,25 @@ package body Analist is
   procedure Sort is new As.U.Utils.Asu_Dyn_List_Mng.Sort (Less_Than);
 
   -- Search the anagrams of a given Length among Letters
-  procedure Try (Dlist : in out As.U.Utils.Asu_Dyn_List_Mng.List_Type;
+  procedure Try (Db : in out As.U.Utils.Asu_Dyn_List_Mng.List_Type;
+                 Dlist : in out As.U.Utils.Asu_Dyn_List_Mng.List_Type;
                  Letters : in String) is
     Moved : Boolean;
     Uword : As.U.Asu_Us;
     Word_Valid, Letter_Valid : Boolean;
     Used : array (1 .. Letters'Length) of Boolean;
   begin
-    if Data_Base.Is_Empty then
+    if Db.Is_Empty then
       return;
     end if;
     -- Iterate on all words
-    Data_Base.Rewind;
+    Db.Rewind;
     loop
       -- Init for this Word
       Word_Valid := True;
       Used := (others => False);
       -- Get the Word
-      Data_Base.Read (Uword, Moved => Moved);
+      Db.Read (Uword, Moved => Moved);
       declare
         Word : constant String := Uword.Image;
       begin
@@ -159,6 +182,7 @@ package body Analist is
 
   -- List the anagrams of Letters in the database
   procedure List (Letters : in String;
+                  Also_In_Nouns : in Boolean;
                   Anagrams : out As.U.Utils.Asu_Ua.Unb_Array) is
 
     -- Dynamic list of words found
@@ -177,7 +201,10 @@ package body Analist is
     end if;
 
     -- Search various anagram lengths
-    Try (Dlist, Letters);
+    Try (Words_Db, Dlist, Letters);
+    if Also_In_Nouns then
+      Try (Nouns_Db, Dlist, Letters);
+    end if;
 
     -- Sort result
     Sort (Dlist);
