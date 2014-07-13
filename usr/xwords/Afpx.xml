@@ -99,9 +99,9 @@
       <Init Row="0" Col="1">Anagrams</Init>
     </Field>
     <Field Num="16" Kind="Put">
-      <Geometry Up="${Field_15.Low}+2" Left="${BtnLeft}" Height="1" Width="10"/>
+      <Geometry Up="${Field_15.Low}+2" Left="${BtnLeft}" Height="1" Width="8"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">With Nouns</Init>
+      <Init Row="0" Col="2">Nouns</Init>
     </Field>
     <Field Num="17" Kind="Button" Name="Ananouns">
       <Geometry Up="${Field_16.Low}" Left="${Field_16.Right}+2" Height="1"

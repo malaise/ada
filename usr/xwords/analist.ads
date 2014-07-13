@@ -18,7 +18,7 @@ package Analist is
   -- List the anagrams of Letters in the database
   Too_Long : exception;
   procedure List (Letters : in String;
-                  Also_In_Nouns : in Boolean;
+                  In_Nouns : in Boolean;
                   Anagrams : out As.U.Utils.Asu_Ua.Unb_Array);
 
 end Analist;

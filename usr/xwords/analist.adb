@@ -182,7 +182,7 @@ package body Analist is
 
   -- List the anagrams of Letters in the database
   procedure List (Letters : in String;
-                  Also_In_Nouns : in Boolean;
+                  In_Nouns : in Boolean;
                   Anagrams : out As.U.Utils.Asu_Ua.Unb_Array) is
 
     -- Dynamic list of words found
@@ -201,8 +201,9 @@ package body Analist is
     end if;
 
     -- Search various anagram lengths
-    Try (Words_Db, Dlist, Letters);
-    if Also_In_Nouns then
+    if not In_Nouns then
+      Try (Words_Db, Dlist, Letters);
+    else
       Try (Nouns_Db, Dlist, Letters);
     end if;
 
