@@ -140,9 +140,6 @@ package body Analist is
     -- Iterate on all words
     Db.Rewind;
     loop
-      -- Init for this Word
-      Word_Valid := True;
-      Used := (others => False);
       -- Get the Word
       Db.Read (Uword, Moved => Moved);
       declare
@@ -150,6 +147,9 @@ package body Analist is
       begin
         -- Process word only if its length  is compatible
         if Word'Length <= Letters'Length then
+          -- Init for this Word
+          Word_Valid := True;
+          Used := (others => False);
 
           -- See if each letter of Word exists in Letters
           for I in Word'Range loop
