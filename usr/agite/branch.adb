@@ -199,14 +199,9 @@ package body Branch is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
             when Afpx.Return_Key =>
-              -- Move to next line of comment
-              if Get_Handle.Cursor_Field = Afpx_Xref.Commit.Comment7 then
-                Get_Handle.Cursor_Field := Afpx_Xref.Commit.Comment1;
-              else
-                Get_Handle.Cursor_Field := Afpx.Next_Cursor_Field (
-                    Get_Handle.Cursor_Field);
+              if Do_Action (Create) then
+                return;
               end if;
-              Get_Handle.Cursor_Col := 0;
             when Afpx.Escape_Key =>
               -- Back
               return;

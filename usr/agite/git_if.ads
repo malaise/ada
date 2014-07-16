@@ -48,6 +48,7 @@ package Git_If is
   -- A comment of commit
   type Comment_Array is array (Positive range <>) of As.U.Asu_Us;
   subtype Comment_1 is Comment_Array (1 .. 1);
+  subtype Comment_2 is Comment_Array (1 .. 2);
 
   -- LOG HISTORY
   -- Git hashing number
@@ -59,7 +60,7 @@ package Git_If is
   type Log_Entry_Rec is record
     Hash : Git_Hash;
     Date : Iso_Date;
-    Comment : Comment_1;
+    Comment : Comment_2;
   end record;
   package Log_Mng is new Dynamic_List (Log_Entry_Rec);
   subtype Log_List is Log_Mng.Dyn_List.List_Type;

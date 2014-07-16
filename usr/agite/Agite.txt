@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V14.21
+V14.22
 
 General purpose
 ---------------
@@ -547,7 +547,7 @@ This lists follows the renaming of files and directories.
 
 .List
 The list shows for each entry the date of the commit (format YYMMDD:HHMM),
-a space then the comment of the commit.
+a space then the comment (up to two lines, separated by '$') of the commit.
 
 Navigation in the list is the same as the xref:XNavig[navigation] in the
 directory menu, with the mouse wheel, the keyboard and buttons.
