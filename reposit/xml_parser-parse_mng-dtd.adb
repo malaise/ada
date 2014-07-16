@@ -87,6 +87,7 @@ package body Dtd is
     -- Intermediate logic
     In_Word : Boolean := False;
     C : Character;
+    Dummy : Positive;
 
     function Is_Sep (C : Character) return Boolean is
     begin
@@ -97,6 +98,46 @@ package body Dtd is
       end loop;
       return False;
     end Is_Sep;
+
+    -- Check no mix of ',' and '|' in a parenthesis level
+    function Check_Level (N : in Positive) return Positive is
+      Any : constant Character := 'A';
+      Exp : Character;
+      I : Positive;
+    begin
+      Exp := Any;
+      -- Res contains at least one name
+      I := N;
+      loop
+        C := Res.Element (I);
+        if C = '(' then
+          if I = Res.Length then
+            Debug ("Dtd unexpected end of children def >" & Res.Image & "<");
+            Util.Error (Ctx.Flow, "Invalid children definition");
+          end if;
+          -- Check inner level
+          I := Check_Level (I + 1);
+        elsif C = ',' or else C = '|' then
+          if Exp = Any then
+            -- Allow C from now on
+            Exp := C;
+          elsif C /= Exp then
+            Debug ("Dtd got " & C & " while expecting " & Exp);
+            Util.Error (Ctx.Flow, "Invalid children definition");
+          end if;
+        elsif C = ')'then
+          -- Return to upper level
+          return I;
+        end if;
+        -- Detect end anyway
+        if I = Res.Length then
+          -- Return to upper level
+          return I;
+        end if;
+        I := I + 1;
+      end loop;
+    end Check_Level;
+
   begin
     for I in 1 .. Str.Length loop
       C := Str.Element (I);
@@ -119,7 +160,7 @@ package body Dtd is
       Res.Append (Info_Sep & ")");
     end if;
     -- Check that words are always separated: a '(' shall always be
-    -- either the first of precceded by ( | or ,
+    -- either the first or preceeded by ( | or ,
     declare
       Index : Natural;
       Str : constant String := Res.Image;
@@ -136,6 +177,8 @@ package body Dtd is
         end if;
       end loop;
     end;
+    -- Check that no mix of '|' and ',' within a level of ()
+    Dummy := Check_Level (1);
     -- Remove any ','
     Res := As.U.Tus (Str_Util.Substit (Res.Image, ",", ""));
     -- Now compile to check it
