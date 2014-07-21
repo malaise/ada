@@ -104,6 +104,26 @@ package body State_Machine is
     end if;
   end Add_Transition;
 
+  -- To define an event as True
+  -- Calling it several times on the same event has no effect
+  -- Only one event can be True
+  -- May raise Event_Already if another event is already True
+  -- May raise Declaration_Ended if called after End_Declaration;
+  procedure Set_True (Machine : in out Machine_Type; Event : in Event_List) is
+  begin
+    if not Machine.In_Declaration then
+      raise Declaration_Ended;
+    end if;
+    if Machine.True_Set then
+      if Machine.True_Event /= Event then
+        raise Event_Already;
+      end if;
+    else
+      Machine.True_Set := True;
+      Machine.True_Event := Event;
+    end if;
+  end Set_True;
+
   -- To end declarations
   -- May raise Declaration_Ended if re-called after End_Declaration;
   procedure End_Declaration (Machine : in out Machine_Type) is
@@ -142,7 +162,7 @@ package body State_Machine is
         -- No other transition (which means no True transition) from this state
         return;
       end if;
-      if Event_List'Image(Ta.Event) = "TRUE" then
+      if Machine.True_Set and then Ta.Event = Machine.True_Event then
         -- Transition is True, follow it
         Do_Transition (Machine, Machine.Curr_State, Ta, Report);
         Ta := Machine.States(Machine.Curr_State);

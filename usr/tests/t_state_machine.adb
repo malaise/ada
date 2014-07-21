@@ -209,7 +209,19 @@ begin
       Dummy := State_Id ("Failed");
     exception
       when Constraint_Error =>
-        Error ("Warning: no state ""Failed""");
+        Basic_Proc.Put_Line_Output ("Warning: No state ""Failed""");
+    end;
+
+    -- Set True event
+    declare
+      Dummy : Event_List;
+    begin
+      Dummy := Event_Id ("True");
+      Mach.Set_True (Dummy);
+      Basic_Proc.Put_Line_Output ("Event ""True"" defined");
+    exception
+      when Constraint_Error =>
+        Basic_Proc.Put_Line_Output ("Warning: No ""True"" event defined");
     end;
 
     -- Define transitions
@@ -241,17 +253,19 @@ begin
     end loop;
 
     -- Set observers, check mandatory
-    Basic_Proc.Put_Line_Output (
-      "Reports set on State=Unknown and Event=Default");
     Mach.Add_State_Report(State_Id ("Unknown"),
                           Report_State'Unrestricted_Access);
+    Basic_Proc.Put_Line_Output ("Set observer on State=Unknown");
     begin
       Mach.Add_Event_Report(Event_Id("Default"),
                             Report_Event'Unrestricted_Access);
+      Basic_Proc.Put_Line_Output ("Set observer on Event=Default");
     exception
       when Constraint_Error =>
-        Error ("Warning: skipping observer on event ""Default""");
+        Basic_Proc.Put_Line_Output (
+            "Warning: skipping observer on Event=Default");
     end;
+
     Basic_Proc.Put_Line_Output ("End of state machine definition.");
     Basic_Proc.New_Line_Output;
     Mach.End_Declaration;

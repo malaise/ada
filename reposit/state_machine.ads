@@ -6,7 +6,7 @@ generic
   type State_List is (<>);
 
   -- List of events
-  -- The True event can be declared in this list to generate
+  -- At modt one of these events can be defined as True in order to generate
   --  automatic transitions
   -- The Default event can be declared in this list to generate
   --  a transition on any unspecified event
@@ -65,11 +65,17 @@ package State_Machine is
   --  when this transition occurs
   -- May raise Event_Already if this event is already defined
   --  from this original state
-  -- May raise Declaration_Ended if called after End_Declaration;
+  -- May raise Declaration_Ended if called after End_Declaration
   procedure Add_Transition (Machine : in out Machine_Type;
                             Transition : in Transition_Rec;
                             Report : in Transition_Report_Access := null);
 
+  -- To define an event as True
+  -- Calling it several times on the same event has no effect
+  -- Only one event can be True
+  -- May raise Event_Already if another event is already True
+  -- May raise Declaration_Ended if called after End_Declaration;
+  procedure Set_True (Machine : in out Machine_Type; Event : in Event_List);
 
   -- To end declarations
   -- May raise Declaration_Ended if re-called after End_Declaration
@@ -125,6 +131,9 @@ private
   type Machine_Type (Id : Machine_Id) is tagged limited record
     -- Still declaring?
     In_Declaration : Boolean := True;
+    -- True event
+    True_Set : Boolean := False;
+    True_Event : Event_List := Event_List'First;
     -- The current state
     Curr_State : State_List := State_List'First;
     -- The states, each one is an access to first transition
