@@ -17,6 +17,7 @@ CLIBS_t_channels := posix2pcre pcre
 CLIBS_t_delta_date := posix2pcre pcre
 CLIBS_t_regex_filters := posix2pcre pcre
 CLIBS_t_regexp := posix2pcre pcre
+CLIBS_t_state_machine := posix2pcre pcre
 CLIBS_t_string := posix2pcre pcre
 CLIBS_t_str_error := posix2pcre pcre
 CLIBS_t_xml_gen := posix2pcre pcre

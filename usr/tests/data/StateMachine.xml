@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE StateMachines SYSTEM "StateMachine.dtd">
+
+<StateMachines>
+  <StateMachine Name="Test">
+    <States>
+      <State Name="Unknown"/>
+      <State Name="Starting"/>
+      <State Name="Failed"/>
+      <State Name="Detached"/>
+      <State Name="Ok"/>
+      <State Name="Error"/>
+    </States>
+    <Events>
+      <Event Name="True"/>
+      <Event Name="Default"/>
+      <Event Name="Start"/>
+      <Event Name="Failure"/>
+      <Event Name="Success"/>
+      <Event Name="Attach"/>
+      <Event Name="Detach"/>
+    </Events>
+    <Transitions>
+      <Transition OrigState="Unknown"  Event="Detach"  DestState="Detached"/>
+      <Transition OrigState="Unknown"  Event="Start"   DestState="Starting"/>
+      <Transition OrigState="Unknown"  Event="True"    DestState="Starting"/>
+      <Transition OrigState="Unknown"  Event="Attach"  DestState="Unknown"/>
+      <Transition OrigState="Unknown"  Event="Default" DestState="Error"/>
+      <Transition OrigState="Starting" Event="Detach"  DestState="Detached"/>
+      <Transition OrigState="Starting" Event="Start"   DestState="Starting"/>
+      <Transition OrigState="Starting" Event="Failure" DestState="Failed"/>
+      <Transition OrigState="Starting" Event="Success" DestState="Ok"/>
+      <Transition OrigState="Starting" Event="Attach"  DestState="Starting"/>
+      <Transition OrigState="Starting" Event="Default" DestState="Error"/>
+      <Transition OrigState="Failed"   Event="Detach"  DestState="Detached"/>
+      <Transition OrigState="Failed"   Event="Start"   DestState="Starting"/>
+      <Transition OrigState="Failed"   Event="Attach"  DestState="Failed"/>
+      <Transition OrigState="Failed"   Event="Default" DestState="Error"/>
+      <Transition OrigState="Ok"       Event="Detach"  DestState="Detached"/>
+      <Transition OrigState="Ok"       Event="Failure" DestState="Failed"/>
+      <Transition OrigState="Ok"       Event="Attach"  DestState="Ok"/>
+      <Transition OrigState="Ok"       Event="Default" DestState="Error"/>
+      <Transition OrigState="Detached" Event="Attach"  DestState="Unknown"/>
+      <Transition OrigState="Error"    Event="Detach"  DestState="Detached"/>
+      <!-- For True_Loop detection
+      <Transition OrigState=""Ok"       Event=""True"    DestState="Failed"/>
+      <Transition OrigState=""Failed"   Event=""True"    DestState="Ok"/>
+      -->
+    </Transitions>
+  </StateMachine>
+</StateMachines>
+

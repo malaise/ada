@@ -1353,10 +1353,10 @@ echo "OK"
 
 # t_state_machine
 title t_state_machine
-echo  -e "success\nfailure\nsuccess\n" | try t_state_machine
+echo  -e "Success\nFailure\nSuccess\n" | try t_state_machine data/StateMachine.xml Test
 tail -3 out | head -1 > out1
 cat << EOF > exp
-TRUE DEFAULT START FAILURE SUCCESS ATTACH DETACH  ? Transition: STARTING -- SUCCESS  -> OK      
+True Default Start Failure Success Attach Detach  ? Transition: Starting -- Success  -> Ok      
 EOF
 comp out1 exp
 comp err nul
