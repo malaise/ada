@@ -4,6 +4,7 @@ package Fleet is
 
   -- List of ships
   type Ship_List is (Carrier, Battleship, Cruiser, Sub1, Sub2);
+  subtype Ship_Kind_List is Ship_List range Carrier .. Sub1;
   Ship_Names : array (Ship_List) of As.U.Asu_Us;
 
   -- Length of a ship

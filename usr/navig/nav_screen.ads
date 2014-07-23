@@ -6,8 +6,9 @@ package Nav_Screen is
   -- Where to go after a field is got
   subtype Movement is Con_Io.Curs_Mvt;
 
-  -- Result of get of action to do
+  -- Result of get of action to do. First the ones that trigger an exit
   type Action is (Compute, Quit, Help, Clear, Prev, Next, Refresh, Break);
+  subtype Dialog_Action is Action range Compute .. Quit;
 
   -- Clear all the screen
   procedure Reset;

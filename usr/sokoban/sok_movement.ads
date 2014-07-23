@@ -6,8 +6,7 @@ package Sok_Movement is
 
 
   -- Man movement
-  subtype Movement_List is Sok_Input.Key_List
-   range Sok_Input.Left .. Sok_Input.Down;
+  subtype Movement_List is Sok_Input.Movement_List;
 
   -- result of a movement try
   type Result_List is

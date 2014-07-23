@@ -1,7 +1,7 @@
 with Ada.Exceptions;
 with As.U, Address_Ops, Socket, Channels, Mixed_Str, Text_Line;
 with Dictio_Debug, Parse, Local_Host_Name;
-pragma Elaborate (Channels);
+pragma Elaborate_All (Channels);
 package body Intra_Dictio is
 
   Lf : constant Character := Text_Line.Line_Feed_Char;

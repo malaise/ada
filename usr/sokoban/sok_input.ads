@@ -1,8 +1,9 @@
 with Con_Io;
 package Sok_Input is
 
-  -- Get a key (in fact an event)
+  -- Get a key (in fact an event), movements first
   type Key_List is (Left, Right, Up, Down, Undo, Esc, Next, Mouse, Refresh);
+  subtype Movement_List is Key_List range Left .. Down;
   function Get_Key return Key_List;
 
   -- Last mouse event, click or release

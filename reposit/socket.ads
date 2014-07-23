@@ -7,8 +7,9 @@ package Socket is
   type Socket_Dscr is tagged private;
   No_Socket : constant Socket_Dscr;
 
-  -- Available protocols on socket
+  -- Available protocols on socket, UDP then TCP
   type Protocol_List is (Udp, Tcp, Tcp_Header, Tcp_Afux, Tcp_Header_Afux);
+  subtype Tcp_Protocol_List is Protocol_List range Tcp .. Tcp_Header_Afux;
 
   -- Note for Multicast IP (using Udp socket):
   -- For sending IPM, simply Set_Destination to a LAN name

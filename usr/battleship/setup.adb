@@ -77,7 +77,7 @@ package body Setup is
   Ships : Ship_State := No_Ship;
 
   -- Kind of ship currently being set
-  subtype Curr_Ship_List is Fleet.Ship_List range Fleet.Carrier .. Fleet.Sub1;
+  subtype Curr_Ship_List is Fleet.Ship_Kind_List;
   Curr_Ship : Curr_Ship_List;
 
   -- Squares used

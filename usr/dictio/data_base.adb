@@ -1,18 +1,11 @@
 with Dynamic_List, Normal, Hash_Function, Hash;
 with Parse;
-pragma Elaborate (Hash);
+pragma Elaborate_All (Hash);
 package body Data_Base is
 
   package Item_Dyn_List_Mng is new Dynamic_List (Item_Rec);
   package Item_List_Mng renames Item_Dyn_List_Mng.Dyn_List;
   Item_List : Item_List_Mng.List_Type;
-
-  -- Name and kind match
-  function Name_Match (Elt1, Elt2 : Item_Rec) return Boolean is
-  begin
-    return Elt1.Kind = Elt2.Kind and then Elt1.Name = Elt2.Name;
-  end Name_Match;
-  function Search_Name is new Item_List_Mng.Search (Name_Match);
 
   type Item_Access is access all Item_Rec;
   -- Hash on: Item.Kind & Item.Name (not Parsed)
@@ -60,22 +53,14 @@ package body Data_Base is
     -- The one to store
     Itm := Item;
 
-    if H_Use then
-      Acc := H_Get (Item.Kind, Item.Name);
-      if Acc /= null then
-        Acc.all := Itm;
-      else
-        Append_Itm;
-        H_Item.Store (H_Table,
-                      Item.Kind & Item.Name,
-                      Item_Access(Item_List.Access_Current));
-      end if;
+    Acc := H_Get (Item.Kind, Item.Name);
+    if Acc /= null then
+      Acc.all := Itm;
     else
-      if Search_Name (Item_List, Itm, From => Item_List_Mng.Absolute) then
-        Item_List.Modify (Itm, Item_List_Mng.Current);
-      else
-        Append_Itm;
-      end if;
+      Append_Itm;
+      H_Item.Store (H_Table,
+                    Item.Kind & Item.Name,
+                    Item_Access(Item_List.Access_Current));
     end if;
   end Set;
 
@@ -92,21 +77,11 @@ package body Data_Base is
     Item : Item_Rec;
     Acc : Item_Access;
   begin
-    if H_Use then
-      Acc := H_Get (Kind, Name);
-      if Acc = null then
-        Item := No_Item;
-      else
-        Item := Acc.all;
-      end if;
+    Acc := H_Get (Kind, Name);
+    if Acc = null then
+      Item := No_Item;
     else
-      Item.Name := Name;
-      Item.Kind := Kind;
-      if Search_Name (Item_List, Item, From => Item_List_Mng.Absolute) then
-        Item_List.Read (Item, Item_List_Mng.Current);
-      else
-        Item := No_Item;
-      end if;
+      Item := Acc.all;
     end if;
     return Item;
   end Get;

@@ -52,6 +52,7 @@ package Sok_Display is
   -- Errors
   type Error_List is (No_Data, Read, No_Frame, Restore, Save,
                       Format, Score_Io, Internal, Init_Score);
+  subtype Menu_Error_List is Error_List range No_Frame .. Score_Io;
   procedure Put_Error (Error : in Error_List);
   procedure Clear_Error;
 

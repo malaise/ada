@@ -1,5 +1,5 @@
 with Common, File;
-pragma Elaborate(File);
+pragma Elaborate_All (File);
 package Data is
   Nb_Cote : constant Common.Cote_Range := File.Get_Nb_Cote;
 

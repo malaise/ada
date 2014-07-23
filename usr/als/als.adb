@@ -268,10 +268,10 @@ begin
     if Date1.Oper = Entities.Equal or else Date2.Oper = Entities.Equal then
       Error ("With two dates, none can be ""eq""");
     end if;
-    if (Date1.Oper <= Entities.Less_Or_Equal
-           and then Date2.Oper <= Entities.Less_Or_Equal)
-    or else (Date1.Oper >= Entities.Greater_Than
-             and then Date2.Oper >= Entities.Greater_Than) then
+    if (Date1.Oper in Entities.Less_Oper_List
+           and then Date2.Oper in Entities.Less_Oper_List)
+    or else (Date1.Oper in Entities.Greater_Oper_List
+             and then Date2.Oper in Entities.Greater_Oper_List) then
       Error ("With two dates, one must be ""lt"" or ""le"" "
              & "and the other ""gt or ""ge""");
     end if;

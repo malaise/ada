@@ -45,7 +45,7 @@ package body Command is
 
   -- The callback for death of child
   procedure Death_Cb (Death_Report : in Proc_Family.Death_Rec) is
-    use type Sys_Calls.Death_Cause_List, Sys_Calls.Pid;
+    use type Sys_Calls.Death_Info_List, Sys_Calls.Pid;
   begin
     case Death_Report.Cause is
       when Sys_Calls.Exited =>
@@ -182,7 +182,7 @@ package body Command is
     Signals_Handled : Boolean;
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
-    use type Sys_Calls.Death_Cause_List;
+    use type Sys_Calls.Death_Info_List;
   begin
     Mut.Get;
     Logger.Init ("Command");

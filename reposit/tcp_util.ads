@@ -18,8 +18,7 @@ package Tcp_Util is
   -- PROTOCOL DEFINITION --
   -------------------------
   -- All kinds of TCP of Socket are supported by Connect_To and Accepti_From
-  subtype Tcp_Protocol_List is Socket.Protocol_List range
-                               Socket.Tcp .. Socket.Tcp_Header_Afux;
+  subtype Tcp_Protocol_List is Socket.Tcp_Protocol_List;
   -- Default TTL
   Default_Ttl : constant Socket.Ttl_Range := 0;
 

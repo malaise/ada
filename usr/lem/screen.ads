@@ -21,8 +21,7 @@ package Screen is
                     Elapsed_Time  : in Chronos.Date_Rec);
 
   -- Put game end
-  subtype End_Reason_List is Flight.Status_List
-                             range Flight.Landed .. Flight.Lost;
+  subtype End_Reason_List is Flight.End_List;
   procedure Put_End (Reason : in End_Reason_List);
 
   -- Put message when paused

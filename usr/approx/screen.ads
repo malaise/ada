@@ -51,6 +51,7 @@ package Screen is
       E_Too_Many_Points);
 
   subtype S_Info_List is S_Message_List range I_Clear .. I_Wait;
+  subtype S_Coord_List is S_Message_List range I_X .. I_Ymax;
   subtype S_Confirm_List is S_Message_List range C_File_Exists .. C_Data_Lost;
   subtype S_Error_List is S_Message_List
                           range E_Done .. E_Too_Many_Points;

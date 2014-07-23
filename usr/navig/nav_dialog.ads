@@ -6,8 +6,7 @@ package Nav_Dialog is
   procedure Init;
 
   -- Action to be managed by the dialog (get -> compute or quit)
-  subtype Action is Nav_Screen.Action
-   range Nav_Screen.Compute .. Nav_Screen.Quit;
+  subtype Action is Nav_Screen.Dialog_Action;
 
   -- get data and then the action
   procedure Get (Data : in out Nav_Data.T_Data; To_Do : out Action);

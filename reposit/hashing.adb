@@ -1,5 +1,5 @@
 with Basic_Proc, Dyn_Data;
-pragma Elaborate (Dyn_Data);
+pragma Elaborate_All (Dyn_Data);
 package body Hashing is
 
   -- The function to hash at default size default

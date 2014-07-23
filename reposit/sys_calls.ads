@@ -226,9 +226,10 @@ package Sys_Calls is
   -- When mutation failed, child process shall suicide by using this
   procedure Suicide;
 
-  -- Process termination information
-  type Death_Cause_List is (No_Dead, Exited, Signaled, Stopped);
-  type Death_Rec (Cause : Death_Cause_List := No_Dead) is record
+  -- Process termination information, dummy No_Dead first
+  type Death_Info_List is (No_Dead, Exited, Signaled, Stopped);
+  subtype Death_Cause_List is Death_Info_List range Exited .. Signaled;
+  type Death_Rec (Cause : Death_Info_List := No_Dead) is record
     case Cause is
       when No_Dead =>
         null;

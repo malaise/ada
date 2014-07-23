@@ -8,9 +8,10 @@ package Flight is
   -- Get a valid init position for the LEM
   function Get_Init_Position return Space.Position_Rec;
 
-  -- Kind of LEM flight status
+  -- Kind of LEM flight status, various kinds of ending last
   type Status_List is (Flying, Approaching, Close, Landed, Safe_Landed,
                        Crashed, Lost);
+  subtype End_List is Status_List range Landed .. Lost;
   -- LEM status, postion and speed
   -- Normally, Game and Screen shall get Pos and Speed from Lem itself
   --  but having them here improves consistency between flight status

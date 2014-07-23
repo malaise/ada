@@ -35,7 +35,7 @@ package body Proc_Family is
     Child  : Child_Rec;
     Report : Death_Rec;
     Moved  : Boolean;
-    use type Sys_Calls.Death_Cause_List;
+    use type Sys_Calls.Death_Info_List;
   begin
     -- Get death description
     Death_Dscr := Sys_Calls.Next_Dead;

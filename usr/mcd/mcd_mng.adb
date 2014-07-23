@@ -1,6 +1,6 @@
 with Random, As.U.Utils, Event_Mng;
 with Debug, Input_Dispatcher, Mcd_Parser;
-pragma Elaborate(Random);
+pragma Elaborate_All (Random);
 package body Mcd_Mng is
 
   -- Current version

@@ -62,9 +62,11 @@ package body Moon is
       Delta_Point_Lem_Width_Error : exception;
     begin
       pragma Warnings (Off, "condition is always False");
+      pragma Warnings (Off, "this code can never be executed and has been deleted");
       if Delta_Point < Lem.Width then
         raise Delta_Point_Lem_Width_Error;
       end if;
+      pragma Warnings (On, "this code can never be executed and has been deleted");
       pragma Warnings (On, "condition is always False");
     end;
 

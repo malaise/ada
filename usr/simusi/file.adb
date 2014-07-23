@@ -1,5 +1,5 @@
 with As.U.Utils, Argument, Basic_Proc, Get_Line, Gets;
-pragma Elaborate (Argument);
+pragma Elaborate_All (Argument);
 with Arg_Parsing;
 package body File is
 

@@ -8,8 +8,7 @@ function Sok_Menu (Done : Boolean) return Menu_Result_List is
   Key : Sok_Input.Key_List;
   Mouse : Sok_Input.Mouse_Event_Rec;
 
-  subtype Menu_Error_List is Sok_Display.Error_List
-   range Sok_Display.No_Frame .. Sok_Display.Score_Io;
+  subtype Menu_Error_List is Sok_Display.Menu_Error_List;
   procedure Put_Menu_Error (Error : in Menu_Error_List) is
   begin
     Sok_Display.Put_Error (Error);

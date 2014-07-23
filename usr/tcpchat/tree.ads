@@ -22,6 +22,9 @@ package Tree is
   -- Operation list
   type Oper_List is (Equal, Noteq, Match, Notmatch,
                      Greater, Less, Greatereq, Lesseq);
+  subtype Equal_List is Oper_List range Equal .. Noteq;
+  subtype Equal_Match_List is Oper_List range Equal .. Notmatch;
+  subtype Unequal_List is Oper_List range Greater .. Lesseq;
 
   -- Evaluations rule
   type Eval_List is (None, Resolve, Compute);

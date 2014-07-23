@@ -36,6 +36,9 @@ package Entities is
   -- Date criteria
   type Date_Oper_List is (Equal, Less_Than, Less_Or_Equal,
                                  Greater_Than, Greater_Or_Equal, None);
+  subtype Less_Oper_List is Date_Oper_List range Less_Than .. Less_Or_Equal;
+  subtype Greater_Oper_List is Date_Oper_List
+                               range Greater_Than .. Greater_Or_Equal;
   type Date_Spec_Rec is record
     Oper : Date_Oper_List := None;
     Date : Ada.Calendar.Time;

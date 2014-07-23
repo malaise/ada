@@ -252,12 +252,12 @@ package body Matcher is
     -- Check Oper versus Eval
     Result := (case Node.Eval is
       -- Only Equal or Notequal
-      when Tree.None => Node.Oper <= Tree.Noteq,
+      when Tree.None => Node.Oper in Tree.Equal_List,
       -- Equal or Notequal or Match or Notmatch
-      when Tree.Resolve => Node.Oper <= Tree.Notmatch,
+      when Tree.Resolve => Node.Oper in Tree.Equal_Match_List,
       -- Equal or Notequal or Greater...
       when Tree.Compute =>
-        (Node.Oper <= Tree.Noteq) or else (Node.Oper >= Tree.Greater));
+        Node.Oper in Tree.Equal_List or else Node.Oper in Tree.Unequal_List);
     if not Result then
       Error ("Operation " & Mixed_Str (Node.Oper'Img)
            & " incompatible with Evaluation " & Mixed_Str (Node.Eval'Img));

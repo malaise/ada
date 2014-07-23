@@ -21,6 +21,7 @@ package Utils is
 
   -- A Coordinate
   type Row_Range is (A, B, C, D, E, F, G, H, I, J);
+  pragma Ordered (Row_Range);
   type Col_Range is new Positive range 1 .. 10;
   type Coord is record
     Row : Row_Range;

@@ -1,11 +1,10 @@
 with Ada.Calendar;
-with Con_Io, Normal, Lower_Str, Upper_Char, Day_Mng, Timers, Language;
+with Con_Io, Normal, Lower_Str, Upper_Char, Day_Mng, Timers, Language, Environ;
 with Pieces, Space.Board, Image;
 package body Screen is
 
   -- Text or Graphic
-  -- Graphic_Mode : constant Boolean := False;
-  Graphic_Mode : constant Boolean := True;
+  Graphic_Mode : Boolean;
 
   Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
@@ -138,6 +137,7 @@ package body Screen is
                     Def_Fore => Main_Fore,
                     Def_Back => Main_Back);
       Screen.Set_To_Screen (Console'Access);
+      Graphic_Mode := not Environ.Is_Yes ("CHESS_TEXT_MODE");
     end if;
     Init_Board (Color);
     for Row in Space.Row_Range loop

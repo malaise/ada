@@ -3,7 +3,7 @@ with Basic_Proc, Argument;
 with Common, Action, Mmind_Asc;
 
 procedure Mmind is
-   Ascii : Boolean;
+   Is_Ascii : Boolean;
 begin
   -- Parse arguments
   declare
@@ -15,21 +15,21 @@ begin
     case Argument.Get_Nbre_Arg is
       when 0 =>
         -- Second level => 4
-        Ascii := False;
+        Is_Ascii := False;
         Level := Default_Level;
       when 1 =>
         if Argument.Get_Parameter = "-t" then
-          Ascii := True;
+          Is_Ascii := True;
           Level := Default_Level;
         else
-          Ascii := False;
+          Is_Ascii := False;
           Level := Common.Last_Level_Range'Value (Argument.Get_Parameter);
         end if;
       when 2 =>
         if Argument.Get_Parameter (Occurence => 1) /= "-t" then
           raise Constraint_Error;
         end if;
-        Ascii := True;
+        Is_Ascii := True;
         Level := Common.Last_Level_Range'Value
                      (Argument.Get_Parameter (Occurence => 2));
       when others =>
@@ -45,7 +45,7 @@ begin
       return;
   end;
 
-  if Ascii then
+  if Is_Ascii then
     -- Ascii Mode
     Mmind_Asc;
   else
