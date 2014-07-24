@@ -404,12 +404,14 @@ package Afpx is
   --   double click terminates Put_Then Get (Mouse_Button, List_Field_No).
   -- In Put fields: nothing.
   -- In Get fields:
+  --   Left/right arrows Home and End navigate in the field (see Con_Io),
   --   A character input, Backspace, Suppr, Shift Suppr or Ctrl Suppr edits
   --    the field (see Con_Io),
-  --   A character input or arrow can also shift the field (by an Offset)
-  --    if the data len is larger than the field width
-  --   (Ctrl) Right/Left arrow, (Ctrl) Home/End navigates in the field,
-  --   Insert toggles insert/replace mode
+  --   Insert toggles insert/replace mode (see Con_Io),
+  --   A character input can also shift the field (by an Offset) if the data
+  --    len is larger than the field width
+  --   (Ctrl) Right/Left arrow move the the first/last significant character of
+  --    the field,
   --   Tab or Shift Tab changes field (like Next/Prev_Cursor_Field), a character
   --    input or left/right arrow can also lead to change field
   --   Only Return, Esc or Break key terminates the Put_Then_Get
