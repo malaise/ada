@@ -221,7 +221,6 @@ package body Pattern is
     Term : Storage.Term_Rec;
     Len : Natural;
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
     Index : Natural;
     use type Storage.Str_Access;
   begin
@@ -322,8 +321,7 @@ package body Pattern is
     Nb_Match : Natural;
     Term, Prev_Term : Storage.Term_Rec;
     Repeating : Boolean;
-    Index : Natural;
-    pragma Unreferenced (Index);
+    Dummy_Index : Natural;
 
     use type Storage.Str_Access;
 
@@ -481,7 +479,7 @@ package body Pattern is
         elsif Strl = Term.Str_Acc.all then
           Put_Debug ("Check", "  Match");
           Nb_Match := Nb_Match + 1;
-          Index := Parser.Last_Index (Iter, False);
+          Dummy_Index := Parser.Last_Index (Iter, False);
           Ok := True;
           -- Next str may mismatch with current term and still Ok
           Repeating := Term.Repet;

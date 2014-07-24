@@ -223,10 +223,9 @@ package body Autobus is
 
     -- Delete this partner from Partners
     declare
-      Partner_Found : Boolean;
-      pragma Unreferenced (Partner_Found);
+      Dummy_Partner_Found : Boolean;
     begin
-      Partner_Found := Partners.Search_Access (Partner_Acc);
+      Dummy_Partner_Found := Partners.Search_Access (Partner_Acc);
     end;
     Partners.Delete (Moved => Moved);
 
@@ -406,7 +405,6 @@ package body Autobus is
     Message : Tcp_Message_Str;
     Message_Length : Natural;
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     if not Connected then
       -- This should not occur because the number of connection retries
@@ -457,12 +455,11 @@ package body Autobus is
   end Tcp_Connection_Cb;
 
   -- Accept connection Cb
-  procedure Tcp_Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
+  procedure Tcp_Accept_Cb (Unused_Port_Num : in Tcp_Util.Port_Num;
                            Local_Dscr      : in Socket.Socket_Dscr;
                            Remote_Host_Id  : in Tcp_Util.Host_Id;
                            Remote_Port_Num : in Tcp_Util.Port_Num;
                            New_Dscr        : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Local_Port_Num);
     Bus : Bus_Rec;
     Partner : Partner_Rec;
   begin
@@ -514,8 +511,7 @@ package body Autobus is
     Rem_Host : Tcp_Util.Remote_Host;
     Rem_Port : Tcp_Util.Remote_Port;
     Partner_Found : Boolean;
-    Connected : Boolean;
-    pragma Unreferenced (Connected);
+    Unused_Connected : Boolean;
     -- Partner is filled progressively (excep its Sock and Timer)
     Partner : Partner_Rec;
     use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
@@ -592,7 +588,7 @@ package body Autobus is
       Partner.Timer := new Chronos.Passive_Timers.Passive_Timer;
       Insert_Partner (Partner);
       -- The callback can be called synchronously
-      Connected := Tcp_Util.Connect_To (
+      Unused_Connected := Tcp_Util.Connect_To (
           Socket.Tcp_Header,
           Rem_Host, Rem_Port,
           Tcp_Connection_Cb'Access,
@@ -607,8 +603,7 @@ package body Autobus is
 
   -- Cb of the active Timer for the Bus
   function Timer_Cb (Id : in Timers.Timer_Id;
-                     Data : in Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Data);
+                     Unused_Data : in Timers.Timer_Data) return Boolean is
     Bus : Bus_Rec;
   begin
     -- Find Bus
@@ -748,8 +743,7 @@ package body Autobus is
 
   -- Reset a Bus (make it re-usable)
   procedure Reset (Bus : in out Bus_Type) is
-    Bus_Found : Boolean;
-    pragma Unreferenced (Bus_Found);
+    Unused_Bus_Found : Boolean;
     Moved : Boolean;
     use type Socket.Socket_Dscr;
   begin
@@ -758,7 +752,7 @@ package body Autobus is
     if Bus.Acc = null then
       raise Status_Error;
     end if;
-    Bus_Found := Buses.Search_Access (Bus.Acc);
+    Unused_Bus_Found := Buses.Search_Access (Bus.Acc);
     Logger.Log_Debug ("Bus.Reset " & Bus.Acc.Name.Image);
 
     -- Send Death info
@@ -790,7 +784,6 @@ package body Autobus is
     Moved : Boolean;
     Success : Boolean;
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     -- Check that Bus is initialised
     if Bus.Acc = null then

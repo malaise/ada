@@ -76,7 +76,6 @@ package body Events is
     Select_Chats : As.U.Asu_Us;
     Variable : As.U.Asu_Us;
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
     use type Tree.Node_Kind, Ios.Event_Kind_List;
   begin
     Put_Line (Argument.Get_Program_Name & " V" & Tree.Get_Version & " ready");

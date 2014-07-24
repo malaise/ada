@@ -61,7 +61,6 @@ package body Regular_Expressions is
   -- Get PCRE version
   function Get_Pcre_Version return String is
     Addr, Dummy : System.Address;
-    pragma Unreferenced (Dummy);
     Str : String (1 .. 255);
     function C_Strncpy (Dest, Src : System.Address; Size : Integer)
              return System.Address;

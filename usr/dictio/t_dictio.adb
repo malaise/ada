@@ -44,11 +44,10 @@ procedure T_Dictio is
   Id_Q      : constant Pattern.Pattern_Id := 322;
   Id_Error  : constant Pattern.Pattern_Id := 999;
 
-  function Com_Fix_Mult (Rule : in Pattern.Rule_No;
+  function Com_Fix_Mult (Unused_Rule : in Pattern.Rule_No;
                          Id   : in Pattern.Pattern_Id;
-                         Nb_Match : in Natural;
+                         Unused_Nb_Match : in Natural;
                          Iter : in Parser.Iterator) return Boolean is
-    pragma Unreferenced (Rule, Nb_Match);
     Arg1 : constant String := Iter.Current_Word;
     Arg2 : constant String := Iter.Next_Word;
     use type Pattern.Pattern_Id;
@@ -66,11 +65,10 @@ procedure T_Dictio is
     return False;
   end Com_Fix_Mult;
 
-  function Com_Fix_Opt (Rule : in Pattern.Rule_No;
+  function Com_Fix_Opt (Unused_Rule : in Pattern.Rule_No;
                         Id   : in Pattern.Pattern_Id;
-                        Nb_Match : in Natural;
+                        Unused_Nb_Match : in Natural;
                         Iter : in Parser.Iterator) return Boolean is
-    pragma Unreferenced (Rule, Nb_Match);
     Arg1 : constant String := Iter.Current_Word;
     Arg2 : constant String := Iter.Next_Word;
     Arg3 : constant String := Iter.Next_Word;
@@ -89,11 +87,10 @@ procedure T_Dictio is
     return False;
   end Com_Fix_Opt;
 
-  function Com_Opt_Opt (Rule : in Pattern.Rule_No;
+  function Com_Opt_Opt (Unused_Rule : in Pattern.Rule_No;
                         Id   : in Pattern.Pattern_Id;
                         Nb_Match : in Natural;
                         Iter : in Parser.Iterator) return Boolean is
-    pragma Unreferenced (Rule);
     Arg1 : constant String := Iter.Current_Word;
     Arg2 : constant String := Iter.Next_Word;
     Alias_Name : constant String := "alias";
@@ -151,11 +148,10 @@ procedure T_Dictio is
     return False;
   end Com_Opt_Opt;
 
-  function Com_Fix (Rule : in Pattern.Rule_No;
+  function Com_Fix (Unused_Rule : in Pattern.Rule_No;
                     Id   : in Pattern.Pattern_Id;
-                    Nb_Match : in Natural;
+                    Unused_Nb_Match : in Natural;
                     Iter : in Parser.Iterator) return Boolean is
-    pragma Unreferenced (Rule, Nb_Match);
     Arg1 : constant String := Iter.Current_Word;
     Arg2 : constant String := Iter.Next_Word;
     use type Pattern.Pattern_Id;
@@ -175,11 +171,10 @@ procedure T_Dictio is
     return False;
   end Com_Fix;
 
-  function Com (Rule : in Pattern.Rule_No;
+  function Com (Unused_Rule : in Pattern.Rule_No;
                 Id   : in Pattern.Pattern_Id;
-                Nb_Match : in Natural;
+                Unused_Nb_Match : in Natural;
                 Iter : in Parser.Iterator) return Boolean is
-    pragma Unreferenced (Rule, Nb_Match);
     Arg1 : constant String := Iter.Current_Word;
     use type Pattern.Pattern_Id;
   begin

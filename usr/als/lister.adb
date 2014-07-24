@@ -51,7 +51,6 @@ package body Lister is
                           return Boolean is
     Dummy_File : constant String := "Toto";
     Dummy_Result : Boolean;
-    pragma Unreferenced (Dummy_Result);
   begin
     if Template = "" then
       return False;

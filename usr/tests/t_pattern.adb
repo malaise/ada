@@ -99,11 +99,10 @@ procedure T_Pattern is
     end if;
   end Parse;
 
-  function Set (Ru : in Pattern.Rule_No;
-                Pa : in Pattern.Pattern_Id;
-                Nb : in Natural;
-                It : in Parser.Iterator) return Boolean is
-    pragma Unreferenced (Ru, Pa, Nb);
+  function Set (Unused_Ru : in Pattern.Rule_No;
+                Unused_Pa : in Pattern.Pattern_Id;
+                Unused_Nb : in Natural;
+                It        : in Parser.Iterator) return Boolean is
     New_Pa : Pattern.Pattern_Id;
 
     Str : constant String := Parser.Image (It);
@@ -137,11 +136,10 @@ procedure T_Pattern is
     return False;
   end Set;
 
-  function Del (Ru : in Pattern.Rule_No;
-                Pa : in Pattern.Pattern_Id;
-                Nb : in Natural;
-                It : in Parser.Iterator) return Boolean is
-    pragma Unreferenced (Ru, Pa, Nb);
+  function Del (Unused_Ru : in Pattern.Rule_No;
+                Unused_Pa : in Pattern.Pattern_Id;
+                Unused_Nb : in Natural;
+                It        : in Parser.Iterator) return Boolean is
     New_Pa : Pattern.Pattern_Id;
 
   begin
@@ -162,11 +160,10 @@ procedure T_Pattern is
     return False;
   end Del;
 
-  function Che (Ru : in Pattern.Rule_No;
-                Pa : in Pattern.Pattern_Id;
-                Nb : in Natural;
-                It : in Parser.Iterator) return Boolean is
-    pragma Unreferenced (Ru, Pa, Nb);
+  function Che (Unused_Ru : in Pattern.Rule_No;
+                Unused_Pa : in Pattern.Pattern_Id;
+                Unused_Nb : in Natural;
+                It        : in Parser.Iterator) return Boolean is
     Str : constant String := Parser.Image (It);
     First : constant Natural := Parser.First_Index (It);
     Res : Boolean;
@@ -185,11 +182,10 @@ procedure T_Pattern is
     return False;
   end Che;
 
-  function Put (Ru : in Pattern.Rule_No;
-                Pa : in Pattern.Pattern_Id;
-                Nb : in Natural;
-                It : in Parser.Iterator) return Boolean is
-    pragma Unreferenced (Ru, Pa, Nb);
+  function Put (Unused_Ru : in Pattern.Rule_No;
+                Unused_Pa : in Pattern.Pattern_Id;
+                Unused_Nb : in Natural;
+                It        : in Parser.Iterator) return Boolean is
     Str : constant String := Parser.Current_Word (It);
     Str1 : constant String := Parser.Next_Word (It);
     Pat2Put : Pattern.Pattern_Id;
@@ -229,11 +225,10 @@ procedure T_Pattern is
 
   end Put;
 
-  function Hel (Ru : in Pattern.Rule_No;
-                Pa : in Pattern.Pattern_Id;
-                Nb : in Natural;
-                It : in Parser.Iterator) return Boolean is
-    pragma Unreferenced (Ru, Pa, Nb, It);
+  function Hel (Unused_Ru : in Pattern.Rule_No;
+                Unused_Pa : in Pattern.Pattern_Id;
+                Unused_Nb : in Natural;
+                Unused_It : in Parser.Iterator) return Boolean is
   begin
     Basic_Proc.Put_Line_Output ("The following commands are supported:");
     Basic_Proc.Put_Line_Output ("  set <id> <pattern>");

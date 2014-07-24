@@ -76,7 +76,6 @@ package body Details is
       Pos : Positive;
       Commit : Git_If.Commit_Entry_Rec;
       Dummy : Boolean;
-      pragma Unreferenced (Dummy);
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;

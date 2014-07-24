@@ -1764,8 +1764,6 @@ package body Dtd is
             Dtd_Val : constant String
                     := Attinfo.List.Slice (2, Sep - 1 );
             Attr_Us : constant As.U.Asu_Us := As.U.Tus (Attr);
-            Namespace : As.U.Asu_Us;
-            pragma Unreferenced (Namespace);
           begin
             if Ctx.Expand then
               if Ctx.Namespace then

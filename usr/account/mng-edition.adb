@@ -446,13 +446,12 @@ package body Edition is
 
   -- Cursor is set after the last significant (non space) character on Left
   --  and on first char in all other cases
-  function Set_Cursor (Field : Afpx.Field_Range;
-                       New_Field : Boolean;
-                       Col   : Con_Io.Col_Range;
+  function Set_Cursor (Unused_Field     : Afpx.Field_Range;
+                       Unused_New_Field : Boolean;
+                       Unused_Col       : Con_Io.Col_Range;
                        Cause : Afpx.Enter_Field_Cause_List;
                        Str   : Afpx.Unicode_Sequence)
            return Con_Io.Col_Range is
-    pragma Unreferenced (Field, New_Field, Col);
     use type Afpx.Enter_Field_Cause_List, Afpx.Field_Range;
   begin
     if Cause = Afpx.Left then

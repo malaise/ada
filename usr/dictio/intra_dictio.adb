@@ -20,7 +20,7 @@ package body Intra_Dictio is
   end record;
 
   procedure Read_Cb (Message  : in Message_Rec;
-                     Length   : in Channels.Message_Length;
+                     Unused_Length   : in Channels.Message_Length;
                      Diffused : in Boolean);
 
   package Dictio_Channel is new Channels.Channel ("Dummy",
@@ -185,10 +185,9 @@ package body Intra_Dictio is
     end if;
   end Sync_Image;
 
-  procedure Read_Cb (Message  : in Message_Rec;
-                     Length   : in Channels.Message_Length;
-                     Diffused : in Boolean) is
-  pragma Unreferenced (Length);
+  procedure Read_Cb (Message       : in Message_Rec;
+                     Unused_Length : in Channels.Message_Length;
+                     Diffused      : in Boolean) is
   begin
     -- Discard own message
     if Mode = Bus and then Local_Name.Image = Parse (Message.Head.From) then

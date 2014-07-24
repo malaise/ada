@@ -79,7 +79,6 @@ package body Sys_Calls is
   end Unlink;
   procedure Unlink (File_Name : String) is
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     Dummy := Unlink (File_Name);
   end Unlink;
@@ -169,7 +168,6 @@ package body Sys_Calls is
     declare
       Result : String (1 .. Integer(C_Strlen(Addr)));
       Dummy_Addr : System.Address;
-      pragma Unreferenced (Dummy_Addr);
     begin
       Dummy_Addr := C_Memcpy (Result'Address, Addr, Result'Length);
       return Result;
@@ -238,7 +236,6 @@ package body Sys_Calls is
     declare
       Str : String (1 .. Integer(C_Strlen (Str_Addr)));
       Dummy_Addr :  System.Address;
-      pragma Unreferenced (Dummy_Addr);
     begin
       Dummy_Addr := C_Strcpy (Str(1)'Address, Str_Addr);
       return Str;

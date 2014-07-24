@@ -60,13 +60,12 @@ package body Mesu_Nam is
   end Valid_No;
 
   function Valid_Pid (Pid : in String) return Boolean is
-    Pid_Val : Pers_Def.Pid_Range;
-    pragma Unreferenced (Pid_Val);
+    Dummy_Pid_Val : Pers_Def.Pid_Range;
   begin
     if Pid'Length /= 3 then
       return False;
     end if;
-    Pid_Val := Pers_Def.Pid_Range'Value(Pid);
+    Dummy_Pid_Val := Pers_Def.Pid_Range'Value(Pid);
     return True;
   exception
     when others =>

@@ -104,8 +104,7 @@ package body Command is
 
   -- The callback for reading out/err output of child
   function Fd_Cb (Fd : in Sys_Calls.File_Desc;
-                  Read : in Boolean) return Boolean is
-    pragma Unreferenced (Read);
+                  Unused_Read : in Boolean) return Boolean is
     Is_Output : Boolean;
     Line : As.U.Asu_Us;
     Got : Boolean;
@@ -180,8 +179,7 @@ package body Command is
     Spawn_Result : Proc_Family.Spawn_Result_Rec;
     Prev_Child_Cb : aliased Event_Mng.Sig_Callback;
     Signals_Handled : Boolean;
-    Dummy : Boolean;
-    pragma Unreferenced (Dummy);
+    Dummy_Res : Boolean;
     use type Sys_Calls.Death_Info_List;
   begin
     Mut.Get;
@@ -242,8 +240,8 @@ package body Command is
     Current_Pid := Spawn_Result.Child_Pid;
     Output_Fd := Spawn_Result.Fd_Out;
     Command.Mix_Policy := Mix_Policy;
-    Dummy := Sys_Calls.Set_Blocking (Spawn_Result.Fd_Out, False);
-    Dummy := Sys_Calls.Set_Blocking (Spawn_Result.Fd_Err, False);
+    Dummy_Res := Sys_Calls.Set_Blocking (Spawn_Result.Fd_Out, False);
+    Dummy_Res := Sys_Calls.Set_Blocking (Spawn_Result.Fd_Err, False);
     Event_Mng.Add_Fd_Callback (Spawn_Result.Fd_Out, True, Fd_Cb'Access);
     Event_Mng.Add_Fd_Callback (Spawn_Result.Fd_Err, True, Fd_Cb'Access);
     Logger.Log_Debug ("Fds are: "

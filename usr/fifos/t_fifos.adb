@@ -76,8 +76,7 @@ procedure T_Fifos is
     end if;
   end Rece_Cb;
 
-  procedure Ovfl_Cb (Id      : in Test_Fifo.Fifo_Id) is
-    pragma Unreferenced (Id);
+  procedure Ovfl_Cb (Unused_Id : in Test_Fifo.Fifo_Id) is
   begin
     Basic_Proc.Put_Line_Output ("End of overflow");
   end Ovfl_Cb;

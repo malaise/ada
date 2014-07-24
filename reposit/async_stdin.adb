@@ -551,8 +551,7 @@ package body Async_Stdin is
 
   -- Our callback
   function Fd_Callback (Fd : Sys_Calls.File_Desc;
-                        Read : Boolean) return Boolean is
-    pragma Unreferenced (Read);
+                        Unused_Read : Boolean) return Boolean is
     Status : Sys_Calls.Get_Status_List;
     C : Character;
     Str : String (1 .. Utf_8.Max_Chars);
@@ -757,11 +756,10 @@ package body Async_Stdin is
 
   -- Put on stdout when in async
   procedure Put_Out (Str : in String) is
-    Result : Boolean;
-    pragma Unreferenced (Result);
+    Dummy_Result : Boolean;
   begin
     if Cb /= null then
-      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
+      Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
       declare
         Buf : constant Unicode_Sequence := Line.Read_Buffer;
       begin
@@ -775,7 +773,7 @@ package body Async_Stdin is
           Console.Set_Col (Line.Read_Col);
         end if;
       end;
-      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+      Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
     else
       Sys_Calls.Put_Output (Str);
     end if;
@@ -792,13 +790,12 @@ package body Async_Stdin is
   end New_Line_Out;
 
   procedure Flush_Out is
-    Result : Boolean;
-    pragma Unreferenced (Result);
+    Dummy_Result : Boolean;
   begin
     if Cb /= null then
-      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
+      Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
       Sys_Calls.Flush_Output;
-      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+      Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
     else
       Sys_Calls.Flush_Output;
     end if;
@@ -806,52 +803,48 @@ package body Async_Stdin is
 
   -- Put on stderr when in async
   procedure Put_Err (Str : in String) is
-    Result : Boolean;
-    pragma Unreferenced (Result);
+    Dummy_Result : Boolean;
   begin
     if Cb /= null then
-      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
+      Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
       Sys_Calls.Put_Error (Str);
-      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+      Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
     else
       Sys_Calls.Put_Error (Str);
     end if;
   end Put_Err;
 
   procedure Put_Line_Err (Str : in String) is
-    Result : Boolean;
-    pragma Unreferenced (Result);
+    Dummy_Result : Boolean;
   begin
     if Cb /= null then
-      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
+      Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
       Sys_Calls.Put_Line_Error (Str);
-      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+      Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
     else
       Sys_Calls.Put_Line_Error (Str);
     end if;
   end Put_Line_Err;
 
   procedure New_Line_Err is
-    Result : Boolean;
-    pragma Unreferenced (Result);
+    Dummy_Result : Boolean;
   begin
     if Cb /= null then
-      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
+      Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
       Sys_Calls.New_Line_Error;
-      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+      Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
     else
       Sys_Calls.New_Line_Error;
     end if;
   end New_Line_Err;
 
   procedure Flush_Err is
-    Result : Boolean;
-    pragma Unreferenced (Result);
+    Dummy_Result : Boolean;
   begin
     if Cb /= null then
-      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
+      Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
       Sys_Calls.Flush_Error;
-      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+      Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
     else
       Sys_Calls.Flush_Error;
     end if;

@@ -18,7 +18,6 @@ procedure Export is
   Oper : Oper_Def.Oper_Rec;
   Oper_List : Oper_List_Mng.List_Type;
   Dummy : Boolean;
-  pragma Unreferenced (Dummy);
   No : Positive;
 
 begin

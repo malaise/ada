@@ -29,13 +29,11 @@ procedure Dtd_Checker is
     raise Abort_Error;
   end Error;
 
-  procedure Warning (Ctx : in  Xml_Parser.Ctx_Type; Msg : in String) is
-  pragma Unreferenced (Ctx);
+  procedure Warning (Unused_Ctx : in  Xml_Parser.Ctx_Type; Msg : in String) is
   begin
     Basic_Proc.Put_Line_Error (Msg);
   end Warning;
   Warnings : Xml_Parser.Warning_Callback_Access;
-
 
   File_Pos : Natural := 1;
 

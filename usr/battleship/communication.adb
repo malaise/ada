@@ -24,10 +24,9 @@ package body Communication is
 
   -- Connection Cb
   type Connect_Type is new Autobus.Observer_Type with null record;
-  procedure Receive (Observer : in out Connect_Type;
-                     Subscriber : in Autobus.Subscriber_Access_Type;
+  procedure Receive (Unused_Observer   : in out Connect_Type;
+                     Unused_Subscriber : in Autobus.Subscriber_Access_Type;
                      Message : in String) is
-    pragma Unreferenced (Observer, Subscriber);
   begin
     Utils.Dbg_Comm ("Received " & Message);
     if Message = "E" then
@@ -46,9 +45,9 @@ package body Communication is
 
   -- Timer management
   Tid : Timers.Timer_Id;
-  function Timer (Id : Timers.Timer_Id; Data : in Timers.Timer_Data)
+  function Timer (Unused_Id : Timers.Timer_Id;
+                  Unused_Data : in Timers.Timer_Data)
                  return Boolean is
-    pragma Unreferenced (Id, Data);
   begin
     Bus.Send ("C");
     return False;
@@ -103,10 +102,9 @@ package body Communication is
   -- Set reception callback
   Reception : Reception_Cb := null;
   type Reception_Type is new Autobus.Observer_Type with null record;
-  procedure Receive (Observer : in out Reception_Type;
-                     Subscriber : in Autobus.Subscriber_Access_Type;
+  procedure Receive (Unused_Observer : in out Reception_Type;
+                     Unused_Subscriber : in Autobus.Subscriber_Access_Type;
                      Message : in String) is
-    pragma Unreferenced (Observer, Subscriber);
   begin
     Utils.Dbg_Comm ("Received " & Message);
     if Reception /= null then

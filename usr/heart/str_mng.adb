@@ -125,7 +125,6 @@ package body Str_Mng is
     Days   : Ada.Calendar.Day_Number;
     Current_Time : constant Ada.Calendar.Time := Ada.Calendar.Clock;
     Dummy  : Ada.Calendar.Time;
-    pragma Unreferenced (Dummy);
   begin
     -- No space or all spaces in each field
     if      (not Is_Spaces(Input.Day)   and then Has_Spaces(Input.Day))

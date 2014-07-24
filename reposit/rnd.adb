@@ -30,8 +30,7 @@ package body Rnd is
   -- Initialisation of sequence
   procedure Randomize (Gen : in out Generator; Init : in Float := 1.0) is
     -- The result of mutex allocation is always true, because infinite waiting
-    Ok : Boolean;
-    pragma Unreferenced (Ok);
+    Dummy_Ok : Boolean;
     F : Float;
     I : U_Rand.Seed_Range_1;
 
@@ -39,7 +38,6 @@ package body Rnd is
     function Init_Aleat return Float is
       Tv : C_Types.Timeval_T;
       Dummy : Integer;
-      pragma Unreferenced (Dummy);
     begin
       Dummy := C_Gettimeofday (Tv'Address, System.Null_Address);
       return Float(Tv.Tv_Usec) / 1.0E6;
@@ -50,7 +48,7 @@ package body Rnd is
     F := (if 0.0 <= Init and then Init < 1.0 then Init else Init_Aleat);
     I := U_Rand.Seed_Range_1 (F * Float(U_Rand.Seed_Range_1'Last - 1) + 1.0);
 
-    Ok := Mutex_Manager.Get (Gen.Lock, -1.0);
+    Dummy_Ok := Mutex_Manager.Get (Gen.Lock, -1.0);
     U_Rand.Start (Gen.Ugen, New_I => I);
     Mutex_Manager.Release (Gen.Lock);
   end Randomize;
@@ -62,10 +60,9 @@ package body Rnd is
                   return Float is
     -- Returned value
     Val : Float;
-    Ok : Boolean;
-    pragma Unreferenced (Ok);
+    Dummy_Ok : Boolean;
   begin
-    Ok := Mutex_Manager.Get (Gen.Lock, -1.0);
+    Dummy_Ok := Mutex_Manager.Get (Gen.Lock, -1.0);
     U_Rand.Next (Gen.Ugen, Val);
     Mutex_Manager.Release (Gen.Lock);
     -- Here 0 <= Val < 1

@@ -35,9 +35,8 @@ procedure T_Tcp is
   procedure My_Send is new Socket.Send (Message_Type);
   procedure My_Receive is new Socket.Receive (Message_Type);
 
-  function Call_Back (F : in Event_Mng.File_Desc; Read : in Boolean)
+  function Call_Back (F : in Event_Mng.File_Desc; Unused_Read : in Boolean)
            return Boolean is
-    pragma Unreferenced (Read);
     use type Event_Mng.File_Desc;
     Message_Len : Natural;
   begin

@@ -126,9 +126,8 @@ procedure Pingpong is
   Info_List : Info_List_Mng.Unique_List_Type;
 
   -- Message reception (ping or pong)
-  function Call_Back (F : in Event_Mng.File_Desc; Read : in Boolean)
+  function Call_Back (F : in Event_Mng.File_Desc; Unused_Read : in Boolean)
                      return Boolean is
-    pragma Unreferenced (Read);
     use type Event_Mng.File_Desc, Socket.Host_Id, Ada.Calendar.Time;
     Message : Message_Type;
     Message_Len : Natural;

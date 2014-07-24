@@ -34,7 +34,7 @@ procedure T_Tcp_Util is
   procedure My_Read is new Socket.Receive (Message_Type);
   function My_Send is new Tcp_Util.Send (Message_Type);
 
-  function Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
+  function Read_Cb (Fd : in Event_Mng.File_Desc; Unused_Read : in Boolean)
                    return Boolean;
   procedure End_Ovf_Cb (Dscr : in  Socket.Socket_Dscr);
 
@@ -121,13 +121,11 @@ procedure T_Tcp_Util is
     In_Ovf := False;
   end End_Ovf_Cb;
 
-  procedure Connect_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
-                        Remote_Port_Num : in Tcp_Util.Port_Num;
-                        Connected       : in Boolean;
-                        Dscr            : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Remote_Port_Num, Remote_Host_Id);
+  procedure Connect_Cb (Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
+                        Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                        Connected              : in Boolean;
+                        Dscr                   : in Socket.Socket_Dscr) is
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     if Connected then
       The_Dscr := Dscr;
@@ -153,24 +151,21 @@ procedure T_Tcp_Util is
 
   procedure Connect is
     Host : Tcp_Util.Remote_Host(Tcp_Util.Host_Name_Spec);
-    Result : Boolean;
-    pragma Unreferenced (Result);
+    Dummy_Res : Boolean;
   begin
     Host.Name := Server_Name;
-    Result := Tcp_Util.Connect_To (Protocol,
-                                   Host, Remote_Port,
-                                   Connect_Cb'Unrestricted_Access,
-                                   Delay_Try, Nb_Try, Ttl);
+    Dummy_Res := Tcp_Util.Connect_To (Protocol,
+                                      Host, Remote_Port,
+                                      Connect_Cb'Unrestricted_Access,
+                                      Delay_Try, Nb_Try, Ttl);
 
   end Connect;
 
-  procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
-                       Local_Dscr      : in Socket.Socket_Dscr;
-                       Remote_Host_Id  : in Tcp_Util.Host_Id;
-                       Remote_Port_Num : in Tcp_Util.Port_Num;
-                       New_Dscr        : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Local_Port_Num, Local_Dscr, Remote_Port_Num,
-                         Remote_Host_Id);
+  procedure Accept_Cb (Unused_Local_Port_Num  : in Tcp_Util.Port_Num;
+                       Unused_Local_Dscr      : in Socket.Socket_Dscr;
+                       Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
+                       Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                       New_Dscr               : in Socket.Socket_Dscr) is
     use type Socket.Socket_Dscr;
     Tmp_Dscr : Socket.Socket_Dscr;
   begin
@@ -199,12 +194,10 @@ procedure T_Tcp_Util is
     end if;
   end Wait;
 
-  function Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
+  function Read_Cb (Fd : in Event_Mng.File_Desc; Unused_Read : in Boolean)
            return Boolean is
-    pragma Unreferenced (Read);
     Len : Natural;
-    Res : Boolean;
-    pragma Unreferenced (Res);
+    Dummy_Res : Boolean;
     use type Event_Mng.File_Desc;
   begin
     if Server then
@@ -257,7 +250,7 @@ procedure T_Tcp_Util is
     if not Server then
       Basic_Proc.Put_Line_Output ("      Working");
       delay 0.3;
-      Res := Send ("Request");
+      Dummy_Res := Send ("Request");
     else
       Basic_Proc.Put_Line_Output ("      Working");
       delay 0.1;

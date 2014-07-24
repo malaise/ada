@@ -617,9 +617,7 @@ package body Git_If is
                          Commit : in out Commit_List) is
     Cmd : Many_Strings.Many_String;
     Dummy_Hash : Git_Hash;
-    pragma Unreferenced (Dummy_Hash);
     Dummy_Done : Boolean;
-    pragma Unreferenced (Dummy_Done);
   begin
     Cmd.Set ("git");
     Cmd.Cat ("log");

@@ -52,7 +52,6 @@ package body Status is
   procedure Set (Status : in Status_List;
                  Immediate : in Boolean := False) is
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
     T : Timers.Delay_Rec;
   begin
     if Immediate then

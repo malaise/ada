@@ -76,9 +76,8 @@ package body Lem is
   -- Return true if too much X thrust while landed
   Current_X_Thrust : X_Thrust_Range := 0;
   Thrust_Tid : Timers.Timer_Id;
-  function Timer_Thrust_Cb (Id : Timers.Timer_Id;
-                            Data : Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Id, Data);
+  function Timer_Thrust_Cb (Unused_Id : Timers.Timer_Id;
+                            Unused_Data : Timers.Timer_Data) return Boolean is
   begin
     -- Reset X thrust
     Current_X_Thrust := 0;
@@ -212,9 +211,8 @@ package body Lem is
   Period : constant Duration := 1.0;
 
   -- Timer callback computing new LEM characteristics
-  function Period_Timer_Cb (Id : Timers.Timer_Id;
-                            Data : Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Id, Data);
+  function Period_Timer_Cb (Unused_Id : Timers.Timer_Id;
+                            Unused_Data : Timers.Timer_Data) return Boolean is
     Fuel_Consumed : Fuel_Range;
     Mass : Mass_Range;
   begin

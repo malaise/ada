@@ -43,12 +43,11 @@ package body Clients is
                            Local : in Boolean);
 
   -- Accept callback: Canncel accept, set connected and set reception callbacks
-  procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
-                       Local_Dscr      : in Socket.Socket_Dscr;
-                       Remote_Host_Id  : in Tcp_Util.Host_Id;
-                       Remote_Port_Num : in Tcp_Util.Port_Num;
-                       New_Dscr        : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Local_Dscr);
+  procedure Accept_Cb (Local_Port_Num    : in Tcp_Util.Port_Num;
+                       Unused_Local_Dscr : in Socket.Socket_Dscr;
+                       Remote_Host_Id    : in Tcp_Util.Host_Id;
+                       Remote_Port_Num   : in Tcp_Util.Port_Num;
+                       New_Dscr          : in Socket.Socket_Dscr) is
     Msg : Partner.Message;
     Client : Client_Rec;
     Loc_Dscr : Socket.Socket_Dscr;
@@ -275,8 +274,7 @@ package body Clients is
                   Len : in Natural;
                   Data : in Common.Data_Type) is
     Dscr : Socket.Socket_Dscr;
-    Res : Boolean;
-    pragma Unreferenced (Res);
+    Dummy_Res : Boolean;
     Msg : Partner.Message;
   begin
     Dscr := Connecteds(Local, Port);
@@ -290,7 +288,7 @@ package body Clients is
       Basic_Proc.Put_Line_Error (Ip_Addr.Image (Port) & ".");
       raise Common.Fatal_Error;
     end if;
-    Res := My_Send (Dscr, null, null, 0.1, Data, Len);
+    Dummy_Res := My_Send (Dscr, null, null, 0.1, Data, Len);
   exception
     when Tcp_Util.Timeout_Error | Socket.Soc_Conn_Lost =>
       Debug.Logger.Log_Debug ("Sending failure to "

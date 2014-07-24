@@ -45,9 +45,8 @@ package body Dictio_Lib is
     end if;
   end Close;
 
-  function Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
+  function Read_Cb (Fd : in Event_Mng.File_Desc; Unused_Read : in Boolean)
            return Boolean is
-    pragma Unreferenced (Read);
     Len : Natural;
     State : Status.Stable_Status_List;
     New_Dictio_State : Dictio_State_List;
@@ -147,11 +146,10 @@ package body Dictio_Lib is
      end case;
   end Read_Cb;
 
-  procedure Connection_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
-                           Remote_Port_Num : in Tcp_Util.Port_Num;
-                           Connected       : in Boolean;
-                           Dscr            : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Remote_Port_Num, Remote_Host_Id);
+  procedure Connection_Cb (Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
+                           Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                           Connected              : in Boolean;
+                           Dscr                   : in Socket.Socket_Dscr) is
   begin
     if not Connected then
       Dictio_Debug.Put_Error (Dictio_Debug.Lib, "Connection_Cb(not connected)");
@@ -169,11 +167,10 @@ package body Dictio_Lib is
   end Connection_Cb;
 
   procedure Connect_To_Dictio is
-    Connected : Boolean;
-    pragma Unreferenced (Connected);
+    Dummy : Boolean;
   begin
-    Connected := Tcp_Util.Connect_To (Protocol, Host, Port,
-                                      Connection_Cb'Access, 1.0, 0);
+    Dummy := Tcp_Util.Connect_To (Protocol, Host, Port,
+                                  Connection_Cb'Access, 1.0, 0);
   exception
     when Error:others =>
       Dictio_Debug.Put (Dictio_Debug.Lib, "Connect fails on exception "

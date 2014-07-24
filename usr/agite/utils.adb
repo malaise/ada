@@ -46,8 +46,7 @@ package body Utils is
 
   -- Sigchild callback
   -- This will trigger Afpx.PtG to return Signal_Event
-  procedure My_Cb (Death_Report : in Proc_Family.Death_Rec) is
-    pragma Unreferenced (Death_Report);
+  procedure My_Cb (Unused_Death_Report : in Proc_Family.Death_Rec) is
   begin
     null;
   end My_Cb;
@@ -55,16 +54,15 @@ package body Utils is
   -- Start a command in background
   procedure Launch (Command : in String; Set_Callback : in Boolean := False) is
     Cmd : Many_Strings.Many_String;
-    Res : Proc_Family.Spawn_Result_Rec;
-    pragma Unreferenced (Res);
+    Dummy_Res : Proc_Family.Spawn_Result_Rec;
   begin
     Cmd.Set ("/bin/sh");
     Cmd.Cat ("-c");
     Cmd.Cat (Command);
     if Set_Callback then
-      Res := Proc_Family.Spawn (Cmd, Death_Report => My_Cb'Access);
+      Dummy_Res := Proc_Family.Spawn (Cmd, Death_Report => My_Cb'Access);
     else
-      Res := Proc_Family.Spawn (Cmd);
+      Dummy_Res := Proc_Family.Spawn (Cmd);
     end if;
   end Launch;
 

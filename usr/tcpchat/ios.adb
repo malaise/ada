@@ -54,9 +54,8 @@ package body Ios is
   end Signal_Cb;
 
   -- Handle global timeout expiration
-  function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Id, Data);
+  function Timer_Cb (Unused_Id   : Timers.Timer_Id;
+                     Unused_Data : Timers.Timer_Data) return Boolean is
   begin
     Debug.Logger.Log_Debug ("Global timeout");
     if Event.Kind /= Exit_Requested
@@ -86,10 +85,9 @@ package body Ios is
   -- Message reception Cb
   subtype Message_Type is String (1 .. 1024);
   package My_Rece is new Tcp_Util.Reception (Message_Type);
-  function Read_Cb (Dscr : Socket.Socket_Dscr;
+  function Read_Cb (Unused_Dscr : Socket.Socket_Dscr;
                     Msg  : Message_Type;
                     Len  : Natural) return Boolean is
-    pragma Unreferenced (Dscr);
   begin
     Debug.Logger.Log_Debug ("Read_Cb >" & Msg(1 .. Len) & "<");
     Buffer.Push (Str_Util.Substit (Msg(1 .. Len), Crlf, Lf));
@@ -97,8 +95,7 @@ package body Ios is
   end Read_Cb;
 
  -- When Soc_Read_0
-  procedure Discon_Cb (Dscr : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Dscr);
+  procedure Discon_Cb (Unused_Dscr : in Socket.Socket_Dscr) is
   begin
     Debug.Logger.Log_Debug ("Disconnected");
     -- Tcp_Util closes the socket
@@ -110,13 +107,11 @@ package body Ios is
   end Discon_Cb;
 
   -- Connection acception Cb
-  procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
-                       Local_Dscr      : in Socket.Socket_Dscr;
-                       Remote_Host_Id  : in Tcp_Util.Host_Id;
-                       Remote_Port_Num : in Tcp_Util.Port_Num;
-                       New_Dscr        : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Local_Port_Num, Local_Dscr, Remote_Port_Num,
-                         Remote_Host_Id);
+  procedure Accept_Cb (Unused_Local_Port_Num  : in Tcp_Util.Port_Num;
+                       Unused_Local_Dscr      : in Socket.Socket_Dscr;
+                       Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
+                       Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                       New_Dscr               : in Socket.Socket_Dscr) is
     use type Socket.Socket_Dscr;
   begin
     Tcp_Soc := New_Dscr;
@@ -147,7 +142,6 @@ package body Ios is
   procedure Open is
     Acc_Soc : Socket.Socket_Dscr;
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     -- Reset caches
     Buffer.Set (Sentence_Cb'Access);
@@ -352,7 +346,6 @@ package body Ios is
     Len : Natural;
     Msg : Message_Type;
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     Debug.Logger.Log_Debug ("Send "
                           & Str_Util.Substit (Text.Image, Lf, "[LF]"));

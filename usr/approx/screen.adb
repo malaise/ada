@@ -233,8 +233,7 @@ package body Screen is
 
 
   procedure Error (Msg : in S_Error_List; Subtitle : in Boolean := False) is
-    Res : Boolean;
-    pragma Unreferenced (Res);
+    Dummy_Res : Boolean;
   begin
     -- No menu. Ok
     Clear_Menu(Subtitle);
@@ -261,7 +260,7 @@ package body Screen is
       when E_Curve_Active       => Encode_Info ("A curve is currently active");
       when E_Too_Many_Points    => Encode_Info ("Too many points");
     end case;
-    Res := S_Confirm;
+    Dummy_Res := S_Confirm;
     -- Reset default colors
     Afpx.Reset_Field(Info_Fld);
   end Error;

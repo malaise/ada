@@ -43,7 +43,6 @@ package body History is
 
     -- Search found
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
 
     -- Init Afpx
     procedure Init is
@@ -183,9 +182,8 @@ package body History is
     end Show;
 
     -- Update the list status
-    procedure List_Change (Action : in Afpx.List_Change_List;
+    procedure List_Change (Unused_Action : in Afpx.List_Change_List;
                            Status : in Afpx.List_Status_Rec) is
-      pragma Unreferenced (Action);
       Percent : Afpx.Percent_Range;
       Row : Con_Io.Row_Range;
     begin

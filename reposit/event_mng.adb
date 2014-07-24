@@ -345,19 +345,17 @@ package body Event_Mng is
   end Wait;
 
   procedure Wait (Timeout_Ms : Integer) is
-    Event : Out_Event_List;
-    pragma Unreferenced (Event);
+    Dummy_Event : Out_Event_List;
   begin
-    Event := Wait (Timeout_Ms);
+    Dummy_Event := Wait (Timeout_Ms);
   end Wait;
 
   -- The pause
   Pause_Level : Any_Def.Any (Any_Def.Inte_Kind) := (Any_Def.Inte_Kind, 0);
 
-  function Pause_Cb (Id : Timers.Timer_Id;
+  function Pause_Cb (Unused_Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data)
            return Boolean is
-    pragma Unreferenced (Id);
   begin
     -- Check this expiration versus current pause level
     if Pause_Level.Inte >= Data.Inte then
@@ -373,7 +371,6 @@ package body Event_Mng is
     Loc_Level : Any_Def.Any (Any_Def.Inte_Kind);
     Wait_Timeout : Integer;
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
     use type My_Math.Inte;
   begin
     -- Increment global pause level and store ours

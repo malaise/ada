@@ -51,9 +51,8 @@ package body Http is
 
   -- Timer Cb
   Timer_Id : Timers.Timer_Id;
-  function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Id, Data);
+  function Timer_Cb (Unused_Id : Timers.Timer_Id;
+                     Unused_Data : Timers.Timer_Data) return Boolean is
   begin
     Logger.Log_Debug ("HTTP: Timeout");
     Result := (Client_Error, Timeout);
@@ -68,10 +67,9 @@ package body Http is
   end Is_Space;
 
   -- Message reception Cb, until disconnection
-  function Read_Cb (Dscr : Socket.Socket_Dscr;
+  function Read_Cb (Unused_Dscr : Socket.Socket_Dscr;
                     Msg : Message_Type;
                     Len : Natural) return Boolean is
-    pragma Unreferenced (Dscr);
   begin
     Logger.Log_Debug ("HTTP: Reading");
     Buffer.Append (Msg(1 .. Len));
@@ -239,8 +237,7 @@ package body Http is
   end Close;
 
   -- When Soc_Read_0
-  procedure Disconnection_Cb (Dscr : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Dscr);
+  procedure Disconnection_Cb (Unused_Dscr : in Socket.Socket_Dscr) is
   begin
     Logger.Log_Debug ("HTTP: Disconnection");
     -- Tcp_Util closes the socket
@@ -362,7 +359,6 @@ package body Http is
       Len : Natural;
       Dummy : Boolean;
       Msg : Message_Type;
-      pragma Unreferenced (Dummy);
     begin
       loop
         if The_Timeout_Ms /= 0 then

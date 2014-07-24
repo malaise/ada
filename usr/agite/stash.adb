@@ -175,7 +175,6 @@ package body Stash is
 
   procedure Do_Stash (Oper : in Stash_Oper_List) is
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     Dummy := Do_Stash (Oper);
   end Do_Stash;

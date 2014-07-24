@@ -458,7 +458,6 @@ begin
     -- Substit only occurences that match criteria
     declare
       Dummy : Boolean;
-      pragma Unreferenced (Dummy);
     begin
       Match_Range := As.U.Tus (Arg_Dscr.Get_Option (12));
       Dummy := Substit.Subst_Match.Matches (0, Match_Range.Image);

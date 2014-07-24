@@ -7,11 +7,10 @@ package body Io_Manager is
 
   -- Skip to Bytes_Offset
   procedure Skip_To (Bytes_Offset : Positive) is
-    B : Byte;
-    pragma Unreferenced (B);
+    Dummy : Byte;
   begin
     for I in 1 .. Bytes_Offset - 1 loop
-      B := Read;
+      Dummy := Read;
     end loop;
   end Skip_To;
 
@@ -84,14 +83,13 @@ package body Io_Manager is
   end Write;
 
   procedure Flush is
-    N : Natural;
-    pragma Unreferenced (N);
+    Dummy : Natural;
   begin
     -- Write buffer on stdout
     if Last_Output /= 0 then
-      N := Sys_Calls.Write (Sys_Calls.Stdout,
-                            Output_Buffer'Address,
-                            Last_Output);
+      Dummy := Sys_Calls.Write (Sys_Calls.Stdout,
+                                Output_Buffer'Address,
+                                Last_Output);
     end if;
   end Flush;
 

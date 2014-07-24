@@ -278,9 +278,9 @@ package body Tcp_Util is
 
   -- Timer callback
   function Connection_Timer_Cb (Id : Timers.Timer_Id;
-                                Data : Timers.Timer_Data := Timers.No_Data)
+                                Unused_Data : Timers.Timer_Data
+                                            := Timers.No_Data)
            return Boolean is
-    pragma Unreferenced (Data);
     Rec : Connecting_Rec;
     Connected : Boolean;
     Go_On : Boolean;
@@ -389,10 +389,9 @@ package body Tcp_Util is
     -- Check port and host name
     if Port.Kind = Port_Name_Spec then
       declare
-        Num : Port_Num;
-        pragma Unreferenced (Num);
+        Dummy_Num : Port_Num;
       begin
-        Num := Socket.Port_Num_Of (Port.Name.Image, Protocol);
+        Dummy_Num := Socket.Port_Num_Of (Port.Name.Image, Protocol);
       exception
         when others =>
           raise Name_Error;
@@ -400,10 +399,9 @@ package body Tcp_Util is
     end if;
     if Host.Kind = Host_Name_Spec then
       declare
-        Id : Host_Id;
-        pragma Unreferenced (Id);
+        Dummy_Id : Host_Id;
       begin
-        Id := Socket.Host_Id_Of (Host.Name.Image);
+        Dummy_Id := Socket.Host_Id_Of (Host.Name.Image);
       exception
         when others =>
           raise Name_Error;
@@ -725,8 +723,7 @@ package body Tcp_Util is
 
   -- Timer expiration callback
   function Timer_Cb (Id : in Timers.Timer_Id;
-                     Data : in Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Data);
+                     Unused_Data : in Timers.Timer_Data) return Boolean is
     Rec : Sending_Rec;
   begin
     -- Find Rec from Timer and read

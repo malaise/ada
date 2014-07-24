@@ -103,18 +103,17 @@ package body Sok_File is
   -- Ensure that frames are readable
   -- Init empty score file if necessary
   procedure Init is
-    Frame : Sok_Types.Frame_Tab;
-    Score : Sok_Types.Score_Rec;
-    pragma Unreferenced (Frame, Score);
+    Dummy_Frame : Sok_Types.Frame_Tab;
+    Dummy_Score : Sok_Types.Score_Rec;
     Sok_Score_File : Sok_Score_Mng.File_Type;
   begin
     -- Read first and last frames
-    Read (Sok_Types.Frame_Range'First, Frame);
-    Read (Sok_Types.Frame_Range'Last, Frame);
+    Read (Sok_Types.Frame_Range'First, Dummy_Frame);
+    Read (Sok_Types.Frame_Range'Last,  Dummy_Frame);
     if Sys_Calls.File_Found (Sok_Score_Name) then
       -- Read first and last scores
-      Score := Read_Score (Sok_Types.Frame_Range'First);
-      Score := Read_Score (Sok_Types.Frame_Range'Last);
+      Dummy_Score := Read_Score (Sok_Types.Frame_Range'First);
+      Dummy_Score := Read_Score (Sok_Types.Frame_Range'Last);
       return;
     end if;
     -- Create empty scores if necessary

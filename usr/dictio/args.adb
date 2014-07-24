@@ -22,12 +22,11 @@ package body Args is
   begin
     Mode := Get_Mode;
     declare
-      S1 : constant String := Get_Name;
-      S2 : constant String := Get_Dest;
-      S3 : constant String := Get_Client_Port;
+      Dummy_1 : constant String := Get_Name;
+      Dummy_2 : constant String := Get_Dest;
+      Dummy_3 : constant String := Get_Client_Port;
       P  : constant Prio_Range
          := Prio_Range'Value (Argument.Get_Parameter(1, "P"));
-      pragma Unreferenced (S1, S2, S3);
     begin
       Prio := Normal (P, 3, Gap => '0');
       return;
@@ -44,8 +43,7 @@ package body Args is
   function Has_Key (Key : in String) return Boolean is
   begin
     declare
-      S :  constant String := Argument.Get_Parameter(1, Key);
-      pragma Unreferenced (S);
+      Dummy :  constant String := Argument.Get_Parameter(1, Key);
     begin
       return True;
     end;

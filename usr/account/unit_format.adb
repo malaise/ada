@@ -16,14 +16,13 @@ package body Unit_Format is
 
   function Date_Value(Str : Date_Str) return Oper_Def.Date_Rec is
     Date : Oper_Def.Date_Rec;
-    Time : Ada.Calendar.Time;
-    pragma Unreferenced (Time);
+    Dummy_Time : Ada.Calendar.Time;
   begin
     Date.Day   := Ada.Calendar.Day_Number'Value  (Str(1 ..  2));
     Date.Month := Ada.Calendar.Month_Number'Value(Str(4 ..  5));
     Date.Year  := Ada.Calendar.Year_Number'Value (Str(7 .. 10));
     -- Check validity
-    Time := Ada.Calendar.Time_Of(Date.Year, Date.Month, Date.Day, 0.0);
+    Dummy_Time := Ada.Calendar.Time_Of(Date.Year, Date.Month, Date.Day, 0.0);
     return Date;
   exception
     when others =>

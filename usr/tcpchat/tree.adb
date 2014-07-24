@@ -280,7 +280,6 @@ package body Tree is
     Ldepth : Natural;
 
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     -- Fill new node
     Debug.Logger.Log_Debug ("Getting node " & Name);
@@ -431,7 +430,6 @@ package body Tree is
     Node : Node_Rec;
     Children_Nb : Trees.Child_Range;
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     -- Inherit Next or set it to current (when root)
     if Next /= No_Position then
@@ -495,7 +493,6 @@ package body Tree is
     Ok : Boolean;
     Xnode : Xml_Parser.Element_Type;
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     begin
       Ctx.Parse (File_Name.Image, Ok);

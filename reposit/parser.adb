@@ -34,7 +34,6 @@ package body Parser is
     end if;
     declare
       Dummy : Boolean;
-      pragma Unreferenced (Dummy);
     begin
       Dummy := Is_Sep ('-');
     exception

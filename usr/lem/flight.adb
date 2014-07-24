@@ -21,16 +21,15 @@ package body Flight is
 
   -- Get index of point (of moon ground) before LEM
   package Locate is
-    function Get_Index (Left, Right : Space.Position_Rec;
+    function Get_Index (Left, Unused_Right : Space.Position_Rec;
                         Ground : Moon.Ground_Array) return Positive;
   end Locate;
   package body Locate is
     Prev_Index : Positive := Positive'First;
 
-    function Get_Index (Left, Right : Space.Position_Rec;
+    function Get_Index (Left, Unused_Right : Space.Position_Rec;
                         Ground : Moon.Ground_Array) return Positive is
       -- Keep it ofr the symetry
-      pragma Unreferenced (Right);
       use type Space.Position_Range;
       Start, Stop : Positive;
     begin

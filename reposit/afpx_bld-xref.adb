@@ -80,7 +80,6 @@ package body Xref is
                             Line  : in Natural) is
     Cell : Field_Cell;
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     Check_Identifier (Name.Image);
     if Name.Image = Dscr_Num then

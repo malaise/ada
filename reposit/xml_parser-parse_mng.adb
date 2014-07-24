@@ -1945,7 +1945,6 @@ package body Parse_Mng  is
     end Update;
 
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     Ctx.Elements.all.Move_Root;
     Dummy := Update (Ctx.Elements.all);

@@ -75,7 +75,6 @@ procedure T_Mut is
         S : String (1 .. 256);
         L : Natural;
         Dummy : Boolean;
-        pragma Unreferenced (Dummy);
         use type Mutex_Manager.Mutex_Kind;
       begin
         Get_Lock.Get;

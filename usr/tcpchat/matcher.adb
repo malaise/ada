@@ -214,11 +214,10 @@ package body Matcher is
     end if;
     -- Check the value expands properly
     declare
-      Expanded : As.U.Asu_Us;
-      pragma Unreferenced (Expanded);
+      Dummy_Expanded : As.U.Asu_Us;
     begin
-      Expanded := Variables.Expand (Node.Assign(I).Value.Str,
-                                    Variables.Check_Only);
+      Dummy_Expanded := Variables.Expand (Node.Assign(I).Value.Str,
+                                          Variables.Check_Only);
     exception
       when Variables.Expand_Error =>
         Error ("Invalid value in assignment "

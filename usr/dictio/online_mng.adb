@@ -9,8 +9,8 @@ package body Online_Mng is
   -- Ever requested a sync?
   Ever_Synced : Boolean := False;
 
-  function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean;
+  function Timer_Cb (Unused_Id : Timers.Timer_Id;
+                     Unused_Data : Timers.Timer_Data) return Boolean;
 
   Fight_Actions : constant Fight_Mng.Fight_Action :=
     (Nodes.Many_Master_Master => Status.Master,
@@ -161,9 +161,8 @@ package body Online_Mng is
 
   end Event;
 
-  function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Id, Data);
+  function Timer_Cb (Unused_Id : Timers.Timer_Id;
+                     Unused_Data : Timers.Timer_Data) return Boolean is
     use type Status.Status_List;
   begin
     if Status.Get = Status.Master then

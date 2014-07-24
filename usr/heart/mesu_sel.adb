@@ -286,7 +286,6 @@ package body Mesu_Sel is
     Person : Pers_Def.Person_Rec;
     Mesure : Mesu_Def.Mesure_Rec;
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
 
     Mesu_Nam.Split_File_Name (Name, Date_S, No_S, Pid_S);

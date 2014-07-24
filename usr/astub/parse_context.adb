@@ -2,8 +2,7 @@ with Common, Output, Words, Parser_Ada,
      Parse_To_End, Parse_Procedure, Parse_Function, Parse_Package, Fix_Comment;
 
 procedure Parse_Context (Generated : out Boolean) is
-  Word, Trash_Word : Words.Word_Rec;
-  pragma Unreferenced (Trash_Word);
+  Word, Dummy_Word : Words.Word_Rec;
   Prev_Private : Boolean;
   use type Parser_Ada.Lexical_Kind_List;
 begin
@@ -36,7 +35,7 @@ begin
       elsif Str = "private" then
         -- Skip private prefix of package/procedure/function
         --   keep trace for "private with"
-        Trash_Word := Parser_Ada.Multiparser.Get (False);
+        Dummy_Word := Parser_Ada.Multiparser.Get (False);
       elsif Str = "generic" then
         -- Not terminated by ";"
         Output.New_Line;

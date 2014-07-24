@@ -13,10 +13,9 @@ function Sok_Menu (Done : Boolean) return Menu_Result_List is
   begin
     Sok_Display.Put_Error (Error);
     declare
-      Key : Sok_Input.Key_List;
-      pragma Unreferenced (Key);
+      Dummy_Key : Sok_Input.Key_List;
     begin
-      Key := Sok_Input.Get_Key;
+      Dummy_Key := Sok_Input.Get_Key;
     exception
       when Sok_Input.Break_Requested =>
         Sok_Display.Clear_Error;

@@ -63,10 +63,9 @@ procedure T_Autobus is
   -- Observer receiver of messages
   type Obs_Rece_Type is new Autobus.Observer_Type with null record;
   Receiver : aliased Obs_Rece_Type;
-  procedure Receive (Observer : in out Obs_Rece_Type;
-                     Subscriber : in Autobus.Subscriber_Access_Type;
-                     Message : in String) is
-    pragma Unreferenced (Observer);
+  procedure Receive (Unused_Observer : in out Obs_Rece_Type;
+                     Subscriber      : in Autobus.Subscriber_Access_Type;
+                     Message         : in String) is
     Index : Natural;
     Str : As.U.Asu_Us;
     use type Autobus.Subscriber_Access_Type;
@@ -91,10 +90,9 @@ procedure T_Autobus is
   -- Observer spying of messages
   type Obs_Spy_Type is new Autobus.Observer_Type with null record;
   Spy : aliased Obs_Spy_Type;
-  procedure Receive (Observer : in out Obs_Spy_Type;
-                     Subscriber : in Autobus.Subscriber_Access_Type;
-                     Message : in String) is
-    pragma Unreferenced (Observer, Subscriber);
+  procedure Receive (Unused_Observer   : in out Obs_Spy_Type;
+                     Unused_Subscriber : in Autobus.Subscriber_Access_Type;
+                     Message           : in String) is
     use type Autobus.Subscriber_Access_Type;
   begin
     Basic_Proc.Put_Line_Output ("Spyed >" & Message & "<");
@@ -103,10 +101,9 @@ procedure T_Autobus is
   -- Observer putting replies in interactive mode
   type Obs_Put_Type is new Autobus.Observer_Type with null record;
   Putter : aliased Obs_Put_Type;
-  procedure Receive (Observer : in out Obs_Put_Type;
-                     Subscriber : in Autobus.Subscriber_Access_Type;
-                     Message : in String) is
-    pragma Unreferenced (Observer, Subscriber);
+  procedure Receive (Unused_Observer   : in out Obs_Put_Type;
+                     Unused_Subscriber : in Autobus.Subscriber_Access_Type;
+                     Message           : in String) is
     use type Autobus.Subscriber_Access_Type;
   begin
     Async_Stdin.Put_Out (Message);

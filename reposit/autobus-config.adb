@@ -76,13 +76,12 @@ package body Config is
   Timeout_Name : constant String := "Timeout";
   Ttl_Name : constant String := "TTL";
   function Check_Attributes (Node : Xml_Parser.Element_Type) return Boolean is
-    Dur : Duration;
-    pragma Unreferenced (Dur);
+    Dummy_Dur : Duration;
   begin
-    Dur := Get_Attribute (Node, Heartbeat_Period_Name, True);
-    Dur := Get_Attribute (Node, Heartbeat_Max_Missed_Name, False);
-    Dur:= Get_Attribute (Node, Timeout_Name, True);
-    Dur:= Get_Attribute (Node, Ttl_Name, False);
+    Dummy_Dur := Get_Attribute (Node, Heartbeat_Period_Name, True);
+    Dummy_Dur := Get_Attribute (Node, Heartbeat_Max_Missed_Name, False);
+    Dummy_Dur := Get_Attribute (Node, Timeout_Name, True);
+    Dummy_Dur := Get_Attribute (Node, Ttl_Name, False);
     return True;
   exception
     when Config_Error =>

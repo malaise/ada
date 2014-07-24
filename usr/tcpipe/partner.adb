@@ -10,9 +10,9 @@ package body Partner is
                 Address_Ops."-" (Dummy_Msg.Data'Address, Dummy_Msg'Address));
 
   -- Message reception
-  procedure Disconnection_Cb (Dscr : in Socket.Socket_Dscr);
+  procedure Disconnection_Cb (Unused_Dscr : in Socket.Socket_Dscr);
   package My_Reception is new Tcp_Util.Reception (Message);
-  function Reception_Cb (Dscr : Socket.Socket_Dscr;
+  function Reception_Cb (Unused_Dscr : Socket.Socket_Dscr;
                          Msg  : Message;
                          Len  : Natural) return Boolean;
   procedure Set_Callbacks;
@@ -33,22 +33,21 @@ package body Partner is
                         Remote_Port_Num : in Tcp_Util.Port_Num;
                         Connected       : in Boolean;
                         Dscr            : in Socket.Socket_Dscr);
-  procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
-                       Local_Dscr      : in Socket.Socket_Dscr;
-                       Remote_Host_Id  : in Tcp_Util.Host_Id;
+  procedure Accept_Cb (Local_Port_Num    : in Tcp_Util.Port_Num;
+                       Unused_Local_Dscr : in Socket.Socket_Dscr;
+                       Remote_Host_Id    : in Tcp_Util.Host_Id;
                        Remote_Port_Num : in Tcp_Util.Port_Num;
                        New_Dscr        : in Socket.Socket_Dscr);
   -- Connect/Accept
   procedure Connect_Accept is
-    Result : Boolean;
-    pragma Unreferenced (Result);
+    Dummy_Res : Boolean;
     Port: Tcp_Util.Port_Num;
     Dscr : Socket.Socket_Dscr;
   begin
     if Client_Mode then
       Debug.Logger.Log_Debug ("Connecting to remote host: "
           & Ip_Addr.Image (Rem_Host.Id, Rem_Port.Num));
-      Result := Tcp_Util.Connect_To (Socket.Tcp_Header, Rem_Host, Rem_Port,
+      Dummy_Res := Tcp_Util.Connect_To (Socket.Tcp_Header, Rem_Host, Rem_Port,
                                      Connect_Cb'Access, Nb_Tries => 0);
     else
       Debug.Logger.Log_Debug ("Accepting on port: "
@@ -156,12 +155,11 @@ package body Partner is
   end Connect_Cb;
 
   -- Accept Callback
-  procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
-                       Local_Dscr      : in Socket.Socket_Dscr;
-                       Remote_Host_Id  : in Tcp_Util.Host_Id;
-                       Remote_Port_Num : in Tcp_Util.Port_Num;
-                       New_Dscr        : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Local_Dscr);
+  procedure Accept_Cb (Local_Port_Num    : in Tcp_Util.Port_Num;
+                       Unused_Local_Dscr : in Socket.Socket_Dscr;
+                       Remote_Host_Id    : in Tcp_Util.Host_Id;
+                       Remote_Port_Num   : in Tcp_Util.Port_Num;
+                       New_Dscr          : in Socket.Socket_Dscr) is
   begin
     -- Stop accepting
     Tcp_Util.Abort_Accept (Socket.Tcp_Header, Local_Port_Num);
@@ -201,10 +199,9 @@ package body Partner is
   -- close to client,
   function My_Send is new Tcp_Util.Send (Message);
   procedure Send (Msg : in Message; Len : in Natural) is
-    Result : Boolean;
-    pragma Unreferenced (Result);
+    Dummy_Res : Boolean;
   begin
-    Result := My_Send (Rem_Dscr, null, null, 0.2, Msg, Len + Head_Len);
+    Dummy_Res := My_Send (Rem_Dscr, null, null, 0.2, Msg, Len + Head_Len);
   exception
     when Error: Socket.Soc_Conn_Lost | Tcp_Util.Timeout_Error =>
       Debug.Logger.Log_Debug ("Exception "
@@ -215,8 +212,7 @@ package body Partner is
   end Send;
 
   -- Message reception
-  procedure Disconnection_Cb (Dscr : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Dscr);
+  procedure Disconnection_Cb (Unused_Dscr : in Socket.Socket_Dscr) is
   begin
      Debug.Logger.Log_Debug ("Tcpipe: disconnection from remote host: "
                            & Ip_Addr.Image (Rem_Host.Id, Rem_Port.Num));
@@ -229,10 +225,9 @@ package body Partner is
                                 Disconnection_Cb'Access);
   end Set_Callbacks;
 
-  function Reception_Cb (Dscr : Socket.Socket_Dscr;
+  function Reception_Cb (Unused_Dscr : Socket.Socket_Dscr;
                          Msg  : Message;
                          Len  : Natural) return Boolean is
-    pragma Unreferenced (Dscr);
   begin
     case Msg.Head.Kind is
       when Connect =>

@@ -265,12 +265,11 @@ package body Fifos is
       end Reception_Cb;
 
 
-      procedure Acception_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
-                              Local_Dscr      : in Socket.Socket_Dscr;
-                              Remote_Host_Id  : in Tcp_Util.Host_Id;
-                              Remote_Port_Num : in Tcp_Util.Port_Num;
-                              New_Dscr        : in Socket.Socket_Dscr) is
-        pragma Unreferenced (Local_Dscr);
+      procedure Acception_Cb (Local_Port_Num    : in Tcp_Util.Port_Num;
+                              Unused_Local_Dscr : in Socket.Socket_Dscr;
+                              Remote_Host_Id    : in Tcp_Util.Host_Id;
+                              Remote_Port_Num   : in Tcp_Util.Port_Num;
+                              New_Dscr          : in Socket.Socket_Dscr) is
         Tmp_Dscr : Socket.Socket_Dscr;
         Rec : Fifo_Rec;
         Acc : Fifo_Rec_Access;
@@ -366,8 +365,7 @@ package body Fifos is
       -------------------------------------------------------------------------
 
       procedure Connect (Fifo : access Fifo_Rec) is
-        Result : Boolean;
-        pragma Unreferenced (Result);
+        Dummy_Res : Boolean;
         Protocol : Socket.Protocol_List;
         use type Socket.Host_Id, Tcp_Util.Remote_Host_List;
       begin
@@ -382,7 +380,7 @@ package body Fifos is
         else
           Protocol := Socket.Tcp_Header;
         end if;
-        Result := Tcp_Util.Connect_To (
+        Dummy_Res := Tcp_Util.Connect_To (
                        Protocol,
                        Fifo.Host, Fifo.Port,
                        Delta_Retry => 3.0,
@@ -539,9 +537,8 @@ package body Fifos is
       end State_Cb;
 
       procedure Notify_Cb (Name : in String;
-                           Item : in Boolean;
+                           Unused_Item : in Boolean;
                            Data : in String) is
-        pragma Unreferenced (Item);
         Acc : Fifo_Rec_Access;
       begin
         -- Cet record and check

@@ -588,7 +588,6 @@ package body Mng is
       Val : String(1 .. 256);
       Len : Natural;
       Dummy : Integer;
-      pragma Unreferenced (Dummy);
     begin
       Len := 3;
       Val (1 .. Len) := "lpr";

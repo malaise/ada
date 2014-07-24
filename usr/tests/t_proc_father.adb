@@ -45,8 +45,7 @@ procedure T_Proc_Father is
   Child_Disconnected : Boolean := False;
   Nb_Failures : Natural := 0;
   function Fd_Cb (Fd : in Sys_Calls.File_Desc;
-                  Read : in Boolean) return Boolean is
-    pragma Unreferenced (Read);
+                  Unused_Read : in Boolean) return Boolean is
     Buf : String (1 .. 1024);
     Res : Natural;
     Reply : constant String := "F2C";

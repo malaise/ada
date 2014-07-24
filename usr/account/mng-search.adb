@@ -7,10 +7,9 @@ procedure Search is
   -- Current date for searching and displaying
   Today : Oper_Def.Date_Rec;
   -- Update current date if it changes
-  function Set_Today (Id : Timers.Timer_Id;
-                      Data : Timers.Timer_Data := Timers.No_Data)
+  function Set_Today (Unused_Id : Timers.Timer_Id;
+                      Unused_Data : Timers.Timer_Data := Timers.No_Data)
            return Boolean is
-    pragma Unreferenced (Id, Data);
     Newday : Oper_Def.Date_Rec;
     Seconds : Ada.Calendar.Day_Duration;
     use type Oper_Def.Date_Rec;
@@ -222,7 +221,6 @@ procedure Search is
   end Switch_Field;
 
   Dummy_Bool : Boolean;
-  pragma Unreferenced (Dummy_Bool);
 begin
 
   if Screen.Is_Sublist then

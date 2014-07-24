@@ -67,9 +67,8 @@ procedure Tcp_Spy is
   -- Timeout expired
   Timeout : Boolean := False;
   Tid : Timers.Timer_Id;
-  function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Id, Data);
+  function Timer_Cb (Unused_Id   : Timers.Timer_Id;
+                     Unused_Data : Timers.Timer_Data) return Boolean is
   begin
     Timeout := True;
     return True;
@@ -137,24 +136,23 @@ procedure Tcp_Spy is
   end Host_Image;
 
   -- Acception, reception, and disconnection callbacks
-  procedure Acception_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
-                          Local_Dscr      : in Socket.Socket_Dscr;
-                          Remote_Host_Id  : in Tcp_Util.Host_Id;
-                          Remote_Port_Num : in Tcp_Util.Port_Num;
-                          New_Dscr        : in Socket.Socket_Dscr);
+  procedure Acception_Cb (Unused_Local_Port_Num  : in Tcp_Util.Port_Num;
+                          Unused_Local_Dscr      : in Socket.Socket_Dscr;
+                          Remote_Host_Id         : in Tcp_Util.Host_Id;
+                          Remote_Port_Num        : in Tcp_Util.Port_Num;
+                          New_Dscr               : in Socket.Socket_Dscr);
   package Data_Reception is new Tcp_Util.Reception (Data_Type);
-  function Reception_Cb (Dscr   : Socket.Socket_Dscr;
-                         Data   : Data_Type;
-                         Length : Natural) return Boolean;
+  function Reception_Cb (Unused_Dscr : Socket.Socket_Dscr;
+                         Data        : Data_Type;
+                         Length      : Natural) return Boolean;
   procedure Disconnection_Cb (Of_Dscr : in Socket.Socket_Dscr);
 
   -- Callback on acception
-  procedure Acception_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
-                          Local_Dscr      : in Socket.Socket_Dscr;
-                          Remote_Host_Id  : in Tcp_Util.Host_Id;
-                          Remote_Port_Num : in Tcp_Util.Port_Num;
-                          New_Dscr        : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Local_Port_Num, Local_Dscr);
+  procedure Acception_Cb (Unused_Local_Port_Num : in Tcp_Util.Port_Num;
+                          Unused_Local_Dscr     : in Socket.Socket_Dscr;
+                          Remote_Host_Id        : in Tcp_Util.Host_Id;
+                          Remote_Port_Num       : in Tcp_Util.Port_Num;
+                          New_Dscr              : in Socket.Socket_Dscr) is
   begin
     -- Allow only one connection at a time
     Tcp_Util.Abort_Accept (Protocol, Port_Num);
@@ -182,10 +180,9 @@ procedure Tcp_Spy is
   end Disconnection_Cb;
 
   -- Callback on socket reception
-  function Reception_Cb (Dscr   : Socket.Socket_Dscr;
-                         Data   : Data_Type;
-                         Length : Natural) return Boolean is
-    pragma Unreferenced (Dscr);
+  function Reception_Cb (Unused_Dscr : Socket.Socket_Dscr;
+                         Data        : Data_Type;
+                         Length      : Natural) return Boolean is
   begin
     Packet_Received := True;
     -- Put header

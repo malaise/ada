@@ -61,10 +61,9 @@ procedure Pipe is
     end if;
   end Send;
 
-  procedure Conn_Cb (Fifo_Name : in String;
-                     Id        : in Pipe_Fifo.Fifo_Id;
-                     Connected : in Boolean) is
-    pragma Unreferenced (Fifo_Name);
+  procedure Conn_Cb (Unused_Fifo_Name : in String;
+                     Id               : in Pipe_Fifo.Fifo_Id;
+                     Connected        : in Boolean) is
     use type Pipe_Fifo.Fifo_Id;
   begin
     if Server then

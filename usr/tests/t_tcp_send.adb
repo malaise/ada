@@ -46,17 +46,15 @@ procedure T_Tcp_Send is
   function My_Send is new Tcp_Util.Send (Message_Type);
 
   -- Reception callbacks
-  procedure Disconnect_Cb  (Dscr : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Dscr);
+  procedure Disconnect_Cb  (Unused_Dscr : in Socket.Socket_Dscr) is
   begin
     Logger.Log_Info ("Disconnection Cb");
     Sock := Socket.No_Socket;
   end Disconnect_Cb;
 
-  function Read_Cb (Dscr : Socket.Socket_Dscr;
-                    Msg  : Message_Type;
-                    Len  : Natural) return Boolean is
-    pragma Unreferenced (Dscr, Len);
+  function Read_Cb (Unused_Dscr : Socket.Socket_Dscr;
+                    Msg         : Message_Type;
+                    Unused_Len  : Natural) return Boolean is
   begin
     if Msg.Seq = Message.Seq then
       Logger.Log_Info ("Read Cb got " & Image (Msg.Seq));
@@ -69,13 +67,11 @@ procedure T_Tcp_Send is
   end Read_Cb;
 
   -- Acception callback
-  procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
-                       Local_Dscr      : in Socket.Socket_Dscr;
-                       Remote_Host_Id  : in Tcp_Util.Host_Id;
-                       Remote_Port_Num : in Tcp_Util.Port_Num;
-                       New_Dscr        : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Local_Port_Num, Local_Dscr, Remote_Port_Num,
-                         Remote_Host_Id);
+  procedure Accept_Cb (Unused_Local_Port_Num  : in Tcp_Util.Port_Num;
+                       Unused_Local_Dscr      : in Socket.Socket_Dscr;
+                       Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
+                       Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                       New_Dscr               : in Socket.Socket_Dscr) is
     use type Socket.Socket_Dscr;
     Tmp_Dscr : Socket.Socket_Dscr;
   begin
@@ -96,11 +92,10 @@ procedure T_Tcp_Send is
 
   -- Connection
   In_Overflow : Boolean := False;
-  procedure Connect_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
-                        Remote_Port_Num : in Tcp_Util.Port_Num;
-                        Connected       : in Boolean;
-                        Dscr            : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Remote_Port_Num, Remote_Host_Id);
+  procedure Connect_Cb (Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
+                        Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                        Connected              : in Boolean;
+                        Dscr                   : in Socket.Socket_Dscr) is
   begin
     if Connected then
       Sock := Dscr;
@@ -124,16 +119,14 @@ procedure T_Tcp_Send is
   end Connect;
 
   -- Emission
-  procedure End_Overflow_Cb (Dscr : in  Socket.Socket_Dscr) is
-    pragma Unreferenced (Dscr);
+  procedure End_Overflow_Cb (Unused_Dscr : in  Socket.Socket_Dscr) is
   begin
     Logger.Log_Info ("End of overflow Cb");
     In_Overflow  := False;
   end End_Overflow_Cb;
 
-  procedure Send_Err_Cb (Dscr : in  Socket.Socket_Dscr;
+  procedure Send_Err_Cb (Unused_Dscr : in  Socket.Socket_Dscr;
                          Conn_Lost : in Boolean) is
-    pragma Unreferenced (Dscr);
   begin
     Logger.Log_Info ("Send error Cb " & Mixed_Str (Conn_Lost'Img));
     -- Socket will be closed by Tcp_Util

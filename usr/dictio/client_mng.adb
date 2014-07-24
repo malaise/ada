@@ -21,9 +21,8 @@ package body Client_Mng is
     Notify.Send (Item);
   end Send_Notify;
 
-  function Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
+  function Read_Cb (Fd : in Event_Mng.File_Desc; Unused_Read : in Boolean)
                    return Boolean is
-    pragma Unreferenced (Read);
     Dscr : Socket.Socket_Dscr;
     Msg : Client_Com.Dictio_Client_Rec;
     Len : Natural;
@@ -109,12 +108,11 @@ package body Client_Mng is
     return False;
   end Read_Cb;
 
-  procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
-                       Local_Dscr      : in Socket.Socket_Dscr;
-                       Remote_Host_Id  : in Tcp_Util.Host_Id;
-                       Remote_Port_Num : in Tcp_Util.Port_Num;
-                       New_Dscr        : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Local_Dscr, Remote_Port_Num, Remote_Host_Id);
+  procedure Accept_Cb (Local_Port_Num         : in Tcp_Util.Port_Num;
+                       Unused_Local_Dscr      : in Socket.Socket_Dscr;
+                       Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
+                       Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                       New_Dscr               : in Socket.Socket_Dscr) is
     use type Tcp_Util.Port_Num;
   begin
     if Local_Port_Num /= Accept_Port then
@@ -135,7 +133,6 @@ package body Client_Mng is
     declare
       Msg : Client_Com.Dictio_Client_Rec;
       Dummy : Boolean;
-      pragma Unreferenced (Dummy);
     begin
       -- Send version then status
       Msg.Action := Client_Com.Version;
@@ -230,7 +227,6 @@ package body Client_Mng is
   procedure Send_Status (Dscr : in Socket.Socket_Dscr) is
     Msg : Client_Com.Dictio_Client_Rec;
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
     State : constant String
           := Status.Stable_Status_List'Image(Dictio_Status);
 

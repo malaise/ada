@@ -180,8 +180,7 @@ package body Output is
   Dlist : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
   -- Store unit of tree
   function List_Unit_Iterator (Dscr : Tree_Mng.Src_Dscr;
-                               Level : Natural) return Boolean is
-    pragma Unreferenced (Level);
+                               Unused_Level : Natural) return Boolean is
     Name : As.U.Asu_Us;
     use type Sourcer.Src_Kind_List;
   begin
@@ -213,8 +212,7 @@ package body Output is
 
   -- Store file of tree
   function List_File_Iterator (Dscr : Tree_Mng.Src_Dscr;
-                               Level : Natural) return Boolean is
-    pragma Unreferenced (Level);
+                               Unused_Level : Natural) return Boolean is
     use type Sourcer.Src_Kind_List;
   begin
     -- Discard Looping info

@@ -12,12 +12,11 @@ package body Sok_Save is
 
   -- when new frame, reset stack and photo
   procedure Reset is
-    Movement : Sok_Movement.Saved_Data_Rec;
-    pragma Unreferenced (Movement);
+    Dummy_Movement : Sok_Movement.Saved_Data_Rec;
   begin
     loop
       begin
-        Movement := Pop;
+        Dummy_Movement := Pop;
       exception
         when No_More_Saved_Movements =>
           exit;

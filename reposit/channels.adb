@@ -194,10 +194,10 @@ package body Channels is
 
     -- Connection callback (used in read callback on destination
     --  disconnection
-    procedure Connect_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
-                          Remote_Port_Num : in Tcp_Util.Port_Num;
-                          Connected       : in Boolean;
-                          Dscr            : in Socket.Socket_Dscr);
+    procedure Connect_Cb (Remote_Host_Id         : in Tcp_Util.Host_Id;
+                          Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                          Unused_Connected       : in Boolean;
+                          Dscr                   : in Socket.Socket_Dscr);
 
     -- General reception callback
     function Read_Cb (Sender : in Boolean; Fd : in Event_Mng.File_Desc)
@@ -241,8 +241,7 @@ package body Channels is
             Delete_Current_Send;
           else
             declare
-              Res : Boolean;
-              pragma Unreferenced (Res);
+              Dummy_Res : Boolean;
               Port : Tcp_Util.Remote_Port (Tcp_Util.Port_Name_Spec);
             begin
               -- Update record
@@ -251,10 +250,10 @@ package body Channels is
               Channel_Dscr.Dests.Modify (D_Rec, Dest_List_Mng.Current);
               -- Retry to connect
               Port.Name := Channel_Dscr.Name;
-              Res := Tcp_Util.Connect_To (Socket.Tcp_Header,
-                                          D_Rec.Host_Name, Port,
-                                          Connect_Cb'Unrestricted_Access,
-                                          Channel_Dscr.Period, 0);
+              Dummy_Res := Tcp_Util.Connect_To (Socket.Tcp_Header,
+                                                D_Rec.Host_Name, Port,
+                                                Connect_Cb'Unrestricted_Access,
+                                                Channel_Dscr.Period, 0);
             exception
               when others =>
                 -- Failure
@@ -283,20 +282,18 @@ package body Channels is
       return True;
     end Read_Cb;
 
-    function Rec_Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
+    function Rec_Read_Cb (Fd : in Event_Mng.File_Desc;
+                          Unused_Read : in Boolean)
                      return Boolean is
-      pragma Unreferenced (Read);
     begin
       return Read_Cb (True, Fd);
     end Rec_Read_Cb;
 
-    procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
-                         Local_Dscr      : in Socket.Socket_Dscr;
-                         Remote_Host_Id  : in Tcp_Util.Host_Id;
-                         Remote_Port_Num : in Tcp_Util.Port_Num;
+    procedure Accept_Cb (Unused_Local_Port_Num  : in Tcp_Util.Port_Num;
+                         Unused_Local_Dscr      : in Socket.Socket_Dscr;
+                         Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
+                         Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
                          New_Dscr        : in Socket.Socket_Dscr) is
-      pragma Unreferenced (Local_Port_Num, Local_Dscr,
-                           Remote_Port_Num, Remote_Host_Id);
       use type Socket.Port_Num;
     begin
       -- Discard and close if channel is closed
@@ -381,18 +378,17 @@ package body Channels is
 
     ----------------------
 
-    function Snd_Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
+    function Snd_Read_Cb (Fd : in Event_Mng.File_Desc;
+                          Unused_Read : in Boolean)
                      return Boolean is
-      pragma Unreferenced (Read);
     begin
       return Read_Cb (False, Fd);
     end Snd_Read_Cb;
 
-    procedure Connect_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
-                          Remote_Port_Num : in Tcp_Util.Port_Num;
-                          Connected       : in Boolean;
-                          Dscr            : in Socket.Socket_Dscr) is
-      pragma Unreferenced (Remote_Port_Num, Connected);
+    procedure Connect_Cb (Remote_Host_Id         : in Tcp_Util.Host_Id;
+                          Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                          Unused_Connected       : in Boolean;
+                          Dscr                   : in Socket.Socket_Dscr) is
       Dest : Dest_Rec;
     begin
       -- Find record
@@ -510,21 +506,19 @@ package body Channels is
 
       -- Try to connect each sec indefinitely
       declare
-        Result : Boolean;
-        pragma Unreferenced (Result);
+        Dummy_Result : Boolean;
       begin
-        Result := Tcp_Util.Connect_To (Socket.Tcp_Header, Host, Port,
-                                       Connect_Cb'Unrestricted_Access,
-                                       Channel_Dscr.Period, 0);
+        Dummy_Result := Tcp_Util.Connect_To (Socket.Tcp_Header, Host, Port,
+                                             Connect_Cb'Unrestricted_Access,
+                                             Channel_Dscr.Period, 0);
       exception
         when Socket.Soc_Name_Not_Found =>
           -- Host/port name is not fount in hosts/services
           -- Check host name
           declare
-            Id : Socket.Host_Id;
-            pragma Unreferenced (Id);
+            Dummy_Id : Socket.Host_Id;
           begin
-            Id := Socket.Host_Id_Of (Host_Name);
+            Dummy_Id := Socket.Host_Id_Of (Host_Name);
             -- Host is ok
             raise Unknown_Channel;
           exception
@@ -720,8 +714,7 @@ package body Channels is
                     Length  : in Message_Length) is
       Msg : Channel_Message_Type;
       Len : Message_Length;
-      Res : Boolean;
-      pragma Unreferenced (Res);
+      Dummy_Res : Boolean;
     begin
       -- Build message and len
       Msg.Diff := False;
@@ -734,7 +727,8 @@ package body Channels is
 
       -- Send on Dscr
       begin
-        Res := Channel_Send (Dscr, null, null, Channel_Dscr.Timeout, Msg, Len);
+        Dummy_Res := Channel_Send (Dscr, null, null, Channel_Dscr.Timeout,
+                                   Msg, Len);
       exception
         when Socket.Soc_Tail_Err =>
           raise Send_Overflow;
@@ -857,9 +851,9 @@ package body Channels is
         raise Name_Too_Long;
     end Change_Names;
 
-    function Loc_Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
-                     return Boolean is
-      pragma Unreferenced (Read);
+    function Loc_Read_Cb (Fd : in Event_Mng.File_Desc;
+                          Unused_Read : in Boolean)
+             return Boolean is
       Dscr : Socket.Socket_Dscr;
       Msg : Bus_Message_Type;
       Len  : Natural;
@@ -906,10 +900,9 @@ package body Channels is
     exception
       when Socket.Soc_Name_Not_Found =>
         declare
-          Num : Socket.Port_Num;
-          pragma Unreferenced (Num);
+          Dummy_Num : Socket.Port_Num;
         begin
-          Num := Socket.Port_Num_Of (Bus_Dscr.Bus_Name.Image, Socket.Udp);
+          Dummy_Num := Socket.Port_Num_Of (Bus_Dscr.Bus_Name.Image, Socket.Udp);
         exception
            when Socket.Soc_Name_Not_Found =>
              raise Unknown_Bus;

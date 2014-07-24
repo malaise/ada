@@ -10,8 +10,7 @@ procedure T_Proc_Child is
   Logger : Trace.Loggers.Logger;
 
   function Fd_Cb (Fd : in Sys_Calls.File_Desc;
-                  Read : in Boolean) return Boolean is
-    pragma Unreferenced (Read);
+                  Unused_Read : in Boolean) return Boolean is
     Res : Natural;
     use type Sys_Calls.File_Desc;
   begin

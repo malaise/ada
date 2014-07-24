@@ -56,8 +56,7 @@ procedure Xml_Checker is
   Progress_Factor : constant := 50;
 
   -- Warning detection
-  procedure Warning (Ctx : in  Xml_Parser.Ctx_Type; Msg : in String) is
-  pragma Unreferenced (Ctx);
+  procedure Warning (Unused_Ctx : in  Xml_Parser.Ctx_Type; Msg : in String) is
   begin
     Basic_Proc.Put_Line_Error (Msg);
   end Warning;
@@ -506,7 +505,6 @@ procedure Xml_Checker is
     -- Parsing elements and charactericstics
     Parse_Ok : Boolean;
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
     use type Xml_Parser.Generator.Format_Kind_List,
              Xml_Parser.Parse_Callback_Access;
   begin

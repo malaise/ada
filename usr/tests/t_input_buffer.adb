@@ -101,8 +101,7 @@ begin
 
   -- Test destructor
   declare
-    B1, B2 : Input_Buffer.Buffer;
-    pragma Unreferenced (B2);
+    B1, Unused : Input_Buffer.Buffer;
   begin
     B1.Set (Notifier'Unrestricted_Access);
   end;

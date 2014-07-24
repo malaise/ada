@@ -53,10 +53,9 @@ procedure T_Async is
   -- Autobus receiver
   type Observer_Type is new Autobus.Observer_Type with null record;
   Receiver : aliased Observer_Type;
-  procedure Receive (Observer : in out Observer_Type;
-                     Subscriber : in Autobus.Subscriber_Access_Type;
+  procedure Receive (Unused_Observer   : in out Observer_Type;
+                     Unused_Subscriber : in Autobus.Subscriber_Access_Type;
                      Message : in String) is
-    pragma Unreferenced (Observer, Subscriber);
   begin
     if Message'Length = 1
     and then Message(Message'First) = Ada.Characters.Latin_1.Eot then
@@ -69,17 +68,15 @@ procedure T_Async is
   end Receive;
 
   -- End of sending overflow
-  procedure End_Ovf_Cb (Dscr : in  Socket.Socket_Dscr) is
-    pragma Unreferenced (Dscr);
+  procedure End_Ovf_Cb (Unused_Dscr : in  Socket.Socket_Dscr) is
     use type Socket.Socket_Dscr;
   begin
     In_Overflow := False;
   end End_Ovf_Cb;
 
   -- Sending fatal error
-  procedure Send_Err_Cb (Dscr : in  Socket.Socket_Dscr;
-                         Conn_Lost : in Boolean) is
-    pragma Unreferenced (Dscr);
+  procedure Send_Err_Cb (Unused_Dscr : in  Socket.Socket_Dscr;
+                         Conn_Lost   : in Boolean) is
   begin
     if Conn_Lost then
       Async_Stdin.Put_Line_Err ("Sending msg failed cause connection lost");
@@ -113,10 +110,9 @@ procedure T_Async is
   end Send;
 
   -- When a message to read
-  function Read_Cb (Dscr : Socket.Socket_Dscr;
-                    Msg  :  Message_Type;
-                    Len  :  Natural) return Boolean is
-    pragma Unreferenced (Dscr);
+  function Read_Cb (Unused_Dscr : Socket.Socket_Dscr;
+                    Msg         :  Message_Type;
+                    Len         :  Natural) return Boolean is
   begin
     if Len = 1 and then Msg(1) = Ada.Characters.Latin_1.Eot then
       -- Single Ctrl D => Close connection
@@ -131,8 +127,7 @@ procedure T_Async is
   package My_Rece is new Tcp_Util.Reception (Message_Type);
 
   -- When Soc_Read_0
-  procedure Discon_Cb (Dscr : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Dscr);
+  procedure Discon_Cb (Unused_Dscr : in Socket.Socket_Dscr) is
   begin
     Async_Stdin.Put_Line_Err ("disconnected");
     -- Tcp_Util closes the socket
@@ -145,13 +140,11 @@ procedure T_Async is
     end if;
   end Discon_Cb;
 
-  procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
-                       Local_Dscr      : in Socket.Socket_Dscr;
-                       Remote_Host_Id  : in Tcp_Util.Host_Id;
-                       Remote_Port_Num : in Tcp_Util.Port_Num;
-                       New_Dscr        : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Local_Port_Num, Local_Dscr, Remote_Port_Num,
-                         Remote_Host_Id);
+  procedure Accept_Cb (Unused_Local_Port_Num  : in Tcp_Util.Port_Num;
+                       Unused_Local_Dscr      : in Socket.Socket_Dscr;
+                       Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
+                       Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                       New_Dscr               : in Socket.Socket_Dscr) is
     use type Socket.Socket_Dscr;
   begin
     Soc := New_Dscr;
@@ -167,11 +160,10 @@ procedure T_Async is
   end Accept_Cb;
 
   -- Connection report Cb
-  procedure Conn_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
-                     Remote_Port_Num : in Tcp_Util.Port_Num;
-                     Connected       : in Boolean;
-                     Dscr            : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Remote_Port_Num, Remote_Host_Id);
+  procedure Conn_Cb (Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
+                     Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                     Connected              : in Boolean;
+                     Dscr                   : in Socket.Socket_Dscr) is
   begin
     if Connected then
       Soc := Dscr;
@@ -192,7 +184,6 @@ procedure T_Async is
   procedure Open is
     Acc_Soc : Socket.Socket_Dscr;
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     case Mode is
       when Abus =>

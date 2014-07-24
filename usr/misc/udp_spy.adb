@@ -79,9 +79,8 @@ procedure Udp_Spy is
   -- Timeout expired
   Timeout : Boolean := False;
   Tid : Timers.Timer_Id;
-  function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Id, Data);
+  function Timer_Cb (Unused_Id   : Timers.Timer_Id;
+                     Unused_Data : Timers.Timer_Data) return Boolean is
   begin
     Timeout := True;
     return True;
@@ -139,9 +138,8 @@ procedure Udp_Spy is
   end Dump_Data;
 
   -- Callback on socket reception
-  function Call_Back (F : in Event_Mng.File_Desc; Read : in Boolean)
+  function Call_Back (F : in Event_Mng.File_Desc; Unused_Read : in Boolean)
                      return Boolean is
-    pragma Unreferenced (Read);
     use type Event_Mng.File_Desc;
     Data_Len : Natural;
   begin

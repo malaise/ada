@@ -74,9 +74,8 @@ procedure T_Channels is
   end Signal_Cb;
 
   -- Time callback, no more waiting
-  function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Id, Data);
+  function Timer_Cb (Unused_Id   : Timers.Timer_Id;
+                     Unused_Data : Timers.Timer_Data) return Boolean is
   begin
     Go_Wait := False;
     return True;

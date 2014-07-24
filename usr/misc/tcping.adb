@@ -96,10 +96,9 @@ procedure Tcping is
   end Put_Line;
 
   -- Cancel immediate timer Cb
-  function Cancel_Cb (Id : Timers.Timer_Id;
-                      Data : Timers.Timer_Data := Timers.No_Data)
+  function Cancel_Cb (Unused_Id : Timers.Timer_Id;
+                      Unused_Data : Timers.Timer_Data := Timers.No_Data)
            return Boolean is
-    pragma Unreferenced (Id, Data);
   begin
     Game_Over := True;
     return True;
@@ -155,12 +154,10 @@ procedure Tcping is
     end if;
   end Connect_Cb;
 
-  function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data := Timers.No_Data)
+  function Timer_Cb (Unused_Id   : Timers.Timer_Id;
+                     Unused_Data : Timers.Timer_Data := Timers.No_Data)
            return Boolean is
-    pragma Unreferenced (Id, Data);
     Dummy :  Boolean;
-    pragma Unreferenced (Dummy);
   begin
     -- Cancel pending connection
     -- This occures if blocked looking for host/port in dns/yp...

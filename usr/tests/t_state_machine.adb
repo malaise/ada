@@ -63,8 +63,7 @@ begin
     subtype State_List is Positive range 1 .. Ctx.Get_Nb_Children (States);
     subtype Event_List is Positive range 1 .. Ctx.Get_Nb_Children (Events);
     package Msm is new State_Machine (State_List, Event_List, Machine_List);
-    Mach, Mach1 : Msm.Machine_Type (The_One);
-    pragma Unreferenced (Mach1);
+    Mach, Unused : Msm.Machine_Type (The_One);
 
     State_Names : As.U.Asu_Array (State_List);
     Event_Names : As.U.Asu_Array (Event_List);
@@ -141,21 +140,18 @@ begin
     end Display_Change;
 
     -- Callbacks of transition, event, state change
-    procedure Report_Transition (Id : in Machine_List;
+    procedure Report_Transition (Unused_Id : in Machine_List;
                                  Transition : in Msm.Transition_Rec) is
-      pragma Unreferenced (Id);
     begin
       Display_Change ("Transition", Transition);
     end Report_Transition;
-    procedure Report_Event (Id : in Machine_List;
+    procedure Report_Event (Unused_Id : in Machine_List;
                             Transition : in Msm.Transition_Rec) is
-      pragma Unreferenced (Id);
     begin
       Display_Change ("Event", Transition);
     end Report_Event;
-    procedure Report_State (Id : in Machine_List;
+    procedure Report_State (Unused_Id : in Machine_List;
                             Change : in Msm.State_Change_Rec) is
-      pragma Unreferenced (Id);
     begin
       Display_Change ("State", Change);
     end Report_State;

@@ -832,7 +832,6 @@ package body Afpx is
 
   procedure Update_List (Action : in List_Action_List) is
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     Af_Dscr.Check(Lfn);
     if not Af_Dscr.Fields(Lfn).Activated then

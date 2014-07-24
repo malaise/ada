@@ -7,11 +7,11 @@ package body Fight_Mng is
 
   Last_Status : Status.Status_List;
 
-  function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean;
+  function Timer_Cb (Unused_Id : Timers.Timer_Id;
+                     Unused_Data : Timers.Timer_Data) return Boolean;
 
-  function Perio_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean;
+  function Perio_Cb (Unused_Id : Timers.Timer_Id;
+                     Unused_Data : Timers.Timer_Data) return Boolean;
 
   Fight_Actions : Fight_Action;
 
@@ -80,9 +80,8 @@ package body Fight_Mng is
   end Event;
 
 
-  function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Id, Data);
+  function Timer_Cb (Unused_Id : Timers.Timer_Id;
+                     Unused_Data : Timers.Timer_Data) return Boolean is
     Result : Nodes.Check_Result_List;
   begin
     Result := Nodes.Check;
@@ -94,9 +93,8 @@ package body Fight_Mng is
     return False;
   end Timer_Cb;
 
-  function Perio_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Id, Data);
+  function Perio_Cb (Unused_Id : Timers.Timer_Id;
+                     Unused_Data : Timers.Timer_Data) return Boolean is
     use type Status.Status_List;
   begin
     if In_Fight and then Last_Status /= Status.Fight then

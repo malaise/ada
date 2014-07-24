@@ -58,8 +58,8 @@ package body Connection is
   procedure Chess_Read is new Socket.Receive (Message_Type);
   procedure Chess_Send is new Socket.Send    (Message_Type);
 
-  function Rec_Call_Back (Fd : in Event_Mng.File_Desc; Read : in Boolean)
-  return Boolean;
+  function Rec_Call_Back (Unused_Fd   : in Event_Mng.File_Desc;
+                          Unused_Read : in Boolean) return Boolean;
 
   procedure Raise_Error (Error : in Error_List) is
   begin
@@ -93,11 +93,10 @@ package body Connection is
   end My_Send;
 
 
-  procedure Con_Call_Back (Remote_Host_Id  : in Tcp_Util.Host_Id;
-                           Remote_Port_Num : in Tcp_Util.Port_Num;
-                           Connected       : in Boolean;
-                           Dscr            : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Remote_Port_Num, Remote_Host_Id, Connected);
+  procedure Con_Call_Back (Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
+                           Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                           Unused_Connected       : in Boolean;
+                           Dscr                   : in Socket.Socket_Dscr) is
   begin
     if Debug.Get (Debug.Connection) then
       Basic_Proc.Put_Line_Output ("Connect callback");
@@ -109,15 +108,14 @@ package body Connection is
   end Con_Call_Back;
 
   procedure Connect_Server is
-    Ok : Boolean;
-    pragma Unreferenced (Ok);
+    Dummy : Boolean;
   begin
     Close;
-    Ok := Tcp_Util.Connect_To (Socket.Tcp_Header,
-                               Server_Host,
-                               Remote_Port,
-                               Con_Call_Back'Access,
-                               1.0, 0);
+    Dummy := Tcp_Util.Connect_To (Socket.Tcp_Header,
+                                  Server_Host,
+                                  Remote_Port,
+                                  Con_Call_Back'Access,
+                                  1.0, 0);
   exception
     when Error: others =>
       if Debug.Get (Debug.Connection) then
@@ -128,11 +126,10 @@ package body Connection is
   end Connect_Server;
 
   procedure Acc_Call_Back (Local_Port_Num  : in Tcp_Util.Port_Num;
-                           Local_Dscr      : in Socket.Socket_Dscr;
-                           Remote_Host_Id  : in Tcp_Util.Host_Id;
-                           Remote_Port_Num : in Tcp_Util.Port_Num;
+                           Unused_Local_Dscr      : in Socket.Socket_Dscr;
+                           Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
+                           Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
                            New_Dscr        : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Local_Dscr, Remote_Port_Num, Remote_Host_Id);
   begin
     if Debug.Get (Debug.Connection) then
       Basic_Proc.Put_Line_Output ("Accept callback");
@@ -155,9 +152,9 @@ package body Connection is
                           Port_Num);
   end Accept_Client;
 
-  function Rec_Call_Back (Fd : in Event_Mng.File_Desc; Read : in Boolean)
+  function Rec_Call_Back (Unused_Fd : in Event_Mng.File_Desc;
+                          Unused_Read : in Boolean)
            return Boolean is
-    pragma Unreferenced (Fd, Read);
     Default_Action : Players.Valid_Action_Rec;
     -- Largest message
     Message : Message_Type := (Kind => Move, Action => Default_Action);

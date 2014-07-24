@@ -325,7 +325,6 @@ procedure Agite is
     declare
    -- Check validity of current directory
     Dummy : constant String := Directory.Get_Current;
-    pragma Unreferenced (Dummy);
     begin
       null;
     end;
@@ -565,7 +564,6 @@ procedure Agite is
   procedure Do_Pull is
     Curr_Dir : constant String := Directory.Get_Current;
     Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     Position := Afpx.Line_List.Get_Position;
     Dummy := Push_Pull.Handle (Root.Image, Pull => True);

@@ -42,8 +42,8 @@ package body Io_Flow is
   -- Observer recevier of messages
   Bus_Subscriber : Autobus.Subscriber_Type;
   type Bus_Observer_Type is new Autobus.Observer_Type with null record;
-  procedure Receive (Observer : in out Bus_Observer_Type;
-                     Subscriber : in Autobus.Subscriber_Access_Type;
+  procedure Receive (Unused_Observer : in out Bus_Observer_Type;
+                     Unused_Subscriber : in Autobus.Subscriber_Access_Type;
                      Message : in String);
   Bus_Observer : aliased Bus_Observer_Type;
 
@@ -385,10 +385,9 @@ package body Io_Flow is
   ----------------------------------------------------
   -- Bus reception callback
   ----------------------------------------------------
-  procedure Receive (Observer : in out Bus_Observer_Type;
-                     Subscriber : in Autobus.Subscriber_Access_Type;
+  procedure Receive (Unused_Observer : in out Bus_Observer_Type;
+                     Unused_Subscriber : in Autobus.Subscriber_Access_Type;
                      Message : in String) is
-    pragma Unreferenced (Observer, Subscriber);
   begin
     if Message'Length = 0 then
       return;
@@ -428,9 +427,9 @@ package body Io_Flow is
   -- Socket operations
   ----------------------------------------------------
   Tcp_Active : Boolean;
-  function Socket_Connect_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
+  function Socket_Connect_Cb (Unused_Fd   : in Event_Mng.File_Desc;
+                              Unused_Read : in Boolean)
                           return Boolean is
-    pragma Unreferenced (Fd, Read);
   begin
     -- Accept re-connection
     Accepting_Soc.Accept_Connection (Soc);
@@ -454,9 +453,9 @@ package body Io_Flow is
     Open_Tcp_Socket (True);
   end Disconnect_Socket;
 
-  function Socket_Rece_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
+  function Socket_Rece_Cb (Unused_Fd   : in Event_Mng.File_Desc;
+                           Unused_Read : in Boolean)
                           return Boolean is
-    pragma Unreferenced (Fd, Read);
     Message : Io_Data.Message_Type;
     Length : Natural;
   begin

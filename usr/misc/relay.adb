@@ -50,8 +50,7 @@ procedure Relay is
   -- Subscriber reads with this
   procedure Channel_Read_Cb (Message  : in Message_Type;
                              Length   : in Channels.Message_Length;
-                             Diffused : in Boolean) is
-    pragma Unreferenced (Diffused);
+                             Unused_Diffused : in Boolean) is
     Len : Channels.Message_Length;
     use type Socket.Host_Id;
   begin

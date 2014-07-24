@@ -120,7 +120,6 @@ package body Notify is
       Fd := Rec.Client.Get_Fd;
       declare
         Dummy : Boolean;
-        pragma Unreferenced (Dummy);
       begin
         Dummy := Client_Com.Dictio_Send (Rec.Client, null, null, 0.0, Msg);
         Dictio_Debug.Put (Dictio_Debug.Client_Notify, "Send: "

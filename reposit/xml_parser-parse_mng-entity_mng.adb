@@ -107,8 +107,7 @@ package body Entity_Mng is
   function Exists (The_Entities : in out Entity_List_Mng.Unique_List_Type;
                    Name      : in As.U.Asu_Us;
                    Parameter : in Boolean) return Boolean is
-    Code : Natural;
-    pragma Unreferenced (Code);
+    Dummy_Code : Natural;
     Entity : Entity_Type;
     Found : Boolean;
   begin
@@ -116,7 +115,7 @@ package body Entity_Mng is
     if not Parameter and then not Name.Is_Null
     and then Name.Element (1) = '#' then
       -- To check validity
-      Code := Code_Of (Name.Image);
+      Dummy_Code := Code_Of (Name.Image);
       return True;
     end if;
 

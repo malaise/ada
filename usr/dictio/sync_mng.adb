@@ -41,9 +41,8 @@ package body Sync_Mng is
     Timer_Id.Delete_If_Exists;
   end Cancel_Timer;
 
-  function Timer_Rec_Cb (Id : Timers.Timer_Id;
-                         Data : Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Id, Data);
+  function Timer_Rec_Cb (Unused_Id : Timers.Timer_Id;
+                         Unused_Data : Timers.Timer_Data) return Boolean is
   begin
     if Sync_Has_Been_Received then
       -- Still in sync
@@ -116,8 +115,8 @@ package body Sync_Mng is
   function Sync_Search is new Sync_List_Mng.Search (As.U."=");
 
 
-  function Timer_Sen_Cb (Id : Timers.Timer_Id;
-                         Data : Timers.Timer_Data) return Boolean;
+  function Timer_Sen_Cb (Unused_Id : Timers.Timer_Id;
+                         Unused_Data : Timers.Timer_Data) return Boolean;
 
   procedure Send (To : Tcp_Util.Host_Name) is
   begin
@@ -267,9 +266,8 @@ package body Sync_Mng is
 
   end Do_Sync_Channel;
 
-  function Timer_Sen_Cb (Id : Timers.Timer_Id;
-                         Data : Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Id, Data);
+  function Timer_Sen_Cb (Unused_Id : Timers.Timer_Id;
+                         Unused_Data : Timers.Timer_Data) return Boolean is
     use type Args.Channel_Mode_List;
   begin
 
