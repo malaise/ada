@@ -404,7 +404,7 @@ package Afpx is
   --   double click terminates Put_Then Get (Mouse_Button, List_Field_No).
   -- In Put fields: nothing.
   -- In Get fields:
-  --   Left/right arrows Home and End navigate in the field (see Con_Io),
+  --   Left/right arrows, Home and End navigate in the field (see Con_Io),
   --   A character input, Backspace, Suppr, Shift Suppr or Ctrl Suppr edits
   --    the field (see Con_Io),
   --   Insert toggles insert/replace mode (see Con_Io),
