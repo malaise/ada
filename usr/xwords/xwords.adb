@@ -50,7 +50,7 @@ procedure Xwords is
   Exit_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Quit;
 
   -- History of search requests
-  History : Cmd.Res_List;
+  History_List : Cmd.Res_List;
   Moved : Boolean;
 
   -- A line of text
@@ -60,8 +60,9 @@ procedure Xwords is
   Words_File_Name, Nouns_File_Name : As.U.Asu_Us;
   Loading_Anagrams : Boolean;
 
-  -- List is words or history
-  List_Is_Words : Boolean;
+  -- List is words or history or anagrams
+  type List_Content_List is (Words, Anagrams, History, Error, Empty);
+  List_Content : List_Content_List := Empty;
 
   -- Us to Afpx line
   function Us2Afpx (Us : As.U.Asu_Us) return Afpx.Line_Rec is
@@ -116,7 +117,8 @@ procedure Xwords is
     use type Afpx.List_Change_List, Afpx.List_Status_Rec;
   begin
     -- Nothing if not a valid list of words
-    if Status /= Found or else not List_Is_Words then
+    if Status /= Found or else List_Content = History
+    or else List_Content = Empty then
       return;
     end if;
 
@@ -223,7 +225,7 @@ procedure Xwords is
 
   -- List anagrams of word
   procedure Do_Anagrams is
-    Anagrams : As.U.Utils.Asu_Ua.Unb_Array;
+    Anagrams_List : As.U.Utils.Asu_Ua.Unb_Array;
     Word : As.U.Asu_Us;
     Char : Character;
     Length : Natural;
@@ -234,6 +236,8 @@ procedure Xwords is
     -- Get word and check it
     Word := As.U.Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
     if Word.Is_Null then
+      List_Content := Empty;
+      Status := Ok;
       return;
     end if;
     for I in 1 .. Word.Length loop
@@ -241,6 +245,7 @@ procedure Xwords is
       if Char < 'a' or else Char > 'z' then
         Afpx.Line_List.Insert (Us2Afpx (
             As.U.Tus ("ERROR: Invalid character in word.")));
+        List_Content := Error;
         Status := Error;
         return;
       end if;
@@ -249,34 +254,38 @@ procedure Xwords is
     -- Get list
     Analist.List (Strip (Afpx.Decode_Field (Get_Fld, 0, False)),
                   Ananouns_Set,
-                  Anagrams);
-    History.Insert (Word);
+                  Anagrams_List);
+    History_List.Insert (Word);
 
     -- Copy in Afpx list
     Length := 0;
-    for I in 1 .. Anagrams.Length loop
-      if Anagrams.Element(I).Length /= Length then
-        Length := Anagrams.Element(I).Length;
+    for I in 1 .. Anagrams_List.Length loop
+      -- Insert length
+      if Anagrams_List.Element(I).Length /= Length then
+        Length := Anagrams_List.Element(I).Length;
         Afpx.Line_List.Insert (Us2Afpx (As.U.Tus (
              "-- " & Images.Integer_Image (Length) & " --")));
       end if;
-      Afpx.Line_List.Insert (Us2Afpx (Anagrams.Element(I)));
+      Afpx.Line_List.Insert (Us2Afpx (Anagrams_List.Element(I)));
     end loop;
     Afpx.Line_List.Rewind;
     Afpx.Update_List(Afpx.Top);
 
     -- Update Status
-    if Anagrams.Length = 1 then
+    if Anagrams_List.Length = 1 then
+      List_Content := Empty;
       Status := Ok;
     else
+      List_Content := Anagrams;
       Status := Found;
-      List_Is_Words := True;
     end if;
 
   exception
     when Analist.Too_Long =>
       Afpx.Line_List.Insert (Us2Afpx (
           As.U.Tus ("ERROR: Word too long.")));
+      List_Content := Error;
+      Status := Error;
   end Do_Anagrams;
 
   -- Build and launch a Words command
@@ -302,6 +311,7 @@ procedure Xwords is
       when Del_Word_Fld | Del_Noun_Fld =>
         Arg.Set ("delete");
       when others =>
+        List_Content := Error;
         Status := Error;
         return;
     end case;
@@ -320,10 +330,11 @@ procedure Xwords is
 
     -- Set status
     if not Command_Ok then
+      List_Content := Error;
       Status := Error;
     elsif Num = Search_Fld or else Num = Research_Fld then
       Status := Found;
-      List_Is_Words := True;
+      List_Content := Words;
     else
       Status := Ok;
     end if;
@@ -344,7 +355,7 @@ procedure Xwords is
     -- Store in history if search
     if (Num = Search_Fld or else Num = Research_Fld)
     and then not Arg.Image.Is_Null then
-      History.Insert (Word);
+      History_List.Insert (Word);
     end if;
 
     -- Log request if needed
@@ -407,8 +418,8 @@ procedure Xwords is
   procedure Do_Recall is
   begin
     Afpx.Clear_Field (Get_Fld);
-    if not History.Is_Empty then
-      History.Read (Line, Cmd.Res_Mng.Dyn_List.Current);
+    if not History_List.Is_Empty then
+      History_List.Read (Line, Cmd.Res_Mng.Dyn_List.Current);
       Afpx.Encode_Field (Get_Fld, (0, 0), Lower_Str (Line.Image));
     end if;
   end Do_Recall;
@@ -466,6 +477,19 @@ procedure Xwords is
    -- Done
   end Load_Anagrams;
 
+  -- Allow button Nouns or not
+  procedure Allow_Nouns (Allow : in Boolean) is
+  begin
+    if Allow then
+      Afpx.Reset_Field  (Nouns_Fld, Reset_String => False);
+    else
+      Afpx.Set_Field_Protection (Nouns_Fld, True);
+      Afpx.Set_Field_Colors (Nouns_Fld,
+           Foreground => Con_Io.Color_Of ("Dark_Grey"),
+           Background => Con_Io.Color_Of ("Light_Grey") );
+    end if;
+  end Allow_Nouns;
+
   use type Afpx.Field_Range;
 begin
   -- Parse option for Log
@@ -504,6 +528,7 @@ begin
 
   Status := Ok;
 
+  -- Main loop
   loop
     -- Get result of loading the dictio: polling
     if Loading_Anagrams then
@@ -529,19 +554,19 @@ begin
     end if;
 
     Afpx.Clear_Field (Topof_Fld);
-    if Status = Found and then List_Is_Words
+    if Status = Found
+    and then (List_Content = Words or else List_Content = Anagrams)
     and then not Afpx.Line_List.Is_Empty then
       -- Get position of top and encode field
       Afpx.Encode_Field (Topof_Fld, (0, 0),
                          Images.Integer_Image (Afpx.Line_List.List_Length));
-      Afpx.Set_Field_Protection (Nouns_Fld, False);
-      Afpx.Reset_Field  (Nouns_Fld, Reset_String => False);
+      Allow_Nouns (List_Content = Words);
     else
       Afpx.Clear_Field (Scroll_Fld);
-      Afpx.Set_Field_Protection (Nouns_Fld, True);
-      Afpx.Set_Field_Colors (Nouns_Fld,
-           Foreground => Con_Io.Color_Of ("Dark_Grey"),
-           Background => Con_Io.Color_Of ("Light_Grey") );
+      Afpx.Clear_Field (Topnum_Fld);
+      Afpx.Clear_Field (Topof_Fld);
+      Afpx.Clear_Field (Percent_Fld);
+      Allow_Nouns (False);
     end if;
 
     -- Color and protection of result list according to status
@@ -592,6 +617,7 @@ begin
           -- Clear get and error
           when Clear_Fld =>
             Afpx.Clear_Field (Get_Fld);
+            List_Content := Empty;
             if Status = Error then
               Afpx.Reset_Field (Afpx.List_Field_No, Reset_String => False);
               Afpx.Line_List.Delete_List (Deallocate => False);
@@ -622,20 +648,20 @@ begin
           when History_Fld =>
             -- Put history of search in list
             Afpx.Line_List.Delete_List (Deallocate => False);
-            if not History.Is_Empty then
-              History.Rewind;
+            if not History_List.Is_Empty then
+              History_List.Rewind;
               loop
-                History.Read (Line, Moved => Moved);
+                History_List.Read (Line, Moved => Moved);
                 Afpx.Line_List.Insert (Us2Afpx (Line), Afpx.Line_List_Mng.Prev);
                 exit when not Moved;
               end loop;
               -- Move to Bottom
               Afpx.Line_List.Rewind (True);
               Afpx.Update_List(Afpx.Top);
-              History.Rewind (True, Cmd.Res_Mng.Dyn_List.Prev);
+              History_List.Rewind (True, Cmd.Res_Mng.Dyn_List.Prev);
             end if;
             Status := Found;
-            List_Is_Words := False;
+            List_Content := History;
           -- Clear list
           when Clear_List_Fld =>
             Afpx.Line_List.Delete_List (Deallocate => False);
