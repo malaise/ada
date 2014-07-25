@@ -16,6 +16,9 @@ package Hexa_Utils is
 
   -- Image in hexadecimal of a Natural
   -- Lower case, no leading space (and no 16#...#)
+  generic
+    type Int is range <>;
+  function Int_Image (I : Int) return String;
   function Image (N : Natural) return String;
   function Image (N : Long_Longs.Ll_Natural) return String;
 

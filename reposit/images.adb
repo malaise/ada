@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with As.U, My_Math, Str_Util, Normal, Day_Mng;
+with As.U, My_Math, Str_Util, Hexa_Utils, Normal, Day_Mng, Upper_Str;
 package body Images is
 
   -- Image of an integer (without leading space)
@@ -30,22 +29,12 @@ package body Images is
   function Long_Long_Image (L : Long_Long_Integer) return String
            renames Loc_Long_Long_Image;
 
-
   -- Image of Integer in base 16 (without leading space)
+  -- 16#xxx#
   function Int_Image16 (I : Int) return String is
-    Str : String (1 .. Int'Width + 5);
-    package Int_Io is new Ada.Text_Io.Integer_Io (Int);
+    function Hexa_Image is new Hexa_Utils.Int_Image (Int);
   begin
-    Int_Io.Put (Str, I, Base => 16);
-    for I in reverse Str'Range loop
-      if Str(I) = ' ' then
-        return Str(I + 1 .. Str'Last);
-      end if;
-    end loop;
-    return Str;
-  exception
-    when others =>
-      raise Constraint_Error;
+    return "16#" & Upper_Str (Hexa_Image (I)) & "#";
   end Int_Image16;
 
   -- Image of a float (without leading space)

@@ -27,19 +27,8 @@ package body Hexa_Utils is
 
   -- Image in hexadecimal of a Natural
   -- Lower case, no leading space
-  function Image (N : Natural) return String is
-    V : Natural := N;
-    Res : As.U.Asu_Us;
-  begin
-    loop
-      Res.Prepend (Hexa_To_Char (V rem 16));
-      V := V / 16;
-      exit when V = 0;
-    end loop;
-    return Res.Image;
-  end Image;
-  function Image (N : Long_Longs.Ll_Natural) return String is
-    V : Long_Longs.Ll_Natural := N;
+  function Int_Image (I : Int) return String is
+    V : Int := I;
     Res : As.U.Asu_Us;
   begin
     loop
@@ -48,7 +37,11 @@ package body Hexa_Utils is
       exit when V = 0;
     end loop;
     return Res.Image;
-  end Image;
+  end Int_Image;
+  function Nat_Image is new Int_Image (Natural);
+  function Image (N : Natural) return String renames Nat_Image;
+  function Llnat_Image is new Int_Image (Long_Longs.Ll_Natural);
+  function Image (N : Long_Longs.Ll_Natural) return String renames Llnat_Image;
 
   -- Image in hexadecimal of a Natural, padded with '0' to fit length
   -- Lower case
