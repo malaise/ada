@@ -1,9 +1,10 @@
 with Bit_Ops, Sys_Calls, Text_Line;
 package body File_Hash is
 
-  -- The goal is to store the hash of word (0 to FFF) and a reasonable length
-  --  of the word (x?) in *FFF, so x is either F (15!) of FF (255) which is OK
-  -- Longer names are not stored
+  -- The goal is to store the hash of the line (0 to FFF) and a reasonable
+  --  length of the the line (x?) in *FFF, so x is either F (15!) of FF (255)
+  --  which is OK
+  -- Longer lines are truncated
   -- Max_Str_Len : constant := 16#FF#;
   -- Hash_Max : constant Hashing.Max_Hash_Range := 16#FFFFF#;
   function Hash_Func (Key : String) return Max_Hash_Range is
@@ -36,7 +37,7 @@ package body File_Hash is
         if Word(Len) = Text_Line.Line_Feed_Char then
           Len := Len - 1;
         end if;
-        -- Store word in Storage and its key in H list
+        -- Store line in Storage and its key in H list
         List.Insert (As.U.Tus (Word(1 ..
               (if Len < Max_Str_Len then Len else Max_Str_Len))));
       end;

@@ -4,8 +4,8 @@ package File_Hash is
 
   -- Stores the content of a file in a hashed list, one entry per line
 
-  -- The goal is to store the hash of word (0 to FFF) and a reasonable length
-  --  of the word (x?) in *FFF, so x is either F (15) which is too small,
+  -- The goal is to store the hash of the line (0 to FFF) and a reasonable
+  --  length of the line (x?) in *FFF, so x is either F (15) which is too small,
   --  or FF (255) which is OK
   -- Longer lines are truncated
   Max_Str_Len : constant := 16#FF#;

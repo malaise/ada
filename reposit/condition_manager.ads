@@ -39,14 +39,14 @@ package Condition_Manager is
   No_Access : exception;
   function Wait (A_Condition  : Condition;
                  Waiting_Time : Duration) return Boolean;
-  procedure Wait (A_Condition  : in Condition);
+  procedure Wait (A_Condition : in Condition);
 
 
   -- Unblock one of the waiting tasks
-  procedure Signal (A_Condition  : in Condition);
+  procedure Signal (A_Condition : in Condition);
 
   -- Unblock all the waiting tasks
-  procedure Broadcast (A_Condition  : in Condition);
+  procedure Broadcast (A_Condition : in Condition);
 
 private
 
@@ -59,7 +59,7 @@ private
     function Owns return Boolean;
     -- Wait for signal or broadcast
     entry Wait;
-    -- Signal  one waiter or broadcast all
+    -- Signal one waiter or broadcast all
     procedure Signal;
     procedure Broadcast;
   private
