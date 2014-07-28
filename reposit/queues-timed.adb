@@ -43,7 +43,7 @@ package body Queues.Timed is
     Item.Timer := new Chronos.Passive_Timers.Passive_Timer;
     Timer := Item.Timer;
     -- Append record and rewind
-    Queue.List.Rewind (False, Item_List_Mng.Prev);
+    Queue.List.Rewind (Item_List_Mng.Prev, False);
     Queue.List.Insert (Item);
     Queue.List.Rewind;
   end Add_Item;
@@ -92,7 +92,7 @@ package body Queues.Timed is
       -- End of list
       exit when not Moved;
     end loop;
-    Queue.List.Rewind (False);
+    Queue.List.Rewind (Check_Empty => False);
   end Expire;
 
    -- Remove expired items and read the first item pushed that matches
@@ -120,7 +120,7 @@ package body Queues.Timed is
       X := Litem.Data;
       Found := True;
     end if;
-    Queue.List.Rewind (False);
+    Queue.List.Rewind (Check_Empty => False);
   end Read;
 
   -- Remove all items

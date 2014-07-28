@@ -236,11 +236,11 @@ package body Autobus is
     Partner_Acc : Partner_Access;
   begin
     -- Insert in Partners list
-    Partners.Rewind (False, Partner_List_Mng.Next);
+    Partners.Rewind (Partner_List_Mng.Next, False);
     Partners.Insert (Partner);
     Partner_Acc := Partner_Access(Partners.Access_Current);
     -- Insert a partner access in the list of partners of the bus
-    Partner_Acc.Bus.Partners.Rewind (False, Partner_Access_List_Mng.Next);
+    Partner_Acc.Bus.Partners.Rewind (Partner_Access_List_Mng.Next, False);
     Partner_Acc.Bus.Partners.Insert (Partner_Acc);
   end Insert_Partner;
 
@@ -307,7 +307,7 @@ package body Autobus is
     Moved : Boolean;
   begin
     Bus_Acc := Bus_Access(Buses.Access_Current);
-    Bus_Acc.Partners.Rewind (False, Partner_Access_List_Mng.Next);
+    Bus_Acc.Partners.Rewind (Partner_Access_List_Mng.Next, False);
     loop
       exit when Bus_Acc.Partners.Is_Empty;
       Bus_Acc.Partners.Read (Partner_Acc, Moved => Moved);
@@ -720,7 +720,7 @@ package body Autobus is
     Rbus.Timer.Create (Timeout, Timer_Cb'Access);
 
     -- Done: Insert in list, return access
-    Buses.Rewind (False, Bus_List_Mng.Next);
+    Buses.Rewind (Bus_List_Mng.Next, False);
     Buses.Insert (Rbus);
     Bus.Acc := Buses.Access_Current;
     Logger.Log_Debug ("Bus " & Rbus.Name.Image
@@ -766,7 +766,7 @@ package body Autobus is
     Remove_Partners (True);
 
     -- Remove all subscribers
-    Bus.Acc.Subscribers.Rewind (False, Subscriber_List_Mng.Next);
+    Bus.Acc.Subscribers.Rewind (Subscriber_List_Mng.Next, False);
     loop
       exit when Bus.Acc.Subscribers.Is_Empty;
       Remove_Current_Subscriber;
@@ -800,7 +800,7 @@ package body Autobus is
       raise Message_Too_Long;
     end if;
     Msg(1 .. Message'Length) := Message;
-    Bus.Acc.Partners.Rewind (False, Partner_Access_List_Mng.Next);
+    Bus.Acc.Partners.Rewind (Partner_Access_List_Mng.Next, False);
 
     -- Send message on each partner except on the passive connection to ourself
     --  (so we send it to ourself only once).
@@ -897,7 +897,7 @@ package body Autobus is
     -- Store in Bus, save position in case we are dispatching
     Position := (if Bus.Acc.Subscribers.Is_Empty then 0
                  else Bus.Acc.Subscribers.Get_Position);
-    Bus.Acc.Subscribers.Rewind (False, Subscriber_List_Mng.Next);
+    Bus.Acc.Subscribers.Rewind (Subscriber_List_Mng.Next, False);
     Bus.Acc.Subscribers.Insert (Subs);
     Subscriber.Acc := Bus.Acc.Subscribers.Access_Current;
     if Position /= 0 then

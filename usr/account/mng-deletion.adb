@@ -46,7 +46,7 @@ package body Deletion is
     end if;
 
     -- Commit deletions from last to first (so REFs remain correct)
-    Sel_List.Rewind (True, Sel_List_Mng.Prev);
+    Sel_List.Rewind (Sel_List_Mng.Prev);
     loop
       Sel_List.Read (Sel, Sel_List_Mng.Current);
       if Sel.Deleted then

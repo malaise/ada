@@ -22,14 +22,16 @@ package Long_Long_Limited_List is
 
 
   -- All calls except Insert, Is_Empty, List_Length, searches and Iterate
-  --  may raise Empty_List if the list is empty
-  -- All calls which modify List may raise In_Callback if performed
-  --  in an application callback (Match, Iteration);
+  --  may raise Empty_List if the list is empty.
+  -- Also Check_Move, Rewind and Access_Current if Check_Empty is True.
+  -- All calls which modify the List may raise In_Callback if performed
+  --  in an application callback (Match, Iteration).
 
 
   -- Check if one move in the given direction is possible
   function Check_Move (List : in List_Type;
-                       Where : Direction := Next) return Boolean;
+                       Where : Direction := Next;
+                       Check_Empty : in Boolean := True) return Boolean;
 
 
   -- Read the current item then moves to another item
@@ -146,8 +148,8 @@ package Long_Long_Limited_List is
   -- Move to beginning/end of list: Move_To (List, Where, 0, False);
   -- Does not raise Empty_list if Check_Empty is False;
   procedure Rewind (List        : in out List_Type;
-                    Check_Empty : in Boolean := True;
-                    Where       : in Direction := Next);
+                    Where       : in Direction := Next;
+                    Check_Empty : in Boolean := True);
 
   -- Permute 2 elements
   --  If From_Current is True,  then numbers of elements are relative from

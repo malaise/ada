@@ -66,7 +66,7 @@ package body Nodes is
       end if;
     elsif Stat /= Status.Dead then
       -- Unknown and alive => insert
-      Node_List.Rewind (False);
+      Node_List.Rewind (Check_Empty => False);
       Node_List.Insert (Rec);
     end if;
   end Set;

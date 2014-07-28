@@ -112,10 +112,10 @@ package body Hashed_List is
     -- Insert new element in list and in hashing
     case Where is
       when First =>
-        List.List.Rewind (False, List_Mng.Next);
+        List.List.Rewind (List_Mng.Next, False);
         List.List.Insert (Item, List_Mng.Prev);
       when Last =>
-        List.List.Rewind (False, List_Mng.Prev);
+        List.List.Rewind (List_Mng.Prev, False);
         List.List.Insert (Item, List_Mng.Next);
       when After_Curr =>
         List.List.Insert (Item, List_Mng.Next);
@@ -274,9 +274,9 @@ package body Hashed_List is
     end if;
     -- Prepare loop on all items
     if From = From_First then
-      List.List.Rewind (True, List_Mng.Next);
+      List.List.Rewind (List_Mng.Next);
     else
-      List.List.Rewind (True, List_Mng.Prev);
+      List.List.Rewind (List_Mng.Prev);
     end if;
     Go_On := True;
     loop
@@ -303,8 +303,8 @@ package body Hashed_List is
     if List.List.Is_Empty then
       raise Not_In_List;
     end if;
-    List.List.Rewind (True, (if From = From_First then List_Mng.Next
-                             else List_Mng.Prev));
+    List.List.Rewind ( (if From = From_First then List_Mng.Next
+                        else List_Mng.Prev));
   end Rewind;
 
   procedure Read_Next (List : in out List_Type;

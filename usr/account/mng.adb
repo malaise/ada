@@ -134,7 +134,7 @@ package body Mng is
       Oper : Oper_Def.Oper_Rec;
     begin
       Oper.Amount := Amount;
-      Oper_List.Rewind (False);
+      Oper_List.Rewind (Check_Empty => False);
       Oper_List.Insert (Oper, Oper_List_Mng.Prev);
     end Insert_Amount;
 
@@ -304,7 +304,7 @@ package body Mng is
       -- Adjust status and date if needed
       Adjust_Copy (Oper);
       -- Append in list of operations
-      Oper_List.Rewind (True, Oper_List_Mng.Prev);
+      Oper_List.Rewind (Oper_List_Mng.Prev);
       Oper_List.Insert (Oper);
       -- Save this operation ref
       Copied_List.Insert ( (No => Oper_List.List_Length, Deleted => False) );

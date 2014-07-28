@@ -200,7 +200,7 @@ package body Timers is
 
     -- Insert in beginning of list and sort
     Id.Init (Timer);
-    Timer_List.Rewind (False);
+    Timer_List.Rewind (Check_Empty => False);
     Timer_List.Insert (Id, Timer_List_Mng.Prev);
     Sort (Timer_List);
 

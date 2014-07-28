@@ -656,9 +656,9 @@ begin
                 exit when not Moved;
               end loop;
               -- Move to Bottom
-              Afpx.Line_List.Rewind (True);
+              Afpx.Line_List.Rewind;
               Afpx.Update_List(Afpx.Top);
-              History_List.Rewind (True, Cmd.Res_Mng.Dyn_List.Prev);
+              History_List.Rewind (Cmd.Res_Mng.Dyn_List.Prev);
             end if;
             Status := Found;
             List_Content := History;

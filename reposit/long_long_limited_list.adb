@@ -11,19 +11,19 @@ package body Long_Long_Limited_List is
 
   procedure Check (List : in List_Type) is
   begin
-    if Is_Empty(List) then
+    if Is_Empty (List) then
       raise Empty_List;
     end if;
   end Check;
 
-  procedure Check_In(Pos : in Link) is
+  procedure Check_In (Pos : in Link) is
   begin
     if Pos = null then
       raise Not_In_List;
     end if;
   end Check_In;
 
-  function Check_In(Pos : in Link) return Boolean is
+  function Check_In (Pos : in Link) return Boolean is
   begin
     return Pos /= null;
   end Check_In;
@@ -37,12 +37,12 @@ package body Long_Long_Limited_List is
 
   -- Delete the full list
   procedure Deallocation_Of is new
-     Unchecked_Deallocation(Object=>Cell, Name=>Link);
+     Unchecked_Deallocation (Object=>Cell, Name=>Link);
   procedure Delete_List (List : in out List_Type;
                          Deallocate : in Boolean := True) is
     Local : Link;
   begin
-    Check_Cb(List);
+    Check_Cb (List);
     -- Don't delete the list if it is a copy
     if not List.Assigned then
       if Deallocate then
@@ -50,13 +50,13 @@ package body Long_Long_Limited_List is
         while List.First /= null loop
           Local := List.First;
           List.First := List.First.Next;
-          Deallocation_Of(Local);
+          Deallocation_Of (Local);
         end loop;
         -- Deallocate the free list
         while Free_List /= null loop
           Local := Free_List;
           Free_List := Free_List.Next;
-          Deallocation_Of(Local);
+          Deallocation_Of (Local);
         end loop;
       else
         -- Insert the list in beginning of free list
@@ -73,7 +73,7 @@ package body Long_Long_Limited_List is
       while Free_List /= null loop
         Local := Free_List;
         Free_List := Free_List.Next;
-        Deallocation_Of(Local);
+        Deallocation_Of (Local);
       end loop;
     end if;
     List.Modified := True;
@@ -93,12 +93,16 @@ package body Long_Long_Limited_List is
     return (if Where = Next then Prev else Next);
   end Other_Way;
 
-
   -- Check movement
   function Check_Move (List : in List_Type;
-                       Where : Direction := Next) return Boolean is
+                       Where : Direction := Next;
+                       Check_Empty : in Boolean := True) return Boolean is
   begin
-    Check(List);
+    if Check_Empty then
+      Check (List);
+    elsif Is_Empty (List) then
+      return False;
+    end if;
     return (if Where = Next then List.Current.Next /= null
             else List.Current.Prev /= null);
   end Check_Move;
@@ -109,8 +113,8 @@ package body Long_Long_Limited_List is
                   Item : out Element_Type;
                   Move : in Movement := Next) is
   begin
-    Check_Cb(List);
-    Check(List);
+    Check_Cb (List);
+    Check (List);
     Set (Item, List.Current.Value);
     if Move /= Current then
       Move_To (List, Move);
@@ -129,8 +133,8 @@ package body Long_Long_Limited_List is
                   Move  : in Movement := Next;
                   Moved : out Boolean) is
   begin
-    Check_Cb(List);
-    Check(List);
+    Check_Cb (List);
+    Check (List);
     Set (Item, List.Current.Value);
     -- Modified is set by Move_To
     if Move = Current then
@@ -149,8 +153,8 @@ package body Long_Long_Limited_List is
                     Item : in Element_Type;
                     Move : in Movement := Next) is
   begin
-    Check_Cb(List);
-    Check(List);
+    Check_Cb (List);
+    Check (List);
     Set (List.Current.Value, Item);
     if Move /= Current then
       Move_To (List, Move);
@@ -163,8 +167,8 @@ package body Long_Long_Limited_List is
                     Move  : in Movement := Next;
                     Moved : out Boolean) is
   begin
-    Check_Cb(List);
-    Check(List);
+    Check_Cb (List);
+    Check (List);
     Set (List.Current.Value, Item);
     List.Modified := True;
     if Move = Current then
@@ -184,7 +188,7 @@ package body Long_Long_Limited_List is
                     Where : in Direction := Next) is
     New_Cell : Link;
   begin
-    Check_Cb(List);
+    Check_Cb (List);
     List.Modified := True;
     if Free_List = null then
       -- Create the first element of the list
@@ -236,8 +240,8 @@ package body Long_Long_Limited_List is
                  Deallocate : in Boolean)  is
     Del_Cell : Link;
   begin
-    Check_Cb(List);
-    Check(List);
+    Check_Cb (List);
+    Check (List);
 
     if List.Pos_First = 1 and then List.Pos_Last = 1 then
       -- Last item of the list
@@ -338,8 +342,8 @@ package body Long_Long_Limited_List is
                  Item : out Element_Type;
                  Move : in Direction := Next) is
   begin
-    Read(List, Item, Current);
-    Delete(List, Move);
+    Read (List, Item, Current);
+    Delete (List, Move);
     -- Modified flag changed by Delete
   end Get;
   function  Get (List : in out List_Type;
@@ -373,8 +377,8 @@ package body Long_Long_Limited_List is
     New_Pos                     : Link;
     New_Pos_First, New_Pos_Last : Long_Longs.Ll_Natural;
   begin
-    Check_Cb(List);
-    Check(List);
+    Check_Cb (List);
+    Check (List);
     -- Start from current or first/last
     if From_Current then
       New_Pos := List.Current;
@@ -459,14 +463,14 @@ package body Long_Long_Limited_List is
 
   -- Move to beginning/end of list: Move_To (List, Where, 0, False);
   procedure Rewind (List        : in out List_Type;
-                    Check_Empty : in Boolean := True;
-                    Where       : in Direction := Next) is
+                    Where       : in Direction := Next;
+                    Check_Empty : in Boolean := True) is
   begin
-    Check_Cb(List);
-    if not Check_Empty and then Is_Empty(List) then
+    Check_Cb (List);
+    if not Check_Empty and then Is_Empty (List) then
       return;
     end if;
-    Check(List);
+    Check (List);
     -- Care here: List_Length reads Pos_First and Pos_Last!
     if Where = Next then
       List.Current := List.First;
@@ -585,7 +589,7 @@ package body Long_Long_Limited_List is
   end Permute;
 
   -- Permutes 2 elements
-  procedure Permute (List      : in out List_Type;
+  procedure Permute (List         : in out List_Type;
                      Number1      : in Long_Longs.Ll_Natural;
                      Number2      : in Long_Longs.Ll_Natural;
                      Where        : in Direction := Next;
@@ -616,7 +620,7 @@ package body Long_Long_Limited_List is
   -- Returns the number of elements in the list (0 if empty)
   function List_Length (List : List_Type) return Long_Longs.Ll_Natural is
   begin
-    return (if Is_Empty(List) then 0 else List.Pos_First + List.Pos_Last - 1);
+    return (if Is_Empty (List) then 0 else List.Pos_First + List.Pos_Last - 1);
   end List_Length;
 
 
@@ -625,10 +629,10 @@ package body Long_Long_Limited_List is
                          From : Reference := From_First)
            return Long_Longs.Ll_Positive is
   begin
-    Check(List);
+    Check (List);
     return (case From is
               when From_First => List.Pos_First,
-             when From_Last => List.Pos_Last);
+              when From_Last => List.Pos_Last);
   end Get_Position;
 
 
@@ -647,7 +651,7 @@ package body Long_Long_Limited_List is
   -- Copy the Val list to To list
   procedure Unchecked_Assign (To : in out List_Type; Val : in List_Type) is
   begin
-    Delete_List(To);
+    Delete_List (To);
     To.Assigned := True;
     To.Modified := True;
     To.In_Cb := False;
@@ -671,7 +675,7 @@ package body Long_Long_Limited_List is
       return;
     end if;
     Unchecked_Assign (Lval, Val);
-    Rewind (Lval, True, Where);
+    Rewind (Lval, Where);
     loop
       -- Copy Elt
       Read (Lval, Elt, Where, Moved);
@@ -706,7 +710,7 @@ package body Long_Long_Limited_List is
     New_Pos_First : Long_Longs.Ll_Natural;
     Found : Boolean;
   begin
-    Check_Cb(List);
+    Check_Cb (List);
     -- Forbid calls from application
     List.In_Cb := True;
     -- Search from first
@@ -774,7 +778,7 @@ package body Long_Long_Limited_List is
     end Prev_Pos;
 
   begin
-    Check_Cb(List);
+    Check_Cb (List);
     -- Default
     Found := False;
     if Is_Empty (List) then
@@ -898,7 +902,7 @@ package body Long_Long_Limited_List is
     Found : Boolean;
     Go_On : Boolean;
   begin
-    Check_Cb(List);
+    Check_Cb (List);
     if List.Is_Empty then
       return;
     end if;
@@ -946,7 +950,7 @@ package body Long_Long_Limited_List is
   procedure Sort (List : in out List_Type) is
     Last : constant Long_Longs.Ll_Natural := List_Length (List);
   begin
-    Check_Cb(List);
+    Check_Cb (List);
     if Last <= 1 then
       -- No or 1 element. No sort.
       return;
@@ -1018,7 +1022,7 @@ package body Long_Long_Limited_List is
       Quick (1, Last);
     end;
     -- Move to first item
-    Rewind (List, True, Next);
+    Rewind (List, Next);
     List.Modified := True;
   exception
     when others => raise Sort_Error;

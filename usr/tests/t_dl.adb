@@ -72,7 +72,7 @@ begin
 
   -- Read 5 elements from list in reverse
   Basic_Proc.Put_Output("Reads 5 elements from the last one: ");
-  List.Rewind(True, My_List.Prev);
+  List.Rewind(My_List.Prev);
   for I in 1 .. 5 loop
     List.Read(Item, My_List.Prev);
     Put(Item);

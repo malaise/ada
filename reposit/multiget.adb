@@ -69,7 +69,7 @@ package body Multiget is
           Getter.Item_List.Rewind;
           Getter.Item_List.Delete;
           -- Be ready to append
-          Getter.Item_List.Rewind (True, Item_List_Mng.Prev);
+          Getter.Item_List.Rewind (Item_List_Mng.Prev);
         end if;
         -- Append new got item
         Getter.Item_List.Insert (Item);

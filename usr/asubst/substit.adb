@@ -286,7 +286,7 @@ package body Substit is
     use type As.U.Asu_Us;
   begin
     -- Move to end
-    Line_List.Rewind (False, Line_List_Mng.Prev);
+    Line_List.Rewind (Line_List_Mng.Prev, False);
     -- Compute amount to fill buffer (Nb lines)
     Nb_To_Read := Nb_Pattern - Line_List.List_Length;
     -- Append trailing new line if any
@@ -858,7 +858,7 @@ package body Substit is
       -- Get access to first and last lines of input
       Line_List.Rewind;
       First_Line := Line_List.Access_Current;
-      Line_List.Rewind (True, Line_List_Mng.Prev);
+      Line_List.Rewind (Line_List_Mng.Prev);
       Last_Line := Line_List.Access_Current;
       -- Result string is -> Start of first line + Replacing
       --                   + End of last line (if not overlap)

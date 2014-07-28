@@ -148,7 +148,7 @@ package body Storage is
         end if;
       else
         -- No following pattern, append to list
-        Term_List.Rewind (True, Term_List_Mng.Prev);
+        Term_List.Rewind (Term_List_Mng.Prev);
         In_Prev := True;
       end if;
     end if;
@@ -179,7 +179,7 @@ package body Storage is
   -- Get terms one by one
   procedure Rewind (Rule : Rule_No) is
   begin
-    Term_List.Rewind (False);
+    Term_List.Rewind (Check_Empty => False);
     The_End := Term_List.Is_Empty;
     The_Rule := Rule;
   end Rewind;

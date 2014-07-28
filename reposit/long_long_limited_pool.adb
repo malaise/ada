@@ -15,7 +15,7 @@ package body Long_Long_Limited_Pool is
   -- Add in beginning of list
   procedure Push (Pool : in out Pool_Type; Data : in Data_Type) is
   begin
-    Pool.Insert(Data, Pool_List_Mng.Prev);
+    Pool.Insert (Data, Pool_List_Mng.Prev);
   exception
     when Pool_List_Mng.Full_List =>
       raise Pool_Full;
@@ -29,9 +29,9 @@ package body Long_Long_Limited_Pool is
     end if;
     if not Lifo then
       -- Fifo means pop last (and go to previous) then rewind to first
-      Pool.Rewind (True, Pool_List_Mng.Prev);
+      Pool.Rewind (Pool_List_Mng.Prev);
       Pool.Get (Data, Pool_List_Mng.Prev);
-      Pool.Rewind (False);
+      Pool.Rewind (Check_Empty => False);
     else
       -- Lifo means pop first and move to next
       Pool.Get(Data);
@@ -52,9 +52,9 @@ package body Long_Long_Limited_Pool is
     end if;
     if not Lifo then
       -- Fifo means pop last (and go to previous) then rewind to first
-      Pool.Rewind (True, Pool_List_Mng.Prev);
+      Pool.Rewind (Pool_List_Mng.Prev);
       Pool.Delete (Pool_List_Mng.Prev);
-      Pool.Rewind (False);
+      Pool.Rewind (Check_Empty => False);
     else
       -- Lifo means pop first and move to next
       Pool.Delete;
@@ -69,9 +69,9 @@ package body Long_Long_Limited_Pool is
     end if;
     if not Lifo then
       -- Fifo means read last then rewind to first
-      Pool.Rewind (True, Pool_List_Mng.Prev);
+      Pool.Rewind (Pool_List_Mng.Prev);
       Pool.Read (Data, Pool_List_Mng.Current);
-      Pool.Rewind (True);
+      Pool.Rewind;
     else
       -- Lifo means read first
       Pool.Read (Data, Pool_List_Mng.Current);

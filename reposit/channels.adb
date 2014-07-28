@@ -275,7 +275,7 @@ package body Channels is
           return False;
       end;
       -- Append, Call callback
-      Channel_Dscr.Replies.Rewind (False, Reply_List_Mng.Prev);
+      Channel_Dscr.Replies.Rewind (Reply_List_Mng.Prev, False);
       Channel_Dscr.Replies.Insert (Dscr);
       Read_Cb (Msg.Data, Len - (Msg.Diff'Size / Byte_Size), Msg.Diff);
       Channel_Dscr.Replies.Delete (Reply_List_Mng.Prev);

@@ -42,7 +42,7 @@ package body Pers_Fil is
     -- Close file
     Person_Io.Close (Person_File);
     -- Move to begining of list
-    The_Persons.Rewind (False);
+    The_Persons.Rewind (Check_Empty => False);
 
   exception
     when Pers_Def.Person_List_Mng.Full_List =>

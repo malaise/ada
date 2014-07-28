@@ -260,7 +260,7 @@ package body Git_If is
             Files.Insert (File_Entry);
           else
             -- Skip and be ready to append next entry
-            Files.Rewind (False, File_Mng.Dyn_List.Prev);
+            Files.Rewind (File_Mng.Dyn_List.Prev, False);
           end if;
         end if;
         exit when not Moved;
@@ -296,7 +296,7 @@ package body Git_If is
     -- Add directories except "." and ".."
     Dir_Mng.List_Dir (Dir_List, "", "");
     if not Dir_List.Is_Empty then
-      Files.Rewind (False);
+      Files.Rewind (Check_Empty => False);
       Dir_List.Rewind;
       loop
         Dir_List.Read (Dir_Entry, Moved => Moved);
@@ -317,7 +317,7 @@ package body Git_If is
     File_Sort (Files);
 
     -- Finally insert "." then ".." at head
-    Files.Rewind (False);
+    Files.Rewind (Check_Empty => False);
     File_Entry.S2 := ' ';
     File_Entry.S3 := ' ';
     File_Entry.Kind := '/';

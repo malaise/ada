@@ -12,6 +12,7 @@ package Limited_List is
   type List_Type is tagged limited private;
 
   -- For Read and Modify to set new position
+  -- Next, Prev, Current
   type Movement is new My_List.Movement;
 
   -- For Insert, Get and Delete, to set new position
@@ -19,6 +20,7 @@ package Limited_List is
   subtype Direction is Movement range Next .. Prev;
 
   -- For Get_Position
+  -- From_First, From_Last
   type Reference is new My_List.Reference;
 
 
@@ -30,7 +32,8 @@ package Limited_List is
 
   -- Check if one move in the given direction is possible
   function Check_Move (List : in List_Type;
-                       Where : Direction := Next) return Boolean;
+                       Where : Direction := Next;
+                       Check_Empty : in Boolean := True) return Boolean;
 
 
   -- Read the current item then moves to another item
@@ -147,8 +150,8 @@ package Limited_List is
   -- Move to beginning/end of list: Move_To (List, Where, 0, False);
   -- Does not raise Empty_list if Check_Empty is False;
   procedure Rewind (List        : in out List_Type;
-                    Check_Empty : in Boolean := True;
-                    Where       : in Direction := Next);
+                    Where       : in Direction := Next;
+                    Check_Empty : in Boolean := True);
 
   -- Permute 2 elements
   --  If From_Current is True,  then numbers of elements are relative from

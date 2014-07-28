@@ -33,7 +33,7 @@ package body Cmd is
       exit when not Moved;
     end loop;
     -- Rewind to end
-    List.Rewind (True, Res_Mng.Dyn_List.Prev);
+    List.Rewind (Res_Mng.Dyn_List.Prev);
   end Normalize;
 
   -- subtype Line_Type is Asu_Us;

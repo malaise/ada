@@ -3,9 +3,10 @@ package body Limited_List is
 
   -- Check if one move in the given direction is possible
   function Check_Move (List : in List_Type;
-                       Where : Direction := Next) return Boolean is
+                       Where : Direction := Next;
+                       Check_Empty : in Boolean := True) return Boolean is
   begin
-    return List.List.Check_Move (My_List.Direction (Where));
+    return List.List.Check_Move (My_List.Direction (Where), Check_Empty);
   end Check_Move;
 
   -- Read the current item then moves to another item
@@ -170,10 +171,10 @@ package body Limited_List is
   -- Move to beginning/end of list: Move_To (List, Where, 0, False);
   -- Does not raise Empty_list if Check_Empty is False;
   procedure Rewind (List        : in out List_Type;
-                    Check_Empty : in Boolean := True;
-                    Where       : in Direction := Next) is
+                    Where       : in Direction := Next;
+                    Check_Empty : in Boolean := True) is
   begin
-    List.List.Rewind (Check_Empty, My_List.Direction (Where));
+    List.List.Rewind (My_List.Direction (Where), Check_Empty);
   end Rewind;
 
   -- Permute 2 elements

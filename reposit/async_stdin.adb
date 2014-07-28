@@ -120,7 +120,7 @@ package body Async_Stdin is
           Clear;
           return;
         end if;
-        List.Rewind (True, List_Mng.Prev);
+        List.Rewind (List_Mng.Prev);
         Copy_Current;
       end Last;
 
@@ -189,7 +189,7 @@ package body Async_Stdin is
         end if;
         -- Append at the end of list
         Copy_Buf (R);
-        List.Rewind (False, List_Mng.Prev);
+        List.Rewind (List_Mng.Prev, False);
         List.Insert (R);
       end Add;
 

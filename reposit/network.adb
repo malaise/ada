@@ -64,13 +64,13 @@ package body Network is
     --  connection access is not set yet
     Connection_Info.Node := To_Node'Unchecked_Access;
     Connection_Info.Data := Of_Conn_Data;
-    Of_Node.Connections.Rewind (False, Connection_Mng.Prev);
+    Of_Node.Connections.Rewind (Connection_Mng.Prev, False);
     Of_Node.Connections.Insert (Connection_Info);
     -- Append Of_Node to connections of To_Node
     Connection_Info.Node := Of_Node'Unchecked_Access;
     Connection_Info.Data := To_Conn_Data;
     Connection_Info.Connection := Of_Node.Connections.Access_Current;
-    To_Node.Connections.Rewind (False, Connection_Mng.Prev);
+    To_Node.Connections.Rewind (Connection_Mng.Prev, False);
     To_Node.Connections.Insert (Connection_Info);
     -- Update connection access in Of_Node
     Of_Node.Connections.Access_Current.Connection :=

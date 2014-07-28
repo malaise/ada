@@ -20,7 +20,7 @@ package body Words is
     end if;
     if Index = 0 or else Index =  Words_List.List_Length then
       -- Delete last word
-      Words_List.Rewind (True, Words_List_Mng.Prev);
+      Words_List.Rewind (Words_List_Mng.Prev);
       Words_List.Delete (Words_List_Mng.Prev);
     elsif Index > Words_List.List_Length then
       return;
@@ -117,7 +117,7 @@ package body Words is
   procedure Add (Word : in Word_Rec) is
   begin
     -- Append word
-    Words_List.Rewind (False, Words_List_Mng.Prev);
+    Words_List.Rewind (Words_List_Mng.Prev, False);
     Words_List.Insert (Word);
   end Add;
 

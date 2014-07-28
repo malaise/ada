@@ -69,7 +69,7 @@ package body Players is
   -- Returns a not Valid movement when end of list
   procedure Rewind_Actions (Color : in Space.Color_List) is
   begin
-    Actions(Color).Rewind (False);
+    Actions(Color).Rewind (Check_Empty => False);
     At_End (Color) := False;
   end Rewind_Actions;
 

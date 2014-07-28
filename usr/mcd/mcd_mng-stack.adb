@@ -124,7 +124,7 @@ package body Stack is
     Item := Litem;
     Debug.Log (Debug.Stack, Item);
     -- Move back to last pushed item
-    Extra_List.Rewind (False, Stack_List.Prev);
+    Extra_List.Rewind (Stack_List.Prev, False);
     Debug.Log (Debug.Stack, Item);
   exception
     when Stack_List.Empty_List =>
@@ -145,7 +145,7 @@ package body Stack is
     Extra_List.Insert (Item, Stack_List.Prev);
 
     -- Move back to last pushed item
-    Extra_List.Rewind (True, Stack_List.Prev);
+    Extra_List.Rewind (Stack_List.Prev);
   end Pushfe;
 
   -- Dump last items popped or read

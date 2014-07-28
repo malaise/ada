@@ -10,7 +10,7 @@ package body Arbitrary.Factors is
   -- Rewind a list
   procedure Rewind (L : in out Nb_List_Mng.List_Type) is
   begin
-    L.Rewind (False);
+    L.Rewind (Check_Empty => False);
   end Rewind;
 
   -- Delete current

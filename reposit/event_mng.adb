@@ -66,7 +66,7 @@ package body Event_Mng is
     end if;
 
     -- Append
-    Cb_List.Rewind (False, Cb_Mng.Prev);
+    Cb_List.Rewind (Cb_Mng.Prev, False);
     Cb_List.Insert ((Fd, Read, Callback));
     -- Add fd to select
     Res := C_Add_Fd (Integer(Fd), C_Types.Bool(Read)) = Ok;

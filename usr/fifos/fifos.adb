@@ -91,7 +91,7 @@ package body Fifos is
       -- Move to first fifo in list
       procedure Rewind is
       begin
-        Fifo_List.Rewind (False);
+        Fifo_List.Rewind (Check_Empty => False);
       end Rewind;
 
       -- Is list empty?

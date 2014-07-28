@@ -161,7 +161,7 @@ package body Virtual_Time is
   procedure Add_Observer (A_Clock : in out Clock;
                           An_Observer :  access Observer'Class) is
   begin
-    A_Clock.Observers.Rewind (False, List_Mng.Prev);
+    A_Clock.Observers.Rewind (List_Mng.Prev, False);
     A_Clock.Observers.Insert (Observer_Access(An_Observer));
   end Add_Observer;
 

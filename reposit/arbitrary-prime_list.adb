@@ -8,7 +8,7 @@ package body Arbitrary.Prime_List is
   -- Rewind the list of prime numbers found so far
   procedure Rewind is
   begin
-    The_List.Rewind (False);
+    The_List.Rewind (Check_Empty => False);
   end Rewind;
 
   -- Read item from list
@@ -24,7 +24,7 @@ package body Arbitrary.Prime_List is
   -- Append a prime number to list
   procedure Append (N : in Positive_Number) is
   begin
-    The_List.Rewind (False, Prime_List_Mng.Prev);
+    The_List.Rewind (Prime_List_Mng.Prev, False);
     The_List.Insert (N);
   end Append;
 

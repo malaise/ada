@@ -40,7 +40,7 @@ package body Connection is
   function Receive return Players.Action_Rec is
     Action : Players.Action_Rec;
   begin
-    Action_List.Rewind (True, Action_List_Mng.Prev);
+    Action_List.Rewind (Action_List_Mng.Prev);
     Action_List.Get (Action, Action_List_Mng.Prev);
     return Action;
   exception
@@ -246,7 +246,7 @@ package body Connection is
         end if;
 
         -- Insert action
-        Action_List.Rewind (False);
+        Action_List.Rewind (Check_Empty => False);
         Action_List.Insert (Message.Action, Action_List_Mng.Prev);
         We_Have_Moved := True;
 

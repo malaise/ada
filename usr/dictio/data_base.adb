@@ -44,7 +44,7 @@ package body Data_Base is
 
     procedure Append_Itm is
     begin
-      Item_List.Rewind (False, Item_List_Mng.Prev);
+      Item_List.Rewind (Item_List_Mng.Prev, False);
       Item_List.Insert (Itm);
     end Append_Itm;
 

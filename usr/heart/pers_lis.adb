@@ -18,7 +18,7 @@ package body Pers_Lis is
         Pers_Def.The_Persons.Move_To;
       end loop;
       -- End of list
-      Afpx.Line_List.Rewind (True, Afpx.Line_List_Mng.Prev);
+      Afpx.Line_List.Rewind (Afpx.Line_List_Mng.Prev);
     end if;
   end Build_List;
 

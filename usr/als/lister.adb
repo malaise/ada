@@ -240,7 +240,7 @@ package body Lister is
     use type Directory.File_Kind_List, Ada.Calendar.Time;
   begin
     -- Prepare list for appending
-    Ent_List.Rewind (False, Entities.Entity_List_Mng.Prev);
+    Ent_List.Rewind (Entities.Entity_List_Mng.Prev, False);
 
     -- Read file stat
     begin
@@ -292,7 +292,7 @@ package body Lister is
              Ada.Calendar.Time;
   begin
     -- Prepare list for appending
-    Ent_List.Rewind (False, Entities.Entity_List_Mng.Prev);
+    Ent_List.Rewind (Entities.Entity_List_Mng.Prev, False);
     -- Init Ent with path
     Ent.Path := As.U.Tus (Dir);
     -- Open

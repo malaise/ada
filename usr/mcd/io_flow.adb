@@ -398,7 +398,7 @@ package body Io_Flow is
       -- Validate the overall string and append it to list
       Input_Data := Tmp_Data;
       Tmp_Data.Set_Null;
-      Messages.Rewind (False, As.U.Utils.Asu_Dyn_List_Mng.Next);
+      Messages.Rewind (As.U.Utils.Asu_Dyn_List_Mng.Next, False);
       Messages.Insert (Input_Data);
       Debug.Log (Debug.Flow, " Bus reception of >" & Input_Data.Image & "<");
     end if;
