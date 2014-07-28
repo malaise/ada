@@ -525,7 +525,7 @@ package body Af_Ptg is
       return Sel_No_Change;
     end if;
     for I  in 1 .. Sel_Txt.Length loop
-      if Sel_Txt.Element (I) = Aski.Lf_Char then
+      if Sel_Txt.Element (I) = Aski.Lf then
         Sel_Txt.Replace_Element (I, ' ');
       end if;
     end loop;

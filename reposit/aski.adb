@@ -18,7 +18,7 @@ package body Aski is
 
   function Is_Strict (U : Unicode_Number)   return Boolean is
   begin
-    return U < Delu;
+    return U < Del_U;
   end Is_Strict;
 
   function Is_Strict (S : Unicode_Sequence) return Boolean is
