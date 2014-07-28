@@ -4,7 +4,8 @@ package body Directory is
 
   subtype Dir_Str is String (1 .. 256);
 
-  Separator : constant Character := '/';
+  Sep_Char : constant Character := '/';
+  Sep_Str  : constant String := Sep_Char & "";
 
   -- For Name_Error else Access_Error
   Enoent  : constant := 2;
@@ -265,7 +266,7 @@ package body Directory is
     loop
       -- Current is a link, read it,
       Dest := As.U.Tus (Read_One_Link(Src.Image));
-      if Dest.Length >= 1 and then Dest.Element (1) /= Separator then
+      if Dest.Length >= 1 and then Dest.Element (1) /= Sep_Char then
         -- Link is relative, append path of source
         Dest := As.U.Tus (Dirname (Src.Image)) & Dest;
       end if;
@@ -333,8 +334,6 @@ package body Directory is
   function Normalize_Path (Path : String) return String is
     Res : As.U.Asu_Us;
     Start, First, Second, Init : Natural;
-    Sep_Char : constant Character := '/';
-    Sep_Str : constant String := Sep_Char & "";
   begin
     -- Append a "/" if ending by "/." or "/.."
     Res := As.U.Tus (Path);
@@ -416,13 +415,12 @@ package body Directory is
   end Make_Full_Path;
 
   -- File name manipulation
-  Sep :  constant String := "" & Separator;
   Dot :  constant String := ".";
   -- Get dir name (path) from a complete file name (up to the last / included)
   function Dirname (File_Name : String) return String is
     I : Natural;
   begin
-    I := Str_Util.Locate (File_Name, Sep, Forward => False);
+    I := Str_Util.Locate (File_Name, Sep_Str, Forward => False);
     -- No / in file name => dir name is empty
     return (if I = 0 then "" else File_Name(File_Name'First .. I));
   end Dirname;
@@ -433,7 +431,7 @@ package body Directory is
     I : Natural;
     Last : constant Natural := File_Name'Last;
   begin
-    I := Str_Util.Locate (File_Name, Sep, Forward => False);
+    I := Str_Util.Locate (File_Name, Sep_Str, Forward => False);
     return (if I = 0 then
               -- No / in file name => no dir name
               File_Name
@@ -480,8 +478,8 @@ package body Directory is
     end Build_Name;
   begin
     return (if Dirname = "" then Build_Name
-            elsif Dirname(Dirname'Last) = Separator then Dirname & Build_Name
-            else Dirname & Sep & Build_Name);
+            elsif Dirname(Dirname'Last) = Sep_Char then Dirname & Build_Name
+            else Dirname & Sep_Str & Build_Name);
   end Build_File_Name;
 
 end Directory;
