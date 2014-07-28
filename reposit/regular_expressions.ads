@@ -126,7 +126,7 @@ private
 
   type Compiled_Pattern is limited
                 new Ada.Finalization.Limited_Controlled with record
-    Lang : Language.Language_List := Language.Get_Env;
+    Lang : Language.Language_Selection_List := Language.Get_Env;
     Comp_Addr : System.Address := System.Null_Address;
     Error : Integer := 0;
   end record;

@@ -2,19 +2,20 @@ with Unicode, Utf_8;
 package Language is
 
   -- When Get_Env, Lang_Utf_8 is set if a Getenv on "LANG" gives a value
-  --  containing "UTF-8", otherwise it is Lang_C that is set. Get_Env  is
-  --  the default behaviour of Get_Language if Set_Language has not been called.
+  --  containing "UTF-8" (any casing), otherwise it is Lang_C that is set.
+  -- Get_Env is the default behaviour of Get_Language if Set_Language has not
+  --  been called.
   -- Once set or got, the language should not be changed because several text
   --  processing utilities depend on it, so any attempt to set language twice
   --  will raise Language_Already_Set
   -- Use Force_Language to bypass this check at your own risks.
-  type Language_List is (Lang_C, Lang_Utf_8, Get_Env);
+  type Language_Selection_List is (Lang_C, Lang_Utf_8, Get_Env);
   Language_Already_Set : exception;
-  procedure Set_Language (Language : in Language_List);
-  procedure Force_Language (Language : in Language_List);
+  procedure Set_Language (Language : in Language_Selection_List);
+  procedure Force_Language (Language : in Language_Selection_List);
 
-  subtype Language_Set_List is Language_List range Lang_C .. Lang_Utf_8;
-  function Get_Language return Language_Set_List;
+  subtype Language_List is Language_Selection_List range Lang_C .. Lang_Utf_8;
+  function Get_Language return Language_List;
 
 
   -- Independant from language:
@@ -45,7 +46,6 @@ package Language is
   function Copy (S : String) return Unicode_Sequence;
   function Copy (U : Unicode_Sequence) return Wide_String;
   function Copy (W : Wide_String) return Unicode_Sequence;
-
 
   -- Dependant from language:
   ---------------------------

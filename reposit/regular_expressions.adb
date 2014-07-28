@@ -105,7 +105,7 @@ package body Regular_Expressions is
                      Dot_All : in Boolean := False) is
     Str4C : constant String := String4C (Str);
     Cflags : Integer := 0;
-    use type System.Address, Language.Language_Set_List;
+    use type System.Address, Language.Language_List;
     use Bit_Ops;
   begin
     Check_Pcre_Version;
@@ -207,7 +207,7 @@ package body Regular_Expressions is
     First : constant Integer := To_Check'First;
     J : Positive;
     use type System.Address;
-    use type Language.Language_Set_List;
+    use type Language.Language_List;
     use Bit_Ops;
   begin
     -- Init results

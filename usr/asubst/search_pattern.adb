@@ -595,7 +595,7 @@ package body Search_Pattern is
                    Case_Sensitive, Is_Regex, Dot_All : in Boolean) is
     Upat : Line_Pat_Rec;
     Search_Access, Exclude_Access : Line_Pat_Acc;
-    use type Language.Language_Set_List;
+    use type Language.Language_List;
   begin
     -- Init global variables and 'constants'
     Search_Pattern.Is_Regex := Is_Regex;

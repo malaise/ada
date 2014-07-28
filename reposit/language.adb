@@ -8,7 +8,7 @@ package body Language is
 
   -- Language management
   Lang_Set : Boolean := False;
-  Lang : Language_Set_List;
+  Lang : Language_List;
 
   -- Guess Lang from Environ
   procedure Getenv_Lang is
@@ -24,7 +24,7 @@ package body Language is
       Lang_Set := True;
   end Getenv_Lang;
 
-  procedure Set_Language (Language : in Language_List) is
+  procedure Set_Language (Language : in Language_Selection_List) is
   begin
     -- Reject changing Lang if already set or got
     if Lang_Set then
@@ -34,7 +34,7 @@ package body Language is
     end if;
   end Set_Language;
 
-  procedure Force_Language (Language : in Language_List) is
+  procedure Force_Language (Language : in Language_Selection_List) is
   begin
     if Language = Get_Env then
       Getenv_Lang;
@@ -44,7 +44,7 @@ package body Language is
     end if;
   end Force_Language;
 
-  function Get_Language return Language_Set_List is
+  function Get_Language return Language_List is
   begin
     if not Lang_Set then
       Getenv_Lang;

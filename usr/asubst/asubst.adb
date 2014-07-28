@@ -242,11 +242,10 @@ procedure Asubst is
   -- Nb subst per file
   Nb_Subst : Substit.Subst_Natural;
   -- Language
-  Lang : Language.Language_List
-       := Language.Get_Env;
+  Lang : Language.Language_Selection_List := Language.Get_Env;
   -- Stdin and Stdout
   Std_In_Out : constant String := "-";
-  use type Language.Language_List;
+  use type Language.Language_Selection_List;
 
   -- Check that there are not several (conflictual) verbosity levels
   function Check_Verbose return Boolean is
