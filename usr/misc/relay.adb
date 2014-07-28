@@ -3,8 +3,7 @@
 -- The channel destinations file is <channel>.chn
 
 with System;
-with Ada.Characters.Latin_1;
-with As.U, Argument, Sys_Calls, Event_Mng, Socket, Channels, Async_Stdin,
+with Aski, As.U, Argument, Sys_Calls, Event_Mng, Socket, Channels, Async_Stdin,
      Str_Util, Basic_Proc;
 procedure Relay is
 
@@ -64,7 +63,7 @@ procedure Relay is
     -- Get string len
     Len := Length - Len_Offset;
     -- Replace Cr by a New_Line
-    if Len = 1 and then Message.Data(1) = Ada.Characters.Latin_1.Cr then
+    if Len = 1 and then Message.Data(1) = Aski.Cr then
       Len := 0;
     end if;
     -- Put
@@ -87,18 +86,18 @@ procedure Relay is
       Done := True;
       return True;
     end if;
-    if Len >= 1 and then Str(Last) = Ada.Characters.Latin_1.Eot then
+    if Len >= 1 and then Str(Last) = Aski.Eot then
       Len := Len - 1;
       Last := Last - 1;
       Done := True;
     end if;
-    if Len > 1 and then (Str(Last) = Ada.Characters.Latin_1.Lf
-                 or else Str(Last) = Ada.Characters.Latin_1.Cr) then
+    if Len > 1 and then (Str(Last) = Aski.Lf
+                 or else Str(Last) = Aski.Cr) then
       Len := Len - 1;
       Last := Last - 1;
     end if;
-    if Len = 1 and then Str(Last) = Ada.Characters.Latin_1.Lf then
-      Message.Data(Message.Data'First) := Ada.Characters.Latin_1.Cr;
+    if Len = 1 and then Str(Last) = Aski.Lf then
+      Message.Data(Message.Data'First) := Aski.Cr;
     else
       Str_Util.Copy (Str (Str'First .. Last), Message.Data);
     end if;
@@ -115,7 +114,7 @@ procedure Relay is
   begin
     Basic_Proc.Get_Line (Message.Data, Len);
     if Len = 0 then
-      Message.Data(1) := Ada.Characters.Latin_1.Cr;
+      Message.Data(1) := Aski.Cr;
       Len := 1;
     end if;
     Message.Id := My_Host_Id;

@@ -1,6 +1,6 @@
 -- Test timed queue
-with Ada.Calendar, Ada.Characters.Latin_1;
-with Argument, Queues.Timed, Basic_Proc, Gets, Lower_Char;
+with Ada.Calendar;
+with Aski, Argument, Queues.Timed, Basic_Proc, Gets, Lower_Char;
 procedure T_Timeq is
 
   procedure Usage is
@@ -107,7 +107,7 @@ begin
     Basic_Proc.Put_Output ("Ivd | P | Rv | E | C | X | A ? ");
     Basic_Proc.Get_Line (Str, Len);
     if Len = 0 then
-      C := Ada.Characters.Latin_1.Nul;
+      C := Aski.Nul;
     else
       C := Lower_Char (Str(1));
     end if;
@@ -155,7 +155,7 @@ begin
       when 'a' =>
         -- Run autotest
         Autotest;
-      when Ada.Characters.Latin_1.Nul =>
+      when Aski.Nul =>
         null;
       when others =>
         Usage;

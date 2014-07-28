@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with Con_Io, Afpx, Normal, Language;
+with Con_Io, Afpx, Normal, Language, Str_Util;
 with Point_Str, Afpx_Xref;
 package body Dialog is
 
@@ -21,7 +20,7 @@ package body Dialog is
   begin
     L := 0;
     for I in reverse Str'Range loop
-      if Str(I) /= ' ' and then Str(I) /= Ada.Characters.Latin_1.Ht then
+      if not Str_Util.Is_Separator (Str(I)) then
         -- Significant char
         if L = 0 then
           L := I;

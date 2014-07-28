@@ -1,5 +1,5 @@
-with Ada.Characters.Latin_1, Ada.Calendar;
-with Trace.Loggers, Environ, Str_Util, Parser,
+with Ada.Calendar;
+with Aski, Trace.Loggers, Environ, Str_Util, Parser,
      Event_Mng, Timers, Ip_Addr, Socket, Tcp_Util, Mutex_Manager;
 package body Http is
 
@@ -36,8 +36,8 @@ package body Http is
   Buffer : As.U.Asu_Us;
 
   -- Line terminators
-  Lf : constant String := Ada.Characters.Latin_1.Lf & "";
-  Cr : constant String := Ada.Characters.Latin_1.Cr & "";
+  Lf : String renames Aski.Lf_S;
+  Cr : String renames Aski.Cr_S;
   Crlf : constant String := Cr & Lf;
 
   -- The timeout for sending request

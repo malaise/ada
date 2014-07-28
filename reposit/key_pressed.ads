@@ -1,7 +1,7 @@
 -- Simple package to passively test if / wait until a key has been pressed
 -- No echo of input
 -- Not compatible with blocking inputs on stdin, of course.
-with Ada.Characters.Latin_1;
+with Aski;
 package Key_Pressed is
 
   -- Error on Open, Close and Key_Pressed
@@ -21,8 +21,8 @@ package Key_Pressed is
   --   If open non blocking then return No_Key,
   --   Otherwise wait until a key is pressed
   -- Return Error_Key on error
-  No_Key     : constant Character := Ada.Characters.Latin_1.Nul;
-  Error_Key  : constant Character := Ada.Characters.Latin_1.Eot;
+  No_Key     : Character renames Aski.Nul;
+  Error_Key  : Character renames Aski.Eot;
   function Get_Key return Character;
 
   -- If open non blocking then check if a key has been pressed,

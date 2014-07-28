@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with Many_Strings, Proc_Family;
+with Str_Util, Many_Strings, Proc_Family;
 package body Utils is
 
   -- If Str fits Width then return Str, padded by spaces if not Align_Left
@@ -30,7 +29,7 @@ package body Utils is
   function Last_Index (Str : String) return Natural is
   begin
     for I in reverse Str'Range loop
-      if Str(I) /= ' ' and then Str(I) /= Ada.Characters.Latin_1.Ht then
+      if not Str_Util.Is_Separator (Str(I)) then
         -- Significant char
         return I;
       end if;

@@ -5,9 +5,7 @@
 -- -s : accepts connections for data to relay
 -- -C or -S for remanent (otherwise exit on fifo disconnection or end of input)
 -- Each data is send to client which sent last data received
-with Ada.Characters.Latin_1;
-
-with Basic_Proc, Argument, Async_Stdin, Mixed_Str, Event_Mng;
+with Aski, Basic_Proc, Argument, Async_Stdin, Mixed_Str, Event_Mng;
 with Fifos;
 procedure Pipe is
 
@@ -124,7 +122,7 @@ procedure Pipe is
         Async_Stdin.Set_Async;
       end if;
       return True;
-    elsif Str(Str'Last) = Ada.Characters.Latin_1.Eot then
+    elsif Str(Str'Last) = Aski.Eot then
       -- End of transmission
       Send (Str(Str'First .. Len-1));
       if not Remanent then
@@ -134,7 +132,7 @@ procedure Pipe is
       end if;
     else
       Send (Str(Str'First .. Len));
-      if Str(Str'Last) /= Ada.Characters.Latin_1.Lf then
+      if Str(Str'Last) /= Aski.Lf then
         Async_Stdin.New_Line_Out;
       end if;
     end if;

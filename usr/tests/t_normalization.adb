@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with Normalization, Gets, Async_Stdin, Basic_Proc, Argument, As.U,
+with Aski, Normalization, Gets, Async_Stdin, Basic_Proc, Argument, As.U,
      Unbounded_Arrays, Command, Many_Strings;
 procedure T_Normalization is
   F : Float;
@@ -58,7 +57,7 @@ procedure T_Normalization is
     -- Raw mode appends a line feed, remove them
     Strlen := Flow.Str.Length;
     if Strlen >= 1
-    and then Flow.Str.Element (Strlen) = Ada.Characters.Latin_1.Lf then
+    and then Flow.Str.Element (Strlen) = Aski.Lf then
       Flow.Str.Delete (Strlen, Strlen);
     end if;
     Strlen := Flow.Str.Length;

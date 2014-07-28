@@ -1,6 +1,5 @@
-with Ada.Characters.Latin_1;
 with As.U.Utils, Argument, Argument_Parser, Environ, Basic_Proc, Images,
-     Sys_Calls, Command, Many_Strings, Parser, Str_Util;
+     Aski, Sys_Calls, Command, Many_Strings, Parser, Str_Util;
 
 procedure T_Arg_Parser is
 
@@ -87,7 +86,7 @@ procedure T_Arg_Parser is
     -- Raw mode appends [ a space ] and a line feed, remove them
     Len := Flow.Str.Length;
     if Len >= 1
-    and then Flow.Str.Element (Len) = Ada.Characters.Latin_1.Lf then
+    and then Flow.Str.Element (Len) = Aski.Lf then
       Flow.Str.Delete (Len, Len);
     end if;
     Len := Flow.Str.Length;

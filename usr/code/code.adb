@@ -1,6 +1,5 @@
-with Ada.Characters.Latin_1;
-with As.U, As.B, Sys_Calls, Argument, Upper_Str, Normal, My_Math, Text_Line,
-     Basic_Proc;
+with Aski, As.U, As.B, Sys_Calls, Argument, Upper_Str, Normal, My_Math,
+     Text_Line, Basic_Proc;
 with Grid_1, Grid_2, Vigenere;
 
 procedure Code is
@@ -68,7 +67,7 @@ procedure Code is
       Si := Si + 2;
       C := Grid_1.Decode(Rec);
       Buff.Append (C);
-      exit when C = Ada.Characters.Latin_1.Lf;
+      exit when C = Aski.Lf;
     end loop;
   end Decode_1;
 
@@ -158,7 +157,7 @@ begin
     -- Code through code 1
     Sl := 1;
     -- Code key
-    Buff.Set (Key.Image & Ada.Characters.Latin_1.Lf);
+    Buff.Set (Key.Image & Aski.Lf);
     Code_1;
     -- Code input file
     loop

@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with As.U.Utils, Argument, Event_Mng, Sys_Calls, Async_Stdin, Text_Line,
+with Aski, As.U.Utils, Argument, Event_Mng, Sys_Calls, Async_Stdin, Text_Line,
      Socket, Socket_Util, Tcp_Util, Ip_Addr, Autobus;
 with Io_Data, Debug;
 package body Io_Flow is
@@ -342,7 +341,7 @@ package body Io_Flow is
   procedure Put_Line (Str : in String) is
   begin
     -- Send/put Lf (the Unix standard)
-    Put (Str & Ada.Characters.Latin_1.Lf);
+    Put (Str & Aski.Lf);
   end Put_Line;
 
   procedure Close is
@@ -394,8 +393,8 @@ package body Io_Flow is
     end if;
     -- Add this chunk
     Tmp_Data.Append (Message);
-    if      Message(Message'Last) = Ada.Characters.Latin_1.Cr
-    or else Message(Message'Last) = Ada.Characters.Latin_1.Lf then
+    if      Message(Message'Last) = Aski.Cr
+    or else Message(Message'Last) = Aski.Lf then
       -- Validate the overall string and append it to list
       Input_Data := Tmp_Data;
       Tmp_Data.Set_Null;
@@ -474,7 +473,7 @@ package body Io_Flow is
     -- Cancel Tcp connection when receiveing CtrlD
     if Io_Mode = Tcp
     and then Length = 1
-    and then Message(1) = Ada.Characters.Latin_1.Eot then
+    and then Message(1) = Aski.Eot then
       -- Tcp Disconnection: close and accept new
       Debug.Log (Debug.Flow, "Socket_Rece_Cb disconnecting");
       Disconnect_Socket;
@@ -482,8 +481,8 @@ package body Io_Flow is
     end if;
     -- Add this chunk
     Tmp_Data.Append (Message(1 .. Length));
-    if      Message(Length) = Ada.Characters.Latin_1.Cr
-    or else Message(Length) = Ada.Characters.Latin_1.Lf then
+    if      Message(Length) = Aski.Cr
+    or else Message(Length) = Aski.Lf then
       -- Validate the overall string
       Input_Data := Tmp_Data;
       Tmp_Data.Set_Null;

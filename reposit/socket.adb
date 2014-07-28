@@ -1,11 +1,11 @@
-with Ada.Characters.Latin_1, Ada.Unchecked_Conversion;
-with Address_Ops;
+with Ada.Unchecked_Conversion;
+with Aski, Address_Ops;
 package body Socket is
 
   ----------------
   -- INTERFACES --
   ----------------
-  Nul : Character renames Ada.Characters.Latin_1.Nul;
+  Nul : Character renames Aski.Nul;
   Byte_Size : constant := C_Types.Uint8'Size;
 
   subtype Result is C_Types.Int;

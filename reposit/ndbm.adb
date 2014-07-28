@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with Bit_Ops, C_Types;
+with Aski, Bit_Ops, C_Types;
 package body Ndbm is
 
   -- Open flags
@@ -83,7 +82,7 @@ package body Ndbm is
   -- Open --
   ----------
   procedure Open (Db : in out Database; File_Name : in String) is
-    Name_For_C : constant String := File_Name & Ada.Characters.Latin_1.Nul;
+    Name_For_C : constant String := File_Name & Aski.Nul;
     use Bit_Ops;
   begin
     if Is_Open (Db) then

@@ -1,5 +1,6 @@
 with System, Interfaces.C_Streams;
-with Ada.Command_Line, Ada.Characters.Latin_1, C_Types, As.U;
+with Ada.Command_Line;
+with Aski, C_Types, As.U;
 package body Basic_Proc is
 
   procedure Check (I : in Integer) is
@@ -12,7 +13,7 @@ package body Basic_Proc is
   -- Put line on stdout
   procedure Put_Output (Str : in String) is
     I : Interfaces.C_Streams.Int;
-    Str4C : constant String := Str & Ada.Characters.Latin_1.Nul;
+    Str4C : constant String := Str & Aski.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stdout);
@@ -21,7 +22,7 @@ package body Basic_Proc is
 
   procedure Put_Output (Char : in Character) is
     I : Interfaces.C_Streams.Int;
-    Str4C : constant String := Char & Ada.Characters.Latin_1.Nul;
+    Str4C : constant String := Char & Aski.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stdout);
@@ -30,8 +31,7 @@ package body Basic_Proc is
 
   procedure New_Line_Output is
     I : Interfaces.C_Streams.Int;
-    Str4C : constant String := Ada.Characters.Latin_1.Lf
-                             & Ada.Characters.Latin_1.Nul;
+    Str4C : constant String := Aski.Lf & Aski.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stdout);
@@ -54,7 +54,7 @@ package body Basic_Proc is
   -- Put line on stderr
   procedure Put_Error (Str : in String) is
     I : Interfaces.C_Streams.Int;
-    Str4C : constant String := Str & Ada.Characters.Latin_1.Nul;
+    Str4C : constant String := Str & Aski.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stderr);
@@ -63,7 +63,7 @@ package body Basic_Proc is
 
   procedure Put_Error (Char : in Character) is
     I : Interfaces.C_Streams.Int;
-    Str4C : constant String := Char & Ada.Characters.Latin_1.Nul;
+    Str4C : constant String := Char & Aski.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stderr);
@@ -72,8 +72,7 @@ package body Basic_Proc is
 
   procedure New_Line_Error is
     I : Interfaces.C_Streams.Int;
-    Str4C : constant String := Ada.Characters.Latin_1.Lf
-                             & Ada.Characters.Latin_1.Nul;
+    Str4C : constant String := Aski.Lf & Aski.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stderr);
@@ -107,9 +106,9 @@ package body Basic_Proc is
       raise End_Error;
     end if;
     for I in Str'Range loop
-      if Str(I) = Ada.Characters.Latin_1.Lf
-      or else Str(I) = Ada.Characters.Latin_1.Cr
-      or else Str(I) = Ada.Characters.Latin_1.Nul then
+      if Str(I) = Aski.Lf
+      or else Str(I) = Aski.Cr
+      or else Str(I) = Aski.Nul then
         -- Copy up to Cr/Lf/Nul excluded
         Item(Item'First .. Item'First + I - Str'First) := Str(Str'First .. I);
         Last := Item'First + I - 2;
@@ -135,12 +134,12 @@ package body Basic_Proc is
         raise End_Error;
       end if;
       for I in Str'Range loop
-        if Str(I) = Ada.Characters.Latin_1.Lf
-        or else Str(I) = Ada.Characters.Latin_1.Cr
-        or else Str(I) = Ada.Characters.Latin_1.Nul then
+        if Str(I) = Aski.Lf
+        or else Str(I) = Aski.Cr
+        or else Str(I) = Aski.Nul then
           -- Append up to Cr/Lf/Nul excluded
           Result.Append (Str(Str'First .. I - 1));
-          if Str(I) /= Ada.Characters.Latin_1.Nul
+          if Str(I) /= Aski.Nul
           or else I = Str'First then
             return Result.Image;
           end if;
@@ -154,7 +153,7 @@ package body Basic_Proc is
   begin
     loop
       Get (C);
-      exit when C = Ada.Characters.Latin_1.Lf;
+      exit when C = Aski.Lf;
     end loop;
   end Skip_Line;
 

@@ -1,11 +1,10 @@
-with Ada.Characters.Latin_1;
 with Argument, Text_Char, Text_Line, Sys_Calls, Ada_Parser, Mixed_Str;
 procedure T_Ada_Parser is
 
   Ifile : Text_Char.File_Type;
   Ofile : Text_Line.File_Type;
 
-  Line_Feed : constant String := Ada.Characters.Latin_1.Lf & "";
+  Line_Feed : String renames Text_Line.Line_Feed_Str;
 
   procedure Callback (Text : in String;
                       Lexic : in Ada_Parser.Lexical_Kind_List) is

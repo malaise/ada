@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with As.U, Sys_Calls, Argument, Hashed_List.Unique, Str_Util, Text_Line,
+with Aski, As.U, Sys_Calls, Argument, Hashed_List.Unique, Str_Util, Text_Line,
      Hexa_Utils, Language, Images, Unbounded_Arrays;
 with Log;
 package body Search_Pattern is
@@ -366,8 +365,7 @@ package body Search_Pattern is
           The_Pattern.Replace (Stop_Index - 1, Stop_Index, " ");
         when 't' =>
           -- "\t" replaced by (horiz) tab
-          The_Pattern.Replace (Stop_Index - 1, Stop_Index,
-                               Ada.Characters.Latin_1.Ht & "");
+          The_Pattern.Replace (Stop_Index - 1, Stop_Index, Aski.Ht_S);
         when 'x' =>
           -- "\xIJ" hexa replaced by byte
           The_Pattern.Replace (Stop_Index - 1, Stop_Index + 2,

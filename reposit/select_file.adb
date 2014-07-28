@@ -1,4 +1,3 @@
-with Ada.Characters.Latin_1;
 with As.U, Con_Io, Directory, Dir_Mng, Str_Util, Language;
 package body Select_File is
 
@@ -162,7 +161,7 @@ package body Select_File is
     begin
       L := 0;
       for I in reverse Str'Range loop
-        if Str(I) /= ' ' and then Str(I) /= Ada.Characters.Latin_1.Ht then
+        if not Str_Util.Is_Separator (Str(I)) then
           -- Significant char
           if L = 0 then
             L := I;

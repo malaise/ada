@@ -1,5 +1,5 @@
-with Ada.Calendar, Ada.Characters.Latin_1;
-with As.B, Dynamic_List, Directory, Afpx, Select_File, Normal, Text_Line,
+with Ada.Calendar;
+with Aski, As.B, Dynamic_List, Directory, Afpx, Select_File, Normal, Text_Line,
      Environ, Sys_Calls, Images, Language, Perpet, Con_Io;
 with Oper_Def, File_Mng, Oper_Dyn_List_Mng, Screen, Unit_Format, Afpx_Xref;
 
@@ -30,17 +30,17 @@ package body Mng is
   Loading : Boolean;
   procedure Init_Select_File is
   begin
-    Afpx.Clear_Field(Screen.Account_Name_Fld);
+    Afpx.Clear_Field (Screen.Account_Name_Fld);
     if Loading then
-      Afpx.Encode_Field(Afpx_Xref.Selection.Title, (0, 0),
+      Afpx.Encode_Field (Afpx_Xref.Selection.Title, (0, 0),
                         "Loading an account");
     else
-      Afpx.Encode_Field(Afpx_Xref.Selection.Title, (0, 0),
+      Afpx.Encode_Field (Afpx_Xref.Selection.Title, (0, 0),
                         "Saving an account");
     end if;
   end Init_Select_File;
-  package Asf is new Select_File(Afpx_Xref.Selection.Dscr_Num,
-                                 Init_Select_File);
+  package Asf is new Select_File (Afpx_Xref.Selection.Dscr_Num,
+                                  Init_Select_File);
 
   -- Selection list
   type Sel_Rec is record
@@ -55,10 +55,9 @@ package body Mng is
   procedure Set_Current (No : in Oper_Nb_Range) is
   begin
     if No in Oper_Range then
-      Sel_List.Move_At(No);
+      Sel_List.Move_At (No);
     end if;
   end Set_Current;
-
 
   -- Builds the Afpx line from oper
   function Oper_To_Line (No : Oper_Range;
@@ -67,14 +66,14 @@ package body Mng is
     Sep : constant String := "|";
     Wsep : constant Wide_String := Language.String_To_Wide (Sep);
   begin
-    Line.Len := Afpx.Get_Field_Width(8);
+    Line.Len := Afpx.Get_Field_Width (8);
     Line.Str := (others => Language.Char_To_Unicode (' '));
     Line.Str(1 .. 33) := Language.Copy (
-                Normal(No, 4) & Sep                                     -- 5
-              & Unit_Format.Short_Date_Image(Oper.Date) & Sep           -- 9
-              & Unit_Format.Short_Image(Oper.Amount) & Sep              -- 10
-              & Unit_Format.Short_Status_Image(Oper.Status) & Sep       -- 4
-              & Unit_Format.Short_Kind_Image(Oper.Kind) & Sep);         -- 5
+                Normal (No, 4) & Sep                                     -- 5
+              & Unit_Format.Short_Date_Image (Oper.Date) & Sep           -- 9
+              & Unit_Format.Short_Image (Oper.Amount) & Sep              -- 10
+              & Unit_Format.Short_Status_Image (Oper.Status) & Sep       -- 4
+              & Unit_Format.Short_Kind_Image (Oper.Kind) & Sep);         -- 5
     Line.Str(34 .. 71) := Language.Copy (
            Oper.Destination(1 .. 10) & Wsep
          & Oper.Comment(1 .. 16) & Wsep
@@ -102,19 +101,18 @@ package body Mng is
 
     procedure Reset_Selection is
     begin
-      Sel_List.Delete_List(Deallocate => False);
+      Sel_List.Delete_List (Deallocate => False);
       for I in 1 .. Oper_List.List_Length loop
-        Sel_List.Insert((No => I, Deleted => False));
+        Sel_List.Insert ((No => I, Deleted => False));
       end loop;
-      Screen.Set_Sublist(False);
+      Screen.Set_Sublist (False);
     end Reset_Selection;
-
 
     procedure Move_To_Current is
       Sel : Sel_Rec;
     begin
-      Sel_List.Read(Sel, Sel_List_Mng.Current);
-      Oper_List.Move_At(Sel.No);
+      Sel_List.Read (Sel, Sel_List_Mng.Current);
+      Oper_List.Move_At (Sel.No);
     end Move_To_Current;
 
     Loc_Pos : Oper_Range;
@@ -129,28 +127,26 @@ package body Mng is
 
     procedure Restore_Pos is
     begin
-      Sel_List.Move_At(Loc_Pos);
+      Sel_List.Move_At (Loc_Pos);
     end Restore_Pos;
-
 
     procedure Insert_Amount (Amount : in Oper_Def.Amount_Range) is
       Oper : Oper_Def.Oper_Rec;
     begin
       Oper.Amount := Amount;
       Oper_List.Rewind (False);
-      Oper_List.Insert(Oper, Oper_List_Mng.Prev);
+      Oper_List.Insert (Oper, Oper_List_Mng.Prev);
     end Insert_Amount;
 
     function Get_Amount return Oper_Def.Amount_Range is
       Oper : Oper_Def.Oper_Rec;
     begin
       Oper_List.Rewind;
-      Oper_List.Get(Oper, Oper_List_Mng.Next);
+      Oper_List.Get (Oper, Oper_List_Mng.Next);
       return Oper.Amount;
     end Get_Amount;
 
   end List_Util;
-
 
   -- Reset the Afpx list from the sel list
   procedure Reset_List is
@@ -165,13 +161,13 @@ package body Mng is
     List_Util.Save_Pos;
     loop
       List_Util.Move_To_Current;
-      Oper_List.Read(Oper, Oper_List_Mng.Current);
-      Afpx.Line_List.Insert(Oper_To_Line(Oper_List.Get_Position, Oper));
+      Oper_List.Read (Oper, Oper_List_Mng.Current);
+      Afpx.Line_List.Insert (Oper_To_Line(Oper_List.Get_Position, Oper));
       exit when not Sel_List.Check_Move;
       Sel_List.Move_To;
     end loop;
     List_Util.Restore_Pos;
-    Afpx.Line_List.Move_At(Sel_List.Get_Position);
+    Afpx.Line_List.Move_At (Sel_List.Get_Position);
   end Reset_List;
 
   -- Compute amounts from all account operations
@@ -212,16 +208,16 @@ package body Mng is
     -- All operations
     Oper_List.Rewind;
     loop
-      Oper_List.Read(Oper, Oper_List_Mng.Current);
+      Oper_List.Read (Oper, Oper_List_Mng.Current);
       Add_Amount (Screen.Real, Oper.Amount);
       if Oper.Status = Oper_Def.Entered then
-        Add_Amount(Screen.Account, Oper.Amount);
+        Add_Amount (Screen.Account, Oper.Amount);
       end if;
       if Oper.Kind = Oper_Def.Savings then
-        Add_Amount(Screen.Saved, Oper.Amount);
+        Add_Amount (Screen.Saved, Oper.Amount);
       end if;
       if Oper.Status = Oper_Def.Defered then
-        Add_Amount(Screen.Defered, Oper.Amount);
+        Add_Amount (Screen.Defered, Oper.Amount);
       end if;
       exit when not Oper_List.Check_Move;
       Oper_List.Move_To;
@@ -238,19 +234,19 @@ package body Mng is
   type List_Update_List is (Bottom, Center, Unchanged);
   procedure Refresh_Screen (List_Update : in List_Update_List) is
   begin
-    Screen.Encode_File_Name(Account_Name.Image);
-    Screen.Encode_Nb_Oper(Oper_List.List_Length,
-                          Sel_List.List_Length);
-    Screen.Encode_Saved(Account_Saved);
+    Screen.Encode_File_Name (Account_Name.Image);
+    Screen.Encode_Nb_Oper (Oper_List.List_Length,
+                           Sel_List.List_Length);
+    Screen.Encode_Saved (Account_Saved);
     Reset_List;
     if List_Update = Bottom then
-      Afpx.Update_List(Afpx.Bottom);
+      Afpx.Update_List (Afpx.Bottom);
     elsif List_Update = Center then
-      Afpx.Update_List(Afpx.Center_Selected);
+      Afpx.Update_List (Afpx.Center_Selected);
     end if;
     Encode_Amounts;
     Screen.Update_To_Unit;
-    Screen.Allow_Edit(not Sel_List.Is_Empty);
+    Screen.Allow_Edit (not Sel_List.Is_Empty);
   end Refresh_Screen;
 
   -- Adjust operation after copy
@@ -341,8 +337,8 @@ package body Mng is
         Loaded_Name.Set (File_Name);
       exception
         when Constraint_Error =>
-          Screen.Ack_Error(Screen.File_Name_Too_Long);
-          Refresh_Screen(Unchanged);
+          Screen.Ack_Error (Screen.File_Name_Too_Long);
+          Refresh_Screen (Unchanged);
           return;
       end;
     else
@@ -355,20 +351,20 @@ package body Mng is
           return;
       end;
       Screen.Reset;
-      Screen.Set_Sublist(False);
-      Refresh_Screen(Bottom);
+      Screen.Set_Sublist (False);
+      Refresh_Screen (Bottom);
     end if;
 
     if not Loaded_Name.Is_Null then
       -- Load
       begin
-        Can_Write := File_Mng.Load(Loaded_Name.Image, Oper_List);
+        Can_Write := File_Mng.Load (Loaded_Name.Image, Oper_List);
       exception
         when File_Mng.F_Access_Error =>
-          Screen.Ack_Error(Screen.File_Access);
+          Screen.Ack_Error (Screen.File_Access);
           return;
         when File_Mng.F_Io_Error =>
-          Screen.Ack_Error(Screen.File_Io);
+          Screen.Ack_Error (Screen.File_Io);
           return;
       end;
       -- Get root amount
@@ -381,9 +377,9 @@ package body Mng is
       Account_Saved := True;
       Compute_Amounts;
       -- Set screen
-      Refresh_Screen(Bottom);
+      Refresh_Screen (Bottom);
       if not Can_Write then
-        Screen.Ack_Error(Screen.File_Read_Only);
+        Screen.Ack_Error (Screen.File_Read_Only);
       end if;
     else
       -- User cancelled selection
@@ -401,8 +397,8 @@ package body Mng is
       return;
     end if;
     if Mode = Rescue then
-      List_Util.Insert_Amount(Root_Amount);
-      File_Mng.Save("Tmp", Oper_List);
+      List_Util.Insert_Amount (Root_Amount);
+      File_Mng.Save ("Tmp", Oper_List);
       Root_Amount := List_Util.Get_Amount;
       return;
     end if;
@@ -411,20 +407,20 @@ package body Mng is
     --  or select file
     Loading := False;
     if Account_Name.Is_Null
-    or else not Screen.Confirm_Action(Screen.Overwrite_File) then
+    or else not Screen.Confirm_Action (Screen.Overwrite_File) then
       -- User discards overwritting
       if Mode = Cancel then
         return;
       end if;
       begin
-        Tmp_Name.Set (Asf.Get_File("", False, False));
+        Tmp_Name.Set (Asf.Get_File ("", False, False));
       exception
         when Asf.Exit_Requested =>
           return;
       end;
       Screen.Reset;
-      Screen.Set_Sublist(False);
-      Refresh_Screen(Center);
+      Screen.Set_Sublist (False);
+      Refresh_Screen (Center);
       if Tmp_Name.Is_Null then
         -- User discards selecting new file name
         return;
@@ -433,42 +429,42 @@ package body Mng is
       Screen.Encode_File_Name (Account_Name.Image);
     end if;
     -- Insert root amount
-    List_Util.Insert_Amount(Root_Amount);
+    List_Util.Insert_Amount (Root_Amount);
     -- Save
     begin
-      File_Mng.Save(Account_Name.Image, Oper_List);
+      File_Mng.Save (Account_Name.Image, Oper_List);
     exception
       when File_Mng.F_Access_Error =>
-        Screen.Ack_Error(Screen.File_Access);
+        Screen.Ack_Error (Screen.File_Access);
         Root_Amount := List_Util.Get_Amount;
         return;
       when File_Mng.F_Io_Error =>
-        Screen.Ack_Error(Screen.File_Io);
+        Screen.Ack_Error (Screen.File_Io);
         Root_Amount := List_Util.Get_Amount;
         return;
     end;
     Root_Amount := List_Util.Get_Amount;
     -- Update data and screen
     Account_Saved := True;
-    Refresh_Screen(Center);
+    Refresh_Screen (Center);
   end Save;
 
   procedure Clear is
   begin
     if not Account_Saved
-    and then not Screen.Confirm_Action(Screen.Overwrite_Account) then
+    and then not Screen.Confirm_Action (Screen.Overwrite_Account) then
       return;
     end if;
     -- Set data
     Account_Name.Set_Null;
-    Sel_List.Delete_List(Deallocate => False);
+    Sel_List.Delete_List (Deallocate => False);
     Oper_List.Delete_List;
     Root_Amount := 0.0;
     Account_Saved := True;
     Compute_Amounts;
     -- Set screen
-    Screen.Set_Sublist(False);
-    Refresh_Screen(Bottom);
+    Screen.Set_Sublist (False);
+    Refresh_Screen (Bottom);
   end Clear;
 
   -- Print account
@@ -477,7 +473,6 @@ package body Mng is
     Pf : Text_Line.File_Type;
     Oper : Oper_Def.Oper_Rec;
     Sep : constant Character := '|';
-    Form_Feed : constant String := Ada.Characters.Latin_1.Ff & "";
     Index : Oper_Range;
     Line : Positive;
     Lines_Per_Page : Positive;
@@ -492,7 +487,7 @@ package body Mng is
       Default_Lines_Per_Page : constant Positive := 60;
     begin
       Lines_Per_Page := Default_Lines_Per_Page;
-      Environ.Get_Pos("ACCOUNT_LPR_LINES_PER_PAGE", Lines_Per_Page);
+      Environ.Get_Pos ("ACCOUNT_LPR_LINES_PER_PAGE", Lines_Per_Page);
       if Lines_Per_Page < Min_Lines_Per_Page then
         Lines_Per_Page := Min_Lines_Per_Page;
       end if;
@@ -503,23 +498,24 @@ package body Mng is
 
     -- Create file
     begin
-      Pf.Create_All(Pfn);
+      Pf.Create_All (Pfn);
     exception
       when others =>
-        Screen.Ack_Error(Screen.File_Access);
-        Refresh_Screen(Center);
+        Screen.Ack_Error (Screen.File_Access);
+        Refresh_Screen (Center);
         return;
     end;
     declare
       -- YYyy/Mm/Dd Hh:Mm:Ss.mmm
-      Date : constant String := Images.Date_Image(Ada.Calendar.Clock);
+      Date : constant String := Images.Date_Image (Ada.Calendar.Clock);
     begin
-      Pf.Put_Line("Account: " & Account_Name.Image
+      Pf.Put_Line (
+               "Account: " & Account_Name.Image
              & "     at: "
              -- Dd/Mm/YYyy Hh:Mm
              & Date(9 .. 10) & Date(8) & Date(6 .. 7) & Date(5) & Date (1 .. 4)
              & Date (11 .. 16));
-      Pf.Put_Line(Page_Title);
+      Pf.Put_Line (Page_Title);
       Line := 3;
     end;
 
@@ -527,12 +523,12 @@ package body Mng is
       Oper_List.Rewind;
       Index := 1;
       loop
-        Oper_List.Read(Oper, Oper_List_Mng.Current);
-        Pf.Put_Line("  " & Normal(Index, 4) & Sep
-                   & Unit_Format.Date_Image(Oper.Date) & Sep
-                   & Unit_Format.Image(Oper.Amount, False) & Sep
-                   & Unit_Format.Short_Status_Image(Oper.Status) & Sep
-                   & Unit_Format.Short_Kind_Image(Oper.Kind) & Sep
+        Oper_List.Read (Oper, Oper_List_Mng.Current);
+        Pf.Put_Line ("  " & Normal (Index, 4) & Sep
+                   & Unit_Format.Date_Image (Oper.Date) & Sep
+                   & Unit_Format.Image (Oper.Amount, False) & Sep
+                   & Unit_Format.Short_Status_Image (Oper.Status) & Sep
+                   & Unit_Format.Short_Kind_Image (Oper.Kind) & Sep
                    & Language.Wide_To_String (Oper.Destination) & Sep
                    & Language.Wide_To_String (Oper.Comment) & Sep
                    & Language.Wide_To_String (Oper.Reference)) ;
@@ -540,8 +536,8 @@ package body Mng is
         Oper_List.Move_To;
         Index := Index + 1;
         if Line = Lines_Per_Page then
-          Pf.Put(Form_Feed);
-          Pf.Put_Line(Page_Title);
+          Pf.Put (Aski.Ff_S);
+          Pf.Put_Line (Page_Title);
           Line := 2;
         else
           Line := Line + 1;
@@ -550,11 +546,11 @@ package body Mng is
     end if;
     -- Print summary
     if Line = Lines_Per_Page then
-      Pf.Put(Form_Feed);
+      Pf.Put (Aski.Ff_S);
       Line := 2;
     end if;
 
-    Pf.Put("Real: ");
+    Pf.Put ("Real: ");
     if not Amounts(Screen.Real).Overflow then
       Pf.Put (Unit_Format.Image(Amounts(Screen.Real).Amount, False));
     else
@@ -580,7 +576,7 @@ package body Mng is
     end if;
     Pf.New_Line;
 
-    Pf.Put(Form_Feed);
+    Pf.Put (Aski.Ff_S);
     Pf.Flush;
 
     -- Print
@@ -590,9 +586,9 @@ package body Mng is
       Dummy : Integer;
     begin
       Len := 3;
-      Val (1 .. Len) := "lpr";
+      Val(1 .. Len) := "lpr";
 
-      Environ.Get_Str("ACCOUNT_LPR_COMMAND", Val, Len);
+      Environ.Get_Str ("ACCOUNT_LPR_COMMAND", Val, Len);
       Dummy := Sys_Calls.Call_System (Val(1..Len) & " " & Pfn);
     end;
 
@@ -602,8 +598,8 @@ package body Mng is
 
   exception
     when others =>
-      Screen.Ack_Error(Screen.File_Io);
-      Refresh_Screen(Center);
+      Screen.Ack_Error (Screen.File_Io);
+      Refresh_Screen (Center);
       return;
   end Print;
 
@@ -613,19 +609,19 @@ package body Mng is
   begin
     Unit_Format.Switch_Unit;
     -- Redisplay
-    Refresh_Screen(Center);
+    Refresh_Screen (Center);
   end Change_Unit;
 
   -- Sort
   procedure Sort (By_Date : in Boolean) is
   begin
     if By_Date then
-      Sort(Oper_List);
+      Sort (Oper_List);
     else
-      Sort_Amounts(Oper_List);
+      Sort_Amounts (Oper_List);
     end if;
     List_Util.Reset_Selection;
-    Refresh_Screen(Bottom);
+    Refresh_Screen (Bottom);
   end Sort;
 
   -- Deletion management
@@ -664,21 +660,21 @@ package body Mng is
     Prev_Status := Oper.Status;
     case Oper.Status is
       when Oper_Def.Entered =>
-        if Oper_Def.Kind_Can_Be(Oper.Kind, Oper_Def.Defered) then
+        if Oper_Def.Kind_Can_Be (Oper.Kind, Oper_Def.Defered) then
           Oper.Status := Oper_Def.Defered;
-        elsif Oper_Def.Kind_Can_Be(Oper.Kind, Oper_Def.Not_Entered) then
+        elsif Oper_Def.Kind_Can_Be (Oper.Kind, Oper_Def.Not_Entered) then
           Oper.Status := Oper_Def.Not_Entered;
         end if;
       when Oper_Def.Not_Entered | Oper_Def.Defered =>
-        if Oper_Def.Kind_Can_Be(Oper.Kind, Oper_Def.Entered) then
+        if Oper_Def.Kind_Can_Be (Oper.Kind, Oper_Def.Entered) then
           Oper.Status := Oper_Def.Entered;
         end if;
     end case;
     if Oper.Status /= Prev_Status then
-      Oper_List.Modify(Oper, Oper_List_Mng.Current);
+      Oper_List.Modify (Oper, Oper_List_Mng.Current);
       Account_Saved := False;
       Compute_Amounts;
-      Refresh_Screen(Unchanged);
+      Refresh_Screen (Unchanged);
     end if;
   end Update_State;
 
@@ -686,40 +682,40 @@ package body Mng is
   procedure Add_Oper is
   begin
     if Oper_List.List_Length /= Oper_Def.Oper_Range'Last then
-      Edition.Edit(Edition.Create);
+      Edition.Edit (Edition.Create);
       Screen.Reset;
       Compute_Amounts;
-      Refresh_Screen(Bottom);
+      Refresh_Screen (Bottom);
     end if;
   end Add_Oper;
 
   -- Edit an operation
   procedure Edit_Oper is
   begin
-    Edition.Edit(Edition.Modify);
+    Edition.Edit (Edition.Modify);
     Screen.Reset;
     Compute_Amounts;
-    Refresh_Screen(Center);
+    Refresh_Screen (Center);
   end Edit_Oper;
 
   -- Copy an operation
   procedure Copy_Oper is
   begin
     if Oper_List.List_Length /= Oper_Def.Oper_Range'Last then
-      Edition.Edit(Edition.Copy);
+      Edition.Edit (Edition.Copy);
       Screen.Reset;
       Compute_Amounts;
-      Refresh_Screen(Bottom);
+      Refresh_Screen (Bottom);
     end if;
   end Copy_Oper;
 
   -- Delete an operation
   procedure Del_Oper is
   begin
-    Edition.Edit(Edition.Delete);
+    Edition.Edit (Edition.Delete);
     Screen.Reset;
     Compute_Amounts;
-    Refresh_Screen(Center);
+    Refresh_Screen (Center);
   end Del_Oper;
 
   -- Remove all entered operations up to current
@@ -740,7 +736,7 @@ package body Mng is
     Tmp_Amount := Root_Amount;
     for I in 1 .. Pos loop
       List_Util.Move_To_Current;
-      Oper_List.Read(Oper, Oper_List_Mng.Current);
+      Oper_List.Read (Oper, Oper_List_Mng.Current);
       -- Remove if entered
       if Oper.Status = Oper_Def.Entered then
         begin
@@ -749,8 +745,8 @@ package body Mng is
           when Constraint_Error =>
             -- Overflow on root amount. Cancel.
             Deletion.Cancel_Deletions;
-            Screen.Ack_Error(Screen.Capacity_Error);
-            Refresh_Screen(Center);
+            Screen.Ack_Error (Screen.Capacity_Error);
+            Refresh_Screen (Center);
             return;
         end;
         Deletion.Flag_Deleted;
@@ -764,7 +760,7 @@ package body Mng is
     Root_Amount := Tmp_Amount;
     Deletion.Commit_Deletions;
     Compute_Amounts;
-    Refresh_Screen(Center);
+    Refresh_Screen (Center);
   end Garbage_Collect;
 
   -- Make a sub selection of operations
@@ -774,7 +770,7 @@ package body Mng is
   procedure Show_All is
   begin
     List_Util.Reset_Selection;
-    Refresh_Screen(Bottom);
+    Refresh_Screen (Bottom);
   end Show_All;
 
   -- Get data

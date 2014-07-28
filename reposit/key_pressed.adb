@@ -35,9 +35,8 @@ package body Key_Pressed is
 
   -- Check if a key has been pressed,
   --  return specific characters if not or on error
-  -- No_Key     : constant Character := Ada.Characters.Latin_1.Nul;
-
-  -- Error_Key  : constant Character := Ada.Characters.Latin_1.Eot;
+  -- No_Key     : Character renames Aski.Nul;
+  -- Error_Key  : Character renames Aski.Eot;
 
   function Get_Key return Character is
     Status : Sys_Calls.Get_Status_List;

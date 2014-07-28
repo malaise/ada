@@ -1,6 +1,5 @@
 -- Posix regular expression
-with Ada.Characters.Latin_1;
-with C_Types, Bit_Ops, Utf_8, Str_Util, Gets;
+with Aski, C_Types, Bit_Ops, Utf_8, Str_Util, Gets;
 package body Regular_Expressions is
 
   -- C interface --
@@ -12,7 +11,7 @@ package body Regular_Expressions is
   type C_Match_Array is array (Natural range <>) of C_Match_Cell;
   function String4C (Str : String) return String is
   begin
-    return Str & Ada.Characters.Latin_1.Nul;
+    return Str & Aski.Nul;
   end String4C;
 
   -- Flags defined in C (those in coment are not used)

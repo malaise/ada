@@ -15,7 +15,7 @@ package body Text_Line is
     File.Line_Feed := As.U.Tus (Line_Feed_Str);
     File.Buffer_Len := 0;
     File.Buffer_Index := 0;
-    File.Buffer := (others => Ada.Characters.Latin_1.Nul);
+    File.Buffer := (others => Aski.Nul);
   end Open;
 
   -- Dissociate a file desc from a Txt_Line file
@@ -74,7 +74,7 @@ package body Text_Line is
   -- Read next text line from File
   -- Reads characters up to a newline (that is appended)
   --  or up to the end of file.
-  -- So, either the returned string ends with a Latin_1.Nl and
+  -- So, either the returned string ends with Line_Feed and
   --  another get can be performed,
   -- Or the strings does not end with Latin_Nl (empty or not) and
   --  the end of file has been reached.
@@ -215,7 +215,7 @@ package body Text_Line is
   end Put;
 
   -- Put_Line some text
-  -- Same as Put (Ada.Characters.Latin_1.Lf)
+  -- Same as Put (Line_Feed)
   procedure Put_Line (File : in out File_Type; Text : in String) is
   begin
     -- Check file is open and in write mode

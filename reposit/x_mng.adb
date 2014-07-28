@@ -1,5 +1,5 @@
-with Ada.Calendar, Ada.Characters.Latin_1;
-with C_Types, Trace.Loggers, Address_Ops, Perpet, Event_Mng, Virtual_Time;
+with Ada.Calendar;
+with Aski, C_Types, Trace.Loggers, Address_Ops, Perpet, Event_Mng, Virtual_Time;
 package body X_Mng is
 
   -- Maximum successive X events
@@ -485,7 +485,7 @@ package body X_Mng is
 
 
     Serv_Name_For_C : constant String(1 .. Server_Name'Length+1)
-                    := Server_Name & Ada.Characters.Latin_1.Nul;
+                    := Server_Name & Aski.Nul;
     Max_Len : Positive;
     Len : Natural;
     Res : Boolean;
@@ -513,7 +513,7 @@ package body X_Mng is
       begin
         for I in Colors'Range loop
           Color_Names(I) (1 .. Colors(I).Length + 1) :=
-             Colors(I).Image & Ada.Characters.Latin_1.Nul;
+             Colors(I).Image & Aski.Nul;
           Colors4C(I) := Color_Names(I)(Color_Names(I)'First)'Address;
         end loop;
         Res := X_Initialise (Serv_Name_For_C(Serv_Name_For_C'First)'Address,
@@ -666,7 +666,7 @@ package body X_Mng is
   procedure X_Set_Line_Name (Line_Id : in Line;
                              Line_Name : in String) is
     Line_Name_For_C : constant String(1 .. Line_Name'Length+1)
-                    := Line_Name & Ada.Characters.Latin_1.Nul;
+                    := Line_Name & Aski.Nul;
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
@@ -1246,7 +1246,7 @@ package body X_Mng is
   procedure X_Set_Selection (Line_Id : in Line; Selection : in String) is
     Line_For_C_Id : Line_For_C;
     Selection_For_C : constant String(1 .. Selection'Length+1)
-                    := Selection & Ada.Characters.Latin_1.Nul;
+                    := Selection & Aski.Nul;
     Res : Boolean;
   begin
     Check (Line_Id);
@@ -1301,7 +1301,7 @@ package body X_Mng is
       raise X_Failure;
     end if;
     for I in Buffer'Range loop
-      if Buffer(I) = Ada.Characters.Latin_1.Nul then
+      if Buffer(I) = Aski.Nul then
         return Buffer (1 .. I - 1);
       end if;
     end loop;

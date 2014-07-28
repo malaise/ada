@@ -1,10 +1,9 @@
-with Ada.Characters.Latin_1;
-with As.B, Basic_Proc, Sorts;
+with Aski, As.B, Basic_Proc, Sorts;
 package body Grid_1 is
 
 
   Data : array (Row_Coordinate, Col_Coordinate) of Character
-       := (others => (others => Ada.Characters.Latin_1.Nul));
+       := (others => (others => Aski.Nul));
   Initialized : Boolean := False;
 
   package Char_Sort is new Sorts (Character, Positive, "<", String);
@@ -12,12 +11,12 @@ package body Grid_1 is
   -- Return a valid character for text
   function Filter (C : Character) return Character is
   begin
-    if (C >= ' ' and then C <= '~') or else C = Ada.Characters.Latin_1.Lf then
+    if (C >= ' ' and then C <= '~') or else C = Aski.Lf then
       return C;
-    elsif C = Ada.Characters.Latin_1.Ht then
+    elsif C = Aski.Ht then
       return ' ';
     else
-      return Ada.Characters.Latin_1.Nul;
+      return Aski.Nul;
     end if;
   end Filter;
 
@@ -48,7 +47,7 @@ package body Grid_1 is
     -- Store stripped key
     for I in Key'Range loop
       Char := Filter(Key(I));
-      if Char /= Ada.Characters.Latin_1.Nul then
+      if Char /= Aski.Nul then
         if Stripped_Key.Locate (Char & "") = 0 then
           Stripped_Key.Append (Char);
         end if;
@@ -68,7 +67,7 @@ package body Grid_1 is
         Store (Sorted_Key(I), False);
       end loop;
     end;
-    Store (Ada.Characters.Latin_1.Lf, True);
+    Store (Aski.Lf, True);
     for C in Character'(' ') .. '~' loop
       Store (C, True);
     end loop;
@@ -76,14 +75,14 @@ package body Grid_1 is
   end Initialize;
 
 
-  -- C can be any char from ' ' to '~' or Ada.Characters.Latin_1.Lf
+  -- C can be any char from ' ' to '~' or Lf
   function Encode (C : Character) return Coordinate_Rec is
     Sc : constant Character := Filter(C);
   begin
     if not Initialized then
       raise Grid_Not_Init;
     end if;
-    if Sc = Ada.Characters.Latin_1.Nul then
+    if Sc = Aski.Nul then
       raise Invalid_Character;
     end if;
     for Row in Row_Coordinate loop
@@ -111,11 +110,11 @@ package body Grid_1 is
     end if;
     for R in Row_Coordinate loop
       for C in Col_Coordinate loop
-        if Data(R, C) = Ada.Characters.Latin_1.Lf then
+        if Data(R, C) = Aski.Lf then
           Basic_Proc.Put_Output ("Ret");
-        elsif Data(R, C) /= Ada.Characters.Latin_1.Nul then
+        elsif Data(R, C) /= Aski.Nul then
           Basic_Proc.Put_Output ('>' & Data(R, C) & '<');
-        elsif Data(R, C) = Ada.Characters.Latin_1.Nul then
+        elsif Data(R, C) = Aski.Nul then
           Basic_Proc.Put_Output ("Nul");
         else
           raise Constraint_Error;

@@ -1,8 +1,6 @@
-with Ada.Characters.Latin_1;
-with Normal, Upper_Str, Upper_Char, Basic_Proc, Images;
+with Aski, Normal, Upper_Str, Upper_Char, Basic_Proc, Images;
 package body Text is
 
-  Lf : constant Character := Ada.Characters.Latin_1.Lf;
   procedure Put (Str : in String) renames Basic_Proc.Put_Output;
   procedure Put_Line (Str : in String) renames Basic_Proc.Put_Line_Output;
   procedure New_Line renames Basic_Proc.New_Line_Output;
@@ -11,7 +9,7 @@ package body Text is
   -- Returns a string filled with Lf on error
   function Get (Length : Positive) return String is
     Str : constant String := Basic_Proc.Get_Line;
-    Err : constant String (1 .. Length) := (others => Lf);
+    Err : constant String (1 .. Length) := (others => Aski.Lf);
   begin
     if Str'Length /= Length then
       return Err;
@@ -189,7 +187,7 @@ package body Text is
         exit;
       elsif Str(1) = 'Q' or else Str(1) = 'X' then
         raise Common.Exit_Requested;
-      elsif Str(1) = Lf then
+      elsif Str(1) = Aski.Lf then
         Change_Game := False;
         exit;
       end if;

@@ -171,7 +171,7 @@ package body Str_Util is
 
   -- Remove tailing spaces and tabs
   function Strip (Str : String; From : Strip_Kind := Tail) return String is
-    -- Parses spaces and tabs (Latin_1.Ht) from the head/tail of a string
+    -- Parses spaces and tabs (Ht) from the head/tail of a string
     -- Returns the position of the first/last character or 0 if
     --  all the string is spaces or tabs (or empty)
     function Parse_Spaces (Str : String;
@@ -181,7 +181,7 @@ package body Str_Util is
       if From_Head then
         -- Look forward for significant character
         for I in Str'Range loop
-          if Str(I) /= ' ' and then Str(I) /= Ada.Characters.Latin_1.Ht then
+          if not Is_Separator (Str(I)) then
             return I;
           end if;
         end loop;
@@ -190,7 +190,7 @@ package body Str_Util is
       else
         -- Look backwards for significant character
         for I in reverse Str'Range loop
-          if Str(I) /= ' ' and then Str(I) /= Ada.Characters.Latin_1.Ht then
+          if not Is_Separator (Str(I)) then
             return I;
           end if;
         end loop;
@@ -392,10 +392,10 @@ package body Str_Util is
 
   -- Locate where to cut Str so that is best matches the requested line Length
   -- Looks for separator character
-  -- Default Separator function, True for Space and Latin.Ht.
+  -- Default Separator function, True for Space and Ht.
   function Is_Separator (Char : Character) return Boolean is
   begin
-    return Char = ' ' or else Char = Ada.Characters.Latin_1.Ht;
+    return Char = Aski.Spc or else Char = Aski.Ht;
   end Is_Separator;
   -- If Str is shorter or equal to Length, return Str'Last
   -- Else try to find a separator before Length, up to Mini

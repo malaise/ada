@@ -16,8 +16,8 @@
 --
 -- Debug displays the modified words.
 
-with Ada.Direct_Io, Ada.Exceptions, Ada.Characters.Latin_1;
-with As.U, Argument, Bloc_Io, Ada_Words, Lower_Str, Mixed_Str, Upper_Str,
+with Ada.Direct_Io, Ada.Exceptions;
+with Aski, As.U, Argument, Bloc_Io, Ada_Words, Lower_Str, Mixed_Str, Upper_Str,
      Basic_Proc, Trace.Loggers;
 procedure Alook is
 
@@ -47,10 +47,10 @@ procedure Alook is
     procedure Update_Str (Str : in String; At_Index : in Positive_Count);
 
     -- End of line/comment
-    New_Line : constant Character := Ada.Characters.Latin_1.Lf;
+    New_Line : Character renames Aski.Lf;
     -- Words might end by and Ada separator or delimiter
     --  or by a New_Line or (DOS format) a Carriage_Return
-    Carriage_Return : constant Character := Ada.Characters.Latin_1.Cr;
+    Carriage_Return : Character renames Aski.Cr;
 
     -- Append a newline in file (which has to be and is left closed)
     procedure Append_New_Line (File_Name : in String);
@@ -280,7 +280,7 @@ procedure Alook is
 
     -- Current, prev and prev of prev characters
     Char, Prev_Char, Prev_Prev_Char : Character;
-    Nul : Character renames Ada.Characters.Latin_1.Nul;
+    Nul : Character renames Aski.Nul;
 
     -- Are they upper case
     Prev_Is_Upper, Curr_Is_Upper : Boolean;

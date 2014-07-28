@@ -1,11 +1,11 @@
-with Ada.Direct_Io, Ada.Characters.Latin_1;
-with As.U.Utils, Get_Line, Basic_Proc;
+with Ada.Direct_Io;
+with Aski, As.U.Utils, Get_Line, Basic_Proc;
 
 with Space;
 
 package body File is
 
-  Lf : Character renames Ada.Characters.Latin_1.Lf;
+  Lf : Character renames Aski.Lf;
 
   File_Name_Txt : As.U.Asu_Us;
 

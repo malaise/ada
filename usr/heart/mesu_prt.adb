@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with Normal, Afpx, Sys_Calls, Text_Line;
+with Aski, Normal, Afpx, Sys_Calls, Text_Line;
 with Str_Mng, Mesu_Fil, Pers_Def, Mesu_Def, Mesu_Nam, Pers_Mng, Afpx_Xref;
 package body Mesu_Prt is
 
@@ -49,7 +48,7 @@ package body Mesu_Prt is
 
   procedure Close is
   begin
-    Printer.Put (Ada.Characters.Latin_1.Ff & "");
+    Printer.Put (Aski.Ff & "");
     Printer.Close_All;
   end Close;
 

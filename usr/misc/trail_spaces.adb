@@ -2,8 +2,8 @@
 -- Replace Cr+Lf by Lf
 -- Remove trailing spaces (speces preceeding a Lf)
 -- Append a Lf and end of file if last char is not a Lf
-with Ada.Exceptions, Ada.Characters.Latin_1;
-with As.U, Argument, Sys_Calls, Temp_File, Text_Line;
+with Ada.Exceptions;
+with Aski, As.U, Argument, Sys_Calls, Temp_File, Text_Line;
 procedure Trail_Spaces is
 
   -- This is the exit code. Like diff:
@@ -93,15 +93,14 @@ procedure Trail_Spaces is
       end if;
       -- Replace horiz tabs by 2 spaces
       for I in 1 .. Line.Length - 1 loop
-        if Line.Element (I) = Ada.Characters.Latin_1.Ht then
+        if Line.Element (I) = Aski.Ht then
           Line.Replace (I, I, "  ");
           Modified := True;
         end if;
       end loop;
       -- Remove Cr if Cr then Lf
       if Line.Length > 1
-      and then Line.Element (Line.Length - 1)
-         = Ada.Characters.Latin_1.Cr then
+      and then Line.Element (Line.Length - 1) = Aski.Cr then
         Line := Line.Slice (1, Line.Length - 2)
               & As.U.Tus (Text_Line.Line_Feed_Char & "");
         Modified := True;

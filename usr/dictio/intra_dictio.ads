@@ -3,9 +3,10 @@ with Tcp_Util;
 with Args, Data_Base, Status;
 package Intra_Dictio is
 
-  Stat_Kind : constant Character := Ada.Characters.Latin_1.Syn;
-  Data_Kind : constant Character := Ada.Characters.Latin_1.Can;
-  Sync_Kind : constant Character := Ada.Characters.Latin_1.Ack;
+  -- Kaind of message
+  Stat_Kind : Character renames Ada.Characters.Latin_1.Syn;
+  Data_Kind : Character renames Ada.Characters.Latin_1.Can;
+  Sync_Kind : Character renames Ada.Characters.Latin_1.Ack;
 
   Extra_Crc : constant Character := 'C';
   Extra_Ver : constant Character := 'V';

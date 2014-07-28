@@ -1,6 +1,5 @@
 -- Various String utilities
-with Ada.Characters.Latin_1;
-with Many_Strings;
+with Aski, Many_Strings;
 package Str_Util is
 
   -- Return a String(1 .. N), copy of Str
@@ -81,7 +80,7 @@ package Str_Util is
   --  beginning (if Shift_Left is False).
   -- Return the remaining string.
   -- Raises Constraint_Error if At_Index is not within From'First .. From'Last.
-  No_Gap : constant Character :=  Ada.Characters.Latin_1.Nul;
+  No_Gap : Character renames  Aski.Nul;
   function Remove (From : String;
                    At_Index : Positive;
                    Nb_Char : Natural;

@@ -1,5 +1,5 @@
-with Ada.Exceptions, Ada.Characters.Latin_1;
-with Argument, Basic_Proc, Async_Stdin, Event_Mng, Socket, Socket_Util,
+with Ada.Exceptions;
+with Argument, Basic_Proc, Aski, Async_Stdin, Event_Mng, Socket, Socket_Util,
      Tcp_Util, Ip_Addr, Sys_Calls, Autobus, As.U;
 procedure T_Async is
 
@@ -58,7 +58,7 @@ procedure T_Async is
                      Message : in String) is
   begin
     if Message'Length = 1
-    and then Message(Message'First) = Ada.Characters.Latin_1.Eot then
+    and then Message(Message'First) = Aski.Eot then
       -- Single Ctrl D => Close connection
       Async_Stdin.Put_Line_Err ("closing");
       Give_Up := True;
@@ -114,7 +114,7 @@ procedure T_Async is
                     Msg         :  Message_Type;
                     Len         :  Natural) return Boolean is
   begin
-    if Len = 1 and then Msg(1) = Ada.Characters.Latin_1.Eot then
+    if Len = 1 and then Msg(1) = Aski.Eot then
       -- Single Ctrl D => Close connection
       Async_Stdin.Put_Line_Err ("closing");
       Close;

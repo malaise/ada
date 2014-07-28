@@ -1,7 +1,6 @@
 -- Interface to forker process
 with System;
-with Ada.Characters.Latin_1;
-with C_Types;
+with Aski, C_Types;
 package Forker is
 
   subtype Int is C_Types.Int;
@@ -45,14 +44,14 @@ package Forker is
 
   Init_Start : constant Start_Request_Rec
              := (Number => 0,
-                 Command => (others => Ada.Characters.Latin_1.Nul),
-                 Environ => (others => Ada.Characters.Latin_1.Nul),
-                 Current_Dir => (others => Ada.Characters.Latin_1.Nul),
-                 Output_Flow => (others => Ada.Characters.Latin_1.Nul),
-                 Error_Flow  => (others => Ada.Characters.Latin_1.Nul),
+                 Command => (others => Aski.Nul),
+                 Environ => (others => Aski.Nul),
+                 Current_Dir => (others => Aski.Nul),
+                 Output_Flow => (others => Aski.Nul),
+                 Error_Flow  => (others => Aski.Nul),
                  Append_Output => False,
                  Append_Error  => False,
-                 Pad => (others => Ada.Characters.Latin_1.Nul) );
+                 Pad => (others => Aski.Nul) );
 
   -- Kill request
   type Kill_Request_Rec is record

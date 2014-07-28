@@ -1,4 +1,4 @@
-with Ada.Calendar, Ada.Characters.Latin_1;
+with Ada.Calendar;
 with Event_Mng, Console, Dynamic_List, Environ,
      Unicode, Aski, Utf_8, Language, As.U;
 package body Async_Stdin is
@@ -40,8 +40,7 @@ package body Async_Stdin is
   end Line;
 
   package body Line is
-    package Latin_1 renames Ada.Characters.Latin_1;
-    Bell : constant String := Latin_1.Bel & "";
+    Bell : String renames Aski.Bel_S;
     package Uu renames Unicode.Unbounded_Unicode;
 
     package History is
@@ -218,8 +217,7 @@ package body Async_Stdin is
     -- After this delay from Esc, we give up
     Seq_Delay   : constant Duration := 0.25;
     Escape_Time : Ada.Calendar.Time;
-    function S2U (S : String)    return Unicode_Sequence renames Aski.Decode;
-    function C2U (C : Character) return Unicode_Number   renames Aski.Decode;
+    function S2U (S : String) return Unicode_Sequence renames Aski.Decode;
     -- Supported sequences
     Arrow_Left_Seq    : constant Unicode_Sequence := S2U ("[D");
     Arrow_Right_Seq   : constant Unicode_Sequence := S2U ("[C");
@@ -257,9 +255,9 @@ package body Async_Stdin is
     end Store;
 
     -- Some usefull definitions
-    Esc   : constant Unicode_Number := C2U (Latin_1.Esc);
-    Del   : constant Unicode_Number := C2U (Latin_1.Del);
-    Space : constant Unicode_Number := C2U (' ');
+    Esc   : Unicode_Number renames Aski.Esc_U;
+    Del   : Unicode_Number renames Aski.Del_U;
+    Space : Unicode_Number renames Aski.Spc_U;
     Uu_Null : constant Uu.Unbounded_Array := Uu.Null_Unbounded_Array;
     function Uu_Is_Null (Str : Uu.Unbounded_Array) return Boolean is
       use type Uu.Unbounded_Array;
@@ -319,14 +317,14 @@ package body Async_Stdin is
       end if;
 
       -- Optim: Set C to character of W or to Nul
-      C := (if U <= Del then Language.Unicode_To_Char (U) else Latin_1.Nul);
+      C := (if U <= Del then Aski.Encode (U) else Aski.Nul);
 
       -- Save current searching status
       Saved_Searching := Searching;
       -- Default, we cancel search on each input except on escape
       Searching := False;
       case C is
-        when Latin_1.Bs | Latin_1.Del =>
+        when Aski.Bs | Aski.Del =>
           -- Backspace
           if not Uu_Is_Null (Seq) then
             Store;
@@ -344,7 +342,7 @@ package body Async_Stdin is
             Console.Left;
             Console.Delete;
           end if;
-        when Latin_1.Ht =>
+        when Aski.Ht =>
           -- Search
           if not Uu_Is_Null (Seq) then
             Store;
@@ -364,7 +362,7 @@ package body Async_Stdin is
             Sys_Calls.Put_Output (Bell);
           end if;
           Searching := True;
-        when Latin_1.Esc =>
+        when Aski.Esc =>
           -- Escape, validate previous escape
           if not Uu_Is_Null (Seq) then
             Store;
@@ -476,7 +474,7 @@ package body Async_Stdin is
               end if;
             end;
           end if;
-        when Latin_1.Nul =>
+        when Aski.Nul =>
           -- Non ASCII (UTF-8) character
           if Uu_Is_Null (Seq) then
             return Insert_Put (U);
@@ -596,8 +594,8 @@ package body Async_Stdin is
 
     -- Fix tty output
     if Stdio_Is_A_Tty
-    and then (C = Ada.Characters.Latin_1.Cr
-      or else C = Ada.Characters.Latin_1.Lf) then
+    and then (C = Aski.Cr
+      or else C = Aski.Lf) then
       Sys_Calls.New_Line_Output;
     end if;
 
@@ -781,12 +779,12 @@ package body Async_Stdin is
 
   procedure Put_Line_Out (Str : in String) is
   begin
-    Put_Out (Str & Ada.Characters.Latin_1.Lf);
+    Put_Out (Str & Aski.Lf);
   end Put_Line_Out;
 
   procedure New_Line_Out is
   begin
-    Put_Out ("" & Ada.Characters.Latin_1.Lf);
+    Put_Out ("" & Aski.Lf);
   end New_Line_Out;
 
   procedure Flush_Out is

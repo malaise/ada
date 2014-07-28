@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with Normal, Rnd, Async_Stdin;
+with Aski, Normal, Rnd, Async_Stdin;
 with Common, Response;
 procedure Mmind_Asc is
 begin
@@ -34,7 +33,7 @@ begin
             Async_Stdin.New_Line_Out;
             return;
           elsif Str'Length /= Len  + 1
-          or else Str(Str'Length) /= Ada.Characters.Latin_1.Lf then
+          or else Str(Str'Length) /= Aski.Lf then
             -- Validated input line must have 3/4/5 chars
             raise Constraint_Error;
           end if;

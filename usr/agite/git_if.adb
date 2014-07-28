@@ -1,6 +1,6 @@
-with Ada.Exceptions, Ada.Characters.Latin_1;
+with Ada.Exceptions;
 with Environ, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng, Str_Util,
-     Images;
+     Aski, Images;
 with Utils;
 package body Git_If is
 
@@ -520,7 +520,7 @@ package body Git_If is
       end if;
       if Details then
         Assert (Line.Length > 2);
-        Assert (Line.Element (2) = Ada.Characters.Latin_1.Ht);
+        Assert (Line.Element (2) = Aski.Ht);
         File.Status := Line.Element (1);
         File.File := Line.Uslice (3, Line.Length);
         Files.Insert (File);

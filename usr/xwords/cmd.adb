@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with As.U, Environ, Many_Strings, Str_Util;
+with As.U, Aski, Environ, Many_Strings, Str_Util;
 package body Cmd is
 
   -- Path to Words
@@ -27,8 +26,7 @@ package body Cmd is
     loop
       -- Replace Lf by space for each Rec
       List.Read (Line, Res_Mng.Dyn_List.Current);
-      Line := As.U.Tus (Str_Util.Substit (
-                Line.Image, Ada.Characters.Latin_1.Lf & "", " "));
+      Line := As.U.Tus (Str_Util.Substit (Line.Image, Aski.Lf_S, " "));
       -- Remove trailing spaces
       Line := As.U.Tus (Str_Util.Strip (Line.Image));
       List.Modify (Line, Moved => Moved);

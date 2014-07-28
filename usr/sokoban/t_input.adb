@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with Con_Io;
+with Aski, Con_Io;
 with Sok_Input;
 
 procedure T_Input is
@@ -13,11 +12,10 @@ begin
   Con.Reset_Screen;
   loop
     Key := Sok_Input.Get_Key;
-    Scr.Put (" " & Sok_Input.Key_List'Image(Key)
-              & "    " & Ada.Characters.Latin_1.Cr);
+    Scr.Put (" " & Sok_Input.Key_List'Image(Key) & "    " & Aski.Cr);
   end loop;
 exception
   when Sok_Input.Break_Requested =>
-    Scr.Put ("Break" & "      " & Ada.Characters.Latin_1.Cr);
+    Scr.Put ("Break" & "      " & Aski.Cr);
     Sok_Input.End_Of_Program;
 end T_Input;

@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Exceptions;
-with Argument, Environ, Lower_Str, Str_Util, Trace.Loggers;
+with Argument, Environ, Lower_Str, Str_Util, Trace.Loggers, Language;
 package body Con_Io is
 
   -- Some constants
@@ -16,7 +16,7 @@ package body Con_Io is
     Border => 0,
     No_Font => 0);
   Mouse_Discard : constant X_Mng.Event_Kind := X_Mng.Keyboard;
-  Lf : Character renames Ada.Characters.Latin_1.Lf;
+  Lf : Character renames Aski.Lf;
   Lfs : constant String := Lf & "";
 
   -- Some global variables, set at Initialize (or before Set_Colors)

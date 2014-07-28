@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with Sys_Calls;
+with Sys_Calls, Str_Util;
 package body Get_Line is
 
   F : Text_Line.File_Type;
@@ -40,10 +39,8 @@ package body Get_Line is
     Sys_Calls.Close (Fd);
   end Close;
 
-  function Is_Separator (C : Character) return Boolean is
-  begin
-    return C = ' ' or else C = Ada.Characters.Latin_1.Ht;
-  end Is_Separator;
+  function Is_Separator (C : Character) return Boolean renames
+           Str_Util.Is_Separator;
 
   -- Next word of Buff (from Cur). "" if no more word.
   function Get_Next_Word return String is

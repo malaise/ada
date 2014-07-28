@@ -1,5 +1,5 @@
-with Ada.Exceptions, Ada.Characters.Latin_1;
-with Argument, Event_Mng, Sys_Calls, Async_Stdin, Text_Line;
+with Ada.Exceptions;
+with Argument, Aski, Event_Mng, Sys_Calls, Async_Stdin, Text_Line;
 
 procedure T_Stdin is
 
@@ -29,7 +29,7 @@ procedure T_Stdin is
       Go_On := False;
       return True;
     end if;
-    if Len >= 1 and then Str(Last) = Ada.Characters.Latin_1.Eot then
+    if Len >= 1 and then Str(Last) = Aski.Eot then
       Len := Len - 1;
       Last := Last - 1;
       Go_On := False;

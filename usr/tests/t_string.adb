@@ -1,5 +1,5 @@
-with Ada.Characters.Latin_1, Ada.Exceptions;
-with As.U.Utils, Basic_Proc, Str_Util.Regex, Many_Strings, Gets,
+with Ada.Exceptions;
+with Aski, As.U.Utils, Basic_Proc, Str_Util.Regex, Many_Strings, Gets,
      Upper_Str, Lower_Str, Mixed_Str, Upper_Char, Environ, Argument;
 procedure T_String is
 
@@ -301,7 +301,7 @@ begin
             Basic_Proc.Put_Output ("Shift_Left (YN)? "); Bool_Get(Bool1);
             Basic_Proc.Put_Output ("Gap (Char, n for none)? ");
                        Basic_Proc.Get(Char1); Basic_Proc.Skip_Line;
-            if Char1 = 'n' then Char1 := Ada.Characters.Latin_1.Nul; end if;
+            if Char1 = 'n' then Char1 := Aski.Nul; end if;
             Basic_Proc.Put_Line_Output ("Remaining string: |"
               & Str_Util.Remove (Str(1 .. Str_Len),
                  At_Index => Pos1,

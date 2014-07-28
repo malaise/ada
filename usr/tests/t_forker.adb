@@ -1,6 +1,4 @@
-with Ada.Characters.Latin_1;
-
-with Basic_Proc, Argument, Lower_Str, Socket, Forker, Ip_Addr, Tcp_Util;
+with Aski, Basic_Proc, Argument, Lower_Str, Socket, Forker, Ip_Addr, Tcp_Util;
 
 procedure T_Forker is
 
@@ -28,11 +26,11 @@ procedure T_Forker is
   begin
     C := ' ';
     for I in To'Range loop
-      if C = Ada.Characters.Latin_1.Nul
-      and then To(I) = Ada.Characters.Latin_1.Nul then
+      if C = Aski.Nul
+      and then To(I) = Aski.Nul then
         To(I .. I + Str'Length - 1) := Str;
-        To(I + Str'Length + 1) := Ada.Characters.Latin_1.Nul;
-        To(I + Str'Length + 2) := Ada.Characters.Latin_1.Nul;
+        To(I + Str'Length + 1) := Aski.Nul;
+        To(I + Str'Length + 2) := Aski.Nul;
         return;
       end if;
       C := To(I);

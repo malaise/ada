@@ -1,14 +1,14 @@
 -- Get lines (until Lf) of text from file
-with Ada.Characters.Latin_1, Ada.Finalization;
-with As.U, Sys_Calls;
+with Ada.Finalization;
+with As.U, Aski, Sys_Calls;
 package Text_Line is
 
   -- The file type
   type File_Type is tagged limited private;
 
   -- The End_Of_Line sequence
-  Line_Feed_Char : constant Character := Ada.Characters.Latin_1.Lf;
-  Line_Feed_Str : constant String := Line_Feed_Char & "";
+  Line_Feed_Char : Character renames Aski.Lf;
+  Line_Feed_Str  : String    renames Aski.Lf_S;
   Max_Line_Feed_Len : constant := 10;
 
   -- The File mode

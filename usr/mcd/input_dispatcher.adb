@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with As.U;
+with Aski, As.U;
 with Debug, Io_Flow;
 package body Input_Dispatcher is
 
@@ -27,16 +26,16 @@ package body Input_Dispatcher is
   Stop_Index : Positive;
 
   -- Line terminator, Lf in Unix (still valid with CrLf of dos/windows)
-  Lf : constant String := Ada.Characters.Latin_1.Lf & "";
+  Lf : String renames Aski.Lf_S;
 
   -- Word separator
   function Is_Separator (C : in Character) return Boolean is
   begin
     -- Space and Tab, Lf (Unix standard) and Cr (cause Dos newline is CrLf)
     return     C = ' '
-       or else C = Ada.Characters.Latin_1.Ht
-       or else C = Ada.Characters.Latin_1.Lf
-       or else C = Ada.Characters.Latin_1.Cr;
+       or else C = Aski.Ht
+       or else C = Aski.Lf
+       or else C = Aski.Cr;
   end Is_Separator;
 
   -- Check that a Character is a Sd

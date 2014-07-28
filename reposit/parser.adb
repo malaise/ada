@@ -1,11 +1,10 @@
-with Ada.Characters.Latin_1, Ada.Unchecked_Deallocation;
+with Ada.Unchecked_Deallocation;
+with Str_Util;
 package body Parser is
 
   -- Standard seaparing function
-  function Is_Space_Or_Htab_Function (C : Character) return Boolean is
-  begin
-    return C = ' ' or else C = Ada.Characters.Latin_1.Ht;
-  end Is_Space_Or_Htab_Function;
+  function Is_Space_Or_Htab_Function (C : Character) return Boolean renames
+           Str_Util.Is_Separator;
 
   -- Is iterator created and not deleted
   function Is_Set (Iter : Iterator) return Boolean is

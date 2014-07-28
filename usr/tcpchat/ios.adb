@@ -1,5 +1,5 @@
-with Ada.Characters.Latin_1, Ada.Calendar;
-with Event_Mng, Ip_Addr, Socket, Tcp_Util, Input_Buffer, Str_Util,
+with Ada.Calendar;
+with Aski, Event_Mng, Ip_Addr, Socket, Tcp_Util, Input_Buffer, Str_Util,
      Unlimited_Pool, Timers, Async_Stdin;
 with Debug, Tree;
 package body Ios is
@@ -34,10 +34,8 @@ package body Ios is
   Global_Tid : Timers.Timer_Id;
 
   -- Lf and CrLf
-  Lf : constant String := Ada.Characters.Latin_1.Lf & "";
-  Crlf : constant String
-       := Ada.Characters.Latin_1.Cr & Ada.Characters.Latin_1.Lf;
-
+  Lf : String renames Aski.Lf_S;
+  Crlf : constant String := Aski.Cr & Aski.Lf;
 
   ----------------------
   -- LOCAL OPERATIONS --

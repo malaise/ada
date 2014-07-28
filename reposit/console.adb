@@ -1,9 +1,8 @@
-with Ada.Characters.Latin_1;
-with Basic_Proc;
+with Aski, Basic_Proc;
 -- From man console_codes
 package body Console is
 
-  Csi : constant String := Ada.Characters.Latin_1.Esc & '[';
+  Csi : constant String := Aski.Esc & '[';
 
   function Trans (N : Positive) return String is
     Str : constant String := N'Img;
@@ -79,7 +78,7 @@ package body Console is
   procedure Sound (N_Times : in Positive := 1) is
   begin
     for I in 1 .. N_Times loop
-      Basic_Proc.Put_Output (Ada.Characters.Latin_1.Bel);
+      Basic_Proc.Put_Output (Aski.Bel);
       Basic_Proc.Flush_Output;
       delay 0.2;
     end loop;

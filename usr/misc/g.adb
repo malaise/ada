@@ -2,8 +2,8 @@
 -- number and add -1, 0 or 1 so that the remaining is 0.
 -- Then do the same on the quotien of this division... until the quotien
 -- becomes 0.
-with Ada.Calendar, Ada.Characters.Latin_1;
-with Rnd, Clear_Screen, Basic_Proc, Normal, Key_Pressed;
+with Ada.Calendar;
+with Aski, Rnd, Clear_Screen, Basic_Proc, Normal, Key_Pressed;
 procedure G is
   -- Generated number
   subtype Number is Natural range 0 .. 999_999_999;
@@ -91,7 +91,7 @@ begin
             Clear_Screen;
             exit Game;
           end if;
-          if Char = Ada.Characters.Latin_1.Esc then
+          if Char = Aski.Esc then
             Char := Get_Char;
             if Char = '[' then
               Char := Get_Char;

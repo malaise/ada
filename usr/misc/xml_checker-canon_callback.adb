@@ -1,12 +1,11 @@
 -- Cannonification of XML
-with Ada.Characters.Latin_1;
-with Sorts;
+with Aski, Sorts;
 separate (Xml_Checker)
 procedure Canon_Callback (Ctx  : in Xml_Parser.Ctx_Type;
                           Node : in Xml_Parser.Node_Update) is
-  Line_Feed : constant Character := Text_Line.Line_Feed_Char;
-  Carriage_Return : constant Character := Ada.Characters.Latin_1.Cr;
-  Horiz_Tab : constant Character := Ada.Characters.Latin_1.Ht;
+  Line_Feed       : Character renames Aski.Lf;
+  Carriage_Return : Character renames Aski.Cr;
+  Horiz_Tab       : Character renames Aski.Ht;
 
   Clone : Xml_Parser.Node_Update;
   Str : As.U.Asu_Us;

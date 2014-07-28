@@ -1,6 +1,5 @@
 -- Generates a Xml file (or stdout), or string from a tree
-with Ada.Characters.Latin_1;
-with Images, Text_Line, Sys_Calls;
+with Aski, Images, Text_Line, Sys_Calls;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
@@ -42,10 +41,10 @@ package body Xml_Parser.Generator is
   -- Detect separator
   function Is_Separator (Char : Character) return Boolean is
   begin
-    return  Char = Ada.Characters.Latin_1.Space
-    or else Char = Ada.Characters.Latin_1.Lf
-    or else Char = Ada.Characters.Latin_1.Cr
-    or else Char = Ada.Characters.Latin_1.Ht;
+    return  Char = Aski.Spc
+    or else Char = Aski.Lf
+    or else Char = Aski.Cr
+    or else Char = Aski.Ht;
   end Is_Separator;
 
   Xml_Name : constant As.U.Asu_Us := As.U.Tus ("xml");
@@ -974,14 +973,11 @@ package body Xml_Parser.Generator is
   begin
     for I in Str'Range loop
       Char := Str(I);
-      if Char = Ada.Characters.Latin_1.Ht
-      or else Char = Ada.Characters.Latin_1.Cr
-      or else Char = Ada.Characters.Latin_1.Lf
-      or else Char = Ada.Characters.Latin_1.Space then
+      if Is_Separator (Char) then
         -- A space
         if not Prev_Is_Space then
           -- Add this new space
-          Res.Append (Ada.Characters.Latin_1.Space);
+          Res.Append (Aski.Spc);
           Prev_Is_Space := True;
         end if;
       else

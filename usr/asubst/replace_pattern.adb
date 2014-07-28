@@ -1,5 +1,5 @@
-with Ada.Characters.Latin_1, Ada.Exceptions;
-with As.U, Argument, Sys_Calls, Str_Util, Text_Line, Hashed_List.Unique,
+with Ada.Exceptions;
+with Aski, As.U, Argument, Sys_Calls, Str_Util, Text_Line, Hashed_List.Unique,
      Hexa_Utils, Upper_Str, Lower_Str, Mixed_Str, Command, Images;
 with Search_Pattern, Log;
 package body Replace_Pattern is
@@ -10,10 +10,10 @@ package body Replace_Pattern is
   The_Pattern : As.U.Asu_Us;
 
   -- The character in the pattern that code a substitution
-  Subst_Char : constant Character := Ada.Characters.Latin_1.Bs;
+  Subst_Char : Character renames Aski.Bs;
 
   -- The line feed string
-  Line_Feed : constant String := Text_Line.Line_Feed_Str;
+  Line_Feed : String renames Text_Line.Line_Feed_Str;
 
   -- Regex and substring indexes of \R and \r
   subtype Byte is Natural range 0 .. 255;
@@ -278,7 +278,7 @@ package body Replace_Pattern is
           The_Pattern.Replace (Got - 1, Got, " ");
         when 't' =>
           -- "\t" replaced by (horiz) tab
-          The_Pattern.Replace (Got - 1, Got, Ada.Characters.Latin_1.Ht & "");
+          The_Pattern.Replace (Got - 1, Got, Aski.Ht_S);
         when 'u' =>
           -- "\u" UPPER_CASE switch on
           Subst.Action := Start_Uppercase;

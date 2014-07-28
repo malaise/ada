@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with Argument, Normal, Basic_Proc, Gets, Normalization;
+with Aski, Argument, Normal, Basic_Proc, Gets, Normalization;
 with Fl_Time, Fl_Get;
 
 procedure Fl is
@@ -9,7 +8,6 @@ procedure Fl is
   With_Cost : Boolean;
   Cost, Tmp_Cost : Float;
   use Fl_Time;
-  Bell : Character renames Ada.Characters.Latin_1.Bel;
 begin
   if Argument.Get_Nbre_Arg = 1 and then
      Argument.Get_Parameter = "-c" then
@@ -64,7 +62,7 @@ begin
       when Fl_Get.Error =>
         T := (True, 0, 0);
         Tmp_Cost := 0.0;
-        Basic_Proc.Put_Line_Error (Bell & "Error.");
+        Basic_Proc.Put_Line_Error (Aski.Bel & "Error.");
       when Fl_Get.Clear =>
         T := (True, 0, 0);
         Tt := (True, 0, 0);
@@ -87,7 +85,7 @@ begin
         when others =>
           T := (True, 0, 0);
           Tmp_Cost := 0.0;
-          Basic_Proc.Put_Line_Error (Bell & "Error.");
+          Basic_Proc.Put_Line_Error (Aski.Bel & "Error.");
       end;
       -- Cost of the flight
       Tmp_Cost := Tmp_Cost * Float(T.Hours)
@@ -108,7 +106,7 @@ begin
     exception
       when Time_Overflow =>
         Tt := St;
-        Basic_Proc.Put_Line_Error (Bell & "Overflow.");
+        Basic_Proc.Put_Line_Error (Aski.Bel & "Overflow.");
     end;
     Cost := Cost + Tmp_Cost;
 

@@ -269,10 +269,6 @@ package body Util is
   -- Getting char --
   ------------------
   -- Circular buffer of read characters
-
-  -- Separator for current line of input
-  Lf : constant Character := Ada.Characters.Latin_1.Lf;
-
   function Build_Error (Flow : in Flow_Type;
                         Is_Error : in Boolean;
                         Msg : in String;
@@ -445,13 +441,13 @@ package body Util is
   begin
     Char := Get_Char (Flow);
     -- Skip CRs: Replace CrLf by Lf, or else Cr by Lf
-    if Char = Ada.Characters.Latin_1.Lf
+    if Char = Aski.Lf
     and then Flow.Curr_Flow.Prev_Char_Was_Cr then
       -- Prev Cr already gave a Lf, skip this one
       Char := Get_Char (Flow);
     end if;
-    if Char = Ada.Characters.Latin_1.Cr then
-      Char := Ada.Characters.Latin_1.Lf;
+    if Char = Aski.Cr then
+      Char := Aski.Lf;
       Flow.Curr_Flow.Prev_Char_Was_Cr := True;
     else
       Flow.Curr_Flow.Prev_Char_Was_Cr := False;
@@ -470,7 +466,7 @@ package body Util is
         Flow.Skip_Recording := Flow.Skip_Recording - 1;
       end if;
     end if;
-    if Char = Lf and then not Flow.Curr_Flow.Same_Line then
+    if Char = Aski.Lf and then not Flow.Curr_Flow.Same_Line then
       Flow.Curr_Flow.Line := Flow.Curr_Flow.Line + 1;
     end if;
     return Char;
@@ -520,7 +516,7 @@ package body Util is
           Flow.Skip_Recording := Flow.Skip_Recording + 1;
         end if;
       end if;
-      if Char = Lf and then not Flow.Curr_Flow.Same_Line then
+      if Char = Aski.Lf and then not Flow.Curr_Flow.Same_Line then
         Flow.Curr_Flow.Line := Flow.Curr_Flow.Line - 1;
       end if;
     end loop;
@@ -571,9 +567,9 @@ package body Util is
   function Is_Separator (Char : Character) return Boolean is
   begin
     return Char = Space
-    or else Char = Ada.Characters.Latin_1.Lf
-    or else Char = Ada.Characters.Latin_1.Cr
-    or else Char = Ada.Characters.Latin_1.Ht;
+    or else Char = Aski.Lf
+    or else Char = Aski.Cr
+    or else Char = Aski.Ht;
   end Is_Separator;
 
   function Is_Separators (Str : As.U.Asu_Us) return Boolean is

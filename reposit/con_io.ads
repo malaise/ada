@@ -1,14 +1,11 @@
-with Ada.Characters.Latin_1;
-with As.U, X_Mng, Timers, Unicode, Language, Smart_Reference, Dynamic_List;
+with As.U, X_Mng, Timers, Unicode, Aski, Smart_Reference, Dynamic_List;
 package Con_Io is
 
   -- Propagation of Unicode definitions
   subtype Unicode_Number is Unicode.Unicode_Number;
   subtype Unicode_Sequence is Unicode.Unicode_Sequence;
-  Space : constant Unicode_Number
-        := Language.Char_To_Unicode (Ada.Characters.Latin_1.Space);
-  Htab  : constant Unicode_Number
-        := Language.Char_To_Unicode (Ada.Characters.Latin_1.Ht);
+  Space : Unicode_Number renames Aski.Spc_U;
+  Htab  : Unicode_Number renames Aski.Ht_U;
 
   -- The Font
   subtype Font_No_Range is Natural range 0 .. 3;

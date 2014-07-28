@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with Lower_Str, Upper_Str, Mixed_Str, As.U.Utils;
+with Aski, Lower_Str, Upper_Str, Mixed_Str, As.U.Utils;
 separate (Xml_Parser)
 
 package body Parse_Mng  is
@@ -332,8 +331,8 @@ package body Parse_Mng  is
     -- Otherwise open and parse File_Name
     -- If file name and Name_Raise_Parse, then file Name_Error raises
     --  Parse_Error otherwise File_Error
-    String_Flow   : constant String := "" & Ada.Characters.Latin_1.Bs;
-    Internal_Flow : constant String := "" & Ada.Characters.Latin_1.Nul;
+    String_Flow   : String renames Aski.Bs_S;
+    Internal_Flow : String renames Aski.Nul_S;
     procedure Parse (Ctx  : in out Ctx_Type;
                      Adtd : in out Dtd_Type;
                      File_Name : in As.U.Asu_Us;

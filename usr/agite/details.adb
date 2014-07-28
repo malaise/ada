@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with As.U, Afpx.List_Manager, Directory;
+with Aski, As.U, Afpx.List_Manager, Directory;
 with Utils.X, View, History, Config, Afpx_Xref, Restore;
 package body Details is
 
@@ -133,7 +132,7 @@ package body Details is
             if Result.Is_Null then
               Result := Comment(I);
             else
-              Result := Comment(I) & Ada.Characters.Latin_1.Lf & Result;
+              Result := Comment(I) & Aski.Lf & Result;
             end if;
           end if;
         end loop;
@@ -141,7 +140,7 @@ package body Details is
         if Result.Is_Null then
           Result := As.U.Tus (Date);
         else
-          Result := As.U.Tus (Date) & Ada.Characters.Latin_1.Lf & Result;
+          Result := As.U.Tus (Date) & Aski.Lf & Result;
         end if;
         Afpx.Set_Selection (Result.Image);
       else

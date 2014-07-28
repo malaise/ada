@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with C_Types, Str_Util;
+with Aski, C_Types, Str_Util;
 package body Directory is
   use System;
 
@@ -19,7 +18,7 @@ package body Directory is
 
   function Str_For_C (Str : String) return String is
   begin
-    return Str & Ada.Characters.Latin_1.Nul;
+    return Str & Aski.Nul;
   end Str_For_C;
 
   -- Returns current working directory

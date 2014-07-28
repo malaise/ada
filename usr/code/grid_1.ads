@@ -1,19 +1,16 @@
 package Grid_1 is
 
-
   subtype Row_Coordinate is Character range 'A' .. 'J';
   subtype Col_Coordinate is Character range 'K' .. 'T';
-
 
   type Coordinate_Rec is record
     Row : Row_Coordinate;
     Col : Col_Coordinate;
   end record;
 
-
   procedure Initialize (Key : in String);
 
-  -- C can be any char from ' ' to '~' or Ada.Characters.Latin_1.Lf
+  -- C can be any char from ' ' to '~' or Lf
   -- Any other char is discarded
   function Encode (C : Character) return Coordinate_Rec;
 

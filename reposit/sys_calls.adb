@@ -1,6 +1,5 @@
 with Interfaces.C.Strings;
-with Ada.Characters.Latin_1;
-with Day_Mng, Bit_Ops;
+with Aski, Day_Mng, Bit_Ops;
 package body Sys_Calls is
 
   -- Common utilities
@@ -18,7 +17,7 @@ package body Sys_Calls is
 
   function Str_For_C (Str : String) return String is
   begin
-    return Str & Ada.Characters.Latin_1.Nul;
+    return Str & Aski.Nul;
   end Str_For_C;
 
   function Str_From_C (Str_Addr : Interfaces.C.Strings.Chars_Ptr) return String is
@@ -106,8 +105,8 @@ package body Sys_Calls is
     function C_Sym_Link (Old_Path, New_Path : System.Address)
                         return C_Types.Int;
     pragma Import (C, C_Sym_Link, "symlink");
-    Old4C : constant String := Old_Path & Ada.Characters.Latin_1.Nul;
-    New4C : constant String := New_Path & Ada.Characters.Latin_1.Nul;
+    Old4C : constant String := Old_Path & Aski.Nul;
+    New4C : constant String := New_Path & Aski.Nul;
     Res : C_Types.Int;
   begin
     if Hard then
@@ -546,7 +545,7 @@ package body Sys_Calls is
     C_Closed : constant Integer := -3;
     Res : C_Types.Int;
   begin
-    C := Ada.Characters.Latin_1.Nul;
+    C := Aski.Nul;
     Status := Error;
     Res := C_Get_Immediate (Integer(Fd));
     if Res >= 0 then
@@ -566,7 +565,7 @@ package body Sys_Calls is
   -- Create
   -- May raise Name_Error
   function Create (Name : String) return File_Desc is
-    Name4C : constant String := Name & Ada.Characters.Latin_1.Nul;
+    Name4C : constant String := Name & Aski.Nul;
     function C_Fd_Create (Path : System.Address) return C_Types.Int;
     pragma Import (C, C_Fd_Create, "fd_create");
     Res : C_Types.Int;
@@ -582,7 +581,7 @@ package body Sys_Calls is
   -- Open
   -- May raise Name_Error
   function Open (Name : String; Mode : File_Mode) return File_Desc is
-    Name4C : constant String := Name & Ada.Characters.Latin_1.Nul;
+    Name4C : constant String := Name & Aski.Nul;
     Modes4C : constant array (File_Mode) of Integer := (
       In_File    => 0,
       Out_File   => 1,
@@ -767,7 +766,7 @@ package body Sys_Calls is
   procedure Mutate (Program : in Many_Strings.Many_String) is
     procedure C_Mutate (Args : in System.Address; Len : in C_Types.Int);
     pragma Import  (C, C_Mutate, "mutate");
-    Str4C : constant String := Program.Image & Ada.Characters.Latin_1.Nul;
+    Str4C : constant String := Program.Image & Aski.Nul;
   begin
     C_Mutate (Str4C'Address, Str4C'Length);
   end Mutate;

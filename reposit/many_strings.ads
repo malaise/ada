@@ -1,11 +1,10 @@
-with Ada.Characters.Latin_1;
-with As.U;
+with Aski, As.U;
 -- Store several strings in one, (using a specific character as separator).
 package Many_Strings is
 
   -- Separator of strings in a Many_String image
   --  (and also used in internal storage)
-  Separator : constant Character := Ada.Characters.Latin_1.Nul;
+  Separator : Character renames Aski.Nul;
 
   -- A Many_String is a list of strings (possibly empty strings)
   --  separated by Separator

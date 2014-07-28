@@ -4,7 +4,7 @@ with As.U;
 package Str_Util.Navigator is
 
   -- Returned when out of string
-  Default_No_Char : constant Character := Ada.Characters.Latin_1.Nul;
+  Default_No_Char :  Character renames Aski.Nul;
 
   type Navigator_Type is tagged private;
 

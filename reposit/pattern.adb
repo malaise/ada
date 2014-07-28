@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with Trace.Loggers, Lower_Str;
+with Str_Util, Trace.Loggers, Lower_Str;
 package body Pattern is
 
   Logger : Trace.Loggers.Logger;
@@ -70,10 +69,7 @@ package body Pattern is
 
 
   -- Separator for parsing patterns
-  function Is_Sep (C : Character) return Boolean is
-  begin
-    return C = ' ' or else C = Ada.Characters.Latin_1.Ht;
-  end Is_Sep;
+  function Is_Sep (C : Character) return Boolean renames Str_Util.Is_Separator;
 
   -- (Re)define a pattern
   -- May raise Invalid_Pattern if Pattern is not valid

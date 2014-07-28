@@ -1,5 +1,5 @@
-with Ada.Exceptions, Ada.Characters.Latin_1;
-with Event_Mng, Async_Stdin, Rnd, Argument, Basic_Proc, Parser, Pattern;
+with Ada.Exceptions;
+with Aski, Event_Mng, Async_Stdin, Rnd, Argument, Basic_Proc, Parser, Pattern;
 with Dictio_Lib;
 procedure T_Dictio is
 
@@ -238,13 +238,13 @@ procedure T_Dictio is
     if Str'Length = 0 then
       return True;
     end if;
-    if Str(Str'Last) = Ada.Characters.Latin_1.Eot then
+    if Str(Str'Last) = Aski.Eot then
       Async_Stdin.Put_Line_Out ("CLIENT: Terminated");
       Event_Mng.Send_Dummy_Signal;
       return True;
     end if;
     if Str'Length <= 1
-    or else Str(Str'Last) /= Ada.Characters.Latin_1.Lf then
+    or else Str(Str'Last) /= Aski.Lf then
       Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
       return False;
     end if;
