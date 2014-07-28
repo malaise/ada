@@ -171,7 +171,7 @@ package body Str_Util is
 
   -- Remove tailing spaces and tabs
   function Strip (Str : String; From : Strip_Kind := Tail) return String is
-    -- Parses spaces and tabs (latin_1.Ht) from the head/tail of a string
+    -- Parses spaces and tabs (Latin_1.Ht) from the head/tail of a string
     -- Returns the position of the first/last character or 0 if
     --  all the string is spaces or tabs (or empty)
     function Parse_Spaces (Str : String;
