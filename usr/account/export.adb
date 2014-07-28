@@ -29,8 +29,8 @@ begin
 
   -- Check that out (ascii) file does not exist
   begin
-    Ada.Wide_Text_Io.Open(File, Ada.Wide_Text_Io.In_File,
-                     Argument.Get_Parameter(Occurence => 2));
+    Ada.Wide_Text_Io.Open (File, Ada.Wide_Text_Io.In_File,
+                           Argument.Get_Parameter(Occurence => 2));
     Basic_Proc.Put_Line_Error ("Error. Ascii file "
                          & Argument.Get_Parameter(Occurence => 2)
                          & " already exists");
@@ -44,25 +44,25 @@ begin
 
   -- Load account and rewind
   begin
-    Dummy := File_Mng.Load(Argument.Get_Parameter(Occurence => 1), Oper_List);
+    Dummy := File_Mng.Load (Argument.Get_Parameter (Occurence => 1), Oper_List);
   exception
     when File_Mng.F_Access_Error =>
       Basic_Proc.Put_Line_Error ("Error. Cannot read from file "
-                         & Argument.Get_Parameter(Occurence => 1));
+                               & Argument.Get_Parameter (Occurence => 1));
     when File_Mng.F_Io_Error =>
       Basic_Proc.Put_Line_Error ("Error. Reading from file "
-                         & Argument.Get_Parameter(Occurence => 1));
+                               & Argument.Get_Parameter (Occurence => 1));
   end;
   Oper_List.Rewind;
 
   -- Create out file
   begin
-    Ada.Wide_Text_Io.Create(File, Ada.Wide_Text_Io.Out_File,
-                       Argument.Get_Parameter(Occurence => 2));
+    Ada.Wide_Text_Io.Create (File, Ada.Wide_Text_Io.Out_File,
+                       Argument.Get_Parameter (Occurence => 2));
   exception
     when others =>
       Basic_Proc.Put_Line_Error ("Error. Cannot create ascii file "
-                         & Argument.Get_Parameter(Occurence => 2));
+                         & Argument.Get_Parameter (Occurence => 2));
       Usage;
       return;
   end;
@@ -70,26 +70,26 @@ begin
   -- Save opers image one by one
   No := 1;
   loop
-    Oper_List.Read(Oper, Oper_List_Mng.Current);
+    Oper_List.Read (Oper, Oper_List_Mng.Current);
 
     begin
-      Str := Unit_Format.Image(Oper);
+      Str := Unit_Format.Image (Oper);
     exception
       when others =>
         Basic_Proc.Put_Line_Error ("Error. At record no "
-                           & Positive'Image(No));
-        Ada.Wide_Text_Io.Close(File);
+                           & Positive'Image (No));
+        Ada.Wide_Text_Io.Close (File);
         return;
     end;
 
 
     begin
-      Ada.Wide_Text_Io.Put_Line(File, Str);
+      Ada.Wide_Text_Io.Put_Line (File, Str);
     exception
       when others =>
         Basic_Proc.Put_Line_Error ("Error. Writing ascii file, record no "
-                           & Positive'Image(No));
-        Ada.Wide_Text_Io.Close(File);
+                           & Positive'Image (No));
+        Ada.Wide_Text_Io.Close (File);
         return;
     end;
 
@@ -101,8 +101,8 @@ begin
   end loop;
 
   -- Done
-  Ada.Wide_Text_Io.New_Line(File);
-  Ada.Wide_Text_Io.Close(File);
+  Ada.Wide_Text_Io.New_Line (File);
+  Ada.Wide_Text_Io.Close (File);
 
 end Export;
 

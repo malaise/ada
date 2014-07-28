@@ -21,7 +21,7 @@ procedure Search is
       -- New day
       Today := Newday;
       Afpx.Encode_Field (Screen.Selected_Fld, (0,0),
-          Unit_Format.Short_Date_Image(Today));
+                         Unit_Format.Short_Date_Image (Today));
       return True;
     else
       -- No change
@@ -42,7 +42,7 @@ procedure Search is
   procedure Unsel is
     Moved : Boolean;
   begin
-    Sel_List.Delete(Sel_List_Mng.Prev, Moved => Moved);
+    Sel_List.Delete (Sel_List_Mng.Prev, Moved => Moved);
   end Unsel;
 
   -- Search criteria
@@ -118,8 +118,8 @@ procedure Search is
     Sel_List.Rewind;
     loop
       List_Util.Move_To_Current;
-      Oper_List.Read(Oper, Oper_List_Mng.Current);
-      if not Match(Oper, Crit) then
+      Oper_List.Read (Oper, Oper_List_Mng.Current);
+      if not Match (Oper, Crit) then
         -- Remove current and move to next or remove last
         Unsel;
         exit when Sel_List.Is_Empty;
@@ -226,17 +226,17 @@ begin
   if Screen.Is_Sublist then
     -- Unselect
     Unsel;
-    Refresh_Screen(Unchanged);
+    Refresh_Screen (Unchanged);
     return;
   end if;
 
   -- Not in sublist: get criteria
   -- Init screen
-  Afpx.Use_Descriptor(Afpx_Xref.Search.Dscr_Num);
-  Screen.Encode_File_Name(Account_Name.Image);
-  Screen.Encode_Nb_Oper(Oper_List.List_Length, Sel_List.List_Length);
-  Afpx.Set_Field_Activation(Screen.Selected_Fld, True);
-  Screen.Encode_Saved(Account_Saved);
+  Afpx.Use_Descriptor (Afpx_Xref.Search.Dscr_Num);
+  Screen.Encode_File_Name (Account_Name.Image);
+  Screen.Encode_Nb_Oper (Oper_List.List_Length, Sel_List.List_Length);
+  Afpx.Set_Field_Activation (Screen.Selected_Fld, True);
+  Screen.Encode_Saved (Account_Saved);
 
   -- Arm timer
   Dummy_Bool := Set_Today (Timers.No_Timer);
@@ -262,8 +262,8 @@ begin
           when Afpx.Return_Key =>
             -- Return = Search if allowed
             if Afpx.Get_Field_Activation (29) then
-              Criteria.Reference := Afpx.Decode_Wide_Field(26, 0);
-              Unsel_All(Criteria);
+              Criteria.Reference := Afpx.Decode_Wide_Field (26, 0);
+              Unsel_All (Criteria);
               In_Sublist := True;
               exit;
             end if;
@@ -327,7 +327,7 @@ begin
           when Afpx_Xref.Search.Search =>
             -- Search
             Criteria.Reference := Afpx.Decode_Wide_Field(26, 0);
-            Unsel_All(Criteria);
+            Unsel_All (Criteria);
             In_Sublist := True;
             exit;
           when Afpx_Xref.Search.Cancel =>
@@ -346,8 +346,8 @@ begin
 
   Cancel_Timer;
   Screen.Reset;
-  Screen.Set_Sublist(In_Sublist);
-  Refresh_Screen(Bottom);
+  Screen.Set_Sublist (In_Sublist);
+  Refresh_Screen (Bottom);
 
 exception
   when others =>

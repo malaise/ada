@@ -9,10 +9,10 @@ package body Deletion is
     Sel : Sel_Rec;
   begin
     -- Flag selected operation as deleted
-    Sel_List.Read(Sel, Sel_List_Mng.Current);
+    Sel_List.Read (Sel, Sel_List_Mng.Current);
     if not Sel.Deleted then
       Sel.Deleted := True;
-      Sel_List.Modify(Sel, Sel_List_Mng.Current);
+      Sel_List.Modify (Sel, Sel_List_Mng.Current);
       Nb_Deleted := Nb_Deleted + 1;
     end if;
   end Flag_Deleted;
@@ -22,10 +22,10 @@ package body Deletion is
     Sel : Sel_Rec;
   begin
     -- Flag selected operation as deleted
-    Sel_List.Read(Sel, Sel_List_Mng.Current);
+    Sel_List.Read (Sel, Sel_List_Mng.Current);
     if Sel.Deleted then
       Sel.Deleted := False;
-      Sel_List.Modify(Sel, Sel_List_Mng.Current);
+      Sel_List.Modify (Sel, Sel_List_Mng.Current);
       Nb_Deleted := Nb_Deleted - 1;
     end if;
   end Flag_Undeleted;
@@ -46,15 +46,15 @@ package body Deletion is
     end if;
 
     -- Commit deletions from last to first (so REFs remain correct)
-    Sel_List.Rewind(True, Sel_List_Mng.Prev);
+    Sel_List.Rewind (True, Sel_List_Mng.Prev);
     loop
-      Sel_List.Read(Sel, Sel_List_Mng.Current);
+      Sel_List.Read (Sel, Sel_List_Mng.Current);
       if Sel.Deleted then
         -- Remove current operation
         List_Util.Move_To_Current;
-        Oper_List.Delete(Moved => Moved);
+        Oper_List.Delete (Moved => Moved);
         -- Remove current selection, moving to Prev
-        Sel_List.Delete(Sel_List_Mng.Prev, Moved);
+        Sel_List.Delete (Sel_List_Mng.Prev, Moved);
         -- Update counter
         Nb_Deleted := Nb_Deleted - 1;
         -- Either first item of selection is deleted here
@@ -63,9 +63,9 @@ package body Deletion is
       else
         -- Update selection with accurate oper no
         Sel.No := Sel.No - Nb_Deleted;
-        Sel_List.Modify(Sel, Sel_List_Mng.Current);
+        Sel_List.Modify (Sel, Sel_List_Mng.Current);
         -- Move to previous selection
-        Sel_List.Move_To(Sel_List_Mng.Prev);
+        Sel_List.Move_To (Sel_List_Mng.Prev);
       end if;
     end loop;
   end Commit_Deletions;
@@ -80,7 +80,7 @@ package body Deletion is
 
     Sel_List.Rewind;
     loop
-      Sel_List.Read(Sel, Sel_List_Mng.Current);
+      Sel_List.Read (Sel, Sel_List_Mng.Current);
       if Sel.Deleted then
         -- Restore flag
         Sel.Deleted := False;
@@ -90,7 +90,7 @@ package body Deletion is
         exit when Nb_Deleted = 0;
       end if;
       -- Move to previous selection
-      Sel_List.Move_To(Sel_List_Mng.Prev);
+      Sel_List.Move_To (Sel_List_Mng.Prev);
     end loop;
   end Cancel_Deletions;
 

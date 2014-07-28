@@ -4,25 +4,25 @@ package body Unit_Format is
 
   Current_Unit : Units_List := Default_Unit;
 
-  package Mef is new Euro_Franc(Oper_Def.Amount_Range, Oper_Def.Amount_Range);
+  package Mef is new Euro_Franc (Oper_Def.Amount_Range, Oper_Def.Amount_Range);
 
   -- Date: 25/10/2001
-  function Date_Image(Date : Oper_Def.Date_Rec) return Date_Str is
+  function Date_Image (Date : Oper_Def.Date_Rec) return Date_Str is
   begin
-    return Normal(Date.Day, 2, Gap => '0') & '/'
-         & Normal(Date.Month, 2, Gap => '0') & '/'
-         & Normal(Date.Year, 4, Gap => '0');
+    return Normal (Date.Day, 2, Gap => '0') & '/'
+         & Normal (Date.Month, 2, Gap => '0') & '/'
+         & Normal (Date.Year, 4, Gap => '0');
   end Date_Image;
 
-  function Date_Value(Str : Date_Str) return Oper_Def.Date_Rec is
+  function Date_Value (Str : Date_Str) return Oper_Def.Date_Rec is
     Date : Oper_Def.Date_Rec;
     Dummy_Time : Ada.Calendar.Time;
   begin
-    Date.Day   := Ada.Calendar.Day_Number'Value  (Str(1 ..  2));
-    Date.Month := Ada.Calendar.Month_Number'Value(Str(4 ..  5));
-    Date.Year  := Ada.Calendar.Year_Number'Value (Str(7 .. 10));
+    Date.Day   := Ada.Calendar.Day_Number'Value   (Str(1 ..  2));
+    Date.Month := Ada.Calendar.Month_Number'Value (Str(4 ..  5));
+    Date.Year  := Ada.Calendar.Year_Number'Value  (Str(7 .. 10));
     -- Check validity
-    Dummy_Time := Ada.Calendar.Time_Of(Date.Year, Date.Month, Date.Day, 0.0);
+    Dummy_Time := Ada.Calendar.Time_Of (Date.Year, Date.Month, Date.Day, 0.0);
     return Date;
   exception
     when others =>
@@ -30,11 +30,11 @@ package body Unit_Format is
   end Date_Value;
 
   -- Short date: 25/10/01
-  function Short_Date_Image(Date : Oper_Def.Date_Rec) return Short_Date_Str is
+  function Short_Date_Image (Date : Oper_Def.Date_Rec) return Short_Date_Str is
   begin
-    return Normal(Date.Day, 2, Gap => '0') & '/'
-         & Normal(Date.Month, 2, Gap => '0') & '/'
-         & Normal(Date.Year, 4, Gap => '0')(3..4);
+    return Normal (Date.Day, 2, Gap => '0') & '/'
+         & Normal (Date.Month, 2, Gap => '0') & '/'
+         & Normal (Date.Year, 4, Gap => '0')(3..4);
   end Short_Date_Image;
 
   -- Short status: Yes No Def
@@ -148,7 +148,7 @@ package body Unit_Format is
     if Get_Current_Unit = Euros then
       Amount_In_Unit := Amount_In_Euros;
     else
-      Amount_In_Unit := Mef.Euros_To_Francs(Amount_In_Euros);
+      Amount_In_Unit := Mef.Euros_To_Francs (Amount_In_Euros);
     end if;
     Str := Normalization.Normal_Fixed (My_Math.Real (Amount_In_Unit),
                                        Amount_Str'Length, 9, '0');
@@ -188,7 +188,7 @@ package body Unit_Format is
       R : My_Math.Real;
       I : My_Math.Inte;
     begin
-      if Has_Dot(Tmp) then
+      if Has_Dot (Tmp) then
         R := My_Math.Get (Tmp);
         Amount_In_Unit := Oper_Def.Amount_Range(R);
       else
@@ -200,7 +200,7 @@ package body Unit_Format is
     if Get_Current_Unit = Euros then
       return Amount_In_Unit;
     else
-      return Mef.Francs_To_Euros(Amount_In_Unit);
+      return Mef.Francs_To_Euros (Amount_In_Unit);
     end if;
   exception
     when others =>
@@ -219,10 +219,10 @@ package body Unit_Format is
     First : Positive;
   begin
     -- Get full string in proper unit
-    Str := Image(Amount_In_Euros, False);
+    Str := Image (Amount_In_Euros, False);
 
     -- Look for first digit
-    First := First_Dig(Str);
+    First := First_Dig (Str);
 
     -- Enough space?
     if First < 4 then
@@ -237,7 +237,7 @@ package body Unit_Format is
         -- Get Int value
         R := My_Math.Get (Str);
         R := R / 1000.0;
-        I := My_Math.Round(R);
+        I := My_Math.Round (R);
         Str(4 .. Dot) := Normal (Integer(I), Dot-3);
 
         -- Remove digits
@@ -254,10 +254,10 @@ package body Unit_Format is
   -- Full operation image/value
   function Image (Rec : Oper_Def.Oper_Rec) return Oper_Str is
   begin
-    return Language.String_To_Wide (Date_Image(Rec.Date)
+    return Language.String_To_Wide (Date_Image (Rec.Date)
                                   & Image(Rec.Amount, True)
-                                  & Short_Kind_Image(Rec.Kind)
-                                  & Short_Status_Image(Rec.Status))
+                                  & Short_Kind_Image (Rec.Kind)
+                                  & Short_Status_Image (Rec.Status))
          & Rec.Destination
          & Rec.Comment
          & Rec.Reference;
@@ -270,19 +270,19 @@ package body Unit_Format is
     Index := 1;
 
     Oper.Date := Date_Value (Language.Wide_To_String (
-           Str(Index .. Index + Date_Str'Length - 1)));
+                        Str(Index .. Index + Date_Str'Length - 1)));
     Index := Index + Date_Str'Length;
 
-    Oper.Amount := Value(Language.Wide_To_String (
+    Oper.Amount := Value (Language.Wide_To_String (
            Str(Index .. Index + Amount_Str'Length - 1)));
     Index := Index + Amount_Str'Length;
 
     Oper.Kind := Short_Kind_Value (Language.Wide_To_String (
-           Str(Index .. Index + Short_Kind_Str'Length - 1)));
+                        Str(Index .. Index + Short_Kind_Str'Length - 1)));
     Index := Index + Short_Kind_Str'Length;
 
     Oper.Status := Short_Status_Value (Language.Wide_To_String (
-           Str(Index .. Index + Short_Status_Str'Length - 1)));
+                        Str(Index .. Index + Short_Status_Str'Length - 1)));
     Index := Index + Short_Status_Str'Length;
 
     Oper.Destination := Str

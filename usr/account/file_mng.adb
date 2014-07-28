@@ -3,8 +3,8 @@ with Basic_Proc;
 with Oper_Def;
 package body File_Mng is
 
-  package Read_Oper_Io is new Ada.Sequential_Io(Oper_Def.Read_Oper_Rec);
-  package Oper_Io is new Ada.Sequential_Io(Oper_Def.Oper_Rec);
+  package Read_Oper_Io is new Ada.Sequential_Io (Oper_Def.Read_Oper_Rec);
+  package Oper_Io is new Ada.Sequential_Io (Oper_Def.Oper_Rec);
 
 
   -- First record in file as to be this

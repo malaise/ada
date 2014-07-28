@@ -15,9 +15,9 @@ procedure Account is
   procedure Set_Unit (Str : in String) is
   begin
     if Str = "-f" then
-      Unit_Format.Set_Unit_To(Unit_Format.Francs);
+      Unit_Format.Set_Unit_To (Unit_Format.Francs);
     elsif Str = "-e" then
-      Unit_Format.Set_Unit_To(Unit_Format.Euros);
+      Unit_Format.Set_Unit_To (Unit_Format.Euros);
     else
       raise Usage_Error;
     end if;
@@ -43,14 +43,14 @@ begin
       end if;
       begin
         -- Try to set unit
-        Set_Unit(Argument.Get_Parameter);
+        Set_Unit (Argument.Get_Parameter);
       exception
         when Usage_Error =>
           -- Not valid unit mode -> file
           File_Arg := 1;
       end;
     elsif Argument.Get_Nbre_Arg = 2 then
-      Set_Unit(Argument.Get_Parameter(1));
+      Set_Unit (Argument.Get_Parameter (1));
       File_Arg := 2;
     else
       raise Usage_Error;
@@ -58,15 +58,15 @@ begin
 
     -- Init the screen
     Screen.Reset;
-    Screen.Set_Sublist(False);
-    Screen.Allow_Edit(False);
+    Screen.Set_Sublist (False);
+    Screen.Allow_Edit (False);
 
     -- No data
     Mng.Clear;
 
     -- Load file if any
     if File_Arg /= 0 then
-      Mng.Load(Argument.Get_Parameter(File_Arg));
+      Mng.Load (Argument.Get_Parameter (File_Arg));
     end if;
   end;
 
@@ -97,25 +97,25 @@ begin
           -- List movements
           when Screen.List_Top_Fld =>
             -- Top
-            Afpx.Update_List(Afpx.Top);
+            Afpx.Update_List (Afpx.Top);
           when Screen.List_Pgup_Fld =>
             -- PgUp
-            Afpx.Update_List(Afpx.Page_Up);
+            Afpx.Update_List (Afpx.Page_Up);
           when Screen.List_Up_Fld =>
             -- Up
-            Afpx.Update_List(Afpx.Up);
+            Afpx.Update_List (Afpx.Up);
           when Screen.List_Center_Fld =>
             -- Center current
-            Afpx.Update_List(Afpx.Center_Selected);
+            Afpx.Update_List (Afpx.Center_Selected);
           when Screen.List_Down_Fld =>
             -- Down
-            Afpx.Update_List(Afpx.Down);
+            Afpx.Update_List (Afpx.Down);
           when Screen.List_Pg_Down_Fld =>
             -- PgDown
-            Afpx.Update_List(Afpx.Page_Down);
+            Afpx.Update_List (Afpx.Page_Down);
           when Screen.List_Bottom_Fld =>
             -- Bottom
-            Afpx.Update_List(Afpx.Bottom);
+            Afpx.Update_List (Afpx.Bottom);
 
           -- Oper actions
           when Screen.Add_Oper_Fld =>
@@ -146,10 +146,10 @@ begin
             Mng.Clear;
           when Screen.Load_Account_Fld =>
             -- Load
-            Mng.Load("");
+            Mng.Load ("");
           when Screen.Save_Account_Fld =>
             -- Save
-            Mng.Save(Mng.Select_New);
+            Mng.Save (Mng.Select_New);
           when Screen.Print_Account_Fld =>
             -- Print
             Mng.Print;
@@ -166,8 +166,8 @@ begin
             -- Exit
             Quit;
           when others =>
-            Screen.Ack_Error(Screen.Internal_Error);
-            Mng.Save(Mng.Rescue);
+            Screen.Ack_Error (Screen.Internal_Error);
+            Mng.Save (Mng.Rescue);
         end case;
       when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
          | Afpx.Refresh =>
@@ -185,7 +185,7 @@ exception
   when Ooops : others =>
     begin
       Screen.Reset;
-      Screen.Ack_Error(Screen.Internal_Error);
+      Screen.Ack_Error (Screen.Internal_Error);
     exception
       when others => null;
     end;
@@ -195,6 +195,6 @@ exception
     exception
       when others => null;
     end;
-    Mng.Save(Mng.Rescue);
+    Mng.Save (Mng.Rescue);
 end Account;
 
