@@ -86,7 +86,7 @@ package body Network is
     end if;
   end Connect_To;
 
-  -- Get the number of connections of of_Node
+  -- Gets the number of connections of of_Node
   function Nb_Connections (Of_Node : Node_Type) return Connection_Number is
   begin
     if Of_Node.Connections = null then
@@ -95,6 +95,44 @@ package body Network is
       return Of_Node.Connections.List_Length;
     end if;
   end Nb_Connections;
+
+  -- Gets a connection of Of_Node, by index
+  -- Raises No_Connection if incorrect index
+  function Get_Connection (Of_Node : Node_Type;
+                           Index : in Connection_Index)
+           return Connection_Info is
+    Connection : Connection_Info_Type;
+  begin
+    -- Check Index is valid
+    if Index > Nb_Connections (Of_Node) then
+      raise No_Connection;
+    end if;
+    -- Move to the proper connection and return data
+    Of_Node.Connections.Move_At (Index);
+    Of_Node.Connections.Read (Connection, Connection_Mng.Current);
+    return (
+        Key => Connection_Key_Type(Of_Node.Connections.Access_Current),
+        Node => Connection.Node,
+        Data => Connection.Data);
+  end Get_Connection;
+
+  -- Gets a connections of Of_Node, by key
+  -- Raises No_Connection if no connection with this key
+  function Get_Connection (Of_Node : Node_Type;
+                           Key : in Connection_Key_Type)
+           return Connection_Info is
+    Connection : Connection_Info_Type;
+  begin
+    -- Search connection matching key
+    if not Of_Node.Connections.Search_Access (Connection_Access(Key)) then
+      raise No_Connection;
+    end if;
+    Of_Node.Connections.Read (Connection, Connection_Mng.Current);
+    return (
+        Key => Connection_Key_Type(Of_Node.Connections.Access_Current),
+        Node => Connection.Node,
+        Data => Connection.Data);
+  end Get_Connection;
 
   -- Lists the connections of Of_Node
   function List_Connections (Of_Node : in Node_Type) return Connection_Array is
@@ -119,7 +157,7 @@ package body Network is
   end List_Connections;
 
 
-  -- Change the data associated to a connection on a node
+  -- Change the data associated to a connection on a node, by index
   -- Raises No_Connection if incorrect index
   procedure Set_Data (Of_Node : in out Node_Type;
                       Index : in Connection_Index;
@@ -138,6 +176,24 @@ package body Network is
     end if;
   end Set_Data;
 
+  -- Change the data associated to a connection on a node, by key
+  -- Raises No_Connection if no connection with this key
+  procedure Set_Data (Of_Node : in out Node_Type;
+                      Key : in Connection_Key_Type;
+                      Of_Conn_Data : in Conn_Data_Type) is
+    Index : Connection_Index;
+  begin
+    -- Search connection matching key
+    if not Of_Node.Connections.Search_Access (Connection_Access(Key)) then
+      raise No_Connection;
+    end if;
+    Of_Node.Connections.Access_Current.Data := Of_Conn_Data;
+    -- Inform the node of connection data change
+    if Of_Node.Process_Connection_Data_Change /= null then
+      Index := Of_Node.Connections.Get_Position;
+      Of_Node.Process_Connection_Data_Change (Of_Node'Unchecked_Access, Index);
+    end if;
+  end Set_Data;
 
   -- Delete the connection that Of_Node has with With_Node
   procedure Asym_Delete_Connection (Of_Node : in out Node_Type;

@@ -55,18 +55,38 @@ package Network is
   -- Get the number of connections of of_Node
   function Nb_Connections (Of_Node : Node_Type) return Connection_Number;
 
-  -- Lists the connections of Of_Node
+  -- Gets one connection of Of_Node, specify index
+  --  Beware that connection index may change (when some are deleted)
+  --  so using the key is safer
+  -- Raises No_Connection if incorrect index
+  function Get_Connection (Of_Node : Node_Type;
+                           Index : in Connection_Index) return Connection_Info;
+
+  -- Gets one connection of Of_Node, specify
+  -- Raises No_Connection if no connection with this key
+  function Get_Connection (Of_Node : Node_Type;
+                           Key : in Connection_Key_Type) return Connection_Info;
+
+  -- Lists all the connections of Of_Node
   function List_Connections (Of_Node : Node_Type) return Connection_Array;
 
-  -- Change the data associated to a connection on a node
+  -- Change the data associated to a connection on a node, specify index
+  --  Beware that connection index may change (when some are deleted)
+  --  so using the key is safer
   -- Raises No_Connection if incorrect index
   procedure Set_Data (Of_Node : in out Node_Type;
                       Index : in Connection_Index;
                       Of_Conn_Data : in Conn_Data_Type);
 
+  -- Change the data associated to a connection on a node, specify key
+  -- Raises No_Connection if no connection with this key
+  procedure Set_Data (Of_Node : in out Node_Type;
+                      Key : in Connection_Key_Type;
+                      Of_Conn_Data : in Conn_Data_Type);
+
   -- Delete a connection of Of_Node, specify index
   --  Beware that connection index may change (when some are deleted)
-  --  so deleting by key is safer
+  --  so using the key is safer
   -- Raises No_Connection if incorrect index
   procedure Delete_Connection (Of_Node : in out Node_Type;
                                Index : in Connection_Index);
