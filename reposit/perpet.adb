@@ -27,13 +27,15 @@ package body Perpet is
      (01 => 31, 02 => 28, 03 => 31, 04 => 30, 05 => 31, 06 => 30,
       07 => 31, 08 => 31, 09 => 30, 10 => 31, 11 => 30, 12 => 31);
   begin
-    if Month /= 2 then return Last_Day_Array(Month); end if;
-
-    -- February
-    -- Leap year
-    return (if Is_Leap_Year (Year) then Last_Day_Array(Month) + 1
-            -- Non leap year
-            else Last_Day_Array(Month));
+    if Month /= 2 then
+      return Last_Day_Array(Month);
+    else
+      -- February
+      -- Leap year
+      return (if Is_Leap_Year (Year) then Last_Day_Array(Month) + 1
+              -- Non leap year
+              else Last_Day_Array(Month));
+    end if;
   end Nb_Days_Month;
 
   -- Number of days of a year
@@ -85,7 +87,7 @@ package body Perpet is
     else
       D.Month := Sum;
     end if;
-    -- trunc
+    -- Trunc
     Sum := Nb_Days_Month (D.Year, D.Month);
     if D.Day > Sum then
       D.Day := Sum;
@@ -108,7 +110,7 @@ package body Perpet is
     else
       D.Month := Sum;
     end if;
-    -- trunc
+    -- Trunc
     Sum := Nb_Days_Month (D.Year, D.Month);
     if D.Day > Sum then
       D.Day := Sum;
@@ -137,7 +139,7 @@ package body Perpet is
   end "-";
 
 
-  -- tries to go to 1st of next month
+  -- Tries to go to 1st of next month
   -- If not, remaining is set to 0
   procedure Next_Month (
    Date      : in out Time_Rec;
@@ -157,7 +159,7 @@ package body Perpet is
     end if;
   end Next_Month;
 
-  -- tries to go to last of previous month
+  -- Tries to go to last of previous month
   -- If not, remaining is set to 0
   procedure Prev_Month (
    Date      : in out Time_Rec;
@@ -168,7 +170,7 @@ package body Perpet is
       Date.Day := Date.Day - Remaining;
       Remaining := 0;
     else
-      -- last of previous month
+      -- Last of previous month
       Remaining := Remaining - Date.Day;
       Date := Date - (Years => 0, Months => 1);
       Date.Day := Nb_Days_Month (Date.Year, Date.Month);
@@ -183,17 +185,17 @@ package body Perpet is
     Remaining : Day_Range := Days;
     Sum : Integer;
   begin
-    -- try to go to 1st january next year
+    -- Try to go to 1st january next year
     loop
       if Remaining = 0 then
-        -- done
+        -- Done
         return Time_Of(Rec);
       end if;
       exit when Rec.Month = 1 and then Rec.Day = 1;
       Next_Month (Rec, Remaining);
     end loop;
 
-    -- try to add years
+    -- Try to add years
     loop
       Sum := Nb_Days_Year (Rec.Year);
       exit when Remaining < Sum;
@@ -216,17 +218,17 @@ package body Perpet is
     Remaining : Day_Range := Days;
     Sum : Integer;
   begin
-    -- try to go to 31th december previous year
+    -- Try to go to 31th december previous year
     loop
       if Remaining = 0 then
-        -- done
+        -- Done
         return Time_Of(Rec);
       end if;
       exit when Rec.Month = 12 and then Rec.Day = 31;
       Prev_Month (Rec, Remaining);
     end loop;
 
-    -- try to substract years
+    -- Try to substract years
     loop
       Sum := Nb_Days_Year (Rec.Year);
       exit when Remaining < Sum;
