@@ -1,8 +1,17 @@
-with Parser;
+with Parser, Unbounded_Arrays, Trace.Loggers, Mixed_Str;
 package body Num_Match is
 
+  -- Separator within a range
   Range_Sep : constant Character := '-';
   Str_Range_Sep : constant String := Range_Sep & "";
+
+  -- Unbounded array of Integer_Type
+  package Integer_Unbounded_Arrays is new Unbounded_Arrays (Integer_Type,
+                                                            Integer_Array);
+  subtype Unb_Ints is Integer_Unbounded_Arrays.Unbounded_Array;
+
+  -- Logger
+  Logger : Trace.Loggers.Logger;
 
   -- Separator of criteria
   Spec_Sep : constant Character := ',';
@@ -31,22 +40,48 @@ package body Num_Match is
     return Index;
   end Range_Sep_Index;
 
-  function Matches (Num : in Integer_Type; Criteria : in String)
-                   return Boolean is
+  -- The common procedure that parses Criteriria and, depending on Match, either
+  -- Check if Num matches and sets Matches (Expanded empty)
+  -- Expands the range of Integer_Type into Expanded (Matches unsignificant)
+  procedure Parse (Num : in Integer_Type; Criteria : in String; Match : in Boolean;
+                   Matches : out Boolean; Expanded : out Unb_Ints) is
+    Integer_First : Integer_Type;
     Iter : Parser.Iterator;
     First : Boolean;
-    Match : Boolean;
-
   begin
+    Logger.Init ("Num_Match");
     -- Check Num
     if Num <  0 then
       raise Constraint_Error;
     end if;
+    -- Set first non negative Integer_Type
+    Integer_First := Integer_Type'First;
+    if Integer_First < 0 then
+      Integer_First := 0;
+    end if;
     -- Optim
     if Criteria = Str_Range_Sep then
-      return True;
+      Logger.Log_Debug ("Optim All");
+      if Match then
+        -- Any Num matches "-"
+        Matches := True;
+      else
+        -- First .. Num
+        Expanded.Set_Null;
+        for I in Integer_First .. Num loop
+          Expanded.Append (I);
+        end loop;
+      end if;
+      return;
     elsif Criteria = "" then
-      return False;
+      Logger.Log_Debug ("Optim None");
+      if Match then
+        -- No Num match ""
+        Matches := False;
+      else
+        Expanded.Set_Null;
+      end if;
+      return;
     end if;
 
     -- Init for check
@@ -55,7 +90,8 @@ package body Num_Match is
     First := True;
     -- Mach is kept along all specs cause we parse (check) all
     -- for syntax
-    Match := False;
+    Matches := False;
+    Expanded.Set_Null;
 
     -- Check all specs
     All_Specs:
@@ -65,7 +101,8 @@ package body Num_Match is
       declare
         Cur_Spec : constant String := Iter.Next_Word;
         Range_Index : Natural;
-        Range_First, Range_Last : Integer_Type;
+        Range_First, Range_Last, Range_Max : Integer_Type;
+        Loc_Matches : Boolean;
       begin
         if First then
           -- First word
@@ -94,11 +131,9 @@ package body Num_Match is
 
         -- Check for range separator
         Range_Index := Range_Sep_Index (Cur_Spec);
-        Range_First := Integer_Type'First;
-        if Range_First < 0 then
-          Range_First := 0;
-        end if;
+        Range_First := Integer_First;
         Range_Last  := Integer_Type'Last;
+        Range_Max := Num;
         -- Set the value(s) or raise Invalid_Criteria
         if Range_Index = 0 then
           -- No range
@@ -112,6 +147,7 @@ package body Num_Match is
           -- Upper limit
           Range_Last  := Integer_Type'Value (
                            Cur_Spec(Range_Index+1 .. Cur_Spec'Last));
+          Range_Max := Range_Last;
         elsif Range_Index = Cur_Spec'Last then
            -- Lower limit
           Range_First := Integer_Type'Value (
@@ -122,25 +158,55 @@ package body Num_Match is
                            Cur_Spec(Cur_Spec'First .. Range_Index-1));
           Range_Last  := Integer_Type'Value (
                            Cur_Spec(Range_Index+1 .. Cur_Spec'Last));
+          Range_Max := Range_Last;
         end if;
 
-        -- Check for match if needed
-        Match := Match or else (Num >= Range_First and then Num <= Range_Last);
+        -- Check for match
+        Loc_Matches := Num >= Range_First and then Num <= Range_Last;
 
-        -- Trace for debug
-        -- Basic_Proc.Put_Line_Output ("Checked spec >" & Cur_Spec & "<  -> "
-        --                     & Range_First'Img & " -" & Range_Last'Img);
+        if Logger.Debug_On then
+          Logger.Log_Debug ("Checked spec >" & Cur_Spec & "<  -> "
+                          & Range_First'Img & " -" & Range_Last'Img & " --> "
+                          & Mixed_Str (Loc_Matches'Img));
+        end if;
+        Matches := Matches or else Loc_Matches;
+
+        -- Expand if needed
+        if not Match then
+          for I in Range_First .. Range_Max loop
+            Expanded.Append (I);
+          end loop;
+        end if;
       end One_Spec;
 
     end loop All_Specs;
 
     -- Cleanup and Done
     Iter.Del;
-    return Match;
   exception
     when others =>
       raise Invalid_Criteria;
+  end Parse;
+
+  -- Check if a given num matches a criteria
+  function Matches (Num : in Integer_Type; Criteria : in String)
+                   return Boolean is
+    Result : Boolean;
+    Dummy_Ints : Unb_Ints;
+  begin
+    Parse (Num, Criteria, True, Result, Dummy_Ints);
+    return Result;
   end Matches;
+
+  -- Expand a <specs> as a list of nums
+  function Expand (Criteria : in String; Max : in Integer_Type)
+           return Integer_Array is
+    Dummy_Match : Boolean;
+    Ints : Unb_Ints;
+  begin
+    Parse (Max, Criteria, False, Dummy_Match, Ints);
+    return Ints.To_Array;
+  end Expand;
 
 end Num_Match;
 

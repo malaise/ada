@@ -1100,12 +1100,14 @@ title t_num_match
 try t_num_match 21 1-5,30-40
 cat << EOF > exp
  21 does not match >1-5,30-40<
+1, 2, 3, 4, 5, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40
 EOF
 comp out exp
 comp err nul
-try t_num_match 21 1-5,30-40,20-22
+try t_num_match 21 -5,30-40,20-
 cat << EOF > exp
- 21 matches >1-5,30-40,20-22<
+ 21 matches >-5,30-40,20-<
+0, 1, 2, 3, 4, 5, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 20, 21
 EOF
 comp out exp
 comp err nul
