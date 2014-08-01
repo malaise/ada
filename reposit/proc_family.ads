@@ -17,7 +17,9 @@ package Proc_Family is
   type Death_Callback_Access is access procedure (Death_Report : in Death_Rec);
 
   -- Result of Spawn
-  -- Pipes to communicate between father and son
+  -- Pipes to communicate between father and child
+  -- These are Fds, in the father, to write to the child Stdin
+  --  or to listen from the child Stdout or Stderr
   type Spawn_Result_Rec (Ok : Boolean := True;
                          Open : Boolean := True) is record
     case Ok is
@@ -40,7 +42,7 @@ package Proc_Family is
   --  - if set, Mutation contains the program name and arguments packed
   --    in a Many_Strings.Many_String,
   --  - redirecting standard in/out/err flows if Std_Fds,
-  --  - opening com channel if New_Fds.
+  --  - opening communication channel if New_Fds.
   -- If Death_Report is set, it will be called on child's death.
   -- WARNING: Spawn internally sets its own Event_Mng Sig_Child_Callback, so
   --  programs using it shall not set their own Sig_Child callback,
