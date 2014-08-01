@@ -29,7 +29,7 @@ package body Tree_Mng is
 
   -- Build a node
   procedure Build_Node (Origin : in Sourcer.Src_Dscr;
-                        Specs_Mode, Revert_Mode : in Boolean);
+                        Specs_Mode, Revert_Mode, Bodies_Mode : in Boolean);
 
   -- Build the nodes with any unit withed in List, whatever Path
   procedure Build_Witheds (Path, Witheds : in As.U.Asu_Us;
@@ -47,7 +47,7 @@ package body Tree_Mng is
       Src := Sourcer.Get_Unit (Path, Name.Unit);
       if not Src.Unit.Is_Null then
         -- Yes, local unit hides remote ones
-        Build_Node (Src, Specs_Mode, False);
+        Build_Node (Src, Specs_Mode, False, False);
         return;
       end if;
       -- List all (remote) units with this withed name
@@ -81,7 +81,7 @@ package body Tree_Mng is
             raise Sourcer.Src_List_Mng.Not_In_List;
           end if;
         end if;
-        Build_Node (Src, Specs_Mode, False);
+        Build_Node (Src, Specs_Mode, False, False);
       end loop;
     end Find_Units;
 
@@ -102,8 +102,8 @@ package body Tree_Mng is
   -- Else any unit withed in List, whatever Path
   procedure Build_Subunits (List : in As.U.Asu_Us;
                             Path : in As.U.Asu_Us;
-                            Specs_Mode : in Boolean;
-                            Revert_Mode : in Boolean) is
+                            Specs_Mode, Revert_Mode,
+                            Bodies_Mode : in Boolean) is
     Iter : Parser.Iterator;
     Crit : Sourcer.Src_Dscr;
   begin
@@ -118,7 +118,7 @@ package body Tree_Mng is
       Crit.Kind := Sourcer.Subunit;
       Crit.Path := Path;
       Sourcer.List.Read (Crit);
-      Build_Node (Crit, Specs_Mode, Revert_Mode);
+      Build_Node (Crit, Specs_Mode, Revert_Mode, Bodies_Mode);
     end loop;
   end Build_Subunits;
 
@@ -160,7 +160,8 @@ package body Tree_Mng is
   package Src_List_Mng is new Dynamic_List (Sourcer.Src_Dscr);
   package Src_Dyn_List_Mng renames Src_List_Mng.Dyn_List;
 
-  procedure Build_Withings (Path, Name : in String) is
+  procedure Build_Withings (Path, Name : in String;
+                            Bodies_Mode : in Boolean) is
     Withing : Sourcer.Withing_Dscr;
     Found : Boolean;
     Iter : Parser.Iterator;
@@ -213,14 +214,15 @@ package body Tree_Mng is
       List.Rewind;
       loop
         List.Read (Dscr, Moved => Moved);
-        Build_Node (Dscr, True, True);
+        Build_Node (Dscr, True, True, Bodies_Mode);
         exit when not Moved;
       end loop;
     end if;
   end Build_Withings;
 
   -- Build children from list of children
-  procedure Build_Children (Path, Children : As.U.Asu_Us) is
+  procedure Build_Children (Path, Children : in As.U.Asu_Us;
+                            Bodies_Mode : in Boolean) is
     Iter : Parser.Iterator;
     Dscr : Sourcer.Src_Dscr;
     List : Src_Dyn_List_Mng.List_Type;
@@ -251,7 +253,7 @@ package body Tree_Mng is
       List.Rewind;
       loop
         List.Read (Dscr, Moved => Moved);
-        Build_Node (Dscr, True, True);
+        Build_Node (Dscr, True, True, Bodies_Mode);
         exit when not Moved;
       end loop;
     end if;
@@ -259,7 +261,7 @@ package body Tree_Mng is
 
   -- Build a node
   procedure Build_Node (Origin : in Sourcer.Src_Dscr;
-                        Specs_Mode,  Revert_Mode : in Boolean) is
+                        Specs_Mode,  Revert_Mode, Bodies_Mode : in Boolean) is
     Found : Boolean;
     Child : Sourcer.Src_Dscr;
     Kind : As.U.Asu_Us;
@@ -300,16 +302,18 @@ package body Tree_Mng is
     -- Any unit: Insert withed
     -- In revert: Insert units withing us if we are a spec or standalone body
     --            Otherwise they are not dependant on us
+    --            except in Bodies_Mode
     if not Revert_Mode then
       Kind :=  As.U.Tus ("withed");
       Build_Witheds (Origin.Path, Origin.Witheds, Specs_Mode);
-    elsif Origin.Kind = Sourcer.Unit_Spec
+    elsif Bodies_Mode
+          or else Origin.Kind = Sourcer.Unit_Spec
           or else (Origin.Kind = Sourcer.Unit_Body
                    and then Origin.Standalone) then
       Kind :=  As.U.Tus ("withing");
-      Build_Withings (Origin.Path.Image, Origin.Unit.Image);
+      Build_Withings (Origin.Path.Image, Origin.Unit.Image, Bodies_Mode);
       -- Also our children are dependent from us
-      Build_Children (Origin.Path, Origin.Children);
+      Build_Children (Origin.Path, Origin.Children, Bodies_Mode);
     end if;
 
     -- A Child (spec or standalone body): Insert parent spec if not revert
@@ -322,7 +326,7 @@ package body Tree_Mng is
       Child.Kind := Sourcer.Unit_Spec;
       Child.Path := Origin.Path;
       Sourcer.List.Read (Child);
-      Build_Node (Child, Specs_Mode, Revert_Mode);
+      Build_Node (Child, Specs_Mode, Revert_Mode, Bodies_Mode);
     end if;
 
     -- From now, spec => body => subunits... except in normal (not revert)
@@ -335,14 +339,15 @@ package body Tree_Mng is
         Child.Kind := Sourcer.Unit_Body;
         Child.Path := Origin.Path;
         Sourcer.List.Read (Child);
-        Build_Node (Child, Specs_Mode, Revert_Mode);
+        Build_Node (Child, Specs_Mode, Revert_Mode, Bodies_Mode);
       end if;
 
       -- A Body or subunit: Insert subunits
       if Origin.Kind = Sourcer.Unit_Body
         or else Origin.Kind = Sourcer.Subunit then
         Kind := As.U.Tus ("subunit");
-        Build_Subunits (Origin.Subunits, Origin.Path, Specs_Mode, Revert_Mode);
+        Build_Subunits (Origin.Subunits, Origin.Path, Specs_Mode,
+                        Revert_Mode, Bodies_Mode);
       end if;
     end if;
 
@@ -374,10 +379,11 @@ package body Tree_Mng is
 
   -- Build the tree of source dependencies of Origin
   procedure Build (Origin : in Sourcer.Src_Dscr;
-                   Specs_Mode, Revert_Mode, Tree_Mode : in Boolean) is
+                   Specs_Mode, Revert_Mode,
+                   Tree_Mode, Bodies_Mode : in Boolean) is
   begin
     Full_Tree := Tree_Mode;
-    Build_Node (Origin, Specs_Mode, Revert_Mode);
+    Build_Node (Origin, Specs_Mode, Revert_Mode, Bodies_Mode);
     Debug.Logger.Log_Debug ("Dumping tree:");
     if Debug.Logger.Debug_On then
       Tree.Iterate (Dump_One'Access, False);

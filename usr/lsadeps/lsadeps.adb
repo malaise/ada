@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V9.6";
+  Version : constant String := "V10.0";
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -19,7 +19,8 @@ procedure Lsadeps is
    10 => (True,  'R', As.U.Tus ("recursive"), True, True, As.U.Tus ("dir")),
    11 => (False, 'l', As.U.Tus ("list"),  False),
    12 => (False, 'a', As.U.Tus ("all"),  False),
-   13 => (False, 'C', As.U.Tus ("children"),  False));
+   13 => (False, 'C', As.U.Tus ("children"),  False),
+   14 => (False, 'b', As.U.Tus ("bodies"),  False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   Include_Index : constant Argument_Parser.The_Keys_Range := 9;
   Recursive_Index : constant Argument_Parser.The_Keys_Range := 10;
@@ -39,7 +40,9 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <target_unit> ::=  [<path>/]<unit>");
     Basic_Proc.Put_Line_Error (
-     " <options>     ::=  [ <specs> | <revert> ] [ <tree> | <direct> ] [ <files> ]");
+     " <options>     ::=  [ <specs> | <revert> ] [ <tree> | <direct> ] [ <bodies> ]");
+    Basic_Proc.Put_Line_Error (
+     "                    [ <files> ]");
     Basic_Proc.Put_Line_Error (
      "                    [ <include> ]");
     Basic_Proc.Put_Line_Error (
@@ -52,6 +55,8 @@ procedure Lsadeps is
      " <direct>      ::= " & Argument_Parser.Image (Keys(7)));
     Basic_Proc.Put_Line_Error (
      " <files>       ::= " & Argument_Parser.Image (Keys(8)));
+    Basic_Proc.Put_Line_Error (
+     " <bodies>      ::= " & Argument_Parser.Image (Keys(14)));
     Basic_Proc.Put_Line_Error (
      " <include>     ::= { <dir> | <recursive> }");
     Basic_Proc.Put_Line_Error (
@@ -88,6 +93,8 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <direct> to show the direct dependencies between units,");
     Basic_Proc.Put_Line_Error (
+     " <bodies> to include the dependencies of bodies in revert mode,");
+    Basic_Proc.Put_Line_Error (
      " <file> to show the file names (instead of unit names),");
     Basic_Proc.Put_Line_Error (
      " <include> to add some directories or some directory trees to the search path");
@@ -120,6 +127,7 @@ procedure Lsadeps is
   Revert_Mode : Boolean := False;
   Tree_Mode : Boolean := False;
   Direct_Mode : Boolean := False;
+  Bodies_Mode : Boolean := False;
   Files_Mode : Boolean := False;
   Target, Target_Dir : As.U.Asu_Us;
   Path, Path_Dir : As.U.Asu_Us;
@@ -218,6 +226,12 @@ begin
   end if;
   if Arg_Dscr.Is_Set (13) then
     Children_Mode := True;
+  end if;
+  if Arg_Dscr.Is_Set (14) then
+    Bodies_Mode := True;
+  end if;
+  if Bodies_Mode and then not Revert_Mode then
+    Error ("Bodies mode is allowed only in revert mode");
   end if;
 
   -- Check mode
@@ -423,7 +437,7 @@ begin
   ----------------------------
   -- BUILD TREE OF SOURCES --
   ----------------------------
-  Tree_Mng.Build (Target_Dscr, Specs_Mode, Revert_Mode, Tree_Mode);
+  Tree_Mng.Build (Target_Dscr, Specs_Mode, Revert_Mode, Tree_Mode, Bodies_Mode);
 
   -------------------
   -- PUT LIST/TREE --

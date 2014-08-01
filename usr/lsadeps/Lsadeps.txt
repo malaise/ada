@@ -1,6 +1,6 @@
 lsadeps
 =======
-V9.6
+V10.0
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -15,12 +15,13 @@ Usage: lsadeps <version> | <help> | <depend> | <list> | <check>
  <help>        ::= -h | --help
  <depend>      ::= <options> <target_unit> [ <path_unit> ]
  <target_unit> ::=  [<path>/]<unit>
- <options>     ::=  [ <specs> | <revert> ] [ <tree> | <direct> ] [ <files> ] [ <include> ]
+ <options>     ::=  [ <specs> | <revert> ] [ <tree> | <direct> ] [ <files> ] [ <bodies> ] [ <include> ]
  <specs>       ::= -s | --specs
  <revert>      ::= -r | --revert
  <tree>        ::= -t | --tree
  <direct>      ::= -d | --direct
  <files>       ::= -f | --files
+ <bodies>      ::= -b | --bodies
  <include>     ::= { <dir> | <recursive> }
  <dir>         ::= -I <dir> | --include=<dir>
  <recursive>   ::= -R <dir> | --recursive=<dir>
@@ -54,12 +55,21 @@ Other options are:
 
  - 'file' to show the file names (instead of unit names),
 
+ - 'bodies' to show, in revert mode, the units that depend from each other by
+   "with" in the body,
+
  - 'include' to add some directories or some directory trees to the search path
    (default is only the current directory and the target directory if any).
 
 'Specs' and 'revert' modes are mutually exclusive. +
 'Tree' and 'direct' modes are mutually exclusive. +
 'path_unit' and 'direct' modes are mutually exclusive. +
+'bodies' is allowed only in 'revert' mode
+
+NOTE: By default, in 'revert' mode, if unit B is withed by the body of A (and
+not by its spec), then the units withing A are not dependant from B in term of
+compilation, so they are not listed. Option 'bodies' leads to list all the
+revert dependecies.
 
 NOTE: Building the whole tree of dependancies might be very time-consuming.
 This is why, when the 'tree' option is not set, the analysis of dependencies
