@@ -1,4 +1,3 @@
-with Ada.Characters.Latin_1;
 with Aski, C_Types;
 package  body Bloc_Io is
 
