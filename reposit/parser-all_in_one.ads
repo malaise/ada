@@ -4,8 +4,7 @@ package Parser.All_In_One is
   -- The array of parsed element
   -- A parsed element is either a word or some separators
   type Parsed_Element_Kind_List is (Word, Separators);
-  type Parsed_Element_Rec is record
-    Kind : Parsed_Element_Kind_List;
+  type Parsed_Element_Rec (Kind : Parsed_Element_Kind_List := Word) is record
     Str : As.U.Asu_Us;
   end record;
 

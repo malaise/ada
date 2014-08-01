@@ -28,8 +28,8 @@ package body Parser.All_In_One is
   begin
     -- Parse Iterator, store separators then word into list
     Reset (Iter);
-    Word_Elt.Kind := Word;
-    Seps_Elt.Kind := Separators;
+    Word_Elt := (Word, As.U.Asu_Null);
+    Seps_Elt := (Separators, As.U.Asu_Null);
     loop
       Word_Elt.Str := As.U.Tus (Next_Word (Iter));
       Seps_Elt.Str := As.U.Tus (Prev_Separators (Iter));
