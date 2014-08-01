@@ -1,54 +1,63 @@
 with Protected_Pool, Str_Util;
 package body Exception_Messenger is
 
-  package Msg_Pool is new Protected_Pool (As.U.Asu_Us);
+  -- Name and Message with Name as key
+  type Exception_Info is record
+    Name, Message : As.U.Asu_Us;
+  end record;
+  function "=" (Current : Exception_Info; Criteria : Exception_Info)
+                return Boolean is
+    use type As.U.Asu_Us;
+  begin
+    return Current.Name = Criteria.Name;
+  end "=";
+  function Image (Element : Exception_Info) return String is
+  begin
+    return Element.Name.Image;
+  end Image;
+
+  package Msg_Pool is new Protected_Pool (Exception_Info, "=", Image);
   Pool : Msg_Pool.Pool_Type;
+
+  function Name (E : Ada.Exceptions.Exception_Id) return String
+           renames Ada.Exceptions.Exception_Name;
 
   -- Raise an exception with a message
   procedure Raise_Exception (E       : in Ada.Exceptions.Exception_Id;
                              Message : in String := "") is
-    Key : Msg_Pool.Key_Type;
   begin
     if Message'Length < Max_Message_Length then
       Ada.Exceptions.Raise_Exception (E, Message);
     else
       -- Insert in pool
       begin
-        Key := Pool.Store (As.U.Tus (Message));
+        Pool.Store ( (As.U.Tus (Name (E)),
+                      As.U.Tus (Message)) );
       exception
         when others =>
           -- Cannot insert in pool!
           Ada.Exceptions.Raise_Exception (E, Message);
       end;
       -- Raise the exception but with the key as message
-      Ada.Exceptions.Raise_Exception (E,
-          Key_Root & Msg_Pool.Key_Image (Key));
+      Ada.Exceptions.Raise_Exception (E, Key_Root & Name(E));
     end if;
   end Raise_Exception;
 
   -- INTERNAL: Retrieve the message associated to an exception message
-  function Get_Message (M : String) return String is
-    Str : constant String (1 .. M'Length) := Str_Util.Normalize (M);
-    Key : Msg_Pool.Key_Type;
-    Res : As.U.Asu_Us;
+  function Get_Message (Msg : String) return String is
+    Info : Exception_Info;
+    Str : constant String := Str_Util.Normalize (Msg);
   begin
     if Str'Length < Key_Root'Length
-    or else Str (1 .. Key_Root'Length) /= Key_Root then
+    or else Str(1 .. Key_Root'Length) /= Key_Root then
       -- Exception message is not a key
       return Str;
     end if;
-    begin
-      Key := Msg_Pool.Key_Value (Str (Key_Root'Length + 1 .. Str'Last));
-    exception
-      when others =>
-        -- Exception message is not a key (but it starts as such!)
-        return Str;
-    end;
-
     -- Get message from pool, return Str if not found
     begin
-      Res := Pool.Get (Key);
-      return Res.Image;
+      Info.Name := As.U.Tus (Str(Key_Root'Length + 1 .. Str'Last));
+      Pool.Get (Info);
+      return Info.Message.Image;
     exception
       when Msg_Pool.Not_Found =>
         return Str;

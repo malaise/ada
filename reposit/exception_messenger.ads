@@ -6,8 +6,7 @@ with Ada.Exceptions, Ada.Unchecked_Deallocation;
 
 -- A message of size below Max_Message_Length will be directly attached
 --  to the exception. Otherwise the message is stored on a (protected)
---  pool and the key image of it is used to build a key string that is
---  attached to the exception for later retrieval.
+--  pool and the exception name is used in the key for later retrieval.
 
 -- Application shall ensure that exceptions raised through Exception_Messenger
 --  are caught and that Exception_Message is called on their occurence,
@@ -15,14 +14,13 @@ with Ada.Exceptions, Ada.Unchecked_Deallocation;
 with As.U;
 package Exception_Messenger is
 
-  -- The name of the key will be "Exception_Messenger_Key_xxx" where
-  --  xxx is a positive number.
+  -- Max message length
+  Max_Message_Length : constant := 200;
+
+  -- The name of the key will be "Exception_Messenger_Key_<Exception_Name>"
   -- Applications shall avoid providing this format of string as their
   --  exception messages
   Key_Root : constant String := "Exception_Messenger_Key_";
-
-  -- Max message length
-  Max_Message_Length : constant := 200;
 
   -- Raise an exception with a message
   procedure Raise_Exception (E       : in Ada.Exceptions.Exception_Id;

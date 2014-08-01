@@ -623,6 +623,19 @@ try t_dur_image 1000
 comp err nul
 echo "OK"
 
+# t_exception_messenger
+title t_exception_messenger
+try t_exception_messenger
+cat << EOF > exp
+Checking >The message<
+Ok
+Checking a long message
+Ok
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
 # t_fifo
 title t_fifo
 try t_fifo
