@@ -175,11 +175,9 @@ package body Hashed_List is
     Get_Access_Current (List, Acc);
 
     -- Locate in list the item that has this access
-    List.List.Rewind;
-    loop
-      exit when Element_Access(List.List.Access_Current) = Acc;
-      List.List.Move_To;
-    end loop;
+    if not List.List.Search_Access (Acc) then
+      raise Internal_Error;
+    end if;
 
     -- Delete this item from hash table (without re-hashing data)
     Hash_Mng.Remove (List.Table, List.Hash_Index);
@@ -187,10 +185,6 @@ package body Hashed_List is
     -- Delete this item from list
     List.List.Delete (Moved => Dummy);
     List.Current := null;
-  exception
-    when List_Mng.Not_In_List =>
-      -- Move_To reached the end without finding
-      raise Internal_Error;
   end Delete_Current;
 
   -- Read the last element searched/found

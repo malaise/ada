@@ -194,8 +194,8 @@ package Long_Long_Limited_List is
   -- CARE: Risk of side effect because List_Type only is duplicated
   --  while both versions are valid, they should only be used to navigate
   --  (search, move)
-  -- CARE CARE: Only use Unchecked_Assign to make a temporary local copy of Val,
-  --  never assign a local list Val to a global list To (because the
+  -- CARE CARE: Only use Unchecked_Assign to make a temporary local copy of
+  --  Val, never assign a local list Val to a global list To (because the
   --  finalization of Val will delete the content of To).
   -- Use Insert_Copy instead.
   -- You have been warned.
@@ -208,12 +208,12 @@ package Long_Long_Limited_List is
                          Val   : in List_Type;
                          Where : in Direction := Next);
 
-
   -- Get direct access to current element in list
+  -- CARE: As soon as the element is deleted, the access becomes invalid
+  --  and using it will lead to unpredictable results
   function Access_Current (List : List_Type;
                            Check_Empty : in Boolean := True)
            return access Element_Type;
-
 
   -- Search the element that is at the provided access (move to it)
   -- Return True if the matching item is found, then the current position is
@@ -221,7 +221,6 @@ package Long_Long_Limited_List is
   -- Does not raise Empty_List.
   function Search_Access (List      : in out List_Type;
                           Criteria  : access Element_Type) return Boolean;
-
 
   -- Three different strategies to search:
   -- From_Current : Search starts from current item (that may match)
