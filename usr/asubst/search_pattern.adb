@@ -1,10 +1,11 @@
 with Aski, As.U, Sys_Calls, Argument, Hashed_List.Unique, Str_Util, Text_Line,
-     Hexa_Utils, Language, Images, Unbounded_Arrays;
+     Hexa_Utils, Language, Images, Unbounded_Arrays, Long_Longs;
 with Log;
 package body Search_Pattern is
 
   -- 0 to 16 substring indexes
-  subtype Substr_Array is Regular_Expressions.Match_Array (Nb_Sub_String_Range);
+  subtype Substr_Array is
+      Regular_Expressions.Match_Array (Nb_Sub_String_Range);
 
   -- Unbounded array of back references (inter-regex)
   subtype Byte is Natural range 0 .. 255;
@@ -167,7 +168,7 @@ package body Search_Pattern is
     Ok : Boolean;
   begin
     -- Compute new pattern number and type
-    Upat.Num := List.List_Length + 1;
+    Upat.Num := Natural (List.List_Length) + 1;
     Upat.Is_Delim := Crit = Delimiter.Image;
     Upat.Prev_Delim := Prev_Delim;
     Upat.Next_Delim := Next_Delim;
@@ -451,7 +452,7 @@ package body Search_Pattern is
                 Backref := (Byt / 16, Byt mod 16);
               end if;
               if Backref.Regex = 0
-              or else Backref.Regex > List.List_Length then
+              or else Backref.Regex > Natural (List.List_Length) then
                 Error ("Invalid regex index "
                      & Images.Integer_Image (Backref.Regex)
                      & " in back reference");
@@ -609,6 +610,9 @@ package body Search_Pattern is
     Is_Iterative := False;
     Parse_One (Search, Case_Sensitive, Is_Regex, True, Dot_All,
                True, Search_List);
+    if Search_List.List_Length > Long_Longs.Ll_Natural'Last then
+      Error ("Too many patterns");
+    end if;
 
     -- See if searches need to overlap
     Is_Overlapping := not First_First_Delim
@@ -633,7 +637,7 @@ package body Search_Pattern is
     if Search_List.List_Length /= Exclude_List.List_Length then
       Error ("Exclude must have the same number of regex as the find pattern");
     end if;
-    for I in 1 .. Search_List.List_Length loop
+    for I in 1 .. Natural (Search_List.List_Length) loop
       Upat.Num := I;
       Search_List.Get_Access (Upat, Search_Access);
       Exclude_List.Get_Access (Upat, Exclude_Access);
@@ -654,7 +658,7 @@ package body Search_Pattern is
   --  search pattern (one per regex and one per New_Line.
   -- Raises No_Regex if the pattern was not parsed OK
   function Number return Positive is
-    N : constant Natural := Search_List.List_Length;
+    N : constant Natural := Natural (Search_List.List_Length);
   begin
     if N = 0 then
       raise No_Regex;
@@ -678,7 +682,7 @@ package body Search_Pattern is
   -- Raises No_Regex if the pattern was not parsed OK
   -- Raises Contraint_Error if N > Number;
   function Get_Pattern (Regex_Index : Positive) return String is
-    L : constant Natural := Search_List.List_Length;
+    L : constant Natural := Natural (Search_List.List_Length);
     Upat_Access : Line_Pat_Acc;
   begin
     if L = 0 then
@@ -988,7 +992,7 @@ package body Search_Pattern is
     Cell.First_Offset := Upat_Access.Substrs(0).First_Offset;
 
     -- Get access to the last pattern if needed (if more than one pattern)
-    Nbre := Search_List.List_Length;
+    Nbre := Natural (Search_List.List_Length);
     if Nbre /= 1 then
       -- Get access to the last pattern
       Upat_Access := Get_Search_Access (Nbre);

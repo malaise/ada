@@ -200,7 +200,7 @@ package body Hashed_List is
                              Item : in Element_Type) is
     Acc : Element_Access;
     First_Element : Element_Type;
-    Position : Positive;
+    Position : Long_Longs.Ll_Positive;
   begin
     Check_Callback (List);
     Get_Access_Current (List, Acc);
@@ -240,7 +240,7 @@ package body Hashed_List is
   end Is_Empty;
 
   -- Return the number of elements in the list (0 if empty, no exception)
-  function List_Length (List : List_Type) return Natural is
+  function List_Length (List : List_Type) return Long_Longs.Ll_Natural is
   begin
     return List.List.List_Length;
   end List_Length;

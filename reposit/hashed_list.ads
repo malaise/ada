@@ -1,4 +1,4 @@
-with Limited_List, Hashing;
+with Long_Longs, Long_Long_Limited_List, Hashing;
 generic
   -- Type of the element of the list
   type Element_Type is limited private;
@@ -115,7 +115,7 @@ package Hashed_List is
   function Is_Empty (List : List_Type) return Boolean;
 
   -- Return the number of elements in the list (0 if empty, no exception)
-  function List_Length (List : List_Type) return Natural;
+  function List_Length (List : List_Type) return Long_Longs.Ll_Natural;
 
   -- These two calls allow sharing the same list among several
   --  software layers. Each time the list is modified, a flag is set
@@ -172,7 +172,7 @@ package Hashed_List is
   Internal_Error : exception;
 private
   -- The limited list of items
-  package List_Mng is new Limited_List (Element_Type, Set);
+  package List_Mng is new Long_Long_Limited_List (Element_Type, Set);
 
   -- Element hashing
   package Sized_Hash is new Hashing.Sized_Hash (Hash_Max);
