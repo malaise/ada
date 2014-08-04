@@ -39,10 +39,10 @@ package body Hashed_List.Unique is
     use type Hash_Mng.Hash_Range;
   begin
     -- See if previously found is the one
-    if List.Current /= null and then List.Hash_Index = Index
-    and then List.Current.all = Crit then
+    if List.Current /= Null_Cell and then List.Hash_Index = Index
+    and then List.Current.Elt.all = Crit then
       -- Yes
-      Element := List.Current;
+      Element := List.Current.Elt;
     else
       Locate (List_Type(List), Crit, True, Element, Forward);
     end if;
@@ -59,7 +59,7 @@ package body Hashed_List.Unique is
     if Acc = null then
       raise Not_In_List;
     end if;
-    Item_Access := List.Current;
+    Item_Access := List.Current.Elt;
   end Get_Access;
 
   -- Insert an item if does not already exists

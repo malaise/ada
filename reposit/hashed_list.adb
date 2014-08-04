@@ -25,10 +25,10 @@ package body Hashed_List is
       -- Loop withing matching (same image) until data = criteria
       List.Table.Find_Next (Index, Data_Found,
                             Hashing.Direction_List(Direction));
-      if Data_Found.Found and then Data_Found.Data.all = Crit then
+      if Data_Found.Found and then Data_Found.Data.Elt.all = Crit then
         -- Found the correct element, store its access (for further access)
         --  and its hash index (for deletion)
-        Element := Data_Found.Data;
+        Element := Data_Found.Data.Elt;
         List.Current := Data_Found.Data;
         List.Hash_Index := Index;
         return;
@@ -40,7 +40,7 @@ package body Hashed_List is
     end loop;
     -- Not found
     Element := null;
-    List.Current := null;
+    List.Current := Null_Cell;
   end Locate;
 
   -- Check if an element exists in the list
@@ -124,7 +124,8 @@ package body Hashed_List is
     end case;
     Hash_Mng.Store (List.Table,
                     Key_Image(Item),
-                    Element_Access (List.List.Access_Current),
+                    (Element_Access (List.List.Access_Current),
+                     List.List.Cell_Access_Current),
                     Hashing.Where_Insert_List(Where));
   exception
     when List_Mng.Full_List =>
@@ -152,39 +153,34 @@ package body Hashed_List is
   procedure Get_Access_Current (List : in List_Type;
                                 Item_Access : out Element_Access) is
   begin
-    if List.Current = null then
+    if List.Current = Null_Cell then
       raise Not_In_List;
     end if;
-    Item_Access := List.Current;
+    Item_Access := List.Current.Elt;
   end Get_Access_Current;
   function Get_Access_Current (List : List_Type) return Element_Access is
   begin
-    if List.Current = null then
+    if List.Current = Null_Cell then
       raise Not_In_List;
     end if;
-    return List.Current;
+    return List.Current.Elt;
   end Get_Access_Current;
 
   -- Suppress the last element found (which is reset)
   -- May raise Not_In_List
   procedure Delete_Current (List : in out List_Type) is
-    Acc : Element_Access;
-    Dummy : Boolean;
   begin
     Check_Callback (List);
-    Get_Access_Current (List, Acc);
-
-    -- Locate in list the item that has this access
-    if not List.List.Search_Access (Acc) then
-      raise Internal_Error;
+    if List.Current = Null_Cell then
+      raise Not_In_List;
     end if;
 
     -- Delete this item from hash table (without re-hashing data)
     Hash_Mng.Remove (List.Table, List.Hash_Index);
 
-    -- Delete this item from list
-    List.List.Delete (Moved => Dummy);
-    List.Current := null;
+    -- Remove the cell that has this access
+    List.List.Delete_Current_Rewind (List.Current.Cell);
+    List.Current := Null_Cell;
   end Delete_Current;
 
   -- Read the last element searched/found
@@ -224,7 +220,7 @@ package body Hashed_List is
     Check_Callback (List);
     List.List.Delete_List (Deallocate);
     Hash_Mng.Clear_All (List.Table);
-    List.Current := null;
+    List.Current := Null_Cell;
   end Delete_List;
 
   -- Return without exception

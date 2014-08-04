@@ -177,14 +177,20 @@ private
   -- Element hashing
   package Sized_Hash is new Hashing.Sized_Hash (Hash_Max);
 
+  type Hashed_Cell is record
+    Elt : Element_Access := null;
+    Cell : access List_Mng.Cell := null;
+  end record;
+  Null_Cell : constant Hashed_Cell := (others => <>);
+
   package Hash_Mng is new Sized_Hash.Hash_Mng
-                  (Element_Access, Hash_Func);
+                  (Hashed_Cell, Hash_Func);
 
   -- A unique list
   type List_Type is tagged limited record
     List : List_Mng.List_Type;
     Table : Hash_Mng.Hash_Table;
-    Current : Element_Access := null;
+    Current : Hashed_Cell;
     Hash_Index : Hash_Mng.Hash_Range := 0;
     In_Cb : Boolean := False;
   end record;
