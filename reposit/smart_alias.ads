@@ -1,4 +1,4 @@
--- Allow several object to have references to a common object and
+-- Allow several objects to have references to a common object and
 --  automatically inform when a user releases its reference
 with Ada.Finalization;
 generic

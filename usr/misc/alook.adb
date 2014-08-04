@@ -1,5 +1,5 @@
 -- Make ADA 83 sources, or badly cased but valid Ada sources,
---  look like a Ada 95 & 05 one.
+--  look like a Ada 95, 05 and 2012 one.
 -- Reserved words are set in lower_case and other identifiers in Mixed_Case.
 -- Numeric literals (extended digits and exponent) are set in UPPERCASE.
 -- Strings and comments are not modified.
@@ -17,8 +17,8 @@
 -- Debug displays the modified words.
 
 with Ada.Direct_Io, Ada.Exceptions;
-with Aski, As.U, Argument, Bloc_Io, Ada_Words, Lower_Str, Mixed_Str, Upper_Str,
-     Basic_Proc, Trace.Loggers;
+with Aski, As.U, Argument, Bloc_Io, Ada_Words.Keywords,
+     Lower_Str, Mixed_Str, Upper_Str, Basic_Proc, Trace.Loggers;
 procedure Alook is
 
   Logger : Trace.Loggers.Logger;
@@ -350,12 +350,12 @@ procedure Alook is
         return;
       end if;
       -- Identifier or reserved word
-      case Ada_Words.Check_Keyword (Str) is
-        when Ada_Words.True =>
+      case Ada_Words.Keywords.Check_Keyword (Str) is
+        when Ada_Words.Keywords.True =>
           Is_Keyword := True;
-        when Ada_Words.Maybe =>
+        when Ada_Words.Keywords.Maybe =>
           Is_Keyword := not Prev_Tick;
-        when Ada_Words.False =>
+        when Ada_Words.Keywords.False =>
           Is_Keyword := False;
       end case;
       if Is_Keyword and then Str /= Lower_Str (Str) then

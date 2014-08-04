@@ -1,4 +1,4 @@
-with Lower_Str, Text_Line, Dynamic_List;
+with Lower_Str, Text_Line, Dynamic_List, Ada_Words.Keywords;
 separate (Afpx_Bld)
 package body Xref is
 
@@ -12,12 +12,12 @@ package body Xref is
 
 
   procedure Check_Identifier (Name : in String) is
-    use type Ada_Words.Keyword_Res_List;
+    use type Ada_Words.Keywords.Keyword_Res_List;
   begin
     if not Ada_Words.Is_Identifier (Name) then
       raise Invalid_Identifier;
     end if;
-    if Ada_Words.Check_Keyword (Name) /= Ada_Words.False then
+    if Ada_Words.Keywords.Check_Keyword (Name) /= Ada_Words.Keywords.False then
       raise Invalid_Identifier;
     end if;
   end Check_Identifier;

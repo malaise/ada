@@ -39,7 +39,7 @@ package Queues.Timed is
                   Found  : out Boolean);
 
   -- Remove all items if any (no exception)
-  -- Leave clock if any is already attached
+  -- Leave the clock attached, if any
   procedure Clear (Queue : in out Timed_Type);
 
   -- Retrieve (and also remove) a non expired item

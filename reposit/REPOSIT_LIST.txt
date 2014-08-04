@@ -232,7 +232,7 @@ criteria.
 ada_parser (2)::
      Parses a text input flow, identifies ada lexical elements.
 
-ada_words (2)::
+ada_words ada_words.keywords (2)::
      Basic ada parsing of delimiters, separators and reserved words.
 
 address_ops (1)::

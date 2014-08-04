@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Ada_Words, Upper_Char, Lower_Str, Mixed_Str;
+with Ada_Words.Keywords, Upper_Char, Lower_Str, Mixed_Str;
 package body Ada_Parser is
 
   -- Characters that deserve specific handling:
@@ -87,27 +87,27 @@ package body Ada_Parser is
     -- End of identifier, check validity
     declare
       Str : constant String := Text.Image;
-      Is_Reserved : Ada_Words.Keyword_Res_List;
-      use type Ada_Words.Keyword_Res_List;
+      Is_Reserved : Ada_Words.Keywords.Keyword_Res_List;
+      use type Ada_Words.Keywords.Keyword_Res_List;
     begin
         -- Check that identifier is valid
       if not Ada_Words.Is_Identifier (Str) then
         raise Syntax_Error;
       end if;
       -- See if reserved word or normal identifier
-      Is_Reserved := Ada_Words.Check_Keyword (Str);
-      if Is_Reserved = Ada_Words.Maybe then
+      Is_Reserved := Ada_Words.Keywords.Check_Keyword (Str);
+      if Is_Reserved = Ada_Words.Keywords.Maybe then
         -- Access, delta, digits or range,
         -- see if prev significant lexical element is "'"
         if Context.Prev_Lex.Image = "'" then
           -- Prev was "'", so current is a qualifier
-          Is_Reserved := Ada_Words.False;
+          Is_Reserved := Ada_Words.Keywords.False;
         else
           -- Prev was not "'", so current is a reserved word
-          Is_Reserved := Ada_Words.True;
+          Is_Reserved := Ada_Words.Keywords.True;
         end if;
       end if;
-      if Is_Reserved = Ada_Words.True then
+      if Is_Reserved = Ada_Words.Keywords.True then
         Lexic := Reserved_Word;
         Get_Text (Lower_Str (Str), Lexic, Context, Text);
       else
