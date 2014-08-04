@@ -1,4 +1,4 @@
-with Ada.Direct_Io;
+with Ada.Exceptions, Ada.Direct_Io;
 with As.U, Aski,
      Con_Io, Normal, Argument,
      Mixed_Str, Basic_Proc, Xml_Parser,
@@ -1244,9 +1244,10 @@ exception
     Close (True);
     Basic_Proc.Put_Line_Error ("Syntax error.");
     Basic_Proc.Set_Error_Exit_Code;
-  when others =>
+  when Error:others =>
     Close (True);
-    Basic_Proc.Put_Line_Error ("Unexpected exception.");
+    Basic_Proc.Put_Line_Error ("Unexpected exception "
+                             & Ada.Exceptions.Exception_Name (Error) & ".");
     Basic_Proc.Set_Error_Exit_Code;
     raise;
 end Afpx_Bld;
