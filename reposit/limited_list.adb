@@ -272,6 +272,28 @@ package body Limited_List is
     return List.List.Search_Access (Criteria);
   end Search_Access;
 
+  -- Access to the cell (that stores data) for deleting it without searching
+  -- Get direct access to the current Cell (that stores the current Element)
+  -- CARE: As soon as the element is deleted, the access becomes invalid
+  --  and using it will lead to unpredictable results
+  function Cell_Access_Current (List : List_Type;
+                                Check_Empty : in Boolean := True)
+           return access Cell is
+  begin
+    return List.List.Cell_Access_Current (Check_Empty);
+  end Cell_Access_Current;
+
+  -- Delete current element and rewind the list
+  -- Rewinding is necessary because the impact of this deletion on current
+  --  position is unknown
+  procedure Delete_Current_Rewind (List     : in out List_Type;
+                                   Cell_Acc : access Cell;
+                                   Where    : in Direction := Next) is
+  begin
+    List.List.Delete_Current_Rewind (Cell_Acc, My_List.Movement (Where));
+  end Delete_Current_Rewind;
+
+
   -- Search with criteria of any type
   -----------------------------------
   -- Search the Nth occurence of an item matching the provided criteria

@@ -215,13 +215,30 @@ package Limited_List is
                            Check_Empty : in Boolean := True)
            return access Element_Type;
 
-
   -- Search the element that is at the provided access (move to it)
   -- Found is set to True if the matching item is found, then the current
   --  position is set to this item, otherwise it is unchanged.
   -- Does not raise Empty_List.
   function Search_Access (List      : in out List_Type;
                           Criteria  : access Element_Type) return Boolean;
+
+
+  -- Access to the cell (that stores data) for deleting it without searching
+  -- Get direct access to the current Cell (that stores the current Element)
+  -- CARE: As soon as the element is deleted, the access becomes invalid
+  --  and using it will lead to unpredictable results
+  subtype Cell is My_List.Cell;
+  function Cell_Access_Current (List : List_Type;
+                                Check_Empty : in Boolean := True)
+           return access Cell;
+
+  -- Delete current element and rewind the list
+  -- Rewinding is necessary because the impact of this deletion on current
+  --  position is unknown
+  procedure Delete_Current_Rewind (List     : in out List_Type;
+                                   Cell_Acc : access Cell;
+                                   Where    : in Direction := Next);
+
 
 
   -- Three different strategies to search:

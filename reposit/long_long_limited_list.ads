@@ -222,6 +222,22 @@ package Long_Long_Limited_List is
   function Search_Access (List      : in out List_Type;
                           Criteria  : access Element_Type) return Boolean;
 
+  -- Access to the cell (that stores data) for deleting it without searching
+  -- Get direct access to the current Cell (that stores the current Element)
+  -- CARE: As soon as the element is deleted, the access becomes invalid
+  --  and using it will lead to unpredictable results
+  type Cell is limited private;
+  function Cell_Access_Current (List : List_Type;
+                                Check_Empty : in Boolean := True)
+           return access Cell;
+
+  -- Delete current element and rewind the list
+  -- Rewinding is necessary because the impact of this deletion on current
+  --  position is unknown
+  procedure Delete_Current_Rewind (List     : in out List_Type;
+                                   Cell_Acc : access Cell;
+                                   Where    : in Direction := Next);
+
   -- Three different strategies to search:
   -- From_Current : Search starts from current item (that may match)
   -- Skip_Current : Search starts after/before current item
@@ -351,8 +367,7 @@ package Long_Long_Limited_List is
   Sort_Error : exception;
 
 private
-  type Cell;
-  type Link is access Cell;
+  type Link is access all Cell;
   type Cell is record
     Value : Element_Type;
     Next  : Link := null;

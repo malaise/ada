@@ -472,15 +472,16 @@ package body Long_Long_Limited_List is
     end if;
     Check (List);
     -- Care here: List_Length reads Pos_First and Pos_Last!
-    if Where = Next then
-      List.Current := List.First;
-      List.Pos_Last := List_Length(List);
-      List.Pos_First := 1;
-    else
-      List.Current := List.Last;
-      List.Pos_First := List_Length(List);
-      List.Pos_Last := 1;
-    end if;
+    case Where is
+      when Next =>
+        List.Current := List.First;
+        List.Pos_Last := List_Length(List);
+        List.Pos_First := 1;
+      when Prev =>
+        List.Current := List.Last;
+        List.Pos_First := List_Length(List);
+        List.Pos_Last := 1;
+    end case;
     List.Modified := True;
   end Rewind;
 
@@ -701,7 +702,6 @@ package body Long_Long_Limited_List is
     return List.Current.Value'Unrestricted_Access;
   end Access_Current;
 
-  -- Search
 
   -- Search the element that is at the provided access (move to it)
   function Search_Access (List      : in out List_Type;
@@ -744,6 +744,78 @@ package body Long_Long_Limited_List is
       raise;
   end Search_Access;
 
+
+  -- Access to the cell (that stores data) for deleting it without searching
+  -- Get direct access to the current Cell (that stores the current Element)
+  -- CARE: As soon as the element is deleted, the access becomes invalid
+  --  and using it will lead to unpredictable results
+  function Cell_Access_Current (List : List_Type;
+                                Check_Empty : in Boolean := True)
+           return access Cell is
+  begin
+    if Is_Empty (List) then
+      if Check_Empty then
+        Check (List);
+      else
+        return null;
+      end if;
+    end if;
+    return List.Current;
+  end Cell_Access_Current;
+
+  -- Delete current element and rewind the list
+  -- Rewinding is necessary because the impact of this deletion on current
+  --  position is unknown
+  procedure Delete_Current_Rewind (List     : in out List_Type;
+                                   Cell_Acc : access Cell;
+                                   Where    : in Direction := Next) is
+    Len : Long_Longs.Ll_Natural;
+  begin
+    Check_Cb (List);
+    Check (List);
+    List.Modified := True;
+    -- Disconnect Cell_Acc
+    if Cell_Acc.Next /= null then
+      Cell_Acc.Next.Prev := Cell_Acc.Prev;
+    else
+      List.Last := Cell_Acc.Prev;
+    end if;
+    if Cell_Acc.Prev /= null then
+      Cell_Acc.Prev.Next := Cell_Acc.Next;
+    else
+      List.First := Cell_Acc.Next;
+    end if;
+    -- Move Cell_Acc into free list
+    if Free_List /= null then
+      Free_List.Prev := Link (Cell_Acc);
+    end if;
+    Cell_Acc.Prev := null;
+    Cell_Acc.Next := Free_List;
+    Free_List := Link (Cell_Acc);
+    -- Rewind: Update Pos_xxx and Current
+    Len := List.Pos_First + List.Pos_Last - 2;
+    if Len = 0 then
+      -- Check the special case when list becomes empty
+      List.Pos_First := 0;
+      List.Pos_Last := 0;
+      List.Current := null;
+    else
+      case Where is
+        when Next =>
+          List.Current := List.First;
+          List.Pos_First := 1;
+          List.Pos_Last := Len;
+        when Prev =>
+          List.Current := List.Last;
+          List.Pos_First := Len;
+          List.Pos_Last := 1;
+      end case;
+    end if;
+  end Delete_Current_Rewind;
+
+
+  -- Searches
+  -----------
 
   -- Generic search with a Criteria not of Item_Type
   function Search_Criteria (List      : in out List_Type;
