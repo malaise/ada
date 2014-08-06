@@ -39,6 +39,7 @@ package Config is
   procedure Add_Bookmark (After_Index : in Natural; Bookmark : in Bookmark_Rec);
   procedure Move_Bookmark (Index : in Positive; Up : in Boolean);
 
+  Io_Error : exception;
   Invalid_Config : exception;
 
 end Config;

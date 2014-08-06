@@ -1,4 +1,4 @@
-with Basic_Proc, Environ, Directory, Xml_Parser.Generator, Timers;
+with Basic_Proc, Environ, Directory, Xml_Parser.Generator, Timers, Sys_Calls;
 package body Config is
 
   -- Config file name
@@ -72,6 +72,8 @@ package body Config is
   -- Save the conf
   procedure Save is
     Ok : Boolean;
+    Tmp_Suffix : constant String := ".tmp";
+    Tmp_File_Name : constant String := Get_File_Name & Tmp_Suffix;
   begin
     -- Check Ctx, it is Ok for sure but this correctly sets
     --  Is_Mixed to False on inserted bookmarks
@@ -81,7 +83,34 @@ package body Config is
                                  & Ctx.Get_Parse_Error_Message);
       raise Invalid_Config;
     end if;
-    Ctx.Put (Get_File_Name);
+    -- Try to overwrite file, make a copy of current
+    if not Sys_Calls.Rename (Get_File_Name, Tmp_File_Name) then
+      Basic_Proc.Put_Line_Error ("Cannot backup config file "
+                                 & Get_File_Name & ".");
+      raise Io_Error;
+    end if;
+    begin
+      Ctx.Put (Get_File_Name);
+      -- Ok
+      begin
+        Sys_Calls.Unlink (Tmp_File_Name);
+      exception
+        when others =>
+          -- Warning
+          Basic_Proc.Put_Line_Error ("Cannot delete backup config file "
+                                 & Tmp_File_Name & ".");
+      end;
+    exception
+      when others =>
+        -- Cannot generate and save config
+        Basic_Proc.Put_Line_Error ("Cannot write config file "
+                                 & Get_File_Name & ".");
+        -- Try to restore backup
+        if not Sys_Calls.Rename (Tmp_File_Name, Get_File_Name) then
+          Basic_Proc.Put_Line_Error ("And cannot restore backup, sorry.");
+          raise;
+        end if;
+    end;
   end Save;
 
   -- X terminal

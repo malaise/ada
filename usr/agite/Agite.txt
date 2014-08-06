@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V14.22
+V14.23
 
 General purpose
 ---------------
@@ -138,6 +138,9 @@ Agite stores the xref:XBook[bookmarks] in this section:
 
 NOTE: The DTD file 'agite.dtd' must be located according to the ''DOCTYPE''
 directive of the Agite XML configuration file.
+
+NOTE: In case of problem, a backup of the configuration file may be found at
+the same location and name as the configuration file, with the suffix ".tmp".
 
 Agite screens
 -------------
