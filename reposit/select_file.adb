@@ -361,13 +361,13 @@ package body Select_File is
     Afpx.Clear_Field (Title_Fld);
     if For_Read then
       Afpx.Encode_Field (Title_Fld, (0, 0),
-          (if Read_Title = ""
-           or else Read_Title'Length > Get_Title_Width then "Load a file"
+          (if Read_Title'Length > Get_Title_Width then
+             Str_Util.Normalize (Read_Title)(1 .. Get_Title_Width)
            else Read_Title));
     else
       Afpx.Encode_Field (Title_Fld, (0, 0),
-          (if Write_Title = ""
-           or else Write_Title'Length > Get_Title_Width then "Save in a file"
+          (if Write_Title'Length > Get_Title_Width then
+            Str_Util.Normalize (Write_Title)(1 .. Get_Title_Width)
            else Write_Title));
     end if;
 

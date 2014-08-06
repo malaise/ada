@@ -27,8 +27,8 @@ generic
   -- Any action to do when a signal_event has occured (see Afpx Signal_Event)
   with procedure Signal_Callback is null;
   -- Title when reading or writting
-  Read_Title  : in String := ""; -- Default: "Load a file"
-  Write_Title : in String := ""; -- Default: "Save in a file"
+  Read_Title  : in String := "Load a file";
+  Write_Title : in String := "Save in a file";
 
 package Select_File is
   -- On Ctrl C, or close window
