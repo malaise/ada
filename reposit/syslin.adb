@@ -1,6 +1,6 @@
 package body Syslin is
 
-  -- The heart (art) of solving
+  -- The solving function
   function Gauss (A : Matrix; B : Vector) return Vector is
 
     -- Dimension of the system
@@ -10,9 +10,9 @@ package body Syslin is
     -- The pivot and its line
     Pivot       : Number;
     Pivot_Line  : Dimension;
-    -- The number above which we consider a number as nul
+    -- The number below which we consider a number as nul
     Epsilon     : constant Number := Number'Epsilon;
-    -- Working matrix and vector for triangulation
+    -- Temporary matrix and vector for triangulation
     A_T         : Matrix(Dimension, Dimension);
     B_T         : Vector(Dimension);
   begin
@@ -49,7 +49,7 @@ package body Syslin is
       return Solution;
     end if;
 
-    -- Load working matrix and vector
+    -- Load tmp matrix and vector
     A_T := A;
     B_T := B;
 
@@ -57,7 +57,8 @@ package body Syslin is
     for Line in Dimension'First .. Dimension'Pred(Dimension'Last) loop
 
       -- Search for biggest pivot as possible
-      --  from current line to last line, in current column (which is current line index)
+      --  from current line to last line, in current column (which is current
+      --  line index)
       Pivot := abs A_T(Line, Line);
       Pivot_Line := Line;
       for Sub_Line in Dimension'Succ(Line) .. Dimension'Last loop
@@ -118,7 +119,8 @@ package body Syslin is
     -- Resolution "in stairs"
     -- Last line is A(l,l) * x(l) = B(l)  => x(l)
     -- then A(l-1, l-1) * x(l-1) + A(l-1, l) * x(l) = B(l-1) => x(l-1)
-    -- then A(l-2, l-2) * x(l-2) + A(l-2, l-1) * x(l-1) +  A(l-2, l * x(l) = B(l-2)
+    -- then A(l-2, l-2) * x(l-2) + A(l-2, l-1) * x(l-1)
+    --                           +  A(l-2, l * x(l) = B(l-2)
     --                            <----------- computed in Tmp ----------->
     Solution(Dimension'Last) := B_T(Dimension'Last) / A_T(Dimension'Last, Dimension'Last);
     for Line in reverse Dimension'First .. Dimension'Pred(Dimension'Last) loop
@@ -137,3 +139,4 @@ package body Syslin is
   end Gauss;
 
 end Syslin;
+

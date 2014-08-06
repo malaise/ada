@@ -1,4 +1,4 @@
--- A is a square matrix and B is a vector of same dimension
+-- A is a square matrix and B is a vector of the same dimension
 -- Resolution of A.X = B, where X is the vector of unknown values
 generic
 
@@ -14,7 +14,7 @@ package Syslin is
   -- The returned vector is indexed from 1 .. Length
   function Gauss (A : Matrix; B : Vector) return Vector;
 
-  -- If the matrix is not a square, or if indexes do not have same Length
+  -- If the matrix is not a square, or if indexes do not have the same Length
   Dimension_Error   : exception;
 
   -- If the determinant is nul
