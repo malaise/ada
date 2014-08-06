@@ -122,7 +122,8 @@ package Tcp_Util is
   -- The Ttl is used (if supported by the TCP stack) to establish the
   --  connection and in the established connection
   -- Timeout = 0.0 may be used for infinite attempt
-  -- Returns a valid Dscr (Open, Full blocking) if success
+  -- Returns a valid Dscr (Open, Full blocking) if success, otherwise
+  --  Socket.No_Socket
   -- May raise Name_Error if Host.Name or Port.Name is unknown
   function Connect_To (Protocol      : in Tcp_Protocol_List;
                        Host          : in Remote_Host;
@@ -135,8 +136,8 @@ package Tcp_Util is
   -------------------------
   -- Acception callback
   -- The Local_Dscr is the one set by Accept_From
-  --  New_Dscr is the one of the new socket, in mode Blocking_Send,
-  --  Remote_Host_Id and Remote_Port_Num are set.
+  -- New_Dscr is the one of the new socket, in mode Blocking_Send,
+  -- Remote_Host_Id and Remote_Port_Num are set.
   type Acception_Callback_Access is
     access procedure (Local_Port_Num  : in Port_Num;
                       Local_Dscr      : in Socket.Socket_Dscr;
@@ -146,7 +147,7 @@ package Tcp_Util is
 
   -- Accept connections to a local port, possibly on a specific interface
   -- Dscr is open in mode Blocking_Send, and set to the accept connections
-  -- Num is its port num (usefull when dynamical).
+  -- Num is its port num (usefull when dynamic).
   -- May raise Name_Error if Port.Name is unknown
   procedure Accept_From (Protocol     : in Tcp_Protocol_List;
                          Port         : in Local_Port;
@@ -155,8 +156,8 @@ package Tcp_Util is
                          Num          : out Port_Num;
                          Link_If      : in Socket.Host_Id := Socket.Any_Host);
 
-  -- Abort further accepts on port (Af_inet and Af_unix may be on the same port).
-  --  and closes the Dscr
+  -- Abort further accepts on port (Af_Inet and Af_Unix may be on the same
+  --  port) and closes the Dscr.
   -- May raise No_Such
   procedure Abort_Accept (Protocol : in Tcp_Protocol_List; Num : in Port_Num);
 
@@ -202,7 +203,7 @@ package Tcp_Util is
   -- If the socket is blocking then the callbacks are not used.
   -- If send is called on a non blocking socket and overflows and then the
   --   socket is changed to blocking then a Timeout error is reported as
-  --   soon as possible (Timeout expiration or next attempt to re send).
+  --   soon as possible (Timeout expiration or next attempt to re-send).
   -- This function can be used on a UDP/IPM socket but adds no value compared
   --  to Socket.Send
   Timeout_Error : exception;

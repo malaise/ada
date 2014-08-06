@@ -1,5 +1,6 @@
 -- Creates a temporary file (empty and closed) in Temp_Dir
--- Returns the file name (Temp_Dir & "/Temp_File.xxx")
+-- Returns the file name (Temp_Dir & "/Temp_File.xxx",
+--  where xxx is from 000 to 9999)
 package Temp_File is
   function Create (Temp_Dir : String) return String;
   -- If directory is not accessible (does not exists or is not user RWX)
