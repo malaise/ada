@@ -31,8 +31,7 @@ package Str_Util.Regex is
     Multi_Line : Boolean := False;
     Dot_All : Boolean := False;
   end record;
-  Tmp_Options : Options_Rec;
-  Default_Options : constant Options_Rec := Tmp_Options;
+  Default_Options : constant Options_Rec := (others => <>);
 
 
   -- Locate a fragment of Within string matching the regexp Criteria.
