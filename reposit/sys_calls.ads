@@ -6,6 +6,7 @@ package Sys_Calls is
   -- Call system (execute UNIX command)
   function Call_System (Command : String) return Integer;
 
+
   -- Unlink a file, returns True if done
   function Unlink (File_Name : String) return Boolean;
   -- Unlink a file if possible, no error
@@ -19,9 +20,11 @@ package Sys_Calls is
   -- Raises Access_Error if other error
   procedure Link (Old_Path, New_Path : String; Hard : Boolean);
 
+
   -- Errno and associated string
   function Errno return Integer;
   function Str_Error (Err : Integer) return String;
+
 
   -- Put line on stdout or stderr
   Io_Error : exception renames Basic_Proc.Io_Error;
@@ -35,6 +38,7 @@ package Sys_Calls is
   procedure Put_Line_Error (Str : in String);
   procedure New_Line_Error;
   procedure Flush_Error;
+
 
   -- Basic getenv, raises Env_Not_Set
   Env_Not_Set : exception;
@@ -56,11 +60,13 @@ package Sys_Calls is
   procedure Setenv (Env_Name : in String; Env_Value : in String);
   procedure Unsetenv (Env_Name : in String);
 
+
   -- Set exit code
   procedure Set_Exit_Code (Code : in Natural);
   -- Set ok or error exit code
   procedure Set_Ok_Exit_Code;
   procedure Set_Error_Exit_Code;
+
 
   -- Unix File Descriptor
   type File_Desc is new C_Types.Int range 0 .. C_Types.Int'Last;
@@ -71,6 +77,7 @@ package Sys_Calls is
   function Stdin  return File_Desc;
   function Stdout return File_Desc;
   function Stderr return File_Desc;
+
 
   -- Result of file check
   type File_Status_List is (Found, Not_Found, Error);
@@ -84,17 +91,15 @@ package Sys_Calls is
 
   -- Kind of file on disk (not tty)
   subtype File_Kind_List is File_Desc_Kind_List range File .. Unknown;
-  -- File modif time
+  -- File modif time, in GMT time
   type Time_T is new C_Types.Time_T;
-
-  -- File Rights are :
+  -- File access rights are :
   --  1st bit OX  2nd bit OW  3rd bit OR
   --  4th bit GX  5th bit GW  6th bit GR
   --  7th bit UX  8th bit UW  9th bit UR
   -- 10th bit ST (sticky)
   -- 11th bit GS (set GID)
   -- 12th bit US (set UID)
-  -- Modif time is in GMT time
   subtype Off_T is C_Types.Off_T;
   type File_Stat_Rec is record
     Kind       : File_Kind_List;
@@ -110,7 +115,7 @@ package Sys_Calls is
   -- May raise Name_Error or Access_Error
   function File_Stat (File_Name : String) return File_Stat_Rec;
 
-  -- Set file mode
+  -- Set file access rights
   -- May raise Name_Error or Access_Error
   procedure Set_Rights (File_Name : in String; Rights : in Natural);
 
@@ -120,6 +125,7 @@ package Sys_Calls is
   -- Get offset of local time versus GMT
   -- Add this offset to a GMT time to get the corresponding local time
   function Gmt_Offset return Duration;
+
 
   -- Get effective user/group Id of current process
   function Get_Effective_User_Id return Natural;
@@ -138,6 +144,7 @@ package Sys_Calls is
   -- May raise System_Error
   function Get_Name_Of_Group_Id (Group_Id : Natural) return String;
   function Get_Id_Of_Group_Name (Group_Name : String) return Natural;
+
 
   -- Modes for a tty. Return True if success
   type Tty_Mode_List is (
@@ -168,6 +175,7 @@ package Sys_Calls is
   procedure Get_Immediate (Fd : in File_Desc;
                            Status : out Get_Status_List;
                            C      : out Character);
+
   -- Read / write on File_Desc
   -- May raise System_Error (C read/write returned -1)
   function Read  (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
@@ -201,6 +209,7 @@ package Sys_Calls is
   -- Set or reset CLOEXEC on Fd
   -- May raise System_Error
   procedure Set_Cloexec (Fd : in File_Desc; On : in Boolean);
+
 
   -- Process Id
   type Pid is new Integer;
@@ -245,6 +254,7 @@ package Sys_Calls is
   end record;
   -- May raise System_Error
   function Next_Dead return Death_Rec;
+
 
   -- Exceptions (of File_Stat, Open, Create, Link)
   Name_Error   : exception;
