@@ -97,22 +97,22 @@ package body Regular_Expressions is
   end Check_Pcre_Version;
 
   -- Ada binding
-  procedure Compile (Result : in out Compiled_Pattern;
+  procedure Compile (Compiled : in out Compiled_Pattern;
                      Ok : out Boolean;
-                     Str : in String;
+                     Criteria : in String;
                      Case_Sensitive : in Boolean := True;
                      Multi_Line : in Boolean := False;
                      Dot_All : in Boolean := False) is
-    Str4C : constant String := String4C (Str);
+    Str4C : constant String := String4C (Criteria);
     Cflags : Integer := 0;
     use type System.Address, Language.Language_List;
     use Bit_Ops;
   begin
     Check_Pcre_Version;
-    Result.Lang := Language.Get_Language;
+    Compiled.Lang := Language.Get_Language;
     -- Set flags
     Cflags := 0;
-    if Result.Lang = Language.Lang_Utf_8 then
+    if Compiled.Lang = Language.Lang_Utf_8 then
       Cflags := Cflags or C_Utf8;
     end if;
     if not Case_Sensitive then
@@ -125,25 +125,25 @@ package body Regular_Expressions is
       Cflags := Cflags or C_Dotall;
     end if;
     -- Free previous buffer if needed, allocate buffer if needed
-    Result.Error := 0;
-    if Result.Comp_Addr /= System.Null_Address then
-      C_Regfree (Result.Comp_Addr);
+    Compiled.Error := 0;
+    if Compiled.Comp_Addr /= System.Null_Address then
+      C_Regfree (Compiled.Comp_Addr);
     else
       -- Allocate regex buffer
-      Result.Comp_Addr := C_Malloc_Regex;
+      Compiled.Comp_Addr := C_Malloc_Regex;
     end if;
     -- Compile
-    Result.Error := C_Regcomp (Result.Comp_Addr, Str4C'Address, Cflags);
-    Ok := Result.Error = 0;
+    Compiled.Error := C_Regcomp (Compiled.Comp_Addr, Str4C'Address, Cflags);
+    Ok := Compiled.Error = 0;
   end Compile;
 
   -- Check a regex, return True if OK
   function Check (Criteria : String) return Boolean is
-    Pattern : Compiled_Pattern;
+    Compiled : Compiled_Pattern;
     Ok : Boolean;
   begin
-    Compile (Pattern, Ok, Criteria);
-    Free (Pattern);
+    Compile (Compiled, Ok, Criteria);
+    Free (Compiled);
     return Ok;
   end Check;
 
@@ -177,24 +177,26 @@ package body Regular_Expressions is
   --  Cells(1).Last_Offset_Stop = Str'Last
   -- Beware that a strict match is not necessarily valid (e.g. Any_Match
   --  strictly matches "" but is not valid)
-  function Strict_Match (Str : String; Cell : Match_Cell)  return Boolean is
+  function Strict_Match (To_Check : String; Cell : Match_Cell)
+           return Boolean is
   begin
     return Cell /= No_Match
-           and then Cell.First_Offset = Str'First
-           and then Cell.Last_Offset_Stop = Str'Last;
+           and then Cell.First_Offset = To_Check'First
+           and then Cell.Last_Offset_Stop = To_Check'Last;
   end Strict_Match;
 
-  function Strict_Match (Str : String; Cells : Match_Array) return Boolean is
+  function Strict_Match (To_Check : String; Cells : Match_Array)
+           return Boolean is
   begin
     if Cells'Length = 0 then
       return False;
     else
-      return Strict_Match (Str, Cells(Cells'First));
+      return Strict_Match (To_Check, Cells(Cells'First));
     end if;
   end Strict_Match;
 
   -- Exec regex
-  procedure Exec (Criteria : in Compiled_Pattern;
+  procedure Exec (Compiled : in Compiled_Pattern;
                   To_Check : in String;
                   N_Matched : out Natural;
                   Match_Info : out Match_Array;
@@ -214,8 +216,8 @@ package body Regular_Expressions is
     Match_Info := (others => No_Match);
     N_Matched := 0;
     -- Check criteria has compiled
-    if Criteria.Error /= 0
-    or else Criteria.Comp_Addr = System.Null_Address then
+    if Compiled.Error /= 0
+    or else Compiled.Comp_Addr = System.Null_Address then
       raise No_Criteria;
     end if;
     -- Set flags
@@ -232,7 +234,7 @@ package body Regular_Expressions is
     end if;
     -- Exec regex
     C_Match_Info := (others => (1, 0));
-    Cres := C_Regexec (Criteria.Comp_Addr,
+    Cres := C_Regexec (Compiled.Comp_Addr,
                        To_Check4C'Address,
                        C_Types.Size_T(Match_Info'Length),
                        C_Match_Info'Address,
@@ -257,7 +259,7 @@ package body Regular_Expressions is
         Match_Info(I).Last_Offset_Stop :=
              C_Match_Info(J).Stop_Offset + First - 1;
         -- Any adjustment due to Lang
-        if Criteria.Lang = Language.Lang_Utf_8
+        if Compiled.Lang = Language.Lang_Utf_8
         and then Match_Info(I).Last_Offset_Stop >= First then
           Adjust_Utf8 (To_Check(Match_Info(I).Last_Offset_Stop),
                        Match_Info(I).Last_Offset_Stop);
@@ -271,7 +273,7 @@ package body Regular_Expressions is
   -- Compare string Str to Criteria
   -- Return a Match_Array of size between 0 (no match) and Max_Match
   -- May raise No_Criteria if Criteria does not compile
-  function Match (Criteria, Str : String; Max_Match : Positive := 10)
+  function Match (Criteria, To_Check : String; Max_Match : Positive := 10)
                   return Match_Array is
     Pattern : Compiled_Pattern;
     Ok : Boolean;
@@ -282,7 +284,7 @@ package body Regular_Expressions is
     if not Ok then
       raise No_Criteria;
     end if;
-    Exec (Pattern, Str, Matched, Match_Info);
+    Exec (Pattern, To_Check, Matched, Match_Info);
     Free (Pattern);
     return Match_Info(1 .. Matched);
   end Match;
@@ -290,8 +292,8 @@ package body Regular_Expressions is
   -- Compare string Str to Criteria
   -- Returns No_Match or a Match_Cell
   -- May raise No_Criteria if Criteria does not compile
-  function Match (Criteria, Str : String) return Match_Cell is
-    Match_Info : constant Match_Array := Match (Criteria, Str, 1);
+  function Match (Criteria, To_Check : String) return Match_Cell is
+    Match_Info : constant Match_Array := Match (Criteria, To_Check, 1);
   begin
     return (if Match_Info'Length = 0 then No_Match else Match_Info(1));
   end Match;
@@ -299,24 +301,24 @@ package body Regular_Expressions is
   -- Compare string Str to Criteria
   -- Returns True or False
   -- May raise No_Criteria if Criteria does not compile.
-  function Match (Criteria, Str : String;
+  function Match (Criteria, To_Check : String;
                   Strict : in Boolean) return Boolean is
     Result : Match_Cell;
   begin
-    Result := Match (Criteria, Str);
+    Result := Match (Criteria, To_Check);
     if not Strict then
       -- Ok if match
       return Result /= No_Match;
     else
       -- Ok if strict match
-      return Strict_Match (Str, Result);
+      return Strict_Match (To_Check, Result);
     end if;
   end Match;
 
-  function Error (Criteria : in Compiled_Pattern) return String is
+  function Error (Compiled : in Compiled_Pattern) return String is
     Len : C_Types.Size_T;
   begin
-    Len := C_Regerror (Criteria.Error, Criteria.Comp_Addr,
+    Len := C_Regerror (Compiled.Error, Compiled.Comp_Addr,
                        System.Null_Address, 0);
     if Len <= 0 then
       return "";
@@ -324,21 +326,21 @@ package body Regular_Expressions is
     declare
       Str : String (1 .. Integer(Len));
     begin
-      Len := C_Regerror (Criteria.Error, Criteria.Comp_Addr,
+      Len := C_Regerror (Compiled.Error, Compiled.Comp_Addr,
                          Str'Address, Len);
       return Str_Util.Strip (Str (1 .. Integer(Len) - 1));
     end;
   end Error;
 
-  procedure Free (Criteria : in out Compiled_Pattern) is
+  procedure Free (Compiled : in out Compiled_Pattern) is
     use type System.Address;
   begin
-    if Criteria.Comp_Addr /= System.Null_Address then
-      C_Regfree (Criteria.Comp_Addr);
-      C_Free_Regex (Criteria.Comp_Addr);
-      Criteria.Comp_Addr := System.Null_Address;
+    if Compiled.Comp_Addr /= System.Null_Address then
+      C_Regfree (Compiled.Comp_Addr);
+      C_Free_Regex (Compiled.Comp_Addr);
+      Compiled.Comp_Addr := System.Null_Address;
     end if;
-    Criteria.Error := 0;
+    Compiled.Error := 0;
   end Free;
 
   overriding procedure Finalize (Criteria : in out Compiled_Pattern) is

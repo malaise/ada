@@ -13,8 +13,8 @@ package Regular_Expressions is
   type Compiled_Pattern is limited private;
 
   -- Matching information:
-  -- Filled with indexes in string To_Check,
-  --  defining matching substrings
+  -- Filled with the indexes in the string To_Check, that match
+  --  parentheses
   -- When a character is encoded on several bytes,
   --  Language is used to detect the end of this sequence and
   --  set Last_Offset_Stop to the last byte of the sequence.
@@ -36,18 +36,18 @@ package Regular_Expressions is
   Any_Match : constant Match_Cell := (1, 0, 0);
 
   -- Compile a regex
-  -- By default
+  -- By default:
   --  Case is sensitive,
   --  '^' and '$' do not match a newline in the middle of Str
   --  '.' does not match all characters (e.g. new line, carriage return...)
-  procedure Compile (Result : in out Compiled_Pattern;
+  procedure Compile (Compiled : in out Compiled_Pattern;
                      Ok : out Boolean;
-                     Str : in String;
+                     Criteria : in String;
                      Case_Sensitive : in Boolean := True;
                      Multi_Line : in Boolean := False;
                      Dot_All : in Boolean := False);
 
-  -- Check syntax of a regex, return True if OK
+  -- Check syntax of a regex (compiles it) , return True if OK
   function Check (Criteria : String) return Boolean;
 
   -- Execute a regex
@@ -66,26 +66,26 @@ package Regular_Expressions is
   -- Begin_Line_Match and End_Line_Match allow '^' and '$' to match beginning
   --  and end of line respectively (if regexp was compiled with Multi_Line).
   No_Criteria : exception;
-  procedure Exec (Criteria : in Compiled_Pattern;
+  procedure Exec (Compiled : in Compiled_Pattern;
                   To_Check : in String;
                   N_Matched : out Natural;
                   Match_Info : out Match_Array;
                   Begin_Line_Match : in Boolean := True;
                   End_Line_Match : in Boolean := True);
 
-  -- Compare string Str to Criteria (Compile and Exec with default values)
+  -- Compare string To_Check to Criteria (Compile and Exec with default values)
   -- Return a Match_Array of size between 0 (no match) and the requested
   --  Max_Match depending on how many substrigs have matched
   --  Max_Match = 10 allows up to 9 substrings
   -- May raise No_Criteria if Criteria does not compile
-  function Match (Criteria, Str : String; Max_Match : Positive := 10)
+  function Match (Criteria, To_Check : String; Max_Match : Positive := 10)
                   return Match_Array;
 
-  -- Compare string Str to Criteria (Compile and Exec with default values)
+  -- Compare string To_Check to Criteria (Compile and Exec with default values)
   -- Returns No_Match or a Match_Cell (possibly Any_Match) corresponding
   --  to Match_Info(1)
   -- May raise No_Criteria if Criteria does not compile
-  function Match (Criteria, Str : String) return Match_Cell;
+  function Match (Criteria, To_Check : String) return Match_Cell;
 
   -- Check that a Match_Cell (returned by Exec or Match) is valid
   --  i.e. it can be used to extract a matching (sub) string
@@ -93,34 +93,34 @@ package Regular_Expressions is
   function Valid_Match (Cell : Match_Cell) return Boolean;
 
   -- Check that a Match_Cell or Match_Array (returned by Exec or Match)
-  --  matches strictly the string Str
-  -- Strict means that the complete Str matches the criteria, i.e.
-  --  Cells(1).First_Offset = Str'First and
-  --  Cells(1).Last_Offset_Stop = Str'Last
+  --  matches strictly the string To_Check
+  -- Strict means that the complete To_Check matches the criteria, i.e.
+  --  Cells(1).First_Offset     = To_Check'First and
+  --  Cells(1).Last_Offset_Stop = To_Check'Last
   -- Beware that a strict match is not necessarily valid (e.g. Any_Match
   --  strictly matches "" but is not valid)
-  function Strict_Match (Str : String; Cell  : Match_Cell)  return Boolean;
-  function Strict_Match (Str : String; Cells : Match_Array) return Boolean;
+  function Strict_Match (To_Check : String; Cell  : Match_Cell)  return Boolean;
+  function Strict_Match (To_Check : String; Cells : Match_Array) return Boolean;
 
-  -- Compare string Str to Criteria (Compile and Exec with default values)
+  -- Compare string To_Check to Criteria (Compile and Exec with default values)
   -- If Strict is set, then True is returned if and only if the
-  --  complete Str matches the criteria (i.e. First_Offset = Str'First
-  --  and Last_Offset_Stop = Str'Last)
+  --  complete Str matches the criteria (i.e. First_Offset = To_Check'First
+  --  and Last_Offset_Stop = To_Check'Last)
   -- Note that setting Strict to True does not prevent lazyness of evaluation,
-  --  so if there are different ways for Str to match Criteria then the Match
-  --  may select the shortest alternative and the strictness check may fail;
-  --  this is not the case if the Criteria starts by '^' and ends by '$'
-  -- Example: "ti" matches "to?|ti"  but not strictly, while it stricly matches
+  --  so if there are different ways for To_Check to match Criteria then the
+  --  Match may select the shortest alternative and the strictness check may
+  --  fail; this is not the case if the Criteria starts by '^' and ends by '$'
+  -- Example: "ti" matches "to?|ti"  but not strictly, while it strictly matches
   --  "^(to?|ti)$" and "ti|to?"
   -- May raise No_Criteria if Criteria does not compile
-  function Match (Criteria, Str : String;
+  function Match (Criteria, To_Check : String;
                   Strict : Boolean) return Boolean;
 
   -- Get Compilation error
-  function Error (Criteria : Compiled_Pattern) return String;
+  function Error (Compiled : Compiled_Pattern) return String;
 
   -- Free compiled (or error) pattern
-  procedure Free (Criteria : in out Compiled_Pattern);
+  procedure Free (Compiled : in out Compiled_Pattern);
 
 private
 
