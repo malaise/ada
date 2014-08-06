@@ -39,7 +39,7 @@ package State_Machine is
   -- Procedure to report a new state, on event or not
   type State_Report_Access is
        access procedure (Id : in Machine_Id;
-                        State_Change : in State_Change_Rec);
+                         State_Change : in State_Change_Rec);
 
   -- To add a report callback on a specific new state (due to event or not)
   -- May raise Report_Already if this state already has a report callback
@@ -83,7 +83,7 @@ package State_Machine is
   procedure End_Declaration (Machine : in out Machine_Type);
 
 
-  -- All following calls may raise Declaration_Not_Ended if
+  -- All the following calls may raise Declaration_Not_Ended if
   --  called before End_Declaration
 
   -- An event: do a transition. If the event is not defined for
