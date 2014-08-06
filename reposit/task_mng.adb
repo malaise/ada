@@ -14,15 +14,15 @@ package body Task_Mng is
   end Callback;
 
   -- Start/restart/replace
-  procedure Start (New_Period : in Duration := Activation_Period) is
+  procedure Start (Period : in Duration := Default_Period) is
     Expiration : Timers.Delay_Rec (Timers.Delay_Sec);
     New_Tid : Timers.Timer_Id;
   begin
     -- Set new period
-    Expiration.Period := (if New_Period < Min_Period then Min_Period
-                          elsif New_Period > Timers.Period_Range'Last then
+    Expiration.Period := (if Period < Min_Period then Min_Period
+                          elsif Period > Timers.Period_Range'Last then
                             Timers.Period_Range'Last
-                          else New_Period);
+                          else Period);
     Expiration.Delay_Seconds := Expiration.Period;
     -- Arm new timer ASAP
     New_Tid.Create (Expiration, Cb_Access);

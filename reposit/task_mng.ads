@@ -1,27 +1,26 @@
 with Timers;
 generic
 
-  Activation_Period : Duration := 1.0;
+  -- The default value for Period of Start
+  Default_Period : Duration := 1.0;
 
-  -- The user defines this procedure which will be called regulary.
-  -- The call back is called on timer expiration.
+  -- The user defines this procedure which will be called periodically.
+  -- The callback is called on timer expiration.
   with procedure Call_Back;
 
 package Task_Mng is
 
-  -- Default period at activation (instanciation)
-  Def_Period : constant Duration := 1.0;
   -- Any Period lower than Min_Period becomes Min_Period
   Min_Period : constant Duration := 0.1;
 
   -- At elaboration, the activity is not started
-  -- This call starts effectively the activity, possibly with a new period.
+  -- This call starts effectively the activity with a period.
   -- If the activity if already started, its period is updated (next activation
-  --  will occure at now + New_Period).
-  procedure Start (New_Period : in Duration := Activation_Period);
+  --  will occure at now + Period).
+  procedure Start (Period : in Duration := Default_Period);
 
-  -- When the the task is started, stops it.
-  -- If the task is already stopped, no effect.
+  -- When the the activity is started, stops it.
+  -- No effect if the activity is already stopped.
   procedure Stop;
 
 private
