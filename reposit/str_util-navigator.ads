@@ -8,7 +8,7 @@ package Str_Util.Navigator is
 
   type Navigator_Type is tagged private;
 
-  -- Constructor. Re-inits position to start of string and resets
+  -- Constructor. Re-inits the position to the start of string and resets
   --  No_Char to default
   procedure Set (Navig : in out Navigator_Type; Str : in String);
 
@@ -26,7 +26,7 @@ package Str_Util.Navigator is
   -- Move forward or backwards
   -- If Current + By is out of the string,
   --  if Check then raises Out_Of_Bounds
-  --  otherwise move out of the string
+  --  otherwise moves out of the string
   procedure Move (Navig : in out Navigator_Type;
                   By    : in Integer := 1;
                   Check : in Boolean := False);
@@ -41,14 +41,14 @@ package Str_Util.Navigator is
   function Get_No_Char (Navig : Navigator_Type) return Character;
 
   -- Lookup a character
-  -- If Current + Offset is out the string, raise Out_Of_Bounds if Check
-  --  and return No_Char otherwise
+  -- If Current + Offset is out of the string, raises Out_Of_Bounds if Check
+  --  and returns No_Char otherwise
   function Lookup (Navig  : Navigator_Type;
                    Offset : Integer := 0;
                    Check  : Boolean := False)
            return Character;
 
-  -- Return the String (from 1 to Length) stored in the Navigator
+  -- Return the string (from 1 to Length) stored in the Navigator
   function Image (Navig  : Navigator_Type) return String;
 
   -- Raised when Check is set and moving/looking out of string
