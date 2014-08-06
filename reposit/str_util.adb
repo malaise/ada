@@ -33,21 +33,37 @@ package body Str_Util is
                    From_Head : Boolean := True)
            return String is
     Used : array (Character) of Boolean := (others => False);
-    Input, Output : String (1 .. From'Length);
-    Last : Natural;
+    Output : String (1 .. From'Length);
+    First, Last : Natural;
     C : Character;
   begin
-    Input := (if From_Head then From else Swap (From));
-    Last := 0;
-    for I in Input'Range loop
-      C := Input(I);
-      if not Used(C) then
-        Last := Last + 1;
-        Output(Last) := C;
-        Used(C) := True;
-      end if;
-    end loop;
-    return (if From_Head then Output(1 .. Last) else Swap (Output(1 .. Last)));
+    if From_Head then
+      Last := 0;
+      for I in From'Range loop
+        C := From(I);
+        if not Used(C) then
+          Last := Last + 1;
+          Output(Last) := C;
+          Used(C) := True;
+        end if;
+      end loop;
+      return Output(1 .. Last);
+    else
+      -- Cannot init First to From'Length + 1, cause may raise Constraint_Error
+      for I in reverse From'Range loop
+        C := From(I);
+        if not Used(C) then
+          if I = From'Last then
+            First := From'Length;
+          else
+            First := First - 1;
+          end if;
+          Output(Last) := C;
+          Used(C) := True;
+        end if;
+      end loop;
+      return Normalize (Output(First .. Output'Last));
+    end if;
   end Unique;
 
   -- Overwrite a part of a string by a new one
