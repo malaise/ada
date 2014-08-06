@@ -42,7 +42,7 @@ procedure Add_Paths is
   end Store;
 
   -- Callback called in each subdir
-  function Add_Current return Boolean is
+  function Add_Current (Dummy_Path : String) return Boolean is
     Dir : constant String := Directory.Get_Current;
   begin
     Sort.Add_Path (As.U.Tus (Dir));

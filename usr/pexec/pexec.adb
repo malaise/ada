@@ -27,7 +27,7 @@ procedure Pexec is
   end Restore;
 
   -- What to do in each dir
-  function Execute return Boolean is
+  function Execute (Dummy_Path : String) return Boolean is
     Exec_Return : Integer;
   begin
     for I in 1 .. Cmd.Nbre_Commands loop

@@ -1,5 +1,5 @@
 with As.U, Basic_Proc, Directory, Dir_Mng;
-procedure Recurs (Do_In_Dir : access function return Boolean;
+procedure Recurs (Do_In_Dir : access function (Path : String) return Boolean;
                   Name_Of_Dir : in Boolean := True;
                   In_Current : in Boolean := True;
                   First_Level_Only : in Boolean := False;
@@ -30,7 +30,7 @@ procedure Recurs (Do_In_Dir : access function return Boolean;
         Basic_Proc.Put_Line_Output (" <==");
       end if;
 
-      if not Do_In_Dir.all and then Stop_On_Error then
+      if not Do_In_Dir (Full_Curr_Name.Image) and then Stop_On_Error then
         Basic_Proc.Put_Line_Output (" *** Abort ***");
         raise Abort_Explore;
       end if;
