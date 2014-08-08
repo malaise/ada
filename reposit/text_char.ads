@@ -1,4 +1,4 @@
--- Get/unget chars from a file
+-- Get/unget chars and strings from a file
 with As.U, Sys_Calls, Text_Line;
 package Text_Char is
 
@@ -21,6 +21,7 @@ package Text_Char is
   -- May raise Status_Error if File is not open
   function Get_Fd (File : File_Type) return Sys_Calls.File_Desc;
 
+
   -- Read next char from File
   -- May raise Status_Error if File is not open
   -- May raise End_Error if end of file is reached
@@ -28,13 +29,25 @@ package Text_Char is
   function Get (File : in out File_Type) return Character;
   procedure Get (File : in out File_Type; Char : out Character);
 
+  -- Read next text line from File
+  -- Reads characters up to Line_Feed (that is appended)
+  --  or up to the end of file (see Text_Line)
+  function Get (File : in out File_Type) return String;
+  function Get (File : in out File_Type) return As.U.Asu_Us;
+
   -- Unget a char so that it will be the next got
   -- May raise Status_Error if File is not open
   procedure Unget (File : in out File_Type; Char : in Character);
 
+  -- Uneget a string so that it will be the got later on
+  procedure Unget (File : in out File_Type; Str : in String);
+  procedure Unget (File : in out File_Type; Str : in  As.U.Asu_Us);
+
+
   -- Returns if the end of file is reached
   -- May raise Status_Error if File is not open
   function End_Of_File (File : in out File_Type) return Boolean;
+
 
   -- Shortcuts to open/close the fd and the file together
 
@@ -60,10 +73,11 @@ private
     Line_File : Text_Line.File_Type;
 
     -- Line got from Text_Line file and index in Line_Got of last char got
-    -- If Get_Index is not 0 and Line_Got is empty, this means
-    --  that end of Text_Line file has been reached
-    -- If Get_Index is 0 and Line_Got is empty, this means that
-    --  a new line must be read from Text_Line file
+    -- If Line_Got is empty:
+    --   If Get_Index is not 0, this means that end of Text_Line file has been
+    -- -  reached
+    -- - If Get_Index is 0, this means that a new line must be read from
+    --    Text_Line file
     -- If Line_Got is not empty, then Line_Got(Get_Index+1) can be read,
     --  there is never Get_Index = Length(Line_Got), except 0
     Line_Got : As.U.Asu_Us;

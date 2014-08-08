@@ -1,3 +1,4 @@
+with Str_Util;
 package body Text_Char is
 
   -- Associate a file desc to a Txt_Char file
@@ -44,6 +45,7 @@ package body Text_Char is
     return Text_Line.Get_Fd (File.Line_File);
   end Get_Fd;
 
+
   -- Try to get another text line
   -- This sets Get_Index to /= 0 if end of Text_Line file is reached
   procedure Read_Line (File : in out File_Type) is
@@ -69,17 +71,15 @@ package body Text_Char is
   end Get;
 
   procedure Get (File : in out File_Type; Char : out Character) is
-    Len : Natural;
 
     -- Read a char from Line_Got, update Get_Index
     procedure Read_Char is
     begin
       File.Get_Index := File.Get_Index + 1;
       Char := File.Line_Got.Element (File.Get_Index);
-      if File.Get_Index = Len then
+      if File.Get_Index = File.Line_Got.Length then
         -- Reset if end of read line
         File.Line_Got.Set_Null;
-        Len := 0;
         File.Get_Index := 0;
       end if;
     end Read_Char;
@@ -89,16 +89,14 @@ package body Text_Char is
       raise Status_Error;
     end if;
     -- Check if there are ungot chars
-    Len := File.Ungot_Chars.Length;
-    if Len /= 0 then
-      Char := File.Ungot_Chars.Element (Len);
+    if File.Ungot_Chars.Length /= 0 then
+      Char := File.Ungot_Chars.Element (File.Ungot_Chars.Length);
       -- Delete this last char
-      File.Ungot_Chars.Delete (Len, Len);
+      File.Ungot_Chars.Delete_Nb (File.Ungot_Chars.Length, 1);
       return;
     end if;
     -- Check if there are read chars to get
-    Len := File.Line_Got.Length;
-    if Len /= 0 then
+    if File.Line_Got.Length /= 0 then
       -- There are chars to read in Line_Got
       Read_Char;
     elsif File.Get_Index /= 0 then
@@ -113,9 +111,76 @@ package body Text_Char is
       if File.Get_Index /= 0 then
         raise End_Error;
       end if;
-      Len := File.Line_Got.Length;
       Read_Char;
     end if;
+  end Get;
+
+  -- Read next text line from File
+  -- Reads characters up to Line_Feed (that is appended)
+  --  or up to the end of file (see Text_Line)
+  function Get (File : in out File_Type) return As.U.Asu_Us is
+    -- Index of last Line_Feed in Ungot_Chars
+    Lfi : Natural;
+    -- Result
+    Res : As.U.Asu_Us;
+
+    -- Move remaining of line (got from text_line) into result
+    procedure Move_Line is
+    begin
+      Res.Append (File.Line_Got.Uslice (
+          File.Get_Index + 1, File.Line_Got.Length));
+      -- Nexts chars are to be read from Text_Line
+      File.Line_Got.Set_Null;
+      File.Get_Index := 0;
+    end Move_Line;
+
+  begin
+    if not Is_Open (File) then
+      raise Status_Error;
+    end if;
+    -- Check if there are ungot chars
+    if File.Ungot_Chars.Length /= 0 then
+      -- Locate last Lf
+      Lfi := Str_Util.Locate (File.Ungot_Chars.Image,
+                              Text_Line.Line_Feed_Str,
+                              Forward => False);
+      if Lfi /= 0 then
+        -- Move and swap from Lfi to Length into Res, done
+        Res := As.U.Tus (Str_Util.Swap (
+            File.Ungot_Chars.Slice (Lfi, File.Ungot_Chars.Length)));
+        File.Ungot_Chars.Delete (Lfi, File.Ungot_Chars.Length);
+        -- Done
+        return Res;
+      else
+        -- Move all into Res, go on
+        Res := As.U.Tus (Str_Util.Swap (File.Ungot_Chars.Image));
+        File.Ungot_Chars.Set_Null;
+      end if;
+    end if;
+    -- Check if there are read chars to get
+    if File.Line_Got.Length /= 0 then
+      -- There are chars to read in Line_Got
+      Move_Line;
+    elsif File.Get_Index /= 0 then
+      -- End of file already reached
+      raise End_Error;
+    else
+      -- Line_Got is empty and Get_Index = 0
+      -- Try to get another text line
+      -- This sets Get_Index to /= 0 if end of Text_Line file is reached
+      Read_Line (File);
+      -- Check if end of file reached
+      if File.Get_Index /= 0 then
+        raise End_Error;
+      end if;
+      Move_Line;
+    end if;
+    return Res;
+  end Get;
+
+  function Get (File : in out File_Type) return String is
+  begin
+    return Get (File).Image;
   end Get;
 
   -- Unget a char so that it will be the next got
@@ -127,6 +192,17 @@ package body Text_Char is
     end if;
     -- Just append char to the string of ungot chars
     File.Ungot_Chars.Append (Char);
+  end Unget;
+
+  -- Uneget a string so that it will be the got later on
+  procedure Unget (File : in out File_Type; Str : in String) is
+  begin
+    File.Ungot_Chars.Append (Str);
+  end Unget;
+
+  procedure Unget (File : in out File_Type; Str : in  As.U.Asu_Us) is
+  begin
+    Unget (File, Str.Image);
   end Unget;
 
   -- Returns if the end of file is reached
@@ -154,6 +230,7 @@ package body Text_Char is
     -- Check if end of file reached
     return File.Get_Index /= 0;
   end End_Of_File;
+
 
   -- Open the fd associated to File_Name (stdin if empty) for reading
   --  and open File to it
