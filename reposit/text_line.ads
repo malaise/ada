@@ -24,12 +24,32 @@ package Text_Line is
   -- May raise Status_Error if File is not open
   procedure Close (File : in out File_Type);
 
+  -- Shortcuts to open/close the fd and the file together
+
+  -- Open the fd associated to File_Name (use stdin/stdout depending
+  --  on Mode if empty File_Name) and open File to it
+  -- May raise Name_Error or Io_Error if error opening File_Name
+  -- May raise Status_Error if File is already open
+  -- May raise Mode_Error if empty File_Name and Mode = Inout_File
+  procedure Open_All (File : in out File_Type;
+                      Mode : in File_Mode;
+                      File_Name : in String := "");
+
+  -- Create (Mode Out_File)
+  procedure Create_All (File : in out File_Type;
+                        File_Name : in String);
+
+  -- Close the file then the fd (if not stdin/stdout/stderr)
+  -- May raise Status_Error if File is not open
+  procedure Close_All (File : in out File_Type);
+
   -- Returns if a file is open
   function Is_Open (File : File_Type) return Boolean;
 
   -- Returns the associated file desc
   -- May raise Status_Error if File is not open
   function Get_Fd (File : File_Type) return Sys_Calls.File_Desc;
+
 
   -- Set and get Line_Feed sequence
   -- If Line_Feed is empty, then Get will return the complete flow or file
@@ -78,25 +98,6 @@ package Text_Line is
                   Line_Feed : in String := Line_Feed_Str);
   function Trim (Line : String;
                  Line_Feed : in String := Line_Feed_Str) return String;
-
-  -- Shortcuts to open/close the fd and the file together
-
-  -- Open the fd associated to File_Name (use stdin/stdout depending
-  --  on Mode if empty File_Name) and open File to it
-  -- May raise Name_Error or Io_Error if error opening File_Name
-  -- May raise Status_Error if File is already open
-  -- May raise Mode_Error if empty File_Name and Mode = Inout_File
-  procedure Open_All (File : in out File_Type;
-                      Mode : in File_Mode;
-                      File_Name : in String := "");
-
-  -- Create (Mode Out_File)
-  procedure Create_All (File : in out File_Type;
-                        File_Name : in String);
-
-  -- Close the file then the fd (if not stdin/stdout/stderr)
-  -- May raise Status_Error if File is not open
-  procedure Close_All (File : in out File_Type);
 
 
   Name_Error : exception;
