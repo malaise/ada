@@ -1,8 +1,8 @@
 package body Trilean is
 
-  function Tri2Boo (Tri : Trilean) return Boolean is
+  function Tri2Boo (Val : Trilean) return Boolean is
   begin
-    case Tri is
+    case Val is
       when False =>
         return Boolean'(False);
       when True =>
@@ -12,9 +12,9 @@ package body Trilean is
     end case;
   end Tri2Boo;
 
-  function Boo2Tri (Boo : Boolean) return Trilean is
+  function Boo2Tri (Val : Boolean) return Trilean is
   begin
-    return (case Boo is
+    return (case Val is
               when Boolean'(False) => False,
               when Boolean'(True)  => True);
   end Boo2Tri;

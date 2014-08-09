@@ -6,11 +6,11 @@ package Trilean is
   pragma Warnings (On, "redefinition of entity * in Standard");
   Maybe : constant Trilean := Other;
 
-  -- Raises Constraint_Error if the Trilean is Other
-  function Tri2Boo (Tri : Trilean) return Boolean;
+  -- Raises Constraint_Error if Val is Other
+  function Tri2Boo (Val : Trilean) return Boolean;
 
-  -- false -> False and True -> True
-  function Boo2Tri (Boo : Boolean) return Trilean;
+  -- False -> False and True -> True
+  function Boo2Tri (Val : Boolean) return Trilean;
 
 end Trilean;
 
