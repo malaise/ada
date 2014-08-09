@@ -112,7 +112,7 @@ package Unbounded_Arrays is
                   Pattern : Element_Array) return Natural;
 
 
-  -- Overwrite a part of a string by a new one
+  -- Overwrite a part of an array by a new one
   -- Do nothing if New_Item is Asu_Null
   -- Append New_Item if Position = Source.Length + 1
   -- Extend Source if Position + New_Item.Length - 1 > Source.Length
@@ -125,7 +125,7 @@ package Unbounded_Arrays is
                        New_Item : in Element_Array);
 
 
-  -- Replace a slice by a new string
+  -- Replace a slice by a new array
   -- Delete chars if By is Asu_Null (except if High < Low)
   -- Insert By before Low if High < Low
   -- Append By if Low = Source.Length + 1 (and High < Low)
@@ -139,7 +139,7 @@ package Unbounded_Arrays is
                      High     : in Natural;
                      By       : in Element_Array);
 
-  -- Insert a string before a given position
+  -- Insert an array before a given position
   -- Append if Before = Source.Length + 1
   -- May raise Index_Error if Before > Source.Length + 1
   procedure Insert (Source   : in out Unbounded_Array;
