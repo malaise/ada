@@ -264,7 +264,7 @@ argument_parser (2)::
 as as.b as.u as.u.utils (2)::
      Bounded and unbounded strings and associated containers.
 
-aski(1)::
+aski aski.unicode (1)::
      Strict ANSI characters definition and conversions
 
 assertion(1)::

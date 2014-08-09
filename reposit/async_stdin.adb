@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with Event_Mng, Console, Dynamic_List, Environ,
-     Unicode, Aski, Utf_8, Language, As.U;
+     Unicode, Aski.Unicode, Utf_8, Language, As.U;
 package body Async_Stdin is
 
   -- The user callback
@@ -217,7 +217,8 @@ package body Async_Stdin is
     -- After this delay from Esc, we give up
     Seq_Delay   : constant Duration := 0.25;
     Escape_Time : Ada.Calendar.Time;
-    function S2U (S : String) return Unicode_Sequence renames Aski.Decode;
+    function S2U (S : String) return Unicode_Sequence
+                              renames Aski.Unicode.Decode;
     -- Supported sequences
     Arrow_Left_Seq    : constant Unicode_Sequence := S2U ("[D");
     Arrow_Right_Seq   : constant Unicode_Sequence := S2U ("[C");
@@ -255,9 +256,9 @@ package body Async_Stdin is
     end Store;
 
     -- Some usefull definitions
-    Esc   : Unicode_Number renames Aski.Esc_U;
-    Del   : Unicode_Number renames Aski.Del_U;
-    Space : Unicode_Number renames Aski.Spc_U;
+    Esc   : Unicode_Number renames Aski.Unicode.Esc_U;
+    Del   : Unicode_Number renames Aski.Unicode.Del_U;
+    Space : Unicode_Number renames Aski.Unicode.Spc_U;
     Uu_Null : constant Uu.Unbounded_Array := Uu.Null_Unbounded_Array;
     function Uu_Is_Null (Str : Uu.Unbounded_Array) return Boolean is
       use type Uu.Unbounded_Array;
@@ -317,7 +318,7 @@ package body Async_Stdin is
       end if;
 
       -- Optim: Set C to character of W or to Nul
-      C := (if U <= Del then Aski.Encode (U) else Aski.Nul);
+      C := (if U <= Del then Aski.Unicode.Encode (U) else Aski.Nul);
 
       -- Save current searching status
       Saved_Searching := Searching;
@@ -622,7 +623,7 @@ package body Async_Stdin is
                        Max_Chars : in Max_Chars_Range := 1;
                        First_Col : in Max_Chars_Range := 1) is
     Result : Boolean;
-    use type  Sys_Calls.File_Desc_Kind_List;
+    use type Sys_Calls.File_Desc_Kind_List;
   begin
     Stdio_Is_A_Tty := Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin) = Sys_Calls.Tty
              and then Sys_Calls.File_Desc_Kind (Sys_Calls.Stdout) = Sys_Calls.Tty;
