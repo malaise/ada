@@ -6,7 +6,7 @@ generic
 
   -- Each time a re-allocation is needed, increment Length by
   --  Nb_To_Add + Growth_Offset + Curr_Length / Growth_Factor
-  --  so that some further growths will not lead to too many re-allocations
+  --  so that some further growths will not lead too many re-allocations
   --  or too large allocations
   -- Always allocate a little bit more than requested
   Growth_Offset : Natural := 32;
@@ -22,6 +22,7 @@ package Unbounded_Arrays is
   type Unbounded_Array is tagged private;
   subtype Unb_Array is Unbounded_Array;
 
+  -- Exception when Low, High, Index... is out of bounds
   Index_Error : exception;
 
   -- Empty unbounded array
