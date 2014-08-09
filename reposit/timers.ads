@@ -1,4 +1,4 @@
-with Any_Def, Perpet, Virtual_Time, Smart_Reference;
+with Any_Def, Perpet, Virtual_Time, Smart_Reference, Dynamic_List;
 package Timers is
 
   -- How to specify a timer, wait some seconds, some days or until a
@@ -30,6 +30,15 @@ package Timers is
         Expiration_Time : Virtual_Time.Time;
     end case;
   end record;
+
+  -- Infinite delay. Do not use for timers
+  Infinite_Seconds : constant Duration := -1.0;
+  Infinite_Delay : constant Delay_Rec(Delay_Sec)
+                 := (Delay_Kind    => Delay_Sec,
+                     Clock         => null,
+                     Period        => No_Period,
+                     Delay_Seconds => Infinite_Seconds);
+
 
   -- Timer unique identifier
   type Timer_Id is tagged private;
@@ -94,50 +103,7 @@ package Timers is
   -- May raise Invalid_Timer if timer is Deleted
   function Remaining (Id : Timer_Id) return Perpet.Delta_Rec;
 
-  --------------------------------------------------------------
-  -- The following operations are used by Event_Mng and X_Mng --
-  -- They should not be used by "normal" applications         --
-  --------------------------------------------------------------
-  -- May be returned by Wait_For. Do not use for timers
-  Infinite_Seconds : constant Duration := -1.0;
-
-  -- Infinite delay. Do not use for timers
-  Infinite_Delay : constant Delay_Rec(Delay_Sec)
-                 := (Delay_Kind    => Delay_Sec,
-                     Clock         => null,
-                     Period        => No_Period,
-                     Delay_Seconds => Infinite_Seconds);
-
-  -- For each timer for which the expiration time/delay is reached
-  --  its callback is called
-  --  then, if periodical it is re-armed (and may expire)
-  --        if not it is deleted
-  -- Return True if at least one timer has expired with a callback set
-  --  and this callback has returned True or if at least one timer has
-  --  expired with no callback set
-  function Expire return Boolean;
-
-  -- Expiration time
-  type Expiration_Rec (Infinite : Boolean := True) is record
-    case Infinite is
-      when True => null;
-      when False => Time : Virtual_Time.Time;
-    end case;
-  end record;
-  Infinite_Expiration : constant Expiration_Rec := (Infinite => True);
-
-  function "<" (E1, E2 : Expiration_Rec) return Boolean;
-
-  -- Delay until next timer expires (or Infinite_Seconds)
-  function Wait_For return Duration;
-  -- Expiration time of next timer (or Infinite)
-  function Wait_Until return Expiration_Rec;
-
-  -- Compute nearest expiration time from Expiration and timers
-  function Next_Expiration (Expiration : Expiration_Rec) return Expiration_Rec;
-
-  -- Is expiration reached
-  function Is_Reached (Expiration : Expiration_Rec) return Boolean;
+  ----------------------------------------------------------------------------
 
   -- Interface for the virtual clock, don'use
   type Observer_Type is new Virtual_Time.Observer with null record;
@@ -145,6 +111,7 @@ package Timers is
                     Rtime, Vtime : in Virtual_Time.Time;
                     Speed : in Virtual_Time.Speed_Range;
                     Clock : in Virtual_Time.Clock_Access);
+
 
 private
 
@@ -167,9 +134,26 @@ private
     Object => Timer_Rec, Set => Set);
 
   type Timer_Id is new Smart_Timer_Mng.Handle with null record;
+  No_Timer : constant Timer_Id
+           := (Smart_Timer_Mng.Null_Handle with others => <>);
 
-  Def_Timer : Timer_Id;
-  No_Timer : constant Timer_Id := Def_Timer;
+
+
+  -- For Expiration --
+  -- Trace
+  procedure Put_Debug (Proc : in String; Msg : in String);
+  -- Timers and mutex
+  package Timer_Dyn_List_Mng is new Dynamic_List (Timer_Id);
+  package Timer_List_Mng renames Timer_Dyn_List_Mng.Dyn_List;
+  Timer_List : Timer_List_Mng.List_Type;
+  procedure Get_Mutex;
+  procedure Release_Mutex;
+  -- Delete current timer
+  procedure Delete_Current;
+  -- Sort timers
+  procedure Sort (List : in out Timer_List_Mng.List_Type);
+  -- Locate First timer to expire, retuns False if no more timer
+  function First return Boolean;
 
 end Timers;
 

@@ -1,6 +1,6 @@
 with System;
 with C_Types, Null_Procedure, Dynamic_List, Trace, Timeval, Perpet,
-     Any_Def, My_Math, Virtual_Time;
+     Any_Def, My_Math, Virtual_Time, Timers.Expiration;
 package body Event_Mng is
 
   -------------
@@ -242,14 +242,14 @@ package body Event_Mng is
   function Wait (Delay_Spec : Timers.Delay_Rec) return Out_Event_List is
     Fd    : Integer;
     Read  : C_Types.Bool;
-    Final_Exp, Next_Exp : Timers.Expiration_Rec;
+    Final_Exp, Next_Exp : Timers.Expiration.Expiration_Rec;
     Now : Virtual_Time.Time;
     Timeout_Val : C_Types.Timeval_T;
     C_Res : C_Types.Int;
     Handle_Res : Out_Event_List;
     use type Virtual_Time.Clock_Access,
              Virtual_Time.Time, Virtual_Time.Speed_Range,
-             Timers.Expiration_Rec, Perpet.Delta_Rec;
+             Timers.Expiration.Expiration_Rec, Perpet.Delta_Rec;
   begin
     if Delay_Spec.Clock /= null then
       raise Invalid_Delay;
@@ -268,8 +268,8 @@ package body Event_Mng is
     loop
 
       -- Compute next timeout
-      Next_Exp := Timers.Next_Expiration (Final_Exp);
-      if Next_Exp = Timers.Infinite_Expiration then
+      Next_Exp := Timers.Expiration.Next_Expiration (Final_Exp);
+      if Next_Exp = Timers.Expiration.Infinite_Expiration then
         Timeout_Val := Timeval.Infinite_Timeout;
       else
         Now := Virtual_Time.Current_Time (Delay_Spec.Clock);
@@ -317,7 +317,7 @@ package body Event_Mng is
       if Handle_Res /= Timeout then
         return Handle_Res;
       end if;
-      if Timers.Is_Reached (Final_Exp) then
+      if Timers.Expiration.Is_Reached (Final_Exp) then
         -- Requested timeout reached
         return Timeout;
       end if;
@@ -462,7 +462,7 @@ package body Event_Mng is
         end case;
       when Timeout =>
         -- Nothing. Expire timers or return timeout
-        if Timers.Expire then
+        if Timers.Expiration.Expire then
           Logger.Log_Debug ("Event_Mng.Handle: No_Event -> Timer_Event");
           return Timer_Event;
         end if;

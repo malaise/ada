@@ -1,5 +1,6 @@
 with Ada.Calendar;
-with Aski, C_Types, Trace.Loggers, Address_Ops, Perpet, Event_Mng, Virtual_Time;
+with Aski, C_Types, Trace.Loggers, Address_Ops, Perpet, Event_Mng, Virtual_Time,
+     Timers.Expiration;
 package body X_Mng is
 
   -- Maximum successive X events
@@ -399,7 +400,7 @@ package body X_Mng is
       -- Will be Line_For_C
       Line_For_C_Id : Line_For_C := No_Line_For_C;
       -- The one provided to Wait
-      Wait_Exp : Timers.Expiration_Rec;
+      Wait_Exp : Timers.Expiration.Expiration_Rec;
     end record;
     type Client_List is array (Positive range <>) of Client_Rec;
 
@@ -427,7 +428,7 @@ package body X_Mng is
 
       -- Ready to wait for Exp
       entry Prepare (Client : in Client_Range;
-                     Exp    : in Timers.Expiration_Rec);
+                     Exp    : in Timers.Expiration.Expiration_Rec);
 
       -- Wait for an event
       entry Wait_Event(Client_Range) (New_Event : out Event_Rec);
@@ -1093,7 +1094,7 @@ package body X_Mng is
                          Timeout : in out Timers.Delay_Rec;
                          Kind : out Event_Kind) is
     Internal_Event : Event_Rec;
-    Final_Exp : Timers.Expiration_Rec;
+    Final_Exp : Timers.Expiration.Expiration_Rec;
     use type Ada.Calendar.Time, Timers.Delay_List, Perpet.Delta_Rec,
              Event_Mng.Out_Event_List, Virtual_Time.Clock_Access;
   begin

@@ -552,7 +552,7 @@ text_char (2)::
 text_line (2)::
      Get/put lines of text from/to a flow.
 
-timers (2)::
+timers timers.expiration (2)::
      Asynchronous timer management.
 
 timeval (1)::

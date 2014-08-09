@@ -16,7 +16,13 @@ package Virtual_Time is
   -- Get current time
   function Current_Time (A_Clock : Clock) return Time;
   -- Use Ada.Calendar.Clock if A_Clock is null
-  function Current_Time (A_Clock : Clock_Access) return Time;
+  function Current_Time (A_Clock : Clock_Access := null) return Time;
+
+  -- Is Time reached
+  function Is_Reached (Expiration_Time : Time;
+                       A_Clock : Clock) return Boolean;
+  function Is_Reached (Expiration_Time : Time;
+                       A_Clock : Clock_Access := null) return Boolean;
 
   -- Set a new synchro point
   -- The speed of the clock must be 0.0

@@ -13,7 +13,7 @@ package body Virtual_Time is
   end Current_Time;
 
   -- Use Ada.Calendar.Clock if A_Clock is null
-  function Current_Time (A_Clock : Clock_Access) return Time is
+  function Current_Time (A_Clock : Clock_Access := null) return Time is
   begin
     if A_Clock = null then
       -- No clock => real time
@@ -22,6 +22,20 @@ package body Virtual_Time is
       return Current_Time (A_Clock.all);
     end if;
   end Current_Time;
+
+  -- Is Time reached
+  function Is_Reached (Expiration_Time : Time;
+                       A_Clock : Clock) return Boolean is
+    use type Ada.Calendar.Time;
+  begin
+    return Current_Time (A_Clock) > Expiration_Time;
+  end Is_Reached;
+  function Is_Reached (Expiration_Time : Time;
+                       A_Clock : Clock_Access := null) return Boolean is
+    use type Ada.Calendar.Time;
+  begin
+    return Current_Time (A_Clock) > Expiration_Time;
+  end Is_Reached;
 
   -- Notify observers of a clock change
   procedure Notify_Observers (A_Clock : in out Clock;

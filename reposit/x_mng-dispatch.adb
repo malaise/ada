@@ -97,13 +97,13 @@ package body Dispatch is
 
   -- Fetch a new event (if C_Id is set)
   -- Otherwise The real call to select
-  procedure Xx_Select (Exp : in Timers.Expiration_Rec;
+  procedure Xx_Select (Exp : in Timers.Expiration.Expiration_Rec;
                        C_Id : in out Line_For_C;
                        Event : out Event_Rec;
                        Next : out Boolean) is
 
     -- Next expiration
-    Select_Exp : Timers.Expiration_Rec;
+    Select_Exp : Timers.Expiration.Expiration_Rec;
     Timeout_Val : C_Types.Timeval_T;
     Now : Ada.Calendar.Time;
     -- For C x_select
@@ -116,15 +116,15 @@ package body Dispatch is
     Evt_Out : Event_Mng.Out_Event_List;
 
     use type Ada.Calendar.Time, System.Address,
-             Timers.Expiration_Rec,
+             Timers.Expiration.Expiration_Rec,
              Event_Mng.Out_Event_List,
              Perpet.Delta_Rec;
   begin
 
     loop
       -- Compute min of Exp and timers, set timeout in Ms
-      Select_Exp := Timers.Next_Expiration (Exp);
-      if Select_Exp = Timers.Infinite_Expiration then
+      Select_Exp := Timers.Expiration.Next_Expiration (Exp);
+      if Select_Exp = Timers.Expiration.Infinite_Expiration then
         Timeout_Val := Timeval.Infinite_Timeout;
       else
         Now := Ada.Calendar.Clock;
@@ -259,9 +259,9 @@ package body Dispatch is
     -- First to expire
     function Closest return Client_Range is
       I : Line_Range;
-      Exp : Timers.Expiration_Rec;
+      Exp : Timers.Expiration.Expiration_Rec;
       Res : Client_Range;
-      use type Timers.Expiration_Rec;
+      use type Timers.Expiration.Expiration_Rec;
     begin
       I := First;
       if I = No_Client_No then
@@ -447,7 +447,7 @@ package body Dispatch is
     -- Ready to wait, store expiration time. Select if last
     --  and no client to wake up
     entry Prepare (Client : in Client_Range;
-                   Exp : in Timers.Expiration_Rec) when not In_X is
+                   Exp : in Timers.Expiration.Expiration_Rec) when not In_X is
       New_Client : Line_Range;
       Got_Id : Line_For_C;
       use type System.Address; -- for checking Line_For_C

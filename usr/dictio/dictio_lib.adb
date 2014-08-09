@@ -1,5 +1,5 @@
-with Ada.Exceptions, Ada.Calendar;
-with As.U, Socket, Tcp_Util, Event_Mng, Sys_Calls, Timers, Environ;
+with Ada.Exceptions;
+with As.U, Socket, Tcp_Util, Event_Mng, Sys_Calls, Environ, Virtual_Time;
 with Dictio_Debug, Parse, Client_Com, Versions, Status, Names;
 package body Dictio_Lib is
 
@@ -206,8 +206,8 @@ package body Dictio_Lib is
 
   procedure Init is
     Local_Host : Tcp_Util.Remote_Host(Tcp_Util.Host_Name_Spec);
-    Expiration : Ada.Calendar.Time;
-    use type Event_Mng.Out_Event_List, Ada.Calendar.Time, Tcp_Util.Remote_Host;
+    Expiration : Virtual_Time.Time;
+    use type Event_Mng.Out_Event_List, Virtual_Time.Time, Tcp_Util.Remote_Host;
   begin
     if Init_Done then
       return;
@@ -243,12 +243,11 @@ package body Dictio_Lib is
     Event_Mng.Pause (100);
 
     -- Wait until connected or delay
-    Expiration := Ada.Calendar.Clock + 0.5;
+    Expiration := Virtual_Time.Current_Time + 0.5;
     loop
       exit when Dictio_State /= Unavailable
            or else Event_Mng.Wait (100) = Event_Mng.Signal_Event
-           or else Timers.Is_Reached ( (Infinite => False,
-                                        Time => Expiration) );
+           or else Virtual_Time.Is_Reached (Expiration);
     end loop;
 
     -- Call state callback if still not available
