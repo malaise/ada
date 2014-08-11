@@ -2,29 +2,29 @@ with As.U, Text_Line, Mutex_Manager;
 -- Log messages in a file or flow
 package Trace is
 
-  -- Log traces through a basic logger
-  -- All logers trace in stderr
+  -- General concepts for Basic_Logger (defined hereafter)
+  --  and for Logger (defined in the child package Trace.Loggers)
   -- Each logger is anonymous or has a name, and each trace has a severity
   --  (possibly several)
-  -- Activate traces by environment variables
+  -- Activate the traces by setting the environment variables
   --   <Process>_TRACE[_<Logger>]="<mask>"
   --   Where <PROCESS> is the process name (no path)
-  --         <Logger> is the logger name , "ALL" for all loggers,
-  --         <Process>_TRACE for anonymous loggers
-  --         <mask> is a list of severity names of values,
-  --           separated by '|', ex: "7|Debug|16#30#"
+  --         <Logger> is the logger name, "ALL" for all loggers,
+  --          <Process>_TRACE for anonymous loggers
+  --         <mask> is a list of severity names or values,
+  --          separated by '|', ex: "7|Debug|16#30#"
   -- Default mask is Fatal | Error
   -- Any value 0 in the mask leads to reset the current mask (further values
   --  are ORed) --  Ex: "Fatal|0|Error" => "Error"
-  -- Parsing error on a severity leads to default severity, except for numeric
-  --  values too high, which are discarded.
+  -- Parsing error on a severity leads to the default severity, except for
+  --  numeric values too high, which are discarded.
 
   -- Trace output is:
   -- "Date Process Logger Severity -> Message"
   -- Where Date     ::= YYyy/Mm/DdTHh:Mm:Ss.mmm
   --       Process  ::= the basename of current process
   --       Logger   ::= the name of the logger, default "-"
-  --       Severity ::= Fatal Error Info Warning Debug or a number
+  --       Severity ::= Fatal, Error, Info, Warning, Debug or a number
   --       Message  ::= the text of the log message
 
   -- The output of trace is protected by a mutex (but not the other
@@ -54,7 +54,9 @@ package Trace is
 
   -- BASIC LOGGER
   ---------------
-  -- Initialize the logger, with a name or anonymous
+  -- All basic logers trace in stderr
+
+  -- Initialize the logger, either with a name or anonymous,
   --  and set its mask from ENV
   -- If name is not valid (i.e. not and Ada identifier) then the logger
   --  is disabled (Mask=0).
@@ -74,7 +76,6 @@ package Trace is
     procedure Del_Mask (Mask : in Severities);
 
     -- Check if a severity is active
-    -- Raise Not_Init if logger is not init
     function Is_On (Severity : in Severities) return Boolean;
     function Fatal_On   return Boolean;
     function Error_On   return Boolean;
@@ -82,7 +83,7 @@ package Trace is
     function Info_On    return Boolean;
     function Debug_On   return Boolean;
 
-    -- Log a message of a given severity (note that it can have several
+    -- Log a message of a given severity (or even several severity levels)
     --  severities)
     procedure Log (Severity : in Severities;
                    Message  : in String);
@@ -95,7 +96,7 @@ package Trace is
     -- Flush logs of a logger
     procedure Flush;
 
-    -- Configure logger to flush each message (True by default)
+    -- Configure logger to flush or not each message (True by default)
     procedure Set_Flush (Each : in Boolean);
 
   end Basic_Logger;
@@ -104,13 +105,17 @@ private
   -- Utilities for child packages
   Lock : Mutex_Manager.Simple_Mutex;
 
-  -- Global basic init
+  -- Operations and variables for Trace.Loggers
+
+  -- Global basic init, sets the following variables
   procedure Basic_Init;
     -- - Process name
   Process : As.U.Asu_Us;
   -- - Global severity mask
   Default : constant Severities := Error + Fatal;
   Global_Mask : Severities := Default;
+  -- - Stderr output flow
+  Stderr : aliased Text_Line.File_Type;
 
   -- Common format of the output
   function Format (Name     : in String;
@@ -123,7 +128,5 @@ private
   -- Image of a severity mask (for debug)
   function Image (Severity : Severities) return String;
 
-  -- Stderr output flow
-  Stderr : aliased Text_Line.File_Type;
 end Trace;
 

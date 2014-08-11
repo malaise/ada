@@ -2,8 +2,8 @@
 with Ada.Finalization;
 package Trace.Loggers is
 
-  -- All the logers trace in a given flow, set in environment variable
-  --  <Process>_TRACEFILE="file"
+  -- All the logers trace in a given flow, which can be set in the environment
+  --  variable <Process>_TRACEFILE="file"
   --  where <Process> is the process name (no path)
   --        file is "stdout", "stderr", "async_stdout", "async_stderr",
   --        or any file name (see Output_Flows), possibly with
@@ -13,9 +13,8 @@ package Trace.Loggers is
   -- A logger of traces
   type Logger is tagged private;
 
-  -- Initialize the logger, with a name or anonymous
+  -- Initialize the logger, either with a name or anonymous
   --  and set its mask from ENV
-  -- Setting a name (even empty) activates the logger
   -- If Name is not empty and <proc>_TRACE_<Name> is set (even empty)
   -- or Name is empty and <proc>_TRACE is set, then the mask is set to
   --  Fatal|Error|value
@@ -23,7 +22,7 @@ package Trace.Loggers is
   --  <Process>_TRACE_ALL if set, or Fatal|Error by default
   -- Each further call to Init have no effect,
   procedure Init (A_Logger : in out Logger; Name : in String := "");
-  -- Set (init) or change the name of the logger
+  -- Change the name of the logger and reset its mask
   -- Also reset its flush mode
   procedure Reset (A_Logger : in out Logger; Name : in String);
 
@@ -50,8 +49,7 @@ package Trace.Loggers is
   function Info_On    (A_Logger : in out Logger) return Boolean;
   function Debug_On   (A_Logger : in out Logger) return Boolean;
 
-  -- Log a message of a given severity (note that it can have several
-  --  severities)
+  -- Log a message of a given severity (or even several severity levels)
   -- Calling it on a logger not initialized implicitly init it with Name
   procedure Log (A_Logger : in out Logger;
                  Severity : in Severities;
