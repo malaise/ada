@@ -385,6 +385,9 @@ package body Trees is
     -------------------
     -- Saved position --
     -------------------
+    -- Position refers to a cell in the tree
+    -- It is forbidden to delete cells while some positions are saved
+
     -- Push current position in a Lifo
     -- May raise No_Cell if The_Tree is empty
     procedure Save_Position (The_Tree : in out Tree_Type) is
@@ -395,7 +398,6 @@ package body Trees is
     end Save_Position;
 
     -- Pop last pushed position and move to it
-    -- May raise No_Cell if The_Tree is empty
     -- May raise No_Saved_Position if no (more) saved position in the Lifo
     procedure Restore_Position (The_Tree : in out Tree_Type) is
     begin
@@ -408,7 +410,6 @@ package body Trees is
     end Restore_Position;
 
     -- Pop last pushed position but does not move to it
-    -- May raise No_Cell if The_Tree is empty
     -- May raise No_Saved_Position if no (more) saved position in the Lifo
     procedure Pop_Position (The_Tree : in out Tree_Type) is
       Tmp_Cell : Cell_Access;

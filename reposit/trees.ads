@@ -1,14 +1,17 @@
 -- Tree of elements
--- A tree starts with a root (first branch)
--- Each branch / cell has
+-- A tree starts with a root (first node)
+-- Each node / cell has
 --  a data (Element_Type)
 --  some children (0 to N)
---  some brothers (0 to N, root has no brother)
---  one father (except root).
+--  some brothers (0 to N)
+--  one father.
+-- Root has no brother and no father
 with Ada.Finalization;
 with Unlimited_Pool;
 package Trees is
 
+  -- Common definitions for all trees
+  --  (exceptions are also common, see below)
   -- Amount of children of a father
   subtype Child_Range is Natural;
 
@@ -23,15 +26,15 @@ package Trees is
     -- All operations that modify the tree, plus Dump and Iterate, may raise
     --  In_Callback if already in a callback (Dump or Iterate)
 
-    -- All operations except Insert_Father, Dump and Iterate, may raise No_Cell
-    --  if the tree is empty
+    -- All operations except Is_Empty, Insert_Father, Dump and Iterate, may
+    --  raise No_Cell if the tree is empty
 
     -- Check if tree is empty
     function Is_Empty (The_Tree : in Tree_Type) return Boolean;
 
     -- Insertions --
     ----------------
-    -- All may raise Too_Many_Children if amount of children
+    -- All insertions may raise Too_Many_Children if the amount of children
     --  is Natural'Last
 
     -- Insert a father of current position
@@ -41,7 +44,7 @@ package Trees is
                              Element  : in Element_Type);
 
     -- Insert a child of current position
-    --  as eldest or youngest child
+    --  either as eldest or youngest child
     -- Move to it
     -- May raise No_Cell if The_Tree is empty
     procedure Insert_Child (The_Tree : in out Tree_Type;
@@ -49,30 +52,30 @@ package Trees is
                             Eldest   : in Boolean := True);
 
     -- Insert a brother of current position
-    --  as older or younger brother of current position
+    --  either as older or younger brother of current position
     -- Move to it
     -- May raise No_Cell if The_Tree is empty
-    -- May raise Is_Root if current is root
+    -- May raise Is_Root if current cell is root
     procedure Insert_Brother (The_Tree : in out Tree_Type;
                               Element  : in Element_Type;
                               Elder    : in Boolean := True);
 
     -- Saved position --
     -------------------
-    -- Position points to the cell in the tree, so it points
-    --  to the same cell (same data) when inserting fathers.
+    -- Position refers to a cell in the tree
+    -- It is forbidden to delete cells while some positions are saved
+    --  so the tree cannot be empty when restoring or popping a position
+    --  (except if also there is no position)
 
     -- Push current position in a Lifo
     -- May raise No_Cell if The_Tree is empty
     procedure Save_Position (The_Tree : in out Tree_Type);
 
     -- Pop last pushed position an move to it
-    -- May raise No_Cell if The_Tree is empty
     -- May raise No_Saved_Position if no (more) saved position in the Lifo
     procedure Restore_Position (The_Tree : in out Tree_Type);
 
     -- Pop last pushed position but does not move to it
-    -- May raise No_Cell if The_Tree is empty
     -- May raise No_Saved_Position if no (more) saved position in the Lifo
     procedure Pop_Position (The_Tree : in out Tree_Type);
 
@@ -116,6 +119,7 @@ package Trees is
     procedure Swap (The_Tree : in Tree_Type;
                     Element  : in out Element_Type);
 
+
     -- Use saved position --
     ------------------------
     -- Swap saved pos and its sub tree with current position and its sub tree
@@ -123,7 +127,8 @@ package Trees is
     -- Current position remains the same cell (it follows the swapped cell)
     -- May raise No_Cell if The_Tree is empty
     -- May raise No_Saved_Position if no position is saved
-    -- May raise Is_Ancestor if one (current or saved) is ancestor of the other
+    -- May raise Is_Ancestor if one (current or saved) pos is ancestor of the
+    --  other
     procedure Swap_Saved (The_Tree : in out Tree_Type);
 
     -- Copy saved pos and its sub tree as (elder or youger) son or brother of
@@ -148,6 +153,7 @@ package Trees is
                           Child    : in Boolean;
                           Elder    : in Boolean := True);
 
+
     -- Look up --
     -------------
     -- Has current cell a father (alway true except for root)
@@ -171,7 +177,7 @@ package Trees is
     procedure Move_Root (The_Tree : in out Tree_Type);
 
     -- Move to father
-    -- May raise No_Cell if no father (at root or tree is empty)
+    -- May raise No_Cell if no father (pos is root or tree is empty)
     procedure Move_Father (The_Tree : in out Tree_Type);
 
     -- Move to oldest/youngest child
@@ -184,17 +190,21 @@ package Trees is
     procedure Move_Brother (The_Tree : in out Tree_Type;
                             Elder    : in Boolean := True);
 
+
     -- Access to Current --
     -----------------------
     -- WARNING:
-    -- It is up to the user to ensure the validity of the access it may store
-    -- versus changes of tree
+    -- It is up to the user to ensure the validity of the access that he may
+    --  store, versus changes of tree
     -- May raise No_Cell if The_Tree is empty
     type Position_Access is private;
     No_Position : constant Position_Access;
+    -- Retrieve current position
     function Get_Position (The_Tree : Tree_Type) return Position_Access;
+    -- Move to a position
     procedure Set_Position (The_Tree : in out Tree_Type;
                             Position : in Position_Access);
+
 
     -- Multi-tree operations
     ------------------------
@@ -217,6 +227,7 @@ package Trees is
                          Child     : in Boolean;
                          Elder     : in Boolean := True);
 
+
     -- Iterate --
     -------------
     -- What to do on current item
@@ -228,8 +239,9 @@ package Trees is
     -- Nothing if tree is empty
     -- Level is 0 on current item
     procedure Iterate (The_Tree   : in out Tree_Type;
-                       Do_One_Acc : access
-      function (Element : Element_Type; Level : Natural) return Boolean;
+                       Do_One_Acc : access function
+                           (Element : Element_Type;
+                            Level   : Natural) return Boolean;
                        Elder      : in Boolean := True);
 
   private
@@ -248,8 +260,6 @@ package Trees is
 
     -- Eldest/Youngest children, or Elder/Younger brothers
     type Order is (Young, Old);
-    -- Workaround of a gvd bug
-    for Order use (1, 2);
     type Cell_Pair is array (Order) of Cell_Access;
 
     -- Access to current data
