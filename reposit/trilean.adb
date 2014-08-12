@@ -1,3 +1,4 @@
+with Mixed_Str;
 package body Trilean is
 
   function Tri2Boo (Val : Trilean) return Boolean is
@@ -18,6 +19,11 @@ package body Trilean is
               when Boolean'(False) => False,
               when Boolean'(True)  => True);
   end Boo2Tri;
+
+  function Image (Val : Trilean) return String is
+  begin
+    return Mixed_Str (Val'Img);
+  end Image;
 
 end Trilean;
 
