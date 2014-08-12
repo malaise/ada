@@ -164,7 +164,6 @@ private
   overriding procedure Finalize (Object : in out Asu_Us);
 
   Asu_Null : constant Asu_Us :=
-     (Ada.Finalization.Controlled with Ref  => Null_String'Access,
-                                       Last => 0);
+     (Ada.Finalization.Controlled with others => <>);
 end As.U;
 

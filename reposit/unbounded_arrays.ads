@@ -25,11 +25,9 @@ package Unbounded_Arrays is
   -- Exception when Low, High, Index... is out of bounds
   Index_Error : exception;
 
-  -- Empty unbounded array
+  -- Null unbounded array and unbounded array length
   Null_Unbounded_Array : constant Unbounded_Array;
   Null_Unb_Array : constant Unbounded_Array;
-
-  -- Null unbounded array and unbounded array length
   procedure Set_Null (Target : in out Unbounded_Array);
   function Is_Null (Source : Unbounded_Array) return Boolean;
   function Length (Source : Unbounded_Array) return Natural;
@@ -186,7 +184,7 @@ package Unbounded_Arrays is
 
 private
 
-  -- Default value is an ampty array
+  -- Default value is an empty array
   Empty_Array : Element_Array (1 .. 0);
   Null_Array : aliased Element_Array := Empty_Array;
 
@@ -200,9 +198,8 @@ private
   overriding procedure Adjust (Object : in out Unbounded_Array);
   overriding procedure Finalize (Object : in out Unbounded_Array);
 
-  Null_Unbounded_Array : constant Unbounded_Array :=
-     (Ada.Finalization.Controlled with Ref => Null_Array'Access,
-                                       Last      => 0);
+  Null_Unbounded_Array : constant Unbounded_Array
+                       := (Ada.Finalization.Controlled with others => <>);
   Null_Unb_Array : constant Unbounded_Array := Null_Unbounded_Array;
 
 end Unbounded_Arrays;
