@@ -1,6 +1,6 @@
 -- A virtual clock can be shift from the real time and can have a different
---  speed (from 0 - frozen - to 128 times faster than the real time).
--- Observer are notified on characteristic changes.
+--  speed (from 0-frozen to 128 times faster than the real time).
+-- Observers are notified on the characteristic changes.
 -- Virtual clocks can be used for Chronos (and associated passive timers)
 --  Timed queues and Timers.
 with Ada.Calendar;
@@ -21,6 +21,7 @@ package Virtual_Time is
   -- Is Time reached
   function Is_Reached (Expiration_Time : Time;
                        A_Clock : Clock) return Boolean;
+  -- Use Ada.Calendar.Clock if A_Clock is null
   function Is_Reached (Expiration_Time : Time;
                        A_Clock : Clock_Access := null) return Boolean;
 
