@@ -4,7 +4,7 @@ package body Utf_16 is
 
   package Unbounded_Unicode renames Unicode.Unbounded_Unicode;
 
-  -- Returns the number of chars of a sequence (coded in the 1st char)
+  -- Returns the number of chars of a word (coded in the 1st char)
   function Nb_Chars (First_Char : Wide_Character) return Len_Range is
     -- Byte value
     Val : constant Integer := Wide_Character'Pos (First_Char);
@@ -23,55 +23,55 @@ package body Utf_16 is
     end if;
   end Nb_Chars;
 
-  -- Checks that a Utf-16 sequence is valid
-  function Is_Valid (Seq : Sequence) return Boolean is
+  -- Checks that a Utf-16 word is valid
+  function Is_Valid (W : Word) return Boolean is
     Val : Integer;
   begin
      -- Check that sequence is not empty
-    if Seq'Length = 0 then
+    if W'Length = 0 then
       return False;
     end if;
     -- Check that sequence has the proper Nb of chars
     -- as required by the first char
-    if Seq'Length /= Nb_Chars (Seq(Seq'First)) then
+    if W'Length /= Nb_Chars (W(W'First)) then
       return False;
     end if;
     -- Check that second word (if any) is between DC00 and DFFF
-    if Seq'Length = 1 then
+    if W'Length = 1 then
       return True;
     end if;
-    Val := Wide_Character'Pos (Seq(Seq'First + 1));
+    Val := Wide_Character'Pos (W(W'First + 1));
     return 16#DC00# <= Val and then Val <= 16#DFFF#;
   exception
     when Invalid_Sequence =>
       return False;
   end Is_Valid;
 
-  -- Checks that a Utf-16 sequence is valid, raise Invalid_Sequence if not
-  procedure Check_Valid (Seq : in Sequence) is
+  -- Checks that a Utf-16 word is valid, raise Invalid_Sequence if not
+  procedure Check_Valid (W : in Word) is
   begin
-    if not Is_Valid (Seq) then
+    if not Is_Valid (W) then
       raise Invalid_Sequence;
     end if;
   end Check_Valid;
 
   -- Internal
-  -- Decodes the first unicode from the given sequence
-  procedure Decode (Seq : in Sequence;
+  -- Decodes the first unicode from the given word
+  procedure Decode (W : in Word;
                     Len : out Len_Range;
                     Unicode : out Unicode_Number) is
     Val1, Val2 : Integer;
     use Bit_Ops;
   begin
-    Len := Nb_Chars (Seq(Seq'First));
+    Len := Nb_Chars (W(W'First));
 
-    Val1 := Wide_Character'Pos (Seq(Seq'First));
+    Val1 := Wide_Character'Pos (W(W'First));
     if Len = 1 then
       Unicode := Val1;
       return;
     end if;
 
-    Val2 := Wide_Character'Pos (Seq(Seq'First + 1));
+    Val2 := Wide_Character'Pos (W(W'First + 1));
     if 16#DC00# > Val2 or else Val2 > 16#DFFF# then
       raise Invalid_Sequence;
     end if;
@@ -82,20 +82,20 @@ package body Utf_16 is
     Unicode := Unicode + 16#10000#;
   end Decode;
 
-  -- Decodes a Utf-16 sequence to Unicode. May raise Invalid_Sequence
-  function Decode (Seq : Sequence) return Unicode_Number is
+  -- Decodes a Utf-16 word to Unicode. May raise Invalid_Sequence
+  function Decode (W : Word) return Unicode_Number is
     U : Unicode_Number;
     L : Len_Range;
   begin
-    Decode (Seq, L, U);
-    if L /= Seq'Length then
+    Decode (W, L, U);
+    if L /= W'Length then
       raise Invalid_Sequence;
     end if;
     return U;
   end Decode;
 
-  -- Encodes a Unicode as a Utf-16 sequence
-  function Encode (Unicode : Unicode_Number) return Sequence is
+  -- Encodes a Unicode as a Utf-16 word
+  function Encode (Unicode : Unicode_Number) return Word is
     Val, Val1, Val2 : Integer;
     use Bit_Ops;
   begin
@@ -115,7 +115,7 @@ package body Utf_16 is
   end Encode;
 
 
-  -- Decodes a Utf-16 sequence (of sequences) to Unicode sequence.
+  -- Decodes a Utf-16 sequence (of words) to Unicode sequence.
   -- May raise Invalid_Sequence
   function Decode (Seq : Sequence) return Unicode_Sequence is
     Index : Positive;
@@ -137,7 +137,7 @@ package body Utf_16 is
     return Unbounded_Unicode.To_Array (Res);
   end Decode;
 
-  -- Encodes a Unicode sequence as a Utf-16 sequence (of sequecnes)
+  -- Encodes a Unicode sequence as a Utf-16 sequence (of words)
   function Encode (Unicode : Unicode_Sequence) return Sequence is
     Result : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
   begin
@@ -148,10 +148,10 @@ package body Utf_16 is
   end Encode;
 
 
-  -- Decodes a Utf-16 sequence to Wide_Character.
+  -- Decodes a Utf-16 words to Wide_Character.
   -- May raise Invalid_Sequence or Not_Wide_Character
-  function Decode (Seq : Sequence) return Wide_Character is
-    U : constant Unicode_Number := Decode (Seq);
+  function Decode (W : Word) return Wide_Character is
+    U : constant Unicode_Number := Decode (W);
   begin
    return Wide_Character'Val (U);
   exception
@@ -159,8 +159,8 @@ package body Utf_16 is
       raise Not_Wide_Character;
   end Decode;
 
-  -- Encodes a Unicode as a Utf-16 sequence
-  function Encode (Wide_Char : Wide_Character) return Sequence is
+  -- Encodes a Unicode as a Utf-16 words
+  function Encode (Wide_Char : Wide_Character) return Word is
   begin
     return Encode (Wide_Character'Pos (Wide_Char));
   end Encode;

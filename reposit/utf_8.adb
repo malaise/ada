@@ -29,22 +29,22 @@ package body Utf_8 is
     end if;
   end Nb_Chars;
 
-  -- Checks that a Utf-8 sequence is valid
-  function Is_Valid (Seq : Sequence) return Boolean is
+  -- Checks that a Utf-8 word is valid
+  function Is_Valid (W : Word) return Boolean is
     use Bit_Ops;
   begin
     -- Check that sequence is not empty
-    if Seq'Length = 0 then
+    if W'Length = 0 then
       return False;
     end if;
     -- Check that sequence has the proper Nb of chars
     -- as required by the first char
-    if Seq'Length /= Nb_Chars (Seq(Seq'First)) then
+    if W'Length /= Nb_Chars (W(W'First)) then
       return False;
     end if;
     -- Check that all but first bytes start by 2#10#
-    for I in Len_Range'Succ(Seq'First) .. Seq'Last loop
-      if Integer'(Character'Pos(Seq(I)) and 2#1100_0000#) /= 2#1000_0000# then
+    for I in Len_Range'Succ(W'First) .. W'Last loop
+      if Integer'(Character'Pos(W(I)) and 2#1100_0000#) /= 2#1000_0000# then
         return False;
       end if;
     end loop;
@@ -54,59 +54,59 @@ package body Utf_8 is
       return False;
   end Is_Valid;
 
-  -- Checks that a Utf-8 sequence is valid, raise Invalid_Sequence if not
-  procedure Check_Valid (Seq : in Sequence) is
+  -- Checks that a Utf-8 word is valid, raise Invalid_Sequence if not
+  procedure Check_Valid (W : in Word) is
   begin
-    if not Is_Valid (Seq) then
+    if not Is_Valid (W) then
       raise Invalid_Sequence;
     end if;
   end Check_Valid;
 
-  -- Checks that a Utf-8 sequence is safe (valid and not uselessly long...)
-  function Is_Safe (Seq : Sequence) return Boolean is
+  -- Checks that a Utf-8 word is safe (valid and not uselessly long...)
+  function Is_Safe (W : Word) return Boolean is
     Unicode : Unicode_Number;
   begin
-    if not Is_Valid (Seq) then
+    if not Is_Valid (W) then
       return False;
     end if;
     -- Decode and check vs forbidden values
-    Unicode := Decode (Seq);
+    Unicode := Decode (W);
     if      Unicode = 16#D800#
     or else Unicode = 16#DFFF#
     or else Unicode = 16#FFFE#
     or else Unicode = 16#FFFF# then
       return False;
     end if;
-    -- Re-encode and check this leads back to Seq
-    if Encode (Unicode) /= Seq then
+    -- Re-encode and check this leads back to W
+    if Encode (Unicode) /= W then
       return False;
     end if;
     -- All tests OK
     return True;
   end Is_Safe;
 
-  -- Checks that a Utf-8 sequence is safe, raise Invalid_Sequence if not
-  procedure Check_Safe (Seq : in Sequence) is
+  -- Checks that a Utf-8 word is safe, raise Invalid_Sequence if not
+  procedure Check_Safe (W : in Word) is
   begin
-    if not Is_Safe (Seq) then
+    if not Is_Safe (W) then
       raise Invalid_Sequence;
     end if;
   end Check_Safe;
 
   -- Internal
-  -- Decodes the first unicode from the given sequence
-  procedure Decode (Seq : in Sequence;
+  -- Decodes the first unicode from the given word
+  procedure Decode (W : in Word;
                     Len : out Len_Range;
                     Unicode : out Unicode_Number) is
-    First : constant Positive := Seq'First;
+    First : constant Positive := W'First;
     function Byte_Of (I : Len_Range) return Natural is
     begin
-      return Character'Pos (Seq (First + I - 1));
+      return Character'Pos (W(First + I - 1));
     end Byte_Of;
 
     use Bit_Ops;
   begin
-    Len := Nb_Chars (Seq(Seq'First));
+    Len := Nb_Chars (W(W'First));
 
     if Len = 1 then
       -- One Byte => Ascii: 0iii_iiii
@@ -115,8 +115,8 @@ package body Utf_8 is
     end if;
 
     -- Check that all but first bytes start by 2#10#
-    for I in Len_Range'Succ(Seq'First) .. Seq'First + Len  - 1 loop
-      if Integer'(Character'Pos(Seq(I)) and 2#1100_0000#) /= 2#1000_0000# then
+    for I in Len_Range'Succ(W'First) .. W'First + Len  - 1 loop
+      if Integer'(Character'Pos(W(I)) and 2#1100_0000#) /= 2#1000_0000# then
         raise Invalid_Sequence;
       end if;
     end loop;
@@ -141,20 +141,20 @@ package body Utf_8 is
     end if;
   end Decode;
 
-  -- Decodes a Utf-8 sequence to Unicode. May raise Invalid_Sequence
-  function Decode (Seq : Sequence) return Unicode_Number is
+  -- Decodes a Utf-8 word to Unicode. May raise Invalid_Sequence
+  function Decode (W : Word) return Unicode_Number is
     U : Unicode_Number;
     L : Len_Range;
   begin
-    Decode (Seq, L, U);
-    if L /= Seq'Length then
+    Decode (W, L, U);
+    if L /= W'Length then
       raise Invalid_Sequence;
     end if;
     return U;
   end Decode;
 
-  -- Encodes a Utf-8 sequence
-  function Encode (Unicode : Unicode_Number) return Sequence is
+  -- Encodes a Utf-8 word
+  function Encode (Unicode : Unicode_Number) return Word is
     Nb_Chars : Len_Range;
     Tab : array (Len_Range) of Natural;
     use Bit_Ops;
@@ -231,10 +231,10 @@ package body Utf_8 is
   end Encode;
 
 
- -- Decodes a Utf-8 sequence to Wide_Character.
+ -- Decodes a Utf-8 word to Wide_Character.
   -- May raise Invalid_Utf_8_Sequence or Not_Wide_Character
-  function Decode (Seq : Sequence) return Wide_Character is
-    U : constant Unicode_Number := Decode (Seq);
+  function Decode (W : Word) return Wide_Character is
+    U : constant Unicode_Number := Decode (W);
   begin
     return Wide_Character'Val (U);
   exception
@@ -242,8 +242,8 @@ package body Utf_8 is
       raise Not_Wide_Character;
   end Decode;
 
-  -- Encodes a Wide_Character as a Utf-8 sequence
-  function Encode (Wide_Char : Wide_Character) return Sequence is
+  -- Encodes a Wide_Character as a Utf-8 word
+  function Encode (Wide_Char : Wide_Character) return Word is
   begin
     return Encode (Wide_Character'Pos (Wide_Char));
   end Encode;

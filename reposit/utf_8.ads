@@ -6,6 +6,9 @@ package Utf_8 is
   Max_Chars : constant := 4;
   subtype Len_Range is Positive range 1 .. Max_Chars;
   subtype Sequence is String;
+  -- A sequence of 1 or 4 Character
+  subtype Word is Sequence;
+
 
   -- Unicode
   subtype Unicode_Number is Unicode.Unicode_Number;
@@ -17,20 +20,20 @@ package Utf_8 is
   -- May raise Invalid_Sequence
   function Nb_Chars (First_Char : Character) return Len_Range;
 
-  -- Checks that a Utf-8 sequence is valid
-  function Is_Valid (Seq : Sequence) return Boolean;
-  -- Checks that a Utf-8 sequence is valid, raise Invalid_Sequence if not
-  procedure Check_Valid (Seq : in Sequence);
-  -- Checks that a Utf-8 sequence is safe (valid and not uselessly long...)
-  function Is_Safe (Seq : Sequence) return Boolean;
-  -- Checks that a Utf-8 sequence is safe, raise Invalid_Sequence if not
-  procedure Check_Safe (Seq : in Sequence);
+  -- Checks that a Utf-8 word is valid
+  function Is_Valid (W : Word) return Boolean;
+  -- Checks that a Utf-8 word is valid, raise Invalid_Sequence if not
+  procedure Check_Valid (W : in Word);
+  -- Checks that a Utf-8 word is safe (valid and not uselessly long...)
+  function Is_Safe (W : Word) return Boolean;
+  -- Checks that a Utf-8 word is safe, raise Invalid_Sequence if not
+  procedure Check_Safe (W : in Word);
 
 
-  -- Decodes a Utf-8 sequence to Unicode. May raise Invalid_Sequence
-  function Decode (Seq : Sequence) return Unicode_Number;
-  -- Encodes a Unicode as a Utf-8 sequence
-  function Encode (Unicode : Unicode_Number) return Sequence;
+  -- Decodes a Utf-8 word to Unicode. May raise Invalid_Sequence
+  function Decode (W : Word) return Unicode_Number;
+  -- Encodes a Unicode as a Utf-8 word
+  function Encode (Unicode : Unicode_Number) return Word;
 
   subtype Unicode_Sequence is Unicode.Unicode_Sequence;
   -- Decodes a Utf-8 sequence (of sequences) to Unicode sequence.
@@ -44,11 +47,11 @@ package Utf_8 is
   --  Wide_Character (16#FFFF#)
   Not_Wide_Character : exception;
 
-  -- Decodes a Utf-8 sequence to Wide_Character.
+  -- Decodes a Utf-8 word to Wide_Character.
   -- May raise Invalid_Sequence or Not_Wide_Character
-  function Decode (Seq : Sequence) return Wide_Character;
+  function Decode (W : Word) return Wide_Character;
   -- Encodes a Unicode as a Utf-8 sequence
-  function Encode (Wide_Char : Wide_Character) return Sequence;
+  function Encode (Wide_Char : Wide_Character) return Word;
 
 end Utf_8;
 
