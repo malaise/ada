@@ -30,7 +30,7 @@ package Utf_8 is
   procedure Check_Safe (W : in Word);
 
 
-  -- Decodes a Utf-8 word to Unicode. May raise Invalid_Sequence
+  -- Decodes a Utf-8 word to a Unicode_Number. May raise Invalid_Sequence
   function Decode (W : Word) return Unicode_Number;
   -- Encodes a Unicode as a Utf-8 word or sequence
   function Encode (Unicode : Unicode_Number) return Word;
@@ -48,7 +48,7 @@ package Utf_8 is
   --  Wide_Character (16#FFFF#)
   Not_Wide_Character : exception;
 
-  -- Decodes a Utf-8 word to Wide_Character.
+  -- Decodes a Utf-8 word to a Wide_Character.
   -- May raise Invalid_Sequence or Not_Wide_Character
   function Decode (W : Word) return Wide_Character;
   -- Encodes a Unicode as a Utf-8 word or sequence

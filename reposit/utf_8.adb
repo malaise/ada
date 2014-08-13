@@ -95,18 +95,18 @@ package body Utf_8 is
 
   -- Internal
   -- Decodes the first unicode from the given word
-  procedure Decode (W : in Word;
+  procedure Decode (Seq : in Sequence;
                     Len : out Len_Range;
                     Unicode : out Unicode_Number) is
-    First : constant Positive := W'First;
+    First : constant Positive := Seq'First;
     function Byte_Of (I : Len_Range) return Natural is
     begin
-      return Character'Pos (W(First + I - 1));
+      return Character'Pos (Seq(First + I - 1));
     end Byte_Of;
 
     use Bit_Ops;
   begin
-    Len := Nb_Chars (W(W'First));
+    Len := Nb_Chars (Seq(Seq'First));
 
     if Len = 1 then
       -- One Byte => Ascii: 0iii_iiii
@@ -115,8 +115,8 @@ package body Utf_8 is
     end if;
 
     -- Check that all but first bytes start by 2#10#
-    for I in Len_Range'Succ(W'First) .. W'First + Len  - 1 loop
-      if Integer'(Character'Pos(W(I)) and 2#1100_0000#) /= 2#1000_0000# then
+    for I in Len_Range'Succ(Seq'First) .. Seq'First + Len  - 1 loop
+      if Integer'(Character'Pos(Seq(I)) and 2#1100_0000#) /= 2#1000_0000# then
         raise Invalid_Sequence;
       end if;
     end loop;
@@ -146,7 +146,7 @@ package body Utf_8 is
     U : Unicode_Number;
     L : Len_Range;
   begin
-    Decode (W, L, U);
+    Decode (Sequence(W), L, U);
     if L /= W'Length then
       raise Invalid_Sequence;
     end if;
@@ -216,7 +216,7 @@ package body Utf_8 is
     -- Get each unicode number
     Index := 1;
     loop
-      Decode (Word (Seq(Index .. Seq'Last)), Len, U);
+      Decode (Seq(Index .. Seq'Last), Len, U);
       Unbounded_Unicode.Append (Res, U);
       Index := Index + Len;
       exit when Index > Seq'Last;

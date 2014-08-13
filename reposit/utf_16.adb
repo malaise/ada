@@ -57,21 +57,21 @@ package body Utf_16 is
 
   -- Internal
   -- Decodes the first unicode from the given word
-  procedure Decode (W : in Word;
+  procedure Decode (Seq : in Sequence;
                     Len : out Len_Range;
                     Unicode : out Unicode_Number) is
     Val1, Val2 : Integer;
     use Bit_Ops;
   begin
-    Len := Nb_Chars (W(W'First));
+    Len := Nb_Chars (Seq(Seq'First));
 
-    Val1 := Wide_Character'Pos (W(W'First));
+    Val1 := Wide_Character'Pos (Seq(Seq'First));
     if Len = 1 then
       Unicode := Val1;
       return;
     end if;
 
-    Val2 := Wide_Character'Pos (W(W'First + 1));
+    Val2 := Wide_Character'Pos (Seq(Seq'First + 1));
     if 16#DC00# > Val2 or else Val2 > 16#DFFF# then
       raise Invalid_Sequence;
     end if;
@@ -87,7 +87,7 @@ package body Utf_16 is
     U : Unicode_Number;
     L : Len_Range;
   begin
-    Decode (W, L, U);
+    Decode (Sequence(W), L, U);
     if L /= W'Length then
       raise Invalid_Sequence;
     end if;
@@ -133,7 +133,7 @@ package body Utf_16 is
     -- Get each unicode number
     Index := 1;
     loop
-      Decode (Word (Seq(Index .. Seq'Last)), Len, U);
+      Decode (Seq(Index .. Seq'Last), Len, U);
       Unbounded_Unicode.Append (Res, U);
       Index := Index + Len;
       exit when Index > Seq'Last;
