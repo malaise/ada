@@ -7,7 +7,7 @@ package Utf_16 is
   subtype Len_Range is Positive range 1 .. Max_Chars;
   subtype Sequence is Wide_String;
   -- A sequence of 1 or 2 Wide_Character
-  subtype Word is Sequence;
+  type Word is array (Len_Range range <>) of Wide_Character;
 
   -- Unicode: Natural range 0 .. 16#10FFFF#;
   subtype Unicode_Number is Unicode.Unicode_Number;
@@ -33,8 +33,9 @@ package Utf_16 is
 
   -- Decodes a Utf-16 sequence to Unicode. May raise Invalid_Sequence
   function Decode (W : Word) return Unicode_Number;
-  -- Encodes a Unicode as a Utf-16 sequence
+  -- Encodes a Unicode as a Utf-16 word or sequence
   function Encode (Unicode : Unicode_Number) return Word;
+  function Encode (Unicode : Unicode_Number) return Sequence;
 
   subtype Unicode_Sequence is Unicode.Unicode_Sequence;
   -- Decodes a Utf-16 sequence (of words) to Unicode sequence.
@@ -50,8 +51,9 @@ package Utf_16 is
   -- Decodes a Utf-16 word to Wide_Character.
   -- May raise Invalid_Sequence or Not_Wide_Character
   function Decode (W : Word) return Wide_Character;
-  -- Encodes a Unicode as a Utf-16 word
+  -- Encodes a Unicode as a Utf-16 word or sequence
   function Encode (Wide_Char : Wide_Character) return Word;
+  function Encode (Wide_Char : Wide_Character) return Sequence;
 
   -- Swap a sequence BE <-> LE (big endian <-> little endian)
   procedure Swap (Wide_Char : in out Wide_Character);

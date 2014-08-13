@@ -50,7 +50,7 @@ begin
     Basic_Proc.Put_Output (Image16 (U1));
     Basic_Proc.Put_Output (" ->");
     declare
-      Str : constant Utf_8.Sequence := Utf_8.Encode (U1);
+      Str : constant Utf_8.Word := Utf_8.Encode (U1);
     begin
       for I in Str'Range loop
         Basic_Proc.Put_Output (" " & Image16 (Character'Pos (Str(I))));

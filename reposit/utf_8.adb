@@ -153,7 +153,7 @@ package body Utf_8 is
     return U;
   end Decode;
 
-  -- Encodes a Utf-8 word
+  -- Encodes a Unicode as Utf-8 word or sequence
   function Encode (Unicode : Unicode_Number) return Word is
     Nb_Chars : Len_Range;
     Tab : array (Len_Range) of Natural;
@@ -193,10 +193,14 @@ package body Utf_8 is
       for I in Seq'Range loop
         Seq(I) := Character'Val (Tab(I));
       end loop;
-      return Seq;
+      return Word (Seq);
     end;
   end Encode;
 
+  function Encode (Unicode : Unicode_Number) return Sequence is
+  begin
+    return Sequence (Word'(Encode (Unicode)));
+  end Encode;
 
   -- Decodes a Utf-8 sequence (of sequences) to Unicode sequence.
   -- May raise Invalid_Sequence
@@ -212,7 +216,7 @@ package body Utf_8 is
     -- Get each unicode number
     Index := 1;
     loop
-      Decode (Seq(Index .. Seq'Last), Len, U);
+      Decode (Word (Seq(Index .. Seq'Last)), Len, U);
       Unbounded_Unicode.Append (Res, U);
       Index := Index + Len;
       exit when Index > Seq'Last;
@@ -242,10 +246,15 @@ package body Utf_8 is
       raise Not_Wide_Character;
   end Decode;
 
-  -- Encodes a Wide_Character as a Utf-8 word
+  -- Encodes a Wide_Character as a Utf-8 word or sequence
   function Encode (Wide_Char : Wide_Character) return Word is
   begin
     return Encode (Wide_Character'Pos (Wide_Char));
+  end Encode;
+
+  function Encode (Wide_Char : Wide_Character) return Sequence is
+  begin
+    return Sequence (Word'(Encode (Wide_Char)));
   end Encode;
 
 end Utf_8;

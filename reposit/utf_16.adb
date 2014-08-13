@@ -114,6 +114,10 @@ package body Utf_16 is
     return Wide_Character'Val (Val1) & Wide_Character'Val (Val2);
   end Encode;
 
+  function Encode (Unicode : Unicode_Number) return Sequence is
+  begin
+    return Sequence (Word'(Encode (Unicode)));
+  end Encode;
 
   -- Decodes a Utf-16 sequence (of words) to Unicode sequence.
   -- May raise Invalid_Sequence
@@ -129,7 +133,7 @@ package body Utf_16 is
     -- Get each unicode number
     Index := 1;
     loop
-      Decode (Seq(Index .. Seq'Last), Len, U);
+      Decode (Word (Seq(Index .. Seq'Last)), Len, U);
       Unbounded_Unicode.Append (Res, U);
       Index := Index + Len;
       exit when Index > Seq'Last;
@@ -159,10 +163,15 @@ package body Utf_16 is
       raise Not_Wide_Character;
   end Decode;
 
-  -- Encodes a Unicode as a Utf-16 words
+  -- Encodes a Unicode as a Utf-16 word or sequence
   function Encode (Wide_Char : Wide_Character) return Word is
   begin
     return Encode (Wide_Character'Pos (Wide_Char));
+  end Encode;
+
+  function Encode (Wide_Char : Wide_Character) return Sequence is
+  begin
+    return Sequence (Word'(Encode (Wide_Char)));
   end Encode;
 
   -- Swap a sequence BE <-> LE (big endian <-> little endian)

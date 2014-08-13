@@ -65,8 +65,8 @@ begin
       end if;
       Nb_Codes := Nb_Arg - 1;
       for I in 2 .. Nb_Arg loop
-       Codes (I-1) := Get_Value (Argument.Get_Parameter(I));
-       if Codes (I-1) > 16#FF# then
+       Codes(I-1) := Get_Value (Argument.Get_Parameter(I));
+       if Codes(I-1) > 16#FF# then
          raise Constraint_Error;
        end if;
      end loop;
@@ -78,8 +78,8 @@ begin
       end if;
       Nb_Codes := Nb_Arg - 1;
       for I in 2 .. Nb_Arg loop
-       Codes (I-1) := Get_Value (Argument.Get_Parameter(I));
-       if Codes (I-1) > 16#FFFF# then
+       Codes(I-1) := Get_Value (Argument.Get_Parameter(I));
+       if Codes(I-1) > 16#FFFF# then
          raise Constraint_Error;
        end if;
      end loop;
@@ -94,12 +94,12 @@ begin
   -- Convert Utf to Unicode
   if Mode = Utf8 then
     declare
-      Seq : Utf_8.Sequence (1 .. Nb_Codes);
+      Word : Utf_8.Word(1 .. Nb_Codes);
     begin
       for I in 1 ..  Nb_Codes loop
-        Seq(I) := Character'Val (Codes(I));
+        Word(I) := Character'Val (Codes(I));
       end loop;
-      Unicode_Val := Utf_8.Decode (Seq);
+      Unicode_Val := Utf_8.Decode (Word);
     exception
       when Utf_8.Invalid_Sequence =>
         Basic_Proc.Put_Line_Output ("Invalid sequence");
@@ -107,12 +107,12 @@ begin
     end;
   elsif Mode = Utf16 then
     declare
-      Seq : Utf_16.Sequence (1 .. Nb_Codes);
+      Word : Utf_16.Word(1 .. Nb_Codes);
     begin
       for I in 1 .. Nb_Codes loop
-        Seq(I) := Wide_Character'Val (Codes(I));
+        Word(I) := Wide_Character'Val (Codes(I));
       end loop;
-      Unicode_Val := Utf_16.Decode (Seq);
+      Unicode_Val := Utf_16.Decode (Word);
     exception
       when Utf_16.Invalid_Sequence =>
         Basic_Proc.Put_Line_Output ("Invalid sequence");

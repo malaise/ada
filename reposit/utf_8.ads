@@ -7,7 +7,7 @@ package Utf_8 is
   subtype Len_Range is Positive range 1 .. Max_Chars;
   subtype Sequence is String;
   -- A sequence of 1 or 4 Character
-  subtype Word is Sequence;
+  type Word is array (Len_Range range <>) of Character;
 
 
   -- Unicode
@@ -32,8 +32,9 @@ package Utf_8 is
 
   -- Decodes a Utf-8 word to Unicode. May raise Invalid_Sequence
   function Decode (W : Word) return Unicode_Number;
-  -- Encodes a Unicode as a Utf-8 word
+  -- Encodes a Unicode as a Utf-8 word or sequence
   function Encode (Unicode : Unicode_Number) return Word;
+  function Encode (Unicode : Unicode_Number) return Sequence;
 
   subtype Unicode_Sequence is Unicode.Unicode_Sequence;
   -- Decodes a Utf-8 sequence (of sequences) to Unicode sequence.
@@ -50,8 +51,9 @@ package Utf_8 is
   -- Decodes a Utf-8 word to Wide_Character.
   -- May raise Invalid_Sequence or Not_Wide_Character
   function Decode (W : Word) return Wide_Character;
-  -- Encodes a Unicode as a Utf-8 sequence
+  -- Encodes a Unicode as a Utf-8 word or sequence
   function Encode (Wide_Char : Wide_Character) return Word;
+  function Encode (Wide_Char : Wide_Character) return Sequence;
 
 end Utf_8;
 

@@ -353,7 +353,7 @@ package body Util is
   function Get_Char (Flow : in out Flow_Type) return Character is
     Char : Character;
     Str2 : Utf_8.Sequence(1 .. 2);
-    Seq16 : Utf_16.Sequence(1 .. Utf_16.Max_Chars);
+    Seq16 : Utf_16.Word(1 .. Utf_16.Max_Chars);
     Seq8 : As.U.Asu_Us;
     Unicode : Utf_8.Unicode_Number;
   begin
@@ -379,7 +379,7 @@ package body Util is
       Str2(2) := Get_One_Char (Flow);
 
       -- Decoding of UTF-16, common to all flows, get a Unicode
-      Seq16(1 .. 1) := Utf_16.Merge (Str2);
+      Seq16(1 .. 1) := Utf_16.Word (Utf_16.Merge (Str2));
       -- Convert to UTF-16BE
       if Flow.Curr_Flow.Encod = Utf16_Le then
         Utf_16.Swap (Seq16(1));
@@ -395,7 +395,7 @@ package body Util is
           when End_Error =>
             raise Decoding_Error;
         end;
-        Seq16(2 .. 2) := Utf_16.Merge (Str2);
+        Seq16(2 .. 2) := Utf_16.Word (Utf_16.Merge (Str2));
         if Flow.Curr_Flow.Encod = Utf16_Le then
           Utf_16.Swap (Seq16(1));
         end if;
