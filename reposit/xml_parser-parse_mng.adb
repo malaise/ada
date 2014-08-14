@@ -64,8 +64,10 @@ package body Parse_Mng  is
     ------------------
     -- Syntax check --
     ------------------
-    -- Check if char is a letter
+    -- Check if valid encoding name
     function Is_Valid_Encoding (Name : As.U.Asu_Us) return Boolean;
+    -- Check if valid PublicId
+    function Is_Valid_Pubid (Name : As.U.Asu_Us) return Boolean;
 
     -- Check that Name is valid
     function Name_Ok (Name : As.U.Asu_Us;
@@ -127,7 +129,7 @@ package body Parse_Mng  is
     Directive : constant Character := '!';
     Slash : constant Character := '/';
     Equal : constant Character := '=';
-    Space : constant Character := ' ';
+    Space : constant Character := Aski.Spc;
     Cdata : constant String := "[CDATA[";
     Cdata_Start : constant String := Start & Directive & Cdata;
     Cdata_End : constant String := "]]" & Stop;
@@ -240,6 +242,20 @@ package body Parse_Mng  is
   package body Util is separate;
   package body Namespaces is separate;
 
+  ---------------------------------------
+  -- Propagate checks to the Generator --
+  ---------------------------------------
+  function Name_Ok (Name : As.U.Asu_Us;
+                    Allow_Token : Boolean := False) return Boolean
+                    renames Util.Name_Ok;
+  function Is_Valid_Encoding (Name : As.U.Asu_Us) return Boolean
+                             renames Util.Is_Valid_Encoding;
+  function Is_Valid_Pubid (Name : As.U.Asu_Us) return Boolean
+                          renames Util.Is_Valid_Pubid;
+
+  ----------------
+  -- Operations --
+  ----------------
   -- Resolve an URI:
   -- if not "://" -> Build_Full_Name (Uri), return File
   -- if "file://" -> Build_Full_Name (Tail), return File

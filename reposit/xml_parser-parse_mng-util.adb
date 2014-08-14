@@ -158,6 +158,21 @@ package body Util is
     return True;
   end Is_Valid_Encoding;
 
+  function Is_Valid_Pubid (Name : As.U.Asu_Us) return Boolean is
+  begin
+    for I in 1 .. Name.Length loop
+      case Name.Element (I) is
+        when Space | Aski.Cr | Aski.Lf | 'a' ..'z' | 'A' .. 'Z' | '0' .. '9'
+           | '-' | ''' | '(' | ')' | '+' | ',' | '.' | '/' | ':' | '=' | '?'
+           | ';' | '!' | '*' | '#' | '@' | '$' | '_' | '%' =>
+          null;
+        when others =>
+          return False;
+      end case;
+    end loop;
+    return True;
+  end Is_Valid_Pubid;
+
   function Is_Valid_Start (U : Utf_8.Unicode_Number) return Boolean is
   begin
     return  (Character'Pos('a') <= U and then U <= Character'Pos('z'))
@@ -477,7 +492,7 @@ package body Util is
       raise File_Error;
     when Decoding_Error =>
       Error (Flow, "Error while decoding character");
-      return ' ';
+      return Space;
   end Get;
 
   -- Get a string

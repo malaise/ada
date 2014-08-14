@@ -805,6 +805,10 @@ private
   function Get_Magic return Float;
   function Get_Tree (Ctx : Ctx_Type;
                      Node : Node_Type) return Tree_Acc;
+  function Name_Ok (Name : As.U.Asu_Us;
+                    Allow_Token : Boolean := False) return Boolean;
+  function Is_Valid_Encoding (Name : As.U.Asu_Us) return Boolean;
+  function Is_Valid_Pubid (Name : As.U.Asu_Us) return Boolean;
 
   -- For Xml_Generator and internal
   -- If Name is empty then return Name

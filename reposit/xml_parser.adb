@@ -4,7 +4,7 @@ with Trace.Loggers, Rnd, Exception_Messenger, Directory, Str_Util,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "4";
+  Minor_Version : constant String := "5";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -270,8 +270,25 @@ package body Xml_Parser is
     procedure Check (Ctx : in out Ctx_Type);
     -- Update Is_Mixed of elements from fill set of children
     procedure Update_Is_Mixed (Ctx : in out Ctx_Type);
+
+    -- Propagate checks to the Generator
+    function Name_Ok (Name : As.U.Asu_Us;
+                    Allow_Token : Boolean := False) return Boolean;
+    function Is_Valid_Encoding (Name : As.U.Asu_Us) return Boolean;
+    function Is_Valid_Pubid (Name : As.U.Asu_Us) return Boolean;
   end Parse_Mng;
   package body Parse_Mng is separate;
+
+  ---------------------------------------
+  -- Propagate checks to the Generator --
+  ---------------------------------------
+  function Name_Ok (Name : As.U.Asu_Us;
+                    Allow_Token : Boolean := False) return Boolean
+                    renames Parse_Mng.Name_Ok;
+  function Is_Valid_Encoding (Name : As.U.Asu_Us) return Boolean
+                             renames Parse_Mng.Is_Valid_Encoding;
+  function Is_Valid_Pubid (Name : As.U.Asu_Us) return Boolean
+                          renames Parse_Mng.Is_Valid_Pubid;
 
   -----------
   -- DEBUG --

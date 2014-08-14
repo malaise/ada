@@ -1,41 +1,19 @@
 -- Generates a Xml file (or stdout), or string from a tree
-with Aski, Images, Text_Line, Sys_Calls;
+with Aski, Images, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
   end Version;
 
-  -- Name validity check
-  function Is_Valid_In_Name (Char : Character) return Boolean is
-  begin
-    if Character'Pos (Char) > 127 then
-      -- Simple test not possible for non ASCII character
-      -- May be a valid byte within a UTF-8 sequence
-      return True;
-    end if;
-    -- Nmtoken validity check
-    return  ('a' <= Char and then Char >= 'z')
-    or else ('A' <= Char and then Char >= 'Z')
-    or else ('0' <= Char and then Char >= '9')
-    or else Char = ':'
-    or else Char = '_'
-    or else Char = '-'
-    or else Char = '.';
-  end Is_Valid_In_Name;
   procedure Check_Name (Name : in String) is
   begin
-    if Name = "" then
+    if not Name_Ok (As.U.Tus (Name)) then
       raise Invalid_Argument;
     end if;
-    for I in Name'Range loop
-      if not Is_Valid_In_Name (Name(I)) then
-        raise Invalid_Argument;
-      end if;
-    end loop;
   end Check_Name;
 
   -- Detect separator
@@ -137,7 +115,9 @@ package body Xml_Parser.Generator is
     Encoding_Cell : My_Tree_Cell;
     use type As.U.Asu_Us;
   begin
-    Check_Name (Encoding);
+    if not Is_Valid_Encoding (As.U.Tus (Encoding)) then
+      raise Invalid_Argument;
+    end if;
     -- Read Xml
     Init_Version (Ctx);
     Ctx.Prologue.Move_Root;
@@ -289,15 +269,22 @@ package body Xml_Parser.Generator is
     Tree : Tree_Acc;
     Cell : My_Tree_Cell;
   begin
+    Check_Name (Name);
+    if not Is_Valid_Pubid (As.U.Tus (Pub_Id)) then
+      raise Invalid_Argument;
+    end if;
+    if Str_Util.Locate (File, "'") /= 0
+    and then Str_Util.Locate (File, """") /= 0 then
+      raise Invalid_Argument;
+    end if;
+    if not Public and then Pub_Id /= "" then
+      raise Invalid_Argument;
+    end if;
     if not Node.In_Prologue then
       raise Invalid_Node;
     end if;
     if not Ctx.Doctype.Name.Is_Null then
       raise Doctype_Already_Set;
-    end if;
-    Check_Name (Name);
-    if not Public and then Pub_Id /= "" then
-      raise Invalid_Argument;
     end if;
     -- Move to node
     Move_To (Ctx, Node, Tree);
@@ -369,6 +356,13 @@ package body Xml_Parser.Generator is
       Cell.Name := As.U.Tus (Pi(Sep1 .. Sep2));
       Cell.Value := As.U.Tus (Pi(Sep3 .. Pi'Last));
    end if;
+   -- Checks
+   if not Name_Ok (Cell.Name) then
+     raise Invalid_Argument;
+   end if;
+   if Str_Util.Locate (Cell.Value.Image, ">?") /= 0 then
+     raise Invalid_Argument;
+   end if;
   end Set_Pi;
 
   -- Add a processing instruction in the prologue
@@ -383,13 +377,12 @@ package body Xml_Parser.Generator is
     if not Node.In_Prologue then
       raise Invalid_Node;
     end if;
-    -- Move to node
-    Move_To (Ctx, Node, Tree);
     -- Add this child to prologue
     Cell.Kind := Xml_Parser.Pi;
     Cell.Nb_Attributes := 0;
     Set_Pi (Cell, Pi);
-    Check_Name (Cell.Name.Image);
+    -- Move to node
+    Move_To (Ctx, Node, Tree);
     Insert_Cell (Tree, Cell, Append_Next);
     -- Done
     New_Node := (Kind => Element,
@@ -397,6 +390,14 @@ package body Xml_Parser.Generator is
                  In_Prologue => True,
                  Tree_Access => Tree.Get_Position);
   end Add_Pi;
+
+  -- Internal: Check validity of a comment
+  procedure Check_Comment (Comment  : in String) is
+  begin
+    if Str_Util.Locate (Comment, "--") /= 0 then
+      raise Invalid_Argument;
+    end if;
+  end Check_Comment;
 
   -- Add a comment in prologue
   procedure Add_Comment (Ctx      : in out Ctx_Type;
@@ -407,6 +408,7 @@ package body Xml_Parser.Generator is
     Tree : Tree_Acc;
     Cell : My_Tree_Cell;
   begin
+    Check_Comment (Comment);
     if not Node.In_Prologue then
       raise Invalid_Node;
     end if;
@@ -1123,7 +1125,12 @@ package body Xml_Parser.Generator is
     end if;
     -- Public or System URI
     if not Doctype.File.Is_Null then
-      Put (Flow, " """  & Doctype.File.Image & """");
+      -- Use '"' by default, use ''' if File contains '"'
+      if Str_Util.Locate (Doctype.File.Image, """") = 0 then
+        Put (Flow, " """  & Doctype.File.Image & """");
+      else
+        Put (Flow, " '"  & Doctype.File.Image & "'");
+      end if;
     end if;
     -- Internal definition
     if not Doctype.Int_Def.Is_Null then

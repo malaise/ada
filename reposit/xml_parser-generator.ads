@@ -3,16 +3,22 @@
 package Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "13";
+  Major_Version : constant String := "14";
   function Version return String;
 
+  -- The context, possibly filled by parsing a file or string in tree mode
+  --  possibly filled or modified by unsing the services hereafter
   type Ctx_Type is new Xml_Parser.Ctx_Type with private;
 
+  ----------------------------
+  -- SET OR MODIFY THE TREE --
+  ----------------------------
   ----------------------------------
-  -- PROLOGUE SPECIFIC OPERATIONS --
+  -- Prologue specific operations --
   ----------------------------------
   -- Commands valid only on or under the prologue
   -- Set XML version (1.0 or 1.1)
+  -- If version is not set, then "1.0" will be assumed
   subtype Major_Range is Positive range 1 .. 1;
   subtype Minor_Range is Natural range 0 .. 1;
   procedure Set_Version (Ctx   : in out Ctx_Type;
@@ -20,7 +26,7 @@ package Xml_Parser.Generator is
                          Minor : in Minor_Range);
 
   -- Set the encoding and the standalone of XML directive
-  -- If version is not set, then "1.0" is assumed
+  -- May raise Invalid_Argument if Encoding is not a valid encoding name
   procedure Set_Encoding (Ctx : in out Ctx_Type;
                           Encoding : in String);
   procedure Set_Standalone (Ctx  : in out Ctx_Type;
@@ -37,9 +43,14 @@ package Xml_Parser.Generator is
   --  default, or as its previous brother if not Append_Next.
 
   -- Set the DOCTYPE text
-  -- May raise Invalid_Node if Node is not of prologue
-  -- May raise Invalid_Argument if not Public and Pub_Id is set
+  -- May raise Invalid_Argument if
+  --  - Pub_Id is not a valid PublicId
+  --  - File is not a valid PublicId
+  --  - Pub_Id is not a valid System literal (i.e. contains ''' and '"')
+  --  - Pub_Id is set but Public is False
+  -- Int_Def is not parsed (will be parsed by Xml_Parser.Check)
   -- May raise Doctype_Already_Set if Doctype already set
+  -- May raise Invalid_Node if Node is not of prologue
   Doctype_Already_Set : exception;
   procedure Add_Doctype (Ctx      : in out Ctx_Type;
                          Node     : in Node_Type;
@@ -58,7 +69,11 @@ package Xml_Parser.Generator is
 
 
   -- Add a processing instruction in the prologue
-  -- Pi shall have the the form "<PITarget> [ <spaces> <Pi_Data> ]"
+  -- Pi shall have the the form
+  --  "[ <spaces> ] <PITarget> [ <spaces> <Pi_Data> ]"
+  -- May raise Invalid_Argument if
+  --  - PITarget is not a valid name
+  --  - Pi_Data is not a valid Pi dada (i.e. contains "?>")
   -- May raise Invalid_Node if Node is not of prologue
   procedure Add_Pi (Ctx      : in out Ctx_Type;
                     Node     : in Node_Type;
@@ -67,6 +82,7 @@ package Xml_Parser.Generator is
                     Append_Next : in Boolean := True);
 
   -- Add a comment in prologue, valid only for comments in the prologue
+  -- May raise Invalid_Argument if Comment is not valid (i.e. contains "--")
   -- May raise Invalid_Node if Node is not of prologue
   procedure Add_Comment (Ctx      : in out Ctx_Type;
                          Node     : in Node_Type;
@@ -78,7 +94,7 @@ package Xml_Parser.Generator is
   procedure Clear_Prologue (Ctx : in out Ctx_Type);
 
   ----------------------------------
-  -- ELEMENTS SPECIFIC OPERATIONS --
+  -- Elements specific operations --
   ----------------------------------
   -- May raise Invalid_Node if used on Prologue
 
@@ -187,7 +203,7 @@ package Xml_Parser.Generator is
                          Content : in String);
 
   -----------------------
-  -- COMMON OPERATIONS --
+  -- Common operations --
   -----------------------
   -- Delete current node and its children, return its father
   -- May raise Invalid_Node if being the Prologue or Element root
@@ -200,7 +216,7 @@ package Xml_Parser.Generator is
                              Element : in out Element_Type);
 
   ----------------
-  -- EXCEPTIONS --
+  -- Exceptions --
   ----------------
   -- When moving outside the tree (father of root..,
   --  to many brothers or children)
