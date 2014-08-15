@@ -779,6 +779,9 @@ package body Dtd is
           Util.Error (Ctx.Flow, "Unexpected delimiter of PUBLIC Id");
         end if;
         Public_Id := Util.Get_Curr_Str (Ctx.Flow);
+        if not Util.Is_Valid_Pubid (Public_Id) then
+          Util.Error (Ctx.Flow, "Invalid entity PUBLIC Id");
+        end if;
         Util.Skip_Separators (Ctx.Flow);
       end if;
       -- PUBLIC or SYSTEM: get URI

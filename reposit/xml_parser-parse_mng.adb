@@ -905,7 +905,7 @@ package body Parse_Mng  is
   begin
     -- Only one DOCTYPE allowed
     if not Ctx.Doctype.Name.Is_Null then
-      Util.Error (Ctx.Flow, "Invalid second DOCTYPE directive");
+      Util.Error (Ctx.Flow, "Invalid second doctype directive");
     end if;
     -- Parse and check name
     Util.Parse_Until_Char (Ctx.Flow, Util.Space & Util.Stop & '[');
@@ -913,7 +913,7 @@ package body Parse_Mng  is
     Util.Skip_Separators (Ctx.Flow);
     Doctype_Name := Util.Get_Curr_Str (Ctx.Flow);
     if not Util.Name_Ok (Doctype_Name) then
-      Util.Error (Ctx.Flow, "Invalid DOCTYPE name " & Doctype_Name.Image);
+      Util.Error (Ctx.Flow, "Invalid doctype name " & Doctype_Name.Image);
     end if;
     Debug ("Parsing doctype " & Doctype_Name.Image);
     Ctx.Doctype.Line_No := Util.Get_Line_No (Ctx.Flow);
@@ -933,12 +933,12 @@ package body Parse_Mng  is
       elsif Char = '"' then
         Util.Parse_Until_Char (Ctx.Flow, """");
       else
-        Util.Error (Ctx.Flow, "Unexpected delimiter of DOCTYPE PUBLIC Id");
+        Util.Error (Ctx.Flow, "Unexpected delimiter of doctype PUBLIC Id");
       end if;
       Ctx.Doctype.Public := True;
       Ctx.Doctype.Pub_Id := Util.Get_Curr_Str (Ctx.Flow);
       if not Util.Is_Valid_Pubid (Ctx.Doctype.Pub_Id) then
-        Util.Error (Ctx.Flow, "Invalid DOCTYPE PUBLIC Id");
+        Util.Error (Ctx.Flow, "Invalid doctype PUBLIC Id");
       end if;
       Util.Skip_Separators (Ctx.Flow);
     else
@@ -954,7 +954,7 @@ package body Parse_Mng  is
       elsif Char = '"' then
         Util.Parse_Until_Char (Ctx.Flow, """");
       else
-        Util.Error (Ctx.Flow, "Unexpected delimiter of DOCTYPE external Id");
+        Util.Error (Ctx.Flow, "Unexpected delimiter of doctype external Id");
       end if;
       Doctype_File := Util.Get_Curr_Str (Ctx.Flow);
       Util.Skip_Separators (Ctx.Flow);
