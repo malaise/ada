@@ -122,6 +122,11 @@ package Regular_Expressions is
   -- Free compiled (or error) pattern
   procedure Free (Compiled : in out Compiled_Pattern);
 
+  -- Is compiled pattern free
+  -- True by default and after Free
+  -- False after a compilation (OK or Error)
+  function Is_Free  (Compiled : in Compiled_Pattern) return Boolean;
+
 private
 
   type Compiled_Pattern is limited

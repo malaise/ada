@@ -343,6 +343,15 @@ package body Regular_Expressions is
     Compiled.Error := 0;
   end Free;
 
+  -- Is compiled pattern free
+  function Is_Free  (Compiled : in Compiled_Pattern) return Boolean  is
+    use type System.Address;
+  begin
+    return Compiled.Comp_Addr = System.Null_Address
+           and then Compiled.Error = 0;
+  end Is_Free;
+
+
   overriding procedure Finalize (Criteria : in out Compiled_Pattern) is
   begin
     Free (Criteria);
