@@ -9,12 +9,104 @@ package body Xml_Parser.Generator is
     return "V" & Major_Version & "." & Minor_Version;
   end Version;
 
+  -- Check validity of Name
   procedure Check_Name (Name : in String) is
   begin
     if not Name_Ok (As.U.Tus (Name)) then
       raise Invalid_Argument;
     end if;
   end Check_Name;
+
+  -- Check validity of Num (deci or hexa)
+  procedure Check_Num (Num : in String) is
+  begin
+    if (Num(Num'First)) = 'x' then
+      -- Hexa num
+      if Num'Length = 1 then
+        raise Invalid_Argument;
+      end if;
+      for I in Positive'Succ (Num'First) .. Num'Last loop
+        if Num(I) not in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' then
+          raise Invalid_Argument;
+        end if;
+      end loop;
+    else
+      -- Deci num
+      for I in Num'Range loop
+        if Num(I) not in '0' .. '9' then
+          raise Invalid_Argument;
+        end if;
+      end loop;
+    end if;
+  end Check_Num;
+
+  -- Check a reference (name or num)
+  procedure Check_Ref (Ref : in String) is
+  begin
+    if Ref(Ref'First) = '#' then
+      Check_Num (Ref(Positive'Succ(Ref'First) .. Ref'Last));
+    else
+      Check_Name (Ref);
+    end if;
+  end Check_Ref;
+
+  -- Locate and check references
+  procedure Check_Refs (Text : in String) is
+    Start, Stop : Natural;
+  begin
+    -- Valid reference to Entity (&Name;) or char (&#Num;)
+    -- Num in decimal ([0-9]+)or hexa ([0-9a-fA-F]+)
+    Stop := Text'First - 1;
+    loop
+      -- Locate next "&...;"
+      Start := Str_Util.Locate (Text, "&", Stop + 1);
+      exit when Start = 0;
+      Stop := Str_Util.Locate (Text, ";", Start + 1);
+      if Stop = 0 or else Stop = Start + 1 then
+        -- Unterminated or empty reference
+        raise Invalid_Argument;
+      end if;
+      Check_Ref (Text(Start + 1 .. Stop - 1));
+    end loop;
+  end Check_Refs;
+
+  -- Check validity of Text (including CData and references)
+  procedure Check_Text (Txt : in String) is
+    -- Find CDATA sections, and between them:
+    -- - check that there is no Start_Tag nor Cdata_Stop sequence
+    -- - check references (name or num)
+    Cdata_Start : constant String := "<![CDATA[";
+    Cdata_Stop  : constant String := "]]>";
+    Start_Tag   : constant String := "<";
+
+    -- Check a CharData block (between CData sections)
+    procedure Check_Chardata (Str : in String) is
+    begin
+      if Str_Util.Locate (Str, Start_Tag) /= 0 then
+        raise Invalid_Argument;
+      end if;
+      if Str_Util.Locate (Str, Cdata_Stop) /= 0 then
+        raise Invalid_Argument;
+      end if;
+      Check_Refs (Str);
+    end Check_Chardata;
+
+     Start, Stop : Natural;
+  begin
+    -- Look for "<![CDATA[ ... ]]>"
+    Stop := Txt'First - 1;
+    loop
+      Start := Str_Util.Locate (Txt, Cdata_Start, Stop + 1);
+      exit when Start = 0;
+      -- Check CharData between CData sections
+      Check_Chardata (Txt(Stop + 1 .. Start - 1));
+      Stop := Str_Util.Locate (Txt, Cdata_Stop, Start + 1);
+      if Stop = 0 then
+        -- Unterminated Cdata section
+        raise Invalid_Argument;
+      end if;
+    end loop;
+  end Check_Text;
 
   -- Detect separator
   function Is_Separator (Char : Character) return Boolean is
@@ -360,7 +452,7 @@ package body Xml_Parser.Generator is
    if not Name_Ok (Cell.Name) then
      raise Invalid_Argument;
    end if;
-   if Str_Util.Locate (Cell.Value.Image, ">?") /= 0 then
+   if Str_Util.Locate (Cell.Value.Image, "?>") /= 0 then
      raise Invalid_Argument;
    end if;
   end Set_Pi;
@@ -477,14 +569,33 @@ package body Xml_Parser.Generator is
     Tree : Tree_Acc;
     Cell : My_Tree_Cell;
   begin
+    Check_Name (Name);
     -- Move to node, must be an element
     Move_To_Element (Ctx, Element, Tree);
-    Check_Name (Name);
     -- Update name
     Tree.Read (Cell);
     Cell.Name := As.U.Tus (Name);
     Tree.Replace (Cell);
   end Set_Name;
+
+  -- INTERNAL: Check validity of an attribute value
+  -- Any char except '<'
+  -- No mix of '"' and '''
+  -- Valid references
+  procedure Check_Attribute (Val : in String) is
+  begin
+    if Val = "" then
+      return;
+    end if;
+    if Str_Util.Locate (Val, "<") /= 0 then
+      raise Invalid_Argument;
+    end if;
+    if Str_Util.Locate (Val, "'") /= 0
+    and then Str_Util.Locate (Val, """") /= 0 then
+      raise Invalid_Argument;
+    end if;
+    Check_Refs (Val);
+  end Check_Attribute;
 
  -- Set all the attributes of an element
   -- May raise Invalid_Argument if a name is invalid
@@ -494,10 +605,15 @@ package body Xml_Parser.Generator is
     Tree : Tree_Acc;
     Cell : My_Tree_Cell;
   begin
+    -- Check input attributes
+    for I in Attributes'Range loop
+      Check_Name (Attributes(I).Name.Image);
+      Check_Attribute (Attributes(I).Name.Image);
+    end loop;
+    -- Move to node, check, set tree
+    Move_To_Element (Ctx, Element, Tree);
     -- Delete all attibutes of this element
     Del_Attributes (Ctx, Element);
-    -- Move to node
-    Move_To_Element (Ctx, Element, Tree);
     -- Set Nb_Attributes
     Tree.Read (Cell);
     Cell.Nb_Attributes := Attributes'Length;
@@ -551,9 +667,10 @@ package body Xml_Parser.Generator is
     Cell : My_Tree_Cell;
     Nb_Attributes : Natural;
   begin
+    Check_Name (Name);
+    Check_Attribute (Value);
     -- Move to node, must be an element
     Move_To_Element (Ctx, Element, Tree);
-    Check_Name (Name);
     -- Increment Nb_Attributes
     Tree.Read (Cell);
     Nb_Attributes := Cell.Nb_Attributes;
@@ -587,9 +704,10 @@ package body Xml_Parser.Generator is
     Cell : My_Tree_Cell;
     use type As.U.Asu_Us;
   begin
+    Check_Name (Name);
+    Check_Attribute (Value);
     -- Move to node, must be an element
     Move_To_Element (Ctx, Element, Tree);
-    Check_Name (Name);
     Tree.Read (Cell);
     -- Look for attribute with this Name
     for I in 1 .. Cell.Nb_Attributes loop
@@ -621,9 +739,9 @@ package body Xml_Parser.Generator is
     Cell : My_Tree_Cell;
     use type As.U.Asu_Us;
   begin
+    Check_Name (Name);
     -- Move to node, must be an element
     Move_To_Element (Ctx, Element, Tree);
-    Check_Name (Name);
     Tree.Read (Cell);
     -- Look for attribute with this Name
     for I in 1 .. Cell.Nb_Attributes loop
@@ -647,6 +765,27 @@ package body Xml_Parser.Generator is
     raise Attribute_Not_Found;
   end Del_Attribute;
 
+  -- INTERNAL: Set kind and name of a cell; Check
+  procedure Set (Cell : in out My_Tree_Cell;
+                 Kind : in Node_Kind_List;
+                 Name : in String) is
+  begin
+    Cell.Kind := Internal_Kind_Of (Kind);
+    Cell.Nb_Attributes := 0;
+    -- Default for all but Pi. Set_Pi will overwrite
+    Cell.Name := As.U.Tus (Name);
+    case Kind is
+      when Element =>
+        Check_Name (Name);
+      when Text =>
+        Check_Text (Name);
+      when Pi =>
+        Set_Pi (Cell, Name);
+      when Comment =>
+        Check_Comment (Name);
+    end case;
+  end Set;
+
   -- Insert a child element, text or comment, and move to it
   procedure Add_Child (Ctx      : in out Ctx_Type;
                        Element  : in Element_Type;
@@ -657,17 +796,11 @@ package body Xml_Parser.Generator is
     Tree : Tree_Acc;
     Father, Cell : My_Tree_Cell;
   begin
+    -- Set the Cell
+    Set (Cell, Kind, Name);
     -- Move to node, must be an element
     Move_To_Element (Ctx, Element, Tree);
     Tree.Read (Father);
-    -- Add this child
-    Cell.Kind := Internal_Kind_Of (Kind);
-    Cell.Nb_Attributes := 0;
-    if Kind = Pi then
-      Set_Pi (Cell, Name);
-    else
-      Cell.Name := As.U.Tus (Name);
-    end if;
     if Append or else Father.Nb_Attributes = 0 then
       Tree.Insert_Child (Cell, not Append);
     else
@@ -694,16 +827,11 @@ package body Xml_Parser.Generator is
     Tree : Tree_Acc;
     Cell : My_Tree_Cell;
   begin
+    -- Set the Cell
+    Set (Cell, Kind, Name);
     -- Move to node, must be an element
     Move_To_Element (Ctx, Node, Tree);
      -- Add this brother
-    Cell.Kind := Internal_Kind_Of (Kind);
-    Cell.Nb_Attributes := 0;
-    if Kind = Pi then
-      Set_Pi (Cell, Name);
-    else
-      Cell.Name := As.U.Tus (Name);
-    end if;
     Tree.Insert_Brother (Cell, not Next);
     New_Node := (Kind => Kind,
                  Magic => Ctx.Magic,
@@ -778,11 +906,11 @@ package body Xml_Parser.Generator is
     Tree : Tree_Acc;
     Cell : My_Tree_Cell;
   begin
+    Set_Pi (Cell, Content);
     -- Move to node, must be a Pi
     Move_To_Element (Ctx, Pi, Tree);
     -- Update Pi
     Tree.Read (Cell);
-    Set_Pi (Cell, Content);
     Tree.Replace (Cell);
   end Set_Pi;
 
@@ -793,6 +921,7 @@ package body Xml_Parser.Generator is
     Tree : Tree_Acc;
     Cell : My_Tree_Cell;
   begin
+    Check_Text (Content);
     -- Move to node, must be a text
     Move_To_Element (Ctx, Text, Tree);
     -- Update Text
@@ -808,6 +937,7 @@ package body Xml_Parser.Generator is
     Tree : Tree_Acc;
     Cell : My_Tree_Cell;
   begin
+    Check_Comment (Content);
     -- Move to node, must be a comment
     Move_To_Element (Ctx, Comment, Tree);
     -- Update Text
@@ -1043,8 +1173,13 @@ package body Xml_Parser.Generator is
         Put (Flow, Pad);
         Cur_Col := Pad'Length;
       end if;
-      Put (Flow, " " & Att_Name.Image & "="""
-               & Attributes(I).Value.Image & """");
+      Put (Flow, " " & Att_Name.Image & "=");
+      -- Use '"' by default, use ''' if File contains '"'
+      if Str_Util.Locate (Attributes(I).Value.Image, """") = 0 then
+        Put (Flow, """" & Attributes(I).Value.Image & """");
+      else
+        Put (Flow, "'" & Attributes(I).Value.Image & "'");
+      end if;
       Cur_Col := Cur_Col + Att_Width;
     end loop;
   end Put_Attributes;

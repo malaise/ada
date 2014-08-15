@@ -1,8 +1,8 @@
 Xml_Checker
 ===========
 
-Parser version: V33.4 +
-Generator version: V13.1 +
+Parser version: V33.5 +
+Generator version: V14.0 +
 Xml_checker version: V18.2 +
 Dtd_checker version: V4.0
 

@@ -113,6 +113,17 @@ begin
   -- Del invalid entry
   Dscr.Delete_Node (New_Node, New_Node);
 
+  -- Add a (valid) entry with empty attribute value and a text child
+  Dscr.Add_Brother (Fail_Node, "Var", Xml_Parser.Element, New_Node);
+  Dscr.Add_Attribute (New_Node, "Name", "Attr");
+  Dscr.Add_Attribute (New_Node, "Type", "");
+  Dscr.Add_Child (New_Node,
+      "Text with a &Reference; and "
+    & "<![CDATA[a Cdata < section]]> ; quite complex.",
+                  Xml_Parser.Text, Node_1);
+  -- Del it
+  Dscr.Delete_Node (New_Node, New_Node);
+
   -- Add a comment in the tail
   -- Tail indicator is an empty element
   Node := Dscr.Get_Tail;
