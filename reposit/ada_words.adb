@@ -24,17 +24,17 @@ package body Ada_Words is
 
   function Is_Upper_Letter (C : Character) return Boolean is
   begin
-    return C >= 'A' and then C <= 'Z';
+    return C in 'A' .. 'Z';
   end Is_Upper_Letter;
 
   function Is_Lower_Letter (C : Character) return Boolean is
   begin
-    return C >= 'a' and then C <= 'z';
+    return C in 'a' .. 'z';
   end Is_Lower_Letter;
 
   function Is_Digit (C : Character) return Boolean is
   begin
-    return C >= '0' and then C <= '9';
+    return C in '0' .. '9';
   end Is_Digit;
 
   function Is_Letter (C : Character) return Boolean is

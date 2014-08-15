@@ -131,8 +131,7 @@ package body Util is
  -- Encoding name check
   function Is_Letter (Char : Character) return Boolean is
   begin
-    return (Char >= 'a' and then Char <= 'z')
-    or else (Char >= 'A' and then Char <= 'Z');
+    return Char in 'a' .. 'z' | 'A' .. 'Z';
   end Is_Letter;
 
   function Is_Valid_Encoding (Name : As.U.Asu_Us) return Boolean is
