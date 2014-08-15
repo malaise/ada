@@ -99,13 +99,15 @@ package Xml_Parser.Generator is
   -- May raise Invalid_Node if used on Prologue
 
   -- Set (change) the name of an element
-  -- May raise Invalid_Argument if invalid name
+  -- May raise Invalid_Argument if Name is not valid
   procedure Set_Name (Ctx     : in out Ctx_Type;
                       Element : in out Element_Type;
                       Name    : in String);
 
   -- Set all the attributes of an element
-  -- May raise Invalid_Argument if a name is invalid
+  -- May raise Invalid_Argument if a name is not valid
+  --  or a value is not valid (i.e. mixes '"' and ''', contains '<' or
+  --  contains an invalid reference to entity or char)
   procedure Set_Attributes (Ctx        : in out Ctx_Type;
                             Element    : in out Element_Type;
                             Attributes : in Attributes_Array);
@@ -115,21 +117,23 @@ package Xml_Parser.Generator is
                             Element : in out Element_Type);
 
   -- Add an attribute to current element
-  -- May raise Invalid_Argument if invalid name
+  -- May raise Invalid_Argument if Name or Value is not valid (see
+  --  Set_Attributes)
   procedure Add_Attribute (Ctx     : in out Ctx_Type;
                            Element : in out Element_Type;
                            Name, Value : in String);
 
   -- Set the value of an attribute of current element
-  -- May raise Invalid_Argument if a name is invalid
-  -- May raise May raise Attribute_Not_Found
+  -- May raise Invalid_Argument if Name or Value is not valid (see
+  --  Set_Attributes)
+  -- May raise Attribute_Not_Found if Name is not found
   procedure Set_Attribute (Ctx     : in out Ctx_Type;
                            Element : in out Element_Type;
                            Name, Value : in String);
 
   -- Delete an attribute of current element
-  -- May raise Invalid_Argument if a name is invalid
-  -- May raise May raise Attribute_Not_Found
+  -- May raise Invalid_Argument if Name is not valid
+  -- May raise May raise Attribute_Not_Found if Name is not found
   procedure Del_Attribute (Ctx     : in out Ctx_Type;
                            Element : in out Element_Type;
                            Name : in String);
@@ -138,6 +142,8 @@ package Xml_Parser.Generator is
   -- For a Text, the Name is the text
   -- For a Pi the Name is "<PITarget> [ <spaces> <Pi_Data> ]"
   -- For a Comment the Name is the comment
+  -- May raise Invalid_Argument if Name is not valid for the Kind (see
+  --  Set_Name/Pi/Text/Comment)
   -- May raise Invalid_Node if in prologue
   procedure Add_Child (Ctx      : in out Ctx_Type;
                        Element  : in Element_Type;
@@ -150,6 +156,8 @@ package Xml_Parser.Generator is
   -- For a Text, the Name is the text
   -- For a Pi the Name is "<PITarget> [ <spaces> <Pi_Data> ]"
   -- For a Comment the Name is the comment
+  -- May raise Invalid_Argument if Name is not valid for the Kind (see
+  --  Set_Name/Pi/Text/Comment)
   -- May raise Invalid_Node if in prologue
   procedure Add_Brother (Ctx      : in out Ctx_Type;
                          Node     : in Node_Type;
@@ -188,16 +196,23 @@ package Xml_Parser.Generator is
 
   -- Set/change the PITarget and data of a Pi
   -- Content must have the form "<PITarget> [ <spaces> <Pi_Data> ]"
+  -- May raise Invalid_Argument if
+  --  - PITarget is not a valid name
+  --  - Pi_Data is not a valid Pi dada (i.e. contains "?>")
   procedure Set_Pi (Ctx     : in out Ctx_Type;
                     Pi    : in out Pi_Type;
                     Content : in String);
 
   -- Set/change the text of a Text element
+  -- May raise Invalid_Argument if Content contains
+  -- - Invalid CData sections
+  -- - Invalid references
   procedure Set_Text (Ctx     : in out Ctx_Type;
                       Text    : in out Text_Type;
                       Content : in String);
 
   -- Set/change the text of a Comment
+  -- May raise Invalid_Argument if Content is no valid (i.e. contains "--")
   procedure Set_Comment (Ctx     : in out Ctx_Type;
                          Comment : in out Comment_Type;
                          Content : in String);
