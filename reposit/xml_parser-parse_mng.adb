@@ -311,6 +311,11 @@ package body Parse_Mng  is
     end if;
     -- Save parsed text
     Value := Util.Get_Curr_Str (Ctx.Flow);
+    -- Text of attribute value cannot contain '<'
+    if Context = Ref_Attribute
+    and then Str_Util.Locate (Value.Image, Util.Start & "") /= 0 then
+      Util.Error (Ctx.Flow, "Unexpected character '<' in attribute value");
+    end if;
     -- Normalize attribute
     if Ctx.Expand and then Ctx.Normalize and then Context = Ref_Attribute then
       Util.Normalize (Value);
@@ -932,6 +937,9 @@ package body Parse_Mng  is
       end if;
       Ctx.Doctype.Public := True;
       Ctx.Doctype.Pub_Id := Util.Get_Curr_Str (Ctx.Flow);
+      if not Util.Is_Valid_Pubid (Ctx.Doctype.Pub_Id) then
+        Util.Error (Ctx.Flow, "Invalid DOCTYPE PUBLIC Id");
+      end if;
       Util.Skip_Separators (Ctx.Flow);
     else
       -- A dtd SYSTEM directive?
