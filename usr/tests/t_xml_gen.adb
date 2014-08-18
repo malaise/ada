@@ -1,4 +1,4 @@
-with Basic_Proc, Xml_Parser.Generator, Sys_Calls, Argument, Trilean;
+with Basic_Proc, Xml_Parser.Generator, Sys_Calls, Argument, Trilean, Mixed_Str;
 procedure T_Xml_Gen is
   Dscr : Xml_Parser.Generator.Ctx_Type;
   Dtd_Name : constant String := "variables.dtd";
@@ -6,6 +6,8 @@ procedure T_Xml_Gen is
   New_Node : Xml_Parser.Node_Type;
   Node_1, Path_Node, Fail_Node : Xml_Parser.Node_Type;
   Ok : Boolean;
+
+  Abort_Error : exception;
 
   procedure Warning (Ctx : in  Xml_Parser.Ctx_Type; Msg : in String) is
   pragma Unreferenced (Ctx);
@@ -23,6 +25,36 @@ procedure T_Xml_Gen is
     end if;
   end Clean;
 
+  -- Check that an invalid name (for kind) raises Invalid_Argument
+  procedure Check_Invalid_Node (Node : in Xml_Parser.Element_Type;
+                                Name : in String;
+                                Kind : in Xml_Parser.Node_Kind_List) is
+    Tmp_Node : Xml_Parser.Node_Type;
+  begin
+    Dscr.Add_Child (Node, Name, Kind, Tmp_Node);
+    Basic_Proc.Put_Line_Error ("Failed to detect invalid name for "
+                             & Mixed_Str (Kind'Img));
+    raise Abort_Error;
+  exception
+    when Xml_Parser.Generator.Invalid_Argument =>
+      -- Ok, error detected
+      null;
+  end Check_Invalid_Node;
+
+  -- Check that an invalid attribute name or value raises Invalid_Argument
+  procedure Check_Invalid_Attribute (Node : in out Xml_Parser.Element_Type;
+                                     Name, Value : in String) is
+  begin
+    Dscr.Add_Attribute (Node, Name, Value);
+    Basic_Proc.Put_Line_Error ("Failed to detect invalid att name/value for "
+                             & Name & "/" & Value);
+    raise Abort_Error;
+  exception
+    when Xml_Parser.Generator.Invalid_Argument =>
+      -- Ok, error detected
+      null;
+  end Check_Invalid_Attribute;
+
   use Xml_Parser, Xml_Parser.Generator;
 begin
   -- Show warnings if "-w"
@@ -36,15 +68,64 @@ begin
   end if;
 
   -- Generate Tree
+  ----------------
+  -- XML
   Dscr.Set_Version (1, 1);
+  begin
+    Dscr.Set_Encoding ("UTF[8]");
+    Basic_Proc.Put_Line_Error ("Check failed to detect invalid encoding");
+    Basic_Proc.Set_Error_Exit_Code;
+    Clean;
+    return;
+  exception
+    when Xml_Parser.Generator.Invalid_Argument =>
+      -- Ok, error detected
+      null;
+  end;
+  Dscr.Set_Encoding ("utf-8");
   Node := Dscr.Get_Prologue;
+
+  -- Prologue
   Dscr.Add_Comment (Node,
      " Definition of variables for test of program ""comp_vars"" ", New_Node);
+  -- Insert a invalid then a valid Public doctype
+  Dscr.Add_Doctype (Node, "Variables", True, "DocId", "variables.dtd", "",
+                    New_Node);
+  Dscr.Delete_Node (New_Node, New_Node);
+  begin
+    Dscr.Add_Doctype (Node, "Variables", True, "Doc{Id", "variables.dtd", "",
+                      New_Node);
+    Basic_Proc.Put_Line_Error ("Check failed to detect invalid DocId name");
+    Basic_Proc.Set_Error_Exit_Code;
+    Clean;
+    return;
+  exception
+    when Xml_Parser.Generator.Invalid_Argument =>
+      -- Ok, error detected
+      null;
+  end;
+  -- Overwrite  with the final system doctype
   Dscr.Add_Doctype (Node, "Variables", False, "", "variables.dtd", "",
                New_Node);
   Dscr.Add_Comment (Node, " After Doctype ", New_Node);
 
+  -- Elements
   Node := Dscr.Get_Root_Element;
+
+  -- Check invalid Pi, Comment, Element name
+  Check_Invalid_Node (Node, "P[i]", Xml_Parser.Pi);
+  Check_Invalid_Node (Node, "Pi Dat?>a", Xml_Parser.Pi);
+  Check_Invalid_Node (Node, "Comment Dat--a", Xml_Parser.Comment);
+  -- Check invalid attribute name and content
+  Check_Invalid_Attribute (Node, "Att[Name", "AttValue");
+  Check_Invalid_Attribute (Node, "AttName", "Att<Value");
+  Check_Invalid_Attribute (Node, "AttName", "Att&Value");
+  Check_Invalid_Attribute (Node, "AttName", "Att&#x4g;");
+  -- Check a valid attribute with references
+  Dscr.Add_Attribute (Node, "AttName", "&Future;=&#x4f;");
+  Dscr.Del_Attribute (Node, "AttName");
+
+  -- Fill Elements section
   Dscr.Set_Name (Node, "Variables");
   Dscr.Add_Child (Node, " Below root ", Xml_Parser.Comment, New_Node);
 
@@ -121,7 +202,7 @@ begin
       "Text with a &Reference; and "
     & "<![CDATA[a Cdata < section]]> ; quite complex.",
                   Xml_Parser.Text, Node_1);
-  -- Del it
+  -- Delete it
   Dscr.Delete_Node (New_Node, New_Node);
 
   -- Add a comment in the tail
@@ -143,5 +224,10 @@ begin
   Dscr.Put (Xml_Parser.Generator.Stdout);
 
   Clean;
+
+exception
+  when Abort_Error =>
+    Basic_Proc.Set_Error_Exit_Code;
+    Clean;
 end T_Xml_Gen;
 
