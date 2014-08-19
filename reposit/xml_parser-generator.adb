@@ -3,7 +3,7 @@ with Aski, Images, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "0";
+  Minor_Version : constant String := "1";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -97,7 +97,11 @@ package body Xml_Parser.Generator is
     Stop := Txt'First - 1;
     loop
       Start := Str_Util.Locate (Txt, Cdata_Start, Stop + 1);
-      exit when Start = 0;
+      if Start = 0 then
+        -- Check CharData after last CData section (the CharData if no Cdata)
+        Check_Chardata (Txt(Stop + 1 .. Txt'Last));
+        exit;
+      end if;
       -- Check CharData between CData sections
       Check_Chardata (Txt(Stop + 1 .. Start - 1));
       Stop := Str_Util.Locate (Txt, Cdata_Stop, Start + 1);

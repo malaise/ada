@@ -112,10 +112,16 @@ begin
   -- Elements
   Node := Dscr.Get_Root_Element;
 
-  -- Check invalid Pi, Comment, Element name
+  -- Check invalid Pi, Comment, Element name, Text
   Check_Invalid_Node (Node, "P[i]", Xml_Parser.Pi);
   Check_Invalid_Node (Node, "Pi Dat?>a", Xml_Parser.Pi);
   Check_Invalid_Node (Node, "Comment Dat--a", Xml_Parser.Comment);
+  Check_Invalid_Node (Node, "Text Dat<a", Xml_Parser.Text);
+  Check_Invalid_Node (Node, "Text &ref", Xml_Parser.Text);
+  -- Check valid text with CDATA and reference
+  Dscr.Add_Child (Node, "Text<![CDATA[Cdata<]]> and &ref;", Xml_Parser.Text,
+                  New_Node);
+  Dscr.Delete_Node (New_Node, New_Node);
   -- Check invalid attribute name and content
   Check_Invalid_Attribute (Node, "Att[Name", "AttValue");
   Check_Invalid_Attribute (Node, "AttName", "Att<Value");
