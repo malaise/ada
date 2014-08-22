@@ -4,7 +4,7 @@ with Trace.Loggers, Rnd, Exception_Messenger, Directory, Str_Util,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "5";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -847,6 +847,11 @@ package body Xml_Parser is
     if Ctx.Status /= Parsed_Elements
     and then Ctx.Status /= Init then
       raise Status_Error;
+    end if;
+    if Ctx.Elements.Is_Empty then
+      -- Ctx is initialized (prologue is set) but the root is not set
+      --  (with the Generator)
+      raise No_Root;
     end if;
     -- Only prologue or full parsing completed
     Ctx.Elements.Move_Root;

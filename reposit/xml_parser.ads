@@ -16,7 +16,7 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "33";
+  Major_Version : constant String := "34";
   function Version return String;
 
   -----------
@@ -312,6 +312,8 @@ package Xml_Parser is
   -- Get Elements'root, after Parse or Parse_Elements
   --  may raise Status_Error if called before Parse_Elements
   --            Parse_Error if Parse was not ok
+  --            No_Root if the Ctx is initialized but no root is defined
+  No_Root : exception;
   function Get_Root_Element (Ctx : Ctx_Type) return Element_Type;
 
   -- Get tail, after Parse or Parse_Elements

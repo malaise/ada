@@ -3,7 +3,7 @@ with Aski, Images, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "2";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -309,13 +309,16 @@ package body Xml_Parser.Generator is
     Ctx.Prologue.Move_Root;
     Ctx.Prologue.Read (Cell);
     Cell.Nb_Attributes := 0;
-    Ctx.Prologue.Replace  (Cell);
-    loop
-      Ctx.Prologue.Move_Child (True);
-      Ctx.Prologue.Read (Cell);
-      exit when Cell.Kind /= Attribute;
-      Ctx.Prologue.Delete_Current;
-    end loop;
+    Ctx.Prologue.Replace (Cell);
+    -- Delete all attributes
+    if Ctx.Prologue.Children_Number /= 0 then
+      loop
+        Ctx.Prologue.Move_Child (True);
+        Ctx.Prologue.Read (Cell);
+        exit when Cell.Kind /= Attribute;
+        Ctx.Prologue.Delete_Current;
+      end loop;
+    end if;
   end Clear_Xml;
 
   -- Internal op to insert child of prologue

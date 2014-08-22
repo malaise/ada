@@ -4,14 +4,16 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
      Basic_Proc, Text_Line, Sys_Calls, Parser, Bloc_Io, Str_Util;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V18.2";
+  Version : constant String := "V19.0";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
             renames Ada.Exceptions.Raise_Exception;
 
   -- Xml Parser context, elements and parsing parameters
-  Ctx : Xml_Parser.Generator.Ctx_Type;
+  Ctx, Ctxc : aliased Xml_Parser.Generator.Ctx_Type;
+  type Ctx_Access is access all Xml_Parser.Generator.Ctx_Type;
+  Ctxa : Ctx_Access;
 
   -- Expand general entities and attributes with default
   Expand : Boolean;
@@ -88,8 +90,9 @@ procedure Xml_Checker is
    13 => (False, 'w', As.U.Tus ("warnings"),  False),
    14 => (False, 't', As.U.Tus ("tree"),      False),
    15 => (False, 'm', As.U.Tus ("mixed"),     False),
-   16 => (False, 'h', As.U.Tus ("help"),      False),
-   17 => (False, 'v', As.U.Tus ("version"),   False)
+   16 => (False, 'c', As.U.Tus ("copytree"),  False),
+   17 => (False, 'h', As.U.Tus ("help"),      False),
+   18 => (False, 'v', As.U.Tus ("version"),   False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -117,8 +120,9 @@ procedure Xml_Checker is
     13 => As.U.Tus ("Check for warnings"),
     14 => As.U.Tus ("Build tree then dump it"),
     15 => As.U.Tus ("Update Mixed tag in tree"),
-    16 => As.U.Tus ("Put this help"),
-    17 => As.U.Tus ("Put versions") );
+    16 => As.U.Tus ("Copy tree then dump the copy"),
+    17 => As.U.Tus ("Put this help"),
+    18 => As.U.Tus ("Put versions") );
 
   -- Program help
   procedure Usage (Full : in Boolean) is
@@ -463,6 +467,9 @@ procedure Xml_Checker is
                             Node : in Xml_Parser.Node_Update) is separate;
   Callback_Acc : Xml_Parser.Parse_Callback_Access;
 
+  -- Copytree (no callback)
+  Copy_Tree : Boolean := False;
+
   -- Count number of lines of file
   procedure Count_Lines (File_Name : in String) is
     package Size_Io is new Bloc_Io(Character);
@@ -499,12 +506,96 @@ procedure Xml_Checker is
       Lines := 0;
   end Count_Lines;
 
+  -- Copy prologue of Ctx into Ctxc
+  procedure Copy_Prologue (Node : in Xml_Parser.Node_Type) is
+    Attrs : constant Xml_Parser.Attributes_Array := Ctx.Get_Attributes (Node);
+    Children : constant Xml_Parser.Nodes_Array := Ctx.Get_Children (Node);
+    -- The prologue node
+    Prologue : constant Xml_Parser.Node_Type := Ctxc.Get_Prologue;
+    -- Major an minor Xml version
+    Dot, Major, Minor : Natural;
+    -- Doctype public info
+    Name, Pub_Id, File, Int_Def : As.U.Asu_Us;
+    Public : Boolean;
+    -- Node created
+    Tmp_Node : Xml_Parser.Node_Type;
+
+  begin
+    -- Copy XML node
+    for I in Attrs'Range loop
+      -- The possible Xml directive
+      if Attrs(I).Name.Image = "version" then
+        -- Parse Major and minor
+        Dot := Str_Util.Locate (Attrs(I).Value.Image, ".");
+        Major := Natural'Value (Attrs(I).Value.Slice (1, Dot-1));
+        Minor := Natural'Value (Attrs(I).Value.Slice (
+                   Dot+1, Attrs(I).Value.Length));
+        Ctxc.Set_Version (Major, Minor);
+      elsif Attrs(I).Name.Image = "encoding" then
+        Ctxc.Set_Encoding (Attrs(I).Value.Image);
+      elsif Attrs(I).Name.Image = "standalone" then
+        Ctxc.Set_Standalone (Attrs(I).Value.Image = "yes");
+      end if;
+    end loop;
+    -- Copy the children
+    for I in Children'Range loop
+      case Children(I).Kind is
+        when Xml_Parser.Element =>
+          -- Xml node cannot have child of kind element
+          raise Constraint_Error;
+        when Xml_Parser.Pi =>
+          Ctxc.Add_Pi (Prologue, Ctx.Get_Target (Children(I))
+                               & " " & Ctx.Get_Pi (Children(I)), Tmp_Node);
+        when Xml_Parser.Comment =>
+          Ctxc.Add_Comment (Prologue, Ctx.Get_Comment (Children(I)), Tmp_Node);
+        when Xml_Parser.Text =>
+          -- Doctype
+          Ctx.Get_Doctype (Name, Public, Pub_Id, File, Int_Def);
+          Ctxc.Add_Doctype (Prologue, Name.Image, Public,
+                            Pub_Id.Image, File.Image, Int_Def.Image, Tmp_Node);
+      end case;
+    end loop;
+  end Copy_Prologue;
+
+  -- Copy Elements of Ctx into Ctxc recursively
+  procedure Copy_Elements (Node : in Xml_Parser.Node_Type;
+                           Nodec : in out Xml_Parser.Node_Type) is
+    -- Children of Node
+    Children : constant Xml_Parser.Nodes_Array := Ctx.Get_Children (Node);
+    -- Node created
+    Tmp_Node : Xml_Parser.Node_Type;
+  begin
+    -- Copy attributes
+    Ctxc.Set_Attributes (Nodec, Ctx.Get_Attributes (Node));
+    Ctxc.Set_Put_Empty (nodec, Ctx.Get_Put_Empty (Node));
+    -- Copy children
+    for I in Children'Range loop
+      case Children(I).Kind is
+        when Xml_Parser.Element =>
+          Ctxc.Add_Child (Nodec, Ctx.Get_Name (Children(I)), Xml_Parser.Element,
+                          Tmp_Node);
+          Copy_Elements (Children(I), Tmp_Node);
+        when Xml_Parser.Text =>
+          Ctxc.Add_Child (Nodec, Ctx.Get_Text (Children(I)), Xml_Parser.Text,
+                          Tmp_Node);
+        when Xml_Parser.Pi =>
+          Ctxc.Add_Child (Nodec, Ctx.Get_Target (Children(I)) & " "
+                               & Ctx.Get_Pi (Children(I)),
+                          Xml_Parser.Pi, Tmp_Node);
+        when Xml_Parser.Comment =>
+          Ctxc.Add_Child (Nodec, Ctx.Get_Comment (Children(I)),
+                          Xml_Parser.Comment, Tmp_Node);
+      end case;
+    end loop;
+  end Copy_Elements;
+
   -- Parse a file provided as arg or stdin
   -- Retrieve comments and don't expand General Entities if output is Xml
   procedure Do_One (Index : in Natural) is
     -- Parsing elements and charactericstics
     Parse_Ok : Boolean;
     Dummy : Boolean;
+    Nodec : Xml_Parser.Element_Type;
     use type Xml_Parser.Generator.Format_Kind_List,
              Xml_Parser.Parse_Callback_Access;
   begin
@@ -548,7 +639,8 @@ procedure Xml_Checker is
       return;
     end if;
 
-    -- Done in callback mode
+    -- Callback mode
+    ----------------
     if Callback_Acc /= null then
       if Output_Kind = Dump then
         Out_Flow.Put_Line ("Unparsed entities:");
@@ -574,26 +666,52 @@ procedure Xml_Checker is
       return;
     end if;
 
+    -- Tree mode
+    ------------
     -- Update tags Is_Mixed in tree
     if Update_Mix then
       Ctx.Update_Is_Mixed;
     end if;
 
+    -- Copy tree
+    if Copy_Tree then
+      -- Copy Ctx into Ctxc
+      Ctxc.Clear_Xml;
+      Copy_Prologue (Ctx.Get_Prologue);
+      Nodec := Ctxc.Get_Root_Element;
+      Ctxc.Set_Name (Nodec, Ctx.Get_Name (Ctx.Get_Root_Element));
+      Copy_Elements (Ctx.Get_Root_Element, Nodec);
+      -- Copy Tail
+      -- @@@
+      Ctxc.Check (Parse_Ok);
+      if not Parse_Ok then
+        Basic_Proc.Put_Line_Error ("Error in copied tree "
+                                 & Get_File_Name (Index, True) & ": "
+                                 & Ctxc.Get_Parse_Error_Message);
+        Basic_Proc.Set_Error_Exit_Code;
+        Ctx.Clean;
+        return;
+      end if;
+      Ctxa := Ctxc'Access;
+    else
+      Ctxa := Ctx'Access;
+    end if;
+
     -- Dump / put
     if Output_Kind = Dump then
       Out_Flow.Put_Line ("Prologue:");
-      Dump_Element (Ctx.Get_Prologue, 0, True);
+      Dump_Element (Ctxa.Get_Prologue, 0, True);
       Out_Flow.Put_Line ("Elements:");
-      Dump_Element (Ctx.Get_Root_Element, 0, True);
-      if Ctx.Get_Nb_Children (Ctx.Get_Tail) /= 0 then
+      Dump_Element (Ctxa.Get_Root_Element, 0, True);
+      if Ctxa.Get_Nb_Children (Ctxa.Get_Tail) /= 0 then
         Out_Flow.Put_Line ("Tail:");
-        Dump_Element (Ctx.Get_Tail, 0, False);
+        Dump_Element (Ctxa.Get_Tail, 0, False);
       end if;
       Out_Flow.Put_Line ("Unparsed entities:");
       Dump_Unparsed_Entities;
       Out_Flow.Flush;
     elsif Output_Kind = Gen then
-      Ctx.Put (Xml_Parser.Generator.Stdout, Format, Width, Namespace);
+      Ctxa.Put (Xml_Parser.Generator.Stdout, Format, Width, Namespace);
     end if;
     Ctx.Clean;
   exception
@@ -603,7 +721,8 @@ procedure Xml_Checker is
       raise Abort_Error;
   end Do_One;
 
-  use type Xml_Parser.Generator.Format_Kind_List;
+  use type Xml_Parser.Generator.Format_Kind_List,
+           Xml_Parser.Parse_Callback_Access;
 begin
   -- Open output flow
   Out_Flow.Open (Text_Line.Out_File, Sys_Calls.Stdout);
@@ -621,7 +740,7 @@ begin
   end if;
 
   -- Process help and version options
-  if Arg_Dscr.Is_Set (16) then
+  if Arg_Dscr.Is_Set (17) then
     -- Help: No file nor other option
     if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0
     or else Arg_Dscr.Get_Number_Keys > 1 then
@@ -632,7 +751,7 @@ begin
     end if;
     Basic_Proc.Set_Error_Exit_Code;
     return;
-  elsif Arg_Dscr.Is_Set (17) then
+  elsif Arg_Dscr.Is_Set (18) then
     -- Version: No file nor other option
     if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0
     or else Arg_Dscr.Get_Number_Keys > 1 then
@@ -659,6 +778,7 @@ begin
   Callback_Acc := null;
   Namespace := False;
   Update_Mix := False;
+  Copy_Tree := False;
   -- Get options and check max of options
   -- Only one option, one more for each keep, one more if check_dtd,
   --  one more if ontheflow, one more if warnings
@@ -704,6 +824,10 @@ begin
              "Incompatible ""callback"" and ""update_mix"" options");
     end if;
     Update_Mix := True;
+    Max_Opt := Max_Opt + 1;
+  end if;
+  if Arg_Dscr.Is_Set (16) then
+    Copy_Tree := True;
     Max_Opt := Max_Opt + 1;
   end if;
 
@@ -874,6 +998,12 @@ begin
     Normalize := False;
     Namespace := False;
     Callback_Acc := Canon_Callback'Unrestricted_Access;
+  end if;
+
+  -- Copy tree => tree mode (no standard nor Canonical Cb)
+  if Copy_Tree and then Callback_Acc /= null then
+    Ae_Re (Arg_Error'Identity,
+      "Incompatible ""copy_tree"" and ""callback"" (or ""canonical"") options");
   end if;
 
   if Keep_Cdata then

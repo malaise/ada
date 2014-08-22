@@ -1,12 +1,12 @@
 Xml_Checker
 ===========
 
-Parser version: V33.5 +
-Generator version: V14.1 +
-Xml_checker version: V18.2 +
+Parser version: V34.0 +
+Generator version: V14.2 +
+Xml_checker version: V19.0 +
 Dtd_checker version: V4.0
 
-Xml_checker is a XML parser who checks the syntax (versus DTD) and formats the
+Xml_checker is a XML parser that checks the syntax (versus DTD) and formats the
 output.
 
 Syntax
@@ -15,7 +15,7 @@ Syntax
 xml_checker[ { <option> } ] [ { <file> } ]
  <option> ::= <silent> | <progress> | <dump> | <raw> | <width> | <one> |
             | <expand> | <keep> | <namespace> | <canonical> | <normalize>
-            | <check_dtd> | <warnings> | <tree> | <update_mix>
+            | <check_dtd> | <warnings> | <tree> | <update_mix> | <copytree>
             | <help> | <version>
  <silent>     ::= -s | --silent    : No output, only exit code
  <progress>   ::= -p | --progress  : Only show a progress bar
@@ -40,10 +40,11 @@ xml_checker[ { <option> } ] [ { <file> } ]
  <warnings>   ::= -w | --warnings  : Check for warnings
  <tree>       ::= -t | --tree      : Build tree then dump it
  <update_mix> ::= -m | --mixed     : Update Mixed tag in tree
+ <copytree>   ::= -c | --copytree  : Copy the tree and dump the copy
  <help>       ::= -h | --help      : Put this help
  <version>    ::= -v | --version   : Put versions
 ...................................................
-All options except expand, keep, dtd, warnings, namespace and tree are
+All options except expand, keep, dtd, warnings, namespace, tree and copytree are
 exclusive.
 
 Output format
@@ -152,6 +153,11 @@ with canonical mode or progress bar.
 Please also consider increasing the process stack size (ulimit -s) to
 avoid stack overflow and Storage_Error, especially in this mode.
 
+anchor:CopyTree[]-c | --copytree: :: In xref:Tree[tree] mode, copy the tree
+that results from the parsing into a new tree (using the
+xref:Generator[generator]) and dump this new tree (usefull to test the
+xref:Generator[generator]).
+
 -m | --mixed: :: When there is no Dtd, the XML parser tries to guess if an
 element is mixed by checking if its first child is text. This option forces a
 global scan of the tree so that this information is updated for each element,
@@ -224,10 +230,15 @@ On option the parser provides partial support for XML namespaces
 (see http://www.w3.org/TR/2009/REC-xml-names-20091208). Namespaces are not
 checked for validity of URI references.
 
+anchor:Generator[]
+
 .XML generator
 Xml_checker also uses a XML generator that is a child package of Xml_Parser
 (Xml_Parser.Generator) to build the formatted XML output of the tree or of
-each node. The generator is not used in 'Dump' and in 'Canonical' modes.
+each node. The generator is not used in 'Dump' and in 'Canonical' modes. 
+
+With xref:CopyTree[copytree] option, Xml_checker also uses the XML generator to
+build the copy of the tree.
 
 .Default behavior
 By default xml_checker invokes the XML parser in callback mode (to allow large
