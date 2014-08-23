@@ -1934,6 +1934,8 @@ package body Dtd is
           end if;
           -- Define namespace
           Namespaces.Add (Ctx, Cell.Name, Cell.Value);
+        else
+          Tree_Mng.Set_Namespace (Ctx.Elements.all, As.U.Asu_Null);
         end if;
       end loop;
       Ctx.Elements.Move_Father;
@@ -2134,6 +2136,7 @@ package body Dtd is
     end if;
     -- Clean namespaces of attributes
     if not Ctx.Namespace then
+      Tree_Mng.Set_Namespace (Ctx.Elements.all, As.U.Asu_Null);
       return;
     end if;
     if Ctx.Elements.Children_Number /= 0 then
@@ -2259,6 +2262,8 @@ package body Dtd is
     Cell : My_Tree_Cell;
     Children : Children_Desc;
   begin
+    Ctx.Elements.Read (Cell);
+    Add_Namespaces (Ctx, Cell.Name);
     -- Check current element, attributes then children
     Check_Attributes (Ctx, Adtd);
     Build_Children (Ctx, Adtd, Children);
@@ -2268,7 +2273,6 @@ package body Dtd is
       -- No child
       return;
     end if;
-    Ctx.Elements.Read (Cell);
     if Cell.Nb_Attributes = Ctx.Elements.Children_Number then
       -- All children are attributes
       return;

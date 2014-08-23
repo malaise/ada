@@ -3,7 +3,7 @@
 package Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "14";
+  Major_Version : constant String := "15";
   function Version return String;
 
   -- The context, possibly filled by parsing a file or string in tree mode
@@ -61,12 +61,6 @@ package Xml_Parser.Generator is
                          Int_Def  : in String;
                          New_Node : out Node_Type;
                          Append_Next : in Boolean := True);
-
-  -- Set the Dtd file towards which comformance shall be checked
-  --   by Xml_parser.Check. Default is Doctype.File when dtd file is "".
-  procedure Set_Dtd_File (Ctx      : in out Ctx_Type;
-                          Dtd_File : in String);
-
 
   -- Add a processing instruction in the prologue
   -- Pi shall have the the form

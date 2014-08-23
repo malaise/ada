@@ -238,6 +238,20 @@ package body Parse_Mng  is
                   Element : in Boolean) return As.U.Asu_Us;
   end Namespaces;
 
+  -- Check and add a name into namespaces
+  procedure Add_Namespaces (Ctx : in out Ctx_Type;
+                            Name : in As.U.Asu_Us) is
+    Namespace : As.U.Asu_Us;
+  begin
+    if Ctx.Namespace then
+      -- Check name v.s. namespace
+      Namespaces.Validate (Ctx, Name, Namespaces.Elt);
+      -- Set element namespace
+      Namespace := Namespaces.Get (Ctx, Name, True);
+      Tree_Mng.Set_Namespace (Ctx.Elements.all, Namespace);
+    end if;
+  end Add_Namespaces;
+
   package body Entity_Mng is separate;
   package body Util is separate;
   package body Namespaces is separate;
@@ -1564,7 +1578,7 @@ package body Parse_Mng  is
                            Adtd : in out Dtd_Type;
                            Parent_Children : access Children_Desc;
                            Root : in Boolean) is
-    Element_Name, End_Name, Namespace : As.U.Asu_Us;
+    Element_Name, End_Name : As.U.Asu_Us;
     Char : Character;
     Line_No : Natural;
     My_Children : aliased Children_Desc;
@@ -1577,10 +1591,6 @@ package body Parse_Mng  is
     Element_Name := Util.Get_Curr_Str (Ctx.Flow);
     if not Util.Name_Ok (Element_Name) then
       Util.Error (Ctx.Flow, "Invalid element name " & Element_Name.Image);
-    end if;
-    if Ctx.Namespace then
-      -- Check name v.s. namespace
-      Namespaces.Validate (Ctx, Element_Name, Namespaces.Elt);
     end if;
     if Root
     and then not Ctx.Doctype.Name.Is_Null
@@ -1635,11 +1645,7 @@ package body Parse_Mng  is
       -- End of this empty element, check attributes and content
       Tree_Mng.Set_Put_Empty (Ctx.Elements.all, True);
       Dtd.Check_Attributes (Ctx, Adtd);
-      -- Set element namespace
-      if Ctx.Namespace then
-        Namespace := Namespaces.Get (Ctx, Element_Name, True);
-        Tree_Mng.Set_Namespace (Ctx.Elements.all, Namespace);
-      end if;
+      Add_Namespaces (Ctx, Element_Name);
       Dtd.Check_Element (Ctx, Adtd,  My_Children);
       -- Create this element with no child (Close)
       Call_Callback (Ctx, Elements, True, False,
@@ -1648,11 +1654,7 @@ package body Parse_Mng  is
       -- >: parse text and children elements until </
       -- Check attributes first (e.g. xml:space)
       Dtd.Check_Attributes (Ctx, Adtd);
-      -- Set element namespace
-      if Ctx.Namespace then
-        Namespace := Namespaces.Get (Ctx, Element_Name, True);
-        Tree_Mng.Set_Namespace (Ctx.Elements.all, Namespace);
-      end if;
+      Add_Namespaces (Ctx, Element_Name);
       -- Try to preserve spaces if current element has this tuning
       -- Tuning set by Dtd (if default is preserve and no value in Xml)
       --  or by attribute value in Xml. In both cases it in Tree
@@ -1949,15 +1951,17 @@ package body Parse_Mng  is
             else
               Tree.Move_Brother (False);
             end if;
-            -- Update child and Consolidate Has_Text
-            Has_Text := Has_Text or else Update (Tree);
+            -- Update child and Consolidate Has_Text (the order is important)
+            Has_Text := Update (Tree) or else Has_Text;
           end loop;
           Tree.Move_Father;
           if not Cell.Is_Mixed and then Has_Text then
             -- Update this cell
-            Debug ("Updating Is_Mixed of " & Cell.Name.Image);
+            Debug ("Updated Is_Mixed of " & Cell.Name.Image);
             Cell.Is_Mixed := True;
             Tree.Replace (Cell);
+          elsif Cell.Is_Mixed then
+            Debug ("Element " & Cell.Name.Image & " is already Is_Mixed");
           end if;
           return False;
         when Text =>

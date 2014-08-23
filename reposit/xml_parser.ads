@@ -16,7 +16,7 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "34";
+  Major_Version : constant String := "35";
   function Version return String;
 
   -----------
@@ -284,11 +284,17 @@ package Xml_Parser is
   -- Check the Ctx: parse the DTD (if any) and check the Ctx versus it
   --  (same effect as Parse, but on a context that has been set or modified by
   --  Xml_Parser.Generator)
-  -- Normalize = Other means "leave as it is", which is the value set in Parse
-  --  (default true at init)
+  -- For Trileans, Other means "leave as it is" (which is the value
+  --  by default or the one set in Parse)
+  -- Comments and Cdata flags of the context are not modified (they don't
+  --  affect the check)
   procedure Check (Ctx : in out Ctx_Type;
                    Ok  : out Boolean;
+                   Expand    : in Trilean.Trilean := Trilean.Other;
                    Normalize : in Trilean.Trilean := Trilean.Other;
+                   Use_Dtd   : in Trilean.Trilean := Trilean.Other;
+                   Dtd_File  : in String  := "";
+                   Namespace : in Trilean.Trilean := Trilean.Other;
                    Warn_Cb   : in Warning_Callback_Access := null);
 
   -------------------------

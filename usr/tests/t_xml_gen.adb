@@ -1,4 +1,4 @@
-with Basic_Proc, Xml_Parser.Generator, Sys_Calls, Argument, Trilean, Mixed_Str;
+with Basic_Proc, Xml_Parser.Generator, Sys_Calls, Argument, Mixed_Str;
 procedure T_Xml_Gen is
   Dscr : Xml_Parser.Generator.Ctx_Type;
   Dtd_Name : constant String := "variables.dtd";
@@ -190,7 +190,7 @@ begin
   -- Add an invalid entry
   Dscr.Add_Brother (Fail_Node, "Var1", Xml_Parser.Element, New_Node);
   -- Check tree
-  Dscr.Check (Ok, Trilean.True, Warnings);
+  Dscr.Check (Ok, Warn_Cb => Warnings);
   if Ok then
     Basic_Proc.Put_Line_Error ("Check failed to detect invalid element name");
     Basic_Proc.Set_Error_Exit_Code;
@@ -218,7 +218,7 @@ begin
                   Xml_Parser.Comment, New_Node);
 
   -- Check tree
-  Dscr.Check (Ok, Trilean.True, Warnings);
+  Dscr.Check (Ok, Warn_Cb => Warnings);
   if not Ok then
     Basic_Proc.Put_Line_Error (Dscr.Get_Parse_Error_Message);
     Basic_Proc.Set_Error_Exit_Code;

@@ -688,7 +688,11 @@ package body Xml_Parser is
   --  (same effect as Xml_Parse.Parse)
   procedure Check (Ctx : in out Ctx_Type;
                    Ok  : out Boolean;
+                   Expand    : in Trilean.Trilean := Trilean.Other;
                    Normalize : in Trilean.Trilean := Trilean.Other;
+                   Use_Dtd   : in Trilean.Trilean := Trilean.Other;
+                   Dtd_File  : in String  := "";
+                   Namespace : in Trilean.Trilean := Trilean.Other;
                    Warn_Cb   : in Warning_Callback_Access := null) is
     use type Trilean.Trilean;
   begin
@@ -702,10 +706,22 @@ package body Xml_Parser is
     Ctx.Status := Error;
     Ctx.Flow.Err_Msg.Set_Null;
     Ok := False;
+    -- Set attributes
+    if Expand /= Trilean.Other then
+      Ctx.Expand := Trilean.Tri2Boo (Expand);
+    end if;
     if Normalize /= Trilean.Other then
       Ctx.Normalize := Trilean.Tri2Boo (Normalize);
     end if;
+    if Use_Dtd /= Trilean.Other then
+      Ctx.Use_Dtd := Trilean.Tri2Boo (Use_Dtd);
+      Ctx.Dtd_File := As.U.Tus (Dtd_File);
+    end if;
+    if Namespace /= Trilean.Other then
+      Ctx.Namespace := Trilean.Tri2Boo (Namespace);
+    end if;
     Ctx.Warnings := Warn_Cb;
+    -- Check
     Parse_Mng.Check (Ctx);
     Ctx.Status := Parsed_Elements;
     Ok := True;

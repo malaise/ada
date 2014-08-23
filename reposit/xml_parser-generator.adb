@@ -3,7 +3,7 @@ with Aski, Images, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -404,13 +404,6 @@ package body Xml_Parser.Generator is
                  In_Prologue => True,
                  Tree_Access => Tree.Get_Position);
   end Add_Doctype;
-
-  -- Set the Dtd file towards which comformance shall be checked
-  procedure Set_Dtd_File (Ctx      : in out Ctx_Type;
-                          Dtd_File : in String) is
-  begin
-    Ctx.Dtd_File := As.U.Tus (Dtd_File);
-  end Set_Dtd_File;
 
   -- Internal: Split PI into Target (-> Name) and text (-> Value)
   procedure Set_Pi (Cell : in out My_Tree_Cell;
