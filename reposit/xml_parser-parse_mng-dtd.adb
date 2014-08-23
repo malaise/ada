@@ -2263,9 +2263,9 @@ package body Dtd is
     Children : Children_Desc;
   begin
     Ctx.Elements.Read (Cell);
-    Add_Namespaces (Ctx, Cell.Name);
     -- Check current element, attributes then children
     Check_Attributes (Ctx, Adtd);
+    Add_Namespaces (Ctx, Cell.Name);
     Build_Children (Ctx, Adtd, Children);
     Check_Element (Ctx, Adtd, Children);
     -- Check children recursively
