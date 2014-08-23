@@ -4,7 +4,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
      Basic_Proc, Text_Line, Sys_Calls, Parser, Bloc_Io, Str_Util, Trilean;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V19.1";
+  Version : constant String := "V19.2";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -147,7 +147,7 @@ procedure Xml_Checker is
       else
         Ustr := "<" & Names(I) & ">";
       end if;
-      Ustr := As.U.Tus (" " & Str_Util.Procuste (Ustr.Image, 15) & " ::= ");
+      Ustr := As.U.Tus (" " & Str_Util.Procuste (Ustr.Image, 13) & " ::= ");
       if I /= 8 then
         Ustr := Ustr & Argument_Parser.Image (Keys(I));
       else
@@ -181,16 +181,16 @@ procedure Xml_Checker is
     Ple ("All options except expand, keep, dtd, warnings, namespace and tree are");
     Ple (" mutually exclusive.");
     Ple ("Keep, expand and namespace are not allowed on Dump mode, Dump => keep all.");
-    Ple ("Canonical only allows options dtd, warnings and keep-comments (it expands,");
-    Ple ("  removes CDATA markers, ignores namespace, does not normalize and by default");
-    Ple ("  removes comments).");
+    Ple ("Canonical is implemented with a callback (no tree). It only allows options dtd,");
+    Ple ("  warnings and keep-comments (it expands, removes CDATA markers, ignores");
+    Ple ("  namespace, does not normalize and, by default, removes comments).");
     Ple ("Namespace always expand, so these options are exclusive.");
     Ple ("Default format is -W" & Xml_Parser.Generator.Default_Width'Img
                          & " on stdout.");
     Ple ("Building the tree is not recommended for big files and forbidden in canonical.");
     Ple ("Progress bar requires the callback mode (no tree).");
-    Ple ("Please also consider increasing the process stack size (ulimit -s) to");
-    Ple ("  avoid stack overflow and Storage_Error.");
+    Ple ("For big files, consider using the callback mode or increasing the process stack");
+    Ple ("  size (ulimit -s) to avoid stack overflow and Storage_Error.");
   end Usage;
 
 
@@ -703,7 +703,9 @@ procedure Xml_Checker is
         Ctx.Clean;
         return;
       end if;
-      Ctxc.Update_Is_Mixed;
+      if Update_Mix then
+        Ctxc.Update_Is_Mixed;
+      end if;
       Ctxa := Ctxc'Access;
     else
       Ctxa := Ctx'Access;
