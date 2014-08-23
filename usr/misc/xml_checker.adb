@@ -1,10 +1,10 @@
 -- Check/Format/Canonify a XML file or flow
 with Ada.Exceptions;
 with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
-     Basic_Proc, Text_Line, Sys_Calls, Parser, Bloc_Io, Str_Util;
+     Basic_Proc, Text_Line, Sys_Calls, Parser, Bloc_Io, Str_Util, Trilean;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V19.0";
+  Version : constant String := "V19.1";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -197,13 +197,15 @@ procedure Xml_Checker is
   -------------------
   -- Dump xml tree --
   -------------------
-  procedure Dump_Line (Node : in Xml_Parser.Node_Type) is
+  procedure Dump_Line (Actx : in out Xml_Parser.Generator.Ctx_Type;
+                       Node : in Xml_Parser.Node_Type) is
   begin
-    Out_Flow.Put (Normal (Ctx.Get_Line_No (Node), 8, True, '0'));
+    Out_Flow.Put (Normal (Actx.Get_Line_No (Node), 8, True, '0'));
   end Dump_Line;
 
-  procedure Dump_Attributes (Elt : in Xml_Parser.Element_Type) is
-    Attrs : constant Xml_Parser.Attributes_Array := Ctx.Get_Attributes (Elt);
+  procedure Dump_Attributes (Actx : in out Xml_Parser.Generator.Ctx_Type;
+                             Elt : in Xml_Parser.Element_Type) is
+    Attrs : constant Xml_Parser.Attributes_Array := Actx.Get_Attributes (Elt);
   begin
     for I in Attrs'Range loop
       if not Attrs(I).Unparsed then
@@ -216,10 +218,11 @@ procedure Xml_Checker is
     end loop;
   end Dump_Attributes;
 
-  procedure Dump_Element (Elt : in Xml_Parser.Element_Type;
+  procedure Dump_Element (Actx : in out Xml_Parser.Generator.Ctx_Type;
+                          Elt : in Xml_Parser.Element_Type;
                           Level : in Natural;
                           Show_It : in Boolean) is
-    Children : Xml_Parser.Nodes_Array := Ctx.Get_Children (Elt);
+    Children : Xml_Parser.Nodes_Array := Actx.Get_Children (Elt);
     Indent : constant String (1 .. Level + 1) := (others => ' ');
     In_Mixed : Boolean;
     use type Xml_Parser.Node_Kind_List;
@@ -227,7 +230,7 @@ procedure Xml_Checker is
                          Inm : in Boolean) is
     begin
       if N.Kind = Xml_Parser.Element
-      and then Ctx.Get_Is_Mixed (N) then
+      and then Actx.Get_Is_Mixed (N) then
         Out_Flow.Put (" M");
       else
         Out_Flow.Put (" -");
@@ -243,64 +246,65 @@ procedure Xml_Checker is
   begin
     if Show_It then
        -- Not the tail
-      Dump_Line (Elt);
-      if Ctx.Is_Root (Elt) then
+      Dump_Line (Actx, Elt);
+      if Actx.Is_Root (Elt) then
         In_Mixed := False;
       else
-        In_Mixed := Ctx.Get_Is_Mixed (Ctx.Get_Parent (Elt));
+        In_Mixed := Actx.Get_Is_Mixed (Actx.Get_Parent (Elt));
       end if;
       Put_Mixed (Elt, In_Mixed);
       Out_Flow.Put (Indent);
-      Out_Flow.Put (Ctx.Get_Name (Elt).Image);
-      if Ctx.Get_Nb_Attributes (Elt) /= 0 then
+      Out_Flow.Put (Actx.Get_Name (Elt).Image);
+      if Actx.Get_Nb_Attributes (Elt) /= 0 then
         Out_Flow.Put (" :" );
       end if;
-      Dump_Attributes (Elt);
+      Dump_Attributes (Actx, Elt);
       Out_Flow.New_Line;
     end if;
 
-    In_Mixed := Ctx.Get_Is_Mixed (Elt);
+    In_Mixed := Actx.Get_Is_Mixed (Elt);
     for I in Children'Range loop
       if I rem 2 = 0 then
         -- Test the individual get
-        Children(I) := Ctx.Get_Child (Elt, I);
+        Children(I) := Actx.Get_Child (Elt, I);
       end if;
       case Children(I).Kind is
         when Xml_Parser.Element =>
           -- Recursive dump child
-          Dump_Element (Children(I), Level + 1, True);
+          Dump_Element (Actx, Children(I), Level + 1, True);
         when Xml_Parser.Text =>
           -- Put text
-          Dump_Line (Children(I));
+          Dump_Line (Actx, Children(I));
           Put_Mixed (Children(I), In_Mixed);
           Out_Flow.Put (Indent);
-          Out_Flow.Put_Line (" =>" & Ctx.Get_Text (Children(I)) & "<=");
+          Out_Flow.Put_Line (" =>" & Actx.Get_Text (Children(I)) & "<=");
         when Xml_Parser.Pi =>
           -- Put Pi
-          Dump_Line (Children(I));
+          Dump_Line (Actx, Children(I));
           Put_Mixed (Children(I), In_Mixed);
           if Show_It then
             Out_Flow.Put (Indent);
           end if;
-          Out_Flow.Put (" <?" & Ctx.Get_Target (Children(I)));
-          if Ctx.Get_Pi (Children(I)).Length /= 0 then
-            Out_Flow.Put (" " & Ctx.Get_Pi (Children(I)));
+          Out_Flow.Put (" <?" & Actx.Get_Target (Children(I)));
+          if Actx.Get_Pi (Children(I)).Length /= 0 then
+            Out_Flow.Put (" " & Actx.Get_Pi (Children(I)));
           end if;
           Out_Flow.Put_Line ("?>");
         when Xml_Parser.Comment =>
           -- Put Comment
-          Dump_Line (Children(I));
+          Dump_Line (Actx, Children(I));
           Put_Mixed (Children(I), In_Mixed);
           if Show_It then
             Out_Flow.Put (Indent);
           end if;
-          Out_Flow.Put_Line (" <!--" & Ctx.Get_Comment (Children(I)) & "-->");
+          Out_Flow.Put_Line (" <!--" & Actx.Get_Comment (Children(I)) & "-->");
       end case;
     end loop;
   end Dump_Element;
 
   -- Dump the unparsed entities characterisics
-  procedure Dump_Unparsed_Entities is
+  procedure Dump_Unparsed_Entities
+            (Actx : in out Xml_Parser.Generator.Ctx_Type) is
     -- Iterator on string list of unparsed entities
     Iter : Parser.Iterator;
     Info : Xml_Parser.Unparsed_Entity_Info_Rec;
@@ -311,7 +315,7 @@ procedure Xml_Checker is
         Entity : constant String := Iter.Next_Word;
       begin
         exit when Entity = "";
-        Ctx.Get_Unparsed_Entity_Info (Entity, Info);
+        Actx.Get_Unparsed_Entity_Info (Entity, Info);
         Out_Flow.Put_Line ("Entity: " & Entity
                          & ", System_Id=" & Info.Entity_System_Id.Image
                          & ", Public_Id=" & Info.Entity_System_Id.Image);
@@ -567,7 +571,7 @@ procedure Xml_Checker is
   begin
     -- Copy attributes
     Ctxc.Set_Attributes (Nodec, Ctx.Get_Attributes (Node));
-    Ctxc.Set_Put_Empty (nodec, Ctx.Get_Put_Empty (Node));
+    Ctxc.Set_Put_Empty (Nodec, Ctx.Get_Put_Empty (Node));
     -- Copy children
     for I in Children'Range loop
       case Children(I).Kind is
@@ -644,7 +648,7 @@ procedure Xml_Checker is
     if Callback_Acc /= null then
       if Output_Kind = Dump then
         Out_Flow.Put_Line ("Unparsed entities:");
-        Dump_Unparsed_Entities;
+        Dump_Unparsed_Entities (Ctx);
       end if;
       if Output_Kind = Progress and then Index /= 0 then
         -- Terminate progress bar
@@ -682,8 +686,15 @@ procedure Xml_Checker is
       Ctxc.Set_Name (Nodec, Ctx.Get_Name (Ctx.Get_Root_Element));
       Copy_Elements (Ctx.Get_Root_Element, Nodec);
       -- Copy Tail
-      -- @@@
-      Ctxc.Check (Parse_Ok);
+      Nodec := Ctxc.Get_Tail;
+      Copy_Elements (Ctx.Get_Tail, Nodec);
+      -- Check
+      Ctxc.Check (Ok => Parse_Ok,
+                  Expand => Trilean.Boo2Tri (Expand),
+                  Normalize => Trilean.Boo2Tri (Normalize),
+                  Use_Dtd  => Trilean.Boo2Tri (Use_Dtd),
+                  Dtd_File => Dtd_File.Image,
+                  Namespace => Trilean.Boo2Tri (Namespace));
       if not Parse_Ok then
         Basic_Proc.Put_Line_Error ("Error in copied tree "
                                  & Get_File_Name (Index, True) & ": "
@@ -692,6 +703,7 @@ procedure Xml_Checker is
         Ctx.Clean;
         return;
       end if;
+      Ctxc.Update_Is_Mixed;
       Ctxa := Ctxc'Access;
     else
       Ctxa := Ctx'Access;
@@ -700,15 +712,15 @@ procedure Xml_Checker is
     -- Dump / put
     if Output_Kind = Dump then
       Out_Flow.Put_Line ("Prologue:");
-      Dump_Element (Ctxa.Get_Prologue, 0, True);
+      Dump_Element (Ctxa.all, Ctxa.Get_Prologue, 0, True);
       Out_Flow.Put_Line ("Elements:");
-      Dump_Element (Ctxa.Get_Root_Element, 0, True);
+      Dump_Element (Ctxa.all, Ctxa.Get_Root_Element, 0, True);
       if Ctxa.Get_Nb_Children (Ctxa.Get_Tail) /= 0 then
         Out_Flow.Put_Line ("Tail:");
-        Dump_Element (Ctxa.Get_Tail, 0, False);
+        Dump_Element (Ctxa.all, Ctxa.Get_Tail, 0, False);
       end if;
       Out_Flow.Put_Line ("Unparsed entities:");
-      Dump_Unparsed_Entities;
+      Dump_Unparsed_Entities (Ctxa.all);
       Out_Flow.Flush;
     elsif Output_Kind = Gen then
       Ctxa.Put (Xml_Parser.Generator.Stdout, Format, Width, Namespace);
