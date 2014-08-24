@@ -209,7 +209,11 @@ package body Language is
             -- Incomplete end of sequence
             raise Invalid_Utf_8_Sequence;
           else
-            Wc := Utf_8.Decode (Utf_8.Word (Str(Index .. Index + Nb - 1)));
+            declare
+              S : constant String (1 .. Nb) := Str(Index .. Index + Nb - 1);
+            begin
+              Wc := Utf_8.Decode (Utf_8.Word (S));
+            end;
           end if;
         exception
           when Utf_8.Invalid_Sequence =>
@@ -292,9 +296,16 @@ package body Language is
         -- Encode the Nb_Chars of this sequence
         begin
           Nb := Utf_8.Nb_Chars (Str(Index));
-          -- Optim
-          U := (if Nb = 1 then Char_To_Unicode (Str(Index))
-                else Utf_8.Decode (Utf_8.Word (Str(Index .. Index + Nb - 1))));
+          if Nb = 1 then
+            -- Optim
+            U := Char_To_Unicode (Str(Index));
+          else
+            declare
+              S : constant String(1 .. Nb) := Str(Index .. Index + Nb - 1);
+            begin
+              U := Utf_8.Decode (Utf_8.Word (S));
+            end;
+          end if;
         exception
           when Utf_8.Invalid_Sequence =>
             U := Char_To_Unicode (Default_Char);
