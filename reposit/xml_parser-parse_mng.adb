@@ -372,6 +372,11 @@ package body Parse_Mng  is
                      Adtd : in out Dtd_Type;
                      File_Name : in As.U.Asu_Us;
                      Name_Raise_Parse : in Boolean := True);
+    -- Switch input to Text, Parse it up to the end
+    procedure Switch_Input (Ctx : in out Ctx_Type;
+                            Adtd : in out Dtd_Type;
+                            Text : in out As.U.Asu_Us;
+                            External : in Boolean);
     -- Perform final checks after DTD parsing: unparsed entities v.s. notations
     procedure Final_Dtd_Check (Ctx  : in out Ctx_Type; Adtd : in out Dtd_Type);
     -- Check attributes of current element of the tree
@@ -972,36 +977,8 @@ package body Parse_Mng  is
       end if;
       Doctype_File := Util.Get_Curr_Str (Ctx.Flow);
       Util.Skip_Separators (Ctx.Flow);
-      if Ctx.Use_Dtd
-      and then Ctx.Dtd_File.Is_Null
-      and then not Doctype_File.Is_Null
-      and then not Adtd.Set then
-        -- Parse dtd file of doctype directive if no alternate file
-        --  and (for string flows) if clean Dtd is provided
-        Util.Push_Flow (Ctx.Flow);
-        -- Check validity of dtd file
-        Full_File := Build_Full_Name (Doctype_File, Ctx.Flow.Curr_Flow.Name);
-        if Full_File.Image = Dtd.String_Flow
-        or else Full_File.Image = Dtd.Internal_Flow then
-          Util.Error (Ctx.Flow, "Invalid Dtd file name");
-        end if;
-        -- Expand URI
-        Resolve_Uri (Ctx, Doctype_File, Is_File, Full_File);
-        if not Is_File then
-          -- Full_File is the content of the Dtd fetched (by http)
-          Ctx.Flow.Curr_Flow.Name := Doctype_File;
-          Ctx.Flow.Curr_Flow.Line := 1;
-          Ctx.Flow.Curr_Flow.Same_Line := False;
-          Ctx.Flow.Curr_Flow.In_Str := Full_File;
-          Ctx.Flow.Curr_Flow.In_Stri := 0;
-          Full_File := As.U.Tus (Dtd.String_Flow);
-          Debug ("Parsing http dtd");
-        end if;
-        Dtd.Parse (Ctx, Adtd, Full_File);
-        Util.Pop_Flow (Ctx.Flow);
-      end if;
-      Ctx.Doctype.File := Doctype_File;
     end if;
+
     -- Now see if there is an internal definition section
     if Util.Get (Ctx.Flow) = '[' then
       -- Internal definition, record the parsing and copy it in Ctx
@@ -1020,6 +997,37 @@ package body Parse_Mng  is
     if Char /= Util.Stop then
       Util.Error (Ctx.Flow, "Unexpected character " & Char & " in DOCTYPE");
     end if;
+    -- Now Parse DTD file
+    if Ctx.Use_Dtd
+    and then Ctx.Dtd_File.Is_Null
+    and then not Doctype_File.Is_Null then
+      -- Parse dtd file of doctype directive if no alternate file
+      --  and (for string flows) if clean Dtd is provided
+      Util.Push_Flow (Ctx.Flow);
+      -- Check validity of dtd file
+      Full_File := Build_Full_Name (Doctype_File, Ctx.Flow.Curr_Flow.Name);
+      if Full_File.Image = Dtd.String_Flow
+      or else Full_File.Image = Dtd.Internal_Flow then
+        Util.Error (Ctx.Flow, "Invalid Dtd file name");
+      end if;
+      -- Expand URI
+      Resolve_Uri (Ctx, Doctype_File, Is_File, Full_File);
+      if not Is_File then
+        -- Full_File is the content of the Dtd fetched (by http)
+        Ctx.Flow.Curr_Flow.Name := Doctype_File;
+        Ctx.Flow.Curr_Flow.Line := 1;
+        Ctx.Flow.Curr_Flow.Same_Line := False;
+        Ctx.Flow.Curr_Flow.In_Str := Full_File;
+        Ctx.Flow.Curr_Flow.In_Stri := 0;
+        Full_File := As.U.Tus (Dtd.String_Flow);
+        Debug ("Parsing http dtd");
+      else
+        Debug ("Parsing file dtd");
+      end if;
+      Dtd.Parse (Ctx, Adtd, Full_File);
+      Util.Pop_Flow (Ctx.Flow);
+    end if;
+    Ctx.Doctype.File := Doctype_File;
     if not Ctx.Use_Dtd then
       -- Reset dtd info
       Debug ("Dtd reset cause not to be used");
@@ -1864,6 +1872,11 @@ package body Parse_Mng  is
     Dtd.Init (Adtd);
     Util.Push_Flow (Ctx.Flow);
     -- Parse Dtd
+    if not Ctx.Doctype.Int_Def.Is_Null then
+      -- Internal directive
+      Dtd.Switch_Input (Ctx, Adtd, Ctx.Doctype.Int_Def, False);
+      Adtd.Xml_Found := False;
+    end if;
     if not Ctx.Dtd_File.Is_Null then
       -- Parse alternate Dtd provided by caller
       Steps_Logger.Log_Info ("Parsing DTD");
@@ -1893,17 +1906,6 @@ package body Parse_Mng  is
         Steps_Logger.Log_Info ("Parsing DTD");
         Dtd.Parse (Ctx, Adtd, Full_File);
       end if;
-    end if;
-    if not Ctx.Doctype.Int_Def.Is_Null then
-      -- Parse internal defs
-      Steps_Logger.Log_Info ("Parsing internal ");
-      Ctx.Flow.Curr_Flow.Is_File := False;
-      Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
-      Ctx.Flow.Curr_Flow.In_Str := Ctx.Doctype.Int_Def;
-      Ctx.Flow.Curr_Flow.In_Stri := 0;
-      Ctx.Flow.Curr_Flow.Line := Ctx.Doctype.Line_No;
-      Ctx.Flow.Curr_Flow.Same_Line := True;
-      Dtd.Parse (Ctx, Adtd, As.U.Tus (Dtd.String_Flow));
     end if;
     -- Restore flow
     Util.Pop_Flow (Ctx.Flow);

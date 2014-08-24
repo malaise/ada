@@ -1045,24 +1045,20 @@ package body Dtd is
     end;
   end Parse_Directive;
 
-  -- Switch input to Text, Parse it up to the end
-  procedure Switch_Input (Ctx : in out Ctx_Type;
-                          Adtd : in out Dtd_Type;
-                          Text : in out As.U.Asu_Us);
-
   -- Parse current dtd
   -- If external, will stop at end of file
   -- otherwise, will stop on ']'
   procedure Parse (Ctx : in out Ctx_Type;
                    Adtd : in out Dtd_Type;
-                   External : in Boolean) is
+                   External : in Boolean;
+                   File : in Boolean) is
     Found : Boolean;
     Entity_Value : As.U.Asu_Us;
     Char : Character;
     Is_Recorded : Boolean;
     use type As.U.Asu_Us;
   begin
-    if External then
+    if External and then File then
       -- Autodetect encoding and check
       Util.Guess_Encoding (Ctx.Flow);
       Debug ("Detected dtd encoding format "
@@ -1099,7 +1095,7 @@ package body Dtd is
           Is_Recorded := Ctx.Flow.Recording;
           Ctx.Flow.Recording := False;
           -- Parse
-          Switch_Input (Ctx, Adtd, Entity_Value);
+          Switch_Input (Ctx, Adtd, Entity_Value, True);
           Ctx.Flow.Recording := Is_Recorded;
         end if;
       end if;
@@ -1112,19 +1108,21 @@ package body Dtd is
         end if;
       end if;
       if not Found then
-        -- Should be the end: End_Error if external, ']' if internal
+        -- Should be the end: End_Error if flow is External or string,
+        --  ']' if internal and file
         begin
           Char := Util.Get (Ctx.Flow);
         exception
           when Util.End_Error =>
-            if External then
+            if External or else not File then
               return;
             else
               Util.Error (Ctx.Flow,
                       "Unexpected end of file while parsing internal dtd");
             end if;
         end;
-        if Char = (']') and then not External then
+        if Char = (']') and then not External and then File then
+          -- End of Internal definition in Xml file
           return;
         else
           Util.Error (Ctx.Flow,
@@ -1137,7 +1135,8 @@ package body Dtd is
   -- Switch input to Text, Parse it up to the end
   procedure Switch_Input (Ctx : in out Ctx_Type;
                           Adtd : in out Dtd_Type;
-                          Text : in out As.U.Asu_Us) is
+                          Text : in out As.U.Asu_Us;
+                          External : in Boolean) is
   begin
     -- Save current flow
     Util.Push_Flow (Ctx.Flow);
@@ -1149,7 +1148,7 @@ package body Dtd is
     Ctx.Flow.Curr_Flow.Same_Line := True;
     -- Parse new flow as dtd
     Debug ("Switching input to " & Text.Image);
-    Parse (Ctx, Adtd, External => True);
+    Parse (Ctx, Adtd, External => External, File => False);
     -- Restore flow
     Util.Pop_Flow (Ctx.Flow);
   end Switch_Input;
@@ -1171,13 +1170,15 @@ package body Dtd is
       Ctx.Flow.Curr_Flow.Is_File := False;
       Ctx.Flow.Curr_Flow.File := null;
       Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
-      Parse (Ctx, Adtd, True);
+      Parse (Ctx, Adtd, True, False);
     elsif File_Name = Internal_Flow then
       -- Internal declarations (string or file) of Ctx
       Debug ("Dtd parsing internal definition");
       Ctx.Flow.Curr_Flow.Kind := Int_Dtd_Flow;
-      Parse (Ctx, Adtd, False);
+      Parse (Ctx, Adtd, False, Ctx.Flow.Curr_Flow.Is_File);
       Ctx.Flow.Curr_Flow.Kind := Xml_Flow;
+      -- Allow Xml directive of Dtd file
+      Adtd.Xml_Found := False;
     else
       -- File name
       Debug ("Dtd parsing file " & File_Name.Image);
@@ -1190,7 +1191,7 @@ package body Dtd is
       Ctx.Flow.Curr_Flow.Name := File_Name;
       Ctx.Flow.Curr_Flow.Line := 1;
       Ctx.Flow.Curr_Flow.Same_Line := False;
-      Parse (Ctx, Adtd, True);
+      Parse (Ctx, Adtd, True, True);
     end if;
     -- Preserved is empty or "#Name#Name...#Name#"
     if not Ctx.Preserved.Is_Null then
