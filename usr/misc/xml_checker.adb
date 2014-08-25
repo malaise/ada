@@ -1,10 +1,11 @@
 -- Check/Format/Canonify a XML file or flow
 with Ada.Exceptions;
 with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
-     Basic_Proc, Text_Line, Sys_Calls, Parser, Bloc_Io, Str_Util, Trilean;
+     Basic_Proc, Text_Line, Sys_Calls, Parser, Bloc_Io, Str_Util, Trilean,
+     Trace.Loggers, Mixed_Str;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V19.2";
+  Version : constant String := "V20.0";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -184,7 +185,7 @@ procedure Xml_Checker is
     Ple ("Canonical is implemented with a callback (no tree). It only allows options dtd,");
     Ple ("  warnings and keep-comments (it expands, removes CDATA markers, ignores");
     Ple ("  namespace, does not normalize and, by default, removes comments).");
-    Ple ("Namespace always expand, so these options are exclusive.");
+    Ple ("Namespace should be used together with Expand for appropriate result.");
     Ple ("Default format is -W" & Xml_Parser.Generator.Default_Width'Img
                          & " on stdout.");
     Ple ("Building the tree is not recommended for big files and forbidden in canonical.");
@@ -511,6 +512,7 @@ procedure Xml_Checker is
   end Count_Lines;
 
   -- Copy prologue of Ctx into Ctxc
+  Copylog : Trace.Loggers.Logger;
   procedure Copy_Prologue (Node : in Xml_Parser.Node_Type) is
     Attrs : constant Xml_Parser.Attributes_Array := Ctx.Get_Attributes (Node);
     Children : constant Xml_Parser.Nodes_Array := Ctx.Get_Children (Node);
@@ -525,6 +527,7 @@ procedure Xml_Checker is
     Tmp_Node : Xml_Parser.Node_Type;
 
   begin
+    Copylog.Init ("Copylog");
     -- Copy XML node
     for I in Attrs'Range loop
       -- The possible Xml directive
@@ -534,11 +537,32 @@ procedure Xml_Checker is
         Major := Natural'Value (Attrs(I).Value.Slice (1, Dot-1));
         Minor := Natural'Value (Attrs(I).Value.Slice (
                    Dot+1, Attrs(I).Value.Length));
-        Ctxc.Set_Version (Major, Minor);
+        begin
+          Ctxc.Set_Version (Major, Minor);
+        exception
+          when Xml_Parser.Generator.Invalid_Argument =>
+            Copylog.Log_Error ("Error on Set_Version ("
+                             & Major'Img & ", " & Minor'Img & ')');
+            raise;
+        end;
       elsif Attrs(I).Name.Image = "encoding" then
-        Ctxc.Set_Encoding (Attrs(I).Value.Image);
+        begin
+          Ctxc.Set_Encoding (Attrs(I).Value.Image);
+        exception
+          when Xml_Parser.Generator.Invalid_Argument =>
+            Copylog.Log_Error ("Error on Set_Encoding ("
+                             & Attrs(I).Value.Image & ')');
+            raise;
+        end;
       elsif Attrs(I).Name.Image = "standalone" then
-        Ctxc.Set_Standalone (Attrs(I).Value.Image = "yes");
+        begin
+          Ctxc.Set_Standalone (Attrs(I).Value.Image = "yes");
+        exception
+          when Xml_Parser.Generator.Invalid_Argument =>
+            Copylog.Log_Error ("Error on Set_Standalone ("
+                             & Attrs(I).Value.Image & ')');
+            raise;
+        end;
       end if;
     end loop;
     -- Copy the children
@@ -548,15 +572,41 @@ procedure Xml_Checker is
           -- Xml node cannot have child of kind element
           raise Constraint_Error;
         when Xml_Parser.Pi =>
-          Ctxc.Add_Pi (Prologue, Ctx.Get_Target (Children(I))
-                               & " " & Ctx.Get_Pi (Children(I)), Tmp_Node);
+          begin
+            Ctxc.Add_Pi (Prologue, Ctx.Get_Target (Children(I))
+                                 & " " & Ctx.Get_Pi (Children(I)), Tmp_Node);
+          exception
+            when Xml_Parser.Generator.Invalid_Argument =>
+              Copylog.Log_Error ("Error on Add_Pi ("
+                               & Ctx.Get_Target (Children(I))
+                               & " " & Ctx.Get_Pi (Children(I)) & ')');
+              raise;
+          end;
         when Xml_Parser.Comment =>
-          Ctxc.Add_Comment (Prologue, Ctx.Get_Comment (Children(I)), Tmp_Node);
+          begin
+            Ctxc.Add_Comment (Prologue, Ctx.Get_Comment (Children(I)),
+                              Tmp_Node);
+          exception
+            when Xml_Parser.Generator.Invalid_Argument =>
+              Copylog.Log_Error ("Error on Set_Comment ("
+                               & Ctx.Get_Comment (Children(I))  & ')');
+              raise;
+          end;
         when Xml_Parser.Text =>
           -- Doctype
           Ctx.Get_Doctype (Name, Public, Pub_Id, File, Int_Def);
-          Ctxc.Add_Doctype (Prologue, Name.Image, Public,
-                            Pub_Id.Image, File.Image, Int_Def.Image, Tmp_Node);
+          begin
+            Ctxc.Add_Doctype (Prologue, Name.Image, Public,
+                              Pub_Id.Image, File.Image, Int_Def.Image,
+                              Tmp_Node);
+          exception
+            when Xml_Parser.Generator.Invalid_Argument =>
+              Copylog.Log_Error ("Error on Add_Doctype ("
+                               & Name.Image & ", " & Mixed_Str (Public'Img)
+                               & ", " & Pub_Id.Image & ", " & File.Image
+                               & ", [" & Int_Def.Image & "])");
+              raise;
+          end;
       end case;
     end loop;
   end Copy_Prologue;
@@ -570,25 +620,70 @@ procedure Xml_Checker is
     Tmp_Node : Xml_Parser.Node_Type;
   begin
     -- Copy attributes
-    Ctxc.Set_Attributes (Nodec, Ctx.Get_Attributes (Node));
+    begin
+      Ctxc.Set_Attributes (Nodec, Ctx.Get_Attributes (Node));
+    exception
+      when Xml_Parser.Generator.Invalid_Argument =>
+        Copylog.Log_Error ("Error on Set_Attributes");
+        declare
+          Attr : constant Xml_Parser.Attributes_Array
+               := Ctx.Get_Attributes (Node);
+        begin
+          for I in Attr'Range loop
+            Copylog.Log_Error ("  " & Attr(I).Name.Image & "-"
+                                    & Attr(I).Value.Image);
+          end loop;
+        end;
+        raise;
+    end;
     Ctxc.Set_Put_Empty (Nodec, Ctx.Get_Put_Empty (Node));
+
     -- Copy children
     for I in Children'Range loop
       case Children(I).Kind is
         when Xml_Parser.Element =>
-          Ctxc.Add_Child (Nodec, Ctx.Get_Name (Children(I)), Xml_Parser.Element,
-                          Tmp_Node);
+          begin
+            Ctxc.Add_Child (Nodec, Ctx.Get_Name (Children(I)),
+                            Xml_Parser.Element, Tmp_Node);
+          exception
+            when Xml_Parser.Generator.Invalid_Argument =>
+              Copylog.Log_Error ("Error on Add_Child Element ("
+                               & Ctx.Get_Name (Children(I)) & ')');
+              raise;
+          end;
           Copy_Elements (Children(I), Tmp_Node);
         when Xml_Parser.Text =>
-          Ctxc.Add_Child (Nodec, Ctx.Get_Text (Children(I)), Xml_Parser.Text,
-                          Tmp_Node);
+          begin
+            Ctxc.Add_Child (Nodec, Ctx.Get_Text (Children(I)), Xml_Parser.Text,
+                            Tmp_Node);
+          exception
+            when Xml_Parser.Generator.Invalid_Argument =>
+              Copylog.Log_Error ("Error on Add_Child Text ("
+                               & Ctx.Get_Text (Children(I)) & ')');
+              raise;
+          end;
         when Xml_Parser.Pi =>
-          Ctxc.Add_Child (Nodec, Ctx.Get_Target (Children(I)) & " "
-                               & Ctx.Get_Pi (Children(I)),
-                          Xml_Parser.Pi, Tmp_Node);
+          begin
+            Ctxc.Add_Child (Nodec, Ctx.Get_Target (Children(I)) & " "
+                                 & Ctx.Get_Pi (Children(I)),
+                            Xml_Parser.Pi, Tmp_Node);
+          exception
+            when Xml_Parser.Generator.Invalid_Argument =>
+              Copylog.Log_Error ("Error on Add_Pi Element ("
+                               & Ctx.Get_Target (Children(I)) & " "
+                               & Ctx.Get_Pi (Children(I)) & ')');
+              raise;
+          end;
         when Xml_Parser.Comment =>
-          Ctxc.Add_Child (Nodec, Ctx.Get_Comment (Children(I)),
-                          Xml_Parser.Comment, Tmp_Node);
+          begin
+            Ctxc.Add_Child (Nodec, Ctx.Get_Comment (Children(I)),
+                            Xml_Parser.Comment, Tmp_Node);
+          exception
+            when Xml_Parser.Generator.Invalid_Argument =>
+              Copylog.Log_Error ("Error on Add_Child Comment ("
+                               & Ctx.Get_Comment (Children(I)) & ')');
+              raise;
+          end;
       end case;
     end loop;
   end Copy_Elements;
@@ -828,7 +923,6 @@ begin
              "Incompatible ""namespace"" and ""expand"" options");
     end if;
     Namespace := True;
-    Expand := True;
     Max_Opt := Max_Opt + 1;
   end if;
   if Arg_Dscr.Is_Set (15) then

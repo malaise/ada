@@ -3,7 +3,7 @@ Xml_Checker
 
 Parser version: V35.1 +
 Generator version: V15.0 +
-Xml_checker version: V19.2 +
+Xml_checker version: V20.0 +
 Dtd_checker version: V4.0
 
 Xml_checker is a XML parser that checks the syntax (versus DTD) and formats the
@@ -108,7 +108,8 @@ markers) or keep all unchanged, which is the default.
 input flowflow is namespace-well-formed and namespace-valid (see 
 http://www.w3.org/TR/REC-xml-names) and expand namespaces as
 '<namespace>^<suffix>.' +
-This option always expand, so it is exclusive with option xref:Expand[expand].
+This option should be used together with option xref:Expand[Expand] in order to
+obtain the appropriate result.
 
 anchor:Canonical[]-C | --canonical: :: for canonicalization of the XML (see
 http://www.w3.org/TR/xml-c14n). This option only allows options dtd, warnings
