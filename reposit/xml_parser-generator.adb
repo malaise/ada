@@ -379,7 +379,7 @@ package body Xml_Parser.Generator is
     if not Public and then Pub_Id /= "" then
       raise Invalid_Argument;
     end if;
-    if not Node.In_Prologue then
+    if Node.Branch /= Prologue_Br then
       raise Invalid_Node;
     end if;
     if not Ctx.Doctype.Name.Is_Null then
@@ -401,7 +401,7 @@ package body Xml_Parser.Generator is
     Ctx.Doctype.Int_Def := As.U.Tus (Int_Def);
     New_Node := (Kind => Text,
                  Magic => Ctx.Magic,
-                 In_Prologue => True,
+                 Branch => Prologue_Br,
                  Tree_Access => Tree.Get_Position);
   end Add_Doctype;
 
@@ -466,7 +466,7 @@ package body Xml_Parser.Generator is
     Tree : Tree_Acc;
     Cell : My_Tree_Cell;
   begin
-    if not Node.In_Prologue then
+    if Node.Branch /= Prologue_Br then
       raise Invalid_Node;
     end if;
     -- Add this child to prologue
@@ -479,7 +479,7 @@ package body Xml_Parser.Generator is
     -- Done
     New_Node := (Kind => Element,
                  Magic => Ctx.Magic,
-                 In_Prologue => True,
+                 Branch => Prologue_Br,
                  Tree_Access => Tree.Get_Position);
   end Add_Pi;
 
@@ -501,7 +501,7 @@ package body Xml_Parser.Generator is
     Cell : My_Tree_Cell;
   begin
     Check_Comment (Comment);
-    if not Node.In_Prologue then
+    if Node.Branch /= Prologue_Br then
       raise Invalid_Node;
     end if;
     -- Move to node
@@ -514,7 +514,7 @@ package body Xml_Parser.Generator is
     -- Done
     New_Node := (Kind => Xml_Parser.Comment,
                  Magic => Ctx.Magic,
-                 In_Prologue => True,
+                 Branch => Prologue_Br,
                  Tree_Access => Tree.Get_Position);
   end Add_Comment;
 
@@ -541,11 +541,12 @@ package body Xml_Parser.Generator is
   -- TREE OF ELEMENTS --
   ----------------------
 
+  -- Move to a node in Elements or Tail
   procedure Move_To_Element (Ctx  : in out Ctx_Type;
                              Node : in Node_Type;
                              Tree : out Tree_Acc) is
   begin
-    if Node.In_Prologue then
+    if Node.Branch = Prologue_Br then
       raise Invalid_Node;
     end if;
     Move_To (Ctx, Node, Tree);
@@ -796,11 +797,17 @@ package body Xml_Parser.Generator is
     Tree : Tree_Acc;
     Father, Cell : My_Tree_Cell;
   begin
-    -- Set the Cell
+    -- Set the Cell, check name
     Set (Cell, Kind, Name);
-    -- Move to node, must be an element
+    -- Move to father, must be in Prologue and an element
     Move_To_Element (Ctx, Element, Tree);
     Tree.Read (Father);
+    -- Forbid inserting Element or Text in tail
+    if Element.Branch = Tail_Br
+    and then (Kind = Xml_Parser.Element or else Kind = Xml_Parser.Text) then
+      raise Invalid_Node;
+    end if;
+    -- Insert
     if Append or else Father.Nb_Attributes = 0 then
       Tree.Insert_Child (Cell, not Append);
     else
@@ -813,7 +820,7 @@ package body Xml_Parser.Generator is
     end if;
     New_Node := (Kind => Kind,
                  Magic => Ctx.Magic,
-                 In_Prologue => False,
+                 Branch => Element.Branch,
                  Tree_Access => Tree.Get_Position);
   end Add_Child;
 
@@ -825,17 +832,27 @@ package body Xml_Parser.Generator is
                          New_Node : out Node_Type;
                          Next     : in Boolean := True) is
     Tree : Tree_Acc;
-    Cell : My_Tree_Cell;
+    Brother, Cell : My_Tree_Cell;
   begin
     -- Set the Cell
     Set (Cell, Kind, Name);
     -- Move to node, must be an element
     Move_To_Element (Ctx, Node, Tree);
-     -- Add this brother
+    Tree.Read (Brother);
+    -- Forbid inserting Element or Text in tail
+    if Node.Branch = Tail_Br
+    and then (Kind = Element or else Kind = Text) then
+      raise Invalid_Node;
+    end if;
+    -- Forbid inserting a brother to root (of elements or tail)
+    if not Tree.Has_Father then
+      raise Invalid_Node;
+    end if;
+    -- Insert
     Tree.Insert_Brother (Cell, not Next);
     New_Node := (Kind => Kind,
                  Magic => Ctx.Magic,
-                 In_Prologue => False,
+                 Branch => Node.Branch,
                  Tree_Access => Tree.Get_Position);
   end Add_Brother;
 
@@ -845,6 +862,10 @@ package body Xml_Parser.Generator is
                   Elt2 : in out Element_Type) is
     Tree : Tree_Acc;
   begin
+    if Elt1.Branch /= Elements_Br
+    or else Elt1.Branch /= Elements_Br then
+      raise Invalid_Node;
+    end if;
     -- Move to node1, must be an element, save pos
     Move_To_Element (Ctx, Elt1, Tree);
     Tree.Save_Position;
@@ -859,16 +880,20 @@ package body Xml_Parser.Generator is
 
   --  Copy Src element as Next (or prev) Child (or brother)
   --  of Dst
-  procedure  Copy (Ctx      : in out Ctx_Type;
-                   Src      : in Element_Type;
-                   Dst      : in Element_Type;
-                   New_Node : out Node_Type;
-                   Child    : in Boolean := True;
-                   Next     : in Boolean := True) is
+  procedure Copy (Ctx      : in out Ctx_Type;
+                  Src      : in Element_Type;
+                  Dst      : in Element_Type;
+                  New_Node : out Node_Type;
+                  Child    : in Boolean := True;
+                  Next     : in Boolean := True) is
     Tree : Tree_Acc;
   begin
     -- Move to Src, must be an element, save pos
     Move_To_Element (Ctx, Src, Tree);
+    if Src.Branch /= Elements_Br
+    or else Dst.Branch /= Elements_Br then
+      raise Invalid_Node;
+    end if;
     Tree.Save_Position;
     -- Move to Dst, must be an element
     Move_To_Element (Ctx, Dst, Tree);
@@ -876,7 +901,7 @@ package body Xml_Parser.Generator is
     Tree.Copy_Saved (Child, not Next);
     New_Node := (Kind => Src.Kind,
                  Magic => Ctx.Magic,
-                 In_Prologue => False,
+                 Branch => Elements_Br,
                  Tree_Access => Tree.Get_Position);
   exception
     when Trees.Is_Ancestor =>
@@ -959,14 +984,14 @@ package body Xml_Parser.Generator is
       raise Invalid_Node;
     end if;
     -- Clean doctype info if node is the doctype (text of prologue)
-    if Node.In_Prologue and then Node.Kind = Text then
+    if Node.Branch = Prologue_Br and then Node.Kind = Text then
       Ctx.Doctype.Name.Set_Null;
     end if;
     Tree.Delete_Tree;
     -- Father is an element
     New_Node := (Kind => Element,
                  Magic => Ctx.Magic,
-                 In_Prologue => Node.In_Prologue,
+                 Branch => Node.Branch,
                  Tree_Access => Tree.Get_Position);
   end Delete_Node;
 
@@ -980,7 +1005,7 @@ package body Xml_Parser.Generator is
     -- Move to node
     Move_To (Ctx, Element, Tree);
     -- Clean doctype info if node is the prologue
-    if Element.In_Prologue and then not Tree.Has_Father then
+    if Element.Branch = Prologue_Br and then not Tree.Has_Father then
       Ctx.Doctype.Name.Set_Null;
     end if;
     -- Delete all children

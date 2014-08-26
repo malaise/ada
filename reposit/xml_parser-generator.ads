@@ -3,7 +3,7 @@
 package Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "15";
+  Major_Version : constant String := "16";
   function Version return String;
 
   -- The context, possibly filled by parsing a file or string in tree mode
@@ -139,6 +139,7 @@ package Xml_Parser.Generator is
   -- May raise Invalid_Argument if Name is not valid for the Kind (see
   --  Set_Name/Pi/Text/Comment)
   -- May raise Invalid_Node if in prologue
+  --   or if Kind is an Element or Text in Tail
   procedure Add_Child (Ctx      : in out Ctx_Type;
                        Element  : in Element_Type;
                        Name     : in String;
@@ -153,6 +154,9 @@ package Xml_Parser.Generator is
   -- May raise Invalid_Argument if Name is not valid for the Kind (see
   --  Set_Name/Pi/Text/Comment)
   -- May raise Invalid_Node if in prologue
+  -- May raise Invalid_Node if in prologue
+  --   or if Kind is an Element or Text in Tail
+  --   or adding a brother to the root element or the the tail element
   procedure Add_Brother (Ctx      : in out Ctx_Type;
                          Node     : in Node_Type;
                          Name     : in String;

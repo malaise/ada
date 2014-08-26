@@ -526,18 +526,18 @@ private
   package My_Tree is new Trees.Tree(My_Tree_Cell);
 
   type Tree_Acc is access all My_Tree.Tree_Type;
+  type Branch_List is (Prologue_Br, Elements_Br, Tail_Br);
   -- Exported node type
   Clean_Magic : constant Float := -1.0;
   type Node_Type (Kind : Node_Kind_List := Element) is record
     -- Magic number of the context
     Magic : Float := Clean_Magic;
-    -- In prologue or a real element
-    In_Prologue : Boolean := False;
+    -- In prologue or a real element or in tail
+    Branch : Branch_List := Prologue_Br;
     -- Position in tree
     Tree_Access : My_Tree.Position_Access := My_Tree.No_Position;
   end record;
-  No_Node : constant Node_Type (Element)
-          := (Element, Clean_Magic, False, My_Tree.No_Position);
+  No_Node : constant Node_Type (Element) := (others => <>);
   ---------------------
   -- INPUT FLOW TYPE --
   ---------------------

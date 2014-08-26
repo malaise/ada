@@ -4,7 +4,7 @@ with Trace.Loggers, Rnd, Exception_Messenger, Directory, Str_Util,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "3";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -764,7 +764,10 @@ package body Xml_Parser is
     if Ctx.Magic /= Node.Magic then
       raise Use_Error;
     end if;
-    return (if Node.In_Prologue then Ctx.Prologue else Ctx.Elements);
+    return (case Node.Branch is
+      when Prologue_Br => Ctx.Prologue,
+      when Elements_Br => Ctx.Elements,
+      when Tail_Br     => Ctx.Tail);
   end Get_Tree;
 
   function Get_Cell (Tree : Tree_Acc;
@@ -851,7 +854,7 @@ package body Xml_Parser is
     Ctx.Prologue.Move_Root;
     return (Kind => Element,
             Magic => Ctx.Magic,
-            In_Prologue => True,
+            Branch => Prologue_Br,
             Tree_Access => Ctx.Prologue.Get_Position);
   end Get_Prologue;
 
@@ -873,7 +876,7 @@ package body Xml_Parser is
     Ctx.Elements.Move_Root;
     return (Kind => Element,
             Magic => Ctx.Magic,
-            In_Prologue => False,
+            Branch => Elements_Br,
             Tree_Access => Ctx.Elements.Get_Position);
   end Get_Root_Element;
 
@@ -889,7 +892,7 @@ package body Xml_Parser is
     Ctx.Tail.Move_Root;
     return (Kind => Element,
             Magic => Ctx.Magic,
-            In_Prologue => False,
+            Branch => Tail_Br,
             Tree_Access => Ctx.Tail.Get_Position);
   end Get_Tail;
 
@@ -1067,25 +1070,25 @@ package body Xml_Parser is
             N (I - Cell.Nb_Attributes) :=
                   (Kind =>  Xml_Parser.Element,
                    Magic => Element.Magic,
-                   In_Prologue => Element.In_Prologue,
+                   Branch => Element.Branch,
                    Tree_Access => Tree.Get_Position);
           when Xml_Parser.Text =>
             N (I - Cell.Nb_Attributes) :=
                   (Kind => Xml_Parser.Text,
                    Magic => Element.Magic,
-                   In_Prologue => Element.In_Prologue,
+                   Branch => Element.Branch,
                    Tree_Access => Tree.Get_Position);
           when Xml_Parser.Pi =>
             N (I - Cell.Nb_Attributes) :=
                   (Kind => Xml_Parser.Pi,
                    Magic => Element.Magic,
-                   In_Prologue => Element.In_Prologue,
+                   Branch => Element.Branch,
                    Tree_Access => Tree.Get_Position);
           when Xml_Parser.Comment =>
             N (I - Cell.Nb_Attributes) :=
                   (Kind => Xml_Parser.Comment,
                    Magic => Element.Magic,
-                   In_Prologue => Element.In_Prologue,
+                   Branch => Element.Branch,
                    Tree_Access => Tree.Get_Position);
           when Xml_Parser.Attribute =>
             -- Attribute
@@ -1136,22 +1139,22 @@ package body Xml_Parser is
       when Xml_Parser.Element =>
         N := (Kind =>  Xml_Parser.Element,
               Magic => Element.Magic,
-              In_Prologue => Element.In_Prologue,
+              Branch => Element.Branch,
               Tree_Access => Tree.Get_Position);
       when Xml_Parser.Text =>
         N := (Kind => Xml_Parser.Text,
               Magic => Element.Magic,
-              In_Prologue => Element.In_Prologue,
+              Branch => Element.Branch,
               Tree_Access => Tree.Get_Position);
       when Xml_Parser.Pi =>
         N := (Kind => Xml_Parser.Pi,
               Magic => Element.Magic,
-              In_Prologue => Element.In_Prologue,
+              Branch => Element.Branch,
               Tree_Access => Tree.Get_Position);
       when Xml_Parser.Comment =>
         N := (Kind => Xml_Parser.Comment,
               Magic => Element.Magic,
-              In_Prologue => Element.In_Prologue,
+              Branch => Element.Branch,
               Tree_Access => Tree.Get_Position);
       when  Xml_Parser.Attribute =>
         -- Attribute
@@ -1187,22 +1190,22 @@ package body Xml_Parser is
       when Xml_Parser.Element =>
         N := (Kind =>  Xml_Parser.Element,
               Magic => Node.Magic,
-              In_Prologue => Node.In_Prologue,
+              Branch => Node.Branch,
               Tree_Access => Tree.Get_Position);
       when Xml_Parser.Text =>
         N := (Kind => Xml_Parser.Text,
               Magic => Node.Magic,
-              In_Prologue => Node.In_Prologue,
+              Branch => Node.Branch,
               Tree_Access => Tree.Get_Position);
       when Xml_Parser.Pi =>
         N := (Kind => Xml_Parser.Pi,
               Magic => Node.Magic,
-              In_Prologue => Node.In_Prologue,
+              Branch => Node.Branch,
               Tree_Access => Tree.Get_Position);
       when Xml_Parser.Comment =>
         N := (Kind => Xml_Parser.Comment,
               Magic => Node.Magic,
-              In_Prologue => Node.In_Prologue,
+              Branch => Node.Branch,
               Tree_Access => Tree.Get_Position);
       when Xml_Parser.Attribute =>
         -- Attribute
@@ -1228,7 +1231,7 @@ package body Xml_Parser is
     if Cell.Kind = Xml_Parser.Element then
       N := (Kind =>  Xml_Parser.Element,
             Magic => Node.Magic,
-            In_Prologue => Node.In_Prologue,
+            Branch => Node.Branch,
             Tree_Access => Tree.Get_Position);
     else
       -- Attribute or text or comment as parent of something!
