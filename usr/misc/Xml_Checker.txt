@@ -2,8 +2,8 @@ Xml_Checker
 ===========
 
 Parser version: V35.3 +
-Generator version: V16.0 +
-Xml_checker version: V20.0 +
+Generator version: V16.1 +
+Xml_checker version: V20.1 +
 Dtd_checker version: V4.0
 
 Xml_checker is a XML parser that checks the syntax (versus DTD) and formats the

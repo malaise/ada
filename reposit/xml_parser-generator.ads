@@ -90,10 +90,11 @@ package Xml_Parser.Generator is
   ----------------------------------
   -- Elements specific operations --
   ----------------------------------
-  -- May raise Invalid_Node if used on Prologue
+  -- May raise Invalid_Node if used in Prologue
 
   -- Set (change) the name of an element
   -- May raise Invalid_Argument if Name is not valid
+  -- May raise Invalid_Node if in Tail
   procedure Set_Name (Ctx     : in out Ctx_Type;
                       Element : in out Element_Type;
                       Name    : in String);
@@ -102,17 +103,20 @@ package Xml_Parser.Generator is
   -- May raise Invalid_Argument if a name is not valid
   --  or a value is not valid (i.e. mixes '"' and ''', contains '<' or
   --  contains an invalid reference to entity or char)
+  -- May raise Invalid_Node if in Tail
   procedure Set_Attributes (Ctx        : in out Ctx_Type;
                             Element    : in out Element_Type;
                             Attributes : in Attributes_Array);
 
   -- Delete the attributes of an element
+  -- May raise Invalid_Node if in Tail
   procedure Del_Attributes (Ctx     : in out Ctx_Type;
                             Element : in out Element_Type);
 
   -- Add an attribute to current element
   -- May raise Invalid_Argument if Name or Value is not valid (see
   --  Set_Attributes)
+  -- May raise Invalid_Node if in Tail
   procedure Add_Attribute (Ctx     : in out Ctx_Type;
                            Element : in out Element_Type;
                            Name, Value : in String);
@@ -121,6 +125,7 @@ package Xml_Parser.Generator is
   -- May raise Invalid_Argument if Name or Value is not valid (see
   --  Set_Attributes)
   -- May raise Attribute_Not_Found if Name is not found
+  -- May raise Invalid_Node if in Tail
   procedure Set_Attribute (Ctx     : in out Ctx_Type;
                            Element : in out Element_Type;
                            Name, Value : in String);
@@ -128,6 +133,7 @@ package Xml_Parser.Generator is
   -- Delete an attribute of current element
   -- May raise Invalid_Argument if Name is not valid
   -- May raise May raise Attribute_Not_Found if Name is not found
+  -- May raise Invalid_Node if in Tail
   procedure Del_Attribute (Ctx     : in out Ctx_Type;
                            Element : in out Element_Type;
                            Name : in String);
@@ -138,7 +144,7 @@ package Xml_Parser.Generator is
   -- For a Comment the Name is the comment
   -- May raise Invalid_Argument if Name is not valid for the Kind (see
   --  Set_Name/Pi/Text/Comment)
-  -- May raise Invalid_Node if in prologue
+  -- May raise Invalid_Node if in Prologue
   --   or if Kind is an Element or Text in Tail
   procedure Add_Child (Ctx      : in out Ctx_Type;
                        Element  : in Element_Type;
@@ -153,9 +159,9 @@ package Xml_Parser.Generator is
   -- For a Comment the Name is the comment
   -- May raise Invalid_Argument if Name is not valid for the Kind (see
   --  Set_Name/Pi/Text/Comment)
-  -- May raise Invalid_Node if in prologue
-  -- May raise Invalid_Node if in prologue
-  --   or if Kind is an Element or Text in Tail
+  -- May raise Invalid_Node if in Prologue
+  -- May raise Invalid_Node if in Prologue
+  --   or if Kind is an Element or a Text in Tail
   --   or adding a brother to the root element or the the tail element
   procedure Add_Brother (Ctx      : in out Ctx_Type;
                          Node     : in Node_Type;
@@ -165,7 +171,7 @@ package Xml_Parser.Generator is
                          Next     : in Boolean := True);
 
   -- Swap two elements (and their children)
-  -- May raise Invalid_Node if one is in prologue
+  -- May raise Invalid_Node if one is in Prologue or in Tail
   -- May raise Invalid_Node is one is ancestor of the other
   procedure Swap (Ctx  : in out Ctx_Type;
                   Elt1 : in out Element_Type;
@@ -173,7 +179,7 @@ package Xml_Parser.Generator is
 
   -- Copy Src element (and its children) as Next (or prev) Child (or brother)
   --  of Dst
-  -- May raise Invalid_Node if one is in prologue
+  -- May raise Invalid_Node if one is in Prologue or in Tail
   -- May raise Invalid_Node is Src is ancestor of the Dst
   procedure Copy (Ctx      : in out Ctx_Type;
                   Src      : in Element_Type;
@@ -188,6 +194,7 @@ package Xml_Parser.Generator is
   -- By default it is False except if
   --  - Parsed element is empty with EmptyElemTag (</element>)
   --  - or Generator.Set_Put_Empty (True) is called on the element
+  -- May raise Invalid_Node if in Prologue or in Tail
   procedure Set_Put_Empty (Ctx        : in out Ctx_Type;
                            Element    : in out Element_Type;
                            Put_Empty  : in Boolean);

@@ -3,7 +3,7 @@ with Aski, Images, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "0";
+  Minor_Version : constant String := "1";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -572,6 +572,9 @@ package body Xml_Parser.Generator is
   begin
     Check_Name (Name);
     -- Move to node, must be an element
+    if Element.Branch /= Elements_Br then
+      raise Invalid_Node;
+    end if;
     Move_To_Element (Ctx, Element, Tree);
     -- Update name
     Tree.Read (Cell);
@@ -612,6 +615,9 @@ package body Xml_Parser.Generator is
       Check_Attribute (Attributes(I).Name.Image);
     end loop;
     -- Move to node, check, set tree
+    if Element.Branch /= Elements_Br then
+      raise Invalid_Node;
+    end if;
     Move_To_Element (Ctx, Element, Tree);
     -- Delete all attibutes of this element
     Del_Attributes (Ctx, Element);
@@ -638,6 +644,9 @@ package body Xml_Parser.Generator is
     Cell : My_Tree_Cell;
   begin
     -- Move to node, must be an element
+    if Element.Branch /= Elements_Br then
+      raise Invalid_Node;
+    end if;
     Move_To_Element (Ctx, Element, Tree);
     -- Reset Nb_Attributes
     Tree.Read (Cell);
@@ -671,6 +680,9 @@ package body Xml_Parser.Generator is
     Check_Name (Name);
     Check_Attribute (Value);
     -- Move to node, must be an element
+    if Element.Branch /= Elements_Br then
+      raise Invalid_Node;
+    end if;
     Move_To_Element (Ctx, Element, Tree);
     -- Increment Nb_Attributes
     Tree.Read (Cell);
@@ -708,6 +720,9 @@ package body Xml_Parser.Generator is
     Check_Name (Name);
     Check_Attribute (Value);
     -- Move to node, must be an element
+    if Element.Branch /= Elements_Br then
+      raise Invalid_Node;
+    end if;
     Move_To_Element (Ctx, Element, Tree);
     Tree.Read (Cell);
     -- Look for attribute with this Name
@@ -742,6 +757,9 @@ package body Xml_Parser.Generator is
   begin
     Check_Name (Name);
     -- Move to node, must be an element
+    if Element.Branch /= Elements_Br then
+      raise Invalid_Node;
+    end if;
     Move_To_Element (Ctx, Element, Tree);
     Tree.Read (Cell);
     -- Look for attribute with this Name
@@ -915,6 +933,9 @@ package body Xml_Parser.Generator is
     Tree : Tree_Acc;
     Cell : My_Tree_Cell;
   begin
+    if Element.Branch /= Elements_Br then
+      raise Invalid_Node;
+    end if;
     -- Move to node, must be an element
     Move_To_Element (Ctx, Element, Tree);
     -- Update name

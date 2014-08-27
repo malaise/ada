@@ -5,7 +5,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
      Trace.Loggers, Mixed_Str;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V20.0";
+  Version : constant String := "V20.1";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -613,30 +613,33 @@ procedure Xml_Checker is
 
   -- Copy Elements of Ctx into Ctxc recursively
   procedure Copy_Elements (Node : in Xml_Parser.Node_Type;
-                           Nodec : in out Xml_Parser.Node_Type) is
+                           Nodec : in out Xml_Parser.Node_Type;
+                           In_Elements : in Boolean) is
     -- Children of Node
     Children : constant Xml_Parser.Nodes_Array := Ctx.Get_Children (Node);
     -- Node created
     Tmp_Node : Xml_Parser.Node_Type;
   begin
-    -- Copy attributes
-    begin
-      Ctxc.Set_Attributes (Nodec, Ctx.Get_Attributes (Node));
-    exception
-      when Xml_Parser.Generator.Invalid_Argument =>
-        Copylog.Log_Error ("Error on Set_Attributes");
-        declare
-          Attr : constant Xml_Parser.Attributes_Array
-               := Ctx.Get_Attributes (Node);
-        begin
-          for I in Attr'Range loop
-            Copylog.Log_Error ("  " & Attr(I).Name.Image & "-"
-                                    & Attr(I).Value.Image);
-          end loop;
-        end;
-        raise;
-    end;
-    Ctxc.Set_Put_Empty (Nodec, Ctx.Get_Put_Empty (Node));
+    if In_Elements then
+      -- Copy attributes
+      begin
+        Ctxc.Set_Attributes (Nodec, Ctx.Get_Attributes (Node));
+      exception
+        when Xml_Parser.Generator.Invalid_Argument =>
+          Copylog.Log_Error ("Error on Set_Attributes");
+          declare
+            Attr : constant Xml_Parser.Attributes_Array
+                 := Ctx.Get_Attributes (Node);
+          begin
+            for I in Attr'Range loop
+              Copylog.Log_Error ("  " & Attr(I).Name.Image & "-"
+                                      & Attr(I).Value.Image);
+            end loop;
+          end;
+          raise;
+      end;
+      Ctxc.Set_Put_Empty (Nodec, Ctx.Get_Put_Empty (Node));
+    end if;
 
     -- Copy children
     for I in Children'Range loop
@@ -651,7 +654,7 @@ procedure Xml_Checker is
                                & Ctx.Get_Name (Children(I)) & ')');
               raise;
           end;
-          Copy_Elements (Children(I), Tmp_Node);
+          Copy_Elements (Children(I), Tmp_Node, In_Elements);
         when Xml_Parser.Text =>
           begin
             Ctxc.Add_Child (Nodec, Ctx.Get_Text (Children(I)), Xml_Parser.Text,
@@ -779,10 +782,10 @@ procedure Xml_Checker is
       Copy_Prologue (Ctx.Get_Prologue);
       Nodec := Ctxc.Get_Root_Element;
       Ctxc.Set_Name (Nodec, Ctx.Get_Name (Ctx.Get_Root_Element));
-      Copy_Elements (Ctx.Get_Root_Element, Nodec);
+      Copy_Elements (Ctx.Get_Root_Element, Nodec, True);
       -- Copy Tail
       Nodec := Ctxc.Get_Tail;
-      Copy_Elements (Ctx.Get_Tail, Nodec);
+      Copy_Elements (Ctx.Get_Tail, Nodec, False);
       -- Check
       Ctxc.Check (Ok => Parse_Ok,
                   Expand => Trilean.Boo2Tri (Expand),
