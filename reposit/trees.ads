@@ -202,6 +202,8 @@ package Trees is
     -- Retrieve current position
     function Get_Position (The_Tree : Tree_Type) return Position_Access;
     -- Move to a position
+    -- May raise No_Cell if The_Tree is empty or not the same as the one
+    --  from which the position was got
     procedure Set_Position (The_Tree : in out Tree_Type;
                             Position : in Position_Access);
 
@@ -249,8 +251,6 @@ package Trees is
     -- One cell of tree and access to it
     type Cell_Rec;
     type Cell_Access is access Cell_Rec;
-    type Position_Access is new Cell_Access;
-    No_Position : constant Position_Access := null;
 
     -- The Lifo of saved position;
     package Saved_Pool_Manager is new Unlimited_Pool (Cell_Access,
@@ -284,6 +284,12 @@ package Trees is
     end record;
     overriding procedure Finalize (Tree : in out Tree_Type);
 
+    type Tree_Access is access all Tree_Type;
+    type Position_Access is record
+      Cell_Acc : Cell_Access;
+      Tree_Acc : Tree_Access;
+    end record;
+    No_Position : constant Position_Access := (others => <>);
   end Tree;
 
   -- When inserting too many children
