@@ -3,7 +3,7 @@ with Aski, Images, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "2";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -542,15 +542,27 @@ package body Xml_Parser.Generator is
   ----------------------
 
   -- Move to a node in Elements or Tail
-  procedure Move_To_Element (Ctx  : in out Ctx_Type;
-                             Node : in Node_Type;
-                             Tree : out Tree_Acc) is
+  procedure Move_To_Node_Elementail (Ctx  : in out Ctx_Type;
+                                     Node : in Node_Type;
+                                     Tree : out Tree_Acc) is
   begin
     if Node.Branch = Prologue_Br then
       raise Invalid_Node;
     end if;
     Move_To (Ctx, Node, Tree);
-  end Move_To_Element;
+  end Move_To_Node_Elementail;
+
+  -- Move to a node in Elements
+  procedure Move_To_Node_Element (Ctx  : in out Ctx_Type;
+                                  Node : in Node_Type;
+                                  Tree : out Tree_Acc) is
+  begin
+    if Node.Branch /= Elements_Br then
+      raise Invalid_Node;
+    end if;
+    Move_To (Ctx, Node, Tree);
+  end Move_To_Node_Element;
+
 
   -- Internal op
   function Internal_Kind_Of (Kind : Node_Kind_List) return Internal_Kind_List is
@@ -571,11 +583,8 @@ package body Xml_Parser.Generator is
     Cell : My_Tree_Cell;
   begin
     Check_Name (Name);
-    -- Move to node, must be an element
-    if Element.Branch /= Elements_Br then
-      raise Invalid_Node;
-    end if;
-    Move_To_Element (Ctx, Element, Tree);
+    -- Move to Element, must be in Elements
+    Move_To_Node_Element (Ctx, Element, Tree);
     -- Update name
     Tree.Read (Cell);
     Cell.Name := As.U.Tus (Name);
@@ -614,11 +623,8 @@ package body Xml_Parser.Generator is
       Check_Name (Attributes(I).Name.Image);
       Check_Attribute (Attributes(I).Name.Image);
     end loop;
-    -- Move to node, check, set tree
-    if Element.Branch /= Elements_Br then
-      raise Invalid_Node;
-    end if;
-    Move_To_Element (Ctx, Element, Tree);
+    -- Move to Element, must be in Elements
+    Move_To_Node_Element (Ctx, Element, Tree);
     -- Delete all attibutes of this element
     Del_Attributes (Ctx, Element);
     -- Set Nb_Attributes
@@ -643,11 +649,8 @@ package body Xml_Parser.Generator is
     Tree : Tree_Acc;
     Cell : My_Tree_Cell;
   begin
-    -- Move to node, must be an element
-    if Element.Branch /= Elements_Br then
-      raise Invalid_Node;
-    end if;
-    Move_To_Element (Ctx, Element, Tree);
+    -- Move to Element, must be in Elements
+    Move_To_Node_Element (Ctx, Element, Tree);
     -- Reset Nb_Attributes
     Tree.Read (Cell);
     Cell.Nb_Attributes := 0;
@@ -679,11 +682,8 @@ package body Xml_Parser.Generator is
   begin
     Check_Name (Name);
     Check_Attribute (Value);
-    -- Move to node, must be an element
-    if Element.Branch /= Elements_Br then
-      raise Invalid_Node;
-    end if;
-    Move_To_Element (Ctx, Element, Tree);
+    -- Move to Element, must be in Elements
+    Move_To_Node_Element (Ctx, Element, Tree);
     -- Increment Nb_Attributes
     Tree.Read (Cell);
     Nb_Attributes := Cell.Nb_Attributes;
@@ -719,11 +719,8 @@ package body Xml_Parser.Generator is
   begin
     Check_Name (Name);
     Check_Attribute (Value);
-    -- Move to node, must be an element
-    if Element.Branch /= Elements_Br then
-      raise Invalid_Node;
-    end if;
-    Move_To_Element (Ctx, Element, Tree);
+    -- Move to Element, must be in Elements
+    Move_To_Node_Element (Ctx, Element, Tree);
     Tree.Read (Cell);
     -- Look for attribute with this Name
     for I in 1 .. Cell.Nb_Attributes loop
@@ -756,11 +753,8 @@ package body Xml_Parser.Generator is
     use type As.U.Asu_Us;
   begin
     Check_Name (Name);
-    -- Move to node, must be an element
-    if Element.Branch /= Elements_Br then
-      raise Invalid_Node;
-    end if;
-    Move_To_Element (Ctx, Element, Tree);
+    -- Move to Element, must be in Elements
+    Move_To_Node_Element (Ctx, Element, Tree);
     Tree.Read (Cell);
     -- Look for attribute with this Name
     for I in 1 .. Cell.Nb_Attributes loop
@@ -817,8 +811,8 @@ package body Xml_Parser.Generator is
   begin
     -- Set the Cell, check name
     Set (Cell, Kind, Name);
-    -- Move to father, must be in Prologue and an element
-    Move_To_Element (Ctx, Element, Tree);
+    -- Move to Element, must be in Elements or Tail
+    Move_To_Node_Elementail (Ctx, Element, Tree);
     Tree.Read (Father);
     -- Forbid inserting Element or Text in tail
     if Element.Branch = Tail_Br
@@ -854,8 +848,8 @@ package body Xml_Parser.Generator is
   begin
     -- Set the Cell
     Set (Cell, Kind, Name);
-    -- Move to node, must be an element
-    Move_To_Element (Ctx, Node, Tree);
+    -- Move to Node, must be in Elements or Tail
+    Move_To_Node_Elementail (Ctx, Node, Tree);
     Tree.Read (Brother);
     -- Forbid inserting Element or Text in tail
     if Node.Branch = Tail_Br
@@ -884,11 +878,11 @@ package body Xml_Parser.Generator is
     or else Elt1.Branch /= Elements_Br then
       raise Invalid_Node;
     end if;
-    -- Move to node1, must be an element, save pos
-    Move_To_Element (Ctx, Elt1, Tree);
+    -- Move to node1, must be in Elements, save pos
+    Move_To_Node_Element (Ctx, Elt1, Tree);
     Tree.Save_Position;
-    -- Move to node2, must be an element
-    Move_To_Element (Ctx, Elt2, Tree);
+    -- Move to node2, must be in Elements
+    Move_To_Node_Element (Ctx, Elt2, Tree);
     -- Swap
     Tree.Swap_Saved;
   exception
@@ -906,15 +900,11 @@ package body Xml_Parser.Generator is
                   Next     : in Boolean := True) is
     Tree : Tree_Acc;
   begin
-    -- Move to Src, must be an element, save pos
-    Move_To_Element (Ctx, Src, Tree);
-    if Src.Branch /= Elements_Br
-    or else Dst.Branch /= Elements_Br then
-      raise Invalid_Node;
-    end if;
+    -- Move to Src, must be in Elements, save pos
+    Move_To_Node_Element (Ctx, Src, Tree);
     Tree.Save_Position;
-    -- Move to Dst, must be an element
-    Move_To_Element (Ctx, Dst, Tree);
+    -- Move to Dst, must be in Elements
+    Move_To_Node_Element (Ctx, Dst, Tree);
     -- Copy Src below or beside Dst
     Tree.Copy_Saved (Child, not Next);
     New_Node := (Kind => Src.Kind,
@@ -936,8 +926,8 @@ package body Xml_Parser.Generator is
     if Element.Branch /= Elements_Br then
       raise Invalid_Node;
     end if;
-    -- Move to node, must be an element
-    Move_To_Element (Ctx, Element, Tree);
+    -- Move to node, must be in Elements
+    Move_To_Node_Element (Ctx, Element, Tree);
     -- Update name
     Tree.Read (Cell);
     Cell.Put_Empty := Put_Empty;
@@ -952,11 +942,13 @@ package body Xml_Parser.Generator is
     Tree : Tree_Acc;
     Cell : My_Tree_Cell;
   begin
+    -- Check Pi info
     Set_Pi (Cell, Content);
-    -- Move to node, must be a Pi
-    Move_To_Element (Ctx, Pi, Tree);
+    -- Move to node, must be in Elements or Tail
+    Move_To_Node_Elementail (Ctx, Pi, Tree);
     -- Update Pi
     Tree.Read (Cell);
+    Set_Pi (Cell, Content);
     Tree.Replace (Cell);
   end Set_Pi;
 
@@ -968,8 +960,8 @@ package body Xml_Parser.Generator is
     Cell : My_Tree_Cell;
   begin
     Check_Text (Content);
-    -- Move to node, must be a text
-    Move_To_Element (Ctx, Text, Tree);
+    -- Move to node, must be in Elements
+    Move_To_Node_Element (Ctx, Text, Tree);
     -- Update Text
     Tree.Read (Cell);
     Cell.Name := As.U.Tus (Content);
@@ -984,8 +976,8 @@ package body Xml_Parser.Generator is
     Cell : My_Tree_Cell;
   begin
     Check_Comment (Content);
-    -- Move to node, must be a comment
-    Move_To_Element (Ctx, Comment, Tree);
+    -- Move to node, must be in Elements or Tail
+    Move_To_Node_Elementail (Ctx, Comment, Tree);
     -- Update Text
     Tree.Read (Cell);
     Cell.Name := As.U.Tus (Content);

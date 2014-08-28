@@ -212,6 +212,7 @@ package Xml_Parser.Generator is
   -- May raise Invalid_Argument if Content contains
   -- - Invalid CData sections
   -- - Invalid references
+  -- May raise Invalid_Node if in Prologue or in Tail
   procedure Set_Text (Ctx     : in out Ctx_Type;
                       Text    : in out Text_Type;
                       Content : in String);
