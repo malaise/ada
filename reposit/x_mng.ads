@@ -17,6 +17,7 @@ package X_Mng is
   subtype Font        is Natural range 0 .. 3;
   subtype Bell_Repeat is Positive range 1 .. 5;
 
+  -- Definition of a line (see X_Open_Line)
   type Line_Definition_Rec is record
     Screen_Id               : Integer;
     Row, Column             : Natural;
@@ -61,7 +62,7 @@ package X_Mng is
   ----- LINE MANAGEMENT -----
 
   -- Initialise the connection to X server on a host and define colors
-  --  this call should be done only once, and before any other call
+  -- This call shall be done only once, and before any other call
   procedure X_Initialise (Server_Name    : in String);
   procedure X_Initialise (Server_Name    : in String;
                           Colors         : in Color_Definition);
@@ -78,7 +79,6 @@ package X_Mng is
                         Line_Id         : in out Line);
 
   -- Close a line
-  -- The line_id is the token, previously given by open_line
   procedure X_Close_Line(Line_Id : in out Line);
 
   -- Suspend and resume a line
@@ -95,23 +95,20 @@ package X_Mng is
 
   -- Set the name of a line
   -- This name will be displayed by the window manager if possible
-  -- The line_id is the token, previously given by open_line
   procedure X_Set_Line_Name (Line_Id : in Line;
                              Line_Name : in String);
 
-  -- Flush all the outputs of all the lines on the host
+  -- Flush all the outputs of all the lines on the Display
   procedure X_Flush(Line_Id : in Line);
 
   -- Clear a line
-  -- The line_id is the token, previously given by open_line
-  -- The character attributes are lost.
+  -- The character attributes are lost
   -- A flush is done
   procedure X_Clear_Line(Line_Id : in Line);
 
   ----- PUT and ATTRIBUTE MANAGEMENT -----
 
   -- Set the attributes for a further put in the same window
-  -- The line_id is the token, previously given by open_line
   -- The paper and ink are color numbers (from 0 to 13)
   -- The attributes are True or False
   procedure X_Set_Attributes(Line_Id     : in Line;
@@ -121,28 +118,24 @@ package X_Mng is
                              Inverse     : in Boolean := False);
 
   -- Set the xor mode or a further put in the same window
-  -- The line_id is the token, previously given by open_line
-  -- if Xor_More is set, all further puts and drawings will be in xor
+  -- If Xor_More is set, all further puts and drawings will be in xor
   procedure X_Set_Xor_Mode(Line_Id     : in Line;
                            Xor_Mode    : in Boolean);
 
 
   -- Write a char with the attributes previously set
-  -- The line_id is the token, previously given by open_line
   -- The character is the one to be written
   procedure X_Put_Char(Line_Id : in Line;
                        Car : in Character;
                        Row, Column : in Natural);
 
   -- Write a char with the attributes previously set
-  -- The line_id is the token, previously given by open_line
   -- The character is the one to be written
   procedure X_Put_Char(Line_Id : in Line;
                        Car : in Byte;
                        Row, Column : in Natural);
 
   -- Write a char with the attributes previously set
-  -- The line_id is the token, previously given by open_line
   -- The character is the one to be written
   procedure X_Overwrite_Char(Line_Id : in Line;
                              Car : in Byte;
@@ -150,7 +143,6 @@ package X_Mng is
 
   -- Write a string with the attributes previously set
   --  at a specified position
-  -- The line_id is the token, previously given by open_line
   -- The string is the one to be written
   -- The output is flushed
   procedure X_Put_String(Line_Id     : in Line;
@@ -158,7 +150,6 @@ package X_Mng is
                          Row, Column : in Natural);
 
   -- Write a char on a line with specified characteristics
-  -- The line_id is the token, previously given by open_line
   -- The row and column are in characters, relative to the window
   -- The character is the one to be written
   -- The paper and ink are color numbers (from 0 to 13)
@@ -171,8 +162,7 @@ package X_Mng is
                                   Underline   : in Boolean := False;
                                   Inverse     : in Boolean := False);
 
-  -- Draw a rectangle (width * height) at position
-  --  with current foreground color.
+  -- Draw a rectangle (width * height) at position with current foreground color
   -- New position is updated to lower-right square of rectangle.
   procedure X_Draw_Area(Line_Id : in Line;
                         Width, Height : in Positive;
@@ -182,7 +172,6 @@ package X_Mng is
 
   -- Write a char on a line with current characteristics
   --  attributes and xor mode
-  -- The line_id is the token, previously given by open_line
   -- The current row and column are not affected
   -- The character is the one to be written
   -- The X and Y are position of the character
@@ -191,7 +180,6 @@ package X_Mng is
                               X, Y        : in Natural);
 
   -- Get graphic info of window
-  -- The line_id is the token, previously given by open_line
   -- Window size in pixels
   -- Font size in pixels
   -- Height offset from top of font
@@ -207,34 +195,29 @@ package X_Mng is
 
   -- Draw a point with current characteristics
   --  attributes and xor mode
-  -- The line_id is the token, previously given by open_line
   -- The X and Y are position of the point
   procedure X_Draw_Point(Line_Id       : in Line;
                          X, Y          : in Natural);
 
   -- Draw a line with current characteristics
   --  attributes and xor mode
-  -- The line_id is the token, previously given by open_line
   -- The X and Y are coordinates of the 2 points
   procedure X_Draw_Line(Line_Id        : in Line;
                         X1, Y1, X2, Y2 : in Natural);
 
   -- Draw a rectangle (border) with current characteristics
   --  attributes and xor mode
-  -- The line_id is the token, previously given by open_line
   -- The X and Y are coordinates of the 4 corners
   procedure X_Draw_Rectangle(Line_Id        : in Line;
                              X1, Y1, X2, Y2 : in Natural);
 
   -- Fill a rectangle with current characteristics
   --  attributes and xor mode
-  -- The line_id is the token, previously given by open_line
   -- The X and Y are coordinates of the 4 corners
   procedure X_Fill_Rectangle(Line_Id        : in Line;
                              X1, Y1, X2, Y2 : in Natural);
 
   -- Get current position of pointer (independant from events)
-  -- The line_id is the token, previously given by open_line
   -- The X and Y are coordinates of the pointer
   procedure X_Get_Current_Pointer_Position(Line_Id : in Line;
                                            X, Y    : out Integer);
@@ -276,9 +259,9 @@ package X_Mng is
                          Kind : out Event_Kind);
 
   -- Read the position on Tid in Row/Col or X/Y
-  -- The line_id must be the one given by wait_event
+  -- The line_id must be the one given to X_Wait_Event
   -- Button can be left, middle or right
-  -- row and column are the position of the "finger" on the Tid
+  -- Row and Column are the position of the "finger" on the Tid
   --  in row/col or X/Y(pixels)
   procedure X_Read_Tid(Line_Id : in Line;
                        Row_Col : in Boolean;
@@ -286,7 +269,7 @@ package X_Mng is
                        Row, Column : out Integer);
 
   -- Read a key of a sequence
-  -- The line_id must be the one given by wait_event
+  -- The line_id must be the one given to X_Wait_Event
   -- Control if control key was on
   -- Shift if Code and shift key was on
   -- Code if function key or no translation, then Key is two bytes
@@ -298,7 +281,6 @@ package X_Mng is
                        Key : out Kbd_Tab_Code);
 
   -- Enable disable cursor motion events
-  -- The line_id must be the one given by wait_event
   procedure X_Enable_Motion_Events (Line_Id : in Line;
                                     Motion_Enable : in Boolean);
 
