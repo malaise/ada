@@ -13,6 +13,9 @@ package Rnd is
   --   randomly otherwise
   procedure Randomize (Gen : in out Generator; Init : in Float := 1.0);
 
+  -- A Generator is initially not radomized
+  function Is_Randomized (Gen : in out Generator) return Boolean;
+
   generic
     type Num is (<>);
   -- Next element in sequence: Mini <= R <= Maxi
@@ -37,6 +40,7 @@ package Rnd is
 private
 
   type Generator is tagged limited record
+    Randomized : Boolean := False;
     Lock : Mutex_Manager.Simple_Mutex;
     Ugen : U_Rand.Generator;
   end record;

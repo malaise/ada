@@ -1,6 +1,6 @@
 with Ada.Finalization;
 with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
-     Unlimited_Pool, Byte_To_Unicode, Trilean;
+     Unlimited_Pool, Byte_To_Unicode, Trilean, Magic_Numbers;
 -- Parse a Xml file or string.
 -- Call callback while parsing or provide access to the tree after parsing.
 -- Limitations:
@@ -528,10 +528,11 @@ private
   type Tree_Acc is access all My_Tree.Tree_Type;
   type Branch_List is (Prologue_Br, Elements_Br, Tail_Br);
   -- Exported node type
-  Clean_Magic : constant Float := -1.0;
+  Clean_Magic : constant Magic_Numbers.Extended_Magic_Long
+              := Magic_Numbers.Magic_Long0;
   type Node_Type (Kind : Node_Kind_List := Element) is record
     -- Magic number of the context
-    Magic : Float := Clean_Magic;
+    Magic : Magic_Numbers.Extended_Magic_Long := Clean_Magic;
     -- In prologue or a real element or in tail
     Branch : Branch_List := Prologue_Br;
     -- Position in tree
@@ -763,7 +764,7 @@ private
   ------------------
   type Ctx_Type is limited new Ada.Finalization.Limited_Controlled with record
     Status  : Ctx_Status_List := Clean;
-    Magic : Float := Clean_Magic;
+    Magic : Magic_Numbers.Extended_Magic_Long := Clean_Magic;
     -- Input flow description
     Flow : Flow_Type;
     -- Parse or skip comments
@@ -810,7 +811,7 @@ private
   overriding procedure Adjust   (Node : in out Node_Update);
 
   -- For Xml_Generator
-  function Get_Magic return Float;
+  function Get_Magic return Magic_Numbers.Magic_Long;
   function Get_Tree (Ctx : Ctx_Type;
                      Node : Node_Type) return Tree_Acc;
   function Name_Ok (Name : As.U.Asu_Us;

@@ -5,22 +5,26 @@ package body Magic_Numbers is
 
   -- The generator of Lmn
   Generator : Rnd.Generator;
-  function Lmn_Random is new Rnd.Discr_Random (Lmn);
+  function Magic_Long_Random is new Rnd.Discr_Random (Magic_Long);
 
   -- At first call, initialize the random number generator
   -- Return a random magic number
-  function Generate return Mn is
+  function Generate return Magic_Number is
   begin
-    -- Reminder of a random Lmn at Mn'Last, plus one
-    return Mn(Generate rem (Lmn(Mn'Last) + 1));
+    -- Reminder of a random Long at Number'Last, + 1
+    return Magic_Number(Generate rem (Magic_Long(Magic_Number'Last)) + 1);
   end Generate;
 
-  function Generate return Lmn is
+  function Generate return Magic_Long is
+    L : Long_Long_Integer;
   begin
+    -- Randomize only once, at first call
     if not Generator.Is_Randomized then
       Generator.Randomize;
     end if;
-    return Lmn_Random (Generator);
+    L := Magic_Long_Random (Generator);
+
+    return L;
   end Generate;
 
 end Magic_Numbers;

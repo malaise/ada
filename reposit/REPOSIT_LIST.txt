@@ -425,6 +425,9 @@ long_long_limited_pool limited_pool unlimited_pool (2)::
 lower_char lower_str mixed_str upper_char upper_str (1)::
      Upper, lower, mixed string and character conversion.
 
+magic_numbers (1)::
+     Generates random magic numbers.
+
 many_strings (2)::
      Concatenate strings in string.
 

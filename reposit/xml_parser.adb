@@ -4,7 +4,7 @@ with Trace.Loggers, Rnd, Exception_Messenger, Directory, Str_Util,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "3";
+  Minor_Version : constant String := "4";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -310,9 +310,9 @@ package body Xml_Parser is
     return Logger.Debug_On;
   end Debug_On;
 
-  function Get_Magic return Float is
+  function Get_Magic return Magic_Numbers.Magic_Long is
   begin
-    return Rnd.Gen.Float_Random (0.0, Float(Integer'Last));
+    return Magic_Numbers.Generate;
   end Get_Magic;
 
   -------------

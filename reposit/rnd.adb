@@ -1,13 +1,13 @@
 with System;
-with C_Types;
+with Long_Longs, C_Types;
 package body Rnd is
 
   function C_Gettimeofday (Tv : System.Address; Tz : System.Address)
   return Integer;
   pragma Import (C, C_Gettimeofday, "gettimeofday");
 
-  -- Return integer equal or below X
-  function To_Int (X : Float) return Long_Long_Integer is
+  -- Return Long_Long equal or below X
+  function To_Long_Long (X : Float) return Long_Longs.Ll_Integer is
     Max : constant Float := Float(Long_Long_Integer'Last);
     Min : constant Float := Float(Long_Long_Integer'First);
     Int : Long_Long_Integer;
@@ -25,7 +25,7 @@ package body Rnd is
   exception
     when others =>
       raise Constraint_Error;
-  end To_Int;
+  end To_Long_Long;
 
   -- Initialisation of sequence
   procedure Randomize (Gen : in out Generator; Init : in Float := 1.0) is
@@ -50,9 +50,20 @@ package body Rnd is
 
     Dummy_Ok := Mutex_Manager.Get (Gen.Lock, -1.0);
     U_Rand.Start (Gen.Ugen, New_I => I);
+    Gen.Randomized := True;
     Mutex_Manager.Release (Gen.Lock);
   end Randomize;
 
+  -- A Generator is initially not radomized
+  function Is_Randomized (Gen : in out Generator) return Boolean is
+    Dummy_Ok : Boolean;
+  begin
+    Dummy_Ok := Mutex_Manager.Get (Gen.Lock, -1.0);
+    return Result : Boolean do
+      Result := Gen.Randomized;
+      Mutex_Manager.Release (Gen.Lock);
+    end return;
+  end Is_Randomized;
 
   -- Next element in sequence
   function Random (Gen : in out Generator;
@@ -75,10 +86,8 @@ package body Rnd is
   begin
     return
       Num'Val (
-        Integer (
-          To_Int (
-            Random (Gen, Float (Num'Pos (Mini)), Float (Num'Pos (Maxi)) + 1.0)
-          )
+        To_Long_Long (
+          Random (Gen, Float (Num'Pos (Mini)), Float (Num'Pos (Maxi)) + 1.0)
         )
       );
   end Discr_Random;
@@ -89,7 +98,7 @@ package body Rnd is
   begin
     return
       Integer (
-       To_Int (Random (Gen, Float (Mini), Float (Maxi) + 1.0) )
+       To_Long_Long (Random (Gen, Float (Mini), Float (Maxi) + 1.0) )
       );
   end Int_Random;
 
