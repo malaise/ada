@@ -9,22 +9,22 @@ package body Address_Ops is
   function To_Address is new Unchecked_Conversion (
     Readable_Address, System.Address);
 
-  function "+" (Addr : System.Address; Offset : Long_Long_Integer)
+  function "+" (Addr : System.Address; Offset : Long_Longs.Ll_Integer)
                return System.Address is
     R : constant Readable_Address := To_Readable (Addr);
   begin
     return To_Address (R + Readable_Address(Offset));
   end "+";
 
-  function "-" (Addr1, Addr2 : System.Address) return Long_Long_Integer is
+  function "-" (Addr1, Addr2 : System.Address) return Long_Longs.Ll_Integer is
     R1 : constant Readable_Address := To_Readable (Addr1);
     R2 : constant Readable_Address := To_Readable (Addr2);
     use type System.Address;
   begin
     if Addr1 >= Addr2 then
-      return Long_Long_Integer(R1 - R2);
+      return Long_Longs.Ll_Integer(R1 - R2);
     else
-      return - Long_Long_Integer(R2 - R1);
+      return - Long_Longs.Ll_Integer(R2 - R1);
     end if;
   end "-";
 
