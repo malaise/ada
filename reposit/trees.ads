@@ -7,7 +7,7 @@
 --  one father.
 -- Root has no brother and no father
 with Ada.Finalization;
-with Unlimited_Pool;
+with Unlimited_Pool, Magic_Numbers;
 package Trees is
 
   -- Common definitions for all trees
@@ -195,7 +195,7 @@ package Trees is
     -----------------------
     -- WARNING:
     -- It is up to the user to ensure the validity of the access that he may
-    --  store, versus changes of tree
+    --  store, versus changes of tree (deletion, swap...)
     -- May raise No_Cell if The_Tree is empty
     type Position_Access is private;
     No_Position : constant Position_Access;
@@ -277,6 +277,7 @@ package Trees is
     -- A tree
     type Tree_Type is limited new Ada.Finalization.Limited_Controlled
     with record
+      Magic : Magic_Numbers.Magic_Long := Magic_Numbers.Generate;
       Root : Cell_Access := null;
       Curr : Cell_Access := null;
       Save : Saved_Pool_Access := null;
@@ -284,10 +285,9 @@ package Trees is
     end record;
     overriding procedure Finalize (Tree : in out Tree_Type);
 
-    type Tree_Access is access all Tree_Type;
     type Position_Access is record
       Cell_Acc : Cell_Access;
-      Tree_Acc : Tree_Access;
+      Magic : Magic_Numbers.Extended_Magic_Long := Magic_Numbers.Magic_Long0;
     end record;
     No_Position : constant Position_Access := (others => <>);
   end Tree;

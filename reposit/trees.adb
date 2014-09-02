@@ -794,16 +794,17 @@ package body Trees is
     begin
       -- No empty tree
       Check_Callback (The_Tree);
-      return (The_Tree.Curr, The_Tree'Unrestricted_Access);
+      return (The_Tree.Curr, The_Tree.Magic);
     end Get_Position;
 
     procedure Set_Position (The_Tree : in out Tree_Type;
                             Position : in Position_Access) is
     begin
-      -- No empty tree
-      if Position.Tree_Acc /= The_Tree'Unrestricted_Access then
+      -- same tree
+      if Position.Magic /= The_Tree.Magic then
         raise No_Cell;
       end if;
+      -- No empty tree
       Check_Callback (The_Tree);
       The_Tree.Curr := Position.Cell_Acc;
     end Set_Position;
