@@ -33,19 +33,33 @@ package body Autobus is
   --  There is no such problem when connecting to a partner because we
   --  connect to the address that we have received in an Alive message.
   -- Note: This mechanism also applies to ourself, so we always see ourself
-  --  twice as a partner (one connected and one accepted). The accepted one is
-  --  passive (with no Alive message nor associated timeout and no sending on
-  --  it).
+  --  twice as a partner (one connected and one accepted). Once this connection
+  --  is established these partners not not have have an active timer.
+  --  The connected partner remains active (to send message to ourself) while
+  --  the accepted partner becomes passive (to receive messages from ourself).
   --
   -- A partner represents a connection. It can be:
   --  - Init: Either when a connection is accepted and we wait until the
-  --     the connecting sends its address, or when connecting until the
+  --     the connecting partner sends its address, or when connecting until the
   --     connection is accepted.
   --  - Active: Connection established to/from a remote partner, or to ourself
-  --  - Passive: Connection from ourslef
+  --  - Passive: Connection from ourslef accepted and first message received
   -- Init connections always have a timer (in order to give up on timeout).
   -- Active connections to remote also have a timer (in order to detect death)
   -- Active and passive connections to ourself have no timer.
+  --
+  -- The connection sequence is:
+  --  - Receive a Alive message from an unknown partner
+  --    * If its address is lower than ours, then send an Alive message and
+  --      he will connect to us.
+  --    * Else add partner as Init and connect to it (asynchronously)
+  --  - Accept a connection request. Add partner as Init (and wait for his
+  --    first message
+  --  - Receive first message on an accepted connection, set partner Active
+  --    (except if it is ourself, set it passive).
+  --  - Receive connection success. Set partner Active
+  --  When setting a partner Active or passive, disable timer if this partner is
+  --   ourself
   --
   -- Sending a message consists in sending it successively to all the active
   --  partners (so not on the passive connection from ourself).
@@ -604,22 +618,23 @@ package body Autobus is
       if Partner.Addr < Partner.Bus.Addr then
         -- Addr < own: we send a live, then the partner will connect to us
         --  (and we will accept) then it will send its address
-        Logger.Log_Debug ("Ipm: Waiting for identification of "
+        Logger.Log_Debug ("Ipm: Waiting for connection from "
                         & Partner.Addr.Image);
         Send_Ipm (True);
-        return False;
+      else
+        -- Addr >= own: add partner and start connect
+        Logger.Log_Debug ("Ipm: Connecting to new partner "
+                        & Partner.Addr.Image);
+        Partner.Timer := new Chronos.Passive_Timers.Passive_Timer;
+        Insert_Partner (Partner);
+        -- The callback can be called synchronously
+        Unused_Connected := Tcp_Util.Connect_To (
+            Socket.Tcp_Header,
+            Rem_Host, Rem_Port,
+            Tcp_Connection_Cb'Access,
+            Partner.Bus.Timeout, 0,
+            Partner.Bus.Ttl);
       end if;
-      -- Addr >= own: add partner and start connect
-      Logger.Log_Debug ("Ipm: Connecting to new partner " & Partner.Addr.Image);
-      Partner.Timer := new Chronos.Passive_Timers.Passive_Timer;
-      Insert_Partner (Partner);
-      -- The callback can be called synchronously
-      Unused_Connected := Tcp_Util.Connect_To (
-          Socket.Tcp_Header,
-          Rem_Host, Rem_Port,
-          Tcp_Connection_Cb'Access,
-          Partner.Bus.Timeout, 0,
-          Partner.Bus.Ttl);
     else
       -- Partner found
       Partners.Read (Partner, Partner_List_Mng.Current);
