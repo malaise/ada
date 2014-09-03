@@ -155,6 +155,7 @@ private
   type Bus_Rec;
   type Bus_Access is access all Bus_Rec;
   type Timer_Access is access all Chronos.Passive_Timers.Passive_Timer;
+  type Partner_State_List is (Init, Active, Passive);
   type Partner_Rec is record
     -- Address of the TCP socket "www.xxx.yyy.zzz:portnum"
     Addr : As.U.Asu_Us;
@@ -163,6 +164,8 @@ private
     Port : Socket.Port_Num;
     -- Socket
     Sock : Socket.Socket_Dscr;
+    -- State of the connection
+    State : Partner_State_List := Init;
     -- Timer of keep alive
     Timer : Timer_Access;
     -- Reference to the bus (when message received or disconnection)

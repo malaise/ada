@@ -37,8 +37,18 @@ package body Autobus is
   --  passive (with no Alive message nor associated timeout and no sending on
   --  it).
   --
-  -- Sending a message consists in sending it successively to all the partners
-  --  except the passive connection to ourself.
+  -- A partner represents a connection. It can be:
+  --  - Init: Either when a connection is accepted and we wait until the
+  --     the connecting sends its address, or when connecting until the
+  --     connection is accepted.
+  --  - Active: Connection established to/from a remote partner, or to ourself
+  --  - Passive: Connection from ourslef
+  -- Init connections always have a timer (in order to give up on timeout).
+  -- Active connections to remote also have a timer (in order to detect death)
+  -- Active and passive connections to ourself have no timer.
+  --
+  -- Sending a message consists in sending it successively to all the active
+  --  partners (so not on the passive connection from ourself).
   -- Receiving a TCP message (except the first TCP service message on each
   --  accepted connection) consists in dispatching it on all the observer,
   --  which means for each:
@@ -124,12 +134,6 @@ package body Autobus is
   begin
     return Curr.Addr = Crit.Addr;
   end Partner_Match_Addr;
-  -- By addr and running
-  function Partner_Match_Addr_Run (Curr, Crit : Partner_Rec) return Boolean is
-    use type As.U.Asu_Us;
-  begin
-    return Curr.Addr = Crit.Addr and then Curr.Timer.Running;
-  end Partner_Match_Addr_Run;
   -- By socket
   function Partner_Match_Sock (Curr, Crit : Partner_Rec) return Boolean is
     use type Socket.Socket_Dscr;
@@ -239,19 +243,6 @@ package body Autobus is
 
   end Remove_Current_Partner;
 
-  -- Insert Partner in current Bus
-  procedure Insert_Partner (Partner : in Partner_Rec) is
-    Partner_Acc : Partner_Access;
-  begin
-    -- Insert in Partners list
-    Partners.Rewind (Partner_List_Mng.Next, False);
-    Partners.Insert (Partner);
-    Partner_Acc := Partner_Access(Partners.Access_Current);
-    -- Insert a partner access in the list of partners of the bus
-    Partner_Acc.Bus.Partners.Rewind (Partner_Access_List_Mng.Next, False);
-    Partner_Acc.Bus.Partners.Insert (Partner_Acc);
-  end Insert_Partner;
-
   -- Start passive timer on current partner
   procedure Start_Partner_Timer (Bus : Bus_Access) is
     Partner_Acc : Partner_Access;
@@ -261,6 +252,22 @@ package body Autobus is
     Timeout.Delay_Seconds := Bus.Heartbeat_Max_Missed * Bus.Heartbeat_Period;
     Partner_Acc.Timer.Start (Timeout);
   end Start_Partner_Timer;
+
+  -- Insert Partner in current Bus
+  procedure Insert_Partner (Partner : in out Partner_Rec) is
+    Partner_Acc : Partner_Access;
+  begin
+    Partner.State := Init;
+    -- Insert in Partners list
+    Partners.Rewind (Partner_List_Mng.Next, False);
+    Partners.Insert (Partner);
+    Partner_Acc := Partner_Access(Partners.Access_Current);
+    -- Insert a partner access in the list of partners of the bus
+    Partner_Acc.Bus.Partners.Rewind (Partner_Access_List_Mng.Next, False);
+    Partner_Acc.Bus.Partners.Insert (Partner_Acc);
+    -- Start Timer on this partner
+    Start_Partner_Timer (Partner_Acc.Bus);
+  end Insert_Partner;
 
   -- Remove current (in current Bus list) subscriber
   --  and move to next
@@ -395,9 +402,11 @@ package body Autobus is
       --  (amoung both) that is passive: no alive timeout check and
       --  no sending of message
       Partner_Acc.Timer.Stop;
+      Partner_Acc.State := Passive;
     else
       Logger.Log_Debug ("Reception of identification from "
                       & Partner_Acc.Addr.Image);
+      Partner_Acc.State := Active;
     end if;
     return False;
   end Tcp_Reception_Cb;
@@ -448,9 +457,13 @@ package body Autobus is
     Tcp_Reception_Mng.Set_Callbacks (Dscr,
                                      Tcp_Reception_Cb'Access,
                                      Tcp_Disconnection_Cb'Access);
-    --  Create and start its timer
-    Logger.Log_Debug ("Starting timer for partner " & Partner_Acc.Addr.Image);
-    Start_Partner_Timer (Partner_Acc.Bus);
+    -- Update partner state and timer
+    Partner_Acc.State := Active;
+    if Partner_Acc.Addr = Buses.Access_Current.Addr then
+      -- This is a connection to ourself
+      Logger.Log_Debug ("Stopping timer to ourself");
+      Partner_Acc.Timer.Stop;
+    end if;
   exception
     when Socket.Soc_Conn_Lost =>
       -- Not working
@@ -489,7 +502,6 @@ package body Autobus is
     -- Insert in Bus a reference to this partner
     Insert_Partner (Partner);
     Logger.Log_Debug ("Acception of partner " & Partner.Addr.Image);
-    Start_Partner_Timer (Partner.Bus);
     -- Set reception callback
     New_Dscr.Set_Ttl (Partner.Bus.Ttl);
     Tcp_Reception_Mng.Set_Callbacks (New_Dscr,
@@ -571,20 +583,6 @@ package body Autobus is
       Partner.Bus := Bus_Access(Buses.Access_Current);
     end;
 
-    -- For message from ourself: find active partner
-    if Partner.Addr = Partner.Bus.Addr then
-      Partner_Found := Partners.Search_Match (Partner_Match_Addr_Run'Access,
-                                              Partner,
-                                    From => Partner_List_Mng.Current_Absolute);
-      if not Partner_Found then
-        Logger.Log_Debug ("Ipm: Ourself not found as active");
-        -- Go on looking for a non active connection to ourself
-      else
-        Start_Partner_Timer (Partner.Bus);
-        return False;
-      end if;
-    end if;
-
     -- Find partner by address
     Partner_Found := Partners.Search_Match (Partner_Match_Addr'Access, Partner,
                                     From => Partner_List_Mng.Current_Absolute);
@@ -625,8 +623,10 @@ package body Autobus is
     else
       -- Partner found
       Partners.Read (Partner, Partner_List_Mng.Current);
-      -- This partner is known, restart its keep alive timer
-      Start_Partner_Timer (Partner.Bus);
+      if Partner.Timer.Running then
+        -- This partner is known with a timer, restart its keep alive timer
+        Start_Partner_Timer (Partner.Bus);
+      end if;
     end if;
     return False;
   end Ipm_Reception_Cb;
@@ -838,7 +838,7 @@ package body Autobus is
       exit when Bus.Acc.Partners.Is_Empty;
       Bus.Acc.Partners.Read (Partner_Acc, Moved => Moved);
       begin
-        if Partner_Acc.Timer.Running then
+        if Partner_Acc.State = Active then
           Dummy := Tcp_Send (Partner_Acc.Sock, null, null,
                              Bus.Acc.Timeout, Msg, Message'Length);
         end if;
