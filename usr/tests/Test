@@ -4,7 +4,7 @@
 
 # Cleanup
 function clean {
-  rm -f out out? err err? exp exp? tmp tmp? nul pipe
+  rm -f out out? err err? exp exp? tmp tmp? nul pipe Afpx.ref Afpx.res Afpx.tmp
 }
 
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM

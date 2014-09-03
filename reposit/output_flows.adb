@@ -19,7 +19,7 @@ package body Output_Flows is
   function Search is new Flows_Mng.Search_Criteria (As.U.Asu_Us, Match);
   function Search (Name : String) return Boolean is
   begin
-    return Search (Flows, As.U.Tus (Name), From => Flows_Mng.Absolute);
+    return Search (Flows, As.U.Tus (Name), From => Flows_Mng.Current_Absolute);
   end Search;
 
   -- A cell is released, when there is one reference it is the list

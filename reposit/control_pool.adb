@@ -53,7 +53,7 @@ package body Control_Pool is
     -- Look for this key in pool
     Cell.Key := Key;
     if Search (Pool.Used_Mutexes, Cell,
-               From => Used_Mutex_List.Absolute) then
+               From => Used_Mutex_List.Current_Absolute) then
       -- Read cell, increment counter, store
       Pool.Used_Mutexes.Read (Cell, Used_Mutex_List.Current);
       Cell.Waiters := Cell.Waiters + 1;
@@ -98,7 +98,7 @@ package body Control_Pool is
     -- Look for this key in pool
     Cell.Key := Key;
     if not Search (Pool.Used_Mutexes, Cell,
-                   From => Used_Mutex_List.Absolute) then
+                   From => Used_Mutex_List.Current_Absolute) then
       -- Exception if not found
       raise Key_Not_Got;
     end if;

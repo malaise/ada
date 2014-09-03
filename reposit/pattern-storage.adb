@@ -68,7 +68,7 @@ package body Storage is
       Term.Rule := Rule;
       return Search_Rule (Term_List, Term,
           From => (if From_Current then Term_List_Mng.From_Current
-                   else Term_List_Mng.Absolute));
+                   else Term_List_Mng.Current_Absolute));
     end Find_Rule;
 
   begin
@@ -94,7 +94,7 @@ package body Storage is
     Term.Id := Id;
     The_Rule := Rule;
     The_End := not Search_Pattern (Term_List, Term,
-                                   From => Term_List_Mng.Absolute);
+                                   From => Term_List_Mng.Current_Absolute);
     return not The_End;
   end Pattern_Exists;
 

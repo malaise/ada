@@ -57,7 +57,8 @@ package body Proc_Family is
     end case;
 
     -- Find child in list
-    if not Search_Pid (Child_List, Child, From => Child_List_Mng.Absolute) then
+    if not Search_Pid (Child_List, Child,
+                       From => Child_List_Mng.Current_Absolute) then
       -- Skip
       return True;
     end if;

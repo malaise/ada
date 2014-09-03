@@ -246,7 +246,7 @@ package body Tcp_Util is
     -- Find record by fd
     Rec.Fd := Fd;
     Rec.Fd_Set := True;
-    Find_By_Fd (Con_List, Rec, From => Con_List_Mng.Absolute);
+    Find_By_Fd (Con_List, Rec, From => Con_List_Mng.Current_Absolute);
 
     Con_List.Read (Rec, Con_List_Mng.Current);
     Log_Connect.Log_Debug ("Tcp_Util.Connection_Fd_Cb found rec "
@@ -292,7 +292,8 @@ package body Tcp_Util is
     if Rec.Timer /= Id then
       -- No good. Locate it
       Rec.Timer := Id;
-      Go_On := Find_By_Timer (Con_List, Rec, From => Con_List_Mng.Absolute);
+      Go_On := Find_By_Timer (Con_List, Rec,
+                              From => Con_List_Mng.Current_Absolute);
       if not Go_On then
         Log_Connect.Log_Debug (
             "Tcp_Util.Connection_Timer_Cb timer rec not found");
@@ -438,7 +439,8 @@ package body Tcp_Util is
     -- Find rec
     Rec.Host := Host;
     Rec.Port := Port;
-    if not Find_By_Dest (Con_List, Rec, From => Con_List_Mng.Absolute) then
+    if not Find_By_Dest (Con_List, Rec,
+                         From => Con_List_Mng.Current_Absolute) then
       Log_Connect.Log_Debug ("Tcp_Util.Abort_Connect rec not found");
       raise No_Such;
     end if;
@@ -555,7 +557,7 @@ package body Tcp_Util is
                            & "  read " & Read'Img);
     -- Find record by fd
     Rec.Fd := Fd;
-    Find_By_Fd (Acc_List, Rec, From => Acc_List_Mng.Absolute);
+    Find_By_Fd (Acc_List, Rec, From => Acc_List_Mng.Current_Absolute);
     Acc_List.Read (Rec, Acc_List_Mng.Current);
     Log_Accept.Log_Debug ("Tcp_Util.Acception_Fd_Cb found rec "
                            & Positive'Image (Acc_List.Get_Position));
@@ -660,7 +662,8 @@ package body Tcp_Util is
     -- Find rec and read
     Rec.Protocol := Protocol;
     Rec.Port := Num;
-    if not Find_By_Port (Acc_List, Rec, From => Acc_List_Mng.Absolute) then
+    if not Find_By_Port (Acc_List, Rec,
+                         From => Acc_List_Mng.Current_Absolute) then
       Log_Accept.Log_Debug ("Tcp_Util.Abort_Accept rec not found");
       raise No_Such;
     end if;
@@ -728,7 +731,7 @@ package body Tcp_Util is
   begin
     -- Find Rec from Timer and read
     Rec.Timer := Id;
-    Find_By_Timer (Sen_List, Rec, From => Sen_List_Mng.Absolute);
+    Find_By_Timer (Sen_List, Rec, From => Sen_List_Mng.Current_Absolute);
     Sen_List.Read (Rec, Sen_List_Mng.Current);
     Log_Overflow.Log_Debug ("Tcp_Util.Timer_Cb found rec "
                     & Positive'Image (Sen_List.Get_Position));
@@ -758,7 +761,7 @@ package body Tcp_Util is
                     & "  read " & Read'Img);
     -- Find Rec from Fd and read
     Rec.Fd := Fd;
-    Find_By_Fd (Sen_List, Rec, From => Sen_List_Mng.Absolute);
+    Find_By_Fd (Sen_List, Rec, From => Sen_List_Mng.Current_Absolute);
     Sen_List.Read (Rec, Sen_List_Mng.Current);
     Log_Overflow.Log_Debug ("Tcp_Util.Sending_Cb found rec "
                     & Positive'Image (Sen_List.Get_Position));
@@ -885,7 +888,8 @@ package body Tcp_Util is
     Log_Overflow.Log_Debug ("Tcp_Util.Abort_Send_and_Close start");
     -- Find Rec from Dscr and read
     Rec.Dscr := Dscr;
-    if not Find_By_Dscr (Sen_List, Rec, From => Sen_List_Mng.Absolute) then
+    if not Find_By_Dscr (Sen_List, Rec,
+                         From => Sen_List_Mng.Current_Absolute) then
       Log_Overflow.Log_Debug ("Tcp_Util.Abort_Send_and_Close rec not found");
       raise No_Such;
     end if;
@@ -978,7 +982,8 @@ package body Tcp_Util is
       end if;
       -- Find dscr from Fd
       The_Rec.Fd := Fd;
-      if not Find_Fd (Rece_List, The_Rec, From => Rece_List_Mng.Absolute) then
+      if not Find_Fd (Rece_List, The_Rec,
+                      From => Rece_List_Mng.Current_Absolute) then
         Log_Reception.Log_Debug ("Tcp_Util.Read_Cb no Dscr for Fd " & Fd'Img);
         Event_Mng.Del_Fd_Callback (Fd, True);
         return False;
@@ -1053,7 +1058,8 @@ package body Tcp_Util is
     begin
       -- Check Dscr is known
       The_Rec.Dscr := Dscr;
-      if not Find_Dscr (Rece_List, The_Rec, From => Rece_List_Mng.Absolute) then
+      if not Find_Dscr (Rece_List,
+                        The_Rec, From => Rece_List_Mng.Current_Absolute) then
         Log_Reception.Log_Debug ("Tcp_Util.Activate_Callbacks Dscr not found");
         raise No_Such;
       end if;
@@ -1072,7 +1078,7 @@ package body Tcp_Util is
       -- Check Dscr is known
       The_Rec.Dscr := Dscr;
       if not Find_Dscr (Rece_List, The_Rec,
-                        From => Rece_List_Mng.Absolute) then
+                        From => Rece_List_Mng.Current_Absolute) then
         Log_Reception.Log_Debug ("Tcp_Util.Callbacks_Active Dscr not found");
         raise No_Such;
       end if;
@@ -1086,7 +1092,7 @@ package body Tcp_Util is
     begin
       The_Rec.Dscr := Dscr;
       if not Find_Dscr (Rece_List, The_Rec,
-                        From => Rece_List_Mng.Absolute) then
+                        From => Rece_List_Mng.Current_Absolute) then
         Log_Reception.Log_Debug ("Tcp_Util.Remove_Callbacks Dscr not found");
         raise No_Such;
       end if;
@@ -1103,7 +1109,8 @@ package body Tcp_Util is
       The_Rec : Rece_Rec;
     begin
       The_Rec.Dscr := Dscr;
-      return Find_Dscr (Rece_List, The_Rec, From => Rece_List_Mng.Absolute);
+      return Find_Dscr (Rece_List, The_Rec,
+                        From => Rece_List_Mng.Current_Absolute);
     end Callbacks_Set;
 
   end Reception;

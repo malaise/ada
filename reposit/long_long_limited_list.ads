@@ -238,11 +238,16 @@ package Long_Long_Limited_List is
                                    Cell_Acc : access Cell;
                                    Where    : in Direction := Next);
 
+  -- Searches
+  -----------
   -- Three different strategies to search:
-  -- From_Current : Search starts from current item (that may match)
-  -- Skip_Current : Search starts after/before current item
-  -- Absolute     : Search starts fron beginning/end of list
-  type Search_Kind_List is (From_Current, Skip_Current, Absolute);
+  -- From_Current    : Search starts from current item (that may match)
+  -- Skip_Current    : Search starts after/before current item
+  -- Absolute        : Search starts from beginning/end of list
+  -- Current_Absolute: Try current then absolute. Occurence must be 1 in this
+  --                   case (or Constraint_Error will be raised)
+  type Search_Kind_List is (From_Current, Skip_Current, Absolute,
+                            Current_Absolute);
 
   -- Search with criteria of any type
   -----------------------------------

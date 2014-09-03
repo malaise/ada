@@ -297,7 +297,7 @@ package body Select_File is
       Change_Dir(".", "");
       -- Search position back and move Afpx to it
       if File_Search (Dir_List, Dir_Item,
-                      From => Dir_Mng.File_List_Mng.Absolute) then
+                      From => Dir_Mng.File_List_Mng.Current_Absolute) then
         Afpx.Line_List.Move_At (Dir_List.Get_Position);
         Afpx.Update_List (Afpx.Center_Selected);
       end if;

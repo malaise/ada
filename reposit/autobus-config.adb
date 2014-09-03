@@ -275,7 +275,7 @@ package body Config is
     -- See if this bus is described
     Crit.Addr := As.U.Tus (Bus_Id (Name));
     Found := Bus_Conf_List.Search_Match (Bus_Conf_Match'Access, Crit,
-                                         From => Bus_Conf_List_Mng.Absolute);
+                                 From => Bus_Conf_List_Mng.Current_Absolute);
     Log_Cfg.Log_Debug ("Bus " & Name & " "
            & (if not Found then "not " else "") & "found for config");
 
@@ -367,7 +367,7 @@ package body Config is
     -- See if this bus is described
     Crit.Addr := As.U.Tus (Bus_Id (Name));
     Found := Bus_Conf_List.Search_Match (Bus_Conf_Match'Access, Crit,
-                                         From => Bus_Conf_List_Mng.Absolute);
+                                 From => Bus_Conf_List_Mng.Current_Absolute);
     Log_Cfg.Log_Debug ("Bus " & Name & " "
            & (if not Found then "not " else "") & "found for LAN or Alias");
 

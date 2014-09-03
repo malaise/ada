@@ -58,12 +58,14 @@ package body Autobus is
 
   -- Ipm message type
   -- 'A' or 'D' then '/' then TCP address then ":" then port num
-  --  Ex: "A/123.123.123.123:65535"
+  --  Ex: "A/345.789.123.567:90123"
   -- Message received shall not exceed 23 chars
   -- We read a message of 24 characters to check that it is shorter than 23
-  Ipm_Message_Max_Length : constant := 23 + 1;
-  subtype Ipm_Message_Str is String (1 .. Ipm_Message_Max_Length);
+  Ipm_Message_Max_Length : constant := 23;
+  subtype Ipm_Message_Str is String (1 .. Ipm_Message_Max_Length + 1);
   package Ipm_Reception_Mng is new Tcp_Util.Reception (Ipm_Message_Str);
+  -- Mini is A/3.5.7.9:1
+  Ipm_Message_Min_Length : constant := 11;
 
   -- Tcp message type
   Tcp_Message_Max_Length : constant := Message_Max_Length;
@@ -188,7 +190,7 @@ package body Autobus is
     Logger.Log_Debug ("Removing partner " & Partner_Acc.Addr.Image);
     if not Partner_Acc.Bus.Partners.Search_Match (
              Partner_Match_Acc'Access, Partner_Acc,
-             From => Partner_Access_List_Mng.Absolute) then
+             From => Partner_Access_List_Mng.Current_Absolute) then
       Log_Error ("Remove_Current_Partner", "not found", "in buses list");
       return;
     end if;
@@ -287,7 +289,7 @@ package body Autobus is
     -- Find partner by socket
     Partner.Sock := Dscr;
     if not Partners.Search_Match (Partner_Match_Sock'Access, Partner,
-                                  From => Partner_List_Mng.Absolute) then
+                          From => Partner_List_Mng.Current_Absolute) then
       Log_Error ("Tcp_Disconnection_Cb", " partner not found",
                  "in partners list");
       return;
@@ -351,7 +353,7 @@ package body Autobus is
     -- Find partner by Socket
     Partner.Sock := Dscr;
     if not Partners.Search_Match (Partner_Match_Sock'Access, Partner,
-                                  From => Partner_List_Mng.Absolute) then
+                          From => Partner_List_Mng.Current_Absolute) then
       Log_Error ("Tcp_Reception_Cb", " partner not found",
                  "in partners list");
       return False;
@@ -410,8 +412,7 @@ package body Autobus is
       -- This should not occur because the number of connection retries
       --  is infinite (in the worst case the connection is cancelled on alive
       --  timeout)
-      Log_Error ("Tcp_Connection_Cb", "failure",
-                 "shall not occur");
+      Log_Error ("Tcp_Connection_Cb", "failure", "shall not occur");
       return;
     end if;
 
@@ -420,7 +421,7 @@ package body Autobus is
     Partner.Port := Remote_Port_Num;
     -- Find partner by address
     if not Partners.Search_Match (Partner_Match_Hp'Access, Partner,
-                                  From => Partner_List_Mng.Absolute) then
+                          From => Partner_List_Mng.Current_Absolute) then
       Log_Error ("Tcp_Connection_Cb", " partner not found",
                  "in partners list");
       return;
@@ -466,7 +467,7 @@ package body Autobus is
     -- Find bus and insert partner
     Bus.Accep := Local_Dscr;
     if not Buses.Search_Match (Bus_Match_Accep'Access, Bus,
-                               From => Bus_List_Mng.Absolute) then
+                               From => Bus_List_Mng.Current_Absolute) then
       Log_Error ("Accept_Cb", "bus not found", "in buses list");
       return;
     end if;
@@ -519,10 +520,11 @@ package body Autobus is
     use type As.U.Asu_Us;
   begin
     -- Check validity of string, drop if KO
-    -- Mini is A/1.1.1.1:1
-    if Length < 11 or else Length > Ipm_Message_Max_Length - 1
+    if Length < Ipm_Message_Min_Length or else Length > Ipm_Message_Max_Length
     or else (Message(1) /= 'A' and then Message(1) /= 'D')
     or else Message(2) /= '/' then
+      Logger.Log_Debug ("Ipm_Reception_Cb received invalid IPM message: >"
+                      & Message(1 .. Length) & "<");
       return False;
     end if;
     declare
@@ -533,6 +535,10 @@ package body Autobus is
       if Rem_Host.Kind = Tcp_Util.Host_Name_Spec
       or else Rem_Port.Kind = Tcp_Util.Port_Name_Spec then
         -- Not an IP address or not a port num
+        -- Consider this as an error because the frame started all right
+        Logger.Log_Debug ("Ipm_Reception_Cb received invalid IPM message: >"
+                        & Message(1 .. Length) & "<");
+        Log_Error ("Ipm_Reception_Cb", "invalid IPM address", Address);
         return False;
       end if;
       -- Set partner address
@@ -549,7 +555,7 @@ package body Autobus is
     begin
       Crit.Admin := Dscr;
       if not Buses.Search_Match (Bus_Match_Admin'Access, Crit,
-                                 From => Bus_List_Mng.Absolute) then
+                                 From => Bus_List_Mng.Current_Absolute) then
         Log_Error ("Ipm_Reception_Cb", "bus not found", "in buses list");
         return False;
       end if;
@@ -559,7 +565,7 @@ package body Autobus is
 
     -- Find partner by address
     Partner_Found := Partners.Search_Match (Partner_Match_Addr'Access, Partner,
-                                            From => Partner_List_Mng.Absolute);
+                                    From => Partner_List_Mng.Current_Absolute);
 
     -- Handle Death
     if Message(1) = 'D' then
@@ -609,7 +615,7 @@ package body Autobus is
     -- Find Bus
     Bus.Timer := Id;
     if not Buses.Search_Match (Bus_Match_Timer'Access, Bus,
-                               From => Bus_List_Mng.Absolute) then
+                       From => Bus_List_Mng.Current_Absolute) then
       Log_Error ("Timer_Cb", "bus not found", "in buses list");
       return False;
     end if;
@@ -653,7 +659,7 @@ package body Autobus is
       Logger.Log_Debug ("Bus " & Rbus.Name.Image & " initialializing");
       -- Check that this address is not already associated to a bus
       if Buses.Search_Match (Bus_Match_Name'Access, Rbus,
-                             From => Bus_List_Mng.Absolute) then
+                             From => Bus_List_Mng.Current_Absolute) then
         Logger.Log_Debug ("Bus " & Rbus.Name.Image  & " already in use");
         raise Address_In_Use;
       end if;

@@ -713,22 +713,29 @@ package body Long_Long_Limited_List is
     Check_Cb (List);
     -- Forbid calls from application
     List.In_Cb := True;
-    -- Search from first
-    New_Pos := List.First;
-    New_Pos_First := 1;
-    -- Search until end of list or found
-    Found := False;
-    loop
-      exit when New_Pos = null;
-      if New_Pos.Value'Unrestricted_Access = Criteria then
-        -- Found
-        Found := True;
-        exit;
-      end if;
-      -- Next cell
-      New_Pos := New_Pos.Next;
-      New_Pos_First := New_Pos_First + 1;
-    end loop;
+    -- Optim: check if current is the one
+    if List.Current.Value'Unrestricted_Access = Criteria then
+      New_Pos := List.Current;
+      New_Pos_First := List.Pos_First;
+      Found := True;
+    else
+      -- Search from first
+      New_Pos := List.First;
+      New_Pos_First := 1;
+      -- Search until end of list or found
+      Found := False;
+      loop
+        exit when New_Pos = null;
+        if New_Pos.Value'Unrestricted_Access = Criteria then
+          -- Found
+          Found := True;
+          exit;
+        end if;
+        -- Next cell
+        New_Pos := New_Pos.Next;
+        New_Pos_First := New_Pos_First + 1;
+      end loop;
+    end if;
     if Found then
       -- Move to item found
       List.Current := New_Pos;
@@ -858,12 +865,27 @@ package body Long_Long_Limited_List is
     end if;
     -- Forbid calls from application
     List.In_Cb := True;
+
+    -- Try Current_Absolute
+    if From = Current_Absolute then
+      if Occurence /= 1 then
+        raise Constraint_Error;
+      end if;
+      if Match (List.Current.Value, Criteria) then
+        -- Optim worked, done
+        List.In_Cb := False;
+        return True;
+      end if;
+    end if;
+
     -- Start from
-    if From /= Absolute then
+    if From = From_Current or else From = Skip_Current then
+      -- From current (keep or skip it)
       New_Pos := List.Current;
       New_Pos_First := List.Pos_First;
       New_Pos_Last := List.Pos_Last;
     else
+      -- Absolute
       case Where is
         when Next =>
           New_Pos := List.First;
@@ -884,7 +906,7 @@ package body Long_Long_Limited_List is
             exit when not Next_Pos;
           end if;
           loop
-            Found := Match(New_Pos.Value, Criteria);
+            Found := Match (New_Pos.Value, Criteria);
             exit when Found;
             exit when not Next_Pos;
           end loop;
@@ -896,7 +918,7 @@ package body Long_Long_Limited_List is
             exit when not Prev_Pos;
           end if;
           loop
-            Found := Match(New_Pos.Value, Criteria);
+            Found := Match (New_Pos.Value, Criteria);
             exit when Found;
             exit when not Prev_Pos;
           end loop;

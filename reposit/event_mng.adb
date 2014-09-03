@@ -61,7 +61,7 @@ package body Event_Mng is
     Cb_Searched.Read := Read;
     Cb_Searched.Cb := null;
     if Cb_Search (Cb_List, Cb_Searched, Cb_Mng.Prev,
-                  From => Cb_Mng.Absolute) then
+                  From => Cb_Mng.Current_Absolute) then
       raise Fd_Cb_Error;
     end if;
 
@@ -90,7 +90,7 @@ package body Event_Mng is
     Cb_Searched.Read := Read;
     Cb_Searched.Cb := null;
     if not Cb_Search (Cb_List,  Cb_Searched, Cb_Mng.Prev,
-                      From => Cb_Mng.Absolute) then
+                      From => Cb_Mng.Current_Absolute) then
       raise Fd_Cb_Error;
     end if;
     Cb_List.Delete (Moved => Res2);

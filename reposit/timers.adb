@@ -194,7 +194,7 @@ package body Timers is
     if Delay_Spec.Clock /= null then
       Clock.Clock := Delay_Spec.Clock;
       if not Search_Clock (Clocks_List, Clock,
-                           From => Clocks_List_Mng.Absolute) then
+                           From => Clocks_List_Mng.Current_Absolute) then
         -- This clock not used so far: insert it and register
         Clock.Nb_Timers := 1;
         Clocks_List.Insert (Clock);
@@ -242,7 +242,8 @@ package body Timers is
     end if;
 
     -- Search timer
-    if not Search_Id (Timer_List, Id, From => Timer_List_Mng.Absolute) then
+    if not Search_Id (Timer_List, Id,
+                      From => Timer_List_Mng.Current_Absolute) then
       raise Invalid_Timer;
     end if;
   end Locate;
@@ -269,7 +270,7 @@ package body Timers is
     if Timer.Clock /= null then
       Clock.Clock := Timer.Clock;
       if not Search_Clock (Clocks_List, Clock,
-                           From => Clocks_List_Mng.Absolute) then
+                           From => Clocks_List_Mng.Current_Absolute) then
         -- Abnormal, clock shall be known
         Put_Debug ("Delete", "but its clock is unknown!!!");
         raise Invalid_Timer;

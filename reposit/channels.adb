@@ -212,7 +212,7 @@ package body Channels is
         -- Look for sender. Unhook Fd if not found (bug).
         S_Rec.Fd := Fd;
         if not Fd_Search (Channel_Dscr.Sends, S_Rec,
-                          From => Send_List_Mng.Absolute) then
+                          From => Send_List_Mng.Current_Absolute) then
           Event_Mng.Del_Fd_Callback (Fd, True);
           return False;
         end if;
@@ -222,7 +222,7 @@ package body Channels is
         -- Look for destination. Unhook Fd if not found (bug).
         D_Rec.Fd := Fd;
         if not Fd_Search (Channel_Dscr.Dests, D_Rec,
-                          From => Dest_List_Mng.Absolute) then
+                          From => Dest_List_Mng.Current_Absolute) then
           Event_Mng.Del_Fd_Callback (Fd, True);
           return False;
         end if;
@@ -394,7 +394,7 @@ package body Channels is
       -- Find record
       Dest.Host_Id := Remote_Host_Id;
       if not Host_Id_Search (Channel_Dscr.Dests, Dest,
-                      From => Dest_List_Mng.Absolute) then
+                      From => Dest_List_Mng.Current_Absolute) then
         -- Bug?
         Dest.Dscr.Close;
         return;
@@ -494,7 +494,7 @@ package body Channels is
       end;
 
       if Host_Id_Search (Channel_Dscr.Dests, Dest,
-                         From => Dest_List_Mng.Absolute) then
+                         From => Dest_List_Mng.Current_Absolute) then
         raise Destination_Already;
       end if;
 
@@ -568,7 +568,7 @@ package body Channels is
           raise Unknown_Destination;
       end;
       if not Host_Id_Search (Channel_Dscr.Dests, Dest,
-                             From => Dest_List_Mng.Absolute) then
+                             From => Dest_List_Mng.Current_Absolute) then
         raise Unknown_Destination;
       end if;
 
@@ -755,10 +755,10 @@ package body Channels is
       -- More probably in senders, but maybe in dests (if reply of a reply)
       S_Rec.Dscr := Dscr;
       if not Dscr_Search (Channel_Dscr.Sends, S_Rec,
-                          From => Send_List_Mng.Absolute) then
+                          From => Send_List_Mng.Current_Absolute) then
         D_Rec.Dscr := Dscr;
         if not Dscr_Search (Channel_Dscr.Dests, D_Rec,
-                            From => Dest_List_Mng.Absolute) then
+                            From => Dest_List_Mng.Current_Absolute) then
           raise Reply_Failed;
         end if;
       end if;
@@ -786,7 +786,7 @@ package body Channels is
       -- Find destination from host name
       D_Rec.Host_Name.Name := As.U.Tus (Host_Name);
       if not Host_Name_Search (Channel_Dscr.Dests, D_Rec,
-                               From => Dest_List_Mng.Absolute) then
+                               From => Dest_List_Mng.Current_Absolute) then
         raise Unknown_Destination;
       end if;
       Channel_Dscr.Dests.Read (D_Rec, Dest_List_Mng.Current);
