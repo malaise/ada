@@ -412,9 +412,8 @@ package body Autobus is
     Partner_Acc.Addr := As.U.Tus (Msg);
     if Partner_Acc.Addr = Buses.Access_Current.Addr then
       Logger.Log_Debug ("Reception of own identification");
-      -- A stopped timer identifies the unique connection to ourself
-      --  (amoung both) that is passive: no alive timeout check and
-      --  no sending of message
+      -- Stop timer on the connection from ourself and make it passive
+      --  (no sending of message)
       Partner_Acc.Timer.Stop;
       Partner_Acc.State := Passive;
     else
@@ -474,7 +473,7 @@ package body Autobus is
     -- Update partner state and timer
     Partner_Acc.State := Active;
     if Partner_Acc.Addr = Buses.Access_Current.Addr then
-      -- This is a connection to ourself
+      -- This is the connection to ourself. Active with no timer
       Logger.Log_Debug ("Stopping timer to ourself");
       Partner_Acc.Timer.Stop;
     end if;
@@ -507,7 +506,7 @@ package body Autobus is
       return;
     end if;
     -- The Addr remains empty until the partner sends it on the connection
-    --  (first message received on the conection)
+    --  (first message received on the connection)
     Partner.Host := Remote_Host_Id;
     Partner.Port := Remote_Port_Num;
     Partner.Sock := New_Dscr;
@@ -616,7 +615,7 @@ package body Autobus is
     if not Partner_Found then
       -- New (unknown yet) partner
       if Partner.Addr < Partner.Bus.Addr then
-        -- Addr < own: we send a live, then the partner will connect to us
+        -- Addr < own: we send an Alive, then the partner will connect to us
         --  (and we will accept) then it will send its address
         Logger.Log_Debug ("Ipm: Waiting for connection from "
                         & Partner.Addr.Image);
@@ -789,7 +788,7 @@ package body Autobus is
   -- Reset a Bus (make it re-usable)
   procedure Reset (Bus : in out Bus_Type) is
     Unused_Bus_Found : Boolean;
-    Moved : Boolean;
+    Dummy_Moved : Boolean;
     use type Socket.Socket_Dscr;
   begin
     Check_In_Receive;
@@ -818,7 +817,7 @@ package body Autobus is
     end loop;
 
     -- Delete current Bus from list
-    Buses.Delete (Moved => Moved);
+    Buses.Delete (Moved => Dummy_Moved);
     Bus.Acc := null;
   end Reset;
 

@@ -34,8 +34,9 @@ package Autobus is
 
   -- Tuning the Bus:
   -- A XML file allows the default tuning for all the Buses, and also a specific
-  --  tuning for each Bus.
-  -- For the default and also for each individual Bus:
+  --  tuning for each Bus. The path of this file must be set in the environment
+  --  variable AUTOBUS_CONFIG.
+  -- For the default values and also for each individual Bus:
   -- - Heartbeat_Period is the period in seconds at which each process on
   --    the Bus sends the alive message. It is used in combination with
   --    Heartbeat_Max_Missed. Default 1.
@@ -58,9 +59,9 @@ package Autobus is
   --    10.100.12.*, then use this interface. A LAN directive will apply to all
   --    the hosts on the LAN, except for those which are previously defined
   --    in an Alias.
-  -- Aliases and LANs are tested in the order of declaration. If none matches
-  --  then the bus listens to, and sends the IPM messages on the interface
-  --  associated to the local host name.
+  -- Aliases and LANs are tested in the order of declaration and the first that
+  --  matches is selected. If none matches, then the bus listens to, and sends
+  --  the IPM messages on the interface associated to the local host name.
   -- See the DTD Autobus.dtd for the format of the XML file.
 
   -- Note that the exclusion of a partner (either because it informs that it
