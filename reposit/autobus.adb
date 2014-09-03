@@ -124,6 +124,12 @@ package body Autobus is
   begin
     return Curr.Addr = Crit.Addr;
   end Partner_Match_Addr;
+  -- By addr and running
+  function Partner_Match_Addr_Run (Curr, Crit : Partner_Rec) return Boolean is
+    use type As.U.Asu_Us;
+  begin
+    return Curr.Addr = Crit.Addr and then Curr.Timer.Running;
+  end Partner_Match_Addr_Run;
   -- By socket
   function Partner_Match_Sock (Curr, Crit : Partner_Rec) return Boolean is
     use type Socket.Socket_Dscr;
@@ -407,6 +413,7 @@ package body Autobus is
     Message : Tcp_Message_Str;
     Message_Length : Natural;
     Dummy : Boolean;
+    use type As.U.Asu_Us;
   begin
     if not Connected then
       -- This should not occur because the number of connection retries
@@ -442,6 +449,7 @@ package body Autobus is
                                      Tcp_Reception_Cb'Access,
                                      Tcp_Disconnection_Cb'Access);
     --  Create and start its timer
+    Logger.Log_Debug ("Starting timer for partner " & Partner_Acc.Addr.Image);
     Start_Partner_Timer (Partner_Acc.Bus);
   exception
     when Socket.Soc_Conn_Lost =>
@@ -563,6 +571,20 @@ package body Autobus is
       Partner.Bus := Bus_Access(Buses.Access_Current);
     end;
 
+    -- For message from ourself: find active partner
+    if Partner.Addr = Partner.Bus.Addr then
+      Partner_Found := Partners.Search_Match (Partner_Match_Addr_Run'Access,
+                                              Partner,
+                                    From => Partner_List_Mng.Current_Absolute);
+      if not Partner_Found then
+        Logger.Log_Debug ("Ipm: Ourself not found as active");
+        -- Go on looking for a non active connection to ourself
+      else
+        Start_Partner_Timer (Partner.Bus);
+        return False;
+      end if;
+    end if;
+
     -- Find partner by address
     Partner_Found := Partners.Search_Match (Partner_Match_Addr'Access, Partner,
                                     From => Partner_List_Mng.Current_Absolute);
@@ -601,6 +623,8 @@ package body Autobus is
           Partner.Bus.Timeout, 0,
           Partner.Bus.Ttl);
     else
+      -- Partner found
+      Partners.Read (Partner, Partner_List_Mng.Current);
       -- This partner is known, restart its keep alive timer
       Start_Partner_Timer (Partner.Bus);
     end if;
