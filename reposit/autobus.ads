@@ -147,7 +147,7 @@ package Autobus is
   -- If initialising or resetting a Bus or a Subscriber while in Receive
   In_Receive : exception;
 
-  -- Ob any unexpected system error on any call
+  -- On any unexpected system error on any call
   System_Error : exception;
 
 private

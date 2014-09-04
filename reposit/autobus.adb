@@ -1,5 +1,6 @@
 with Ada.Unchecked_Deallocation, Ada.Exceptions;
-with Environ, Images, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng, Trace.Loggers;
+with Environ, Images, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng, Trace.Loggers,
+     Long_Longs, As.U.Utils, Str_Util.Regex, Modulus_Smaller;
 package body Autobus is
   -- Design
   ---------
@@ -10,12 +11,12 @@ package body Autobus is
   --    address) and the TCP port
   --  * send a Dead message when the Bus is reset
   --  * when discovering a new partner (in an Alive message), the smaller of
-  --    local and partner's host address connects to the higher. So if local
-  --    host address is the same or larger we connect in TCP to the address
-  --    received, otherwise we just send an Alive message and the partner will
-  --    connect to us
+  --    local and partner's host address connects to the higher (according to
+  --    a specific policy described below). So if local host address is the
+  --    same or larger, we connect in TCP to the address received, otherwise we
+  --    just send an Alive message and the partner will connect to us
   --  * when connected to a partner, send him a first TCP (service) message
-  --    with our TCP address.
+  --    with our TCP address
   --  * keep a list of partners connected in TCP. This list is updated:
   --   - when receiving an Alive message (we update the date of death to
   --     current_time + max__to_miss * period)
@@ -50,8 +51,8 @@ package body Autobus is
   --
   -- The connection sequence is:
   --  - Receive a Alive message from an unknown partner
-  --    * If its address is lower than ours, then send an Alive message and
-  --      he will connect to us.
+  --    * If its address is lower than ours (according to the policy), then send
+  --      an Alive message and he will connect to us.
   --    * Else add partner as Init and connect to it (asynchronously)
   --  - Accept a connection request. Add partner as Init (and wait for his
   --    first message
@@ -70,11 +71,25 @@ package body Autobus is
   --    to receive the echo,
   --  * check the message content versus the filter if any,
   --  * call the observer if the message passes.
+  --
+  -- Policy for sorting addressses:
+  -- The goal is to avoid that some nodes always connect and som others always
+  --  accept, which could lead to exhaust some resources
+  -- The idea is to represent addresses by numbers: pad with zeros the 4 bytes
+  --  of the IP address on 3 digits and the port num on 5 digits, max value
+  --  M=25525525525565535 can be stored in a Long_Long
+  -- Compute the modulus of the address by the number of slices (fixed to 10)
+  -- Compare the result of local and received address:
+  --  - If modulus are equal then compare the addresses
+  --  - otherwise compare the modulus A and B:
+  --    * if Max(A,B) - Min(A,B) < M / 2 then Max(A,B) > Min(A,B)
 
   --------------
   -- INTERNAL --
   --------------
-  -- Static data: List of Buses and Partners,
+  -- Static data:
+  -- True while calling Receive of the application, in order to prevent
+  --  the application to call us in Receive
   Calling_Receive : Boolean := False;
 
   -- Access to Subscriber_Rec
@@ -128,8 +143,8 @@ package body Autobus is
 
   -- Get tuning
   package Config is
-    -- Get for the bus the heartbeat period, the heartbeat max missed number
-    -- and the timeout of connection and send
+    -- Get for the bus the heartbeat period, the heartbeat max missed number,
+    -- the timeout of connection and send
     -- May raise Config_Error
     procedure Get_Tuning (Name : in String;
                           Heartbeat_Period : out Duration;
@@ -199,6 +214,55 @@ package body Autobus is
       raise In_Receive;
     end if;
   end Check_In_Receive;
+
+  -- Sort partner addresses
+  -- Numeric representation of an address 255.255.255.255:6535
+  subtype Addr_Num is Long_Longs.Ll_Natural range 0 .. 25525525525556535;
+  -- Number of slices of modulus, must be > 2
+  Slices : constant := 10;
+  -- Convert an address into num
+  function Addr_Num_Of (A : As.U.Asu_Us) return Addr_Num is
+    Strs : As.U.Utils.Asu_Array (1 .. 5);
+    Str : As.U.Asu_Us;
+    Pad : constant String (1 .. 5) := (others => '0');
+  begin
+    Strs := Str_Util.Regex.Split_Sep (A.Image, "[:.]");
+    -- Pad each byte of the address on 3 digits
+    for I in 1 .. 4 loop
+      Strs(I).Prepend (Pad(1 .. 3 - Strs(I).Length));
+      Str.Append (Strs(I));
+    end loop;
+    -- Pad the port on 5 digits
+    Strs(5).Prepend (Pad(1 .. 5 - Strs(5).Length));
+    Str.Append (Strs(5));
+    return Addr_Num'Value (Str.Image);
+  exception
+    when Constraint_Error =>
+      Log_Error ("Address Num Of", "invalid address", A.Image);
+      raise Invalid_Address;
+  end Addr_Num_Of;
+
+  -- Is Val < Crit
+  function Smaller (Val, Crit : As.U.Asu_Us) return Boolean is
+    Nv, Nc : Addr_Num;
+    Mv, Mc : Natural;
+    Sl : constant Addr_Num := Addr_Num (Slices);
+    use type As.U.Asu_Us;
+  begin
+    -- Convert to num
+    Nv := Addr_Num_Of (Val);
+    Nc := Addr_Num_Of (Crit);
+    -- Compute modulus
+    Mv := Natural (Nv mod Sl);
+    Mc := Natural (Nc mod Sl);
+    if Mv = Mc then
+      -- Compare addresses if same modulus or not enough slices
+      return Nv < Nc;
+    else
+      -- Compare modulus
+      return Modulus_Smaller (Mv, Mc, Slices);
+    end if;
+  end Smaller;
 
   -- Remove current (in Partners list) Partner
   -- Remove its ref in its Bus list and remove it from Partners list
@@ -550,7 +614,6 @@ package body Autobus is
     Partner : Partner_Rec;
     use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
     use type Socket.Host_Id;
-    use type As.U.Asu_Us;
   begin
     -- Check validity of string, drop if KO
     if Length < Ipm_Message_Min_Length or else Length > Ipm_Message_Max_Length
@@ -614,14 +677,14 @@ package body Autobus is
     -- Handle Alive
     if not Partner_Found then
       -- New (unknown yet) partner
-      if Partner.Addr < Partner.Bus.Addr then
-        -- Addr < own: we send an Alive, then the partner will connect to us
+      if Smaller (Partner.Addr, Partner.Bus.Addr) then
+        -- Partner < Own: we send an Alive, then the partner will connect to us
         --  (and we will accept) then it will send its address
         Logger.Log_Debug ("Ipm: Waiting for connection from "
                         & Partner.Addr.Image);
         Send_Ipm (True);
       else
-        -- Addr >= own: add partner and start connect
+        -- partner >= Own: add partner and start connect
         Logger.Log_Debug ("Ipm: Connecting to new partner "
                         & Partner.Addr.Image);
         Partner.Timer := new Chronos.Passive_Timers.Passive_Timer;
@@ -772,7 +835,8 @@ package body Autobus is
     Logger.Log_Debug (" with Period: "
        & Images.Dur_Image (Rbus.Heartbeat_Period, 1, False)
        & ", MaxMissed: " & Images.Integer_Image(Rbus.Heartbeat_Max_Missed)
-       & " and Timeout: " &  Images.Dur_Image (Rbus.Timeout, 1, False));
+       & ", Timeout: " &  Images.Dur_Image (Rbus.Timeout, 1, False)
+       & ", TTL: " & Images.Integer_Image(Rbus.Ttl));
 
     -- Wait a little bit (100ms) for "immediate" connections to establish
     Event_Mng.Pause (100);
