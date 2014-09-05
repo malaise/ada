@@ -485,7 +485,7 @@ protected_pool (1)::
 protected_var (1)::
      Generic protected variable (write-read).
 
-queues queues-timed (1)::
+queues queues.timed (1)::
      Fifo, Lifo, Prio, Timed queues.
 
 recurs (1)::
@@ -534,7 +534,7 @@ split_lines (1)::
 state_machine (2)::
      Generic state machine manager.
 
-str_util str_util-navigator str_util-regex (2)::
+str_util str_util.navigator str_util.regex (2)::
      Various string utilites, including regexp and navigation.
 
 sys_calls (2)::
