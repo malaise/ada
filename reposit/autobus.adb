@@ -81,15 +81,16 @@ package body Autobus is
   -- Compute the modulus of the address by the number of slices (fixed to 10)
   -- Compare the result of local and received address:
   --  - If modulus are equal then compare the addresses
-  --  - otherwise compare the modulus A and B:
-  --    * if Max(A,B) - Min(A,B) < M / 2 then Max(A,B) > Min(A,B)
+  --  - Otherwise compare the modulus Ma and Mb. Ma < Mb if:
+  --    * if Ma < Mb and then Mb - Ma < M / 2
+  --    * if Ma > Mb and then Ma - Mb > M / 2
 
   --------------
   -- INTERNAL --
   --------------
   -- Static data:
-  -- True while calling Receive of the application, in order to prevent
-  --  the application to call us in Receive
+  -- True while calling Receive or Sup callback of the application, in order to
+  --  prevent the application to call us in Receive/Callback
   Calling_Receive : Boolean := False;
 
   -- Access to Subscriber_Rec
@@ -264,6 +265,26 @@ package body Autobus is
     end if;
   end Smaller;
 
+  -- Notify sup callback on current Bus of current partner
+  procedure Notify_Sup (Partner : in Partner_Access;
+                        State   : in Trilean.Trilean) is
+    Bus : Bus_Access;
+  begin
+    Bus := Partner.Bus;
+    if Bus.Sup_Cb = null then
+      return;
+    end if;
+    Calling_Receive := True;
+    begin
+      Bus.Sup_Cb ( (Partner.Addr, State) );
+    exception
+      when Error:others =>
+        Logger.Log_Debug ("Sup callback raised exception: "
+                        & Ada.Exceptions.Exception_Name (Error));
+    end;
+    Calling_Receive := False;
+  end Notify_Sup;
+
   -- Remove current (in Partners list) Partner
   -- Remove its ref in its Bus list and remove it from Partners list
   -- Move to next in both lists
@@ -388,6 +409,7 @@ package body Autobus is
     -- Don't close socket (Tcp_Util will do it when we return)
     Logger.Log_Debug ("Disconnection of partner "
                     & Partners.Access_Current.Addr.Image);
+    Notify_Sup (Partners.Access_Current, Trilean.False);
     Remove_Current_Partner (False);
   end Tcp_Disconnection_Cb;
 
@@ -484,6 +506,7 @@ package body Autobus is
       Logger.Log_Debug ("Reception of identification from "
                       & Partner_Acc.Addr.Image);
       Partner_Acc.State := Active;
+      Notify_Sup (Partner_Acc, Trilean.True);
     end if;
     return False;
   end Tcp_Reception_Cb;
@@ -541,6 +564,9 @@ package body Autobus is
       Logger.Log_Debug ("Stopping timer to ourself");
       Partner_Acc.Timer.Stop;
     end if;
+    Notify_Sup (Partner_Acc,
+                (if Partner_Acc.Timer.Running then Trilean.True
+                 else Trilean.Other));
   exception
     when Socket.Soc_Conn_Lost =>
       -- Not working
@@ -668,6 +694,7 @@ package body Autobus is
       if Partner_Found then
         -- Death of a known partner, remove it and close connection
         Logger.Log_Debug ("Ipm: Death of partner " & Partner.Addr.Image);
+        Notify_Sup (Partners.Access_Current, Trilean.False);
         Remove_Current_Partner (True);
       end if;
       -- End of processing of a death message
@@ -735,7 +762,8 @@ package body Autobus is
 
   -- Initialise a Bus
   procedure Init (Bus : in out Bus_Type;
-                  Address : in String) is
+                  Address : in String;
+                  Sup_Cb : Sup_Callback := null) is
     Rbus : Bus_Rec;
     Port_Num : Socket.Port_Num;
     Timeout : Timers.Delay_Rec (Timers.Delay_Sec);
@@ -802,6 +830,7 @@ package body Autobus is
                        Rbus.Heartbeat_Max_Missed,
                        Rbus.Timeout,
                        Rbus.Ttl);
+    Rbus.Sup_Cb := Sup_Cb;
 
     -- Set admin callback
     Ipm_Reception_Mng.Set_Callbacks (Rbus.Admin, Ipm_Reception_Cb'Access, null);
@@ -1098,7 +1127,7 @@ package body Autobus is
   ---------------
   -- Internal: Copy a Bus_Rec, for dynamic list of Buses
   -- This is used only to store the bus in the Buses at creation
-  -- Other accesses are done by Access_Current
+  -- Other accesses (including filling the listst) are done by Access_Current
   procedure Set (To : out Bus_Rec; Val : in Bus_Rec) is
   begin
     -- Copy all fields except the lists (of Partners and Subscribers)
@@ -1106,6 +1135,13 @@ package body Autobus is
     To.Addr := Val.Addr;
     To.Admin := Val.Admin;
     To.Accep := Val.Accep;
+    To.Timer := Val.Timer;
+    To.Host_If := Val.Host_If;
+    To.Sup_Cb := Val.Sup_Cb;
+    To.Heartbeat_Period := Val.Heartbeat_Period;
+    To.Heartbeat_Max_Missed := Val.Heartbeat_Max_Missed;
+    To.Timeout := Val.Timeout;
+    To.Ttl := Val.Ttl;
     To.Timer := Val.Timer;
     -- Lists must be empty because this is Bus creation
     if not Val.Partners.Is_Empty or else not Val.Subscribers.Is_Empty then

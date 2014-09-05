@@ -11,13 +11,15 @@
 --   Reply is the remaining text in Mixed_Str
 --  * Exit after sending 3 messages
 with Basic_Proc, Event_Mng, Str_Util, Mixed_Str, As.U, Async_Stdin,
-     Argument, Argument_Parser;
+     Argument, Argument_Parser, Trilean;
 with Autobus;
 procedure T_Autobus is
 
   Default_Address : constant String := "234.7.6.5:21021";
+  Bus_Address : As.U.Asu_Us;
 
   procedure Plo (Str : in String) renames Basic_Proc.Put_Line_Output;
+  procedure Ple (Str : in String) renames Basic_Proc.Put_Line_Error;
 
   -- Arguments
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -43,7 +45,7 @@ procedure T_Autobus is
 
   procedure Error (Msg : in String) is
   begin
-    Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
+    Ple ("ERROR: " & Msg & ".");
     Basic_Proc.Set_Error_Exit_Code;
   end Error;
 
@@ -57,6 +59,16 @@ procedure T_Autobus is
   begin
     Sig := True;
   end Signal_Cb;
+
+  -- Supervision callback
+  procedure Sup_Cb (Report : in Autobus.Sup_Report) is
+    use type Trilean.Trilean;
+  begin
+    Ple ((case Report.State is
+            when Trilean.True  => "Insertion of: ",
+            when Trilean.False => "Death of: ",
+            when Trilean.Other => "Own address: ") & Report.Addr.Image);
+  end Sup_Cb;
 
   Stimulus : As.U.Asu_Us;
 
@@ -124,7 +136,6 @@ procedure T_Autobus is
     end if;
   end Async_Cb;
 
-
 begin
 
   -- Parse arguments
@@ -146,30 +157,37 @@ begin
     return;
   end if;
 
-  -- Mode required
+  -- One mode required
   if not Key_Dscr.Is_Set (2) and then not Key_Dscr.Is_Set (3) then
     Error ("Missing mode");
+    Usage;
+    return;
+  elsif Key_Dscr.Is_Set (2) and then Key_Dscr.Is_Set (3) then
+    Error ("Too many modes");
     Usage;
     return;
   end if;
 
   -- No message in manual mode
-  if  Key_Dscr.Is_Set (3)
+  if Key_Dscr.Is_Set (3)
   and then Key_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 0 then
     Error ("No automatic message allowed in manual mode");
     Usage;
     return;
   end if;
 
-  -- Init bus
+  -- Init bus with address provided or default
+  --  with supervision callback in manual
   if Key_Dscr.Is_Set (4) then
     if Key_Dscr.Get_Option (4, 1) = "" then
       Error ("Missing bus address");
     end if;
-    Bus.Init (Key_Dscr.Get_Option (4, 1));
+    Bus_Address := As.U.Tus (Key_Dscr.Get_Option (4, 1));
   else
-    Bus.Init (Default_Address);
+    Bus_Address := As.U.Tus (Default_Address);
   end if;
+  Bus.Init (Bus_Address.Image,
+            (if Key_Dscr.Is_Set (3) then Sup_Cb'Unrestricted_Access else null));
 
   if Key_Dscr.Is_Set (2) then
     -- Automatic mode

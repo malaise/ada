@@ -1,8 +1,7 @@
 -- Simple API for reliable message passing
 with Ada.Finalization;
-with Socket, Regular_Expressions, As.U,
-     Dynamic_List, Limited_List,
-     Timers, Chronos.Passive_Timers;
+with Socket, Regular_Expressions, As.U, Dynamic_List, Limited_List,
+     Timers, Chronos.Passive_Timers, Trilean;
 package Autobus is
 
   -- Concept
@@ -76,6 +75,15 @@ package Autobus is
   type Bus_Type is tagged limited private;
   type Bus_Access_Type is access all Bus_Type;
 
+  -- Supervision callback on the Bus
+  -- Report the insertion of a remote partner (State=True), the death of a
+  --  remote (State=False) and our own address (State=Other)
+  type Sup_Report is record
+    Addr  : As.U.Asu_Us;
+    State : Trilean.Trilean;
+  end record;
+  type Sup_Callback is access procedure (Report : in Sup_Report);
+
   -- Initialise a Bus, may raise:
   -- On incorrect format (not <lan>:<port>, invalid LAN or port)
   Invalid_Address : exception;
@@ -87,7 +95,8 @@ package Autobus is
   -- See Autobus.dtd for the format of this file
   Config_Error : exception;
   procedure Init (Bus : in out Bus_Type;
-                  Address : in String);
+                  Address : in String;
+                  Sup_Cb : Sup_Callback := null);
 
   -- Is a Bus initialised
   function Is_Init (Bus : Bus_Type) return Boolean;
@@ -197,6 +206,8 @@ private
   package Subscriber_List_Mng renames Subscriber_Dyn_List_Mng.Dyn_List;
 
   -- List of Buses
+  -- Don't forget to update Set when adding fields in Bus_Rec
+  -----------------------------------------------------------
   type Bus_Rec is limited new Ada.Finalization.Limited_Controlled with record
     -- Address of the IPM socket "www.xxx.yyy.zzz:portnum", for reporting
     Name : As.U.Asu_Us;
@@ -208,6 +219,8 @@ private
     Accep : Socket.Socket_Dscr := Socket.No_Socket;
     -- Host Id denoting the interface (for TCP and IPM)
     Host_If : Socket.Host_Id;
+    -- Supervision callback
+    Sup_Cb : Sup_Callback;
     -- Heartbeat period and Max missed number, Timeout on connect and send, TTL
     Heartbeat_Period : Duration := 1.0;
     Heartbeat_Max_Missed : Positive := 3;
