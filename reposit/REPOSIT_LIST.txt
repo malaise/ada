@@ -431,6 +431,9 @@ magic_numbers (1)::
 many_strings (2)::
      Concatenate strings in string.
 
+modulus_smaller.adb (1)::
+     Compute which number is smaller modulo a max.
+
 multiget (2)::
      Allow getting/ungetting items from an input flow.
 
