@@ -12,6 +12,8 @@ package Autobus is
   -- How to use:
   -- * First, create and initialise a Bus (provide an IPM address or LAN name,
   --    and a port num or name).
+  --   If you are Active on the bus, then your presence will be checked
+  --    periodically by the other partners.
   --   Then you can send messages (strings) on the Bus.
   --   You can tune this Bus in the XML file indicated in the ENV variable
   --    AUTOBUS_CONFIG (see below).
@@ -48,6 +50,8 @@ package Autobus is
   --    each timeout there is a new attempt... likely until the partner is
   --    finally discarded because of alive timeout.
   -- - TTL for both IPM and TCP exchanges. Default 5.
+  -- - Passive_Factor for the number of Heartbeat after which passive partners
+  --    send an alive message. Default 10.
   -- For each Bus, two ways to set a specific network interface for IPM and TCP:
   -- - Alias defines the IP address of the interface to be used by a given host.
   --    Ex: Name="telemaque" Address="192.168.0.5" means: if your local host
@@ -96,7 +100,8 @@ package Autobus is
   Config_Error : exception;
   procedure Init (Bus : in out Bus_Type;
                   Address : in String;
-                  Sup_Cb : Sup_Callback := null);
+                  Active : in Boolean := True;
+                  Sup_Cb : in Sup_Callback := null);
 
   -- Is a Bus initialised
   function Is_Init (Bus : Bus_Type) return Boolean;
@@ -174,6 +179,8 @@ private
     Port : Socket.Port_Num;
     -- Socket
     Sock : Socket.Socket_Dscr;
+    -- Is it active on the bus
+    Active : Boolean;
     -- State of the connection
     State : Partner_State_List := Init;
     -- Timer of keep alive
@@ -221,17 +228,23 @@ private
     Host_If : Socket.Host_Id;
     -- Supervision callback
     Sup_Cb : Sup_Callback;
-    -- Heartbeat period and Max missed number, Timeout on connect and send, TTL
+    -- Are we active on this bus
+    Active : Boolean;
+    -- Heartbeat period and Max missed number, Timeout on connect and send,
+    --  TTL and passive_Factor
     Heartbeat_Period : Duration := 1.0;
     Heartbeat_Max_Missed : Positive := 3;
     Timeout : Duration := 0.5;
     Ttl : Socket.Ttl_Range := 5;
+    Passive_Factor : Positive := 10;
     -- List of access to partners (TCP connections)
     Partners : Partner_Access_List_Mng.List_Type;
     -- List of subscribers
     Subscribers : Subscriber_List_Mng.List_Type;
-    -- Timer
-    Timer : Timers.Timer_Id;
+    -- Timer for heartbeat sending and checking
+    Heartbeat_Timer : Timers.Timer_Id;
+    -- Passive timer for heartbeat sending when pasive
+    Passive_Timer : Timer_Access;
   end record;
   procedure Set (To : out Bus_Rec; Val : in Bus_Rec);
   package Bus_List_Mng is new Limited_List (Bus_Rec, Set);

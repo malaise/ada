@@ -15,6 +15,7 @@ package body Config is
   Default_Heartbeat_Max_Missed : constant := 3;
   Default_Timeout : constant Duration := 0.5;
   Default_Ttl : constant Socket.Ttl_Range := 5;
+  Default_Passive_Factor : constant Positive := 10;
 
   Log_Cfg : Trace.Loggers.Logger;
 
@@ -75,6 +76,7 @@ package body Config is
   Heartbeat_Max_Missed_Name : constant String := "Heartbeat_Max_Missed";
   Timeout_Name : constant String := "Timeout";
   Ttl_Name : constant String := "TTL";
+  Passive_Factor_Name : constant String := "Passive_Factor";
   function Check_Attributes (Node : Xml_Parser.Element_Type) return Boolean is
     Dummy_Dur : Duration;
   begin
@@ -82,6 +84,7 @@ package body Config is
     Dummy_Dur := Get_Attribute (Node, Heartbeat_Max_Missed_Name, False);
     Dummy_Dur := Get_Attribute (Node, Timeout_Name, True);
     Dummy_Dur := Get_Attribute (Node, Ttl_Name, False);
+    Dummy_Dur := Get_Attribute (Node, Passive_Factor_Name, False);
     return True;
   exception
     when Config_Error =>
@@ -262,7 +265,8 @@ package body Config is
                         Heartbeat_Period : out Duration;
                         Heartbeat_Max_Missed : out Positive;
                         Timeout : out Duration;
-                        Ttl : out Socket.Ttl_Range) is
+                        Ttl : out Socket.Ttl_Range;
+                        Passive_Factor : out Positive) is
     Root : Xml_Parser.Element_Type;
     Crit : Bus_Conf_Rec;
     Found : Boolean;
@@ -346,6 +350,21 @@ package body Config is
     end if;
     -- Default or value
     Ttl := (if Dur = 0.0 then Default_Ttl else Positive (Dur));
+
+    -- Get Passive_Factor
+    Dur := 0.0;
+    if Found then
+      -- In Conf?
+      Dur := Get_Attribute (Bus_Conf_List.Access_Current.Bus,
+                            Passive_Factor_Name, False);
+    end if;
+    if Dur = 0.0 then
+      -- In Root?
+      Dur := Get_Attribute (Root, Passive_Factor_Name, False);
+    end if;
+    -- Default or value
+    Passive_Factor := (if Dur = 0.0 then Default_Passive_Factor
+                       else Positive (Dur));
   end Get_Tuning;
 
   -- Get Host_Id corerspondig to the address that is attribute of a node

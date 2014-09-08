@@ -25,8 +25,9 @@ procedure T_Autobus is
   Keys : constant Argument_Parser.The_Keys_Type := (
    1 => (False, 'h', As.U.Tus ("help"), False),
    2 => (False, 'a', As.U.Tus ("auto"), False),
-   3 => (False, 'm', As.U.Tus ("manual"), False),
-   4 => (True, 'b', As.U.Tus ("bus"), False, True, As.U.Tus ("bus_address")));
+   3 => (False, 'M', As.U.Tus ("Manual"), False),
+   4 => (False, 'm', As.U.Tus ("manual"), False),
+   5 => (True, 'b', As.U.Tus ("bus"), False, True, As.U.Tus ("bus_address")));
  Key_Dscr : Argument_Parser.Parsed_Dscr;
 
   procedure Usage is
@@ -158,18 +159,21 @@ begin
   end if;
 
   -- One mode required
-  if not Key_Dscr.Is_Set (2) and then not Key_Dscr.Is_Set (3) then
+  if not Key_Dscr.Is_Set (2) and then not Key_Dscr.Is_Set (3)
+  and then not Key_Dscr.Is_Set (4) then
     Error ("Missing mode");
     Usage;
     return;
-  elsif Key_Dscr.Is_Set (2) and then Key_Dscr.Is_Set (3) then
+  elsif (Key_Dscr.Is_Set (2) and then Key_Dscr.Is_Set (3))
+  or else (Key_Dscr.Is_Set (2) and then Key_Dscr.Is_Set (4))
+  or else (Key_Dscr.Is_Set (3) and then Key_Dscr.Is_Set (4)) then
     Error ("Too many modes");
     Usage;
     return;
   end if;
 
   -- No message in manual mode
-  if Key_Dscr.Is_Set (3)
+  if (Key_Dscr.Is_Set (3) or else Key_Dscr.Is_Set (4))
   and then Key_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 0 then
     Error ("No automatic message allowed in manual mode");
     Usage;
@@ -178,16 +182,19 @@ begin
 
   -- Init bus with address provided or default
   --  with supervision callback in manual
-  if Key_Dscr.Is_Set (4) then
-    if Key_Dscr.Get_Option (4, 1) = "" then
+  if Key_Dscr.Is_Set (5) then
+    if Key_Dscr.Get_Option (5, 1) = "" then
       Error ("Missing bus address");
     end if;
-    Bus_Address := As.U.Tus (Key_Dscr.Get_Option (4, 1));
+    Bus_Address := As.U.Tus (Key_Dscr.Get_Option (5, 1));
   else
     Bus_Address := As.U.Tus (Default_Address);
   end if;
+  -- Init Bus, Active if M or a (not if m), set sup Cb if manual
   Bus.Init (Bus_Address.Image,
-            (if Key_Dscr.Is_Set (3) then Sup_Cb'Unrestricted_Access else null));
+            not Key_Dscr.Is_Set (4),
+            (if not Key_Dscr.Is_Set (2) then Sup_Cb'Unrestricted_Access
+             else null));
 
   if Key_Dscr.Is_Set (2) then
     -- Automatic mode

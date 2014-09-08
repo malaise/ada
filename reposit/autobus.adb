@@ -18,12 +18,13 @@ package body Autobus is
   --  * when connected to a partner, send him a first TCP (service) message
   --    with our TCP address
   --  * keep a list of partners connected in TCP. This list is updated:
-  --   - when receiving an Alive message (we update the date of death to
-  --     current_time + max__to_miss * period)
+  --   - when receiving an Alive message we update the date of death (to
+  --     current_time + max__to_miss * period) of active partners
   --   - when receiving a Dead message (we disconnect and remove partner)
-  --   - periodically for detecting silent death of partners (date of death
-  --     reached) and removing them
+  --   - periodically for detecting silent death of active partners (date of
+  --     death reached) and removing them
   --   - when the sending of a message to it fails on timeout.
+  --   - when a partner disconnects from us
   --
   -- Note: The remote host id that we get when accepting a partner may not be
   --  the local host that it sees itself (and sends in the Alive message),
@@ -97,7 +98,7 @@ package body Autobus is
   type Subscriber_Access is access all Subscriber_Rec;
 
   -- Ipm message type
-  -- 'A' or 'D' then '/' then TCP address then ":" then port num
+  -- 'A' or 'P' or 'D' then '/' then TCP address then ":" then port num
   --  Ex: "A/345.789.123.567:90123"
   -- Message received shall not exceed 23 chars
   -- We read a message of 24 characters to check that it is shorter than 23
@@ -105,7 +106,7 @@ package body Autobus is
   subtype Ipm_Message_Str is String (1 .. Ipm_Message_Max_Length + 1);
   package Ipm_Reception_Mng is new Tcp_Util.Reception (Ipm_Message_Str);
   -- Mini is A/3.5.7.9:1
-  Ipm_Message_Min_Length : constant := 11;
+  Message_Min_Length : constant := 11;
 
   -- Tcp message type
   Tcp_Message_Max_Length : constant := Message_Max_Length;
@@ -151,7 +152,8 @@ package body Autobus is
                           Heartbeat_Period : out Duration;
                           Heartbeat_Max_Missed : out Positive;
                           Timeout : out Duration;
-                          Ttl : out Socket.Ttl_Range);
+                          Ttl : out Socket.Ttl_Range;
+                          Passive_Factor : out Positive);
     -- Return the Host_Id denoting the interface to use
     function Get_Interface (Name : String) return Socket.Host_Id;
   end Config;
@@ -199,7 +201,7 @@ package body Autobus is
   function Bus_Match_Timer (Curr, Crit : Bus_Rec) return Boolean is
     use type Timers.Timer_Id;
   begin
-    return Curr.Timer = Crit.Timer;
+    return Curr.Heartbeat_Timer = Crit.Heartbeat_Timer;
   end Bus_Match_Timer;
   -- By Address
   function Bus_Match_Name (Curr, Crit : Bus_Rec) return Boolean is
@@ -413,7 +415,7 @@ package body Autobus is
     Remove_Current_Partner (False);
   end Tcp_Disconnection_Cb;
 
-  -- Remove partners that are not alive (alive timeout expired)
+  -- Remove active partners that are not alive (alive timeout expired)
   --  or remove ALL partners. Of current Bus.
   procedure Remove_Partners (Remove_All : in Boolean) is
     Bus_Acc : Bus_Access;
@@ -430,7 +432,8 @@ package body Autobus is
       if Remove_All then
         Remove := True;
       else
-        if Partner_Acc.Timer.Running and then Partner_Acc.Timer.Has_Expired then
+        if Partner_Acc.Active and then Partner_Acc.Timer.Running
+        and then Partner_Acc.Timer.Has_Expired then
           -- This partner is not alive (alive timeout has expired)
           Logger.Log_Debug ("Alive timeout of partner "
                           & Partner_Acc.Addr.Image);
@@ -459,6 +462,7 @@ package body Autobus is
                              Message : Tcp_Message_Str;
                              Length  : Natural) return Boolean is
     Msg : constant String := Message (1 .. Length);
+    Addr : As.U.Asu_Us;
     Partner : Partner_Rec;
     Partner_Acc : Partner_Access;
     use type As.U.Asu_Us;
@@ -483,11 +487,18 @@ package body Autobus is
 
     -- The partner (that has just connected to us) sends us its accept address
     --  (the one in its live message)
+    if Length < Message_Min_Length or else Length > Ipm_Message_Max_Length
+    or else (Msg(1) /= 'A' and then Msg(1) /= 'P') or else Msg(2) /= '/' then
+      Log_Error ("Tcp_Reception_Cb", "invalid identification header",
+                 Msg & " from " & Partner_Acc.Addr.Image);
+    end if;
+    Addr := As.U.Tus (Msg(3 .. Length));
+
     declare
       Rem_Host : Tcp_Util.Remote_Host;
       Rem_Port : Tcp_Util.Remote_Port;
     begin
-      Ip_Addr.Parse (Msg, Rem_Host, Rem_Port);
+      Ip_Addr.Parse (Addr.Image, Rem_Host, Rem_Port);
     exception
       when Ip_Addr.Parse_Error =>
         Log_Error ("Tcp_Reception_Cb", "invalid identification",
@@ -495,7 +506,7 @@ package body Autobus is
         Remove_Current_Partner (True);
         return False;
     end;
-    Partner_Acc.Addr := As.U.Tus (Msg);
+    Partner_Acc.Addr := As.U.Tus (Addr.Image);
     if Partner_Acc.Addr = Buses.Access_Current.Addr then
       Logger.Log_Debug ("Reception of own identification");
       -- Stop timer on the connection from ourself and make it passive
@@ -505,6 +516,11 @@ package body Autobus is
     else
       Logger.Log_Debug ("Reception of identification from "
                       & Partner_Acc.Addr.Image);
+Logger.Log_Debug (Msg(1 .. Length));
+      Partner_Acc.Active := Msg(1) = 'A';
+      if not Partner_Acc.Active then
+        Partner_Acc.Timer.Stop;
+      end if;
       Partner_Acc.State := Active;
       Notify_Sup (Partner_Acc, Trilean.True);
     end if;
@@ -548,8 +564,9 @@ package body Autobus is
     -- Set TTL and send identification message: our TCP address
     Partner_Acc.Sock := Dscr;
     Partner_Acc.Sock.Set_Ttl (Partner_Acc.Bus.Ttl);
-    Message_Length := Partner_Acc.Bus.Addr.Length;
-    Message(1 .. Message_Length) := Partner_Acc.Bus.Addr.Image;
+    Message_Length := Partner_Acc.Bus.Addr.Length + 2;
+    Message(1 .. Message_Length) := (if Partner_Acc.Bus.Active then 'A' else 'P')
+                                    & "/" & Partner_Acc.Bus.Addr.Image;
     Dummy := Tcp_Send (Partner_Acc.Sock, null, null, Partner_Acc.Bus.Timeout,
                        Message, Message_Length);
 
@@ -616,15 +633,18 @@ package body Autobus is
   -- Send Alive message of current Bus
   procedure Ipm_Send is new Socket.Send (Ipm_Message_Str,
                                          Ipm_Message_Max_Length - 1);
-  procedure Send_Ipm (Alive : in Boolean) is
+  procedure Send_Ipm (Active : in Trilean.Trilean) is
     Message_Len : Natural;
     Message : Ipm_Message_Str;
     Bus_Acc : Bus_Access;
   begin
     Bus_Acc := Bus_Access(Buses.Access_Current);
     Message_Len := Bus_Acc.Addr.Length + 2;
-    Message(1 .. Message_Len) := (if Alive then "A/" else "D/")
-                               & Bus_Acc.Addr.Image;
+    Message(1 .. Message_Len) := (case Active is
+                                    when Trilean.True  => "A",
+                                    when Trilean.False => "P",
+                                    when Trilean.Other => "D")
+                               & "/" & Bus_Acc.Addr.Image;
     Ipm_Send (Bus_Acc.Admin, Message, Message_Len);
   end Send_Ipm;
 
@@ -642,8 +662,9 @@ package body Autobus is
     use type Socket.Host_Id;
   begin
     -- Check validity of string, drop if KO
-    if Length < Ipm_Message_Min_Length or else Length > Ipm_Message_Max_Length
-    or else (Message(1) /= 'A' and then Message(1) /= 'D')
+    if Length < Message_Min_Length or else Length > Ipm_Message_Max_Length
+    or else (Message(1) /= 'A' and then Message(1) /= 'P'
+             and then Message(1) /= 'D')
     or else Message(2) /= '/' then
       Logger.Log_Debug ("Ipm_Reception_Cb received invalid IPM message: >"
                       & Message(1 .. Length) & "<");
@@ -709,11 +730,12 @@ package body Autobus is
         --  (and we will accept) then it will send its address
         Logger.Log_Debug ("Ipm: Waiting for connection from "
                         & Partner.Addr.Image);
-        Send_Ipm (True);
+        Send_Ipm (Trilean.Boo2Tri (Partner.Bus.Active));
       else
         -- partner >= Own: add partner and start connect
         Logger.Log_Debug ("Ipm: Connecting to new partner "
                         & Partner.Addr.Image);
+        Partner.Active := Message(1) = 'A';
         Partner.Timer := new Chronos.Passive_Timers.Passive_Timer;
         Insert_Partner (Partner);
         -- The callback can be called synchronously
@@ -739,9 +761,10 @@ package body Autobus is
   function Timer_Cb (Id : in Timers.Timer_Id;
                      Unused_Data : in Timers.Timer_Data) return Boolean is
     Bus : Bus_Rec;
+    Bus_Acc : Bus_Access;
   begin
     -- Find Bus
-    Bus.Timer := Id;
+    Bus.Heartbeat_Timer := Id;
     if not Buses.Search_Match (Bus_Match_Timer'Access, Bus,
                        From => Bus_List_Mng.Current_Absolute) then
       Log_Error ("Timer_Cb", "bus not found", "in buses list");
@@ -749,7 +772,10 @@ package body Autobus is
     end if;
 
     -- Send Alive message
-    Send_Ipm (True);
+    Bus_Acc := Buses.Access_Current;
+    if Bus_Acc.Active or else Bus_Acc.Passive_Timer.Has_Expired then
+      Send_Ipm (Trilean.Boo2Tri (Bus_Acc.Active));
+    end if;
 
     -- Check partners keep alive timers and remove dead ones
     Remove_Partners (False);
@@ -763,7 +789,8 @@ package body Autobus is
   -- Initialise a Bus
   procedure Init (Bus : in out Bus_Type;
                   Address : in String;
-                  Sup_Cb : Sup_Callback := null) is
+                  Active : in Boolean := True;
+                  Sup_Cb : in  Sup_Callback := null) is
     Rbus : Bus_Rec;
     Port_Num : Socket.Port_Num;
     Timeout : Timers.Delay_Rec (Timers.Delay_Sec);
@@ -829,7 +856,9 @@ package body Autobus is
                        Rbus.Heartbeat_Period,
                        Rbus.Heartbeat_Max_Missed,
                        Rbus.Timeout,
-                       Rbus.Ttl);
+                       Rbus.Ttl,
+                       Rbus.Passive_Factor);
+    Rbus.Active := Active;
     Rbus.Sup_Cb := Sup_Cb;
 
     -- Set admin callback
@@ -850,22 +879,28 @@ package body Autobus is
     Rbus.Admin.Set_Ttl (Rbus.Ttl);
     Rbus.Accep.Set_Ttl (Rbus.Ttl);
 
-    -- Arm Bus related active timer
+    -- Arm Bus related active timer and create passive timer
     Timeout.Delay_Seconds := 0.0;
     Timeout.Period := Rbus.Heartbeat_Period;
-    Rbus.Timer.Create (Timeout, Timer_Cb'Access);
+    Rbus.Heartbeat_Timer.Create (Timeout, Timer_Cb'Access);
+    Rbus.Passive_Timer := new Chronos.Passive_Timers.Passive_Timer;
+    Timeout.Period := Rbus.Heartbeat_Period * Rbus.Passive_Factor;
+    Rbus.Passive_Timer.Start (Timeout);
 
     -- Done: Insert in list, return access
     Buses.Rewind (Bus_List_Mng.Next, False);
     Buses.Insert (Rbus);
     Bus.Acc := Buses.Access_Current;
     Logger.Log_Debug ("Bus " & Rbus.Name.Image
-                    & " created at " & Rbus.Addr.Image);
+                    & " created "
+                    & (if Rbus.Active then "Active" else "Passive")
+                    & " at " & Rbus.Addr.Image);
     Logger.Log_Debug (" with Period: "
        & Images.Dur_Image (Rbus.Heartbeat_Period, 1, False)
        & ", MaxMissed: " & Images.Integer_Image(Rbus.Heartbeat_Max_Missed)
        & ", Timeout: " &  Images.Dur_Image (Rbus.Timeout, 1, False)
-       & ", TTL: " & Images.Integer_Image(Rbus.Ttl));
+       & ", TTL: " & Images.Integer_Image(Rbus.Ttl)
+       & ", PassiveFactor " & Images.Integer_Image(Rbus.Passive_Factor));
 
     -- Wait a little bit (100ms) for "immediate" connections to establish
     Event_Mng.Pause (100);
@@ -893,11 +928,15 @@ package body Autobus is
     Logger.Log_Debug ("Bus.Reset " & Bus.Acc.Name.Image);
 
     -- Send Death info
-    Send_Ipm (False);
+    Send_Ipm (Trilean.Other);
 
     -- Close resources
     Ipm_Reception_Mng.Remove_Callbacks (Bus.Acc.Admin);
     Tcp_Util.Abort_Accept (Socket.Tcp_Header, Bus.Acc.Accep.Get_Linked_To);
+    if Bus.Acc.Passive_Timer.Running then
+      Bus.Acc.Passive_Timer.Stop;
+    end if;
+    Deallocate (Bus.Acc.Passive_Timer);
 
     -- Remove all partners
     Remove_Partners (True);
@@ -1135,14 +1174,16 @@ package body Autobus is
     To.Addr := Val.Addr;
     To.Admin := Val.Admin;
     To.Accep := Val.Accep;
-    To.Timer := Val.Timer;
     To.Host_If := Val.Host_If;
     To.Sup_Cb := Val.Sup_Cb;
+    To.Active := Val.Active;
     To.Heartbeat_Period := Val.Heartbeat_Period;
     To.Heartbeat_Max_Missed := Val.Heartbeat_Max_Missed;
     To.Timeout := Val.Timeout;
     To.Ttl := Val.Ttl;
-    To.Timer := Val.Timer;
+    To.Passive_Factor := Val.Passive_Factor;
+    To.Heartbeat_Timer := Val.Heartbeat_Timer;
+    To.Passive_Timer := Val.Passive_Timer;
     -- Lists must be empty because this is Bus creation
     if not Val.Partners.Is_Empty or else not Val.Subscribers.Is_Empty then
       raise Internal_Error;
