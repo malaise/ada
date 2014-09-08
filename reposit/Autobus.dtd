@@ -4,7 +4,8 @@
 <!ENTITY % Tuning "Heartbeat_Period CDATA #IMPLIED
                    Heartbeat_Max_Missed CDATA #IMPLIED
                    Timeout CDATA #IMPLIED
-                   TTL CDATA #IMPLIED">
+                   TTL CDATA #IMPLIED
+                   Passive_Factor CDATA #IMPLIED">
 
 <!-- This file contains a default configuration, then possibly several bus,
      each with a configuration, host Aliases and LAN associations -->
@@ -39,3 +40,4 @@
 <!ELEMENT LAN EMPTY>
 <!ATTLIST LAN Address  CDATA #REQUIRED
               Netmask CDATA #REQUIRED>
+
