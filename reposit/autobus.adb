@@ -1,6 +1,7 @@
 with Ada.Unchecked_Deallocation, Ada.Exceptions;
 with Environ, Images, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng, Trace.Loggers,
-     Long_Longs, As.U.Utils, Str_Util.Regex, Modulus_Smaller;
+     Long_Longs, As.U.Utils, Str_Util.Regex, Modulus_Smaller, Sys_Calls,
+     Normal;
 package body Autobus is
   -- Design
   ---------
@@ -65,6 +66,7 @@ package body Autobus is
   --
   -- Sending a message consists in sending it successively to all the active
   --  partners (so not on the passive connection from ourself).
+  -- In Multicast, prepend the image of our pid
   -- Receiving a TCP message (except the first TCP service message on each
   --  accepted connection) consists in dispatching it on all the observer,
   --  which means for each:
@@ -93,6 +95,10 @@ package body Autobus is
   -- True while calling Receive or Sup callback of the application, in order to
   --  prevent the application to call us in Receive/Callback
   Calling_Receive : Boolean := False;
+
+  -- Own pid
+  Max_Pid_Image : constant String := Images.Integer_Image (Integer'Last);
+  Pid_Image : String (1 .. Max_Pid_Image'Last) := (others => ' ');
 
   -- Access to Subscriber_Rec
   type Subscriber_Access is access all Subscriber_Rec;
@@ -678,11 +684,22 @@ package body Autobus is
     -- Handle Multicast bus
     if Buses.Access_Current.Kind = Multicast then
       -- Message is local if the sender is ourself
-      -- The sender is the dest after receive (Set_For_Reply=True)
-      Dispatch (Message (1 .. Length),
+      if Length < Pid_Image'Length + 1 then
+        Log_Error ("Ipm_Reception_Cb", "multicast message too short",
+                   Message(1 .. Length));
+      end if;
+      if Message (Pid_Image'Length + 1) /= '/' then
+        Log_Error ("Ipm_Reception_Cb", "multicast message too short",
+                   Message(1 .. Length));
+      end if;
+
+      -- The sender host is the dest after receive (Set_For_Reply=True)
+      -- Check Pid if same host
+      Dispatch (Message (Pid_Image'Length + 2 .. Length),
           Partner.Bus,
           Local => Socket.Get_Destination_Host (Dscr) = Partner.Bus.Host_If
-          and then Socket.Get_Destination_Port (Dscr) = Partner.Bus.Port);
+          and then Socket.Get_Destination_Port (Dscr) = Partner.Bus.Port
+          and then Message(1 .. Pid_Image'Length) = Pid_Image);
       return False;
     end if;
 
@@ -810,6 +827,11 @@ package body Autobus is
   begin
     Logger.Init ("Autobus");
     Check_In_Receive;
+    -- Init Pid image
+    if Pid_Image(Pid_Image'First) = ' ' then
+      Pid_Image := Normal (Integer(Sys_Calls.Get_Pid),
+                           Pid_Image'Length, Gap => '0');
+    end if;
     -- Check that Bus is not already initialised
     if Bus.Acc /= null then
       raise Status_Error;
@@ -1002,7 +1024,8 @@ package body Autobus is
                                    Socket => Bus.Acc.Admin,
                                    Host => Bus.Acc.Host,
                                    Port => Bus.Acc.Port);
-      Ipm_Send (Bus.Acc.Admin, Message, Message'Length);
+      Ipm_Send (Bus.Acc.Admin, Pid_Image & '/' & Message,
+                               Pid_Image'Length + 1 + Message'Length);
       return;
     end if;
 

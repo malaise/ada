@@ -256,9 +256,8 @@ begin
                else Autobus.Multicast),
               Sup_Cb'Unrestricted_Access);
     Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
-    -- Init subscriber, echo if Multicast
-    Subs_Put.Init (Bus'Unrestricted_Access, Putter'Unrestricted_Access,
-                   Echo => Key_Dscr.Is_Set (5));
+    -- Init subscriber
+    Subs_Put.Init (Bus'Unrestricted_Access, Putter'Unrestricted_Access);
     Async_Stdin.Set_Async (Async_Cb'Unrestricted_Access,
                            Autobus.Message_Max_Length);
     loop
