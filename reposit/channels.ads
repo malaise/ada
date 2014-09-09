@@ -197,7 +197,7 @@ package Channels is
     -- Name of the bus (udp in services)
     Bus_Name : in String;
 
-    -- Name of the Lan (in setworks)
+    -- Name of the Lan (in networks)
     Destination_Name : in String;
 
     -- Type of message exchanged on the channel
