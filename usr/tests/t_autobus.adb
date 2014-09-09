@@ -25,9 +25,10 @@ procedure T_Autobus is
   Keys : constant Argument_Parser.The_Keys_Type := (
    1 => (False, 'h', As.U.Tus ("help"), False),
    2 => (False, 'a', As.U.Tus ("auto"), False),
-   3 => (False, 'M', As.U.Tus ("Manual"), False),
-   4 => (False, 'm', As.U.Tus ("manual"), False),
-   5 => (True, 'b', As.U.Tus ("bus"), False, True, As.U.Tus ("bus_address")));
+   3 => (False, 'A', As.U.Tus ("active"), False),
+   4 => (False, 'P', As.U.Tus ("passive"), False),
+   5 => (False, 'M', As.U.Tus ("multicast"), False),
+   6 => (True, 'b', As.U.Tus ("bus"), False, True, As.U.Tus ("bus_address")));
  Key_Dscr : Argument_Parser.Parsed_Dscr;
 
   procedure Usage is
@@ -36,12 +37,15 @@ procedure T_Autobus is
        & " <mode> [ <bus> ] [ <auto_message> ]");
     Plo ("   or: " & Argument.Get_Program_Name & " "
        & Argument_Parser.Image(Keys(1)));
-    Plo (" <mode>   ::= <auto> | <manual>");
-    Plo (" <auto>   ::= " & Argument_Parser.Image(Keys(2)));
-    Plo (" <manual> ::= " & Argument_Parser.Image(Keys(3)));
-    Plo (" <bus>    ::= " & Argument_Parser.Image(Keys(4)));
+    Plo (" <mode>      ::= <auto> | <manual>");
+    Plo (" <auto>      ::= " & Argument_Parser.Image(Keys(2)));
+    Plo (" <manual>    ::= <active> | <passive> | <multicast>");
+    Plo (" <active>    ::= " & Argument_Parser.Image(Keys(3)));
+    Plo (" <passive>   ::= " & Argument_Parser.Image(Keys(4)));
+    Plo (" <multicast> ::= " & Argument_Parser.Image(Keys(5)));
+    Plo (" <bus>    ::= " & Argument_Parser.Image(Keys(6)));
     Plo ("Ex: " & Argument.Get_Program_Name
-       & " --manual -b " & Default_Address);
+       & " --active -b " & Default_Address);
   end Usage;
 
   procedure Error (Msg : in String) is
@@ -72,6 +76,7 @@ procedure T_Autobus is
   end Sup_Cb;
 
   Stimulus : As.U.Asu_Us;
+  Nb_Opt : Natural;
 
   -- Observer receiver of messages
   type Obs_Rece_Type is new Autobus.Observer_Type with null record;
@@ -159,21 +164,32 @@ begin
   end if;
 
   -- One mode required
-  if not Key_Dscr.Is_Set (2) and then not Key_Dscr.Is_Set (3)
-  and then not Key_Dscr.Is_Set (4) then
+  Nb_Opt := 0;
+  if Key_Dscr.Is_Set (2) then
+    Nb_Opt := Nb_Opt + 1;
+  end if;
+  if Key_Dscr.Is_Set (3) then
+    Nb_Opt := Nb_Opt + 1;
+  end if;
+  if Key_Dscr.Is_Set (4) then
+    Nb_Opt := Nb_Opt + 1;
+  end if;
+  if Key_Dscr.Is_Set (5) then
+    Nb_Opt := Nb_Opt + 1;
+  end if;
+  if Nb_Opt = 0 then
     Error ("Missing mode");
     Usage;
     return;
-  elsif (Key_Dscr.Is_Set (2) and then Key_Dscr.Is_Set (3))
-  or else (Key_Dscr.Is_Set (2) and then Key_Dscr.Is_Set (4))
-  or else (Key_Dscr.Is_Set (3) and then Key_Dscr.Is_Set (4)) then
+  elsif Nb_Opt > 1 then
     Error ("Too many modes");
     Usage;
     return;
   end if;
 
   -- No message in manual mode
-  if (Key_Dscr.Is_Set (3) or else Key_Dscr.Is_Set (4))
+  if (Key_Dscr.Is_Set (3) or else Key_Dscr.Is_Set (4)
+      or else Key_Dscr.Is_Set (5))
   and then Key_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 0 then
     Error ("No automatic message allowed in manual mode");
     Usage;
@@ -182,22 +198,19 @@ begin
 
   -- Init bus with address provided or default
   --  with supervision callback in manual
-  if Key_Dscr.Is_Set (5) then
-    if Key_Dscr.Get_Option (5, 1) = "" then
+  if Key_Dscr.Is_Set (6) then
+    if Key_Dscr.Get_Option (6, 1) = "" then
       Error ("Missing bus address");
     end if;
-    Bus_Address := As.U.Tus (Key_Dscr.Get_Option (5, 1));
+    Bus_Address := As.U.Tus (Key_Dscr.Get_Option (6, 1));
   else
     Bus_Address := As.U.Tus (Default_Address);
   end if;
-  -- Init Bus, Active if M or a (not if m), set sup Cb if manual
-  Bus.Init (Bus_Address.Image,
-            not Key_Dscr.Is_Set (4),
-            (if not Key_Dscr.Is_Set (2) then Sup_Cb'Unrestricted_Access
-             else null));
 
   if Key_Dscr.Is_Set (2) then
     -- Automatic mode
+    -- Init Bus, Active and no Cb
+    Bus.Init (Bus_Address.Image, Autobus.Active);
     -- Concat parts of automatic message
     for I in 1 .. Key_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) loop
       Stimulus.Append (" " & Key_Dscr.Get_Option (
@@ -236,8 +249,16 @@ begin
     Basic_Proc.Put_Line_Output ("Done.");
   else
     -- Manual mode
+    -- Init bus in Active, Passive or Multicast. With Cb
+    Bus.Init (Bus_Address.Image,
+              (if Key_Dscr.Is_Set (3) then Autobus.Active
+               elsif Key_Dscr.Is_Set (4) then Autobus.Passive
+               else Autobus.Multicast),
+              Sup_Cb'Unrestricted_Access);
     Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
-    Subs_Put.Init (Bus'Unrestricted_Access, Putter'Unrestricted_Access);
+    -- Init subscriber, echo if Multicast
+    Subs_Put.Init (Bus'Unrestricted_Access, Putter'Unrestricted_Access,
+                   Echo => Key_Dscr.Is_Set (5));
     Async_Stdin.Set_Async (Async_Cb'Unrestricted_Access,
                            Autobus.Message_Max_Length);
     loop

@@ -516,7 +516,6 @@ package body Autobus is
     else
       Logger.Log_Debug ("Reception of identification from "
                       & Partner_Acc.Addr.Image);
-Logger.Log_Debug (Msg(1 .. Length));
       Partner_Acc.Active := Msg(1) = 'A';
       if not Partner_Acc.Active then
         Partner_Acc.Timer.Stop;
@@ -565,8 +564,9 @@ Logger.Log_Debug (Msg(1 .. Length));
     Partner_Acc.Sock := Dscr;
     Partner_Acc.Sock.Set_Ttl (Partner_Acc.Bus.Ttl);
     Message_Length := Partner_Acc.Bus.Addr.Length + 2;
-    Message(1 .. Message_Length) := (if Partner_Acc.Bus.Active then 'A' else 'P')
-                                    & "/" & Partner_Acc.Bus.Addr.Image;
+    Message(1 .. Message_Length) :=
+        (if Partner_Acc.Bus.Kind = Active then 'A' else 'P')
+       & "/" & Partner_Acc.Bus.Addr.Image;
     Dummy := Tcp_Send (Partner_Acc.Sock, null, null, Partner_Acc.Bus.Timeout,
                        Message, Message_Length);
 
@@ -631,8 +631,8 @@ Logger.Log_Debug (Msg(1 .. Length));
   end Tcp_Accept_Cb;
 
   -- Send Alive message of current Bus
-  procedure Ipm_Send is new Socket.Send (Ipm_Message_Str,
-                                         Ipm_Message_Max_Length - 1);
+  procedure Ipm_Send is new Socket.Send (String,
+                                         Message_Max_Length);
   procedure Send_Ipm (Active : in Trilean.Trilean) is
     Message_Len : Natural;
     Message : Ipm_Message_Str;
@@ -659,8 +659,33 @@ Logger.Log_Debug (Msg(1 .. Length));
     -- Partner is filled progressively (excep its Sock and Timer)
     Partner : Partner_Rec;
     use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
-    use type Socket.Host_Id;
+    use type Socket.Host_Id, Socket.Port_Num;
   begin
+    -- Find bus by admin socket
+    declare
+      Crit : Bus_Rec;
+    begin
+      Crit.Admin := Dscr;
+      if not Buses.Search_Match (Bus_Match_Admin'Access, Crit,
+                                 From => Bus_List_Mng.Current_Absolute) then
+        Log_Error ("Ipm_Reception_Cb", "bus not found", "in buses list");
+        return False;
+      end if;
+      -- Set partner bus
+      Partner.Bus := Bus_Access(Buses.Access_Current);
+    end;
+
+    -- Handle Multicast bus
+    if Buses.Access_Current.Kind = Multicast then
+      -- Message is local if the sender is ourself
+      -- The sender is the dest after receive (Set_For_Reply=True)
+      Dispatch (Message (1 .. Length),
+          Partner.Bus,
+          Local => Socket.Get_Destination_Host (Dscr) = Partner.Bus.Host_If
+          and then Socket.Get_Destination_Port (Dscr) = Partner.Bus.Port);
+      return False;
+    end if;
+
     -- Check validity of string, drop if KO
     if Length < Message_Min_Length or else Length > Ipm_Message_Max_Length
     or else (Message(1) /= 'A' and then Message(1) /= 'P'
@@ -692,20 +717,6 @@ Logger.Log_Debug (Msg(1 .. Length));
       when others => return False;
     end;
 
-    -- Find bus by admin socket
-    declare
-      Crit : Bus_Rec;
-    begin
-      Crit.Admin := Dscr;
-      if not Buses.Search_Match (Bus_Match_Admin'Access, Crit,
-                                 From => Bus_List_Mng.Current_Absolute) then
-        Log_Error ("Ipm_Reception_Cb", "bus not found", "in buses list");
-        return False;
-      end if;
-      -- Set partner bus
-      Partner.Bus := Bus_Access(Buses.Access_Current);
-    end;
-
     -- Find partner by address
     Partner_Found := Partners.Search_Match (Partner_Match_Addr'Access, Partner,
                                     From => Partner_List_Mng.Current_Absolute);
@@ -730,7 +741,8 @@ Logger.Log_Debug (Msg(1 .. Length));
         --  (and we will accept) then it will send its address
         Logger.Log_Debug ("Ipm: Waiting for connection from "
                         & Partner.Addr.Image);
-        Send_Ipm (Trilean.Boo2Tri (Partner.Bus.Active));
+        Send_Ipm ((if Partner.Bus.Kind = Active then Trilean.True
+                   else Trilean.False));
       else
         -- partner >= Own: add partner and start connect
         Logger.Log_Debug ("Ipm: Connecting to new partner "
@@ -773,8 +785,9 @@ Logger.Log_Debug (Msg(1 .. Length));
 
     -- Send Alive message
     Bus_Acc := Buses.Access_Current;
-    if Bus_Acc.Active or else Bus_Acc.Passive_Timer.Has_Expired then
-      Send_Ipm (Trilean.Boo2Tri (Bus_Acc.Active));
+    if Bus_Acc.Kind = Active or else Bus_Acc.Passive_Timer.Has_Expired then
+      Send_Ipm ((if Bus_Acc.Kind = Active then Trilean.True
+                 else Trilean.False));
     end if;
 
     -- Check partners keep alive timers and remove dead ones
@@ -789,7 +802,7 @@ Logger.Log_Debug (Msg(1 .. Length));
   -- Initialise a Bus
   procedure Init (Bus : in out Bus_Type;
                   Address : in String;
-                  Active : in Boolean := True;
+                  Kind : in Bus_Kind := Active;
                   Sup_Cb : in  Sup_Callback := null) is
     Rbus : Bus_Rec;
     Port_Num : Socket.Port_Num;
@@ -838,6 +851,8 @@ Logger.Log_Debug (Msg(1 .. Length));
       Rbus.Admin.Set_Reception_Interface (Rbus.Host_If);
       Socket_Util.Set_Destination (Rbus.Admin, Lan => True,
                                    Host => Rem_Host, Port => Rem_Port);
+      Rbus.Host := Socket.Get_Destination_Host (Rbus.Admin);
+      Rbus.Port := Socket.Get_Destination_Port (Rbus.Admin);
       Socket_Util.Link (Rbus.Admin, Rem_Port);
       Logger.Log_Debug ("IPM socket initialialized");
     exception
@@ -858,34 +873,39 @@ Logger.Log_Debug (Msg(1 .. Length));
                        Rbus.Timeout,
                        Rbus.Ttl,
                        Rbus.Passive_Factor);
-    Rbus.Active := Active;
+    Rbus.Kind := Kind;
     Rbus.Sup_Cb := Sup_Cb;
 
     -- Set admin callback
-    Ipm_Reception_Mng.Set_Callbacks (Rbus.Admin, Ipm_Reception_Cb'Access, null);
+    Ipm_Reception_Mng.Set_Callbacks (Rbus.Admin, Ipm_Reception_Cb'Access, null,
+                                     Set_For_Reply => Rbus.Kind = Multicast);
 
-    -- Create the TCP accepting socket, set accep callback
-    Tcp_Util.Accept_From (Socket.Tcp_Header,
-                          (Kind => Tcp_Util.Port_Dynamic_Spec),
-                          Tcp_Accept_Cb'Access,
-                          Rbus.Accep, Port_Num,
-                          Rbus.Host_If);
-    Logger.Log_Debug ("TCP socket initialialized");
+    if Rbus.Kind /= Multicast then
+      -- Create the TCP accepting socket, set accep callback
+      Tcp_Util.Accept_From (Socket.Tcp_Header,
+                            (Kind => Tcp_Util.Port_Dynamic_Spec),
+                            Tcp_Accept_Cb'Access,
+                            Rbus.Accep, Port_Num,
+                            Rbus.Host_If);
+      Logger.Log_Debug ("TCP socket initialialized");
 
-    -- Now we know on which host and port we listen (for the Alive message)
-    Rbus.Addr := As.U.Tus (Image (Rbus.Host_If, Port_Num));
+      -- Now we know on which host and port we listen (for the Alive message)
+      Rbus.Addr := As.U.Tus (Image (Rbus.Host_If, Port_Num));
+    end if;
 
     -- Set TTL on Admin and Accept (IPM and TCP) sockets
     Rbus.Admin.Set_Ttl (Rbus.Ttl);
-    Rbus.Accep.Set_Ttl (Rbus.Ttl);
+    if Rbus.Kind /= Multicast then
+      Rbus.Accep.Set_Ttl (Rbus.Ttl);
 
-    -- Arm Bus related active timer and create passive timer
-    Timeout.Delay_Seconds := 0.0;
-    Timeout.Period := Rbus.Heartbeat_Period;
-    Rbus.Heartbeat_Timer.Create (Timeout, Timer_Cb'Access);
-    Rbus.Passive_Timer := new Chronos.Passive_Timers.Passive_Timer;
-    Timeout.Period := Rbus.Heartbeat_Period * Rbus.Passive_Factor;
-    Rbus.Passive_Timer.Start (Timeout);
+      -- Arm Bus related active timer and create passive timer
+      Timeout.Delay_Seconds := 0.0;
+      Timeout.Period := Rbus.Heartbeat_Period;
+      Rbus.Heartbeat_Timer.Create (Timeout, Timer_Cb'Access);
+      Rbus.Passive_Timer := new Chronos.Passive_Timers.Passive_Timer;
+      Timeout.Period := Rbus.Heartbeat_Period * Rbus.Passive_Factor;
+      Rbus.Passive_Timer.Start (Timeout);
+    end if;
 
     -- Done: Insert in list, return access
     Buses.Rewind (Bus_List_Mng.Next, False);
@@ -893,17 +913,23 @@ Logger.Log_Debug (Msg(1 .. Length));
     Bus.Acc := Buses.Access_Current;
     Logger.Log_Debug ("Bus " & Rbus.Name.Image
                     & " created "
-                    & (if Rbus.Active then "Active" else "Passive")
-                    & " at " & Rbus.Addr.Image);
-    Logger.Log_Debug (" with Period: "
-       & Images.Dur_Image (Rbus.Heartbeat_Period, 1, False)
-       & ", MaxMissed: " & Images.Integer_Image(Rbus.Heartbeat_Max_Missed)
-       & ", Timeout: " &  Images.Dur_Image (Rbus.Timeout, 1, False)
-       & ", TTL: " & Images.Integer_Image(Rbus.Ttl)
-       & ", PassiveFactor " & Images.Integer_Image(Rbus.Passive_Factor));
+                    & (case Rbus.Kind is
+                        when Active  => "Active",
+                        when Passive =>  "Passive",
+                        when Multicast => "Multicast")
+                    & (if Rbus.Kind /= Multicast then " at " & Rbus.Addr.Image
+                       else ""));
+    if Rbus.Kind /= Multicast then
+      Logger.Log_Debug (" with Period: "
+         & Images.Dur_Image (Rbus.Heartbeat_Period, 1, False)
+         & ", MaxMissed: " & Images.Integer_Image(Rbus.Heartbeat_Max_Missed)
+         & ", Timeout: " &  Images.Dur_Image (Rbus.Timeout, 1, False)
+         & ", TTL: " & Images.Integer_Image(Rbus.Ttl)
+         & ", PassiveFactor " & Images.Integer_Image(Rbus.Passive_Factor));
 
-    -- Wait a little bit (100ms) for "immediate" connections to establish
-    Event_Mng.Pause (100);
+      -- Wait a little bit (100ms) for "immediate" connections to establish
+      Event_Mng.Pause (100);
+    end if;
 
   end Init;
 
@@ -928,18 +954,22 @@ Logger.Log_Debug (Msg(1 .. Length));
     Logger.Log_Debug ("Bus.Reset " & Bus.Acc.Name.Image);
 
     -- Send Death info
-    Send_Ipm (Trilean.Other);
+    if Bus.Acc.Kind /= Multicast then
+      Send_Ipm (Trilean.Other);
+    end if;
 
     -- Close resources
     Ipm_Reception_Mng.Remove_Callbacks (Bus.Acc.Admin);
-    Tcp_Util.Abort_Accept (Socket.Tcp_Header, Bus.Acc.Accep.Get_Linked_To);
-    if Bus.Acc.Passive_Timer.Running then
-      Bus.Acc.Passive_Timer.Stop;
-    end if;
-    Deallocate (Bus.Acc.Passive_Timer);
+    if Bus.Acc.Kind /= Multicast then
+      Tcp_Util.Abort_Accept (Socket.Tcp_Header, Bus.Acc.Accep.Get_Linked_To);
+      if Bus.Acc.Passive_Timer.Running then
+        Bus.Acc.Passive_Timer.Stop;
+      end if;
+      Deallocate (Bus.Acc.Passive_Timer);
 
-    -- Remove all partners
-    Remove_Partners (True);
+      -- Remove all partners
+      Remove_Partners (True);
+    end if;
 
     -- Remove all subscribers
     Bus.Acc.Subscribers.Rewind (Subscriber_List_Mng.Next, False);
@@ -964,6 +994,16 @@ Logger.Log_Debug (Msg(1 .. Length));
     -- Check that Bus is initialised
     if Bus.Acc = null then
       raise Status_Error;
+    end if;
+
+    if Bus.Acc.Kind = Multicast then
+      -- Multicast
+      Socket.Set_Destination_Host_And_Port (
+                                   Socket => Bus.Acc.Admin,
+                                   Host => Bus.Acc.Host,
+                                   Port => Bus.Acc.Port);
+      Ipm_Send (Bus.Acc.Admin, Message, Message'Length);
+      return;
     end if;
 
     if Bus.Acc.Partners.Is_Empty then
@@ -1173,10 +1213,12 @@ Logger.Log_Debug (Msg(1 .. Length));
     To.Name := Val.Name;
     To.Addr := Val.Addr;
     To.Admin := Val.Admin;
+    To.Host := Val.Host;
+    To.Port := Val.Port;
     To.Accep := Val.Accep;
     To.Host_If := Val.Host_If;
     To.Sup_Cb := Val.Sup_Cb;
-    To.Active := Val.Active;
+    To.Kind := Val.Kind;
     To.Heartbeat_Period := Val.Heartbeat_Period;
     To.Heartbeat_Max_Missed := Val.Heartbeat_Max_Missed;
     To.Timeout := Val.Timeout;

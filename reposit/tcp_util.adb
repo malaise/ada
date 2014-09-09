@@ -919,6 +919,7 @@ package body Tcp_Util is
       Dscr : Socket.Socket_Dscr;
       Fd   : Event_Mng.File_Desc;
       Read_Cb : Reception_Callback_Access := null;
+      Set_For_Reply : Boolean := False;
       Discon_Cb : Disconnection_Callback_Access := null;
     end record;
     package Rece_Dyn_List_Mng is new Dynamic_List (Rece_Rec);
@@ -994,7 +995,7 @@ package body Tcp_Util is
       Msg := new Message_Type;
       -- Try to read
       begin
-        Read (The_Rec.Dscr, Msg.all, Len);
+        Read (The_Rec.Dscr, Msg.all, Len, The_Rec.Set_For_Reply);
       exception
         when Socket.Soc_Would_Block =>
           -- Data is not completely ready
@@ -1030,7 +1031,8 @@ package body Tcp_Util is
     procedure Set_Callbacks (
                 Dscr             : in Socket.Socket_Dscr;
                 Reception_Cb     : in Reception_Callback_Access;
-                Disconnection_Cb : in Disconnection_Callback_Access) is
+                Disconnection_Cb : in Disconnection_Callback_Access;
+                Set_For_Reply    : in Boolean := False) is
       The_Rec : Rece_Rec;
     begin
       Init_Debug;
@@ -1041,6 +1043,7 @@ package body Tcp_Util is
       The_Rec.Dscr := Dscr;
       The_Rec.Fd := Dscr.Get_Fd;
       The_Rec.Read_Cb := Reception_Cb;
+      The_Rec.Set_For_Reply := Set_For_Reply;
       The_Rec.Discon_Cb := Disconnection_Cb;
 
       -- Append to list

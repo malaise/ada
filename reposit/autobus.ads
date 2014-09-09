@@ -25,19 +25,29 @@ package Autobus is
   --     Bus) that match the filter.
 
   -- Implementation:
+  -- There are two kinds of Bus: Multicast and Reliable. They cannot be mixed.
+  -- A. Multicast
+  -- Each message is sent in multicast (IPM) to the receiving applications and
+  --  dispatched to the observers. Some messages might be lost in the network.
+  -- B. Reliable
   -- Each Bus relies on a fixed IPM address and port, and a random TCP port.
-  -- Each process sends periodically an IPM message with his host and TCP port.
+  -- Each process sends periodically an IPM message with its host and TCP port.
   -- The other processes on the bus keep a list of known alive partners.
   -- When a new process starts it declares itself on the Bus and all the
   --  partners either connects to it or get connected to it.
   -- Delivering a message consists in sending it in TCP successively to the all
   --  the partners, each of them dispatching the message to the local observers.
+  -- Each partner on a reliable bus can be either active (its sudden death can
+  --  be detected by a polling) or passive (its sudden death can only be
+  --  detected by the closure of the TCP connection).
+  --  Active mode can useful for servers, while passive mode might convenient
+  --  for clients.
 
   -- Tuning the Bus:
   -- A XML file allows the default tuning for all the Buses, and also a specific
   --  tuning for each Bus. The path of this file must be set in the environment
   --  variable AUTOBUS_CONFIG.
-  -- For the default values and also for each individual Bus:
+  -- For the default values and also for each individual reliable Bus:
   -- - Heartbeat_Period is the period in seconds at which each process on
   --    the Bus sends the alive message. It is used in combination with
   --    Heartbeat_Max_Missed. Default 1.
@@ -67,11 +77,11 @@ package Autobus is
   --  the IPM messages on the interface associated to the local host name.
   -- See the DTD Autobus.dtd for the format of the XML file.
 
-  -- Note that the exclusion of a partner (either because it informs that it
-  --  dyes, or because of a timeout of alive message, or on timeout while
-  --  connecting or sending) is not definitive. The partner is re-inserted when
-  --  it is reachable again (i.e. when we receive an alive message from it). It
-  --  only misses the applicative  messages that were sent meanwhile.
+  -- Note that the exclusion of an active partner (either because it informs
+  --  that it dyes, or because of a timeout of alive message, or on timeout
+  --  while connecting or sending) is not definitive. The partner is re-inserted
+  --  when it is reachable again (i.e. when we receive an alive message from
+  --  it). It only misses the applicative messages that were sent meanwhile.
 
   -------------
   -- The Bus --
@@ -88,7 +98,11 @@ package Autobus is
   end record;
   type Sup_Callback is access procedure (Report : in Sup_Report);
 
-  -- Initialise a Bus, may raise:
+  -- Initialise a Bus
+  -- We are either active on a reliable Bus, passive on a reliable Bus
+  --  or the bus is multicast
+  type Bus_Kind is (Active, Passive, Multicast);
+  -- May raise:
   -- On incorrect format (not <lan>:<port>, invalid LAN or port)
   Invalid_Address : exception;
   -- On LAN or port name not found (DNS, networks, services)
@@ -98,9 +112,10 @@ package Autobus is
   -- On error in the tuning configuration file (parsed at Init of first Bus)
   -- See Autobus.dtd for the format of this file
   Config_Error : exception;
+  -- The Sup_Cb is not used on multicast bus
   procedure Init (Bus : in out Bus_Type;
                   Address : in String;
-                  Active : in Boolean := True;
+                  Kind : in Bus_Kind := Active;
                   Sup_Cb : in Sup_Callback := null);
 
   -- Is a Bus initialised
@@ -220,8 +235,10 @@ private
     Name : As.U.Asu_Us;
     -- Address of the TCP socket "www.xxx.yyy.zzz:portnum"
     Addr : As.U.Asu_Us;
-    -- Administration IPM socket
+    -- Administration or multicast IPM socket
     Admin : Socket.Socket_Dscr := Socket.No_Socket;
+    Host : Socket.Host_Id;
+    Port : Socket.Port_Num;
     -- TCP accept socket
     Accep : Socket.Socket_Dscr := Socket.No_Socket;
     -- Host Id denoting the interface (for TCP and IPM)
@@ -229,7 +246,7 @@ private
     -- Supervision callback
     Sup_Cb : Sup_Callback;
     -- Are we active on this bus
-    Active : Boolean;
+    Kind : Bus_Kind := Active;
     -- Heartbeat period and Max missed number, Timeout on connect and send,
     --  TTL and passive_Factor
     Heartbeat_Period : Duration := 1.0;

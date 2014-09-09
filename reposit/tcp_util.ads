@@ -249,11 +249,13 @@ package Tcp_Util is
     -- Set reception and disconnection callbacks
     --  (callbacks may be null, then data/events will be lost)
     -- Callbacks are activated
+    -- Set_For_Reply may be set for each read
     -- May raise No_Such if Dscr is not open
     procedure Set_Callbacks (
                     Dscr             : in Socket.Socket_Dscr;
                     Reception_Cb     : in Reception_Callback_Access;
-                    Disconnection_Cb : in Disconnection_Callback_Access);
+                    Disconnection_Cb : in Disconnection_Callback_Access;
+                    Set_For_Reply    : in Boolean := False);
 
     -- Activate or freeze the reception on connection
     -- When a connection is frozen, data/events are kept
