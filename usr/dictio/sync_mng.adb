@@ -1,5 +1,5 @@
 with As.U, Timers, Event_Mng, Dynamic_List, Environ;
-with Intra_Dictio, Data_Base, Dictio_Debug, Online_Mng, Args;
+with Intra_Dictio, Data_Base, Dictio_Debug, Online_Mng;
 package body Sync_Mng is
 
   Timer_Id : Timers.Timer_Id;
@@ -82,10 +82,6 @@ package body Sync_Mng is
 
   type Send_Status_List is (Init, Send, Stop);
   Sending_Status : Send_Status_List := Stop;
-
-  Max_Retry : constant := 3;
-  First_Timeout : constant Natural := 100;
-  Timeout_Factor : constant := 2;
 
   -- Timer between first request and real syn (Init)
   --  or for flow limitation (Send)
@@ -184,91 +180,8 @@ package body Sync_Mng is
 
   end Do_Sync_Bus;
 
-  procedure Do_Sync_Channel is
-    Item : Data_Base.Item_Rec;
-    Reply_Result : Intra_Dictio.Reply_Result_List;
-    Ovf_Timeout, Curr_Timeout : Natural;
-    Dest : Tcp_Util.Host_Name;
-    Bytes_Sent : Natural;
-    Moved : Boolean;
-    use type Data_Base.Item_Rec, Intra_Dictio.Reply_Result_List,
-             Event_Mng.Out_Event_List;
-  begin
-
-    Item := Data_Base.Read_First;
-    Bytes_Sent := 0;
-
-    Items:
-    while Item /= Data_Base.No_Item loop
-
-      Sync_List.Rewind;
-      Dests:
-      loop
-        Sync_List.Read (Dest, Sync_List_Mng.Current);
-
-        Ovf_Timeout := First_Timeout;
-        Retries:
-        for I in 1 .. Max_Retry loop
-          -- Try to send
-          Reply_Result := Intra_Dictio.Send_Sync_Data (Dest.Image, Item);
-          if Reply_Result = Intra_Dictio.Overflow then
-            Curr_Timeout := Ovf_Timeout;
-            -- Increase timeout for next retry
-            Ovf_Timeout := Ovf_Timeout * Timeout_Factor;
-            Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: Overflow to "
-                                               & Dest.Image);
-          else
-            -- Ok or error
-            Curr_Timeout := 0;
-          end if;
-          -- Wait a bit / check event
-          Event_Mng.Pause (Curr_Timeout);
-
-          if Sending_Status /= Send then
-            Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: Sending cancelled");
-            exit Items;
-          end if;
-
-          -- Ok or Error or too many Overflows.
-          exit Retries when Reply_Result /= Intra_Dictio.Overflow
-                            or else I = Max_Retry;
-        end loop Retries;
-
-        if Reply_Result /= Intra_Dictio.Ok then
-          -- Give up with this destination if too many overflows or other error
-          Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: Giving up " & Dest.Image
-                                             & " due to " & Reply_Result'Img);
-          Sync_List.Delete (Sync_List_Mng.Prev, Moved);
-          exit Items when Sync_List.Is_Empty;
-        else
-          -- Flow limitation
-          Bytes_Sent := Bytes_Sent + 110 + Item.Data_Len;
-          if Bytes_Sent >= 1024 then
-            Bytes_Sent := 0;
-            Event_Mng.Pause (Delay_Per_Kb);
-          else
-            Event_Mng.Pause (0);
-          end if;
-        end if;
-
-        if Sync_List.Check_Move then
-          -- Next Dest
-          Sync_List.Move_To;
-        else
-          exit Dests;
-        end if;
-
-      end loop Dests;
-
-      Item := Data_Base.Read_Next;
-
-    end loop Items;
-
-  end Do_Sync_Channel;
-
   function Timer_Sen_Cb (Unused_Id : Timers.Timer_Id;
                          Unused_Data : Timers.Timer_Data) return Boolean is
-    use type Args.Channel_Mode_List;
   begin
 
     -- Check sync not cancelled during init
@@ -284,11 +197,7 @@ package body Sync_Mng is
 
     -- Send items
     Sending_Status := Send;
-    if Args.Get_Mode = Args.Channel then
-      Do_Sync_Channel;
-    else
-      Do_Sync_Bus;
-    end if;
+    Do_Sync_Bus;
 
     -- Done
     if not Sync_List.Is_Empty then

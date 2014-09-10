@@ -24,8 +24,6 @@ export DICTIO_DELAY_PER_KB=0.021
 export DICTIO_STABLE_DELAY=0.200
 # Default prio
 export DICTIO_PRIO=10
-# Default mode
-export MODE=bus
 
 # Parse args
 while [ "$1" != "" ] ; do
@@ -33,24 +31,13 @@ while [ "$1" != "" ] ; do
     shift
     export DICTIO_PRIO=$1
     shift
-  elif [ "$1" = "-b" ] ; then
-    export MODE=bus
-    shift
-  elif [ "$1" = "-c" ] ; then
-    export MODE=channel
-    shift
   else
-    echo "Usage: `basename $0`   [ -b | -c ]   [ -p <prio> ]"
+    echo "Usage: `basename $0` [ -p <prio> ]"
     exit 1
   fi
 done
 
-# Set dictio channel
-if [ "$MODE" = "channel" ] ; then
-  export CHANNEL="-ntest_tcp -cdictio.xml"
-else
-  export CHANNEL="-ntest_udp -btest_ipm"
-fi
+export BUS="234.7.6.5:21021"
 
 # Set client port
 export HOST=`uname -s`
@@ -81,5 +68,5 @@ elif [ "$DICTIO_LAUNCHER" = "gvd" ] ; then
   GVOPT=--pargs
 fi
 
-${DICTIO_LAUNCHER} ./dictio $GVOPT $CHANNEL -p$PORT -P$DICTIO_PRIO
+${DICTIO_LAUNCHER} ./dictio -b$BUS -p$PORT -P$DICTIO_PRIO
 

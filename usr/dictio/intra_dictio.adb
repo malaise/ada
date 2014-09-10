@@ -1,7 +1,6 @@
 with Ada.Exceptions;
-with As.U, Address_Ops, Socket, Channels, Mixed_Str, Text_Line;
+with As.U, Address_Ops, Socket, Autobus, Mixed_Str, Text_Line;
 with Dictio_Debug, Parse, Local_Host_Name;
-pragma Elaborate_All (Channels);
 package body Intra_Dictio is
 
   Lf : constant Character := Text_Line.Line_Feed_Char;
@@ -19,142 +18,58 @@ package body Intra_Dictio is
     Item : Data_Base.Item_Rec;
   end record;
 
-  procedure Read_Cb (Message  : in Message_Rec;
-                     Unused_Length   : in Channels.Message_Length;
-                     Diffused : in Boolean);
-
-  package Dictio_Channel is new Channels.Channel ("Dummy",
-                                                  Message_Rec, Read_Cb);
-  package Dictio_Bus is new Channels.Bus ("Dummy", "Dummy",
-                                                  Message_Rec, Read_Cb);
-  type Channel_Mode_List is new Args.Channel_Mode_List;
-  Mode : Channel_Mode_List;
-
+  Bus : aliased Autobus.Bus_Type;
   Local_Name : Tcp_Util.Host_Name;
 
+  -- Call bac to invoke on message reception
+  Client_Cb : Read_Cb_Access := null;
+  procedure Set_Read_Cb (Read_Cb : Read_Cb_Access) is
+  begin
+    Client_Cb := Read_Cb;
+  end Set_Read_Cb;
+
+  -- Observer receiver of messages
+  Subscriber : aliased Autobus.Subscriber_Type;
+  type Observer_Type is new Autobus.Observer_Type with null record;
+  procedure Receive (Unused_Observer   : in out Observer_Type;
+                     Unused_Subscriber : in Autobus.Subscriber_Access_Type;
+                     Message           : in String) is
+  begin
+    if Client_Cb = null then
+      return;
+    end if;
+    -- @@@ parse and call Client_Cb
+  end Receive;
+  Receiver : aliased Observer_Type;
+
+
   procedure Init is
-    use type Args.Channel_Mode_List;
   begin
     Local_Host_Name.Set(Socket.Local_Host_Name);
     Local_Name := As.U.Tus (Local_Host_Name.Get);
 
-    Mode := Channel_Mode_List(Args.Get_Mode);
+    Dictio_Debug.Put (Dictio_Debug.Intra, "Init bus");
+    begin
+      Bus.Init (Args.Get_Bus, Autobus.Multicast);
+    exception
+      when Error: others =>
+        Dictio_Debug.Put_Error (Dictio_Debug.Intra,
+            "Cannot init bus " & Args.Get_Bus
+          & Lf & "Exception: " & Ada.Exceptions.Exception_Name(Error));
+        Args.Usage;
+    end;
 
-    if Mode = Channel then
+    Subscriber.Init (Bus'Access, Receiver'Access);
 
-      Dictio_Debug.Put (Dictio_Debug.Intra, "Init channel");
-      begin
-        Dictio_Channel.Change_Channel_Name (Args.Get_Name);
-        Dictio_Channel.Subscribe;
-      exception
-        when Error: others =>
-          Dictio_Debug.Put_Error (Dictio_Debug.Intra,
-              "Cannot use channel " & Args.Get_Name
-            & Lf & "Exception: " & Ada.Exceptions.Exception_Name(Error));
-          Args.Usage;
-      end;
-
-      begin
-        Dictio_Channel.Add_Destinations (Args.Get_Dest);
-      exception
-        when Error: others =>
-          Dictio_Debug.Put_Error (Dictio_Debug.Intra,
-              "Cannot set destinations of " & Args.Get_Name
-            & Lf & "Exception: " & Ada.Exceptions.Exception_Name(Error));
-          Args.Usage;
-      end;
-
-      begin
-        Dictio_Channel.Del_Destination (Local_Name.Image);
-      exception
-        when Error: others =>
-          Dictio_Debug.Put_Error (Dictio_Debug.Intra,
-              "Cannot remove local host from destinations of " & Args.Get_Name
-            & Lf & "Exception: " & Ada.Exceptions.Exception_Name(Error));
-          Args.Usage;
-      end;
-
-    else
-
-      Dictio_Debug.Put (Dictio_Debug.Intra, "Init bus");
-      begin
-        Dictio_Bus.Change_Names (Args.Get_Name, Args.Get_Dest);
-      exception
-        when Error: others =>
-          Dictio_Debug.Put_Error (Dictio_Debug.Intra,
-              "Cannot use bus " & Args.Get_Name & " with destination "
-            & Args.Get_Dest
-            & Lf & "Exception: " & Ada.Exceptions.Exception_Name(Error));
-          Args.Usage;
-      end;
-
-      begin
-        Dictio_Bus.Subscribe;
-        Dictio_Bus.Join;
-      exception
-        when Error: others =>
-          Dictio_Debug.Put_Error (Dictio_Debug.Intra,
-              "Cannot subscribe or join bus " & Args.Get_Name
-            & " with destination " & Args.Get_Dest
-            & Lf & "Exception: " & Ada.Exceptions.Exception_Name(Error));
-          Args.Usage;
-      end;
-    end if;
     Dictio_Debug.Put (Dictio_Debug.Intra, "Init succeeded");
   end Init;
 
   procedure Quit is
   begin
     Dictio_Debug.Put (Dictio_Debug.Intra, "Quit");
-    if Mode = Channel then
-      begin
-        Dictio_Channel.Unsubscribe;
-      exception
-        when Channels.Not_Subscribed =>
-          null;
-      end;
-      Dictio_Channel.Del_All_Destinations;
-    else
-      Dictio_Bus.Unsubscribe;
-      Dictio_Bus.Leave;
-    end if;
+    Bus.Reset;
   end Quit;
 
-
-  procedure Add_Host (Host : String) is
-  begin
-    if Mode = Bus then
-      return;
-    end if;
-    Dictio_Channel.Add_Destination (Host);
-    Dictio_Debug.Put (Dictio_Debug.Intra, "Add_Host: " & Host & " done");
-  exception
-    when Error : others =>
-      Dictio_Debug.Put (Dictio_Debug.Intra, "Add_Host: " & Host
-                                          & " not done cause "
-                                       & Ada.Exceptions.Exception_Name(Error));
-  end Add_Host;
-
-  procedure Del_Host (Host : String) is
-  begin
-    if Mode = Bus then
-      return;
-    end if;
-    Dictio_Channel.Del_Destination (Host);
-    Dictio_Debug.Put (Dictio_Debug.Intra, "Del_Host: " & Host & " done");
-  exception
-    when Error : others =>
-        Dictio_Debug.Put (Dictio_Debug.Intra, "Del_Host: " & Host
-                                            & " not done cause "
-                                       & Ada.Exceptions.Exception_Name(Error));
-  end Del_Host;
-
-  Client_Cb : Read_Cb_Access := null;
-
-  procedure Set_Read_Cb (Read_Cb : Read_Cb_Access) is
-  begin
-    Client_Cb := Read_Cb;
-  end Set_Read_Cb;
 
   function Kind_Image (C : Character) return String is
   begin
@@ -186,11 +101,11 @@ package body Intra_Dictio is
   end Sync_Image;
 
   procedure Read_Cb (Message       : in Message_Rec;
-                     Unused_Length : in Channels.Message_Length;
+                     Unused_Length : in Natural;
                      Diffused      : in Boolean) is
   begin
     -- Discard own message
-    if Mode = Bus and then Local_Name.Image = Parse (Message.Head.From) then
+    if Local_Name.Image = Parse (Message.Head.From) then
       return;
     end if;
     Dictio_Debug.Put (Dictio_Debug.Intra,
@@ -216,7 +131,9 @@ package body Intra_Dictio is
                   Message : in out Message_Rec;
                   Result  : out Reply_Result_List;
                   Get_Status : in Boolean := True) is
-    Len : Natural;
+    -- @@@
+    Msg : String (1 .. Autobus.Message_Max_Length);
+    Len : Natural := 0;
     use Address_Ops;
     use type Data_Base.Item_Rec;
   begin
@@ -254,40 +171,23 @@ package body Intra_Dictio is
 
     Result := Error;
     if To = "*" then
-      if Mode = Channel then
-        Dictio_Channel.Write (Message, Len);
-      else
-        Dictio_Bus.Write (Message, Len);
-      end if;
+      Bus.Send (Msg (1 .. Len));
       Result := Ok;
     elsif To = "" then
       begin
-        if Mode = Channel then
-          Dictio_Channel.Reply (Message, Len);
-        else
-          Dictio_Bus.Reply (Message, Len);
-        end if;
+        Bus.Reply (Msg (1 .. Len));
         Result := Ok;
       exception
-        when Channels.Reply_Overflow =>
-          -- Channel only
-          Result := Overflow;
-        when Channels.Reply_Failed =>
+        when others =>
           Result := Error;
       end;
     else
       begin
-        if Mode = Channel then
-          Dictio_Channel.Send (To, Message, Len);
-        else
-          Dictio_Bus.Send (To, Message, Len);
-        end if;
+        -- @@@ To
+        Bus.Send_To (To, Msg (1 .. Len));
         Result := Ok;
       exception
-        when Channels.Send_Overflow =>
-          -- Channel only
-          Result := Overflow;
-        when Channels.Send_Failed =>
+        when others =>
           Result := Error;
       end;
     end if;

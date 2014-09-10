@@ -23,7 +23,6 @@ procedure T_Dictio is
     P (" set    <name>    [ <data> ]        alias  <name>    [ <of_name> ]");
     P (" get    [ alias ] [ <name> ]");
     P (" notify [ alias ] [ <pattern> ]     cancel [ alias ] [ <pattern> ]");
-    P (" add    <host>                      del    <host>");
     P (" help                               status");
     P (" quit | exit | q");
   end Put_Help;
@@ -35,8 +34,6 @@ procedure T_Dictio is
   Id_Get    : constant Pattern.Pattern_Id := 100;
   Id_Notify : constant Pattern.Pattern_Id := 110;
   Id_Cancel : constant Pattern.Pattern_Id := 120;
-  Id_Add    : constant Pattern.Pattern_Id := 200;
-  Id_Del    : constant Pattern.Pattern_Id := 210;
   Id_Help   : constant Pattern.Pattern_Id := 300;
   Id_Status : constant Pattern.Pattern_Id := 310;
   Id_Exit   : constant Pattern.Pattern_Id := 320;
@@ -148,29 +145,6 @@ procedure T_Dictio is
     return False;
   end Com_Opt_Opt;
 
-  function Com_Fix (Unused_Rule : in Pattern.Rule_No;
-                    Id   : in Pattern.Pattern_Id;
-                    Unused_Nb_Match : in Natural;
-                    Iter : in Parser.Iterator) return Boolean is
-    Arg1 : constant String := Iter.Current_Word;
-    Arg2 : constant String := Iter.Next_Word;
-    use type Pattern.Pattern_Id;
-  begin
-    -- Add/Del <host>
-    if Arg1 = "" or else Arg2 /= "" then
-      Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
-      return False;
-    end if;
-    if Id = Id_Add then
-      Dictio_Lib.Add_Host (Arg1);
-    elsif Id = Id_Del then
-      Dictio_Lib.Del_Host (Arg1);
-    else
-      Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
-    end if;
-    return False;
-  end Com_Fix;
-
   function Com (Unused_Rule : in Pattern.Rule_No;
                 Id   : in Pattern.Pattern_Id;
                 Unused_Nb_Match : in Natural;
@@ -212,10 +186,6 @@ procedure T_Dictio is
                  Com_Opt_Opt'Unrestricted_Access);
     Pattern.Set (Rule, Id_Cancel, "cancel [ alias ]",
                  Com_Opt_Opt'Unrestricted_Access);
-    Pattern.Set (Rule, Id_Add, "add",
-                 Com_Fix'Unrestricted_Access);
-    Pattern.Set (Rule, Id_Del, "del",
-                 Com_Fix'Unrestricted_Access);
     Pattern.Set (Rule, Id_Help, "help",
                  Com'Unrestricted_Access);
     Pattern.Set (Rule, Id_Status, "status",

@@ -3,7 +3,7 @@ with Tcp_Util;
 with Args, Data_Base, Status;
 package Intra_Dictio is
 
-  -- Kaind of message
+  -- Kind of message
   Stat_Kind : Character renames Ada.Characters.Latin_1.Syn;
   Data_Kind : Character renames Ada.Characters.Latin_1.Can;
   Sync_Kind : Character renames Ada.Characters.Latin_1.Ack;
@@ -26,9 +26,6 @@ package Intra_Dictio is
 
   procedure Init;
   procedure Quit;
-
-  procedure Add_Host (Host : String);
-  procedure Del_Host (Host : String);
 
   procedure Send_Status (Stat  : in Status.Status_List;
                          Extra : in String := "");

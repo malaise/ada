@@ -86,21 +86,5 @@ package Dictio_Lib is
   -- May raise Invalid_Name or Name_Too_Long
   procedure Notify (Name : in String; Item : in Boolean; On : in Boolean);
 
-
-  -- Add/del a new host to destination list
-  -- Use with care:
-  --  For adding a host:
-  --   insert it in the channel files of all dictios
-  --   add it on all running dictios (with Add_Host)
-  --   start it
-  --  For deleting a host:
-  --   stop it
-  --   delete it from the channel files of all dictios
-  --   delete it on all running dictios (with Del_Host)
-  -- May raise Data_Too_Long
-  procedure Add_Host (Host : in String);
-  procedure Del_Host (Host : in String);
-
-
 end Dictio_Lib;
 

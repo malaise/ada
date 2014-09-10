@@ -99,10 +99,6 @@ package body Client_Mng is
         Notify.Add (Dscr, Msg.Item.Name, Msg.Item.Kind);
       when Client_Com.Notif_Off =>
         Notify.Del (Dscr, Msg.Item.Name, Msg.Item.Kind);
-      when Client_Com.Add_Host =>
-        Intra_Dictio.Add_Host (Msg.Item.Data(1 .. Msg.Item.Data_Len));
-      when Client_Com.Del_Host =>
-        Intra_Dictio.Del_Host (Msg.Item.Data(1 .. Msg.Item.Data_Len));
     end case;
     Dictio_Debug.Put (Dictio_Debug.Client, "Request done");
     return False;
