@@ -1018,6 +1018,11 @@ package body Autobus is
       raise Status_Error;
     end if;
 
+    -- Check message length
+    if Message'Length > Msg'Length then
+      raise Message_Too_Long;
+    end if;
+
     if Bus.Acc.Kind = Multicast then
       -- Multicast
       Socket.Set_Destination_Host_And_Port (
@@ -1035,9 +1040,6 @@ package body Autobus is
     end if;
 
     -- Prepare message and list of parners
-    if Message'Length > Msg'Length then
-      raise Message_Too_Long;
-    end if;
     Msg(1 .. Message'Length) := Message;
     Bus.Acc.Partners.Rewind (Partner_Access_List_Mng.Next, False);
 
@@ -1073,6 +1075,172 @@ package body Autobus is
       exit when not Moved;
     end loop;
   end Send;
+
+  -- Reply to the message currently being received
+  -- If not in receive
+  procedure Reply (Bus : in out Bus_Type; Message : in String) is
+    Msg : Tcp_Message_Str;
+    Partner_Acc : Partner_Access;
+    Success : Boolean;
+    Dummy : Boolean;
+  begin
+    -- We must be in receive
+    if not Calling_Receive then
+      raise Not_In_Receive;
+    end if;
+
+    -- Check that Bus is initialised
+    if Bus.Acc = null then
+      raise Status_Error;
+    end if;
+
+    -- Check message length
+    if Message'Length > Msg'Length then
+      raise Message_Too_Long;
+    end if;
+
+    if Bus.Acc.Kind = Multicast then
+      -- Multicast bus, send on the socket (Set_For_Reply was set)
+      Ipm_Send (Bus.Acc.Admin, Pid_Image & '/' & Message,
+                               Pid_Image'Length + 1 + Message'Length);
+      return;
+    end if;
+
+    if Bus.Acc.Partners.Is_Empty then
+      -- No partner
+      return;
+    end if;
+
+    -- Prepare message and (current) partner
+    Msg(1 .. Message'Length) := Message;
+    Partner_Acc := Partners.Access_Current;
+    if Partner_Acc.State /= Active then
+      return;
+    end if;
+
+    -- Send
+    begin
+      Dummy := Tcp_Send (Partner_Acc.Sock, null, null,
+                         Bus.Acc.Timeout, Msg, Message'Length);
+    exception
+      when Socket.Soc_Conn_Lost =>
+        Logger.Log_Debug ("Lost connection to " & Partner_Acc.Addr.Image);
+        Success := False;
+      when Tcp_Util.Timeout_Error =>
+        Logger.Log_Debug ("Timeout while sending to "
+                        & Partner_Acc.Addr.Image);
+        Success := False;
+      when Except:others =>
+        Log_Exception ("Tcp_Send", Ada.Exceptions.Exception_Name (Except),
+                       "sending to " & Partner_Acc.Addr.Image);
+        Success := False;
+    end;
+    if not Success then
+      -- Remove partner with which error occurs
+      Remove_Current_Partner (True);
+    end if;
+  end Reply;
+
+
+  -- Send a message to one process
+  procedure Send_To (Bus : in out Bus_Type;
+                     Host_Port : in String;
+                     Message : in String) is
+    Host : Tcp_Util.Remote_Host;
+    Port : Tcp_Util.Remote_Port;
+    Host_Id : Socket.Host_Id;
+    Port_Num : Socket.Port_Num;
+
+  begin
+    -- Check that Bus is initialised
+    if Bus.Acc = null then
+      raise Status_Error;
+    end if;
+    -- Parse and resolve into Host_Id and Port_Num
+    Ip_Addr.Parse (Host_Port, Host, Port);
+    Host_Id := Ip_Addr.Resolve (Host, False);
+    if Bus.Acc.Kind = Multicast then
+      -- Port is not significant
+      Port_Num := 0;
+    else
+      Port_Num := Ip_Addr.Resolve (Port, Socket.Tcp);
+    end if;
+    Send_To (Bus, Host_Id, Port_Num, Message);
+  exception
+    when Ip_Addr.Name_Error =>
+      raise Unknown_Destination;
+  end Send_To;
+
+  procedure Send_To (Bus : in out Bus_Type;
+                     Host : in Socket.Host_Id;
+                     Port : in Socket.Port_Num;
+                     Message : in String) is
+    Msg : Tcp_Message_Str;
+    Partner_Acc : Partner_Access;
+    Partner : Partner_Rec;
+    Success : Boolean;
+    Dummy : Boolean;
+  begin
+    -- Check that Bus is initialised
+    if Bus.Acc = null then
+      raise Status_Error;
+    end if;
+
+    -- Check message length
+    if Message'Length > Msg'Length then
+      raise Message_Too_Long;
+    end if;
+
+    if Bus.Acc.Kind = Multicast then
+      -- Multicast bus, send  to destination
+      Socket.Set_Destination_Host_And_Port (
+                                   Socket => Bus.Acc.Admin,
+                                   Host => Host,
+                                   Port => Port);
+      Ipm_Send (Bus.Acc.Admin, Pid_Image & '/' & Message,
+                               Pid_Image'Length + 1 + Message'Length);
+      return;
+    end if;
+
+    -- Search partner
+    Partner.Host := Host;
+    Partner.Port := Port;
+    if not Partners.Search_Match (Partner_Match_Hp'Access, Partner,
+                          From => Partner_List_Mng.Current_Absolute) then
+      raise Unknown_Destination;
+    end if;
+    Partner_Acc := Partners.Access_Current;
+
+    -- Prepare message and (current) partner
+    Msg(1 .. Message'Length) := Message;
+    if Partner_Acc.State /= Active then
+      return;
+    end if;
+
+    -- Send
+    begin
+      Dummy := Tcp_Send (Partner_Acc.Sock, null, null,
+                         Bus.Acc.Timeout, Msg, Message'Length);
+    exception
+      when Socket.Soc_Conn_Lost =>
+        Logger.Log_Debug ("Lost connection to " & Partner_Acc.Addr.Image);
+        Success := False;
+      when Tcp_Util.Timeout_Error =>
+        Logger.Log_Debug ("Timeout while sending to "
+                        & Partner_Acc.Addr.Image);
+        Success := False;
+      when Except:others =>
+        Log_Exception ("Tcp_Send", Ada.Exceptions.Exception_Name (Except),
+                       "sending to " & Partner_Acc.Addr.Image);
+        Success := False;
+    end;
+    if not Success then
+      -- Remove partner with which error occurs
+      Dummy := Partners.Search_Access (Partner_Acc);
+      Remove_Current_Partner (True);
+    end if;
+
+  end Send_To;
 
   -------------------
   -- The Subsciber --

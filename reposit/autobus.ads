@@ -130,6 +130,31 @@ package Autobus is
   Message_Too_Long : exception;
   procedure Send (Bus : in out Bus_Type; Message : in String);
 
+  -- Reply to the message currently being received
+  -- Note that if two processes use the same multicast bus on the same node
+  --  they both receive the reply to a message sent by one of them
+  -- If not in receive
+  Not_In_Receive : exception;
+  procedure Reply (Bus : in out Bus_Type; Message : in String);
+
+  -- Send a message to one process
+  -- If names do not resolve or destination is not known
+  Unknown_Destination : exception;
+  -- Note that if two processes use the same multicast bus on the same node
+  --  they both receive the message sent to one of them
+  -- Port is not significant on a multicast Bus (will use the port of the Bus)
+  -- Dest is designated by a string "host_addr:port_num"
+  --  or "host_name:port_name" or any combination
+  procedure Send_To (Bus : in out Bus_Type;
+                     Host_Port : in String;
+                     Message : in String);
+  -- Dest is designated by a Hosti_Id and Port_Num
+  procedure Send_To (Bus : in out Bus_Type;
+                     Host : in Socket.Host_Id;
+                     Port : in Socket.Port_Num;
+                     Message : in String);
+
+
   --------------------
   -- The Subscriber --
   --------------------
