@@ -144,11 +144,11 @@ package Autobus is
   --  they both receive the message sent to one of them
   -- Port is not significant on a multicast Bus (will use the port of the Bus)
   -- Dest is designated by a string "host_addr:port_num"
-  --  or "host_name:port_name" or any combination
+  --  or "host_name:port_name" or any combination, including empty port_name
   procedure Send_To (Bus : in out Bus_Type;
                      Host_Port : in String;
                      Message : in String);
-  -- Dest is designated by a Hosti_Id and Port_Num
+  -- Dest is designated by a Host_Id and a Port_Num
   procedure Send_To (Bus : in out Bus_Type;
                      Host : in Socket.Host_Id;
                      Port : in Socket.Port_Num;

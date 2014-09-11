@@ -1,27 +1,15 @@
 with Ada.Exceptions;
-with As.U, Address_Ops, Socket, Autobus, Mixed_Str, Text_Line;
+with As.U, Socket, Autobus, Mixed_Str, Text_Line, Normal;
 with Dictio_Debug, Parse, Local_Host_Name;
 package body Intra_Dictio is
 
   Lf : constant Character := Text_Line.Line_Feed_Char;
 
-  type Header_Rec is record
-    Stat : Character;
-    Sync : Character;
-    From : Local_Host_Name.Host_Name;
-    Kind : Character;
-    Prio : Args.Prio_Str;
-  end record;
-
-  type Message_Rec is record
-    Head : Header_Rec;
-    Item : Data_Base.Item_Rec;
-  end record;
-
   Bus : aliased Autobus.Bus_Type;
-  Local_Name : Tcp_Util.Host_Name;
 
-  -- Call bac to invoke on message reception
+  Msg_Max_Len : constant Positive := 367;
+
+  -- Call back to invoke on message reception
   Client_Cb : Read_Cb_Access := null;
   procedure Set_Read_Cb (Read_Cb : Read_Cb_Access) is
   begin
@@ -33,20 +21,13 @@ package body Intra_Dictio is
   type Observer_Type is new Autobus.Observer_Type with null record;
   procedure Receive (Unused_Observer   : in out Observer_Type;
                      Unused_Subscriber : in Autobus.Subscriber_Access_Type;
-                     Message           : in String) is
-  begin
-    if Client_Cb = null then
-      return;
-    end if;
-    -- @@@ parse and call Client_Cb
-  end Receive;
+                     Message           : in String);
   Receiver : aliased Observer_Type;
 
 
   procedure Init is
   begin
     Local_Host_Name.Set(Socket.Local_Host_Name);
-    Local_Name := As.U.Tus (Local_Host_Name.Get);
 
     Dictio_Debug.Put (Dictio_Debug.Intra, "Init bus");
     begin
@@ -91,106 +72,130 @@ package body Intra_Dictio is
     return Mixed_Str (Stat'Img);
   end Stat_Image;
 
-  function Sync_Image (C : Character) return String is
+  procedure Receive (Unused_Observer   : in out Observer_Type;
+                     Unused_Subscriber : in Autobus.Subscriber_Access_Type;
+                     Message           : in String) is
+    Msg : String (1 .. Msg_Max_Len);
+    Diff : Boolean;
+    Stat : Status.Status_List;
+    Sync : Boolean;
+    Prio : Args.Prio_Str;
+    From : Tcp_Util.Host_Name;
+    Kind : Character;
+    Item : Data_Base.Item_Rec;
+    Invalid_Data : exception;
   begin
-    if Character'Pos (C) = Boolean'Pos (True) then
-      return "True";
-    else
-      return "False";
-    end if;
-  end Sync_Image;
-
-  procedure Read_Cb (Message       : in Message_Rec;
-                     Unused_Length : in Natural;
-                     Diffused      : in Boolean) is
-  begin
-    -- Discard own message
-    if Local_Name.Image = Parse (Message.Head.From) then
+    if Client_Cb = null then
       return;
     end if;
-    Dictio_Debug.Put (Dictio_Debug.Intra,
-               "Receive Kind: " & Kind_Image (Message.Head.Kind)
-             & "  Diff: " & Mixed_Str (Diffused'Img)
-             & "  Stat: " & Stat_Image (Message.Head.Stat)
-             & "  Sync: " & Sync_Image (Message.Head.Sync)
-             & "  Prio: " & Message.Head.Prio
-             & "  From: " & Parse (Message.Head.From));
-    -- Call dispatcher
-    if Client_Cb /= null then
-      Client_Cb (Diffused,
-                 Status.Status_List'Val(Character'Pos(Message.Head.Stat)),
-                 Boolean'Val(Character'Pos(Message.Head.Sync)),
-                 Message.Head.Prio,
-                 As.U.Tus (Parse (Message.Head.From)),
-                 Message.Head.Kind,
-                 Message.Item);
+    -- Copy Message -> 1 .. Len
+    if Message'Length > Msg'Length then
+      Dictio_Debug.Put_Error (Dictio_Debug.Intra, "Message too long: >"
+                            & Message & "<");
+      return;
     end if;
-  end Read_Cb;
+    Msg (1 .. Message'Length) := Message;
+
+    -- Parse Message
+    case Msg(1) is
+      when 'M' => Diff := True;
+      when 'R' => Diff := False;
+      when 'T' => Diff := False;
+      when others => raise Invalid_Data;
+    end case;
+    Stat := Status.Status_List'Val (Character'Pos (Msg(2)));
+    Sync := Boolean'Val (Character'Pos (Msg(3)));
+    Prio := Msg(4 .. 6);
+    From := As.U.Tus (Parse (Msg (7 .. 70)));
+    Kind := Msg(71);
+    Item.Data_Len := Integer'Value (Msg(72 .. 74));
+    Item.Name := Msg(75 .. 106);
+    Item.Kind := Msg(107 .. 107);
+    Item.Crc := Msg(108 .. 111);
+    Item.Data(1 .. Item.Data_Len) := Msg(112 .. 112 + Item.Data_Len - 1);
+
+    Dictio_Debug.Put (Dictio_Debug.Intra,
+               "Receive Kind: " & Kind_Image (Kind)
+             & "  Diff: " & Mixed_Str (Diff'Img)
+             & "  Stat: " & Mixed_Str (Stat'Img)
+             & "  Sync: " & Mixed_Str (Sync'Img)
+             & "  Prio: " & Prio
+             & "  From: " & From.Image);
+    -- Call Client_Cb
+    Client_Cb (Diff, Stat, Sync, Prio, From, Kind, Item);
+  exception
+    when Constraint_Error | Invalid_Data =>
+      Dictio_Debug.Put_Error (Dictio_Debug.Intra, "Invalid_Message: >"
+                            & Message & "<");
+  end Receive;
+
+  type Header_Rec is record
+    Stat : Character;
+    Sync : Character;
+    Prio : Args.Prio_Str;
+    From : Local_Host_Name.Host_Name;
+    Kind : Character;
+  end record;
+
+  type Message_Rec is record
+    Head : Header_Rec;
+    Item : Data_Base.Item_Rec;
+  end record;
 
   procedure Send (To      : in String;
                   Message : in out Message_Rec;
                   Result  : out Reply_Result_List;
                   Get_Status : in Boolean := True) is
-    -- @@@
-    Msg : String (1 .. Autobus.Message_Max_Length);
+    Msg : String(1 .. Msg_Max_Len);
     Len : Natural := 0;
-    use Address_Ops;
     use type Data_Base.Item_Rec;
   begin
     if Get_Status then
       Message.Head.Stat := Character'Val(Status.Status_List'Pos(Status.Get));
     end if;
-    Message.Head.Sync := Character'Val(Boolean'Pos(Status.Sync));
-    Message.Head.Prio := Args.Get_Prio;
-    Local_Host_Name.Get (Message.Head.From);
+    Msg(2) := Message.Head.Stat;
+    Msg(3) := Message.Head.Sync;
+    Msg(4 .. 6) := Message.Head.Prio;
+    Local_Host_Name.Get (Msg(7 ..  70));
+    Msg(71) := Message.Head.Kind;
 
     if Message.Item.Data_Len = 0 then
-      -- Item without data
-      Len := Integer(Message.Item.Data(1)'Address
-                     - Message'Address + 4 - 1);
+      -- No item
+      Len := 71;
     else
-      Len := Integer(Message.Item.Data(Message.Item.Data_Len)'Address
-                     - Message'Address + 4);
+      -- An item
+      Msg(72 .. 74) := Normal (Message.Item.Data_Len, 3, Gap => '0');
+      Msg(75 .. 106) := Message.Item.Name;
+      Msg(107 .. 107) := Message.Item.Kind;
+      Msg(108 .. 111) := Message.Item.Crc;
+      Msg(112 .. 112 + Message.Item.Data_Len - 1) :=
+          Message.Item.Data(1 .. Message.Item.Data_Len);
+      Len := 111 + Message.Item.Data_Len;
     end if;
-    if To = "*" then
-      Dictio_Debug.Put (Dictio_Debug.Intra, "Bcast Kind: "
-                 & Kind_Image(Message.Head.Kind)
-                 & "  Stat: " & Stat_Image(Message.Head.Stat)
-                 & "  Len: " & Len'Img);
-    elsif To = "" then
-      Dictio_Debug.Put (Dictio_Debug.Intra, "Reply Kind: "
-                 & Kind_Image(Message.Head.Kind)
-                 & "  Stat: " & Stat_Image(Message.Head.Stat)
-                 & "  Len: " & Len'Img);
-    else
-      Dictio_Debug.Put (Dictio_Debug.Intra, "Send to: " & To
+    Dictio_Debug.Put (Dictio_Debug.Intra,
+                      (if To = "*" then "Bcast"
+                       elsif To = "" then  "Reply"
+                       else "Send to: " & To)
                  & "  Kind: " & Kind_Image(Message.Head.Kind)
                  & "  Stat: " & Stat_Image(Message.Head.Stat)
-                 & "  Len: " & Len'Img);
-    end if;
+                 & "  Len: "  & Len'Img);
 
-    Result := Error;
     if To = "*" then
+      Msg(1) := 'M';
       Bus.Send (Msg (1 .. Len));
-      Result := Ok;
     elsif To = "" then
-      begin
-        Bus.Reply (Msg (1 .. Len));
-        Result := Ok;
-      exception
-        when others =>
-          Result := Error;
-      end;
+      Msg(1) := 'R';
+      Bus.Reply (Msg (1 .. Len));
     else
-      begin
-        -- @@@ To
-        Bus.Send_To (To, Msg (1 .. Len));
-        Result := Ok;
-      exception
-        when others =>
-          Result := Error;
-      end;
+      Msg(1) := 'T';
+      Bus.Send_To (To & ":", Msg (1 .. Len));
     end if;
+    Result := Ok;
+  exception
+    when others =>
+      Result := Error;
+      Dictio_Debug.Put_Error (Dictio_Debug.Intra,
+                              "Exception when sending message");
   end Send;
 
   procedure Send (To : in String;
@@ -229,7 +234,6 @@ package body Intra_Dictio is
     Send ("*", Msg, Get_Status => False);
   end Send_Status;
 
-
   procedure Reply_Status (Extra : in String := "") is
     Msg : Message_Rec;
   begin
@@ -264,7 +268,10 @@ package body Intra_Dictio is
     else
       Send ("*", Msg, Result);
     end if;
-    Dictio_Debug.Put (Dictio_Debug.Intra, "Sync reply failed on " & Result'Img);
+    if Result /= Ok then
+      Dictio_Debug.Put (Dictio_Debug.Intra,
+                        "Sync reply failed on " & Result'Img);
+    end if;
     return Result;
   end Send_Sync_Data;
 

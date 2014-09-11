@@ -1,21 +1,21 @@
 #!/bin/bash
 
-export DICTIO_DEBUG=Y
+export DICTIO_Debug=Y
 
-if [ "$DICTIO_DEBUG" = "Y" ] ; then
+if [ "$DICTIO_Debug" = "Y" ] ; then
 # These ones generate few traces
-export DICTIO_TRACE_STATUS=DEBUG
-export DICTIO_TRACE_FIGHT=DEBUG
-export DICTIO_TRACE_SYNC=DEBUG
-export DICTIO_TRACE_ONLINE=DEBUG
-export DICTIO_TRACE_CLIENT=DEBUG
+export dictio_TRACE_Status=Debug
+export dictio_TRACE_Fight=Debug
+export dictio_TRACE_Sync=Debug
+export dictio_TRACE_Online=Debug
+export dictio_TRACE_Client=Debug
 fi
 
 # These ones generate many traces
-#export DICTIO_TRACE_CLIENT_DATA=DEBUG
-#export DICTIO_TRACE_CLIENT_NOTIFY=DEBUG
-#export DICTIO_TRACE_CLIENT_ALIAS=DEBUG
-#export DICTIO_TRACE_INTRA=DEBUG
+#export dictio_TRACE_Client_Data=Debug
+#export dictio_TRACE_CLIENT_Notify=Debug
+#export dictio_TRACE_CLIENT_Alias=Debug
+#export dictio_TRACE_Intra=Debug
 
 # These ones are not debug
 # Flow control on LAN during sync
@@ -30,6 +30,9 @@ while [ "$1" != "" ] ; do
   if [ "$1" = "-p" ] ; then
     shift
     export DICTIO_PRIO=$1
+    shift
+  elif [ "$1" = "-d" ] ; then
+    export  DICTIO_LAUNCHER=gvd
     shift
   else
     echo "Usage: `basename $0` [ -p <prio> ]"
@@ -51,7 +54,7 @@ else
 fi
 
 # Clean previous Afunix socket if any
-SOK=`grep -E "^$PORT[[:blank:]]" /etc/services | awk '{print $2}' \
+SOK=`grep -E "^$PORT[[:blank:]]" /etc/services | awk '{print $2; exit}' \
 | cut -d '/' -f1`
 if [ -z "$SOK" ] ; then
   SOK=$PORT
@@ -65,7 +68,7 @@ fi
 if [ -z "$DICTIO_LAUNCHER" ] ; then
   DICTIO_LAUNCHER=exec
 elif [ "$DICTIO_LAUNCHER" = "gvd" ] ; then
-  GVOPT=--pargs
+  echo Debugging ./dictio -b$BUS -p$PORT -P$DICTIO_PRIO
 fi
 
 ${DICTIO_LAUNCHER} ./dictio -b$BUS -p$PORT -P$DICTIO_PRIO

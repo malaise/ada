@@ -110,7 +110,8 @@ package body Autobus is
   -- We read a message of 24 characters to check that it is shorter than 23
   Ipm_Message_Max_Length : constant := 23;
   subtype Ipm_Message_Str is String (1 .. Ipm_Message_Max_Length + 1);
-  package Ipm_Reception_Mng is new Tcp_Util.Reception (Ipm_Message_Str);
+  subtype Message_Str is String (1 .. Message_Max_Length);
+  package Ipm_Reception_Mng is new Tcp_Util.Reception (Message_Str);
   -- Mini is A/3.5.7.9:1
   Message_Min_Length : constant := 11;
 
@@ -656,7 +657,7 @@ package body Autobus is
 
   -- IPM Reception Cb
   function Ipm_Reception_Cb (Dscr    : Socket.Socket_Dscr;
-                             Message : Ipm_Message_Str;
+                             Message : Message_Str;
                              Length  : Natural) return Boolean is
     Rem_Host : Tcp_Util.Remote_Host;
     Rem_Port : Tcp_Util.Remote_Port;

@@ -4,9 +4,9 @@ with Args, Data_Base, Status;
 package Intra_Dictio is
 
   -- Kind of message
-  Stat_Kind : Character renames Ada.Characters.Latin_1.Syn;
+  Stat_Kind : Character renames Ada.Characters.Latin_1.Enq;
   Data_Kind : Character renames Ada.Characters.Latin_1.Can;
-  Sync_Kind : Character renames Ada.Characters.Latin_1.Ack;
+  Sync_Kind : Character renames Ada.Characters.Latin_1.Syn;
 
   Extra_Crc : constant Character := 'C';
   Extra_Ver : constant Character := 'V';
