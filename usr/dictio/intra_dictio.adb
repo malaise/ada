@@ -83,6 +83,7 @@ package body Intra_Dictio is
     From : Tcp_Util.Host_Name;
     Kind : Character;
     Item : Data_Base.Item_Rec;
+    Step : As.U.Asu_Us;
     Invalid_Data : exception;
   begin
     if Client_Cb = null then
@@ -97,22 +98,35 @@ package body Intra_Dictio is
     Msg (1 .. Message'Length) := Message;
 
     -- Parse Message
+    Step := As.U.Tus ("Diff");
     case Msg(1) is
       when 'M' => Diff := True;
       when 'R' => Diff := False;
       when 'T' => Diff := False;
       when others => raise Invalid_Data;
     end case;
+    Step := As.U.Tus ("Stat");
     Stat := Status.Status_List'Val (Character'Pos (Msg(2)));
+    Step := As.U.Tus ("Sync");
     Sync := Boolean'Val (Character'Pos (Msg(3)));
+    Step := As.U.Tus ("Prio");
     Prio := Msg(4 .. 6);
+    Step := As.U.Tus ("From");
     From := As.U.Tus (Parse (Msg (7 .. 70)));
+    Step := As.U.Tus ("Kind");
     Kind := Msg(71);
-    Item.Data_Len := Integer'Value (Msg(72 .. 74));
-    Item.Name := Msg(75 .. 106);
-    Item.Kind := Msg(107 .. 107);
-    Item.Crc := Msg(108 .. 111);
-    Item.Data(1 .. Item.Data_Len) := Msg(112 .. 112 + Item.Data_Len - 1);
+    if Message'Length > 71 then
+      Step := As.U.Tus ("Item len");
+      Item.Data_Len := Integer'Value (Msg(72 .. 74));
+      Step := As.U.Tus ("Item name");
+      Item.Name := Msg(75 .. 106);
+      Step := As.U.Tus ("Item kind");
+      Item.Kind := Msg(107 .. 107);
+      Step := As.U.Tus ("Item CRC");
+      Item.Crc := Msg(108 .. 111);
+      Step := As.U.Tus ("Item data");
+      Item.Data(1 .. Item.Data_Len) := Msg(112 .. 112 + Item.Data_Len - 1);
+   end if;
 
     Dictio_Debug.Put (Dictio_Debug.Intra,
                "Receive Kind: " & Kind_Image (Kind)
@@ -122,11 +136,12 @@ package body Intra_Dictio is
              & "  Prio: " & Prio
              & "  From: " & From.Image);
     -- Call Client_Cb
+    Step := As.U.Tus ("Call_Cb data");
     Client_Cb (Diff, Stat, Sync, Prio, From, Kind, Item);
   exception
     when Constraint_Error | Invalid_Data =>
       Dictio_Debug.Put_Error (Dictio_Debug.Intra, "Invalid_Message: >"
-                            & Message & "<");
+                            & Message & "<. Error decoding " & Step.Image);
   end Receive;
 
   type Header_Rec is record
