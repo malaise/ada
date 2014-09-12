@@ -145,11 +145,11 @@ package body Intra_Dictio is
   end Receive;
 
   type Header_Rec is record
-    Stat : Character;
-    Sync : Character;
-    Prio : Args.Prio_Str;
-    From : Local_Host_Name.Host_Name;
-    Kind : Character;
+    Stat : Character := '?';
+    Sync : Character := '?';
+    Prio : Args.Prio_Str := "999";
+    From : Local_Host_Name.Host_Name := (others => '?');
+    Kind : Character := '?';
   end record;
 
   type Message_Rec is record
@@ -169,8 +169,8 @@ package body Intra_Dictio is
       Message.Head.Stat := Character'Val(Status.Status_List'Pos(Status.Get));
     end if;
     Msg(2) := Message.Head.Stat;
-    Msg(3) := Message.Head.Sync;
-    Msg(4 .. 6) := Message.Head.Prio;
+    Msg(3) := Character'Val(Boolean'Pos(Status.Sync));
+    Msg(4 .. 6) := Args.Get_Prio;
     Local_Host_Name.Get (Msg(7 ..  70));
     Msg(71) := Message.Head.Kind;
 
