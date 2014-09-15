@@ -1019,7 +1019,8 @@ package body Tcp_Util is
           return True;
       end;
       Log_Reception.Log_Debug ("Tcp_Util.Read_Cb len " & Len'Img & " on fd "
-                             & Fd'Img);
+          & Fd'Img
+          & (if The_Rec.Set_For_Reply then " Set_For_Reply" else ""));
       -- Call appli callback
       if The_Rec.Read_Cb /= null then
         Result := The_Rec.Read_Cb (The_Rec.Dscr, Msg.all, Len);
