@@ -264,8 +264,8 @@ private
     Admin : Socket.Socket_Dscr := Socket.No_Socket;
     Host : Socket.Host_Id;
     Port : Socket.Port_Num;
-    -- TCP accept socket
-    Accep : Socket.Socket_Dscr := Socket.No_Socket;
+    -- TCP accept socket or UDP point to point
+    Ptp : Socket.Socket_Dscr := Socket.No_Socket;
     -- Host Id denoting the interface (for TCP and IPM)
     Host_If : Socket.Host_Id;
     -- Supervision callback

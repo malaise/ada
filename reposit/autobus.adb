@@ -199,11 +199,11 @@ package body Autobus is
     return Curr.Admin = Crit.Admin;
   end Bus_Match_Admin;
   -- By accept socket
-  function Bus_Match_Accep (Curr, Crit : Bus_Rec) return Boolean is
+  function Bus_Match_Ptp (Curr, Crit : Bus_Rec) return Boolean is
     use type Socket.Socket_Dscr;
   begin
-    return Curr.Accep = Crit.Accep;
-  end Bus_Match_Accep;
+    return Curr.Ptp = Crit.Ptp;
+  end Bus_Match_Ptp;
   -- By timer Id
   function Bus_Match_Timer (Curr, Crit : Bus_Rec) return Boolean is
     use type Timers.Timer_Id;
@@ -613,8 +613,8 @@ package body Autobus is
     Partner : Partner_Rec;
   begin
     -- Find bus and insert partner
-    Bus.Accep := Local_Dscr;
-    if not Buses.Search_Match (Bus_Match_Accep'Access, Bus,
+    Bus.Ptp := Local_Dscr;
+    if not Buses.Search_Match (Bus_Match_Ptp'Access, Bus,
                                From => Bus_List_Mng.Current_Absolute) then
       Log_Error ("Accept_Cb", "bus not found", "in buses list");
       return;
@@ -640,7 +640,7 @@ package body Autobus is
   -- Send Alive message of current Bus
   procedure Ipm_Send is new Socket.Send (String,
                                          Message_Max_Length);
-  procedure Send_Ipm (Active : in Trilean.Trilean) is
+  procedure Send_Admin (Active : in Trilean.Trilean) is
     Message_Len : Natural;
     Message : Ipm_Message_Str;
     Bus_Acc : Bus_Access;
@@ -653,7 +653,7 @@ package body Autobus is
                                     when Trilean.Other => "D")
                                & "/" & Bus_Acc.Addr.Image;
     Ipm_Send (Bus_Acc.Admin, Message, Message_Len);
-  end Send_Ipm;
+  end Send_Admin;
 
   -- IPM Reception Cb
   function Ipm_Reception_Cb (Dscr    : Socket.Socket_Dscr;
@@ -675,8 +675,16 @@ package body Autobus is
       Crit.Admin := Dscr;
       if not Buses.Search_Match (Bus_Match_Admin'Access, Crit,
                                  From => Bus_List_Mng.Current_Absolute) then
-        Log_Error ("Ipm_Reception_Cb", "bus not found", "in buses list");
-        return False;
+        Crit.Ptp := Dscr;
+        if not Buses.Search_Match (Bus_Match_Ptp'Access, Crit,
+                                 From => Bus_List_Mng.Current_Absolute) then
+          Log_Error ("Ipm_Reception_Cb", "bus not found", "in buses list");
+          return False;
+        elsif Buses.Access_Current.Kind /= Multicast then
+          Log_Error ("Ipm_Reception_Cb", "bus not found by admin",
+                     "in buses list");
+          return False;
+        end if;
       end if;
       -- Set partner bus
       Partner.Bus := Bus_Access(Buses.Access_Current);
@@ -759,8 +767,8 @@ package body Autobus is
         --  (and we will accept) then it will send its address
         Logger.Log_Debug ("Ipm: Waiting for connection from "
                         & Partner.Addr.Image);
-        Send_Ipm ((if Partner.Bus.Kind = Active then Trilean.True
-                   else Trilean.False));
+        Send_Admin ((if Partner.Bus.Kind = Active then Trilean.True
+                    else Trilean.False));
       else
         -- partner >= Own: add partner and start connect
         Logger.Log_Debug ("Ipm: Connecting to new partner "
@@ -804,8 +812,8 @@ package body Autobus is
     -- Send Alive message
     Bus_Acc := Buses.Access_Current;
     if Bus_Acc.Kind = Active or else Bus_Acc.Passive_Timer.Has_Expired then
-      Send_Ipm ((if Bus_Acc.Kind = Active then Trilean.True
-                 else Trilean.False));
+      Send_Admin ((if Bus_Acc.Kind = Active then Trilean.True
+                  else Trilean.False));
     end if;
 
     -- Check partners keep alive timers and remove dead ones
@@ -903,12 +911,23 @@ package body Autobus is
     Ipm_Reception_Mng.Set_Callbacks (Rbus.Admin, Ipm_Reception_Cb'Access, null,
                                      Set_For_Reply => Rbus.Kind = Multicast);
 
-    if Rbus.Kind /= Multicast then
+    if Rbus.Kind = Multicast then
+      -- Create the UDP Pt to Pt socket
+      Rbus.Ptp.Open (Socket.Udp);
+      Rbus.Ptp.Set_Reception_Interface (Rbus.Host_If);
+      Rbus.Ptp.Link_Port (Rbus.Admin.Get_Linked_To);
+      -- Used to detect local messages
+      Rbus.Ptp.Set_Destination_Host_And_Port (Rbus.Host_If,
+                                                Rbus.Admin.Get_Linked_To);
+      Ipm_Reception_Mng.Set_Callbacks (Rbus.Ptp, Ipm_Reception_Cb'Access,
+                                       null);
+      
+    else
       -- Create the TCP accepting socket, set accep callback
       Tcp_Util.Accept_From (Socket.Tcp_Header,
                             (Kind => Tcp_Util.Port_Dynamic_Spec),
                             Tcp_Accept_Cb'Access,
-                            Rbus.Accep, Port_Num,
+                            Rbus.Ptp, Port_Num,
                             Rbus.Host_If);
       Logger.Log_Debug ("TCP socket initialialized");
 
@@ -919,7 +938,7 @@ package body Autobus is
     -- Set TTL on Admin and Accept (IPM and TCP) sockets
     Rbus.Admin.Set_Ttl (Rbus.Ttl);
     if Rbus.Kind /= Multicast then
-      Rbus.Accep.Set_Ttl (Rbus.Ttl);
+      Rbus.Ptp.Set_Ttl (Rbus.Ttl);
 
       -- Arm Bus related active timer and create passive timer
       Timeout.Delay_Seconds := 0.0;
@@ -978,13 +997,15 @@ package body Autobus is
 
     -- Send Death info
     if Bus.Acc.Kind /= Multicast then
-      Send_Ipm (Trilean.Other);
+      Send_Admin (Trilean.Other);
     end if;
 
     -- Close resources
     Ipm_Reception_Mng.Remove_Callbacks (Bus.Acc.Admin);
-    if Bus.Acc.Kind /= Multicast then
-      Tcp_Util.Abort_Accept (Socket.Tcp_Header, Bus.Acc.Accep.Get_Linked_To);
+    if Bus.Acc.Kind = Multicast then
+      Ipm_Reception_Mng.Remove_Callbacks (Bus.Acc.Ptp);
+    else
+      Tcp_Util.Abort_Accept (Socket.Tcp_Header, Bus.Acc.Ptp.Get_Linked_To);
       if Bus.Acc.Passive_Timer.Running then
         Bus.Acc.Passive_Timer.Stop;
       end if;
@@ -1407,7 +1428,7 @@ package body Autobus is
     To.Admin := Val.Admin;
     To.Host := Val.Host;
     To.Port := Val.Port;
-    To.Accep := Val.Accep;
+    To.Ptp := Val.Ptp;
     To.Host_If := Val.Host_If;
     To.Sup_Cb := Val.Sup_Cb;
     To.Kind := Val.Kind;
