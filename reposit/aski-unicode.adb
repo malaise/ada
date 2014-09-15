@@ -3,7 +3,7 @@ package body Aski.Unicode is
   -- Are strict ANSI the characters from 0 (Nul) to 127 (Del) included
   function Is_Strict (U : Unicode_Number)   return Boolean is
   begin
-    return U < Del_U;
+    return U <= Del_U;
   end Is_Strict;
 
   function Is_Strict (S : Unicode_Sequence) return Boolean is
