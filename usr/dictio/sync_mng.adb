@@ -73,6 +73,7 @@ package body Sync_Mng is
   procedure Sync_Received is
   begin
     if Timer_Active then
+      Dictio_Debug.Put (Dictio_Debug.Sync, "Sync: Received");
       Sync_Has_Been_Received := True;
       Nb_Syn_Received := Nb_Syn_Received + 1;
     end if;
@@ -137,7 +138,7 @@ package body Sync_Mng is
     end if;
   end Send;
 
-  procedure Do_Sync_Bus is
+  procedure Do_Sync is
     Item : Data_Base.Item_Rec;
     Bytes_Sent : Natural;
     Reply_Result : Intra_Dictio.Reply_Result_List;
@@ -178,7 +179,7 @@ package body Sync_Mng is
 
     end loop Items;
 
-  end Do_Sync_Bus;
+  end Do_Sync;
 
   function Timer_Sen_Cb (Unused_Id : Timers.Timer_Id;
                          Unused_Data : Timers.Timer_Data) return Boolean is
@@ -197,7 +198,7 @@ package body Sync_Mng is
 
     -- Send items
     Sending_Status := Send;
-    Do_Sync_Bus;
+    Do_Sync;
 
     -- Done
     if not Sync_List.Is_Empty then

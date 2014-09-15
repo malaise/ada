@@ -72,6 +72,12 @@ package body Intra_Dictio is
     return Mixed_Str (Stat'Img);
   end Stat_Image;
 
+  function Sync_Image (Sync : Boolean) return String is
+  begin
+    return Mixed_Str (Sync'Img);
+  end Sync_Image;
+
+
   procedure Receive (Unused_Observer   : in out Observer_Type;
                      Unused_Subscriber : in Autobus.Subscriber_Access_Type;
                      Message           : in String) is
@@ -193,6 +199,7 @@ package body Intra_Dictio is
                        else "Send to: " & To)
                  & "  Kind: " & Kind_Image(Message.Head.Kind)
                  & "  Stat: " & Stat_Image(Message.Head.Stat)
+                 & "  Sync: " & Sync_Image(Status.Sync)
                  & "  Len: "  & Len'Img);
 
     if To = "*" then
