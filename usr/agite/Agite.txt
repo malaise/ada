@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V14.24
+V14.00
 
 General purpose
 ---------------
@@ -226,9 +226,16 @@ field changes the current directory to the root.
 anchor:XGo[]
 
 Go::
-This line shows the current directory. It also allows entering a path and then
-going to it by hitting the key 'Return' or clicking in the 'Go' button. This
-text field can scroll horizontally to accomodate to long paths.
+This line shows the current directory. This field can be modified by:
+
+* changing / entering a new path with the keyboard,
+* clicking on xref:XReread[Reread] to restore the current directory,
+* clicking on xref:XPushD[PopD] to restore a path previously pushed.
+
++
+Then it is possible to change to the new path by hitting the key 'Return' or
+by clicking on the 'Go' button. +
+This text field can scroll horizontally to accomodate to long paths.
 
 anchor:XReread[]
 
@@ -236,7 +243,8 @@ Reread::
 Normally Agite re-scans the current directory and refreshes the list and status
 when necessary, and also periodically if the feature is enabled (see
 xref:XConfPeriod[period] configuration option). This button explicitly refreshes
-the current list and status of files.
+the current list and status of files and also resets the xref:XGo[Go] field to
+the current directory.
 
 Dir Up::
 This button allows moving up to parent directory.
@@ -244,31 +252,29 @@ This button allows moving up to parent directory.
 Bookmarks::
 This button activates the xref:XBook[bookmarks] menu.
 
+anchor:XPushD[]
+
 PushD and PopD::
-The 'PushD' button allows storing the current directory and the
-'PopD' button then allows moving back to it.
-+
+The 'PushD' button allows storing the current directory, and later on the
+'PopD' button allows moving back to it.
+
 * [underline]#How it works#: Agite keeps a cache of two paths, D1 and D2.
-'PushD' saves D1 as D2 and pushes the current directory as D1,
-while 'PopD' swaps D1 and D2 and moves to the new D1 (if D2 is empty then 'PopD'
-makes a 'PushD' first). Note that 'PopD' is disabled as long as it would lead
-to move to the current directory (i.e. when D2 is the current directory, or
-D2 ie empty and D1 is the current directory).
-+
+'PushD' saves D1 as D2 and pushes the current directory as D1. 'PopD' swaps D1
+and D2 (if D2 is not empty) and copies the new D1 into the xref:XGo[Go] field.
+
 * [underline]#How to use it#: At start-up current the directory is automatically
-pushed and 'PopD' is disabled. As soon as you move to another directory, 'PopD'
-allows moving back to the original one. Once two directories have been pushed, 
-clicking on 'PopD' allows swapping between the new pushed and the previously
-pushed directories (in fact, 'PopD' does not pop).
-+
+pushed. As soon as you move to another directory, 'PopD' then xref:XGo[Go]
+allow moving back to the original one. Once two directories have been pushed, 
+clicking on 'PopD' then xref:XGo[Go] allows swapping between both directories
+(so, in fact, 'PopD' does not pop).
+
 * [underline]#Warning#: Keep in mind that only the first directory (where Agite
-starts) and the current directory from which you do a first 'PopD' (because
-at this time D2 is empty) are automatically pushed. Changing to a new directory
+starts) is automatically pushed. Changing to a new directory
 doesn't make it automatically pushed. Popping doesn't lead to push
 the current directory either. For example, if you 'PushD' the directory
 A, then change to B (and do not explicitly push it), then change to C, then
 'PopD', then Agite will change to directory A (not B).
-+
+
 * [underline]#Warning#: Keep in mind that 'PopD' swaps D1 and D2 before going
 to D1.  For example, if you start in directory A, then change to B, then push it,
 then change to C, then 'PopD', Agite will change to directory A (not B). A
@@ -388,11 +394,11 @@ This button reverts the local change on the current entry. +
 First, a simple screen asks to confirm or cancel the operation. +
 Then, depending on the type of the current entry:
 
-- If it is \'./' then, after confirmation, Agite performs a 'git reset
---hard', which resets the local changes in the *whole worktree* (root and
-subtree), not only the current directory.
-- If it is a directory then it is deleted, which succeeds only if the
-directory is empty.
+- If it is \'./' then Agite performs a 'git reset --hard', which resets the
+local changes in the *whole worktree* (root and subtree), not only the current
+directory.
+- If it is a subdirectory (not \'./' nor \'../') then it is deleted, which
+succeeds only if it is empty.
 - If it is a file or a symbolic link,
  * if unknown by Git, then it is removed,
  * if just added to Git, then it becomes unknown by Git,
@@ -406,7 +412,8 @@ committed content and the new one is reset as unknown by Git
  * if up to date in Git, then it is removed from Git
 
 +
-Note: The Revert button has no effect on a file known by Git and not modified.
+Note: The Revert button has no effect on a file known by Git and not modified,
+and no effect on \'../'.
 
 .Other actions
 

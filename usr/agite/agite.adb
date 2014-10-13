@@ -238,11 +238,33 @@ procedure Agite is
     return File;
   end Get_Current_File;
 
+  -- Update cursor col to the last char of Dir_Field
+  procedure Update_Cursor_Col is
+    Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (Dir_Field);
+    Wstr : constant Wide_String := Afpx.Decode_Wide_Field (Dir_Field, 0);
+  begin
+    -- Move cursor col on last significant char
+    Get_Handle.Cursor_Col := 0;
+    Get_Handle.Offset := 0;
+    Get_Handle.Insert := False;
+    for I in reverse Wstr'Range loop
+      if Wstr(I) /= ' ' then
+        Get_Handle.Cursor_Col := I;
+        exit;
+      end if;
+    end loop;
+    -- String is longer that field width
+    if Get_Handle.Cursor_Col >= Width then
+      -- Width + Offset = Data_Len
+      Get_Handle.Offset := Get_Handle.Cursor_Col - Width;
+      Get_Handle.Cursor_Col := Width - 1;
+    end if;
+  end Update_Cursor_Col;
+
   -- Change dir (or at least try) according to argument or Dir_Field
   procedure Change_Dir (New_Dir : in String := "") is
     Str : constant String
         := Utils.Parse_Spaces (Afpx.Decode_Field (Dir_Field, 0, False));
-    Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (Dir_Field);
     Target : As.U.Asu_Us;
   begin
     begin
@@ -284,26 +306,7 @@ procedure Agite is
 
     -- Encode current dir (get field)
     Utils.X.Encode_Field (Directory.Get_Current, Dir_Field);
-    -- Move cursor col on last significant char
-    Get_Handle.Cursor_Col := 0;
-    Get_Handle.Offset := 0;
-    Get_Handle.Insert := False;
-    declare
-      Wstr : constant Wide_String := Afpx.Decode_Wide_Field (Dir_Field, 0);
-    begin
-      for I in reverse Wstr'Range loop
-        if Wstr(I) /= ' ' then
-          Get_Handle.Cursor_Col := I;
-          exit;
-        end if;
-      end loop;
-    end;
-    -- String is longer that field width
-    if Get_Handle.Cursor_Col >= Width then
-      -- Width + Offset = Data_Len
-      Get_Handle.Offset := Get_Handle.Cursor_Col - Width;
-      Get_Handle.Cursor_Col := Width - 1;
-    end if;
+    Update_Cursor_Col;
 
     -- Encode root dir
     Utils.X.Encode_Field (Root.Image, Afpx_Xref.Main.Root);
@@ -718,14 +721,17 @@ procedure Agite is
   procedure Pop_Dir is
     New_Dir : As.U.Asu_Us;
   begin
+    -- Swap Dir1 and Dir2 if possible and propose Goto to new Dir1
     if Dir2.Is_Null then
-      Push_Dir;
+      New_Dir := Dir1;
+    else
+      New_Dir := Dir2;
+      Dir2 := Dir1;
+      Dir1 := New_Dir;
     end if;
-    -- Change to Dir2 and swap Dir1 and Dir2
-    New_Dir := Dir2;
-    Dir2 := Dir1;
-    Dir1 := New_Dir;
-    Change_Dir (New_Dir.Image);
+    -- Propose Goto to new Dir1
+    Utils.X.Encode_Field (New_Dir.Image, Dir_Field);
+    Update_Cursor_Col;
   end Pop_Dir;
   procedure Init_Dir is
   begin
@@ -736,10 +742,8 @@ procedure Agite is
     return True;
   end Can_Push;
   function Can_Pop return Boolean is
-    Curr_Dir : constant String := Directory.Get_Current;
   begin
-    return (Dir2.Is_Null and then Curr_Dir /= Dir1.Image)
-    or else (not Dir2.Is_Null and then Curr_Dir /= Dir2.Image);
+    return True;
   end Can_Pop;
 
 begin
