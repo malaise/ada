@@ -921,7 +921,7 @@ package body Autobus is
                                                 Rbus.Admin.Get_Linked_To);
       Ipm_Reception_Mng.Set_Callbacks (Rbus.Ptp, Ipm_Reception_Cb'Access,
                                        null);
-      
+
     else
       -- Create the TCP accepting socket, set accep callback
       Tcp_Util.Accept_From (Socket.Tcp_Header,
