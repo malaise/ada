@@ -4,7 +4,7 @@ with Trace.Loggers, Rnd, Exception_Messenger, Directory, Str_Util,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "4";
+  Minor_Version : constant String := "5";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1365,8 +1365,6 @@ package body Xml_Parser is
    (My_Tree.Tree_Type, Tree_Acc);
   procedure Deallocate is new Ada.Unchecked_Deallocation
    (Id_List_Mng.Unique_List_Type, Id_List_Access);
-  procedure Deallocate is new Ada.Unchecked_Deallocation
-   (Idref_List_Mng.List_Type, Idref_List_Access);
   overriding procedure Finalize (Ctx : in out Ctx_Type) is
   begin
     -- Clean contenxt and its data

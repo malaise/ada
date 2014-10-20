@@ -1,5 +1,5 @@
 with Ada.Finalization;
-with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
+with As.U, Queues, Trees, Hashed_List.Unique, Text_Char,
      Unlimited_Pool, Byte_To_Unicode, Trilean, Magic_Numbers;
 -- Parse a Xml file or string.
 -- Call callback while parsing or provide access to the tree after parsing.
@@ -718,9 +718,8 @@ private
   type Id_List_Access is access Id_List_Mng.Unique_List_Type;
 
   -- List of IDREFs found
-  package Idref_Dyn_List_Mng is new Dynamic_List (Id_Cell);
-  package Idref_List_Mng renames Idref_Dyn_List_Mng.Dyn_List;
-  type Idref_List_Access is access Idref_List_Mng.List_Type;
+  package Idref_List_Mng renames Id_List_Mng;
+  subtype Idref_List_Access is Id_List_Access;
 
   -- Unparsed entities
   type Unparsed_Access is access all Unparsed_Type;
@@ -799,7 +798,7 @@ private
     -- Unique list of Ids
     Ids : Id_List_Access := new Id_List_Mng.Unique_List_Type;
     -- List of Idrefs
-    Idrefs : Idref_List_Access := new Idref_List_Mng.List_Type;
+    Idrefs : Idref_List_Access := new Idref_List_Mng.Unique_List_Type;
     -- Unparsed entities and Notations
     Unparsed_List : Unparsed_List_Mng.Unique_List_Type;
     -- Namespaces

@@ -1827,14 +1827,19 @@ package body Dtd is
             Ctx.Ids.Insert (Idcell);
             Debug (" Check, added ID " & Xml_Val.Image);
           elsif Td(1) = 'R' then
-            -- Store this IDREF and line_no to list of IDREFs
+            -- Store this IDREF and line_no to list of IDREFs if this
+            --  IDREF is not known yet
+            -- So the first occurence of this IDREF missinf ID will be reported
             Idcell.Name := Xml_Val;
             Idcell.Line_No := Line_No;
-            Ctx.Idrefs.Insert (Idcell);
-            Debug (" Check, added IDREF " & Xml_Val.Image);
+            if Ctx.Idrefs.Insert_If_New (Idcell) then
+              Debug (" Check, added IDREF " & Xml_Val.Image);
+            end if;
           elsif Td(1) = 'r' then
             Idcell.Line_No := Line_No;
-            -- Store these IDREFs and line_no to list of IDREFs
+            -- Store these IDREFs and line_no to list of IDREFs if this
+            --  IDREF is not known yet
+            -- So the first occurence of this IDREF missinf ID will be reported
             Util.Normalize_Spaces (Xml_Val);
             -- Split IDREFS and insert each IDREF
             Iter_Xml.Set (Xml_Val.Image,
@@ -1843,8 +1848,9 @@ package body Dtd is
             loop
               Idcell.Name := As.U.Tus (Iter_Xml.Next_Word);
               exit when Idcell.Name.Is_Null;
-              Ctx.Idrefs.Insert (Idcell);
-              Debug (" Check, added IDREF " & Idcell.Name.Image);
+              if Ctx.Idrefs.Insert_If_New (Idcell) then
+                Debug (" Check, added IDREF " & Idcell.Name.Image);
+              end if;
             end loop;
             Iter_Xml.Del;
           end if;
@@ -2300,16 +2306,6 @@ package body Dtd is
     Ctx.Elements.Move_Father;
   end Check_Subtree;
 
-
-  -- For sorting IDREFs
-  function Less_Than (I1, I2 : Id_Cell) return Boolean is
-    use type As.U.Asu_Us;
-  begin
-    -- Sort by Name then Line_No
-    return I1.Name < I2.Name
-    or else (I1.Name = I2.Name and then I1.Line_No < I2.Line_No);
-  end Less_Than;
-  procedure Id_Sort is new Idref_List_Mng.Sort (Less_Than);
   -- Final checks
   -- Check that all attribute values of Xml tagged IDREF(s) in Dtd
   --  and thus collected in Idrefs
@@ -2317,24 +2313,20 @@ package body Dtd is
   --  and thus collected in Ids
   procedure Final_Check (Ctx : in out Ctx_Type) is
     Moved : Boolean;
-    Idref, Prev_Ref : Id_Cell;
+    Idref : Id_Cell;
     Found : Boolean;
   begin
     Debug ("Checking final");
     -- Each IDREF must exist in IDs
     if not Ctx.Idrefs.Is_Empty then
-      Id_Sort (Ctx.Idrefs.all);
       Ctx.Idrefs.Rewind;
       loop
-        Ctx.Idrefs.Read (Idref, Moved => Moved);
-        -- Check for Id if this reference is new
-        if Idref /= Prev_Ref then
-          Ctx.Ids.Search (Idref, Found);
-          if not Found then
-            Util.Error (Ctx.Flow,"No ID for this IDREF " & Idref.Name.Image,
-                        Idref.Line_No);
-          end if;
-          Prev_Ref := Idref;
+        Ctx.Idrefs.Read_Next (Idref, Moved => Moved);
+        -- Check for Id of this reference
+        Ctx.Ids.Search (Idref, Found);
+        if not Found then
+          Util.Error (Ctx.Flow,"No ID for this IDREF " & Idref.Name.Image,
+                      Idref.Line_No);
         end if;
         exit when not Moved;
       end loop;
