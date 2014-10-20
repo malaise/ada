@@ -64,16 +64,25 @@ package body Hashed_List.Unique is
 
   -- Insert an item if does not already exists
   -- May raise Full_List (no more memory)
-  procedure Insert_If_New (List : in out Unique_List_Type;
-                           Item : in Element_Type) is
+  function  Insert_If_New (List : in out Unique_List_Type;
+                           Item : in Element_Type) return Boolean is
     Acc : Element_Access;
   begin
     Check_Callback (List_Type(List));
     Locate (List_Type(List), Item, True, Acc);
     if Acc = null then
       Insert (List_Type(List), Item, First);
+      return True;
+    else
       -- Else drop
+      return False;
     end if;
+  end Insert_If_New;
+  procedure Insert_If_New (List : in out Unique_List_Type;
+                           Item : in Element_Type) is
+    Dummy : Boolean;
+  begin
+    Dummy := Insert_If_New (List, Item);
   end Insert_If_New;
 
   -- Insert or replace an item

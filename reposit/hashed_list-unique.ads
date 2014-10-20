@@ -35,8 +35,10 @@ package Hashed_List.Unique is
                         Item : in Element_Type;
                         Item_Access : out Element_Access);
 
-  -- Insert an item only if it does not already exists
+  -- Insert an item only if it does not already exists (and return True)
   -- May raise Full_List (no more memory)
+  function  Insert_If_New (List : in out Unique_List_Type;
+                           Item : in Element_Type) return Boolean;
   procedure Insert_If_New (List : in out Unique_List_Type;
                            Item : in Element_Type);
   -- Insert or replace an item
