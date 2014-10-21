@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V15.00
+V15.01
 
 General purpose
 ---------------
@@ -476,8 +476,8 @@ in the list.
 
 Checkout::
 
-Click in the 'Checkout' button to checkout, after confirmation, the branch
-selected in the list.
+Click in the 'Checkout' button to checkout, after confirmation, the HEAD of
+the branch selected in the list.
 
 Merge::
 
@@ -642,8 +642,8 @@ confirmation then checks out the currently selected commit. Beware that the
 current worktree then becomes in 'detached HEAD' state. "You can look around,
 make experimental changes and commit them, and you can discard any commits you
 make in this state without impacting any branches by performing another
-checkout" (another commit earlier in the same branch or the HEAD of another
-branch).
+checkout" (another commit earlier in the same branch, or the HEAD of any
+xref:XBranches[branch], including the current branch, master...).
 
 .Back
 This button returns to the xref:XDir[directory] menu.
