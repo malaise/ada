@@ -1,6 +1,6 @@
 with As.U, Afpx.List_Manager, Basic_Proc, Images, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket;
-with Utils.X, Git_If, Config, Bookmarks, History, Commit, Push_Pull,
+with Utils.X, Git_If, Config, Bookmarks, History, Tags, Commit, Push_Pull,
      Confirm, Error, Stash, Branch, Afpx_Xref;
 procedure Agite is
 
@@ -413,6 +413,13 @@ procedure Agite is
     History.Handle (Root.Image, Path.Image, Name, Is_File);
     Init (Position);
   end Do_History;
+
+  procedure List_Tags is
+  begin
+    Position := Afpx.Line_List.Get_Position;
+    Tags.List (Root.Image);
+    Init (Position);
+  end List_Tags;
 
   -- Add a dir or file
   procedure Do_Add_File (File : in Git_If.File_Entry_Rec) is
@@ -911,6 +918,8 @@ begin
           when Afpx_Xref.Main.History =>
             -- History
             List_Action (History);
+          when Afpx_Xref.Main.Tags =>
+            List_Tags;
           when Afpx_Xref.Main.Stash =>
             -- Stash
             Do_Stash;
