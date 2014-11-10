@@ -5,7 +5,7 @@ package body History is
   -- List Width
   List_Width : Afpx.Width_Range;
   procedure Set (Line : in out Afpx.Line_Rec;
-                 From : in  Git_If.Log_Entry_Rec) is
+                 From : in Git_If.Log_Entry_Rec) is
   begin
     Utils.X.Encode_Line (
         -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD HH:MM "
@@ -34,7 +34,6 @@ package body History is
     -- Afpx stuff
     Get_Handle  : Afpx.Get_Handle_Rec;
     Ptg_Result  : Afpx.Result_Rec;
-    List_Height : Afpx.Height_Range;
     use type Afpx.Absolute_Field_Range;
 
     -- The log
@@ -50,7 +49,7 @@ package body History is
       Afpx.Use_Descriptor (Afpx_Xref.History.Dscr_Num);
       Get_Handle := (others => <>);
       -- List characteristics
-      Afpx.Get_Field_Size (Afpx.List_Field_No, List_Height, List_Width);
+      List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
       -- Encode file/dir
       Utils.X.Encode_Field ((if Is_File then Path & Name
                             elsif Name /= "" then Path & Name & "/"
@@ -58,8 +57,16 @@ package body History is
                             else "/"),
                             Afpx_Xref.History.File);
       -- Encode current branch
-      Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
-                            Afpx_Xref.History.Branch);
+      begin
+        Afpx.Suspend;
+        Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
+                              Afpx_Xref.History.Branch);
+        Afpx.Resume;
+      exception
+        when others =>
+          Afpx.Resume;
+          raise;
+      end;
 
       -- Suppress button View and restore on dirs
       Afpx.Set_Field_Activation (Afpx_Xref.History.View, Is_File);
@@ -96,14 +103,22 @@ package body History is
       Afpx.Line_List.Move_At (Comp);
 
       -- Call delta
-      if Ref_Hash = Git_If.No_Hash then
-        -- Only Left selection: Hash^ and Hash
-        Git_If.Launch_Delta (Config.Differator, Root & Path & Name,
-                             Comp_Hash & "^", Comp_Hash);
-      else
-        Git_If.Launch_Delta (Config.Differator, Root & Path & Name,
-                             Ref_Hash, Comp_Hash);
-      end if;
+      begin
+        Afpx.Suspend;
+        if Ref_Hash = Git_If.No_Hash then
+          -- Only Left selection: Hash^ and Hash
+          Git_If.Launch_Delta (Config.Differator, Root & Path & Name,
+                               Comp_Hash & "^", Comp_Hash);
+        else
+          Git_If.Launch_Delta (Config.Differator, Root & Path & Name,
+                               Ref_Hash, Comp_Hash);
+        end if;
+        Afpx.Resume;
+      exception
+        when others =>
+          Afpx.Resume;
+          raise;
+      end;
     end Show_Delta;
 
     -- Do a restore
@@ -140,7 +155,15 @@ package body History is
       -- Confirm
       if Confirm ("Checkout", Commit.Image) then
         -- Checkout this Hash
-        Result := As.U.Tus (Git_If.Do_Checkout (Log.Hash));
+        begin
+          Afpx.Suspend;
+          Result := As.U.Tus (Git_If.Do_Checkout (Log.Hash));
+          Afpx.Resume;
+        exception
+          when others =>
+            Afpx.Resume;
+            raise;
+        end;
         -- Handle error
         if not Result.Is_Null then
           Error ("Checkout", Commit.Image, Result.Image);
@@ -322,8 +345,15 @@ package body History is
           null;
         when Afpx.Refresh =>
           -- Encode current branch
-          Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
-                               Afpx_Xref.History.Branch);
+          begin
+            Afpx.Suspend;
+            Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
+                                  Afpx_Xref.History.Branch);
+            Afpx.Resume;
+          exception
+            when others =>
+              Afpx.Resume;
+          end;
       end case;
     end loop;
 

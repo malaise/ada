@@ -883,12 +883,12 @@
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="13" Kind="Button">
+    <Field Num="13" Kind="Button" Name="List">
       <Geometry Up="${Field_12.Low}+2" Left="1" Height="1" Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">List</Init>
     </Field>
-    <Field Num="14" Kind="Get" Name="List">
+    <Field Num="14" Kind="Get" Name="Template">
       <Geometry Up="${Field_13.Up}" Left="${Field_13.Right}+2" Height="1"
                 Right="${List.Right}"/>
       <Get_Tuning Data_Len="255"/>

@@ -757,12 +757,12 @@ package body Git_If is
   end Do_Reset_Hard;
 
   -- Launch a global checkout, return "" if OK, else the error
-  function Do_Checkout (Rev : in String) return String is
+  function Do_Checkout (Rev_Tag : in String) return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
     Cmd.Cat ("checkout");
-    Cmd.Cat (Rev);
+    Cmd.Cat (Rev_Tag);
     Command.Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -1221,6 +1221,62 @@ package body Git_If is
       return "";
     end if;
   end Drop_Stash;
+
+  -- List tags matching Template
+  procedure List_Tags (Template : in String;
+                       Tags : in out Tags_Mng.List_Type) is
+    Cmd : Many_Strings.Many_String;
+    Line : As.U.Asu_Us;
+    Moved : Boolean;
+    use type As.U.Asu_Us;
+  begin
+    Tags.Delete_List;
+    Cmd.Set ("git");
+    Cmd.Cat ("tag");
+    if Template /= "" then
+      Cmd.Cat ("-l");
+      Cmd.Cat ("'" & Template & "'");
+    end if;
+
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git tag"
+        & (if Template /= "" then " -l '" & Template & "'"
+           else "")
+        & ": " & Err_Flow_1.Str.Image);
+      return;
+    end if;
+
+    -- Encode info
+    if not Out_Flow_1.List.Is_Empty then
+      Out_Flow_1.List.Rewind;
+      loop
+        Out_Flow_1.List.Read (Line, Moved => Moved);
+        Tags.Insert (Line);
+        exit when not Moved;
+      end loop;
+    end if;
+  end List_Tags;
+
+  -- Delete tag
+  procedure Delete_Tag (Tag : in String) is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("tag");
+    Cmd.Cat ("-d");
+    Cmd.Cat (Tag);
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git tag -d " & Tag
+                                 & ": " & Err_Flow_1.Str.Image);
+      return;
+    end if;
+  end Delete_Tag;
 
 end Git_If;
 

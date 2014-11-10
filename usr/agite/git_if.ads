@@ -112,7 +112,7 @@ package Git_If is
   procedure Do_Reset_Hard;
 
   -- Launch a global checkout, return "" if OK, else the error
-  function Do_Checkout (Rev : in String) return String;
+  function Do_Checkout (Rev_Tag : in String) return String;
 
   -- Launch a add to index synchronous
   procedure Do_Add (File : in String);
@@ -173,6 +173,14 @@ package Git_If is
 
   -- Drop a stash, return "" if Ok else the error
   function Drop_Stash (Num : Stash_Number) return String;
+
+  -- List tags
+  package Tags_Mng renames As.U.Utils.Asu_Dyn_List_Mng;
+  procedure List_Tags (Template : in String;
+                       Tags : in out Tags_Mng.List_Type);
+
+  -- Delete tag
+  procedure Delete_Tag (Tag : in String);
 
 end Git_If;
 
