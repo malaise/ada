@@ -13,6 +13,7 @@ procedure T_Git is
   Logs : Git_If.Log_List;
   Log_Entry : Git_If.Log_Entry_Rec;
 
+  Hash : Git_If.Git_Hash;
   Date : Git_If.Iso_Date;
   Comment : Git_If.Comment_Array (1 ..20);
   Commits : Git_If.Commit_List;
@@ -64,7 +65,8 @@ begin
   end if;
 
   Git_If.List_Commit (Argument.Get_Parameter (Occurence => 2),
-                      Date, Comment, Commits);
+                      Hash, Date, Comment, Commits);
+  Basic_Proc.Put_Line_Output (Hash);
   Basic_Proc.Put_Line_Output (Date);
   for I in Comment'Range loop
     Basic_Proc.Put_Line_Output (Comment(I).Image);

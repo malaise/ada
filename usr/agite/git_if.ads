@@ -82,7 +82,8 @@ package Git_If is
   subtype Commit_List is Commit_File_Mng.Dyn_List.List_Type;
 
   -- List detailed info on a commit
-  procedure List_Commit (Hash : in Git_Hash;
+  procedure List_Commit (Rev_Tag : in String;
+                         Hash : out Git_Hash;
                          Date : out Iso_Date;
                          Comment : out Comment_Array;
                          Commit : in out Commit_List);

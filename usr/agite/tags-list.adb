@@ -1,5 +1,6 @@
+with Basic_Proc;
 with As.U.Utils, Afpx.List_Manager, Str_Util;
-with Utils.X, Afpx_Xref, Confirm;
+with Utils.X, Afpx_Xref, Details, Confirm;
 separate (Tags)
 
 procedure List (Root : in String) is
@@ -19,6 +20,9 @@ procedure List (Root : in String) is
   Ptg_Result  : Afpx.Result_Rec;
   use type Afpx.Absolute_Field_Range;
 
+  -- List of matching tags
+  Tags_List : Git_If.Tags_Mng.List_Type;
+
   -- Init screen
   procedure Init is
   begin
@@ -29,11 +33,12 @@ procedure List (Root : in String) is
     Get_Handle := (others => <>);
     Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
                           Afpx_Xref.List_Tags.Branch);
+
+    -- Clear the list
     Afpx.Line_List.Delete_List;
   end Init;
 
   -- Get the tags and encode in list
-  Tags_List : Git_If.Tags_Mng.List_Type;
   procedure Read_Tags is
     Template : As.U.Asu_Us;
   begin
@@ -41,18 +46,54 @@ procedure List (Root : in String) is
           Afpx.Decode_Field (Afpx_Xref.List_Tags.Template, 0, False)));
     -- Get tags list
     Git_If.List_Tags (Template.Image, Tags_List);
+    Init_List (Tags_List);
+    Afpx.Update_List (Afpx.Center_Selected);
   end Read_Tags;
 
+  -- Current tag, template, position
   Current_Tag : As.U.Asu_Us;
+  Current_Tmpl : As.U.Asu_Us;
+  Current_Pos : Natural;
+
+  -- Save current context
+  procedure Save is
+  begin
+    if Afpx.Line_List.Is_Empty then
+      Current_Pos := 0;
+    else
+      Current_Pos := Afpx.Line_List.Get_Position;
+    end if;
+    Current_Tmpl := As.U.Tus (Str_Util.Strip (
+      Afpx.Decode_Field (Afpx_Xref.List_Tags.Template, 0, False)));
+  end Save;
+
+  -- Restore context
+  procedure Restore (Position : in Boolean) is
+  begin
+    -- Reset Afpx and reread tags
+    Init;
+    Afpx.Encode_Field (Afpx_Xref.List_Tags.Template, (0, 0),
+                       Current_Tmpl.Image);
+    Read_Tags;
+    -- Restore position
+    if Position
+    and then Current_Pos > 0
+    and then Current_Pos <= Afpx.Line_List.List_Length then
+       Afpx.Line_List.Move_At (Current_Pos);
+       Afpx.Update_List (Afpx.Center_Selected);
+    else
+      Afpx.Update_List (Afpx.Bottom);
+    end if;
+  end Restore;
+
 begin
 
   -- Init Afpx
   Init;
+  Init_List (Tags_List);
 
   -- Main loop
   loop
-   -- Set the list
-   Init_List (Tags_List);
 
     -- Activate Checkout and Delete if list is not empty
     Afpx.Set_Field_Activation (Afpx_Xref.List_Tags.Checkout,
@@ -86,6 +127,14 @@ begin
                Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
           when Afpx_Xref.List_Tags.List =>
             Read_Tags;
+          when Afpx_Xref.List_Tags.Details =>
+            -- Details of tag selected
+            Tags_List.Move_At (Afpx.Line_List.Get_Position);
+            Current_Tag := As.U.Tus (Tags_List.Access_Current.Image);
+            Save;
+Basic_Proc.Put_Line_Error (">" & Current_Tag.Image & "<");
+            Details.Handle (Root, Current_Tag.Image);
+            Restore (True);
           when Afpx_Xref.List_Tags.Checkout =>
             -- Call Checkout on current tag
             -- @@@
@@ -94,6 +143,7 @@ begin
             -- Delete tag selected
             Tags_List.Move_At (Afpx.Line_List.Get_Position);
             Current_Tag := As.U.Tus (Tags_List.Access_Current.Image);
+            Save;
             if Confirm  ("Delete Tag", Current_Tag.Image) then
               begin
                 Afpx.Suspend;
@@ -104,15 +154,9 @@ begin
                 when others =>
                   Afpx.Resume;
               end;
-              Init;
-              -- Rewind
-              Read_Tags;
-              if not Afpx.Line_List.Is_Empty then
-                Afpx.Line_List.Rewind;
-                Afpx.Update_List (Afpx.Top);
-              end if;
+              Restore (False);
             else
-              Init;
+              Restore (True);
             end if;
           when Afpx_Xref.List_Tags.Back =>
             return;

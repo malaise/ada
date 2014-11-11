@@ -611,12 +611,12 @@ package body Git_If is
   end Last_Hash;
 
   -- List detailed info on a commit
-  procedure List_Commit (Hash : in Git_Hash;
+  procedure List_Commit (Rev_Tag : in String;
+                         Hash : out Git_Hash;
                          Date : out Iso_Date;
                          Comment : out Comment_Array;
                          Commit : in out Commit_List) is
     Cmd : Many_Strings.Many_String;
-    Dummy_Hash : Git_Hash;
     Dummy_Done : Boolean;
   begin
     Cmd.Set ("git");
@@ -625,7 +625,8 @@ package body Git_If is
     Cmd.Cat ("--date=iso");
     Cmd.Cat ("-n");
     Cmd.Cat ("1");
-    Cmd.Cat (Hash);
+    Cmd.Cat (Rev_Tag);
+    Cmd.Cat ("--");
     Command.Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -641,8 +642,8 @@ package body Git_If is
       Commit.Delete_List;
     else
       Out_Flow_1.List.Rewind;
-      Read_Block (Out_Flow_1.List, True, Dummy_Hash, Date,
-                    Comment, Commit'Access, Dummy_Done);
+      Read_Block (Out_Flow_1.List, True, Hash, Date,
+                  Comment, Commit'Access, Dummy_Done);
     end if;
     if not Commit.Is_Empty then
       Commit.Rewind;

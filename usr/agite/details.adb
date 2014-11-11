@@ -1,5 +1,5 @@
 with Aski, As.U, Afpx.List_Manager, Directory;
-with Utils.X, View, History, Config, Afpx_Xref, Restore;
+with Utils.X, Git_If, View, History, Config, Afpx_Xref, Restore;
 package body Details is
 
   -- The current list of Commit entires
@@ -19,7 +19,7 @@ package body Details is
     Git_If.Commit_Entry_Rec, Git_If.Commit_File_Mng, Set, False);
 
 
-  procedure Handle (Root : in String; Hash : in Git_If.Git_Hash) is
+  procedure Handle (Root : in String; Rev_Tag : in String) is
 
     -- Afpx stuff
     Get_Handle     : Afpx.Get_Handle_Rec;
@@ -29,6 +29,7 @@ package body Details is
     use type Afpx.Absolute_Field_Range;
 
     -- Commit details
+    Hash : Git_If.Git_Hash;
     Date : Git_If.Iso_Date;
     Comment : Git_If.Comment_Array(1 .. 10);
 
@@ -50,7 +51,7 @@ package body Details is
       if Get_Details then
         Afpx.Suspend;
         begin
-          Git_If.List_Commit (Hash, Date, Comment, Commits);
+          Git_If.List_Commit (Rev_Tag, Hash, Date, Comment, Commits);
           Afpx.Resume;
         exception
           when others =>
@@ -60,6 +61,10 @@ package body Details is
       end if;
 
       -- Encode info
+      if Rev_Tag /= Hash then
+        -- Rev_Tag is a tag
+        Utils.X.Encode_Field ("of " & Rev_Tag, Afpx_Xref.Details.Tag);
+      end if;
       Utils.X.Encode_Field (Hash, Afpx_Xref.Details.Hash);
       Utils.X.Encode_Field (Date, Afpx_Xref.Details.Date);
       Afpx.Clear_Field (Afpx_Xref.Details.Comment);
