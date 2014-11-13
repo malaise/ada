@@ -1109,7 +1109,7 @@
     <Field Num="16" Kind="Get" Name="Tag_Name">
       <Geometry Up="${Field_15.Low}" Left="${Field_15.Right}+2" Height="1"
                 Right="${Screen.Width}-2"/>
-      <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="17" Kind="Put">
       <Geometry Up="${Field_15.Low}+2" Left="1" Height="1" Width="8"/>
@@ -1119,7 +1119,7 @@
     <Field Num="18" Kind="Get" Name="Tag_Comment">
       <Geometry Up="${Field_17.Low}" Left="${Field_17.Right}+2" Height="1"
                 Right="${Screen.Width}-2"/>
-      <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="19" Kind="Button" Name="Tag_Annotated">
       <Geometry Up="${Field_18.Low}+2" Left="1" Height="3" Width="15"/>

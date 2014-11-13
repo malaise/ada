@@ -1244,6 +1244,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("show");
     Cmd.Cat ("--date=iso");
+    Cmd.Cat ("--quiet");
     Cmd.Cat (Tag.Name.Image);
     Cmd.Cat ("--");
     Command.Execute (Cmd, True, Command.Both,
@@ -1325,7 +1326,6 @@ package body Git_If is
         & ": " & Err_Flow_1.Str.Image);
       return;
     end if;
-
     -- Encode info
     if not Out_Flow_1.List.Is_Empty then
       Out_Flow_1.List.Rewind;
