@@ -947,15 +947,14 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="4" Kind="Put">
-      <Geometry Up="${Field_1.Low}+2" Left="21" Height="1" Width="8"/>
+      <Geometry Up="${Field_1.Low}+2" Left="20" Height="1" Width="8"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Checkout</Init>
     </Field>
     <Field Num="5" Kind="Put" Name="Commit_Tag">
       <Geometry Up="${Field_4.Low}" Left="${Field_4.Right}+2" Height="1"
-                Width="6"/>
+                Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">Commit</Init>
     </Field>
     <Field Num="6" Kind="Put" Name="Root">
       <Geometry Up="${Field_4.Low}+2" Left="1" Height="1"
@@ -972,8 +971,8 @@
                 Right="${Screen.Right}-1"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="1">WARNING: This will checkout the whole repository!</Init>
-      <Init Row="3" Col="2">Please enter a new branch name to checkout into</Init>
-      <Init Row="4" Col="4">Leave empty to checkout as "detached HEAD"</Init>
+      <Init Row="3" Col="2">Please enter a new branch name to checkout into.</Init>
+      <Init Row="4" Col="4">Leave empty to checkout as "detached HEAD".</Init>
     </Field>
     <Field Num="9" Kind="Put">
       <Geometry Up="${Field_8.Low}+2" Left="1" Height="1" Width="12"/>

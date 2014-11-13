@@ -113,7 +113,7 @@ package Git_If is
   procedure Do_Reset_Hard;
 
   -- Launch a global checkout, return "" if OK, else the error
-  function Do_Checkout (Rev_Tag : in String) return String;
+  function Do_Checkout (Rev_Tag, Branch : String) return String;
 
   -- Launch a add to index synchronous
   procedure Do_Add (File : in String);

@@ -758,11 +758,15 @@ package body Git_If is
   end Do_Reset_Hard;
 
   -- Launch a global checkout, return "" if OK, else the error
-  function Do_Checkout (Rev_Tag : in String) return String is
+  function Do_Checkout (Rev_Tag, Branch : String) return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
     Cmd.Cat ("checkout");
+    if Branch /= "" then
+      Cmd.Cat ("-b");
+      Cmd.Cat (Branch);
+    end if;
     Cmd.Cat (Rev_Tag);
     Command.Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
@@ -1239,6 +1243,7 @@ package body Git_If is
     Cmd.Cat ("show");
     Cmd.Cat ("--date=iso");
     Cmd.Cat (Tag.Name.Image);
+    Cmd.Cat ("--");
     Command.Execute (Cmd, True, Command.Both,
         Out_Flow_2'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -1278,6 +1283,7 @@ package body Git_If is
     Out_Flow_2.List.Read (Line);
     Assert (Line.Is_Null);
     -- "commit <hash>"
+    Out_Flow_2.List.Read (Line);
     Get_Hash;
   exception
     when Log_Error =>

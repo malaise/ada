@@ -6,17 +6,20 @@ procedure List (Root : in String) is
 
    -- List Width
   List_Width : Afpx.Width_Range;
-  Empty_Date : constant Git_If.Iso_Date := (others =>' ');
+
+  -- Image of a tag
+  function Image (Tag : Git_If.Tag_Entry_Rec) return String is
+  begin
+    return Tag.Name.Image
+         & (if Tag.Annoted then " " & Tag.Date else "")
+         & (if Tag.Annoted then " " & Tag.Comment.Image else "");
+  end Image;
+
   -- Encode a line of list
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in Git_If.Tag_Entry_Rec) is
   begin
-    Utils.X.Encode_Line (From.Name.Image,
-                         (if From.Annoted then " " & From.Date
-                          else Empty_Date),
-                         (if From.Annoted then " " & From.Comment.Image
-                          else ""),
-                         List_Width, Line, False);
+    Utils.X.Encode_Line (Image (From), "", "", List_Width, Line, False);
   end Set;
   procedure Init_List is new Afpx.List_Manager.Init_List (
     Git_If.Tag_Entry_Rec, Git_If.Tag_Mng, Set, False);
@@ -66,8 +69,8 @@ procedure List (Root : in String) is
     Tags_List.Read (Tag, Git_If.Tag_Mng.Dyn_List.Current);
 
     -- Checkout (success will lead to return to Directory)
-    if Checkout.Handle (Root, Tag.Name.Image & " " & Tag.Date,
-                        Tag.Hash, False) then
+    if Checkout.Handle (Root, "tag: " & Tag.Name.Image,
+                        Image (Tag), Tag.Hash) then
       return True;
     else
       -- Restore screen

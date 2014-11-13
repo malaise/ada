@@ -147,7 +147,7 @@ package body Branch is
         Result := As.U.Tus (Git_If.Delete_Branch (Curr_Name.Image));
       when Checkout =>
         Message := As.U.Tus ("Checking out branch " & Curr_Name.Image);
-        Result := As.U.Tus (Git_If.Do_Checkout (Curr_Name.Image));
+        Result := As.U.Tus (Git_If.Do_Checkout (Curr_Name.Image, ""));
       when Merge =>
         Message := As.U.Tus ("Merging branch " & Curr_Name.Image);
         Result := As.U.Tus (Git_If.Merge_Branch (Curr_Name.Image));

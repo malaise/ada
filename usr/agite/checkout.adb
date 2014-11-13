@@ -1,12 +1,12 @@
-with As.U, Afpx;
+with As.U, Afpx, Str_Util;
 with Afpx_Xref, Utils.X, Error;
 package body Checkout is
 
   -- Root path
   Root : As.U.Asu_Us;
-  -- Text of the Commit/tag
+  -- Info and Text of the Commit/tag
+  Info : As.U.Asu_Us;
   Text : As.U.Asu_Us;
-  Is_Commit : Boolean;
 
   -- Afpx Ptg stuff
   Get_Handle : Afpx.Get_Handle_Rec;
@@ -19,10 +19,7 @@ package body Checkout is
     Utils.X.Encode_Field (Root.Image, Afpx_Xref.Checkout.Root);
     Utils.X.Encode_Branch (Afpx_Xref.Checkout.Branch);
     -- Commit or tag
-    if not Is_Commit then
-      Afpx.Clear_Field (Afpx_Xref.Checkout.Commit_Tag);
-      Afpx.Encode_Field (Afpx_Xref.Checkout.Commit_Tag, (0, 0), "Tag");
-    end if;
+    Afpx.Encode_Field (Afpx_Xref.Checkout.Commit_Tag, (0, 0), Info.Image);
     -- Info
     Afpx.Encode_Field (Afpx_Xref.Checkout.Info, (0, 0), Text.Image);
     -- Reset Ptg stuff
@@ -32,10 +29,15 @@ package body Checkout is
   -- Do a checkout
   function Do_Checkout (Hash : Git_If.Git_Hash) return Boolean is
     Result : As.U.Asu_Us;
+    Branch : As.U.Asu_Us;
   begin
+    -- Read target branch
+    Branch := As.U.Tus (
+      Str_Util.Strip (Afpx.Decode_Field (Afpx_Xref.Checkout.Into_Branch,
+                                         0, False)));
     begin
       Afpx.Suspend;
-      Result := As.U.Tus (Git_If.Do_Checkout (Hash));
+      Result := As.U.Tus (Git_If.Do_Checkout (Hash, Branch.Image));
       Afpx.Resume;
     exception
       when others =>
@@ -53,14 +55,14 @@ package body Checkout is
 
   -- Checkout a commit or tag. True if success
   function Handle (Root : String;
+                   Info : String;
                    Text : String;
-                   Hash : Git_If.Git_Hash;
-                   Is_Commit : Boolean) return Boolean is
+                   Hash : Git_If.Git_Hash) return Boolean is
     Ptg_Result   : Afpx.Result_Rec;
   begin
     Checkout.Root := As.U.Tus (Root);
+    Checkout.Info := As.U.Tus (Info);
     Checkout.Text := As.U.Tus (Text);
-    Checkout.Is_Commit := Is_Commit;
     Init;
 
     loop

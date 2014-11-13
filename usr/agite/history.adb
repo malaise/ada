@@ -140,7 +140,7 @@ package body History is
               1 .. Afpx.Line_List.Access_Current.Len)));
 
       -- Checkout (success will lead to return to Directory)
-      if Checkout.Handle (Root, Commit.Image, Log.Hash, True) then
+      if Checkout.Handle (Root, "commit", Commit.Image, Log.Hash) then
         return True;
       else
         -- Restore screen
