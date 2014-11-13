@@ -1262,10 +1262,10 @@ package body Git_If is
       -- Not annoted tag
       -- "commit <hash>"
       Get_Hash;
-      Tag.Annoted := False;
+      Tag.Annotated := False;
       return;
     end if;
-    Tag.Annoted := True;
+    Tag.Annotated := True;
     -- Line are "tag <tag_name>", "Tagger: <tagger_email>", "Date: <date_iso>",
     -- "", "<tag_comment>", "", then the commit (starts with "commit <hash>")
     -- Skip tagger

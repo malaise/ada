@@ -153,46 +153,56 @@ of a directory.
 jumping to a bookmark.
 * xref:XHist[History]: This shows the Git history of a file or directory, the
 list of commits that have modified the file(s).
-* xref:XDetails[Details]: This shows information on a commit, including the list
-of files modified by the commit.
-* xref:XStash[Stash]: This menu allows stashing the local worktree and managing
+* xref:XTag[Tag]: This allows tagging a commit.
+* xref:XDetail[Detail]: This shows information on a commit or a tag,
+including the list of files modified by the commit.
+* xref:XTags[Tags]: This lists the tags and allows managing them.
+* xref:XCheckout[Checkout]: This allows checking out a commit or a tag.
+* xref:XStash[Stash]: This allows stashing the local worktree and managing
 the stack of stashes.
-* xref:XCommit[Commit]: This menu shows all the local modifications of the
+* xref:XCommit[Commit]: This shows all the local modifications of the
 worktree and allows staging and commiting them.
-* xref:XPush[Push]: This menu allows pushing local commits to a remote
+* xref:XPush[Push]: This allows pushing local commits to a remote
 repository.
-* xref:XPull[Pull]: This menu allows fetching or pulling a branch from a
+* xref:XPull[Pull]: This allows fetching or pulling a branch from a
 remote repository.
 
 anchor:XNavigation[]
 The navigation is as follows:
 
 
-                           +----------+
-                       /-> | Branches |
-                      /    +----------+
-                     /     +-----------+
-                    /----->| Bookmarks |
-                   /       +-----------+
-                  /        +---------+       +---------+
-                 /-------->| History |<----->| Details |
-                /          +---------+       +---------+
-  +---------- +/           +-------+
-  | Directory |----------->| Stash |
-  +---------- +\           +-------+
-                \          +--------+       +------+
-                 \-------->| Commit |------>| Push |
-                  \        +--------+       +------+
-                   \       +------+
-                    \----->| Pull |
-                           +------+
+                                +----------+
+                            /-> | Branches |
+                           /    +----------+
+                          /     +-----------+
+                         /----->| Bookmarks |
+                        /       +-----------+       +-----+
+                       /                  /-------->| Tag |
+                      /                  /          +-----+
+                     /          +-------+-+         +--------+
+                    /---------->| History |<-----+->| Detail |
+                   /            +-------+-+     /   +--------+
+                  /             +------+ \     /    +----------+
+                 /--------------| Tags +--+---+---->| Checkout |
+                /               +------+            +----------+
+  +---------- +/                +-------+
+  | Directory |---------------->| Stash |
+  +---------- +\                +-------+
+                \               +--------+          +------+
+                 \------------->| Commit +--------->| Push |
+                  \             +--------+          +------+
+                   \            +------+
+                    \---------->| Pull |
+                                +------+
 
 There are also a confirmation screen and an error screen that are called when
 necessary.
 
+NOTE: The 'History' and 'Tags' menus call the 'Detail' and 'Checkout' menus.
+
 NOTE: All the screen transitions are based on the 'call-return' scheme. +
-So please note the double arrow between 'History' and 'Details': from the
-'History' of a file (or dir) you can select a commit and see its 'Details'.
+So please note the double arrow between 'History' and 'Detail': from the
+'History' of a file (or dir) you can select a commit and see its 'Detail'.
 In this new screen you can select a file and see its 'History'... and so on.
 Once this is done you need to "un-stack" all these menus (by clicking on
 the 'Back' button in each) in order to go back to the 'Directory' menu. +
@@ -589,7 +599,7 @@ button to view the version of the file that was committed.
 
 When the current history is on a directory this feature is de-activated.
 Still it is possible to list and view one by one the files of a commit with the
-xref:XDetails[details] menu.
+xref:XDetail[detail] menu.
 
 anchor:XDiff1[]
 
@@ -622,10 +632,10 @@ with the version before the selection as reference and the selection
 as the target of the difference. If the history is about a directory several
 differators may be started.
 
-anchor:XDetail[]
+anchor:XDetailBut[]
 
 .Detail
-This button activates the xref:XDetails[details] menu on the
+This button activates the xref:XDetail[detail] menu on the
 commit currently (left-)selected in the history.
 
 anchor:XRestore[]
@@ -637,13 +647,12 @@ version currently (left-)selected in the history. This function is not active on
 the history of a directory.
 
 .Checkout
-This button is active only on the history of the root directory. It asks
-confirmation then checks out the currently selected commit. Beware that the
-current worktree then becomes in 'detached HEAD' state. "You can look around,
-make experimental changes and commit them, and you can discard any commits you
-make in this state without impacting any branches by performing another
-checkout" (another commit earlier in the same branch, or the HEAD of any
-xref:XBranches[branch], including the current branch, master...).
+This button button launches the xref:XCheckout[checkout] menu that allows
+checking out the selected commit.
+
+.Tag
+This button button launches the xref:XTag[tag] menu that allows tagging the 
+selected commit.
 
 .Back
 This button returns to the xref:XDir[directory] menu.
@@ -656,17 +665,22 @@ if the entry in the history is before a renaming. Still, it is possible to view
 a file that has been committed, then renamed later on, with the following
 operations: +
 * Select the commit in the history +
-* Show the xref:XDetail[details] of this commit +
-* Select the file in the xref:XDetails[details] of the commit (previous name) +
+* Show the xref:XDetailBut[detail] of this commit +
+* Select the file in the xref:XDetail[detail] of the commit (previous name) +
 * Click on xref:XView[View] the file.
 
 It is not possible to do a xref:XDiff1[diff] between two versions of a file if
 the file has been renamed or moved between the versions.
 
-Details
-~~~~~~~
-anchor:XDetails[]
-The 'Details' menu shows the details of a commit:
+Tag
+~~~
+anchor:XTag[]
+The 'Tag' menu allows tagging a commit. *TBD*
+
+Detail
+~~~~~~
+anchor:XDetail[]
+The 'Detail' menu shows the details of a commit or a tag:
 
 * The SHA-1 hash of the commit, that you can copy into the clipboard,
 * The date and comment (up to seven lines) of the commit, that you can
@@ -701,10 +715,75 @@ if none of them is locally modified, and after a confirmation.
 NOTE: Clicking on 'Hist' leads to call a new function that show the history, as
 explained in the section on xref:XNavigation[navigation].
 
+Checkout
+~~~~~~~~
+anchor:XCheckout[]
+The 'Checkout' menu allows checking out a commit or a tag.
+
+NOTE: This overwrites the whole worktree. 
+
+In case of a commit, the date and comment of the commit are indicated. In case
+of a tag, the tag name and, if any (annotated tag), the date and the comment of
+the tag are indicated.
+
+You can (should) enter the name of a new branch into with the checkout is
+performed. Otherwise the current worktree then becomes in 'detached HEAD' state.
+"You can look around, make experimental changes and commit them, and you can
+discard any commits you make in this state without impacting any branches by
+performing another checkout" (another commit earlier in the same branch,
+or the HEAD of any xref:XBranches[branch], including the current branch,
+master...).
+
+.Checkout
+
+This button launches the checkout of the tag or commit, in a branch or detached,
+and returns to the xref:XDir[directory] menu.
+
+.Cancel
+
+This button cancels the checkout (and the branch creation).
+
+Tags
+~~~~~
+anchor:XTags[]
+The 'Tags' menu lists the tags of the workdir that match a criteria.
+
+.List
+
+The list is initially empty. You can enter a template (like V1.*) in the get
+area besides the 'List' button or leave it empty for all the tags. Then you can
+hit the 'Return' key or click in the 'List' button, which updates the list.
+
+* Annotated tags are shown with the tag name, tagging date and comment,
+* Non annotated tags are show with only the tag name.
+
+
+.Actions
+
+The possible actions on a tag are:
+
+Detail::
+
+This button activates the xref:XDetail[detail] menu on the
+tag currently (left-)selected in the list.
+
+Checkout::
+
+This button button launches the xref:XCheckout[checkout] menu that allows
+checking out the selected tag.
+
+Delete::
+
+This button button asks for confirmation, then deletes the selected tag.
+
+.Back
+
+This button returns to the xref:XDir[directory] menu.
+
 Stash
 ~~~~~
 anchor:XStash[]
-This menu works on the global worktree, not on the local directory. +
+The 'Stash' menu works on the global worktree, not on the local directory. +
 The screen shows the list of stashes. Each entry has a stash number,
 the branch on which the stash was done and the text of the message.
 

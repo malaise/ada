@@ -11,8 +11,8 @@ procedure List (Root : in String) is
   function Image (Tag : Git_If.Tag_Entry_Rec) return String is
   begin
     return Tag.Name.Image
-         & (if Tag.Annoted then " " & Tag.Date else "")
-         & (if Tag.Annoted then " " & Tag.Comment.Image else "");
+         & (if Tag.Annotated then " " & Tag.Date else "")
+         & (if Tag.Annotated then " " & Tag.Comment.Image else "");
   end Image;
 
   -- Encode a line of list

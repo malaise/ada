@@ -179,7 +179,7 @@ package Git_If is
   type Tag_Entry_Rec is record
     Name : As.U.Asu_Us;
     Hash : Git_Hash;
-    Annoted : Boolean;
+    Annotated : Boolean;
     Date : Iso_Date;
     Comment : As.U.Asu_Us;
   end record;
