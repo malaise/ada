@@ -52,11 +52,6 @@ package body Push_Pull is
     Index : Natural;
     Log : As.U.Asu_Us;
   begin
-    -- Get current branch
-    Afpx.Suspend;
-    Branch := As.U.Tus (Git_If.Current_Branch);
-    Afpx.Resume;
-
     -- Get current selected branch
     References.Move_At (Afpx.Line_List.Get_Position);
     References.Read (Branch, Git_If.Reference_Mng.Current);
@@ -111,11 +106,12 @@ package body Push_Pull is
       Utils.X.Encode_Field (Root, Afpx_Xref.Push_Pull.Root);
 
       -- Encode current branch
+      Utils.X.Encode_Branch (Afpx_Xref.Push_Pull.Branch);
+
+      -- Get current branch
       Afpx.Suspend;
       Curr_Branch := As.U.Tus (Git_If.Current_Branch);
       Afpx.Resume;
-      Utils.X.Encode_Field (Utils.X.Branch_Image (Curr_Branch.Image),
-                            Afpx_Xref.Push_Pull.Branch);
 
       -- Change title and Push button if Pull_Branch or Pull
       case Menu is
@@ -223,10 +219,7 @@ package body Push_Pull is
          null;
       when Afpx.Refresh =>
         -- Encode current branch
-        Afpx.Suspend;
-        Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
-                              Afpx_Xref.Push_Pull.Branch);
-        Afpx.Resume;
+        Utils.X.Encode_Branch (Afpx_Xref.Push_Pull.Branch);
       end case;
     end loop;
 

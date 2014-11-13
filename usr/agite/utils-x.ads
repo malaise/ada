@@ -13,6 +13,9 @@ package Utils.X is
   -- Image of a Git branch
   function Branch_Image (Git_Branch : String) return String;
 
+  -- Encode current branch
+  procedure Encode_Branch (Field_No : in Afpx.Absolute_Field_Range);
+
   -- Encode a line, procuste, preserve tail
   procedure Encode_Line (Head, Text, Tail : in String;
                          Width : in Afpx.Width_Range;

@@ -1223,11 +1223,79 @@ package body Git_If is
     end if;
   end Drop_Stash;
 
-  -- List tags matching Template
-  procedure List_Tags (Template : in String;
-                       Tags : in out Tags_Mng.List_Type) is
+  -- Internal: read tag Tag.Name and fill Tag
+  procedure Read_Tag (Tag : in out Tag_Entry_Rec) is
     Cmd : Many_Strings.Many_String;
     Line : As.U.Asu_Us;
+    Commit_Str :constant String := "commit ";
+    procedure Get_Hash is
+    begin
+      Assert (Line.Length = Commit_Str'Length + Git_Hash'Length);
+      Assert (Line.Slice (1, Commit_Str'Length) = Commit_Str);
+      Tag.Hash := Line.Slice (Commit_Str'Length + 1, Line.Length);
+    end Get_Hash;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("show");
+    Cmd.Cat ("--date=iso");
+    Cmd.Cat (Tag.Name.Image);
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_2'Access, Err_Flow_1'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git show: " & Err_Flow_1.Str.Image);
+      return;
+    end if;
+    -- See if tag is annoted : first line of "shows "is "tag <name>"
+    --  otherwise it is a commit (starts with "commit <hash>")
+    if Out_Flow_2.List.Is_Empty then
+      raise Log_Error;
+    end if;
+    Out_Flow_2.List.Rewind;
+    Out_Flow_2.List.Read (Line);
+    if Line.Slice (1, 4) /= "tag " then
+      -- Not annoted tag
+      -- "commit <hash>"
+      Get_Hash;
+      Tag.Annoted := False;
+      return;
+    end if;
+    Tag.Annoted := True;
+    -- Line are "tag <tag_name>", "Tagger: <tagger_email>", "Date: <date_iso>",
+    -- "", "<tag_comment>", "", then the commit (starts with "commit <hash>")
+    -- Skip tagger
+    Out_Flow_2.List.Read (Line);
+    -- Read date
+    Out_Flow_2.List.Read (Line);
+    Assert (Line.Slice (1, 8) = "Date:   ");
+    Tag.Date := Line.Slice (9, 27);
+    -- Skip ""
+    Out_Flow_2.List.Read (Line);
+    Assert (Line.Is_Null);
+    -- Read Comment
+    Out_Flow_2.List.Read (Tag.Comment);
+    -- Skip ""
+    Out_Flow_2.List.Read (Line);
+    Assert (Line.Is_Null);
+    -- "commit <hash>"
+    Get_Hash;
+  exception
+    when Log_Error =>
+      if Out_Flow_2.List.Is_Empty then
+        Basic_Proc.Put_Line_Error ("git show " & Tag.Name.Image
+                                 & ": empty flow");
+      else
+        Basic_Proc.Put_Line_Error ("git show " & Tag.Name.Image & ": At line "
+                              & Positive'Image (Out_Flow_2.List.Get_Position));
+      end if;
+      raise Log_Error;
+  end Read_Tag;
+
+  -- List tags matching Template
+  procedure List_Tags (Template : in String;
+                       Tags : in out Tag_List) is
+    Cmd : Many_Strings.Many_String;
+    Tag : Tag_Entry_Rec;
     Moved : Boolean;
     use type As.U.Asu_Us;
   begin
@@ -1254,8 +1322,9 @@ package body Git_If is
     if not Out_Flow_1.List.Is_Empty then
       Out_Flow_1.List.Rewind;
       loop
-        Out_Flow_1.List.Read (Line, Moved => Moved);
-        Tags.Insert (Line);
+        Out_Flow_1.List.Read (Tag.Name, Moved => Moved);
+        Read_Tag (Tag);
+        Tags.Insert (Tag);
         exit when not Moved;
       end loop;
     end if;

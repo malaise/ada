@@ -81,8 +81,7 @@ package body Branch is
     Afpx.Update_List (Afpx.Center_Selected);
 
     -- Encode current branch
-    Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
-                          Afpx_Xref.Branches.Branch);
+    Utils.X.Encode_Branch (Afpx_Xref.Branches.Branch);
     -- Set field activity
     Utils.X.Protect_Field (Afpx_Xref.Branches.Rename, Afpx.Line_List.Is_Empty);
     Utils.X.Protect_Field (Afpx_Xref.Branches.Delete, Afpx.Line_List.Is_Empty);

@@ -176,9 +176,18 @@ package Git_If is
   function Drop_Stash (Num : Stash_Number) return String;
 
   -- List tags
-  package Tags_Mng renames As.U.Utils.Asu_Dyn_List_Mng;
+  type Tag_Entry_Rec is record
+    Name : As.U.Asu_Us;
+    Hash : Git_Hash;
+    Annoted : Boolean;
+    Date : Iso_Date;
+    Comment : As.U.Asu_Us;
+  end record;
+  package Tag_Mng is new Dynamic_List (Tag_Entry_Rec);
+  subtype Tag_List is Tag_Mng.Dyn_List.List_Type;
+
   procedure List_Tags (Template : in String;
-                       Tags : in out Tags_Mng.List_Type);
+                       Tags : in out Tag_List);
 
   -- Delete tag
   procedure Delete_Tag (Tag : in String);

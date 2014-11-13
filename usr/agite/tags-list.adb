@@ -1,19 +1,25 @@
-with Basic_Proc;
-with As.U.Utils, Afpx.List_Manager, Str_Util;
-with Utils.X, Afpx_Xref, Details, Confirm;
+with As.U, Afpx.List_Manager, Str_Util;
+with Utils.X, Afpx_Xref, Details, Confirm, Checkout;
 separate (Tags)
 
 procedure List (Root : in String) is
 
    -- List Width
   List_Width : Afpx.Width_Range;
+  Empty_Date : constant Git_If.Iso_Date := (others =>' ');
+  -- Encode a line of list
   procedure Set (Line : in out Afpx.Line_Rec;
-                 From : in As.U.Asu_Us) is
+                 From : in Git_If.Tag_Entry_Rec) is
   begin
-    Utils.X.Encode_Line (From.Image, "", "", List_Width, Line, False);
+    Utils.X.Encode_Line (From.Name.Image,
+                         (if From.Annoted then " " & From.Date
+                          else Empty_Date),
+                         (if From.Annoted then " " & From.Comment.Image
+                          else ""),
+                         List_Width, Line, False);
   end Set;
   procedure Init_List is new Afpx.List_Manager.Init_List (
-    As.U.Asu_Us, As.U.Utils.Asu_List_Mng, Set, False);
+    Git_If.Tag_Entry_Rec, Git_If.Tag_Mng, Set, False);
 
   -- Afpx stuff
   Get_Handle  : Afpx.Get_Handle_Rec;
@@ -21,7 +27,7 @@ procedure List (Root : in String) is
   use type Afpx.Absolute_Field_Range;
 
   -- List of matching tags
-  Tags_List : Git_If.Tags_Mng.List_Type;
+  Tags_List : Git_If.Tag_List;
 
   -- Init screen
   procedure Init is
@@ -30,9 +36,8 @@ procedure List (Root : in String) is
     List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
 
     Utils.X.Encode_Field (Root, Afpx_Xref.List_Tags.Root);
+    Utils.X.Encode_Branch (Afpx_Xref.List_Tags.Branch);
     Get_Handle := (others => <>);
-    Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
-                          Afpx_Xref.List_Tags.Branch);
 
     -- Clear the list
     Afpx.Line_List.Delete_List;
@@ -49,6 +54,30 @@ procedure List (Root : in String) is
     Init_List (Tags_List);
     Afpx.Update_List (Afpx.Center_Selected);
   end Read_Tags;
+
+  -- Checkout current tag
+  function Do_Checkout return Boolean is
+    Pos : Positive;
+    Tag : Git_If.Tag_Entry_Rec;
+  begin
+    -- Save position in List and read it
+    Pos := Afpx.Line_List.Get_Position;
+    Tags_List.Move_At (Pos);
+    Tags_List.Read (Tag, Git_If.Tag_Mng.Dyn_List.Current);
+
+    -- Checkout (success will lead to return to Directory)
+    if Checkout.Handle (Root, Tag.Name.Image & " " & Tag.Date,
+                        Tag.Hash, False) then
+      return True;
+    else
+      -- Restore screen
+      Init;
+      Init_List (Tags_List);
+      Afpx.Line_List.Move_At (Pos);
+      Afpx.Update_List (Afpx.Center_Selected);
+      return False;
+    end if;
+  end Do_Checkout;
 
   -- Current tag, template, position
   Current_Tag : As.U.Asu_Us;
@@ -96,6 +125,8 @@ begin
   loop
 
     -- Activate Checkout and Delete if list is not empty
+    Afpx.Set_Field_Activation (Afpx_Xref.List_Tags.Details,
+                               not Afpx.Line_List.Is_Empty);
     Afpx.Set_Field_Activation (Afpx_Xref.List_Tags.Checkout,
                                not Afpx.Line_List.Is_Empty);
     Afpx.Set_Field_Activation (Afpx_Xref.List_Tags.Delete,
@@ -130,25 +161,28 @@ begin
           when Afpx_Xref.List_Tags.Details =>
             -- Details of tag selected
             Tags_List.Move_At (Afpx.Line_List.Get_Position);
-            Current_Tag := As.U.Tus (Tags_List.Access_Current.Image);
+            Current_Tag := Tags_List.Access_Current.Name;
             Save;
-Basic_Proc.Put_Line_Error (">" & Current_Tag.Image & "<");
             Details.Handle (Root, Current_Tag.Image);
             Restore (True);
           when Afpx_Xref.List_Tags.Checkout =>
-            -- Call Checkout on current tag
-            -- @@@
-            null;
+            -- Checkout current tag
+            Tags_List.Move_At (Afpx.Line_List.Get_Position);
+            Save;
+            if Do_Checkout then
+              return;
+            end if;
+            Restore (True);
           when Afpx_Xref.List_Tags.Delete =>
             -- Delete tag selected
             Tags_List.Move_At (Afpx.Line_List.Get_Position);
-            Current_Tag := As.U.Tus (Tags_List.Access_Current.Image);
+            Current_Tag := Tags_List.Access_Current.Name;
             Save;
             if Confirm  ("Delete Tag", Current_Tag.Image) then
               begin
                 Afpx.Suspend;
                 Git_If.Delete_Tag (Str_Util.Strip (
-                    Tags_List.Access_Current.Image));
+                    Tags_List.Access_Current.Name.Image));
                 Afpx.Resume;
               exception
                 when others =>
@@ -168,10 +202,7 @@ Basic_Proc.Put_Line_Error (">" & Current_Tag.Image & "<");
       when Afpx.Refresh =>
         -- Encode current branch
         begin
-          Afpx.Suspend;
-          Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
-                                Afpx_Xref.List_Tags.Branch);
-          Afpx.Resume;
+          Utils.X.Encode_Branch (Afpx_Xref.List_Tags.Branch);
         exception
           when others =>
             Afpx.Resume;

@@ -55,7 +55,6 @@ procedure Agite is
 
   -- Files list and current branch
   Files : Git_If.File_List;
-  Curr_Branch : As.U.Asu_Us;
 
   -- Quick search dir or file
   Search_Dir : Boolean;
@@ -116,7 +115,6 @@ procedure Agite is
       if Root.Is_Null then
         Git_If.Get_Root_And_Path (Root, Path);
       end if;
-      Curr_Branch := As.U.Tus (Git_If.Current_Branch);
       Git_If.List_Files (Path.Image, Files);
       Afpx.Resume;
     exception
@@ -163,8 +161,7 @@ procedure Agite is
     -- Refresh list only if it has changed
     -- Update list of files and branch
     List_Files;
-    Utils.X.Encode_Field (Utils.X.Branch_Image (Curr_Branch.Image),
-                          Afpx_Xref.Main.Branch);
+    Utils.X.Encode_Branch (Afpx_Xref.Main.Branch);
 
     -- Check lengths then content
     if not Changed

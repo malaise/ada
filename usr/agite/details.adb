@@ -43,8 +43,7 @@ package body Details is
       List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
 
       -- Encode current branch
-      Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
-                            Afpx_Xref.Details.Branch);
+      Utils.X.Encode_Branch (Afpx_Xref.Details.Branch);
 
 
       -- Get commit details
@@ -212,8 +211,7 @@ package body Details is
           null;
         when Afpx.Refresh =>
           -- Encode current branch
-          Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
-                                Afpx_Xref.Details.Branch);
+          Utils.X.Encode_Branch (Afpx_Xref.Details.Branch);
       end case;
     end loop;
 

@@ -1,5 +1,5 @@
 with As.U, Con_Io, Afpx.List_Manager, Normal, Rounds, Language;
-with Utils.X, Config, Details, View, Afpx_Xref, Restore, Confirm, Error;
+with Utils.X, Config, Details, View, Afpx_Xref, Restore, Checkout;
 package body History is
 
   -- List Width
@@ -57,23 +57,11 @@ package body History is
                             else "/"),
                             Afpx_Xref.History.File);
       -- Encode current branch
-      begin
-        Afpx.Suspend;
-        Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
-                              Afpx_Xref.History.Branch);
-        Afpx.Resume;
-      exception
-        when others =>
-          Afpx.Resume;
-          raise;
-      end;
+      Utils.X.Encode_Branch (Afpx_Xref.History.Branch);
 
       -- Suppress button View and restore on dirs
       Afpx.Set_Field_Activation (Afpx_Xref.History.View, Is_File);
       Afpx.Set_Field_Activation (Afpx_Xref.History.Restore, Is_File);
-      -- Suppress button Checkout except on root dir
-      Afpx.Set_Field_Activation (Afpx_Xref.History.Checkout,
-          not Is_File and then Path = "");
     end Init;
 
     -- Show delta from current in list to comp
@@ -142,7 +130,6 @@ package body History is
     function Do_Checkout return Boolean is
       Pos : Positive;
       Commit : As.U.Asu_Us;
-      Result : As.U.Asu_Us;
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
@@ -152,28 +139,9 @@ package body History is
           Afpx.Line_List.Access_Current.Str(
               1 .. Afpx.Line_List.Access_Current.Len)));
 
-      -- Confirm
-      if Confirm ("Checkout", Commit.Image) then
-        -- Checkout this Hash
-        begin
-          Afpx.Suspend;
-          Result := As.U.Tus (Git_If.Do_Checkout (Log.Hash));
-          Afpx.Resume;
-        exception
-          when others =>
-            Afpx.Resume;
-            raise;
-        end;
-        -- Handle error
-        if not Result.Is_Null then
-          Error ("Checkout", Commit.Image, Result.Image);
-          -- Restore screen, (success will lead to return to Directory)
-          Init;
-          Init_List (Logs);
-          Afpx.Line_List.Move_At (Pos);
-          Afpx.Update_List (Afpx.Center_Selected);
-        end if;
-        return Result.Is_Null;
+      -- Checkout (success will lead to return to Directory)
+      if Checkout.Handle (Root, Commit.Image, Log.Hash, True) then
+        return True;
       else
         -- Restore screen
         Init;
@@ -345,15 +313,7 @@ package body History is
           null;
         when Afpx.Refresh =>
           -- Encode current branch
-          begin
-            Afpx.Suspend;
-            Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
-                                  Afpx_Xref.History.Branch);
-            Afpx.Resume;
-          exception
-            when others =>
-              Afpx.Resume;
-          end;
+          Utils.X.Encode_Branch (Afpx_Xref.History.Branch);
       end case;
     end loop;
 

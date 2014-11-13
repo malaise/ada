@@ -1,4 +1,5 @@
 with Str_Util;
+with Git_If;
 package body Utils.X is
 
   -- Protect a field and "revert" its colors
@@ -24,6 +25,15 @@ package body Utils.X is
       return Git_Branch;
     end if;
   end Branch_Image;
+
+  -- Encode current branch
+  procedure Encode_Branch (Field_No : in Afpx.Absolute_Field_Range) is
+  begin
+    Afpx.Suspend;
+    Encode_Field (Branch_Image (Git_If.Current_Branch), Field_No);
+    Afpx.Resume;
+  end Encode_Branch;
+
 
   -- Encode Head, Text and Tail in a line,
   -- Procuste on Text, preserve tail of Text

@@ -145,10 +145,9 @@ package body Commit is
         exit when not Moved;
       end loop;
     end if;
-    -- Encode current branch
-    Utils.X.Encode_Field (Utils.X.Branch_Image (Git_If.Current_Branch),
-                          Afpx_Xref.Commit.Branch);
     Afpx.Resume;
+    -- Encode current branch
+    Utils.X.Encode_Branch (Afpx_Xref.Commit.Branch);
 
     -- Encode the list
     Init_List (Changes);
