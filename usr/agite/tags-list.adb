@@ -11,7 +11,6 @@ procedure List (Root : in String) is
   function Image (Tag : Git_If.Tag_Entry_Rec) return String is
   begin
     return Tag.Name.Image
-         & (if Tag.Annotated then " " & Tag.Date else "")
          & (if Tag.Annotated then " " & Tag.Comment.Image else "");
   end Image;
 
@@ -19,7 +18,7 @@ procedure List (Root : in String) is
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in Git_If.Tag_Entry_Rec) is
   begin
-    Utils.X.Encode_Line (Image (From), "", "", List_Width, Line, False);
+    Utils.X.Encode_Line ("", Image (From), "", List_Width, Line, False);
   end Set;
   procedure Init_List is new Afpx.List_Manager.Init_List (
     Git_If.Tag_Entry_Rec, Git_If.Tag_Mng, Set, False);
