@@ -323,8 +323,8 @@ procedure Agite is
   procedure Check_Dir is
   begin
     declare
-   -- Check validity of current directory
-    Dummy : constant String := Directory.Get_Current;
+      -- Check validity of current directory
+      Dummy : constant String := Directory.Get_Current;
     begin
       null;
     end;
@@ -772,6 +772,7 @@ begin
   exception
     when Git_If.No_Git =>
       Error ("Can't find Git");
+      raise;
   end;
   if Version.Major < Ref_Version.Major then
     raise Incorrect_Version;
@@ -974,5 +975,7 @@ exception
   when Lost_Dir =>
     Basic_Proc.Put_Line_Error ("Cannot read current directory.");
     Basic_Proc.Set_Error_Exit_Code;
+  when Git_If.No_Git =>
+     Basic_Proc.Set_Error_Exit_Code;
 end Agite;
 

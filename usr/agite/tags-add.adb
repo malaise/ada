@@ -33,6 +33,7 @@ procedure Add (Rev : in Git_If.Git_Hash) is
   Comment : Git_If.Comment_Array(1 .. 10);
 
   procedure Init (Get_Details : in Boolean) is
+    Dummy_Moved : Boolean;
   begin
     -- Init Afpx
     Afpx.Use_Descriptor (Afpx_Xref.Add_Tag.Dscr_Num);
@@ -59,6 +60,11 @@ procedure Add (Rev : in Git_If.Git_Hash) is
           raise;
       end;
     end if;
+    -- Remove first " /" line
+    if not Commits.Is_Empty then
+      Commits.Rewind;
+      Commits.Delete (Moved => Dummy_Moved);
+    end if;
 
     -- Encode info
     Utils.X.Encode_Field (Hash, Afpx_Xref.Add_Tag.Hash);
@@ -71,29 +77,37 @@ procedure Add (Rev : in Git_If.Git_Hash) is
     Init_List (Commits);
   end Init;
 
-  -- Get tag name and comment, and add the tag on hash
-  procedure Add_Tag (Annotated : in Boolean) is
+  -- Get tag name and comment, and add the tag on hash. Return true on success
+  function Add_Tag (Annotated : in Boolean) return Boolean is
     Tag : As.U.Asu_Us;
     Comment : As.U.Asu_Us;
     Result : As.U.Asu_Us;
   begin
-    -- Get Tag name and comment, and create tag
+    -- Get Tag name and comment
     Tag := As.U.Tus (Str_Util.Strip (
         Afpx.Decode_Field (Afpx_Xref.Add_Tag.Tag_Name, 0)));
+    if Tag.Is_Null then
+      return False;
+    end if;
     Comment := As.U.Tus (Str_Util.Strip (
       Afpx.Decode_Field (Afpx_Xref.Add_Tag.Tag_Comment, 0)));
+
+    -- Create tag
     Result := As.U.Tus (Git_If.Add_Tag (Tag.Image, Rev, Annotated,
                         Comment.Image));
-    -- Handle error
-    if not Result.Is_Null then
-      Error ("Tag add",
-             (if Annotated then "-a -m " & Comment.Image else ""),
-             Result.Image);
-      -- restore
-      Init (False);
-      Afpx.Encode_Field (Afpx_Xref.Add_Tag.Tag_Name, (0, 0), Tag.Image);
-      Afpx.Encode_Field (Afpx_Xref.Add_Tag.Tag_Comment, (0, 0), Comment.Image);
+    if Result.Is_Null then
+      return True;
     end if;
+
+    -- Handle error
+    Error ("Tag add",
+           Tag.Image & (if Annotated then " -a -m " & Comment.Image else ""),
+           Result.Image);
+    -- restore
+    Init (False);
+    Afpx.Encode_Field (Afpx_Xref.Add_Tag.Tag_Name, (0, 0), Tag.Image);
+    Afpx.Encode_Field (Afpx_Xref.Add_Tag.Tag_Comment, (0, 0), Comment.Image);
+    return False;
   end Add_Tag;
 
 begin
@@ -124,12 +138,14 @@ begin
                Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
           when Afpx_Xref.Add_Tag.Tag_Annotated =>
             -- Tag annotated
-            Add_Tag (True);
-            return;
+            if Add_Tag (True) then
+              return;
+            end if;
           when Afpx_Xref.Add_Tag.Tag_Simple =>
             -- Tad not annotated
-            Add_Tag (False);
-            return;
+            if Add_Tag (False) then
+              return;
+            end if;
           when Afpx_Xref.Add_Tag.Back =>
             -- Back
             return;

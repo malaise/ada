@@ -1,4 +1,4 @@
-with Afpx, Temp_File;
+with Temp_File;
 with Utils, Config;
 procedure View (Path : in String;
                 Hash : in Git_If.Git_Hash) is
@@ -9,19 +9,11 @@ begin
     Tmp_Name : constant String := Temp_File.Create ("/tmp");
   begin
     -- Cat file in it
-    Afpx.Suspend;
-    begin
-      Ok := Git_If.Cat (Path, Hash, Tmp_Name, Log_Error => False);
-      if not Ok then
-        -- Try Hash^ (file might be deleted by the commit of hash)
-        Ok := Git_If.Cat (Path, Hash & "^", Tmp_Name);
-      end if;
-      Afpx.Resume;
-    exception
-      when others =>
-        Afpx.Resume;
-        raise;
-    end;
+    Ok := Git_If.Cat (Path, Hash, Tmp_Name, Log_Error => False);
+    if not Ok then
+      -- Try Hash^ (file might be deleted by the commit of hash)
+      Ok := Git_If.Cat (Path, Hash & "^", Tmp_Name);
+    end if;
     -- Launch viewer
     if Ok then
       Utils.Launch (Config.Viewer & " " & Tmp_Name

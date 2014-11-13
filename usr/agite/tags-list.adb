@@ -182,15 +182,8 @@ begin
             Current_Tag := Tags_List.Access_Current.Name;
             Save;
             if Confirm  ("Delete Tag", Current_Tag.Image) then
-              begin
-                Afpx.Suspend;
-                Git_If.Delete_Tag (Str_Util.Strip (
-                    Tags_List.Access_Current.Name.Image));
-                Afpx.Resume;
-              exception
-                when others =>
-                  Afpx.Resume;
-              end;
+              Git_If.Delete_Tag (Str_Util.Strip (
+                  Tags_List.Access_Current.Name.Image));
               Restore (False);
             else
               Restore (True);

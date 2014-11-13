@@ -57,14 +57,12 @@ package body Branch is
       Line.Len := 0;
     end if;
 
-    -- Get list of changes
-    Afpx.Suspend;
+    -- Get list of branches
     Git_If.List_Branches (Local => True, Branches => Branches);
     if not Restore then
       -- Set default to current branch
       Set (Line, As.U.Tus (Git_If.Current_Branch));
     end if;
-    Afpx.Resume;
 
     -- Encode the list
     Init_List (Branches);
@@ -86,12 +84,6 @@ package body Branch is
     Utils.X.Protect_Field (Afpx_Xref.Branches.Rename, Afpx.Line_List.Is_Empty);
     Utils.X.Protect_Field (Afpx_Xref.Branches.Delete, Afpx.Line_List.Is_Empty);
     Utils.X.Protect_Field (Afpx_Xref.Branches.Checkout, Afpx.Line_List.Is_Empty);
-   exception
-     when others =>
-       if Afpx.Is_Suspended then
-         Afpx.Resume;
-       end if;
-       raise;
   end Reread;
 
   -- Actions on branches
@@ -128,7 +120,6 @@ package body Branch is
     end if;
 
     -- Git_If
-    Afpx.Suspend;
     case Action is
       when Create =>
         Message := As.U.Tus ("Creating branch " & New_Name.Image);
@@ -152,7 +143,6 @@ package body Branch is
         Message := As.U.Tus ("Merging branch " & Curr_Name.Image);
         Result := As.U.Tus (Git_If.Merge_Branch (Curr_Name.Image));
     end case;
-    Afpx.Resume;
 
     -- Handle error
     if not Result.Is_Null then

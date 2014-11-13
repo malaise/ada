@@ -2,7 +2,6 @@
 --   otherwise restore the file
 -- Reject restoring if a/the file if it is locally modified
 -- Otherwise confirm and restore
-with Afpx;
 with Git_If, Error, Confirm;
 procedure Restore (Root, File, Hash : in String;
                    Commits : access Git_If.Commit_List) is
@@ -11,7 +10,6 @@ procedure Restore (Root, File, Hash : in String;
 begin
 
   -- See if a/the file is locally modified
-  Afpx.Suspend;
   if File = "/" then
     Modified := False;
     -- Iterate on all the list except first
@@ -26,7 +24,6 @@ begin
   else
     Modified := Git_If.Is_Modified (Root & File);
   end if;
-  Afpx.Resume;
 
   -- Reject if file is modified
   if Modified then
@@ -43,7 +40,6 @@ begin
   -- Confirm file restoration
   if Confirm ("Ready to restore:",
               (if File = "/"  then "Full commit" else File)) then
-    Afpx.Suspend;
     if File = "/" then
       Commits.Rewind;
       loop
@@ -56,13 +52,7 @@ begin
     else
       Modified := Git_If.Cat (File, Hash, Root & File);
     end if;
-    Afpx.Resume;
   end if;
 
-exception
-  when others =>
-    if Afpx.Is_Suspended then
-      Afpx.Resume;
-    end if;
 end Restore;
 

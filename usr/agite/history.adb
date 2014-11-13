@@ -91,22 +91,14 @@ package body History is
       Afpx.Line_List.Move_At (Comp);
 
       -- Call delta
-      begin
-        Afpx.Suspend;
-        if Ref_Hash = Git_If.No_Hash then
-          -- Only Left selection: Hash^ and Hash
-          Git_If.Launch_Delta (Config.Differator, Root & Path & Name,
-                               Comp_Hash & "^", Comp_Hash);
-        else
-          Git_If.Launch_Delta (Config.Differator, Root & Path & Name,
-                               Ref_Hash, Comp_Hash);
-        end if;
-        Afpx.Resume;
-      exception
-        when others =>
-          Afpx.Resume;
-          raise;
-      end;
+      if Ref_Hash = Git_If.No_Hash then
+        -- Only Left selection: Hash^ and Hash
+        Git_If.Launch_Delta (Config.Differator, Root & Path & Name,
+                             Comp_Hash & "^", Comp_Hash);
+      else
+        Git_If.Launch_Delta (Config.Differator, Root & Path & Name,
+                             Ref_Hash, Comp_Hash);
+      end if;
     end Show_Delta;
 
     -- Do a restore

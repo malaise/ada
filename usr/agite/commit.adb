@@ -169,12 +169,12 @@ package body Commit is
     Utils.X.Protect_Field (Afpx_Xref.Commit.Diff, Afpx.Line_List.Is_Empty);
     Utils.X.Protect_Field (Afpx_Xref.Commit.Stage_All, Afpx.Line_List.Is_Empty);
     Utils.X.Protect_Field (Afpx_Xref.Commit.Commit, not To_Commit);
-   exception
-     when others =>
-       if Afpx.Is_Suspended then
-         Afpx.Resume;
-       end if;
-       raise;
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+        Afpx.Resume;
+      end if;
+      raise;
   end Reread;
 
   -- Diff
@@ -191,7 +191,6 @@ package body Commit is
   begin
     Changes.Move_At (Afpx.Line_List.Get_Position);
     Status := Changes.Access_Current.S3;
-    Afpx.Suspend;
     if Stage then
       if Status = '?' or else Status = 'M' then
         -- Stage new file or modif
@@ -204,7 +203,6 @@ package body Commit is
       -- File is staged, reset
       Git_If.Do_Reset (Changes.Access_Current.Name.Image);
     end if;
-    Afpx.Resume;
     -- Move to next entry
     if Move
     and then Afpx.Line_List.Get_Position (Afpx.Line_List_Mng.From_Last) /= 1
@@ -265,18 +263,22 @@ package body Commit is
                   Ok_Cancel => False,
                   Show_List => True) then
         -- Add untracked files
-        Afpx.Suspend;
         loop
           Untracked.Read (Change, Moved => Moved);
           Git_If.Do_Add (Change.Name.Image);
           exit when not Moved;
         end loop;
-        Afpx.Resume;
       end if;
       Init;
     end if;
 
     Reread;
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+        Afpx.Resume;
+      end if;
+      raise;
   end Do_Stage_All;
 
   -- Sign the comment
@@ -285,9 +287,7 @@ package body Commit is
     use type As.U.Asu_Us;
   begin
     -- Get user name and email
-    Afpx.Suspend;
     Line := As.U.Tus (Git_If.Get_User);
-    Afpx.Resume;
 
     -- Decode current comment
     Decode_Comment;
@@ -304,9 +304,7 @@ package body Commit is
   begin
     Decode_Comment;
     -- Git_If.Commit
-    Afpx.Suspend;
     Result := As.U.Tus (Git_If.Do_Commit (Comment.Image));
-    Afpx.Resume;
     if Result.Is_Null then
       return;
     end if;

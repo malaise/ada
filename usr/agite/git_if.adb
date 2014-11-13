@@ -1282,9 +1282,11 @@ package body Git_If is
     Assert (Line.Is_Null);
     -- Read Comment
     Out_Flow_2.List.Read (Tag.Comment);
-    -- Skip ""
-    Out_Flow_2.List.Read (Line);
-    Assert (Line.Is_Null);
+    -- Skip "" if there is a comment
+    if not Tag.Comment.Is_Null then
+      Out_Flow_2.List.Read (Line);
+      Assert (Line.Is_Null);
+    end if;
     -- "commit <hash>"
     Out_Flow_2.List.Read (Line);
     Get_Hash;

@@ -675,7 +675,23 @@ the file has been renamed or moved between the versions.
 Tag
 ~~~
 anchor:XTag[]
-The 'Tag' menu allows tagging a commit. *TBD*
+The 'Tag' menu allows tagging a commit. It shows the details of the commit, as
+in the xref:XDetail[Detail] menu:
+
+* The SHA-1 hash of the commit, that you can copy into the clipboard,
+* The date and comment (up to seven lines) of the commit, that you can
+also alternatively copy into the clipboard,
+* The list of all the files in the commit, each preceded by a letter M, A or
+D.
+
+You can:
+
+* Enter the tag name in the 'Tag name' field.
+* If you want to create an annotated tag, then enter the tag comment in the
+'Comment' field.
+* Click either in the 'Tag Annotated' or in the 'Tag Simple' to create a tag
+on the current commit (and go back to the xref:XHist[History] menu).
+* Click either in the 'Tag Annotated' or in the 'Tag Simple' to create a tag
 
 Detail
 ~~~~~~
@@ -1072,7 +1088,7 @@ calling 'git difftool -y -x <differator> <ref_HSA1> <comp_HSA1> \-- <file>',
 'git checkout HEAD \-- <file>',
 
 * A function globally checks out a given commit or branch by calling
-'git checkout <ref>',
+'git checkout [ -b <branch> ] <ref>',
 
 * A function resets the staged sgtatus of a file by calling 'git reset \--
 <file>',
@@ -1107,5 +1123,14 @@ remote branches by calling 'git fetch' then 'git branch -r',
 * Three functions create/rename/delete a branch by calling 'git branch
 [ -m | -d ] <name> [<new_name>]',
 
-* A function merges a branch into current by calling 'git merge <branch>'.
+* A function merges a branch into current by calling 'git merge <branch>',
+
+* A function lists the tags by calling 'git tag [ -l <template> ]',
+
+* A function shows a tag by calling 'git show --date=iso --quiet <tag> \--',
+
+* A function deletes a tag by calling 'git tag -d <tag>',
+
+* A function adds a tag by calling 'git tag [ -a -m <comment> ] <tag> <ref>'.
+
 

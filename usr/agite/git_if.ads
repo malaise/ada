@@ -12,6 +12,8 @@ package Git_If is
 
 
   -- Current Root and relative path to git, empty or "/" appended
+  -- No_Git is raised is raised if no ".git" (or $GIT_DIR) is found
+  --  in parent dirs
   procedure Get_Root_And_Path (Root, Path : out As.U.Asu_Us);
 
   -- LIST OF FILES AND STATUS
@@ -66,6 +68,7 @@ package Git_If is
   subtype Log_List is Log_Mng.Dyn_List.List_Type;
 
   -- List the log of a dir or file
+  -- May raise anonymous exception Log_Error
   procedure List_Log (Path : in String;
                       Log : in out Log_List);
 
@@ -82,6 +85,7 @@ package Git_If is
   subtype Commit_List is Commit_File_Mng.Dyn_List.List_Type;
 
   -- List detailed info on a commit
+  -- May raise anonymous exception Log_Error
   procedure List_Commit (Rev_Tag : in String;
                          Hash : out Git_Hash;
                          Date : out Iso_Date;
@@ -175,7 +179,7 @@ package Git_If is
   -- Drop a stash, return "" if Ok else the error
   function Drop_Stash (Num : Stash_Number) return String;
 
-  -- List tags
+  -- List of tags
   type Tag_Entry_Rec is record
     Name : As.U.Asu_Us;
     Hash : Git_Hash;
@@ -186,6 +190,8 @@ package Git_If is
   package Tag_Mng is new Dynamic_List (Tag_Entry_Rec);
   subtype Tag_List is Tag_Mng.Dyn_List.List_Type;
 
+  -- List tags matching Template
+  -- May raise anonymous exception Log_Error
   procedure List_Tags (Template : in String;
                        Tags : in out Tag_List);
 
