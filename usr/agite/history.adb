@@ -1,5 +1,5 @@
 with As.U, Con_Io, Afpx.List_Manager, Normal, Rounds, Language;
-with Utils.X, Config, Details, View, Afpx_Xref, Restore, Checkout;
+with Utils.X, Config, Details, View, Afpx_Xref, Restore, Checkout, Tags;
 package body History is
 
   -- List Width
@@ -152,6 +152,23 @@ package body History is
       end if;
     end Do_Checkout;
 
+    -- Do a tag
+    procedure Do_Tag is
+      Pos : Positive;
+    begin
+      -- Save position in List and read it
+      Pos := Afpx.Line_List.Get_Position;
+      Logs.Move_At (Pos);
+      Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
+      -- Restore file
+      Tags.Add (Log.Hash);
+      -- Restore screen
+      Init;
+      Init_List (Logs);
+      Afpx.Line_List.Move_At (Pos);
+      Afpx.Update_List (Afpx.Center_Selected);
+    end Do_Tag;
+
     -- View file or commit details
     type Show_List is (Show_View, Show_Details);
     procedure Show (What : in Show_List) is
@@ -301,6 +318,9 @@ package body History is
               if Do_Checkout then
                 return;
               end if;
+            when Afpx_Xref.History.Tag =>
+              -- Tag
+              Do_Tag;
             when Afpx_Xref.History.Back =>
               -- Back
               return;

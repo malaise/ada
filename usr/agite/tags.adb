@@ -4,10 +4,7 @@ package body Tags is
   procedure List (Root : in String) is separate;
 
   -- Add a tag on a commit
-  procedure Add (Hash : in Git_If.Git_Hash) is
-  begin
-    null;
-  end Add;
+  procedure Add (Rev : in Git_If.Git_Hash) is separate;
 
 end Tags;
 

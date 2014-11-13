@@ -5,7 +5,7 @@ package Tags is
   procedure List (Root : in String);
 
   -- Add a tag on a commit
-  procedure Add (Hash : in Git_If.Git_Hash);
+  procedure Add (Rev : in Git_If.Git_Hash);
 
 end Tags;
 

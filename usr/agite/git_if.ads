@@ -192,5 +192,11 @@ package Git_If is
   -- Delete tag
   procedure Delete_Tag (Tag : in String);
 
+  -- Add a tag, return "" if Ok else the error
+  function  Add_Tag (Tag : String;
+                     Hash : Git_Hash;
+                     Annotated : Boolean;
+                     Comment : in String) return String;
+
 end Git_If;
 

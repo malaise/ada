@@ -810,19 +810,21 @@ package body Git_If is
     end if;
   end Do_Rm;
 
+  -- Strip a comment: Replace ' by '\'', then protect commend in quotes
+  function Strip_Comment (Comment : String) return String is
+  begin
+    return "'" & Str_Util.Substit (Comment, "'", "'\''", True) & "'";
+  end Strip_Comment;
+
   -- Launch a commit synchronous
   function Do_Commit (Comment : String) return String is
     Cmd : Many_Strings.Many_String;
-    Lcomment : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
-    -- Replace ' by '\'' in comment, then protect commend in quotes
-    Lcomment := As.U.Tus (Str_Util.Substit (Comment, "'", "'\''", True));
-    Lcomment := "'" & Lcomment & "'";
     Cmd.Set ("git");
     Cmd.Cat ("commit");
     Cmd.Cat ("-m");
-    Cmd.Cat (Lcomment.Image);
+    Cmd.Cat (Strip_Comment (Comment));
     Command.Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -1353,6 +1355,32 @@ package body Git_If is
       return;
     end if;
   end Delete_Tag;
+
+  -- Add a tag, return "" if Ok else the error
+  function  Add_Tag (Tag : String;
+                     Hash : Git_Hash;
+                     Annotated : Boolean;
+                     Comment : in String) return String is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("tag");
+    if Annotated then
+      Cmd.Cat ("-a");
+      Cmd.Cat ("-m");
+      Cmd.Cat (Strip_Comment (Comment));
+    end if;
+    Cmd.Cat (Tag);
+    Cmd.Cat (Hash);
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      return Err_Flow_1.Str.Image;
+    else
+      return "";
+    end if;
+  end Add_Tag;
 
 end Git_If;
 
