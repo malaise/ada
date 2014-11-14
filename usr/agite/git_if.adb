@@ -1280,12 +1280,14 @@ package body Git_If is
     -- Skip ""
     Out_Flow_2.List.Read (Line);
     Assert (Line.Is_Null);
-    -- Read Comment
+    -- Read 1st line of Comment
     Out_Flow_2.List.Read (Tag.Comment);
-    -- Skip "" if there is a comment
+    -- Skip other lines of comment, until ""
     if not Tag.Comment.Is_Null then
-      Out_Flow_2.List.Read (Line);
-      Assert (Line.Is_Null);
+      loop
+        Out_Flow_2.List.Read (Line);
+        exit when Line.Is_Null;
+      end loop;
     end if;
     -- "commit <hash>"
     Out_Flow_2.List.Read (Line);
