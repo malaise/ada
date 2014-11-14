@@ -835,12 +835,15 @@ package body Git_If is
   end Do_Commit;
 
   -- Launch a push synchronous
-  function Do_Push (Remote : String) return String is
+  function Do_Push (Remote : String; Tag : String) return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
     Cmd.Cat ("push");
     Cmd.Cat (Remote);
+    if Tag /= "" then
+      Cmd.Cat (Tag);
+    end if;
     Command.Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error

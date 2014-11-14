@@ -128,8 +128,9 @@ package Git_If is
   -- Launch a commit synchronous, return "" if OK, else the error
   function Do_Commit (Comment : String) return String;
 
-  -- Launch a push synchronous, return "" if OK, else the error
-  function Do_Push (Remote : String) return String;
+  -- Launch a push synchronous (of current branch or tag),
+  --  return "" if OK, else the error
+  function Do_Push (Remote : String; Tag : String) return String;
 
   -- Launch a fetch (or pull) synchronous, "" if OK, else the error
   function Do_Fetch (Remote : String; Branch : String; Pull : Boolean)

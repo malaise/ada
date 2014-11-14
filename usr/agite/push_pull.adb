@@ -31,11 +31,11 @@ package body Push_Pull is
   References : Git_If.Reference_Mng.List_Type;
 
   -- Get remote and push
-  function Do_Push return Boolean is
+  function Do_Push (Tag : in String) return Boolean is
     Log : As.U.Asu_Us;
   begin
     References.Move_At (Afpx.Line_List.Get_Position);
-    Log := As.U.Tus (Git_If.Do_Push (References.Access_Current.Image));
+    Log := As.U.Tus (Git_If.Do_Push (References.Access_Current.Image, Tag));
     if Log.Is_Null then
       return True;
     else
@@ -110,7 +110,7 @@ package body Push_Pull is
       -- Change title and Push button if Pull_Branch or Pull
       case Menu is
         when Push =>
-          Utils.X.Center_Field ("Push", Afpx_Xref.Push_Pull.Title);
+          Utils.X.Center_Field ("Push " & Branch, Afpx_Xref.Push_Pull.Title);
         when Pull_Branch =>
           Utils.X.Center_Field ("Pull", Afpx_Xref.Push_Pull.Title);
           Utils.X.Center_Field ("Select branch", Afpx_Xref.Push_Pull.Sub_Title);
@@ -191,7 +191,7 @@ package body Push_Pull is
                 when Pull =>
                   Result := Do_Fetch (Branch, Branch = Curr_Branch);
                 when Push =>
-                  Result := Do_Push;
+                  Result := Do_Push (Branch);
               end case;
               if Result then
                 -- Push/Pull OK
@@ -219,12 +219,14 @@ package body Push_Pull is
 
   -- Public interface
   -- Handle the Push or pull
-  function Handle (Root : String; Pull : Boolean) return Boolean is
+  function Handle (Root : String;
+                   Pull : Boolean;
+                   Tag : String := "") return Boolean is
   begin
     if Pull then
       return Do_Handle (Root, Pull_Branch, "");
     else
-      return Do_Handle (Root, Push, "");
+      return Do_Handle (Root, Push, Tag);
     end if;
   end Handle;
 end Push_Pull;

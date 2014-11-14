@@ -1,5 +1,5 @@
 with As.U, Afpx.List_Manager, Str_Util;
-with Utils.X, Afpx_Xref, Details, Confirm, Checkout;
+with Utils.X, Afpx_Xref, Details, Confirm, Checkout, Push_Pull;
 separate (Tags)
 
 procedure List (Root : in String) is
@@ -117,6 +117,7 @@ procedure List (Root : in String) is
     end if;
   end Restore;
 
+  Dummy_Res : Boolean;
 begin
 
   -- Init Afpx
@@ -126,12 +127,14 @@ begin
   -- Main loop
   loop
 
-    -- Activate Checkout and Delete if list is not empty
+    -- Activate Detail, Checkout, Delete and Push only if list is not empty
     Afpx.Set_Field_Activation (Afpx_Xref.List_Tags.Details,
                                not Afpx.Line_List.Is_Empty);
     Afpx.Set_Field_Activation (Afpx_Xref.List_Tags.Checkout,
                                not Afpx.Line_List.Is_Empty);
     Afpx.Set_Field_Activation (Afpx_Xref.List_Tags.Delete,
+                               not Afpx.Line_List.Is_Empty);
+    Afpx.Set_Field_Activation (Afpx_Xref.List_Tags.Push,
                                not Afpx.Line_List.Is_Empty);
 
     Afpx.Put_Then_Get (Get_Handle, Ptg_Result, True);
@@ -185,12 +188,19 @@ begin
             Tags_List.Read (Current_Tag, Git_If.Tag_Mng.Dyn_List.Current);
             Save;
             if Confirm  ("Delete Tag", Current_Tag.Name.Image) then
-              Git_If.Delete_Tag (Str_Util.Strip (
-                  Tags_List.Access_Current.Name.Image));
+              Git_If.Delete_Tag (Str_Util.Strip (Current_Tag.Name.Image));
               Restore (False);
             else
               Restore (True);
             end if;
+          when Afpx_Xref.List_Tags.Push =>
+            -- Push tag selected
+            Tags_List.Move_At (Afpx.Line_List.Get_Position);
+            Tags_List.Read (Current_Tag, Git_If.Tag_Mng.Dyn_List.Current);
+            Save;
+            Dummy_Res := Push_Pull.Handle (Root, Pull => False,
+                                           Tag => Current_Tag.Name.Image);
+            Restore (True);
           when Afpx_Xref.List_Tags.Back =>
             return;
           when others =>

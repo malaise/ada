@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V16.02
+V16.03
 
 General purpose
 ---------------
@@ -158,12 +158,12 @@ list of commits that have modified the file(s).
 including the list of files modified by the commit.
 * xref:XTags[Tags]: This lists the tags and allows managing them.
 * xref:XCheckout[Checkout]: This allows checking out a commit or a tag.
-* xref:XStash[Stash]: This allows stashing the local worktree and managing
-the stack of stashes.
 * xref:XCommit[Commit]: This shows all the local modifications of the
 worktree and allows staging and commiting them.
 * xref:XPush[Push]: This allows pushing local commits to a remote
 repository.
+* xref:XStash[Stash]: This allows stashing the local worktree and managing
+the stack of stashes.
 * xref:XPull[Pull]: This allows fetching or pulling a branch from a
 remote repository.
 
@@ -184,13 +184,13 @@ The navigation is as follows:
                    /            +-------+-+     /   +--------+
                   /             +------+ \     /    +----------+
                  /--------------| Tags +--+---+---->| Checkout |
-                /               +------+            +----------+
-  +---------- +/                +-------+
-  | Directory |---------------->| Stash |
-  +---------- +\                +-------+
-                \               +--------+          +------+
-                 \------------->| Commit +--------->| Push |
-                  \             +--------+          +------+
+                /               +------+   \        +----------+
+  +---------- +/                +-------+   \       +------+
+  | Directory |---------------->| Commit|----+----->| Push |
+  +---------- +\                +-------+           +------+
+                \               +-------+
+                 \------------->| Stash |
+                  \             +-------+
                    \            +------+
                     \---------->| Pull |
                                 +------+
@@ -198,7 +198,8 @@ The navigation is as follows:
 There are also a confirmation screen and an error screen that are called when
 necessary.
 
-NOTE: The 'History' and 'Tags' menus call the 'Detail' and 'Checkout' menus.
+NOTE: The 'History' and 'Tags' menus call the 'Detail' and 'Checkout' menus. +
+The 'Tags' and 'Commit' menus call the 'Push' menu.
 
 NOTE: All the screen transitions are based on the 'call-return' scheme. +
 So please note the double arrow between 'History' and 'Detail': from the
@@ -676,7 +677,7 @@ Tag
 ~~~
 anchor:XTag[]
 The 'Tag' menu allows tagging a commit. It shows the details of the commit, as
-in the xref:XDetail[Detail] menu:
+in the xref:XDetail[detail] menu:
 
 * The SHA-1 hash of the commit, that you can copy into the clipboard,
 * The date and comment (up to seven lines) of the commit, that you can
@@ -690,7 +691,7 @@ You can:
 * If you want to create an annotated tag, then enter the tag comment in the
 'Comment' field.
 * Click either in the 'Tag Annotated' or in the 'Tag Simple' to create a tag
-on the current commit (and go back to the xref:XHist[History] menu).
+on the current commit (and go back to the xref:XHist[history] menu).
 * Click either in the 'Tag Annotated' or in the 'Tag Simple' to create a tag
 
 Detail
@@ -807,51 +808,10 @@ Delete::
 
 This button button asks for confirmation, then deletes the selected tag.
 
-.Back
+Push::
 
-This button returns to the xref:XDir[directory] menu.
-
-Stash
-~~~~~
-anchor:XStash[]
-The 'Stash' menu works on the global worktree, not on the local directory. +
-The screen shows the list of stashes. Each entry has a stash number,
-the branch on which the stash was done and the text of the message.
-
-.Current branch and root
-
-This shows the current branch and path of the root of current worktree.
-
-.Actions
-
-The possible actions on the list of stashes are:
-
-Add::
-
-Enter a message (or name) for the stash and click in the 'Add' button or press
-the Return key. Agit stashes the current worktree (which performs a 'git reset
---hard'), then applies this stash, then returns to the xref:XDir[directory]
-menu. +
-The new stash has been inserted in the list. +
-
-NOTE: You can un-apply this stash ('git reset --hard') by selecting the entry
-'/' of the xref:XDir[directory] list and cliking on the xref:XRevert[revert]
-button.
-
-
-Apply::
-
-Applies the stash currently selected in the list and returns to the
-xref:XDir[directory] menu.
-
-Pop::
-
-After confirmation, applies the stash currently selected in the list, removes
-it from the list and returns to the xref:XDir[directory] menu.
-
-Del::
-
-After confirmation, deletes (drops) the stash currently selected in the list.
+This button button launches the xref:XPush[push] manu that allowws pushing
+the selected tag into a a given remote reference.
 
 .Back
 
@@ -971,9 +931,13 @@ This button returns to the xref:XDir[directory] menu.
 Push
 ~~~~
 anchor:XPush[]
-The 'Push' menu allows pushing the local changes to a given remote
-repository. +
+The 'Push' menu allows pushing the local changes (commits) ior a tag into a
+given remote repository. +
 It shows:
+
+.Title
+
+In case of a tag the title recalls the name of the tag.
 
 .Current branch and root
 
@@ -986,15 +950,63 @@ If the remote ''orign'' is defined then it is selected by default.
 
 .Push
 
-Pushes the local commits to the selected remote repository. +
-If there is no error then agite returns back to the xref:XDir[directory] menu,
-otherwise the error is reported through a specific screen.
+Pushes the local commits or tag to the selected remote repository. +
+After pushing commits agite returns back to the xref:XDir[directory] menu,
+while after pushing a tag it returns back to the xref:XTags[tags] menu. +
+Any error is reported through a specific screen.
 
 .Back
 
 Moves back to the xref:XCommit[commit] menu without pushing.
 
 anchor:XSelBranch[]
+
+Stash
+~~~~~
+anchor:XStash[]
+The 'Stash' menu works on the global worktree, not on the local directory. +
+The screen shows the list of stashes. Each entry has a stash number,
+the branch on which the stash was done and the text of the message.
+
+.Current branch and root
+
+This shows the current branch and path of the root of current worktree.
+
+.Actions
+
+The possible actions on the list of stashes are:
+
+Add::
+
+Enter a message (or name) for the stash and click in the 'Add' button or press
+the Return key. Agit stashes the current worktree (which performs a 'git reset
+--hard'), then applies this stash, then returns to the xref:XDir[directory]
+menu. +
+The new stash has been inserted in the list. +
+
+NOTE: You can un-apply this stash ('git reset --hard') by selecting the entry
+'/' of the xref:XDir[directory] list and cliking on the xref:XRevert[revert]
+button.
+
+
+Apply::
+
+Applies the stash currently selected in the list and returns to the
+xref:XDir[directory] menu.
+
+Pop::
+
+After confirmation, applies the stash currently selected in the list, removes
+it from the list and returns to the xref:XDir[directory] menu.
+
+Del::
+
+After confirmation, deletes (drops) the stash currently selected in the list.
+
+.Back
+
+This button returns to the xref:XDir[directory] menu.
+
 
 Pull
 ~~~~
@@ -1115,10 +1127,12 @@ calling 'git difftool -y -x <differator> <ref_HSA1> <comp_HSA1> \-- <file>',
 * A function commits the local changes by calling 'git commit -m
 "<comment>"',
 
-* A function pushes the local commits by calling 'git push <remote>',
+* A function pushes the local commits or a tag by calling 'git push <remote> 
+[ <tag> ]',
 
-* A function fetches or pulls the current branch by calling 'git fetch
-* <remote> <branch>:<branch>' or 'git pull * <remote> <branch>:<branch>',
+* A function fetches or pulls the current branch by calling
+'git fetch -q --tags <remote> <branch>:<branch>' or
+'git pull -q --tags <remote> <branch>:<branch>',
 
 * A function gets the user name and email by calling 'git config user.name'
 and 'git config user.email',
