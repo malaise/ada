@@ -863,6 +863,7 @@ package body Git_If is
       Cmd.Cat ("fetch");
     end if;
     Cmd.Cat ("-q");
+    Cmd.Cat ("--tags");
     Cmd.Cat (Remote);
     Cmd.Cat (Branch & ":" & Branch);
     Command.Execute (Cmd, True, Command.Both,
