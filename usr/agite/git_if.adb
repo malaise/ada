@@ -1249,6 +1249,7 @@ package body Git_If is
     Cmd.Cat ("show");
     Cmd.Cat ("--date=iso");
     Cmd.Cat ("--quiet");
+    Cmd.Cat ("-s");
     Cmd.Cat (Tag.Name.Image);
     Cmd.Cat ("--");
     Command.Execute (Cmd, True, Command.Both,
