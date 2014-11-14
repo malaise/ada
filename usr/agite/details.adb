@@ -19,7 +19,9 @@ package body Details is
     Git_If.Commit_Entry_Rec, Git_If.Commit_File_Mng, Set, False);
 
 
-  procedure Handle (Root : in String; Rev_Tag : in String) is
+  procedure Handle (Root : in String;
+                    Rev_Tag : in String;
+                    Tag_Date, Tag_Comment : in String := "") is
 
     -- Afpx stuff
     Get_Handle     : Afpx.Get_Handle_Rec;
@@ -61,8 +63,13 @@ package body Details is
 
       -- Encode info
       if Rev_Tag /= Hash then
-        -- Rev_Tag is a tag
-        Utils.X.Encode_Field ("of " & Rev_Tag, Afpx_Xref.Details.Tag);
+        -- Rev_Tag is a tag. Center "Tag: <name>", preserving tail,
+        --  put tag date and comment
+        Utils.X.Center_Field ("Tag: " & Rev_Tag, Afpx_Xref.Details.Title,
+                              False);
+        Utils.X.Encode_Field (Tag_Date, Afpx_Xref.Details.Tag_Date);
+        Utils.X.Encode_Field (Tag_Comment, Afpx_Xref.Details.Tag_Comment,
+                              False);
       end if;
       Utils.X.Encode_Field (Hash, Afpx_Xref.Details.Hash);
       Utils.X.Encode_Field (Date, Afpx_Xref.Details.Date);

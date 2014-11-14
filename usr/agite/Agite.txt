@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V16.01
+V16.02
 
 General purpose
 ---------------
@@ -698,6 +698,19 @@ Detail
 anchor:XDetail[]
 The 'Detail' menu shows the details of a commit or a tag:
 
+.Title
+In case of a tag, the title recalls the name of the tag (in case of a commit
+the title is simply "Commit").
+
+.Tag information
+Then, in case of an annotated tag, the title is followed by the tag
+information:
+
+* The date when the tag was created,
+* The first line of the comment of the tag.
+
+Then, in any case, there is the information on the commmit:
+
 * The SHA-1 hash of the commit, that you can copy into the clipboard,
 * The date and comment (up to seven lines) of the commit, that you can
 also alternatively copy into the clipboard,
@@ -706,10 +719,12 @@ also alternatively copy into the clipboard,
 ** A Added,
 ** D Deleted.
 
-A specific entry '/' is added on top of the list, which represents the root of
+A specific entry, "/", is added on top of the list, which represents the root of
 the current worktree.
 
-For all other entries (files) of the list:
+.Actions
+
+For all file entries of the list (not "/"):
 
 * double click on the entry or select the entry and click on 'View' allows 
 viewing the file as it was committed,

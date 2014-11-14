@@ -82,7 +82,7 @@ procedure List (Root : in String) is
   end Do_Checkout;
 
   -- Current tag, template, position
-  Current_Tag : As.U.Asu_Us;
+  Current_Tag : Git_If.Tag_Entry_Rec;
   Current_Tmpl : As.U.Asu_Us;
   Current_Pos : Natural;
 
@@ -163,9 +163,13 @@ begin
           when Afpx_Xref.List_Tags.Details =>
             -- Details of tag selected
             Tags_List.Move_At (Afpx.Line_List.Get_Position);
-            Current_Tag := Tags_List.Access_Current.Name;
+            Tags_List.Read (Current_Tag, Git_If.Tag_Mng.Dyn_List.Current);
             Save;
-            Details.Handle (Root, Current_Tag.Image);
+            Details.Handle (Root, Current_Tag.Name.Image,
+                (if Current_Tag.Annotated then Current_Tag.Date
+                 else ""),
+                (if Current_Tag.Annotated then Current_Tag.Comment.Image
+                 else ""));
             Restore (True);
           when Afpx_Xref.List_Tags.Checkout =>
             -- Checkout current tag
@@ -178,9 +182,9 @@ begin
           when Afpx_Xref.List_Tags.Delete =>
             -- Delete tag selected
             Tags_List.Move_At (Afpx.Line_List.Get_Position);
-            Current_Tag := Tags_List.Access_Current.Name;
+            Tags_List.Read (Current_Tag, Git_If.Tag_Mng.Dyn_List.Current);
             Save;
-            if Confirm  ("Delete Tag", Current_Tag.Image) then
+            if Confirm  ("Delete Tag", Current_Tag.Name.Image) then
               Git_If.Delete_Tag (Str_Util.Strip (
                   Tags_List.Access_Current.Name.Image));
               Restore (False);
