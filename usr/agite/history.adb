@@ -244,7 +244,14 @@ package body History is
     -- Get history
     Afpx.Suspend;
     begin
-      Git_If.List_Log (Root & Path & Name, Logs);
+      if Path = "" and then Name = "" then
+        -- Log in (the root dir of) a bare repository
+        --  fails if we provide the full (Root) path
+        --  but is OK with '.'
+        Git_If.List_Log (".", Logs);
+      else
+        Git_If.List_Log (Root & Path & Name, Logs);
+      end if;
       Afpx.Resume;
     exception
       when others =>
