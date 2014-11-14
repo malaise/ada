@@ -189,6 +189,7 @@ procedure Agite is
     elsif Pos = 0 then
       -- Initial list was empty
       Init_List (Files);
+      Afpx.Line_List.Rewind (Check_Empty => False);
       Afpx.Update_List (Afpx.Top);
     else
       Init_List (Files);
