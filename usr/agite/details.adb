@@ -119,8 +119,11 @@ package body Details is
               View (Commit.File.Image, Hash);
             end if;
           when Show_Hist =>
-            History.Handle (Root, Path, File, Commit.File.Image /= "/",
-                            Hash);
+            if Commit.File.Image = "/" then
+              History.Handle (Root, "", "", False, Hash);
+            else
+              History.Handle (Root, Path, File, True, Hash);
+            end if;
             -- Re init sreen
             Init (False);
           when Show_Diff =>
