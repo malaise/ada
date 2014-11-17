@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V16.04
+V16.05
 
 General purpose
 ---------------
@@ -118,6 +118,17 @@ menus. This parameter defines the period in seconds of this automatic check.
 Setting the value to 0.0 disables the feature.
 +
 Note: A manual refresh is always possible with the xref:XReread[Reread] button.
+
+anchor:XListTags[]
+
+list_tags::
+By default, when starting the xref:XTags[tags] menu, agite does not list all
+the tags and lets you enter a template. This prevents spending to much time
+in the reading of all the tags.
++
+Setting the value to true instructs agite to list all the tags by default when
+entering this menu.
+
 
 Agite persistent data
 ~~~~~~~~~~~~~~~~~~~~~
@@ -782,7 +793,10 @@ The 'Tags' menu lists the tags of the workdir that match a criteria.
 
 .List
 
-The list is initially empty. You can enter a template (like V1.*) in the get
+The list is initially empty, except if xref:XListTags[list_tags] is set to
+true (any casing) in the xref:XConfig[configuration file]. In this case it
+contains all the tags. +
+You can enter a template (like V1.*) in the get
 area besides the 'List' button or leave it empty for all the tags. Then you can
 hit the 'Return' key or click in the 'List' button, which updates the list.
 

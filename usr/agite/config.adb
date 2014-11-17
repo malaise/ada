@@ -24,8 +24,8 @@ package body Config is
     return File_Path.Image;
   end Get_File_Name;
 
-  Curr_Dir_Pos : constant := 7;
-  Bookmarks_Pos : constant := 8;
+  Curr_Dir_Pos : constant := 8;
+  Bookmarks_Pos : constant := 9;
 
   -- Load the conf and check
   Ctx : Xml_Parser.Generator.Ctx_Type;
@@ -154,6 +154,18 @@ package body Config is
     when others =>
       raise Invalid_Config;
   end Period;
+
+  -- List tags
+  function List_Tags return Boolean is
+    Result : Boolean;
+  begin
+    Result := Boolean'Value (
+               Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 7), 1)));
+    return Result;
+  exception
+    when others =>
+      raise Invalid_Config;
+  end List_Tags;
 
   -- Last/Current dir
   procedure Save_Curr_Dir (Dir : in String) is

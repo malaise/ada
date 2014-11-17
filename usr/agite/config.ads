@@ -21,6 +21,9 @@ package Config is
   -- Refresh period
   function Period return Duration;
 
+  -- List tags by default
+  function List_Tags return Boolean;
+
   -- Last/Current dir
   procedure Save_Curr_Dir (Dir : in String);
   function Prev_Dir return String;

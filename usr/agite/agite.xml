@@ -9,6 +9,7 @@
   <differator>tkdiff</differator>
   <make>xmake</make>
   <period>5.0</period>
+  <list_tags>false</list_tags>
   <last_dir></last_dir>
   <bookmarks>
     <bookmark Name="Ada"/>

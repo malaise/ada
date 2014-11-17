@@ -1,5 +1,5 @@
 with As.U, Afpx.List_Manager, Str_Util;
-with Utils.X, Afpx_Xref, Details, Confirm, Checkout, Push_Pull;
+with Utils.X, Afpx_Xref, Config, Details, Confirm, Checkout, Push_Pull;
 separate (Tags)
 
 procedure List (Root : in String) is
@@ -122,6 +122,10 @@ begin
 
   -- Init Afpx
   Init;
+  -- Read all tags if configured
+  if Config.List_Tags then
+    Read_Tags;
+  end if;
   Init_List (Tags_List);
 
   -- Main loop
