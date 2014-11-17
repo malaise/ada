@@ -54,7 +54,10 @@ procedure List (Root : in String) is
     -- Get tags list
     Git_If.List_Tags (Template.Image, Tags_List);
     Init_List (Tags_List);
-    Afpx.Update_List (Afpx.Center_Selected);
+    if not Afpx.Line_List.Is_Empty then
+      Afpx.Line_List.Rewind;
+    end if;
+    Afpx.Update_List (Afpx.Top);
   end Read_Tags;
 
   -- Checkout current tag
@@ -125,8 +128,9 @@ begin
   -- Read all tags if configured
   if Config.List_Tags then
     Read_Tags;
+  else
+    Init_List (Tags_List);
   end if;
-  Init_List (Tags_List);
 
   -- Main loop
   loop
