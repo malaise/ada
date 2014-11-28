@@ -91,7 +91,7 @@ package body Util is
     begin
       if not Environ.Is_Set (Var_Name)
       or else not Sys_Calls.File_Found (File_Name) then
-        Error (Flow, "Unsupported encoding (only UTF-8, UTF-16 "
+        Error (Flow, "Unsupported encoding (only (xx-)ASCII, UTF-8, UTF-16 "
                           & "and ISO-8859-1 are natively supported)");
       end if;
       Debug ("Loading map " & Name & " from file " & File_Name);

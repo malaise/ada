@@ -8,7 +8,8 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char,
 --    Public Id (if any) is ignored.
 --  * Only the schemes: path to local file, "file://" and "http://" are
 --     supported in URIs (other schemes raise parsing error).
---  * Only UTF-8, UTF-16 and ISO-8859-1 encodings are natively supported.
+--  * Only (xx-)ASCII, UTF-8, UTF-16 and ISO-8859-1 encodings are natively
+--     supported.
 --    Some other encodings may be handled by defining the environment variable
 --    XML_PARSER_MAP_DIR to the path where Byte_To_Unicode can find the mapping
 --    file named <ENCODING>.xml (in uppercase, ex: ISO-8859-9.xml).
@@ -16,7 +17,7 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "35";
+  Major_Version : constant String := "36";
   function Version return String;
 
   -----------

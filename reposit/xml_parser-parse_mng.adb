@@ -554,8 +554,8 @@ package body Parse_Mng  is
       if not Util.Is_Valid_Encoding (Attribute_Value) then
         Util.Error (Ctx.Flow, "Invalid encoding name");
       end if;
-      -- Check this is "UTF-8", "UTF-16" or "ISO-8859-1" and that it matches
-      --  the guessed encoding
+      -- Check this is "UTF-8", "UTF-16" or "ISO-8859-1" or "ASCII" or
+      --  "xx-ASCII" and that it matches the guessed encoding
       if Upper_Str (Attribute_Value.Image) = "UTF-8" then
         if Ctx.Flow.Curr_Flow.Encod /= Utf8 then
           Util.Error (Ctx.Flow, "Encoding " & Attribute_Value.Image
@@ -569,11 +569,14 @@ package body Parse_Mng  is
                     & " differs from autodetected "
                     & Ctx.Flow.Curr_Flow.Encod'Img);
         end if;
-      elsif Upper_Str (Attribute_Value.Image) = "ISO-8859-1" then
+      elsif Upper_Str (Attribute_Value.Image) = "ISO-8859-1"
+      or else Regular_Expressions.Match ("([A-Z]{2}-)?ASCII",
+                                         Upper_Str (Attribute_Value.Image),
+                                         Strict => True) then
         -- Guessing set encoding to Utf8 for any byte-based format
         if Ctx.Flow.Curr_Flow.Encod /= Utf8 then
           Util.Error (Ctx.Flow, "Encoding " & Attribute_Value.Image
-                    & " differs from autodetected "
+                    & " incompatible with autodetected "
                     & Ctx.Flow.Curr_Flow.Encod'Img);
         else
           Ctx.Flow.Curr_Flow.Encod := Latin1;
