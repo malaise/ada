@@ -360,7 +360,7 @@ package body Util is
       Flow.Curr_Flow.In_Stri := Flow.Curr_Flow.In_Stri + 1;
       return Flow.Curr_Flow.In_Str.Element (Flow.Curr_Flow.In_Stri);
     end if;
-  end;
+  end Get_One_Char;
 
   -- Internal: Get one char on current flow - handle encoding
   Decoding_Error : exception;
@@ -455,19 +455,18 @@ package body Util is
   begin
     Char := Get_Char (Flow);
     -- Skip CRs: Replace CrLf by Lf, or else Cr by Lf
-    if Char = Aski.Lf
-    and then Flow.Curr_Flow.Prev_Char_Was_Cr then
-      -- Prev Cr already gave a Lf, skip this one
-      Char := Get_Char (Flow);
-    end if;
     if Char = Aski.Cr then
       Char := Aski.Lf;
-      Flow.Curr_Flow.Prev_Char_Was_Cr := True;
+      My_Circ.Push (Flow.Circ, Char);
+      Char := Get_Char (Flow);
+      if Char /= Aski.Lf then
+        -- Cr not followed ny Lf, restore it for later get
+        My_Circ.Push (Flow.Circ, Char);
+        Unget (Flow);
+      end if;
     else
-      Flow.Curr_Flow.Prev_Char_Was_Cr := False;
+      My_Circ.Push (Flow.Circ, Char);
     end if;
-
-    My_Circ.Push (Flow.Circ, Char);
     if Flow.Recording then
       if Flow.Skip_Recording <= 0 then
         -- 0: all Get to skip have been skipped (but an unget
