@@ -1,7 +1,7 @@
 Xml_Checker
 ===========
 
-Parser version: V35.4 +
+Parser version: V36.1 +
 Generator version: V16.2 +
 Xml_checker version: V20.1 +
 Dtd_checker version: V4.0
@@ -214,7 +214,8 @@ http://www.w3.org/TR/2006/REC-xml11-20060816):
 Public Id (if any) is skipped.
 - Only the local file, the "file://" and the "http://" schemes are supported
 in URIs (otherwise it raises parsing error).
-- Only UTF-8, UTF-16 and ISO-8859-1 encodings are natively supported.
+- Only (xx-)ASCII, UTF-8, UTF-16 and ISO-8859-1 encodings are natively
+supported.
 Some other encodings may be handled by defining the environment variable
 XML_PARSER_MAP_DIR to where Byte_To_Unicode can find the mapping file
 named <ENCODING>.xml (in uppercase, ex: ISO-8859-9.xml). This file maps each

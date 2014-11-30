@@ -2278,6 +2278,7 @@ package body Dtd is
     -- Check children recursively
     if Ctx.Elements.Children_Number = 0 then
       -- No child
+      Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, Is_Mixed (Adtd, Cell.Name));
       return;
     end if;
     if Cell.Nb_Attributes = Ctx.Elements.Children_Number then
