@@ -626,7 +626,8 @@ package body Parse_Mng  is
                            Stage : Stage_List;
                            Creation : in Boolean;
                            Has_Children : in Boolean := False;
-                           In_Mixed : in Boolean := False) is
+                           In_Mixed : in Boolean := False;
+                           Put_Empty : in Boolean := False) is
     Upd : Node_Update;
   begin
     if Ctx.Callback = null then
@@ -642,6 +643,7 @@ package body Parse_Mng  is
     end case;
     Upd.Stage := Stage;
     Upd.Has_Children := Has_Children;
+    Upd.Put_Empty := Put_Empty;
     Upd.In_Mixed := In_Mixed;
     Upd.Level := Ctx.Level;
     if not Creation then
@@ -1539,12 +1541,7 @@ package body Parse_Mng  is
                            In_Mixed => Children.In_Mixed);
           else
             -- Empty element <elt></elt>: Create element and close it
-            Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, True);
-            Children.Is_Mixed := True;
-            Create (True);
-            Ctx.Level := Ctx.Level - 1;
-            Call_Callback (Ctx, Elements, False, False,
-                           In_Mixed => Children.In_Mixed);
+            Create (False);
           end if;
           return;
         elsif Char = Util.Directive then
@@ -1658,9 +1655,10 @@ package body Parse_Mng  is
       Dtd.Check_Attributes (Ctx, Adtd);
       Add_Namespaces (Ctx, Element_Name);
       Dtd.Check_Element (Ctx, Adtd,  My_Children);
-      -- Create this element with no child (Close)
+      -- Create this element with no child (Close) and Put_Empty
       Call_Callback (Ctx, Elements, True, False,
-                     In_Mixed => Parent_Children.Is_Mixed);
+                     In_Mixed => Parent_Children.Is_Mixed,
+                     Put_Empty => True);
     elsif Char = Util.Stop then
       -- >: parse text and children elements until </
       -- Check attributes first (e.g. xml:space)

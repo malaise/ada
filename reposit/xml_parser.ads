@@ -17,7 +17,7 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "36";
+  Major_Version : constant String := "37";
   function Version return String;
 
   -----------
@@ -124,8 +124,10 @@ package Xml_Parser is
   -- When a callback is provided to Parse, then no tree is build but the nodes
   --  are directly provided. Prologue items all have a level of 0 and no child
   -- Only elements have namespace, attributes and children.
-  --  When it has children, an element is created (Creation = True),
-  --  then its children (recusively) then it is closed (Creation = False)
+  --  When it has children, an element is created (Creation = True,
+  --  Has_Children = True), then its children (recusively) then it is closed
+  --  (Creation = False), otherwise it is only created (Has_Children = False)
+  --  and Put_Empty set if it is an EmptyElemTag
   -- Only PIs have a value
   -- Is_Mixed is set on element if this element has mixed content
   -- In_Mixed is set on anything within a Is_Mixed element: indent shall be
@@ -157,6 +159,7 @@ package Xml_Parser is
     In_Mixed : Boolean := False;
     -- Only for Kind Element
     Has_Children : Boolean := False;
+    Put_Empty : Boolean := False;
     -- Only for Kind Element
     Attributes : Attributes_Access := null;
   end record;

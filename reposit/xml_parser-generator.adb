@@ -3,7 +3,7 @@ with Aski, Images, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "3";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1678,7 +1678,19 @@ package body Xml_Parser.Generator is
           -- Any child?
           if not Update.Has_Children then
             -- No child, terminate tag now
-            Put (Flow, "/>");
+            if Update.Put_Empty then
+              -- <Elt/>
+              Put (Flow, "/>");
+            elsif Update.Is_Mixed then
+              -- <Elt></Elt>
+              Put (Flow, "></" & Elt_Name.Image & ">");
+            else
+              -- <Elt>
+              -- </Elt>
+              Put (Flow, ">");
+              New_Line (Flow);
+              Put (Flow, Indent & "</" & Elt_Name.Image & ">");
+            end if;
           else
             -- Children to come: New_Line id not mixed and done
             Put (Flow, ">");
