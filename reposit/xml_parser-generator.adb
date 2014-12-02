@@ -3,7 +3,7 @@ with Aski, Images, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "4";
+  Minor_Version : constant String := "5";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1522,7 +1522,7 @@ package body Xml_Parser.Generator is
           end if;
         when Pi =>
           -- Put PI
-          if Do_Indent_Child then
+          if Stage = Elements and then Do_Indent_Child then
             Put (Flow, Indent1);
           end if;
           Put (Flow, "<?" & Child.Name.Image);
@@ -1536,7 +1536,7 @@ package body Xml_Parser.Generator is
           end if;
         when Comment =>
           -- Comment
-          if Do_Indent_Child then
+          if Stage = Elements and then Do_Indent_Child then
             Put (Flow, Indent1);
           end if;
           Put_Comment (Flow, Child.Name.Image);
@@ -1661,29 +1661,32 @@ package body Xml_Parser.Generator is
     end if;
 
     -- In elements tree
-    if Format /= Raw
-    and then Update.Stage = Elements
-    and then Update.Creation
-    and then Update.Level = 0 then
-      -- Creation of root, separate from prologue
-      New_Line (Flow);
+    if Update.Stage = Elements then
+      if Format /= Raw
+      and then Update.Creation
+      and then Update.Level = 0 then
+        -- Creation of root, separate from prologue
+        New_Line (Flow);
+      end if;
+
+      if Update.Creation and then Do_Indent_Parent
+      and then Update.Kind /= Xml_Parser.Text
+      and then (Update.Kind /= Xml_Parser.Element
+                or else not Update.Name.Is_Null) then
+        -- Creation of a new node: Indent if not within mixed, if not text
+        --  and if not in tail
+        Put (Flow, Indent);
+      elsif not Update.Creation and then Do_Indent_Child then
+        -- Closure of an element: Indent if not mixed
+        Put (Flow, Indent);
+      end if;
     end if;
 
-    if Update.Creation and then Do_Indent_Parent
-    and then Update.Kind /= Xml_Parser.Text
-    and then (Update.Kind /= Xml_Parser.Element
-              or else not Update.Name.Is_Null) then
-      -- Creation of a new node: Indent if not within mixed, if not text
-      --  and if not at beginning of tail
-      Put (Flow, Indent);
-    elsif not Update.Creation and then Do_Indent_Child then
-      -- Closure of an element: Indent if not mixed
-      Put (Flow, Indent);
-    end if;
+    -- In Elements or Tail
     case Update.Kind is
       when Xml_Parser.Element =>
         Set_Name (Elt_Name, Namespace, Update.Name, Update.Namespace);
-        if Update.Creation and then not Update.Name.Is_Null then
+        if Update.Creation then
           -- Put element and attributes
           Put (Flow, "<" & Elt_Name.Image);
           if Update.Attributes /= null then
@@ -1697,7 +1700,7 @@ package body Xml_Parser.Generator is
             if Update.Put_Empty then
               -- <Elt/>
               Put (Flow, "/>");
-            elsif Do_Indent_Child then
+            elsif not Do_Indent_Child then
               -- <Elt></Elt>
               Put (Flow, "></" & Elt_Name.Image & ">");
             else
@@ -1715,9 +1718,14 @@ package body Xml_Parser.Generator is
             end if;
             return Flow.Us.Image;
           end if;
-        elsif not Update.Name.Is_Null then
+        else
           -- End of element with children
           Put (Flow, "</" & Elt_Name.Image & ">");
+          if Format /= Raw and then Update.Stage = Elements
+          and then Update.Level = 0 and then not Do_Indent_Parent then
+            -- End of root while end of element will not appen New_Line
+            New_Line (Flow);
+          end if;
         end if;
       when Text =>
         -- Put text
