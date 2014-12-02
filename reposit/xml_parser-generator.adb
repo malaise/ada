@@ -3,7 +3,7 @@ with Aski, Images, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "3";
+  Minor_Version : constant String := "4";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1476,7 +1476,7 @@ package body Xml_Parser.Generator is
           end if;
           Close;
         end if;
-        -- Newline after root with no tail
+        -- Newline after root with no child
         if Level = 0 and then Format /= Raw and then not Do_Indent_Parent then
           New_Line (Flow);
         end if;
@@ -1485,23 +1485,11 @@ package body Xml_Parser.Generator is
       return;
     else
       -- End Father for child
-      Child := Tree.Read;
       if Stage = Elements then
-        if not Child.Name.Is_Null then
-          -- There is a significant child
-          Put (Flow, ">");
-          if Do_Indent_Child then
-            -- New line after the start of this non-mixed element
-            New_Line (Flow);
-          end if;
-        else
-          -- Closing root with a tail
-          Put (Flow, "/>");
-          if Format /= Raw then
-            -- New line after the end of root and before tail
-            New_Line (Flow);
-          end if;
-          Closed := True;
+        Put (Flow, ">");
+        if Do_Indent_Child then
+          -- New line after the start of this non-mixed element
+          New_Line (Flow);
         end if;
       end if;
     end if;
@@ -1556,17 +1544,21 @@ package body Xml_Parser.Generator is
             -- New line after the end of this comment
             New_Line (Flow);
           end if;
-        end case;
-        -- Next child or done
-        exit when not Tree.Has_Brother (False);
-        Tree.Move_Brother (False);
-      end loop;
-      -- Close parent element after its children
-      if Stage = Elements then
-        Close;
+      end case;
+      -- Next child or done
+      exit when not Tree.Has_Brother (False);
+      Tree.Move_Brother (False);
+    end loop;
+    -- Close parent element after its children
+    if Stage = Elements then
+      Close;
+      -- Newline after root with children
+      if Level = 0 and then Format /= Raw and then not Do_Indent_Parent then
+        New_Line (Flow);
       end if;
-      -- End of this element
-      Tree.Move_Father;
+    end if;
+    -- End of this element
+    Tree.Move_Father;
   end Put_Element;
 
   -- Internal procedure to generate the output
