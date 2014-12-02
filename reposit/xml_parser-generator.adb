@@ -1336,17 +1336,30 @@ package body Xml_Parser.Generator is
     Elt_Name : As.U.Asu_Us;
     Xml_Attr_Format : Format_Kind_List;
     Closed : Boolean := False;
+    -- Do we indent these outputs
+    function Do_Indent_Child return Boolean is
+    begin
+      return Format /= Raw
+      and then (Stage /= Elements
+                or else (not Is_Mixed and then Ctx.Normalize));
+    end Do_Indent_Child;
+    function Do_Indent_Parent return Boolean is
+    begin
+      return Format /= Raw
+      and then (Stage /= Elements
+                or else (not In_Mixed and then Ctx.Normalize));
+    end Do_Indent_Parent;
     -- Terminate tag after children
-    procedure Close (Force_No_Indent : in Boolean := False) is
+    procedure Close is
     begin
       if not Closed then
-        if not Is_Mixed and then Format /= Raw and then not Force_No_Indent then
+        if Do_Indent_Child then
           -- Indent the end of this non-mixed element
           Put (Flow, Indent);
         end if;
         Put (Flow, "</" & Elt_Name.Image & ">");
-        if not In_Mixed and then Format /= Raw then
-          -- End of this element not in mixed
+        if Do_Indent_Parent then
+          -- End of this element
           New_Line (Flow);
         end if;
       end if;
@@ -1431,7 +1444,7 @@ package body Xml_Parser.Generator is
     -- Elements and tail
     if Stage = Elements then
       -- Put element, attributes and children recursively
-      if not In_Mixed and then Format /= Raw then
+      if Do_Indent_Parent then
         -- Indent before the start of this element
         Put (Flow, Indent);
       end if;
@@ -1451,20 +1464,21 @@ package body Xml_Parser.Generator is
         if Cell.Put_Empty then
           -- EmptyElementTag now
           Put (Flow, "/>");
-          if not In_Mixed and then Format /= Raw then
+          if Do_Indent_Parent then
             -- New line after the end of this element
             New_Line (Flow);
           end if;
         else
           -- Finish STag now and close (add ETag)
           Put (Flow, ">");
-          if Is_Mixed then
-            -- No indentation between STag and ETag
-            Close (Force_No_Indent => True);
-          else
+          if Do_Indent_Child then
             New_Line (Flow);
-            Close (Force_No_Indent => False);
           end if;
+          Close;
+        end if;
+        -- Newline after root with no tail
+        if Level = 0 and then Format /= Raw and then not Do_Indent_Parent then
+          New_Line (Flow);
         end if;
       end if;
       -- Terminate now
@@ -1476,7 +1490,7 @@ package body Xml_Parser.Generator is
         if not Child.Name.Is_Null then
           -- There is a significant child
           Put (Flow, ">");
-          if not Is_Mixed and then Format /= Raw then
+          if Do_Indent_Child then
             -- New line after the start of this non-mixed element
             New_Line (Flow);
           end if;
@@ -1514,13 +1528,13 @@ package body Xml_Parser.Generator is
           end if;
           -- Specific put text
           Put (Flow, Child.Name.Image);
-          if not Is_Mixed and then Format /= Raw then
+          if Do_Indent_Child then
             -- New line after the end of this text
             New_Line (Flow);
           end if;
         when Pi =>
           -- Put PI
-          if Stage = Elements and then not Is_Mixed and then Format /= Raw then
+          if Do_Indent_Child then
             Put (Flow, Indent1);
           end if;
           Put (Flow, "<?" & Child.Name.Image);
@@ -1528,17 +1542,17 @@ package body Xml_Parser.Generator is
             Put (Flow, " " & Child.Value.Image);
           end if;
           Put (Flow, "?>");
-          if not Is_Mixed and then Format /= Raw then
+          if Do_Indent_Child then
             -- New line after the end of this PI
             New_Line (Flow);
           end if;
         when Comment =>
           -- Comment
-          if Stage = Elements and then not Is_Mixed and then Format /= Raw then
+          if Do_Indent_Child then
             Put (Flow, Indent1);
           end if;
           Put_Comment (Flow, Child.Name.Image);
-          if not Is_Mixed and then Format /= Raw then
+          if Do_Indent_Child then
             -- New line after the end of this comment
             New_Line (Flow);
           end if;
@@ -1547,7 +1561,7 @@ package body Xml_Parser.Generator is
         exit when not Tree.Has_Brother (False);
         Tree.Move_Brother (False);
       end loop;
-      -- Close root element after its children
+      -- Close parent element after its children
       if Stage = Elements then
         Close;
       end if;
@@ -1589,6 +1603,19 @@ package body Xml_Parser.Generator is
                   Format    : Format_Kind_List := Default_Format;
                   Width     : Natural := Default_Width;
                   Namespace : Boolean := False) return String is
+    -- Do we indent these outputs
+    function Do_Indent_Child return Boolean is
+    begin
+      return Format /= Raw
+      and then (Update.Stage /= Elements
+                or else (not Update.Is_Mixed and then Ctx.Normalize));
+    end Do_Indent_Child;
+    function Do_Indent_Parent return Boolean is
+    begin
+      return Format /= Raw
+      and then (Update.Stage /= Elements
+                or else (not Update.In_Mixed and then Ctx.Normalize));
+    end Do_Indent_Parent;
     Elt_Name : As.U.Asu_Us;
     Flow : Flow_Dscr(Use_File => False);
     Indent : constant String (1 .. 2 * Update.Level) := (others => ' ');
@@ -1650,19 +1677,16 @@ package body Xml_Parser.Generator is
       New_Line (Flow);
     end if;
 
-    if Format /= Raw then
-      if Update.Creation
-      and then not Update.In_Mixed
-      and then Update.Kind /= Xml_Parser.Text
-      and then (Update.Kind /= Xml_Parser.Element
+    if Update.Creation and then Do_Indent_Parent
+    and then Update.Kind /= Xml_Parser.Text
+    and then (Update.Kind /= Xml_Parser.Element
               or else not Update.Name.Is_Null) then
-        -- Creation of a new node: Indent if not within mixed, if not text
-        --  and if not at beginning of tail
-        Put (Flow, Indent);
-     elsif not Update.Creation and then not Update.Is_Mixed then
-       -- Closure of an element: Indent if not mixed
-        Put (Flow, Indent);
-      end if;
+      -- Creation of a new node: Indent if not within mixed, if not text
+      --  and if not at beginning of tail
+      Put (Flow, Indent);
+    elsif not Update.Creation and then Do_Indent_Child then
+      -- Closure of an element: Indent if not mixed
+      Put (Flow, Indent);
     end if;
     case Update.Kind is
       when Xml_Parser.Element =>
@@ -1681,7 +1705,7 @@ package body Xml_Parser.Generator is
             if Update.Put_Empty then
               -- <Elt/>
               Put (Flow, "/>");
-            elsif Update.Is_Mixed then
+            elsif Do_Indent_Child then
               -- <Elt></Elt>
               Put (Flow, "></" & Elt_Name.Image & ">");
             else
@@ -1692,9 +1716,9 @@ package body Xml_Parser.Generator is
               Put (Flow, Indent & "</" & Elt_Name.Image & ">");
             end if;
           else
-            -- Children to come: New_Line id not mixed and done
+            -- Children to come: New_Line if not mixed and done
             Put (Flow, ">");
-            if Format /= Raw and then not Update.Is_Mixed then
+            if Do_Indent_Child then
               New_Line (Flow);
             end if;
             return Flow.Us.Image;
@@ -1717,7 +1741,7 @@ package body Xml_Parser.Generator is
         -- Comment
         Put_Comment (Flow, Update.Name.Image);
     end case;
-    if Format /= Raw and then not Update.In_Mixed then
+    if Do_Indent_Parent then
       -- End of element
       New_Line (Flow);
     end if;

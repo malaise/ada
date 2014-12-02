@@ -342,14 +342,14 @@ package body Parse_Mng  is
   function Add_Text (Ctx : in Ctx_Type; Text : As.U.Asu_Us) return Boolean is
     Tmp_Text : As.U.Asu_Us;
   begin
-    if not Ctx.Expand and then Ctx.Normalize then
-      -- When not expanding, add child only if not empty
-      Tmp_Text := Text;
+    Tmp_Text := Text;
+    if not Ctx.Expand then
+      -- When not expanding the remove entitie
       Util.Remove_Entities (Tmp_Text);
-      return not Tmp_Text.Is_Null;
-    elsif not Ctx.Normalize then
+    end if;
+    if not Ctx.Normalize then
       -- When preserving spaces, add child only if not only separators
-      return not Util.Is_Separators (Text);
+      return not Util.Is_Separators (Tmp_Text);
     else
       return True;
     end if;
