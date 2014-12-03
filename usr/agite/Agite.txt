@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V16.06
+V16.07
 
 General purpose
 ---------------
@@ -63,7 +63,8 @@ Configuration file
 ------------------
 User defined configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-Agite reads at start-up some user-defined configuration parameters:
+At start-up Agite reads some user-defined parameters from its configuration
+file:
 
 anchor:XConfXterm[]
 
@@ -117,7 +118,7 @@ menus. This parameter defines the period in seconds of this automatic check.
 +
 Setting the value to 0.0 disables the feature.
 +
-Note: A manual refresh is always possible with the xref:XReread[Reread] button.
+NOTE: A manual refresh is always possible with the xref:XReread[Reread] button.
 
 anchor:XListTags[]
 
@@ -136,12 +137,13 @@ Agite also uses the configuration file to store information from one invocation
 to another.
 
 last_dir::
-Agite continuously stores the current directory in this entry. See the 
+Agite stores the current directory (each time it changes) in this entry. See the
 xref:XCommandLine[argument] '-p' ('--previous') for how to use this feature
 and the argument '-n' ('--no_history') for how to disable this feature.
 
 bookmarks::
-Agite stores the xref:XBook[bookmarks] in this section:
+Agite stores the xref:XBook[bookmarks] (each time you change them) in this
+section:
 
 * blank lines have no 'Name' nor content,
 * separators have a 'Name' and no content,
@@ -150,8 +152,14 @@ Agite stores the xref:XBook[bookmarks] in this section:
 NOTE: The DTD file 'agite.dtd' must be located according to the ''DOCTYPE''
 directive of the Agite XML configuration file.
 
-NOTE: In case of problem, a backup of the configuration file may be found at
-the same location and name as the configuration file, with the suffix ".tmp".
+NOTE: You may modify these values, providing that: +
+* Agite is not running (it would overwrite your changes), +
+* You don't add comments (agite would remove them), +
+* The file 'agite.xlm' complies with the DTD 'agite.dtd'.
+
+NOTE: In case of problem (crash), a backup of the configuration file may be
+found at the same location and name as the configuration file, with the suffix
+".tmp".
 
 Agite screens
 -------------
