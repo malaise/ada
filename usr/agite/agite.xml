@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?Warning: This file is read and modified by agite. Edit with caution.?>
+<?Warning: Only modify the content of elements before bookmarks or the bookmarks themself.?>
 <!DOCTYPE agite SYSTEM "agite.dtd">
-
 
 <agite>
   <xterm>gnome-terminal --zoom=0.9</xterm>
