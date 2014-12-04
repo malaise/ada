@@ -385,6 +385,9 @@ package body Parse_Mng  is
     -- Is this element defined as Mixed
     function Is_Mixed (Adtd : in out Dtd_Type;
                        Elt  : in As.U.Asu_Us) return Boolean;
+    -- Is this element defined as EMPTY
+    function Is_Empty (Adtd : in out Dtd_Type;
+                       Elt  : in As.U.Asu_Us) return Boolean;
     -- Is this element defined in internal dtd or else has not Content def
     function Can_Have_Spaces (Adtd : in out Dtd_Type;
                               Elt  : in As.U.Asu_Us) return Boolean;
@@ -1415,7 +1418,7 @@ package body Parse_Mng  is
       if not Children.First_Child
       or else (Adtd.Set and then not Children.Is_Mixed) then
         -- We know by parsing that there is not only a text child
-        -- Or we know by dtd that there cannot be text here
+        -- or we know by dtd that there cannot be text here
         Normalize := True;
         Debug ("Txt normalizing");
       end if;
@@ -1541,6 +1544,10 @@ package body Parse_Mng  is
                            In_Mixed => Children.In_Mixed);
           else
             -- Empty element <elt></elt>: Create element and close it
+            if Dtd.Is_Empty (Adtd, Children.Father) then
+              -- Force Is_Mixed for element defined as EMPTY
+              Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, True);
+            end if;
             Create (False);
           end if;
           return;
@@ -1650,8 +1657,13 @@ package body Parse_Mng  is
         Util.Error (Ctx.Flow, "Unexpected char " & Char
                             & " after " & Util.Slash);
       end if;
-      -- End of this empty element, check attributes and content
+      -- Empty element
+      if Dtd.Is_Empty (Adtd, Element_Name) then
+        -- Force Is_Mixed for element defined as EMPTY
+        Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, True);
+      end if;
       Tree_Mng.Set_Put_Empty (Ctx.Elements.all, True);
+      -- End of this empty element, check attributes and content
       Dtd.Check_Attributes (Ctx, Adtd);
       Add_Namespaces (Ctx, Element_Name);
       Dtd.Check_Element (Ctx, Adtd,  My_Children);

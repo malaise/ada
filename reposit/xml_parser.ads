@@ -17,7 +17,7 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "37";
+  Major_Version : constant String := "38";
   function Version return String;
 
   -----------
@@ -150,18 +150,20 @@ package Xml_Parser is
     Name : As.U.Asu_Us;
     -- Creation or closure
     Creation : Boolean := True;
-    -- Only for Kind Elements
-    Namespace : As.U.Asu_Us;
     -- Only for Kind Pi
     Value : As.U.Asu_Us;
-    -- Only for Kind Element
-    Is_Mixed : Boolean := False;
-    In_Mixed : Boolean := False;
-    -- Only for Kind Element
-    Has_Children : Boolean := False;
-    Put_Empty : Boolean := False;
-    -- Only for Kind Element
+    -- The following fields are meanigfull only for Kind Elements
+    Namespace : As.U.Asu_Us;
     Attributes : Attributes_Access := null;
+    -- True if DTD specifies #PCDATA or EMPTY,
+    --  or, without DTD, if first child is text
+    Is_Mixed : Boolean := False;
+    -- True if parent is Mixed
+    In_Mixed : Boolean := False;
+    -- True if node has children
+    Has_Children : Boolean := False;
+    -- True if <EmptyElemTag/>
+    Put_Empty : Boolean := False;
   end record;
 
   -- If the callback raises an exception the parsing raises:

@@ -2021,7 +2021,7 @@ package body Dtd is
 
   end Check_Attributes;
 
-  -- Is this element defined as Mixed
+  -- Is this element defined as Mixed or ANY
   function Is_Mixed (Adtd : in out Dtd_Type;
                      Elt  : in As.U.Asu_Us) return Boolean is
     Info : Info_Rec;
@@ -2043,8 +2043,33 @@ package body Dtd is
       return False;
     end if;
     -- Element is mixed?
-    return Info.List.Element (1) = 'M';
+    return Info.List.Element (1) = 'M' or else Info.List.Element (1) = 'A';
   end Is_Mixed;
+
+  -- Is this element defined as EMPTY
+  function Is_Empty (Adtd : in out Dtd_Type;
+                     Elt  : in As.U.Asu_Us) return Boolean is
+    Info : Info_Rec;
+    Info_Found : Boolean;
+    use type As.U.Asu_Us;
+  begin
+    -- Default: No (not empty)
+    if not Adtd.Set then
+      -- No dtd => not empty
+      return False;
+    end if;
+    -- Read ELEMENT def of Elt
+    Info.Name := As.U.Tus ("Elt" & Info_Sep) & Elt;
+    Adtd.Info_List.Search (Info, Info_Found);
+    if Info_Found then
+      Adtd.Info_List.Read (Info);
+    else
+      -- Not found => Elt not defined
+      return False;
+    end if;
+    -- Element is empty?
+    return Info.List.Element (1) = 'E';
+  end Is_Empty;
 
   -- Is this element defined in internal dtd or else has not Content def
   function Can_Have_Spaces (Adtd : in out Dtd_Type;
@@ -2209,6 +2234,9 @@ package body Dtd is
         end case;
       end loop;
       Ctx.Elements.Move_Father;
+    elsif Is_Empty (Adtd, Cell.Name) then
+      -- Force Is_Mixed for element defined as EMPTY
+      Can_Have_Text := True;
     end if;
     Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, Can_Have_Text);
   end Build_Children;
