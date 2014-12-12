@@ -953,7 +953,7 @@ package body Parse_Mng  is
     Util.Skip_Separators (Ctx.Flow);
     Ok := Util.Try (Ctx.Flow, "PUBLIC ");
     if Ok then
-      -- A dtd PUBLIC directive: skip public Id
+      -- A dtd PUBLIC directive: check and skip public Id
       Char := Util.Get (Ctx.Flow);
       if Char = ''' then
         Util.Parse_Until_Char (Ctx.Flow, "'");
@@ -964,6 +964,7 @@ package body Parse_Mng  is
       end if;
       Ctx.Doctype.Public := True;
       Ctx.Doctype.Pub_Id := Util.Get_Curr_Str (Ctx.Flow);
+      Util.Normalize_Spaces (Ctx.Doctype.Pub_Id);
       if not Util.Is_Valid_Pubid (Ctx.Doctype.Pub_Id) then
         Util.Error (Ctx.Flow, "Invalid doctype PUBLIC Id");
       end if;
@@ -974,7 +975,7 @@ package body Parse_Mng  is
       Ctx.Doctype.Public := False;
     end if;
     if Ok then
-      -- Now at dtd URI: file name expected
+      -- Now at dtd URI
       Char := Util.Get (Ctx.Flow);
       if Char = ''' then
         Util.Parse_Until_Char (Ctx.Flow, "'");
@@ -984,6 +985,9 @@ package body Parse_Mng  is
         Util.Error (Ctx.Flow, "Unexpected delimiter of doctype external Id");
       end if;
       Doctype_File := Util.Get_Curr_Str (Ctx.Flow);
+      if Doctype_File.Is_Null then
+        Util.Error (Ctx.Flow, "Empty doctype external Id");
+      end if;
       Util.Skip_Separators (Ctx.Flow);
     end if;
 

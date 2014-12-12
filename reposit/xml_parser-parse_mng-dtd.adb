@@ -779,6 +779,7 @@ package body Dtd is
           Util.Error (Ctx.Flow, "Unexpected delimiter of PUBLIC Id");
         end if;
         Public_Id := Util.Get_Curr_Str (Ctx.Flow);
+        Util.Normalize_Spaces (Public_Id);
         if not Util.Is_Valid_Pubid (Public_Id) then
           Util.Error (Ctx.Flow, "Invalid entity PUBLIC Id");
         end if;
@@ -794,6 +795,10 @@ package body Dtd is
         Util.Error (Ctx.Flow, "Unexpected delimiter of PUBLIC Id");
       end if;
       System_Id := Util.Get_Curr_Str (Ctx.Flow);
+      if System_Id.Is_Null then
+        Util.Error (Ctx.Flow, "Empty entity external Id");
+      end if;
+
     end if;
     Util.Skip_Separators (Ctx.Flow);
 
