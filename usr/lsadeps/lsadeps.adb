@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V10.0";
+  Version : constant String := "V10.1";
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -437,7 +437,8 @@ begin
   ----------------------------
   -- BUILD TREE OF SOURCES --
   ----------------------------
-  Tree_Mng.Build (Target_Dscr, Specs_Mode, Revert_Mode, Tree_Mode, Bodies_Mode);
+  Tree_Mng.Build (Target_Dscr, Specs_Mode, Revert_Mode,
+                  Tree_Mode, Direct_Mode, Bodies_Mode);
 
   -------------------
   -- PUT LIST/TREE --

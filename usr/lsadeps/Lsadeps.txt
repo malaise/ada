@@ -1,6 +1,6 @@
 lsadeps
 =======
-V10.0
+V10.1
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -76,7 +76,8 @@ This is why, when the 'tree' option is not set, the analysis of dependencies
 is optimized so that the same unit is not analyzed several times. +
 On the other hand this leads to display only one path (not necessarily the
 shortest) with the option 'path_unit'. Adding the 'tree' option with a
-'path_unit' leads to display all the possible paths between the specified units.
+'path_unit' leads to display all the possible paths between the specified
+units.
 
 List units
 ~~~~~~~~~~

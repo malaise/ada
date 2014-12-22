@@ -12,8 +12,10 @@ package body Tree_Mng is
     raise Error_Raised;
   end Error;
 
-  -- Do we build full tree or do we optimize
-  Full_Tree : Boolean;
+  -- Do we build full tree or do we optimizeA (each entry only once)
+  --  or do we do only first level
+  type Tree_Kind_List is (Full_Tree, Optimized, First_Level);
+  Tree_Kind : Tree_Kind_List;
 
   -- Optimization: unique list of <Path><File>
   List : As.U.Utils.Asu_Unique_List_Mng.Unique_List_Type;
@@ -262,6 +264,15 @@ package body Tree_Mng is
   -- Build a node
   procedure Build_Node (Origin : in Sourcer.Src_Dscr;
                         Specs_Mode,  Revert_Mode, Bodies_Mode : in Boolean) is
+    -- Clean rope and move up after processing node
+    procedure Done is
+    begin
+      if Tree.Has_Father then
+        Tree.Move_Father;
+        Rope.Delete (Origin);
+      end if;
+    end Done;
+
     Found : Boolean;
     Child : Sourcer.Src_Dscr;
     Kind : As.U.Asu_Us;
@@ -273,7 +284,7 @@ package body Tree_Mng is
       Tree.Insert_Father ((Origin, False));
       Rope.Insert (Origin);
     else
-      if not Full_Tree then
+      if Tree_Kind = Optimized then
         -- Optim: locate and store <path><file>
         List.Search (Origin.Path & Origin.File, Found);
         if Found then
@@ -297,6 +308,11 @@ package body Tree_Mng is
         Tree.Insert_Child ((Origin, False));
         Rope.Insert (Origin);
       end if;
+      -- Done if not root and only first level requested
+      if Tree_Kind = First_Level then
+        Done;
+        return;
+      end if;
     end if;
 
     -- Any unit: Insert withed
@@ -314,6 +330,12 @@ package body Tree_Mng is
       Build_Withings (Origin.Path.Image, Origin.Unit.Image, Bodies_Mode);
       -- Also our children are dependent from us
       Build_Children (Origin.Path, Origin.Children, Bodies_Mode);
+    end if;
+
+    -- Done if first level requested
+    if Tree_Kind = First_Level then
+      Done;
+      return;
     end if;
 
     -- A Child (spec or standalone body): Insert parent spec if not revert
@@ -352,10 +374,7 @@ package body Tree_Mng is
     end if;
 
     -- Done, move up
-    if Tree.Has_Father then
-      Tree.Move_Father;
-      Rope.Delete (Origin);
-    end if;
+    Done;
   exception
     when Sourcer.Src_List_Mng.Not_In_List =>
       Error ("Cannot find " & Kind.Image & " of " & Sourcer.Image (Origin));
@@ -380,9 +399,25 @@ package body Tree_Mng is
   -- Build the tree of source dependencies of Origin
   procedure Build (Origin : in Sourcer.Src_Dscr;
                    Specs_Mode, Revert_Mode,
-                   Tree_Mode, Bodies_Mode : in Boolean) is
+                   Tree_Mode, Direct_Mode, Bodies_Mode : in Boolean) is
   begin
-    Full_Tree := Tree_Mode;
+    -- Full tree, optimized, or first level
+    case Tree_Mode is
+      when True =>
+        case Direct_Mode is
+          when True =>
+            Error ("Cannot do direct mode with full tree");
+          when False =>
+            Tree_Kind := Full_Tree;
+        end case;
+      when False =>
+        case Direct_Mode is
+          when True =>
+            Tree_Kind := First_Level;
+          when False =>
+            Tree_Kind := Optimized;
+        end case;
+    end case;
     Build_Node (Origin, Specs_Mode, Revert_Mode, Bodies_Mode);
     Debug.Logger.Log_Debug ("Dumping tree:");
     if Debug.Logger.Debug_On then

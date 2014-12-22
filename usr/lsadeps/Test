@@ -67,7 +67,7 @@ Lsadeps
 EOF
 check "-lC lsadeps"
 
-# revert dependancies
+# Revert dependancies
 cat << EOF > res2
 Lsadeps
 Output
