@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<!DOCTYPE Enigma SYSTEM "" [
+<!DOCTYPE Enigma [
   <!ELEMENT Enigma (Rotor*, Reflector+)>
 
   <!ELEMENT Rotor (#PCDATA)>
