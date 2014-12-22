@@ -4,7 +4,7 @@ with Trace.Loggers, Rnd, Exception_Messenger, Directory, Str_Util,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -741,9 +741,9 @@ package body Xml_Parser is
       raise Internal_Error;
   end Check;
 
-  ----------------
-  -- NAVIGATION --
-  ----------------
+  -----------------------------
+  -- PROLOGUE, ROOT and TAIL --
+  -----------------------------
   -- Read internal tree cell of a node
   function Get_Tree (Ctx : Ctx_Type;
                      Node : Node_Type) return Tree_Acc is
@@ -759,8 +759,9 @@ package body Xml_Parser is
     and then Ctx.Status /= Init then
       raise Status_Error;
     end if;
-    -- Magic must match
-    if Ctx.Magic /= Node.Magic then
+    -- Magic must be set and must match
+    if Node.Magic = Clean_Magic
+    or else Node.Magic /= Ctx.Magic then
       raise Use_Error;
     end if;
     return (case Node.Branch is
@@ -796,54 +797,20 @@ package body Xml_Parser is
     end if;
   end Check_For_Get;
 
-  -- Get Doctype characteristics (prologue must have been parsed)
-  procedure Get_Doctype (Ctx : in Ctx_Type;
-       Name    : out As.U.Asu_Us;
-       Public  : out Boolean;
-       Pub_Id  : out As.U.Asu_Us;
-       File    : out As.U.Asu_Us;
-       Int_Def : out As.U.Asu_Us) is
+  -- Is a Node valid (returned by Get_xxx)
+  function Is_Valid (Node : Node_Type) return Boolean is
+    use type My_Tree.Position_Access;
   begin
-    Check_For_Get (Ctx.Status);
-    if Ctx.Doctype.Name.Is_Null then
-      raise Doctype_Not_Set;
-    end if;
-    Name    := Ctx.Doctype.Name;
-    Public  := Ctx.Doctype.Public;
-    Pub_Id  := Ctx.Doctype.Pub_Id;
-    File    := Ctx.Doctype.File;
-    Int_Def := Ctx.Doctype.Int_Def;
-  end Get_Doctype;
+    return Node.Tree_Access /= My_Tree.No_Position;
+  end Is_Valid;
 
- -- Get the Target of a PI
-  function Get_Target (Ctx     : Ctx_Type;
-                       Pi_Node : Pi_Type) return String is
+  -- Line number of start of declaration of node
+  function Get_Line_No (Ctx  : Ctx_Type;
+                        Node : Node_Type) return Natural is
+    Cell : constant My_Tree_Cell := Get_Cell (Get_Tree (Ctx, Node), Node);
   begin
-    return Get_Target (Ctx, Pi_Node).Image;
-  end Get_Target;
-
-  function Get_Target (Ctx     : Ctx_Type;
-                       Pi_Node : Pi_Type) return As.U.Asu_Us is
-    Cell : constant My_Tree_Cell
-         := Get_Cell (Get_Tree (Ctx, Pi_Node), Pi_Node);
-  begin
-    return Cell.Name;
-  end Get_Target;
-
-  -- Get a PI data
-  function Get_Pi (Ctx : in Ctx_Type;
-                   Pi_Node : Pi_Type) return String is
-  begin
-    return Get_Pi (Ctx, Pi_Node).Image;
-  end Get_Pi;
-
-  function Get_Pi (Ctx : in Ctx_Type;
-                   Pi_Node : Pi_Type) return As.U.Asu_Us is
-    Cell : constant My_Tree_Cell
-         := Get_Cell (Get_Tree (Ctx, Pi_Node), Pi_Node);
-  begin
-    return Cell.Value;
-  end Get_Pi;
+    return Cell.Line_No;
+  end Get_Line_No;
 
   -- Get Prologue of a parsed context (after Parse or Parse_Prologue)
   function Get_Prologue (Ctx : Ctx_Type) return Element_Type is
@@ -895,13 +862,24 @@ package body Xml_Parser is
             Tree_Access => Ctx.Tail.Get_Position);
   end Get_Tail;
 
-  -- Line number of start of declaration of node
-  function Get_Line_No (Ctx  : Ctx_Type;
-                        Node : Node_Type) return Natural is
-    Cell : constant My_Tree_Cell := Get_Cell (Get_Tree (Ctx, Node), Node);
+  -- Get Doctype characteristics (prologue must have been parsed)
+  procedure Get_Doctype (Ctx : in Ctx_Type;
+       Name    : out As.U.Asu_Us;
+       Public  : out Boolean;
+       Pub_Id  : out As.U.Asu_Us;
+       File    : out As.U.Asu_Us;
+       Int_Def : out As.U.Asu_Us) is
   begin
-    return Cell.Line_No;
-  end Get_Line_No;
+    Check_For_Get (Ctx.Status);
+    if Ctx.Doctype.Name.Is_Null then
+      raise Doctype_Not_Set;
+    end if;
+    Name    := Ctx.Doctype.Name;
+    Public  := Ctx.Doctype.Public;
+    Pub_Id  := Ctx.Doctype.Pub_Id;
+    File    := Ctx.Doctype.File;
+    Int_Def := Ctx.Doctype.Int_Def;
+  end Get_Doctype;
 
   -------------------------
   -- NAME AND ATTRIBUTES --
@@ -1036,15 +1014,80 @@ package body Xml_Parser is
     return Get_Attribute (Ctx, Element, Name).Image;
   end Get_Attribute;
 
+  --------------------------
+  -- PI, TEXT and COMMENT --
+  --------------------------
+  -- Get the Target of a PI
+  function Get_Target (Ctx     : Ctx_Type;
+                       Pi_Node : Pi_Type) return String is
+  begin
+    return Get_Target (Ctx, Pi_Node).Image;
+  end Get_Target;
+
+  function Get_Target (Ctx     : Ctx_Type;
+                       Pi_Node : Pi_Type) return As.U.Asu_Us is
+    Cell : constant My_Tree_Cell
+         := Get_Cell (Get_Tree (Ctx, Pi_Node), Pi_Node);
+  begin
+    return Cell.Name;
+  end Get_Target;
+
+  -- Get a PI data
+  function Get_Pi (Ctx : in Ctx_Type;
+                   Pi_Node : Pi_Type) return String is
+  begin
+    return Get_Pi (Ctx, Pi_Node).Image;
+  end Get_Pi;
+
+  function Get_Pi (Ctx : in Ctx_Type;
+                   Pi_Node : Pi_Type) return As.U.Asu_Us is
+    Cell : constant My_Tree_Cell
+         := Get_Cell (Get_Tree (Ctx, Pi_Node), Pi_Node);
+  begin
+    return Cell.Value;
+  end Get_Pi;
+
+   -- TEXT
+  function  Get_Text (Ctx  : Ctx_Type;
+                      Text : Text_Type) return String is
+  begin
+    return Get_Text (Ctx, Text).Image;
+  end Get_Text;
+
+  function Get_Text (Ctx  : Ctx_Type;
+                     Text : Text_Type) return As.U.Asu_Us is
+    Cell : constant My_Tree_Cell
+         := Get_Cell (Get_Tree (Ctx, Text), Text);
+  begin
+    if Cell.Kind /= Xml_Parser.Text then
+      Debug ("Expecting kind text, found " & Cell.Kind'Img);
+      raise Internal_Error;
+    end if;
+    return Cell.Name;
+  end Get_Text;
+
+   -- Comment
+  function Get_Comment (Ctx     : Ctx_Type;
+                        Comment : Comment_Type) return String is
+  begin
+    return Get_Comment (Ctx, Comment).Image;
+  end Get_Comment;
+
+  function Get_Comment (Ctx     : Ctx_Type;
+                        Comment : Comment_Type) return As.U.Asu_Us is
+    Cell : constant My_Tree_Cell
+         := Get_Cell (Get_Tree (Ctx, Comment), Comment);
+  begin
+    if Cell.Kind /= Xml_Parser.Comment then
+      Debug ("Expecting kind Comment, found " & Cell.Kind'Img);
+      raise Internal_Error;
+    end if;
+    return Cell.Name;
+  end Get_Comment;
+
   ----------------
   -- NAVIGATION --
   ----------------
-  function Is_Valid (Node : Node_Type) return Boolean is
-    use type My_Tree.Position_Access;
-  begin
-    return Node.Tree_Access /= My_Tree.No_Position;
-  end Is_Valid;
-
   -- Get the Children of an element (elements or texts or comments)
   function Get_Children (Ctx     : Ctx_Type;
                          Element : Element_Type) return Nodes_Array is
@@ -1247,45 +1290,9 @@ package body Xml_Parser is
     return not Tree.Has_Father;
   end Is_Root;
 
-   -- TEXT
-  function  Get_Text (Ctx  : Ctx_Type;
-                      Text : Text_Type) return String is
-  begin
-    return Get_Text (Ctx, Text).Image;
-  end Get_Text;
-
-  function Get_Text (Ctx  : Ctx_Type;
-                     Text : Text_Type) return As.U.Asu_Us is
-    Cell : constant My_Tree_Cell
-         := Get_Cell (Get_Tree (Ctx, Text), Text);
-  begin
-    if Cell.Kind /= Xml_Parser.Text then
-      Debug ("Expecting kind text, found " & Cell.Kind'Img);
-      raise Internal_Error;
-    end if;
-    return Cell.Name;
-  end Get_Text;
-
-   -- Comment
-  function Get_Comment (Ctx     : Ctx_Type;
-                        Comment : Comment_Type) return String is
-  begin
-    return Get_Comment (Ctx, Comment).Image;
-  end Get_Comment;
-
-  function Get_Comment (Ctx     : Ctx_Type;
-                        Comment : Comment_Type) return As.U.Asu_Us is
-    Cell : constant My_Tree_Cell
-         := Get_Cell (Get_Tree (Ctx, Comment), Comment);
-  begin
-    if Cell.Kind /= Xml_Parser.Comment then
-      Debug ("Expecting kind Comment, found " & Cell.Kind'Img);
-      raise Internal_Error;
-    end if;
-    return Cell.Name;
-  end Get_Comment;
-
-  -- Unparsed entity
+  --------------------------
+  -- UNPARSED ENTITY info --
+  --------------------------
   procedure Get_Unparsed_Entity_Info (Ctx    : in out Ctx_Type;
                                       Entity : in String;
                                       Info   : out Unparsed_Entity_Info_Rec) is
@@ -1327,6 +1334,9 @@ package body Xml_Parser is
     Info.Notation_Public_Id := Rec.Public_Id;
   end Get_Unparsed_Entity_Info;
 
+  -------------------
+  -- Specific TAGS --
+  -------------------
   -- Shall the Element, if empty, be put with EmptyElemTag (<element/>) or
   -- with STag and ETag (<element></elememt>)
   function Get_Put_Empty (Ctx     : Ctx_Type;

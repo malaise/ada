@@ -9,10 +9,10 @@ package body Magic_Numbers is
 
   -- At first call, initialize the random number generator
   -- Return a random magic number
-  function Generate return Magic_Number is
+  function Generate return Magic_Int is
   begin
     -- Reminder of a random Long at Number'Last, + 1
-    return Magic_Number(Generate rem (Magic_Long(Magic_Number'Last)) + 1);
+    return Magic_Int(Generate rem (Magic_Long(Magic_Int'Last)) + 1);
   end Generate;
 
   function Generate return Magic_Long is

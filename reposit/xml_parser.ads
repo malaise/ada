@@ -17,7 +17,7 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "38";
+  Major_Version : constant String := "39";
   function Version return String;
 
   -----------
@@ -76,9 +76,11 @@ package Xml_Parser is
                              Remove_Cdata_Markers,  -- Remove markers
                              Remove_Cdata_Section); -- Remove whole section
 
-  ---------------------------
-  -- NOTE ABOUT NAMESPACES --
-  ---------------------------
+  -----------
+  -- NOTES --
+  -----------
+  -- About NAMESPACES
+  -------------------
   -- When the Namespaces option is set then:
   --  - the document is checked to be namespace-well-formed and namespace-valid
   --  - namespace information of elements (Get_Namespace) and attributes
@@ -86,9 +88,8 @@ package Xml_Parser is
   -- Note that the names of element and attribute remain qualified and that the
   --  validity of URIs is not checked
 
-  -----------------------------
-  -- NOTE ABOUT THE PROLOGUE --
-  -----------------------------
+  -- About the PROLOGUE
+  ---------------------
   -- In xml V1.0, the prologue consists in an optional xml directive
   --  (<?xml attributes?>) then optional processing instructions
   --  (<?name text?>), DOCTYPE and comments.
@@ -96,31 +97,32 @@ package Xml_Parser is
   -- In both case, the attribute "version" of xml is mandatory.
   -- So, the Prologue is an element of name "xml" with possible attributes
   --  (no attribute means that there is no Xml directive) and children:
-  --  for a PIs a Pi node
+  --  for a PI: a Pi node
   --  for a comment: a Comment node
   --  for the doctype: an empty Text
 
-  ----------------------------
-  -- NOTE ABOUT THE DOCTYPE --
-  ----------------------------
+  -- About the DOCTYPE
+  --------------------
   -- The DOCTYPE is parsed during the prologue parsing, it can be retrieved
   --  when the Prologue has a child of type Text (empty)
-  -- PUBLIC directive is not processed
+  -- NOte that the PUBLIC directive, if any, is not processed
 
-  -----------------------------
-  -- NOTE ABOUT THE WARNINGS --
-  -----------------------------
+  -- About the WARNINGS
+  ---------------------
   -- The warnings reported by the parser are:
   -- - ATTLIST already existing for element and attribute => merge directives
   -- - attribute already defined for element => discard new definition
   -- - entity already defined => discard new definition
   -- - unknown element used in child definition => discard
   -- - unknown element used in ATTLIST => discard
-  -- - inconsistency between EMPTY definition of element and an empty tag
+  -- - inconsistency between EMPTY definition of element and an EmptyElemTag
+  -- The callback called in case of warning
+  type Warning_Callback_Access is access
+            procedure (Ctx : in Ctx_Type;
+                       Warning : in String);
 
-  -------------------------------------
-  -- NOTE ABOUT THE PARSING CALLBACK --
-  -------------------------------------
+  -- About the PARSING CALLBACK
+  -----------------------------
   -- When a callback is provided to Parse, then no tree is build but the nodes
   --  are directly provided. Prologue items all have a level of 0 and no child
   -- Only elements have namespace, attributes and children.
@@ -133,10 +135,13 @@ package Xml_Parser is
   -- In_Mixed is set on anything within a Is_Mixed element: indent shall be
   --  skipped for these nodes
   -- After the parsing, the Ctx has status Unparsed and only the info on
-  --  unparsed entities  can be got from it
+  --  unparsed entities can be got from it
+
   -- Parsing stage. The tail is the part (comments, PIs) after the closure of
   --  the root element
   type Stage_List is (Prologue, Elements, Tail);
+
+  -- A node update transmitted to the callback
   type Node_Update is new Ada.Finalization.Controlled with record
     -- Stage where the node is parsed
     Stage : Stage_List := Prologue;
@@ -155,8 +160,7 @@ package Xml_Parser is
     -- The following fields are meanigfull only for Kind Elements
     Namespace : As.U.Asu_Us;
     Attributes : Attributes_Access := null;
-    -- True if DTD specifies #PCDATA or EMPTY,
-    --  or, without DTD, if first child is text
+    -- True if DTD specifies #PCDATA or, without DTD, if first child is text
     Is_Mixed : Boolean := False;
     -- True if parent is Mixed
     In_Mixed : Boolean := False;
@@ -166,29 +170,25 @@ package Xml_Parser is
     Put_Empty : Boolean := False;
   end record;
 
-  -- If the callback raises an exception the parsing raises:
+  -- If the callback raises an exception, then the parsing raises:
   Callback_Error : exception;
-  -- The callback called during parsing, instead of building the tree
+
+  -- The callback that is called during parsing, instead of building the tree
   type Parse_Callback_Access is access
             procedure (Ctx  : in Ctx_Type;
                        Node : in Node_Update);
 
-  -- The callback called in case of warning
-  type Warning_Callback_Access is access
-            procedure (Ctx : in Ctx_Type;
-                       Warning : in String);
-
   ------------------
   -- FILE PARSING --
   ------------------
-  -- Parse a Xml file, stdin if empty
-  -- On option, allows retrieval of comments (usefull for formatter)
-  -- On option skip CDATA sections or keep markers
+  -- Parse a Xml file, stdin if File_Name is empty
+  -- On option, allows retrieval of comments (usefull for a formatter)
+  -- On option skip CDATA sections or keep CDATA markers
   -- On option, does not expand general entities nor set attributes with
-  --  default values (usefull for formatter)
+  --  default values (usefull for a formatter)
   -- On option, keep separators unchanged in attributes and text
   -- On option does not check compliance with Dtd
-  -- On option force a dtd file different from DOCTYPE directive
+  -- On option force a dtd file different from the DOCTYPE directive
   -- On option check and fill namespace informations
   -- If a warning callback is set then it is called for each warning detected
   -- If a parsing callback is set then it is called for each node creation
@@ -224,7 +224,7 @@ package Xml_Parser is
   -----------------
   -- DTD PARSING --
   -----------------
-  -- Parse a Dtd, stdin if empty
+  -- Parse a Dtd, stdin if File_Name is empty
   -- Optionally check for some warnings
   -- The Dtd can then be used to Parse_Elements
   -- Set Error to error string, or empty string if OK
@@ -253,9 +253,9 @@ package Xml_Parser is
   --  (Calling Get_Root_Element will raise Status_Error);
   -- If the Dtd is clean then it is set from the DOCTYPE directive,
   --  otherwise it is completed with the internal declaration if any
-  -- On option, allows retrieval of comments (usefull for formatter)
+  -- On option, allows retrieval of comments (usefull for a formatter)
   -- On option skip CDATA sections or keep markers
-  -- On option, does not expand general entities (usefull for formatter)
+  -- On option, does not expand general entities (usefull for a formatter)
   -- On option, keep separators unchanged in attributes and text
   -- On option check and fill namespace informations
   -- May raise Status_Error if Ctx is not clean
@@ -300,15 +300,13 @@ package Xml_Parser is
                    Normalize : in Trilean.Trilean := Trilean.Other;
                    Use_Dtd   : in Trilean.Trilean := Trilean.Other;
                    Dtd_File  : in String  := "";
+
                    Namespace : in Trilean.Trilean := Trilean.Other;
                    Warn_Cb   : in Warning_Callback_Access := null);
 
-  -------------------------
-  -- NAME AND ATTRIBUTES --
-  -------------------------
-  -- Is a Node valid (returned by Get_xxx)
-  function Is_Valid (Node : Node_Type) return Boolean;
-
+  -----------------------------
+  -- PROLOGUE, ROOT and TAIL --
+  -----------------------------
   -- All the following operations may raise Invalid_Node if the Node has
   --  not been returned by Get_xxx... They also may raise
   --  Status_Error if the Ctx is clean or unparsed
@@ -316,6 +314,14 @@ package Xml_Parser is
   --  (Element obtained from another context)
   Invalid_Node : exception;
   Use_Error : exception;
+
+  -- Is a Node valid (returned by Get_xxx)
+  function Is_Valid (Node : Node_Type) return Boolean;
+
+  -- Get the line number of the beginning of the declaration of a node
+  -- 0 if not the result of parsing of a file
+  function Get_Line_No (Ctx  : Ctx_Type;
+                        Node : Node_Type) return Natural;
 
   -- Get Prologue of a parsed context (after Parse or Parse_Prologue)
   --  may raise Parse_Error if Parse was not ok
@@ -330,7 +336,8 @@ package Xml_Parser is
 
   -- Get tail, after Parse or Parse_Elements
   -- The tail contains the Comments and PIs after the root element, if any
-  -- Returns a dummy element (with empty name) that has the tail as children
+  -- Returns a dummy element (with empty name) the children of which are
+  --  the Comments and PIs of the tail
   -- May raise Status_Error if called before Parse_Elements
   --            Parse_Error if Parse was not ok
   function Get_Tail (Ctx : Ctx_Type) return Element_Type;
@@ -345,22 +352,9 @@ package Xml_Parser is
        File    : out As.U.Asu_Us;
        Int_Def : out As.U.Asu_Us);
 
-  -- Get the Target of a PI
-  function Get_Target (Ctx     : Ctx_Type;
-                       Pi_Node : Pi_Type) return String;
-  function Get_Target (Ctx     : Ctx_Type;
-                       Pi_Node : Pi_Type) return As.U.Asu_Us;
-  -- Get the data of a PI
-  function Get_Pi (Ctx : in Ctx_Type;
-                   Pi_Node : Pi_Type) return String;
-  function Get_Pi (Ctx : in Ctx_Type;
-                   Pi_Node : Pi_Type) return As.U.Asu_Us;
-
-  -- Get the line number of the beginning of the declaration of a node
-  -- 0 if not the result of parsing of a file
-  function Get_Line_No (Ctx  : Ctx_Type;
-                        Node : Node_Type) return Natural;
-
+  ---------------------------------
+  -- ELEMENT NAME and ATTRIBUTES --
+  ---------------------------------
   -- Get the name of an element
   function Get_Name (Ctx     : Ctx_Type;
                      Element : Element_Type) return String;
@@ -394,6 +388,34 @@ package Xml_Parser is
                           Element : Element_Type;
                           Name    : String) return As.U.Asu_Us;
 
+  --------------------------
+  -- PI, TEXT and COMMENT --
+  --------------------------
+  -- Get the Target of a PI
+  function Get_Target (Ctx     : Ctx_Type;
+                       Pi_Node : Pi_Type) return String;
+  function Get_Target (Ctx     : Ctx_Type;
+                       Pi_Node : Pi_Type) return As.U.Asu_Us;
+  -- Get the data of a PI
+  function Get_Pi (Ctx : in Ctx_Type;
+                   Pi_Node : Pi_Type) return String;
+  function Get_Pi (Ctx : in Ctx_Type;
+                   Pi_Node : Pi_Type) return As.U.Asu_Us;
+
+  -- Get text of a Text or Comment node
+  function Get_Text (Ctx  : Ctx_Type;
+                     Text : Text_Type) return String;
+  function Get_Text (Ctx  : Ctx_Type;
+                     Text : Text_Type)
+                     return As.U.Asu_Us;
+
+  -- Get the content of a comment
+  function Get_Comment (Ctx     : Ctx_Type;
+                        Comment : Comment_Type) return String;
+  function Get_Comment (Ctx     : Ctx_Type;
+                        Comment : Comment_Type)
+                        return As.U.Asu_Us;
+
   ----------------
   -- NAVIGATION --
   ----------------
@@ -426,22 +448,6 @@ package Xml_Parser is
                        Node : Node_Type) return Element_Type;
   function Is_Root (Ctx  : Ctx_Type;
                     Node : Node_Type) return Boolean;
-
-  ----------------------
-  -- TEXT and COMMENT --
-  ----------------------
-  -- Get text of a Text or Comment node
-  function Get_Text (Ctx  : Ctx_Type;
-                     Text : Text_Type) return String;
-  function Get_Text (Ctx  : Ctx_Type;
-                     Text : Text_Type)
-                     return As.U.Asu_Us;
-
-  function Get_Comment (Ctx     : Ctx_Type;
-                        Comment : Comment_Type) return String;
-  function Get_Comment (Ctx     : Ctx_Type;
-                        Comment : Comment_Type)
-                        return As.U.Asu_Us;
 
   --------------------------
   -- UNPARSED ENTITY info --
@@ -498,7 +504,7 @@ package Xml_Parser is
   ------------------------
   -- General EXCEPTIONS --
   ------------------------
-  -- If internal logic error (in parsing)
+  -- If internal logic error is raise (during parsing)
   Internal_Error : exception;
 
 private
@@ -545,6 +551,7 @@ private
     Tree_Access : My_Tree.Position_Access := My_Tree.No_Position;
   end record;
   No_Node : constant Node_Type (Element) := (others => <>);
+
   ---------------------
   -- INPUT FLOW TYPE --
   ---------------------
@@ -701,9 +708,9 @@ private
     Include_Level : Natural := 0;
   end record;
 
-  --------------------------------------------------
-  -- IDs, IDREFs, UNPARSED ENTITIES and NAMSPACES --
-  --------------------------------------------------
+  ------------------------------------------------------------
+  -- IDs, IDREFs, UNPARSED ENTITIES, NAMESPACES and DOCTYPE --
+  ------------------------------------------------------------
   type Id_Cell is record
     -- Line where the ID or IDREF is defined
     Line_No : Natural := 0;
@@ -747,9 +754,8 @@ private
   function Image (Namespace : Namespace_Type) return String;
   package Namespace_List_Mng is new Hashed_List (Namespace_Type,
              Namespace_Access, Set, "=", Image);
-  ------------------
-  -- DOCTYPE info --
-  ------------------
+
+  -- Doctype info
   type Doctype_Type is record
     -- Line of the DOCTYPE directive
     Line_No : Natural := 0;
@@ -808,11 +814,18 @@ private
     -- Namespaces
     Namespace_List : Namespace_List_Mng.List_Type;
   end record;
+
+  ------------------
+  -- FINALIZATION --
+  ------------------
   overriding procedure Finalize (Ctx : in out Ctx_Type);
 
   overriding procedure Finalize (Node : in out Node_Update);
   overriding procedure Adjust   (Node : in out Node_Update);
 
+  --------------------------
+  -- OPERATIONS for CHILDREN
+  --------------------------
   -- For Xml_Generator
   function Get_Magic return Magic_Numbers.Magic_Long;
   function Get_Tree (Ctx : Ctx_Type;
@@ -826,5 +839,6 @@ private
   -- If Name is empty then return Name
   -- Otherwise return Namespace^NameSuffix
   function Expand_Name (Name, Namespace : As.U.Asu_Us) return As.U.Asu_Us;
+
 end Xml_Parser;
 
