@@ -1158,7 +1158,6 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("stash");
     Cmd.Cat ("save");
-    Cmd.Cat ("-q");
     Cmd.Cat (Name);
     Command.Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
@@ -1172,7 +1171,13 @@ package body Git_If is
         return Out_Flow_3.Str.Image;
       end if;
     else
-      return "";
+      if Str_Util.Locate (Out_Flow_3.Str.Image,
+        "Saved working directory and index state On") /= 0 then
+        -- Success
+        return "";
+      else
+        return Out_Flow_3.Str.Image;
+      end if;
     end if;
   end Add_Stash;
 
