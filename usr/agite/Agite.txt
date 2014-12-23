@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V16.07
+V16.08
 
 General purpose
 ---------------
@@ -414,8 +414,8 @@ the current file or directory.
 anchor:XAdd[]
 
 Add::
-Adds to Git the current directory (its content in fact), the current file or
-symbolic link.
+Adds to Git the current directory (its content in fact), the current file (new
+or modified) or symbolic link.
 
 anchor:XRevert[]
 
