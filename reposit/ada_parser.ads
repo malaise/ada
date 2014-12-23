@@ -1,7 +1,7 @@
 -- The ada parser analyses the input flow, separates words, delimiters...
 --  identifies and returns them through a callback.
 -- It stops at the end of the input flow.
-with As.U, Text_Char;
+with As.U, Text_Char, Ada_Words.Keywords;
 package Ada_Parser is
 
   -- The kinds of lexical elements
@@ -31,7 +31,9 @@ package Ada_Parser is
   procedure Parse (File : in out Text_Char.File_Type;
                    Cb : access procedure (
                      Text : in String;
-                     Lexic : in Lexical_Kind_List));
+                     Lexic : in Lexical_Kind_List);
+                   Version : Ada_Words.Keywords.Language_Versions
+                           := Ada_Words.Keywords.Default_Version);
 
 
   -- Parse flow of File until next lexical element
@@ -43,7 +45,9 @@ package Ada_Parser is
                         Context : in out Parsing_Context;
                         Text : out As.U.Asu_Us;
                         Lexic : out Lexical_Kind_List;
-                        Raise_End : in Boolean := False);
+                        Raise_End : in Boolean := False;
+                        Version : Ada_Words.Keywords.Language_Versions
+                                := Ada_Words.Keywords.Default_Version);
 
   -- Syntax error detected
   Syntax_Error : exception;

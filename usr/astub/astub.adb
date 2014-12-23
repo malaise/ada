@@ -1,24 +1,29 @@
 with Ada.Exceptions;
-with As.U, Argument, Argument_Parser, Mixed_Str, Basic_Proc;
+with As.U, Argument, Argument_Parser, Mixed_Str, Basic_Proc, Ada_Words.Keywords;
 with Common, Files, Parse_Context;
 procedure Astub is
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => (False, 'f', As.U.Tus ("force"), False),
-   02 => (False, 'k', As.U.Tus ("keep"),  False));
+   01 => (False, 'f', As.U.Tus ("force"),    False),
+   02 => (False, 'k', As.U.Tus ("keep"),     False),
+   03 => (True,  'l', As.U.Tus ("lang"), False,
+          True, As.U.Tus ("version")));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Output ("Usage : " & Argument.Get_Program_Name
-      & " [ <force> ] [ <keep> ] <spec_file_name>");
+      & " [ <force> ] [ <keep> ] [ <lang> ] <spec_file_name>");
     Basic_Proc.Put_Line_Output (
       "  <force> ::= " & Argument_Parser.Image (Keys(1))
       & " : Force generation (delete existing body)");
     Basic_Proc.Put_Line_Output (
       " <keep>   ::= " & Argument_Parser.Image (Keys(2))
       & "  : Keep empty body");
+    Basic_Proc.Put_Line_Output (
+      " <lang>   ::= " & Argument_Parser.Image (Keys(3))
+      & "  : Ada83..Ada2012 (Ada2012)");
   end Usage;
 
   procedure Error (Msg : in String) is
@@ -32,7 +37,6 @@ procedure Astub is
   -- The options
   Force_Opt : Boolean;
   Keep_Opt : Boolean;
-
 
   Generated : Boolean;
 begin
@@ -57,6 +61,16 @@ begin
   end;
   Force_Opt := Arg_Dscr.Is_Set (1);
   Keep_Opt := Arg_Dscr.Is_Set (2);
+  begin
+    if Arg_Dscr.Is_Set (3) then
+      Common.Language_Version := Ada_Words.Keywords.Language_Versions'Value (
+                                   Arg_Dscr.Get_Option (3));
+    end if;
+  exception
+    when others =>
+      Error ("Invalid language version");
+      return;
+  end;
 
   -- Open files
   Basic_Proc.Put_Line_Output ("Astubbing "

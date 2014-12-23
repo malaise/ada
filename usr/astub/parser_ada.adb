@@ -1,4 +1,4 @@
-with Files;
+with Files, Common;
 package body Parser_Ada is
 
   Context : Ada_Parser.Parsing_Context;
@@ -11,7 +11,8 @@ package body Parser_Ada is
                            Context => Context,
                            Text => Word.Text,
                            Lexic => Ada_Parser.Lexical_Kind_List(Word.Lexic),
-                           Raise_End => Raise_End);
+                           Raise_End => Raise_End,
+                           Version => Common.Language_Version);
     return Word;
   end Get_Word;
 

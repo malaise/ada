@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Ada_Words.Keywords, Upper_Char, Lower_Str, Mixed_Str;
+with Upper_Char, Lower_Str, Mixed_Str;
 package body Ada_Parser is
 
   -- Characters that deserve specific handling:
@@ -63,7 +63,8 @@ package body Ada_Parser is
                               File : in out Text_Char.File_Type;
                               Context : in out Parsing_Context;
                               Text : out As.U.Asu_Us;
-                              Lexic : out Lexical_Kind_List) is
+                              Lexic : out Lexical_Kind_List;
+                              Version : Ada_Words.Keywords.Language_Versions) is
     -- Current Char
     Cc : Character;
   begin
@@ -92,7 +93,7 @@ package body Ada_Parser is
         raise Syntax_Error;
       end if;
       -- See if reserved word or normal identifier
-      Is_Reserved := Ada_Words.Keywords.Check_Keyword (Str);
+      Is_Reserved := Ada_Words.Keywords.Check_Keyword (Str, Version);
       if Is_Reserved = Ada_Words.Keywords.Maybe then
         -- Access, delta, digits or range,
         -- see if prev significant lexical element is "'"
@@ -179,13 +180,15 @@ package body Ada_Parser is
     end loop;
   end Parse_Comment;
 
-  -- Internal parsing of one word
+  -- Parsing of one word
   -- Sets Text to "" (and Lexic to Separator) when end of file
   procedure Parse_Next (File : in out Text_Char.File_Type;
                         Context : in out Parsing_Context;
                         Text : out As.U.Asu_Us;
                         Lexic : out Lexical_Kind_List;
-                        Raise_End : in Boolean := False) is
+                        Raise_End : in Boolean := False;
+                        Version : Ada_Words.Keywords.Language_Versions
+                                := Ada_Words.Keywords.Default_Version) is
     -- Next and nextnext characters (read ahead)
     Cc, Nc, Nnc : Character;
     -- Upper char of Cc
@@ -268,7 +271,7 @@ package body Ada_Parser is
     -- Identifer?
     Uc := Upper_Char (Cc);
     if Uc >= 'A' and then Uc <= 'Z' then
-      Parse_Identifier (Cc, File, Context, Text, Lexic);
+      Parse_Identifier (Cc, File, Context, Text, Lexic, Version);
       Get_Text (Text, Lexic, Context, Text);
       return;
     end if;
@@ -312,14 +315,16 @@ package body Ada_Parser is
   procedure Parse (File : in out Text_Char.File_Type;
                    Cb : access
     procedure (Text : in String;
-                   Lexic : in Lexical_Kind_List)) is
+               Lexic : in Lexical_Kind_List);
+                   Version : Ada_Words.Keywords.Language_Versions
+                           := Ada_Words.Keywords.Default_Version) is
     Context : Parsing_Context;
     Lexic : Lexical_Kind_List;
     Text : As.U.Asu_Us;
   begin
     -- Loop until end of file
     loop
-      Parse_Next (File, Context, Text, Lexic);
+      Parse_Next (File, Context, Text, Lexic, False, Version);
       exit when Text.Is_Null;
       -- Call callback
       Cb (Text.Image, Lexic);

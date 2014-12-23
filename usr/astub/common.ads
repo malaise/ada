@@ -1,6 +1,10 @@
 -- Common definitions
-with As.U;
+with As.U, Ada_Words.Keywords;
 package Common is
+
+  -- Current Ada langauge version
+  Language_Version : Ada_Words.Keywords.Language_Versions
+                   := Ada_Words.Keywords.Ada2012;
 
   -- Line feed string
   function Line_Feed return As.U.Asu_Us;
