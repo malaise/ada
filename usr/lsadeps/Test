@@ -8,8 +8,14 @@ function error {
 function check {
 
   lsadeps $1 > res1
+  if [ $? -ne 0 ] ; then
+    error "lsadeps $1 has failed"
+  fi
   if [ -n "$2" ] ; then
     lsadeps $2 > res2
+    if [ $? -ne 0 ] ; then
+      error "lsadeps $2 has failed"
+    fi
     expected="res2 of $2"
   else
     expected=expected

@@ -1,6 +1,6 @@
 lsadeps
 =======
-V10.2
+V10.3
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -104,6 +104,12 @@ by one of its parents. +
 
 It does not support any option (even includes), only one optional 'target'
 directory.
+
+Ada language selection
+~~~~~~~~~~~~~~~~~~~~~~
+The files are parsed according to the default Ada language version 'Ada2012',
+but the environment variable 'LSADEPS_LANGUAGE' can be set to 'Ada83', 'Ada95'
+'Ada2005' or 'Ada2012' to tune the logic of the parsing.
 
 Format of output
 ----------------

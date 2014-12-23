@@ -1,12 +1,16 @@
 with Ada.Exceptions;
-with Basic_Proc, Directory, Sys_Calls, Text_Char, Ada_Parser, Str_Util,
-     Mixed_Str, As.U.Utils, Parser, Text_Line;
+with Basic_Proc, Directory, Sys_Calls, Text_Char, Environ, Ada_Parser,
+     Ada_Words.Keywords, Str_Util, Mixed_Str, As.U.Utils, Parser,
+     Text_Line;
 with Debug, Sort;
 package body Sourcer is
 
   -- The empty dscr
   Default_Dscr : Src_Dscr;
   Empty_Dscr : constant Src_Dscr := Default_Dscr;
+
+  -- The ENV var for setting Ada language version
+  Language_Version_Name : constant String := "LSADEPS_LANGUAGE";
 
   -- Is separator for iterator
   function Is_Sep (C : Character) return Boolean is
@@ -97,6 +101,8 @@ package body Sourcer is
 
   -- Get next significant word (reserved or identifier or delimiter)
   -- (skips comments, separators, literals)
+  Language_Version : Ada_Words.Keywords.Language_Versions
+                   := Ada_Words.Keywords.Ada2012;
   procedure Next_Word (Txt : in out Text_Char.File_Type;
                        Ctx : in out Ada_Parser.Parsing_Context;
                        Word : out As.U.Asu_Us;
@@ -104,7 +110,8 @@ package body Sourcer is
     use type Ada_Parser.Lexical_Kind_List;
   begin
     loop
-      Ada_Parser.Parse_Next (Txt, Ctx, Word, Lexic, Raise_End => True);
+      Ada_Parser.Parse_Next (Txt, Ctx, Word, Lexic, Raise_End => True,
+                             Version => Language_Version);
       exit when Lexic = Ada_Parser.Reserved_Word
       or else Lexic = Ada_Parser.Identifier
       or else Lexic = Ada_Parser.Delimiter;
@@ -392,6 +399,18 @@ package body Sourcer is
     Name : Name_Dscr;
     use type As.U.Asu_Us;
   begin
+    if Environ.Is_Set (Language_Version_Name) then
+      begin
+        Language_Version := Ada_Words.Keywords.Language_Versions'Value (
+                              Environ.Getenv (Language_Version_Name));
+      exception
+        when others =>
+          Error ("Invalid Ada language version "
+               & Environ.Getenv (Language_Version_Name)
+               & " in ENV var " & Language_Version_Name);
+      end;
+    end if;
+
     -- Process paths one by one
     for I in 1 .. Paths.Length loop
       Debug.Logger.Log_Debug ("Parsing dir " & Paths.Element (I).Image);
