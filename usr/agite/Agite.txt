@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V16.08
+V16.10
 
 General purpose
 ---------------
@@ -414,8 +414,15 @@ the current file or directory.
 anchor:XAdd[]
 
 Add::
-Adds to Git the current directory (its content in fact), the current file (new
-or modified) or symbolic link.
+Adds to Git the current directory (its content in fact), the current file (new,
+modified or manually merged) or symbolic link. +
+If a merge leads to conficts, then you have to fix one by one each unmerged file
+(with status 'U'):
+
+* xref:XEdit[Edit] the file, manually solve the conflicts (look for sequences
+like '<<<<<<<', '=======' and '>>>>>>>') and save,
+
+* Use the 'Add' function to add this changes to the index for the next commit.
 
 anchor:XRevert[]
 
@@ -922,6 +929,9 @@ StageAll::
 
 Stage all the changes that are unstaged. Also proposes to add the untracked
 (new) files.
+
+NOTE: The Stage, and StageAll buttons do not stage the files that are in the
+status 'U' (updated but unmerged), see then xref:XAdd[Add] function.
 
 NOTE: The Stage, Unstage and StageAll buttons are active only if there are local
 changes.

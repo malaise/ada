@@ -192,7 +192,7 @@ package body Commit is
     Changes.Move_At (Afpx.Line_List.Get_Position);
     Status := Changes.Access_Current.S3;
     if Stage then
-      if Status = '?' or else Status = 'M' or else Status = 'U' then
+      if Status = '?' or else Status = 'M' then
         -- Stage new file or modif or unresolved conflict
         Git_If.Do_Add (Changes.Access_Current.Name.Image);
       elsif Status = 'D' then
@@ -239,7 +239,7 @@ package body Commit is
       Changes.Rewind;
       loop
         Changes.Read (Change, Moved => Moved);
-        if Change.S3 = 'M' or else Change.S3 = 'U' then
+        if Change.S3 = 'M' then
           Git_If.Do_Add (Change.Name.Image);
         elsif Change.S3 = 'D' then
           Git_If.Do_Rm (Change.Name.Image);
