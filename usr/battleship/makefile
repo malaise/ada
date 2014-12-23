@@ -13,7 +13,7 @@ LARGS_battleship.stat := $(CPATHD)/libx_mng.a $(CPATHD)/libcutil.a \
  $(CPATHD)/libposix2pcre.a $(PCRE_LIB)/libpcre.a -lX11
 
 TXT := BattleShip
-DOCOPTS_Asubst := -a toc
+DOCOPTS_BattleShip := -a toc
 
 include $(TEMPLATES)/ada.mk
 
