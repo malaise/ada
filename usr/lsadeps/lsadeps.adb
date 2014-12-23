@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V10.1";
+  Version : constant String := "V10.2";
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -445,7 +445,7 @@ begin
   -------------------
   -- Back to original dir
   Check_Dir ("");
-  Output.Put (Revert_Mode, Tree_Mode, Direct_Mode, Files_Mode, Path_Dscr);
+  Output.Put (Revert_Mode, Tree_Mode, Files_Mode, Path_Dscr);
 
 exception
   when Error_Raised | Sourcer.Error_Raised | Output.Error_Raised =>

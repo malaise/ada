@@ -62,9 +62,6 @@ package body Output is
     end case;
   end Is_Parent;
 
-  -- Limit to level one (direct mode)
-  Level1 : Boolean;
-
   -- Dump Units of tree
   Level : Integer := -1;
   procedure Tree_Unit_Walker (Parent : in Sourcer.Src_Dscr) is
@@ -107,8 +104,7 @@ package body Output is
       else
         Name := Dscr.Dscr.Unit;
       end if;
-      if not Name.Is_Null
-      and then (not Level1 or else Level <= 1) then
+      if not Name.Is_Null then
         for I in 1 .. Level loop
           Str.Append (Tab);
         end loop;
@@ -149,14 +145,12 @@ package body Output is
     if Dscr.Looping then
       return True;
     end if;
-    if not Level1 or else Level <= 1 then
-      for I in 1 .. Level loop
-        Str.Append (Tab);
-      end loop;
-      -- File
-      Str.Append (Strip (Sort.Make_Path (Dscr.Dscr.Path, Dscr.Dscr.File)));
-      Basic_Proc.Put_Line_Output (Str.Image);
-    end if;
+    for I in 1 .. Level loop
+      Str.Append (Tab);
+    end loop;
+    -- File
+    Str.Append (Strip (Sort.Make_Path (Dscr.Dscr.Path, Dscr.Dscr.File)));
+    Basic_Proc.Put_Line_Output (Str.Image);
     return True;
   end Tree_File_Iterator;
 
@@ -407,7 +401,7 @@ package body Output is
   end Put_Path;
 
   -- Put list/tree, normal/revert of units/files
-  procedure Put (Revert_Mode, Tree_Mode, Direct_Mode, File_Mode : in Boolean;
+  procedure Put (Revert_Mode, Tree_Mode, File_Mode : in Boolean;
                  Path_Unit : in Sourcer.Src_Dscr) is
   begin
     Directory.Get_Current (Curr_Dir);
@@ -421,11 +415,6 @@ package body Output is
       Put_Path (File_Mode);
     elsif Tree_Mode then
       -- Tree from Root or reverse
-      Level1 := False;
-      Put_Tree (File_Mode);
-    elsif Direct_Mode then
-      -- Level one of tree
-      Level1 := True;
       Put_Tree (File_Mode);
     else
       -- List from Root or reverse

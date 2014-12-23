@@ -332,12 +332,6 @@ package body Tree_Mng is
       Build_Children (Origin.Path, Origin.Children, Bodies_Mode);
     end if;
 
-    -- Done if first level requested
-    if Tree_Kind = First_Level then
-      Done;
-      return;
-    end if;
-
     -- A Child (spec or standalone body): Insert parent spec if not revert
     if not Revert_Mode
     and then (Origin.Kind = Sourcer.Unit_Spec

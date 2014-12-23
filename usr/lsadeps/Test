@@ -75,3 +75,10 @@ Sort
 Sourcer
 EOF
 check "-r sort"
+
+# Direct
+cat << EOF > res2
+Sourcer
+Tree_Mng
+EOF
+check "-d tree_mng"
