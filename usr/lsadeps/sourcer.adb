@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Basic_Proc, Directory, Sys_Calls, Text_Char, Environ, Ada_Parser,
-     Ada_Words.Keywords, Str_Util, Mixed_Str, As.U.Utils, Parser,
+     Ada_Words.Keywords, Str_Util.Regex, Mixed_Str, As.U.Utils, Parser,
      Text_Line;
 with Debug, Sort;
 package body Sourcer is
@@ -151,7 +151,8 @@ package body Sourcer is
     Txt : Text_Char.File_Type;
     -- File root: path/prefix
     Root_File : As.U.Asu_Us;
-    -- Last Minus '-' separator index in file name
+    -- Last Minus '-' or '~' separator index in file name
+    Search_Result : Str_Util.Regex.Search_Result;
     Minus : Natural;
     -- Ada_Parser stuff
     Context : Ada_Parser.Parsing_Context;
@@ -185,16 +186,18 @@ package body Sourcer is
 
     -- Store Unit and parent
     -- Locate last '-' if any, save parent
-    Minus := Str_Util.Locate (File, "-", Forward => False);
+    -- File can also be a|g|s|i~...
+    Search_Result := Str_Util.Regex.Locate (File, "[-~]", Forward => False);
+    Minus := Search_Result.First_Offset;
     if Minus = 0 then
       Dscr.Parent.Set_Null;
       Dscr.Unit := As.U.Tus (Directory.File_Prefix (File));
     else
-      -- '-' indicates either a child unit or a subunit
+      -- '-' or '~' indicates either a child unit or a subunit
       -- Parsing "separate" will identify subunits
       -- Full unit name (parent.unit) without suffix
       Dscr.Parent := As.U.Tus (Mixed_Str (
-         Str_Util.Substit (File(File'First .. Minus - 1), "-", ".")));
+         Str_Util.Regex.Substit (File(File'First .. Minus - 1), "[-~]", ".")));
       Dscr.Unit := Dscr.Parent & "."
                & Directory.File_Prefix (File(Minus+1 .. File'Last));
     end if;

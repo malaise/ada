@@ -1,11 +1,15 @@
 lsadeps
 =======
-V10.3
+V10.4
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
 
 Alternatively it checks redundant "with" clauses between specs and bodies.
+
+It relies on GNAT file naming conventions:
+
+  <unit>{[("-"|"~")<child_or_subunit>]}".ad"("s"|"b")
 
 Command line arguments
 ----------------------
