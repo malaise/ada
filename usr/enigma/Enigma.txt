@@ -209,16 +209,16 @@ Encoding an upper character consists in:
 
 Compatibility
 -------------
-Enigma can simulate Enigma M3 and M4 machines, but also allows more
+Enigma can simulate Enigma M3 and M4 machines, but it also allows more
 combinations than the physical machines (rotors are from 0 to 4, no
-restriction on the combination of first (slowest) rotor and reflector, offset
-of reflector...).
+restriction on the combination of the first (slowest) rotor and the reflector,
+on the offset of the reflector...).
 
 M3 compatible configurations shall use a reflector from A to C with no offset
-and 3 rotors from I to VIII.
+and three rotors from I to VIII.
 
 M4 compatible configurations shall use a reflector Bthin or Cthin with no
-offset, a rotor Beta and 3 rotors from I to VIII.
+offset, the rotor Beta and then three rotors from I to VIII.
 
 Tools
 -----
@@ -322,7 +322,7 @@ name, each with the ring offset then the initial offset.
 
 - Then the reflector offset is repeated (so that, like a rotor, it is a
 number in letters then two letters), then a ''Z'' (which cannot start a
-digit in letters), which marks the end). Example
+digit in letters), which marks the end). Example:
 --------------------------------------
 C@A -rI@H#VII@R#II@U -iUAQ -sAEBM -> AEBMPPONEHUSEVENRATWOUQTHREEAAZ
 --------------------------------------
@@ -330,18 +330,51 @@ C@A -rI@H#VII@R#II@U -iUAQ -sAEBM -> AEBMPPONEHUSEVENRATWOUQTHREEAAZ
 This format of text key is also supported as argument, then it is parsed and
 displayed as normal enigma settings.
 
+Handling punctuation with letterator
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Letterator is a tools that ecodes each ASCII chararacter from stdin into a
+unique pair of uppercase letters on stdout, and vice versa (ex: \'a' <--> "GL").
+
+  Usage: letterator -c | -d    [ -f<first_index> ] [ -l<last_index> ]
+  Use -c for coding and -d for decoding
+  Use -f and -l to specify the range of characters from stdin to process (like for enigma)
+
 Random encoding with enigmacode
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Enigmacode is a tool that encodes with a random key.
+Enigmacode is a tool that encodes stdin with a random key.
 
-This key is itself encoded with the given date or today and prepended at the
-beginning of the output file.
+This key is itself encoded with the given date or with today, and prepended at
+the beginning of the output file.
 
-Similarly, given a date or with today it decodes a file that it has
+Similarly, given a date or with today it decodes from stdin a string that it has
 encoded.
 
   Usage: enigmacode -c | -d  [ <date> ]
-    <date>  ::=  jj/mm/YYyy
+    <date> ::= jj/mm/YYyy
+
+Exemples:
+
+--------------------------------------
+echo "This is a test." | enigmacode -c
+--------------------------------------
+encodes "This is a test." (appending a line feed), using the current date as
+key, and outputs
+
+  JEVKZFGWZDWHVDYXFETLZFAWJKQCWWXNEDSVIVGDCFZDWKEWVFLYVSAYEQQ.
+
+--------------------------------------
+echo -n JEVKZFGWZDWHVDYXFETLZFAWJKQCWWXNEDSVIVGDCFZDWKEWVFLYVSAYEQQ | enigmacode -d 24/12/2014
+--------------------------------------
+decodes this string if it was encoded with the date 23/12/2014 and outputs
+
+  This is a test.
+
+(with the line feed)
+
+NOTE: It is important to use the '-n' option of echo when providing the key to
+enigmacode, otherwise echo would append a line feed.
+
 
 Coding
 ^^^^^^
@@ -353,6 +386,7 @@ This generates 'key_num' and 'key_text'.
 
 The key in text is coded, with a key generated from the given date or today,
 at the beginning of the coded file:
+
 --------------------------------------
 echo -n $key_text" | enigma `def_enigma <date>  > <coded_file>
 --------------------------------------
@@ -361,9 +395,6 @@ The input file is coded with the random key and appended to the coded file
 --------------------------------------
 letterator -c | enigma $key_num >> <coded_file>
 --------------------------------------
-
-NOTE: letterator is a tools that ecodes each ASCII chararacter unto a unique
-pair of uppercase letters, and vice versa (ex 'a' <--> "GL").
 
 Decoding
 ^^^^^^^^
