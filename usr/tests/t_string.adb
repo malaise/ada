@@ -131,8 +131,12 @@ begin
       N2 : constant String := Str_Util.Replace (N1, 1, 0, Str(200 .. 200));
       N3 : constant String := Str_Util.Replace (N2, 3, 1, Str(301 .. 302));
       N4 : constant String := Str_Util.Replace (N3, 12, 11, Str(325 .. 326));
+      L1 : constant Natural := Str_Util.Locate (N4, "34", Forward => True);
+      L2 : constant Natural := Str_Util.Locate (N4, "34", Forward => False);
     begin
       Basic_Proc.Put_Line_Output ("Image " & N4);
+      Basic_Proc.Put_Line_Output ("Locate 34:" &
+        Natural'Image (L1) & " and" & Natural'Image (L2));
     end;
     Basic_Proc.Put_Line_Output ("Delete from 3 to 4, insert a, b, c, d before 4");
     Basic_Proc.Put_Line_Output ("Replace from 4 to 5 with B, C, D");

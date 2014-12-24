@@ -76,6 +76,7 @@ swap dup strlen swap2 strdel
 "Replace from 12 to 11 with y, z" putl
 12 11 "yz" R pushr call
 "Image " put dup putl
+1 format "Locate 34: " put dup 1 "34" strloc dup put " and " put putl
 
 "Delete from 3 to 4, insert a, b, c, d before 4" putl
 3 4 strdel 4 "abcd" strins

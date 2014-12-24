@@ -2,6 +2,7 @@ with As.B, Images, Basic_Proc;
 procedure T_Asb is
 
   N1, N2 : As.B.Asb_Bs(128);
+  L1, L2 : Natural;
   Str : String(1 .. 500) := (others => '#');
   use type As.B.Asb_Bs;
 
@@ -97,6 +98,10 @@ begin
   Basic_Proc.Put_Line_Output ("Replace from 12 to 11 with y, z");
   N1.Replace (12, 11, Str(325 .. 326)); --> 01ab2345678yz
   Basic_Proc.Put_Line_Output ("Image " & N1.Image);
+  L1 := N1.Locate ("34", Forward => True);
+  L2 := N1.Locate ("34", Forward => False);
+  Basic_Proc.Put_Line_Output ("Locate 34:" & Natural'Image (L1)
+                            & " and" & Natural'Image (L2));
 
   Basic_Proc.Put_Line_Output ("Delete from 3 to 4, insert a, b, c, d before 4");
   N1.Delete (3, 4); --> 012345678yz
