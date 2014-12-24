@@ -497,6 +497,25 @@ package body Str_Util is
     end;
   end Center;
 
+  -- Check if Within starts or ends with Fragment (More efficient than Locate)
+  -- Returns False if Fragment is empty
+  function Start_With (Within     : String;
+                       Fragment   : String;
+                       Forward    : Boolean := True) return Boolean is
+  begin
+    -- Handle incorrect values
+    if Fragment'Length = 0 or else Within'Length < Fragment'Length then
+      return False;
+    end if;
+    if Forward then
+      return Within(Within'First .. Within'First + Fragment'Length - 1)
+             = Fragment;
+    else
+      return Within(Within'Last - Fragment'Length + 1 .. Within'Last)
+             = Fragment;
+    end if;
+  end Start_With;
+
   -- Locate Nth occurence of a fragment within a string,
   --  between a given index (first/last if 0) and the end/beginning of string,
   --  searching forward or backward

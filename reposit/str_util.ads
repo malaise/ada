@@ -175,6 +175,13 @@ package Str_Util is
                    Len : Positive;
                    Gap : Character := ' ') return String;
 
+  -- Check if Within starts or ends with Fragment (More efficient than Locate)
+  -- Returns False if Fragment is empty
+  function Start_With (Within     : String;
+                       Fragment   : String;
+                       Forward    : Boolean := True) return Boolean;
+
+
   -- Locate the Nth occurence of a fragment within a string,
   --  between a given index (first/last if 0) and the end/beginning of the
   --  string, searching forward or backward
@@ -184,8 +191,7 @@ package Str_Util is
                    Fragment   : String;
                    From_Index : Natural := 0;
                    Forward    : Boolean := True;
-                   Occurence  : Positive := 1)
-           return Natural;
+                   Occurence  : Positive := 1) return Natural;
 
   -- This function returns the value of a variable. It may raise exceptions
   --  (that will be propagated by Eval_Variables).
