@@ -209,6 +209,7 @@ begin
       Basic_Proc.Put_Line_Output ("26 Delete");
       Basic_Proc.Put_Line_Output ("27 Delete_nb");
       Basic_Proc.Put_Line_Output ("28 Check char is backslashed");
+      Basic_Proc.Put_Line_Output ("29 Start_With");
 
       Basic_Proc.New_Line_Output;
       Basic_Proc.Put_Line_Output (
@@ -219,7 +220,7 @@ begin
        "String: |" & Str(1 .. Str_Len) & "|   len: "
                     & Integer'Image(Str_Len));
       Basic_Proc.New_Line_Output;
-      Basic_Proc.Put_Output ("Choice (0 .. 28) ? "); Nat_Get (Action, True);
+      Basic_Proc.Put_Output ("Choice (0 .. 29) ? "); Nat_Get (Action, True);
       Basic_Proc.New_Line_Output;
 
       begin
@@ -565,6 +566,17 @@ begin
               & Mixed_Str(Boolean'Image (Str_Util.Is_Backslashed (
                    Str(1 .. Str_Len),
                    Index => Pos1))));
+
+          when 29 =>
+            Basic_Proc.Put_Line_Output ("28 Start_With");
+            Basic_Proc.Put_Output ("Fragment (Str)? "); Basic_Proc.Get_Line (Str1, Nat1);
+            Basic_Proc.Put_Output ("Forward (YN)? "); Bool_Get(Bool1);
+            Basic_Proc.Put_Line_Output (
+                "Start_With: "
+              & Mixed_Str(Boolean'Image (Str_Util.Start_With (
+                   Str(1 .. Str_Len),
+                   Str1(1 .. Nat1),
+                   Bool1))));
 
           when others => null;
 
