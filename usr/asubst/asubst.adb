@@ -4,7 +4,7 @@ with As.U.Utils, Environ, Argument, Argument_Parser, Basic_Proc, Language,
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Log;
 procedure Asubst is
 
-  Version : constant String  := "V17.4";
+  Version : constant String  := "V18.0";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -32,10 +32,10 @@ procedure Asubst is
    16 => (False, 's', As.U.Tus ("save"),        False),
    17 => (False, 't', As.U.Tus ("test"),        False),
    18 => (False, 'u', As.U.Tus ("utf8"),        False),
-   19 => (False, 'v', As.U.Tus ("verbose"),     False),
+   19 => (False, 'V', As.U.Tus ("verbose"),     False),
    20 => (False, 'x', As.U.Tus ("noregex"),     False),
    21 => (False, 'h', As.U.Tus ("help"),        False),
-   22 => (False, 'V', As.U.Tus ("version"),     False)
+   22 => (False, 'v', As.U.Tus ("version"),     False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -252,7 +252,7 @@ procedure Asubst is
   begin
     if Verbosity /= Put_File_Name then
       Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
-          & ": Syntax ERROR. Options 'n', 'q' and 'v' are mutually exclusive.");
+          & ": Syntax ERROR. Options 'n', 'q' and 'V' are mutually exclusive.");
       Error;
       return False;
     else

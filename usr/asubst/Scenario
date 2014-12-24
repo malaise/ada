@@ -91,6 +91,7 @@
 "aaaa"                  "^(.*)a(.*)$"                 "->\r11<-a->\r12<-\n"         "->aaa<-a-><-"
 
 # Change delimiter of Scenario for awk format string
+"Options"
 "Delimiter" "@"
 @toto:010@              @([0-9]+)@                    @\Kecho \r11 | awk '{printf "%03d" ,$1+1}'\k@ @toto:011@
 @Delimiter@ @"@

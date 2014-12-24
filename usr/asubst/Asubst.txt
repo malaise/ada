@@ -1,15 +1,16 @@
 Asubst
 ======
-V17.4
+V18.0
 
-Asubs is a command line tool that finds occurences of text that match a
-pattern (regular expression), and replaces these occurrences by a given string.
+Asubs is a command line tool that substitutes text within text. It finds
+occurences of text that match a pattern (regular expression), and replaces
+these occurrences by a given string.
 
 General syntax
 --------------
 ...................................
 Usage: asubst [ { <option > } ] <find_pattern> <replace_string> [ { <file> } ]
-or   : asubst -h | --help | -V | --version
+or   : asubst -h | --help | -v | --version
 ...................................
 Substitutes strings in files.
 
@@ -45,7 +46,7 @@ substitution), +
 -s or --save : make a backup (<file>.asu) of the original file(s), +
 -t or --test for test, substitutions are not performed, +
 -u or --utf8 : process utf-8 sequences, +
--v or --verbose : print each substitution and its line number, +
+-V or --verbose : print each substitution and its line number, +
 -x or --noregex : <find_pattern> is considered as string(s), +
 \-- : to stop the list of options. If <find_pattern> is "-pat", then use: +
 ++asubst [ { <option> } ] \-- "-pat" <replace_pattern> [ { <file> } ]++.
