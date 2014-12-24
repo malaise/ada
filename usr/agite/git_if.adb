@@ -1171,8 +1171,8 @@ package body Git_If is
         return Out_Flow_3.Str.Image;
       end if;
     else
-      if Str_Util.Locate (Out_Flow_3.Str.Image,
-        "Saved working directory and index state On") /= 0 then
+      if Str_Util.Start_With (Out_Flow_3.Str.Image,
+                              "Saved working directory and index state") then
         -- Success
         return "";
       else
