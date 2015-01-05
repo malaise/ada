@@ -14,22 +14,38 @@ trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 export LIST="A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"
 
 # Do local tests with: settings, encypted and decoded text
-echo "Test of fixed settings, encrypted and decoded files:"
-for i in 1 2 3 4 5 ; do
+function check {
+  local i=$1
+  echo -n "cat $DATA/crypt${i} | enigma `tail -1 $DATA/set${i}` "
   cat $DATA/crypt${i} | enigma `tail -1 $DATA/set${i}` > tmp
   cmp -s $DATA/decod${i} tmp
   res=$?
-  echo -n "cat $DATA/crypt${i} | enigma `tail -1 $DATA/set${i}` "
   if [ $res -eq 0 ] ; then
     echo "OK."
   else
-    rm -f tmp
     echo "FAILED."
     exit 1
   fi
+  rm -f tmp
+}
+
+if [ "$1" = "-c" ] ; then
+  check $2
+  exit 0
+fi
+
+echo "Test of fixed settings, encrypted and decoded files:"
+cd $DATA
+crypts="`ls crypt*`"
+cd ..
+for crypt in $crypts ; do
+  i=${crypt#crypt}
+  check $i
 done
-rm tmp
 echo ""
+if [ "$1" = "-f" ] ; then
+  exit 0
+fi
 
 # Verify upper level txt files through enigmacode -c then -d
 echo "Test of txt files with enigmacode:"
