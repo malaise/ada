@@ -293,7 +293,7 @@ package body Definition is
               & Images.Integer_Image (Def.Nb_Rotors));
         end if;
         Arob := Str_Util.Locate (Str, "@");
-        if Arob /= Str'Last - 1 then
+        if Arob = 0 or else Arob /= Str'Last - 1 then
           Error ("Invalid rotors definition");
         end if;
         -- Check offset letter
@@ -314,6 +314,11 @@ package body Definition is
                    Init => Types.Id_Of (Init_Str(I)));
       end;
     end loop;
+
+    -- No more rotor
+    if Iter.Next_Word /= "" then
+      Error ("Invalid rotors definition");
+    end if;
 
     -- Only last rotor can have no carry
     for I in 1 .. Def.Nb_Rotors - 1 loop
@@ -405,7 +410,7 @@ package body Definition is
       end if;
     else
       declare
-        Str : constant String := Argument.Get_Parameter (1,Rotors_Key);
+        Str : constant String := Argument.Get_Parameter (1, Rotors_Key);
       begin
         for I in Str'Range loop
           if Str(I) = '@' then
@@ -413,6 +418,9 @@ package body Definition is
           end if;
         end loop;
       end;
+      if Rotor_Nb = 0 then
+        Error ("Invalid rotors definition");
+      end if;
       if Argument.Is_Set (1, Init_Key)
       and then Argument.Get_Parameter (1, Init_Key)'Length /= Rotor_Nb then
         Error ("Invalid number of rotor initial offsets in """

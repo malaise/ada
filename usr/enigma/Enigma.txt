@@ -218,7 +218,7 @@ M3 compatible configurations shall use a reflector from A to C with no offset
 and three rotors from I to VIII.
 
 M4 compatible configurations shall use a reflector Bthin or Cthin with no
-offset, the rotor Beta and then three rotors from I to VIII.
+offset, then the rotor Beta or Gamma, and then three rotors from I to VIII.
 
 Tools
 -----
