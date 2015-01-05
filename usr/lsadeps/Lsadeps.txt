@@ -1,6 +1,6 @@
 lsadeps
 =======
-V10.4
+V10.5
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -62,8 +62,9 @@ Other options are:
  - 'bodies' to show, in revert mode, the units that depend from each other by
    "with" in the body,
 
- - 'include' to add some directories or some directory trees to the search path
-   (default is only the current directory and the target directory if any).
+ - 'include' to add some directories or some directory trees to the search path.
+   By default there is only the current directory and the directory of the
+   target unit (or the target directory itself) if any.
 
 'Specs' and 'revert' modes are mutually exclusive. +
 'Tree' and 'direct' modes are mutually exclusive. +
@@ -85,8 +86,12 @@ units.
 
 List units
 ~~~~~~~~~~
-This function lists the units of the current directory, or the units
-of the directory specified by <path_unit> or the unit <path_unit>.
+This function lists:
+
+ * the units (including child units but not subunits) of the
+current directory if no argument is provided,
+ * or the units (same as above) of <path_unit> if it denotes a directory,
+ * or only the unit <path_unit> if it denotes a unit.
 
 The possible options are:
 
@@ -163,7 +168,7 @@ another unit U co-located with W.
 are processed identically (they are all considered to depend on or to be
 dependent from current unit).
 
-lsadeps exits with 1 on error, and with 0 otherwise.
+Lsadeps exits with 1 on error, and with 0 otherwise.
 
 List units
 ~~~~~~~~~~
@@ -178,7 +183,7 @@ Optionally the subunits are listed after each unit.
 Alternatively, the corresponding files, specification then body (then,
 if specified, the files of the subunits), are listed.
 
-lsadeps exits with 1 on error, including when no unit could be found,
+Lsadeps exits with 1 on error, including when no unit could be found,
 and with 0 otherwise.
 
 Check redundant "with"
@@ -196,18 +201,18 @@ Example:
 
   Unit lsadeps/Output#UB withes Sourcer already withed by parent lsadeps/Output#US
 
-lsadeps exits with 1 if at least one redundant "with" is detected or on
+Lsadeps exits with 1 if at least one redundant "with" is detected or on
 error, and with 0 otherwise.
 
 Examples
 --------
 
-What are the units needed by 'Unit'
+What are the local units needed to build (compile and link) 'Unit'
 --------------------
   lsadeps Unit (or lsadeps unit)
 --------------------
 
-What are the units, including those of the repository, needed by 'Unit'
+What are the units, including those of the repository, needed to build 'Unit'
 --------------------
   lsadeps -I ~/ada/reposit Unit
 --------------------
