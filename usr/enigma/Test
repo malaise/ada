@@ -36,7 +36,7 @@ fi
 
 echo "Test of fixed settings, encrypted and decoded files:"
 cd $DATA
-crypts="`ls crypt*`"
+crypts="`ls crypt* | grep -v U534`"
 cd ..
 for crypt in $crypts ; do
   i=${crypt#crypt}
