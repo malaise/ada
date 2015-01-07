@@ -54,30 +54,50 @@ package body Coder is
     end loop;
   end Init;
 
+  -- Kind of movement: No movement, simple rotation,
+  --  rotation with carry on initial pos
+  type State_List is (Steady, Move, Move_Carry);
   -- Move the rotors
   procedure Move is
-    Next_Moves, Curr_Moves : Boolean;
+    Prev_State, Curr_State : State_List;
+    Curr_Carry : Boolean;
     use type Types.Lid;
   begin
-    -- Next_Moves is set if current carry is set (so next rotor moves)
-    -- First rotor always moves
-    Next_Moves := True;
+    -- First rotor always moves, simulate it as if previous moved with carry
+    Prev_State := Move_Carry;
     Put ("Moving:" );
     for I in 1 .. Machine.Nb_Rotors loop
-      -- Does current rotor move
-      Curr_Moves := Next_Moves;
-      -- Will next rotor move
-      Next_Moves := I /= Machine.Nb_Rotors
-                and then Machine.Rotors(I).Carries(Machine.Rotors(I).Position);
-      -- Move current rotor either because previous rotor has the carry
-      --  or because current rotor has the carry and moves next rotor
+      -- Is initial position with the carry
+      Curr_Carry := Machine.Rotors(I).Carries(Machine.Rotors(I).Position);
+      -- Move current rotor either because previous rotor moved and had carry
+      -- or because current rotor has the carry and next rotor can move
       -- This causes the "doublestepping"
       -- But last rotor may be fixed anyway
-      if (Curr_Moves or else Next_Moves)
-      and then (I /= Machine.Nb_Rotors or else not Last_Fixed) then
+      if I = Machine.Nb_Rotors and then Last_Fixed then
+        -- (Last) rotor with no carry does not turn, except if alone
+        Curr_State := Steady;
+      elsif Prev_State = Move_Carry then
+        Curr_State := Move;
+      elsif Prev_State = Move
+            and then Curr_Carry
+            and then (I /= Machine.Nb_Rotors - 1 or else not Last_Fixed) then
+        Curr_State := Move;
+      else
+        Curr_State := Steady;
+      end if;
+      if Curr_State = Move then
+        Curr_State := (if Curr_Carry then Move_Carry else Move);
         Machine.Rotors(I).Position := Machine.Rotors(I).Position + 1;
         Put (I'Img);
       end if;
+      Prev_State := Curr_State;
+    end loop;
+    Putl("");
+
+    -- Dump current rotors
+    Put ("Rotors: ");
+    for I in reverse 1 .. Machine.Nb_Rotors loop
+      Put (Image (Machine.Rotors(I).Position) & " ");
     end loop;
     Putl("");
   end Move;

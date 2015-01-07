@@ -117,9 +117,14 @@ Data flows:;;
      letters are converted to uppercase, codded, then converted to lowercase.
      Other bytes are not coded (they are output unchanged on stdout).
 
-Turning rules and coding ways:;;
+Stepping rules:;;
      Rotors turn before the coding. The Enigma double stepping behavior
-     applies.
+     applies except:
+
+ * on the first rotor, which always turns one step,
+ * on the last rotor, if not alone and has no carry, which never turns,
+ * on the one but last rotor if the last rotor has no carry, which turns only
+if the previous rotor was on a carry.
 
 anchor:XCodingRule[]
 
