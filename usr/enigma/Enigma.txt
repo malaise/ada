@@ -322,11 +322,12 @@ provided date) is also translated to text:
 - Then the rotors are displayed but their number in letters instead of
 name, each with the ring offset then the initial offset.
 
-- Then the reflector number in letters and its offset.
+- Then the reflector number in letters and its offset, then the reflector offset
+is repeated (so that, like a rotor, it is a number in letters then two letters),
 
-- Then the reflector offset is repeated (so that, like a rotor, it is a
-number in letters then two letters), then a ''Z'' (which cannot start a
-digit in letters), which marks the end). Example:
+- Then a ''Z'' (which cannot start a digit in letters), which marks the end.
+
+Example:
 --------------------------------------
 C@A -rI@H#VII@R#II@U -iUAQ -sAEBM -> AEBMPPONEHUSEVENRATWOUQTHREEAAZ
 --------------------------------------

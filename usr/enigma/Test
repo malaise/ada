@@ -13,7 +13,7 @@ trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 # For loops
 export LIST="A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"
 
-# Do local tests with: settings, encypted and decoded text
+# Do local tests with known: settings, encypted and decoded text
 function check {
   local i=$1
   echo -n "cat $DATA/crypt${i} | enigma `tail -1 $DATA/set${i}` "
