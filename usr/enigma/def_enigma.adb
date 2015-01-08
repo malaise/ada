@@ -703,6 +703,9 @@ begin
     Basic_Proc.Put_Output (" ");
     -- Key coded onto text
     -- Switch and random separator
+    if not Rnd.Gen.Is_Randomized then
+      Rnd.Gen.Randomize;
+    end if;
     Separator := To_Letter (Id_Random (Rnd.Gen.all));
     Basic_Proc.Put_Output (Switch.Image & Separator & Separator);
     for I in 1 .. Rotors.Length loop
