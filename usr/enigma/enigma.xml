@@ -12,7 +12,7 @@
 
 <Enigma>
 
-  <!-- These rotors and reflectors have the wiring used during WW2, except:
+  <!-- These rotors and reflectors have the wiring used in ENIGMA, except:
        - Test<i> rotors and reflectors, which are used for test 
        - Rotor IX and X, which are random, used by def_enigma: Def_enigma 
          assumes that there are 10 rotors with no carry restriction, and then
@@ -22,6 +22,15 @@
        no dup in scramble (26 letters) -->
   <!-- Only last rotor (slowest, first in command line) can have no carry -->
   <!-- A rotor with no carry does not turn, except if it is alone -->
+  <!-- Default entry stator -->
+  <!--                             ABCDEFGHIJKLMNOPQRSTUVWXYZ -->
+  <Rotor Name="ETW"   Carries=""  >ABCDEFGHIJKLMNOPQRSTUVWXYZ</Rotor>
+  <!-- Commercial Enigma A and B -->
+  <!--                             ABCDEFGHIJKLMNOPQRSTUVWXYZ -->
+  <Rotor Name="IC"    Carries="A" >DMTWSILRUYQNKFEJCAZBPGXOHV</Rotor>
+  <Rotor Name="IIC"   Carries="A" >HQZGPJTMOBLNCIFDYAWVEUSRKX</Rotor>
+  <Rotor Name="IIIC"  Carries="A" >UQNTLSZFMREHDPXKIBVYGJCWOA</Rotor>
+  <!-- Enigma I, M3 and M4 three first rotors -->
   <!--                             ABCDEFGHIJKLMNOPQRSTUVWXYZ -->
   <Rotor Name="I"     Carries="Q" >EKMFLGDQVZNTOWYHXUSPAIBRCJ</Rotor>
   <Rotor Name="II"    Carries="E" >AJDKSIRUXBLHWTMCQGZNPYFVOE</Rotor>
@@ -31,22 +40,51 @@
   <Rotor Name="VI"    Carries="ZM">JPGVOUMFYQBENHZRDKASXLICTW</Rotor>
   <Rotor Name="VII"   Carries="ZM">NZJHGRCXMYSWBOUFAIVLPEKQDT</Rotor>
   <Rotor Name="VIII"  Carries="ZM">FKQHTLXOCBJSPDZRAMEWNIUYGV</Rotor>
+  <!-- Complement to 10 rotors for def_enigma -->
   <Rotor Name="IX"    Carries="IX">XRUAKZGBPNTOIELVJHCSWDQMFY</Rotor>
   <Rotor Name="X"     Carries="IO">EOBIHJUCYGDVPMTLRXWQSFZKNA</Rotor>
+  <!-- Enigma M4 fourth rotor -->
+  <!--                             ABCDEFGHIJKLMNOPQRSTUVWXYZ -->
   <Rotor Name="Beta"  Carries=""  >LEYJVCNIXWPBQMDRTAKZGFUHOS</Rotor>
   <Rotor Name="Gamma" Carries=""  >FSOKANUERHMBTIYCWLQPZXVGJD</Rotor>
+  <!-- German Railway (Rocket) -->
+  <!--                             ABCDEFGHIJKLMNOPQRSTUVWXYZ -->
+  <Rotor Name="IR"    Carries="Q" >JGDQOXUSCAMIFRVTPNEWKBLZYH</Rotor>
+  <Rotor Name="IIR"   Carries="E" >NTZPSFBOKMWRCJDIVLAEYUXHGQ</Rotor>
+  <Rotor Name="IIIR"  Carries="V" >JVIUBHTCDYAKEQZPOSGXNRMWFL</Rotor>
+  <Rotor Name="ETWR"  Carries=""  >QWERTZUIOASDFGHJKPYXCVBNML</Rotor>
+  <!-- Swiss K -->
+  <!--                             ABCDEFGHIJKLMNOPQRSTUVWXYZ -->
+  <Rotor Name="IK"    Carries="Q" >PEZUOHXSCVFMTBGLRINQJWAYDK</Rotor>
+  <Rotor Name="IIK"   Carries="E" >ZOUESYDKFWPCIQXHMVBLGNJRAT</Rotor>
+  <Rotor Name="IIIK"  Carries="V" >EHRVXGAOBQUSIMZFLYNWKTPDJC</Rotor>
+  <Rotor Name="ETWK"  Carries=""  >QWERTZUIOASDFGHJKPYXCVBNML</Rotor>
+  <!-- Test -->
+  <!--                             ABCDEFGHIJKLMNOPQRSTUVWXYZ -->
   <Rotor Name="Test1" Carries="A" >ABCDEFGHIJKLMNOPQRSTUVWXYZ</Rotor>
   <Rotor Name="Test2" Carries="B" >ABCDEFGHIJKLMNOPQRSTUVWXYZ</Rotor>
   <Rotor Name="Test3" Carries="C" >ABCDEFGHIJKLMNOPQRSTUVWXYZ</Rotor>
+  
 
   <!-- A Reflector. No dup in scramble (26 letters),
        must be symetrical (A->B->A) and must not have any identity (A->A) -->
+  <!-- Enigma M3 -->
   <!--                    ABCDEFGHIJKLMNOPQRSTUVWXYZ -->
   <Reflector Name="A"    >EJMZALYXVBWFCRQUONTSPIKHGD</Reflector>
   <Reflector Name="B"    >YRUHQSLDPXNGOKMIEBFZCWVJAT</Reflector>
   <Reflector Name="C"    >FVPJIAOYEDRZXWGCTKUQSBNMHL</Reflector>
+  <!-- Enigma M4 -->
+  <!--                    ABCDEFGHIJKLMNOPQRSTUVWXYZ -->
   <Reflector Name="Bthin">ENKQAUYWJICOPBLMDXZVFTHRGS</Reflector>
   <Reflector Name="Cthin">RDOBJNTKVEHMLFCWZAXGYIPSUQ</Reflector>
+  <!-- German Railway (Rocket) -->
+  <!--                             ABCDEFGHIJKLMNOPQRSTUVWXYZ -->
+  <Reflector Name="UKWR" >QYHOGNECVPUZTFDJAXWMKISRBL</Reflector>
+  <!-- Swiss K -->
+  <!--                             ABCDEFGHIJKLMNOPQRSTUVWXYZ -->
+  <Reflector Name="UKWK" >IMETCGFRAYSQBZXWLHKDVUPOJN</Reflector>
+  <!-- Test -->
+  <!--                    ABCDEFGHIJKLMNOPQRSTUVWXYZ -->
   <Reflector Name="TestB">BADCFEHGJILKNMPORQTSVUXWZY</Reflector>
 
 </Enigma>
