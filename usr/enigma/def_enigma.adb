@@ -5,8 +5,8 @@
 -- <switches> is pairs of letters, each letter appears at most once
 -- See Def_Enigma.txt for more information
 
--- Def_Enigma expects that reflectors named A, B and C exists
---  and that rotors I to X exist and have (at least) a carry
+-- Def_Enigma expects that reflectors named "A", "B" and "C" exists
+--  and that rotors "I" to "X" exist and have (at least) a carry
 
 with Ada.Calendar;
 with As.B, Perpet, Argument, Day_Mng, Normal, Upper_Str, Rnd,
@@ -15,17 +15,6 @@ with Types, Scrambler_Gen, Definition;
 procedure Def_Enigma is
 
   Logger : Trace.Loggers.Logger;
-
-  package Xml is
-    -- Parse the Xml config file
-    procedure Init;
-    -- Get the Name of a rotor of reflector, given its id. "" if not found
-    function Get_Name (Rotor : Boolean; Id : Positive) return String;
-    -- Get the Id of a rotor of reflector, given its name. 0 if not found
-    function Get_Id (Rotor : Boolean; Name : String) return Natural;
-    Invalid_Configuration : exception;
-  end Xml;
-  package body Xml is separate;
 
   procedure Usage is
   begin
@@ -117,10 +106,10 @@ procedure Def_Enigma is
     Id : Natural;
   begin
     Arob := Reflector_Str'Last - 1;
-    if Reflector_Str (Arob) /= '@' then
+    if Reflector_Str'Length /= 3 or else Reflector_Str (Arob) /= '@' then
       raise Key_Error;
     end if;
-    Id := Xml.Get_Id (False, Reflector_Str(Reflector_Str'First .. Arob - 1));
+    Id := To_Id (Reflector_Str(Reflector_Str'First));
     if Id = 0 then
       raise Key_Error;
     end if;
@@ -280,8 +269,6 @@ begin
     return;
   end if;
 
-  Xml.Init;
-
   -- Main processing of actions
   case Action is
     when Current_Date =>
@@ -375,13 +362,7 @@ begin
       end;
 
       -- Set random reflector, no offset
-      if Nb_Rotors /= 4 then
-        -- 3 rotors: Reflector A to C
-        Reflector.Set (To_Letter (Rnd.Gen.Int_Random (1, 3)) & 'A');
-      else
-        -- 4 rotors: Reflectors Bthin or Cthin
-        Reflector.Set (To_Letter (Rnd.Gen.Int_Random (4, 5)) & 'A');
-      end if;
+      Reflector.Set (To_Letter (Rnd.Gen.Int_Random (1, 3)) & 'A');
 
     when Extract =>
       begin
@@ -688,8 +669,7 @@ begin
   declare
     Num : constant Positive := To_Id (Reflector.Element (1));
   begin
-    Basic_Proc.Put_Output (Xml.Get_Name (False, Num) & '@'
-                   & Reflector.Element (2));
+    Basic_Proc.Put_Output (To_Letter (Num) & '@' & Reflector.Element (2));
   end;
 
   if not Init_Offset.Is_Null then

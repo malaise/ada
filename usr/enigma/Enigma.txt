@@ -236,8 +236,8 @@ randomly or based on a date.
     date ::= dd/mm/YYyy
     <enigma_setting> ::= <reflector> [ <rotors> <rotors_init> ] [ <switches> ]
 
-If rnd, generates a random switch sequence, 3 to 4 rotors and a random
-reflector (A to Cthin).
+If rnd, generates a random switch sequence, 3 or 4 rotors ("I" to "X") and a
+random reflector ("A" to "C").
 
 If <date>, generates a switch sequence, 3 rotors and the reflector from the
 date.
@@ -251,8 +251,8 @@ If <enigma_setting>, check and displays these enigma arguments.
 
 If -text, also generates text key (see xref:XT-TextKey[Text Key]).
 
-Rotors (at least 10) and reflectors (at least 5) are defined in a XML file as
-for enigma.
+Rotors ("I", "II" .. "X") and reflectors ("A", "B" and "C") must be defined 
+defined in a XML file, as for enigma.
 
 Normal generation
 ^^^^^^^^^^^^^^^^^
@@ -264,9 +264,9 @@ There are 3 rotors.
 
 Reflector
 +++++++++
-The Reflector num is 1 to 3, computed from DAYNUM:
-
-01->1, 02->2, 03 -> 3, 04 -> 1...
+The Reflector num is 1 to 3, computed from DAYNUM: +
+01->1, 02->2, 03 -> 3, 04 -> 1... +
+The reflector name is "A" for 1, "B" for 2 and "C" for 3.
 
 Its offset is 0 (A).
 
@@ -276,11 +276,13 @@ There are 3 rotors:
 
 - The first rotor number is the unit of DAYNUM, with 1->1 .. 10->10, 11->1.
 
-- The second rotor is the tenth of DAYNUM, with 0..9->1, 10..19->2,
+- The second rotor number is the tenth of DAYNUM, with 0..9->1, 10..19->2,
 20..29->3 and 30..31 ->4. If used by first rotor, then add 1.
 
-- The third rotor is month num rem 10 with 1->1 .. 10->10, 11->1...  If
+- The third rotor number is the month num rem 10 with 1->1 .. 10->10, 11->1...  If
 used by first or second rotor, then add 1.
+
+The rotor names are "I" for 1, "II" for 2 .. "X" for 10.
 
 The rotor ring offsets are the first three letters of DAYNAME respectively.
 
@@ -296,15 +298,12 @@ Ex MONDAY DECEMBER -> MONDAYECBR.
 
 Random generation
 ^^^^^^^^^^^^^^^^^
-The reflector is random from 1 to 3 if 3 rotors, from 1 to 2 (meaning Bthin
-and Cthin, num 4 and 5) if 4 rotors. It has no offset (A).
+The reflector num is random from 1 to 3. +
+"C". +
+It has no offset (A).
 
-The rotors are a random number (3 to 4 included) of random rotors, each with
-a random ring offset letter and a random initial offset letter.
-
-If 4 rotors, the 1st is 1 or 2, meaning Beta or Gamma (num 11 and 12).
-
-The other rotors are from 1st to 10th.
+The rotors are a random number (3 to 4 included) of random rotors (1 to 10),
+each with a random ring offset letter and a random initial offset letter.
 
 The switch is a random list (1 to 12 included) of random pairs of letters
 
@@ -323,7 +322,7 @@ provided date) is also translated to text:
 - Then the rotors are displayed but their number in letters instead of
 name, each with the ring offset then the initial offset.
 
-- Then the reflector num in letters and its offset.
+- Then the reflector number in letters and its offset.
 
 - Then the reflector offset is repeated (so that, like a rotor, it is a
 number in letters then two letters), then a ''Z'' (which cannot start a
