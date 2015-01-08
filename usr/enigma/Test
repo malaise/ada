@@ -24,7 +24,7 @@ function check {
     echo "OK."
   else
     echo "FAILED."
-#    exit 1
+    exit 1
   fi
   rm -f tmp
 }
@@ -36,7 +36,7 @@ fi
 
 echo "Test of fixed settings, encrypted and decoded files:"
 cd $DATA
-crypts="`ls crypt*`"
+crypts="`ls crypt* | grep -Ev 'crypt_U534_P10306(73|94)'`"
 cd ..
 for crypt in $crypts ; do
   i=${crypt#crypt}
