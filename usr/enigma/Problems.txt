@@ -1,5 +1,11 @@
-http://www.enigma.hoerenberg.com
 echo U | enigma Cthin -rBeta@A#V@A#VI@E#VIII@L -iELGI -sAEBFCMDQHUJNLXPRSZVW -> G i.o. F                (P1030673)
 echo V | enigma Bthin -rGamma@A#IV@A#III@C#VIII@U -iMEPB -sCHEJNVOUTYLGSZPKDIQB -> W i.o. A             (P1030694)
 echo B | enigma Bthin -rGamma@A#IV@A#III@C#VIII@U -iMDBR -sCHEJNVOUTYLGSZPKDIQB -> W i.o. I             (P1030706)
 echo H | enigma Bthin -rGamma@A#IV@A#III@C#VIII@U -iMDBS -sCHEJNVOUTYLGSZPKDIQB -> M i.o. E             (P1030706)
+
+http://www.enigma.hoerenberg.com
+
++
+
+Pb in site: In P1030664, the end of the message is TUITHNJ instead of TITHNJ
+
