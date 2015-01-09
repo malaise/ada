@@ -119,8 +119,7 @@ newline".
 
 The following specific ''\'' sequences are also handled by asubst:
 
-- "\i", i from 1 to 9, standard back reference to a matching substring within
-current rexep,
+- "\n", replaced by a line feed (when a specific xref:XDelim[delimiter] is set),
 
 - "\s", replaced by a space,
 
@@ -158,21 +157,21 @@ J = 0 for the complete string, (so "\R0x" = "\rx0").
 +
 NOTE: * Substrings are numbered in the order of the opening parenthesis, left
 to right. +
-* Such back reference to a previous match degrade the performance because the regex is
-re-compiled at each try. +
-* For back reference within the current regex, use the "\i" notation of the standard
-regex syntax. +
+* Such back reference to a previous match degrade the performance because the
+regex is re-compiled at each try. +
+* For back reference within the current regex, use the "\i" notation of the
+standard regex syntax. +
 * Beware that "\i" is processed at PCRE level while "\rij" and "\Rij" are
 processed by asubst, which leads to significant differences. For example, with "ab"
 matching "(..)", then "\1+" means "(ab)\+", while "\r11+" means "a(b)+".
-
 
 NOTE: Beware that some regex expressions are supposed to match a "new line"
 (example [:blank:] within a bracket expression) but will not match in asubst,
 because the input flow/file is decomposed into lines first (except if a specific
 delimiter is provided), then each line is compared to a regex expression.
 
-NOTE: In "regex" mode, other ''\'' expressions are passed to PCRE.
+NOTE: In "regex" mode, other ''\'' expressions (like "\i" for intra-regex back
+reference, or "\b" for word boundary) are passed to PCRE.
 
 Exclusion pattern
 -----------------
@@ -211,6 +210,7 @@ requires the long option name. Example: don't use '"-m -4"', but '"-m 1-4"' or
 
 Delimiter
 ---------
+anchor:XDelim[]
 Normally, asubst reads the input flow or file line by line (separated by
 ''\n''), and searches for matches between 
 
