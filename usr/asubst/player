@@ -50,17 +50,18 @@ while true ; do
     if [ \( -z "$input" \) -a \( -z "$search" \) ] ; then
       break
     fi
-    rexpected=`echo -e -n "$expected"`
+    mapfile mexpected < <(echo -e -n "$expected")
+    rexpected="${mexpected[@]}"
     # Do test and save exit status
     if [ "$opt1" != "" ] ; then
       echo "echo -en \"$input\" | asubst $opt1 $opt2 $opt3 \"$search\" \"$replace\" -> $expected"
-      result=`echo -en "$input" | asubst $opt1 $opt2 $opt3 "$search" "$replace"`
+      mapfile mresult< <(echo -en "$input" | asubst $opt1 $opt2 $opt3 "$search" "$replace")
     else
       echo "echo -en \"$input\" | asubst \"$search\" \"$replace\" -> $expected"
-      result=`echo -en "$input" | asubst "$search" "$replace"`
+      mapfile mresult< <(echo -en "$input" | asubst "$search" "$replace")
     fi
     code=$?
-    export result
+    export result="${mresult[@]}"
     # Check exit status
     if [ $code -eq 2 ] ; then
       echo "Error: asubst exited with code $code"
@@ -68,7 +69,7 @@ while true ; do
     fi
     # Check that result is expected
     if [ "$result" != "$rexpected" ] ; then
-      echo "Error: expected $rexpected != got $result"
+      echo "Error: expected >$rexpected< != got >$result<"
       exit 1
     fi
   fi
