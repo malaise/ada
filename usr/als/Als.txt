@@ -1,6 +1,6 @@
 Als
 ===
-V13.1
+V13.3
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, the output format of each entry, and general
@@ -63,7 +63,7 @@ Specify which entry to select
 Specify how to show each entry selected
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  -l (--list)                Show rights, owner, size, date, symbolic link target
+  -l (--list)                Show rights, owner, size, modification date, symbolic link target
   -1 (--1row)                One name per line
   -c (--classify)            Append '/' to dirs, '@' to symbolic links
   -H (--human)               Show sizes in friendly format (e.g. 1K, 2G)
@@ -93,7 +93,8 @@ Other options
 Environment Variables
 ~~~~~~~~~~~~~~~~~~~~~
 The variable 'ALS_MAX_TO_SORT' can be set to define the number of entries above
-which als does not apply the sorting options anymore. The default is 5000.
+which als does not apply the sorting options anymore. Set it to 0 for always
+sorting (1 leads to never sort). The default is 5000.
 
 Notes on compatibility between options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

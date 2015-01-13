@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister, Exit_Code, Str_Util;
 procedure Als is
-  Version : constant String  := "V13.1";
+  Version : constant String  := "V13.3";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -93,7 +93,7 @@ procedure Als is
     Put_Line_Error ("                     //  (before, after or equal to a given date or delay)");
     Put_Line_Error ("    " & Argument_Parser.Image(Keys((22))) & " is a shortcut to ""-d ge<date>""");
     Put_Line_Error ("How to show each entry (file or dir):");
-    Put_Line_Error ("  " & Key_Img(03) & "// Show rights, owner, size, date, symlink target");
+    Put_Line_Error ("  " & Key_Img(03) & "// Show rights, owner, size, modif date, symlink target");
     Put_Line_Error ("  " & Key_Img(04) & "// One name per line");
     Put_Line_Error ("  " & Key_Img(23) & "// Append '/' to dirs, '@' to symlinks");
     Put_Line_Error ("  " & Key_Img(25) & "// Show sizes in friendly format (e.g. 1K, 2G)");
