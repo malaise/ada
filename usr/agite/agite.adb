@@ -310,8 +310,10 @@ procedure Agite is
     Utils.X.Encode_Field (Root.Image, Afpx_Xref.Main.Root);
 
     -- Protect Git functions if not in Git
+    Utils.X.Protect_Field (Afpx_Xref.Main.Branch, Root.Is_Null);
     Utils.X.Protect_Field (Afpx_Xref.Main.Diff, Root.Is_Null);
     Utils.X.Protect_Field (Afpx_Xref.Main.History, Root.Is_Null);
+    Utils.X.Protect_Field (Afpx_Xref.Main.Tags, Root.Is_Null);
     Utils.X.Protect_Field (Afpx_Xref.Main.Add, Root.Is_Null);
     Utils.X.Protect_Field (Afpx_Xref.Main.Revert, Root.Is_Null);
     Utils.X.Protect_Field (Afpx_Xref.Main.Stash, Root.Is_Null);
