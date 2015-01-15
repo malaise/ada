@@ -6,7 +6,7 @@ AFPX := true
 AFPX_XREF := afpx_xref
 
 SUBUNITS := xml_checker-canon_callback
-EXES := adand add_nums alook arbipas astat beep comp_vars ddir \
+EXES := adand add_nums alook arbipas astat azf beep comp_vars ddir \
  dtd_checker dtd_checker.stat e2f fact full_path g hanoi impot_04 \
  mlbx_overflow one_of_arg pascal pingpong prime \
  random relay rndsok renamer \
