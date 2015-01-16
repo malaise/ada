@@ -20,7 +20,7 @@ procedure Azf is
   Compress : Boolean;
 
   -- Buffers and lengths
-  Block_Size : constant := 1024 * 1024 * 1024;
+  Block_Size : constant := 1024 * 1024;
   Inb, Outb : Lzf.Byte_Array (1 .. Block_Size);
   Dummy, Inl, Outl : Natural;
 
