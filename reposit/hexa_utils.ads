@@ -19,6 +19,9 @@ package Hexa_Utils is
   generic
     type Int is range <>;
   function Int_Image (I : Int) return String;
+  generic
+    type Modulus is mod <>;
+  function Mod_Image (I : Modulus) return String;
   function Image (N : Natural) return String;
   function Image (N : Long_Longs.Ll_Natural) return String;
 

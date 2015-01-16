@@ -38,6 +38,17 @@ package body Hexa_Utils is
     end loop;
     return Res.Image;
   end Int_Image;
+  function Mod_Image (I : Modulus) return String is
+    V : Modulus := I;
+    Res : As.U.Asu_Us;
+  begin
+    loop
+      Res.Prepend (Hexa_To_Char (Natural (V rem 16)));
+      V := V / 16;
+      exit when V = 0;
+    end loop;
+    return Res.Image;
+  end Mod_Image;
   function Nat_Image is new Int_Image (Natural);
   function Image (N : Natural) return String renames Nat_Image;
   function Llnat_Image is new Int_Image (Long_Longs.Ll_Natural);
