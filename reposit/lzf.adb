@@ -68,7 +68,7 @@ package body Lzf is
   -- Convert an int into a byte
   function To_Byte (I : Integer) return Byte is
   begin
-    return Byte (I And 16#FF#);
+    return Byte (I and 16#FF#);
   end To_Byte;
 
   -- Compress Input into Output
@@ -96,7 +96,7 @@ package body Lzf is
     while In_Pos < Input'Length - 4 loop
       P2 := Input(Input'First + In_Pos + 2);
       -- Next
-      Future := Shl (Future, 8) Or Integer (P2);
+      Future := Shl (Future, 8) or Integer (P2);
       Logger.Log_Debug ("Start loop at index " & In_Pos'Img
                       & ", P2 " & Image(P2)
                       & ", future " & Hexa_Utils.Image(Future));
@@ -139,6 +139,8 @@ package body Lzf is
         end if;
 
         -- Length of the match
+        -- Ensure that there will remain at least 2 more bytes to rebuild
+        --  the future from
         Max_Len := Input'Length - In_Pos - 2;
         if Max_Len > Max_Ref then
           Max_Len := Max_Ref;
@@ -155,10 +157,10 @@ package body Lzf is
         -- Store match length
         if Len < 7 then
           -- Less than 3 bits of length then 5 upper bits of offset
-          Output(Out_Pos) := To_Byte (Shr (Off, 8) Or Shl (Len, 5));
+          Output(Out_Pos) := To_Byte (Shr (Off, 8) or Shl (Len, 5));
         else
           -- 3 bits of length then 5 upper bits of offset
-          Output(Out_Pos) := To_Byte (Shr (Off, 8) Or Shl (7, 5));
+          Output(Out_Pos) := To_Byte (Shr (Off, 8) or Shl (7, 5));
           Out_Pos := Out_Pos + 1;
           -- Then Length - 7
           Output(Out_Pos) := To_Byte (Len - 7);
@@ -195,6 +197,9 @@ package body Lzf is
         Out_Pos := Out_Pos + 1;
         Literals := Literals + 1;
         if Literals = Max_Literal then
+          Logger.Log_Debug (
+              "  Store Nb literals " & Integer'Image (Literals - 1)
+            & " at pos " & Integer'Image (Out_Pos - Literals - 1));
           Output(Out_Pos - Literals - 1) := To_Byte (Literals - 1);
           Literals := 0;
           -- Move ahead one byte to allow for the literal run control byte
@@ -205,24 +210,40 @@ package body Lzf is
     end loop;
 
     -- Write the remaining few bytes as literals
+    -- There are always at least 2
     while In_Pos < Input'Length loop
+      Logger.Log_Debug (
+          "Append literal " & Image (Input(Input'First + In_Pos))
+        & " at pos " & Integer'Image (Out_Pos));
       Output(Out_Pos) := Input(Input'First + In_Pos);
       In_Pos := In_Pos + 1;
       Out_Pos := Out_Pos + 1;
       Literals := Literals + 1;
       if Literals = Max_Literal then
+        Logger.Log_Debug (
+            "  Store Nb literals " & Integer'Image (Literals - 1)
+          & " at pos " & Integer'Image (Out_Pos - Literals - 1));
         Output(Out_Pos - Literals - 1) := To_Byte (Literals - 1);
         Literals := 0;
         Out_Pos := Out_Pos + 1;
       end if;
     end loop;
+
     -- Write the final literal run length to the control byte
-    Output(Out_Pos - Literals - 1) := To_Byte (Literals - 1);
-    if Literals = 0 then
+    if Literals /= 0 then
+      Output(Out_Pos - Literals - 1) := To_Byte (Literals - 1);
+      Logger.Log_Debug ("  Store Nb literals " & Integer'Image (Literals - 1)
+                      & " at pos " & Integer'Image (Out_Pos - Literals - 1));
+    else
+      -- One extra byte was inserted to store the length, but there is
+      --  no more literal
       Out_Pos := Out_Pos - 1;
     end if;
 
-    Outlen := Out_Pos - Output'First + 1;
+    Outlen := Out_Pos - Output'First;
+  exception
+    when Constraint_Error =>
+      raise Too_Big;
   end Compress;
 
   -- Uncompress Input into Output
@@ -234,19 +255,26 @@ package body Lzf is
     In_Pos, Out_Pos : Integer;
     Ctrl, Len : Integer;
   begin
+    if not Logger.Is_Init then
+      Logger.Init ("Lzf");
+    end if;
+
     In_Pos := Input'First;
     Out_Pos := Output'First;
     loop
+      -- Get control char: literals-run or backref
       Ctrl := Integer (Input(In_Pos));
       In_Pos := In_Pos + 1;
       if Ctrl < Max_Literal then
         -- Literal run of length = ctrl + 1,
-        Ctrl := Ctrl + 1;
         -- Copy to output and move forward this many bytes
-        Output(Out_Pos .. Out_Pos + Ctrl - 1) :=
-            Input (In_Pos .. In_Pos + Ctrl - 1);
-        In_Pos := In_Pos + Ctrl;
-        Out_Pos := Out_Pos + Ctrl;
+        Logger.Log_Debug ("Got " & Integer'Image (Ctrl + 1) & " litterals");
+        if Out_Pos + Ctrl > Output'Last then
+          raise Too_Big;
+        end if;
+        Output(Out_Pos .. Out_Pos + Ctrl) := Input (In_Pos .. In_Pos + Ctrl);
+        In_Pos := In_Pos + Ctrl + 1;
+        Out_Pos := Out_Pos + Ctrl + 1;
       else
         -- Back reference: the highest 3 bits are the match length
         Len := Shr (Ctrl, 5);
@@ -261,22 +289,26 @@ package body Lzf is
 
         -- Ctrl is now the offset for a back-reference...
         -- the logical AND operation removes the length bits
-        Ctrl := -Shl (Ctrl and 16#1F#, 8) - 1;
+        Ctrl := Shl (Ctrl and 16#1F#, 8);
 
-        -- The next byte augments/increases the offset
-        Ctrl := Ctrl - Integer(Input(In_Pos));
+        -- The next byte increases the offset
+        Ctrl := Ctrl + Integer(Input(In_Pos)) + 1;
         In_Pos := In_Pos + 1;
+        Logger.Log_Debug ("Got a backref of len " & Integer'Image (Len)
+                         & " at offset " & Integer'Image(Ctrl));
 
         -- Copy the back-reference bytes from the given
         --  location in output to current position
-        Ctrl := Ctrl + Out_Pos;
+        if Out_Pos + Len - 1 > Output'Last then
+          raise Too_Big;
+        end if;
+        Ctrl := Out_Pos - Ctrl;
         Output(Out_Pos .. Out_Pos + Len - 1) :=
-            Input(In_Pos .. In_Pos+ Len - 1);
+            Output(Ctrl .. Ctrl + Len - 1);
         Out_Pos := Out_Pos + Len;
-        In_Pos := In_Pos + Len;
       end if;
 
-      exit when Out_Pos >= Output'Last;
+      exit when In_Pos > Input'Last;
     end loop;
     Outlen := Out_Pos - Output'First + 1;
   end Uncompress;

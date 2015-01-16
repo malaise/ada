@@ -6,7 +6,8 @@ package Lzf is
   type Byte_Array is array (Positive range <>) of Byte;
 
   -- Compress Input into Output
-  -- Outlen is less than 104% of Input length
+  -- Outlen is at most one extra byte each 31 bytes, 3.3% overhead
+  -- May raise Too_Big if Output is too small
   procedure Compress (Input : in Byte_Array;
                       Output : out Byte_Array;
                       Outlen : out Natural);
@@ -17,5 +18,6 @@ package Lzf is
                         Output : out Byte_Array;
                         Outlen : out Natural);
 
+  Too_Big : exception;
 end Lzf;
 
