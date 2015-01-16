@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Automatic tests of misc
+
+# Cleanup
+function clean {
+  rm -f cmp res
+}
+
+trap 'echo ""; clean; exit 1' SIGINT SIGTERM
+
+for file in `ls *.ads *.adb` ; do
+  echo azf $file
+  cat $file | azf -c > cmp
+  cat cmp | azf -d > res
+  cmp $file res 2>/dev/null
+  res=$?
+  if [ $res -ne 0 ] ; then
+    echo "File res differs from original $file." 2>&1
+    exit 1
+  fi
+done
+
+clean
+

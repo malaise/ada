@@ -15,8 +15,8 @@
 --    are data to copy directly into the output.
 -- - For back-references, the highest three bits of the control byte are the
 --    back-reference length - 2.
---    If all three bits are set, then the back-reference length is stored in
---    the next byte. The lower bits of the control byte combined with the next
+--    If all three bits are set, then the back-reference length - 7 is stored in
+--    the next byte. The 5 lower bits of the control byte combined with the next
 --    byte form the offset for the back-reference (0 for prev byte).
 with Bit_Ops, Trace.Loggers, Hexa_Utils;
 use Bit_Ops;
@@ -95,8 +95,8 @@ package body Lzf is
     -- Main loop
     while In_Pos < Input'Length - 4 loop
       P2 := Input(Input'First + In_Pos + 2);
-      -- Next
-      Future := Shl (Future, 8) or Integer (P2);
+      -- Next: Remove oldest byte, shift Future left, append P2
+      Future := Shl (Future and 16#FFFF#, 8) or Integer (P2);
       Logger.Log_Debug ("Start loop at index " & In_Pos'Img
                       & ", P2 " & Image(P2)
                       & ", future " & Hexa_Utils.Image(Future));
@@ -179,9 +179,15 @@ package body Lzf is
         Future := First (Input, In_Pos);
         Future := Next (Future, Input, In_Pos);
         Hash_Table(Hash (Future)) := In_Pos;
+        Logger.Log_Debug ("  Future " & Hexa_Utils.Image (Future)
+                      & " hashed index " & In_Pos'Img
+                      & " at offset " & Integer'Image (Hash (Future)));
         In_Pos := In_Pos + 1;
         Future := Next (Future, Input, In_Pos);
         Hash_Table(Hash (Future)) := In_Pos;
+        Logger.Log_Debug ("  Future " & Hexa_Utils.Image (Future)
+                      & " hashed index " & In_Pos'Img
+                      & " at offset " & Integer'Image (Hash (Future)));
         In_Pos := In_Pos + 1;
         Logger.Log_Debug ("  Now at index " & In_Pos'Img
                         & ", future " & Hexa_Utils.Image(Future));
@@ -241,9 +247,9 @@ package body Lzf is
     end if;
 
     Outlen := Out_Pos - Output'First;
-  exception
-    when Constraint_Error =>
-      raise Too_Big;
+  -- exception
+  --   when Constraint_Error =>
+  --     raise Too_Big;
   end Compress;
 
   -- Uncompress Input into Output
@@ -303,14 +309,16 @@ package body Lzf is
           raise Too_Big;
         end if;
         Ctrl := Out_Pos - Ctrl;
-        Output(Out_Pos .. Out_Pos + Len - 1) :=
-            Output(Ctrl .. Ctrl + Len - 1);
+        -- Areas may overlap! so we must copy byte per byte
+        for I in 0 .. Len - 1 loop
+          Output(Out_Pos + I) := Output (Ctrl + I);
+        end loop;
         Out_Pos := Out_Pos + Len;
       end if;
 
       exit when In_Pos > Input'Last;
     end loop;
-    Outlen := Out_Pos - Output'First + 1;
+    Outlen := Out_Pos - Output'First;
   end Uncompress;
 
 end Lzf;
