@@ -17,9 +17,11 @@
 -- back-reference length is stored in the next byte. The lower bits of the
 -- control byte combined with the next byte form the offset for the
 -- back-reference.
-with Bit_Ops;
+with Bit_Ops, Trace.Loggers;
 use Bit_Ops;
 package body Lzf is
+
+  Logger : Trace.Loggers.Logger;
 
   -- The number of entries in the hash table. The size is a trade-off between
   --  hash collisions (reduced compression) and speed (amount that fits in CPU
@@ -52,8 +54,15 @@ package body Lzf is
   -- Compute the address in the hash table.
   function Hash (H : Integer) return Integer is
   begin
-    return Shr (H * 2777, 9) and (Hash_Size - 1);
+    return Integer(Shr (Long_Long_Integer(H) * 2777, 9) and 16#7FFFFFFF#)
+                   and (Hash_Size - 1);
   end Hash;
+
+  -- Convert an int into a byte
+  function To_Byte (I : Integer) return Byte is
+  begin
+    return Byte (I And 16#FF#);
+  end To_Byte;
 
   -- Compress Input into Output
   -- Outlen is less than 104% of Input length
@@ -72,8 +81,12 @@ package body Lzf is
     Match : Boolean;
     use type C_Types.Byte;
   begin
+    if not Logger.Is_Init then
+      Logger.Init ("Lzf");
+    end if;
     while In_Pos < Input'Length - 4 loop
       P2 := Input(Input'First + In_Pos + 2);
+      Logger.Log_Debug ("Start loop pos " & In_Pos'Img & ", P2 " & P2'Img);
       -- Next
       Future := Shl (Future, 8) + Integer (P2);
       Off := Hash (Future);
@@ -87,13 +100,14 @@ package body Lzf is
         Off := In_Pos - Ref - 1;
         if Off < Max_Off
         and then Input(Input'First + Ref + 2) = P2
-        and then Input(Input'First + Ref + 1) = Byte (Shr (Future, 8))
-        and then Input(Input'First + Ref)     = Byte (Shr (Future, 16)) then
+        and then Input(Input'First + Ref + 1) = To_Byte (Shr (Future, 8))
+        and then Input(Input'First + Ref) = To_Byte (Shr (Future, 16)) then
           Match := True;
         end if;
       end if;
 
       if Match then
+        Logger.Log_Debug ("Match");
         Max_Len := Input'Length - In_Pos - 2;
         if Max_Len > Max_Ref then
           Max_Len := Max_Ref;
@@ -105,7 +119,7 @@ package body Lzf is
         else
           -- Set the control byte at the start of the literal run
           -- to store the number of literals
-          Output(Out_Pos - Literals - 1) := Byte (Literals - 1);
+          Output(Out_Pos - Literals - 1) := To_Byte ((Literals - 1));
           Literals := 0;
         end if;
         Len := 3;
@@ -117,14 +131,14 @@ package body Lzf is
         Len := Len - 2;
 
         if Len < 7 then
-          Output(Out_Pos) := Byte (Shr (Off, 8) + Shl (Len, 5));
+          Output(Out_Pos) := To_Byte (Shr (Off, 8) + Shl (Len, 5));
         else
-          Output(Out_Pos) := Byte (Shr (Off, 8) + Shl (7, 5));
+          Output(Out_Pos) := To_Byte (Shr (Off, 8) + Shl (7, 5));
           Out_Pos := Out_Pos + 1;
-          Output(Out_Pos) := Byte (Len - 7);
+          Output(Out_Pos) := To_Byte (Len - 7);
         end if;
         Out_Pos := Out_Pos + 1;
-        Output(Out_Pos) := Byte (Off);
+        Output(Out_Pos) := To_Byte (Off);
         Out_Pos := Out_Pos + 1;
         -- Move one byte forward to allow for a literal run control byte
         Out_Pos := Out_Pos + 1;
@@ -142,6 +156,7 @@ package body Lzf is
         In_Pos := In_Pos + 1;
       else
         -- Not match
+        Logger.Log_Debug ("Not Match");
         -- Copy one byte from input to output as part of literal
         Output(Out_Pos) := Input(Input'First + In_Pos);
         In_Pos := In_Pos + 1;
@@ -153,26 +168,29 @@ package body Lzf is
           -- Move ahead one byte to allow for the literal run control byte
           Out_Pos := Out_Pos + 1;
         end if;
-      end if;
-
-      -- Write the remaining few bytes as literals
-      while In_Pos < Input'Length loop
-        Output(Out_Pos) := Input(Input'First + In_Pos);
-        In_Pos := In_Pos + 1;
-        Out_Pos := Out_Pos + 1;
-        Literals := Literals + 1;
-        if Literals = Max_Literal then
-          Output(Out_Pos - Literals - 1) := Byte (Literals - 1);
-          Literals := 0;
-          Out_Pos := Out_Pos + 1;
-        end if;
-      end loop;
-      -- Write the final literal run length to the control byte
-      Output(Out_Pos - Literals - 1) := Byte (Literals - 1);
-      if Literals = 0 then
-        Out_Pos := Out_Pos - 1;
+        Logger.Log_Debug ("Literals " & Literals'Img
+                        & ", Out_Pos " & Out_Pos'Img);
       end if;
     end loop;
+
+    -- Write the remaining few bytes as literals
+    while In_Pos < Input'Length loop
+      Output(Out_Pos) := Input(Input'First + In_Pos);
+      In_Pos := In_Pos + 1;
+      Out_Pos := Out_Pos + 1;
+      Literals := Literals + 1;
+      if Literals = Max_Literal then
+        Output(Out_Pos - Literals - 1) := To_Byte (Literals - 1);
+        Literals := 0;
+        Out_Pos := Out_Pos + 1;
+      end if;
+    end loop;
+    -- Write the final literal run length to the control byte
+    Output(Out_Pos - Literals - 1) := To_Byte (Literals - 1);
+    if Literals = 0 then
+      Out_Pos := Out_Pos - 1;
+    end if;
+
     Outlen := Out_Pos - Output'First + 1;
   end Compress;
 
