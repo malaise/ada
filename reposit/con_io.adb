@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Exceptions;
-with Argument, Environ, Lower_Str, Str_Util, Trace.Loggers, Language;
+with Argument, C_Types, Environ, Lower_Str, Str_Util, Trace.Loggers, Language;
 package body Con_Io is
 
   -- Some constants
@@ -984,7 +984,7 @@ package body Con_Io is
 
     X_Event : X_Mng.Event_Kind;
     use X_Mng, Ada.Calendar;
-    use type Timers.Delay_Rec, Timers.Delay_List;
+    use type C_Types.Byte, Timers.Delay_Rec, Timers.Delay_List;
   begin
 
     Event := Timeout;

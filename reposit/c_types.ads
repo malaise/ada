@@ -18,14 +18,18 @@ package C_Types is
   type  Double is new Long_Float;
 
   -- Unsigned types
-  type Uint8 is new Integer range 0 .. 2 ** 8 - 1;
+  type Uint8 is mod 2 **  8;
   for Uint8'Size use 8;
+  subtype Byte is Uint8;
 
-  type Uint16 is new Integer range 0 .. 2 ** 16 - 1;
+  type Uint16 is mod 2 ** 16;
   for Uint16'Size use 16;
 
-  type Uint32 is new Long_Long_Integer range 0 .. 2 ** 32 - 1;
+  type Uint32 is mod 2 ** 32;
   for Uint32'Size use 32;
+
+  type Uint64 is mod 2 ** 64;
+  for Uint64'Size use 64;
 
   -- Other types
   subtype Time_T is Long;

@@ -1,5 +1,6 @@
 with Ada.Calendar;
-with X_Mng, Event_Mng, Timers, Argument, As.B, Null_Procedure, Language;
+with C_Types, X_Mng, Event_Mng, Timers, Argument, As.B, Null_Procedure,
+     Language;
 use X_Mng;
 procedure T_X is
 
@@ -42,7 +43,7 @@ procedure T_X is
                             Row, 8);
   end Put;
 
-  use type Ada.Calendar.Time;
+  use type Ada.Calendar.Time, C_Types.Byte;
 
 begin
   Char_Offset := 0;

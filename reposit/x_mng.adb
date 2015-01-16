@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Aski, C_Types, Trace.Loggers, Address_Ops, Perpet, Event_Mng, Virtual_Time,
+with Aski, Trace.Loggers, Address_Ops, Perpet, Event_Mng, Virtual_Time,
      Timers.Expiration;
 package body X_Mng is
 

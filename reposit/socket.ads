@@ -277,8 +277,7 @@ package Socket is
   function Local_Lan_Id return Host_Id;
 
   -- Host_Id <-> 4 bytes of Ip address
-  type Byte is new Natural range 0 .. 255;
-  for Byte'Size use System.Storage_Unit;
+  subtype Byte is C_Types.Byte;
   type Ip_Address is record
     A, B, C, D : Byte; -- Network (natural) order
   end record;

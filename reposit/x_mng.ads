@@ -1,6 +1,6 @@
 -- Low level access to X11 operations (put text / draw / get events)
 with System;
-with As.U, Timers;
+with C_Types, As.U, Timers;
 package X_Mng is
 
   ----- TYPES -----
@@ -8,8 +8,7 @@ package X_Mng is
   Max_Line_Number : constant := 5;
   type Line is private;
 
-  type Byte is new Natural range 0 .. 255;
-  for Byte'Size use System.Storage_Unit;
+  subtype Byte is C_Types.Byte;
 
   -- Colors and fonts
   subtype Color       is Natural range 0 .. 13;
