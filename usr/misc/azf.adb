@@ -27,7 +27,7 @@ procedure Azf is
   Block_Size : constant := 1024 * 1024;
   type Buffer_Access is access Lzf.Byte_Array;
   Inb, Outb : Buffer_Access;
-  Dummy, Inl, Outl : Natural;
+  Dummy, Res, Inl, Outl : Natural;
 
   procedure Parse_Mode (I : Positive) is
   begin
@@ -82,7 +82,19 @@ begin
   Outb := new Lzf.Byte_Array(1 .. Buffer_Size * Block_Size);
 
   -- Read input
-  Inl := Sys_Calls.Read (Sys_Calls.Stdin, Inb.all'Address, Inb'Length);
+  begin
+    Inl := 0;
+    loop
+      Res := Sys_Calls.Read (Sys_Calls.Stdin, Inb(Inl + 1)'Address, Inb'Length);
+      exit when Res = 0;
+      Inl := Inl + Res;
+    end loop;
+  exception
+    when Constraint_Error =>
+      Basic_Proc.Put_Line_Error ("Input buffer too small.");
+      Basic_Proc.Set_Error_Exit_Code;
+      return;
+  end;
 
   -- (Un)compress
   if Compress then
