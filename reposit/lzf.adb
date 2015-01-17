@@ -80,7 +80,7 @@ package body Lzf is
                       Outlen : out Natural) is
     In_Pos : Integer := 0;
     Out_Pos : Integer := Output'First + 1;
-    Hash_Table : Hash_Table_Type := (others => 0);
+    Hash_Table : Hash_Table_Type := (others => -1);
     Future : Integer := First (Input, 0);
     Literals : Integer := 0;
     P2 : Byte;
@@ -111,7 +111,7 @@ package body Lzf is
       -- Check if match
       Match := False;
       if Ref < In_Pos
-      and then Ref > 0 then
+      and then Ref >= 0 then
         Off := In_Pos - Ref - 1;
         if Off < Max_Off
         and then Input(Input'First + Ref + 2) = P2
