@@ -7,8 +7,9 @@
 --  - Invalid compressed data can cause exceptions (Constraint_Error)
 -- The LZF compressed format knows literal runs and back-references:
 --  - Literal run: directly copy bytes from input to output.
---  - Back-reference: copy previous data to output stream, with specified
---    offset from location and length. The length is at least 3 bytes.
+--  - Back-reference: copy previous data of the uncompressed stream to the
+--    output stream, with specified offset from location in the uncompressed
+--    stream and length. The length is at least 3 bytes.
 -- The first byte of the compressed stream is the control byte.
 -- -  For literal runs, the highest three bits of the control byte are not set,
 --    then the lower bits are the literal run length - 1, and the next bytes
@@ -79,7 +80,7 @@ package body Lzf is
                       Outlen : out Natural) is
     In_Pos : Integer := 0;
     Out_Pos : Integer := Output'First + 1;
-    Hash_Table : Hash_Table_Type := (others => -1);
+    Hash_Table : Hash_Table_Type := (others => 0);
     Future : Integer := First (Input, 0);
     Literals : Integer := 0;
     P2 : Byte;
@@ -93,10 +94,10 @@ package body Lzf is
     end if;
 
     -- Main loop
-    while In_Pos < Input'Length - 4 loop
+    while In_Pos < Input'Length - 2 loop
       P2 := Input(Input'First + In_Pos + 2);
       -- Next: Remove oldest byte, shift Future left, append P2
-      Future := Shl (Future and 16#FFFF#, 8) or Integer (P2);
+      Future := Shl (Future, 8) or Integer (P2);
       Logger.Log_Debug ("Start loop at index " & In_Pos'Img
                       & ", P2 " & Image(P2)
                       & ", future " & Hexa_Utils.Image(Future));
@@ -110,7 +111,7 @@ package body Lzf is
       -- Check if match
       Match := False;
       if Ref < In_Pos
-      and then Ref >= 0 then
+      and then Ref > 0 then
         Off := In_Pos - Ref - 1;
         if Off < Max_Off
         and then Input(Input'First + Ref + 2) = P2
@@ -154,7 +155,7 @@ package body Lzf is
         Logger.Log_Debug ("  match len " & Len'Img);
         Len := Len - 2;
 
-        -- Store match length
+        -- Store match length-2
         if Len < 7 then
           -- Less than 3 bits of length then 5 upper bits of offset
           Output(Out_Pos) := To_Byte (Shr (Off, 8) or Shl (Len, 5));
@@ -173,24 +174,29 @@ package body Lzf is
         Out_Pos := Out_Pos + 1;
         In_Pos := In_Pos + Len;
 
-        -- Rebuild the future, and store the last bytes to the hashtable.
-        -- Storing hashes of the last bytes in back-reference
-        --  improves the compression ratio and only reduces speed slightly.
-        Future := First (Input, In_Pos);
-        Future := Next (Future, Input, In_Pos);
-        Hash_Table(Hash (Future)) := In_Pos;
-        Logger.Log_Debug ("  Future " & Hexa_Utils.Image (Future)
-                      & " hashed index " & In_Pos'Img
-                      & " at offset " & Integer'Image (Hash (Future)));
-        In_Pos := In_Pos + 1;
-        Future := Next (Future, Input, In_Pos);
-        Hash_Table(Hash (Future)) := In_Pos;
-        Logger.Log_Debug ("  Future " & Hexa_Utils.Image (Future)
-                      & " hashed index " & In_Pos'Img
-                      & " at offset " & Integer'Image (Hash (Future)));
-        In_Pos := In_Pos + 1;
-        Logger.Log_Debug ("  Now at index " & In_Pos'Img
-                        & ", future " & Hexa_Utils.Image(Future));
+        if In_Pos < Input'Length - 3 then
+          -- Rebuild the future, and store the last 2 bytes to the hashtable.
+          -- Storing hashes of the last bytes in back-reference
+          --  improves the compression ratio and only reduces speed slightly.
+          Future := First (Input, In_Pos);
+          Future := Next (Future, Input, In_Pos);
+          Hash_Table(Hash (Future)) := In_Pos;
+          Logger.Log_Debug ("  Future " & Hexa_Utils.Image (Future)
+                        & " hashed index " & In_Pos'Img
+                        & " at offset " & Integer'Image (Hash (Future)));
+          In_Pos := In_Pos + 1;
+          Future := Next (Future, Input, In_Pos);
+          Hash_Table(Hash (Future)) := In_Pos;
+          Logger.Log_Debug ("  Future " & Hexa_Utils.Image (Future)
+                        & " hashed index " & In_Pos'Img
+                        & " at offset " & Integer'Image (Hash (Future)));
+          In_Pos := In_Pos + 1;
+          Logger.Log_Debug ("  Now at index " & In_Pos'Img
+                          & ", future " & Hexa_Utils.Image(Future));
+        else
+          -- Set correct inpout index
+          In_Pos := In_Pos + 2;
+        end if;
       else
         -- Not match
         Logger.Log_Debug ("Not Match");
@@ -216,7 +222,6 @@ package body Lzf is
     end loop;
 
     -- Write the remaining few bytes as literals
-    -- There are always at least 2
     while In_Pos < Input'Length loop
       Logger.Log_Debug (
           "Append literal " & Image (Input(Input'First + In_Pos))
@@ -303,7 +308,7 @@ package body Lzf is
         Logger.Log_Debug ("Got a backref of len " & Integer'Image (Len)
                          & " at offset " & Integer'Image(Ctrl));
 
-        -- Copy the back-reference bytes from the given
+        -- Copy the *back-reference* bytes from the given
         --  location in output to current position
         if Out_Pos + Len - 1 > Output'Last then
           raise Too_Big;
