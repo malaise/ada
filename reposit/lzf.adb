@@ -90,7 +90,7 @@ package body Lzf is
     In_Pos : Integer := 0;
     Out_Pos : Integer := Output'First + 1;
     Hash_Table : Hash_Table_Type := (others => -1);
-    Future : Integer := First (Input, 0);
+    Future : Integer;
     Literals : Integer := 0;
     P2 : Byte;
     Off, Ref : Integer;
@@ -102,7 +102,40 @@ package body Lzf is
       Logger.Init ("Lzf");
     end if;
 
+    if Input'Length = 0 then
+      Outlen := 0;
+      if Logger.Debug_On then
+        Log ("Empty input");
+      end if;
+      return;
+    elsif Input'Length = 1 then
+      if Output'Length < 2 then
+        raise Too_Big;
+      end if;
+      Outlen := 2;
+      Output(Out_Pos) := 0;
+      Output(Out_Pos + 1) := Input(Input'First);
+      if Logger.Debug_On then
+        Log ("Single byte " & Image (Input(Input'First)));
+      end if;
+      return;
+    elsif Input'Length = 2 then
+      if Output'Length < 2 then
+        raise Too_Big;
+      end if;
+      Outlen := 3;
+      Output(Out_Pos) := 1;
+      Output(Out_Pos + 1) := Input(Input'First);
+      Output(Out_Pos + 2) := Input(Input'First + 1);
+      if Logger.Debug_On then
+        Log ("Two bytes " & Image (Input(Input'First))
+           & " and " & Image (Input(Input'First + 1)));
+      end if;
+      return;
+    end if;
+
     -- Main loop
+    Future := First (Input, 0);
     while In_Pos < Input'Length - 2 loop
       P2 := Input(Input'First + In_Pos + 2);
       -- Next: Remove oldest byte, shift Future left, append P2
@@ -298,6 +331,12 @@ package body Lzf is
   begin
     if not Logger.Is_Init then
       Logger.Init ("Lzf");
+    end if;
+
+    if Input'Length = 0 then
+      Log ("Empty input");
+      Outlen := 0;
+      return;
     end if;
 
     In_Pos := Input'First;

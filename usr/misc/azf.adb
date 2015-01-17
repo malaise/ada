@@ -104,7 +104,9 @@ begin
   end if;
 
   -- Write output
-  Dummy := Sys_Calls.Write (Sys_Calls.Stdout, Outb.all'Address, Outl);
+  if Outl > 0 then
+    Dummy := Sys_Calls.Write (Sys_Calls.Stdout, Outb.all'Address, Outl);
+  end if;
 
 exception
   when others =>
