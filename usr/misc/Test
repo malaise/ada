@@ -33,6 +33,15 @@ function azf_one {
   fi
 }
 
+if [ "$1"  = "-azf" ] ; then
+  shift
+  for file in $* ; do
+    azf_one $file
+  done
+  clean
+  exit
+fi
+
 for file in `ls *.ads *.adb lib_Linux/*` ; do
   azf_one $file
 done
