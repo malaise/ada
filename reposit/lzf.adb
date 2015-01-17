@@ -56,7 +56,7 @@ package body Lzf is
   -- Shift the value 1 byte left, and add the byte at index inPos+2
   function Next (V : Integer; A : Byte_Array; I : Integer) return Integer is
   begin
-    return Shl (V, 8) or Integer(A(A'First + I + 2));
+    return Shl (V and 16#FFFF#, 8) or Integer(A(A'First + I + 2));
   end Next;
 
   -- Compute the address in the hash table.
@@ -97,7 +97,8 @@ package body Lzf is
     while In_Pos < Input'Length - 2 loop
       P2 := Input(Input'First + In_Pos + 2);
       -- Next: Remove oldest byte, shift Future left, append P2
-      Future := Shl (Future, 8) or Integer (P2);
+      Future := Shl (Future and 16#FFFF#, 8) or Integer (P2);
+      Logger.Log_Debug (Future'img);
       Logger.Log_Debug ("Start loop at index " & In_Pos'Img
                       & ", P2 " & Image(P2)
                       & ", future " & Hexa_Utils.Image(Future));
