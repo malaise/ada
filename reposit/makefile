@@ -8,6 +8,7 @@ SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg afpx_bld-xref \
   xml_parser-parse_mng-resolve_uri xml_parser-parse_mng-util \
   xml_parser-tree_mng \
   x_mng-dispatch 
+OPTIMIZED := lzf
 EXES := afpx_bld afpx_rnb clear_screen
 
 CLIBS_afpx_bld := cutil x_mng posix2pcre pcre X11

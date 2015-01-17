@@ -1,5 +1,0 @@
-- Fix issue with binaries (adand)
-- Add a raw mode to lzf in C, add in Git
-- Ensure same result as C
-- Optimize (Remove logger, pragma inline and optimize)
-

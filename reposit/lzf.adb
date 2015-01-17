@@ -21,10 +21,16 @@
 --    byte form the offset for the back-reference (0 for prev byte).
 with Bit_Ops, Trace.Loggers, Hexa_Utils;
 use Bit_Ops;
+pragma Optimize (Time);
 package body Lzf is
 
   -- Trace logger
   Logger : Trace.Loggers.Logger;
+  procedure Log (Msg : in String) is
+  pragma Inline (Log);
+  begin
+    Logger.Log_Debug (Msg);
+  end Log;
 
   -- Image of a byte
   function Image is new Hexa_Utils.Mod_Image (Byte);
@@ -49,18 +55,21 @@ package body Lzf is
   -- Return the integer with the first two bytes 0, then the bytes at the
   --  index, then at index+1
   function First (A : Byte_Array; I : Integer) return Integer is
+  pragma Inline (First);
   begin
     return Shl (Integer(A(A'First + I)), 8) or Integer(A(A'First + I + 1));
   end First;
 
   -- Shift the value 1 byte left, and add the byte at index inPos+2
   function Next (V : Integer; A : Byte_Array; I : Integer) return Integer is
+  pragma Inline (Next);
   begin
     return Shl (V and 16#FFFF#, 8) or Integer(A(A'First + I + 2));
   end Next;
 
   -- Compute the address in the hash table.
   function Hash (H : Integer) return Integer is
+  pragma Inline (Hash);
   begin
     return Integer(Shr (Long_Long_Integer(H) * 2777, 9) and 16#7FFFFFFF#)
                    and (Hash_Size - 1);
@@ -98,16 +107,17 @@ package body Lzf is
       P2 := Input(Input'First + In_Pos + 2);
       -- Next: Remove oldest byte, shift Future left, append P2
       Future := Shl (Future and 16#FFFF#, 8) or Integer (P2);
-      Logger.Log_Debug (Future'img);
-      Logger.Log_Debug ("Start loop at index " & In_Pos'Img
-                      & ", P2 " & Image(P2)
-                      & ", future " & Hexa_Utils.Image(Future));
+      if Logger.Debug_On then
+        Log ("Start loop at index " & In_Pos'Img
+           & ", P2 " & Image(P2) & ", future " & Hexa_Utils.Image(Future));
+      end if;
       Off := Hash (Future);
       Ref := Hash_Table(Off);
       Hash_Table(Off) := In_Pos;
-      Logger.Log_Debug ("Hashed index " & In_Pos'Img
-                      & ", at offset " & Off'Img
-                      & ", replacing ref " & Ref'Img);
+      if Logger.Debug_On then
+        Log ("Hashed index " & In_Pos'Img & ", at offset " & Off'Img
+           & ", replacing ref " & Ref'Img);
+      end if;
 
       -- Check if match
       Match := False;
@@ -123,7 +133,9 @@ package body Lzf is
       end if;
 
       if Match then
-        Logger.Log_Debug ("Match at offset " & Integer'Image (Off + 1));
+        if Logger.Debug_On then
+          Log ("Match at offset " & Integer'Image (Off + 1));
+        end if;
 
         if Literals = 0 then
           -- Multiple successive back-references,
@@ -133,9 +145,10 @@ package body Lzf is
           -- Set the control byte at the start of the literal run
           --  to store the number of literals
           -- 3 first bits at 0 then Nb on the next 5 bits (so <= 31)
-          Logger.Log_Debug (
-              "  Store Nb literals " & Integer'Image (Literals - 1)
-            & " at pos " & Integer'Image (Out_Pos - Literals - 1));
+          if Logger.Debug_On then
+            Log ("  Store Nb literals " & Integer'Image (Literals - 1)
+               & " at pos " & Integer'Image (Out_Pos - Literals - 1));
+          end if;
           Output(Out_Pos - Literals - 1) := To_Byte ((Literals - 1));
           Literals := 0;
         end if;
@@ -153,7 +166,9 @@ package body Lzf is
                = Input(Input'First + In_Pos + Len) loop
           Len := Len + 1;
         end loop;
-        Logger.Log_Debug ("  match len " & Len'Img);
+        if Logger.Debug_On then
+          Log ("  match len " & Len'Img);
+        end if;
         Len := Len - 2;
 
         -- Store match length-2
@@ -182,59 +197,71 @@ package body Lzf is
           Future := First (Input, In_Pos);
           Future := Next (Future, Input, In_Pos);
           Hash_Table(Hash (Future)) := In_Pos;
-          Logger.Log_Debug ("  Future " & Hexa_Utils.Image (Future)
-                        & " hashed index " & In_Pos'Img
-                        & " at offset " & Integer'Image (Hash (Future)));
+          if Logger.Debug_On then
+            Log ("  Future " & Hexa_Utils.Image (Future)
+               & " hashed index " & In_Pos'Img
+               & " at offset " & Integer'Image (Hash (Future)));
+          end if;
           In_Pos := In_Pos + 1;
           Future := Next (Future, Input, In_Pos);
           Hash_Table(Hash (Future)) := In_Pos;
-          Logger.Log_Debug ("  Future " & Hexa_Utils.Image (Future)
-                        & " hashed index " & In_Pos'Img
-                        & " at offset " & Integer'Image (Hash (Future)));
+          if Logger.Debug_On then
+            Log ("  Future " & Hexa_Utils.Image (Future)
+               & " hashed index " & In_Pos'Img
+               & " at offset " & Integer'Image (Hash (Future)));
+          end if;
           In_Pos := In_Pos + 1;
-          Logger.Log_Debug ("  Now at index " & In_Pos'Img
-                          & ", future " & Hexa_Utils.Image(Future));
+          if Logger.Debug_On then
+            Log ("  Now at index " & In_Pos'Img
+               & ", future " & Hexa_Utils.Image(Future));
+          end if;
         else
           -- Set correct inpout index
           In_Pos := In_Pos + 2;
         end if;
       else
         -- Not match
-        Logger.Log_Debug ("Not Match");
         -- Copy one byte from input to output as part of literal
         Output(Out_Pos) := Input(Input'First + In_Pos);
-        Logger.Log_Debug (
-            "  Store literal " & Image (Input(Input'First + In_Pos))
-          & " at pos " & Integer'Image (Out_Pos));
+        if Logger.Debug_On then
+          Log ("Not Match");
+          Log ("  Store literal " & Image (Input(Input'First + In_Pos))
+             & " at pos " & Integer'Image (Out_Pos));
+        end if;
         In_Pos := In_Pos + 1;
         Out_Pos := Out_Pos + 1;
         Literals := Literals + 1;
         if Literals = Max_Literal then
-          Logger.Log_Debug (
-              "  Store Nb literals " & Integer'Image (Literals - 1)
-            & " at pos " & Integer'Image (Out_Pos - Literals - 1));
+          if Logger.Debug_On then
+            Log ("  Store Nb literals " & Integer'Image (Literals - 1)
+               & " at pos " & Integer'Image (Out_Pos - Literals - 1));
+          end if;
           Output(Out_Pos - Literals - 1) := To_Byte (Literals - 1);
           Literals := 0;
           -- Move ahead one byte to allow for the literal run control byte
           Out_Pos := Out_Pos + 1;
         end if;
-        Logger.Log_Debug ("  Nb literals " & Literals'Img);
+        if Logger.Debug_On then
+          Log ("  Nb literals " & Literals'Img);
+        end if;
       end if;
     end loop;
 
     -- Write the remaining few bytes as literals
     while In_Pos < Input'Length loop
-      Logger.Log_Debug (
-          "Append literal " & Image (Input(Input'First + In_Pos))
-        & " at pos " & Integer'Image (Out_Pos));
+      if Logger.Debug_On then
+        Log ("Append literal " & Image (Input(Input'First + In_Pos))
+           & " at pos " & Integer'Image (Out_Pos));
+      end if;
       Output(Out_Pos) := Input(Input'First + In_Pos);
       In_Pos := In_Pos + 1;
       Out_Pos := Out_Pos + 1;
       Literals := Literals + 1;
       if Literals = Max_Literal then
-        Logger.Log_Debug (
-            "  Store Nb literals " & Integer'Image (Literals - 1)
-          & " at pos " & Integer'Image (Out_Pos - Literals - 1));
+        if Logger.Debug_On then
+          Log ("  Store Nb literals " & Integer'Image (Literals - 1)
+             & " at pos " & Integer'Image (Out_Pos - Literals - 1));
+        end if;
         Output(Out_Pos - Literals - 1) := To_Byte (Literals - 1);
         Literals := 0;
         Out_Pos := Out_Pos + 1;
@@ -244,8 +271,10 @@ package body Lzf is
     -- Write the final literal run length to the control byte
     if Literals /= 0 then
       Output(Out_Pos - Literals - 1) := To_Byte (Literals - 1);
-      Logger.Log_Debug ("  Store Nb literals " & Integer'Image (Literals - 1)
-                      & " at pos " & Integer'Image (Out_Pos - Literals - 1));
+      if Logger.Debug_On then
+        Log ("  Store Nb literals " & Integer'Image (Literals - 1)
+           & " at pos " & Integer'Image (Out_Pos - Literals - 1));
+      end if;
     else
       -- One extra byte was inserted to store the length, but there is
       --  no more literal
@@ -253,9 +282,9 @@ package body Lzf is
     end if;
 
     Outlen := Out_Pos - Output'First;
-  -- exception
-  --   when Constraint_Error =>
-  --     raise Too_Big;
+  exception
+    when Constraint_Error =>
+      raise Too_Big;
   end Compress;
 
   -- Uncompress Input into Output
@@ -280,7 +309,9 @@ package body Lzf is
       if Ctrl < Max_Literal then
         -- Literal run of length = ctrl + 1,
         -- Copy to output and move forward this many bytes
-        Logger.Log_Debug ("Got " & Integer'Image (Ctrl + 1) & " litterals");
+        if Logger.Debug_On then
+          Log ("Got " & Integer'Image (Ctrl + 1) & " litterals");
+        end if;
         if Out_Pos + Ctrl > Output'Last then
           raise Too_Big;
         end if;
@@ -306,8 +337,10 @@ package body Lzf is
         -- The next byte increases the offset
         Ctrl := Ctrl + Integer(Input(In_Pos)) + 1;
         In_Pos := In_Pos + 1;
-        Logger.Log_Debug ("Got a backref of len " & Integer'Image (Len)
-                         & " at offset " & Integer'Image(Ctrl));
+        if Logger.Debug_On then
+          Log ("Got a backref of len " & Integer'Image (Len)
+             & " at offset " & Integer'Image(Ctrl));
+        end if;
 
         -- Copy the *back-reference* bytes from the given
         --  location in output to current position
