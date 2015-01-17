@@ -9,17 +9,19 @@ function clean {
 
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
-for file in `ls *.ads *.adb` ; do
+function azf_one {
+  local file=$1
+
   echo azf $file
-  cat $file | azf -c > cmp
+  cat $file | azf -s 900 -c > cmp
   if [ $? -ne 0 ] ; then
-    echo "Azf -c has failed." 2>&1
+    echo "Azf -c $file has failed." 2>&1
     exit 1
   fi
 
-  cat cmp | azf -d > res
+  cat cmp | azf -s 900 -d > res
   if [ $? -ne 0 ] ; then
-    echo "Azf -d has failed." 2>&1
+    echo "Azf -d on $file has failed." 2>&1
     exit 1
   fi
 
@@ -29,6 +31,10 @@ for file in `ls *.ads *.adb` ; do
     echo "File res differs from original $file." 2>&1
     exit 1
   fi
+}
+
+for file in `ls *.ads *.adb lib_Linux/*` ; do
+  azf_one $file
 done
 
 clean
