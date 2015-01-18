@@ -1,13 +1,21 @@
+with System;
 -- Compress or uncompress stdin to stdout
-with Basic_Proc, Argument, Sys_Calls, Lzf;
+with Basic_Proc, Sys_Calls, Argument, Argument_Parser,
+     Long_Longs, Bit_Ops, Address_Ops,
+     As.U, Images, Lzf;
 procedure Azf is
+
+  Max_Buffer_Size : constant := 1024;
+
   procedure Help is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-        &  " [ -s <buffer_size> ] -c | -d | -h");
+        &  " [ -s <buffer_size> | -H ] -c | -d | -h");
     Basic_Proc.Put_Line_Error (" -c : Compress stdin to stdout");
     Basic_Proc.Put_Line_Error (" -d : Uncompress stdin to stdout");
-    Basic_Proc.Put_Line_Error (" -s : Set buffer size in Mega bytes");
+    Basic_Proc.Put_Line_Error (" -s : Set buffer size in Mega Bytes (max "
+                             & Images.Integer_Image (Max_Buffer_Size) & ")");
+    Basic_Proc.Put_Line_Error (" -H : Use headers (and buffers of 64 kB)");
     Basic_Proc.Put_Line_Error (" -h : Display this help");
   end Help;
   procedure Error (Msg : in String) is
@@ -17,95 +25,178 @@ procedure Azf is
     Basic_Proc.Set_Error_Exit_Code;
   end Error;
 
+  -- Argument parsing
+  Keys : constant Argument_Parser.The_Keys_Type := (
+    01 => (False, 'c', As.U.Tus ("compress"),    False),
+    02 => (False, 'd', As.U.Tus ("decompress"),  False),
+    03 => (True,  's', As.U.Tus ("buffer_size"), False, True, As.U.Tus ("MB")),
+    04 => (False, 'H', As.U.Tus ("headers"),     False),
+    05 => (False, 'h', As.U.Tus ("help"),        False));
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
+
   -- Do we compress
   Compress : Boolean;
+
+  -- Header mode
+  Header_Mode : Boolean := False;
 
   -- Buffer size
   Buffer_Size : Positive := 1;
 
+  -- Header: "Z V", then either "0 Uh Ul" or "1 Ch Cl Uh Ul"
+  --  High and low bytes of uncompressed and compressed length
+  Header : Lzf.Byte_Array (1 .. 7);
+  -- So max len of a data bloc is <len on 2 bytes> - 7
+  Max_Len_Header : constant := 16#FFFF# - 7;
+
   -- Buffers and lengths
-  Block_Size : constant := 1024 * 1024;
+  Buffer_Unit : constant := 1024 * 1024;
   type Buffer_Access is access Lzf.Byte_Array;
   Inb, Outb : Buffer_Access;
-  Dummy, Res, Inl, Outl : Natural;
+  Inl, Outl : Natural;
 
-  procedure Parse_Mode (I : Positive) is
+  procedure Parse_Size (Str : in String) is
   begin
-    if Argument.Get_Parameter (I) ="-c" then
-      Compress := True;
-    elsif Argument.Get_Parameter (I) ="-d" then
-      Compress := False;
-    else
-      Error ("Invalid argument");
-      return;
-    end if;
-  end Parse_Mode;
-
-  procedure Parse_Size (I : Positive) is
-  begin
-    Buffer_Size := Positive'Value (Argument.Get_Parameter (I + 1));
-    if Buffer_Size > 1024 then
+    Buffer_Size := Positive'Value (Str);
+    if Buffer_Size > Max_Buffer_Size then
       Error ("Buffer size too large");
       return;
     end if;
+  exception
+    when others =>
+      Error ("Invaid buffer size");
+      return;
   end Parse_Size;
+
+  -- Read at most N bytes, return the number of bytes read
+  function Read (Buffer : Lzf.Byte_Array; N : Positive) return Natural is
+    Index : Positive;
+    Res, Remain : Natural;
+  begin
+    Index := 1;
+    Remain := N;
+    loop
+      -- Read Remain bytes until read returns 0 or buffer full
+      Res := Sys_Calls.Read (Sys_Calls.Stdin, Buffer(Index)'Address, Remain);
+      exit when Res = 0;
+      Index := Index + Res;
+      Remain := Remain - Res;
+      exit when Remain = 0;
+    end loop;
+    return N - Remain;
+  end Read;
+
+  -- Write N bytes
+  procedure Write (Buffer : in System.Address; N : in Positive) is
+    Addr : System.Address;
+    Res, Remain : Natural;
+    use Address_Ops;
+    use type System.Address;
+  begin
+    Addr := Buffer;
+    Remain := N;
+    loop
+      -- Write Remain bytes until Remain becomes 0
+      Res := Sys_Calls.Write (Sys_Calls.Stdout, Addr, Remain);
+      Addr := Addr + Long_Longs.Ll_Integer(Res);
+      Remain := Remain - Res;
+      exit when Remain = 0;
+    end loop;
+  end Write;
 
 begin
 
   -- Parse arguments
-  if Argument.Get_Nbre_Arg = 1 then
-    if Argument.Get_Parameter (1) ="-h" then
-      Help;
-      Basic_Proc.Set_Error_Exit_Code;
-      return;
-    else
-      Parse_Mode (1);
-    end if;
-  elsif  Argument.Get_Nbre_Arg = 3 then
-    if Argument.Get_Parameter (1) = "-s" then
-      Parse_Size (1);
-      Parse_Mode (3);
-    elsif Argument.Get_Parameter (2) = "-s" then
-      Parse_Mode (1);
-      Parse_Size (2);
-    else
-      Error ("Invalid argument");
-      return;
-    end if;
-  else
-    Error ("Invalid argument");
+  Arg_Dscr := Argument_Parser.Parse (Keys);
+  if not Arg_Dscr.Is_Ok then
+    Error (Arg_Dscr.Get_Error);
     return;
+  end if;
+  -- Help
+  if Arg_Dscr.Is_Set (5) then
+    Help;
+    return;
+  end if;
+  -- Arg
+  if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 0 then
+    Error ("Unexpected argument");
+    return;
+  end if;
+  -- (un)compress
+  if (Arg_Dscr.Is_Set (1) and then Arg_Dscr.Is_Set (2))
+  or else (not Arg_Dscr.Is_Set (1) and then not Arg_Dscr.Is_Set (2)) then
+    Error ("Expecting either compress or decompress");
+    return;
+  end if;
+  Compress := Arg_Dscr.Is_Set (1);
+  -- Buffer size or header
+  if Arg_Dscr.Is_Set (3) and then Arg_Dscr.Is_Set (4) then
+    Error ("Headers is exclusive with buffer size");
+    return;
+  end if;
+  if Arg_Dscr.Is_Set (3) then
+    Parse_Size (Arg_Dscr.Get_Option (3));
+  elsif Arg_Dscr.Is_Set (4) then
+    Header_Mode := True;
   end if;
 
   -- Create buffers
-  Inb := new Lzf.Byte_Array(1 .. Buffer_Size * Block_Size);
-  Outb := new Lzf.Byte_Array(1 .. Buffer_Size * Block_Size);
+  Inb := new Lzf.Byte_Array(1 .. Buffer_Size * Buffer_Unit);
+  Outb := new Lzf.Byte_Array(1 .. Buffer_Size * Buffer_Unit);
 
-  -- Read input
-  begin
-    Inl := 0;
-    loop
-      Res := Sys_Calls.Read (Sys_Calls.Stdin, Inb(Inl + 1)'Address, Inb'Length);
-      exit when Res = 0;
-      Inl := Inl + Res;
-    end loop;
-  exception
-    when Constraint_Error =>
-      Basic_Proc.Put_Line_Error ("Input buffer too small.");
-      Basic_Proc.Set_Error_Exit_Code;
+  if not Header_Mode then
+    -- Read input
+    Inl := Read (Inb.all, Inb'Length);
+    if Inl = Inb'Length then
+      -- Buffer filled
+      Error ("Input buffer too small");
       return;
-  end;
+    end if;
 
-  -- (Un)compress
-  if Compress then
-    Lzf.Compress (Inb(1 .. Inl), Outb.all, Outl);
-  else
-    Lzf.Uncompress (Inb(1..Inl), Outb.all, Outl);
+    -- (Un)compress
+    if Compress then
+      Lzf.Compress (Inb(1 .. Inl), Outb.all, Outl);
+    else
+      Lzf.Uncompress (Inb(1..Inl), Outb.all, Outl);
+    end if;
+
+    -- Write output
+    if Outl > 0 then
+      Write (Outb.all'Address, Outl);
+    end if;
+    return;
   end if;
 
-  -- Write output
-  if Outl > 0 then
-    Dummy := Sys_Calls.Write (Sys_Calls.Stdout, Outb.all'Address, Outl);
+  -- Header mode
+  if Compress then
+    -- Prepare header
+    Header(1) := Lzf.Byte (Character'Pos ('Z'));
+    Header(2) := Lzf.Byte (Character'Pos ('V'));
+    -- Read, compress and write blocs
+    loop
+      Inl := Read (Inb.all, Max_Len_Header);
+      exit when Inl = 0;
+      Lzf.Compress (Inb(1 .. Inl), Outb.all, Outl);
+      if Outl > Inl then
+        -- Compression lead to longer output, write input
+        Header(3) := Lzf.Byte (Character'Pos ('0'));
+        Header(4) := Lzf.Byte (Bit_Ops.Shr (Inl, 8));
+        Header(5) := Lzf.Byte (Bit_Ops."And" (Inl, 16#FF#));
+        Write (Header'Address, 5);
+        Write (Inb.all'Address, Inl);
+      else
+        -- Write compressed data
+        Header(3) := Lzf.Byte (Character'Pos ('1'));
+        Header(4) := Lzf.Byte (Bit_Ops.Shr (Inl, 8));
+        Header(5) := Lzf.Byte (Bit_Ops."And" (Outl, 16#FF#));
+        Header(6) := Lzf.Byte (Bit_Ops.Shr (Outl, 8));
+        Header(7) := Lzf.Byte (Bit_Ops."And" (Inl, 16#FF#));
+        Write (Header'Address, 7);
+        Write (Outb.all'Address, Outl);
+      end if;
+    end loop;
+  else
+    null;
   end if;
 
 exception
