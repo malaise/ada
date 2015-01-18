@@ -341,6 +341,9 @@ package body Lzf is
 
     In_Pos := Input'First;
     Out_Pos := Output'First;
+    if Logger.Debug_On then
+      Log ("First index is " & Integer'Image (In_Pos));
+    end if;
     loop
       -- Get control char: literals-run or backref
       Ctrl := Integer (Input(In_Pos));
@@ -349,7 +352,11 @@ package body Lzf is
         -- Literal run of length = ctrl + 1,
         -- Copy to output and move forward this many bytes
         if Logger.Debug_On then
-          Log ("Got " & Integer'Image (Ctrl + 1) & " litterals");
+          Log ("Got at index " & Integer'Image (In_Pos - 1)
+             & " " & Integer'Image (Ctrl + 1) & " litterals");
+          for I in In_Pos .. In_Pos + Ctrl loop
+             Log ("  Literal " & Hexa_Utils.Image (Integer (Input(I))));
+          end loop;
         end if;
         if Out_Pos + Ctrl > Output'Last then
           raise Too_Big;
@@ -377,8 +384,9 @@ package body Lzf is
         Ctrl := Ctrl + Integer(Input(In_Pos)) + 1;
         In_Pos := In_Pos + 1;
         if Logger.Debug_On then
-          Log ("Got a backref of len " & Integer'Image (Len)
-             & " at offset " & Integer'Image(Ctrl));
+          Log ("Got at index " & Integer'Image (In_Pos - 1)
+             & " a backref of len " & Integer'Image (Len)
+             & " and offset " & Integer'Image(Ctrl));
         end if;
 
         -- Copy the *back-reference* bytes from the given
