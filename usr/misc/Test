@@ -12,12 +12,17 @@ trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 function azf_one {
   local file=$1
 
-  echo azf $file
+  echo -n azf $file 
   cat $file | azf -s 900 -c > cmp
   if [ $? -ne 0 ] ; then
+    echo
     echo "Azf -c $file has failed." 2>&1
     exit 1
   fi
+  let ISIZE=0+`ls -l $file | cut -d ' ' -f 5` 
+  let CSIZE=0+`ls -l cmp   | cut -d ' ' -f 5` 
+  let PER=\($ISIZE-$CSIZE\)*100/$ISIZE
+  echo " "$PER"%"
 
   cat cmp | azf -s 900 -d > res
   if [ $? -ne 0 ] ; then
