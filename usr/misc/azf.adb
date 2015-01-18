@@ -1,11 +1,12 @@
-with System;
 -- Compress or uncompress stdin to stdout
-with Basic_Proc, Sys_Calls, Argument, Argument_Parser,
-     Long_Longs, Bit_Ops, Address_Ops,
-     As.U, Images, Lzf;
+with Basic_Proc, Sys_Calls, Argument, Argument_Parser, C_Types, Bit_Ops,
+     As.U, Images, Lzf, Trace.Loggers;
 procedure Azf is
 
+  -- Max buffer size in Mega Bytes
   Max_Buffer_Size : constant := 1024;
+
+  Logger : Trace.Loggers.Logger;
 
   procedure Help is
   begin
@@ -46,14 +47,17 @@ procedure Azf is
   -- Header: "Z V", then either "0 Uh Ul" or "1 Ch Cl Uh Ul"
   --  High and low bytes of uncompressed and compressed length
   Header : Lzf.Byte_Array (1 .. 7);
-  -- So max len of a data bloc is <len on 2 bytes> - 7
-  Max_Len_Header : constant := 16#FFFF# - 7;
+  -- So max len of a data block is <len on 2 bytes> - 7
+  Max_Len_Header : constant := 16#FFFF# - Header'Length;
+  -- The minimum block length: header length (5, not-compressed header)
+  --                         + 1 data
+  Min_Len_Header : constant := 6;
 
   -- Buffers and lengths
   Buffer_Unit : constant := 1024 * 1024;
   type Buffer_Access is access Lzf.Byte_Array;
   Inb, Outb : Buffer_Access;
-  Inl, Outl : Natural;
+  Inl, Outl, Expected: Natural;
 
   procedure Parse_Size (Str : in String) is
   begin
@@ -73,7 +77,7 @@ procedure Azf is
     Index : Positive;
     Res, Remain : Natural;
   begin
-    Index := 1;
+    Index := Buffer'First;
     Remain := N;
     loop
       -- Read Remain bytes until read returns 0 or buffer full
@@ -87,24 +91,24 @@ procedure Azf is
   end Read;
 
   -- Write N bytes
-  procedure Write (Buffer : in System.Address; N : in Positive) is
-    Addr : System.Address;
+  procedure Write (Buffer : in Lzf.Byte_Array; N : in Positive) is
+    Index : Natural;
     Res, Remain : Natural;
-    use Address_Ops;
-    use type System.Address;
   begin
-    Addr := Buffer;
+    Index := Buffer'First;
     Remain := N;
     loop
       -- Write Remain bytes until Remain becomes 0
-      Res := Sys_Calls.Write (Sys_Calls.Stdout, Addr, Remain);
-      Addr := Addr + Long_Longs.Ll_Integer(Res);
+      Res := Sys_Calls.Write (Sys_Calls.Stdout, Buffer(Index)'Address, Remain);
+      Index := Index + Res;
       Remain := Remain - Res;
       exit when Remain = 0;
     end loop;
   end Write;
 
+  use type C_Types.Byte;
 begin
+  Logger.Init ("Azf");
 
   -- Parse arguments
   Arg_Dscr := Argument_Parser.Parse (Keys);
@@ -147,6 +151,7 @@ begin
   if not Header_Mode then
     -- Read input
     Inl := Read (Inb.all, Inb'Length);
+    Logger.Log_Debug ("Read " & Inl'Img & " bytes");
     if Inl = Inb'Length then
       -- Buffer filled
       Error ("Input buffer too small");
@@ -156,13 +161,15 @@ begin
     -- (Un)compress
     if Compress then
       Lzf.Compress (Inb(1 .. Inl), Outb.all, Outl);
+      Logger.Log_Debug ("Compressed into " & Outl'Img & " bytes");
     else
       Lzf.Uncompress (Inb(1..Inl), Outb.all, Outl);
+      Logger.Log_Debug ("Uncompressed into " & Outl'Img & " bytes");
     end if;
 
     -- Write output
     if Outl > 0 then
-      Write (Outb.all'Address, Outl);
+      Write (Outb.all, Outl);
     end if;
     return;
   end if;
@@ -172,31 +179,77 @@ begin
     -- Prepare header
     Header(1) := Lzf.Byte (Character'Pos ('Z'));
     Header(2) := Lzf.Byte (Character'Pos ('V'));
-    -- Read, compress and write blocs
+    -- Read, compress and write blocks
     loop
       Inl := Read (Inb.all, Max_Len_Header);
+      Logger.Log_Debug ("Read " & Inl'Img & " bytes");
       exit when Inl = 0;
       Lzf.Compress (Inb(1 .. Inl), Outb.all, Outl);
+      Logger.Log_Debug ("Compressed into " & Outl'Img & " bytes");
       if Outl > Inl then
         -- Compression lead to longer output, write input
-        Header(3) := Lzf.Byte (Character'Pos ('0'));
+        Header(3) := 0;
         Header(4) := Lzf.Byte (Bit_Ops.Shr (Inl, 8));
         Header(5) := Lzf.Byte (Bit_Ops."And" (Inl, 16#FF#));
-        Write (Header'Address, 5);
-        Write (Inb.all'Address, Inl);
+        Write (Header, 5);
+        Write (Inb.all, Inl);
+        Logger.Log_Debug ("Copied");
       else
         -- Write compressed data
-        Header(3) := Lzf.Byte (Character'Pos ('1'));
-        Header(4) := Lzf.Byte (Bit_Ops.Shr (Inl, 8));
+        Header(3) := 1;
+        Header(4) := Lzf.Byte (Bit_Ops.Shr (Outl, 8));
         Header(5) := Lzf.Byte (Bit_Ops."And" (Outl, 16#FF#));
-        Header(6) := Lzf.Byte (Bit_Ops.Shr (Outl, 8));
+        Header(6) := Lzf.Byte (Bit_Ops.Shr (Inl, 8));
         Header(7) := Lzf.Byte (Bit_Ops."And" (Inl, 16#FF#));
-        Write (Header'Address, 7);
-        Write (Outb.all'Address, Outl);
+        Write (Header, 7);
+        Write (Outb.all, Outl);
+        Logger.Log_Debug ("Written");
       end if;
     end loop;
   else
-    null;
+    loop
+      -- Uncompress, read header (at least the not-compressed header)
+      Inl := Read (Header, Min_Len_Header);
+      -- Empty input?
+      exit when Inl = 0;
+      Logger.Log_Debug ("Read " & Inl'Img & " bytes");
+      if Inl < Min_Len_Header
+      or else Header(1) /= Lzf.Byte (Character'Pos ('Z'))
+      or else Header(2) /= Lzf.Byte (Character'Pos ('V')) then
+        Error ("Invalid header");
+        return;
+      end if;
+      if Header(3) = 0 then
+        -- Not compressed
+        -- Data len
+        Outl := Bit_Ops.Shl (Integer (Header(4)), 8) + Integer (Header(5));
+        -- Copy the first byte of data
+        Outb(1) := Header(Min_Len_Header);
+        if Outl /= 1 then
+          -- Read remainig data
+          Outl := Read (Outb(2 .. Outb'Last), Outl - 1);
+        end if;
+        Logger.Log_Debug ("To copy");
+      elsif Header(3) = 1 then
+        -- Compressed
+        Inl := Bit_Ops.Shl (Integer (Header(4)), 8) + Integer (Header(5));
+        -- Read last byte of header and data
+        Inl := Read (Inb.all, Inl + 1);
+        -- Compute size of output
+        Expected := Bit_Ops.Shl (Integer (Header(6)), 8) + Integer (Inb(1));
+        -- Inl is the last byte to uncompress
+        Lzf.Uncompress (Inb(2 .. Inl), Outb.all, Outl);
+        if Outl /= Expected then
+          Error ("Unexpected uncompressed length");
+          return;
+        end if;
+        Logger.Log_Debug ("Uncompressed into " & Outl'Img & " bytes");
+      else
+        Error ("Invalid header kind");
+        return;
+      end if;
+      Write (Outb.all, Outl);
+    end loop;
   end if;
 
 exception
