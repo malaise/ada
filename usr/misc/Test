@@ -21,8 +21,12 @@ function azf_one {
   fi
   let ISIZE=0+`ls -l $file | cut -d ' ' -f 5` 
   let CSIZE=0+`ls -l cmp   | cut -d ' ' -f 5` 
-  let PER=\($ISIZE-$CSIZE\)*100/$ISIZE
-  echo " "$PER"%"
+  if [ $ISIZE -eq 0 ] ; then
+    echo " 0"
+  else
+    let PER=\($ISIZE-$CSIZE\)*100/$ISIZE
+    echo " "$PER"%"
+  fi
 
   cat cmp | azf -s 900 -d > res
   if [ $? -ne 0 ] ; then
