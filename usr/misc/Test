@@ -26,6 +26,7 @@ function azf_one {
 
   cat cmp | azf -s 900 -d > res
   if [ $? -ne 0 ] ; then
+    echo
     echo "Azf -d on $file has failed." 2>&1
     exit 1
   fi
@@ -33,6 +34,7 @@ function azf_one {
   cmp $file res 2>/dev/null
   res=$?
   if [ $res -ne 0 ] ; then
+    echo
     echo "File res differs from original $file." 2>&1
     exit 1
   fi
