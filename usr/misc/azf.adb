@@ -227,7 +227,7 @@ begin
         Outb(1) := Header(Min_Len_Header);
         if Outl /= 1 then
           -- Read remainig data
-          Outl := Read (Outb(2 .. Outb'Last), Outl - 1);
+          Outl := Read (Outb(2 .. Outb'Last), Outl - 1) + 1;
         end if;
         Logger.Log_Debug ("To copy");
       elsif Header(3) = 1 then
