@@ -1,23 +1,51 @@
 -- This package implements the LZF lossless data compression algorithm. LZF is
 -- a Lempel-Ziv variant with byte-aligned output, and optimized for speed.
+
 -- Safety/Use Notes:
---  - Each instance should be used by a single thread only.
---  - The data buffers should be smaller than 1 GB.
+--  - The byte arrays should be smaller than 1 GB.
 --  - For performance reasons, safety checks on expansion are omitted.
 --  - Invalid compressed data can cause exceptions (Constraint_Error)
+
+-- General principles:
 -- The LZF compressed format knows literal runs and back-references:
 --  - Literal run: directly copy bytes from input to output.
 --  - Back-reference: copy previous data of the uncompressed stream to the
 --    output stream, with specified offset from location in the uncompressed
 --    stream and length. The length is at least 3 bytes.
+-- The compression algorithm is
+--  - Read next byte and the 2 following bytes, these 3 bytes are the "future",
+--    hash them
+--  - Read the corresponding hash entry and replace the entry by current input
+--    index (so, for a hash value, there is always the most recent index)
+--  - If the read entry is set, then it is an index. Compare the three bytes at
+--    this reference index with the current "future"
+--  - If they match, then check how long of the reference matches current text
+--    and append a cross reference (with offset from current and length of
+--    match)
+--  - If no match, then append the current byte as literal.
+--  - The first byte of a literal run is a vontrol byte than denotes a literal
+--    run (as opposed to a corss reference) and indicates the length of the run,
+--    so:
+--  - When appending the first literal of a run (first byte of the input or
+--    just after a cross reference) skip a byte for this control byte
+--  - When appening a corss reference after a literal run, update the control
+--    char of this run (set it to the length of the run)
+-- The uncompression algorithm is
+--  - Read a byte
+--  - If this is the control byte of a literal run, then it indicates the
+--    length; copy this length of bytes from input to output
+--  - If this is a cross-refernce, then it indicates the offset and length;
+--    copy this length from *output* at this offset to output.
+
+-- Format of the compressed data:
 -- The first byte of the compressed stream is the control byte.
 -- -  For literal runs, the highest three bits of the control byte are not set,
 --    then the lower bits are the literal run length - 1, and the next bytes
---    are data to copy directly into the output.
+--    are the literals
 -- - For back-references, the highest three bits of the control byte are the
 --    back-reference length - 2.
 --    If all three bits are set, then the back-reference length - 7 is stored in
---    the next byte. The 5 lower bits of the control byte combined with the next
+--    the next byte. The 5 lower bits of the control byte combined with the last
 --    byte form the offset for the back-reference (0 for prev byte).
 with Bit_Ops, Trace.Loggers, Hexa_Utils;
 use Bit_Ops;
@@ -46,20 +74,23 @@ package body Lzf is
   Max_Literal : constant Natural := Shl (1, 5);
 
   -- The maximum offset allowed for a back-reference (8192)
-  -- The offset (-1) is stored in 5+8 bits -> 1F
+  -- The offset - 1 is stored in 5 + 8 bits -> 1FFF
   Max_Off : constant Natural := Shl (1, 13);
 
   -- The maximum back-reference length (264)
+  -- 7 + one byte to store length - 3
   Max_Ref : constant Natural := Shl (1, 8) + Shl (1, 3);
 
-  -- Return the integer with the first two bytes 0, then the bytes at the
-  --  index, then at index+1
+  -- Compute the input to Next to compute the future
+  -- Return the integer with the first two bytes 0, then the byte at the
+  --  index and the byte at index + 1
   function First (A : Byte_Array; I : Integer) return Integer is
   pragma Inline (First);
   begin
     return Shl (Integer(A(A'First + I)), 8) or Integer(A(A'First + I + 1));
   end First;
 
+  -- Update the future with current position
   -- Shift the value 1 byte left, and add the byte at index inPos+2
   function Next (V : Integer; A : Byte_Array; I : Integer) return Integer is
   pragma Inline (Next);
@@ -67,7 +98,7 @@ package body Lzf is
     return Shl (V and 16#FFFF#, 8) or Integer(A(A'First + I + 2));
   end Next;
 
-  -- Compute the address in the hash table.
+  -- Compute the hash value of a future
   function Hash (H : Integer) return Integer is
   pragma Inline (Hash);
   begin
@@ -77,6 +108,7 @@ package body Lzf is
 
   -- Convert an int into a byte
   function To_Byte (I : Integer) return Byte is
+  pragma Inline (To_Byte);
   begin
     return Byte (I and 16#FF#);
   end To_Byte;
@@ -87,15 +119,24 @@ package body Lzf is
   procedure Compress (Input : in Byte_Array;
                       Output : out Byte_Array;
                       Outlen : out Natural) is
+    -- Indexes in input and output flows
     In_Pos : Integer := 0;
     Out_Pos : Integer := Output'First + 1;
+    -- Hash table: indexes are the hash of future and values are indexes
+    --  in the input flow
     Hash_Table : Hash_Table_Type := (others => -1);
+    -- Current, next and next-next bytes
     Future : Integer;
+    -- NUmber of literal in current run
     Literals : Integer := 0;
+    -- Next-next byte
     P2 : Byte;
-    Off, Ref : Integer;
-    Len, Max_Len : Integer;
+    -- Absolute and relative index, in input, of cross reference
+    Ref, Off : Integer;
+    -- Do we match the cross reference found at Hash(Future) in Hash_Table
     Match : Boolean;
+    -- Length and max_len of a match with cross reference
+    Len, Max_Len : Integer;
     use type C_Types.Byte;
   begin
     if not Logger.Is_Init then
@@ -397,7 +438,7 @@ package body Lzf is
         Ctrl := Out_Pos - Ctrl;
         -- Areas may overlap! so we must copy byte per byte
         for I in 0 .. Len - 1 loop
-          Output(Out_Pos + I) := Output (Ctrl + I);
+          Output(Out_Pos + I) := Output(Ctrl + I);
         end loop;
         Out_Pos := Out_Pos + Len;
       end if;

@@ -1,4 +1,5 @@
 with C_Types;
+-- Lzf compression
 package Lzf is
 
   -- An array of bytes to (un)compress
@@ -18,6 +19,8 @@ package Lzf is
                         Output : out Byte_Array;
                         Outlen : out Natural);
 
+  -- Output is too small
   Too_Big : exception;
+
 end Lzf;
 
