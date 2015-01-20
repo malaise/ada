@@ -47,6 +47,15 @@
 --    If all three bits are set, then the back-reference length - 7 is stored in
 --    the next byte. The 5 lower bits of the control byte combined with the last
 --    byte form the offset for the back-reference (0 for prev byte).
+
+-- Main differences from the original implementation (in C):
+-- - The hash table is initialized with -1, which avoids comparisons when
+--   the hashing leads to an empty cell. If this raises an issue, the hash
+--   can be initialised with 0, or even not initialised at all, but in both
+--   cases the test of match "Ref >= 0" must become strict ("Ref > 0").
+-- - The most upper byte of the future is always masked when shifting, so that
+--   the match always applies to the next 3 bytes, excluding the byte that is in
+--   the past.
 with Bit_Ops, Trace.Loggers, Hexa_Utils;
 use Bit_Ops;
 pragma Optimize (Time);
@@ -66,7 +75,12 @@ package body Lzf is
   -- The number of entries in the hash table. The size is a trade-off between
   --  hash collisions (reduced compression) and speed (amount that fits in CPU
   --  cache)
-  Hash_Size : constant Natural := Shl (1, 14);
+  -- The difference between 15 and 14 is very small
+  -- Sor small blocks (and 14 is usually a bit faster).
+  -- For a low-memory/faster configuration, use Hash_Log = 13
+  -- For best compression, use 15 or 16 (or more, up to 22).
+  Hash_Log : constant := 16;
+  Hash_Size : constant Natural := Shl (1, Hash_Log);
   type Hash_Table_Type is array (0 .. Hash_Size - 1) of Integer;
 
   -- The maximum number of literals in a chunk (32)
@@ -102,8 +116,7 @@ package body Lzf is
   function Hash (H : Integer) return Integer is
   pragma Inline (Hash);
   begin
-    return Integer(Shr (Long_Long_Integer(H) * 2777, 9) and 16#7FFFFFFF#)
-                   and (Hash_Size - 1);
+    return (Shr (H, 3 * 8 - Hash_Log) - H * 5) and (Hash_Size - 1);
   end Hash;
 
   -- Convert an int into a byte
