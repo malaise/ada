@@ -425,7 +425,7 @@ long_long_limited_pool limited_pool unlimited_pool (2)::
 lower_char lower_str mixed_str upper_char upper_str (1)::
      Upper, lower, mixed string and character conversion.
 
-lzf::
+lzf (2)::
      Extremely fast compression / uncompression algorithm.
 
 magic_numbers (1)::

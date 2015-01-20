@@ -212,6 +212,7 @@ Misc::
      Many simple programs here. The most interesting are:
 - Alook (1) properly formats the words of a (valid) Ada2012 source file.
 - Astat (1) counts the number of instruction of (valid) Ada source files.
+- Azf (1) (un)compress a flow of bytes with Lzf.
 - Dtd_Checker (1) checks a DTD file (of a xml).
 - G (1) is a game where to find the remaining of division by 3.
 - Prime (1) searches prime numbers.

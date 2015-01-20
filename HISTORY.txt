@@ -4,6 +4,23 @@ Main changes
 
 [horizontal]
 
+*2015/01/19*:: Add Lzf library
+
+*2015/01/08*:: Fix enigma double stepping
+
+*2014/12/22*:: Fix processing of ANY and EMPTY elements in Xml_Parser
+V39.0, Xml_Parser.Generator V16.0 and xml_checker V20.0
+
+*2014/11/14*:: Add support for tags in agite, V16.0
+
+*2014/10/06*:: Add passive mode and multicast in autobus
+
+*2014/08/25*:: Improve Generator checks and handling of Is_Mixed in Xml_Parser
+V35.0, Xml_Parser.Generator V15.0 and xml_checker V19.1
+
+*2014/08/01*:: Improve output for children units and add option to list
+revert references by bodies in lsadeps, V10.0
+
 *2014/06/20*:: Add option -l | --list to lsadeps, V9.0
 
 *2014/06/11*:: Simplify syntax and add new statements to tcpchat, V4.0
@@ -69,7 +86,7 @@ xml_checker V16.1
 
 *2012/01/04*:: Add keep local doctype definition even if a dtd file is provided in Xml_Parser V27.4
 +
-Fix output when some prologue when no xml directive in Xml_parser.Generator
+Fix output when some prologue when no xml directive in Xml_Parser.Generator
 V9.3
 
 *2012/01/04*:: Fix "<!INCLUDE[" (with no separators after INCLUDE)
