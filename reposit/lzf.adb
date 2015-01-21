@@ -49,20 +49,20 @@
 --    byte form the offset for the back-reference (0 for prev byte).
 
 -- Main differences from the original implementation (in C):
--- - The hash table is initialized with -1, which avoids comparisons when
---   the hashing leads to an empty cell. If this raises an issue, the hash
+-- - The hash table is initialized with -1, which allows a match with index 0
+--   (first bytes). If this raises a performance issue, the hash
 --   can be initialised with 0, or even not initialised at all, but in both
 --   cases the test of match "Ref >= 0" must become strict ("Ref > 0").
 -- - The most upper byte of the future is always masked when shifting, so that
 --   the match always applies to the next 3 bytes, excluding the byte that is in
 --   the past.
-with Bit_Ops, Trace.Loggers, Hexa_Utils;
+with Bit_Ops, Trace, Hexa_Utils;
 use Bit_Ops;
 pragma Optimize (Time);
 package body Lzf is
 
   -- Trace logger
-  Logger : Trace.Loggers.Logger;
+  package Logger is new Trace.Basic_Logger ("Lzf");
   procedure Log (Msg : in String) is
   pragma Inline (Log);
   begin
@@ -152,9 +152,6 @@ package body Lzf is
     Len, Max_Len : Integer;
     use type C_Types.Byte;
   begin
-    if not Logger.Is_Init then
-      Logger.Init ("Lzf");
-    end if;
 
     if Input'Length = 0 then
       Outlen := 0;
@@ -383,9 +380,6 @@ package body Lzf is
     In_Pos, Out_Pos : Integer;
     Ctrl, Len : Integer;
   begin
-    if not Logger.Is_Init then
-      Logger.Init ("Lzf");
-    end if;
 
     if Input'Length = 0 then
       Log ("Empty input");
