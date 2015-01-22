@@ -59,22 +59,70 @@
 --   hashing it. Still, this does not change the result of the hashing.
 with Bit_Ops; use Bit_Ops;
 --#Ifdef Trace
-with Trace, Hexa_Utils;
+  --#Ifdef LocalTrace
+    with Ada.Text_Io;
+  --#Else
+    with Trace, Hexa_Utils;
+  --#Endif
 --#Endif
 pragma Optimize (Time);
 package body Lzf is
 
   --#Ifdef Trace
-  -- Trace logger
-  package Logger is new Trace.Basic_Logger ("Lzf");
-  procedure Log (Msg : in String) is
-  pragma Inline (Log);
-  begin
-    Logger.Log_Debug (Msg);
-  end Log;
 
-  -- Image of a byte
-  function Image is new Hexa_Utils.Mod_Image (Byte);
+    --#Ifdef LocalTrace
+      -- Logging
+      package Logger is
+        function Debug_On return Boolean;
+      end Logger;
+      package body Logger is
+        function Debug_On return Boolean is
+        pragma Inline (Debug_On);
+        begin
+          -- Static activation of traces
+          return True;
+        end Debug_On;
+      end Logger;
+      procedure Log (Msg : in String) is
+      pragma Inline (Log);
+      begin
+        Ada.Text_Io.Put_Line (Ada.Text_Io.Standard_Error, Msg);
+      end Log;
+      -- Image of natural
+      package Int_Io is new Ada.Text_Io.Integer_Io (Integer);
+      package Hexa_Utils is
+        function Image (N : Natural) return String;
+      end Hexa_Utils;
+      package body Hexa_Utils is
+        function Image (N : Natural) return String is
+          Str : String (1 .. 12); -- 16#FFFFFFFF#
+        begin
+          Int_Io.Put (Str, N, 16);
+          return Str;
+        end Image;
+      end Hexa_Utils;
+      -- Image of a byte
+      package Byte_Io is new Ada.Text_Io.Modular_Io (Byte);
+      function Image (B : Byte) return String is
+        Str : String (1 .. 6); -- 16#FF#
+      begin
+        Byte_Io.Put (Str, B, 16);
+        return Str;
+      end Image;
+
+    --#Else
+
+      -- Trace logger
+      package Logger is new Trace.Basic_Logger ("Lzf");
+      procedure Log (Msg : in String) is
+      pragma Inline (Log);
+      begin
+        Logger.Log_Debug (Msg);
+      end Log;
+      -- Image of a byte
+      function Image is new Hexa_Utils.Mod_Image (Byte);
+    --#Endif
+
   --#Endif
 
   -- The number of entries in the hash table. The size is a trade-off between
