@@ -11,7 +11,7 @@ SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg afpx_bld-xref \
 OPTIMIZED := lzf
 EXES := afpx_bld afpx_rnb clear_screen
 
-PARGS_lzf.apb := Trace LocalTrace
+PARGS_lzf.apb := Trace
 CLIBS_afpx_bld := cutil x_mng posix2pcre pcre X11
 CLIBS_afpx_rnb := cutil x_mng posix2pcre pcre X11
 CLIBS_clear_screen := cutil

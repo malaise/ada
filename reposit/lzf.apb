@@ -80,7 +80,7 @@ package body Lzf is
         pragma Inline (Debug_On);
         begin
           -- Static activation of traces
-          return True;
+          return False;
         end Debug_On;
       end Logger;
       procedure Log (Msg : in String) is
