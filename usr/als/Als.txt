@@ -1,6 +1,6 @@
 Als
 ===
-V13.3
+V13.4
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, the output format of each entry, and general
@@ -9,10 +9,21 @@ formatting options.
 General syntax
 --------------
 
- Usage: als [ { <option> } ] [ { <file_or_dir_spec> } ]
+ Usage: als [ { <option> } ] [ { <file_or_dir_name> } ]
  or   : als -h | --help | -v | --version
 
-List files or directory contents.
+List file or directory contents.
+
+NOTE: The arguments '<file_or_dir_name>' must denote existing files or
+directories. +
+Wildcards are not supported for these arguments but often, the shell expands
+the wildcards before providing the arguments to the program.  This is why,
+for example, "als \*.xml" may work while "als \'\*.xml'" will fail. On this
+respect 'als' behaves like 'ls'. +
+Prefer the option '<match_name>' to specify target names with wildcards. For
+example, "als -m \'*.xml' subdir" will list the files with suffix 'xml' in
+the subdirectory 'subdir'.
+
 
 Detailed options
 ----------------
@@ -34,20 +45,21 @@ Specify which entry to select
   --depth=<positive>         Scan only to given depth (needs "-R")
 
   --skip_dirs                Skip directories from arguments
-                               (useful when calling "asl *")
+                               (useful when calling "als *")
   --no_name                  Do not show directory names
 
   <match_name> ::= -m <criteria> | --match=<criteria>
     <criteria> ::= <templates> | @<regex>
     <templates> ::= <template> [ { ,<template> } ]
                              Keep only files that match the criteria
-                              (one template or the regular expression)
+                              (name matches one template or the regular expression)
   <exclude_name> ::= -e <criteria> | --exclude=<criteria>
                              Exclude files that match the criteria
   <match_dir> ::= --match_dir=<criteria>
                              Scan only directories that match the criteria
   <exclude_dir> ::= --exclude_dir=<criteria>
                              Don't scan directories that match the criteria
+
   --follow_links             Consider final target of symbolic links
 
   <date_spec> [ <date_spec> ]
@@ -124,6 +136,14 @@ Examples:
 * Sorting criterai are mutually exclusive.
 * -d and -n are mutually exclusive.
 * -S is not compatible with some other formatting options (-l, -1 and -c).
+
+.Some options are combined according to a specific logic
+
+* Matching applies to the target of the link (if '--follow_links').
+* Several matching criteria are usually combined with operator 'and', except
+that:
+ - several kinds are combined with 'or',
+ - several name matching patterns or regex are combined with 'or'.
 
 Als exit codes
 --------------

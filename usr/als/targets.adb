@@ -1,5 +1,5 @@
 with As.U.Utils, Directory, Argument, Basic_Proc;
-with Lister, Output, Exit_Code;
+with Lister, Output, Exit_Code, Debug;
 package body Targets is
 
   -- List of absolute paths from origin to current, to detect loops of symlinks
@@ -40,26 +40,32 @@ package body Targets is
       if Recursive and then Follow_Links then
         if Rope.Search (Curdir) then
           -- Current directory already listed (due to recursive symbolic links)
+          Debug.Log ("  Found in rope");
           return Found;
         end if;
         Rope.Insert (Curdir);
       end if;
-      -- Do this dir
-      if Need_New_Line then
-        -- Insert a New_Line between previous output (files or dir) and current
-        Output.New_Line;
-      end if;
-      Lister.List (Entries, Dir, Dots, Count_Dot);
-      if not Merge then
-        if Put_Name then
-          Output.Put_Dir (Dir);
+      if Lister.Dir_Matches (Dir) then
+        Debug.Log ("  Dir matches");
+        -- Do this dir
+        if Need_New_Line then
+          -- Insert a New_Line between previous output (files or dir) and current
+          Output.New_Line;
         end if;
-        if not Entries.Is_Empty then
-          Found := True;
-          Output.Put (Entries, True);
-          Need_New_Line := Put_Name;
-          Entries.Delete_List;
+        Lister.List (Entries, Dir, Dots, Count_Dot);
+        if not Merge then
+          if Put_Name then
+            Output.Put_Dir (Dir);
+          end if;
+          if not Entries.Is_Empty then
+            Found := True;
+            Output.Put (Entries, True);
+            Need_New_Line := Put_Name;
+            Entries.Delete_List;
+          end if;
         end if;
+      else
+        Debug.Log ("  Dir does not match");
       end if;
       -- Done except if recursive
       if not Recursive then
@@ -85,6 +91,7 @@ package body Targets is
               Dir, Subdir.Image, ""));
         end if;
         -- Recursive invocation
+        Debug.Log ("Doing subdir " & Subdir.Image);
         Found := Found or Do_Dir (Subdir.Image, Put_Dir_Names, Level + 1,
                                   False);
         exit when not Moved;
@@ -107,6 +114,7 @@ package body Targets is
           if File /= ""
           and then Directory.File_Kind (File) /= Directory.Dir then
             -- Add this "file" if it matches
+            Debug.Log ("Listing arg " & File);
             Lister.List (Entries, File);
           end if;
         exception
@@ -130,6 +138,7 @@ package body Targets is
     if Args.Get_First_Pos_After_Keys = 0
     or else Argument.Get_Parameter (
           Occurence => Args.Get_First_Pos_After_Keys) = "" then
+      Debug.Log ("Doing dir .");
       Found := Found or Do_Dir (".", False, 1, True);
     end if;
 
@@ -141,9 +150,9 @@ package body Targets is
           Dir : constant String := Argument.Get_Parameter (Occurence => I);
         begin
           if Dir /= ""
-          and then Directory.File_Kind (Dir) = Directory.Dir
-          and then Lister.Dir_Matches (Dir) then
+          and then Directory.File_Kind (Dir) = Directory.Dir then
             -- Add this "Dir"
+            Debug.Log ("Doing dir " & Dir);
             Found := Found or Do_Dir (Dir, Put_Dir_Names, 1, True);
           end if;
         exception

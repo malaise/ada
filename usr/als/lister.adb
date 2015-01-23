@@ -1,7 +1,7 @@
 with Ada.Calendar;
 with Basic_Proc, Argument, Sys_Calls, Regular_Expressions, Directory,
      Dynamic_List;
-with Exit_Code;
+with Exit_Code, Debug;
 package body Lister is
 
   -- List of file templates
@@ -134,13 +134,16 @@ package body Lister is
     end if;
   end Match;
 
-  -- Does a file name match a template or regex
+  -- Does a file full name match a template or regex
   function Match (File, Template : String; Regex : Boolean) return Boolean is
   begin
     if Regex then
-      return Regular_Expressions.Match (Template, File, Strict => True);
+      -- Full name v.s. regex
+      return Regular_Expressions.Match (Template, Directory.Basename (File),
+                                        Strict => True);
     else
-      return Directory.File_Match (File, Template);
+      -- Basename v.s. template
+      return Directory.File_Match (Directory.Basename (File), Template);
     end if;
   end Match;
 
@@ -149,10 +152,12 @@ package body Lister is
     Tmpl : Tmpl_Rec;
     Moved : Boolean;
   begin
+    Debug.Log ("  Checking match for " & Ent.Name.Image);
     -- Check file type and date
     if not Match (Ent.Kind, Ent.Link_Ok)
     or else not Match (Ent.Modif_Time, Date1)
     or else not Match (Ent.Modif_Time, Date2) then
+      Debug.Log ("    Kind or date mismatch");
       return False;
     end if;
     -- Check versus exclusion templates
@@ -162,6 +167,7 @@ package body Lister is
         Excludes.Read (Tmpl, Moved => Moved);
         if Match (Ent.Name.Image, Tmpl.Template.Image, Tmpl.Regex) then
           -- The file matches this exclusion template
+          Debug.Log ("    Match exclusion " & Tmpl.Template.Image);
           return False;
         end if;
         exit when not Moved;
@@ -177,11 +183,13 @@ package body Lister is
       Matches.Read (Tmpl, Moved => Moved);
       if Match (Ent.Name.Image, Tmpl.Template.Image, Tmpl.Regex) then
         -- The file matches this matching template
+        Debug.Log ("    Match " & Tmpl.Template.Image);
         return True;
       end if;
       exit when not Moved;
     end loop;
     -- The file does not match any matching template
+    Debug.Log ("    No match");
     return False;
   end Match;
 
@@ -393,7 +401,6 @@ package body Lister is
     Desc.Close;
   end List;
 
-
   -- Add a dir match or exclude template or regex
   -- Dir will match if no matching template or if it matches one of the
   --  matching templates, and if it does not match any exclude template
@@ -424,13 +431,13 @@ package body Lister is
       loop
         Dir_Exclude.Read (Tmpl, Moved => Moved);
         if Match (Dir, Tmpl.Template.Image, Tmpl.Regex) then
-          -- The file matches this exclusion template
+          -- The dir matches this exclusion template
           return False;
         end if;
         exit when not Moved;
       end loop;
     end if;
-    -- File matches if no matching template
+    -- Dir matches if no matching template
     if Dir_Match.Is_Empty then
       return True;
     end if;
@@ -439,12 +446,12 @@ package body Lister is
     loop
       Dir_Match.Read (Tmpl, Moved => Moved);
       if Match (Dir, Tmpl.Template.Image, Tmpl.Regex) then
-        -- The file matches this matching template
+        -- The dir matches this matching template
         return True;
       end if;
       exit when not Moved;
     end loop;
-    -- The file does not match any matching template
+    -- The dir does not match any matching template
     return False;
   end Dir_Matches;
 
@@ -494,12 +501,11 @@ package body Lister is
         if Lstr /= "."
         and then Lstr /= ".." then
           Kind := Directory.File_Kind (Fstr);
-          if Kind = Directory.Dir and then Dir_Matches (Lstr) then
-            -- Directory matches: Append entity to list
+          if Kind = Directory.Dir then
+            -- Directory: Append entity to list
             List.Insert (Str);
-          elsif Follow_Links and then Kind = Directory.Link
-          and then Dir_Matches (Lstr) then
-            -- Follow_Link and link matches, check it is a directory
+          elsif Follow_Links and then Kind = Directory.Link then
+            -- Follow link
             begin
               Link_Target := As.U.Tus (Directory.Read_Link (
                   File_Name => Fstr, Recursive => True));

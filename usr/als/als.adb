@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister, Exit_Code, Str_Util;
 procedure Als is
-  Version : constant String  := "V13.3";
+  Version : constant String  := "V13.4";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -55,7 +55,7 @@ procedure Als is
     use Basic_Proc;
   begin
     Put_Line_Error ("Usage:" & Argument.Get_Program_Name
-      & " [ { <option> } ] [ { <file_or_dir_spec> } ]");
+      & " [ { <option> } ] [ { <file_or_dir_name> } ]");
     Put_Line_Error ("   or: " & Argument.Get_Program_Name
       & " " & Argument_Parser.Image(Keys(12))
       & " | " & Argument_Parser.Image(Keys(13)));
@@ -75,8 +75,8 @@ procedure Als is
     Put_Line_Error ("  <match_name>   ::= " & Argument_Parser.Image(Keys(16)));
     Put_Line_Error ("    <criteria>     ::= <templates> | @<regex>");
     Put_Line_Error ("    <templates>    ::= <template> [ { ,<template> } ]");
-    Put_Line_Error ("                     // Keep only files that match the criteria (one template");
-    Put_Line_Error ("                     //  or the regular expression)");
+    Put_Line_Error ("                     // Keep only files which name matches the criteria");
+    Put_Line_Error ("                     //  (one template or the regular expression)");
     Put_Line_Error ("  <exclude_name> ::= " & Argument_Parser.Image(Keys(17)));
     Put_Line_Error ("                     // Exclude files that match the criteria");
     Put_Line_Error ("  <match_dir>    ::= " & Argument_Parser.Image(Keys(18)));
