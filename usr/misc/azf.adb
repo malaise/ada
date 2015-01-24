@@ -11,12 +11,14 @@ procedure Azf is
   procedure Help is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-        &  " [ -s <buffer_size> | -H ] -c | -d | -h");
+        &  " [ -s <buffer_size> | -H ] [ -S | -F ] -c | -d | -h");
     Basic_Proc.Put_Line_Error (" -c : Compress stdin to stdout");
     Basic_Proc.Put_Line_Error (" -d : Uncompress stdin to stdout");
     Basic_Proc.Put_Line_Error (" -s : Set buffer size in Mega Bytes (max "
                              & Images.Integer_Image (Max_Buffer_Size) & ")");
     Basic_Proc.Put_Line_Error (" -H : Use headers (and buffers of 64 kB)");
+    Basic_Proc.Put_Line_Error (" -S : Slower (better) compression");
+    Basic_Proc.Put_Line_Error (" -F : Faster (worse) compression");
     Basic_Proc.Put_Line_Error (" -h : Display this help");
   end Help;
   procedure Error (Msg : in String) is
@@ -28,11 +30,13 @@ procedure Azf is
 
   -- Argument parsing
   Keys : constant Argument_Parser.The_Keys_Type := (
-    01 => (False, 'c', As.U.Tus ("compress"),    False),
-    02 => (False, 'd', As.U.Tus ("decompress"),  False),
-    03 => (True,  's', As.U.Tus ("buffer_size"), False, True, As.U.Tus ("MB")),
-    04 => (False, 'H', As.U.Tus ("headers"),     False),
-    05 => (False, 'h', As.U.Tus ("help"),        False));
+    01 => (False, 'h', As.U.Tus ("help"),        False),
+    02 => (False, 'c', As.U.Tus ("compress"),    False),
+    03 => (False, 'd', As.U.Tus ("decompress"),  False),
+    04 => (True,  's', As.U.Tus ("buffer_size"), False, True, As.U.Tus ("MB")),
+    05 => (False, 'H', As.U.Tus ("headers"),     False),
+    06 => (False, 'S', As.U.Tus ("slow"),        False),
+    07 => (False, 'F', As.U.Tus ("fast"),        False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Do we compress
@@ -43,6 +47,9 @@ procedure Azf is
 
   -- Buffer size
   Buffer_Size : Positive := 1;
+
+  -- Compression speed
+  Speed : Lzf.Compression_Speed := Lzf.Default_Speed;
 
   -- Header: "Z V", then either "0 Uh Ul" or "1 Ch Cl Uh Ul"
   --  High and low bytes of uncompressed and compressed length
@@ -117,7 +124,7 @@ begin
     return;
   end if;
   -- Help
-  if Arg_Dscr.Is_Set (5) then
+  if Arg_Dscr.Is_Set (1) then
     Help;
     return;
   end if;
@@ -127,21 +134,39 @@ begin
     return;
   end if;
   -- (un)compress
-  if (Arg_Dscr.Is_Set (1) and then Arg_Dscr.Is_Set (2))
-  or else (not Arg_Dscr.Is_Set (1) and then not Arg_Dscr.Is_Set (2)) then
+  if (Arg_Dscr.Is_Set (2) and then Arg_Dscr.Is_Set (3))
+  or else (not Arg_Dscr.Is_Set (2) and then not Arg_Dscr.Is_Set (3)) then
     Error ("Expecting either compress or decompress");
     return;
   end if;
-  Compress := Arg_Dscr.Is_Set (1);
+  Compress := Arg_Dscr.Is_Set (2);
   -- Buffer size or header
-  if Arg_Dscr.Is_Set (3) and then Arg_Dscr.Is_Set (4) then
+  if Arg_Dscr.Is_Set (4) and then Arg_Dscr.Is_Set (5) then
     Error ("Headers is exclusive with buffer size");
     return;
   end if;
-  if Arg_Dscr.Is_Set (3) then
-    Parse_Size (Arg_Dscr.Get_Option (3));
-  elsif Arg_Dscr.Is_Set (4) then
+  if Arg_Dscr.Is_Set (4) then
+    Parse_Size (Arg_Dscr.Get_Option (4));
+  elsif Arg_Dscr.Is_Set (5) then
     Header_Mode := True;
+  end if;
+  -- Compression speed
+  if Arg_Dscr.Is_Set (6) or else Arg_Dscr.Is_Set (7) then
+    if not Compress then
+      Error ("Compression speed is expected only for compression");
+      return;
+    end if;
+    if Arg_Dscr.Is_Set (6) and then Arg_Dscr.Is_Set (7) then
+      Error ("Expecting only one compression speed");
+      return;
+    end if;
+    if Arg_Dscr.Is_Set (6) then
+     -- Slow means Lzf.Fast (default is Lzf.Very_Fast)
+     Speed := Lzf.Fast;
+    else
+     -- Fast means Lzf.Ultra_Fast (default is Lzf.Very_Fast)
+     Speed := Lzf.Ultra_Fast;
+    end if;
   end if;
 
   -- Create buffers
@@ -160,7 +185,7 @@ begin
 
     -- (Un)compress
     if Compress then
-      Lzf.Compress (Inb(1 .. Inl), Outb.all, Outl);
+      Lzf.Compress (Inb(1 .. Inl), Outb.all, Outl, Speed);
       Logger.Log_Debug ("Compressed into " & Outl'Img & " bytes");
     else
       Lzf.Uncompress (Inb(1..Inl), Outb.all, Outl);
@@ -184,7 +209,7 @@ begin
       Inl := Read (Inb.all, Max_Len_Header);
       Logger.Log_Debug ("Read " & Inl'Img & " bytes");
       exit when Inl = 0;
-      Lzf.Compress (Inb(1 .. Inl), Outb.all, Outl);
+      Lzf.Compress (Inb(1 .. Inl), Outb.all, Outl, Speed);
       Logger.Log_Debug ("Compressed into " & Outl'Img & " bytes");
       if Outl > Inl then
         -- Compression lead to longer output, write input
