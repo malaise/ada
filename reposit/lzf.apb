@@ -124,13 +124,25 @@ package body Lzf is
   -- The number of entries in the hash table. The size is a trade-off between
   --  hash collisions (reduced compression) and speed (amount that fits in CPU
   --  cache)
-  -- The difference between 15 and 14 is very small
-  -- Sor small blocks (and 14 is usually a bit faster).
+  -- The difference between 15 and 14 is very small for small blocks (and 14
+  --  is usually a bit faster).
   -- For a low-memory/faster configuration, use Hash_Log = 13
   -- For best compression, use 15 or 16 (or more, up to 22).
-  Hash_Log : constant := 16;
-  Hash_Size : constant Natural := Shl (1, Hash_Log);
-  type Hash_Table_Type is array (0 .. Hash_Size - 1) of Integer;
+  subtype Hash_Log_Range is Natural range 13 .. 22;
+  -- Values above 16 do not significantly improve the compression rate
+  --  but significantly degrade the compression time (3 times for 22).
+  -- Values below 16 do not significantly change anything.
+  Hash_Logs : constant array (Compression_Speed) of Hash_Log_Range
+            := (Fast       => 22,
+                Very_Fast  => 16,
+                Ultra_Fast => 13);
+  Hash_Sizes : constant array (Compression_Speed) of Natural
+             := (Fast       => Shl (1, Hash_Logs(Fast)),
+                 Very_Fast  => Shl (1, Hash_Logs(Very_Fast)),
+                 Ultra_Fast => Shl (1, Hash_Logs(Ultra_Fast)));
+  -- Hash table: array (0 .. Hash_Sizes(Speed) - 1)
+  type Hash_Table_Type is array (Natural range <>) of Integer;
+
   -- The initial value of the Hash_Table
   Default_Hash : constant Integer := -1;
 
@@ -169,12 +181,14 @@ package body Lzf is
   begin
     case Speed is
       when Fast =>
-        return (Shr (H xor Shl (H, 5), 3 * 8 - Hash_Log) - H * 5)
-               and (Hash_Size - 1);
+        return (Shr (H xor Shl (H, 5), 3 * 8 - Hash_Logs(Fast))       - H * 5)
+               and (Hash_Sizes(Fast) - 1);
       when Very_Fast =>
-        return (Shr (H, 3 * 8 - Hash_Log) - H * 5) and (Hash_Size - 1);
+        return (Shr (H,                3 * 8 - Hash_Logs(Very_Fast))  - H * 5)
+               and (Hash_Sizes(Very_Fast) - 1);
       when Ultra_Fast =>
-        return (Shr (H, 3 * 8 - Hash_Log) - H)     and (Hash_Size - 1);
+        return (Shr (H,                3 * 8 - Hash_Logs(Ultra_Fast)) - H)
+               and (Hash_Sizes(Ultra_Fast) - 1);
     end case;
   end Hash;
 
@@ -197,7 +211,8 @@ package body Lzf is
     Out_Pos : Integer := Output'First + 1;
     -- Hash table: indexes are the hash of future and values are indexes
     --  in the input flow
-    Hash_Table : Hash_Table_Type := (others => -1);
+    Hash_Table : Hash_Table_Type (0 .. Hash_Sizes(Speed) - 1)
+               := (others => Default_Hash);
     -- Current, next and next-next bytes
     Future : Integer;
     -- NUmber of literal in current run
