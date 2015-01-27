@@ -1,4 +1,4 @@
-with As.U.Utils;
+with As.U.Utils, Trilean;
 with Entities;
 package Lister is
 
@@ -38,7 +38,14 @@ package Lister is
   procedure Add_Dir_Exclude (Template : in String; Regex : in Boolean);
 
   -- Does a dir (full path) match
-  function Dir_Matches (Dir : String) return Boolean;
+  -- True: Does not match any exclusion and matches one inclusion
+  --       => show and go on
+  -- False: Does not match any exclusion nor any inclusion
+  --       => don't show and go on
+  -- Discard : matches an exclusion
+  --       => discard
+  Discard : constant Trilean.Trilean := Trilean.Other;
+  function Dir_Matches (Dir : String) return Trilean.Trilean;
 
   -- List subdirs of Dir (apply matching and exclude criteria)
   package Dir_List_Mng renames Str_List_Mng;

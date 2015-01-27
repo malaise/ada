@@ -1,6 +1,6 @@
 Als
 ===
-V13.4
+V13.5
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, the output format of each entry, and general
@@ -144,6 +144,28 @@ Examples:
 that:
  - several kinds are combined with 'or',
  - several name matching patterns or regex are combined with 'or'.
+
+Name matching
+~~~~~~~~~~~~~
+The general rule is that, if at least one matching criteria is provided, then
+the name must match at least one of them. No criteria means "all names
+match". +
+Conversely, if at least one exclusion criteria is provided, then
+the name must not match any of them. No criterai means "all names
+match" as well.
+
+The matching of directory name in recursive mode is handled a specific way:
+
+* If the current directory name matches a 'exclude_dir' criteria, then
+its content *and* subdirectories are skipped.
+
+* If the name matches a 'match_dir' criteria (or if there is none)
+and does not match any 'exclude_dir' criteria (or if there is none), then the
+content of the directory is listed and the subdirectories are scanned.
+
+* If the name doesn't matches any 'match_dir' criteria
+and does not match any 'exclude_dir' criteria (or if there is none), then the 
+content of the directory is skipped but its subdirectories are scanned.
 
 Als exit codes
 --------------

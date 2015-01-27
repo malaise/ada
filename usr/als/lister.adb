@@ -421,7 +421,7 @@ package body Lister is
   end Add_Dir_Exclude;
 
   -- Does a dir (full path) match
-  function Dir_Matches (Dir : String) return Boolean is
+  function Dir_Matches (Dir : String) return Trilean.Trilean is
     Tmpl : Tmpl_Rec;
     Moved : Boolean;
   begin
@@ -432,14 +432,14 @@ package body Lister is
         Dir_Exclude.Read (Tmpl, Moved => Moved);
         if Match (Dir, Tmpl.Template.Image, Tmpl.Regex) then
           -- The dir matches this exclusion template
-          return False;
+          return Discard;
         end if;
         exit when not Moved;
       end loop;
     end if;
     -- Dir matches if no matching template
     if Dir_Match.Is_Empty then
-      return True;
+      return Trilean.True;
     end if;
     -- Check versus matching templates
     Dir_Match.Rewind;
@@ -447,12 +447,12 @@ package body Lister is
       Dir_Match.Read (Tmpl, Moved => Moved);
       if Match (Dir, Tmpl.Template.Image, Tmpl.Regex) then
         -- The dir matches this matching template
-        return True;
+        return Trilean.True;
       end if;
       exit when not Moved;
     end loop;
     -- The dir does not match any matching template
-    return False;
+    return Trilean.False;
   end Dir_Matches;
 
   -- List subdirs of Dir

@@ -1,4 +1,4 @@
-with As.U.Utils, Directory, Argument, Basic_Proc;
+with As.U.Utils, Directory, Argument, Basic_Proc, Trilean;
 with Lister, Output, Exit_Code, Debug;
 package body Targets is
 
@@ -22,6 +22,7 @@ package body Targets is
                      Count_Dot : Boolean) return Boolean is
       Found : Boolean;
       Moved : Boolean;
+      Match : Trilean.Trilean;
       Subdirs : Lister.Dir_List;
       Curdir, Subdir : As.U.Asu_Us;
 
@@ -33,6 +34,7 @@ package body Targets is
         end if;
       end Remove_Current;
 
+      use type Trilean.Trilean;
     begin
       Found := False;
       -- Make full path of current dir ('.' or relative or absolute path)
@@ -45,7 +47,8 @@ package body Targets is
         end if;
         Rope.Insert (Curdir);
       end if;
-      if Lister.Dir_Matches (Dir) then
+      Match := Lister.Dir_Matches (Dir);
+      if Match = Trilean.True then
         Debug.Log ("  Dir matches");
         -- Do this dir
         if Need_New_Line then
@@ -64,15 +67,17 @@ package body Targets is
             Entries.Delete_List;
           end if;
         end if;
-      else
+      elsif Match = Trilean.False then
         Debug.Log ("  Dir does not match");
+      else
+        Debug.Log ("  Dir is discarded");
       end if;
-      -- Done except if recursive
-      if not Recursive then
-        Remove_Current;
-        return Found;
-      elsif Depth /= 0 and then Level > Depth then
-        -- Depth level is reached
+      -- Done if not recursive
+      -- Or directory excluded
+      -- Or depth reached
+      if not Recursive
+      or else Match = Lister.Discard
+      or else (Depth /= 0 and then Level > Depth) then
         Remove_Current;
         return Found;
       end if;
