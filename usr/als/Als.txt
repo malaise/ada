@@ -151,7 +151,7 @@ The general rule is that, if at least one matching criteria is provided, then
 the name must match at least one of them. No criteria means "all names
 match". +
 Conversely, if at least one exclusion criteria is provided, then
-the name must not match any of them. No criterai means "all names
+the name must not match any of them. No criteria means "all names
 match" as well.
 
 The matching of directory name in recursive mode is handled a specific way:
