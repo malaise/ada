@@ -132,16 +132,11 @@ package body Lzf is
   -- Values above 16 do not significantly improve the compression rate
   --  but significantly degrade the compression time (3 times for 22).
   -- Values below 16 do not significantly change anything.
-  Hash_Logs : constant array (Compression_Speed) of Hash_Log_Range
-            := (Fast       => 22,
-                Very_Fast  => 16,
-                Ultra_Fast => 13);
-  Hash_Sizes : constant array (Compression_Speed) of Natural
-             := (Fast       => Shl (1, Hash_Logs(Fast)),
-                 Very_Fast  => Shl (1, Hash_Logs(Very_Fast)),
-                 Ultra_Fast => Shl (1, Hash_Logs(Ultra_Fast)));
-  -- Hash table: array (0 .. Hash_Sizes(Speed) - 1)
-  type Hash_Table_Type is array (Natural range <>) of Integer;
+  Hash_Log : constant Hash_Log_Range := 16;
+  Hash_Size : constant Natural := Shl (1, Hash_Log);
+  -- Hash table: indexes are the hash of future and values are indexes
+  --  in the input flow
+  Hash_Table : array (0 .. Hash_Size - 1) of Integer;
 
   -- The initial value of the Hash_Table
   Default_Hash : constant Integer := -1;
@@ -176,20 +171,10 @@ package body Lzf is
   end Next;
 
   -- Compute the hash value of a future
-  function Hash (H : Integer; Speed : in Compression_Speed) return Integer is
+  function Hash (H : Integer) return Integer is
   pragma Inline (Hash);
   begin
-    case Speed is
-      when Fast =>
-        return (Shr (H xor Shl (H, 5), 3 * 8 - Hash_Logs(Fast))       - H * 5)
-               and (Hash_Sizes(Fast) - 1);
-      when Very_Fast =>
-        return (Shr (H,                3 * 8 - Hash_Logs(Very_Fast))  - H * 5)
-               and (Hash_Sizes(Very_Fast) - 1);
-      when Ultra_Fast =>
-        return (Shr (H,                3 * 8 - Hash_Logs(Ultra_Fast)) - H)
-               and (Hash_Sizes(Ultra_Fast) - 1);
-    end case;
+    return (Shr (H, 3 * 8 - Hash_Log) - H * 5) and (Hash_Size - 1);
   end Hash;
 
   -- Convert an int into a byte
@@ -204,15 +189,10 @@ package body Lzf is
   -- May raise Too_Big if Output is too small
   procedure Compress (Input  : in Byte_Array;
                       Output : out Byte_Array;
-                      Outlen : out Natural;
-                      Speed  : in Compression_Speed := Default_Speed) is
+                      Outlen : out Natural) is
     -- Indexes in input and output flows
     In_Pos : Integer := 0;
     Out_Pos : Integer := Output'First + 1;
-    -- Hash table: indexes are the hash of future and values are indexes
-    --  in the input flow
-    Hash_Table : Hash_Table_Type (0 .. Hash_Sizes(Speed) - 1)
-               := (others => Default_Hash);
     -- Current, next and next-next bytes
     Future : Integer;
     -- NUmber of literal in current run
@@ -266,6 +246,7 @@ package body Lzf is
       return;
     end if;
 
+    Hash_Table := (others => Default_Hash);
     -- Main loop
     Future := First (Input, 0);
     while In_Pos < Input'Length - 2 loop
@@ -278,7 +259,7 @@ package body Lzf is
            & ", future " & Hexa_Utils.Image (Future));
       end if;
       --#EndifDef
-      Off := Hash (Future, Speed);
+      Off := Hash (Future);
       Ref := Hash_Table(Off);
       Hash_Table(Off) := In_Pos;
       --#IfDef Trace
@@ -373,22 +354,22 @@ package body Lzf is
           --  improves the compression ratio and only reduces speed slightly.
           Future := First (Input, In_Pos);
           Future := Next (Future, Input, In_Pos);
-          Hash_Table(Hash (Future, Speed)) := In_Pos;
+          Hash_Table(Hash (Future)) := In_Pos;
           --#IfDef Trace
           if Logger.Debug_On then
             Log ("  Future " & Hexa_Utils.Image (Future)
                & " store index " & Hexa_Utils.Image (In_Pos)
-               & " at offset " & Hexa_Utils.Image (Hash (Future, Speed)));
+               & " at offset " & Hexa_Utils.Image (Hash (Future)));
           end if;
           --#EndifDef
           In_Pos := In_Pos + 1;
           Future := Next (Future, Input, In_Pos);
-          Hash_Table(Hash (Future, Speed)) := In_Pos;
+          Hash_Table(Hash (Future)) := In_Pos;
           --#IfDef Trace
           if Logger.Debug_On then
             Log ("  Future " & Hexa_Utils.Image (Future)
                & " store index " & Hexa_Utils.Image (In_Pos)
-               & " at hash " & Hexa_Utils.Image (Hash (Future, Speed)));
+               & " at hash " & Hexa_Utils.Image (Hash (Future)));
           end if;
           --#EndifDef
           In_Pos := In_Pos + 1;
@@ -476,9 +457,12 @@ package body Lzf is
     end if;
 
     Outlen := Out_Pos - Output'First;
+  --#IfDef DebugExceptions
+  --#ElseDef
   exception
     when Constraint_Error =>
       raise Too_Big;
+  --#EndifDef
   end Compress;
 
   -- Uncompress Input into Output
