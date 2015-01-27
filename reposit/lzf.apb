@@ -51,8 +51,9 @@
 -- Main differences from the original implementation (in C):
 -- - The hash table is initialized with -1, which allows a match with index 0
 --   (first three bytes). If this raises a performance issue, the hash table
---   can be initialised with 0, or even not initialised at all, but in both
---   cases Default_Hash must be set to 0.
+--   can be initialised with 0 (change Default_Hash). It can even be not
+--   initialised at all, but in this case the test "if Ref /= Default_Hash"
+--   must be replaced by "if Ref in Hash_Table'Range".
 -- - The most upper byte of the future is masked when shifting (left), otherwise
 --   the hashing fails on overflow. Considering that the future applies to 3
 --   bytes, it is cleaner to mask when building the future rather than when
@@ -136,10 +137,12 @@ package body Lzf is
   Hash_Size : constant Natural := Shl (1, Hash_Log);
   -- Hash table: indexes are the hash of future and values are indexes
   --  in the input flow
+  subtype Hash_Range is Integer range -1 .. Integer'Last;
+  subtype Hash_Ref is Hash_Range range 0 .. Hash_Range'Last;
   Hash_Table : array (0 .. Hash_Size - 1) of Integer;
 
   -- The initial value of the Hash_Table
-  Default_Hash : constant Integer := -1;
+  Default_Hash : constant Hash_Range := -1;
 
   -- The maximum number of literals in a chunk (32)
   -- Nb of literals is on 5 bits (the 3 first are 0), so up to 31 literals
@@ -153,10 +156,11 @@ package body Lzf is
   -- 7 + one byte to store length - 3
   Max_Ref : constant Natural := Shl (1, 8) + Shl (1, 3);
 
-  -- Compute the input to Next to compute the future
+  -- Compute the input to Next, to compute the future
   -- Return the integer with the first two bytes 0, then the byte at the
   --  index and the byte at index + 1
-  function First (A : Byte_Array; I : Integer) return Integer is
+  subtype Future_Range is Natural;
+  function First (A : Byte_Array; I : Natural) return Future_Range is
   pragma Inline (First);
   begin
     return Shl (Integer(A(A'First + I)), 8) or Integer(A(A'First + I + 1));
@@ -164,21 +168,22 @@ package body Lzf is
 
   -- Update the future with current position
   -- Shift the value 1 byte left, and add the byte at index inPos+2
-  function Next (V : Integer; A : Byte_Array; I : Integer) return Integer is
+  function Next (V : Future_Range; A : Byte_Array; I : Natural)
+                return Future_Range is
   pragma Inline (Next);
   begin
     return Shl (V and 16#FFFF#, 8) or Integer(A(A'First + I + 2));
   end Next;
 
   -- Compute the hash value of a future
-  function Hash (H : Integer) return Integer is
+  function Hash (V : Future_Range) return Hash_Ref is
   pragma Inline (Hash);
   begin
-    return (Shr (H, 3 * 8 - Hash_Log) - H * 5) and (Hash_Size - 1);
+    return (Shr (V, 3 * 8 - Hash_Log) - V * 5) and (Hash_Size - 1);
   end Hash;
 
   -- Convert an int into a byte
-  function To_Byte (I : Integer) return Byte is
+  function To_Byte (I : Natural) return Byte is
   pragma Inline (To_Byte);
   begin
     return Byte (I and 16#FF#);
@@ -191,20 +196,21 @@ package body Lzf is
                       Output : out Byte_Array;
                       Outlen : out Natural) is
     -- Indexes in input and output flows
-    In_Pos : Integer := 0;
-    Out_Pos : Integer := Output'First + 1;
+    In_Pos : Natural := 0;
+    Out_Pos : Positive := Output'First + 1;
     -- Current, next and next-next bytes
-    Future : Integer;
+    Future : Future_Range;
     -- NUmber of literal in current run
     Literals : Integer := 0;
     -- Next-next byte
     P2 : Byte;
     -- Absolute and relative index, in input, of cross reference
-    Ref, Off : Integer;
+    Ref : Hash_Range;
+    Off : Natural;
     -- Do we match the cross reference found at Hash(Future) in Hash_Table
     Match : Boolean;
-    -- Length and max_len of a match with cross reference
-    Len, Max_Len : Integer;
+    -- Length and Max_Len of a match with cross reference
+    Len, Max_Len : Positive;
     use type C_Types.Byte;
   begin
 
@@ -246,7 +252,9 @@ package body Lzf is
       return;
     end if;
 
+    -- Init
     Hash_Table := (others => Default_Hash);
+
     -- Main loop
     Future := First (Input, 0);
     while In_Pos < Input'Length - 2 loop
@@ -273,8 +281,7 @@ package body Lzf is
 
       -- Check if match
       Match := False;
-      if Ref < In_Pos
-      and then Ref /= Default_Hash then
+      if Ref /= Default_Hash then
         Off := In_Pos - Ref - 1;
         if Off < Max_Off
         and then Input(Input'First + Ref + 2) = P2
