@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister, Exit_Code, Str_Util;
 procedure Als is
-  Version : constant String  := "V13.5";
+  Version : constant String  := "V14.0";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -42,7 +42,8 @@ procedure Als is
    33 => (False, Nkc, As.U.Tus ("no_name"),      False),
    34 => (False, 'U', As.U.Tus ("utc"),          False),
    35 => (False, Nkc, As.U.Tus ("len_alpha"),    False),
-   36 => (False, 'q', As.U.Tus ("quiet"),        False) );
+   36 => (False, 'q', As.U.Tus ("quiet"),        False),
+   37 => (True,  Nkc, As.U.Tus ("discard_dir"),  True,  True, As.U.Tus ("criteria")));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Usage
@@ -80,9 +81,11 @@ procedure Als is
     Put_Line_Error ("  <exclude_name> ::= " & Argument_Parser.Image(Keys(17)));
     Put_Line_Error ("                     // Exclude files that match the criteria");
     Put_Line_Error ("  <match_dir>    ::= " & Argument_Parser.Image(Keys(18)));
-    Put_Line_Error ("                     // Scan only directories that match the criteria");
+    Put_Line_Error ("                     // Show only directories that match the criteria");
     Put_Line_Error ("  <exclude_dir>  ::= " & Argument_Parser.Image(Keys(19)));
-    Put_Line_Error ("                     // Don't scan directories that match the criteria");
+    Put_Line_Error ("                     // Don't show directories that match the criteria");
+    Put_Line_Error ("  <discard_dir>  ::= " & Argument_Parser.Image(Keys(37)));
+    Put_Line_Error ("                     // Discard directories that match the criteria");
     Put_Line_Error ("  <date_spec> [ <date_spec> ]");
     Put_Line_Error ("    <date_spec> ::= " & Argument_Parser.Image(Keys(11)));
     Put_Line_Error ("    <date_comp> ::= eq | lt | le | gt | ge");
@@ -160,7 +163,7 @@ procedure Als is
   -- Parse a date argument
   function Parse_Date (Str : String) return Entities.Date_Spec_Rec is separate;
 
-  -- Set a file or dir, match or exclusion criteria
+  -- Set a file or dir, match or exclusion criteria, or dir discard criteria
   type Call_Access is access procedure (Template : in String;
                                         Regex    : in Boolean);
   procedure Set_Criteria (Criteria : in String;
@@ -325,6 +328,15 @@ begin
     exception
       when Lister.Invalid_Template =>
         Error ("Invalid dir_match " & Arg_Dscr.Get_Option (19, I));
+    end;
+  end loop;
+  -- Add dir_discard if any
+  for I in 1 .. Arg_Dscr.Get_Nb_Occurences (37) loop
+    begin
+      Set_Criteria (Arg_Dscr.Get_Option (37, I), Lister.Add_Dir_Discard'Access);
+    exception
+      when Lister.Invalid_Template =>
+        Error ("Invalid dir_match " & Arg_Dscr.Get_Option (37, I));
     end;
   end loop;
 

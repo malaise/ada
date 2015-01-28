@@ -1,6 +1,6 @@
 Als
 ===
-V13.5
+V14.0
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, the output format of each entry, and general
@@ -58,7 +58,9 @@ Specify which entry to select
   <match_dir> ::= --match_dir=<criteria>
                              Scan only directories that match the criteria
   <exclude_dir> ::= --exclude_dir=<criteria>
-                             Don't scan directories that match the criteria
+                             Don't show directories that match the criteria
+  <discard_dir> ::= --discard_dir=<criteria>
+                             Discard directories that match the criteria
 
   --follow_links             Consider final target of symbolic links
 
@@ -154,18 +156,17 @@ Conversely, if at least one exclusion criteria is provided, then
 the name must not match any of them. No criteria means "all names
 match" as well.
 
-The matching of directory name in recursive mode is handled a specific way:
+The matching of directory name in recursive mode is handled a specific way. 
+If the current directory name matches a 'discard_dir' criteria, then
+its content *and* subdirectories are skipped, otherwise:
 
-* If the current directory name matches a 'exclude_dir' criteria, then
-its content *and* subdirectories are skipped.
+* If the current directory name matches a 'exclude_dir' criteria (if there are
+some), or if it does not match any 'match_dir' criteria (if there are some),
+then the content of the directory is skipped but its subdirectories are scanned.
 
 * If the name matches a 'match_dir' criteria (or if there is none)
 and does not match any 'exclude_dir' criteria (or if there is none), then the
 content of the directory is listed and the subdirectories are scanned.
-
-* If the name doesn't matches any 'match_dir' criteria
-and does not match any 'exclude_dir' criteria (or if there is none), then the 
-content of the directory is skipped but its subdirectories are scanned.
 
 Als exit codes
 --------------

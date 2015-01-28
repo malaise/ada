@@ -403,9 +403,12 @@ package body Lister is
 
   -- Add a dir match or exclude template or regex
   -- Dir will match if no matching template or if it matches one of the
-  --  matching templates, and if it does not match any exclude template
+  --  matching templates, and if it does not match any exclude or discard
+  --  template. It will be discarded (excluded AND subdirs not scanned)
+  --  if it matches a discard template
   Dir_Match : Tmpl_List;
   Dir_Exclude : Tmpl_List;
+  Dir_Discard : Tmpl_List;
   procedure Add_Dir_Match   (Template : in String; Regex : in Boolean) is
   begin
     if Check_Template (Template, Regex) then
@@ -420,11 +423,30 @@ package body Lister is
     end if;
   end Add_Dir_Exclude;
 
+  procedure Add_Dir_Discard (Template : in String; Regex : in Boolean) is
+  begin
+    if Check_Template (Template, Regex) then
+      Dir_Discard.Insert ((As.U.Tus (Template), Regex));
+    end if;
+  end Add_Dir_Discard;
+
   -- Does a dir (full path) match
   function Dir_Matches (Dir : String) return Trilean.Trilean is
     Tmpl : Tmpl_Rec;
     Moved : Boolean;
   begin
+    -- Check versus discarding templates
+    if not Dir_Discard.Is_Empty then
+      Dir_Discard.Rewind;
+      loop
+        Dir_Discard.Read (Tmpl, Moved => Moved);
+        if Match (Dir, Tmpl.Template.Image, Tmpl.Regex) then
+          -- The dir matches this discaring template
+          return Discard;
+        end if;
+        exit when not Moved;
+      end loop;
+    end if;
     -- Check versus exclusion templates
     if not Dir_Exclude.Is_Empty then
       Dir_Exclude.Rewind;
@@ -432,27 +454,28 @@ package body Lister is
         Dir_Exclude.Read (Tmpl, Moved => Moved);
         if Match (Dir, Tmpl.Template.Image, Tmpl.Regex) then
           -- The dir matches this exclusion template
-          return Discard;
+          return Trilean.False;
         end if;
         exit when not Moved;
       end loop;
     end if;
-    -- Dir matches if no matching template
-    if Dir_Match.Is_Empty then
+    if not Dir_Match.Is_Empty then
+      -- Check versus matching templates
+      Dir_Match.Rewind;
+      loop
+        Dir_Match.Read (Tmpl, Moved => Moved);
+        if Match (Dir, Tmpl.Template.Image, Tmpl.Regex) then
+          -- The dir matches this matching template
+          return Trilean.True;
+        end if;
+        exit when not Moved;
+      end loop;
+      -- The dir does not match any of the matching templates
+      return Trilean.False;
+    else
+      -- Dir matches if no matching template
       return Trilean.True;
     end if;
-    -- Check versus matching templates
-    Dir_Match.Rewind;
-    loop
-      Dir_Match.Read (Tmpl, Moved => Moved);
-      if Match (Dir, Tmpl.Template.Image, Tmpl.Regex) then
-        -- The dir matches this matching template
-        return Trilean.True;
-      end if;
-      exit when not Moved;
-    end loop;
-    -- The dir does not match any matching template
-    return Trilean.False;
   end Dir_Matches;
 
   -- List subdirs of Dir

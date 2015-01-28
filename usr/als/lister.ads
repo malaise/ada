@@ -36,6 +36,7 @@ package Lister is
   --  matching templates, and if it does not match any exclude template
   procedure Add_Dir_Match   (Template : in String; Regex : in Boolean);
   procedure Add_Dir_Exclude (Template : in String; Regex : in Boolean);
+  procedure Add_Dir_Discard (Template : in String; Regex : in Boolean);
 
   -- Does a dir (full path) match
   -- True: Does not match any exclusion and matches one inclusion
