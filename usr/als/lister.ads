@@ -48,7 +48,8 @@ package Lister is
   Discard : constant Trilean.Trilean := Trilean.Other;
   function Dir_Matches (Dir : String) return Trilean.Trilean;
 
-  -- List subdirs of Dir (apply matching and exclude criteria)
+  -- List subdirs of Dir (apply discard, exclude and matching criteria)
+  -- Sort by alphabetic order
   package Dir_List_Mng renames Str_List_Mng;
   subtype Dir_List is Dir_List_Mng.List_Type;
 

@@ -479,6 +479,7 @@ package body Lister is
   end Dir_Matches;
 
   -- List subdirs of Dir
+  procedure Sort is new Str_List_Mng.Sort (As.U."<");
   procedure List_Dirs (Dir : in String;
                        List : out Dir_List) is
     Desc : Directory.Dir_Desc;
@@ -554,6 +555,8 @@ package body Lister is
 
     -- Done
     Desc.Close;
+    -- Sort directories into alphabetic order
+    Sort (List);
   end List_Dirs;
 
   -- Activate, then later get grand total

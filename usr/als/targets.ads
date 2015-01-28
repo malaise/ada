@@ -1,4 +1,4 @@
-with Argument_Parser;
+with Argument_Parser, Trilean;
 with Entities;
 package Targets is
 
@@ -9,7 +9,7 @@ package Targets is
                  Depth : Natural;
                  Merge : Boolean;
                  Skip_Dirs : Boolean;
-                 Put_Dir_Names : Boolean;
+                 Put_Dir_Names : Trilean.Trilean;
                  Follow_Links : Boolean;
                  Args : Argument_Parser.Parsed_Dscr) return Boolean;
 

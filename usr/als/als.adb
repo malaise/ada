@@ -1,8 +1,8 @@
 with Ada.Calendar;
-with As.U, Basic_Proc, Argument, Argument_Parser;
-with Entities, Output, Targets, Lister, Exit_Code, Str_Util;
+with As.U, Basic_Proc, Argument, Argument_Parser, Str_Util, Trilean;
+with Entities, Output, Targets, Lister, Exit_Code;
 procedure Als is
-  Version : constant String  := "V14.0";
+  Version : constant String  := "V15.0";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -39,7 +39,7 @@ procedure Als is
    30 => (False, Nkc, As.U.Tus ("date_iso"),     False),
    31 => (False, Nkc, As.U.Tus ("skip_dirs"),    False),
    32 => (False, 'O', As.U.Tus ("others"),       False),
-   33 => (False, Nkc, As.U.Tus ("no_name"),      False),
+   33 => (True,  Nkc, As.U.Tus ("dir_name"),     False, True, As.U.Tus ("always|never")),
    34 => (False, 'U', As.U.Tus ("utc"),          False),
    35 => (False, Nkc, As.U.Tus ("len_alpha"),    False),
    36 => (False, 'q', As.U.Tus ("quiet"),        False),
@@ -72,10 +72,9 @@ procedure Als is
     Put_Line_Error ("  " & Key_Img(07) & "// Scan directories recursively");
     Put_Line_Error ("  " & Key_Img(24) & "// Scan only to given depth (needs ""-R"")");
     Put_Line_Error ("  " & Key_Img(31) & "// Skip directories from arguments");
-    Put_Line_Error ("  " & Key_Img(33) & "// Do not show directory names");
     Put_Line_Error ("  <match_name>   ::= " & Argument_Parser.Image(Keys(16)));
-    Put_Line_Error ("    <criteria>     ::= <templates> | @<regex>");
-    Put_Line_Error ("    <templates>    ::= <template> [ { ,<template> } ]");
+    Put_Line_Error ("    <criteria>   ::= <templates> | @<regex>");
+    Put_Line_Error ("    <templates>  ::= <template> [ { ,<template> } ]");
     Put_Line_Error ("                     // Keep only files which name matches the criteria");
     Put_Line_Error ("                     //  (one template or the regular expression)");
     Put_Line_Error ("  <exclude_name> ::= " & Argument_Parser.Image(Keys(17)));
@@ -112,6 +111,8 @@ procedure Als is
     Put_Line_Error ("  " & Key_Img(06) & "// Sort (by name, size, time or len) in reverse order");
     Put_Line_Error ("  " & Key_Img(26) & "// Keep same order as in the directory structure");
     Put_Line_Error ("  " & Key_Img(10) & "// Show a global list of entries (without dir names)");
+    Put_Line_Error ("  " & Argument_Parser.Image(Keys(33)));
+    Put_Line_Error ("                     // Show names of directories (default=when not empty)");
     Put_Line_Error ("  " & Key_Img(21) & "// Also show number and total size of listed entries");
     Put_Line_Error ("  " & Key_Img(34) & "// Use UTC i.o. local time for date spec and output");
     Put_Line_Error ("  " & Key_Img(36) & "// Do not show entries");
@@ -156,7 +157,7 @@ procedure Als is
   Date_Iso : Boolean;
   Skip_Dirs : Boolean;
   List_Only_Others : Boolean;
-  No_Name : Boolean;
+  Dir_Name : Trilean.Trilean;
   Utc : Boolean;
   Quiet : Boolean;
 
@@ -235,7 +236,6 @@ begin
   Full_Path := Arg_Dscr.Is_Set (27);
   Date_Iso := Arg_Dscr.Is_Set (30);
   List_Only_Others := Arg_Dscr.Is_Set (32);
-  No_Name := Arg_Dscr.Is_Set (33);
   Utc := Arg_Dscr.Is_Set (34);
   Sort_By_Len := Arg_Dscr.Is_Set (35);
   Depth := 0;
@@ -351,6 +351,20 @@ begin
     end if;
   end if;
 
+  -- Put dir names
+  if Arg_Dscr.Is_Set (33) then
+    if Arg_Dscr.Get_Option (33) = "always" then
+      Dir_Name := Trilean.True;
+    elsif Arg_Dscr.Get_Option (33) = "never" then
+      Dir_Name := Trilean.False;
+    else
+      Error ("Invalid ""dir_name"" option");
+    end if;
+  else
+    -- Default names of non empty dirs
+    Dir_Name := Trilean.Other;
+  end if;
+
   -- Put total size
   Put_Total := Arg_Dscr.Is_Set (21);
 
@@ -423,7 +437,7 @@ begin
   end if;
 
   -- List each target
-  if Targets.List (Dots, Recursive, Depth, Merge_Lists, Skip_Dirs, not No_Name,
+  if Targets.List (Dots, Recursive, Depth, Merge_Lists, Skip_Dirs, Dir_Name,
                    Follow_Links, Arg_Dscr) then
     Exit_Code.Update (Exit_Code.Found);
   else

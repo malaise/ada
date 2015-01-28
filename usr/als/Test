@@ -44,7 +44,7 @@ function do_dir {
 
   export LSN=`ls -1 $1 | wc -l`
 
-  export ALSOPTS="-1 --no_name"
+  export ALSOPTS="-1 --dir_name=never"
   export ALSF=`launch $ALSOPTS -F $1 | wc -l`
   export ALSD=`launch $ALSOPTS -D $1 | wc -l`
   export ALSL=`launch $ALSOPTS -L $1 | wc -l`
@@ -66,11 +66,11 @@ for dir in `als -DM --exclude="proc" /` ; do
 done
 
 # Compare als -R --no-name and als -RM
-title "In ., no_name v.s. merge"
-export ALSRN=`launch -R  -1 --no_name | wc -l`
+title "In ., dir_name=never v.s. merge"
+export ALSRN=`launch -R  -1 --dir_name=never | wc -l`
 export ALSMN=`launch -RM -1 | wc -l`
 if [ $ALSRN -ne $ALSMN ] ; then
-  error "als -R --no-name finds $ALSMN entries while als -RM finds $ALSMN"
+  error "als -R --dir_name=never finds $ALSRN entries while als -RM finds $ALSMN"
 fi
 echo "OK"
 

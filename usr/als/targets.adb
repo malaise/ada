@@ -1,4 +1,4 @@
-with As.U.Utils, Directory, Argument, Basic_Proc, Trilean;
+with As.U.Utils, Directory, Argument, Basic_Proc;
 with Lister, Output, Exit_Code, Debug;
 package body Targets is
 
@@ -10,15 +10,17 @@ package body Targets is
                  Depth : Natural;
                  Merge : Boolean;
                  Skip_Dirs : Boolean;
-                 Put_Dir_Names : Boolean;
+                 Put_Dir_Names : Trilean.Trilean;
                  Follow_Links : Boolean;
                  Args : Argument_Parser.Parsed_Dscr) return Boolean is
     Found : Boolean;
     Entries : Entities.Entity_List;
     Need_New_Line : Boolean;
-    use type Directory.File_Kind_List;
+    use type Directory.File_Kind_List, Trilean.Trilean;
 
-    function Do_Dir (Dir : String; Put_Name : Boolean; Level : Positive;
+    function Do_Dir (Dir : String;
+                     Put_Name : Trilean.Trilean;
+                     Level : Positive;
                      Count_Dot : Boolean) return Boolean is
       Found : Boolean;
       Moved : Boolean;
@@ -34,7 +36,6 @@ package body Targets is
         end if;
       end Remove_Current;
 
-      use type Trilean.Trilean;
     begin
       Found := False;
       -- Make full path of current dir ('.' or relative or absolute path)
@@ -51,19 +52,32 @@ package body Targets is
       if Match = Trilean.True then
         Debug.Log ("  Dir matches");
         -- Do this dir
-        if Need_New_Line then
-          -- Insert a New_Line between previous output (files or dir) and current
-          Output.New_Line;
-        end if;
         Lister.List (Entries, Dir, Dots, Count_Dot);
         if not Merge then
-          if Put_Name then
-            Output.Put_Dir (Dir);
-          end if;
-          if not Entries.Is_Empty then
+          if Entries.Is_Empty then
+            if Put_Name = Trilean.True then
+              -- Always put dir name, even if no entity to put
+              if Need_New_Line then
+                -- Insert New_Line between previous output (files or dir)
+                --  and current
+                Output.New_Line;
+              end if;
+              Output.Put_Dir (Dir);
+              Need_New_Line := False;
+            end if;
+          else
+            if Need_New_Line then
+              -- Insert New_Line between previous output (files or dir)
+              --  and current
+              Output.New_Line;
+            end if;
+            if Put_Name /= Trilean.False then
+              -- Not Never put dir name
+              Output.Put_Dir (Dir);
+            end if;
             Found := True;
             Output.Put (Entries, True);
-            Need_New_Line := Put_Name;
+            Need_New_Line := Put_Name /= Trilean.False;
             Entries.Delete_List;
           end if;
         end if;
@@ -144,7 +158,11 @@ package body Targets is
     or else Argument.Get_Parameter (
           Occurence => Args.Get_First_Pos_After_Keys) = "" then
       Debug.Log ("Doing dir .");
-      Found := Found or Do_Dir (".", False, 1, True);
+      -- No dir name if explicit dir_name=Always
+      Found := Found or Do_Dir (".",
+                           (if Put_Dir_Names = Trilean.True then Trilean.True
+                            else Trilean.False),
+                           1, True);
     end if;
 
     -- Process dirs that match
