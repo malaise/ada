@@ -134,11 +134,11 @@ package body Lister is
     end if;
   end Match;
 
-  -- Does a file full name match a template or regex
+  -- Does a file/dir name (without path) match a template or regex
   function Match (File, Template : String; Regex : Boolean) return Boolean is
   begin
     if Regex then
-      -- Full name v.s. regex
+      -- Basename v.s. regex
       return Regular_Expressions.Match (Template, Directory.Basename (File),
                                         Strict => True);
     else
@@ -293,6 +293,7 @@ package body Lister is
                   Dir : in String;
                   Dots : in Entities.Dots_Kind_List;
                   Count_Dot : in Boolean) is
+    One_Listed : Boolean;
     Desc : Directory.Dir_Desc;
     Ent : Entities.Entity;
     Stat : Sys_Calls.File_Stat_Rec;
@@ -318,13 +319,9 @@ package body Lister is
         Exit_Code.Update (Exit_Code.Error);
         return;
     end;
-    -- Add current dir size
-    if Total_Active and then Count_Dot then
-      Stat := Sys_Calls.File_Stat (Dir);
-      Add_Size (Stat.Size, False);
-    end if;
 
     -- For each entry
+    One_Listed := False;
     loop
       declare
         Discard : exception;
@@ -389,6 +386,8 @@ package body Lister is
         Ent_List.Insert (Ent);
         -- Update size
         Add_Size (Ent.Size, True);
+        -- At least one entity listed (so add current dir size)
+        One_Listed := True;
       exception
         when Discard =>
           -- Discard this file
@@ -396,6 +395,12 @@ package body Lister is
       end;
 
     end loop;
+
+    -- Add current dir size
+    if Total_Active and then Count_Dot and then One_Listed then
+      Stat := Sys_Calls.File_Stat (Dir);
+      Add_Size (Stat.Size, False);
+    end if;
 
     -- Done
     Desc.Close;
@@ -515,7 +520,7 @@ package body Lister is
           exit;
       end;
 
-      -- Check if it is a directory and matches
+      -- Check if it is a directory
       declare
         Lstr : constant String := Str.Image;
         Fstr : constant String := Directory.Build_File_Name (Dir, Lstr, "");

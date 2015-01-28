@@ -15,8 +15,9 @@ package Lister is
                           Utc : in Boolean);
 
   -- Add a file match or exclude template or regex
-  -- File will match if no matching template or if it matches one of the
-  --  matching templates, and if it does not match any exclude template
+  -- File will match if no matching template or if its name (without path)
+  --  matches one of the matching templates, and if it does not match any
+  --  exclude template
   Invalid_Template : exception;
   procedure Add_Match (Template : in String; Regex : in Boolean);
   procedure Add_Exclude (Template : in String; Regex : in Boolean);
@@ -32,23 +33,25 @@ package Lister is
                   File : in String);
 
   -- Add a dir match or exclude template or regex
-  -- Dir will match if no matching template or if it matches one of the
-  --  matching templates, and if it does not match any exclude template
+  -- Dir will match if no matching template or if its name (without path)
+  --  matches one of the matching templates, and if it does not match any
+  --  discard or exclude template
   procedure Add_Dir_Match   (Template : in String; Regex : in Boolean);
   procedure Add_Dir_Exclude (Template : in String; Regex : in Boolean);
   procedure Add_Dir_Discard (Template : in String; Regex : in Boolean);
 
-  -- Does a dir (full path) match
-  -- True: Does not match any exclusion and matches one inclusion
-  --       => show and go on
-  -- False: Does not match any exclusion nor any inclusion
-  --       => don't show and go on
-  -- Discard : matches an exclusion
-  --       => discard
+  -- Does a dir (without path) match
+  -- Discard : matches a discard
+  --       => discard this dir and its subdirs
+  -- True: Does not match any discard nor exclusion and matches one inclusion
+  --       => show this dir and process its subdirs
+  -- False: Does not match any discard but matches an exclusion or
+  --        does not match any inclusion
+  --       => don't show this dir but process its subdirs
   Discard : constant Trilean.Trilean := Trilean.Other;
   function Dir_Matches (Dir : String) return Trilean.Trilean;
 
-  -- List subdirs of Dir (apply discard, exclude and matching criteria)
+  -- List subdirs of Dir (without discard, exclude or matching criteria)
   -- Sort by alphabetic order
   package Dir_List_Mng renames Str_List_Mng;
   subtype Dir_List is Dir_List_Mng.List_Type;
@@ -56,7 +59,7 @@ package Lister is
   procedure List_Dirs (Dir : in String;
                        List : out Dir_List);
 
-  -- Activate, then later get grand total
+  -- Activate, then later on get the grand total
   subtype Size_Type is Long_Long_Integer range 0 .. Long_Long_Integer'Last;
   procedure Activate_Total;
   function Get_Number return Natural;

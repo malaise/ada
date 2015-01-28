@@ -1,6 +1,6 @@
 Als
 ===
-V15.0
+V15.1
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, the output format of each entry, and general
@@ -150,8 +150,8 @@ that:
 Name matching
 ~~~~~~~~~~~~~
 The general rule is that, if at least one matching criteria is provided, then
-the name must match at least one of them. No criteria means "all names
-match". +
+the name (wthout path) must match at least one of them. No criteria means
+"all names match". +
 Conversely, if at least one exclusion criteria is provided, then
 the name must not match any of them. No criteria means "all names
 match" as well.
