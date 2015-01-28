@@ -48,7 +48,7 @@ elif [ "$COMMAND" = "gnatstub" ] ; then
   export PATH=$GNATPATH:$PATH
   export ADAOPT="-gnaty2"
   export ADAFLAGS=""
-  export GNATFLAGS="-gnat05"
+  export GNATFLAGS="-gnat2012"
   mkflags -I
 elif [ "$COMMAND" = "gnatls" ] ; then
   if [ "$1" = "-noview" ] ; then
