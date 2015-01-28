@@ -12,18 +12,18 @@ procedure Azf is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
         &  " [ -s <buffer_size> | -H ] -c | -d | -h");
-    Basic_Proc.Put_Line_Error (" -c : Compress stdin to stdout");
-    Basic_Proc.Put_Line_Error (" -d : Uncompress stdin to stdout");
-    Basic_Proc.Put_Line_Error (" -s : Set buffer size in Mega Bytes (max "
-                             & Images.Integer_Image (Max_Buffer_Size) & ")");
-    Basic_Proc.Put_Line_Error (" -H : Use headers (and buffers of 64 kB)");
-    Basic_Proc.Put_Line_Error (" -h : Display this help");
-  end Help;
-  procedure Error (Msg : in String) is
-  begin
-    Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
-    Help;
-    Basic_Proc.Set_Error_Exit_Code;
+    Basic_Proc.Put_Line_Error (" -c | --compress              : Compress stdin to stdout");
+    Basic_Proc.Put_Line_Error (" -d | --decompress            : Uncompress stdin to stdout");
+    Basic_Proc.Put_Line_Error (" -s <MB> | --buffer_size=<MB> : Set buffer size in Mega Bytes (max "
+                           & Images.Integer_Image (Max_Buffer_Size) & ")");
+    Basic_Proc.Put_Line_Error (" -H | --headers               : Use headers (and buffers of 64 kB)");
+    Basic_Proc.Put_Line_Error (" -h | --help                  : Display this help");
+end Help;
+procedure Error (Msg : in String) is
+begin
+  Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
+  Help;
+  Basic_Proc.Set_Error_Exit_Code;
   end Error;
 
   -- Argument parsing
@@ -63,12 +63,13 @@ procedure Azf is
   begin
     Buffer_Size := Positive'Value (Str);
     if Buffer_Size > Max_Buffer_Size then
-      Error ("Buffer size too large");
+      Error ("Buffer size too large (Max "
+           & Images.Integer_Image (Max_Buffer_Size) & ")");
       return;
     end if;
   exception
     when others =>
-      Error ("Invaid buffer size");
+      Error ("Invalid buffer size");
       return;
   end Parse_Size;
 
@@ -122,14 +123,15 @@ begin
     return;
   end if;
   -- Arg
-  if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 0 then
-    Error ("Unexpected argument");
+  if Arg_Dscr.Is_Set (Argument_Parser.No_Key_Index) then
+    Error ("Unexpected argument "
+         & Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index));
     return;
   end if;
   -- (un)compress
   if (Arg_Dscr.Is_Set (2) and then Arg_Dscr.Is_Set (3))
   or else (not Arg_Dscr.Is_Set (2) and then not Arg_Dscr.Is_Set (3)) then
-    Error ("Expecting either compress or decompress");
+    Error ("Expecting either compress or decompress mode");
     return;
   end if;
   Compress := Arg_Dscr.Is_Set (2);
@@ -148,6 +150,7 @@ begin
   Inb := new Lzf.Byte_Array(1 .. Buffer_Size * Buffer_Unit);
   Outb := new Lzf.Byte_Array(1 .. Buffer_Size * Buffer_Unit);
 
+  -- Handle direct mode (no header no split)
   if not Header_Mode then
     -- Read input
     Inl := Read (Inb.all, Inb'Length);
@@ -216,7 +219,7 @@ begin
       if Inl < Min_Len_Header
       or else Header(1) /= Lzf.Byte (Character'Pos ('Z'))
       or else Header(2) /= Lzf.Byte (Character'Pos ('V')) then
-        Error ("Invalid header");
+        Error ("Invalid header read");
         return;
       end if;
       if Header(3) = 0 then
@@ -240,12 +243,14 @@ begin
         -- Inl is the last byte to uncompress
         Lzf.Uncompress (Inb(2 .. Inl), Outb.all, Outl);
         if Outl /= Expected then
-          Error ("Unexpected uncompressed length");
+          Error ("Unexpected uncompressed length ("
+                 & Images.Integer_Image (Outl) & "i.o. "
+                 & Images.Integer_Image (Expected));
           return;
         end if;
         Logger.Log_Debug ("Uncompressed into " & Outl'Img & " bytes");
       else
-        Error ("Invalid header kind");
+        Error ("Invalid header kind read");
         return;
       end if;
       Write (Outb.all, Outl);
