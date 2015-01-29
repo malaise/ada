@@ -386,7 +386,7 @@ package body Lzf is
           end if;
           --#EndifDef
         else
-          -- Set correct inpout index
+          -- Set correct input index
           In_Pos := In_Pos + 2;
         end if;
       else
