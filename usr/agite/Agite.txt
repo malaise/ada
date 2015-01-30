@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V16.12
+V16.13
 
 General purpose
 ---------------
@@ -1036,7 +1036,7 @@ button.
 Apply::
 
 Applies the stash currently selected in the list and returns to the
-xref:XDir[directory] menu.
+xref:XDir[directory] menu. A double click on an entry has the same effect.
 
 Pop::
 
