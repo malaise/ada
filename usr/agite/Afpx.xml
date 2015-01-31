@@ -29,7 +29,7 @@
     <Var Name="LmUp" Value="${List.Up}+16"/>
     <Var Name="LmSta" Value="1"/>
 
-    <Field Num="2" Kind="Button" Name="Up">
+    <Field Num="2" Kind="Button" Name="Top">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="${LmSta}+1">Top</Init>
