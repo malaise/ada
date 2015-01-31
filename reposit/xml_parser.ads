@@ -300,7 +300,6 @@ package Xml_Parser is
                    Normalize : in Trilean.Trilean := Trilean.Other;
                    Use_Dtd   : in Trilean.Trilean := Trilean.Other;
                    Dtd_File  : in String  := "";
-
                    Namespace : in Trilean.Trilean := Trilean.Other;
                    Warn_Cb   : in Warning_Callback_Access := null);
 
