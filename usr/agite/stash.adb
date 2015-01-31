@@ -220,7 +220,7 @@ package body Stash is
               if Do_Stash (Stash_Add) then
                 return;
               end if;
-            when Afpx_Xref.Stash.Apply 
+            when Afpx_Xref.Stash.Apply
                | Afpx.List_Field_No =>
               if Do_Stash (Stash_Apl) then
                 return;

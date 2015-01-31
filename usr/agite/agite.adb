@@ -1,5 +1,5 @@
 with As.U, Afpx.List_Manager, Basic_Proc, Images, Directory,
-     Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket;
+     Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Environ;
 with Utils.X, Git_If, Config, Bookmarks, History, Tags, Commit, Push_Pull,
      Confirm, Error, Stash, Branch, Afpx_Xref;
 procedure Agite is
@@ -29,6 +29,9 @@ procedure Agite is
     Basic_Proc.Set_Error_Exit_Code;
     raise Utils.Exit_Requested;
   end Error;
+
+  -- Name of AFPX_DATA_DIR env variable
+  Afpx_Data_Dir : constant String := "AFPX_DATA_DIR";
 
   -- Got to previous dir (if any) / Save history
   Goto_Previous : Boolean;
@@ -297,6 +300,10 @@ procedure Agite is
       Afpx.Line_List.Rewind (Check_Empty => False);
     end if;
     Encode_Files (Force => True);
+
+    -- Set bookmark variables AGITE_CUR_DIR and GIT_ROOT_DIR
+    Bookmarks.Set_Var ("AGITE_CUR_DIR", Directory.Get_Current);
+    Bookmarks.Set_Var ("GIT_ROOT_DIR", Root.Image);
 
     -- Reset Quick search dir option
     Search_Dir := False;
@@ -789,6 +796,14 @@ begin
     end if;
   end if;
 
+  -- Init Bookmarks memory
+  Bookmarks.Init;
+  -- AFPX_DATA_DIR and AGITE_START_DIR
+  Bookmarks.Set_Var (Afpx_Data_Dir,
+      (if Environ.Is_Set (Afpx_Data_Dir) then Environ.Getenv (Afpx_Data_Dir)
+       else Directory.Get_Current));
+  Bookmarks.Set_Var ("AGITE_START_DIR", Directory.Get_Current);
+
   -- No history
   Update_History := not Arg_Dscr.Is_Set (2);
 
@@ -819,17 +834,19 @@ begin
              Target_Dir.Image,
              "No such directory, starting in current.");
   end;
+  -- Set variable AGITE_INIT_DIR
+  Bookmarks.Set_Var ("AGITE_INIT_DIR", Directory.Get_Current);
 
   -- Get or init config
   Editor := As.U.Tus (Config.Editor);
   Differator := As.U.Tus (Config.Differator);
 
-  -- Init Afpx and Timer
+  -- Init Afpx (dir, files..) and Timer
   Init (0);
   Timer.Start (Periodic => True);
 
   -- Now we can reset this env variables for our children
-  Sys_Calls.Unsetenv ("AFPX_DATA_DIR");
+  Sys_Calls.Unsetenv (Afpx_Data_Dir);
 
   -- Init Push/Pop dirs
   Init_Dir;

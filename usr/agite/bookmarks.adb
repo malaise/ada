@@ -1,11 +1,26 @@
-with As.U, Directory, Afpx.List_Manager;
+with As.U, Directory, Afpx.List_Manager, Environ, Computer;
 with Utils.X, Config, Afpx_Xref, Confirm;
 package body Bookmarks is
 
-  -- Strip potential leading "(name) " of bookmark
+  -- The internal variables (none so far)
+  Mem : Computer.Memory_Type;
+
+  -- Set external resolver of variables to getenv returning empty is not set
+  procedure Init is
+  begin
+    Mem.Set_External_Resolver (Environ.Getenv'Access);
+  end Init;
+
+  -- Set an internal variable
+  procedure Set_Var (Name, Value : in String) is
+  begin
+    Mem.Set (Name, Value, Modifiable => True, Persistent => False);
+  end Set_Var;
+
+  -- Expand Env variables from path of bookmark
   function Dir_Of (Index : in Positive) return String is
   begin
-    return As.U.Image (Config.Get_Bookmarks (Index).Path);
+    return Mem.Eval (As.U.Image (Config.Get_Bookmarks (Index).Path));
   end Dir_Of;
 
   -- Insert in Afpx list the image of a bookmark (normalized if necessary)

@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V16.13
+V16.14
 
 General purpose
 ---------------
@@ -531,6 +531,8 @@ This button returns to the xref:XDir[directory] menu.
 Bookmarks
 ~~~~~~~~~
 anchor:XBook[]
+
+.General presentation
 Locations (directories) can be bookmarked. To bookmark a directory, first move
 to it through the xref:XDir[directory] menu, then go in the 'bookmark' menu,
 then click in the button xref:XAddCurr[AddCur]. This adds the current directory
@@ -542,6 +544,7 @@ back to this directory.
 Bookmarks are saved in the xref:XConfig[configuration file] so that they 
 are persistent from one session to another.
 
+.List
 The bookmark menu shows the current directory and lists the known bookmarks.
 This list can contain four kinds of entry:
 
@@ -564,6 +567,7 @@ in xref:XAddSep[AddSep]. This creates a line with dashes and the name. Example:
 * Blank lines can also be used to separate bookmarks. They are anonymous 
 separators, created by clicking in xref:XAddSep[AddSep] with no name set.
 
+.Buttons
 anchor:XAddCurr[]
 anchor:XAddSep[]
 The buttons 'AddCur' and 'AddSep' insert a named or anonymous entry (depending
@@ -584,6 +588,42 @@ directory menu, with the mouse wheel, the keyboard and buttons.
 anchor:XBookBack[]
 The button 'Back' returns to the xref:XDir[directory] menu without
 changing the current directory.
+
+.Variables
+A bookmark path can reference some Environment variables or some predefined
+variables that agite maintains automatically. 
+
+The predefiend variables are:
+
+* 'AGITE_START_DIR': The current directory from which agite was started (constant).
+
+* 'AGITE_INIT_DIR': The initial directory where agite started (constant).
+
+* 'AFPX_DATA_DIR': The directory where AFPX configuration files where found (constant).
+
+* 'GIT_ROOT_DIR': The root directory of the current worktree (updated).
+
+* 'AGITE_CUR_DIR': The current directory (updated).
+
+Variable references must be set manually by editing the configuration file:
+
+. Start agite an create a bookmark
+. Quit agite
+. Edit the configuration file 'agite.xml'. +
+Modify the bookmark path with the reference to an environment variable or a
+predefined variable. +
+For example:
++
+  <bookmark Name="Agite">/home/${BUILD}/agite>
+  <bookmark Name="Afpx">${AFPX_DATA_DIR}</bookmark>
+
+. Save the file
+. Restart agite
+
+You can prevent agite to expand a variable by backslashing the delimiters
+"${" *and* "}". Example:
+
+  <bookmark Name="Afpx">\${AFPX_DATA_DIR\}</bookmark>
 
 History
 ~~~~~~~
