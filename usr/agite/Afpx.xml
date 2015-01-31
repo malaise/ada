@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V16.14"/>
+  <Var Name="Version" Value="V16.15"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -278,7 +278,7 @@
 
     <!-- List management -->
     <Var Name="LmLeft" Value="${List.Right}+${LmHOffset}"/>
-    <Var Name="LmUp" Value="${List.Up}+12"/>
+    <Var Name="LmUp" Value="${List.Up}+14"/>
     <Var Name="LmSta" Value="1"/>
 
     <Field Num="2" Kind="Button">
@@ -334,7 +334,7 @@
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="11" Kind="Put">
+    <Field Num="11" Kind="Put" Name="Get_Title">
       <Geometry Up="${Field_10.Low}+2" Left="1" Height="1" Width="12"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Name to add:</Init>
@@ -378,15 +378,20 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">MovDwn</Init>
     </Field>
-
-    <Field Num="18" Kind="Button" Name="Del">
+    <Field Num="18" Kind="Button" Name="Edit">
       <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">Edit</Init>
+    </Field>
+    <Field Num="19" Kind="Button" Name="Del">
+      <Geometry Up="${Field_18.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Del</Init>
     </Field>
 
-    <Field Num="19" Kind="Button" Name="Back">
+    <Field Num="20" Kind="Button" Name="Back">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>

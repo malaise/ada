@@ -58,7 +58,7 @@ package body Bookmarks is
     end if;
   end Load_List;
 
-  -- Bookmark name (from Get field)
+  -- Get bookmark name (from Get field)
   Get_Handle : Afpx.Get_Handle_Rec;
   function Get_Name return String is
     Str : constant String
@@ -69,6 +69,57 @@ package body Bookmarks is
     Afpx.Reset (Get_Handle);
     return Str;
   end Get_Name;
+
+  -- Modify current bookmark
+  procedure Start_Edit (Bookmark : out Config.Bookmark_Rec) is
+    New_Name : constant String := Get_Name;
+  begin
+    -- Get bookmark
+    Bookmark := Config.Get_Bookmark (Afpx.Line_List.Get_Position);
+    if New_Name /= "" then
+      -- Change name
+      Bookmark.Name := As.U.Tus (New_Name);
+    end if;
+    -- Encode path to edit
+    Utils.X.Encode_Field (Bookmark.Path.Image, Afpx_Xref.Bookmarks.Name,
+                          False);
+    -- Change titles
+    Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+    Afpx.Clear_Field (Afpx_Xref.Bookmarks.Get_Title);
+    Utils.X.Encode_Field ("Path:", Afpx_Xref.Bookmarks.Get_Title);
+    Utils.X.Center_Field ("OK", Afpx_Xref.Bookmarks.Addcurr);
+    Utils.X.Center_Field ("Cancel", Afpx_Xref.Bookmarks.Addsep);
+    -- Disable list and all buttons
+    Afpx.Set_Field_Activation (Afpx_Xref.Bookmarks.Go, False);
+    Afpx.Set_Field_Activation (Afpx_Xref.Bookmarks.Moveup, False);
+    Afpx.Set_Field_Activation (Afpx_Xref.Bookmarks.Movedown, False);
+    Afpx.Set_Field_Activation (Afpx_Xref.Bookmarks.Edit, False);
+    Afpx.Set_Field_Activation (Afpx_Xref.Bookmarks.Del, False);
+    Afpx.Set_Field_Activation (Afpx_Xref.Bookmarks.Back, False);
+  end Start_Edit;
+
+  procedure End_Edit (Bookmark : in out Config.Bookmark_Rec;
+                      Ok : in Boolean) is
+  begin
+    -- Restore list and buttons
+    Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
+    Afpx.Reset_Field (Afpx_Xref.Bookmarks.Get_Title, Reset_Colors => False);
+    Afpx.Reset_Field (Afpx_Xref.Bookmarks.Addcurr, Reset_Colors => False);
+    Afpx.Reset_Field (Afpx_Xref.Bookmarks.Addsep, Reset_Colors => False);
+    Afpx.Reset_Field (Afpx_Xref.Bookmarks.Go, Reset_Colors => False);
+    Afpx.Reset_Field (Afpx_Xref.Bookmarks.Moveup, Reset_Colors => False);
+    Afpx.Reset_Field (Afpx_Xref.Bookmarks.Movedown, Reset_Colors => False);
+    Afpx.Reset_Field (Afpx_Xref.Bookmarks.Edit, Reset_Colors => False);
+    Afpx.Reset_Field (Afpx_Xref.Bookmarks.Del, Reset_Colors => False);
+    Afpx.Reset_Field (Afpx_Xref.Bookmarks.Back, Reset_Colors => False);
+    -- Get and clear path
+    Bookmark.Path := As.U.Tus (Get_Name);
+    if Ok then
+      -- Insert new bookmark after current and delete current
+      Config.Add_Bookmark (Afpx.Line_List.Get_Position, Bookmark);
+      Config.Del_Bookmark (Afpx.Line_List.Get_Position);
+    end if;
+  end End_Edit;
 
   -- Handle Bookmarks screen
   -- Returns new dir to change to, or "" if unchanged
@@ -86,6 +137,9 @@ package body Bookmarks is
     -- Bookmark
     Bookmark : Config.Bookmark_Rec;
 
+    -- In Edit mode
+    In_Edit : Boolean := False;
+
     Dummy : Boolean;
 
   begin
@@ -102,22 +156,33 @@ package body Bookmarks is
 
     -- Main loop
     loop
-      -- No Goto nor Del nor Move if no Bookmark
-      Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Go,
-                             Afpx.Line_List.Is_Empty);
-      Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Moveup,
-                             Afpx.Line_List.Is_Empty);
-      Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Movedown,
-                             Afpx.Line_List.Is_Empty);
-      Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Del,
-                             Afpx.Line_List.Is_Empty);
+      if not In_Edit then
+        -- No Goto nor Del nor Move if no Bookmark
+        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Go,
+                               Afpx.Line_List.Is_Empty);
+        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Moveup,
+                               Afpx.Line_List.Is_Empty);
+        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Movedown,
+                               Afpx.Line_List.Is_Empty);
+        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Edit,
+                               Afpx.Line_List.Is_Empty);
+        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Del,
+                               Afpx.Line_List.Is_Empty);
+      end if;
 
       Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
             when Afpx.Return_Key =>
-              null;
+              if In_Edit then
+                -- End edition OK
+                End_Edit (Bookmark, True);
+                In_Edit := False;
+                Position := Afpx.Line_List.Get_Position;
+                Load_List;
+                Afpx.Line_List.Move_At (Position);
+              end if;
             when Afpx.Escape_Key =>
               -- Back
               return "";
@@ -142,24 +207,39 @@ package body Bookmarks is
               Afpx.List_Manager.Scroll(
                  Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
             when Afpx_Xref.Bookmarks.Addcurr =>
-              -- Add current
-              Bookmark := (As.U.Tus (Get_Name),
-                           As.U.Tus (Directory.Get_Current));
-              if Afpx.Line_List.Is_Empty then
-                Config.Add_Bookmark (0, Bookmark);
+              if In_Edit then
+                -- End edition OK
+                End_Edit (Bookmark, True);
+                In_Edit := False;
+                Position := Afpx.Line_List.Get_Position;
+                Load_List;
+                Afpx.Line_List.Move_At (Position);
               else
-                Config.Add_Bookmark (Afpx.Line_List.Get_Position, Bookmark);
+                -- Add current
+                Bookmark := (As.U.Tus (Get_Name),
+                             As.U.Tus (Directory.Get_Current));
+                if Afpx.Line_List.Is_Empty then
+                  Config.Add_Bookmark (0, Bookmark);
+                else
+                  Config.Add_Bookmark (Afpx.Line_List.Get_Position, Bookmark);
+                end if;
+                Insert_List (Bookmark);
               end if;
-              Insert_List (Bookmark);
             when Afpx_Xref.Bookmarks.Addsep =>
-              -- Add separator
-              Bookmark := (As.U.Tus (Get_Name), As.U.Asu_Null);
-              if Afpx.Line_List.Is_Empty then
-                Config.Add_Bookmark (0, Bookmark);
+              if In_Edit then
+                -- End edition Cancel
+                End_Edit (Bookmark, False);
+                In_Edit := False;
               else
-                Config.Add_Bookmark (Afpx.Line_List.Get_Position, Bookmark);
+                -- Add separator
+                Bookmark := (As.U.Tus (Get_Name), As.U.Asu_Null);
+                if Afpx.Line_List.Is_Empty then
+                  Config.Add_Bookmark (0, Bookmark);
+                else
+                  Config.Add_Bookmark (Afpx.Line_List.Get_Position, Bookmark);
+                end if;
+                Insert_List (Bookmark);
               end if;
-              Insert_List (Bookmark);
 
             when Afpx_Xref.Bookmarks.Moveup =>
               -- Move bookmark up
@@ -178,8 +258,12 @@ package body Bookmarks is
                 Afpx.Line_List.Move_At (Position + 1);
               end if;
 
+            when Afpx_Xref.Bookmarks.Edit =>
+              -- Edit bookmark
+              Start_Edit (Bookmark);
+              In_Edit := True;
             when Afpx_Xref.Bookmarks.Del =>
-              -- Del
+              -- Del bookmark
               Bookmark := Config.Get_Bookmark (Afpx.Line_List.Get_Position);
               -- Confirm bookmark deletion (no confirmation for separators)
               if Bookmark.Path.Is_Null
