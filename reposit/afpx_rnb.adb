@@ -211,8 +211,11 @@ procedure Afpx_Rnb is
                        Field     : out Xml_Parser.Element_Type) is
     -- Text for Indentation
     Indent_Node : Xml_Parser.Text_Type;
-    -- geometry and color
-    Child_Node : Xml_Parser.Element_Type;
+    -- Geometry and color
+    Child_Node : Xml_Parser.Node_Type;
+    Lf : constant String := Text_Line.Line_Feed_Str;
+    Indent1 : constant String := Lf & "    ";
+    Indent2 : constant String := Indent1 & "  ";
   begin
     -- Init global attributes once
     if not Ini_Attrs then
@@ -258,16 +261,20 @@ procedure Afpx_Rnb is
       Xml.Set_Attribute (Field, Fld_Attrs(1).Name.Image,
                                 Fld_Attrs(1).Value.Image);
     else
+      -- Set explicit indent because of non normalization
       -- Set attributes to (Field_Num_Name, Num)
       Xml.Set_Attributes (Field, Fld_Attrs);
       -- Insert Geometry
+      Xml.Add_Child (Field, Indent2, Xml_Parser.Text, Child_Node);
       Xml.Add_Child (Field, "Geometry", Xml_Parser.Element, Child_Node);
       Xml.Set_Put_Empty (Child_Node, True);
       Xml.Set_Attributes (Child_Node, Geo_Attrs);
       -- Insert Colors
+      Xml.Add_Child (Field, Indent2, Xml_Parser.Text, Child_Node);
       Xml.Add_Child (Field, "Colors", Xml_Parser.Element, Child_Node);
       Xml.Set_Put_Empty (Child_Node, True);
       Xml.Set_Attributes (Child_Node, Col_Attrs);
+      Xml.Add_Child (Field, Indent1, Xml_Parser.Text, Child_Node);
     end if;
   end Add_Field;
 
@@ -570,6 +577,7 @@ begin
     Parse_Ok : Boolean;
     use Xml_Parser;
   begin
+    -- Parse. Not normalize to preserve empty lines
     Xml.Parse (Input_File_Name.Image, Parse_Ok,
                Comments => True,
                Cdata => Keep_Cdata_Section,
