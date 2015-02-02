@@ -448,7 +448,7 @@ package body Lzf is
         if In_Pos < Input'Length - 3 then
           Future := First (Input, In_Pos);
           Future := Next (Future, Input, In_Pos);
-          Hash_Table(Hash (Future)) := In_Pos;--#IfDef Debug
+          Hash_Table(Hash (Future)) := In_Pos;
           --#IfDef Debug
           if Logger.Debug_On then
             Log ("  Future " & Hexa_Utils.Image (Future)
