@@ -243,8 +243,8 @@ package body Lzf is
         raise Too_Big;
       end if;
       Outlen := 2;
-      Output(Out_Pos) := 0;
-      Output(Out_Pos + 1) := Input(Input'First);
+      Output(Out_Pos - 1) := 0;
+      Output(Out_Pos) := Input(Input'First);
       --#IfDef Debug
       if Logger.Debug_On then
         Log ("Single byte " & Image (Input(Input'First)));
@@ -256,9 +256,9 @@ package body Lzf is
         raise Too_Big;
       end if;
       Outlen := 3;
-      Output(Out_Pos) := 1;
-      Output(Out_Pos + 1) := Input(Input'First);
-      Output(Out_Pos + 2) := Input(Input'First + 1);
+      Output(Out_Pos - 1) := 1;
+      Output(Out_Pos   ) := Input(Input'First);
+      Output(Out_Pos + 1) := Input(Input'First + 1);
       --#IfDef Debug
       if Logger.Debug_On then
         Log ("Two bytes " & Image (Input(Input'First))
