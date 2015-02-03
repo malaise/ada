@@ -1,0 +1,201 @@
+-- This package implements the LZ4 lossless data compression algorithm. LZF is
+-- a Lempel-Ziv variant with byte-aligned output, and optimized for speed.
+
+-- Safety/Use Notes:
+--  - The byte arrays should be smaller than 2 GB (Positive'Last).
+--  - For performance reasons, safety checks on expansion are omitted.
+--  - Invalid compressed data can cause exceptions (Constraint_Error)
+
+-- General principles:
+-- The LZ4 compressed format knows literal runs and back-references:
+--  - Literal run: directly copy bytes from input to output.
+--  - Back-reference: copy previous data of the uncompressed stream to the
+--    output stream, with specified offset from location in the uncompressed
+--    stream and length. The length is at least 4 bytes.
+-- The compression algorithm is
+--  - Read next byte and the 3 following bytes, these 4 bytes are the "future",
+--    hash them
+--  - Read the corresponding hash entry and replace the entry by current input
+--    index (so, for a hash value, there is always the most recent index)
+--  - If the read entry is set, then it is an index. Compare the four bytes at
+--    this reference index with the current "future"
+--  - If they match, then check how long of the reference matches current text
+--    and append a cross reference (with offset from current and length of
+--    match)
+--  - If no match, then append the current byte as literal.
+--  - The compressed flow is a suite of sequences. A sequence contains a run of
+--    litteral then a cross reference. It is made of:
+--    * A token: The first 4 bits indicate the length of the litteral run
+--      and last 4 bits indicate the length of the corss reference
+--    * Then, if the run is longer than 14, the token contains Fx and the
+--      following (up to four) bytes contain the remaining of the length
+--      Exemple, a length of 300 is coded as Fx FF 1E (15+255+30). (x is used
+--      to code the length of the cross reference)
+--    * Then the litteral run (if any)
+--    * Then on two bytes little endian the offset of the cross reference
+--      (1 for current - 1)
+--    * Then, if the reference is longer than 14, the (up to four bytes) to
+--      complete the length.
+--    The last sequence contains only a token, possible extension of litteral
+--     run length, and litterals.
+
+-- The uncompression algorithm is
+--  - Read a token, read the complement of litteral run length if needed,
+--  - Copy the literals from input
+--  - Read the offset, read the complement of reference length if needed
+--  - Copy the reference from output
+
+with Bit_Ops; use Bit_Ops;
+with Long_Longs;
+--#IfDef Debug
+with Trace, Hexa_Utils;
+--#EndifDef
+pragma Optimize (Time);
+package body Lz4 is
+
+  --#IfDef Debug
+  -- Trace logger
+  package Logger is new Trace.Basic_Logger ("Lzf");
+  procedure Log (Msg : in String) is
+  pragma Inline (Log);
+  begin
+    Logger.Log_Debug (Msg);
+  end Log;
+  -- Image of a byte
+  function Image is new Hexa_Utils.Mod_Image (Byte);
+  --#EndifDef
+
+  -- The number of entries in the hash table. The size is a trade-off between
+  --  hash collisions (reduced compression) and speed (amount that fits in CPU
+  --  cache)
+  subtype Hash_Log_Range is Natural range 13 .. 22;
+  Hash_Log : constant Hash_Log_Range := 17;
+  Hash_Size : constant Natural := Shl (1, Hash_Log);
+  -- Hash table: indexes are the hash of future and values are indexes
+  --  in the input flow
+  subtype Hash_Range is Integer range -1 .. Integer'Last;
+  subtype Hash_Ref is Hash_Range range 0 .. Hash_Range'Last;
+  Hash_Table : array (0 .. Hash_Size - 1) of Integer;
+
+  -- The initial value of the Hash_Table
+  Default_Hash : constant Hash_Range := -1;
+
+  -- The maximum offset allowed for a back-reference (8192)
+  -- The offset is stored in 16 bits -> FFFF
+  Max_Off : constant Natural := Shl (1, 16);
+
+  -- Compute the input to Next, to compute the future
+  subtype Future_Range is Integer;
+
+  -- Init the future
+  -- Bytes at Pos, Pos+1, Pos+2, Pos+3
+  function First (A : Byte_Array; I : Natural) return Future_Range is
+  pragma Inline (First);
+  begin
+    return Shl (Integer(A(A'First + I + 0)), 24)
+        or Shl (Integer(A(A'First + I + 1)), 16)
+        or Shl (Integer(A(A'First + I + 2)),  8)
+        or      Integer(A(A'First + I + 3));
+  end First;
+
+  -- Update the future with current position
+  -- Shift the value 1 byte left, and add the byte at index inPos+3
+  function Next (V : Future_Range; A : Byte_Array; I : Natural)
+                return Future_Range is
+  pragma Inline (Next);
+  begin
+    return Shl (V and 16#FFFFFF#, 8) or Integer(A(A'First + I + 3));
+  end Next;
+
+  -- Compute the hash value of a future
+  function Hash (V : Future_Range) return Hash_Ref is
+  pragma Inline (Hash);
+  begin
+    return Hash_Ref (Shr (Long_Long_Integer (V) * 2654435761, 32 - Hash_Log));
+  end Hash;
+
+  -- Convert an int into a byte
+  function To_Byte (I : Natural) return Byte is
+  pragma Inline (To_Byte);
+  begin
+    return Byte (I and 16#FF#);
+  end To_Byte;
+
+  -- Compress Input into Output
+  -- May raise Too_Big if Output is too small
+  procedure Compress (Input  : in Byte_Array;
+                      Output : out Byte_Array;
+                      Outlen : out Natural) is
+    -- Indexes in input and output flows
+    Src_Pos : Natural := 0;
+    Src_Limit : constant Integer := Output'Length - 4;
+    Out_Pos : Positive := Output'First + 1;
+    -- Current, next, next-next and next-next-next bytes
+    Seq : Future_Range;
+    Build_Seq : Boolean;
+    -- NUmber of literal in current run
+    Literals : Integer := 0;
+    -- Absolute and relative index, in input, of cross reference
+    Hashed : Hash_Ref;
+    Ref : Hash_Range;
+    Off : Natural;
+    -- Do we match the cross reference found at Hash(Future) in Hash_Table
+    Match : Boolean;
+    -- Length and Max_Len of a match with cross reference
+    Len, Max_Len : Positive;
+    use type C_Types.Byte;
+  begin
+    
+    --#IfDef Debug
+    if Logger.Debug_On then
+      Log ("Starting encoding from index " & Hexa_Utils.Image (Input'First)
+         & " to " & Hexa_Utils.Image (Input'Last));
+    end if;
+    --#EndifDef
+
+    -- Init
+    Hash_Table := (others => Default_Hash);
+    Build_Seq := True;
+
+    -- Main loop
+    while Src_Pos < Src_Limit loop
+
+      -- Build sequence, hash it, read and replace Hash table content
+      if Build_Seq then
+        -- Rebuild the complete sequence
+        Seq := First (Input, Src_Pos);
+      else
+        -- Update the seqence with current byte
+        Seq := Next (Seq, Input, Src_Pos);
+      end if;
+      Hashed := Hash (Seq);
+      Ref := Hash_Table(Hashed);
+      Hash_Table(Hashed) := Src_Pos;
+      --#IfDef Debug
+      if Logger.Debug_On then
+        Log ("At inpos " & Hexa_Utils.Image (Src_Pos)
+           & " Seq " & Hexa_Utils.Image (Long_Longs.Ll_Natural(Seq))
+           & " Hashed as " & Hexa_Utils.Image (Hashed)
+           & " got " & (if Ref = Default_Hash then "Default"
+                        else Hexa_Utils.Image (Ref)) );
+
+      end if;
+      --#EndifDef
+
+    end loop;
+
+  end Compress;
+
+  -- Uncompress Input into Output
+  -- May raise Too_Big if Output is too small
+  -- May raise Invalid if input is not a valid compressed buffer
+  procedure Uncompress (Input  : in Byte_Array;
+                        Output : out Byte_Array;
+                        Outlen : out Natural) is
+  begin
+
+    null;
+  end Uncompress;
+
+end Lz4;
+
