@@ -23,12 +23,12 @@
 --    and append a cross reference (with offset from current and length of
 --    match)
 --  - If no match, then append the current byte as literal.
---  - The first byte of a literal run is a vontrol byte than denotes a literal
+--  - The first byte of a literal run is a control byte than denotes a literal
 --    run (as opposed to a corss reference) and indicates the length of the run,
 --    so:
 --  - When appending the first literal of a run (first byte of the input or
 --    just after a cross reference) skip a byte for this control byte
---  - When appening a corss reference after a literal run, update the control
+--  - When appening a cross reference after a literal run, update the control
 --    char of this run (set it to the length of the run)
 -- The uncompression algorithm is
 --  - Read a byte
@@ -216,7 +216,7 @@ package body Lzf is
     Out_Pos : Positive := Output'First + 1;
     -- Current, next and next-next bytes
     Future : Future_Range;
-    -- NUmber of literal in current run
+    -- Number of literal in current run
     Literals : Integer := 0;
     -- Next-next byte
     P2 : Byte;
