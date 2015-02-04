@@ -55,7 +55,7 @@ package body Lz4 is
 
   --#IfDef Debug
   -- Trace logger
-  package Logger is new Trace.Basic_Logger ("Lzf");
+  package Logger is new Trace.Basic_Logger ("Lz4");
   procedure Log (Msg : in String) is
   pragma Inline (Log);
   begin
@@ -72,16 +72,16 @@ package body Lz4 is
   Hash_Size : constant Natural := Shl (1, Hash_Log);
   -- Hash table: indexes are the hash of future and values are indexes
   --  in the input flow
-  subtype Hash_Range is Integer range -1 .. Integer'Last;
-  subtype Hash_Ref is Hash_Range range 0 .. Hash_Range'Last;
-  Hash_Table : array (0 .. Hash_Size - 1) of Integer;
-
-  -- The initial value of the Hash_Table
-  Default_Hash : constant Hash_Range := -1;
+  subtype Hash_Ref is Integer;
+  Hash_Table : array (0 .. Hash_Size - 1) of Hash_Ref;
+  Hash_Mask : constant Long_Long_Integer := Long_Long_Integer (Hash_Size - 1);
 
   -- The maximum offset allowed for a back-reference (8192)
   -- The offset is stored in 16 bits -> FFFF
   Max_Off : constant Natural := Shl (1, 16);
+
+  -- The initial value of the Hash_Table: an offset too large
+  Default_Hash : constant Hash_Ref := -Max_Off;
 
   -- The representaion of 4 succesive bytes of input
   subtype Seq_Type is Integer;
@@ -101,7 +101,8 @@ package body Lz4 is
   function Hash (V : Seq_Type) return Hash_Ref is
   pragma Inline (Hash);
   begin
-    return Hash_Ref (Shr (Long_Long_Integer (V) * 2654435761, 32 - Hash_Log));
+    return Hash_Ref (Shr (Long_Long_Integer (V) * 2654435761, 32 - Hash_Log)
+                     and Hash_Mask);
   end Hash;
 
   -- Convert an int into a byte
@@ -137,7 +138,7 @@ package body Lz4 is
                       Outlen : out Natural) is
     -- Indexes in input and output flows
     In_Pos, Anchor : Natural := 0;
-    Src_Limit : constant Integer := Output'Length - 4;
+    Src_Limit : constant Integer := Input'Length - 4;
     Out_Pos : Positive := Output'First;
     Token_Pos : Positive;
     -- Current, next, next-next and next-next-next bytes
@@ -152,11 +153,17 @@ package body Lz4 is
     Nb_Match : Natural;
     -- Absolute and relative index, in input, of cross reference
     Hashed : Hash_Ref;
-    Ref : Hash_Range;
+    Ref : Hash_Ref;
     Off : Integer;
     use type C_Types.Byte;
   begin
+
     if Output'Length = 0 then
+      --#IfDef Debug
+      if Logger.Debug_On then
+        Log ("Empty input");
+      end if;
+      --#EndifDef
       if Input'Length = 0 then
         Outlen := 0;
         return;
@@ -190,7 +197,7 @@ package body Lz4 is
       --#IfDef Debug
       if Logger.Debug_On then
         Log ("At Inpos " & Hexa_Utils.Image (In_Pos)
-           & ", Byte " & Image (Input (In_Pos))
+           & ", Byte " & Image (Input(Input'First + In_Pos))
            & ", Seq " & Hexa_Utils.Image (Long_Longs.Ll_Natural(Seq))
            & ", Hashed as " & Hexa_Utils.Image (Hashed)
            & ", Got " & (if Ref = Default_Hash then "Default"
@@ -201,7 +208,7 @@ package body Lz4 is
 
       if Ref = Default_Hash                    -- No reference
       or else Off > Max_Off                    -- Reference too far backwards
-      or else Seq /= Build (Input, Off)        -- Hash matches but not seq
+      or else Seq /= Build (Input, Ref)        -- Hash matches but not seq
       or else In_Pos >= Input'Length - 11 then -- The last match is before the
                                                --  last 12 bytes
         --#IfDef Debug
@@ -252,6 +259,7 @@ package body Lz4 is
         if Nb_Literals < 16#F# then
           -- Stored in 4 bits (upper quartet of token)
           Output(Out_Pos) := To_Byte (Shl (Nb_Literals, 4));
+          Out_Pos := Out_Pos + 1;
         else
           -- Stored on 4 bits and several successive bytes
           Output(Out_Pos) := 16#F0#;
@@ -294,10 +302,9 @@ package body Lz4 is
           Output(Token_Pos) :=
             To_Byte (Integer (Output(Token_Pos)) or Nb_Match);
         else
-          -- Stored on 4 bits and several successive bytes
+          -- Stored on 4 lower bits in the token and in several successive bytes
           Output (Token_Pos) :=
             To_Byte (Integer (Output(Token_Pos)) or 16#0F#);
-          Out_Pos := Out_Pos + 1;
           Encode_Length (Nb_Match - 16#F#, Out_Pos, Output);
         end if;
 
@@ -309,9 +316,15 @@ package body Lz4 is
 
     -- Encode length of last literals
     Nb_Literals := Input'Length - Anchor;
+    --#IfDef Debug
+    if Logger.Debug_On then
+      Log ("Copy last " & Hexa_Utils.Image (Nb_Literals) & " literals");
+    end if;
+    --#EndifDef
     if Nb_Literals < 16#F# then
       -- Stored in 4 bits (upper quartet of token)
       Output(Out_Pos) := To_Byte (Shl (Nb_Literals, 4));
+      Out_Pos := Out_Pos + 1;
     else
       -- Stored on 4 bits and several successive bytes
       Output(Out_Pos) := 16#F0#;
@@ -341,13 +354,14 @@ package body Lz4 is
     -- Token of a sequence
     Token : Natural;
     -- Number of literal in current run
-    Nb_Literals : Positive;
+    Nb_Literals : Natural;
     -- Offset of the matching sequence
     Off : Positive;
     -- Length-4 of the matching sequence
     Nb_Match : Natural;
     use type C_Types.Byte;
   begin
+
     --#IfDef Debug
     if Logger.Debug_On then
       Log ("Starting decoding indexes " & Hexa_Utils.Image (Input'First)
@@ -361,6 +375,12 @@ package body Lz4 is
     while In_Pos < Input'Last loop
       -- Read token
       Token := Natural (Input(In_Pos));
+      --#IfDef Debug
+      if Logger.Debug_On then
+        Log ("At index " & Hexa_Utils.Image (In_Pos)
+           & " got token " & Image (Input(In_Pos)));
+      end if;
+      --#EndifDef
       In_Pos := In_Pos + 1;
 
       -- Extract length of the literals run
@@ -388,8 +408,8 @@ package body Lz4 is
       -- Check end of input
       exit when In_Pos > Input'Last;
 
-      -- Get match offset
-      Off := Shl (Natural(Input(In_Pos)), 8) + Natural(Input(In_Pos + 1));
+      -- Get match offset, little endian
+      Off := Natural(Input(In_Pos)) + Shl (Natural(Input(In_Pos + 1)), 8);
       In_Pos := In_Pos + 2;
       --#IfDef Debug
       if Logger.Debug_On then

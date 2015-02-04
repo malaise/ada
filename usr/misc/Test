@@ -10,13 +10,18 @@ function clean {
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
 function azf_one {
+  export OPT=""
+  if [ "$1" = "--lz4" ] ; then
+    OPT="--lz4"
+    shift
+  fi
   local file=$1
 
-  echo -n azf $file 
-  cat $file | azf -s 900 -c > cmp
+  echo -n azf $OPT $file 
+  cat $file | azf $OPT -s 900 -c > cmp
   if [ $? -ne 0 ] ; then
     echo
-    echo "Azf -c $file has failed." 2>&1
+    echo "Azf $OPT -c $file has failed." 2>&1
     exit 1
   fi
   let ISIZE=0+`ls -l $file | cut -d ' ' -f 5` 
@@ -28,10 +33,10 @@ function azf_one {
     echo " "$PER"%"
   fi
 
-  cat cmp | azf -s 900 -d > res
+  cat cmp | azf $OPT -s 900 -d > res
   if [ $? -ne 0 ] ; then
     echo
-    echo "Azf -d on $file has failed." 2>&1
+    echo "Azf $OPT -d on $file has failed." 2>&1
     exit 1
   fi
 
@@ -44,10 +49,17 @@ function azf_one {
   fi
 }
 
-if [ "$1"  = "-azf" ] ; then
+if [ "$1"  = "-lzf" ] ; then
   shift
   for file in $* ; do
     azf_one $file
+  done
+  clean
+  exit
+elif [ "$1"  = "-lz4" ] ; then
+  shift
+  for file in $* ; do
+    azf_one --lz4 $file
   done
   clean
   exit
@@ -55,6 +67,7 @@ fi
 
 for file in `ls *.ads *.adb lib_Linux/*` ; do
   azf_one $file
+  azf_one --lz4 $file
 done
 
 clean
