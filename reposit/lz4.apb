@@ -63,6 +63,15 @@ package body Lz4 is
   end Log;
   -- Image of a byte
   function Image is new Hexa_Utils.Mod_Image (Byte);
+  -- Image of a signed integer
+  function Int_Image (I : Integer) return String is
+  begin
+    if I >= 0 then
+      return Hexa_Utils.Image (I);
+    else
+      return Hexa_Utils.Image (Long_Longs.Ll_Integer (not I) + 16#10000000#);
+    end if;
+  end Int_Image;
   --#EndifDef
 
   -- The number of entries in the hash table. The size is a trade-off between
@@ -198,7 +207,7 @@ package body Lz4 is
       if Logger.Debug_On then
         Log ("At Inpos " & Hexa_Utils.Image (In_Pos)
            & ", Byte " & Image (Input(Input'First + In_Pos))
-           & ", Seq " & Hexa_Utils.Image (Long_Longs.Ll_Natural(Seq))
+           & ", Seq " & Int_Image (Seq)
            & ", Hashed as " & Hexa_Utils.Image (Hashed)
            & ", Got " & (if Ref = Default_Hash then "Default"
                          else Hexa_Utils.Image (Ref)) );
@@ -207,7 +216,7 @@ package body Lz4 is
       --#EndifDef
 
       if Ref = Default_Hash                    -- No reference
-      or else Off > Max_Off                    -- Reference too far backwards
+      or else Off >= Max_Off                   -- Reference too far backwards
       or else Seq /= Build (Input, Ref)        -- Hash matches but not seq
       or else In_Pos >= Input'Length - 11 then -- The last match is before the
                                                --  last 12 bytes
@@ -252,7 +261,8 @@ package body Lz4 is
         Nb_Literals := In_Pos - Anchor;
         --#IfDef Debug
         if Logger.Debug_On then
-          Log ("Match after " & Hexa_Utils.Image (Nb_Literals) & " literals");
+          Log ("Match after " & Hexa_Utils.Image (Nb_Literals)
+             & " literals, write at outpos " & Hexa_Utils.Image (Out_Pos));
         end if;
         --#EndifDef
         Token_Pos := Out_Pos;
