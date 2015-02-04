@@ -139,6 +139,7 @@ package body Lz4 is
     In_Pos, Anchor : Natural := 0;
     Src_Limit : constant Integer := Output'Length - 4;
     Out_Pos : Positive := Output'First;
+    Token_Pos : Positive;
     -- Current, next, next-next and next-next-next bytes
     Seq : Seq_Type;
     -- For increasing step of search
@@ -147,6 +148,8 @@ package body Lz4 is
     Match_Step : Positive := 1;
     -- Number of literal in current run
     Nb_Literals : Integer := 0;
+    -- Length-4 of the matching sequence
+    Nb_Match : Natural;
     -- Absolute and relative index, in input, of cross reference
     Hashed : Hash_Ref;
     Ref : Hash_Range;
@@ -184,56 +187,142 @@ package body Lz4 is
       Off := In_Pos - Ref;
       --#IfDef Debug
       if Logger.Debug_On then
-        Log ("At inpos " & Hexa_Utils.Image (In_Pos)
-           & " Seq " & Hexa_Utils.Image (Long_Longs.Ll_Natural(Seq))
-           & " Hashed as " & Hexa_Utils.Image (Hashed)
-           & " got " & (if Ref = Default_Hash then "Default"
-                        else Hexa_Utils.Image (Ref)) );
+        Log ("At Inpos " & Hexa_Utils.Image (In_Pos)
+           & ", Byte " & Image (Input (In_Pos))
+           & ", Seq " & Hexa_Utils.Image (Long_Longs.Ll_Natural(Seq))
+           & ", Hashed as " & Hexa_Utils.Image (Hashed)
+           & ", Got " & (if Ref = Default_Hash then "Default"
+                         else Hexa_Utils.Image (Ref)) );
 
       end if;
       --#EndifDef
 
       if Ref = Default_Hash                  -- No reference
       or else Off > Max_Off                  -- Reference too far backwards
-      or else Seq /= Build (Input, Off) then -- Hash matches but not seq
+      or else Seq /= Build (Input, Off)      -- Hash matches but not seq
+      or else In_Pos >= Input'Last - 11 then -- The last match is before the
+                                             --  last 12 bytes
+        --#IfDef Debug
+        if Logger.Debug_On then
+          Log ("No match");
+        end if;
+        --#EndifDef
 
         -- No match: search another following byte
         if In_Pos - Anchor > Unmatch_Limit then
           -- After Unmatch_Limit failures we consider that the flow is not
-          --  compresible, so we increase the step and the limit
+          --  compressible, so we increase the step and the limit
           Unmatch_Limit := Shl (Unmatch_Limit, 1);
           Match_Step := Match_Step + 1 + Shr (Match_Step, 2);
+          --#IfDef Debug
+          if Logger.Debug_On then
+            Log ("Step becomes" & Match_Step'Img
+               & " and limit" & Unmatch_Limit'Img);
+          end if;
+          --#EndifDef
         end if;
         In_Pos := In_Pos + Match_Step;
       elsif Match_Step > 1 then
-         -- Match while stepping by more than one
-         -- Restart just after previous matching failure
-         Hash_Table(Hashed) := Ref;
-         In_Pos := In_Pos - (Match_Step - 1);
-         Match_Step := 1;
-       else
-         -- Match while stepping by one
+        -- Match while stepping by more than one
+        -- Restart just after previous matching failure
+        Hash_Table(Hashed) := Ref;
+        In_Pos := In_Pos - (Match_Step - 1);
+        Match_Step := 1;
+        --#IfDef Debug
+        if Logger.Debug_On then
+          Log ("Match while stepping, restart at " & Hexa_Utils.Image (In_Pos));
+        end if;
+        --#EndifDef
+      else
+        -- Match while stepping by one
 
-         -- Reset the stepping values
-         Unmatch_Limit := Incompressible;
+        -- Reset the stepping values
+        Unmatch_Limit := Incompressible;
 
-         -- Encode then length of literal run seen so far
-         Nb_Literals := In_Pos - Anchor;
-         if Nb_Literals < 16#F# then
-           -- Stored in 4 bits (upper quartet of token)
-           Output (Out_Pos) := To_Byte (Shl (Nb_Literals, 4));
-         else
-           -- Stored on 4 bits and several successive bytes
-           Output (Out_Pos) := 16#F0#;
-           Out_Pos := Out_Pos + 1;
-           Encode_Length (Nb_Literals - 16#F#, Out_Pos, Output);
-         end if;
+        -- Encode then length of literal run seen so far
+        Nb_Literals := In_Pos - Anchor;
+        --#IfDef Debug
+        if Logger.Debug_On then
+          Log ("Match after " & Hexa_Utils.Image (Nb_Literals) & " literals");
+        end if;
+        --#EndifDef
+        Token_Pos := Out_Pos;
+        if Nb_Literals < 16#F# then
+          -- Stored in 4 bits (upper quartet of token)
+          Output(Out_Pos) := To_Byte (Shl (Nb_Literals, 4));
+        else
+          -- Stored on 4 bits and several successive bytes
+          Output(Out_Pos) := 16#F0#;
+          Out_Pos := Out_Pos + 1;
+          Encode_Length (Nb_Literals - 16#F#, Out_Pos, Output);
+        end if;
 
+        -- Copy literals
+        Output(Out_Pos .. Out_Pos + Nb_Literals - 1)
+              := Input(Anchor .. Anchor + Nb_Literals - 1);
+        Out_Pos := Out_Pos + Nb_Literals;
+
+        -- Encode Offset, litle endian
+        Output(Out_Pos) := Byte (Off and 16#FF#);
+        Output(Out_Pos + 1) := Byte (Shr (Off, 8) and 16#FF#);
+        Out_Pos := Out_Pos + 2;
+
+        -- Count the length of the matching sequence
+        -- The last 5 bytes are always literals
+        In_Pos := In_Pos + 4;
+        Ref := Ref + 4;
+        Anchor := In_Pos;
+        while Input(In_Pos) = Input(Ref)
+        and then In_Pos < Input'Last - 4 loop
+          In_Pos := In_Pos + 1;
+          Ref := Ref + 1;
+        end loop;
+
+        -- Encode the length - 4
+        Nb_Match := In_Pos - Anchor;
+        --#IfDef Debug
+        if Logger.Debug_On then
+          Log ("Match length " & Hexa_Utils.Image (Nb_Match + 4)
+             & " at offset " & Hexa_Utils.Image (Off));
+        end if;
+        --#EndifDef
+        if Nb_Match < 16#F# then
+          -- Stored in 4 bits (lower quartet of token)
+          Output(Token_Pos) :=
+            To_Byte (Integer (Output(Token_Pos)) or Nb_Match);
+        else
+          -- Stored on 4 bits and several successive bytes
+          Output (Token_Pos) :=
+            To_Byte (Integer (Output(Token_Pos)) or 16#0F#);
+          Out_Pos := Out_Pos + 1;
+          Encode_Length (Nb_Match - 16#F#, Out_Pos, Output);
+        end if;
+
+        -- Set Anchor to start of new run
+        Anchor := In_Pos;
 
       end if;
-
     end loop;
 
+    -- Encode length of last literals
+    Nb_Literals := Input'Length - Anchor;
+    if Nb_Literals < 16#F# then
+      -- Stored in 4 bits (upper quartet of token)
+      Output(Out_Pos) := To_Byte (Shl (Nb_Literals, 4));
+    else
+      -- Stored on 4 bits and several successive bytes
+      Output(Out_Pos) := 16#F0#;
+      Out_Pos := Out_Pos + 1;
+      Encode_Length (Nb_Literals - 16#F#, Out_Pos, Output);
+    end if;
+
+    -- Copy last literals
+    Output(Out_Pos .. Out_Pos + Nb_Literals - 1)
+          := Input(Anchor .. Anchor + Nb_Literals - 1);
+    Out_Pos := Out_Pos + Nb_Literals;
+
+    -- Done
+    Outlen := Out_Pos - Output'First;
   end Compress;
 
   -- Uncompress Input into Output
