@@ -564,7 +564,6 @@ package body Lzf is
 
   -- Uncompress Input into Output
   -- May raise Too_Big if Output is too small
-  -- May raise Invalid if input is not a valid compressed buffer
   procedure Uncompress (Input  : in Byte_Array;
                         Output : out Byte_Array;
                         Outlen : out Natural) is
