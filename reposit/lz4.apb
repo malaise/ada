@@ -24,23 +24,23 @@
 --    match)
 --  - If no match, then append the current byte as literal.
 --  - The compressed flow is a suite of sequences. A sequence contains a run of
---    litteral then a cross reference. It is made of:
---    * A token: The first 4 bits indicate the length of the litteral run
+--    literal then a cross reference. It is made of:
+--    * A token: The first 4 bits indicate the length of the literal run
 --      and last 4 bits indicate the length of the corss reference
 --    * Then, if the run is longer than 14, the token contains Fx and the
 --      following (up to four) bytes contain the remaining of the length
 --      Exemple, a length of 300 is coded as Fx FF 1E (15+255+30). (x is used
 --      to code the length of the cross reference)
---    * Then the litteral run (if any)
---    * Then on two bytes little endian the offset of the cross reference
+--    * Then the literal run (if any)
+--    * Then on two bytes litle endian the offset of the cross reference
 --      (1 for current - 1)
 --    * Then, if the reference is longer than 14, the (up to four bytes) to
 --      complete the length.
---    The last sequence contains only a token, possible extension of litteral
---     run length, and litterals.
+--    The last sequence contains only a token, possible extension of literal
+--     run length, and literals.
 
 -- The uncompression algorithm is
---  - Read a token, read the complement of litteral run length if needed,
+--  - Read a token, read the complement of literal run length if needed,
 --  - Copy the literals from input
 --  - Read the offset, read the complement of reference length if needed
 --  - Copy the reference from output
@@ -168,8 +168,10 @@ package body Lz4 is
 
     --#IfDef Debug
     if Logger.Debug_On then
-      Log ("Starting encoding from index " & Hexa_Utils.Image (Input'First)
-         & " to " & Hexa_Utils.Image (Input'Last));
+      Log ("Starting encoding indexes " & Hexa_Utils.Image (Input'First)
+         & " .. " & Hexa_Utils.Image (Input'Last)
+         & " into " & Hexa_Utils.Image (Output'First)
+         & " .. " & Hexa_Utils.Image (Output'Last));
     end if;
     --#EndifDef
 
@@ -197,11 +199,11 @@ package body Lz4 is
       end if;
       --#EndifDef
 
-      if Ref = Default_Hash                  -- No reference
-      or else Off > Max_Off                  -- Reference too far backwards
-      or else Seq /= Build (Input, Off)      -- Hash matches but not seq
-      or else In_Pos >= Input'Last - 11 then -- The last match is before the
-                                             --  last 12 bytes
+      if Ref = Default_Hash                    -- No reference
+      or else Off > Max_Off                    -- Reference too far backwards
+      or else Seq /= Build (Input, Off)        -- Hash matches but not seq
+      or else In_Pos >= Input'Length - 11 then -- The last match is before the
+                                               --  last 12 bytes
         --#IfDef Debug
         if Logger.Debug_On then
           Log ("No match");
@@ -259,7 +261,8 @@ package body Lz4 is
 
         -- Copy literals
         Output(Out_Pos .. Out_Pos + Nb_Literals - 1)
-              := Input(Anchor .. Anchor + Nb_Literals - 1);
+              := Input(Input'First + Anchor ..
+                       Input'First + Anchor + Nb_Literals - 1);
         Out_Pos := Out_Pos + Nb_Literals;
 
         -- Encode Offset, litle endian
@@ -272,8 +275,8 @@ package body Lz4 is
         In_Pos := In_Pos + 4;
         Ref := Ref + 4;
         Anchor := In_Pos;
-        while Input(In_Pos) = Input(Ref)
-        and then In_Pos < Input'Last - 4 loop
+        while Input(Input'First + In_Pos) = Input(Input'First + Ref)
+        and then In_Pos < Input'Length - 4 loop
           In_Pos := In_Pos + 1;
           Ref := Ref + 1;
         end loop;
@@ -318,7 +321,8 @@ package body Lz4 is
 
     -- Copy last literals
     Output(Out_Pos .. Out_Pos + Nb_Literals - 1)
-          := Input(Anchor .. Anchor + Nb_Literals - 1);
+          := Input(Input'First + Anchor ..
+                   Input'First + Anchor + Nb_Literals - 1);
     Out_Pos := Out_Pos + Nb_Literals;
 
     -- Done
@@ -327,13 +331,102 @@ package body Lz4 is
 
   -- Uncompress Input into Output
   -- May raise Too_Big if Output is too small
-  -- May raise Invalid if input is not a valid compressed buffer
   procedure Uncompress (Input  : in Byte_Array;
                         Output : out Byte_Array;
                         Outlen : out Natural) is
+    -- Indexes in input and output flows
+    In_Pos : Natural := Input'First;
+    Ref : Natural;
+    Out_Pos : Positive := Output'First;
+    -- Token of a sequence
+    Token : Natural;
+    -- Number of literal in current run
+    Nb_Literals : Positive;
+    -- Offset of the matching sequence
+    Off : Positive;
+    -- Length-4 of the matching sequence
+    Nb_Match : Natural;
+    use type C_Types.Byte;
   begin
+    --#IfDef Debug
+    if Logger.Debug_On then
+      Log ("Starting decoding indexes " & Hexa_Utils.Image (Input'First)
+         & " .. " & Hexa_Utils.Image (Input'Last)
+         & " into " & Hexa_Utils.Image (Output'First)
+         & " .. " & Hexa_Utils.Image (Output'Last));
+    end if;
+    --#EndifDef
 
-    null;
+    -- Main loop
+    while In_Pos < Input'Last loop
+      -- Read token
+      Token := Natural (Input(In_Pos));
+      In_Pos := In_Pos + 1;
+
+      -- Extract length of the literals run
+      Nb_Literals := Shr (Token, 4);
+      if Nb_Literals >= 15 then
+        while Input(In_Pos) = 255 loop
+           Nb_Literals := Nb_Literals + 255;
+           In_Pos := In_Pos + 1;
+        end loop;
+        Nb_Literals := Nb_Literals + Natural (Input(In_Pos));
+        In_Pos := In_Pos + 1;
+      end if;
+      --#IfDef Debug
+      if Logger.Debug_On then
+        Log ("Got literal length " & Hexa_Utils.Image (Nb_Literals));
+      end if;
+      --#EndifDef
+
+      -- Copy literals
+      Output(Out_Pos .. Out_Pos + Nb_Literals - 1)
+          := Input(In_Pos ..  In_Pos + Nb_Literals - 1);
+      In_Pos := In_Pos + Nb_Literals;
+      Out_Pos := Out_Pos + Nb_Literals;
+
+      -- Check end of input
+      exit when In_Pos > Input'Last;
+
+      -- Get match offset
+      Off := Shl (Natural(Input(In_Pos)), 8) + Natural(Input(In_Pos + 1));
+      In_Pos := In_Pos + 2;
+      --#IfDef Debug
+      if Logger.Debug_On then
+        Log ("Got match offset " & Hexa_Utils.Image (Off));
+      end if;
+      --#EndifDef
+
+      -- Get match length
+      Nb_Match := Token and 16#0F#;
+      if Nb_Match >= 15 then
+        while Input(In_Pos) = 255 loop
+           Nb_Match := Nb_Match + 255;
+           In_Pos := In_Pos + 1;
+        end loop;
+        Nb_Match := Nb_Match + Natural (Input(In_Pos));
+        In_Pos := In_Pos + 1;
+      end if;
+      Nb_Match := Nb_Match + 4;
+      --#IfDef Debug
+      if Logger.Debug_On then
+        Log ("Got match length " & Hexa_Utils.Image (Nb_Match));
+      end if;
+      --#EndifDef
+
+      -- Copy matching sequence from Output to Output
+      -- Areas may overlap! so we must copy byte per byte
+      Ref := Out_Pos - Off;
+      for I in 1 .. Nb_Match loop
+        Output(Out_Pos) := Output(Ref);
+        Out_Pos := Out_Pos + 1;
+        Ref := Ref + 1;
+      end loop;
+
+    end loop;
+
+    Outlen := Out_Pos - Output'First;
+
   end Uncompress;
 
 end Lz4;
