@@ -1,6 +1,6 @@
 Als
 ===
-V15.1
+V15.2
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, the output format of each entry, and general
@@ -107,8 +107,9 @@ Other options
 Environment Variables
 ~~~~~~~~~~~~~~~~~~~~~
 The variable 'ALS_MAX_TO_SORT' can be set to define the number of entries above
-which als does not apply the sorting options anymore. Set it to 0 for always
-sorting (1 leads to never sort). The default is 5000.
+which als does not apply the default sorting policy (alphanum) or the sorting
+options. Set it to 0 for always sorting (1 leads to never sort). +
+The default is 5000.
 
 Notes on compatibility between options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
