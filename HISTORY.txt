@@ -4,6 +4,8 @@ Main changes
 
 [horizontal]
 
+*2015/02/05*:: Add Lz4 library
+
 *2015/01/19*:: Add Lzf library
 
 *2015/01/08*:: Fix enigma double stepping
