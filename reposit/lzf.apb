@@ -230,42 +230,45 @@ package body Lzf is
     use type C_Types.Byte;
   begin
 
-    if Input'Length = 0 then
-      Outlen := 0;
-      --#IfDef Debug
-      if Logger.Debug_On then
-        Log ("Empty input");
+    if Input'Length < 3 then
+      -- Specific handling of input too short to compute the future
+      if Input'Length = 0 then
+        Outlen := 0;
+        --#IfDef Debug
+        if Logger.Debug_On then
+          Log ("Empty input");
+        end if;
+        --#EndifDef
+        return;
+      elsif Input'Length = 1 then
+        if Output'Length < 2 then
+          raise Too_Big;
+        end if;
+        Outlen := 2;
+        Output(Out_Pos - 1) := 0;
+        Output(Out_Pos) := Input(Input'First);
+        --#IfDef Debug
+        if Logger.Debug_On then
+          Log ("Single byte " & Image (Input(Input'First)));
+        end if;
+        --#EndifDef
+        return;
+      elsif Input'Length = 2 then
+        if Output'Length < 2 then
+          raise Too_Big;
+        end if;
+        Outlen := 3;
+        Output(Out_Pos - 1) := 1;
+        Output(Out_Pos   ) := Input(Input'First);
+        Output(Out_Pos + 1) := Input(Input'First + 1);
+        --#IfDef Debug
+        if Logger.Debug_On then
+          Log ("Two bytes " & Image (Input(Input'First))
+             & " and " & Image (Input(Input'First + 1)));
+        end if;
+        --#EndifDef
+        return;
       end if;
-      --#EndifDef
-      return;
-    elsif Input'Length = 1 then
-      if Output'Length < 2 then
-        raise Too_Big;
-      end if;
-      Outlen := 2;
-      Output(Out_Pos - 1) := 0;
-      Output(Out_Pos) := Input(Input'First);
-      --#IfDef Debug
-      if Logger.Debug_On then
-        Log ("Single byte " & Image (Input(Input'First)));
-      end if;
-      --#EndifDef
-      return;
-    elsif Input'Length = 2 then
-      if Output'Length < 2 then
-        raise Too_Big;
-      end if;
-      Outlen := 3;
-      Output(Out_Pos - 1) := 1;
-      Output(Out_Pos   ) := Input(Input'First);
-      Output(Out_Pos + 1) := Input(Input'First + 1);
-      --#IfDef Debug
-      if Logger.Debug_On then
-        Log ("Two bytes " & Image (Input(Input'First))
-           & " and " & Image (Input(Input'First + 1)));
-      end if;
-      --#EndifDef
-      return;
     end if;
 
     --#IfDef Debug
