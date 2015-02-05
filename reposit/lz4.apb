@@ -46,7 +46,6 @@
 --  - Copy the reference from output
 
 with Bit_Ops; use Bit_Ops;
-with Long_Longs;
 --#IfDef Debug
 with Trace, Hexa_Utils;
 --#EndifDef
@@ -64,14 +63,7 @@ package body Lz4 is
   -- Image of a byte
   function Image is new Hexa_Utils.Mod_Image (Byte);
   -- Image of a signed integer
-  function Int_Image (I : Integer) return String is
-  begin
-    if I >= 0 then
-      return Hexa_Utils.Image (I);
-    else
-      return Hexa_Utils.Image (Long_Longs.Ll_Integer (not I) + 16#10000000#);
-    end if;
-  end Int_Image;
+  function Image is new Hexa_Utils.Int_Image (Integer);
   --#EndifDef
 
   -- The number of entries in the hash table. The size is a trade-off between
@@ -207,7 +199,7 @@ package body Lz4 is
       if Logger.Debug_On then
         Log ("At Inpos " & Hexa_Utils.Image (In_Pos)
            & ", Byte " & Image (Input(Input'First + In_Pos))
-           & ", Seq " & Int_Image (Seq)
+           & ", Seq " & Image (Seq)
            & ", Hashed as " & Hexa_Utils.Image (Hashed)
            & ", Got " & (if Ref = Default_Hash then "Default"
                          else Hexa_Utils.Image (Ref)) );

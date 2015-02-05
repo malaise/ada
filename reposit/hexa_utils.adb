@@ -1,4 +1,4 @@
-with As.U;
+with As.U, Bit_Ops;
 package body Hexa_Utils is
   -- Convert an hexadecimal character (0..9 | 'a' .. 'f' | 'A' .. 'F')
   --  into its value (0 .. 15).
@@ -25,19 +25,22 @@ package body Hexa_Utils is
             else Character'Val (Character'Pos('a') + H - 10));
   end Hexa_To_Char;
 
-  -- Image in hexadecimal of a Natural
+  -- Image in hexadecimal of an integer
   -- Lower case, no leading space
   function Int_Image (I : Int) return String is
-    V : Int := I;
+    V : Long_Longs.Ll_Integer := Long_Longs.Ll_Integer (I);
     Res : As.U.Asu_Us;
+    use Bit_Ops;
   begin
     loop
-      Res.Prepend (Hexa_To_Char (Natural (V rem 16)));
-      V := V / 16;
+      Res.Prepend (Hexa_To_Char (Natural (V and 16#F#)));
+      V := Shr (V, 4);
       exit when V = 0;
     end loop;
     return Res.Image;
   end Int_Image;
+
+  -- Image of a modulus
   function Mod_Image (I : Modulus) return String is
     V : Modulus := I;
     Res : As.U.Asu_Us;
@@ -49,6 +52,8 @@ package body Hexa_Utils is
     end loop;
     return Res.Image;
   end Mod_Image;
+
+  -- Image of naturals
   function Nat_Image is new Int_Image (Natural);
   function Image (N : Natural) return String renames Nat_Image;
   function Llnat_Image is new Int_Image (Long_Longs.Ll_Natural);
