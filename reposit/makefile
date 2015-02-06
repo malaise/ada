@@ -8,11 +8,12 @@ SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg afpx_bld-xref \
   xml_parser-parse_mng-resolve_uri xml_parser-parse_mng-util \
   xml_parser-tree_mng \
   x_mng-dispatch 
-OPTIMIZED := lzf lz4
+OPTIMIZED := snappy lzf lz4
 EXES := afpx_bld afpx_rnb clear_screen
 
+PARGS_sanppy.apb := Debug
 PARGS_lzf.apb :=  # Debug # Fast | Slow # LocalTrace
-PARGS_lz4.apb :=  Debug
+PARGS_lz4.apb :=  # Debug
 CLIBS_afpx_bld := cutil x_mng posix2pcre pcre X11
 CLIBS_afpx_rnb := cutil x_mng posix2pcre pcre X11
 CLIBS_clear_screen := cutil
