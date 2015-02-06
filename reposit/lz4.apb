@@ -342,6 +342,13 @@ package body Lz4 is
 
     -- Done
     Outlen := Out_Pos - Output'First;
+
+  --#IfDef Debug
+  --#ElseDef
+  exception
+    when Constraint_Error =>
+      raise Too_Big;
+  --#EndifDef
   end Compress;
 
   -- Uncompress Input into Output
@@ -449,6 +456,12 @@ package body Lz4 is
 
     Outlen := Out_Pos - Output'First;
 
+  --#IfDef Debug
+  --#ElseDef
+  exception
+    when Constraint_Error =>
+      raise Too_Big;
+  --#EndifDef
   end Uncompress;
 
 end Lz4;
