@@ -263,6 +263,7 @@ procedure Agite is
   end Update_Cursor_Col;
 
   -- Change dir (or at least try) according to argument or Dir_Field
+  Last_Valid_Dir : As.U.Asu_Us;
   procedure Change_Dir (New_Dir : in String := "") is
     Str : constant String
         := Utils.Parse_Spaces (Afpx.Decode_Field (Dir_Field, 0, False));
@@ -292,6 +293,7 @@ procedure Agite is
     end;
     -- Success, reset root path for re-evaluation, save current dir
     Root.Set_Null;
+    Last_Valid_Dir := As.U.Tus (Directory.Get_Current);
     if Update_History then
       Config.Save_Curr_Dir (Directory.Get_Current);
     end if;
@@ -330,17 +332,43 @@ procedure Agite is
 
   -- Check validity of current directory
   Lost_Dir : exception;
-  procedure Check_Dir is
+  function Check_Dir return Boolean is
+    Dir : As.U.Asu_Us;
   begin
-    declare
-      -- Check validity of current directory
-      Dummy : constant String := Directory.Get_Current;
     begin
-      null;
+      -- Check validity of current directory
+      Dir := As.U.Tus (Directory.Get_Current);
+      Last_Valid_Dir := Dir;
+      return True;
+    exception
+      when Directory.Name_Error | Directory.Access_Error =>
+        -- Fallback hereafter
+        null;
     end;
-  exception
-    when Directory.Name_Error | Directory.Access_Error =>
-      raise Lost_Dir;
+    -- Fallback to las valid dir or one of its parents
+    Dir := Last_Valid_Dir;
+    loop
+      begin
+        Directory.Change_Current (Dir.Image);
+        -- Ok
+        exit;
+      exception
+        when Directory.Name_Error | Directory.Access_Error =>
+          -- Try parent
+          if Dir.Image = "/" then
+            -- No more parent: game over
+            raise Lost_Dir;
+          end if;
+          Dir := As.U.Tus (Directory.Dirname (Dir.Image));
+      end;
+    end loop;
+    -- Save this dir for a later fallback
+    Last_Valid_Dir := Dir;
+    Error ("Current directory has vanished",
+           "falling back into:",
+           Dir.Image);
+    Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
+    return False;
   end Check_Dir;
 
   -- Refresh list of files
@@ -348,9 +376,8 @@ procedure Agite is
   -- Try to restore current pos
   procedure Reread (Set_Dir : in Boolean) is
   begin
-    Check_Dir;
-    -- Re-build list
-    if Set_Dir then
+    -- Re-build list if needed or requested
+    if not Check_Dir or else Set_Dir then
       Change_Dir (".");
     else
       Encode_Files (Force => False);
