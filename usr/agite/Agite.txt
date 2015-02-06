@@ -178,7 +178,7 @@ including the list of files modified by the commit.
 * xref:XCheckout[Checkout]: This allows checking out a commit or a tag.
 * xref:XCommit[Commit]: This shows all the local modifications of the
 worktree and allows staging and commiting them.
-* xref:XPush[Push]: This allows pushing local commits to a remote
+* xref:XPush[Push]: This allows pushing a branch or tag into a remote
 repository.
 * xref:XStash[Stash]: This allows stashing the local worktree and managing
 the list of stashes.
@@ -899,8 +899,8 @@ This button button asks for confirmation, then deletes the selected tag.
 
 Push::
 
-This button button launches the xref:XPush[push] manu that allowws pushing
-the selected tag into a a given remote reference.
+This button button launches the xref:XPush[push] manu that allows pushing
+the selected tag into a selected remote repository.
 
 .Back
 
@@ -1012,7 +1012,8 @@ NOTE: The Commit button is active only if there are staged changes.
 
 .Push
 
-This button activates the xref:XPush[push] menu.
+This button activates the xref:XPush[push] menu to push the last commits into
+a selected remote reference.
 
 .Back
 
@@ -1021,8 +1022,8 @@ This button returns to the xref:XDir[directory] menu.
 Push
 ~~~~
 anchor:XPush[]
-The 'Push' menu allows pushing the local changes (commits) of the current
-branch or to push a tag into a given remote repository. +
+The 'Push' menu allows pushing the local commits of the current
+branch or to push a tag into a selected remote repository. +
 It shows:
 
 .Title
@@ -1036,21 +1037,26 @@ workstree.
 
 .List of references
 
-This lists the known remote references, from which you can select the target. +
+This lists the known remote repositories, from which you can select the
+target. +
 If the remote ''orign'' is defined then it is selected by default.
 
 .Push
 
 Pushes the local commits of current branch or the tag to the selected remote
 repository. +
-After pushing commits agite returns back to the xref:XDir[directory] menu,
-while after pushing a tag it returns back to the xref:XTags[tags] menu. +
+After pushing the current branch, agite returns back to the
+xref:XDir[directory] menu, while after pushing a tag it returns back to the
+xref:XTags[tags] menu. +
 Any error is reported through a specific screen.
 
 .Push Upstream
 Only active when pushing the current branch, allows the creation of the
-current branch in the remote repository. +
-After pushing commits agite returns back to the xref:XDir[directory] menu. +
+current branch in the remote repository. If the branch has already been pushed
+upstream into this repository, then this button has the same effect as
+'Push'. +
+After pushing the branch, agite returns back to the xref:XDir[directory]
+menu. +
 Any error is reported through a specific screen.
 
 .Back
