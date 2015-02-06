@@ -23,21 +23,21 @@
 --    and append a cross reference (with offset from current and length of
 --    match)
 --  - If no match, then append the current byte as literal.
---  - The compressed flow is a suite of sequences. A sequence contains a run of
---    literal then a cross reference. It is made of:
---    * A token: The first 4 bits indicate the length of the literal run
---      and last 4 bits indicate the length of the corss reference
---    * Then, if the run is longer than 14, the token contains Fx and the
---      following (up to four) bytes contain the remaining of the length
---      Exemple, a length of 300 is coded as Fx FF 1E (15+255+30). (x is used
---      to code the length of the cross reference)
---    * Then the literal run (if any)
---    * Then on two bytes litle endian the offset of the cross reference
---      (1 for current - 1)
---    * Then, if the reference is longer than 14, the (up to four bytes) to
---      complete the length.
---    The last sequence contains only a token, possible extension of literal
---     run length, and literals.
+-- The compressed flow is a suite of sequences. A sequence contains a run of
+--  literal then a cross reference. It is made of:
+--  * A token: The first 4 bits indicate the length of the literal run
+--    and the last 4 bits indicate the length of the cross reference
+--  * Then, if the run is longer than 14, the token contains Fx and the
+--    following (up to four) bytes contain the remaining of the length
+--    Exemple, a length of 300 is coded as Fx FF 1E (15+255+30). (x is used
+--    to code the length of the cross reference)
+--  * Then the literal run (if any)
+--  * Then on two bytes litle endian the offset of the cross reference
+--    (1 for current - 1)
+--  * Then, if the reference is longer than 14, the (up to four bytes) to
+--    complete the length.
+--  The last sequence contains only a token, possible extension of literal
+--   run length, and literals.
 
 -- The uncompression algorithm is
 --  - Read a token, read the complement of literal run length if needed,
@@ -114,6 +114,7 @@ package body Lz4 is
   end To_Byte;
 
   -- Encode a length on several successive Out_Pos of Output
+  --  by succesive slices of 255
   procedure Encode_Length (Val : in Natural; Out_Pos : in out Positive;
                                              Output : in out Byte_Array) is
     Res : Natural := Val;
@@ -209,7 +210,7 @@ package body Lz4 is
 
       if Ref = Default_Hash                    -- No reference
       or else Off >= Max_Off                   -- Reference too far backwards
-      or else Seq /= Build (Input, Ref)        -- Hash matches but not seq
+      or else Seq /= Build (Input, Ref)        -- Seq do not match
       or else In_Pos >= Input'Length - 11 then -- The last match is before the
                                                --  last 12 bytes
         --#IfDef Debug
