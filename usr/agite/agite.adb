@@ -360,6 +360,10 @@ procedure Agite is
             raise Lost_Dir;
           end if;
           Dir := As.U.Tus (Directory.Dirname (Dir.Image));
+          -- Remove trailing '/'
+          if Dir.Element (Dir.Length) = '/' then
+            Dir.Trail (1);
+          end if;
       end;
     end loop;
     -- Save this dir for a later fallback
