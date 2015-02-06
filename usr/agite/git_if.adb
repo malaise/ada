@@ -835,11 +835,15 @@ package body Git_If is
   end Do_Commit;
 
   -- Launch a push synchronous
-  function Do_Push (Remote : String; Tag : String) return String is
+  function Do_Push (Remote : String; Tag : String;
+                    Set_Upstream : Boolean) return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
     Cmd.Cat ("push");
+    if Set_Upstream then
+      Cmd.Cat ("--set-upstream");
+    end if;
     Cmd.Cat (Remote);
     if Tag /= "" then
       Cmd.Cat (Tag);

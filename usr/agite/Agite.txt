@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V16.17
+V16.18
 
 General purpose
 ---------------
@@ -1021,8 +1021,8 @@ This button returns to the xref:XDir[directory] menu.
 Push
 ~~~~
 anchor:XPush[]
-The 'Push' menu allows pushing the local changes (commits) or a tag into a
-given remote repository. +
+The 'Push' menu allows pushing the local changes (commits) of the current
+branch or to push a tag into a given remote repository. +
 It shows:
 
 .Title
@@ -1041,9 +1041,16 @@ If the remote ''orign'' is defined then it is selected by default.
 
 .Push
 
-Pushes the local commits or tag to the selected remote repository. +
+Pushes the local commits of current branch or the tag to the selected remote
+repository. +
 After pushing commits agite returns back to the xref:XDir[directory] menu,
 while after pushing a tag it returns back to the xref:XTags[tags] menu. +
+Any error is reported through a specific screen.
+
+.Push Upstream
+Only active when pushing the current branch, allows the creation of the
+current branch in the remote repository. +
+After pushing commits agite returns back to the xref:XDir[directory] menu. +
 Any error is reported through a specific screen.
 
 .Back
@@ -1218,8 +1225,8 @@ calling 'git difftool -y -x <differator> <ref_HSA1> <comp_HSA1> \-- <file>',
 * A function commits the local changes by calling 'git commit -m
 "<comment>"',
 
-* A function pushes the local commits or a tag by calling 'git push <remote> 
-[ <tag> ]',
+* A function pushes the local commits of current branch or a tag by calling
+'git push [ --set-upstream ] <remote> [ <tag> ]',
 
 * A function fetches or pulls the current branch by calling
 'git fetch -q --tags <remote> <branch>:<branch>' or
