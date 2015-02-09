@@ -182,7 +182,7 @@ package body Snappy is
       Output(Out_Pos + 2) := To_Byte (Shr (Off and 16#FF00#, 8));
       Out_Pos := Out_Pos + 3;
     else
-      -- LLLLLL10 O O 0 0 (with L = Len - 1)
+      -- LLLLLL10 O1 O2 O3 O4 (with L = Len - 1)
       Output(Out_Pos) := To_Byte (Shl (Len - 1, 2) and 16#10#);
       Output(Out_Pos + 1) := To_Byte (Off and 16#FF#);
       Output(Out_Pos + 2) := To_Byte (Shr (Off and 16#FF00#, 8));
@@ -380,112 +380,133 @@ package body Snappy is
   procedure Uncompress (Input  : in Byte_Array;
                         Output : out Byte_Array;
                         Outlen : out Natural) is
-    -- Indexes in input and output flows
-    In_Pos : Natural := Input'First;
-    Ref : Natural;
-    Out_Pos : Positive := Output'First;
-    -- Token of a sequence
-    Token : Natural;
-    -- Number of literal in current run
-    Nb_Literals : Natural;
-    -- Offset of the matching sequence
-    Off : Positive;
-    -- Length-4 of the matching sequence
-    Nb_Match : Natural;
-    use type C_Types.Byte;
+    In_Pos, Out_Pos : Integer;
+    Ctrl, Kind, Len, Off : Integer;
   begin
 
+    if Input'Length = 0 then
+      --#IfDef Debug
+      if Logger.Debug_On then
+        Log ("Empty input");
+      end if;
+      --#EndifDef
+      Outlen := 0;
+      return;
+    end if;
+
+    In_Pos := Input'First;
+    Out_Pos := Output'First;
     --#IfDef Debug
     if Logger.Debug_On then
-      Log ("Starting decoding indexes " & Hexa_Utils.Image (Input'First)
-         & " .. " & Hexa_Utils.Image (Input'Last)
-         & " into " & Hexa_Utils.Image (Output'First)
-         & " .. " & Hexa_Utils.Image (Output'Last));
+      Log ("First index is " & Hexa_Utils.Image (In_Pos));
     end if;
     --#EndifDef
-
-    -- Main loop
-    while In_Pos < Input'Last loop
-      -- Read token
-      Token := Natural (Input(In_Pos));
+    loop
+      -- Get control char: literals-run or backref
+      Ctrl := Integer (Input(In_Pos));
+      Kind := Ctrl and 16#3#;
       --#IfDef Debug
       if Logger.Debug_On then
         Log ("At index " & Hexa_Utils.Image (In_Pos)
-           & " got token " & Image (Input(In_Pos)));
+           & ", kind " & Hexa_Utils.Image (Kind));
       end if;
       --#EndifDef
       In_Pos := In_Pos + 1;
 
-      -- Extract length of the literals run
-      Nb_Literals := Shr (Token, 4);
-      if Nb_Literals >= 15 then
-        while Input(In_Pos) = 255 loop
-           Nb_Literals := Nb_Literals + 255;
-           In_Pos := In_Pos + 1;
+
+      if Kind = 0 then
+        -- Literal run
+        Len := Shr (Ctrl, 2);
+        case Len is
+          when 16#3C# =>
+            -- Len on 1 byte
+            Len := Integer (Input(In_Pos));
+            In_Pos := In_Pos + 1;
+          when 16#3D# =>
+            -- Len on 2 bytes
+            Len := Integer (Input(In_Pos))
+                   or Shl (Integer (Input(In_Pos + 1)), 8);
+            In_Pos := In_Pos + 2;
+          when 16#3E# =>
+            -- Len on 3 bytes
+            Len := Integer (Input(In_Pos))
+                   or Shl (Integer (Input(In_Pos + 1)), 8)
+                   or Shl (Integer (Input(In_Pos + 2)), 16);
+            In_Pos := In_Pos + 3;
+          when 16#3F# =>
+            -- Len on 4 bytes
+            Len := Integer (Input(In_Pos))
+                   or Shl (Integer (Input(In_Pos + 1)), 8)
+                   or Shl (Integer (Input(In_Pos + 2)), 16)
+                   or Shl (Integer (Input(In_Pos + 3)), 24);
+            In_Pos := In_Pos + 4;
+          when others =>
+            -- Len <= 16#3B# then
+            Len := Len + 1;
+        end case;
+
+        --#IfDef Debug
+        if Logger.Debug_On then
+          Log ("Got " & Hexa_Utils.Image (Len) & " litterals");
+          for I in In_Pos .. In_Pos + Len loop
+             Log ("  Literal " & Image (Input(I)));
+          end loop;
+        end if;
+        --#EndifDef
+        -- Copy to output and move forward this many bytes
+        if Out_Pos + Len > Output'Last then
+          raise Too_Big;
+        end if;
+        Output(Out_Pos .. Out_Pos + Len - 1)
+             := Input (In_Pos .. In_Pos + Len - 1);
+        In_Pos := In_Pos + Len;
+        Out_Pos := Out_Pos + Len;
+      else
+        -- Back reference
+        if Kind = 16#01# then
+          -- OOOLLL01 OOOOOOOO   (with L = Len-4)
+          Len := Shr (Ctrl and 16#1C#, 2) + 4;
+          Off := Shl (Ctrl and 16#E0#, 8) or Integer (Input (In_Pos));
+          In_Pos := In_Pos + 1;
+        elsif Kind = 16#02# then
+          -- LLLLLL10 Ol Oh (with L = Len - 1)
+          Len := Shr (Ctrl, 2) + 1;
+          Off := Integer (Input (In_Pos))
+               + Shl (Integer (Input (In_Pos + 1)), 8);
+          In_Pos := In_Pos + 2;
+        elsif Kind = 16#03# then
+          -- LLLLLL10 O O O O (with L = Len - 1)
+          Len := Shr (Ctrl, 2) + 1;
+          Off := Integer (Input (In_Pos))
+               + Shl (Integer (Input (In_Pos + 1)), 8)
+               + Shl (Integer (Input (In_Pos + 2)), 16)
+               + Shl (Integer (Input (In_Pos + 3)), 24);
+          In_Pos := In_Pos + 4;
+        end if;
+
+        --#IfDef Debug
+        if Logger.Debug_On then
+          Log ("Got  a backref of len " & Hexa_Utils.Image (Len)
+             & " and offset " & Hexa_Utils.Image (Off));
+        end if;
+        --#EndifDef
+
+        -- Copy the *back-reference* bytes from the given
+        --  location in output to current position
+        if Out_Pos + Len - 1 > Output'Last then
+          raise Too_Big;
+        end if;
+        Off := Out_Pos - Off;
+        -- Areas may overlap! so we must copy byte per byte
+        for I in 0 .. Len - 1 loop
+          Output(Out_Pos + I) := Output(Off + I);
         end loop;
-        Nb_Literals := Nb_Literals + Natural (Input(In_Pos));
-        In_Pos := In_Pos + 1;
+        Out_Pos := Out_Pos + Len;
       end if;
-      --#IfDef Debug
-      if Logger.Debug_On then
-        Log ("Got literal length " & Hexa_Utils.Image (Nb_Literals));
-      end if;
-      --#EndifDef
 
-      -- Copy literals
-      Output(Out_Pos .. Out_Pos + Nb_Literals - 1)
-          := Input(In_Pos ..  In_Pos + Nb_Literals - 1);
-      In_Pos := In_Pos + Nb_Literals;
-      Out_Pos := Out_Pos + Nb_Literals;
-
-      -- Check end of input
       exit when In_Pos > Input'Last;
-
-      -- Get match offset, little endian
-      Off := Natural(Input(In_Pos)) + Shl (Natural(Input(In_Pos + 1)), 8);
-      In_Pos := In_Pos + 2;
-      --#IfDef Debug
-      if Logger.Debug_On then
-        Log ("Got match offset " & Hexa_Utils.Image (Off));
-      end if;
-      --#EndifDef
-
-      -- Get match length
-      Nb_Match := Token and 16#0F#;
-      if Nb_Match >= 15 then
-        while Input(In_Pos) = 255 loop
-           Nb_Match := Nb_Match + 255;
-           In_Pos := In_Pos + 1;
-        end loop;
-        Nb_Match := Nb_Match + Natural (Input(In_Pos));
-        In_Pos := In_Pos + 1;
-      end if;
-      Nb_Match := Nb_Match + 4;
-      --#IfDef Debug
-      if Logger.Debug_On then
-        Log ("Got match length " & Hexa_Utils.Image (Nb_Match));
-      end if;
-      --#EndifDef
-
-      -- Copy matching sequence from Output to Output
-      -- Areas may overlap! so we must copy byte per byte
-      Ref := Out_Pos - Off;
-      for I in 1 .. Nb_Match loop
-        Output(Out_Pos) := Output(Ref);
-        Out_Pos := Out_Pos + 1;
-        Ref := Ref + 1;
-      end loop;
-
     end loop;
-
     Outlen := Out_Pos - Output'First;
-
-  --#IfDef Debug
-  --#ElseDef
-  exception
-    when Constraint_Error =>
-      raise Too_Big;
-  --#EndifDef
   end Uncompress;
 
 end Snappy;
