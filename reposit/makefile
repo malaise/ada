@@ -11,7 +11,7 @@ SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg afpx_bld-xref \
 OPTIMIZED := snappy lzf lz4
 EXES := afpx_bld afpx_rnb clear_screen
 
-PARGS_snappy.apb := Debug
+PARGS_snappy.apb := # Debug
 PARGS_lzf.apb :=  # Debug # Fast | Slow # LocalTrace
 PARGS_lz4.apb :=  # Debug
 CLIBS_afpx_bld := cutil x_mng posix2pcre pcre X11
