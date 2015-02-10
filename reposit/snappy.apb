@@ -13,6 +13,8 @@
 --  - Back-reference: copy previous data of the uncompressed stream to the
 --    output stream, with specified offset from location in the uncompressed
 --    stream and length. The length is at least 4 bytes.
+-- A sequence is made of one or several literal runs, then of one or several
+--  back references (all with the same offset).
 -- The compression algorithm is
 --  - Read next byte and the 3 following bytes, these 4 bytes are the "future",
 --    hash them
@@ -52,7 +54,7 @@ package body Snappy is
 
   --#IfDef Debug
   -- Trace logger
-  package Logger is new Trace.Basic_Logger ("Lz4");
+  package Logger is new Trace.Basic_Logger ("Snappy");
   procedure Log (Msg : in String) is
   pragma Inline (Log);
   begin
@@ -113,12 +115,13 @@ package body Snappy is
                              Input       : in  Byte_Array;
                              Out_Pos     : in out Positive;
                              Output      : in out Byte_Array) is
-    Res : Natural := Nb_Literals;
+    Res : Natural;
   begin
     -- Encode literal token xxxxxx00
     if Nb_Literals < 16#3C# then
-      -- Stored Len - 1 in 6 bits (upper quartet of token)
+      -- Stored Length - 1 in 6 bits (upper quartet of token)
       Output(Out_Pos) := To_Byte (Shl (Nb_Literals - 1, 2));
+      Out_Pos := Out_Pos + 1;
     else
       -- Len will be stored on 1 to 4 successive bytes
       -- The 6 bits indicate the number of bytes
@@ -136,7 +139,8 @@ package body Snappy is
         Output(Out_Pos) := 16#FC#;
       end if;
       Out_Pos := Out_Pos + 1;
-      -- Encode the length on 1 to 4 bytes, little endian
+      -- Encode the length - 1 on 1 to 4 bytes, little endian
+      Res := Nb_Literals - 1;
       loop
         -- Lower byte
         Output(Out_Pos) := To_Byte (Res and 16#FF#);
@@ -163,25 +167,25 @@ package body Snappy is
     --#IfDef Debug
     if Logger.Debug_On then
       Log ("  Write ref off " & Hexa_Utils.Image (Off)
-         & " , len " & Hexa_Utils.Image (Len)
-         & " , at pos " & Hexa_Utils.Image (Out_Pos));
+         & ", len " & Hexa_Utils.Image (Len)
+         & ", at outpos " & Hexa_Utils.Image (Out_Pos));
     end if;
     --#EndifDef
     if Len <= 16#0B# and then Off <= 16#7FF# then
       -- OOOLLL01 OOOOOOOO   (with L = Len-4)
       Output(Out_Pos) := To_Byte (
-          Shr (Off and 16#700#, 3) and Shl (Len - 4, 2) and 16#01#);
+          Shr (Off and 16#700#, 3) or Shl (Len - 4, 2) or 16#01#);
       Output(Out_Pos + 1) := To_Byte (Off and 16#FF#);
       Out_Pos := Out_Pos + 2;
     elsif Off <= 16#FFFF# then
       -- LLLLLL10 Ol Oh (with L = Len - 1)
-      Output(Out_Pos) := To_Byte (Shl (Len - 1, 2) and 16#10#);
+      Output(Out_Pos) := To_Byte (Shl (Len - 1, 2) or 16#02#);
       Output(Out_Pos + 1) := To_Byte (Off and 16#FF#);
       Output(Out_Pos + 2) := To_Byte (Shr (Off and 16#FF00#, 8));
       Out_Pos := Out_Pos + 3;
     else
       -- LLLLLL10 O1 O2 O3 O4 (with L = Len - 1)
-      Output(Out_Pos) := To_Byte (Shl (Len - 1, 2) and 16#10#);
+      Output(Out_Pos) := To_Byte (Shl (Len - 1, 2) or 16#03#);
       Output(Out_Pos + 1) := To_Byte (Off and 16#FF#);
       Output(Out_Pos + 2) := To_Byte (Shr (Off and 16#FF00#, 8));
       Output(Out_Pos + 3) := To_Byte (Shr (Off and 16#FF0000#, 16));
@@ -218,12 +222,12 @@ package body Snappy is
   begin
 
     if Output'Length = 0 then
-      --#IfDef Debug
-      if Logger.Debug_On then
-        Log ("Empty input");
-      end if;
-      --#EndifDef
       if Input'Length = 0 then
+        --#IfDef Debug
+        if Logger.Debug_On then
+          Log ("Empty input");
+        end if;
+        --#EndifDef
         Outlen := 0;
         return;
       else
@@ -321,28 +325,26 @@ package body Snappy is
           Log ("Match length " & Hexa_Utils.Image (Nb_Match));
         end if;
         --#EndifDef
+        In_Pos := In_Pos + Nb_Match;
 
         -- Write reference blocks, keep last 4 bytes
         while Nb_Match >= 68 loop
           Encode_Ref64 (Off, 64, Out_Pos, Output);
           Nb_Match := Nb_Match - 64;
         end loop;
-
         -- Write extra 60 block if possible
         if Nb_Match >= 64 then
           Encode_Ref64 (Off, 60, Out_Pos, Output);
           Nb_Match := Nb_Match - 60;
         end if;
-
         -- Write remaining block
         Encode_Ref64 (Off, Nb_Match, Out_Pos, Output);
 
-        In_Pos := In_Pos + Nb_Match;
-
         -- Set Anchor to start of new run
-        -- And store both last hash values
+        Anchor := In_Pos;
+
+        -- Store both last hash values
         if In_Pos < Src_Limit then
-          Anchor := In_Pos;
           Seq := Build (Input, In_Pos - 2);
           Hash_Table(Hash (Seq)) := In_Pos - 2;
           Seq := Build (Input, In_Pos - 1);
@@ -354,13 +356,15 @@ package body Snappy is
 
     -- Encode length of last literals
     Nb_Literals := Input'Length - Anchor;
-    --#IfDef Debug
-    if Logger.Debug_On then
-      Log ("Copy last " & Hexa_Utils.Image (Nb_Literals) & " literals");
+    if Nb_Literals /= 0 then
+      --#IfDef Debug
+      if Logger.Debug_On then
+        Log ("Copy last " & Hexa_Utils.Image (Nb_Literals) & " literals");
+      end if;
+      --#EndifDef
+      -- Encode literals
+      Encode_Literals (Nb_Literals, Anchor, Input, Out_Pos, Output);
     end if;
-    --#EndifDef
-    -- Encode literals
-    Encode_Literals (Nb_Literals, Anchor, Input, Out_Pos, Output);
 
     -- Done
     Outlen := Out_Pos - Output'First;
@@ -406,6 +410,7 @@ package body Snappy is
       --#IfDef Debug
       if Logger.Debug_On then
         Log ("At index " & Hexa_Utils.Image (In_Pos)
+           & ", outpos " & Hexa_Utils.Image (Out_Pos)
            & ", kind " & Hexa_Utils.Image (Kind));
       end if;
       --#EndifDef
@@ -413,7 +418,7 @@ package body Snappy is
 
 
       if Kind = 0 then
-        -- Literal run
+        -- LLLLLL00: Literal run
         Len := Shr (Ctrl, 2);
         case Len is
           when 16#3C# =>
@@ -439,14 +444,15 @@ package body Snappy is
                    or Shl (Integer (Input(In_Pos + 3)), 24);
             In_Pos := In_Pos + 4;
           when others =>
-            -- Len <= 16#3B# then
-            Len := Len + 1;
+            -- Len <= 16#3B#, in token
+            null;
         end case;
+        Len := Len + 1;
 
         --#IfDef Debug
         if Logger.Debug_On then
           Log ("Got " & Hexa_Utils.Image (Len) & " litterals");
-          for I in In_Pos .. In_Pos + Len loop
+          for I in In_Pos .. In_Pos + Len - 1 loop
              Log ("  Literal " & Image (Input(I)));
           end loop;
         end if;
@@ -464,7 +470,7 @@ package body Snappy is
         if Kind = 16#01# then
           -- OOOLLL01 OOOOOOOO   (with L = Len-4)
           Len := Shr (Ctrl and 16#1C#, 2) + 4;
-          Off := Shl (Ctrl and 16#E0#, 8) or Integer (Input (In_Pos));
+          Off := Shl (Ctrl and 16#E0#, 3) or Integer (Input (In_Pos));
           In_Pos := In_Pos + 1;
         elsif Kind = 16#02# then
           -- LLLLLL10 Ol Oh (with L = Len - 1)
@@ -484,7 +490,7 @@ package body Snappy is
 
         --#IfDef Debug
         if Logger.Debug_On then
-          Log ("Got  a backref of len " & Hexa_Utils.Image (Len)
+          Log ("Got a backref of len " & Hexa_Utils.Image (Len)
              & " and offset " & Hexa_Utils.Image (Off));
         end if;
         --#EndifDef
@@ -496,7 +502,19 @@ package body Snappy is
         end if;
         Off := Out_Pos - Off;
         -- Areas may overlap! so we must copy byte per byte
+        --#IfDef Debug
+        if Logger.Debug_On then
+          Log ("  Copying from " & Hexa_Utils.Image (Off)
+             & " to " & Hexa_Utils.Image (Off + Len - 1)
+             & " into " & Hexa_Utils.Image (Out_Pos));
+        end if;
+        --#EndifDef
         for I in 0 .. Len - 1 loop
+          --#IfDef Debug
+          if Logger.Debug_On then
+            Log ("  --> " & Image (Output(Off + I)));
+          end if;
+          --#EndifDef
           Output(Out_Pos + I) := Output(Off + I);
         end loop;
         Out_Pos := Out_Pos + Len;
