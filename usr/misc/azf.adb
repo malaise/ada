@@ -35,7 +35,8 @@ begin
     03 => (False, 'd', As.U.Tus ("decompress"),  False),
     04 => (True,  's', As.U.Tus ("buffer_size"), False, True, As.U.Tus ("MB")),
     05 => (False, 'H', As.U.Tus ("headers"),     False),
-    06 => (False, Argument_Parser.No_Key_Char, As.U.Tus ("lz4"), False));
+    06 => (False, Argument_Parser.No_Key_Char, As.U.Tus ("lz4"), False),
+    07 => (False, Argument_Parser.No_Key_Char, As.U.Tus ("snappy"), False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Do we compress
