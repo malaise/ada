@@ -123,15 +123,16 @@ package body Snappy is
       Output(Out_Pos) := To_Byte (Shl (Nb_Literals - 1, 2));
       Out_Pos := Out_Pos + 1;
     else
-      -- Len will be stored on 1 to 4 successive bytes
+      -- Length -1 will be stored on 1 to 4 successive bytes
       -- The 6 bits indicate the number of bytes
-      if Nb_Literals <= 16#FF# then
+      Res := Nb_Literals - 1;
+      if Res <= 16#FF# then
         -- Shl (16#3C#, 2)
         Output(Out_Pos) := 16#F0#;
-      elsif Nb_Literals <= 16#FFFF# then
+      elsif Res <= 16#FFFF# then
         -- Shl (16#3D#, 2)
         Output(Out_Pos) := 16#F4#;
-      elsif Nb_Literals <= 16#FFFFFF# then
+      elsif Res <= 16#FFFFFF# then
         -- Shl (16#3E#, 2)
         Output(Out_Pos) := 16#F8#;
       else
@@ -140,7 +141,6 @@ package body Snappy is
       end if;
       Out_Pos := Out_Pos + 1;
       -- Encode the length - 1 on 1 to 4 bytes, little endian
-      Res := Nb_Literals - 1;
       loop
         -- Lower byte
         Output(Out_Pos) := To_Byte (Res and 16#FF#);
@@ -315,7 +315,7 @@ package body Snappy is
         -- Count length of the match
         Nb_Match := 4;
         Max_Len := Input'Length - In_Pos;
-        while Nb_Match <= Max_Len
+        while Nb_Match < Max_Len
         and then Input (Input'First + Ref + Nb_Match)
                = Input(Input'First + In_Pos + Nb_Match) loop
           Nb_Match := Nb_Match + 1;
