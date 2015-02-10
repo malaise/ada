@@ -1,13 +1,14 @@
--- This package implements the LZ4 lossless data compression algorithm. LZF is
--- a Lempel-Ziv variant with byte-aligned output, and optimized for speed.
-
+-- This package implements the Snappy lossless data compression algorithm.
+-- Snappy is a Lempel-Ziv variant, which aims for very high speeds and
+-- reasonable compression. This version is not as optimised as the original
+-- in C++.
 -- Safety/Use Notes:
 --  - The byte arrays should be smaller than 2 GB (Positive'Last).
 --  - For performance reasons, safety checks on expansion are omitted.
 --  - Invalid compressed data can cause exceptions (Constraint_Error)
 
 -- General principles:
--- The LZ4 compressed format knows literal runs and back-references:
+-- The Snappy compressed format knows literal runs and back-references:
 --  - Literal run: directly copy bytes from input to output.
 --  - Back-reference: copy previous data of the uncompressed stream to the
 --    output stream, with specified offset from location in the uncompressed
@@ -23,27 +24,24 @@
 --    and append a cross reference (with offset from current and length of
 --    match)
 --  - If no match, then append the current byte as literal.
---  - The compressed flow is a suite of sequences. A sequence contains a run of
---    literal then a cross reference. It is made of:
---    * A token: The first 4 bits indicate the length of the literal run
---      and last 4 bits indicate the length of the corss reference
---    * Then, if the run is longer than 14, the token contains Fx and the
---      following (up to four) bytes contain the remaining of the length
---      Exemple, a length of 300 is coded as Fx FF 1E (15+255+30). (x is used
---      to code the length of the cross reference)
---    * Then the literal run (if any)
---    * Then on two bytes litle endian the offset of the cross reference
---      (1 for current - 1)
---    * Then, if the reference is longer than 14, the (up to four bytes) to
---      complete the length.
---    The last sequence contains only a token, possible extension of literal
---     run length, and literals.
-
--- The uncompression algorithm is
---  - Read a token, read the complement of literal run length if needed,
---  - Copy the literals from input
---  - Read the offset, read the complement of reference length if needed
---  - Copy the reference from output
+--  - The compressed flow is a suite of sequences. A sequence starts with a
+--    token, the 2 lowest bits of it indicate the kind of the sequence
+--    * 00: a literal run, the 6 other bits L of the token indicate the
+--      length:
+--      - 0 <= L < 60, L = length - 1
+--      - L = 60, the length - 1 is coded in the 1 following byte
+--      - L = 61, length - 1 is coded in the 2 following bytes, littel endian
+--      - L = 62, length - 1 is coded in the 3 following bytes, little endian
+--      - L = 63, length - 1 is coded in the 4 following bytes, little endian
+--    * 01: a reference with offset on 1 byte. The token is of the form:
+--      OOOLLL01 oooooooo. OOOoooooooo is the offset (on 11 bits) and LLL
+--      if the length - 4 on 3 bits
+--    * 10: a reference with offset on 2 bytes. The token is of the form:
+--      LLLLLL10 OOOOOOOO oooooooo. LLLLLL is the length - 1 on 6 bits, and
+--      the token is followed by the offset on 16 bits, little endian
+--    * 11: a reference with offset on 4 bytes. The token has
+--      LLLLLL11, where LLLLLL is the length - 1 on 6 bits, and
+--      it is followed by the offset on 32 bits, little endian
 
 with Bit_Ops; use Bit_Ops;
 --#IfDef Debug
