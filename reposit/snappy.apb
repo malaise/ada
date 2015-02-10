@@ -416,7 +416,6 @@ package body Snappy is
       --#EndifDef
       In_Pos := In_Pos + 1;
 
-
       if Kind = 0 then
         -- LLLLLL00: Literal run
         Len := Shr (Ctrl, 2);
