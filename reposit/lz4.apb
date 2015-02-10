@@ -161,12 +161,12 @@ package body Lz4 is
   begin
 
     if Output'Length = 0 then
-      --#IfDef Debug
-      if Logger.Debug_On then
-        Log ("Empty input");
-      end if;
-      --#EndifDef
       if Input'Length = 0 then
+        --#IfDef Debug
+        if Logger.Debug_On then
+          Log ("Empty input");
+        end if;
+        --#EndifDef
         Outlen := 0;
         return;
       else
