@@ -524,6 +524,9 @@ smart_alias (2)::
 smart_reference (2)::
      Smart reference (automatic free).
 
+snappy (2)::
+     Very fast lossless compression / uncompression algorithm.
+
 socket (2)::
      Socket (Udp/Tpc/Tcp_Header, Ipm, Afunix) operations. Relies on a quite
 complex C library.
