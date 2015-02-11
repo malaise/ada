@@ -1,6 +1,6 @@
 -- Compress or uncompress stdin to stdout
 with Basic_Proc, Sys_Calls, Argument, Argument_Parser, C_Types, Bit_Ops,
-     As.U, Images, Lzf, Lz4, Trace.Loggers;
+     As.U, Images, Trace.Loggers, Lzf, Lz4, Snappy;
 procedure Azf is
 
   -- Max buffer size in Mega Bytes
@@ -18,6 +18,7 @@ procedure Azf is
                            & Images.Integer_Image (Max_Buffer_Size) & ")");
     Basic_Proc.Put_Line_Error (" -H | --headers               : Use headers (and buffers of 64 kB)");
     Basic_Proc.Put_Line_Error (" --lz4                        : Use lz4 instead of lzf");
+    Basic_Proc.Put_Line_Error (" --snappy                     : Use snappy instead of lzf");
     Basic_Proc.Put_Line_Error (" -h | --help                  : Display this help");
 end Help;
 procedure Error (Msg : in String) is
@@ -34,7 +35,8 @@ begin
     03 => (False, 'd', As.U.Tus ("decompress"),  False),
     04 => (True,  's', As.U.Tus ("buffer_size"), False, True, As.U.Tus ("MB")),
     05 => (False, 'H', As.U.Tus ("headers"),     False),
-    06 => (False, Argument_Parser.No_Key_Char, As.U.Tus ("lz4"), False));
+    06 => (False, Argument_Parser.No_Key_Char, As.U.Tus ("lz4"), False),
+    07 => (False, Argument_Parser.No_Key_Char, As.U.Tus ("snappy"), False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Do we compress
@@ -46,8 +48,9 @@ begin
   -- Buffer size
   Buffer_Size : Positive := 1;
 
-  -- Use lz4 i.o. lzf
-  Use_Lz4 : Boolean := False;
+  -- Use lzf, lz4 or snappy
+  type Algo_List is (Lzf_Algo, Lz4_Algo, Snappy_Algo);
+  Algo : Algo_List;
 
   -- Header: "Z V", then either "0 Uh Ul" or "1 Ch Cl Uh Ul"
   --  High and low bytes of uncompressed and compressed length
@@ -150,13 +153,24 @@ begin
   elsif Arg_Dscr.Is_Set (5) then
     Header_Mode := True;
   end if;
-  -- Lz4
-  if Arg_Dscr.Is_Set (5) and then Arg_Dscr.Is_Set (6) then
-    Error ("Headers is exclusive with lz4");
+  -- Header is only for lzf
+  if Arg_Dscr.Is_Set (5) and then
+     (Arg_Dscr.Is_Set (6) or else Arg_Dscr.Is_Set (7)) then
+    Error ("Headers is exclusive with Lz4 and Snappy");
     return;
   end if;
-  Use_Lz4 := Arg_Dscr.Is_Set (6);
-
+  -- Lz4 or snappy
+  if Arg_Dscr.Is_Set (6) and then Arg_Dscr.Is_Set (7) then
+    Error ("Lz4 and Snappy are mutually exclusive");
+    return;
+  end if;
+  if Arg_Dscr.Is_Set (6) then
+    Algo := Lz4_Algo;
+  elsif Arg_Dscr.Is_Set (7) then
+    Algo := Snappy_Algo;
+  else
+    Algo := Lzf_Algo;
+  end if;
 
   -- Create buffers
   Inb := new Lzf.Byte_Array(1 .. Buffer_Size * Buffer_Unit);
@@ -175,20 +189,28 @@ begin
 
     -- (Un)compress
     if Compress then
-      if Use_Lz4 then
-        Lz4.Compress (Lz4.Byte_Array (Inb(1 .. Inl)),
-                      Lz4.Byte_Array (Outb.all), Outl);
-      else
-        Lzf.Compress (Inb(1 .. Inl), Outb.all, Outl);
-      end if;
+      case Algo is
+        when Lzf_Algo =>
+          Lzf.Compress (Inb(1 .. Inl), Outb.all, Outl);
+        when Lz4_Algo =>
+          Lz4.Compress (Lz4.Byte_Array (Inb(1 .. Inl)),
+                        Lz4.Byte_Array (Outb.all), Outl);
+        when Snappy_Algo =>
+          Snappy.Compress (Snappy.Byte_Array (Inb(1 .. Inl)),
+                           Snappy.Byte_Array (Outb.all), Outl);
+      end case;
       Logger.Log_Debug ("Compressed into " & Outl'Img & " bytes");
     else
-      if Use_Lz4 then
-        Lz4.Uncompress (Lz4.Byte_Array (Inb(1..Inl)),
-                        Lz4.Byte_Array (Outb.all), Outl);
-      else
-        Lzf.Uncompress (Inb(1..Inl), Outb.all, Outl);
-      end if;
+      case Algo is
+        when Lzf_Algo =>
+          Lzf.Uncompress (Inb(1..Inl), Outb.all, Outl);
+        when Lz4_Algo =>
+          Lz4.Uncompress (Lz4.Byte_Array (Inb(1..Inl)),
+                          Lz4.Byte_Array (Outb.all), Outl);
+        when Snappy_Algo =>
+          Snappy.Uncompress (Snappy.Byte_Array (Inb(1..Inl)),
+                             Snappy.Byte_Array (Outb.all), Outl);
+      end case;
       Logger.Log_Debug ("Uncompressed into " & Outl'Img & " bytes");
     end if;
 
