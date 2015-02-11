@@ -538,8 +538,9 @@ package body Output is
     if List.Is_Empty or else Quiet then
       return;
     end if;
-    -- Sort (rewinds) if less than a max
-    if Sort_Kind = None or else List.List_Length > Max_To_Sort then
+    -- Sort (which rewinds) if less than a max, otherwise rewind
+    if Sort_Kind = None
+    or else (Max_To_Sort /= 0 and then List.List_Length > Max_To_Sort) then
       List.Rewind;
     else
       Sort (List);
