@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V16.18
+V16.19
 
 General purpose
 ---------------
@@ -1052,9 +1052,9 @@ Any error is reported through a specific screen.
 
 .Push Upstream
 Only active when pushing the current branch, allows the creation of the
-current branch in the remote repository. If the branch has already been pushed
+current branch in the remote repository. (If the branch has already been pushed
 upstream into this repository, then this button has the same effect as
-'Push'. +
+'Push'.) +
 After pushing the branch, agite returns back to the xref:XDir[directory]
 menu. +
 Any error is reported through a specific screen.
