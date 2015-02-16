@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V16.19"/>
+  <Var Name="Version" Value="V16.20"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -19,9 +19,9 @@
       <Colors Foreground="Black" Background="Dark_Grey" Selected="Lime_Green"/>
     </List>
     <Field Num="1" Kind="Put">
-      <Geometry Up="0" Left="20" Height="1" Width="9"/>
+      <Geometry Up="0" Left="23" Height="1" Width="5"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">A G I T E</Init>
+      <Init Row="0" Col="0">AGITE</Init>
     </Field>
 
     <!-- List management -->
@@ -1172,7 +1172,7 @@
       <Colors Foreground="Black" Background="Dark_Grey" Selected="Lime_Green"/>
     </List>
     <Field Num="1" Kind="Put">
-      <Geometry Up="0" Left="20" Height="1" Width="9"/>
+      <Geometry Up="0" Left="23" Height="1" Width="9"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">A G I T E</Init>
     </Field>
@@ -1378,7 +1378,7 @@
       <Colors Foreground="Black" Background="Dark_Grey" Selected="Lime_Green"/>
     </List>
     <Field Num="1" Kind="Put">
-      <Geometry Up="0" Left="20" Height="1" Width="9"/>
+      <Geometry Up="0" Left="23" Height="1" Width="9"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">A G I T E</Init>
     </Field>
@@ -1497,7 +1497,7 @@
       <Colors Foreground="Black" Background="Dark_Grey" Selected="Lime_Green"/>
     </List>
     <Field Num="1" Kind="Put">
-      <Geometry Up="0" Left="20" Height="1" Width="9"/>
+      <Geometry Up="0" Left="23" Height="1" Width="9"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">A G I T E</Init>
     </Field>
@@ -1642,7 +1642,7 @@
       <Colors Foreground="Black" Background="Dark_Grey" Selected="Lime_Green"/>
     </List>
     <Field Num="1" Kind="Put">
-      <Geometry Up="0" Left="20" Height="1" Width="9"/>
+      <Geometry Up="0" Left="23" Height="1" Width="9"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">A G I T E</Init>
     </Field>
