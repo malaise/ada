@@ -10,7 +10,7 @@ package Byte_To_Unicode is
 
   -- Load a (XML defined) map from File_Name (or stdin if "")
   -- The file defines the Code values that differ from the input Byte
-  --  (the table is initialised to identidy)
+  --  (the table is initialised to identity)
   -- Raises File_Error if error accessing file
   -- Raises Parse_Error if incorrect table (e.g. duplicate entry)
   -- An error message is associated to the Parse_Error exception

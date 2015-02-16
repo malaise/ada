@@ -616,7 +616,7 @@ package body Parse_Mng  is
 
     -- No more attribute allowed
     if Tree_Mng.Get_Nb_Xml_Attributes (Ctx.Prologue.all) /= Next_Index - 1 then
-      Util.Error (Ctx.Flow, "Unexpecteed xml attribute");
+      Util.Error (Ctx.Flow, "Unexpected xml attribute");
     end if;
   end Check_Xml_Attributes;
 
