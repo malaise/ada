@@ -21,6 +21,7 @@ package Byte_To_Unicode is
   procedure Load (The_Map : out Map; File_Name : in String);
 
   -- Return the Unicode corresponding to a given byte in the map
+  -- If the map is not loaded, then return Code
   function Convert (The_Map : Map;
                     Code : Byte) return Unicode.Unicode_Number;
 
@@ -28,8 +29,11 @@ private
 
   type Table_Array is array (Byte'Range) of Unicode.Unicode_Number;
   type Map is tagged record
+    Loaded : Boolean := False;
     Table : Table_Array := (others => 0);
   end record;
+
+  Default_Map : constant Map := (others => <>);
 
 end Byte_To_Unicode;
 

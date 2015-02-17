@@ -61,15 +61,16 @@ package body Byte_To_Unicode is
       Set(Code) := True;
     end loop;
 
+    The_Map.Loaded := True;
   exception
     when Xml_Parser.File_Error =>
-      The_Map.Table := (others => 0);
+      The_Map := Default_Map;
       raise File_Error;
     when Parse_Error =>
-      The_Map.Table := (others => 0);
+      The_Map := Default_Map;
       raise;
     when Error:others =>
-      The_Map.Table := (others => 0);
+      The_Map := Default_Map;
       Ada.Exceptions.Raise_Exception (Parse_Error'Identity,
                "Exception " &
                Mixed_Str (Ada.Exceptions.Exception_Name (Error)) &
@@ -78,10 +79,12 @@ package body Byte_To_Unicode is
   end Load;
 
   -- Returns the Unicode corresponding to a given byte in the table
+  -- If the map is not loaded, then return Code
   function Convert (The_Map : Map;
                     Code : Byte) return Unicode.Unicode_Number is
   begin
-    return The_Map.Table (Code);
+    return (if The_Map.Loaded then The_Map.Table (Code)
+            else Code);
   end Convert;
 
 end Byte_To_Unicode;
