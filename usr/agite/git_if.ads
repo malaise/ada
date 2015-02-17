@@ -12,7 +12,7 @@ package Git_If is
 
 
   -- Current Root and relative path to git, empty or "/" appended
-  -- No_Git is raised is raised if no ".git" (or $GIT_DIR) is found
+  -- No_Git is raised if no ".git" (or $GIT_DIR) is found
   --  in parent dirs
   procedure Get_Root_And_Path (Root, Path : out As.U.Asu_Us);
 
