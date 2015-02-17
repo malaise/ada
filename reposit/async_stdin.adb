@@ -741,9 +741,17 @@ package body Async_Stdin is
     Set_Async (Get_Line_Cb'Access, Max_Chars, First_Col);
     -- Wait until an event
     Event_Mng.Wait (Event_Mng.Infinite_Ms);
-    -- Unset callback
+    -- No data got?
+    if Get_Line_Buffer.Is_Null then
+      raise Io_Error;
+    end if;
+    -- Unset callback and done
     Set_Async;
     return Get_Line_Buffer.Image;
+  exception
+    when others =>
+      Set_Async;
+      raise;
   end Get_Line;
 
   -- Strip last character if Str if it is a control char (before space)

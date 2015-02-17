@@ -90,6 +90,8 @@ begin
           D := Delt_Range (F);
           exit;
         exception
+          when Async_Stdin.Io_Error =>
+            raise;
           when others => null;
         end;
       end loop;
@@ -100,6 +102,8 @@ begin
               Async_Stdin.Get_Line (80, 9)));
           exit;
         exception
+          when Async_Stdin.Io_Error =>
+            raise;
           when others => null;
         end;
       end loop;
@@ -110,6 +114,8 @@ begin
               Async_Stdin.Get_Line (80, 14)));
           exit;
         exception
+          when Async_Stdin.Io_Error =>
+            raise;
           when others => null;
         end;
       end loop;
@@ -197,5 +203,9 @@ begin
   for I in 1 .. Tests.Length loop
     exit when not Do_Test (Tests.Element (I));
   end loop;
+exception
+  when Async_Stdin.Io_Error =>
+    Async_Stdin.New_Line_Out;
+    Basic_Proc.Put_Line_Error ("Aborted.");
 end T_Normalization;
 
