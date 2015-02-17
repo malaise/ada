@@ -63,9 +63,9 @@ package body Normalization is
       -- I is longer than the requested Len
       -- Round I at Len - 1 digits and cat the warning char
       declare
-        R : constant Float := Float(I) / (10.0 ** (L-Len+1) );
-        I : constant Int := Round (R);
-        Imi : constant String := Int'Image(I);
+        R : constant Float := Float(I) / (10.0 ** (L - Len + 1) );
+        Ri : constant Int := Round (R);
+        Imi : constant String := Int'Image (Ri);
         Fi : Natural := 1;
         Li : Natural := Imi'Last;
       begin
@@ -129,6 +129,84 @@ package body Normalization is
                              Right : Boolean := True;
                              Gap   : Character := ' ') return String
            renames Loc_Normal_Long_Long;
+
+  function Normal_Mod (M     : Modulus;
+                       Len   : Positive;
+                       Right : Boolean := True;
+                       Gap   : Character := ' ') return String is
+    L : Positive := Modulus'Image(M)'Last;
+    Si : String (1 .. L) := Modulus'Image(M);
+    Sm : String (1 .. Len);
+
+    -- Real -> Int : round or trunc
+    function Trunc (X : in Float) return Modulus is
+      M : Modulus;
+    begin
+      M := Modulus (X);
+      -- Adjust to 1
+      -- If x>0 error is 1 too much
+      if Float (M) > X then
+        M := M - 1;
+      end if;
+      return M;
+    exception
+      when others => raise Constraint_Error;
+    end Trunc;
+
+    function Round (X : in Float) return Modulus is
+    begin
+      return Trunc  (X + 0.5);
+    exception
+      when others => raise Constraint_Error;
+    end Round;
+
+  begin
+    -- Skip first char if space
+    if Si(1) = ' ' then
+      L := L - 1;
+      Si (1 .. L) := Si (2 .. L + 1);
+    end if;
+    if L > Len then
+      -- I is longer than the requested Len
+      -- Round I at Len - 1 digits and cat the warning char
+      declare
+        R : constant Float := Float(M) / (10.0 ** (L-Len+1) );
+        Ri : constant Modulus := Round (R);
+        Imi : constant String := Modulus'Image (Ri);
+        Fi : Natural := 1;
+        Li : Natural := Imi'Last;
+      begin
+        -- Skip first char if space
+        if Imi(1) = ' ' then
+          Fi := Fi + 1;
+        end if;
+        if Li - Fi + 1 = (Len - 1) + 1 then
+          -- Round has generated an extra digit (e.g. 99.8 -> 100)
+          -- Skip last digit
+          Li := Li - 1;
+        elsif Li - Fi + 1 = (Len - 1) then
+          -- Round has not generated extra digit (e.g. 99.4 -> 99)
+          null;
+        else
+          -- Bug: Round should have lead to (Len - 1) or (Len - 1) + 1
+          raise Program_Error;
+        end if;
+        -- Cat warning char
+        return (if Right then Warning_Char & Imi(Fi .. Li)
+                else Imi(Fi .. Li) & Warning_Char);
+      end;
+    else -- L <= Len
+      -- Gap with gap_character, in Sm
+      if Right then
+        Sm (1 .. Len-L) := (others => Gap);
+        Sm (Len-L+1 .. Len) := Si (1 ..L);
+      else
+        Sm (1 .. L) := Si (1 .. L);
+        Sm (L+1 .. Len) := (others => Gap);
+      end if;
+      return Sm;
+    end if;
+  end Normal_Mod;
 
   -- Puts a float F or a real R in a string of fixed length.
   -- S i . f {[ f ]} E S e {[ e ]}

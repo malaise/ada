@@ -36,6 +36,12 @@ package Normalization is
                              Right : Boolean := True;
                              Gap   : Character := ' ') return String;
 
+  generic
+    type Modulus is mod <>;
+  function Normal_Mod (M     : Modulus;
+                       Len   : Positive;
+                       Right : Boolean := True;
+                       Gap   : Character := ' ') return String;
 
 
   -- Puts a float F or a real R in a string of fixed length.
