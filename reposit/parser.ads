@@ -7,11 +7,12 @@ package Parser is
   type Separing_Function is
        access function (C : Character) return Boolean;
 
+  -- A convenient default separing function
   function Is_Space_Or_Htab_Function (C : Character) return Boolean;
   Space_Htab : constant Separing_Function
              := Is_Space_Or_Htab_Function'Access;
 
-  -- Access key
+  -- The iterator
   type Iterator is tagged limited private;
 
   -- Initialise the iterator Iter with the string to parse and the criteria.
@@ -33,7 +34,7 @@ package Parser is
   -- Src_Iter may not be set, which deletes Dest_Iter.
   procedure Copy (Dest_Iter : in out Iterator; Src_Iter : in Iterator);
 
-  -- Reset iterator Iter, setting it in the same state than at creation.
+  -- Reset iterator Iter, setting it in the same state as at creation.
   -- The separing function may be changed at this occasion.
   -- May raise Constraint_Error if Iter is not set.
   procedure Reset (Iter : in Iterator;
@@ -102,7 +103,7 @@ private
   -- While not Finished:
   --   Word is Str (First .. Last)
   --   Separators is Str (Sep .. First - 1);
-  -- If Word is not empty then, Indexes are First and Last, else 1 and 0.
+  -- If Word is not empty then Indexes are First and Last, else 1 and 0.
   type Iter_Rec is record
     -- Initialised by Sep
     -- The string, its lenght and first index, and sepration function
