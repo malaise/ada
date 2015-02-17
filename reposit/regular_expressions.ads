@@ -57,7 +57,7 @@ package Regular_Expressions is
   -- Beware that some slots from 1 to N_Matched might have strange values:
   --  - No_Match e.g. when an optional substring does not match
   --  - empty string (First_Offset > Last_Offset) e.g. when Criteria is like
-  --    'toto($)', including (1, 0) when Criteria is like '(^)toto'.
+  --    'toto($)', including [1-0/0] when Criteria is like '(^)toto'.
   -- Also beware that an empty To_Check can match a Criteria that is
   --  only made of optional patterns (e.g. '' matches 't*'). In this
   --  case Match_Info is one cell of Any_Match.
@@ -75,21 +75,21 @@ package Regular_Expressions is
 
   -- Compare string To_Check to Criteria (Compile and Exec with default values)
   -- Return a Match_Array of size between 0 (no match) and the requested
-  --  Max_Match depending on how many substrigs have matched
+  --  Max_Match, depending on how many substrigs have matched
   --  Max_Match = 10 allows up to 9 substrings
   -- May raise No_Criteria if Criteria does not compile
   function Match (Criteria, To_Check : String; Max_Match : Positive := 10)
                   return Match_Array;
 
   -- Compare string To_Check to Criteria (Compile and Exec with default values)
-  -- Returns No_Match or a Match_Cell (possibly Any_Match) corresponding
-  --  to Match_Info(1)
+  -- Returns either No_Match or the Match_Cell (possibly Any_Match)
+  --  corresponding to Match_Info(1)
   -- May raise No_Criteria if Criteria does not compile
   function Match (Criteria, To_Check : String) return Match_Cell;
 
   -- Check that a Match_Cell (returned by Exec or Match) is valid
   --  i.e. it can be used to extract a matching (sub) string
-  -- No_Match and Any_Match are not valid
+  -- No_Match, Any_Match and empty cells (e.g. [1-0/0]) are not valid
   function Valid_Match (Cell : Match_Cell) return Boolean;
 
   -- Check that a Match_Cell or Match_Array (returned by Exec or Match)
