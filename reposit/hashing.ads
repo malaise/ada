@@ -2,23 +2,26 @@
 -- The user needs to associate a unique access to each data
 --  (index in an array, access type...)
 with Ada.Finalization;
-with Hash_Function;
+with Long_Longs, Hash_Function;
 package Hashing is
   -- Maxmum size of the primary hash table (16_777_215)
   subtype Max_Hash_Range is Hash_Function.Hash_Range;
   Max_Hash_Value : constant Max_Hash_Range := Max_Hash_Range'Last;
 
-  -- Where inserting a new data
+  -- Where inserting a new data in current branch
   type Where_Insert_List is (First, Last, After_Curr, Before_Curr);
 
-  -- In which direction searching
+  -- In which direction searching in current branch
   type Direction_List is (Forward, Backward);
 
   -- Raised on Remove or on Store (After_Curr | Before_Curr)
   --  if last found is not set
   Not_Found : exception;
 
-  -- Default maximum size of primary hash table (4095)
+  -- Raised on Store if Ll_Natural'Last items already in current branch
+  Too_Many : exception;
+
+  -- Default maximum size of primary hash table, number of branches (4095)
   subtype Def_Max_Hash_Range is Max_Hash_Range range 0 .. 16#FFF#;
   Def_Max_Hash_Value : constant Def_Max_Hash_Range := Def_Max_Hash_Range'Last;
   function Def_Max_Hash_Func (Key : String) return Def_Max_Hash_Range;
@@ -65,8 +68,18 @@ package Hashing is
       -- Raised on Remove if last found is not set
       Not_Found : exception renames Hashing.Not_Found;
 
-      -- To store association Key <-> Index
+      -- Raised on Store if Ll_Natural'Last items already in current branch
+      Too_Many : exception renames Hashing.Too_Many;
+
+      -- The number of items on a branch
+      subtype Depth_Range is Long_Longs.Ll_Mod;
+
+      -- To store association Key/Index <-> Data
       -- Last found is not reset
+      procedure Store (Table : in out Hash_Table;
+                       Index : in Hash_Range;
+                       Data  : in Data_Access;
+                       Where : in Where_Insert_List := Last);
       procedure Store (Table : in out Hash_Table;
                        Key   : in String;
                        Data  : in Data_Access;
@@ -75,6 +88,12 @@ package Hashing is
       -- To reset finding for Index or Key
       procedure Reset_Find (Table : in out Hash_Table; Index : in Hash_Range);
       procedure Reset_Find (Table : in out Hash_Table; Key   : in String);
+
+      -- Return the depth of the table for this Index or Key
+      function Depth (Table : Hash_Table; Index : Hash_Range)
+                     return Depth_Range;
+      function Depth (Table : Hash_Table; Key   : String)
+                     return Depth_Range;
 
       -- To get first, then next Data for Index or Key
       -- Last found is reset if not found
@@ -148,6 +167,7 @@ package Hashing is
         First     : Cell_Access := null;
         Last      : Cell_Access := null;
         Current   : Cell_Access := null;
+        Depth     : Depth_Range := 0;
       end record;
 
 

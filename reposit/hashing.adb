@@ -28,26 +28,26 @@ package body Hashing is
 
       -- To store association Key <-> Index
       procedure Store (Table : in out Hash_Table;
-                       Key   : in String;
+                       Index : in Hash_Range;
                        Data  : in Data_Access;
                        Where : in Where_Insert_List := Last) is
-        I : constant Hash_Range := Hash_Func(Key);
         Ca : Cell_Access;
         Cu : Cell_Access;
+        use type Long_Longs.Ll_Mod;
       begin
         Ca := Dyn_Hash.Allocate ((Data => Data, Prev => null, Next => null));
 
-        Cu := Table.Arr(I).Current;
-        if Table.Arr(I).First = null then
+        Cu := Table.Arr(Index).Current;
+        if Table.Arr(Index).First = null then
           if Where = After_Curr or else Where = Before_Curr then
             raise Not_Found;
           end if;
         else
           case Where is
             when First =>
-              Ca.Next := Table.Arr(I).First;
+              Ca.Next := Table.Arr(Index).First;
             when Last =>
-              Ca.Prev := Table.Arr(I).Last;
+              Ca.Prev := Table.Arr(Index).Last;
             when After_Curr =>
               if Cu = null then
                 raise Not_Found;
@@ -66,19 +66,33 @@ package body Hashing is
         if Ca.Prev /= null then
           Ca.Prev.Next := Ca;
         else
-          Table.Arr(I).First := Ca;
+          Table.Arr(Index).First := Ca;
         end if;
         if Ca.Next /= null then
           Ca.Next.Prev := Ca;
         else
-          Table.Arr(I).Last := Ca;
+          Table.Arr(Index).Last := Ca;
         end if;
+        -- Count items in branch
+        if Table.Arr(Index).Depth = Depth_Range'Last then
+          raise Too_Many;
+        end if;
+        Table.Arr(Index).Depth := Table.Arr(Index).Depth + 1;
+      end Store;
+
+      procedure Store (Table : in out Hash_Table;
+                       Key   : in String;
+                       Data  : in Data_Access;
+                       Where : in Where_Insert_List := Last) is
+      begin
+        Store (Table, Hash_Func(Key), Data, Where);
       end Store;
 
       -- To remove a stored association Key <-> Index
       procedure Remove (Table : in out Hash_Table;
                         Index : in Hash_Range) is
         Cu : Cell_Access;
+        use type Long_Longs.Ll_Mod;
       begin
         Cu := Table.Arr(Index).Current;
         -- Empty or not found
@@ -104,6 +118,7 @@ package body Hashing is
         -- Get rid of current
         Dyn_Hash.Free (Cu);
 
+        Table.Arr(Index).Depth := Table.Arr(Index).Depth - 1;
       end Remove;
 
       procedure Remove (Table : in out Hash_Table;
@@ -124,6 +139,18 @@ package body Hashing is
       begin
         Reset_Find (Table, Hash_Func(Key));
       end Reset_Find;
+
+      -- Depth
+      function Depth (Table : Hash_Table; Index : Hash_Range)
+                     return Depth_Range is
+      begin
+        return Table.Arr(Index).Depth;
+      end Depth;
+      function Depth (Table : Hash_Table; Key   : String)
+                     return Depth_Range is
+      begin
+        return Table.Arr(Hash_Func(Key)).Depth;
+      end Depth;
 
       -- To get next Index matching Key
       procedure Find_Next (Table     : in out Hash_Table;
