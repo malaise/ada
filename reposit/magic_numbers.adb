@@ -1,5 +1,4 @@
 -- Generates random magic number and long magic numbers
--- with Long_Longs;
 with Rnd;
 package body Magic_Numbers is
 
@@ -10,13 +9,14 @@ package body Magic_Numbers is
   -- At first call, initialize the random number generator
   -- Return a random magic number
   function Generate return Magic_Int is
+    use type Magic_Long;
   begin
     -- Reminder of a random Long at Number'Last, + 1
     return Magic_Int(Generate rem (Magic_Long(Magic_Int'Last)) + 1);
   end Generate;
 
   function Generate return Magic_Long is
-    L : Long_Long_Integer;
+    L : Magic_Long;
   begin
     -- Randomize only once, at first call
     if not Generator.Is_Randomized then

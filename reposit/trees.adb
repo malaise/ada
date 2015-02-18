@@ -799,6 +799,7 @@ package body Trees is
 
     procedure Set_Position (The_Tree : in out Tree_Type;
                             Position : in Position_Access) is
+      use type Magic_Numbers.Extended_Magic_Long;
     begin
       -- same tree
       if Position.Magic /= The_Tree.Magic then

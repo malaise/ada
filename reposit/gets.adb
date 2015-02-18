@@ -1,6 +1,7 @@
 with Ada.Text_Io;
 package body Gets is
   package Llint_Io is new Ada.Text_Io.Integer_Io (Long_Longs.Ll_Integer);
+  package Llmod_Io is new Ada.Text_Io.Modular_Io (Long_Longs.Ll_Mod_Natural);
   package Flo_Io is new Ada.Text_Io.Float_Io (Float);
   package Dur_Io is new Ada.Text_Io.Fixed_Io (Duration);
 
@@ -40,6 +41,33 @@ package body Gets is
     when others =>
       raise Constraint_Error;
   end Get_Llint;
+
+  function Get_Llmod (Str : String) return Long_Longs.Ll_Mod_Natural is
+    I : Long_Longs.Ll_Mod_Natural;
+    L : Positive;
+    Str_Len : Natural;
+  begin
+    -- Locate last significant character of Str
+    Str_Len := 0;
+    for J in reverse Str'Range loop
+      if Str_Len = 0 and then Str(J) /= ' ' then
+        Str_Len := J + 1 - Str'First;
+      end if;
+    end loop;
+    if Str_Len = 0 then
+      raise Constraint_Error;
+    end if;
+
+    Llmod_Io.Get (Str, I, L);
+
+    if L /= Str'Last then
+      raise Constraint_Error;
+    end if;
+    return I;
+  exception
+    when others =>
+      raise Constraint_Error;
+  end Get_Llmod;
 
   function Get_Float (Str : String) return Float is
     F : Float;

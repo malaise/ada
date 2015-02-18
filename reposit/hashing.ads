@@ -72,7 +72,7 @@ package Hashing is
       Too_Many : exception renames Hashing.Too_Many;
 
       -- The number of items on a branch
-      subtype Depth_Range is Long_Longs.Ll_Mod;
+      subtype Depth_Range is Long_Longs.Ll_Mod_Natural;
 
       -- To store association Key/Index <-> Data
       -- Last found is not reset

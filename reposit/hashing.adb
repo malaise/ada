@@ -33,7 +33,7 @@ package body Hashing is
                        Where : in Where_Insert_List := Last) is
         Ca : Cell_Access;
         Cu : Cell_Access;
-        use type Long_Longs.Ll_Mod;
+        use type Long_Longs.Ll_Mod_Natural;
       begin
         Ca := Dyn_Hash.Allocate ((Data => Data, Prev => null, Next => null));
 

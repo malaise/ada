@@ -4,7 +4,7 @@ package Magic_Numbers is
 
   -- The magic number types
   subtype Extended_Magic_Int  is Natural;
-  subtype Extended_Magic_Long is Long_Longs.Ll_Natural;
+  subtype Extended_Magic_Long is Long_Longs.Ll_Mod_Natural;
   -- Returned random values (1 .. Max)
   subtype Magic_Int  is Extended_Magic_Int
                           range 1 .. Extended_Magic_Int'Last;

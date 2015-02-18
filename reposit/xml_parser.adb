@@ -747,7 +747,7 @@ package body Xml_Parser is
   -- Read internal tree cell of a node
   function Get_Tree (Ctx : Ctx_Type;
                      Node : Node_Type) return Tree_Acc is
-    use type My_Tree.Position_Access;
+    use type My_Tree.Position_Access, Magic_Numbers.Extended_Magic_Long;
   begin
     -- Node must be set
     if Node.Tree_Access = My_Tree.No_Position then
