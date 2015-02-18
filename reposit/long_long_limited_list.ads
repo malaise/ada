@@ -20,6 +20,9 @@ package Long_Long_Limited_List is
   -- For Get_Position
   type Reference is (From_First, From_Last);
 
+  -- Natural and Positive
+  subtype Ll_Natural  is Long_Longs.Ll_Mod;
+  subtype Ll_Positive is Long_Longs.Ll_Mod_Positive;
 
   -- All calls except Insert, Is_Empty, List_Length, searches and Iterate
   --  may raise Empty_List if the list is empty.
@@ -133,7 +136,7 @@ package Long_Long_Limited_List is
   --            Move_To (List, Next, 0, False) goes to FIRST element
   procedure Move_To (List         : in out List_Type;
                      Where        : in Direction := Next;
-                     Number       : in Long_Longs.Ll_Natural := 1;
+                     Number       : in Ll_Natural := 1;
                      From_Current : in Boolean := True);
 
   -- Set the current element to number elements from first (Direction = Next)
@@ -142,7 +145,7 @@ package Long_Long_Limited_List is
   -- May raise Not_In_List (no movement done)
   --  Example: Move_At (List, Next, 1) goes to FIRST element
   procedure Move_At (List     : in out List_Type;
-                     Position : in Long_Longs.Ll_Positive;
+                     Position : in Ll_Positive;
                      Where    : in Direction := Next);
 
   -- Move to beginning/end of list: Move_To (List, Where, 0, False);
@@ -159,8 +162,8 @@ package Long_Long_Limited_List is
   -- May raise Not_In_List (no movement done)
   --  example Permute (List, 0, 1, Next, False) permutes 1st and 2nd elements
   procedure Permute (List         : in out List_Type;
-                     Number1      : in Long_Longs.Ll_Natural;
-                     Number2      : in Long_Longs.Ll_Natural;
+                     Number1      : in Ll_Natural;
+                     Number2      : in Ll_Natural;
                      Where        : in Direction := Next;
                      From_Current : in Boolean   := False);
 
@@ -170,7 +173,7 @@ package Long_Long_Limited_List is
 
 
   -- Return the number of elements in the list (0 if empty, no exception)
-  function List_Length (List : List_Type) return Long_Longs.Ll_Natural;
+  function List_Length (List : List_Type) return Ll_Natural;
 
 
   -- Get position from first or last item in list
@@ -178,7 +181,7 @@ package Long_Long_Limited_List is
   -- May raise Empty_List
   function Get_Position (List : List_Type;
                          From : Reference := From_First)
-           return Long_Longs.Ll_Positive;
+           return Ll_Positive;
 
 
   -- These two calls allow sharing the same list among several
@@ -266,7 +269,7 @@ package Long_Long_Limited_List is
   function Search_Criteria (List      : in out List_Type;
                             Criteria  : in Criteria_Type;
                             Where     : in Direction := Next;
-                            Occurence : in Long_Longs.Ll_Positive := 1;
+                            Occurence : in Ll_Positive := 1;
                             From      : in Search_Kind_List) return Boolean;
 
   -- Search with criteria of Element_Type
@@ -285,7 +288,7 @@ package Long_Long_Limited_List is
   function Search (List      : in out List_Type;
                    Criteria  : in Element_Type;
                    Where     : in Direction := Next;
-                   Occurence : in Long_Longs.Ll_Positive := 1;
+                   Occurence : in Ll_Positive := 1;
                    From      : in Search_Kind_List) return Boolean;
 
   -- Search with Match access and on Element_Type
@@ -306,7 +309,7 @@ package Long_Long_Limited_List is
                    function (Current, Criteria : Element_Type) return Boolean;
                          Criteria  : in Element_Type;
                          Where     : in Direction := Next;
-                         Occurence : in Long_Longs.Ll_Positive := 1;
+                         Occurence : in Ll_Positive := 1;
                          From      : in Search_Kind_List) return Boolean;
 
 
@@ -321,7 +324,7 @@ package Long_Long_Limited_List is
   procedure Search_Raise (List      : in out List_Type;
                           Criteria  : in Element_Type;
                           Where     : in Direction := Next;
-                          Occurence : in Long_Longs.Ll_Positive := 1;
+                          Occurence : in Ll_Positive := 1;
                           From      : in Search_Kind_List);
 
 
@@ -383,8 +386,8 @@ private
     Modified  : Boolean := True;
     Assigned  : Boolean := False;
     In_Cb     : Boolean := False;
-    Pos_First : Long_Longs.Ll_Natural := 0;
-    Pos_Last  : Long_Longs.Ll_Natural := 0;
+    Pos_First : Ll_Natural := 0;
+    Pos_Last  : Ll_Natural := 0;
     Current   : Link    := null;
     First     : Link    := null;
     Last      : Link    := null;

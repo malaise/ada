@@ -1,6 +1,6 @@
 Asubst
 ======
-V18.1
+V18.2
 
 Asubs is a command line tool that substitutes text within text. It finds
 occurences of text that match a pattern (regular expression), and replaces

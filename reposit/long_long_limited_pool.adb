@@ -7,7 +7,7 @@ package body Long_Long_Limited_Pool is
     return Pool_List_Mng.List_Type(Pool).Is_Empty;
   end Is_Empty;
 
-  function Length (Pool : in Pool_Type) return Long_Longs.Ll_Natural is
+  function Length (Pool : in Pool_Type) return Ll_Natural is
   begin
     return Pool.List_Length;
   end Length;

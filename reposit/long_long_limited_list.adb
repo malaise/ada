@@ -1,5 +1,6 @@
 with Unchecked_Deallocation;
 package body Long_Long_Limited_List is
+  use type Ll_Natural;
 
   Free_List : Link := null;
 
@@ -372,10 +373,10 @@ package body Long_Long_Limited_List is
   -- Changes current position
   procedure Move_To (List         : in out List_Type;
                      Where        : in Direction := Next;
-                     Number       : in Long_Longs.Ll_Natural := 1;
+                     Number       : in Ll_Natural := 1;
                      From_Current : in Boolean := True) is
     New_Pos                     : Link;
-    New_Pos_First, New_Pos_Last : Long_Longs.Ll_Natural;
+    New_Pos_First, New_Pos_Last : Ll_Natural;
   begin
     Check_Cb (List);
     Check (List);
@@ -387,7 +388,10 @@ package body Long_Long_Limited_List is
     else
       case Where is
         when Next =>
-          if abs (Number - List.Pos_First) > List.Pos_First / 2 then
+          if (Number >= List.Pos_First
+              and then Number - List.Pos_First > List.Pos_First / 2)
+          or else (Number < List.Pos_First
+                   and then List.Pos_First - Number > List.Pos_First / 2) then
             New_Pos := List.First;
             New_Pos_First := 1;
             New_Pos_Last := List_Length(List);
@@ -401,7 +405,10 @@ package body Long_Long_Limited_List is
             return;
           end if;
         when Prev =>
-          if abs (Number - List.Pos_Last) > List.Pos_Last / 2 then
+          if (Number >= List.Pos_Last
+              and then Number - List.Pos_Last > List.Pos_Last / 2)
+          or else (Number < List.Pos_Last
+                   and then List.Pos_Last - Number > List.Pos_Last / 2) then
             New_Pos := List.Last;
             New_Pos_First := List_Length(List);
             New_Pos_Last := 1;
@@ -442,7 +449,7 @@ package body Long_Long_Limited_List is
 
   -- Move at given position
   procedure Move_At (List     : in out List_Type;
-                     Position : in Long_Longs.Ll_Positive;
+                     Position : in Ll_Positive;
                      Where    : in Direction := Next) is
   begin
     Check(List);
@@ -591,11 +598,12 @@ package body Long_Long_Limited_List is
 
   -- Permutes 2 elements
   procedure Permute (List         : in out List_Type;
-                     Number1      : in Long_Longs.Ll_Natural;
-                     Number2      : in Long_Longs.Ll_Natural;
+                     Number1      : in Ll_Natural;
+                     Number2      : in Ll_Natural;
                      Where        : in Direction := Next;
                      From_Current : in Boolean   := False) is
-    Current_Position : constant Long_Longs.Ll_Positive := Get_Position (List);
+    Current_Position : constant Ll_Positive
+                     := Get_Position (List);
     Link1, Link2 : Link;
   begin
     -- Move to elements and store links to them
@@ -619,7 +627,7 @@ package body Long_Long_Limited_List is
 
 
   -- Returns the number of elements in the list (0 if empty)
-  function List_Length (List : List_Type) return Long_Longs.Ll_Natural is
+  function List_Length (List : List_Type) return Ll_Natural is
   begin
     return (if Is_Empty (List) then 0 else List.Pos_First + List.Pos_Last - 1);
   end List_Length;
@@ -628,7 +636,7 @@ package body Long_Long_Limited_List is
   -- Get position from first or last item in list
   function Get_Position (List : List_Type;
                          From : Reference := From_First)
-           return Long_Longs.Ll_Positive is
+           return Ll_Positive is
   begin
     Check (List);
     return (case From is
@@ -707,7 +715,7 @@ package body Long_Long_Limited_List is
   function Search_Access (List      : in out List_Type;
                           Criteria  : access Element_Type) return Boolean is
     New_Pos : Link;
-    New_Pos_First : Long_Longs.Ll_Natural;
+    New_Pos_First : Ll_Natural;
     Found : Boolean;
   begin
     Check_Cb (List);
@@ -776,7 +784,7 @@ package body Long_Long_Limited_List is
   procedure Delete_Current_Rewind (List     : in out List_Type;
                                    Cell_Acc : access Cell;
                                    Where    : in Direction := Next) is
-    Len : Long_Longs.Ll_Natural;
+    Len : Ll_Natural;
   begin
     Check_Cb (List);
     Check (List);
@@ -828,10 +836,10 @@ package body Long_Long_Limited_List is
   function Search_Criteria (List      : in out List_Type;
                             Criteria  : in Criteria_Type;
                             Where     : in Direction := Next;
-                            Occurence : in Long_Longs.Ll_Positive := 1;
+                            Occurence : in Ll_Positive := 1;
                             From      : in Search_Kind_List) return Boolean is
     New_Pos                     : Link;
-    New_Pos_First, New_Pos_Last : Long_Longs.Ll_Natural;
+    New_Pos_First, New_Pos_Last : Ll_Natural;
     Found : Boolean;
 
     function Next_Pos return Boolean is
@@ -944,7 +952,7 @@ package body Long_Long_Limited_List is
   function Search (List      : in out List_Type;
                    Criteria  : in Element_Type;
                    Where     : in Direction := Next;
-                   Occurence : in Long_Longs.Ll_Positive := 1;
+                   Occurence : in Ll_Positive := 1;
                    From      : in Search_Kind_List) return Boolean is
 
     function Item_Search is new Search_Criteria (Element_Type, Match);
@@ -959,7 +967,7 @@ package body Long_Long_Limited_List is
                    function (Current, Criteria : Element_Type) return Boolean;
                          Criteria  : in Element_Type;
                          Where     : in Direction := Next;
-                         Occurence : in Long_Longs.Ll_Positive := 1;
+                         Occurence : in Ll_Positive := 1;
                          From      : in Search_Kind_List) return Boolean is
     function Search_Element is new Search (Match.all);
   begin
@@ -970,7 +978,7 @@ package body Long_Long_Limited_List is
   procedure Search_Raise (List      : in out List_Type;
                           Criteria  : in Element_Type;
                           Where     : in Direction := Next;
-                          Occurence : in Long_Longs.Ll_Positive := 1;
+                          Occurence : in Ll_Positive := 1;
                           From      : in Search_Kind_List) is
     function Loc_Match (Current, Criteria : Element_Type) return Boolean is
     begin
@@ -1042,7 +1050,7 @@ package body Long_Long_Limited_List is
 
   -- Sort
   procedure Sort (List : in out List_Type) is
-    Last : constant Long_Longs.Ll_Natural := List_Length (List);
+    Last : constant Ll_Natural := List_Length (List);
   begin
     Check_Cb (List);
     if Last <= 1 then
@@ -1053,12 +1061,12 @@ package body Long_Long_Limited_List is
     declare
 
       -- Recursive procedure which sorts a slice of the list
-      procedure Quick (Left, Right : in Long_Longs.Ll_Positive) is
+      procedure Quick (Left, Right : in Ll_Positive) is
         -- Middle of the slice
-        I_Frontier : constant Long_Longs.Ll_Positive := (Left + Right) / 2;
+        I_Frontier : constant Ll_Positive := (Left + Right) / 2;
         L_Frontier : Link;
         -- Indexes in both halfs of the slice
-        I_Left, I_Right : Long_Longs.Ll_Positive;
+        I_Left, I_Right : Ll_Positive;
         L_Left, L_Right : Link;
      begin
         I_Left := Left;

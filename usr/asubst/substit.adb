@@ -21,15 +21,15 @@ package body Substit is
   Is_Stdin : Boolean;
 
   -- Number of patterns and is it iterative
-  Nb_Pattern : Positive;
+  Nb_Pattern : Search_Pattern.Ll_Positive;
   Is_Iterative : Boolean;
 
   -- Line or block separator
   Delimiter : As.U.Asu_Us;
 
   -- Current line number
-  Line_No : Long_Longs.Ll_Natural;
-  function Line_Image is new Images.Int_Image (Long_Longs.Ll_Natural);
+  Line_No : Long_Longs.Ll_Mod_Natural;
+  function Line_Image is new Images.Mod_Image (Long_Longs.Ll_Mod_Natural);
 
   -- Display error. If Give_Up then also cleanup and raise Substit_Error
   procedure Error (Msg : in String; Give_Up : in Boolean := True);
@@ -278,17 +278,18 @@ package body Substit is
   -- Read the number of lines and New_Lines needed to fill Line_List
   Trail_Line_Feed : Boolean := False;
   function Read return Boolean is
-    Nb_To_Read : Natural;
+    Nb_To_Read : Search_Pattern.Ll_Natural;
     Line : As.U.Asu_Us;
     Len : Natural;
     Line_Feed : constant As.U.Asu_Us := As.U.Tus (In_File.Get_Line_Feed);
     Feed_Len : constant Natural := Line_Feed.Length;
-    use type As.U.Asu_Us;
+    use type As.U.Asu_Us, Search_Pattern.Ll_Natural;
   begin
     -- Move to end
     Line_List.Rewind (Line_List_Mng.Prev, False);
     -- Compute amount to fill buffer (Nb lines)
-    Nb_To_Read := Nb_Pattern - Line_List.List_Length;
+    Nb_To_Read := Nb_Pattern
+                - Search_Pattern.Ll_Natural (Line_List.List_Length);
     -- Append trailing new line if any
     if Trail_Line_Feed then
       Line_List.Insert (Line_Feed);
@@ -332,7 +333,7 @@ package body Substit is
         Line_No := Line_No + 1;
       end if;
     end loop;
-    Log.Sub ("Read up to line no " &  Line_No'Img
+    Log.Sub ("Read up to line no " &  Line_Image (Line_No)
              & (if Trail_Line_Feed then " & trail" else ""));
     return True;
   end Read;
@@ -453,7 +454,7 @@ package body Substit is
           Loc_Subst := Loc_Subst + 1;
           if Verbose then
             Basic_Proc.Put_Line_Output (
-                Line_No'Img & " : "
+                Line_Image (Line_No) & " : "
               & Search_Char & " -> " & Replace_Char);
           end if;
           if not Test then
@@ -493,7 +494,7 @@ package body Substit is
     Current : Positive;
     Match_Res : Regular_Expressions.Match_Cell;
     Matches : Boolean;
-    use type Regular_Expressions.Match_Cell;
+    use type Regular_Expressions.Match_Cell, Search_Pattern.Ll_Natural;
   begin
     Done_File := False;
     -- Optimization if simple substit of a char by a char, no regex
@@ -605,7 +606,7 @@ package body Substit is
           -- Display verbose substitution
           if Verbose then
             Basic_Proc.Put_Line_Output (
-                Line_No'Img & " : "
+                Line_Image (Line_No) & " : "
               & Line.all.Slice (Match_Res.First_Offset,
                                 Match_Res.Last_Offset_Stop)
               & " -> " & Replacing);
@@ -622,7 +623,7 @@ package body Substit is
               end if;
               Basic_Proc.Put_Output (":");
               if Grep_Line_Nb then
-                Basic_Proc.Put_Output (Line_Image(Line_No) & ":");
+                Basic_Proc.Put_Output (Line_Image (Line_No) & ":");
               end if;
             elsif Grep_List then
               Done_File := True;
@@ -713,7 +714,7 @@ package body Substit is
 
     -- Put matching text, complete line or just the matching text
     procedure Put_Match (Complete : in Boolean) is
-      use type Str_Access;
+      use type Str_Access, Search_Pattern.Ll_Natural;
     begin
       if Last_Line = First_Line then
         -- Handle specific case of only one line
@@ -747,6 +748,8 @@ package body Substit is
                         1, Match_Res.Last_Offset_Stop));
       end if;
     end Put_Match;
+
+     use type Search_Pattern.Ll_Natural;
   begin
     -- Rewind read lines
     Line_List.Rewind;
@@ -883,7 +886,7 @@ package body Substit is
         end if;
         if Verbose then
           -- Display verbose substitution
-          Basic_Proc.Put_Output (Long_Longs.Ll_Natural'Image(Line_No) & " : ");
+          Basic_Proc.Put_Output (Line_Image (Line_No) & " : ");
           Put_Match (False);
           Basic_Proc.Put_Line_Output (" -> " & Str_Replacing);
         elsif Grep then
@@ -897,7 +900,7 @@ package body Substit is
             end if;
             Basic_Proc.Put_Output (":");
             if Grep_Line_Nb then
-              Basic_Proc.Put_Output (Line_Image(Line_No) & ":");
+              Basic_Proc.Put_Output (Line_Image (Line_No) & ":");
             end if;
           elsif Grep_List then
             Done_File := True;

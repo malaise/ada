@@ -13,7 +13,8 @@ package Long_Long_Limited_Pool is
 
   -- Check if pool is not empty, get number of elements in pool
   function Is_Empty (Pool : in Pool_Type) return Boolean;
-  function Length (Pool : in Pool_Type) return Long_Longs.Ll_Natural;
+  subtype Ll_Natural is Long_Longs.Ll_Mod;
+  function Length (Pool : in Pool_Type) return Ll_Natural;
 
   -- Add in pool
   Pool_Full : exception;

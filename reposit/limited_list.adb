@@ -1,4 +1,3 @@
-with Long_Longs;
 package body Limited_List is
 
   -- Check if one move in the given direction is possible
@@ -152,7 +151,7 @@ package body Limited_List is
                      From_Current : in Boolean := True) is
   begin
     List.List.Move_To (My_List.Direction (Where),
-                       Long_Longs.Ll_Natural (Number), From_Current);
+                       My_List.Ll_Natural (Number), From_Current);
   end Move_To;
 
   -- Set the current element to number elements from first (Direction = Next)
@@ -164,7 +163,7 @@ package body Limited_List is
                      Position : in Positive;
                      Where    : in Direction := Next) is
   begin
-    List.List.Move_At (Long_Longs.Ll_Positive (Position),
+    List.List.Move_At (My_List.Ll_Positive (Position),
                        My_List.Direction (Where));
   end Move_At;
 
@@ -190,8 +189,8 @@ package body Limited_List is
                      Where        : in Direction := Next;
                      From_Current : in Boolean   := False) is
   begin
-    List.List.Permute (Long_Longs.Ll_Natural (Number1),
-                       Long_Longs.Ll_Natural (Number2),
+    List.List.Permute (My_List.Ll_Natural (Number1),
+                       My_List.Ll_Natural (Number2),
                        My_List.Direction (Where), From_Current);
   end Permute;
 
@@ -311,7 +310,7 @@ package body Limited_List is
       Criteria_Type, Match);
   begin
     return My_Search_Criteria (List.List, Criteria, My_List.Direction (Where),
-                        Long_Longs.Ll_Positive (Occurence),
+                        My_List.Ll_Positive (Occurence),
                         My_List.Search_Kind_List (From));
   end Search_Criteria;
 
@@ -338,7 +337,7 @@ package body Limited_List is
     function My_Search is new My_List.Search (Match);
   begin
     return My_Search (List.List, Criteria, My_List.Direction (Where),
-               Long_Longs.Ll_Positive (Occurence),
+               My_List.Ll_Positive (Occurence),
                My_List.Search_Kind_List (From));
   end Search;
 
@@ -362,7 +361,7 @@ package body Limited_List is
   begin
     return List.List.Search_Match (Match, Criteria,
                             My_List.Direction (Where),
-                            Long_Longs.Ll_Positive (Occurence),
+                            My_List.Ll_Positive (Occurence),
                             My_List.Search_Kind_List (From));
 
   end Search_Match;
@@ -379,7 +378,7 @@ package body Limited_List is
     procedure My_Search_Raise is new My_List.Search_Raise (Match);
   begin
     My_Search_Raise (List.List, Criteria, My_List.Direction (Where),
-                     Long_Longs.Ll_Positive (Occurence),
+                     My_List.Ll_Positive (Occurence),
                      My_List.Search_Kind_List (From));
 
   end Search_Raise;

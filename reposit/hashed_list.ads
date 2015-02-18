@@ -40,6 +40,7 @@ package Hashed_List is
   -- In which direction searching
   type Direction_List is new Hashing.Direction_List;
 
+  subtype Ll_Natural is Long_Longs.Ll_Mod;
 
   -- Insert/Replace_Current/Delete_Current may raise In_Callback if performed
   --  in an application callback (Iteration);
@@ -115,7 +116,7 @@ package Hashed_List is
   function Is_Empty (List : List_Type) return Boolean;
 
   -- Return the number of elements in the list (0 if empty, no exception)
-  function List_Length (List : List_Type) return Long_Longs.Ll_Natural;
+  function List_Length (List : List_Type) return Ll_Natural;
 
   -- These two calls allow sharing the same list among several
   --  software layers. Each time the list is modified, a flag is set

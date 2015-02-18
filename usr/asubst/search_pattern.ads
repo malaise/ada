@@ -1,5 +1,8 @@
-with Regular_Expressions;
+with Long_Longs, Regular_Expressions;
 package Search_Pattern is
+
+  subtype Ll_Natural  is Long_Longs.Ll_Mod_Natural;
+  subtype Ll_Positive is Long_Longs.Ll_Mod_Positive;
 
   -- Parses and compiles the search patern
   -- Parses and compiles the exclude patern (if any)
@@ -14,7 +17,7 @@ package Search_Pattern is
   -- Returns the number of patterns that are implied by the
   --  search pattern (one per pattern and one per delimiters).
   -- Raises No_Regex if the pattern was not parsed OK
-  function Number return Positive;
+  function Number return Ll_Positive;
 
   -- Is search pattern a Regex
   -- Raises No_Regex if the pattern was not parsed OK
@@ -23,7 +26,7 @@ package Search_Pattern is
   -- Return the Nts pattern or delimiter
   -- Raises No_Regex if the pattern was not parsed OK
   -- Raises Contraint_Error if N > Number;
-  function Get_Pattern (Regex_Index : Positive) return String;
+  function Get_Pattern (Regex_Index : Ll_Positive) return String;
 
   -- Tells if the search pattern can be applied several times
   --  on one line of input (i.e. does not contain '\n', '^' or '$')
@@ -49,7 +52,7 @@ package Search_Pattern is
   -- Raise Regex_Error if regex (after insertion of back reference) is not valid
   function Check (Str : String; Start : Positive;
                   Search      : Boolean;
-                  Regex_Index : Positive) return Boolean;
+                  Regex_Index : Ll_Positive) return Boolean;
   No_Regex : exception;
   Regex_Error : exception;
 
@@ -58,7 +61,7 @@ package Search_Pattern is
   --  the number of regex (returned by Number)
   subtype Nb_Sub_String_Range is Natural range 0 .. 16;
   subtype Sub_String_Range is Nb_Sub_String_Range range 1 .. 16;
-  function Nb_Substrings (Regex_Index : Positive) return Nb_Sub_String_Range;
+  function Nb_Substrings (Regex_Index : Ll_Positive) return Nb_Sub_String_Range;
 
   -- Returns the Nth sub-matching string of one regex
   -- Returns the complete matching string of one regex if Sub_String_Index is 0
@@ -70,7 +73,7 @@ package Search_Pattern is
   -- May raise Substr_Len_Error if Utf8 sequence leads to exceed
   --  (sub) string length
   Substr_Len_Error : exception;
-  function Substring (Regex_Index : Positive;
+  function Substring (Regex_Index : Ll_Positive;
                       Sub_String_Index : Nb_Sub_String_Range)
            return String;
 

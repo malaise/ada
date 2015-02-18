@@ -158,6 +158,7 @@ package body Replace_Pattern is
     -- Currently in command, in file
     In_Command, In_File : Boolean;
 
+    use type Search_Pattern.Ll_Natural;
   begin
     Log.Rep ("Replace parsing pattern >" & Pattern & "<");
     -- Store pattern
@@ -296,7 +297,8 @@ package body Replace_Pattern is
           Subst.Info := Hexa_Byte;
           if Esc_Char = 'R' then
             -- Replace by regex index IJ, check IJ
-            if Hexa_Byte > Search_Pattern.Number then
+            if Search_Pattern.Ll_Natural (Hexa_Byte) > Search_Pattern.Number
+            then
               Error ( "Invalid (null or too high) regex index "
                 & The_Pattern.Slice (Got + 1, Got + 2)
                 & " in replace pattern");
@@ -306,14 +308,16 @@ package body Replace_Pattern is
             -- Replace by regex I substring J
             -- Check I
             if Hexa_Byte / 16#10# = 0
-            or else Hexa_Byte / 16#10# > Search_Pattern.Number then
+            or else Search_Pattern.Ll_Natural (Hexa_Byte / 16#10#)
+                    > Search_Pattern.Number then
               Error ( "Invalid (null or too high) regex index "
                 & The_Pattern.Element (Got + 1)
                 & " in replace pattern");
             end if;
             -- Check J
             if Hexa_Byte rem 16#10#
-               > Search_Pattern.Nb_Substrings (Hexa_Byte / 16#10#) then
+               > Search_Pattern.Nb_Substrings (
+                   Search_Pattern.Ll_Positive (Hexa_Byte / 16#10#)) then
               Error ("Invalid (too high) substr index "
                 & The_Pattern.Element (Got + 2)
                 & " of regex index " & The_Pattern.Element (Got + 1)
@@ -414,7 +418,7 @@ package body Replace_Pattern is
         Rth := Nth / 16;
         Sth := Nth rem 16;
       end if;
-      return Search_Pattern.Substring (Rth, Sth);
+      return Search_Pattern.Substring (Search_Pattern.Ll_Positive (Rth), Sth);
     end if;
   exception
     when Error:others =>
