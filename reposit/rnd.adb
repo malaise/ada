@@ -105,9 +105,20 @@ package body Rnd is
   function Mod_Random (Gen : in out Generator;
                        Mini : in Modulus := Modulus'First;
                        Maxi : in Modulus := Modulus'Last) return Modulus is
+    X : Float;
+    M : Modulus;
   begin
-    return
-      Modulus (Random (Gen, Float (Mini), Float (Maxi) + 1.0));
+    X := Random (Gen, Float (Mini), Float (Maxi) + 1.0);
+    M := Modulus (X);
+    if Float(M) > X then
+      -- Round to modulus lead to > X
+      M := M - 1;
+    end if;
+    return M;
+  exception
+    when Constraint_Error =>
+      -- Round to modulus lead to overflow
+      return Maxi;
   end Mod_Random;
 
   function Float_Random (Gen : in out Generator;
