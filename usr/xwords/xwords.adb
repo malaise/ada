@@ -354,7 +354,7 @@ procedure Xwords is
 
     -- Store in history if search
     if (Num = Search_Fld or else Num = Research_Fld)
-    and then not Arg.Image.Is_Null then
+    and then not Word.Is_Null then
       History_List.Insert (Word);
     end if;
 
