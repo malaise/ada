@@ -102,6 +102,14 @@ package body Rnd is
       );
   end Int_Random;
 
+  function Mod_Random (Gen : in out Generator;
+                       Mini : in Modulus := Modulus'First;
+                       Maxi : in Modulus := Modulus'Last) return Modulus is
+  begin
+    return
+      Modulus (Random (Gen, Float (Mini), Float (Maxi) + 1.0));
+  end Mod_Random;
+
   function Float_Random (Gen : in out Generator;
                          Mini : in Float := 0.0; Maxi : in Float := 1.0)
            return Float is

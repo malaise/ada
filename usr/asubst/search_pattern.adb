@@ -345,7 +345,7 @@ package body Search_Pattern is
     Backref : Backref_Rec;
     Backrefs : Backref_Ua;
 
-    use type Search_Pattern.Ll_Natural;
+    use type Ll_Natural;
   begin
     Log.Sea ("Search parsing pattern >" & Pattern & "<");
     -- Reset pattern characteristics

@@ -58,8 +58,8 @@ package body Hexa_Utils is
   function Image (N : Natural) return String renames Nat_Image;
   function Llnat_Image is new Int_Image (Long_Longs.Ll_Natural);
   function Image (N : Long_Longs.Ll_Natural) return String renames Llnat_Image;
-  function Llmod_Image is new Mod_Image (Long_Longs.Ll_Mod_Natural);
-  function Image (N : Long_Longs.Ll_Mod_Natural) return String
+  function Llmod_Image is new Mod_Image (Long_Longs.Llu_Natural);
+  function Image (N : Long_Longs.Llu_Natural) return String
                  renames Llmod_Image;
 
   -- Image in hexadecimal of a Natural, padded with '0' to fit length
@@ -81,7 +81,7 @@ package body Hexa_Utils is
     Result (Result'Last - Imag'Length + 1 .. Result'Last) := Imag;
     return Result;
   end Image;
-  function Image (N : Long_Longs.Ll_Mod_Natural;
+  function Image (N : Long_Longs.Llu_Natural;
                   Len : Positive; Gap : Character := '0') return String is
     Result : String (1 .. Len) := (others => Gap);
     Imag : constant String := Image (N);
@@ -142,11 +142,11 @@ package body Hexa_Utils is
     end loop;
     return Res;
   end Value;
-  function Value (Str : String) return Long_Longs.Ll_Mod_Natural is
+  function Value (Str : String) return Long_Longs.Llu_Natural is
     Start : Positive;
-    Res : Long_Longs.Ll_Mod_Natural := 0;
-    Mul : Long_Longs.Ll_Mod_Positive := 1;
-    use type Long_Longs.Ll_Mod_Natural;
+    Res : Long_Longs.Llu_Natural := 0;
+    Mul : Long_Longs.Llu_Positive := 1;
+    use type Long_Longs.Llu_Natural;
   begin
     if Str = "" then
       raise Constraint_Error;
@@ -159,7 +159,7 @@ package body Hexa_Utils is
       end if;
     end loop;
     for I in reverse Str'Range loop
-      Res := Res + Long_Longs.Ll_Mod_Natural(Char_To_Hexa (Str(I))) * Mul;
+      Res := Res + Long_Longs.Llu_Natural(Char_To_Hexa (Str(I))) * Mul;
       if I /= Start then
         Mul := 16 * Mul;
         exit when Str(I - 1) = ' ';

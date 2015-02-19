@@ -9,27 +9,26 @@ package body Address_Ops is
   function To_Address is new Unchecked_Conversion (
     Readable_Address, System.Address);
 
-  function "+" (Addr : System.Address; Offset : Long_Longs.Ll_Mod_Natural)
+  function "+" (Addr : System.Address; Offset : Long_Longs.Llu_Natural)
                return System.Address is
     R : constant Readable_Address := To_Readable (Addr);
   begin
     return To_Address (R + Readable_Address(Offset));
   end "+";
-  function "-" (Addr : System.Address; Offset : Long_Longs.Ll_Mod_Natural)
+  function "-" (Addr : System.Address; Offset : Long_Longs.Llu_Natural)
                return System.Address is
     R : constant Readable_Address := To_Readable (Addr);
   begin
     return To_Address (R + Readable_Address(Offset));
   end "-";
 
-  function "-" (Addr1, Addr2 : System.Address)
-           return Long_Longs.Ll_Mod_Natural is
+  function "-" (Addr1, Addr2 : System.Address) return Long_Longs.Llu_Natural is
     R1 : constant Readable_Address := To_Readable (Addr1);
     R2 : constant Readable_Address := To_Readable (Addr2);
     use type System.Address;
   begin
     if Addr1 >= Addr2 then
-      return Long_Longs.Ll_Mod_Natural(R1 - R2);
+      return Long_Longs.Llu_Natural(R1 - R2);
     else
       raise Constraint_Error;
     end if;

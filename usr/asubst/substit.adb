@@ -28,8 +28,8 @@ package body Substit is
   Delimiter : As.U.Asu_Us;
 
   -- Current line number
-  Line_No : Long_Longs.Ll_Mod_Natural;
-  function Line_Image is new Images.Mod_Image (Long_Longs.Ll_Mod_Natural);
+  Line_No : Long_Longs.Llu_Natural;
+  function Line_Image is new Images.Mod_Image (Long_Longs.Llu_Natural);
 
   -- Display error. If Give_Up then also cleanup and raise Substit_Error
   procedure Error (Msg : in String; Give_Up : in Boolean := True);

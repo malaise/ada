@@ -227,7 +227,7 @@ package body Autobus is
 
   -- Sort partner addresses
   -- Numeric representation of an address 255.255.255.255:6535
-  subtype Addr_Num is Long_Longs.Ll_Mod_Natural range 0 .. 25525525525556535;
+  subtype Addr_Num is Long_Longs.Llu_Natural range 0 .. 25525525525556535;
   -- Number of slices of modulus, must be > 2
   Slices : constant := 10;
   -- Convert an address into num
@@ -257,7 +257,7 @@ package body Autobus is
     Nv, Nc : Addr_Num;
     Mv, Mc : Natural;
     Sl : constant Addr_Num := Addr_Num (Slices);
-    use type As.U.Asu_Us, Long_Longs.Ll_Mod_Natural;
+    use type As.U.Asu_Us, Addr_Num;
   begin
     -- Convert to num
     Nv := Addr_Num_Of (Val);

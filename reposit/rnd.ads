@@ -16,6 +16,7 @@ package Rnd is
   -- A Generator is initially not radomized
   function Is_Randomized (Gen : in out Generator) return Boolean;
 
+  -- Don't exceed Long_Long'First .. Long_Long'Last
   generic
     type Num is (<>);
   -- Next element in sequence: Mini <= R <= Maxi
@@ -27,6 +28,12 @@ package Rnd is
   function Int_Random (Gen : in out Generator;
                        Mini : in Integer := 0;
                        Maxi : in Integer := 1) return Integer;
+  generic
+    type Modulus is mod <>;
+  -- Next element in sequence: Mini <= R <= Maxi
+  function Mod_Random (Gen : in out Generator;
+                       Mini : in Modulus := Modulus'First;
+                       Maxi : in Modulus := Modulus'Last) return Modulus;
 
   -- Next element in sequence: Mini <= R < Maxi
   function Float_Random (Gen : in out Generator;

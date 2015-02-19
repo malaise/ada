@@ -4,7 +4,7 @@ package body Magic_Numbers is
 
   -- The generator of Lmn
   Generator : Rnd.Generator;
-  function Magic_Long_Random is new Rnd.Discr_Random (Magic_Long);
+  function Magic_Long_Random is new Rnd.Mod_Random (Magic_Long);
 
   -- At first call, initialize the random number generator
   -- Return a random magic number

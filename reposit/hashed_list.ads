@@ -40,7 +40,7 @@ package Hashed_List is
   -- In which direction searching
   type Direction_List is new Hashing.Direction_List;
 
-  subtype Ll_Natural is Long_Longs.Ll_Mod_Natural;
+  subtype Ll_Natural is Long_Longs.Llu_Natural;
 
   -- Insert/Replace_Current/Delete_Current may raise In_Callback if performed
   --  in an application callback (Iteration);

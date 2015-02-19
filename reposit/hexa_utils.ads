@@ -24,7 +24,7 @@ package Hexa_Utils is
   function Mod_Image (I : Modulus) return String;
   function Image (N : Natural) return String;
   function Image (N : Long_Longs.Ll_Natural) return String;
-  function Image (N : Long_Longs.Ll_Mod_Natural) return String;
+  function Image (N : Long_Longs.Llu_Natural) return String;
 
   -- Image in hexadecimal of a Natural, with head padded with gap to fit length
   -- Lower case
@@ -33,7 +33,7 @@ package Hexa_Utils is
                   Len : Positive; Gap : Character := '0') return String;
   function Image (N : Long_Longs.Ll_Natural;
                   Len : Positive; Gap : Character := '0') return String;
-  function Image (N : Long_Longs.Ll_Mod_Natural;
+  function Image (N : Long_Longs.Llu_Natural;
                   Len : Positive; Gap : Character := '0') return String;
 
   -- Value of an hexadecimal string (without 16#...#)
@@ -42,7 +42,7 @@ package Hexa_Utils is
   -- May raises Constraint_Error if Str is not valid or result is too large
   function Value (Str : String) return Natural;
   function Value (Str : String) return Long_Longs.Ll_Natural;
-  function Value (Str : String) return Long_Longs.Ll_Mod_Natural;
+  function Value (Str : String) return Long_Longs.Llu_Natural;
 
 end Hexa_Utils;
 

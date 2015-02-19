@@ -33,7 +33,7 @@ package body Hashing is
                        Where : in Where_Insert_List := Last) is
         Ca : Cell_Access;
         Cu : Cell_Access;
-        use type Long_Longs.Ll_Mod_Natural;
+        use type Depth_Range;
       begin
         Ca := Dyn_Hash.Allocate ((Data => Data, Prev => null, Next => null));
 
@@ -92,7 +92,7 @@ package body Hashing is
       procedure Remove (Table : in out Hash_Table;
                         Index : in Hash_Range) is
         Cu : Cell_Access;
-        use type Long_Longs.Ll_Mod;
+        use type Depth_Range;
       begin
         Cu := Table.Arr(Index).Current;
         -- Empty or not found

@@ -21,8 +21,8 @@ package Long_Long_Limited_List is
   type Reference is (From_First, From_Last);
 
   -- Natural and Positive
-  subtype Ll_Natural  is Long_Longs.Ll_Mod;
-  subtype Ll_Positive is Long_Longs.Ll_Mod_Positive;
+  subtype Ll_Natural  is Long_Longs.Llu_Natural;
+  subtype Ll_Positive is Long_Longs.Llu_Positive;
 
   -- All calls except Insert, Is_Empty, List_Length, searches and Iterate
   --  may raise Empty_List if the list is empty.

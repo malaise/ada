@@ -190,7 +190,7 @@ package body Hashed_List is
                              Item : in Element_Type) is
     Acc : Element_Access;
     First_Element : Element_Type;
-    Position : Long_Longs.Ll_Mod_Positive;
+    Position : Long_Longs.Llu_Positive;
   begin
     Check_Callback (List);
     Get_Access_Current (List, Acc);

@@ -1,8 +1,8 @@
 with Long_Longs, Regular_Expressions;
 package Search_Pattern is
 
-  subtype Ll_Natural  is Long_Longs.Ll_Mod_Natural;
-  subtype Ll_Positive is Long_Longs.Ll_Mod_Positive;
+  subtype Ll_Natural  is Long_Longs.Llu_Natural;
+  subtype Ll_Positive is Long_Longs.Llu_Positive;
 
   -- Parses and compiles the search patern
   -- Parses and compiles the exclude patern (if any)

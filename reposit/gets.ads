@@ -6,7 +6,7 @@ package Gets is
   -- May raise Constraint_Error
   function Get_Int (Str : String) return Integer;
   function Get_Llint (Str : String) return Long_Longs.Ll_Integer;
-  function Get_Llmod (Str : String) return Long_Longs.Ll_Mod_Natural;
+  function Get_Llmod (Str : String) return Long_Longs.Llu_Natural;
   function Get_Float (Str : String) return Float;
   function Get_Dur (Str : String) return Duration;
 

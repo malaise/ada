@@ -1,7 +1,7 @@
 with Ada.Text_Io;
 package body Gets is
   package Llint_Io is new Ada.Text_Io.Integer_Io (Long_Longs.Ll_Integer);
-  package Llmod_Io is new Ada.Text_Io.Modular_Io (Long_Longs.Ll_Mod_Natural);
+  package Llmod_Io is new Ada.Text_Io.Modular_Io (Long_Longs.Llu_Natural);
   package Flo_Io is new Ada.Text_Io.Float_Io (Float);
   package Dur_Io is new Ada.Text_Io.Fixed_Io (Duration);
 
@@ -42,8 +42,8 @@ package body Gets is
       raise Constraint_Error;
   end Get_Llint;
 
-  function Get_Llmod (Str : String) return Long_Longs.Ll_Mod_Natural is
-    I : Long_Longs.Ll_Mod_Natural;
+  function Get_Llmod (Str : String) return Long_Longs.Llu_Natural is
+    I : Long_Longs.Llu_Natural;
     L : Positive;
     Str_Len : Natural;
   begin
