@@ -1,6 +1,6 @@
 with Ada.Unchecked_Deallocation, Ada.Exceptions;
 with Environ, Images, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng, Trace.Loggers,
-     Long_Longs, As.U.Utils, Str_Util.Regex, Modulus_Smaller, Sys_Calls,
+     Long_Longs, As.U.Utils, Str_Util.Regex, Mod_Utils, Sys_Calls,
      Normal;
 package body Autobus is
   -- Design
@@ -270,7 +270,7 @@ package body Autobus is
       return Nv < Nc;
     else
       -- Compare modulus
-      return Modulus_Smaller (Mv, Mc, Slices);
+      return Mod_Utils.Smaller (Mv, Mc, Slices);
     end if;
   end Smaller;
 

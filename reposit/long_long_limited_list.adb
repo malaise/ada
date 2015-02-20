@@ -1,4 +1,5 @@
 with Unchecked_Deallocation;
+with Mod_Utils;
 package body Long_Long_Limited_List is
   use type Ll_Natural;
 
@@ -388,10 +389,7 @@ package body Long_Long_Limited_List is
     else
       case Where is
         when Next =>
-          if (Number >= List.Pos_First
-              and then Number - List.Pos_First > List.Pos_First / 2)
-          or else (Number < List.Pos_First
-                   and then List.Pos_First - Number > List.Pos_First / 2) then
+          if Mod_Utils.Dist (Number, List.Pos_First) > List.Pos_First / 2 then
             New_Pos := List.First;
             New_Pos_First := 1;
             New_Pos_Last := List_Length(List);
@@ -405,10 +403,7 @@ package body Long_Long_Limited_List is
             return;
           end if;
         when Prev =>
-          if (Number >= List.Pos_Last
-              and then Number - List.Pos_Last > List.Pos_Last / 2)
-          or else (Number < List.Pos_Last
-                   and then List.Pos_Last - Number > List.Pos_Last / 2) then
+          if Mod_Utils.Dist (Number, List.Pos_Last) > List.Pos_Last / 2 then
             New_Pos := List.Last;
             New_Pos_First := List_Length(List);
             New_Pos_Last := 1;
