@@ -7,7 +7,7 @@ Add a flag In_Branch that de-activates the Hist and Restore buttons
   calls "git cherry Target Ref", returns the list of commits, with the tag
   Merged set or not (add this field in Log_Entry_Rec)
 - Add a function Show that fills the date and comment of a commit
-- Add a Cherry_Pick operation that takes a list of SHAs (separated by space)
+- Add a Cherry_Pick operation that takes a list of commits
   and calls "git cherry-pick --ff { <SHA-1> }"
 4) history
 Duplicate Handle into a new operation Cherry_Pick that takes a branch name and

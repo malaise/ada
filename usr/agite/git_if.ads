@@ -61,6 +61,7 @@ package Git_If is
   -- A log entry
   type Log_Entry_Rec is record
     Hash : Git_Hash;
+    Merged : Boolean;
     Date : Iso_Date;
     Comment : Comment_2;
   end record;
@@ -74,6 +75,9 @@ package Git_If is
 
   -- Get last hash (hash of last commit) of file or dir
   function Last_Hash (Path : in String) return Git_Hash;
+
+  -- Get info on a commit: fill Date and Comment
+  procedure Info_Commit (Commit : in out Log_Entry_Rec);
 
   -- COMMIT DETAILS
   -- A commit file entry
@@ -206,6 +210,16 @@ package Git_If is
                      Hash : Git_Hash;
                      Annotated : Boolean;
                      Comment : in String) return String;
+
+  -- List cherry commits: the commits in Ref, and indicates if they are
+  --  or not merged in target
+  -- Inserts the Log_Entry_Rec with Hash and Merged set
+  procedure Cherry_List (Ref, Target : in String;
+                         Commits : in out Log_List);
+
+  -- Cherry pick some commits into current branch
+  -- Returns "" if OK else the error
+  function Cherry_Pick (Commits : in out Log_List) return String;
 
 end Git_If;
 

@@ -571,6 +571,7 @@ package body Git_If is
 
     -- Encode entries
     Out_Flow_1.List.Rewind;
+    Log_Entry.Merged := False;
     loop
       Read_Block (Out_Flow_1.List, False, Log_Entry.Hash, Log_Entry.Date,
                   Log_Entry.Comment, null, Done);
@@ -610,6 +611,37 @@ package body Git_If is
     end if;
   end Last_Hash;
 
+  -- Get info on a commit: fill Date and Comment
+  procedure Info_Commit (Commit : in out Log_Entry_Rec) is
+    Cmd : Many_Strings.Many_String;
+    Dummy_Done : Boolean;
+  begin
+    -- Git ls-files
+    Cmd.Set ("git");
+    Cmd.Cat ("log");
+    Cmd.Cat ("--date=iso");
+    Cmd.Cat ("-n");
+    Cmd.Cat ("1");
+    Cmd.Cat (Commit.Hash);
+    Cmd.Cat ("--");
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git log2: " & Err_Flow_1.Str.Image);
+      return;
+    end if;
+
+    -- Encode info
+    if Out_Flow_1.List.Is_Empty then
+      Commit.Date := (others => ' ');
+      Commit.Comment := (others => As.U.Asu_Null);
+      return;
+    end if;
+    Read_Block (Out_Flow_1.List, False, Commit.Hash, Commit.Date,
+                Commit.Comment, null, Dummy_Done);
+  end Info_Commit;
+
   -- List detailed info on a commit
   procedure List_Commit (Rev_Tag : in String;
                          Hash : out Git_Hash;
@@ -631,7 +663,7 @@ package body Git_If is
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git log2: " & Err_Flow_1.Str.Image);
+      Basic_Proc.Put_Line_Error ("git log3: " & Err_Flow_1.Str.Image);
       return;
     end if;
 
@@ -1399,6 +1431,83 @@ package body Git_If is
       return "";
     end if;
   end Add_Tag;
+
+   -- List cherry commits: the commits in Ref, and indicates if they are
+  --  or not merged in target
+  -- Inserts the Log_Entry_Rec with Hash and Merged set
+  procedure Cherry_List (Ref, Target : in String;
+                         Commits : in out Log_List) is
+    Cmd : Many_Strings.Many_String;
+    Line : As.U.Asu_Us;
+    Commit : Log_Entry_Rec;
+    Moved : Boolean;
+  begin
+    Commits.Delete_List;
+    Cmd.Set ("git");
+    Cmd.Cat ("cherry");
+    Cmd.Cat (Target);
+    Cmd.Cat (Ref);
+
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git cherry: "
+                               & Err_Flow_1.Str.Image);
+      return;
+    end if;
+    -- Encode info
+    if not Out_Flow_1.List.Is_Empty then
+      Out_Flow_1.List.Rewind;
+      loop
+        Out_Flow_1.List.Read (Line, Moved => Moved);
+        if Line.Element (1) = '-' then
+          Commit.Merged := True;
+        elsif Line.Element (1) = '+' then
+          Commit.Merged := False;
+        else
+          Basic_Proc.Put_Line_Error ("git cherry unexpected output : "
+                                   & Line.Image);
+          Commits.Delete_List;
+          return;
+        end if;
+        Commit.Hash := Line.Slice (3, 2 + Git_Hash'Length);
+        Commits.Insert (Commit);
+        exit when not Moved;
+      end loop;
+    end if;
+  end Cherry_List;
+
+  -- Cherry pick some commits into current branch
+  function Cherry_Pick (Commits : in out Log_List) return String is
+    Cmd : Many_Strings.Many_String;
+    Commit : Log_Entry_Rec;
+    Moved : Boolean;
+  begin
+    if Commits.Is_Empty then
+      return "";
+    end if;
+    Cmd.Set ("git");
+    Cmd.Cat ("cherry-pick");
+    Cmd.Cat ("-ff");
+
+    -- Append all the Hash
+    Commits.Rewind;
+    loop
+      Commits.Read (Commit, Moved => Moved);
+      Cmd.Cat (Commit.Hash);
+      exit when not Moved;
+    end loop;
+
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      return Err_Flow_1.Str.Image;
+    else
+      return "";
+    end if;
+  end Cherry_Pick;
 
 end Git_If;
 
