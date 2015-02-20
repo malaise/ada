@@ -176,7 +176,7 @@ begin
             Tags_List.Move_At (Afpx.Line_List.Get_Position);
             Tags_List.Read (Current_Tag, Git_If.Tag_Mng.Dyn_List.Current);
             Save;
-            Details.Handle (Root, Current_Tag.Name.Image,
+            Details.Handle (Root, Current_Tag.Name.Image, True,
                 (if Current_Tag.Annotated then Current_Tag.Date
                  else ""),
                 (if Current_Tag.Annotated then Current_Tag.Comment.Image

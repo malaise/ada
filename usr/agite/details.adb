@@ -21,6 +21,7 @@ package body Details is
 
   procedure Handle (Root : in String;
                     Rev_Tag : in String;
+                    Allow_Modif : in Boolean;
                     Tag_Date, Tag_Comment : in String := "") is
 
     -- Afpx stuff
@@ -47,6 +48,9 @@ package body Details is
       -- Encode current branch
       Utils.X.Encode_Branch (Afpx_Xref.Details.Branch);
 
+      -- Allow modifications (Hist that can recall Detail, restore) or not
+      Afpx.Set_Field_Activation (Afpx_Xref.Details.History, Allow_Modif);
+      Afpx.Set_Field_Activation (Afpx_Xref.Details.Restore, Allow_Modif);
 
       -- Get commit details
       if Get_Details then

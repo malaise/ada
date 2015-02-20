@@ -28,9 +28,12 @@ package body History is
   function Hash_Search is new Git_If.Log_Mng.Dyn_List.Search (Hash_Match);
 
   -- Handle the history of a file or dir
-  procedure Handle (Root, Path, Name : in String;
-                    Is_File : in Boolean;
-                    Hash : in Git_If.Git_Hash := Git_If.No_Hash) is
+  -- Or the cherry-pick from a branch
+  function Do_Handle (Cherry_Pick : in Boolean;
+                      Root, Path, Name : in String;
+                      Is_File : in Boolean;
+                      Hash : in Git_If.Git_Hash := Git_If.No_Hash)
+           return Boolean is
     -- Afpx stuff
     Get_Handle  : Afpx.Get_Handle_Rec;
     Ptg_Result  : Afpx.Result_Rec;
@@ -50,18 +53,24 @@ package body History is
       Get_Handle := (others => <>);
       -- List characteristics
       List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
-      -- Encode file/dir
-      Utils.X.Encode_Field ((if Is_File then Path & Name
-                            elsif Name /= "" then Path & Name & "/"
-                            elsif Path /= "" then Path
-                            else "/"),
-                            Afpx_Xref.History.File);
       -- Encode current branch
       Utils.X.Encode_Branch (Afpx_Xref.History.Branch);
 
-      -- Suppress button View and restore on dirs
-      Afpx.Set_Field_Activation (Afpx_Xref.History.View, Is_File);
-      Afpx.Set_Field_Activation (Afpx_Xref.History.Restore, Is_File);
+      if Cherry_Pick then
+        -- Encode Root
+        Utils.X.Encode_Field (Root, Afpx_Xref.History.File);
+      else
+        -- Encode file/dir
+        Utils.X.Encode_Field ((if Is_File then Path & Name
+                              elsif Name /= "" then Path & Name & "/"
+                              elsif Path /= "" then Path
+                              else "/"),
+                              Afpx_Xref.History.File);
+
+        -- Suppress button View and restore on dirs
+        Afpx.Set_Field_Activation (Afpx_Xref.History.View, Is_File);
+        Afpx.Set_Field_Activation (Afpx_Xref.History.Restore, Is_File);
+      end if;
     end Init;
 
     -- Show delta from current in list to comp
@@ -174,7 +183,8 @@ package body History is
         when Show_View =>
           View (Path & Name, Log.Hash);
         when Show_Details =>
-          Details.Handle (Root, Log.Hash);
+          -- Prevent modif in Cherry_Pick
+          Details.Handle (Root, Log.Hash, not Cherry_Pick);
           Init;
           Init_List (Logs);
           Afpx.Update_List (Afpx.Center_Selected);
@@ -241,6 +251,11 @@ package body History is
     -- Init Afpx
     Init;
 
+    -- Tempo
+    if Cherry_Pick then
+       return False;
+    end if;
+
     -- Get history
     Afpx.Suspend;
     begin
@@ -261,7 +276,7 @@ package body History is
 
     -- Encode history
     if Logs.Is_Empty then
-      return;
+      return False;
     end if;
     if Hash /= Git_If.No_Hash then
       -- Set current to Hash provided
@@ -283,7 +298,7 @@ package body History is
               null;
             when Afpx.Escape_Key =>
               -- Back
-              return;
+              return False;
             when Afpx.Break_Key =>
               raise Utils.Exit_Requested;
           end case;
@@ -315,14 +330,14 @@ package body History is
             when Afpx_Xref.History.Checkout =>
               -- Checkout
               if Do_Checkout then
-                return;
+                return True;
               end if;
             when Afpx_Xref.History.Tag =>
               -- Tag
               Do_Tag;
             when Afpx_Xref.History.Back =>
               -- Back
-              return;
+              return False;
             when others =>
               -- Other button?
               null;
@@ -336,7 +351,22 @@ package body History is
       end case;
     end loop;
 
+  end Do_Handle;
+
+  -- Handle the history of a file or dir
+  procedure Handle (Root, Path, Name : in String;
+                    Is_File : in Boolean;
+                    Hash : in Git_If.Git_Hash := Git_If.No_Hash) is
+    Dummy : Boolean;
+  begin
+    Dummy := Do_Handle (True, Root, Path, Name, Is_File, Hash);
   end Handle;
+
+  -- Handle the selection of Commits to cherry-pick
+  function Cherry_Pick (Root, Branch : String) return Boolean is
+  begin
+    return Do_Handle (False, Root, Branch, "", False, Git_If.No_Hash);
+  end Cherry_Pick;
 
 end History;
 

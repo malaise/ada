@@ -7,5 +7,8 @@ package History is
                     Is_File : in Boolean;
                     Hash : in Git_If.Git_Hash := Git_If.No_Hash);
 
+  -- Handle the selection of Commits to cherry-pick
+  function Cherry_Pick (Root, Branch : String) return Boolean;
+
 end History;
 

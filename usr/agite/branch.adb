@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with As.U.Utils, Directory, Afpx.List_Manager, Basic_Proc, Unicode;
-with Git_If, Utils.X, Afpx_Xref, Confirm, Error;
+with Git_If, Utils.X, Afpx_Xref, Confirm, Error, History;
 package body Branch is
 
   -- List width
@@ -87,10 +87,11 @@ package body Branch is
   end Reread;
 
   -- Actions on branches
-  type Action_List is (Create, Rename, Delete, Checkout, Merge);
+  type Action_List is (Create, Rename, Delete, Checkout, Merge, Cherry_Pick);
   function Do_Action (Action : in Action_List) return Boolean is
     Curr_Name, New_Name : As.U.Asu_Us;
     Message, Result : As.U.Asu_Us;
+    Done : Boolean;
   begin
     -- Retrieve current name
     if Action /= Create then
@@ -142,6 +143,14 @@ package body Branch is
       when Merge =>
         Message := As.U.Tus ("Merging branch " & Curr_Name.Image);
         Result := As.U.Tus (Git_If.Merge_Branch (Curr_Name.Image));
+      when Cherry_Pick =>
+        Done := History.Cherry_Pick (Root.Image, Curr_Name.Image);
+        if not Done then
+          -- Canceled => remain in Branch menu
+          Init;
+          Reread (False);
+        end if;
+        return Done;
     end case;
 
     -- Handle error
@@ -225,6 +234,10 @@ package body Branch is
               end if;
             when Afpx_Xref.Branches.Merge =>
               if Do_Action (Merge) then
+                return;
+              end if;
+            when Afpx_Xref.Branches.Cherry_Pick =>
+              if Do_Action (Cherry_Pick) then
                 return;
               end if;
             when Afpx_Xref.Branches.Back =>

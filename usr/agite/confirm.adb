@@ -1,5 +1,6 @@
 with Afpx;
 with Utils.X, Afpx_Xref;
+-- Confirm: OK/Cancel or Yes/No, show (protected) of hide the list
 function Confirm (Title, Msg : String;
                   Ok_Cancel : Boolean := True;
                   Show_List : Boolean := False) return Boolean is
