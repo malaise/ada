@@ -29,4 +29,4 @@ In Cherry_Pick mode,
  * Set the Afpx list to this selection
  * Confirm (showing the list) from Refbranch into Target(current)
 - If confirm Ok, do git cherry-pick --ff { <SHA-1> }'
-5) Update doc
+5) Update doc, remove ToDo
