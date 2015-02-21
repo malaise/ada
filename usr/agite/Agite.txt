@@ -167,6 +167,8 @@ Agite is based on the following main menus:
 * xref:XDir[Directory]: This is the \'root' menu and the initial menu at
 start-up. It shows the content of the current directory.
 * xref:XBranches[Branches]: This menu allows managing local branches.
+* xref:XCherry[CherryPick]: This menu allows performing a cherry pick of
+commits from a local branch.
 * xref:XBook[Bookmarks]: This menu allows bookmarking directories and quickly
 jumping to a bookmark.
 * xref:XHist[History]: This shows the Git history of a file or directory, the
@@ -189,16 +191,16 @@ anchor:XNavigation[]
 The navigation between the screens is as follows:
 
 
-                                +----------+
-                            /-> | Branches |
-                           /    +----------+
-                          /     +-----------+
-                         /----->| Bookmarks |
-                        /       +-----------+       +-----+
-                       /                  /-------->| Tag |
-                      /                  /          +-----+
-                     /          +-------+-+         +--------+
-                    /---------->| History |<-----+->| Detail |
+                                +----------+        +------------+
+                            /-> | Branches |------->| CherryPick |--+
+                           /    +----------+        +------------+  |
+                          /     +-----------+                       |
+                         /----->| Bookmarks |                       |
+                        /       +-----------+       +-----+         |
+                       /                  /-------->| Tag |         |
+                      /                  /          +-----+         |
+                     /          +-------+-+         +--------+      |
+                    /---------->| History |<-----+->| Detail |<-----+
                    /            +-------+-+     /   +--------+
                   /             +------+ \     /    +----------+
                  /--------------| Tags |--+---+---->| Checkout |
@@ -217,7 +219,9 @@ There are also a confirmation screen and an error screen that are called when
 necessary.
 
 NOTE: The 'History' and 'Tags' menus call the 'Detail' and 'Checkout' menus. +
-The 'Tags' and 'Commit' menus call the 'Push' menu.
+The 'Tags' and 'Commit' menus call the 'Push' menu. +
+The 'CherryPick' menu calls the 'Detail' menu, but without allowing it to call
+the 'History' menu.
 
 NOTE: All the screen transitions are based on the 'call-return' scheme. +
 So please note the double arrow between 'History' and 'Detail': from the
@@ -232,7 +236,7 @@ the Directory menu.
 Directory
 ~~~~~~~~~
 anchor:XDir[]
-The 'Directory' menu lists the content, subdirectories and files, of
+The 'directory' menu lists the content, subdirectories and files, of
 the current directory. Starting from top, the areas and fields are:
 
 .Environment
@@ -523,6 +527,11 @@ Merge::
 anchor:XMerge[]
 Click in the 'Merge' button to merge into current, after confirmation, the
 branch selected in the list.
+
+CherryPk::
+
+Click on the 'CherryPk' button to launch the xref:XCherry[cherry pick] menu
+on the branch selected in the list.
 
 .Back
 
@@ -906,6 +915,76 @@ the selected tag into a selected remote repository.
 
 This button returns to the xref:XDir[directory] menu.
 
+CherryPick
+~~~~~~~~~~
+anchor:XCherry[]
+This menu works on the global worktree, not on the local directory. +
+It allows selecting some commits of the selected branch and it
+merges them into the current branch. +
+It shows:
+
+.Current branch
+On the top left is recalled the name of the current branch, into which the
+selected commits will be merged.
+
+.Title
+The title recalls the name of the 'reference branch' from which the commits are
+selected.
+
+.Root
+The third line recalls the root of the current worktree.
+
+.List
+The list shows the result of \'git cherry', which is the list of commits in the
+'reference branch' that are not merged into the current branch.
+
+* Entries starting with \'=' are identified as already merged. +
+They cannot be picked or discarded.
+
+* Entries starting with \'+' are 'picked', which means that they are selected 
+for merge.
+
+* Entries starting with ' ' are 'discarded', which means that they are not
+selected for merge. +
+By default, all the non-merged commits are not selected.
+
+Double-clicking on an entry of the list toggles its selection for merge
+(if this entry is not already merged).
+
+NOTE: The commits that have already been merged through the \'fast forward'
+mechanism are not listed at all.
+
+.Detail
+Click on the 'Detail' button to see the xref:XDetail[details] of a commit,
+including viewing a file or seeing the differences introduced by this commit,
+but excluding launching the 'history' menu and excluding restoring files.
+
+.Add
+When there is only a left selection in the list, clicking on the 'Add' button
+adds it to the 'picked' commits (if the commit is currently discarded). +
+When there is a right and a left selection in the list, clicking on this
+button adds all the commits between the selections that are currently
+discarded.
+
+.Remove
+When there is only a left selection in the list, clicking on the 'Remove' button
+removes it from the 'picked' commits (if the commit is currently picked). +
+When there is a right and a left selection in the list, clicking on this
+button removes all the commit between the selections that are currently
+picked.
+
+.Reset
+Click on this button to discard all the commits currently selected for merge.
+
+.Done
+Click on this button when the selection is completed. +
+If some commits have been selected, then they are listed in a confirmation
+screen. +
+If confirmed, then these commits are merged into the current branch. Any error
+is reported in a specific screen. +
+After success, agite returns back on the xref:XDir[directory] menu, otherwise
+it returns in the xref:XBranches[branches] menu
+
 Commit
 ~~~~~~
 anchor:XCommit[]
@@ -1201,6 +1280,9 @@ version 1.7.0 or above:
 * A functions gets the hash of the last commit by calling 'git log
 --pretty=format:"%H" -n -1 -- <pwd>'
 
+* A function gets general information on a commit by calling 'git log
+--date=iso -n 1 <HSA1_hash> \--',
+
 * A function gets the details of a commit by calling
 'git log --name-status --date=iso -n 1 <HSA1_hash> \--',
 
@@ -1213,7 +1295,8 @@ version 1.7.0 or above:
 calling 'git difftool -y -x <differator> HEAD \-- <file>',
 
 * A function lauches the differator between two versions of a file (or dir) by
-calling 'git difftool -y -x <differator> <ref_HSA1> <comp_HSA1> \-- <file>',
+calling 'git difftool -y -x <differator> <ref_HSA1_hash> <comp_HSA1_hash>
+\-- <file>',
 
 * A function reverts the local changes of a file by calling
 'git checkout HEAD \-- <file>',
@@ -1268,4 +1351,8 @@ and 'git config user.email',
 
 * A function adds a tag by calling 'git tag [ -a -m <comment> ] <tag> <ref>'.
 
+* A function lists the cherry commits of reference branch versus a target
+branch by calling 'git cherry <target> <reference>'
 
+* A function cherry picks some commits by calling 'git cherry-pick --ff {
+<HSA1_hash> }'

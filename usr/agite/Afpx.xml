@@ -492,13 +492,13 @@
       <Geometry Up="${Field_12.Low}+2" Left="1" Height="1" Width="3"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="14" Kind="Put">
+    <Field Num="14" Kind="Put" Name="Tpercent">
       <Geometry Up="${Field_13.Up}" Left="${Field_13.Right}+1" Height="1"
                 Width="1"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">%</Init>
     </Field>
-    <Field Num="15" Kind="Put">
+    <Field Num="15" Kind="Put" Name="Tleftsel">
       <Geometry Up="${Field_13.Up}" Left="${Field_14.Right}+3" Height="1"
                 Width="8"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
@@ -509,7 +509,7 @@
                 Width="7"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="17" Kind="Put">
+    <Field Num="17" Kind="Put" Name="Trightsel">
       <Geometry Up="${Field_13.Up}" Left="${Field_16.Right}+3" Height="1"
                 Width="9"/>
       <Colors Foreground="Black" Background="Light_Grey"/>

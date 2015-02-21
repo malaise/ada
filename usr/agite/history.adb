@@ -284,6 +284,14 @@ package body History is
         -- Disable View and diff
         Afpx.Set_Field_Activation (Afpx_Xref.History.View, False);
         Afpx.Set_Field_Activation (Afpx_Xref.History.Diff, False);
+        -- Disable scroll and list indicators
+        Afpx.Set_Field_Activation (Afpx_Xref.History.Scroll, False);
+        Afpx.Set_Field_Activation (Afpx_Xref.History.Tpercent, False);
+        Afpx.Set_Field_Activation (Afpx_Xref.History.Percent, False);
+        Afpx.Set_Field_Activation (Afpx_Xref.History.Tleftsel, False);
+        Afpx.Set_Field_Activation (Afpx_Xref.History.Leftsel, False);
+        Afpx.Set_Field_Activation (Afpx_Xref.History.Trightsel, False);
+        Afpx.Set_Field_Activation (Afpx_Xref.History.Rightsel, False);
         -- Change button names
         Utils.X.Center_Field ("Add", Afpx_Xref.History.Restore);
         Utils.X.Center_Field ("Remove", Afpx_Xref.History.Checkout);
