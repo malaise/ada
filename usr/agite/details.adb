@@ -124,9 +124,9 @@ package body Details is
             end if;
           when Show_Hist =>
             if Commit.File.Image = "/" then
-              History.Handle (Root, "", "", False, Hash);
+              History.List (Root, "", "", False, Hash);
             else
-              History.Handle (Root, Path, File, True, Hash);
+              History.List (Root, Path, File, True, Hash);
             end if;
             -- Re init sreen
             Init (False);

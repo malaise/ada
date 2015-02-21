@@ -1,6 +1,7 @@
 with Afpx, As.U.Utils, Parser, Split_Lines;
 with Utils.X, Afpx_Xref;
-procedure Error (Action, Target, Text : String) is
+procedure Error (Action, Target, Text : in String;
+                 Keep_Tail : in Boolean := True) is
   -- Afpx stuff
   Get_Handle : Afpx.Get_Handle_Rec;
   Ptg_Result   : Afpx.Result_Rec;
@@ -15,10 +16,15 @@ begin
   Afpx.Use_Descriptor (Afpx_Xref.Error.Dscr_Num);
   Utils.X.Center_Field (Action, Afpx_Xref.Error.Action);
   Utils.X.Center_Field (Target, Afpx_Xref.Error.Target);
-  -- Split text and encode last 4 lines
+
+  -- Split text and encode last 4 or the first 4 lines
   Iter.Set (Text, Utils.Separator'Access);
-  Texts := Split_Lines (Iter, Afpx.Get_Field_Width (Afpx_Xref.Error.Text1), -4);
   Fld := Afpx_Xref.Error.Text1;
+  if Keep_Tail then
+    Texts := Split_Lines (Iter, Afpx.Get_Field_Width (Fld), -4);
+  else
+    Texts := Split_Lines (Iter, Afpx.Get_Field_Width (Fld), +4);
+  end if;
   for I in 1 .. Texts.Length loop
     Utils.X.Center_Field (Texts.Element(I).Image, Fld, Keep_Head => False);
     Fld := Afpx.Field_Range'Succ (Fld);

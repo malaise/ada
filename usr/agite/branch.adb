@@ -145,11 +145,8 @@ package body Branch is
         Result := As.U.Tus (Git_If.Merge_Branch (Curr_Name.Image));
       when Cherry_Pick =>
         Done := History.Cherry_Pick (Root.Image, Curr_Name.Image);
-        if not Done then
-          -- Canceled => remain in Branch menu
-          Init;
-          Reread (False);
-        end if;
+        Init;
+        Reread (False);
         return Done;
     end case;
 

@@ -548,7 +548,7 @@ package body Git_If is
     -- Init result
     Log.Delete_List;
 
-    -- Git ls-files
+    -- Git log
     Cmd.Set ("git");
     Cmd.Cat ("log");
     Cmd.Cat ("--follow");
@@ -637,9 +637,11 @@ package body Git_If is
       Commit.Date := (others => ' ');
       Commit.Comment := (others => As.U.Asu_Null);
       return;
+    else
+      Out_Flow_1.List.Rewind;
+      Read_Block (Out_Flow_1.List, False, Commit.Hash, Commit.Date,
+                  Commit.Comment, null, Dummy_Done);
     end if;
-    Read_Block (Out_Flow_1.List, False, Commit.Hash, Commit.Date,
-                Commit.Comment, null, Dummy_Done);
   end Info_Commit;
 
   -- List detailed info on a commit
@@ -1456,11 +1458,11 @@ package body Git_If is
                                & Err_Flow_1.Str.Image);
       return;
     end if;
-    -- Encode info
+    -- Encode info in reverse order (newest first)
     if not Out_Flow_1.List.Is_Empty then
-      Out_Flow_1.List.Rewind;
+      Out_Flow_1.List.Rewind (Command.Res_Mng.Dyn_List.Prev);
       loop
-        Out_Flow_1.List.Read (Line, Moved => Moved);
+        Out_Flow_1.List.Read (Line, Command.Res_Mng.Dyn_List.Prev, Moved);
         if Line.Element (1) = '-' then
           Commit.Merged := True;
         elsif Line.Element (1) = '+' then
@@ -1489,16 +1491,15 @@ package body Git_If is
     end if;
     Cmd.Set ("git");
     Cmd.Cat ("cherry-pick");
-    Cmd.Cat ("-ff");
+    Cmd.Cat ("--ff");
 
-    -- Append all the Hash
-    Commits.Rewind;
+    -- Append all the Hash in reverse order (oldest first)
+    Commits.Rewind (Log_Mng.Dyn_List.Prev);
     loop
-      Commits.Read (Commit, Moved => Moved);
+      Commits.Read (Commit, Log_Mng.Dyn_List.Prev, Moved);
       Cmd.Cat (Commit.Hash);
       exit when not Moved;
     end loop;
-
     Command.Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error

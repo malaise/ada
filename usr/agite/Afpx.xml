@@ -475,10 +475,11 @@
                 Right="${Field_1.Left}-2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="11" Kind="Put">
-      <Geometry Up="${Field_1.Low}+2" Left="23" Height="1" Width="9"/>
+    <Field Num="11" Kind="Put" Name="Title">
+      <Geometry Up="${Field_1.Low}+2" Left="1" Height="1"
+                Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="1">History</Init>
+      <Init Row="0" Col="25">History</Init>
     </Field>
     <Field Num="12" Kind="Put" Name="File">
       <Geometry Up="${Field_11.Low}+2" Left="1" Height="1"

@@ -1,11 +1,17 @@
 with As.U, Con_Io, Afpx.List_Manager, Normal, Rounds, Language;
-with Utils.X, Config, Details, View, Afpx_Xref, Restore, Checkout, Tags;
+with Utils.X, Config, Details, View, Afpx_Xref, Restore, Checkout, Tags,
+     Confirm, Error;
 package body History is
 
   -- List Width
   List_Width : Afpx.Width_Range;
+  -- Confirm list witdh
+  Confirm_Width : Afpx.Width_Range;
+
+  -- Encode a commit on a given length
   procedure Set (Line : in out Afpx.Line_Rec;
-                 From : in Git_If.Log_Entry_Rec) is
+                 From : in Git_If.Log_Entry_Rec;
+                 Width : in Afpx.Width_Range) is
   begin
     Utils.X.Encode_Line (
         -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD HH:MM "
@@ -15,24 +21,236 @@ package body History is
         From.Comment(1).Image
           & (if not From.Comment(2).Is_Null then "$" & From.Comment(2).Image
              else ""),
-        "", List_Width, Line, False);
+        "", Width, Line, False);
   end Set;
+
+  ----------------
+  -- For LIST mode
+  ----------------
+  procedure Set_List (Line : in out Afpx.Line_Rec;
+                      From : in Git_If.Log_Entry_Rec) is
+  begin
+    Set (Line, From, List_Width);
+  end Set_List;
   procedure Init_List is new Afpx.List_Manager.Init_List (
-    Git_If.Log_Entry_Rec, Git_If.Log_Mng, Set, False);
+    Git_If.Log_Entry_Rec, Git_If.Log_Mng, Set_List, False);
 
   -- To search matching hash in Log
-  function Hash_Match (Current, Criteria : Git_If.Log_Entry_Rec) return Boolean is
+  function List_Hash_Match (Current, Criteria : Git_If.Log_Entry_Rec)
+           return Boolean is
   begin
     return Current.Hash = Criteria.Hash;
-  end Hash_Match;
-  function Hash_Search is new Git_If.Log_Mng.Dyn_List.Search (Hash_Match);
+  end List_Hash_Match;
+  function List_Hash_Search is
+           new Git_If.Log_Mng.Dyn_List.Search (List_Hash_Match);
+
+  -----------------------
+  -- For CHERRY-PICK mode
+  -----------------------
+  procedure Set_Cherry (Line : in out Afpx.Line_Rec;
+                        From : in Git_If.Log_Entry_Rec) is
+  begin
+    Utils.X.Encode_Line (
+        -- "= " or "- "
+        (if From.Merged then '=' else ' ') & ' '
+        -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD HH:MM "
+        & From.Date(03 .. 04) & From.Date(06 .. 07) & From.Date(09 .. 10) & '-'
+        & From.Date(12 .. 13) & From.Date(15 .. 16) & ' ',
+        -- 1 or 2 lines of comment
+        From.Comment(1).Image
+          & (if not From.Comment(2).Is_Null then "$" & From.Comment(2).Image
+             else ""),
+        "", List_Width, Line, False);
+  end Set_Cherry;
+  procedure Init_Cherry is new Afpx.List_Manager.Init_List (
+    Git_If.Log_Entry_Rec, Git_If.Log_Mng, Set_Cherry, False);
+
+  -- For Confirmation
+  procedure Set_Confirm (Line : in out Afpx.Line_Rec;
+                         From : in Git_If.Log_Entry_Rec) is
+  begin
+    Set (Line, From, Confirm_Width);
+  end Set_Confirm;
+  procedure Init_Confirm is new Afpx.List_Manager.Init_List (
+    Git_If.Log_Entry_Rec, Git_If.Log_Mng, Set_Confirm, False);
+
+  procedure Cherry_Init (Branch : in String;
+                         Cherries : in out Git_If.Log_List) is
+    Cherry : Git_If.Log_Entry_Rec;
+    Moved : Boolean;
+  begin
+    Afpx.Line_List.Delete_List;
+    Afpx.Suspend;
+    -- List Cherries
+    Git_If.Cherry_List (Branch, Git_If.Current_Branch, Cherries);
+    if Cherries.Is_Empty then
+      Afpx.Resume;
+      return;
+    end if;
+
+    -- Fill Date and Comment info
+    Cherries.Rewind;
+    loop
+      Cherries.Read (Cherry, Git_If.Log_Mng.Dyn_List.Current);
+      Git_If.Info_Commit (Cherry);
+      Cherries.Modify (Cherry, Moved => Moved);
+      exit when not Moved;
+    end loop;
+
+    -- Set Afpx list
+    Init_Cherry (Cherries);
+    Afpx.Resume;
+  exception
+    when others =>
+      Afpx.Resume;
+      raise;
+  end Cherry_Init;
+
+  -- Read / Write cherry state
+  function Read return Character is
+    Line : Afpx.Line_Rec;
+  begin
+    Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
+    return Language.Unicode_To_Char (Line.Str(1));
+  end Read;
+  procedure Write (C : in Character) is
+    Line : Afpx.Line_Rec;
+  begin
+    Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
+    if Language.Unicode_To_Char (Line.Str(1)) /= '=' then
+      Line.Str(1) := Language.Char_To_Unicode (C);
+      Afpx.Line_List.Modify (Line, Afpx.Line_List_Mng.Current);
+    end if;
+  end Write;
+
+  -- Actions
+  type Cherry_Actions is (Add, Remove, Toggle, Reset);
+  procedure Cherry_Action (Action : in Cherry_Actions;
+                           Left_Sel : in Natural) is
+    Char : Character;
+    Pos0, Pos1, Pos2 : Positive;
+  begin
+    -- Nothing if no cherry
+    if Afpx.Line_List.Is_Empty then
+      return;
+    end if;
+    -- Save position and Set both indexes, Pos1 <= Pos2
+    Pos0 := Afpx.Line_List.Get_Position;
+    if Left_Sel = 0 then
+      Pos1 := Pos0;
+      Pos2 := Pos0;
+    elsif Left_Sel > Pos0 then
+      Pos1 := Pos0;
+      Pos2 := Left_Sel;
+    else
+      Pos1 := Left_Sel;
+      Pos2 := Pos0;
+    end if;
+    -- Perform action
+    case Action is
+      when Add =>
+        for I in Pos1 .. Pos2 loop
+          Afpx.Line_List.Move_At (I);
+          Write ('+');
+        end loop;
+        Afpx.Line_List.Move_At (Pos0);
+      when Remove =>
+        for I in Pos1 .. Pos2 loop
+          Afpx.Line_List.Move_At (I);
+          Write (' ');
+        end loop;
+        Afpx.Line_List.Move_At (Pos0);
+      when Toggle =>
+        Char := Read;
+        if Char = '+' then
+          Write (' ');
+        elsif Char = ' ' then
+          Write ('+');
+        end if;
+        -- Move to next cherry in time, so backwards
+        if Afpx.Line_List.Check_Move (Afpx.Line_List_Mng.Prev) then
+          Afpx.Line_List.Move_To (Afpx.Line_List_Mng.Prev);
+        end if;
+      when Reset =>
+        for I in 1 .. Afpx.Line_List.List_Length loop
+          Afpx.Line_List.Move_At (I);
+          Write (' ');
+        end loop;
+        Afpx.Line_List.Move_At (Pos0);
+    end case;
+  end Cherry_Action;
+
+  -- Confirm and do the Cherry-pick, return True if completed
+  function Cherry_Done (Branch : in String;
+                        Cherries : in out Git_If.Log_List) return Boolean is
+    Moved : Boolean;
+    Char : Character;
+  begin
+    -- Nothing if no cherry
+    if Afpx.Line_List.Is_Empty then
+      return False;
+    end if;
+
+    -- Rebuild Cherry list from Afpx '+'
+    Afpx.Line_List.Rewind;
+    Cherries.Rewind;
+    -- Scan all Afpx list and discard ' ' and '='
+    loop
+      Char := Read;
+      if Char /= '+' then
+        -- Discard this cherry
+        Cherries.Delete (Moved => Moved);
+      elsif Cherries.Check_Move (Check_Empty => False) then
+        -- Keep this cherry
+        Cherries.Move_To;
+      end if;
+      -- No more entry to process
+      exit when not Afpx.Line_List.Check_Move;
+      Afpx.Line_List.Move_To;
+    end loop;
+
+    -- Return false if empty
+    if Cherries.Is_Empty then
+      return False;
+    end if;
+
+    -- Redo Afpx list of confirm (new width)
+    Afpx.Use_Descriptor (Afpx_Xref.Confirm.Dscr_Num);
+    Confirm_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
+    Init_Confirm (Cherries);
+
+    -- Confirm, return False if not
+    if not Confirm ("Cherry pick", "Ok to cherry pick from " & Branch,
+                    Show_List => True) then
+      return False;
+    end if;
+
+    -- Do the cherry pick
+    declare
+      Result : constant String := Git_If.Cherry_Pick (Cherries);
+    begin
+      if Result = "" then
+        -- Ok
+        return True;
+      else
+        -- Cherry pick failed, the error message starts with the
+        --  conflicts
+        Error ("Cherry pick from", Branch, Result, False);
+        return False;
+      end if;
+    end;
+  end Cherry_Done;
+
+  ------------------
+  -- Common HANDLING
+  ------------------
 
   -- Handle the history of a file or dir
   -- Or the cherry-pick from a branch
-  function Do_Handle (Cherry_Pick : in Boolean;
-                      Root, Path, Name : in String;
-                      Is_File : in Boolean;
-                      Hash : in Git_If.Git_Hash := Git_If.No_Hash)
+  function Handle (Cherry_Pick : in Boolean;
+                   Root, Path, Name : in String;
+                   Is_File : in Boolean;
+                   Hash : in Git_If.Git_Hash := Git_If.No_Hash)
            return Boolean is
     -- Afpx stuff
     Get_Handle  : Afpx.Get_Handle_Rec;
@@ -57,8 +275,20 @@ package body History is
       Utils.X.Encode_Branch (Afpx_Xref.History.Branch);
 
       if Cherry_Pick then
+        -- Encode Title
+        Utils.X.Center_Field ("Cherry pick from " & Path,
+                              Afpx_Xref.History.Title,
+                              Keep_Head => False);
         -- Encode Root
         Utils.X.Encode_Field (Root, Afpx_Xref.History.File);
+        -- Disable View and diff
+        Afpx.Set_Field_Activation (Afpx_Xref.History.View, False);
+        Afpx.Set_Field_Activation (Afpx_Xref.History.Diff, False);
+        -- Change button names
+        Utils.X.Center_Field ("Add", Afpx_Xref.History.Restore);
+        Utils.X.Center_Field ("Remove", Afpx_Xref.History.Checkout);
+        Utils.X.Center_Field ("Reset", Afpx_Xref.History.Tag);
+        Utils.X.Center_Field ("Done", Afpx_Xref.History.Back);
       else
         -- Encode file/dir
         Utils.X.Encode_Field ((if Is_File then Path & Name
@@ -177,6 +407,7 @@ package body History is
     begin
       -- Read reference hash in Logs
       Ref := Afpx.Line_List.Get_Position;
+      -- This will also save/restore current position
       Logs.Move_At (Ref);
       Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
       case What is
@@ -186,7 +417,11 @@ package body History is
           -- Prevent modif in Cherry_Pick
           Details.Handle (Root, Log.Hash, not Cherry_Pick);
           Init;
-          Init_List (Logs);
+          if Cherry_Pick then
+            Init_Cherry (Logs);
+          else
+            Init_List (Logs);
+          end if;
           Afpx.Update_List (Afpx.Center_Selected);
       end case;
     end Show;
@@ -251,40 +486,41 @@ package body History is
     -- Init Afpx
     Init;
 
-    -- Tempo
+    -- Init list
     if Cherry_Pick then
-       return False;
-    end if;
-
-    -- Get history
-    Afpx.Suspend;
-    begin
-      if Path = "" and then Name = "" then
-        -- Log in (the root dir of) a bare repository
-        --  fails if we provide the full (Root) path
-        --  but is OK with '.'
-        Git_If.List_Log (".", Logs);
-      else
-        Git_If.List_Log (Root & Path & Name, Logs);
-      end if;
-      Afpx.Resume;
-    exception
-      when others =>
+      -- Path is the Ref branch
+      Cherry_Init (Path, Logs);
+    else
+      -- Get history list
+      Afpx.Suspend;
+      begin
+        if Path = "" and then Name = "" then
+          -- Log in (the root dir of) a bare repository
+          --  fails if we provide the full (Root) path
+          --  but is OK with '.'
+          Git_If.List_Log (".", Logs);
+        else
+          Git_If.List_Log (Root & Path & Name, Logs);
+        end if;
         Afpx.Resume;
-        raise;
-    end;
+      exception
+        when others =>
+          Afpx.Resume;
+          raise;
+      end;
 
-    -- Encode history
-    if Logs.Is_Empty then
-      return False;
+      -- Encode history
+      if Logs.Is_Empty then
+        return False;
+      end if;
+      if Hash /= Git_If.No_Hash then
+        -- Set current to Hash provided
+        Log.Hash := Hash;
+        Dummy := List_Hash_Search (Logs, Log,
+                     From => Git_If.Log_Mng.Dyn_List.Absolute);
+      end if;
+      Init_List (Logs);
     end if;
-    if Hash /= Git_If.No_Hash then
-      -- Set current to Hash provided
-      Log.Hash := Hash;
-      Dummy := Hash_Search (Logs, Log,
-                            From => Git_If.Log_Mng.Dyn_List.Absolute);
-    end if;
-    Init_List (Logs);
 
     -- Main loop
     loop
@@ -305,8 +541,15 @@ package body History is
 
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
-            when Afpx.List_Field_No | Afpx_Xref.History.View =>
-              -- Double click or View => View if file
+            when Afpx.List_Field_No  =>
+              -- Double click or View => View if List file, Toggle cherry
+              if Cherry_Pick then
+                Cherry_Action (Toggle, Ptg_Result.Id_Selected_Right);
+              elsif Is_File then
+                Show (Show_View);
+              end if;
+            when Afpx_Xref.History.View =>
+              -- View => View if file
               if Is_File then
                 Show (Show_View);
               end if;
@@ -325,19 +568,37 @@ package body History is
               -- Details
               Show (Show_Details);
             when Afpx_Xref.History.Restore =>
-              -- Restore
-              Do_Restore;
+              if Cherry_Pick then
+                -- Add
+                Cherry_Action (Add, Ptg_Result.Id_Selected_Right);
+              else
+                -- Restore
+                Do_Restore;
+              end if;
             when Afpx_Xref.History.Checkout =>
-              -- Checkout
-              if Do_Checkout then
+              if Cherry_Pick then
+                -- Remove
+                Cherry_Action (Remove, Ptg_Result.Id_Selected_Right);
+              elsif Do_Checkout then
+                -- Checkout
                 return True;
               end if;
             when Afpx_Xref.History.Tag =>
-              -- Tag
-              Do_Tag;
+              if Cherry_Pick then
+                -- Reset
+                Cherry_Action (Reset, Ptg_Result.Id_Selected_Right);
+              else
+                -- Tag
+                Do_Tag;
+              end if;
             when Afpx_Xref.History.Back =>
-              -- Back
-              return False;
+              if Cherry_Pick then
+                -- Done
+                return Cherry_Done (Path, Logs);
+              else
+                -- Back
+                return False;
+              end if;
             when others =>
               -- Other button?
               null;
@@ -351,21 +612,21 @@ package body History is
       end case;
     end loop;
 
-  end Do_Handle;
+  end Handle;
 
   -- Handle the history of a file or dir
-  procedure Handle (Root, Path, Name : in String;
+  procedure List (Root, Path, Name : in String;
                     Is_File : in Boolean;
                     Hash : in Git_If.Git_Hash := Git_If.No_Hash) is
     Dummy : Boolean;
   begin
-    Dummy := Do_Handle (True, Root, Path, Name, Is_File, Hash);
-  end Handle;
+    Dummy := Handle (False, Root, Path, Name, Is_File, Hash);
+  end List;
 
   -- Handle the selection of Commits to cherry-pick
   function Cherry_Pick (Root, Branch : String) return Boolean is
   begin
-    return Do_Handle (False, Root, Branch, "", False, Git_If.No_Hash);
+    return Handle (True, Root, Branch, "", False, Git_If.No_Hash);
   end Cherry_Pick;
 
 end History;

@@ -22,7 +22,8 @@ In Cherry_Pick mode,
 - Change buttons
  * button Restore becomes Add, it adds a commit or a list (between right and
    left selection included) but not the commits already '=': They become '+'
- * button Checkout becomes Del, idem as Add but unselects: They become ' '
+ * button Checkout becomes Remove, idem as Add but unselects: They become ' '
+ * Double-click on an entry toggles '+' <-> ' ', nothing if '='
  * button Tag becomes Reset: all the not '=' become ' '
  * button Back becomes Done
 - If Done and list of '+' is not empty, then
