@@ -46,13 +46,15 @@ procedure List (Root : in String) is
   end Init;
 
   -- Get the tags and encode in list
-  procedure Read_Tags is
+  procedure Read_Tags (Reread : in Boolean) is
     Template : As.U.Asu_Us;
   begin
-    Template := As.U.Tus (Str_Util.Strip (
-          Afpx.Decode_Field (Afpx_Xref.List_Tags.Template, 0, False)));
-    -- Get tags list
-    Git_If.List_Tags (Template.Image, Tags_List);
+    if Reread then
+      Template := As.U.Tus (Str_Util.Strip (
+            Afpx.Decode_Field (Afpx_Xref.List_Tags.Template, 0, False)));
+      -- Get tags list
+      Git_If.List_Tags (Template.Image, Tags_List);
+    end if;
     Init_List (Tags_List);
     if not Afpx.Line_List.Is_Empty then
       Afpx.Line_List.Rewind;
@@ -102,13 +104,13 @@ procedure List (Root : in String) is
   end Save;
 
   -- Restore context
-  procedure Restore (Position : in Boolean) is
+  procedure Restore (Position, Reread : in Boolean) is
   begin
     -- Reset Afpx and reread tags
     Init;
     Afpx.Encode_Field (Afpx_Xref.List_Tags.Template, (0, 0),
                        Current_Tmpl.Image);
-    Read_Tags;
+    Read_Tags (Reread);
     -- Restore position
     if Position
     and then Current_Pos > 0
@@ -127,7 +129,7 @@ begin
   Init;
   -- Read all tags if configured
   if Config.List_Tags then
-    Read_Tags;
+    Read_Tags (True);
   else
     Init_List (Tags_List);
   end if;
@@ -151,7 +153,7 @@ begin
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is
           when Afpx.Return_Key =>
-            Read_Tags;
+            Read_Tags (True);
           when Afpx.Escape_Key =>
             -- Back
             return;
@@ -170,7 +172,7 @@ begin
             Afpx.List_Manager.Scroll (
                Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
           when Afpx_Xref.List_Tags.List =>
-            Read_Tags;
+            Read_Tags (True);
           when Afpx_Xref.List_Tags.Details =>
             -- Details of tag selected
             Tags_List.Move_At (Afpx.Line_List.Get_Position);
@@ -181,7 +183,7 @@ begin
                  else ""),
                 (if Current_Tag.Annotated then Current_Tag.Comment.Image
                  else ""));
-            Restore (True);
+            Restore (True, False);
           when Afpx_Xref.List_Tags.Checkout =>
             -- Checkout current tag
             Tags_List.Move_At (Afpx.Line_List.Get_Position);
@@ -189,7 +191,7 @@ begin
             if Do_Checkout then
               return;
             end if;
-            Restore (True);
+            Restore (True, False);
           when Afpx_Xref.List_Tags.Delete =>
             -- Delete tag selected
             Tags_List.Move_At (Afpx.Line_List.Get_Position);
@@ -197,9 +199,9 @@ begin
             Save;
             if Confirm  ("Delete Tag", Current_Tag.Name.Image) then
               Git_If.Delete_Tag (Str_Util.Strip (Current_Tag.Name.Image));
-              Restore (False);
+              Restore (False, True);
             else
-              Restore (True);
+              Restore (True, False);
             end if;
           when Afpx_Xref.List_Tags.Push =>
             -- Push tag selected
@@ -208,7 +210,7 @@ begin
             Save;
             Dummy_Res := Push_Pull.Handle (Root, Pull => False,
                                            Tag => Current_Tag.Name.Image);
-            Restore (True);
+            Restore (True, False);
           when Afpx_Xref.List_Tags.Back =>
             return;
           when others =>

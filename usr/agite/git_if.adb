@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Environ, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng, Str_Util,
-     Aski, Images;
+     Aski, Images, Regular_Expressions;
 with Utils;
 package body Git_If is
 
@@ -1292,7 +1292,7 @@ package body Git_If is
   -- Internal: read tag Tag.Name and fill Tag
   procedure Read_Tag (Tag : in out Tag_Entry_Rec) is
     Cmd : Many_Strings.Many_String;
-    Line : As.U.Asu_Us;
+    Line, Prev_Line : As.U.Asu_Us;
     Commit_Str :constant String := "commit ";
     procedure Get_Hash is
     begin
@@ -1315,7 +1315,7 @@ package body Git_If is
       Basic_Proc.Put_Line_Error ("git show: " & Err_Flow_1.Str.Image);
       return;
     end if;
-    -- See if tag is annoted : first line of "shows "is "tag <name>"
+    -- See if tag is annoted : first line of "show " is "tag <name>"
     --  otherwise it is a commit (starts with "commit <hash>")
     if Out_Flow_2.List.Is_Empty then
       raise Log_Error;
@@ -1332,8 +1332,14 @@ package body Git_If is
     Tag.Annotated := True;
     -- Line are "tag <tag_name>", "Tagger: <tagger_email>", "Date: <date_iso>",
     -- "", "<tag_comment>", "", then the commit (starts with "commit <hash>")
-    -- Skip tagger
+    -- Check tagger
     Out_Flow_2.List.Read (Line);
+    if Line.Length < 8 or else Line.Slice (1, 8) /= "Tagger: " then
+      -- Unrocognized tag format (this happens)
+      Tag.Hash := No_Hash;
+      Tag.Annotated := False;
+      return;
+    end if;
     -- Read date
     Out_Flow_2.List.Read (Line);
     Assert (Line.Slice (1, 8) = "Date:   ");
@@ -1343,15 +1349,18 @@ package body Git_If is
     Assert (Line.Is_Null);
     -- Read 1st line of Comment
     Out_Flow_2.List.Read (Tag.Comment);
-    -- Skip other lines of comment, until ""
-    if not Tag.Comment.Is_Null then
-      loop
-        Out_Flow_2.List.Read (Line);
-        exit when Line.Is_Null;
-      end loop;
-    end if;
-    -- "commit <hash>"
-    Out_Flow_2.List.Read (Line);
+    -- Skip other lines of comment, until "" then "commit <hash>
+    loop
+      Out_Flow_2.List.Read (Line);
+      exit when Prev_Line.Is_Null
+      and then Line.Length = Commit_Str'Length + Git_Hash'Length
+      and then Line.Slice (1, Commit_Str'Length) = Commit_Str
+      and then Regular_Expressions.Match (
+                   "[0-9a-z]{40}",
+                   Line.Slice (Commit_Str'Length + 1, Line.Length),
+                   Strict => True);
+      Prev_Line := Line;
+    end loop;
     Get_Hash;
   exception
     when Log_Error =>
