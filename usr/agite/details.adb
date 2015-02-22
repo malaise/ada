@@ -33,6 +33,7 @@ package body Details is
 
     -- Commit details
     Hash : Git_If.Git_Hash;
+    Merged : Boolean;
     Date : Git_If.Iso_Date;
     Comment : Git_If.Comment_Array(1 .. 10);
 
@@ -56,7 +57,7 @@ package body Details is
       if Get_Details then
         Afpx.Suspend;
         begin
-          Git_If.List_Commit (Rev_Tag, Hash, Date, Comment, Commits);
+          Git_If.List_Commit (Rev_Tag, Hash, Merged, Date, Comment, Commits);
           Afpx.Resume;
         exception
           when others =>
@@ -76,6 +77,11 @@ package body Details is
                               False);
       end if;
       Utils.X.Encode_Field (Hash, Afpx_Xref.Details.Hash);
+      if Merged then
+        Utils.X.Encode_Field (">", Afpx_Xref.Details.Merged);
+      else
+        Afpx.Clear_Field (Afpx_Xref.Details.Merged);
+      end if;
       Utils.X.Encode_Field (Date, Afpx_Xref.Details.Date);
       Afpx.Clear_Field (Afpx_Xref.Details.Comment);
       for I in 1 .. Comment_Height loop

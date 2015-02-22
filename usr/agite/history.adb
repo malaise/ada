@@ -16,7 +16,8 @@ package body History is
     Utils.X.Encode_Line (
         -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD HH:MM "
         From.Date(03 .. 04) & From.Date(06 .. 07) & From.Date(09 .. 10) & '-'
-          & From.Date(12 .. 13) & From.Date(15 .. 16) & ' ',
+          & From.Date(12 .. 13) & From.Date(15 .. 16)
+          & (if From.Merged then '>' else ' '),
         -- 1 or 2 lines of comment
         From.Comment(1).Image
           & (if not From.Comment(2).Is_Null then "$" & From.Comment(2).Image
@@ -506,9 +507,10 @@ package body History is
           -- Log in (the root dir of) a bare repository
           --  fails if we provide the full (Root) path
           --  but is OK with '.'
-          Git_If.List_Log (".", Logs);
+          Git_If.List_Log (".", False, Logs);
         else
-          Git_If.List_Log (Root & Path & Name, Logs);
+          -- Log, following renames only if file
+          Git_If.List_Log (Root & Path & Name, Name /= "", Logs);
         end if;
         Afpx.Resume;
       exception

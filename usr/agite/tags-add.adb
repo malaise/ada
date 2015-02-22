@@ -29,6 +29,7 @@ procedure Add (Rev : in Git_If.Git_Hash) is
 
   -- Commit details
   Hash : Git_If.Git_Hash;
+  Merged : Boolean;
   Date : Git_If.Iso_Date;
   Comment : Git_If.Comment_Array(1 .. 10);
 
@@ -52,7 +53,7 @@ procedure Add (Rev : in Git_If.Git_Hash) is
     if Get_Details then
       Afpx.Suspend;
       begin
-        Git_If.List_Commit (Rev, Hash, Date, Comment, Commits);
+        Git_If.List_Commit (Rev, Hash, Merged, Date, Comment, Commits);
         Afpx.Resume;
       exception
         when others =>

@@ -428,6 +428,7 @@ package body Git_If is
   procedure Read_Block (Flow : in out Command.Res_List;
                         Details : in Boolean;
                         Hash : out Git_Hash;
+                        Merge : out Boolean;
                         Date : out Iso_Date;
                         Comments : out Comment_Array;
                         Files : access Commit_List;
@@ -445,7 +446,10 @@ package body Git_If is
     -- possible "Merge:... ..." then Author: ...
     Flow.Read (Line);
     if Line.Slice (1, 7) = "Merge: " then
+      Merge := True;
       Flow.Read (Line);
+    else
+      Merge := False;
     end if;
     Assert (Line.Slice (1, 8) = "Author: ");
 
@@ -499,6 +503,7 @@ package body Git_If is
       return;
     elsif not Done and then Details then
       -- No change in detail (merge....)
+      Files.Delete_List;
       Done := not Done;
       return;
     end if;
@@ -540,6 +545,7 @@ package body Git_If is
 
   -- List the log of a dir or file
   procedure List_Log (Path : in String;
+                      Follow : in Boolean;
                       Log : in out Log_List) is
     Cmd : Many_Strings.Many_String;
     Done : Boolean;
@@ -551,7 +557,9 @@ package body Git_If is
     -- Git log
     Cmd.Set ("git");
     Cmd.Cat ("log");
-    Cmd.Cat ("--follow");
+    if Follow then
+      Cmd.Cat ("--follow");
+    end if;
     Cmd.Cat ("--date=iso");
     Cmd.Cat ("--topo-order");
     Cmd.Cat ("--");
@@ -571,10 +579,9 @@ package body Git_If is
 
     -- Encode entries
     Out_Flow_1.List.Rewind;
-    Log_Entry.Merged := False;
     loop
-      Read_Block (Out_Flow_1.List, False, Log_Entry.Hash, Log_Entry.Date,
-                  Log_Entry.Comment, null, Done);
+      Read_Block (Out_Flow_1.List, False, Log_Entry.Hash, Log_Entry.Merged,
+                  Log_Entry.Date, Log_Entry.Comment, null, Done);
       Log.Insert (Log_Entry);
       exit when Done;
     end loop;
@@ -639,20 +646,28 @@ package body Git_If is
       return;
     else
       Out_Flow_1.List.Rewind;
-      Read_Block (Out_Flow_1.List, False, Commit.Hash, Commit.Date,
-                  Commit.Comment, null, Dummy_Done);
+      Read_Block (Out_Flow_1.List, False, Commit.Hash, Commit.Merged,
+                  Commit.Date, Commit.Comment, null, Dummy_Done);
     end if;
   end Info_Commit;
 
   -- List detailed info on a commit
   procedure List_Commit (Rev_Tag : in String;
                          Hash : out Git_Hash;
+                         Merged : out Boolean;
                          Date : out Iso_Date;
                          Comment : out Comment_Array;
                          Commit : in out Commit_List) is
     Cmd : Many_Strings.Many_String;
     Dummy_Done : Boolean;
   begin
+    -- Default values
+    Hash := No_Hash;
+    Merged := False;
+    Date := (others => ' ');
+    Comment := (others => As.U.Asu_Null);
+    Commit.Delete_List;
+    -- Command
     Cmd.Set ("git");
     Cmd.Cat ("log");
     Cmd.Cat ("--name-status");
@@ -670,13 +685,9 @@ package body Git_If is
     end if;
 
     -- Encode info
-    if Out_Flow_1.List.Is_Empty then
-      Date := (others => ' ');
-      Comment := (others => As.U.Asu_Null);
-      Commit.Delete_List;
-    else
+    if not Out_Flow_1.List.Is_Empty then
       Out_Flow_1.List.Rewind;
-      Read_Block (Out_Flow_1.List, True, Hash, Date,
+      Read_Block (Out_Flow_1.List, True, Hash, Merged, Date,
                   Comment, Commit'Access, Dummy_Done);
     end if;
     if not Commit.Is_Empty then

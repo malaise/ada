@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.01
+V17.02
 
 General purpose
 ---------------
@@ -659,7 +659,10 @@ This lists follows the renaming of files and directories.
 
 .List
 The list shows, for each entry, the date of the commit (format YYMMDD:HHMM),
-a space then the comment (up to two lines, separated by '$') of the commit.
+a space then the comment (up to two lines, separated by \'$\') of the commit. +
+If the entry is a merge (which is possible only when showing the history of
+the root of the worktree), then the separator between the date and the comment
+becomes a \'>'.
 
 Navigation in the list is the same as the xref:XNavig[navigation] in the
 directory menu, with the mouse wheel, the keyboard and buttons.
@@ -801,9 +804,11 @@ information:
 .Tag and commit information
 Then, in any case, there is the information on the commmit:
 
-* The SHA-1 hash of the commit, that you can copy into the X11 selection buffer,
+* The SHA-1 hash of the commit, that you can copy into the X11 selection
+buffer,
 * The date and comment (up to seven lines) of the commit, that you can
-also alternatively copy into the X11 selection buffer,
+also alternatively copy into the X11 selection buffer +
+(if the entry is a merge, then the date is preceded by a \'>'),
 * The list of all the files in the commit, each preceded by a letter:
 ** M Modified,
 ** A Added,
@@ -1276,8 +1281,9 @@ version 1.7.0 or above:
 * A function lists the status of a file by calling 'git status \-- porcelain
 <file>',
 
-* A function lists the commits on local dir by calling
-'git log --follow --date=iso --topo-order \-- <pwd>',
+* A function lists the commits on a dir by calling
+'git log --date=iso --topo-order \-- <dir>', +
+and on a file by calling 'git log --follow --date=iso --topo-order \-- <file>',
 
 * A functions gets the hash of the last commit by calling 'git log
 --pretty=format:"%H" -n -1 -- <pwd>'

@@ -14,6 +14,7 @@ procedure T_Git is
   Log_Entry : Git_If.Log_Entry_Rec;
 
   Hash : Git_If.Git_Hash;
+  Merged : Boolean;
   Date : Git_If.Iso_Date;
   Comment : Git_If.Comment_Array (1 ..20);
   Commits : Git_If.Commit_List;
@@ -47,7 +48,7 @@ begin
   else
     Argument.Get_Parameter (Path, Occurence => 1);
   end if;
-  Git_If.List_Log (Path.Image, Logs);
+  Git_If.List_Log (Path.Image, False, Logs);
   if Logs.Is_Empty then
     Basic_Proc.Put_Line_Output ("No log");
   else
@@ -65,8 +66,9 @@ begin
   end if;
 
   Git_If.List_Commit (Argument.Get_Parameter (Occurence => 2),
-                      Hash, Date, Comment, Commits);
+                      Hash, Merged, Date, Comment, Commits);
   Basic_Proc.Put_Line_Output (Hash);
+  Basic_Proc.Put_Line_Output ("Merged: " & Merged'Img);
   Basic_Proc.Put_Line_Output (Date);
   for I in Comment'Range loop
     Basic_Proc.Put_Line_Output (Comment(I).Image);
