@@ -156,7 +156,7 @@ package Git_If is
   function Create_Branch (Name : String) return String;
   function Rename_Branch (Name, New_Name : String) return String;
   function Delete_Branch (Name : String) return String;
-  function Merge_Branch (Name : String) return String;
+  function Merge_Branch (Name : String; Comment : String) return String;
 
   -- Get current user name and email
   function Get_User return String;
@@ -206,10 +206,10 @@ package Git_If is
   procedure Delete_Tag (Tag : in String);
 
   -- Add a tag, return "" if Ok else the error
-  function  Add_Tag (Tag : String;
-                     Hash : Git_Hash;
-                     Annotated : Boolean;
-                     Comment : in String) return String;
+  function Add_Tag (Tag : String;
+                    Hash : Git_Hash;
+                    Annotated : Boolean;
+                    Comment : in String) return String;
 
   -- List cherry commits: the commits in Ref, and indicates if they are
   --  or not merged in target

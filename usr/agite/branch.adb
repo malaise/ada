@@ -142,7 +142,9 @@ package body Branch is
         Result := As.U.Tus (Git_If.Do_Checkout (Curr_Name.Image, ""));
       when Merge =>
         Message := As.U.Tus ("Merging branch " & Curr_Name.Image);
-        Result := As.U.Tus (Git_If.Merge_Branch (Curr_Name.Image));
+        Result := As.U.Tus (
+           Git_If.Merge_Branch (Curr_Name.Image,
+                                "Merge branch '" & Curr_Name.Image & "'"));
       when Cherry_Pick =>
         Done := History.Cherry_Pick (Root.Image, Curr_Name.Image);
         Init;

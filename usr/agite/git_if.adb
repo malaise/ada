@@ -1065,11 +1065,13 @@ package body Git_If is
   end Delete_Branch;
 
   -- Merge a branch, return "" if Ok else the error
-  function Merge_Branch (Name : String) return String is
+  function Merge_Branch (Name : String; Comment : String) return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
     Cmd.Cat ("merge");
+    Cmd.Cat ("-m");
+    Cmd.Cat (Strip_Comment (Comment));
     Cmd.Cat (Name);
     Command.Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
@@ -1409,10 +1411,10 @@ package body Git_If is
   end Delete_Tag;
 
   -- Add a tag, return "" if Ok else the error
-  function  Add_Tag (Tag : String;
-                     Hash : Git_Hash;
-                     Annotated : Boolean;
-                     Comment : in String) return String is
+  function Add_Tag (Tag : String;
+                    Hash : Git_Hash;
+                    Annotated : Boolean;
+                    Comment : in String) return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");

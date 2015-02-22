@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.00
+V17.01
 
 General purpose
 ---------------
@@ -526,7 +526,9 @@ Merge::
 
 anchor:XMerge[]
 Click in the 'Merge' button to merge into current, after confirmation, the
-branch selected in the list.
+branch selected in the list. +
+If the merge does not lead to 'fast forward', then a new commit is
+automatically generated with the comment "Merge branch \'<branch>'".
 
 CherryPk::
 
@@ -1331,7 +1333,8 @@ remote branches by calling 'git fetch' then 'git branch -r',
 * Three functions create/rename/delete a branch by calling 'git branch
 [ -m | -d ] <name> [<new_name>]',
 
-* A function merges a branch into current by calling 'git merge <branch>',
+* A function merges a branch into current by calling 'git merge -m <comment> 
+<branch>',
 
 * A function gets the user name and email by calling 'git config user.name'
 and 'git config user.email',
