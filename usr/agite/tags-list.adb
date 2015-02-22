@@ -45,6 +45,25 @@ procedure List (Root : in String) is
     Afpx.Line_List.Delete_List;
   end Init;
 
+  -- To sort tags by date, return false if A before B so newest tags first
+  function Less_Than (A, B : in Git_If.Tag_Entry_Rec) return Boolean is
+  begin
+    if A.Date /= Git_If.No_Date and then B.Date /= Git_If.No_Date then
+      if A.Date /= B.Date then
+        return A.Date > B.Date;
+      else
+        return A.Name.Image > B.Name.Image;
+      end if;
+    elsif A.Date /= Git_If.No_Date then
+      return True;
+    elsif B.Date /= Git_If.No_Date then
+      return False;
+    else
+      return A.Name.Image > B.Name.Image;
+    end if;
+  end Less_Than;
+  procedure Sort is new Git_If.Tag_Mng.Dyn_List.Sort (Less_Than);
+
   -- Get the tags and encode in list
   procedure Read_Tags (Reread : in Boolean) is
     Template : As.U.Asu_Us;
@@ -54,6 +73,7 @@ procedure List (Root : in String) is
             Afpx.Decode_Field (Afpx_Xref.List_Tags.Template, 0, False)));
       -- Get tags list
       Git_If.List_Tags (Template.Image, Tags_List);
+      Sort (Tags_List);
     end if;
     Init_List (Tags_List);
     if not Afpx.Line_List.Is_Empty then

@@ -1301,6 +1301,13 @@ package body Git_If is
       Tag.Hash := Line.Slice (Commit_Str'Length + 1, Line.Length);
     end Get_Hash;
   begin
+    -- Default result
+    Tag.Hash := No_Hash;
+    Tag.Annotated := False;
+    Tag.Date := No_Date;
+    Tag.Comment := As.U.Asu_Null;
+
+    -- Command
     Cmd.Set ("git");
     Cmd.Cat ("show");
     Cmd.Cat ("--date=iso");

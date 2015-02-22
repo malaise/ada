@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.03
+V17.04
 
 General purpose
 ---------------
@@ -893,7 +893,8 @@ or leave it empty (for all the tags). Then you can hit the 'Return' key or click
 in the 'List' button, which updates the list.
 
 * Annotated tags are shown with the tag name, tagging date and comment,
-* Non annotated tags are shown with only the tag name.
+* Non annotated tags are shown with only the tag name,
+* Tags are sorted by date.
 
 .Actions
 

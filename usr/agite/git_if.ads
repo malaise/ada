@@ -58,6 +58,7 @@ package Git_If is
   No_Hash : constant Git_Hash := (others => ' ');
   -- A date at iso YYYY-MM-DD HH:MM:SS
   subtype Iso_Date is String (1 .. 19);
+  No_Date : constant Iso_Date := (others => ' ');
   -- A log entry
   type Log_Entry_Rec is record
     Hash : Git_Hash;
