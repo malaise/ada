@@ -948,7 +948,6 @@ package body Git_If is
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git branch: " & Err_Flow_1.Str.Image);
       return Error;
     end if;
     -- Look for "* "
@@ -1292,7 +1291,7 @@ package body Git_If is
   -- Internal: read tag Tag.Name and fill Tag
   procedure Read_Tag (Tag : in out Tag_Entry_Rec) is
     Cmd : Many_Strings.Many_String;
-    Line, Prev_Line : As.U.Asu_Us;
+    Line : As.U.Asu_Us;
     Commit_Str :constant String := "commit ";
     procedure Get_Hash is
     begin
@@ -1339,34 +1338,34 @@ package body Git_If is
     Tag.Annotated := True;
     -- Line are "tag <tag_name>", "Tagger: <tagger_email>", "Date: <date_iso>",
     -- "", "<tag_comment>", "", then the commit (starts with "commit <hash>")
-    -- Check tagger
     Out_Flow_2.List.Read (Line);
-    if Line.Length < 8 or else Line.Slice (1, 8) /= "Tagger: " then
-      -- Unrocognized tag format (this happens)
-      Tag.Hash := No_Hash;
-      Tag.Annotated := False;
-      return;
+    if Line.Length >= 8 and then Line.Slice (1, 8) = "Tagger: " then
+      -- Skip tagger
+      Out_Flow_2.List.Read (Line);
     end if;
     -- Read date
-    Out_Flow_2.List.Read (Line);
-    Assert (Line.Slice (1, 8) = "Date:   ");
-    Tag.Date := Line.Slice (9, 27);
-    -- Skip ""
-    Out_Flow_2.List.Read (Line);
-    Assert (Line.Is_Null);
-    -- Read 1st line of Comment
-    Out_Flow_2.List.Read (Tag.Comment);
-    -- Skip other lines of comment, until "" then "commit <hash>
+    if Line.Length >= 8 and then Line.Slice (1, 8) = "Date:   " then
+      Tag.Date := Line.Slice (9, 27);
+      Out_Flow_2.List.Read (Line);
+    end if;
+    -- Skip "" and read first line of comment
+    if Line.Is_Null then
+      -- Read 1st line of Comment
+      Out_Flow_2.List.Read (Tag.Comment);
+    else
+      Basic_Proc.Put_Line_Error ("Unrecognized tag " & Tag.Name.Image);
+      return;
+    end if;
+
+    -- Skip other lines of comment, until "commit <hash>
     loop
       Out_Flow_2.List.Read (Line);
-      exit when Prev_Line.Is_Null
-      and then Line.Length = Commit_Str'Length + Git_Hash'Length
+      exit when Line.Length = Commit_Str'Length + Git_Hash'Length
       and then Line.Slice (1, Commit_Str'Length) = Commit_Str
       and then Regular_Expressions.Match (
                    "[0-9a-z]{40}",
                    Line.Slice (Commit_Str'Length + 1, Line.Length),
                    Strict => True);
-      Prev_Line := Line;
     end loop;
     Get_Hash;
   exception
@@ -1378,7 +1377,13 @@ package body Git_If is
         Basic_Proc.Put_Line_Error ("git show " & Tag.Name.Image & ": At line "
                               & Positive'Image (Out_Flow_2.List.Get_Position));
       end if;
-      raise Log_Error;
+      raise;
+    when Command.Res_Mng.Dyn_List.Not_In_List =>
+      -- Commit line not found
+      Basic_Proc.Put_Line_Error ("Unrecognized tag " & Tag.Name.Image);
+    when others =>
+      Basic_Proc.Put_Line_Error ("git show " & Tag.Name.Image);
+      raise;
   end Read_Tag;
 
   -- List tags matching Template
