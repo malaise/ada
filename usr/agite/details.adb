@@ -78,7 +78,7 @@ package body Details is
       end if;
       Utils.X.Encode_Field (Hash, Afpx_Xref.Details.Hash);
       if Merged then
-        Utils.X.Encode_Field (">", Afpx_Xref.Details.Merged);
+        Utils.X.Encode_Field ("Merge", Afpx_Xref.Details.Merged);
       else
         Afpx.Clear_Field (Afpx_Xref.Details.Merged);
       end if;

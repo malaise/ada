@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.05
+V17.06
 
 General purpose
 ---------------
@@ -806,9 +806,9 @@ Then, in any case, there is the information on the commmit:
 
 * The SHA-1 hash of the commit, that you can copy into the X11 selection
 buffer,
-* The date and comment (up to seven lines) of the commit, that you can
-also alternatively copy into the X11 selection buffer +
-(if the entry is a merge, then the date is preceded by a \'>'),
+* If the entry is a merge, this is indicated by the word "Merge",
+* The date and the comment of the commit (up to seven lines), that you can
+also alternatively copy into the X11 selection buffer, 
 * The list of all the files in the commit, each preceded by a letter:
 ** M Modified,
 ** A Added,

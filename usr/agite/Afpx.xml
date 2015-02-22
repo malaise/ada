@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V17.05"/>
+  <Var Name="Version" Value="V17.06"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -683,8 +683,7 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="16" Kind="Put" Name="Merged">
-      <Geometry Up="${Field_15.Low}" Right="${Field_15.Left}-2" Height="1"
-                Width="1"/>
+      <Geometry Up="${Field_15.Low}" Left="3" Height="1" Width="5"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="17" Kind="Put" Name="Comment">
