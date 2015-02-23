@@ -504,7 +504,7 @@ package body History is
       Afpx.Suspend;
       begin
         if Path = "" and then Name = ""
-        and then Directory.Get_Current = Root then
+        and then Directory.Get_Current = Directory.Normalize_Path (Root) then
           -- Log in (the root dir of) a bare repository
           --  fails if we provide the full (Root) path
           --  but is OK with '.'
