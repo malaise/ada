@@ -95,7 +95,7 @@ package body Checkout is
           null;
         when Afpx.Refresh =>
           -- Encode current branch
-          Utils.X.Encode_Branch (Afpx_Xref.History.Branch);
+          Utils.X.Encode_Branch (Afpx_Xref.Checkout.Branch);
       end case;
     end loop;
 
