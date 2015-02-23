@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.09
+V17.10
 
 General purpose
 ---------------
@@ -125,11 +125,11 @@ anchor:XListTags[]
 
 list_tags::
 By default, when starting the xref:XTags[tags] menu and if no template is
-specified, agite does not list all the tags and lets you enter a template.
+specified, Agite does not list all the tags and lets you enter a template.
 This prevents spending to much time in the reading of all the tags of the
 repository.
 +
-Setting the value to true instructs agite to list all the tags by default when
+Setting the value to true instructs Agite to list all the tags by default when
 entering this menu.
 
 Agite persistent data
@@ -154,7 +154,7 @@ NOTE: The DTD file 'agite.dtd' must be located according to the ''DOCTYPE''
 directive of the Agite XML configuration file. +
 You may modify these persistent values, providing that: +
 * Agite is not running (it would overwrite your changes), +
-* You don't add comments (agite would remove them), +
+* You don't add comments (Agite would remove them), +
 * The file 'agite.xlm' complies with the DTD 'agite.dtd'.
 
 NOTE: In case of problem (crash), a backup of the configuration file may be
@@ -621,13 +621,13 @@ changing the current directory.
 
 .Variables
 A bookmark path can reference some Environment variables or some predefined
-variables that agite maintains automatically. 
+variables that Agite maintains automatically. 
 
 The predefiend variables are:
 
-* 'AGITE_START_DIR': The current directory from which agite was started (constant).
+* 'AGITE_START_DIR': The current directory from which Agite was started (constant).
 
-* 'AGITE_INIT_DIR': The initial directory where agite started (constant).
+* 'AGITE_INIT_DIR': The initial directory where Agite started (constant).
 
 * 'AFPX_DATA_DIR': The directory where AFPX configuration files where found (constant).
 
@@ -643,7 +643,7 @@ example:
   <bookmark Name="Agite">/home/${BUILD}/agite>
   <bookmark Name="Afpx">${AFPX_DATA_DIR}</bookmark>
 
-You can prevent agite from expanding a variable by backslashing the delimiters
+You can prevent Agite from expanding a variable by backslashing the delimiters
 "${" *and* "}". Example:
 
   <bookmark Name="Afpx">\${AFPX_DATA_DIR\}</bookmark>
@@ -749,6 +749,13 @@ This button button launches the xref:XCheckout[checkout] menu that allows
 checking out the selected commit (either in a new branch or as detached from
 HEAD).
 
+NOTE: There is a major difference between the 'Restore' and the 'Checkout'
+operations. +
+- 'Restore' overwrites the file with the content that it had in the given
+commit. +
+- 'Checkout' checks out the whole workspace in the state that it had when the
+commit was performed.
+
 .Tag
 This button button launches the xref:XTag[tag] menu that allows tagging the 
 selected commit.
@@ -834,21 +841,22 @@ the current worktree.
 
 For all file entries of the list (not "/"):
 
-* double click on the entry or select the entry and click on 'View' allows 
+* double clicking on the entry or select the entry and click on 'View' allows 
 viewing the file as it was committed,
-* clicking on 'Hist' allows viewing the full history of the file,
-* clicking on 'Diff' allows viewing the differences between the version before
-and in the commit.
-* clicking on 'Restore' allows restoring the file from the commit. As in the
-xref:XRestore[restore] from the history, there is first a check that the file is
-not locally modified, then a confirmation.
+* clicking on the button 'Hist' shows the full history of the file,
+* clicking on the button 'Diff' shows the differences between the version
+before and in the commit,
+* clicking on the button 'Restore' restores the file from the commit.
+As in the xref:XRestore[restore] from the 'history', there is first a check
+that the file is not locally modified, then a confirmation.
 
-When the "/" entry is selected you can:
+When the "/" entry is selected:
 
-* click on the button 'History' to get the full history of the worktree,
-* click on the button 'Diff' to launch the differator on each file of
+* clicking on the button 'History' shows the full history of the
+worktree,
+* clicking on the button 'Diff' launches the differator on each file of
 the commit (differences brought by the commit),
-* click on the button 'Restore' to restore all the files of the commit,
+* clicking on the button 'Restore' restores all the files of the commit,
 if none of them is locally modified, and after a confirmation.
 
 NOTE: Clicking on 'Hist' leads to call a new function that shows the history, as
@@ -908,7 +916,7 @@ You can enter a name or a template (like V1.*) in the get area besides the
 key or click in the 'List' button, which updates the list.
 
 As soon as it is used for searching, the criteria is memorized for further
-invocations of the menu, until you quit agite.
+invocations of the menu, until you quit Agite.
 
 .List
 
@@ -1012,7 +1020,7 @@ If some commits have been selected, then they are listed in a confirmation
 screen. +
 If confirmed, then these commits are merged into the current branch. Any error
 is reported in a specific screen. +
-After success, agite returns back on the xref:XDir[directory] menu, otherwise
+After success, Agite returns back on the xref:XDir[directory] menu, otherwise
 it returns in the xref:XBranches[branches] menu.
 
 NOTE: To cancel a cherry pick, simply ensure that no commit is selected (click
@@ -1157,7 +1165,7 @@ If the remote ''orign'' is defined then it is selected by default.
 
 Pushes the local commits of current branch or the tag to the selected remote
 repository. +
-After pushing the current branch, agite returns back to the
+After pushing the current branch, Agite returns back to the
 xref:XDir[directory] menu, while after pushing a tag it returns back to the
 xref:XTags[tags] menu. +
 Any error is reported through a specific screen.
@@ -1167,7 +1175,7 @@ Only active when pushing the current branch, allows the creation of the
 current branch in the remote repository. (If the branch has already been pushed
 upstream into this repository, then this button has the same effect as
 'Push'.) +
-After pushing the branch, agite returns back to the xref:XDir[directory]
+After pushing the branch, Agite returns back to the xref:XDir[directory]
 menu. +
 Any error is reported through a specific screen.
 
@@ -1285,7 +1293,7 @@ If the remote ''orign'' is defined then it is selected by default.
 This button shows 'Pull' if the selected remote branch is the same as current
 branch, otherwise it shows 'Fetch'. It pulls or fetches the remote branch from
 the selected remote repository. +
-If there is no error then agite returns back to the xref:XDir[directory] menu,
+If there is no error then Agite returns back to the xref:XDir[directory] menu,
 otherwise the error is reported through a specific screen.
 
 .Back

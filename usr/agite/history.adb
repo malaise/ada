@@ -1,4 +1,4 @@
-with As.U, Con_Io, Afpx.List_Manager, Normal, Rounds, Language;
+with As.U, Con_Io, Afpx.List_Manager, Normal, Rounds, Language, Directory;
 with Utils.X, Config, Details, View, Afpx_Xref, Restore, Checkout, Tags,
      Confirm, Error;
 package body History is
@@ -503,10 +503,12 @@ package body History is
       -- Get history list
       Afpx.Suspend;
       begin
-        if Path = "" and then Name = "" then
+        if Path = "" and then Name = ""
+        and then Directory.Get_Current = Root then
           -- Log in (the root dir of) a bare repository
           --  fails if we provide the full (Root) path
           --  but is OK with '.'
+          -- Use '.' if we are in root and target dir is root
           Git_If.List_Log (".", False, Logs);
         else
           -- Log, following renames only if file
