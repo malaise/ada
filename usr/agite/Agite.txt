@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.08
+V17.09
 
 General purpose
 ---------------
@@ -124,9 +124,10 @@ NOTE: A manual refresh is always possible with the xref:XReread[Reread] button.
 anchor:XListTags[]
 
 list_tags::
-By default, when starting the xref:XTags[tags] menu, agite does not list all
-the tags and lets you enter a template. This prevents spending to much time
-in the reading of all the tags of the repository.
+By default, when starting the xref:XTags[tags] menu and if no template is
+specified, agite does not list all the tags and lets you enter a template.
+This prevents spending to much time in the reading of all the tags of the
+repository.
 +
 Setting the value to true instructs agite to list all the tags by default when
 entering this menu.
@@ -218,17 +219,17 @@ The navigation between the screens is as follows:
 There are also a confirmation screen and an error screen that are called when
 necessary.
 
-NOTE: The 'History' and 'Tags' menus call the 'Detail' and 'Checkout' menus. +
-The 'Tags' and 'Commit' menus call the 'Push' menu. +
-The 'CherryPick' menu calls the 'Detail' menu, but without allowing it to call
-the 'History' menu.
+NOTE: The 'history' and 'tags' menus call the 'detail' and 'checkout' menus. +
+The 'tags' and 'commit' menus call the 'push' menu. +
+The 'cherryPick' menu calls the 'detail' menu, but without allowing it to call
+the 'history' menu.
 
 NOTE: All the screen transitions are based on the 'call-return' scheme. +
-So please note the double arrow between 'History' and 'Detail': from the
-'History' of a file (or dir) you can select a commit and see its 'Detail'.
+So please note the double arrow between 'history' and 'detail': from the
+'history' of a file (or dir) you can select a commit and see its 'detail'.
 In this new screen you can select a file and see its 'History', and so on...
 Once this is done you need to "un-stack" all these menus (by clicking on
-the 'Back' button in each) in order to go back to the 'Directory' menu. +
+the 'Back' button in each) in order to go back to the 'directory' menu. +
 Also please note that sometimes a successuful action in a menu leads to
 automatically go back to the ancestor of this menu, sometimes directly back to
 the Directory menu.
@@ -773,7 +774,7 @@ the file has been renamed or moved between the versions.
 Tag
 ~~~
 anchor:XTag[]
-The 'Tag' menu allows tagging a commit. It shows the details of the commit, as
+The 'tag' menu allows tagging a commit. It shows the details of the commit, as
 in the xref:XDetail[detail] menu:
 
 * The SHA-1 hash of the commit,
@@ -792,7 +793,7 @@ on the current commit (and go back to the xref:XHist[history] menu).
 Detail
 ~~~~~~
 anchor:XDetail[]
-The 'Detail' menu shows the details of a commit or a tag:
+The 'detail' menu shows the details of a commit or a tag:
 
 .Title
 In case of a tag, the title recalls the name of the tag (in case of a commit
@@ -856,7 +857,7 @@ explained in the section on xref:XNavigation[navigation].
 Checkout
 ~~~~~~~~
 anchor:XCheckout[]
-The 'Checkout' menu allows checking out a commit or a tag.
+The 'checkout' menu allows checking out a commit or a tag.
 
 NOTE: the checkout operation will be rejected if it leads to overwrite a local
 modification in the worktree.
@@ -885,20 +886,37 @@ This button cancels the checkout (and the branch creation).
 Tags
 ~~~~
 anchor:XTags[]
-The 'Tags' menu lists the tags of the workdir that match a criteria.
+The 'tags' menu lists the tags of the workdir that match a criteria.
+
+.Criteria
+The criteria is intially empty, which means "all tags". When the 'tags'
+menu is launched (from the xref:XDir[directory] menu), the criteria is used as
+follows:
+
+* Either there is a criteria already set (from a previous invocation of the
+'tags' menu), then this criteria applies and the matching tags are listed,
+
+* Or the criteria is empty but the xref:XListTags[list_tags] has been set
+to true (any casing) in the xref:XConfig[configuration file], then all the
+tags are listed,
+
+* Otherwise no search is performed by default. This is to prevent spending to
+much time in searching and sorting all the tags.
+
+You can enter a name or a template (like V1.*) in the get area besides the
+'List' button or leave it empty (for all the tags). Then you can hit the Return
+key or click in the 'List' button, which updates the list.
+
+As soon as it is used for searching, the criteria is memorized for further
+invocations of the menu, until you quit agite.
 
 .List
 
-The list is initially empty, except if xref:XListTags[list_tags] has been  set
-to true (any casing) in the xref:XConfig[configuration file]. In this case it
-is initialized with all the tags of the repository. +
-You can enter a template (like V1.*) in the get area besides the 'List' button
-or leave it empty (for all the tags). Then you can hit the 'Return' key or click
-in the 'List' button, which updates the list.
+The list contains the matching tags, sorted by date:
 
 * Annotated tags are shown with the tag name, tagging date and comment,
 * Non annotated tags are shown with only the tag name,
-* Tags are sorted by date.
+
 
 .Actions
 
@@ -920,7 +938,7 @@ This button button asks for confirmation, then deletes the selected tag.
 
 Push::
 
-This button button launches the xref:XPush[push] manu that allows pushing
+This button button launches the xref:XPush[push] menu that allows pushing
 the selected tag into a selected remote repository.
 
 .Back
@@ -1116,7 +1134,7 @@ This button returns to the xref:XDir[directory] menu.
 Push
 ~~~~
 anchor:XPush[]
-The 'Push' menu allows pushing the local commits of the current
+The 'push' menu allows pushing the local commits of the current
 branch or to push a tag into a selected remote repository. +
 It shows:
 
@@ -1162,7 +1180,7 @@ anchor:XSelBranch[]
 Stash
 ~~~~~
 anchor:XStash[]
-The 'Stash' menu works on the global worktree, not on the local directory. +
+The 'stash' menu works on the global worktree, not on the local directory. +
 The screen shows the list of stashes. Each entry has a stash number,
 the branch on which the stash was done and the text of the message.
 
@@ -1209,7 +1227,7 @@ This button returns to the xref:XDir[directory] menu.
 Pull
 ~~~~
 anchor:XPull[]
-The 'Pull' menu allows pulling the current branch (fetching and merging) or
+The 'pull' menu allows pulling the current branch (fetching and merging) or
 fetching only another branch from a remote repository. +
 This is achieved through two successive screens.
 
@@ -1299,7 +1317,7 @@ selected file or directory:
 * 'Add' and 'Revert' buttons add or remove the selected file or directory
 
 * 'Restore' button (of the detail menu) retrieves the selected file or all the
-listed files
+files of the commit
 
 Current workspace
 ~~~~~~~~~~~~~~~~~
@@ -1319,8 +1337,8 @@ workspace
 
 * 'Tags' screen lists the tags of the current workspace
 
-* 'Checkout' button (of the history menu or in the tags menu) retrieves the
-commit on the current workspace
+* 'Checkout' button (of the history menu or of the tags menu) checks out the
+commit in the current workspace
 
 * 'Stash' screen saves and restore stashes on the current workspace
 

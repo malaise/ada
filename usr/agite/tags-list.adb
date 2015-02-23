@@ -1,4 +1,4 @@
-with As.U, Afpx.List_Manager, Str_Util;
+with Afpx.List_Manager, Str_Util;
 with Utils.X, Afpx_Xref, Config, Details, Confirm, Checkout, Push_Pull;
 separate (Tags)
 
@@ -39,6 +39,9 @@ procedure List (Root : in String) is
 
     Utils.X.Encode_Field (Root, Afpx_Xref.List_Tags.Root);
     Utils.X.Encode_Branch (Afpx_Xref.List_Tags.Branch);
+    -- Restore template from previous invocation
+    Utils.X.Encode_Field (Template.Image, Afpx_Xref.List_Tags.Template);
+
     Get_Handle := (others => <>);
 
     -- Clear the list
@@ -64,13 +67,18 @@ procedure List (Root : in String) is
   end Less_Than;
   procedure Sort is new Git_If.Tag_Mng.Dyn_List.Sort (Less_Than);
 
+  -- Read the template
+  procedure Read_Template is
+  begin
+    Template := As.U.Tus (Str_Util.Strip (
+            Afpx.Decode_Field (Afpx_Xref.List_Tags.Template, 0, False)));
+  end Read_Template;
+
   -- Get the tags and encode in list
   procedure Read_Tags (Reread : in Boolean) is
-    Template : As.U.Asu_Us;
   begin
     if Reread then
-      Template := As.U.Tus (Str_Util.Strip (
-            Afpx.Decode_Field (Afpx_Xref.List_Tags.Template, 0, False)));
+      Read_Template;
       -- Get tags list
       Git_If.List_Tags (Template.Image, Tags_List);
       Sort (Tags_List);
@@ -147,8 +155,8 @@ begin
 
   -- Init Afpx
   Init;
-  -- Read all tags if configured
-  if Config.List_Tags then
+  -- Read all tags if a template is set or if configured to read all
+  if not Template.Is_Null or else Config.List_Tags then
     Read_Tags (True);
   else
     Init_List (Tags_List);

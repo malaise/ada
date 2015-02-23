@@ -1,4 +1,4 @@
-with As.U, Afpx.List_Manager, Str_Util;
+with Afpx.List_Manager, Str_Util;
 with Utils.X, Afpx_Xref, Error;
 separate (Tags)
 procedure Add (Rev : in Git_If.Git_Hash) is
