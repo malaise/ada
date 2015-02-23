@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.06
+V17.07
 
 General purpose
 ---------------
@@ -471,10 +471,6 @@ Make::
 This button makes a local compilation by launching the command defined
 in the xref:XConfMake[make] entry of the configuration file.
 
-Stash::
-This button launches the xref:XStash[stash] screen that allows managing the
-the list of stashes.
-
 Commit::
 This button launches the xref:XCommit[commit] screen that allows
 commiting the the local modifications.
@@ -482,6 +478,14 @@ commiting the the local modifications.
 Pull::
 This button launches the xref:XPull[pull] screen that allows fetching or 
 pulling a branch from a remote repository;
+
+Tags::
+This button launches the xref:XTags[tags] screen that allows managing the
+tags.
+
+Stash::
+This button launches the xref:XStash[stash] screen that allows managing the
+the list of stashes.
 
 Exit::
 This button makes Agite exit.
@@ -923,8 +927,8 @@ the selected tag into a selected remote repository.
 
 This button returns to the xref:XDir[directory] menu.
 
-CherryPick
-~~~~~~~~~~
+Cherry pick
+~~~~~~~~~~~
 anchor:XCherry[]
 This menu works on the global worktree, not on the local directory. +
 It allows selecting some commits of the selected branch and it
@@ -991,7 +995,10 @@ screen. +
 If confirmed, then these commits are merged into the current branch. Any error
 is reported in a specific screen. +
 After success, agite returns back on the xref:XDir[directory] menu, otherwise
-it returns in the xref:XBranches[branches] menu
+it returns in the xref:XBranches[branches] menu.
+
+NOTE: To cancel a cherry pick, simply ensure that no commit is selected (click
+on the 'Reset' button) and click on the 'Done' button.
 
 Commit
 ~~~~~~
@@ -1266,6 +1273,76 @@ otherwise the error is reported through a specific screen.
 .Back
 
 Moves back to the xref:XSelBranch[branch selection] menu without pulling.
+
+Scope of the operations
+-----------------------
+Each of the operations described above operates on a given scope, which is
+summarized hereafter.
+
+Current directory
+~~~~~~~~~~~~~~~~~
+The following functions and screens apply to the current directory or to the
+selected file or directory:
+
+* 'Reread' button rereads the current directory
+
+* 'Search' button searches a file or a directory in the current directory
+
+* 'Make' button launches make in the current directory
+
+* 'Edit' button edits the selected file
+
+* 'Diff' button shows the differences on the selected file or directory
+
+* 'Hist' button shows the history of the selected file or directory
+
+* 'Add' and 'Revert' buttons add or remove the selected file or directory
+
+* 'Restore' button (of the detail menu) retrieves the selected file or all the
+listed files
+
+Current workspace
+~~~~~~~~~~~~~~~~~
+The following functions and screens apply to the current workspace:
+
+* 'Branch' screen allows several operations on branches on the the current
+workspace, including 'Merge' and 'Cherry pick'
+
+* 'Root' button moves to the root directory of the current workspace,
+
+* 'Commit' screen allows commiting the files modified within the current
+workspace
+
+* 'Push' screen allows allows pushing commits on the current workspace
+
+* 'Pull' screen pulls branches of the current workspace
+
+* 'Tags' screen lists the tags of the current workspace
+
+* 'Checkout' button (of the history menu or in the tags menu) retrieves the
+commit on the current workspace
+
+* 'Stash' screen saves and restore stashes on the current workspace
+
+* 'Tag' tags a commit of the current workspace
+
+* 'Detail' shows the details of a commit on the current workspace
+
+Anywhere
+~~~~~~~~
+The following operations allow changing the current directory with no
+limitation:
+
+* 'Go' button moves to the specified directory
+
+* 'Dir Up' button moves to parent directory
+
+* 'Bookmarks' menu handles bookmarks of directories
+
+* 'PushD' and 'PopD' buttons push and pop directories
+
+* 'Xterm' button starts a terminal in the current directory, then one can
+change its current directory
 
 Interfaces with Git
 -------------------

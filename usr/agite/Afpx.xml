@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V17.06"/>
+  <Var Name="Version" Value="V17.07"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -202,41 +202,41 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Hist</Init>
     </Field>
-    <Field Num="31" Kind="Button" Name="Tags">
+    <Field Num="31" Kind="Button" Name="Add">
       <Geometry Up="${Field_30.Low}+2" Left="${LmLeft}" Height="1"
-                Width="${LmWidth}"/>
-      <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">Tags</Init>
-    </Field>
-    <Field Num="32" Kind="Button" Name="Add">
-      <Geometry Up="${Field_31.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Add</Init>
     </Field>
-    <Field Num="33" Kind="Button" Name="Revert">
-      <Geometry Up="${Field_32.Low}+2" Left="${LmLeft}" Height="1"
+    <Field Num="32" Kind="Button" Name="Revert">
+      <Geometry Up="${Field_31.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Revert</Init>
     </Field>
-    <Field Num="34" Kind="Button" Name="Stash">
-      <Geometry Up="${Field_33.Low}+2" Left="${LmLeft}" Height="1"
-                Width="${LmWidth}"/>
-      <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">Stash</Init>
-    </Field>
-    <Field Num="35" Kind="Button" Name="Commit">
-      <Geometry Up="${Field_34.Low}+2" Left="${LmLeft}" Height="1"
+    <Field Num="33" Kind="Button" Name="Commit">
+      <Geometry Up="${Field_32.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Commit</Init>
     </Field>
-    <Field Num="36" Kind="Button" Name="Pull">
-      <Geometry Up="${Field_35.Low}+2" Left="${LmLeft}" Height="1"
+    <Field Num="34" Kind="Button" Name="Pull">
+      <Geometry Up="${Field_33.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Pull</Init>
+    </Field>
+    <Field Num="35" Kind="Button" Name="Tags">
+      <Geometry Up="${Field_34.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">Tags</Init>
+    </Field>
+    <Field Num="36" Kind="Button" Name="Stash">
+      <Geometry Up="${Field_35.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Stash</Init>
     </Field>
     <Field Num="37" Kind="Put">
       <Geometry Up="${Field_36.Low}+1" Left="${LmLeft}" Height="1"
