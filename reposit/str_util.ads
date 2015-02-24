@@ -132,12 +132,15 @@ package Str_Util is
   -- Show_Trunc : When string is longer than Len, if Show_Trunc is set,
   --         then Str is truncated to Len-2 and starts (Trunc_Head) with "> "
   --         or ends (not Trunc_Head) with " <"
+  subtype Str2 is String (1 .. 2);
   function Procuste (Str : String;
                      Len : Positive;
                      Align_Left : Boolean := True;
                      Gap : Character := ' ';
                      Trunc_Head : Boolean := True;
-                     Show_Trunc : Boolean := True)
+                     Show_Trunc : Boolean := True;
+                     Head_Mark : Str2 := "> ";
+                     Tail_Mark : Str2 := " <")
            return String;
 
   -- Try to cut Str so that it best matches the requested line Length

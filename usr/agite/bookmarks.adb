@@ -1,4 +1,4 @@
-with As.U, Directory, Afpx.List_Manager, Environ, Computer;
+with As.U, Directory, Afpx.Utils, Environ, Computer;
 with Utils.X, Config, Afpx_Xref, Confirm;
 package body Bookmarks is
 
@@ -41,7 +41,7 @@ package body Bookmarks is
       -- Separator with name
       Text := "----- " & Bookmark.Name & " -----";
     end if;
-    Utils.X.Encode_Line (Head.Image, Text.Image, "", List_Width, Line);
+    Afpx.Utils.Encode_Line (Head.Image, Text.Image, "", List_Width, Line);
     Afpx.Line_List.Insert (Line);
   end Insert_List;
 
@@ -204,7 +204,7 @@ package body Bookmarks is
             when Utils.X.List_Scroll_Fld_Range'First ..
                  Utils.X.List_Scroll_Fld_Range'Last =>
               -- Scroll list
-              Afpx.List_Manager.Scroll(
+              Afpx.Utils.Scroll(
                  Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
             when Afpx_Xref.Bookmarks.Addcurr =>
               if In_Edit then

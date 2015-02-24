@@ -1,4 +1,4 @@
-with Afpx.List_Manager, Str_Util;
+with Afpx.Utils, Str_Util;
 with Utils.X, Afpx_Xref, Config, Details, Confirm, Checkout, Push_Pull;
 separate (Tags)
 
@@ -18,9 +18,9 @@ procedure List (Root : in String) is
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in Git_If.Tag_Entry_Rec) is
   begin
-    Utils.X.Encode_Line ("", Image (From), "", List_Width, Line, False);
+    Afpx.Utils.Encode_Line ("", Image (From), "", List_Width, Line, False);
   end Set;
-  procedure Init_List is new Afpx.List_Manager.Init_List (
+  procedure Init_List is new Afpx.Utils.Init_List (
     Git_If.Tag_Entry_Rec, Git_If.Tag_Mng, Set, False);
 
   -- Afpx stuff
@@ -197,7 +197,7 @@ begin
           when Utils.X.List_Scroll_Fld_Range'First ..
                Utils.X.List_Scroll_Fld_Range'Last =>
             -- Scroll list
-            Afpx.List_Manager.Scroll (
+            Afpx.Utils.Scroll (
                Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
           when Afpx_Xref.List_Tags.List =>
             Read_Tags (True);

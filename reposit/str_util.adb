@@ -364,7 +364,9 @@ package body Str_Util is
                      Align_Left : Boolean := True;
                      Gap : Character := ' ';
                      Trunc_Head : Boolean := True;
-                     Show_Trunc : Boolean := True)
+                     Show_Trunc : Boolean := True;
+                     Head_Mark : Str2 := "> ";
+                     Tail_Mark : Str2 := " <")
            return String is
     L : constant Natural := Str'Length;
     S : String (1 .. Len);
@@ -374,29 +376,29 @@ package body Str_Util is
       if Align_Left then
         -- Copy L characters at left and pad
         S(1 .. L) := Str;
-        S(L+1 .. Len) := (others => Gap);
+        S(L + 1 .. Len) := (others => Gap);
       else
         -- Copy L characters at right and pad
-        S(Len-L+1 .. Len) := Str;
-        S(1 .. Len-L) := (others => Gap);
+        S(Len - L + 1 .. Len) := Str;
+        S(1 .. Len - L) := (others => Gap);
       end if;
     elsif L > Len then
       -- Str is larger than Len: Trunc
       if Trunc_Head then
         if Show_Trunc and then Len >= 2 then
           -- Copy "> " then Len-2 last characters of Str
-          S := "> " & Str(Str'Last-Len+1+2 .. Str'Last);
+          S := Head_Mark & Str(Str'Last - Len + 1 + 2 .. Str'Last);
         else
           -- Copy Len last characters of Str
-          S := Str(Str'Last-Len+1 .. Str'Last);
+          S := Str(Str'Last - Len + 1 .. Str'Last);
         end if;
       else
         if Show_Trunc and then Len >= 2 then
           -- Copy Len-2 first characters of Str then " <"
-          S := Str(Str'First .. Str'First+Len-1-2) & " <";
+          S := Str(Str'First .. Str'First + Len - 1 - 2) & Tail_Mark;
         else
           -- Copy Len first characters of Str
-          S := Str(Str'First .. Str'First+Len-1);
+          S := Str(Str'First .. Str'First + Len - 1);
         end if;
       end if;
     else

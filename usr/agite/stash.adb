@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with As.U, Directory, Afpx.List_Manager, Str_Util, Basic_Proc,
+with As.U, Directory, Afpx.Utils, Str_Util, Basic_Proc,
      Language, Images;
 with Git_If, Utils.X, Afpx_Xref, Confirm, Error;
 package body Stash is
@@ -10,7 +10,7 @@ package body Stash is
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in  Git_If.Stash_Entry_Rec) is
   begin
-    Utils.X.Encode_Line ("",
+    Afpx.Utils.Encode_Line ("",
         Images.Integer_Image (From.Num)
       & " " & From.Branch.Image & " " & From.Name.Image, "", List_Width, Line,
         False);
@@ -21,7 +21,7 @@ package body Stash is
           & " raised in stash on " & From.Name.Image);
   end Set;
 
-  procedure Init_List is new Afpx.List_Manager.Init_List (
+  procedure Init_List is new Afpx.Utils.Init_List (
     Git_If.Stash_Entry_Rec, Git_If.Stash_Mng, Set, False);
 
   -- Root path
@@ -210,7 +210,7 @@ package body Stash is
             when Utils.X.List_Scroll_Fld_Range'First ..
                  Utils.X.List_Scroll_Fld_Range'Last =>
               -- Scroll list
-              Afpx.List_Manager.Scroll(
+              Afpx.Utils.Scroll(
                   Ptg_Result.Field_No
                 - Utils.X.List_Scroll_Fld_Range'First
                 + 1);

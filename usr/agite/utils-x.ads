@@ -1,4 +1,4 @@
-with Con_Io, Afpx;
+with Con_Io, Afpx.Utils;
 with Afpx_Xref;
 package Utils.X is
 
@@ -8,7 +8,8 @@ package Utils.X is
 
   -- Protect a field and "revert" its colors, or reset it
   procedure Protect_Field (Field_No : in Afpx.Absolute_Field_Range;
-                           Protect  : in Boolean);
+                           Protect  : in Boolean)
+           renames Afpx.Utils.Protect_Field;
 
   -- Image of a Git branch
   function Branch_Image (Git_Branch : String) return String;
@@ -16,27 +17,21 @@ package Utils.X is
   -- Encode current branch
   procedure Encode_Branch (Field_No : in Afpx.Absolute_Field_Range);
 
-  -- Encode a line, procuste, preserve tail
-  procedure Encode_Line (Head, Text, Tail : in String;
-                         Width : in Afpx.Width_Range;
-                         Line : in out Afpx.Line_Rec;
-                         Keep_Tail : in Boolean := True);
-
   -- Clear field and encode Text in 1st column of Field (row 0 or 1)
   --  procuste, preserve tail or head
   procedure Encode_Field (Text : in String;
                           Field : in Afpx.Field_Range;
                           Keep_Tail : in Boolean := True);
 
-  -- Encode Text in 1st column of Row of Field, procuste
-  --  preserve Tail or head
+  -- CLear field and encode Text in 1st column of Row of Field
+  --  procuste, preserve Tail or head
   procedure Encode_Row (Text : in String;
                         Field : in Afpx.Field_Range;
-                        Row : Con_Io.Row_Range;
+                        Row : in Con_Io.Row_Range;
                         Keep_Tail : in Boolean := True);
 
   -- CLear field and Center Text in 1st column of Field (row 0 or 1)
-  --  procuste, preserve head
+  --  procuste, preserve head or not
   procedure Center_Field (Text : in String;
                           Field : in Afpx.Field_Range;
                           Keep_Head : in Boolean := True);

@@ -1,4 +1,4 @@
-with As.U, Afpx.List_Manager, Basic_Proc, Images, Directory,
+with As.U, Afpx.Utils, Basic_Proc, Images, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Environ;
 with Utils.X, Git_If, Config, Bookmarks, History, Tags, Commit, Push_Pull,
      Confirm, Error, Stash, Branch, Afpx_Xref;
@@ -70,11 +70,11 @@ procedure Agite is
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in Git_If.File_Entry_Rec) is
   begin
-    Utils.X.Encode_Line (From.S2 & From.S3 & ' ',
-                         From.Name.Image & From.Kind, "",
-                         List_Width, Line);
+    Afpx.Utils.Encode_Line (From.S2 & From.S3 & ' ',
+                            From.Name.Image & From.Kind, "",
+                            List_Width, Line);
   end Set;
-  procedure Init_List is new Afpx.List_Manager.Init_List (
+  procedure Init_List is new Afpx.Utils.Init_List (
     Git_If.File_Entry_Rec, Git_If.File_Mng, Set, False);
 
 
@@ -430,7 +430,7 @@ procedure Agite is
     -- Init fields
     Afpx.Get_Console.Set_Name ("Agite (on " & Socket.Local_Host_Name & ")");
     Utils.X.Encode_Field (Host_Str, Afpx_Xref.Main.Host);
-    Utils.X.Center_Field (Config.XTerm_Name, Afpx_Xref.Main.Xterm);
+    Utils.X.Center_Field (Config.Xterm_Name, Afpx_Xref.Main.Xterm);
     Utils.X.Center_Field (Config.Make_Name, Afpx_Xref.Main.Make);
 
     Change_Dir (Dir);
@@ -917,7 +917,7 @@ begin
           when Utils.X.List_Scroll_Fld_Range'First ..
                Utils.X.List_Scroll_Fld_Range'Last =>
             -- Scroll list
-            Afpx.List_Manager.Scroll(
+            Afpx.Utils.Scroll(
                 Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
           when Afpx_Xref.Main.Branch =>
             -- Branches menu

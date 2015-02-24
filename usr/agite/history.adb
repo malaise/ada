@@ -1,4 +1,4 @@
-with As.U, Con_Io, Afpx.List_Manager, Normal, Rounds, Language, Directory;
+with As.U, Con_Io, Afpx.Utils, Normal, Rounds, Language, Directory;
 with Utils.X, Config, Details, View, Afpx_Xref, Restore, Checkout, Tags,
      Confirm, Error;
 package body History is
@@ -13,7 +13,7 @@ package body History is
                  From : in Git_If.Log_Entry_Rec;
                  Width : in Afpx.Width_Range) is
   begin
-    Utils.X.Encode_Line (
+    Afpx.Utils.Encode_Line (
         -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD HH:MM "
         From.Date(03 .. 04) & From.Date(06 .. 07) & From.Date(09 .. 10) & '-'
           & From.Date(12 .. 13) & From.Date(15 .. 16)
@@ -33,7 +33,7 @@ package body History is
   begin
     Set (Line, From, List_Width);
   end Set_List;
-  procedure Init_List is new Afpx.List_Manager.Init_List (
+  procedure Init_List is new Afpx.Utils.Init_List (
     Git_If.Log_Entry_Rec, Git_If.Log_Mng, Set_List, False);
 
   -- To search matching hash in Log
@@ -51,7 +51,7 @@ package body History is
   procedure Set_Cherry (Line : in out Afpx.Line_Rec;
                         From : in Git_If.Log_Entry_Rec) is
   begin
-    Utils.X.Encode_Line (
+    Afpx.Utils.Encode_Line (
         -- "= " or "- "
         (if From.Merged then '=' else ' ') & ' '
         -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD HH:MM "
@@ -63,7 +63,7 @@ package body History is
              else ""),
         "", List_Width, Line, False);
   end Set_Cherry;
-  procedure Init_Cherry is new Afpx.List_Manager.Init_List (
+  procedure Init_Cherry is new Afpx.Utils.Init_List (
     Git_If.Log_Entry_Rec, Git_If.Log_Mng, Set_Cherry, False);
 
   -- For Confirmation
@@ -72,7 +72,7 @@ package body History is
   begin
     Set (Line, From, Confirm_Width);
   end Set_Confirm;
-  procedure Init_Confirm is new Afpx.List_Manager.Init_List (
+  procedure Init_Confirm is new Afpx.Utils.Init_List (
     Git_If.Log_Entry_Rec, Git_If.Log_Mng, Set_Confirm, False);
 
   procedure Cherry_Init (Branch : in String;
@@ -568,7 +568,7 @@ package body History is
             when Utils.X.List_Scroll_Fld_Range'First ..
                  Utils.X.List_Scroll_Fld_Range'Last =>
               -- Scroll list
-              Afpx.List_Manager.Scroll(
+              Afpx.Utils.Scroll(
                  Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
             when Afpx_Xref.History.Scroll =>
               -- Scroll bar

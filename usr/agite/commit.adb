@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with As.U, Directory, Afpx.List_Manager, Str_Util, Basic_Proc,
+with As.U, Directory, Afpx.Utils, Str_Util, Basic_Proc,
      Aski, Unicode, Images;
 with Git_If, Utils.X, Config, Push_Pull, Afpx_Xref, Confirm, Error;
 package body Commit is
@@ -15,7 +15,7 @@ package body Commit is
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in  Git_If.File_Entry_Rec) is
   begin
-    Utils.X.Encode_Line (
+    Afpx.Utils.Encode_Line (
         (if    not Is_Staged (From.S2) then ' '
          elsif not Is_Staged (From.S3) then '+'
          else '*')
@@ -35,7 +35,7 @@ package body Commit is
   end Match;
   function Search is new Afpx.Line_List_Mng.Search (Match);
 
-  procedure Init_List is new Afpx.List_Manager.Init_List (
+  procedure Init_List is new Afpx.Utils.Init_List (
     Git_If.File_Entry_Rec, Git_If.File_Mng, Set, False);
 
   -- Differator
@@ -367,7 +367,7 @@ package body Commit is
             when Utils.X.List_Scroll_Fld_Range'First ..
                  Utils.X.List_Scroll_Fld_Range'Last =>
               -- Scroll list
-              Afpx.List_Manager.Scroll(
+              Afpx.Utils.Scroll(
                   Ptg_Result.Field_No
                 - Utils.X.List_Scroll_Fld_Range'First
                 + 1);

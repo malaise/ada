@@ -238,7 +238,7 @@ ada_words ada_words.keywords (2)::
 address_ops (1)::
      Add, sub and returns image of a System.Address.
 
-afpx afpx.list_manager (3)::
+afpx afpx.utils (3)::
      Graphic (text oriented) manager of input screens that are off-line
      defined.
 

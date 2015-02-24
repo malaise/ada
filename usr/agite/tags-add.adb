@@ -1,4 +1,4 @@
-with Afpx.List_Manager, Str_Util;
+with Afpx.Utils, Str_Util;
 with Utils.X, Afpx_Xref, Error;
 separate (Tags)
 procedure Add (Rev : in Git_If.Git_Hash) is
@@ -10,13 +10,13 @@ procedure Add (Rev : in Git_If.Git_Hash) is
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in Git_If.Commit_Entry_Rec) is
   begin
-    Utils.X.Encode_Line (From.Status & " ", From.File.Image, "",
-                         List_Width, Line);
+    Afpx.Utils.Encode_Line (From.Status & " ", From.File.Image, "",
+                            List_Width, Line);
   exception
     when others => null;
   end Set;
 
-  procedure Init_List is new Afpx.List_Manager.Init_List (
+  procedure Init_List is new Afpx.Utils.Init_List (
     Git_If.Commit_Entry_Rec, Git_If.Commit_File_Mng, Set, False);
 
 
@@ -135,7 +135,7 @@ begin
           when Utils.X.List_Scroll_Fld_Range'First ..
                Utils.X.List_Scroll_Fld_Range'Last =>
             -- Scroll list
-            Afpx.List_Manager.Scroll (
+            Afpx.Utils.Scroll (
                Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
           when Afpx_Xref.Add_Tag.Tag_Annotated =>
             -- Tag annotated

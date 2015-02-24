@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with As.U.Utils, Directory, Afpx.List_Manager, Basic_Proc, Unicode;
+with As.U.Utils, Directory, Afpx.Utils, Basic_Proc, Unicode;
 with Git_If, Utils.X, Afpx_Xref, Confirm, Error, History;
 package body Branch is
 
@@ -9,7 +9,7 @@ package body Branch is
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in As.U.Asu_Us) is
   begin
-    Utils.X.Encode_Line ("", From.Image, "", List_Width, Line);
+    Afpx.Utils.Encode_Line ("", From.Image, "", List_Width, Line);
   exception
     when Error:others =>
       Basic_Proc.Put_Line_Error ("Exception "
@@ -24,7 +24,7 @@ package body Branch is
   end Match;
   function Search is new Afpx.Line_List_Mng.Search (Match);
 
-  procedure Init_List is new Afpx.List_Manager.Init_List (
+  procedure Init_List is new Afpx.Utils.Init_List (
     As.U.Asu_Us, As.U.Utils.Asu_List_Mng, Set, False);
 
   -- Root path
@@ -211,7 +211,7 @@ package body Branch is
             when Utils.X.List_Scroll_Fld_Range'First ..
                  Utils.X.List_Scroll_Fld_Range'Last =>
               -- Scroll list
-              Afpx.List_Manager.Scroll(
+              Afpx.Utils.Scroll(
                   Ptg_Result.Field_No
                 - Utils.X.List_Scroll_Fld_Range'First
                 + 1);

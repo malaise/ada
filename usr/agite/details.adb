@@ -1,4 +1,4 @@
-with Aski, As.U, Afpx.List_Manager, Directory;
+with Aski, As.U, Afpx.Utils, Directory;
 with Utils.X, Git_If, View, History, Config, Afpx_Xref, Restore;
 package body Details is
 
@@ -9,13 +9,13 @@ package body Details is
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in Git_If.Commit_Entry_Rec) is
   begin
-    Utils.X.Encode_Line (From.Status & " ", From.File.Image, "",
-                         List_Width, Line);
+    Afpx.Utils.Encode_Line (From.Status & " ", From.File.Image, "",
+                            List_Width, Line);
   exception
     when others => null;
   end Set;
 
-  procedure Init_List is new Afpx.List_Manager.Init_List (
+  procedure Init_List is new Afpx.Utils.Init_List (
     Git_If.Commit_Entry_Rec, Git_If.Commit_File_Mng, Set, False);
 
 
@@ -199,7 +199,7 @@ package body Details is
             when Utils.X.List_Scroll_Fld_Range'First ..
                  Utils.X.List_Scroll_Fld_Range'Last =>
               -- Scroll list
-              Afpx.List_Manager.Scroll (
+              Afpx.Utils.Scroll (
                  Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
             when Afpx_Xref.Details.View =>
               -- View

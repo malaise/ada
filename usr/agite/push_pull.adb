@@ -1,4 +1,4 @@
-with As.U.Utils, Afpx.List_Manager, Unicode;
+with As.U.Utils, Afpx.Utils, Unicode;
 with Utils.X, Git_If, Afpx_Xref, Error;
 package body Push_Pull is
 
@@ -11,11 +11,11 @@ package body Push_Pull is
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in As.U.Asu_Us) is
   begin
-    Utils.X.Encode_Line ("", From.Image, "",
-                         Afpx.Get_Field_Width (Afpx.List_Field_No), Line);
+    Afpx.Utils.Encode_Line ("", From.Image, "",
+                            Afpx.Get_Field_Width (Afpx.List_Field_No), Line);
   end Set;
 
-  procedure Init_List is new Afpx.List_Manager.Init_List (
+  procedure Init_List is new Afpx.Utils.Init_List (
     As.U.Asu_Us, As.U.Utils.Asu_List_Mng, Set, False);
 
   -- Afpx line list with "origin"
@@ -187,7 +187,7 @@ package body Push_Pull is
             when Utils.X.List_Scroll_Fld_Range'First ..
                  Utils.X.List_Scroll_Fld_Range'Last =>
               -- Scroll list
-              Afpx.List_Manager.Scroll(
+              Afpx.Utils.Scroll(
                   Ptg_Result.Field_No
                 - Utils.X.List_Scroll_Fld_Range'First
                 + 1);
