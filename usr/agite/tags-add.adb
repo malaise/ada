@@ -72,7 +72,9 @@ procedure Add (Rev : in Git_If.Git_Hash) is
     Utils.X.Encode_Field (Date, Afpx_Xref.Add_Tag.Date);
     Afpx.Clear_Field (Afpx_Xref.Add_Tag.Comment);
     for I in 1 .. Comment_Height loop
-      Utils.X.Encode_Row (Comment(I).Image, Afpx_Xref.Add_Tag.Comment, I - 1);
+      -- No clear, and keep Head
+      Afpx.Utils.Encode_Field (Comment(I).Image, Afpx_Xref.Add_Tag.Comment,
+                               I - 1, False, False);
     end loop;
     -- Encode list
     Init_List (Commits);

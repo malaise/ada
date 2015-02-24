@@ -1,3 +1,4 @@
+with Con_Io;
 with Git_If;
 package body Utils.X is
 
@@ -32,16 +33,6 @@ package body Utils.X is
   begin
     Afpx.Utils.Encode_Field (Text, Field, Row (Field), True, Keep_Tail);
   end Encode_Field;
-
-  -- Encode Text in 1st column of Row of Field, procuste
-  --  preserve Tail or head
-  procedure Encode_Row (Text : in String;
-                        Field : in Afpx.Field_Range;
-                        Row : Con_Io.Row_Range;
-                        Keep_Tail : in Boolean := True) is
-  begin
-    Afpx.Utils.Encode_Field (Text, Field, Row, True, Keep_Tail);
-  end Encode_Row;
 
   -- CLear field and Center Text in 1st column of Field (row 0 or 1)
   --  procuste, preserve head
