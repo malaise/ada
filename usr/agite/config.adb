@@ -114,10 +114,14 @@ package body Config is
   end Save;
 
   -- X terminal
-  function Xterminal return String is
+  function Xterm_Name return String is
+  begin
+    return Ctx.Get_Attribute (Ctx.Get_Child (Root, 1), "Name");
+  end Xterm_Name;
+  function Xterm return String is
   begin
     return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 1), 1));
-  end Xterminal;
+  end Xterm;
 
   -- Editor GUI
   function Editor return String is
@@ -138,6 +142,10 @@ package body Config is
   end Differator;
 
   -- Make command
+  function Make_Name return String is
+  begin
+    return Ctx.Get_Attribute (Ctx.Get_Child (Root, 5), "Name");
+  end Make_Name;
   function Make return String is
   begin
     return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 5), 1));

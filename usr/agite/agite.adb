@@ -426,16 +426,24 @@ procedure Agite is
     Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
     List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
     Dir_Field := Afpx_Xref.Main.Dir;
+
+    -- Init fields
     Afpx.Get_Console.Set_Name ("Agite (on " & Socket.Local_Host_Name & ")");
-    Get_Handle := (others => <>);
     Utils.X.Encode_Field (Host_Str, Afpx_Xref.Main.Host);
+    Utils.X.Center_Field (Config.XTerm_Name, Afpx_Xref.Main.Xterm);
+    Utils.X.Center_Field (Config.Make_Name, Afpx_Xref.Main.Make);
+
     Change_Dir (Dir);
+
+    -- Init list
     if Pos /= 0 and then Pos <= Afpx.Line_List.List_Length then
       Afpx.Line_List.Move_At (Pos);
     else
       Afpx.Line_List.Rewind;
     end if;
     Afpx.Update_List (Afpx.Center_Selected);
+
+    Get_Handle := (others => <>);
   end Init;
 
   procedure Do_Edit (File_Name : in String) is
@@ -954,7 +962,7 @@ begin
             end if;
           when Afpx_Xref.Main.Xterm =>
             -- XTerm
-            Utils.Launch (Config.Xterminal);
+            Utils.Launch (Config.Xterm);
           when Afpx_Xref.Main.Make =>
             -- Make
             Utils.Launch (Config.Make);

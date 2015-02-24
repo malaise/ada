@@ -1,10 +1,12 @@
 with As.U;
 package Config is
+
   -- Check configuration (raise Invalid_Config)
   procedure Check;
 
   -- X terminal
-  function Xterminal return String;
+  function Xterm_Name return String;
+  function Xterm return String;
 
   -- Editor GUI
   function Editor return String;
@@ -16,6 +18,7 @@ package Config is
   function Differator return String;
 
   -- Make command
+  function Make_Name return String;
   function Make return String;
 
   -- Refresh period

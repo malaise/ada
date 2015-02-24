@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.11
+V17.12
 
 General purpose
 ---------------
@@ -72,7 +72,10 @@ anchor:XConfXterm[]
 
 xterm::
 This defines the command to be launched when the
-xref:XXterm[XTerm] button is selected. Example: 'gnome-terminal --zoom=0.9'
+xref:XXterm[XTerm] button is selected. Example: 'gnome-terminal --zoom=0.9'. +
+The default name for this button is "Xterm", but you can set the 'Name'
+attribute of the XML element in order to specifiy another name for the button
+(8 characters max).
 
 anchor:XConfEditor[]
 
@@ -103,8 +106,11 @@ anchor:XConfMake[]
 
 make::
 This defines the command to be launched for the local compilation with the
-xref:XMake[Make] button. It shall launch a GUI. +
-Example: '#xterm -e 'sh -c "make; echo -n Done.; read a"'#'
+xref:XMake[Make] button. It shall launch a GUI. Example:
+'#xterm -e 'sh -c "make; echo -n Done.; read a"'#' +
+The default name for this button is "Make" and, as for the 'xterm' button,
+you can set the 'Name' attribute  of the XML element in order to specify 
+another name for the button (8 characters max).
 
 anchor:XConfPeriod[]
 

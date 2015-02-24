@@ -4,10 +4,12 @@
                  last_dir,bookmarks*)>
 
 <!ELEMENT xterm (#PCDATA)>
+<!ATTLIST xterm Name CDATA "Xterm">
 <!ELEMENT editor (#PCDATA)>
 <!ELEMENT viewer (#PCDATA)>
 <!ELEMENT differator (#PCDATA)>
 <!ELEMENT make (#PCDATA)>
+<!ATTLIST make Name CDATA "Make">
 <!ELEMENT period (#PCDATA)>
 <!ELEMENT list_tags (#PCDATA)>
 <!ELEMENT last_dir (#PCDATA)>
