@@ -58,11 +58,13 @@ package body Branch is
     end if;
 
     -- Get list of branches
+    Afpx.Suspend;
     Git_If.List_Branches (Local => True, Branches => Branches);
     if not Restore then
       -- Set default to current branch
       Set (Line, As.U.Tus (Git_If.Current_Branch));
     end if;
+    Afpx.Resume;
 
     -- Encode the list
     Init_List (Branches);
@@ -84,6 +86,12 @@ package body Branch is
     Utils.X.Protect_Field (Afpx_Xref.Branches.Rename, Afpx.Line_List.Is_Empty);
     Utils.X.Protect_Field (Afpx_Xref.Branches.Delete, Afpx.Line_List.Is_Empty);
     Utils.X.Protect_Field (Afpx_Xref.Branches.Checkout, Afpx.Line_List.Is_Empty);
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+       Afpx.Resume;
+      end if;
+      raise;
   end Reread;
 
   -- Actions on branches
@@ -125,26 +133,36 @@ package body Branch is
       when Create =>
         Message := As.U.Tus ("Creating branch " & New_Name.Image);
         if not New_Name.Is_Null then
+          Afpx.Suspend;
           Result := As.U.Tus (Git_If.Create_Branch (New_Name.Image));
+          Afpx.Resume;
         end if;
       when Rename =>
         Message := As.U.Tus ("Renaming branch " & Curr_Name.Image
                            & " to " & New_Name.Image);
         if not New_Name.Is_Null then
+          Afpx.Suspend;
           Result := As.U.Tus (Git_If.Rename_Branch (Curr_Name.Image,
                                                     New_Name.Image));
+          Afpx.Resume;
         end if;
       when Delete =>
         Message := As.U.Tus ("Deleting branch " & Curr_Name.Image);
+        Afpx.Suspend;
         Result := As.U.Tus (Git_If.Delete_Branch (Curr_Name.Image));
+        Afpx.Resume;
       when Checkout =>
         Message := As.U.Tus ("Checking out branch " & Curr_Name.Image);
+        Afpx.Suspend;
         Result := As.U.Tus (Git_If.Do_Checkout (Curr_Name.Image, ""));
+        Afpx.Resume;
       when Merge =>
         Message := As.U.Tus ("Merging branch " & Curr_Name.Image);
+        Afpx.Suspend;
         Result := As.U.Tus (
            Git_If.Merge_Branch (Curr_Name.Image,
                                 "Merge branch '" & Curr_Name.Image & "'"));
+        Afpx.Resume;
       when Cherry_Pick =>
         Done := History.Cherry_Pick (Root.Image, Curr_Name.Image);
         Init;
@@ -164,6 +182,12 @@ package body Branch is
     Reread (False);
     -- Successful checkout or merge lead to return
     return Action = Checkout or else Action = Merge;
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+       Afpx.Resume;
+      end if;
+      raise;
   end Do_Action;
 
   -- Handle the Branches

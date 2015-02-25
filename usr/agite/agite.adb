@@ -472,9 +472,17 @@ procedure Agite is
   begin
     if File.S2 = '?' or else File.S2 = ' ' or else File.S2 = 'U' then
       -- Untracked or not in index or unmerged
+      Afpx.Suspend;
       Git_If.Do_Add (File.Name.Image);
+      Afpx.Resume;
       Encode_Files (Force => False);
     end if;
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+       Afpx.Resume;
+      end if;
+      raise;
   end Do_Add_File;
 
   procedure Do_Revert (Name, Prev : in String) is
@@ -489,7 +497,9 @@ procedure Agite is
       -- Handle Dir
       if File.Name.Image = "." then
         if Confirm ("Ready to reset --hard the whole worktree", "") then
+          Afpx.Suspend;
           Git_If.Do_Reset_Hard;
+          Afpx.Resume;
           Position := 1;
         end if;
       elsif File.Name.Image = ".." then
@@ -516,22 +526,28 @@ procedure Agite is
         -- File is deleted locally, checkout from repository
         if Confirm ("Ready to revert:",
                     Directory.Build_File_Name (Path.Image, Name, "")) then
+          Afpx.Suspend;
           Git_If.Do_Revert (Name);
+          Afpx.Resume;
           Position := 1;
         end if;
       elsif File.S2 = 'D' and then File.S3 = ' ' then
         -- File is deleted in Git, reset and checkout from repository
         if Confirm ("Ready to reset and revert:",
                     Directory.Build_File_Name (Path.Image, Name, "")) then
+          Afpx.Suspend;
           Git_If.Do_Reset (Name);
           Git_If.Do_Revert (Name);
+          Afpx.Resume;
           Position := 1;
         end if;
       elsif File.S3 = 'D' then
         -- File is staged and has unstaged deletion, reset
         if Confirm ("Ready to reset:",
                     Directory.Build_File_Name (Path.Image, Name, "")) then
+          Afpx.Suspend;
           Git_If.Do_Reset (Name);
+          Afpx.Resume;
         end if;
       end if;
     elsif File.Kind /= ' ' and then File.Kind /= '@' then
@@ -550,47 +566,65 @@ procedure Agite is
         if Confirm ("Ready to reset: "
                        & Directory.Build_File_Name (Path.Image, Name, ""),
                     "and restore: " & Prev) then
+          Afpx.Suspend;
           Git_If.Do_Reset (Name);
           -- Prev has the relative path to root
           Git_If.Do_Reset (Root.Image & Prev);
           Git_If.Do_Revert (Root.Image & Prev);
+          Afpx.Resume;
           Position := Position - 1;
         end if;
       elsif File.S2 = 'M' then
         -- File is updated in index, reset the index and restore
         if Confirm ("Ready to reset and revert:",
                     Directory.Build_File_Name (Path.Image, Name, "")) then
+          Afpx.Suspend;
           Git_If.Do_Reset (Name);
           Git_If.Do_Revert (Name);
+          Afpx.Resume;
         end if;
       else
         -- File is updated (A, C or U) in index, just reset the index
         if Confirm ("Ready to reset:",
                     Directory.Build_File_Name (Path.Image, Name, "")) then
+          Afpx.Suspend;
           Git_If.Do_Reset (Name);
+          Afpx.Resume;
         end if;
       end if;
     elsif File.S3 /= ' ' then
       -- File is modified locally, restore
       if Confirm ("Ready to revert:",
                   Directory.Build_File_Name (Path.Image, Name, "")) then
+        Afpx.Suspend;
         Git_If.Do_Revert (Name);
+        Afpx.Resume;
       end if;
     elsif File.S2 = ' ' and then File.S3 = ' ' then
       -- File is up to date, remove it from Git
       if Confirm ("Ready to remove for Git:",
                   Directory.Build_File_Name (Path.Image, Name, "")) then
+        Afpx.Suspend;
         Git_If.Do_Rm (Name);
+        Afpx.Resume;
         Position := 1;
       end if;
     else
       -- File is staged and has unstaged changes, reset
       if Confirm ("Ready to reset:",
                     Directory.Build_File_Name (Path.Image, Name, "")) then
-          Git_If.Do_Reset (Name);
+        Afpx.Suspend;
+        Git_If.Do_Reset (Name);
+        Afpx.Resume;
       end if;
     end if;
     Init (Position);
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+       Afpx.Resume;
+      end if;
+      raise;
   end Do_Revert;
 
   procedure Do_Branch is
@@ -659,7 +693,9 @@ procedure Agite is
           end if;
         when Add =>
           if File_Name /= ".." then
+            Afpx.Suspend;
             Git_If.Do_Add (File_Name);
+            Afpx.Resume;
           end if;
       end case;
     elsif File.Kind = '?' then
@@ -669,6 +705,7 @@ procedure Agite is
           Do_Revert (File_Name, File.Prev.Image);
         when Diff =>
           -- File is deleted: diff from last commit to null
+          Afpx.Suspend;
           declare
             Hash : constant Git_If.Git_Hash := Git_If.Last_Hash (File_Name);
           begin
@@ -677,6 +714,7 @@ procedure Agite is
                                    Hash, "");
             end if;
           end;
+          Afpx.Resume;
         when others =>
           null;
       end case;
@@ -705,6 +743,7 @@ procedure Agite is
         when Diff =>
           if File.S2 = ' ' and then File.S3 = ' ' then
             -- File is unmodified: diff on last commit of it
+            Afpx.Suspend;
             declare
               Hash : constant Git_If.Git_Hash := Git_If.Last_Hash (File_Name);
             begin
@@ -713,6 +752,7 @@ procedure Agite is
                                      Hash & "^", Hash);
               end if;
             end;
+            Afpx.Resume;
           else
             -- File is "modified"
             Git_If.Launch_Diff (Differator.Image, File_Name);
@@ -725,6 +765,12 @@ procedure Agite is
           Do_Add_File (File);
       end case;
     end if;
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+       Afpx.Resume;
+      end if;
+      raise;
   end List_Action;
 
   -- Locate a file that has its first letter = Key

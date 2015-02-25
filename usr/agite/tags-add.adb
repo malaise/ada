@@ -57,7 +57,9 @@ procedure Add (Rev : in Git_If.Git_Hash) is
         Afpx.Resume;
       exception
         when others =>
-          Afpx.Resume;
+          if Afpx.Is_Suspended then
+            Afpx.Resume;
+          end if;
           raise;
       end;
     end if;
@@ -96,8 +98,10 @@ procedure Add (Rev : in Git_If.Git_Hash) is
       Afpx.Decode_Field (Afpx_Xref.Add_Tag.Tag_Comment, 0)));
 
     -- Create tag
+    Afpx.Suspend;
     Result := As.U.Tus (Git_If.Add_Tag (Tag.Image, Rev, Annotated,
                         Comment.Image));
+    Afpx.Resume;
     if Result.Is_Null then
       return True;
     end if;
@@ -111,6 +115,12 @@ procedure Add (Rev : in Git_If.Git_Hash) is
     Afpx.Encode_Field (Afpx_Xref.Add_Tag.Tag_Name, (0, 0), Tag.Image);
     Afpx.Encode_Field (Afpx_Xref.Add_Tag.Tag_Comment, (0, 0), Comment.Image);
     return False;
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+       Afpx.Resume;
+      end if;
+      raise;
   end Add_Tag;
 
 begin

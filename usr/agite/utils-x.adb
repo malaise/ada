@@ -15,7 +15,15 @@ package body Utils.X is
   -- Encode current branch
   procedure Encode_Branch (Field_No : in Afpx.Absolute_Field_Range) is
   begin
+    Afpx.Suspend;
     Encode_Field (Branch_Image (Git_If.Current_Branch), Field_No);
+    Afpx.Resume;
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+       Afpx.Resume;
+      end if;
+      raise;
   end Encode_Branch;
 
 

@@ -13,7 +13,7 @@ package body Commit is
   end Is_Staged;
 
   procedure Set (Line : in out Afpx.Line_Rec;
-                 From : in  Git_If.File_Entry_Rec) is
+                 From : in Git_If.File_Entry_Rec) is
   begin
     Afpx.Utils.Encode_Line (
         (if    not Is_Staged (From.S2) then ' '
@@ -133,6 +133,7 @@ package body Commit is
     -- Get list of changes
     Afpx.Suspend;
     Git_If.List_Changes (Changes);
+    Afpx.Resume;
     To_Commit := False;
     if not Changes.Is_Empty then
       -- See if at least one entry to commit
@@ -145,7 +146,6 @@ package body Commit is
         exit when not Moved;
       end loop;
     end if;
-    Afpx.Resume;
     -- Encode current branch
     Utils.X.Encode_Branch (Afpx_Xref.Commit.Branch);
 
@@ -191,6 +191,7 @@ package body Commit is
   begin
     Changes.Move_At (Afpx.Line_List.Get_Position);
     Status := Changes.Access_Current.S3;
+    Afpx.Suspend;
     if Stage then
       if Status = '?' or else Status = 'M' then
         -- Stage new file or modif or unresolved conflict
@@ -203,6 +204,7 @@ package body Commit is
       -- File is staged, reset
       Git_If.Do_Reset (Changes.Access_Current.Name.Image);
     end if;
+    Afpx.Resume;
     -- Move to next entry
     if Move
     and then Afpx.Line_List.Get_Position (Afpx.Line_List_Mng.From_Last) /= 1
@@ -210,6 +212,12 @@ package body Commit is
       Afpx.Line_List.Move_To;
     end if;
     Reread;
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+       Afpx.Resume;
+      end if;
+      raise;
   end Do_Stage;
 
   -- Switch stage
@@ -265,7 +273,9 @@ package body Commit is
         -- Add untracked files
         loop
           Untracked.Read (Change, Moved => Moved);
+          Afpx.Suspend;
           Git_If.Do_Add (Change.Name.Image);
+          Afpx.Resume;
           exit when not Moved;
         end loop;
       end if;
@@ -287,7 +297,9 @@ package body Commit is
     use type As.U.Asu_Us;
   begin
     -- Get user name and email
+    Afpx.Suspend;
     Line := As.U.Tus (Git_If.Get_User);
+    Afpx.Resume;
 
     -- Decode current comment
     Decode_Comment;
@@ -296,6 +308,12 @@ package body Commit is
     -- Re-encode
     Encode_Comment;
     Reset_Ptg;
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+       Afpx.Resume;
+      end if;
+      raise;
   end Do_Sign;
 
   -- Decode comments and commit
@@ -304,12 +322,20 @@ package body Commit is
   begin
     Decode_Comment;
     -- Git_If.Commit
+    Afpx.Suspend;
     Result := As.U.Tus (Git_If.Do_Commit (Comment.Image));
+    Afpx.Resume;
     if Result.Is_Null then
       return;
     end if;
     -- Show error
     Error ("Commit", "", Result.Image);
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+       Afpx.Resume;
+      end if;
+      raise;
   end Do_Commit;
 
   -- Handle the commits

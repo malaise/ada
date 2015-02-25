@@ -97,13 +97,15 @@ package body History is
       Cherries.Modify (Cherry, Moved => Moved);
       exit when not Moved;
     end loop;
+    Afpx.Resume;
 
     -- Set Afpx list
     Init_Cherry (Cherries);
-    Afpx.Resume;
   exception
     when others =>
-      Afpx.Resume;
+      if Afpx.Is_Suspended then
+       Afpx.Resume;
+      end if;
       raise;
   end Cherry_Init;
 
@@ -227,9 +229,11 @@ package body History is
     end if;
 
     -- Do the cherry pick
+    Afpx.Suspend;
     declare
       Result : constant String := Git_If.Cherry_Pick (Cherries);
     begin
+      Afpx.Resume;
       if Result = "" then
         -- Ok
         return True;
@@ -240,6 +244,12 @@ package body History is
         return False;
       end if;
     end;
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+       Afpx.Resume;
+      end if;
+      raise;
   end Cherry_Done;
 
   ------------------
@@ -517,7 +527,9 @@ package body History is
         Afpx.Resume;
       exception
         when others =>
-          Afpx.Resume;
+          if Afpx.Is_Suspended then
+            Afpx.Resume;
+          end if;
           raise;
       end;
 

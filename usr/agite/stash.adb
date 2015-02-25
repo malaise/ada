@@ -55,7 +55,9 @@ package body Stash is
     end if;
 
     -- Get list of changes
+    Afpx.Suspend;
     Git_If.List_Stashes (Stashes);
+    Afpx.Resume;
 
     -- Encode the list
     Init_List (Stashes);
@@ -81,6 +83,12 @@ package body Stash is
     Utils.X.Protect_Field (Afpx_Xref.Stash.Del, Afpx.Line_List.Is_Empty);
     Utils.X.Protect_Field (Afpx_Xref.Stash.Apply, Afpx.Line_List.Is_Empty);
     Utils.X.Protect_Field (Afpx_Xref.Stash.Pop, Afpx.Line_List.Is_Empty);
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+       Afpx.Resume;
+      end if;
+      raise;
   end Reread;
 
   -- Stash operations
@@ -129,6 +137,7 @@ package body Stash is
     end if;
 
     -- Do stash operation
+    Afpx.Suspend;
     case Oper is
       when Stash_Add =>
         Message := As.U.Tus (Git_If.Add_Stash (Name.Image));
@@ -140,6 +149,7 @@ package body Stash is
       when Stash_Pop => Message := As.U.Tus (Git_If.Pop_Stash (Num));
       when Stash_Del => Message := As.U.Tus (Git_If.Drop_Stash (Num));
     end case;
+    Afpx.Resume;
 
     -- Handle error
     if Message.Is_Null then
@@ -158,6 +168,12 @@ package body Stash is
       Reread (True);
       return False;
     end if;
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+       Afpx.Resume;
+      end if;
+      raise;
   end Do_Stash;
 
   procedure Do_Stash (Oper : in Stash_Oper_List) is
