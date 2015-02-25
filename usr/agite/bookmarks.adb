@@ -121,6 +121,17 @@ package body Bookmarks is
     end if;
   end End_Edit;
 
+  -- Update the list status
+  procedure List_Change (Unused_Action : in Afpx.List_Change_List;
+                         Unused_Status : in Afpx.List_Status_Rec) is
+    Bookmark : constant Config.Bookmark_Rec
+             := Config.Get_Bookmark (Afpx.Line_List.Get_Position);
+  begin
+     -- No Goto on separator
+     Afpx.Utils.Protect_Field (Afpx_Xref.Bookmarks.Go, Bookmark.Path.Is_Null);
+  end List_Change;
+
+
   -- Handle Bookmarks screen
   -- Returns new dir to change to, or "" if unchanged
   function Handle return String is
@@ -158,19 +169,20 @@ package body Bookmarks is
     loop
       if not In_Edit then
         -- No Goto nor Del nor Move if no Bookmark
-        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Go,
-                               Afpx.Line_List.Is_Empty);
-        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Moveup,
-                               Afpx.Line_List.Is_Empty);
-        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Movedown,
-                               Afpx.Line_List.Is_Empty);
-        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Edit,
-                               Afpx.Line_List.Is_Empty);
-        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Del,
-                               Afpx.Line_List.Is_Empty);
+        Afpx.Utils.Protect_Field (Afpx_Xref.Bookmarks.Go,
+                                  Afpx.Line_List.Is_Empty);
+        Afpx.Utils.Protect_Field (Afpx_Xref.Bookmarks.Moveup,
+                                  Afpx.Line_List.Is_Empty);
+        Afpx.Utils.Protect_Field (Afpx_Xref.Bookmarks.Movedown,
+                                  Afpx.Line_List.Is_Empty);
+        Afpx.Utils.Protect_Field (Afpx_Xref.Bookmarks.Edit,
+                                  Afpx.Line_List.Is_Empty);
+        Afpx.Utils.Protect_Field (Afpx_Xref.Bookmarks.Del,
+                                  Afpx.Line_List.Is_Empty);
       end if;
 
-      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
+                         List_Change_Cb => List_Change'Access);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is

@@ -83,9 +83,16 @@ package body Branch is
     -- Encode current branch
     Utils.X.Encode_Branch (Afpx_Xref.Branches.Branch);
     -- Set field activity
-    Utils.X.Protect_Field (Afpx_Xref.Branches.Rename, Afpx.Line_List.Is_Empty);
-    Utils.X.Protect_Field (Afpx_Xref.Branches.Delete, Afpx.Line_List.Is_Empty);
-    Utils.X.Protect_Field (Afpx_Xref.Branches.Checkout, Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rename,
+                              Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Delete,
+                              Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Checkout,
+                              Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Merge,
+                              Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Cherry_Pick,
+                              Afpx.Line_List.Is_Empty);
   exception
     when others =>
       if Afpx.Is_Suspended then

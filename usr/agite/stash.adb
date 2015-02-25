@@ -80,9 +80,9 @@ package body Stash is
     -- Encode current branch
     Utils.X.Encode_Branch (Afpx_Xref.Commit.Branch);
     -- Set field activity
-    Utils.X.Protect_Field (Afpx_Xref.Stash.Del, Afpx.Line_List.Is_Empty);
-    Utils.X.Protect_Field (Afpx_Xref.Stash.Apply, Afpx.Line_List.Is_Empty);
-    Utils.X.Protect_Field (Afpx_Xref.Stash.Pop, Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Stash.Del, Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Stash.Apply, Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Stash.Pop, Afpx.Line_List.Is_Empty);
   exception
     when others =>
       if Afpx.Is_Suspended then

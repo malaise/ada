@@ -316,9 +316,9 @@ package body History is
                               else "/"),
                               Afpx_Xref.History.File);
 
-        -- Suppress button View and restore on dirs
-        Afpx.Set_Field_Activation (Afpx_Xref.History.View, Is_File);
-        Afpx.Set_Field_Activation (Afpx_Xref.History.Restore, Is_File);
+        -- Protect buttons View and restore on dirs
+        Afpx.Utils.Protect_Field (Afpx_Xref.History.View, not Is_File);
+        Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore, not Is_File);
       end if;
     end Init;
 
@@ -533,18 +533,25 @@ package body History is
           raise;
       end;
 
-      -- Encode history
-      if Logs.Is_Empty then
-        return False;
-      end if;
       if Hash /= Git_If.No_Hash then
         -- Set current to Hash provided
         Log.Hash := Hash;
         Dummy := List_Hash_Search (Logs, Log,
                      From => Git_If.Log_Mng.Dyn_List.Absolute);
       end if;
+      -- Encode history
       Init_List (Logs);
     end if;
+
+    -- Disable buttons if empty list
+    if Logs.Is_Empty then
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.View, True);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Diff, True);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Details, True);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore, True);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Checkout, True);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag, True);
+   end if;
 
     -- Main loop
     loop

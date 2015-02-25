@@ -164,11 +164,15 @@ package body Commit is
     Afpx.Update_List (Afpx.Center_Selected);
 
     -- Set field activity
-    Utils.X.Protect_Field (Afpx_Xref.Commit.Stage, Afpx.Line_List.Is_Empty);
-    Utils.X.Protect_Field (Afpx_Xref.Commit.Unstage, Afpx.Line_List.Is_Empty);
-    Utils.X.Protect_Field (Afpx_Xref.Commit.Diff, Afpx.Line_List.Is_Empty);
-    Utils.X.Protect_Field (Afpx_Xref.Commit.Stage_All, Afpx.Line_List.Is_Empty);
-    Utils.X.Protect_Field (Afpx_Xref.Commit.Commit, not To_Commit);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Stage,
+                              Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Unstage,
+                              Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Diff,
+                              Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Stage_All,
+                              Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Commit, not To_Commit);
   exception
     when others =>
       if Afpx.Is_Suspended then

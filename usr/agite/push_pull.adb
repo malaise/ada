@@ -164,7 +164,7 @@ package body Push_Pull is
       Afpx.Resume;
       Init_List (References);
 
-      Utils.X.Protect_Field (Afpx_Xref.Push_Pull.Push, References.Is_Empty);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Push_Pull.Push, References.Is_Empty);
       if not References.Is_Empty then
         -- Move to "origin" for push and pull,
         --  or "origin":<branch> for pull branch, or top

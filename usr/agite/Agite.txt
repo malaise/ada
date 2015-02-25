@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.14
+V17.15
 
 General purpose
 ---------------
@@ -174,8 +174,6 @@ Agite is based on the following main menus:
 * xref:XDir[Directory]: This is the \'root' menu and the initial menu at
 start-up. It shows the content of the current directory.
 * xref:XBranches[Branches]: This menu allows managing local branches.
-* xref:XCherry[CherryPick]: This menu allows performing a cherry pick of
-commits from a local branch.
 * xref:XBook[Bookmarks]: This menu allows bookmarking directories and quickly
 jumping to a bookmark.
 * xref:XHist[History]: This shows the Git history of a file or directory, the
@@ -183,8 +181,10 @@ list of commits that have modified the file(s).
 * xref:XTag[Tag]: This allows tagging a commit.
 * xref:XDetail[Detail]: This shows information on a commit or a tag,
 including the list of files modified by the commit.
-* xref:XTags[Tags]: This lists the tags and allows managing them.
 * xref:XCheckout[Checkout]: This allows checking out a commit or a tag.
+* xref:XTags[Tags]: This lists the tags and allows managing them.
+* xref:XCherry[CherryPick]: This menu allows performing a cherry pick of
+commits from a local branch.
 * xref:XCommit[Commit]: This shows all the local modifications of the
 worktree and allows staging and commiting them.
 * xref:XPush[Push]: This allows pushing a branch or tag into a remote
@@ -399,7 +399,7 @@ Edit::
 This button launches the editor (defined in the xref:XConfEditor[editor] entry
 of the configuration file) on the file currently selected in the list, as a
 double click on this file would do. +
-It has no effect if the current entry is a directory.
+It is not active if the current entry is a directory.
 
 anchor:XDiff[]
 
@@ -414,8 +414,8 @@ introduced by the last commit involving the file).
 *On a directory* (including './' but excluding '../'), this button launches the
 difference on all the modified files of the selected directory and
 of its sub-directories. +
-It has no effect if the selected directory is the parent directory entry ('../')
-or if there is no modified file under the selected directory.
+It is not active if the selected directory is the parent directory entry ('../')
+and it has no effect if there is no modified file under the selected directory.
 
 anchor:XHistory[]
 
@@ -446,7 +446,7 @@ Then, depending on the type of the current entry:
 - If it is \'./' then Agite performs a 'git reset --hard', which resets the
 local changes in the *whole worktree* (root and subtree), not only the current
 directory.
-- If it is a subdirectory (not \'./' nor \'../') then it is deleted, which
+- If it is a subdirectory (not \'./') then it is deleted, which
 succeeds only if it is empty.
 - If it is a file or a symbolic link,
  * if unknown by Git, then it is removed,
@@ -462,7 +462,7 @@ committed content and the new one is reset as unknown by Git
 
 +
 Note: The Revert button has no effect on a file known by Git and not modified,
-and no effect on \'../'.
+and is not active on \'../'.
 
 .Other actions
 
@@ -598,8 +598,8 @@ on the field 'Name to add') below the current entry.
 anchor:XGoto[]
 The 'Goto' button allows changing the current directory to the bookmark
 currently selected, and retruns back to the xref:XDir[directory] menu.
-Double clicking on the entry has the same effect. It has no effect on a
-separator.
+It is de-activated on a separator. +
+Double clicking on the entry has the same effect.
 
 Bookmarks and separators can be organised with the buttons 'MovUp', 'MovDwn'.
 

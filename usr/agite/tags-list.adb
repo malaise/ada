@@ -174,14 +174,14 @@ begin
   loop
 
     -- Activate Detail, Checkout, Delete and Push only if list is not empty
-    Afpx.Set_Field_Activation (Afpx_Xref.List_Tags.Details,
-                               not Afpx.Line_List.Is_Empty);
-    Afpx.Set_Field_Activation (Afpx_Xref.List_Tags.Checkout,
-                               not Afpx.Line_List.Is_Empty);
-    Afpx.Set_Field_Activation (Afpx_Xref.List_Tags.Delete,
-                               not Afpx.Line_List.Is_Empty);
-    Afpx.Set_Field_Activation (Afpx_Xref.List_Tags.Push,
-                               not Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.List_Tags.Details,
+                              Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.List_Tags.Checkout,
+                              Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.List_Tags.Delete,
+                              Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.List_Tags.Push,
+                              Afpx.Line_List.Is_Empty);
 
     Afpx.Put_Then_Get (Get_Handle, Ptg_Result, True);
 

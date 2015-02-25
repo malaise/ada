@@ -319,15 +319,15 @@ procedure Agite is
     Utils.X.Encode_Field (Root.Image, Afpx_Xref.Main.Root);
 
     -- Protect Git functions if not in Git
-    Utils.X.Protect_Field (Afpx_Xref.Main.Branch, Root.Is_Null);
-    Utils.X.Protect_Field (Afpx_Xref.Main.Diff, Root.Is_Null);
-    Utils.X.Protect_Field (Afpx_Xref.Main.History, Root.Is_Null);
-    Utils.X.Protect_Field (Afpx_Xref.Main.Tags, Root.Is_Null);
-    Utils.X.Protect_Field (Afpx_Xref.Main.Add, Root.Is_Null);
-    Utils.X.Protect_Field (Afpx_Xref.Main.Revert, Root.Is_Null);
-    Utils.X.Protect_Field (Afpx_Xref.Main.Stash, Root.Is_Null);
-    Utils.X.Protect_Field (Afpx_Xref.Main.Commit, Root.Is_Null);
-    Utils.X.Protect_Field (Afpx_Xref.Main.Pull, Root.Is_Null);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Branch, Root.Is_Null);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Diff, Root.Is_Null);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.History, Root.Is_Null);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Tags, Root.Is_Null);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Add, Root.Is_Null);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Revert, Root.Is_Null);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Stash, Root.Is_Null);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Commit, Root.Is_Null);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Pull, Root.Is_Null);
   end Change_Dir;
 
   -- Check validity of current directory
@@ -696,6 +696,7 @@ procedure Agite is
             Afpx.Suspend;
             Git_If.Do_Add (File_Name);
             Afpx.Resume;
+            Encode_Files (Force => False);
           end if;
       end case;
     elsif File.Kind = '?' then
@@ -845,6 +846,34 @@ procedure Agite is
     return True;
   end Can_Pop;
 
+  --- Update the list status
+  procedure List_Change (Unused_Action : in Afpx.List_Change_List;
+                         Unused_Status : in Afpx.List_Status_Rec) is
+    File : constant Git_If.File_Entry_Rec := Get_Current_File;
+    Dummy_Target : As.U.Asu_Us;
+    Kind : Character;
+    Act : Boolean;
+  begin
+    -- Resolve Sym link kind
+    if File.Kind /= '@' then
+      Kind := File.Kind;
+    else
+      Link_Target (File.Name.Image, Dummy_Target, Kind);
+    end if;
+    -- Edit is always possible on file
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Edit, Kind = '/');
+    if Root.Is_Null then
+      -- No ther function if not in Git (already protected by Init)
+      return;
+    end if;
+    -- No Diff, Hist, Add, revert on ".."
+    Act := File.Name.Image = "..";
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Diff, Act);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.History, Act);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Add, Act);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Revert, Act);
+  end List_Change;
+
 begin
   -- Check/Parse arguments
    Arg_Dscr := Argument_Parser.Parse (Keys);
@@ -939,10 +968,11 @@ begin
   -- Main loop
   loop
     -- Protect PushD and PopD
-    Utils.X.Protect_Field (Afpx_Xref.Main.Pushd, not Can_Push);
-    Utils.X.Protect_Field (Afpx_Xref.Main.Popd,  not Can_Pop);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Pushd, not Can_Push);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Popd,  not Can_Pop);
 
-    Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
+    Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
+                       List_Change_Cb => List_Change'Access);
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is

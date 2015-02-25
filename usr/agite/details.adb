@@ -174,13 +174,24 @@ package body Details is
       end if;
     end Copy_Selection;
 
+  -- Update the list status
+  procedure List_Change (Unused_Action : in Afpx.List_Change_List;
+                         Unused_Status : in Afpx.List_Status_Rec) is
+
+  begin
+     -- No view on '/', first entry
+     Afpx.Utils.Protect_Field (Afpx_Xref.Details.View,
+                               Afpx.Line_List.Get_Position = 1);
+  end List_Change;
+
   begin
     -- Full init
     Init (True);
 
     -- Main loop
     loop
-      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
+                         List_Change_Cb => List_Change'Access);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
