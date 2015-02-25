@@ -1,0 +1,116 @@
+#!/bin/bash
+
+# Install agite in ${HOME}/.agite, ${HOME}/bin and ${HOME}/agite
+
+# Default targets
+export PREFIX=${HOME}
+export CONF_DIR=${PREFIX}/.agite
+export BIN_DIR=${PREFIX}/bin
+export AGITE_DIR=${PREFIX}/agite
+# Necessary files
+export FILES="agite.xml agite.dtd agite.stat AFPX.DSC AFPX.FLD AFPX.INI"
+
+# Help
+function usage {
+  echo "Usage: `basename $0` [ { <prefix> | <conf_dir> | <bin_dir> | <agite_dir> } ]" 1>&2
+  echo " <prefix>    ::= --prefix=<dir>    default $HOME" 1>&2
+  echo " <conf_dir>  ::= --conf=<dir>      default $CONF_DIR" 1>&2
+  echo " <bin_dir>   ::= --bin=<dir>       default $BINC_DIR" 1>&2
+  echo " <agite_dir> ::= --agite=<dir>     default $AGITE_DIR" 1>&2
+}
+
+# Error
+function error {
+  echo "ERROR: $*."
+  exit 1
+}
+
+# Make a dir if needed and verify
+function make_dir {
+  mkdir -p $1
+  if [ ! -d $1 ] ; then
+    error "Cannot create directory $1"
+  fi
+}
+
+# Parse arguments
+while [ "$1" != "" ] ; do
+  case "$1" in
+    ("-h"| "--help")
+      usage
+      exit 0
+    ;;
+    (--tar)
+      echo tar cvzf agite.tgz $FILES
+      tar cvzf agite.tgz $FILES
+      exit 0
+    ;;
+    (--prefix=*)
+      PREFIX=${1#*=}
+      CONF_DIR=${PREFIX}/.agite
+      BIN_DIR=${PREFIX}/bin
+      AGITE_DIR=${PREFIX}/agite
+    ;;
+    (--conf=*)
+      CONF_DIR=${1#*=}
+    ;;
+    (--bin=*)
+      BIN_DIR=${1#*=}
+    ;;
+    (--agite=*)
+      AGITE_DIR=${1#*=}
+    ;;
+    (*)
+      error "Invalid option $1"
+    ;;
+  esac
+  shift
+done
+
+# Verify that the the files are here
+for file in $FILES ; do
+  if [ ! -f $file ] ; then
+    error "File $file is missing in current directory"
+  fi
+done
+
+# Validate install dirs
+while true ; do
+  echo    "Ready to install agite, configuration in $CONF_DIR,"
+  echo    "                        launcher      in $BIN_DIR,"
+  echo -n "                        binaries      in $AGITE_DIR (Y/y)?"
+  read ANS
+  if [ \( "$ANS" = "y" \) -o \( "$ANS" = "Y" \) ] ; then
+    break;
+  elif [ \( "$ANS" = "n" \) -o \( "$ANS" = "N" \) ] ; then
+    echo "Aborted."
+    exit 1
+  fi
+done
+
+#  Go
+# Conf dir
+make_dir $CONF_DIR
+cp agite.dtd $CONF_DIR
+if [ ! -f $CONF_DIR/agite.xml ] ; then
+  cp agite.xml $CONF_DIR
+else
+  echo "Preserving existing file $CONF_DIR/agite.xml."
+fi
+
+# Agite dir
+make_dir $AGITE_DIR
+cp agite.stat $AGITE_DIR/agite
+cp AFPX.DSC AFPX.FLD AFPX.INI $AGITE_DIR
+
+# Bin dir
+make_dir $BIN_DIR
+export LAUNCHER=$BIN_DIR/agite
+echo "AGITE_DIR=$AGITE_DIR" > $LAUNCHER
+echo "export AGITE_CONF_FILE=$CONF_DIR/agite.xml" >> $LAUNCHER
+echo 'export AFPX_DATA_DIR=$AGITE_DIR' >> $LAUNCHER
+echo 'exec $AGITE_DIR/agite --previous $* & > /dev/null 2>&1' >> $LAUNCHER
+chmod u+x $LAUNCHER
+
+echo "Done, ensure that $BIN_DIR is in your PATH."
+
