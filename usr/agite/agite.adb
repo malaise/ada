@@ -1051,7 +1051,7 @@ exception
   when Utils.Exit_Requested =>
     begin
       Afpx.Release_Descriptor;
-      Git_If.Leaving_AFpx;
+      Git_If.Leaving_Afpx;
     exception
       when Afpx.No_Descriptor =>
         null;

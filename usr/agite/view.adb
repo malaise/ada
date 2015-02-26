@@ -1,4 +1,4 @@
-with Afpx, Temp_File;
+with Temp_File;
 with Utils, Config;
 procedure View (Path : in String;
                 Hash : in Git_If.Git_Hash) is
