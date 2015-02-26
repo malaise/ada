@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Basic_Proc, Argument, Num_Letters;
+with Basic_Proc, Argument, Arbitrary, Num_Letters;
 
 procedure T_Num_Letters is
 
@@ -10,7 +10,7 @@ begin
 
     Basic_Proc.Put_Output (Argument.Get_Parameter (Occurence => I) & " -->");
     begin
-      N := Num_Letters.Number'Value (Argument.Get_Parameter (Occurence => I));
+      N := Arbitrary.Set (Argument.Get_Parameter (Occurence => I));
       Ok := True;
     exception
       when Constraint_Error =>

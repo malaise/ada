@@ -14,7 +14,7 @@ package body Num_Letters is
   Tenth : Name_Array (0 .. 2);
   -- Stores "", "thousand", "million", "milliard", billion", "billiard"
   --  "trillion", "trilliard"
-  Thousand : Name_Array (0 .. 7);
+  Thousand : Name_Array (0 .. 21);
 
   Initialized : Boolean := False;
   procedure Init is
@@ -50,7 +50,21 @@ package body Num_Letters is
                 new String'("billion"),
                 new String'("billiard"),
                 new String'("trillion"),
-                new String'("trilliard") );
+                new String'("trilliard"),
+                new String'("quadrillion"),
+                new String'("quadrilliard"),
+                new String'("quintillion"),
+                new String'("quintilliard"),
+                new String'("sextillion"),
+                new String'("sextilliard"),
+                new String'("septillion"),
+                new String'("septilliard"),
+                new String'("octillion"),
+                new String'("octilliard"),
+                new String'("nonillion"),
+                new String'("nonilliard"),
+                new String'("decillion"),
+                new String'("decilliard") );
   end Init;
 
   subtype Str1 is String (1 .. 1);
@@ -141,11 +155,12 @@ package body Num_Letters is
   end Make100;
 
   function Letters_Of (N : Number) return String is
-    -- Image
-    Tmp : constant String := N'Img;
-    -- Skip leading space of image
+    -- Image: +xxxx
+    Tmp : constant String := Arbitrary.Image (N);
+    -- Digits, skip '+'
     Img : constant String (1 .. Tmp'Length - 1)
         := Tmp (Integer'Succ(Tmp'First) .. Tmp'Last);
+    -- Start and stop of slice of 3 chars max:= Arbitrary.Image (N);
     -- Start and stop of slice of 3 chars max
     Start, Stop : Positive;
     -- Do we need to prepend a separator between previous output and current
@@ -155,8 +170,11 @@ package body Num_Letters is
     use type Number;
   begin
     Init;
+    if N > Max_Number then
+      raise Constraint_Error;
+    end if;
     -- Handle specific case of 0 => "zero"
-    if N = 0 then
+    if N = Arbitrary.Zero then
       return Names(0).all;
     end if;
 

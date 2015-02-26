@@ -9,7 +9,7 @@
 --  and that rotors "I" to "X" exist and have (at least) a carry
 
 with Ada.Calendar;
-with As.B, Perpet, Argument, Day_Mng, Normal, Upper_Str, Rnd,
+with As.B, Perpet, Argument, Day_Mng, Normal, Upper_Str, Rnd, Arbitrary,
      Num_Letters, Basic_Proc, Str_Util, Parser, Trace.Loggers, Romanic;
 with Types, Scrambler_Gen, Definition;
 procedure Def_Enigma is
@@ -161,7 +161,7 @@ procedure Def_Enigma is
         return;
       end if;
       for I in Rotor_Id loop
-        if Upper_Str (Num_Letters.Letters_Of (Num_Letters.Number(I)))
+        if Upper_Str (Num_Letters.Letters_Of (Arbitrary.Set(I)))
            = Str(Start .. Stop) then
           -- Found a num (ONE .. NINE, TEN), return 1 .. 10
           Id := I;
@@ -714,7 +714,7 @@ begin
         -- Rotor letter
         declare
           Num : constant Num_Letters.Number
-              := Num_Letters.Number (To_Id (Rotors.Element (I)) );
+              := Arbitrary.Set (To_Id (Rotors.Element (I)) );
         begin
           Basic_Proc.Put_Output (Upper_Str (Num_Letters.Letters_Of (Num)));
         end;
@@ -727,7 +727,7 @@ begin
     -- Reflector: Num, offset, offset and zero
     declare
       Reflector_Num : constant Num_Letters.Number
-                    := Num_Letters.Number (To_Id (Reflector.Element (1)));
+                    := Arbitrary.Set (To_Id (Reflector.Element (1)));
 
       Reflector_Str : constant String
                 := Upper_Str (Num_Letters.Letters_Of (Reflector_Num));
