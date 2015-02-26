@@ -161,7 +161,8 @@ procedure Def_Enigma is
         return;
       end if;
       for I in Rotor_Id loop
-        if Upper_Str (Num_Letters.Letters_Of(I)) = Str(Start .. Stop) then
+        if Upper_Str (Num_Letters.Letters_Of (Num_Letters.Number(I)))
+           = Str(Start .. Stop) then
           -- Found a num (ONE .. NINE, TEN), return 1 .. 10
           Id := I;
           Last := Stop;
@@ -712,8 +713,8 @@ begin
       if I rem 2 = 1 then
         -- Rotor letter
         declare
-          Num : constant Positive
-              := Positive (To_Id (Rotors.Element (I)) );
+          Num : constant Num_Letters.Number
+              := Num_Letters.Number (To_Id (Rotors.Element (I)) );
         begin
           Basic_Proc.Put_Output (Upper_Str (Num_Letters.Letters_Of (Num)));
         end;
@@ -725,8 +726,8 @@ begin
     end loop;
     -- Reflector: Num, offset, offset and zero
     declare
-      Reflector_Num : constant Positive
-                    := Positive (To_Id (Reflector.Element (1)));
+      Reflector_Num : constant Num_Letters.Number
+                    := Num_Letters.Number (To_Id (Reflector.Element (1)));
 
       Reflector_Str : constant String
                 := Upper_Str (Num_Letters.Letters_Of (Reflector_Num));
