@@ -9,13 +9,11 @@ begin
     Tmp_Name : constant String := Temp_File.Create ("/tmp");
   begin
     -- Cat file in it
-    Afpx.Suspend;
     Ok := Git_If.Cat (Path, Hash, Tmp_Name, Log_Error => False);
     if not Ok then
       -- Try Hash^ (file might be deleted by the commit of hash)
       Ok := Git_If.Cat (Path, Hash & "^", Tmp_Name);
     end if;
-    Afpx.Resume;
     -- Launch viewer
     if Ok then
       Utils.Launch (Config.Viewer & " " & Tmp_Name
@@ -25,10 +23,5 @@ begin
 exception
   when Temp_File.Invalid_Dir | Temp_File.No_More_Temp =>
     null;
-  when others =>
-    if Afpx.Is_Suspended then
-     Afpx.Resume;
-    end if;
-    raise;
 end View;
 

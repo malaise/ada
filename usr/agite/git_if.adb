@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Environ, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng, Str_Util,
-     Aski, Images, Regular_Expressions;
+     Aski, Images, Regular_Expressions, Afpx;
 with Utils;
 package body Git_If is
 
@@ -13,6 +13,40 @@ package body Git_If is
   Err_Flow_1 : aliased Command.Flow_Rec(Command.Str);
   -- Exit code
   Exit_Code : Command.Exit_Code_Range;
+
+  -- For encapsulation of Command.Execute
+  In_Afpx : Boolean := False;
+  procedure Entering_Afpx is
+  begin
+    In_Afpx := True;
+  end Entering_Afpx;
+  procedure Leaving_Afpx is
+  begin
+    In_Afpx := False;
+  end Leaving_Afpx;
+  procedure Execute (Cmd : in Many_Strings.Many_String;
+                     Use_Shell : in Boolean;
+                     Mix_Policy : in Command.Flow_Mixing_Policies;
+                     Out_Flow : in Command.Flow_Access;
+                     Err_Flow : in Command.Flow_Access;
+                     Exit_Code : out Command.Exit_Code_Range) is
+  begin
+    if In_Afpx and then not Afpx.Is_Suspended then
+      Afpx.Suspend;
+      Command.Execute (Cmd, Use_Shell, Mix_Policy,
+                       Out_Flow, Err_Flow, Exit_Code);
+      Afpx.Resume;
+    else
+      Command.Execute (Cmd, Use_Shell, Mix_Policy,
+                       Out_Flow, Err_Flow, Exit_Code);
+    end if;
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+        Afpx.Resume;
+      end if;
+      raise;
+  end Execute;
 
   -- Kind file/dir/...
   function Kind_Of (Path : String) return Sys_Calls.File_Kind_List is
@@ -50,7 +84,7 @@ package body Git_If is
     -- Git --version
     Cmd.Set ("git");
     Cmd.Cat ("--version");
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -221,7 +255,7 @@ package body Git_If is
     -- Git ls-files
     Cmd.Set ("git");
     Cmd.Cat ("ls-files");
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -235,7 +269,7 @@ package body Git_If is
     Cmd.Cat ("status");
     Cmd.Cat ("--porcelain");
     Cmd.Cat (".");
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_2'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -345,7 +379,7 @@ package body Git_If is
     Cmd.Cat ("status");
     Cmd.Cat ("--porcelain");
     Cmd.Cat (".");
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -381,7 +415,7 @@ package body Git_If is
     Cmd.Cat ("status");
     Cmd.Cat ("--porcelain");
     Cmd.Cat (File);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -564,7 +598,7 @@ package body Git_If is
     Cmd.Cat ("--topo-order");
     Cmd.Cat ("--");
     Cmd.Cat (Path);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -600,7 +634,7 @@ package body Git_If is
     Cmd.Cat ("-1");
     Cmd.Cat ("--");
     Cmd.Cat (Path);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -631,7 +665,7 @@ package body Git_If is
     Cmd.Cat ("1");
     Cmd.Cat (Commit.Hash);
     Cmd.Cat ("--");
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -676,7 +710,7 @@ package body Git_If is
     Cmd.Cat ("1");
     Cmd.Cat (Rev_Tag);
     Cmd.Cat ("--");
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -705,7 +739,7 @@ package body Git_If is
     References.Delete_List;
     Cmd.Set ("git");
     Cmd.Cat ("remote");
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -733,7 +767,7 @@ package body Git_If is
     Cmd.Cat ("show");
     Cmd.Cat (Hash & ":" & Name);
     Cmd.Cat (">" & File);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -769,7 +803,7 @@ package body Git_If is
     Cmd.Cat ("HEAD");
     Cmd.Cat ("--");
     Cmd.Cat (File);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -785,7 +819,7 @@ package body Git_If is
     Cmd.Cat ("reset");
     Cmd.Cat ("--");
     Cmd.Cat (File);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Don't handle error because git exits with 1 if some unstaged changes
     --  remain
@@ -798,7 +832,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("reset");
     Cmd.Cat ("--hard");
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
   end Do_Reset_Hard;
 
@@ -813,7 +847,7 @@ package body Git_If is
       Cmd.Cat (Branch);
     end if;
     Cmd.Cat (Rev_Tag);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -831,7 +865,7 @@ package body Git_If is
     Cmd.Cat ("add");
     Cmd.Cat ("--");
     Cmd.Cat (File);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -847,7 +881,7 @@ package body Git_If is
     Cmd.Cat ("rm");
     Cmd.Cat ("--");
     Cmd.Cat (File);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -870,7 +904,7 @@ package body Git_If is
     Cmd.Cat ("commit");
     Cmd.Cat ("-m");
     Cmd.Cat (Strip_Comment (Comment));
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -893,7 +927,7 @@ package body Git_If is
     if Tag /= "" then
       Cmd.Cat (Tag);
     end if;
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -918,7 +952,7 @@ package body Git_If is
     Cmd.Cat ("--tags");
     Cmd.Cat (Remote);
     Cmd.Cat (Branch & ":" & Branch);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -944,7 +978,7 @@ package body Git_If is
   begin
     Cmd.Set ("git");
     Cmd.Cat ("branch");
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -986,7 +1020,7 @@ package body Git_If is
       -- For remote branches, first fetch them
       Cmd.Set ("git");
       Cmd.Cat ("fetch");
-      Command.Execute (Cmd, True, Command.Both,
+      Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     end if;
     -- List branches
@@ -996,7 +1030,7 @@ package body Git_If is
       Cmd.Cat ("-r");
       Remotestr := As.U.Tus (" -r");
     end if;
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1027,7 +1061,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("branch");
     Cmd.Cat (Name);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1046,7 +1080,7 @@ package body Git_If is
     Cmd.Cat ("-m");
     Cmd.Cat (Name);
     Cmd.Cat (New_Name);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1064,7 +1098,7 @@ package body Git_If is
     Cmd.Cat ("branch");
     Cmd.Cat ("-d");
     Cmd.Cat (Name);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1083,7 +1117,7 @@ package body Git_If is
     Cmd.Cat ("-m");
     Cmd.Cat (Strip_Comment (Comment));
     Cmd.Cat (Name);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1104,7 +1138,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("config");
     Cmd.Cat ("user.name");
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1122,7 +1156,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("config");
     Cmd.Cat ("user.email");
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1154,7 +1188,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("stash");
     Cmd.Cat ("list");
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1209,7 +1243,7 @@ package body Git_If is
     Cmd.Cat ("stash");
     Cmd.Cat ("save");
     Cmd.Cat (Name);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1240,7 +1274,7 @@ package body Git_If is
     Cmd.Cat ("apply");
     Cmd.Cat ("-q");
     Cmd.Cat ("stash@{" & Images.Integer_Image (Num) & "}");
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1259,7 +1293,7 @@ package body Git_If is
     Cmd.Cat ("pop");
     Cmd.Cat ("-q");
     Cmd.Cat ("stash@{" & Images.Integer_Image (Num) & "}");
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1278,7 +1312,7 @@ package body Git_If is
     Cmd.Cat ("drop");
     Cmd.Cat ("-q");
     Cmd.Cat ("stash@{" & Images.Integer_Image (Num) & "}");
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1314,7 +1348,7 @@ package body Git_If is
     Cmd.Cat ("-s");
     Cmd.Cat (Tag.Name.Image);
     Cmd.Cat ("--");
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_2'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1402,7 +1436,7 @@ package body Git_If is
       Cmd.Cat ("'" & Template & "'");
     end if;
 
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1432,7 +1466,7 @@ package body Git_If is
     Cmd.Cat ("tag");
     Cmd.Cat ("-d");
     Cmd.Cat (Tag);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1458,7 +1492,7 @@ package body Git_If is
     end if;
     Cmd.Cat (Tag);
     Cmd.Cat (Hash);
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1484,7 +1518,7 @@ package body Git_If is
     Cmd.Cat (Target);
     Cmd.Cat (Ref);
 
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -1534,7 +1568,7 @@ package body Git_If is
       Cmd.Cat (Commit.Hash);
       exit when not Moved;
     end loop;
-    Command.Execute (Cmd, True, Command.Both,
+    Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then

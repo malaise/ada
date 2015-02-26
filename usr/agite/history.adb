@@ -81,11 +81,9 @@ package body History is
     Moved : Boolean;
   begin
     Afpx.Line_List.Delete_List;
-    Afpx.Suspend;
     -- List Cherries
     Git_If.Cherry_List (Branch, Git_If.Current_Branch, Cherries);
     if Cherries.Is_Empty then
-      Afpx.Resume;
       return;
     end if;
 
@@ -97,16 +95,9 @@ package body History is
       Cherries.Modify (Cherry, Moved => Moved);
       exit when not Moved;
     end loop;
-    Afpx.Resume;
 
     -- Set Afpx list
     Init_Cherry (Cherries);
-  exception
-    when others =>
-      if Afpx.Is_Suspended then
-       Afpx.Resume;
-      end if;
-      raise;
   end Cherry_Init;
 
   -- Read / Write cherry state
@@ -229,11 +220,9 @@ package body History is
     end if;
 
     -- Do the cherry pick
-    Afpx.Suspend;
     declare
       Result : constant String := Git_If.Cherry_Pick (Cherries);
     begin
-      Afpx.Resume;
       if Result = "" then
         -- Ok
         return True;
@@ -244,12 +233,6 @@ package body History is
         return False;
       end if;
     end;
-  exception
-    when others =>
-      if Afpx.Is_Suspended then
-       Afpx.Resume;
-      end if;
-      raise;
   end Cherry_Done;
 
   ------------------
@@ -511,27 +494,17 @@ package body History is
       Cherry_Init (Path, Logs);
     else
       -- Get history list
-      Afpx.Suspend;
-      begin
-        if Path = "" and then Name = ""
-        and then Directory.Get_Current = Directory.Normalize_Path (Root) then
-          -- Log in (the root dir of) a bare repository
-          --  fails if we provide the full (Root) path
-          --  but is OK with '.'
-          -- Use '.' if we are in root and target dir is root
-          Git_If.List_Log (".", False, Logs);
-        else
-          -- Log, following renames only if file
-          Git_If.List_Log (Root & Path & Name, Name /= "", Logs);
-        end if;
-        Afpx.Resume;
-      exception
-        when others =>
-          if Afpx.Is_Suspended then
-            Afpx.Resume;
-          end if;
-          raise;
-      end;
+      if Path = "" and then Name = ""
+      and then Directory.Get_Current = Directory.Normalize_Path (Root) then
+        -- Log in (the root dir of) a bare repository
+        --  fails if we provide the full (Root) path
+        --  but is OK with '.'
+        -- Use '.' if we are in root and target dir is root
+        Git_If.List_Log (".", False, Logs);
+      else
+        -- Log, following renames only if file
+        Git_If.List_Log (Root & Path & Name, Name /= "", Logs);
+      end if;
 
       if Hash /= Git_If.No_Hash then
         -- Set current to Hash provided

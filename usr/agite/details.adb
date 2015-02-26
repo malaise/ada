@@ -55,15 +55,7 @@ package body Details is
 
       -- Get commit details
       if Get_Details then
-        Afpx.Suspend;
-        begin
-          Git_If.List_Commit (Rev_Tag, Hash, Merged, Date, Comment, Commits);
-          Afpx.Resume;
-        exception
-          when others =>
-            Afpx.Resume;
-            raise;
-        end;
+        Git_If.List_Commit (Rev_Tag, Hash, Merged, Date, Comment, Commits);
       end if;
 
       -- Encode info

@@ -35,15 +35,7 @@ package body Checkout is
     Branch := As.U.Tus (
       Str_Util.Strip (Afpx.Decode_Field (Afpx_Xref.Checkout.Into_Branch,
                                          0, False)));
-    begin
-      Afpx.Suspend;
-      Result := As.U.Tus (Git_If.Do_Checkout (Hash, Branch.Image));
-      Afpx.Resume;
-    exception
-      when others =>
-        Afpx.Resume;
-        raise;
-    end;
+    Result := As.U.Tus (Git_If.Do_Checkout (Hash, Branch.Image));
     -- Handle error
     if not Result.Is_Null then
       Error ("Checkout", Hash, Result.Image);

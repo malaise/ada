@@ -80,9 +80,7 @@ procedure List (Root : in String) is
     if Reread then
       Read_Template;
       -- Get tags list
-      Afpx.Suspend;
       Git_If.List_Tags (Template.Image, Tags_List);
-      Afpx.Resume;
       Sort (Tags_List);
     end if;
     Init_List (Tags_List);
@@ -90,12 +88,6 @@ procedure List (Root : in String) is
       Afpx.Line_List.Rewind;
     end if;
     Afpx.Update_List (Afpx.Top);
-  exception
-    when others =>
-      if Afpx.Is_Suspended then
-       Afpx.Resume;
-      end if;
-      raise;
   end Read_Tags;
 
   -- Checkout current tag
@@ -234,17 +226,7 @@ begin
             Tags_List.Read (Current_Tag, Git_If.Tag_Mng.Dyn_List.Current);
             Save;
             if Confirm  ("Delete Tag", Current_Tag.Name.Image) then
-              begin
-                Afpx.Suspend;
-                Git_If.Delete_Tag (Str_Util.Strip (Current_Tag.Name.Image));
-                Afpx.Resume;
-              exception
-                when others =>
-                  if Afpx.Is_Suspended then
-                   Afpx.Resume;
-                  end if;
-                  raise;
-              end;
+              Git_If.Delete_Tag (Str_Util.Strip (Current_Tag.Name.Image));
               Restore (False, True);
             else
               Restore (True, False);

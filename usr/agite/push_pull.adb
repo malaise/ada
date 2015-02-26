@@ -36,22 +36,14 @@ package body Push_Pull is
     Log : As.U.Asu_Us;
   begin
     References.Move_At (Afpx.Line_List.Get_Position);
-    Afpx.Suspend;
     Log := As.U.Tus (Git_If.Do_Push (References.Access_Current.Image,
                                      Tag, Set_Upstream));
-    Afpx.Resume;
     if Log.Is_Null then
       return True;
     else
       Error ("Pushing to", References.Access_Current.Image, Log.Image);
       return False;
     end if;
-  exception
-    when others =>
-      if Afpx.Is_Suspended then
-       Afpx.Resume;
-      end if;
-      raise;
   end Do_Push;
 
   -- Get branch and call Do_Handle (Pull, Branch);
@@ -77,10 +69,8 @@ package body Push_Pull is
     Log : As.U.Asu_Us;
   begin
     References.Move_At (Afpx.Line_List.Get_Position);
-    Afpx.Suspend;
     Log := As.U.Tus (
           Git_If.Do_Fetch (References.Access_Current.Image, Branch, Pull));
-    Afpx.Resume;
     if Log.Is_Null then
       return True;
     else
@@ -89,12 +79,6 @@ package body Push_Pull is
              Log.Image);
       return False;
     end if;
-  exception
-    when others =>
-      if Afpx.Is_Suspended then
-       Afpx.Resume;
-      end if;
-      raise;
   end Do_Fetch;
 
   -- Handle the Push, the Pull_Branch and the Pull
@@ -123,9 +107,7 @@ package body Push_Pull is
       Utils.X.Encode_Branch (Afpx_Xref.Push_Pull.Branch);
 
       -- Get current branch
-      Afpx.Suspend;
       Curr_Branch := As.U.Tus (Git_If.Current_Branch);
-      Afpx.Resume;
 
       -- Change title and Push button if Pull_Branch or Pull
 
@@ -155,13 +137,11 @@ package body Push_Pull is
       end case;
 
       -- Get list of references
-      Afpx.Suspend;
       if Menu = Pull_Branch then
         Git_If.List_Branches (Local => False, Branches => References);
       else
         Git_If.List_References (References);
       end if;
-      Afpx.Resume;
       Init_List (References);
 
       Afpx.Utils.Protect_Field (Afpx_Xref.Push_Pull.Push, References.Is_Empty);
@@ -180,12 +160,6 @@ package body Push_Pull is
         end if;
       end if;
 
-    exception
-      when others =>
-        if Afpx.Is_Suspended then
-         Afpx.Resume;
-        end if;
-        raise;
     end Init;
 
   begin
