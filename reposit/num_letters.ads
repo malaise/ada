@@ -1,16 +1,18 @@
--- Conversion Number -> letters (long scale): Decilliards, Decillions...
--- Trilliards, Trillions, Billiars, Billions, Milliards, Millions, Thousands
--- and Units
+-- Conversion Number -> letters
 --  e.g. 9789  -> "nine thousand seven hundred eighty nine"
 with Arbitrary;
 package Num_Letters is
-  -- nine thousand nine hundred ninety one decilliards.... = 10 ** 66 - 1
-  Max_Number : constant Arbitrary.Number := Arbitrary.Set (
---          6         5         4         3         2         1         0
--- 9876543210987654321098765432109876543210987654321098765432109876543210
-      "999999999999999999999999999999999999999999999999999999999999999999");
+
+  -- Number to convert
   subtype Number is Arbitrary.Number;
-  function Letters_Of (N : Number) return String;
+
+  -- long scale:  Decilliard, Decillion .. Milliard,          Max 10^606-1
+  -- short scale: Decillion, Novemnonagintillion .. Billion,  Max 10^306-1
+  -- common: Million, Thousand, Hundred, Tenth and Unit
+  type Scale_List is (Short, Long);
+
+  -- Raises Constraint_Error if N is too large for the scale (see "Max" above)
+  function Letters_Of (N : Number; Scale : Scale_List := Long) return String;
 
 end Num_Letters;
 

@@ -1090,7 +1090,7 @@ echo "OK"
 
 # t_num_letters
 title t_num_letters
-try t_num_letters 1 2 3 4 5 6 7 8 9 0 21
+try t_num_letters 1 2 3 4 5 6 7 8 9 0 21 1000000000000 -s 1000000000
 cat << EOF > exp
 1 -->one<
 2 -->two<
@@ -1103,6 +1103,8 @@ cat << EOF > exp
 9 -->nine<
 0 -->zero<
 21 -->twenty one<
+1000000000000 -->one billion<
+1000000000 -->one billion<
 EOF
 comp out exp
 comp err nul
