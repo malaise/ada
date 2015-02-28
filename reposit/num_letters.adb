@@ -522,5 +522,10 @@ package body Num_Letters is
     return Txt.Image;
   end Letters_Of;
 
+  -- Raises Constraint_Error is Words is an invalid number
+  function Num_Of (Words : String; Scale : Scale_List := Long) return Number is
+  begin
+    return Arbitrary.Zero;
+  end Num_Of;
 end Num_Letters;
 
