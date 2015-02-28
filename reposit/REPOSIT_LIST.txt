@@ -461,8 +461,8 @@ normalization, normal (1)::
 null_procedure (1)::
      Null (dummy) procedure.
 
-num_letters (1)::
-     Converts a number into english text.
+num_letters (2)::
+     Converts a number into english text and reverse.
 
 num_match (1)::
      Checks if a number matches a range based criteria.
@@ -470,7 +470,7 @@ num_match (1)::
 output_flows (2)::
      Pool of shared ans standardized output flows
 
-parser parser.all_in_one (2)::
+parser parser.all_in_one parser.keywords (2)::
      Parse a string, separate words and separators.
 
 pattern (2)::
