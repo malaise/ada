@@ -27,8 +27,9 @@ package body Branch is
   procedure Init_List is new Afpx.Utils.Init_List (
     As.U.Asu_Us, As.U.Utils.Asu_List_Mng, Set, False);
 
-  -- Root path
+  -- Root path and current branch
   Root : As.U.Asu_Us;
+  Current_Branch : As.U.Asu_Us;
 
   -- The Branches
   Branches : Git_If.Branches_Mng.List_Type;
@@ -80,6 +81,8 @@ package body Branch is
 
     -- Encode current branch
     Utils.X.Encode_Branch (Afpx_Xref.Branches.Branch);
+    Current_Branch := As.U.Tus (Git_If.Current_Branch);
+
     -- Set field activity
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rename,
                               Afpx.Line_List.Is_Empty);
@@ -173,6 +176,22 @@ package body Branch is
     return Action = Checkout or else Action = Merge;
   end Do_Action;
 
+  -- Update the list status
+  procedure List_Change (Unused_Action : in Afpx.List_Change_List;
+                         Unused_Status : in Afpx.List_Status_Rec) is
+    On_Current : Boolean;
+    use type As.U.Asu_Us;
+  begin
+    -- No action on current branch (except Create)
+    Branches.Move_At (Afpx.Line_List.Get_Position);
+    On_Current := Branches.Access_Current.all = Current_Branch;
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rename, On_Current);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Delete, On_Current);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Checkout, On_Current);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Merge, On_Current);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Cherry_Pick, On_Current);
+  end List_Change;
+
   -- Handle the Branches
   procedure Handle (Root : in String) is
     Ptg_Result   : Afpx.Result_Rec;
@@ -197,7 +216,8 @@ package body Branch is
 
     -- Main loop
     loop
-      Afpx.Put_Then_Get (Get_Handle, Ptg_Result, True);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
+                         List_Change_Cb => List_Change'Access);
 
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
