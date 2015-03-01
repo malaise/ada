@@ -1,4 +1,4 @@
-with As.U;
+with As.U, Parser.Keywords, Trace.Loggers, Str_Util;
 package body Num_Letters is
 
   -- Conversion Number -> letters
@@ -522,10 +522,221 @@ package body Num_Letters is
     return Txt.Image;
   end Letters_Of;
 
+  -- Logger (debug and errors)
+  Logger : Trace.Loggers.Logger;
+  -- Data stored for a word
+  type Word_Kind_List is (Multiplicators,     -- "centillion" .. "thousand"
+                          Hundred,            -- "hundred"
+                          Ties,               -- "ninety" .. "twenty"
+                          Teens,              -- "nineteen" .. "ten"
+                          Units,              -- "nine" .. "one"
+                          Not_Found,          -- keyword not found
+                          End_Reached);       -- end of Words reached
+  subtype Stored_Word_Kind_List is Word_Kind_List
+                                   range Multiplicators .. Units;
+  type Data_Rec is record
+    Kind : Stored_Word_Kind_List;
+    -- For a multiplicator, the power of ten, else 100, 90, 80 .. 20 .. 1
+    Val  : Natural;
+  end record;
+
+  -- Hashed lists of words
+  package Keys_Mng is new Parser.Keywords (Data_Rec);
+  H_Long, H_Short : aliased Keys_Mng.Iterator;
+
+  -- Parsing result handled internally
+  type Word_Rec is record
+    Kind : Word_Kind_List;
+    Word : As.U.Asu_Us;
+    Val : Natural;
+  end record;
+
+  function Next_Word (Iter : in out Keys_Mng.Iterator) return Word_Rec is
+    Res : Keys_Mng.Result_Rec;
+  begin
+    Res := Iter.Next_Word;
+    case Res.Kind is
+      when Keys_Mng.Found =>
+        Logger.Log_Debug ("Got keyword " & Res.Keyword.Image &  " "
+                        & Res.Data.Kind'Img);
+        return (Res.Data.Kind, Res.Keyword, Res.Data.Val);
+      when Keys_Mng.Not_Found =>
+        Logger.Log_Debug ("Got unknown word " & Res.Word.Image);
+        return (Not_Found, Res.Word, 0);
+      when Keys_Mng.End_Reached =>
+        Logger.Log_Debug ("Got end reached");
+        return (End_Reached, As.U.Asu_Null, 0);
+    end case;
+  end Next_Word;
+
+  -- Init at first call
+  procedure Init is
+    Name : As.U.Asu_Us;
+  begin
+    if Logger.Is_Init then
+      return;
+    end if;
+    -- Init logger
+    Logger.Init ("Num_Letters");
+    Logger.Add_Mask (Trace.Error);
+    -- Init arrays
+    -- Multiplicators decilliard | decillion .. thousand
+    for I in 1 .. Thoulong'Last loop
+      H_Long.Add  (Thoulong(I).all, (Multiplicators, I * 3));
+    end loop;
+    for I in 1 .. Thoushort'Last loop
+      H_Short.Add (Thoushort(I).all, (Multiplicators, I * 3));
+    end loop;
+    -- Hundred
+    H_Long.Add  ("hundred", (Hundred, 100));
+    H_Short.Add ("hundred", (Hundred, 100));
+    -- Ties: ninety .. twenty
+    for I in Suffixes'Range loop
+      if Suffixes(I) = null then
+        -- Use name in Names
+        Name := As.U.Tus (Names(I).all);
+      else
+        Name := As.U.Tus (Suffixes(I).all);
+      end if;
+      H_Long.Add  (Name.Image & "ty", (Ties, I * 10) );
+      H_Short.Add (Name.Image & "ty", (Ties, I * 10) );
+    end loop;
+    -- Teens: nineteen .. thirteen, twelve, eleven, ten
+    for I in 10 .. 12 loop
+      H_Long.Add  (Names(I).all, (Teens, I) );
+      H_Short.Add (Names(I).all, (Teens, I) );
+    end loop;
+    for I in 3 .. Suffixes'Last loop
+      if Suffixes(I) = null then
+        -- Use name in Names
+        Name := As.U.Tus (Names(I).all);
+      else
+        Name := As.U.Tus (Suffixes(I).all);
+      end if;
+      H_Long.Add  (Name.Image & "teen", (Teens, 10 + I) );
+      H_Short.Add (Name.Image & "teen", (Teens, 10 + I) );
+    end loop;
+    -- Units, not "zero", one .. nine
+    for I in 1 .. 9 loop
+      H_Long.Add  (Names(I).all, (Units, I) );
+      H_Short.Add (Names(I).all, (Units, I) );
+    end loop;
+    -- End init
+  end Init;
+
   -- Raises Constraint_Error is Words is an invalid number
   function Num_Of (Words : String; Scale : Scale_List := Long) return Number is
+    Iter : access Keys_Mng.Iterator;
+    Piter : Parser.Iterator;
+    Prev_Multiplicator : Natural;
+    Word, Tmp_Word : Word_Rec;
+    Result : Number;
+    Factor : Number;
+    Done : Boolean;
+    use type Number;
   begin
-    return Arbitrary.Zero;
+    -- Init result
+    Result := Arbitrary.Zero;
+
+    -- Handle empty input and "zero"
+    if Words = "" then
+      raise Constraint_Error;
+    elsif Str_Util.Strip (Words, Str_Util.Both) = Names(0).all then
+      return Result;
+    end if;
+
+    -- Init tables
+    Init;
+    -- Set iterators
+    if Scale = Long then
+      Iter := H_Long'Access;
+    else
+      Iter := H_Short'Access;
+    end if;
+    Piter.Set (Words);
+    Iter.Set (Piter);
+
+    -- Parse words, series of: Factor Multiplicator then [ Factor ]
+    -- Factor = [ Units Hundred ] [ Ties [ Units ] | Teen | Units ]
+    Prev_Multiplicator := Natural'Last;
+    Word := Next_Word (Iter.all);
+    loop
+      -- Init factor
+      Factor := Arbitrary.Zero;
+      Done := False;
+
+      exit when Word.Kind = End_Reached;
+      if Word.Kind = Units then
+        Tmp_Word := Next_Word (Iter.all);
+        if Tmp_Word.Kind = Hundred then
+          -- Units hundred
+          Factor := Arbitrary.Set (Word.Val * Tmp_Word.Val);
+          Word := Next_Word (Iter.all);
+        else
+          -- Units
+          Factor := Arbitrary.Set (Word.Val);
+          Word := Tmp_Word;
+          Done := True;
+        end if;
+      end if;
+
+      -- Ties?
+      if not Done then
+        if Word.Kind = Ties then
+          -- Ties [ Units ]
+          Tmp_Word := Next_Word (Iter.all);
+          Factor := Factor + Arbitrary.Set (Word.Val);
+          if Tmp_Word.Kind = Units then
+            Factor := Factor + Arbitrary.Set (Tmp_Word.Val);
+            Word := Next_Word (Iter.all);
+          else
+            Word := Tmp_Word;
+          end if;
+        elsif Word.Kind = Teens then
+          -- Teens
+          Factor := Factor + Arbitrary.Set (Word.Val);
+          Word := Next_Word (Iter.all);
+        elsif Word.Kind = Units then
+          -- Units
+          Factor := Factor + Arbitrary.Set (Word.Val);
+          Word := Next_Word (Iter.all);
+        elsif Word.Kind /= Multiplicators
+        and then Word.Kind /= End_Reached then
+          Logger.Log_Error ("Unexpected word " & Word.Word.Image);
+          raise Constraint_Error;
+        end if;
+      end if;
+
+      -- Check that a factor is set
+      if Factor = Arbitrary.Zero then
+        Logger.Log_Error ("Missing factor at " & Word.Word.Image);
+        raise Constraint_Error;
+      end if;
+
+      -- Multiplicator?
+      if Word.Kind = Multiplicators then
+        -- Check that multiplicators are decreasing
+        if Word.Val >= Prev_Multiplicator then
+          Logger.Log_Error ("Crescent multiplicator " & Word.Word.Image);
+          raise Constraint_Error;
+        end if;
+        -- Muliplicator is a power of 10
+        Factor := Factor
+               * (Arbitrary.Set (Integer'(10)) ** Arbitrary.Set (Word.Val));
+        Word := Next_Word (Iter.all);
+      elsif Word.Kind /= End_Reached then
+        Logger.Log_Error ("Unexpected word " & Word.Word.Image);
+          raise Constraint_Error;
+      end if;
+
+      -- Add
+      Result := Result + Factor;
+
+      -- Next word
+      exit when Word.Kind = End_Reached;
+    end loop;
+
+    return Result;
   end Num_Of;
 end Num_Letters;
 

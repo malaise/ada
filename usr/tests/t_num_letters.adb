@@ -22,12 +22,12 @@ procedure T_Num_Letters is
     -- Back to default scale
     Scale := Num_Letters.Long;
     Words.Set_Null;
-  exception
-    when Error:others =>
-      Scale := Num_Letters.Long;
-      Words.Set_Null;
-      Basic_Proc.Put_Line_Output (" Exception "
-        & Ada.Exceptions.Exception_Name (Error));
+--  exception
+--    when Error:others =>
+--      Scale := Num_Letters.Long;
+--      Words.Set_Null;
+--      Basic_Proc.Put_Line_Output (" Exception "
+--        & Ada.Exceptions.Exception_Name (Error));
   end Put_Words;
 
 begin
