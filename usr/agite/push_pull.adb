@@ -23,7 +23,7 @@ package body Push_Pull is
   function Match (Current, Criteria : Afpx.Line_Rec) return Boolean is
     use type Unicode.Unicode_Sequence;
   begin
-    return Current.Str(4 .. Current.Len) = Criteria.Str(4 .. Criteria.Len);
+    return Current.Str(1 .. Current.Len) = Criteria.Str(1 .. Criteria.Len);
   end Match;
   function Search is new Afpx.Line_List_Mng.Search (Match);
 
@@ -151,8 +151,8 @@ package body Push_Pull is
         if Menu /= Pull_Branch  then
           Afpx.Encode_Line (Origin, "origin");
         elsif not Curr_Branch.Is_Null then
-          Afpx.Encode_Line (Origin,
-                            "origin" & Git_If.Separator & Curr_Branch.Image);
+          Set (Origin,
+               As.U.Tus ("origin" & Git_If.Separator & Curr_Branch.Image));
         end if;
         if not Search (Afpx.Line_List, Origin,
                        From => Afpx.Line_List_Mng.Absolute) then
