@@ -16,9 +16,8 @@ procedure T_Num_Letters is
 
   procedure Put_Words is
   begin
-    Basic_Proc.Put_Output (Words.Image & " -->");
     N := Num_Letters.Num_Of (Words.Image, Scale);
-    Basic_Proc.Put_Line_Output (Image (N) & "<");
+    Basic_Proc.Put_Line_Output (Image (N));
     -- Back to default scale
     Scale := Num_Letters.Long;
     Words.Set_Null;
@@ -77,8 +76,7 @@ begin
     if Kind = Number then
       -- No error
       begin
-        Basic_Proc.Put_Output (Num.Image & " -->");
-        Basic_Proc.Put_Line_Output (Num_Letters.Letters_Of (N, Scale) & "<");
+        Basic_Proc.Put_Line_Output (Num_Letters.Letters_Of (N, Scale));
         -- Back to default scale
         Scale := Num_Letters.Long;
       exception
