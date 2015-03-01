@@ -11,6 +11,8 @@ package Parser.Keywords is
   -- Add a keyword
   -- Any redefinition of a keyword overwrites the previous
   procedure Add (Keys : in out Iterator;
+                 Keyword : in String; Data : in Data_Type);
+  procedure Add (Keys : in out Iterator;
                  Keyword : in As.U.Asu_Us; Data : in Data_Type);
   -- Clears all the words
   procedure Reset (Keys : in out Iterator);

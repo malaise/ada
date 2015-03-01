@@ -24,6 +24,12 @@ package body Parser.Keywords is
     Keys.List.Insert ( (Keyword, Data) );
   end Add;
 
+  procedure Add (Keys : in out Iterator;
+                 Keyword : in String; Data : in Data_Type) is
+  begin
+    Add (Keys, As.U.Tus (Keyword), Data);
+  end Add;
+
   -- Clears all the words
   procedure Reset (Keys : in out Iterator) is
   begin
