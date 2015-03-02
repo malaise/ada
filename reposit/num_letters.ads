@@ -1,13 +1,13 @@
--- Conversion Number -> letters
---  e.g. 9789  -> "nine thousand seven hundred eighty nine"
+-- Conversion Number <-> letters
+--  e.g. 9789  <-> nine thousand seven hundred eighty nine
 with Arbitrary;
 package Num_Letters is
 
   -- Number to convert
   subtype Number is Arbitrary.Number;
 
-  -- long scale:  Decilliard, Decillion .. Milliard,          Max 10^606-1
-  -- short scale: Decillion, Novemnonagintillion .. Billion,  Max 10^306-1
+  -- long scale:  Decilliard, Decillion .. Milliard           Max 10^606-1
+  -- short scale: Decillion, Novemnonagintillion .. Billion   Max 10^306-1
   -- common: Million, Thousand, Hundred, Tenth and Unit
   type Scale_List is (Short, Long);
 
