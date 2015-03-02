@@ -6,6 +6,10 @@ generic
 package Parser.Keywords is
 
   -- Keywords parser iterator
+  -- It allows storing several keywords (each with some private data),
+  --  then setting a sentence (Parser.Iterator), then getting the words
+  --  of the sentence one after the other; if a word is akeyword then
+  --  it is retrieved togther with the private data.
   type Iterator is tagged limited private;
 
   -- Add a keyword
