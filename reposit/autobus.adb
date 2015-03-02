@@ -76,7 +76,7 @@ package body Autobus is
   --  * call the observer if the message passes.
   --
   -- Policy for sorting addressses:
-  -- The goal is to avoid that some nodes always connect and som others always
+  -- The goal is to avoid that some nodes always connect and some others always
   --  accept, which could lead to exhaust some resources
   -- The idea is to represent addresses by numbers: pad with zeros the 4 bytes
   --  of the IP address on 3 digits and the port num on 5 digits, max value
@@ -496,8 +496,9 @@ package body Autobus is
     --  (the one in its live message)
     if Length < Message_Min_Length or else Length > Ipm_Message_Max_Length
     or else (Msg(1) /= 'A' and then Msg(1) /= 'P') or else Msg(2) /= '/' then
-      Log_Error ("Tcp_Reception_Cb", "invalid identification header",
-                 Msg & " from " & Partner_Acc.Addr.Image);
+      Logger.Log_Warning (
+          "Tcp_Reception_Cb recieved invalid identification header >"
+        & Msg & "< from " & Partner_Acc.Addr.Image);
     end if;
     Addr := As.U.Tus (Msg(3 .. Length));
 
@@ -508,8 +509,9 @@ package body Autobus is
       Ip_Addr.Parse (Addr.Image, Rem_Host, Rem_Port);
     exception
       when Ip_Addr.Parse_Error =>
-        Log_Error ("Tcp_Reception_Cb", "invalid identification",
-                 Msg & " from " & Partner_Acc.Addr.Image);
+        Logger.Log_Warning (
+            "Tcp_Reception_Cb received invalid identification >"
+          & Msg & "< from " & Partner_Acc.Addr.Image);
         Remove_Current_Partner (True);
         return False;
     end;
@@ -694,12 +696,16 @@ package body Autobus is
     if Buses.Access_Current.Kind = Multicast then
       -- Message is local if the sender is ourself
       if Length < Pid_Image'Length + 1 then
-        Log_Error ("Ipm_Reception_Cb", "multicast message too short",
-                   Message(1 .. Length));
+        Logger.Log_Warning (
+            "Ipm_Reception_Cb received multicast message too short >"
+          & Message(1 .. Length) & "<");
+        return False;
       end if;
       if Message (Pid_Image'Length + 1) /= '/' then
-        Log_Error ("Ipm_Reception_Cb", "multicast message too short",
-                   Message(1 .. Length));
+        Logger.Log_Warning (
+            "Ipm_Reception_Cb received invalid multicast message >"
+          & Message(1 .. Length) & "<");
+        return False;
       end if;
 
       -- The sender host is the dest after receive (Set_For_Reply=True)
@@ -717,8 +723,8 @@ package body Autobus is
     or else (Message(1) /= 'A' and then Message(1) /= 'P'
              and then Message(1) /= 'D')
     or else Message(2) /= '/' then
-      Logger.Log_Debug ("Ipm_Reception_Cb received invalid IPM message: >"
-                      & Message(1 .. Length) & "<");
+      Logger.Log_Warning ("Ipm_Reception_Cb received invalid IPM message: >"
+                        & Message(1 .. Length) & "<");
       return False;
     end if;
     declare
@@ -730,8 +736,6 @@ package body Autobus is
       or else Rem_Port.Kind = Tcp_Util.Port_Name_Spec then
         -- Not an IP address or not a port num
         -- Consider this as an error because the frame started all right
-        Logger.Log_Debug ("Ipm_Reception_Cb received invalid IPM message: >"
-                        & Message(1 .. Length) & "<");
         Log_Error ("Ipm_Reception_Cb", "invalid IPM address", Address);
         return False;
       end if;
