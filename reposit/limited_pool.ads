@@ -29,7 +29,9 @@ package Limited_Pool is
 
   -- Read from pool the next to be popped
   --  i.e. last pushed (Lifo) or first pushed (Fifo)
-  procedure Front (Pool : in out Pool_Type; Data : out Data_Type);
+  procedure Look (Pool : in out Pool_Type; Data : out Data_Type);
+  function  Look (Pool : in out Pool_Type) return Data_Type;
+
 
   -- Clear the pool (deallocates)
   procedure Clear (Pool : in out Pool_Type);
