@@ -1,6 +1,8 @@
 with As.U, Dynamic_List, Text_Line, Smart_Alias;
 package Output_Flows is
 
+  -- An output flow provides Put_Line and Flush operations the same way on
+  --  a flow that is either Stdout, Stderr, synchronous or not, or a file.
   type Output_Flow is tagged private;
 
   -- Get a flow
