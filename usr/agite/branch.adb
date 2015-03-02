@@ -31,6 +31,10 @@ package body Branch is
   Root : As.U.Asu_Us;
   Current_Branch : As.U.Asu_Us;
 
+  -- The branch previously selected (when moving back from a sub-menu or
+  --  when being re-called
+  Previous_Branch : As.U.Asu_Us;
+
   -- The Branches
   Branches : Git_If.Branches_Mng.List_Type;
 
@@ -51,22 +55,25 @@ package body Branch is
   procedure Reread (Restore : in Boolean) is
     Line : Afpx.Line_Rec;
   begin
+    -- Encode current branch
+    Utils.X.Encode_Branch (Afpx_Xref.Branches.Branch);
+    Current_Branch := As.U.Tus (Git_If.Current_Branch);
+
     -- Save current selection
     if Restore and then not Afpx.Line_List.Is_Empty then
       Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
+    elsif not Previous_Branch.Is_Null then
+      -- Set default to previous branch
+      Set (Line, Previous_Branch);
     else
-      Line.Len := 0;
-    end if;
-
-    -- Get list of branches
-    Git_If.List_Branches (Local => True, Branches => Branches);
-    if not Restore then
       -- Set default to current branch
-      Set (Line, As.U.Tus (Git_If.Current_Branch));
+      Set (Line, Current_Branch);
     end if;
 
     -- Encode the list
+    Git_If.List_Branches (Local => True, Branches => Branches);
     Init_List (Branches);
+
     -- Move back to the same entry as before (if possible)
     if not Afpx.Line_List.Is_Empty then
       if Search (Afpx.Line_List, Line,
@@ -78,10 +85,6 @@ package body Branch is
     end if;
     -- Center
     Afpx.Update_List (Afpx.Center_Selected);
-
-    -- Encode current branch
-    Utils.X.Encode_Branch (Afpx_Xref.Branches.Branch);
-    Current_Branch := As.U.Tus (Git_If.Current_Branch);
 
     -- Set field activity
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rename,
@@ -136,6 +139,9 @@ package body Branch is
         Message := As.U.Tus ("Creating branch " & New_Name.Image);
         if not New_Name.Is_Null then
           Result := As.U.Tus (Git_If.Create_Branch (New_Name.Image));
+          if Result.Is_Null then
+            Previous_Branch := New_Name;
+          end if;
         end if;
       when Rename =>
         Message := As.U.Tus ("Renaming branch " & Curr_Name.Image
@@ -143,19 +149,28 @@ package body Branch is
         if not New_Name.Is_Null then
           Result := As.U.Tus (Git_If.Rename_Branch (Curr_Name.Image,
                                                     New_Name.Image));
+          if Result.Is_Null then
+            Previous_Branch := New_Name;
+          end if;
         end if;
       when Delete =>
         Message := As.U.Tus ("Deleting branch " & Curr_Name.Image);
         Result := As.U.Tus (Git_If.Delete_Branch (Curr_Name.Image));
+        if Result.Is_Null then
+          Previous_Branch := Current_Branch;
+        end if;
       when Checkout =>
         Message := As.U.Tus ("Checking out branch " & Curr_Name.Image);
         Result := As.U.Tus (Git_If.Do_Checkout (Curr_Name.Image, ""));
+        Previous_Branch := Current_Branch;
       when Merge =>
         Message := As.U.Tus ("Merging branch " & Curr_Name.Image);
+        Previous_Branch := Curr_Name;
         Result := As.U.Tus (
            Git_If.Merge_Branch (Curr_Name.Image,
                                 "Merge branch '" & Curr_Name.Image & "'"));
       when Cherry_Pick =>
+        Previous_Branch := Curr_Name;
         Done := History.Cherry_Pick (Root.Image, Curr_Name.Image);
         Init;
         Reread (False);
@@ -182,6 +197,9 @@ package body Branch is
     On_Current : Boolean;
     use type As.U.Asu_Us;
   begin
+    if Afpx.Line_List.Is_Empty then
+      return;
+    end if;
     -- No action on current branch (except Create)
     Branches.Move_At (Afpx.Line_List.Get_Position);
     On_Current := Branches.Access_Current.all = Current_Branch;
@@ -194,7 +212,8 @@ package body Branch is
 
   -- Handle the Branches
   procedure Handle (Root : in String) is
-    Ptg_Result   : Afpx.Result_Rec;
+    Ptg_Result : Afpx.Result_Rec;
+    Dummy_Res  : Boolean;
     use type Afpx.Field_Range;
   begin
 
@@ -223,12 +242,10 @@ package body Branch is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
             when Afpx.Return_Key =>
-              if Do_Action (Create) then
-                return;
-              end if;
+              Dummy_Res := Do_Action (Create);
             when Afpx.Escape_Key =>
               -- Back
-              return;
+              exit;
             when Afpx.Break_Key =>
               raise Utils.Exit_Requested;
           end case;
@@ -244,31 +261,29 @@ package body Branch is
                 + 1);
             when Afpx.List_Field_No | Afpx_Xref.Branches.Checkout =>
               if Do_Action (Checkout) then
-                return;
+                exit;
               end if;
             when Afpx_Xref.Branches.Create =>
-              if Do_Action (Create) then
-                return;
-              end if;
+              Dummy_Res := Do_Action (Create);
             when Afpx_Xref.Branches.Rename =>
               if Do_Action (Rename) then
-                return;
+                exit;
               end if;
             when Afpx_Xref.Branches.Delete =>
               if Do_Action (Delete) then
-                return;
+                exit;
               end if;
             when Afpx_Xref.Branches.Merge =>
               if Do_Action (Merge) then
-                return;
+                exit;
               end if;
             when Afpx_Xref.Branches.Cherry_Pick =>
               if Do_Action (Cherry_Pick) then
-                return;
+                exit;
               end if;
             when Afpx_Xref.Branches.Back =>
               -- Back button
-              return;
+              exit;
             when others =>
               null;
           end case;
@@ -281,6 +296,10 @@ package body Branch is
       end case;
     end loop;
 
+    if not Afpx.Line_List.Is_Empty then
+      Branches.Move_At (Afpx.Line_List.Get_Position);
+      Previous_Branch := Branches.Access_Current.all;
+    end if;
   end Handle;
 
 end Branch;
