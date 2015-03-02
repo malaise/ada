@@ -77,7 +77,8 @@ package Directory is
   function Make_Full_Path (Path : String) return String;
 
   -- Get dir name (path) from a complete file name (up to the last / included)
-  function Dirname (File_Name : String) return String;
+  -- If Strip then remove the trailing '/' except on "/"
+  function Dirname (File_Name : String; Strip : Boolean := False) return String;
   -- Get file name from a complete file name (from the last / excluded),
   --  then remove the end of it if it matches Suffix (. is not necessary)
   function Basename (File_Name : String; Suffix : String := "") return String;

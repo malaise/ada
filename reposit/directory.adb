@@ -417,10 +417,14 @@ package body Directory is
   -- File name manipulation
   Dot :  constant String := ".";
   -- Get dir name (path) from a complete file name (up to the last / included)
-  function Dirname (File_Name : String) return String is
+  function Dirname (File_Name : String; Strip : Boolean := False)
+           return String is
     I : Natural;
   begin
     I := Str_Util.Locate (File_Name, Sep_Str, Forward => False);
+    if Strip and then I > 1 then
+      I := I - 1;
+    end if;
     -- No / in file name => dir name is empty
     return (if I = 0 then "" else File_Name(File_Name'First .. I));
   end Dirname;
