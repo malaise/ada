@@ -798,6 +798,7 @@ procedure Agite is
   --- Update the list status
   procedure List_Change (Unused_Action : in Afpx.List_Change_List;
                          Unused_Status : in Afpx.List_Status_Rec) is
+    -- The list cannot be empty
     File : constant Git_If.File_Entry_Rec := Get_Current_File;
     Dummy_Target : As.U.Asu_Us;
     Kind : Character;

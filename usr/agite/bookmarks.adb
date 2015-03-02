@@ -124,11 +124,14 @@ package body Bookmarks is
   -- Update the list status
   procedure List_Change (Unused_Action : in Afpx.List_Change_List;
                          Unused_Status : in Afpx.List_Status_Rec) is
-    Bookmark : constant Config.Bookmark_Rec
-             := Config.Get_Bookmark (Afpx.Line_List.Get_Position);
+    Bookmark : Config.Bookmark_Rec;
   begin
-     -- No Goto on separator
-     Afpx.Utils.Protect_Field (Afpx_Xref.Bookmarks.Go, Bookmark.Path.Is_Null);
+     if Afpx.Line_List.Is_Empty then
+      return;
+    end if;
+    -- No Goto on separator
+    Bookmark := Config.Get_Bookmark (Afpx.Line_List.Get_Position);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Bookmarks.Go, Bookmark.Path.Is_Null);
   end List_Change;
 
 
