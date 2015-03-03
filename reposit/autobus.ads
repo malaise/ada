@@ -25,9 +25,7 @@ package Autobus is
   --     Bus) that match the filter.
 
   -- Implementation:
-  -- There are two kinds of Bus: Multicast and Reliable. They cannot be mixed
-  --  in the that a Musticast Bus and a Reliable Bus on the same address do not
-  --  exchange data.
+  -- There are two kinds of Bus, Multicast and Reliable:
   -- A. Multicast
   -- Each message is sent in multicast (IPM) to the receiving applications and
   --  dispatched to the observers. Some messages might be lost in the network.
@@ -44,6 +42,8 @@ package Autobus is
   --  detected by the closure of the TCP connection).
   --  Active mode can be useful for servers, while passive mode might be more
   --  convenient for clients.
+  -- Bus kinds cannot be mixed, in the sense that a Musticast Bus and a
+  --  Reliable Bus on the same IPM address do not exchange data.
 
   -- Tuning the Bus:
   -- A XML file allows the default tuning for all the Buses, and also a specific
