@@ -25,13 +25,11 @@ package Autobus is
   --     Bus) that match the filter.
 
   -- Implementation:
-  -- There are two kinds of Bus: Multicast and Reliable. They cannot be mixed.
-  -- A. Multicast
-  -- Each message is sent in multicast (IPM) to the receiving applications and
-  --  dispatched to the observers. Some messages might be lost in the network.
-  -- B. Reliable
+  -- There are two kinds of Bus, Multicast and Reliable:
+  -- A. Reliable
   -- Each Bus relies on a fixed IPM address and port, and a random TCP port.
-  -- Each process sends periodically an IPM message with its host and TCP port.
+  -- Each process sends periodically in IPM a live message containing
+  --  its host and local TCP port.
   -- The other processes on the bus keep a list of known alive partners.
   -- When a new process starts it declares itself on the Bus and all the
   --  partners either connects to it or get connected to it.
@@ -40,8 +38,26 @@ package Autobus is
   -- Each partner on a reliable bus can be either active (its sudden death can
   --  be detected by a polling) or passive (its sudden death can only be
   --  detected by the closure of the TCP connection).
-  --  Active mode can useful for servers, while passive mode might convenient
-  --  for clients.
+  --  Active mode can be useful for servers, while passive mode might be more
+  --  convenient for clients.
+  -- B. Multicast
+  -- Each message is sent in multicast (IPM) to the receiving applications and
+  --  dispatched to the observers. Some messages might be lost in the network.
+
+  -- Bus kinds can be mixed. In one process a Bus is either Reliable (active or
+  --  passive) or Multicast. But different processes can communicate through
+  --  Buses of different kinds, providing of course that they have the same
+  --  address.
+  --  - A publisher Reliable sends in TCP while in Multicast it sends in IPM,
+  --  - A receiver Reliable receives Reliable and Multicast messages,
+  --  - A receivers Multicast receives the live messages of the Reliable
+  --    publishers and connects to them
+  --  - Point to point sending follows the same logic: on a Reliable bus the
+  --    Host-Port must denote a known Reliable patner (which has a Reliable
+  --    or Multicast bus), while on a Multicast bus it is sent in point to
+  --    point UDP to the Host.
+  -- This way, any message sent through a reliable bus is reliable and any
+  --  message sent through a Multicast Bus is multicast.
 
   -- Tuning the Bus:
   -- A XML file allows the default tuning for all the Buses, and also a specific
@@ -112,7 +128,8 @@ package Autobus is
   -- On error in the tuning configuration file (parsed at Init of first Bus)
   -- See Autobus.dtd for the format of this file
   Config_Error : exception;
-  -- The Sup_Cb is not used on multicast bus
+  -- The Sup_Cb does not report any Multicast bus address and state
+  --  (neither partners nor ourself)
   procedure Init (Bus : in out Bus_Type;
                   Address : in String;
                   Kind : in Bus_Kind := Active;
@@ -264,7 +281,9 @@ private
     Admin : Socket.Socket_Dscr := Socket.No_Socket;
     Host : Socket.Host_Id;
     Port : Socket.Port_Num;
-    -- TCP accept socket or UDP point to point
+    -- TCP accept socket
+    Acc : Socket.Socket_Dscr := Socket.No_Socket;
+    -- UDP point to point socket
     Ptp : Socket.Socket_Dscr := Socket.No_Socket;
     -- Host Id denoting the interface (for TCP and IPM)
     Host_If : Socket.Host_Id;
