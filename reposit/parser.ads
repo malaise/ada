@@ -1,4 +1,4 @@
--- Parse the words of a string
+-- Parse the words of a string according to a separator
 with Ada.Finalization;
 with As.U;
 package Parser is

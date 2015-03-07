@@ -1192,7 +1192,7 @@ package body Git_If is
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git stasj list: " & Err_Flow_1.Str.Image);
+      Basic_Proc.Put_Line_Error ("git stash list: " & Err_Flow_1.Str.Image);
       return;
     end if;
     -- Read lines

@@ -735,7 +735,7 @@ title t_file_hash
 try t_file_hash t_file_hash.adb begin
 cat << EOF > exp
 begin -> 
-FOUND begin
+FOUND at line 6 >begin<
 EOF
 comp out exp
 comp err nul
@@ -1594,16 +1594,25 @@ cat << EOF > out1
 Starting
 Done
 EOF
+export t_trace_TRACE_ALL='0'
 try t_trace
 comp out out1
 comp err nul
+unset t_trace_TRACE_ALL
+
 function strip_date {
   cat $1 | cut -d ' ' -f 2- > tmp
   mv tmp $1
 }
 
-export t_trace_TRACE=Info
+export t_trace_TRACE='Info+'
 cat << EOF > err1
+t_trace - Error -> Bloga Error
+t_trace Blogn Error -> Blogn Error
+t_trace - Error -> Loga Error
+t_trace Logn Error -> Logn Error
+t_trace - Warning -> Bloga Warning
+t_trace - Warning -> Loga Warning
 t_trace - Info -> Bloga Info
 t_trace - Info -> Loga Info
 EOF
@@ -1614,6 +1623,12 @@ comp err err1
 
 export t_trace_TRACE_Logn='Debug|Info'
 cat << EOF > err1
+t_trace - Error -> Bloga Error
+t_trace Blogn Error -> Blogn Error
+t_trace - Error -> Loga Error
+t_trace Logn Error -> Logn Error
+t_trace - Warning -> Bloga Warning
+t_trace - Warning -> Loga Warning
 t_trace - Info -> Bloga Info
 t_trace - Info -> Loga Info
 t_trace Logn Info -> Logn Info

@@ -3,7 +3,7 @@ package Normalization is
 
   -- Puts an int in a string of fixed length.
   -- If I is shorter than max, it is aligned at right or left
-  -- If I is longer, it is rounded if possible (or truncated)
+  -- If I is longer, it is rounded if possible (otherwise truncated)
 
   -- I : value to put in the returned string
   -- Len : Number of characters of the returned string
@@ -36,6 +36,7 @@ package Normalization is
                              Right : Boolean := True;
                              Gap   : Character := ' ') return String;
 
+  -- Normal for modulus
   generic
     type Modulus is mod <>;
   function Normal_Mod (M     : Modulus;

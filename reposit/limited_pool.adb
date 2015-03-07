@@ -37,10 +37,17 @@ package body Limited_Pool is
   end Pop;
 
   -- Read from pool last pushed (Lifo) or first pushed (Fifo)
-  procedure Front (Pool : in out Pool_Type; Data : out Data_Type) is
+  procedure Look (Pool : in out Pool_Type; Data : out Data_Type) is
   begin
-    Pool.Pool.Front (Data);
-  end Front;
+    Pool.Pool.Look (Data);
+  end Look;
+
+  function  Look (Pool : in out Pool_Type) return Data_Type is
+  begin
+    return Data : Data_Type do
+      Look (Pool, Data);
+    end return;
+  end Look;
 
   -- Clear the pool (deallocates)
   procedure Clear (Pool : in out Pool_Type) is

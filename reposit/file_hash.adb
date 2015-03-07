@@ -1,9 +1,24 @@
 with Bit_Ops, Sys_Calls, Text_Line;
 package body File_Hash is
 
+  -- Set, "=" and Key_Image for the cell
+  procedure Set (To : out Line_Rec; Val : in Line_Rec) is
+  begin
+    To := Val;
+  end Set;
+  function "=" (Current : Line_Rec; Criteria : Line_Rec) return Boolean is
+    use type As.U.Asu_Us;
+  begin
+    return Current.Txt = Criteria.Txt;
+  end "=";
+  function Key_Image (Element : Line_Rec) return String is
+  begin
+    return Element.Txt.Image;
+  end Key_Image;
+
   -- The goal is to store the hash of the line (0 to FFF) and a reasonable
-  --  length of the the line (x?) in *FFF, so x is either F (15!) of FF (255)
-  --  which is OK
+  --  length of the line (x?) in *FFF.
+  -- x could be (15) but this is too small, so it is FF (255), which is OK
   -- Longer lines are truncated
   -- Max_Str_Len : constant := 16#FF#;
   -- Hash_Max : constant Hashing.Max_Hash_Range := 16#FFFFF#;
@@ -21,6 +36,7 @@ package body File_Hash is
   -- Load the content of the file in the list
   procedure Load (File_Name : in String;
                   List : in out List_Mng.List_Type) is
+    Line : Long_Longs.Ll_Positive := 1;
     Fd : Sys_Calls.File_Desc;
     File : Text_Line.File_Type;
   begin
@@ -38,9 +54,11 @@ package body File_Hash is
           Len := Len - 1;
         end if;
         -- Store line in Storage and its key in H list
-        List.Insert (As.U.Tus (Word(1 ..
-              (if Len < Max_Str_Len then Len else Max_Str_Len))));
+        List.Insert (
+            (Line, As.U.Tus (Word(1 ..
+                    (if Len < Max_Str_Len then Len else Max_Str_Len)))) );
       end;
+      Line := Line + 1;
     end loop;
 
     -- Done

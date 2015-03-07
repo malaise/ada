@@ -99,14 +99,24 @@ package body Trace is
           -- Predefined severities
           elsif Word = "FATAL" then
             Result := Result or Fatal;
+          elsif Word = "FATAL+" then
+            Result := Result or Fatal;
           elsif Word = "ERROR" then
              Result := Result or Error;
+          elsif Word = "ERROR+" then
+             Result := Result or Error or Fatal;
           elsif Word = "WARNING"
             then Result := Result or Warning;
+          elsif Word = "WARNING+"
+            then Result := Result or Warning or Error or Fatal;
           elsif Word = "INFO" then
             Result := Result or Info;
+          elsif Word = "INFO+" then
+            Result := Result or Info or Warning or Error or Fatal;
           elsif Word = "DEBUG" then
             Result := Result or Debug;
+          elsif Word = "DEBUG+" then
+            Result := Result or Debug or Info or Warning or Error or Fatal;
           else
             return Default;
           end if;

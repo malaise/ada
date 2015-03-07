@@ -171,7 +171,8 @@ package body Details is
                          Unused_Status : in Afpx.List_Status_Rec) is
 
   begin
-     -- No view on '/', first entry
+     -- No view on '/', first entry,
+     --  always present, so list cannot be empty
      Afpx.Utils.Protect_Field (Afpx_Xref.Details.View,
                                Afpx.Line_List.Get_Position = 1);
   end List_Change;

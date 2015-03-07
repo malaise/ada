@@ -46,23 +46,13 @@ package body Long_Long_Limited_Pool is
   end Pop;
 
   procedure Pop (Pool : in out Pool_Type) is
+    Dummy_Data : Data_Type;
   begin
-    if Pool.Is_Empty then
-      raise Empty_Pool;
-    end if;
-    if not Lifo then
-      -- Fifo means pop last (and go to previous) then rewind to first
-      Pool.Rewind (Pool_List_Mng.Prev);
-      Pool.Delete (Pool_List_Mng.Prev);
-      Pool.Rewind (Check_Empty => False);
-    else
-      -- Lifo means pop first and move to next
-      Pool.Delete;
-    end if;
+    Pop (Pool, Dummy_Data);
   end Pop;
 
   -- Read from pool, remain at current pos
-  procedure Front (Pool : in out Pool_Type; Data : out Data_Type) is
+  procedure Look (Pool : in out Pool_Type; Data : out Data_Type) is
   begin
     if Pool.Is_Empty then
       raise Empty_Pool;
@@ -76,7 +66,15 @@ package body Long_Long_Limited_Pool is
       -- Lifo means read first
       Pool.Read (Data, Pool_List_Mng.Current);
     end if;
-  end Front;
+  end Look;
+
+  function  Look (Pool : in out Pool_Type) return Data_Type is
+  begin
+    return Data : Data_Type do
+      Look (Pool, Data);
+    end return;
+  end Look;
+
 
   -- Clear the pool
   procedure Clear (Pool : in out Pool_Type) is

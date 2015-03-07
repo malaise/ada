@@ -12,8 +12,9 @@ package Trace is
   --         <Logger> is the logger name, "ALL" for all loggers,
   --          <Process>_TRACE for anonymous loggers
   --         <mask> is a list of severity names or values,
-  --          separated by '|', ex: "7|Debug|16#30#"
+  --          separated by '|', ex: "7|Debug|16#30#|Warning+"
   -- Default mask is Fatal | Error
+  -- A severity name then a '+' means "name and higher"
   -- Any value 0 in the mask leads to reset the current mask (further values
   --  are ORed) --  Ex: "Fatal|0|Error" => "Error"
   -- Parsing error on a severity leads to the default severity, except for
