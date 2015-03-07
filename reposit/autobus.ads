@@ -108,6 +108,8 @@ package Autobus is
   -- Supervision callback on the Bus
   -- Report the insertion of a remote partner (State=True), the death of a
   --  remote (State=False) and our own address (State=Other)
+  -- In Sup_Callback it is forbidden to initialise or reset a Bus or a
+  --  Subscriber, this would raise the exception In_Callback
   type Sup_Report is record
     Addr  : As.U.Asu_Us;
     State : Trilean.Trilean;
@@ -184,7 +186,7 @@ package Autobus is
   -- Empty filter lets all messages pass through
   -- Echo allows enabling observation of messages sent by own process
   -- In Receive it is forbidden to initialise or reset a Bus or a Subscriber,
-  --  this would raise the exception In_Receive
+  --  this would raise the exception In_Callback
   -- Exceptions raised by Receive itself are caught and hidden
   type Observer_Type is limited interface;
   procedure Receive (Observer : in out Observer_Type;
@@ -216,7 +218,8 @@ package Autobus is
   Status_Error : exception;
 
   -- If initialising or resetting a Bus or a Subscriber while in Receive
-  In_Receive : exception;
+  --  or in Sup_Callback
+  In_Callback : exception;
 
   -- On any unexpected system error on any call
   System_Error : exception;
@@ -270,8 +273,9 @@ private
   package Subscriber_List_Mng renames Subscriber_Dyn_List_Mng.Dyn_List;
 
   -- List of Buses
-  -- Don't forget to update Set when adding fields in Bus_Rec
-  -----------------------------------------------------------
+  --************************************************************************
+  --* Don't forget to update the body of Set when adding fields in Bus_Rec *
+  --************************************************************************
   type Bus_Rec is limited new Ada.Finalization.Limited_Controlled with record
     -- Address of the IPM socket "www.xxx.yyy.zzz:portnum", for reporting
     Name : As.U.Asu_Us;

@@ -92,9 +92,13 @@ package body Autobus is
   -- INTERNAL --
   --------------
   -- Static data:
-  -- True while calling Receive or Sup callback of the application, in order to
-  --  prevent the application to call us in Receive/Callback
+  -- True while calling Receive of the application, in order to
+  --  ensure that Reply is called from Receive
+  --  and prevent the application from callin us from Receive
   Calling_Receive : Boolean := False;
+  -- True while calling Sup_Cb of the application, in order to
+  --  and prevent the application from callin us from Sup_Cb
+  Calling_Supcb   : Boolean := False;
 
   -- Own pid
   Max_Pid_Image : constant String := Images.Integer_Image (Integer'Last);
@@ -224,12 +228,12 @@ package body Autobus is
   end Bus_Match_Name;
 
   -- Raise In_Receive if Calling_Receive
-  procedure Check_In_Receive is
+  procedure Check_In_Callback is
   begin
-    if Calling_Receive then
-      raise In_Receive;
+    if Calling_Receive or else Calling_Supcb then
+      raise In_Callback;
     end if;
-  end Check_In_Receive;
+  end Check_In_Callback;
 
   -- Sort partner addresses
   -- Numeric representation of an address 255.255.255.255:6535
@@ -289,7 +293,7 @@ package body Autobus is
     if Bus.Sup_Cb = null then
       return;
     end if;
-    Calling_Receive := True;
+    Calling_Supcb := True;
     begin
       Bus.Sup_Cb ( (Partner.Addr, State) );
     exception
@@ -297,7 +301,7 @@ package body Autobus is
         Logger.Log_Debug ("Sup callback raised exception: "
                         & Ada.Exceptions.Exception_Name (Error));
     end;
-    Calling_Receive := False;
+    Calling_Supcb := False;
   end Notify_Sup;
 
   -- Remove current (in Partners list) Partner
@@ -845,7 +849,7 @@ package body Autobus is
     Timeout : Timers.Delay_Rec (Timers.Delay_Sec);
   begin
     Logger.Init ("Autobus");
-    Check_In_Receive;
+    Check_In_Callback;
     -- Init Pid image
     if Pid_Image(Pid_Image'First) = ' ' then
       Pid_Image := Normal (Integer(Sys_Calls.Get_Pid),
@@ -999,7 +1003,7 @@ package body Autobus is
     Dummy_Moved : Boolean;
     use type Socket.Socket_Dscr;
   begin
-    Check_In_Receive;
+    Check_In_Callback;
     -- Check that Bus is initialised
     if Bus.Acc = null then
       raise Status_Error;
@@ -1303,7 +1307,7 @@ package body Autobus is
     Ok : Boolean;
     Position : Natural;
   begin
-    Check_In_Receive;
+    Check_In_Callback;
     -- Check that this Bus is initialised
     if Bus = null then
       raise Status_Error;
@@ -1359,7 +1363,7 @@ package body Autobus is
   -- Reset a Subscriber (make it re-usable)
   procedure Reset (Subscriber : in out Subscriber_Type) is
   begin
-    Check_In_Receive;
+    Check_In_Callback;
     if Subscriber.Acc = null then
       raise Status_Error;
     end if;
@@ -1416,8 +1420,10 @@ package body Autobus is
           Subs.Observer.Receive (Subs.Client, Message);
           Calling_Receive := False;
         exception
-          when others =>
+          when Error:others =>
             Calling_Receive := False;
+            Logger.Log_Debug ("Receive raised exception: "
+                            & Ada.Exceptions.Exception_Name (Error));
         end;
       end if;
       exit when not Bus.Subscribers.Check_Move;
