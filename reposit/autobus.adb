@@ -193,12 +193,18 @@ package body Autobus is
 
   -- Search Bus
   -- By admin socket
-  function Bus_Match_Admin (Curr, Crit : Bus_Rec) return Boolean is
+  function Bus_Match_Adm (Curr, Crit : Bus_Rec) return Boolean is
     use type Socket.Socket_Dscr;
   begin
-    return Curr.Admin = Crit.Admin;
-  end Bus_Match_Admin;
+    return Curr.Adm = Crit.Adm;
+  end Bus_Match_Adm;
   -- By accept socket
+  function Bus_Match_Acc (Curr, Crit : Bus_Rec) return Boolean is
+    use type Socket.Socket_Dscr;
+  begin
+    return Curr.Acc = Crit.Acc;
+  end Bus_Match_Acc;
+  -- By point to point socket
   function Bus_Match_Ptp (Curr, Crit : Bus_Rec) return Boolean is
     use type Socket.Socket_Dscr;
   begin
@@ -615,8 +621,8 @@ package body Autobus is
     Partner : Partner_Rec;
   begin
     -- Find bus and insert partner
-    Bus.Ptp := Local_Dscr;
-    if not Buses.Search_Match (Bus_Match_Ptp'Access, Bus,
+    Bus.Acc := Local_Dscr;
+    if not Buses.Search_Match (Bus_Match_Acc'Access, Bus,
                                From => Bus_List_Mng.Current_Absolute) then
       Log_Error ("Accept_Cb", "bus not found", "in buses list");
       return;
@@ -642,7 +648,7 @@ package body Autobus is
   -- Send Alive message of current Bus
   procedure Ipm_Send is new Socket.Send (String,
                                          Message_Max_Length);
-  procedure Send_Admin (Active : in Trilean.Trilean) is
+  procedure Send_Adm (Active : in Trilean.Trilean) is
     Message_Len : Natural;
     Message : Ipm_Message_Str;
     Bus_Acc : Bus_Access;
@@ -654,8 +660,8 @@ package body Autobus is
                                     when Trilean.False => "P",
                                     when Trilean.Other => "D")
                                & "/" & Bus_Acc.Addr.Image;
-    Ipm_Send (Bus_Acc.Admin, Message, Message_Len);
-  end Send_Admin;
+    Ipm_Send (Bus_Acc.Adm, Message, Message_Len);
+  end Send_Adm;
 
   -- IPM Reception Cb
   function Ipm_Reception_Cb (Dscr    : Socket.Socket_Dscr;
@@ -674,8 +680,8 @@ package body Autobus is
     declare
       Crit : Bus_Rec;
     begin
-      Crit.Admin := Dscr;
-      if not Buses.Search_Match (Bus_Match_Admin'Access, Crit,
+      Crit.Adm := Dscr;
+      if not Buses.Search_Match (Bus_Match_Adm'Access, Crit,
                                  From => Bus_List_Mng.Current_Absolute) then
         Crit.Ptp := Dscr;
         if not Buses.Search_Match (Bus_Match_Ptp'Access, Crit,
@@ -771,8 +777,8 @@ package body Autobus is
         --  (and we will accept) then it will send its address
         Logger.Log_Debug ("Ipm: Waiting for connection from "
                         & Partner.Addr.Image);
-        Send_Admin ((if Partner.Bus.Kind = Active then Trilean.True
-                    else Trilean.False));
+        Send_Adm ((if Partner.Bus.Kind = Active then Trilean.True
+                   else Trilean.False));
       else
         -- partner >= Own: add partner and start connect
         Logger.Log_Debug ("Ipm: Connecting to new partner "
@@ -816,8 +822,8 @@ package body Autobus is
     -- Send Alive message
     Bus_Acc := Buses.Access_Current;
     if Bus_Acc.Kind = Active or else Bus_Acc.Passive_Timer.Has_Expired then
-      Send_Admin ((if Bus_Acc.Kind = Active then Trilean.True
-                  else Trilean.False));
+      Send_Adm ((if Bus_Acc.Kind = Active then Trilean.True
+                 else Trilean.False));
     end if;
 
     -- Check partners keep alive timers and remove dead ones
@@ -881,14 +887,14 @@ package body Autobus is
       end if;
 
       -- Open the IPM UDP socket and configure it
-      Rbus.Admin.Open (Socket.Udp);
-      Rbus.Admin.Set_Sending_Ipm_Interface (Rbus.Host_If);
-      Rbus.Admin.Set_Reception_Interface (Rbus.Host_If);
-      Socket_Util.Set_Destination (Rbus.Admin, Lan => True,
+      Rbus.Adm.Open (Socket.Udp);
+      Rbus.Adm.Set_Sending_Ipm_Interface (Rbus.Host_If);
+      Rbus.Adm.Set_Reception_Interface (Rbus.Host_If);
+      Socket_Util.Set_Destination (Rbus.Adm, Lan => True,
                                    Host => Rem_Host, Port => Rem_Port);
-      Rbus.Host := Socket.Get_Destination_Host (Rbus.Admin);
-      Rbus.Port := Socket.Get_Destination_Port (Rbus.Admin);
-      Socket_Util.Link (Rbus.Admin, Rem_Port);
+      Rbus.Host := Socket.Get_Destination_Host (Rbus.Adm);
+      Rbus.Port := Socket.Get_Destination_Port (Rbus.Adm);
+      Socket_Util.Link (Rbus.Adm, Rem_Port);
       Logger.Log_Debug ("IPM socket initialialized");
     exception
       when Ip_Addr.Parse_Error =>
@@ -912,17 +918,17 @@ package body Autobus is
     Rbus.Sup_Cb := Sup_Cb;
 
     -- Set admin callback
-    Ipm_Reception_Mng.Set_Callbacks (Rbus.Admin, Ipm_Reception_Cb'Access, null,
+    Ipm_Reception_Mng.Set_Callbacks (Rbus.Adm, Ipm_Reception_Cb'Access, null,
                                      Set_For_Reply => Rbus.Kind = Multicast);
 
     if Rbus.Kind = Multicast then
       -- Create the UDP Pt to Pt socket
       Rbus.Ptp.Open (Socket.Udp);
       Rbus.Ptp.Set_Reception_Interface (Rbus.Host_If);
-      Rbus.Ptp.Link_Port (Rbus.Admin.Get_Linked_To);
+      Rbus.Ptp.Link_Port (Rbus.Adm.Get_Linked_To);
       -- Used to detect local messages
       Rbus.Ptp.Set_Destination_Host_And_Port (Rbus.Host_If,
-                                                Rbus.Admin.Get_Linked_To);
+                                              Rbus.Adm.Get_Linked_To);
       Ipm_Reception_Mng.Set_Callbacks (Rbus.Ptp, Ipm_Reception_Cb'Access,
                                        null);
 
@@ -931,7 +937,7 @@ package body Autobus is
       Tcp_Util.Accept_From (Socket.Tcp_Header,
                             (Kind => Tcp_Util.Port_Dynamic_Spec),
                             Tcp_Accept_Cb'Access,
-                            Rbus.Ptp, Port_Num,
+                            Rbus.Acc, Port_Num,
                             Rbus.Host_If);
       Logger.Log_Debug ("TCP socket initialialized");
 
@@ -939,10 +945,12 @@ package body Autobus is
       Rbus.Addr := As.U.Tus (Image (Rbus.Host_If, Port_Num));
     end if;
 
-    -- Set TTL on Admin and Accept (IPM and TCP) sockets
-    Rbus.Admin.Set_Ttl (Rbus.Ttl);
-    if Rbus.Kind /= Multicast then
+    -- Set TTL on Admin, Accept (TCP) and Ptp (UDP) sockets
+    Rbus.Adm.Set_Ttl (Rbus.Ttl);
+    if Rbus.Kind = Multicast then
       Rbus.Ptp.Set_Ttl (Rbus.Ttl);
+    else
+      Rbus.Acc.Set_Ttl (Rbus.Ttl);
 
       -- Arm Bus related active timer and create passive timer
       Timeout.Delay_Seconds := 0.0;
@@ -1001,15 +1009,15 @@ package body Autobus is
 
     -- Send Death info
     if Bus.Acc.Kind /= Multicast then
-      Send_Admin (Trilean.Other);
+      Send_Adm (Trilean.Other);
     end if;
 
     -- Close resources
-    Ipm_Reception_Mng.Remove_Callbacks (Bus.Acc.Admin);
+    Ipm_Reception_Mng.Remove_Callbacks (Bus.Acc.Adm);
     if Bus.Acc.Kind = Multicast then
       Ipm_Reception_Mng.Remove_Callbacks (Bus.Acc.Ptp);
     else
-      Tcp_Util.Abort_Accept (Socket.Tcp_Header, Bus.Acc.Ptp.Get_Linked_To);
+      Tcp_Util.Abort_Accept (Socket.Tcp_Header, Bus.Acc.Acc.Get_Linked_To);
       if Bus.Acc.Passive_Timer.Running then
         Bus.Acc.Passive_Timer.Stop;
       end if;
@@ -1052,11 +1060,11 @@ package body Autobus is
     if Bus.Acc.Kind = Multicast then
       -- Multicast
       Socket.Set_Destination_Host_And_Port (
-                                   Socket => Bus.Acc.Admin,
+                                   Socket => Bus.Acc.Adm,
                                    Host => Bus.Acc.Host,
                                    Port => Bus.Acc.Port);
-      Ipm_Send (Bus.Acc.Admin, Pid_Image & '/' & Message,
-                               Pid_Image'Length + 1 + Message'Length);
+      Ipm_Send (Bus.Acc.Adm, Pid_Image & '/' & Message,
+                             Pid_Image'Length + 1 + Message'Length);
       return;
     end if;
 
@@ -1127,8 +1135,8 @@ package body Autobus is
 
     if Bus.Acc.Kind = Multicast then
       -- Multicast bus, send on the socket (Set_For_Reply was set)
-      Ipm_Send (Bus.Acc.Admin, Pid_Image & '/' & Message,
-                               Pid_Image'Length + 1 + Message'Length);
+      Ipm_Send (Bus.Acc.Adm, Pid_Image & '/' & Message,
+                             Pid_Image'Length + 1 + Message'Length);
       return;
     end if;
 
@@ -1220,11 +1228,11 @@ package body Autobus is
     if Bus.Acc.Kind = Multicast then
       -- Multicast bus, send  to destination
       Socket.Set_Destination_Host_And_Port (
-                                   Socket => Bus.Acc.Admin,
+                                   Socket => Bus.Acc.Adm,
                                    Host => Host,
                                    Port => Port);
-      Ipm_Send (Bus.Acc.Admin, Pid_Image & '/' & Message,
-                               Pid_Image'Length + 1 + Message'Length);
+      Ipm_Send (Bus.Acc.Adm, Pid_Image & '/' & Message,
+                             Pid_Image'Length + 1 + Message'Length);
       return;
     end if;
 
@@ -1429,9 +1437,10 @@ package body Autobus is
     -- Copy all fields except the lists (of Partners and Subscribers)
     To.Name := Val.Name;
     To.Addr := Val.Addr;
-    To.Admin := Val.Admin;
+    To.Adm := Val.Adm;
     To.Host := Val.Host;
     To.Port := Val.Port;
+    To.Acc := Val.Acc;
     To.Ptp := Val.Ptp;
     To.Host_If := Val.Host_If;
     To.Sup_Cb := Val.Sup_Cb;

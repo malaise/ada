@@ -278,7 +278,7 @@ private
     -- Address of the TCP socket "www.xxx.yyy.zzz:portnum"
     Addr : As.U.Asu_Us;
     -- Administration or multicast IPM socket
-    Admin : Socket.Socket_Dscr := Socket.No_Socket;
+    Adm : Socket.Socket_Dscr := Socket.No_Socket;
     Host : Socket.Host_Id;
     Port : Socket.Port_Num;
     -- TCP accept socket
