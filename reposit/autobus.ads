@@ -182,7 +182,7 @@ package Autobus is
 
   -- The Observer is notified with the messages (sent on the Bus)
   --  that pass the filter
-  -- Filter is a PCRE regular expression
+  -- Filter is a PCRE multi-line regular expression
   -- Empty filter lets all messages pass through
   -- Echo allows enabling observation of messages sent by own process
   -- In Receive it is forbidden to initialise or reset a Bus or a Subscriber,
@@ -230,7 +230,8 @@ private
   type Bus_Rec;
   type Bus_Access is access all Bus_Rec;
   type Timer_Access is access all Chronos.Passive_Timers.Passive_Timer;
-  type Partner_State_List is (Init, Active, Passive);
+  type Partner_State_List is (Init, Active, Passive, Multicast, Shadow);
+  subtype Init_Sate_List is Partner_State_List range Active .. Passive;
   type Partner_Rec is record
     -- Address of the TCP socket "www.xxx.yyy.zzz:portnum"
     Addr : As.U.Asu_Us;
@@ -239,8 +240,8 @@ private
     Port : Socket.Port_Num;
     -- Socket
     Sock : Socket.Socket_Dscr;
-    -- Is it active on the bus
-    Active : Boolean;
+    -- State of the partner while waiting for connection completion
+    Init_State: Init_Sate_List;
     -- State of the connection
     State : Partner_State_List := Init;
     -- Timer of keep alive

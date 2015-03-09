@@ -1,14 +1,16 @@
 -- In manual mode:
 --  * Send on bus the text got by async_stdin
 --  * Output on stdout the text received on bus
--- In automatic mode:
---  * Send each second the automatic message if any
+-- In automatic mode create an Active reliable bus and:
+--  * Send each second the automatic message, if provided in command line
 --  * Spy (echo "Spyed ><Msg><") each received message, including owers
---  * Drop (echo "Received <Msg> -> Dropping") messages starting by "Coucou"
---  * Reply (echo "Received <Msg> -> Replying <reply>") messages "Ah que "
---  * Reply (echo "Received <Msg> -> Replying <reply>") messages starting by
---   "Ah que " and containing something
---   Reply is the remaining text in Mixed_Str
+--  * Drop (echo "Received <Msg> -> Dropping") the messages received by Drop
+--    observer (i.e. matching "Coucou.*"
+--  * In Repl observer (messages matching "Ah que .*")
+--   - Reject (echo "Received <Msg> -> Rejecting") messages that contain less
+--     than '2 spaces then a letter'
+--   - Reply (echo "Received <Msg> -> Replying <reply>") other messages
+--     Reply is the remaining text after second space, in Mixed_Str
 --  * Exit after sending 3 messages
 with Basic_Proc, Event_Mng, Str_Util, Mixed_Str, As.U, Async_Stdin,
      Argument, Argument_Parser, Trilean;
@@ -102,7 +104,7 @@ procedure T_Autobus is
     end if;
     Str := As.U.Tus (Mixed_Str (Message(Index + 1 .. Message'Last) & '!'));
     Basic_Proc.Put_Line_Output (" -> Replying " & Str.Image);
-    Bus.Send (Str.Image);
+    Bus.Reply (Str.Image);
   end Receive;
 
   -- Observer spying of messages

@@ -1,11 +1,11 @@
 with Ada.Unchecked_Deallocation, Ada.Exceptions;
 with Environ, Images, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng, Trace.Loggers,
      Long_Longs, As.U.Utils, Str_Util.Regex, Mod_Utils, Sys_Calls,
-     Normal;
+     Normal, Mixed_Str;
 package body Autobus is
   -- Design
   ---------
-  -- A Bus is the sharing of an IPM address and port. For each Bus we:
+  -- A Reliable Bus is the sharing of an IPM address and port. For each Bus we:
   --  * bind to this IPM address (use the config to set a specific interface)
   --  * bind to a dynamic TCP port (use the config to set a specific interface)
   --  * send periodically an Alive message with local host (the interface IP
@@ -87,6 +87,12 @@ package body Autobus is
   --  - Otherwise compare the modulus Ma and Mb. Ma < Mb if:
   --    * if Ma < Mb and then Mb - Ma < M / 2
   --    * if Ma > Mb and then Ma - Mb > M / 2
+  --
+  -- Multicast and compatibility
+  -- If Multicast bus, also create a Ptp UDP socket on the port of the Bus.
+  -- When receiving a Reliable live message, create a connection to the sender.
+  -- When sending, send in multicast and on the connections
+
 
   --------------
   -- INTERNAL --
@@ -101,17 +107,19 @@ package body Autobus is
   Calling_Supcb   : Boolean := False;
 
   -- Own pid
+  -- Each multicast message is made of
+  -- M/PID/DATA
   Max_Pid_Image : constant String := Images.Integer_Image (Integer'Last);
   Pid_Image : String (1 .. Max_Pid_Image'Last) := (others => ' ');
 
   -- Access to Subscriber_Rec
   type Subscriber_Access is access all Subscriber_Rec;
 
-  -- Ipm message type
+  -- Ipm live message type
   -- 'A' or 'P' or 'D' then '/' then TCP address then ":" then port num
   --  Ex: "A/345.789.123.567:90123"
-  -- Message received shall not exceed 23 chars
-  -- We read a message of 24 characters to check that it is shorter than 23
+  --  These messages shall not exceed 23 chars
+  --  We read a message of 24 characters to check that it is shorter than 23
   Ipm_Message_Max_Length : constant := 23;
   subtype Ipm_Message_Str is String (1 .. Ipm_Message_Max_Length + 1);
   subtype Message_Str is String (1 .. Message_Max_Length);
@@ -449,7 +457,7 @@ package body Autobus is
       if Remove_All then
         Remove := True;
       else
-        if Partner_Acc.Active and then Partner_Acc.Timer.Running
+        if Partner_Acc.State = Active and then Partner_Acc.Timer.Running
         and then Partner_Acc.Timer.Has_Expired then
           -- This partner is not alive (alive timeout has expired)
           Logger.Log_Debug ("Alive timeout of partner "
@@ -494,54 +502,68 @@ package body Autobus is
     end if;
     Partner_Acc := Partner_Access(Partners.Access_Current);
 
-    if not Partner_Acc.Addr.Is_Null then
+    if Partner_Acc.State /= Init then
       -- Not the first message, so this is Data => dispatch
+      -- Message is local if same Bus address and partner is not multicast
       Dispatch (Message (1 .. Length),
                 Partner_Acc.Bus,
-                Partner_Acc.Addr = Partner_Acc.Bus.Addr);
+                Partner_Acc.Addr = Partner_Acc.Bus.Addr
+                and then Partner_Acc.State /= Multicast);
       return True;
     end if;
 
     -- The partner (that has just connected to us) sends us its accept address
-    --  (the one in its live message)
-    if Length < Message_Min_Length or else Length > Ipm_Message_Max_Length
+    --  (the one in its live message) or just "M/"
+    if Length = 2 and then Msg = "M/" then
+      Logger.Log_Debug ("Reception of identification from Multicast bus");
+    elsif Length < Message_Min_Length or else Length > Ipm_Message_Max_Length
     or else (Msg(1) /= 'A' and then Msg(1) /= 'P') or else Msg(2) /= '/' then
       Logger.Log_Warning (
-          "Tcp_Reception_Cb recieved invalid identification header >"
+          "Tcp_Reception_Cb received invalid identification header >"
         & Msg & "< from " & Partner_Acc.Addr.Image);
     end if;
     Addr := As.U.Tus (Msg(3 .. Length));
 
-    declare
-      Rem_Host : Tcp_Util.Remote_Host;
-      Rem_Port : Tcp_Util.Remote_Port;
-    begin
-      Ip_Addr.Parse (Addr.Image, Rem_Host, Rem_Port);
-    exception
-      when Ip_Addr.Parse_Error =>
-        Logger.Log_Warning (
-            "Tcp_Reception_Cb received invalid identification >"
-          & Msg & "< from " & Partner_Acc.Addr.Image);
-        Remove_Current_Partner (True);
-        return False;
-    end;
+    -- Check validity of received address
+    if not Addr.Is_Null then
+      declare
+        Rem_Host : Tcp_Util.Remote_Host;
+        Rem_Port : Tcp_Util.Remote_Port;
+      begin
+        Ip_Addr.Parse (Addr.Image, Rem_Host, Rem_Port);
+      exception
+        when Ip_Addr.Parse_Error =>
+          Logger.Log_Warning (
+              "Tcp_Reception_Cb received invalid identification >"
+            & Msg & "< from " & Partner_Acc.Addr.Image);
+          Remove_Current_Partner (True);
+          return False;
+      end;
+    end if;
+
+    -- Detect own address
     Partner_Acc.Addr := As.U.Tus (Addr.Image);
     if Partner_Acc.Addr = Buses.Access_Current.Addr then
       Logger.Log_Debug ("Reception of own identification");
       -- Stop timer on the connection from ourself and make it passive
       --  (no sending of message)
       Partner_Acc.Timer.Stop;
-      Partner_Acc.State := Passive;
-    else
+      Partner_Acc.State := Shadow;
+    elsif not Addr.Is_Null then
       Logger.Log_Debug ("Reception of identification from "
                       & Partner_Acc.Addr.Image);
-      Partner_Acc.Active := Msg(1) = 'A';
-      if not Partner_Acc.Active then
+      Partner_Acc.State := (if Msg(1) = 'A' then Active else Passive);
+      if Partner_Acc.State = Passive then
         Partner_Acc.Timer.Stop;
       end if;
-      Partner_Acc.State := Active;
       Notify_Sup (Partner_Acc, Trilean.True);
+    else
+      -- Already logged
+      -- No timer, connection is active
+      Partner_Acc.State := Multicast;
+      Partner_Acc.Timer.Stop;
     end if;
+    Logger.Log_Debug ("Partner is " & Mixed_Str (Partner_Acc.State'Img));
     return False;
   end Tcp_Reception_Cb;
 
@@ -584,8 +606,10 @@ package body Autobus is
     Partner_Acc.Sock.Set_Ttl (Partner_Acc.Bus.Ttl);
     Message_Length := Partner_Acc.Bus.Addr.Length + 2;
     Message(1 .. Message_Length) :=
-        (if Partner_Acc.Bus.Kind = Active then 'A' else 'P')
-       & "/" & Partner_Acc.Bus.Addr.Image;
+        (case Partner_Acc.Bus.Kind is
+          when Active => 'A',
+          when Passive => 'P',
+          when Multicast => 'M') & "/" & Partner_Acc.Bus.Addr.Image;
     Dummy := Tcp_Send (Partner_Acc.Sock, null, null, Partner_Acc.Bus.Timeout,
                        Message, Message_Length);
 
@@ -594,14 +618,17 @@ package body Autobus is
                                      Tcp_Reception_Cb'Access,
                                      Tcp_Disconnection_Cb'Access);
     -- Update partner state and timer
-    Partner_Acc.State := Active;
+    Partner_Acc.State := Partner_Acc.Init_State;
     if Partner_Acc.Addr = Buses.Access_Current.Addr then
       -- This is the connection to ourself. Active with no timer
       Logger.Log_Debug ("Stopping timer to ourself");
+      Partner_Acc.State := (if Partner_Acc.Bus.Kind = Active then Active
+                            else Passive);
       Partner_Acc.Timer.Stop;
+      Logger.Log_Debug ("Partner is " & Mixed_Str (Partner_Acc.State'Img));
     end if;
     Notify_Sup (Partner_Acc,
-                (if Partner_Acc.Timer.Running then Trilean.True
+                (if Partner_Acc.State = Init then Trilean.True
                  else Trilean.Other));
   exception
     when Socket.Soc_Conn_Lost =>
@@ -702,32 +729,40 @@ package body Autobus is
       Partner.Bus := Bus_Access(Buses.Access_Current);
     end;
 
-    -- Handle Multicast bus
-    if Buses.Access_Current.Kind = Multicast then
-      -- Message is local if the sender is ourself
-      if Length < Pid_Image'Length + 1 then
-        Logger.Log_Warning (
-            "Ipm_Reception_Cb received multicast message too short >"
-          & Message(1 .. Length) & "<");
-        return False;
-      end if;
-      if Message (Pid_Image'Length + 1) /= '/' then
-        Logger.Log_Warning (
-            "Ipm_Reception_Cb received invalid multicast message >"
-          & Message(1 .. Length) & "<");
-        return False;
-      end if;
+    -- Handle Multicast bus data message
+    if Length > 0 and then Message(1) = 'M' then
+      if Buses.Access_Current.Kind = Multicast then
+        -- M/Pid/Data
+        -- Message is local if the sender is ourself
+        if Length < Pid_Image'Length + 3 then
+          Logger.Log_Warning (
+              "Ipm_Reception_Cb received multicast message too short >"
+            & Message(1 .. Length) & "<");
+          return False;
+        end if;
+        if Message (2) /= '/'
+        or else Message (Pid_Image'Length + 3) /= '/' then
+          Logger.Log_Warning (
+              "Ipm_Reception_Cb received invalid multicast message >"
+            & Message(1 .. Length) & "<");
+          return False;
+        end if;
 
-      -- The sender host is the dest after receive (Set_For_Reply=True)
-      -- Check Pid if same host
-      Dispatch (Message (Pid_Image'Length + 2 .. Length),
-          Partner.Bus,
-          Local => Socket.Get_Destination_Host (Dscr) = Partner.Bus.Host_If
-          and then Socket.Get_Destination_Port (Dscr) = Partner.Bus.Port
-          and then Message(1 .. Pid_Image'Length) = Pid_Image);
-      return False;
+        -- The sender host is the dest after receive (Set_For_Reply=True)
+        -- Check Pid if same host
+        Dispatch (Message (Pid_Image'Length + 4 .. Length),
+            Partner.Bus,
+            Local => Socket.Get_Destination_Host (Dscr) = Partner.Bus.Host_If
+            and then Socket.Get_Destination_Port (Dscr) = Partner.Bus.Port
+            and then Message(3 .. Pid_Image'Length + 2) = Pid_Image);
+        return False;
+      else
+        -- Reliable bus discards multicast message
+        return False;
+      end if;
     end if;
 
+    -- Message is alive message of reliable bus
     -- Check validity of string, drop if KO
     if Length < Message_Min_Length or else Length > Ipm_Message_Max_Length
     or else (Message(1) /= 'A' and then Message(1) /= 'P'
@@ -776,7 +811,9 @@ package body Autobus is
     -- Handle Alive
     if not Partner_Found then
       -- New (unknown yet) partner
-      if Smaller (Partner.Addr, Partner.Bus.Addr) then
+      if Buses.Access_Current.Kind /= Multicast
+      and then Smaller (Partner.Addr, Partner.Bus.Addr) then
+        -- We are Reliable (not multicast), and
         -- Partner < Own: we send an Alive, then the partner will connect to us
         --  (and we will accept) then it will send its address
         Logger.Log_Debug ("Ipm: Waiting for connection from "
@@ -784,10 +821,12 @@ package body Autobus is
         Send_Adm ((if Partner.Bus.Kind = Active then Trilean.True
                    else Trilean.False));
       else
-        -- partner >= Own: add partner and start connect
+        -- We are Multicast or partner >= Own: add partner and start connect
         Logger.Log_Debug ("Ipm: Connecting to new partner "
                         & Partner.Addr.Image);
-        Partner.Active := Message(1) = 'A';
+        Partner.State := Init;
+        -- Save partner state received, for when connection establishes
+        Partner.Init_State := (if Message(1) = 'A' then Active else Passive);
         Partner.Timer := new Chronos.Passive_Timers.Passive_Timer;
         Insert_Partner (Partner);
         -- The callback can be called synchronously
@@ -834,6 +873,12 @@ package body Autobus is
     Remove_Partners (False);
     return False;
   end Timer_Cb;
+
+  -- Is a partner connected (connection is not Init nor Shadow)
+  function Talk_To (State : Partner_State_List) return Boolean is
+  begin
+    return State /= Init and then State /= Shadow;
+  end Talk_To;
 
   ------------
   -- PUBLIC --
@@ -1067,9 +1112,8 @@ package body Autobus is
                                    Socket => Bus.Acc.Adm,
                                    Host => Bus.Acc.Host,
                                    Port => Bus.Acc.Port);
-      Ipm_Send (Bus.Acc.Adm, Pid_Image & '/' & Message,
-                             Pid_Image'Length + 1 + Message'Length);
-      return;
+      Ipm_Send (Bus.Acc.Adm, "M/" & Pid_Image & '/' & Message,
+                             Pid_Image'Length + 3 + Message'Length);
     end if;
 
     if Bus.Acc.Partners.Is_Empty then
@@ -1081,13 +1125,13 @@ package body Autobus is
     Msg(1 .. Message'Length) := Message;
     Bus.Acc.Partners.Rewind (Partner_Access_List_Mng.Next, False);
 
-    -- Send message on each partner except on the passive connection to ourself
+    -- Send message on each partner except on the shadow connection to ourself
     --  (so we send it to ourself only once).
     loop
       exit when Bus.Acc.Partners.Is_Empty;
       Bus.Acc.Partners.Read (Partner_Acc, Moved => Moved);
       begin
-        if Partner_Acc.State = Active then
+        if Talk_To (Partner_Acc.State) then
           Dummy := Tcp_Send (Partner_Acc.Sock, null, null,
                              Bus.Acc.Timeout, Msg, Message'Length);
         end if;
@@ -1152,7 +1196,7 @@ package body Autobus is
     -- Prepare message and (current) partner
     Msg(1 .. Message'Length) := Message;
     Partner_Acc := Partners.Access_Current;
-    if Partner_Acc.State /= Active then
+    if not Talk_To (Partner_Acc.State) then
       return;
     end if;
 
@@ -1251,7 +1295,7 @@ package body Autobus is
 
     -- Prepare message and (current) partner
     Msg(1 .. Message'Length) := Message;
-    if Partner_Acc.State /= Active then
+    if not Talk_To (Partner_Acc.State) then
       return;
     end if;
 
@@ -1329,7 +1373,8 @@ package body Autobus is
     -- Compile Filter
     if Filter /= "" then
       Subs.Filter := new Regular_Expressions.Compiled_Pattern;
-      Regular_Expressions.Compile (Subs.Filter.all, Ok, Filter);
+      Regular_Expressions.Compile (Subs.Filter.all, Ok, Filter,
+                                   Multi_Line => True, Dot_All => True);
       if not Ok then
         Logger.Log_Debug ("Subscriber.Init regexp error "
                         & Regular_Expressions.Error (Subs.Filter.all));
