@@ -106,8 +106,10 @@ package Autobus is
   type Bus_Access_Type is access all Bus_Type;
 
   -- Supervision callback on the Bus
-  -- Report the insertion of a remote partner (State=True), the death of a
-  --  remote (State=False) and our own address (State=Other)
+  -- Report the insertion of a remote reliable partner (State=True),
+  --  the death of a remote reliable parner (State=False) and our own address
+  --  (State=Other) on a reliable or multicast bus
+  -- Address has the form "host_addr:port_num/mode"
   -- In Sup_Callback it is forbidden to initialise or reset a Bus or a
   --  Subscriber, this would raise the exception In_Callback
   type Sup_Report is record
@@ -159,22 +161,29 @@ package Autobus is
   -- May also raise Empty_Message
   procedure Reply (Bus : in out Bus_Type; Message : in String);
 
+  -- Mode definition (to identify a destination) and image
+  type Mode_List is (Reliable, Multicast);
+  -- Returns "/R" or "/M"
+  function Mode_Suffix (Mode : in Mode_List) return String;
+
   -- Send a message to one process
+  -- Dest is designated by a string "host_addr:port_num/mode"
+  --  or "host_name:port_name/mode" or any combination,where mode is 'R' for
+  --  reliable or 'M' for multicast
   -- If names do not resolve or destination is not known
   Unknown_Destination : exception;
-  -- May also raise Empty_Message
-  -- Note that if two processes use the same multicast bus on the same node
-  --  they both receive the message sent to one of them
-  -- Port is not significant on a multicast Bus (will use the port of the Bus)
-  -- Dest is designated by a string "host_addr:port_num"
-  --  or "host_name:port_name" or any combination, including empty port_name
+  -- If sending Muticast message through a Reliable Bus
+  Uncompatible_Mode : exception;
+  -- May also raise Empty_Message or Invalid_Address
   procedure Send_To (Bus : in out Bus_Type;
-                     Host_Port : in String;
+                     Host_Port_Mode : in String;
                      Message : in String);
-  -- Dest is designated by a Host_Id and a Port_Num
+
+  -- Dest is designated by a Host_Id, a Port_Num and a mode
   procedure Send_To (Bus : in out Bus_Type;
                      Host : in Socket.Host_Id;
                      Port : in Socket.Port_Num;
+                     Mode : in Mode_List;
                      Message : in String);
 
 
@@ -237,11 +246,12 @@ private
   type Partner_State_List is (Init, Active, Passive, Multicast, Shadow);
   subtype Init_Sate_List is Partner_State_List range Active .. Passive;
   type Partner_Rec is record
-    -- Address of the TCP socket "www.xxx.yyy.zzz:portnum"
+    -- Address of the TCP socket "www.xxx.yyy.zzz:portnum/mode"
     Addr : As.U.Asu_Us;
     -- Low level address
     Host : Socket.Host_Id;
     Port : Socket.Port_Num;
+    Mode : Mode_List;
     -- Socket
     Sock : Socket.Socket_Dscr;
     -- State of the partner while waiting for connection completion
@@ -285,8 +295,11 @@ private
     -- Address of the IPM socket "www.xxx.yyy.zzz:portnum", for reporting
     Name : As.U.Asu_Us;
     -- Address of the TCP (Acc) or the UDP socket on dynamic port
-    --  "www.xxx.yyy.zzz:portnum"
+    --  "www.xxx.yyy.zzz:portnum/mode" (Mode is 'R' or 'M')
+    -- Unique identifier
     Addr : As.U.Asu_Us;
+    -- The IP and port part of Addr
+    Ipaddr : As.U.Asu_Us;
     -- Administration or multicast IPM socket
     Adm : Socket.Socket_Dscr := Socket.No_Socket;
     Host : Socket.Host_Id;
@@ -294,13 +307,11 @@ private
     -- TCP accept socket, dynamic port => Unique for this process/node
     --  (in multicast, it is bound to a dynamic UDP port)
     Acc : Socket.Socket_Dscr := Socket.No_Socket;
-    -- UDP point to point socket (on same port as Adm)
-    Ptp : Socket.Socket_Dscr := Socket.No_Socket;
     -- Host Id denoting the interface (for TCP and IPM)
     Host_If : Socket.Host_Id;
     -- Supervision callback
     Sup_Cb : Sup_Callback;
-    -- Are we active on this bus
+    -- Are we active or passive or multicasting on this bus
     Kind : Bus_Kind := Active;
     -- Heartbeat period and Max missed number, Timeout on connect and send,
     --  TTL and passive_Factor

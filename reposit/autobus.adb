@@ -89,7 +89,8 @@ package body Autobus is
   --    * if Ma > Mb and then Ma - Mb > M / 2
   --
   -- Multicast and compatibility
-  -- If Multicast bus, also create a Ptp UDP socket on the port of the Bus.
+  -- If Multicast bus, create a Ptp UDP socket on a dynamic port instead
+  --  of the acceptance socket
   -- When receiving a Reliable live message, create a connection to the sender.
   -- When sending, send in multicast and on the connections
 
@@ -179,24 +180,19 @@ package body Autobus is
   package body Config is separate;
 
   -- Search Partner
-  -- By address
-  function Partner_Match_Addr (Curr, Crit : Partner_Rec) return Boolean is
-    use type As.U.Asu_Us;
-  begin
-    return Curr.Addr = Crit.Addr;
-  end Partner_Match_Addr;
   -- By socket
   function Partner_Match_Sock (Curr, Crit : Partner_Rec) return Boolean is
     use type Socket.Socket_Dscr;
   begin
     return Curr.Sock = Crit.Sock;
   end Partner_Match_Sock;
-  -- By Host and port
-  function Partner_Match_Hp (Curr, Crit : Partner_Rec) return Boolean is
+  -- By host, port and mode
+  function Partner_Match_Hpm (Curr, Crit : Partner_Rec) return Boolean is
     use type Socket.Host_Id, Socket.Port_Num;
   begin
-    return Curr.Host = Crit.Host and then Curr.Port = Crit.Port;
-  end Partner_Match_Hp;
+    return Curr.Host = Crit.Host and then Curr.Port = Crit.Port
+           and then Curr.Mode = Crit.Mode;
+  end Partner_Match_Hpm;
   -- By access
   function Partner_Match_Acc (Curr, Crit : Partner_Access) return Boolean is
   begin
@@ -216,19 +212,13 @@ package body Autobus is
   begin
     return Curr.Acc = Crit.Acc;
   end Bus_Match_Acc;
-  -- By point to point socket
-  function Bus_Match_Ptp (Curr, Crit : Bus_Rec) return Boolean is
-    use type Socket.Socket_Dscr;
-  begin
-    return Curr.Ptp = Crit.Ptp;
-  end Bus_Match_Ptp;
   -- By timer Id
   function Bus_Match_Timer (Curr, Crit : Bus_Rec) return Boolean is
     use type Timers.Timer_Id;
   begin
     return Curr.Heartbeat_Timer = Crit.Heartbeat_Timer;
   end Bus_Match_Timer;
-  -- By Address
+  -- By Address name
   function Bus_Match_Name (Curr, Crit : Bus_Rec) return Boolean is
     use type As.U.Asu_Us;
    begin
@@ -292,18 +282,17 @@ package body Autobus is
     end if;
   end Smaller;
 
-  -- Notify sup callback on current Bus of current partner
-  procedure Notify_Sup (Partner : in Partner_Access;
+  -- Notify sup callback on current Bus of a partner or local address
+  procedure Notify_Sup (Bus : in Bus_Access;
+                        Address : in As.U.Asu_Us;
                         State   : in Trilean.Trilean) is
-    Bus : Bus_Access;
   begin
-    Bus := Partner.Bus;
     if Bus.Sup_Cb = null then
       return;
     end if;
     Calling_Supcb := True;
     begin
-      Bus.Sup_Cb ( (Partner.Addr, State) );
+      Bus.Sup_Cb ( (Address, State) );
     exception
       when Error:others =>
         Logger.Log_Debug ("Sup callback raised exception: "
@@ -424,6 +413,7 @@ package body Autobus is
 
   procedure Tcp_Disconnection_Cb (Dscr : in Socket.Socket_Dscr) is
     Partner : Partner_Rec;
+    Partner_Acc : Partner_Access;
   begin
     -- Find partner by socket
     Partner.Sock := Dscr;
@@ -434,9 +424,11 @@ package body Autobus is
       return;
     end if;
     -- Don't close socket (Tcp_Util will do it when we return)
+    Partner_Acc := Partners.Access_Current;
     Logger.Log_Debug ("Disconnection of partner "
-                    & Partners.Access_Current.Addr.Image);
-    Notify_Sup (Partners.Access_Current, Trilean.False);
+                    & Partner_Acc.Addr.Image);
+    Notify_Sup (Partner_Acc.Bus, Partner_Acc.Addr, Trilean.False);
+    -- remove partner without closing (socket is already closed)
     Remove_Current_Partner (False);
   end Tcp_Disconnection_Cb;
 
@@ -512,44 +504,48 @@ package body Autobus is
       return True;
     end if;
 
-    -- The partner (that has just connected to us) sends us its accept address
-    --  (the one in its live message) or just "M/"
-    if Length = 2 and then Msg = "M/" then
-      Logger.Log_Debug ("Reception of identification from Multicast bus");
-    elsif Length < Message_Min_Length or else Length > Ipm_Message_Max_Length
-    or else (Msg(1) /= 'A' and then Msg(1) /= 'P') or else Msg(2) /= '/' then
+    -- The partner (that has just connected to us) sends us its unique address
+    -- <kind>/<ipaddr>:<port>
+    if Length < Message_Min_Length or else Length > Ipm_Message_Max_Length
+    or else (Msg(1) /= 'A' and then Msg(1) /= 'P' and then Msg(1) /= 'M')
+    or else Msg(2) /= '/' then
       Logger.Log_Warning (
           "Tcp_Reception_Cb received invalid identification header >"
         & Msg & "< from " & Partner_Acc.Addr.Image);
     end if;
-    Addr := As.U.Tus (Msg(3 .. Length));
 
     -- Check validity of received address
-    if not Addr.Is_Null then
-      declare
-        Rem_Host : Tcp_Util.Remote_Host;
-        Rem_Port : Tcp_Util.Remote_Port;
-      begin
-        Ip_Addr.Parse (Addr.Image, Rem_Host, Rem_Port);
-        -- Ok, store it
-        Partner_Acc.Addr := Addr;
-        Partner_Acc.Host := Ip_Addr.Resolve (Rem_Host, False);
-        Partner_Acc.Port := Ip_Addr.Resolve (Rem_Port, Socket.Tcp);
-      exception
-        when Ip_Addr.Parse_Error =>
-          Logger.Log_Warning (
-              "Tcp_Reception_Cb received invalid identification >"
-            & Msg & "< from " & Partner_Acc.Addr.Image);
-          Remove_Current_Partner (True);
-          return False;
-        when Ip_Addr.Name_Error =>
-          Logger.Log_Warning (
-              "Tcp_Reception_Cb received unknown identification >"
-            & Msg & "< from " & Partner_Acc.Addr.Image);
-          Remove_Current_Partner (True);
-          return False;
-      end;
-    end if;
+    Addr := As.U.Tus (Msg(3 .. Length));
+    declare
+      Rem_Host : Tcp_Util.Remote_Host;
+      Rem_Port : Tcp_Util.Remote_Port;
+      use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
+    begin
+      Ip_Addr.Parse (Addr.Image, Rem_Host, Rem_Port);
+      -- Must be Ids
+      if Rem_Host.Kind /= Tcp_Util.Host_Id_Spec
+      or else Rem_Port.Kind /= Tcp_Util.Port_Num_Spec then
+        raise Ip_Addr.Parse_Error;
+      end if;
+      -- Ok, store it
+      Partner_Acc.Host := Rem_Host.Id;
+      Partner_Acc.Port := Rem_Port.Num;
+      Partner_Acc.Mode := (if Msg(1) = 'M' then Multicast else Reliable);
+      Partner_Acc.Addr := Addr & Mode_Suffix (Partner_Acc.Mode);
+    exception
+      when Ip_Addr.Parse_Error =>
+        Logger.Log_Warning (
+            "Tcp_Reception_Cb received invalid identification >"
+          & Msg & "< from " & Partner_Acc.Addr.Image);
+        Remove_Current_Partner (True);
+        return False;
+      when Ip_Addr.Name_Error =>
+        Logger.Log_Warning (
+            "Tcp_Reception_Cb received unknown identification >"
+          & Msg & "< from " & Partner_Acc.Addr.Image);
+        Remove_Current_Partner (True);
+        return False;
+    end;
 
     -- Detect own address
     if Partner_Acc.Addr = Buses.Access_Current.Addr then
@@ -558,19 +554,18 @@ package body Autobus is
       --  (no sending of message)
       Partner_Acc.Timer.Stop;
       Partner_Acc.State := Shadow;
-    elsif not Addr.Is_Null then
+    else
       Logger.Log_Debug ("Reception of identification from "
                       & Partner_Acc.Addr.Image);
-      Partner_Acc.State := (if Msg(1) = 'A' then Active else Passive);
-      if Partner_Acc.State = Passive then
+      Partner_Acc.State := (if Msg(1) = 'A' then Active
+                            elsif Msg(1) = 'P' then Passive
+                            else Multicast);
+      if Partner_Acc.State /= Active then
         Partner_Acc.Timer.Stop;
       end if;
-      Notify_Sup (Partner_Acc, Trilean.True);
-    else
-      -- Already logged
-      -- No timer, connection is active
-      Partner_Acc.State := Multicast;
-      Partner_Acc.Timer.Stop;
+      if Partner_Acc.State /= Multicast then
+        Notify_Sup (Partner_Acc.Bus, Partner_Acc.Addr, Trilean.True);
+      end if;
     end if;
     Logger.Log_Debug ("Partner is " & Mixed_Str (Partner_Acc.State'Img));
     return False;
@@ -600,36 +595,38 @@ package body Autobus is
     -- Find partner by Host and Port
     Partner.Host := Remote_Host_Id;
     Partner.Port := Remote_Port_Num;
+    Partner.Mode := Reliable;
     -- Find partner by address
-    if not Partners.Search_Match (Partner_Match_Hp'Access, Partner,
+    if not Partners.Search_Match (Partner_Match_Hpm'Access, Partner,
                           From => Partner_List_Mng.Current_Absolute) then
       Log_Error ("Tcp_Connection_Cb", " partner not found",
                  "in partners list");
       return;
     end if;
-    Partner_Acc := Partner_Access(Partners.Access_Current);
+    Partner_Acc := Partners.Access_Current;
     Logger.Log_Debug ("Connection to partner " & Partner_Acc.Addr.Image);
-
-    -- Set TTL and send identification message: our TCP address
-    Partner_Acc.Sock := Dscr;
-    Partner_Acc.Sock.Set_Ttl (Partner_Acc.Bus.Ttl);
-    Message_Length := Partner_Acc.Bus.Addr.Length + 2;
-    Message(1 .. Message_Length) :=
-        (case Partner_Acc.Bus.Kind is
-          when Active => 'A',
-          when Passive => 'P',
-          when Multicast => 'M') & "/" & Partner_Acc.Bus.Addr.Image;
-    Logger.Log_Debug ("Sending our address " & Message(1 .. Message_Length));
-    Dummy := Tcp_Send (Partner_Acc.Sock, null, null, Partner_Acc.Bus.Timeout,
-                       Message, Message_Length);
 
     -- Hook callbacks
     Tcp_Reception_Mng.Set_Callbacks (Dscr,
                                      Tcp_Reception_Cb'Access,
                                      Tcp_Disconnection_Cb'Access);
+
+    -- Set TTL and send identification message: our TCP address
+    Partner_Acc.Sock := Dscr;
+    Partner_Acc.Sock.Set_Ttl (Partner_Acc.Bus.Ttl);
+    Message_Length := Partner_Acc.Bus.Ipaddr.Length + 2;
+    Message(1 .. Message_Length) :=
+        (case Partner_Acc.Bus.Kind is
+          when Active => 'A',
+          when Passive => 'P',
+          when Multicast => 'M') & "/" & Partner_Acc.Bus.Ipaddr.Image;
+    Logger.Log_Debug ("Sending our address " & Message(1 .. Message_Length));
+    Dummy := Tcp_Send (Partner_Acc.Sock, null, null, Partner_Acc.Bus.Timeout,
+                       Message, Message_Length);
+
     -- Update partner state and timer
     Partner_Acc.State := Partner_Acc.Init_State;
-    if Partner_Acc.Addr = Buses.Access_Current.Addr then
+    if Partner_Acc.Addr = Partner_Acc.Bus.Addr then
       -- This is the connection to ourself. Active with no timer
       Logger.Log_Debug ("Stopping timer to ourself");
       Partner_Acc.State := (if Partner_Acc.Bus.Kind = Active then Active
@@ -637,7 +634,7 @@ package body Autobus is
       Partner_Acc.Timer.Stop;
       Logger.Log_Debug ("Partner is " & Mixed_Str (Partner_Acc.State'Img));
     end if;
-    Notify_Sup (Partner_Acc,
+    Notify_Sup (Partner_Acc.Bus, Partner_Acc.Addr,
                 (if Partner_Acc.Timer.Running then Trilean.True
                  else Trilean.Other));
   exception
@@ -668,10 +665,12 @@ package body Autobus is
       Log_Error ("Accept_Cb", "bus not found", "in buses list");
       return;
     end if;
-    -- The Addr remains empty until the partner sends it on the connection
+    -- The Host/Port/mode are the one of the connection and the Addr remains
+    --  empty until the partner sends them on the connection
     --  (first message received on the connection)
     Partner.Host := Remote_Host_Id;
     Partner.Port := Remote_Port_Num;
+    Partner.Mode := Reliable;
     Partner.Sock := New_Dscr;
     Partner.Timer := new Chronos.Passive_Timers.Passive_Timer;
     Partner.Bus := Bus_Access(Buses.Access_Current);
@@ -690,18 +689,18 @@ package body Autobus is
   procedure Ipm_Send is new Socket.Send (String,
                                          Message_Max_Length);
   procedure Send_Adm (Active : in Trilean.Trilean) is
-    Message_Len : Natural;
+    Addr : As.U.Asu_Us;
     Message : Ipm_Message_Str;
-    Bus_Acc : Bus_Access;
+    use type As.U.Asu_Us;
   begin
-    Bus_Acc := Bus_Access(Buses.Access_Current);
-    Message_Len := Bus_Acc.Addr.Length + 2;
-    Message(1 .. Message_Len) := (case Active is
-                                    when Trilean.True  => "A",
-                                    when Trilean.False => "P",
-                                    when Trilean.Other => "D")
-                               & "/" & Bus_Acc.Addr.Image;
-    Ipm_Send (Bus_Acc.Adm, Message, Message_Len);
+    Addr := Buses.Access_Current.Ipaddr;
+    -- Append paddr to prefix 'A', 'P' or 'D'
+    Addr.Prepend ( (case Active is
+                      when Trilean.True  => "A",
+                      when Trilean.False => "P",
+                      when Trilean.Other => "D") & "/");
+    Message(1 .. Addr.Length) := Addr.Image;
+    Ipm_Send (Buses.Access_Current.Adm, Message, Addr.Length);
   end Send_Adm;
 
   -- IPM Reception Cb
@@ -711,6 +710,8 @@ package body Autobus is
     Rem_Host : Tcp_Util.Remote_Host;
     Rem_Port : Tcp_Util.Remote_Port;
     Partner_Found : Boolean;
+    Partner_Ipaddr : As.U.Asu_Us;
+    Partner_Acc : Partner_Access;
     Unused_Connected : Boolean;
     -- Partner is filled progressively (excep its Sock and Timer)
     Partner : Partner_Rec;
@@ -724,9 +725,9 @@ package body Autobus is
       Crit.Adm := Dscr;
       if not Buses.Search_Match (Bus_Match_Adm'Access, Crit,
                                  From => Bus_List_Mng.Current_Absolute) then
-        Crit.Ptp := Dscr;
-        if not Buses.Search_Match (Bus_Match_Ptp'Access, Crit,
-                                 From => Bus_List_Mng.Current_Absolute) then
+        Crit.Acc := Dscr;
+        if not Buses.Search_Match (Bus_Match_Acc'Access, Crit,
+                                   From => Bus_List_Mng.Current_Absolute) then
           Log_Error ("Ipm_Reception_Cb", "bus not found", "in buses list");
           return False;
         elsif Buses.Access_Current.Kind /= Multicast then
@@ -743,7 +744,6 @@ package body Autobus is
     if Length > 0 and then Message(1) = 'M' then
       if Buses.Access_Current.Kind = Multicast then
         -- M/Pid/Data
-        -- Message is local if the sender is ourself
         if Length < Pid_Image'Length + 3 then
           Logger.Log_Warning (
               "Ipm_Reception_Cb received multicast message too short >"
@@ -758,6 +758,7 @@ package body Autobus is
           return False;
         end if;
 
+        -- Message is local if the sender is ourself
         -- The sender host is the dest after receive (Set_For_Reply=True)
         -- Check Pid if same host
         Dispatch (Message (Pid_Image'Length + 4 .. Length),
@@ -795,23 +796,28 @@ package body Autobus is
         return False;
       end if;
       -- Set partner address
-      Partner.Addr := As.U.Tus (Address);
+      Partner_Ipaddr := As.U.Tus (Address);
       Partner.Host := Rem_Host.Id;
       Partner.Port := Rem_Port.Num;
+      Partner.Mode := Reliable;
+      Partner.Addr := As.U.Tus (Address & Mode_Suffix (Partner.Mode));
     exception
       when others => return False;
     end;
 
-    -- Find partner by address
-    Partner_Found := Partners.Search_Match (Partner_Match_Addr'Access, Partner,
+    -- Find partner by host, port, mode
+    Partner_Found := Partners.Search_Match (Partner_Match_Hpm'Access, Partner,
                                     From => Partner_List_Mng.Current_Absolute);
+    if Partner_Found then
+      Partner_Acc := Partners.Access_Current;
+    end if;
 
     -- Handle Death
     if Message(1) = 'D' then
       if Partner_Found then
         -- Death of a known partner, remove it and close connection
         Logger.Log_Debug ("Ipm: Death of partner " & Partner.Addr.Image);
-        Notify_Sup (Partners.Access_Current, Trilean.False);
+        Notify_Sup (Partner_Acc.Bus, Partner_Acc.Addr, Trilean.False);
         Remove_Current_Partner (True);
       end if;
       -- End of processing of a death message
@@ -822,7 +828,7 @@ package body Autobus is
     if not Partner_Found then
       -- New (unknown yet) partner
       if Buses.Access_Current.Kind /= Multicast
-      and then Smaller (Partner.Addr, Partner.Bus.Addr) then
+      and then Smaller (Partner_Ipaddr, Partner.Bus.Ipaddr) then
         -- We are Reliable (not multicast), and
         -- Partner < Own: we send an Alive, then the partner will connect to us
         --  (and we will accept) then it will send its address
@@ -849,10 +855,9 @@ package body Autobus is
       end if;
     else
       -- Partner found
-      Partners.Read (Partner, Partner_List_Mng.Current);
-      if Partner.Timer.Running then
+      if Partner_Acc.Timer.Running then
         -- This partner is known with a timer, restart its keep alive timer
-        Start_Partner_Timer (Partner.Bus);
+        Start_Partner_Timer (Partner_Acc.Bus);
       end if;
     end if;
     return False;
@@ -993,18 +998,17 @@ package body Autobus is
 
     if Rbus.Kind = Multicast then
       -- Create the UDP Pt to Pt socket
-      Rbus.Ptp.Open (Socket.Udp);
-      Rbus.Ptp.Set_Reception_Interface (Rbus.Host_If);
-      Rbus.Ptp.Link_Port (Rbus.Adm.Get_Linked_To);
-      -- Used to detect local messages
-      Rbus.Ptp.Set_Destination_Host_And_Port (Rbus.Host_If,
-                                              Rbus.Adm.Get_Linked_To);
-      Ipm_Reception_Mng.Set_Callbacks (Rbus.Ptp, Ipm_Reception_Cb'Access,
-                                       null);
-      -- Unique identifier of this process
       Rbus.Acc.Open (Socket.Udp);
+      Rbus.Acc.Set_Reception_Interface (Rbus.Host_If);
       Rbus.Acc.Link_Dynamic;
-      Rbus.Addr := As.U.Tus (Image (Rbus.Host_If, Rbus.Acc.Get_Linked_To));
+      -- Set reception callback. The Set_For_Reply is needed to detect our
+      --  own messages
+      Ipm_Reception_Mng.Set_Callbacks (Rbus.Acc, Ipm_Reception_Cb'Access, null,
+                                       Set_For_Reply => True);
+      Logger.Log_Debug ("UDP socket initialialized");
+      -- Unique identifier of this process
+      Rbus.Addr := As.U.Tus (Image (Rbus.Host_If, Rbus.Acc.Get_Linked_To)
+                           & Mode_Suffix (Multicast));
     else
       -- Create the TCP accepting socket, set accep callback
       Tcp_Util.Accept_From (Socket.Tcp_Header,
@@ -1014,17 +1018,18 @@ package body Autobus is
                             Rbus.Host_If);
       Logger.Log_Debug ("TCP socket initialialized");
 
-      -- Now we know on which host and port we listen (for the Alive message)
-      Rbus.Addr := As.U.Tus (Image (Rbus.Host_If, Port_Num));
+      -- Unique identifier of this process
+      Rbus.Addr := As.U.Tus (Image (Rbus.Host_If, Port_Num)
+                           & Mode_Suffix (Reliable));
     end if;
+    -- Also store the IP:Port
+    Rbus.Ipaddr := Rbus.Addr;
+    Rbus.Ipaddr.Trail (2);
 
-    -- Set TTL on Admin, Accept (TCP) and Ptp (UDP) sockets
+    -- Set TTL on Admin and Accept (TCP or UDP) sockets
     Rbus.Adm.Set_Ttl (Rbus.Ttl);
-    if Rbus.Kind = Multicast then
-      Rbus.Ptp.Set_Ttl (Rbus.Ttl);
-    else
-      Rbus.Acc.Set_Ttl (Rbus.Ttl);
-
+    Rbus.Acc.Set_Ttl (Rbus.Ttl);
+    if Rbus.Kind /= Multicast then
       -- Arm Bus related active timer and create passive timer
       Timeout.Delay_Seconds := 0.0;
       Timeout.Period := Rbus.Heartbeat_Period;
@@ -1032,20 +1037,27 @@ package body Autobus is
       Rbus.Passive_Timer := new Chronos.Passive_Timers.Passive_Timer;
       Timeout.Period := Rbus.Heartbeat_Period * Rbus.Passive_Factor;
       Rbus.Passive_Timer.Start (Timeout);
+      Logger.Log_Debug ("Reliable timer created");
     end if;
 
     -- Done: Insert in list, return access
     Buses.Rewind (Bus_List_Mng.Next, False);
     Buses.Insert (Rbus);
     Bus.Acc := Buses.Access_Current;
+
+    -- Report own address in Multicast
+    -- (report of reliable own address will occur after  local connection)
+    if Rbus.Kind = Multicast then
+      Notify_Sup (Buses.Access_Current, Rbus.Addr, Trilean.Other);
+    end if;
+
     Logger.Log_Debug ("Bus " & Rbus.Name.Image
                     & " created "
                     & (case Rbus.Kind is
                         when Active  => "Active",
                         when Passive =>  "Passive",
                         when Multicast => "Multicast")
-                    & (if Rbus.Kind /= Multicast then " at " & Rbus.Addr.Image
-                       else ""));
+                    & " at " & Rbus.Addr.Image);
     if Rbus.Kind /= Multicast then
       Logger.Log_Debug (" with Period: "
          & Images.Dur_Image (Rbus.Heartbeat_Period, 1, False)
@@ -1080,25 +1092,30 @@ package body Autobus is
     Unused_Bus_Found := Buses.Search_Access (Bus.Acc);
     Logger.Log_Debug ("Bus.Reset " & Bus.Acc.Name.Image);
 
-    -- Send Death info
+    -- Send Death info (if possible)
     if Bus.Acc.Kind /= Multicast then
-      Send_Adm (Trilean.Other);
+      begin
+        Send_Adm (Trilean.Other);
+      exception
+        when others =>
+          null;
+      end;
     end if;
 
     -- Close resources
     Ipm_Reception_Mng.Remove_Callbacks (Bus.Acc.Adm);
     if Bus.Acc.Kind = Multicast then
-      Ipm_Reception_Mng.Remove_Callbacks (Bus.Acc.Ptp);
+      Ipm_Reception_Mng.Remove_Callbacks (Bus.Acc.Acc);
     else
       Tcp_Util.Abort_Accept (Socket.Tcp_Header, Bus.Acc.Acc.Get_Linked_To);
       if Bus.Acc.Passive_Timer.Running then
         Bus.Acc.Passive_Timer.Stop;
       end if;
       Deallocate (Bus.Acc.Passive_Timer);
-
-      -- Remove all partners
-      Remove_Partners (True);
     end if;
+
+    -- Remove all partners
+    Remove_Partners (True);
 
     -- Remove all subscribers
     Bus.Acc.Subscribers.Rewind (Subscriber_List_Mng.Next, False);
@@ -1203,8 +1220,8 @@ package body Autobus is
 
     if Bus.Acc.Kind = Multicast then
       -- Multicast bus, send on the socket (Set_For_Reply was set)
-      Ipm_Send (Bus.Acc.Adm, Pid_Image & '/' & Message,
-                             Pid_Image'Length + 1 + Message'Length);
+      Ipm_Send (Bus.Acc.Adm, "M/" & Pid_Image & '/' & Message,
+                             Pid_Image'Length + 3 + Message'Length);
       return;
     end if;
 
@@ -1244,39 +1261,66 @@ package body Autobus is
     end if;
   end Reply;
 
+  -- Mode definition (to identify a destination) and image
+  Mode_List_Image : constant array (Mode_List) of Character :=
+    (Reliable => 'R', Multicast => 'M');
+  -- Returns "/R" or "/M"
+  function Mode_Suffix (Mode : in Mode_List) return String is
+  begin
+    return '/' & Mode_List_Image(Mode);
+  end Mode_Suffix;
 
   -- Send a message to one process
   procedure Send_To (Bus : in out Bus_Type;
-                     Host_Port : in String;
+                     Host_Port_Mode : in String;
                      Message : in String) is
     Host : Tcp_Util.Remote_Host;
     Port : Tcp_Util.Remote_Port;
     Host_Id : Socket.Host_Id;
     Port_Num : Socket.Port_Num;
+    Mode : Mode_List;
 
   begin
     -- Check that Bus is initialised
     if Bus.Acc = null then
       raise Status_Error;
     end if;
-    -- Parse and resolve into Host_Id and Port_Num
-    Ip_Addr.Parse (Host_Port, Host, Port);
-    Host_Id := Ip_Addr.Resolve (Host, False);
-    if Bus.Acc.Kind = Multicast then
-      -- Port is not significant
-      Port_Num := 0;
-    else
-      Port_Num := Ip_Addr.Resolve (Port, Socket.Tcp);
+
+    -- Check, Parse and resolve into Host_Id and Port_Num
+    if Host_Port_Mode'Length < 3
+    or else Host_Port_Mode(Host_Port_Mode'Last-1) /= '/' then
+      raise Invalid_Address;
     end if;
-    Send_To (Bus, Host_Id, Port_Num, Message);
+    -- Parse IP addr & port
+    Ip_Addr.Parse (
+        Host_Port_Mode(Host_Port_Mode'First .. Host_Port_Mode'Last-2),
+        Host, Port);
+    -- Parse mode
+    if Host_Port_Mode(Host_Port_Mode'Last) = Mode_List_Image(Reliable) then
+      Mode := Reliable;
+    elsif Host_Port_Mode(Host_Port_Mode'Last) = Mode_List_Image(Multicast) then
+      Mode := Multicast;
+    else
+      raise Invalid_Address;
+    end if;
+    -- resolve host and port
+    Host_Id := Ip_Addr.Resolve (Host, False);
+    Port_Num := Ip_Addr.Resolve (Port,
+        (if Mode = Reliable then Socket.Tcp else Socket.Udp));
+
+    -- Send
+    Send_To (Bus, Host_Id, Port_Num, Mode, Message);
   exception
     when Ip_Addr.Name_Error =>
       raise Unknown_Destination;
+    when Ip_Addr.Parse_Error =>
+      raise Invalid_Address;
   end Send_To;
 
   procedure Send_To (Bus : in out Bus_Type;
                      Host : in Socket.Host_Id;
                      Port : in Socket.Port_Num;
+                     Mode : in Mode_List;
                      Message : in String) is
     Msg : Tcp_Message_Str;
     Partner_Acc : Partner_Access;
@@ -1289,30 +1333,36 @@ package body Autobus is
       raise Status_Error;
     end if;
 
+    -- Check that Reliable Bus sends reliable messages
+    if Bus.Acc.Kind /= Multicast and then Mode = Multicast then
+      raise Uncompatible_Mode;
+    end if;
+
     -- Check message length
     Check_Message (Message);
 
-    if Bus.Acc.Kind = Multicast then
-      -- Multicast bus, send  to destination
+    -- Send point to point UDP
+    if Mode = Multicast then
       Socket.Set_Destination_Host_And_Port (
-                                   Socket => Bus.Acc.Adm,
+                                   Socket => Bus.Acc.Acc,
                                    Host => Host,
-                                   Port => Bus.Acc.Port);
-      Ipm_Send (Bus.Acc.Adm, Pid_Image & '/' & Message,
-                             Pid_Image'Length + 1 + Message'Length);
+                                   Port => Port);
+      Ipm_Send (Bus.Acc.Acc, "M/" & Pid_Image & '/' & Message,
+                             Pid_Image'Length + 3 + Message'Length);
       return;
     end if;
 
     -- Search partner
     Partner.Host := Host;
     Partner.Port := Port;
-    if not Partners.Search_Match (Partner_Match_Hp'Access, Partner,
+    Partner.Mode := Mode;
+    if not Partners.Search_Match (Partner_Match_Hpm'Access, Partner,
                           From => Partner_List_Mng.Current_Absolute) then
       raise Unknown_Destination;
     end if;
     Partner_Acc := Partners.Access_Current;
 
-    -- Prepare message and (current) partner
+    -- Prepare message and check state of partner
     Msg(1 .. Message'Length) := Message;
     if not Talk_To (Partner_Acc.State) then
       return;
@@ -1508,11 +1558,11 @@ package body Autobus is
     -- Copy all fields except the lists (of Partners and Subscribers)
     To.Name := Val.Name;
     To.Addr := Val.Addr;
+    To.Ipaddr := Val.Ipaddr;
     To.Adm := Val.Adm;
     To.Host := Val.Host;
     To.Port := Val.Port;
     To.Acc := Val.Acc;
-    To.Ptp := Val.Ptp;
     To.Host_If := Val.Host_If;
     To.Sup_Cb := Val.Sup_Cb;
     To.Kind := Val.Kind;
