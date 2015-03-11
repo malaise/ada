@@ -13,7 +13,7 @@
 --     Reply is the remaining text after second space, in Mixed_Str
 --  * Exit after sending 3 messages
 with Basic_Proc, Event_Mng, Str_Util, Mixed_Str, As.U, Async_Stdin,
-     Argument, Argument_Parser, Trilean;
+     Argument, Argument_Parser, Trilean, Aski;
 with Autobus;
 procedure T_Autobus is
 
@@ -127,11 +127,15 @@ procedure T_Autobus is
     use type Autobus.Subscriber_Access_Type;
   begin
     Async_Stdin.Put_Out (Message);
+    if Message = "" or else Message (Message'Last) /= Aski.Lf then
+      Async_Stdin.New_Line_Out;
+    end if;
     Async_Stdin.Flush_Out;
   end Receive;
 
   -- Async stdin callback
   function Async_Cb (Str : String) return Boolean is
+    Last : Natural;
   begin
     if Str = "" then
       -- Async stdin error
@@ -139,7 +143,12 @@ procedure T_Autobus is
       Sig := True;
       return True;
     else
-      Bus.Send (Str);
+      Last := Str'Last;
+      if Last > Str'First and then Str(Last) = Aski.Lf then
+        -- Remove trailing Lf except if empty line
+        Last := Last - 1;
+      end if;
+      Bus.Send (Str(Str'First .. Last));
       return False;
     end if;
   end Async_Cb;

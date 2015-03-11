@@ -147,6 +147,8 @@ package Autobus is
   -- On message longer than Message_Max_Length (1MB)
   Message_Max_Length : constant := 1024 * 1024;
   Message_Too_Long : exception;
+  -- Empty message
+  Empty_Message : exception;
   procedure Send (Bus : in out Bus_Type; Message : in String);
 
   -- Reply to the message currently being received
@@ -154,11 +156,13 @@ package Autobus is
   --  they both receive the reply to a message sent by one of them
   -- If not in receive
   Not_In_Receive : exception;
+  -- May also raise Empty_Message
   procedure Reply (Bus : in out Bus_Type; Message : in String);
 
   -- Send a message to one process
   -- If names do not resolve or destination is not known
   Unknown_Destination : exception;
+  -- May also raise Empty_Message
   -- Note that if two processes use the same multicast bus on the same node
   --  they both receive the message sent to one of them
   -- Port is not significant on a multicast Bus (will use the port of the Bus)
@@ -280,15 +284,17 @@ private
   type Bus_Rec is limited new Ada.Finalization.Limited_Controlled with record
     -- Address of the IPM socket "www.xxx.yyy.zzz:portnum", for reporting
     Name : As.U.Asu_Us;
-    -- Address of the TCP socket "www.xxx.yyy.zzz:portnum"
+    -- Address of the TCP (Acc) or the UDP socket on dynamic port
+    --  "www.xxx.yyy.zzz:portnum"
     Addr : As.U.Asu_Us;
     -- Administration or multicast IPM socket
     Adm : Socket.Socket_Dscr := Socket.No_Socket;
     Host : Socket.Host_Id;
     Port : Socket.Port_Num;
-    -- TCP accept socket
+    -- TCP accept socket, dynamic port => Unique for this process/node
+    --  (in multicast, it is bound to a dynamic UDP port)
     Acc : Socket.Socket_Dscr := Socket.No_Socket;
-    -- UDP point to point socket
+    -- UDP point to point socket (on same port as Adm)
     Ptp : Socket.Socket_Dscr := Socket.No_Socket;
     -- Host Id denoting the interface (for TCP and IPM)
     Host_If : Socket.Host_Id;

@@ -340,13 +340,10 @@ echo >> out1
 cat << EOF > exp
 Received Ah que coucou -> Replying Coucou!
 Spyed >Ah que coucou<
-Spyed >Coucou!<
 Received Ah que coucou -> Replying Coucou!
 Spyed >Ah que coucou<
-Spyed >Coucou!<
 Received Ah que coucou -> Replying Coucou!
 Spyed >Ah que coucou<
-Spyed >Coucou!<
 Closing.
 Done.
 EOF

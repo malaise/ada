@@ -610,6 +610,7 @@ package body Autobus is
           when Active => 'A',
           when Passive => 'P',
           when Multicast => 'M') & "/" & Partner_Acc.Bus.Addr.Image;
+    Logger.Log_Debug ("Sending our address " & Message(1 .. Message_Length));
     Dummy := Tcp_Send (Partner_Acc.Sock, null, null, Partner_Acc.Bus.Timeout,
                        Message, Message_Length);
 
@@ -628,7 +629,7 @@ package body Autobus is
       Logger.Log_Debug ("Partner is " & Mixed_Str (Partner_Acc.State'Img));
     end if;
     Notify_Sup (Partner_Acc,
-                (if Partner_Acc.State = Init then Trilean.True
+                (if Partner_Acc.Timer.Running then Trilean.True
                  else Trilean.Other));
   exception
     when Socket.Soc_Conn_Lost =>
@@ -880,6 +881,17 @@ package body Autobus is
     return State /= Init and then State /= Shadow;
   end Talk_To;
 
+  -- Check that message is not empty and not too long
+  procedure Check_Message (Msg : in String) is
+  begin
+    if Msg'Length = 0 then
+      raise Empty_Message;
+    end if;
+    if Msg'Length > Tcp_Message_Str'Length then
+      raise Message_Too_Long;
+    end if;
+  end Check_Message;
+
   ------------
   -- PUBLIC --
   ------------
@@ -980,7 +992,10 @@ package body Autobus is
                                               Rbus.Adm.Get_Linked_To);
       Ipm_Reception_Mng.Set_Callbacks (Rbus.Ptp, Ipm_Reception_Cb'Access,
                                        null);
-
+      -- Unique identifier of this process
+      Rbus.Acc.Open (Socket.Udp);
+      Rbus.Acc.Link_Dynamic;
+      Rbus.Addr := As.U.Tus (Image (Rbus.Host_If, Rbus.Acc.Get_Linked_To));
     else
       -- Create the TCP accepting socket, set accep callback
       Tcp_Util.Accept_From (Socket.Tcp_Header,
@@ -1102,9 +1117,7 @@ package body Autobus is
     end if;
 
     -- Check message length
-    if Message'Length > Msg'Length then
-      raise Message_Too_Long;
-    end if;
+    Check_Message (Message);
 
     if Bus.Acc.Kind = Multicast then
       -- Multicast
@@ -1177,9 +1190,7 @@ package body Autobus is
     end if;
 
     -- Check message length
-    if Message'Length > Msg'Length then
-      raise Message_Too_Long;
-    end if;
+    Check_Message (Message);
 
     if Bus.Acc.Kind = Multicast then
       -- Multicast bus, send on the socket (Set_For_Reply was set)
@@ -1204,6 +1215,7 @@ package body Autobus is
     begin
       Dummy := Tcp_Send (Partner_Acc.Sock, null, null,
                          Bus.Acc.Timeout, Msg, Message'Length);
+      Success := True;
     exception
       when Socket.Soc_Conn_Lost =>
         Logger.Log_Debug ("Lost connection to " & Partner_Acc.Addr.Image);
@@ -1269,9 +1281,7 @@ package body Autobus is
     end if;
 
     -- Check message length
-    if Message'Length > Msg'Length then
-      raise Message_Too_Long;
-    end if;
+    Check_Message (Message);
 
     if Bus.Acc.Kind = Multicast then
       -- Multicast bus, send  to destination
