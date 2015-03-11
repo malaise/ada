@@ -500,7 +500,7 @@ package body Autobus is
                  "in partners list");
       return False;
     end if;
-    Partner_Acc := Partner_Access(Partners.Access_Current);
+    Partner_Acc := Partners.Access_Current;
 
     if Partner_Acc.State /= Init then
       -- Not the first message, so this is Data => dispatch
@@ -531,6 +531,10 @@ package body Autobus is
         Rem_Port : Tcp_Util.Remote_Port;
       begin
         Ip_Addr.Parse (Addr.Image, Rem_Host, Rem_Port);
+        -- Ok, store it
+        Partner_Acc.Addr := Addr;
+        Partner_Acc.Host := Ip_Addr.Resolve (Rem_Host, False);
+        Partner_Acc.Port := Ip_Addr.Resolve (Rem_Port, Socket.Tcp);
       exception
         when Ip_Addr.Parse_Error =>
           Logger.Log_Warning (
@@ -538,11 +542,16 @@ package body Autobus is
             & Msg & "< from " & Partner_Acc.Addr.Image);
           Remove_Current_Partner (True);
           return False;
+        when Ip_Addr.Name_Error =>
+          Logger.Log_Warning (
+              "Tcp_Reception_Cb received unknown identification >"
+            & Msg & "< from " & Partner_Acc.Addr.Image);
+          Remove_Current_Partner (True);
+          return False;
       end;
     end if;
 
     -- Detect own address
-    Partner_Acc.Addr := As.U.Tus (Addr.Image);
     if Partner_Acc.Addr = Buses.Access_Current.Addr then
       Logger.Log_Debug ("Reception of own identification");
       -- Stop timer on the connection from ourself and make it passive
@@ -667,8 +676,8 @@ package body Autobus is
     Partner.Timer := new Chronos.Passive_Timers.Passive_Timer;
     Partner.Bus := Bus_Access(Buses.Access_Current);
     -- Insert in Bus a reference to this partner
+    Logger.Log_Debug ("Acception of partner");
     Insert_Partner (Partner);
-    Logger.Log_Debug ("Acception of partner " & Partner.Addr.Image);
     -- Set reception callback
     New_Dscr.Set_Ttl (Partner.Bus.Ttl);
     Tcp_Reception_Mng.Set_Callbacks (New_Dscr,
@@ -1288,7 +1297,7 @@ package body Autobus is
       Socket.Set_Destination_Host_And_Port (
                                    Socket => Bus.Acc.Adm,
                                    Host => Host,
-                                   Port => Port);
+                                   Port => Bus.Acc.Port);
       Ipm_Send (Bus.Acc.Adm, Pid_Image & '/' & Message,
                              Pid_Image'Length + 1 + Message'Length);
       return;
@@ -1313,6 +1322,7 @@ package body Autobus is
     begin
       Dummy := Tcp_Send (Partner_Acc.Sock, null, null,
                          Bus.Acc.Timeout, Msg, Message'Length);
+      Success := True;
     exception
       when Socket.Soc_Conn_Lost =>
         Logger.Log_Debug ("Lost connection to " & Partner_Acc.Addr.Image);

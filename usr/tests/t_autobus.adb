@@ -1,5 +1,6 @@
 -- In manual mode:
 --  * Send on bus the text got by async_stdin
+--  * if <send> option, recognises "sendto <addr> text" and sends <text> to <addr>
 --  * Output on stdout the text received on bus
 -- In automatic mode create an Active reliable bus and:
 --  * Send each second the automatic message, if provided in command line
@@ -12,8 +13,9 @@
 --   - Reply (echo "Received <Msg> -> Replying <reply>") other messages
 --     Reply is the remaining text after second space, in Mixed_Str
 --  * Exit after sending 3 messages
+with Ada.Exceptions;
 with Basic_Proc, Event_Mng, Str_Util, Mixed_Str, As.U, Async_Stdin,
-     Argument, Argument_Parser, Trilean, Aski;
+     Argument, Argument_Parser, Trilean, Aski, Regular_Expressions;
 with Autobus;
 procedure T_Autobus is
 
@@ -30,7 +32,8 @@ procedure T_Autobus is
    3 => (False, 'A', As.U.Tus ("active"), False),
    4 => (False, 'P', As.U.Tus ("passive"), False),
    5 => (False, 'M', As.U.Tus ("multicast"), False),
-   6 => (True, 'b', As.U.Tus ("bus"), False, True, As.U.Tus ("bus_address")));
+   6 => (True, 'b', As.U.Tus ("bus"), False, True, As.U.Tus ("bus_address")),
+   7 => (False, 's', As.U.Tus ("send"), False) );
  Key_Dscr : Argument_Parser.Parsed_Dscr;
 
   procedure Usage is
@@ -41,13 +44,15 @@ procedure T_Autobus is
        & Argument_Parser.Image(Keys(1)));
     Plo (" <mode>      ::= <auto> | <manual>");
     Plo (" <auto>      ::= " & Argument_Parser.Image(Keys(2)));
-    Plo (" <manual>    ::= <active> | <passive> | <multicast>");
+    Plo (" <manual>    ::= <active> | <passive> | <multicast>  [ <send> ]");
     Plo (" <active>    ::= " & Argument_Parser.Image(Keys(3)));
     Plo (" <passive>   ::= " & Argument_Parser.Image(Keys(4)));
     Plo (" <multicast> ::= " & Argument_Parser.Image(Keys(5)));
+    Plo (" <send>      ::= " & Argument_Parser.Image(Keys(7)));
     Plo (" <bus>    ::= " & Argument_Parser.Image(Keys(6)));
     Plo ("Ex: " & Argument.Get_Program_Name
        & " --active -b " & Default_Address);
+    Plo ("Send mode leads to detect ""sendto <addr> <text>"" and to send text to addr.");
   end Usage;
 
   procedure Error (Msg : in String) is
@@ -77,6 +82,8 @@ procedure T_Autobus is
             when Trilean.Other => "Own address: ") & Report.Addr.Image);
   end Sup_Cb;
 
+  Send_Mode : Boolean;
+  Send_Str : constant String := "sendto";
   Stimulus : As.U.Asu_Us;
   Nb_Opt : Natural;
 
@@ -135,22 +142,55 @@ procedure T_Autobus is
 
   -- Async stdin callback
   function Async_Cb (Str : String) return Boolean is
-    Last : Natural;
+    Do_Sendto : Boolean;
+    Addr, Msg : As.U.Asu_Us;
   begin
     if Str = "" then
       -- Async stdin error
       Async_Stdin.Put_Line_Err ("Async stdin error");
       Sig := True;
       return True;
-    else
-      Last := Str'Last;
-      if Last > Str'First and then Str(Last) = Aski.Lf then
-        -- Remove trailing Lf except if empty line
-        Last := Last - 1;
-      end if;
-      Bus.Send (Str(Str'First .. Last));
-      return False;
     end if;
+
+    Msg := As.U.Tus (Str);
+    if Msg.Length > 1 and then Msg.Element (Msg.Length) = Aski.Lf then
+      -- Remove trailing Lf except if empty line
+      Msg.Trail (1);
+    end if;
+
+    -- In Send mode, check validity of request
+    -- "sendto <addr> <msg>
+    Do_Sendto := Send_Mode;
+    if Do_Sendto then
+      declare
+        Matches : constant Regular_Expressions.Match_Array
+                := Regular_Expressions.Match (
+                     Send_Str & " +([^ ]+) +(.+)", Msg.Image, 3);
+      begin
+        -- Check that string matches
+        Do_Sendto := Matches'Length = 3
+            and then Regular_Expressions.Strict_Match (Msg.Image, Matches(1))
+            and then Regular_Expressions.Valid_Match (Matches(1));
+        if Do_Sendto then
+          Addr := Msg.Uslice (Matches(2).First_Offset,
+                              Matches(2).Last_Offset_Stop);
+          Msg := Msg.Uslice (Matches(3).First_Offset,
+                             Matches(3).Last_Offset_Stop);
+        end if;
+      end;
+    end if;
+
+    if Do_Sendto then
+      Bus.Send_To (Addr.Image, Msg.Image);
+     else
+      Bus.Send (Msg.Image);
+    end if;
+    return False;
+  exception
+    when Error:others =>
+      Async_Stdin.Put_Line_Err ("Exception "
+          & Ada.Exceptions.Exception_Name (Error) & " raised");
+      return False;
   end Async_Cb;
 
 begin
@@ -207,6 +247,14 @@ begin
     return;
   end if;
 
+  -- No send mode in auto
+  if Key_Dscr.Is_Set (2) and then Key_Dscr.Is_Set (7) then
+    Error ("No send option in automatic mode");
+    Usage;
+    return;
+  end if;
+
+
   -- Init bus with address provided or default
   --  with supervision callback in manual
   if Key_Dscr.Is_Set (6) then
@@ -260,6 +308,8 @@ begin
     Basic_Proc.Put_Line_Output ("Done.");
   else
     -- Manual mode
+    -- Send mode options?
+    Send_Mode := Key_Dscr.Is_Set (7);
     -- Init bus in Active, Passive or Multicast. With Cb
     Bus.Init (Bus_Address.Image,
               (if Key_Dscr.Is_Set (3) then Autobus.Active
