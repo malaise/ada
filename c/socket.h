@@ -144,8 +144,8 @@ extern int soc_get_blocking (soc_token token, blocking_mode *blocking);
 /* Get socket protocol */
 extern int soc_get_protocol (soc_token token, socket_protocol *protocol);
 
-/* Set the TTL. Socket must be either udp with dest set (otherwise */
-/*  SOC_DEST_ERR), or tcp non afux (otherwise SOC_PROTO_ERR) */
+/* Set the TTL. Socket must be either udp or tcp non afux */
+/*  (otherwise SOC_PROTO_ERR) */
 extern int soc_set_ttl (soc_token token, byte ttl);
 
 /* Get the TTL. Socket must be either udp or tcp non afux (otherwise */
