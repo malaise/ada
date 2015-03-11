@@ -106,7 +106,6 @@ package Socket is
                        return Boolean;
 
   -- Set the TTL of a socket
-  -- May raise Soc_Dest_Err on UDP (or IPM) socket if dest is not set
   -- May raise Soc_Proto_Err if socket is Tcp_(Header_)Afux
   procedure Set_Ttl (Socket : in Socket_Dscr; Ttl : in Ttl_Range);
 

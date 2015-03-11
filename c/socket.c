@@ -452,8 +452,8 @@ static int set_ttl (soc_ptr soc) {
   return (SOC_OK);
 }
 
-/* Set the TTL. Socket must be either udp with dest set (otherwise */
-/*  SOC_DEST_ERR), or tcp non afux (otherwise SOC_PROTO_ERR) */
+/* Set the TTL. Socket must be either udp or tcp non afux */
+/*  (otherwise SOC_PROTO_ERR) */
 extern int soc_set_ttl (soc_token token, byte ttl) {
   soc_ptr soc = (soc_ptr) token;
 
@@ -461,11 +461,7 @@ extern int soc_set_ttl (soc_token token, byte ttl) {
   if (soc == NULL) return (SOC_USE_ERR);
   LOCK;
 
-  if ( (soc->protocol == udp_protocol) && (!soc->dest_set) ) {
-    /* UDP/IPM dest must be set */
-    UNLOCK;
-    return (SOC_DEST_ERR);
-  } else if ( (soc->socket_kind == tcp_afux_socket)
+  if ( (soc->socket_kind == tcp_afux_socket)
     || (soc->socket_kind == tcp_header_afux_socket) ) {
     /* No TTL on AFUX */
     UNLOCK;
