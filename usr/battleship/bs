@@ -1,8 +1,11 @@
 #!/bin/bash
-export BATTLESHIP_DEBUG_COMM=Y
-export BATTLESHIP_DEBUG_SETUP=Y
-export BATTLESHIP_DEBUG_PLAY=Y
-export AUTOBUS_DEBUG=Y
+DEBUG=0
+if [ $DEBUG -eq 1 ] ; then
+  export battleship_TRACE_Communication='Debug'
+  export battleship_TRACE_SetuAp='Debug'
+  export battleship_TRACE_Play='Debug'
+  export battleship_TRACE_Autobus='Debug+'
+fi
 # export TCP_UTIL_DEBUG_RECEPTION=Y
 exec ./battleship test_ipm:21210 $*
 
