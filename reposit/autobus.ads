@@ -26,12 +26,10 @@ package Autobus is
 
   -- Implementation:
   -- There are two kinds of Bus, Multicast and Reliable:
-  -- A. Multicast
-  -- Each message is sent in multicast (IPM) to the receiving applications and
-  --  dispatched to the observers. Some messages might be lost in the network.
-  -- B. Reliable
+  -- A. Reliable
   -- Each Bus relies on a fixed IPM address and port, and a random TCP port.
-  -- Each process sends periodically an IPM message with its host and TCP port.
+  -- Each process sends periodically in IPM a live message containing
+  --  its host and local TCP port.
   -- The other processes on the bus keep a list of known alive partners.
   -- When a new process starts it declares itself on the Bus and all the
   --  partners either connects to it or get connected to it.
@@ -42,8 +40,24 @@ package Autobus is
   --  detected by the closure of the TCP connection).
   --  Active mode can be useful for servers, while passive mode might be more
   --  convenient for clients.
-  -- Bus kinds cannot be mixed, in the sense that a Musticast Bus and a
-  --  Reliable Bus on the same IPM address do not exchange data.
+  -- B. Multicast
+  -- Each message is sent in multicast (IPM) to the receiving applications and
+  --  dispatched to the observers. Some messages might be lost in the network.
+
+  -- Bus kinds can be mixed. In one process, a Bus is either Reliable (active or
+  --  passive) or Multicast. But different processes can communicate through
+  --  Buses of different kinds, providing of course that they have the same
+  --  address.
+  --  - A publisher Reliable sends in TCP while in Multicast it sends in IPM,
+  --  - A receiver Reliable receives Reliable and Multicast messages,
+  --  - A Multicast Bus receives the live messages of the Reliable Buses
+  --    connects to them, then it handles them as passive,
+  --  - Point to point sending follows the same logic: on a Reliable bus the
+  --    Host-Port must denote a known Reliable patner (which has a Reliable
+  --    or Multicast bus), while on a Multicast bus it is sent in point to
+  --    point UDP to the Host,
+  -- This way, any message sent through or to a reliable bus is reliable and
+  --  message sent through and to a Multicast bus is multicast.
 
   -- Tuning the Bus:
   -- A XML file allows the default tuning for all the Buses, and also a specific
@@ -92,8 +106,12 @@ package Autobus is
   type Bus_Access_Type is access all Bus_Type;
 
   -- Supervision callback on the Bus
-  -- Report the insertion of a remote partner (State=True), the death of a
-  --  remote (State=False) and our own address (State=Other)
+  -- Report the insertion of a remote reliable partner (State=True),
+  --  the death of a remote reliable parner (State=False) and our own address
+  --  (State=Other) on a reliable or multicast bus
+  -- Address has the form "host_addr:port_num/mode"
+  -- In Sup_Callback it is forbidden to initialise or reset a Bus or a
+  --  Subscriber, this would raise the exception In_Callback
   type Sup_Report is record
     Addr  : As.U.Asu_Us;
     State : Trilean.Trilean;
@@ -114,7 +132,8 @@ package Autobus is
   -- On error in the tuning configuration file (parsed at Init of first Bus)
   -- See Autobus.dtd for the format of this file
   Config_Error : exception;
-  -- The Sup_Cb is not used on multicast bus
+  -- The Sup_Cb does not report any Multicast bus address and state
+  --  (neither partners nor ourself)
   procedure Init (Bus : in out Bus_Type;
                   Address : in String;
                   Kind : in Bus_Kind := Active;
@@ -130,6 +149,8 @@ package Autobus is
   -- On message longer than Message_Max_Length (1MB)
   Message_Max_Length : constant := 1024 * 1024;
   Message_Too_Long : exception;
+  -- Empty message
+  Empty_Message : exception;
   procedure Send (Bus : in out Bus_Type; Message : in String);
 
   -- Reply to the message currently being received
@@ -137,23 +158,32 @@ package Autobus is
   --  they both receive the reply to a message sent by one of them
   -- If not in receive
   Not_In_Receive : exception;
+  -- May also raise Empty_Message
   procedure Reply (Bus : in out Bus_Type; Message : in String);
 
+  -- Mode definition (to identify a destination) and image
+  type Mode_List is (Reliable, Multicast);
+  -- Returns "/R" or "/M"
+  function Mode_Suffix (Mode : in Mode_List) return String;
+
   -- Send a message to one process
+  -- Dest is designated by a string "host_addr:port_num/mode"
+  --  or "host_name:port_name/mode" or any combination,where mode is 'R' for
+  --  reliable or 'M' for multicast
   -- If names do not resolve or destination is not known
   Unknown_Destination : exception;
-  -- Note that if two processes use the same multicast bus on the same node
-  --  they both receive the message sent to one of them
-  -- Port is not significant on a multicast Bus (will use the port of the Bus)
-  -- Dest is designated by a string "host_addr:port_num"
-  --  or "host_name:port_name" or any combination, including empty port_name
+  -- If sending Muticast message through a Reliable Bus
+  Uncompatible_Mode : exception;
+  -- May also raise Empty_Message or Invalid_Address
   procedure Send_To (Bus : in out Bus_Type;
-                     Host_Port : in String;
+                     Host_Port_Mode : in String;
                      Message : in String);
-  -- Dest is designated by a Host_Id and a Port_Num
+
+  -- Dest is designated by a Host_Id, a Port_Num and a mode
   procedure Send_To (Bus : in out Bus_Type;
                      Host : in Socket.Host_Id;
                      Port : in Socket.Port_Num;
+                     Mode : in Mode_List;
                      Message : in String);
 
 
@@ -165,11 +195,11 @@ package Autobus is
 
   -- The Observer is notified with the messages (sent on the Bus)
   --  that pass the filter
-  -- Filter is a PCRE regular expression
+  -- Filter is a PCRE multi-line regular expression
   -- Empty filter lets all messages pass through
   -- Echo allows enabling observation of messages sent by own process
   -- In Receive it is forbidden to initialise or reset a Bus or a Subscriber,
-  --  this would raise the exception In_Receive
+  --  this would raise the exception In_Callback
   -- Exceptions raised by Receive itself are caught and hidden
   type Observer_Type is limited interface;
   procedure Receive (Observer : in out Observer_Type;
@@ -201,7 +231,8 @@ package Autobus is
   Status_Error : exception;
 
   -- If initialising or resetting a Bus or a Subscriber while in Receive
-  In_Receive : exception;
+  --  or in Sup_Callback
+  In_Callback : exception;
 
   -- On any unexpected system error on any call
   System_Error : exception;
@@ -212,17 +243,19 @@ private
   type Bus_Rec;
   type Bus_Access is access all Bus_Rec;
   type Timer_Access is access all Chronos.Passive_Timers.Passive_Timer;
-  type Partner_State_List is (Init, Active, Passive);
+  type Partner_State_List is (Init, Active, Passive, Multicast, Shadow);
+  subtype Init_Sate_List is Partner_State_List range Active .. Passive;
   type Partner_Rec is record
-    -- Address of the TCP socket "www.xxx.yyy.zzz:portnum"
+    -- Address of the TCP socket "www.xxx.yyy.zzz:portnum/mode"
     Addr : As.U.Asu_Us;
     -- Low level address
     Host : Socket.Host_Id;
     Port : Socket.Port_Num;
+    Mode : Mode_List;
     -- Socket
     Sock : Socket.Socket_Dscr;
-    -- Is it active on the bus
-    Active : Boolean;
+    -- State of the partner while waiting for connection completion
+    Init_State: Init_Sate_List;
     -- State of the connection
     State : Partner_State_List := Init;
     -- Timer of keep alive
@@ -255,24 +288,30 @@ private
   package Subscriber_List_Mng renames Subscriber_Dyn_List_Mng.Dyn_List;
 
   -- List of Buses
-  -- Don't forget to update Set when adding fields in Bus_Rec
-  -----------------------------------------------------------
+  --************************************************************************
+  --* Don't forget to update the body of Set when adding fields in Bus_Rec *
+  --************************************************************************
   type Bus_Rec is limited new Ada.Finalization.Limited_Controlled with record
     -- Address of the IPM socket "www.xxx.yyy.zzz:portnum", for reporting
     Name : As.U.Asu_Us;
-    -- Address of the TCP socket "www.xxx.yyy.zzz:portnum"
+    -- Address of the TCP (Acc) or the UDP socket on dynamic port
+    --  "www.xxx.yyy.zzz:portnum/mode" (Mode is 'R' or 'M')
+    -- Unique identifier
     Addr : As.U.Asu_Us;
+    -- The IP and port part of Addr
+    Ipaddr : As.U.Asu_Us;
     -- Administration or multicast IPM socket
-    Admin : Socket.Socket_Dscr := Socket.No_Socket;
+    Adm : Socket.Socket_Dscr := Socket.No_Socket;
     Host : Socket.Host_Id;
     Port : Socket.Port_Num;
-    -- TCP accept socket or UDP point to point
-    Ptp : Socket.Socket_Dscr := Socket.No_Socket;
+    -- TCP accept socket, dynamic port => Unique for this process/node
+    --  (in multicast, it is bound to a dynamic UDP port)
+    Acc : Socket.Socket_Dscr := Socket.No_Socket;
     -- Host Id denoting the interface (for TCP and IPM)
     Host_If : Socket.Host_Id;
     -- Supervision callback
     Sup_Cb : Sup_Callback;
-    -- Are we active on this bus
+    -- Are we active or passive or multicasting on this bus
     Kind : Bus_Kind := Active;
     -- Heartbeat period and Max missed number, Timeout on connect and send,
     --  TTL and passive_Factor
