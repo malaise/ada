@@ -33,7 +33,8 @@ procedure T_Autobus is
    4 => (False, 'P', As.U.Tus ("passive"), False),
    5 => (False, 'M', As.U.Tus ("multicast"), False),
    6 => (True, 'b', As.U.Tus ("bus"), False, True, As.U.Tus ("bus_address")),
-   7 => (False, 's', As.U.Tus ("send"), False) );
+   7 => (False, 's', As.U.Tus ("send"), False),
+   8 => (False, 'n', As.U.Tus ("nolf"), False) );
  Key_Dscr : Argument_Parser.Parsed_Dscr;
 
   procedure Usage is
@@ -44,11 +45,12 @@ procedure T_Autobus is
        & Argument_Parser.Image(Keys(1)));
     Plo (" <mode>      ::= <auto> | <manual>");
     Plo (" <auto>      ::= " & Argument_Parser.Image(Keys(2)));
-    Plo (" <manual>    ::= <active> | <passive> | <multicast>  [ <send> ]");
+    Plo (" <manual>    ::= <active> | <passive> | <multicast>  [ <send> ] [ <nolf> ");
     Plo (" <active>    ::= " & Argument_Parser.Image(Keys(3)));
     Plo (" <passive>   ::= " & Argument_Parser.Image(Keys(4)));
     Plo (" <multicast> ::= " & Argument_Parser.Image(Keys(5)));
     Plo (" <send>      ::= " & Argument_Parser.Image(Keys(7)));
+    Plo (" <nolf>      ::= " & Argument_Parser.Image(Keys(8)));
     Plo (" <bus>    ::= " & Argument_Parser.Image(Keys(6)));
     Plo ("Ex: " & Argument.Get_Program_Name
        & " --active -b " & Default_Address);
@@ -83,6 +85,7 @@ procedure T_Autobus is
   end Sup_Cb;
 
   Send_Mode : Boolean;
+  Nolf : Boolean;
   Send_Str : constant String := "sendto";
   Stimulus : As.U.Asu_Us;
   Nb_Opt : Natural;
@@ -134,7 +137,8 @@ procedure T_Autobus is
     use type Autobus.Subscriber_Access_Type;
   begin
     Async_Stdin.Put_Out (Message);
-    if Message = "" or else Message (Message'Last) /= Aski.Lf then
+    if Nolf
+    and then (Message = "" or else Message (Message'Last) /= Aski.Lf) then
       Async_Stdin.New_Line_Out;
     end if;
     Async_Stdin.Flush_Out;
@@ -153,7 +157,8 @@ procedure T_Autobus is
     end if;
 
     Msg := As.U.Tus (Str);
-    if Msg.Length > 1 and then Msg.Element (Msg.Length) = Aski.Lf then
+    if Nolf and then Msg.Length > 1
+    and then Msg.Element (Msg.Length) = Aski.Lf then
       -- Remove trailing Lf except if empty line
       Msg.Trail (1);
     end if;
@@ -247,11 +252,18 @@ begin
     return;
   end if;
 
-  -- No send mode in auto
-  if Key_Dscr.Is_Set (2) and then Key_Dscr.Is_Set (7) then
-    Error ("No send option in automatic mode");
-    Usage;
-    return;
+  -- No send mode nor nolf in auto
+  if Key_Dscr.Is_Set (2) then
+    if Key_Dscr.Is_Set (7) then
+      Error ("No send option in automatic mode");
+      Usage;
+      return;
+    end if;
+    if Key_Dscr.Is_Set (8) then
+      Error ("No nolf option in automatic mode");
+      Usage;
+      return;
+    end if;
   end if;
 
 
@@ -308,8 +320,9 @@ begin
     Basic_Proc.Put_Line_Output ("Done.");
   else
     -- Manual mode
-    -- Send mode options?
+    -- Send mode and nolf options?
     Send_Mode := Key_Dscr.Is_Set (7);
+    Nolf := Key_Dscr.Is_Set (8);
     -- Init bus in Active, Passive or Multicast. With Cb
     Bus.Init (Bus_Address.Image,
               (if Key_Dscr.Is_Set (3) then Autobus.Active
