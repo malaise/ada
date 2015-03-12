@@ -146,6 +146,7 @@ package body Autobus is
   -- Traces
   Logger : Trace.Loggers.Logger;
   Finalizations : constant Trace.Severities := 16#20#;
+  All_Timers    : constant Trace.Severities := 16#40#;
 
   -- Log an exception
   procedure Log_Exception (Operation, Exception_Name, Message : in String) is
@@ -364,6 +365,7 @@ package body Autobus is
     Timeout : Timers.Delay_Rec (Timers.Delay_Sec);
   begin
     Partner_Acc := Partner_Access(Partners.Access_Current);
+    Logger.Log (All_Timers, "Starting timer for " & Partner_Acc.Addr.Image);
     Timeout.Delay_Seconds := Bus.Heartbeat_Max_Missed * Bus.Heartbeat_Period;
     Partner_Acc.Timer.Start (Timeout);
   end Start_Partner_Timer;
@@ -454,6 +456,8 @@ package body Autobus is
           -- This partner is not alive (alive timeout has expired)
           Logger.Log_Debug ("Alive timeout of partner "
                           & Partner_Acc.Addr.Image);
+          Logger.Log (All_Timers, "Expiration of  timer for "
+                                & Partner_Acc.Addr.Image);
           Remove := True;
         end if;
       end if;
@@ -548,8 +552,9 @@ package body Autobus is
     end;
 
     -- Detect own address
-    if Partner_Acc.Addr = Buses.Access_Current.Addr then
+    if Partner_Acc.Addr = Partner_Acc.Bus.Addr then
       Logger.Log_Debug ("Reception of own identification");
+      Logger.Log (All_Timers, "Stopping timer for " & Partner_Acc.Addr.Image);
       -- Stop timer on the connection from ourself and make it passive
       --  (no sending of message)
       Partner_Acc.Timer.Stop;
@@ -560,8 +565,12 @@ package body Autobus is
       Partner_Acc.State := (if Msg(1) = 'A' then Active
                             elsif Msg(1) = 'P' then Passive
                             else Multicast);
-      if Partner_Acc.State /= Active then
+      if Partner_Acc.State /= Active
+      or else Partner_Acc.Bus.Kind = Multicast then
+        -- Reliable partner of Multicast is managed as passive
+        Partner_Acc.State := Passive;
         Partner_Acc.Timer.Stop;
+        Logger.Log (All_Timers, "Stopping timer for " & Partner_Acc.Addr.Image);
       end if;
       if Partner_Acc.State /= Multicast then
         Notify_Sup (Partner_Acc.Bus, Partner_Acc.Addr, Trilean.True);
@@ -629,11 +638,17 @@ package body Autobus is
     if Partner_Acc.Addr = Partner_Acc.Bus.Addr then
       -- This is the connection to ourself. Active with no timer
       Logger.Log_Debug ("Stopping timer to ourself");
+      Logger.Log (All_Timers, "Stopping timer for " & Partner_Acc.Addr.Image);
       Partner_Acc.State := (if Partner_Acc.Bus.Kind = Active then Active
                             else Passive);
       Partner_Acc.Timer.Stop;
-      Logger.Log_Debug ("Partner is " & Mixed_Str (Partner_Acc.State'Img));
+    elsif Partner_Acc.Bus.Kind = Multicast then
+      -- Reliable partner of Multicast is managed as passive
+      Logger.Log (All_Timers, "Stopping timer for " & Partner_Acc.Addr.Image);
+      Partner_Acc.State :=  Passive;
+      Partner_Acc.Timer.Stop;
     end if;
+    Logger.Log_Debug ("Partner is " & Mixed_Str (Partner_Acc.State'Img));
     Notify_Sup (Partner_Acc.Bus, Partner_Acc.Addr,
                 (if Partner_Acc.Timer.Running then Trilean.True
                  else Trilean.Other));
@@ -773,7 +788,7 @@ package body Autobus is
       end if;
     end if;
 
-    -- Message is alive message of reliable bus
+    -- Message is an alive message from a reliable bus
     -- Check validity of string, drop if KO
     if Length < Message_Min_Length or else Length > Ipm_Message_Max_Length
     or else (Message(1) /= 'A' and then Message(1) /= 'P'
@@ -869,6 +884,7 @@ package body Autobus is
     Bus : Bus_Rec;
     Bus_Acc : Bus_Access;
   begin
+    Logger.Log (All_Timers, "Expiration of Bus active timer");
     -- Find Bus
     Bus.Heartbeat_Timer := Id;
     if not Buses.Search_Match (Bus_Match_Timer'Access, Bus,
@@ -877,9 +893,10 @@ package body Autobus is
       return False;
     end if;
 
-    -- Send Alive message
+    -- Send Alive message if active
     Bus_Acc := Buses.Access_Current;
     if Bus_Acc.Kind = Active or else Bus_Acc.Passive_Timer.Has_Expired then
+      Logger.Log (All_Timers, "Expiration of Bus passive timer");
       Send_Adm ((if Bus_Acc.Kind = Active then Trilean.True
                  else Trilean.False));
     end if;
@@ -1029,16 +1046,17 @@ package body Autobus is
     -- Set TTL on Admin and Accept (TCP or UDP) sockets
     Rbus.Adm.Set_Ttl (Rbus.Ttl);
     Rbus.Acc.Set_Ttl (Rbus.Ttl);
-    if Rbus.Kind /= Multicast then
-      -- Arm Bus related active timer and create passive timer
-      Timeout.Delay_Seconds := 0.0;
-      Timeout.Period := Rbus.Heartbeat_Period;
-      Rbus.Heartbeat_Timer.Create (Timeout, Timer_Cb'Access);
-      Rbus.Passive_Timer := new Chronos.Passive_Timers.Passive_Timer;
-      Timeout.Period := Rbus.Heartbeat_Period * Rbus.Passive_Factor;
-      Rbus.Passive_Timer.Start (Timeout);
-      Logger.Log_Debug ("Reliable timer created");
-    end if;
+
+    -- Arm Bus related active timer and create passive timer
+    Timeout.Delay_Seconds := 0.0;
+    Timeout.Period := Rbus.Heartbeat_Period;
+    Rbus.Heartbeat_Timer.Create (Timeout, Timer_Cb'Access);
+    Logger.Log (All_Timers, "Started Bus active timer");
+    Rbus.Passive_Timer := new Chronos.Passive_Timers.Passive_Timer;
+    Timeout.Period := Rbus.Heartbeat_Period * Rbus.Passive_Factor;
+    Rbus.Passive_Timer.Start (Timeout);
+    Logger.Log_Debug ("Reliable timer created");
+    Logger.Log (All_Timers, "Started Bus passive timer");
 
     -- Done: Insert in list, return access
     Buses.Rewind (Bus_List_Mng.Next, False);
@@ -1110,7 +1128,10 @@ package body Autobus is
       Tcp_Util.Abort_Accept (Socket.Tcp_Header, Bus.Acc.Acc.Get_Linked_To);
       if Bus.Acc.Passive_Timer.Running then
         Bus.Acc.Passive_Timer.Stop;
+        Logger.Log (All_Timers, "Stopped Bus passive timer");
       end if;
+      Bus.Acc.Heartbeat_Timer.Delete;
+      Logger.Log (All_Timers, "Stopped Bus active timer");
       Deallocate (Bus.Acc.Passive_Timer);
     end if;
 
@@ -1123,6 +1144,7 @@ package body Autobus is
       exit when Bus.Acc.Subscribers.Is_Empty;
       Remove_Current_Subscriber;
     end loop;
+
 
     -- Delete current Bus from list
     Buses.Delete (Moved => Dummy_Moved);

@@ -44,20 +44,20 @@ package Autobus is
   -- Each message is sent in multicast (IPM) to the receiving applications and
   --  dispatched to the observers. Some messages might be lost in the network.
 
-  -- Bus kinds can be mixed. In one process a Bus is either Reliable (active or
+  -- Bus kinds can be mixed. In one process, a Bus is either Reliable (active or
   --  passive) or Multicast. But different processes can communicate through
   --  Buses of different kinds, providing of course that they have the same
   --  address.
   --  - A publisher Reliable sends in TCP while in Multicast it sends in IPM,
   --  - A receiver Reliable receives Reliable and Multicast messages,
-  --  - A receivers Multicast receives the live messages of the Reliable
-  --    publishers and connects to them
+  --  - A Multicast Bus receives the live messages of the Reliable Buses
+  --    connects to them, then it handles them as passive,
   --  - Point to point sending follows the same logic: on a Reliable bus the
   --    Host-Port must denote a known Reliable patner (which has a Reliable
   --    or Multicast bus), while on a Multicast bus it is sent in point to
-  --    point UDP to the Host.
-  -- This way, any message sent through a reliable bus is reliable and any
-  --  message sent through a Multicast Bus is multicast.
+  --    point UDP to the Host,
+  -- This way, any message sent through or to a reliable bus is reliable and
+  --  message sent through and to a Multicast bus is multicast.
 
   -- Tuning the Bus:
   -- A XML file allows the default tuning for all the Buses, and also a specific
