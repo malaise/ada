@@ -68,6 +68,8 @@ package Timers is
                   Data : in Timer_Data) return Boolean;
 
   -- Create a new timer
+  -- It will expire even if the Id is destroyed (e.g. when leaving the scope of
+  --  the Id).
   -- May raise Invalid_Delay if Delay_Seconds is < 0
   Invalid_Delay : exception;
   -- May raise No_More_Timer if resource exhausted
@@ -105,7 +107,7 @@ package Timers is
 
   ----------------------------------------------------------------------------
 
-  -- Interface for the virtual clock, don'use
+  -- Interface for the virtual clock, don't use
   type Observer_Type is new Virtual_Time.Observer with null record;
   procedure Notify (An_Observer : in out Observer_Type;
                     Rtime, Vtime : in Virtual_Time.Time;
