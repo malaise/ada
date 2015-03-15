@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.22
+V17.23
 
 General purpose
 ---------------
@@ -1438,8 +1438,8 @@ calling 'git difftool -y -x <differator> <ref_HSA1_hash> <comp_HSA1_hash>
 'git push [ --set-upstream ] <remote> [ <tag> ]',
 
 * A function fetches or pulls the current branch by calling
-'git fetch -q --tags <remote> <branch>:<branch>' or
-'git pull -q --tags <remote> <branch>:<branch>',
+'git fetch --tags <remote> <branch>:<branch>' or
+'git pull --tags <remote> <branch>:<branch>',
 
 * A function gets the name of current branch by calling 'git branch',
 
