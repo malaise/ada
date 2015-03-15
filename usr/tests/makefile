@@ -15,6 +15,7 @@ CLIBS_t_autobus := posix2pcre pcre
 CLIBS_t_byte_to_unicode := posix2pcre pcre
 CLIBS_t_channels := posix2pcre pcre
 CLIBS_t_delta_date := posix2pcre pcre
+CLIBS_t_evp_digest := ssl crypto
 CLIBS_t_regex_filters := posix2pcre pcre
 CLIBS_t_regexp := posix2pcre pcre
 CLIBS_t_state_machine := posix2pcre pcre
