@@ -358,6 +358,9 @@ euro_franc (1)::
 event_mng (2)::
      Multiplex reception of events (timers, fd, signals).
 
+evp_digest (1)::
+     Compute Hash with OpenSSL.
+
 exception_messenger (1)::
      Allow transmission of un-truncated long exception message.
 

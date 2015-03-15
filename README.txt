@@ -3,11 +3,13 @@ Ada notes
 
 This README file describes briefly the main directories of the Ada contrib.
 
-The software compiles with Ada 2014 (Gnat GPL 2014) and runs on Unix (Linux).
+The software compiles with Ada 2012 (Gnat GPL 2014) and runs on Unix (Linux).
 
 Some programs depend on anchor:XPCRE[] PCRE (Perl Compatible Regular Expressions) and work
 with version 7.8 or above (8.35 is OK) and require the PCRE developpement
 package.
+
+Some programs depend on libssl and libcrypto for EVP digest.
 
 The 'asciidoc' suite is used for the generation of the documentation.
 
