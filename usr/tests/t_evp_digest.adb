@@ -1,4 +1,4 @@
-with Basic_Proc, Argument, Evp_Digest, Hexa_Utils;
+with Basic_Proc, Argument, Evp_Digest, Hexa_Utils, Images;
 procedure T_Evp_Digest is
 
   procedure Usage is
@@ -25,7 +25,8 @@ procedure T_Evp_Digest is
         Str(1 + 2 * I .. 1 + 2 * I + 1) :=
             Hexa_Utils.Image (Natural (Res(I + 1)), 2);
       end loop;
-      Basic_Proc.Put_Line_Output (Str);
+      Basic_Proc.Put_Line_Output (Str
+          & " (" & Images.Integer_Image (Res'Length) & ")");
     end;
     Shown := True;
  end Show;
