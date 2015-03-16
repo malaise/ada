@@ -641,6 +641,11 @@ package body Long_Long_Limited_List is
 
 
   -- Modification stuff
+  procedure Set_Modified (List : in out List_Type) is
+  begin
+    List.Modified := False;
+  end Set_Modified;
+
   function Is_Modified (List : List_Type) return Boolean is
   begin
     return List.Modified;

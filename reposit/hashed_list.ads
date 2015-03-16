@@ -75,7 +75,7 @@ package Hashed_List is
                        Crit      : in Element_Type;
                        Direction : in Direction_List := Forward);
 
-  -- Insert an item
+  -- Insert an item (does no change the ref to last element searched/found)
   -- May raise Full_List (no more memory)
   procedure Insert (List  : in out List_Type;
                     Item  : in Element_Type;
@@ -153,6 +153,12 @@ package Hashed_List is
                        Item      : out Element_Type;
                        Moved     : out Boolean;
                        Direction : in Direction_List := Forward);
+  -- Read the item at a given position
+  -- May raise Not_In_List
+  procedure Read_At (List      : in out List_Type;
+                     Position  : in Long_Longs.Llu_Positive;
+                     Direction : in Direction_List := Forward;
+                     Item      : out Element_Type);
 
   ----------------
   -- EXCEPTIONS --
@@ -178,6 +184,8 @@ private
   -- Element hashing
   package Sized_Hash is new Hashing.Sized_Hash (Hash_Max);
 
+  -- The hashed cell contains the access to the Element in the Limited_List
+  --  and the access to the Cell of the Element in the Limited_List
   type Hashed_Cell is record
     Elt : Element_Access := null;
     Cell : access List_Mng.Cell := null;

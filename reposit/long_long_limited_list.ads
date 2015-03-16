@@ -184,10 +184,14 @@ package Long_Long_Limited_List is
            return Ll_Positive;
 
 
-  -- These two calls allow sharing the same list among several
+  -- These three calls allow sharing the same list among several
   --  software layers. Each time the list is modified, a flag is set
   --  which allow another layer to test it and to reset it for further
   --  setting and testing
+  -- Because of Access_Curent, it is possible to explicitly set the list as
+  --   modified
+  procedure Set_Modified (List : in out List_Type);
+
   function Is_Modified (List : List_Type) return Boolean;
 
   procedure Modification_Ack (List : in out List_Type);

@@ -215,10 +215,17 @@ package body Limited_List is
     return Positive (List.List.Get_Position (My_List.Reference (From)));
   end Get_Position;
 
-  -- These two calls allow sharing the same list among several
+  -- These three calls allow sharing the same list among several
   --  software layers. Each time the list is modified, a flag is set
   --  which allow another layer to test it and to reset it for further
   --  setting and testing
+  -- Because of Access_Curent, it is possible to explicitly set the list as
+  --   modified
+  procedure Set_Modified (List : in out List_Type) is
+  begin
+    List.List.Set_Modified;
+  end Set_Modified;
+
   function Is_Modified (List : List_Type) return Boolean is
   begin
     return List.List.Is_Modified;

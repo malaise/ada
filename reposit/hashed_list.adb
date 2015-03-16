@@ -26,7 +26,7 @@ package body Hashed_List is
       List.Table.Find_Next (Index, Data_Found,
                             Hashing.Direction_List(Direction));
       if Data_Found.Found and then Data_Found.Data.Elt.all = Crit then
-        -- Found the correct element, store its access (for further access)
+        -- Found a matching element, store its access (for further access)
         --  and its hash index (for deletion)
         Element := Data_Found.Data.Elt;
         List.Current := Data_Found.Data;
@@ -189,8 +189,6 @@ package body Hashed_List is
   procedure Replace_Current (List : in out List_Type;
                              Item : in Element_Type) is
     Acc : Element_Access;
-    First_Element : Element_Type;
-    Position : Long_Longs.Llu_Positive;
   begin
     Check_Callback (List);
     Get_Access_Current (List, Acc);
@@ -203,13 +201,8 @@ package body Hashed_List is
     -- Overwrite current element
     Set (Acc.all, Item);
 
-    -- Replace first element by itself so that the list is (marked as) modified
-    -- The list is not empty for sure (Get_Access passed)
-    Position := List.List.Get_Position;
-    List.List.Rewind;
-    List.List.Read (First_Element, List_Mng.Current);
-    List.List.Modify (First_Element, List_Mng.Current);
-    List.List.Move_At (Position);
+    -- Mark the list is (marked as) modified
+    List.List.Set_Modified;
   end Replace_Current;
 
   -- Delete the full list
@@ -310,6 +303,18 @@ package body Hashed_List is
                      else List_Mng.Prev),
                     Moved);
   end Read_Next;
+
+   -- Read the item at a given position
+  procedure Read_At (List      : in out List_Type;
+                     Position  : in Long_Longs.Llu_Positive;
+                     Direction : in Direction_List := Forward;
+                     Item      : out Element_Type) is
+  begin
+    List.List.Move_At (Position,
+                       (if Direction = Forward then List_Mng.Next
+                        else List_Mng.Prev));
+    List.List.Read (Item, List_Mng.Current);
+  end Read_At;
 
 end Hashed_List;
 
