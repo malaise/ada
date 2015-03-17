@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with As.U.Utils, Directory, Afpx.Utils, Basic_Proc, Unicode;
+with As.U.Utils, Directory, Afpx.Utils, Basic_Proc, Unicode, Str_Util;
 with Git_If, Utils.X, Afpx_Xref, Confirm, Error, History;
 package body Branch is
 
@@ -115,6 +115,11 @@ package body Branch is
       Afpx.Decode_Field (Afpx_Xref.Branches.Name, 0, New_Name);
       Afpx.Clear_Field (Afpx_Xref.Branches.Name);
       Afpx.Reset (Get_Handle);
+      New_Name := As.U.Tus (Str_Util.Strip (New_Name.Image, Str_Util.Both));
+      if New_Name.Is_Null then
+        -- Cancel Create/Rename if empty name
+        return False;
+      end if;
     end if;
 
     -- Cancel if not confirm
@@ -263,6 +268,12 @@ package body Branch is
               if Do_Action (Checkout) then
                 exit;
               end if;
+            when Afpx_Xref.Branches.Merge =>
+              Dummy_Res := Do_Action (Merge);
+            when Afpx_Xref.Branches.Cherry_Pick =>
+              if Do_Action (Cherry_Pick) then
+                exit;
+              end if;
             when Afpx_Xref.Branches.Create =>
               Dummy_Res := Do_Action (Create);
             when Afpx_Xref.Branches.Rename =>
@@ -271,14 +282,6 @@ package body Branch is
               end if;
             when Afpx_Xref.Branches.Delete =>
               if Do_Action (Delete) then
-                exit;
-              end if;
-            when Afpx_Xref.Branches.Merge =>
-              if Do_Action (Merge) then
-                exit;
-              end if;
-            when Afpx_Xref.Branches.Cherry_Pick =>
-              if Do_Action (Cherry_Pick) then
                 exit;
               end if;
             when Afpx_Xref.Branches.Back =>
