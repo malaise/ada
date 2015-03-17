@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.23
+V17.25
 
 General purpose
 ---------------
@@ -510,12 +510,33 @@ This shows the current branch and path of the root of current worktree.
 
 .Actions
 
-The possible actions on the list of local branches:
+The possible actions on the list of local branches are the following (all
+these actions except 'Merge' lead to return to the xref:XDir[directory]
+menu in case of success):
+
+Checkout::
+
+Click in the 'Checkout' button to checkout, after confirmation, the HEAD of
+the branch selected in the list. Double clicking on an entry of the list has
+the same effect.
+
+Merge::
+
+anchor:XMerge[]
+Click in the 'Merge' button to merge, after confirmation, the
+branch selected in the list into the current branch. +
+If the merge does not lead to 'fast forward', then a new commit is
+automatically generated with the comment "Merge branch \'<branch>'".
+
+CherryPk::
+
+Click on the 'CherryPk' button to launch the xref:XCherry[cherry pick] menu
+from the branch selected in the list into the current branch.
 
 Create::
 
-Enter a name in the text field and click in the 'Create' button or hit Return
-to create a new branch.
+Enter a name in the text field and click in the 'Create' button, or hit
+Return, to create a new branch.
 
 Rename::
 
@@ -527,24 +548,6 @@ Delete::
 Click in the 'Delete' button to delete, after confirmation, the branch selected
 in the list.
 
-Checkout::
-
-Click in the 'Checkout' button to checkout, after confirmation, the HEAD of
-the branch selected in the list. Double clicking on an entry of the list has
-the same effect.
-
-Merge::
-
-anchor:XMerge[]
-Click in the 'Merge' button to merge into current, after confirmation, the
-branch selected in the list. +
-If the merge does not lead to 'fast forward', then a new commit is
-automatically generated with the comment "Merge branch \'<branch>'".
-
-CherryPk::
-
-Click on the 'CherryPk' button to launch the xref:XCherry[cherry pick] menu
-on the branch selected in the list.
 
 .Back
 
@@ -593,7 +596,9 @@ separators, created by clicking in xref:XAddSep[AddSep] with no name set.
 anchor:XAddCurr[]
 anchor:XAddSep[]
 The buttons 'AddCur' and 'AddSep' insert a named or anonymous entry (depending
-on the field 'Name to add') below the current entry.
+on the field 'Name to add') below the current entry. +
+This text field 'Name to add' can scroll horizontally to accomodate to long
+paths.
 
 anchor:XGoto[]
 The 'Goto' button allows changing the current directory to the bookmark
