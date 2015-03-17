@@ -236,18 +236,13 @@ procedure Agite is
   -- Update cursor col to the last char of Dir_Field
   procedure Update_Cursor_Col is
     Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (Dir_Field);
-    Wstr : constant Wide_String := Afpx.Decode_Wide_Field (Dir_Field, 0);
+    Str : constant Afpx.Unicode_Sequence := Afpx.Decode_Field (Dir_Field, 0);
   begin
     -- Move cursor col on last significant char
     Get_Handle.Cursor_Col := 0;
     Get_Handle.Offset := 0;
     Get_Handle.Insert := False;
-    for I in reverse Wstr'Range loop
-      if Wstr(I) /= ' ' then
-        Get_Handle.Cursor_Col := I;
-        exit;
-      end if;
-    end loop;
+    Get_Handle.Cursor_Col := Afpx.Last_Index (Str, True);
     -- String is longer that field width
     if Get_Handle.Cursor_Col >= Width then
       -- Width + Offset = Data_Len
@@ -427,6 +422,7 @@ procedure Agite is
     Utils.X.Encode_Field (Host_Str, Afpx_Xref.Main.Host);
     Utils.X.Center_Field (Config.Xterm_Name, Afpx_Xref.Main.Xterm);
     Utils.X.Center_Field (Config.Make_Name, Afpx_Xref.Main.Make);
+    Get_Handle := (others => <>);
 
     Change_Dir (Dir);
 
@@ -438,7 +434,6 @@ procedure Agite is
     end if;
     Afpx.Update_List (Afpx.Center_Selected);
 
-    Get_Handle := (others => <>);
   end Init;
 
   procedure Do_Edit (File_Name : in String) is

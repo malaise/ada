@@ -72,7 +72,9 @@ package body Bookmarks is
 
   -- Modify current bookmark
   procedure Start_Edit (Bookmark : out Config.Bookmark_Rec) is
+    Getfld : constant Afpx.Field_Range := Afpx_Xref.Bookmarks.Name;
     New_Name : constant String := Get_Name;
+    Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (Getfld);
   begin
     -- Get bookmark
     Bookmark := Config.Get_Bookmark (Afpx.Line_List.Get_Position);
@@ -81,8 +83,22 @@ package body Bookmarks is
       Bookmark.Name := As.U.Tus (New_Name);
     end if;
     -- Encode path to edit
-    Utils.X.Encode_Field (Bookmark.Path.Image, Afpx_Xref.Bookmarks.Name,
-                          False);
+    Utils.X.Encode_Field (Bookmark.Path.Image, Getfld);
+     -- Move cursor col on last significant char
+    declare
+      Str : constant Afpx.Unicode_Sequence := Afpx.Decode_Field (Getfld, 0);
+    begin
+      Get_Handle.Cursor_Col := 0;
+      Get_Handle.Offset := 0;
+      Get_Handle.Insert := False;
+      Get_Handle.Cursor_Col := Afpx.Last_Index (Str, True);
+      -- String is longer that field width
+      if Get_Handle.Cursor_Col >= Width then
+        -- Width + Offset = Data_Len
+        Get_Handle.Offset := Get_Handle.Cursor_Col - Width;
+        Get_Handle.Cursor_Col := Width - 1;
+      end if;
+    end;
     -- Change titles
     Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
     Afpx.Clear_Field (Afpx_Xref.Bookmarks.Get_Title);
