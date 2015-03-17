@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.24
+V17.25
 
 General purpose
 ---------------
@@ -596,7 +596,9 @@ separators, created by clicking in xref:XAddSep[AddSep] with no name set.
 anchor:XAddCurr[]
 anchor:XAddSep[]
 The buttons 'AddCur' and 'AddSep' insert a named or anonymous entry (depending
-on the field 'Name to add') below the current entry.
+on the field 'Name to add') below the current entry. +
+This text field 'Name to add' can scroll horizontally to accomodate to long
+paths.
 
 anchor:XGoto[]
 The 'Goto' button allows changing the current directory to the bookmark
