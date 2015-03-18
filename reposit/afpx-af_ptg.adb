@@ -824,9 +824,9 @@ package body Af_Ptg is
       Need_Redisplay := False;
       Af_Dscr.Current_Dscr.Modified := False;
       Af_Dscr.Fields(Lfn).Modified := False;
-      Field_Start := Field.Char_Index + Field.Offset;
 
       if Get_Active then
+        Field_Start := Field.Char_Index + Field.Offset;
         Pos := Get_Handle.Cursor_Col + 1;
         -- Move at beginning of field and put_then_get
         Af_Con_Io.Move (Field.Upper_Left.Row, Field.Upper_Left.Col);
