@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.26
+V17.27
 
 General purpose
 ---------------
@@ -167,6 +167,126 @@ NOTE: In case of problem (crash), a backup of the configuration file may be
 found at the same location and name as the configuration file, with the suffix
 ".tmp".
 
+Ergonomy
+--------
+Agite implements a succession of menus in a series of screens. All the screens
+have the same fixed size.
+
+In each screen you can use the keyboard, the three buttons and the wheel of
+the mouse in order to interact with agite lists, get fields and buttons.
+
+List
+~~~~
+.Selecting item(s) in the list
+
+* The left mouse button is used to define the main selection. The selected item
+becomes green. Any new main selection replaces the previous.
+
+* On most lists, a double click with the left mouse button triggers a
+pre-defined action on the selected item.
+
+* The right mouse button is used on some lists (xref:XHist[history] and
+xref:XCherry[cherry pick]) to make a second selection. The selected item
+becomes black. +
+Any main selection on the second selection makes it becomming the main
+selection. Any second re-selection of the second selection itself un-selects it.
+Any new second selection replaces the previous.
++
+This dual selection is used either to compare some items, or to activate a
+range of items.
+
+Clicking on an item and releasing on another has no effect.
+
+.Scrolling the list
+
+* Scrolling by one line up/down can be done by either:
+ - up and down arrow keys
+ - mouse wheele
+ - Up and Down buttons
+
+* Scrolling by one page up/down can be done by either:
+ - shift + up and down arrow keys
+ - page-up and page-down keys
+ - shift + mouse wheele
+ - PgUp and PgDown buttons
+
+* Scrolling by ten pages up/down can be done by either:
+ - control + up and down arrow keys
+ - shift + page-up and page-down keys
+ - control + mouse wheele
+
+* Moving to top/bottom can be done by either:
+ - control + page-up and page-down keys
+ - Top and Bottom buttons
+
+* Scroll bar +
+Besides the xref:XHist[history] list (which can be long) is a scroll-bar that
+indicates the relative position of the items currently displayed in the list
+window, versus the whole list. Clicking and releasing in this scroll-bar
+scrolls the list so that it matches the release position.
+
+* Quick search +
+On top of the xref:XDir[directory] list are special buttons that allow
+searching an entry of the list by its first letter. The item becomes selected
+and the list is scrolled to move the item on top of the list window.
+
+Get fields
+~~~~~~~~~~~
+Get fields are identified by their background in white. +
+Each get field is on one row only.
+
+* Selection +
+When several get fields are defined in a screen, it is possible to select a get
+field by clicking in it. +
+Alternatively the keyboard keys Tab and Shift-Tab allow changing to the next or
+to the previous get field. +
+Finally, contiguous get fields (like the comment of a xref:XCommit[commit])
+allow continuous input: when the cursor reaches the end of a field it moves to
+the next field, and vice versa.
+
+* Edition +
+In a get field, the following actions are possible with the keyboard keys. +
+Note that some get fields (target xref:XDir[directory] and xref:XBook[bookmark]
+edition) allow a string wider than the get area in the screen.
+
+ - Clicking somewhere in the field moves the cursor at this position
+ - Home and End: move to the boundaries of the get area
+ - Left/right arrows: navigate in the string
+ - A character input, Backspace and Suppr edit the string 
+ - Shift+Suppr clears the string from the current position to the end
+ - Ctrl+Suppr clears the whole string (and moves to the beginning of it)
+ - Insert: toggles the insert/replace mode (in Insert mode the cursor becomes
+a \'^')
+ - Ctrl+Right/Left arrow: move to the the first/last significant character of
+the string
+ - Shift+Right/Left arrow: move to the the first/last character of the string.
+
+Buttons
+~~~~~~~~
+
+Several buttons are defined in each screen. Clicking and releasing on one button
+triggers an action that can:
+
+* apply to the list selection,
+* scroll the list,
+* use or change the content of get fields...
+
+Whole screen
+~~~~~~~~~~~~
+.Keys
+Only the following keyboard keys can trigger an action with a wider scope
+than the input of strings:
+
+* Return: usually makes a predefined action for the screen, like validating
+the content of the get fields, or launching an action on the list selection.
+
+
+* Escape: cancels the current action or returns to the previous screen.
+
+* Ctrl-C: requests agite to exit (as the \'X' button in the title of the X
+window of Agite, or as clicking in the 'Exit' button of the
+xref:XDir[directory] menu).
+
 Agite screens
 -------------
 Agite is based on the following main menus:
@@ -256,7 +376,7 @@ name launches the xref:XBranches[branches] menu.
 
 Host::
 On the right is the indication of current host (which normally is also
-indicated in title of the X window of Agite).
+indicated in the title of the X window of Agite).
 
 .Directories
 Root::
@@ -614,7 +734,9 @@ The current bookmark or separator can be edited as follows:
 to add', otherwise leave it empty,
 * Click in the 'Edit' button,
 * Enter or modify the path in the field 'Name to add',
-* Click in the 'OK' button.
+* Click in the 'OK' button or hit the 'Return' key. +
+The edition can be cancelled by clicking in the 'Cancel' button or with the
+'Esc' key.
 
 NOTE: As a consequence, it is possible to change a separator into a bookmark
 and reverse, but it is not possible to clear the name of an existing

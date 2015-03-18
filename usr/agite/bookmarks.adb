@@ -215,8 +215,14 @@ package body Bookmarks is
                 Afpx.Line_List.Move_At (Position);
               end if;
             when Afpx.Escape_Key =>
-              -- Back
-              return "";
+              if In_Edit then
+                -- End edition Cancel
+                End_Edit (Bookmark, False);
+                In_Edit := False;
+              else
+                -- Back
+                return "";
+              end if;
             when Afpx.Break_Key =>
               raise Utils.Exit_Requested;
           end case;
