@@ -667,6 +667,7 @@ package body Af_Ptg is
   procedure Redisplay is
   begin
     Need_Redisplay := True;
+    Prev_Cursor_Field := Afpx_Typ.List_Field_No;
   end Redisplay;
 
   -- Print the fields and the list, then gets
@@ -687,9 +688,8 @@ package body Af_Ptg is
      procedure (Action : in List_Change_List;
                 Status : in List_Status_Rec) := null) is
 
-    Cursor_Field : Afpx_Typ.Field_Range;
+    Cursor_Field : Afpx_Typ.Absolute_Field_Range;
     List_Present : Boolean;
-    New_Field : Boolean;
     Field : Afpx_Typ.Field_Rec;
     Last : Natural;
     Stat : Con_Io.Extra_Mvt;
@@ -720,12 +720,13 @@ package body Af_Ptg is
       Af_Con_Io.Clear;
     end if;
 
-    -- A new field at start up if some get field
-    New_Field := Get_Active;
     -- Init Cursor field and its offset
     if Get_Active then
       Cursor_Field := Afpx_Typ.Field_Range (Get_Handle.Cursor_Field);
       Af_Dscr.Fields(Cursor_Field).Offset := Get_Handle.Offset;
+    else
+      Cursor_Field := Afpx_Typ.List_Field_No;
+      Prev_Cursor_Field := Afpx_Typ.List_Field_No;
     end if;
 
     -- The infinite loop
@@ -813,10 +814,9 @@ package body Af_Ptg is
       Prev_Cursor_Field := Cursor_Field;
 
       -- Get field, set colors when field changes
-      if New_Field then
+      if Get_Active then
         Field := Af_Dscr.Fields(Cursor_Field);
         Set_Colors (Field, Selected, Foreground, Background);
-        New_Field := False;
       end if;
 
       -- Flush output
@@ -995,7 +995,6 @@ package body Af_Ptg is
                   True,
                   Con_Io.Col_Range'First,
                   Right_Full, Cursor_Col_Cb);
-              New_Field := True;
               Get_Handle.Insert := False;
             end if;
           end if;
@@ -1014,7 +1013,6 @@ package body Af_Ptg is
                   True,
                   Con_Io.Col_Range'First,
                   Left, Cursor_Col_Cb);
-              New_Field := True;
               Get_Handle.Insert := False;
             end if;
           end if;
@@ -1075,7 +1073,6 @@ package body Af_Ptg is
                 True,
                 Con_Io.Col_Range'First,
                 Tab, Cursor_Col_Cb);
-            New_Field := True;
             Get_Handle.Insert := False;
           end if;
         when Con_Io.Stab =>
@@ -1089,7 +1086,6 @@ package body Af_Ptg is
                 True,
                 Con_Io.Col_Range'First,
                 Stab, Cursor_Col_Cb);
-            New_Field := True;
             Get_Handle.Insert := False;
           end if;
         when Con_Io.Ret =>
@@ -1128,7 +1124,6 @@ package body Af_Ptg is
                   True,
                   Con_Io.Col_Range'First,
                   Right_Full, Cursor_Col_Cb);
-              New_Field := True;
               Get_Handle.Insert := False;
             elsif Selection_Result /= Sel_No_Change then
               -- Selection moved the cursor
@@ -1157,7 +1152,6 @@ package body Af_Ptg is
                       True,
                       Click_Result.Click_Col,
                       Mouse, Cursor_Col_Cb);
-                  New_Field := True;
                   Get_Handle.Insert := False;
                 else
                   -- Same field, update cursor col
