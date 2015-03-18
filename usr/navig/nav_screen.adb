@@ -290,7 +290,8 @@ package body Nav_Screen is
            | Con_Io.Ctrl_Up    | Con_Io.Ctrl_Down
            | Con_Io.Shift_Pgup | Con_Io.Shift_Pgdown
            | Con_Io.Ctrl_Pgup  | Con_Io.Ctrl_Pgdown
-           | Con_Io.Ctrl_Left  | Con_Io.Ctrl_Right | Con_Io.Selection =>
+           | Con_Io.Ctrl_Left  | Con_Io.Ctrl_Right | Con_Io.Selection
+           | Con_Io.Shift_Left | Con_Io.Shift_Right =>
           null;
         when Con_Io.Left | Con_Io.Stab =>
           if Cur_Operation /= Operation'First then

@@ -41,7 +41,8 @@ package body Sok_Input is
           when Down => return Down;
           when Shift_Up | Shift_Down | Ctrl_Up | Ctrl_Down
               | Pgup | Pgdown | Shift_Pgup | Shift_Pgdown
-              | Ctrl_Pgup | Ctrl_Pgdown | Ctrl_Right | Ctrl_Left =>
+              | Ctrl_Pgup | Ctrl_Pgdown | Ctrl_Right | Ctrl_Left
+              | Shift_Right | Shift_Left =>
             null;
           when Left => return Left;
           when Right => return Right;
@@ -127,7 +128,8 @@ package body Sok_Input is
         when Down => return;
         when Shift_Up | Shift_Down | Ctrl_Up | Ctrl_Down
            | Pgup | Pgdown | Shift_Pgup | Shift_Pgdown
-           | Ctrl_Pgup | Ctrl_Pgdown | Ctrl_Right | Ctrl_Left =>
+           | Ctrl_Pgup | Ctrl_Pgdown | Ctrl_Right | Ctrl_Left
+           | Shift_Right | Shift_Left =>
           null;
         when Left => return;
         when Right => return;

@@ -325,9 +325,9 @@ package Con_Io is
   --  (clear the string), Shift Suppr (clear to end of string) are managed
   --  internaly.
   -- The get ends either:
-  --  if (Ctrl/Shift) Up/Down arrow, (Ctrl/Shift) Page Up/Down, Ctrl Left/Right
-  --   arrow is pressed
-  --  if the cursor leaves the field on Left/Right arrow or character
+  --  if (Ctrl/Shift) Up/Down arrow, (Ctrl/Shift) Page Up/Down, Ctrl/Shift
+  --   Left/Right arrow is pressed
+  --  if the cursor leaves the field on Left/Right arrow or on character
   --   input (Full),
   --  if Tab, Shift Tab, Return(Lf), Escape is pressed
   --  on CtrlC/CtrlBreak or X event Exit_Request (from window manager)
@@ -352,6 +352,7 @@ package Con_Io is
                      Pgup, Pgdown, Shift_Pgup, Shift_Pgdown,
                      Ctrl_Pgup, Ctrl_Pgdown,
                      Left, Right, Ctrl_Left, Ctrl_Right,
+                     Shift_Left, Shift_Right,
                      Full, Tab, Stab, Ret, Esc, Break,
                      Mouse_Button, Selection, Timeout, Fd_Event, Timer_Event,
                      Signal_Event, Refresh,
@@ -396,17 +397,18 @@ package Con_Io is
 
   -- Idem but, if Extra, then any change of the string length (Suppr, Insert...)
   --   ends Ptg before modifying Str
-  procedure Put_Then_Get (Name       : in Window;
-                          Extra      : in Boolean;
-                          Str        : in out Unicode_Sequence;
-                          Last       : out Natural;
-                          Stat       : out Extra_Mvt;
-                          Pos        : in out Positive;
-                          Insert     : in out Boolean;
-                          Foreground : in Colors := Current;
-                          Background : in Colors := Current;
-                          Time_Out   : in Delay_Rec :=  Infinite_Delay;
-                          Echo       : in Boolean := True);
+  -- Returns the inserted char or space
+  function Put_Then_Get (Name       : in Window;
+                         Extra      : in Boolean;
+                         Str        : in out Unicode_Sequence;
+                         Last       : out Natural;
+                         Stat       : out Extra_Mvt;
+                         Pos        : in out Positive;
+                         Insert     : in out Boolean;
+                         Foreground : in Colors := Current;
+                         Background : in Colors := Current;
+                         Time_Out   : in Delay_Rec :=  Infinite_Delay;
+                         Echo       : in Boolean := True) return Unicode_Number;
 
   -- Get an event (key or other), no echo
   type Get_Result (Mvt : Curs_Mvt := Full) is record

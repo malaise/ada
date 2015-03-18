@@ -106,7 +106,8 @@ package Afpx is
   procedure Get_Field_Size (Field_No : in Absolute_Field_Range;
                             Height : out Height_Range;
                             Width  : out Width_Range);
-  -- Data len of a get field
+  -- Data len of a get field (which can be longer than the field width if
+  --  Data_Len is defined in the Xml)
   -- Exceptions : No_Descriptor (no Descriptor in use),
   --              Invalid_Field (Field_No too big or not a Get field)
   function Get_Data_Len (Field_No : Absolute_Field_Range)
@@ -404,16 +405,19 @@ package Afpx is
   --   double click terminates Put_Then Get (Mouse_Button, List_Field_No).
   -- In Put fields: nothing.
   -- In Get fields:
-  --   Left/right arrows, Home and End navigate in the field (see Con_Io),
+  --   Home and End move to the boundaries of the get area (see Con_Io), while
+  --   the other keys operate on the whole data of the field, which can be
+  --   wider (see Get_Data_Len):
+  --   Left/right arrows, navigate in the data and may scroll it (see Con_Io)
   --   A character input, Backspace, Suppr, Shift Suppr or Ctrl Suppr edits
-  --    the field (see Con_Io),
+  --    the data (see Con_Io),
   --   Insert toggles insert/replace mode (see Con_Io),
-  --   A character input can also shift the field (by an Offset) if the data
-  --    len is larger than the field width
   --   (Ctrl) Right/Left arrow move the the first/last significant character of
-  --    the field,
+  --    the data,
+  --   (Shift) Right/Left arrow move the the first/last character of the data,
   --   Tab or Shift Tab changes field (like Next/Prev_Cursor_Field), a character
-  --    input or left/right arrow can also lead to change field
+  --    input or left/right arrow can also lead to change field (if it has been
+  --    defined in the Xml with Move_Prev or Move_Next),
   --   Only Return, Esc or Break key terminates the Put_Then_Get
   --   A mouse click in a field moves the cursor into the field.
   -- In Button fields: mouse click then release terminates Put_Then_Get.

@@ -1054,17 +1054,18 @@ package body Con_Io is
 
   -- Put_Then_Get : On option prevents change of Str length and
   --  returns extra movements
-  procedure Put_Then_Get (Name       : in Window;
-                          Extra      : in Boolean;
-                          Str        : in out Unicode_Sequence;
-                          Last       : out Natural;
-                          Stat       : out Extra_Mvt;
-                          Pos        : in out Positive;
-                          Insert     : in out Boolean;
-                          Foreground : in Colors := Current;
-                          Background : in Colors := Current;
-                          Time_Out   : in Delay_Rec :=  Infinite_Delay;
-                          Echo       : in Boolean := True) is
+  function Put_Then_Get (Name       : in Window;
+                         Extra      : in Boolean;
+                         Str        : in out Unicode_Sequence;
+                         Last       : out Natural;
+                         Stat       : out Extra_Mvt;
+                         Pos        : in out Positive;
+                         Insert     : in out Boolean;
+                         Foreground : in Colors := Current;
+                         Background : in Colors := Current;
+                         Time_Out   : in Delay_Rec :=  Infinite_Delay;
+                         Echo       : in Boolean := True)
+           return Unicode_Number is
     -- Window and console data
     Con : access Console_Data;
     Win : access Window_Data;
@@ -1088,6 +1089,9 @@ package body Con_Io is
     Redraw      : Boolean;
     First_Pos   : Square;
     Last_Time   : Delay_Rec;
+
+    -- Default returned value
+    Res : Unicode_Number := Space;
 
     -- Return index in str of last char of a position
     function End_Index_Of (Position : Natural) return Natural is
@@ -1224,18 +1228,22 @@ package body Con_Io is
               exit;
             when 16#51# =>
               -- <--
-              if not Ctrl then
-                Stat := Left;
-              else
+              if Ctrl then
                 Stat := Ctrl_Left;
+              elsif Shift then
+                Stat := Shift_Left;
+              else
+                Stat := Left;
               end if;
               exit;
             when 16#53# =>
               -- -->
-              if not Ctrl then
-                Stat := Right;
-              else
+              if Ctrl then
                 Stat := Ctrl_Right;
+              elsif Shift then
+                Stat := Shift_Right;
+              else
+                Stat := Right;
               end if;
               exit;
             when 16#52# =>
@@ -1291,7 +1299,7 @@ package body Con_Io is
         end if;  -- Function key or normal key
       end loop;  -- Discard any unaccepted key
       -- Done for Width = 0
-      return;
+      return Res;
     end if;  -- Width = 0
 
     -- Check width and current_pos / window's width
@@ -1367,12 +1375,14 @@ package body Con_Io is
             Pos := Width;
           when 16#51# =>
             -- <--
-            if not Ctrl and then Pos /= 1 then
+            if not Ctrl and then not Shift and then Pos /= 1 then
               Pos := Pos - 1;
             else
               Last := Parse;
               if Ctrl then
                 Stat := Ctrl_Left;
+              elsif Shift then
+                Stat := Shift_Left;
               else
                 Stat := Left;
               end if;
@@ -1380,12 +1390,14 @@ package body Con_Io is
             end if;
           when 16#53# =>
             -- -->
-            if not Ctrl and then Pos /= Width then
+            if not Ctrl and then not Shift and then Pos /= Width then
               Pos := Pos + 1;
             else
               Last := Parse;
               if Ctrl then
                 Stat := Ctrl_Right;
+              elsif Shift then
+                Stat := Shift_Right;
               else
                 Stat := Right;
               end if;
@@ -1483,6 +1495,7 @@ package body Con_Io is
           if Extra and then Insert then
             -- Last character will shift and be overwriten
             Stat := Con_Io.Insert;
+            Res := Language.String_To_Unicode (Got_Str)(1);
             exit;
           end if;
           if Insert and then Pos < Width then
@@ -1510,6 +1523,7 @@ package body Con_Io is
      end if;
     end loop;
     Str := Language.String_To_Unicode (Lstr.Image);
+    return Res;
   end Put_Then_Get;
 
   -- Normal Put_Then_Get on Unicode
@@ -1523,9 +1537,10 @@ package body Con_Io is
                           Background : in Colors := Current;
                           Time_Out   : in Delay_Rec :=  Infinite_Delay;
                           Echo       : in Boolean := True) is
+    Dummy_Res : Unicode_Number;
   begin
-    Put_Then_Get (Name, False, Str, Last, Stat, Pos, Insert,
-                  Foreground, Background, Time_Out, Echo);
+    Dummy_Res := Put_Then_Get (Name, False, Str, Last, Stat, Pos, Insert,
+                               Foreground, Background, Time_Out, Echo);
   end Put_Then_Get;
 
   -- Idem but with a Wide_String

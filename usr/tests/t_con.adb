@@ -167,6 +167,7 @@ procedure T_Con is
                Con_Io.Ctrl_Pgup | Con_Io.Ctrl_Pgdown |
                Con_Io.Left | Con_Io.Right |
                Con_Io.Ctrl_Left | Con_Io.Ctrl_Right |
+               Con_Io.Shift_Left | Con_Io.Shift_Right |
                Con_Io.Full | Con_Io.Tab | Con_Io.Stab |
                Con_Io.Selection | Con_Io.Timeout | Con_Io.Fd_Event |
                Con_Io.Timer_Event | Con_Io.Signal_Event =>
