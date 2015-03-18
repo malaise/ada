@@ -327,7 +327,8 @@ package Con_Io is
   -- The get ends either:
   --  if (Ctrl/Shift) Up/Down arrow, (Ctrl/Shift) Page Up/Down, Ctrl Left/Right
   --   arrow is pressed
-  --  if the cursor leaves the field (Left/Right arrow or character input),
+  --  if the cursor leaves the field on Left/Right arrow or character
+  --   input (Full),
   --  if Tab, Shift Tab, Return(Lf), Escape is pressed
   --  on CtrlC/CtrlBreak or X event Exit_Request (from window manager)
   --  on mouse click, release (or motion if enabled)
@@ -339,7 +340,7 @@ package Con_Io is
   --  if a refresh is needed on the screen (see x_mng)
   -- Mouse_button event can only be generated if the mouse cursor is shown
 
-  -- The returned string ends at last significant digit (gaps with spaces),
+  -- The returned string ends at last significant digit (padded with spaces),
   --  tailling spaces are parsed out and last is the index in Str of
   --  the last non-space character
   -- The in and out positions mean 1 for 1st character ..., not indexes
@@ -347,13 +348,16 @@ package Con_Io is
   -- If Str'length is 0 then last=0 and stat is significant (full if normal
   --  character), but pos_out is not significant.
   -- Note that if Str'Lenght is 0, the cursor is hidden
-  type Curs_Mvt is (Up, Down, Shift_Up, Shift_Down, Ctrl_Up, Ctrl_Down,
-                    Pgup, Pgdown, Shift_Pgup, Shift_Pgdown,
-                    Ctrl_Pgup, Ctrl_Pgdown,
-                    Left, Right, Ctrl_Left, Ctrl_Right,
-                    Full, Tab, Stab, Ret, Esc, Break,
-                    Mouse_Button, Selection, Timeout, Fd_Event, Timer_Event,
-                    Signal_Event, Refresh);
+  type Extra_Mvt is (Up, Down, Shift_Up, Shift_Down, Ctrl_Up, Ctrl_Down,
+                     Pgup, Pgdown, Shift_Pgup, Shift_Pgdown,
+                     Ctrl_Pgup, Ctrl_Pgdown,
+                     Left, Right, Ctrl_Left, Ctrl_Right,
+                     Full, Tab, Stab, Ret, Esc, Break,
+                     Mouse_Button, Selection, Timeout, Fd_Event, Timer_Event,
+                     Signal_Event, Refresh,
+  -- Extra cursor movements when preventing change of length
+                    Backspace, Suppr, Ctrl_Suppr, Shift_Suppr, Insert);
+  subtype Curs_Mvt is Extra_Mvt range Up .. Refresh;
   procedure Get (Name       : in Window;
                  Str        : out Unicode_Sequence;
                  Last       : out Natural;
@@ -383,6 +387,20 @@ package Con_Io is
                           Str        : in out Wide_String;
                           Last       : out Natural;
                           Stat       : out Curs_Mvt;
+                          Pos        : in out Positive;
+                          Insert     : in out Boolean;
+                          Foreground : in Colors := Current;
+                          Background : in Colors := Current;
+                          Time_Out   : in Delay_Rec :=  Infinite_Delay;
+                          Echo       : in Boolean := True);
+
+  -- Idem but, if Extra, then any change of the string length (Suppr, Insert...)
+  --   ends Ptg before modifying Str
+  procedure Put_Then_Get (Name       : in Window;
+                          Extra      : in Boolean;
+                          Str        : in out Unicode_Sequence;
+                          Last       : out Natural;
+                          Stat       : out Extra_Mvt;
                           Pos        : in out Positive;
                           Insert     : in out Boolean;
                           Foreground : in Colors := Current;

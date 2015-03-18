@@ -1052,12 +1052,13 @@ package body Con_Io is
     return Str;
   end Spaces;
 
-  -- Idem but the get is initialised with the initial content of the string
-  --  and cursor's initial location can be set
+  -- Put_Then_Get : On option prevents change of Str length and
+  --  returns extra movements
   procedure Put_Then_Get (Name       : in Window;
+                          Extra      : in Boolean;
                           Str        : in out Unicode_Sequence;
                           Last       : out Natural;
-                          Stat       : out Curs_Mvt;
+                          Stat       : out Extra_Mvt;
                           Pos        : in out Positive;
                           Insert     : in out Boolean;
                           Foreground : in Colors := Current;
@@ -1083,8 +1084,7 @@ package body Con_Io is
 
     -- Key of function key (2nd byte)
     Key         : Natural;
-    -- Done?
-    Done        : Boolean;
+    -- Redraw Str before looping
     Redraw      : Boolean;
     First_Pos   : Square;
     Last_Time   : Delay_Rec;
@@ -1186,7 +1186,7 @@ package body Con_Io is
         if Event /= Esc then
           -- No key ==> mouse, time out, refresh, fd...
           Stat := Event;
-          return;
+          exit;
         elsif Code and then Kbd_Tab.Tab(1) = 16#FF# then
           Key := Natural (Kbd_Tab.Tab(2));
           -- Function key
@@ -1194,11 +1194,11 @@ package body Con_Io is
             when 16#0D# =>
               -- Return
               Stat := Ret;
-              return;
+              exit;
             when 16#1B# =>
               -- Escape
               Stat := Esc;
-              return;
+              exit;
             when 16#09# =>
               if Shift then
                 -- Shift Tab
@@ -1207,18 +1207,21 @@ package body Con_Io is
                 -- Tab
                 Stat := Tab;
               end if;
-              return;
+              exit;
             when 16#08# =>
               -- Backspace
-              null;
+              if Extra then
+                Stat := Backspace;
+                exit;
+              end if;
             when 16#50# =>
               -- Home
               Stat := Left;
-              return;
+              exit;
             when 16#57# =>
               -- End
               Stat := Right;
-              return;
+              exit;
             when 16#51# =>
               -- <--
               if not Ctrl then
@@ -1226,7 +1229,7 @@ package body Con_Io is
               else
                 Stat := Ctrl_Left;
               end if;
-              return;
+              exit;
             when 16#53# =>
               -- -->
               if not Ctrl then
@@ -1234,7 +1237,7 @@ package body Con_Io is
               else
                 Stat := Ctrl_Right;
               end if;
-              return;
+              exit;
             when 16#52# =>
               -- Up
               if Ctrl then
@@ -1244,7 +1247,7 @@ package body Con_Io is
               else
                 Stat := Up;
               end if;
-              return;
+              exit;
             when 16#54# =>
               -- Down
               if Ctrl then
@@ -1254,7 +1257,7 @@ package body Con_Io is
               else
                 Stat := Down;
               end if;
-              return;
+              exit;
             when 16#55# =>
               -- Page Up
               if Ctrl then
@@ -1264,7 +1267,7 @@ package body Con_Io is
               else
                 Stat := Pgup;
               end if;
-              return;
+              exit;
             when 16#56# =>
               -- Page Down
               if Ctrl then
@@ -1274,7 +1277,7 @@ package body Con_Io is
               else
                 Stat := Pgdown;
               end if;
-              return;
+              exit;
             when 16#63# =>
               -- Insert
               Insert := not Insert;
@@ -1284,9 +1287,11 @@ package body Con_Io is
         elsif not Code then
           -- Every other valid char
           Stat := Full;
-          return;
+          exit;
         end if;  -- Function key or normal key
       end loop;  -- Discard any unaccepted key
+      -- Done for Width = 0
+      return;
     end if;  -- Width = 0
 
     -- Check width and current_pos / window's width
@@ -1303,7 +1308,6 @@ package body Con_Io is
       Put (Name, Lstr.Image, Foreground, Background, Move => False);
     end if;
 
-    Done := False;
     loop
       -- Show cursor
       if Echo then
@@ -1320,7 +1324,7 @@ package body Con_Io is
         -- No key ==> mouse, time out, refresh, fd...
         Last := Parse;
         Stat := Event;
-        Done := True;
+        exit;
       elsif Code and then Kbd_Tab.Tab(1) = 16#FF# then
         Key := Natural (Kbd_Tab.Tab(2));
         case Key is
@@ -1328,12 +1332,12 @@ package body Con_Io is
             -- Return
             Last := Parse;
             Stat := Ret;
-            Done := True;
+            exit;
           when 16#1B# =>
             -- Escape
             Last := Parse;
             Stat := Esc;
-            Done := True;
+            exit;
           when 16#09# =>
             Last := Parse;
             if Shift then
@@ -1343,9 +1347,13 @@ package body Con_Io is
               -- Tab
               Stat := Tab;
             end if;
-            Done := True;
+            exit;
           when 16#08# =>
             -- Backspace
+            if Extra then
+              Stat := Backspace;
+              exit;
+            end if;
             if Pos /= 1 then
               Pos := Pos - 1;
               Overwrite (Pos, Slice (Pos + 1, Width) & String'(" "));
@@ -1368,7 +1376,7 @@ package body Con_Io is
               else
                 Stat := Left;
               end if;
-              Done := True;
+              exit;
             end if;
           when 16#53# =>
             -- -->
@@ -1381,7 +1389,7 @@ package body Con_Io is
               else
                 Stat := Right;
               end if;
-              Done := True;
+              exit;
             end if;
           when 16#52# =>
             -- Up
@@ -1393,7 +1401,7 @@ package body Con_Io is
             else
               Stat := Up;
             end if;
-            Done := True;
+            exit;
           when 16#54# =>
             -- Down
             Last := Parse;
@@ -1404,7 +1412,7 @@ package body Con_Io is
             else
               Stat := Down;
             end if;
-            Done := True;
+            exit;
           when 16#55# =>
             -- Page Up
             Last := Parse;
@@ -1415,7 +1423,7 @@ package body Con_Io is
             else
               Stat := Pgup;
             end if;
-            Done := True;
+            exit;
           when 16#56# =>
             -- Page Down
             Last := Parse;
@@ -1426,11 +1434,22 @@ package body Con_Io is
             else
               Stat := Pgdown;
             end if;
-            Done := True;
+            exit;
           when 16#63# =>
             -- Insert
             Insert := not Insert;
           when 16#FF# =>
+            if Extra then
+              if Ctrl then
+                Stat := Ctrl_Suppr;
+              elsif Shift then
+                Stat := Shift_Suppr;
+              else
+                Stat := Suppr;
+              end if;
+              exit;
+            end if;
+            -- Xxx Suppr
             if Ctrl then
               -- Ctrl Suppr : clear field + home
               Pos := 1;
@@ -1454,16 +1473,23 @@ package body Con_Io is
         declare
           Got_Str : String (1 .. Kbd_Tab.Nbre);
         begin
+          -- Decode char
           for I in Got_Str'Range loop
             Got_Str(I) := Character'Val(Kbd_Tab.Tab(I));
           end loop;
           if Language.Put_Length (Got_Str) /= 1 then
             raise Constraint_Error;
           end if;
+          if Extra and then Insert then
+            -- Last character will shift and be overwriten
+            Stat := Con_Io.Insert;
+            exit;
+          end if;
           if Insert and then Pos < Width then
             -- Insert => Shift right
             Overwrite (Pos, Got_Str & Slice (Pos, Width - 1));
           else
+            -- Not insert or at last pos: overwrite
             Overwrite (Pos, Got_Str);
           end if;
         end;
@@ -1473,7 +1499,7 @@ package body Con_Io is
         else
           Last := Parse;
           Stat := Full;
-          Done := True;
+          exit;
         end if;
       end if;  -- Is_char
 
@@ -1482,9 +1508,24 @@ package body Con_Io is
         Move (Name, First_Pos);
         Put (Name, Lstr.Image, Foreground, Background, Move => False);
      end if;
-     exit when Done;
     end loop;
     Str := Language.String_To_Unicode (Lstr.Image);
+  end Put_Then_Get;
+
+  -- Normal Put_Then_Get on Unicode
+  procedure Put_Then_Get (Name       : in Window;
+                          Str        : in out Unicode_Sequence;
+                          Last       : out Natural;
+                          Stat       : out Curs_Mvt;
+                          Pos        : in out Positive;
+                          Insert     : in out Boolean;
+                          Foreground : in Colors := Current;
+                          Background : in Colors := Current;
+                          Time_Out   : in Delay_Rec :=  Infinite_Delay;
+                          Echo       : in Boolean := True) is
+  begin
+    Put_Then_Get (Name, False, Str, Last, Stat, Pos, Insert,
+                  Foreground, Background, Time_Out, Echo);
   end Put_Then_Get;
 
   -- Idem but with a Wide_String

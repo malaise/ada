@@ -692,7 +692,7 @@ package body Af_Ptg is
     New_Field : Boolean;
     Field : Afpx_Typ.Field_Rec;
     Last : Natural;
-    Stat : Con_Io.Curs_Mvt;
+    Stat : Con_Io.Extra_Mvt;
     Pos : Positive;
     Foreground : Con_Io.Effective_Colors;
     Background : Con_Io.Effective_Colors;
@@ -700,6 +700,8 @@ package body Af_Ptg is
     Selection_Result : Integer;
     List_Init : Boolean;
     List_Scrolled : Boolean;
+    Field_Start : Afpx_Typ.Char_Str_Range;
+    Change : Boolean;
 
     use Afpx_Typ;
     use type Con_Io.Curs_Mvt;
@@ -822,15 +824,15 @@ package body Af_Ptg is
       Need_Redisplay := False;
       Af_Dscr.Current_Dscr.Modified := False;
       Af_Dscr.Fields(Lfn).Modified := False;
+      Field_Start := Field.Char_Index + Field.Offset;
 
       if Get_Active then
         Pos := Get_Handle.Cursor_Col + 1;
         -- Move at beginning of field and put_then_get
         Af_Con_Io.Move (Field.Upper_Left.Row, Field.Upper_Left.Col);
         Af_Con_Io.Put_Then_Get (
-         Str    => Af_Dscr.Chars
-                    (Field.Char_Index + Field.Offset ..
-                     Field.Char_Index + Field.Offset + Field.Width - 1),
+         Str    => Af_Dscr.Chars(Field_Start .. Field_Start + Field.Width - 1),
+         Extra => Field.Data_Len /= Field.Width,
          Last   => Last,
          Stat   => Stat,
          Pos    => Pos,
@@ -844,6 +846,7 @@ package body Af_Ptg is
         Af_Con_Io.Move (Af_Con_Io.Row_Range_Last, Af_Con_Io.Col_Range_Last);
         Af_Con_Io.Put_Then_Get (
          Str    => Af_Dscr.Chars (1 .. 0),
+         Extra => False,
          Last   => Last,
          Stat   => Stat,
          Pos    => Pos,
@@ -856,6 +859,42 @@ package body Af_Ptg is
       -- Now the big case on keys
       List_Scrolled := False;
       case Stat is
+        -- Extra Con_Io returned to preserve a scrolling Get field
+        when Con_Io.Backspace =>
+          if Pos = 1 then
+            -- Cursor is at Leftmost column of field
+            if Field.Offset = Afpx_Typ.Offset_Range'First then
+              -- Fully at beginning of string => nothing happens
+              Change := False;
+            else
+              -- Shift string right
+              Field.Offset := Field.Offset - 1;
+              Change := True;
+            end if;
+          else
+            Pos := Pos - 1;
+            Change := True;
+          end if;
+          if Change then
+            Af_Dscr.Fields(Cursor_Field).Offset := Field.Offset;
+            Get_Handle.Cursor_Col := Pos - 1;
+            -- Overwrite char at Pos, by scrolling left and append space
+            Af_Dscr.Chars (Field_Start + Pos - 1
+                        .. Field.Char_Index + Field.Data_Len - 2) :=
+              Af_Dscr.Chars (Field_Start + Pos
+                          .. Field.Char_Index + Field.Data_Len - 1);
+            Af_Dscr.Chars (Field.Char_Index + Field.Data_Len - 1) :=
+              Con_Io.Space;
+          end if;
+        when Con_Io.Suppr =>
+          null;
+        when Con_Io.Ctrl_Suppr =>
+          null;
+        when Con_Io.Shift_Suppr =>
+          null;
+        when Con_Io.Insert =>
+          null;
+        -- Normal Con_io Cursor movements
         when Con_Io.Up =>
           -- List scroll down
           if List_Present then
