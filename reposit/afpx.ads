@@ -419,7 +419,12 @@ package Afpx is
   --    input or left/right arrow can also lead to change field (if it has been
   --    defined in the Xml with Move_Prev or Move_Next),
   --   Only Return, Esc or Break key terminates the Put_Then_Get
-  --   A mouse click in a field moves the cursor into the field.
+  --   A mouse left click in a field moves the cursor into the field, at this
+  --    position or at the last significant character.
+  --   A mouse middle click pastes the current selection (see Con_Io) at the
+  --    current cursor position, overwriting or inserting into the current text.
+  --    This operation does not expand to next get field, even if Move_Next is
+  --    set for current field.
   -- In Button fields: mouse click then release terminates Put_Then_Get.
   -- This call affects the content of Get fields, the cursor field and col,
   --  and the current element of the list, it calls Modification_Ack on the

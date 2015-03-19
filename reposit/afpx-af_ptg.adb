@@ -513,9 +513,10 @@ package body Af_Ptg is
     Field : constant Afpx_Typ.Field_Rec
           := Af_Dscr.Fields(Afpx_Typ.Field_Range(Handle.Cursor_Field));
     Column : constant  Con_Io.Col_Range := Handle.Cursor_Col;
+    Index  : constant Afpx_Typ.Char_Str_Range := Field.Offset + Column + 1;
     Offset : Con_Io.Col_Range;
     Str : Unicode.Unbounded_Unicode.Unbounded_Array;
-    Len : Natural;
+    Str_Len : Natural;
     Result : Integer;
   begin
      -- Get selection and replace Line_Feed by Space
@@ -529,14 +530,17 @@ package body Af_Ptg is
         Sel_Txt.Replace_Element (I, ' ');
       end if;
     end loop;
-    -- Current content of field from cursor (included) to end
-    Str.Set (Af_Dscr.Chars(Field.Char_Index + Column
-                        .. Field.Char_Index + Field.Data_Len - 1));
+
+    -- Insert/Overwrite the selection in Str
     declare
       Selection : constant Unicode_Sequence
                 := Language.String_To_Unicode (Sel_Txt.Image);
     begin
       Sel_Len := Selection'Length;
+      -- Current content of field from cursor (included) to end
+      Str.Set (Af_Dscr.Chars(Field.Char_Index + Field.Offset + Column
+                          .. Field.Char_Index + Field.Data_Len - 1));
+      Str_Len := Str.Length;
       if Sel_Len = 0 then
         return Sel_No_Change;
       end if;
@@ -547,39 +551,43 @@ package body Af_Ptg is
         Str.Overwrite (1, Selection);
       end if;
     end;
-
-    -- Trunk at end of field, Str must be Len length
-    Len := Field.Data_Len - Column;
-    if Str.Length > Len then
-      Str.Delete (Len + 1, Str.Length);
+    -- Trunk at end of data_len, Str must be remain of length Str_Len
+    if Str.Length > Str_Len then
+      Str.Delete (Str_Len + 1, Str.Length);
     end if;
 
-    -- See if result is within Data_Len
-    if Column + Sel_Len >= Field.Data_Len then
+    -- Compute new Offset and Cursor_Col (Result)
+    -- Index is initial relative index in Chars(1 .. Data_Len)
+    if Index + Sel_Len >= Field.Data_Len then
       -- Cursor would move out of field
       if Field.Move_Next then
         Result := Sel_New_Field;
       else
+        -- Last column of field
         Result := Field.Width - 1;
       end if;
       -- Max offset
       Offset := Field.Data_Len - Field.Width;
     else
+      -- Cursor remains within field data
       Result := Column + Sel_Len;
-      if Result >= Field.Width then
-        Offset := Result - Field.Width + 1;
+      if Result > Field.Width - 1 then
+        -- Scroll, cursor moves at the right side of the window
+        Offset := Field.Offset + Result - Field.Width + 1;
+        Result := Field.Width - 1;
       else
-        Offset := 0;
+        -- No scroll, move cursor
+        Offset := Field.Offset;
       end if;
     end if;
 
+    -- 'Encode' new content
+    Af_Dscr.Chars(Field.Char_Index + Field.Offset + Column
+               .. Field.Char_Index + Field.Data_Len - 1) := Str.To_Array;
+    Af_Dscr.Current_Dscr.Modified := True;
     -- Update offset
     Af_Dscr.Fields(Afpx_Typ.Field_Range(Handle.Cursor_Field)).Offset := Offset;
 
-    -- 'Encode' new content
-    Af_Dscr.Chars(Field.Char_Index + Column
-               .. Field.Char_Index + Field.Data_Len - 1) := Str.To_Array;
-    Af_Dscr.Current_Dscr.Modified := True;
     return Result;
   exception
     when others =>
