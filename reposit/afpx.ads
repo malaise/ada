@@ -422,7 +422,9 @@ package Afpx is
   --   A mouse left click in a field moves the cursor into the field, at this
   --    position or at the last significant character.
   --   A mouse middle click pastes the current selection (see Con_Io) at the
-  --    current cursor position, overwriting or inserting into the current text.
+  --    current cursor position, overwriting or inserting into the current
+  --    text. If the click in in a Get field, then the cursor is moved at this
+  --    position before pasting.
   --    This operation does not expand to next get field, even if Move_Next is
   --    set for current field.
   -- In Button fields: mouse click then release terminates Put_Then_Get.

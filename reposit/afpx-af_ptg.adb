@@ -236,6 +236,7 @@ package body Af_Ptg is
                    Status : in List_Status_Rec) := null) is
     Cursor_Pos : constant Con_Io.Square := Af_Con_Io.Position;
     Valid_Field : Boolean;
+    Request_Selection : Boolean;
     Click_Pos : Con_Io.Square;
     Click_But : Button_List;
     List_But : List_Button_List;
@@ -284,8 +285,8 @@ package body Af_Ptg is
                         List_Change_Cb) then
       return;
     end if;
-
     Valid_Field := True;
+    Request_Selection := False;
     -- Get button and pos, find field
     Click_But := Last_But;
     Click_Pos := Last_Pos;
@@ -343,8 +344,8 @@ package body Af_Ptg is
         -- Invalid field
         Valid_Field := False;
       end if;
-      -- Request selection anyway
-      Console.Request_Selection;
+      -- Request selection anyway, after release
+      Request_Selection := True;
     else
       -- Right click not in list
       Valid_Field := False;
@@ -365,11 +366,16 @@ package body Af_Ptg is
     -- Wait release. No keyboard input
     Release_Pos := Wait_Release (Click_But);
 
-    -- Done if click not valid
+    -- Request selection just after receiving release
+    if Request_Selection then
+      Console.Request_Selection;
+    end if;
+    -- Done if click/release not valid
     if not Valid_Field then
       Af_Con_Io.Move (Cursor_Pos);
       return;
     end if;
+
     Field := Af_Dscr.Fields(Click_Field);
 
     -- Check release in same field/row as click
