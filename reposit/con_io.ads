@@ -530,9 +530,11 @@ package Con_Io is
 
   -- Button status: when Motion, Button is Motion
   type Mouse_Button_Status_List is (Pressed, Released, Motion);
-  -- List of button
+  -- List of buttons
   type Mouse_Button_List is (Left, Middle, Right, Motion, Up, Down,
                              Shift_Up, Shift_Down, Ctrl_Up, Ctrl_Down);
+  -- Pointing buttons
+  subtype Mouse_Pointing_List is Mouse_Button_List range Left .. Right;
   -- Mouse status
   -- Invalid press should be discarded
   -- Invalid release/motion are out of screen
