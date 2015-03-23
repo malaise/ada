@@ -506,6 +506,8 @@ package body Af_Ptg is
         end if;
       end if;
       -- Result is Put
+      -- End of processing of click in list
+
     elsif Field.Kind = Afpx_Typ.Get then
       -- If field is get: restore color
       Put_Field (Click_Field, Normal);
@@ -527,7 +529,6 @@ package body Af_Ptg is
       end if;
     end if;
 
-    -- Skip any keyboard entry during handle click
     Af_Con_Io.Move (Cursor_Pos);
 
   end Handle_Click;
@@ -656,9 +657,9 @@ package body Af_Ptg is
           Signif_Col := Last_Col (Field_No);
           return Signif_Col;
         when Mouse =>
-          -- When click in new field set cursor where clicked if there is a
-          --  significant char otherwise set it just after last significant char
-          -- When same field, set cursor where clicked
+          -- When click in a Get, set cursor where clicked if there is a
+          --  significant char there or on its right, otherwise set it just
+          --  after last significant char
           Signif_Col := Last_Col (Field_No);
           if Cursor_Col > Signif_Col then
             return Signif_Col;
