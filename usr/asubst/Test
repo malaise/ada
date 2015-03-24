@@ -220,7 +220,7 @@ if [ $code != 2 ] ; then
   echo "$STEP FAILED."
   exit 1
 fi
-asubst "[is" "is" $FT > log 2>&1
+asubst "[is" "is" $FT > /dev/null 2>&1
 code=$?
 if [ $code != 2 ] ; then
   echo "Error: asubst exited with code $code instead of 2"
