@@ -8,7 +8,7 @@ AFPX_XREF := afpx_xref
 SUBUNITS := renardeau-x
 EXES := renardeau
 
-CLIBS := x_mng cutil X11
+CLIBS := $(X11_SLIBS)
 
 include $(TEMPLATES)/ada.mk
 

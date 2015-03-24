@@ -5,7 +5,7 @@ ADAVIEW := $(REPOSIT)
 SUBUNITS := def_enigma-xml
 EXES := anal_freq enigma scrambler_generator def_enigma letterator
 
-CLIBS := cutil
+CLIBS := $(UTILS_SLIBS)
 CLIBS_enigma := $(PCRE_SLIBS)
 CLIBS_def_enigma := $(PCRE_SLIBS)
 

@@ -5,7 +5,7 @@ ADAVIEW := $(REPOSIT)
 
 EXES := $(UNITS)
 
-CLIBS_servprio := cutil
+CLIBS_servprio := $(UTILS_SLIBS)
 
 include $(TEMPLATES)/ada.mk
 

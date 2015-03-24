@@ -5,7 +5,7 @@ ADAVIEW := $(REPOSIT)
 SUBUNITS := screen-get_event
 EXES := land_lem
 
-CLIBS := x_mng cutil X11
+CLIBS := $(X11_SLIBS)
 
 TXT := Lem
 DOCOPTS_Lem := -a toc

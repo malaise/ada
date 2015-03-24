@@ -8,10 +8,10 @@ AFPX_XREF := afpx_xref
 SUBUNITS := account-quit mng-deletion mng-edition mng-search
 EXES := account import export account.stat
 
-CLIBS := cutil
-CLIBS_account := x_mng X11
+CLIBS := $(UTILS_SLIBS)
+CLIBS_account := $(X11_SLIBS)
 
-LARGS_account.stat := $(CPATHD)/libx_mng.a $(CPATHD)/libcutil.a -lX11
+LARGS_account.stat := $(X11_ALIBS)
 
 include $(TEMPLATES)/ada.mk
 

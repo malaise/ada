@@ -5,7 +5,7 @@ ADAVIEW := $(REPOSIT)
 SUBUNITS := action-treat_click action-treat_release
 EXES := mmind
 
-CLIBS_mmind := x_mng cutil X11
+CLIBS_mmind := $(X11_SLIBS)
 
 include $(TEMPLATES)/ada.mk
 

@@ -5,7 +5,7 @@ ADAVIEW := $(REPOSIT)
 SUBUNITS := sok_manager-sok_file sok_manager-sok_menu
 EXES := sokoban scores
 
-CLIBS := x_mng cutil X11
+CLIBS := $(X11_SLIBS)
 
 include $(TEMPLATES)/ada.mk
 

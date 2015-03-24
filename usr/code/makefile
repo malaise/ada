@@ -4,7 +4,7 @@ ADAVIEW := $(REPOSIT)
 
 EXES := code t_vigenere
 
-CLIBS := cutil
+CLIBS := $(UTILS_SLIBS)
 
 include $(TEMPLATES)/ada.mk
 

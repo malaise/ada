@@ -7,7 +7,7 @@ mcd_mng-registers mcd_mng-file mcd_mng-stack mcd_mng-ios mcd_mng-strings \
 mcd_mng-misc
 EXES := mcd
 
-CLIBS := cutil
+CLIBS := $(UTILS_SLIBS)
 CLIBS_mcd := $(PCRE_SLIBS)
 
 include $(TEMPLATES)/ada.mk

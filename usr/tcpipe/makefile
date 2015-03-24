@@ -4,7 +4,7 @@ ADAVIEW := $(REPOSIT)
 
 EXES := tcpipe
 
-CLIBS := cutil
+CLIBS := $(UTILS_SLIBS)
 
 TXT := Tcpipe
 

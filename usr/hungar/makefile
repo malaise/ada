@@ -4,7 +4,7 @@ ADAVIEW := $(REPOSIT)
 
 EXES := hungar generate
 
-CLIBS_hungar := cutil
+CLIBS_hungar := $(UTILS_SLIBS)
 
 include $(TEMPLATES)/ada.mk
 

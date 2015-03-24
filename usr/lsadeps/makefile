@@ -5,11 +5,10 @@ ADAVIEW := $(REPOSIT)
 SUBUNITS := lsadeps-add_paths
 EXES := lsadeps lsadeps.stat
 
-CLIBS := cutil
-LARGS_lsadeps := -L$(PCRE_LIB)
+CLIBS := $(UTILS_SLIBS)
 CLIBS_lsadeps := $(PCRE_SLIBS)
 
-LARGS_lsadeps.stat := $(CPATHD)/libcutil.a $(PCRE_ALIBS)
+LARGS_lsadeps.stat := $(PCRE_ALIBS) $(UTILS_ALIBS)
 
 TXT := Lsadeps
 DOCOPTS_Lsadeps := -a toc

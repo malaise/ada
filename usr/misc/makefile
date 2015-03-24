@@ -26,8 +26,8 @@ LARGS_astat.stat := $(UTILS_ALIBS)
 LARGS_tcping.stat := $(UTILS_ALIBS)
 LARGS_udp_spy.stat := $(UTILS_ALIBS)
 LARGS_pingpong.stat := $(UTILS_ALIBS)
-LARGS_dtd_checker.stat := $(UTILS_ALIBS) $(PCRE_ALIBS)
-LARGS_xml_checker.stat := $(UTILS_ALIBS) $(PCRE_ALIBS)
+LARGS_dtd_checker.stat := $(PCRE_ALIBS) $(UTILS_ALIBS)
+LARGS_xml_checker.stat := $(PCRE_ALIBS) $(UTILS_ALIBS)
 
 TXT := Xml_Checker
 DOCOPTS_Xml_Checker := -a toc

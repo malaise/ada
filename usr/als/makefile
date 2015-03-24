@@ -5,10 +5,10 @@ ADAVIEW := $(REPOSIT)
 SUBUNITS := als-parse_date als-set_criteria
 EXES := als als.stat
 
-CLIBS := cutil
+CLIBS := $(UTILS_SLIBS)
 CLIBS_als := $(PCRE_SLIBS)
 
-LARGS_als.stat := $(CPATHD)/libcutil.a $(PCRE_ALIBS)
+LARGS_als.stat := $(PCRE_ALIBS) $(X11_ALIBS)
 
 TXT := Als
 DOCOPTS_Als := -a toc

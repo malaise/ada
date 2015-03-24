@@ -5,11 +5,10 @@ ADAVIEW := $(REPOSIT)
 SUBUNITS := replace_pattern-file_content replace_pattern-shell_command
 EXES := asubst asubst.stat
 
-CLIBS := cutil
-LARGS_asubst := -L$(PCRE_LIB)
+CLIBS := $(UTILS_SLIBS)
 CLIBS_asubst = $(PCRE_SLIBS)
 
-LARGS_asubst.stat := $(CPATHD)/libcutil.a $(PCRE_ALIBS)
+LARGS_asubst.stat := $(PCRE_ALIBS) $(UTILS_ALIBS)
 
 TXT := Asubst
 DOCOPTS_Asubst := -a toc

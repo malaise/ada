@@ -7,7 +7,7 @@ AFPX := true
 
 EXES := $(filter-out t_smart_int, $(UNITS))
 
-CLIBS := x_mng cutil X11
+CLIBS := $(X11_SLIBS)
 CLIBS_t_ndbm := cndbm gdbm \
  $(patsubst /usr/lib/$(ARCH)/lib%.so, %, $(wildcard /usr/lib/$(ARCH)/libgdbm_compat.so))
 CLIBS_t_async := $(PCRE_SLIBS)

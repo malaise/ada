@@ -4,9 +4,9 @@ ADAVIEW := $(REPOSIT)
 
 EXES := pexec pexec.stat
 
-CLIBS := cutil
+CLIBS := $(UTILS_SLIBS)
 
-LARGS_pexec.stat := $(CPATHD)/libcutil.a
+LARGS_pexec.stat := $(UTILS_ALIBS)
 
 include $(TEMPLATES)/ada.mk
 

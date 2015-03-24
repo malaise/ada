@@ -4,7 +4,7 @@ ADAVIEW := $(USR)/dictio $(REPOSIT)
 
 EXES := t_fifos
 
-CLIBS := cutil
+CLIBS := $(UTILS_SLIBS)
 
 include $(TEMPLATES)/ada.mk
 

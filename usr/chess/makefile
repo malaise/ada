@@ -8,7 +8,7 @@ pieces-actions_of_rook screen-text screen-moves screen-graphic-bitmaps \
 screen-graphic
 EXES := chess
 
-CLIBS := x_mng cutil X11
+CLIBS := $(X11_SLIBS)
 
 GITIGNORE := Default.chs
 

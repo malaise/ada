@@ -5,7 +5,7 @@ ADAVIEW := $(REPOSIT)
 NOTUNITS := test
 EXES := astub
 
-CLIBS := cutil
+CLIBS := $(UTILS_SLIBS)
 CLIBS_astub := $(PCRE_SLIBS)
 
 TXT := Astub

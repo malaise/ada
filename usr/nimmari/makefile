@@ -7,7 +7,7 @@ AFPX_XREF := afpx_xref
 
 EXES := nimmari
 
-CLIBS := x_mng cutil X11
+CLIBS := $(X11_SLIBS)
 
 include $(TEMPLATES)/ada.mk
 
