@@ -6,8 +6,8 @@ This README file describes briefly the main directories of the Ada contrib.
 The software compiles with Ada 2012 (Gnat GPL 2014) and runs on Unix (Linux).
 
 Some programs depend on anchor:XPCRE[] PCRE (Perl Compatible Regular Expressions) and work
-with version 7.8 or above (8.35 is OK) and require the PCRE developpement
-package.
+with version 7.8 or above (8.35 is OK), or PCRE2 (10.00 or above), and require
+the corresponding PCRE developpement package.
 
 Some programs depend on libssl and libcrypto for EVP digest.
 
@@ -45,6 +45,11 @@ Makefiles project (MANDATORY)
 -----------------------------
 This project gathers several generic definitions for C and Ada generation.
 Several examples of usage can be found in the source directories.
+
+PCRE flavour
+~~~~~~~~~~~~
+Depending of the use of PCRE or PCRE2, the template 'path.mk' has to be
+adapted by defining the variable 'PCRE' to either 'PCRE1' or 'PCRE2'.
 
 Relocation of the Makefiles directory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

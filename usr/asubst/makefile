@@ -7,10 +7,9 @@ EXES := asubst asubst.stat
 
 CLIBS := cutil
 LARGS_asubst := -L$(PCRE_LIB)
-CLIBS_asubst = posix2pcre $(PCRE_LIBS)
+CLIBS_asubst = $(PCRE_SLIBS)
 
-LARGS_asubst.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
-                     $(PCRE_ALIBS)
+LARGS_asubst.stat := $(CPATHD)/libcutil.a $(PCRE_ALIBS)
 
 TXT := Asubst
 DOCOPTS_Asubst := -a toc

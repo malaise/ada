@@ -8,7 +8,7 @@ mcd_mng-misc
 EXES := mcd
 
 CLIBS := cutil
-CLIBS_mcd := posix2pcre $(PCRE_LIBS)
+CLIBS_mcd := $(PCRE_SLIBS)
 
 include $(TEMPLATES)/ada.mk
 

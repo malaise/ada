@@ -14,9 +14,9 @@ EXES := afpx_bld afpx_rnb clear_screen
 PARGS_snappy.apb := # Debug
 PARGS_lzf.apb :=  # Debug # Fast | Slow # LocalTrace
 PARGS_lz4.apb :=  # Debug
-CLIBS_afpx_bld := cutil x_mng posix2pcre $(PCRE_LIBS) X11
-CLIBS_afpx_rnb := cutil x_mng posix2pcre $(PCRE_LIBS) X11
-CLIBS_clear_screen := cutil
+CLIBS_afpx_bld = $(PCRE_SLIBS) $(X11_SLIBS)
+CLIBS_afpx_rnb = $(PCRE_SLIBS) $(X11_SLIBS)
+CLIBS_clear_screen := $(UTILS_SLIBS)
 
 HTML := true
 GNATHTMLOPT := -d

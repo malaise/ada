@@ -5,7 +5,7 @@ ADAVIEW := $(REPOSIT)
 EXES := fourtwentyone
 
 CLIBS := cutil
-CLIBS_als := posix2pcre $(PCRE_LIBS)
+CLIBS_als := $(PCRE_SLIBS)
 
 TXT := FourTwentyOne
 

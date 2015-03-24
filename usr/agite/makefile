@@ -8,12 +8,11 @@ AFPX_XREF := afpx_xref
 SUBUNITS := agite-timer tags-list tags-add
 EXES := agite agite.stat t_git
 
-CLIBS := x_mng cutil X11
-CLIBS_agite := posix2pcre $(PCRE_LIBS)
-CLIBS_t_git := posix2pcre $(PCRE_LIBS)
+CLIBS := $(X11_SLIBS)
+CLIBS_agite := $(PCRE_SLIBS)
+CLIBS_t_git := $(PCRE_SLIBS)
 
-LARGS_agite.stat := $(CPATHD)/libx_mng.a $(CPATHD)/libcutil.a \
-  $(CPATHD)/libposix2pcre.a $(PCRE_ALIBS) -lX11
+LARGS_agite.stat := $(PCRE_ALIBS) $(X11_ALIBS)
 
 TXT := Agite
 DOCOPTS_Agite= -a toc

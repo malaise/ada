@@ -14,22 +14,20 @@ EXES := adand add_nums alook arbipas astat azf beep comp_vars ddir \
  wait wake xml_checker astat.stat pingpong.stat tcping.stat tcp_spy \
  udp_spy.stat xml_checker.stat
 
-CLIBS := cutil
-CLIBS_renamer := x_mng X11
-CLIBS_comp_vars := posix2pcre $(PCRE_LIBS)
-CLIBS_dtd_checker := posix2pcre $(PCRE_LIBS)
-CLIBS_relay := posix2pcre $(PCRE_LIBS)
-CLIBS_wake := posix2pcre $(PCRE_LIBS)
-CLIBS_xml_checker := posix2pcre $(PCRE_LIBS)
+CLIBS := $(UTILS_SLIBS)
+CLIBS_renamer := $(X11_SLIBS)
+CLIBS_comp_vars := $(PCRE_SLIBS)
+CLIBS_dtd_checker := $(PCRE_SLIBS)
+CLIBS_relay := $(PCRE_SLIBS)
+CLIBS_wake := $(PCRE_SLIBS)
+CLIBS_xml_checker := $(PCRE_SLIBS)
 
-LARGS_astat.stat := $(CPATHD)/libcutil.a
-LARGS_tcping.stat := $(CPATHD)/libcutil.a
-LARGS_udp_spy.stat := $(CPATHD)/libcutil.a
-LARGS_pingpong.stat := $(CPATHD)/libcutil.a
-LARGS_dtd_checker.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
-  $(PCRE_ALIBS)
-LARGS_xml_checker.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
-  $(PCRE_ALIBS)
+LARGS_astat.stat := $(UTILS_ALIBS)
+LARGS_tcping.stat := $(UTILS_ALIBS)
+LARGS_udp_spy.stat := $(UTILS_ALIBS)
+LARGS_pingpong.stat := $(UTILS_ALIBS)
+LARGS_dtd_checker.stat := $(UTILS_ALIBS) $(PCRE_ALIBS)
+LARGS_xml_checker.stat := $(UTILS_ALIBS) $(PCRE_ALIBS)
 
 TXT := Xml_Checker
 DOCOPTS_Xml_Checker := -a toc

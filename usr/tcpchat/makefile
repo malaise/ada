@@ -4,7 +4,7 @@ ADAVIEW := $(REPOSIT)
 
 EXES := tcpchat tios
 
-CLIBS := cutil posix2pcre $(PCRE_LIBS)
+CLIBS := cutil $(PCRE_SLIBS)
 
 TXT := Tcpchat
 DOCOPTS_Tcpchat := -a toc

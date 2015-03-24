@@ -7,10 +7,10 @@ AFPX_XREF := afpx_xref
 
 EXES := battleship battleship.stat
 
-CLIBS := x_mng cutil posix2pcre $(PCRE_LIBS) X11
+CLIBS := x_mng cutil $(PCRE_SLIBS) X11
 
 LARGS_battleship.stat := $(CPATHD)/libx_mng.a $(CPATHD)/libcutil.a \
- $(CPATHD)/libposix2pcre.a $(PCRE_ALIBS) -lX11
+                         $(PCRE_ALIBS) -lX11
 
 TXT := BattleShip
 DOCOPTS_BattleShip := -a toc

@@ -7,10 +7,9 @@ EXES := lsadeps lsadeps.stat
 
 CLIBS := cutil
 LARGS_lsadeps := -L$(PCRE_LIB)
-CLIBS_lsadeps := posix2pcre $(PCRE_LIBS)
+CLIBS_lsadeps := $(PCRE_SLIBS)
 
-LARGS_lsadeps.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
-  $(PCRE_ALIBS)
+LARGS_lsadeps.stat := $(CPATHD)/libcutil.a $(PCRE_ALIBS)
 
 TXT := Lsadeps
 DOCOPTS_Lsadeps := -a toc

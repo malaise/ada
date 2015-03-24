@@ -6,7 +6,7 @@ NOTUNITS := test
 EXES := astub
 
 CLIBS := cutil
-CLIBS_astub := posix2pcre $(PCRE_LIBS)
+CLIBS_astub := $(PCRE_SLIBS)
 
 TXT := Astub
 DOCOPTS_Astub := -a toc

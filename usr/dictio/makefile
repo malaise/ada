@@ -4,7 +4,7 @@ ADAVIEW := $(REPOSIT)
 
 EXES := dictio t_dictio
 
-CLIBS := posix2pcre $(PCRE_LIBS) cutil
+CLIBS := $(PCRE_SLIBS) cutil
 
 include $(TEMPLATES)/ada.mk
 
