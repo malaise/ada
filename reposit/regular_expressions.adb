@@ -70,7 +70,8 @@ package body Regular_Expressions is
     Dummy := C_Strncpy (Str(Str'First)'Address, Addr, Str'Length);
     -- Stop at first space if any
     for I in Str'Range loop
-      if Str(I) = ' ' and then I /= Str'First then
+      if Str(I) = Aski.Nul
+      or else (Str(I) = ' ' and then I /= Str'First) then
         return Str(Str'First .. I - 1);
       end if;
     end loop;

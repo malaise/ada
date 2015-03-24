@@ -3,34 +3,46 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+
+#ifdef PCRE2
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
+#include <pcre2posix.h>
+#else
 #include <pcre.h>
+#endif
 
 #include "boolean.h"
-
 #include "posix2pcre.h"
 
 /* Mapping PCRE error codes to POSIX error codes */
+#ifndef PCRE2
 static const int eint[] = {
   0,           /* no error */
   REG_EESCAPE, /* \ at end of pattern */
   REG_EESCAPE, /* \c at end of pattern */
   REG_EESCAPE, /* unrecognized character follows \ */
   REG_BADBR,   /* numbers out of order in {} quantifier */
+  /* 5 */
   REG_BADBR,   /* number too big in {} quantifier */
   REG_EBRACK,  /* missing terminating ] for character class */
   REG_ECTYPE,  /* invalid escape sequence in character class */
   REG_ERANGE,  /* range out of order in character class */
   REG_BADRPT,  /* nothing to repeat */
+  /* 10 */
   REG_BADRPT,  /* operand of unlimited repeat could match the empty string */
   REG_ASSERT,  /* internal error: unexpected repeat */
   REG_BADPAT,  /* unrecognized character after (? */
   REG_BADPAT,  /* POSIX named classes are supported only within a class */
   REG_EPAREN,  /* missing ) */
+  /* 15 */
   REG_ESUBREG, /* reference to non-existent subpattern */
   REG_INVARG,  /* erroffset passed as NULL */
   REG_INVARG,  /* unknown option bit(s) set */
   REG_EPAREN,  /* missing ) after comment */
   REG_ESIZE,   /* parentheses nested too deeply */
+  /* 20 */
   REG_ESIZE,   /* regular expression too large */
   REG_ESPACE,  /* failed to get memory */
   REG_EPAREN,  /* unmatched brackets */
@@ -102,7 +114,6 @@ static const char *const pstring[] = {
   "match failed"                     /* NOMATCH    */
 };
 
-/* Some constants */
 #define POSIX_MALLOC_THRESHOLD 10
 
 /* Compile regex */
@@ -129,10 +140,8 @@ extern int regcomp(regex_t *preg, const char *pattern, int cflags) {
   preg->re_erroffset = erroffset;
 
   if (preg->re_pcre == NULL) return eint[errorcode];
-
   pcre_fullinfo((const pcre *)preg->re_pcre, NULL, PCRE_INFO_CAPTURECOUNT,
                 &(preg->re_nsub));
-
   return 0;
 }
 
@@ -152,6 +161,7 @@ extern int regexec(regex_t *preg, const char *string, size_t nmatch,
 
   /* Init out parameters */
   preg->re_erroffset = (size_t)(-1);
+
 
   if (nmatch > 0) {
     if (nmatch <= POSIX_MALLOC_THRESHOLD) {
@@ -175,7 +185,6 @@ extern int regexec(regex_t *preg, const char *string, size_t nmatch,
 
   rc = pcre_exec((const pcre *)preg->re_pcre, NULL, string + so, (eo - so),
                  0, options, ovector, nmatch * 3);
-
   if (rc == 0) rc = nmatch;
 
   if (rc >= 0) {
@@ -187,20 +196,19 @@ extern int regexec(regex_t *preg, const char *string, size_t nmatch,
     if (allocated_ovector) free(ovector);
     for (; i < nmatch; i++) pmatch[i].rm_so = pmatch[i].rm_eo = -1;
     return 0;
-  } else {
-    if (allocated_ovector) free(ovector);
-    switch(rc) {
-      case PCRE_ERROR_NOMATCH: return REG_NOMATCH;
-      case PCRE_ERROR_NULL: return REG_INVARG;
-      case PCRE_ERROR_BADOPTION: return REG_INVARG;
-      case PCRE_ERROR_BADMAGIC: return REG_INVARG;
-      case PCRE_ERROR_UNKNOWN_NODE: return REG_ASSERT;
-      case PCRE_ERROR_NOMEMORY: return REG_ESPACE;
-      case PCRE_ERROR_MATCHLIMIT: return REG_ESPACE;
-      case PCRE_ERROR_BADUTF8: return REG_INVARG;
-      case PCRE_ERROR_BADUTF8_OFFSET: return REG_INVARG;
-      default: return REG_ASSERT;
-    }
+  }
+  if (allocated_ovector) free(ovector);
+  switch(rc) {
+    case PCRE_ERROR_NOMATCH: return REG_NOMATCH;
+    case PCRE_ERROR_NULL: return REG_INVARG;
+    case PCRE_ERROR_BADOPTION: return REG_INVARG;
+    case PCRE_ERROR_BADMAGIC: return REG_INVARG;
+    case PCRE_ERROR_UNKNOWN_NODE: return REG_ASSERT;
+    case PCRE_ERROR_NOMEMORY: return REG_ESPACE;
+    case PCRE_ERROR_MATCHLIMIT: return REG_ESPACE;
+    case PCRE_ERROR_BADUTF8: return REG_INVARG;
+    case PCRE_ERROR_BADUTF8_OFFSET: return REG_INVARG;
+    default: return REG_ASSERT;
   }
 }
 
@@ -237,13 +245,26 @@ extern size_t regerror(int errcode, const regex_t *preg, char *errbuf,
 extern void regfree(regex_t *preg) {
   pcre_free(preg->re_pcre);
 }
+#endif
+
+/* Return current version, e.g. "10.10" */
+#ifdef PCRE2
+static char version[512];
+extern const char * pcre_version (void) {
+  sprintf (version, "%d.%d", PCRE2_MAJOR, PCRE2_MINOR);
+  return version;
+}
+#endif
 
 /* Memory management */
 extern void * malloc_regex (void) {
-  return malloc (sizeof(regex_t));
+  void * ptr;
+  ptr = malloc (sizeof(regex_t));
+  memset (ptr, 0, sizeof(regex_t));
+  return ptr;
 }
 
 extern void free_regex (void *ptr) {
-  if (ptr != NULL) free(ptr);
+  if (ptr != NULL) free (ptr);
 }
 

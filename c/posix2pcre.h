@@ -1,3 +1,6 @@
+#ifdef PCRE2
+extern const char * pcre_version (void);
+#else
 /* Options */
 #define REG_ICASE     0x0001
 #define REG_NEWLINE   0x0002
@@ -53,6 +56,7 @@ extern int regcomp(regex_t *, const char *, int);
 extern int regexec(regex_t *, const char *, size_t, regmatch_t *, int);
 extern size_t regerror(int, const regex_t *, char *, size_t);
 extern void regfree(regex_t *);
+#endif
 
 /* Memory management */
 extern void * malloc_regex (void);

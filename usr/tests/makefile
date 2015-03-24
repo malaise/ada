@@ -10,19 +10,19 @@ EXES := $(filter-out t_smart_int, $(UNITS))
 CLIBS := x_mng cutil X11
 CLIBS_t_ndbm := cndbm gdbm \
  $(patsubst /usr/lib/$(ARCH)/lib%.so, %, $(wildcard /usr/lib/$(ARCH)/libgdbm_compat.so))
-CLIBS_t_async := posix2pcre pcre
-CLIBS_t_autobus := posix2pcre pcre
-CLIBS_t_byte_to_unicode := posix2pcre pcre
-CLIBS_t_channels := posix2pcre pcre
-CLIBS_t_delta_date := posix2pcre pcre
+CLIBS_t_async := posix2pcre $(PCRE_LIBS)
+CLIBS_t_autobus := posix2pcre $(PCRE_LIBS)
+CLIBS_t_byte_to_unicode := posix2pcre $(PCRE_LIBS)
+CLIBS_t_channels := posix2pcre $(PCRE_LIBS)
+CLIBS_t_delta_date := posix2pcre $(PCRE_LIBS)
 CLIBS_t_evp_digest := ssl crypto
-CLIBS_t_regex_filters := posix2pcre pcre
-CLIBS_t_regexp := posix2pcre pcre
-CLIBS_t_state_machine := posix2pcre pcre
-CLIBS_t_string := posix2pcre pcre
-CLIBS_t_str_error := posix2pcre pcre
-CLIBS_t_xml_gen := posix2pcre pcre
-CLIBS_t_xml_string := posix2pcre pcre
+CLIBS_t_regex_filters := posix2pcre $(PCRE_LIBS)
+CLIBS_t_regexp := posix2pcre $(PCRE_LIBS)
+CLIBS_t_state_machine := posix2pcre $(PCRE_LIBS)
+CLIBS_t_string := posix2pcre $(PCRE_LIBS)
+CLIBS_t_str_error := posix2pcre $(PCRE_LIBS)
+CLIBS_t_xml_gen := posix2pcre $(PCRE_LIBS)
+CLIBS_t_xml_string := posix2pcre $(PCRE_LIBS)
 
 include $(TEMPLATES)/ada.mk
 

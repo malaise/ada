@@ -6,8 +6,8 @@ SUBUNITS := def_enigma-xml
 EXES := anal_freq enigma scrambler_generator def_enigma letterator
 
 CLIBS := cutil
-CLIBS_enigma := posix2pcre pcre
-CLIBS_def_enigma := posix2pcre pcre
+CLIBS_enigma := posix2pcre $(PCRE_LIBS)
+CLIBS_def_enigma := posix2pcre $(PCRE_LIBS)
 
 TXT := Enigma
 DOCOPTS_Enigma := -a toc
