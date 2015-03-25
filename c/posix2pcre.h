@@ -1,6 +1,11 @@
-#ifdef PCRE2
-extern const char * pcre_version (void);
-#else
+/* PCRE0: Before PCRE V7.9, some constants (ex: REG_NOTEMPTY) where not     */
+/*   supported so we need to re-define the whole pcreposix in this case     */
+/* PCRE1: PCRE V7.9 and after, but before PCRE2 (before V10.00), we can use */
+/*   pcreposix and pcre_version                                             */
+/* PCRE2: PCRE2 (V10.00 and after) we use pcreposix but need to define      */
+/*   pcre_version                                                           */
+
+#ifdef PCRE0
 /* Options */
 #define REG_ICASE     0x0001
 #define REG_NEWLINE   0x0002
@@ -56,6 +61,11 @@ extern int regcomp(regex_t *, const char *, int);
 extern int regexec(regex_t *, const char *, size_t, regmatch_t *, int);
 extern size_t regerror(int, const regex_t *, char *, size_t);
 extern void regfree(regex_t *);
+#endif
+
+#ifdef PCRE2
+/* No more pcre_version in PCRE2 */
+extern const char * pcre_version (void);
 #endif
 
 /* Memory management */

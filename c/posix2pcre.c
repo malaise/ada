@@ -4,11 +4,13 @@
 #include <stdio.h>
 #include <string.h>
 
-
-#ifdef PCRE2
+#if defined PCRE2
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
 #include <pcre2posix.h>
+#elif defined PCRE1
+#include <pcre.h>
+#include <pcreposix.h>
 #else
 #include <pcre.h>
 #endif
@@ -17,7 +19,7 @@
 #include "posix2pcre.h"
 
 /* Mapping PCRE error codes to POSIX error codes */
-#ifndef PCRE2
+#ifdef PCRE0
 static const int eint[] = {
   0,           /* no error */
   REG_EESCAPE, /* \ at end of pattern */
