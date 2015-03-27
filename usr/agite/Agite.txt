@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.27
+V17.28
 
 General purpose
 ---------------
@@ -59,6 +59,9 @@ directory.
 By default it is named '.git' but this can be overridden by setting the
 environment variable 'GIT_DIR' to the name (without path) of the Git directory.
 
+GIT_EDITOR::
+Agite sets this variable to the value configured as xref:XConfEditor[editor].
+
 anchor:XConfig[] 
 
 Configuration file
@@ -81,12 +84,12 @@ anchor:XConfEditor[]
 
 editor::
 This defines the command to be launched for editing a file (for example
-with the xref:XEdit[Edit] button). A space and the file name will be
-concatenated to this string.
+with the xref:XEdit[Edit] button).
+A space and the file name will be concatenated to this string.
 +
 NOTE: This command shall start a GUI editor like 'gedit' or a 'xterm -e vi'. +
-The editor should not return until completion, so that Agite
-can properly refresh the status of files when the editor exits.
+The editor should not return until completion, so that Agite detects when the
+editor exits and can properly refresh the status of files.
 
 viewer::
 This defines the command to be launched for viewing a file (for example
@@ -631,7 +634,7 @@ This shows the current branch and path of the root of current worktree.
 .Actions
 
 The possible actions on the list of local branches are the following (all
-these actions except 'Merge' lead to return to the xref:XDir[directory]
+these actions except the creation lead to return to the xref:XDir[directory]
 menu in case of success):
 
 Checkout::
@@ -647,6 +650,17 @@ Click in the 'Merge' button to merge, after confirmation, the
 branch selected in the list into the current branch. +
 If the merge does not lead to 'fast forward', then a new commit is
 automatically generated with the comment "Merge branch \'<branch>'".
+
+TruMerge::
+Click in the 'TruMerge' button to merge, after confirmation, the
+branch selected in the list into the current branch, with no 'fast forward'
+policy. A new commit is always automatically generated with the comment
+"Merge branch \'<branch>'".
+
+Rebase::
+Click in the 'Rebase' button to rebase, after confirmation, the
+branch selected in the list starting from and into the current branch. +
+The rebased branch is automatically checked out by this operation.
 
 CherryPk::
 

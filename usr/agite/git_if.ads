@@ -163,11 +163,14 @@ package Git_If is
   procedure List_Branches (Local : in Boolean;
                            Branches : in out Branches_Mng.List_Type);
 
-  -- Create, rename, delete, merge a branch, return "" if Ok else the error
+  -- Create, rename, delete, merge, rebase a branch,
+  --  return "" if Ok else the error
   function Create_Branch (Name : String) return String;
   function Rename_Branch (Name, New_Name : String) return String;
   function Delete_Branch (Name : String) return String;
-  function Merge_Branch (Name : String; Comment : String) return String;
+  function Merge_Branch (Name : String; Comment : String;
+                         No_Fast_Forward : in Boolean) return String;
+  function Rebase_Branch (From : String; Name : String) return String;
 
   -- Get current user name and email
   function Get_User return String;

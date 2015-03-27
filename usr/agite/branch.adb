@@ -95,12 +95,17 @@ package body Branch is
                               Afpx.Line_List.Is_Empty);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Merge,
                               Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.True_Merge,
+                              Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rebase,
+                              Afpx.Line_List.Is_Empty);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Cherry_Pick,
                               Afpx.Line_List.Is_Empty);
   end Reread;
 
   -- Actions on branches
-  type Action_List is (Create, Rename, Delete, Checkout, Merge, Cherry_Pick);
+  type Action_List is (Create, Rename, Delete, Checkout, Merge, True_Merge,
+                       Rebase, Cherry_Pick);
   function Do_Action (Action : in Action_List) return Boolean is
     Curr_Name, New_Name : As.U.Asu_Us;
     Message, Result : As.U.Asu_Us;
@@ -123,12 +128,17 @@ package body Branch is
     end if;
 
     -- Cancel if not confirm
-    if Action = Delete or else Action = Checkout or else Action = Merge then
+    if Action /= Create and then Action /= Rename
+    and then Action /= Cherry_Pick then
       if not Confirm (
-          (if Action = Delete then "Delete"
-           elsif Action = Checkout then "Checkout"
-           elsif Action = Merge then "Merge"
-           else "???") & " branch",
+          (case Action is
+             when Create | Rename | Cherry_Pick => "???",
+             when Delete     => "Delete",
+             when Checkout   => "Checkout",
+             when Merge      => "Merge",
+             when True_Merge => "True Merge",
+             when Rebase     => "Rebase"
+           ) & " branch",
           Curr_Name.Image) then
         Init;
         Reread (True);
@@ -173,7 +183,21 @@ package body Branch is
         Previous_Branch := Curr_Name;
         Result := As.U.Tus (
            Git_If.Merge_Branch (Curr_Name.Image,
-                                "Merge branch '" & Curr_Name.Image & "'"));
+                                "Merge branch '" & Curr_Name.Image & "'",
+                                False));
+      when True_Merge =>
+        Message := As.U.Tus ("True merging branch " & Curr_Name.Image);
+        Previous_Branch := Curr_Name;
+        Result := As.U.Tus (
+           Git_If.Merge_Branch (Curr_Name.Image,
+                                "Merge branch '" & Curr_Name.Image & "'",
+                                True));
+      when Rebase =>
+        Message := As.U.Tus ("Rebasing branch " & Curr_Name.Image & " from "
+                           & Current_Branch.Image);
+        Previous_Branch := Curr_Name;
+        Result := As.U.Tus (
+           Git_If.Rebase_Branch (Current_Branch.Image, Curr_Name.Image));
       when Cherry_Pick =>
         Previous_Branch := Curr_Name;
         Done := History.Cherry_Pick (Root.Image, Curr_Name.Image);
@@ -208,11 +232,13 @@ package body Branch is
     -- No action on current branch (except Create)
     Branches.Move_At (Afpx.Line_List.Get_Position);
     On_Current := Branches.Access_Current.all = Current_Branch;
-    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rename, On_Current);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Delete, On_Current);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Checkout, On_Current);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Merge, On_Current);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.True_Merge, On_Current);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rebase, On_Current);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Cherry_Pick, On_Current);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rename, On_Current);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Delete, On_Current);
   end List_Change;
 
   -- Handle the Branches
@@ -269,7 +295,17 @@ package body Branch is
                 exit;
               end if;
             when Afpx_Xref.Branches.Merge =>
-              Dummy_Res := Do_Action (Merge);
+              if Do_Action (Merge) then
+                exit;
+              end if;
+            when Afpx_Xref.Branches.True_Merge =>
+              if Do_Action (True_Merge) then
+                exit;
+              end if;
+            when Afpx_Xref.Branches.Rebase =>
+              if Do_Action (Rebase) then
+                exit;
+              end if;
             when Afpx_Xref.Branches.Cherry_Pick =>
               if Do_Action (Cherry_Pick) then
                 exit;

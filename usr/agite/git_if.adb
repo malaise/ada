@@ -1108,13 +1108,17 @@ package body Git_If is
   end Delete_Branch;
 
   -- Merge a branch, return "" if Ok else the error
-  function Merge_Branch (Name : String; Comment : String) return String is
+  function Merge_Branch (Name : String; Comment : String;
+                         No_Fast_Forward : in Boolean) return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
     Cmd.Cat ("merge");
     Cmd.Cat ("-m");
     Cmd.Cat (Strip_Comment (Comment));
+    if No_Fast_Forward then
+      Cmd.Cat ("--no-ff");
+    end if;
     Cmd.Cat (Name);
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
@@ -1125,6 +1129,25 @@ package body Git_If is
       return "";
     end if;
   end Merge_Branch;
+
+  -- Rebase a branch (or current) from From
+  function Rebase_Branch (From : String; Name : String) return String is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("rebase");
+    Cmd.Cat (From);
+    Cmd.Cat (Name);
+    Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      return Err_Flow_1.Str.Image;
+    else
+      return "";
+    end if;
+  end Rebase_Branch;
+
 
   -- Get current user email
   function Get_User return String is

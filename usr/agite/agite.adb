@@ -907,6 +907,9 @@ begin
   -- Now we can reset this env variables for our children
   Sys_Calls.Unsetenv (Afpx_Data_Dir);
 
+  -- And set GIT_EDITR (for rebase -i)
+  Sys_Calls.Setenv ("GIT_EDITOR", Editor.Image);
+
   -- Init Push/Pop dirs
   Init_Dir;
 

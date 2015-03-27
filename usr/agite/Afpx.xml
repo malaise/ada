@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V17.27"/>
+  <Var Name="Version" Value="V17.28"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -1716,8 +1716,7 @@
       <Init Row="0" Col="0">Branches</Init>
     </Field>
     <Field Num="12" Kind="Put" Name="Root">
-      <Geometry Up="${Field_11.Low}+2" Left="1" Height="1"
-                Right="${Screen.Width}-2"/>
+      <Geometry Up="${Field_11.Low}+2" Left="1" Height="1" Right="${LmLeft}-2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
@@ -1728,8 +1727,7 @@
     </Field>
 
     <Field Num="14" Kind="Button" Name="Checkout">
-      <Geometry Up="${Field_12.Low}+2" Left="${LmLeft}" Height="3"
-                Width="${LmWidth}"/>
+      <Geometry Up="1" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="0">Checkout</Init>
     </Field>
@@ -1739,33 +1737,45 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Merge</Init>
     </Field>
-    <Field Num="16" Kind="Button" Name="Cherry_Pick">
+    <Field Num="16" Kind="Button" Name="True_Merge">
       <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="0">TruMerge</Init>
+    </Field>
+    <Field Num="17" Kind="Button" Name="Rebase">
+      <Geometry Up="${Field_16.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Rebase</Init>
+    </Field>
+    <Field Num="18" Kind="Button" Name="Cherry_Pick">
+      <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="0">CherryPk</Init>
     </Field>
 
-    <Field Num="17" Kind="Button" Name="Create">
-      <Geometry Up="${Field_16.Up}+2" Left="${LmLeft}" Height="1"
+    <Field Num="19" Kind="Button" Name="Create">
+      <Geometry Up="${Field_18.Up}+3" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Create</Init>
     </Field>
-    <Field Num="18" Kind="Button" Name="Rename">
-      <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}" Height="1"
+    <Field Num="20" Kind="Button" Name="Rename">
+      <Geometry Up="${Field_19.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Rename</Init>
     </Field>
-    <Field Num="19" Kind="Button" Name="Delete">
-      <Geometry Up="${Field_18.Low}+2" Left="${LmLeft}" Height="1"
+    <Field Num="21" Kind="Button" Name="Delete">
+      <Geometry Up="${Field_20.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Delete</Init>
     </Field>
 
-    <Field Num="20" Kind="Button" Name="Back">
+    <Field Num="22" Kind="Button" Name="Back">
       <Geometry Low="${List.Low}" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
