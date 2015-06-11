@@ -33,10 +33,10 @@ msd
 # Substrac to s if entry, add to s if leave, switch oper
 s pushr swap [ - ] [ + ] e pushr dup ~ e popr etfi call s popr
 
-# Exit whe no more arg
+# Exit when no more arg
 ssize 0 = ifret
 
-# Loop
+# End Loop
 L pushr retacal ] L copyr call
 
 # Convert 8.0 - s and check validity (0 <= s < 24)
