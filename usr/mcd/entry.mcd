@@ -2,20 +2,14 @@
 
 # Arg error
 [
-"Error. Usage: entry <entry_time> [ { <leave_time> <entry_time> } ]"
-putl "<time> ::= h[.mn]    and times must be crescent" putl
+"Error. Usage: entry <entry_time> { [ <leave_time> <entry_time> ] | [ <delta> ] }"
+putl 
+"<delta> ::= :~<time>:" putl
+"<time> ::= h[.mn]    and times must be crescent" putl
 ssize popn 1 setexit retall
 ] E popr
 
-# Check stack size is odd
-ssize 2 % 0 = E pushr ifcall
-
-# Init sum, current oper (entrye=true, leave=false)
-0.0 s popr
-true e popr
-24.0 p popr
-
-# Loop to parse arguments
+# Function to check a time (tos), leave it at tos if OK
 [
 # Arg must be int or real, 0.0 <= Arg < 24 and frac < 0.60
 dup isinte [ toreal ] ifcall
@@ -23,21 +17,49 @@ dup isreal ~ E pushr ifcall
 dup isneg E pushr ifcall
 dup 24.0 >= E pushr ifcall
 dup frac 0.60 >= E pushr ifcall
+] C popr
 
-# Current time must be < previous
-dup p pushr >= E pushr ifcall
-dup p popr
+# Init sum, current oper (entry=true, leave=false)
+# Sum is the negative sum of all the deltas
+0.0 s popr
+true e popr
+24.0 p popr
+
+# Loop to parse arguments
+[
+
+# Check if arg is a delta
+false d popr dup isstr 
+[ true d popr 
+# If yes, check after a leave
+e pushr ~ E pushr ifcall
+# Check and remove leading '~'
+dup 1 1 strsub "~" /= E pushr ifcall dup strlen 2 swap strsub
+# and locate '.' to convert into int or real 
+dup 1 "." strloc 0 = [ strinte ] [ strreal ] ifte call
+] ifcall
+
+# Check time
+C pushr call
+
+# Current time must be < previous if not a delta
+d pushr ~ [ dup p pushr >= E pushr ifcall dup p popr ] ifcall
 
 # Convert dms to real
 msd
-# Substrac to s if entry, add to s if leave, switch oper
-s pushr swap [ - ] [ + ] e pushr dup ~ e popr etfi call s popr
+# Either substract to s if entry, add to s if leave, switch oper
+# Or add delta value
+d pushr ~ [ s pushr swap [ - ] [ + ] e pushr dup ~ e popr etfi call s popr ]
+[ s pushr swap - s popr ] ifte call
 
 # Exit when no more arg
 ssize 0 = ifret
 
 # End Loop
 L pushr retacal ] L copyr call
+
+# Check not finishing with a leave
+e pushr E pushr ifcall
 
 # Convert 8.0 - s and check validity (0 <= s < 24)
 8.0 s pushr - s copyr 0.0 < s pushr 24.0 >= |
