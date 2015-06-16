@@ -35,7 +35,7 @@ pushle 1 +
 " 12" "Aveyron"                 S pushr call
 " 13" "Bouches du Rhône"        S pushr call
 " 14" "Calvados"                S pushr call
-" 15" "Cantal Alpes"            S pushr call
+" 15" "Cantal"                  S pushr call
 " 16" "Charente"                S pushr call
 " 17" "Charente Maritime"       S pushr call
 " 18" "Cher"                    S pushr call
@@ -46,7 +46,7 @@ pushle 1 +
 " 22" "Cotes d'Armor"           S pushr call
 " 23" "Creuse"                  S pushr call
 " 24" "Dordogne"                S pushr call     
-" 25" "Doubs Alpes"             S pushr call
+" 25" "Doubs"                   S pushr call
 " 26" "Drôme Maritimes"         S pushr call
 " 27" "Eure"                    S pushr call
 " 28" "Eure et Loire"           S pushr call
@@ -140,10 +140,10 @@ D pushr retacal ] D popr
 [
 # Take a random number from 1 to N
 rnd N pushr toreal * trunc 1 +
-# Put its Num during 3 seconds
+# Put its Num during 4 seconds
 dup n swap pusha put ": " put 4.0 sleep
-# Put its Name during 3 seconds
-N swap pusha putl 3.0 sleep
+# Put its Name during 1 seconds
+N swap pusha putl 1.0 sleep
 # Loop
 M pushr retacal ] M copyr call
 
