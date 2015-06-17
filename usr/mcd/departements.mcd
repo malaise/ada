@@ -1,6 +1,8 @@
 # Select a random departement number
 # 1..19 2A 2B 21..95 971..974 976
 # Put it for some seconds then put its name during some seconds
+# Delay before putting the answer and pause between questions
+4.0 a popr 1.0 p popr
 
 # Load the numbers and names
 
@@ -24,58 +26,58 @@ pushle 1 +
 " 01" "Ain"                     S pushr call
 " 02" "Aisne"                   S pushr call
 " 03" "Alliers"                 S pushr call
-" 04" "Alpes de Haute Provence" S pushr call
-" 05" "Hautes Alpes"            S pushr call
-" 06" "Alpes Maritimes"         S pushr call
+" 04" "Alpes-de-Haute-Provence" S pushr call
+" 05" "Hautes-Alpes"            S pushr call
+" 06" "Alpes-Maritimes"         S pushr call
 " 07" "Ardèche"                 S pushr call
 " 08" "Ardennes"                S pushr call
 " 09" "Ariège"                  S pushr call
 " 10" "Aube"                    S pushr call
 " 11" "Aude"                    S pushr call
 " 12" "Aveyron"                 S pushr call
-" 13" "Bouches du Rhône"        S pushr call
+" 13" "Bouches-du-Rhône"        S pushr call
 " 14" "Calvados"                S pushr call
 " 15" "Cantal"                  S pushr call
 " 16" "Charente"                S pushr call
-" 17" "Charente Maritime"       S pushr call
+" 17" "Charente-Maritime"       S pushr call
 " 18" "Cher"                    S pushr call
 " 19" "Corrèze"                 S pushr call
-" 2A" "Haute Corse"             S pushr call
-" 2B" "Corse du Sud"            S pushr call
-" 21" "Côte d'Or"               S pushr call
-" 22" "Cotes d'Armor"           S pushr call
+" 2A" "Corse-du-Sud"            S pushr call
+" 2B" "Haute-Corse"             S pushr call
+" 21" "Côte-d'Or"               S pushr call
+" 22" "Cotes-d'Armor"           S pushr call
 " 23" "Creuse"                  S pushr call
 " 24" "Dordogne"                S pushr call     
 " 25" "Doubs"                   S pushr call
-" 26" "Drôme Maritimes"         S pushr call
+" 26" "Drôme"                   S pushr call
 " 27" "Eure"                    S pushr call
-" 28" "Eure et Loire"           S pushr call
+" 28" "Eure-et-Loir"            S pushr call
 " 29" "Finistère"               S pushr call
 " 30" "Gard"                    S pushr call
-" 31" "Haute Garonne"           S pushr call
+" 31" "Haute-Garonne"           S pushr call
 " 32" "Gers"                    S pushr call
 " 33" "Gironde"                 S pushr call
 " 34" "Hérault"                 S pushr call
-" 35" "Isle et Villaine"        S pushr call
+" 35" "Ille-et-Vilaine"         S pushr call
 " 36" "Indre"                   S pushr call
-" 37" "Indre et Loire"          S pushr call
+" 37" "Indre-et-Loire"          S pushr call
 " 38" "Isère"                   S pushr call
 " 39" "Jura"                    S pushr call
 " 40" "Landes"                  S pushr call
-" 41" "Loir et Cher"            S pushr call
+" 41" "Loir-et-Cher"            S pushr call
 " 42" "Loire"                   S pushr call
-" 43" "Haute Loire"             S pushr call
-" 44" "Loire Atlantique"        S pushr call
+" 43" "Haute-Loire"             S pushr call
+" 44" "Loire-Atlantique"        S pushr call
 " 45" "loiret"                  S pushr call
 " 46" "Lot"                     S pushr call
-" 47" "Lot et Garonne"          S pushr call
+" 47" "Lot-et-Garonne"          S pushr call
 " 48" "Lozère"                  S pushr call
-" 49" "Maine et Loire"          S pushr call
+" 49" "Maine-et-Loire"          S pushr call
 " 50" "Manche"                  S pushr call
 " 51" "Marne"                   S pushr call
-" 52" "Haute Marne"             S pushr call
+" 52" "Haute-Marne"             S pushr call
 " 53" "Mayenne"                 S pushr call
-" 54" "Meurthe et Moselle"      S pushr call
+" 54" "Meurthe-et-Moselle"      S pushr call
 " 55" "Meuse"                   S pushr call
 " 56" "Morbillan"               S pushr call
 " 57" "Moselle"                 S pushr call
@@ -83,40 +85,40 @@ pushle 1 +
 " 59" "Nord"                    S pushr call
 " 60" "Oise"                    S pushr call
 " 61" "Orne"                    S pushr call
-" 62" "Pas de Calais"           S pushr call
-" 63" "Puy de Dôme"             S pushr call
-" 64" "Pyrénées Atlantiques"    S pushr call
-" 65" "Hautes Pyrénées"         S pushr call
-" 66" "Pyrénées Orientales"     S pushr call
-" 67" "Bas Rhin"                S pushr call
-" 68" "Haut Rhin"               S pushr call
+" 62" "Pas-de-Calais"           S pushr call
+" 63" "Puy-de-Dôme"             S pushr call
+" 64" "Pyrénées-Atlantiques"    S pushr call
+" 65" "Hautes-Pyrénées"         S pushr call
+" 66" "Pyrénées-Orientales"     S pushr call
+" 67" "Bas-Rhin"                S pushr call
+" 68" "Haut-Rhin"               S pushr call
 " 69" "Rhône"                   S pushr call
-" 70" "Haute Saône"             S pushr call
-" 71" "Saône et Loire"          S pushr call
+" 70" "Haute-Saône"             S pushr call
+" 71" "Saône-et-Loire"          S pushr call
 " 72" "Sarthe"                  S pushr call
 " 73" "Savoie"                  S pushr call
-" 74" "Haute Savoie"            S pushr call
+" 74" "Haute-Savoie"            S pushr call
 " 75" "Paris"                   S pushr call
-" 76" "Seine Maritime"          S pushr call
-" 77" "Seine et Marne"          S pushr call
-" 78" "Yvelinnes"               S pushr call
-" 79" "Deux Sèvres"             S pushr call
+" 76" "Seine-Maritime"          S pushr call
+" 77" "Seine-et-Marne"          S pushr call
+" 78" "Yvelines"                S pushr call
+" 79" "Deux-Sèvres"             S pushr call
 " 80" "Somme"                   S pushr call
 " 81" "Tarn"                    S pushr call
-" 82" "Tarn et Garonne"         S pushr call
+" 82" "Tarn-et-Garonne"         S pushr call
 " 83" "Var"                     S pushr call
 " 84" "Vaucluse"                S pushr call
 " 85" "Vendée"                  S pushr call
 " 86" "Vienne"                  S pushr call
-" 87" "Haute Vienne"            S pushr call
+" 87" "Haute-Vienne"            S pushr call
 " 88" "Vosges"                  S pushr call
 " 89" "Yonne"                   S pushr call
 " 90" "Territoire de Belfort"   S pushr call
 " 91" "Essonne"                 S pushr call
-" 92" "Hauts de Seine"          S pushr call
-" 93" "Seine Saint Denis"       S pushr call
-" 94" "Val de Marne"            S pushr call
-" 95" "Val d'Oise"              S pushr call
+" 92" "Hauts-de-Seine"          S pushr call
+" 93" "Seine-Saint-Denis"       S pushr call
+" 94" "Val-de-Marne"            S pushr call
+" 95" "Val-d'Oise"              S pushr call
 "971" "Guadeloupe"              S pushr call
 "972" "Martinique"              S pushr call
 "973" "Guyanne"                 S pushr call
@@ -124,7 +126,7 @@ pushle 1 +
 "976" "Mayotte"                 S pushr call
 1 - N popr
 
-# Dump; Index Number Name (used for debug)
+# Dump: Index Number Name (used for debug)
 3 format
 [
 dup put " " put dup n swap pusha put " " put dup N swap pusha putl
@@ -140,10 +142,10 @@ D pushr retacal ] D popr
 [
 # Take a random number from 1 to N
 rnd N pushr toreal * trunc 1 +
-# Put its Num during 4 seconds
-dup n swap pusha put ": " put 4.0 sleep
-# Put its Name during 1 seconds
-N swap pusha putl 1.0 sleep
+# Put its Num during a seconds
+dup n swap pusha put ": " put a pushr sleep
+# Put its Name during p seconds
+N swap pusha putl p pushr sleep
 # Loop
 M pushr retacal ] M copyr call
 
