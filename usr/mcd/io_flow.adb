@@ -8,6 +8,7 @@ package body Io_Flow is
     Unknown,
     Stdio_Tty,
     Stdio_Not_Tty,
+    File,
     Udp,
     Tcp,
     Abus);
@@ -49,11 +50,14 @@ package body Io_Flow is
   -- Async Stdin
   function Stdin_Cb (Str : in String) return Boolean;
 
-  -- Input flow when stdin is not a tty
+  -- File name
+  File_Name : As.U.Asu_Us;
+
+  -- Input flow when stdin is not a tty or when file
   Input_Flow : Text_Line.File_Type;
 
   ----------------------------------------------------
-  -- Init fifo, tcp, udp or stdin (async or not)
+  -- Init fifo, tcp, udp, file or stdin (async or not)
   ----------------------------------------------------
   -- Default init when sync stdin or forced
   procedure Init_Default is
@@ -143,6 +147,26 @@ package body Io_Flow is
         & Ip_Addr.Image (Send_Soc.Get_Destination_Port)));
     end if;
 
+    -- Get file name if set
+    if Argument.Is_Set (1, "f") then
+      -- Parse TCP port
+      File_Name := As.U.Tus (Argument.Get_Parameter (1, "f"));
+      if File_Name.Is_Null then
+        Async_Stdin.Put_Line_Err ("Invalid file name.");
+        raise Init_Error;
+      end if;
+      begin
+        Input_Flow.Open_All (Text_Line.In_File, File_Name.Image);
+      exception
+        when others =>
+          Async_Stdin.Put_Line_Err ("Cannot open input file "
+                                  & File_Name.Image);
+          raise Init_Error;
+      end;
+      Debug.Log (Debug.Flow, "Init on file " & File_Name.Image);
+      Io_Mode := File;
+    end if;
+
     -- If no arg => Stdin
     if Io_Mode /= Unknown then
       if Argument.Get_Nbre_Arg /= 1 then
@@ -198,9 +222,10 @@ package body Io_Flow is
     Len : Natural;
     use type Event_Mng.Out_Event_List;
   begin
-    if Io_Mode = Stdio_Not_Tty then
+    if Io_Mode = Stdio_Not_Tty
+    or else Io_Mode = File then
       Input_Data.Set_Null;
-      -- Get next non empty line from Stdin (not a tty)
+      -- Get next non empty line from Stdin (not a tty) or File
       loop
         -- Get next line
         Input_Data := Input_Flow.Get;
@@ -236,7 +261,7 @@ package body Io_Flow is
         end if;
       end loop;
     else
-      -- Get next data on async stdin, socket
+      -- Get next data set by callback of async stdin, socket
       loop
         Input_Data.Set_Null;
         Debug.Log (Debug.Flow, "Waiting on bus/socket/tty");
@@ -271,10 +296,10 @@ package body Io_Flow is
     Debug.Log (Debug.Flow, "Next_Line -> " & Str.Image);
   end Next_Line;
 
-  ----------------------------------------------------
-  -- Pet data on fifo, tcp, udp or stdin (async or not)
-  ----------------------------------------------------
-  -- Send one message on socket or Autobus
+  -------------------------------
+  -- Send data on bus, tcp or udp
+  -------------------------------
+  -- Send one message on Autobus, Tcp or Udp socket
   Message_To_Put : Io_Data.Message_Type;
   procedure Send_Message (Str : in String) is
     Active : Boolean;
@@ -303,7 +328,7 @@ package body Io_Flow is
     case Io_Mode is
       when Unknown =>
         null;
-      when Stdio_Tty | Stdio_Not_Tty =>
+      when Stdio_Tty | Stdio_Not_Tty | File =>
         -- Put on stdout (tty or not)
         begin
           Async_Stdin.Put_Out (Str);
@@ -351,6 +376,9 @@ package body Io_Flow is
         -- Reset tty blocking
         Async_Stdin.Set_Async;
         Async_Stdin.Flush_Out;
+      when File =>
+        -- Close input file
+        Input_Flow.Close_All;
       when Stdio_Not_Tty =>
         -- Close input flow
         Input_Flow.Close;
