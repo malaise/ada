@@ -47,7 +47,7 @@ pushle 1 +
 " 21" "Côte-d'Or"               S pushr call
 " 22" "Cotes-d'Armor"           S pushr call
 " 23" "Creuse"                  S pushr call
-" 24" "Dordogne"                S pushr call     
+" 24" "Dordogne"                S pushr call
 " 25" "Doubs"                   S pushr call
 " 26" "Drôme"                   S pushr call
 " 27" "Eure"                    S pushr call
@@ -133,7 +133,7 @@ dup put " " put dup n swap pusha put " " put dup N swap pusha putl
 # Stop loop after putting index N
 dup N pushr = ifret
 # Increment index
-1 + 
+1 +
 D pushr retacal ] D popr
 # Call dump if debug
 # 1 D pushr call pop
