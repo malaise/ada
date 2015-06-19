@@ -3,7 +3,7 @@
 # Arg error
 [
 "Error. Usage: entry <entry_time> { [ <leave_time> <entry_time> ] | [ <delta> ] }"
-putl 
+putl
 "<delta> ::= :~<time>:" putl
 "<time> ::= h[.mn]    and times must be crescent" putl
 ssize popn 1 setexit retall
@@ -29,13 +29,13 @@ true e popr
 [
 
 # Check if arg is a delta
-false d popr dup isstr 
-[ true d popr 
+false d popr dup isstr
+[ true d popr
 # If yes, check after a leave
 e pushr ~ E pushr ifcall
 # Check and remove leading '~'
 dup 1 1 strsub "~" /= E pushr ifcall dup strlen 2 swap strsub
-# and locate '.' to convert into int or real 
+# and locate '.' to convert into int or real
 dup 1 "." strloc 0 = [ strinte ] [ strreal ] ifte call
 ] ifcall
 
