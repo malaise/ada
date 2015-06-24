@@ -168,6 +168,8 @@ package Mcd_Mng is
    -- Miscelaneous
    Nop,
    Getenv,
+   Inkey,
+   Instr,
    Readfile,
    Readlins,
    Rnd,
@@ -219,7 +221,7 @@ package Mcd_Mng is
   function Is_Register (C : in Character) return Boolean;
 
   Invalid_Argument, Argument_Mismatch, Invalid_Register, Empty_Register,
-  Empty_Stack, String_Len, Compute_Error, File_Error: exception;
+  Empty_Stack, String_Len, Compute_Error, File_Error : exception;
 
 end Mcd_Mng;
 

@@ -1,6 +1,6 @@
 with Ada.Text_Io;
 with Normal, Mixed_Str, Str_Util;
-with Inte_Io, Real_Io, Bool_Io, Io_Flow;
+with Inte_Io, Real_Io, Bool_Io;
 separate (Mcd_Mng)
 
 package body Ios is
@@ -91,6 +91,22 @@ package body Ios is
   begin
     Io_Flow.New_Line;
   end New_Line;
+
+  function Get_Key return Item_Rec is
+    Res : Item_Rec(Chrs);
+    Char : Character;
+  begin
+    Char := Io_Flow.Get_Key;
+    Res.Val_Text := As.U.Tus (Char);
+    return Res;
+  end Get_Key;
+
+  function Get_Str return Item_Rec  is
+    Res : Item_Rec(Chrs);
+  begin
+    Res.Val_Text := As.U.Tus (Io_Flow.Get_Str);
+    return Res;
+  end Get_Str;
 
   function Strarbi (S : Item_Rec) return Item_Rec is
     Len : Natural;

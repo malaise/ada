@@ -56,6 +56,9 @@ package body Io_Flow is
   -- Input flow when stdin is not a tty or when file
   Input_Flow : Text_Line.File_Type;
 
+  -- Stdin flow (when Input_Flow is not stdin)
+  Stdin_Flow : Text_Line.File_Type;
+
   ----------------------------------------------------
   -- Init fifo, tcp, udp, file or stdin (async or not)
   ----------------------------------------------------
@@ -63,8 +66,13 @@ package body Io_Flow is
   procedure Init_Default is
   begin
     Io_Mode := Stdio_Not_Tty;
-    Input_Flow.Open (Text_Line.In_File, Sys_Calls.Stdin);
+    Input_Flow.Open_All (Text_Line.In_File);
   end Init_Default;
+
+  function Is_Stdio return Boolean is
+  begin
+    return Io_Mode = Stdio_Tty or else Io_Mode = Stdio_Not_Tty;
+  end Is_Stdio;
 
   procedure Init (Default : in Boolean := False) is
     use type Sys_Calls.File_Desc_Kind_List;
@@ -173,8 +181,6 @@ package body Io_Flow is
         Async_Stdin.Put_Line_Err ("Too many arguments.");
         raise Init_Error;
       end if;
-      -- Mode is set
-      return;
     else
       if Argument.Get_Nbre_Arg /= 0 then
         Async_Stdin.Put_Line_Err ("Invalid argument.");
@@ -182,19 +188,26 @@ package body Io_Flow is
       end if;
     end if;
 
-    -- Stdin
-    Debug.Log (Debug.Flow, "Init on stdio");
-    -- Set stdin/out asynchronous if it is a Tty
-    if Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin)  = Sys_Calls.Tty
-    and then Sys_Calls.File_Desc_Kind (Sys_Calls.Stdout) = Sys_Calls.Tty then
-      Io_Mode := Stdio_Tty;
-      Async_Stdin.Set_Async (Stdin_Cb'Access, 0);
-      Debug.Log (Debug.Flow, "Stdio is a tty");
-    else
-      Init_Default;
-      Debug.Log (Debug.Flow, "Stdio is a not a tty");
+    if Io_Mode = Unknown then
+      -- Stdin
+      Debug.Log (Debug.Flow, "Init on stdio");
+      -- Set stdin/out asynchronous if it is a Tty
+      if Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin)  = Sys_Calls.Tty
+      and then Sys_Calls.File_Desc_Kind (Sys_Calls.Stdout) = Sys_Calls.Tty then
+        Io_Mode := Stdio_Tty;
+        Async_Stdin.Set_Async (Stdin_Cb'Access, 0);
+        Debug.Log (Debug.Flow, "Stdio is a tty");
+      else
+        Init_Default;
+        Debug.Log (Debug.Flow, "Stdio is a not a tty");
+      end if;
     end if;
 
+    if not Is_Stdio then
+      -- Open input stream
+      Stdin_Flow.Open_All (Text_Line.In_File);
+      Debug.Log (Debug.Flow, "Stdin stream opened");
+    end if;
   end Init;
 
   function Is_Interactive return Boolean  is
@@ -206,10 +219,10 @@ package body Io_Flow is
     end if;
   end Is_Interactive;
 
-   procedure Clear_Interactive is
-   begin
-     if Io_Mode /= Stdio_Tty then
-       raise Init_Error;
+  procedure Clear_Interactive is
+  begin
+    if Io_Mode /= Stdio_Tty then
+      raise Init_Error;
     end if;
     Async_Stdin.Clear;
   end Clear_Interactive;
@@ -358,6 +371,9 @@ package body Io_Flow is
     end case;
   end Put;
 
+  -------------------------------------------
+  -- Input / Output of text in stdin / stdout
+  -------------------------------------------
   procedure New_Line is
   begin
     Put_Line ("");
@@ -369,8 +385,86 @@ package body Io_Flow is
     Put (Str & Aski.Lf);
   end Put_Line;
 
+  -- Callback to get text on stdin
+  Stdin_Data : As.U.Asu_Us;
+  function Get_Stdin_Cb (Str : in String) return Boolean is
+  begin
+    if Str = "" then
+      -- Error or end
+      Stdin_Data := As.U.Tus (Str);
+      return True;
+    else
+      Stdin_Data := As.U.Tus (Str);
+    end if;
+    -- Prevent overwritting of Stdin_Data by freezing Stdin
+    Async_Stdin.Activate (False);
+    Debug.Log (Debug.Flow, "Get_Stdin_Cb set >" & Stdin_Data.Image & "<");
+    return True;
+  end Get_Stdin_Cb;
+
+  -- Wait for Stdin data
+  procedure Wait_Stdin is
+    Evt : Event_Mng.Out_Event_List;
+    use type Event_Mng.Out_Event_List;
+  begin
+    loop
+      Stdin_Data.Set_Null;
+      Debug.Log (Debug.Flow, "Waiting on stdin");
+      Evt := Event_Mng.Wait (Event_Mng.Infinite_Ms);
+
+      if Evt = Event_Mng.Fd_Event
+      and then not Stdin_Data.Is_Null then
+        -- New string
+        exit;
+      elsif Evt = Event_Mng.Signal_Event then
+        -- Give up on signal
+        Stdin_Data.Set_Null;
+        Debug.Log (Debug.Flow, "Got signal");
+        exit;
+      else
+        Debug.Log (Debug.Flow, "Got event " & Evt'Img);
+      end if;
+    end loop;
+    -- Restore default behaviour for stdin
+    Async_Stdin.Set_Async;
+    Async_Stdin.Activate (True);
+    if Stdin_Data.Is_Null then
+      -- Signal event
+      raise End_Error;
+    end if;
+  end Wait_Stdin;
+
+  function Get_Key return Character is
+    Char : Character;
+  begin
+    if Is_Stdio then
+      raise In_Stdin;
+    end if;
+    Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 1, 1);
+    Wait_Stdin;
+    Char := Stdin_Data.Element (1);
+Debug.Log (Debug.Flow, "Got " & Char);
+    return Char;
+  end Get_Key;
+
+  function Get_Str return String is
+  begin
+    if Is_Stdio then
+      raise In_Stdin;
+    end if;
+    Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 0, 1);
+    Wait_Stdin;
+Debug.Log (Debug.Flow, "Got " & Stdin_Data.Image);
+    return Stdin_Data.Image;
+  end Get_Str;
+
   procedure Close is
   begin
+    if not Is_Stdio then
+      -- Reset stdin to echo
+      Stdin_Flow.Close_All;
+      Debug.Log (Debug.Flow, "Stdin stream closed");
+    end if;
     case Io_Mode is
       when Stdio_Tty =>
         -- Reset tty blocking
@@ -381,7 +475,7 @@ package body Io_Flow is
         Input_Flow.Close_All;
       when Stdio_Not_Tty =>
         -- Close input flow
-        Input_Flow.Close;
+        Input_Flow.Close_All;
         Async_Stdin.Flush_Out;
       when Abus =>
         Bus_Subscriber.Reset;

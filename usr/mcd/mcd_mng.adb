@@ -1,5 +1,5 @@
 with Random, As.U.Utils, Event_Mng;
-with Debug, Input_Dispatcher, Mcd_Parser;
+with Debug, Input_Dispatcher, Mcd_Parser, Io_Flow;
 pragma Elaborate_All (Random);
 package body Mcd_Mng is
 
@@ -214,6 +214,9 @@ package body Mcd_Mng is
     procedure Put (Item : in Item_Rec);
     procedure Put_Line (Item : in Item_Rec);
     procedure New_Line;
+
+    function Get_Key return Item_Rec;
+    function Get_Str return Item_Rec;
 
     function Strarbi (S : Item_Rec) return Item_Rec;
     function Strfrac (S : Item_Rec) return Item_Rec;
@@ -1093,6 +1096,12 @@ package body Mcd_Mng is
           -- push getenv(A)
           Pop(A); Push (Misc.Getenv(A));
           S := A;
+        when Inkey =>
+          -- push Get_Key
+          Push (Ios.Get_Key);
+        when Instr =>
+          -- push Get_Str
+          Push (Ios.Get_Str);
         when Readfile =>
           -- read content of A as string
           Pop(A);
@@ -1143,6 +1152,9 @@ package body Mcd_Mng is
 
       end case;
     end if;
+  exception
+    when Io_Flow.End_Error =>
+      Handle_Break;
   end New_Item;
 
   function Check_Empty_Stack return Boolean is

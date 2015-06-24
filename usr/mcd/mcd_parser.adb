@@ -201,6 +201,8 @@ package body Mcd_Parser is
    -- Miscelaneous
    Nop      => (Nosy, "no operation                                      ", As.U.Asu_Null, False),
    Getenv   => (Nosy, "push getenv(A) or False                           ", As.U.Asu_Null, False),
+   Inkey    => (Nosy, "push the key pressed on stdin                     ", As.U.Asu_Null, False),
+   Instr    => (Nosy, "push the string entered on stdin                  ", As.U.Asu_Null, False),
    Readfile => (Nosy, "push content of file as a string or False         ", As.U.Asu_Null, False),
    Readlins => (Nosy, "push all lines of file (first on top) then the    ",
      As.U.Tus ("number of lines read, or False"), False),

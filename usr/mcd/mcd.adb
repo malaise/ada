@@ -92,6 +92,8 @@ begin
         Error ("Initialization error");
       when Io_Flow.Communication_Error =>
         Error ("Communication error");
+      when Io_Flow.In_Stdin =>
+        Error ("Cannot read stdin while flow is stdin");
       when Mcd_Parser.Parsing_Error =>
         Error ("Parsing error");
     end;
