@@ -47,17 +47,17 @@ package body Io_Flow is
                      Message : in String);
   Bus_Observer : aliased Bus_Observer_Type;
 
-  -- Async Stdin
+  -- Async Stdin for input flow
   function Stdin_Cb (Str : in String) return Boolean;
+
+  -- Async Stdin for Get
+  function Get_Stdin_Cb (Str : in String) return Boolean;
 
   -- File name
   File_Name : As.U.Asu_Us;
 
   -- Input flow when stdin is not a tty or when file
   Input_Flow : Text_Line.File_Type;
-
-  -- Stdin flow (when Input_Flow is not stdin)
-  Stdin_Flow : Text_Line.File_Type;
 
   ----------------------------------------------------
   -- Init fifo, tcp, udp, file or stdin (async or not)
@@ -178,6 +178,7 @@ package body Io_Flow is
     -- If no arg => Stdin
     if Io_Mode /= Unknown then
       if Argument.Get_Nbre_Arg /= 1 then
+        -- At most one mode
         Async_Stdin.Put_Line_Err ("Too many arguments.");
         raise Init_Error;
       end if;
@@ -204,9 +205,8 @@ package body Io_Flow is
     end if;
 
     if not Is_Stdio then
-      -- Open input stream
-      Stdin_Flow.Open_All (Text_Line.In_File);
-      Debug.Log (Debug.Flow, "Stdin stream opened");
+      -- Open stdin asynchronous
+      Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 1, 1);
     end if;
   end Init;
 
@@ -426,7 +426,6 @@ package body Io_Flow is
       end if;
     end loop;
     -- Restore default behaviour for stdin
-    Async_Stdin.Set_Async;
     Async_Stdin.Activate (True);
     if Stdin_Data.Is_Null then
       -- Signal event
@@ -440,10 +439,9 @@ package body Io_Flow is
     if Is_Stdio then
       raise In_Stdin;
     end if;
-    Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 1, 1);
     Wait_Stdin;
+    Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 1, 1);
     Char := Stdin_Data.Element (1);
-Debug.Log (Debug.Flow, "Got " & Char);
     return Char;
   end Get_Key;
 
@@ -454,15 +452,14 @@ Debug.Log (Debug.Flow, "Got " & Char);
     end if;
     Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 0, 1);
     Wait_Stdin;
-Debug.Log (Debug.Flow, "Got " & Stdin_Data.Image);
-    return Stdin_Data.Image;
+    -- Strip trailing Lf if any
+    return Async_Stdin.Strip_Last_Control (Stdin_Data.Image);
   end Get_Str;
 
   procedure Close is
   begin
     if not Is_Stdio then
       -- Reset stdin to echo
-      Stdin_Flow.Close_All;
       Debug.Log (Debug.Flow, "Stdin stream closed");
     end if;
     case Io_Mode is
@@ -501,6 +498,10 @@ Debug.Log (Debug.Flow, "Got " & Stdin_Data.Image);
       when others =>
         null;
     end case;
+    if not Is_Stdio then
+      -- Restore normal stdin
+      Async_Stdin.Set_Async;
+    end if;
   end Close;
 
   ----------------------------------------------------
