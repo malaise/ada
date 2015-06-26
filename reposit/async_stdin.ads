@@ -19,7 +19,8 @@ package Async_Stdin is
   --  a Fd_Event if User_Callback returns True
   procedure Set_Async (User_Callback : in User_Callback_Access := null;
                        Max_Chars : in Max_Chars_Range := 1;
-                       First_Col : in Max_Chars_Range := 1);
+                       First_Col : in Max_Chars_Range := 1;
+                       Echo      : in Boolean := True);
   function Is_Set return Boolean;
 
   -- Activate asynchronous data to trigger callback
@@ -42,7 +43,8 @@ package Async_Stdin is
   -- Raise Io_Error in case of error
   -- Return empty string in case of event (timer, signal....)
   function Get_Line (Max_Chars : Max_Chars_Range := 0;
-                     First_Col : Max_Chars_Range := 1) return String;
+                     First_Col : Max_Chars_Range := 1;
+                     Echo      : Boolean := True) return String;
 
   -- Strip last character of Str if it is a control char (i.e. before space
   --  in ASCII table)

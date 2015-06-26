@@ -5,6 +5,8 @@ package body Async_Stdin is
 
   -- The user callback
   Cb : User_Callback_Access := null;
+  -- Do we echo inputs
+  Echo : Boolean := True;
   -- Max len of result
   Max : Max_Chars_Range := 1;
   -- First column
@@ -236,10 +238,12 @@ package body Async_Stdin is
     -- Copy Buf and move to end of line
     procedure Update is
     begin
-      Console.Set_Col (First_Col);
-      Console.Erase_End_Line;
       Txt := History.Buf;
-      Sys_Calls.Put_Output (Language.Unicode_To_String (Uu.To_Array (Txt)));
+      if Echo then
+        Console.Set_Col (First_Col);
+        Console.Erase_End_Line;
+        Sys_Calls.Put_Output (Language.Unicode_To_String (Uu.To_Array (Txt)));
+      end if;
       Ind := Uu.Length (Txt) + 1;
     end Update;
 
@@ -288,12 +292,14 @@ package body Async_Stdin is
       end if;
       -- Move 1 right and redisplay
       Ind := Ind + 1;
-      Sys_Calls.Put_Output (Language.Unicode_To_String (
-                             Uu.Slice (Txt, Ind - 1, Uu.Length(Txt))));
-      -- Move cursor at proper position
-      for I in 1 .. Uu.Length(Txt) - Ind + 1 loop
-        Console.Left;
-      end loop;
+      if Echo then
+        Sys_Calls.Put_Output (Language.Unicode_To_String (
+                               Uu.Slice (Txt, Ind - 1, Uu.Length(Txt))));
+        -- Move cursor at proper position
+        for I in 1 .. Uu.Length(Txt) - Ind + 1 loop
+          Console.Left;
+        end loop;
+      end if;
       -- Detect completion of input
       if Uu.Length (Txt) = Max then
         Store;
@@ -333,15 +339,19 @@ package body Async_Stdin is
             return True;
           end if;
           if Ind = 1 then
-            Sys_Calls.Put_Output (Bell);
+            if Echo then
+              Sys_Calls.Put_Output (Bell);
+            end if;
           else
             -- Move one left, shift tail
             Ind := Ind - 1;
             Txt := Uu.To_Unbounded_Array (
                       Uu.Slice (Txt, 1, Ind - 1)
                     & Uu.Slice (Txt, Ind + 1, Uu.Length(Txt)));
-            Console.Left;
-            Console.Delete;
+            if Echo then
+              Console.Left;
+              Console.Delete;
+            end if;
           end if;
         when Aski.Ht =>
           -- Search
@@ -359,7 +369,7 @@ package body Async_Stdin is
           if History.Search (not Saved_Searching) then
             Update;
             At_Last := False;
-          else
+          elsif Echo then
             Sys_Calls.Put_Output (Bell);
           end if;
           Searching := True;
@@ -385,33 +395,41 @@ package body Async_Stdin is
             begin
               if Str = Arrow_Left_Seq then
                 -- Left if not at first
-                if Ind = 1 then
+                if Ind = 1 and then Echo then
                   Sys_Calls.Put_Output (Bell);
                 else
                   Ind := Ind - 1;
-                  Console.Left;
+                  if Echo then
+                    Console.Left;
+                  end if;
                 end if;
                 Seq := Uu_Null;
               elsif Str = Arrow_Right_Seq then
                 -- Right if not at Last
-                if Ind = Uu.Length (Txt) + 1 then
+                if Ind = Uu.Length (Txt) + 1 and then Echo then
                   Sys_Calls.Put_Output (Bell);
                 else
                   Ind := Ind + 1;
-                  Console.Right;
+                  if Echo then
+                    Console.Right;
+                  end if;
                 end if;
                 Seq := Uu_Null;
               elsif Str = Home_Seq
               or else Str = Home1_Seq then
                 -- Home
                 Ind := 1;
-                Console.Set_Col(First_Col);
+                if Echo then
+                  Console.Set_Col(First_Col);
+                end if;
                 Seq := Uu_Null;
               elsif Str = End_Seq
               or else Str = End1_Seq then
                 -- End
                 Ind := Uu.Length(Txt) + 1;
-                Console.Set_Col(First_Col + Ind - 1);
+                if Echo then
+                  Console.Set_Col(First_Col + Ind - 1);
+                end if;
                 Seq := Uu_Null;
               elsif Str = Delete_Seq then
                 -- Del
@@ -420,7 +438,9 @@ package body Async_Stdin is
                   Txt := Uu.To_Unbounded_Array (
                           Uu.Slice (Txt, 1, Ind - 1)
                         & Uu.Slice (Txt, Ind + 1, Uu.Length(Txt)));
-                  Console.Delete;
+                  if Echo then
+                    Console.Delete;
+                  end if;
                 end if;
                 Seq := Uu_Null;
               elsif Str = Arrow_Up_Seq then
@@ -520,7 +540,7 @@ package body Async_Stdin is
       Seq := Uu_Null;
       Txt := Uu_Null;
       Ind := 1;
-      if Stdio_Is_A_Tty then
+      if Stdio_Is_A_Tty and then Echo then
         Console.Set_Col(First_Col);
       end if;
     end Clear;
@@ -605,7 +625,7 @@ package body Async_Stdin is
     begin
       -- Cb may call Put, so clear Line first
       Line.Clear;
-      if Stdio_Is_A_Tty then
+      if Stdio_Is_A_Tty and then Echo then
         Console.Set_Col (1);
       end if;
       Insert_Mode := True;
@@ -621,7 +641,8 @@ package body Async_Stdin is
   -- Set null callback to restore normal behaviour
   procedure Set_Async (User_Callback : in User_Callback_Access := null;
                        Max_Chars : in Max_Chars_Range := 1;
-                       First_Col : in Max_Chars_Range := 1) is
+                       First_Col : in Max_Chars_Range := 1;
+                       Echo      : in Boolean := True) is
     Result : Boolean;
     use type Sys_Calls.File_Desc_Kind_List;
   begin
@@ -664,7 +685,8 @@ package body Async_Stdin is
         end if;
         Cb := User_Callback;
         Async_Stdin.First_Col := First_Col;
-        if Stdio_Is_A_Tty then
+        Async_Stdin.Echo := Echo;
+        if Stdio_Is_A_Tty and then Echo then
           Console.Set_Col (First_Col);
         end if;
       else
@@ -733,12 +755,13 @@ package body Async_Stdin is
   end Get_Line_Cb;
 
   function Get_Line (Max_Chars : Max_Chars_Range := 0;
-                     First_Col : Max_Chars_Range := 1) return String is
+                     First_Col : Max_Chars_Range := 1;
+                     Echo      : Boolean := True) return String is
     use type Event_Mng.Out_Event_List;
   begin
     -- Set callback
     Get_Line_Buffer.Set_Null;
-    Set_Async (Get_Line_Cb'Access, Max_Chars, First_Col);
+    Set_Async (Get_Line_Cb'Access, Max_Chars, First_Col, Echo);
     -- Wait until an event
     Event_Mng.Wait (Event_Mng.Infinite_Ms);
     -- No data got?
@@ -774,7 +797,7 @@ package body Async_Stdin is
           Sys_Calls.New_Line_Output;
         end if;
         Sys_Calls.Put_Output (Str);
-        if Stdio_Is_A_Tty and then Buf'Length /= 0 then
+        if Stdio_Is_A_Tty and then Buf'Length /= 0 and then Echo then
           -- Put buffer, move cursor
           Sys_Calls.Put_Output (Language.Unicode_To_String (Buf));
           Console.Set_Col (Line.Read_Col);
