@@ -168,6 +168,7 @@ package Mcd_Mng is
    -- Miscelaneous
    Nop,
    Getenv,
+   Inecho,
    Inkey,
    Instr,
    Readfile,

@@ -92,6 +92,14 @@ package body Ios is
     Io_Flow.New_Line;
   end New_Line;
 
+  procedure Set_Echo (Item : in Item_Rec) is
+  begin
+    if Item.Kind /= Bool then
+      raise Invalid_Argument;
+    end if;
+    Io_Flow.Set_Echo (Item.Val_Bool);
+  end Set_Echo;
+
   function Get_Key return Item_Rec is
     Res : Item_Rec(Chrs);
     Char : Character;

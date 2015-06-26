@@ -51,6 +51,7 @@ package body Io_Flow is
   function Stdin_Cb (Str : in String) return Boolean;
 
   -- Async Stdin for Get
+  Get_Echo : Boolean := True;
   function Get_Stdin_Cb (Str : in String) return Boolean;
 
   -- File name
@@ -433,13 +434,18 @@ package body Io_Flow is
     end if;
   end Wait_Stdin;
 
+  procedure Set_Echo (Echo : in Boolean) is
+  begin
+    Get_Echo := Echo;
+  end Set_Echo;
+
   function Get_Key return Character is
     Char : Character;
   begin
     if Is_Stdio then
       raise In_Stdin;
     end if;
-    Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 1, 1);
+    Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 1, 1, Get_Echo);
     Wait_Stdin;
     Char := Stdin_Data.Element (1);
     return Char;
@@ -450,7 +456,7 @@ package body Io_Flow is
     if Is_Stdio then
       raise In_Stdin;
     end if;
-    Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 0, 1);
+    Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 0, 1, Get_Echo);
     Wait_Stdin;
     -- Strip trailing Lf if any
     return Async_Stdin.Strip_Last_Control (Stdin_Data.Image);

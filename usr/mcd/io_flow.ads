@@ -21,9 +21,10 @@ package Io_Flow is
   procedure Put_Line (Str : in String);
   procedure New_Line;
 
-  -- Data to input from stdin (no echo), when stdin is not the flow
+  -- Data to input from stdin (echo or not), when stdin is not the flow
   In_Stdin : exception;
   End_Error :exception;
+  procedure Set_Echo (Echo : in Boolean);
   function Get_Key return Character;
   function Get_Str return String;
 

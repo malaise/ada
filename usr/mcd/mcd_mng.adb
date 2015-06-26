@@ -215,6 +215,7 @@ package body Mcd_Mng is
     procedure Put_Line (Item : in Item_Rec);
     procedure New_Line;
 
+    procedure Set_Echo (Item : in Item_Rec);
     function Get_Key return Item_Rec;
     function Get_Str return Item_Rec;
 
@@ -1096,6 +1097,9 @@ package body Mcd_Mng is
           -- push getenv(A)
           Pop(A); Push (Misc.Getenv(A));
           S := A;
+        when Inecho =>
+          -- set echo to A
+          Pop(A); Ios.Set_Echo (A);
         when Inkey =>
           -- push Get_Key
           Push (Ios.Get_Key);
