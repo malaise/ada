@@ -439,8 +439,8 @@ package body Io_Flow is
     if Is_Stdio then
       raise In_Stdin;
     end if;
-    Wait_Stdin;
     Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 1, 1);
+    Wait_Stdin;
     Char := Stdin_Data.Element (1);
     return Char;
   end Get_Key;
