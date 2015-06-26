@@ -1,7 +1,7 @@
 # Test inkey and instr
 
 [
-"Enter a key: " putl inkey "Got " put  putl 
-"Enter a string: " putl instr "Got " put  putl 
+"Enter a key: " putl inkey "Got " put  putl
+"Enter a string: " putl instr "Got " put  putl
 L pushr retacal ] L copyr call
 
