@@ -4,7 +4,7 @@ with As.U.Utils, Environ, Argument, Argument_Parser, Basic_Proc, Language,
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Log;
 procedure Asubst is
 
-  Version : constant String  := "V18.2";
+  Version : constant String  := "V18.3";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -52,7 +52,7 @@ procedure Asubst is
     Basic_Proc.Put_Line_Error (
      "or:    " & Argument.Get_Program_Name
          & " " & Argument_Parser.Image (Keys(Help_Key))
-       & " | " & Argument_Parser.Image (Keys(Help_Key)));
+       & " | " & Argument_Parser.Image (Keys(Vers_Key)));
     Basic_Proc.Put_Line_Error (
      "  Substitutes pattern in files, or from stdin to stdout if no file.");
   end Usage;
@@ -84,9 +84,9 @@ procedure Asubst is
   begin
     Usage;
     Basic_Proc.Put_Line_Error (
-     "  <option> ::= -a | -D <string> | -d | -e <pattern> | -F | -f | -g | -i");
+     "  <option> ::= -a | -D <string> | -d | -e <pattern> | -F | -f | -g | -I | -i");
     Basic_Proc.Put_Line_Error (
-     "             | -l | -m <range> | -n | -p | -q | -s | -t | -u | -v | -x | --");
+     "             | -L | -l | -m <range> | -n | -p | -q | -s | -t | -u | -v | -x | --");
     for I in Helps'Range loop
 
       Basic_Proc.Put_Line_Error (
@@ -121,7 +121,9 @@ procedure Asubst is
     Basic_Proc.Put_Line_Error (
      "     \T [:punct:]   \S [:space:]   \U [:upper:]   \X [:xdigit:]");
     Basic_Proc.Put_Line_Error (
-     "    A <regex> can contain '^' or '$'. If not, it applies several times per line.");
+     "    A <regex> can contain '^' or '$'. If not and if the <find_pattern> is a");
+    Basic_Proc.Put_Line_Error (
+     "     simple <regex>, then it applies several times per line.");
     Basic_Proc.Put_Line_Error (
      "    A <regex> can't contain the delimiter (default ""\n"").");
     Basic_Proc.Put_Line_Error (
