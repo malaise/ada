@@ -42,21 +42,21 @@ procedure Prime is
     Basic_Proc.Put_Line_Output (
   "<mode> ::= <list> | <from> | <is> | <next> | <prev> | <factors> | <hcd> | <lcm>");
     Basic_Proc.Put_Line_Output (
-  "<list>    ::= -list [ <positive> ]        -- list prime numbers (up to N)");
+  "<list>    ::= list [ <positive> ]        -- list prime numbers (up to N)");
     Basic_Proc.Put_Line_Output (
-  "<from>    ::= -from [ <positive> ]        -- list prime numbers above N");
+  "<from>    ::= from <positive>            -- list prime numbers above N");
     Basic_Proc.Put_Line_Output (
-  "<is>      ::= -is <positive>              -- is N prime or not");
+  "<is>      ::= is <positive>              -- is N prime or not");
     Basic_Proc.Put_Line_Output (
-  "<next>    ::= -next <positive>            -- next prime number after N");
+  "<next>    ::= next <positive>            -- next prime number after N");
     Basic_Proc.Put_Line_Output (
-  "<prev>    ::= -prev <positive>            -- previous prime number before N");
+  "<prev>    ::= prev <positive>            -- previous prime number before N");
     Basic_Proc.Put_Line_Output (
-  "<factors> ::= -fact <positive>            -- prime factors of N");
+  "<factors> ::= fact <positive>            -- prime factors of N");
     Basic_Proc.Put_Line_Output (
-  "<hcd>     ::= -hcd <positive> <positive>  -- highest common denominator");
+  "<hcd>     ::= hcd <positive> <positive>  -- highest common denominator");
     Basic_Proc.Put_Line_Output (
-  "<lcm>     ::= -lcm <positive> <positive>  -- lowest common multiple");
+  "<lcm>     ::= lcm <positive> <positive>  -- lowest common multiple");
   end Usage;
 
   -- Remove the leading '+'
@@ -104,39 +104,39 @@ begin
   -- Parse arguments
   begin
     if Argument.Get_Nbre_Arg = 1
-    and then Argument.Get_Parameter = "-list" then
+    and then Argument.Get_Parameter = "list" then
       Mode := List_All;
     elsif Argument.Get_Nbre_Arg = 2
-    and then Argument.Get_Parameter = "-list" then
+    and then Argument.Get_Parameter = "list" then
       Mode := List;
       N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 2
-    and then Argument.Get_Parameter = "-from" then
+    and then Argument.Get_Parameter = "from" then
       Mode := From;
       N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 2
-    and then Argument.Get_Parameter = "-is" then
+    and then Argument.Get_Parameter = "is" then
       Mode := Is_Prime;
       N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 2
-    and then Argument.Get_Parameter = "-next" then
+    and then Argument.Get_Parameter = "next" then
       Mode := Next;
       N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 2
-    and then Argument.Get_Parameter = "-prev" then
+    and then Argument.Get_Parameter = "prev" then
       Mode := Prev;
       N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 2
-    and then Argument.Get_Parameter = "-fact" then
+    and then Argument.Get_Parameter = "fact" then
       Mode := Factors;
       N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 3
-    and then Argument.Get_Parameter = "-hcd" then
+    and then Argument.Get_Parameter = "hcd" then
       Mode := Hcd;
       N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
       N2 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 3));
     elsif Argument.Get_Nbre_Arg = 3
-    and then Argument.Get_Parameter = "-lcm" then
+    and then Argument.Get_Parameter = "lcm" then
       Mode := Lcm;
       N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
       N2 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 3));
