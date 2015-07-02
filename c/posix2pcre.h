@@ -56,6 +56,11 @@ typedef struct {
   regoff_t rm_eo;
 } regmatch_t;
 
+/* POSIX2 API */
+extern int regcomp(regex_t *, const char *, int);
+extern int regexec(regex_t *, const char *, size_t, regmatch_t *, int);
+extern size_t regerror(int, const regex_t *, char *, size_t);
+extern void regfree(regex_t *);
 #endif /* PCRE0 */
 
 /* POSIX2PCRE API */
