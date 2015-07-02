@@ -56,17 +56,18 @@ typedef struct {
   regoff_t rm_eo;
 } regmatch_t;
 
-/* POSIX API */
-extern int regcomp(regex_t *, const char *, int);
-extern int regexec(regex_t *, const char *, size_t, regmatch_t *, int);
-extern size_t regerror(int, const regex_t *, char *, size_t);
-extern void regfree(regex_t *);
-#endif
+#endif /* PCRE0 */
+
+/* POSIX2PCRE API */
+extern int posix2pcre_regcomp(regex_t *, const char *, int);
+extern int posix2pcre_regexec(regex_t *, const char *, size_t, regmatch_t *, int);
+extern size_t posix2pcre_regerror(int, const regex_t *, char *, size_t);
+extern void posix2pcre_regfree(regex_t *);
 
 #ifdef PCRE2
 /* No more pcre_version in PCRE2 */
 extern const char * pcre_version (void);
-#endif
+#endif /* PCRE2 */
 
 /* Memory management */
 extern void * malloc_regex (void);

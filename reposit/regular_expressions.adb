@@ -39,23 +39,23 @@ package body Regular_Expressions is
   function C_Regcomp (Preg : in System.Address;
                       Regex : in System.Address;
                       Cflags : in C_Types.Int) return C_Types.Int;
-  pragma Import (C, C_Regcomp, "regcomp");
+  pragma Import (C, C_Regcomp, "posix2pcre_regcomp");
 
   function C_Regexec (Preg : in System.Address;
                       Str : in System.Address;
                       Nmatch : in C_Types.Size_T;
                       Pmatch : in System.Address;
                       Eflags : in C_Types.Int) return C_Types.Int;
-  pragma Import (C, C_Regexec, "regexec");
+  pragma Import (C, C_Regexec, "posix2pcre_regexec");
 
   function C_Regerror (Errcode : in C_Types.Int;
                        Preg : in System.Address;
                        Errbuf : in System.Address;
                        Errbuf_Size : in C_Types.Size_T) return C_Types.Size_T;
-  pragma Import (C, C_Regerror, "regerror");
+  pragma Import (C, C_Regerror, "posix2pcre_regerror");
 
   procedure C_Regfree (Preg : in System.Address);
-  pragma Import (C, C_Regfree, "regfree");
+  pragma Import (C, C_Regfree, "posix2pcre_regfree");
 
   -- Get PCRE version
   function Get_Pcre_Version return String is

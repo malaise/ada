@@ -247,7 +247,24 @@ extern size_t regerror(int errcode, const regex_t *preg, char *errbuf,
 extern void regfree(regex_t *preg) {
   pcre_free(preg->re_pcre);
 }
-#endif
+#endif /* PCRE0 */
+
+/* POSIX2PCRE API */
+extern int posix2pcre_regcomp(regex_t *preg, const char *pattern, int cflags) {
+  return regcomp(preg, pattern, cflags);
+}
+extern int posix2pcre_regexec(regex_t *preg, const char *string, size_t nmatch,
+            regmatch_t pmatch[], int eflags) {
+  return regexec(preg, string, nmatch, pmatch, eflags);
+}
+extern size_t posix2pcre_regerror(int errcode, const regex_t *preg, char *errbuf,
+                size_t errbuf_size) {
+  return regerror(errcode, preg, errbuf, errbuf_size);
+}
+extern void posix2pcre_regfree(regex_t *preg) {
+  regfree(preg);
+}
+
 
 /* Return current version, e.g. "10.10" */
 #ifdef PCRE2
@@ -256,7 +273,7 @@ extern const char * pcre_version (void) {
   sprintf (version, "%d.%d", PCRE2_MAJOR, PCRE2_MINOR);
   return version;
 }
-#endif
+#endif /* PCRE2 */
 
 /* Memory management */
 extern void * malloc_regex (void) {
