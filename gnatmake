@@ -2,7 +2,9 @@
 # gnatmake, gnatstub and gnatls
 # Only "-noview" for gnatls is handled here
 #  other args are passed
-export GNATPATH=/usr/local/gnat/bin
+if [ -z "$GNATPATH" ] ; then
+  export GNATPATH=/usr/local/gnat/bin
+fi
 
 # Like makefiles
 export HOST=`uname -s`
