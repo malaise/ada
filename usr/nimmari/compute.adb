@@ -7,7 +7,7 @@ package body Compute is
   end Init;
 
   -- Remove How_Many random bars from From
-  -- Set From the the map of removed bars
+  -- Set From to the map of removed bars
   procedure Remove_From (From : in out Common.Bar_Status_Array;
                          How_Many : in Common.Full_Bar_Range) is
     Nb_Removed : Common.Full_Bar_Range := 0;
@@ -71,7 +71,7 @@ package body Compute is
         Sum := Common.Nb_Bars (Common.Get_Bars (I));
         Sums(I) := Sum;
         Sums_Sums := Sums_Sums + Sum;
-        -- Number of rows with more than one for marienbad end
+        -- Number of rows with more than one, for the specific end of marienbad
         if Sum > 1 then
           Nb_Rows_More_One := Nb_Rows_More_One + 1;
         end if;
@@ -100,7 +100,9 @@ package body Compute is
       return;
     end if;
 
-    -- Special ending for Marienbad
+    -- Special ending for Marienbad, when only one row has more that one bar
+    -- If Nb of rows with one bar is even then leave one bar, otherwise remove
+    --  all
     if Common.Get_Game_Kind = Common.Marienbad
     and then Nb_Rows_More_One = 1 then
       -- Last decision point
