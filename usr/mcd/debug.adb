@@ -1,4 +1,4 @@
-with As.U, Arbitrary.Fractions, Mixed_Str;
+with As.U, Arbitrary.Fractions, Mixed_Str, Argument, Environ;
 package body Debug is
 
   procedure Init is
@@ -6,6 +6,11 @@ package body Debug is
     for Level in Level_List loop
       Loggers(Level).Init (Mixed_Str (Level'Img));
     end loop;
+    if Environ.Is_Yes (Argument.Get_Program_Name & "_DEBUG") then
+      for Level in Level_List loop
+        Loggers(Level).Add_Mask (Trace.Debug);
+      end loop;
+    end if;
   end Init;
 
   procedure Log (Level : in Level_List; Message : in String) is
