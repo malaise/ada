@@ -207,7 +207,7 @@ package body Io_Flow is
 
     if not Is_Stdio then
       -- Open stdin asynchronous
-      Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 1, 1);
+      Set_Echo (True);
     end if;
   end Init;
 
@@ -408,6 +408,8 @@ package body Io_Flow is
     Evt : Event_Mng.Out_Event_List;
     use type Event_Mng.Out_Event_List;
   begin
+    Async_Stdin.Activate (True);
+    Async_Stdin.Clear;
     loop
       Stdin_Data.Set_Null;
       Debug.Log (Debug.Flow, "Waiting on stdin");
@@ -436,7 +438,11 @@ package body Io_Flow is
 
   procedure Set_Echo (Echo : in Boolean) is
   begin
+    if Is_Stdio then
+      raise In_Stdin;
+    end if;
     Get_Echo := Echo;
+    Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 0, 1, Get_Echo);
   end Set_Echo;
 
   function Get_Key return Character is
@@ -456,7 +462,6 @@ package body Io_Flow is
     if Is_Stdio then
       raise In_Stdin;
     end if;
-    Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 0, 1, Get_Echo);
     Wait_Stdin;
     -- Strip trailing Lf if any
     return Async_Stdin.Strip_Last_Control (Stdin_Data.Image);
