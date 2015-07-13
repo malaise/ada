@@ -1,6 +1,9 @@
 # Select a random departement number
 # 1..19 2A 2B 21..95 971..974 976
 # Put it for some seconds then put its name during some seconds
+
+# Input key will not echo
+false inecho
 # Delay before putting the answer and pause between questions
 4.0 a popr 1.0 p popr
 
