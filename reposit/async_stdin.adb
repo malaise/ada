@@ -615,6 +615,7 @@ package body Async_Stdin is
 
     -- Fix tty output
     if Stdio_Is_A_Tty
+    and then Echo
     and then (C = Aski.Cr
       or else C = Aski.Lf) then
       Sys_Calls.New_Line_Output;
@@ -728,8 +729,18 @@ package body Async_Stdin is
 
   -- Clear internal buffer of pending characters
   procedure Clear is
+    Status : Sys_Calls.Get_Status_List;
+    C : Character;
+    use type Sys_Calls.Get_Status_List;
   begin
     Line.Clear;
+    if Cb /= null then
+      -- Remove pending characters from stdin
+      loop
+        Sys_Calls.Get_Immediate (Sys_Calls.Stdin, Status, C);
+        exit when Status /= Sys_Calls.Got;
+      end loop;
+    end if;
   end Clear;
 
   -- By default the input is in insert mode and reset in insert after
@@ -793,7 +804,7 @@ package body Async_Stdin is
       declare
         Buf : constant Unicode_Sequence := Line.Read_Buffer;
       begin
-        if Stdio_Is_A_Tty and then Buf'Length /= 0 then
+        if Stdio_Is_A_Tty and then Buf'Length /= 0 and then Echo then
           Sys_Calls.New_Line_Output;
         end if;
         Sys_Calls.Put_Output (Str);
