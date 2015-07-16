@@ -86,14 +86,30 @@ package body Io_Flow is
       return;
     end if;
 
-    -- Get bus address argument if set
-    if Argument.Is_Set (1, "a") then
-      -- Parse (auto)bus address
-      Argument.Get_Parameter (Bus_Addr, 1, "a");
-      if Bus_Addr.Is_Null then
-        Async_Stdin.Put_Line_Err ("Missing autobus address.");
-        raise Init_Error;
+    -- 0 or 2 arguments
+    if Argument.Get_Nbre_Arg = 0 then
+      -- Stdin
+      Debug.Log (Debug.Flow, "Init on stdio");
+      -- Set stdin/out asynchronous if it is a Tty
+      if Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin)  = Sys_Calls.Tty
+      and then Sys_Calls.File_Desc_Kind (Sys_Calls.Stdout) = Sys_Calls.Tty then
+        Io_Mode := Stdio_Tty;
+        Async_Stdin.Set_Async (Stdin_Cb'Access, 0);
+        Debug.Log (Debug.Flow, "Stdio is a tty");
+      else
+        Init_Default;
+        Debug.Log (Debug.Flow, "Stdio is a not a tty");
       end if;
+    elsif Argument.Get_Nbre_Arg = 1 then
+      Async_Stdin.Put_Line_Err ("Invalid argument.");
+      raise Init_Error;
+    elsif Argument.Get_Nbre_Arg /= 2 then
+      Async_Stdin.Put_Line_Err ("Too many arguments.");
+      raise Init_Error;
+    elsif Argument.Get_Parameter (1) = "-a" then
+      -- Get bus address argument if set
+      -- Parse (auto)bus address
+      Bus_Addr := As.U.Tus (Argument.Get_Parameter (Occurence => 2));
       Debug.Log (Debug.Flow, "Init on autobus " & Bus_Addr.Image);
       begin
         Bus.Init (Bus_Addr.Image);
@@ -113,13 +129,11 @@ package body Io_Flow is
       end;
       Bus_Subscriber.Init (Bus'Access, Bus_Observer'Access);
       Io_Mode := Abus;
-    end if;
-
-    -- Get tcp port if set
-    if Argument.Is_Set (1, "t") then
+    elsif Argument.Get_Parameter (1) = "-t" then
+      -- Get tcp port if set
       -- Parse TCP port
       begin
-        Port := Ip_Addr.Parse (Argument.Get_Parameter (1, "t"));
+        Port := Ip_Addr.Parse (Argument.Get_Parameter (2));
       exception
         when Ip_Addr.Parse_Error =>
           Async_Stdin.Put_Line_Err ("Invalid tcp port.");
@@ -129,24 +143,18 @@ package body Io_Flow is
       Debug.Log (Debug.Flow, "Init on tcp port "
                            & Ip_Addr.Image (Accepting_Soc.Get_Linked_To));
       Io_Mode := Tcp;
-    end if;
-
-    -- Get udp/ipm spec if set
-    if Argument.Is_Set (1, "u")
-    or else Argument.Is_Set (1, "U") then
+    elsif Argument.Get_Parameter (1) = "-u"
+    or else Argument.Get_Parameter (1) = "-U" then
+      -- Get udp/ipm spec if set
       -- Parse udp port or ipm address
       begin
-        if Argument.Is_Set (1, "u") then
-          Ip_Addr.Parse (Argument.Get_Parameter (1, "u"), Host, Port);
-        else
-          Ip_Addr.Parse (Argument.Get_Parameter (1, "U"), Host, Port);
-        end if;
+        Ip_Addr.Parse (Argument.Get_Parameter (2), Host, Port);
       exception
         when Ip_Addr.Parse_Error =>
           Async_Stdin.Put_Line_Err ("Invalid udp spec.");
           raise Init_Error;
       end;
-      Open_Udp_Sockets (Argument.Is_Set (1, "U"));
+      Open_Udp_Sockets (Argument.Get_Parameter (1) = "-U");
       Io_Mode := Udp;
       Debug.Log (Debug.Flow, "Init on "
         & (if Is_Ipm then "ipm LAN " & Ip_Addr.Image (Soc.Get_Destination_Host)
@@ -154,12 +162,9 @@ package body Io_Flow is
         & " port " & Ip_Addr.Image (Soc.Get_Linked_To)
         & " sending on port "
         & Ip_Addr.Image (Send_Soc.Get_Destination_Port)));
-    end if;
-
-    -- Get file name if set
-    if Argument.Is_Set (1, "f") then
-      -- Parse TCP port
-      File_Name := As.U.Tus (Argument.Get_Parameter (1, "f"));
+    elsif Argument.Get_Parameter (1) = "-f" then
+      -- Get file name if set
+      File_Name := As.U.Tus (Argument.Get_Parameter (Occurence => 2));
       if File_Name.Is_Null then
         Async_Stdin.Put_Line_Err ("Invalid file name.");
         raise Init_Error;
@@ -174,35 +179,9 @@ package body Io_Flow is
       end;
       Debug.Log (Debug.Flow, "Init on file " & File_Name.Image);
       Io_Mode := File;
-    end if;
-
-    -- If no arg => Stdin
-    if Io_Mode /= Unknown then
-      if Argument.Get_Nbre_Arg /= 1 then
-        -- At most one mode
-        Async_Stdin.Put_Line_Err ("Too many arguments.");
-        raise Init_Error;
-      end if;
     else
-      if Argument.Get_Nbre_Arg /= 0 then
-        Async_Stdin.Put_Line_Err ("Invalid argument.");
-        raise Init_Error;
-      end if;
-    end if;
-
-    if Io_Mode = Unknown then
-      -- Stdin
-      Debug.Log (Debug.Flow, "Init on stdio");
-      -- Set stdin/out asynchronous if it is a Tty
-      if Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin)  = Sys_Calls.Tty
-      and then Sys_Calls.File_Desc_Kind (Sys_Calls.Stdout) = Sys_Calls.Tty then
-        Io_Mode := Stdio_Tty;
-        Async_Stdin.Set_Async (Stdin_Cb'Access, 0);
-        Debug.Log (Debug.Flow, "Stdio is a tty");
-      else
-        Init_Default;
-        Debug.Log (Debug.Flow, "Stdio is a not a tty");
-      end if;
+      Async_Stdin.Put_Line_Err ("Invalid argument.");
+      raise Init_Error;
     end if;
 
     if not Is_Stdio then
