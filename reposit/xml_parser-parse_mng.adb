@@ -959,6 +959,8 @@ package body Parse_Mng  is
         Util.Parse_Until_Char (Ctx.Flow, "'");
       elsif Char = '"' then
         Util.Parse_Until_Char (Ctx.Flow, """");
+      elsif Char = '>' then
+        Util.Error (Ctx.Flow, "Missing doctype PUBLIC Id");
       else
         Util.Error (Ctx.Flow, "Unexpected delimiter of doctype PUBLIC Id");
       end if;
@@ -981,6 +983,8 @@ package body Parse_Mng  is
         Util.Parse_Until_Char (Ctx.Flow, "'");
       elsif Char = '"' then
         Util.Parse_Until_Char (Ctx.Flow, """");
+      elsif Char = '>' then
+        Util.Error (Ctx.Flow, "Missing doctype external Id");
       else
         Util.Error (Ctx.Flow, "Unexpected delimiter of doctype external Id");
       end if;
