@@ -188,5 +188,12 @@ package body Queues.Timed is
     Done := True;
   end Pop;
 
+  function Pop (Queue : in out Timed_Type; Done : out Boolean) return Item is
+    X : Item;
+  begin
+    Pop (Queue, X, Done);
+    return X;
+  end Pop;
+
 end Queues.Timed;
 

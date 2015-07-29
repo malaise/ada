@@ -54,6 +54,7 @@ package Queues.Timed is
   -- Items are retrieved in the order there where pushed
   -- Set Done to False if the queue was empty (and X is not set)
   procedure Pop (Queue : in out Timed_Type; X : out Item; Done : out Boolean);
+  function Pop (Queue : in out Timed_Type; Done : out Boolean) return Item;
 
   -- Exceptions raised during push if the stack is full
   --  or during pop if the stack is empty

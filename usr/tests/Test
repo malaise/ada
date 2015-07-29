@@ -1553,30 +1553,31 @@ comp err nul
 echo "OK"
 
 # t_timeq
-title t_timeq
+title t_timeq...
 echo -e "A\nX\n" | try t_timeq
 echo >> out
 cat << EOF > exp
-Insert(Value, Duration) Pop Get(Value) Expire Clear eXit Autotest> 
-Ivd | P | Rv | E | C | X | A ? Putting 11 22 33 44 55 and waiting 3 seconds
+Insert(Value, Duration) Pop Read(Value) Expire Clear eXit Autotest> 
+Ivd | P | Rv | E | C | X | A ? Putting 11 22 44 55 66 and waiting 3 seconds
 Popping first without expire
 Got 1
-Putting 66 then popping all
+Putting 77 then popping all
 Got 4
 Got 5
 Got 6
-Putting 11 22 33 44 55 and waiting 3 seconds
-Reading 1, 2, 3, 4, 5 and 4 again
+Got 7
+Putting 11 22 44 55 88 and waiting 3 seconds
+Reading 1, 2, 4, 5, 8 and 5 again
 Not data matches  1
 Not data matches  2
 Not data matches  3
 Read  4
 Read  5
-Read  4
-Putting 11 33 and waiting 1 seconds
+Read  5
+Putting 11 44 and waiting 3 seconds
 Expiring then popping all
-Got 5
-Got 3
+Got 8
+Got 4
 Putting 11 and 66, cleaning then popping all
 End of auto test.
 Ivd | P | Rv | E | C | X | A ? 
