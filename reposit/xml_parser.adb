@@ -4,7 +4,7 @@ with Trace.Loggers, Exception_Messenger, Directory, Str_Util,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "3";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -33,6 +33,10 @@ package body Xml_Parser is
   Logger : Trace.Loggers.Logger;
   procedure Debug (Msg : in String);
   function Debug_On return Boolean;
+  -- Other specific severities
+  -- Callback arguments
+  use type Trace.Severities;
+  Cb_Severity : constant Trace.Severities := Trace.Debug * 2;
 
   -- File management
   package File_Mng is
@@ -81,9 +85,9 @@ package body Xml_Parser is
     Xml_Space_Preserve : constant String := Xml_Space & "=" & Preserve;
     procedure Add_Tuning (Elements : in out My_Tree.Tree_Type;
                           Tuning : in String);
-    -- Set Put_Empty
-    procedure Set_Put_Empty (Elements : in out My_Tree.Tree_Type;
-                             Put_Empty : in Boolean);
+    -- Set Empty_Info
+    procedure Set_Empty_Info (Elements : in out My_Tree.Tree_Type;
+                              Empty_Info : in  Empty_Info_List);
     -- Set Is_Mixed
     procedure Set_Is_Mixed (Elements : in out My_Tree.Tree_Type;
                             Is_Mixed : in Boolean);
@@ -1339,13 +1343,13 @@ package body Xml_Parser is
   -------------------
   -- Shall the Element, if empty, be put with EmptyElemTag (<element/>) or
   -- with STag and ETag (<element></elememt>)
-  function Get_Put_Empty (Ctx     : Ctx_Type;
-                          Element : Element_Type) return Boolean is
+  function Get_Empty_Info (Ctx     : Ctx_Type;
+                          Element : Element_Type) return Empty_Info_List is
     Cell : constant My_Tree_Cell
          := Get_Cell (Get_Tree (Ctx, Element), Element);
   begin
-    return Cell.Put_Empty;
-  end Get_Put_Empty;
+    return Cell.Empty_Info;
+  end Get_Empty_Info;
 
   -- Is this element Mixed: either Mixed in Dtd or its first child is Text
   function Get_Is_Mixed (Ctx     : Ctx_Type;

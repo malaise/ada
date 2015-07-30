@@ -17,7 +17,7 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "39";
+  Major_Version : constant String := "40";
   function Version return String;
 
   -----------
@@ -131,7 +131,8 @@ package Xml_Parser is
   --  (Creation = False), otherwise it is only created (Has_Children = False)
   --  and Put_Empty set if it is an EmptyElemTag
   -- Only PIs have a value
-  -- Is_Mixed is set on element if this element has mixed content
+  -- Is_Mixed is set on element if this element has mixed content: children will
+  --  be appended
   -- In_Mixed is set on anything within a Is_Mixed element: indent shall be
   --  skipped for these nodes
   -- After the parsing, the Ctx has status Unparsed and only the info on
@@ -140,6 +141,17 @@ package Xml_Parser is
   -- Parsing stage. The tail is the part (comments, PIs) after the closure of
   --  the root element
   type Stage_List is (Prologue, Elements, Tail);
+
+  -- The "Empty" info about an element
+  -- Usefull to display the element, either as EmptyElemTag (<Element/>)
+  --  or with STag and ETag (<Element></Element>)
+  --  or with STag, Lf, Indent then ETag (<Element>
+  --                                      </Element>)
+  type Empty_Info_List is (
+    Tag_Empty,   -- Parsed as <EmptyElemTag/> or Generator.Set_Tag_Empty (True)
+                 --  was called, whatever the Dtd can define
+    Def_Empty,   -- Not Tag_Empty but defined as EMPTY in the Dtd
+    Not_Empty);  -- None of the cases above
 
   -- A node update transmitted to the callback
   type Node_Update is new Ada.Finalization.Controlled with record
@@ -167,8 +179,8 @@ package Xml_Parser is
     In_Mixed : Boolean := False;
     -- True if node has children
     Has_Children : Boolean := False;
-    -- True if <EmptyElemTag/> (whatever the DTD definition of the element)
-    Put_Empty : Boolean := False;
+    -- Empty info
+    Empty_Info : Empty_Info_List := Not_Empty;
   end record;
 
   -- If the callback raises an exception, then the parsing raises:
@@ -472,13 +484,13 @@ package Xml_Parser is
   -------------------
   -- Specific TAGS --
   -------------------
-  -- Shall the Element, if empty, be put with EmptyElemTag (<element/>) or
-  --  with STag and ETag (<element></elememt>)
-  -- By default it is False except if:
-  --  - the element is parsed empty with the EmptyElemTag (</element>)
-  --  - or Generator.Set_Put_Empty (True) is called on the element
-  function Get_Put_Empty (Ctx     : Ctx_Type;
-                          Element : Element_Type) return Boolean;
+  -- It is Tag_Empty if:
+  --  - the element is parsed empty with the EmptyElemTag (</Element>)
+  --  - or Generator.Set_Tag_Empty (True) is called on the element
+  -- Otherwise it is Def_Empty if the element is defined as EMPTY in the Dtd
+  -- Otherwise if Not_Empty
+  function Get_Empty_Info (Ctx     : Ctx_Type;
+                           Element : Element_Type) return Empty_Info_List;
 
   -- Is this element Mixed: either Mixed in Dtd or its first child is Text
   -- Set by the parsing or by calling Check
@@ -530,7 +542,7 @@ private
     -- Is this attribute an Unparsed entity or a list of unparsed entities
     Unparsed : Boolean := False;
     -- Put empty element with EmptyElemTag
-    Put_Empty : Boolean := False;
+    Empty_Info : Empty_Info_List := Not_Empty;
     -- Is this element containing Mixed: either Mixed in Dtd
     --  or its first child is text
     Is_Mixed : Boolean := False;

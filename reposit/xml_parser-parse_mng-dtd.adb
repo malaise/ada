@@ -1456,7 +1456,7 @@ package body Dtd is
                             Adtd : in out Dtd_Type;
                             Name : in As.U.Asu_Us;
                             Line_No : in Natural;
-                            Put_Empty : in Boolean;
+                            Empty_Info : in Empty_Info_List;
                             Children : in Children_Desc) is
     -- Element info
     Info : Info_Rec;
@@ -1560,7 +1560,7 @@ package body Dtd is
         raise Internal_Error;
     end case;
 
-    if Put_Empty /= Dtd_Empty then
+    if Dtd_Empty /= (Empty_Info = Tag_Empty) then
       Util.Warning (Ctx,
         "Empty-Element tag shall " & Only.Image
       & "be used for EMPTY elements");
@@ -2168,7 +2168,7 @@ package body Dtd is
   begin
     if Adtd.Set then
       Ctx.Elements.Read (Cell);
-      Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Cell.Put_Empty,
+      Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Cell.Empty_Info,
                       Children);
     end if;
     -- Clean namespaces of attributes
@@ -2266,8 +2266,8 @@ package body Dtd is
     if not Cell.Value.Is_Null then
       Util.Error (Ctx.Flow, "Tail has a value");
     end if;
-    if Cell.Put_Empty then
-      Util.Error (Ctx.Flow, "Tail has Put_Empty set");
+    if Cell.Empty_Info /= Not_Empty then
+      Util.Error (Ctx.Flow, "Tail has Empty_Info set");
     end if;
     if Cell.Is_Mixed then
       Util.Error (Ctx.Flow, "Tail has Is_Mixed set");
@@ -2303,6 +2303,12 @@ package body Dtd is
     Add_Namespaces (Ctx, Cell.Name);
     Build_Children (Ctx, Adtd, Children);
     Check_Element (Ctx, Adtd, Children);
+    if Cell.Empty_Info /= Tag_Empty then
+      -- Update Empty_Info of Cell and in Elements tree
+      Cell.Empty_Info := (if Is_Empty (Adtd, Cell.Name) then Def_Empty
+                          else Not_Empty);
+      Tree_Mng.Set_Empty_Info (Ctx.Elements.all, Cell.Empty_Info);
+    end if;
     -- Check children recursively
     if Ctx.Elements.Children_Number = 0 then
       -- No child

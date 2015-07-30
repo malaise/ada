@@ -267,12 +267,12 @@ procedure Afpx_Rnb is
       -- Insert Geometry
       Xml.Add_Child (Field, Indent2, Xml_Parser.Text, Child_Node);
       Xml.Add_Child (Field, "Geometry", Xml_Parser.Element, Child_Node);
-      Xml.Set_Put_Empty (Child_Node, True);
+      Xml.Set_Tag_Empty (Child_Node, True);
       Xml.Set_Attributes (Child_Node, Geo_Attrs);
       -- Insert Colors
       Xml.Add_Child (Field, Indent2, Xml_Parser.Text, Child_Node);
       Xml.Add_Child (Field, "Colors", Xml_Parser.Element, Child_Node);
-      Xml.Set_Put_Empty (Child_Node, True);
+      Xml.Set_Tag_Empty (Child_Node, True);
       Xml.Set_Attributes (Child_Node, Col_Attrs);
       Xml.Add_Child (Field, Indent1, Xml_Parser.Text, Child_Node);
     end if;

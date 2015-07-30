@@ -161,7 +161,7 @@ begin
 
   Dscr.Add_Brother (Node, "Var", Xml_Parser.Element, New_Node);
   Dscr.Add_Attribute (New_Node, "Name", "V4");
-  Dscr.Set_Put_Empty (New_Node, True);
+  Dscr.Set_Tag_Empty (New_Node, True);
   Node := New_Node;
 
   -- Add a Copy from Node_1 as brother

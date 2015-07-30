@@ -624,13 +624,34 @@ package body Parse_Mng  is
   --  for its XML declaration
   package body Dtd is separate;
 
+  -- String image of attributes
+  function Attributes_Image (Attr : Attributes_Access) return String is
+    Img : As.U.Asu_Us;
+  begin
+    if Attr = null then
+      return "";
+    end if;
+    for I in Attr'Range loop
+      Img.Append (Attr(I).Name.Image & "=""" & Attr(I).Value.Image & "");
+      if not Attr(I).Namespace.Is_Null then
+        Img.Append ("#" & Attr(I).Namespace.Image);
+      end if;
+      if Attr(I).Unparsed then
+        Img.Append ("/Unparsed");
+      end if;
+      if I /= Attr'Last then
+        Img.Append (", ");
+      end if;
+    end loop;
+    return Img.Image;
+  end Attributes_Image;
+
   -- Call Callback of creation if requested
   procedure Call_Callback (Ctx : in out Ctx_Type;
                            Stage : Stage_List;
                            Creation : in Boolean;
                            Has_Children : in Boolean := False;
-                           In_Mixed : in Boolean := False;
-                           Put_Empty : in Boolean := False) is
+                           In_Mixed : in Boolean := False) is
     Upd : Node_Update;
   begin
     if Ctx.Callback = null then
@@ -646,12 +667,29 @@ package body Parse_Mng  is
     end case;
     Upd.Stage := Stage;
     Upd.Has_Children := Has_Children;
-    Upd.Put_Empty := Put_Empty;
     Upd.In_Mixed := In_Mixed;
     Upd.Level := Ctx.Level;
     if not Creation then
       Upd.Line_No := Util.Get_Line_No(Ctx.Flow);
     end if;
+
+    if Logger.Is_On (Cb_Severity) then
+      Logger.Log (Cb_Severity,
+          "Stage: " & Mixed_Str (Upd.Stage'Img)
+        & ", Line:" & Upd.Line_No'Img
+        & ", Kind:" & Mixed_Str (Upd.Kind'Img)
+        & ", Name:" & Upd.Name.Image
+        & ", Creation: " & Mixed_Str (Upd.Creation'Img)
+        & ", Value: " & Upd.Value.Image
+        & ", Namespace: " & Upd.Namespace.Image
+        & ", Attributes: " & Attributes_Image (Upd.Attributes)
+        & ", Is_Mixed: " & Mixed_Str (Upd.Is_Mixed'Img)
+        & ", In_Mixed: " & Mixed_Str (Upd.In_Mixed'Img)
+        & ", Has_Children: " & Mixed_Str (Upd.Has_Children'Img)
+        & ", Empty_Info: " & Mixed_Str (Upd.Empty_Info'Img)
+      );
+    end if;
+
     begin
       Ctx.Callback (Ctx, Upd);
     exception
@@ -1552,10 +1590,9 @@ package body Parse_Mng  is
                            In_Mixed => Children.In_Mixed);
           else
             -- Empty element <elt></elt>: Create element and close it
-            if Dtd.Is_Empty (Adtd, Children.Father) then
-              -- Force Is_Mixed for element defined as EMPTY
-              Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, True);
-            end if;
+            Tree_Mng.Set_Empty_Info (Ctx.Elements.all,
+                (if Dtd.Is_Empty (Adtd, Children.Father) then Def_Empty
+                 else Not_Empty));
             Create (False);
           end if;
           return;
@@ -1665,20 +1702,15 @@ package body Parse_Mng  is
         Util.Error (Ctx.Flow, "Unexpected char " & Char
                             & " after " & Util.Slash);
       end if;
-      -- Empty element
-      if Dtd.Is_Empty (Adtd, Element_Name) then
-        -- Force Is_Mixed for element defined as EMPTY
-        Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, True);
-      end if;
-      Tree_Mng.Set_Put_Empty (Ctx.Elements.all, True);
+      -- Empty element tag
+      Tree_Mng.Set_Empty_Info (Ctx.Elements.all, Tag_Empty);
       -- End of this empty element, check attributes and content
       Dtd.Check_Attributes (Ctx, Adtd);
       Add_Namespaces (Ctx, Element_Name);
       Dtd.Check_Element (Ctx, Adtd,  My_Children);
       -- Create this element with no child (Close) and Put_Empty
       Call_Callback (Ctx, Elements, True, False,
-                     In_Mixed => Parent_Children.Is_Mixed,
-                     Put_Empty => True);
+                     In_Mixed => Parent_Children.Is_Mixed);
     elsif Char = Util.Stop then
       -- >: parse text and children elements until </
       -- Check attributes first (e.g. xml:space)
@@ -1708,7 +1740,9 @@ package body Parse_Mng  is
                   & ", got " & End_Name.Image);
       end if;
       -- End of this non empty element, check children
-      Tree_Mng.Set_Put_Empty (Ctx.Elements.all, False);
+      Tree_Mng.Set_Empty_Info (Ctx.Elements.all,
+        (if Dtd.Is_Empty (Adtd, Element_Name) then Def_Empty
+         else Not_Empty));
       Dtd.Check_Element (Ctx, Adtd, My_Children);
     else
       Util.Error (Ctx.Flow, "Unexpected character " & Char

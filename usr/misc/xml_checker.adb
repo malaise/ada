@@ -619,6 +619,7 @@ procedure Xml_Checker is
     Children : constant Xml_Parser.Nodes_Array := Ctx.Get_Children (Node);
     -- Node created
     Tmp_Node : Xml_Parser.Node_Type;
+    use type Xml_Parser.Empty_Info_List;
   begin
     if In_Elements then
       -- Copy attributes
@@ -638,7 +639,8 @@ procedure Xml_Checker is
           end;
           raise;
       end;
-      Ctxc.Set_Put_Empty (Nodec, Ctx.Get_Put_Empty (Node));
+      Ctxc.Set_Tag_Empty (Nodec,
+                          Ctx.Get_Empty_Info (Node) = Xml_Parser.Tag_Empty);
     end if;
 
     -- Copy children

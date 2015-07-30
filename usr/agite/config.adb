@@ -259,7 +259,7 @@ package body Config is
                        New_Node, True);
     end if;
     -- Bookmarks can be empty (when separators)
-    Ctx.Set_Put_Empty (New_Node, True);
+    Ctx.Set_Tag_Empty (New_Node, True);
     -- Add its name attribute
     if not Bookmark.Name.Is_Null then
       Ctx.Add_Attribute (New_Node, "Name", Bookmark.Name.Image);

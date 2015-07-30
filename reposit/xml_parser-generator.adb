@@ -3,7 +3,7 @@ with Aski, Images, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "5";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -916,10 +916,10 @@ package body Xml_Parser.Generator is
       raise Invalid_Node;
   end Copy;
 
-  -- Set the Put_Empty tag on the element
-  procedure Set_Put_Empty (Ctx        : in out Ctx_Type;
+  -- Set the Empty_Info of the element to Tag_Empty
+  procedure Set_Tag_Empty (Ctx        : in out Ctx_Type;
                            Element    : in out Element_Type;
-                           Put_Empty  : in Boolean) is
+                           Tag_Empty  : in Boolean) is
     Tree : Tree_Acc;
     Cell : My_Tree_Cell;
   begin
@@ -930,9 +930,9 @@ package body Xml_Parser.Generator is
     Move_To_Node_Element (Ctx, Element, Tree);
     -- Update name
     Tree.Read (Cell);
-    Cell.Put_Empty := Put_Empty;
+    Cell.Empty_Info := (if Tag_Empty then Xml_Parser.Tag_Empty else Not_Empty);
     Tree.Replace (Cell);
-  end Set_Put_Empty;
+  end Set_Tag_Empty;
 
   -- Set the PITarget and data of a Pi
   -- Content must have the form "<PITarget> [ <spaces> <Pi_Data> ]"
@@ -1333,6 +1333,7 @@ package body Xml_Parser.Generator is
     Indent : constant String (1 .. 2 * Level) := (others => ' ');
     Indent1 : constant String := Indent & "  ";
     Is_Mixed : constant Boolean := Cell.Is_Mixed;
+    Empty_Info : constant Empty_Info_List := Cell.Empty_Info;
     Elt_Name : As.U.Asu_Us;
     Xml_Attr_Format : Format_Kind_List;
     Closed : Boolean := False;
@@ -1341,7 +1342,8 @@ package body Xml_Parser.Generator is
     begin
       return Format /= Raw
       and then (Stage /= Elements
-                or else (not Is_Mixed and then Ctx.Normalize));
+                or else (not (Empty_Info = Def_Empty or else Is_Mixed)
+                         and then Ctx.Normalize));
     end Do_Indent_Child;
     function Do_Indent_Parent return Boolean is
     begin
@@ -1461,7 +1463,7 @@ package body Xml_Parser.Generator is
     if Tree.Get_Position = Cell_Ref then
       -- No Child (Put_Attributes moved back to current): return
       if Stage = Elements then
-        if Cell.Put_Empty then
+        if Cell.Empty_Info = Tag_Empty then
           -- EmptyElementTag now
           Put (Flow, "/>");
           if Do_Indent_Parent then
@@ -1600,7 +1602,9 @@ package body Xml_Parser.Generator is
     begin
       return Format /= Raw
       and then (Update.Stage /= Elements
-                or else (not Update.Is_Mixed and then Ctx.Normalize));
+                or else (not (Update.Empty_Info = Def_Empty
+                              or else Update.Is_Mixed)
+                         and then Ctx.Normalize));
     end Do_Indent_Child;
     function Do_Indent_Parent return Boolean is
     begin
@@ -1697,7 +1701,7 @@ package body Xml_Parser.Generator is
           -- Any child?
           if not Update.Has_Children then
             -- No child, terminate tag now
-            if Update.Put_Empty then
+            if Update.Empty_Info = Tag_Empty then
               -- <Elt/>
               Put (Flow, "/>");
             elsif not Do_Indent_Child then

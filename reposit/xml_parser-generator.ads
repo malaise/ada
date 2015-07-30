@@ -3,7 +3,7 @@
 package Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "16";
+  Major_Version : constant String := "17";
   function Version return String;
 
   -- The context, possibly filled by parsing a file or string in tree mode
@@ -188,16 +188,16 @@ package Xml_Parser.Generator is
                   Child    : in Boolean := True;
                   Next     : in Boolean := True);
 
-  -- Set the Put_Empty tag on the element
+  -- Set the Empty_Info of the element to Tag_Empty
   -- Shall the Element, if empty, be put with EmptyElemTag (<element/>) or
   --  with STag and ETag (<element></elememt>)
-  -- By default it is False except if
+  -- By default it is Def_Empty or Not_Empty (depending on Ftf) except if
   --  - Parsed element is empty with EmptyElemTag (</element>)
-  --  - or Generator.Set_Put_Empty (True) is called on the element
+  --  - or Generator.Set_Tag_Empty (True) is called on the element
   -- May raise Invalid_Node if in Prologue or in Tail
-  procedure Set_Put_Empty (Ctx        : in out Ctx_Type;
+  procedure Set_Tag_Empty (Ctx        : in out Ctx_Type;
                            Element    : in out Element_Type;
-                           Put_Empty  : in Boolean);
+                           Tag_Empty  : in Boolean);
 
   -- Set/change the PITarget and data of a Pi
   -- Content must have the form "<PITarget> [ <spaces> <Pi_Data> ]"

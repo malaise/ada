@@ -132,15 +132,15 @@ package body Tree_Mng is
     return Cell.Value.Image;
   end Get_Tuning;
 
-  -- Set Put_Empty to False
-  procedure Set_Put_Empty (Elements : in out My_Tree.Tree_Type;
-                           Put_Empty : in Boolean) is
+  -- Set Empty info
+  procedure Set_Empty_Info (Elements : in out My_Tree.Tree_Type;
+                            Empty_Info : in  Empty_Info_List) is
     Cell : My_Tree_Cell;
   begin
     Elements.Read (Cell);
-    Cell.Put_Empty := Put_Empty;
+    Cell.Empty_Info := Empty_Info;
     Elements.Replace (Cell);
-  end Set_Put_Empty;
+  end Set_Empty_Info;
 
   -- Set Is_Mixed
   procedure Set_Is_Mixed (Elements : in out My_Tree.Tree_Type;
@@ -385,6 +385,7 @@ package body Tree_Mng is
     Update.Value := Cell.Value;
     Update.Creation := Creation;
     Update.Is_Mixed := Cell.Is_Mixed;
+    Update.Empty_Info := Cell.Empty_Info;
     case Cell.Kind is
       when Element =>
         Update.Kind := Element;
