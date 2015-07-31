@@ -70,19 +70,21 @@ anchor:Dump[]-D | --dump: :: for a dump of the line numbers, of XML structure an
 information, example:
 
   Prologue:
-  00000001 - - xml : version=1.1
-  00000002 - -  <!-- Definition of variables for test of program "comp_vars" -->
-  00000003 - -  =><=
-  00000004 - -  <!-- After Doctype -->
+  00000001 - - N xml : version=1.1
+  00000002 - - -  <!-- Definition of variables for test of program "comp_vars" -->
+  00000003 - - -  =><=
+  00000004 - - -  <!-- After Doctype -->
   Elements:
-  00000006 - - Variables
-  00000007 - -  <!-- Below root -->
-  00000008 M -  Var : Name=V1 Type=Int
-  00000008 - M   =>5<=
+  00000006 - - N Variables
+  00000007 - - -  <!-- Below root -->
+  00000008 M - N  Var : Name=V1 Type=Int
+  00000008 - M -   =>5<=
 +
-A 'M' in first column indicates that the field has Mixed content while in
+A 'M' in first column indicates that the element has Mixed content while in
 second column it denotes a field that is part of a Mixed content (they are not
-exclusive).
+exclusive). The third column indicates if the element is a
+"<EmptyElementTag/>" (T), otherwise if it is defined as EMPTY in the Dtd (D),
+or if it is not empty (N).
 +
 Note that this options is incompatible with the xref:Expand[expand] option and
 with the xref:Keep[keep] option. Dump implies to keep all as is.
@@ -160,13 +162,13 @@ xref:Generator[generator]) and dump this new tree (usefull to test the
 xref:Generator[generator]).
 
 -m | --mixed: :: When there is no Dtd, the XML parser tries to guess if an
-element is mixed by checking if its first child is text. This option forces a
-global scan of the tree so that this information is updated for each element,
-taking into account all its children.
+element is mixed by checking if its first child is text. In xref:Tree[tree]
+mode, this option forces a global scan of the tree so that this information
+is updated for each element, taking into account all its children.
 +
-Note that the children of an element re-tagged as mixed, have been parsed
+Note that such element re-tagged as mixed had its children being parsed
 without the information that they were part of a mixed element, so line-feeds
-and indentation have been skipped. Now they will be displayed with the new
+and indentation had been skipped. Now they will be displayed with the new
 information that the element is mixed, so line-feeds and indentation will not
 be generated.
 
