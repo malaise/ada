@@ -5,7 +5,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
      Trace.Loggers, Mixed_Str;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V20.1";
+  Version : constant String := "V21.0";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -242,6 +242,19 @@ procedure Xml_Checker is
       else
         Out_Flow.Put (" -");
       end if;
+      -- Empty info
+      if N.Kind = Xml_Parser.Element then
+        case Actx.Get_Empty_Info (N) is
+          when Xml_Parser.Tag_Empty =>
+            Out_Flow.Put (" T");
+          when Xml_Parser.Def_Empty =>
+            Out_Flow.Put (" D");
+          when Xml_Parser.Not_Empty =>
+            Out_Flow.Put (" N");
+        end case;
+      else
+        Out_Flow.Put (" -");
+      end if;
     end Put_Mixed;
 
   begin
@@ -435,6 +448,19 @@ procedure Xml_Checker is
     else
       Out_Flow.Put (" -");
     end if;
+    if Node.Kind = Xml_Parser.Element then
+      case Node.Empty_Info is
+        when Xml_Parser.Tag_Empty =>
+          Out_Flow.Put (" T");
+        when Xml_Parser.Def_Empty =>
+          Out_Flow.Put (" D");
+        when Xml_Parser.Not_Empty =>
+          Out_Flow.Put (" N");
+      end case;
+    else
+      Out_Flow.Put (" -");
+    end if;
+
     Out_Flow.Put (Indent);
     case Node.Kind is
       when Xml_Parser.Element =>

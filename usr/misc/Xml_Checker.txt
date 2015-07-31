@@ -1,9 +1,9 @@
 Xml_Checker
 ===========
 
-Parser version: V40.0 +
+Parser version: V40.1 +
 Generator version: V17.0 +
-Xml_checker version: V20.1 +
+Xml_checker version: V21.0 +
 Dtd_checker version: V4.0
 
 Xml_checker is a XML parser that checks the syntax (versus DTD) and formats the
@@ -49,8 +49,8 @@ exclusive.
 
 Output format
 ~~~~~~~~~~~~~
-anchor:Silent[]-s | --silent: :: for no output at all. The xref:Exit[exit
-code] indicates success or failure.
+anchor:Silent[]-s | --silent: :: for no XML output (so only error and
+warning messages). The xref:Exit[exit code] indicates success or failure.
 
 anchor:Progress[]-p | --progress: :: for only output a progress bar like this:
 
