@@ -2303,12 +2303,20 @@ package body Dtd is
     Add_Namespaces (Ctx, Cell.Name);
     Build_Children (Ctx, Adtd, Children);
     Check_Element (Ctx, Adtd, Children);
-    if Cell.Empty_Info /= Tag_Empty then
-      -- Update Empty_Info of Cell and in Elements tree
-      Cell.Empty_Info := (if Is_Empty (Adtd, Cell.Name) then Def_Empty
-                          else Not_Empty);
-      Tree_Mng.Set_Empty_Info (Ctx.Elements.all, Cell.Empty_Info);
-    end if;
+    -- Update Empty_Info of Cell and in Elements tree
+    case Cell.Empty_Info is
+      when Tag_Empty | Def_Empty =>
+        if not Children.Is_Empty then
+          -- Element is tagged or defined empty while it has children
+          Cell.Empty_Info := Not_Empty;
+        end if;
+      when Not_Empty =>
+        if Children.Is_Empty and then Is_Empty (Adtd, Cell.Name) then
+          -- Element is seen not empty but has no children and is defined empty
+          Cell.Empty_Info := Def_Empty;
+        end if;
+    end case;
+    Tree_Mng.Set_Empty_Info (Ctx.Elements.all, Cell.Empty_Info);
     -- Check children recursively
     if Ctx.Elements.Children_Number = 0 then
       -- No child
