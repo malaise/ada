@@ -191,7 +191,7 @@ package Xml_Parser.Generator is
   -- Set the Empty_Info of the element to Tag_Empty
   -- Shall the Element, if empty, be put with EmptyElemTag (<element/>) or
   --  with STag and ETag (<element></elememt>)
-  -- By default it is Def_Empty or Not_Empty (depending on Ftf) except if
+  -- By default it is Def_Empty or Not_Empty (depending on Dtd) except if
   --  - Parsed element is empty with EmptyElemTag (</element>)
   --  - or Generator.Set_Tag_Empty (True) is called on the element
   -- May raise Invalid_Node if in Prologue or in Tail
