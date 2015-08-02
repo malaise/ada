@@ -302,7 +302,8 @@ package Xml_Parser is
   -----------
   -- Check the Ctx: parse the DTD (if any) and check the Ctx versus it
   --  (same effect as Parse, but on a context that has been set or modified by
-  --  Xml_Parser.Generator)
+  --  Xml_Parser.Generator). Updates the namespaces, the Is_Mixed and the
+  --  Empty_Info of the elements
   -- For Trileans, Other means "leave as it is" (which is the value
   --  by default or the one set in Parse)
   -- Comments and Cdata flags of the context are not modified (they don't
