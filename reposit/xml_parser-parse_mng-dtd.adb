@@ -1721,6 +1721,11 @@ package body Dtd is
         if Att_Set then
           -- Get the Xml Attribute
           Xml_Val := Tree_Mng.Get_Attribute (Ctx.Elements.all, As.U.Tus(Attr));
+          if not Ctx.Expand then
+            -- Expand for check if attribute value not already expanded
+            Util.Expand_Vars (Ctx, Adtd, Xml_Val, Check_Attribute);
+            Debug ("Xml attribute expanded for check as " & Xml_Val.Image);
+          end if;
         end if;
 
         --  Any Required in dtd must appear in xml
@@ -1768,25 +1773,26 @@ package body Dtd is
           declare
             -- Get the first value from dtd list, from 2 to second sep
             Sep : constant Positive
-                := Str_Util.Locate (Attinfo.List.Image,
-                                      Info_Sep & "", 2);
-            Dtd_Val : constant String
-                    := Attinfo.List.Slice (2, Sep - 1 );
+                := Str_Util.Locate (Attinfo.List.Image, Info_Sep & "", 2);
+            Dtd_Val : constant As.U.Asu_Us := Attinfo.List.Uslice (2, Sep - 1 );
             Attr_Us : constant As.U.Asu_Us := As.U.Tus (Attr);
           begin
+            Xml_Val := Dtd_Val;
+            Util.Expand_Vars (Ctx, Adtd, Xml_Val, Check_Attribute);
             if Ctx.Expand then
               if Ctx.Namespace then
                 -- Add namespace of default or fixed attribute
-                Namespaces.Add (Ctx, Attr_Us, As.U.Tus (Dtd_Val));
+                Namespaces.Add (Ctx, Attr_Us, Xml_Val);
               end if;
               Debug ("Dtd adding attribute " & Attr_Us.Image & " type " & Td
-                    & " val " & Dtd_Val);
+                    & " val " & Xml_Val.Image);
               Tree_Mng.Add_Attribute (Ctx.Elements.all,
-                  Attr_Us, As.U.Tus (Dtd_Val), Line_No);
+                  Attr_Us, Xml_Val, Line_No);
+            else
+              Debug ("Dtd attribute expanded for check as " & Xml_Val.Image);
             end if;
-            Xml_Val := As.U.Tus (Dtd_Val);
             if Attr = Tree_Mng.Xml_Space
-            and then Dtd_Val = Tree_Mng.Preserve then
+            and then Xml_Val.Image = Tree_Mng.Preserve then
               Tree_Mng.Add_Tuning (Ctx.Elements.all,
                                    Tree_Mng.Xml_Space_Preserve);
               Debug (" Check, added tuning " & Tree_Mng.Xml_Space_Preserve);

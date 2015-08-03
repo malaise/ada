@@ -11,9 +11,9 @@ package body Parse_Mng  is
   end Init_Steps_Logger;
 
   -- Context where a reference to entity is resolved
-  -- In Xml content, in attribute value, in entity value,
+  -- In Xml content, in attribute value, in entity value, for Check_Attribute,
   --  in dtd (outside or inside markup or inside content description)
-  type Context_List is (Ref_Xml, Ref_Attribute,
+  type Context_List is (Ref_Xml, Ref_Attribute, Check_Attribute,
                         Ref_Entity, Ref_Dtd, Ref_Dtd_Mark, Ref_Dtd_Content);
   -- Is a context in dtd
   function In_Dtd (Context : Context_List) return Boolean is

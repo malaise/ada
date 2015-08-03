@@ -168,7 +168,7 @@ package body Entity_Mng is
     --  - Bypass (replace Got by "&name;")
     --  - Include as PE (Got = ' ' & Value & ' ')
     case Context is
-      when Ref_Xml | Ref_Attribute =>
+      when Ref_Xml | Ref_Attribute | Check_Attribute =>
         if Parameter then
           Debug ("Forbidden parameter entity reference " & Name.Image
                & " in xml");
