@@ -4,7 +4,7 @@ with Trace.Loggers, Exception_Messenger, Directory, Str_Util,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -263,9 +263,10 @@ package body Xml_Parser is
     function String_Flow return String;
     procedure Parse_Dtd (Ctx : in out Ctx_Type;
                          Adtd : in out Dtd_Type);
+    procedure Clean_Dtd (Adtd : in out Dtd_Type);
     -- Parse the prologue
     procedure Parse_Prologue (Ctx : in out Ctx_Type;
-                              Adtd : in out Dtd_Type);
+                              Adtd : out Dtd_Type);
     -- Parse the elements
     procedure Parse_Elements (Ctx : in out Ctx_Type;
                               Adtd : in out Dtd_Type);
@@ -555,12 +556,7 @@ package body Xml_Parser is
   procedure Clean_Dtd (Dtd : in out Dtd_Type) is
   begin
     -- Clean Dtd
-    Dtd.Set := False;
-    Dtd.Xml_Found := False;
-    Dtd.Encoding.Set_Null;
-    Dtd.Include_Level := 0;
-    Info_Mng.Delete_List (Dtd.Info_List);
-    Entity_List_Mng.Delete_List (Dtd.Entity_List);
+    Parse_Mng.Clean_Dtd (Dtd);
   end Clean_Dtd;
 
   -- Parse the prologue of a string
@@ -568,13 +564,15 @@ package body Xml_Parser is
   --    Parse_Error while parsing the string
   procedure Parse_Prologue (Ctx       : out Ctx_Type;
                             Str       : in String;
-                            Dtd       : in out Dtd_Type;
+                            Dtd       : out Dtd_Type;
                             Ok        : out Boolean;
                             Comments  : in Boolean := False;
                             Cdata     : in Cdata_Policy_List
                                       := Remove_Cdata_Markers;
                             Expand    : in Boolean := True;
                             Normalize : in Boolean := True;
+                            Use_Dtd   : in Boolean := True;
+                            Dtd_File  : in String  := "";
                             Namespace : in Boolean := False;
                             Warn_Cb   : in Warning_Callback_Access := null;
                             Parse_Cb  : in Parse_Callback_Access := null) is
@@ -601,6 +599,8 @@ package body Xml_Parser is
     Ctx.Expand := Expand;
     Ctx.Cdata_Policy := Cdata;
     Ctx.Normalize := Normalize;
+    Ctx.Use_Dtd := Use_Dtd;
+    Ctx.Dtd_File := As.U.Tus (Dtd_File);
     Ctx.Namespace := Namespace;
     Ctx.Warnings := Warn_Cb;
     Ctx.Callback := Parse_Cb;

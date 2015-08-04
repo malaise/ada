@@ -1,9 +1,9 @@
 Xml_Checker
 ===========
 
-Parser version: V40.2 +
+Parser version: V41.0 +
 Generator version: V17.0 +
-Xml_checker version: V21.0 +
+Xml_checker version: V21.1 +
 Dtd_checker version: V4.0
 
 Xml_checker is a XML parser that checks the syntax (versus DTD) and formats the
@@ -127,10 +127,11 @@ This option forces no normalization of the text and of the expanded attributes.
 
 Checks
 ~~~~~~
--d [ <Dtd> ] | --dtd=[<Dtd>]: :: for check with a specific DTD file.
-Use this option to set the DTD if the XML file has no DOCTYPE or to overwrite
-the DOCTYPE directive. You ca use ''-d ""'' or ''--dtd=""'' to force discarding
-the DOCTYPE directive.
+-d [ <Dtd> ] | --dtd=[<Dtd>]: :: for check with a specific external DTD file.
+Use this option to set the external DTD if the XML file has no DOCTYPE,
+or to overwrite the one of DOCTYPE directive. +
+You can use ''-d ""'' or ''--dtd=""'' to force discarding the complete DOCTYPE
+directive (include internal DTD).
 
 anchor:Warnings[]-w | --warnings: :: for check and report warnings. The warnings
 that can be reported are:
@@ -175,7 +176,7 @@ be generated.
 -h | --help: :: for put online help.
 
 -v | --version: :: for put versions of the Xml_Parser, the Xml_Parser.Generator
-(see xref:XmlParser[XML parser and generator]) and Xml_checker.
+(see xref:XmlParser[XML parser and generator]) and xml_checker.
 
 Behavior
 --------
@@ -203,8 +204,10 @@ Exit code
 anchor:Exit[]Xml_checker exits with 0 if no error is detected and with 1 otherwise
 (xref:Warnings[warnings] don't affect the exit code).
 
-anchor:XmlParser[] Use of XML parser and generator
---------------------------------------------------
+anchor:XmlParser[]
+
+Use of XML parser and generator
+-------------------------------
 .XML parser
 Xml_checker uses a standalone package (Xml_Parser) to parse the XML flow.
 
@@ -241,7 +244,7 @@ Xml_checker also uses a XML generator that is a child package of Xml_Parser
 (Xml_Parser.Generator) to build the formatted XML output of the tree or of
 each node. The generator is not used in 'Dump' and in 'Canonical' modes. 
 
-With xref:CopyTree[copytree] option, Xml_checker also uses the XML generator to
+With xref:CopyTree[copytree] option, xml_checker also uses the XML generator to
 build the copy of the tree.
 
 .Default behavior
@@ -254,7 +257,7 @@ the comments and CDATA markers are removed, where entities are expanded, and
 where attributes are initialized with their default values. This is the most
 convenient for an application that wants to process the content of the XML
 file. +
-The following table summarizes the defaults of Xml_Checker (and Generator) and
+The following table summarizes the defaults of xml_checker (and Generator) and
 of Xml_Parser. The differences are highlighted:
 [width="75%", options="header"]
 |=========================================================
@@ -275,6 +278,20 @@ of Xml_Parser. The differences are highlighted:
 In order to trigger the default behaviour of the parser, xml_checker shalled
 be called with options: +
 '--tree --keep=none --expand'
+
+.Check versus Dtd
+Here is how xml_checker instructs Xml_Parser to process the DOCTYPE directive,
+depending on the '-d' option:
+
+* By default, Xml_Parser parses the DOCTYPE directive and the corresponding DTDs
+(internal and external) if any, and checks the compliance of the XML file
+versus this DTD.
+
+* With option '-d <URI>', Xml_Parser parses the internal DTD (if any) and the
+provided URI, and checks the compliance of the XML file versus this DTD. +
+
+* With option '-d ""', Xml_Parser skips the DOCTYPE directive and does not
+check compliance.
 
 .Canonicalization
 As explained about xref:Canonical[canonical] option, xml_checker supports

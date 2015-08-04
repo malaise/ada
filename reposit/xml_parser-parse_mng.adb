@@ -1875,9 +1875,15 @@ package body Parse_Mng  is
     Steps_Logger.Log_Info ("Done Parse_Dtd");
   end Parse_Dtd;
 
+  -- Clean a Dtd
+  procedure Clean_Dtd (Adtd : in out Dtd_Type) is
+  begin
+    Dtd.Init (Adtd);
+  end Clean_Dtd;
+
    -- Parse the prologue
   procedure Parse_Prologue (Ctx : in out Ctx_Type;
-                            Adtd : in out Dtd_Type) is
+                            Adtd : out Dtd_Type) is
   begin
     Init_Steps_Logger;
     Steps_Logger.Log_Info ("Starting Parse_Prologue");
@@ -1885,9 +1891,9 @@ package body Parse_Mng  is
     Namespaces.Init (Ctx);
     -- Init Prologue with an empty root
     Tree_Mng.Init_Prologue (Ctx.Prologue.all);
-    -- Reset Dtd, it will not be used
+    -- Reset Dtd
     Dtd.Init (Adtd);
-    -- Parse prologue, disallow Dtd
+    -- Parse prologue
     Steps_Logger.Log_Info ("Parsing prologue");
     Parse_Start_To_Root (Ctx, Adtd);
     Steps_Logger.Log_Info ("Done Parse_Prologue");
