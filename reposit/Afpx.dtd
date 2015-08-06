@@ -22,8 +22,9 @@
 <!-- The Afpx_Descriptors is made of several descriptors. -->
 <!-- Before descriptors it is possible to re-define any of the 14 colors. -->
 <!--  The constants Color01 to Color14 are automatically created after this -->
-<!--  definition or before the first descriptor. It is also possible to -->
-<!--  define the default background for descriptors (default is Color01). -->
+<!--  definition, or at least before the first descriptor. It is also --> 
+<!--  possible to define the default background for descriptors (default is -->
+<!--  Color01). -->
 <!-- As soon as the Afpx descriptors declaration is parsed a constant -->
 <!--  Default_Background is defined. -->
 <!-- Before the descriptors, it is possible to (re)define some variables. -->
@@ -40,11 +41,11 @@
               Value CDATA   #REQUIRED>
 
 <!-- This ENTITY is informative. It defines the default colors, (if not -->
-<!--  re-defined by ColorDefinitions). -->
-<!ENTITY % Colors "Light_Grey | Blue | Dark_Green | Cyan |
-                   Red | Magenta | Brown | Black |
-                   Dark_Grey | Light_Blue | Lime_Green  |Orange |
-                   Yellow | White">
+<!--  re-defined in ColorDefinitions). -->
+<!ENTITY % Default_Colors "Light_Grey | Blue | Dark_Green | Cyan |
+                           Red | Magenta | Brown | Black |
+                           Dark_Grey | Light_Blue | Lime_Green  |Orange |
+                           Yellow | White">
 <!ELEMENT Color_Definitions (Color_Definition*,Default_Background?)>
 <!ELEMENT Color_Definition EMPTY>
 <!ATTLIST Color_Definition Id ID #REQUIRED
@@ -57,15 +58,17 @@
 <!-- It is possible to define the background color of the descriptor -->
 <!--  (default is Default_Background). -->
 <!-- The descriptor name is the name of the corresponding package in the -->
-<!--  cross-reference package (default: dscr_<Num>) -->
-<!-- As soon as this descriptor declaration is parsed, a constant -->
-<!--  named Descriptor.Background and with current descriptor background is -->
-<!--  defined for the rest of the descriptor. -->
-<!--  Another constant with a specific name and the same value is defined -->
-<!--  for the rest of the descriptors (e.g. Dscr_1.Background). -->
-<!--  Same for the name if it is defined. -->
-<!-- A descriptor leads to the definition of a sub-package of the -->
-<!--  cross-reference package with a constant Dscr_Num. -->
+<!--  cross-reference package (default: Dscr_<Num>) -->
+<!-- As soon as a descriptor declaration is parsed, the following -->
+<!--  constants are defined: -->
+<!--  - Descriptor.Name, set to the current descriptor name, -->
+<!--    scope the current descriptor, -->
+<!--  - Descriptor.Background, set to the current descriptor background, -->
+<!--    scope the current descriptor, -->
+<!--  - Dscr_<Name>.Background, set to the current descriptor background, -->
+<!--    scope the following descriptors. -->
+<!-- A descriptor leads to the definition of a sub-package (named <Name>) -->
+<!--  of the cross-reference package, with a constant Dscr_Num set to <Num>. -->
 <!ATTLIST Descriptor Num NMTOKEN #REQUIRED Background CDATA #IMPLIED
                                            Name CDATA #IMPLIED>
 <!-- A descriptor allows defining one optional list, then fields. -->
@@ -87,8 +90,10 @@
 <!-- Put field simply displays fixed text, Button field allows the user to -->
 <!--  click (with the mouse) on it and Get field allows the used to enter -->
 <!--  text in it. -->
-<!-- If a Name is set then a a variable is defined (e.g. Field_2.Name) and -->
-<!--  a constant Name will be generated in the cross-reference package. -->
+<!-- If a Name is set, then a variable is defined (e.g. Field_2.Name) and -->
+<!--  a constant Name will be generated in the desciptor's sub-pacakge of -->
+<!--  the cross-reference package, so the name "Dscr_Num" is forbidden for -->
+<!--  a field. -->
 <!ATTLIST Field Num NMTOKEN #REQUIRED
                 Kind (Put|Button|Get) #REQUIRED
                 Name CDATA #IMPLIED>
