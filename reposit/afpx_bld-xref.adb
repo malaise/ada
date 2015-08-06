@@ -2,6 +2,7 @@ with Lower_Str, Text_Line, Dynamic_List, Ada_Words.Keywords;
 separate (Afpx_Bld)
 package body Xref is
 
+  -- These are reserved Dscr attributes. These names are forbidden for fields
   Dscr_Num : constant String := "Dscr_Num";
   -- When an identifier is redefined, get line of previous definition
   Prev_Line_No : Natural := 0;

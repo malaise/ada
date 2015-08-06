@@ -22,7 +22,7 @@
 <!-- The Afpx_Descriptors is made of several descriptors. -->
 <!-- Before descriptors it is possible to re-define any of the 14 colors. -->
 <!--  The constants Color01 to Color14 are automatically created after this -->
-<!--  definition, or at least before the first descriptor. It is also --> 
+<!--  definition, or at least before the first descriptor. It is also -->
 <!--  possible to define the default background for descriptors (default is -->
 <!--  Color01). -->
 <!-- As soon as the Afpx descriptors declaration is parsed a constant -->
@@ -43,9 +43,9 @@
 <!-- This ENTITY is informative. It defines the default colors, (if not -->
 <!--  re-defined in ColorDefinitions). -->
 <!ENTITY % Default_Colors "Light_Grey | Blue | Dark_Green | Cyan |
-                           Red | Magenta | Brown | Black |
-                           Dark_Grey | Light_Blue | Lime_Green  |Orange |
-                           Yellow | White">
+                           Red | Magenta | Brown | White |
+                           Dark_Grey | Light_Blue | Lime_Green | Orange |
+                           Yellow | Black">
 <!ELEMENT Color_Definitions (Color_Definition*,Default_Background?)>
 <!ELEMENT Color_Definition EMPTY>
 <!ATTLIST Color_Definition Id ID #REQUIRED
