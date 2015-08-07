@@ -805,9 +805,8 @@ package body Util is
     use type As.U.Asu_Us;
   begin
     Start_Index := 0;
-    if not In_Dtd (Context) and then not Ctx.Expand
-    and then Context /= Check_Attribute then
-      -- Do not expand in Xml, except for checking attribute
+    if not In_Dtd (Context) and then not Ctx.Expand then
+      -- Do not expand in Xml
       return;
     end if;
 
@@ -819,7 +818,7 @@ package body Util is
     Sstart := 1;
     Result := Text;
     -- Normalize separators if attribute
-    if Context = Ref_Attribute or else Context = Check_Attribute then
+    if Context = Ref_Attribute then
       declare
         Str : String := Result.Image;
       begin
