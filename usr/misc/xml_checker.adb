@@ -5,7 +5,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
      Trace.Loggers, Mixed_Str;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V21.1";
+  Version : constant String := "V21.2";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -761,8 +761,7 @@ procedure Xml_Checker is
                Warn_Cb => Warnings,
                Parse_Cb => Callback_Acc);
     if not Parse_Ok then
-      Basic_Proc.Put_Line_Error ("Error in file "
-                               & Get_File_Name (Index, True) & ": "
+      Basic_Proc.Put_Line_Error ("Error: "
                                & Ctx.Get_Parse_Error_Message);
       Basic_Proc.Set_Error_Exit_Code;
       Ctx.Clean;
