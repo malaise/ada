@@ -958,7 +958,7 @@ procedure Afpx_Bld is
     if not Background then
       Descriptors(Dscr_No).Background := Default_Background;
     end if;
-    Add_Variable (Node, "Dscr_" & Dscr_Image (Dscr_No) & ".Background",
+    Add_Variable (Node, "Dscr_" & Name.Image & ".Background",
         Color_Image (Descriptors(Dscr_No).Background), False, True);
     Add_Variable (Node, "Descriptor.Background",
         Color_Image (Descriptors(Dscr_No).Background), False, False);
