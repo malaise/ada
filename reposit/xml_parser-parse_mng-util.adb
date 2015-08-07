@@ -303,7 +303,9 @@ package body Util is
                       when Xml_Flow | Int_Dtd_Flow => " xml",
                       when Dtd_Flow => " dtd",
                       when Ext_Flow => " external entity");
-    if not Flow.Curr_Flow.Name.Is_Null then
+    if Flow.Curr_Flow.Name.Length > 1
+    or else (Flow.Curr_Flow.Name.Length = 1
+             and then Flow.Curr_Flow.Name.Element (1) > Space) then
       Err_Msg.Append (" " & Flow.Curr_Flow.Name);
     end if;
     Err_Msg.Append (": " & Msg & ".");
