@@ -298,6 +298,13 @@ provided URI, and checks the compliance of the XML file versus this DTD. +
 * With option '-d ""', Xml_Parser skips the DOCTYPE directive and does not
 check compliance.
 
+Some XML files cannot be validated without being expanded. For example, this
+occurs if they contain references to internal entities (&ent;) that expand as
+sub-elements, attribute contents... +
+In this case, the validation (with expansion) is possible with options '-V
+[ -d <external_dtd> ]', and the formatting (without validation nor expansion)
+is obtained with options '-d ""'.
+
 .Canonicalization
 As explained about xref:Canonical[canonical] option, xml_checker supports
 canonicalization of XML documents. It invokes the XML parser with fixed options:
