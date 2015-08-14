@@ -28,7 +28,7 @@ procedure Wake is
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
-      & " <mac_address> [<host>][:<port>]");
+      & " <mac_address> [ <host>:<port> | <host>: | :<port> ]");
     Basic_Proc.Put_Line_Output (
       " <mac_address> ::= XX:XX:XX:XX:XX:XX    -- MAC address of host to wake up");
     Basic_Proc.Put_Line_Output (
@@ -112,7 +112,12 @@ begin
   -- Use default Host : Port
   if Host.Kind = Tcp_Util.Host_Name_Spec and then Host.Name.Is_Null then
     -- Default host is broadcast on LAN
-    Lan_Id := Socket.Bcast_Of (Socket.Local_Host_Id);
+    begin
+      Lan_Id := Socket.Bcast_Of (Socket.Local_Host_Id);
+    exception
+      when Socket.Soc_Name_Not_Found =>
+        Error ("Unknown local host, try specifying destination");
+    end;
     Host := (Tcp_Util.Host_Id_Spec, Lan_Id);
   end if;
   if Port.Kind = Tcp_Util.Port_Name_Spec and then Port.Name.Is_Null then
