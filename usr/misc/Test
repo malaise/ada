@@ -4,11 +4,39 @@
 
 # Cleanup
 function clean {
-  rm -f cmp res
+  rm -f cmp res out err expout experr
+}
+
+# Error message
+function error {
+  echo
+  echo $* 2>&1
+  exit 1
+}
+
+# Compare 2 files
+function comp {
+  local ok=1
+  if [ $1 = "-n" ] ; then
+    ok=0
+    shift
+  fi
+  cmp $1 $2 2> /dev/null
+  res=$?
+  if [ $ok -eq 1 ] ; then
+    if [ $res -ne 0 ] ; then
+      error "File $1 differs from expected $2."
+    fi
+  else
+    if [ $res -eq 0 ] ; then
+      error "File $1 should differs from expected $2."
+    fi
+  fi
 }
 
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
+# On test of compression / uncompression
 function azf_one {
   export OPT=""
   if [ "$1" = "--lz4" ] ; then
@@ -52,6 +80,7 @@ function azf_one {
   fi
 }
 
+# Specific option to do one azf test
 if [ "$1"  = "--lzf" ] ; then
   shift
   for file in $* ; do
@@ -75,11 +104,48 @@ elif [ "$1"  = "--snappy" ] ; then
   exit
 fi
 
-for file in `ls *.ads *.adb lib_Linux/*` ; do
-  azf_one $file
-  azf_one --lz4 $file
-  azf_one --snappy $file
-done
+# Default
+if [ "$1"  != "--none" ] ; then
+  # Azf on lzf, lz4 and snappy
+  for file in `ls *.ads *.adb lib_Linux/*` ; do
+    azf_one $file
+    azf_one --lz4 $file
+    azf_one --snappy $file
+  done
+  echo ""
+fi
 
+# Comp_vars with SET_ME set
+echo "comp_vars with SET_ME"
+export SET_ME=Momo
+comp_vars < variables.xml >out 2>err
+cat > expout << EOF
+<?xml version="1.1"?>
+<Variables>
+  <Var Name="V1" Type="Int">5</Var>
+  <Var Name="PATH" Type="Str">/shared/tools/git/current/bin:.:/home/malaise/bin:/usr/gnat/bin:/usr/local/bin:/usr/bin:/bin:/shared/tools/exec/tkcvs/bin:/shared/tools/bin:/shared/tools/exec/GtkAda-2.14.0/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/games:/usr/lib/teTeX/bin:/shared/TOOLS/jdk1.6.0_16/bin:/usr/local/bin</Var>
+  <Var Name="V2" Type="Int">125</Var>
+  <Var Name="V3" Type="Str">5*125</Var>
+  <Var Name="V4" Type="Str"></Var>
+  <Var Name="V2" Type="Int">1250</Var>
+  <Var Name="Fail" Type="Str">Momo</Var>
+</Variables>
+EOF
+echo -n > experr
+comp out expout
+comp err experr
+
+# Comp_vars without SET_ME set
+echo "comp_vars without SET_ME"
+unset SET_ME
+comp_vars < variables.xml >out 2>err
+cat > experr << EOF 
+Error: Environ variable SET_ME not found.
+Error processing input flow at line 15 on node Var:
+Unknown variable while evaluating variable.
+EOF
+comp err experr
+
+# Done
 clean
 
