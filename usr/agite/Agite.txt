@@ -469,6 +469,7 @@ Each file is preceded by two characters of its Git index and local status (see
 * ' ' = unmodified
 * ? = unknown
 * M = modified
+* T = type modified
 * A = added
 * D = deleted
 * R = renamed
@@ -970,6 +971,7 @@ buffer,
 also alternatively copy into the X11 selection buffer, 
 * The list of all the files in the commit, each preceded by a letter:
 ** M Modified,
+** T Type modified,
 ** A Added,
 ** D Deleted.
 
