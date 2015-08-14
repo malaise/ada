@@ -1528,7 +1528,6 @@ static int get_iface (const soc_host *host, const soc_host *mask,
     return (SOC_NAME_NOT_FOUND);
   } else {
     /* Found */
-
     memcpy (iface, &ifreqs[n], sizeof(struct ifreq));
     return (SOC_OK);
   }
