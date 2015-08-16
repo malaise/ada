@@ -32,7 +32,7 @@ procedure Wake is
     Basic_Proc.Put_Line_Output (
       " <mac_address> ::= XX:XX:XX:XX:XX:XX    -- MAC address of host to wake up");
     Basic_Proc.Put_Line_Output (
-      " <host> ::= <host_name>|<host_ip>       -- Default: broadcast on local LAN");
+      " <host> ::= <host_name>|<host_lan_ip>   -- Default: broadcast on local LAN");
     Basic_Proc.Put_Line_Output (
       " <port> ::= <port_name>|<port_num>      -- Default: "
     & Ip_Addr.Image (Default_Port));
