@@ -30,11 +30,11 @@ procedure Wake is
     Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
       & " <mac_address> [ <host>:<port> | <host>: | :<port> ]");
     Basic_Proc.Put_Line_Output (
-      " <mac_address> ::= XX:XX:XX:XX:XX:XX    -- MAC address of host to wake up");
+      " <mac_address> ::= XX:XX:XX:XX:XX:XX      -- MAC address of host to wake up");
     Basic_Proc.Put_Line_Output (
-      " <host> ::= <host_name>|<host_lan_ip>   -- Default: broadcast on local LAN");
+      " <host> ::= <host_lan_name>|<host_lan_ip> -- Default: broadcast on local LAN");
     Basic_Proc.Put_Line_Output (
-      " <port> ::= <port_name>|<port_num>      -- Default: "
+      " <port> ::= <port_name>|<port_num>        -- Default: "
     & Ip_Addr.Image (Default_Port));
   end Usage;
 
@@ -137,7 +137,14 @@ begin
 
   -- Send dest to Host/Lan
   begin
-    Socket_Util.Set_Destination (Soc, False, Host, Port);
+    begin
+      -- Try to interprete Host as a host
+      Socket_Util.Set_Destination (Soc, False, Host, Port);
+    exception
+      when Socket.Soc_Name_Not_Found =>
+        -- Try to interprete Host as a LAN
+        Socket_Util.Set_Destination (Soc, True, Host, Port);
+    end;
   exception
     when Socket.Soc_Name_Not_Found =>
       Error ("Unknown destination "
