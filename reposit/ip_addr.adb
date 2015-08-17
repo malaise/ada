@@ -38,7 +38,7 @@ package body Ip_Addr is
     -- Check if Addr is an addr (contains only nums and dots): X[.Y[.Z  ... ]]
     -- Give up otherwise
     for I in Addr'Range loop
-      if (Addr(I) < '0' and then Addr(I) > '9')
+      if (Addr(I) < '0' or else Addr(I) > '9')
       and then (I = Addr'First or else Addr(I) /= '.') then
         return Result;
       end if;
