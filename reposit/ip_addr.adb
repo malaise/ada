@@ -19,59 +19,60 @@ package body Ip_Addr is
 
   -- If Addr is "xxx.yyy.zzz.ttt" where each is between 0 and 255 then
   --   return the Tcp_Util.Remote_Host (Tcp_Util.Host_Id_Spec)
+  -- Elsif Addr is empty or made of only numbers and dots, raise Parse_Error
   -- Else
   --   return the Tcp_Util.Remote_Host (Tcp_Util.Host_Name_Spec)
   -- End if
   function Parse (Addr : String) return Tcp_Util.Remote_Host is
+    Result : Tcp_Util.Remote_Host;
     Txt : As.U.Asu_Us;
     Dots : array (1 .. 3) of Natural;
     Ip_Addr : Socket.Ip_Address;
-    Result : Tcp_Util.Remote_Host;
   begin
     if Addr = "" then
       raise Parse_Error;
     end if;
-    -- Try to parse Host_Id
-    begin
-      Txt := As.U.Tus (Addr);
-      -- 3 and only three dots, not contiguous
-      if Str_Util.Locate (Txt.Image, ".", Occurence => 4) /= 0 then
-        raise Parse_Error;
-      end if;
-      Dots(1) := Str_Util.Locate (Txt.Image, ".", Occurence => 1);
-      Dots(2) := Str_Util.Locate (Txt.Image, ".", Occurence => 2);
-      Dots(3) := Str_Util.Locate (Txt.Image, ".", Occurence => 3);
-      if Dots(1) = 1 or else Dots(2) = Dots(1)+1 or else
-         Dots(3) = Dots(2)+1 or else Dots(3) = Txt.Length
-      or else Dots(3) = 0 then
-        raise Parse_Error;
-      end if;
-
-      -- 4 bytes
-      Ip_Addr.A := Socket.Byte(To_Natural(
-            Txt.Slice (1, Dots(1)-1)));
-      Ip_Addr.B := Socket.Byte(To_Natural(
-            Txt.Slice (Dots(1)+1, Dots(2)-1)));
-      Ip_Addr.C := Socket.Byte(To_Natural(
-            Txt.Slice (Dots(2)+1, Dots(3)-1)));
-      Ip_Addr.D := Socket.Byte(To_Natural(
-            Txt.Slice (Dots(3)+1, Txt.Length)));
-      return (Kind => Tcp_Util.Host_Id_Spec,
-              Id   => Socket.Addr2Id (Ip_Addr) );
-    exception
-      when others =>
-        -- Not a "vvv.xxx.yyy.zzz" format
-        null;
-    end;
-
-    -- Try to parse Host_Name
+    -- Default result
     Result.Name := As.U.Tus (Addr);
-    return Result;
 
+    -- Check if Addr is an addr (contains only nums and dots): X[.Y[.Z  ... ]]
+    -- Give up otherwise
+    for I in Addr'Range loop
+      if (Addr(I) < '0' and then Addr(I) > '9')
+      and then (I = Addr'First or else Addr(I) /= '.') then
+        return Result;
+      end if;
+    end loop;
+
+    -- Try to parse Host_Id
+    Txt := As.U.Tus (Addr);
+    -- 3 and only three dots, not contiguous
+    if Str_Util.Locate (Txt.Image, ".", Occurence => 4) /= 0 then
+      raise Parse_Error;
+    end if;
+    Dots(1) := Str_Util.Locate (Txt.Image, ".", Occurence => 1);
+    Dots(2) := Str_Util.Locate (Txt.Image, ".", Occurence => 2);
+    Dots(3) := Str_Util.Locate (Txt.Image, ".", Occurence => 3);
+    if Dots(1) = 1 or else Dots(2) = Dots(1)+1 or else
+       Dots(3) = Dots(2)+1 or else Dots(3) = Txt.Length
+    or else Dots(3) = 0 then
+      raise Parse_Error;
+    end if;
+
+    -- 4 bytes
+    Ip_Addr.A := Socket.Byte(To_Natural(
+          Txt.Slice (1, Dots(1)-1)));
+    Ip_Addr.B := Socket.Byte(To_Natural(
+          Txt.Slice (Dots(1)+1, Dots(2)-1)));
+    Ip_Addr.C := Socket.Byte(To_Natural(
+          Txt.Slice (Dots(2)+1, Dots(3)-1)));
+    Ip_Addr.D := Socket.Byte(To_Natural(
+          Txt.Slice (Dots(3)+1, Txt.Length)));
+    return (Kind => Tcp_Util.Host_Id_Spec,
+            Id   => Socket.Addr2Id (Ip_Addr) );
   exception
     when others =>
       raise Parse_Error;
-
   end Parse;
 
   -- Image of an Ip address: "xxx.yyy.zzz.ttt"

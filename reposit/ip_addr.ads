@@ -5,6 +5,7 @@ package Ip_Addr is
 
   -- If Addr is "xxx.yyy.zzz.ttt" where each is between 0 and 255 then
   --   return the Tcp_Util.Remote_Host (Tcp_Util.Host_Id_Spec)
+  -- Elsif Addr is made of only numbers and dots, raise Parse_Error
   -- Else
   --   return the Tcp_Util.Remote_Host (Tcp_Util.Host_Name_Spec)
   -- End if
