@@ -89,9 +89,6 @@ typedef union soc_host_t {
     byte bytes[4];
 } soc_host;
 
-/* String length for a host or a port */
-#define SOC_MAX_LEN 50
-
 /* A message */
 typedef int soc_length;
 typedef void * soc_message;
