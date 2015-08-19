@@ -581,12 +581,11 @@ procedure Alook is
   type Verbose_Level_List is (Normal, Silent, Verbose, Test);
   Verbose_Level : Verbose_Level_List;
   Warn_Comment : Boolean;
-  One_Done : Boolean;
 
   procedure Put_Usage is
   begin
     Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
-         & " [ { -v | -s | -t | -n | -C | -c <file> } ]");
+         & " [ { -v | -s | -t | -n | -C | -c | <file> } ]");
     Basic_Proc.Put_Line_Output ("Verbose levels (exclusive): " &
                           "Verbose, Silent, Normal or Test");
     Basic_Proc.Put_Line_Output ("Warnings on comments (on/off): if upper case");
@@ -596,15 +595,14 @@ begin
 
   Logger.Init;
   -- Help
-  if Argument.Get_Nbre_Arg = 0
-  or else Argument.Get_Parameter = "-h" then
+  if Argument.Get_Nbre_Arg = 1
+  and then Argument.Get_Parameter = "-h" then
     Put_Usage;
     return;
   end if;
 
   Verbose_Level := Normal;
   Warn_Comment := False;
-  One_Done := False;
 
   -- Process all remaining arguments (file names)
   for I in 1 .. Argument.Get_Nbre_Arg loop
@@ -626,7 +624,6 @@ begin
       Warn_Comment := False;
     else
       -- Process file
-      One_Done := True;
       if Do_One (Argument.Get_Parameter (I),
                  Verbose_Level /= Test,
                  Warn_Comment) then
@@ -650,9 +647,6 @@ begin
     end if;
   end loop;
 
-  if not One_Done then
-    Put_Usage;
-  end if;
   Basic_Proc.Set_Exit_Code (Exit_Code);
 exception
   when others =>
