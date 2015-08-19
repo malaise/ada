@@ -141,7 +141,7 @@ package body Graphic is
 
     use type Space.Color_List;
   begin
-    -- Y0 = Y_Max - XO - Len + Size is the offset of the middle of lowest row
+    -- Y0 = Y_Max - X0 - Len + Size is the offset of the middle of lowest row
     -- Y0 - Size is the pos of lower text "a b c d .."
     -- Y0 - Size - Height should be the text "Move:"
     -- Y0 - Size - 2 * Height must be positive, otherwise the font is too small

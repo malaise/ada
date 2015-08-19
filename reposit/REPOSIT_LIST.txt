@@ -320,7 +320,7 @@ condition_manager (1)::
      Allow several tasks to wait until unblocked all together or one by one.
 
 console (1)::
-     ANSII management of text/cursor console.
+     ANSI management of text/cursor console.
 
 control_pool (2)::
      Control exclusive access to data in a pool.

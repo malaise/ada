@@ -81,7 +81,7 @@ package body Argument_Parser is
   end Get_Option;
 
   -- Parse an argument
-  -- P_Dscr.OK is set to false if not a valid key
+  -- P_Dscr.Ok is set to false if not a valid key
   -- P_Dscr.Error is not set if not a key at all
   procedure Parse_Arg (The_Keys : in The_Keys_Type;
                        Arg_No : in Positive;

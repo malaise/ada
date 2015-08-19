@@ -16,7 +16,7 @@ package body Aski.Unicode is
     return True;
   end Is_Strict;
 
-  -- Conversion from strict ANSII to Unicode and reverse
+  -- Conversion from strict ANSI to Unicode and reverse
   -- Raise Constraint_Error if a character or unicode is not strict
   function Decode (C : Character) return Unicode_Number is
   begin

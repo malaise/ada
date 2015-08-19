@@ -44,7 +44,7 @@ package Aski.Unicode is
   function Is_Strict (U : Unicode_Number)   return Boolean;
   function Is_Strict (S : Unicode_Sequence) return Boolean;
 
-  -- Conversion from strict ANSII to Unicode and reverse
+  -- Conversion from strict ANSI to Unicode and reverse
   -- Raise Constraint_Error if a character or unicode is not strict
   function Decode (C : Character) return Unicode_Number;
   function Decode (S : String)    return Unicode_Sequence;

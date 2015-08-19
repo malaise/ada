@@ -194,7 +194,7 @@ package body Edition is
         Kind := K;
         -- Update Status when not allowed for current (new) kind
         if not Oper_Def.Kind_Can_Be (Kind, Status) then
-          -- Trye Not_Entered then Defered then ENtered
+          -- Try Not_Entered then Defered then Entered
           if Oper_Def.Kind_Can_Be (Kind, Oper_Def.Not_Entered) then
             Status := Oper_Def.Not_Entered;
           elsif Oper_Def.Kind_Can_Be (Kind, Oper_Def.Defered) then

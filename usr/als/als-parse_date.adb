@@ -115,7 +115,7 @@ begin
       end case;
     end;
   end if;
-  -- Clock is in Local time, convert into UTc if requested
+  -- Clock is in Local time, convert into UTC if requested
   if Utc then
     Crit.Date := Crit.Date - Sys_Calls.Gmt_Offset;
   end if;

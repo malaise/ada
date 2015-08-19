@@ -8,7 +8,7 @@ package body X_Mng is
 
   Infinite_Timeout : constant Duration := Timers.Infinite_Seconds;
 
-  -- MAximum length of a font name
+  -- Maximum length of a font name
   Max_Font_Name_Len : constant := 1024;
 
   -- Debug
