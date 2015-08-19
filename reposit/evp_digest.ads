@@ -13,7 +13,7 @@ package Evp_Digest is
 
 
   -- Initialize a context for use with a given digest kind
-  -- Valid names should be at least (demending on implementation):
+  -- Valid names should be at least (depending on implementation):
   --  md4 md5 sha sha1 dss1 sha224 sha256 sha384 sha512 ripemd160 whirlpool
   -- May raise:
   -- If Name does not correspond to a known digest kind (see man EVP_DigestInit)

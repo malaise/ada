@@ -988,7 +988,7 @@ begin
     -- Canonical
     Output_Kind := Canon;
   elsif Arg_Dscr.Is_Set (05) then
-    -- DUmp
+    -- Dump
     if Arg_Dscr.Is_Set (08) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""keep"" and ""dump"" options");
