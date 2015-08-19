@@ -620,6 +620,17 @@ try t_dur_image 1000
 comp err nul
 echo "OK"
 
+# t_evp digest
+title t_evp_digest
+try t_evp_digest sha1 tototititata
+cat << EOF > exp
+f56dfd658d9bf8e36df4223218f5e9cec128e287 (20)
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+
 # t_exception_messenger
 title t_exception_messenger
 try t_exception_messenger
