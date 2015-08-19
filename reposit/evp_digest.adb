@@ -49,7 +49,7 @@ package body Evp_Digest is
     use type System.Address;
   begin
     -- Check that Ctx is not in use
-    if Ctx.Evp_Md_Ctx /= System.Null_Address then
+    if Is_Init (Ctx) then
       raise Status_Error;
     end if;
     -- Global init
@@ -66,14 +66,19 @@ package body Evp_Digest is
     Ctx.Clean := False;
   end Init;
 
+  function Is_Init (Ctx : in Context) return Boolean is
+    use type System.Address;
+  begin
+    return Ctx.Evp_Md_Ctx /= System.Null_Address;
+  end Is_Init;
+
   -- Update the context with some text
   -- May raise Status_Error if Ctx is not init or finalized
   procedure Update (Ctx : in out Context; Text : in String) is
     Len : constant C_Types.Size_T := C_Types.Size_T (Text'Length);
-    use type System.Address;
   begin
     -- Check that Ctx is initialized
-    if Ctx.Evp_Md_Ctx = System.Null_Address then
+    if not Is_Init (Ctx) then
       raise Status_Error;
     end if;
     if Ctx.Clean then
@@ -86,13 +91,12 @@ package body Evp_Digest is
 
   procedure Update (Ctx : in out Context; Bytes : in Byte_Array) is
     Len : constant C_Types.Size_T := C_Types.Size_T (Bytes'Length);
-    use type System.Address;
   begin
     -- Check that Ctx is initialized
-    if Ctx.Evp_Md_Ctx = System.Null_Address then
+    if not Is_Init (Ctx) then
       raise Status_Error;
     end if;
-    if not Ctx.Clean then
+    if Ctx.Clean then
       Evp_Digestinit_Ex (Ctx.Evp_Md_Ctx, Ctx.Evp_Md, System.Null_Address);
       Ctx.Clean := False;
     end if;
@@ -105,10 +109,9 @@ package body Evp_Digest is
   function Get (Ctx : in out Context) return Byte_Array is
     Md : Byte_Array (1 .. Evp_Max_Md_Size);
     Len : C_Types.Uint32;
-    use type System.Address;
   begin
     -- Check that Ctx is initialized
-    if Ctx.Evp_Md_Ctx = System.Null_Address then
+    if not Is_Init (Ctx) then
       raise Status_Error;
     end if;
 
@@ -123,13 +126,23 @@ package body Evp_Digest is
     return Md (Md'First .. Md'First + Integer (Len) - 1);
   end Get;
 
+
+  -- Reset the context for a new Init
+  -- May raise Status_Error if Ctx is not init or already reset
+  procedure Reset (Ctx : in out Context) is
+  begin
+    if not Is_Init (Ctx) then
+      -- Context not init or already reset
+      raise Status_Error;
+    end if;
+    Finalize (Ctx);
+  end Reset;
+
   -- Finalize the context
-  -- May raise Status_Error if Ctx is not init or finalized
   procedure Finalize (Ctx : in out Context) is
-    use type System.Address;
   begin
     -- Check that Ctx is initialized
-    if Ctx.Evp_Md_Ctx /= System.Null_Address then
+    if Is_Init (Ctx) then
       Evp_Md_Ctx_Destroy (Ctx.Evp_Md_Ctx);
       Ctx.Evp_Md_Ctx := System.Null_Address;
     end if;

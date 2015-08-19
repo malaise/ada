@@ -18,9 +18,10 @@ package Evp_Digest is
   -- May raise:
   -- If Name does not correspond to a known digest kind (see man EVP_DigestInit)
   Name_Error : exception;
-  -- If Ctx is already init (and not finalized)
+  -- If Ctx is already init (and not reset)
   Status_Error : exception;
   procedure Init (Ctx : in out Context; Name : in String);
+  function Is_Init (Ctx : in Context) return Boolean;
 
   -- Update the context with some text
   -- May raise Status_Error if Ctx is not init or finalized
@@ -31,9 +32,9 @@ package Evp_Digest is
   -- May raise Status_Error if Ctx is not init or finalized
   function Get (Ctx : in out Context) return Byte_Array;
 
-  -- Finalize the context
-  -- May raise Status_Error if Ctx is not init or finalized
-  procedure Finalize (Ctx : in out Context);
+  -- Reset the context for a new Init
+  -- May raise Status_Error if Ctx is not init or already reset
+  procedure Reset (Ctx : in out Context);
 
 private
 
@@ -46,6 +47,8 @@ private
     Evp_Md_Ctx : System.Address := System.Null_Address;
     Evp_Md : System.Address := System.Null_Address;
   end record;
+
+  procedure Finalize (Ctx : in out Context);
 
 end Evp_Digest;
 
