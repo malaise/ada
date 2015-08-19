@@ -421,6 +421,7 @@ package body Io_Flow is
       raise In_Stdin;
     end if;
     Get_Echo := Echo;
+    -- Get / store strings (i.o. keys) by default
     Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 0, 1, Get_Echo);
   end Set_Echo;
 
@@ -441,6 +442,7 @@ package body Io_Flow is
     if Is_Stdio then
       raise In_Stdin;
     end if;
+    Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 0, 1, Get_Echo);
     Wait_Stdin;
     -- Strip trailing Lf if any
     return Async_Stdin.Strip_Last_Control (Stdin_Data.Image);
