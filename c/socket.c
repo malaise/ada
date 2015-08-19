@@ -25,7 +25,10 @@ static int evt_fd_set (int fd __attribute__ ((unused)),
 #endif
 
 #ifndef MAXHOSTNAMELEN
-#define MAXHOSTNAMELEN 64
+#define MAXHOSTNAMELEN NI_MAXHOST
+#endif
+#ifndef MAXSERVNAMELEN
+#define MAXSERVNAMELEN NI_MAXSERV
 #endif
 
 #define MAX_ERROR 28
@@ -586,13 +589,16 @@ static int get_host_addr (const char * name, soc_host *host) {
   hint.ai_socktype = 0;
   hint.ai_protocol = 0;
   hint.ai_flags = 0;
+
+  /* Get host by name, copy first addr and free list */
   result = getaddrinfo(name, NULL, &hint, &info);
   if (result == 0) {
     host->integer = (((struct sockaddr_in *) info->ai_addr)->sin_addr.s_addr);
-    freeaddrinfo (info);
-    return SOC_OK;
+    freeaddrinfo(info);
+    return (SOC_OK);
   } else {
-    return SOC_NAME_NOT_FOUND;
+    errno = ENOENT;
+    return (SOC_NAME_NOT_FOUND);
   }
 }
 
@@ -648,7 +654,7 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
 
   if (! lan) {
     /* Read  IP adress of host */
-    if (get_host_addr (host_lan, &host) != SOC_OK) {
+    if (get_host_addr(host_lan, &host) != SOC_OK) {
       errno = ENOENT;
       UNLOCK;
       return (SOC_NAME_NOT_FOUND);
@@ -723,7 +729,7 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
 
   if (! lan) {
     /* Read  IP adress of host */
-    if (get_host_addr (host_lan, &host) != SOC_OK) {
+    if (get_host_addr(host_lan, &host) != SOC_OK) {
       errno = ENOENT;
       UNLOCK;
       return (SOC_NAME_NOT_FOUND);
@@ -896,7 +902,7 @@ extern int soc_change_dest_name (soc_token token, const char *host_lan, boolean 
 
   if (! lan) {
     /* Read  IP adress of host */
-    if (get_host_addr (host_lan, &host) != SOC_OK) {
+    if (get_host_addr(host_lan, &host) != SOC_OK) {
       errno = ENOENT;
       UNLOCK;
       return (SOC_NAME_NOT_FOUND);
@@ -1268,22 +1274,25 @@ extern int soc_host_name_of (const soc_host *p_host, char *host_name,
   /* Read name of host */
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = p_host->integer;
-  result = getnameinfo ((struct sockaddr*) &addr, sizeof (addr),
-                        host_name, host_name_len,
-                        NULL, 0, NI_NAMEREQD);
-  if (result != 0) {
+  result = getnameinfo((struct sockaddr*) &addr, sizeof (addr),
+                       host_name, host_name_len,
+                       NULL, 0, NI_NAMEREQD);
+  if (result == 0) {
+    /* Ok */
+    return (SOC_OK);
+  } else if (result == EAI_OVERFLOW) {
+    return (SOC_LEN_ERR);
+  } else {
     errno = ENOENT;
     return (SOC_NAME_NOT_FOUND);
   }
 
-  /* Ok */
-  return (SOC_OK);
 }
 
 extern int soc_host_of (const char *host_name, soc_host *p_host) {
 
   /* Read  IP adress of host */
-  return get_host_addr (host_name, p_host);
+  return get_host_addr(host_name, p_host);
 }
 
 extern int soc_lan_name_of (const soc_host *p_lan, char *lan_name,
@@ -1387,13 +1396,13 @@ extern int soc_get_local_host_id (soc_host *p_host) {
   /* Get current host name */
   res = soc_get_local_host_name(hostname, sizeof(hostname));
   if (res != SOC_OK) {
-    perror ("gethostname of soc_get_local_host_name");
+    perror("gethostname of soc_get_local_host_name");
     return (res);
   }
   /* Get its addr */
   res = soc_host_of(hostname, p_host);
   if (res != SOC_OK) {
-    perror ("getaddrinfo of soc_host_of");
+    perror("getaddrinfo of soc_host_of");
   }
   return (res);
 }
@@ -1413,7 +1422,7 @@ extern int soc_get_local_lan_name (char *lan_name, unsigned int lan_name_len) {
     return (SOC_NAME_NOT_FOUND);
   }
 
-  if (get_host_addr (host_name, &host) != SOC_OK) {
+  if (get_host_addr(host_name, &host) != SOC_OK) {
     errno = ENOENT;
     UNLOCK;
     return (SOC_NAME_NOT_FOUND);
@@ -1451,7 +1460,7 @@ extern int soc_get_local_lan_id (soc_host *p_lan) {
     return (SOC_NAME_NOT_FOUND);
   }
 
-  if (get_host_addr (host_name, &host) != SOC_OK) {
+  if (get_host_addr(host_name, &host) != SOC_OK) {
     errno = ENOENT;
     UNLOCK;
     return (SOC_NAME_NOT_FOUND);
