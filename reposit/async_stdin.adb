@@ -264,6 +264,8 @@ package body Async_Stdin is
     Ctrl_Shift_Right_Seq : constant Unicode_Sequence := S2U ("[1;6C");
     Ctrl_Shift_Up_Seq    : constant Unicode_Sequence := S2U ("[1;6A");
     Ctrl_Shift_Down_Seq  : constant Unicode_Sequence := S2U ("[1;6B");
+    Ctrl_Shift_Pgup_Seq  : constant Unicode_Sequence := S2U ("[5;6~");
+    Ctrl_Shift_Pgdw_Seq  : constant Unicode_Sequence := S2U ("[6;6~");
     Ctrl_Home_Seq        : constant Unicode_Sequence := S2U ("[1;5H");
     Ctrl_End_Seq         : constant Unicode_Sequence := S2U ("[1;5F");
     Shift_Home_Seq       : constant Unicode_Sequence := S2U ("[1;2H");
@@ -542,6 +544,8 @@ package body Async_Stdin is
               or else Str = Ctrl_Shift_Right_Seq
               or else Str = Ctrl_Shift_Up_Seq
               or else Str = Ctrl_Shift_Down_Seq
+              or else Str = Ctrl_Shift_Pgup_Seq
+              or else Str = Ctrl_Shift_Pgdw_Seq
               or else Str = Ctrl_Home_Seq
               or else Str = Ctrl_End_Seq
               or else Str = Shift_Home_Seq
