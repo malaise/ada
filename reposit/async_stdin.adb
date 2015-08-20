@@ -238,7 +238,9 @@ package body Async_Stdin is
     Arrow_Down_Seq    : constant Unicode_Sequence := S2U ("[B");
     Home_Seq          : constant Unicode_Sequence := S2U ("[1~");
     End_Seq           : constant Unicode_Sequence := S2U ("[4~");
-    Home1_Seq         : constant Unicode_Sequence := S2U ("OH");
+    Home1_Seq         : constant Unicode_Sequence := S2U ("[H");
+    End2_Seq          : constant Unicode_Sequence := S2U ("[F");
+    Home2_Seq         : constant Unicode_Sequence := S2U ("OH");
     End1_Seq          : constant Unicode_Sequence := S2U ("OF");
     Delete_Seq        : constant Unicode_Sequence := S2U ("[3~");
     Page_Up_Seq       : constant Unicode_Sequence := S2U ("[5~");
@@ -260,6 +262,15 @@ package body Async_Stdin is
     Shift_Down_Seq       : constant Unicode_Sequence := S2U ("[1;2B");
     Ctrl_Shift_Left_Seq  : constant Unicode_Sequence := S2U ("[1;6D");
     Ctrl_Shift_Right_Seq : constant Unicode_Sequence := S2U ("[1;6C");
+    Ctrl_Shift_Up_Seq    : constant Unicode_Sequence := S2U ("[1;6A");
+    Ctrl_Shift_Down_Seq  : constant Unicode_Sequence := S2U ("[1;6B");
+    Ctrl_Home_Seq        : constant Unicode_Sequence := S2U ("[1;5H");
+    Ctrl_End_Seq         : constant Unicode_Sequence := S2U ("[1;5F");
+    Shift_Home_Seq       : constant Unicode_Sequence := S2U ("[1;2H");
+    Shift_End_Seq        : constant Unicode_Sequence := S2U ("[1;2F");
+    Ctrl_Shift_Home_Seq  : constant Unicode_Sequence := S2U ("[1;6H");
+    Ctrl_Shift_End_Seq   : constant Unicode_Sequence := S2U ("[1;6F");
+    Ctrl_Insert_Seq      : constant Unicode_Sequence := S2U ("[2;5~");
     Ctrl_Shift_Suppr_Seq : constant Unicode_Sequence := S2U ("[3;6~");
 
     -- Copy Buf and move to end of line
@@ -335,6 +346,7 @@ package body Async_Stdin is
       C : Character;
       use type Unicode_Sequence, Uu.Unbounded_Array;
     begin
+      Logger.Log (16#20#, "Got " & Hexa_Utils.Image (U));
       -- Simplistic treatment when stdin/out is not a tty
       if not Stdio_Is_A_Tty then
         Txt.Append (U);
@@ -434,7 +446,8 @@ package body Async_Stdin is
                 end if;
                 Seq := Uu_Null;
               elsif Str = Home_Seq
-              or else Str = Home1_Seq then
+              or else Str = Home1_Seq
+              or else Str = Home2_Seq then
                 -- Home
                 Ind := 1;
                 if Echo then
@@ -442,7 +455,8 @@ package body Async_Stdin is
                 end if;
                 Seq := Uu_Null;
               elsif Str = End_Seq
-              or else Str = End1_Seq then
+              or else Str = End1_Seq
+              or else Str = End2_Seq then
                 -- End
                 Ind := Txt.Length + 1;
                 if Echo then
@@ -526,6 +540,15 @@ package body Async_Stdin is
               or else Str = Shift_Down_Seq
               or else Str = Ctrl_Shift_Left_Seq
               or else Str = Ctrl_Shift_Right_Seq
+              or else Str = Ctrl_Shift_Up_Seq
+              or else Str = Ctrl_Shift_Down_Seq
+              or else Str = Ctrl_Home_Seq
+              or else Str = Ctrl_End_Seq
+              or else Str = Shift_Home_Seq
+              or else Str = Shift_End_Seq
+              or else Str = Ctrl_Shift_Home_Seq
+              or else Str = Ctrl_Shift_End_Seq
+              or else Str = Ctrl_Insert_Seq
               or else Str = Ctrl_Shift_Suppr_Seq then
                 -- Drop this sequence
                 Seq := Uu_Null;
