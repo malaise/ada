@@ -178,7 +178,7 @@ package body Ios is
 
     if Stdio then
       if Async_Stdin.Is_Set then
-        Async_Stdin.Clear;
+        Async_Stdin.Clear_Pending;
       end if;
       return;
     end if;

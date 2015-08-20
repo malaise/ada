@@ -204,7 +204,7 @@ package body Io_Flow is
     if Io_Mode /= Stdio_Tty then
       raise Init_Error;
     end if;
-    Async_Stdin.Clear;
+    Async_Stdin.Clear_Pending;
   end Clear_Interactive;
 
   ----------------------------------------------------
@@ -388,7 +388,8 @@ package body Io_Flow is
     use type Event_Mng.Out_Event_List;
   begin
     Async_Stdin.Activate (True);
-    Async_Stdin.Clear;
+    Async_Stdin.Clear_Pending;
+    Async_Stdin.Clear_History;
     loop
       Stdin_Data.Set_Null;
       Debug.Log (Debug.Flow, "Waiting on stdin");

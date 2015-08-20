@@ -1,6 +1,7 @@
 with Ada.Calendar;
 with Event_Mng, Console, Dynamic_List, Environ,
-     Unicode, Aski.Unicode, Utf_8, Language, As.U;
+     Unicode, Aski.Unicode, Utf_8, Language, As.U,
+     Trace, Hexa_Utils;
 package body Async_Stdin is
 
   -- The user callback
@@ -39,6 +40,9 @@ package body Async_Stdin is
     function Read_Buffer return Unicode_Sequence;
     function Read_Col return Positive;
 
+    -- Clear history
+    procedure Clear_History;
+
   end Line;
 
   package body Line is
@@ -65,7 +69,12 @@ package body Async_Stdin is
 
       -- Asu.Append Buf as new record
       procedure Add;
+
+      -- Clear the history
+      procedure Clear_List;
     end History;
+
+    package Logger is new Trace.Basic_Logger ("Async_Stdin");
 
     package body History is
       subtype Rec is Uu.Unbounded_Array;
@@ -100,16 +109,15 @@ package body Async_Stdin is
       end Copy_Buf;
 
       -- Clear Buf
-      procedure Clear is
+      procedure Clear_Buff is
       begin
         Buf := Uu.Null_Unbounded_Array;
-      end Clear;
+      end Clear_Buff;
 
       -- Movements
       procedure First is
       begin
         if List.Is_Empty then
-          Clear;
           return;
         end if;
         List.Rewind;
@@ -119,7 +127,6 @@ package body Async_Stdin is
       procedure Last is
       begin
         if List.Is_Empty then
-          Clear;
           return;
         end if;
         List.Rewind (List_Mng.Prev);
@@ -129,7 +136,6 @@ package body Async_Stdin is
       procedure Next is
       begin
         if List.Is_Empty then
-          Clear;
           return;
         end if;
         if List.Check_Move then
@@ -141,7 +147,6 @@ package body Async_Stdin is
       procedure Prev is
       begin
         if List.Is_Empty then
-          Clear;
           return;
         end if;
         if List.Check_Move (List_Mng.Prev) then
@@ -176,11 +181,10 @@ package body Async_Stdin is
         else
           -- Restore Pos
           List.Move_At (Pos);
-          Clear;
+          Clear_Buff;
         end if;
         return Found;
       end Search;
-
 
       procedure Add is
         R : Rec;
@@ -194,6 +198,11 @@ package body Async_Stdin is
         List.Rewind (List_Mng.Prev, False);
         List.Insert (R);
       end Add;
+
+      procedure Clear_List is
+      begin
+        List.Delete_List;
+      end Clear_List;
 
     end History;
 
@@ -212,8 +221,9 @@ package body Async_Stdin is
     -- Have we just stored a new string, so prev shall be last
     At_Last : Boolean := True;
 
-    -- Current sequence characters: Esc + 3
-    Seq_Max_Length : constant := 4;
+    -- Max len of a sequence of characters: Esc + 6
+    Seq_Max_Length : constant := 6;
+    -- Current sequence characters
     Seq : Uu.Unbounded_Array;
 
     -- After this delay from Esc, we give up
@@ -234,6 +244,8 @@ package body Async_Stdin is
     Page_Up_Seq       : constant Unicode_Sequence := S2U ("[5~");
     Page_Down_Seq     : constant Unicode_Sequence := S2U ("[6~");
     Insert_Seq        : constant Unicode_Sequence := S2U ("[2~");
+    Ctrl_Suppr_Seq    : constant Unicode_Sequence := S2U ("[3;5~");
+    Shift_Suppr_Seq   : constant Unicode_Sequence := S2U ("[3;2~");
 
     -- Copy Buf and move to end of line
     procedure Update is
@@ -242,16 +254,16 @@ package body Async_Stdin is
       if Echo then
         Console.Set_Col (First_Col);
         Console.Erase_End_Line;
-        Sys_Calls.Put_Output (Language.Unicode_To_String (Uu.To_Array (Txt)));
+        Sys_Calls.Put_Output (Language.Unicode_To_String (Txt.To_Array));
       end if;
-      Ind := Uu.Length (Txt) + 1;
+      Ind := Txt.Length + 1;
     end Update;
 
     -- Store Txt in history
     procedure Store is
     begin
       -- Don't store empty line
-      if Uu.Length (Txt) = 0 then
+      if Txt.Is_Null then
         return;
       end if;
       History.Buf := Txt;
@@ -264,15 +276,10 @@ package body Async_Stdin is
     Del   : Unicode_Number renames Aski.Unicode.Del_U;
     Space : Unicode_Number renames Aski.Unicode.Spc_U;
     Uu_Null : constant Uu.Unbounded_Array := Uu.Null_Unbounded_Array;
-    function Uu_Is_Null (Str : Uu.Unbounded_Array) return Boolean is
-      use type Uu.Unbounded_Array;
-    begin
-      return Str = Uu_Null;
-    end Uu_Is_Null;
 
     -- Insert and put a wide character
     function Insert_Put (U : in Unicode_Number) return Boolean is
-      use type Unicode_Sequence;
+      use type Unicode_Sequence, Uu.Unbounded_Array;
     begin
       if not Insert_Mode then
         -- Overwrite mode
@@ -285,23 +292,20 @@ package body Async_Stdin is
         end if;
       else
         -- Insert U at current position and move 1 right
-        Txt := Uu.To_Unbounded_Array (
-                  Uu.Slice (Txt, 1, Ind - 1)
-                & U
-                & Uu.Slice (Txt, Ind, Uu.Length(Txt)));
+        Txt := Txt.Unb_Slice (1, Ind - 1) & U & Txt.Unb_Slice (Ind, Txt.Length);
       end if;
       -- Move 1 right and redisplay
       Ind := Ind + 1;
       if Echo then
         Sys_Calls.Put_Output (Language.Unicode_To_String (
-                               Uu.Slice (Txt, Ind - 1, Uu.Length(Txt))));
+                               Txt.Slice (Ind - 1, Txt.Length)));
         -- Move cursor at proper position
-        for I in 1 .. Uu.Length(Txt) - Ind + 1 loop
+        for I in 1 .. Txt.Length - Ind + 1 loop
           Console.Left;
         end loop;
       end if;
       -- Detect completion of input
-      if Uu.Length (Txt) = Max then
+      if Txt.Length = Max then
         Store;
         return True;
       else
@@ -314,13 +318,13 @@ package body Async_Stdin is
     function Add (U : Unicode_Number) return Boolean is
       Saved_Searching : Boolean;
       C : Character;
-      use type Unicode_Sequence;
+      use type Unicode_Sequence, Uu.Unbounded_Array;
     begin
       -- Simplistic treatment when stdin/out is not a tty
       if not Stdio_Is_A_Tty then
-        Uu.Append (Txt, U);
+        Txt.Append (U);
         -- Done when control character or buffer full
-        return U < Space or else Uu.Length(Txt) = Max;
+        return U < Space or else Txt.Length = Max;
       end if;
 
       -- Optim: Set C to character of W or to Nul
@@ -333,9 +337,9 @@ package body Async_Stdin is
       case C is
         when Aski.Bs | Aski.Del =>
           -- Backspace
-          if not Uu_Is_Null (Seq) then
+          if not Seq.Is_Null then
             Store;
-            Uu.Append (Txt, Esc);
+            Txt.Append (Esc);
             return True;
           end if;
           if Ind = 1 then
@@ -345,9 +349,8 @@ package body Async_Stdin is
           else
             -- Move one left, shift tail
             Ind := Ind - 1;
-            Txt := Uu.To_Unbounded_Array (
-                      Uu.Slice (Txt, 1, Ind - 1)
-                    & Uu.Slice (Txt, Ind + 1, Uu.Length(Txt)));
+            Txt := Txt.Unb_Slice (1, Ind - 1)
+                 & Txt.Unb_Slice (Ind + 1, Txt.Length);
             if Echo then
               Console.Left;
               Console.Delete;
@@ -355,12 +358,12 @@ package body Async_Stdin is
           end if;
         when Aski.Ht =>
           -- Search
-          if not Uu_Is_Null (Seq) then
+          if not Seq.Is_Null then
             Store;
-            Uu.Append (Txt, Esc);
+            Txt.Append (Esc);
             return True;
           end if;
-          if Uu.Length (Txt) = 0 then
+          if Txt.Is_Null then
             return False;
           end if;
           if not Saved_Searching then
@@ -375,23 +378,23 @@ package body Async_Stdin is
           Searching := True;
         when Aski.Esc =>
           -- Escape, validate previous escape
-          if not Uu_Is_Null (Seq) then
+          if not Seq.Is_Null then
             Store;
-            Uu.Append (Txt, Esc);
+            Txt.Append (Esc);
             return True;
           end if;
           Seq := Uu.To_Unbounded_Array (U);
           Escape_Time := Ada.Calendar.Clock;
         when ' ' .. '~' =>
-          if Uu_Is_Null (Seq) then
+          if Seq.Is_Null then
             -- Valid ASCII character
             return Insert_Put (U);
           else
             -- Add C in sequence try to find one
-            Uu.Append (Seq, U);
+            Seq.Append (U);
             declare
               Str : constant Unicode_Sequence
-                  := Uu.Slice (Seq, 2, Uu.Length (Seq));
+                  := Seq.Slice (2, Seq.Length);
             begin
               if Str = Arrow_Left_Seq then
                 -- Left if not at first
@@ -406,7 +409,7 @@ package body Async_Stdin is
                 Seq := Uu_Null;
               elsif Str = Arrow_Right_Seq then
                 -- Right if not at Last
-                if Ind = Uu.Length (Txt) + 1 and then Echo then
+                if Ind = Txt.Length + 1 and then Echo then
                   Sys_Calls.Put_Output (Bell);
                 else
                   Ind := Ind + 1;
@@ -426,18 +429,17 @@ package body Async_Stdin is
               elsif Str = End_Seq
               or else Str = End1_Seq then
                 -- End
-                Ind := Uu.Length(Txt) + 1;
+                Ind := Txt.Length + 1;
                 if Echo then
                   Console.Set_Col(First_Col + Ind - 1);
                 end if;
                 Seq := Uu_Null;
               elsif Str = Delete_Seq then
                 -- Del
-                if Ind /= Uu.Length (Txt) + 1 then
+                if Ind /= Txt.Length + 1 then
                   -- Move shift tail
-                  Txt := Uu.To_Unbounded_Array (
-                          Uu.Slice (Txt, 1, Ind - 1)
-                        & Uu.Slice (Txt, Ind + 1, Uu.Length(Txt)));
+                  Txt := Txt.Unb_Slice (1, Ind - 1)
+                       & Txt.Unb_Slice (Ind + 1, Txt.Length);
                   if Echo then
                     Console.Delete;
                   end if;
@@ -478,18 +480,44 @@ package body Async_Stdin is
                 -- Insert
                 Insert_Mode := not Insert_Mode;
                 Seq := Uu_Null;
-              -- No sequence identified
-              elsif Uu.Length(Seq) = Seq_Max_Length then
-                -- Sequence is full and will not be recognized
+              elsif Str = Ctrl_Suppr_Seq then
+                -- Clear line
+                Ind := 1;
+                Txt.Set_Null;
+                if Echo then
+                  Console.Set_Col (First_Col);
+                  Console.Erase_End_Line;
+                end if;
+                Seq := Uu_Null;
+              elsif Str = Shift_Suppr_Seq then
+                -- Clear to end
+                if Ind /= Txt.Length + 1 then
+                  Txt.Delete (Ind, Txt.Length);
+                  if Echo then
+                    Console.Erase_End_Line;
+                  end if;
+                end if;
+                Seq := Uu_Null;
+
+              -- From now: No sequence identified
+              elsif Seq.Length = Seq_Max_Length then
+                -- Sequence is not recognized
+                if Logger.Debug_On then
+                  -- Dump unrecognized sequence
+                  Logger.Log_Debug ("Unrecognized sequence");
+                  for I in 1 .. Seq.Length loop
+                    Logger.Log_Debug ("  " & Hexa_Utils.Image (Seq.Element(I)));
+                  end loop;
+                end if;
                 Seq := Uu_Null;
                 Store;
-                Uu.Append (Txt, Esc);
+                Txt.Append (Esc);
                 return True;
-              elsif Uu.Length(Txt) + Uu.Length(Seq) = Max then
+              elsif Txt.Length + Seq.Length = Max then
                 -- Not enough final space to store sequence
                 Seq := Uu_Null;
                 Store;
-                Uu.Append (Txt, Esc);
+                Txt.Append (Esc);
                 return True;
               -- else U is stored in Seq and we return False
               end if;
@@ -497,24 +525,24 @@ package body Async_Stdin is
           end if;
         when Aski.Nul =>
           -- Non ASCII (UTF-8) character
-          if Uu_Is_Null (Seq) then
+          if Seq.Is_Null then
             return Insert_Put (U);
           else
             -- Drop
             Seq := Uu_Null;
             Store;
-            Uu.Append (Txt, Esc);
+            Txt.Append (Esc);
             return True;
           end if;
         when others =>
           -- Other char: ASCII control (< ' ') or UTF-8 (> Del)
           Store;
-          if not Uu_Is_Null (Seq) then
-            Uu.Append (Txt, Esc);
+          if not Seq.Is_Null then
+            Txt.Append (Esc);
           else
-            Uu.Append (Txt, U);
+            Txt.Append (U);
           end if;
-          if U <= Del or else Uu.Length(Txt) = Max then
+          if U <= Del or else Txt.Length = Max then
             -- Any ASCII control char, or UTF-8 reaching max length
             return True;
           end if;
@@ -525,10 +553,10 @@ package body Async_Stdin is
     function Flush return Boolean is
       use type Ada.Calendar.Time;
     begin
-      if not Uu_Is_Null (Seq)
+      if not Seq.Is_Null
       and then Ada.Calendar.Clock - Escape_Time > Seq_Delay then
         -- Client wants to flush and Esc is getting old
-        Uu.Append (Txt, Esc);
+        Txt.Append (Esc);
         Seq := Uu_Null;
         return True;
       end if;
@@ -547,9 +575,9 @@ package body Async_Stdin is
 
     function Get return Unicode_Sequence is
     begin
-      Uu.Append (Txt, Seq);
+      Txt.Append (Seq);
       Seq := Uu_Null;
-      return Uu.To_Array (Txt);
+      return Txt.To_Array;
     end Get;
 
     -- Read current content of buffer and current cursor col
@@ -558,13 +586,18 @@ package body Async_Stdin is
       use type Uu.Unbounded_Array;
     begin
       Res := Txt & Seq;
-      return Uu.To_Array (Res);
+      return Res.To_Array;
     end Read_Buffer;
 
     function Read_Col return Positive is
     begin
       return Ind;
     end Read_Col;
+
+    procedure Clear_History is
+    begin
+      History.Clear_List;
+    end Clear_History;
 
   end Line;
 
@@ -728,7 +761,7 @@ package body Async_Stdin is
   end Is_Active;
 
   -- Clear internal buffer of pending characters
-  procedure Clear is
+  procedure Clear_Pending is
     Status : Sys_Calls.Get_Status_List;
     C : Character;
     use type Sys_Calls.Get_Status_List;
@@ -741,7 +774,13 @@ package body Async_Stdin is
         exit when Status /= Sys_Calls.Got;
       end loop;
     end if;
-  end Clear;
+  end Clear_Pending;
+
+  -- Clear the history
+  procedure Clear_History is
+  begin
+    Line.Clear_History;
+  end Clear_History;
 
   -- By default the input is in insert mode and reset in insert after
   --  each input (before calling user callback) and when calling Set_Async

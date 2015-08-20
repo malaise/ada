@@ -12,6 +12,15 @@ package Async_Stdin is
   -- Set asynchronous mode for stdin
   -- User callback is called when Max_Chars characters are entered
   --  or at each control char (i.e. before space)
+  -- The following specific keys are handled:
+  --  - Backspace, suppr, left and right arrows, Home and End (move cursor)
+  --  - CtrlSuppr (clear line) and ShiftSuppr (clear to end of line)
+  --  - Ins (toggle insertion mode)
+  --  - Up and down arrows, page up and page down (move in history)
+  --  - Tab (searchg in history)
+  -- History size can be tuned with ENV ASYNC_STDIN_HISTORY_SIZE (default 20)
+  -- If a unrecognized sequence is entered, then the user callback is called
+  --  with the characters got so far and the Esc char
   -- User callback is called with empty string in case of error
   -- Set null callback to restore normal behaviour
   -- Asynchronous mode relies on a Event_Mng Fd Callback which
@@ -30,7 +39,10 @@ package Async_Stdin is
   function Is_Active return Boolean;
 
   -- Clear internal buffer of pending characters
-  procedure Clear;
+  procedure Clear_Pending;
+
+  -- Clear history
+  procedure Clear_History;
 
   -- By default the input is in insert mode and is reset to insert mode after
   --  each input (just before calling user callback)
