@@ -246,6 +246,21 @@ package body Async_Stdin is
     Insert_Seq        : constant Unicode_Sequence := S2U ("[2~");
     Ctrl_Suppr_Seq    : constant Unicode_Sequence := S2U ("[3;5~");
     Shift_Suppr_Seq   : constant Unicode_Sequence := S2U ("[3;2~");
+    -- Recognized and skipped sequences (all remaining combination of
+    -- Ctrl, Shift, Arrows, Pg up/down, Home, End, Inser, Suppr...)
+    Ctrl_Pgup_Seq        : constant Unicode_Sequence := S2U ("[5;5~");
+    Ctrl_Pgdw_Seq        : constant Unicode_Sequence := S2U ("[6;5~");
+    Ctrl_Left_Seq        : constant Unicode_Sequence := S2U ("[1;5D");
+    Ctrl_Right_Seq       : constant Unicode_Sequence := S2U ("[1;5C");
+    Ctrl_Up_Seq          : constant Unicode_Sequence := S2U ("[1;5A");
+    Ctrl_Down_Seq        : constant Unicode_Sequence := S2U ("[1;5B");
+    Shift_Left_Seq       : constant Unicode_Sequence := S2U ("[1;2D");
+    Shift_Right_Seq      : constant Unicode_Sequence := S2U ("[1;2C");
+    Shift_Up_Seq         : constant Unicode_Sequence := S2U ("[1;2A");
+    Shift_Down_Seq       : constant Unicode_Sequence := S2U ("[1;2B");
+    Ctrl_Shift_Left_Seq  : constant Unicode_Sequence := S2U ("[1;6D");
+    Ctrl_Shift_Right_Seq : constant Unicode_Sequence := S2U ("[1;6C");
+    Ctrl_Shift_Suppr_Seq : constant Unicode_Sequence := S2U ("[3;6~");
 
     -- Copy Buf and move to end of line
     procedure Update is
@@ -497,6 +512,22 @@ package body Async_Stdin is
                     Console.Erase_End_Line;
                   end if;
                 end if;
+                Seq := Uu_Null;
+
+              elsif   Str = Ctrl_Pgup_Seq
+              or else Str = Ctrl_Pgdw_Seq
+              or else Str = Ctrl_Left_Seq
+              or else Str = Ctrl_Right_Seq
+              or else Str = Ctrl_Up_Seq
+              or else Str = Ctrl_Down_Seq
+              or else Str = Shift_Left_Seq
+              or else Str = Shift_Right_Seq
+              or else Str = Shift_Up_Seq
+              or else Str = Shift_Down_Seq
+              or else Str = Ctrl_Shift_Left_Seq
+              or else Str = Ctrl_Shift_Right_Seq
+              or else Str = Ctrl_Shift_Suppr_Seq then
+                -- Drop this sequence
                 Seq := Uu_Null;
 
               -- From now: No sequence identified
