@@ -1094,9 +1094,9 @@ package body Parse_Mng  is
     end if;
     Ctx.Doctype.File := Doctype_File;
     if Ctx.Warnings /= null then
-      Debug ("Parsing checking warnings");
+      Debug ("Parse doctype checking warnings");
       Dtd.Check_Warnings (Ctx, Adtd);
-      Debug ("Parsing checked warnings");
+      Debug ("Parse doctype checked warnings");
     end if;
     if not Ctx.Use_Dtd then
       -- Reset dtd info
@@ -1886,9 +1886,9 @@ package body Parse_Mng  is
     Dtd.Parse (Ctx, Adtd, Ctx.Flow.Curr_Flow.Name,
                Name_Raise_Parse => False);
     if Ctx.Warnings /= null then
-      Debug ("Parsing dtd checking warnings");
+      Debug ("Parse dtd checking warnings");
       Dtd.Check_Warnings (Ctx, Adtd);
-      Debug ("Parsing dtd checked warnings");
+      Debug ("Parse dtd checked warnings");
     end if;
     -- Perform final checks on Dtd (unparsed entities v.s. notations)
     Steps_Logger.Log_Info ("Checking DTD");
@@ -1988,6 +1988,11 @@ package body Parse_Mng  is
         Steps_Logger.Log_Info ("Parsing DTD");
         Dtd.Parse (Ctx, Adtd, Full_File);
       end if;
+    end if;
+    if Ctx.Warnings /= null then
+      Debug ("Check checking warnings");
+      Dtd.Check_Warnings (Ctx, Adtd);
+      Debug ("Check checked warnings");
     end if;
     -- Restore flow
     Util.Pop_Flow (Ctx.Flow);
