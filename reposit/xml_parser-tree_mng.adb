@@ -342,7 +342,7 @@ package body Tree_Mng is
     Tree.Insert_Child (Cell, False);
   end Add_Pi;
 
-  -- Add a comment to current cell (of elements or prologue)
+  -- Add a text to current cell (of elements or prologue)
   -- remain on current cell
   procedure Add_Text (Tree : in out My_Tree.Tree_Type;
                       Text : in As.U.Asu_Us; Line : in Natural) is

@@ -278,15 +278,23 @@ package body Util is
     return True;
   end Names_Ok;
 
+  -----------------------
+  -- Error  or warning --
+  -----------------------
+  -- Image of a flow kind (xml, dtd or external entity)
+  function Flow_Image (Flow_Kind : Flow_Kind_List) return String is
+  begin
+    return (case Flow_Kind is
+             when Xml_Flow | Int_Dtd_Flow => "xml",
+             when Dtd_Flow => "dtd",
+             when Ext_Flow => "external entity");
+  end Flow_Image;
 
-  ------------------
-  -- Getting char --
-  ------------------
-  -- Circular buffer of read characters
   function Build_Error (Flow : in Flow_Type;
                         Is_Error : in Boolean;
                         Msg : in String;
-                        Line_No : in Natural) return String is
+                        Line_No : in Natural;
+                        Flow_Kind : in Put_Flow_Kind_List) return String is
     Err_Msg : As.U.Asu_Us;
     Put_Line_No : Natural := 0;
     use type As.U.Asu_Us;
@@ -294,19 +302,17 @@ package body Util is
     Put_Line_No := (if Line_No = 0 then Get_Line_No(Flow) else Line_No);
     Err_Msg := As.U.Tus ("Xml_Parser");
     Err_Msg.Append (if Is_Error then " error" else " warning");
-    if Put_Line_No /= 0 then
-      Err_Msg.Append (" at line" & Put_Line_No'Img);
-    end if;
-    -- Xml, Dtd or external entity
-    Err_Msg.Append (if Put_Line_No /= 0 then " of" else " in");
-    Err_Msg.Append (case Flow.Curr_Flow.Kind is
-                      when Xml_Flow | Int_Dtd_Flow => " xml",
-                      when Dtd_Flow => " dtd",
-                      when Ext_Flow => " external entity");
     if Flow.Curr_Flow.Name.Length > 1
     or else (Flow.Curr_Flow.Name.Length = 1
              and then Flow.Curr_Flow.Name.Element (1) > Space) then
-      Err_Msg.Append (" " & Flow.Curr_Flow.Name);
+      Err_Msg.Append (" in " & Flow.Curr_Flow.Name);
+    end if;
+    if Put_Line_No /= 0 then
+      Err_Msg.Append (" at line" & Put_Line_No'Img & " of ");
+      -- Xml, Dtd or external entity
+      Err_Msg.Append (case Flow_Kind is
+                        when Guess => Flow_Image (Flow.Curr_Flow.Kind),
+                        when others => Flow_Image (Flow_Kind));
     end if;
     Err_Msg.Append (": " & Msg & ".");
     return Err_Msg.Image;
@@ -314,8 +320,10 @@ package body Util is
 
   procedure Error (Flow : in out Flow_Type;
                    Msg : in String;
-                   Line_No : in Natural := 0) is
-    Err_Msg : constant String := Build_Error (Flow, True, Msg, Line_No);
+                   Line_No : in Natural := 0;
+                   Flow_Kind : in Put_Flow_Kind_List := Guess) is
+    Err_Msg : constant String := Build_Error (Flow, True, Msg,
+                                              Line_No, Flow_Kind);
   begin
     -- The error message is attached to the exception
     -- Xml_parser will copy it in the Flow.
@@ -324,8 +332,10 @@ package body Util is
   end Error;
   procedure Warning (Ctx     : in out Ctx_Type;
                      Msg     : in String;
-                     Line_No : in Natural := 0) is
-    Err_Msg : constant String := Build_Error (Ctx.Flow, False, Msg, Line_No);
+                     Line_No : in Natural := 0;
+                     Flow_Kind : in Put_Flow_Kind_List := Guess) is
+    Err_Msg : constant String := Build_Error (Ctx.Flow, False, Msg,
+                                              Line_No, Flow_Kind);
   begin
     if Ctx.Warnings = null then
       return;
@@ -334,6 +344,10 @@ package body Util is
     Ctx.Warnings (Ctx, Err_Msg);
   end Warning;
 
+  ------------------
+  -- Getting char --
+  ------------------
+  -- Circular buffer of read characters
   -- Start recording
   procedure Start_Recording (Flow : in out Flow_Type) is
   begin

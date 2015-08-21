@@ -577,7 +577,10 @@ private
   package My_Circ is new Queues.Circ (Max_Buf_Len, Character);
 
   -- Current flow is...
-  type Flow_Kind_List is (Xml_Flow, Dtd_Flow, Int_Dtd_Flow, Ext_Flow);
+  -- Guess is used for tracing (errors, warnings) and means "gesss from Ctx"
+  type Put_Flow_Kind_List is (Guess,
+                              Xml_Flow, Dtd_Flow, Int_Dtd_Flow, Ext_Flow);
+  subtype Flow_Kind_List is Put_Flow_Kind_List range Xml_Flow .. Ext_Flow;
   -- Current encoding
   type Encod_List is (Utf8, Utf16_Le, Utf16_Be, Latin1, Other);
   -- Number of single UTF8 bytes re-inserted in flow when in UTF16
@@ -677,6 +680,8 @@ private
     --   for an Enum, the list of possible "<name>#" and, if there is a default
     --   this value is the first
     List : As.U.Asu_Us;
+    -- Is it defined in external or internal Dtd, and at which line
+    Flow_Kind : Flow_Kind_List;
     Line : Natural;
   end record;
   type Info_Access is access all Info_Rec;
@@ -694,6 +699,7 @@ private
     -- Name
     Name : As.U.Asu_Us;
     -- Line where defined
+    Flow_Kind : Flow_Kind_List;
     Line_No : Natural := 0;
     -- Ids
     System_Id : As.U.Asu_Us;

@@ -191,7 +191,9 @@ package body Dtd is
   end Build_Regexp;
 
   -- Parse <!ELEMENT
-  procedure Parse_Element (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
+  procedure Parse_Element (Ctx : in out Ctx_Type;
+                           Adtd : in out Dtd_Type;
+                           Flow_Kind : in Flow_Kind_List) is
     Info : Info_Rec;
     Info_Name : As.U.Asu_Us;
     Found : Boolean;
@@ -207,15 +209,18 @@ package body Dtd is
     Util.Normalize (Info_Name);
     Util.Normalize_Spaces (Info_Name);
     if not Util.Name_Ok (Info_Name) then
-      Util.Error (Ctx.Flow, "Invalid name " & Info_Name.Image);
+      Util.Error (Ctx.Flow, "Invalid element name " & Info_Name.Image);
     end if;
     Info.Name := "Elt" & Info_Sep & Info_Name;
+    Info.Flow_Kind := Flow_Kind;
     Info.Line := Util.Get_Line_No (Ctx.Flow);
     -- Element must not exist
     Adtd.Info_List.Search (Info, Found);
     if Found then
       Util.Error (Ctx.Flow, "ELEMENT " & Info_Name.Image
-                          & " already exists");
+                          & " already defined at line "
+           & Line_Image (Info.Line)
+           & " of " & Util.Flow_Image (Info.Flow_Kind));
     end if;
     -- Parse content
     Util.Skip_Separators (Ctx.Flow);
@@ -349,7 +354,9 @@ package body Dtd is
   end Parse_Element;
 
   -- Parse <!ATTLIST
-  procedure Parse_Attlist (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
+  procedure Parse_Attlist (Ctx : in out Ctx_Type;
+                           Adtd : in out Dtd_Type;
+                           Flow_Kind : in Flow_Kind_List) is
     -- Atl, Att and Id info blocs
     Info, Attinfo : Info_Rec;
     Found : Boolean;
@@ -392,6 +399,7 @@ package body Dtd is
       Util.Error (Ctx.Flow, "Invalid name " & Elt_Name.Image);
     end if;
     Info.Name := "Atl" & Info_Sep & Elt_Name;
+    Info.Flow_Kind := Flow_Kind;
     Info.Line := Util.Get_Line_No (Ctx.Flow);
     -- Attribute list of this element may already exist => merge
     Adtd.Info_List.Search (Info, Found);
@@ -401,6 +409,7 @@ package body Dtd is
            & " " & Info.List.Image);
       Util.Warning (Ctx, "Attlist already defined at line "
            & Line_Image (Info.Line)
+           & " of " & Util.Flow_Image (Info.Flow_Kind)
            & " for element " & Elt_Name.Image);
     end if;
 
@@ -625,6 +634,7 @@ package body Dtd is
         -- If enum store Att of enum
         --  or if fixed or default store Att of default
         Attinfo.Name := "Att" & Info_Sep & Elt_Name & Info_Sep & Att_Name;
+        Attinfo.Flow_Kind := Flow_Kind;
         Attinfo.Line := Util.Get_Line_No (Ctx.Flow);
         if Typ_Char = 'E' or else Typ_Char = 'N' then
           Attinfo.List := Enum;
@@ -693,7 +703,9 @@ package body Dtd is
   end Parse_Attlist;
 
   -- Parse <!ENTITY
-  procedure Parse_Entity (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
+  procedure Parse_Entity (Ctx : in out Ctx_Type;
+                          Adtd : in out Dtd_Type;
+                          Flow_Kind : in Flow_Kind_List) is
     -- Entity name, value (or URI or notation)
     Name, Value : As.U.Asu_Us;
     -- Public and System Ids
@@ -843,6 +855,7 @@ package body Dtd is
     if not Parsed then
       Unparsed_Rec.Is_Entity := True;
       Unparsed_Rec.Name := Name;
+      Unparsed_Rec.Flow_Kind := Flow_Kind;
       Unparsed_Rec.Line_No := Util.Get_Line_No (Ctx.Flow);
       Unparsed_Rec.System_Id := System_Id;
       Unparsed_Rec.Public_Id := Public_Id;
@@ -861,7 +874,9 @@ package body Dtd is
   end Parse_Entity;
 
   -- Parse a <!NOTATION
-  procedure Parse_Notation (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
+  procedure Parse_Notation (Ctx : in out Ctx_Type;
+                            Adtd : in out Dtd_Type;
+                            Flow_Kind : in Flow_Kind_List) is
     -- Notation name
     Name : As.U.Asu_Us;
     -- Is Notation found
@@ -935,6 +950,7 @@ package body Dtd is
     -- Store notation
     Unparsed_Rec.Is_Entity := False;
     Unparsed_Rec.Name := Name;
+    Unparsed_Rec.Flow_Kind := Flow_Kind;
     Unparsed_Rec.Line_No := Util.Get_Line_No (Ctx.Flow);
     Unparsed_Rec.System_Id := System_Id;
     Unparsed_Rec.Public_Id := Public_Id;
@@ -952,7 +968,7 @@ package body Dtd is
   begin
     -- Not in internal Dtd
     if Ctx.Flow.Curr_Flow.Kind = Int_Dtd_Flow then
-      Util.Error (Ctx.Flow, "Conditional directive forbidden in internal dtd");
+      Util.Error (Ctx.Flow, "Conditional directive forbidden in internal Dtd");
     end if;
     -- After '[', possible separators, then IGNORE or INCLUDE directive
     -- then possible separators then '['
@@ -1005,7 +1021,9 @@ package body Dtd is
   end Parse_Condition;
 
   -- Parse a directive
-  procedure Parse_Directive (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
+  procedure Parse_Directive (Ctx : in out Ctx_Type;
+                             Adtd : in out Dtd_Type;
+                             Flow_Kind : in Flow_Kind_List) is
     Char : Character;
     Word : As.U.Asu_Us;
     Ok : Boolean;
@@ -1037,13 +1055,13 @@ package body Dtd is
       Str : constant String := Word.Image;
     begin
       if Str = "ELEMENT" then
-        Parse_Element (Ctx, Adtd);
+        Parse_Element (Ctx, Adtd, Flow_Kind);
       elsif Str = "ATTLIST" then
-        Parse_Attlist (Ctx, Adtd);
+        Parse_Attlist (Ctx, Adtd, Flow_Kind);
       elsif Str = "ENTITY" then
-        Parse_Entity (Ctx, Adtd);
+        Parse_Entity (Ctx, Adtd, Flow_Kind);
       elsif Str = "NOTATION" then
-        Parse_Notation (Ctx, Adtd);
+        Parse_Notation (Ctx, Adtd, Flow_Kind);
       else
         Util.Error (Ctx.Flow, "Invalid directive " & Str);
       end if;
@@ -1053,10 +1071,10 @@ package body Dtd is
   -- Parse current dtd
   -- If external, will stop at end of file
   -- otherwise, will stop on ']'
-  procedure Parse (Ctx : in out Ctx_Type;
-                   Adtd : in out Dtd_Type;
-                   External : in Boolean;
-                   File : in Boolean) is
+  procedure Int_Parse (Ctx : in out Ctx_Type;
+                       Adtd : in out Dtd_Type;
+                       External : in Boolean;
+                       File : in Boolean) is
     Found : Boolean;
     Entity_Value : As.U.Asu_Us;
     Char : Character;
@@ -1081,7 +1099,8 @@ package body Dtd is
         -- Try directive
         Found := Util.Try (Ctx.Flow, Util.Start & Util.Directive);
         if Found then
-          Parse_Directive (Ctx, Adtd);
+          Parse_Directive (Ctx, Adtd,
+                           (if External then Dtd_Flow else Int_Dtd_Flow));
         end if;
       end if;
       if not Found then
@@ -1135,7 +1154,7 @@ package body Dtd is
         end if;
       end if;
     end loop;
-  end Parse;
+  end Int_Parse;
 
   -- Switch input to Text, Parse it up to the end
   procedure Switch_Input (Ctx : in out Ctx_Type;
@@ -1153,13 +1172,10 @@ package body Dtd is
     Ctx.Flow.Curr_Flow.Same_Line := True;
     -- Parse new flow as dtd
     Debug ("Switching input to " & Text.Image);
-    Parse (Ctx, Adtd, External => External, File => False);
+    Int_Parse (Ctx, Adtd, External => External, File => False);
     -- Restore flow
     Util.Pop_Flow (Ctx.Flow);
   end Switch_Input;
-
-  procedure Check_Warnings (Ctx  : in out Ctx_Type;
-                            Adtd : in out Dtd_Type);
 
   -- Parse a dtd (either a external file or internal if name is empty)
   procedure Parse (Ctx : in out Ctx_Type;
@@ -1175,12 +1191,12 @@ package body Dtd is
       Ctx.Flow.Curr_Flow.Is_File := False;
       Ctx.Flow.Curr_Flow.File := null;
       Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
-      Parse (Ctx, Adtd, True, False);
+      Int_Parse (Ctx, Adtd, True, False);
     elsif File_Name = Internal_Flow then
       -- Internal declarations (string or file) of Ctx
       Debug ("Dtd parsing internal definition");
       Ctx.Flow.Curr_Flow.Kind := Int_Dtd_Flow;
-      Parse (Ctx, Adtd, False, Ctx.Flow.Curr_Flow.Is_File);
+      Int_Parse (Ctx, Adtd, False, Ctx.Flow.Curr_Flow.Is_File);
       Ctx.Flow.Curr_Flow.Kind := Xml_Flow;
       -- Allow Xml directive of Dtd file
       Adtd.Xml_Found := False;
@@ -1196,7 +1212,7 @@ package body Dtd is
       Ctx.Flow.Curr_Flow.Name := File_Name;
       Ctx.Flow.Curr_Flow.Line := 1;
       Ctx.Flow.Curr_Flow.Same_Line := False;
-      Parse (Ctx, Adtd, True, True);
+      Int_Parse (Ctx, Adtd, True, True);
     end if;
     -- Preserved is empty or "#Name#Name...#Name#"
     if not Ctx.Preserved.Is_Null then
@@ -1205,11 +1221,6 @@ package body Dtd is
     -- Dtd is now valid
     Debug ("Dtd parsed dtd");
     Adtd.Set := True;
-    if Ctx.Warnings /= null then
-      Debug ("Dtd checking warnings");
-      Check_Warnings (Ctx, Adtd);
-      Debug ("Dtd checked warnings");
-    end if;
     if Close_File then
       File_Mng.Close (Ctx.Flow.Curr_Flow.File.all);
     end if;
@@ -1234,11 +1245,11 @@ package body Dtd is
   -- Perform final checks after DTD parsing: unparsed entities v.s. notations
   procedure Final_Dtd_Check (Ctx  : in out Ctx_Type; Adtd : in out Dtd_Type) is
     -- Iterators
-    Iter, Iter1, Iter2 : Parser.Iterator;
+    Iter, Iter1, Iter2, Iter3 : Parser.Iterator;
     -- Element/att info
     Info : Info_Rec;
-    -- List of unparsed entities, line of def and notation
-    Entities, Notations, Lines : As.U.Asu_Us;
+    -- List of unparsed entities, notations, line of def and kind of flow
+    Entities, Notations, Lines, Kinds : As.U.Asu_Us;
     -- Unparsed entity or Notation
     Unparsed_Rec : Unparsed_Type;
     Ok : Boolean;
@@ -1253,19 +1264,22 @@ package body Dtd is
         Ctx.Unparsed_List.Read_Next (Unparsed_Rec, Moved => Ok);
         Entities.Append (Unparsed_Rec.Name & Info_Sep);
         Lines.Append (Line_Image(Unparsed_Rec.Line_No) & Info_Sep);
+        Kinds.Append (Util.Flow_Image (Unparsed_Rec.Flow_Kind));
         Notations.Append (Unparsed_Rec.Notation & Info_Sep);
         exit when not Ok;
       end loop;
       -- Locate notation
       Iter.Set (Entities.Image, Is_Sep'Access);
       Iter1.Set (Lines.Image, Is_Sep'Access);
-      Iter2.Set (Notations.Image, Is_Sep'Access);
+      Iter2.Set (Kinds.Image, Is_Sep'Access);
+      Iter3.Set (Notations.Image, Is_Sep'Access);
       loop
         declare
           -- Next entity and its notation
           Entity : constant String := Iter.Next_Word;
           Line : constant String := Iter1.Next_Word;
-          Notation : constant String := Iter2.Next_Word;
+          Kind : constant String := Iter2.Next_Word;
+          Notation : constant String := Iter3.Next_Word;
         begin
           exit when Notation = "";
           Debug ("Checking notation " & Notation
@@ -1277,13 +1291,14 @@ package body Dtd is
           if not Ok then
             Util.Error (Ctx.Flow,
                "No notation " & Notation & " for unparsed entity " & Entity
-             & " defined at line " & Line);
+             & " defined at line " & Line & " of " & Kind);
           end if;
         end;
       end loop;
       Iter.Del;
       Iter1.Del;
       Iter2.Del;
+      Iter3.Del;
     end if;
 
     -- All ATTLIST NOTATION values shall refer to a NOTATION
@@ -1301,7 +1316,7 @@ package body Dtd is
         exit when Elt = "";
 
         -- Read info with the list of enum values
-       Debug ("Checking notation attribute " & Att & " of element " & Elt);
+        Debug ("Checking notation attribute " & Att & " of element " & Elt);
         Info.Name := As.U.Tus ("Att" & Info_Sep & Elt & Info_Sep & Att);
         Adtd.Info_List.Read (Info);
         Iter1.Set (Info.List.Image, Is_Sep'Access);
@@ -1320,7 +1335,8 @@ package body Dtd is
             Util.Error (Ctx.Flow,
                  "No notation for value " & Val
                & " of attribute " & Att & " defined at line "
-               & Line_Image (Info.Line));
+               & Line_Image (Info.Line)
+               & " of " & Util.Flow_Image (Info.Flow_Kind));
           end if;
         end;
         Iter1.Del;
@@ -1331,7 +1347,8 @@ package body Dtd is
         if Info.List.Element (1) = 'E' then
           Util.Error (Ctx.Flow,
             "Element " & Elt & " defined at line " & Line_Image (Info.Line)
-            & " in dtd is EMPTY and has an attribute type notation");
+            & " of " & Util.Flow_Image (Info.Flow_Kind)
+            & " is EMPTY and has an attribute type notation");
         end if;
       end;
     end loop;
@@ -1342,6 +1359,7 @@ package body Dtd is
   -- Check for warnings
   type Elt_Ref_Type is record
     Father, Child : As.U.Asu_Us;
+    Flow_Kind : Flow_Kind_List;
     Line : Natural;
   end record;
   package Us_Pool_Manager is new Unlimited_Pool (Elt_Ref_Type);
@@ -1389,6 +1407,7 @@ package body Dtd is
         -- Push an entry for each child
         -- Save name (skip "Elt#")
         Elt_Ref.Father := As.U.Tus (Info.Name.Slice (5, Info.Name.Length));
+        Elt_Ref.Flow_Kind := Info.Flow_Kind;
         Elt_Ref.Line := Info.Line;
         Elt_Ref.Child.Set_Null;
         -- Parse children names from list (skip first Char)
@@ -1414,8 +1433,9 @@ package body Dtd is
         end loop;
 
       elsif Child_Kind = 'A' then
-        -- This is a attlist, push an etry with empty Father
+        -- This is a attlist, push an entry with empty Father
         Elt_Ref.Father.Set_Null;
+        Elt_Ref.Flow_Kind := Info.Flow_Kind;
         Elt_Ref.Line := Info.Line;
         Elt_Ref.Child := As.U.Tus (Info.Name.Slice (5, Info.Name.Length));
         Pool.Push (Elt_Ref);
@@ -1433,11 +1453,11 @@ package body Dtd is
           Util.Warning (Ctx,
             "Element " & Elt_Ref.Father.Image & " references unknown child "
                        &  Elt_Ref.Child.Image,
-            Elt_Ref.Line);
+            Elt_Ref.Line, Elt_Ref.Flow_Kind);
         else
           Util.Warning (Ctx,
             "Undefined element " & Elt_Ref.Child.Image & " used in ATTLIST",
-            Elt_Ref.Line);
+            Elt_Ref.Line, Elt_Ref.Flow_Kind);
         end if;
       end if;
     end loop;

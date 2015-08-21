@@ -69,6 +69,9 @@ package body Parse_Mng  is
     -- Check if valid PublicId
     function Is_Valid_Pubid (Name : As.U.Asu_Us) return Boolean;
 
+    -- Image of a flow kind (xml, dtd or external entity)
+    function Flow_Image (Flow_Kind : Flow_Kind_List) return String;
+
     -- Check that Name is valid
     function Name_Ok (Name : As.U.Asu_Us;
                       Allow_Token : Boolean := False) return Boolean;
@@ -76,12 +79,17 @@ package body Parse_Mng  is
     function Names_Ok (Str : As.U.Asu_Us;
                        Seps : String;
                        Allow_Token : Boolean := False) return Boolean;
+
     -- Report an error, raises Parsing_Error.
     procedure Error (Flow : in out Flow_Type;
-                     Msg : in String; Line_No : in Natural := 0);
+                     Msg : in String;
+                     Line_No : in Natural := 0;
+                     Flow_Kind : in Put_Flow_Kind_List := Guess);
     -- Report a warning
     procedure Warning (Ctx : in out Ctx_Type;
-                       Msg  : in String; Line_No : in Natural := 0);
+                       Msg  : in String;
+                       Line_No : in Natural := 0;
+                       Flow_Kind : in Put_Flow_Kind_List := Guess);
 
     ----------------------
     -- Input characters --
@@ -377,6 +385,9 @@ package body Parse_Mng  is
                             Adtd : in out Dtd_Type;
                             Text : in out As.U.Asu_Us;
                             External : in Boolean);
+    -- Check Dtd warnings (after parsing the whole doctype)
+    procedure Check_Warnings (Ctx  : in out Ctx_Type;
+                              Adtd : in out Dtd_Type);
     -- Perform final checks after DTD parsing: unparsed entities v.s. notations
     procedure Final_Dtd_Check (Ctx  : in out Ctx_Type; Adtd : in out Dtd_Type);
     -- Check attributes of current element of the tree
@@ -1062,7 +1073,7 @@ package body Parse_Mng  is
       Full_File := Build_Full_Name (Doctype_File, Ctx.Flow.Curr_Flow.Name);
       if Full_File.Image = Dtd.String_Flow
       or else Full_File.Image = Dtd.Internal_Flow then
-        Util.Error (Ctx.Flow, "Invalid Dtd file name");
+        Util.Error (Ctx.Flow, "Invalid dtd file name");
       end if;
       -- Expand URI
       Resolve_Uri (Ctx, Doctype_File, Is_File, Full_File);
@@ -1082,9 +1093,14 @@ package body Parse_Mng  is
       Util.Pop_Flow (Ctx.Flow);
     end if;
     Ctx.Doctype.File := Doctype_File;
+    if Ctx.Warnings /= null then
+      Debug ("Parsing checking warnings");
+      Dtd.Check_Warnings (Ctx, Adtd);
+      Debug ("Parsing checked warnings");
+    end if;
     if not Ctx.Use_Dtd then
       -- Reset dtd info
-      Debug ("Dtd reset cause not to be used");
+      Debug ("Parsing resetting dtd cause not to be used");
       Dtd.Init (Adtd);
     end if;
     if Ctx.Expand or else not Ctx.Use_Dtd then
@@ -1869,6 +1885,11 @@ package body Parse_Mng  is
     Steps_Logger.Log_Info ("Parsing Dtd");
     Dtd.Parse (Ctx, Adtd, Ctx.Flow.Curr_Flow.Name,
                Name_Raise_Parse => False);
+    if Ctx.Warnings /= null then
+      Debug ("Parsing dtd checking warnings");
+      Dtd.Check_Warnings (Ctx, Adtd);
+      Debug ("Parsing dtd checked warnings");
+    end if;
     -- Perform final checks on Dtd (unparsed entities v.s. notations)
     Steps_Logger.Log_Info ("Checking DTD");
     Dtd.Final_Dtd_Check (Ctx, Adtd);
@@ -1949,7 +1970,7 @@ package body Parse_Mng  is
                                       Ctx.Flow.Curr_Flow.Name);
         if Full_File.Image = Dtd.String_Flow
         or else Full_File.Image = Dtd.Internal_Flow then
-          Util.Error (Ctx.Flow, "Invalid Dtd file name");
+          Util.Error (Ctx.Flow, "Invalid dtd file name");
         end if;
         -- Expand URI
         Steps_Logger.Log_Info ("Resolving DTD URI");

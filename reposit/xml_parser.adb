@@ -4,7 +4,7 @@ with Trace.Loggers, Exception_Messenger, Directory, Str_Util,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "3";
+  Minor_Version : constant String := "4";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -502,6 +502,8 @@ package body Xml_Parser is
     Parse_Mng.Parse_Dtd (Ctx, Dtd);
     Clean (Ctx);
   exception
+    when File_Error =>
+      raise;
     when Error_Occ:Parse_Error =>
       -- Retrieve and set parsing error message
       Clean (Ctx);
