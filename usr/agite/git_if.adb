@@ -201,6 +201,32 @@ package body Git_If is
   end Less_Than;
   procedure File_Sort is new File_Mng.Dyn_List.Sort (Less_Than);
 
+  -- Parse file output by '--porcelain' : Nothing if first char is not '"'
+  -- Else: remove leading and trailing '"'
+  -- Replace any "\x" by 'x'
+  procedure Parse_Filename (Txt : in out As.U.Asu_Us) is
+    I : Positive;
+  begin
+    if Txt.Length < 2 or else Txt.Element (1) /= '"'
+    or else Txt.Element (Txt.Length) /= '"' then
+      return;
+    end if;
+    -- Remove leading and trailing '"'
+    Txt.Delete (1, 1);
+    Txt.Trail (1);
+    -- Remove any '\' except if it is last char
+    if Txt.Is_Null then
+      return;
+    end if;
+    I := 1;
+    loop
+      if Txt.Element (I) = '\' and then I /= Txt.Length then
+        Txt.Delete (I, I);
+      end if;
+      exit when I = Txt.Length;
+      I := I + 1;
+    end loop;
+  end Parse_Filename;
 
   -- Internal: parse a line of "git status --porcelain"
   function Parse (Line : As.U.Asu_Us) return File_Entry_Rec is
@@ -213,14 +239,16 @@ package body Git_If is
     File_Entry.S3 := Str.Element(2);
     -- Remove "XY "
     Str.Delete (1, 3);
-    Redirect := Str_Util.Locate (Str.Image, "-> ");
+    Redirect := Str_Util.Locate (Str.Image, " -> ");
     if Redirect /= 0 then
       -- File is a move (or copy?) ("<old_name> -> <new_name>")
       -- Split and store Remove "<old_name> -> "
-      File_Entry.Prev := Str.Uslice (1, Redirect - 2);
-      Str.Delete (1, Redirect + 2);
+      File_Entry.Prev := Str.Uslice (1, Redirect - 1);
+      Parse_Filename (File_Entry.Prev);
+      Str.Delete (1, Redirect + 3);
     end if;
     File_Entry.Name := Str;
+    Parse_Filename (File_Entry.Name);
     File_Entry.Kind := Char_Of (File_Entry.Name.Image);
     return File_Entry;
   end Parse;
@@ -282,6 +310,7 @@ package body Git_If is
       Out_Flow_1.List.Rewind;
       loop
         Out_Flow_1.List.Read (Str, Moved => Moved);
+        Parse_Filename (Str);
         if Directory.Dirname (Str.Image) = "" then
           File_Entry.Name := Str;
           -- Only one entry per name
@@ -414,7 +443,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("status");
     Cmd.Cat ("--porcelain");
-    Cmd.Cat (File);
+    Cmd.Cat ("'" & File & "'");
     Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -597,7 +626,7 @@ package body Git_If is
     Cmd.Cat ("--date=iso");
     Cmd.Cat ("--topo-order");
     Cmd.Cat ("--");
-    Cmd.Cat (Path);
+    Cmd.Cat ("'" & Path & "'");
     Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -633,7 +662,7 @@ package body Git_If is
     Cmd.Cat ("-n");
     Cmd.Cat ("-1");
     Cmd.Cat ("--");
-    Cmd.Cat (Path);
+    Cmd.Cat ("'" & Path & "'");
     Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -765,8 +794,8 @@ package body Git_If is
   begin
     Cmd.Set ("git");
     Cmd.Cat ("show");
-    Cmd.Cat (Hash & ":" & Name);
-    Cmd.Cat (">" & File);
+    Cmd.Cat ("'" & Hash & ":" & Name & "'");
+    Cmd.Cat (">'" & File & "'");
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -783,7 +812,7 @@ package body Git_If is
   procedure Launch_Diff (Differator, File_Name : in String) is
   begin
     Utils.Launch ("git difftool -y " & " -x " & Differator
-                & " HEAD -- " & File_Name);
+                & " HEAD -- '" & File_Name & "'");
   end Launch_Diff;
 
   -- Launch a diff (asynchronous) from Comp to Ref
@@ -791,7 +820,7 @@ package body Git_If is
                           Ref_Rev, Comp_Rev : in String) is
   begin
     Utils.Launch ("git difftool -y " & " -x " & Differator
-          & " " & Ref_Rev & " " & Comp_Rev & " -- " & File_Name);
+          & " " & Ref_Rev & " " & Comp_Rev & " -- '" & File_Name & "'");
   end Launch_Delta;
 
    -- Launch a revert (checkout) synchronous
@@ -802,7 +831,7 @@ package body Git_If is
     Cmd.Cat ("checkout");
     Cmd.Cat ("HEAD");
     Cmd.Cat ("--");
-    Cmd.Cat (File);
+    Cmd.Cat ("'" & File & "'");
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -818,7 +847,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("reset");
     Cmd.Cat ("--");
-    Cmd.Cat (File);
+    Cmd.Cat ("'" & File & "'");
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Don't handle error because git exits with 1 if some unstaged changes
@@ -844,7 +873,7 @@ package body Git_If is
     Cmd.Cat ("checkout");
     if Branch /= "" then
       Cmd.Cat ("-b");
-      Cmd.Cat (Branch);
+      Cmd.Cat ("'" & Branch & "'");
     end if;
     Cmd.Cat (Rev_Tag);
     Execute (Cmd, True, Command.Both,
@@ -864,7 +893,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("add");
     Cmd.Cat ("--");
-    Cmd.Cat (File);
+    Cmd.Cat ("'" & File & "'");
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -880,7 +909,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("rm");
     Cmd.Cat ("--");
-    Cmd.Cat (File);
+    Cmd.Cat ("'" & File & "'");
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -889,7 +918,7 @@ package body Git_If is
     end if;
   end Do_Rm;
 
-  -- Strip a comment: Replace ' by '\'', then protect commend in quotes
+  -- Strip a comment: Replace ' by '\'', then protect comment in quotes
   function Strip_Comment (Comment : String) return String is
   begin
     return "'" & Str_Util.Substit (Comment, "'", "'\''", True) & "'";
@@ -923,9 +952,9 @@ package body Git_If is
     if Set_Upstream then
       Cmd.Cat ("--set-upstream");
     end if;
-    Cmd.Cat (Remote);
+    Cmd.Cat ("'" & Remote & "'");
     if Tag /= "" then
-      Cmd.Cat (Tag);
+      Cmd.Cat ("'" & Tag & "'");
     end if;
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
@@ -949,8 +978,8 @@ package body Git_If is
       Cmd.Cat ("fetch");
     end if;
     Cmd.Cat ("--tags");
-    Cmd.Cat (Remote);
-    Cmd.Cat (Branch & ":" & Branch);
+    Cmd.Cat ("'" & Remote & "'");
+    Cmd.Cat ("'" & Branch & ":" & Branch & "'");
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -1059,7 +1088,7 @@ package body Git_If is
   begin
     Cmd.Set ("git");
     Cmd.Cat ("branch");
-    Cmd.Cat (Name);
+    Cmd.Cat ("'" & Name & "'");
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -1077,8 +1106,8 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("branch");
     Cmd.Cat ("-m");
-    Cmd.Cat (Name);
-    Cmd.Cat (New_Name);
+    Cmd.Cat ("'" & Name & "'");
+    Cmd.Cat ("'" & New_Name & "'");
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -1096,7 +1125,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("branch");
     Cmd.Cat ("-d");
-    Cmd.Cat (Name);
+    Cmd.Cat ("'" & Name & "'");
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -1119,7 +1148,7 @@ package body Git_If is
     if No_Fast_Forward then
       Cmd.Cat ("--no-ff");
     end if;
-    Cmd.Cat (Name);
+    Cmd.Cat ("'" & Name & "'");
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -1136,8 +1165,8 @@ package body Git_If is
   begin
     Cmd.Set ("git");
     Cmd.Cat ("rebase");
-    Cmd.Cat (From);
-    Cmd.Cat (Name);
+    Cmd.Cat ("'" & From & "'");
+    Cmd.Cat ("'" & Name & "'");
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -1264,7 +1293,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("stash");
     Cmd.Cat ("save");
-    Cmd.Cat (Name);
+    Cmd.Cat ("'" & Name & "'");
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -1487,7 +1516,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("tag");
     Cmd.Cat ("-d");
-    Cmd.Cat (Tag);
+    Cmd.Cat ("'" & Tag & "'");
     Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -1512,7 +1541,7 @@ package body Git_If is
       Cmd.Cat ("-m");
       Cmd.Cat (Strip_Comment (Comment));
     end if;
-    Cmd.Cat (Tag);
+    Cmd.Cat ("'" & Tag & "'");
     Cmd.Cat (Hash);
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
@@ -1537,8 +1566,8 @@ package body Git_If is
     Commits.Delete_List;
     Cmd.Set ("git");
     Cmd.Cat ("cherry");
-    Cmd.Cat (Target);
-    Cmd.Cat (Ref);
+    Cmd.Cat ("'" & Target & "'");
+    Cmd.Cat ("'" & Ref & "'");
 
     Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);

@@ -16,8 +16,8 @@ begin
     end if;
     -- Launch viewer
     if Ok then
-      Utils.Launch (Config.Viewer & " " & Tmp_Name
-                  & "; sleep 5; rm " & Tmp_Name);
+      Utils.Launch (Config.Viewer & " '" & Tmp_Name
+                  & "' ; sleep 5; rm '" & Tmp_Name & "'");
     end if;
   end;
 exception

@@ -165,7 +165,7 @@ procedure Agite is
     and then Files.List_Length /= Prev_Files.List_Length then
       Changed := True;
     end if;
-    if not Changed then
+    if not Changed and then not Files.Is_Empty then
       Files.Rewind;
       Prev_Files.Rewind;
       loop
@@ -197,7 +197,7 @@ procedure Agite is
         Afpx.Line_List.Move_At (Files.Get_Position);
         Afpx.Update_List (Afpx.Center_Selected);
       else
-        Afpx.Line_List.Rewind;
+        Afpx.Line_List.Rewind (Check_Empty => False);
         Afpx.Update_List (Afpx.Top);
       end if;
     end if;
@@ -439,7 +439,7 @@ procedure Agite is
   procedure Do_Edit (File_Name : in String) is
   begin
     Timer.Start;
-    Utils.Launch (Editor.Image & " " & File_Name, True);
+    Utils.Launch (Editor.Image & " '" & File_Name & "'", True);
   end Do_Edit;
 
   procedure Do_History (Name : in String; Is_File : in Boolean) is
