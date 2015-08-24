@@ -240,11 +240,11 @@ package body Stash is
               null;
           end case;
 
-       when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
           null;
-       when Afpx.Refresh =>
-         -- Reread branch and stashes
-         Reread (True);
+        when Afpx.Refresh =>
+         -- Encode current branch
+         Utils.X.Encode_Branch (Afpx_Xref.Commit.Branch);
       end case;
     end loop;
 

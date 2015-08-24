@@ -327,11 +327,11 @@ package body Branch is
               null;
           end case;
 
-       when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
           null;
-       when Afpx.Refresh =>
-         -- Reread branches
-         Reread (True);
+        when Afpx.Refresh =>
+          -- Encode current branch
+          Utils.X.Encode_Branch (Afpx_Xref.Branches.Branch);
       end case;
     end loop;
 

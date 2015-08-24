@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with As.U, Directory, Afpx.Utils, Str_Util, Basic_Proc,
-     Aski, Unicode, Images;
+     Aski, Images;
 with Git_If, Utils.X, Config, Push_Pull, Afpx_Xref, Confirm, Error;
 package body Commit is
 
@@ -28,12 +28,13 @@ package body Commit is
           & " raised in commit on " & From.Name.Image);
   end Set;
 
-  function Match (Current, Criteria : Afpx.Line_Rec) return Boolean is
-    use type Unicode.Unicode_Sequence;
+  function Match (Current, Criteria : Git_If.File_Entry_Rec) return Boolean is
+    use type As.U.Asu_Us;
   begin
-    return Current.Str(4 .. Current.Len) = Criteria.Str(4 .. Criteria.Len);
+    return Current.Kind = Criteria.Kind and then Current.Name = Criteria.Name;
   end Match;
-  function Search is new Afpx.Line_List_Mng.Search (Match);
+  function Change_Search is new Git_If.File_Mng.Dyn_List.Search (Match);
+
 
   procedure Init_List is new Afpx.Utils.Init_List (
     Git_If.File_Entry_Rec, Git_If.File_Mng, Set, False);
@@ -117,49 +118,88 @@ package body Commit is
   end Init;
 
   -- Re assess the status of changes
-  procedure Reread is
-    Line : Afpx.Line_Rec;
-    Change : Git_If.File_Entry_Rec;
+  procedure Reread (Force : in Boolean) is
+    Current_Change : Git_If.File_Entry_Rec;
     Moved : Boolean;
     To_Commit : Boolean;
+    Pos : Natural := 0;
+    Prev_Changes : Git_If.File_List;
+    Changed : Boolean;
+    use type Git_If.File_Entry_Rec;
   begin
-    -- Save current selection
-    if not Afpx.Line_List.Is_Empty then
-      Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
-    else
-      Line.Len := 0;
+    Changed := Force;
+    -- Save current position and entry
+    if not Force and then not Changes.Is_Empty
+    and then not Afpx.Line_List.Is_Empty then
+      Pos := Afpx.Line_List.Get_Position;
+      Changes.Move_At (Pos);
+      Changes.Read (Current_Change, Git_If.File_Mng.Dyn_List.Current);
+      -- Make a copy of files list
+      Prev_Changes.Insert_Copy (Changes);
     end if;
 
-    -- Get list of changes
+    -- Refresh list only if it has changed
+    -- Update list of files and branch
     Git_If.List_Changes (Changes);
+    Utils.X.Encode_Branch (Afpx_Xref.Commit.Branch);
+
+    -- Check lengths then content
+    if not Changed
+    and then Changes.List_Length /= Prev_Changes.List_Length then
+      Changed := True;
+    end if;
+    if not Changed then
+      Changes.Rewind;
+      Prev_Changes.Rewind;
+      loop
+        if Changes.Access_Current.all /= Prev_Changes.Access_Current.all then
+          -- Stop as soon as one entry differs
+          Changed := True;
+          exit;
+        end if;
+        exit when not Changes.Check_Move;
+        Changes.Move_To;
+        Prev_Changes.Move_To;
+      end loop;
+    end if;
+
+    -- Copy in Afpx list
+    if not Changed then
+      -- No change: nothing
+      return;
+    elsif Pos = 0 then
+      -- Initial list was empty
+      Init_List (Changes);
+      Afpx.Line_List.Rewind (Check_Empty => False);
+      Afpx.Update_List (Afpx.Top);
+    else
+      Init_List (Changes);
+      -- Search position back and move Afpx to it
+      if Change_Search (Changes, Current_Change,
+                        From => Git_If.File_Mng.Dyn_List.Absolute) then
+        Afpx.Line_List.Move_At (Changes.Get_Position);
+        Afpx.Update_List (Afpx.Center_Selected);
+      else
+        Afpx.Line_List.Rewind;
+        Afpx.Update_List (Afpx.Top);
+      end if;
+    end if;
+
+    -- Check if some changes are staged
     To_Commit := False;
     if not Changes.Is_Empty then
+      Pos := Changes.Get_Position;
       -- See if at least one entry to commit
       Changes.Rewind;
       loop
-        Changes.Read (Change, Moved => Moved);
-        if Is_Staged (Change.S2) then
+        Changes.Read (Current_Change, Moved => Moved);
+        if Is_Staged (Current_Change.S2) then
           To_Commit := True;
         end if;
         exit when not Moved;
       end loop;
+      Changes.Move_At (Pos);
     end if;
-    -- Encode current branch
-    Utils.X.Encode_Branch (Afpx_Xref.Commit.Branch);
-
-    -- Encode the list
-    Init_List (Changes);
-    -- Move back to the same entry as before (if possible)
-    if not Afpx.Line_List.Is_Empty then
-      if Search (Afpx.Line_List, Line,
-                 From => Afpx.Line_List_Mng.Absolute) then
-        Afpx.Line_List.Move_At (Afpx.Line_List.Get_Position);
-      else
-        Afpx.Line_List.Rewind;
-      end if;
-    end if;
-    -- Center
-    Afpx.Update_List (Afpx.Center_Selected);
 
     -- Set field activity
     Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Stage,
@@ -205,7 +245,7 @@ package body Commit is
     then
       Afpx.Line_List.Move_To;
     end if;
-    Reread;
+    Reread (True);
   end Do_Stage;
 
   -- Switch stage
@@ -266,7 +306,7 @@ package body Commit is
       Init;
     end if;
 
-    Reread;
+    Reread (True);
   end Do_Stage_All;
 
   -- Sign the comment
@@ -322,7 +362,7 @@ package body Commit is
     List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
 
     -- Encode Changes
-    Reread;
+    Reread (True);
 
     -- Main loop
     loop
@@ -361,7 +401,7 @@ package body Commit is
                 + 1);
             when Afpx_Xref.Commit.Reread =>
               -- Reread button
-              Reread;
+              Reread (True);
             when Afpx_Xref.Commit.Diff =>
               Do_Diff;
             when Afpx_Xref.Commit.Stage =>
@@ -389,7 +429,7 @@ package body Commit is
               -- Commit button
               Do_Commit;
               Init;
-              Reread;
+              Reread (True);
             when Afpx_Xref.Commit.Push =>
               -- Push button
               Decode_Comment;
@@ -397,7 +437,7 @@ package body Commit is
                 return;
               else
                 Init;
-                Reread;
+                Reread (True);
               end if;
             when Afpx_Xref.Commit.Back =>
               -- Back button
@@ -408,13 +448,14 @@ package body Commit is
           end case;
 
        when Afpx.Timer_Event =>
-         Reread;
+         -- Reread branch and changes if they have changed
+         Reread (False);
 
        when Afpx.Fd_Event | Afpx.Signal_Event =>
           null;
        when Afpx.Refresh =>
-         -- Reread branch and changes
-         Reread;
+         -- Reread branch and changes if they have changed
+         Reread (False);
       end case;
     end loop;
 

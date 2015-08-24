@@ -180,6 +180,7 @@ procedure Agite is
       end loop;
     end if;
 
+    -- Copy in Afpx list
     if not Changed then
       -- No change: nothing
       return;
@@ -200,7 +201,6 @@ procedure Agite is
         Afpx.Update_List (Afpx.Top);
       end if;
     end if;
-    -- Copy in Afpx list
   end Encode_Files;
 
   -- Read the target of link and its kind ('?' if error)
