@@ -1,4 +1,5 @@
-with Basic_Proc, Environ, Directory, Xml_Parser.Generator, Timers, Sys_Calls;
+with Basic_Proc, Environ, Directory, Xml_Parser.Generator, Timers, Sys_Calls,
+     Str_Util;
 package body Config is
 
   -- Config file name
@@ -41,7 +42,7 @@ package body Config is
     declare
       Ok : Boolean;
     begin
-      Ctx.Parse (Get_File_Name, Ok);
+      Ctx.Parse (Get_File_Name, Ok, Expand => False);
       if not Ok then
         Basic_Proc.Put_Line_Error ("Parse error in config: "
                                  & Ctx.Get_Parse_Error_Message);
@@ -175,6 +176,27 @@ package body Config is
       raise Invalid_Config;
   end List_Tags;
 
+  -- Fix Characters '&' and '<' in path
+  function Path2Xml (Str : in String) return String is
+    Res : As.U.Asu_Us;
+  begin
+    for I in Str'Range loop
+      case Str(I) is
+        when '&' => Res.Append ("&amp;");
+        when '<' => Res.Append ("&lt;");
+        when others => Res.Append (Str(I));
+      end case;
+    end loop;
+    return Res.Image;
+  end Path2Xml;
+  function Xml2Path (Str : in String) return String is
+    Res : As.U.Asu_Us;
+  begin
+    Res := As.U.Tus (Str_Util.Substit (Str, "&amp;", "&"));
+    Res :=  As.U.Tus (Str_Util.Substit (Res.Image, "&lt;", "<"));
+    return Res.Image;
+  end Xml2Path;
+
   -- Last/Current dir
   procedure Save_Curr_Dir (Dir : in String) is
     Prev : Xml_Parser.Element_Type;
@@ -185,7 +207,7 @@ package body Config is
     if Ctx.Get_Nb_Children (Prev) = 1 then
       Ctx.Delete_Children (Prev);
     end if;
-    Ctx.Add_Child (Prev, Dir, Xml_Parser.Text, New_Node);
+    Ctx.Add_Child (Prev, Path2Xml (Dir), Xml_Parser.Text, New_Node);
     Save;
   end Save_Curr_Dir;
 
@@ -195,7 +217,7 @@ package body Config is
     -- Prev dir may be empty
     Prev := Ctx.Get_Child (Root, Curr_Dir_Pos);
     if Ctx.Get_Nb_Children (Prev) = 1 then
-      return Ctx.Get_Text (Ctx.Get_Child (Prev, 1));
+      return Xml2Path (Ctx.Get_Text (Ctx.Get_Child (Prev, 1)));
     else
       return "";
     end if;
@@ -229,7 +251,8 @@ package body Config is
       Result.Path.Set_Null;
     else
       -- Some bookmark text: full bookmark
-      Result.Path := As.U.Asu_Us'(Ctx.Get_Text (Ctx.Get_Child (Bookmark, 1)));
+      Result.Path := As.U.Tus (Xml2Path (Ctx.Get_Text (
+                      Ctx.Get_Child (Bookmark, 1))));
     end if;
     return Result;
   end Get_Bookmark;
@@ -266,7 +289,7 @@ package body Config is
     end if;
     -- Add its text
     if not Bookmark.Path.Is_Null then
-      Ctx.Add_Child (New_Node, Bookmark.Path.Image, Xml_Parser.Text,
+      Ctx.Add_Child (New_Node, Path2Xml (Bookmark.Path.Image), Xml_Parser.Text,
                      New_Node);
     end if;
     Save;

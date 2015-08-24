@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.30
+V17.31
 
 General purpose
 ---------------
@@ -714,13 +714,17 @@ directory. Example:
  /home/user/ada
 
 * Named bookmarks are created like anonymous ones but with a name set in the
-'Name to add' field when clicking in xref:XAddCurr[AddCur]. The name appears in
-parentheses before the path of the bookmark. Example:
+'Name to add' field when clicking in xref:XAddCurr[AddCur]. The name must comply
+with the syntax of an Ada identifier ('letter [ { [ _ ] letter_or_digit }
+]'). +
+The name appears in parentheses before the path of the bookmark. Example:
 
  (Reposit) /home/user/ada/reposit
 
 * Separators are created by setting a name (in 'Name to add') and clicking
-in xref:XAddSep[AddSep]. This creates a line with dashes and the name. Example:
+in xref:XAddSep[AddSep]. The name must comply with the syntax of an Ada
+identifier. +
+This creates a line with dashes and the name. Example:
 
  ----- Ada -----
 

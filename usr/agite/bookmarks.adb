@@ -1,5 +1,5 @@
-with As.U, Directory, Afpx.Utils, Environ, Computer;
-with Utils.X, Config, Afpx_Xref, Confirm;
+with As.U, Directory, Afpx.Utils, Environ, Computer, Ada_Words, Aski;
+with Utils.X, Config, Afpx_Xref, Confirm, Error;
 package body Bookmarks is
 
   -- The internal variables (none so far)
@@ -58,24 +58,52 @@ package body Bookmarks is
     end if;
   end Load_List;
 
-  -- Get bookmark name (from Get field)
+  -- Init screen
   Get_Handle : Afpx.Get_Handle_Rec;
-  function Get_Name return String is
+  procedure Init_Screen is
+  begin
+    -- Init Afpx
+    Afpx.Use_Descriptor (Afpx_Xref.Bookmarks.Dscr_Num);
+    Get_Handle := (others => <>);
+    List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
+
+    -- Encode current dir
+    Utils.X.Encode_Field (Directory.Get_Current, Afpx_Xref.Bookmarks.Dir);
+
+    -- Encode Bookmarks
+    Load_List;
+  end Init_Screen;
+
+  -- Get and check bookmark name or get edited path (from Get field)
+  -- Handle error and return Aski.Nul on error
+  Get_Error : constant String := Aski.Nul_S;
+  function Get_Name (Name : Boolean := True) return String is
     Str : constant String
         := Utils.Parse_Spaces (Afpx.Decode_Field (Afpx_Xref.Bookmarks.Name,
                                0, False));
   begin
-    Afpx.Clear_Field (Afpx_Xref.Bookmarks.Name);
-    Afpx.Reset (Get_Handle);
-    return Str;
+    -- No check on Path (edit), or empty name (anonymous) or valid
+    if not Name or else Str = "" or else Ada_Words.Is_Identifier (Str) then
+      Afpx.Clear_Field (Afpx_Xref.Bookmarks.Name);
+      Afpx.Reset (Get_Handle);
+      return Str;
+    else
+      Error ("Bookmark name", Str, "Invalid bookmark name");
+      Init_Screen;
+      Afpx.Encode_Field (Afpx_Xref.Bookmarks.Name, (0, 0), Str);
+      return Get_Error;
+    end if;
   end Get_Name;
 
   -- Modify current bookmark
   procedure Start_Edit (Bookmark : out Config.Bookmark_Rec) is
     Getfld : constant Afpx.Field_Range := Afpx_Xref.Bookmarks.Name;
-    New_Name : constant String := Get_Name;
     Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (Getfld);
+    New_Name : constant String := Get_Name;
   begin
+    if New_Name = Get_Error then
+      return;
+    end if;
     -- Get bookmark
     Bookmark := Config.Get_Bookmark (Afpx.Line_List.Get_Position);
     if New_Name /= "" then
@@ -128,8 +156,9 @@ package body Bookmarks is
     Afpx.Reset_Field (Afpx_Xref.Bookmarks.Edit, Reset_Colors => False);
     Afpx.Reset_Field (Afpx_Xref.Bookmarks.Del, Reset_Colors => False);
     Afpx.Reset_Field (Afpx_Xref.Bookmarks.Back, Reset_Colors => False);
+
     -- Get and clear path
-    Bookmark.Path := As.U.Tus (Get_Name);
+    Bookmark.Path := As.U.Tus (Get_Name (False));
     if Ok then
       -- Insert new bookmark after current and delete current
       Config.Add_Bookmark (Afpx.Line_List.Get_Position, Bookmark);
@@ -158,9 +187,6 @@ package body Bookmarks is
     Ptg_Result   : Afpx.Result_Rec;
     use type Afpx.Absolute_Field_Range, Afpx.Descriptor_Range;
 
-    -- Current dir
-    Curr_Dir : constant String := Directory.Get_Current;
-
     -- Current position in Afpx list
     Position : Positive;
 
@@ -173,16 +199,8 @@ package body Bookmarks is
     Dummy : Boolean;
 
   begin
-    -- Init Afpx
-    Afpx.Use_Descriptor (Afpx_Xref.Bookmarks.Dscr_Num);
-    Get_Handle := (others => <>);
-    List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
-
-    -- Encode dir
-    Utils.X.Encode_Field (Curr_Dir, Afpx_Xref.Bookmarks.Dir);
-
-    -- Encode Bookmarks
-    Load_List;
+    -- Init screen
+    Init_Screen;
 
     -- Main loop
     loop
@@ -255,12 +273,14 @@ package body Bookmarks is
                 -- Add current
                 Bookmark := (As.U.Tus (Get_Name),
                              As.U.Tus (Directory.Get_Current));
-                if Afpx.Line_List.Is_Empty then
-                  Config.Add_Bookmark (0, Bookmark);
-                else
-                  Config.Add_Bookmark (Afpx.Line_List.Get_Position, Bookmark);
+                if Bookmark.Name.Image /= Get_Error then
+                  if Afpx.Line_List.Is_Empty then
+                    Config.Add_Bookmark (0, Bookmark);
+                  else
+                    Config.Add_Bookmark (Afpx.Line_List.Get_Position, Bookmark);
+                  end if;
+                  Insert_List (Bookmark);
                 end if;
-                Insert_List (Bookmark);
               end if;
             when Afpx_Xref.Bookmarks.Addsep =>
               if In_Edit then
@@ -270,12 +290,14 @@ package body Bookmarks is
               else
                 -- Add separator
                 Bookmark := (As.U.Tus (Get_Name), As.U.Asu_Null);
-                if Afpx.Line_List.Is_Empty then
-                  Config.Add_Bookmark (0, Bookmark);
-                else
-                  Config.Add_Bookmark (Afpx.Line_List.Get_Position, Bookmark);
+                if Bookmark.Name.Image /= Get_Error then
+                  if Afpx.Line_List.Is_Empty then
+                    Config.Add_Bookmark (0, Bookmark);
+                  else
+                    Config.Add_Bookmark (Afpx.Line_List.Get_Position, Bookmark);
+                  end if;
+                  Insert_List (Bookmark);
                 end if;
-                Insert_List (Bookmark);
               end if;
 
             when Afpx_Xref.Bookmarks.Moveup =>
@@ -310,7 +332,7 @@ package body Bookmarks is
               end if;
               -- Restore descriptor
               if Afpx.Get_Descriptor /= Afpx_Xref.Bookmarks.Dscr_Num then
-                Afpx.Use_Descriptor (Afpx_Xref.Bookmarks.Dscr_Num);
+                Init_Screen;
               end if;
             when Afpx_Xref.Bookmarks.Back =>
               -- Back
