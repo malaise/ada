@@ -3,7 +3,7 @@ with Aski, Images, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "0";
+  Minor_Version : constant String := "1";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -16,6 +16,39 @@ package body Xml_Parser.Generator is
   Ampersand   : constant String := "&";
   Quotation   : constant String := """";
   Apostrophe  : constant String := "'";
+
+  -- Process pure text (outside CDATA)
+  procedure Process_Text (
+      Text : in out As.U.Asu_Us;
+      Process : access procedure (Text : in out As.U.Asu_Us)) is
+    Start, Stop : Natural;
+    Slice : As.U.Asu_Us;
+    Len : Natural;
+  begin
+    -- Look for "<![CDATA[ ... ]]>"
+    Stop := 0;
+    loop
+      Start := Str_Util.Locate (Text.Image, Cdata_Start, Stop + 1);
+      if Start = 0 then
+        -- Check CharData after last CData section (the CharData if no Cdata)
+        Slice := Text.Uslice (Stop + 1, Text.Length);
+        Process (Slice);
+        Text.Replace (Stop + 1, Text.Length, Slice.Image);
+        exit;
+      end if;
+      -- Check CharData between CData sections
+      Slice := Text.Uslice (Stop + 1, Start - 1);
+      Len := Slice.Length;
+      Process (Slice);
+      Text.Replace (Stop + 1, Text.Length, Slice.Image);
+      Start := Start + Slice.Length - Len;
+      Stop := Str_Util.Locate (Text.Image, Cdata_Stop, Start + 1);
+      if Stop = 0 then
+        -- Unterminated Cdata section
+        raise Invalid_Argument;
+      end if;
+    end loop;
+  end Process_Text;
 
   -- Check validity of Name
   procedure Check_Name (Name : in String) is
@@ -85,36 +118,20 @@ package body Xml_Parser.Generator is
     -- - check references (name or num)
 
     -- Check a CharData block (between CData sections)
-    procedure Check_Chardata (Str : in String) is
+    procedure Check_Chardata (Text : in out As.U.Asu_Us) is
     begin
-      if Str_Util.Locate (Str, Start_Tag) /= 0 then
+      if Str_Util.Locate (Text.Image, Start_Tag) /= 0 then
         raise Invalid_Argument;
       end if;
-      if Str_Util.Locate (Str, Cdata_Stop) /= 0 then
+      if Str_Util.Locate (Text.Image, Cdata_Stop) /= 0 then
         raise Invalid_Argument;
       end if;
-      Check_Refs (Str);
+      Check_Refs (Text.Image);
     end Check_Chardata;
 
-     Start, Stop : Natural;
+    Text : As.U.Asu_Us := As.U.Tus (Txt);
   begin
-    -- Look for "<![CDATA[ ... ]]>"
-    Stop := Txt'First - 1;
-    loop
-      Start := Str_Util.Locate (Txt, Cdata_Start, Stop + 1);
-      if Start = 0 then
-        -- Check CharData after last CData section (the CharData if no Cdata)
-        Check_Chardata (Txt(Stop + 1 .. Txt'Last));
-        exit;
-      end if;
-      -- Check CharData between CData sections
-      Check_Chardata (Txt(Stop + 1 .. Start - 1));
-      Stop := Str_Util.Locate (Txt, Cdata_Stop, Start + 1);
-      if Stop = 0 then
-        -- Unterminated Cdata section
-        raise Invalid_Argument;
-      end if;
-    end loop;
+    Process_Text (Text, Check_Chardata'Access);
   end Check_Text;
 
   -- Detect separator
@@ -1052,38 +1069,6 @@ package body Xml_Parser.Generator is
     Text := As.U.Tus (Str_Util.Substit (Text.Image, "&lt;", Start_Tag));
     Text := As.U.Tus (Str_Util.Substit (Text.Image, "&amp;", Ampersand));
   end Xml2Text;
-  -- Local: identify pure text and process it
-  procedure Process_Text (
-      Text : in out As.U.Asu_Us;
-      Process : access procedure (Text : in out As.U.Asu_Us)) is
-    Start, Stop : Natural;
-    Slice : As.U.Asu_Us;
-    Len : Natural;
-  begin
-    -- Look for "<![CDATA[ ... ]]>"
-    Stop := 0;
-    loop
-      Start := Str_Util.Locate (Text.Image, Cdata_Start, Stop + 1);
-      if Start = 0 then
-        -- Check CharData after last CData section (the CharData if no Cdata)
-        Slice := Text.Uslice (Stop + 1, Text.Length);
-        Process (Slice);
-        Text.Replace (Stop + 1, Text.Length, Slice.Image);
-        exit;
-      end if;
-      -- Check CharData between CData sections
-      Slice := Text.Uslice (Stop + 1, Start - 1);
-      Len := Slice.Length;
-      Process (Slice);
-      Text.Replace (Stop + 1, Text.Length, Slice.Image);
-      Start := Start + Slice.Length - Len;
-      Stop := Str_Util.Locate (Text.Image, Cdata_Stop, Start + 1);
-      if Stop = 0 then
-        -- Unterminated Cdata section
-        raise Invalid_Argument;
-      end if;
-    end loop;
-  end Process_Text;
 
   -- Convert a Text for XML
   -- Outside CDATA sections, replace "&" by "&amp;", "<" by "&lt;"
