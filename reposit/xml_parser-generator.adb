@@ -9,6 +9,14 @@ package body Xml_Parser.Generator is
     return "V" & Major_Version & "." & Minor_Version;
   end Version;
 
+  -- Common delimiter definitions
+  Cdata_Start : constant String := "<![CDATA[";
+  Cdata_Stop  : constant String := "]]>";
+  Start_Tag   : constant String := "<";
+  Ampersand   : constant String := "&";
+  Quotation   : constant String := """";
+  Apostrophe  : constant String := "'";
+
   -- Check validity of Name
   procedure Check_Name (Name : in String) is
   begin
@@ -59,7 +67,7 @@ package body Xml_Parser.Generator is
     Stop := Text'First - 1;
     loop
       -- Locate next "&...;"
-      Start := Str_Util.Locate (Text, "&", Stop + 1);
+      Start := Str_Util.Locate (Text, Ampersand, Stop + 1);
       exit when Start = 0;
       Stop := Str_Util.Locate (Text, ";", Start + 1);
       if Stop = 0 or else Stop = Start + 1 then
@@ -75,9 +83,6 @@ package body Xml_Parser.Generator is
     -- Find CDATA sections, and between them:
     -- - check that there is no Start_Tag nor Cdata_Stop sequence
     -- - check references (name or num)
-    Cdata_Start : constant String := "<![CDATA[";
-    Cdata_Stop  : constant String := "]]>";
-    Start_Tag   : constant String := "<";
 
     -- Check a CharData block (between CData sections)
     procedure Check_Chardata (Str : in String) is
@@ -1028,6 +1033,123 @@ package body Xml_Parser.Generator is
       Tree.Delete_Tree;
     end loop;
   end Delete_Children;
+
+  --------------------------------------------------------------------------------------
+  -- CONVERSIONS --
+  -----------------
+
+  -- Local: Convert pure text (no CDATA) to XML and reverse
+  procedure Text2Xml (Text : in out As.U.Asu_Us) is
+  begin
+    Text := As.U.Tus (Str_Util.Substit (Text.Image, Ampersand, "&amp;"));
+    Text := As.U.Tus (Str_Util.Substit (Text.Image, Start_Tag, "&lt;"));
+    Text := As.U.Tus (Str_Util.Substit (Text.Image, Cdata_Stop, "]]&gt;"));
+  end Text2Xml;
+  procedure Xml2Text (Text : in out As.U.Asu_Us) is
+  begin
+    -- Convert ampersand at the end
+    Text := As.U.Tus (Str_Util.Substit (Text.Image, "]]&gt;", Cdata_Stop));
+    Text := As.U.Tus (Str_Util.Substit (Text.Image, "&lt;", Start_Tag));
+    Text := As.U.Tus (Str_Util.Substit (Text.Image, "&amp;", Ampersand));
+  end Xml2Text;
+  -- Local: identify pure text and process it
+  procedure Process_Text (
+      Text : in out As.U.Asu_Us;
+      Process : access procedure (Text : in out As.U.Asu_Us)) is
+    Start, Stop : Natural;
+    Slice : As.U.Asu_Us;
+    Len : Natural;
+  begin
+    -- Look for "<![CDATA[ ... ]]>"
+    Stop := 0;
+    loop
+      Start := Str_Util.Locate (Text.Image, Cdata_Start, Stop + 1);
+      if Start = 0 then
+        -- Check CharData after last CData section (the CharData if no Cdata)
+        Slice := Text.Uslice (Stop + 1, Text.Length);
+        Process (Slice);
+        Text.Replace (Stop + 1, Text.Length, Slice.Image);
+        exit;
+      end if;
+      -- Check CharData between CData sections
+      Slice := Text.Uslice (Stop + 1, Start - 1);
+      Len := Slice.Length;
+      Process (Slice);
+      Text.Replace (Stop + 1, Text.Length, Slice.Image);
+      Start := Start + Slice.Length - Len;
+      Stop := Str_Util.Locate (Text.Image, Cdata_Stop, Start + 1);
+      if Stop = 0 then
+        -- Unterminated Cdata section
+        raise Invalid_Argument;
+      end if;
+    end loop;
+  end Process_Text;
+
+  -- Convert a Text for XML
+  -- Outside CDATA sections, replace "&" by "&amp;", "<" by "&lt;"
+  --  and "]]>" by "]]&gt;"
+  function Text2Xml (Str : String) return String is
+    -- Find CDATA sections, and between them, replace
+    Text : As.U.Asu_Us := As.U.Tus (Str);
+  begin
+    Process_Text (Text, Text2Xml'Access);
+    return Text.Image;
+  end Text2Xml;
+
+  -- Convert Text from Xml
+  -- Outside CDATA sections, replace "&amp;" by "&", "&lt;" by "<"
+  --  and "&gt;" by ">"
+  function Xml2Text (Str : String) return String is
+    -- Find CDATA sections, and between them, replace
+    Text : As.U.Asu_Us := As.U.Tus (Str);
+  begin
+    Process_Text (Text, Xml2Text'Access);
+    return Text.Image;
+  end Xml2Text;
+
+  -- Convert an attribute value for Xml
+  -- Replace any "'" by "&apos;" and any """" by "&quot;"
+  function Attr2Xml (Str : String) return String is
+    Text : As.U.Asu_Us := As.U.Tus (Str);
+  begin
+    Text := As.U.Tus (Str_Util.Substit (Text.Image, Quotation, "&quot;"));
+    Text := As.U.Tus (Str_Util.Substit (Text.Image, Apostrophe, "&apos;"));
+    return Text.Image;
+  end Attr2Xml;
+
+  -- Convert an attribute value from Xml
+  -- Replace any "&apos;" by "'" and any "&quot;" by """"
+  function Xml2Attr (Str : String) return String is
+    Text : As.U.Asu_Us := As.U.Tus (Str);
+  begin
+    Text := As.U.Tus (Str_Util.Substit (Text.Image, "&quot;", Quotation));
+    Text := As.U.Tus (Str_Util.Substit (Text.Image, "&apos;", Apostrophe));
+    return Text.Image;
+  end Xml2Attr;
+
+  -- Convert the content of a context, after it has been checked with expand
+  --  so that it can be put/set as a valid Xml flow:
+  -- Apply Text2Xml to each Text node and Attr2Xml to each attribute value.
+  -- Iterator
+  function To_Xml (Cell  : in out My_Tree_Cell;
+                   Dummy_Level : Natural) return Boolean is
+  begin
+    case Cell.Kind is
+      when Text =>
+        Cell.Name := As.U.Tus (Text2Xml (Cell.Name.Image));
+      when Attribute =>
+        Cell.Value := As.U.Tus (Attr2Xml (Cell.Value.Image));
+      when others =>
+        null;
+    end case;
+    return True;
+  end To_Xml;
+
+  procedure Tree2Xml (Ctx : in out Ctx_Type) is
+  begin
+    Init_Ctx (Ctx);
+    Ctx.Elements.Iterate (To_Xml'Access);
+  end Tree2Xml;
 
   --------------------------------------------------------------------------------------
   -- GENERATION --

@@ -3,7 +3,7 @@
 package Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "17";
+  Major_Version : constant String := "18";
   function Version return String;
 
   -- The context, possibly filled by parsing a file or string in tree mode
@@ -246,6 +246,30 @@ package Xml_Parser.Generator is
   Invalid_Argument : exception;
 
   ----------------
+  -- CONVERSION --
+  ----------------
+  -- Convert a Text for XML
+  -- Outside CDATA sections, replace "&" by "&amp;", "<" by "&lt;"
+  --  and "]]>" by "]]&gt;"
+  function Text2Xml (Str : String) return String;
+  -- Convert Text from Xml
+  -- Outside CDATA sections, replace "&amp;" by "&", "&lt;" by "<"
+  --  and "&gt;" by ">"
+  function Xml2Text (Str : String) return String;
+
+  -- Convert an attribute value for Xml
+  -- Replace any "'" by "&apos;" and any """" by "&quot;"
+  function Attr2Xml (Str : String) return String;
+  -- Convert an attribute value from Xml
+  -- Replace any "&apos;" by "'" and any "&quot;" by """"
+  function Xml2Attr (Str : String) return String;
+
+  -- Convert the content of a context, after it has been checked with expand
+  --  so that it can be put/set as a valid Xml flow:
+  -- Apply Text2Xml to each Text node and Attr2Xml to each attribute value.
+  procedure Tree2Xml (Ctx : in out Ctx_Type);
+
+  ----------------
   -- GENERATION --
   ----------------
   -- Kind of output format
@@ -270,7 +294,7 @@ package Xml_Parser.Generator is
 
   -- Dumps in a string
   -- Same as for Put, the Ctx should have been checked if new nodes
-  function Set (Ctx    : Ctx_Type;
+  function Set (Ctx       : Ctx_Type;
                 Format    : Format_Kind_List := Default_Format;
                 Width     : Natural := Default_Width;
                 Namespace : Boolean := False) return String;

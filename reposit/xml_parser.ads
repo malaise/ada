@@ -550,7 +550,7 @@ private
     --  or its first child is text
     Is_Mixed : Boolean := False;
   end record;
-  package My_Tree is new Trees.Tree(My_Tree_Cell);
+  package My_Tree is new Trees.Tree (My_Tree_Cell);
 
   type Tree_Acc is access all My_Tree.Tree_Type;
   type Branch_List is (Prologue_Br, Elements_Br, Tail_Br);

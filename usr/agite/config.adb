@@ -1,5 +1,5 @@
 with Basic_Proc, Environ, Directory, Xml_Parser.Generator, Timers, Sys_Calls,
-     Str_Util;
+     Trilean;
 package body Config is
 
   -- Config file name
@@ -42,7 +42,7 @@ package body Config is
     declare
       Ok : Boolean;
     begin
-      Ctx.Parse (Get_File_Name, Ok, Expand => False);
+      Ctx.Parse (Get_File_Name, Ok);
       if not Ok then
         Basic_Proc.Put_Line_Error ("Parse error in config: "
                                  & Ctx.Get_Parse_Error_Message);
@@ -68,21 +68,26 @@ package body Config is
     if Ctx.Get_Name (Bookmarks) /= "bookmarks" then
       raise Invalid_Config;
     end if;
+    -- Restore text as valid Xml for later saving
+    Ctx.Tree2Xml;
   end Check;
 
   -- Save the conf
-  procedure Save is
+  procedure Save (Check : in Boolean := True) is
     Ok : Boolean;
     Tmp_Suffix : constant String := ".tmp";
     Tmp_File_Name : constant String := Get_File_Name & Tmp_Suffix;
   begin
-    -- Check Ctx, it is Ok for sure but this correctly sets
-    --  Is_Mixed to False on inserted bookmarks
-    Ctx.Check (Ok);
-    if not Ok then
-      Basic_Proc.Put_Line_Error ("Check error on config: "
-                                 & Ctx.Get_Parse_Error_Message);
-      raise Invalid_Config;
+    if Check then
+      -- Check Ctx, it is Ok for sure but this correctly sets
+      --  Is_Mixed to False on inserted bookmarks
+      -- Keep text not expanded
+      Ctx.Check (Ok, Expand => Trilean.Boo2Tri (False));
+      if not Ok then
+        Basic_Proc.Put_Line_Error ("Check error on config: "
+                                   & Ctx.Get_Parse_Error_Message);
+        raise Invalid_Config;
+      end if;
     end if;
     -- Try to overwrite file, make a copy of current
     if not Sys_Calls.Rename (Get_File_Name, Tmp_File_Name) then
@@ -177,25 +182,10 @@ package body Config is
   end List_Tags;
 
   -- Fix Characters '&' and '<' in path
-  function Path2Xml (Str : in String) return String is
-    Res : As.U.Asu_Us;
-  begin
-    for I in Str'Range loop
-      case Str(I) is
-        when '&' => Res.Append ("&amp;");
-        when '<' => Res.Append ("&lt;");
-        when others => Res.Append (Str(I));
-      end case;
-    end loop;
-    return Res.Image;
-  end Path2Xml;
-  function Xml2Path (Str : in String) return String is
-    Res : As.U.Asu_Us;
-  begin
-    Res := As.U.Tus (Str_Util.Substit (Str, "&amp;", "&"));
-    Res :=  As.U.Tus (Str_Util.Substit (Res.Image, "&lt;", "<"));
-    return Res.Image;
-  end Xml2Path;
+  function Path2Xml (Str : in String) return String
+    renames Xml_Parser.Generator.Text2Xml;
+  function Xml2Path (Str : in String) return String
+    renames Xml_Parser.Generator.Xml2Text;
 
   -- Last/Current dir
   procedure Save_Curr_Dir (Dir : in String) is
@@ -208,7 +198,7 @@ package body Config is
       Ctx.Delete_Children (Prev);
     end if;
     Ctx.Add_Child (Prev, Path2Xml (Dir), Xml_Parser.Text, New_Node);
-    Save;
+    Save (False);
   end Save_Curr_Dir;
 
   function Prev_Dir return String is
@@ -306,17 +296,18 @@ package body Config is
       Name := Ctx.Get_Attribute (Bookmark, 1).Value;
     end if;
     if Ctx.Get_Nb_Children (Bookmark) /= 0 then
-      Path := Ctx.Get_Text (Ctx.Get_Child (Bookmark, 1));
+      Path := As.U.Tus (Xml2Path (Ctx.Get_Text (Ctx.Get_Child (Bookmark, 1))));
     end if;
 
     -- Delete this bookmark
     Ctx.Delete_Node (Bookmark, Bookmark);
     -- Insert after new index
     if Up then
-      Add_Bookmark (Index - 2, (Name,Path));
+      Add_Bookmark (Index - 2, (Name, Path));
     else
       Add_Bookmark (Index, (Name, Path));
     end if;
+    Save;
   end Move_Bookmark;
 
 end Config;
