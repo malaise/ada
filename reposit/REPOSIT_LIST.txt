@@ -21,7 +21,7 @@ Multiplexed inputs::
 TCP socket), stdin, signals (SIGCHILD and SIGTERM), timers.
 +
 => The program *must* use 'Event_Mng'.Wait as the single blocking point. This
-allows dispatching the FD events, timers and signals to the proper callbacks).
+allows dispatching the FD events, timers and signals to the proper callbacks.
 
  * 'Event_Mng' allows defining callbacks for handling signal and FD events,
 
@@ -47,7 +47,7 @@ Several tasks can be defined, for example one for each window.
 Notes: 
 
 * Using 'Event_Mng' in X11 programs requires caution (see 'Event_Mng'.Wait and
-Command).
+'Command').
 
 * Using 'X_Mng' is exclusive with 'Con_Io' and 'Afpx'. 
 
@@ -71,7 +71,6 @@ light blue, lime green, orange, yellow and white. +
 dark green, cyan, red, magenta, brown, white, dark grey, light blue, lime green,
 orange, yellow and black.
 
-
 Families of tools
 -----------------
 
@@ -85,6 +84,9 @@ are many, are optional, support options...
 
 * 'Basic_Proc' allows setting the exit code of the process and basic
 input/output.
+
+* 'Trace' allows logging trace in the code. The output is filtered according
+to envirnment variables.
 
 Strings
 ~~~~~~~
@@ -133,6 +135,8 @@ to integers.
 real.
 
 * 'Round_At' rounds a real at a given precision.
+
+* 'Hexa_Utils' handles hexadecimal represntation of numbers.
 
 Data containers
 ~~~~~~~~~~~~~~~

@@ -4,7 +4,20 @@ Main changes
 
 [horizontal]
 
-*2015/02/05*:: Add Lz4 library
+*2015/08/25*:: Fix handling of special characters in (file) names in agite,
+V17.33
+
+*2015/08/07*:: Improve Empty and Mixed information in Xml_Parser V41.1
+
+*2015/07/16*:: Add asynchronous inputs in mcd
+
+*2015/03/25*:: Add support for PCRE2 (10.10)
+
+*2015/02/23*:: Add hybrid mode in autobus
+
+*2015/02/23*:: Add cherrypick in agite, V17.0
+
+*2015/02/11*:: Add Lz4 and Snappy libraies
 
 *2015/01/19*:: Add Lzf library
 
