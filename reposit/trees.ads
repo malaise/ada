@@ -235,14 +235,15 @@ package Trees is
     -- What to do on current item
     -- Iteration will continue as long as returning True
     type Do_One_Access is access
-         function (Element : Element_Type; Level : Natural) return Boolean;
+         function (Element : in out Element_Type;
+                   Level : Natural) return Boolean;
 
     -- Iterate on current and children (old to young by default)
     -- Nothing if tree is empty
     -- Level is 0 on current item
     procedure Iterate (The_Tree   : in out Tree_Type;
                        Do_One_Acc : access function
-                           (Element : Element_Type;
+                           (Element : in out Element_Type;
                             Level   : Natural) return Boolean;
                        Elder      : in Boolean := True);
 

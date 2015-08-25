@@ -136,7 +136,7 @@ package body Output is
   end Tree_Unit_Walker;
 
   -- Dump files of tree
-  function Tree_File_Iterator (Dscr : Tree_Mng.Src_Dscr;
+  function Tree_File_Iterator (Dscr : in out Tree_Mng.Src_Dscr;
                                Level : Natural) return Boolean is
     Str : As.U.Asu_Us;
     use type Sourcer.Src_Kind_List;
@@ -173,7 +173,7 @@ package body Output is
   -- Dynamic list of sorted entries (units or files)
   Dlist : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
   -- Store unit of tree
-  function List_Unit_Iterator (Dscr : Tree_Mng.Src_Dscr;
+  function List_Unit_Iterator (Dscr : in out Tree_Mng.Src_Dscr;
                                Unused_Level : Natural) return Boolean is
     Name : As.U.Asu_Us;
     use type Sourcer.Src_Kind_List;
@@ -205,7 +205,7 @@ package body Output is
   end List_Unit_Iterator;
 
   -- Store file of tree
-  function List_File_Iterator (Dscr : Tree_Mng.Src_Dscr;
+  function List_File_Iterator (Dscr : in out Tree_Mng.Src_Dscr;
                                Unused_Level : Natural) return Boolean is
     use type Sourcer.Src_Kind_List;
   begin
@@ -321,7 +321,7 @@ package body Output is
 
   -- Reuse the Level
   -- Path of units
-  function Path_Unit_Iterator (Dscr : Tree_Mng.Src_Dscr;
+  function Path_Unit_Iterator (Dscr : in out Tree_Mng.Src_Dscr;
                                Level : Natural) return Boolean is
     Name : As.U.Asu_Us;
     use type As.U.Asu_Us;
@@ -362,7 +362,7 @@ package body Output is
   end Path_Unit_Iterator;
 
   -- Path of files
-  function Path_File_Iterator (Dscr : Tree_Mng.Src_Dscr;
+  function Path_File_Iterator (Dscr : in out Tree_Mng.Src_Dscr;
                                Level : Natural) return Boolean is
     Name, File : As.U.Asu_Us;
     use type As.U.Asu_Us;

@@ -253,7 +253,7 @@ package body Tree is
     return True;
   end Dump;
   -- For dump of the tree (iterator)
-  function Dump (Node : Node_Rec; Level : Natural) return Boolean is
+  function Dump (Node : in out Node_Rec; Level : Natural) return Boolean is
   begin
     return Dump ("", Node, Level);
   end Dump;

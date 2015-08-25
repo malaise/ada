@@ -375,7 +375,7 @@ package body Tree_Mng is
   end Build_Node;
 
   -- Dump one element of the tree
-  function Dump_One (Dscr : in Src_Dscr;
+  function Dump_One (Dscr : in out Src_Dscr;
                      Level : in Natural) return Boolean is
     Str : As.U.Asu_Us;
   begin

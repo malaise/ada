@@ -952,7 +952,7 @@ package body Trees is
 
     procedure Iterate (The_Tree   : in out Tree_Type;
                        Do_One_Acc : access
-      function (Element : Element_Type; Level : Natural) return Boolean;
+      function (Element : in out Element_Type; Level : Natural) return Boolean;
                        Elder      : in Boolean := True) is
 
       Cell_Acc : Cell_Access;

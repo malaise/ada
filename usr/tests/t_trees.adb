@@ -6,7 +6,7 @@ procedure T_Trees is
   T, T1 : My_Tree.Tree_Type;
 
   Spaces : constant String (1 .. 132) := (others => ' ');
-  function Put (Elt : in Natural;
+  function Put (Elt : in out Natural;
                 Level : in Natural) return Boolean is
   begin
     Basic_Proc.Put_Line_Output (Spaces (1 .. Level*3) & Elt'Img);
