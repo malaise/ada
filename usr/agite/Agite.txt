@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.33
+V17.34
 
 General purpose
 ---------------
@@ -399,7 +399,10 @@ clear the field),
 +
 Then it is possible to change to the new path by hitting the key 'Return' or
 by clicking on the 'Go' button. +
-This text field can scroll horizontally to accomodate to long paths.
+This text field can scroll horizontally to accomodate to long paths. +
+After clicking on the 'Go' button (but not after hitting 'Return') the new path
+is copied into the X11 selection buffer (for a paste with the middle mouse
+button, see xref:XX11Selection[X11 selection]).
 
 anchor:XReread[]
 
@@ -968,11 +971,11 @@ information:
 .Tag and commit information
 Then, in any case, there is the information on the commmit:
 
-* The SHA-1 hash of the commit, that you can copy into the X11 selection
+* The SHA-1 hash of the commit, that you can '*copy*' into the X11 selection
 buffer,
 * If the entry is a merge, this is indicated by the word "Merge",
 * The date and the comment of the commit (up to seven lines), that you can
-also alternatively copy into the X11 selection buffer, 
+also alternatively '*copy*' into the X11 selection buffer, 
 * The list of all the files in the commit, each preceded by a letter:
 ** M Modified,
 ** T Type modified,
@@ -981,7 +984,8 @@ also alternatively copy into the X11 selection buffer,
 
 anchor:XX11Selection[]
 
-NOTE: You can paste the X11 selection buffer by using the middle mouse button).
+NOTE: You can paste (into agite or into another application) the X11 selection
+buffer by using the middle mouse button. +
 This X11 selection buffer is different from the clipboard of the window manager
 (accessed in some applications by Ctrl-C, Ctrl-V and with the right mouse
 button opening a pop-up menu), which is not available in Agite, neither for copy

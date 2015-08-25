@@ -952,6 +952,8 @@ begin
           when Afpx_Xref.Main.Chdir =>
             -- Go (to dir)
             Change_Dir;
+            -- Propose current path for copy/paste
+            Afpx.Set_Selection (Directory.Get_Current);
           when Afpx_Xref.Main.Reread =>
             -- Reread (change dir . and restore pos)
             Reread (True);
