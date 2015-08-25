@@ -555,7 +555,7 @@ package body Af_Ptg is
     Result : Integer;
   begin
      -- Get selection and replace Line_Feed by Space
-    Sel_Txt := As.U.Tus (Console.Get_Selection (Af_Con_Io.Col_Range_Last + 1));
+    Sel_Txt := As.U.Tus (Console.Get_Selection (Width_Range'Last));
     if Sel_Txt.Length = 0 then
       -- No selection
       return Sel_No_Change;
