@@ -3,7 +3,7 @@ with Aski, Images, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "2";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -40,7 +40,7 @@ package body Xml_Parser.Generator is
       Slice := Text.Uslice (Stop + 1, Start - 1);
       Len := Slice.Length;
       Process (Slice);
-      Text.Replace (Stop + 1, Text.Length, Slice.Image);
+      Text.Replace (Stop + 1, Start - 1, Slice.Image);
       Start := Start + Slice.Length - Len;
       Stop := Str_Util.Locate (Text.Image, Cdata_Stop, Start + 1);
       if Stop = 0 then
