@@ -19,6 +19,9 @@ package Utils is
   -- Separator to split output text
   function Separator (C : Character) return Boolean;
 
+  -- Protect text for shell: replace '"' by "\"" and enclose within " "
+  function Protect_Text (Str : in String) return String;
+
   -- Exception on Ctrl C
   Exit_Requested : exception;
 

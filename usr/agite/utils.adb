@@ -1,4 +1,5 @@
 with Str_Util, Many_Strings, Proc_Family;
+with basic_proc;
 package body Utils is
 
   -- If Str fits Width then return Str, padded by spaces if not Align_Left
@@ -58,6 +59,7 @@ package body Utils is
     Cmd.Set ("/bin/sh");
     Cmd.Cat ("-c");
     Cmd.Cat (Command);
+basic_proc.put_line_error (">" & Command & "<");
     if Set_Callback then
       Dummy_Res := Proc_Family.Spawn (Cmd, Death_Report => My_Cb'Access);
     else
@@ -71,6 +73,12 @@ package body Utils is
   begin
     return C <= ' ' or else C > '~';
   end Separator;
+
+  -- Protect text for shell: replace ''' by '\'' and enclose within quotes
+  function Protect_Text (Str : in String) return String is
+  begin
+    return "'" & Str_Util.Substit (Str, "'", "'\''", True) & "'";
+  end Protect_Text;
 
 end Utils;
 

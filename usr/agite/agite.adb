@@ -439,7 +439,7 @@ procedure Agite is
   procedure Do_Edit (File_Name : in String) is
   begin
     Timer.Start;
-    Utils.Launch (Editor.Image & " '" & File_Name & "'", True);
+    Utils.Launch (Editor.Image & " " & Utils.Protect_Text (File_Name), True);
   end Do_Edit;
 
   procedure Do_History (Name : in String; Is_File : in Boolean) is

@@ -1,5 +1,6 @@
 with Temp_File;
 with Utils, Config;
+with basic_proc;
 procedure View (Path : in String;
                 Hash : in Git_If.Git_Hash) is
   Ok : Boolean;
@@ -7,6 +8,7 @@ begin
   -- Create temporaty file
   declare
     Tmp_Name : constant String := Temp_File.Create ("/tmp");
+    Prot_Name : constant String := Utils.Protect_Text (Tmp_Name);
   begin
     -- Cat file in it
     Ok := Git_If.Cat (Path, Hash, Tmp_Name, Log_Error => False);
@@ -14,10 +16,11 @@ begin
       -- Try Hash^ (file might be deleted by the commit of hash)
       Ok := Git_If.Cat (Path, Hash & "^", Tmp_Name);
     end if;
+basic_proc.put_Line_error (Ok'Img & " > " & Prot_Name & "<");
     -- Launch viewer
     if Ok then
-      Utils.Launch (Config.Viewer & " '" & Tmp_Name
-                  & "' ; sleep 5; rm '" & Tmp_Name & "'");
+      Utils.Launch (Config.Viewer & " " & Prot_Name
+                  & " ; sleep 5; rm " & Prot_Name);
     end if;
   end;
 exception
