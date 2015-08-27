@@ -659,11 +659,12 @@ procedure Agite is
           -- File or link deleted in Git
           Do_Revert (File_Name, File.Prev.Image);
         when Diff =>
-          -- File is deleted: diff from last commit to null
+          -- File is unknown or deleted: diff from last commit to null
           declare
             Hash : constant Git_If.Git_Hash := Git_If.Last_Hash (File_Name);
           begin
             if Hash /= Git_If.No_Hash then
+              -- File is known, so deleted
               Git_If.Launch_Delta (Differator.Image, File_Name,
                                    Hash, "");
             end if;
@@ -704,6 +705,9 @@ procedure Agite is
                                      Hash & "^", Hash);
               end if;
             end;
+          elsif File.S2 = 'A' and then File.S3 = ' ' then
+            -- File is brand new
+            null;
           else
             -- File is "modified"
             Git_If.Launch_Diff (Differator.Image, File_Name);
@@ -915,128 +919,133 @@ begin
 
   -- Main loop
   loop
-    -- Protect PushD and PopD
-    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Pushd, not Can_Push);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Popd,  not Can_Pop);
+    begin
+      -- Protect PushD and PopD
+      Afpx.Utils.Protect_Field (Afpx_Xref.Main.Pushd, not Can_Push);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Main.Popd,  not Can_Pop);
 
-    Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
-                       List_Change_Cb => List_Change'Access);
-    case Ptg_Result.Event is
-      when Afpx.Keyboard =>
-        case Ptg_Result.Keyboard_Key is
-          when Afpx.Return_Key =>
-            -- Change dir to content of Dir_Field
-            Change_Dir;
-          when Afpx.Escape_Key =>
-            null;
-          when Afpx.Break_Key =>
-            raise Utils.Exit_Requested;
-        end case;
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
+                         List_Change_Cb => List_Change'Access);
+      case Ptg_Result.Event is
+        when Afpx.Keyboard =>
+          case Ptg_Result.Keyboard_Key is
+            when Afpx.Return_Key =>
+              -- Change dir to content of Dir_Field
+              Change_Dir;
+            when Afpx.Escape_Key =>
+              null;
+            when Afpx.Break_Key =>
+              raise Utils.Exit_Requested;
+          end case;
 
-      when Afpx.Mouse_Button =>
-        case Ptg_Result.Field_No is
-          when Afpx.List_Field_No =>
-            -- Double click (edit file or change to dir)
-            List_Action (Default);
-          when Utils.X.List_Scroll_Fld_Range'First ..
-               Utils.X.List_Scroll_Fld_Range'Last =>
-            -- Scroll list
-            Afpx.Utils.Scroll(
-                Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
-          when Afpx_Xref.Main.Branch =>
-            -- Branches menu
-            Do_Branch;
-          when Afpx_Xref.Main.Root =>
-            -- Root (change dir to)
-            Change_Dir (Root.Image);
-          when Afpx_Xref.Main.Chdir =>
-            -- Go (to dir)
-            Change_Dir;
-            -- Propose current path for copy/paste
-            Afpx.Set_Selection (Directory.Get_Current);
-          when Afpx_Xref.Main.Reread =>
-            -- Reread (change dir . and restore pos)
-            Reread (True);
-          when Afpx_Xref.Main.Dirup =>
-            -- Up (change dir ..)
-            Change_Dir ("..");
-          when Afpx_Xref.Main.Bookmarks =>
-            -- Bookmarks (menu)
-            declare
-              New_Dir : constant String := Bookmarks.Handle;
-            begin
-              Init (0, New_Dir);
-            end;
-          when Afpx_Xref.Main.Pushd =>
-            -- PushD
-            Push_Dir;
-          when Afpx_Xref.Main.Popd =>
-            -- PopD
-            Pop_Dir;
-          when Afpx_Xref.Main.Quick_Search =>
-            -- Quick search
-            Locate_Entry (
-              Afpx.Decode_Field (Ptg_Result.Field_No, Ptg_Result.Click_Pos.Row)
-                                  (Ptg_Result.Click_Pos.Col + 1));
-          when Afpx_Xref.Main.Search_Dir =>
-            -- Flip flop quick search dir option
-            Search_Dir := not Search_Dir;
-            if Search_Dir then
-              Afpx.Encode_Field (Afpx_Xref.Main.Search_Dir, (0, 0), "X");
-            else
-              Afpx.Clear_Field (Afpx_Xref.Main.Search_Dir);
-            end if;
-          when Afpx_Xref.Main.Xterm =>
-            -- XTerm
-            Utils.Launch (Config.Xterm);
-          when Afpx_Xref.Main.Make =>
-            -- Make
-            Utils.Launch (Config.Make);
-          when Afpx_Xref.Main.Edit =>
-            -- Edit (file)
-            List_Action (Edit);
-          when Afpx_Xref.Main.Diff =>
-            -- Diff
-            List_Action (Diff);
-          when Afpx_Xref.Main.History =>
-            -- History
-            List_Action (History);
-          when Afpx_Xref.Main.Tags =>
-            List_Tags;
-          when Afpx_Xref.Main.Stash =>
-            -- Stash
-            Do_Stash;
-          when Afpx_Xref.Main.Add =>
-            -- Add
-            List_Action (Add);
-          when Afpx_Xref.Main.Revert =>
-            -- Revert
-            List_Action (Revert);
-          when Afpx_Xref.Main.Commit =>
-            -- Commit screen
-            Do_Commit;
-          when Afpx_Xref.Main.Pull =>
-            -- Pull screen
-            Do_Pull;
-          when Afpx_Xref.Main.Quit =>
-            -- Exit
-            raise Utils.Exit_Requested;
-          when others =>
-            -- Other button?
-            null;
-        end case;
+        when Afpx.Mouse_Button =>
+          case Ptg_Result.Field_No is
+            when Afpx.List_Field_No =>
+              -- Double click (edit file or change to dir)
+              List_Action (Default);
+            when Utils.X.List_Scroll_Fld_Range'First ..
+                 Utils.X.List_Scroll_Fld_Range'Last =>
+              -- Scroll list
+              Afpx.Utils.Scroll(
+                  Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
+            when Afpx_Xref.Main.Branch =>
+              -- Branches menu
+              Do_Branch;
+            when Afpx_Xref.Main.Root =>
+              -- Root (change dir to)
+              Change_Dir (Root.Image);
+            when Afpx_Xref.Main.Chdir =>
+              -- Go (to dir)
+              Change_Dir;
+              -- Propose current path for copy/paste
+              Afpx.Set_Selection (Directory.Get_Current);
+            when Afpx_Xref.Main.Reread =>
+              -- Reread (change dir . and restore pos)
+              Reread (True);
+            when Afpx_Xref.Main.Dirup =>
+              -- Up (change dir ..)
+              Change_Dir ("..");
+            when Afpx_Xref.Main.Bookmarks =>
+              -- Bookmarks (menu)
+              declare
+                New_Dir : constant String := Bookmarks.Handle;
+              begin
+                Init (0, New_Dir);
+              end;
+            when Afpx_Xref.Main.Pushd =>
+              -- PushD
+              Push_Dir;
+            when Afpx_Xref.Main.Popd =>
+              -- PopD
+              Pop_Dir;
+            when Afpx_Xref.Main.Quick_Search =>
+              -- Quick search
+              Locate_Entry (
+                Afpx.Decode_Field (Ptg_Result.Field_No, Ptg_Result.Click_Pos.Row)
+                                    (Ptg_Result.Click_Pos.Col + 1));
+            when Afpx_Xref.Main.Search_Dir =>
+              -- Flip flop quick search dir option
+              Search_Dir := not Search_Dir;
+              if Search_Dir then
+                Afpx.Encode_Field (Afpx_Xref.Main.Search_Dir, (0, 0), "X");
+              else
+                Afpx.Clear_Field (Afpx_Xref.Main.Search_Dir);
+              end if;
+            when Afpx_Xref.Main.Xterm =>
+              -- XTerm
+              Utils.Launch (Config.Xterm);
+            when Afpx_Xref.Main.Make =>
+              -- Make
+              Utils.Launch (Config.Make);
+            when Afpx_Xref.Main.Edit =>
+              -- Edit (file)
+              List_Action (Edit);
+            when Afpx_Xref.Main.Diff =>
+              -- Diff
+              List_Action (Diff);
+            when Afpx_Xref.Main.History =>
+              -- History
+              List_Action (History);
+            when Afpx_Xref.Main.Tags =>
+              List_Tags;
+            when Afpx_Xref.Main.Stash =>
+              -- Stash
+              Do_Stash;
+            when Afpx_Xref.Main.Add =>
+              -- Add
+              List_Action (Add);
+            when Afpx_Xref.Main.Revert =>
+              -- Revert
+              List_Action (Revert);
+            when Afpx_Xref.Main.Commit =>
+              -- Commit screen
+              Do_Commit;
+            when Afpx_Xref.Main.Pull =>
+              -- Pull screen
+              Do_Pull;
+            when Afpx_Xref.Main.Quit =>
+              -- Exit
+              raise Utils.Exit_Requested;
+            when others =>
+              -- Other button?
+              null;
+          end case;
 
-      when Afpx.Fd_Event =>
-        null;
-      when Afpx.Timer_Event =>
-        -- A child likely to change status (Edit, GitGUI) is running
+        when Afpx.Fd_Event =>
+          null;
+        when Afpx.Timer_Event =>
+          -- A child likely to change status (Edit, GitGUI) is running
+          Reread (False);
+        when Afpx.Signal_Event =>
+          -- Exit of child likely to change status
+          Reread (False);
+        when Afpx.Refresh =>
+          Reread (False);
+      end case;
+    exception
+      when Directory.Name_Error =>
         Reread (False);
-      when Afpx.Signal_Event =>
-        -- Exit of child likely to change status
-        Reread (False);
-      when Afpx.Refresh =>
-        Reread (False);
-    end case;
+    end;
   end loop;
 
 exception

@@ -519,12 +519,14 @@ package body History is
     -- Disable buttons if empty list
     if Logs.Is_Empty then
       Afpx.Utils.Protect_Field (Afpx_Xref.History.View, True);
-      Afpx.Utils.Protect_Field (Afpx_Xref.History.Diff, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Details, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Checkout, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag, True);
-   end if;
+    end if;
+    if Logs.List_Length <= 1 then
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Diff, True);
+    end if;
 
     -- Main loop
     loop

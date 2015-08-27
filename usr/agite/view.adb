@@ -1,6 +1,5 @@
 with Temp_File;
 with Utils, Config;
-with basic_proc;
 procedure View (Path : in String;
                 Hash : in Git_If.Git_Hash) is
   Ok : Boolean;
@@ -16,7 +15,6 @@ begin
       -- Try Hash^ (file might be deleted by the commit of hash)
       Ok := Git_If.Cat (Path, Hash & "^", Tmp_Name);
     end if;
-basic_proc.put_Line_error (Ok'Img & " > " & Prot_Name & "<");
     -- Launch viewer
     if Ok then
       Utils.Launch (Config.Viewer & " " & Prot_Name
