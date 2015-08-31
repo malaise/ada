@@ -148,7 +148,7 @@ package body Commit is
     and then Changes.List_Length /= Prev_Changes.List_Length then
       Changed := True;
     end if;
-    if not Changed then
+    if not Changed and then not Changes.Is_Empty then
       Changes.Rewind;
       Prev_Changes.Rewind;
       loop
