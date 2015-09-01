@@ -1,0 +1,40 @@
+Checkout dest branch
+Create tmp_branch
+Checkout tmp_branch
+Cherry-pick from origin (1)
+Checkout origin
+Reset --hard tmp_branch (2)
+Delete tmp_branch
+
+Allow continue, quit abort options to cherry-pick (2)
+
+
+(1) In the Cherry-pick menu
+- keep the "=" for "already merged not modifable", skipped
+- keep the " " for "skip", button Remove renamed Skip
+- Use "V" for "pick and go on", button Pik&Meld
+- Use "?" for "pick and edit for commit", button Pik&Edit
+- Use "!" for "pick and apply", button Pik&Appl
+- Keep the Reset and Detail buttons
+Init the list with '!' and '='.
+
+Process the list from top to bottom, keeping in mind last action (init to
+'None':
+As long as there are 'V' and a '?', concat the SHA,
+On '?', call:
+- CherryPick -n on the list of SHAs, reset the list
+- Commit screen, that returns OK (commit done or skipped, continue)
+or Quit (Quit by used, stop loop).
+On '!', call:
+- CherryPick -n on the list of SHAs if any, reset the list
+- CherryPick this SHA
+
+So need a Cherrypick -n, Commit to become a function (QuitIOPush : in Boolean)
+return Boolean;
+
+(2) 3 buttons to add in the cherrypick menu: continue, quit, abort.
+Which makes 9 buttons (Pik&Meld, Pik&Comm, Pik&Apply, Skip, Detail, Reset,
+Continue, Quit, Abort) too many for the History descriptor.
+=> Create a new descriptor and move cherry-pick mangement out of History
+package, in a new package.
+
