@@ -161,9 +161,9 @@ package body History is
         elsif Char = ' ' then
           Write ('+');
         end if;
-        -- Move to next cherry in time, so backwards
-        if Afpx.Line_List.Check_Move (Afpx.Line_List_Mng.Prev) then
-          Afpx.Line_List.Move_To (Afpx.Line_List_Mng.Prev);
+        -- Move to next cherry in time
+        if Afpx.Line_List.Check_Move then
+          Afpx.Line_List.Move_To;
         end if;
       when Reset =>
         for I in 1 .. Afpx.Line_List.List_Length loop

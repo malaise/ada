@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.37
+V17.38
 
 General purpose
 ---------------
@@ -1131,7 +1131,8 @@ The third line recalls the root of the current worktree.
 
 .List
 The list shows the result of \'git cherry', which is the list of commits in the
-'reference branch' that are not merged into the current branch.
+'reference branch' that are not merged into the current branch. The oldest
+commits are displayed first, so the list is in the "order of replay".
 
 * Entries starting with \'=' are identified as already merged. +
 They cannot be picked or discarded.

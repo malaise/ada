@@ -1574,11 +1574,11 @@ package body Git_If is
                                & Err_Flow_1.Str.Image);
       return;
     end if;
-    -- Encode info in reverse order (newest first)
+    -- Encode info (oldest first)
     if not Out_Flow_1.List.Is_Empty then
-      Out_Flow_1.List.Rewind (Command.Res_Mng.Dyn_List.Prev);
+      Out_Flow_1.List.Rewind;
       loop
-        Out_Flow_1.List.Read (Line, Command.Res_Mng.Dyn_List.Prev, Moved);
+        Out_Flow_1.List.Read (Line, Moved => Moved);
         if Line.Element (1) = '-' then
           Commit.Merged := True;
         elsif Line.Element (1) = '+' then
@@ -1609,10 +1609,10 @@ package body Git_If is
     Cmd.Cat ("cherry-pick");
     Cmd.Cat ("--ff");
 
-    -- Append all the Hash in reverse order (oldest first)
-    Commits.Rewind (Log_Mng.Dyn_List.Prev);
+    -- Append all the Hash in order (oldest first)
+    Commits.Rewind;
     loop
-      Commits.Read (Commit, Log_Mng.Dyn_List.Prev, Moved);
+      Commits.Read (Commit, Moved => Moved);
       Cmd.Cat (Commit.Hash);
       exit when not Moved;
     end loop;
