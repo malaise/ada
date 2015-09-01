@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.38
+V17.39
 
 General purpose
 ---------------
@@ -590,6 +590,10 @@ committed content and the new one is reset as unknown by Git
 +
 Note: The Revert button has no effect on a file known by Git and not modified,
 and is not active on \'../'.
++
+Note: It is also possible to 'git reset --hard' the whole worktree to a given
+branch, including current branch, through the xref:XHReset[HReset] button of
+the xref:XBranches[branches] menu.
 
 .Other actions
 
@@ -663,13 +667,19 @@ policy. A new commit is always automatically generated with the comment
 
 Rebase::
 Click in the 'Rebase' button to rebase, after confirmation, the
-branch selected in the list starting from and into the current branch. +
+branch selected in the list, starting from and into the current branch. +
 The rebased branch is automatically checked out by this operation.
 
 CherryPk::
 
 Click on the 'CherryPk' button to launch the xref:XCherry[cherry pick] menu
 from the branch selected in the list into the current branch.
+
+HReset::
+
+anchor:XHReset[]
+Click on the 'HReset' button to 'reset hard', after confirmation, the current
+worktree to the index of the branch selected in the list.
 
 Create::
 

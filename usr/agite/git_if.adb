@@ -857,13 +857,16 @@ package body Git_If is
     --  remain
   end Do_Reset;
 
-  -- Launch a reset --hard
-  procedure Do_Reset_Hard is
+  -- Launch a reset --hard [ <branch> ]
+  procedure Do_Reset_Hard (Branch : in String := "") is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
     Cmd.Cat ("reset");
     Cmd.Cat ("--hard");
+    if Branch /= "" then
+      Cmd.Cat (Pt (Branch));
+    end if;
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
   end Do_Reset_Hard;

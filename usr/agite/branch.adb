@@ -105,7 +105,7 @@ package body Branch is
 
   -- Actions on branches
   type Action_List is (Create, Rename, Delete, Checkout, Merge, True_Merge,
-                       Rebase, Cherry_Pick);
+                       Rebase, Cherry_Pick, Reset_Hard);
   function Do_Action (Action : in Action_List) return Boolean is
     Curr_Name, New_Name : As.U.Asu_Us;
     Message, Result : As.U.Asu_Us;
@@ -116,6 +116,7 @@ package body Branch is
       Branches.Move_At (Afpx.Line_List.Get_Position);
       Curr_Name := Branches.Access_Current.all;
     end if;
+    -- Get new name from Get field
     if Action = Create or else Action = Rename then
       Afpx.Decode_Field (Afpx_Xref.Branches.Name, 0, New_Name);
       Afpx.Clear_Field (Afpx_Xref.Branches.Name);
@@ -135,9 +136,10 @@ package body Branch is
              when Create | Rename | Cherry_Pick => "???",
              when Delete     => "Delete",
              when Checkout   => "Checkout",
-             when Merge      => "Merge",
-             when True_Merge => "True Merge",
-             when Rebase     => "Rebase"
+             when Merge      => "Merge from",
+             when True_Merge => "True Merge from",
+             when Rebase     => "Rebase",
+             when Reset_Hard => "Reset hard to"
            ) & " branch",
           Curr_Name.Image) then
         Init;
@@ -204,6 +206,10 @@ package body Branch is
         Init;
         Reread (False);
         return Done;
+      when Reset_Hard =>
+        Previous_Branch := Curr_Name;
+        Git_If.Do_Reset_Hard (Curr_Name.Image);
+        return True;
     end case;
 
     -- Handle error
@@ -229,7 +235,7 @@ package body Branch is
     if Afpx.Line_List.Is_Empty then
       return;
     end if;
-    -- No action on current branch (except Create)
+    -- No action on current branch (except Create and Reset_Hard)
     Branches.Move_At (Afpx.Line_List.Get_Position);
     On_Current := Branches.Access_Current.all = Current_Branch;
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Checkout, On_Current);
@@ -308,6 +314,10 @@ package body Branch is
               end if;
             when Afpx_Xref.Branches.Cherry_Pick =>
               if Do_Action (Cherry_Pick) then
+                exit;
+              end if;
+            when Afpx_Xref.Branches.Reset_Hard =>
+              if Do_Action (Reset_Hard) then
                 exit;
               end if;
             when Afpx_Xref.Branches.Create =>
