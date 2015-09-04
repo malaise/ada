@@ -19,6 +19,8 @@ In the Cherry-pick list:
 * keep the " " for "skip", button Remove renamed Skip
 * Use "A" for "pick and go on", button Apply
 * Use "E" for "pick and edit for commit", button Edit
+* Use "F" for "pick as fix and edit previous comment if it is a Apply",
+button Fixup
 * Use "C" for "pick and commit", button Commit
 * Keep the Reset and Detail buttons
 Init the list with 'C' and '='.
@@ -27,18 +29,24 @@ Processing the list
 -------------------
 Process the list from top to bottom:
 
-* On 'V', call
+* On 'A', call
   - CherryPick -n on the SHA
+  - Store SHA as last-applied
   - Continue looping
-* On '?', call:
+* On 'E', call:
   - CherryPick -n on the SHA
-  - Call the Commit screen, which returns either
+  - Reset last-applied
+  - Call the Commit screen (with this SHA), which returns either
     * Committed (Button Commit) => continue looping
     * Not_Commited (Button Back) => continue looping
     * Quit (Button Quit) => stop loop.
-* On '!', call:
+* On 'F', call:
+  - CherryPick -n on the SHA
+  - Reset last-applied
+  - Call the Commit screen (with last-applied SHA if any SHA)
+* On 'C', call:
   - CherryPick on the SHA
-  - Go on looping
+  - Continue looping
 
 Refresh the list after each each commit (action C, or action E returning
 Committed).
@@ -58,10 +66,11 @@ issued from original selection and processing so far:
 Changes
 -------
 Need a 'Cherrypick -n' function in git_if, 'Commit' screen management to become
-a function (Quit_Io_Push : in Boolean) return Boolean;
+a function (Quit_Io_Push : in Boolean; Hash_Of_Comment : in Git_Hash)
+return Boolean;
 
-Need new buttons, so: Apply, Edit, Commit, MovUp and MovDw in addition to
-Skip, Detail, Reset. So nned to move cherry pick in a new descriptor and
+Need new buttons, so: Apply, Edit, Fixup, Commit, MovUp and MovDw in addition to
+Skip, Detail, Reset. So need to move cherry pick in a new descriptor and
 package.
 
 ToDo
@@ -69,10 +78,12 @@ ToDo
 
 1. Move cherry pick in a new descriptor and a new package
 
-2. Add No_Commit option to Git_If.Cherryi_Pick
+2. Add No_Commit option to Git_If.Cherry_Pick
 
-3. Add Quit_Io_Push to Commit.Handle
+3. Add Quit_Io_Push and Hash_Of_Comment to Commit.Handle
 
 4. Modify the list display, action buttons and processing
 
-5. Doc, make a major release
+5. Doc, make a major release. Describe two use case of 'rebase -i' (on the
+branch itself or on a ref branch).
+
