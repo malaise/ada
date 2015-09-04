@@ -54,10 +54,13 @@ Committed).
 Quitting Commit
 ----------------
 Quitting the commit returns to the main (Directory) screen. But as long as:
-- The same orig and dest branch are selected,
 
-- CherryPick Reset is not called, the CherryPick screen shall maintain the list
-issued from original selection and processing so far:
+- The same orig and dest branch are selected,
+- CherryPick Reset is not called,
+
+the CherryPick screen shall maintain the list issued from original selection
+and processing so far:
+
 - Reassess the Cherry list
 - Remove items that have disappeared
 - Set "=" to all items already merged in the new list

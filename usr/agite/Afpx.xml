@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V17.41"/>
+  <Var Name="Version" Value="V17.42"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -1792,6 +1792,164 @@
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Back</Init>
+    </Field>
+  </Descriptor>
+
+  <!-- Cherry-pick -->
+  <Descriptor Num="14" Background="Light_Grey" Name="Cherry">
+    <!-- List management setup -->
+    <Var Name="LmWidth" Value="8"/>
+    <Var Name="LmHOffset" Value="2"/>
+
+    <!-- Title and list -->
+    <Var Name="LWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
+    <List>
+      <Geometry Up="7" Left="1" Low="${Screen.Low}-1" Width="${LWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey" Selected="Lime_Green"/>
+    </List>
+    <Field Num="1" Kind="Put">
+      <Geometry Up="0" Left="23" Height="1" Width="9"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">A G I T E</Init>
+    </Field>
+
+    <!-- List management -->
+    <Var Name="LmLeft" Value="${List.Right}+${LmHOffset}"/>
+    <Var Name="LmUp" Value="${List.Up}+16"/>
+    <Var Name="LmSta" Value="1"/>
+
+    <Field Num="2" Kind="Button">
+      <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="${LmSta}+1">Top</Init>
+    </Field>
+    <Field Num="3" Kind="Button">
+      <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="${LmSta}+1">PgUp </Init>
+    </Field>
+    <Field Num="4" Kind="Button">
+      <Geometry Up="${Field_3.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="${LmSta}+2">Up </Init>
+    </Field>
+    <Field Num="5" Kind="Button">
+      <Geometry Up="${Field_4.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="${LmSta}">Center</Init>
+    </Field>
+    <Field Num="6" Kind="Button">
+      <Geometry Up="${Field_5.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="${LmSta}+1">Down</Init>
+    </Field>
+    <Field Num="7" Kind="Button">
+      <Geometry Up="${Field_6.Low}+2" Left="${LmLeft}" Height="3"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="${LmSta}">PgDown</Init>
+    </Field>
+    <Field Num="8" Kind="Button">
+      <Geometry Up="${Field_7.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="${LmSta}">Bottom</Init>
+    </Field>
+
+    <!-- Branch, sub title and current file/dir-->
+    <Field Num="9" Kind="Put">
+      <Geometry Up="0" Left="1" Height="1" Width="3"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">Br:</Init>
+    </Field>
+    <Field Num="10" Kind="Put" Name="Branch">
+      <Geometry Up="0" Left="${Field_9.Right}+2" Height="1"
+                Right="${Field_1.Left}-2"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
+    <Field Num="11" Kind="Put" Name="Title">
+      <Geometry Up="${Field_1.Low}+2" Left="1" Height="1"
+                Right="${Screen.Width}-2"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
+    <Field Num="12" Kind="Put" Name="Root">
+      <Geometry Up="${Field_11.Low}+2" Left="1" Height="1"
+                Right="${List.Right}"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
+
+    <!-- Detail, Apply, Dit, Fixup, Commit, MovUp, MovDwn, Skip, Reset -->
+    <Field Num="13" Kind="Button" Name="Detail">
+      <Geometry Up="${List.Up}-4" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Detail</Init>
+    </Field>
+    <Field Num="14" Kind="Button" Name="Apply">
+      <Geometry Up="${Field_13.Low}+3" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">Apply</Init>
+    </Field>
+    <Field Num="15" Kind="Button" Name="Edit">
+      <Geometry Up="${Field_14.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">Edit</Init>
+    </Field>
+    <Field Num="16" Kind="Button" Name="Fixup">
+      <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Fixup</Init>
+    </Field>
+    <Field Num="17" Kind="Button" Name="Commit">
+      <Geometry Up="${Field_16.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Commit</Init>
+    </Field>
+    <Field Num="18" Kind="Button" Name="Skip">
+      <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">Skip</Init>
+    </Field>
+    <Field Num="19" Kind="Button" Name="Move_Up">
+      <Geometry Up="${Field_18.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">MovUp</Init>
+    </Field>
+    <Field Num="20" Kind="Button" Name="Move_Down">
+      <Geometry Up="${Field_19.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">MovDwn</Init>
+    </Field>
+    <Field Num="21" Kind="Button" Name="Reset">
+      <Geometry Up="${Field_20.Low}+3" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">Reset</Init>
+    </Field>
+
+    <Field Num="22" Kind="Put">
+      <Geometry Up="${Field_21.Low}+1" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">--------</Init>
+    </Field>
+
+    <Field Num="23" Kind="Button" Name="Go">
+      <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="3">Go</Init>
     </Field>
   </Descriptor>
 </Afpx_Descriptors>
