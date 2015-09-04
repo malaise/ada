@@ -141,7 +141,7 @@ package body Cherry is
         for I in Pos1 .. Pos2 loop
           Afpx.Line_List.Move_At (I);
           Char := Read;
-          if Char /= ' ' then
+          if Char = 'C' then
             Nb_Cherries := Nb_Cherries - 1;
             Write (' ');
           end if;
@@ -161,10 +161,13 @@ package body Cherry is
           Afpx.Line_List.Move_To;
         end if;
       when Reset =>
-        Nb_Cherries := 0;
         for I in 1 .. Afpx.Line_List.List_Length loop
           Afpx.Line_List.Move_At (I);
-          Write (' ');
+          Char := Read;
+          if Char = 'C' then
+            Nb_Cherries := Nb_Cherries - 1;
+            Write (' ');
+          end if;
         end loop;
         Afpx.Line_List.Move_At (Pos0);
     end case;
