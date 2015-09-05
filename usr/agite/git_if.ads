@@ -68,9 +68,9 @@ package Git_If is
   No_Date : constant Iso_Date := (others => ' ');
   -- A log entry
   type Log_Entry_Rec is record
-    Hash : Git_Hash;
-    Merged : Boolean;
-    Date : Iso_Date;
+    Hash : Git_Hash := No_Hash;
+    Merged : Boolean := False;
+    Date : Iso_Date := (others => ' ');
     Comment : Comment_2;
   end record;
   package Log_Mng is new Dynamic_List (Log_Entry_Rec);
@@ -233,9 +233,11 @@ package Git_If is
   procedure Cherry_List (Ref, Target : in String;
                          Commits : in out Log_List);
 
-  -- Cherry pick some commits into current branch
+  -- Cherry pick a commit into current branch
+  -- Commit it or not
   -- Returns "" if OK else the error
-  function Cherry_Pick (Commits : in out Log_List) return String;
+  function Cherry_Pick (Commit : in Log_Entry_Rec;
+                        Do_Commit : in Boolean) return String;
 
 end Git_If;
 

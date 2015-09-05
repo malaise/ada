@@ -1,7 +1,7 @@
 with Ada.Exceptions;
 with As.U, Directory, Afpx.Utils, Str_Util, Basic_Proc,
      Aski, Images;
-with Git_If, Utils.X, Config, Push_Pull, Afpx_Xref, Confirm, Error;
+with Utils.X, Config, Push_Pull, Afpx_Xref, Confirm, Error;
 package body Commit is
 
   -- List width
@@ -61,6 +61,7 @@ package body Commit is
   end Reset_Ptg;
 
   -- Decode Comment fields
+  Nb_Row_Comment : constant := 7;
   procedure Decode_Comment is
   begin
     Comment.Set_Null;
@@ -105,8 +106,36 @@ package body Commit is
     end if;
   end Encode_Comment;
 
+  -- Encode comment from a commit
+  procedure Encode_Commit (Ref : in Git_If.Git_Hash) is
+    Hash : Git_If.Git_Hash;
+    Merged : Boolean;
+    Date : Git_If.Iso_Date;
+    Comment_Array : Git_If.Comment_Array (1 .. Nb_Row_Comment);
+    Commit : Git_If.Commit_List;
+    Do_Copy : Boolean;
+  begin
+    if Ref = Git_If.No_Hash then
+      return;
+    end if;
+    -- Get Commit info (comment)
+    Git_If.List_Commit (Ref, Hash, Merged, Date, Comment_Array, Commit);
+    Comment.Set_Null;
+    -- Append rows, starting from last non-empty
+    Do_Copy := False;
+    for I in reverse Comment_Array'Range loop
+      if not Comment_Array(I).Is_Null then
+        Do_Copy := True;
+      end if;
+      if Do_Copy then
+        Comment.Prepend (Comment_Array(I).Image & Aski.Lf);
+      end if;
+    end loop;
+  end Encode_Commit;
+
+
   -- Init screen
-  procedure Init is
+  procedure Init (in_Loop : in Boolean) is
   begin
     Afpx.Use_Descriptor (Afpx_Xref.Commit.Dscr_Num);
     -- Encode Root
@@ -115,6 +144,11 @@ package body Commit is
     Encode_Comment;
     -- Reset Ptg stuff
     Reset_Ptg;
+    -- Change buttons when in loop
+    if In_Loop then
+      Afpx.Encode_Field (Afpx_Xref.Commit.Back, (1, 2), "Done");
+      Afpx.Encode_Field (Afpx_Xref.Commit.Push, (1, 1), "Quit");
+    end if;
   end Init;
 
   -- Re assess the status of changes
@@ -265,7 +299,7 @@ package body Commit is
   end Switch_Stage;
 
   -- Stage all unstaged changes
-  procedure Do_Stage_All is
+  procedure Do_Stage_All (In_Loop : in Boolean) is
     Change : Git_If.File_Entry_Rec;
     Untracked : Git_If.File_List;
     Moved : Boolean;
@@ -305,7 +339,7 @@ package body Commit is
           exit when not Moved;
         end loop;
       end if;
-      Init;
+      Init (In_Loop);
     end if;
 
     Reread (True);
@@ -342,8 +376,13 @@ package body Commit is
     Error ("Commit", "", Result.Image);
   end Do_Commit;
 
-  -- Handle the commits
-  procedure Handle (Root : in String) is
+  -- Handle the commit of modifications
+  -- Show button Done instead of Back, Quit instead of Push
+  -- Init comment from the one of the provided Hash
+  function Common_Handle (
+           Root : String;
+           In_Loop : Boolean;
+           Hash_For_Comment : Git_If.Git_Hash) return Boolean is
     Ptg_Result   : Afpx.Result_Rec;
     use type Afpx.Field_Range;
   begin
@@ -354,8 +393,11 @@ package body Commit is
     Commit.Root := As.U.Tus (Root);
     Directory.Change_Current (Root);
 
+    -- Encode the comment of Hash_For_Comment into Comment
+    Encode_Commit (Hash_For_Comment);
+
     -- Init Afpx
-    Init;
+    Init (In_Loop);
 
     -- Reset Afpx list
     Afpx.Line_List.Delete_List (False);
@@ -384,7 +426,7 @@ package body Commit is
               Get_Handle.Cursor_Col := 0;
             when Afpx.Escape_Key =>
               -- Back
-              return;
+              return True;
             when Afpx.Break_Key =>
               raise Utils.Exit_Requested;
           end case;
@@ -414,7 +456,7 @@ package body Commit is
               Do_Stage (False, True);
             when Afpx_Xref.Commit.Stage_All =>
               -- StageAll button
-              Do_Stage_All;
+              Do_Stage_All (In_Loop);
             when Afpx_Xref.Commit.Copy =>
               -- Copy button
               Decode_Comment;
@@ -430,21 +472,25 @@ package body Commit is
             when Afpx_Xref.Commit.Commit =>
               -- Commit button
               Do_Commit;
-              Init;
+              Init (In_loop);
               Reread (True);
             when Afpx_Xref.Commit.Push =>
+              if In_Loop then
+                -- Quit in a loop
+                return False;
+              end if;
               -- Push button
               Decode_Comment;
               if Push_Pull.Handle (Root, Pull => False) then
-                return;
+                return True;
               else
-                Init;
+                Init (In_Loop);
                 Reread (True);
               end if;
             when Afpx_Xref.Commit.Back =>
-              -- Back button
+              -- Back / Done button
               Decode_Comment;
-              return;
+              return True;
             when others =>
               null;
           end case;
@@ -461,6 +507,22 @@ package body Commit is
       end case;
     end loop;
 
+  end Common_Handle;
+
+  -- Handle the commit of modifications
+  procedure Handle (Root : in String) is
+    Dummy : Boolean;
+  begin
+    Dummy := Common_Handle (Root, False, Git_If.No_Hash);
+  end Handle;
+
+  -- Handle the commit of modifications
+  -- Show button Quit instead of Push
+  -- Init comment from the one of the provided Hash
+  function Handle (Root : String;
+                   Hash_For_Comment : Git_If.Git_Hash) return Boolean is
+  begin
+    return Common_Handle (Root, True, Hash_For_Comment);
   end Handle;
 
 end Commit;

@@ -1605,26 +1605,19 @@ package body Git_If is
     end if;
   end Cherry_List;
 
-  -- Cherry pick some commits into current branch
-  function Cherry_Pick (Commits : in out Log_List) return String is
+  -- Cherry pick a commit into current branch
+  function Cherry_Pick (Commit : in Log_Entry_Rec;
+                        Do_Commit : in Boolean) return String is
     Cmd : Many_Strings.Many_String;
-    Commit : Log_Entry_Rec;
-    Moved : Boolean;
   begin
-    if Commits.Is_Empty then
-      return "";
-    end if;
     Cmd.Set ("git");
     Cmd.Cat ("cherry-pick");
-    Cmd.Cat ("--ff");
-
-    -- Append all the Hash in order (oldest first)
-    Commits.Rewind;
-    loop
-      Commits.Read (Commit, Moved => Moved);
-      Cmd.Cat (Commit.Hash);
-      exit when not Moved;
-    end loop;
+    if Do_Commit then
+      Cmd.Cat ("--ff");
+    else
+      Cmd.Cat ("--no-commit");
+    end if;
+    Cmd.Cat (Commit.Hash);
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
