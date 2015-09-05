@@ -372,11 +372,12 @@ package body Commit is
   end Do_Commit;
 
   -- Handle the commit of modifications
-  -- Show button Quit instead of Push
+  -- Show button Done instead of Back, Quit instead of Push
   -- Init comment from the one of the provided Hash
-  procedure Handle (Root : in String;
-                    Quit_Io_Push : in Boolean := False;
-                    Hash_For_Comment : in Git_If.Git_Hash := Git_If.No_Hash) is
+  function Common_Handle (
+           Root : String;
+           In_Loop : Boolean;
+           Hash_For_Comment : Git_If.Git_Hash) return Boolean is
     Ptg_Result   : Afpx.Result_Rec;
     use type Afpx.Field_Range;
   begin
@@ -392,8 +393,9 @@ package body Commit is
 
     -- Init Afpx
     Init;
-    if Quit_Io_Push then
-      Afpx.Encode_Field (Afpx_Xref.Commit.Push, (0, 1), "Quit");
+    if In_Loop then
+      Afpx.Encode_Field (Afpx_Xref.Commit.Back, (1, 2), "Done");
+      Afpx.Encode_Field (Afpx_Xref.Commit.Push, (1, 1), "Quit");
     end if;
 
     -- Reset Afpx list
@@ -423,7 +425,7 @@ package body Commit is
               Get_Handle.Cursor_Col := 0;
             when Afpx.Escape_Key =>
               -- Back
-              return;
+              return True;
             when Afpx.Break_Key =>
               raise Utils.Exit_Requested;
           end case;
@@ -472,18 +474,22 @@ package body Commit is
               Init;
               Reread (True);
             when Afpx_Xref.Commit.Push =>
+              if In_Loop then
+                -- Quit in a loop
+                return False;
+              end if;
               -- Push button
               Decode_Comment;
               if Push_Pull.Handle (Root, Pull => False) then
-                return;
+                return True;
               else
                 Init;
                 Reread (True);
               end if;
             when Afpx_Xref.Commit.Back =>
-              -- Back button
+              -- Back / Done button
               Decode_Comment;
-              return;
+              return True;
             when others =>
               null;
           end case;
@@ -500,6 +506,22 @@ package body Commit is
       end case;
     end loop;
 
+  end Common_Handle;
+
+  -- Handle the commit of modifications
+  procedure Handle (Root : in String) is
+    Dummy : Boolean;
+  begin
+    Dummy := Common_Handle (Root, False, Git_If.No_Hash);
+  end Handle;
+
+  -- Handle the commit of modifications
+  -- Show button Quit instead of Push
+  -- Init comment from the one of the provided Hash
+  function Handle (Root : String;
+                   Hash_For_Comment : Git_If.Git_Hash) return Boolean is
+  begin
+    return Common_Handle (Root, True, Hash_For_Comment);
   end Handle;
 
 end Commit;

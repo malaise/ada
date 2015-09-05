@@ -1612,8 +1612,9 @@ package body Git_If is
   begin
     Cmd.Set ("git");
     Cmd.Cat ("cherry-pick");
-    Cmd.Cat ("--ff");
-    if not Do_Commit then
+    if Do_Commit then
+      Cmd.Cat ("--ff");
+    else
       Cmd.Cat ("--no-commit");
     end if;
     Cmd.Cat (Commit.Hash);

@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.42
+V18.00
 
 General purpose
 ---------------
@@ -331,14 +331,14 @@ The navigation between the screens is as follows:
                       /                  /          +-----+         |
                      /          +-------+-+         +--------+      |
                     /---------->| History |<-----+->| Detail |<-----+
-                   /            +-------+-+     /   +--------+
-                  /             +------+ \     /    +----------+
-                 /--------------| Tags |--+---+---->| Checkout |
-                /               +------+   \        +----------+
-  +---------- +/                +-------+   \       +------+
-  | Directory |---------------->| Commit|----+----->| Push |
-  +---------- +\                +-------+           +------+
-                \               +-------+
+                   /            +-------+-+     /   +--------+      |
+                  /             +------+ \     /    +----------+    |
+                 /--------------| Tags |--+---+---->| Checkout |    |
+                /               +------+   \        +----------+    |
+  +---------- +/                +-------+   \       +------+        |
+  | Directory |---------------->| Commit|----+----->| Push |        |
+  +---------- +\                +-------+<-\        +------+        |
+                \               +-------+   \-----------------------+
                  \------------->| Stash |
                   \             +-------+
                    \            +------+
@@ -350,13 +350,15 @@ necessary.
 
 NOTE: The 'history' and 'tags' menus call the 'detail' and 'checkout' menus. +
 The 'tags' and 'commit' menus call the 'push' menu. +
-The 'cherryPick' menu calls the 'detail' menu, but without allowing it to call
-the 'history' menu.
+The 'cherry-pick' menu calls the 'detail' menu, but without allowing it to call
+the 'history' menu. +
+The 'cherry-pick' menu calls the 'commit' menu, but without allowing it to call
+the 'push' menu.
 
 NOTE: All the screen transitions are based on the 'call-return' scheme. +
 So please note the double arrow between 'history' and 'detail': from the
 'history' of a file (or dir) you can select a commit and see its 'detail'.
-In this new screen you can select a file and see its 'History', and so on...
+In this new screen you can select a file and see its 'history', and so on...
 Once this is done you need to "un-stack" all these menus (by clicking on
 the 'Back' button in each) in order to go back to the 'directory' menu. +
 Also please note that sometimes a successuful action in a menu leads to
@@ -1142,20 +1144,32 @@ The third line recalls the root of the current worktree.
 .List
 The list shows the result of \'git cherry', which is the list of commits in the
 'reference branch' that are not merged into the current branch. The oldest
-commits are displayed first, so the list is in the "order of replay".
+commits are displayed first, so the list is in the "order of replay". +
+The first letter of each line describes the status of the cherry:
 
-* Entries starting with \'=' are identified as already merged. +
-They cannot be picked or discarded.
+* \'=' denotes a commit already 'merged', which cannot be picked nor skipped.
 
-* Entries starting with \'+' are 'picked', which means that they are selected 
-for merge.
+* \'A' denotes a cherry 'picked for apply', which will be applied but
+not committed (allowing it to be commited together with other cherries).
 
-* Entries starting with ' ' are 'discarded', which means that they are not
-selected for merge. +
-By default, all the non-merged commits are not selected.
+* \'E' denotes a cherry 'picked for edition', which will be applied then
+proposed for edition of the commit (allowing to modify the comment,
+to split the commit...).
 
-Double-clicking on an entry of the list toggles its selection for merge
-(if this entry is not already merged).
+* \'F' denotes a cherry 'picked for fixup', which will be applied then
+proposed for edition of the commit. This is the same as a cherry 'picked for
+edition', except that thee commit comment is initialised with the content of
+the first cherry of the serie of preceeding 'picked for apply'.
+
+* \'C' denotes a cherry 'picked for commit', which will be applied then
+committed.
+
+* ' ' denotes a cherry 'skipped', which will not be picked. +
+
+By default, all the non-merged commits are selected for commit.
+
+Double-clicking on an entry of the list toggles its selection from 'skipped'
+to 'picked for commit' and vice versa.
 
 NOTE: The commits that have already been merged through the \'fast forward'
 mechanism are not listed at all.
@@ -1165,34 +1179,76 @@ Click on the 'Detail' button to see the xref:XDetail[details] of a commit,
 including viewing a file or seeing the differences introduced by this commit,
 but excluding launching the 'history' menu and excluding restoring files.
 
-.Add
-When there is only a left selection in the list, clicking on the 'Add' button
-adds it to the 'picked' commits (if the commit is currently discarded). +
-When there is a right and a left selection in the list, clicking on this
-button adds all the commits between the selections that are currently
-discarded.
+.Apply, Edit, Fixup, Commit and Skip
+When there is only a left selection in the list, clicking on one of these
+buttons changes its status, and moves to the next cherry. +
+When there is a right and a left selection in the list, clicking on one of
+these buttons changes the status all the commits between the selections
+included.
 
-.Remove
-When there is only a left selection in the list, clicking on the 'Remove' button
-removes it from the 'picked' commits (if the commit is currently picked). +
-When there is a right and a left selection in the list, clicking on this
-button removes all the commit between the selections that are currently
-picked.
+.MovUp and MovDwn
+Move up or down in the list the current cherry.
 
 .Reset
-Click on this button to discard all the commits currently selected for merge.
+Click on this button to skip all the commits currently selected for being
+picked.
 
-.Done
+.Go - Cancel
 Click on this button when the selection is completed. +
-If some commits have been selected, then they are listed in a confirmation
-screen. +
-If confirmed, then these commits are merged into the current branch. Any error
-is reported in a specific screen. +
-After success, Agite returns back on the xref:XDir[directory] menu, otherwise
+If no commit is selected, then the button is 'Cancel' and Agite returns back
+in the xref:XBranches[branches] menu. +
+If some commits are selected, then the button is 'Go'. The non-merged commits
+are then listed in a confirmation screen. +
+If confirmed, then the picked cherries are applied one by one onto the
+current branch. Any error in picking a cherry is reported in a specific screen
+and the list is not processed any longer. +
+The commit screen is called after picking cherries for edition or fixup.
+It is possible to modify the comment and/or selection of files, and
+to make several commits. Clicking on the 'Done' button goes back to the loop
+of picking the cherries (possibly with some files not yet committed).
+Clicking on the 'Quit' button cancels the loop at the current point. +
+After success, Agite returns back in the xref:XDir[directory] menu, otherwise
 it returns in the xref:XBranches[branches] menu.
 
 NOTE: To cancel a cherry pick, simply ensure that no commit is selected (click
-on the 'Reset' button) and click on the 'Done' button.
+on the 'Reset' button) and click on the 'Cancel' button.
+
+[underline]#*Some use-cases:*#
+
+* Meld several cherries into one
+  - 'Pick for apply' all the cherries to meld, except the last one
+  - 'Pick for edit' the last cherry to meld (or 'pick for commit' for
+    committing automatically with the comment of the last cherry)
+  - In the 'commit' screen, edit the comment and validate the commit 
+
+* Meld a cherry whith several following fixes
+  - 'Pick for apply' all the cherries to meld, except the last one
+  - 'Pick for fixup' the last cherry to meld
+  - In the 'commit' screen, check the comment (it is intialized from the one
+    of the first applied cherry) and validate the commit 
+
+* Split a cherry
+  - 'Pick for edit' the cherry
+  - In the 'commit' screen, set the comment and stage the files for the first
+    commit, then commit. Set the comment and stage the files for the second
+    commit, then commit...  Then click on the 'Done' button.
+
+* Rebase a branch a long another
+anchor:XCherryRebase[]
+  - On the root branch, create a Tmp branch
+  - Cherry pick from the rebased branch into Tmp branch (keep the initial
+    selection of 'picked for commit' cherries)
+  - xref:XHReset[Hard reset] the branch to Tmp branch
+  - Delete the Tmp branch
+
+* Interactively rebase a branch on itself
+  - In the xref:XHist[history] menu, select the commit before the first to
+    rebase and check it out as a Tmp branch
+  - Cherry pick from the original branch into this Tmp branch, modify the
+    selection
+  - xref:XHReset[Hard reset] the branch to Tmp branch
+  - Delete the Tmp branch
+
 
 Commit
 ~~~~~~

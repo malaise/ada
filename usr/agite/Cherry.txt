@@ -87,6 +87,11 @@ ToDo
 
 4. Modify the list display, action buttons and processing
 
-5. Doc, make a major release. Describe two use case of 'rebase -i' (on the
-branch itself or on a ref branch).
+5. Handle memory of the list
+
+6. Doc, make a major release. Describe two use case of 'rebase -i' (on the
+branch itself or on a ref branch)
+
+7. Implement the rebase with a sequence of cherry-pick (need algo to create
+a tmp branch)
 

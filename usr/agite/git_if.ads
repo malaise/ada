@@ -68,9 +68,9 @@ package Git_If is
   No_Date : constant Iso_Date := (others => ' ');
   -- A log entry
   type Log_Entry_Rec is record
-    Hash : Git_Hash;
-    Merged : Boolean;
-    Date : Iso_Date;
+    Hash : Git_Hash := No_Hash;
+    Merged : Boolean := False;
+    Date : Iso_Date := (others => ' ');
     Comment : Comment_2;
   end record;
   package Log_Mng is new Dynamic_List (Log_Entry_Rec);
