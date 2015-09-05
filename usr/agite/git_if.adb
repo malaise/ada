@@ -1590,9 +1590,14 @@ package body Git_If is
   function Cherry_Pick (Commit : in Log_Entry_Rec;
                         Do_Commit : in Boolean) return String is
     Cmd : Many_Strings.Many_String;
+    -- Unavoidable error message, to skip
+    Empty_Cherry_Error : constant String :=
+      "The previous cherry-pick is now empty, "
+    & "possibly due to conflict resolution.";
   begin
     Cmd.Set ("git");
     Cmd.Cat ("cherry-pick");
+    Cmd.Cat ("--allow-empty");
     if Do_Commit then
       Cmd.Cat ("--ff");
     else
@@ -1603,7 +1608,14 @@ package body Git_If is
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      return Err_Flow_1.Str.Image;
+      -- In case of Empty_Cherry_Error, consider Ok
+      if Err_Flow_1.Str.Length >= Empty_Cherry_Error'Length
+      and then Err_Flow_1.Str.Slice (1, Empty_Cherry_Error'Length)
+               = Empty_Cherry_Error then
+        return "";
+      else
+        return Err_Flow_1.Str.Image;
+      end if;
     else
       return "";
     end if;
