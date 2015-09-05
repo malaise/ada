@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V17.40
+V17.41
 
 General purpose
 ---------------
@@ -1599,15 +1599,15 @@ calling 'git difftool -y -x <differator> <ref_HSA1_hash> <comp_HSA1_hash>
 
 * A function removes a file from the index by 'git rm \-- <file>',
 
-* A function commits the local changes by calling 'git commit -m
+* A function commits the local changes by calling 'git commit --allow-empty -m
 "<comment>"',
 
 * A function pushes the local commits of current branch or a tag by calling
-'git push [ --set-upstream ] <remote> [ <tag> ]',
+'git push [ --set-upstream ] [ --force ] <remote> [ <tag> ]',
 
 * A function fetches or pulls the current branch by calling
-'git fetch --tags <remote> <branch>:<branch>' or
-'git pull --tags <remote> <branch>:<branch>',
+'git fetch --tags <remote> <branch>' or
+'git pull --tags <remote> <branch>',
 
 * A function gets the name of current branch by calling 'git branch',
 
