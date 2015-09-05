@@ -931,8 +931,8 @@ package body Git_If is
   begin
     Cmd.Set ("git");
     Cmd.Cat ("commit");
-    Cmd.Cat ("-m");
     Cmd.Cat ("--allow-empty");
+    Cmd.Cat ("-m");
     Cmd.Cat (Pt (Comment));
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
