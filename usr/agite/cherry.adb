@@ -289,7 +289,8 @@ package body Cherry is
     Picked.Delete_List;
 
     -- Confirm, return False if not
-    if not Confirm ("Cherry pick", "Ok to cherry pick from " & Branch,
+    if not Confirm ("Cherry pick from branch " & Branch,
+                    "into current branch " & Git_If.Current_Branch,
                     Show_List => True) then
       return False;
     end if;
