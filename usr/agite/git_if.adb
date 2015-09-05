@@ -932,6 +932,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("commit");
     Cmd.Cat ("-m");
+    Cmd.Cat ("--allow-empty");
     Cmd.Cat (Pt (Comment));
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
@@ -978,12 +979,13 @@ package body Git_If is
     Cmd.Set ("git");
     if Pull then
       Cmd.Cat ("pull");
+      Cmd.Cat ("--no-commit");
     else
       Cmd.Cat ("fetch");
     end if;
     Cmd.Cat ("--tags");
     Cmd.Cat (Pt (Remote));
-    Cmd.Cat (Pt (Branch & ":" & Branch));
+    Cmd.Cat (Pt (Branch));
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
