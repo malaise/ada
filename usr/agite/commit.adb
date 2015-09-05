@@ -135,7 +135,7 @@ package body Commit is
 
 
   -- Init screen
-  procedure Init is
+  procedure Init (in_Loop : in Boolean) is
   begin
     Afpx.Use_Descriptor (Afpx_Xref.Commit.Dscr_Num);
     -- Encode Root
@@ -144,6 +144,11 @@ package body Commit is
     Encode_Comment;
     -- Reset Ptg stuff
     Reset_Ptg;
+    -- Change buttons when in loop
+    if In_Loop then
+      Afpx.Encode_Field (Afpx_Xref.Commit.Back, (1, 2), "Done");
+      Afpx.Encode_Field (Afpx_Xref.Commit.Push, (1, 1), "Quit");
+    end if;
   end Init;
 
   -- Re assess the status of changes
@@ -294,7 +299,7 @@ package body Commit is
   end Switch_Stage;
 
   -- Stage all unstaged changes
-  procedure Do_Stage_All is
+  procedure Do_Stage_All (In_Loop : in Boolean) is
     Change : Git_If.File_Entry_Rec;
     Untracked : Git_If.File_List;
     Moved : Boolean;
@@ -334,7 +339,7 @@ package body Commit is
           exit when not Moved;
         end loop;
       end if;
-      Init;
+      Init (In_Loop);
     end if;
 
     Reread (True);
@@ -392,11 +397,7 @@ package body Commit is
     Encode_Commit (Hash_For_Comment);
 
     -- Init Afpx
-    Init;
-    if In_Loop then
-      Afpx.Encode_Field (Afpx_Xref.Commit.Back, (1, 2), "Done");
-      Afpx.Encode_Field (Afpx_Xref.Commit.Push, (1, 1), "Quit");
-    end if;
+    Init (In_Loop);
 
     -- Reset Afpx list
     Afpx.Line_List.Delete_List (False);
@@ -455,7 +456,7 @@ package body Commit is
               Do_Stage (False, True);
             when Afpx_Xref.Commit.Stage_All =>
               -- StageAll button
-              Do_Stage_All;
+              Do_Stage_All (In_Loop);
             when Afpx_Xref.Commit.Copy =>
               -- Copy button
               Decode_Comment;
@@ -471,7 +472,7 @@ package body Commit is
             when Afpx_Xref.Commit.Commit =>
               -- Commit button
               Do_Commit;
-              Init;
+              Init (In_loop);
               Reread (True);
             when Afpx_Xref.Commit.Push =>
               if In_Loop then
@@ -483,7 +484,7 @@ package body Commit is
               if Push_Pull.Handle (Root, Pull => False) then
                 return True;
               else
-                Init;
+                Init (In_Loop);
                 Reread (True);
               end if;
             when Afpx_Xref.Commit.Back =>

@@ -104,6 +104,8 @@ package body Cherry is
 
     -- Set Afpx list
     Init_Cherry (Cherries);
+    Cherries.Rewind;
+    Afpx.Line_List.Rewind;
   end Init_Cherries;
 
   -- Write cherry in list and update Afpx line
