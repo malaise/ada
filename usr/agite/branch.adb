@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with As.U.Utils, Directory, Afpx.Utils, Basic_Proc, Unicode, Str_Util;
-with Git_If, Utils.X, Afpx_Xref, Confirm, Error, History;
+with Git_If, Utils.X, Afpx_Xref, Confirm, Error, Cherry;
 package body Branch is
 
   -- List width
@@ -202,7 +202,7 @@ package body Branch is
            Git_If.Rebase_Branch (Current_Branch.Image, Curr_Name.Image));
       when Cherry_Pick =>
         Previous_Branch := Curr_Name;
-        Done := History.Cherry_Pick (Root.Image, Curr_Name.Image);
+        Done := Cherry.Pick (Root.Image, Curr_Name.Image);
         Init;
         Reread (False);
         return Done;

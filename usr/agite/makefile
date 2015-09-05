@@ -14,7 +14,7 @@ CLIBS_t_git := $(PCRE_SLIBS)
 
 LARGS_agite.stat := $(PCRE_ALIBS) $(X11_ALIBS)
 
-TXT := Agite
+TXT := Agite Cherry
 DOCOPTS_Agite= -a toc
 
 include $(TEMPLATES)/ada.mk
