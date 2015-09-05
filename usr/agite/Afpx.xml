@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V17.39"/>
+  <Var Name="Version" Value="V17.40"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -1469,7 +1469,7 @@
       <Init Row="0" Col="0">References:</Init>
     </Field>
 
-    <!-- Push/OK(Pull), Push-Upstream, and back -->
+    <!-- Push/OK(Pull), Push-Upstream, Push-Force, and Back -->
     <Field Num="15" Kind="Button" Name="Push">
       <Geometry Up="${List.Low}+2" Left="1" Height="3" Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -1481,7 +1481,13 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Upstream</Init>
     </Field>
-    <Field Num="17" Kind="Button" Name="Back">
+    <Field Num="17" Kind="Button" Name="Push_Force">
+      <Geometry Up="${Field_15.Up}+1" Left="${Field_16.Right}+2" Height="1"
+                Width="7"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Force</Init>
+    </Field>
+    <Field Num="18" Kind="Button" Name="Back">
       <Geometry Up="${Field_15.Up}" Height="3" Left="${LmLeft}"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
