@@ -145,9 +145,11 @@ package Git_If is
 
   -- Launch a push synchronous (of current branch or tag),
   --  optionnaly add --set-upstream (on branch)
+  --  optionnaly add -- force
   --  return "" if OK, else the error
   function Do_Push (Remote : String; Tag : String;
-                    Set_Upstream : Boolean) return String;
+                    Set_Upstream : Boolean;
+                    Force : Boolean) return String;
 
   -- Launch a fetch (or pull) synchronous, "" if OK, else the error
   function Do_Fetch (Remote : String; Branch : String; Pull : Boolean)

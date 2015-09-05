@@ -31,13 +31,14 @@ package body Push_Pull is
   References : Git_If.Reference_Mng.List_Type;
 
   -- Get remote and push
-  function Do_Push (Tag : in String; Set_Upstream : in Boolean)
-           return Boolean is
+  function Do_Push (Tag : in String;
+                    Set_Upstream : in Boolean;
+                    Force : in Boolean) return Boolean is
     Log : As.U.Asu_Us;
   begin
     References.Move_At (Afpx.Line_List.Get_Position);
     Log := As.U.Tus (Git_If.Do_Push (References.Access_Current.Image,
-                                     Tag, Set_Upstream));
+                                     Tag, Set_Upstream, Force));
     if Log.Is_Null then
       return True;
     else
@@ -111,8 +112,10 @@ package body Push_Pull is
 
       -- Change title and Push button if Pull_Branch or Pull
 
-      -- Push upstream only for push of branch (not tag)
+      -- Push upstream and force only for push of branch (not tag)
       Afpx.Set_Field_Activation (Afpx_Xref.Push_Pull.Push_Upstream,
+                                 Menu = Push and then Branch_Tag = "");
+      Afpx.Set_Field_Activation (Afpx_Xref.Push_Pull.Push_Force,
                                  Menu = Push and then Branch_Tag = "");
       case Menu is
         when Push =>
@@ -201,7 +204,7 @@ package body Push_Pull is
                   Result := Do_Fetch (Branch_Tag, Branch_Tag = Curr_Branch);
                 when Push =>
                   -- Push branch or tag
-                  Result := Do_Push (Branch_Tag, False);
+                  Result := Do_Push (Branch_Tag, False, False);
               end case;
               if Result then
                 -- Push/Pull OK
@@ -212,7 +215,17 @@ package body Push_Pull is
               end if;
             when Afpx_Xref.Push_Pull.Push_Upstream =>
               -- Push current branch with --set-upstream
-              Result := Do_Push (Curr_Branch.Image, True);
+              Result := Do_Push (Curr_Branch.Image, True, False);
+              if Result then
+                -- Push/Pull OK
+                return True;
+              else
+                -- Push/Pull KO
+                Init;
+              end if;
+            when Afpx_Xref.Push_Pull.Push_Force =>
+              -- Push current branch with --force
+              Result := Do_Push (Curr_Branch.Image, False, True);
               if Result then
                 -- Push/Pull OK
                 return True;
