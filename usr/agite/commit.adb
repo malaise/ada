@@ -210,7 +210,9 @@ package body Commit is
                               Afpx.Line_List.Is_Empty);
     Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Stage_All,
                               Afpx.Line_List.Is_Empty);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Commit, not To_Commit);
+    -- Allow commit if some stages or empty list
+    Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Commit,
+      not (To_Commit or else Afpx.Line_List.Is_Empty);
   end Reread;
 
   -- Diff
