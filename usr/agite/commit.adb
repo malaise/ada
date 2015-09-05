@@ -212,7 +212,7 @@ package body Commit is
                               Afpx.Line_List.Is_Empty);
     -- Allow commit if some stages or empty list
     Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Commit,
-      not (To_Commit or else Afpx.Line_List.Is_Empty);
+      not (To_Commit or else Afpx.Line_List.Is_Empty));
   end Reread;
 
   -- Diff
