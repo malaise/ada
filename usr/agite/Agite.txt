@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V18.01
+V18.02
 
 General purpose
 ---------------
@@ -668,9 +668,12 @@ policy. A new commit is always automatically generated with the comment
 "Merge branch \'<branch>'".
 
 Rebase::
-Click in the 'Rebase' button to rebase, after confirmation, the
-branch selected in the list, starting from and into the current branch. +
+Click in the 'Rebase' button to rebase the current branch, after confirmation,
+to the the head of then branch selected in the list. +
 The rebased branch is automatically checked out by this operation.
+
+NOTE: The rebase is done by performing xref:XCherry[cherry picks], see
+xref:XCherryRebase[Rebasing with cherry-pick].
 
 CherryPk::
 

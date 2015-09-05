@@ -103,18 +103,93 @@ package body Branch is
                               Afpx.Line_List.Is_Empty);
   end Reread;
 
+  -- Find a unused Tmp branch name
+  function Find_Tmp_Name return String is
+    Suffix : constant String := "Tmp";
+    Pos : Positive;
+    Name : As.U.Asu_Us;
+    use type As.U.Asu_Us;
+  begin
+    if Branches.Is_Empty then
+      return Suffix;
+    end if;
+
+    -- Save Pos
+    Pos := Branches.Get_Position;
+    -- Find longest branch
+    Branches.Rewind;
+    loop
+      if Branches.Access_Current.Length > Name.Length then
+        Branches.Read (Name, Git_If.Branches_Mng.Current);
+      end if;
+      exit when not Branches.Check_Move;
+      Branches.Move_To;
+    end loop;
+    -- Restore Pos
+    Branches.Move_At (Pos);
+
+    -- Done
+    return Name.Image & "." & Suffix;
+  end Find_Tmp_Name;
+
+
+  -- Rebase current branch to head of Reference
+  function Do_Rebase (Root : String; Ref_Branch: String) return String is
+    Result : As.U.Asu_Us;
+    Tmp_Branch : As.U.Asu_Us;
+  begin
+    -- Find Tmp branch name
+    Tmp_Branch := As.U.Tus (Find_Tmp_Name);
+    -- Create a Tmp branch at head of the Ref
+    Result := As.U.Tus (Git_If.Do_Checkout (Ref_Branch, ""));
+    if not Result.Is_Null then
+      return "Cannot checkout ref branch " & Ref_Branch & ": " & Result.Image;
+    end if;
+    Result := As.U.Tus (Git_If.Create_Branch (Tmp_Branch.Image));
+    if not Result.Is_Null then
+      return "Cannot create tmp branch " & Tmp_Branch.Image & ": "
+             & Result.Image;
+    end if;
+    Result := As.U.Tus (Git_If.Do_Checkout (Tmp_Branch.Image, ""));
+    if not Result.Is_Null then
+      return "Cannot checkout tmp branch " & Tmp_Branch.Image & ": "
+             & Result.Image;
+    end if;
+
+    -- Cherry pick all the cherries from the Rebased branch
+    if not Cherry.Pick (Root, Current_Branch.Image, False) then
+      return "Cherry pick did not complete";
+    end if;
+
+    -- Hard reset the Rebased branch to Tmp branch
+    Result := As.U.Tus (Git_If.Do_Checkout (Current_Branch.Image, ""));
+    if not Result.Is_Null then
+      return "Cannot checkout back ref branch " & Ref_Branch & ": "
+             & Result.Image;
+    end if;
+    Git_If.Do_Reset_Hard (Tmp_Branch.Image);
+
+    -- Delete the Tmp branch
+    Result := As.U.Tus (Git_If.Delete_Branch (Tmp_Branch.Image));
+    if not Result.Is_Null then
+      return "Cannot delete tmp branch " & Tmp_Branch.Image & ": "
+             & Result.Image;
+    end if;
+    return "";
+  end Do_Rebase;
+
   -- Actions on branches
   type Action_List is (Create, Rename, Delete, Checkout, Merge, True_Merge,
                        Rebase, Cherry_Pick, Reset_Hard);
   function Do_Action (Action : in Action_List) return Boolean is
-    Curr_Name, New_Name : As.U.Asu_Us;
+    Sel_Name, New_Name : As.U.Asu_Us;
     Message, Result : As.U.Asu_Us;
     Done : Boolean;
   begin
     -- Retrieve current name
     if Action /= Create then
       Branches.Move_At (Afpx.Line_List.Get_Position);
-      Curr_Name := Branches.Access_Current.all;
+      Sel_Name := Branches.Access_Current.all;
     end if;
     -- Get new name from Get field
     if Action = Create or else Action = Rename then
@@ -134,14 +209,20 @@ package body Branch is
       if not Confirm (
           (case Action is
              when Create | Rename | Cherry_Pick => "???",
-             when Delete     => "Delete",
-             when Checkout   => "Checkout",
-             when Merge      => "Merge from",
-             when True_Merge => "True Merge from",
-             when Rebase     => "Rebase",
-             when Reset_Hard => "Reset hard to"
-           ) & " branch",
-          Curr_Name.Image) then
+             when Delete     => "Delete branch " & Sel_Name.Image,
+             when Checkout   => "Checkout branch " & Sel_Name.Image,
+             when Merge      => "Merge branch " & Sel_Name.Image,
+             when True_Merge => "True Merge branch " & Sel_Name.Image,
+             when Rebase     => "Rebase current branch "
+                                & Current_Branch.Image,
+             when Reset_Hard => "Reset hard current branch "
+                                & Current_Branch.Image),
+          (case Action is
+             when Create | Rename | Cherry_Pick | Delete | Checkout => "",
+             when Merge | True_Merge  => "into current branch "
+                                         & Current_Branch.Image,
+             when Rebase | Reset_Hard => "to the head of " & Sel_Name.Image))
+      then
         Init;
         Reread (True);
         return False;
@@ -161,54 +242,54 @@ package body Branch is
           end if;
         end if;
       when Rename =>
-        Message := As.U.Tus ("Renaming branch " & Curr_Name.Image
+        Message := As.U.Tus ("Renaming branch " & Sel_Name.Image
                            & " to " & New_Name.Image);
         if not New_Name.Is_Null then
-          Result := As.U.Tus (Git_If.Rename_Branch (Curr_Name.Image,
+          Result := As.U.Tus (Git_If.Rename_Branch (Sel_Name.Image,
                                                     New_Name.Image));
           if Result.Is_Null then
             Previous_Branch := New_Name;
           end if;
         end if;
       when Delete =>
-        Message := As.U.Tus ("Deleting branch " & Curr_Name.Image);
-        Result := As.U.Tus (Git_If.Delete_Branch (Curr_Name.Image));
+        Message := As.U.Tus ("Deleting branch " & Sel_Name.Image);
+        Result := As.U.Tus (Git_If.Delete_Branch (Sel_Name.Image));
         if Result.Is_Null then
           Previous_Branch := Current_Branch;
         end if;
       when Checkout =>
-        Message := As.U.Tus ("Checking out branch " & Curr_Name.Image);
-        Result := As.U.Tus (Git_If.Do_Checkout (Curr_Name.Image, ""));
+        Message := As.U.Tus ("Checking out branch " & Sel_Name.Image);
+        Result := As.U.Tus (Git_If.Do_Checkout (Sel_Name.Image, ""));
         Previous_Branch := Current_Branch;
       when Merge =>
-        Message := As.U.Tus ("Merging branch " & Curr_Name.Image);
-        Previous_Branch := Curr_Name;
+        Message := As.U.Tus ("Merging branch " & Sel_Name.Image);
+        Previous_Branch := Sel_Name;
         Result := As.U.Tus (
-           Git_If.Merge_Branch (Curr_Name.Image,
-                                "Merge branch '" & Curr_Name.Image & "'",
+           Git_If.Merge_Branch (Sel_Name.Image,
+                                "Merge branch '" & Sel_Name.Image & "'",
                                 False));
       when True_Merge =>
-        Message := As.U.Tus ("True merging branch " & Curr_Name.Image);
-        Previous_Branch := Curr_Name;
+        Message := As.U.Tus ("True merging branch " & Sel_Name.Image);
+        Previous_Branch := Sel_Name;
         Result := As.U.Tus (
-           Git_If.Merge_Branch (Curr_Name.Image,
-                                "Merge branch '" & Curr_Name.Image & "'",
+           Git_If.Merge_Branch (Sel_Name.Image,
+                                "Merge branch '" & Sel_Name.Image & "'",
                                 True));
       when Rebase =>
-        Message := As.U.Tus ("Rebasing branch " & Curr_Name.Image & " from "
-                           & Current_Branch.Image);
-        Previous_Branch := Curr_Name;
-        Result := As.U.Tus (
-           Git_If.Rebase_Branch (Current_Branch.Image, Curr_Name.Image));
+        Message := As.U.Tus ("Rebasing branch " & Current_Branch.Image
+                             & " to head of " & Sel_Name.Image);
+        Previous_Branch := Sel_Name;
+        Result := As.U.Tus (Do_Rebase (Root.Image, Sel_Name.Image));
+        Init;
       when Cherry_Pick =>
-        Previous_Branch := Curr_Name;
-        Done := Cherry.Pick (Root.Image, Curr_Name.Image);
+        Previous_Branch := Sel_Name;
+        Done := Cherry.Pick (Root.Image, Sel_Name.Image, True);
         Init;
         Reread (False);
         return Done;
       when Reset_Hard =>
-        Previous_Branch := Curr_Name;
-        Git_If.Do_Reset_Hard (Curr_Name.Image);
+        Previous_Branch := Sel_Name;
+        Git_If.Do_Reset_Hard (Sel_Name.Image);
         return True;
     end case;
 
@@ -222,8 +303,8 @@ package body Branch is
 
     -- Done
     Reread (False);
-    -- Successful checkout or merge lead to return
-    return Action = Checkout or else Action = Merge;
+    -- Successful checkout, merge, rebase
+    return Action = Checkout or else Action = Merge or else Action = Rebase;
   end Do_Action;
 
   -- Update the list status

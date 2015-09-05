@@ -70,11 +70,14 @@ package body Cherry is
     Cherry_Rec, Cherries_Mng, Set_Cherry, False);
 
   -- Get list of cherries
-  procedure Init_Cherries (Branch : in String) is
+  procedure Init_Cherries (Branch : in String;
+                           Align_Afpx : in Boolean) is
     Logs : Git_If.Log_List;
     Cherry : Cherry_Rec;
   begin
-    Afpx.Line_List.Delete_List;
+    if Align_Afpx then
+      Afpx.Line_List.Delete_List;
+    end if;
     Nb_Cherries := 0;
     Cherries.Delete_List;
     -- List Cherries
@@ -103,9 +106,11 @@ package body Cherry is
     end loop;
 
     -- Set Afpx list
-    Init_Cherry (Cherries);
+    if Align_Afpx then
+      Init_Cherry (Cherries);
+      Afpx.Line_List.Rewind;
+    end if;
     Cherries.Rewind;
-    Afpx.Line_List.Rewind;
   end Init_Cherries;
 
   -- Write cherry in list and update Afpx line
@@ -339,7 +344,8 @@ package body Cherry is
   end Cherry_Done;
 
   -- Handle the selection of Commits to cherry-pick
-  function Pick (Root, Branch : String) return Boolean is
+  function Pick (Root, Branch : String;
+                 Interactive : in Boolean) return Boolean is
     -- Afpx stuff
     Get_Handle  : Afpx.Get_Handle_Rec;
     Ptg_Result  : Afpx.Result_Rec;
@@ -384,11 +390,18 @@ package body Cherry is
     end Show_Details;
 
   begin
+    if not Interactive then
+      -- Automatically pick and commit all cherries
+      Init_Cherries (Branch, False);
+      return (if Nb_Cherries = 0 then True
+              else Cherry_Done (Root, Branch));
+    end if;
+
     -- Init Afpx
     Init;
 
     -- Init list
-    Init_Cherries (Branch);
+    Init_Cherries (Branch, True);
 
     -- Disable buttons if empty list
     if Cherries.Is_Empty then

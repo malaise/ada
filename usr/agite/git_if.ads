@@ -172,7 +172,6 @@ package Git_If is
   function Delete_Branch (Name : String) return String;
   function Merge_Branch (Name : String; Comment : String;
                          No_Fast_Forward : in Boolean) return String;
-  function Rebase_Branch (From : String; Name : String) return String;
 
   -- Get current user name and email
   function Get_User return String;

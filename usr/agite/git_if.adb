@@ -1130,7 +1130,7 @@ package body Git_If is
   begin
     Cmd.Set ("git");
     Cmd.Cat ("branch");
-    Cmd.Cat ("-d");
+    Cmd.Cat ("-D");
     Cmd.Cat (Pt (Name));
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
@@ -1164,25 +1164,6 @@ package body Git_If is
       return "";
     end if;
   end Merge_Branch;
-
-  -- Rebase a branch (or current) from From
-  function Rebase_Branch (From : String; Name : String) return String is
-    Cmd : Many_Strings.Many_String;
-  begin
-    Cmd.Set ("git");
-    Cmd.Cat ("rebase");
-    Cmd.Cat (Pt (From));
-    Cmd.Cat (Pt (Name));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
-    -- Handle error
-    if Exit_Code /= 0 then
-      return Err_Flow_1.Str.Image;
-    else
-      return "";
-    end if;
-  end Rebase_Branch;
-
 
   -- Get current user email
   function Get_User return String is
