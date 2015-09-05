@@ -135,7 +135,7 @@ package body Commit is
 
 
   -- Init screen
-  procedure Init (in_Loop : in Boolean) is
+  procedure Init (In_Loop : in Boolean) is
   begin
     Afpx.Use_Descriptor (Afpx_Xref.Commit.Dscr_Num);
     -- Encode Root
@@ -214,7 +214,7 @@ package body Commit is
         Afpx.Line_List.Move_At (Changes.Get_Position);
         Afpx.Update_List (Afpx.Center_Selected);
       else
-        Afpx.Line_List.Rewind;
+        Afpx.Line_List.Rewind (Check_Empty => False);
         Afpx.Update_List (Afpx.Top);
       end if;
     end if;
@@ -472,7 +472,7 @@ package body Commit is
             when Afpx_Xref.Commit.Commit =>
               -- Commit button
               Do_Commit;
-              Init (In_loop);
+              Init (In_Loop);
               Reread (True);
             when Afpx_Xref.Commit.Push =>
               if In_Loop then
