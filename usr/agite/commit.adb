@@ -1,7 +1,7 @@
 with Ada.Exceptions;
 with As.U, Directory, Afpx.Utils, Str_Util, Basic_Proc,
      Aski, Images;
-with Git_If, Utils.X, Config, Push_Pull, Afpx_Xref, Confirm, Error;
+with Utils.X, Config, Push_Pull, Afpx_Xref, Confirm, Error;
 package body Commit is
 
   -- List width
@@ -61,6 +61,7 @@ package body Commit is
   end Reset_Ptg;
 
   -- Decode Comment fields
+  Nb_Row_Comment : constant := 7;
   procedure Decode_Comment is
   begin
     Comment.Set_Null;
@@ -104,6 +105,34 @@ package body Commit is
       end loop;
     end if;
   end Encode_Comment;
+
+  -- Encode comment from a commit
+  procedure Encode_Commit (Ref : in Git_If.Git_Hash) is
+    Hash : Git_If.Git_Hash;
+    Merged : Boolean;
+    Date : Git_If.Iso_Date;
+    Comment_Array : Git_If.Comment_Array (1 .. Nb_Row_Comment);
+    Commit : Git_If.Commit_List;
+    Do_Copy : Boolean;
+  begin
+    if Ref = Git_If.No_Hash then
+      return;
+    end if;
+    -- Get Commit info (comment)
+    Git_If.List_Commit (Ref, Hash, Merged, Date, Comment_Array, Commit);
+    Comment.Set_Null;
+    -- Append rows, starting from last non-empty
+    Do_Copy := False;
+    for I in reverse Comment_Array'Range loop
+      if not Comment_Array(I).Is_Null then
+        Do_Copy := True;
+      end if;
+      if Do_Copy then
+        Comment.Prepend (Comment_Array(I).Image & Aski.Lf);
+      end if;
+    end loop;
+  end Encode_Commit;
+
 
   -- Init screen
   procedure Init is
@@ -342,8 +371,12 @@ package body Commit is
     Error ("Commit", "", Result.Image);
   end Do_Commit;
 
-  -- Handle the commits
-  procedure Handle (Root : in String) is
+  -- Handle the commit of modifications
+  -- Show button Quit instead of Push
+  -- Init comment from the one of the provided Hash
+  procedure Handle (Root : in String;
+                    Quit_Io_Push : in Boolean := False;
+                    Hash_For_Comment : in Git_If.Git_Hash := Git_If.No_Hash) is
     Ptg_Result   : Afpx.Result_Rec;
     use type Afpx.Field_Range;
   begin
@@ -354,8 +387,14 @@ package body Commit is
     Commit.Root := As.U.Tus (Root);
     Directory.Change_Current (Root);
 
+    -- Encode the comment of Hash_For_Comment into Comment
+    Encode_Commit (Hash_For_Comment);
+
     -- Init Afpx
     Init;
+    if Quit_Io_Push then
+      Afpx.Encode_Field (Afpx_Xref.Commit.Push, (0, 1), "Quit");
+    end if;
 
     -- Reset Afpx list
     Afpx.Line_List.Delete_List (False);

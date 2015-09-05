@@ -1,4 +1,4 @@
-with As.U, Afpx.Utils, Language;
+with Afpx.Utils, Language;
 with Utils.X, Git_If, Details, Afpx_Xref, Confirm, Error;
 package body Cherry is
 
@@ -177,6 +177,7 @@ package body Cherry is
   function Cherry_Done (Branch : in String) return Boolean is
     Moved : Boolean;
     Char : Character;
+    Cherry : Git_If.Log_Entry_Rec;
   begin
     -- Nothing if no cherry
     if Afpx.Line_List.Is_Empty then
@@ -189,7 +190,7 @@ package body Cherry is
     -- Scan all Afpx list and discard ' ' and '='
     loop
       Char := Read;
-      if Char /= '+' then
+      if Char /= 'C' then
         -- Discard this cherry
         Cherries.Delete (Moved => Moved);
       elsif Cherries.Check_Move (Check_Empty => False) then
@@ -218,19 +219,24 @@ package body Cherry is
     end if;
 
     -- Do the cherry pick
-    declare
-      Result : constant String := Git_If.Cherry_Pick (Cherries);
-    begin
-      if Result = "" then
-        -- Ok
-        return True;
-      else
-        -- Cherry pick failed, the error message starts with the
-        --  conflicts
-        Error ("Cherry pick from", Branch, Result, False);
-        return False;
-      end if;
-    end;
+    Cherries.Rewind;
+    loop
+      -- Read a Cherry, apply and commit it
+      Cherries.Read (Cherry, Git_If.Log_Mng.Dyn_List.Current);
+      declare
+        Result : constant String := Git_If.Cherry_Pick (Cherry, True);
+      begin
+        if Result /= "" then
+          -- Cherry pick failed, the error message starts with the
+          --  conflicts
+          Error ("Cherry pick from", Branch, Result, False);
+          return False;
+        end if;
+      end;
+      exit when not Cherries.Check_Move;
+      Cherries.Move_To;
+    end loop;
+    return True;
   end Cherry_Done;
 
   -- Handle the selection of Commits to cherry-pick
@@ -303,7 +309,7 @@ package body Cherry is
     -- Main loop
     loop
       if Nb_Cherries = 0 then
-        Utils.X.Center_Field ("Cancel", Afpx_Xref.Cherry.Go);
+        Afpx.Encode_Field (Afpx_Xref.Cherry.Go, (0, 1), "Cancel");
       else
         Afpx.Reset_Field (Afpx_Xref.Cherry.Go, Reset_Colors => False);
       end if;
