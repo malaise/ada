@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V18.04
+V18.05
 
 General purpose
 ---------------
@@ -669,16 +669,17 @@ policy. A new commit is always automatically generated with the comment
 
 Rebase::
 Click in the 'Rebase' button to rebase the current branch, after confirmation,
-to the the head of then branch selected in the list. +
+to the the head of the branch selected in the list. +
 The rebased branch is automatically checked out by this operation.
 
-NOTE: The rebase is done by performing xref:XCherry[cherry picks], see
-xref:XCherryRebase[Rebasing with cherry-pick].
+NOTE: The rebase is done by automatically performing successive
+xref:XCherry[cherry picks], see how-to
+xref:XCherryRebase[rebase with cherry-pick].
 
 CherryPk::
 
-Click on the 'CherryPk' button to launch the xref:XCherry[cherry pick] menu
-from the branch selected in the list into the current branch.
+Click on the 'CherryPk' button to launch the menu to xref:XCherry[cherry pick]
+commits from the branch selected in the list into the current branch.
 
 HReset::
 
@@ -914,6 +915,8 @@ version currently (left-)selected in the history. The file will be tagged as
 \'M' (modified) if this version differs from the Git HEAD one. +
 This function is not active on the history of a directory.
 
+anchor:XHistCheckout[]
+
 .Checkout
 This button button launches the xref:XCheckout[checkout] menu that allows
 checking out the selected commit (either in a new branch or as detached from
@@ -922,7 +925,7 @@ HEAD).
 NOTE: There is a major difference between the 'Restore' and the 'Checkout'
 operations. +
 - 'Restore' overwrites the file with the content that it had in the given
-commit. +
+commit (it is likely to be tagged as modified in the current workspace). +
 - 'Checkout' checks out the whole workspace in the state that it had when the
 commit was performed.
 
@@ -1130,12 +1133,12 @@ Cherry pick
 anchor:XCherry[]
 This menu works on the global worktree, not on the local directory. +
 It allows selecting some commits of the selected branch and it
-merges them into the current branch. +
+apply them into the current branch. +
 It shows:
 
 .Current branch
 On the top left is recalled the name of the current branch, into which the
-selected commits will be merged.
+selected commits will be applied.
 
 .Title
 The title recalls the name of the 'reference branch' from which the commits are
@@ -1161,15 +1164,15 @@ to split the commit...).
 
 * \'F' denotes a cherry 'picked for fixup', which will be applied then
 proposed for edition of the commit. This is the same as a cherry 'picked for
-edition', except that thee commit comment is initialised with the content of
+edition', except that the commit comment is initialised with the content of
 the first cherry of the serie of preceeding 'picked for apply'.
 
 * \'C' denotes a cherry 'picked for commit', which will be applied then
-committed.
+automatically committed.
 
 * ' ' denotes a cherry 'skipped', which will not be picked. +
 
-By default, all the non-merged commits are selected for commit.
+By default, all the non-merged commits are selected as 'picked for commit'.
 
 Double-clicking on an entry of the list toggles its selection from 'skipped'
 to 'picked for commit' and vice versa.
@@ -1193,8 +1196,7 @@ included.
 Move up or down in the list the current cherry.
 
 .Reset
-Click on this button to skip all the commits currently selected for being
-picked.
+Click on this button to skip all the commits (except the already merged ones).
 
 .Go - Cancel
 Click on this button when the selection is completed. +
@@ -1210,18 +1212,17 @@ It is possible to modify the comment and/or selection of files, and
 to make several commits. Clicking on the 'Done' button goes back to the loop
 of picking the cherries (possibly with some files not yet committed).
 Clicking on the 'Quit' button cancels the loop at the current point. +
-After success, Agite returns back in the xref:XDir[directory] menu, otherwise
-it returns in the xref:XBranches[branches] menu.
+After success, Agite returns back in the xref:XDir[directory] menu.
 
 NOTE: To cancel a cherry pick, simply ensure that no commit is selected (click
 on the 'Reset' button) and click on the 'Cancel' button.
 
-[underline]#*Some use-cases:*#
+[underline]#*Cherry-pick how-to:*#
 
 * Meld several cherries into one
   - 'Pick for apply' all the cherries to meld, except the last one
   - 'Pick for edit' the last cherry to meld (or 'pick for commit' for
-    committing automatically with the comment of the last cherry)
+    committing automatically with its comment)
   - In the 'commit' screen, edit the comment and validate the commit 
 
 * Meld a cherry whith several following fixes
@@ -1234,11 +1235,11 @@ on the 'Reset' button) and click on the 'Cancel' button.
   - 'Pick for edit' the cherry
   - In the 'commit' screen, set the comment and stage the files for the first
     commit, then commit. Set the comment and stage the files for the second
-    commit, then commit...  Then click on the 'Done' button.
+    commit, then commit... Finally, click on the 'Done' button.
 
-* Rebase a branch a long another
+* Rebase a branch along another
 anchor:XCherryRebase[]
-  - On the root branch, create a Tmp branch
+  - On the reference branch, create a Tmp branch
   - Cherry pick from the rebased branch into Tmp branch (keep the initial
     selection of 'picked for commit' cherries)
   - xref:XHReset[Hard reset] the branch to Tmp branch
@@ -1246,12 +1247,11 @@ anchor:XCherryRebase[]
 
 * Interactively rebase a branch on itself
   - In the xref:XHist[history] menu, select the commit before the first to
-    rebase and check it out as a Tmp branch
+    rebase and xref:XHistCheckout[check out] it as a Tmp branch
   - Cherry pick from the original branch into this Tmp branch, modify the
     selection
-  - xref:XHReset[Hard reset] the branch to Tmp branch
+  - xref:XHReset[Hard reset] the rebased branch to Tmp branch
   - Delete the Tmp branch
-
 
 Commit
 ~~~~~~
@@ -1463,7 +1463,6 @@ After confirmation, deletes (drops) the stash currently selected in the list.
 .Back
 
 This button returns to the xref:XDir[directory] menu.
-
 
 Pull
 ~~~~

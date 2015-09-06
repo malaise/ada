@@ -261,8 +261,11 @@ package body Cherry is
     end case;
   end Cherry_Action;
 
-  -- Confirm and do the Cherry-pick, return True if completed
-  function Cherry_Done (Root, Branch : in String) return Boolean is
+  -- Confirm (if Interactive) and do the Cherry-pick,
+  -- return True if completed or error or aborted => Go back to directory
+  -- return False if nothing to do or cancelled => Stay in Branches
+  function Do_Cherry (Root, Branch : in String;
+                      Interactive : in Boolean) return Boolean is
     Cherry : Cherry_Rec;
     Picked : Cherries_Mng.Dyn_List.List_Type;
     Prev_Hash : Git_If.Git_Hash := Git_If.No_Hash;
@@ -273,26 +276,28 @@ package body Cherry is
       return False;
     end if;
 
-    -- Redo Afpx list of confirm (new width, only not merged)
-    Cherries.Rewind;
-    loop
-      Cherry := Read;
-      if Cherry.Status /= Merged then
-        Picked.Insert (Cherry);
-      end if;
-      exit when not Cherries.Check_Move;
-      Cherries.Move_To;
-    end loop;
-    Afpx.Use_Descriptor (Afpx_Xref.Confirm.Dscr_Num);
-    Confirm_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
-    Init_Confirm (Picked);
-    Picked.Delete_List;
+    if Interactive then
+      -- Redo Afpx list of confirm (new width, only not merged)
+      Cherries.Rewind;
+      loop
+        Cherry := Read;
+        if Cherry.Status /= Merged then
+          Picked.Insert (Cherry);
+        end if;
+        exit when not Cherries.Check_Move;
+        Cherries.Move_To;
+      end loop;
+      Afpx.Use_Descriptor (Afpx_Xref.Confirm.Dscr_Num);
+      Confirm_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
+      Init_Confirm (Picked);
+      Picked.Delete_List;
 
-    -- Confirm, return False if not
-    if not Confirm ("Cherry pick from branch " & Branch,
-                    "into current branch " & Git_If.Current_Branch,
-                    Show_List => True) then
-      return False;
+      -- Confirm, return False if not
+      if not Confirm ("Cherry pick from branch " & Branch,
+                      "into current branch " & Git_If.Current_Branch,
+                      Show_List => True) then
+        return False;
+      end if;
     end if;
 
     -- Do the cherry pick
@@ -328,7 +333,7 @@ package body Cherry is
         -- Cherry pick failed, the error message starts with the
         --  conflicts
         Error ("Cherry pick from", Branch, Result.Image, False);
-        return False;
+        return True;
       end if;
       -- Commit if necessary
       if Cherry.Status = Edit or else Cherry.Status = Fixup then
@@ -342,7 +347,7 @@ package body Cherry is
       Cherries.Move_To;
     end loop;
     return True;
-  end Cherry_Done;
+  end Do_Cherry;
 
   -- Handle the selection of Commits to cherry-pick
   function Pick (Root, Branch : String;
@@ -352,7 +357,7 @@ package body Cherry is
     Ptg_Result  : Afpx.Result_Rec;
     use type Afpx.Absolute_Field_Range;
 
-    -- Search found
+    -- Search found, or result of automatic cherry-pick
     Dummy : Boolean;
 
     -- Init Afpx
@@ -394,8 +399,8 @@ package body Cherry is
     if not Interactive then
       -- Automatically pick and commit all cherries
       Init_Cherries (Branch, False);
-      return (if Nb_Cherries = 0 then True
-              else Cherry_Done (Root, Branch));
+      Dummy := Do_Cherry (Root, Branch, False);
+      return True;
     end if;
 
     -- Init Afpx
@@ -479,8 +484,7 @@ package body Cherry is
               Cherry_Action (Move_Down, Ptg_Result.Id_Selected_Right);
             when Afpx_Xref.Cherry.Go =>
               -- Done
-              return (if Nb_Cherries = 0 then False
-                      else Cherry_Done (Root, Branch));
+              return Do_Cherry (Root, Branch, True);
             when others =>
               -- Other button?
               null;
