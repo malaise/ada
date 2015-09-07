@@ -262,8 +262,9 @@ package body Cherry is
   end Cherry_Action;
 
   -- Confirm (if Interactive) and do the Cherry-pick,
-  -- return True if completed or error or aborted => Go back to directory
-  -- return False if nothing to do or cancelled => Stay in Branches
+  -- If Interactive: return True if OK or Error => back to Directory
+  --    return False if nothing to do or cancel => back to Branches
+  -- Otherwise, return True if completed OK
   function Do_Cherry (Root, Branch : in String;
                       Interactive : in Boolean) return Boolean is
     Cherry : Cherry_Rec;
@@ -303,9 +304,9 @@ package body Cherry is
     -- Do the cherry pick
     Cherries.Rewind;
     loop
-      -- Read a Cherry, apply and possibly commit it
+      -- Get a Cherry, apply and possibly commit it
       -- Store Hash of first Apply of a serie
-      Cherries.Read (Cherry, Cherries_Mng.Dyn_List.Current);
+      Cherries.Get (Cherry);
       case Cherry.Status is
         when Merged | Skip =>
           null;
@@ -333,23 +334,30 @@ package body Cherry is
         -- Cherry pick failed, the error message starts with the
         --  conflicts
         Error ("Cherry pick from", Branch, Result.Image, False);
-        return True;
-      end if;
-      -- Commit if necessary
-      if Cherry.Status = Edit or else Cherry.Status = Fixup then
+        -- Propose manual resolution
+        if not Handle_Commit.Handle (Root, Cherry.Commit.Hash) then
+          -- User gave up:
+          -- Done, back to dir if interactive, error if not interactive
+          return Interactive;
+        end if;
+      elsif Cherry.Status = Edit or else Cherry.Status = Fixup then
+        -- Success: Commit if necessary
         if not Handle_Commit.Handle (Root, Prev_Hash) then
           -- Commit Quit => cancel cherry-pick and return to Directory
-          return True;
+          return Interactive;
         end if;
         Prev_Hash := Git_If.No_Hash;
       end if;
-      exit when not Cherries.Check_Move;
-      Cherries.Move_To;
+      exit when Cherries.Is_Empty;
     end loop;
+    -- Success
     return True;
   end Do_Cherry;
 
   -- Handle the selection of Commits to cherry-pick
+  -- If Interactive: return True if OK or Error => back to Directory
+  --    return False if nothing to do or cancel => back to Branches
+  -- Otherwise, return True if completed OK
   function Pick (Root, Branch : String;
                  Interactive : in Boolean) return Boolean is
     -- Afpx stuff
@@ -399,8 +407,7 @@ package body Cherry is
     if not Interactive then
       -- Automatically pick and commit all cherries
       Init_Cherries (Branch, False);
-      Dummy := Do_Cherry (Root, Branch, False);
-      return True;
+      return Do_Cherry (Root, Branch, False);
     end if;
 
     -- Init Afpx

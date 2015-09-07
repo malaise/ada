@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V18.05
+V18.06
 
 General purpose
 ---------------
@@ -668,13 +668,15 @@ policy. A new commit is always automatically generated with the comment
 "Merge branch \'<branch>'".
 
 Rebase::
+anchor:XRebase[]
 Click in the 'Rebase' button to rebase the current branch, after confirmation,
 to the the head of the branch selected in the list. +
 The rebased branch is automatically checked out by this operation.
 
 NOTE: The rebase is done by automatically performing successive
-xref:XCherry[cherry picks], see how-to
-xref:XCherryRebase[rebase with cherry-pick].
+xref:XCherry[cherry picks], see the how-to
+xref:XCherryRebase[rebase with cherry-pick] and the section
+xref:XCherryError[Error in cherry-pick] on how to handle cherry-pick error.
 
 CherryPk::
 
@@ -1160,10 +1162,11 @@ not committed (allowing it to be commited together with other cherries).
 
 * \'E' denotes a cherry 'picked for edition', which will be applied then
 proposed for edition of the commit (allowing to modify the comment,
-to split the commit...).
+to split the commit...) in the xref:XCommit[commit] menu.
 
 * \'F' denotes a cherry 'picked for fixup', which will be applied then
-proposed for edition of the commit. This is the same as a cherry 'picked for
+proposed for edition of the commit in the xref:XCommit[commit] menu.
+This is the same as a cherry 'picked for
 edition', except that the commit comment is initialised with the content of
 the first cherry of the serie of preceeding 'picked for apply'.
 
@@ -1205,17 +1208,23 @@ in the xref:XBranches[branches] menu. +
 If some commits are selected, then the button is 'Go'. The non-merged commits
 are then listed in a confirmation screen. +
 If confirmed, then the picked cherries are applied one by one onto the
-current branch. Any error in picking a cherry is reported in a specific screen
-and the list is not processed any longer. +
-The commit screen is called after picking cherries for edition or fixup.
-It is possible to modify the comment and/or selection of files, and
-to make several commits. Clicking on the 'Done' button goes back to the loop
-of picking the cherries (possibly with some files not yet committed).
-Clicking on the 'Quit' button cancels the loop at the current point. +
-After success, Agite returns back in the xref:XDir[directory] menu.
+current branch. +
+An action to 'pick for edition' or 'pick for fixup' launches the
+xref:XCommit[commit] menu.  It is possible to modify some files and the
+comment, and/or the selection of files, and to make several commits. 
 
-NOTE: To cancel a cherry pick, simply ensure that no commit is selected (click
-on the 'Reset' button) and click on the 'Cancel' button.
+ * Clicking on the 'Done' button goes back to the loop
+of picking the cherries (possibly with some files not yet committed).
+ * Clicking on the 'Quit' button cancels the loop at the current point (see
+the section xref:XCherryError[Error in cherry-pick] for how to restart). +
+
+Any error in picking a cherry is reported in a specific screen
+and the list is not processed any longer. See the section
+xref:XCherryError[Error in cherry-pick] on how to handle such error. +
+After completion, Agite returns back in the xref:XDir[directory] menu.
+
+NOTE: To cancel the cherry-pick menu, simply ensure that no commit is selected
+(click on the 'Reset' button) and click on the 'Cancel' button.
 
 [underline]#*Cherry-pick how-to:*#
 
@@ -1365,6 +1374,35 @@ a selected remote reference.
 .Back
 
 This button returns to the xref:XDir[directory] menu.
+
+Handling error in cherry-pick
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+anchor:XCherryError[]
+If a cherry fails to be applied, it is very likely a confict in the merge.
+The xref:XCommit[commit] screen is called for manual resolution.
+
+.Fix, commit and continue
+Hopefully you can use the file edition and staging in order to resolve the
+conflict. You should then commit the changes and click on the 'Done' button.
+The loop will continue picking the remaining cherries.
+
+.Cancel
+If you need more tools or time to solve the conflict then you can click on
+the 'Quit' button to cancel the operation. You are then back in
+the XDirectory[directory] menu, from which you should fix the conflict and
+commit the result. +
+Restarting the loop depends on wether the failure occured during a
+xref:XRebase[rebase] or a xref:XCherry[cherry-pick].
+
+Restart a rebase:: If you launch a rebase of the same branch along the same
+branch, then Agite proposes to continue or cancel the rebase. If you launch
+any other rebase then the current rebase is cancelled. A branch named
+'xxx.Tmp' remains (with the commits already applied) that you can either
+delete or reuse to complete the rebase manually.
+
+Restart a cherry-pick:: If you launch a cherry-pick from the same branch
+to the same branch, then Agite proposes to continue or cancel the cherry-pick.
+If you launch any other cherry-pick then the current one is cancelled. 
 
 Push
 ~~~~

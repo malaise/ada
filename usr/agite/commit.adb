@@ -39,8 +39,8 @@ package body Commit is
   procedure Init_List is new Afpx.Utils.Init_List (
     Git_If.File_Entry_Rec, Git_If.File_Mng, Set, False);
 
-  -- Differator
-  Differator : As.U.Asu_Us;
+  -- Editor and Differator
+  Editor, Differator : As.U.Asu_Us;
 
   -- Root path
   Root : As.U.Asu_Us;
@@ -249,6 +249,15 @@ package body Commit is
       not (To_Commit or else Afpx.Line_List.Is_Empty));
   end Reread;
 
+  -- Edit
+  procedure Do_Edit is
+  begin
+    Changes.Move_At (Afpx.Line_List.Get_Position);
+    Utils.Launch (Editor.Image & " "
+                & Utils.Protect_Text (Changes.Access_Current.Name.Image),
+                True);
+  end Do_Edit;
+
   -- Diff
   procedure Do_Diff is
   begin
@@ -386,7 +395,8 @@ package body Commit is
     Ptg_Result   : Afpx.Result_Rec;
     use type Afpx.Field_Range;
   begin
-    -- Init differator
+    -- Init editor and differator
+    Editor := As.U.Tus (Config.Editor);
     Differator := As.U.Tus (Config.Differator);
 
     -- Move to root
@@ -446,6 +456,8 @@ package body Commit is
             when Afpx_Xref.Commit.Reread =>
               -- Reread button
               Reread (True);
+            when Afpx_Xref.Commit.Edit =>
+              Do_Edit;
             when Afpx_Xref.Commit.Diff =>
               Do_Diff;
             when Afpx_Xref.Commit.Stage =>
