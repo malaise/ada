@@ -7,5 +7,5 @@ if [ $DEBUG -eq 1 ] ; then
   export battleship_TRACE_Autobus='Debug+'
 fi
 # export TCP_UTIL_DEBUG_RECEPTION=Y
-exec ./battleship test_ipm:21210 $*
+exec ./battleship 234.7.6.5:21210 $*
 
