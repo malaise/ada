@@ -6,5 +6,8 @@ package Cherry is
   -- Otherwise, return True if completed OK
   function Pick (Root, Branch : String; Interactive : Boolean) return Boolean;
 
+  -- Reset memory of previous uncompleted cherry-pick
+  procedure Reset;
+
 end Cherry;
 

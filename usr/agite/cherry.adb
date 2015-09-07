@@ -336,9 +336,8 @@ package body Cherry is
         Error ("Cherry pick from", Branch, Result.Image, False);
         -- Propose manual resolution
         if not Handle_Commit.Handle (Root, Cherry.Commit.Hash) then
-          -- User gave up:
-          -- Done, back to dir if interactive, error if not interactive
-          return Interactive;
+          -- User gave up: error
+          return False;
         end if;
       elsif Cherry.Status = Edit or else Cherry.Status = Fixup then
         -- Success: Commit if necessary
@@ -507,5 +506,11 @@ package body Cherry is
 
   end Pick;
 
+  -- Reset memory
+  procedure Reset is
+  begin
+    Cherries.Delete_List;
+    -- @@@
+  end Reset;
 end Cherry;
 

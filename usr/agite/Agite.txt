@@ -671,7 +671,8 @@ Rebase::
 anchor:XRebase[]
 Click in the 'Rebase' button to rebase the current branch, after confirmation,
 to the the head of the branch selected in the list. +
-The rebased branch is automatically checked out by this operation.
+The rebased branch is automatically checked out by this operation and Agite
+returns to the xref:XDirectory[directory] menu.
 
 NOTE: The rebase is done by automatically performing successive
 xref:XCherry[cherry picks], see the how-to
