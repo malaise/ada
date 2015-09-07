@@ -108,7 +108,7 @@ package body Branch is
     -- (Re) start a rebase, return the error message to display
     function Do_Rebase (Root : String; Ref_Branch: String) return String;
     -- Reset memory of previous rebase
-    procedure Reset;
+    procedure Reset (Cherries : in Boolean);
   end Rebase_Mng;
   package body Rebase_Mng is separate;
 
@@ -216,7 +216,7 @@ package body Branch is
         Init;
       when Cherry_Pick =>
         -- Reset memory of previous rebase
-        Rebase_Mng.Reset;
+        Rebase_Mng.Reset (False);
         Previous_Branch := Sel_Name;
         Done := Cherry.Pick (Root.Image, Sel_Name.Image, True);
         Init;

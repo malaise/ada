@@ -42,7 +42,7 @@ package body Rebase_Mng is
     function Do_Confirm return Boolean is
     begin
       return Confirm (
-        (if Restart then "Restart the rebase" else "Rebase")
+        (if Restart then "Continue the rebase" else "Rebase")
          & " of branch " & Current_Branch.Image,
         "to the head of " & Ref_Branch);
     end Do_Confirm;
@@ -68,12 +68,12 @@ package body Rebase_Mng is
     end if;
 
     if Restart then
+      -- Reuse previous Tmp branch
       Tmp_Branch := Temporary;
     else
-      Reset;
+      Reset (True);
       -- Find Tmp branch name
       Tmp_Branch := As.U.Tus (Find_Tmp_Name);
-      -- Save branch names
       -- Create a Tmp branch at head of the Ref
       Result := As.U.Tus (Git_If.Do_Checkout (Ref_Branch, ""));
       if not Result.Is_Null then
@@ -84,11 +84,13 @@ package body Rebase_Mng is
         return "Cannot create tmp branch " & Tmp_Branch.Image & ": "
                & Result.Image;
       end if;
-      Result := As.U.Tus (Git_If.Do_Checkout (Tmp_Branch.Image, ""));
-      if not Result.Is_Null then
-        return "Cannot checkout tmp branch " & Tmp_Branch.Image & ": "
-               & Result.Image;
-      end if;
+    end if;
+
+    -- Checkout the Tmp branch
+    Result := As.U.Tus (Git_If.Do_Checkout (Tmp_Branch.Image, ""));
+    if not Result.Is_Null then
+      return "Cannot checkout tmp branch " & Tmp_Branch.Image & ": "
+             & Result.Image;
     end if;
 
     -- Store current rebasing branches
@@ -96,12 +98,13 @@ package body Rebase_Mng is
     Reference := As.U.Tus (Ref_Branch);
     Temporary := Tmp_Branch;
     -- Cherry pick all the cherries from the Rebased branch
-    if not Cherry.Pick (Root, Current_Branch.Image, False) then
+    -- Interactively if a restart
+    if not Cherry.Pick (Root, Current_Branch.Image, Restart) then
       -- Error already handled
       return "";
     end if;
     -- Done, wipe memory
-    Reset;
+    Reset (True);
 
     -- Hard reset the Rebased branch to Tmp branch
     Result := As.U.Tus (Git_If.Do_Checkout (Current_Branch.Image, ""));
@@ -122,12 +125,14 @@ package body Rebase_Mng is
     return "";
   end Do_Rebase;
 
-  procedure Reset is
+  procedure Reset (Cherries : in Boolean) is
   begin
-    Rebased := As.U.Asu_Null;
-    Reference := As.U.Asu_Null;
-    Temporary := As.U.Asu_Null;
-    Cherry.Reset;
+    Rebased.Set_Null;
+    Reference.Set_Null;
+    Temporary.Set_Null;
+    if Cherries then
+      Cherry.Reset;
+    end if;
   end Reset;
 
 end Rebase_Mng;

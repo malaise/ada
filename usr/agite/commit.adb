@@ -244,9 +244,8 @@ package body Commit is
                               Afpx.Line_List.Is_Empty);
     Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Stage_All,
                               Afpx.Line_List.Is_Empty);
-    -- Allow commit if some stages or empty list
-    Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Commit,
-      not (To_Commit or else Afpx.Line_List.Is_Empty));
+    -- Allow commit if some stages
+    Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Commit, not To_Commit);
   end Reread;
 
   -- Edit
@@ -274,7 +273,7 @@ package body Commit is
     Status := Changes.Access_Current.S3;
     if Stage then
       if Status = '?' or else Status = 'M' or else Status = 'T'
-      or else Status = 'U' then
+      or else Status = 'U' or else Status = 'A' then
         -- Stage new file or modif or unresolved conflict
         Git_If.Do_Add (Changes.Access_Current.Name.Image);
       elsif Status = 'D' then
@@ -320,7 +319,8 @@ package body Commit is
       Changes.Rewind;
       loop
         Changes.Read (Change, Moved => Moved);
-        if Change.S3 = 'M' or else Change.S3 = 'T' or else Change.S3 = 'U' then
+        if Change.S3 = 'M' or else Change.S3 = 'T' or else Change.S3 = 'U'
+        or else Change.S3 = 'A' then
           Git_If.Do_Add (Change.Name.Image);
         elsif Change.S3 = 'D' then
           Git_If.Do_Rm (Change.Name.Image);

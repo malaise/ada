@@ -2,7 +2,7 @@ with As.U, Afpx.Utils, Dynamic_List;
 with Utils.X, Git_If, Details, Afpx_Xref, Confirm, Error, Commit;
 package body Cherry is
 
-  package Handle_Commit renames Commit;
+  package Commit_Mng renames Commit;
 
   -- A log with cherry status
   type Cherry_Status_List is (Merged, Skip, Apply, Edit, Fixup, Commit);
@@ -11,9 +11,17 @@ package body Cherry is
     Commit : Git_If.Log_Entry_Rec;
   end record;
   package Cherries_Mng is new Dynamic_List (Cherry_Rec);
+  -- Search by Hash
+  function Match (Current, Criteria : Cherry_Rec) return Boolean is
+  begin
+    return Current.Commit.Hash = Criteria.Commit.Hash;
+  end Match;
+  function Search_Hash is new Cherries_Mng.Dyn_List.Search (Match);
 
   -- The cherries
   Cherries : Cherries_Mng.Dyn_List.List_Type;
+  -- Memory of previous Cherry operation: the Cherries and branch names
+  From_Branch, To_Branch : As.U.Asu_Us;
 
   -- The number of Cherries selected
   Nb_Cherries : Natural := 0;
@@ -71,22 +79,37 @@ package body Cherry is
 
   -- Get list of cherries
   procedure Init_Cherries (Branch : in String;
-                           Align_Afpx : in Boolean) is
+                           Interactive : in Boolean) is
     Logs : Git_If.Log_List;
-    Cherry : Cherry_Rec;
+    Cherry, Old_Cherry : Cherry_Rec;
+    Curr_Branch : constant String := Git_If.Current_Branch;
+    Old_Cherries : Cherries_Mng.Dyn_List.List_Type;
+    Merge : Boolean;
   begin
-    if Align_Afpx then
+    -- Check if same branches as previously uncompleted cherry-pick
+    Merge := Branch = From_Branch.Image
+             and then Curr_Branch = To_Branch.Image;
+    -- Confirm reuse
+    Merge := Merge and then Confirm (
+      "Restart cherry pick from branch " & Branch,
+      "into " & Curr_Branch, Ok_Cancel => False);
+    if Merge then
+      Old_Cherries.Insert_Copy (Cherries);
+    end if;
+
+    -- Init list
+    if Interactive then
       Afpx.Line_List.Delete_List;
     end if;
-    Nb_Cherries := 0;
-    Cherries.Delete_List;
     -- List Cherries
-    Git_If.Cherry_List (Branch, Git_If.Current_Branch, Logs);
+    Git_If.Cherry_List (Branch, Curr_Branch, Logs);
     if Logs.Is_Empty then
       return;
     end if;
 
-    -- Fill Date and Comment info
+    -- Fill Status, Date and Comment info
+    Nb_Cherries := 0;
+    Cherries.Delete_List;
     Logs.Rewind;
     loop
       Logs.Read (Cherry.Commit, Git_If.Log_Mng.Dyn_List.Current);
@@ -105,8 +128,33 @@ package body Cherry is
       Logs.Move_To;
     end loop;
 
+    if Merge then
+      -- Any non-merged of the new list that exists non-merged in the old
+      --  list gets the old status
+      Cherries.Rewind;
+      loop
+        Cherry := Cherries.Access_Current.all;
+        if Cherry.Status /= Merged
+        and then Search_Hash (Old_Cherries, Cherry,
+                        From => Cherries_Mng.Dyn_List.Current_Absolute) then
+          Old_Cherry := Old_Cherries.Access_Current.all;
+          if Old_Cherry.Status /= Merged then
+            -- Copy status from previous list
+            Cherry.Status := Old_Cherry.Status;
+            Cherries.Modify (Cherry, Cherries_Mng.Dyn_List.Current);
+            -- Update Nb_Cherries if Commit -> Skip
+            if Old_Cherry.Status = Skip then
+              Nb_Cherries := Nb_Cherries - 1;
+            end if;
+          end if;
+        end if;
+        exit when not Cherries.Check_Move;
+        Cherries.Move_To;
+      end loop;
+    end if;
+
     -- Set Afpx list
-    if Align_Afpx then
+    if Interactive then
       Init_Cherry (Cherries);
       Afpx.Line_List.Rewind;
     end if;
@@ -301,6 +349,9 @@ package body Cherry is
       end if;
     end if;
 
+    -- Save branches
+    From_Branch := As.U.Tus (Branch);
+    To_Branch := As.U.Tus (Git_If.Current_Branch);
     -- Do the cherry pick
     Cherries.Rewind;
     loop
@@ -335,13 +386,13 @@ package body Cherry is
         --  conflicts
         Error ("Cherry pick from", Branch, Result.Image, False);
         -- Propose manual resolution
-        if not Handle_Commit.Handle (Root, Cherry.Commit.Hash) then
-          -- User gave up: error
-          return False;
+        if not Commit_Mng.Handle (Root, Cherry.Commit.Hash) then
+          -- User gave up: error if non interactive
+          return Interactive;
         end if;
       elsif Cherry.Status = Edit or else Cherry.Status = Fixup then
         -- Success: Commit if necessary
-        if not Handle_Commit.Handle (Root, Prev_Hash) then
+        if not Commit_Mng.Handle (Root, Prev_Hash) then
           -- Commit Quit => cancel cherry-pick and return to Directory
           return Interactive;
         end if;
@@ -350,6 +401,7 @@ package body Cherry is
       exit when Cherries.Is_Empty;
     end loop;
     -- Success
+    Reset;
     return True;
   end Do_Cherry;
 
@@ -414,6 +466,8 @@ package body Cherry is
 
     -- Init list
     Init_Cherries (Branch, True);
+    -- May have called Confirm
+    Init;
 
     -- Disable buttons if empty list
     if Cherries.Is_Empty then
@@ -509,8 +563,9 @@ package body Cherry is
   -- Reset memory
   procedure Reset is
   begin
+    From_Branch.Set_Null;
+    To_Branch.Set_Null;
     Cherries.Delete_List;
-    -- @@@
   end Reset;
 end Cherry;
 
