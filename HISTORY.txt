@@ -4,6 +4,8 @@ Main changes
 
 [horizontal]
 
+*2015/09/08*:: Add reorg, rebase and cherrypick error handling in Agite, V19.0
+
 *2015/08/25*:: Fix handling of special characters in (file) names in agite,
 V17.33
 

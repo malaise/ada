@@ -106,7 +106,8 @@ package body Branch is
   -- Handle Rebase memory (incuding restart)
   package Rebase_Mng is
     -- (Re) start a rebase, return the error message to display
-    function Do_Rebase (Root : String; Ref_Branch: String) return String;
+    function Do_Rebase (Root : String; Ref_Branch: String;
+                        Interactive : Boolean) return String;
     -- Reset memory of previous rebase
     procedure Reset (Cherries : in Boolean);
   end Rebase_Mng;
@@ -212,7 +213,8 @@ package body Branch is
         Message := As.U.Tus ("Rebasing branch " & Current_Branch.Image
                              & " to head of " & Sel_Name.Image);
         Previous_Branch := Sel_Name;
-        Result := As.U.Tus (Rebase_Mng.Do_Rebase (Root.Image, Sel_Name.Image));
+        Result := As.U.Tus (Rebase_Mng.Do_Rebase (Root.Image, Sel_Name.Image,
+                                                  False));
         Init;
       when Cherry_Pick =>
         -- Reset memory of previous rebase
@@ -367,6 +369,18 @@ package body Branch is
       Previous_Branch := Branches.Access_Current.all;
     end if;
   end Handle;
+
+  -- Interactively rebase current branch from rev
+  function Reorg (Root, Rev : String) return Boolean is
+    Msg : As.U.Asu_Us;
+  begin
+    Msg := As.U.Tus (Rebase_Mng.Do_Rebase (Root, Rev, True));
+    if Msg.Is_Null then
+      return True;
+    end if;
+    Error ("Rebase from " & Rev, "", Msg.Image);
+    return False;
+  end Reorg;
 
 end Branch;
 

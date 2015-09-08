@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V18.07
+V19.00
 
 General purpose
 ---------------
@@ -933,6 +933,19 @@ commit (it is likely to be tagged as modified in the current workspace). +
 - 'Checkout' checks out the whole workspace in the state that it had when the
 commit was performed.
 
+anchor:XReorg[]
+
+.Reorg
+This button launches an interactive rebase of the commits that follow the
+selected one. This allows splitting, merging, modifing the comment of these
+commits.
+
+NOTE: The reeorg is done by performing automatically successive
+xref:XCherry[cherry picks] from the current branch to a temporary branch.
+See the how-to xref:XCherryReorg[interactively rebase a branch on itself]
+and the section xref:XCherryError[Error in cherry-pick] on how to handle
+errors during a reorg.
+
 .Tag
 This button button launches the xref:XTag[tag] menu that allows tagging the 
 selected commit.
@@ -1256,9 +1269,10 @@ anchor:XCherryRebase[]
   - xref:XHReset[Hard reset] the rebased branch to Tmp branch
   - Delete the Tmp branch
 +
-This is exactly what the xref:XRebase[rebase] is performed.
+This is exactly how the xref:XRebase[rebase] is performed.
 
 * Interactively rebase a branch on itself
+anchor:XCherryReorg[]
   - In the xref:XHist[history] menu of the rebased branch, select the commit
     that is just before the first commit to rebase, and
     xref:XHistCheckout[check out] it as a Tmp branch
@@ -1266,6 +1280,8 @@ This is exactly what the xref:XRebase[rebase] is performed.
     selection
   - xref:XHReset[Hard reset] the rebased branch to Tmp branch
   - Delete the Tmp branch
++
+This is exactly how the xref:XReorg[reorg] is performed.
 
 Commit
 ~~~~~~
@@ -1561,24 +1577,25 @@ on the 'Quit' button to cancel the operation. You are then back in
 the xref:XDir[directory] menu, from which you should fix the
 conflict and commit the result. +
 Restarting the loop depends on wether the failure occured during a
-xref:XRebase[rebase] or a xref:XCherry[cherry-pick].
+xref:XRebase[rebase] or xref:XReorg[reorg] or a xref:XCherry[cherry-pick].
 
-Restart a rebase:: If you re-launch a rebase of the same branch and along the
-same branch as the previously interrupted rebase, then Agite proposes to
-continue the rebase. You will be prompted to restart interactively 
-the cherry pick from the rebased branch into the temporary branch (you may
-probably need to skip the commit that conflicted previously).
+Restart a rebase or reorg:: If you re-launch a rebase or reorg of the same
+branch and along the same branch or same reference as the previously
+interrupted rebase or reorg, then Agite proposes to continue the rebase or
+reorg. You will be prompted to restart interactively the cherry pick from the
+rebased branch into the temporary branch (you may probably need to skip the
+commit that conflicted previously).
 
 Restart a cherry-pick:: If you launch a cherry-pick from the same branch
 and to the same branch as the previously interrupted cherry-pick, then Agite
 proposes to restart the cherry-pick. The previous selection to skip or pick
 for edit/fixup/commit the cherries is restored.
 
-NOTE: If you launch any other rebase or cherry-pick or if you quit Agite,
-then the interupted cherry-pick or rebase cannot be restarted. +
-In case of a rebase, the temporary branch, named 'xxx.Tmp', remains (with
-the commits already applied). You can complete the cherry-pick manually on
-it, then hard-reset the rebased branch on it. Then you should delete it.
+NOTE: If you launch any other rebase, reorg  or cherry-pick or if you quit
+Agite, then the interupted cherry-pick or rebase cannot be restarted. +
+In case of a reorg or rebase, the temporary branch, named 'xxx.Tmp', remains
+(with some commits already applied). You can complete the cherry-pick manually
+on it, then hard-reset the rebased branch on it. Then you should delete it.
 
 Scope of the operations
 -----------------------
@@ -1612,7 +1629,7 @@ Current workspace
 The following functions and screens apply to the current workspace:
 
 * 'Branch' screen allows several operations on branches on the current
-workspace, including 'Merge' and 'Cherry pick'
+workspace, including 'Merge', 'Rebase' and 'Cherry pick'
 
 * 'Root' button moves to the root directory of the current workspace,
 
@@ -1627,6 +1644,9 @@ workspace
 
 * 'Checkout' button (of the history menu or of the tags menu) checks out the
 commit in the current workspace
+
+* 'Reorg' button (of the history menu) makes a rebase of the current branch,
+applying to the whole workspace
 
 * 'Stash' screen saves and restore stashes on the current workspace
 

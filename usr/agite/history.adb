@@ -1,5 +1,6 @@
 with As.U, Con_Io, Afpx.Utils, Normal, Rounds, Language, Directory;
-with Utils.X, Config, Details, View, Afpx_Xref, Restore, Checkout, Tags;
+with Utils.X, Config, Details, View, Afpx_Xref, Restore, Checkout, Tags,
+     Branch;
 package body History is
 
   -- List Width
@@ -155,6 +156,27 @@ package body History is
         return False;
       end if;
     end Do_Checkout;
+
+    -- Do a reorg
+    function Do_Reorg return Boolean is
+      Pos : Positive;
+    begin
+      -- Save position in List and read it
+      Pos := Afpx.Line_List.Get_Position;
+      Logs.Move_At (Pos);
+      Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
+      -- Reorg (success will lead to return to Directory)
+      if Branch.Reorg (Root, Log.Hash) then
+        return True;
+      else
+        -- Restore screen
+        Init;
+        Init_List (Logs);
+        Afpx.Line_List.Move_At (Pos);
+        Afpx.Update_List (Afpx.Center_Selected);
+        return False;
+      end if;
+    end Do_Reorg;
 
     -- Do a tag
     procedure Do_Tag is
@@ -336,6 +358,11 @@ package body History is
             when Afpx_Xref.History.Checkout =>
               -- Checkout
               if Do_Checkout then
+                return;
+              end if;
+            when Afpx_Xref.History.Reorg =>
+              -- Reorg
+              if Do_Reorg then
                 return;
               end if;
             when Afpx_Xref.History.Tag =>

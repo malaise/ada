@@ -4,6 +4,7 @@ package body Rebase_Mng is
   -- Memory of previous rebase
   Rebased, Reference, Temporary : As.U.Asu_Us;
 
+
   -- Find a unused Tmp branch name
   function Find_Tmp_Name return String is
     Suffix : constant String := "Tmp";
@@ -11,6 +12,7 @@ package body Rebase_Mng is
     Name : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
+    Git_If.List_Branches (Local => True, Branches => Branches);
     if Branches.Is_Empty then
       return Suffix;
     end if;
@@ -34,7 +36,8 @@ package body Rebase_Mng is
   end Find_Tmp_Name;
 
   -- Rebase current branch to head of Reference
-  function Do_Rebase (Root : String; Ref_Branch: String) return String is
+  function Do_Rebase (Root : String; Ref_Branch: String;
+                      Interactive : Boolean) return String is
     Restart : Boolean;
     Result : As.U.Asu_Us;
     Tmp_Branch : As.U.Asu_Us;
@@ -44,9 +47,10 @@ package body Rebase_Mng is
       return Confirm (
         (if Restart then "Continue the rebase" else "Rebase")
          & " of branch " & Current_Branch.Image,
-        "to the head of " & Ref_Branch);
+        "on " & Ref_Branch);
     end Do_Confirm;
   begin
+    Current_Branch := As.U.Tus (Git_If.Current_Branch);
     -- Check if same rebase as previous
     Restart := Current_Branch = Rebased and then Ref_Branch = Reference.Image;
 
@@ -70,27 +74,21 @@ package body Rebase_Mng is
     if Restart then
       -- Reuse previous Tmp branch
       Tmp_Branch := Temporary;
+      Result := As.U.Tus (Git_If.Do_Checkout (Tmp_Branch.Image, ""));
+      if not Result.Is_Null then
+        return "Cannot checkout tmp branch " & Tmp_Branch.Image & ": "
+               & Result.Image;
+      end if;
     else
       Reset (True);
       -- Find Tmp branch name
       Tmp_Branch := As.U.Tus (Find_Tmp_Name);
-      -- Create a Tmp branch at head of the Ref
-      Result := As.U.Tus (Git_If.Do_Checkout (Ref_Branch, ""));
-      if not Result.Is_Null then
-        return "Cannot checkout ref branch " & Ref_Branch & ": " & Result.Image;
-      end if;
-      Result := As.U.Tus (Git_If.Create_Branch (Tmp_Branch.Image));
+      -- Create a Tmp branch from Ref
+      Result := As.U.Tus (Git_If.Do_Checkout (Ref_Branch, Tmp_Branch.Image));
       if not Result.Is_Null then
         return "Cannot create tmp branch " & Tmp_Branch.Image & ": "
-               & Result.Image;
+               & Result.Image & " from " & Ref_Branch;
       end if;
-    end if;
-
-    -- Checkout the Tmp branch
-    Result := As.U.Tus (Git_If.Do_Checkout (Tmp_Branch.Image, ""));
-    if not Result.Is_Null then
-      return "Cannot checkout tmp branch " & Tmp_Branch.Image & ": "
-             & Result.Image;
     end if;
 
     -- Store current rebasing branches
@@ -98,8 +96,9 @@ package body Rebase_Mng is
     Reference := As.U.Tus (Ref_Branch);
     Temporary := Tmp_Branch;
     -- Cherry pick all the cherries from the Rebased branch
-    -- Interactively if a restart
-    if not Cherry.Pick (Root, Current_Branch.Image, Restart) then
+    -- Interactively if requested or restart
+    if not Cherry.Pick (Root, Current_Branch.Image,
+                        Interactive or else Restart) then
       -- Error already handled
       return "";
     end if;
