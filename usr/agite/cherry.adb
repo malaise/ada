@@ -2,10 +2,9 @@ with As.U, Afpx.Utils, Dynamic_List;
 with Utils.X, Git_If, Details, Afpx_Xref, Confirm, Error, Commit;
 package body Cherry is
 
-  package Commit_Mng renames Commit;
-
   -- A log with cherry status
-  type Cherry_Status_List is (Merged, Skip, Apply, Edit, Fixup, Commit);
+  type Cherry_Status_List is (Merged, Pick, Reword, Edit, Squash, Fixup,
+                              Drop);
   type Cherry_Rec is record
     Status : Cherry_Status_List := Merged;
     Commit : Git_If.Log_Entry_Rec;
@@ -34,11 +33,12 @@ package body Cherry is
     return
       (case From.Status is
          when Merged => "=",
-         when Skip   => " ",
-         when Apply  => "A",
+         when Pick   => "P",
+         when Reword => "R",
          when Edit   => "E",
+         when Squash => "S",
          when Fixup  => "F",
-         when Commit => "C")
+         when Drop   => " ")
       & " "
       -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD HH:MM "
       & From.Commit.Date(03 .. 04) & From.Commit.Date(06 .. 07)
@@ -102,13 +102,13 @@ package body Cherry is
       Afpx.Line_List.Delete_List;
     end if;
     -- List Cherries
+    Nb_Cherries := 0;
     Git_If.Cherry_List (Branch, Curr_Branch, Logs);
     if Logs.Is_Empty then
       return;
     end if;
 
     -- Fill Status, Date and Comment info
-    Nb_Cherries := 0;
     Cherries.Delete_List;
     Logs.Rewind;
     loop
@@ -116,9 +116,9 @@ package body Cherry is
       if Cherry.Commit.Merged then
         Cherry.Status := Merged;
       else
-        -- Not already merged cherries are init as 'C'
+        -- Not already merged cherries are init as 'Pick'
         Nb_Cherries := Nb_Cherries + 1;
-        Cherry.Status := Commit;
+        Cherry.Status := Pick;
       end if;
       -- Fill commit date and comment
       Git_If.Info_Commit (Cherry.Commit);
@@ -142,8 +142,8 @@ package body Cherry is
             -- Copy status from previous list
             Cherry.Status := Old_Cherry.Status;
             Cherries.Modify (Cherry, Cherries_Mng.Dyn_List.Current);
-            -- Update Nb_Cherries if Commit -> Skip
-            if Old_Cherry.Status = Skip then
+            -- Update Nb_Cherries ifi Pick -> Drop
+            if Old_Cherry.Status = Drop then
               Nb_Cherries := Nb_Cherries - 1;
             end if;
           end if;
@@ -179,8 +179,8 @@ package body Cherry is
   end Read;
 
   -- Actions
-  type Cherry_Actions is (Toggle, Reset, Skip, Apply, Edit, Fixup, Commit,
-                          Move_Up, Move_Down);
+  type Cherry_Actions is (Toggle, Drop, Pick, Reword, Edit, Fixup, Squash,
+                          Move_Up, Move_Down, Reset);
   procedure Cherry_Action (Action : in Cherry_Actions;
                            Left_Sel : in Natural) is
     Cherry : Cherry_Rec;
@@ -188,14 +188,14 @@ package body Cherry is
     Pos0, Pos1, Pos2 : Positive;
 
     -- Pick some commits
-    procedure Pick (Status : in Cherry_Status_List) is
+    procedure Apply (Status : in Cherry_Status_List) is
     begin
       -- Set cherries in slice to Status
       for I in Pos1 .. Pos2 loop
         Cherries.Move_At (I);
         Cherry := Read;
         if Cherry.Status /= Merged then
-          if Cherry.Status = Skip then
+          if Cherry.Status = Drop then
             Nb_Cherries := Nb_Cherries + 1;
           end if;
           Cherry.Status := Status;
@@ -203,11 +203,14 @@ package body Cherry is
         end if;
       end loop;
       -- Move to next if one selection
-      if Pos1 = Pos2 and then Cherries.Check_Move then
+      if Pos1 /= Pos2 then
+        Cherries.Move_At (Pos0);
+        Afpx.Line_List.Move_At (Pos0);
+      elsif Pos1 = Pos2 and then Cherries.Check_Move then
         Cherries.Move_To;
         Afpx.Line_List.Move_To;
       end if;
-    end Pick;
+    end Apply;
   begin
     -- Nothing if no cherry
     if Cherries.Is_Empty then
@@ -232,12 +235,12 @@ package body Cherry is
         Cherries.Move_At (Pos0);
         Cherry := Read;
         if Cherry.Status /= Merged then
-          if Cherry.Status /= Skip then
+          if Cherry.Status /= Drop then
             Nb_Cherries := Nb_Cherries - 1;
-            Cherry.Status := Skip;
+            Cherry.Status := Drop;
           else
             Nb_Cherries := Nb_Cherries + 1;
-            Cherry.Status := Commit;
+            Cherry.Status := Pick;
           end if;
           Update (Cherry);
           -- Move to next cherry
@@ -250,9 +253,9 @@ package body Cherry is
         Cherries.Rewind;
         loop
           Cherry := Read;
-          if Cherry.Status /= Merged and then Cherry.Status /= Skip then
+          if Cherry.Status /= Merged and then Cherry.Status /= Drop then
             Nb_Cherries := Nb_Cherries - 1;
-            Cherry.Status := Skip;
+            Cherry.Status := Drop;
             Update (Cherry);
           end if;
           exit when not Cherries.Check_Move;
@@ -260,29 +263,34 @@ package body Cherry is
         end loop;
         Cherries.Rewind;
         Afpx.Line_List.Rewind;
-      when Skip =>
+      when Drop =>
         for I in Pos1 .. Pos2 loop
           Cherries.Move_At (I);
           Cherry := Read;
-          if Cherry.Status /= Merged and then Cherry.Status /= Skip then
+          if Cherry.Status /= Merged and then Cherry.Status /= Drop then
             Nb_Cherries := Nb_Cherries - 1;
-            Cherry.Status := Skip;
+            Cherry.Status := Drop;
             Update (Cherry);
           end if;
         end loop;
         -- Move to next if one selection
-        if Pos1 = Pos2 and then Cherries.Check_Move then
+        if Pos1 /= Pos2 then
+          Cherries.Move_At (Pos0);
+          Afpx.Line_List.Move_At (Pos0);
+        elsif Pos1 = Pos2 and then Cherries.Check_Move then
           Cherries.Move_To;
           Afpx.Line_List.Move_To;
         end if;
-      when Apply =>
-        Pick (Apply);
+      when Pick =>
+        Apply (Pick);
+      when Reword =>
+        Apply (Reword);
       when Edit =>
-        Pick (Edit);
+        Apply (Edit);
+      when Squash =>
+        Apply (Squash);
       when Fixup =>
-        Pick (Fixup);
-      when Commit =>
-        Pick (Commit);
+        Apply (Fixup);
       when Move_Up =>
         if Pos1 = 1 then
           return;
@@ -310,19 +318,18 @@ package body Cherry is
   end Cherry_Action;
 
   -- Confirm (if Interactive) and do the Cherry-pick,
-  -- If Interactive: return True if OK or Error => back to Directory
-  --    return False if nothing to do or cancel => back to Branches
-  -- Otherwise, return True if completed OK
   function Do_Cherry (Root, Branch : in String;
-                      Interactive : in Boolean) return Boolean is
-    Cherry : Cherry_Rec;
-    Picked : Cherries_Mng.Dyn_List.List_Type;
-    Prev_Hash : Git_If.Git_Hash := Git_If.No_Hash;
+                      Interactive : in Boolean) return Result_List is
+    Cherry, First_Cherry : Cherry_Rec;
+    Next_Meld : Boolean;
+    Picked, Tmp_List : Cherries_Mng.Dyn_List.List_Type;
+    Comment_Hash : Git_If.Git_Hash;
     Result : As.U.Asu_Us;
   begin
     -- Nothing if no cherry selected
     if Nb_Cherries = 0 then
-      return False;
+      Reset;
+      return Cancelled;
     end if;
 
     if Interactive then
@@ -345,72 +352,177 @@ package body Cherry is
       if not Confirm ("Cherry pick from branch " & Branch,
                       "into current branch " & Git_If.Current_Branch,
                       Show_List => True) then
-        return False;
+        return Cancelled;
       end if;
     end if;
 
     -- Save branches
     From_Branch := As.U.Tus (Branch);
     To_Branch := As.U.Tus (Git_If.Current_Branch);
+
     -- Do the cherry pick
     Cherries.Rewind;
+    -- First_Cherry status is: Drop=Unset, Pick=Set, Edit=In_Commit
+    First_Cherry.Status := Drop;
     loop
-      -- Get a Cherry, apply and possibly commit it
-      -- Store Hash of first Apply of a serie
+      -- Get a Cherry and apply, possibly keep edit/keep comment,
+      --  possibly commit it
       Cherries.Get (Cherry);
-      case Cherry.Status is
-        when Merged | Skip =>
-          null;
-        when Apply =>
-          Result := As.U.Tus (Git_If.Cherry_Pick (Cherry.Commit, False));
-          if Prev_Hash = Git_If.No_Hash then
-            Prev_Hash := Cherry.Commit.Hash;
-          end if;
-        when Edit =>
-          Result := As.U.Tus (Git_If.Cherry_Pick (Cherry.Commit, False));
-          -- Will commit with current comment
-          Prev_Hash := Cherry.Commit.Hash;
-        when Fixup =>
-          Result := As.U.Tus (Git_If.Cherry_Pick (Cherry.Commit, False));
-          -- Will commit with comment of first of previou Applies, if any
-          if Prev_Hash = Git_If.No_Hash then
-            Prev_Hash := Cherry.Commit.Hash;
-          end if;
-        when Commit =>
-          Result := As.U.Tus (Git_If.Cherry_Pick (Cherry.Commit, True));
-          Prev_Hash := Git_If.No_Hash;
-      end case;
-      -- Check result of cherry-pick
-      if not Result.Is_Null then
-        -- Cherry pick failed, the error message starts with the
-        --  conflicts
-        Error ("Cherry pick from", Branch, Result.Image, False);
-        -- Propose manual resolution
-        if not Commit_Mng.Handle (Root, Cherry.Commit.Hash) then
-          -- User gave up: error if non interactive
-          return Interactive;
-        end if;
-      elsif Cherry.Status = Edit or else Cherry.Status = Fixup then
-        -- Success: Commit if necessary
-        if not Commit_Mng.Handle (Root, Prev_Hash) then
-          -- Commit Quit => cancel cherry-pick and return to Directory
-          return Interactive;
-        end if;
-        Prev_Hash := Git_If.No_Hash;
+
+      -- Look at following cherry to see if it is a meld
+      Next_Meld := False;
+      if not Cherries.Is_Empty then
+        Tmp_List.Unchecked_Assign (Cherries);
+        loop
+          case Tmp_List.Access_Current.Status is
+            when Merged | Drop =>
+              -- Look for next
+              exit when not Tmp_List.Check_Move;
+              Tmp_List.Move_To;
+            when Squash | Fixup =>
+              Next_Meld := True;
+              exit;
+            when Pick | Reword | Edit =>
+              Next_Meld := False;
+              exit;
+          end case;
+        end loop;
       end if;
+
+      -- Init comment for Reword, Edit or manual resolution
+      Comment_Hash :=
+          (if Cherry.Status = Fixup then
+             -- Try to reuse first commit
+             (if First_Cherry.Status = Drop then Cherry.Commit.Hash
+              elsif First_Cherry.Status = Pick then First_Cherry.Commit.Hash
+              else Git_If.No_Hash)
+           else Cherry.Commit.Hash);
+
+      if Next_Meld then
+        -- Next is Squash or Fixup: don't commit current
+        -- Cherry-pick without committing
+        Result := As.U.Tus (Git_If.Cherry_Pick (Cherry.Commit, False));
+        if not Result.Is_Null then
+          -- Cherry pick failed, the error message starts with the
+          --  conflicts
+          Error ("Cherry pick from", Branch, Result.Image, False);
+          -- Propose manual resolution
+          if not Commit.Handle (Root, Comment_Hash) then
+            -- User gave up: error
+            return Error;
+          end if;
+        else
+          -- Cherry-pick without committing OK
+          case Cherry.Status is
+            when Merged | Drop =>
+              null;
+            when Pick =>
+              -- Keep this comment in case next is Fixup
+              First_Cherry := Cherry;
+              First_Cherry.Status := Pick;
+            when Reword | Edit =>
+              -- Launch Commit screen, allow modif of content if Edit,
+              -- allow committing if Edit (for splitting)
+              if not Commit.Handle (Root, Comment_Hash, Cherry.Status = Edit,
+                  (if Cherry.Status = Edit then Commit.Allow
+                   else Commit.Forbid)) then
+                -- User gave up
+                return Error;
+              end if;
+              -- Keep comment in case next is Fixup
+              First_Cherry.Status := Edit;
+            when Squash =>
+              -- Cherry already applied not committed, update comment
+              --  in case next is Fixup
+              First_Cherry := Cherry;
+              First_Cherry.Status := Pick;
+            when Fixup =>
+              -- Cherry already applied not committed
+              --  keep comment if already set
+              if First_Cherry.Status = Drop then
+                First_Cherry := Cherry;
+                First_Cherry.Status := Pick;
+              end if;
+          end case;
+        end if;
+      else
+        -- Next is neither Squash nor Fixup: commit
+        case Cherry.Status is
+          when Merged | Drop =>
+            null;
+          when Pick =>
+            Result := As.U.Tus (Git_If.Cherry_Pick (Cherry.Commit, True));
+            if not Result.Is_Null then
+              -- Cherry pick failed, the error message starts with the
+              --  conflicts
+              Error ("Cherry pick from", Branch, Result.Image, False);
+              -- Propose manual resolution
+              if not Commit.Handle (Root, Comment_Hash) then
+                -- User gave up
+                return Error;
+              end if;
+            end if;
+          when Reword | Edit =>
+            Result := As.U.Tus (Git_If.Cherry_Pick (Cherry.Commit, False));
+            if not Result.Is_Null then
+              -- Cherry pick failed, the error message starts with the
+              --  conflicts
+              Error ("Cherry pick from", Branch, Result.Image, False);
+              -- Propose manual resolution
+              if not Commit.Handle (Root, Comment_Hash) then
+                -- User gave up
+                return Error;
+              end if;
+            else
+              -- Cherry pick OK, commit it
+              -- Require commit
+              if not Commit.Handle (Root, Cherry.Commit.Hash,
+                                    Cherry.Status = Edit, Commit.Require) then
+                -- User gave up
+                return Error;
+              end if;
+            end if;
+          when Squash | Fixup =>
+            Result := As.U.Tus (Git_If.Cherry_Pick (Cherry.Commit, False));
+            if not Result.Is_Null then
+              -- Cherry pick failed, the error message starts with the
+              --  conflicts
+              Error ("Cherry pick from", Branch, Result.Image, False);
+              -- Propose manual resolution
+              if not Commit.Handle (Root, Comment_Hash) then
+                -- User gave up
+                return Error;
+              end if;
+            else
+              -- Cherry-pick OK, commit with current or previous comment
+              Result := As.U.Tus (Git_If.Do_Commit (
+                  Commit.Get_Comment (Comment_Hash)));
+              if not Result.Is_Null then
+                -- Commit failed, propose manual resolution
+                Error ("Commit cherry from", Branch, Result.Image, False);
+                -- Propose manual resolution
+                if not Commit.Handle (Root, Comment_Hash) then
+                  -- User gave up: error if non interactive
+                  return Error;
+                end if;
+              end if;
+            end if;
+        end case;
+        -- In any case, current comment is not kept further on
+        First_Cherry.Status := Drop;
+      end if;
+
       exit when Cherries.Is_Empty;
     end loop;
+
     -- Success
     Reset;
-    return True;
+    return Ok;
   end Do_Cherry;
 
   -- Handle the selection of Commits to cherry-pick
-  -- If Interactive: return True if OK or Error => back to Directory
-  --    return False if nothing to do or cancel => back to Branches
-  -- Otherwise, return True if completed OK
   function Pick (Root, Branch : String;
-                 Interactive : in Boolean) return Boolean is
+                 Interactive : in Boolean) return Result_List is
     -- Afpx stuff
     Get_Handle  : Afpx.Get_Handle_Rec;
     Ptg_Result  : Afpx.Result_Rec;
@@ -472,11 +584,12 @@ package body Cherry is
     -- Disable buttons if empty list
     if Cherries.Is_Empty then
       Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Detail, True);
-      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Apply, True);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Pick, True);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Reword, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Edit, True);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Squash, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Fixup, True);
-      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Commit, True);
-      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Skip, True);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Drop, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Reset, True);
     end if;
     if Cherries.List_Length <= 1 then
@@ -500,7 +613,7 @@ package body Cherry is
               null;
             when Afpx.Escape_Key =>
               -- Back
-              return False;
+              return Cancelled;
             when Afpx.Break_Key =>
               raise Utils.Exit_Requested;
           end case;
@@ -518,30 +631,33 @@ package body Cherry is
             when Afpx_Xref.Cherry.Detail =>
               -- Details
               Show_Details;
-            when Afpx_Xref.Cherry.Skip =>
-              -- Skip
-              Cherry_Action (Skip, Ptg_Result.Id_Selected_Right);
-            when Afpx_Xref.Cherry.Apply =>
-              -- Apply
-              Cherry_Action (Apply, Ptg_Result.Id_Selected_Right);
+            when Afpx_Xref.Cherry.Pick =>
+              -- Pick
+              Cherry_Action (Pick, Ptg_Result.Id_Selected_Right);
+            when Afpx_Xref.Cherry.Reword =>
+              -- Reword
+              Cherry_Action (Reword, Ptg_Result.Id_Selected_Right);
             when Afpx_Xref.Cherry.Edit =>
               -- Edit
               Cherry_Action (Edit, Ptg_Result.Id_Selected_Right);
+            when Afpx_Xref.Cherry.Squash =>
+              -- Squash
+              Cherry_Action (Squash, Ptg_Result.Id_Selected_Right);
             when Afpx_Xref.Cherry.Fixup =>
               -- Fixup
               Cherry_Action (Fixup, Ptg_Result.Id_Selected_Right);
-            when Afpx_Xref.Cherry.Commit =>
-              -- Commit
-              Cherry_Action (Commit, Ptg_Result.Id_Selected_Right);
-            when Afpx_Xref.Cherry.Reset =>
-              -- Reset
-              Cherry_Action (Reset, Ptg_Result.Id_Selected_Right);
+            when Afpx_Xref.Cherry.Drop =>
+              -- Drop
+              Cherry_Action (Drop, Ptg_Result.Id_Selected_Right);
             when Afpx_Xref.Cherry.Move_Up =>
               -- Move Up
               Cherry_Action (Move_Up, Ptg_Result.Id_Selected_Right);
             when Afpx_Xref.Cherry.Move_Down =>
               -- Move Down
               Cherry_Action (Move_Down, Ptg_Result.Id_Selected_Right);
+            when Afpx_Xref.Cherry.Reset =>
+              -- Reset
+              Cherry_Action (Reset, Ptg_Result.Id_Selected_Right);
             when Afpx_Xref.Cherry.Go =>
               -- Done
               return Do_Cherry (Root, Branch, True);

@@ -120,6 +120,7 @@ package body Branch is
     Sel_Name, New_Name : As.U.Asu_Us;
     Message, Result : As.U.Asu_Us;
     Done : Boolean;
+    use type Cherry.Result_List;
   begin
     -- Retrieve current name
     if Action /= Create then
@@ -220,7 +221,10 @@ package body Branch is
         -- Reset memory of previous rebase
         Rebase_Mng.Reset (False);
         Previous_Branch := Sel_Name;
-        Done := Cherry.Pick (Root.Image, Sel_Name.Image, True);
+        -- Done (back to Directory) if Ok or Error
+        -- Remain in Branch only if Cancelled
+        Done := Cherry.Pick (Root.Image, Sel_Name.Image, True)
+                /= Cherry.Cancelled;
         Init;
         Reread (False);
         return Done;

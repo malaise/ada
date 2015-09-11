@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V19.00
+V20.00
 
 General purpose
 ---------------
@@ -674,7 +674,7 @@ to the head of the branch selected in the list. +
 The rebased branch is automatically checked out by this operation and Agite
 returns to the xref:XDir[directory] menu.
 
-NOTE: The rebase is done by performing automatically successive
+NOTE: The 'Rebase' is done by performing automatically successive
 xref:XCherry[cherry picks] from the rebased branch to a temporary branch.
 See the how-to xref:XCherryRebase[rebase with cherry-pick] and the section
 xref:XCherryError[Error in cherry-pick] on how to handle errors during
@@ -940,7 +940,7 @@ This button launches an interactive rebase of the commits that follow the
 selected one. This allows splitting, merging, modifing the comment of these
 commits.
 
-NOTE: The reeorg is done by performing automatically successive
+NOTE: The 'Reorg' is done by performing automatically successive
 xref:XCherry[cherry picks] from the current branch to a temporary branch.
 See the how-to xref:XCherryReorg[interactively rebase a branch on itself]
 and the section xref:XCherryError[Error in cherry-pick] on how to handle
@@ -1172,28 +1172,40 @@ The first letter of each line describes the status of the cherry:
 
 * \'=' denotes a commit already 'merged', which cannot be picked nor skipped.
 
-* \'A' denotes a cherry 'picked for apply', which will be applied but
-not committed (allowing it to be commited together with other cherries).
+* \'P' denotes a cherry 'picked', which will be applied. If the next
+(non-merged non-dropped) cherry is not a 'squash' or a 'fixup', then
+the result then will be commited with the cherries's comment.
 
-* \'E' denotes a cherry 'picked for edition', which will be applied then
+* \'R' denotes a cherry picked for 'rewording', which will be applied then
+proposed for edition of the comment of the commit in the xref:XCommit[commit]
+menu. It will be possible to edit the comment, commit the change (if the next
+cherry is not a 'squash' or a 'fixup') and click on the 'Done' button.
+
+* \'E' denotes a cherry picked for 'edition', which will be applied then
 proposed for edition of the commit (allowing to modify the comment,
-to split the commit...) in the xref:XCommit[commit] menu.
+to split the commit...) in the xref:XCommit[commit] menu. It will be possible
+to leave not committed some changes, which has a sense if the next cherry
+is a 'squash' or a 'fixup'.
 
-* \'F' denotes a cherry 'picked for fixup', which will be applied then
-proposed for edition of the commit in the xref:XCommit[commit] menu.
-This is the same as a cherry 'picked for
-edition', except that the commit comment is initialised with the content of
-the first cherry of the serie of preceeding 'picked for apply'.
+* \'S' denotes a cherry picked for 'squash', which will be applied and melt
+with the previous cherry. If the next cherry is not a 'squash' or a 'fixup',
+then the result will be commited with the cherries's comment.
 
-* \'C' denotes a cherry 'picked for commit', which will be applied then
-automatically committed.
+* \'F' denotes a cherry picked for 'fixup', which will be applied and melt
+with the previous cherry. This is the same as a cherry 'squash'
+except that the current comment will not be retained for committing (the
+current cherry or a following one).
 
-* ' ' denotes a cherry 'skipped', which will not be picked. +
+* ' ' denotes a cherry 'dropped', which will not be picked. +
 
-By default, all the non-merged commits are selected as 'picked for commit'.
+By default, all the non-merged commits are selected as 'picked'.
 
-Double-clicking on an entry of the list toggles its selection from 'skipped'
-to 'picked for commit' and vice versa.
+Double-clicking on an entry of the list toggles its selection from 'dropped'
+to 'picked' and vice versa.
+
+NOTE: The logic is the same as in Git interactive rebase. The only difference
+is that, in Agite, a 'squash' leads to overwrite the commit of the previous
+cherry picked, while in Git the comments are concatenated.
 
 NOTE: The commits that have already been merged through the \'fast forward'
 mechanism are not listed at all.
@@ -1203,7 +1215,7 @@ Click on the 'Detail' button to see the xref:XDetail[details] of a commit,
 including viewing a file or seeing the differences introduced by this commit,
 but excluding launching the 'history' menu and excluding restoring files.
 
-.Apply, Edit, Fixup, Commit and Skip
+.Pick, Reword, Edit, Squash, Fixup, Drop
 When there is only a left selection in the list, clicking on one of these
 buttons changes its status, and moves to the next cherry. +
 When there is a right and a left selection in the list, clicking on one of
@@ -1224,7 +1236,7 @@ If some commits are selected, then the button is 'Go'. The non-merged commits
 are then listed in a confirmation screen. +
 If confirmed, then the picked cherries are applied one by one onto the
 current branch. +
-An action to 'pick for edition' or 'pick for fixup' launches the
+An action to 'edit' or 'reword' launches the
 xref:XCommit[commit] menu.  It is possible to modify some files and the
 comment, and/or the selection of files, and to make several commits. 
 
@@ -1243,20 +1255,18 @@ NOTE: To cancel the cherry-pick menu, simply ensure that no commit is selected
 
 [underline]#*Cherry-pick how-to:*#
 
-* Meld several cherries into one
-  - 'Pick for apply' all the cherries to meld, except the last one
-  - 'Pick for edit' the last cherry to meld (or 'pick for commit' for
-    committing automatically with its comment)
-  - In the 'commit' screen, edit the comment and validate the commit 
+* Meld several cherries into one, keep the last comment
+  - 'Pick' the first cherry to meld
+  - 'Fixup' all the other cherries to meld except the last one
+  - 'Squash' the last cherry to meld
 
 * Meld a cherry whith several following fixes
-  - 'Pick for apply' all the cherries to meld, except the last one
-  - 'Pick for fixup' the last cherry to meld
-  - In the 'commit' screen, check the comment (it is intialized from the one
-    of the first applied cherry) and validate the commit 
+  - 'Edit' the first cherry to meld,
+  - 'Fixup' all the other cherries to meld
+  - Check/modify the comment of the first commit, then click on 'Done'
 
 * Split a cherry
-  - 'Pick for edit' the cherry
+  - 'Edit' the cherry
   - In the 'commit' screen, set the comment and stage the files for the first
     commit, then commit. Set the comment and stage the files for the second
     commit, then commit... Finally, click on the 'Done' button.
@@ -1265,7 +1275,7 @@ NOTE: To cancel the cherry-pick menu, simply ensure that no commit is selected
 anchor:XCherryRebase[]
   - On the reference branch, create a Tmp branch
   - Cherry pick from the rebased branch into Tmp branch (keep the initial
-    selection of cherries 'picked for commit')
+    selection of cherries 'picked')
   - xref:XHReset[Hard reset] the rebased branch to Tmp branch
   - Delete the Tmp branch
 +

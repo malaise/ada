@@ -97,18 +97,34 @@ package body Rebase_Mng is
     Temporary := Tmp_Branch;
     -- Cherry pick all the cherries from the Rebased branch
     -- Interactively if requested or restart
-    if not Cherry.Pick (Root, Current_Branch.Image,
-                        Interactive or else Restart) then
-      -- Error already handled
-      return "";
-    end if;
-    -- Done, wipe memory
-    Reset (True);
+    case Cherry.Pick (Root, Current_Branch.Image,
+                      Interactive or else Restart) is
+      when Cherry.Ok =>
+        -- Done, wipe memory and continue
+        Reset (True);
+      when Cherry.Error =>
+        -- Error already handled
+        return "";
+      when Cherry.Cancelled =>
+        -- Switch back to original branch and remove Tmp branch
+        Reset (True);
+        Result := As.U.Tus (Git_If.Do_Checkout (Current_Branch.Image, ""));
+        if not Result.Is_Null then
+          return "Cannot checkout back rebased branch " & Ref_Branch & ": "
+                 & Result.Image;
+        end if;
+        Result := As.U.Tus (Git_If.Delete_Branch (Tmp_Branch.Image));
+        if not Result.Is_Null then
+          return "Cannot delete tmp branch " & Tmp_Branch.Image & ": "
+                 & Result.Image;
+        end if;
+        return "";
+    end case;
 
     -- Hard reset the Rebased branch to Tmp branch
     Result := As.U.Tus (Git_If.Do_Checkout (Current_Branch.Image, ""));
     if not Result.Is_Null then
-      return "Cannot checkout back ref branch " & Ref_Branch & ": "
+      return "Cannot checkout back rebased branch " & Ref_Branch & ": "
              & Result.Image;
     end if;
     Git_If.Do_Reset_Hard (Tmp_Branch.Image);
