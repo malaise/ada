@@ -1,10 +1,12 @@
 package Cherry is
 
   -- Handle the selection of Commits to cherry-pick
-  -- If Interactive: return True if OK or Error => back to Directory
-  --    return False if nothing to do or cancel => back to Branches
-  -- Otherwise, return True if completed OK
-  function Pick (Root, Branch : String; Interactive : Boolean) return Boolean;
+  -- Return OK => Completed
+  --        Error => Error not recovered by user (e.g. user quit)
+  --     or Cancelled (cancelled by user before starting, or nothing to do)
+  type Result_List is (Ok, Error, Cancelled);
+  function Pick (Root, Branch : String;
+                 Interactive : Boolean) return Result_List;
 
   -- Reset memory of previous uncompleted cherry-pick
   procedure Reset;
