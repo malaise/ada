@@ -5,7 +5,7 @@ ADAVIEW := $(REPOSIT)
 AFPX := true
 AFPX_XREF := afpx_xref
 
-SUBUNITS := agite-timer tags-list tags-add
+SUBUNITS := agite-timer branch-rebase_mng tags-list tags-add
 EXES := agite agite.stat t_git
 
 CLIBS := $(X11_SLIBS)

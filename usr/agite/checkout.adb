@@ -65,7 +65,7 @@ package body Checkout is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
             when Afpx.Return_Key =>
-              null;
+              return Do_Checkout (Hash);
             when Afpx.Escape_Key =>
               -- Back
               return False;

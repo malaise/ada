@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V18.05
+V20.00
 
 General purpose
 ---------------
@@ -260,9 +260,9 @@ edition) allow a string wider than the get area in the screen.
  - Ctrl+Suppr clears the whole string (and moves to the beginning of it)
  - Insert: toggles the insert/replace mode (in Insert mode the cursor becomes
 a \'^')
- - Ctrl+Right/Left arrow: move to the the first/last significant character of
+ - Ctrl+Right/Left arrow: move to the first/last significant character of
 the string
- - Shift+Right/Left arrow: move to the the first/last character of the string.
+ - Shift+Right/Left arrow: move to the first/last character of the string.
 
 Buttons
 ~~~~~~~~
@@ -613,7 +613,7 @@ in the xref:XConfMake[make] entry of the configuration file.
 
 Commit::
 This button launches the xref:XCommit[commit] screen that allows
-commiting the the local modifications.
+commiting the local modifications.
 
 Pull::
 This button launches the xref:XPull[pull] screen that allows fetching or 
@@ -668,13 +668,17 @@ policy. A new commit is always automatically generated with the comment
 "Merge branch \'<branch>'".
 
 Rebase::
+anchor:XRebase[]
 Click in the 'Rebase' button to rebase the current branch, after confirmation,
-to the the head of the branch selected in the list. +
-The rebased branch is automatically checked out by this operation.
+to the head of the branch selected in the list. +
+The rebased branch is automatically checked out by this operation and Agite
+returns to the xref:XDir[directory] menu.
 
-NOTE: The rebase is done by automatically performing successive
-xref:XCherry[cherry picks], see how-to
-xref:XCherryRebase[rebase with cherry-pick].
+NOTE: The 'Rebase' is done by performing automatically successive
+xref:XCherry[cherry picks] from the rebased branch to a temporary branch.
+See the how-to xref:XCherryRebase[rebase with cherry-pick] and the section
+xref:XCherryError[Error in cherry-pick] on how to handle errors during
+a rebase.
 
 CherryPk::
 
@@ -929,6 +933,19 @@ commit (it is likely to be tagged as modified in the current workspace). +
 - 'Checkout' checks out the whole workspace in the state that it had when the
 commit was performed.
 
+anchor:XReorg[]
+
+.Reorg
+This button launches an interactive rebase of the commits that follow the
+selected one. This allows splitting, merging, modifing the comment of these
+commits.
+
+NOTE: The 'Reorg' is done by performing automatically successive
+xref:XCherry[cherry picks] from the current branch to a temporary branch.
+See the how-to xref:XCherryReorg[interactively rebase a branch on itself]
+and the section xref:XCherryError[Error in cherry-pick] on how to handle
+errors during a reorg.
+
 .Tag
 This button button launches the xref:XTag[tag] menu that allows tagging the 
 selected commit.
@@ -1155,27 +1172,40 @@ The first letter of each line describes the status of the cherry:
 
 * \'=' denotes a commit already 'merged', which cannot be picked nor skipped.
 
-* \'A' denotes a cherry 'picked for apply', which will be applied but
-not committed (allowing it to be commited together with other cherries).
+* \'P' denotes a cherry 'picked', which will be applied. If the next
+(non-merged non-dropped) cherry is not a 'squash' or a 'fixup', then
+the result then will be commited with the cherries's comment.
 
-* \'E' denotes a cherry 'picked for edition', which will be applied then
+* \'R' denotes a cherry picked for 'rewording', which will be applied then
+proposed for edition of the comment of the commit in the xref:XCommit[commit]
+menu. It will be possible to edit the comment, commit the change (if the next
+cherry is not a 'squash' or a 'fixup') and click on the 'Done' button.
+
+* \'E' denotes a cherry picked for 'edition', which will be applied then
 proposed for edition of the commit (allowing to modify the comment,
-to split the commit...).
+to split the commit...) in the xref:XCommit[commit] menu. It will be possible
+to leave not committed some changes, which has a sense if the next cherry
+is a 'squash' or a 'fixup'.
 
-* \'F' denotes a cherry 'picked for fixup', which will be applied then
-proposed for edition of the commit. This is the same as a cherry 'picked for
-edition', except that the commit comment is initialised with the content of
-the first cherry of the serie of preceeding 'picked for apply'.
+* \'S' denotes a cherry picked for 'squash', which will be applied and melt
+with the previous cherry. If the next cherry is not a 'squash' or a 'fixup',
+then the result will be commited with the cherries's comment.
 
-* \'C' denotes a cherry 'picked for commit', which will be applied then
-automatically committed.
+* \'F' denotes a cherry picked for 'fixup', which will be applied and melt
+with the previous cherry. This is the same as a cherry 'squash'
+except that the current comment will not be retained for committing (the
+current cherry or a following one).
 
-* ' ' denotes a cherry 'skipped', which will not be picked. +
+* ' ' denotes a cherry 'dropped', which will not be picked. +
 
-By default, all the non-merged commits are selected as 'picked for commit'.
+By default, all the non-merged commits are selected as 'picked'.
 
-Double-clicking on an entry of the list toggles its selection from 'skipped'
-to 'picked for commit' and vice versa.
+Double-clicking on an entry of the list toggles its selection from 'dropped'
+to 'picked' and vice versa.
+
+NOTE: The logic is the same as in Git interactive rebase. The only difference
+is that, in Agite, a 'squash' leads to overwrite the commit of the previous
+cherry picked, while in Git the comments are concatenated.
 
 NOTE: The commits that have already been merged through the \'fast forward'
 mechanism are not listed at all.
@@ -1185,7 +1215,7 @@ Click on the 'Detail' button to see the xref:XDetail[details] of a commit,
 including viewing a file or seeing the differences introduced by this commit,
 but excluding launching the 'history' menu and excluding restoring files.
 
-.Apply, Edit, Fixup, Commit and Skip
+.Pick, Reword, Edit, Squash, Fixup, Drop
 When there is only a left selection in the list, clicking on one of these
 buttons changes its status, and moves to the next cherry. +
 When there is a right and a left selection in the list, clicking on one of
@@ -1205,34 +1235,38 @@ in the xref:XBranches[branches] menu. +
 If some commits are selected, then the button is 'Go'. The non-merged commits
 are then listed in a confirmation screen. +
 If confirmed, then the picked cherries are applied one by one onto the
-current branch. Any error in picking a cherry is reported in a specific screen
-and the list is not processed any longer. +
-The commit screen is called after picking cherries for edition or fixup.
-It is possible to modify the comment and/or selection of files, and
-to make several commits. Clicking on the 'Done' button goes back to the loop
-of picking the cherries (possibly with some files not yet committed).
-Clicking on the 'Quit' button cancels the loop at the current point. +
-After success, Agite returns back in the xref:XDir[directory] menu.
+current branch. +
+An action to 'edit' or 'reword' launches the
+xref:XCommit[commit] menu.  It is possible to modify some files and the
+comment, and/or the selection of files, and to make several commits. 
 
-NOTE: To cancel a cherry pick, simply ensure that no commit is selected (click
-on the 'Reset' button) and click on the 'Cancel' button.
+ * Clicking on the 'Done' button goes back to the loop
+of picking the cherries (possibly with some files not yet committed).
+ * Clicking on the 'Quit' button cancels the loop at the current point (see
+the section xref:XCherryError[Error in cherry-pick] for how to restart). +
+
+Any error in picking a cherry is reported in a specific screen
+and the list is not processed any longer. See the section
+xref:XCherryError[Error in cherry-pick] on how to handle such error. +
+After completion, Agite returns back in the xref:XDir[directory] menu.
+
+NOTE: To cancel the cherry-pick menu, simply ensure that no commit is selected
+(click on the 'Reset' button) and click on the 'Cancel' button.
 
 [underline]#*Cherry-pick how-to:*#
 
-* Meld several cherries into one
-  - 'Pick for apply' all the cherries to meld, except the last one
-  - 'Pick for edit' the last cherry to meld (or 'pick for commit' for
-    committing automatically with its comment)
-  - In the 'commit' screen, edit the comment and validate the commit 
+* Meld several cherries into one, keep the last comment
+  - 'Pick' the first cherry to meld
+  - 'Fixup' all the other cherries to meld except the last one
+  - 'Squash' the last cherry to meld
 
 * Meld a cherry whith several following fixes
-  - 'Pick for apply' all the cherries to meld, except the last one
-  - 'Pick for fixup' the last cherry to meld
-  - In the 'commit' screen, check the comment (it is intialized from the one
-    of the first applied cherry) and validate the commit 
+  - 'Edit' the first cherry to meld,
+  - 'Fixup' all the other cherries to meld
+  - Check/modify the comment of the first commit, then click on 'Done'
 
 * Split a cherry
-  - 'Pick for edit' the cherry
+  - 'Edit' the cherry
   - In the 'commit' screen, set the comment and stage the files for the first
     commit, then commit. Set the comment and stage the files for the second
     commit, then commit... Finally, click on the 'Done' button.
@@ -1241,17 +1275,23 @@ on the 'Reset' button) and click on the 'Cancel' button.
 anchor:XCherryRebase[]
   - On the reference branch, create a Tmp branch
   - Cherry pick from the rebased branch into Tmp branch (keep the initial
-    selection of 'picked for commit' cherries)
-  - xref:XHReset[Hard reset] the branch to Tmp branch
+    selection of cherries 'picked')
+  - xref:XHReset[Hard reset] the rebased branch to Tmp branch
   - Delete the Tmp branch
++
+This is exactly how the xref:XRebase[rebase] is performed.
 
 * Interactively rebase a branch on itself
-  - In the xref:XHist[history] menu, select the commit before the first to
-    rebase and xref:XHistCheckout[check out] it as a Tmp branch
+anchor:XCherryReorg[]
+  - In the xref:XHist[history] menu of the rebased branch, select the commit
+    that is just before the first commit to rebase, and
+    xref:XHistCheckout[check out] it as a Tmp branch
   - Cherry pick from the original branch into this Tmp branch, modify the
     selection
   - xref:XHReset[Hard reset] the rebased branch to Tmp branch
   - Delete the Tmp branch
++
+This is exactly how the xref:XReorg[reorg] is performed.
 
 Commit
 ~~~~~~
@@ -1309,29 +1349,24 @@ changes.
 The possible actions on the list of changes or the comment are:
 
 Double click::
-
 A double click on a change toggles the stage status of the entry:
  - if all the modifications of the file are staged (S='''+''') then unstage
 these changes,
  - otherwise stage all the changes.
 
 Reread::
-
 Normally Agite re-scans the current directory and refreshes the list and status
 when necessary, and also periodically if the feature is enabled (see
 xref:XConfPeriod[period] configuration option). This button explicitly refreshes
 the current list and status of changes.
 
 Stage::
-
 Stage (add/rm) the current file (selected in list) or change, and move to next.
 
 Unstage::
-
 Unstage (reset) the current file (selected in list) or change and move to next.
 
 StageAll::
-
 Stage all the changes that are unstaged. Also proposes to add the untracked
 (new) files.
 
@@ -1341,8 +1376,10 @@ status 'U' (updated but unmerged), see the xref:XAdd[Add] function.
 NOTE: The Stage, Unstage and StageAll buttons are active only if there are local
 changes.
 
-Diff::
+Edit::
+Launch the editor on the current file (selected in list).
 
+Diff::
 Show the difference between the current change and the HEAD for the current file
 (selected in list).
 
@@ -1355,7 +1392,8 @@ NOTE: Ensure to enter a comment before committing.
 If the commit succeeds then the list of changes is updated, otherwise
 the error is reported through a specific screen.
 
-NOTE: The Commit button is active only if there are staged changes.
+NOTE: The Commit button is active only if there are staged change.
+is no change at all.
 
 .Push
 
@@ -1532,6 +1570,43 @@ otherwise the error is reported through a specific screen.
 
 Moves back to the xref:XSelBranch[branch selection] menu without pulling.
 
+Handling error in cherry-pick
+-----------------------------
+anchor:XCherryError[]
+If a cherry fails to be applied, it is very likely a confict in the merge.
+The xref:XCommit[commit] screen is called for manual resolution.
+
+.Fix, commit and continue
+Hopefully you can use the file edition and staging in order to resolve the
+conflict. You should then commit the changes and click on the 'Done' button.
+The loop will continue processing the remaining cherries.
+
+.Cancel
+If you need more tools or more time to solve the conflict then you can click
+on the 'Quit' button to cancel the operation. You are then back in
+the xref:XDir[directory] menu, from which you should fix the
+conflict and commit the result. +
+Restarting the loop depends on wether the failure occured during a
+xref:XRebase[rebase] or xref:XReorg[reorg] or a xref:XCherry[cherry-pick].
+
+Restart a rebase or reorg:: If you re-launch a rebase or reorg of the same
+branch and along the same branch or same reference as the previously
+interrupted rebase or reorg, then Agite proposes to continue the rebase or
+reorg. You will be prompted to restart interactively the cherry pick from the
+rebased branch into the temporary branch (you may probably need to skip the
+commit that conflicted previously).
+
+Restart a cherry-pick:: If you launch a cherry-pick from the same branch
+and to the same branch as the previously interrupted cherry-pick, then Agite
+proposes to restart the cherry-pick. The previous selection to skip or pick
+for edit/fixup/commit the cherries is restored.
+
+NOTE: If you launch any other rebase, reorg  or cherry-pick or if you quit
+Agite, then the interupted cherry-pick or rebase cannot be restarted. +
+In case of a reorg or rebase, the temporary branch, named 'xxx.Tmp', remains
+(with some commits already applied). You can complete the cherry-pick manually
+on it, then hard-reset the rebased branch on it. Then you should delete it.
+
 Scope of the operations
 -----------------------
 Each of the operations described above operates on a given scope, which is
@@ -1563,8 +1638,8 @@ Current workspace
 ~~~~~~~~~~~~~~~~~
 The following functions and screens apply to the current workspace:
 
-* 'Branch' screen allows several operations on branches on the the current
-workspace, including 'Merge' and 'Cherry pick'
+* 'Branch' screen allows several operations on branches on the current
+workspace, including 'Merge', 'Rebase' and 'Cherry pick'
 
 * 'Root' button moves to the root directory of the current workspace,
 
@@ -1579,6 +1654,9 @@ workspace
 
 * 'Checkout' button (of the history menu or of the tags menu) checks out the
 commit in the current workspace
+
+* 'Reorg' button (of the history menu) makes a rebase of the current branch,
+applying to the whole workspace
 
 * 'Stash' screen saves and restore stashes on the current workspace
 
