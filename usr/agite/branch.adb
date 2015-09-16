@@ -106,7 +106,8 @@ package body Branch is
   -- Handle Rebase memory (incuding restart)
   package Rebase_Mng is
     -- (Re) start a rebase, return the error message to display
-    function Do_Rebase (Root : String; Ref_Branch: String;
+    function Do_Rebase (Root : String;
+                        Target_Branch, Reference_Branch: String;
                         Interactive : Boolean) return String;
     -- Reset memory of previous rebase
     procedure Reset (Cherries : in Boolean);
@@ -116,8 +117,10 @@ package body Branch is
   -- Actions on branches
   type Action_List is (Create, Rename, Delete, Checkout, Merge, True_Merge,
                        Rebase, Cherry_Pick, Reset_Hard);
-  function Do_Action (Action : in Action_List) return Boolean is
-    Sel_Name, New_Name : As.U.Asu_Us;
+  function Do_Action (Action : in Action_List;
+                      Ref : in Natural := 0) return Boolean is
+    Sel_Name, New_Name, Ref_Name : As.U.Asu_Us;
+    Pos : Positive;
     Message, Result : As.U.Asu_Us;
     Done : Boolean;
     use type Cherry.Result_List;
@@ -137,6 +140,16 @@ package body Branch is
         -- Cancel Create/Rename if empty name
         return False;
       end if;
+    end if;
+
+    -- Get name of right selection
+    -- If no right selection then leave empty for default
+    if (Action = Rebase or else Action = Cherry_Pick)
+    and then Ref /= 0 then
+      Pos := Branches.Get_Position;
+      Branches.Move_At (Ref);
+      Ref_Name := Branches.Access_Current.all;
+      Branches.Move_At (Pos);
     end if;
 
     -- Cancel if not confirm
@@ -214,8 +227,8 @@ package body Branch is
         Message := As.U.Tus ("Rebasing branch " & Current_Branch.Image
                              & " to head of " & Sel_Name.Image);
         Previous_Branch := Sel_Name;
-        Result := As.U.Tus (Rebase_Mng.Do_Rebase (Root.Image, Sel_Name.Image,
-                                                  False));
+        Result := As.U.Tus (Rebase_Mng.Do_Rebase (Root.Image,
+            Sel_Name.Image, Ref_Name.Image, False));
         Init;
       when Cherry_Pick =>
         -- Reset memory of previous rebase
@@ -223,8 +236,8 @@ package body Branch is
         Previous_Branch := Sel_Name;
         -- Done (back to Directory) if Ok or Error
         -- Remain in Branch only if Cancelled
-        Done := Cherry.Pick (Root.Image, Sel_Name.Image, True)
-                /= Cherry.Cancelled;
+        Done := Cherry.Pick (Root.Image,
+            Sel_Name.Image, Ref_Name.Image, True) /= Cherry.Cancelled;
         Init;
         Reread (False);
         return Done;
@@ -295,7 +308,7 @@ package body Branch is
 
     -- Main loop
     loop
-      Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result, True,
                          List_Change_Cb => List_Change'Access);
 
       case Ptg_Result.Event is
@@ -332,11 +345,11 @@ package body Branch is
                 exit;
               end if;
             when Afpx_Xref.Branches.Rebase =>
-              if Do_Action (Rebase) then
+              if Do_Action (Rebase, Ptg_Result.Id_Selected_Right) then
                 exit;
               end if;
             when Afpx_Xref.Branches.Cherry_Pick =>
-              if Do_Action (Cherry_Pick) then
+              if Do_Action (Cherry_Pick, Ptg_Result.Id_Selected_Right) then
                 exit;
               end if;
             when Afpx_Xref.Branches.Reset_Hard =>
@@ -378,7 +391,7 @@ package body Branch is
   function Reorg (Root, Rev : String) return Boolean is
     Msg : As.U.Asu_Us;
   begin
-    Msg := As.U.Tus (Rebase_Mng.Do_Rebase (Root, Rev, True));
+    Msg := As.U.Tus (Rebase_Mng.Do_Rebase (Root, Rev, "", True));
     if Msg.Is_Null then
       return True;
     end if;
