@@ -2,7 +2,7 @@ separate (Branch)
 package body Rebase_Mng is
 
   -- Memory of previous rebase
-  Rebased, Reference, Temporary : As.U.Asu_Us;
+  Rebased, Target, Reference, Temporary : As.U.Asu_Us;
 
 
   -- Find a unused Tmp branch name
@@ -36,7 +36,8 @@ package body Rebase_Mng is
   end Find_Tmp_Name;
 
   -- Rebase current branch to head of Reference
-  function Do_Rebase (Root : String; Ref_Branch: String;
+  function Do_Rebase (Root : String;
+                      Target_Branch, Reference_Branch: String;
                       Interactive : Boolean) return String is
     Restart : Boolean;
     Result : As.U.Asu_Us;
@@ -46,13 +47,16 @@ package body Rebase_Mng is
     begin
       return Confirm (
         (if Restart then "Continue the rebase" else "Rebase")
-         & " of branch " & Current_Branch.Image,
-        "on " & Ref_Branch);
+        & " of branch " & Current_Branch.Image
+        & (if Reference_Branch /= "" then " from " & Reference_Branch else ""),
+        "on " & Target_Branch);
     end Do_Confirm;
   begin
     Current_Branch := As.U.Tus (Git_If.Current_Branch);
     -- Check if same rebase as previous
-    Restart := Current_Branch = Rebased and then Ref_Branch = Reference.Image;
+    Restart := Current_Branch = Rebased
+               and then Target_Branch = Target.Image
+               and then Reference_Branch = Reference.Image;
 
     -- Confirm restart
     if Restart then
@@ -83,21 +87,25 @@ package body Rebase_Mng is
       Reset (True);
       -- Find Tmp branch name
       Tmp_Branch := As.U.Tus (Find_Tmp_Name);
-      -- Create a Tmp branch from Ref
-      Result := As.U.Tus (Git_If.Do_Checkout (Ref_Branch, Tmp_Branch.Image));
+      -- Create a Tmp branch from Target
+      Result := As.U.Tus (Git_If.Do_Checkout (Target_Branch,
+                                              Tmp_Branch.Image));
       if not Result.Is_Null then
-        return "Cannot create tmp branch " & Tmp_Branch.Image & ": "
-               & Result.Image & " from " & Ref_Branch;
+        return "Cannot create tmp branch " & Tmp_Branch.Image
+               & " from " & Target_Branch & ": "
+               & Result.Image;
       end if;
     end if;
 
     -- Store current rebasing branches
     Rebased := Current_Branch;
-    Reference := As.U.Tus (Ref_Branch);
+    Target := As.U.Tus (Target_Branch);
+    Reference := As.U.Tus (Reference_Branch);
     Temporary := Tmp_Branch;
-    -- Cherry pick all the cherries from the Rebased branch
+    -- Cherry pick all the cherries between the Rebased (initally current)
+    --  branch and the Reference, into current (Tmp)
     -- Interactively if requested or restart
-    case Cherry.Pick (Root, Current_Branch.Image,
+    case Cherry.Pick (Root, Current_Branch.Image, Reference_Branch,
                       Interactive or else Restart) is
       when Cherry.Ok =>
         -- Done, wipe memory and continue
@@ -110,8 +118,8 @@ package body Rebase_Mng is
         Reset (True);
         Result := As.U.Tus (Git_If.Do_Checkout (Current_Branch.Image, ""));
         if not Result.Is_Null then
-          return "Cannot checkout back rebased branch " & Ref_Branch & ": "
-                 & Result.Image;
+          return "Cannot checkout back rebased branch "
+                 & Current_Branch.Image & ": " & Result.Image;
         end if;
         Result := As.U.Tus (Git_If.Delete_Branch (Tmp_Branch.Image));
         if not Result.Is_Null then
@@ -124,8 +132,8 @@ package body Rebase_Mng is
     -- Hard reset the Rebased branch to Tmp branch
     Result := As.U.Tus (Git_If.Do_Checkout (Current_Branch.Image, ""));
     if not Result.Is_Null then
-      return "Cannot checkout back rebased branch " & Ref_Branch & ": "
-             & Result.Image;
+      return "Cannot checkout back rebased branch " & Current_Branch.Image
+             & ": " & Result.Image;
     end if;
     Git_If.Do_Reset_Hard (Tmp_Branch.Image);
 
@@ -143,6 +151,7 @@ package body Rebase_Mng is
   procedure Reset (Cherries : in Boolean) is
   begin
     Rebased.Set_Null;
+    Target.Set_Null;
     Reference.Set_Null;
     Temporary.Set_Null;
     if Cherries then

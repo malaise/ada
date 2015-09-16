@@ -20,7 +20,7 @@ package body Cherry is
   -- The cherries
   Cherries : Cherries_Mng.Dyn_List.List_Type;
   -- Memory of previous Cherry operation: the Cherries and branch names
-  From_Branch, To_Branch : As.U.Asu_Us;
+  From_Branch, To_Branch, Ref_Branch : As.U.Asu_Us;
 
   -- The number of Cherries selected
   Nb_Cherries : Natural := 0;
@@ -78,7 +78,7 @@ package body Cherry is
     Cherry_Rec, Cherries_Mng, Set_Cherry, False);
 
   -- Get list of cherries
-  procedure Init_Cherries (Branch : in String;
+  procedure Init_Cherries (Branch, Reference : in String;
                            Interactive : in Boolean) is
     Logs : Git_If.Log_List;
     Cherry, Old_Cherry : Cherry_Rec;
@@ -88,6 +88,7 @@ package body Cherry is
   begin
     -- Check if same branches as previously uncompleted cherry-pick
     Merge := Branch = From_Branch.Image
+             and then Reference = Ref_Branch.Image
              and then Curr_Branch = To_Branch.Image;
     -- Confirm reuse
     Merge := Merge and then Confirm (
@@ -103,7 +104,7 @@ package body Cherry is
     end if;
     -- List Cherries
     Nb_Cherries := 0;
-    Git_If.Cherry_List (Branch, Curr_Branch, Logs);
+    Git_If.Cherry_List (Branch, Reference, Logs);
     if Logs.Is_Empty then
       return;
     end if;
@@ -318,7 +319,7 @@ package body Cherry is
   end Cherry_Action;
 
   -- Confirm (if Interactive) and do the Cherry-pick,
-  function Do_Cherry (Root, Branch : in String;
+  function Do_Cherry (Root, Branch, Reference : in String;
                       Interactive : in Boolean) return Result_List is
     Cherry, First_Cherry : Cherry_Rec;
     Next_Meld : Boolean;
@@ -358,6 +359,7 @@ package body Cherry is
 
     -- Save branches
     From_Branch := As.U.Tus (Branch);
+    Ref_Branch := As.U.Tus (Reference);
     To_Branch := As.U.Tus (Git_If.Current_Branch);
 
     -- Do the cherry pick
@@ -521,12 +523,15 @@ package body Cherry is
   end Do_Cherry;
 
   -- Handle the selection of Commits to cherry-pick
-  function Pick (Root, Branch : String;
+  function Pick (Root, Branch, Reference : String;
                  Interactive : in Boolean) return Result_List is
     -- Afpx stuff
     Get_Handle  : Afpx.Get_Handle_Rec;
     Ptg_Result  : Afpx.Result_Rec;
     use type Afpx.Absolute_Field_Range;
+
+    -- Reference branch
+    Ref : As.U.Asu_Us;
 
     -- Search found, or result of automatic cherry-pick
     Dummy : Boolean;
@@ -542,7 +547,9 @@ package body Cherry is
       Utils.X.Encode_Branch (Afpx_Xref.Cherry.Branch);
 
       -- Encode Title
-      Utils.X.Center_Field ("Cherry pick from " & Branch,
+      Utils.X.Center_Field ("Cherry pick from " & Branch
+                            & (if Reference = "" then ""
+                               else " with ref " & Reference),
                             Afpx_Xref.Cherry.Title,
                             Keep_Head => False);
       -- Encode Root
@@ -567,17 +574,22 @@ package body Cherry is
     end Show_Details;
 
   begin
+    -- Set Ref to Reference or current
+    Ref := As.U.Tus (if Reference = "" then Git_If.Current_Branch
+                     else Reference);
+
+    -- Automatic pick-up
     if not Interactive then
       -- Automatically pick and commit all cherries
-      Init_Cherries (Branch, False);
-      return Do_Cherry (Root, Branch, False);
+      Init_Cherries (Branch, Ref.Image, False);
+      return Do_Cherry (Root, Branch, Ref.Image, False);
     end if;
 
     -- Init Afpx
     Init;
 
     -- Init list
-    Init_Cherries (Branch, True);
+    Init_Cherries (Branch, Ref.Image, True);
     -- May have called Confirm
     Init;
 
@@ -660,7 +672,7 @@ package body Cherry is
               Cherry_Action (Reset, Ptg_Result.Id_Selected_Right);
             when Afpx_Xref.Cherry.Go =>
               -- Done
-              return Do_Cherry (Root, Branch, True);
+              return Do_Cherry (Root, Branch, Ref.Image, True);
             when others =>
               -- Other button?
               null;
@@ -681,6 +693,7 @@ package body Cherry is
   begin
     From_Branch.Set_Null;
     To_Branch.Set_Null;
+    Ref_Branch.Set_Null;
     Cherries.Delete_List;
   end Reset;
 end Cherry;
