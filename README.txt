@@ -142,8 +142,9 @@ Account (3)::
      cheque, credit card (defered) and transfer operations.
 
 Agite (3)::
-     GUI for Git on 'Afpx', directory oriented. Implements all basic actions
-     with GIT.
+     GUI for Git on 'Afpx'. Implements all the basic and some less basic
+     everyday actions of GIT (push, pull, commit, stash, tag, branches, merge,
+     rebase...).
 
 Als (2)::
      Lists, more or less the "ls" way, files and directories. Allow selection
