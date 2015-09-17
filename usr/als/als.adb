@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser, Str_Util, Trilean;
 with Entities, Output, Targets, Lister, Exit_Code;
 procedure Als is
-  Version : constant String  := "V15.3";
+  Version : constant String  := "V16.0";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -43,7 +43,8 @@ procedure Als is
    34 => (False, 'U', As.U.Tus ("utc"),          False),
    35 => (False, Nkc, As.U.Tus ("len_alpha"),    False),
    36 => (False, 'q', As.U.Tus ("quiet"),        False),
-   37 => (True,  Nkc, As.U.Tus ("discard_dir"),  True,  True, As.U.Tus ("criteria")));
+   37 => (True,  Nkc, As.U.Tus ("discard_dir"),  True,  True, As.U.Tus ("criteria")),
+   38 => (False, 'b', As.U.Tus ("basename"),     True));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Usage
@@ -104,6 +105,7 @@ procedure Als is
     Put_Line_Error ("                     // Insert <string> between each entry");
     Put_Line_Error ("  " & Key_Img(29) & "// Show final target of symlinks");
     Put_Line_Error ("  " & Key_Img(30) & "// Show date in strict ISO format (<date>T<time>)");
+    Put_Line_Error ("  " & Key_Img(38) & "// In Merge mode, show only basename of each entry");
     Put_Line_Error ("How to organize entry list:");
     Put_Line_Error ("  " & Key_Img(08) & "// Sort by decreasing size (see also ""-r"")");
     Put_Line_Error ("  " & Key_Img(09) & "// Sort by decreasing time (see also ""-r"")");
@@ -160,6 +162,7 @@ procedure Als is
   Dir_Name : Trilean.Trilean;
   Utc : Boolean;
   Quiet : Boolean;
+  Basename : Boolean;
 
   -- Parse a date argument
   function Parse_Date (Str : String) return Entities.Date_Spec_Rec is separate;
@@ -365,6 +368,9 @@ begin
     Dir_Name := Trilean.Other;
   end if;
 
+  -- Only basename (in Merge)
+  Basename := Arg_Dscr.Is_Set (38);
+
   -- Put total size
   Put_Total := Arg_Dscr.Is_Set (21);
 
@@ -397,7 +403,8 @@ begin
     else
       Format_Kind := Output.Simple;
     end if;
-    Output.Set_Style (Sort_Kind, Sort_Reverse, Format_Kind, Merge_Lists,
+    Output.Set_Style (Sort_Kind, Sort_Reverse, Format_Kind,
+                      Merge_Lists and then not Basename,
                       Full_Path, Classify, Date_Iso, Quiet, Separator);
   end;
 
