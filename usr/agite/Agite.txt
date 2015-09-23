@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V21.01
+V21.02
 
 General purpose
 ---------------
@@ -1721,12 +1721,11 @@ version 1.7.0 or above:
 * A function lists the status of a file by calling 'git status \-- porcelain
 <file>',
 
-* A function lists the commits on a dir by calling
-'git log --date=iso \-- <dir>', +
-and on a file by calling 'git log --follow --date=iso \-- <file>',
+* A function lists the commits on a dir or file by calling
+'git log --date=iso \-- <dir_or_file>',
 
 * A functions gets the hash of the last commit by calling 'git log
---pretty=format:"%H" -n -1 -- <pwd>'
+--pretty=format:"%H" -n -1 -- <pwd>',
 
 * A function gets general information on a commit by calling 'git log
 --date=iso -n 1 <HSA1_hash> \--',

@@ -611,7 +611,6 @@ package body Git_If is
 
   -- List the log of a dir or file
   procedure List_Log (Path : in String;
-                      Follow : in Boolean;
                       Log : in out Log_List) is
     Cmd : Many_Strings.Many_String;
     Done : Boolean;
@@ -623,9 +622,6 @@ package body Git_If is
     -- Git log
     Cmd.Set ("git");
     Cmd.Cat ("log");
-    if Follow then
-      Cmd.Cat ("--follow");
-    end if;
     Cmd.Cat ("--date=iso");
     Cmd.Cat ("--");
     Cmd.Cat (Pt (Path));

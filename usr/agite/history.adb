@@ -284,10 +284,10 @@ package body History is
       --  fails if we provide the full (Root) path
       --  but is OK with '.'
       -- Use '.' if we are in root and target dir is root
-      Git_If.List_Log (".", False, Logs);
+      Git_If.List_Log (".", Logs);
     else
-      -- Log, following renames only if file
-      Git_If.List_Log (Root & Path & Name, Name /= "", Logs);
+      -- Log
+      Git_If.List_Log (Root & Path & Name, Logs);
     end if;
 
     if Hash /= Git_If.No_Hash then

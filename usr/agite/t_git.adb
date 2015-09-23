@@ -48,7 +48,7 @@ begin
   else
     Argument.Get_Parameter (Path, Occurence => 1);
   end if;
-  Git_If.List_Log (Path.Image, False, Logs);
+  Git_If.List_Log (Path.Image, Logs);
   if Logs.Is_Empty then
     Basic_Proc.Put_Line_Output ("No log");
   else

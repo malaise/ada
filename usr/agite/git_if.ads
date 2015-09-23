@@ -77,10 +77,8 @@ package Git_If is
   subtype Log_List is Log_Mng.Dyn_List.List_Type;
 
   -- List the log of a dir or file
-  -- Follow renames (use it on files) or not
   -- May raise anonymous exception Log_Error
   procedure List_Log (Path : in String;
-                      Follow : in Boolean;
                       Log : in out Log_List);
 
   -- Get last hash (hash of last commit) of file or dir
