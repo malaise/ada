@@ -627,7 +627,6 @@ package body Git_If is
       Cmd.Cat ("--follow");
     end if;
     Cmd.Cat ("--date=iso");
-    Cmd.Cat ("--topo-order");
     Cmd.Cat ("--");
     Cmd.Cat (Pt (Path));
     Execute (Cmd, True, Command.Both,
