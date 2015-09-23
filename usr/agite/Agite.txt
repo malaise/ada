@@ -1722,8 +1722,8 @@ version 1.7.0 or above:
 <file>',
 
 * A function lists the commits on a dir by calling
-'git log --date=iso --topo-order \-- <dir>', +
-and on a file by calling 'git log [ --follow ] --date=iso \-- <file>',
+'git log --date=iso \-- <dir>', +
+and on a file by calling 'git log --follow --date=iso \-- <file>',
 
 * A functions gets the hash of the last commit by calling 'git log
 --pretty=format:"%H" -n -1 -- <pwd>'
