@@ -123,7 +123,7 @@ cat > expout << EOF
 <?xml version="1.1"?>
 <Variables>
   <Var Name="V1" Type="Int">5</Var>
-  <Var Name="PATH" Type="Str">/shared/tools/git/current/bin:.:/home/malaise/bin:/usr/gnat/bin:/usr/local/bin:/usr/bin:/bin:/shared/tools/exec/tkcvs/bin:/shared/tools/bin:/shared/tools/exec/GtkAda-2.14.0/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/games:/usr/lib/teTeX/bin:/shared/TOOLS/jdk1.6.0_16/bin:/usr/local/bin</Var>
+  <Var Name="PATH" Type="Str">$PATH:/usr/local/bin</Var>
   <Var Name="V2" Type="Int">125</Var>
   <Var Name="V3" Type="Str">5*125</Var>
   <Var Name="V4" Type="Str"></Var>
