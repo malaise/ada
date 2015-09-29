@@ -1,31 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?Warning: This file is read and modified by agite. Edit with caution.?>
-<?Warning: Only modify the content of the elements before bookmarks.?>
+<?Warning: Only modify the content of the elements before the bookmarks?>
+<?         or the bookmarks themself.?>
 <!DOCTYPE agite SYSTEM "agite.dtd">
 
 <agite>
-  <xterm>gnome-terminal --zoom=0.9</xterm>
+  <xterm Name="Xterm">gnome-terminal --zoom=1.1</xterm>
   <editor>xvi</editor>
   <viewer>xvi -M</viewer>
   <differator>tkdiff</differator>
-  <make>xmake</make>
-  <period>5.0</period>
-  <list_tags>false</list_tags>
-  <last_dir></last_dir>
+  <make Name="Make">xmake</make>
+  <period>30.0</period>
+  <list_tags>True</list_tags>
+  <last_dir>/home/malaise/ada/usr/agite</last_dir>
   <bookmarks>
-    <bookmark Name="Ada"/>
-    <bookmark Name="Ada">/home/malaise/ada</bookmark>
-    <bookmark Name="Reposit">/home/malaise/ada/reposit</bookmark>
-    <bookmark Name="Usr">/home/malaise/ada/usr</bookmark>
-    <bookmark Name="C">/home/malaise/ada/c</bookmark>
+    <bookmark Name="Ada">${HOME}/ada</bookmark>
+    <bookmark Name="Reposit">${HOME}/ada/reposit</bookmark>
+    <bookmark Name="Usr">${HOME}/ada/usr</bookmark>
+    <bookmark Name="Misc">${HOME}/ada/usr/misc</bookmark>
+    <bookmark Name="Tests">${HOME}/ada/usr/tests</bookmark>
+    <bookmark Name="C">${HOME}/ada/c</bookmark>
+    <bookmark Name="Agite">${HOME}/ada/usr/agite</bookmark>
     <bookmark/>
     <bookmark Name="Others"/>
-    <bookmark Name="Home">/home/malaise</bookmark>
-    <bookmark Name="C">/home/malaise/c</bookmark>
-    <bookmark Name="Bin">/home/malaise/bin</bookmark>
+    <bookmark Name="Home">${HOME}</bookmark>
+    <bookmark Name="C">${HOME}/c</bookmark>
+    <bookmark Name="Bin">${HOME}/bin</bookmark>
+    <bookmark Name="Makefiles">${HOME}/Makefiles</bookmark>
+    <bookmark Name="T_Xml">${HOME}/t_xml</bookmark>
+    <bookmark Name="Xfreecell">${HOME}/xfreecell</bookmark>
+    <bookmark Name="words">${HOME}/words</bookmark>
     <bookmark/>
     <bookmark Name="Tmp"/>
-    <bookmark>/home/malaise/ada/usr/agite</bookmark>
+    <bookmark Name="Rebase">${HOME}/AdaDevs/Rebase/usr/agite</bookmark>
+    <bookmark Name="DictioConsist">${HOME}/AdaDevs/DictioConsist/usr/dictio</bookmark>
+    <bookmark Name="Rebase">/home/malaise/tmp/Rebase</bookmark>
   </bookmarks>
 </agite>
 
