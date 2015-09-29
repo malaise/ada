@@ -12,10 +12,11 @@ export FILES="agite.xml agite.dtd agite.stat AFPX.DSC AFPX.FLD AFPX.INI"
 
 # Help
 function usage {
-  echo "Usage: `basename $0` [ { <prefix> | <conf_dir> | <bin_dir> | <agite_dir> } ]" 1>&2
+  echo "Usage: `basename $0` --tar | -h | --help" 1>&2
+  echo "    or `basename $0` [ { <prefix> | <conf_dir> | <bin_dir> | <agite_dir> } ]" 1>&2
   echo " <prefix>    ::= --prefix=<dir>    default $HOME" 1>&2
   echo " <conf_dir>  ::= --conf=<dir>      default $CONF_DIR" 1>&2
-  echo " <bin_dir>   ::= --bin=<dir>       default $BINC_DIR" 1>&2
+  echo " <bin_dir>   ::= --bin=<dir>       default $BIN_DIR" 1>&2
   echo " <agite_dir> ::= --agite=<dir>     default $AGITE_DIR" 1>&2
 }
 
