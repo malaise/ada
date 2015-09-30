@@ -8,7 +8,8 @@ export CONF_DIR=${PREFIX}/.agite
 export BIN_DIR=${PREFIX}/bin
 export AGITE_DIR=${PREFIX}/agite
 # Necessary files
-export FILES="agite.xml agite.dtd agite.stat AFPX.DSC AFPX.FLD AFPX.INI"
+export FILES="agite.xml agite.dtd agite.stat install_agite Agite.html \
+AFPX.DSC AFPX.FLD AFPX.INI"
 
 # Help
 function usage {
@@ -43,7 +44,7 @@ while [ "$1" != "" ] ; do
     ;;
     (--tar)
       echo tar cvzf agite.tgz $FILES
-      tar cvzf agite.tgz $FILES
+      tar cvzhf agite.tgz $FILES
       exit 0
     ;;
     (--prefix=*)
@@ -102,7 +103,7 @@ fi
 # Agite dir
 make_dir $AGITE_DIR
 cp agite.stat $AGITE_DIR/agite
-cp AFPX.DSC AFPX.FLD AFPX.INI $AGITE_DIR
+cp Agite.html AFPX.DSC AFPX.FLD AFPX.INI $AGITE_DIR
 
 # Bin dir
 make_dir $BIN_DIR
