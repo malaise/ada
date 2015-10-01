@@ -1,7 +1,7 @@
 with As.U, Afpx.Utils, Basic_Proc, Images, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Environ;
 with Utils.X, Git_If, Config, Bookmarks, History, Tags, Commit, Push_Pull,
-     Confirm, Error, Stash, Branch, Afpx_Xref;
+     Confirm, Confirm_Diff_Dir, Error, Stash, Branch, Afpx_Xref;
 procedure Agite is
 
   -- Options
@@ -635,7 +635,11 @@ procedure Agite is
           null;
         when Diff =>
           if File_Name /= ".." then
-            Git_If.Launch_Diff (Differator.Image, File_Name);
+            Position := Afpx.Line_List.Get_Position;
+            if Confirm_Diff_Dir (Path.Image, File_Name) then
+              Git_If.Launch_Diff (Differator.Image, File_Name);
+            end if;
+            Init (Position);
           end if;
         when History =>
           if File_Name = "." then

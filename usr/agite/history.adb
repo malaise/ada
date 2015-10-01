@@ -1,6 +1,6 @@
 with As.U, Con_Io, Afpx.Utils, Normal, Rounds, Language, Directory;
 with Utils.X, Config, Details, View, Afpx_Xref, Restore, Checkout, Tags,
-     Branch;
+     Branch, Confirm_Diff_Dir;
 package body History is
 
   -- List Width
@@ -82,6 +82,15 @@ package body History is
       Comp : Positive;
       Ref_Hash, Comp_Hash : Git_If.Git_Hash;
     begin
+      -- Confim if diff on a dir
+      if not Is_File then
+        if not Confirm_Diff_Dir (Path, Name) then
+          Init;
+          return;
+        end if;
+        Init;
+      end if;
+
       -- Save position in List
       Comp := Afpx.Line_List.Get_Position;
 

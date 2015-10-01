@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V21.02
+V21.03
 
 General purpose
 ---------------
@@ -904,9 +904,11 @@ anchor:XDiff1[]
 .Diff
 The 'Diff' button shows the differences between commits. When the history is on
 a directory it applies to all the files of the directory and sub-directories
-that were affected by the commit(s).
+that were affected by the commit(s). In this case the action can lead to
+launch many differators, so it is started only after confirmation.
 
-'Diff' can compare two arbitrary commits or show the changes of one commit:
+'Diff' can compare two arbitrary commits or show the changes introduced by
+one commit:
 
 * Diff between two commits. 
 ** Left click on an entry of the list. It becomes green and the 'LeftSel'
