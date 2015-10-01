@@ -75,7 +75,11 @@ package body Utils is
   -- Protect text for shell: replace ''' by '\'' and enclose within quotes
   function Protect_Text (Str : in String) return String is
   begin
-    return "'" & Str_Util.Substit (Str, "'", "'\''", True) & "'";
+    if Str = "" then
+      return Str;
+    else
+      return "'" & Str_Util.Substit (Str, "'", "'\''", True) & "'";
+    end if;
   end Protect_Text;
 
 end Utils;

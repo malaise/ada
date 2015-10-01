@@ -23,6 +23,9 @@ package Git_If is
   --  in parent dirs
   procedure Get_Root_And_Path (Root, Path : out As.U.Asu_Us);
 
+  -- Is current repository a bare one
+  function Is_Bare return Boolean;
+
   -- LIST OF FILES AND STATUS
   -- A file entry
   -- Two letters of Git status (? A M D R C U)

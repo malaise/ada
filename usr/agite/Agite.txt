@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V21.05
+V21.06
 
 General purpose
 ---------------
@@ -1793,16 +1793,21 @@ and 'git config user.email',
 * Three functions apply/pop/drop a stash by calling 'git stash apply/pop/drop
 -q stash@{<num>}',
 
-* A function shows a tag by calling 'git show --date=iso --quiet -s <tag> \--',
+* A function shows a tag by calling 'git show --date=iso --quiet
+-s <tag> \--',
 
 * A function lists the tags by calling 'git tag [ -l <template> ]',
 
 * A function deletes a tag by calling 'git tag -d <tag>',
 
-* A function adds a tag by calling 'git tag [ -a -m <comment> ] <tag> <ref>'.
+* A function adds a tag by calling 'git tag [ -a -m <comment> ] <tag> <ref>',
 
 * A function lists the cherry commits of reference branch versus a target
-branch by calling 'git cherry <target> <reference>'
+branch by calling 'git cherry <target> <reference>',
 
 * A function cherry picks some commits by calling 'git cherry-pick --ff {
-<HSA1_hash> }'
+<HSA1_hash> }',
+
+* A function checks if current repository is bare by calling 'git rev-parse
+--is-bare-repository'.
+

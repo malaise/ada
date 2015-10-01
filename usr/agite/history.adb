@@ -293,7 +293,8 @@ package body History is
       --  fails if we provide the full (Root) path
       --  but is OK with '.'
       -- Use '.' if we are in root and target dir is root
-      Git_If.List_Log (".", Logs);
+      -- and in a bare repository, otherwise ""
+      Git_If.List_Log ((if Git_If.Is_Bare then "." else ""), Logs);
     else
       -- Log
       Git_If.List_Log (Root & Path & Name, Logs);

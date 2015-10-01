@@ -164,6 +164,23 @@ package body Git_If is
     Root.Append ("/");
   end Get_Root_And_Path;
 
+  -- Is current repository a bare one
+  function Is_Bare return Boolean is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("rev-parse");
+    Cmd.Cat ("--is-bare-repository");
+    Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      return False;
+    end if;
+    -- Result is "true" or "false"
+    return Out_Flow_3.Str.Image = "true";
+  end Is_Bare;
+
   -- LIST OF FILES AND STATUS
   -- A file entry
   -- type File_Entry_Rec is record
