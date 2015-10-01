@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V21.04
+V21.05
 
 General purpose
 ---------------
@@ -1183,7 +1183,7 @@ It shows:
 
 .Current branch
 On the top left is recalled the name of the current branch, into which the
-selected commits will be applied.
+selected commits will be applied, except in the case of a xref:XReorg[reorg].
 
 .Title
 The title recalls the name of the 'source' branch from which the commits are

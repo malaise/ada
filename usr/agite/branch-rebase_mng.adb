@@ -104,9 +104,10 @@ package body Rebase_Mng is
     Temporary := Tmp_Branch;
     -- Cherry pick all the cherries between the Rebased (initally current)
     --  branch and the Reference, into current (Tmp)
-    -- Interactively if requested or restart
+    -- Interactively (hiding Tmp branch name) if requested or restart
     case Cherry.Pick (Root, Current_Branch.Image, Reference_Branch,
-                      Interactive or else Restart) is
+        (if Interactive or else Restart then Cherry.Interactive_Tmp
+         else Cherry.Automatic)) is
       when Cherry.Ok =>
         -- Done, wipe memory and continue
         Reset (True);

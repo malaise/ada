@@ -236,8 +236,8 @@ package body Branch is
         Previous_Branch := Sel_Name;
         -- Done (back to Directory) if Ok or Error
         -- Remain in Branch only if Cancelled
-        Done := Cherry.Pick (Root.Image,
-            Sel_Name.Image, Ref_Name.Image, True) /= Cherry.Cancelled;
+        Done := Cherry.Pick (Root.Image, Sel_Name.Image, Ref_Name.Image,
+                             Cherry.Interactive) /= Cherry.Cancelled;
         Init;
         Reread (False);
         return Done;

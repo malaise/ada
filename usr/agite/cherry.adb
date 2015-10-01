@@ -79,7 +79,7 @@ package body Cherry is
 
   -- Get list of cherries
   procedure Init_Cherries (Branch, Reference : in String;
-                           Interactive : in Boolean) is
+                           Mode : in Cherry_Mode) is
     Logs : Git_If.Log_List;
     Cherry, Old_Cherry : Cherry_Rec;
     Curr_Branch : constant String := Git_If.Current_Branch;
@@ -99,7 +99,7 @@ package body Cherry is
     end if;
 
     -- Init list
-    if Interactive then
+    if Mode /= Automatic then
       Afpx.Line_List.Delete_List;
     end if;
     -- List Cherries
@@ -155,7 +155,7 @@ package body Cherry is
     end if;
 
     -- Set Afpx list
-    if Interactive then
+    if Mode /= Automatic then
       Init_Cherry (Cherries);
       Afpx.Line_List.Rewind;
     end if;
@@ -319,8 +319,8 @@ package body Cherry is
   end Cherry_Action;
 
   -- Confirm (if Interactive) and do the Cherry-pick,
-  function Do_Cherry (Root, Branch, Reference : in String;
-                      Interactive : in Boolean) return Result_List is
+  function Do_Pick (Root, Branch, Reference : in String;
+                    Mode : in Cherry_Mode) return Result_List is
     Cherry, First_Cherry : Cherry_Rec;
     Next_Meld : Boolean;
     Picked, Tmp_List : Cherries_Mng.Dyn_List.List_Type;
@@ -333,7 +333,7 @@ package body Cherry is
       return Cancelled;
     end if;
 
-    if Interactive then
+    if Mode /= Automatic then
       -- Redo Afpx list of confirm (new width, only not merged)
       Cherries.Rewind;
       loop
@@ -351,7 +351,10 @@ package body Cherry is
 
       -- Confirm, return False if not
       if not Confirm ("Cherry pick from branch " & Branch,
-                      "into current branch " & Git_If.Current_Branch,
+                      (if Mode = Interactive then
+                         "into current branch " & Git_If.Current_Branch
+                       else
+                         "into a temporary branch for reorg"),
                       Show_List => True) then
         return Cancelled;
       end if;
@@ -520,11 +523,11 @@ package body Cherry is
     -- Success
     Reset;
     return Ok;
-  end Do_Cherry;
+  end Do_Pick;
 
   -- Handle the selection of Commits to cherry-pick
   function Pick (Root, Branch, Reference : String;
-                 Interactive : in Boolean) return Result_List is
+                 Mode : Cherry_Mode) return Result_List is
     -- Afpx stuff
     Get_Handle  : Afpx.Get_Handle_Rec;
     Ptg_Result  : Afpx.Result_Rec;
@@ -536,6 +539,20 @@ package body Cherry is
     -- Search found, or result of automatic cherry-pick
     Dummy : Boolean;
 
+    -- Encode current branch... or not
+    procedure Encode_Branch is
+    begin
+      case Mode is
+        when Automatic =>
+          null;
+        when Interactive =>
+          Utils.X.Encode_Branch (Afpx_Xref.Cherry.Branch);
+        when Interactive_Tmp =>
+          Afpx.Clear_Field (Afpx_Xref.Cherry.Branch_Title);
+          Afpx.Clear_Field (Afpx_Xref.Cherry.Branch);
+      end case;
+    end Encode_Branch;
+
     -- Init Afpx
     procedure Init is
     begin
@@ -544,8 +561,7 @@ package body Cherry is
       -- List characteristics
       List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
       -- Encode current branch
-      Utils.X.Encode_Branch (Afpx_Xref.Cherry.Branch);
-
+      Encode_Branch;
       -- Encode Title
       Utils.X.Center_Field ("Cherry pick from " & Branch
                             & (if Reference = "" then ""
@@ -579,17 +595,17 @@ package body Cherry is
                      else Reference);
 
     -- Automatic pick-up
-    if not Interactive then
+    if Mode = Automatic then
       -- Automatically pick and commit all cherries
-      Init_Cherries (Branch, Ref.Image, False);
-      return Do_Cherry (Root, Branch, Ref.Image, False);
+      Init_Cherries (Branch, Ref.Image, Mode);
+      return Do_Pick (Root, Branch, Ref.Image, Mode);
     end if;
 
     -- Init Afpx
     Init;
 
     -- Init list
-    Init_Cherries (Branch, Ref.Image, True);
+    Init_Cherries (Branch, Ref.Image, Mode);
     -- May have called Confirm
     Init;
 
@@ -672,7 +688,7 @@ package body Cherry is
               Cherry_Action (Reset, Ptg_Result.Id_Selected_Right);
             when Afpx_Xref.Cherry.Go =>
               -- Done
-              return Do_Cherry (Root, Branch, Ref.Image, True);
+              return Do_Pick (Root, Branch, Ref.Image, Mode);
             when others =>
               -- Other button?
               null;
@@ -682,7 +698,7 @@ package body Cherry is
           null;
         when Afpx.Refresh =>
           -- Encode current branch
-          Utils.X.Encode_Branch (Afpx_Xref.Cherry.Branch);
+          Encode_Branch;
       end case;
     end loop;
 
