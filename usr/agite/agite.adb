@@ -136,6 +136,45 @@ procedure Agite is
   end Match;
   function File_Search is new Git_If.File_Mng.Dyn_List.Search (Match);
 
+  -- Local host: "on (<host>)" if possible
+  -- else "(<host>)" if possible
+  -- else "<host>" if possible
+  -- else ">tail"
+  Local_Host : As.U.Asu_Us;
+  function Host_Str return String is
+    Len : constant Positive := Afpx.Get_Field_Width (Afpx_Xref.Main.Host);
+    use type As.U.Asu_Us;
+  begin
+    if not Local_Host.Is_Null then
+      return Local_Host.Image;
+    end if;
+    Local_Host := As.U.Tus (Socket.Local_Host_Name);
+    if Local_Host.Length + 5 <= Len then
+      Local_Host := "(on " & Local_Host & ")";
+    elsif Local_Host.Length + 2 <= Len then
+      Local_Host := "(" & Local_Host & ")";
+    end if;
+    Local_Host := As.U.Tus (Utils.Normalize (Local_Host.Image, Len,
+                                             Align_Left => False));
+    return Local_Host.Image;
+  end Host_Str;
+
+  -- Init Afpx
+  procedure Init_Afpx is
+  begin
+    Git_If.Entering_Afpx;
+    Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
+    List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
+    Dir_Field := Afpx_Xref.Main.Dir;
+
+    -- Init fields
+    Afpx.Get_Console.Set_Name ("Agite (on " & Socket.Local_Host_Name & ")");
+    Utils.X.Encode_Field (Host_Str, Afpx_Xref.Main.Host);
+    Utils.X.Center_Field (Config.Xterm_Name, Afpx_Xref.Main.Xterm);
+    Utils.X.Center_Field (Config.Make_Name, Afpx_Xref.Main.Make);
+    Get_Handle := (others => <>);
+  end Init_Afpx;
+
   -- Encode Afpx list with files, if list has changed or if Force
   procedure Encode_Files (Force : in Boolean) is
     Pos : Natural := 0;
@@ -277,7 +316,7 @@ procedure Agite is
         Error ("Changing directory to:",
                Target.Image,
                "Staying in current.");
-        Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
+        Init_Afpx;
         Directory.Change_Current (Directory.Get_Current);
     end;
     -- Success, reset root path for re-evaluation, save current dir
@@ -360,7 +399,7 @@ procedure Agite is
     Error ("Current directory has vanished",
            "falling back into:",
            Dir.Image);
-    Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
+    Init_Afpx;
     return False;
   end Check_Dir;
 
@@ -386,44 +425,13 @@ procedure Agite is
   end Timer;
   package body Timer is separate;
 
-  -- Local host: "on (<host>)" if possible
-  -- else "(<host>)" if possible
-  -- else "<host>" if possible
-  -- else ">tail"
-  Local_Host : As.U.Asu_Us;
-  function Host_Str return String is
-    Len : constant Positive := Afpx.Get_Field_Width (Afpx_Xref.Main.Host);
-    use type As.U.Asu_Us;
-  begin
-    if not Local_Host.Is_Null then
-      return Local_Host.Image;
-    end if;
-    Local_Host := As.U.Tus (Socket.Local_Host_Name);
-    if Local_Host.Length + 5 <= Len then
-      Local_Host := "(on " & Local_Host & ")";
-    elsif Local_Host.Length + 2 <= Len then
-      Local_Host := "(" & Local_Host & ")";
-    end if;
-    Local_Host := As.U.Tus (Utils.Normalize (Local_Host.Image, Len,
-                                             Align_Left => False));
-    return Local_Host.Image;
-  end Host_Str;
-
-  -- Init Afpx
+  -- Init screen
   procedure Init (Pos : in Natural; Dir : in String := "") is
   begin
-    Git_If.Entering_Afpx;
-    Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
-    List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
-    Dir_Field := Afpx_Xref.Main.Dir;
+    -- Init Afpx
+    Init_Afpx;
 
-    -- Init fields
-    Afpx.Get_Console.Set_Name ("Agite (on " & Socket.Local_Host_Name & ")");
-    Utils.X.Encode_Field (Host_Str, Afpx_Xref.Main.Host);
-    Utils.X.Center_Field (Config.Xterm_Name, Afpx_Xref.Main.Xterm);
-    Utils.X.Center_Field (Config.Make_Name, Afpx_Xref.Main.Make);
-    Get_Handle := (others => <>);
-
+    -- Init dir
     Change_Dir (Dir);
 
     -- Init list
@@ -829,7 +837,7 @@ procedure Agite is
 
 begin
   -- Check/Parse arguments
-   Arg_Dscr := Argument_Parser.Parse (Keys);
+  Arg_Dscr := Argument_Parser.Parse (Keys);
   if not Arg_Dscr.Is_Ok then
     Error (Arg_Dscr.Get_Error);
   end if;
