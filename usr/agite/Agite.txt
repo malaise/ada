@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V21.09
+V21.10
 
 General purpose
 ---------------
@@ -53,8 +53,8 @@ NOTE: At least the variable 'HOME' or 'AGITE_CONF_FILE' must be set in the
 environment, otherwise Agite won't start.
 
 GIT_DIR::
-Agite needs to know the root directory of the current Git worktree (if any). It
-finds it by locating, in the current directory or above, the Git technical
+Agite needs to know the root directory of the current Git repository (if any).
+It finds it by locating, in the current directory or above, the Git technical
 directory.
 By default it is named '.git' but this can be overridden by setting the
 environment variable 'GIT_DIR' to the name (without path) of the Git directory.
@@ -309,10 +309,10 @@ including the list of files modified by the commit.
 * xref:XCherry[CherryPick]: This menu allows performing a cherry pick of
 commits from a local branch.
 * xref:XCommit[Commit]: This shows all the local modifications of the
-worktree and allows staging and commiting them.
+repository and allows staging and commiting them.
 * xref:XPush[Push]: This allows pushing a branch or tag into a remote
 repository.
-* xref:XStash[Stash]: This allows stashing the local worktree and managing
+* xref:XStash[Stash]: This allows stashing the local repository and managing
 the list of stashes.
 * xref:XPull[Pull]: This allows fetching or pulling a branch from a
 remote repository.
@@ -385,8 +385,8 @@ indicated in the title of the X window of Agite).
 
 .Directories
 Root::
-This line shows the root directory of the current Git worktree. Clicking in this
-field changes the current directory to the root.
+This line shows the root directory of the current Git repository. Clicking in
+this field changes the current directory to the root.
 
 anchor:XGo[]
 
@@ -593,7 +593,7 @@ committed content and the new one is reset as unknown by Git
 Note: The Revert button has no effect on a file known by Git and not modified,
 and is not active on \'../'.
 +
-Note: It is also possible to 'git reset --hard' the whole worktree to a given
+Note: It is also possible to 'git reset --hard' the whole repository to a given
 branch, including current branch, through the xref:XHReset[HReset] button of
 the xref:XBranches[branches] menu.
 
@@ -633,13 +633,13 @@ This button makes Agite exit.
 Branches
 ~~~~~~~~
 anchor:XBranches[]
-This menu works on the global worktree, not on the local directory. +
+This menu works on the global repository, not on the local directory. +
 It allows adding, modifying, checking out a branch or merging a branch into
 current. +
 
 .Current branch and root
 
-This shows the current branch and path of the root of current worktree.
+This shows the current branch and path of the root of current repository.
 
 .Actions
 
@@ -715,7 +715,7 @@ HReset::
 
 anchor:XHReset[]
 Click on the 'HReset' button to 'reset hard', after confirmation, the current
-worktree to the index of the branch selected in the list.
+repository to the index of the branch selected in the list.
 
 Create::
 
@@ -832,7 +832,7 @@ The predefiend variables are:
 
 * 'AFPX_DATA_DIR': The directory where AFPX configuration files where found (constant).
 
-* 'GIT_ROOT_DIR': The root directory of the current worktree (updated).
+* 'GIT_ROOT_DIR': The root directory of the current repository (updated).
 
 * 'AGITE_CUR_DIR': The current directory (updated).
 
@@ -867,7 +867,7 @@ This lists follows the renaming of files and directories.
 The list shows, for each entry, the date of the commit (format YYMMDD:HHMM),
 a space then the comment (up to two lines, separated by \'$\') of the commit. +
 If the entry is a merge (which is possible only when showing the history of
-the root of the worktree), then the separator between the date and the comment
+the root of the repository), then the separator between the date and the comment
 becomes a \'>'.
 
 Navigation in the list is the same as the xref:XNavig[navigation] in the
@@ -1059,7 +1059,7 @@ button opening a pop-up menu), which is not available in Agite, neither for copy
 nor for paste.
 
 A specific entry, "/", is added on top of the list, which represents the root of
-the current worktree.
+the current repository.
 
 .Actions
 
@@ -1077,7 +1077,7 @@ that the file is not locally modified, then a confirmation.
 When the "/" entry is selected:
 
 * clicking on the button 'History' shows the full history of the
-worktree,
+repository,
 * clicking on the button 'Diff' launches the differator on each file of
 the commit (differences brought by the commit),
 * clicking on the button 'Restore' restores all the files of the commit,
@@ -1092,14 +1092,15 @@ anchor:XCheckout[]
 The 'checkout' menu allows checking out a commit or a tag.
 
 NOTE: the checkout operation will be rejected if it leads to overwrite a local
-modification in the worktree.
+modification in the repository.
 
 In case of a commit, the date and comment of the commit are indicated. In case
 of a tag, the tag name and, if any (annotated tag), the date and the comment of
 the tag are indicated.
 
 You can (should) enter the name of a new branch into with the checkout is
-performed. Otherwise the current worktree then becomes in 'detached HEAD' state.
+performed. Otherwise the current repository then becomes in 'detached HEAD'
+state.
 "You can look around, make experimental changes and commit them, and you can
 discard any commits you make in this state without impacting any branches by
 performing another checkout" (another commit earlier in the same branch,
@@ -1180,7 +1181,7 @@ This button returns to the xref:XDir[directory] menu.
 Cherry pick
 ~~~~~~~~~~~
 anchor:XCherry[]
-This menu works on the global worktree, not on the local directory. +
+This menu works on the global repository, not on the local directory. +
 It allows selecting some commits of the selected branch and it
 apply them into the current branch. +
 It shows:
@@ -1194,7 +1195,7 @@ The title recalls the name of the 'source' branch from which the commits are
 selected and the 'reference' branch if it is not the current branch.
 
 .Root
-The third line recalls the root of the current worktree.
+The third line recalls the root of the current repository.
 
 .List
 The list shows the result of \'git cherry', which is the list of commits in the
@@ -1328,13 +1329,14 @@ This is exactly how the xref:XReorg[reorg] is performed.
 Commit
 ~~~~~~
 anchor:XCommit[]
-This menu works on the global worktree, not on the local directory. +
+This menu works on the global repository, not on the local directory. +
 It shows the list of all the local changes, allows (un)staging them and allows
 entering a comment for the commit:
 
 .Current branch and root
 
-This shows the current branch and the path of the root of the current worktree.
+This shows the current branch and the path of the root of the current
+repository.
 
 .Sign
 
@@ -1361,7 +1363,7 @@ NOTE: The comment must not be empty when committing.
 
 .List of changes
 
-This list shows all the current changes in the worktree, with 3 letters of
+This list shows all the current changes in the repository, with 3 letters of
 status for each file:
 
 * The first column ('S') shows the summary of the status:
@@ -1370,8 +1372,8 @@ status for each file:
  - empty if no changes are staged (e.g. locally modified or new).
 * The second column ('I') shows the changes in the index (that will be
 committed),
-* The third column ('L') shows the changes local to the worktree (that will not
-be committed).
+* The third column ('L') shows the changes local to the repository (that will
+not be committed).
 
 You can select a file and show its local differences, stage or unstage its
 changes.
@@ -1491,13 +1493,14 @@ anchor:XSelBranch[]
 Stash
 ~~~~~
 anchor:XStash[]
-The 'stash' menu works on the global worktree, not on the local directory. +
+The 'stash' menu works on the global repository, not on the local directory. +
 The screen shows the list of stashes. Each entry has a stash number,
 the branch on which the stash was done and the text of the message.
 
 .Current branch and root
 
-This shows the current branch and the path of the root of the current worktree.
+This shows the current branch and the path of the root of the current
+repository.
 
 .Actions
 
@@ -1506,7 +1509,7 @@ The possible actions on the list of stashes are:
 Add::
 
 Enter a message (or name) for the stash and click in the 'Add' button or press
-the Return key. Agit stashes the current worktree (which performs a 'git reset
+the Return key. Agit stashes the current repository (which performs a 'git reset
 --hard'), then applies this stash, then returns to the xref:XDir[directory]
 menu. +
 The new stash has been inserted in the list. +
@@ -1701,6 +1704,8 @@ applying to the whole repository
 
 * 'Detail' shows the details of a commit on the current repository
 
+* 'Reset', when reverting on '.', resets the whole repository
+
 Anywhere
 ~~~~~~~~
 The following operations allow changing the current directory with no
@@ -1762,7 +1767,8 @@ calling 'git difftool -y -x <differator> <ref_HSA1_hash> <comp_HSA1_hash>
 * A function resets the staged sgtatus of a file by calling 'git reset \--
 <file>',
 
-* A function resets the repository by calling 'git reset \--hard',
+* A function resets the repository to a commit or branch, by calling
+ 'git reset \--hard <ref>',
 
 * A function globally checks out a given commit or branch by calling
 'git checkout [ -b <branch> ] <ref>',
