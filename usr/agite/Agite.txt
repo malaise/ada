@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V21.08
+V21.09
 
 General purpose
 ---------------
@@ -957,8 +957,8 @@ HEAD).
 NOTE: There is a major difference between the 'Restore' and the 'Checkout'
 operations. +
 - 'Restore' overwrites the file with the content that it had in the given
-commit (it is likely to be tagged as modified in the current workspace). +
-- 'Checkout' checks out the whole workspace in the state that it had when the
+commit (it is likely to be tagged as modified in the current repository). +
+- 'Checkout' checks out the whole repository in the state that it had when the
 commit was performed.
 
 anchor:XReorg[]
@@ -975,7 +975,7 @@ and the section xref:XCherryError[Error in cherry-pick] on how to handle
 errors during a reorg.
 
 .HReset
-This button resets, after confirmation, the workspace to the state of the
+This button resets, after confirmation, the repository to the state of the
 (left) selected commit.
 
 .Tag
@@ -1549,7 +1549,8 @@ It shows:
 
 .Current branch and root
 
-This shows the current branch and the path of the root of the current workspace.
+This shows the current branch and the path of the root of the current
+repository.
 
 .List of remote branches
 
@@ -1577,7 +1578,8 @@ It shows:
 
 .Current branch and root
 
-This shows the current branch and the path of the root of the current workspace.
+This shows the current branch and the path of the root of the current
+repository.
 
 .Selected branch to pull
 
@@ -1666,38 +1668,38 @@ selected file or directory:
 * 'Restore' button (of the detail menu) retrieves the selected file or all the
 files of the commit
 
-Current workspace
+Current repository
 ~~~~~~~~~~~~~~~~~
-The following functions and screens apply to the current workspace:
+The following functions and screens apply to the current repository:
 
 * 'Branch' screen allows several operations on branches on the current
-workspace, including 'Merge', 'Rebase' and 'Cherry pick'
+repository, including 'Merge', 'Rebase' and 'Cherry pick'
 
-* 'Root' button moves to the root directory of the current workspace,
+* 'Root' button moves to the root directory of the current repository,
 
 * 'Commit' screen allows commiting the files modified within the current
-workspace
+repository
 
-* 'Push' screen allows allows pushing commits on the current workspace
+* 'Push' screen allows allows pushing commits on the current repository
 
-* 'Pull' screen pulls branches of the current workspace
+* 'Pull' screen pulls branches of the current repository
 
-* 'Tags' screen lists the tags of the current workspace
+* 'Tags' screen lists the tags of the current repository
 
 * 'Checkout' button (of the history menu or of the tags menu) checks out the
-commit in the current workspace
+commit in the current repository
 
 * 'HReset' button (of the history menu or of the branches menu) resets the
-current workspace to the state of the commit or branch
+current repository to the state of the commit or branch
 
 * 'Reorg' button (of the history menu) makes a rebase of the current branch,
-applying to the whole workspace
+applying to the whole repository
 
-* 'Stash' screen saves and restore stashes on the current workspace
+* 'Stash' screen saves and restore stashes on the current repository
 
-* 'Tag' tags a commit of the current workspace
+* 'Tag' tags a commit of the current repository
 
-* 'Detail' shows the details of a commit on the current workspace
+* 'Detail' shows the details of a commit on the current repository
 
 Anywhere
 ~~~~~~~~
