@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V21.10
+V22.00
 
 General purpose
 ---------------
@@ -316,6 +316,8 @@ repository.
 the list of stashes.
 * xref:XPull[Pull]: This allows fetching or pulling a branch from a
 remote repository.
+* xref:XReset[Reset]: This allows cleaning or doing a hard/mixed/soft reset
+of the current repository.
 
 anchor:XNavigation[]
 The navigation between the screens is as follows:
@@ -344,6 +346,9 @@ The navigation between the screens is as follows:
                    \            +------+
                     \---------->| Pull |
                                 +------+
+                     +-------+
+                     | Reset |
+                     +-------+
 
 There are also a confirmation screen and an error screen that are called when
 necessary.
@@ -353,7 +358,9 @@ The 'tags' and 'commit' menus call the 'push' menu. +
 The 'cherry-pick' menu calls the 'detail' menu, but without allowing it to call
 the 'history' menu. +
 The 'cherry-pick' menu calls the 'commit' menu, but without allowing it to call
-the 'push' menu.
+the 'push' menu. +
+The 'reset' menu is called by the 'directory', the 'history' and the 'branch'
+menus.
 
 NOTE: All the screen transitions are based on the 'call-return' scheme. +
 So please note the double arrow between 'history' and 'detail': from the
@@ -572,9 +579,9 @@ This button reverts the local change on the current entry. +
 First, a simple screen asks to confirm or cancel the operation. +
 Then, depending on the type of the current entry:
 
-- If it is \'./' then Agite performs a 'git reset --hard', which resets the
-local changes in the *whole worktree* (root and subtree), not only the current
-directory.
+- If it is \'./' then Agite calls the xref:XReset[reset] menu to 'hard reset to
+head' or to 'clean the untracked files and directories' of the 
+*whole repository*, not only the current directory.
 - If it is a subdirectory (not \'./') then it is deleted, which
 succeeds only if it is empty.
 - If it is a file or a symbolic link,
@@ -593,9 +600,11 @@ committed content and the new one is reset as unknown by Git
 Note: The Revert button has no effect on a file known by Git and not modified,
 and is not active on \'../'.
 +
-Note: It is also possible to 'git reset --hard' the whole repository to a given
-branch, including current branch, through the xref:XHReset[HReset] button of
-the xref:XBranches[branches] menu.
+Note: It is also possible to 'reset --hard' the whole repository to a given
+branch, including current branch, through the xref:XBReset[Reset] button of
+the xref:XBranches[branches] menu. It is also possible to 'reset --hard' the
+whole repository to a given commit, including current head, through the
+xref:XHReset[Reset] button of the xref:XHist[history] menu
 
 .Other actions
 
@@ -711,11 +720,11 @@ If a branch is right-selected (reference) then the cherries to pick are
 the ones in the 'source' but not in the 'reference', otherwise the default
 reference is the 'target'.
 
-HReset::
+Reset::
 
-anchor:XHReset[]
-Click on the 'HReset' button to 'reset hard', after confirmation, the current
-repository to the index of the branch selected in the list.
+anchor:XBReset[]
+This button calls the xref:XReset[reset] menu to reset (soft, mixed or hard)
+the repository to the (left) selected branch.
 
 Create::
 
@@ -974,9 +983,10 @@ See the how-to xref:XCherryReorg[interactively rebase a branch on itself]
 and the section xref:XCherryError[Error in cherry-pick] on how to handle
 errors during a reorg.
 
-.HReset
-This button resets, after confirmation, the repository to the state of the
-(left) selected commit.
+.Reset
+anchor:XHReset[]
+This button calls the xref:XReset[reset] menu to reset (soft, mixed or hard)
+the repository to the (left) selected commit.
 
 .Tag
 This button button launches the xref:XTag[tag] menu that allows tagging the 
@@ -1309,7 +1319,7 @@ anchor:XCherryRebase[]
   - On the target branch, create a Tmp branch
   - Cherry pick from the source branch into Tmp branch (keep the initial
     selection of cherries 'picked')
-  - xref:XHReset[Hard reset] the rebased branch to Tmp branch
+  - xref:XBReset[Hard reset] the rebased branch to Tmp branch
   - Delete the Tmp branch
 +
 This is exactly how the xref:XRebase[rebase] is performed.
@@ -1321,7 +1331,7 @@ anchor:XCherryReorg[]
     xref:XHistCheckout[check out] it as a Tmp branch
   - Cherry pick from the original branch into this Tmp branch, modify the
     selection
-  - xref:XHReset[Hard reset] the rebased branch to Tmp branch
+  - xref:XBReset[Hard reset] the rebased branch to Tmp branch
   - Delete the Tmp branch
 +
 This is exactly how the xref:XReorg[reorg] is performed.
@@ -1607,6 +1617,27 @@ otherwise the error is reported through a specific screen.
 
 Moves back to the xref:XSelBranch[branch selection] menu without pulling.
 
+Reset
+~~~~~
+anchor:XReset[]
+This menu has two modes:
+
+.Called by the 'directory' menu,
+it allows to either:
+
+* 'Hard' reset the current repository to HEAD
+* 'Cleanup' from the current repository the untracked files and directories
+
+or to 'Cancel'.
+
+.Called by the 'branch' or the 'history' menu,
+it allows to reset the current repository the a branch or commit.
+The reset can be 'Soft', 'Mixed' or 'Hard', and it is also possible to
+'Cancel'.
+
+If cancelled it goes back to the calling menu, otherwise to the
+xref:XDir[directory] menu.
+
 Handling error in cherry-pick
 -----------------------------
 anchor:XCherryError[]
@@ -1704,7 +1735,7 @@ applying to the whole repository
 
 * 'Detail' shows the details of a commit on the current repository
 
-* 'Reset', when reverting on '.', resets the whole repository
+* 'Clean' and 'Reset', clean or reset the whole repository
 
 Anywhere
 ~~~~~~~~
@@ -1769,6 +1800,12 @@ calling 'git difftool -y -x <differator> <ref_HSA1_hash> <comp_HSA1_hash>
 
 * A function resets the repository to a commit or branch, by calling
  'git reset \--hard <ref>',
+
+* A function mixed or soft resets the repository to head, by calling
+'git reset --mixed | --soft',
+
+* A function cleans untracked files and directories by calling
+'git clean -d -f',
 
 * A function globally checks out a given commit or branch by calling
 'git checkout [ -b <branch> ] <ref>',

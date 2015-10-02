@@ -894,6 +894,34 @@ package body Git_If is
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
   end Do_Reset_Hard;
 
+  -- Launch a soft or mixed reset
+  procedure Do_Reset (Rev : in String; Soft : in Boolean) is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("reset");
+    if Soft then
+      Cmd.Cat ("--soft");
+    end if;
+    if Rev /= "" then
+      Cmd.Cat (Pt (Rev));
+    end if;
+    Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+  end Do_Reset;
+
+  -- Launch a clean
+  procedure Do_Clean is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("clean");
+    Cmd.Cat ("-d");
+    Cmd.Cat ("-f");
+    Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+  end Do_Clean;
+
   -- Launch a global checkout, return "" if OK, else the error
   function Do_Checkout (Rev_Tag, Branch : String) return String is
     Cmd : Many_Strings.Many_String;

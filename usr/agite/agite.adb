@@ -1,7 +1,7 @@
 with As.U, Afpx.Utils, Basic_Proc, Images, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Environ;
 with Utils.X, Git_If, Config, Bookmarks, History, Tags, Commit, Push_Pull,
-     Confirm, Confirm_Diff_Dir, Error, Stash, Branch, Afpx_Xref;
+     Confirm, Confirm_Diff_Dir, Error, Stash, Branch, Afpx_Xref, Reset;
 procedure Agite is
 
   -- Options
@@ -477,6 +477,7 @@ procedure Agite is
 
   procedure Do_Revert (Name, Prev : in String) is
     File : Git_If.File_Entry_Rec;
+    Dummy : Boolean;
   begin
     -- Call Confirm and restore current entry
     Position := Afpx.Line_List.Get_Position;
@@ -486,10 +487,9 @@ procedure Agite is
     if File.Kind = '/' then
       -- Handle Dir
       if File.Name.Image = "." then
-        if Confirm ("Ready to reset --hard the whole worktree", "") then
-          Git_If.Do_Reset_Hard;
-          Position := 1;
-        end if;
+        -- Hard reset to head or clean
+        Dummy := Reset (Root.Image, "");
+        Position := 1;
       elsif File.Name.Image = ".." then
         return;
       elsif Confirm ("Ready to remove directory:",

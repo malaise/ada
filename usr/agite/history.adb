@@ -1,6 +1,6 @@
 with As.U, Con_Io, Afpx.Utils, Normal, Rounds, Language, Directory, Str_Util;
 with Utils.X, Config, Details, View, Afpx_Xref, Restore, Checkout, Tags,
-     Branch, Confirm_Diff_Dir, Confirm;
+     Branch, Confirm_Diff_Dir, Reset;
 package body History is
 
   -- List Width
@@ -207,11 +207,9 @@ package body History is
       Pos := Afpx.Line_List.Get_Position;
       Logs.Move_At (Pos);
       Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
-      -- Confirm reset
+      -- Reset
       Str := As.U.Tus (Str_Util.Strip (Image1 (Log) & " " & Image2 (Log)));
-      if Confirm ("Ready to hard reset the whole repository to commit",
-                  Str.Image) then
-        Git_If.Do_Reset_Hard (Log.Hash);
+      if Reset (Root, Log.Hash, Str.Image) then
         return True;
       else
         -- Restore screen
@@ -411,7 +409,7 @@ package body History is
               if Do_Reorg then
                 return;
               end if;
-            when Afpx_Xref.History.Reset_Hard =>
+            when Afpx_Xref.History.Reset =>
               -- Reorg
               if Do_Reset then
                 return;

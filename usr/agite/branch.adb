@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with As.U.Utils, Directory, Afpx.Utils, Basic_Proc, Unicode, Str_Util;
-with Git_If, Utils.X, Afpx_Xref, Confirm, Error, Cherry;
+with Git_If, Utils.X, Afpx_Xref, Confirm, Error, Cherry, Reset;
 package body Branch is
 
   -- List width
@@ -116,7 +116,7 @@ package body Branch is
 
   -- Actions on branches
   type Action_List is (Create, Rename, Delete, Checkout, Merge, True_Merge,
-                       Rebase, Cherry_Pick, Reset_Hard);
+                       Rebase, Cherry_Pick, Reset);
   function Do_Action (Action : in Action_List;
                       Ref : in Natural := 0) return Boolean is
     Sel_Name, New_Name, Ref_Name : As.U.Asu_Us;
@@ -154,22 +154,20 @@ package body Branch is
 
     -- Cancel if not confirm
     if Action /= Create and then Action /= Rename
-    and then Action /= Cherry_Pick and then Action /= Rebase then
+    and then Action /= Rebase and then Action /= Cherry_Pick
+    and then Action /= Reset then
       if not Confirm (
           (case Action is
-             when Create | Rename | Cherry_Pick | Rebase => "???",
+             when Create | Rename | Rebase | Cherry_Pick | Reset => "???",
              when Delete     => "Delete branch " & Sel_Name.Image,
              when Checkout   => "Checkout branch " & Sel_Name.Image,
              when Merge      => "Merge branch " & Sel_Name.Image,
-             when True_Merge => "True Merge branch " & Sel_Name.Image,
-             when Reset_Hard => "Reset hard current branch "
-                                & Current_Branch.Image),
+             when True_Merge => "True Merge branch " & Sel_Name.Image),
           (case Action is
-             when Create | Rename | Cherry_Pick | Rebase | Delete
+             when Create | Rename | Rebase | Cherry_Pick | Reset | Delete
                 | Checkout => "",
              when Merge | True_Merge  => "into current branch "
-                                         & Current_Branch.Image,
-             when Reset_Hard => "to the head of " & Sel_Name.Image))
+                                         & Current_Branch.Image) )
       then
         Init;
         Reread (True);
@@ -241,10 +239,14 @@ package body Branch is
         Init;
         Reread (False);
         return Done;
-      when Reset_Hard =>
+      when Reset =>
         Previous_Branch := Sel_Name;
-        Git_If.Do_Reset_Hard (Sel_Name.Image);
-        return True;
+        Done := Reset (Root.Image, Sel_Name.Image);
+        if not Done then
+          Init;
+          Reread (False);
+        end if;
+        return Done;
     end case;
 
     -- Handle error
@@ -352,8 +354,8 @@ package body Branch is
               if Do_Action (Cherry_Pick, Ptg_Result.Id_Selected_Right) then
                 exit;
               end if;
-            when Afpx_Xref.Branches.Reset_Hard =>
-              if Do_Action (Reset_Hard) then
+            when Afpx_Xref.Branches.Reset =>
+              if Do_Action (Reset) then
                 exit;
               end if;
             when Afpx_Xref.Branches.Create =>

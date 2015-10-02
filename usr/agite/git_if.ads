@@ -132,6 +132,12 @@ package Git_If is
   -- Launch a reset --hard [ <rev> ]
   procedure Do_Reset_Hard (Rev : in String := "");
 
+  -- Launch a soft or mixed reset
+  procedure Do_Reset (Rev : in String; Soft : in Boolean);
+
+  -- Launch a clean
+  procedure Do_Clean;
+
   -- Launch a global checkout, return "" if OK, else the error
   function Do_Checkout (Rev_Tag, Branch : String) return String;
 
