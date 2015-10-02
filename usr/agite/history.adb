@@ -1,24 +1,35 @@
-with As.U, Con_Io, Afpx.Utils, Normal, Rounds, Language, Directory;
+with As.U, Con_Io, Afpx.Utils, Normal, Rounds, Language, Directory, Str_Util;
 with Utils.X, Config, Details, View, Afpx_Xref, Restore, Checkout, Tags,
-     Branch, Confirm_Diff_Dir;
+     Branch, Confirm_Diff_Dir, Confirm;
 package body History is
 
   -- List Width
   List_Width : Afpx.Width_Range;
+
+  -- Full image of a commit: Date, then Comment
+  function Image1 (Log : Git_If.Log_Entry_Rec) return String is
+  begin
+    return
+        -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD HH:MM "
+        Log.Date(03 .. 04) & Log.Date(06 .. 07) & Log.Date(09 .. 10) & '-'
+        & Log.Date(12 .. 13) & Log.Date(15 .. 16);
+  end Image1;
+  function Image2 (Log : Git_If.Log_Entry_Rec) return String is
+  begin
+    return
+        -- 1 or 2 lines of comment
+        Log.Comment(1).Image
+        & (if not Log.Comment(2).Is_Null then "$" & Log.Comment(2).Image
+           else "");
+  end Image2;
 
   -- Encode a commit on a given length
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in Git_If.Log_Entry_Rec) is
   begin
     Afpx.Utils.Encode_Line (
-        -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD HH:MM "
-        From.Date(03 .. 04) & From.Date(06 .. 07) & From.Date(09 .. 10) & '-'
-          & From.Date(12 .. 13) & From.Date(15 .. 16)
-          & (if From.Merged then '>' else ' '),
-        -- 1 or 2 lines of comment
-        From.Comment(1).Image
-          & (if not From.Comment(2).Is_Null then "$" & From.Comment(2).Image
-             else ""),
+        Image1 (From) & (if From.Merged then '>' else ' '),
+        Image2 (From),
         "", List_Width, Line, False);
   end Set;
 
@@ -186,6 +197,31 @@ package body History is
         return False;
       end if;
     end Do_Reorg;
+
+    -- Do a hard reset
+    function Do_Reset return Boolean is
+      Pos : Positive;
+      Str : As.U.Asu_Us;
+    begin
+      -- Save position in List and read it
+      Pos := Afpx.Line_List.Get_Position;
+      Logs.Move_At (Pos);
+      Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
+      -- Confirm reset
+      Str := As.U.Tus (Str_Util.Strip (Image1 (Log) & " " & Image2 (Log)));
+      if Confirm ("Ready to hard reset the whole repository to commit",
+                  Str.Image) then
+        Git_If.Do_Reset_Hard (Log.Hash);
+        return True;
+      else
+        -- Restore screen
+        Init;
+        Init_List (Logs);
+        Afpx.Line_List.Move_At (Pos);
+        Afpx.Update_List (Afpx.Center_Selected);
+        return False;
+      end if;
+    end Do_Reset;
 
     -- Do a tag
     procedure Do_Tag is
@@ -373,6 +409,11 @@ package body History is
             when Afpx_Xref.History.Reorg =>
               -- Reorg
               if Do_Reorg then
+                return;
+              end if;
+            when Afpx_Xref.History.Reset_Hard =>
+              -- Reorg
+              if Do_Reset then
                 return;
               end if;
             when Afpx_Xref.History.Tag =>

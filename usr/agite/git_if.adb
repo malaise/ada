@@ -869,15 +869,15 @@ package body Git_If is
     --  remain
   end Do_Reset;
 
-  -- Launch a reset --hard [ <branch> ]
-  procedure Do_Reset_Hard (Branch : in String := "") is
+  -- Launch a reset --hard [ <rev> ]
+  procedure Do_Reset_Hard (Rev : in String := "") is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
     Cmd.Cat ("reset");
     Cmd.Cat ("--hard");
-    if Branch /= "" then
-      Cmd.Cat (Pt (Branch));
+    if Rev /= "" then
+      Cmd.Cat (Pt (Rev));
     end if;
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);

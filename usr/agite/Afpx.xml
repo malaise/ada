@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V21.06"/>
+  <Var Name="Version" Value="V21.07"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -539,10 +539,10 @@
       <Init Row="1" Col="2">Diff</Init>
     </Field>
     <Field Num="22" Kind="Button" Name="Details">
-      <Geometry Up="${Field_21.Low}+2" Left="${LmLeft}" Height="3"
+      <Geometry Up="${Field_21.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">Detail</Init>
+      <Init Row="0" Col="1">Detail</Init>
     </Field>
     <Field Num="23" Kind="Button" Name="Restore">
       <Geometry Up="${Field_22.Low}+2" Left="${LmLeft}" Height="1"
@@ -562,27 +562,33 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Reorg</Init>
     </Field>
-    <Field Num="26" Kind="Button" Name="Tag">
+    <Field Num="26" Kind="Button" Name="Reset_Hard">
       <Geometry Up="${Field_25.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">HReset</Init>
+    </Field>
+    <Field Num="27" Kind="Button" Name="Tag">
+      <Geometry Up="${Field_26.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Tag</Init>
     </Field>
-    <Field Num="27" Kind="Put">
-      <Geometry Up="${Field_26.Low}+1" Left="${LmLeft}" Height="1"
+    <Field Num="28" Kind="Put">
+      <Geometry Up="${Field_27.Low}+1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
 
-    <Field Num="28" Kind="Put">
+    <Field Num="29" Kind="Put">
       <Geometry Up="${List.Low}-3" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
-    <Field Num="29" Kind="Button" Name="Back">
-      <Geometry Up="${Field_28.Low}+1" Left="${LmLeft}" Height="3"
+    <Field Num="30" Kind="Button" Name="Back">
+      <Geometry Up="${Field_29.Low}+1" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Back</Init>

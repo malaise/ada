@@ -129,8 +129,8 @@ package Git_If is
   -- Launch a reset of index synchronous
   procedure Do_Reset (File : in String);
 
-  -- Launch a reset --hard [ <branch> ]
-  procedure Do_Reset_Hard (Branch : in String := "");
+  -- Launch a reset --hard [ <rev> ]
+  procedure Do_Reset_Hard (Rev : in String := "");
 
   -- Launch a global checkout, return "" if OK, else the error
   function Do_Checkout (Rev_Tag, Branch : String) return String;

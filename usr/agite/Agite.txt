@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V21.06
+V21.07
 
 General purpose
 ---------------
@@ -974,6 +974,10 @@ See the how-to xref:XCherryReorg[interactively rebase a branch on itself]
 and the section xref:XCherryError[Error in cherry-pick] on how to handle
 errors during a reorg.
 
+.HReset
+This button resets, after confirmation, the workspace to the state of the
+(left) selected commit.
+
 .Tag
 This button button launches the xref:XTag[tag] menu that allows tagging the 
 selected commit.
@@ -1682,6 +1686,9 @@ workspace
 
 * 'Checkout' button (of the history menu or of the tags menu) checks out the
 commit in the current workspace
+
+* 'HReset' button (of the history menu or of the branches menu) resets the
+current workspace to the state of the commit or branch
 
 * 'Reorg' button (of the history menu) makes a rebase of the current branch,
 applying to the whole workspace
