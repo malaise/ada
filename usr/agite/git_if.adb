@@ -1,8 +1,11 @@
 with Ada.Exceptions;
 with Environ, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng, Str_Util,
-     Aski, Images, Regular_Expressions, Afpx;
+     Aski, Images, Regular_Expressions, Afpx, Trace.Loggers;
 with Utils;
 package body Git_If is
+
+  -- Logger of external calls
+  Logger : Trace.Loggers.Logger;
 
   -- For Command
   -- Two ouput flows as lists
@@ -34,6 +37,14 @@ package body Git_If is
                      Err_Flow : in Command.Flow_Access;
                      Exit_Code : out Command.Exit_Code_Range) is
   begin
+    -- Log call
+    if not Logger.Is_Init then
+      Logger.Init ("Git");
+    end if;
+    if Logger.Info_On  then
+      Logger.Log_Info (Cmd.Image ('|'));
+    end if;
+    -- Call GIT, with or without protecting Afpx
     if In_Afpx and then not Afpx.Is_Suspended then
       Afpx.Suspend;
       Command.Execute (Cmd, Use_Shell, Mix_Policy,
