@@ -175,7 +175,7 @@ begin
     Afpx.Utils.Protect_Field (Afpx_Xref.List_Tags.Push,
                               Afpx.Line_List.Is_Empty);
 
-    Afpx.Put_Then_Get (Get_Handle, Ptg_Result, True);
+    Afpx.Put_Then_Get (Get_Handle, Ptg_Result, False);
 
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
