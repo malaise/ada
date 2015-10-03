@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with As.U, Directory, Afpx.Utils, Str_Util, Basic_Proc,
-     Aski, Images;
+     Aski, Images, Trilean;
 with Utils.X, Config, Push_Pull, Afpx_Xref, Confirm, Error;
 package body Commit is
 
@@ -40,25 +40,55 @@ package body Commit is
 
   function Is_Staged (C : Character) return Boolean is
   begin
-    return C /= ' ' and then C /= '?';
+    return C /= ' ' and then C /= '?' and then C /= '-';
   end Is_Staged;
 
+  -- Is E Staged
+  function Staged (E : Git_If.File_Entry_Rec) return Trilean.Trilean is
+  begin
+    return (if    not Is_Staged (E.S2) then Trilean.False
+            elsif not Is_Staged (E.S3) then Trilean.True
+            else Trilean.Other);
+  end Staged;
+
+  -- Separator File entry and Afpx line
+  Sep_File : constant Git_If.File_Entry_Rec
+           := (Kind => '-', S2 => '-', others => <>);
+  Sep : constant Afpx.Line_Rec := (Len => Afpx.Line_Len_Range'Last,
+                                   Str => (others => Character'Pos('-')) );
+  function Is_Sep return Boolean is
+    use type Afpx.Line_Rec;
+  begin
+    return Afpx.Line_List.Access_Current.all = Sep;
+  end Is_Sep;
+
+  -- Encode Afpx line
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in Git_If.File_Entry_Rec) is
+    use type Git_If.File_Entry_Rec;
   begin
-    Afpx.Utils.Encode_Line (
-        (if    not Is_Staged (From.S2) then ' '
-         elsif not Is_Staged (From.S3) then '+'
-         else '*')
-      & From.S2 & From.S3 & ' ',
-        From.Name.Image, "", List_Width, Line);
+    if From = Sep_File then
+      Line := Sep;
+    else
+      Afpx.Utils.Encode_Line ( (case Staged (From) is
+                                  when Trilean.False => ' ',
+                                  when Trilean.True  => '+',
+                                  when Trilean.Other => '*')
+                               & From.S2 & From.S3 & ' ',
+                              From.Name.Image, "", List_Width, Line);
+    end if;
   exception
     when Error:others =>
       Basic_Proc.Put_Line_Error ("Exception "
           & Ada.Exceptions.Exception_Name (Error)
           & " raised in commit on " & From.Name.Image);
   end Set;
+  -- Init Afpx list
+  procedure Init_List is new Afpx.Utils.Init_List (
+    Git_If.File_Entry_Rec, Git_If.File_Mng, Set, False);
 
+
+  -- Search entry by kind and name
   function Match (Current, Criteria : Git_If.File_Entry_Rec) return Boolean is
     use type As.U.Asu_Us;
   begin
@@ -66,9 +96,65 @@ package body Commit is
   end Match;
   function Change_Search is new Git_If.File_Mng.Dyn_List.Search (Match);
 
+  -- Sort entry: Unstaged, Partly staged, Staged
+  function Less_Than (E1, E2 : Git_If.File_Entry_Rec) return Boolean is
+    S1, S2 : Trilean.Trilean;
+    use type Trilean.Trilean, As.U.Asu_Us;
+  begin
+    S1 := Staged (E1);
+    S2 := Staged (E2);
+    if S1 = S2 then
+      -- Same stage status
+      return E1.Name < E2.Name;
+    end if;
+    return (case S1 is
+        -- S1 is not staged at all
+        when Trilean.False => True,
+        -- S1 is fully staged
+        when Trilean.True => False,
+        -- S1 is partially staged, S2 is fully or not
+        when Trilean.Other => S2 = Trilean.True);
+  end Less_Than;
+  procedure Sort is new Git_If.File_Mng.Dyn_List.Sort (Less_Than);
 
-  procedure Init_List is new Afpx.Utils.Init_List (
-    Git_If.File_Entry_Rec, Git_If.File_Mng, Set, False);
+  -- Insert separators in List
+  procedure Separate_List (List : in out Git_If.File_List) is
+    Prev, Curr : Trilean.Trilean;
+    use type Trilean.Trilean;
+  begin
+    if List.Is_Empty then
+      return;
+    end if;
+    -- Scan list and insert Sep when first char changes
+    List.Rewind;
+    Prev := Trilean.False;
+    loop
+      -- Get status
+      Curr := Staged (List.Access_Current.all);
+      if Curr /= Prev then
+        -- Insert separator file
+        List.Insert (Sep_File, Git_If.File_Mng.Dyn_List.Prev);
+        List.Move_To;
+        if Prev = Trilean.False and then Curr = Trilean.True then
+          -- No partially staged => Insert a second separator file
+          List.Insert (Sep_File, Git_If.File_Mng.Dyn_List.Prev);
+          List.Move_To;
+        end if;
+      end if;
+      Prev := Curr;
+      exit when not List.Check_Move;
+      List.Move_To;
+    end loop;
+    -- Add trailing seperators
+    if Curr /= Trilean.True then
+      -- Last item was not or partially staged => insert a Sep
+      List.Insert (Sep_File);
+    end if;
+    if Curr = Trilean.False then
+      -- Last item was not staged => insert a second Sep
+      List.Insert (Sep_File);
+    end if;
+  end Separate_List;
 
   -- Handle the commit of modifications
   -- Show button Done instead of Back, Quit instead of Push
@@ -85,7 +171,6 @@ package body Commit is
 
     -- The changes
     Changes : Git_If.File_List;
-
 
     -- Afpx Ptg stuff
     Get_Handle : Afpx.Get_Handle_Rec;
@@ -172,7 +257,7 @@ package body Commit is
     begin
       Changed := Force;
       -- Save current position and entry
-      if not Force and then not Changes.Is_Empty
+      if not Changes.Is_Empty
       and then not Afpx.Line_List.Is_Empty then
         Pos := Afpx.Line_List.Get_Position;
         Changes.Move_At (Pos);
@@ -184,6 +269,8 @@ package body Commit is
       -- Refresh list only if it has changed
       -- Update list of files and branch
       Git_If.List_Changes (Changes);
+      Sort (Changes);
+      Separate_List (Changes);
       Utils.X.Encode_Branch (Afpx_Xref.Commit.Branch);
 
       -- Check lengths then content
@@ -264,6 +351,9 @@ package body Commit is
     -- Edit
     procedure Do_Edit is
     begin
+      if Is_Sep then
+        return;
+      end if;
       Changes.Move_At (Afpx.Line_List.Get_Position);
       Utils.Launch (Editor.Image & " "
                   & Utils.Protect_Text (Changes.Access_Current.Name.Image),
@@ -273,6 +363,9 @@ package body Commit is
     -- Diff
     procedure Do_Diff is
     begin
+      if Is_Sep then
+        return;
+      end if;
       Changes.Move_At (Afpx.Line_List.Get_Position);
       Git_If.Launch_Diff (Differator.Image,
                           Changes.Access_Current.Name.Image);
@@ -282,6 +375,9 @@ package body Commit is
     procedure Do_Stage (Stage : in Boolean; Move : in Boolean) is
       Status : Character;
     begin
+      if Is_Sep then
+        return;
+      end if;
       Changes.Move_At (Afpx.Line_List.Get_Position);
       Status := Changes.Access_Current.S3;
       if Stage then
@@ -309,6 +405,9 @@ package body Commit is
     -- Switch stage
     procedure Switch_Stage is
     begin
+      if Is_Sep then
+        return;
+      end if;
       Changes.Move_At (Afpx.Line_List.Get_Position);
       if Is_Staged (Changes.Access_Current.S2)
       and then not Is_Staged (Changes.Access_Current.S3) then
@@ -328,17 +427,21 @@ package body Commit is
     begin
       -- Reread and update changes
       Git_If.List_Changes (Changes);
+      Sort (Changes);
+      Separate_List (Changes);
       if not Changes.Is_Empty then
         Changes.Rewind;
         loop
           Changes.Read (Change, Moved => Moved);
-          if Change.S3 = 'M' or else Change.S3 = 'T' or else Change.S3 = 'U'
-          or else Change.S3 = 'A' then
-            Git_If.Do_Add (Change.Name.Image);
-          elsif Change.S3 = 'D' then
-            Git_If.Do_Rm (Change.Name.Image);
-          elsif Change.S3 = '?' then
-            Untracked.Insert (Change);
+          if not Is_Sep then
+            if Change.S3 = 'M' or else Change.S3 = 'T' or else Change.S3 = 'U'
+            or else Change.S3 = 'A' then
+              Git_If.Do_Add (Change.Name.Image);
+            elsif Change.S3 = 'D' then
+              Git_If.Do_Rm (Change.Name.Image);
+            elsif Change.S3 = '?' then
+              Untracked.Insert (Change);
+            end if;
           end if;
           exit when not Moved;
         end loop;
@@ -425,7 +528,7 @@ package body Commit is
 
     -- Main loop
     loop
-      Afpx.Put_Then_Get (Get_Handle, Ptg_Result, True);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result, False);
 
       case Ptg_Result.Event is
         when Afpx.Keyboard =>

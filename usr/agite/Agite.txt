@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V22.02
+V23.00
 
 General purpose
 ---------------
@@ -1377,9 +1377,15 @@ This list shows all the current changes in the repository, with 3 letters of
 status for each file:
 
 * The first column ('S') shows the summary of the status:
- - a '''+''' if all the changes of the file are staged,
- - a '''*''' if some changes are staged and some others are not,
- - empty if no changes are staged (e.g. locally modified or new).
+ - empty if no changes are staged (e.g. locally modified or deleted),
+ - a '''*''' if some changes are staged and some others are not (also in case
+of unresolved conflicts),
+ - a '''+''' if all the changes of the file are staged.
+
++
+The list is sorted according to these three categories, separated by dummy
+entries "-----------------".
+
 * The second column ('I') shows the changes in the index (that will be
 committed),
 * The third column ('L') shows the changes local to the repository (that will
