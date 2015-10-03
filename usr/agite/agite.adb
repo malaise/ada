@@ -469,8 +469,13 @@ procedure Agite is
   procedure Do_Add_File (File : in Git_If.File_Entry_Rec) is
   begin
     if File.S2 = '?' or else File.S2 = ' ' or else File.S2 = 'U' then
-      -- Untracked or not in index or unmerged
-      Git_If.Do_Add (File.Name.Image);
+      if File.S3 = 'D' then
+        -- File being deleted
+        Git_If.Do_Rm (File.Name.Image);
+      else
+        -- Untracked or not in index or unmerged
+        Git_If.Do_Add (File.Name.Image);
+      end if;
       Encode_Files (Force => False);
     end if;
   end Do_Add_File;
@@ -681,6 +686,9 @@ procedure Agite is
                                    Hash, "");
             end if;
           end;
+        when Add =>
+          -- File is going to be deleted: stage the change
+          Do_Add_File (File);
         when others =>
           null;
       end case;
