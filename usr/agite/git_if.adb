@@ -1053,6 +1053,18 @@ package body Git_If is
     end if;
   end Do_Fetch;
 
+  -- Prune useless tracked branches on Remote
+  procedure Do_Prune (Remote : String) is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("remote");
+    Cmd.Cat ("prune");
+    Cmd.Cat (Pt (Remote));
+    Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+  end Do_Prune;
+
   -- Get current branch name
   No_Branch : constant String := "(no branch)";
   function Current_Branch return String is

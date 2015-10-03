@@ -162,6 +162,9 @@ package Git_If is
   function Do_Fetch (Remote : String; Branch : String; Pull : Boolean)
                     return String;
 
+  -- Prune useless tracked branches on Remote
+  procedure Do_Prune (Remote : String);
+
   -- Get current branch name
   function Current_Branch return String;
 

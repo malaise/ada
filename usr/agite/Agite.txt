@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V23.01
+V24.00
 
 General purpose
 ---------------
@@ -1508,8 +1508,6 @@ Any error is reported through a specific screen.
 
 Moves back to the xref:XCommit[commit] menu without pushing.
 
-anchor:XSelBranch[]
-
 Stash
 ~~~~~
 anchor:XStash[]
@@ -1564,39 +1562,38 @@ The 'pull' menu allows pulling the current branch (fetching and merging) or
 fetching only another branch from a remote repository. +
 This is achieved through two successive screens.
 
-Branch selection
+Remote selection
 ^^^^^^^^^^^^^^^^
-anchor:XSelBranch[]
-This screen allows selecting the branch to pull. +
+anchor:XSelRemote[]
+This screen allows selecting the remote repository from which to pull. +
 It shows:
 
 .Current branch and root
-
 This shows the current branch and the path of the root of the current
 repository.
 
-.List of remote branches
+.List of remote repositories
 
-This lists all the known remote branches, from which you can select the branch
-to fetch. +
-The current branch is selected by default and will be pulled. If you select
-another branch it will only be fetched and you will have to xref:XMerge[merge]
-it explicitly if you want.
+This lists all the known remote repositories.
+If the remote ''orign'' is defined then it is selected by default.
 
-.OK
+.Prune
+This button prunes from the local repository all the tracking branches that
+refer to the selected remote and that do not exist (any more) in this remote.
 
-Validates the branch selection and activates the 
-xref:XSelReference[reference selection] for selecting the remote reference and
-pulling from it.
+.Pull
+Validates the selection of remote and activates the 
+xref:XSelBranch[branch selection] for selecting the branch to pull or fetch.
 
 .Back
 
 Moves back to the xref:XDir[directory] menu without pulling.
 
-Reference selection
-^^^^^^^^^^^^^^^^^^^
-anchor:XSelReference[]
-This screen allows selecting the remote repository from which to pull. +
+Branch selection
+^^^^^^^^^^^^^^^^
+anchor:XSelBranch[]
+This screen allows selecting the branch to pull or fetch from the
+repository previously selected. +
 It shows:
 
 .Current branch and root
@@ -1604,28 +1601,28 @@ It shows:
 This shows the current branch and the path of the root of the current
 repository.
 
-.Selected branch to pull
+.Selected remote
 
-Below the title is displayed the branch (previously selected) that will be
-pulled.
+Below the title is displayed the remote (previously selected).
 
-.List of references
+.List of branches
 
-This lists the known references from which you can select the one to pull the
-branch from. +
-If the remote ''orign'' is defined then it is selected by default.
+This lists the known remote branches from which you can select the one to
+pull or fetch. +
+If it exists, the current branch is selected by default and will be pulled.
+If you select another branch it will only be fetched and you will have to
+xref:XMerge[merge] it explicitly if you want.
 
-.Pull or Fetch
+.OK
 
-This button shows 'Pull' if the selected remote branch is the same as current
-branch, otherwise it shows 'Fetch'. It pulls or fetches the remote branch from
-the selected remote repository. +
+This button pulls or fetches the selected remote branch from the remote
+repository. +
 If there is no error then Agite returns back to the xref:XDir[directory] menu,
 otherwise the error is reported through a specific screen.
 
 .Back
 
-Moves back to the xref:XSelBranch[branch selection] menu without pulling.
+Moves back to the xref:XSelRemote[remote selection] menu without pulling.
 
 Reset
 ~~~~~
@@ -1833,6 +1830,9 @@ calling 'git difftool -y -x <differator> <ref_HSA1_hash> <comp_HSA1_hash>
 * A function fetches or pulls the current branch by calling
 'git fetch --tags <remote> <branch>' or
 'git pull --tags <remote> <branch>',
+
+* A function prunes useless remote branches by calling 'git remote prune
+<remote>',
 
 * A function gets the name of current branch by calling 'git branch',
 

@@ -2,7 +2,7 @@ with As.U.Utils, Afpx.Utils, Unicode;
 with Utils.X, Git_If, Afpx_Xref, Error;
 package body Push_Pull is
 
-  type Menu_List is (Push, Pull_Branch, Pull);
+  type Menu_List is (Push, Pull_Remote, Pull_Branch);
   -- Handle the Push (of tag), the Pull_Branch and the Pull
   function Do_Handle (Root : String;
                       Menu : Menu_List;
@@ -30,6 +30,9 @@ package body Push_Pull is
   -- The references
   References : Git_If.Reference_Mng.List_Type;
 
+  -- Current branch
+  Curr_Branch : As.U.Asu_Us;
+
   -- Get remote and push
   function Do_Push (Tag : in String;
                     Set_Upstream : in Boolean;
@@ -47,36 +50,41 @@ package body Push_Pull is
     end if;
   end Do_Push;
 
-  -- Get branch and call Do_Handle (Pull, Branch);
+  -- Get remote and call Do_Handle (Pull, Remote);
   function Do_Pull_Branch (Root : String) return Boolean is
-    Branch : As.U.Asu_Us;
-    Index : Natural;
-    Log : As.U.Asu_Us;
+    Remote : As.U.Asu_Us;
   begin
-    -- Get current selected branch
+    -- Get current selected remote
     References.Move_At (Afpx.Line_List.Get_Position);
-    References.Read (Branch, Git_If.Reference_Mng.Current);
-    Index := Branch.Locate (Git_If.Separator & "");
-    if Index < 2 or else Index > Branch.Length - 1 then
-      Log.Set ("Invalid remote branch format");
-      return False;
-    else
-      return Do_Handle (Root, Pull, Branch.Slice (Index + 1, Branch.Length));
-    end if;
+    References.Read (Remote, Git_If.Reference_Mng.Current);
+    return Do_Handle (Root, Pull_Branch, Remote.Image);
   end Do_Pull_Branch;
 
   -- Fetch or pull (remote branch)
-  function Do_Fetch (Branch : String; Pull : Boolean) return Boolean is
-    Log : As.U.Asu_Us;
+  function Do_Fetch (Remote : String) return Boolean is
+    Branch, Log : As.U.Asu_Us;
+    Remote_Sep : constant String := Remote & Git_If.Separator;
+    Pull : Boolean;
   begin
+    -- Get selected branch name
     References.Move_At (Afpx.Line_List.Get_Position);
-    Log := As.U.Tus (
-          Git_If.Do_Fetch (References.Access_Current.Image, Branch, Pull));
+    References.Read (Branch, Git_If.Reference_Mng.Current);
+    -- Remove remote from branch name if possible
+    if Branch.Length > Remote_Sep'Length
+    and then Branch.Slice (1, Remote_Sep'Length) = Remote_Sep then
+      Branch.Delete ( 1, Remote_Sep'Length);
+      -- Pull if same branch name
+      Pull := Curr_Branch.Image = Branch.Image;
+    else
+      -- Fetch
+      Pull := False;
+    end if;
+    -- Fetch
+    Log := As.U.Tus (Git_If.Do_Fetch (Remote, Branch.Image, Pull));
     if Log.Is_Null then
       return True;
     else
-      Error ("Pulling branch",
-             References.Access_Current.Image & Git_If.Separator & Branch,
+      Error ("Pulling branch " &  Branch.Image,"from remote " & Remote,
              Log.Image);
       return False;
     end if;
@@ -89,8 +97,6 @@ package body Push_Pull is
     -- Afpx stuff
     Get_Handle : Afpx.Get_Handle_Rec;
     Ptg_Result   : Afpx.Result_Rec;
-    -- Current branch
-    Curr_Branch : As.U.Asu_Us;
     -- Result of Push or Pull
     Result : Boolean;
     use type Afpx.Absolute_Field_Range, As.U.Asu_Us;
@@ -117,26 +123,27 @@ package body Push_Pull is
                                  Menu = Push and then Branch_Tag = "");
       Afpx.Set_Field_Activation (Afpx_Xref.Push_Pull.Push_Force,
                                  Menu = Push and then Branch_Tag = "");
+      -- Prune only for Pull_Remote
+      Afpx.Set_Field_Activation (Afpx_Xref.Push_Pull.Prune,
+                                 Menu = Pull_Remote);
       case Menu is
         when Push =>
           Utils.X.Center_Field ("Push " & Branch_Tag,
                                 Afpx_Xref.Push_Pull.Title);
+        when Pull_Remote =>
+          Utils.X.Center_Field (Branch_Tag, Afpx_Xref.Push_Pull.Sub_Title);
+          Utils.X.Center_Field ("Select remote", Afpx_Xref.Push_Pull.Title);
+          Utils.X.Center_Field ("Pull", Afpx_Xref.Push_Pull.Push);
+          Afpx.Reset_Field (Afpx_Xref.Push_Pull.Entries);
         when Pull_Branch =>
-          Utils.X.Center_Field ("Pull", Afpx_Xref.Push_Pull.Title);
-          Utils.X.Center_Field ("Select branch", Afpx_Xref.Push_Pull.Sub_Title);
+          Utils.X.Center_Field ("Pull from " & Branch_Tag,
+                                Afpx_Xref.Push_Pull.Title);
+          Utils.X.Center_Field ("Select branch",
+                                Afpx_Xref.Push_Pull.Sub_Title);
           Utils.X.Center_Field ("OK", Afpx_Xref.Push_Pull.Push);
           Afpx.Clear_Field (Afpx_Xref.Push_Pull.Entries);
-          Afpx.Encode_Field (Afpx_Xref.Push_Pull.Entries, (0, 0), "Branches:");
-        when Pull =>
-          Utils.X.Center_Field (Branch_Tag, Afpx_Xref.Push_Pull.Sub_Title);
-          if Branch_Tag = Curr_Branch then
-            Utils.X.Center_Field ("Pull branch", Afpx_Xref.Push_Pull.Title);
-            Utils.X.Center_Field ("Pull", Afpx_Xref.Push_Pull.Push);
-          else
-            Utils.X.Center_Field ("Fetch branch", Afpx_Xref.Push_Pull.Title);
-            Utils.X.Center_Field ("Fetch", Afpx_Xref.Push_Pull.Push);
-          end if;
           Afpx.Reset_Field (Afpx_Xref.Push_Pull.Entries);
+          Afpx.Encode_Field (Afpx_Xref.Push_Pull.Entries, (0, 0), "Branches:");
       end case;
 
       -- Get list of references
@@ -149,13 +156,13 @@ package body Push_Pull is
 
       Afpx.Utils.Protect_Field (Afpx_Xref.Push_Pull.Push, References.Is_Empty);
       if not References.Is_Empty then
-        -- Move to "origin" for push and pull,
-        --  or "origin":<branch> for pull branch, or top
+        -- Move to "origin" for push and pull_remote,
+        --  or <remote>/<branch> for pull_branch, or top
         if Menu /= Pull_Branch  then
           Afpx.Encode_Line (Origin, "origin");
         elsif not Curr_Branch.Is_Null then
           Set (Origin,
-               As.U.Tus ("origin" & Git_If.Separator & Curr_Branch.Image));
+               As.U.Tus (Branch_Tag & Git_If.Separator & Curr_Branch.Image));
         end if;
         if not Search (Afpx.Line_List, Origin,
                        From => Afpx.Line_List_Mng.Absolute) then
@@ -194,14 +201,18 @@ package body Push_Pull is
                   Ptg_Result.Field_No
                 - Utils.X.List_Scroll_Fld_Range'First
                 + 1);
+            when Afpx_Xref.Push_Pull.Prune =>
+              -- Prune remotes of selected remote
+              References.Move_At (Afpx.Line_List.Get_Position);
+              Git_If.Do_Prune (References.Access_Current.Image);
             when Afpx.List_Field_No | Afpx_Xref.Push_Pull.Push =>
               case Menu is
-                when Pull_Branch =>
+                when Pull_Remote =>
                   -- Pull branch
                   Result := Do_Pull_Branch (Root);
-                when Pull =>
+                when Pull_Branch =>
                   -- Fetch branch
-                  Result := Do_Fetch (Branch_Tag, Branch_Tag = Curr_Branch);
+                  Result := Do_Fetch (Branch_Tag);
                 when Push =>
                   -- Push branch or tag
                   Result := Do_Push (Branch_Tag, False, False);
@@ -257,7 +268,7 @@ package body Push_Pull is
                    Tag : String := "") return Boolean is
   begin
     if Pull then
-      return Do_Handle (Root, Pull_Branch, "");
+      return Do_Handle (Root, Pull_Remote, "");
     else
       return Do_Handle (Root, Push, Tag);
     end if;
