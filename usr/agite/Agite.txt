@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V24.00
+V25.00
 
 General purpose
 ---------------
@@ -322,26 +322,26 @@ of the current repository.
 anchor:XNavigation[]
 The navigation between the screens is as follows:
 
-
-                                +----------+        +------------+
-                            /-> | Branches |------->| CherryPick |--+
-                           /    +----------+        +------------+  |
-                          /     +-----------+                       |
-                         /----->| Bookmarks |                       |
-                        /       +-----------+       +-----+         |
-                       /                  /-------->| Tag |         |
-                      /                  /          +-----+         |
-                     /          +-------+-+         +--------+      |
-                    /---------->| History |<-----+->| Detail |<-----+
-                   /            +-------+-+     /   +--------+      |
-                  /             +------+ \     /    +----------+    |
-                 /--------------| Tags |--+---+---->| Checkout |    |
-                /               +------+   \        +----------+    |
-  +---------- +/                +-------+   \       +------+        |
-  | Directory |---------------->| Commit|----+----->| Push |        |
-  +---------- +\                +-------+<-\        +------+        |
-                \               +-------+   \-----------------------+
-                 \------------->| Stash |
+                                               /-----------------------+
+                                +----------+  /     +------------+     |
+                            /-> | Branches |-/----->| CherryPick |--+  |
+                           /    +----------+        +------------+  |  |
+                          /     +-----------+                       |  |
+                         /----->| Bookmarks |                       |  |
+                        /       +-----------+       +-----+         |  |
+                       /                  /-------->| Tag |         |  |
+                      /                  /          +-----+         |  |
+                     /          +-------+-+         +--------+      |  |
+                    /---------->| History |<-----+->| Detail |<-----+  |
+                   /            +-------+-+     /   +--------+      |  |
+                  /             +------+ \     /    +----------+    |  |
+                 /--------------| Tags |--+---+---->| Checkout |    |  |
+                /               +------+   \        +----------+    |  |
+  +---------- +/                +-------+   \       +------+        |  |
+  | Directory |---------------->| Commit|----+----->| Push |        |  |
+  +---------- +\                +-------+<-\        +------+        |  |
+                \               +-------+   \-----------------------+  |
+                 \------------->| Stash |    \-------------------------+
                   \             +-------+
                    \            +------+
                     \---------->| Pull |
@@ -673,8 +673,8 @@ automatically generated with the comment "Merge branch \'<branch>'".
 TruMerge::
 Click in the 'TruMerge' button to merge, after confirmation, the
 branch selected in the list into the current branch, with no 'fast forward'
-policy. A new commit is always automatically generated with the comment
-"Merge branch \'<branch>'".
+and no commit policy. Then the xref:XCommit[commit] screen allows amending
+the comment and commiting the result.
 
 Rebase::
 anchor:XRebase[]

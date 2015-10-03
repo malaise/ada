@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with As.U.Utils, Directory, Afpx.Utils, Basic_Proc, Unicode, Str_Util;
-with Git_If, Utils.X, Afpx_Xref, Confirm, Error, Cherry, Reset;
+with Git_If, Utils.X, Afpx_Xref, Confirm, Error, Cherry, Reset, Commit;
 package body Branch is
 
   -- List width
@@ -120,6 +120,7 @@ package body Branch is
   function Do_Action (Action : in Action_List;
                       Ref : in Natural := 0) return Boolean is
     Sel_Name, New_Name, Ref_Name : As.U.Asu_Us;
+    Comment : As.U.Asu_Us;
     Pos : Positive;
     Message, Result : As.U.Asu_Us;
     Done : Boolean;
@@ -210,17 +211,25 @@ package body Branch is
       when Merge =>
         Message := As.U.Tus ("Merging branch " & Sel_Name.Image);
         Previous_Branch := Sel_Name;
+        -- Commit comment
+        Comment := As.U.Tus ("Merge branch '" & Sel_Name.Image & "'");
+        -- Merge, allow fast forward and commit
         Result := As.U.Tus (
-           Git_If.Merge_Branch (Sel_Name.Image,
-                                "Merge branch '" & Sel_Name.Image & "'",
-                                False));
+           Git_If.Merge_Branch (Sel_Name.Image, Comment.Image, False, False));
+        if not Result.Is_Null then
+          -- Set comment for on going manual commit
+          Commit.Set_Comment (Comment.Image);
+        end if;
       when True_Merge =>
         Message := As.U.Tus ("True merging branch " & Sel_Name.Image);
         Previous_Branch := Sel_Name;
+        -- Commit comment
+        Comment := As.U.Tus ("Merge branch '" & Sel_Name.Image & "'");
+        -- Merge, disallow fast forward and do not commit
         Result := As.U.Tus (
-           Git_If.Merge_Branch (Sel_Name.Image,
-                                "Merge branch '" & Sel_Name.Image & "'",
-                                True));
+           Git_If.Merge_Branch (Sel_Name.Image, "", True, True));
+        -- Set comment for on going manual commit
+        Commit.Set_Comment (Comment.Image);
       when Rebase =>
         Message := As.U.Tus ("Rebasing branch " & Current_Branch.Image
                              & " to head of " & Sel_Name.Image);
@@ -256,6 +265,12 @@ package body Branch is
       Reread (False);
       -- Rebase always True, else False
       return Action = Rebase;
+    end if;
+
+    -- Call commit aftert successful true merge
+    if Action = True_Merge then
+      Commit.Handle (Root.Image, Allow_Modif => False);
+      Init;
     end if;
 
     -- Done

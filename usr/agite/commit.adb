@@ -630,10 +630,11 @@ package body Commit is
   end Common_Handle;
 
   -- Handle the commit of modifications
-  procedure Handle (Root : in String) is
+  procedure Handle (Root : in String;
+                   Allow_Modif : in Boolean := True) is
     Dummy : Boolean;
   begin
-    Dummy := Common_Handle (Root, False, Git_If.No_Hash, True, Allow);
+    Dummy := Common_Handle (Root, False, Git_If.No_Hash, Allow_Modif, Allow);
   end Handle;
 
   -- Handle the commit of modifications
@@ -656,6 +657,12 @@ package body Commit is
     end if;
     return Comment.Image;
   end Get_Comment;
+
+  -- Set default comment for next commit
+  procedure Set_Comment (Str : in String) is
+  begin
+    Comment := As.U.Tus (Str & Aski.Lf);
+  end Set_Comment;
 
 end Commit;
 

@@ -1207,7 +1207,8 @@ package body Git_If is
 
   -- Merge a branch, return "" if Ok else the error
   function Merge_Branch (Name : String; Comment : String;
-                         No_Fast_Forward : in Boolean) return String is
+                         No_Fast_Forward : Boolean;
+                         No_Commit : Boolean) return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
@@ -1216,6 +1217,9 @@ package body Git_If is
     Cmd.Cat (Pt (Comment));
     if No_Fast_Forward then
       Cmd.Cat ("--no-ff");
+    end if;
+    if No_Commit then
+      Cmd.Cat ("--no-commit");
     end if;
     Cmd.Cat (Pt (Name));
     Execute (Cmd, True, Command.Both,
