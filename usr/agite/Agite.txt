@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V23.00
+V23.01
 
 General purpose
 ---------------
@@ -1335,6 +1335,10 @@ anchor:XCherryReorg[]
   - Delete the Tmp branch
 +
 This is exactly how the xref:XReorg[reorg] is performed.
+
+NOTE: xref:XRebase[Rebase] and xref:XReorg[reorg] create a temporary branch
+named "\{Agite}@"<source>".Tmp". If this branch already exists then another
+".Tmp" is appended, and so on.
 
 Commit
 ~~~~~~

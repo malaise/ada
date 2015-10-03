@@ -90,10 +90,12 @@ package body Cherry is
     Merge := Branch = From_Branch.Image
              and then Reference = Ref_Branch.Image
              and then Curr_Branch = To_Branch.Image;
-    -- Confirm reuse
-    Merge := Merge and then Confirm (
-      "Restart cherry pick from branch " & Branch,
-      "into " & Curr_Branch, Ok_Cancel => False);
+    if Mode = Interactive then
+      -- Confirm reuse
+      Merge := Merge and then Confirm (
+        "Restart cherry pick from branch " & Branch,
+        "into " & Curr_Branch, Ok_Cancel => False);
+    end if;
     if Merge then
       Old_Cherries.Insert_Copy (Cherries);
     end if;
@@ -354,7 +356,7 @@ package body Cherry is
                       (if Mode = Interactive then
                          "into current branch " & Git_If.Current_Branch
                        else
-                         "into a temporary branch for reorg"),
+                         "into a temporary branch for reorg/rebase"),
                       Show_List => True) then
         return Cancelled;
       end if;

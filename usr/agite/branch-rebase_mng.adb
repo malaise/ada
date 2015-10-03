@@ -4,36 +4,41 @@ package body Rebase_Mng is
   -- Memory of previous rebase
   Rebased, Target, Reference, Temporary : As.U.Asu_Us;
 
+  -- Search a branch
+  function Branch_Search is new Git_If.Branches_Mng.Search (As.U."=");
 
   -- Find a unused Tmp branch name
-  function Find_Tmp_Name return String is
-    Suffix : constant String := "Tmp";
-    Pos : Positive;
+  function Find_Tmp_Name (From : in String) return String is
+    Branches : Git_If.Branches_Mng.List_Type;
+    Suffix : constant String := ".Tmp";
     Name : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
+    -- List branches
     Git_If.List_Branches (Local => True, Branches => Branches);
-    if Branches.Is_Empty then
-      return Suffix;
-    end if;
 
-    -- Save Pos
-    Pos := Branches.Get_Position;
-    -- Find longest branch
+    -- Try "{Agite}@From.Tmp" and concat ".Tmp" as long as it already exists
     Branches.Rewind;
+    Name := As.U.Tus ("{Agite}@" & From  & Suffix);
     loop
-      if Branches.Access_Current.Length > Name.Length then
-        Branches.Read (Name, Git_If.Branches_Mng.Current);
-      end if;
-      exit when not Branches.Check_Move;
-      Branches.Move_To;
+      exit when not Branch_Search (Branches, Name,
+                                   From => Git_If.Branches_Mng.Absolute);
+        Name.Append (Suffix);
     end loop;
-    -- Restore Pos
-    Branches.Move_At (Pos);
 
     -- Done
-    return Name.Image & "." & Suffix;
+    return Name.Image;
   end Find_Tmp_Name;
+
+  -- Check if a branch exists
+  function Exists (Branch : As.U.Asu_Us) return Boolean is
+    Branches : Git_If.Branches_Mng.List_Type;
+  begin
+    -- List branches
+    Git_If.List_Branches (Local => True, Branches => Branches);
+    return Branch_Search (Branches, Branch,
+                          From => Git_If.Branches_Mng.Absolute);
+  end Exists;
 
   -- Rebase current branch to head of Reference
   function Do_Rebase (Root : String;
@@ -53,10 +58,11 @@ package body Rebase_Mng is
     end Do_Confirm;
   begin
     Current_Branch := As.U.Tus (Git_If.Current_Branch);
-    -- Check if same rebase as previous
+    -- Check if same rebase as previous and temporary branch still here
     Restart := Current_Branch = Rebased
                and then Target_Branch = Target.Image
-               and then Reference_Branch = Reference.Image;
+               and then Reference_Branch = Reference.Image
+               and then Exists (Temporary);
 
     -- Confirm restart
     if Restart then
@@ -85,8 +91,8 @@ package body Rebase_Mng is
       end if;
     else
       Reset (True);
-      -- Find Tmp branch name
-      Tmp_Branch := As.U.Tus (Find_Tmp_Name);
+      -- Find Tmp branch name (build it from rebased branch name)
+      Tmp_Branch := As.U.Tus (Find_Tmp_Name (Current_Branch.Image));
       -- Create a Tmp branch from Target
       Result := As.U.Tus (Git_If.Do_Checkout (Target_Branch,
                                               Tmp_Branch.Image));
