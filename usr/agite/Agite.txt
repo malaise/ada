@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V25.00
+V25.01
 
 General purpose
 ---------------
@@ -1842,8 +1842,8 @@ remote branches by calling 'git fetch' then 'git branch -r',
 * Three functions create/rename/delete a branch by calling 'git branch
 [ -m | -d ] <name> [<new_name>]',
 
-* A function merges a branch into current by calling 'git merge -m <comment> 
-<branch>',
+* A function merges a branch into current by calling 'git merge [ --no-commit
+| [ -m <comment> ]] [ --no-ff ] <branch>',
 
 * A function gets the user name and email by calling 'git config user.name'
 and 'git config user.email',
