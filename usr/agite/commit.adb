@@ -424,6 +424,7 @@ package body Commit is
       Change : Git_If.File_Entry_Rec;
       Untracked : Git_If.File_List;
       Moved : Boolean;
+      use type Git_If.File_Entry_Rec;
     begin
       -- Reread and update changes
       Git_If.List_Changes (Changes);
@@ -433,7 +434,7 @@ package body Commit is
         Changes.Rewind;
         loop
           Changes.Read (Change, Moved => Moved);
-          if not Is_Sep then
+          if Change /= Sep_File then
             if Change.S3 = 'M' or else Change.S3 = 'T' or else Change.S3 = 'U'
             or else Change.S3 = 'A' then
               Git_If.Do_Add (Change.Name.Image);
