@@ -13,7 +13,7 @@ AFPX.DSC AFPX.FLD AFPX.INI"
 
 # Help
 function usage {
-  echo "Usage: `basename $0` --tar | -h | --help" 1>&2
+  echo "Usage: `basename $0` -h | --help | -- tar [ <dest_dir> ]" 1>&2
   echo "    or `basename $0` [ { <prefix> | <conf_dir> | <bin_dir> | <agite_dir> } ]" 1>&2
   echo " <prefix>    ::= --prefix=<dir>    default $HOME" 1>&2
   echo " <conf_dir>  ::= --conf=<dir>      default $CONF_DIR" 1>&2
@@ -43,8 +43,14 @@ while [ "$1" != "" ] ; do
       exit 0
     ;;
     (--tar)
-      echo tar cvzf agite.tgz $FILES
-      tar cvzhf agite.tgz $FILES
+      shift
+      if [ "$1" = "" ] ; then
+        export DEST=.
+      else
+        export DEST=$1
+      fi
+      echo tar cvzf $DEST/agite.tgz $FILES
+      tar cvzhf $DEST/agite.tgz $FILES
       exit 0
     ;;
     (--prefix=*)
