@@ -216,7 +216,7 @@ package body Commit is
       if not Comment.Is_Null then
         Prev := 1;
         Field := Afpx_Xref.Commit.Comment1;
-        for I in 2 .. Comment.Length loop
+        for I in 1 .. Comment.Length loop
           if Comment.Element (I) = Aski.Lf then
             Utils.X.Encode_Field (Comment.Slice (Prev, I - 1), Field);
             exit when Field = Afpx_Xref.Commit.Comment7;

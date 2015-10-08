@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V25.05
+V25.06
 
 General purpose
 ---------------
