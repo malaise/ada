@@ -544,8 +544,7 @@ package body Commit is
               end if;
               Get_Handle.Cursor_Col := 0;
             when Afpx.Escape_Key =>
-              -- Back
-              return True;
+              null;
             when Afpx.Break_Key =>
               raise Utils.Exit_Requested;
           end case;
