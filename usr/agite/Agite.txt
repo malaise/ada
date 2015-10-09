@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V25.06
+V25.07
 
 General purpose
 ---------------
@@ -1366,7 +1366,7 @@ Copy the text of the comment in the xref:XX11Selection[X11 selection buffer].
 
 .Comment
 
-You can enter up to 7 lines of comment. +
+You can enter up to 7 lines of up to 75 characters each for the comment. +
 You can paste the content of the xref:XX11Selection[X11 selection buffer] into
 a line of the comment, by middle-clicking on this line. +
 You can clear a line by hitting Ctrl + Suppr, clear the end of line by hitting

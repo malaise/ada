@@ -543,6 +543,7 @@ package body Commit is
                     Get_Handle.Cursor_Field);
               end if;
               Get_Handle.Cursor_Col := 0;
+              Get_Handle.Offset := 0;
             when Afpx.Escape_Key =>
               null;
             when Afpx.Break_Key =>
