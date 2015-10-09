@@ -569,11 +569,6 @@ procedure Afpx_Bld is
       File_Error (Node, "Invalid get tuning: Data_Len must be greater or"
                       & " equal to Width");
     end if;
-    if Fields(Fn).Data_Len /= Fields(Fn).Width
-    and then (Fields(Fn).Move_Prev or else Fields(Fn).Move_Next) then
-      File_Error (Node, "Invalid get tuning: Move_Prev and Move_Next are"
-                      & " forbidden when Data_Len is different from Width");
-    end if;
   end Load_Get_Tuning;
 
   procedure Load_Colors (Node : in Xp.Node_Type;
