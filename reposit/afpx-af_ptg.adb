@@ -511,7 +511,11 @@ package body Af_Ptg is
     elsif Field.Kind = Afpx_Typ.Get then
       -- If field is get: restore color
       Put_Field (Click_Field, Normal);
-      if not Valid_Field then
+      if not Valid_Field
+      or else (Click_But = Con_Io.Middle
+               and then Click_Field = Cursor_Field)  then
+        -- Invalid click/Release, or Middle button in current cursor field
+        --  => Discard: keep cursor field and col
         Result := (Kind => Afpx_Typ.Put);
       else
         Result := (Kind => Afpx_Typ.Get,
