@@ -313,7 +313,8 @@ package Afpx is
 
   -- Call back called by Put_Then_Get when entering a new get field:
   -- Given the field no, the reason for entering field (see Con_Io)
-  --  given the cursor col when this is a Mouse click
+  --  given the mouse pointer col when this is a Mouse click
+  --  given the field offset
   --  and given the content of the get field as by Decode_Field (Row => 0)
   --  the client specifies the column of the cursor.
   -- If the value returned is bigger than Str'Length - 1,
@@ -326,7 +327,8 @@ package Afpx is
   type Cursor_Set_Col_Cb is access
        function (Cursor_Field : Field_Range;
                  New_Field : Boolean;
-                 Cursor_Col : Con_Io.Col_Range;
+                 Pointer_Col : Con_Io.Col_Range;
+                 Offset : Con_Io.Col_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
                  Str : Unicode_Sequence) return Con_Io.Col_Range;
 
@@ -451,7 +453,8 @@ package Afpx is
                           Cursor_Col_Cb : access
        function (Cursor_Field : Field_Range;
                  New_Field : Boolean;
-                 Cursor_Col : Con_Io.Col_Range;
+                 Pointer_Col : Con_Io.Col_Range;
+                 Offset : Con_Io.Col_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
                  Str : Unicode_Sequence) return Con_Io.Col_Range := null;
                           List_Change_Cb : access

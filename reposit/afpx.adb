@@ -164,7 +164,8 @@ package body Afpx is
                    Cursor_Col_Cb : access
       function (Cursor_Field : Field_Range;
                 New_Field : Boolean;
-                Cursor_Col : Con_Io.Col_Range;
+                Pointer_Col : Con_Io.Col_Range;
+                Offset : Con_Io.Col_Range;
                 Enter_Field_Cause : Enter_Field_Cause_List;
                 Str : Unicode_Sequence) return Con_Io.Col_Range := null;
                    List_Change_Cb : access
@@ -932,7 +933,8 @@ package body Afpx is
                           Cursor_Col_Cb : access
        function (Cursor_Field : Field_Range;
                  New_Field : Boolean;
-                 Cursor_Col : Con_Io.Col_Range;
+                 Pointer_Col : Con_Io.Col_Range;
+                 Offset : Con_Io.Col_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
                  Str : Unicode_Sequence) return Con_Io.Col_Range := null;
                           List_Change_Cb : access

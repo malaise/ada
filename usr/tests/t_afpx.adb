@@ -47,6 +47,7 @@ procedure T_Afpx is
   function Cursor_Col_Cb (Cursor_Field : Afpx.Field_Range;
                           New_Field : Boolean;
                           Cursor_Col : Con_Io.Col_Range;
+                          Offset : Con_Io.Col_Range;
                           Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
                           Str : Afpx.Unicode_Sequence)
            return Con_Io.Col_Range is
@@ -57,6 +58,7 @@ procedure T_Afpx is
      & "Cursor_Field:" & Cursor_Field'Img
      & ", New: " & Mixed_Str (New_Field'Img)
      & ", Cursor_Col:" & Cursor_Col'Img
+     & ", Offset:" & Offset'Img
      & ", Cause: " & Mixed_Str (Enter_Field_Cause'Img)
      & ", Content: " & Language.Unicode_To_String (Str));
     Last_Index := Afpx.Last_Index (Afpx.Decode_Field (Cursor_Field, 0), True);

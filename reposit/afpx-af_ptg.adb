@@ -111,9 +111,9 @@ package body Af_Ptg is
   function Last_Col (Field_No :  Afpx_Typ.Field_Range)
            return Con_Io.Col_Range is
     Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
-    Str : constant Unicode_Sequence (1 .. Field.Width)
+    Str : constant Unicode_Sequence (1 .. Field.Data_Len)
         := Af_Dscr.Chars
-              (Field.Char_Index .. Field.Char_Index + Field.Width - 1);
+              (Field.Char_Index .. Field.Char_Index + Field.Data_Len - 1);
   begin
     return Last_Index (Str, True);
   end Last_Col;
@@ -637,12 +637,14 @@ package body Af_Ptg is
   function Get_Cursor_Col (
                  Field_No : Afpx_Typ.Field_Range;
                  New_Field : Boolean;
-                 Cursor_Col : Con_Io.Col_Range;
+                 Pointer_Col : Con_Io.Col_Range;
+                 Offset : Con_Io.Col_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
                  Cursor_Col_Cb : access
     function (Cursor_Field : Field_Range;
               New_Field : Boolean;
-              Cursor_Col : Con_Io.Col_Range;
+              Pointer_Col : Con_Io.Col_Range;
+              Offset : Con_Io.Col_Range;
               Enter_Field_Cause : Enter_Field_Cause_List;
               Str : Unicode_Sequence) return Con_Io.Col_Range)
   return Con_Io.Col_Range is
@@ -665,23 +667,24 @@ package body Af_Ptg is
           --  significant char there or on its right, otherwise set it just
           --  after last significant char
           Signif_Col := Last_Col (Field_No);
-          if Cursor_Col > Signif_Col then
+          if Pointer_Col > Signif_Col then
             return Signif_Col;
           else
-            return Cursor_Col;
+            return Pointer_Col;
           end if;
       end case;
     end if;
     -- The user Cb will appreciate a string (1 .. Len)
     --  so make a local copy
     declare
-      Str : constant Unicode_Sequence (1 .. Field.Width)
+      Str : constant Unicode_Sequence (1 .. Field.Data_Len)
           := Af_Dscr.Chars
-              (Field.Char_Index .. Field.Char_Index + Field.Width - 1);
+              (Field.Char_Index .. Field.Char_Index + Field.Data_Len - 1);
     begin
       Result := Cursor_Col_Cb (Afpx.Field_Range(Field_No),
                                New_Field,
-                               Cursor_Col,
+                               Pointer_Col,
+                               Offset,
                                Enter_Field_Cause,
                                Str);
     end;
@@ -726,7 +729,8 @@ package body Af_Ptg is
                  Cursor_Col_Cb : access
      function (Cursor_Field : Field_Range;
                New_Field : Boolean;
-               Cursor_Col : Con_Io.Col_Range;
+               Pointer_Col : Con_Io.Col_Range;
+               Offset : Con_Io.Col_Range;
                Enter_Field_Cause : Enter_Field_Cause_List;
                Str : Unicode_Sequence)
                return Con_Io.Col_Range := null;
@@ -1037,10 +1041,13 @@ package body Af_Ptg is
               -- Restore normal color of previous field
               Put_Field (Cursor_Field, Normal);
               Cursor_Field := Next_Get_Field (Cursor_Field);
+              Get_Handle.Offset := Con_Io.Col_Range'First;
+              Af_Dscr.Fields(Cursor_Field).Offset := Get_Handle.Offset;
               Get_Handle.Cursor_Col := Get_Cursor_Col (
                   Cursor_Field,
                   True,
                   Con_Io.Col_Range'First,
+                  Get_Handle.Offset,
                   Right_Full, Cursor_Col_Cb);
               Get_Handle.Insert := False;
             end if;
@@ -1055,11 +1062,27 @@ package body Af_Ptg is
               -- Restore normal color of previous field
               Put_Field (Cursor_Field, Normal);
               Cursor_Field := Prev_Get_Field (Cursor_Field);
+              Field := Af_Dscr.Fields(Cursor_Field);
+              Field.Offset := Field.Data_Len - Field.Width;
+              Get_Handle.Offset := Field.Offset;
+              Af_Dscr.Fields(Cursor_Field).Offset := Field.Offset;
               Get_Handle.Cursor_Col := Get_Cursor_Col (
                   Cursor_Field,
                   True,
                   Con_Io.Col_Range'First,
+                  Get_Handle.Offset,
                   Left, Cursor_Col_Cb);
+              -- The returned cursor col is somewhere in Field(1 .. Data_len)
+              -- Adapt offset to have it at pos Width: first slot is Width-1
+              if Get_Handle.Cursor_Col >= Field.Width - 1 then
+                -- Yes we can
+                Field.Offset := Get_Handle.Cursor_Col - Field.Width + 1;
+                Get_Handle.Cursor_Col := Field.Width - 1;
+              else
+                -- Nop, show head and move Pos
+                Field.Offset := Con_Io.Col_Range_First;
+              end if;
+              Af_Dscr.Fields(Cursor_Field).Offset := Field.Offset;
               Get_Handle.Insert := False;
             end if;
           end if;
@@ -1115,10 +1138,13 @@ package body Af_Ptg is
             -- Restore normal color of previous field
             Put_Field (Cursor_Field, Normal);
             Cursor_Field := Next_Get_Field (Cursor_Field);
+            Get_Handle.Offset := Con_Io.Col_Range'First;
+            Af_Dscr.Fields(Cursor_Field).Offset := Get_Handle.Offset;
             Get_Handle.Cursor_Col := Get_Cursor_Col (
                 Cursor_Field,
                 True,
                 Con_Io.Col_Range'First,
+                Get_Handle.Offset,
                 Tab, Cursor_Col_Cb);
             Get_Handle.Insert := False;
           end if;
@@ -1128,10 +1154,13 @@ package body Af_Ptg is
             -- Restore normal color of previous field
             Put_Field (Cursor_Field, Normal);
             Cursor_Field := Prev_Get_Field (Cursor_Field);
+            Get_Handle.Offset := Con_Io.Col_Range'First;
+            Af_Dscr.Fields(Cursor_Field).Offset := Get_Handle.Offset;
             Get_Handle.Cursor_Col := Get_Cursor_Col (
                 Cursor_Field,
                 True,
                 Con_Io.Col_Range'First,
+                Get_Handle.Offset,
                 Stab, Cursor_Col_Cb);
             Get_Handle.Insert := False;
           end if;
@@ -1166,10 +1195,13 @@ package body Af_Ptg is
               -- Restore normal color of previous field
               Put_Field (Cursor_Field, Normal);
               Cursor_Field := Next_Get_Field (Cursor_Field);
+              Get_Handle.Offset := Con_Io.Col_Range'First;
+              Af_Dscr.Fields(Cursor_Field).Offset := Get_Handle.Offset;
               Get_Handle.Cursor_Col := Get_Cursor_Col (
                   Cursor_Field,
                   True,
                   Con_Io.Col_Range'First,
+                  Get_Handle.Offset,
                   Right_Full, Cursor_Col_Cb);
               Get_Handle.Insert := False;
             elsif Selection_Result /= Sel_No_Change then
@@ -1198,6 +1230,7 @@ package body Af_Ptg is
                       Cursor_Field,
                       True,
                       Click_Result.Click_Col,
+                      Af_Dscr.Fields(Cursor_Field).Offset,
                       Mouse, Cursor_Col_Cb);
                   Get_Handle.Insert := False;
                 else
@@ -1206,6 +1239,7 @@ package body Af_Ptg is
                       Cursor_Field,
                       False,
                       Click_Result.Click_Col,
+                      Af_Dscr.Fields(Cursor_Field).Offset,
                       Mouse, Cursor_Col_Cb);
                 end if;
               when Afpx_Typ.Button =>

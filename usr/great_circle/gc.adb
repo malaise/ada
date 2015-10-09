@@ -93,6 +93,7 @@ procedure Gc is
   function Next_Field_Cb (Unused_Cursor_Field : Afpx.Field_Range;
                           Unused_New_Field : Boolean;
                           Cursor_Col : Con_Io.Col_Range;
+                          Unused_Offset : Con_Io.Col_Range;
                           Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
                           Str : Afpx.Unicode_Sequence) return Con_Io.Col_Range is
     Last : Con_Io.Col_Range;

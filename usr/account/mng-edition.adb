@@ -451,6 +451,7 @@ package body Edition is
   function Set_Cursor (Unused_Field     : Afpx.Field_Range;
                        Unused_New_Field : Boolean;
                        Unused_Col       : Con_Io.Col_Range;
+                       Unused_Offset    : Con_Io.Col_Range;
                        Cause : Afpx.Enter_Field_Cause_List;
                        Str   : Afpx.Unicode_Sequence)
            return Con_Io.Col_Range is
