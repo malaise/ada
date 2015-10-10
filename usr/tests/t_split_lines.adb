@@ -3,7 +3,6 @@ procedure T_Split_Lines is
 
   Len : Positive;
   Max : Integer;
-  Cut : Boolean;
   Text : As.U.Asu_Us;
   Iter : Parser.Iterator;
   Res : As.U.Utils.Asu_Ua.Unb_Array;
@@ -13,21 +12,19 @@ begin
   begin
     Len := Positive'Value (Argument.Get_Parameter (1));
     Max := Integer'Value (Argument.Get_Parameter (2));
-    Cut := Boolean'Value (Argument.Get_Parameter (3));
   exception
     when others =>
       Basic_Proc.Put_Line_Error ("Syntax error. Usage: "
-          & Argument.Get_Program_Name & " <len> <max> <cut> [ { <text> } ]");
+          & Argument.Get_Program_Name & " <len> <max> [ { <text> } ]");
       Basic_Proc.Put_Line_Error ("<len> ::= <Positive>");
       Basic_Proc.Put_Line_Error ("<max> ::= <Integer>");
-      Basic_Proc.Put_Line_Error ("<cut> ::= <Boolean>");
       Basic_Proc.Set_Error_Exit_Code;
       return;
   end;
 
   -- Parse text
-  for I in 4 .. Argument.Get_Nbre_Arg loop
-    if I /= 4 then
+  for I in 3 .. Argument.Get_Nbre_Arg loop
+    if I /= 3 then
       Text.Append (" ");
     end if;
     Text.Append (Argument.Get_Parameter (Occurence => I));
@@ -35,7 +32,7 @@ begin
 
   Basic_Proc.Put_Line_Output ("Splitting >" & Text.Image & "<");
   Iter.Set (Text.Image);
-  Res := Split_Lines (Iter, Len, Max, Cut);
+  Res := Split_Lines (Iter, Len, ">>", Max);
 
   Basic_Proc.Put_Line_Output (" 0        1         2         3         4         5         6         7        ");
   Basic_Proc.Put_Line_Output (" 123456789012345678901234567890123456789012345678901234567890123456789012345678");

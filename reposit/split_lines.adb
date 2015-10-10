@@ -1,8 +1,8 @@
-function Split_Lines (Iter : Parser.Iterator;
-                      Len  : Positive;
-                      Max  : Integer := 0;
-                      Cut  : Boolean := True)
-                      return As.U.Utils.Asu_Ua.Unb_Array is
+function Split_Lines (Iter   : Parser.Iterator;
+                      Len    : Positive;
+                      Indent : String;
+                      Max    : Integer := 0)
+         return As.U.Utils.Asu_Ua.Unb_Array is
   Result : As.U.Utils.Asu_Ua.Unb_Array;
   Line : As.U.Asu_Us;
   Needed : Positive;
@@ -34,7 +34,7 @@ begin
         if not Line.Is_Null then
           Result.Append (Line);
         end if;
-        Line.Set (Word);
+        Line.Set (Indent & Word);
       end if;
     end;
   end loop;
@@ -45,30 +45,11 @@ begin
   end if;
 
   if Max = 0 or else Result.Length <= abs Max then
-    -- Merge/Cut head or tail only if necessary
+    -- No need to cut
     return Result;
   end if;
 
-  if not Cut then
-    -- Merge
-    if Max > 0 then
-      -- Merge tailing lines
-      Line := Result.Element (Max);
-      for I in Max + 1 .. Result.Length loop
-        Line.Append (" " & Result.Element (I));
-      end loop;
-      Result.Replace_Element (Max, Line);
-    else
-      -- Merge heading lines (keep in mind that Max < 0)
-      Line := Result.Element (Result.Length + Max + 1);
-      for I in reverse 1 .. Result.Length + Max loop
-        Line.Prepend (Result.Element (I) & " ");
-      end loop;
-      Result.Replace_Element (Result.Length + Max + 1, Line);
-    end if;
-  end if;
-
-  -- Cut anyway
+  -- Cut
   if Max > 0 then
     -- Cut tailing lines
     Result.Delete (Max + 1, Result.Length);
