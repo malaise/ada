@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V25.09"/>
+  <Var Name="Version" Value="V25.10"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -795,50 +795,84 @@
   <!-- Error screen -->
   <Descriptor Num="6" Background="Light_Grey" Name="Error">
 
+    <List>
+      <Geometry Up="8" Left="1" Low="${Screen.Low}-9"
+                Width="${Screen.Width}-2"/>
+      <Colors Foreground="Black" Background="Dark_Grey" Selected="Lime_Green"/>
+    </List>
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="23" Height="1" Width="9"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">A G I T E</Init>
     </Field>
-    <Field Num="2" Kind="Put">
+
+    <!-- List management -->
+    <Var Name="LmWidth" Value="8"/>
+    <Var Name="LmLeft" Value="${Screen.Width}-${LmWidth}-2"/>
+
+    <Field Num="2" Kind="Button">
+      <Geometry Up="${List.Up}-8" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">Top</Init>
+    </Field>
+    <Field Num="3" Kind="Button">
+      <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="2">PgUp </Init>
+    </Field>
+    <Field Num="4" Kind="Button">
+      <Geometry Up="${Field_3.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="3">Up </Init>
+    </Field>
+    <!-- Dummy Center -->
+    <Field Num="5" Kind="Put">
+      <Geometry Up="${Screen.Height}-1" Left="${Screen.Width}-1"
+                Height="1" Width="1"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
+    <Field Num="6" Kind="Button">
+      <Geometry Up="${List.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">Down</Init>
+    </Field>
+    <Field Num="7" Kind="Button">
+      <Geometry Up="${Field_6.Low}+2" Left="${LmLeft}" Height="3"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="1">PgDown</Init>
+    </Field>
+    <Field Num="8" Kind="Button">
+      <Geometry Up="${Field_7.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Bottom</Init>
+    </Field>
+
+    <!-- Title -->
+    <Field Num="9" Kind="Put">
       <Geometry Up="${Field_1.Low}+2" Left="25" Height="1" Width="5"/>
       <Colors Foreground="Red" Background="Light_Grey"/>
       <Init Row="0" Col="0">ERROR</Init>
     </Field>
 
     <!-- Sub title and current file/dir-->
-    <Field Num="3" Kind="Put" Name="Action">
-      <Geometry Up="${Field_2.Low}+2" Left="1" Height="1"
-                Right="${Screen.Right}-1"/>
+    <Field Num="10" Kind="Put" Name="Action">
+      <Geometry Up="${Field_9.Low}+2" Left="1" Height="1"
+                Right="${Field_2.Left}-2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="4" Kind="Put" Name="Target">
-      <Geometry Up="${Field_3.Low}+2" Left="1" Height="1"
-                Right="${Screen.Right}-1"/>
+    <Field Num="11" Kind="Put" Name="Target">
+      <Geometry Up="${Field_10.Low}+2" Left="1" Height="1"
+                Right="${Field_2.Left}-2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="5" Kind="Put" Name="Text1">
-      <Geometry Up="${Field_4.Low}+2" Left="1" Height="1"
-                Right="${Screen.Right}-1"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
-    </Field>
-    <Field Num="6" Kind="Put" Name="Text2">
-      <Geometry Up="${Field_5.Low}+1" Left="1" Height="1"
-                Right="${Screen.Right}-1"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
-    </Field>
-    <Field Num="7" Kind="Put" Name="Text3">
-      <Geometry Up="${Field_6.Low}+1" Left="1" Height="1"
-                Right="${Screen.Right}-1"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
-    </Field>
-    <Field Num="8" Kind="Put" Name="Text4">
-      <Geometry Up="${Field_7.Low}+1" Left="1" Height="1"
-                Right="${Screen.Right}-1"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
-    </Field>
-    <Field Num="9" Kind="Button" Name="Ok">
-      <Geometry Up="${Field_8.Low}+3" Left="24" Height="3" Width="6"/>
+    <Field Num="12" Kind="Button" Name="Ok">
+      <Geometry Low="${Screen.Height}-2" Left="24" Height="3" Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">OK</Init>
     </Field>
@@ -1497,8 +1531,7 @@
 
     <!-- Prune button -->
     <Field Num="15" Kind="Button" Name="Prune">
-      <Geometry Up="${List.Up}" Left="${LmLeft}" Height="1"
-                Width="${LmWidth}"/>
+      <Geometry Up="${List.Up}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Prune</Init>
     </Field>

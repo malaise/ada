@@ -412,7 +412,7 @@ package body Cherry is
         if not Result.Is_Null then
           -- Cherry pick failed, the error message starts with the
           --  conflicts
-          Error ("Cherry pick from", Branch, Result.Image, False);
+          Error ("Cherry pick from", Branch, Result.Image);
           -- Propose manual resolution
           if not Commit.Handle (Root, Comment_Hash) then
             -- User gave up: error
@@ -462,7 +462,7 @@ package body Cherry is
             if not Result.Is_Null then
               -- Cherry pick failed, the error message starts with the
               --  conflicts
-              Error ("Cherry pick from", Branch, Result.Image, False);
+              Error ("Cherry pick from", Branch, Result.Image);
               -- Propose manual resolution
               if not Commit.Handle (Root, Comment_Hash) then
                 -- User gave up
@@ -474,7 +474,7 @@ package body Cherry is
             if not Result.Is_Null then
               -- Cherry pick failed, the error message starts with the
               --  conflicts
-              Error ("Cherry pick from", Branch, Result.Image, False);
+              Error ("Cherry pick from", Branch, Result.Image);
               -- Propose manual resolution
               if not Commit.Handle (Root, Comment_Hash) then
                 -- User gave up
@@ -494,7 +494,7 @@ package body Cherry is
             if not Result.Is_Null then
               -- Cherry pick failed, the error message starts with the
               --  conflicts
-              Error ("Cherry pick from", Branch, Result.Image, False);
+              Error ("Cherry pick from", Branch, Result.Image);
               -- Propose manual resolution
               if not Commit.Handle (Root, Comment_Hash) then
                 -- User gave up
@@ -506,7 +506,7 @@ package body Cherry is
                   Commit.Get_Comment (Comment_Hash)));
               if not Result.Is_Null then
                 -- Commit failed, propose manual resolution
-                Error ("Commit cherry from", Branch, Result.Image, False);
+                Error ("Commit cherry from", Branch, Result.Image);
                 -- Propose manual resolution
                 if not Commit.Handle (Root, Comment_Hash) then
                   -- User gave up: error if non interactive
