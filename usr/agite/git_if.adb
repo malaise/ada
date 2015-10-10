@@ -1325,8 +1325,12 @@ package body Git_If is
        end if;
        I2 := Str_Util.Locate (Line.Image, ":", I1);
        Stash.Branch := Line.Uslice (I1 + 1, I2 - 1);
-       -- ": " <Name>"
-       Stash.Name := Line.Uslice (I2 + 2, Line.Length);
+       -- ":" [ " <Name>" ]
+       if I2 /= Line.Length then
+         Stash.Name := Line.Uslice (I2 + 2, Line.Length);
+       else
+         Stash.Name.Set_Null;
+       end if;
        Stashes.Insert (Stash);
       exception
         when Error:others =>
