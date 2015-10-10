@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V25.07
+V25.08
 
 General purpose
 ---------------
@@ -314,8 +314,8 @@ repository and allows staging and commiting them.
 repository.
 * xref:XStash[Stash]: This allows stashing the local repository and managing
 the list of stashes.
-* xref:XPull[Pull]: This allows fetching or pulling a branch from a
-remote repository.
+* xref:XPull[Pull]: This allows pulling, fetching or checking out a branch
+from a remote repository.
 * xref:XReset[Reset]: This allows cleaning or doing a hard/mixed/soft reset
 of the current repository.
 
@@ -625,8 +625,8 @@ This button launches the xref:XCommit[commit] screen that allows
 commiting the local modifications.
 
 Pull::
-This button launches the xref:XPull[pull] screen that allows fetching or 
-pulling a branch from a remote repository;
+This button launches the xref:XPull[pull] screen that allows pulling, fetching
+or checking out a branch from a remote repository;
 
 Tags::
 This button launches the xref:XTags[tags] screen that allows managing the
@@ -1559,13 +1559,14 @@ Pull
 ~~~~
 anchor:XPull[]
 The 'pull' menu allows pulling the current branch (fetching and merging) or
-fetching only another branch from a remote repository. +
+fetching only or checking out another branch from a remote repository. +
 This is achieved through two successive screens.
 
 Remote selection
 ^^^^^^^^^^^^^^^^
 anchor:XSelRemote[]
-This screen allows selecting the remote repository from which to pull. +
+This screen allows selecting the remote repository from which to pull,
+fetch or checkout. +
 It shows:
 
 .Current branch and root
@@ -1581,18 +1582,18 @@ If the remote ''orign'' is defined then it is selected by default.
 This button prunes from the local repository all the tracking branches that
 refer to the selected remote and that do not exist (any more) in this remote.
 
-.Pull
+.OK
 Validates the selection of remote and activates the 
-xref:XSelBranch[branch selection] for selecting the branch to pull or fetch.
+xref:XSelBranch[branch selection] for selecting the branch to pull, fetch or
+checkout.
 
 .Back
-
 Moves back to the xref:XDir[directory] menu without pulling.
 
 Branch selection
 ^^^^^^^^^^^^^^^^
 anchor:XSelBranch[]
-This screen allows selecting the branch to pull or fetch from the
+This screen allows selecting the branch to pull, fetch or checkout from the
 repository previously selected. +
 It shows:
 
@@ -1608,21 +1609,31 @@ Below the title is displayed the remote (previously selected).
 .List of branches
 
 This lists the known remote branches from which you can select the one to
-pull or fetch. +
+pull, fetch or checkout. +
 If it exists, the current branch is selected by default and will be pulled.
-If you select another branch it will only be fetched and you will have to
-xref:XMerge[merge] it explicitly if you want.
+If you select another branch it will be fetched or checked out.
 
-.OK
+.Main action: Pull/Fetch/Checkout
 
-This button pulls or fetches the selected remote branch from the remote
-repository. +
+This button shows and launches an action, depending on the remote branch
+currently selected in the list:
+
+* Pull: if the remote branch selected matches the current branch,
+* Fetch: if the remote branch matches another local branch,
+* Checkout: if the remote branch does not match any local branch.
+
+.Alternate buton: Fetch
+When the main action is 'Pull' (the selected remote branch matches the local
+current branch), this button is active and allow only fetching the remote
+branch into the local for a later manual merge.
+
+
 If there is no error then Agite returns back to the xref:XDir[directory] menu,
 otherwise the error is reported through a specific screen.
 
 .Back
 
-Moves back to the xref:XSelRemote[remote selection] menu without pulling.
+Moves back to the xref:XSelRemote[remote selection] menu without action.
 
 Reset
 ~~~~~

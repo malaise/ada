@@ -932,7 +932,7 @@ package body Git_If is
       Cmd.Cat ("-b");
       Cmd.Cat (Pt (Branch));
     end if;
-    Cmd.Cat (Rev_Tag);
+    Cmd.Cat (Pt (Rev_Tag));
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
