@@ -8,7 +8,7 @@ begin
   Sys_Calls.Put_Line_Output ("Creating " & Names'Last'Img & " temp files in "
                       & Temp_Dir & ":");
   for I in Names'Range loop
-    Names(I) := new String'(Temp_File.Create (Temp_Dir));
+    Names(I) := new String'(Temp_File.Create (Temp_Dir, "tmp"));
     Sys_Calls.Put_Line_Output ("Created temp file " & Names(I).all);
   end loop;
   Sys_Calls.New_Line_Output;
@@ -28,10 +28,9 @@ begin
   Sys_Calls.Put_Line_Output ("Checking exception on yet another temp file:");
   begin
     declare
-      N3 : constant String := Temp_File.Create (Temp_Dir);
-      pragma Unreferenced (N3);
+      N3 : constant String := Temp_File.Create (Temp_Dir, "tmp");
     begin
-      null;
+      Sys_Calls.Put_Line_Output ("NOK, got " & N3);
     end;
   exception
     when Temp_File.No_More_Temp =>

@@ -24,15 +24,17 @@ package body Temp_File  is
   -- Remove a file if possible, no error
   procedure Remove (File_Name : in String) renames Sys_Calls.Unlink;
 
-  -- Possible suffixes, tried one after another
-  subtype Suffix_Range is Natural range 000 .. 999;
+  -- Possible nums, tried one after another
+  subtype Num_Range is Natural range 000 .. 999;
 
-  -- Try with this suffix. Return the successful file name or ""
-  function Try (Path : String; Suffix : Suffix_Range) return String is
+  -- Try with this num. Return the successful file name or ""
+  function Try (Path : String; Num : Num_Range; Suffix : String)
+           return String is
     Tfn : constant String := Path & '/' & "Temp_File_Tmp."
-                                        & Normal (Suffix, 3, Gap => '0');
+                                        & Normal (Num, 3, Gap => '0');
     Fn : constant String := Path & '/' & "Temp_File."
-                                 & Normal (Suffix, 3, Gap => '0');
+                                 & Normal (Num, 3, Gap => '0')
+                                 & Suffix;
     Fd : Sys_Calls.File_Desc;
   begin
     -- Check if that Tmp file exists
@@ -89,7 +91,7 @@ package body Temp_File  is
     end;
   end Try;
 
-  function Create (Temp_Dir : String) return String is
+  function Create (Temp_Dir : String; Suffix : String := "") return String is
     Fstat : Sys_Calls.File_Stat_Rec;
   begin
     -- Check that Temp_Dir exists, and is user RWX (rights >= 7)
@@ -106,9 +108,10 @@ package body Temp_File  is
     end ;
 
     -- Try each of the 1000 possible files
-    for I in Suffix_Range loop
+    for I in Num_Range loop
       declare
-        Str : constant String := Try (Temp_Dir, I);
+        Str : constant String
+            := Try (Temp_Dir, I, (if Suffix /= "" then "." & Suffix else ""));
       begin
         if Str /= "" then
           -- It worked
