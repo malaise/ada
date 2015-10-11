@@ -7,11 +7,16 @@ procedure View (Path : in String;
     -- File_Suffix is empty or ".suffix"
     Suffix : constant String
            := Str_Util.Normalize (Directory.File_Suffix (Path));
+    -- Locate last dot
+    Index : constant Natural
+          := Str_Util.Locate (Suffix, ".", Forward => False);
   begin
-    if Suffix = "" then
+    if Index = 0 then
+      -- No dot => no suffix
       return "";
     else
-     return Suffix(2 .. Suffix'Last);
+      -- Tail after last dot
+      return Suffix(Index + 1 .. Suffix'Last);
     end if;
   end Get_Suffix;
 
