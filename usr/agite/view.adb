@@ -1,12 +1,24 @@
-with Temp_File;
+with Temp_File, Directory, Str_Util;
 with Utils, Config;
 procedure View (Path : in String;
                 Hash : in Git_If.Git_Hash) is
   Ok : Boolean;
+  function Get_Suffix return String is
+    -- File_Suffix is empty or ".suffix"
+    Suffix : constant String
+           := Str_Util.Normalize (Directory.File_Suffix (Path));
+  begin
+    if Suffix = "" then
+      return "";
+    else
+     return Suffix(2 .. Suffix'Last);
+    end if;
+  end Get_Suffix;
+
 begin
-  -- Create temporaty file
+  -- Create temporary file with same suffix as Path
   declare
-    Tmp_Name : constant String := Temp_File.Create ("/tmp");
+    Tmp_Name : constant String := Temp_File.Create ("/tmp", Get_Suffix);
     Prot_Name : constant String := Utils.Protect_Text (Tmp_Name);
   begin
     -- Cat file in it
