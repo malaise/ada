@@ -85,7 +85,7 @@ package body Push_Pull is
   end Split;
 
   -- Fetch or pull or checkout(remote branch)
-  function Do_Get return Boolean is
+  function Do_Get (Force_Fetch : in Boolean) return Boolean is
     Branch, Log : As.U.Asu_Us;
     Action : Action_List;
     Txt : As.U.Asu_Us;
@@ -97,8 +97,9 @@ package body Push_Pull is
     -- Fetch
     case Action is
       when Pull =>
-        Txt := As.U.Tus ("Pulling");
-        Log := As.U.Tus (Git_If.Do_Fetch (Remote.Image, Branch.Image, True));
+        Txt := As.U.Tus ((if Force_Fetch then "Fetching" else "Pulling"));
+        Log := As.U.Tus (Git_If.Do_Fetch (Remote.Image, Branch.Image,
+                                          Pull => not Force_Fetch));
       when Fetch =>
         Txt := As.U.Tus ("Fetching");
         Log := As.U.Tus (Git_If.Do_Fetch (Remote.Image, Branch.Image, False));
@@ -272,7 +273,7 @@ package body Push_Pull is
                   Result := Do_Pull_Branch (Root);
                 when Pull_Branch =>
                   -- Pull/Fetch/Checkout branch
-                  Result := Do_Get;
+                  Result := Do_Get (False);
                 when Push =>
                   -- Push branch or tag
                   Result := Do_Push (Branch_Tag, False, False);
@@ -285,8 +286,16 @@ package body Push_Pull is
                 Init;
               end if;
             when Afpx_Xref.Push_Pull.Push_Upstream =>
-              -- Push current branch with --set-upstream
-              Result := Do_Push (Curr_Branch.Image, True, False);
+              case Menu is
+                when Pull_Remote =>
+                  null;
+                when Pull_Branch =>
+                  -- Only fetch current branch
+                  Result := Do_Get (True);
+                when Push =>
+                  -- Push current branch with --set-upstream
+                  Result := Do_Push (Curr_Branch.Image, True, False);
+              end case;
               if Result then
                 -- Push/Pull OK
                 return True;
