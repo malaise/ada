@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V25.10"/>
+  <Var Name="Version" Value="V26.00"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -830,8 +830,8 @@
     </Field>
     <!-- Dummy Center -->
     <Field Num="5" Kind="Put">
-      <Geometry Up="${Screen.Height}-1" Left="${Screen.Width}-1"
-                Height="1" Width="1"/>
+      <Geometry Up="${Screen.Height}-1" Left="${Screen.Width}-1" Height="1"
+                Width="1"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="6" Kind="Button">
@@ -898,7 +898,7 @@
 
     <!-- List management -->
     <Var Name="LmLeft" Value="${List.Right}+${LmHOffset}"/>
-    <Var Name="LmUp" Value="${List.Up}+14"/>
+    <Var Name="LmUp" Value="${List.Up}+15"/>
     <Var Name="LmSta" Value="1"/>
 
     <Field Num="2" Kind="Button">
@@ -974,33 +974,39 @@
                 Right="${List.Right}"/>
       <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
     </Field>
-
     <!-- Details, Checkout, Delete, Back -->
-    <Field Num="15" Kind="Button" Name="Details">
-      <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
+    <Field Num="15" Kind="Button" Name="Create">
+      <Geometry Up="${Field_14.Up}" Left="${LmLeft}" Height="3"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="1">Create</Init>
+    </Field>
+    <Field Num="16" Kind="Button" Name="Details">
+      <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="3"
+                Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Detail</Init>
     </Field>
-    <Field Num="16" Kind="Button" Name="Checkout">
-      <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="3"
+    <Field Num="17" Kind="Button" Name="Checkout">
+      <Geometry Up="${Field_16.Low}+2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="0">Checkout</Init>
     </Field>
-    <Field Num="17" Kind="Button" Name="Delete">
-      <Geometry Up="${Field_16.Low}+2" Left="${LmLeft}" Height="1"
+    <Field Num="18" Kind="Button" Name="Delete">
+      <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Delete</Init>
     </Field>
-    <Field Num="18" Kind="Button" Name="Push">
-      <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}" Height="1"
+    <Field Num="19" Kind="Button" Name="Push">
+      <Geometry Up="${Field_18.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Push</Init>
     </Field>
 
-    <Field Num="19" Kind="Button" Name="Back">
+    <Field Num="20" Kind="Button" Name="Back">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -1099,7 +1105,7 @@
 
     <!-- List management -->
     <Var Name="LmLeft" Value="${List.Right}+${LmHOffset}"/>
-    <Var Name="LmUp" Value="${List.Up}"/>
+    <Var Name="LmUp" Value="${List.Up}+6"/>
     <Var Name="LmSta" Value="1"/>
 
     <Field Num="2" Kind="Button">
@@ -1176,40 +1182,54 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
+    <!-- View and Diff -->
+    <Field Num="15" Kind="Button" Name="View">
+      <Geometry Up="${List.Up}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">View</Init>
+    </Field>
+    <Field Num="16" Kind="Button" Name="Diff">
+      <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">Diff</Init>
+    </Field>
+
     <!-- Tag name and comment, Tag annotated, Tag Simple, Cancel -->
-    <Field Num="15" Kind="Put">
+    <Field Num="17" Kind="Put">
       <Geometry Up="${List.Low}+2" Left="1" Height="1" Width="9"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Tag name:</Init>
     </Field>
-    <Field Num="16" Kind="Get" Name="Tag_Name">
-      <Geometry Up="${Field_15.Low}" Left="${Field_15.Right}+2" Height="1"
-                Right="${Screen.Width}-2"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
-    </Field>
-    <Field Num="17" Kind="Put">
-      <Geometry Up="${Field_15.Low}+2" Left="1" Height="1" Width="8"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">Comment:</Init>
-    </Field>
-    <Field Num="18" Kind="Get" Name="Tag_Comment">
+    <Field Num="18" Kind="Get" Name="Tag_Name">
       <Geometry Up="${Field_17.Low}" Left="${Field_17.Right}+2" Height="1"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
-    <Field Num="19" Kind="Button" Name="Tag_Annotated">
-      <Geometry Up="${Field_18.Low}+2" Left="1" Height="3" Width="15"/>
+    <Field Num="19" Kind="Put">
+      <Geometry Up="${Field_17.Low}+2" Left="1" Height="1" Width="8"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">Comment:</Init>
+    </Field>
+    <Field Num="20" Kind="Get" Name="Tag_Comment">
+      <Geometry Up="${Field_19.Low}" Left="${Field_19.Right}+2" Height="1"
+                Right="${Screen.Width}-2"/>
+      <Get_Tuning Data_Len="75"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
+    </Field>
+    <Field Num="21" Kind="Button" Name="Tag_Annotated">
+      <Geometry Up="${Field_20.Low}+2" Left="1" Height="3" Width="15"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Tag Annotated</Init>
     </Field>
-    <Field Num="20" Kind="Button" Name="Tag_Simple">
-      <Geometry Up="${Field_19.Up}" Left="${Field_19.Right}+3" Height="3"
+    <Field Num="22" Kind="Button" Name="Tag_Simple">
+      <Geometry Up="${Field_21.Up}" Left="${Field_21.Right}+3" Height="3"
                 Width="12"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Tag Simple</Init>
     </Field>
-    <Field Num="21" Kind="Button" Name="Back">
-      <Geometry Up="${Field_19.Up}" Right="${Screen.Width}-2" Height="3"
+    <Field Num="23" Kind="Button" Name="Back">
+      <Geometry Up="${Field_21.Up}" Right="${Screen.Width}-2" Height="3"
                 Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Back</Init>

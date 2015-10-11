@@ -454,7 +454,7 @@ procedure Agite is
   begin
     -- Call history and restore current entry
     Position := Afpx.Line_List.Get_Position;
-    History.List (Root.Image, Path.Image, Name, Is_File);
+    History.List (Root.Image, Path.Image, Name, Is_File, True);
     Init (Position);
   end Do_History;
 

@@ -1,9 +1,9 @@
-with Afpx.Utils, Str_Util;
-with Utils.X, Afpx_Xref, Error;
+with Afpx.Utils, Str_Util, Directory;
+with Utils.X, Afpx_Xref, Error, Config, View;
 separate (Tags)
-procedure Add (Rev : in Git_If.Git_Hash) is
+procedure Add (Root : in String; Rev : in Git_If.Git_Hash) is
 
-  -- The current list of Commit entires
+  -- The current list of Commit entries
   Commits : aliased Git_If.Commit_List;
 
   List_Width : Afpx.Width_Range;
@@ -46,9 +46,6 @@ procedure Add (Rev : in Git_If.Git_Hash) is
     -- Encode current branch
     Utils.X.Encode_Branch (Afpx_Xref.Add_Tag.Branch);
 
-    -- Protect list
-    Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
-
     -- Get commit details
     if Get_Details then
       Git_If.List_Commit (Rev, Hash, Merged, Date, Comment, Commits);
@@ -71,6 +68,32 @@ procedure Add (Rev : in Git_If.Git_Hash) is
     -- Encode list
     Init_List (Commits);
   end Init;
+
+  -- Launch viewer on current file, or history on current dir or file
+  type Show_List is (Show_View, Show_Diff);
+  procedure Show (What : in Show_List) is
+    Pos : constant Positive := Afpx.Line_List.Get_Position;
+    Commit : Git_If.Commit_Entry_Rec;
+  begin
+    Commits.Move_At (Pos);
+    Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
+    declare
+      Path : constant String := Directory.Dirname (Commit.File.Image);
+      File : constant String := Directory.Basename (Commit.File.Image);
+    begin
+      case What is
+        when Show_View =>
+          -- Only files except leading "/"
+          if Commit.File.Image /= "/" then
+            View (Commit.File.Image, Hash);
+          end if;
+        when Show_Diff =>
+          -- Call delta between previous of this file and this commit
+          Git_If.Launch_Delta (Config.Differator, Root & Path & File,
+                           Hash & "^", Hash);
+      end case;
+    end;
+  end Show;
 
   -- Get tag name and comment, and add the tag on hash. Return true on success
   function Add_Tag (Annotated : in Boolean) return Boolean is
@@ -118,8 +141,7 @@ begin
           when Afpx.Return_Key =>
             null;
           when Afpx.Escape_Key =>
-            -- Back
-            return;
+            null;
           when Afpx.Break_Key =>
             raise Utils.Exit_Requested;
         end case;
@@ -131,6 +153,10 @@ begin
             -- Scroll list
             Afpx.Utils.Scroll (
                Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
+          when Afpx_Xref.Add_Tag.View =>
+            Show (Show_View);
+          when Afpx_Xref.Add_Tag.Diff =>
+            Show (Show_Diff);
           when Afpx_Xref.Add_Tag.Tag_Annotated =>
             -- Tag annotated
             if Add_Tag (True) then

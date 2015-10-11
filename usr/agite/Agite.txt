@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V25.10
+V26.00
 
 General purpose
 ---------------
@@ -322,26 +322,26 @@ of the current repository.
 anchor:XNavigation[]
 The navigation between the screens is as follows:
 
-                                               /-----------------------+
-                                +----------+  /     +------------+     |
-                            /-> | Branches |-/----->| CherryPick |--+  |
-                           /    +----------+        +------------+  |  |
-                          /     +-----------+                       |  |
-                         /----->| Bookmarks |                       |  |
-                        /       +-----------+       +-----+         |  |
-                       /                  /-------->| Tag |         |  |
-                      /                  /          +-----+         |  |
-                     /          +-------+-+         +--------+      |  |
-                    /---------->| History |<-----+->| Detail |<-----+  |
-                   /            +-------+-+     /   +--------+      |  |
-                  /             +------+ \     /    +----------+    |  |
-                 /--------------| Tags |--+---+---->| Checkout |    |  |
-                /               +------+   \        +----------+    |  |
-  +---------- +/                +-------+   \       +------+        |  |
-  | Directory |---------------->| Commit|----+----->| Push |        |  |
-  +---------- +\                +-------+<-\        +------+        |  |
-                \               +-------+   \-----------------------+  |
-                 \------------->| Stash |    \-------------------------+
+                                               /-------------------------+
+                                +----------+  /       +------------+     |
+                            /-> | Branches |-/------->| CherryPick |--+  |
+                           /    +----------+          +------------+  |  |
+                          /     +-----------+                         |  |
+                         /----->| Bookmarks |                         |  |
+                        /       +-----------+         +-----+         |  |
+                       /                  /---------->| Tag |         |  |
+                      /                  /            +-----+         |  |
+                     /          +-------+-+           +--------+      |  |
+                    /---------->| History |<-+-----+->| Detail |<-----+  |
+                   /            +-------+-+   \   /   +--------+      |  |
+                  /             +------+ \     \ /    +----------+    |  |
+                 /--------------| Tags |--+-----+---->| Checkout |    |  |
+                /               +------+   \          +----------+    |  |
+  +---------- +/                +-------+   \         +------+        |  |
+  | Directory |---------------->| Commit|----+------->| Push |        |  |
+  +---------- +\                +-------+<-\          +------+        |  |
+                \               +-------+   \-------------------------+  |
+                 \------------->| Stash |    \---------------------------+
                   \             +-------+
                    \            +------+
                     \---------->| Pull |
@@ -355,6 +355,7 @@ necessary.
 
 NOTE: The 'history' and 'tags' menus call the 'detail' and 'checkout' menus. +
 The 'tags' and 'commit' menus call the 'push' menu. +
+The 'tags' menu calls the 'history' menu. +
 The 'cherry-pick' menu calls the 'detail' menu, but without allowing it to call
 the 'history' menu. +
 The 'cherry-pick' menu calls the 'commit' menu, but without allowing it to call
@@ -1018,8 +1019,10 @@ in the xref:XDetail[detail] menu:
 
 * The SHA-1 hash of the commit,
 * The date and comment (up to seven lines) of the commit,
-* The list of all the files in the commit, each preceded by a letter M, A or
-D.
+* The list of all the files in the commit, each preceded by a letter M, A
+or D. +
+You can view the corresponding version of a file, or see the difference
+introduced by this commit on a file.
 
 You can:
 
@@ -1154,12 +1157,14 @@ As soon as it is used for searching, the criteria is memorized for further
 invocations of the menu, until you quit Agite.
 
 .List
-
 The list contains the matching tags, sorted by date:
 
 * Annotated tags are shown with the tag name, tagging date and comment,
 * Non annotated tags are shown with only the tag name,
 
+.Create
+This button launches the xref:XHist[history] menu of the root of the
+repository, which allows selecting a commit and xref:XTag[tagging] it.
 
 .Actions
 

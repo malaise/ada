@@ -1,5 +1,6 @@
 with Afpx.Utils, Str_Util;
-with Utils.X, Afpx_Xref, Config, Details, Confirm, Checkout, Push_Pull;
+with Utils.X, Afpx_Xref, Config, History, Details, Confirm, Checkout,
+     Push_Pull;
 separate (Tags)
 
 procedure List (Root : in String) is
@@ -201,6 +202,9 @@ begin
                Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
           when Afpx_Xref.List_Tags.List =>
             Read_Tags (True);
+          when Afpx_Xref.List_Tags.Create =>
+            History.List (Root, "", "", False, False);
+            Restore (False, True);
           when Afpx_Xref.List_Tags.Details =>
             -- Details of tag selected
             Tags_List.Move_At (Afpx.Line_List.Get_Position);

@@ -103,7 +103,6 @@ package body Details is
       Afpx.Update_List (Afpx.Center_Selected);
     end Do_Restore;
 
-
     -- Launch viewer on current file, or history on current dir or file
     type Show_List is (Show_View, Show_Hist, Show_Diff);
     procedure Show (What : in Show_List) is
@@ -124,9 +123,9 @@ package body Details is
             end if;
           when Show_Hist =>
             if Commit.File.Image = "/" then
-              History.List (Root, "", "", False, Hash);
+              History.List (Root, "", "", False, Allow_Modif, Hash);
             else
-              History.List (Root, Path, File, True, Hash);
+              History.List (Root, Path, File, True, Allow_Modif, Hash);
             end if;
             -- Re init sreen
             Init (False);

@@ -53,6 +53,7 @@ package body History is
   -- Handle the history of a file or dir
   procedure List (Root, Path, Name : in String;
                   Is_File : in Boolean;
+                  Allow_Modif : in Boolean;
                   Hash : in Git_If.Git_Hash := Git_If.No_Hash) is
     -- Afpx stuff
     Get_Handle  : Afpx.Get_Handle_Rec;
@@ -86,6 +87,12 @@ package body History is
       -- Protect buttons View and restore on dirs
       Afpx.Utils.Protect_Field (Afpx_Xref.History.View, not Is_File);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore, not Is_File);
+
+      -- Protect Restore, Checkout, Reorg and Reset
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore, not Allow_Modif);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Checkout, not Allow_Modif);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Reorg, not Allow_Modif);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Reset, not Allow_Modif);
     end Init;
 
     -- Show delta from current in list to comp
@@ -230,7 +237,7 @@ package body History is
       Logs.Move_At (Pos);
       Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
       -- Restore file
-      Tags.Add (Log.Hash);
+      Tags.Add (Root, Log.Hash);
       -- Restore screen
       Init;
       Init_List (Logs);
@@ -253,7 +260,7 @@ package body History is
           View (Path & Name, Log.Hash);
         when Show_Details =>
           -- Allow modif
-          Details.Handle (Root, Log.Hash, True);
+          Details.Handle (Root, Log.Hash, Allow_Modif);
           Init;
           Init_List (Logs);
           Afpx.Update_List (Afpx.Center_Selected);
