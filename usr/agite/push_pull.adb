@@ -146,6 +146,7 @@ package body Push_Pull is
     Get_Handle : Afpx.Get_Handle_Rec;
     Ptg_Result   : Afpx.Result_Rec;
     -- Result of Push or Pull
+    Txt : As.U.Asu_Us;
     Result : Boolean;
     -- Origin
     Origin : As.U.Asu_Us;
@@ -263,6 +264,19 @@ package body Push_Pull is
                   Ptg_Result.Field_No
                 - Utils.X.List_Scroll_Fld_Range'First
                 + 1);
+            when Afpx_Xref.Push_Pull.Fetch =>
+              -- Fetch whole remote
+              List.Move_At (Afpx.Line_List.Get_Position);
+              Txt := As.U.Tus (Git_If.Do_Fetch (List.Access_Current.Image,
+                                                "", False));
+              if Txt.Is_Null then
+                return True;
+              else
+                Error ("Fetching all branches",
+                       "from remote " & List.Access_Current.Image,
+                       Txt.Image);
+                Init;
+              end if;
             when Afpx_Xref.Push_Pull.Prune =>
               -- Prune remotes of selected remote
               List.Move_At (Afpx.Line_List.Get_Position);

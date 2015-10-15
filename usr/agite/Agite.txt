@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V26.04
+V26.05
 
 General purpose
 ---------------
@@ -1582,6 +1582,10 @@ repository.
 
 This lists all the known remote repositories.
 If the remote ''orign'' is defined then it is selected by default.
+
+.Fetch
+This button fetches all the known remote branches from the the selected
+remote.
 
 .Prune
 This button prunes from the local repository all the tracking branches that

@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V26.04"/>
+  <Var Name="Version" Value="V26.05"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -1549,34 +1549,40 @@
       <Init Row="0" Col="0">Remotes:</Init>
     </Field>
 
-    <!-- Prune button -->
-    <Field Num="15" Kind="Button" Name="Prune">
+    <!-- Fetch and Prune buttons -->
+    <Field Num="15" Kind="Button" Name="Fetch">
       <Geometry Up="${List.Up}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Fetch</Init>
+    </Field>
+    <Field Num="16" Kind="Button" Name="Prune">
+      <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Prune</Init>
     </Field>
 
 
     <!-- Push(Push) or OK/Pull/Fetch/Checkou(Pull), Push-Upstream, Push-Force, and Back -->
-    <Field Num="16" Kind="Button" Name="Push">
+    <Field Num="17" Kind="Button" Name="Push">
       <Geometry Up="${List.Low}+2" Left="1" Height="3" Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Push</Init>
     </Field>
-    <Field Num="17" Kind="Button" Name="Push_Upstream">
-      <Geometry Up="${Field_16.Up}+1" Left="${Field_16.Right}+2" Height="1"
+    <Field Num="18" Kind="Button" Name="Push_Upstream">
+      <Geometry Up="${Field_17.Up}+1" Left="${Field_17.Right}+2" Height="1"
                 Width="10"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Upstream</Init>
     </Field>
-    <Field Num="18" Kind="Button" Name="Push_Force">
-      <Geometry Up="${Field_16.Up}+1" Left="${Field_17.Right}+2" Height="1"
+    <Field Num="19" Kind="Button" Name="Push_Force">
+      <Geometry Up="${Field_17.Up}+1" Left="${Field_18.Right}+2" Height="1"
                 Width="7"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Force</Init>
     </Field>
-    <Field Num="19" Kind="Button" Name="Back">
-      <Geometry Up="${Field_16.Up}" Height="3" Left="${LmLeft}"
+    <Field Num="20" Kind="Button" Name="Back">
+      <Geometry Up="${Field_17.Up}" Height="3" Left="${LmLeft}"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Back</Init>
