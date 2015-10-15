@@ -1104,16 +1104,20 @@ package body Git_If is
       return Error;
   end Current_Branch;
 
-  -- List local or remote branches
+  -- List local or remote branches or both
   -- package Branches_Mng renames As.U.Utils.Asu_Dyn_List_Mng;
-  procedure List_Branches (Local : in Boolean;
+  procedure List_Branches (Local, Remote : in Boolean;
                            Branches : in out Branches_Mng.List_Type) is
     Cmd : Many_Strings.Many_String;
-    Line, Remotestr : As.U.Asu_Us;
+    Line, Opt : As.U.Asu_Us;
+    Index : Natural;
     Moved : Boolean;
   begin
     Branches.Delete_List;
-    if not Local then
+    if not Local and then not Remote then
+      return;
+    end if;
+    if Remote then
       -- For remote branches, first fetch them
       Cmd.Set ("git");
       Cmd.Cat ("fetch");
@@ -1124,14 +1128,19 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("branch");
     if not Local then
+      -- Only remote
       Cmd.Cat ("-r");
-      Remotestr := As.U.Tus (" -r");
+      Opt := As.U.Tus (" -r");
+    elsif Remote then
+      -- Both remote and local
+      Cmd.Cat ("-a");
+      Opt := As.U.Tus (" -a");
     end if;
     Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git branch " & Remotestr.Image
+      Basic_Proc.Put_Line_Error ("git branch " & Opt.Image
                                & ": " & Err_Flow_1.Str.Image);
       return;
     end if;
@@ -1144,6 +1153,11 @@ package body Git_If is
         -- Replace "* <branch>" or "  <branch>" by "<branch>"
         if Line.Length > 2 then
           Line.Delete (1, 2);
+        end if;
+        -- Remove potential " -> remote/branch"
+        Index := Str_Util.Locate (Line.Image, " ");
+        if Index /= 0 then
+          Line.Delete (Index, Line.Length);
         end if;
         Branches.Insert (Line);
         exit when not Moved;

@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V26.03
+V26.04
 
 General purpose
 ---------------
@@ -653,34 +653,34 @@ This shows the current branch and path of the root of current repository.
 
 .Actions
 
-The possible actions on the list of local branches are the following (all
+The possible actions on the list of local and remote branches are the following (all
 these actions except the creation lead to return to the xref:XDir[directory]
 menu in case of success):
 
 Checkout::
 
 Click in the 'Checkout' button to checkout, after confirmation, the HEAD of
-the branch selected in the list. Double clicking on an entry of the list has
+the local branch selected in the list. Double clicking on an entry of the list has
 the same effect.
 
 Merge::
 
 anchor:XMerge[]
 Click in the 'Merge' button to merge, after confirmation, the
-branch selected in the list into the current branch. +
+branch selected in the list into the local or remote current branch. +
 If the merge does not lead to 'fast forward', then a new commit is
 automatically generated with the comment "Merge branch \'<branch>'".
 
 TruMerge::
 Click in the 'TruMerge' button to merge, after confirmation, the
-branch selected in the list into the current branch, with no 'fast forward'
+branch selected in the list into the local or remote current branch, with no 'fast forward'
 and no commit policy. Then the xref:XCommit[commit] screen allows amending
 the comment and commiting the result.
 
 Rebase::
 anchor:XRebase[]
 Click in the 'Rebase' button to rebase the current branch, after confirmation,
-to the head of the branch selected in the list. If a branch is
+to the head of the local branch selected in the list. If a branch is
 right-selected in the list, then it is used as a reference for listing the
 commits to rebase. Example:
 
@@ -715,7 +715,7 @@ a rebase.
 CherryPk::
 
 Click on the 'CherryPk' button to launch the menu to xref:XCherry[cherry-pick]
-commits from the branch left-selected in the list (source) into the current
+commits from the local branch left-selected in the list (source) into the current
 branch (target). +
 If a branch is right-selected (reference) then the cherries to pick are
 the ones in the 'source' but not in the 'reference', otherwise the default
@@ -725,21 +725,21 @@ Reset::
 
 anchor:XBReset[]
 This button calls the xref:XReset[reset] menu to reset (soft, mixed or hard)
-the repository to the (left) selected branch.
+the repository to the (left) selected local branch.
 
 Create::
 
 Enter a name in the text field and click in the 'Create' button, or hit
-Return, to create a new branch.
+Return, to create a new local branch.
 
 Rename::
 
 Enter a new name in the text field and click in the 'Rename' button to rename
-the branch selected in the list.
+the local branch selected in the list.
 
 Delete::
 
-Click in the 'Delete' button to delete, after confirmation, the branch selected
+Click in the 'Delete' button to delete, after confirmation, the local branch selected
 in the list.
 
 

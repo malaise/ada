@@ -198,14 +198,15 @@ package body Push_Pull is
           Afpx.Clear_Field (Afpx_Xref.Push_Pull.Entries);
           Afpx.Reset_Field (Afpx_Xref.Push_Pull.Entries);
           Afpx.Encode_Field (Afpx_Xref.Push_Pull.Entries, (0, 0), "Branches:");
-          Git_If.List_Branches (Local => True, Branches => Branches);
       end case;
       Remote := As.U.Tus (Branch_Tag);
 
       -- Get list of references
       if Menu = Pull_Branch then
-        -- List branches
-        Git_If.List_Branches (Local => False, Branches => List);
+        -- List local branches to check if remote exists locally
+        Git_If.List_Branches (Local => True, Remote => False, Branches => Branches);
+        -- List remote branches
+        Git_If.List_Branches (Local => False, Remote => True, Branches => List);
       else
         -- List remotes
         Git_If.List_References (List);

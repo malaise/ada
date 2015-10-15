@@ -15,7 +15,7 @@ package body Rebase_Mng is
     use type As.U.Asu_Us;
   begin
     -- List branches
-    Git_If.List_Branches (Local => True, Branches => Branches);
+    Git_If.List_Branches (Local => True, Remote => False, Branches => Branches);
 
     -- Try "{Agite}@From.Tmp" and concat ".Tmp" as long as it already exists
     Branches.Rewind;
@@ -35,7 +35,7 @@ package body Rebase_Mng is
     Branches : Git_If.Branches_Mng.List_Type;
   begin
     -- List branches
-    Git_If.List_Branches (Local => True, Branches => Branches);
+    Git_If.List_Branches (Local => True, Remote => False, Branches => Branches);
     return Branch_Search (Branches, Branch,
                           From => Git_If.Branches_Mng.Absolute);
   end Exists;

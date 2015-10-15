@@ -27,6 +27,9 @@ package body Branch is
   procedure Init_List is new Afpx.Utils.Init_List (
     As.U.Asu_Us, As.U.Utils.Asu_List_Mng, Set, False);
 
+  -- Separator in branch names
+  Sep : constant String := Git_If.Separator & "";
+
   -- Root path and current branch
   Root : As.U.Asu_Us;
   Current_Branch : As.U.Asu_Us;
@@ -53,6 +56,9 @@ package body Branch is
 
   -- Re assess the list of branches
   procedure Reread (Restore : in Boolean) is
+    Branch : As.U.Asu_Us;
+    Sep_Index : Natural;
+    Moved : Boolean;
     Line : Afpx.Line_Rec;
   begin
     -- Encode current branch
@@ -70,8 +76,37 @@ package body Branch is
       Set (Line, Current_Branch);
     end if;
 
-    -- Encode the list
-    Git_If.List_Branches (Local => True, Branches => Branches);
+    -- Get the list of local and remote branches
+    Git_If.List_Branches (Local => True, Remote => True, Branches => Branches);
+    -- Filter out entry [Xxx/]"HEAD"
+    --  and filter out leading "remotes/" from entries
+    if not Branches.Is_Empty then
+      Branches.Rewind;
+      loop
+        Branches.Read (Branch, Git_If.Branches_Mng.Current);
+        -- Last slash
+        Sep_Index := Str_Util.Locate (Branch.Image, Sep, Forward => False);
+        if Branch.Slice (Sep_Index + 1, Branch.Length) = "HEAD" then
+          Branches.Delete (Moved => Moved);
+          exit when not Moved;
+        else
+          -- First slash
+          Sep_Index := Str_Util.Locate (Branch.Image, Sep, Forward => True);
+          if Branch.Slice (1, Sep_Index) = "remotes/" then
+            Branch.Delete (1, Sep_Index);
+            Branches.Modify (Branch, Git_If.Branches_Mng.Current);
+          end if;
+          -- Move to next if possible
+          if Branches.Check_Move then
+            Branches.Move_To;
+          else
+            exit;
+          end if;
+        end if;
+      end loop;
+    end if;
+
+    -- Encode the Afpx list
     Init_List (Branches);
 
     -- Move back to the same entry as before (if possible)
@@ -282,7 +317,7 @@ package body Branch is
   -- Update the list status
   procedure List_Change (Unused_Action : in Afpx.List_Change_List;
                          Unused_Status : in Afpx.List_Status_Rec) is
-    On_Current : Boolean;
+    On_Current, Remote : Boolean;
     use type As.U.Asu_Us;
   begin
     if Afpx.Line_List.Is_Empty then
@@ -291,13 +326,21 @@ package body Branch is
     -- No action on current branch (except Create and Reset_Hard)
     Branches.Move_At (Afpx.Line_List.Get_Position);
     On_Current := Branches.Access_Current.all = Current_Branch;
-    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Checkout, On_Current);
+    -- Only Merge or TrueMerge from remote, and create
+    Remote := Str_Util.Locate (Branches.Access_Current.all.Image, Sep) /= 0;
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Checkout,
+                              On_Current or else Remote);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Merge, On_Current);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.True_Merge, On_Current);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rebase, On_Current);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Cherry_Pick, On_Current);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rename, On_Current);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Delete, On_Current);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rebase,
+                              On_Current or else Remote);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Cherry_Pick,
+                              On_Current or else Remote);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Reset, Remote);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rename,
+                              On_Current or else Remote);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Delete,
+                              On_Current or else Remote);
   end List_Change;
 
   -- Handle the Branches
