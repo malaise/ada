@@ -1158,6 +1158,44 @@ package body Git_If is
     end if;
   end List_Branches;
 
+  -- List branches of a reference
+  procedure List_Branches_Of (Reference : in String;
+                              Branches : in out Branches_Mng.List_Type) is
+    Cmd : Many_Strings.Many_String;
+    Line: As.U.Asu_Us;
+    Index : Natural;
+    Moved : Boolean;
+  begin
+    Branches.Delete_List;
+    Cmd.Set ("git");
+    Cmd.Cat ("ls-remote");
+    Cmd.Cat ("--heads");
+    Cmd.Cat (Pt (Reference));
+    Execute (Cmd, True, Command.Both,
+        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git ls-remote --heads " & Reference
+                               & ": " & Err_Flow_1.Str.Image);
+      return;
+    end if;
+
+    -- Encode info: <hash> Tab refs/heads/<branch>
+    if not Out_Flow_1.List.Is_Empty then
+      Out_Flow_1.List.Rewind;
+      loop
+        Out_Flow_1.List.Read (Line, Moved => Moved);
+        -- Keep tail after last separator
+        Index := Str_Util.Locate (Line.Image, Separator & "", Forward => False);
+        if Index /= 0 then
+          Line.Delete (1 , Index);
+          Branches.Insert (Line);
+        end if;
+        exit when not Moved;
+      end loop;
+    end if;
+  end List_Branches_Of;
+
   -- Create a branch, return "" if Ok else the error
   function Create_Branch (Name : String) return String is
     Cmd : Many_Strings.Many_String;

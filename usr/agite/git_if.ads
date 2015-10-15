@@ -168,12 +168,15 @@ package Git_If is
   -- Get current branch name
   function Current_Branch return String;
 
-  -- List local or remote branches or both
+  -- List local or remote tracking branches, or both
   -- Separator between <remote> and <branch>
   Separator : constant Character := '/';
   package Branches_Mng renames As.U.Utils.Asu_Dyn_List_Mng;
   procedure List_Branches (Local, Remote : in Boolean;
                            Branches : in out Branches_Mng.List_Type);
+  -- List branches of a reference
+  procedure List_Branches_Of (Reference : in String;
+                              Branches : in out Branches_Mng.List_Type);
 
   -- Create, rename, delete, merge, rebase a branch,
   --  return "" if Ok else the error

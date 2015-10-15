@@ -88,7 +88,18 @@ package body Push_Pull is
   function Do_Get (Force_Fetch : in Boolean) return Boolean is
     Branch, Log : As.U.Asu_Us;
     Action : Action_List;
-    Txt : As.U.Asu_Us;
+    function Check (Msg : in String) return Boolean is
+    begin
+      if Log.Is_Null then
+        return True;
+      else
+        Error (Msg & " branch " & Branch.Image,
+               "from remote " & Remote.Image,
+               Log.Image);
+        return False;
+      end if;
+    end Check;
+
   begin
     -- Get selected branch name
     List.Move_At (Afpx.Line_List.Get_Position);
@@ -97,24 +108,20 @@ package body Push_Pull is
     -- Fetch
     case Action is
       when Pull =>
-        Txt := As.U.Tus ((if Force_Fetch then "Fetching" else "Pulling"));
         Log := As.U.Tus (Git_If.Do_Fetch (Remote.Image, Branch.Image,
                                           Pull => not Force_Fetch));
+        return Check (if Force_Fetch then "Fetching" else "Pulling");
       when Fetch =>
-        Txt := As.U.Tus ("Fetching");
         Log := As.U.Tus (Git_If.Do_Fetch (Remote.Image, Branch.Image, False));
+        return Check ("Fetching");
       when Checkout =>
-        Txt := As.U.Tus ("Checking out");
         Log := As.U.Tus (Git_If.Do_Checkout (Remote.Image, Branch.Image));
+        if not Check ("Checking out") then
+          return False;
+        end if;
+        Log := As.U.Tus (Git_If.Do_Fetch (Remote.Image, Branch.Image, False));
+        return Check ("Fetching");
     end case;
-    if Log.Is_Null then
-      return True;
-    else
-      Error (Txt.Image & " branch " & Branch.Image,
-             "from remote " & Remote.Image,
-             Log.Image);
-      return False;
-    end if;
   end Do_Get;
 
   --- Update the list status
@@ -207,7 +214,7 @@ package body Push_Pull is
         -- List local branches to check if remote exists locally
         Git_If.List_Branches (Local => True, Remote => False, Branches => Branches);
         -- List remote branches
-        Git_If.List_Branches (Local => False, Remote => True, Branches => List);
+        Git_If.List_Branches_Of (Remote.Image, Branches => List);
       else
         -- List remotes
         Git_If.List_References (List);
@@ -221,8 +228,7 @@ package body Push_Pull is
         if Menu /= Pull_Branch  then
           Origin := As.U.Tus ("origin");
         elsif not Curr_Branch.Is_Null then
-          Origin := As.U.Tus (Branch_Tag & Git_If.Separator
-                            & Curr_Branch.Image);
+          Origin := As.U.Tus (Curr_Branch.Image);
         end if;
         if not Search_Ref (List, Origin,
                            From => Git_If.Reference_Mng.Absolute) then

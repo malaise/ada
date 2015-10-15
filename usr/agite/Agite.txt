@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V26.06
+V27.00
 
 General purpose
 ---------------
@@ -1617,7 +1617,7 @@ Below the title is displayed the remote (previously selected).
 
 .List of branches
 
-This lists the known remote branches from which you can select the one to
+This lists the branches in the the remote, from which you can select the one to
 pull, fetch or checkout. +
 If it exists, the current branch is selected by default and will be pulled.
 If you select another branch it will be fetched or checked out.
@@ -1627,9 +1627,12 @@ If you select another branch it will be fetched or checked out.
 This button shows and launches an action, depending on the remote branch
 currently selected in the list:
 
-* Pull: if the remote branch selected matches the current branch,
-* Fetch: if the remote branch matches another local branch,
-* Checkout: if the remote branch does not match any local branch.
+* Pull: when the remote branch selected matches the current branch, pulls the
+remote branch,
+* Fetch: when the remote branch matches another local branch, fetches the
+remote branch,
+* Checkout: when the remote branch does not match any local branch,
+checks out then fetches the remote branch.
 
 .Alternate buton: Fetch
 When the main action is 'Pull' (the selected remote branch matches the local
@@ -1877,7 +1880,11 @@ calling 'git difftool -y -x <differator> <ref_HSA1_hash> <comp_HSA1_hash>
 * A function gets the name of current branch by calling 'git branch',
 
 * A function lists the local branches by calling 'git branch' or lists the
-remote branches by calling 'git fetch' then 'git branch -r',
+remote tracking branches by calling 'git branch -r' or lists both by calling
+'git branch -a',
+
+* A function lists the branches of a remote reference by calling 'git
+ls-remote --heads <reference>',
 
 * Three functions create/rename/delete a branch by calling 'git branch
 [ -m | -d ] <name> [<new_name>]',
