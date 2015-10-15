@@ -155,6 +155,7 @@ package body Branch is
   function Do_Action (Action : in Action_List;
                       Ref : in Natural := 0) return Boolean is
     Sel_Name, New_Name, Ref_Name : As.U.Asu_Us;
+    Remote : Boolean;
     Comment : As.U.Asu_Us;
     Pos : Positive;
     Message, Result : As.U.Asu_Us;
@@ -235,9 +236,16 @@ package body Branch is
         end if;
       when Delete =>
         Message := As.U.Tus ("Deleting branch " & Sel_Name.Image);
-        Result := As.U.Tus (Git_If.Delete_Branch (Sel_Name.Image));
+        Remote := Str_Util.Locate (Sel_Name.Image, Sep) /= 0;
+        Result := As.U.Tus (Git_If.Delete_Branch (Sel_Name.Image, Remote));
         if Result.Is_Null then
-          Previous_Branch := Current_Branch;
+          -- Go to next branch in list if possible
+          if Branches.Check_Move then
+            Branches.Move_To;
+            Previous_Branch := Branches.Access_Current.all;
+          else
+            Previous_Branch := Current_Branch;
+          end if;
         end if;
       when Checkout =>
         Message := As.U.Tus ("Checking out branch " & Sel_Name.Image);
@@ -326,7 +334,7 @@ package body Branch is
     -- No action on current branch (except Create and Reset_Hard)
     Branches.Move_At (Afpx.Line_List.Get_Position);
     On_Current := Branches.Access_Current.all = Current_Branch;
-    -- Only Merge or TrueMerge from remote, and create
+    -- Only Merge, TrueMerge and Delete of remote, and create
     Remote := Str_Util.Locate (Branches.Access_Current.all.Image, Sep) /= 0;
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Checkout,
                               On_Current or else Remote);
@@ -339,8 +347,7 @@ package body Branch is
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Reset, Remote);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rename,
                               On_Current or else Remote);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Delete,
-                              On_Current or else Remote);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Delete, On_Current);
   end List_Change;
 
   -- Handle the Branches

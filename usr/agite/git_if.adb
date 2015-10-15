@@ -1117,13 +1117,6 @@ package body Git_If is
     if not Local and then not Remote then
       return;
     end if;
-    if Remote then
-      -- For remote branches, first fetch them
-      Cmd.Set ("git");
-      Cmd.Cat ("fetch");
-      Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
-    end if;
     -- List branches
     Cmd.Set ("git");
     Cmd.Cat ("branch");
@@ -1202,12 +1195,16 @@ package body Git_If is
   end Rename_Branch;
 
   -- Delete a branch, return "" if Ok else the error
-  function Delete_Branch (Name : String) return String is
+  function Delete_Branch (Name : String; Remote : in Boolean := False)
+           return String is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
     Cmd.Cat ("branch");
     Cmd.Cat ("-D");
+    if Remote then
+      Cmd.Cat ("-r");
+    end if;
     Cmd.Cat (Pt (Name));
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);

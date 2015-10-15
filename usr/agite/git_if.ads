@@ -179,7 +179,8 @@ package Git_If is
   --  return "" if Ok else the error
   function Create_Branch (Name : String) return String;
   function Rename_Branch (Name, New_Name : String) return String;
-  function Delete_Branch (Name : String) return String;
+  function Delete_Branch (Name : String; Remote : in Boolean := False)
+           return String;
   function Merge_Branch (Name : String;
                          Comment : String;
                          No_Fast_Forward : Boolean;
