@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V27.01
+V27.02
 
 General purpose
 ---------------
@@ -340,11 +340,13 @@ The navigation between the screens is as follows:
   +---------- +/                +-------+   \         +------+        |  |
   | Directory |---------------->| Commit|----+------->| Push |        |  |
   +---------- +\                +-------+<-\          +------+        |  |
-                \               +-------+   \-------------------------+  |
-                 \------------->| Stash |    \---------------------------+
-                  \             +-------+
-                   \            +------+
-                    \---------->| Pull |
+                \                     |     \                         |  |
+                 \                    V      \                        |  |
+                  \             +-------+     \-----------------------+  |
+                   \----------->| Stash |      \-------------------------+
+                    \           +-------+
+                     \          +------+
+                      \-------->| Pull |
                                 +------+
                      +-------+
                      | Reset |
@@ -1393,6 +1395,12 @@ changes.
 
 Edit::
 Launch the editor on the current file (selected in list).
+
+Stash::
+Launch the xref:XStash[stash] menu, which allows applying a stashed change on
+the local changes. Beware: applying a stash will merge the changes of a
+file only if the local changes of this file are staged, otherwise applying the
+stash will be rejected.
 
 Diff::
 Show the difference between the current change and the HEAD for the current file

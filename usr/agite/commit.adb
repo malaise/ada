@@ -1,7 +1,7 @@
 with Ada.Exceptions;
 with As.U, Directory, Afpx.Utils, Str_Util, Basic_Proc,
      Aski, Images, Trilean;
-with Utils.X, Config, Push_Pull, Afpx_Xref, Confirm, Error;
+with Utils.X, Config, Push_Pull, Afpx_Xref, Confirm, Error, Stash;
 package body Commit is
 
   -- The text of the comment
@@ -567,6 +567,10 @@ package body Commit is
               Reread (True);
             when Afpx_Xref.Commit.Edit =>
               Do_Edit;
+            when Afpx_Xref.Commit.Stash =>
+              Stash.Handle (Root);
+              Init (In_Loop);
+              Reread (True);
             when Afpx_Xref.Commit.Diff =>
               Do_Diff;
             when Afpx_Xref.Commit.Stage =>
