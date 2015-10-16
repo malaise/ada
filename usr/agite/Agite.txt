@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V27.04
+V27.05
 
 General purpose
 ---------------
@@ -1273,6 +1273,9 @@ buttons changes its status, and moves to the next cherry. +
 When there is a right and a left selection in the list, clicking on one of
 these buttons changes the status all the commits between the selections
 included.
+
+.Copy
+Copy the current cherry.
 
 .MovUp and MovDwn
 Move up or down in the list the current cherry.

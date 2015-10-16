@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V27.04"/>
+  <Var Name="Version" Value="V27.05"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -1984,13 +1984,13 @@
 
     <!-- Detail, Apply, Dit, Fixup, Commit, MovUp, MovDwn, Skip, Reset -->
     <Field Num="13" Kind="Button" Name="Detail">
-      <Geometry Up="${List.Up}-4" Left="${LmLeft}" Height="1"
+      <Geometry Up="${List.Up}-6" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Detail</Init>
     </Field>
     <Field Num="14" Kind="Button" Name="Pick">
-      <Geometry Up="${Field_13.Low}+2" Left="${LmLeft}" Height="1"
+      <Geometry Up="${List.Up}-4" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Pick</Init>
@@ -2025,39 +2025,45 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Drop</Init>
     </Field>
-    <Field Num="20" Kind="Button" Name="Move_Up">
+    <Field Num="20" Kind="Button" Name="Copy">
       <Geometry Up="${Field_19.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">Copy</Init>
+    </Field>
+    <Field Num="21" Kind="Button" Name="Move_Up">
+      <Geometry Up="${Field_20.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">MovUp</Init>
     </Field>
-    <Field Num="21" Kind="Button" Name="Move_Down">
-      <Geometry Up="${Field_20.Low}+2" Left="${LmLeft}" Height="1"
+    <Field Num="22" Kind="Button" Name="Move_Down">
+      <Geometry Up="${Field_21.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">MovDwn</Init>
     </Field>
-    <Field Num="22" Kind="Button" Name="Reset">
-      <Geometry Up="${Field_21.Low}+3" Left="${LmLeft}" Height="1"
+    <Field Num="23" Kind="Button" Name="Reset">
+      <Geometry Up="${Field_22.Low}+3" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Reset</Init>
     </Field>
 
-    <Field Num="23" Kind="Put">
-      <Geometry Up="${Field_22.Low}+1" Left="${LmLeft}" Height="1"
+    <Field Num="24" Kind="Put">
+      <Geometry Up="${Field_23.Low}+1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
 
-    <Field Num="24" Kind="Put">
+    <Field Num="25" Kind="Put">
       <Geometry Up="${List.Low}-3" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
-    <Field Num="25" Kind="Button" Name="Go">
+    <Field Num="26" Kind="Button" Name="Go">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>

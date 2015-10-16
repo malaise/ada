@@ -183,7 +183,7 @@ package body Cherry is
 
   -- Actions
   type Cherry_Actions is (Toggle, Drop, Pick, Reword, Edit, Fixup, Squash,
-                          Move_Up, Move_Down, Reset);
+                          Copy, Move_Up, Move_Down, Reset);
   procedure Cherry_Action (Action : in Cherry_Actions;
                            Left_Sel : in Natural) is
     Cherry : Cherry_Rec;
@@ -294,6 +294,15 @@ package body Cherry is
         Apply (Squash);
       when Fixup =>
         Apply (Fixup);
+      when Copy =>
+        -- Copy current
+        Cherries.Move_At (Pos0);
+        Cherries.Read (Cherry, Cherries_Mng.Dyn_List.Current);
+        Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
+        -- Paste
+        Cherries.Insert (Cherry);
+        Afpx.Line_List.Insert (Line);
+        Nb_Cherries := Nb_Cherries + 1;
       when Move_Up =>
         if Pos1 = 1 then
           return;
@@ -679,6 +688,9 @@ package body Cherry is
             when Afpx_Xref.Cherry.Drop =>
               -- Drop
               Cherry_Action (Drop, Ptg_Result.Id_Selected_Right);
+            when Afpx_Xref.Cherry.Copy =>
+              -- Copy
+              Cherry_Action (Copy, Ptg_Result.Id_Selected_Right);
             when Afpx_Xref.Cherry.Move_Up =>
               -- Move Up
               Cherry_Action (Move_Up, Ptg_Result.Id_Selected_Right);
