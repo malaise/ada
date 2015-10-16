@@ -1,5 +1,5 @@
 with As.U.Utils, Afpx.Utils, Str_Util, Mixed_Str;
-with Utils.X, Git_If, Afpx_Xref, Error;
+with Utils.X, Git_If, Afpx_Xref, Error, Confirm;
 package body Push_Pull is
 
   type Menu_List is (Push, Pull_Remote, Pull_Branch);
@@ -124,6 +124,25 @@ package body Push_Pull is
     end case;
   end Do_Get;
 
+  function Fetch_All return Boolean is
+    Ref : As.U.Asu_Us;
+    Res : As.U.Asu_Us;
+  begin
+    List.Move_At (Afpx.Line_List.Get_Position);
+    Ref := List.Access_Current.all;
+    if not Confirm ("Fetching all branches from " & Ref.Image,
+                    "This may take some time and create many branches") then
+       return False;
+    end if;
+    Res := As.U.Tus (Git_If.Do_Fetch (Ref.Image, "", False));
+    if Res.Is_Null then
+      return True;
+    else
+      Error ("Fetching all branches", "from remote " & Ref.Image, Res.Image);
+      return False;
+    end if;
+  end Fetch_All;
+
   --- Update the list status
   procedure List_Change (Unused_Action : in Afpx.List_Change_List;
                          Unused_Status : in Afpx.List_Status_Rec) is
@@ -153,7 +172,6 @@ package body Push_Pull is
     Get_Handle : Afpx.Get_Handle_Rec;
     Ptg_Result   : Afpx.Result_Rec;
     -- Result of Push or Pull
-    Txt : As.U.Asu_Us;
     Result : Boolean;
     -- Origin
     Origin : As.U.Asu_Us;
@@ -272,17 +290,10 @@ package body Push_Pull is
                 + 1);
             when Afpx_Xref.Push_Pull.Fetch =>
               -- Fetch whole remote
-              List.Move_At (Afpx.Line_List.Get_Position);
-              Txt := As.U.Tus (Git_If.Do_Fetch (List.Access_Current.Image,
-                                                "", False));
-              if Txt.Is_Null then
+              if Fetch_All then
                 return True;
-              else
-                Error ("Fetching all branches",
-                       "from remote " & List.Access_Current.Image,
-                       Txt.Image);
-                Init;
               end if;
+              Init;
             when Afpx_Xref.Push_Pull.Prune =>
               -- Prune remotes of selected remote
               List.Move_At (Afpx.Line_List.Get_Position);
