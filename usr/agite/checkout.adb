@@ -59,7 +59,7 @@ package body Checkout is
 
     loop
 
-      Afpx.Put_Then_Get (Get_Handle, Ptg_Result, False);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
 
       case Ptg_Result.Event is
         when Afpx.Keyboard =>

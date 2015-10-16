@@ -634,7 +634,7 @@ package body Cherry is
       else
         Afpx.Reset_Field (Afpx_Xref.Cherry.Go, Reset_Colors => False);
       end if;
-      Afpx.Put_Then_Get (Get_Handle, Ptg_Result, True);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result, Right_Select => True);
 
       case Ptg_Result.Event is
         when Afpx.Keyboard =>

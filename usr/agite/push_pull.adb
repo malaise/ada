@@ -245,7 +245,7 @@ package body Push_Pull is
 
     -- Main loop
     loop
-      Afpx.Put_Then_Get (Get_Handle, Ptg_Result, False,
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
           List_Change_Cb => (if Menu = Pull_Branch then
                              List_Change'Access else null));
 

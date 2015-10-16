@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V27.02
+V27.03
 
 General purpose
 ---------------
@@ -742,8 +742,10 @@ the local branch selected in the list.
 Delete::
 
 Click in the 'Delete' button to delete, after confirmation, the branch selected
-in the list.
-
+in the list. +
+Select two branches (one with the right mouse button and the other with the
+left button) to delete, after confirmation, all the branches between these
+branches included.
 
 .Back
 

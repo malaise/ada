@@ -154,10 +154,11 @@ package body Branch is
                        Rebase, Cherry_Pick, Reset);
   function Do_Action (Action : in Action_List;
                       Ref : in Natural := 0) return Boolean is
-    Sel_Name, New_Name, Ref_Name : As.U.Asu_Us;
+    Sel_Name, New_Name, Ref_Name, Tmp_Name : As.U.Asu_Us;
     Remote : Boolean;
     Comment : As.U.Asu_Us;
-    Pos : Positive;
+    Pos, Tmp_Index : Positive;
+    Refi : Natural;
     Message, Result : As.U.Asu_Us;
     Done : Boolean;
     use type Cherry.Result_List;
@@ -181,12 +182,24 @@ package body Branch is
 
     -- Get name of right selection
     -- If no right selection then leave empty for default
-    if (Action = Rebase or else Action = Cherry_Pick)
+    if (Action = Rebase or else Action = Cherry_Pick or else Action = Delete)
     and then Ref /= 0 then
       Pos := Branches.Get_Position;
       Branches.Move_At (Ref);
       Ref_Name := Branches.Access_Current.all;
       Branches.Move_At (Pos);
+    end if;
+    if Action = Delete then
+      Refi := Ref;
+      if Refi /= 0 and then Refi < Pos then
+        -- Sort the list of branches to delete
+        Tmp_Index := Pos;
+        Pos := Refi;
+        Refi := Tmp_Index;
+        Tmp_Name := Sel_Name;
+        Sel_Name := Ref_Name;
+        Ref_Name := Tmp_Name;
+      end if;
     end if;
 
     -- Cancel if not confirm
@@ -196,13 +209,17 @@ package body Branch is
       if not Confirm (
           (case Action is
              when Create | Rename | Rebase | Cherry_Pick | Reset => "???",
-             when Delete     => "Delete branch " & Sel_Name.Image,
+             when Delete     =>
+               (if Ref = 0 then "Delete branch " & Sel_Name.Image
+                else "Delete branches from " & Sel_Name.Image),
              when Checkout   => "Checkout branch " & Sel_Name.Image,
              when Merge      => "Merge branch " & Sel_Name.Image,
              when True_Merge => "True Merge branch " & Sel_Name.Image),
           (case Action is
-             when Create | Rename | Rebase | Cherry_Pick | Reset | Delete
+             when Create | Rename | Rebase | Cherry_Pick | Reset
                 | Checkout => "",
+             when Delete =>
+               (if Ref = 0 then "" else "to " & Ref_Name.Image),
              when Merge | True_Merge  => "into current branch "
                                          & Current_Branch.Image) )
       then
@@ -235,17 +252,30 @@ package body Branch is
           end if;
         end if;
       when Delete =>
-        Message := As.U.Tus ("Deleting branch " & Sel_Name.Image);
-        Remote := Str_Util.Locate (Sel_Name.Image, Sep) /= 0;
-        Result := As.U.Tus (Git_If.Delete_Branch (Sel_Name.Image, Remote));
-        if Result.Is_Null then
-          -- Go to next branch in list if possible
-          if Branches.Check_Move then
-            Branches.Move_To;
-            Previous_Branch := Branches.Access_Current.all;
-          else
-            Previous_Branch := Current_Branch;
+        if Refi = 0 then
+          -- No right selection: delete current branch
+          Message := As.U.Tus ("Deleting branch " & Sel_Name.Image);
+          Remote := Str_Util.Locate (Sel_Name.Image, Sep) /= 0;
+          Result := As.U.Tus (Git_If.Delete_Branch (Sel_Name.Image, Remote));
+          if Result.Is_Null then
+            -- Go to next branch in list if possible
+            if Branches.Check_Move then
+              Branches.Move_To;
+              Previous_Branch := Branches.Access_Current.all;
+            else
+              Previous_Branch := Current_Branch;
+            end if;
           end if;
+        else
+          -- Delete branches from Pos to Ref
+          for I in Pos .. Refi loop
+            Branches.Move_At (I);
+            Tmp_Name := Branches.Access_Current.all;
+            Message := As.U.Tus ("Deleting branch " & Tmp_Name.Image);
+            Remote := Str_Util.Locate (Tmp_Name.Image, Sep) /= 0;
+            Result := As.U.Tus (Git_If.Delete_Branch (Tmp_Name.Image, Remote));
+            exit when not Result.Is_Null;
+          end loop;
         end if;
       when Checkout =>
         Message := As.U.Tus ("Checking out branch " & Sel_Name.Image);
@@ -375,7 +405,8 @@ package body Branch is
 
     -- Main loop
     loop
-      Afpx.Put_Then_Get (Get_Handle, Ptg_Result, True,
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
+                         Right_Select => True,
                          List_Change_Cb => List_Change'Access);
 
       case Ptg_Result.Event is
@@ -430,7 +461,7 @@ package body Branch is
                 exit;
               end if;
             when Afpx_Xref.Branches.Delete =>
-              if Do_Action (Delete) then
+              if Do_Action (Delete, Ptg_Result.Id_Selected_Right) then
                 exit;
               end if;
             when Afpx_Xref.Branches.Back =>

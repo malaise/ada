@@ -364,7 +364,7 @@ package body History is
 
     -- Main loop
     loop
-      Afpx.Put_Then_Get (Get_Handle, Ptg_Result, True,
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result, Right_Select => True,
                          List_Change_Cb => List_Change'Access);
 
       case Ptg_Result.Event is
