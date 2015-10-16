@@ -85,13 +85,15 @@ package body Http is
   begin
     Logger.Log_Debug ("HTTP: Checking");
 
-    -- Parse buffer, init default result
-    Result := (Client_Error, Invalid_Answer);
-
+    -- Empty buffer means disconnection
     if Buffer.Is_Null then
       Logger.Log_Debug ("HTTP: No anwser at all");
+      Result := (Client_Error, Disconnection);
       return;
     end if;
+
+    -- Parse buffer, init default result
+    Result := (Client_Error, Invalid_Answer);
 
     -- See if line break is Lf or Cr+Lf, set New_Line
     Ind := Str_Util.Locate (Buffer.Image, Lf);

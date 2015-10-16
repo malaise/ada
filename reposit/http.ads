@@ -9,7 +9,8 @@ package Http is
   type Client_Error_List is (
     Invalid_Url,    -- Not "http://<host>/<opt_content>
     Name_Error,     -- Host or port not found
-    Invalid_Answer, -- Not "HTTP/<vers> <code> <text>"
+    Disconnection,  -- Server has disconnected before replying
+    Invalid_Answer, -- Reply is not "HTTP/<vers> <code> <text>"
     Missing_Length, -- No "Content-Length:" in answer
     Msg_Too_Long,   -- Answer message is too long (above Max_Msg_Len)
     Wrong_Length,   -- Length received (before disconnection) /= Content-Length
