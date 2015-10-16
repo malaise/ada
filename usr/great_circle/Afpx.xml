@@ -42,12 +42,14 @@
     <!-- Point A Lat/Lon -->
     <Field Num="6" Kind="Get" Name="A_First">
       <Geometry Up="6" Left="1" Low="6" Right="1"/>
+      <Get_Tuning Move_Prev="False" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
       <Init Row="0" Col="0">N</Init>
     </Field>
 
     <Field Num="7" Kind="Get">
       <Geometry Up="6" Left="2" Low="6" Right="3"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
@@ -59,6 +61,7 @@
 
     <Field Num="9" Kind="Get">
       <Geometry Up="6" Left="5" Low="6" Right="6"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
@@ -70,6 +73,7 @@
 
     <Field Num="11" Kind="Get">
       <Geometry Up="6" Left="8" Low="6" Right="9"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
@@ -81,12 +85,14 @@
 
     <Field Num="13" Kind="Get">
       <Geometry Up="6" Left="12" Low="6" Right="12"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
       <Init Row="0" Col="0">W</Init>
     </Field>
 
     <Field Num="14" Kind="Get">
       <Geometry Up="6" Left="13" Low="6" Right="15"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
@@ -98,6 +104,7 @@
 
     <Field Num="16" Kind="Get">
       <Geometry Up="6" Left="17" Low="6" Right="18"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
@@ -109,6 +116,7 @@
 
     <Field Num="18" Kind="Get">
       <Geometry Up="6" Left="20" Low="6" Right="21"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
@@ -121,12 +129,14 @@
     <!-- Point B Lat/Lon -->
     <Field Num="20" Kind="Get" Name="B_First">
       <Geometry Up="6" Left="24" Low="6" Right="24"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
       <Init Row="0" Col="0">N</Init>
     </Field>
 
     <Field Num="21" Kind="Get">
       <Geometry Up="6" Left="25" Low="6" Right="26"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
@@ -138,6 +148,7 @@
 
     <Field Num="23" Kind="Get">
       <Geometry Up="6" Left="28" Low="6" Right="29"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
@@ -149,6 +160,7 @@
 
     <Field Num="25" Kind="Get">
       <Geometry Up="6" Left="31" Low="6" Right="32"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
@@ -160,12 +172,14 @@
 
     <Field Num="27" Kind="Get">
       <Geometry Up="6" Left="35" Low="6" Right="35"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
       <Init Row="0" Col="0">W</Init>
     </Field>
 
     <Field Num="28" Kind="Get">
       <Geometry Up="6" Left="36" Low="6" Right="38"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
@@ -177,6 +191,7 @@
 
     <Field Num="30" Kind="Get">
       <Geometry Up="6" Left="40" Low="6" Right="41"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
@@ -188,6 +203,7 @@
 
     <Field Num="32" Kind="Get">
       <Geometry Up="6" Left="43" Low="6" Right="44"/>
+      <Get_Tuning Move_Prev="True" Move_Next="False"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
