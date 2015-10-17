@@ -202,7 +202,9 @@ package body Push_Pull is
       -- Push upstream and force only for push of branch (not tag)
       Afpx.Set_Field_Activation (Afpx_Xref.Push_Pull.Push_Force,
                                  Menu = Push and then Branch_Tag = "");
-      -- Prune only for Pull_Remote
+      -- Fetch and Prune only for Pull_Remote
+      Afpx.Set_Field_Activation (Afpx_Xref.Push_Pull.Fetch,
+                                 Menu = Pull_Remote);
       Afpx.Set_Field_Activation (Afpx_Xref.Push_Pull.Prune,
                                  Menu = Pull_Remote);
       case Menu is
