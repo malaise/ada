@@ -121,11 +121,7 @@ package body Branch is
     -- Center
     Afpx.Update_List (Afpx.Center_Selected);
 
-    -- Set field activity
-    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rename,
-                              Afpx.Line_List.Is_Empty);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Delete,
-                              Afpx.Line_List.Is_Empty);
+    -- Set field activity: only Create
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Checkout,
                               Afpx.Line_List.Is_Empty);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Merge,
@@ -135,6 +131,12 @@ package body Branch is
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rebase,
                               Afpx.Line_List.Is_Empty);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Cherry_Pick,
+                              Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Reset,
+                              Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rename,
+                              Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Delete,
                               Afpx.Line_List.Is_Empty);
   end Reread;
 
@@ -354,8 +356,11 @@ package body Branch is
 
   -- Update the list status
   procedure List_Change (Unused_Action : in Afpx.List_Change_List;
-                         Unused_Status : in Afpx.List_Status_Rec) is
+                         Status : in Afpx.List_Status_Rec) is
     On_Current, Remote : Boolean;
+    -- Only Rebase, Cherrypick and Delete if right selection
+    Right : constant Boolean
+          := Status.Ids_Selected (Afpx.List_Right) /= 0;
     use type As.U.Asu_Us;
   begin
     if Afpx.Line_List.Is_Empty then
@@ -364,20 +369,25 @@ package body Branch is
     -- No action on current branch (except Create and Reset_Hard)
     Branches.Move_At (Afpx.Line_List.Get_Position);
     On_Current := Branches.Access_Current.all = Current_Branch;
-    -- Only Merge, TrueMerge and Delete of remote, and create
+    -- Only Merge, TrueMerge CherryPickand Delete of remote, and create
     Remote := Str_Util.Locate (Branches.Access_Current.all.Image, Sep) /= 0;
+
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Checkout,
-                              On_Current or else Remote);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Merge, On_Current);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.True_Merge, On_Current);
+                              On_Current or else Remote or else Right);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Merge,
+                              On_Current or else Right);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.True_Merge,
+                              On_Current or else Right);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rebase,
                               On_Current or else Remote);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Cherry_Pick,
-                              On_Current or else Remote);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Reset, Remote);
+                              On_Current);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Reset,
+                              Remote or else Right);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rename,
-                              On_Current or else Remote);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Delete, On_Current);
+                              On_Current or else Remote or else Right);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Delete,
+                              On_Current);
   end List_Change;
 
   -- Handle the Branches

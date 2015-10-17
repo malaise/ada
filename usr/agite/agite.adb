@@ -352,10 +352,10 @@ procedure Agite is
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.History, Root.Is_Null);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Tags, Root.Is_Null);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Add, Root.Is_Null);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Revert, Root.Is_Null);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Stash, Root.Is_Null);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Commit, Root.Is_Null);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Pull, Root.Is_Null);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Tags, Root.Is_Null);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Stash, Root.Is_Null);
   end Change_Dir;
 
   -- Check validity of current directory
@@ -821,7 +821,8 @@ procedure Agite is
     File : constant Git_If.File_Entry_Rec := Get_Current_File;
     Dummy_Target : As.U.Asu_Us;
     Kind : Character;
-    Act : Boolean;
+    Dotdot : Boolean;
+    Untracked : Boolean;
   begin
     -- Resolve Sym link kind
     if File.Kind /= '@' then
@@ -835,12 +836,14 @@ procedure Agite is
       -- No ther function if not in Git (already protected by Init)
       return;
     end if;
-    -- No Diff, Hist, Add, revert on ".."
-    Act := File.Name.Image = "..";
-    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Diff, Act);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Main.History, Act);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Add, Act);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Revert, Act);
+    -- No Diff, Hist, Add, Revert on ".." (already de-activated if not in Git)
+    Dotdot := File.Name.Image = ".." or else Root.Is_Null;
+    -- No Diff, Hist on untracked file
+    Untracked := File.S2 = '?';
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Diff, Dotdot or else Untracked);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.History, Dotdot or else Untracked);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Add, Dotdot);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Revert, Dotdot);
   end List_Change;
 
 begin

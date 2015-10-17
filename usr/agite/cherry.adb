@@ -583,6 +583,31 @@ package body Cherry is
       Utils.X.Encode_Field (Root, Afpx_Xref.Cherry.Root);
     end Init;
 
+    -- Update the list status
+    procedure List_Change (Unused_Action : in Afpx.List_Change_List;
+                           Status : in Afpx.List_Status_Rec) is
+      -- Right selection in list
+      Right : constant Boolean
+            := Status.Ids_Selected (Afpx.List_Right) /= 0;
+      Empty : constant Boolean := Cherries.Is_Empty;
+    begin
+      -- Disable buttons if empty list, Right selection...
+      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Detail, Empty or else Right);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Pick, Empty);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Reword, Empty);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Edit, Empty);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Squash, Empty);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Fixup, Empty);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Drop, Empty);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Copy, Empty or else Right);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Move_Up,
+                                Cherries.List_Length <= 1 or else Right);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Move_Down,
+                                Cherries.List_Length <= 1 or else Right);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Reset, Empty);
+    end List_Change;
+
+
     -- View commit details
     procedure Show_Details is
       Ref : Positive;
@@ -620,22 +645,6 @@ package body Cherry is
     -- May have called Confirm
     Init;
 
-    -- Disable buttons if empty list
-    if Cherries.Is_Empty then
-      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Detail, True);
-      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Pick, True);
-      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Reword, True);
-      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Edit, True);
-      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Squash, True);
-      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Fixup, True);
-      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Drop, True);
-      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Reset, True);
-    end if;
-    if Cherries.List_Length <= 1 then
-      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Move_Up, True);
-      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Move_Down, True);
-    end if;
-
     -- Main loop
     loop
       if Nb_Cherries = 0 then
@@ -643,7 +652,8 @@ package body Cherry is
       else
         Afpx.Reset_Field (Afpx_Xref.Cherry.Go, Reset_Colors => False);
       end if;
-      Afpx.Put_Then_Get (Get_Handle, Ptg_Result, Right_Select => True);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result, Right_Select => True,
+                         List_Change_Cb => List_Change'Access);
 
       case Ptg_Result.Event is
         when Afpx.Keyboard =>

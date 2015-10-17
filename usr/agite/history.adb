@@ -83,16 +83,6 @@ package body History is
                             elsif Path /= "" then Path
                             else "/"),
                             Afpx_Xref.History.File);
-
-      -- Protect buttons View and restore on dirs
-      Afpx.Utils.Protect_Field (Afpx_Xref.History.View, not Is_File);
-      Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore, not Is_File);
-
-      -- Protect Restore, Checkout, Reorg and Reset
-      Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore, not Allow_Modif);
-      Afpx.Utils.Protect_Field (Afpx_Xref.History.Checkout, not Allow_Modif);
-      Afpx.Utils.Protect_Field (Afpx_Xref.History.Reorg, not Allow_Modif);
-      Afpx.Utils.Protect_Field (Afpx_Xref.History.Reset, not Allow_Modif);
     end Init;
 
     -- Show delta from current in list to comp
@@ -270,9 +260,33 @@ package body History is
     -- Update the list status
     procedure List_Change (Unused_Action : in Afpx.List_Change_List;
                            Status : in Afpx.List_Status_Rec) is
+      -- Right selection in list
+      Right : constant Boolean
+            := Status.Ids_Selected (Afpx.List_Right) /= 0;
+      Empty : constant Boolean := Logs.Is_Empty;
       Percent : Afpx.Percent_Range;
       Row : Con_Io.Row_Range;
     begin
+      -- No View, Detail, Restore, Checkout, Reorg, Reset nor Tag if RightSelect
+      -- Protect buttons View and restore on dirs
+      -- Protect Restore, Checkout, Reorg and Reset if no modif allowed
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.View,
+                                not Is_File or else Right or else Empty);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Diff,
+                                Logs.List_Length <= 1);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Details,
+                                Right or else Empty);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore,
+                                not Is_File or else not Allow_Modif
+                                or else Right or else Empty);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Checkout,
+                                not Allow_Modif or else Right or else Empty);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Reorg,
+                                not Allow_Modif or else Right or else Empty);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Reset,
+                                not Allow_Modif or else Right or else Empty);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag,
+                                Right or else Empty);
       -- Put percent value and "scroll bar"
       Percent := Afpx.Get_List_Percent;
       Afpx.Clear_Field (Afpx_Xref.History.Scroll);
@@ -357,9 +371,6 @@ package body History is
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Checkout, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag, True);
-    end if;
-    if Logs.List_Length <= 1 then
-      Afpx.Utils.Protect_Field (Afpx_Xref.History.Diff, True);
     end if;
 
     -- Main loop
