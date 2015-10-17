@@ -84,16 +84,17 @@ package body Stash is
   end Reread;
 
   -- Stash operations
-  type Stash_Oper_List is (Stash_Add, Stash_Apl, Stash_Pop, Stash_Del);
+  type Stash_Oper_List is (Stash_Addapl, Stash_Addrst, Stash_Apl,
+                           Stash_Pop, Stash_Del);
   function Do_Stash (Oper : in Stash_Oper_List) return Boolean is
     Name : As.U.Asu_Us;
     Num : Git_If.Stash_Number;
+    Loc_Oper : Stash_Oper_List := Oper;
     Message : As.U.Asu_Us;
-    Local_Oper : Stash_Oper_List := Oper;
     Result : Boolean;
   begin
     -- Recover argument
-    if Oper = Stash_Add then
+    if Oper = Stash_Addapl or else Oper = Stash_Addrst then
        -- Recover name from Get field
        Afpx.Decode_Field (Afpx_Xref.Stash.Name, 0, Name);
        Afpx.Clear_Field (Afpx_Xref.Stash.Name);
@@ -108,15 +109,17 @@ package body Stash is
       begin
         Num := Git_If.Stash_Number'Value (Str(1 .. Index));
         -- Confirm except for add
-        if Oper /= Stash_Add then
+        if Oper /= Stash_Addapl then
           Result := Confirm ("Stash",
               "Ready to "
             & (case Oper is
-                when Stash_Add => "",
+                when Stash_Addapl => "",
+                when Stash_Addrst => "add ",
                 when Stash_Apl => "apply",
                 when Stash_Pop => "apply and delete",
                 when Stash_Del => "del")
-            & " stash: " & Str);
+            & " stash: " & Str
+            & (if Oper = Stash_Addrst then " and reset" else ""));
           Init;
           Reread (True);
           if not Result then
@@ -130,12 +133,14 @@ package body Stash is
 
     -- Do stash operation
     case Oper is
-      when Stash_Add =>
+      when Stash_Addapl =>
+        Loc_Oper := Stash_Addrst;
         Message := As.U.Tus (Git_If.Add_Stash (Name.Image));
         if Message.Is_Null then
-          Local_Oper := Stash_Apl;
+          Loc_Oper := Stash_Apl;
           Message := As.U.Tus (Git_If.Apply_Stash (0));
         end if;
+      when Stash_Addrst => Message := As.U.Tus (Git_If.Add_Stash (Name.Image));
       when Stash_Apl => Message := As.U.Tus (Git_If.Apply_Stash (Num));
       when Stash_Pop => Message := As.U.Tus (Git_If.Pop_Stash (Num));
       when Stash_Del => Message := As.U.Tus (Git_If.Drop_Stash (Num));
@@ -148,10 +153,11 @@ package body Stash is
       return True;
     else
       Error ("Stash "
-        & (case Local_Oper is
-              when Stash_Add => "adding",
+        & (case Loc_Oper is
+              when Stash_Addrst => "adding",
+              when Stash_Addapl => "",
               when Stash_Apl => "applying",
-              when Stash_Pop => "applying and deleting",
+              when Stash_Pop => "popping",
               when Stash_Del => "deleting"),
         Name.Image, Message.Image);
       Init;
@@ -196,8 +202,9 @@ package body Stash is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
             when Afpx.Return_Key =>
-              -- Add stash
-              Do_Stash (Stash_Add);
+              -- Add stash and apply
+              Do_Stash (Stash_Addapl);
+              return;
             when Afpx.Escape_Key =>
               -- Back
               return;
@@ -216,20 +223,29 @@ package body Stash is
                 + 1);
 
             -- Stash operations
-            when Afpx_Xref.Stash.Add =>
-              if Do_Stash (Stash_Add) then
+            when Afpx_Xref.Stash.Add_Apply =>
+              -- Add stash and apply
+              if Do_Stash (Stash_Addapl) then
+                return;
+              end if;
+            when Afpx_Xref.Stash.Add_Reset =>
+              -- Add stash (and reset)
+              if Do_Stash (Stash_Addrst) then
                 return;
               end if;
             when Afpx_Xref.Stash.Apply
                | Afpx.List_Field_No =>
+              -- Apply stash
               if Do_Stash (Stash_Apl) then
                 return;
               end if;
             when Afpx_Xref.Stash.Pop =>
+              -- Pop stash
               if Do_Stash (Stash_Pop) then
                 return;
               end if;
             when Afpx_Xref.Stash.Del =>
+              -- Delete stash
               Do_Stash (Stash_Del);
               Reread (False);
 

@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V27.05
+V27.06
 
 General purpose
 ---------------
@@ -653,11 +653,17 @@ current. +
 
 This shows the current branch and path of the root of current repository.
 
+.List
+
+The list contains the local branches and then the remote tracking bracnhes (in
+alphanumeric order).
+
 .Actions
 
-The possible actions on the list of local and remote branches are the following (all
-these actions except the creation lead to return to the xref:XDir[directory]
-menu in case of success):
+The possible actions are activated depending on the branch currently left
+selected. Criteria of activation are "local or remote", "current or not".
+All these actions except the creation lead to return to the xref:XDir[directory]
+menu in case of success:
 
 Checkout::
 
@@ -1498,11 +1504,11 @@ repository.
 
 The possible actions on the list of stashes are:
 
-Add::
+AddAppl::
 
-Enter a message (or name) for the stash and click in the 'Add' button or press
-the Return key. Agit stashes the current repository (which performs a 'git reset
---hard'), then applies this stash, then returns to the xref:XDir[directory]
+Enter a message (or name) for the stash, and click in the 'AddReset' button
+or press the Return key. Agit stashes the current repository (which performs a
+'git reset --hard'), then applies it, then returns to the xref:XDir[directory]
 menu. +
 The new stash has been inserted in the list. +
 
@@ -1510,6 +1516,12 @@ NOTE: You can un-apply this stash ('git reset --hard') by selecting the entry
 '/' of the xref:XDir[directory] list and cliking on the xref:XRevert[revert]
 button.
 
+AddReset::
+
+Enter a message (or name) for the stash and click in the 'AddReset' button.
+Agit stashes the current repository, which performs a 'git reset
+--hard', then returns to the xref:XDir[directory] menu. +
+The new stash has been inserted in the list. +
 
 Apply::
 

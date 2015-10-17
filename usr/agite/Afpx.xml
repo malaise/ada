@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V27.05"/>
+  <Var Name="Version" Value="V27.06"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -1695,44 +1695,49 @@
     </Field>
 
     <!-- Actions on list -->
-    <Field Num="15" Kind="Button" Name="Add">
+    <Field Num="15" Kind="Button" Name="Add_Apply">
       <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="2">Add</Init>
+      <Init Row="1" Col="0">AddAppl</Init>
     </Field>
-    <Field Num="16" Kind="Button" Name="Apply">
-      <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="3"
+    <Field Num="16" Kind="Button" Name="Add_Reset">
+      <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="0">AddReset</Init>
+    </Field>
+    <Field Num="17" Kind="Button" Name="Apply">
+      <Geometry Up="${Field_16.Low}+2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Apply</Init>
     </Field>
-    <Field Num="17" Kind="Button" Name="Pop">
-      <Geometry Up="${Field_16.Low}+2" Left="${LmLeft}" Height="3"
+    <Field Num="18" Kind="Button" Name="Pop">
+      <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="2">Pop</Init>
+      <Init Row="0" Col="2">Pop</Init>
     </Field>
-    <Field Num="18" Kind="Button" Name="Del">
-      <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}" Height="3"
+    <Field Num="19" Kind="Button" Name="Del">
+      <Geometry Up="${Field_18.Low}+2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Del</Init>
     </Field>
 
-    <Field Num="19" Kind="Put">
-      <Geometry Up="${Field_18.Low}+1" Left="${LmLeft}" Height="1"
+    <Field Num="20" Kind="Put">
+      <Geometry Up="${Field_19.Low}+1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
-    <Field Num="20" Kind="Put">
+    <Field Num="21" Kind="Put">
       <Geometry Up="${Field_8.Low}+1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
 
-    <Field Num="21" Kind="Button" Name="Back">
+    <Field Num="22" Kind="Button" Name="Back">
       <Geometry Low="${List.Low}" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
