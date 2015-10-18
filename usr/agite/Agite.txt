@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V27.08
+V27.09
 
 General purpose
 ---------------
@@ -1613,13 +1613,13 @@ remote branch,
 * Fetch: when the remote branch matches another local branch, fetches the
 remote branch,
 * Checkout: when the remote branch does not match any local branch,
-checks out then fetches the remote branch.
+fetches the remote branch then checks it out.
 
 .Alternate buton: Fetch
 When the main action is 'Pull' (the selected remote branch matches the local
-current branch), this button is active and allow only fetching the remote
-branch into the local for a later manual merge.
-
+current branch) or 'Checkout' (the selected remote branch does not exist
+locally), this button is active and allow only fetching the remote
+branch into the local tracking branch for a later manual merge.
 
 If there is no error then Agite returns back to the xref:XDir[directory] menu,
 otherwise the error is reported through a specific screen.

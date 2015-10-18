@@ -108,19 +108,25 @@ package body Push_Pull is
     -- Fetch
     case Action is
       when Pull =>
+        -- Pull or force Fetch
         Log := As.U.Tus (Git_If.Do_Fetch (Remote.Image, Branch.Image,
                                           Pull => not Force_Fetch));
         return Check (if Force_Fetch then "Fetching" else "Pulling");
       when Fetch =>
+        -- Fetch
         Log := As.U.Tus (Git_If.Do_Fetch (Remote.Image, Branch.Image, False));
         return Check ("Fetching");
       when Checkout =>
-        Log := As.U.Tus (Git_If.Do_Checkout (Remote.Image, Branch.Image));
-        if not Check ("Checking out") then
+        -- Fetch
+        Log := As.U.Tus (Git_If.Do_Fetch (Remote.Image, Branch.Image, False));
+        if not Check ("Fetching") then
           return False;
         end if;
-        Log := As.U.Tus (Git_If.Do_Fetch (Remote.Image, Branch.Image, False));
-        return Check ("Fetching");
+        -- Checkout remote tracking into local
+        Log := As.U.Tus (Git_If.Do_Checkout (
+            Remote.Image & Git_If.Separator & Branch.Image,
+            Branch.Image));
+        return Check ("Checking out");
     end case;
   end Do_Get;
 
@@ -159,9 +165,9 @@ package body Push_Pull is
     -- Get possible action and encode in main button
     Action := Split (Rem_Item.Image, Unused_Branch);
     Utils.X.Center_Field (Mixed_Str (Action'Img), Afpx_Xref.Push_Pull.Push);
-    -- Update second button to Fetch if Action is Pull
+    -- Update second button to Fetch if Action is Pull or Checkout
     Afpx.Set_Field_Activation (Afpx_Xref.Push_Pull.Push_Upstream,
-                               Action = Pull);
+                               Action /= Fetch);
   end List_Change;
 
   -- Handle the Push, the Pull_Branch and the Pull
@@ -195,7 +201,7 @@ package body Push_Pull is
       -- Change title and Push button if Pull_Branch or Pull
 
       -- Push upstream only for push of branch (not tag)
-      --  or for Pull_Branch
+      --  or for Pull_Branch (Fetch)
       Afpx.Set_Field_Activation (Afpx_Xref.Push_Pull.Push_Upstream,
                                  (Menu = Push and then Branch_Tag = "")
                                  or else Menu = Pull_Branch);
