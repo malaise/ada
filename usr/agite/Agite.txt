@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V27.10
+V27.11
 
 General purpose
 ---------------
@@ -668,8 +668,9 @@ menu in case of success:
 Checkout::
 
 Click in the 'Checkout' button to checkout, after confirmation, the HEAD of
-the local branch selected in the list. Double clicking on an entry of the list has
-the same effect.
+the branch selected in the list. If the selected branch is remote, then it is
+checked out as a new local branch. +
+Double clicking on an entry of the list has the same effect.
 
 Merge::
 

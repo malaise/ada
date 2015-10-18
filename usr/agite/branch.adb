@@ -1,31 +1,18 @@
 with Ada.Exceptions;
-with As.U.Utils, Directory, Afpx.Utils, Basic_Proc, Unicode, Str_Util;
+with As.U, Directory, Afpx.Utils, Basic_Proc, Unicode, Str_Util, Dynamic_List;
 with Git_If, Utils.X, Afpx_Xref, Confirm, Error, Cherry, Reset, Commit;
 package body Branch is
 
   -- List width
   List_Width : Afpx.Width_Range;
 
-  procedure Set (Line : in out Afpx.Line_Rec;
-                 From : in As.U.Asu_Us) is
+  -- Search a branch
+  function Match (Current, Criteria : As.U.Asu_Us) return Boolean is
+    use type As.U.Asu_Us;
   begin
-    Afpx.Utils.Encode_Line ("", From.Image, "", List_Width, Line);
-  exception
-    when Error:others =>
-      Basic_Proc.Put_Line_Error ("Exception "
-          & Ada.Exceptions.Exception_Name (Error)
-          & " raised in branches on " & From.Image);
-  end Set;
-
-  function Match (Current, Criteria : Afpx.Line_Rec) return Boolean is
-    use type Unicode.Unicode_Sequence;
-  begin
-    return Current.Str(4 .. Current.Len) = Criteria.Str(4 .. Criteria.Len);
+    return Current = Criteria;
   end Match;
-  function Search is new Afpx.Line_List_Mng.Search (Match);
-
-  procedure Init_List is new Afpx.Utils.Init_List (
-    As.U.Asu_Us, As.U.Utils.Asu_List_Mng, Set, False);
+  function Search is new Git_If.Branches_Mng.Search (Match);
 
   -- Separator in branch names
   Sep : constant String := Git_If.Separator & "";
@@ -38,9 +25,41 @@ package body Branch is
   --  when being re-called
   Previous_Branch : As.U.Asu_Us;
 
-  -- The Branches
-  Branches : Git_If.Branches_Mng.List_Type;
+  -- The local branches and the listed branches
+  Locals : Git_If.Branches_Mng.List_Type;
+  -- Keep for each branch its name, is it remote, local name and
+  --  does local branch exist
+  type Branch_Rec_Type is record
+    Name : As.U.Asu_Us;
+    Is_Remote : Boolean := False;
+    Local : As.U.Asu_Us;
+    Has_Local : Boolean := False;
+  end record;
+  package Branches_Mng is new Dynamic_List (Branch_Rec_Type);
+  Branches : Branches_Mng.Dyn_List.List_Type;
 
+
+  -- Init Afpx list from Branches
+  procedure Set (Line : in out Afpx.Line_Rec;
+                 From : in Branch_Rec_Type) is
+  begin
+    Afpx.Utils.Encode_Line ("", From.Name.Image, "", List_Width, Line);
+  exception
+    when Error:others =>
+      Basic_Proc.Put_Line_Error ("Exception "
+          & Ada.Exceptions.Exception_Name (Error)
+          & " raised in branches on " & From.Name.Image);
+  end Set;
+
+  function Match (Current, Criteria : Afpx.Line_Rec) return Boolean is
+    use type Unicode.Unicode_Sequence;
+  begin
+    return Current.Str(4 .. Current.Len) = Criteria.Str(4 .. Criteria.Len);
+  end Match;
+  function Search is new Afpx.Line_List_Mng.Search (Match);
+
+  procedure Init_List is new Afpx.Utils.Init_List (
+    Branch_Rec_Type, Branches_Mng, Set, False);
   -- Afpx Ptg stuff
   Get_Handle : Afpx.Get_Handle_Rec;
 
@@ -57,8 +76,9 @@ package body Branch is
   -- Re assess the list of branches
   procedure Reread (Restore : in Boolean) is
     Branch : As.U.Asu_Us;
+    Branch_Rec : Branch_Rec_Type;
+    Alls : Git_If.Branches_Mng.List_Type;
     Sep_Index : Natural;
-    Moved : Boolean;
     Line : Afpx.Line_Rec;
   begin
     -- Encode current branch
@@ -70,38 +90,58 @@ package body Branch is
       Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
     elsif not Previous_Branch.Is_Null then
       -- Set default to previous branch
-      Set (Line, Previous_Branch);
+      Branch_Rec.Name := Previous_Branch;
+      Set (Line, Branch_Rec);
     else
       -- Set default to current branch
-      Set (Line, Current_Branch);
+      Branch_Rec.Name := Current_Branch;
+      Set (Line, Branch_Rec);
     end if;
 
+    -- Get the list of local branches
+    Git_If.List_Branches (Local => True, Remote => False, Branches => Locals);
     -- Get the list of local and remote branches
-    Git_If.List_Branches (Local => True, Remote => True, Branches => Branches);
+    Git_If.List_Branches (Local => True, Remote => True, Branches => Alls);
     -- Filter out entry [Xxx/]"HEAD"
     --  and filter out leading "remotes/" from entries
-    if not Branches.Is_Empty then
-      Branches.Rewind;
+    Branches.Delete_List;
+    if not Alls.Is_Empty then
+      Alls.Rewind;
       loop
-        Branches.Read (Branch, Git_If.Branches_Mng.Current);
+        Alls.Read (Branch, Git_If.Branches_Mng.Current);
         -- Last slash
         Sep_Index := Str_Util.Locate (Branch.Image, Sep, Forward => False);
-        if Branch.Slice (Sep_Index + 1, Branch.Length) = "HEAD" then
-          Branches.Delete (Moved => Moved);
-          exit when not Moved;
-        else
+        if Branch.Slice (Sep_Index + 1, Branch.Length) /= "HEAD" then
+          -- Else do not copy
+          -- Fill record
           -- First slash
           Sep_Index := Str_Util.Locate (Branch.Image, Sep, Forward => True);
           if Branch.Slice (1, Sep_Index) = "remotes/" then
             Branch.Delete (1, Sep_Index);
-            Branches.Modify (Branch, Git_If.Branches_Mng.Current);
-          end if;
-          -- Move to next if possible
-          if Branches.Check_Move then
-            Branches.Move_To;
+            Branch_Rec.Is_Remote := True;
+            -- Last slash
+            Sep_Index := Str_Util.Locate (Branch.Image, Sep, Forward => False);
+            if Sep_Index = 0 then
+              -- No name of remote reference???
+              Branch_Rec.Local := Branch;
+            else
+              -- Tail after last slash
+              Branch_Rec.Local := Branch.Uslice (Sep_Index + 1, Branch.Length);
+            end if;
+            Branch_Rec.Has_Local :=
+                Search (Locals, Branch_Rec.Local,
+                        From => Git_If.Branches_Mng.Absolute);
           else
-            exit;
+            Branch_Rec := (others => <>);
           end if;
+          Branch_Rec.Name := Branch;
+          Branches.Insert (Branch_Rec);
+        end if;
+        -- Move to next if possible
+        if Alls.Check_Move then
+          Alls.Move_To;
+        else
+          exit;
         end if;
       end loop;
     end if;
@@ -157,6 +197,7 @@ package body Branch is
   function Do_Action (Action : in Action_List;
                       Ref : in Natural := 0) return Boolean is
     Sel_Name, New_Name, Ref_Name, Tmp_Name : As.U.Asu_Us;
+    Sel_Rec : Branch_Rec_Type;
     Remote : Boolean;
     Comment : As.U.Asu_Us;
     Pos, Tmp_Index : Positive;
@@ -168,7 +209,8 @@ package body Branch is
     -- Retrieve current name
     if Action /= Create then
       Branches.Move_At (Afpx.Line_List.Get_Position);
-      Sel_Name := Branches.Access_Current.all;
+      Sel_Rec := Branches.Access_Current.all;
+      Sel_Name := Sel_Rec.Name;
     end if;
     -- Get new name from Get field
     if Action = Create or else Action = Rename then
@@ -188,7 +230,7 @@ package body Branch is
     and then Ref /= 0 then
       Pos := Branches.Get_Position;
       Branches.Move_At (Ref);
-      Ref_Name := Branches.Access_Current.all;
+      Ref_Name := Branches.Access_Current.Name;
       Branches.Move_At (Pos);
     end if;
     if Action = Delete then
@@ -263,7 +305,7 @@ package body Branch is
             -- Go to next branch in list if possible
             if Branches.Check_Move then
               Branches.Move_To;
-              Previous_Branch := Branches.Access_Current.all;
+              Previous_Branch := Branches.Access_Current.Name;
             else
               Previous_Branch := Current_Branch;
             end if;
@@ -272,7 +314,7 @@ package body Branch is
           -- Delete branches from Pos to Ref
           for I in Pos .. Refi loop
             Branches.Move_At (I);
-            Tmp_Name := Branches.Access_Current.all;
+            Tmp_Name := Branches.Access_Current.Name;
             Message := As.U.Tus ("Deleting branch " & Tmp_Name.Image);
             Remote := Str_Util.Locate (Tmp_Name.Image, Sep) /= 0;
             Result := As.U.Tus (Git_If.Delete_Branch (Tmp_Name.Image, Remote));
@@ -280,8 +322,11 @@ package body Branch is
           end loop;
         end if;
       when Checkout =>
+        -- Checkout branch. If it is a remote tracking then check it out
+        --  as local name
         Message := As.U.Tus ("Checking out branch " & Sel_Name.Image);
-        Result := As.U.Tus (Git_If.Do_Checkout (Sel_Name.Image, ""));
+        Result := As.U.Tus (Git_If.Do_Checkout (Sel_Name.Image,
+            (if Sel_Rec.Is_Remote then Sel_Rec.Local.Image else "")));
         Previous_Branch := Current_Branch;
       when Merge =>
         Message := As.U.Tus ("Merging branch " & Sel_Name.Image);
@@ -350,6 +395,7 @@ package body Branch is
 
     -- Done
     Reread (False);
+
     -- Successful checkout, merge, rebase
     return Action = Checkout or else Action = Merge or else Action = Rebase;
   end Do_Action;
@@ -357,7 +403,7 @@ package body Branch is
   -- Update the list status
   procedure List_Change (Unused_Action : in Afpx.List_Change_List;
                          Status : in Afpx.List_Status_Rec) is
-    On_Current, Remote : Boolean;
+    On_Current, Remote, Has_Local : Boolean;
     -- Only Rebase, Cherrypick and Delete if right selection
     Right : constant Boolean
           := Status.Ids_Selected (Afpx.List_Right) /= 0;
@@ -368,12 +414,16 @@ package body Branch is
     end if;
     -- No action on current branch (except Create and Reset_Hard)
     Branches.Move_At (Afpx.Line_List.Get_Position);
-    On_Current := Branches.Access_Current.all = Current_Branch;
-    -- Only Merge, TrueMerge CherryPickand Delete of remote, and create
-    Remote := Str_Util.Locate (Branches.Access_Current.all.Image, Sep) /= 0;
-
+    On_Current := Branches.Access_Current.Name = Current_Branch;
+    -- Only Merge, TrueMerge CherryPickand Delete of remote, and Create
+    Remote := Branches.Access_Current.Is_Remote;
+    -- Allow Checkout on Remote that does not have corresponding local
+    Has_Local := Branches.Access_Current.Has_Local;
+    -- Protect
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Checkout,
-                              On_Current or else Remote or else Right);
+                              On_Current
+                              or else (Remote and then Has_Local)
+                              or else Right);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Merge,
                               On_Current or else Right);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.True_Merge,
@@ -491,7 +541,7 @@ package body Branch is
 
     if not Afpx.Line_List.Is_Empty then
       Branches.Move_At (Afpx.Line_List.Get_Position);
-      Previous_Branch := Branches.Access_Current.all;
+      Previous_Branch := Branches.Access_Current.Name;
     end if;
   end Handle;
 
