@@ -1148,7 +1148,7 @@ package body Git_If is
           Line.Delete (1, 2);
         end if;
         -- Remove potential " -> remote/branch"
-        Index := Str_Util.Locate (Line.Image, " ");
+        Index := Str_Util.Locate (Line.Image, " -> ");
         if Index /= 0 then
           Line.Delete (Index, Line.Length);
         end if;
