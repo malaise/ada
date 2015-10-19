@@ -1424,7 +1424,6 @@ extern int soc_get_local_lan_name (char *lan_name, unsigned int lan_name_len) {
 
   if (get_host_addr(host_name, &host) != SOC_OK) {
     errno = ENOENT;
-    UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
 
@@ -1462,7 +1461,6 @@ extern int soc_get_local_lan_id (soc_host *p_lan) {
 
   if (get_host_addr(host_name, &host) != SOC_OK) {
     errno = ENOENT;
-    UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
 
