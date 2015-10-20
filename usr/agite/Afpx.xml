@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V27.13"/>
+  <Var Name="Version" Value="V27.14"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -333,9 +333,9 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="11" Kind="Put" Name="Get_Title">
-      <Geometry Up="${Field_10.Low}+2" Left="1" Height="1" Width="12"/>
+      <Geometry Up="${Field_10.Low}+2" Left="1" Height="1" Width="5"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">Name to add:</Init>
+      <Init Row="0" Col="0">Name:</Init>
     </Field>
     <Field Num="12" Kind="Get" Name="Name">
       <Geometry Up="${Field_10.Low}+2" Left="${Field_11.Right}+2" Height="1"

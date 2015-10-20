@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V27.13
+V27.14
 
 General purpose
 ---------------
@@ -795,16 +795,16 @@ directory. Example:
 
  /home/user/ada
 
-* Named bookmarks are created like anonymous ones, but with a name previously 
-set in the 'Name to add' field when clicking in xref:XAddCurr[AddCur].
+* Named bookmarks are created like anonymous ones, but with a *name previously 
+set* in the 'Name' field when clicking in xref:XAddCurr[AddCur].
 The name must comply with the syntax of an Ada identifier
 ('letter [ { [ _ ] letter_or_digit } ]'). +
 The name appears in parentheses before the path of the bookmark. Example:
 
  (Reposit) /home/user/ada/reposit
 
-* Separators are created by setting a name (in 'Name to add') and then clicking
-in xref:XAddSep[AddSep]. The name must comply with the syntax of an Ada
+* Separators are created by *first setting a name* (in 'Name'), and then
+clicking in xref:XAddSep[AddSep]. The name must comply with the syntax of an Ada
 identifier. +
 This creates a line with dashes and the name. Example:
 
@@ -816,9 +816,9 @@ separators, created by clicking in xref:XAddSep[AddSep] with no name set.
 .Buttons
 anchor:XAddCurr[]
 anchor:XAddSep[]
-The buttons 'AddCur' and 'AddSep' insert a named or anonymous entry (depending
-on the field 'Name to add') below the current entry. +
-This text field 'Name to add' can scroll horizontally to accomodate to long
+The buttons 'AddCur' and 'AddSep' insert a named or anonymous (depending
+on the field 'Name') bookmark or separator, below the current entry. +
+This text field 'Name:' can scroll horizontally to accomodate to long
 paths.
 
 anchor:XGoto[]
@@ -831,10 +831,10 @@ Bookmarks and separators can be organised with the buttons 'MovUp' and 'MovDwn'.
 
 The current bookmark or separator can be edited as follows:
 
-* To modify the name, first set the new name in the field 'Name to add',
+* To modify the name, *first set the new name* in the field 'Name',
 otherwise leave it empty,
 * Click in the 'Edit' button,
-* Enter or modify the path in the field 'Name to add',
+* Enter or modify the path in the field 'Path',
 * Click in the 'OK' button or hit the 'Return' key. +
 The edition can be cancelled by clicking in the 'Cancel' button or with the
 'Esc' key.

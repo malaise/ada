@@ -96,6 +96,7 @@ package body Bookmarks is
   end Get_Name;
 
   -- Modify current bookmark
+  In_Edit : Boolean := False;
   procedure Start_Edit (Bookmark : out Config.Bookmark_Rec) is
     Getfld : constant Afpx.Field_Range := Afpx_Xref.Bookmarks.Name;
     Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (Getfld);
@@ -140,6 +141,7 @@ package body Bookmarks is
     Afpx.Set_Field_Activation (Afpx_Xref.Bookmarks.Edit, False);
     Afpx.Set_Field_Activation (Afpx_Xref.Bookmarks.Del, False);
     Afpx.Set_Field_Activation (Afpx_Xref.Bookmarks.Back, False);
+    In_Edit := True;
   end Start_Edit;
 
   procedure End_Edit (Bookmark : in out Config.Bookmark_Rec;
@@ -164,6 +166,7 @@ package body Bookmarks is
       Config.Add_Bookmark (Afpx.Line_List.Get_Position, Bookmark);
       Config.Del_Bookmark (Afpx.Line_List.Get_Position);
     end if;
+    In_Edit := False;
   end End_Edit;
 
   -- Update the list status
@@ -174,9 +177,10 @@ package body Bookmarks is
      if Afpx.Line_List.Is_Empty then
       return;
     end if;
-    -- No Goto on separator
+    -- No Goto on separator (nor in Edit)
     Bookmark := Config.Get_Bookmark (Afpx.Line_List.Get_Position);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Bookmarks.Go, Bookmark.Path.Is_Null);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Bookmarks.Go,
+                              In_Edit or else Bookmark.Path.Is_Null);
   end List_Change;
 
 
