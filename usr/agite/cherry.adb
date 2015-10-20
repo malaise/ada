@@ -428,7 +428,7 @@ package body Cherry is
             return Error;
           end if;
         else
-          -- Cherry-pick without committing OK
+          -- Cherry-pick without committing is OK
           case Cherry.Status is
             when Merged | Drop =>
               null;
@@ -439,7 +439,8 @@ package body Cherry is
             when Reword | Edit =>
               -- Launch Commit screen, allow modif of content if Edit,
               -- allow committing if Edit (for splitting)
-              if not Commit.Handle (Root, Comment_Hash, Cherry.Status = Edit,
+              if not Commit.Handle (Root, Comment_Hash,
+                  Cherry.Status = Edit,
                   (if Cherry.Status = Edit then Commit.Allow
                    else Commit.Forbid)) then
                 -- User gave up

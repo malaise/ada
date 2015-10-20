@@ -554,7 +554,9 @@ package body Commit is
           case Ptg_Result.Field_No is
             when Afpx.List_Field_No =>
               -- Double click: stage or unstage
-              Switch_Stage;
+              if Allow_Modif then
+                Switch_Stage;
+              end if;
             when Utils.X.List_Scroll_Fld_Range'First ..
                  Utils.X.List_Scroll_Fld_Range'Last =>
               -- Scroll list
@@ -636,7 +638,7 @@ package body Commit is
 
   -- Handle the commit of modifications
   procedure Handle (Root : in String;
-                   Allow_Modif : in Boolean := True) is
+                    Allow_Modif : in Boolean := True) is
     Dummy : Boolean;
   begin
     Dummy := Common_Handle (Root, False, Git_If.No_Hash, Allow_Modif, Allow);
