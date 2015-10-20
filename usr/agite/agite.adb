@@ -468,7 +468,8 @@ procedure Agite is
   -- Add a dir or file
   procedure Do_Add_File (File : in Git_If.File_Entry_Rec) is
   begin
-    if File.S2 = '?' or else File.S2 = ' ' or else File.S2 = 'U' then
+    if File.S2 = '?' or else File.S2 = ' '
+    or else File.S2 = 'U' or else File.S2 = 'M' then
       if File.S3 = 'D' then
         -- File being deleted
         Git_If.Do_Rm (File.Name.Image);

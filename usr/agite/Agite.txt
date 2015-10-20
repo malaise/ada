@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V27.12
+V27.13
 
 General purpose
 ---------------
@@ -575,8 +575,8 @@ anchor:XAdd[]
 Add::
 Adds to Git the current directory (its content in fact), the current file (new,
 modified, manually merged, deleted) or symbolic link. +
-If a merge leads to conficts, then you have to fix one by one each unmerged file
-(with status 'U'):
+When a merge leads to conficts, then you have to fix one by one each unmerged
+file (with status 'UU'):
 
 * xref:XEdit[Edit] the file, manually solve the conflicts (look for sequences
 like '<<<<<<<', '=======' and '>>>>>>>') and save,
