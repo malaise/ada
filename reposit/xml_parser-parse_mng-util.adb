@@ -1,3 +1,4 @@
+with basic_proc;
 with Environ, Utf_8, Utf_16, Sys_Calls, Str_Util.Regex, Dynamic_List;
 separate (Xml_Parser.Parse_Mng)
 package body Util is
@@ -233,6 +234,7 @@ package body Util is
   -- Check that Str defines valid names seprated by Sep
   function Names_Ok (Str : As.U.Asu_Us;
                      Seps : String;
+                     Strict : Boolean;
                      Allow_Token : Boolean := False) return Boolean is
     S : constant String(1 .. Str.Length) := Str.Image;
     I1, I2 : Natural;
@@ -249,6 +251,13 @@ package body Util is
     -- Must not be empty
     if S = "" then
       return False;
+    end if;
+    if Strict then
+      -- Must not start or end by Sep
+      if Is_Sep (S(S'First)) or else Is_Sep (S(S'Last)) then
+Basic_Proc.Put_Line_Error (">" & S & "<");
+        return False;
+      end if;
     end if;
     -- Identify words
     I1 := S'First;

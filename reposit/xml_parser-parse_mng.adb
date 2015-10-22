@@ -76,8 +76,10 @@ package body Parse_Mng  is
     function Name_Ok (Name : As.U.Asu_Us;
                       Allow_Token : Boolean := False) return Boolean;
     -- Check that Str defines valid names separated by Seps
+    -- I Strict, check that no Seps at begin or end
     function Names_Ok (Str : As.U.Asu_Us;
                        Seps : String;
+                       Strict : Boolean;
                        Allow_Token : Boolean := False) return Boolean;
 
     -- Report an error, raises Parsing_Error.

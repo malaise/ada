@@ -279,7 +279,7 @@ package body Dtd is
           or else Info.List.Element (1) = '|' then
             Util.Error (Ctx.Flow, "Invalid Mixed definition");
           end if;
-          if not Util.Names_Ok (Info.List, "|") then
+          if not Util.Names_Ok (Info.List, "|", True) then
             Util.Error (Ctx.Flow, "Invalid Mixed definition");
           end if;
           -- Last ')' must be followed by '*', remove it
@@ -324,7 +324,7 @@ package body Dtd is
         end if;
         Util.Remove_Separators (Info.List, "?*+()|,");
         -- Check valid names
-        if not Util.Names_Ok (Info.List, "?*+()|,") then
+        if not Util.Names_Ok (Info.List, "?*+()|,", False) then
           Util.Error (Ctx.Flow, "Invalid name in Children definition");
         end if;
         -- Fix regex: each name becomes "(#name#)"
@@ -503,7 +503,8 @@ package body Dtd is
         or else Enum.Element (1) = '|' then
           Util.Error (Ctx.Flow, "Invalid Enum definition");
         end if;
-        if not Util.Names_Ok (Enum, "|", Allow_Token => Typ_Char = 'E') then
+        if not Util.Names_Ok (Enum, "|", True,
+                              Allow_Token => Typ_Char = 'E') then
            Util.Error (Ctx.Flow,
              (if Typ_Char = 'E' then "Invalid nmtoken in Enum definition"
               else "Invalid name in Notation definition"));
@@ -613,7 +614,7 @@ package body Dtd is
               Util.Error (Ctx.Flow, "Invalid name for default value");
             end if;
           when 'r' | 'y' =>
-            if not Util.Names_Ok (Def_Val, Util.Space & "") then
+            if not Util.Names_Ok (Def_Val, Util.Space & "", True) then
               Util.Error (Ctx.Flow, "Invalid name in default value");
             end if;
           when 'T' =>
@@ -621,7 +622,7 @@ package body Dtd is
               Util.Error (Ctx.Flow, "Invalid token for default value");
             end if;
           when 't' =>
-            if not Util.Names_Ok (Def_Val, Util.Space & "",
+            if not Util.Names_Ok (Def_Val, Util.Space & "", True,
                                   Allow_Token => True) then
               Util.Error (Ctx.Flow, "Invalid token in default value");
             end if;
@@ -1820,7 +1821,7 @@ package body Dtd is
             Util.Error (Ctx.Flow, "Invalid name for ID, IDREF or ENTITY "
                       & Xml_Val.Image, Line_No);
           elsif (Td(1) = 'r' or else Td(1) = 'y')
-          and then  not Util.Names_Ok (Xml_Val, Util.Space & "") then
+          and then  not Util.Names_Ok (Xml_Val, Util.Space & "", True) then
             Util.Error (Ctx.Flow, "Invalid name in IDREFS or ENTITIES "
                       & Xml_Val.Image, Line_No);
           elsif Td(1) = 'T'
@@ -1828,8 +1829,7 @@ package body Dtd is
             Util.Error (Ctx.Flow, "Invalid token for NMTOKEN "
                       & Xml_Val.Image, Line_No);
           elsif Td(1) = 't'
-          and then not Util.Names_Ok (Xml_Val,
-                                      Util.Space & "",
+          and then not Util.Names_Ok (Xml_Val, Util.Space & "", True,
                                       Allow_Token => True) then
             Util.Error (Ctx.Flow, "Invalid name in NMTOKENS "
                       & Xml_Val.Image, Line_No);
