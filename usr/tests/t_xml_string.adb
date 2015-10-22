@@ -197,7 +197,7 @@ procedure T_Xml_String is
     Xml_Parser.Clean_Dtd (Dtd);
     Ctx.Parse_Prologue (Read_File (Name), Dtd, Parse_Ok);
     if not Parse_Ok then
-      Basic_Proc.Put_Line_Error (Xml_Parser.Get_Parse_Error_Message (Ctx));
+      Basic_Proc.Put_Line_Error (Ctx.Get_Parse_Error_Message);
       Basic_Proc.Set_Error_Exit_Code;
       Ctx.Clean;
       return;
@@ -218,9 +218,9 @@ procedure T_Xml_String is
     Basic_Proc.Put_Line_Output ("Parsing remaining of string");
     Ctx.Parse_Elements (Dtds (Dtd_Index), Parse_Ok);
     if not Parse_Ok then
-      Basic_Proc.Put_Line_Error (Xml_Parser.Get_Parse_Error_Message (Ctx));
+      Basic_Proc.Put_Line_Error (Ctx.Get_Parse_Error_Message);
       Basic_Proc.Set_Error_Exit_Code;
-      Xml_Parser.Clean (Ctx);
+      Ctx.Clean;
     else
       Basic_Proc.Put_Line_Output ("Got Elements:");
       Root := Ctx.Get_Root_Element;
