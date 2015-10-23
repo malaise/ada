@@ -89,14 +89,27 @@ package body Parser is
                    Is_Sep : in Separing_Function := null) is
   begin
     Check (Iter);
-    -- Possibly new separator function
-    if Is_Sep /= null then
-      Iter.Acc.Is_Sep := Is_Sep;
-    end if;
-    Iter.Acc.State := Parsing;
-    Iter.Acc.First := Init_Rec.First;
-    Iter.Acc.Last  := Init_Rec.Last;
-    Iter.Acc.Sep   := Init_Rec.Sep;
+    -- Same string and possibly new separing function
+    Iter.Acc.all := (
+      Str    => Iter.Acc.Str,
+      Len    => Iter.Acc.Len,
+      Start  => Iter.Acc.Start,
+      Is_Sep => (if Is_Sep /= null then Is_Sep else Iter.Acc.Is_Sep),
+      others => <>);
+  end Reset;
+
+  -- Reset iterator Iter with a new Str and the same separing function
+  -- May raise Constraint_Error if Iter is not set.
+  procedure Reset (Iter : in Iterator; Str : in String) is
+  begin
+    Check (Iter);
+    -- New string and same separing function
+    Iter.Acc.all := (
+      Str => As.U.Tus (Str),
+      Len => Str'Length,
+      Start => Str'First,
+      Is_Sep => Iter.Acc.Is_Sep,
+      others => <>);
   end Reset;
 
   -- Parse first then next word of the string

@@ -40,6 +40,10 @@ package Parser is
   procedure Reset (Iter : in Iterator;
                    Is_Sep : in Separing_Function := null);
 
+  -- Reset iterator Iter with a new Str and the same separing function
+  -- May raise Constraint_Error if Iter is not set.
+  procedure Reset (Iter : in Iterator; Str : in String);
+
   -- Parse first then next word of the string.
   -- End of parsing is signaled by returning an empty string.
   -- May raise Constraint_Error if Iter is not set.
