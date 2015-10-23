@@ -1,7 +1,7 @@
 -- Generate a valid DTD from a XML file or flow
 -- Ignores internal and external DTD
 with Argument, Basic_Proc, As.U, Xml_Parser, Str_Util, Hashed_List.Unique,
-     Trace.Loggers, Mixed_Str, Unbounded_Arrays, Parser;
+     Trace.Loggers, Mixed_Str, Unbounded_Arrays, Parser, Limited_List;
 procedure Dtd_Generator is
 
   -- Algorithm criteria
@@ -148,6 +148,8 @@ procedure Dtd_Generator is
   type Element_Type is record
     -- Key: the element name
     Name : As.U.Asu_Us;
+    -- Order of creation of the element
+    Order : Positive := 1;
     -- Kind of children series
     Kind : Elt_Kind_List := Empty;
     -- Children
@@ -155,6 +157,8 @@ procedure Dtd_Generator is
     -- Attributes
     Attributes : Attr_Unbs.Unb_Array;
   end record;
+
+  -- Hashed list of elements
   type Element_Access is access all Element_Type;
   procedure Set (To : out Element_Type; Val : in Element_Type) is
   begin
@@ -176,7 +180,17 @@ procedure Dtd_Generator is
   package Elem_Unique is new Elem_Hash.Unique;
   Elements : Elem_Unique.Unique_List_Type;
 
+  -- Sorted List of elements (by order)
+  package Elem_List is new Limited_List (Element_Type, Set);
+  function Less_Than (El1, El2 : Element_Type) return Boolean is
+  begin
+    return El1.Order < El2.Order;
+  end Less_Than;
+  procedure Sort_Elements is new Elem_List.Sort (Less_Than);
+  Sorted_Elements : Elem_List.List_Type;
+
   -- Add or update an element
+  Current_Order : Natural := 0;
   procedure Add_Element (Node : Xml_Parser.Element_Type) is
     Cur_Elt, Sto_Elt : Element_Type;
     Child_Node : Xml_Parser.Node_Type;
@@ -270,6 +284,8 @@ procedure Dtd_Generator is
       else
         Attr.Kind := Cdata;
       end if;
+      Dbg ("  Attr " & Attr.Name.Image & " " & Mixed_Str (Attr.Kind'Img)
+           & " " & Attr.Values.Image);
       Cur_Elt.Attributes.Append (Attr);
     end loop;
 
@@ -282,6 +298,9 @@ procedure Dtd_Generator is
       -- Merge attributes definition of current element into stored
       -- @@@
     else
+      -- New element, to be stored
+      Current_Order := Current_Order + 1;
+      Cur_Elt.Order := Current_Order;
       Sto_Elt := Cur_Elt;
     end if;
     Elements.Insert (Sto_Elt);
@@ -356,11 +375,22 @@ begin
   -- Output DTD
   Plo ("<?xml version=""1.0"" encoding=""UTF-8""?>");
   Nlo;
+
   -- Loop on all elements
   if not Elements.Is_Empty then
-    Elements.Rewind (Elem_Hash.From_Last);
+
+    -- Sort elements
+    Elements.Rewind;
     loop
-      Elements.Read_Next (Element, Moved, Elem_Hash.Backward);
+      Elements.Read_Next (Element, Moved);
+      Sorted_Elements.Insert (Element);
+      exit when not Moved;
+    end loop;
+    Sort_Elements (Sorted_Elements);
+
+    Sorted_Elements.Rewind;
+    loop
+      Sorted_Elements.Read (Element, Moved => Moved);
       -- Put definition of Element
       Po ("<!ELEMENT " & Element.Name.Image & " ");
       case Element.Kind is
