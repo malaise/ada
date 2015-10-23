@@ -1,4 +1,3 @@
-with basic_proc;
 with Environ, Utf_8, Utf_16, Sys_Calls, Str_Util.Regex, Dynamic_List;
 separate (Xml_Parser.Parse_Mng)
 package body Util is
@@ -255,7 +254,6 @@ package body Util is
     if Strict then
       -- Must not start or end by Sep
       if Is_Sep (S(S'First)) or else Is_Sep (S(S'Last)) then
-Basic_Proc.Put_Line_Error (">" & S & "<");
         return False;
       end if;
     end if;
