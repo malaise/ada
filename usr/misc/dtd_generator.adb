@@ -11,13 +11,13 @@ procedure Dtd_Generator is
   -- of match and of mismatch of the current definition v.s. the reference
   -- When Nb_Mismatch - Nb_Match > Max_Deviation we give up the sequence
   -- and use a choice "(xxx|yyy)*" or ANY. 0 disables.
-  -- Max_Deviation : constant Natural := 5;
+  Max_Deviation : constant Natural := 5;
 
   -- Above Max_Elements in sequence or choice, we set ANY. 0 disbles.
   Max_Elements : constant Natural := 420;
 
-  -- Above Max_Values in an attribute enul we set NMTOKEN. 0 disables.
-  Max_Enum : constant Natural := 42;
+  -- Above Max_Values in an attribute enum, we set NMTOKEN. 0 disables.
+  Max_Enum : Natural := 42;
 
   -- Put usage
   procedure Usage is
@@ -129,7 +129,7 @@ procedure Dtd_Generator is
   type Child_Array is array (Positive range <>) of Child_Type;
   package Child_Unbs is new Unbounded_Arrays (Child_Type, Child_Array);
 
-  -- Attributes of the element
+  -- Attributes of the element: from the most to the less stringent
   type Attr_Kind_List is (Enum, Nmtoken, Nmtokens, Cdata);
   type Attr_Type is record
     -- Key, the attribute name
@@ -188,6 +188,11 @@ procedure Dtd_Generator is
   end Less_Than;
   procedure Sort_Elements is new Elem_List.Sort (Less_Than);
   Sorted_Elements : Elem_List.List_Type;
+
+  -- Merge current element (children and attributes) with definition
+  --  elaborated so far
+  procedure Merge (Into : in out Element_Type; Val : in Element_Type)
+            is separate;
 
   -- Add or update an element
   Current_Order : Natural := 0;
@@ -293,10 +298,9 @@ procedure Dtd_Generator is
     Sto_Elt.Name := Cur_Elt.Name;
     if Elements.Search (Sto_Elt) then
       Elements.Read (Sto_Elt);
-      -- Merge children definition of current element into stored
-      -- @@@
-      -- Merge attributes definition of current element into stored
-      -- @@@
+      -- Merge children and attribtues definition of current element
+      --  into the stored one
+      Merge (Sto_Elt, Cur_Elt);
     else
       -- New element, to be stored
       Current_Order := Current_Order + 1;
@@ -368,6 +372,9 @@ begin
     Error (Ctx.Get_Parse_Error_Message);
     return;
   end if;
+
+  -- Init the iterator of Enum values
+  Iter.Set ("", Is_Sep'Unrestricted_Access);
 
   -- Recursively process from root element
   Add_Element (Ctx.Get_Root_Element);

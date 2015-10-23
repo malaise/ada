@@ -5,7 +5,7 @@ ADAVIEW := $(REPOSIT)
 AFPX := true
 AFPX_XREF := afpx_xref
 
-SUBUNITS := xml_checker-canon_callback
+SUBUNITS := dtd_generator-merge xml_checker-canon_callback
 EXES := adand add_nums alook arbipas astat azf beep comp_vars ddir \
  dtd_checker dtd_checker.stat dtd_generator e2f fact full_path g hanoi \
  impot_04 mlbx_overflow one_of_arg pascal pingpong prime \
