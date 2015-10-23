@@ -1,7 +1,8 @@
 -- Generate a valid DTD from a XML file or flow
 -- Ignores internal and external DTD
-with Argument, Basic_Proc, As.U, Xml_Parser, Str_Util, Hashed_List.Unique,
-     Trace.Loggers, Mixed_Str, Unbounded_Arrays, Parser, Limited_List;
+with Argument, Argument_Parser, Basic_Proc, As.U, Str_Util, Mixed_Str,
+     Unbounded_Arrays, Trace.Loggers,
+     Xml_Parser, Parser, Hashed_List.Unique, Limited_List;
 procedure Dtd_Generator is
 
   -- Algorithm criteria
@@ -11,19 +12,30 @@ procedure Dtd_Generator is
   -- of match and of mismatch of the current definition v.s. the reference
   -- When Nb_Mismatch - Nb_Match > Max_Deviation we give up the sequence
   -- and use a choice "(xxx|yyy)*" or ANY. 0 disables.
-  Max_Deviation : constant Natural := 5;
+  Max_Deviation : Natural := 5;
 
-  -- Above Max_Elements in sequence or choice, we set ANY. 0 disbles.
-  Max_Elements : constant Natural := 420;
+  -- Above Max_Elements in sequence, choice or mixed, we set ANY. 0 disbles.
+  Max_Elements : Natural := 420;
 
   -- Above Max_Values in an attribute enum, we set NMTOKEN. 0 disables.
-  Max_Enum : Natural := 42;
+  Max_Enums : Natural := 42;
 
   -- Put usage
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-        & " [ -h | --help | <xml_file> ]");
+        & " [ -h | --help | <options> <xml_file> ]");
+    Basic_Proc.Put_Line_Error (
+        "  <options> ::= [ <deviation> ] [ <elements> ] [ <enums> ]");
+    Basic_Proc.Put_Line_Error (
+        "  <deviation> ::= --deviation=<val>    // default"
+        & Max_Deviation'Img);
+    Basic_Proc.Put_Line_Error (
+        "  <elements>  ::= --elements=<val>    // default"
+        & Max_Elements'Img);
+    Basic_Proc.Put_Line_Error (
+        "  <enums>     ::= --enums=<val>    // default"
+        & Max_Enums'Img);
     Basic_Proc.Put_Line_Error (
         "Outputs on stdout the DTD of the XML file or stdin.");
   end Usage;
@@ -104,6 +116,21 @@ procedure Dtd_Generator is
     return True;
   end Is_Names;
 
+  -- Argument keys
+   -- The argument keys and descriptor of parsed keys
+  Keys : constant Argument_Parser.The_Keys_Type := (
+   01 => (False, 'h', As.U.Tus ("help"),      False),
+   02 => (True, Argument_Parser.No_Key_Char,
+                As.U.Tus ("deviation"), False, True, As.U.Asu_Null),
+   03 => (True, Argument_Parser.No_Key_Char,
+                As.U.Tus ("elements"), False, True, As.U.Asu_Null),
+   04 => (True, Argument_Parser.No_Key_Char,
+                As.U.Tus ("enums"), False, True, As.U.Asu_Null));
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
+  No_Key_Index : constant Argument_Parser.The_Keys_Index
+               := Argument_Parser.No_Key_Index;
+
+
   -- The XML file name
   File_Name : As.U.Asu_Us;
 
@@ -121,7 +148,7 @@ procedure Dtd_Generator is
   Iter : Parser.Iterator;
 
   -- Kind of children of the element
-  type Elt_Kind_List is (Empty, Sequence, Any, Mixed, Pcdata);
+  type Elt_Kind_List is (Empty, Sequence, Choice, Mixed, Any, Pcdata);
   type Child_Type is record
     Name : As.U.Asu_Us;
     Opt, Mult : Boolean := False;
@@ -152,6 +179,8 @@ procedure Dtd_Generator is
     Order : Positive := 1;
     -- Kind of children series
     Kind : Elt_Kind_List := Empty;
+    -- Cumulated deviation of the merges
+    Deviation : Integer := 0;
     -- Children
     Children : Child_Unbs.Unb_Array;
     -- Attributes
@@ -240,20 +269,39 @@ procedure Dtd_Generator is
                  end if;
                end if;
                if Child.Name.Is_Null then
-                 -- First or new child
-                 Child := (Name => Cur_Name, Mult | Opt => False);
-                 Cur_Elt.Children.Append (Child);
-                 Dbg ("  Addseq " & Cur_Name.Image & " kind _");
+                 -- Check Max element will not be exceeded
+                 if Max_Elements /= 0
+                 and then Cur_Elt.Children.Length = Max_Elements then
+                   Dbg ("  Addseq exceedes max elements => Any");
+                   Cur_Elt.Kind := Any;
+                   Cur_Elt.Children.Set_Null;
+                 else
+                   -- First or new child
+                   Child := (Name => Cur_Name, Mult | Opt => False);
+                   Cur_Elt.Children.Append (Child);
+                   Dbg ("  Addseq " & Cur_Name.Image & " kind _");
+                 end if;
                end if;
              when Mixed | Pcdata =>
-               Child := (Name => Cur_Name, Mult | Opt => False);
-               Cur_Elt.Children.Append (Child);
-               if Cur_Elt.Kind = Pcdata then
-                 -- Child after text => Mixed
-                 Dbg ("  Change to Mixed");
-                 Cur_Elt.Kind := Mixed;
+               -- Check Max element will not be exceeded
+               if Max_Elements /= 0
+               and then Cur_Elt.Children.Length = Max_Elements then
+                 Dbg ("  Addmixed exceedes max elements => Any");
+                 Cur_Elt.Kind := Any;
+                 Cur_Elt.Children.Set_Null;
+               else
+                 Dbg ("  Addmixed " & Cur_Name.Image & " kind _");
+                 Child := (Name => Cur_Name, Mult | Opt => False);
+                 Cur_Elt.Children.Append (Child);
+                 if Cur_Elt.Kind = Pcdata then
+                   -- Child after text => Mixed
+                   Dbg ("  Change to Mixed");
+                   Cur_Elt.Kind := Mixed;
+                 end if;
                end if;
-             when Any => null;
+             when Any | Choice =>
+               -- Kind not used for current element
+               null;
            end case;
         when Xml_Parser.Text =>
           case Cur_Elt.Kind is
@@ -264,7 +312,8 @@ procedure Dtd_Generator is
                -- Text after children => Mixed
                Dbg ("  Change to Mixed");
                Cur_Elt.Kind := Mixed;
-             when Mixed | Any =>
+             when Mixed | Any | Choice =>
+               -- Mixed => no change, others => not used
                null;
              when Pcdata =>
                -- Several data
@@ -306,6 +355,7 @@ procedure Dtd_Generator is
       Current_Order := Current_Order + 1;
       Cur_Elt.Order := Current_Order;
       Sto_Elt := Cur_Elt;
+      Dbg ("Inserting element " & Sto_Elt.Name.Image);
     end if;
     Elements.Insert (Sto_Elt);
 
@@ -339,19 +389,40 @@ begin
   Logger.Init ("Dtd_Generator");
 
   -- Parse arguments
-  if Argument.Get_Nbre_Arg = 1 then
-    if Argument.Get_Parameter (1) = "-h"
-    or else Argument.Get_Parameter (1) = "--help" then
-      -- Help
+  Arg_Dscr := Argument_Parser.Parse (Keys);
+  if not Arg_Dscr.Is_Ok then
+    Error (Arg_Dscr.Get_Error);
+    return;
+  end if;
+   -- Any path/file spec must be after options
+  if Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
+    Error ("File name must appear after option");
+    return;
+  end if;
+
+  begin
+    if Arg_Dscr.Is_Set (2) then
+      Max_Deviation := Natural'Value (Arg_Dscr.Get_Option (2));
+    end if;
+    if Arg_Dscr.Is_Set (3) then
+      Max_Elements := Natural'Value (Arg_Dscr.Get_Option (3));
+    end if;
+    if Arg_Dscr.Is_Set (4) then
+      Max_Enums := Natural'Value (Arg_Dscr.Get_Option (4));
+    end if;
+  exception
+    when others =>
+      Error ("Invalid argument");
       Usage;
       return;
-    else
-      -- One arg: the file name
-      Argument.Get_Parameter (File_Name);
-    end if;
-  elsif Argument.Get_Nbre_Arg = 0 then
+  end;
+
+  -- Procee file or stdin
+  if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) = 0 then
     -- No arg => Stdin
     File_Name := As.U.Tus (Xml_Parser.Stdin);
+  elsif Arg_Dscr.Get_Nb_Occurences (No_Key_Index) = 1 then
+    File_Name := As.U.Tus (Arg_Dscr.Get_Option (No_Key_Index));
   else
     -- Too many arguments
     Error ("Invalid arguments");
@@ -423,7 +494,7 @@ begin
             end if;
           end loop;
           Plo (")>");
-        when Mixed =>
+        when Choice | Mixed =>
           Po ("(");
           First := True;
           if Element.Kind = Mixed then
