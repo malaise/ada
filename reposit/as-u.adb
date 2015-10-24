@@ -489,6 +489,18 @@ package body As.U is
     Move (Source, Before, Last + 1);
   end Insert;
 
+  procedure Insert (Source   : in out Asu_Us;
+                    Before   : in Positive;
+                    New_Item : in Character) is
+    Last : constant Natural := Source.Last;
+  begin
+    if Before > Source.Last + 1 then
+      raise Index_Error;
+    end if;
+    Append (Source, New_Item);
+    Move (Source, Before, Last + 1);
+  end Insert;
+
   procedure Delete (Source  : in out Asu_Us;
                     From    : in Positive;
                     Through : in Natural) is
