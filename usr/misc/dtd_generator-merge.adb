@@ -9,7 +9,7 @@ procedure Merge (Into : in out Element_Type; Val : in Element_Type) is
     Child : Child_Type;
     Found : Boolean;
   begin
-    Dbg ("  Merging lists");
+    Dbg ("  Merging lists into " & Into.Name.Image);
     for I in 1 .. Val.Children.Length loop
       Child := Val.Children.Element (I);
       Found := False;
@@ -35,41 +35,195 @@ procedure Merge (Into : in out Element_Type; Val : in Element_Type) is
     end loop;
   end Merge_Lists;
 
-  -- Merge Val sequence into Into
-  -- loop // ends when increasing one or both indexes leads to one or both out
-  --   if Cur_Into = Cur_Val then
-  --     Decrease deviation
-  --     Set Mult in Into if Val is Mult and not Into
-  --     Increase both indexes
-  --     Reset
-  --   else
-  --     if Cur_Into is Opt then
-  --       Go to next Into
-  --       Reset
-  --     elsif deviation reached then
-  --       if Saved then
-  --         If max elements reached then give up => Any
-  --         Restore
-  --         Insert Cur_Val as Opt,
-  --         Increase deviation
-  --         Increase both indexes
-  --       else
-  --         Give up => Mixed
-  --       end if
-  --     else
-  --       if not Saved then Save (children of Into, deviation and both indexes)
-  --       Set Opt in Into
-  --       Increase deviation
-  --       Increase Into index
-  --     end if
-  -- end loop
-  -- // Increasing both indexes has increased one if possible
-  -- Check deviation and set as Opt all remaining Into
-  -- Check max elements and deviation and append as Opt all remaining Val
-  procedure Merge_Sequences is
+  -- False if max deviation would be exceeded by adding offset
+  function Check_Deviation (Offset : Integer := -1) return Boolean is
   begin
-    -- @@@
-    Merge_Lists;
+    return Max_Deviation = 0
+           or else Into.Deviation + Offset >= -Max_Deviation;
+  end Check_Deviation;
+
+  -- Merge Val sequence into Into
+  procedure Merge_Sequences is
+    -- Indexes in sequences, 0 when out of bounds
+    Vali, Intoi : Natural;
+    -- Current Into element
+    Curinto : Child_Type;
+    -- Current Val element
+    Curval : Child_Type;
+    -- An array (1..1) for insertion
+    Childarr : Child_Array(1 .. 1);
+    -- Saved data: index, deviation and into children
+    Saved : Boolean := False;
+    Savali, Saintoi : Positive;
+    Sadev : Integer;
+    Sachild : Child_Unbs.Unb_Array;
+
+    -- Increment Into index, return True if it has overflown
+    function Step_Into return Boolean is
+    begin
+      if Intoi = Into.Children.Length then
+        Intoi := 0;
+        return True;
+      else
+        Intoi := Intoi + 1;
+        return False;
+      end if;
+    end Step_Into;
+
+    -- Increment both indexes, return True if one has overflown
+    function Step_Both return Boolean is
+      Res : Boolean;
+    begin
+      if Vali = Val.Children.Length then
+        Vali := 0;
+        Res := True;
+      else
+        Vali := Vali + 1;
+        Res := False;
+      end if;
+      -- Always also step into
+      return Step_Into or else Res;
+    end Step_Both;
+
+  begin
+    -- Init to start
+    Vali := 1;
+    Intoi := 1;
+    Dbg ("  Merging sequences into " & Into.Name.Image);
+
+    -- Fusion loop
+    loop
+      Curinto := Into.Children.Element (Intoi);
+      Curval := Val.Children.Element (Vali);
+      if Curinto.Name = Val.Children.Element (Vali).Name then
+        -- Match: increase deviation, reset, propagate Mult, step
+        Into.Deviation := Into.Deviation + 1;
+        Saved := False;
+        Dbg ("    Match for " & Curinto.Name.Image
+             & " dev: " & Into.Deviation'Img);
+        if Curval.Mult and then not Curinto.Mult then
+          Curinto.Mult := True;
+          Into.Children.Replace_Element (Intoi, Curinto);
+          Dbg ("      Propagate Mult");
+        end if;
+        if Step_Both then
+          Dbg ("      Stepped over");
+          exit;
+        end if;
+      else
+        if Curinto.Opt then
+          -- Cur Into is optional: skip it
+          Dbg ("    Current Into " & Curinto.Name.Image & " is Opt");
+          -- Reset and step into
+          Saved := False;
+          if Step_Into then
+            Dbg ("      Stepped over");
+            exit;
+          end if;
+        elsif Check_Deviation then
+          -- Cut Into is not optional: Save, insert Val as opt
+          -- Check max elements
+          if Max_Elements /= 0
+          and then Into.Children.Length = Max_Elements then
+            Dbg ("    Max children reached with "
+                 & Curinto.Name.Image & ". Giving up => Any");
+            Into.Kind := Any;
+            return;
+          end if;
+          -- Save if needed
+          if not Saved then
+            Dbg ("      Saving");
+            Savali := Vali;
+            Saintoi := Intoi;
+            Sadev := Into.Deviation;
+            Sachild := Into.Children;
+            Saved := True;
+          end if;
+          -- Insert
+          Curval.Opt := True;
+          Childarr(1) := Curval;
+          Into.Children.Insert (Intoi, Childarr);
+          Into.Deviation := Into.Deviation - 1;
+          -- Remain on this Into (so incr index) and incr Val
+          if Step_Both then
+            Dbg ("      Stepped over");
+            exit;
+          end if;
+        else
+          -- Deviation reached when inserting Val as Opt. Need to roll back
+          if not Saved then
+            -- Nothing saved
+            Dbg ("    Deviation reached and no saved. Giving up => Mixed");
+            Into.Kind := Mixed;
+            Merge_Lists;
+            return;
+          end if;
+          -- Something saved: Rollback and change current Into as Opt
+          Dbg ("    Deviation reached, roll back and chhange Into as Opt");
+          -- Restore
+          Vali := Savali;
+          Intoi := Saintoi;
+          Into.Deviation := Sadev;
+          Into.Children := Sachild;
+          -- Change current Into as Opt
+          Curinto := Val.Children.Element (Intoi);
+          Curinto.Opt := True;
+          Into.Children.Replace_Element (Intoi, Curinto);
+          Into.Deviation := Into.Deviation - 1;
+          if Step_Into then
+            Dbg ("      Stepped over");
+            exit;
+          end if;
+        end if;
+      end if;
+    end loop;
+
+    -- Change as Opt tail of Into
+    if Intoi /= 0 then
+      Dbg ("  Tail of Into");
+      loop
+        Curinto := Into.Children.Element (Intoi);
+        if not Curinto.Opt then
+          if not Check_Deviation then
+            Dbg ("    Deviation reached. Giving up => Mixed");
+            Into.Kind := Mixed;
+            Merge_Lists;
+            return;
+          end if;
+          Dbg ("    " & Curinto.Name.Image & " change as Opt");
+          Curinto.Opt := True;
+          Into.Children.Replace_Element (Intoi, Curinto);
+          Into.Deviation := Into.Deviation + 1;
+        end if;
+        exit when Intoi = Into.Children.Length;
+        Intoi := Intoi + 1;
+      end loop;
+    end if;
+
+    -- Append as Opt the tail of Val
+    if Vali /= 0 then
+      Dbg ("  Tail of Val");
+      if Max_Elements /= 0
+      and then Into.Children.Length + Val.Children.Length - Vali + 1
+               > Max_Elements then
+        Dbg ("    Max children reached with tail. Giving up => Any");
+        Into.Kind := Any;
+        return;
+      end if;
+      if not Check_Deviation (-(Val.Children.Length - Vali + 1)) then
+        Dbg ("    Deviation reached. Giving up => Mixed");
+        Into.Kind := Mixed;
+        Merge_Lists;
+        return;
+      end if;
+      for I in Vali .. Val.Children.Length loop
+        Curval := Val.Children.Element (I);
+        Dbg ("    Append " & Curval.Name.Image & " as Opt");
+        Curval.Opt := True;
+        Into.Children.Append (Curval);
+      end loop;
+    end if;
+
   end Merge_Sequences;
 
 
@@ -109,12 +263,7 @@ begin
           when Sequence =>
             Dbg ("  Empty then Sequence => Copy sequence as optional");
             -- Check deviation will not exceed max
-            if Max_Deviation /= 0
-            and then Into.Deviation - Val.Children.Length < -Max_Deviation then
-              Dbg ("    Deviation exceeded => Any");
-              Into.Kind := Any;
-              Into.Children.Set_Null;
-            else
+            if Check_Deviation (-Val.Children.Length) then
               -- The sequence just got is copied as optional
               Into.Kind := Sequence;
               for I in 1 .. Val.Children.Length loop
@@ -123,6 +272,10 @@ begin
                 Into.Children.Append (Child);
               end loop;
               Into.Deviation := Into.Deviation - Val.Children.Length;
+            else
+              Dbg ("    Deviation exceeded => Any");
+              Into.Kind := Any;
+              Into.Children.Set_Null;
             end if;
           when Mixed =>
             Dbg ("  Empty then Mixed => null");
@@ -139,8 +292,7 @@ begin
               Child := Into.Children.Element (I);
               if not Child.Opt then
                 -- Child is changed as Opt
-                if Max_Deviation /= 0
-                and then Into.Deviation = -Max_Deviation then
+                if not Check_Deviation then
                   Dbg ("    Deviation exceeded => Any");
                   Into.Kind := Any;
                   Into.Children.Set_Null;

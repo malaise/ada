@@ -24,17 +24,17 @@ procedure Dtd_Generator is
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-        & " [ -h | --help | <options> <xml_file> ]");
+        & " -h | --help | [ <options> ] [ { <xml_file> } ]");
     Basic_Proc.Put_Line_Error (
         "  <options> ::= [ <deviation> ] [ <elements> ] [ <enums> ]");
     Basic_Proc.Put_Line_Error (
         "  <deviation> ::= --deviation=<val>    // default"
         & Max_Deviation'Img);
     Basic_Proc.Put_Line_Error (
-        "  <elements>  ::= --elements=<val>    // default"
+        "  <elements>  ::= --elements=<val>     // default"
         & Max_Elements'Img);
     Basic_Proc.Put_Line_Error (
-        "  <enums>     ::= --enums=<val>    // default"
+        "  <enums>     ::= --enums=<val>        // default"
         & Max_Enums'Img);
     Basic_Proc.Put_Line_Error (
         "Outputs on stdout the DTD of the XML file or stdin.");
@@ -369,6 +369,9 @@ procedure Dtd_Generator is
     end loop;
   end Add_Element;
 
+  -- Argument number and index
+  Arg_Nb : Natural;
+  Arg_Index : Positive;
   -- Elements read to generate DTD
   Element : Element_Type;
   Child : Child_Type;
@@ -401,6 +404,10 @@ begin
   end if;
 
   begin
+    if Arg_Dscr.Is_Set (1) then
+      Usage;
+      return;
+    end if;
     if Arg_Dscr.Is_Set (2) then
       Max_Deviation := Natural'Value (Arg_Dscr.Get_Option (2));
     end if;
@@ -417,38 +424,42 @@ begin
       return;
   end;
 
-  -- Procee file or stdin
-  if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) = 0 then
-    -- No arg => Stdin
-    File_Name := As.U.Tus (Xml_Parser.Stdin);
-  elsif Arg_Dscr.Get_Nb_Occurences (No_Key_Index) = 1 then
-    File_Name := As.U.Tus (Arg_Dscr.Get_Option (No_Key_Index));
-  else
-    -- Too many arguments
-    Error ("Invalid arguments");
-    Usage;
-    return;
-  end if;
-
-  -- Parse the file or stdin
-  begin
-    Ctx.Parse (File_Name.Image, Parse_Ok, Use_Dtd => False);
-  exception
-    when Xml_Parser.File_Error =>
-      Error ("File " & File_Name.Image & " not found");
-      Usage;
-      return;
-  end;
-  if not Parse_Ok then
-    Error (Ctx.Get_Parse_Error_Message);
-    return;
-  end if;
-
   -- Init the iterator of Enum values
   Iter.Set ("", Is_Sep'Unrestricted_Access);
 
-  -- Recursively process from root element
-  Add_Element (Ctx.Get_Root_Element);
+  -- Process files or stdin
+  Arg_Nb := Arg_Dscr.Get_Nb_Occurences (No_Key_Index);
+  Arg_Index := 1;
+  loop
+    if Arg_Nb = 0 then
+      -- No arg => Stdin
+      File_Name := As.U.Tus (Xml_Parser.Stdin);
+    else
+      File_Name := As.U.Tus (Arg_Dscr.Get_Option (No_Key_Index, Arg_Index));
+    end if;
+
+    -- Parse the file or stdin
+    begin
+      Ctx.Parse (File_Name.Image, Parse_Ok, Use_Dtd => False);
+    exception
+      when Xml_Parser.File_Error =>
+        Error ("File " & File_Name.Image & " not found");
+        Usage;
+        return;
+    end;
+    if not Parse_Ok then
+      Error (Ctx.Get_Parse_Error_Message);
+      return;
+    end if;
+
+    -- Recursively process from root element
+    Add_Element (Ctx.Get_Root_Element);
+
+    -- Check and prepare next loop
+    exit when Arg_Nb = 0 or else Arg_Index = Arg_Nb;
+    Arg_Index := Arg_Index + 1;
+    Ctx.Clean;
+  end loop;
 
   -- Output DTD
   Plo ("<?xml version=""1.0"" encoding=""UTF-8""?>");
