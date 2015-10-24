@@ -50,8 +50,6 @@ procedure Merge (Into : in out Element_Type; Val : in Element_Type) is
     Curinto : Child_Type;
     -- Current Val element
     Curval : Child_Type;
-    -- An array (1..1) for insertion
-    Childarr : Child_Array(1 .. 1);
     -- Saved data: index, deviation and into children
     Saved : Boolean := False;
     Savali, Saintoi : Positive;
@@ -141,8 +139,7 @@ procedure Merge (Into : in out Element_Type; Val : in Element_Type) is
           end if;
           -- Insert
           Curval.Opt := True;
-          Childarr(1) := Curval;
-          Into.Children.Insert (Intoi, Childarr);
+          Into.Children.Insert (Intoi, Curval);
           Into.Deviation := Into.Deviation - 1;
           -- Remain on this Into (so incr index) and incr Val
           if Step_Both then
