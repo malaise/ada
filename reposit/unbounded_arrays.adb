@@ -449,6 +449,15 @@ package body Unbounded_Arrays is
                  & New_Item
                  & Source.Ref(Before .. Source.Last));
   end Insert;
+  procedure Insert (Source   : in out Unbounded_Array;
+                    Before   : in Positive;
+                    New_Item : in Element_Type) is
+  begin
+    Check_Index (Before, Source.Last, True);
+    Store (Source, Source.Ref(1 .. Before - 1)
+                 & New_Item
+                 & Source.Ref(Before .. Source.Last));
+  end Insert;
 
   -- Delete
   procedure Delete (Source  : in out Unbounded_Array;
