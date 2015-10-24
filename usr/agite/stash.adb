@@ -97,14 +97,15 @@ package body Stash is
     if Oper = Stash_Addapl or else Oper = Stash_Addrst then
        -- Recover name from Get field
        Afpx.Decode_Field (Afpx_Xref.Stash.Name, 0, Name);
+       Name := As.U.Tus (Str_Util.Strip (Name.Image));
        Afpx.Clear_Field (Afpx_Xref.Stash.Name);
        Afpx.Reset (Get_Handle);
     else
       -- Recover num
       declare
         Line : constant Afpx.Line_Rec := Afpx.Line_List.Access_Current.all;
-        Str : constant String := Language.Unicode_To_String (
-          Line.Str(1 .. Line.Len));
+        Str : constant String := Str_Util.Strip (Language.Unicode_To_String (
+          Line.Str(1 .. Line.Len)));
         Index : constant Positive := Str_Util.Locate (Str, " ");
       begin
         Num := Git_If.Stash_Number'Value (Str(1 .. Index));
