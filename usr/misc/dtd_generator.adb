@@ -7,18 +7,29 @@ procedure Dtd_Generator is
 
   -- Algorithm criteria
 
-  -- When merging progressively the various definitions of the children
-  -- of an element, as long as the reference is a sequence, we count the number
-  -- of match and of mismatch of the current definition v.s. the reference
-  -- When Nb_Mismatch - Nb_Match > Max_Deviation we give up the sequence
-  -- and use a choice "(xxx|yyy)*" or ANY. 0 disables.
+  -- Whe merging a new children sequence with the current fusionned sequence,
+  --  the maximum successive insertions of new items (as optional before current
+  --  fusionned item), before giving up, rolling back, and changing the
+  --  fusionned item as optional. 0 disables.
+  Max_Insertions : Natural := 2;
+
+  -- When merging a new children sequence with the current fusionned sequence,
+  --  the maximum number of changes (insertion of new child as optional,
+  --  or change of fusionned chiled into optional) before giving up.
+  --  Giving up means:
+  --  - When inserting => roll back and try to change a fusionned child
+  --    as optional
+  --  - When changing fusionned child => change the sequence into a choice.
+  --  0 disables.
   Max_Deviation : Natural := 5;
 
-  -- Above Max_Elements in sequence, choice or mixed, we set ANY. 0 disbles.
-  Max_Elements : Natural := 420;
+  -- When merging sequences, choice or any, maximum number of children in
+  --  the list before giving up and changing the list into a any. 0 disables.
+  Max_Elements : Natural := 210;
 
-  -- Above Max_Values in an attribute enum, we set NMTOKEN. 0 disables.
-  Max_Enums : Natural := 42;
+  -- When merging definitions of an enum attribute, maximum number of values
+  --  before giving up and changing the attribute into nmtoken. 0 disables.
+  Max_Enums : Natural := 21;
 
   -- Put usage
   procedure Usage is
@@ -26,7 +37,10 @@ procedure Dtd_Generator is
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
         & " -h | --help | [ <options> ] [ { <xml_file> } ]");
     Basic_Proc.Put_Line_Error (
-        "  <options> ::= [ <deviation> ] [ <elements> ] [ <enums> ]");
+        "  <options> ::= [ <insertion> ] [ <deviation> ] [ <elements> ] [ <enums> ]");
+    Basic_Proc.Put_Line_Error (
+        "  <insertion> ::= --insertion=<val>    // default"
+        & Max_Insertions'Img);
     Basic_Proc.Put_Line_Error (
         "  <deviation> ::= --deviation=<val>    // default"
         & Max_Deviation'Img);
@@ -121,15 +135,16 @@ procedure Dtd_Generator is
   Keys : constant Argument_Parser.The_Keys_Type := (
    01 => (False, 'h', As.U.Tus ("help"),      False),
    02 => (True, Argument_Parser.No_Key_Char,
-                As.U.Tus ("deviation"), False, True, As.U.Asu_Null),
+                As.U.Tus ("insertion"), False, True, As.U.Asu_Null),
    03 => (True, Argument_Parser.No_Key_Char,
-                As.U.Tus ("elements"), False, True, As.U.Asu_Null),
+                As.U.Tus ("deviation"), False, True, As.U.Asu_Null),
    04 => (True, Argument_Parser.No_Key_Char,
+                As.U.Tus ("elements"), False, True, As.U.Asu_Null),
+   05 => (True, Argument_Parser.No_Key_Char,
                 As.U.Tus ("enums"), False, True, As.U.Asu_Null));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
-
 
   -- The XML file name
   File_Name : As.U.Asu_Us;
@@ -179,8 +194,6 @@ procedure Dtd_Generator is
     Order : Positive := 1;
     -- Kind of children series
     Kind : Elt_Kind_List := Empty;
-    -- Cumulated deviation of the merges
-    Deviation : Integer := 0;
     -- Children
     Children : Child_Unbs.Unb_Array;
     -- Attributes
@@ -409,13 +422,16 @@ begin
       return;
     end if;
     if Arg_Dscr.Is_Set (2) then
-      Max_Deviation := Natural'Value (Arg_Dscr.Get_Option (2));
+      Max_Insertions := Natural'Value (Arg_Dscr.Get_Option (2));
     end if;
     if Arg_Dscr.Is_Set (3) then
-      Max_Elements := Natural'Value (Arg_Dscr.Get_Option (3));
+      Max_Deviation := Natural'Value (Arg_Dscr.Get_Option (3));
     end if;
     if Arg_Dscr.Is_Set (4) then
-      Max_Enums := Natural'Value (Arg_Dscr.Get_Option (4));
+      Max_Elements := Natural'Value (Arg_Dscr.Get_Option (4));
+    end if;
+    if Arg_Dscr.Is_Set (5) then
+      Max_Enums := Natural'Value (Arg_Dscr.Get_Option (5));
     end if;
   exception
     when others =>
@@ -439,6 +455,7 @@ begin
     end if;
 
     -- Parse the file or stdin
+    Logger.Log_Info ("Parsing file " & File_Name.Image);
     begin
       Ctx.Parse (File_Name.Image, Parse_Ok, Use_Dtd => False);
     exception
