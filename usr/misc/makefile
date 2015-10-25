@@ -5,10 +5,10 @@ ADAVIEW := $(REPOSIT)
 AFPX := true
 AFPX_XREF := afpx_xref
 
-SUBUNITS := xml_checker-canon_callback
+SUBUNITS := dtd_generator-merge xml_checker-canon_callback
 EXES := adand add_nums alook arbipas astat azf beep comp_vars ddir \
- dtd_checker dtd_checker.stat e2f fact full_path g hanoi impot_04 \
- mlbx_overflow one_of_arg pascal pingpong prime \
+ dtd_checker dtd_checker.stat dtd_generator e2f fact full_path g hanoi \
+ impot_04 mlbx_overflow one_of_arg pascal pingpong prime \
  random relay rndsok renamer \
  second statfile status strcase tcping trail_spaces udp_spy \
  wait wake xml_checker astat.stat pingpong.stat tcping.stat tcp_spy \
@@ -18,6 +18,7 @@ CLIBS := $(UTILS_SLIBS)
 CLIBS_renamer := $(X11_SLIBS)
 CLIBS_comp_vars := $(PCRE_SLIBS)
 CLIBS_dtd_checker := $(PCRE_SLIBS)
+CLIBS_dtd_generator := $(PCRE_SLIBS)
 CLIBS_relay := $(PCRE_SLIBS)
 CLIBS_wake := $(PCRE_SLIBS)
 CLIBS_xml_checker := $(PCRE_SLIBS)
