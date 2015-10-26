@@ -323,7 +323,7 @@ begin
         Merge_Lists;
     end case;
   else
-    -- Handle all heterogenous combinations
+    -- Handle all heterogeneous combinations
     case Into.Kind is
       when Empty =>
         case Val.Kind is
@@ -346,9 +346,12 @@ begin
               Into.Children.Set_Null;
             end if;
           when Mixed =>
-            Dbg ("  Empty then Mixed => null");
+            Dbg ("  Empty then Mixed => Mixed");
+            Into.Kind := Mixed;
+            Into.Children := Val.Children;
           when Pcdata =>
-            Dbg ("  Empty then Pcdata => null");
+            Dbg ("  Empty then Pcdata => Pcdata");
+            Into.Kind := Pcdata;
           when others =>
             null;
         end case;
@@ -432,6 +435,18 @@ begin
           when others =>
             null;
         end case;
+    end case;
+
+    -- Something with Val Any => Any
+    if Val.Kind = Any then
+      Dbg ("  " & Mixed_Str (Into.Kind'Img) & "then Any => Any");
+      Into.Kind := Any;
+    end if;
+
+    -- Clean children if not needed
+    case Into.Kind is
+      when Sequence | Choice | Mixed => null;
+      when Empty | Any | Pcdata => Into.Children.Set_Null;
     end case;
 
     -- Remove duplicates in Choice or Mixed

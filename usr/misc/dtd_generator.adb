@@ -83,18 +83,19 @@ procedure Dtd_Generator is
     for I in Val'Range loop
       C := Val(I);
       if I = Val'First and then Strict then
-        return (C >= 'A' and then C <= 'Z')
-               or else (C >= 'a' and then C <= 'z')
-               or else C = ':' or else C = '_';
-      end if;
-      if (C >= 'A' and then C <= 'Z')
-      or else (C >= 'a' and then C <= 'z')
-      or else (C >= '0' and then C <= '9')
-      or else C = ':' or else C = '_'
-      or else C = '-' or else C = '.' then
-        null;
+        if (C < 'A' or else C > 'Z')
+        and then (C < 'a' or else C > 'z')
+        and then C /= ':' and then C /= '_' then
+          return False;
+        end if;
       else
-        return False;
+        if (C < 'A' or else C > 'Z')
+        and then (C < 'a' or else C > 'z')
+        and then (C < '0' or else C > '9')
+        and then C /= ':' and then C /= '_'
+        and then C /= '-' and then C /= '.' then
+          return False;
+        end if;
       end if;
     end loop;
     return True;
