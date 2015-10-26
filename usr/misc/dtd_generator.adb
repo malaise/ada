@@ -455,7 +455,9 @@ begin
     end if;
 
     -- Parse the file or stdin
-    Logger.Log_Info ("Parsing file " & File_Name.Image);
+    Logger.Log_Info ("Processing "
+        & (if File_Name.Is_Null then "stdin"
+           else "file " & File_Name.Image));
     begin
       Ctx.Parse (File_Name.Image, Parse_Ok, Use_Dtd => False);
     exception
