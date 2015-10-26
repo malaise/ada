@@ -288,8 +288,8 @@ begin
   if Val.Kind = Into.Kind then
     Dbg ("  Same kind " & Mixed_Str (Val.Kind'Img));
     case Val.Kind is
-      when Empty | Any | Pcdata =>
-        -- Element remains Empty, Any or Pcdata
+      when Empty | Not_Empty | Any | Pcdata =>
+        -- Element remains Empty, Not_Empty | Any or Pcdata
         null;
       when Sequence =>
         -- The most complex case
@@ -300,7 +300,7 @@ begin
   else
     -- Handle all heterogeneous combinations
     case Into.Kind is
-      when Empty =>
+      when Empty | Not_Empty =>
         case Val.Kind is
           when Sequence =>
             Dbg ("  Empty then Sequence => Copy sequence as optional");
@@ -332,7 +332,7 @@ begin
         end case;
       when Sequence =>
         case Val.Kind is
-          when Empty =>
+          when Empty | Not_Empty =>
             Dbg ("  Sequence then Empty => Change sequence as optional");
             for I in 1 .. Into.Children.Length loop
               Child := Into.Children.Element (I);
@@ -363,7 +363,7 @@ begin
         end case;
       when Choice =>
         case Val.Kind is
-          when Empty =>
+          when Empty | Not_Empty =>
             Dbg ("  Choice then Empty => null");
             null;
           when Sequence =>
@@ -382,14 +382,14 @@ begin
         end case;
       when Mixed =>
         case Val.Kind is
-          when Empty =>
+          when Empty | Not_Empty =>
             Dbg ("  Mixed then Empty => null");
             null;
           when Sequence =>
             Dbg ("  Mixed then Sequence => Mixed merged");
             Merge_Lists;
           when Pcdata =>
-            Dbg ("  Mixed then Empty => null");
+            Dbg ("  Mixed then Pcdata => null");
           when others =>
             null;
         end case;
@@ -397,7 +397,7 @@ begin
         Dbg ("  Any then " & Mixed_Str (Val.Kind'Img) & " => null");
       when Pcdata =>
         case Val.Kind is
-          when Empty =>
+          when Empty | Not_Empty =>
             Dbg ("  Pcdata then Empty => null");
           when Sequence =>
             Dbg ("  Pcdata then Sequence => Mixed copy");
@@ -421,7 +421,7 @@ begin
     -- Clean children if not needed
     case Into.Kind is
       when Sequence | Choice | Mixed => null;
-      when Empty | Any | Pcdata => Into.Children.Set_Null;
+      when Empty | Not_Empty | Any | Pcdata => Into.Children.Set_Null;
     end case;
 
     -- Remove duplicates in Choice or Mixed

@@ -106,7 +106,15 @@ procedure Dtd_Generator is
   Iter : Parser.Iterator;
 
   -- Kind of children of the element
-  type Elt_Kind_List is (Empty, Sequence, Choice, Mixed, Any, Pcdata);
+  -- Empty     : EMPTY, really Empty
+  -- Not_Empty : Has comment or Pi, cannot be Empty, but can become Sequence
+  -- Sequence  : Elt,Elt.. with Opt and/or Mult (+, * or ?)
+  -- Choice    : (Elt|Elt..)*
+  -- Mixed     : (#PCDATA|Elt|Elt...)*
+  -- Any       : ANY, any combination of text and elements
+  -- Pcdata    : (#PCDATA), text
+  type Elt_Kind_List is (Empty, Not_Empty, Sequence, Choice, Mixed,
+                         Any, Pcdata);
   type Child_Type is record
     Name : As.U.Asu_Us;
     Opt, Mult : Boolean := False;
@@ -277,7 +285,7 @@ procedure Dtd_Generator is
     use type As.U.Asu_Us, Xml_Parser.Node_Kind_List;
   begin
     -- Build the list of children of this element
-    -- Kind is Empty, Mixed, Data or
+    -- Kind is Empty, Not_Empty, Mixed, Data or
     --  a Sequence where children are not Opt but can be Mult
     Cur_Elt.Name := Ctx.Get_Name (Node);
     Dbg ("Add element " & Cur_Elt.Name.Image);
@@ -291,7 +299,7 @@ procedure Dtd_Generator is
            Dbg ("  Child " & Cur_Name.Image & " Kind "
               & Mixed_Str (Cur_Elt.Kind'Img));
            case Cur_Elt.Kind is
-             when Empty | Sequence =>
+             when Empty | Not_Empty | Sequence =>
                -- Start or complete a sequence
                Cur_Elt.Kind := Sequence;
                -- Append curr child by default
@@ -357,7 +365,7 @@ procedure Dtd_Generator is
            end case;
         when Xml_Parser.Text =>
           case Cur_Elt.Kind is
-             when Empty =>
+             when Empty | Not_Empty =>
                Dbg ("  Change to Pcdata");
                Cur_Elt.Kind := Pcdata;
              when Sequence =>
@@ -375,10 +383,10 @@ procedure Dtd_Generator is
         when Xml_Parser.Pi | Xml_Parser.Comment =>
           case Cur_Elt.Kind is
              when Empty =>
-               Dbg ("  Change to Pcdata");
-               Cur_Elt.Kind := Pcdata;
+               Dbg ("  Change to Not_Empty");
+               Cur_Elt.Kind := Not_Empty;
                Reduce (Cur_Elt);
-             when Sequence | Mixed | Any | Choice | Pcdata =>
+             when Not_Empty | Sequence | Mixed | Any | Choice | Pcdata =>
                -- => no change
                null;
            end case;
@@ -594,7 +602,7 @@ begin
           Plo (")*>");
         when Any =>
           Plo ("ANY>");
-        when Pcdata =>
+        when Pcdata | Not_Empty =>
           Plo ("(#PCDATA)>");
       end case;
 
