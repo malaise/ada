@@ -12,13 +12,6 @@ procedure Merge (Into : in out Element_Type; Val : in Element_Type) is
     return Max_Deviation = 0 or else Deviation + Offset <= Max_Deviation;
   end Check_Deviation;
 
-  -- False if max elements would be exceeded by adding offset
-  function Check_Elements (Number : in Natural;
-                           Offset : Integer := 1) return Boolean is
-  begin
-    return Max_Elements = 0 or else Number + Offset <= Max_Elements;
-  end Check_Elements;
-
   -- Append to Into the children that are new in Val
   -- Don't care about Opt and Mult cause result will be a Choice or Mixed
   -- Only check that Max_Elements is not reached
@@ -51,24 +44,6 @@ procedure Merge (Into : in out Element_Type; Val : in Element_Type) is
       end if;
     end loop;
   end Merge_Lists;
-
-  -- Reduce Into Choice or Mixed so that each child appears only once
-  procedure Reduce is
-    Child : Child_Type;
-  begin
-    Dbg ("  Reducing list of " & Into.Name.Image);
-    for I in 1 .. Into.Children.Length - 1 loop
-      -- We are deleting children within this loop
-      exit when I >= Into.Children.Length;
-      Child := Into.Children.Element (I);
-      -- Reverse so that deleting J does not affect algo
-      for J in reverse I + 1 .. Into.Children.Length loop
-        if Into.Children.Element (J).Name = Child.Name then
-          Into.Children.Delete (J, J);
-        end if;
-      end loop;
-    end loop;
-  end Reduce;
 
   -- Image of a sequence
   function Sequence_Image (Children : Child_Unbs.Unb_Array) return String is
@@ -451,7 +426,7 @@ begin
 
     -- Remove duplicates in Choice or Mixed
     if Into.Kind = Choice or else Into.Kind = Mixed then
-      Reduce;
+      Reduce (Into);
     end if;
   end if;
 

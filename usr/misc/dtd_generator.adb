@@ -73,64 +73,6 @@ procedure Dtd_Generator is
   procedure Plo (Str : in String) renames Basic_Proc.Put_Line_Output;
   procedure Nlo renames Basic_Proc.New_Line_Output;
 
-  -- Is an attribute value compatible bo be a Name (or Nmtoken)
-  function Is_Name (Val : in String; Strict : in Boolean) return Boolean is
-    C : Character;
-  begin
-    if Val = "" then
-      return False;
-    end if;
-    for I in Val'Range loop
-      C := Val(I);
-      if I = Val'First and then Strict then
-        if (C < 'A' or else C > 'Z')
-        and then (C < 'a' or else C > 'z')
-        and then C /= ':' and then C /= '_' then
-          return False;
-        end if;
-      else
-        if (C < 'A' or else C > 'Z')
-        and then (C < 'a' or else C > 'z')
-        and then (C < '0' or else C > '9')
-        and then C /= ':' and then C /= '_'
-        and then C /= '-' and then C /= '.' then
-          return False;
-        end if;
-      end if;
-    end loop;
-    return True;
-  end Is_Name;
-
-  -- Is an attribute value compatible bo be a Names (Nmtokens)
-  function Is_Names (Val : in String) return Boolean is
-    Start, Stop : Natural;
-  begin
-    if Val = "" then
-      return False;
-    end if;
-    -- Get slices separated by space
-    Start := Val'First;
-    loop
-      Stop := Str_Util.Locate (Val, " ", Start);
-      -- Names cannot start nor end with space
-      if Stop = Val'First or else Stop = Val'Last then
-        return False;
-      end if;
-      -- Last slice
-      if Stop = 0 then
-        Stop := Val'Last + 1;
-      end if;
-      -- Check slice
-      if not Is_Name (Val(Start .. Stop - 1), False) then
-        return False;
-      end if;
-      -- Done or prepare next iteration
-      exit when Stop > Val'Last;
-      Start :=  Stop + 1;
-    end loop;
-    return True;
-  end Is_Names;
-
   -- Argument keys
    -- The argument keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -232,10 +174,94 @@ procedure Dtd_Generator is
   procedure Sort_Elements is new Elem_List.Sort (Less_Than);
   Sorted_Elements : Elem_List.List_Type;
 
+  -- Reduce Into Choice or Mixed so that each child appears only once
+  procedure Reduce (Elt : in out Element_Type) is
+    Child : Child_Type;
+    use type As.U.Asu_Us;
+  begin
+    Dbg ("  Reducing list of " & Elt.Name.Image);
+    for I in 1 .. Elt.Children.Length - 1 loop
+      -- We are deleting children within this loop
+      exit when I >= Elt.Children.Length;
+      Child := Elt.Children.Element (I);
+      -- Reverse so that deleting J does not affect algo
+      for J in reverse I + 1 .. Elt.Children.Length loop
+        if Elt.Children.Element (J).Name = Child.Name then
+          Elt.Children.Delete (J, J);
+        end if;
+      end loop;
+    end loop;
+  end Reduce;
+
+  -- False if max elements would be exceeded by adding offset
+  function Check_Elements (Number : in Natural;
+                           Offset : Integer := 1) return Boolean is
+  begin
+    return Max_Elements = 0 or else Number + Offset <= Max_Elements;
+  end Check_Elements;
+
   -- Merge current element (children and attributes) with definition
   --  elaborated so far
   procedure Merge (Into : in out Element_Type; Val : in Element_Type)
             is separate;
+
+  -- Is an attribute value compatible bo be a Name (or Nmtoken)
+  function Is_Name (Val : in String; Strict : in Boolean) return Boolean is
+    C : Character;
+  begin
+    if Val = "" then
+      return False;
+    end if;
+    for I in Val'Range loop
+      C := Val(I);
+      if I = Val'First and then Strict then
+        if (C < 'A' or else C > 'Z')
+        and then (C < 'a' or else C > 'z')
+        and then C /= ':' and then C /= '_' then
+          return False;
+        end if;
+      else
+        if (C < 'A' or else C > 'Z')
+        and then (C < 'a' or else C > 'z')
+        and then (C < '0' or else C > '9')
+        and then C /= ':' and then C /= '_'
+        and then C /= '-' and then C /= '.' then
+          return False;
+        end if;
+      end if;
+    end loop;
+    return True;
+  end Is_Name;
+
+  -- Is an attribute value compatible bo be a Names (Nmtokens)
+  function Is_Names (Val : in String) return Boolean is
+    Start, Stop : Natural;
+  begin
+    if Val = "" then
+      return False;
+    end if;
+    -- Get slices separated by space
+    Start := Val'First;
+    loop
+      Stop := Str_Util.Locate (Val, " ", Start);
+      -- Names cannot start nor end with space
+      if Stop = Val'First or else Stop = Val'Last then
+        return False;
+      end if;
+      -- Last slice
+      if Stop = 0 then
+        Stop := Val'Last + 1;
+      end if;
+      -- Check slice
+      if not Is_Name (Val(Start .. Stop - 1), False) then
+        return False;
+      end if;
+      -- Done or prepare next iteration
+      exit when Stop > Val'Last;
+      Start :=  Stop + 1;
+    end loop;
+    return True;
+  end Is_Names;
 
   -- Add or update an element
   Current_Order : Natural := 0;
@@ -246,6 +272,7 @@ procedure Dtd_Generator is
     Child : Child_Type;
     Attr : Attr_Type;
     Cur_Name : As.U.Asu_Us;
+    Found : Boolean;
     Len : Natural;
     use type As.U.Asu_Us, Xml_Parser.Node_Kind_List;
   begin
@@ -284,35 +311,46 @@ procedure Dtd_Generator is
                end if;
                if Child.Name.Is_Null then
                  -- Check Max element will not be exceeded
-                 if Max_Elements /= 0
-                 and then Cur_Elt.Children.Length = Max_Elements then
-                   Dbg ("  Addseq exceedes max elements => Any");
-                   Cur_Elt.Kind := Any;
-                   Cur_Elt.Children.Set_Null;
-                 else
+                 if Check_Elements (Cur_Elt.Children.Length) then
                    -- First or new child
                    Child := (Name => Cur_Name, Mult | Opt => False);
                    Cur_Elt.Children.Append (Child);
                    Dbg ("  Addseq " & Cur_Name.Image & " kind _");
+                 else
+                   Dbg ("  Addseq exceedes max elements => Any");
+                   Cur_Elt.Kind := Any;
+                   Cur_Elt.Children.Set_Null;
                  end if;
                end if;
-             when Mixed | Pcdata =>
-               -- Check Max element will not be exceeded
-               if Max_Elements /= 0
-               and then Cur_Elt.Children.Length = Max_Elements then
-                 Dbg ("  Addmixed exceedes max elements => Any");
-                 Cur_Elt.Kind := Any;
-                 Cur_Elt.Children.Set_Null;
+             when Mixed =>
+               -- Element after Mixed: Insert element only if it is new
+               Found := False;
+               for I in 1 .. Cur_Elt.Children.Length loop
+                 if Cur_Elt.Children.Element (I).Name = Cur_Name then
+                   Found := True;
+                   exit;
+                 end if;
+               end loop;
+               if Found then
+                 Dbg ("  Element " & Cur_Name.Image & " already in mixed");
                else
-                 Dbg ("  Addmixed " & Cur_Name.Image & " kind _");
-                 Child := (Name => Cur_Name, Mult | Opt => False);
-                 Cur_Elt.Children.Append (Child);
-                 if Cur_Elt.Kind = Pcdata then
-                   -- Child after text => Mixed
-                   Dbg ("  Change to Mixed");
-                   Cur_Elt.Kind := Mixed;
+                 -- Check Max element will not be exceeded
+                 if Check_Elements (Cur_Elt.Children.Length) then
+                   Dbg ("  Addmixed " & Cur_Name.Image & " kind _");
+                   Child := (Name => Cur_Name, Mult | Opt => False);
+                   Cur_Elt.Children.Append (Child);
+                 else
+                   Dbg ("  Addmixed exceedes max elements => Any");
+                   Cur_Elt.Kind := Any;
+                   Cur_Elt.Children.Set_Null;
                  end if;
                end if;
+             when Pcdata =>
+               -- Child after text => Mixed
+               Dbg ("  Changemixed " & Cur_Name.Image & " kind _");
+               Child := (Name => Cur_Name, Mult | Opt => False);
+               Cur_Elt.Kind := Mixed;
+               Cur_Elt.Children.Append (Child);
              when Any | Choice =>
                -- Kind not used for current element
                null;
@@ -326,6 +364,7 @@ procedure Dtd_Generator is
                -- Text after children => Mixed
                Dbg ("  Change to Mixed");
                Cur_Elt.Kind := Mixed;
+               Reduce (Cur_Elt);
              when Mixed | Any | Choice =>
                -- Mixed => no change, others => not used
                null;
@@ -333,7 +372,16 @@ procedure Dtd_Generator is
                -- Several data
                Cur_Elt.Kind := Mixed;
            end case;
-        when Xml_Parser.Pi | Xml_Parser.Comment => null;
+        when Xml_Parser.Pi | Xml_Parser.Comment =>
+          case Cur_Elt.Kind is
+             when Empty =>
+               Dbg ("  Change to Pcdata");
+               Cur_Elt.Kind := Pcdata;
+               Reduce (Cur_Elt);
+             when Sequence | Mixed | Any | Choice | Pcdata =>
+               -- => no change
+               null;
+           end case;
       end case;
     end loop;
 
@@ -460,7 +508,8 @@ begin
         & (if File_Name.Is_Null then "stdin"
            else "file " & File_Name.Image));
     begin
-      Ctx.Parse (File_Name.Image, Parse_Ok, Use_Dtd => False);
+      -- Allow comments  otherwise we detect wrongly Empty
+      Ctx.Parse (File_Name.Image, Parse_Ok, Comments => True, Use_Dtd => False);
     exception
       when Xml_Parser.File_Error =>
         Error ("File " & File_Name.Image & " not found");
