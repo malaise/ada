@@ -265,6 +265,7 @@ package  body Sequences is
     end if;
 
     -- Optim if lists are similar (same sequence of names)
+    Same_Names := False;
     if Intolen = Vallen then
       Same_Names := True;
       for I in 1 .. Intolen loop
