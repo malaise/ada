@@ -7,12 +7,6 @@ procedure Dtd_Generator is
 
   -- Algorithm criteria
 
-  -- Whe merging a new children sequence with the current fusionned sequence,
-  --  the maximum successive insertions of new items (as optional before current
-  --  fusionned item), before giving up, rolling back, and changing the
-  --  fusionned item as optional. 0 disables.
-  Max_Insertions : Natural := 2;
-
   -- When merging a new children sequence with the current fusionned sequence,
   --  the maximum number of changes (insertion of new child as optional,
   --  or change of fusionned chiled into optional) before giving up.
@@ -21,7 +15,7 @@ procedure Dtd_Generator is
   --    as optional
   --  - When changing fusionned child => change the sequence into a choice.
   --  0 disables.
-  Max_Deviation : Natural := 5;
+  Max_Deviation : Natural := 11;
 
   -- When merging sequences, choice or any, maximum number of children in
   --  the list before giving up and changing the list into a any. 0 disables.
@@ -37,10 +31,7 @@ procedure Dtd_Generator is
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
         & " -h | --help | [ <options> ] [ { <xml_file> } ]");
     Basic_Proc.Put_Line_Error (
-        "  <options> ::= [ <insertion> ] [ <deviation> ] [ <elements> ] [ <enums> ]");
-    Basic_Proc.Put_Line_Error (
-        "  <insertion> ::= --insertion=<val>    // default"
-        & Max_Insertions'Img);
+        "  <options> ::= [ [ <deviation> ] [ <elements> ] [ <enums> ]");
     Basic_Proc.Put_Line_Error (
         "  <deviation> ::= --deviation=<val>    // default"
         & Max_Deviation'Img);
@@ -78,12 +69,10 @@ procedure Dtd_Generator is
   Keys : constant Argument_Parser.The_Keys_Type := (
    01 => (False, 'h', As.U.Tus ("help"),      False),
    02 => (True, Argument_Parser.No_Key_Char,
-                As.U.Tus ("insertion"), False, True, As.U.Asu_Null),
-   03 => (True, Argument_Parser.No_Key_Char,
                 As.U.Tus ("deviation"), False, True, As.U.Asu_Null),
-   04 => (True, Argument_Parser.No_Key_Char,
+   03 => (True, Argument_Parser.No_Key_Char,
                 As.U.Tus ("elements"), False, True, As.U.Asu_Null),
-   05 => (True, Argument_Parser.No_Key_Char,
+   04 => (True, Argument_Parser.No_Key_Char,
                 As.U.Tus ("enums"), False, True, As.U.Asu_Null));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -479,16 +468,13 @@ begin
       return;
     end if;
     if Arg_Dscr.Is_Set (2) then
-      Max_Insertions := Natural'Value (Arg_Dscr.Get_Option (2));
+      Max_Deviation := Natural'Value (Arg_Dscr.Get_Option (2));
     end if;
     if Arg_Dscr.Is_Set (3) then
-      Max_Deviation := Natural'Value (Arg_Dscr.Get_Option (3));
+      Max_Elements := Natural'Value (Arg_Dscr.Get_Option (3));
     end if;
     if Arg_Dscr.Is_Set (4) then
-      Max_Elements := Natural'Value (Arg_Dscr.Get_Option (4));
-    end if;
-    if Arg_Dscr.Is_Set (5) then
-      Max_Enums := Natural'Value (Arg_Dscr.Get_Option (5));
+      Max_Enums := Natural'Value (Arg_Dscr.Get_Option (4));
     end if;
   exception
     when others =>

@@ -2,14 +2,10 @@ separate (Dtd_Generator)
 procedure Merge (Into : in out Element_Type; Val : in Element_Type) is
   use type As.U.Asu_Us;
 
-  -- The current deviation (insertion of new children as Opt, change of
-  --  current children into Opt) before falling back into a choice
-  Deviation : Natural;
-
-  -- False if max deviation would be exceeded by adding offset
-  function Check_Deviation (Offset : Integer := 1) return Boolean is
+  -- False if Val exceeds Max Deviation
+  function Check_Deviation (Val : Integer) return Boolean is
   begin
-    return Max_Deviation = 0 or else Deviation + Offset <= Max_Deviation;
+    return Max_Deviation = 0 or else Val <= Max_Deviation;
   end Check_Deviation;
 
   -- Append to Into the children that are new in Val
@@ -64,209 +60,12 @@ procedure Merge (Into : in out Element_Type; Val : in Element_Type) is
     return Res.Image;
   end Sequence_Image;
 
-  -- Merge Val sequence into Into
-  procedure Merge_Sequences is
-    -- Indexes in sequences, 0 when out of bounds
-    Vali, Intoi : Natural;
-    -- Current Into element
-    Curinto : Child_Type;
-    -- Current Val element
-    Curval : Child_Type;
-    -- Current number of successive insertions
-    Insertions : Natural := 0;
-    -- Saved data: index, deviation and into children
-    Saved : Boolean := False;
-    Savali, Saintoi : Positive;
-    Sadev : Natural;
-    Sachild : Child_Unbs.Unb_Array;
-
-    -- Increment Into index, return True if it has overflown
-    function Step_Into return Boolean is
-    begin
-      if Intoi = Into.Children.Length then
-        Intoi := 0;
-        return True;
-      else
-        Intoi := Intoi + 1;
-        return False;
-      end if;
-    end Step_Into;
-
-    -- Increment both indexes, return True if one has overflown
-    function Step_Both return Boolean is
-      Res : Boolean;
-    begin
-      if Vali = Val.Children.Length then
-        Vali := 0;
-        Res := True;
-      else
-        Vali := Vali + 1;
-        Res := False;
-      end if;
-      -- Always also step into
-      return Step_Into or else Res;
-    end Step_Both;
-
-  begin
-    -- Init to start
-    Vali := 1;
-    Intoi := 1;
-    if Logger.Debug_On then
-      Dbg ("  Merging sequence " &  Sequence_Image (Val.Children));
-      Dbg ("    into " & Sequence_Image (Into.Children));
-    end if;
-
-    -- Fusion loop
-    loop
-      Curinto := Into.Children.Element (Intoi);
-      Curval := Val.Children.Element (Vali);
-      if Curinto.Name = Val.Children.Element (Vali).Name then
-        -- Match: Reset, propagate Mult, step
-        Saved := False;
-        Insertions := 0;
-        Dbg ("    Match for " & Curinto.Name.Image
-             & " dev: " & Deviation'Img);
-        if Curval.Mult and then not Curinto.Mult then
-          Curinto.Mult := True;
-          Into.Children.Replace_Element (Intoi, Curinto);
-          Dbg ("      Propagate Mult");
-        end if;
-        if Step_Both then
-          Dbg ("      Stepped over");
-          exit;
-        end if;
-      else
-        if Curinto.Opt then
-          -- Cur Into is optional: skip it
-          Dbg ("    Current Into " & Curinto.Name.Image & " is Opt");
-          -- Reset and step into
-          Saved := False;
-          Insertions := 0;
-          if Step_Into then
-            Dbg ("      Stepped over");
-            exit;
-          end if;
-        elsif (Max_Insertions = 0
-               or else Insertions < Max_Insertions)
-        and then Check_Deviation then
-          -- Cur Into is not optional: Save, insert Val as opt
-          -- Check max elements
-          if not Check_Elements (Into.Children.Length) then
-            Dbg ("    Max children reached with tail. Give up => Any");
-            Into.Kind := Any;
-            return;
-          end if;
-          -- Save if needed
-          if not Saved then
-            Dbg ("      Save");
-            Savali := Vali;
-            Saintoi := Intoi;
-            Sadev := Deviation;
-            Sachild := Into.Children;
-            Saved := True;
-          end if;
-          -- Insert
-          Curval.Opt := True;
-          Into.Children.Insert (Intoi, Curval);
-          Deviation := Deviation + 1;
-          Insertions := Insertions + 1;
-          Dbg ("      Insert Val." & Curval.Name.Image);
-          -- Remain on this Into (so incr index) and incr Val
-          if Step_Both then
-            Dbg ("      Stepped over");
-            exit;
-          end if;
-        else
-          if Insertions = 0 and then not Check_Deviation then
-            -- Deviation reached when changing Into as Opt.
-            Dbg ("    Deviation reached while changing Into as opt."
-                 & " Give up => Choice");
-            Into.Kind := Choice;
-            Merge_Lists;
-            return;
-          end if;
-          -- Insertions or Deviation reached. Need to roll back
-          if not Saved then
-            -- Nothing saved
-            Dbg ("    Insertions or Deviation reached and no saved."
-                 & " Give up => Choice");
-            Into.Kind := Choice;
-            Merge_Lists;
-            return;
-          end if;
-          -- Something saved: Rollback and change current Into as Opt
-          -- Restore
-          Vali := Savali;
-          Intoi := Saintoi;
-          Deviation := Sadev;
-          Into.Children := Sachild;
-          -- Change current Into as Opt
-          Curinto := Into.Children.Element (Intoi);
-          Curinto.Opt := True;
-          Into.Children.Replace_Element (Intoi, Curinto);
-          Dbg ("    Insertions or Deviation reached, roll back and change"
-               & " Into." & Curinto.Name.Image & " as Opt");
-          Saved := False;
-          Deviation := Deviation + 1;
-          Insertions := 0;
-          if Step_Into then
-            Dbg ("      Stepped over");
-            exit;
-          end if;
-        end if;
-      end if;
-    end loop;
-
-    -- Change as Opt tail of Into
-    if Intoi /= 0 then
-      Dbg ("  Tail of Into");
-      loop
-        Curinto := Into.Children.Element (Intoi);
-        if not Curinto.Opt then
-          if not Check_Deviation then
-            Dbg ("    Deviation reached. Give up => Choice");
-            Into.Kind := Choice;
-            Merge_Lists;
-            return;
-          end if;
-          Dbg ("    Change Into." & Curinto.Name.Image & " as Opt");
-          Curinto.Opt := True;
-          Into.Children.Replace_Element (Intoi, Curinto);
-          Deviation := Deviation + 1;
-        end if;
-        exit when Intoi = Into.Children.Length;
-        Intoi := Intoi + 1;
-      end loop;
-    end if;
-
-    -- Append as Opt the tail of Val
-    if Vali /= 0 then
-      Dbg ("  Tail of Val");
-      if Max_Elements /= 0
-      and then Into.Children.Length + Val.Children.Length - Vali + 1
-               > Max_Elements then
-        Dbg ("    Max children reached with tail. Giving up => Any");
-        Into.Kind := Any;
-        return;
-      end if;
-      if not Check_Deviation (Val.Children.Length - Vali + 1) then
-        Dbg ("    Deviation reached. Giving up => Choice");
-        Into.Kind := Choice;
-        Merge_Lists;
-        return;
-      end if;
-      for I in Vali .. Val.Children.Length loop
-        Curval := Val.Children.Element (I);
-        Dbg ("    Append Val." & Curval.Name.Image & " as Opt");
-        Curval.Opt := True;
-        Into.Children.Append (Curval);
-      end loop;
-    end if;
-
-    if Logger.Debug_On then
-      Dbg ("  Merged into " & Sequence_Image (Into.Children));
-    end if;
-  end Merge_Sequences;
+  -- The merge of sequences
+  package Sequences is
+    procedure Merge_Sequences;
+  end Sequences;
+  package body Sequences is separate;
+  procedure Merge_Sequences renames Sequences.Merge_Sequences;
 
   -- When looking ofr a match
   Index : Natural;
@@ -277,10 +76,11 @@ procedure Merge (Into : in out Element_Type; Val : in Element_Type) is
   Child : Child_Type;
   -- The attributes
   Val_Attr, Into_Attr : Attr_Type;
+  -- Deviation when progressively chaning children as Opt
+  Deviation : Natural;
 
 begin
   Dbg ("Merging element " & Val.Name.Image);
-  Deviation := 0;
 
   -- Merge children definitions
   -- if same kind then potentially merge lists
@@ -314,11 +114,9 @@ begin
                 Child.Opt := True;
                 Into.Children.Append (Child);
               end loop;
-              Deviation := Deviation + Val.Children.Length;
             else
-              Dbg ("    Deviation exceeded => Any");
-              Into.Kind := Any;
-              Into.Children.Set_Null;
+              Dbg ("    Deviation exceeded => Choice");
+              Into.Kind := Choice;
             end if;
           when Mixed =>
             Dbg ("  Empty then Mixed => Mixed");
@@ -334,16 +132,16 @@ begin
         case Val.Kind is
           when Empty | Not_Empty =>
             Dbg ("  Sequence then Empty => Change sequence as optional");
+            Deviation := 0;
             for I in 1 .. Into.Children.Length loop
               Child := Into.Children.Element (I);
               if not Child.Opt then
                 -- Child is changed as Opt
                 -- The max number has already been checked when building Val
                 -- Check deviation will not exceed max
-                if not Check_Deviation then
-                  Dbg ("    Deviation exceeded => Any");
-                  Into.Kind := Any;
-                  Into.Children.Set_Null;
+                if not Check_Deviation (Deviation) then
+                  Dbg ("    Deviation exceeded => Choice");
+                  Into.Kind := Choice;
                   exit;
                 end if;
                 Deviation := Deviation + 1;
@@ -424,10 +222,12 @@ begin
       when Empty | Not_Empty | Any | Pcdata => Into.Children.Set_Null;
     end case;
 
-    -- Remove duplicates in Choice or Mixed
-    if Into.Kind = Choice or else Into.Kind = Mixed then
-      Reduce (Into);
-    end if;
+    -- End of Same kind or heterogeneous
+  end if;
+
+  -- Remove duplicates in Choice or Mixed
+  if Into.Kind = Choice or else Into.Kind = Mixed then
+    Reduce (Into);
   end if;
 
   -- Merge new attributes:
