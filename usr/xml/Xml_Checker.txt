@@ -4,7 +4,8 @@ Xml_Checker
 Parser version: V41.5 +
 Generator version: V18.2 +
 Xml_checker version: V22.2 +
-Dtd_checker version: V4.0
+Dtd_checker version: V4.0 +
+Dtd_generator version: V2.0
 
 Xml_checker is a XML parser that checks the syntax (versus DTD) and formats the
 output.
@@ -330,4 +331,34 @@ If no file or an empty argument is provided then dtd_checker parses stdin.
 
 Dtd_checker exits with 0 if no error is detected and with 1 otherwise
 (warnings don’t affect the exit code).
+
+DTD generator
+-------------
+Dtd_generator is a standalone tool that parses one or several XML files and 
+generates a DTD file representing the structure (elements and attributes) of 
+these files.
+...................................................
+dtd_generator [ <options> ] [ { <xml_file> } ]
+  <options> ::= [ [ <deviation> ] [ <elements> ] [ <enums> ]
+  <deviation> ::= --deviation=<val>    // default 11
+  <elements>  ::= --elements=<val>     // default 210
+  <enums>     ::= --enums=<val>        // default 21
+...................................................
+
+The options tune the behavior as follows (a value of '0' disables the check):
+
+* Deviation: The maximum number of changes introduced by a new set of
+children, before which the element is declared as a choice
+('(Elt|Elt|Elt...)*').
+* Elements: The maximum number of children of an element, before which the
+element is declared as ANY.
+* Enums: The maximum number of values of an enumerated attribute, before which
+the attribute is declared as NMTOKEN.
+
+If no file is provided then dtd_checker parses stdin. +
+It puts the generated DTD on stdout. +
+Dtd_generator exits with 0 if no error is detected and with 1 otherwise.
+
+NOTE: Dtd_generator uses the xref:Tree[tree] mode of the XML parser, so it
+may not be usable with very big files.
 

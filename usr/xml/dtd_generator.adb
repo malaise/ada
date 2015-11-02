@@ -5,14 +5,16 @@ with Argument, Argument_Parser, Basic_Proc, As.U, Str_Util, Mixed_Str,
      Xml_Parser, Parser, Hashed_List.Unique, Limited_List;
 procedure Dtd_Generator is
 
+  -- Current version
+  Version : constant String := "V2.0";
+
   -- Algorithm criteria
 
   -- When merging a new children sequence with the current fusionned sequence,
   --  the maximum number of changes (insertion of new child as optional,
   --  or change of fusionned chiled into optional) before giving up.
   --  Giving up means:
-  --  - When inserting => roll back and try to change a fusionned child
-  --    as optional
+  --  - While merging two sequences, stop exploring the current combination
   --  - When changing fusionned child => change the sequence into a choice.
   --  0 disables.
   Max_Deviation : Natural := 11;
@@ -29,7 +31,9 @@ procedure Dtd_Generator is
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-        & " -h | --help | [ <options> ] [ { <xml_file> } ]");
+        & " [ <options> ] [ { <xml_file> } ]");
+    Basic_Proc.Put_Line_Error ("or " & Argument.Get_Program_Name
+        & " -h | --help | -v | --version");
     Basic_Proc.Put_Line_Error (
         "  <options> ::= [ [ <deviation> ] [ <elements> ] [ <enums> ]");
     Basic_Proc.Put_Line_Error (
@@ -67,12 +71,13 @@ procedure Dtd_Generator is
   -- Argument keys
    -- The argument keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => (False, 'h', As.U.Tus ("help"),      False),
-   02 => (True, Argument_Parser.No_Key_Char,
-                As.U.Tus ("deviation"), False, True, As.U.Asu_Null),
+   01 => (False, 'h', As.U.Tus ("help"), False),
+   02 => (False, 'v', As.U.Tus ("version"), False),
    03 => (True, Argument_Parser.No_Key_Char,
-                As.U.Tus ("elements"), False, True, As.U.Asu_Null),
+                As.U.Tus ("deviation"), False, True, As.U.Asu_Null),
    04 => (True, Argument_Parser.No_Key_Char,
+                As.U.Tus ("elements"), False, True, As.U.Asu_Null),
+   05 => (True, Argument_Parser.No_Key_Char,
                 As.U.Tus ("enums"), False, True, As.U.Asu_Null));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -463,17 +468,27 @@ begin
   end if;
 
   begin
+    -- Help and version
     if Arg_Dscr.Is_Set (1) then
       Usage;
       return;
+    elsif Arg_Dscr.Is_Set (2) then
+      Basic_Proc.Put_Line_Output (
+          "Parser version:        " & Xml_Parser.Version);
+      Basic_Proc.Put_Line_Output (
+          "Dtd_Generator version: " & Version);
+      Basic_Proc.Set_Error_Exit_Code;
+      return;
     end if;
-    if Arg_Dscr.Is_Set (2) then
+
+    -- Options
+    if Arg_Dscr.Is_Set (3) then
       Max_Deviation := Natural'Value (Arg_Dscr.Get_Option (2));
     end if;
-    if Arg_Dscr.Is_Set (3) then
+    if Arg_Dscr.Is_Set (4) then
       Max_Elements := Natural'Value (Arg_Dscr.Get_Option (3));
     end if;
-    if Arg_Dscr.Is_Set (4) then
+    if Arg_Dscr.Is_Set (5) then
       Max_Enums := Natural'Value (Arg_Dscr.Get_Option (4));
     end if;
   exception
