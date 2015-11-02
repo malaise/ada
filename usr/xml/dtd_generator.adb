@@ -645,8 +645,9 @@ begin
         end loop;
       end if;
 
-      exit when not Moved;
+      -- Skip a line before next element, or after last element
       Nlo;
+      exit when not Moved;
     end loop;
   end if;
 
