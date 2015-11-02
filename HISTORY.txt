@@ -4,8 +4,10 @@ Main changes
 
 [horizontal]
 
-*2015/09/17*:: Handle rebase the same way as Git, and add optional reference
-different from target, in Agite V21.0
+*2015/11/02*:: Add dtd_generator and move it, with xml_checker and dtd_checker,
+in a new subdir "xml"
+
+*2015/10/15*:: Fix and improve remote branch management in Agite, V27.0
 
 *2015/09/08*:: Add reorg, rebase and cherrypick error handling in Agite, V19.0
 

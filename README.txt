@@ -128,11 +128,11 @@ and 'tasks' (simple task examples).
 They all depend on C and Reposit and are independant one from the others (except
 'pipe' -> 'fifos' -> 'dictio').
 
-The more usefull are 'udp_spy' and 'xml_checker' (in directory 'misc'), 'agite',
-'alook', 'als', 'asubst', 'lsadeps' and 'mcd'.
+The more usefull are 'udp_spy' and 'alook' (in directory 'misc'),
+'xml_checker' (in directory xml) 'agite', 'als', 'asubst', 'lsadeps' and 'mcd'.
 
-The games are 'g' (in directory 'misc'), 'battleship', 'lem', 'mmind', 'nimmari' and
-'sokoban'.
+The games are 'g' (in directory 'misc'), 'battleship', 'lem', 'mmind', 'nimmari'
+and 'sokoban'.
 
 Here is the full list and description, rated from 1 (simple) to 3 (very
 complex) on subjective criteria:
@@ -142,9 +142,8 @@ Account (3)::
      cheque, credit card (defered) and transfer operations.
 
 Agite (3)::
-     GUI for Git on 'Afpx'. Implements all the basic and some less basic
-     everyday actions of GIT (push, pull, commit, stash, tag, branches, merge,
-     rebase...).
+     GUI for Git on 'Afpx', directory oriented. Implements all basic actions
+     with GIT.
 
 Als (2)::
      Lists, more or less the "ls" way, files and directories. Allow selection
@@ -176,9 +175,6 @@ C_Magic (1)::
 Code (1)::
      Simple programs that codes (encrypts) and decodes a text. The crypting
      algo are old and not secure.
-
-Day_Of_Week (1)::
-     Simple program that tells everything on today (or on another day).
 
 Dictio (3)::
      Distributed data dictionnary that allows storing data, distributing this
@@ -221,7 +217,7 @@ Misc::
 - Alook (1) properly formats the words of a (valid) Ada2012 source file.
 - Astat (1) counts the number of instruction of (valid) Ada source files.
 - Azf (1) (un)compress a flow of bytes with Lzf.
-- Dtd_Checker (1) checks a DTD file (of a xml).
+- Day_of_week (1) tells everything on today (or on another day).
 - G (1) is a game where to find the remaining of division by 3.
 - Prime (1) searches prime numbers.
 - Renamer (1) is a 'Afpx' based HMI to rename files.
@@ -231,7 +227,6 @@ Misc::
 - Trail_spaces (1) removes tabs and trailing spaces and dos2unix a file.
 - Udp_Spy (2) displays udp/ipm packets received on a port.
 - Wake (1) sends a "Wake On LAN" packet on the local network or to a host:port.
-- Xml_Checker (3) checks and formats a XML file.
 
 Mmind (2)::
      Mastermind game on 'Con_Io'.
@@ -271,6 +266,11 @@ Tcpipe (2)::
 Tests::
      Several small test programs of the Repository packages.
 
+Xml::
+- Dtd_Checker (1) checks a DTD file (of a xml).
+- Dtd_Generator (2) generates a DTD from one or several XML files
+- Xml_Checker (3) checks and formats a XML file.
+
 Xwords (2)::
      A graphical lexicography of common words and nouns (french DB),
      search with wildcards for crosswords, search of anagrams.
@@ -294,8 +294,8 @@ a test fails. With option '-ix' the 'Test' script launches the tests of the
 packages that are based on X11 ('X_Mng', 'Con_Io', 'Afpx', 'Curve'...)
 for interactive testing.
 
-Many projects in 'usr' subdirectories also implement automatic tests that are
-launched by a local 'Test' script and fail on error.
+Many projects in subdirectories of 'usr' also implement automatic tests that
+are launched by a local 'Test' script and fail on error.
 
 Finally a 'Test' script in 'usr' lauches all the tests, which takes around 5
 minutes.
