@@ -198,19 +198,17 @@ package  body Sequences is
         Child := Def_Cell;
         Child.Kind := Step_Both;
         Child.Deviation := Cell.Deviation + Dev_Step_Both;
-        if Check_Deviation (Child.Deviation) then
-          Dbg ("    Add stepping both");
-          -- Update current and insert child
-          Tree.Insert_Child (Child);
-          Step (True, Intoi);
-          Step (True, Vali);
-          Iterate;
-          Step (False, Intoi);
-          Step (False, Vali);
-          Tree.Move_Father;
-          -- Skip other options in Simple mode
-          Skip := Simple;
-        end if;
+        Dbg ("    Add stepping both");
+        -- Update current and insert child
+        Tree.Insert_Child (Child);
+        Step (True, Intoi);
+        Step (True, Vali);
+        Iterate;
+        Step (False, Intoi);
+        Step (False, Vali);
+        Tree.Move_Father;
+        -- Skip other options in Simple mode
+        Skip := Simple;
       end if;
 
       -- Insert solutions of skipping current Into, as optional
@@ -230,6 +228,11 @@ package  body Sequences is
           Iterate;
           Step (False, Intoi);
           Tree.Move_Father;
+        else
+          -- Dead end
+          Child.Deviation := Integer'Last;
+          Tree.Insert_Child (Child);
+          Tree.Move_Father;
         end if;
       end if;
 
@@ -246,6 +249,11 @@ package  body Sequences is
           Step (True, Vali);
           Iterate;
           Step (False, Vali);
+          Tree.Move_Father;
+        else
+          -- Dead end
+          Child.Deviation := Integer'Last;
+          Tree.Insert_Child (Child);
           Tree.Move_Father;
         end if;
       end if;

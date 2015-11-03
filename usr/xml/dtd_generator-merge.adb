@@ -169,11 +169,11 @@ begin
             Into.Kind := Choice;
             Merge_Lists;
           when Mixed =>
-            Dbg ("  Choice then Sequence => Mixed merged");
+            Dbg ("  Choice then Mixed => Mixed merged");
             Into.Kind := Mixed;
             Merge_Lists;
           when Pcdata =>
-            Dbg ("  Choice then Sequence => Mixed");
+            Dbg ("  Choice then Pcdata => Mixed");
             Into.Kind := Mixed;
           when others =>
             null;
