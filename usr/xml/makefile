@@ -19,6 +19,7 @@ LARGS_xml_checker.stat := $(PCRE_ALIBS) $(UTILS_ALIBS)
 
 TXT := Xml_Checker Dtd_Generator
 DOCOPTS_Xml_Checker := -a toc
+DOCOPTS_Dtd_Generator := -a toc
 
 include $(TEMPLATES)/ada.mk
 

@@ -52,8 +52,8 @@ package  body Sequences is
   -- Update the current solution while scanning
   -- Return True when best deviation has been reached
   Deviation : Integer;
-  function Update_Solution (T : in out Cell_Tree_Mng.Tree_Type;
-                            Child : in Boolean)
+  function Build_Solution (T : in out Cell_Tree_Mng.Tree_Type;
+                           Child : in Boolean)
            return Boolean is
     Cell : Cell_Type;
   begin
@@ -84,7 +84,7 @@ package  body Sequences is
     else
       Dbg ("  Move child");
       T.Move_Child (Eldest => False);
-      if Update_Solution (T, True) then
+      if Build_Solution (T, True) then
         if T.Has_Father then
           Dbg ("  Move father cause OK");
           T.Move_Father;
@@ -99,7 +99,7 @@ package  body Sequences is
     while T.Has_Brother loop
       Dbg ("  Move brother");
       T.Move_Brother;
-      if Update_Solution (T, False) then
+      if Build_Solution (T, False) then
         if T.Has_Father then
           Dbg ("  Move father cause OK");
           T.Move_Father;
@@ -120,7 +120,7 @@ package  body Sequences is
       Dbg ("  Back at root");
     end if;
     return False;
-  end Update_Solution;
+  end Build_Solution;
 
   -- Increment Into or Val index, return True if it has overflown
   -- Or decrement index if possible
@@ -150,8 +150,6 @@ package  body Sequences is
     -- Resulting sequence
     Result : Sol_Poo_Mng.Pool_Type;
     Kind : Cell_Child_Kind_List;
-    -- Simple scan (don't look for alternatives whe a step_both os possible)
-    Simple : Boolean;
 
     -- Update the 'best deviation so far'
     procedure Update_Deviation (Val : Integer) is
@@ -162,13 +160,13 @@ package  body Sequences is
     end Update_Deviation;
 
     -- Recursive procedure that scans the solutions and builds the tree
-    procedure Iterate is
+    procedure Explore is
       -- Current Into and Val element
       Curinto, Curval : Child_Type;
       -- The cell being inserted
       Cell, Child : Cell_Type;
-      -- Skip negative options
-      Skip : Boolean;
+      -- Skip negative options when Step_Both is possible
+      Stepped : Boolean;
     begin
       -- Read: Tree points to current cell, indexes point to unbouded arrays
       Cell := Tree.Read;
@@ -192,7 +190,7 @@ package  body Sequences is
       end if;
 
       -- Insert solution of stepping both (when they match)
-      Skip := False;
+      Stepped := False;
       if Intoi /= Intolen + 1 and then  Vali /= Vallen + 1
       and then Curinto.Name = Curval.Name then
         Child := Def_Cell;
@@ -203,16 +201,15 @@ package  body Sequences is
         Tree.Insert_Child (Child);
         Step (True, Intoi);
         Step (True, Vali);
-        Iterate;
+        Explore;
         Step (False, Intoi);
         Step (False, Vali);
         Tree.Move_Father;
-        -- Skip other options in Simple mode
-        Skip := Simple;
+        Stepped := True;
       end if;
 
       -- Insert solutions of skipping current Into, as optional
-      if Intoi /= Intolen + 1 and then not Skip then
+      if Intoi /= Intolen + 1 and then not Stepped then
         Child := Def_Cell;
         Child.Kind := Skip_Cur;
         if Curinto.Opt then
@@ -225,7 +222,7 @@ package  body Sequences is
           Dbg ("    Add skipping of Into, Opt " & Mixed_Str (Curinto.Opt'Img));
           Tree.Insert_Child (Child);
           Step (True, Intoi);
-          Iterate;
+          Explore;
           Step (False, Intoi);
           Tree.Move_Father;
         else
@@ -238,7 +235,7 @@ package  body Sequences is
 
       -- Insert solution of inserting current Val, as optional, before current
       --  Into
-      if Vali /= Vallen + 1 and then not Skip then
+      if Vali /= Vallen + 1 and then not Stepped then
         Child := Def_Cell;
         Child.Kind := Insert_Val;
         Child.Deviation := Cell.Deviation + Dev_Insert_Val;
@@ -247,7 +244,7 @@ package  body Sequences is
           -- Update current and insert child
           Tree.Insert_Child (Child);
           Step (True, Vali);
-          Iterate;
+          Explore;
           Step (False, Vali);
           Tree.Move_Father;
         else
@@ -263,7 +260,7 @@ package  body Sequences is
       if Intoi = Intolen + 1 and then  Vali = Vallen + 1 then
         Update_Deviation (Cell.Deviation);
       end if;
-    end Iterate;
+    end Explore;
 
   begin
     -- Init to start
@@ -308,14 +305,9 @@ package  body Sequences is
     Intoi := 1;
     Deviation := Integer'Last;
     Tree.Insert_Father (Def_Cell);
-    -- Simple mode (do not skip curr Into nor insert curr Val when a step both
-    --  is possible)
-    Simple := not Check_Deviation (Into.Children.Length)
-              or else not Check_Deviation (Val.Children.Length);
-    Dbg ("Simple is " & Mixed_Str (Simple'Img));
 
-    -- Scan and build the tree of possible combinations
-    Iterate;
+    -- Explore the solutions and build the tree of possible combinations
+    Explore;
     if Logger.Debug_On then
       Dump_Tree (Tree);
       Dbg ("Best deviation is " & Deviation 'Img);
@@ -332,7 +324,7 @@ package  body Sequences is
     -- Scan the tree, maintain the current solution, give-up when reached
     Solution.Clear;
     Tree.Move_Root;
-    if not Update_Solution (Tree, True) then
+    if not Build_Solution (Tree, True) then
       -- Should not occur
       Dbg ("  Best deviation not found => Choice");
       Into.Kind := Choice;
