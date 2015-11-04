@@ -356,6 +356,19 @@ package  body Sequences is
       Kind := Result.Pop;
       Dbg ("  Apply " &  Mixed_Str (Kind'Img));
       case Kind is
+        when Step_Both =>
+          -- Propagate Mult from Val to Into if necessary
+          Child := Val.Children.Element (Vali);
+          if Child.Mult then
+            Child := Into.Children.Element (Intoi);
+            if not Child.Mult then
+              Child.Mult := True;
+              Into.Children.Replace_Element (Intoi, Child);
+            end if;
+          end if;
+          -- Move to next Val and next Into
+          Step (True, Intoi);
+          Step (True, Vali);
         when Skip_Cur =>
           -- Make current Into Opt if necessary
           Child := Into.Children.Element (Intoi);
@@ -372,19 +385,6 @@ package  body Sequences is
           -- Move to next Val and remain in same Into
           Step (True, Vali);
           Step (True, Intoi);
-        when Step_Both =>
-          -- Propagate Mult from Val to Into if necessary
-          Child := Val.Children.Element (Vali);
-          if Child.Mult then
-            Child := Into.Children.Element (Intoi);
-            if not Child.Mult then
-              Child.Mult := True;
-             Into.Children.Replace_Element (Intoi, Child);
-            end if;
-          end if;
-          -- Move to next Val and next Into
-          Step (True, Intoi);
-          Step (True, Vali);
       end case;
     end loop;
 
