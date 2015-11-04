@@ -1,4 +1,4 @@
-Dtd_Generator, elements of deisgn
+Dtd_Generator, elements of design
 =================================
 
 General principle
