@@ -17,7 +17,7 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "41";
+  Major_Version : constant String := "42";
   function Version return String;
 
   -----------
@@ -423,6 +423,12 @@ package Xml_Parser is
   function Get_Text (Ctx  : Ctx_Type;
                      Text : Text_Type)
                      return As.U.Asu_Us;
+
+  -- Because of the parsing logic in Callback mode (see Get_Is_Mixed)
+  --  the parsing without DTD may lead to pieces of text that are made
+  --  of separators. This allows checking it
+  function Is_Separators (Text : String) return Boolean;
+  function Is_Separators (Text : As.U.Asu_Us) return Boolean;
 
   -- Get the content of a comment
   function Get_Comment (Ctx     : Ctx_Type;

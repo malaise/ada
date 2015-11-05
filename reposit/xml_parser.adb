@@ -4,7 +4,7 @@ with Trace.Loggers, Exception_Messenger, Directory, Str_Util,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "7";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -280,6 +280,8 @@ package body Xml_Parser is
                     Allow_Token : Boolean := False) return Boolean;
     function Is_Valid_Encoding (Name : As.U.Asu_Us) return Boolean;
     function Is_Valid_Pubid (Name : As.U.Asu_Us) return Boolean;
+    -- Text utility
+    function Is_Separators (Text : As.U.Asu_Us) return Boolean;
   end Parse_Mng;
   package body Parse_Mng is separate;
 
@@ -1071,6 +1073,14 @@ package body Xml_Parser is
     end if;
     return Cell.Name;
   end Get_Text;
+
+  function Is_Separators (Text : String) return Boolean is
+  begin
+    return Is_Separators (As.U.Tus (Text));
+  end Is_Separators;
+
+  function Is_Separators (Text : As.U.Asu_Us) return Boolean
+           renames Parse_Mng.Is_Separators;
 
    -- Comment
   function Get_Comment (Ctx     : Ctx_Type;

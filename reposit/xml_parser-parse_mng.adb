@@ -221,6 +221,9 @@ package body Parse_Mng  is
 
   end Util;
 
+  function Is_Separators (Text : As.U.Asu_Us) return Boolean
+           renames Util.Is_Separators;
+
   package Namespaces is
     -- Init namespaces definitions
     procedure Init (Ctx : in out Ctx_Type);
