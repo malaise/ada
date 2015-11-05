@@ -3,15 +3,9 @@ with Trees, Unlimited_Pool;
 separate (Dtd_Generator.Merge)
 package  body Sequences is
 
-  -- Deviation caused by a given option
-  Dev_Skip_Cur_Opt : constant := 0;
-  Dev_Skip_Cur_Man : constant := 1;
-  Dev_Insert_Val : constant := 2;
-  Dev_Step_Both : constant := -1;
-
   -- Tree of possible solutions
   -- A child of current cell can be this:
-  type Cell_Child_Kind_List is (Skip_Cur, Insert_Val, Step_Both);
+  type Cell_Child_Kind_List is (Step_Both, Skip_Cur, Insert_Val, Dead_End);
   type Cell_Type is record
     -- Which kind of child are we
     Kind : Cell_Child_Kind_List := Step_Both;
@@ -69,9 +63,11 @@ package  body Sequences is
     -- Push new brother ot child
     Solution.Push (Cell.Kind);
 
-    -- Check if this is the end
-    if Cell.Deviation = Deviation
-    and then T.Children_Number = 0 then
+    -- Check if this is the end of branch, not dead end,
+    --  and with expected "best" deviation
+    if T.Children_Number = 0
+    and then Cell.Kind /= Dead_End
+    and then Cell.Deviation = Deviation then
       -- A leaf with the correct best deviation, keep it
       Dbg ("  Got it OK");
       T.Move_Father;
@@ -152,10 +148,10 @@ package  body Sequences is
     Kind : Cell_Child_Kind_List;
 
     -- Update the 'best deviation so far'
-    procedure Update_Deviation (Val : Integer) is
+    procedure Update_Deviation (By : Integer) is
     begin
-      if Val < Deviation then
-        Deviation := Val;
+      if By < Deviation then
+        Deviation := By;
       end if;
     end Update_Deviation;
 
@@ -227,7 +223,7 @@ package  body Sequences is
           Tree.Move_Father;
         else
           -- Dead end
-          Child.Deviation := Integer'Last;
+          Child.Kind := Dead_End;
           Tree.Insert_Child (Child);
           Tree.Move_Father;
         end if;
@@ -249,7 +245,7 @@ package  body Sequences is
           Tree.Move_Father;
         else
           -- Dead end
-          Child.Deviation := Integer'Last;
+          Child.Kind := Dead_End;
           Tree.Insert_Child (Child);
           Tree.Move_Father;
         end if;
@@ -270,6 +266,7 @@ package  body Sequences is
     end if;
 
     -- Optim if lists are similar (same sequence of names)
+    -- Length of Val has already been through Check_Elements
     Same_Names := False;
     if Intolen = Vallen then
       Same_Names := True;
@@ -283,20 +280,14 @@ package  body Sequences is
     if Same_Names then
       Dbg("Optim");
       -- Just propagate Mult from Val to Into
-      Deviation := 0;
       for I in 1 .. Intolen loop
         Child := Into.Children.Element (I);
         if Val.Children.Element (I).Mult and then not Child.Mult then
-          if Check_Deviation (Deviation) then
-            Child.Mult := True;
-            Into.Children.Replace_Element (I, Child);
-            Deviation := Deviation  + 1;
-          else
-            Dbg ("  Deviation exceeded => Choice");
-            Into.Kind := Choice;
-          end if;
+          Child.Mult := True;
+          Into.Children.Replace_Element (I, Child);
         end if;
       end loop;
+      -- Done
       return;
     end if;
 
@@ -317,6 +308,10 @@ package  body Sequences is
     if not Check_Deviation (Deviation) then
       Dbg ("  Deviation exceeded => Choice");
       Into.Kind := Choice;
+      -- Remove duplicates and merge lists A (does Check_Elements)
+      Reduce (Into);
+      Reduce (Val);
+      Merge_Lists;
       return;
     end if;
 
@@ -328,6 +323,16 @@ package  body Sequences is
       -- Should not occur
       Dbg ("  Best deviation not found => Choice");
       Into.Kind := Choice;
+      Reduce (Into);
+      Reduce (Val);
+      Merge_Lists;
+      return;
+    end if;
+
+    -- Check length of solution
+    if not Check_Elements (Result.Length, 0) then
+      Dbg ("  Max elements exceed in best solution => Any");
+      Into.Kind := Any;
       return;
     end if;
 
@@ -377,6 +382,11 @@ package  body Sequences is
           -- Move to next Val and remain in same Into
           Step (True, Vali);
           Step (True, Intoi);
+        when Dead_End =>
+          -- Should not occur
+          Basic_Proc.Put_Line_Error (
+              "Unexpected Dead_End cell while applying solution");
+          raise Program_Error;
       end case;
     end loop;
 

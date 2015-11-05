@@ -1,6 +1,12 @@
 separate (Dtd_Generator)
-procedure Merge (Into : in out Element_Type; Val : in Element_Type) is
+procedure Merge (Into : in out Element_Type; Val : in out Element_Type) is
   use type As.U.Asu_Us;
+
+  -- Deviation caused by a given change of Into
+  Dev_Skip_Cur_Opt : constant := 0;
+  Dev_Skip_Cur_Man : constant := 1;
+  Dev_Insert_Val : constant := 2;
+  Dev_Step_Both : constant := -1;
 
   -- False if Val exceeds Max Deviation
   function Check_Deviation (Val : Integer) return Boolean is
@@ -106,7 +112,8 @@ begin
             Dbg ("  Empty then Sequence => Copy sequence as optional");
             -- The max number has already been checked when building Val
             -- Check deviation will not exceed max
-            if Check_Deviation (Val.Children.Length) then
+            -- In Val, no child is Opt
+            if Check_Deviation (Val.Children.Length * Dev_Skip_Cur_Man) then
               -- The sequence just got is copied as optional
               Into.Kind := Sequence;
               for I in 1 .. Val.Children.Length loop
@@ -144,7 +151,7 @@ begin
                   Into.Kind := Choice;
                   exit;
                 end if;
-                Deviation := Deviation + 1;
+                Deviation := Deviation + Dev_Skip_Cur_Man;
                 Child.Opt := True;
                 Into.Children.Replace_Element (I, Child);
               end if;
@@ -152,10 +159,12 @@ begin
           when Mixed =>
             Dbg ("  Sequence then Mixed => Mixed merged");
             Into.Kind := Mixed;
+            Reduce (Into);
             Merge_Lists;
           when Pcdata =>
             Dbg ("  Sequence then Pcdata => Mixed");
             Into.Kind := Mixed;
+            Reduce (Into);
           when others =>
             null;
         end case;
@@ -167,6 +176,7 @@ begin
           when Sequence =>
             Dbg ("  Choice then Sequence => Choice merged");
             Into.Kind := Choice;
+            Reduce (Val);
             Merge_Lists;
           when Mixed =>
             Dbg ("  Choice then Mixed => Mixed merged");
@@ -185,6 +195,7 @@ begin
             null;
           when Sequence =>
             Dbg ("  Mixed then Sequence => Mixed merged");
+            Reduce (Val);
             Merge_Lists;
           when Pcdata =>
             Dbg ("  Mixed then Pcdata => null");
@@ -200,6 +211,7 @@ begin
           when Sequence =>
             Dbg ("  Pcdata then Sequence => Mixed copy");
             Into.Kind := Mixed;
+            Reduce (Val);
             Into.Children := Val.Children;
           when Mixed =>
             Dbg ("  Pcdata then Mixed => Mixed copy");
@@ -223,11 +235,6 @@ begin
     end case;
 
     -- End of Same kind or heterogeneous
-  end if;
-
-  -- Remove duplicates in Choice or Mixed
-  if Into.Kind = Choice or else Into.Kind = Mixed then
-    Reduce (Into);
   end if;
 
   -- Merge new attributes:

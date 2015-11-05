@@ -6,7 +6,7 @@ with Argument, Argument_Parser, Basic_Proc, As.U, Str_Util, Mixed_Str,
 procedure Dtd_Generator is
 
   -- Current version
-  Version : constant String := "V2.0";
+  Version : constant String := "V2.2";
 
   -- Algorithm criteria
 
@@ -204,7 +204,7 @@ procedure Dtd_Generator is
 
   -- Merge current element (children and attributes) with definition
   --  elaborated so far
-  procedure Merge (Into : in out Element_Type; Val : in Element_Type)
+  procedure Merge (Into : in out Element_Type; Val : in out Element_Type)
             is separate;
 
   -- Is an attribute value compatible bo be a Name (or Nmtoken)

@@ -1,5 +1,6 @@
 Dtd_Generator, elements of design
 =================================
+Version: V2.2
 
 General principle
 -----------------
@@ -94,7 +95,7 @@ If both sequences have the same children in the same order, then the
 merge only consists in propagating the 'Mult' tags of the 'new' sequence into
 the 'previous' one (remember that the 'new' sequence deos not have tags 'Opt').
 
-.Exploration
+.Exploration of the solutions
 The exploration algorithm does not depend on the 'Mult' tags but considers
 the 'Opt' tags of the 'previous' sequence. Let's take an example, where A,
 B... are child names and \'o' indicates an optional child.
@@ -126,7 +127,6 @@ In our example, and after the two initial steps, this will lead to:
  current: A  B  C  Do E
                 |
 
-
 * Alternatively, the current 'new' can be changed as optional and inserted,
 before the current 'current', with a deviation increase of 2. +
 In our example, and after the two initial steps, this will lead to:
@@ -144,18 +144,86 @@ explored,
 * when the maximum deviation allowed (if set) is reached, then the current
 solution is abandonned and the exploration continues.
 
-The tree keeps track of the cumulated deviation optained to build each node and
-also remembers the best deviation ever obtained.
+.Identification of the best solution
+Each node of the tree represents a step of the solution and can be of kind:
 
-Then the tree in scanned in order to identify the (first) branch that leads
-to this best deviation.
+* Step_Both: when the action is to step in both lists,
+* Skip_Current: when the action is to skip the current (Opt or not) of
+'current' list,
+* Insert_New: when the action is is to insert the current of 'new' list, as
+Opt, before the current of the 'current' list,
+* Dead_End: when the insertion of this node led to exceed the maximum
+deviation.
 
-Then the content of this branch (list of modifications) is applied to the
-'current' sequence.
+As a consequence, each node can have the following combination of children:
 
-NOTE: The algorithm checks that the maximum number of elements (if set) is not
-exceeded, otherwise it generates an Any. It also checks that the overall
-deviation (if set) is not exceeded, otherwise it generates leads to a Choice.
+* No child: leaf of the tree, can be a dead end or a valid solution (candidate
+for the best solution)
+* One child of kind Step_Both
+* One child of kind Skip_Current, Insert_New or Dead_End.
+* Two children, any combination of kind Skip_Current, Insert_New or Dead_End,
+where only Dead_End can be duplicated.
+
+Each node also stores the value of the deviation obtained so far in the
+building of the current solution. +
+The algorithm also keeps track of the best deviation ever obtained when
+building valid leaves of the tree.
+
+NOTE: If the overall best  deviation exceeds the maximum deviation (if set),
+then the merge results in a Choice.
+
+The example above leads to the following tree (with an extra artificial root
+of kind Step_Both), with a best deviation of 0:
+
+ Step_Both (-1)
+  |- Step_Both (-2)
+      |- Skip_Cur (-1)
+          |- Skip_Cur (-1)
+              |   |- Step_Both (-2)
+              |       |- Insert_Val (0)
+              |- Insert_Val (1)
+                  |- Skip_Cur (1)
+                  |   |- Skip_Cur (2)
+                  |   |   |- Insert_Val (4)
+                  |   |- Insert_Val (3)
+                  |       |- Skip_Cur (4)
+                  |- Insert_Val (3)
+                      |- Skip_Cur (3)
+                          |- Skip_Cur (4)
+ ...
+
+Then the tree in scanned and a LIFO stack of tree nodes keeps trace of the
+current path in the tree:
+
+* Moving down to a child of the tree pushes the child node in the stack,
+* Moving up to the father pops the top of the stack. +
+As soon as a valid leaf with the best deviation is reached, then the scan is
+abandonned and the stack contains the best solutioni (in reverse order.
+
+In our example, the stack will contain:
+
+  Step_Both, Step_Both, Skip_Cur, Skip_Cur, Step_Both, Insert_Val
+
+.Application of the solution
+Then the items of the stack are extracted in FIFO order and applied, starting
+from the first child of the 'current' and 'new' sequences:
+
+* Step_Both leads to possibly propagate the Mult tag from the current 'new'
+into the current 'current' and increment both indexes,
+* Skip_Cur leads to possibley set the current 'current' as Opt, and increment
+'current' index
+* Insert_Val leads to insert, as Opt, the current 'new' before the current
+'current' and increment both indexes (which leaves 'current' at the same
+element).
+
+NOTE: The algorithm also checks that the maximum number of elements (if set) is
+not exceeded, otherwise it generates an Any.
+
+In our example, the result will be:
+
+ new:     A  B  E  G
+ current: A  B  C  Do E
+ result:  A  B  Co Do E Go
 
 Attributes
 ----------
