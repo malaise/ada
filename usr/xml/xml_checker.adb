@@ -5,7 +5,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
      Trace.Loggers, Mixed_Str;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V22.0";
+  Version : constant String := "V23.0";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -183,8 +183,8 @@ procedure Xml_Checker is
     end loop;
 
     Ple ("Empty Dtd can be used to force skipping validation versus dtd.");
-    Ple ("All options except expand, keep, dtd, warnings, namespace and tree are");
-    Ple (" mutually exclusive.");
+    Ple ("All options except expand, keep, dtd, warnings, namespace, normalize and tree");
+    Ple (" are mutually exclusive.");
     Ple ("Keep, expand and namespace are not allowed on Dump mode, Dump => keep all.");
     Ple ("Canonical is implemented with a callback (no tree). It only allows options dtd,");
     Ple ("  warnings and keep-comments (it expands, removes CDATA markers, ignores");
@@ -962,6 +962,11 @@ begin
     Namespace := True;
     Max_Opt := Max_Opt + 1;
   end if;
+  -- No normalize
+  if Arg_Dscr.Is_Set (11) then
+    Normalize := False;
+    Max_Opt := Max_Opt + 1;
+  end if;
   if Arg_Dscr.Is_Set (16) then
     -- Tree mode
     Max_Opt := Max_Opt + 1;
@@ -1158,11 +1163,6 @@ begin
   if Copy_Tree and then Callback_Acc /= null then
     Ae_Re (Arg_Error'Identity,
       "Incompatible ""copy_tree"" and ""callback"" (or ""canonical"") options");
-  end if;
-
-  -- No normalize
-  if Arg_Dscr.Is_Set (11) then
-    Normalize := False;
   end if;
 
   -- Validate
