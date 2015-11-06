@@ -6,7 +6,7 @@ with Argument, Argument_Parser, Basic_Proc, As.U, Str_Util, Mixed_Str,
 procedure Dtd_Generator is
 
   -- Current version
-  Version : constant String := "V2.2";
+  Version : constant String := "V2.3";
 
   -- Algorithm criteria
 
@@ -290,7 +290,7 @@ procedure Dtd_Generator is
       case Child_Node.Kind is
         when Xml_Parser.Element =>
            Cur_Name := Ctx.Get_Name (Child_Node);
-           Dbg ("  Child " & Cur_Name.Image & " Kind "
+           Dbg ("  Child " & Cur_Name.Image & " of Elt kind "
               & Mixed_Str (Cur_Elt.Kind'Img));
            case Cur_Elt.Kind is
              when Empty | Not_Empty | Sequence =>
@@ -301,11 +301,12 @@ procedure Dtd_Generator is
                if Len /= 0 then
                  Child := Cur_Elt.Children.Element (Len);
                  if Child.Name =  Cur_Name then
+                   -- Last child is repeated => Mult
                    if not Child.Mult then
                      Child.Mult := True;
                      Cur_Elt.Children.Replace_Element (Len, Child);
                    end if;
-                   Dbg ("  Setseq " & Cur_Name.Image & " Mult");
+                   Dbg ("  Change last Seq " & Cur_Name.Image & " Mult");
                  else
                    -- Append
                    Child.Name.Set_Null;
@@ -317,9 +318,9 @@ procedure Dtd_Generator is
                    -- First or new child
                    Child := (Name => Cur_Name, Mult | Opt => False);
                    Cur_Elt.Children.Append (Child);
-                   Dbg ("  Addseq " & Cur_Name.Image & " kind _");
+                   Dbg ("  Add to Seq " & Cur_Name.Image);
                  else
-                   Dbg ("  Addseq exceedes max elements => Any");
+                   Dbg ("  Seq exceedes max elements => Any");
                    Cur_Elt.Kind := Any;
                    Cur_Elt.Children.Set_Null;
                  end if;
@@ -338,18 +339,18 @@ procedure Dtd_Generator is
                else
                  -- Check Max element will not be exceeded
                  if Check_Elements (Cur_Elt.Children.Length) then
-                   Dbg ("  Addmixed " & Cur_Name.Image & " kind _");
+                   Dbg ("  Add to Mixed " & Cur_Name.Image & " kind _");
                    Child := (Name => Cur_Name, Mult | Opt => False);
                    Cur_Elt.Children.Append (Child);
                  else
-                   Dbg ("  Addmixed exceedes max elements => Any");
+                   Dbg ("  Mixed exceedes max elements => Any");
                    Cur_Elt.Kind := Any;
                    Cur_Elt.Children.Set_Null;
                  end if;
                end if;
              when Pcdata =>
                -- Child after text => Mixed
-               Dbg ("  Changemixed " & Cur_Name.Image & " kind _");
+               Dbg ("  Change to Mixed " & Cur_Name.Image);
                Child := (Name => Cur_Name, Mult | Opt => False);
                Cur_Elt.Kind := Mixed;
                Cur_Elt.Children.Append (Child);

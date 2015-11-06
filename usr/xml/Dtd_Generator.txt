@@ -1,6 +1,6 @@
 Dtd_Generator, elements of design
 =================================
-Version: V2.2
+Version: V2.3
 
 General principle
 -----------------
@@ -275,5 +275,10 @@ attributes.
 This list is scanned in order to generate the proper \'!<ELEMENT' and
 \'<!ATTLIST' directives of the DTD.
 
+Traces
+------
+Dtd_generator logs through a logger named "Dtd_Generator", 
 
+* with severity Info, the name of each file being processed (or "stdin"),
+* with severity Debug, several logs on the processing, including merging.
 
