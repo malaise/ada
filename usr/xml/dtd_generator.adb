@@ -6,7 +6,7 @@ with Argument, Argument_Parser, Basic_Proc, As.U, Str_Util, Mixed_Str,
 procedure Dtd_Generator is
 
   -- Current version
-  Version : constant String := "V2.3";
+  Version : constant String := "V2.4";
 
   -- Algorithm criteria
 
@@ -359,22 +359,36 @@ procedure Dtd_Generator is
                null;
            end case;
         when Xml_Parser.Text =>
-          case Cur_Elt.Kind is
-             when Empty | Not_Empty =>
-               Dbg ("  Change to Pcdata");
-               Cur_Elt.Kind := Pcdata;
-             when Sequence =>
-               -- Text after children => Mixed
-               Dbg ("  Change to Mixed");
-               Cur_Elt.Kind := Mixed;
-               Reduce (Cur_Elt);
-             when Mixed | Any | Choice =>
-               -- Mixed => no change, others => not used
-               null;
-             when Pcdata =>
-               -- Several data
-               Cur_Elt.Kind := Mixed;
-           end case;
+          if Xml_Parser.Is_Separators (String'(Ctx.Get_Text (Child_Node))) then
+             -- This text is only separators (due to lack of Dtd)
+            Dbg ("  Text is only separators");
+            case Cur_Elt.Kind is
+               when Empty =>
+                 Dbg ("  Change to Not_Empty");
+                 Cur_Elt.Kind :=  Not_Empty;
+               when Not_Empty | Sequence | Mixed | Any | Choice | Pcdata =>
+                 -- no change
+                 null;
+             end case;
+          else
+            case Cur_Elt.Kind is
+               when Empty | Not_Empty =>
+                 Dbg ("  Change to Pcdata");
+                 Cur_Elt.Kind := Pcdata;
+               when Sequence =>
+                 -- Text after children => Mixed
+                 Dbg ("  Change to Mixed");
+                 Cur_Elt.Kind := Mixed;
+                 Reduce (Cur_Elt);
+               when Mixed | Any | Choice =>
+                 -- Mixed => no change, others => not used
+                 null;
+               when Pcdata =>
+                 -- Several data
+                 Dbg ("  Change to Mixed");
+                 Cur_Elt.Kind := Mixed;
+             end case;
+           end if;
         when Xml_Parser.Pi | Xml_Parser.Comment =>
           case Cur_Elt.Kind is
              when Empty =>

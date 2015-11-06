@@ -1,6 +1,6 @@
 Dtd_Generator, elements of design
 =================================
-Version: V2.3
+Version: V2.4
 
 General principle
 -----------------
@@ -73,7 +73,9 @@ definitions and takes into account both constraints. Examples:
 * a Sequence and a Mixed or Pcdata becomes a Mixed (with lists merged)
 * a Sequence and an Empty becomes a Sequence with all children optional
 * a Choice and a Pcdata becomes a Mixed 
-* any kind and an Any becomes an Any +
+* any kind and an Any becomes an Any
+* "empty" Pcdata (only separators) only makes an Empty to become Not_Empty,
+otherwise it is discarded +
 ...
 
 NOTE: Each change of a list (Sequence, Choice or Mixed) that leads to exceed
