@@ -35,6 +35,8 @@ package Images is
 
 
   -- Image of a duration (without leading space)
+  -- Specify the number of decimals (after the '.')
+  -- Prepend a '+' or not to positive value
   function Dur_Image (Dur : Duration; Nb_Digits : Natural; Plus : Boolean)
                       return String;
 
