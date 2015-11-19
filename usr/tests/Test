@@ -274,7 +274,7 @@ comp out data/t_asbu.ref
 comp err nul
 echo "OK"
 
-# t_asb 
+# t_asu 
 title t_asu
 try t_asu
 comp out data/t_asbu.ref
@@ -477,7 +477,7 @@ t_control_pool >out 2>err &
 PID=$!
 sleep 3
 kill $PID
-sleep 10
+sleep 5
 comp err nul
 echo "OK"
 
@@ -1845,7 +1845,7 @@ comp out exp
 comp err nul
 echo "OK"
 
-# t_unbounded_arrays
+# t_urand
 title t_urand
 try t_urand
 cat << EOF > exp
