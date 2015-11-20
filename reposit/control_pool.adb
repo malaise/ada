@@ -122,7 +122,11 @@ package body Control_Pool is
   -- Clear (from free list) the unused accesses
   procedure Clear (Pool : in out Controlled_Pool_Type) is
   begin
+    -- Global lock
+    Pool.Global_Mutex.Get;
     Pool.Free_Mutexes.Clear;
+    -- Unlock Global mutex
+    Pool.Global_Mutex.Release;
   end Clear;
 
 end Control_Pool;
