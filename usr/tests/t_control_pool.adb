@@ -44,8 +44,9 @@ procedure T_Control_Pool is
     Pool_No : Pool_Range;
     Got : Boolean;
     T1 : Ada.Calendar.Time;
-    Dur1, Dur2 : Duration;
-    Client_Done : Boolean := False;
+    Dur1, Dur2, Dur3 : Duration;
+    Client_Stop : Boolean := False;
+
     use type Ada.Calendar.Time;
   begin
     accept Start (Client_No : in Client_Range) do
@@ -66,17 +67,39 @@ procedure T_Control_Pool is
       -- Check that no signal, otherwise give up
       select
         accept Stop;
-        Client_Done := True;
+        Client_Stop := True;
       or
         delay 0.0;
-        Client_Done := Main_Done;
       end select;
 
       if Got then
-        if not Client_Done then
-          -- Wait a bit (1 to 5 s) to simulate ectivity
+        if not Client_Stop and then not Main_Done then
+          -- Wait a bit (1 to 5 s) to simulate proteted activity
           Log (My_No'Img & ": working on" & Pool_No'Img);
-          delay Rnd.Gen.Dur_Random (1.0, 5.0);
+          Dur3 := Rnd.Gen.Dur_Random (1.0, 5.0);
+          Activity: loop
+            -- Split actifity into slices of 1s max
+            if Dur3 > 1.0 then
+              delay 1.0;
+              Dur3 := Dur3 - 1.0;
+            else
+              -- Last slice
+              delay Dur3;
+              Log (My_No'Img & ": done with" & Pool_No'Img);
+              exit Activity;
+            end if;
+            -- Activity checks for signal from time to time
+            select
+              accept Stop;
+              Client_Stop := True;
+            or
+              delay 0.0;
+            end select;
+            if Client_Stop or else Main_Done then
+              Log (My_No'Img & ": giving up with" & Pool_No'Img);
+              exit Activity;
+            end if;
+          end loop Activity;
         end if;
         -- Release resource
         Log (My_No'Img & ": releasing" & Pool_No'Img);
@@ -84,25 +107,22 @@ procedure T_Control_Pool is
       end if;
 
       -- Exit on signal
-      exit when Client_Done;
+      exit when Client_Stop or else Main_Done;
       -- Check that no signal, otherwise give up
       select
         accept Stop;
-        Client_Done := True;
+        Client_Stop := True;
       or
         delay 0.0;
-        Client_Done := Main_Done;
       end select;
-      exit when Client_Done;
+      exit when Client_Stop or else Main_Done;
     end loop;
 
     Log (My_No'Img & ": exit");
-    -- Stop has already been accepted, or not yet
-    select
+    if not Client_Stop then
+      -- Stop must be accepted only once
       accept Stop;
-    or
-      terminate;
-    end select;
+    end if;
   end Client_Task;
 
   Clients : array (Client_Range) of Client_Task;
@@ -129,6 +149,7 @@ begin
   end loop;
 
   -- Clear the control pool
+  Log ("Clearing");
   Pool.Clear;
 
   -- The end
