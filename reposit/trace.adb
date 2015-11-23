@@ -265,6 +265,12 @@ package body Trace is
         Stderr.Flush;
       end if;
       Lock.Release;
+    exception
+      when others =>
+        if Lock.Is_Owner then
+          Lock.Release;
+        end if;
+        raise;
     end Log;
 
     procedure Log_Fatal   (Message  : in String) is

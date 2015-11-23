@@ -232,6 +232,12 @@ package body Trace.Loggers is
       end if;
     end if;
     Lock.Release;
+  exception
+    when others =>
+      if Lock.Is_Owner then
+        Lock.Release;
+      end if;
+      raise;
   end Log;
 
   procedure Log_Fatal   (A_Logger : in out Logger;
