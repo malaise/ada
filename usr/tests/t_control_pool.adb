@@ -37,6 +37,7 @@ procedure T_Control_Pool is
   task type Client_Task is
     entry Start (Client_No : in Client_Range);
     entry Stop;
+    entry Stopped;
   end Client_Task;
 
   task body Client_Task is
@@ -118,11 +119,15 @@ procedure T_Control_Pool is
       exit when Client_Stop or else Main_Done;
     end loop;
 
-    Log (My_No'Img & ": exit");
+    Log (My_No'Img & ": stopping");
     if not Client_Stop then
       -- Stop must be accepted only once
       accept Stop;
     end if;
+
+    -- Ensures that all clients have finished (no risk of Get/Release)
+    accept Stopped;
+    Log (My_No'Img & ": stopped");
   end Client_Task;
 
   Clients : array (Client_Range) of Client_Task;
@@ -146,6 +151,11 @@ begin
   -- Stop clients
   for I in Client_Range loop
     Clients(I).Stop;
+  end loop;
+
+  -- Ensure all clients are stopped
+  for I in Client_Range loop
+    Clients(I).Stopped;
   end loop;
 
   -- Clear the control pool
