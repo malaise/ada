@@ -224,8 +224,8 @@ directories, and tools for building and splitting directory path.
 * 'Dir_Mng' fills a xref:XDynamic_List[dynamic list] with the content of a
 directory.
 
-* 'Basic_Proc', 'Async_Stdin', 'Key_Pressed' (and 'Sys_Calls') provide input
-from stdin and output to stdout and stderr.
+* 'Basic_Proc', 'Protected_Put', 'Async_Stdin', 'Key_Pressed' (and 'Sys_Calls')
+provide input from stdin and output to stdout and stderr.
 
 List of packages
 ----------------
@@ -494,6 +494,9 @@ property_def (1)::
 
 protected_pool (1)::
      Store and retrieve data (by key) in a protected pool.
+
+protected_put (1)::
+     Output on Stdout or Stderr, protected by a mutex.
 
 protected_var (1)::
      Generic protected variable (write-read).

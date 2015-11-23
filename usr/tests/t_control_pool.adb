@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Rnd, Event_Mng, Control_Pool, Sys_Calls, Mutex_Manager, Images;
+with Rnd, Event_Mng, Control_Pool, Images, Protected_Put;
 procedure T_Control_Pool is
 
   -- The pool to control resources
@@ -8,14 +8,10 @@ procedure T_Control_Pool is
   Pool : Control_Pool_Mng.Controlled_Pool_Type;
 
   -- Protected logger
-  Mutex : Mutex_Manager.Mutex (Mutex_Manager.Simple, False);
   procedure Log (Msg : in String) is
   begin
-    Mutex.Get;
-    Sys_Calls.Put_Line_Output (Msg);
-    Mutex.Release;
+    Protected_Put.Put_Line_Output (Msg);
   end Log;
-
   -- Detect Ctrl-C and signal to tasks the end of program
   Main_Done : Boolean := False;
   procedure Term_Cb is

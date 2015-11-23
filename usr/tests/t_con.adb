@@ -1,5 +1,5 @@
 with Ada.Exceptions, Ada.Calendar;
-with Basic_Proc, Normal, Argument, Timers, Language, Trace.Loggers;
+with Protected_Put, Normal, Argument, Timers, Language, Trace.Loggers;
 with Con_Io;
 
 procedure T_Con is
@@ -106,7 +106,7 @@ procedure T_Con is
             & Str(1..Last)
             & Language.Char_To_Unicode ('<')
             & Language.String_To_Unicode (Con_Io.Curs_Mvt'Image(Stat)));
-        Basic_Proc.Put_Line_Output (Positive'Image(Me)
+        Protected_Put.Put_Line_Output (Positive'Image(Me)
                       & " >" & Language.Unicode_To_String (Str(1 .. Last))
                       & "<" & Con_Io.Curs_Mvt'Image(Stat));
         case Stat is
@@ -205,11 +205,11 @@ procedure T_Con is
       delay 1.0;
     end if;
 
-    Basic_Proc.Put_Line_Output (Me'Img & " Terminated");
+    Protected_Put.Put_Line_Output (Me'Img & " Terminated");
 
   exception
     when Error : others =>
-       Basic_Proc.Put_Line_Output ("Exception in " &  Me'Img
+       Protected_Put.Put_Line_Output ("Exception in " &  Me'Img
                      & " " & Ada.Exceptions.Exception_Name (Error));
        raise;
   end Task_T;
@@ -217,7 +217,7 @@ procedure T_Con is
 
 begin
   -- Force Con_Io init on main stack
-  Basic_Proc.Put_Line_Output ("Main starting");
+  Protected_Put.Put_Line_Output ("Main starting");
   Logger.Init ("T_Con");
   Logger.Log_Debug ("Starting");
   Con_Io.Initialise;
@@ -227,6 +227,6 @@ begin
     delay 1.0;
   end loop;
   Logger.Log_Debug ("Waiting for termination");
-  Basic_Proc.Put_Line_Output ("Main Terminated");
+  Protected_Put.Put_Line_Output ("Main Terminated");
 end T_Con;
 

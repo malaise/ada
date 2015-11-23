@@ -1,10 +1,9 @@
-with Mutex_Manager, Schedule, Rnd, Normal, Argument, Basic_Proc;
+with Mutex_Manager, Schedule, Rnd, Normal, Argument, Basic_Proc, Protected_Put;
 
 procedure T_Read_Write is
   pragma Priority(10);
 
   Lock : access Mutex_Manager.Mutex;
-  Io_Lock : Mutex_Manager.Simple_Mutex;
 
   subtype Range_Task is Positive range 1 .. 10;
 
@@ -16,9 +15,7 @@ procedure T_Read_Write is
 
   procedure Put_Line (Index : in Range_Task; Msg : in String) is
   begin
-    Io_Lock.Get;
-    Basic_Proc.Put_Line_Output (Normal (Index, 3) & " " & Msg);
-    Io_Lock.Release;
+    Protected_Put.Put_Line_Output (Normal (Index, 3) & " " & Msg);
   end Put_Line;
 
   function Image (D : Duration) return String is
