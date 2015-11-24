@@ -818,12 +818,12 @@ package body Af_Ptg is
         if not Af_Dscr.Has_List then
           -- No list in this Dscr
           null;
-        elsif Line_List.Is_Empty then
-          -- Empty list
-          Af_List.Display(1);
         elsif not Af_Dscr.Fields(Lfn).Activated then
           -- List not active
           Erase_Field (Lfn);
+        elsif Line_List.Is_Empty then
+          -- Empty list
+          Af_List.Display(1);
         else
           -- List is present (exists, active and not empty)
           if Af_List.Get_Status.Id_Top = 0 then
