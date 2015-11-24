@@ -98,7 +98,12 @@ package Unbounded_Arrays is
   function "=" (Left  : Element_Array;
                 Right : Unbounded_Array) return Boolean;
 
-  -- Locate a fragment
+  -- Locate a Element or afragment
+  function Locate (Within     : Unbounded_Array;
+                   Element    : Element_Type;
+                   From_Index : Natural := 0;
+                   Forward    : Boolean := True;
+                   Occurence  : Positive := 1) return Natural;
   function Locate (Within     : Unbounded_Array;
                    Fragment   : Element_Array;
                    From_Index : Natural := 0;

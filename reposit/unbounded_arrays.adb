@@ -311,6 +311,16 @@ package body Unbounded_Arrays is
 
   --Locate
   function Locate (Within     : Unbounded_Array;
+                   Element    : Element_Type;
+                   From_Index : Natural := 0;
+                   Forward    : Boolean := True;
+                   Occurence  : Positive := 1) return Natural is
+    Fragment : constant Element_Array(1 .. 1) := (others => Element);
+  begin
+    return Locate (Within, Fragment, From_Index, Forward, Occurence);
+  end Locate;
+
+  function Locate (Within     : Unbounded_Array;
                    Fragment   : Element_Array;
                    From_Index : Natural := 0;
                    Forward    : Boolean := True;
