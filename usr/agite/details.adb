@@ -1,5 +1,6 @@
 with Aski, As.U, Afpx.Utils, Directory;
-with Utils.X, Git_If, View, History, Config, Afpx_Xref, Restore;
+with Utils.X, Git_If, View, History, Config, Afpx_Xref, Restore,
+     Confirm_Diff_Dir;
 package body Details is
 
   -- The current list of Commit entires
@@ -108,6 +109,7 @@ package body Details is
     procedure Show (What : in Show_List) is
       Pos : constant Positive := Afpx.Line_List.Get_Position;
       Commit : Git_If.Commit_Entry_Rec;
+      Result : Boolean;
     begin
       Commits.Move_At (Pos);
       Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
@@ -130,7 +132,15 @@ package body Details is
             -- Re init sreen
             Init (False);
           when Show_Diff =>
-            -- Call delta between previous of this file and this commit
+            if Commit.File.Image = "/" then
+              -- Diff on '/': Confirm several Diff
+              Result := Confirm_Diff_Dir (Path, File);
+              Init (False);
+              if not Result then
+                return;
+              end if;
+            end if;
+            -- Call delta of this commit: all files or one
             Git_If.Launch_Delta (Config.Differator, Root & Path & File,
                              Hash & "^", Hash);
         end case;

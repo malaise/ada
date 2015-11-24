@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V27.20
+V27.21
 
 General purpose
 ---------------
@@ -962,8 +962,8 @@ you can right-select any entry and de-select it with a second right click on it.
 above the list shows the index of this entry from the Head.
 ** Click on the 'Diff' button. This starts the xref:XConfDiff[differator]
 with the version before the selection as reference and the selection
-as the target of the difference. If the history is about a directory several
-differators may be started.
+as the target of the difference. If the history is about a directory, then
+several differators may be started.
 
 anchor:XDetailBut[]
 
@@ -1103,19 +1103,19 @@ For all the file entries of the list (not "/"):
 
 * double clicking on the entry or select the entry and click on 'View' allows 
 viewing the file as it was committed,
-* clicking on the button 'Hist' shows the full history of the file,
 * clicking on the button 'Diff' shows the differences between the version
 before and in the commit,
+* clicking on the button 'Hist' shows the full history of the file,
 * clicking on the button 'Restore' restores the file from the commit.
 As in the xref:XRestore[restore] from the 'history', there is first a check
 that the file is not locally modified, then a confirmation.
 
 When the "/" entry is selected:
 
-* clicking on the button 'History' shows the full history of the
-repository,
-* clicking on the button 'Diff' launches the differator on each file of
-the commit (differences brought by the commit),
+* clicking on the button 'Diff' launches a differator on each file of
+the commit (differences brought by the commit), so several differators may be
+started,
+* clicking on the button 'Hist' shows the full history of the repository,
 * clicking on the button 'Restore' restores all the files of the commit,
 if none of them is locally modified, and after a confirmation.
 

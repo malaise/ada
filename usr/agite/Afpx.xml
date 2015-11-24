@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V27.20"/>
+  <Var Name="Version" Value="V27.21"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -715,17 +715,17 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">View</Init>
     </Field>
-    <Field Num="19" Kind="Button" Name="History">
+    <Field Num="19" Kind="Button" Name="Diff">
       <Geometry Up="${Field_18.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">Hist</Init>
+      <Init Row="0" Col="2">Diff</Init>
     </Field>
-    <Field Num="20" Kind="Button" Name="Diff">
+    <Field Num="20" Kind="Button" Name="History">
       <Geometry Up="${Field_19.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">Diff</Init>
+      <Init Row="0" Col="2">Hist</Init>
     </Field>
     <Field Num="21" Kind="Button" Name="Restore">
       <Geometry Up="${Field_20.Low}+2" Left="${LmLeft}" Height="1"
