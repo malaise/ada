@@ -22,13 +22,13 @@ procedure Agite is
        " <previous>   ::= " & Argument_Parser.Image (Keys(3)));
   end Usage;
 
-  procedure Error (Msg : in String) is
+  procedure Basic_Error (Msg : in String) is
   begin
     Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
     Usage;
     Basic_Proc.Set_Error_Exit_Code;
     raise Utils.Exit_Requested;
-  end Error;
+  end Basic_Error;
 
   -- Name of AFPX_DATA_DIR env variable
   Afpx_Data_Dir : constant String := "AFPX_DATA_DIR";
@@ -852,7 +852,7 @@ begin
   -- Check/Parse arguments
   Arg_Dscr := Argument_Parser.Parse (Keys);
   if not Arg_Dscr.Is_Ok then
-    Error (Arg_Dscr.Get_Error);
+    Basic_Error (Arg_Dscr.Get_Error);
   end if;
 
   if Arg_Dscr.Is_Set (1) then
@@ -869,7 +869,7 @@ begin
     Version := Git_If.Get_Version;
   exception
     when Git_If.No_Git =>
-      Error ("Can't find Git");
+      Basic_Error ("Can't find Git");
       raise;
   end;
   if Version.Major < Ref_Version.Major then
@@ -902,7 +902,7 @@ begin
   begin
     if Arg_Dscr.Is_Set (Argument_Parser.No_Key_Index) then
       if Goto_Previous then
-        Error ("""Previous"" option and path are mutually exclusive");
+        Basic_Error ("""Previous"" option and path are mutually exclusive");
       end if;
       -- Go to path
       Target_Dir := As.U.Tus (Arg_Dscr.Get_Option (

@@ -495,7 +495,7 @@ package body Commit is
     begin
       Decode_Comment;
       if Comment.Is_Null then
-        Error ("Commit", "", "Empty comment");
+        Error ("Commit", "Empty comment", "");
         return;
       end if;
       -- Git_If.Commit
@@ -504,7 +504,7 @@ package body Commit is
         return;
       end if;
       -- Show error
-      Error ("Commit", "", Result.Image);
+      Error ("Commit", Result.Image, "");
     end Do_Commit;
 
     use type Afpx.Field_Range;

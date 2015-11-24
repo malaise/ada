@@ -380,7 +380,7 @@ package body Branch is
 
     -- Handle error
     if not Result.Is_Null then
-      Error (Message.Image, "", Result.Image);
+      Error (Message.Image, Result.Image, "");
       Init;
       Reread (False);
       -- Rebase always True, else False
@@ -553,7 +553,7 @@ package body Branch is
     if Msg.Is_Null then
       return True;
     end if;
-    Error ("Rebase from " & Rev, "", Msg.Image);
+    Error ("Rebase from " & Rev, Msg.Image, "");
     return False;
   end Reorg;
 

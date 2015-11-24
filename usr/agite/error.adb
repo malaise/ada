@@ -42,9 +42,22 @@ begin
       Afpx.Line_List.Insert (Af_Line);
     end loop;
   end loop;
-  Word_Iter.Del;
+
+  -- Cleanup
+  if Word_Iter.Is_Set then
+    Word_Iter.Del;
+  end if;
   Line_Iter.Del;
   Afpx.Line_List.Rewind (Check_Empty => False);
+
+  -- De-activate list and navigation if empty list
+  if Afpx.Line_List.Is_Empty then
+    Afpx.Set_Field_Activation (Afpx.List_Field_No, False);
+    for I in  Utils.X.List_Scroll_Fld_Range'First ..
+              Utils.X.List_Scroll_Fld_Range'Last loop
+      Afpx.Set_Field_Activation (I, False);
+    end loop;
+  end if;
 
   -- Main loop
   loop
