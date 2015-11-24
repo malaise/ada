@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V10.5";
+  Version : constant String := "V11.0";
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -15,15 +15,17 @@ procedure Lsadeps is
    06 => (False, 't', As.U.Tus ("tree"),    False),
    07 => (False, 'd', As.U.Tus ("direct"),  False),
    08 => (False, 'f', As.U.Tus ("files"),   False),
-   09 => (True,  'I', As.U.Tus ("include"),   True, True, As.U.Tus ("dir")),
-   10 => (True,  'R', As.U.Tus ("recursive"), True, True, As.U.Tus ("dir")),
-   11 => (False, 'l', As.U.Tus ("list"),  False),
-   12 => (False, 'a', As.U.Tus ("all"),  False),
-   13 => (False, 'C', As.U.Tus ("children"),  False),
-   14 => (False, 'b', As.U.Tus ("bodies"),  False));
+   09 => (True,  'I', As.U.Tus ("include"),   True, True, As.U.Tus ("dir_path")),
+   10 => (True,  'R', As.U.Tus ("recursive"), True, True, As.U.Tus ("dir_path")),
+   11 => (True,  'E', As.U.Tus ("exclude"),   True, True, As.U.Tus ("dir_name")),
+   12 => (False, 'l', As.U.Tus ("list"),  False),
+   13 => (False, 'a', As.U.Tus ("all"),  False),
+   14 => (False, 'C', As.U.Tus ("children"),  False),
+   15 => (False, 'b', As.U.Tus ("bodies"),  False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   Include_Index : constant Argument_Parser.The_Keys_Range := 9;
   Recursive_Index : constant Argument_Parser.The_Keys_Range := 10;
+  Exclude_Index : constant Argument_Parser.The_Keys_Range := 11;
 
   -- Usage and Error
   procedure Usage is
@@ -42,9 +44,7 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <options>     ::=  [ <specs> | <revert> ] [ <tree> | <direct> ] [ <bodies> ]");
     Basic_Proc.Put_Line_Error (
-     "                    [ <files> ]");
-    Basic_Proc.Put_Line_Error (
-     "                    [ <include> ]");
+     "                    [ <files> ] [ <inclusions> ]");
     Basic_Proc.Put_Line_Error (
      " <specs>       ::= " & Argument_Parser.Image (Keys(4)));
     Basic_Proc.Put_Line_Error (
@@ -56,22 +56,24 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <files>       ::= " & Argument_Parser.Image (Keys(8)));
     Basic_Proc.Put_Line_Error (
-     " <bodies>      ::= " & Argument_Parser.Image (Keys(14)));
+     " <bodies>      ::= " & Argument_Parser.Image (Keys(15)));
     Basic_Proc.Put_Line_Error (
-     " <include>     ::= { <dir> | <recursive> }");
+     " <inclusions>  ::= { <include> | <recursive> | <exclude> }");
     Basic_Proc.Put_Line_Error (
-     " <dir>         ::= " & Argument_Parser.Image (Keys(9)));
+     " <include>     ::= " & Argument_Parser.Image (Keys(9)));
     Basic_Proc.Put_Line_Error (
      " <recursive>   ::= " & Argument_Parser.Image (Keys(10)));
     Basic_Proc.Put_Line_Error (
+     " <exclude>     ::= " & Argument_Parser.Image (Keys(11)));
+    Basic_Proc.Put_Line_Error (
      " <list>        ::= [ <files> ] [ <all> ] [ <children> ] "
-                           & Argument_Parser.Image (Keys(11)));
+                           & Argument_Parser.Image (Keys(12)));
     Basic_Proc.Put_Line_Error (
      "                   [ <path_unit> ]");
     Basic_Proc.Put_Line_Error (
-     " <all>         ::= " & Argument_Parser.Image (Keys(12)));
+     " <all>         ::= " & Argument_Parser.Image (Keys(13)));
     Basic_Proc.Put_Line_Error (
-     " <children>    ::= " & Argument_Parser.Image (Keys(13)));
+     " <children>    ::= " & Argument_Parser.Image (Keys(14)));
     Basic_Proc.Put_Line_Error (
      " <check>       ::= " & Argument_Parser.Image (Keys(3)) & " [ <target_dir> ]");
     Basic_Proc.Put_Line_Error (
@@ -97,9 +99,11 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <file> to show the file names (instead of unit names),");
     Basic_Proc.Put_Line_Error (
-     " <include> to add some directories or some directory trees to the search path");
+     " <inclusions> to add some directories or some directory trees to the search");
     Basic_Proc.Put_Line_Error (
-     "    (default is current and target directories),");
+     "    path (default is current and target directories), or to exclude some");
+    Basic_Proc.Put_Line_Error (
+     "    directory names from directory trees,");
     Basic_Proc.Put_Line_Error (
      "List function lists units of a dir (default: current dir), or of a unit,");
     Basic_Proc.Put_Line_Error (
@@ -221,13 +225,13 @@ begin
   if Arg_Dscr.Is_Set (8) then
     Files_Mode := True;
   end if;
-  if Arg_Dscr.Is_Set (12) then
+  if Arg_Dscr.Is_Set (13) then
     All_Mode := True;
   end if;
-  if Arg_Dscr.Is_Set (13) then
+  if Arg_Dscr.Is_Set (14) then
     Children_Mode := True;
   end if;
-  if Arg_Dscr.Is_Set (14) then
+  if Arg_Dscr.Is_Set (15) then
     Bodies_Mode := True;
   end if;
   if Bodies_Mode and then not Revert_Mode then
@@ -250,7 +254,7 @@ begin
   end if;
 
   -- List mode
-  if Arg_Dscr.Is_Set (11) then
+  if Arg_Dscr.Is_Set (12) then
     -- No option except File and all
     if Specs_Mode or else Revert_Mode or else Tree_Mode
     or else Direct_Mode then

@@ -1,6 +1,6 @@
 lsadeps
 =======
-V10.5
+V11.0
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -19,16 +19,17 @@ Usage: lsadeps <version> | <help> | <depend> | <list> | <check>
  <help>        ::= -h | --help
  <depend>      ::= <options> <target_unit> [ <path_unit> ]
  <target_unit> ::=  [<path>/]<unit>
- <options>     ::=  [ <specs> | <revert> ] [ <tree> | <direct> ] [ <files> ] [ <bodies> ] [ <include> ]
+ <options>     ::=  [ <specs> | <revert> ] [ <tree> | <direct> ] [ <files> ] [ <bodies> ] [ <inclusions> ]
  <specs>       ::= -s | --specs
  <revert>      ::= -r | --revert
  <tree>        ::= -t | --tree
  <direct>      ::= -d | --direct
  <files>       ::= -f | --files
  <bodies>      ::= -b | --bodies
- <include>     ::= { <dir> | <recursive> }
- <dir>         ::= -I <dir> | --include=<dir>
- <recursive>   ::= -R <dir> | --recursive=<dir>
+ <inclusions   ::= { <include> | <recursive> | <exclude> }
+ <dir>         ::= -I <dir> | --include=<dir_path>
+ <recursive>   ::= -R <dir> | --recursive=<dir_path>
+ <exclude>     ::= -E <dir> | --exclude=<dir_name>
  <list>        ::= -l | --list  [ <file> ] [ <all> ] [ <children> [ <path_unit> ]
  <all>         ::= -a | --all
  <children>    ::= -C | --children
@@ -62,9 +63,22 @@ Other options are:
  - 'bodies' to show, in revert mode, the units that depend from each other by
    "with" in the body,
 
- - 'include' to add some directories or some directory trees to the search path.
-   By default there is only the current directory and the directory of the
-   target unit (or the target directory itself) if any.
+ - 'inclusions' to add some directories or some directory trees to the search
+path. +
+By default, the files are searched only in the current directory and in the
+directory of the target unit (or in the target directory itself) if any.
+These options are:
+  * 'include': adds an individual directory to the search path,
+  * 'recursive': adds a directory and each of its subdirectories to the search
+path,
+  * 'exclude': adds a directory name in the list of exclusion: Any directory in
+a 'recursive' search (including the root path provided as argument) that has
+its name defined in the exclusion list is skipped, and its subdirectories as
+well. +
+Individual 'include' paths are not checked for exclusion. 
+
+NOTE: 'include' and 'recursive' must specify directory paths (absolute or
+relative), while 'exclude' must specify simple directory names (no \'/').
 
 'Specs' and 'revert' modes are mutually exclusive. +
 'Tree' and 'direct' modes are mutually exclusive. +
