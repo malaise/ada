@@ -27,9 +27,13 @@ procedure Pexec is
   end Restore;
 
   -- What to do in each dir
-  function Execute (Dummy_Path : String) return Boolean is
+  procedure Execute (Dummy_Path : in String;
+                     Result : out Boolean;
+                     Go_On : out Boolean) is
     Exec_Return : Integer;
   begin
+    Result := False;
+    Go_On := True;
     for I in 1 .. Cmd.Nbre_Commands loop
       if not No_Action then
         Basic_Proc.Put_Line_Output ("--> " & Cmd.Nth_Command (I));
@@ -40,11 +44,13 @@ procedure Pexec is
       if Exec_Return /= 0 then
         Basic_Proc.Put_Line_Error ("Error executing command "
                       & Cmd.Nth_Command (I));
-        return False;
+        -- Result is False
+        return;
       end if;
 
     end loop;
-    return True;
+    Result := True;
+    return;
   end Execute;
 
 begin

@@ -1,5 +1,7 @@
 with As.U, Basic_Proc, Directory, Dir_Mng;
-procedure Recurs (Do_In_Dir : access function (Path : String) return Boolean;
+procedure Recurs (Do_In_Dir : access procedure (Path   : in String;
+                                                Result : out Boolean;
+                                                Go_On  : out Boolean);
                   Name_Of_Dir : in Boolean := True;
                   In_Current : in Boolean := True;
                   First_Level_Only : in Boolean := False;
@@ -20,7 +22,8 @@ procedure Recurs (Do_In_Dir : access function (Path : String) return Boolean;
     Nb_Sons : Natural;
     use Directory;
 
-    procedure Do_Here is
+    function Do_Here return Boolean is
+      Result, Go_On : Boolean;
     begin
       -- Display current drive and directory
       if Name_Of_Dir then
@@ -30,10 +33,12 @@ procedure Recurs (Do_In_Dir : access function (Path : String) return Boolean;
         Basic_Proc.Put_Line_Output (" <==");
       end if;
 
-      if not Do_In_Dir (Full_Curr_Name.Image) and then Stop_On_Error then
+      Do_In_Dir (Full_Curr_Name.Image, Result, Go_On);
+      if not Result and then Stop_On_Error then
         Basic_Proc.Put_Line_Output (" *** Abort ***");
         raise Abort_Explore;
       end if;
+      return Go_On;
     end Do_Here;
 
   begin
@@ -59,8 +64,11 @@ procedure Recurs (Do_In_Dir : access function (Path : String) return Boolean;
     -- Do current dir when not Leaves_Only
     if not Leaves_Only then
       if Current_Level /= 0 or else In_Current then
-        -- Check if do action in intial dir
-        Do_Here;
+        -- Check if do action in initial dir
+        if not Do_Here then
+          -- Do_In_Dir wants to skip sub-dirs
+          return;
+        end if;
       end if;
       -- Optim: Done it if first level only
       if Current_Level = 1 and then First_Level_Only then
@@ -126,7 +134,10 @@ procedure Recurs (Do_In_Dir : access function (Path : String) return Boolean;
     if Nb_Sons = 0 and then Leaves_Only then
       -- Check if do action in current dir
       if Current_Level /= 0 or else In_Current then
-        Do_Here;
+        if not Do_Here then
+          -- Well... we are on a leaf anyway
+          return;
+        end if;
       end if;
     end if;
 
