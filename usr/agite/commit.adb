@@ -494,6 +494,10 @@ package body Commit is
       Result : As.U.Asu_Us;
     begin
       Decode_Comment;
+      if Comment.Is_Null then
+        Error ("Commit", "", "Empty comment");
+        return;
+      end if;
       -- Git_If.Commit
       Result := As.U.Tus (Git_If.Do_Commit (Comment.Image));
       if Result.Is_Null then
