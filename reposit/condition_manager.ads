@@ -52,6 +52,7 @@ private
 
   type Condition_State_List is (Blocked, Signaled, Broadcasted);
 
+  -- The protected condition
   protected type Condition_Protect is
     -- Get/release mutex
     entry Get;
@@ -73,8 +74,8 @@ private
     State : Condition_State_List := Blocked;
   end Condition_Protect;
 
+  -- Access to the protected condition, so that copies share the same state
   type Condition_Access is access Condition_Protect;
-
   type Condition is tagged record
     Condition_Pointer : Condition_Access := new Condition_Protect;
   end record;

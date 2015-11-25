@@ -22,7 +22,7 @@ procedure T_Cond is
     for I in 1 .. Nb_Loops loop
       Protected_Put.Put_Line_Output ("Client " & Me'Img
                           & " getting access");
-      Condition_Manager.Get (Cond);
+      Cond.Get;
 
       if Me = 1 then
         -- First task makes conditional waiting
@@ -30,21 +30,21 @@ procedure T_Cond is
                             & " trying to wait on condition");
         if I = 1 then
           -- This one will fail
-          Res := Condition_Manager.Wait (Cond, 0.1);
+          Res := Cond.Wait (0.1);
         else
           -- These ones will succeed
-          Res := Condition_Manager.Wait (Cond, 10.0);
+          Res := Cond.Wait (10.0);
         end if;
       else
         Protected_Put.Put_Line_Output ("Client " & Me'Img
                             & " waiting on condition");
-        Condition_Manager.Wait (Cond);
+        Cond.Wait;
         Res := True;
       end if;
       if Res then
         Protected_Put.Put_Line_Output ("Client " & Me'Img
                             & " released on condition, releasing access");
-        Condition_Manager.Release (Cond);
+        Cond.Release;
       else
         Protected_Put.Put_Line_Output ("Client " & Me'Img
                            & " giving up");
@@ -69,7 +69,7 @@ begin -- T_Cond
   -- Signal each client plus some of them twice
   for I in 1 .. Nb_Clients + 2 loop
     Protected_Put.Put_Line_Output ("Main signaling on condition");
-    Condition_Manager.Signal (Cond);
+    Cond.Signal;
     delay 0.1;
     Protected_Put.Put_Line_Output ("Main waiting a bit");
     delay 1.0;
@@ -78,7 +78,7 @@ begin -- T_Cond
   -- Broadcast enough times so each client reaches end
   for I in 1 ..Nb_Loops loop
     Protected_Put.Put_Line_Output ("Main broadcasting on condition");
-    Condition_Manager.Broadcast (Cond);
+    Cond.Broadcast;
     delay 0.1;
     Protected_Put.Put_Line_Output ("Main waiting a bit");
     Protected_Put.Put_Line_Output ("Main waiting a bit");
@@ -86,7 +86,7 @@ begin -- T_Cond
   end loop;
 
   Protected_Put.Put_Line_Output ("Main signaling on condition");
-  Condition_Manager.Signal (Cond);
+  Cond.Signal;
   delay 0.1;
   Protected_Put.Put_Line_Output ("Main waiting a bit");
   delay 1.0;
