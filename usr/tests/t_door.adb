@@ -7,9 +7,19 @@ procedure T_Door is
   Nb_Clients : constant := 4;
   Nb_Loops : constant := 3;
   Nb_Waiters : constant := 3;
+  Stopping : Boolean := False;
+  function Stop return Boolean is
+  begin
+    return Stopping;
+  end Stop;
+  procedure Stop is
+  begin
+    Stopping := True;
+  end Stop;
 
   task type Client is
     entry Init (No : in Positive);
+    entry Resume;
   end Client;
 
   task body Client is
@@ -22,35 +32,48 @@ procedure T_Door is
     end Init;
     for I in 1 .. Nb_Loops loop
       Protected_Put.Put_Line_Output ("Client " & Me'Img
-                          & " getting access to door");
-      Door_Manager.Get (Door);
+                                   & " getting access to door");
+      Door.Get;
 
       if Me = 1 then
         -- First task make conditional waiting
         Protected_Put.Put_Line_Output ("Client " & Me'Img
-                            & " trying to wait on door");
+                                     & " trying to wait on door");
         if I = 1 then
           -- This one will fail
-          Res := Door_Manager.Wait (Door, 0.1);
+          Res := Door.Wait (0.1);
         else
           -- These ones will succeed
-          Res := Door_Manager.Wait (Door, 10.0);
+          Res := Door.Wait (10.0);
         end if;
       else
-        Protected_Put.Put_Line_Output ("Client " & Me'Img
-                            & " waiting on door");
-        Door_Manager.Wait (Door);
+        Protected_Put.Put_Line_Output ("Client " & Me'Img & " waiting on door");
+        Door.Wait;
         Res := True;
       end if;
       if Res then
         Protected_Put.Put_Line_Output ("Client " & Me'Img
-                            & " released on door");
-        Door_Manager.Release (Door);
+                                     & " released on door");
+        Door.Release;
       else
-        Protected_Put.Put_Line_Output ("Client " & Me'Img
-                           & " giving up");
+        Protected_Put.Put_Line_Output ("Client " & Me'Img & " giving up");
       end if;
       delay 1.0;
+    end loop;
+
+    Protected_Put.Put_Line_Output ("Client " & Me'Img & " suspended");
+    accept Resume;
+    Protected_Put.Put_Line_Output ("Client " & Me'Img & " resumed");
+
+    -- Now loop waiting on the door until stopped
+    loop
+      Protected_Put.Put_Line_Output ("Client " & Me'Img & " waiting");
+      Door.Get;
+      Door.Wait;
+      Door.Release;
+      Protected_Put.Put_Line_Output ("Client " & Me'Img & " released");
+      delay 0.5;
+      exit when Stop;
     end loop;
     Protected_Put.Put_Line_Output ("Client " & Me'Img & " terminating");
   end Client;
@@ -59,9 +82,9 @@ procedure T_Door is
 
 begin -- T_Cond
   -- Set door capacity
-  Door_Manager.Get (Door);
-  Door_Manager.Set_Nb_Waiters (Door, Nb_Waiters);
-  Door_Manager.Release (Door);
+  Door.Get;
+  Door.Set_Nb_Waiters (Nb_Waiters);
+  Door.Release;
 
   -- Init the clients
   Protected_Put.Put_Line_Output ("Main initializing clients");
@@ -71,15 +94,43 @@ begin -- T_Cond
   end loop;
   delay 0.5;
   Protected_Put.Put_Line_Output ("Main waiting some time");
-  delay 10.0;
+  delay 5.0;
 
   -- Release all clients
   Protected_Put.Put_Line_Output ("Main opening door");
-  Door_Manager.Get (Door);
-  Door_Manager.Set_Nb_Waiters (Door, 1);
-  Door_Manager.Release (Door);
+  Door.Get;
+  Door.Set_Nb_Waiters (Door_Manager.Open);
+  Door.Release;
+
+  Protected_Put.Put_Line_Output ("Main resuming");
+  for I in 1 .. Nb_Clients loop
+    Clients(I).Resume;
+  end loop;
+
+  -- Lock the door
+  Protected_Put.Put_Line_Output ("Main locking door");
+  Door.Get;
+  Door.Set_Nb_Waiters (Door_Manager.Closed);
+  Door.Release;
+  delay 1.0;
+
+  -- Check that we can bypass
+  Protected_Put.Put_Line_Output ("Main bypassing door");
+  Door.Get;
+  Door.Wait (Door_Manager.Pass);
+  Door.Release;
+  delay 1.0;
+
+  -- Unlock the door
+  Protected_Put.Put_Line_Output ("Main unlocking door");
+  Door.Get;
+  Door.Set_Nb_Waiters (Door_Manager.Open);
+  Door.Release;
+  delay 5.0;
 
   -- Terminate
+  Protected_Put.Put_Line_Output ("Main stopping");
+  Stop;
   Protected_Put.Put_Line_Output ("Main terminating");
 end T_Door;
 

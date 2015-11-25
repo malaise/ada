@@ -25,7 +25,8 @@ package body Door_Manager is
   -- Open the door if number of waiters is reached
   function Check_Open (A_Door : in Door) return Boolean is
   begin
-    if A_Door.Door_Pointer.Current >= A_Door.Door_Pointer.Expected then
+    if A_Door.Door_Pointer.Expected /= 0
+    and then A_Door.Door_Pointer.Current >= A_Door.Door_Pointer.Expected then
       -- Release all waiters of wait
       Condition_Manager.Broadcast (A_Door.Door_Pointer.Cond);
       A_Door.Door_Pointer.Current := 0;
@@ -52,7 +53,7 @@ package body Door_Manager is
   -- Set/get nb waiters --
   -- Set the expected number of waiters
   procedure Set_Nb_Waiters (A_Door : in Door;
-                            To : in Positive) is
+                            To : in Natural) is
   begin
     Check_Access (A_Door);
     A_Door.Door_Pointer.Expected := To;
@@ -61,7 +62,7 @@ package body Door_Manager is
   end Set_Nb_Waiters;
 
   -- Get the expected number of waiters
-  function Get_Nb_Waiters (A_Door : in Door) return Positive is
+  function Get_Nb_Waiters (A_Door : in Door) return Natural is
   begin
     Check_Access (A_Door);
     return A_Door.Door_Pointer.Expected;
@@ -73,15 +74,17 @@ package body Door_Manager is
                                Val : in Integer) is
   begin
     Check_Access (A_Door);
+    if A_Door.Door_Pointer.Expected + Val < 0 then
+       Release (A_Door);
+       raise Constraint_Error;
+    end if;
     begin
       A_Door.Door_Pointer.Expected :=
-          (if A_Door.Door_Pointer.Expected + Val >= 1 then
-             A_Door.Door_Pointer.Expected + Val
-           else 1);
+          A_Door.Door_Pointer.Expected + Val;
     exception
       -- Overflow
       when Constraint_Error =>
-        A_Door.Door_Pointer.Expected := Positive'Last;
+        A_Door.Door_Pointer.Expected := Natural'Last;
     end;
     -- This may lead to open the door
     Check_Open (A_Door);
@@ -91,10 +94,15 @@ package body Door_Manager is
   -- Wait --
   -- Wait until the required number of waiters is reached
   function Wait (A_Door : Door;
-                 Waiting_Time : Duration) return Boolean is
+                 Waiting_Time : Duration;
+                 Key : Key_Type := Fake) return Boolean is
     Result : Boolean;
   begin
     Check_Access (A_Door);
+    if Key = Pass then
+      -- If Key is Pass, then simply return True (access remains granted)
+      return True;
+    end if;
     -- One more waiter
     A_Door.Door_Pointer.Current := A_Door.Door_Pointer.Current + 1;
     if Check_Open (A_Door) then
@@ -111,10 +119,10 @@ package body Door_Manager is
     end if;
   end Wait;
 
-  procedure Wait (A_Door : in Door) is
+  procedure Wait (A_Door : in Door; Key : in Key_Type := Fake) is
     Dummy : Boolean;
   begin
-    Dummy := Wait (A_Door, -1.0);
+    Dummy := Wait (A_Door, -1.0, Key);
   end Wait;
 
 end Door_Manager;
