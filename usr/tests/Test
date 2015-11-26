@@ -971,6 +971,12 @@ comp out exp
 comp err nul
 echo "OK"
 
+# t_lock
+title t_lock...
+try t_lock
+comp err nul
+echo "OK"
+
 # t_many_strings
 title t_many_strings
 try t_many_strings toto titi tata

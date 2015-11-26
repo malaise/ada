@@ -164,7 +164,8 @@ Tasking tools
 ~~~~~~~~~~~~~
 
 * 'Mutex_Manager' provides simple and read-write mutexes, while 'Door_Manager'
-provides doors and 'Condition_Manager' provides conditions.
+provides doors, 'Lock_Manager' provides locks and 'Condition_Manager' provides
+conditions.
 
 * 'Control_Pool' provides exclusive access to an item in a pool.
 
@@ -419,6 +420,9 @@ key_pressed (1)::
 
 language (2)::
      Support Utf6 - Unicode - wide char conversions.
+
+lock_manager (1)::
+     Allow several tasks to wait until the lock is open.
 
 long_longs (1)::
      Definition of long long integer and associated subtypes.
