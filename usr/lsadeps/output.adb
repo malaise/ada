@@ -75,11 +75,6 @@ package body Output is
     -- Get current item
     Tree_Mng.Tree.Read (Dscr);
 
-    -- Discard Looping info
-    if Dscr.Looping then
-      return;
-    end if;
-
     -- Update level
     if Revert
     or else Dscr.Dscr.Kind = Sourcer.Unit_Spec
@@ -113,6 +108,11 @@ package body Output is
       end if;
     end if;
 
+    -- No recursion if looping
+    if Dscr.Looping then
+      return;
+    end if;
+
     -- Iterate on children
     Nb_Children := Tree_Mng.Tree.Children_Number;
     for I in 1 .. Nb_Children loop
@@ -141,10 +141,6 @@ package body Output is
     Str : As.U.Asu_Us;
     use type Sourcer.Src_Kind_List;
   begin
-    -- Discard Looping info
-    if Dscr.Looping then
-      return True;
-    end if;
     for I in 1 .. Level loop
       Str.Append (Tab);
     end loop;

@@ -281,7 +281,7 @@ package body Tree_Mng is
     -- Insert ourself
     if Tree.Is_Empty then
       -- First node
-      Tree.Insert_Father ((Origin, False));
+      Tree.Insert_Father ((Origin, Looping => False));
       Rope.Insert (Origin);
     else
       if Tree_Kind = Optimized then
@@ -300,12 +300,12 @@ package body Tree_Mng is
       Rope.Search (Origin, Found);
       if Found then
         -- Current Origin already exists => Looping
-        Tree.Insert_Child ((Origin, True));
+        Tree.Insert_Child ((Origin, Looping => True));
         Tree.Move_Father;
         return;
       else
         -- Normal insertion of a new node
-        Tree.Insert_Child ((Origin, False));
+        Tree.Insert_Child ((Origin, Looping => False));
         Rope.Insert (Origin);
       end if;
       -- Done if not root and only first level requested
@@ -345,12 +345,12 @@ package body Tree_Mng is
       Build_Node (Child, Specs_Mode, Revert_Mode, Bodies_Mode);
     end if;
 
-    -- From now, spec => body => subunits... except in normal (not revert)
-    --  if specs only
+    -- Insert body of spec
     if Revert_Mode or else not Specs_Mode then
-      -- A spec: Insert body
       Kind := As.U.Tus ("body");
-      if not Origin.Standalone then
+      -- A spec with body: Insert body
+      if Origin.Kind = Sourcer.Unit_Spec
+      and then not Origin.Standalone then
         Child.Unit := Origin.Unit;
         Child.Kind := Sourcer.Unit_Body;
         Child.Path := Origin.Path;
