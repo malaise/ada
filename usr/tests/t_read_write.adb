@@ -1,9 +1,9 @@
-with Mutex_Manager, Schedule, Rnd, Normal, Argument, Basic_Proc, Protected_Put;
+with Mutexes, Schedule, Rnd, Normal, Argument, Basic_Proc, Protected_Put;
 
 procedure T_Read_Write is
   pragma Priority(10);
 
-  Lock : access Mutex_Manager.Mutex;
+  Lock : access Mutexes.Mutex;
 
   subtype Range_Task is Positive range 1 .. 10;
 
@@ -27,11 +27,11 @@ procedure T_Read_Write is
   task body T is
     Index : Range_Task;
     Dur : Duration;
-    Kind : Mutex_Manager.Access_Kind;
+    Kind : Mutexes.Access_Kind;
     subtype Str5 is String (1 .. 5);
-    Kind_Strs : constant array (Mutex_Manager.Access_Kind) of Str5 := (
-      Mutex_Manager.Read  => " Read",
-      Mutex_Manager.Write => "Write");
+    Kind_Strs : constant array (Mutexes.Access_Kind) of Str5 := (
+      Mutexes.Read  => " Read",
+      Mutexes.Write => "Write");
     Res : Boolean;
   begin
     -- Get name
@@ -45,9 +45,9 @@ procedure T_Read_Write is
       Dur := Duration (Rnd.Gen.Int_Random (-1, 5)) / 10.0;
       -- 10% chances to write
       if Rnd.Gen.Int_Random (0, 9) = 0 then
-        Kind := Mutex_Manager.Write;
+        Kind := Mutexes.Write;
       else
-        Kind := Mutex_Manager.Read;
+        Kind := Mutexes.Read;
       end if;
       -- Get lock
       Put_Line (Index, "get " & Kind_Strs(Kind) & " " & Image(Dur));
@@ -93,9 +93,9 @@ begin
   end if;
   if Argument.Get_Nbre_Arg = 0
   or else Argument.Get_Parameter = "rw" then
-    Lock := new Mutex_Manager.Mutex (Mutex_Manager.Read_Write, False);
+    Lock := new Mutexes.Mutex (Mutexes.Read_Write, False);
   elsif Argument.Get_Parameter = "wr" then
-    Lock := new Mutex_Manager.Mutex (Mutex_Manager.Write_Read, False);
+    Lock := new Mutexes.Mutex (Mutexes.Write_Read, False);
   else
     Error ("unexpected argument " & Argument.Get_Parameter);
     return;

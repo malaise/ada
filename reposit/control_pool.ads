@@ -1,5 +1,5 @@
 -- Exclusive access to data in a pool
-with Mutex_Manager, Long_Long_Limited_List, Long_Long_Limited_Pool;
+with Mutexes, Long_Long_Limited_List, Long_Long_Limited_Pool;
 generic
   type Key_Type is private;
 package Control_Pool is
@@ -28,7 +28,7 @@ private
   -- Pool of used mutexes
   -----------------------
   -- The item in the pool
-  type Mutex_Access is access Mutex_Manager.Mutex;
+  type Mutex_Access is access Mutexes.Mutex;
   type Cell_Type is record
     Data_Mutex : Mutex_Access;
     Waiters : Positive;
@@ -47,7 +47,7 @@ private
 
   -- A controlled pool
   type Controlled_Pool_Type is tagged limited record
-    Global_Mutex : Mutex_Manager.Simple_Mutex;
+    Global_Mutex : Mutexes.Simple_Mutex;
     Used_Mutexes : Used_Mutex_List.List_Type;
     Free_Mutexes : Free_Mutex_Pool.Pool_Type;
   end record;

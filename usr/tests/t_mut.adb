@@ -1,5 +1,4 @@
-with Basic_Proc, Mutex_Manager, Schedule, Argument, Upper_Char, Sys_Calls,
-     Normal;
+with Basic_Proc, Mutexes, Schedule, Argument, Upper_Char, Sys_Calls, Normal;
 
 procedure T_Mut is
   pragma Priority(10);
@@ -19,9 +18,9 @@ procedure T_Mut is
     end case;
   end Get_Immediate;
 
-  procedure Exec (Mut_Kind : Mutex_Manager.Mutex_Kind;
+  procedure Exec (Mut_Kind : Mutexes.Mutex_Kind;
                   Max_Task : in Positive) is
-    Crit_Lock : Mutex_Manager.Mutex (Mut_Kind, False);
+    Crit_Lock : Mutexes.Mutex (Mut_Kind, False);
 
     subtype Range_Task is Positive range 1 .. Max_Task;
 
@@ -42,12 +41,12 @@ procedure T_Mut is
     package body Input is
       In_Get : Boolean := False;
       Current_I : Range_Task;
-      Put_Lock, Get_Lock, Prompt_Lock : Mutex_Manager.Simple_Mutex;
+      Put_Lock, Get_Lock, Prompt_Lock : Mutexes.Simple_Mutex;
 
       Tab : constant String (1..4) := (others => ' ');
 
       procedure Prompt (I : in Range_Task; Set : in Boolean) is
-        use type Mutex_Manager.Mutex_Kind;
+        use type Mutexes.Mutex_Kind;
       begin
         Prompt_Lock.Get;
         if Set then
@@ -58,7 +57,7 @@ procedure T_Mut is
         if Stdin_Is_A_Tty then
           Basic_Proc.Put_Output ("Task: ");
           Basic_Proc.Put_Output (Normal (Current_I, 3));
-          if Mut_Kind /= Mutex_Manager.Simple then
+          if Mut_Kind /= Mutexes.Simple then
             Basic_Proc.Put_Output (" : Read, Write, Terminate");
             Basic_Proc.Put_Output (" : Bloqued, Immediate, Wait (3s) ? ");
           else
@@ -75,7 +74,7 @@ procedure T_Mut is
         S : String (1 .. 256);
         L : Natural;
         Dummy : Boolean;
-        use type Mutex_Manager.Mutex_Kind;
+        use type Mutexes.Mutex_Kind;
       begin
         Get_Lock.Get;
         if Stdin_Is_A_Tty then
@@ -95,7 +94,7 @@ procedure T_Mut is
         loop
           Prompt (I, True);
           Basic_Proc.Get_Line (S, L);
-          if Mut_Kind /= Mutex_Manager.Simple then
+          if Mut_Kind /= Mutexes.Simple then
             if L = 1 then
               K := Upper_Char (S(1));
               if K = 'T' then
@@ -140,7 +139,7 @@ procedure T_Mut is
     -- get mutex then release and return True otherwise
     function Critical (Num : in Range_Task) return Boolean is
       K, A : Character;
-      Action : Mutex_Manager.Access_Kind;
+      Action : Mutexes.Access_Kind;
       Waiting : Duration;
       B : Boolean;
     begin
@@ -148,9 +147,9 @@ procedure T_Mut is
       Input.Get (Num, K, A);
 
       if Upper_Char (K) = 'R' then
-        Action := Mutex_Manager.Read;
+        Action := Mutexes.Read;
       elsif Upper_Char (K) = 'W' then
-        Action := Mutex_Manager.Write;
+        Action := Mutexes.Write;
       else
         return True;
       end if;
@@ -228,8 +227,8 @@ procedure T_Mut is
   -- Local to main
   N_Args : Natural;
   N_Tasks : Positive;
-  M_Kind : Mutex_Manager.Mutex_Kind;
-  use type Mutex_Manager.Mutex_Kind, Sys_Calls.File_Desc_Kind_List;
+  M_Kind : Mutexes.Mutex_Kind;
+  use type Mutexes.Mutex_Kind, Sys_Calls.File_Desc_Kind_List;
 
 begin -- T_Mut
   N_Args := Argument.Get_Nbre_Arg;
@@ -238,11 +237,11 @@ begin -- T_Mut
     Error ("Argument <mutex_kind> expected.");
     return;
   elsif Argument.Get_Parameter (1) = "s" then
-    M_Kind := Mutex_Manager.Simple;
+    M_Kind := Mutexes.Simple;
   elsif Argument.Get_Parameter (1) = "rw" then
-    M_Kind := Mutex_Manager.Read_Write;
+    M_Kind := Mutexes.Read_Write;
   elsif Argument.Get_Parameter (1) = "wr" then
-    M_Kind := Mutex_Manager.Write_Read;
+    M_Kind := Mutexes.Write_Read;
   else
     Error ("Invalid argument " & Argument.Get_Parameter (Occurence => 1));
     return;
@@ -252,7 +251,7 @@ begin -- T_Mut
 
   if N_Args = 1 then
     -- Default Nb of tasks
-    if M_Kind = Mutex_Manager.Simple then
+    if M_Kind = Mutexes.Simple then
       -- 2 tasks on simple mutex
       Exec(M_Kind, 2);
     else

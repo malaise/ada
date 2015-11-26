@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Trace, Images, Mutex_Manager;
+with Trace, Images, Mutexes;
 package body Timers is
 
   -- Debugging
@@ -7,7 +7,7 @@ package body Timers is
 
   -- The mutex that protect the whole
   -- Must be recursive because timer Cb can call Timers
-  Mutex : Mutex_Manager.Mutex (Mutex_Manager.Simple, Recursive => True);
+  Mutex : Mutexes.Mutex (Mutexes.Simple, Recursive => True);
   procedure Get_Mutex is
   begin
     Mutex.Get;

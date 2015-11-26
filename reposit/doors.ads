@@ -1,5 +1,5 @@
-with Condition_Manager;
-package Door_Manager is
+with Conditions;
+package Doors is
 
   -- A door is a waiting point on which one or several tasks may
   --  wait until the required number of waiters is reached.
@@ -14,7 +14,7 @@ package Door_Manager is
   -- If delay is null, try and give up if not free
   -- If delay is positive, try during the specified delay
   -- Raises Already_Got if current task already owns the access
-  Already_Got : exception renames Condition_Manager.Already_Got;
+  Already_Got : exception renames Conditions.Already_Got;
   function Get (A_Door : Door;
                 Waiting_Time : Duration) return Boolean;
   -- Get access to the door : infinite wait
@@ -22,7 +22,7 @@ package Door_Manager is
 
   -- Release access to the door
   -- Raises Not_Owner if current task does not own the access
-  Not_Owner : exception renames Condition_Manager.Not_Owner;
+  Not_Owner : exception renames Conditions.Not_Owner;
   procedure Release (A_Door : in Door);
 
 
@@ -76,7 +76,7 @@ private
     -- The current number of waiters
     Current : Natural := 0;
     -- The condition on which waiters are waiting
-    Cond : Condition_Manager.Condition;
+    Cond : Conditions.Condition;
   end record;
 
   -- Access to the Rec, so that copies share the same status and condition
@@ -85,5 +85,5 @@ private
     Door_Pointer : Door_Access := new Door_Rec;
   end record;
 
-end Door_Manager;
+end Doors;
 

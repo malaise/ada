@@ -1,23 +1,23 @@
-package body Door_Manager is
+package body Doors is
 
   -- Access to condition --
   -- Get access to the condition
   function Get (A_Door : Door;
                 Waiting_Time : Duration) return Boolean is
   begin
-    return Condition_Manager.Get (A_Door.Door_Pointer.Cond, Waiting_Time);
+    return A_Door.Door_Pointer.Cond.Get (Waiting_Time);
   end Get;
 
   -- Get access to the condition : infinite wait
   procedure Get (A_Door : in Door) is
   begin
-    Condition_Manager.Get (A_Door.Door_Pointer.Cond);
+    A_Door.Door_Pointer.Cond.Get;
   end Get;
 
   -- Release access to the condition
   procedure Release (A_Door : in Door) is
   begin
-    Condition_Manager.Release (A_Door.Door_Pointer.Cond);
+    A_Door.Door_Pointer.Cond.Release;
   end Release;
 
 
@@ -28,7 +28,7 @@ package body Door_Manager is
     if A_Door.Door_Pointer.Expected /= 0
     and then A_Door.Door_Pointer.Current >= A_Door.Door_Pointer.Expected then
       -- Release all waiters of wait
-      Condition_Manager.Broadcast (A_Door.Door_Pointer.Cond);
+      A_Door.Door_Pointer.Cond.Broadcast;
       A_Door.Door_Pointer.Current := 0;
       return True;
     else
@@ -44,7 +44,7 @@ package body Door_Manager is
   -- Check that current tasks has access
   procedure Check_Access (A_Door : in Door) is
   begin
-    if not Condition_Manager.Is_Owner (A_Door.Door_Pointer.Cond) then
+    if not A_Door.Door_Pointer.Cond.Is_Owner then
       raise Not_Owner;
     end if;
   end Check_Access;
@@ -110,7 +110,7 @@ package body Door_Manager is
       return True;
     else
       -- Wait
-      Result := Condition_Manager.Wait (A_Door.Door_Pointer.Cond, Waiting_Time);
+      Result := A_Door.Door_Pointer.Cond.Wait (Waiting_Time);
       if not Result then
         -- Giving up: one waiter less
         A_Door.Door_Pointer.Current := A_Door.Door_Pointer.Current - 1;
@@ -125,5 +125,5 @@ package body Door_Manager is
     Dummy := Wait (A_Door, -1.0, Key);
   end Wait;
 
-end Door_Manager;
+end Doors;
 

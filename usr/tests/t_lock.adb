@@ -1,8 +1,8 @@
-with Protected_Put, Lock_Manager;
+with Protected_Put, Locks;
 procedure T_Lock is
   pragma Priority(10);
 
-  Lock : Lock_Manager.Lock;
+  Lock : Locks.Lock;
 
   Nb_Clients : constant := 4;
 

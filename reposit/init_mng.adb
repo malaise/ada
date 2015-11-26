@@ -1,15 +1,15 @@
-with Unlimited_Pool, Mutex_Manager;
-package body Init_Manager is
+with Unlimited_Pool, Mutexes;
+package body Init_Mng is
 
   -- The Wr_Mutex is used for general protection
   -- Writers lock is used to accept new event, which ensures that several
   --  new events are accepted even if some events are to be delivered
   -- Readers lock is used to deliver an event to the handler (if there
   --  is not new event to accept)
-  Wr_Mutex : Mutex_Manager.Mutex (Mutex_Manager.Write_Read, False);
+  Wr_Mutex : Mutexes.Mutex (Mutexes.Write_Read, False);
   -- The Read_Mutex is used to protect the pool for event delivery
   --  because the Wr_Mutext allows several simultaneous readers
-  R_Mutex : Mutex_Manager.Simple_Mutex;
+  R_Mutex : Mutexes.Simple_Mutex;
 
   -- The pool of pending events: Fifo
   package Event_Pool_Manager is new Unlimited_Pool (Event_Type, Lifo => False);
@@ -41,7 +41,7 @@ package body Init_Manager is
   begin
     -- Acquire exclusive access if no event waiting to be accepted
     --  and set new handler
-    Wr_Mutex.Get (Mutex_Manager.Read);
+    Wr_Mutex.Get (Mutexes.Read);
     R_Mutex.Get;
     The_Handler := Handler;
     -- Deliver pending events as long as no new event pending
@@ -53,7 +53,7 @@ package body Init_Manager is
       Wr_Mutex.Release;
       Deliver (Event);
       -- Re-acquire exclusive access if no event waiting to be accepted
-      Wr_Mutex.Get (Mutex_Manager.Read);
+      Wr_Mutex.Get (Mutexes.Read);
       R_Mutex.Get;
     end loop;
     -- Final release
@@ -75,7 +75,7 @@ package body Init_Manager is
   procedure New_Event (Event : in Event_Type) is
   begin
     -- Acquire exclusive access with high prio
-    Wr_Mutex.Get (Mutex_Manager.Write);
+    Wr_Mutex.Get (Mutexes.Write);
     if The_Handler /= null and then Event_Pool.Is_Empty then
       -- Handler is set and no pending events => deliver directly
       Wr_Mutex.Release;
@@ -96,5 +96,5 @@ package body Init_Manager is
       raise;
   end New_Event;
 
-end Init_Manager;
+end Init_Mng;
 

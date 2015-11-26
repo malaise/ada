@@ -1,8 +1,8 @@
-with Protected_Put, Door_Manager;
+with Protected_Put, Doors;
 procedure T_Door is
   pragma Priority(10);
 
-  Door : Door_Manager.Door;
+  Door : Doors.Door;
 
   Nb_Clients : constant := 4;
   Nb_Loops : constant := 3;
@@ -99,7 +99,7 @@ begin -- T_Cond
   -- Release all clients
   Protected_Put.Put_Line_Output ("Main opening door");
   Door.Get;
-  Door.Set_Nb_Waiters (Door_Manager.Open);
+  Door.Set_Nb_Waiters (Doors.Open);
   Door.Release;
 
   Protected_Put.Put_Line_Output ("Main resuming");
@@ -110,21 +110,21 @@ begin -- T_Cond
   -- Lock the door
   Protected_Put.Put_Line_Output ("Main locking door");
   Door.Get;
-  Door.Set_Nb_Waiters (Door_Manager.Closed);
+  Door.Set_Nb_Waiters (Doors.Closed);
   Door.Release;
   delay 1.0;
 
   -- Check that we can bypass
   Protected_Put.Put_Line_Output ("Main bypassing door");
   Door.Get;
-  Door.Wait (Door_Manager.Pass);
+  Door.Wait (Doors.Pass);
   Door.Release;
   delay 1.0;
 
   -- Unlock the door
   Protected_Put.Put_Line_Output ("Main unlocking door");
   Door.Get;
-  Door.Set_Nb_Waiters (Door_Manager.Open);
+  Door.Set_Nb_Waiters (Doors.Open);
   Door.Release;
   delay 5.0;
 

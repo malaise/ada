@@ -1,5 +1,5 @@
 -- Pseudo random number generator
-with Mutex_Manager, U_Rand;
+with Mutexes, U_Rand;
 package Rnd is
 
   -- A random generator
@@ -48,7 +48,7 @@ private
 
   type Generator is tagged limited record
     Randomized : Boolean := False;
-    Lock : Mutex_Manager.Simple_Mutex;
+    Lock : Mutexes.Simple_Mutex;
     Ugen : U_Rand.Generator;
   end record;
 

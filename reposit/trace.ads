@@ -1,4 +1,4 @@
-with As.U, Text_Line, Mutex_Manager;
+with As.U, Text_Line, Mutexes;
 -- Log messages in a file or flow
 package Trace is
 
@@ -104,7 +104,7 @@ package Trace is
 
 private
   -- Utilities for child packages
-  Lock : Mutex_Manager.Simple_Mutex;
+  Lock : Mutexes.Simple_Mutex;
 
   -- Operations and variables for Trace.Loggers
 

@@ -1,6 +1,6 @@
 -- Protected pool of objects, each accessed by a unique key
 -- Access and modification of the Pool are protected by a mutex
-with Hashed_List.Unique, Mutex_Manager;
+with Hashed_List.Unique, Mutexes;
 generic
 
   type Element_Type is private;
@@ -39,7 +39,7 @@ private
                                            Set, "=", Key_Image);
   package Elt_Uniq_Mng is new Elt_List_Mng.Unique;
   type Pool_Type is tagged limited record
-    Mutex : Mutex_Manager.Simple_Mutex;
+    Mutex : Mutexes.Simple_Mutex;
     List : Elt_Uniq_Mng.Unique_List_Type;
   end record;
 

@@ -4,7 +4,7 @@ package body Protected_Var is
   -- Infinite wait for Get and Release
   procedure Set (Var : in out Protected_T; Val : in T) is
   begin
-    Var.Mutex.Get (Mutex_Manager.Write);
+    Var.Mutex.Get (Mutexes.Write);
     Var.Val := Val;
     Var.Mutex.Release;
   end Set;

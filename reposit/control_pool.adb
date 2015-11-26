@@ -30,7 +30,7 @@ package body Control_Pool is
       Pool.Free_Mutexes.Pop (Mut_Acc);
     else
       -- No more free mutex, create a new one
-      Mut_Acc := new Mutex_Manager.Simple_Mutex;
+      Mut_Acc := new Mutexes.Simple_Mutex;
     end if;
     return Mut_Acc;
   end Get_Mutex;

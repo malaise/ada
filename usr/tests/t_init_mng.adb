@@ -1,7 +1,7 @@
-with Protected_Put, Init_Manager;
-procedure T_Init_Manager is
+with Protected_Put, Init_Mng;
+procedure T_Init_Mng is
 
-  package Mng is new Init_Manager (Natural);
+  package Mng is new Init_Mng (Natural);
 
   -- Task that injects an update event each second
   task Evt_Gen is
@@ -52,5 +52,5 @@ begin
   delay 0.1;
   Protected_Put.Put_Line_Output ("Terminated");
 
-end T_Init_Manager;
+end T_Init_Mng;
 

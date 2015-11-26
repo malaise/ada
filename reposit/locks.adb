@@ -1,4 +1,4 @@
-package body Lock_Manager is
+package body Locks is
 
   protected body Lock_Protect is
 
@@ -57,5 +57,5 @@ package body Lock_Manager is
     A_Lock.Lock_Pointer.Wait;
   end Wait;
 
-end Lock_Manager;
+end Locks;
 

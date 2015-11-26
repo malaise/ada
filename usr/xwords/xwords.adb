@@ -2,7 +2,7 @@
 -- Or search anagrams
 with As.U.Utils, Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings,
      Str_Util, Lower_Str, Environ, Images, Event_Mng, Afpx_Xref,
-     Mutex_Manager, Protected_Var, Trilean, Rounds, Normal;
+     Mutexes, Protected_Var, Trilean, Rounds, Normal;
 with Cmd, Analist;
 procedure Xwords is
 
@@ -432,7 +432,7 @@ procedure Xwords is
 
   -- Anagram loading status: Ok, Failed or Pending
   package Protected_Trilean is new Protected_Var (Trilean.Trilean);
-  Anagram_Loaded : Protected_Trilean.Protected_T(Mutex_Manager.Simple);
+  Anagram_Loaded : Protected_Trilean.Protected_T(Mutexes.Simple);
   task body Load_Anagrams is
     Words_Name, Nouns_Name : As.U.Asu_Us;
     Load : Boolean;

@@ -1,4 +1,4 @@
-package body Mutex_Manager is
+package body Mutexes is
 
   use type Ada.Task_Identification.Task_Id;
 
@@ -327,5 +327,5 @@ package body Mutex_Manager is
     end case;
   end Is_Owner;
 
-end Mutex_Manager;
+end Mutexes;
 

@@ -1,4 +1,4 @@
-package Lock_Manager is
+package Locks is
 
   -- A lock
   type Lock is tagged private;
@@ -29,6 +29,6 @@ private
     Lock_Pointer : Lock_Access := new Lock_Protect;
   end record;
 
-end Lock_Manager;
+end Locks;
 
 

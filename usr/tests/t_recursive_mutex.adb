@@ -1,7 +1,7 @@
-with Protected_Put, Mutex_Manager, Mixed_Str;
+with Protected_Put, Mutexes, Mixed_Str;
 procedure T_Recursive_Mutex is
 
-  M : Mutex_Manager.Mutex (Mutex_Manager.Simple, Recursive => True);
+  M : Mutexes.Mutex (Mutexes.Simple, Recursive => True);
   B : Boolean;
 
   task T is

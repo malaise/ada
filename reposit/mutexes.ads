@@ -1,6 +1,6 @@
 with Ada.Task_Identification;
 -- Mutex (single and Read_Write) management
-package Mutex_Manager is
+package Mutexes is
 
   -- Kind of mutex
   -- Simple is standard mutex providing exclusive acccess. Efficient.
@@ -177,5 +177,5 @@ private
     end case;
   end record;
 
-end Mutex_Manager;
+end Mutexes;
 

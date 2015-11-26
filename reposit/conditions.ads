@@ -1,5 +1,5 @@
 with Ada.Task_Identification;
-package Condition_Manager is
+package Conditions is
 
   -- A condition is a waiting point on which one or several tasks may
   --  wait until un-blocked, either one by one (signal) or all together
@@ -80,5 +80,5 @@ private
     Condition_Pointer : Condition_Access := new Condition_Protect;
   end record;
 
-end Condition_Manager;
+end Conditions;
 

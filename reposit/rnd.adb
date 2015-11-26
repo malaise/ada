@@ -48,20 +48,20 @@ package body Rnd is
     F := (if 0.0 <= Init and then Init < 1.0 then Init else Init_Aleat);
     I := U_Rand.Seed_Range_1 (F * Float(U_Rand.Seed_Range_1'Last - 1) + 1.0);
 
-    Dummy_Ok := Mutex_Manager.Get (Gen.Lock, -1.0);
+    Dummy_Ok := Gen.Lock.Get (-1.0);
     U_Rand.Start (Gen.Ugen, New_I => I);
     Gen.Randomized := True;
-    Mutex_Manager.Release (Gen.Lock);
+    Gen.Lock.Release;
   end Randomize;
 
   -- A Generator is initially not radomized
   function Is_Randomized (Gen : in out Generator) return Boolean is
     Dummy_Ok : Boolean;
   begin
-    Dummy_Ok := Mutex_Manager.Get (Gen.Lock, -1.0);
+    Dummy_Ok := Gen.Lock.Get (-1.0);
     return Result : Boolean do
       Result := Gen.Randomized;
-      Mutex_Manager.Release (Gen.Lock);
+      Gen.Lock.Release;
     end return;
   end Is_Randomized;
 
@@ -73,9 +73,9 @@ package body Rnd is
     Val : Float;
     Dummy_Ok : Boolean;
   begin
-    Dummy_Ok := Mutex_Manager.Get (Gen.Lock, -1.0);
+    Dummy_Ok := Gen.Lock.Get (-1.0);
     U_Rand.Next (Gen.Ugen, Val);
-    Mutex_Manager.Release (Gen.Lock);
+    Gen.Lock.Release;
     -- Here 0 <= Val < 1
     return (if Mini >= Maxi then Val else Mini + (Val * (Maxi - Mini) ));
   end Random;

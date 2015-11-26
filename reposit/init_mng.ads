@@ -4,7 +4,7 @@ generic
 
   type Event_Type is private;
 
-package Init_Manager is
+package Init_Mng is
 
   -- Declare the event handler (overwrites any previous),
   -- As long as there is no handler, new events are bufferized
@@ -18,5 +18,5 @@ package Init_Manager is
   --  pending events are bufferized
   procedure New_Event (Event : in Event_Type);
 
-end Init_Manager;
+end Init_Mng;
 

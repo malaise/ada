@@ -1,9 +1,9 @@
 -- Basic_Proc output on stdout or stderr, protected by a Mutex
-with Basic_Proc, Mutex_Manager;
+with Basic_Proc, Mutexes;
 package body Protected_Put is
 
   -- Mutex on Stdout and on Stderr
-  Out_Mutex, Err_Mutex : Mutex_Manager.Mutex (Mutex_Manager.Simple, False);
+  Out_Mutex, Err_Mutex : Mutexes.Mutex (Mutexes.Simple, False);
 
   procedure Put_Line_Output (Str : in String) is
   begin

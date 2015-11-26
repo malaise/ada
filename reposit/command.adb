@@ -1,9 +1,9 @@
-with Sys_Calls, Proc_Family, Event_Mng, Text_Line, Mutex_Manager, Trace.Loggers,
+with Sys_Calls, Proc_Family, Event_Mng, Text_Line, Mutexes, Trace.Loggers,
      Input_Buffer;
 package body Command is
 
   -- The Mutex of exclusive execution
-  Mut : Mutex_Manager.Mutex (Mutex_Manager.Simple, True);
+  Mut : Mutexes.Mutex (Mutexes.Simple, True);
 
   -- Debug option
   Logger : Trace.Loggers.Logger;

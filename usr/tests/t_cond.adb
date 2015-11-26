@@ -1,8 +1,8 @@
-with Protected_Put, Condition_Manager;
+with Protected_Put, Conditions;
 procedure T_Cond is
   pragma Priority(10);
 
-  Cond : Condition_Manager.Condition;
+  Cond : Conditions.Condition;
 
   Nb_Clients : constant := 4;
   Nb_Loops : constant := 3;

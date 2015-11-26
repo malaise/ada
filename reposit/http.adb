@@ -1,10 +1,10 @@
 with Ada.Calendar;
 with Aski, Trace.Loggers, Environ, Str_Util, Parser,
-     Event_Mng, Timers, Ip_Addr, Socket, Tcp_Util, Mutex_Manager;
+     Event_Mng, Timers, Ip_Addr, Socket, Tcp_Util, Mutexes;
 package body Http is
 
   -- The Mutex of exclusive execution
-  Mut : Mutex_Manager.Mutex (Mutex_Manager.Simple, True);
+  Mut : Mutexes.Mutex (Mutexes.Simple, True);
 
   -- Debug
   Logger : Trace.Loggers.Logger;

@@ -163,9 +163,8 @@ in container of fixed size.
 Tasking tools
 ~~~~~~~~~~~~~
 
-* 'Mutex_Manager' provides simple and read-write mutexes, while 'Door_Manager'
-provides doors, 'Lock_Manager' provides locks and 'Condition_Manager' provides
-conditions.
+* 'Mutexe' provides simple and read-write mutexes, while 'Doors' provides doors,
+'Locks' provides locks and 'Conditions' provides conditions.
 
 * 'Control_Pool' provides exclusive access to an item in a pool.
 
@@ -321,7 +320,7 @@ computer (2)::
 con_io (3)::
      Console IOs (keyboard, mouse, screen) in text and graphic.     
 
-condition_manager (1)::
+conditions (1)::
      Allow several tasks to wait until unblocked all together or one by one.
 
 console (1)::
@@ -348,7 +347,7 @@ dir_mng (2)::
 directory (2)::
      Change/read directory, dirname, basename...
 
-door_manager (1)::
+doors (1)::
      Allow several tasks to wait until a given amount or waiters is reached.
 
 dyn_data (2)::
@@ -406,7 +405,7 @@ images (1)::
      Image of integer, long long integer, modulus, float, integer in base
      16 (no leading space), duration and time.
 
-init_manager (1)::
+init_mng (1)::
      Manage atomic init of state while concurent update events are bufferized.
 
 input_buffer (1)::
@@ -421,7 +420,7 @@ key_pressed (1)::
 language (2)::
      Support Utf6 - Unicode - wide char conversions.
 
-lock_manager (1)::
+locks (1)::
      Allow several tasks to wait until the lock is open.
 
 long_longs (1)::
@@ -454,7 +453,7 @@ mod_utils (1)::
 multiget (2)::
      Allow getting/ungetting items from an input flow.
 
-mutex_manager (2)::
+mutexes (2)::
      Mutex for exclusive access or read/write access to shared data.
 
 my_math (2)::

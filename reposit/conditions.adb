@@ -1,4 +1,4 @@
-package body Condition_Manager is
+package body Conditions is
   use type Ada.Task_Identification.Task_Id;
 
   -- The protected object which implements the condition
@@ -168,6 +168,5 @@ package body Condition_Manager is
     A_Condition.Condition_Pointer.Broadcast;
   end Broadcast;
 
-end Condition_Manager;
-
+end Conditions;
 
