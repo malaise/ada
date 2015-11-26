@@ -1,7 +1,7 @@
 with As.U, Afpx.Utils, Basic_Proc, Images, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Environ;
 with Utils.X, Git_If, Config, Bookmarks, History, Tags, Commit, Push_Pull,
-     Confirm, Confirm_Diff_Dir, Error, Stash, Branch, Afpx_Xref, Reset;
+     Confirm, Confirm_Diff_Dir, Error, Stash, Branch, Afpx_Xref, Reset, Aski;
 procedure Agite is
 
   -- Options
@@ -315,7 +315,7 @@ procedure Agite is
         -- Cannot change to new dir or cannot process files (No_Git?)
         Error ("Changing directory to:",
                Target.Image,
-               "Staying in current.");
+               "Failure (not found?)" & Aski.Lf & "Staying in current");
         Init_Afpx;
         Directory.Change_Current (Directory.Get_Current);
     end;
@@ -920,7 +920,7 @@ begin
     when Directory.Name_Error =>
       Error ("Changing directory to:",
              Target_Dir.Image,
-             "No such directory, starting in current.");
+             "No such directory" & Aski.Lf & "Starting in current");
   end;
   -- Set variable AGITE_INIT_DIR
   Bookmarks.Set_Var ("AGITE_INIT_DIR", Directory.Get_Current);

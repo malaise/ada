@@ -202,7 +202,7 @@ package body Branch is
     Comment : As.U.Asu_Us;
     Pos, Tmp_Index : Positive;
     Refi : Natural;
-    Message, Result : As.U.Asu_Us;
+    Message1, Message2, Result : As.U.Asu_Us;
     Done : Boolean;
     use type Cherry.Result_List;
   begin
@@ -276,9 +276,10 @@ package body Branch is
     end if;
 
     -- Git_If
+    Message2 := As.U.Asu_Null;
     case Action is
       when Create =>
-        Message := As.U.Tus ("Creating branch " & New_Name.Image);
+        Message1 := As.U.Tus ("Creating branch " & New_Name.Image);
         if not New_Name.Is_Null then
           Result := As.U.Tus (Git_If.Create_Branch (New_Name.Image));
           if Result.Is_Null then
@@ -286,8 +287,8 @@ package body Branch is
           end if;
         end if;
       when Rename =>
-        Message := As.U.Tus ("Renaming branch " & Sel_Name.Image
-                           & " to " & New_Name.Image);
+        Message1 := As.U.Tus ("Renaming branch " & Sel_Name.Image);
+        Message2 := As.U.Tus ("to " & New_Name.Image);
         if not New_Name.Is_Null then
           Result := As.U.Tus (Git_If.Rename_Branch (Sel_Name.Image,
                                                     New_Name.Image));
@@ -298,7 +299,7 @@ package body Branch is
       when Delete =>
         if Refi = 0 then
           -- No right selection: delete current branch
-          Message := As.U.Tus ("Deleting branch " & Sel_Name.Image);
+          Message1 := As.U.Tus ("Deleting branch " & Sel_Name.Image);
           Remote := Str_Util.Locate (Sel_Name.Image, Sep) /= 0;
           Result := As.U.Tus (Git_If.Delete_Branch (Sel_Name.Image, Remote));
           if Result.Is_Null then
@@ -315,7 +316,7 @@ package body Branch is
           for I in Pos .. Refi loop
             Branches.Move_At (I);
             Tmp_Name := Branches.Access_Current.Name;
-            Message := As.U.Tus ("Deleting branch " & Tmp_Name.Image);
+            Message1 := As.U.Tus ("Deleting branch " & Tmp_Name.Image);
             Remote := Str_Util.Locate (Tmp_Name.Image, Sep) /= 0;
             Result := As.U.Tus (Git_If.Delete_Branch (Tmp_Name.Image, Remote));
             exit when not Result.Is_Null;
@@ -324,12 +325,12 @@ package body Branch is
       when Checkout =>
         -- Checkout branch. If it is a remote tracking then check it out
         --  as local name
-        Message := As.U.Tus ("Checking out branch " & Sel_Name.Image);
+        Message1 := As.U.Tus ("Checking out branch " & Sel_Name.Image);
         Result := As.U.Tus (Git_If.Do_Checkout (Sel_Name.Image,
             (if Sel_Rec.Is_Remote then Sel_Rec.Local.Image else "")));
         Previous_Branch := Current_Branch;
       when Merge =>
-        Message := As.U.Tus ("Merging branch " & Sel_Name.Image);
+        Message1 := As.U.Tus ("Merging branch " & Sel_Name.Image);
         Previous_Branch := Sel_Name;
         -- Commit comment
         Comment := As.U.Tus ("Merge branch '" & Sel_Name.Image & "'");
@@ -341,7 +342,7 @@ package body Branch is
           Commit.Set_Comment (Comment.Image);
         end if;
       when True_Merge =>
-        Message := As.U.Tus ("True merging branch " & Sel_Name.Image);
+        Message1 := As.U.Tus ("True merging branch " & Sel_Name.Image);
         Previous_Branch := Sel_Name;
         -- Commit comment
         Comment := As.U.Tus ("Merge branch '" & Sel_Name.Image & "'");
@@ -351,8 +352,8 @@ package body Branch is
         -- Set comment for on going manual commit
         Commit.Set_Comment (Comment.Image);
       when Rebase =>
-        Message := As.U.Tus ("Rebasing branch " & Current_Branch.Image
-                             & " to head of " & Sel_Name.Image);
+        Message1 := As.U.Tus ("Rebasing branch " & Current_Branch.Image);
+        Message2 := As.U.Tus ("to head of " & Sel_Name.Image);
         Previous_Branch := Sel_Name;
         Result := As.U.Tus (Rebase_Mng.Do_Rebase (Root.Image,
             Sel_Name.Image, Ref_Name.Image, False));
@@ -380,7 +381,7 @@ package body Branch is
 
     -- Handle error
     if not Result.Is_Null then
-      Error (Message.Image, Result.Image, "");
+      Error (Message1.Image, Message2.Image, Result.Image);
       Init;
       Reread (False);
       -- Rebase always True, else False
@@ -553,7 +554,7 @@ package body Branch is
     if Msg.Is_Null then
       return True;
     end if;
-    Error ("Rebase from " & Rev, Msg.Image, "");
+    Error ("Rebase from " & Rev, "", Msg.Image);
     return False;
   end Reorg;
 

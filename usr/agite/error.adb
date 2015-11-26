@@ -50,9 +50,14 @@ begin
   Line_Iter.Del;
   Afpx.Line_List.Rewind (Check_Empty => False);
 
-  -- De-activate list and navigation if empty list
+  -- De-activate list if empty list
   if Afpx.Line_List.Is_Empty then
     Afpx.Set_Field_Activation (Afpx.List_Field_No, False);
+  end if;
+
+  -- De-activate navigation if list is short enough
+  if Afpx.Line_List.List_Length <= Afpx.Get_Field_Height (Afpx.List_Field_No)
+  then
     for I in  Utils.X.List_Scroll_Fld_Range'First ..
               Utils.X.List_Scroll_Fld_Range'Last loop
       Afpx.Set_Field_Activation (I, False);

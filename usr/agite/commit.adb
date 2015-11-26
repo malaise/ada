@@ -504,7 +504,7 @@ package body Commit is
         return;
       end if;
       -- Show error
-      Error ("Commit", Result.Image, "");
+      Error ("Commit", "", Result.Image);
     end Do_Commit;
 
     use type Afpx.Field_Range;
