@@ -864,9 +864,9 @@ comp out exp
 comp err nul
 echo "OK"
 
-# t_init_manager
-title t_init_manager...
-try t_init_manager
+# t_init_mng
+title t_init_mng...
+try t_init_mng
 comp err nul
 echo "OK"
 
