@@ -184,9 +184,9 @@ package body Tree is
   end Get_Attributes;
 
   -- For dump of a node with some text before
-  function Dump (Init_Str : String;
-                 Node : Node_Rec;
-                 Level : Natural) return Boolean is
+  procedure Dump (Init_Str : String;
+                  Node : Node_Rec;
+                  Level : Natural) is
     Tab : constant String (1 .. 2 * Level) := (others => ' ');
     Text : As.U.Asu_Us;
     use type Any_Def.Any_Kind_List;
@@ -250,12 +250,17 @@ package body Tree is
     end if;
 
     Debug.Logger.Log_Debug (Text.Image);
-    return True;
+  end Dump;
+  procedure Dump (Node : in out Node_Rec; Level : Natural) is
+  begin
+    Dump ("", Node, Level);
   end Dump;
   -- For dump of the tree (iterator)
-  function Dump (Node : in out Node_Rec; Level : Natural) return Boolean is
+  function Dump (Node : in out Node_Rec; Level : Natural)
+           return Trees.Iteration_Policy is
   begin
-    return Dump ("", Node, Level);
+    Dump (Node, Level);
+    return Trees.Go_On;
   end Dump;
 
   -----------------------
@@ -279,7 +284,6 @@ package body Tree is
     Nb_Children : Natural;
     Ldepth : Natural;
 
-    Dummy : Boolean;
   begin
     -- Fill new node
     Debug.Logger.Log_Debug ("Getting node " & Name);
@@ -382,7 +386,7 @@ package body Tree is
       Chats.Insert_Brother (Node, False);
     end if;
     if Debug.Logger.Debug_On then
-      Dummy := Dump (Node, 1);
+      Dump (Node, 1);
     end if;
 
     -- Instructions known to have no child (except text)
@@ -429,7 +433,6 @@ package body Tree is
     Lnext, Lexitnext : Position_Access;
     Node : Node_Rec;
     Children_Nb : Trees.Child_Range;
-    Dummy : Boolean;
   begin
     -- Inherit Next or set it to current (when root)
     if Next /= No_Position then
@@ -439,7 +442,7 @@ package body Tree is
     end if;
     Lexitnext := Exit_Next;
     Chats.Read (Node);
-    Dummy := Dump (Node, 0);
+    Dump (Node, 0);
     case Node.Kind is
       when Tree.Expect | Tree.Default | Tree.Timeout
               | Tree.Condif | Tree.Condelse =>

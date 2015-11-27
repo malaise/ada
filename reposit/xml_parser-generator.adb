@@ -1117,7 +1117,7 @@ package body Xml_Parser.Generator is
   -- Apply Text2Xml to each Text node and Attr2Xml to each attribute value.
   -- Iterator
   function To_Xml (Cell  : in out My_Tree_Cell;
-                   Dummy_Level : Natural) return Boolean is
+                   Dummy_Level : Natural) return Trees.Iteration_Policy is
   begin
     case Cell.Kind is
       when Text =>
@@ -1127,7 +1127,7 @@ package body Xml_Parser.Generator is
       when others =>
         null;
     end case;
-    return True;
+    return Trees.Go_On;
   end To_Xml;
 
   procedure Tree2Xml (Ctx : in out Ctx_Type) is

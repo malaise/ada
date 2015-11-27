@@ -7,13 +7,20 @@
 --  one father.
 -- Root has no brother and no father
 with Ada.Finalization;
-with Unlimited_Pool, Magic_Numbers;
+with Unlimited_Pool, Magic_Numbers, Trilean;
 package Trees is
 
   -- Common definitions for all trees
   --  (exceptions are also common, see below)
   -- Amount of children of a father
   subtype Child_Range is Natural;
+
+  -- Waht to do after current item when iterating in tree
+  subtype Iteration_Policy is Trilean.Trilean;
+  -- Go_On scanning the tree, Skip subtree of current element, Give_Up
+  Go_On   : constant Iteration_Policy := Trilean.True;
+  Skip    : constant Iteration_Policy := Trilean.Other;
+  Give_Up : constant Iteration_Policy := Trilean.False;
 
   generic
     -- Element to store in the tree
@@ -232,11 +239,10 @@ package Trees is
 
     -- Iterate --
     -------------
-    -- What to do on current item
-    -- Iteration will continue as long as returning True
+    -- What to do on current item, and what to do next
     type Do_One_Access is access
          function (Element : in out Element_Type;
-                   Level : Natural) return Boolean;
+                   Level : Natural) return Iteration_Policy;
 
     -- Iterate on current and children (old to young by default)
     -- Nothing if tree is empty
@@ -244,7 +250,7 @@ package Trees is
     procedure Iterate (The_Tree   : in out Tree_Type;
                        Do_One_Acc : access function
                            (Element : in out Element_Type;
-                            Level   : Natural) return Boolean;
+                            Level   : Natural) return Iteration_Policy;
                        Elder      : in Boolean := True);
 
   private

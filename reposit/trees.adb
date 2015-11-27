@@ -929,33 +929,50 @@ package body Trees is
     -- Iterate --
     -------------
     -- Iterate on current and children
-    procedure Recurs (Me         : in out Cell_Access;
-                      Level      : in Natural;
-                      Do_One_Acc : in Do_One_Access;
-                      Elder      : in Boolean) is
+    function Recurs (Me         : in out Cell_Access;
+                     Level      : in Natural;
+                     Do_One_Acc : in Do_One_Access;
+                     Elder      : in Boolean)  return Boolean is
       Next : Cell_Access;
+      Result : Iteration_Policy;
     begin
-      -- Do_One on me, stop if it returns False
-      if not Do_One_Acc (Me.Data.all, Level) then
-        return;
-      end if;
+      -- Do_One on me
+      Result := Do_One_Acc (Me.Data.all, Level);
 
-      -- Iterate on children, oldest first if Elder
-      Next := Me.Children((if Elder then Old else Young));
-      while Next /= null loop
-        Recurs (Next, Level + 1, Do_One_Acc, Elder);
-      end loop;
+
+      -- Give_Up or Skip if requested
+      case Result is
+        when Give_Up =>
+          -- Stop and signal to caller
+          return False;
+        when Skip =>
+          -- Skip children
+          null;
+        when Go_On =>
+          -- Iterate on children, oldest first if Elder
+          Next := Me.Children((if Elder then Old else Young));
+          while Next /= null loop
+            if not Recurs (Next, Level + 1, Do_One_Acc, Elder) then
+              -- Propagate stop signal
+              return False;
+            end if;
+          end loop;
+      end case;
 
       -- Move to younger (if Eldest) older brother
       Me := Me.Brothers((if Elder then Young else Old));
+      -- Go on
+      return True;
     end Recurs;
 
     procedure Iterate (The_Tree   : in out Tree_Type;
                        Do_One_Acc : access
-      function (Element : in out Element_Type; Level : Natural) return Boolean;
+        function (Element : in out Element_Type;
+                  Level : Natural) return Iteration_Policy;
                        Elder      : in Boolean := True) is
 
       Cell_Acc : Cell_Access;
+      Dummy : Boolean;
     begin
       -- Not in callback
       if The_Tree.In_Cb then
@@ -968,7 +985,7 @@ package body Trees is
       -- Do it
       The_Tree.In_Cb := True;
       Cell_Acc := The_Tree.Curr;
-      Recurs (Cell_Acc, 0, Do_One_Acc, Elder);
+      Dummy := Recurs (Cell_Acc, 0, Do_One_Acc, Elder);
       The_Tree.In_Cb := False;
     exception
       when others =>

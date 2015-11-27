@@ -17,12 +17,12 @@ package  body Sequences is
 
   -- Dump tree for debug
   function Dump_Cell (Cell : in out Cell_Type;
-                      Level : in Natural) return Boolean is
+                      Level : in Natural) return Trees.Iteration_Policy is
     Pad : constant String (1 .. 2 * Level) := (others => ' ');
   begin
     Basic_Proc.Put_Line_Error (Pad & Mixed_Str (Cell.Kind'Img)
                              & " " & Cell.Deviation'Img);
-    return True;
+    return Trees.Go_On;
   end Dump_Cell;
   procedure Dump_Tree (T : in out Cell_Tree_Mng.Tree_Type) is
   begin

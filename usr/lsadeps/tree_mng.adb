@@ -376,7 +376,7 @@ package body Tree_Mng is
 
   -- Dump one element of the tree
   function Dump_One (Dscr : in out Src_Dscr;
-                     Level : in Natural) return Boolean is
+                     Level : in Natural) return Trees.Iteration_Policy is
     Str : As.U.Asu_Us;
   begin
     for I in 1 .. Level loop
@@ -387,7 +387,7 @@ package body Tree_Mng is
       Str.Append (" -->X");
     end if;
     Debug.Logger.Log_Debug (Str.Image);
-    return True;
+    return Trees.Go_On;
   end Dump_One;
 
   -- Build the tree of source dependencies of Origin

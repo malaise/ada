@@ -7,10 +7,10 @@ procedure T_Trees is
 
   Spaces : constant String (1 .. 132) := (others => ' ');
   function Put (Elt : in out Natural;
-                Level : in Natural) return Boolean is
+                Level : in Natural) return Trees.Iteration_Policy is
   begin
     Basic_Proc.Put_Line_Output (Spaces (1 .. Level*3) & Elt'Img);
-    return True;
+    return Trees.Go_On;
   end Put;
 
   -- Dumps the full tree. Sets Saved_Position to current

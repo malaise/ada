@@ -1,4 +1,4 @@
-with As.U.Utils, Basic_Proc, Directory, Unbounded_Arrays, Parser;
+with As.U.Utils, Basic_Proc, Directory, Unbounded_Arrays, Parser, Trees;
 with Debug, Tree_Mng, Sort;
 package body Output is
 
@@ -136,8 +136,9 @@ package body Output is
   end Tree_Unit_Walker;
 
   -- Dump files of tree
-  function Tree_File_Iterator (Dscr : in out Tree_Mng.Src_Dscr;
-                               Level : Natural) return Boolean is
+  function Tree_File_Iterator (
+      Dscr : in out Tree_Mng.Src_Dscr;
+      Level : Natural) return Trees.Iteration_Policy is
     Str : As.U.Asu_Us;
     use type Sourcer.Src_Kind_List;
   begin
@@ -147,7 +148,7 @@ package body Output is
     -- File
     Str.Append (Strip (Sort.Make_Path (Dscr.Dscr.Path, Dscr.Dscr.File)));
     Basic_Proc.Put_Line_Output (Str.Image);
-    return True;
+    return Trees.Go_On;
   end Tree_File_Iterator;
 
   -- Put tree of units or files
@@ -169,14 +170,15 @@ package body Output is
   -- Dynamic list of sorted entries (units or files)
   Dlist : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
   -- Store unit of tree
-  function List_Unit_Iterator (Dscr : in out Tree_Mng.Src_Dscr;
-                               Unused_Level : Natural) return Boolean is
+  function List_Unit_Iterator (
+      Dscr : in out Tree_Mng.Src_Dscr;
+      Unused_Level : Natural) return Trees.Iteration_Policy is
     Name : As.U.Asu_Us;
     use type Sourcer.Src_Kind_List;
   begin
     -- Discard Looping info
     if Dscr.Looping then
-      return True;
+      return Trees.Go_On;
     end if;
     if not Revert then
       -- Keep only spec or standalone body
@@ -184,7 +186,7 @@ package body Output is
           and then not List_Subunits)
          or else (Dscr.Dscr.Kind = Sourcer.Unit_Body
                   and then not Dscr.Dscr.Standalone) then
-        return True;
+        return Trees.Go_On;
       end if;
       Name := Dscr.Dscr.Unit;
     else
@@ -197,21 +199,21 @@ package body Output is
     end if;
     -- PathOfFile / UnitName
     Ulist.Insert (Sort.Make_Path (Dscr.Dscr.Path, Name));
-    return True;
+    return Trees.Go_On;
   end List_Unit_Iterator;
 
   -- Store file of tree
-  function List_File_Iterator (Dscr : in out Tree_Mng.Src_Dscr;
-                               Unused_Level : Natural) return Boolean is
+  function List_File_Iterator (
+      Dscr : in out Tree_Mng.Src_Dscr;
+      Unused_Level : Natural) return Trees.Iteration_Policy is
     use type Sourcer.Src_Kind_List;
   begin
     -- Discard Looping info
-    if Dscr.Looping then
-      return True;
+    if not Dscr.Looping then
+      -- File
+      Ulist.Insert (Sort.Make_Path (Dscr.Dscr.Path, Dscr.Dscr.File));
     end if;
-    -- File
-    Ulist.Insert (Sort.Make_Path (Dscr.Dscr.Path, Dscr.Dscr.File));
-    return True;
+    return Trees.Go_On;
   end List_File_Iterator;
 
   -- Store unit of list
@@ -318,7 +320,7 @@ package body Output is
   -- Reuse the Level
   -- Path of units
   function Path_Unit_Iterator (Dscr : in out Tree_Mng.Src_Dscr;
-                               Level : Natural) return Boolean is
+                               Level : Natural) return Trees.Iteration_Policy is
     Name : As.U.Asu_Us;
     use type As.U.Asu_Us;
     use type Sourcer.Src_Kind_List;
@@ -327,14 +329,14 @@ package body Output is
     Move_Up (Level);
     -- Discard Looping info
     if Dscr.Looping then
-      return True;
+      return Trees.Go_On;
     end if;
     if not Revert then
       -- Keep only spec or standalone body
       if Dscr.Dscr.Kind = Sourcer.Subunit
          or else (Dscr.Dscr.Kind = Sourcer.Unit_Body
                   and then not Dscr.Dscr.Standalone) then
-        return True;
+        return Trees.Go_On;
       end if;
       Name := Dscr.Dscr.Unit;
     else
@@ -354,12 +356,12 @@ package body Output is
         Show;
       end if;
     end if;
-    return True;
+    return Trees.Go_On;
   end Path_Unit_Iterator;
 
   -- Path of files
   function Path_File_Iterator (Dscr : in out Tree_Mng.Src_Dscr;
-                               Level : Natural) return Boolean is
+                               Level : Natural) return Trees.Iteration_Policy is
     Name, File : As.U.Asu_Us;
     use type As.U.Asu_Us;
     use type Sourcer.Src_Kind_List;
@@ -368,7 +370,7 @@ package body Output is
     Move_Up (Level);
     -- Discard Looping info
     if Dscr.Looping then
-      return True;
+      return Trees.Go_On;
     end if;
     -- Append and check PathOfFile / Unit_Name and same for Unit_File
     Name := As.U.Tus (Sort.Make_Path (Dscr.Dscr.Path, Dscr.Dscr.Unit));
@@ -382,7 +384,7 @@ package body Output is
                        and then Dscr.Dscr.Standalone)) then
       Show;
     end if;
-    return True;
+    return Trees.Go_On;
   end Path_File_Iterator;
 
   procedure Put_Path (File_Mode : in Boolean) is
