@@ -9,7 +9,7 @@ Some programs depend on anchor:XPCRE[] PCRE (Perl Compatible Regular Expressions
 with version 7.8 or above (8.35 is OK), or PCRE2 (10.00 or above), and require
 the corresponding PCRE developpement package.
 
-Some programs depend on libssl and libcrypto for EVP digest.
+Some programs depend on libssl for EVP digest.
 
 The 'asciidoc' suite is used for the generation of the documentation.
 
