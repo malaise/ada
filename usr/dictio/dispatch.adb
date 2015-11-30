@@ -1,5 +1,5 @@
 with Tcp_Util, Event_Mng;
-with Status, Data_Base, Intra_Dictio, Init_Mng, Online_Mng, Client_Mng, Args,
+with Status, Data_Base, Intra_Dictio, Online_Mng, Client_Mng, Args, Nodes,
      Sync_Mng, Dictio_Debug, Versions, Parse, Fight_Mng, Errors;
 package body Dispatch is
 
@@ -100,7 +100,15 @@ package body Dispatch is
       when Status.Starting =>
         Status.Set (Status.Init);
       when Status.Init =>
-        Init_Mng.Start;
+        Fight_Mng.Start (Status.Init, 2.0,
+          (Nodes.Many_Master_Master => Status.Starting,
+           Nodes.Many_Master_Slave  => Status.Starting,
+           Nodes.One_Master_Master  => Status.Slave,
+           Nodes.One_Master_Slave   => Status.Slave,
+           Nodes.All_Init_Master    => Status.Master,
+           Nodes.All_Init_Slave     => Status.Slave,
+           Nodes.No_Master_Master   => Status.Master,
+           Nodes.No_Master_Slave    => Status.Starting) );
       when Status.Dead =>
         if Prev_Status = Status.Master then
           Intra_Dictio.Send_Status;
