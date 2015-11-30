@@ -1,6 +1,6 @@
 Asubst
 ======
-V18.3
+V18.4
 
 Asubs is a command line tool that substitutes text within text. It finds
 occurences of text that match a pattern (regular expression), and replaces
@@ -157,13 +157,12 @@ J = 0 for the complete string, (so "\R0x" = "\rx0").
 +
 NOTE: * Substrings are numbered in the order of the opening parenthesis, left
 to right. +
-* Such back reference to a previous match degrade the performance because the
+* Such back reference to a previous match degrades the performance because the
 regex is re-compiled at each try. +
 * For back reference within the current regex, use the "\i" notation of the
 standard regex syntax. +
-* Beware that "\i" is processed at PCRE level while "\rij" and "\Rij" are
-processed by asubst, which leads to significant differences. For example, with "ab"
-matching "(..)", then "\1+" means "(ab)\+", while "\r11+" means "a(b)+".
+* Beware that "\i" is processed by PCRE and refers to the current regex, 
+while "\rij" and "\Rij" are processed by asubst and refer to a previous regex.
 
 NOTE: Beware that some regex expressions are supposed to match a "new line"
 (example [:blank:] within a bracket expression) but will not match in asubst,
@@ -178,7 +177,7 @@ Exclusion pattern
 This option means that the text matching the find pattern but also strictly
 matching the exclusion pattern will not be replaced.
 
-NOTE: Beware that it applies only to the the fragment of text that matches the
+NOTE: Beware that it applies only to the fragment of text that matches the
 find pattern, not the full input text. +
 'Strictly' means that the full text must match the full pattern, e.g. "to"
 does not strictly match "o" but strictly matches ".o". +
@@ -186,7 +185,7 @@ So in the exclusion regex a leading ''^'' and a tailing ''$'' are meaningless".
 
 If set, the <exclude_regex> must have the same number of regex as the
 find pattern. +
-Exclusion is allowed in the xref:XNoRegex[noregex] mode, and then interpreted
+Exclusion is allowed in the xref:XNoRegex[noregex] mode, and is then interpreted
 as a normal string, which is not very usefull.
 
 For example 'echo "toto" | asubst --exclude=toto to ti' will replace toto by
@@ -234,7 +233,7 @@ Setting a delimiter to a specific string is useful to process a (big) file line
 by line when the line delimiter of the file is not ''\n''.
 
 NOTE: Special regex characters (e.g. '+', '?', '.', '*'...) must not be
-backslashed in the delimiter, even if it appears in the find pattern.
+backslashed in the delimiter, even if they appear in the find pattern.
 
 Examples:
 
@@ -259,7 +258,7 @@ allow ''.'' in find pattern to match ''\n'' in the text.
 
 Replace string
 --------------
-The following ''\'' sequences are supported iin the replace string:
+The following ''\'' sequences are supported in the replace string:
 
 - "\n" will be replaced by a newline.
 
@@ -510,7 +509,7 @@ according to the delimiter) versus one simple regex of the sequence.
 
 .No delimiter in regex
 Because of this logic the delimiter cannot appear in a regex. In other words,
-a string between two delimiters must be a complete valid regex. This prevents
+a string between two delimiters must be a complete valid regex. This forbids
 find pattern like:
 --------------------------------------
 text\n?text
@@ -522,7 +521,8 @@ Such expressions are valid only if ''\n'' is not the delimiter.
 Because of this logic there are two kinds of back references:
 
 - a back reference to a "local" substring (local to this regex) uses the
-standard notation "\i" and is quite efficiently handled by the regex engine.
+standard notation "\i" and is quite efficiently handled by the PCRE regex
+engine.
 - a back reference to a (sub)string of a previous regex uses the notation
 "\Rij" or "\rij" and is handled by asubst itself. Asubst replaces the
 reference by the corresponding (sub) string and (in regex mode) re-computes
@@ -541,7 +541,7 @@ provided.
 -> Because regex imposes to provide "\\f" for matching "\f", ("\f" matches "f") and the
 shell imposes a "\\" for each "\" transmitted to asubst.
 +
-Note that you can pass to the shell "\\f" instead of "\\\\f".
+Note that you can pass to the shell \'\\f' instead of "\\\\f".
 +
 Same considerations apply to "\$" or ''$'' in order to pass '$' to asubst.
 
