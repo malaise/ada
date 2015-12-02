@@ -21,6 +21,8 @@ with Gtk.Text;
 with Gtk.Toggle_Button;
 with Gtk.Window;
 with Gtkada.Dialogs;
+with Gtk.Check_Menu_Item;
+
 
 with Ada.Characters.Latin_1;
 with Ada.Strings.Unbounded;
@@ -47,6 +49,7 @@ use Gtkada.Dialogs;
 use Gtk.Dialog;
 use Gtk.Scrolled_Window;
 use Gtk.Text;
+use Gtk.Check_Menu_Item;
 
 with Gtk.Menu;
 with Gtk.Menu_Item;
@@ -101,7 +104,8 @@ package body User_IF is
                                     3 => (Name => "200", Mines => 200),
                                     4 => (Name => "250", Mines => 250) );
 
-   Default_Level : constant Glib.Gint := 1;
+   subtype Levels_Range is Glib.Gint range Levels'Range;
+   Default_Level : constant Levels_Range := 1;
 
    Auto_Marking_Desired      : Boolean := False;
    Extended_Stepping_Desired : Boolean := False;
@@ -455,19 +459,22 @@ package body User_IF is
       Group     : Widget_SList.GSlist;
       Menu_Item : Gtk_Radio_Menu_Item;
 
-      procedure Add_Line (Text : in String) is
-         -- null;
+      procedure Add_Line (Index : in Levels_Range; Text : in String) is
+         use type Levels_Range;
       begin -- Add_Line
          Gtk_New (Menu_Item, Group, Text);
          Group := Gtk.Radio_Menu_Item.Get_Group (Menu_Item);
          Append (Menu, Menu_Item);
+         if Index = Default_Level then
+            Set_Active (Menu_Item, True);
+         end if;
          Show (Menu_Item);
       end Add_Line;
    begin -- Create_Level_Option_Menu
       Gtk_New (Menu);
 
       for I in Levels'range loop
-         Add_Line (Levels (I).Name);
+         Add_Line (I, Levels (I).Name);
       end loop;
 
       return Menu;
