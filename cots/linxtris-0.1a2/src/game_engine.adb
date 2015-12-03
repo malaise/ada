@@ -129,7 +129,7 @@ package body Game_Engine is
       Gdkw: Gdk.Gdk_Window;
    begin
       Gdkw := Get_Window( Main_Window );
-      Gdk.Drawable.Draw_Pixmap( Get_Pixmap( Main_Window.Game_Screen ),
+      Gdk.Drawable.Draw_Drawable( Get_Pixmap( Main_Window.Game_Screen ),
                                 Main_Window.GC, Color_To_Pix(Color),
                                 0, 0,
                                 X_Drawing_Coordinate(X),
