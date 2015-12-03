@@ -1,4 +1,5 @@
-with Basic_Proc, Rnd;
+-- Main calls a service while a task freely loops
+with Protected_Put, Rnd;
 procedure Iole is
 
   task T1 is
@@ -12,7 +13,7 @@ procedure Iole is
     loop
       select
         accept Request do
-          Basic_Proc.Put_Line_Output ("Request");
+          Protected_Put.Put_Line_Output ("Request");
         end Request;
       or
         terminate;
@@ -24,7 +25,7 @@ procedure Iole is
   begin
     loop
       delay Rnd.Gen.Dur_Random (0.0, 0.1);
-      Basic_Proc.Put_Line_Output ("Event");
+      Protected_Put.Put_Line_Output ("Event");
     end loop;
   end T2;
 

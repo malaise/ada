@@ -1,57 +1,54 @@
--- dependance de taches
-with Basic_Proc;
+-- Dependancy between tasks
+with Protected_Put;
 procedure Termin is
-  use Basic_Proc;
+  use Protected_Put;
 
-  type T_Creation is (Par_Acces, Direct);
+  type T_Creation is (By_Access, Direct);
 
   Loops : constant array (T_Creation) of Positive := (4, 2);
 
   -- priorite du programme principal
   pragma Priority (5);
 
-  -- type de tache
-  task type T_Tache is
-    entry Init (Nom : in T_Creation);
+  -- Kind of task
+  task type T_Task is
+    entry Init (Name : in T_Creation);
     pragma Priority (1);
-  end T_Tache;
+  end T_Task;
 
-  type T_Ptr_Tache is access T_Tache;
+  type T_Ptr_Task is access T_Task;
 
-  Separateur : constant String := "-------------";
+  Separator : constant String := "-------------";
 
-  task body T_Tache is
-    Nom : T_Creation;
+  task body T_Task is
+    Name : T_Creation;
   begin
-    accept Init (Nom : in T_Creation) do
-      T_Tache.Nom := Init.Nom;
+    accept Init (Name : in T_Creation) do
+      T_Task.Name := Init.Name;
     end Init;
-    Put_Output ("tache "); Put_Output (Nom'Img);
-    Put_Line_Output (" lancee");
-    for I in 1..Loops(Nom) loop
+    Put_Line_Output ("task " & Name'Img & " started");
+    for I in 1..Loops(Name) loop
       delay 0.5;
-      Put_Output ("tache "); Put_Output (Nom'Img);
-      Put_Line_Output (" active");
+      Put_Line_Output ("task " & Name'Img & " active");
     end loop;
-    Put_Output ("tache "); Put_Output (Nom'Img);
-    Put_Line_Output (" achevee");
-  end T_Tache;
+    Put_Line_Output ("task " & Name'Img & " terminated");
+  end T_Task;
 
 begin
-  Put_Line_Output ("Une tache depend du bloc ou elle est declaree, sauf une tache "
-    & "accedee,");
-  Put_Line_Output (" laquelle depend du bloc qui declare le type acces:");
-  New_Line_Output;
+  Put_Line_Output ("A task depends from the bloc in which it is declared,"
+    & " except if it is accessed,");
+  Put_Line_Output (" in which case it depends from the bloc declaring the access type:");
   New_Line_Output;
 
   declare
-    Pa : constant T_Ptr_Tache := new T_Tache;
-    Pb : T_Tache;
+    Pa : constant T_Ptr_Task := new T_Task;
+    Pb : T_Task;
   begin
-    Put_Output (Separateur); Put_Output (" Debut bloc "); Put_Line_Output (Separateur);
-    Pa.Init (Par_Acces);
+    Put_Line_Output (Separator & " Start bloc " & Separator);
+    Pa.Init (By_Access);
     Pb.Init (Direct);
   end;
-  Put_Output (Separateur); Put_Output (" Fin   bloc "); Put_Line_Output (Separateur);
+  Put_Line_Output (Separator & " End bloc " & Separator);
 
 end Termin;
+

@@ -1,47 +1,51 @@
-with Basic_Proc, Rnd, Schedule, Text_Line;
-use Basic_Proc;
+with Ada.Exceptions;
+-- Service with priorities
+with Protected_Put, Rnd, Schedule, Text_Line, Mutexes;
+use Protected_Put;
 procedure Servprio is
 
-  type Urgence is (Critique, Urgent, Normal, Lent);
+  type Urgency is (Critical, Urgent, Normal, Slow);
   subtype Client_Range is Positive range 1 .. 10;
 
-  type Tableau is array(Urgence) of Natural;
-  Totals, Totalc : Tableau := (others => 0);
-  Total_Appel    : Natural := 0;
+  type Tab is array(Urgency) of Natural;
+  Totals, Totalc : Tab := (others => 0);
+  Total_Call     : Natural := 0;
 
-  function My_Random is
-    new Rnd.Discr_Random(Urgence);
+  function My_Random is new Rnd.Discr_Random(Urgency);
 
-  Fich : Text_Line.File_Type;
-  Nom  : constant String := ("servprio.dat");
+  File : Text_Line.File_Type;
+  Name  : constant String := ("servprio.dat");
 
-  task Serveur is
+  task Server is
     entry Init;
-    entry Service(Urgence)(No_Client : in Client_Range);
-    entry Fin;
-  end Serveur;
+    entry Service( Urgency)(No_Client : in Client_Range);
+    entry Stop;
+  end Server;
 
   task type Client is
-    entry Init(No : in Client_Range);
-    entry Fin(Total : in out Tableau);
+    entry Init (No : in Client_Range);
+    entry Stop (Total : in out Tab);
   end Client;
 
   Clients : array(Client_Range) of Client;
 
-  procedure Print(Auteur    : in String;
-                  Degre     : in Urgence;
-                  Client_No : in Client_Range) is
+  Mutex : Mutexes.Mutex (Mutexes.Simple, False);
+  procedure Print (Author    : in String;
+                   Degree    : in Urgency;
+                   Client_No : in Client_Range) is
   begin
-    Text_Line.Put (Fich, Auteur);
-    Text_Line.Put (Fich, " de ");
-    Text_Line.Put (Fich, Client_Range'Image(Client_No));
-    Text_Line.Put (Fich, " priorite ");
-    Text_Line.Put_Line(Fich, Urgence'Image(Degre));
+    Mutex.Get;
+    Text_Line.Put (File, Author);
+    Text_Line.Put (File, " of ");
+    Text_Line.Put (File, Client_Range'Image (Client_No));
+    Text_Line.Put (File, " priority ");
+    Text_Line.Put_Line (File, Urgency'Image(Degree));
+    Mutex.Release;
   end Print;
 
 
-  task body Serveur is
-    I : Urgence := Urgence'First;
+  task body Server is
+    I : Urgency := Urgency'First;
 
   begin
     accept Init;
@@ -55,32 +59,33 @@ procedure Servprio is
           Put_Line_Output ("Service");
           Totals(I) := Totals(I) + 1;
         end Service;
-        I := Urgence'First;
+        I := Urgency'First;
       or
         delay 0.0;
-        if I /= Urgence'Last then
-          I := Urgence'Succ(I);
+        if I /= Urgency'Last then
+          I := Urgency'Succ(I);
         else
-          I := Urgence'First;
+          I := Urgency'First;
         end if;
       or
-        accept Fin;
+        accept Stop;
         exit;
       end select;
     end loop;
 
   exception
-    when others =>
-      Put_Line_Output ("Exception serveur");
-  end Serveur;
+    when Error: others =>
+      Put_Line_Output ("Exception in serveur");
+      Put_Line_Output (Ada.Exceptions.Exception_Name (Error));
+  end Server;
 
 
   task body Client is
     No       : Client_Range;
-    Prio     : Urgence;
+    Prio     : Urgency;
     Max_Loop : constant Positive := 10;
     N_Loop   : Positive;
-    Calcul   : Tableau := (others => 0);
+    Summary   : Tab := (others => 0);
   begin
     accept Init (No : in Client_Range) do
       Client.No := No;
@@ -90,63 +95,67 @@ procedure Servprio is
     for I in 1 .. N_Loop loop
       Schedule;
       Prio := My_Random (Rnd.Gen.all);
-      Print ("                           Requete", Prio, No);
+      Print ("                           Request", Prio, No);
 
-      Serveur.Service(Prio) (No);
+      Server.Service(Prio) (No);
 
-      Calcul (Prio) := Calcul (Prio) + 1;
+      Summary(Prio) := Summary(Prio) + 1;
     end loop;
 
-    accept Fin (Total : in out Tableau) do
-      for I in Urgence loop
-        Total(I) := Total(I) + Calcul(I);
+    accept Stop (Total : in out Tab) do
+      for I in Urgency loop
+        Total(I) := Total(I) + Summary(I);
       end loop;
-    end Fin;
+    end Stop;
 
-    Text_Line.Put (Fich, "                           Fin client ");
-    Text_Line.Put (Fich, Client_Range'Image(No));
-    Text_Line.Put (Fich, " , ");
-    Text_Line.Put (Fich, Positive'Image(N_Loop));
-    Text_Line.Put_Line (Fich, " appels");
+    Mutex.Get;
+    Text_Line.Put (File, "                           End of client ");
+    Text_Line.Put (File, Client_Range'Image(No));
+    Text_Line.Put (File, " , ");
+    Text_Line.Put (File, Positive'Image(N_Loop));
+    Text_Line.Put_Line (File, " calls");
+    Mutex.Release;
 
   exception
-    when others =>
-      Put_Line_Output ("Exception client");
+    when Error:others =>
+      Put_Line_Output ("Exception in client");
+      Put_Line_Output (Ada.Exceptions.Exception_Name (Error));
       raise;
   end Client;
 
 begin
   Rnd.Gen.Randomize;
-  Text_Line.Create_All (Fich, Nom);
+  Text_Line.Create_All (File, Name);
 
   for I in Client_Range loop
     Clients(I).Init (I);
   end loop;
 
-  Serveur.Init;
+  Server.Init;
 
   for I in Client_Range loop
-    Clients(I).Fin (Totalc);
+    Clients(I).Stop (Totalc);
   end loop;
 
-  Serveur.Fin;
+  Server.Stop;
 
-  Text_Line.Put_Line (Fich, "TOTAUX");
-  for I in Urgence loop
-    Text_Line.Put (Fich, Urgence'Image(I));
-    Text_Line.Put (Fich, " -> ");
-    Text_Line.Put (Fich, Positive'Image(Totals(I)));
-    Text_Line.Put (Fich, " & ");
-    Text_Line.Put_Line (Fich, Positive'Image(Totalc(I)));
-    Total_Appel := Total_Appel + Totalc(I);
+  Text_Line.Put_Line (File, "SUMMARY");
+  for I in Urgency loop
+    Text_Line.Put (File, Urgency'Image(I));
+    Text_Line.Put (File, " -> ");
+    Text_Line.Put (File, Positive'Image(Totals(I)));
+    Text_Line.Put (File, " & ");
+    Text_Line.Put_Line (File, Positive'Image(Totalc(I)));
+    Total_Call := Total_Call + Totalc(I);
   end loop;
-  Text_Line.Put_Line (Fich, " TOTAL APPELS : " & Positive'Image(Total_Appel));
+  Text_Line.Put_Line (File, " TOTAL CALLS : " & Positive'Image(Total_Call));
 
-  Text_Line.Close_All (Fich);
+  Text_Line.Close_All (File);
 
 exception
-  when others =>
-    Put_Line_Output ("Exception prog");
+  when Error: others =>
+    Put_Line_Output ("Exception in prog");
+    Put_Line_Output (Ada.Exceptions.Exception_Name (Error));
     raise;
 end Servprio;
 

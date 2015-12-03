@@ -1,3 +1,4 @@
+-- Transmission of exceptions through rendez-vous
 with Basic_Proc;
 
 procedure Para is

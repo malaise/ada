@@ -1,4 +1,5 @@
-with Basic_Proc;
+-- Several (2) free tasks
+with Basic_Proc, Protected_Put;
 procedure Wheeles is
 
   Nb_Wheeles : constant := 3;
@@ -16,27 +17,32 @@ procedure Wheeles is
   begin
     accept Start (No : in Wheeles_Range) do
       T_Wheele.No := No;
-      Basic_Proc.Put_Line_Output ("Task " & Wheeles_Range'Image(No) & " is starting.");
+      Protected_Put.Put_Line_Output ("Task " & Wheeles_Range'Image(No)
+                                   & " is starting.");
     end Start;
-    Basic_Proc.Put_Line_Output ("Task " & Wheeles_Range'Image(No) & " is started.");
+    Protected_Put.Put_Line_Output ("Task " & Wheeles_Range'Image(No)
+                                 & " is started.");
 
     loop
-      Basic_Proc.Put_Line_Output ("Task " & Wheeles_Range'Image(No) & " is running.");
+      Protected_Put.Put_Line_Output ("Task " & Wheeles_Range'Image(No)
+                                   & " is running.");
       select
         accept Stop do
-          Basic_Proc.Put_Line_Output ("Task " & Wheeles_Range'Image(No) & " is exiting.");
+          Protected_Put.Put_Line_Output ("Task " & Wheeles_Range'Image(No)
+                                       & " is exiting.");
         end Stop;
         exit;
       or
         delay 0.01;
       end select;
     end loop;
-    Basic_Proc.Put_Line_Output ("Task " & Wheeles_Range'Image(No) & " is exited.");
+    Protected_Put.Put_Line_Output ("Task " & Wheeles_Range'Image(No)
+                                 & " is exited.");
   end T_Wheele;
 
 
 begin
-  Basic_Proc.Put_Line_Output ("Starting tasks.");
+  Protected_Put.Put_Line_Output ("Starting tasks.");
   for I in Wheeles_Range loop
     Wheeles_Array(I).Start(I);
   end loop;
@@ -53,10 +59,11 @@ begin
       when others => null;
     end;
   end loop;
-  Basic_Proc.Put_Line_Output ("Stopping tasks.");
+  Protected_Put.Put_Line_Output ("Stopping tasks.");
 
   for I in Wheeles_Range loop
     Wheeles_Array(I).Stop;
   end loop;
-  Basic_Proc.Put_Line_Output ("Exiting.");
+  Protected_Put.Put_Line_Output ("Exiting.");
 end Wheeles;
+

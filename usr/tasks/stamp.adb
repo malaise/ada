@@ -1,3 +1,4 @@
+-- Two free task, one with random delay and the other periodic
 with Ada.Calendar;
 with Basic_Proc, Rnd, Console, Normal;
 use Basic_Proc;

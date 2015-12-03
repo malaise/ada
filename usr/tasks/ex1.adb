@@ -1,15 +1,16 @@
-with Basic_Proc, Normal;
-use  Basic_Proc;
+-- Two clients share a unique service
+with Protected_Put, Normal;
+use  Protected_Put;
 procedure Ex1 is
   pragma Priority (1);
 
-  subtype Client_Range is Positive range 1..2;
+  subtype Client_Range is Positive range 1 .. 2;
 
-  task Serveur is
+  task Server is
     entry Init;
     entry Service (No_Client : in Client_Range);
     pragma Priority (20);
-  end Serveur;
+  end Server;
 
   task type Client is
     entry Init (No : in Client_Range);
@@ -20,20 +21,18 @@ procedure Ex1 is
 
   procedure Print (Message : in String; Client_No : in Client_Range) is
   begin
-    Put_Output (Message & ' ');
-    Put_Output (Normal (Client_No, 3));
-    New_Line_Output;
+    Put_Line_Output (Message & ' ' & Normal (Client_No, 2));
   end Print;
 
 
-  task body Serveur is
+  task body Server is
   begin
     accept Init;
 
     loop
       select
         accept Service (No_Client : in Client_Range) do
-          Print ("                           Service de", No_Client);
+          Print ("                           Service of", No_Client);
           delay (1.0);
         end Service;
       or
@@ -44,8 +43,8 @@ procedure Ex1 is
 
   exception
     when others =>
-      Put_Line_Output ("Exception serveur");
-  end Serveur;
+      Put_Line_Output ("Exception in server");
+  end Server;
 
 
   task body Client is
@@ -56,14 +55,13 @@ procedure Ex1 is
     end Init;
 
     loop
-      Print ("Requete de", No);
-      Serveur.Service (No);
---      Schedule;
+      Print ("Request from", No);
+      Server.Service (No);
     end loop;
 
   exception
     when others =>
-      Put_Line_Output ("Exception client");
+      Put_Line_Output ("Exception in client");
   end Client;
 
 begin
@@ -71,10 +69,10 @@ begin
     Clients(I).Init(I);
   end loop;
 
-  Serveur.Init;
+  Server.Init;
 
 exception
   when others =>
-    Put_Line_Output ("Exception procedure");
+    Put_Line_Output ("Exception in main procedure");
 end Ex1;
 
