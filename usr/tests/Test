@@ -131,6 +131,26 @@ if [ $? -ne 0 ] ; then
 fi
 echo "OK"
 
+# t_any
+title t_any
+try t_any
+cat > exp << EOF
+None_Kind: 
+Bool_Kind: True
+Trilean_Kind: Other
+Inte_Kind: 2121
+Integer_Kind: 21
+Real_Kind: 2.12100000000000E+01
+Float_Kind: 2.12121E+03
+Str_Kind: A string
+Address_Kind:                 16#33C99#
+Access_Kind: ->Another string
+EOF
+comp out exp
+comp err nul
+
+
+
 # t_arbitrary
 title t_arbitrary
 try t_arbitrary 21

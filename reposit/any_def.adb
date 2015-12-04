@@ -12,6 +12,7 @@ package body Any_Def is
     return (case A.Kind is
         when None_Kind    => "",
         when Bool_Kind    => Mixed_Str (A.Bool'Img),
+        when Trilean_Kind => Trilean.Image (A.Tril),
         when Integer_Kind => Integer_Image (A.Int),
         when Inte_Kind    => Inte_Image (A.Inte),
         when Real_Kind    => Real_Image (A.Real),

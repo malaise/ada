@@ -1,12 +1,12 @@
 with System;
-with As.U, My_Math;
+with Trilean, As.U, My_Math;
 package Any_Def is
 
   -- An "any" is a multi-type container
-  -- An "any" can be empty, a boolean, integer, real, string, address
+  -- An "any" can be empty, a boolean, trilean, integer, real, string, address
   --  or access to an "any"
   type Any_Kind_List is (None_Kind,
-                         Bool_Kind,
+                         Bool_Kind, Trilean_Kind,
                          Inte_Kind, Integer_Kind,
                          Real_Kind, Float_Kind,
                          Str_Kind,
@@ -20,6 +20,7 @@ package Any_Def is
     case Kind is
       when None_Kind    => null;
       when Bool_Kind    => Bool : Boolean;
+      when Trilean_Kind => Tril : Trilean.Trilean;
       when Integer_Kind => Int  : Integer;
       when Inte_Kind    => Inte : My_Math.Inte;
       when Real_Kind    => Real : My_Math.Real;
