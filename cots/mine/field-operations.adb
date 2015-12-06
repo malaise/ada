@@ -103,8 +103,6 @@ package body Field.Operations is
          end loop Fill_Columns;
       end loop Fill_Rows;
 
-      Random.Reset (Gen);
-
       -- Shuffle Rand_List, a list of cell locations
       Shuffle : for I in Rand_List'range loop
          Index := Random.Random (Gen);
