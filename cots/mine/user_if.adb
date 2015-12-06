@@ -1,7 +1,9 @@
 -- Mine Detector Game
--- Copyright (C) 2009 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2015 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
+-- V6.1 2015 Dec 01 Corrected initial levels selection
+-- V6.1 2012 Aug 01 GTKAda changed
 -- V6.0 2009 Aug 01
 --
 with Glib;
@@ -21,8 +23,6 @@ with Gtk.Text;
 with Gtk.Toggle_Button;
 with Gtk.Window;
 with Gtkada.Dialogs;
-with Gtk.Check_Menu_Item;
-
 
 with Ada.Characters.Latin_1;
 with Ada.Strings.Unbounded;
@@ -49,7 +49,6 @@ use Gtkada.Dialogs;
 use Gtk.Dialog;
 use Gtk.Scrolled_Window;
 use Gtk.Text;
-use Gtk.Check_Menu_Item;
 
 with Gtk.Menu;
 with Gtk.Menu_Item;
@@ -104,8 +103,7 @@ package body User_IF is
                                     3 => (Name => "200", Mines => 200),
                                     4 => (Name => "250", Mines => 250) );
 
-   subtype Levels_Range is Glib.Gint range Levels'Range;
-   Default_Level : constant Levels_Range := 1;
+   Default_Level : constant Glib.Gint := 1;
 
    Auto_Marking_Desired      : Boolean := False;
    Extended_Stepping_Desired : Boolean := False;
@@ -213,6 +211,7 @@ package body User_IF is
       -- null;
    begin -- When_Close
       Main_Quit;
+
       return True;
    end When_Close;
 
@@ -296,6 +295,7 @@ package body User_IF is
       -- null;
    begin -- Close_Rules
       Destroy (Rules_Dialog);
+
       return True;
    end Close_Rules;
 
@@ -392,7 +392,7 @@ package body User_IF is
       Set_Title (Rules_Dialog, "Rules for Mine Detector");
       Set_USize (Rules_Dialog, 500, 400);
       Window_Cb.Connect (Rules_Dialog, "delete_event",
-                         Window_Cb.To_Marshaller (Close_Rules'Access));
+                         Window_Cb.To_Marshaller (Close_Rules'Access) );
       V_Box := Get_Vbox (Rules_Dialog);
       Action := Get_Action_Area (Rules_Dialog);
 
@@ -459,15 +459,17 @@ package body User_IF is
       Group     : Widget_SList.GSlist;
       Menu_Item : Gtk_Radio_Menu_Item;
 
-      procedure Add_Line (Index : in Levels_Range; Text : in String) is
-         use type Levels_Range;
+      procedure Add_Line (Index : in Glib.Gint; Text : in String) is
+         use type Glib.Gint;
       begin -- Add_Line
          Gtk_New (Menu_Item, Group, Text);
          Group := Gtk.Radio_Menu_Item.Get_Group (Menu_Item);
          Append (Menu, Menu_Item);
+
          if Index = Default_Level then
             Set_Active (Menu_Item, True);
          end if;
+
          Show (Menu_Item);
       end Add_Line;
    begin -- Create_Level_Option_Menu
@@ -494,10 +496,10 @@ package body User_IF is
       Set_Position (Window, Win_Pos_Center);
       Set_Title (Window, "Mine Detector");
       Window_Cb.Connect (Window, "delete_event",
-                         Window_Cb.To_Marshaller (When_Close'Access));
+                         Window_Cb.To_Marshaller (When_Close'Access) );
       Gtk_New_Hbox (Box => Box, Spacing => 2);
       Add (Window, Box);
-      Gtk_New (Widget      => Table,
+      Gtk_New (Table       => Table,
                Rows        => Glib.Guint (Field.Valid_Row'Last),
                Columns     => Glib.Guint (Field.Valid_Column'Last),
                Homogeneous => True);
