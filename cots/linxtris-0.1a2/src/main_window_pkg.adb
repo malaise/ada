@@ -116,7 +116,7 @@ package body Main_Window_Pkg is
                                      Gdk.Types.Keysyms.GDK_Pause, Gdk.Types.Release_Mask, Gtk.Accel_Group.Accel_Visible );
 
 
-      Gtk.Table.Gtk_New( Widget => Win.Table,
+      Gtk.Table.Gtk_New( Table => Win.Table,
                          Rows => 2, Columns => 2,
                          Homogeneous => False );
       Add( Win, Win.Table );
