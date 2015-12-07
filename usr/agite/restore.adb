@@ -1,6 +1,6 @@
 -- If file is / then restore all the files of the list,
 --   otherwise restore the file
--- Reject restoring if a/the file if it is locally modified
+-- Reject restoring if a/the file is locally modified
 -- Otherwise confirm and restore
 with Git_If, Error, Confirm;
 procedure Restore (Root, File, Hash : in String;

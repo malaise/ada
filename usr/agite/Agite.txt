@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V27.22
+V27.23
 
 General purpose
 ---------------
@@ -978,7 +978,8 @@ This button causes Agite to check that the current file is not locally
 modified. If not, Agite asks for confirmation then checkouts the file in the
 version currently (left-)selected in the history. The file will be tagged as
 \'M' (modified) if this version differs from the Git HEAD one. +
-This function is not active on the history of a directory.
+This function is not active on the history of a directory (but restoring a
+whole commit is possible from the xref:XDetail[detail] menu).
 
 anchor:XHistCheckout[]
 
