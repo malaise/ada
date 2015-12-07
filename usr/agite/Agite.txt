@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V27.23
+V27.24
 
 General purpose
 ---------------
@@ -1315,6 +1315,8 @@ current branch. +
 An action to 'edit' or 'reword' launches the
 xref:XCommit[commit] menu.  It is possible to modify some files and the
 comment, and/or the selection of files, and to make several commits. 
+See the section xref:XCherryHowto[Cherry-pick how to] for more details on how
+to use the 'commit' menu in this context.
 
  * Clicking on the 'Done' button goes back to the loop
 of picking the cherries (possibly with some files not yet committed).
@@ -1365,7 +1367,7 @@ Shift + Suppr, move to the last character of a line by hitting Ctrl
 
 NOTE: The comment must not be empty when committing.
 
-.List of changes
+.List of change
 
 This list shows all the current changes in the repository, with 3 letters of
 status for each file:
@@ -1683,6 +1685,15 @@ Use-cases
   - In the 'commit' screen, set the comment and stage the files for the first
     commit, then commit. Set the comment and stage the files for the second
     commit, then commit... Finally, click on the 'Done' button.
+
+* Remove some files from a Cherry
+  - 'Edit' the cherry
+  - In the 'commit' screen, leave staged the files to keep (unstage the files
+    to remove). Commit the change.
+  - Call the 'stash' menu and 'AddReset' the remaining files into a new stash.
+  - Click on the 'Done' button of the 'commit' menu.
+  - During or after the cherry-pick operation, you can reuse or delete
+    the stash.
 
 * Split a cherry into two commits separated by already existing commits
   - 'Edit' the cherry
