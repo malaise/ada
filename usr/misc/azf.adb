@@ -16,7 +16,7 @@ procedure Azf is
     Basic_Proc.Put_Line_Error (" -d | --decompress            : Uncompress stdin to stdout");
     Basic_Proc.Put_Line_Error (" -s <MB> | --buffer_size=<MB> : Set buffer size in Mega Bytes (max "
                            & Images.Integer_Image (Max_Buffer_Size) & ")");
-    Basic_Proc.Put_Line_Error (" -H | --headers               : Use headers (and buffers of 64 kB)");
+    Basic_Proc.Put_Line_Error (" -H | --headers               : Use lzf header (and buffer of 64 kB)");
     Basic_Proc.Put_Line_Error (" --lz4                        : Use lz4 instead of lzf");
     Basic_Proc.Put_Line_Error (" --snappy                     : Use snappy instead of lzf");
     Basic_Proc.Put_Line_Error (" -h | --help                  : Display this help");
