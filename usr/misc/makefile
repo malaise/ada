@@ -9,7 +9,7 @@ SUBUNITS :=
 EXES := adand add_nums alook arbipas astat azf beep comp_vars \
  day_of_week ddir e2f fact full_path g hanoi \
  impot_04 mlbx_overflow one_of_arg pascal pingpong prime \
- random relay rndsok renamer \
+ random relay renamer \
  second statfile status strcase tcping trail_spaces udp_spy \
  wait wake \
  astat.stat pingpong.stat \
