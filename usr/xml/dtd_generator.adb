@@ -6,7 +6,7 @@ with Argument, Argument_Parser, Basic_Proc, As.U, Str_Util, Mixed_Str,
 procedure Dtd_Generator is
 
   -- Current version
-  Version : constant String := "V2.4";
+  Version : constant String := "V2.5";
 
   -- Algorithm criteria
 
@@ -498,13 +498,13 @@ begin
 
     -- Options
     if Arg_Dscr.Is_Set (3) then
-      Max_Deviation := Natural'Value (Arg_Dscr.Get_Option (2));
+      Max_Deviation := Natural'Value (Arg_Dscr.Get_Option (3));
     end if;
     if Arg_Dscr.Is_Set (4) then
-      Max_Elements := Natural'Value (Arg_Dscr.Get_Option (3));
+      Max_Elements := Natural'Value (Arg_Dscr.Get_Option (4));
     end if;
     if Arg_Dscr.Is_Set (5) then
-      Max_Enums := Natural'Value (Arg_Dscr.Get_Option (4));
+      Max_Enums := Natural'Value (Arg_Dscr.Get_Option (5));
     end if;
   exception
     when others =>
