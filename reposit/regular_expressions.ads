@@ -10,7 +10,7 @@ package Regular_Expressions is
   procedure Check_Pcre_Version;
 
   -- Result of regex compilation
-  type Compiled_Pattern is limited private;
+  type Compiled_Pattern is tagged limited private;
 
   -- Matching information:
   -- Filled with the indexes in the string To_Check, that match
@@ -46,6 +46,11 @@ package Regular_Expressions is
                      Case_Sensitive : in Boolean := True;
                      Multi_Line : in Boolean := False;
                      Dot_All : in Boolean := False);
+  function Compile (Compiled : in out Compiled_Pattern;
+                    Criteria : in String;
+                    Case_Sensitive : in Boolean := True;
+                    Multi_Line : in Boolean := False;
+                    Dot_All : in Boolean := False) return Boolean;
 
   -- Check syntax of a regex (compiles it) , return True if OK
   function Check (Criteria : String) return Boolean;
@@ -80,6 +85,13 @@ package Regular_Expressions is
   -- May raise No_Criteria if Criteria does not compile
   function Match (Criteria, To_Check : String; Max_Match : Positive := 10)
                   return Match_Array;
+
+  -- Compare string To_Check to Pattern (Exec with default values)
+  -- Returns either No_Match or the Match_Cell (possibly Any_Match)
+  --  corresponding to Match_Info(1)
+  -- May raise No_Criteria if Criteria does not compile
+  function Match (Compiled : Compiled_Pattern; To_Check : String)
+                 return Match_Cell;
 
   -- Compare string To_Check to Criteria (Compile and Exec with default values)
   -- Returns either No_Match or the Match_Cell (possibly Any_Match)

@@ -138,6 +138,17 @@ package body Regular_Expressions is
     Ok := Compiled.Error = 0;
   end Compile;
 
+  function Compile (Compiled : in out Compiled_Pattern;
+                    Criteria : in String;
+                    Case_Sensitive : in Boolean := True;
+                    Multi_Line : in Boolean := False;
+                    Dot_All : in Boolean := False) return Boolean is
+  begin
+    return Ok : Boolean do
+      Compile (Compiled, Ok, Criteria, Case_Sensitive, Multi_Line, Dot_All);
+    end return;
+  end Compile;
+
   -- Check a regex, return True if OK
   function Check (Criteria : String) return Boolean is
     Compiled : Compiled_Pattern;
@@ -271,7 +282,7 @@ package body Regular_Expressions is
     end loop;
   end Exec;
 
-  -- Compare string Str to Criteria
+  -- Compare string To_Check to Criteria
   -- Return a Match_Array of size between 0 (no match) and Max_Match
   -- May raise No_Criteria if Criteria does not compile
   function Match (Criteria, To_Check : String; Max_Match : Positive := 10)
@@ -290,7 +301,20 @@ package body Regular_Expressions is
     return Match_Info(1 .. Matched);
   end Match;
 
-  -- Compare string Str to Criteria
+    -- Compare string To_Check to Pattern (Exec with default values)
+  -- Returns either No_Match or the Match_Cell (possibly Any_Match)
+  --  corresponding to Match_Info(1)
+  -- May raise No_Criteria if Criteria does not compile
+  function Match (Compiled : Compiled_Pattern; To_Check : String)
+                 return Match_Cell is
+    Matched : Natural;
+    Match_Info : One_Match_Array;
+  begin
+    Exec (Compiled, To_Check, Matched, Match_Info);
+    return Match_Info (1);
+  end Match;
+
+  -- Compare string To_Check to Criteria
   -- Returns No_Match or a Match_Cell
   -- May raise No_Criteria if Criteria does not compile
   function Match (Criteria, To_Check : String) return Match_Cell is
@@ -299,7 +323,7 @@ package body Regular_Expressions is
     return (if Match_Info'Length = 0 then No_Match else Match_Info(1));
   end Match;
 
-  -- Compare string Str to Criteria
+  -- Compare string To_Check to Criteria
   -- Returns True or False
   -- May raise No_Criteria if Criteria does not compile.
   function Match (Criteria, To_Check : String;
