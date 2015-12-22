@@ -71,7 +71,7 @@ package body Lzf is
 
   --#IfDef Debug
     --#IfDef LocalTrace
-      -- Logging
+  -- Logging
   package Logger is
     function Debug_On return Boolean;
   end Logger;
