@@ -24,8 +24,8 @@ procedure T_Arg_Parser is
     As.U.Tus ("A second single key"),
     As.U.Tus ("A third single key"),
     As.U.Tus ("Key that can appear several times"),
-    As.U.Tus ("Key that can have options"),
-    As.U.Tus ("Key that can appear several times and have options"));
+    As.U.Tus ("Key that must have options"),
+    As.U.Tus ("Key that can appear several times and can have options"));
 
   No_Keys : constant Argument_Parser.The_Keys_Type (1 .. 0)
           := (others => (False,
