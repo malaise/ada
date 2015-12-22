@@ -1,0 +1,115 @@
+App
+===
+
+Version Beta
+
+App is a pre-processor that selects pieces of text and expands names
+according to definitions.
+
+Syntax
+------
+
+..........................................
+app [ <prefix> ] [ { <definition> } ]
+
+  <prefix>     ::= --prefix=<regex> | -p <regex>     // default "#"
+  <definition> ::= <name>[=[<value>]]
+..........................................
+
+app reads stdin and outputs on stdout the generated text.
+
+Directives
+----------
+app searches in the input for lines that contain preprocessing directives.
+A preprocessing directive is a line that:
+
+ * possibly starts with some spaces and horizontal tabulations
+ * followed by a 'prefix'
+ * followed by at least a space or a tab
+ * followed by a 'keyword'.  Some keywords must be followed by:
+  - at least a space or a tab
+  - a 'name'
+* possibly followed by some spaces and horizontal tabulations
+
+
+.prefix
+The 'prefix' is "#" by default, but a different string can be specified as
+argument.
+
+NOTE: Beware that the search is based on regular expressions, so it might be
+necessary to backslash some specific characters of the prefix definition
+('\*', '+', '?', '(', ')', '|', '.', '['...). +
+Example, for a C comment followed by a sharp, use "prefix=/\*#".
+
+.Keyword
+
+app recognizes the following keywords (and suppresses them from the output):
+
+IfDef <names>::
+
+<names> is one name or several names separated by \'|'. +
+If one of the names is defined in the arguments, then the text following
+the line is kept, up to the next preprocessing directive.
+
+IfNotDef <names>::
+<names> is one name or several names separated by \'&'. +
+If none of the names is defined in the arguments, then the text following
+the line is kept, up to the next preprocessing directive.
+
+ElsIfDef <names>::
+<names> is one name or several names separated by \'|'. +
+If no preceeding directive has been selected and one of the names
+is defined in the arguments, then the text following
+the line is kept, up to the next preprocessing directive.
+
+ElsIfNotDef <names>::
+<names> is one name or several names separated by \'&'. +
+If no preceeding directive has been selected and none of the names
+is defined in the arguments, then the text following
+the line is kept, up to the next preprocessing directive.
+
+ElseDef::
+If no preceeding directive has been selected, then the text following
+the line is kept, up to the next preprocessing directive.
+
+EndifDef::
+End of the check at this level.
+
+RefDef <name>::
+Replaces the whole line (except leading separators) by the value defined for
+<name>, by nothing if the <name> is not defined.
+
+.Summary
+app looks for lines of text stricly matching (depending on the keyword):
+
+   ^[[:blank:]]*<prefix><keyword>[[:blank:]]+<name>[[:blank:]]*$
+
+or
+
+   ^[[:blank:]]*<prefix><keyword>[[:blank:]]*$
+
+.Examples
+
+  #IfDef X
+    echo "Def X"
+  #ElsifNotDef Y&Z
+    echo "NotDef Y&Z"
+  #ElsifDef T
+    echo "Def T"
+    #IfNotDef A
+      echo "NotDef A"
+    #ElsifDef B|C
+      echo "Def B|C"
+      echo "B is "\
+#RefDef B
+    #ElseDef
+      echo "NotDef A|B|C"
+    #EndifDef
+  #EndifDef
+
+Errors
+------
+ * ElsifDef, ElsifNotDef or ElseDef not after a IfDef or a IfNotDef.
+ * ElseDef not followed by EndifDef.
+ * A block not terminated by EndifDef.
+

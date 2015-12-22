@@ -9,11 +9,13 @@ SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg afpx_bld-xref \
   xml_parser-tree_mng \
   x_mng-dispatch 
 OPTIMIZED := snappy lzf lz4
+PREREQS := app
 EXES := afpx_bld afpx_rnb clear_screen
 
 PARGS_snappy.apb := # Debug
 PARGS_lzf.apb :=  # Debug # Fast | Slow # LocalTrace
 PARGS_lz4.apb :=  # Debug
+CLIBS_app = $(UTILS_SLIBS) $(PCRE_SLIBS)
 CLIBS_afpx_bld = $(PCRE_SLIBS) $(X11_SLIBS)
 CLIBS_afpx_rnb = $(PCRE_SLIBS) $(X11_SLIBS)
 CLIBS_clear_screen := $(UTILS_SLIBS)
@@ -21,7 +23,7 @@ CLIBS_clear_screen := $(UTILS_SLIBS)
 HTML := true
 GNATHTMLOPT := -d
 
-TXT := REPOSIT_LIST
+TXT := REPOSIT_LIST App
 DOCOPTS_REPOSIT_LIST := -a toc
 
 include $(TEMPLATES)/ada.mk
