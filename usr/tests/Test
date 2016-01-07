@@ -143,7 +143,7 @@ Integer_Kind: 21
 Real_Kind: 2.12100000000000E+01
 Float_Kind: 2.12121E+03
 Str_Kind: A string
-Address_Kind:                 16#33C99#
+Address_Kind:       16#33C99#
 Access_Kind: ->Another string
 EOF
 comp out exp
