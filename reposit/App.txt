@@ -1,7 +1,7 @@
 App
 ===
 
-Version Beta
+Version 02.00
 
 App is a pre-processor that selects pieces of text and expands names
 according to definitions.
@@ -79,6 +79,9 @@ RefDef <name>::
 Replaces the whole line (except leading separators) by the value defined for
 <name>, by nothing if the <name> is not defined.
 
+Define <name> <value>::
+Defines or re-defines a value for <name>.
+
 .Summary
 app looks for lines of text stricly matching (depending on the keyword):
 
@@ -87,6 +90,10 @@ app looks for lines of text stricly matching (depending on the keyword):
 or
 
    ^[[:blank:]]*<prefix><keyword>[[:blank:]]*$
+
+or 
+
+   ^[[:blank:]]*<prefix>Define[[:blank:]]+<name>[[:blank:]]+<Value>$
 
 .Examples
 

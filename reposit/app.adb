@@ -3,7 +3,7 @@ with Basic_Proc, Trace.Loggers, As.U, Argument, Argument_Parser, Long_Longs,
      Regular_Expressions, Unlimited_Pool;
 procedure App is
 
-  Version : constant String := "V01.00";
+  Version : constant String := "V02.00";
 
   -- Log an error and raise
   Raised_Error : exception;
@@ -60,6 +60,33 @@ procedure App is
   Definition : Definition_Rec;
   -- Append or replace
   Found : Boolean;
+
+  -- Check, then replace or add a definition
+  procedure Define (Definition : in Definition_Rec) is
+    use type As.U.Asu_Us;
+  begin
+    -- Check name validity
+    if not Ada_Words.Is_Identifier (Definition.Name.Image) then
+      Error ("Invalid definition name " & Definition.Name.Image);
+    end if;
+
+    -- Store: replace or append
+    Found := False;
+    for I in 1 .. Definitions.Length loop
+      if Definitions.Element(I).Name = Definition.Name then
+        Definitions.Replace_Element (I, Definition);
+        Found := True;
+        Logger.Log_Debug ("Definition replaced >" & Definition.Name.Image
+                        & "=" & Definition.Value.Image & "<");
+        exit;
+      end if;
+    end loop;
+    if not Found then
+      Definitions.Append (Definition);
+      Logger.Log_Debug ("Definition appended >" & Definition.Name.Image
+                      & "=" & Definition.Value.Image & "<");
+    end if;
+  end Define;
 
   -- Regex associated to
   -- Valid <name>{|[<name>]} or <name>{&[<name>]}
@@ -127,13 +154,14 @@ procedure App is
   -- The regexes associated to the prefix and various keywords
   --------------
   Rdef, Rifdef, Rifnotdef, Relsifdef, Relsifnotdef, Relsedef, Rendifdef,
-  Rrefdef : Regular_Expressions.Compiled_Pattern;
+  Rrefdef, Rdefine : Regular_Expressions.Compiled_Pattern;
 
-  -- Compile a regex, with or withtout a name
+  -- Compile a regex, with or without a name, with or without a value
   -- Report error
   procedure Compile (Pattern : in out Regular_Expressions.Compiled_Pattern;
                      Keyword : in String;
-                     Name : in Boolean) is
+                     Name : in Boolean;
+                     Value : in Boolean := False) is
     Ok : Boolean;
   begin
     -- Opt spaces, then prefix and keyword
@@ -141,12 +169,14 @@ procedure App is
     -- Opt spaces
     Logger.Log_Debug ("Compiling "
       & "^[[:blank:]]*" & Prefix.Image & Keyword
-      & (if Name then "[[:blank:]]+[^[:blank:]]+" else "")
-      & "[[:blank:]]*$");
+      & (if Name then "[[:blank:]]+([^[:blank:]]+)" else "")
+      & (if Value then "[[:blank:]]+([^[:blank:].*)" else "[[:blank:]]*")
+      & "$");
     Regular_Expressions.Compile (Pattern, Ok,
         "^[[:blank:]]*" & Prefix.Image & Keyword
       & (if Name then "[[:blank:]]+([^[:blank:]]+)" else "")
-      & "[[:blank:]]*$");
+      & (if Value then "[[:blank:]]+([^[:blank:].*)" else "[[:blank:]]*")
+      & "$");
     if not Ok then
       Error ("Regex " & Keyword & " does not compile: "
            & Regular_Expressions.Error (Pattern));
@@ -154,12 +184,12 @@ procedure App is
   end Compile;
 
   -- Check if Str strictly matches the Regex
-  -- Store last name is it was set
-  Last_Name : As.U.Asu_Us;
+  -- Store last name and last value if they are set
+  Last_Name, Last_Value : As.U.Asu_Us;
   function Match (Pattern : Regular_Expressions.Compiled_Pattern;
                   Str : As.U.Asu_Us) return Boolean is
     N : Natural;
-    Info : Regular_Expressions.Match_Array (1 .. 2);
+    Info : Regular_Expressions.Match_Array (1 .. 3);
     Result : Boolean;
   begin
     Regular_Expressions.Exec (Pattern, Str.Image, N, Info);
@@ -167,10 +197,16 @@ procedure App is
     Result := N >= 1
               and then Regular_Expressions.Strict_Match (Str.Image, Info(1));
     -- Store name (first substring, info(2))
-    if N = 2 then
+    if N >= 2 then
       Last_Name := Str.Uslice (Info(2).First_Offset, Info(2).Last_Offset_Stop);
     else
       Last_Name.Set_Null;
+    end if;
+    -- Store value (second substring, info(3))
+    if N = 3 then
+      Last_Value := Str.Uslice (Info(3).First_Offset, Info(3).Last_Offset_Stop);
+    else
+      Last_Value.Set_Null;
     end if;
     return Result;
   end Match;
@@ -265,27 +301,8 @@ begin
       Definition.Value := Str.Uslice (Index + 1, Str.Length);
     end if;
 
-    -- Check name validity
-    if not Ada_Words.Is_Identifier (Definition.Name.Image) then
-      Error ("Invalid definition name " & Definition.Name.Image);
-    end if;
-
-    -- Store: replace or append
-    Found := False;
-    for I in 1 .. Definitions.Length loop
-      if Definitions(I).Name = Definition.Name then
-        Definitions.Replace_Element (I, Definition);
-        Found := True;
-        Logger.Log_Debug ("Definition replaced >" & Definition.Name.Image
-                        & "=" & Definition.Value.Image & "<");
-        exit;
-      end if;
-    end loop;
-    if not Found then
-      Definitions.Append (Definition);
-      Logger.Log_Debug ("Definition appended >" & Definition.Name.Image
-                      & "=" & Definition.Value.Image & "<");
-    end if;
+    -- Check, then add or replace
+    Define (Definition);
 
   end loop;
 
@@ -302,6 +319,7 @@ begin
   Compile (Relsedef, "ElseDef", False);
   Compile (Rendifdef, "EndifDef", False);
   Compile (Rrefdef, "RefDef", True);
+  Compile (Rdefine, "Define", True, True);
 
   -- Open stdin and stdout flows
   In_Flow.Open_All (Text_Line.In_File);
@@ -380,12 +398,18 @@ begin
         Lines.Pop;
         Last_Else := False;
         Skip := True;
-      elsif Match (Rrefdef, Line) and then Keep.Look then
+      elsif Keep.Look and then Match (Rrefdef, Line) then
         Logger.Log_Debug ("  Match RefDef " & Line.Image);
         -- A reference: replace in Str
         Str := As.U.Tus (Str_Util.Substit (Str.Image, Last_Name.Image,
                                            Value_Of (Last_Name)));
         Logger.Log_Debug ("  Replaced by " & Text_Line.Trim (Line.Image));
+      elsif Keep.Look and then Match (Rdefine, Line) then
+        Logger.Log_Debug ("  Match Define " & Line.Image);
+        -- A definition, store
+        Definition.Name := Last_Name;
+        Definition.Value := Last_Value;
+        Define (Definition);
       end if;
     end if;
 
