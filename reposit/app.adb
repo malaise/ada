@@ -3,7 +3,7 @@ with Basic_Proc, Trace.Loggers, As.U, Argument, Argument_Parser, Long_Longs,
      Regular_Expressions, Unlimited_Pool;
 procedure App is
 
-  Version : constant String := "V01.00 alpha";
+  Version : constant String := "V01.00";
 
   -- Log an error and raise
   Raised_Error : exception;
@@ -58,6 +58,8 @@ procedure App is
                                                    Definition_Array);
   Definitions : Definitions_Mng.Unb_Array;
   Definition : Definition_Rec;
+  -- Append or replace
+  Found : Boolean;
 
   -- Regex associated to
   -- Valid <name>{|[<name>]} or <name>{&[<name>]}
@@ -263,13 +265,28 @@ begin
       Definition.Value := Str.Uslice (Index + 1, Str.Length);
     end if;
 
-    -- Check name validity ans store
+    -- Check name validity
     if not Ada_Words.Is_Identifier (Definition.Name.Image) then
       Error ("Invalid definition name " & Definition.Name.Image);
     end if;
-    Definitions.Append (Definition);
-    Logger.Log_Debug ("Definition >" & Definition.Name.Image
-                    & "=" & Definition.Value.Image & "<");
+
+    -- Store: replace or append
+    Found := False;
+    for I in 1 .. Definitions.Length loop
+      if Definitions(I).Name = Definition.Name then
+        Definitions.Replace_Element (I, Definition);
+        Found := True;
+        Logger.Log_Debug ("Definition replaced >" & Definition.Name.Image
+                        & "=" & Definition.Value.Image & "<");
+        exit;
+      end if;
+    end loop;
+    if not Found then
+      Definitions.Append (Definition);
+      Logger.Log_Debug ("Definition appended >" & Definition.Name.Image
+                      & "=" & Definition.Value.Image & "<");
+    end if;
+
   end loop;
 
   -- Compile the Regexes
