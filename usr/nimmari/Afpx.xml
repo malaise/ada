@@ -14,7 +14,7 @@
     <!-- Title NIM / MARIENBAD, then NIM or Marienbad -->
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="30" Low="0" Right="46"/>
-      <Colors Foreground="Blue" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">NIM and MARIENBAD</Init>
     </Field>
 
@@ -165,13 +165,13 @@
     <!-- Score -->
     <Field Num="19" Kind="Put" Name="Names">
       <Geometry Up="0" Left="54" Low="0" Right="78"/>
-      <Colors Foreground="Blue" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
     </Field>
 
     <!-- Title NIM or Marienbad -->
     <Field Num="20" Kind="Put" Name="Game">
       <Geometry Up="0" Left="34" Low="0" Right="42"/>
-      <Colors Foreground="Blue" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
     </Field>
 
     <!-- Who wins -->
