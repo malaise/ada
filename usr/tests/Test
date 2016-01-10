@@ -148,6 +148,11 @@ Access_Kind: ->Another string
 EOF
 comp out exp
 comp err nul
+echo "OK"
+
+# t_app
+title t_app
+t_app
 
 # t_arbitrary
 title t_arbitrary

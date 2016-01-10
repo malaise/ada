@@ -1,9 +1,9 @@
 with Basic_Proc, Trace.Loggers, As.U, Argument, Argument_Parser, Long_Longs,
-     Mixed_Str, Str_Util, Ada_Words, Text_Line, Unbounded_Arrays, Many_Strings,
-     Regular_Expressions, Unlimited_Pool;
+     Mixed_Str, Str_Util.Regex, Ada_Words, Text_Line, Unbounded_Arrays,
+     Many_Strings, Regular_Expressions, Unlimited_Pool;
 procedure App is
 
-  Version : constant String := "V02.00";
+  Version : constant String := "V02.01";
 
   -- Log an error and raise
   Raised_Error : exception;
@@ -114,27 +114,26 @@ procedure App is
     Splitted := Str_Util.Split (Names.Image, (if Ored then '|' else '&'));
 
     -- Look for a match among the Definition names
+    if Definitions.Is_Null then
+      Logger.Log_Debug ("Check, no defintion => False");
+      return False;
+    end if;
+    Found := False;
     for I in 1 .. Splitted.Nb loop
       Name := Splitted.Nth (I);
       for J in 1 .. Definitions.Length loop
         if Name = Definitions.Element(J).Name then
           -- Name matches a definition
-          if Ored then
-            Logger.Log_Debug ("Check found match on " & Names.Image);
-            return True;
-          end if;
-        else
-          -- No match
-          if not Ored then
-            Logger.Log_Debug ("Check found no match on " & Names.Image);
-            return False;
-          end if;
+          Logger.Log_Debug ("Check found "
+                          & Definitions.Element(J).Name.Image
+                          & " matching with " & Names.Image);
+          return True;
         end if;
       end loop;
     end loop;
     -- All or no match at all
-    Logger.Log_Debug ("Check result " & Mixed_Str (Boolean'Image (not Ored)));
-    return not Ored;
+    Logger.Log_Debug ("Check no match found => False");
+    return False;
   end Check;
 
   -- Value of a name
@@ -156,6 +155,8 @@ procedure App is
   Rdef, Rifdef, Rifnotdef, Relsifdef, Relsifnotdef, Relsedef, Rendifdef,
   Rrefdef, Rdefine : Regular_Expressions.Compiled_Pattern;
 
+  Refdef_Str : constant String := "RefDef";
+
   -- Compile a regex, with or without a name, with or without a value
   -- Report error
   procedure Compile (Pattern : in out Regular_Expressions.Compiled_Pattern;
@@ -166,16 +167,17 @@ procedure App is
   begin
     -- Opt spaces, then prefix and keyword
     --   space(s) then (name)
+    --     (space(s) then (value))?
     -- Opt spaces
     Logger.Log_Debug ("Compiling "
       & "^[[:blank:]]*" & Prefix.Image & Keyword
       & (if Name then "[[:blank:]]+([^[:blank:]]+)" else "")
-      & (if Value then "[[:blank:]]+([^[:blank:].*)" else "[[:blank:]]*")
+      & (if Value then "([[:blank:]]+([^[:blank:]].*))?" else "[[:blank:]]*")
       & "$");
     Regular_Expressions.Compile (Pattern, Ok,
         "^[[:blank:]]*" & Prefix.Image & Keyword
       & (if Name then "[[:blank:]]+([^[:blank:]]+)" else "")
-      & (if Value then "[[:blank:]]+([^[:blank:].*)" else "[[:blank:]]*")
+      & (if Value then "([[:blank:]]+([^[:blank:]].*))?" else "[[:blank:]]*")
       & "$");
     if not Ok then
       Error ("Regex " & Keyword & " does not compile: "
@@ -189,7 +191,7 @@ procedure App is
   function Match (Pattern : Regular_Expressions.Compiled_Pattern;
                   Str : As.U.Asu_Us) return Boolean is
     N : Natural;
-    Info : Regular_Expressions.Match_Array (1 .. 3);
+    Info : Regular_Expressions.Match_Array (1 .. 4);
     Result : Boolean;
   begin
     Regular_Expressions.Exec (Pattern, Str.Image, N, Info);
@@ -202,9 +204,9 @@ procedure App is
     else
       Last_Name.Set_Null;
     end if;
-    -- Store value (second substring, info(3))
-    if N = 3 then
-      Last_Value := Str.Uslice (Info(3).First_Offset, Info(3).Last_Offset_Stop);
+    -- Store value (third substring, info(4))
+    if N = 4 then
+      Last_Value := Str.Uslice (Info(4).First_Offset, Info(4).Last_Offset_Stop);
     else
       Last_Value.Set_Null;
     end if;
@@ -318,7 +320,7 @@ begin
   Compile (Relsifnotdef, "ElsifNotDef", True);
   Compile (Relsedef, "ElseDef", False);
   Compile (Rendifdef, "EndifDef", False);
-  Compile (Rrefdef, "RefDef", True);
+  Compile (Rrefdef, Refdef_Str, True);
   Compile (Rdefine, "Define", True, True);
 
   -- Open stdin and stdout flows
@@ -401,8 +403,10 @@ begin
       elsif Keep.Look and then Match (Rrefdef, Line) then
         Logger.Log_Debug ("  Match RefDef " & Line.Image);
         -- A reference: replace in Str
-        Str := As.U.Tus (Str_Util.Substit (Str.Image, Last_Name.Image,
-                                           Value_Of (Last_Name)));
+        Str := As.U.Tus (Str_Util.Regex.Substit (
+          Str.Image,
+          Prefix.Image & Refdef_Str & "[[:blank:]]+" & Last_Name.Image & ".*",
+          Value_Of (Last_Name)));
         Logger.Log_Debug ("  Replaced by " & Text_Line.Trim (Line.Image));
       elsif Keep.Look and then Match (Rdefine, Line) then
         Logger.Log_Debug ("  Match Define " & Line.Image);
@@ -410,6 +414,7 @@ begin
         Definition.Name := Last_Name;
         Definition.Value := Last_Value;
         Define (Definition);
+        Skip := True;
       end if;
     end if;
 

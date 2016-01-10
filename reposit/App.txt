@@ -93,7 +93,7 @@ or
 
 or 
 
-   ^[[:blank:]]*<prefix>Define[[:blank:]]+<name>[[:blank:]]+<Value>$
+   ^[[:blank:]]*<prefix>Define[[:blank:]]+<name>([[:blank:]]+<Value>)?$
 
 .Examples
 
