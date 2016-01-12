@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Autobus, Timers, Event_Mng;
+with Autobus, Timers, Event_Mng, Trilean, Mixed_Str;
 with Utils;
 package body Communication is
 
@@ -53,6 +53,9 @@ package body Communication is
     return False;
   end Timer;
 
+  -- Supervision callback
+  procedure Supervise (Report : in Autobus.Sup_Report);
+
   -- Wait until a partner is connected
   -- When client, send a "C" (client) each second
   procedure Connect (Addr : in String; Server : in Boolean) is
@@ -62,7 +65,7 @@ package body Communication is
 
     -- Init Bus
     begin
-      Bus.Init (Addr);
+      Bus.Init (Addr, Sup_Cb => Supervise'Access);
     exception
       when Error:others =>
         Utils.Err_Comm  ("Cannot init Bus at address " & Addr
@@ -146,6 +149,22 @@ package body Communication is
       Bus.Reset;
     end if;
   end Close;
+
+  -- Supervision callback
+  procedure Supervise (Report : in Autobus.Sup_Report) is
+    use type Trilean.Trilean;
+  begin
+    Utils.Dbg_Comm ("Sup event " & Mixed_Str (Report.State'Img));
+    if Report.State /= Trilean.False then
+      -- Not a disconnection, discard
+      return;
+    end if;
+    if Connected and then Reception /= null then
+      -- Simulate a "End" message
+      Utils.Dbg_Comm ("Simulating reception of E");
+      Reception ("E");
+    end if;
+  end Supervise;
 
 end Communication;
 
