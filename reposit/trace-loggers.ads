@@ -4,11 +4,12 @@ package Trace.Loggers is
 
   -- All the logers trace in a given flow, which can be set in the environment
   --  variable <Process>_TRACEFILE="file"
-  --  where <Process> is the process name (no path)
+  --  where <Process> is the process name (no path, non alphanum characters
+  --         replaced by '_'))
   --        file is "stdout", "stderr", "async_stdout", "async_stderr",
-  --        or any file name (see Output_Flows), possibly with
-  --        ${PID}, ${CMD}, ${HOST} or ${DATE}, which are expanded.
-  --        Default is stderr.
+  --         or any file name (see Output_Flows), possibly with
+  --         ${PID}, ${CMD}, ${HOST} or ${DATE}, which are expanded.
+  --         Default is stderr.
 
   -- A logger of traces
   type Logger is tagged private;

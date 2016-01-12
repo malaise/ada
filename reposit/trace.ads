@@ -8,7 +8,8 @@ package Trace is
   --  (possibly several)
   -- Activate the traces by setting the environment variables
   --   <Process>_TRACE[_<Logger>]="<mask>"
-  --   Where <PROCESS> is the process name (no path)
+  --   Where <Process> is the process name (no path, non alphanum characters
+  --          replaced by '_')
   --         <Logger> is the logger name, "ALL" for all loggers,
   --          <Process>_TRACE for anonymous loggers
   --         <mask> is a list of severity names or values,
@@ -112,6 +113,9 @@ private
   procedure Basic_Init;
     -- - Process name
   Process : As.U.Asu_Us;
+  -- Name of process for ENV definitions (Process with non alphanum replaced
+  -- by '_')
+  Env_Proc : As.U.Asu_Us;
   -- - Global severity mask
   Default : constant Severities := Error + Fatal;
   Global_Mask : Severities := Default;

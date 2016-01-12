@@ -134,10 +134,21 @@ package body Trace is
   ---------------------
   -- Private: Minimal init: global process name, global maks and stderr
   procedure Basic_Init is
+    C : Character;
   begin
     if Process.Is_Null then
       -- Init process name
       Process := As.U.Tus (Argument.Get_Program_Name);
+      -- Same as Process except non alphanum characters replaced by '_'
+      Env_Proc := Process;
+      for I in 1 .. Env_Proc.Length loop
+        C := Env_Proc.Element (I);
+        if (C < '0' or else C > '9')
+        and then (C < 'A' or else C > 'Z')
+        and then (C < 'a' or else C > 'z') then
+          Env_Proc.Replace_Element (I, '_');
+        end if;
+      end loop;
       -- Open Stderr
       Stderr.Open (Text_Line.Out_File, Sys_Calls.Stderr);
       -- Get global mask
@@ -154,8 +165,8 @@ package body Trace is
     end if;
     declare
       Env : constant String
-          := Process.Image & "_TRACE" & (if Name = "" then ""
-                                         else "_" & Name);
+          := Env_Proc.Image & "_TRACE" & (if Name = "" then ""
+                                          else "_" & Name);
     begin
       if Environ.Is_Set (Env) then
         return Parse (Environ.Getenv (Env));

@@ -40,7 +40,7 @@ package body Trace.Loggers is
                 False, True);
 
     -- Get flow name and init flow
-    File_Name := As.U.Tus (Environ.Getenv (Process.Image & "_TRACEFILE"));
+    File_Name := As.U.Tus (Environ.Getenv (Env_Proc.Image & "_TRACEFILE"));
 
     if not File_Name.Is_Null
     and then File_Name.Image /= Output_Flows.Stderr_Name then
