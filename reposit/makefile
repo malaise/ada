@@ -8,10 +8,9 @@ SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg afpx_bld-xref \
   xml_parser-parse_mng-resolve_uri xml_parser-parse_mng-util \
   xml_parser-tree_mng \
   x_mng-dispatch 
-OPTIMIZED := snappy lzf lz4
-PREREQS := app
 EXES := afpx_bld afpx_rnb clear_screen
 
+OPTIMIZED := snappy lzf lz4
 PARGS_snappy.apb := # Debug
 PARGS_lzf.apb :=  # Debug # Fast | Slow # LocalTrace
 PARGS_lz4.apb :=  # Debug
