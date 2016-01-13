@@ -11,7 +11,7 @@ procedure Battleship is
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
-      & " [ -s ] <bus_address>");
+      & " [ -s | --server ] <bus_address>");
     Basic_Proc.Put_Line_Output ("  <bus_address>  ::= <ip_address>:<port>");
   end Usage;
 
