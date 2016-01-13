@@ -479,7 +479,7 @@ package body Cherry is
                 return Error;
               end if;
             end if;
-          when Reword | Edit =>
+          when Reword | Edit | Squash =>
             Result := As.U.Tus (Git_If.Cherry_Pick (Cherry.Commit, False));
             if not Result.Is_Null then
               -- Cherry pick failed, the error message starts with the
@@ -499,7 +499,7 @@ package body Cherry is
                 return Error;
               end if;
             end if;
-          when Squash | Fixup =>
+          when Fixup =>
             Result := As.U.Tus (Git_If.Cherry_Pick (Cherry.Commit, False));
             if not Result.Is_Null then
               -- Cherry pick failed, the error message starts with the

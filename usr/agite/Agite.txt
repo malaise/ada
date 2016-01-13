@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V27.24
+V28.00
 
 General purpose
 ---------------
@@ -1262,7 +1262,8 @@ is a 'squash' or a 'fixup'.
 
 * \'S' denotes a cherry picked for 'squash', which will be applied and melt
 with the previous cherry. If the next cherry is not a 'squash' or a 'fixup',
-then the result will be commited with the cherries's comment.
+then the result will be applied and the cherry's comment will be proposed for
+'edition'.
 
 * \'F' denotes a cherry picked for 'fixup', which will be applied and melt
 with the previous cherry. This is the same as a cherry 'squash'
