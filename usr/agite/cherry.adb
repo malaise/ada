@@ -332,10 +332,10 @@ package body Cherry is
   -- Confirm (if Interactive) and do the Cherry-pick,
   function Do_Pick (Root, Branch, Reference : in String;
                     Mode : in Cherry_Mode) return Result_List is
-    Cherry, First_Cherry : Cherry_Rec;
+    Cherry : Cherry_Rec;
     Next_Meld : Boolean;
     Picked, Tmp_List : Cherries_Mng.Dyn_List.List_Type;
-    Comment_Hash : Git_If.Git_Hash;
+    Curr_Comment : constant Git_If.Git_Hash := Git_If.No_Hash;
     Result : As.U.Asu_Us;
   begin
     -- Nothing if no cherry selected
@@ -378,8 +378,8 @@ package body Cherry is
 
     -- Do the cherry pick
     Cherries.Rewind;
-    -- First_Cherry status is: Drop=Unset, Pick=Set, Edit=In_Commit
-    First_Cherry.Status := Drop;
+    -- Comments will be set or concatenated
+    Commit.Set_Comment ("");
     loop
       -- Get a Cherry and apply, possibly keep edit/keep comment,
       --  possibly commit it
@@ -405,17 +405,26 @@ package body Cherry is
         end loop;
       end if;
 
-      -- Init comment for Reword, Edit or manual resolution
-      Comment_Hash :=
-          (if Cherry.Status = Fixup then
-             -- Try to reuse first commit
-             (if First_Cherry.Status = Drop then Cherry.Commit.Hash
-              elsif First_Cherry.Status = Pick then First_Cherry.Commit.Hash
-              else Git_If.No_Hash)
-           else Cherry.Commit.Hash);
+      -- Init/update comment
+      case Cherry.Status is
+        when Merged | Drop =>
+          null;
+        when Fixup =>
+          if Commit.Get_Comment (Curr_Comment) = "" then
+            -- Init comment if needed (first is a fixup)
+            Commit.Set_Comment (Commit.Get_Comment (Cherry.Commit.Hash));
+          end if;
+        when Squash =>
+          -- Concat comment for squash
+          Commit.Cat_Comment (Commit.Get_Comment (Cherry.Commit.Hash));
+        when Pick | Reword | Edit =>
+          -- Set comment
+          Commit.Set_Comment (Commit.Get_Comment (Cherry.Commit.Hash));
+      end case;
 
+      -- Process the cherry
       if Next_Meld then
-        -- Next is Squash or Fixup: don't commit current
+        -- Next is Squash or Fixup:
         -- Cherry-pick without committing
         Result := As.U.Tus (Git_If.Cherry_Pick (Cherry.Commit, False));
         if not Result.Is_Null then
@@ -423,7 +432,7 @@ package body Cherry is
           --  conflicts
           Error ("Cherry pick from", Branch, Result.Image);
           -- Propose manual resolution
-          if not Commit.Handle (Root, Comment_Hash) then
+          if not Commit.Handle (Root, Curr_Comment) then
             -- User gave up: error
             return Error;
           end if;
@@ -432,34 +441,19 @@ package body Cherry is
           case Cherry.Status is
             when Merged | Drop =>
               null;
-            when Pick =>
-              -- Keep this comment in case next is Fixup
-              First_Cherry := Cherry;
-              First_Cherry.Status := Pick;
             when Reword | Edit =>
               -- Launch Commit screen, allow modif of content if Edit,
               -- allow committing if Edit (for splitting)
-              if not Commit.Handle (Root, Comment_Hash,
+              if not Commit.Handle (Root, Curr_Comment,
                   Cherry.Status = Edit,
                   (if Cherry.Status = Edit then Commit.Allow
                    else Commit.Forbid)) then
                 -- User gave up
                 return Error;
               end if;
-              -- Keep comment in case next is Fixup
-              First_Cherry.Status := Edit;
-            when Squash =>
-              -- Cherry already applied not committed, update comment
-              --  in case next is Fixup
-              First_Cherry := Cherry;
-              First_Cherry.Status := Pick;
-            when Fixup =>
+            when Pick | Squash | Fixup =>
               -- Cherry already applied not committed
-              --  keep comment if already set
-              if First_Cherry.Status = Drop then
-                First_Cherry := Cherry;
-                First_Cherry.Status := Pick;
-              end if;
+              null;
           end case;
         end if;
       else
@@ -474,7 +468,7 @@ package body Cherry is
               --  conflicts
               Error ("Cherry pick from", Branch, Result.Image);
               -- Propose manual resolution
-              if not Commit.Handle (Root, Comment_Hash) then
+              if not Commit.Handle (Root, Curr_Comment) then
                 -- User gave up
                 return Error;
               end if;
@@ -486,14 +480,14 @@ package body Cherry is
               --  conflicts
               Error ("Cherry pick from", Branch, Result.Image);
               -- Propose manual resolution
-              if not Commit.Handle (Root, Comment_Hash) then
+              if not Commit.Handle (Root, Curr_Comment) then
                 -- User gave up
                 return Error;
               end if;
             else
               -- Cherry pick OK, commit it
               -- Require commit
-              if not Commit.Handle (Root, Cherry.Commit.Hash,
+              if not Commit.Handle (Root, Curr_Comment,
                                     Cherry.Status = Edit, Commit.Require) then
                 -- User gave up
                 return Error;
@@ -506,27 +500,25 @@ package body Cherry is
               --  conflicts
               Error ("Cherry pick from", Branch, Result.Image);
               -- Propose manual resolution
-              if not Commit.Handle (Root, Comment_Hash) then
+              if not Commit.Handle (Root, Curr_Comment) then
                 -- User gave up
                 return Error;
               end if;
             else
               -- Cherry-pick OK, commit with current or previous comment
               Result := As.U.Tus (Git_If.Do_Commit (
-                  Commit.Get_Comment (Comment_Hash)));
+                  Commit.Get_Comment (Curr_Comment)));
               if not Result.Is_Null then
                 -- Commit failed, propose manual resolution
                 Error ("Commit cherry from", Branch, Result.Image);
                 -- Propose manual resolution
-                if not Commit.Handle (Root, Comment_Hash) then
+                if not Commit.Handle (Root, Curr_Comment) then
                   -- User gave up: error if non interactive
                   return Error;
                 end if;
               end if;
             end if;
         end case;
-        -- In any case, current comment is not kept further on
-        First_Cherry.Status := Drop;
       end if;
 
       exit when Cherries.Is_Empty;

@@ -21,5 +21,9 @@ package Commit is
 
   -- Set default comment for next commit
   procedure Set_Comment (Str : in String);
+
+  -- Concat a new comment to the default comment for next commit
+  procedure Cat_Comment (Str : in String);
+
 end Commit;
 

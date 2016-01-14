@@ -9,20 +9,20 @@ package body Commit is
   Nb_Row_Comment : constant := 7;
 
   -- Encode comment from a commit
-  procedure Encode_Commit (Ref : in Git_If.Git_Hash) is
+  function Encode_Commit (Ref : Git_If.Git_Hash) return As.U.Asu_Us is
     Hash : Git_If.Git_Hash;
     Merged : Boolean;
     Date : Git_If.Iso_Date;
     Comment_Array : Git_If.Comment_Array (1 .. Nb_Row_Comment);
     Commit : Git_If.Commit_List;
+    Result : As.U.Asu_Us;
     Do_Copy : Boolean;
   begin
     if Ref = Git_If.No_Hash then
-      return;
+      return Result;
     end if;
     -- Get Commit info (comment)
     Git_If.List_Commit (Ref, Hash, Merged, Date, Comment_Array, Commit);
-    Comment.Set_Null;
     -- Append rows, starting from last non-empty
     Do_Copy := False;
     for I in reverse Comment_Array'Range loop
@@ -30,9 +30,10 @@ package body Commit is
         Do_Copy := True;
       end if;
       if Do_Copy then
-        Comment.Prepend (Comment_Array(I).Image & Aski.Lf);
+        Result.Prepend (Comment_Array(I).Image & Aski.Lf);
       end if;
     end loop;
+    return Result;
   end Encode_Commit;
 
   -- List width
@@ -211,18 +212,18 @@ package body Commit is
     Start := 1;
     for I in 1 .. Comment.Length loop
       if Comment.Element (I) = Aski.Lf then
-         -- Got a line
-         Line_Nb := Line_Nb + 1;
-         Stop := I;
-         exit when Line_Nb = Line_No;
-         Start := Stop + 1;
-       end if;
-     end loop;
-     -- Delete line if it exists
-     if Line_Nb = Line_No then
-       Comment.Delete (Start, Stop);
-     end if;
-   end Delete_Line;
+        -- Got a line
+        Line_Nb := Line_Nb + 1;
+        Stop := I;
+        exit when Line_Nb = Line_No;
+        Start := Stop + 1;
+      end if;
+    end loop;
+    -- Delete line if it exists
+    if Line_Nb = Line_No then
+      Comment.Delete (Start, Stop);
+    end if;
+  end Delete_Line;
 
   -- Insert an empty line before current in comment
   procedure Insert_Line (Line_No : in Positive) is
@@ -591,7 +592,9 @@ package body Commit is
     Directory.Change_Current (Root);
 
     -- Encode the comment of Hash_For_Comment into Comment
-    Encode_Commit (Hash_For_Comment);
+    if Hash_For_Comment /= Git_If.No_Hash then
+      Comment := Encode_Commit (Hash_For_Comment);
+    end if;
 
     -- Init Afpx
     Init (In_Loop);
@@ -744,16 +747,45 @@ package body Commit is
   function Get_Comment (Hash : Git_If.Git_Hash) return String is
   begin
     if Hash /= Git_If.No_Hash then
-      Encode_Commit (Hash);
+      return Encode_Commit (Hash).Image;
+    else
+      return Comment.Image;
     end if;
-    return Comment.Image;
   end Get_Comment;
 
   -- Set default comment for next commit
   procedure Set_Comment (Str : in String) is
   begin
-    Comment := As.U.Tus (Str & Aski.Lf);
+    Comment := As.U.Tus (Str);
+    if not Comment.Is_Null
+    and then Comment.Element (Comment.Length) /= Aski.Lf then
+      Comment.Append (Aski.Lf);
+    end if;
   end Set_Comment;
+
+  -- Concat a new comment to the default comment for next commit
+  procedure Cat_Comment (Str : in String) is
+    Line_Nb : Natural;
+  begin
+    Comment.Append (Str);
+    -- Locate last Lf
+    Line_Nb := 0;
+    for I in 1 .. Comment.Length loop
+      if Comment.Element (I) = Aski.Lf then
+        -- Got a line
+        Line_Nb := Line_Nb + 1;
+        if Line_Nb = Nb_Row_Comment then
+          -- Delete tail of comment (if any)
+          Comment.Delete (I + 1, Comment.Length);
+          exit;
+        end if;
+      end if;
+    end loop;
+    if not Comment.Is_Null
+    and then Comment.Element (Comment.Length) /= Aski.Lf then
+      Comment.Append (Aski.Lf);
+    end if;
+  end Cat_Comment;
 
 end Commit;
 
