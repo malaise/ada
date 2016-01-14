@@ -156,6 +156,99 @@ package body Commit is
     end if;
   end Separate_List;
 
+  -- Decode Comment fields
+  procedure Decode_Comment is
+  begin
+    Comment.Set_Null;
+    for Field in Afpx_Xref.Commit.Comment1 .. Afpx_Xref.Commit.Comment7 loop
+      -- Decode comment, remove trailing spaces,
+      Comment.Append (Str_Util.Strip (Afpx.Decode_Field (Field, 0)) & Aski.Lf);
+    end loop;
+    -- Skip trailing empty lines
+    for I in reverse 1 .. Comment.Length loop
+      exit when Comment.Element (I) /= Aski.Lf;
+      Comment.Trail (1);
+    end loop;
+    -- Append the last Lf
+    if not Comment.Is_Null
+    and then Comment.Element (Comment.Length) /= Aski.Lf then
+      Comment.Append (Aski.Lf);
+    end if;
+  end Decode_Comment;
+
+  -- Encode Comment fields
+  procedure Encode_Comment is
+    Prev : Positive;
+    Field : Afpx.Field_Range;
+    use type Afpx.Absolute_Field_Range;
+  begin
+    -- Encode text of (current) comment
+    for F in Afpx_Xref.Commit.Comment1 .. Afpx_Xref.Commit.Comment7 loop
+      -- Decode comment, remove trailing spaces,
+      Afpx.Clear_Field (F);
+    end loop;
+    if not Comment.Is_Null then
+      Prev := 1;
+      Field := Afpx_Xref.Commit.Comment1;
+      for I in 1 .. Comment.Length loop
+        if Comment.Element (I) = Aski.Lf then
+          Utils.X.Encode_Field (Comment.Slice (Prev, I - 1), Field);
+          exit when Field = Afpx_Xref.Commit.Comment7;
+          Field := Field + 1;
+          Prev := I + 1;
+        end if;
+      end loop;
+    end if;
+ end Encode_Comment;
+
+  -- Delete a line
+  procedure Delete_Line (Line_No : in Positive) is
+    Start, Stop : Positive;
+    Line_Nb : Natural;
+  begin
+    -- Locate start (first char) and stop (Lf) of Line_No
+    Line_Nb := 0;
+    Start := 1;
+    for I in 1 .. Comment.Length loop
+      if Comment.Element (I) = Aski.Lf then
+         -- Got a line
+         Line_Nb := Line_Nb + 1;
+         Stop := I;
+         exit when Line_Nb = Line_No;
+         Start := Stop + 1;
+       end if;
+     end loop;
+     -- Delete line if it exists
+     if Line_Nb = Line_No then
+       Comment.Delete (Start, Stop);
+     end if;
+   end Delete_Line;
+
+  -- Insert an empty line before current in comment
+  procedure Insert_Line (Line_No : in Positive) is
+    Start, Stop : Positive;
+    Line_Nb : Natural;
+  begin
+    -- Locate start (first char) and stop (Lf) of Line_No
+    Line_Nb := 0;
+    Start := 1;
+    for I in 1 .. Comment.Length loop
+      if Comment.Element (I) = Aski.Lf then
+        -- Got a line
+        Line_Nb := Line_Nb + 1;
+        Stop := I;
+        exit when Line_Nb = Line_No;
+        Start := Stop + 1;
+      end if;
+    end loop;
+    -- Insert line before current if it exists
+    if Line_Nb = Line_No then
+      Comment.Insert (Start, Aski.Lf);
+      -- Delete extra last line if it exists
+      Delete_Line (Nb_Row_Comment + 1);
+    end if;
+  end Insert_Line;
+
   -- Handle the commit of modifications
   -- Show button Done instead of Back, Quit instead of Push
   -- Init comment from the one of the provided Hash
@@ -182,50 +275,31 @@ package body Commit is
       Get_Handle := (others => <>);
     end Reset_Ptg;
 
-    -- Decode Comment fields
-    procedure Decode_Comment is
-    begin
-      Comment.Set_Null;
-      for Field in Afpx_Xref.Commit.Comment1 .. Afpx_Xref.Commit.Comment7 loop
-        -- Decode comment, remove trailing spaces,
-        Comment.Append (Str_Util.Strip (Afpx.Decode_Field (Field, 0)) & Aski.Lf);
-      end loop;
-      -- Skip trailing empty lines
-      for I in reverse 1 .. Comment.Length loop
-        exit when Comment.Element (I) /= Aski.Lf;
-        Comment.Trail (1);
-      end loop;
-      -- Append the last Lf
-      if not Comment.Is_Null
-      and then Comment.Element (Comment.Length) /= Aski.Lf then
-        Comment.Append (Aski.Lf);
-      end if;
-    end Decode_Comment;
-
-    -- Encode Comment fields
-    procedure Encode_Comment is
-      Prev : Positive;
-      Field : Afpx.Field_Range;
+    -- Get current cursor line no
+    function Get_Line_No return Positive is
       use type Afpx.Absolute_Field_Range;
     begin
-      -- Encode text of (current) comment
-      for F in Afpx_Xref.Commit.Comment1 .. Afpx_Xref.Commit.Comment7 loop
-        -- Decode comment, remove trailing spaces,
-        Afpx.Clear_Field (F);
-      end loop;
-      if not Comment.Is_Null then
-        Prev := 1;
-        Field := Afpx_Xref.Commit.Comment1;
-        for I in 1 .. Comment.Length loop
-          if Comment.Element (I) = Aski.Lf then
-            Utils.X.Encode_Field (Comment.Slice (Prev, I - 1), Field);
-            exit when Field = Afpx_Xref.Commit.Comment7;
-            Field := Field + 1;
-            Prev := I + 1;
-          end if;
-        end loop;
-      end if;
-    end Encode_Comment;
+      return Natural(Get_Handle.Cursor_Field - Afpx_Xref.Commit.Comment1) + 1;
+    end Get_Line_No;
+
+    -- Delete current line
+    procedure Delete_Line is
+    begin
+      Decode_Comment;
+      Delete_Line (Get_Line_No);
+      Get_Handle.Cursor_Col := 0;
+      Encode_Comment;
+     end Delete_Line;
+
+    -- Insert an empty line before current in comment
+    procedure Insert_Line is
+    begin
+      Decode_Comment;
+      Insert_Line (Get_Line_No);
+      Get_Handle.Cursor_Col := 0;
+      Delete_Line (Nb_Row_Comment + 1);
+      Encode_Comment;
+     end Insert_Line;
 
     -- Init screen
     procedure Init (In_Loop : in Boolean) is
@@ -600,6 +674,12 @@ package body Commit is
               Comment.Set_Null;
               Encode_Comment;
               Reset_Ptg;
+            when Afpx_Xref.Commit.Ins_Line =>
+              -- InsLine button
+              Insert_Line;
+            when Afpx_Xref.Commit.Del_Line =>
+              -- DelLine button
+              Delete_Line;
             when Afpx_Xref.Commit.Commit =>
               -- Commit button
               Do_Commit;
