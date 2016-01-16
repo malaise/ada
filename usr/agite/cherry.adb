@@ -1,4 +1,4 @@
-with As.U, Afpx.Utils, Dynamic_List;
+with As.U, Afpx.Utils, Dynamic_List, Mixed_Str;
 with Utils.X, Git_If, Details, Afpx_Xref, Confirm, Error, Commit;
 package body Cherry is
 
@@ -16,6 +16,11 @@ package body Cherry is
     return Current.Commit.Hash = Criteria.Commit.Hash;
   end Match;
   function Search_Hash is new Cherries_Mng.Dyn_List.Search (Match);
+
+  function Image (Status : Cherry_Status_List) return String is
+  begin
+    return Mixed_Str (Status'Img);
+  end Image;
 
   -- The cherries
   Cherries : Cherries_Mng.Dyn_List.List_Type;
@@ -432,7 +437,7 @@ package body Cherry is
           --  conflicts
           Error ("Cherry pick from", Branch, Result.Image);
           -- Propose manual resolution
-          if not Commit.Handle (Root, Curr_Comment) then
+          if not Commit.Handle (Root, Image (Cherry.Status), Curr_Comment) then
             -- User gave up: error
             return Error;
           end if;
@@ -444,7 +449,7 @@ package body Cherry is
             when Reword | Edit =>
               -- Launch Commit screen, allow modif of content if Edit,
               -- allow committing if Edit (for splitting)
-              if not Commit.Handle (Root, Curr_Comment,
+              if not Commit.Handle (Root, Image (Cherry.Status), Curr_Comment,
                   Cherry.Status = Edit,
                   (if Cherry.Status = Edit then Commit.Allow
                    else Commit.Forbid)) then
@@ -468,7 +473,8 @@ package body Cherry is
               --  conflicts
               Error ("Cherry pick from", Branch, Result.Image);
               -- Propose manual resolution
-              if not Commit.Handle (Root, Curr_Comment) then
+              if not Commit.Handle (Root, Image (Cherry.Status),
+                                    Curr_Comment) then
                 -- User gave up
                 return Error;
               end if;
@@ -480,14 +486,16 @@ package body Cherry is
               --  conflicts
               Error ("Cherry pick from", Branch, Result.Image);
               -- Propose manual resolution
-              if not Commit.Handle (Root, Curr_Comment) then
+              if not Commit.Handle (Root, Image (Cherry.Status),
+                                    Curr_Comment) then
                 -- User gave up
                 return Error;
               end if;
             else
               -- Cherry pick OK, commit it
               -- Require commit
-              if not Commit.Handle (Root, Curr_Comment,
+              if not Commit.Handle (Root, Image (Cherry.Status),
+                                    Curr_Comment,
                                     Cherry.Status = Edit, Commit.Require) then
                 -- User gave up
                 return Error;
@@ -500,7 +508,8 @@ package body Cherry is
               --  conflicts
               Error ("Cherry pick from", Branch, Result.Image);
               -- Propose manual resolution
-              if not Commit.Handle (Root, Curr_Comment) then
+              if not Commit.Handle (Root, Image (Cherry.Status),
+                                    Curr_Comment) then
                 -- User gave up
                 return Error;
               end if;
@@ -512,7 +521,8 @@ package body Cherry is
                 -- Commit failed, propose manual resolution
                 Error ("Commit cherry from", Branch, Result.Image);
                 -- Propose manual resolution
-                if not Commit.Handle (Root, Curr_Comment) then
+                if not Commit.Handle (Root, Image (Cherry.Status),
+                                      Curr_Comment) then
                   -- User gave up: error if non interactive
                   return Error;
                 end if;

@@ -388,7 +388,7 @@ package body Branch is
       return Action = Rebase;
     end if;
 
-    -- Call commit aftert successful true merge
+    -- Call commit after successful true merge
     if Action = True_Merge then
       Commit.Handle (Root.Image, Allow_Modif => False);
       Init;

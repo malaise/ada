@@ -12,6 +12,7 @@ package Commit is
   type Commit_Allow_List is (Forbid, Allow, Require);
   -- Init comment from the one of the provided Hash
   function Handle (Root : String;
+                   Title : String;
                    Hash_For_Comment : Git_If.Git_Hash;
                    Allow_Modif : Boolean := True;
                    Allow_Commit : Commit_Allow_List := Allow) return Boolean;

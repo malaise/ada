@@ -256,6 +256,7 @@ package body Commit is
   function Common_Handle (
            Root : String;
            In_Loop : Boolean;
+           Title : String;
            Hash_For_Comment : Git_If.Git_Hash;
            Allow_Modif : Boolean;
            Allow_Commit : Commit_Allow_List) return Boolean is
@@ -303,7 +304,8 @@ package body Commit is
      end Insert_Line;
 
     -- Init screen
-    procedure Init (In_Loop : in Boolean) is
+    procedure Init (In_Loop : in Boolean;
+                    Title : in String := "") is
     begin
       Afpx.Use_Descriptor (Afpx_Xref.Commit.Dscr_Num);
       -- Encode Root
@@ -316,6 +318,10 @@ package body Commit is
       if In_Loop then
         Afpx.Encode_Field (Afpx_Xref.Commit.Back, (1, 2), "Done");
         Afpx.Encode_Field (Afpx_Xref.Commit.Push, (1, 1), "Quit");
+      end if;
+      -- Change title
+      if Title /= "" then
+        Utils.X.Center_Field (Title, Afpx_Xref.Commit.Title);
       end if;
     end Init;
 
@@ -597,7 +603,9 @@ package body Commit is
     end if;
 
     -- Init Afpx
-    Init (In_Loop);
+    -- Modify Title if In_Loop: Edit then
+    --   if Allow_Modif then Commit else Comment
+    Init (In_Loop, Title);
 
     -- Reset Afpx list
     Afpx.Line_List.Delete_List (False);
@@ -652,7 +660,7 @@ package body Commit is
               Do_Edit;
             when Afpx_Xref.Commit.Stash =>
               Stash.Handle (Root);
-              Init (In_Loop);
+              Init (In_Loop, Title);
               Reread (True);
             when Afpx_Xref.Commit.Diff =>
               Do_Diff;
@@ -686,7 +694,7 @@ package body Commit is
             when Afpx_Xref.Commit.Commit =>
               -- Commit button
               Do_Commit;
-              Init (In_Loop);
+              Init (In_Loop, Title);
               Reread (True);
             when Afpx_Xref.Commit.Push =>
               if In_Loop then
@@ -698,7 +706,7 @@ package body Commit is
               if Push_Pull.Handle (Root, Pull => False) then
                 return True;
               else
-                Init (In_Loop);
+                Init (In_Loop, Title);
                 Reread (True);
               end if;
             when Afpx_Xref.Commit.Back =>
@@ -728,18 +736,20 @@ package body Commit is
                     Allow_Modif : in Boolean := True) is
     Dummy : Boolean;
   begin
-    Dummy := Common_Handle (Root, False, Git_If.No_Hash, Allow_Modif, Allow);
+    Dummy := Common_Handle (Root, False, "", Git_If.No_Hash,
+                            Allow_Modif, Allow);
   end Handle;
 
   -- Handle the commit of modifications
   -- Show button Quit instead of Push
   -- Init comment from the one of the provided Hash
   function Handle (Root : String;
+                   Title : String;
                    Hash_For_Comment : Git_If.Git_Hash;
                    Allow_Modif : Boolean := True;
                    Allow_Commit : Commit_Allow_List := Allow) return Boolean is
   begin
-    return Common_Handle (Root, True, Hash_For_Comment,
+    return Common_Handle (Root, True, Title, Hash_For_Comment,
                           Allow_Modif, Allow_Commit);
   end Handle;
 
