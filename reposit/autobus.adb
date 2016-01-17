@@ -147,6 +147,7 @@ package body Autobus is
   Logger : Trace.Loggers.Logger;
   Finalizations : constant Trace.Severities := 16#20#;
   All_Timers    : constant Trace.Severities := 16#40#;
+  Live_Messages : constant Trace.Severities := 16#80#;
 
   -- Log an exception
   procedure Log_Exception (Operation, Exception_Name, Message : in String) is
@@ -715,6 +716,7 @@ package body Autobus is
                       when Trilean.False => "P",
                       when Trilean.Other => "D") & "/");
     Message(1 .. Addr.Length) := Addr.Image;
+    Logger.Log (Live_Messages, "Sending Adm " & Message (1 .. Addr.Length));
     Ipm_Send (Buses.Access_Current.Adm, Message, Addr.Length);
   end Send_Adm;
 
@@ -756,6 +758,7 @@ package body Autobus is
     end;
 
     -- Handle Multicast bus data message
+    Logger.Log (Live_Messages, "Received Ipm " & Message (1 .. Length));
     if Length > 0 and then Message(1) = 'M' then
       if Buses.Access_Current.Kind = Multicast then
         -- M/Pid/Data
@@ -872,6 +875,7 @@ package body Autobus is
       -- Partner found
       if Partner_Acc.Timer.Running then
         -- This partner is known with a timer, restart its keep alive timer
+        Logger.Log (Live_Messages, "Processing Ipm live message");
         Start_Partner_Timer (Partner_Acc.Bus);
       end if;
     end if;
