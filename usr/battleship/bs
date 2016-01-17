@@ -40,8 +40,17 @@ if [ $DEBUG -eq 1 ] ; then
   export ${PROC}_TRACE_Communication='Debug'
   export ${PROC}_TRACE_SetuAp='Debug'
   export ${PROC}_TRACE_Play='Debug'
-  export ${PROC}_TRACE_Autobus='Debug+'
+  export ${PROC}_TRACE_Autobus='Debug+|16#C0#'
+  # export ${PROC}_TRACE_Tcp_Util_Reception='Debug'
+  # export ${PROC}_TRACE_Tcp_Util_Overflow='Debug'
+  # export ${PROC}_TRACE_Tcp_Util_Connect='Debug'
+  # export ${PROC}_TRACE_Tcp_Util_Accept='Debug'
 fi
-# export TCP_UTIL_DEBUG_RECEPTION=Y
-exec ./${CMD} 234.7.6.5:21210 $*
+
+export AUTOBUS_CONFIG=Autobus.xml
+if [ $DEBUG -eq 1 ] ; then
+  exec ./${CMD} 234.7.6.5:21210 $* >log 2>&1
+else
+  exec ./${CMD} 234.7.6.5:21210 $*
+fi
 
