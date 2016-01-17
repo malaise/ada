@@ -1002,10 +1002,20 @@ package body Tcp_Util is
           Log_Reception.Log_Debug ("Tcp_Util.Read_Cb soc would block on fd "
                                 & Fd'Img);
           return False;
-        when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
+        when Socket.Soc_Conn_Lost =>
           -- Remote has diconnected
-          Log_Reception.Log_Debug ("Tcp_Util.Read_Cb disconnection on fd "
-                                & Fd'Img);
+          Log_Reception.Log_Debug (
+              "Tcp_Util.Read_Cb disconnection (connection lost) on fd "
+             & Fd'Img);
+          -- Notify and close
+          Close_Current;
+          Free_Message (Msg);
+          return True;
+        when Socket.Soc_Read_0 =>
+          -- Remote has diconnected
+          Log_Reception.Log_Debug (
+              "Tcp_Util.Read_Cb disconnection (read retruned 0) on fd "
+             & Fd'Img);
           -- Notify and close
           Close_Current;
           Free_Message (Msg);
