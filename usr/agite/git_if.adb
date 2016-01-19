@@ -517,6 +517,11 @@ package body Git_If is
   --     <Comment>
   --     ....
   -- C       <file>
+  --     ....
+  -- possibly
+  -- Notes:
+  --     <Some note>
+  --     ....
   -- ....
   -- except for last block
   procedure Read_Block (Flow : in out Command.Res_List;
@@ -537,7 +542,7 @@ package body Git_If is
     Assert (Line.Slice (1, 7) = "commit ");
     Hash := Line.Slice (8, 47);
 
-    -- possible "Merge:... ..." then Author: ...
+    -- Possible "Merge:... ..." then Author: ...
     Flow.Read (Line);
     if Line.Slice (1, 7) = "Merge: " then
       Merge := True;
@@ -571,8 +576,8 @@ package body Git_If is
       Ind := Ind + 1;
       if Ind = 1 and then Line.Length >= 2
       and then Line.Slice (1, 2) /= "  " then
-        -- No Comment at all in short mode (=> next commit)
-        -- No Comment at all in detailed mode (=> modified files)
+        -- No Comment at all in short mode (=> notes or next commit)
+        -- No Comment at all in detailed mode (=> notes or modified files)
         if Done then
           -- When reding details (one bloc) with no comment and one change
           -- Done is False and we shall remain on this line
@@ -588,6 +593,22 @@ package body Git_If is
       end if;
       exit when not Done;
     end loop;
+
+    -- Comment has been read. Discard potential "Notes:"
+    if Done then
+      Flow.Read (Line, Moved => Done);
+      if Line.Length = 6 and then Line.Slice (1, 6) = "Notes:" then
+        -- Discard notes until empty line
+        while Done loop
+          Flow.Read (Line, Moved => Done);
+          exit when Line.Length = 0;
+        end loop;
+      else
+        -- No Notes
+        Flow.Move_To (Command.Res_Mng.Dyn_List.Prev);
+        Flow.Read (Line, Command.Res_Mng.Dyn_List.Current);
+      end if;
+    end if;
 
     -- No files if no detail
     if (Line.Length = 0 or else not Done) and then not Details then

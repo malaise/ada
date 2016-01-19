@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V28.04
+V28.05
 
 General purpose
 ---------------
@@ -890,6 +890,7 @@ anchor:XHist[]
 On a file, this menu shows the relative path of the selected file,
 and lists the history of all the commits on current branch that have affected
 this file. +
+Git notes are discarded. +
 The newest release (head) is on top.
 
 In case of a directory the menu shows the relative path of the directory
