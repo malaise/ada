@@ -32,11 +32,11 @@ package Autobus is
   --  its host and local TCP port.
   -- The other processes on the bus keep a list of known alive partners.
   -- When a new process starts it declares itself on the Bus and all the
-  --  partners either connects to it or get connected to it.
+  --  partners either connect to it or get connected to it.
   -- Delivering a message consists in sending it in TCP successively to the all
   --  the partners, each of them dispatching the message to the local observers.
-  -- Each partner on a reliable bus can be either active (its sudden death can
-  --  be detected by a polling) or passive (its sudden death can only be
+  -- Each partner on a reliable bus can be either active (a polling ensures that
+  --  its death can always be detected) or passive (its sudden death can only be
   --  detected by the closure of the TCP connection).
   --  Active mode can be useful for servers, while passive mode might be more
   --  convenient for clients.
