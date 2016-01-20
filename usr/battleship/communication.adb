@@ -65,7 +65,7 @@ package body Communication is
 
     -- Init Bus
     begin
-      Bus.Init (Addr, Sup_Cb => Supervise'Access);
+      Bus.Init (Addr, Autobus.Passive, Supervise'Access);
     exception
       when Error:others =>
         Utils.Err_Comm  ("Cannot init Bus at address " & Addr

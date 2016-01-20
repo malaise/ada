@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Autobus SYSTEM "Autobus.dtd">
-
-<Autobus Heartbeat_Period="10" 
-         Heartbeat_Max_Missed="60"
-         Timeout="1.0">
-</Autobus>
-

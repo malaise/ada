@@ -4,6 +4,7 @@ export PROC=battleship
 export CMD=battleship
 DEBUG=0
 STATIC=0
+HOSTNAME=`hostname`
 
 function help {
   echo "Usage: `basename $0` [ --static ] [ --debug ] [ <battleship_args> ]" 1>&2
@@ -47,9 +48,8 @@ if [ $DEBUG -eq 1 ] ; then
   # export ${PROC}_TRACE_Tcp_Util_Accept='Debug'
 fi
 
-export AUTOBUS_CONFIG=Autobus.xml
 if [ $DEBUG -eq 1 ] ; then
-  exec ./${CMD} 234.7.6.5:21210 $* >log 2>&1
+  exec ./${CMD} 234.7.6.5:21210 $* >log_$HOSTNAME 2>&1
 else
   exec ./${CMD} 234.7.6.5:21210 $*
 fi
