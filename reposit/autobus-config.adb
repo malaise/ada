@@ -183,7 +183,8 @@ package body Config is
     begin
       Ok := True;
       if Check_Attributes (Root) then
-        Log_Cfg.Log_Debug ("Got default config " & Image (Ctx.Get_Attributes (Root)));
+        Log_Cfg.Log_Debug ("Got default config "
+                         & Image (Ctx.Get_Attributes (Root)));
       else
         Ok := False;
       end if;
@@ -427,7 +428,7 @@ package body Config is
                   Netmask => Id_Of (Lans(Lan), "Netmask"));
               Log_Cfg.Log_Debug ("Found LAN Address "
                    & Ctx.Get_Attribute (Lans(Lan), "Address")
-                   & " Mask " & Ctx.Get_Attribute (Lans(Lan), "Mask")
+                   & " Netmask " & Ctx.Get_Attribute (Lans(Lan), "Netmask")
                    & " to " & Ip_Addr.Image (Host_Id));
               return Host_Id;
             exception
