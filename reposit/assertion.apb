@@ -1,5 +1,8 @@
 with Ada.Calendar;
 with Argument, Images, Basic_Proc, Environ, Upper_Str;
+--#IfDef NoAssert
+pragma Unreferenced (Ada.Calendar, Argument, Images, Basic_Proc);
+--#EndifDef
 package body Assertion is
 
   -- Init (getenv) done?
@@ -48,6 +51,11 @@ package body Assertion is
   --  Else do nothing
   procedure Assert (What : in Boolean; Trace : in String := "";
                     Action : in Assert_Action_List := Default) is
+--#IfDef NoAssert
+    pragma Unreferenced (What, Trace, Action);
+  begin
+    null;
+--#ElseDef
     To_Do : Action_List;
   begin
     if What then
@@ -82,6 +90,7 @@ package body Assertion is
 
     -- Action is to raise exception
     raise Assert_Error;
+--#EndifDef
   end Assert;
 
 end Assertion;

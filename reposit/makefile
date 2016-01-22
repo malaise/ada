@@ -11,9 +11,10 @@ SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg afpx_bld-xref \
 EXES := afpx_bld afpx_rnb clear_screen
 
 OPTIMIZED := snappy lzf lz4
-PARGS_snappy.apb := # Debug
-PARGS_lzf.apb :=  # Debug # Fast | Slow # LocalTrace
+PARGS_assertion.apb := # NoAssert
 PARGS_lz4.apb :=  # Debug
+PARGS_lzf.apb :=  # Debug # Fast | Slow # LocalTrace
+PARGS_snappy.apb := # Debug
 CLIBS_app = $(UTILS_SLIBS) $(PCRE_SLIBS)
 CLIBS_afpx_bld = $(PCRE_SLIBS) $(X11_SLIBS)
 CLIBS_afpx_rnb = $(PCRE_SLIBS) $(X11_SLIBS)
