@@ -30,10 +30,7 @@ package Smart_Alias is
 
 private
 
-  type Object_Box is record
-    Obj : Object_Access := null;
-    Nb_Access : Natural := 0;
-  end record;
+  type Object_Box;
   type Object_Box_Access is access Object_Box;
 
 

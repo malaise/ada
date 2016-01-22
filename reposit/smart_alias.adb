@@ -2,9 +2,17 @@ with Ada.Unchecked_Deallocation;
 with Trace, Address_Ops;
 package body Smart_Alias is
 
+  -- The box
+  type Object_Box is record
+    Obj : Object_Access := null;
+    Nb_Access : Natural := 0;
+  end record;
+
+  -- Memory cleanup
   procedure Free is new Ada.Unchecked_Deallocation (Object_Box,
                                                     Object_Box_Access);
 
+  -- Trace with a Basic Logger
   package Logger is new Trace.Basic_Logger ("Smart_Alias");
 
   procedure Trace (Ref : in Handle; Str : in String) is

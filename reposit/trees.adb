@@ -10,6 +10,15 @@ package body Trees is
   --  one father (except root).
   package body Tree is
 
+    -- A cell of tree
+    type Cell_Rec is record
+      Father   : Cell_Access := null;
+      Brothers : Cell_Pair := (others => null);
+      Nb_Children : Child_Range := 0;
+      Children : Cell_Pair := (others => null);
+      Data : Element_Access := null;
+    end record;
+
     -- What a new cell shall be
     Free_Cell : constant Cell_Rec :=
         (Father => null,

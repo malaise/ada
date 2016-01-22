@@ -272,15 +272,6 @@ package Trees is
     -- Access to current data
     type Element_Access is access all Element_Type;
 
-    -- A cell of tree
-    type Cell_Rec is record
-      Father   : Cell_Access := null;
-      Brothers : Cell_Pair := (others => null);
-      Nb_Children : Child_Range := 0;
-      Children : Cell_Pair := (others => null);
-      Data : Element_Access := null;
-    end record;
-
     -- A tree
     type Tree_Type is limited new Ada.Finalization.Limited_Controlled
     with record

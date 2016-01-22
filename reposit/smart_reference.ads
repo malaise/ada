@@ -40,10 +40,7 @@ package Smart_Reference is
 
 private
 
-  type Object_Box is record
-    Obj : Object;
-    Nb_Access : Natural := 0;
-  end record;
+  type Object_Box;
   type Object_Box_Access is access Object_Box;
 
   type Handle is new Ada.Finalization.Controlled with record

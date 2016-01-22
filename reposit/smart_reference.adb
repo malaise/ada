@@ -2,9 +2,17 @@ with Ada.Unchecked_Deallocation;
 with Trace, Address_Ops;
 package body Smart_Reference is
 
+  -- The box
+  type Object_Box is record
+    Obj : Object;
+    Nb_Access : Natural := 0;
+  end record;
+
+  -- Memory cleanup
   procedure Free is new Ada.Unchecked_Deallocation (Object_Box,
                                                     Object_Box_Access);
 
+  -- Logging with a Basic logger
   package Logger is new Trace.Basic_Logger ("Smart_Reference");
 
   procedure Trace (Ref : in Handle; Str : in String) is
