@@ -536,6 +536,7 @@ package body Git_If is
     Ind : Natural;
     File : Commit_Entry_Rec;
   begin
+    Logger.Log_Debug ("  Block length: " & Integer'Image (Flow.List_Length));
     -- commit <hash>
     Flow.Read (Line);
     Assert (Line.Length = 47);
@@ -545,20 +546,24 @@ package body Git_If is
     -- Possible "Merge:... ..." then Author: ...
     Flow.Read (Line);
     if Line.Slice (1, 7) = "Merge: " then
+      Logger.Log_Debug ("  Block skip " & Line.Image);
       Merge := True;
       Flow.Read (Line);
     else
       Merge := False;
     end if;
     Assert (Line.Slice (1, 8) = "Author: ");
+    Logger.Log_Debug ("  Block skip " & Line.Image);
 
     -- Date:   YYYY-MM-DD HH:MM:SS ...
     Flow.Read (Line, Moved => Done);
     Assert (Line.Length >= 27);
     Assert (Line.Slice (1, 8) = "Date:   ");
     Date := Line.Slice (9, 27);
+    Logger.Log_Debug ("  Block got Date: " & Date);
     if not Done then
       -- No comment and last block
+      Logger.Log_Debug ("  Block done cause no comment nor change");
       Done := not Done;
       return;
     end if;
@@ -581,6 +586,7 @@ package body Git_If is
         if Done then
           -- When reding details (one bloc) with no comment and one change
           -- Done is False and we shall remain on this line
+          Logger.Log_Debug ("  Block no comment");
           Flow.Move_To (Command.Res_Mng.Dyn_List.Prev);
         end if;
         exit;
@@ -590,6 +596,9 @@ package body Git_If is
       -- Copy first comments
       if Ind <= Comments'Last then
         Comments(Ind) := Line.Uslice (5,  Line.Length);
+        Logger.Log_Debug ("  Block got Comment: " & Comments(Ind).Image);
+      else
+        Logger.Log_Debug ("  Block skip " & Line.Image);
       end if;
       exit when not Done;
     end loop;
@@ -598,14 +607,21 @@ package body Git_If is
     if Done then
       Flow.Read (Line, Moved => Done);
       if Line.Length = 6 and then Line.Slice (1, 6) = "Notes:" then
+        Logger.Log_Debug ("  Block skip " & Line.Image);
         -- Discard notes until empty line
         while Done loop
           Flow.Read (Line, Moved => Done);
+          Logger.Log_Debug ("  Block skip " & Line.Image);
           exit when Line.Length = 0;
         end loop;
       else
-        -- No Notes
-        Flow.Move_To (Command.Res_Mng.Dyn_List.Prev);
+        -- No Notes: rollback
+        Logger.Log_Debug ("  Block no notes");
+        if Done then
+          Flow.Move_To (Command.Res_Mng.Dyn_List.Prev);
+        else
+          Done := True;
+        end if;
         Flow.Read (Line, Command.Res_Mng.Dyn_List.Current);
       end if;
     end if;
@@ -615,11 +631,13 @@ package body Git_If is
       -- The Dyn_List.Read Done is set to False when reaching the end
       -- Our Done shall be True as long as not the end
       Done := not Done;
+      Logger.Log_Debug ("  Block done cause no details requested");
       return;
     elsif not Done and then Details then
       -- No change in detail (merge....)
       Files.Delete_List;
       Done := not Done;
+      Logger.Log_Debug ("  Block done cause no change");
       return;
     end if;
 
@@ -635,6 +653,7 @@ package body Git_If is
       if Ind = 1 and then Line.Length = 47
       and then Line.Slice (1, 7) = "commit " then
         -- No change at all
+        Logger.Log_Debug ("  Block done cause found new commit (no change)");
         Flow.Move_To (Command.Res_Mng.Dyn_List.Prev);
         exit;
       end if;
@@ -644,12 +663,15 @@ package body Git_If is
         File.Status := Line.Element (1);
         File.File := Line.Uslice (3, Line.Length);
         Files.Insert (File);
+        Logger.Log_Debug ("  Block got: " & File.Status
+                        & " " & File.File.Image);
       end if;
       exit when not Done;
     end loop;
 
     -- The Dyn_List.Read Done is set to False when reaching the end
     -- Our Done shall be True as long as not the end
+    Logger.Log_Debug ("  Block done.");
     Done := not Done;
   exception
     when others =>
@@ -796,6 +818,7 @@ package body Git_If is
 
     -- Encode info
     if not Out_Flow_1.List.Is_Empty then
+Logger.Log_Debug ("  log commit not empty");
       Out_Flow_1.List.Rewind;
       Read_Block (Out_Flow_1.List, True, Hash, Merged, Date,
                   Comment, Commit'Access, Dummy_Done);
