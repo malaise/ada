@@ -12,6 +12,7 @@
   <make Name="Make">xmake</make>
   <period>30.0</period>
   <list_tags>True</list_tags>
+  <history>0</history>
   <last_dir>/home/malaise/ada/usr/agite</last_dir>
   <bookmarks>
     <bookmark Name="Ada">${HOME}/ada</bookmark>

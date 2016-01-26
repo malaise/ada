@@ -63,6 +63,7 @@ package body History is
     -- The log
     Logs : Git_If.Log_List;
     Log : Git_If.Log_Entry_Rec;
+    All_Read : Boolean;
 
     -- Search found
     Dummy : Boolean;
@@ -311,6 +312,8 @@ package body History is
       Afpx.Encode_Field (Afpx_Xref.History.Rightsel, (0, 0),
            Normal (Status.Ids_Selected(Afpx.List_Right),
                    Afpx.Get_Field_Width (Afpx_Xref.History.Rightsel), False));
+      -- Activate button "All" if not all read
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.List_All, All_Read);
     end List_Change;
 
     -- Move according to click row in scroll field
@@ -337,23 +340,54 @@ package body History is
       Afpx.Line_List.Move_At (Saved_Position);
     end Move_At_Scroll;
 
+    -- Reread history
+    procedure Reread (Force_All : in Boolean) is
+      Max : Natural;
+    begin
+      -- Read all or the default (Config) number of entires
+      if Force_All then
+        Max := 0;
+      else
+        Max := Config.History_Len;
+      end if;
+      -- Get history list
+      if Path = "" and then Name = ""
+      and then Directory.Get_Current = Directory.Normalize_Path (Root) then
+        -- Log in (the root dir of) a bare repository
+        --  fails if we provide the full (Root) path
+        --  but is OK with '.'
+        -- Use '.' if we are in root and target dir is root
+        -- and in a bare repository, otherwise ""
+        Git_If.List_Log ((if Git_If.Is_Bare then "." else ""),
+                         Max,
+                         Logs,
+                         All_Read);
+      else
+        -- Log
+        Git_If.List_Log (Root & Path & Name,
+                         Max,
+                         Logs,
+                         All_Read);
+      end if;
+  end Reread;
+
+  -- Read all entries and update
+  procedure Do_Read_All is
+    Pos : Positive;
+  begin
+    Pos := Afpx.Line_List.Get_Position;
+    Reread (True);
+    Init_List (Logs);
+    Afpx.Line_List.Move_At (Pos);
+    Afpx.Update_List (Afpx.Center_Selected);
+  end Do_Read_All;
+
   begin
     -- Init Afpx
     Init;
 
-    -- Get history list
-    if Path = "" and then Name = ""
-    and then Directory.Get_Current = Directory.Normalize_Path (Root) then
-      -- Log in (the root dir of) a bare repository
-      --  fails if we provide the full (Root) path
-      --  but is OK with '.'
-      -- Use '.' if we are in root and target dir is root
-      -- and in a bare repository, otherwise ""
-      Git_If.List_Log ((if Git_If.Is_Bare then "." else ""), Logs);
-    else
-      -- Log
-      Git_If.List_Log (Root & Path & Name, Logs);
-    end if;
+    -- Get history list with default length
+    Reread (False);
 
     if Hash /= Git_If.No_Hash then
       -- Set current to Hash provided
@@ -366,6 +400,7 @@ package body History is
 
     -- Disable buttons if empty list
     if Logs.Is_Empty then
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.List_All, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.View, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Details, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore, True);
@@ -395,6 +430,9 @@ package body History is
             when Afpx.List_Field_No  =>
               -- Double click or View => View if List file, Toggle cherry
               Show (Show_View);
+            when Afpx_Xref.History.List_All =>
+              -- List all the entries
+              Do_Read_All;
             when Afpx_Xref.History.View =>
               -- View => View if file
               if Is_File then

@@ -676,19 +676,30 @@ package body Git_If is
   end Read_Block;
 
   -- List the log of a dir or file
+ -- Stop at Max if not 0
+  -- Returns wether the end of list is reached at or before Max
+  -- May raise anonymous exception Log_Error
   procedure List_Log (Path : in String;
-                      Log : in out Log_List) is
+                      Max : in Natural;
+                      Log : in out Log_List;
+                      End_Reached : out Boolean) is
     Cmd : Many_Strings.Many_String;
     Done : Boolean;
     Log_Entry : Log_Entry_Rec;
+    N_Read : Natural;
   begin
     -- Init result
     Log.Delete_List;
+    End_Reached := True;
 
     -- Git log
     Cmd.Set ("git");
     Cmd.Cat ("log");
     Cmd.Cat ("--date=iso");
+    if Max /= 0 then
+      Cmd.Cat ("-n");
+      Cmd.Cat (Images.Integer_Image (Max + 1));
+    end if;
     Cmd.Cat ("--");
     Cmd.Cat (Pt (Path));
     Execute (Cmd, True, Command.Both,
@@ -706,13 +717,16 @@ package body Git_If is
 
     -- Encode entries
     Out_Flow_1.List.Rewind;
+    N_Read := 0;
     loop
       Read_Block (Out_Flow_1.List, False, Log_Entry.Hash, Log_Entry.Merged,
                   Log_Entry.Date, Log_Entry.Comment, null, Done);
       Log.Insert (Log_Entry);
-      exit when Done;
+      N_Read := N_Read + 1;
+      exit when N_Read = Max or else Done;
     end loop;
     Log.Rewind;
+    End_Reached := Done;
   end List_Log;
 
   -- Get last hash (hash of last commit) of file or dir

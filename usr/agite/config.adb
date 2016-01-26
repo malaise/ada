@@ -25,8 +25,8 @@ package body Config is
     return File_Path.Image;
   end Get_File_Name;
 
-  Curr_Dir_Pos : constant := 8;
-  Bookmarks_Pos : constant := 9;
+  Curr_Dir_Pos : constant := 9;
+  Bookmarks_Pos : constant := 10;
 
   -- Load the conf and check
   Ctx : Xml_Parser.Generator.Ctx_Type;
@@ -180,6 +180,18 @@ package body Config is
     when others =>
       raise Invalid_Config;
   end List_Tags;
+
+  -- Default history length
+  function History_Len return Natural is
+      Result : Natural;
+  begin
+    Result := Natural'Value (
+               Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 8), 1)));
+    return Result;
+  exception
+    when others =>
+      raise Invalid_Config;
+  end History_Len;
 
   -- Fix Characters '&' and '<' in path
   function Path2Xml (Str : in String) return String

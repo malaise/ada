@@ -80,9 +80,13 @@ package Git_If is
   subtype Log_List is Log_Mng.Dyn_List.List_Type;
 
   -- List the log of a dir or file
+  -- Stop at Max if not 0
+  -- Returns wether the end of list is reached at or before Max
   -- May raise anonymous exception Log_Error
   procedure List_Log (Path : in String;
-                      Log : in out Log_List);
+                      Max : in Natural;
+                      Log : in out Log_List;
+                      End_Reached : out Boolean);
 
   -- Get last hash (hash of last commit) of file or dir
   function Last_Hash (Path : in String) return Git_Hash;

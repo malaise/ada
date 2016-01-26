@@ -2,7 +2,7 @@ with As.U, Argument, Basic_Proc;
 with Git_If;
 procedure T_Git is
 
-  Moved : Boolean;
+  Moved, Done : Boolean;
 
   Vers : Git_If.Version_Rec;
   Root, Path : As.U.Asu_Us;
@@ -48,7 +48,7 @@ begin
   else
     Argument.Get_Parameter (Path, Occurence => 1);
   end if;
-  Git_If.List_Log (Path.Image, Logs);
+  Git_If.List_Log (Path.Image, 0, Logs, Done);
   if Logs.Is_Empty then
     Basic_Proc.Put_Line_Output ("No log");
   else

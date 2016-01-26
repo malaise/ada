@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V28.07
+V29.00
 
 General purpose
 ---------------
@@ -141,6 +141,17 @@ repository.
 +
 Setting the value to true instructs Agite to list all the tags by default when
 entering this menu.
+
+anchor:XHistoryLen[]
+
+history::
+When reading the xref:XHist[history] of a directory or file, Agite only scans
+and displays the amount of entries specified in this parameter (a button,
+xref:XListAll[All], allows listing all the entries). 
++
+Setting the value to 0 disables the feature and Agite will always list all the
+entries of the history.
+
 
 Agite persistent data
 ~~~~~~~~~~~~~~~~~~~~~
@@ -922,6 +933,13 @@ of the current page, as a scroll bar would do,
 * You can click at a given row in this "scroll bar". The list will move
 at the page corresponding to where you *release* the mouse button (and the
 hyphen will be set to this position).
+
+anchor:XListAll[]
+
+.All
+If the xref:XHistoryLen[history length] is reduced by configuration and leads
+to display only some entries, then this button allows showing all the entries
+of the history (which can take some time).
 
 anchor:XView[]
 

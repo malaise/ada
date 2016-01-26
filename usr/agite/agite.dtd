@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!ELEMENT agite (xterm,editor,viewer,differator,make,period,list_tags,
-                 last_dir,bookmarks*)>
+                 history,last_dir,bookmarks*)>
 
 <!ELEMENT xterm (#PCDATA)>
 <!ATTLIST xterm Name CDATA "Xterm">
@@ -12,6 +12,7 @@
 <!ATTLIST make Name CDATA "Make">
 <!ELEMENT period (#PCDATA)>
 <!ELEMENT list_tags (#PCDATA)>
+<!ELEMENT history (#PCDATA)>
 <!ELEMENT last_dir (#PCDATA)>
 <!ELEMENT bookmarks (bookmark*)>
 <!ELEMENT bookmark (#PCDATA)>

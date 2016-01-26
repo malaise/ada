@@ -27,6 +27,9 @@ package Config is
   -- List tags by default
   function List_Tags return Boolean;
 
+  -- Default history length
+  function History_Len return Natural;
+
   -- Last/Current dir
   procedure Save_Curr_Dir (Dir : in String);
   function Prev_Dir return String;
