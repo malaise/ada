@@ -261,6 +261,7 @@ package body Push_Pull is
           List.Rewind;
         end if;
         Afpx.Line_List.Move_At (List.Get_Position);
+        Afpx.Update_List (Afpx.Center_Selected);
       end if;
 
     end Init;
