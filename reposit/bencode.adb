@@ -351,7 +351,7 @@ package body Bencode is
           raise Format_Error;
         end if;
         -- Encode value as Bytes
-        Logger.Log_Debug ("Usung Bytes attribute " & Attr.Value.Image);
+        Logger.Log_Debug ("Using Bytes attribute " & Attr.Value.Image);
         for I in 1 .. Attr.Value.Length loop
           Bytes.Append (Byte(Character'Pos (Attr.Value.Element (I))));
         end loop;
