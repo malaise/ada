@@ -777,7 +777,7 @@ title t_file_hash
 try t_file_hash t_file_hash.adb begin
 cat << EOF >exp
 begin -> 
-FOUND at line 8 >begin<
+FOUND at line 6 >begin<
 EOF
 comp out exp
 comp err nul

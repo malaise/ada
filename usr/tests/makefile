@@ -5,7 +5,7 @@ ADAVIEW := $(REPOSIT)
 
 AFPX := true
 
-EXES := $(filter-out t_smart_int t_file_hash_list, $(UNITS))
+EXES := $(filter-out t_smart_int, $(UNITS))
 
 CLIBS := $(X11_SLIBS)
 CLIBS_t_ndbm := cndbm gdbm \

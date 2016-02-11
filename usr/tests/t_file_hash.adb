@@ -1,8 +1,6 @@
 with Argument, Basic_Proc, File_Hash, Images;
--- Workaround to GNAT GPL 2015 (64bits):
--- Declaring the list in stack segfaults
-with T_File_Hash_List;
 procedure T_File_Hash is
+  List : File_Hash.List_Mng.List_Type;
   Line : File_Hash.Line_Rec;
   Found : Boolean;
 begin
@@ -14,19 +12,19 @@ begin
     return;
   end if;
 
-  File_Hash.Load (Argument.Get_Parameter (1), T_File_Hash_List.List);
+  File_Hash.Load (Argument.Get_Parameter (1), List);
 
   for I in 2 .. Argument.Get_Nbre_Arg loop
     Argument.Get_Parameter (Line.Txt, Occurence => I);
     Basic_Proc.Put_Line_Output (Line.Txt.Image & " -> ");
-    T_File_Hash_List.List.Search_First (Line, Found);
+    List.Search_First (Line, Found);
     if Found then
      loop
-        T_File_Hash_List.List.Read_Current (Line);
+        List.Read_Current (Line);
         Basic_Proc.Put_Line_Output ("FOUND at line "
                                   & Images.Long_Long_Image (Line.No)
                                   & " >" & Line.Txt.Image & "<");
-        T_File_Hash_List.List.Search_Next (Line, Found);
+        List.Search_Next (Line, Found);
         exit when not Found;
       end loop;
     else
