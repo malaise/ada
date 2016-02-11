@@ -38,15 +38,27 @@ package body Address_Ops is
   function Image (Addr : System.Address) return String is
     -- "16#<Image>#    "
     S : String (1 .. Readable_Address'Width + 4);
+    Start : Positive;
+    Stop : Natural;
   begin
     Addr_Io.Put (S, To_Readable(Addr), 16);
-    -- Strip trailing spaces
-    for I in reverse S'Range loop
+    -- Strip heading spaces
+    Start := 1;
+    for I in S'Range loop
       if S(I) /= ' ' then
-        return S(1 .. I);
+        Start := I;
+        exit;
       end if;
     end loop;
-    return "";
+    -- Strip trailing spaces
+    Stop := 0;
+    for I in reverse S'Range loop
+      if S(I) /= ' ' then
+        Stop := I;
+        exit;
+      end if;
+    end loop;
+    return S(Start .. Stop);
   end Image;
 
 end Address_Ops;
