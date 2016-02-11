@@ -283,6 +283,9 @@ autobus (3)::
 basic_proc (1)::
      Basic IO operations and exit code setting.
 
+bencode (2)::
+     Encodes a Bencoded stream to/from a XML stream
+
 bit_ops (1)::
      Bit operations.
 
