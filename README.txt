@@ -3,7 +3,8 @@ Ada notes
 
 This README file describes briefly the main directories of the Ada contrib.
 
-The software compiles with Ada 2012 (Gnat GPL 2014) and runs on Unix (Linux).
+The software compiles with Ada 2012 (Gnat GPL 2015) and runs on Unix (Linux)
+32 and 64 bits.
 
 Some programs depend on anchor:XPCRE[] PCRE (Perl Compatible Regular Expressions) and work
 with version 7.8 or above (8.35 is OK), or PCRE2 (10.00 or above), and require
@@ -25,6 +26,9 @@ NOTE: Some C includes and libraries are installed in '/usr/local'. The first
 time, you may need to install them as root then change their owner.
 You may also need to add '/usr/local/lib' in '/etc/ld.so.conf' (and do a
 'ldconfig').
+
+NOTE: Some programs require the stack size to be larger than the default
+maximum. Use 'ulimit -s 10485760' to allow a larger stack.
 
 Programs are rated from 1 (simple) to 3 (very complex), on subjective
 criteria.
@@ -284,7 +288,7 @@ This directory mainly contains a copy of:
 
 - LinXtris from http://sourceforge.net/projects/linxtris (under GPL)
 
-They use Gtk-Ada 2.1x.
+They use Gtk-Ada 2.2x.
 
 Testing
 -------
