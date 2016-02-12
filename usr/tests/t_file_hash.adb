@@ -1,6 +1,9 @@
 with Argument, Basic_Proc, File_Hash, Images;
 procedure T_File_Hash is
-  List : File_Hash.List_Mng.List_Type;
+  -- Allocate list on Heap i.o. stack
+  type List_Access is access File_Hash.List_Mng.List_Type;
+  List_Acc : constant List_Access := new File_Hash.List_Mng.List_Type;
+  List : File_Hash.List_Mng.List_Type renames List_Acc.all;
   Line : File_Hash.Line_Rec;
   Found : Boolean;
 begin
@@ -32,5 +35,11 @@ begin
     end if;
   end loop;
 
+exception
+  when File_Hash.Init_Error =>
+    Basic_Proc.Put_Line_Error ("ERROR: File "
+                             & Argument.Get_Parameter (Occurence => 1)
+                             & " not found.");
+    Basic_Proc.Set_Error_Exit_Code;
 end T_File_Hash;
 
