@@ -311,46 +311,26 @@ package body Bencode is
       use type Xml_Parser.Node_Kind_List;
     begin
       Logger.Log_Debug ("Encoding Bytes");
+
+      -- Node must have at most one Text child
+      if Ctx.Get_Nb_Children (Node) > 1 then
+        Logger.Log_Error ("Bytes node must have at most one text child");
+        raise Format_Error;
+      elsif Ctx.Get_Nb_Children (Node) = 1 then
+        Text_Node := Ctx.Get_Child (Node, 1);
+        if Text_Node.Kind /= Xml_Parser.Text then
+          Logger.Log_Error ("Bytes node child must be text");
+          raise Format_Error;
+        end if;
+      end if;
+
       -- Node can have one attribute "Str", if yes then use it instead of text
       Nb_Attributes := Ctx.Get_Nb_Attributes (Node);
       if Nb_Attributes > 1 then
         Logger.Log_Error ("Invalid attributes of Bytes");
         raise Format_Error;
-      end if;
-
-      -- Check and encode Hexa number
-      -- Node must have one Text child with even chars
-      if Ctx.Get_Nb_Children (Node) > 1 then
-        Logger.Log_Error ("Bytes node must have at most one text child");
-        raise Format_Error;
-      end if;
-      if Ctx.Get_Nb_Children (Node) = 1 then
-        Text_Node := Ctx.Get_Child (Node, 1);
-        if Text_Node.Kind /= Xml_Parser.Text then
-          Logger.Log_Error ("Bytes node must have one text child");
-          raise Format_Error;
-        end if;
-        Text := Ctx.Get_Text (Text_Node);
-      end if;
-      if Text.Length rem 2 /= 0 then
-        Logger.Log_Error ("Bytes text has an odd length");
-        raise Format_Error;
-      end if;
-      Logger.Log_Debug ("Bytes text is " & Text.Image);
-      begin
-        for I in 1 .. Text.Length / 2 loop
-          -- Extract successive pairs of digits as bytes
-          Bytes.Append (Byte(Natural'(
-              Hexa_Utils.Value (Text.Slice (I * 2 - 1, I * 2)))));
-        end loop;
-      exception
-        when others =>
-          Logger.Log_Error ("Invalid content of Bytes " & Text.Image);
-          raise Format_Error;
-      end;
-
-      -- Set Bytes from Attribute "Str" if it is set
-      if Nb_Attributes = 1 then
+      elsif Nb_Attributes = 1 then
+        -- Set Bytes from Attribute "Str" if it is set
         -- Check attribute name
         Bytes.Set_Null;
         Attr := Ctx.Get_Attribute (Node, 1);
@@ -364,8 +344,34 @@ package body Bencode is
         for I in 1 .. Attr.Value.Length loop
           Bytes.Append (Byte(Character'Pos (Attr.Value.Element (I))));
         end loop;
+      else
+        -- Node must have one Text child
+        if Ctx.Get_Nb_Children (Node) /= 1 then
+          Logger.Log_Error ("Bytes node without Str must have one text child");
+          raise Format_Error;
+        end if;
+        -- Check length of text is even (Text node has laready been set)
+        Text := Ctx.Get_Text (Text_Node);
+        if Text.Length rem 2 /= 0 then
+          Logger.Log_Error ("Bytes text has an odd length");
+          raise Format_Error;
+        end if;
+        -- Check and encode Hexa number
+        Logger.Log_Debug ("Bytes text is " & Text.Image);
+        begin
+          for I in 1 .. Text.Length / 2 loop
+            -- Extract successive pairs of digits as bytes
+            Bytes.Append (Byte(Natural'(
+                Hexa_Utils.Value (Text.Slice (I * 2 - 1, I * 2)))));
+          end loop;
+        exception
+          when others =>
+            Logger.Log_Error ("Invalid content of Bytes " & Text.Image);
+            raise Format_Error;
+        end;
       end if;
-      -- <len>:<bytes>
+
+      -- Done: put <len>:<bytes>
       Append (Images.Integer_Image (Bytes.Length) & ":");
       Result.Append (Bytes);
       Logger.Log_Debug ("Encoded" & Natural'Image (Bytes.Length) & " Bytes");
