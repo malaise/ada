@@ -394,11 +394,11 @@ echo "OK"
 
 # t_bencode
 title t_bencode
-BENCOD='6:Dictiod6:OneInti1e7:TwoListli10e6:Elevene3:Tab1:\te'
-echo -e "$BENCOD" >exp
+BENCOD='6:Dictiod6:OneInti1e7:TwoListli10e6:Eleven5:Empty0:e3:Tab1:\te'
+echo -en "$BENCOD" >exp
 XML=`echo -en $BENCOD | t_bencode -b2x 2>err`
 BDECOD=`echo -n $XML | t_bencode -x2b 2>>err`
-echo -e "$BDECOD" >out
+echo -en "$BDECOD" >out
 comp out exp
 comp err nul
 echo "OK"
@@ -777,7 +777,7 @@ title t_file_hash
 try t_file_hash t_file_hash.adb begin
 cat << EOF >exp
 begin -> 
-FOUND at line 6 >begin<
+FOUND at line 9 >begin<
 EOF
 comp out exp
 comp err nul
