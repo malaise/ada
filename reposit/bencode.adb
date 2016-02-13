@@ -104,8 +104,8 @@ package body Bencode is
           raise Format_Error;
         end if;
         Tmp.Append (Character'Val(B));
-        I := I + 1;
         Check ("decoding a Bytes length");
+        I := I + 1;
       end loop;
       -- Extract length
       Len := Gets.Get_Int (Tmp.Image);
@@ -114,8 +114,8 @@ package body Bencode is
       Tmp.Set_Null;
       Valid := True;
       for J in 1 .. Len loop
-        I := I + 1;
         Check ("reading a Bytes array");
+        I := I + 1;
         B := Natural (Ben_Stream(I));
         Tmp.Append (Upper_Str (Hexa_Utils.Image (B, 2, '0')));
         Valid := Valid and then B >= Character'Pos(' ')
@@ -124,12 +124,19 @@ package body Bencode is
           Str.Append (Character'Val(B));
         end if;
       end loop;
-      -- Insert element "Bytes" with text
+      -- Insert element "Bytes", either emty or with text
       Ctx.Add_Child (Node, Bytes_Name, Xml_Parser.Element, New_Node);
+      -- Insert Str attribute if valid string
       if Valid then
         Ctx.Add_Attribute (New_Node, Str_Name, Str.Image);
       end if;
-      Ctx.Add_Child (New_Node, Tmp.Image, Xml_Parser.Text, New_Node);
+      if Tmp.Is_Null then
+        -- Ensure emty text in (formatted) output
+        Ctx.Set_Tag_Empty (New_Node, True);
+      else
+        -- Add text child
+        Ctx.Add_Child (New_Node, Tmp.Image, Xml_Parser.Text, New_Node);
+      end if;
       Logger.Log_Debug ("Got Bytes " & Tmp.Image);
       if Valid then
         Logger.Log_Debug ("    Str " & Str.Image);
@@ -313,16 +320,18 @@ package body Bencode is
 
       -- Check and encode Hexa number
       -- Node must have one Text child with even chars
-      if Ctx.Get_Nb_Children (Node) /= 1 then
-        Logger.Log_Error ("Bytes node must have one text child");
+      if Ctx.Get_Nb_Children (Node) > 1 then
+        Logger.Log_Error ("Bytes node must have at most one text child");
         raise Format_Error;
       end if;
-      Text_Node := Ctx.Get_Child (Node, 1);
-      if Text_Node.Kind /= Xml_Parser.Text then
-        Logger.Log_Error ("Bytes node must have one text child");
-        raise Format_Error;
+      if Ctx.Get_Nb_Children (Node) = 1 then
+        Text_Node := Ctx.Get_Child (Node, 1);
+        if Text_Node.Kind /= Xml_Parser.Text then
+          Logger.Log_Error ("Bytes node must have one text child");
+          raise Format_Error;
+        end if;
+        Text := Ctx.Get_Text (Text_Node);
       end if;
-      Text := Ctx.Get_Text (Text_Node);
       if Text.Length rem 2 /= 0 then
         Logger.Log_Error ("Bytes text has an odd length");
         raise Format_Error;

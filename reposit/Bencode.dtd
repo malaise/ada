@@ -10,12 +10,14 @@
 <!ELEMENT Bencode (%Element;)*>
 
 <!-- A Byte array is a text containing the bytes in Hexa uppercase -->
+<!-- Can (should rather) be empty elmenent (<Bytes/>) when the array is
+     empty -->
 <!ELEMENT Bytes (#PCDATA)>
-<!-- If all the bytes of the array are printable (from ' ' to '~') then,
-     after decoding from Bencoded, the attribute contains the readable
+<!-- When decoding from Bencoded to Xml: If all the bytes of the array are
+     printable (from ' ' to '~') then the attribute contains the readable
      string -->
-<!-- If it is set for the for the conversion from Xml to Bencoded,
-     then it is used instead of the text -->
+<!-- When encoding from Xml to Bencoded: If it is set, then the attribute is
+     used instead of the text -->
 <!ATTLIST Bytes Str CDATA #IMPLIED>
 
 <!-- An Int is a text containing the image in base 10 -->
