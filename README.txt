@@ -28,7 +28,7 @@ You may also need to add '/usr/local/lib' in '/etc/ld.so.conf' (and do a
 'ldconfig').
 
 NOTE: Some programs require the stack size to be larger than the default
-maximum. Use 'ulimit -s 10485760' to allow a larger stack.
+maximum. Use 'ulimit -s 1048576' to allow a larger stack.
 
 Programs are rated from 1 (simple) to 3 (very complex), on subjective
 criteria.
