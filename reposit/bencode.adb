@@ -295,6 +295,7 @@ package body Bencode is
       exception
         when others =>
           Logger.Log_Error ("Invalid Int value " & Text.Image);
+          raise Format_Error;
       end;
       -- Ok
       Append (Text.Image);

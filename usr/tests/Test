@@ -394,7 +394,7 @@ echo "OK"
 
 # t_bencode
 title t_bencode
-BENCOD='6:Dictiod6:OneInti1e7:TwoListli10e6:Eleven5:Empty0:e3:Tab1:\te'
+BENCOD='6:Dictiod6:OneInti1e7:TwoListli10e6:Eleven5:Empty0:e3:Tab1:\t8:Negativei-21ee'
 echo -en "$BENCOD" >exp
 XML=`echo -en $BENCOD | t_bencode -b2x 2>err`
 BDECOD=`echo -n $XML | t_bencode -x2b 2>>err`
