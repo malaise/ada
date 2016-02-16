@@ -28,7 +28,7 @@ You may also need to add '/usr/local/lib' in '/etc/ld.so.conf' (and do a
 'ldconfig').
 
 NOTE: Some programs require the stack size to be larger than the default
-maximum. Use 'ulimit -s 1048576' to allow a larger stack.
+maximum. Use for example 'ulimit -s 1048576' to allow a larger stack.
 
 Programs are rated from 1 (simple) to 3 (very complex), on subjective
 criteria.
@@ -42,13 +42,24 @@ Similarly, the commands 'ada' and 'gnatlink' can be in the path and be this
 same gnatmake script (you can copy it or make links from '$HOME/bin/ada' and
 '$HOME/bin/gnatlink' to it).
 
-The automatic generation by make (see next section) doesn't use them but these
-scripts are useful for manual compilation.
+The automatic generation by make (see next section) doesn't use them but this
+script and commands can be useful for manual compilation.
 
 Makefiles project (MANDATORY)
 -----------------------------
 This project gathers several generic definitions for C and Ada generation.
-Several examples of usage can be found in the source directories.
+Several examples of usage can be found in the source directories. +
+
+Summary
+~~~~~~~
+The main features are:
+
+ * automatic list of units
+ * prerequisits
+ * conditionnal preprocessing
+ * optimization
+ * static executables
+ * documentation generation
 
 PCRE flavour
 ~~~~~~~~~~~~
