@@ -1,5 +1,7 @@
 <?xml version="1.1" encoding="UTF-8"?>
+
 <!-- DTD for Afpx xml definition -->
+<!-- +++++++++++++++++++++++++++ -->
 <!-- See also the comments in afpx.ads for the handling of user actions -->
 <!--  on list, on buttons and on get fields. -->
 

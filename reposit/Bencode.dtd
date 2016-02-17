@@ -1,6 +1,8 @@
 <?xml version="1.1" encoding="UTF-8"?>
+
 <!-- DTD for the Bencode package -->
-<!-- Defines the format of the XML stream coverted to or from Bencode -->
+<!-- +++++++++++++++++++++++++++ -->
+<!-- Defines the format of the XML stream converted to or from Bencode -->
 
 <!-- Any entry of the XML stream -->
 <!ENTITY % Element "Bytes|Int|List|Dictio">
@@ -10,17 +12,18 @@
 <!ELEMENT Bencode (%Element;)*>
 
 <!-- A Byte array is a text containing the bytes in Hexa uppercase -->
-<!-- Can (should rather) be empty elmenent (<Bytes/>) when the array is
-     empty -->
+<!-- Can (should rather) be empty element (<Bytes/>) when the array is
+     empty, so that XML formatting does not insert lineFeed and indentation -->
 <!ELEMENT Bytes (#PCDATA)>
 <!-- When decoding from Bencoded to Xml: If all the bytes of the array are
      printable (from ' ' to '~') then the attribute contains the readable
-     string -->
+     string corresponding to the Bytes text -->
 <!-- When encoding from Xml to Bencoded: If it is set, then the attribute is
-     used instead of the text -->
+     used instead of the Bytes text -->
 <!ATTLIST Bytes Str CDATA #IMPLIED>
 
-<!-- An Int is a text containing the image in base 10 -->
+<!-- An Int has a text containing the image in base 10
+     (-0, -00... are forbidden) -->
 <!ELEMENT Int (#PCDATA)>
 
 <!-- A List is a sequence of elments -->

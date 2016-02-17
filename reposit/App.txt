@@ -43,28 +43,29 @@ Example, for a C comment followed by a sharp, use "prefix=/\*#".
 
 .Keyword
 
-app recognizes the following keywords (and suppresses them from the output):
+app recognizes the following keywords (and suppresses the corresponding line
+from the output):
 
 IfDef <names>::
 
-<names> is one name or several names separated by \'|'. +
+<names> is one name, or several names separated by \'|'. +
 If one of the names is defined in the arguments, then the text following
 the line is kept, up to the next preprocessing directive.
 
 IfNotDef <names>::
-<names> is one name or several names separated by \'&'. +
+<names> is one name, or several names separated by \'&'. +
 If none of the names is defined in the arguments, then the text following
 the line is kept, up to the next preprocessing directive.
 
 ElsIfDef <names>::
-<names> is one name or several names separated by \'|'. +
-If no preceeding directive has been selected and one of the names
+<names> is one name, or several names separated by \'|'. +
+If no preceeding directive has been selected and if one of the names
 is defined in the arguments, then the text following
 the line is kept, up to the next preprocessing directive.
 
 ElsIfNotDef <names>::
-<names> is one name or several names separated by \'&'. +
-If no preceeding directive has been selected and none of the names
+<names> is one name, or several names separated by \'&'. +
+If no preceeding directive has been selected and if none of the names
 is defined in the arguments, then the text following
 the line is kept, up to the next preprocessing directive.
 
@@ -82,8 +83,9 @@ Replaces the whole line (except leading separators) by the value defined for
 Define <name> <value>::
 Defines or re-defines a value for <name>.
 
-.Summary
-app looks for lines of text stricly matching (depending on the keyword):
+.Regular expressions
+app looks for lines of text stricly matching (depending on the keyword) the
+following regular expressions:
 
    ^[[:blank:]]*<prefix><keyword>[[:blank:]]+<name>[[:blank:]]*$
 
@@ -95,7 +97,7 @@ or
 
    ^[[:blank:]]*<prefix>Define[[:blank:]]+<name>([[:blank:]]+<Value>)?$
 
-.Examples
+.Example of directives
 
   #IfDef X
     echo "Def X"
@@ -116,6 +118,8 @@ or
 
 Errors
 ------
+The following errors are reported:
+
  * ElsifDef, ElsifNotDef or ElseDef not after a IfDef or a IfNotDef.
  * ElseDef not followed by EndifDef.
  * A block not terminated by EndifDef.
