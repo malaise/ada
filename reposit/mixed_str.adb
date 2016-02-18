@@ -1,5 +1,6 @@
--- Convert the characters of Str: First character into upper char
---  and others into lower char
+-- Convert the characters of Str:
+-- Any letter that follows a letter is lower char
+-- Any other  letter (including the first letter) is UPPER char
 with Upper_Char, Lower_Char;
 function Mixed_Str (Str : String) return String is
   Str_Loc : String (Str'Range) := Str;

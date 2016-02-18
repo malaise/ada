@@ -1,9 +1,11 @@
 -- Make ADA 83 sources, or badly cased but valid Ada sources,
 --  look like a Ada 95, 05 and 2012 one.
--- Reserved words are set in lower_case and other identifiers in Mixed_Case.
--- Numeric literals (extended digits and exponent) are set in UPPERCASE.
+-- Reserved words are set in lower_case and other identifiers in Mixed_Case
+--  (e.g. Ident4Good).
+-- Numeric literals (extended digits and exponent) are set in UPPERCASE (e.g.
+--  16#FF#).
 -- Strings and comments are not modified.
--- A New_Line is appended to the file when last char is not a New_Line.
+-- A Line_Feed is appended to the file when the last char is not a Line_Feed.
 --
 -- Verbose mode lists all processed files with a "=" (not modified)
 --  or a "*" (modified).
@@ -47,13 +49,13 @@ procedure Alook is
     procedure Update_Str (Str : in String; At_Index : in Positive_Count);
 
     -- End of line/comment
-    New_Line : Character renames Aski.Lf;
+    Line_Feed : Character renames Aski.Lf;
     -- Words might end by and Ada separator or delimiter
-    --  or by a New_Line or (DOS format) a Carriage_Return
+    --  or by a Line_Feed or (DOS format) a Carriage_Return
     Carriage_Return : Character renames Aski.Cr;
 
-    -- Append a newline in file (which has to be and is left closed)
-    procedure Append_New_Line (File_Name : in String);
+    -- Append a line feed in file (which has to be and is left closed)
+    procedure Append_Line_Feed (File_Name : in String);
   end Reading;
 
   package body Reading is
@@ -250,7 +252,7 @@ procedure Alook is
 
     end Update_Str;
 
-    procedure Append_New_Line (File_Name : in String) is
+    procedure Append_Line_Feed (File_Name : in String) is
       Dir_File : Dir_Io.File_Type;
       use type Dir_Io.Count;
     begin
@@ -258,9 +260,9 @@ procedure Alook is
         raise Char_Io.Status_Error;
       end if;
       Dir_Io.Open (Dir_File,  Dir_Io.Inout_File, File_Name);
-      Dir_Io.Write (Dir_File, New_Line, Dir_Io.Size (Dir_File) + 1);
+      Dir_Io.Write (Dir_File, Line_Feed, Dir_Io.Size (Dir_File) + 1);
       Dir_Io.Close (Dir_File);
-    end Append_New_Line;
+    end Append_Line_Feed;
 
   end Reading;
 
@@ -431,7 +433,7 @@ procedure Alook is
       end;
 
       -- Check end of line
-      if Char = Reading.New_Line or else End_Of_File then
+      if Char = Reading.Line_Feed or else End_Of_File then
         -- End of line or of file (and end of comment, string)
         In_Comment := False;
         In_String := False;
@@ -439,7 +441,7 @@ procedure Alook is
       end if;
 
       -- Update line char for warnings if possible
-      if Char /= Reading.New_Line and then not End_Of_File then
+      if Char /= Reading.Line_Feed and then not End_Of_File then
         begin
           Line.Append (Char);
         exception
@@ -454,7 +456,7 @@ procedure Alook is
       and then not In_String then
         if Ada_Words.Is_Separator (Char)
         or else Ada_Words.Is_Delimiter (Char)
-        or else Char = Reading.New_Line
+        or else Char = Reading.Line_Feed
         or else Char = Reading.Carriage_Return
         or else End_Of_File then
           -- End of word, check it
@@ -530,7 +532,7 @@ procedure Alook is
       end if;
 
       -- Show warnings at line level if end of line
-      if Char = Reading.New_Line or else End_Of_File then
+      if Char = Reading.Line_Feed or else End_Of_File then
         -- Check warnings
         Check_Line;
         Line_No := Line_No + 1;
@@ -554,13 +556,13 @@ procedure Alook is
 
     end loop;
 
-    -- Done: Check that last line ends with new_line
-    if Char /= Reading.New_Line and then Do_It then
-      Reading.Append_New_Line (File_Name);
+    -- Done: Check that last line ends with Line_Feed
+    if Char /= Reading.Line_Feed and then Do_It then
+      Reading.Append_Line_Feed (File_Name);
       Modified := True;
       Logger.Log_Debug ("In file " & File_Name
                       & " at line" & Line_No'Img
-                      & ": New_Line appended");
+                      & ": Line_Feed appended");
     end if;
 
     return Modified;
