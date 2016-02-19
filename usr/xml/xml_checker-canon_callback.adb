@@ -161,7 +161,7 @@ begin
     Clone.Has_Children := True;
     Clone.Is_Mixed := True;
     -- Start Tag
-    Str := As.U.Tus (Xml_Parser.Generator.Image (Ctx, Clone, Format, Width));
+    Str := As.U.Tus (Xml_Parser.Generator.Image (Ctx, Clone, Format));
     Out_Flow.Put (Str.Image);
     -- End Tag
     Clone.Creation := False;
@@ -169,7 +169,7 @@ begin
   end if;
 
   -- Use the Image of Xml_Parser.Generator
-  Str := As.U.Tus (Xml_Parser.Generator.Image (Ctx, Clone, Format, Width));
+  Str := As.U.Tus (Xml_Parser.Generator.Image (Ctx, Clone, Format));
   Len := Str.Length;
 
   -- Remove Leading Line_Feed before Root

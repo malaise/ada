@@ -1,9 +1,9 @@
 Xml_Checker
 ===========
-Version: V23.0
+Version: V24.0
 
-'Parser version: V42.0 +
-Generator version: V18.2 +
+'Parser version: V42.1 +
+Generator version: V19.0 +
 Dtd_checker version: V4.0 +
 Dtd_generator version: V2.5'
 
@@ -14,7 +14,7 @@ Syntax
 ------
 ...................................................
 xml_checker[ { <option> } ] [ { <file> } ]
- <option> ::= <silent> | <progress> | <dump> | <raw> | <width> | <one> |
+ <option> ::= <silent> | <progress> | <dump> | <raw> | <width> | <one> | <split>
             | <expand> | <keep> | <namespace> | <canonical> | <normalize>
             | <check_dtd> | <validate> | <tree> | <update_mix> | <copytree>
             | <warnings>
@@ -41,6 +41,7 @@ xml_checker[ { <option> } ] [ { <file> } ]
  <progress>    ::= -p | --progress  : Only show a progress bar
  <raw>         ::= -r | --raw       : Put all on one line
  <silent>      ::= -s | --silent    : No output, only exit code
+ <split>       ::= --split-nochild  : Element without child is put on 2 lines
  <tree>        ::= -t | --tree      : Build tree then dump it
  <validate>    ::= -V | --validate  : Process for validation (-E -k n)
  <width>       ::= -W <Width> | --width=<Width>
@@ -98,7 +99,10 @@ feed).
 -W <Width> | --width=<Width>: :: for limiting the number of attributes per
 line to up to <Width> columns. Default format is ''-W 80''.
 
--1 | --one : :: for a XML output with at most one attribute per line.
+-1 | --one: :: for a XML output with at most one attribute per line.
+
+--split-no-child: :: put non-empty elements that have no child on two lines
+instead of '<Elt></Elt>' (in 'width' and 'one' modes).
 
 Transformations
 ~~~~~~~~~~~~~~~
@@ -267,7 +271,7 @@ The following table summarizes the defaults of xml_checker (and Generator) and
 of Xml_Parser. The differences are highlighted:
 [width="75%", options="header"]
 |=========================================================
-| Option         | Xml_Parser default   | xml_cheker default
+| Option         | Xml_Parser default   | xml_checker default
 | File name      | None, ("" for stdin) | Stdin
 | Comments      s| False               s| True
 | Cdata         s| Remove markers      s| Keep markers
@@ -280,6 +284,7 @@ of Xml_Parser. The differences are highlighted:
 | Callback/Tree s| Tree                s| Callback
 | Format         | Fill width           | Fill width
 | Width          | 80                   | 80
+| Split          | False                | False
 |=========================================================
 In order to trigger the default behaviour of the parser, xml_checker shalled
 be called with options: +

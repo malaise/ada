@@ -3,7 +3,7 @@ with Aski, Images, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1148,8 +1148,7 @@ package body Xml_Parser.Generator is
 
   -- Internal procedure to generate the output
   procedure Generate (Ctx       : in Ctx_Type;
-                      Format    : in Format_Kind_List;
-                      Width     : in Natural;
+                      Format    : in Format_Definition;
                       Namespace : in Boolean;
                       Flow      : in out Flow_Dscr);
 
@@ -1157,8 +1156,7 @@ package body Xml_Parser.Generator is
   -- Raises Text_Line exceptions
   procedure Put (Ctx       : in out Ctx_Type;
                  File_Name : in String;
-                 Format    : in Format_Kind_List := Default_Format;
-                 Width     : in Natural := Default_Width;
+                 Format    : in Format_Definition := Default_Format;
                  Namespace : in Boolean := False) is
     Flow : Flow_Dscr(Use_File => True);
     Fd : Sys_Calls.File_Desc;
@@ -1188,7 +1186,7 @@ package body Xml_Parser.Generator is
     end if;
     Text_Line.Open (Flow.File, Text_Line.Out_File, Fd);
     -- Put generated text
-    Generate (Ctx, Format, Width, Namespace, Flow);
+    Generate (Ctx, Format, Namespace, Flow);
     -- Close flow
     Close;
   exception
@@ -1198,28 +1196,26 @@ package body Xml_Parser.Generator is
   end Put;
 
   -- Dumps in a string then raw XML flow (no CR no space)
-  function Set (Ctx       : Ctx_Type;
-                Format    : Format_Kind_List := Default_Format;
-                Width     : Natural := Default_Width;
+  function Put (Ctx       : Ctx_Type;
+                Format    : Format_Definition := Default_Format;
                 Namespace : Boolean := False) return String is
     Flow : Flow_Dscr(Use_File => False);
   begin
     -- Compute generated text
-    Generate (Ctx, Format, Width, Namespace, Flow);
+    Generate (Ctx, Format, Namespace, Flow);
     return Flow.Us.Image;
-  end Set;
+  end Put;
 
-  procedure Set (Ctx       : in Ctx_Type;
+  procedure Put (Ctx       : in Ctx_Type;
                  Str       : out As.U.Asu_Us;
-                 Format    : in Format_Kind_List := Default_Format;
-                 Width     : in Natural := Default_Width;
+                 Format    : in Format_Definition := Default_Format;
                  Namespace : in Boolean := False) is
     Flow : Flow_Dscr(Use_File => False);
   begin
     -- Compute generated text
-    Generate (Ctx, Format, Width, Namespace, Flow);
+    Generate (Ctx, Format, Namespace, Flow);
     Str := Flow.Us;
-  end Set;
+  end Put;
 
   ---------------------
   -- Put the Xml way --
@@ -1282,8 +1278,7 @@ package body Xml_Parser.Generator is
 
   -- Put the attributes
   procedure Put_Attributes (Flow         : in out Flow_Dscr;
-                            Format       : in Format_Kind_List;
-                            Width        : in Natural;
+                            Format       : in Format_Definition;
                             Namespace    : in Boolean;
                             Attributes   : in Attributes_Array;
                             Level        : in Natural;
@@ -1310,10 +1305,10 @@ package body Xml_Parser.Generator is
       -- Never new line for first
       -- New line if One_Per_Line of Fill_Width and no more width
       if I /= Attributes'First
-      and then (Format = One_Per_Line
-         or else (Format = Fill_Width
-                  and then Width /= Infinite_Width
-                  and then Cur_Col + Att_Width > Width) ) then
+      and then (Format.Kind = One_Per_Line
+         or else (Format.Kind = Fill_Width
+                  and then Format.Width /= Infinite_Width
+                  and then Cur_Col + Att_Width > Format.Width) ) then
         New_Line (Flow);
         Put (Flow, Pad);
         Cur_Col := Pad'Length;
@@ -1332,8 +1327,7 @@ package body Xml_Parser.Generator is
   -- Put the attributes of current element
   -- Move to first child of element if any, otherwise remain on element
   procedure Put_Attributes (Flow         : in out Flow_Dscr;
-                            Format       : in Format_Kind_List;
-                            Width        : in Natural;
+                            Format       : in Format_Definition;
                             Namespace    : in Boolean;
                             Element      : in out My_Tree.Tree_Type;
                             Level        : in Natural;
@@ -1368,7 +1362,7 @@ package body Xml_Parser.Generator is
         Attributes(I).Namespace := Cell.Namespace;
         Attributes(I).Value := Cell.Value;
       end loop;
-      Put_Attributes (Flow, Format, Width, Namespace,
+      Put_Attributes (Flow, Format, Namespace,
                       Attributes, Level, Offset, Has_Children);
     end;
     -- Move to next brother if any, otherwise move to father
@@ -1389,7 +1383,7 @@ package body Xml_Parser.Generator is
   -- Put a DOCTYPE directive
   procedure Put_Doctype (Flow    : in out Flow_Dscr;
                          Doctype : in Doctype_Type;
-                         Format  : in Format_Kind_List) is
+                         Format  : in Format_Definition) is
   begin
     -- Put DOCTYPE, name
     Put (Flow, "<!DOCTYPE " & Doctype.Name.Image);
@@ -1414,7 +1408,7 @@ package body Xml_Parser.Generator is
     end if;
     -- Internal definition
     if not Doctype.Int_Def.Is_Null then
-      if Format /= Raw then
+      if Format.Kind /= Raw then
         Put (Flow, " [" & Doctype.Int_Def.Image & "]");
       else
         Put (Flow, "[" & Normalize (Doctype.Int_Def.Image) & "]");
@@ -1425,8 +1419,7 @@ package body Xml_Parser.Generator is
 
   -- Put an element (and its attributes and children)
   procedure Put_Element (Flow      : in out Flow_Dscr;
-                         Format    : in Format_Kind_List;
-                         Width     : in Natural;
+                         Format    : in Format_Definition;
                          Namespace : in Boolean;
                          Ctx       : in Ctx_Type;
                          Stage     : in Stage_List;
@@ -1444,21 +1437,22 @@ package body Xml_Parser.Generator is
     Nb_Children : constant Child_Range
                 := Nb_Cell_Children - Cell.Nb_Attributes;
     Elt_Name : As.U.Asu_Us;
-    Xml_Attr_Format : Format_Kind_List;
+    Xml_Attr_Format : Format_Definition;
     Closed : Boolean := False;
     -- Do we indent these outputs
     function Do_Indent_Child return Boolean is
     begin
-      return Format /= Raw
+      return Format.Kind /= Raw
       and then (Stage /= Elements
                 or else (not (Empty_Info = Def_Empty
                               or else Is_Mixed
-                              or else Nb_Children = 0)
+                              or else (not Format.Split_No_Child
+                                       and then Nb_Children = 0))
                          and then Ctx.Normalize));
     end Do_Indent_Child;
     function Do_Indent_Parent return Boolean is
     begin
-      return Format /= Raw
+      return Format.Kind /= Raw
       and then (Stage /= Elements
                 or else (not In_Mixed and then Ctx.Normalize));
     end Do_Indent_Parent;
@@ -1492,21 +1486,21 @@ package body Xml_Parser.Generator is
         -- The Xml directive
         -- Even if one attr per line is requested, Xml directive attributes
         --  are all on the same line
-        Xml_Attr_Format := (if Format = One_Per_Line then Fill_Width
-                            else Format);
+        Xml_Attr_Format := Format;
+        Xml_Attr_Format.Kind := Fill_Width;
         -- Put the xml directive with attributes if any
         Put (Flow, "<?" & Cell.Name.Image);
-        Put_Attributes (Flow, Xml_Attr_Format, Width, Namespace, Tree, 0,
+        Put_Attributes (Flow, Xml_Attr_Format, Namespace, Tree, 0,
                         2 + Cell.Name.Length, False);
         Put (Flow, "?>");
-        if Format /= Raw then
+        if Format.Kind /= Raw then
           New_Line (Flow);
         end if;
       end if;
       -- Any child of prologue?
       if Tree.Get_Position = Cell_Ref then
         -- No Child (Put_Attributes moved back to current): return
-        if Format /= Raw and then Cell.Nb_Attributes /= 0 then
+        if Format.Kind /= Raw and then Cell.Nb_Attributes /= 0 then
           -- Skip one line between prologue and root if there is
           --  a xml directive
           New_Line (Flow);
@@ -1537,7 +1531,7 @@ package body Xml_Parser.Generator is
           when Comment =>
             Put_Comment (Flow, Child.Name.Image);
         end case;
-        if Format /= Raw then
+        if Format.Kind /= Raw then
           New_Line (Flow);
         end if;
         -- Next child or done
@@ -1546,7 +1540,7 @@ package body Xml_Parser.Generator is
       end loop;
       -- End of prologue and its children
       Tree.Move_Father;
-      if Format /= Raw then
+      if Format.Kind /= Raw then
         -- Skip one line between prologue and root
         New_Line (Flow);
       end if;
@@ -1566,7 +1560,7 @@ package body Xml_Parser.Generator is
     end if;
 
     -- Put attributes and move to first child (if any)
-    Put_Attributes (Flow, Format, Width, Namespace, Tree, Level,
+    Put_Attributes (Flow, Format, Namespace, Tree, Level,
                     1 + Cell.Name.Length,
                     Has_Children => Nb_Children /= 0);
 
@@ -1590,7 +1584,8 @@ package body Xml_Parser.Generator is
           Close;
         end if;
         -- Newline after root with no child
-        if Level = 0 and then Format /= Raw and then not Do_Indent_Parent then
+        if Level = 0 and then Format.Kind /= Raw
+                     and then not Do_Indent_Parent then
           New_Line (Flow);
         end if;
       end if;
@@ -1620,7 +1615,7 @@ package body Xml_Parser.Generator is
             raise Internal_Error;
           end if;
           -- Recursive dump child
-          Put_Element (Flow, Format, Width, Namespace, Ctx, Stage, Tree,
+          Put_Element (Flow, Format, Namespace, Ctx, Stage, Tree,
                          Level + 1, Cell.Is_Mixed and then Stage = Elements);
         when Text =>
           if Stage = Tail then
@@ -1666,7 +1661,8 @@ package body Xml_Parser.Generator is
     if Stage = Elements then
       Close;
       -- Newline after root with children
-      if Level = 0 and then Format /= Raw and then not Do_Indent_Parent then
+      if Level = 0 and then Format.Kind /= Raw
+                   and then not Do_Indent_Parent then
         New_Line (Flow);
       end if;
     end if;
@@ -1676,8 +1672,7 @@ package body Xml_Parser.Generator is
 
   -- Internal procedure to generate the output
   procedure Generate (Ctx       : in Ctx_Type;
-                      Format    : in Format_Kind_List;
-                      Width     : in Natural;
+                      Format    : in Format_Definition;
                       Namespace : in Boolean;
                       Flow      : in out Flow_Dscr) is
   begin
@@ -1686,17 +1681,17 @@ package body Xml_Parser.Generator is
     end if;
     -- Put prologue if any
     Ctx.Prologue.Move_Root;
-    Put_Element (Flow, Format, Width, Namespace, Ctx,
+    Put_Element (Flow, Format, Namespace, Ctx,
                  Prologue, Ctx.Prologue.all, 0, False);
     -- Put Elements
     Ctx.Elements.Move_Root;
-    Put_Element (Flow, Format, Width, Namespace, Ctx,
+    Put_Element (Flow, Format, Namespace, Ctx,
                  Elements, Ctx.Elements.all, 0, False);
     -- Put tail
     Ctx.Tail.Move_Root;
-    Put_Element (Flow, Format, Width, Namespace, Ctx,
+    Put_Element (Flow, Format, Namespace, Ctx,
                  Tail, Ctx.Tail.all, 0, False);
-    if Format /= Raw then
+    if Format.Kind /= Raw then
       New_Line (Flow);
     end if;
 
@@ -1705,29 +1700,29 @@ package body Xml_Parser.Generator is
   -- Put a node update image in a string
   function Image (Ctx       : Xml_Parser.Ctx_Type;
                   Update    : Node_Update;
-                  Format    : Format_Kind_List := Default_Format;
-                  Width     : Natural := Default_Width;
+                  Format    : Format_Definition := Default_Format;
                   Namespace : Boolean := False) return String is
     -- Do we indent these outputs
     function Do_Indent_Child return Boolean is
     begin
-      return Format /= Raw
+      return Format.Kind /= Raw
       and then (Update.Stage /= Elements
                 or else (not (Update.Empty_Info = Def_Empty
                               or else Update.Is_Mixed
-                              or else not Update.Has_Children)
+                              or else (not Format.Split_No_Child
+                                       and then not Update.Has_Children))
                          and then Ctx.Normalize));
     end Do_Indent_Child;
     function Do_Indent_Parent return Boolean is
     begin
-      return Format /= Raw
+      return Format.Kind /= Raw
       and then (Update.Stage /= Elements
                 or else (not Update.In_Mixed and then Ctx.Normalize));
     end Do_Indent_Parent;
     Elt_Name : As.U.Asu_Us;
     Flow : Flow_Dscr(Use_File => False);
     Indent : constant String (1 .. 2 * Update.Level) := (others => ' ');
-    Xml_Attr_Format : Format_Kind_List;
+    Xml_Attr_Format : Format_Definition;
   begin
     if Update.Stage = Prologue then
       if Update.Level = 0 then
@@ -1737,17 +1732,14 @@ package body Xml_Parser.Generator is
         and then Update.Attributes'Length /= 0 then
           -- Even if one attr per line request, Xml directive attributes
           --  are all on the same line
-          if Format = One_Per_Line then
-            Xml_Attr_Format := Fill_Width;
-          else
-            Xml_Attr_Format := Format;
-          end if;
+          Xml_Attr_Format := Format;
+          Xml_Attr_Format.Kind := Fill_Width;
           Put (Flow, "<?" & Update.Name.Image);
-          Put_Attributes (Flow, Xml_Attr_Format, Width, Namespace,
+          Put_Attributes (Flow, Xml_Attr_Format, Namespace,
                           Update.Attributes.all, 0, 2 + Update.Name.Length,
                           False);
           Put (Flow, "?>");
-          if Format /= Raw then
+          if Format.Kind /= Raw then
             New_Line (Flow);
           end if;
         end if;
@@ -1769,7 +1761,7 @@ package body Xml_Parser.Generator is
           when Comment =>
             Put_Comment (Flow, Update.Name.Image);
         end case;
-        if Format /= Raw then
+        if Format.Kind /= Raw then
           New_Line (Flow);
         end if;
       end if;
@@ -1778,7 +1770,7 @@ package body Xml_Parser.Generator is
 
     -- In elements tree
     if Update.Stage = Elements then
-      if Format /= Raw
+      if Format.Kind /= Raw
       and then Update.Creation
       and then Update.Level = 0 then
         -- Creation of root, separate from prologue
@@ -1806,7 +1798,7 @@ package body Xml_Parser.Generator is
           -- Put element and attributes
           Put (Flow, "<" & Elt_Name.Image);
           if Update.Attributes /= null then
-            Put_Attributes (Flow, Format, Width, Namespace,
+            Put_Attributes (Flow, Format, Namespace,
                             Update.Attributes.all, Update.Level,
                             1 + Update.Name.Length, Update.Has_Children);
           end if;
@@ -1837,7 +1829,7 @@ package body Xml_Parser.Generator is
         else
           -- End of element with children
           Put (Flow, "</" & Elt_Name.Image & ">");
-          if Format /= Raw and then Update.Stage = Elements
+          if Format.Kind /= Raw and then Update.Stage = Elements
           and then Update.Level = 0 and then not Do_Indent_Parent then
             -- End of root while end of element will not appen New_Line
             New_Line (Flow);
@@ -1864,15 +1856,14 @@ package body Xml_Parser.Generator is
     return Flow.Us.Image;
   end Image;
 
-  procedure Set_Image (Ctx    : in Xml_Parser.Ctx_Type;
-                       Update : in Node_Update;
-                       Str    : out As.U.Asu_Us;
-                       Format : in Format_Kind_List := Default_Format;
-                       Width  : in Natural := Default_Width;
-                       Namespace : in Boolean := False) is
+  procedure Image (Ctx    : in Xml_Parser.Ctx_Type;
+                   Update : in Node_Update;
+                   Str    : out As.U.Asu_Us;
+                   Format : in Format_Definition := Default_Format;
+                   Namespace : in Boolean := False) is
   begin
-    Str := As.U.Tus (Image (Ctx, Update, Format, Width, Namespace));
-  end Set_Image;
+    Str := As.U.Tus (Image (Ctx, Update, Format, Namespace));
+  end Image;
 
 end Xml_Parser.Generator;
 

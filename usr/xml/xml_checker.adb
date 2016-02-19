@@ -5,7 +5,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
      Trace.Loggers, Mixed_Str;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V23.0";
+  Version : constant String := "V24.0";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -37,8 +37,7 @@ procedure Xml_Checker is
   Output_Kind : Output_Kind_List;
 
   -- Xml_Generator descriptor and format
-  Format : Xml_Parser.Generator.Format_Kind_List;
-  Width  : Natural;
+  Format : Xml_Parser.Generator.Format_Definition;
 
   -- Normalize text
   Normalize : Boolean;
@@ -91,10 +90,11 @@ procedure Xml_Checker is
    13 => (False, 'p', As.U.Tus ("progress"),  False),
    14 => (False, 'r', As.U.Tus ("raw"),       False),
    15 => (False, 's', As.U.Tus ("silent"),    False),
-   16 => (False, 't', As.U.Tus ("tree"),      False),
-   17 => (False, 'V', As.U.Tus ("validate"),  False),
-   18 => (True,  'W', As.U.Tus ("width"),     False, True, As.U.Tus ("Width")),
-   19 => (False, 'w', As.U.Tus ("warnings"),  False)
+   16 => (False, Argument_Parser.No_Key_Char, As.U.Tus ("split-nochild"), False),
+   17 => (False, 't', As.U.Tus ("tree"),      False),
+   18 => (False, 'V', As.U.Tus ("validate"),  False),
+   19 => (True,  'W', As.U.Tus ("width"),     False, True, As.U.Tus ("Width")),
+   20 => (False, 'w', As.U.Tus ("warnings"),  False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -104,6 +104,7 @@ procedure Xml_Checker is
     06 => As.U.Tus ("check_dtd"),
     09 => As.U.Tus ("update_mix"),
     11 => As.U.Tus ("normalize"),
+    16 => As.U.Tus ("split"),
     others => As.U.Asu_Null);
 
   Helps : constant As.U.Utils.Asu_Array (Keys'Range) := (
@@ -122,10 +123,11 @@ procedure Xml_Checker is
     13 => As.U.Tus ("Only show a progress bar"),
     14 => As.U.Tus ("Put all on one line"),
     15 => As.U.Tus ("No output, only exit code"),
-    16 => As.U.Tus ("Build tree then dump it"),
-    17 => As.U.Tus ("Process for validation (-E -k n)"),
-    18 => As.U.Tus ("Put attributes up to Width"),
-    19 => As.U.Tus ("Check for warnings")
+    16 => As.U.Tus ("Element without child is put on 2 lines"),
+    17 => As.U.Tus ("Build tree then dump it"),
+    18 => As.U.Tus ("Process for validation (-E -k n)"),
+    19 => As.U.Tus ("Put attributes up to Width"),
+    20 => As.U.Tus ("Check for warnings")
     );
 
   -- Program help
@@ -141,7 +143,7 @@ procedure Xml_Checker is
       Ple ("Use option '-h' or '--help' for help.");
       return;
     end if;
-    Ple (" <option> ::= <silent> | <progress> | <dump> | <raw> | <width> | <one> |");
+    Ple (" <option> ::= <silent> | <progress> | <dump> | <raw> | <width> | <one> | <split>");
     Ple ("            | <expand> | <keep> | <namespace> | <canonical> | <normalize>");
     Ple ("            | <check_dtd> | <validate> | <tree> | <update_mix> | <copytree>");
     Ple ("            | <warnings>");
@@ -399,7 +401,7 @@ procedure Xml_Checker is
     elsif Output_Kind /= Dump then
       -- Use the Image of Xml_Parser.Generator
       Str := As.U.Tus (Xml_Parser.Generator.Image (Ctx, Node, Format,
-                                                   Width, Namespace));
+                                                   Namespace));
       if Cb_Status = Init then
         if Str.Is_Null then
           -- Dummy Xml node when no xml directive, we will need to skip
@@ -791,7 +793,7 @@ procedure Xml_Checker is
       if Output_Kind /= Dump
       and then Output_Kind /= None
       and then Output_Kind /= Canon
-      and then Format /= Xml_Parser.Generator.Raw then
+      and then Format.Kind /= Xml_Parser.Generator.Raw then
         -- Last Line feed
         Out_Flow.New_Line;
       end if;
@@ -854,7 +856,7 @@ procedure Xml_Checker is
       Dump_Unparsed_Entities (Ctxa.all);
       Out_Flow.Flush;
     elsif Output_Kind = Gen then
-      Ctxa.Put (Xml_Parser.Generator.Stdout, Format, Width, Namespace);
+      Ctxa.Put (Xml_Parser.Generator.Stdout, Format, Namespace);
     end if;
     Ctx.Clean;
   exception
@@ -909,7 +911,6 @@ begin
 
   -- Default behavior
   Output_Kind := Gen;
-  Width := Xml_Parser.Generator.Default_Width;
   Format := Xml_Parser.Generator.Default_Format;
   Warnings := null;
   Expand := False;
@@ -946,7 +947,7 @@ begin
   end if;
   if Arg_Dscr.Is_Set (09) then
      -- Update Is_Mixed in tree
-     if not Arg_Dscr.Is_Set (16) then
+     if not Arg_Dscr.Is_Set (17) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""callback"" and ""update_mix"" options");
     end if;
@@ -967,17 +968,17 @@ begin
     Normalize := False;
     Max_Opt := Max_Opt + 1;
   end if;
-  if Arg_Dscr.Is_Set (16) then
+  if Arg_Dscr.Is_Set (17) then
     -- Tree mode
     Max_Opt := Max_Opt + 1;
   else
     Callback_Acc := Callback'Unrestricted_Access;
   end if;
-  if Arg_Dscr.Is_Set (17) then
+  if Arg_Dscr.Is_Set (18) then
     -- Validate
     Max_Opt := Max_Opt + 1;
   end if;
-  if Arg_Dscr.Is_Set (19) then
+  if Arg_Dscr.Is_Set (20) then
     -- Put warnings
     Max_Opt := Max_Opt + 1;
     Warnings := Warning'Unrestricted_Access;
@@ -1006,7 +1007,7 @@ begin
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""namespace"" and ""dump"" options");
     end if;
-    if Arg_Dscr.Is_Set (17) then
+    if Arg_Dscr.Is_Set (18) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""validate"" and ""dump"" options");
     end if;
@@ -1018,7 +1019,7 @@ begin
     Namespace := False;
   elsif Arg_Dscr.Is_Set (13) then
     -- Progress bar
-    if Arg_Dscr.Is_Set (16) then
+    if Arg_Dscr.Is_Set (17) then
       Output_Kind := Progress;
         Ae_Re (Arg_Error'Identity,
                "Incompatible ""progress"" and ""tree"" options");
@@ -1033,7 +1034,7 @@ begin
       end if;
     end;
   elsif Arg_Dscr.Is_Set (14) then
-    Format := Xml_Parser.Generator.Raw;
+    Format.Kind := Xml_Parser.Generator.Raw;
   elsif Arg_Dscr.Is_Set (15) then
     -- Silent
     Output_Kind := None;
@@ -1043,20 +1044,30 @@ begin
     -- Options only significant in normal mode
     if Arg_Dscr.Is_Set (12) then
       -- -1
-      Format := Xml_Parser.Generator.One_Per_Line;
-    elsif Arg_Dscr.Is_Set (18) then
+      Format.Kind := Xml_Parser.Generator.One_Per_Line;
+    elsif Arg_Dscr.Is_Set (19) then
       -- -w <Width>
-      Format := Xml_Parser.Generator.Fill_Width;
-      if Arg_Dscr.Get_Option (18) = "" then
+      Format.Kind := Xml_Parser.Generator.Fill_Width;
+      if Arg_Dscr.Get_Option (19) = "" then
         Ae_Re (Arg_Error'Identity, "Width value is mandatory with -w");
       end if;
       begin
-        Width := Natural'Value (Arg_Dscr.Get_Option (18));
+        Format.Width := Natural'Value (Arg_Dscr.Get_Option (19));
       exception
         when others =>
           Ae_Re (Arg_Error'Identity, "Invalid Width value "
-               & Arg_Dscr.Get_Option (18));
+               & Arg_Dscr.Get_Option (19));
       end;
+    end if;
+  end if;
+
+  if Arg_Dscr.Is_Set (16) then
+    if Output_Kind = Gen
+    and then (Format.Kind = Xml_Parser.Generator.One_Per_Line
+              or else Format.Kind = Xml_Parser.Generator.Fill_Width) then
+      Format.Split_No_Child := True;
+    else
+      Ae_Re (Arg_Error'Identity, "Option Split incompatibe with format");
     end if;
   end if;
 
@@ -1128,7 +1139,7 @@ begin
              "Incompatible ""canonical"" and ""expand"" options");
     end if;
     -- No tree
-    if Arg_Dscr.Is_Set (16) then
+    if Arg_Dscr.Is_Set (17) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""canonical"" and ""tree"" options");
     end if;
@@ -1147,13 +1158,17 @@ begin
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""canonical"" and ""keep cdata"" options");
     end if;
+    if Arg_Dscr.Is_Set (16) then
+      Ae_Re (Arg_Error'Identity,
+             "Incompatible ""canonical"" and ""split"" options");
+    end if;
     -- Skip comments by default, don't keep others
     Keep_Comments := Keep_Comments_Set;
     Expand := True;
     Keep_Cdata := False;
     Output_Kind := Canon;
-    Format := Xml_Parser.Generator.Fill_Width;
-    Width := Xml_Parser.Generator.Infinite_Width;
+    Format.Kind := Xml_Parser.Generator.Fill_Width;
+    Format.Width := Xml_Parser.Generator.Infinite_Width;
     Normalize := False;
     Namespace := False;
     Callback_Acc := Canon_Callback'Unrestricted_Access;
@@ -1166,7 +1181,7 @@ begin
   end if;
 
   -- Validate
-  if Arg_Dscr.Is_Set (17) then
+  if Arg_Dscr.Is_Set (18) then
     if Arg_Dscr.Is_Set (03) then
       Ae_Re (Arg_Error'Identity,
         "Incompatible ""validate"" and ""canonical"" options");

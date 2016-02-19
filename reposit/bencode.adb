@@ -242,7 +242,7 @@ package body Bencode is
       I := I + 1;
     end loop;
     -- Return the Xml flow
-    return Ctx.Set (Xml_Parser.Generator.Raw);
+    return Ctx.Put ( (Kind => Xml_Parser.Generator.Raw, others => <>) );
   end Bencode2Xml;
 
 
