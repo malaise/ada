@@ -171,6 +171,7 @@ package Xml_Parser is
     Value : As.U.Asu_Us;
     -- The following fields are meaningful only for Kind Elements
     Namespace : As.U.Asu_Us;
+    -- Attributes are set only at child creation (not at closure)
     Attributes : Attributes_Access := null;
     -- True if DTD specifies #PCDATA or EMPTY,
     --  or, without DTD, if first child is text

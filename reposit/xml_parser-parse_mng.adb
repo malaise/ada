@@ -1607,7 +1607,7 @@ package body Parse_Mng  is
           if Children.Created then
             -- Element was created, close it
             Ctx.Level := Ctx.Level - 1;
-            Call_Callback (Ctx, Elements, False, False,
+            Call_Callback (Ctx, Elements, False, True,
                            In_Mixed => Children.In_Mixed);
           else
             -- Empty element <elt></elt>: Create element and close it
@@ -1627,7 +1627,9 @@ package body Parse_Mng  is
           else
             -- Directive: must be a comment
             Util.Get (Ctx.Flow, Str2);
-            Create (True);
+            if Ctx.Parse_Comments then
+              Create (True);
+            end if;
             Parse_Directive (Ctx, Adtd, Allow_Dtd => False,
                                         Context => Ref_Xml,
                                         Children => Children);

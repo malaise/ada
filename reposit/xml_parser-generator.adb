@@ -1435,12 +1435,14 @@ package body Xml_Parser.Generator is
                          In_Mixed  : in Boolean) is
     Cell : constant My_Tree_Cell := Tree.Read;
     Cell_Ref : constant My_Tree.Position_Access := Tree.Get_Position;
-    Nb_Children : constant Trees.Child_Range := Tree.Children_Number;
+    Nb_Cell_Children : constant Trees.Child_Range := Tree.Children_Number;
     Child : My_Tree_Cell;
     Indent : constant String (1 .. 2 * Level) := (others => ' ');
     Indent1 : constant String := Indent & "  ";
     Is_Mixed : constant Boolean := Cell.Is_Mixed;
     Empty_Info : constant Empty_Info_List := Cell.Empty_Info;
+    Nb_Children : constant Child_Range
+                := Nb_Cell_Children - Cell.Nb_Attributes;
     Elt_Name : As.U.Asu_Us;
     Xml_Attr_Format : Format_Kind_List;
     Closed : Boolean := False;
@@ -1449,7 +1451,9 @@ package body Xml_Parser.Generator is
     begin
       return Format /= Raw
       and then (Stage /= Elements
-                or else (not (Empty_Info = Def_Empty or else Is_Mixed)
+                or else (not (Empty_Info = Def_Empty
+                              or else Is_Mixed
+                              or else Nb_Children = 0)
                          and then Ctx.Normalize));
     end Do_Indent_Child;
     function Do_Indent_Parent return Boolean is
@@ -1486,7 +1490,7 @@ package body Xml_Parser.Generator is
         end if;
       else
         -- The Xml directive
-        -- Even if one attr per line request, Xml directive attributes
+        -- Even if one attr per line is requested, Xml directive attributes
         --  are all on the same line
         Xml_Attr_Format := (if Format = One_Per_Line then Fill_Width
                             else Format);
@@ -1564,10 +1568,10 @@ package body Xml_Parser.Generator is
     -- Put attributes and move to first child (if any)
     Put_Attributes (Flow, Format, Width, Namespace, Tree, Level,
                     1 + Cell.Name.Length,
-                    Has_Children => Nb_Children > Cell.Nb_Attributes);
+                    Has_Children => Nb_Children /= 0);
 
     -- Any child?
-    if Tree.Get_Position = Cell_Ref then
+    if Nb_Children = 0 then
       -- No Child (Put_Attributes moved back to current): return
       if Stage = Elements then
         if Cell.Empty_Info = Tag_Empty then
@@ -1617,7 +1621,7 @@ package body Xml_Parser.Generator is
           end if;
           -- Recursive dump child
           Put_Element (Flow, Format, Width, Namespace, Ctx, Stage, Tree,
-                         Level + 1, Cell.Is_Mixed and Stage = Elements);
+                         Level + 1, Cell.Is_Mixed and then Stage = Elements);
         when Text =>
           if Stage = Tail then
             -- Impossibe
@@ -1710,7 +1714,8 @@ package body Xml_Parser.Generator is
       return Format /= Raw
       and then (Update.Stage /= Elements
                 or else (not (Update.Empty_Info = Def_Empty
-                              or else Update.Is_Mixed)
+                              or else Update.Is_Mixed
+                              or else not Update.Has_Children)
                          and then Ctx.Normalize));
     end Do_Indent_Child;
     function Do_Indent_Parent return Boolean is
