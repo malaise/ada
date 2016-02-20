@@ -3,7 +3,7 @@ with Aski, Images, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "0";
+  Minor_Version : constant String := "1";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1262,6 +1262,49 @@ package body Xml_Parser.Generator is
     return Res.Image;
   end Normalize;
 
+  -- Do we indent the children of the current element
+  function Do_Indent_Child (Format       : Format_Definition;
+                            Stage        : Stage_List;
+                            Normalize    : Boolean;
+                            Is_Mixed     : Boolean;
+                            Empty_Info   : Empty_Info_List;
+                            Has_Children : Boolean) return Boolean is
+  begin
+    -- No indent in raw mode
+    if Format.Kind = Raw then return False; end if;
+    -- Always indent if not in Elements
+    if Stage /= Elements then return True; end if;
+    -- Only indent if Normalize
+    if not Normalize then return False; end if;
+    -- No indent if it is micxed, if it is defined as empty in Dtd,
+    --  or if it has not child and Split_No_child is not forced
+    if Is_Mixed
+        or else Empty_Info = Def_Empty
+        or else (not Has_Children and then not Format.Split_No_Child) then
+      return False;
+    end if;
+    -- Othewise indent
+    return True;
+  end Do_Indent_Child;
+
+  -- Do we indent the current element
+  function Do_Indent_Parent (Format       : Format_Definition;
+                             Stage        : Stage_List;
+                             Normalize    : Boolean;
+                             In_Mixed     : Boolean) return Boolean is
+  begin
+    -- No indent in raw mode
+    if Format.Kind = Raw then return False; end if;
+    -- Always indent if not in Elements
+    if Stage /= Elements then return True; end if;
+    -- Only indent if Normalize
+    if not Normalize then return False; end if;
+    -- No indent if in mixed
+    if In_Mixed then return False; end if;
+    -- Othewise indent
+    return True;
+  end Do_Indent_Parent;
+
   -- Set the name of an element or attribute, with or without namespace
   -- If no Use_Namespace, just copy Name
   -- Else Expand Name and Namespace
@@ -1442,19 +1485,12 @@ package body Xml_Parser.Generator is
     -- Do we indent these outputs
     function Do_Indent_Child return Boolean is
     begin
-      return Format.Kind /= Raw
-      and then (Stage /= Elements
-                or else (not (Empty_Info = Def_Empty
-                              or else Is_Mixed
-                              or else (not Format.Split_No_Child
-                                       and then Nb_Children = 0))
-                         and then Ctx.Normalize));
+      return Do_Indent_Child (Format, Stage, Ctx.Normalize, Is_Mixed,
+                              Empty_Info, Nb_Children /= 0);
     end Do_Indent_Child;
     function Do_Indent_Parent return Boolean is
     begin
-      return Format.Kind /= Raw
-      and then (Stage /= Elements
-                or else (not In_Mixed and then Ctx.Normalize));
+      return Do_Indent_Parent (Format, Stage, Ctx.Normalize, In_Mixed);
     end Do_Indent_Parent;
     -- Terminate tag after children
     procedure Close is
@@ -1705,19 +1741,14 @@ package body Xml_Parser.Generator is
     -- Do we indent these outputs
     function Do_Indent_Child return Boolean is
     begin
-      return Format.Kind /= Raw
-      and then (Update.Stage /= Elements
-                or else (not (Update.Empty_Info = Def_Empty
-                              or else Update.Is_Mixed
-                              or else (not Format.Split_No_Child
-                                       and then not Update.Has_Children))
-                         and then Ctx.Normalize));
+      return Do_Indent_Child (Format, Update.Stage, Ctx.Normalize,
+                              Update.Is_Mixed, Update.Empty_Info,
+                              Update.Has_Children);
     end Do_Indent_Child;
     function Do_Indent_Parent return Boolean is
     begin
-      return Format.Kind /= Raw
-      and then (Update.Stage /= Elements
-                or else (not Update.In_Mixed and then Ctx.Normalize));
+      return Do_Indent_Parent (Format, Update.Stage, Ctx.Normalize,
+                               Update.In_Mixed);
     end Do_Indent_Parent;
     Elt_Name : As.U.Asu_Us;
     Flow : Flow_Dscr(Use_File => False);
