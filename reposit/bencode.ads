@@ -25,7 +25,7 @@ package Bencode is
   List_Name : constant String := "List";
   --   containing elements
 
-  -- Dictionnary is an element
+  -- Dictionary is an element
   Dictio_Name : constant String := "Dictio";
   --  containing pairs of elements
 
@@ -35,11 +35,16 @@ package Bencode is
   type Byte_Array is array (Positive range <>) of Byte;
 
 
+  -- Option Check_Dictio enables the check that Dictio keys are Bytes and
+  -- that they appear in crescent order
+
   -- Encode a Xml string into a Bencoded byte array
-  function Xml2Bencode (Xml_Stream : String) return Byte_Array;
+  function Xml2Bencode (Xml_Stream : String;
+                        Check_Dictio : Boolean := True) return Byte_Array;
 
   -- Decode a Bencoded byte array into a Xml stream
-  function Bencode2Xml (Ben_Stream : Byte_Array) return String;
+  function Bencode2Xml (Ben_Stream : Byte_Array;
+                        Check_Dictio : Boolean := True) return String;
 
   -- When invalid Bencode or Xml format of the input
   -- The error is logged throught the Trace system

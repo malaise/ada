@@ -146,8 +146,8 @@ Str_Kind: A string
 Address_Kind: 16#33C99#
 Access_Kind: ->Another string
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_app
@@ -165,8 +165,8 @@ A positive  True
 Sqrt(A)     +4
 Digits: 2 and 1
 EOF
-comp out exp
 comp err nul
+comp out exp
 
 try t_arbitrary 3 7
 cat >exp << EOF
@@ -199,8 +199,8 @@ A rem B is +3
 A mod B is +3
 A ** B is  +2187
 EOF
-comp out exp
 comp err nul
+comp out exp
 try t_arbitrary -a 1000
 comp err nul
 echo "OK"
@@ -252,8 +252,8 @@ N : Not_key
 A : Any_arg
 Enter the letter of your choice : 
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_arg_parser
@@ -286,22 +286,22 @@ Key c combi is found on 2 occurences.
   Kind: Chr  Position:  7  Option ><
   Kind: Chr  Position:  9  Option >2<
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_asb 
 title t_asb
 try t_asb
-comp out data/t_asbu.ref
 comp err nul
+comp out data/t_asbu.ref
 echo "OK"
 
 # t_asu 
 title t_asu
 try t_asu
-comp out data/t_asbu.ref
 comp err nul
+comp out data/t_asbu.ref
 echo "OK"
 
 # t_assert
@@ -312,8 +312,8 @@ Set ENV variable ASSERT_ACTION to TRACE to see the 3 traces
  or to RAISE to raise first exception.
 EOF
 try t_assert
-comp out exp
 comp err nul
+comp out exp
 
 export ASSERT_ACTION=TRACE
 try t_assert
@@ -370,9 +370,9 @@ Spyed >Ah que coucou<
 Closing.
 Done.
 EOF
-comp out1 exp
 comp err1 nul
 comp err nul
+comp out1 exp
 echo "OK"
 
 # t_basic
@@ -394,13 +394,41 @@ echo "OK"
 
 # t_bencode
 title t_bencode
-BENCOD='6:Dictiod6:OneInti1e7:TwoListli10e6:Eleven5:Empty0:e3:Tab1:\t8:Negativei-21ee'
+BENCOD='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:e4:3Tab1:\t9:4Negativei-21ee'
 echo -en "$BENCOD" >exp
 XML=`echo -en $BENCOD | t_bencode -b2x 2>err`
 BDECOD=`echo -n $XML | t_bencode -x2b 2>>err`
 echo -en "$BDECOD" >out
-comp out exp
 comp err nul
+comp out exp
+
+BENCOD='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:e4:3Tab1:\t9:3Negativei-21ee'
+echo -en "$BENCOD" >exp
+XML=`echo -en $BENCOD | t_bencode -nc -b2x 2>err`
+BDECOD=`echo -n $XML | t_bencode -nc -x2b 2>>err`
+echo -en "$BDECOD" >out
+comp err nul
+comp out exp
+echo -en $BENCOD | t_bencode -b2x >out 2>err
+if [ $? -ne 1 ] ; then
+  cat err
+  error "t_bencode shall have detected dictio error"
+fi
+comp out nul
+
+BENCOD='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:ei21e1:\t9:3Negativei-21ee'
+echo -en "$BENCOD" >exp
+XML=`echo -en $BENCOD | t_bencode -nc -b2x 2>err`
+BDECOD=`echo -n $XML | t_bencode -nc -x2b 2>>err`
+echo -en "$BDECOD" >out
+comp err nul
+comp out exp
+echo -en $BENCOD | t_bencode -b2x >out 2>err
+if [ $? -ne 1 ] ; then
+  cat err
+  error "t_bencode shall have detected dictio error"
+fi
+comp out nul
 echo "OK"
 
 # t_bloc_io
@@ -413,8 +441,8 @@ Dump:  42
 Set index to  5371
 Dump:  21 -1 -2  21 
 EOF
-comp tmp exp
 comp err nul
+comp tmp exp
 echo "OK"
 
 # t_byte_to_unicode
@@ -429,9 +457,9 @@ cat << EOF >exp2
 254 16#FE# ->   351 16#15F#
 255 16#FF# ->   255 16#FF#
 EOF
+comp err nul
 comp out1 exp1
 comp out2 exp2
-comp err nul
 echo "OK"
 
 # t_c_nbres
@@ -447,8 +475,8 @@ Got:  3.000000000000000E+00 - i * 2.000000000000000E+00
  A/B: -5.384615384615380E-01 + i * 1.307692307692310E+00
  A**B.real: -7.400000000000000E+01 - i * 1.100000000000000E+02
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_command
@@ -482,8 +510,8 @@ Error flow:
 
 Exit code:  0
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_computer
@@ -495,8 +523,8 @@ Evaluation:
 Computation: 
  21
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_cond
@@ -523,8 +551,8 @@ Host:       16#12345678#
 to Network: 16#78563412#
 to Host:    16#12345678#
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_day_mng
@@ -543,8 +571,8 @@ Enter a duration:  57000.000000000
 
 Enter a duration: 
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_dd
@@ -556,8 +584,8 @@ Performinig  10000 iterations, each of them consisting in
  allocating  256 objects of  1024 bytes then freeing them.
 Test successful.
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_delta_date
@@ -568,8 +596,8 @@ cat << EOF >exp
 1963/10/25 21:21:21.210 is a FRIDAY
  Date1 - Date2: 17782 days 66351.304 sec
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_dirname
@@ -591,8 +619,8 @@ Make_Full "": /home/malaise/ada/usr/tests
 Make_Full ".": /home/malaise/ada/usr/tests
 Make_Full dir1/../dirok/./dir3/../toto.ads: /home/malaise/ada/usr/tests/dirok/toto.ads
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_dl
@@ -638,14 +666,14 @@ Make the following automatic list: 21 05 30 31 07 21 23 12
 After sorting it: 05 07 12 21 21 23 30 31 
 Copied/Inserted in a new list between 21 and 12: 21 05 07 12 21 21 23 30 31 12 
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_door
 title t_door...
-try t_door
 comp err nul
+try t_door
 echo "OK"
 
 # t_dur_image
@@ -660,8 +688,8 @@ try t_evp_digest sha1 tototititata
 cat << EOF >exp
 f56dfd658d9bf8e36df4223218f5e9cec128e287 (20)
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 
@@ -674,8 +702,8 @@ Ok
 Checking a long message
 Ok
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_fifo
@@ -768,8 +796,8 @@ Look done
 Pop ==>  10
 FIFO empty
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_file_hash
@@ -779,16 +807,16 @@ cat << EOF >exp
 begin -> 
 FOUND at line 9 >begin<
 EOF
-comp out exp
 comp err nul
+comp out exp
 
 try t_file_hash t_file_hash.adb procedure
 cat << EOF >exp
 procedure -> 
 NOT FOUND
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_fork
@@ -825,8 +853,8 @@ A / B is   +2:1
 A ** B.Num is +1:3
 Set (1,0) raises Constraint_Error, OK.
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_getenv
@@ -837,8 +865,8 @@ cat << EOF >exp
 GETENV Not set
 EOF
 tail -1 out >tmp
-comp tmp exp
 comp err nul
+comp tmp exp
 
 export GETENV="test is OK."
 try t_getenv
@@ -846,8 +874,8 @@ cat << EOF >exp
 GETENV ->test is OK.<
 EOF
 tail -1 out >tmp
-comp tmp exp
 comp err nul
+comp tmp exp
 echo "OK"
 
 # t_get_line
@@ -894,8 +922,8 @@ cat << EOF >exp
 050 ->   2:>end<>T_Get_Line;<
 Done.
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_init_mng
@@ -907,8 +935,8 @@ echo "OK"
 # t_input_buffer
 title t_input_buffer
 try t_input_buffer t_input_buffer.adb
-comp out t_input_buffer.adb
 comp err nul
+comp out t_input_buffer.adb
 echo "OK"
 
 # t_lifo
@@ -1001,8 +1029,8 @@ Look done
 Pop ==>  6
 LIFO empty
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_lock
@@ -1026,8 +1054,8 @@ After split:
 This should raise String_Error
 String_Error raised.
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_math
@@ -1055,8 +1083,8 @@ Enter another real R2 : ?  roundiv (round(R1), round(R2)) 3
 
 Enter a real R1 : ? 
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_mut
@@ -1076,8 +1104,8 @@ cat << EOF >exp
 
 Done.
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_network
@@ -1104,8 +1132,8 @@ Node2 ->
 Node3 -> 
 Done.
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_normal
@@ -1119,8 +1147,8 @@ I ? : LEN ? : RIGHT ? : GAP ? : 0         1         2         3         4       
 
 I ? : 
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_normalization
@@ -1132,8 +1160,8 @@ cat << EOF >exp
  1.00000E+01 10 3 > 1.00E+001< > 10.0@@@@@< > 10.00000@< -> OK
  1.01000E+01 10 3 > 1.01E+001< > 10.1@@@@@< > 10.10000@< -> OK
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_num_letters
@@ -1154,15 +1182,15 @@ twenty one
 one billion
 one billion
 EOF
-comp out exp
 comp err nul
+comp out exp
 for i in 1 2 3 4 5 6 7 8 9 10 ; do
   v=`t_rnd 2147483647`
   t_num_letters $v >exp
   t_num_letters `cat exp` >out1
   t_num_letters `cat out1` >out
-  comp out exp
   comp err nul
+  comp out exp
 done
 echo "OK"
 
@@ -1173,15 +1201,15 @@ cat << EOF >exp
  21 does not match >1-5,30-40<
 1, 2, 3, 4, 5, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40
 EOF
-comp out exp
 comp err nul
+comp out exp
 try t_num_match 21 -5,30-40,20-
 cat << EOF >exp
  21 matches >-5,30-40,20-<
 0, 1, 2, 3, 4, 5, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 20, 21
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_output_flows
@@ -1226,8 +1254,8 @@ Got >,,< of kind Separators
 
 Done.
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_passive_timers
@@ -1268,8 +1296,8 @@ T3 has not Expired
 T3 has Expired
 Exception Timer_Expired (OK)
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_perpet
@@ -1291,8 +1319,8 @@ Days ->  Base + Delta: 1964 5 22
 Delta :
 Years -> 
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 
@@ -1320,8 +1348,8 @@ Check titi -> False
 Check lolo -> False
 Check lili -> False
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo -e "toto\ntiti\nlolo\nlili\n" | try t_regex_filters F t.t. T .i.i F
 cat << EOF >exp
 Check toto -> True
@@ -1329,8 +1357,8 @@ Check titi -> True
 Check lolo -> True
 Check lili -> False
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_regexp
@@ -1339,14 +1367,14 @@ try t_regexp "t.t." toto
 cat << EOF >exp
 String >toto< matches at pos [1-4/4]
 EOF
-comp out exp
 comp err nul
+comp out exp
 try -n t_regexp "t.t." tolo
 cat << EOF >exp
 String >tolo< does not match
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_romanic
@@ -1356,14 +1384,14 @@ try t_romanic 1963
 cat << EOF >exp
 1963 -> MCMLXIII
 EOF
-comp out exp
 comp err nul
+comp out exp
 try t_romanic MMXII
 cat << EOF >exp
 MMXII ->  2012
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_round_at
@@ -1374,8 +1402,8 @@ Digits:  3
 Image ->  2.20000000000000E+02
 Normalization ->  2.200E+02
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_smart_alias
@@ -1394,8 +1422,8 @@ Test: Set R1 to R3. Got R1= 23 and R3= 23 - Releasing R3
 Test: R3 released - The end: garbage collecting
 Finalization of 23
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_smart_ref
@@ -1414,8 +1442,8 @@ Test: Set R1 to R3. Got R1= 23 and R3= 23 - Releasing R3
 Test: R3 released - The end: garbage collecting
 Finalization of 23
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_sorts
@@ -1431,8 +1459,8 @@ tail -3 out | head -1 >out1
 cat << EOF >exp
 True Default Start Failure Success Attach Detach  ? Transition: Starting -- Success  -> Ok      
 EOF
-comp out1 exp
 comp err nul
+comp out1 exp
 echo "OK"
 
 # t_stdin
@@ -1445,8 +1473,8 @@ rm pipe
 cat << EOF >exp
 Toto
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_str_error
@@ -1455,15 +1483,15 @@ try t_str_error 21
 cat << EOF >exp
  21 EISDIR          -> Is a directory
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_string 
 title t_string
 try t_string -a
-comp out data/t_asbu.ref
 comp err nul
+comp out data/t_asbu.ref
 echo "OK"
 
 # t_strnav
@@ -1541,8 +1569,8 @@ Lookup  10 -> -
 Image:
 1234567890
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_syslin
@@ -1554,8 +1582,8 @@ cat << EOF >exp
 > 1  1  2   8<
 Unable to solve: Determinant is nul.
 EOF
-comp out exp
 comp err nul
+comp out exp
 try t_syslin syslin2.dat
 cat << EOF >exp
 >2   1      7<
@@ -1563,8 +1591,8 @@ cat << EOF >exp
 X(  1) = 2.00000E+00
 X(  2) = 3.00000E+00
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_temp_file
@@ -1582,16 +1610,16 @@ Cleaning temp files.
 
 Done.
 EOF
-comp out1 exp
 comp err nul
+comp out1 exp
 echo "OK"
 
 
 # t_text_char
 title t_text_char
 try t_text_char t_text_char.adb
-comp out t_text_char.adb
 comp err nul
+comp out t_text_char.adb
 echo "OK"
 
 # t_text_line
@@ -1599,8 +1627,8 @@ title t_text_line
 cat t_text_line.adb | try t_text_line
 cat t_text_line.adb >exp
 echo >>exp
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_timeq
@@ -1633,8 +1661,8 @@ Putting 11 and 66, cleaning then popping all
 End of auto test.
 Ivd | P | Rv | E | C | X | A ? 
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_trace
@@ -1645,8 +1673,8 @@ Done
 EOF
 export t_trace_TRACE_ALL='0'
 try t_trace
-comp out out1
 comp err nul
+comp out out1
 unset t_trace_TRACE_ALL
 
 function strip_date {
@@ -1814,8 +1842,8 @@ T'
 Clearing all
 Empty OK.
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_ul
@@ -1830,8 +1858,8 @@ Got >ENV<->True<
 Inserted >ENV=False<
 Got >ENV<->False<
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_unbounded_arrays
@@ -1881,8 +1909,8 @@ Array of 21, 22
 Image >21, 22<
 Done.
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_urand
@@ -1900,8 +1928,8 @@ Expected Results    Actual Results
 
 Random Number Generator Consistent
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_utf
@@ -1910,8 +1938,8 @@ try t_utf U+E7
 cat << EOF >exp
 U+0000E7 : 00E7      : C3 A7       : ç
 EOF
-comp out exp
 comp err nul
+comp out exp
 echo "OK"
 
 # t_utf8
@@ -1960,8 +1988,8 @@ Got Elements:
 <try xml:space="preserve">This text is in <bold>bold</bold>.</try>
   ---------------------------------------------------------------------------
 EOF
-comp out exp
 comp err nul
+comp out exp
 try t_xml_string data/xml_2.xml
 cat << EOF >exp
 Parsing file data/dtd_1.dtd
@@ -1982,8 +2010,8 @@ Got Elements:
  and this one is in <italic>italic</italic>.</try>
   ---------------------------------------------------------------------------
 EOF
-comp out exp
 comp err nul
+comp out exp
 try t_xml_string data/xml_3.xml
 cat << EOF >exp
 Parsing file data/dtd_1.dtd
@@ -2005,8 +2033,8 @@ Got Elements:
  and this one is in <superscript>superscript</superscript>.</try>
   ---------------------------------------------------------------------------
 EOF
-comp out exp
 comp err nul
+comp out exp
 try -n t_xml_string data/xml_3_nok.xml
 cat << EOF >exp
 Parsing file data/dtd_1.dtd
