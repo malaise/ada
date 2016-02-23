@@ -213,6 +213,8 @@ package body Parse_Mng  is
                                  Seps : in String);
     -- Remove (no expanded) entities from text
     procedure Remove_Entities (Text : in out As.U.Asu_Us);
+    -- Make text "For compatibility" (">" -> "&gt;");
+    procedure Make_Compatible (Text : in out As.U.Asu_Us);
 
     -- Push current flow
     procedure Push_Flow (Flow : in out Flow_Type);
@@ -1285,15 +1287,21 @@ package body Parse_Mng  is
 
     -- Depending on Last_Is_Text, append Txt to last or insert it
     procedure Insert_Text (Txt : in As.U.Asu_Us) is
-      Tmp : As.U.Asu_Us;
+      Ttxt, Tmp : As.U.Asu_Us;
     begin
+      -- Make inserted text compatible if requested
+      Ttxt := Txt;
+      if Ctx.Compatible then
+        Util.Make_Compatible (Ttxt);
+      end if;
       if Last_Is_Text then
         Texts.Read (Tmp, As.U.Utils.Asu_Dyn_List_Mng.Current);
-        Tmp.Append (Txt);
+        Tmp.Append (Ttxt);
         Texts.Modify (Tmp, As.U.Utils.Asu_Dyn_List_Mng.Current);
       else
-        Texts.Insert (Txt);
+        Texts.Insert (Ttxt);
       end if;
+      Debug ("Txt -- appended text >" & Ttxt.Image & "<");
     end Insert_Text;
 
     use type As.U.Asu_Us;
@@ -1387,8 +1395,6 @@ package body Parse_Mng  is
             end case;
             -- Insert the expanded text and the CDATA section
             Insert_Text (Text.Uslice (1, Start_Index - 1));
-            Debug ("Txt -- appended text >" & Text.Slice (1, Start_Index - 1)
-                 & "<");
             Texts.Insert (Cdata);
             Debug ("Txt -- appended CDATA >" & Cdata.Image & "<");
             -- Text is the remaining unexpanded text, fixed
@@ -1400,7 +1406,6 @@ package body Parse_Mng  is
             -- There is a '<' but not CDATA: prepend it to the tail
             Tail := Text.Slice (Index, Text.Length) & Tail;
             Insert_Text (Text.Uslice (1, Index - 1));
-            Debug ("Txt -- appended text >" & Text.Slice (1, Index - 1) & "<");
             Last_Is_Text := True;
             Debug ("Txt -- tail >" & Tail.Image & "<");
             -- And done (completely)
@@ -1410,7 +1415,6 @@ package body Parse_Mng  is
          -- There is no '<' in expanded text
           -- Store the expanded text
           Insert_Text (Text);
-          Debug ("Txt -- appended text >" & Text.Image & "<");
           Last_Is_Text := True;
           -- Nothing more to expand => Need to read from flow
           exit Cdata_In_Text;

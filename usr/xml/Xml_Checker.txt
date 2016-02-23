@@ -1,8 +1,8 @@
 Xml_Checker
 ===========
-Version: V24.0
+Version: V25.0
 
-'Parser version: V42.1 +
+'Parser version: V43.0 +
 Generator version: V19.1 +
 Dtd_checker version: V4.0 +
 Dtd_generator version: V2.5'
@@ -16,12 +16,13 @@ Syntax
 xml_checker[ { <option> } ] [ { <file> } ]
  <option> ::= <silent> | <progress> | <dump> | <raw> | <width> | <one> | <split>
             | <expand> | <keep> | <namespace> | <canonical> | <normalize>
-            | <check_dtd> | <validate> | <tree> | <update_mix> | <copytree>
-            | <warnings>
+            | <compat> | <check_dtd> | <validate> | <tree> | <update_mix>
+            | <copytree> | <warnings>
             | <help> | <version>
  <help>        ::= -h | --help      : Put this help
  <version>     ::= -v | --version   : Put versions
  <canonical>   ::= -C | --canonical : Canonicalize xml
+ <compat>      ::= -c | --compat    : Make text compatible ('>' -> "&gt;")
  <copytree>    ::= -c | --copytree  : Copy tree then dump the copy
  <dump>        ::= -D | --dump      : Dump expanded Xml tree
  <check_dtd>   ::= -d <Dtd> | --dtd=<Dtd>
@@ -132,6 +133,8 @@ text. By default the text is normalized and, if the xref:Expand[expand] option
 is set, the attributes are normalized as well. +
 This option forces no normalization of the text and of the expanded attributes.
 
+-c | --compat: :: for make text "compatible" by replacing \'>' by "&amp;gt;".
+
 anchor:Validate[]-V | --validate: :: shortcut for "-E -kc", usefull for
 validation of the XML versus DTD.
 
@@ -167,7 +170,7 @@ with canonical mode or progress bar.
 Please also consider increasing the process stack size (ulimit -s) to
 avoid stack overflow and Storage_Error, especially in this mode.
 
-anchor:CopyTree[]-c | --copytree: :: In xref:Tree[tree] mode, copy the tree
+anchor:CopyTree[]--copytree: :: In xref:Tree[tree] mode, copy the tree
 that results from the parsing into a new tree (using the
 xref:Generator[generator]) and dump this new tree (usefull to test the
 xref:Generator[generator]).
@@ -277,6 +280,7 @@ of Xml_Parser. The differences are highlighted:
 | Cdata         s| Remove markers      s| Keep markers
 | Expand        s| True                s| False
 | Normalize      | True                 | True
+| Compatible     | False                | False
 | Use Dtd        | True                 | True
 | Dtd file       | ""                   | ""
 | Namespace      | False                | False

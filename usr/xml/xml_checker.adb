@@ -5,7 +5,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
      Trace.Loggers, Mixed_Str;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V24.0";
+  Version : constant String := "V25.0";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -41,6 +41,9 @@ procedure Xml_Checker is
 
   -- Normalize text
   Normalize : Boolean;
+
+  -- Make text compatible
+  Compatible : Boolean;
 
   -- Flow of dump or canonicalization
   Out_Flow : Text_Line.File_Type;
@@ -78,56 +81,58 @@ procedure Xml_Checker is
    01 => (False, 'h', As.U.Tus ("help"),      False),
    02 => (False, 'v', As.U.Tus ("version"),   False),
    03 => (False, 'C', As.U.Tus ("canonical"), False),
-   04 => (False, 'c', As.U.Tus ("copytree"),  False),
-   05 => (False, 'D', As.U.Tus ("dump"),      False),
-   06 => (True,  'd', As.U.Tus ("dtd"),       False, True, As.U.Tus ("Dtd")),
-   07 => (False, 'E', As.U.Tus ("expand"),    False),
-   08 => (True,  'k', As.U.Tus ("keep"),      True,  True, As.U.Tus ("c|d|n|a")),
-   09 => (False, 'm', As.U.Tus ("mixed"),     False),
-   10 => (False, 'n', As.U.Tus ("namespace"), False),
-   11 => (False, Argument_Parser.No_Key_Char, As.U.Tus ("no-normalize"), False),
-   12 => (False, '1', As.U.Tus ("one"),       False),
-   13 => (False, 'p', As.U.Tus ("progress"),  False),
-   14 => (False, 'r', As.U.Tus ("raw"),       False),
-   15 => (False, 's', As.U.Tus ("silent"),    False),
-   16 => (False, Argument_Parser.No_Key_Char, As.U.Tus ("split-nochild"), False),
-   17 => (False, 't', As.U.Tus ("tree"),      False),
-   18 => (False, 'V', As.U.Tus ("validate"),  False),
-   19 => (True,  'W', As.U.Tus ("width"),     False, True, As.U.Tus ("Width")),
-   20 => (False, 'w', As.U.Tus ("warnings"),  False)
+   04 => (False, 'c', As.U.Tus ("compat"),    False),
+   05 => (False, Argument_Parser.No_Key_Char, As.U.Tus ("copytree"),  False),
+   06 => (False, 'D', As.U.Tus ("dump"),      False),
+   07 => (True,  'd', As.U.Tus ("dtd"),       False, True, As.U.Tus ("Dtd")),
+   08 => (False, 'E', As.U.Tus ("expand"),    False),
+   09 => (True,  'k', As.U.Tus ("keep"),      True,  True, As.U.Tus ("c|d|n|a")),
+   10 => (False, 'm', As.U.Tus ("mixed"),     False),
+   11 => (False, 'n', As.U.Tus ("namespace"), False),
+   12 => (False, Argument_Parser.No_Key_Char, As.U.Tus ("no-normalize"), False),
+   13 => (False, '1', As.U.Tus ("one"),       False),
+   14 => (False, 'p', As.U.Tus ("progress"),  False),
+   15 => (False, 'r', As.U.Tus ("raw"),       False),
+   16 => (False, 's', As.U.Tus ("silent"),    False),
+   17 => (False, Argument_Parser.No_Key_Char, As.U.Tus ("split-nochild"), False),
+   18 => (False, 't', As.U.Tus ("tree"),      False),
+   19 => (False, 'V', As.U.Tus ("validate"),  False),
+   20 => (True,  'W', As.U.Tus ("width"),     False, True, As.U.Tus ("Width")),
+   21 => (False, 'w', As.U.Tus ("warnings"),  False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
 
   Names : constant As.U.Utils.Asu_Array (Keys'Range) := (
-    06 => As.U.Tus ("check_dtd"),
-    09 => As.U.Tus ("update_mix"),
-    11 => As.U.Tus ("normalize"),
-    16 => As.U.Tus ("split"),
+    07 => As.U.Tus ("check_dtd"),
+    10 => As.U.Tus ("update_mix"),
+    12 => As.U.Tus ("normalize"),
+    17 => As.U.Tus ("split"),
     others => As.U.Asu_Null);
 
   Helps : constant As.U.Utils.Asu_Array (Keys'Range) := (
     01 => As.U.Tus ("Put this help"),
     02 => As.U.Tus ("Put versions"),
     03 => As.U.Tus ("Canonicalize xml"),
-    04 => As.U.Tus ("Copy tree then dump the copy"),
-    05 => As.U.Tus ("Dump expanded Xml tree"),
-    06 => As.U.Tus ("Use a specific dtd or skip doctype"),
-    07 => As.U.Tus ("Expand general entities"),
-    08 => As.U.Tus ("Keep comments and Cdata"),
-    09 => As.U.Tus ("Update Mixed tag in tree"),
-    10 => As.U.Tus ("Put Namespace^Suffix"),
-    11 => As.U.Tus ("Do not normalize attributes and text"),
-    12 => As.U.Tus ("Put one attribute per line"),
-    13 => As.U.Tus ("Only show a progress bar"),
-    14 => As.U.Tus ("Put all on one line"),
-    15 => As.U.Tus ("No output, only exit code"),
-    16 => As.U.Tus ("Element without child is put on 2 lines"),
-    17 => As.U.Tus ("Build tree then dump it"),
-    18 => As.U.Tus ("Process for validation (-E -k n)"),
-    19 => As.U.Tus ("Put attributes up to Width"),
-    20 => As.U.Tus ("Check for warnings")
+    04 => As.U.Tus ("Make text compatible ('>' -> ""&gt;"""),
+    05 => As.U.Tus ("Copy tree then dump the copy"),
+    06 => As.U.Tus ("Dump expanded Xml tree"),
+    07 => As.U.Tus ("Use a specific dtd or skip doctype"),
+    08 => As.U.Tus ("Expand general entities"),
+    09 => As.U.Tus ("Keep comments and Cdata"),
+    10 => As.U.Tus ("Update Mixed tag in tree"),
+    11 => As.U.Tus ("Put Namespace^Suffix"),
+    12 => As.U.Tus ("Do not normalize attributes and text"),
+    13 => As.U.Tus ("Put one attribute per line"),
+    14 => As.U.Tus ("Only show a progress bar"),
+    15 => As.U.Tus ("Put all on one line"),
+    16 => As.U.Tus ("No output, only exit code"),
+    17 => As.U.Tus ("Element without child is put on 2 lines"),
+    18 => As.U.Tus ("Build tree then dump it"),
+    19 => As.U.Tus ("Process for validation (-E -k n)"),
+    20 => As.U.Tus ("Put attributes up to Width"),
+    21 => As.U.Tus ("Check for warnings")
     );
 
   -- Program help
@@ -145,8 +150,8 @@ procedure Xml_Checker is
     end if;
     Ple (" <option> ::= <silent> | <progress> | <dump> | <raw> | <width> | <one> | <split>");
     Ple ("            | <expand> | <keep> | <namespace> | <canonical> | <normalize>");
-    Ple ("            | <check_dtd> | <validate> | <tree> | <update_mix> | <copytree>");
-    Ple ("            | <warnings>");
+    Ple ("            | <compat> | <check_dtd> | <validate> | <tree> | <update_mix>");
+    Ple ("            | <copytree> | <warnings>");
     Ple ("            | <help> | <version>");
     for I in Keys'Range loop
       if Names(I).Is_Null then
@@ -154,10 +159,8 @@ procedure Xml_Checker is
       else
         Ustr := "<" & Names(I) & ">";
       end if;
-      Ustr := As.U.Tus (" " & Str_Util.Procuste (Ustr.Image, 13) & " ::= ");
-      if I /= 08 then
-        Ustr := Ustr & Argument_Parser.Image (Keys(I));
-      else
+      Ustr := As.U.Tus (" " & Str_Util.Procuste (Ustr.Image, 14) & " ::= ");
+      if I = 09 then
         -- For Keep we replace "c|d|n|a" by "comments|cdata|none|all>"
         declare
           Str : constant String := Argument_Parser.Image (Keys(I));
@@ -166,6 +169,8 @@ procedure Xml_Checker is
                 & "comments|cdata|none|all>";
           Ustr := Ustr & Tstr;
         end;
+      else
+        Ustr := Ustr & Argument_Parser.Image (Keys(I));
       end if;
       if Ustr.Length <= Tab'Length then
         Pl (Str_Util.Procuste (Ustr.Image, Tab'Length));
@@ -174,9 +179,9 @@ procedure Xml_Checker is
         Pl (Tab);
       end if;
       Ple (" : " & Helps(I).Image);
-      if I = 07 then
+      if I = 08 then
         Ple (Tab & " :  and attributes with default");
-      elsif I = 08 then
+      elsif I = 09 then
         Ple (Tab & " : Keep CDATA sections unchanged");
         Ple (Tab & " : Keep none (remove comments and CDATA");
         Ple (Tab & " :  markers)");
@@ -185,8 +190,8 @@ procedure Xml_Checker is
     end loop;
 
     Ple ("Empty Dtd can be used to force skipping validation versus dtd.");
-    Ple ("All options except expand, keep, dtd, warnings, namespace, normalize and tree");
-    Ple (" are mutually exclusive.");
+    Ple ("All options except expand, keep, dtd, warnings, namespace, normalize, tree");
+    Ple (" and compatible are mutually exclusive.");
     Ple ("Keep, expand and namespace are not allowed on Dump mode, Dump => keep all.");
     Ple ("Canonical is implemented with a callback (no tree). It only allows options dtd,");
     Ple ("  warnings and keep-comments (it expands, removes CDATA markers, ignores");
@@ -761,6 +766,7 @@ procedure Xml_Checker is
                Cdata  => Cdata_Policy,
                Expand => Expand,
                Normalize => Normalize,
+               Compatible => Compatible,
                Use_Dtd => Use_Dtd,
                Dtd_File => Dtd_File.Image,
                Namespace => Namespace,
@@ -821,11 +827,12 @@ procedure Xml_Checker is
       Copy_Elements (Ctx.Get_Tail, Nodec, False);
       -- Check
       Ctxc.Check (Ok => Parse_Ok,
-                  Expand => Trilean.Boo2Tri (Expand),
-                  Normalize => Trilean.Boo2Tri (Normalize),
-                  Use_Dtd  => Trilean.Boo2Tri (Use_Dtd),
-                  Dtd_File => Dtd_File.Image,
-                  Namespace => Trilean.Boo2Tri (Namespace));
+                  Expand     => Trilean.Boo2Tri (Expand),
+                  Normalize  => Trilean.Boo2Tri (Normalize),
+                  Compatible => Trilean.Boo2Tri (Compatible),
+                  Use_Dtd    => Trilean.Boo2Tri (Use_Dtd),
+                  Dtd_File   => Dtd_File.Image,
+                  Namespace  => Trilean.Boo2Tri (Namespace));
       if not Parse_Ok then
         Basic_Proc.Put_Line_Error ("Error in copied tree "
                                  & Get_File_Name (Index, True) & ": "
@@ -917,6 +924,7 @@ begin
   Keep_Comments := True;
   Keep_Cdata := True;
   Normalize := True;
+  Compatible := False;
   Use_Dtd := True;
   Dtd_File.Set_Null;
   Callback_Acc := null;
@@ -927,58 +935,63 @@ begin
   -- Only one option, one more for keep, check_dtd, tree, warnings, copytree,
   --  validate
   Max_Opt := 1;
-  if Arg_Dscr.Is_Set (04) then
+  if Arg_Dscr.Is_Set (05) then
     -- Copy tree
     Copy_Tree := True;
     Max_Opt := Max_Opt + 1;
   end if;
-  if Arg_Dscr.Is_Set (06) then
+  if Arg_Dscr.Is_Set (07) then
     -- Check dtd
     Max_Opt := Max_Opt + 1;
   end if;
-  if Arg_Dscr.Is_Set (07) then
+  if Arg_Dscr.Is_Set (08) then
     -- Expand entities and default of attributes
     Expand := True;
     Max_Opt := Max_Opt + 1;
   end if;
-  if Arg_Dscr.Is_Set (08) then
-    -- One or several Keep options
-    Max_Opt := Max_Opt + Arg_Dscr.Get_Nb_Occurences (8);
-  end if;
   if Arg_Dscr.Is_Set (09) then
+    -- One or several Keep options
+    Max_Opt := Max_Opt + Arg_Dscr.Get_Nb_Occurences (09);
+  end if;
+  if Arg_Dscr.Is_Set (10) then
      -- Update Is_Mixed in tree
-     if not Arg_Dscr.Is_Set (17) then
+     if not Arg_Dscr.Is_Set (18) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""callback"" and ""update_mix"" options");
     end if;
     Update_Mix := True;
     Max_Opt := Max_Opt + 1;
   end if;
-  if Arg_Dscr.Is_Set (10) then
+  if Arg_Dscr.Is_Set (11) then
     -- Expand namespaces
-    if Arg_Dscr.Is_Set (07) then
+    if Arg_Dscr.Is_Set (08) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""namespace"" and ""expand"" options");
     end if;
     Namespace := True;
     Max_Opt := Max_Opt + 1;
   end if;
+  -- Compatible
+  if Arg_Dscr.Is_Set (04) then
+    Compatible := True;
+    Max_Opt := Max_Opt + 1;
+  end if;
   -- No normalize
-  if Arg_Dscr.Is_Set (11) then
+  if Arg_Dscr.Is_Set (12) then
     Normalize := False;
     Max_Opt := Max_Opt + 1;
   end if;
-  if Arg_Dscr.Is_Set (17) then
+  if Arg_Dscr.Is_Set (18) then
     -- Tree mode
     Max_Opt := Max_Opt + 1;
   else
     Callback_Acc := Callback'Unrestricted_Access;
   end if;
-  if Arg_Dscr.Is_Set (18) then
+  if Arg_Dscr.Is_Set (19) then
     -- Validate
     Max_Opt := Max_Opt + 1;
   end if;
-  if Arg_Dscr.Is_Set (20) then
+  if Arg_Dscr.Is_Set (21) then
     -- Put warnings
     Max_Opt := Max_Opt + 1;
     Warnings := Warning'Unrestricted_Access;
@@ -993,21 +1006,21 @@ begin
   if Arg_Dscr.Is_Set (03) then
     -- Canonical
     Output_Kind := Canon;
-  elsif Arg_Dscr.Is_Set (05) then
+  elsif Arg_Dscr.Is_Set (06) then
     -- Dump
-    if Arg_Dscr.Is_Set (08) then
+    if Arg_Dscr.Is_Set (09) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""keep"" and ""dump"" options");
     end if;
-    if Arg_Dscr.Is_Set (07) then
+    if Arg_Dscr.Is_Set (08) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""expand"" and ""dump"" options");
     end if;
-    if Arg_Dscr.Is_Set (10) then
+    if Arg_Dscr.Is_Set (11) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""namespace"" and ""dump"" options");
     end if;
-    if Arg_Dscr.Is_Set (18) then
+    if Arg_Dscr.Is_Set (19) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""validate"" and ""dump"" options");
     end if;
@@ -1017,9 +1030,9 @@ begin
     Keep_Cdata := True;
     Expand := False;
     Namespace := False;
-  elsif Arg_Dscr.Is_Set (13) then
+  elsif Arg_Dscr.Is_Set (14) then
     -- Progress bar
-    if Arg_Dscr.Is_Set (17) then
+    if Arg_Dscr.Is_Set (18) then
       Output_Kind := Progress;
         Ae_Re (Arg_Error'Identity,
                "Incompatible ""progress"" and ""tree"" options");
@@ -1033,35 +1046,35 @@ begin
         Output_Kind := None;
       end if;
     end;
-  elsif Arg_Dscr.Is_Set (14) then
-    Format.Kind := Xml_Parser.Generator.Raw;
   elsif Arg_Dscr.Is_Set (15) then
+    Format.Kind := Xml_Parser.Generator.Raw;
+  elsif Arg_Dscr.Is_Set (16) then
     -- Silent
     Output_Kind := None;
   end if;
 
   if Output_Kind = Gen then
     -- Options only significant in normal mode
-    if Arg_Dscr.Is_Set (12) then
+    if Arg_Dscr.Is_Set (13) then
       -- -1
       Format.Kind := Xml_Parser.Generator.One_Per_Line;
-    elsif Arg_Dscr.Is_Set (19) then
+    elsif Arg_Dscr.Is_Set (20) then
       -- -w <Width>
       Format.Kind := Xml_Parser.Generator.Fill_Width;
-      if Arg_Dscr.Get_Option (19) = "" then
+      if Arg_Dscr.Get_Option (20) = "" then
         Ae_Re (Arg_Error'Identity, "Width value is mandatory with -w");
       end if;
       begin
-        Format.Width := Natural'Value (Arg_Dscr.Get_Option (19));
+        Format.Width := Natural'Value (Arg_Dscr.Get_Option (20));
       exception
         when others =>
           Ae_Re (Arg_Error'Identity, "Invalid Width value "
-               & Arg_Dscr.Get_Option (19));
+               & Arg_Dscr.Get_Option (20));
       end;
     end if;
   end if;
 
-  if Arg_Dscr.Is_Set (16) then
+  if Arg_Dscr.Is_Set (17) then
     if Output_Kind = Gen
     and then (Format.Kind = Xml_Parser.Generator.One_Per_Line
               or else Format.Kind = Xml_Parser.Generator.Fill_Width) then
@@ -1072,24 +1085,24 @@ begin
   end if;
 
   -- Specific external Dtd or skip Doctype
-  if Arg_Dscr.Is_Set (06) then
+  if Arg_Dscr.Is_Set (07) then
     -- -d: Check dtd file
-    Dtd_File := As.U.Tus (Arg_Dscr.Get_Option (06));
+    Dtd_File := As.U.Tus (Arg_Dscr.Get_Option (07));
     if Dtd_File.Is_Null then
       -- If option set with empty dtd => no check
       Use_Dtd := False;
     end if;
   end if;
 
-  if Arg_Dscr.Is_Set (08) then
+  if Arg_Dscr.Is_Set (09) then
     -- -k: keep comments|cdata|none|all
-    for I in 1 .. Arg_Dscr.Get_Nb_Occurences (08) loop
+    for I in 1 .. Arg_Dscr.Get_Nb_Occurences (09) loop
       -- Parse Keep options
       Keep_Comments := False;
       Keep_Cdata := False;
       declare
-        Opt : constant String := Arg_Dscr.Get_Option (08, I);
-        Chr : constant Boolean := Arg_Dscr.Is_Char (08, I);
+        Opt : constant String := Arg_Dscr.Get_Option (09, I);
+        Chr : constant Boolean := Arg_Dscr.Is_Char (09, I);
       begin
         if (Chr and then Opt = "n")
         or else (not Chr and then Opt = "none") then
@@ -1134,31 +1147,37 @@ begin
 
   -- Canonical
   if Arg_Dscr.Is_Set (03) then
-    if Arg_Dscr.Is_Set (07) then
+    -- No compatibility
+    if Arg_Dscr.Is_Set (04) then
+      Ae_Re (Arg_Error'Identity,
+             "Incompatible ""canonical"" and ""compat"" options");
+    end if;
+    -- No expand
+    if Arg_Dscr.Is_Set (08) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""canonical"" and ""expand"" options");
     end if;
     -- No tree
-    if Arg_Dscr.Is_Set (17) then
+    if Arg_Dscr.Is_Set (18) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""canonical"" and ""tree"" options");
     end if;
     -- No namespace
-    if Arg_Dscr.Is_Set (10) then
+    if Arg_Dscr.Is_Set (11) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""canonical"" and ""namespace"" options");
     end if;
     -- No no-normalized (forced)
-    if Arg_Dscr.Is_Set (11) then
+    if Arg_Dscr.Is_Set (12) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""canonical"" and ""no-normalize"" options");
     end if;
     -- No other keep than -k c
-    if Arg_Dscr.Is_Set (08) and then Keep_Cdata_Set then
+    if Arg_Dscr.Is_Set (09) and then Keep_Cdata_Set then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""canonical"" and ""keep cdata"" options");
     end if;
-    if Arg_Dscr.Is_Set (16) then
+    if Arg_Dscr.Is_Set (17) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""canonical"" and ""split"" options");
     end if;
@@ -1181,32 +1200,32 @@ begin
   end if;
 
   -- Validate
-  if Arg_Dscr.Is_Set (18) then
+  if Arg_Dscr.Is_Set (19) then
     if Arg_Dscr.Is_Set (03) then
       Ae_Re (Arg_Error'Identity,
         "Incompatible ""validate"" and ""canonical"" options");
     end if;
-    if Arg_Dscr.Is_Set (04) then
+    if Arg_Dscr.Is_Set (05) then
       Ae_Re (Arg_Error'Identity,
         "Incompatible ""validate"" and ""copytree"" options");
     end if;
-    if Arg_Dscr.Is_Set (07) then
+    if Arg_Dscr.Is_Set (08) then
       Ae_Re (Arg_Error'Identity,
         "Incompatible ""validate"" and ""expand"" options");
     end if;
-    if Arg_Dscr.Is_Set (08) then
+    if Arg_Dscr.Is_Set (09) then
       Ae_Re (Arg_Error'Identity,
         "Incompatible ""validate"" and ""keep"" options");
     end if;
-    if Arg_Dscr.Is_Set (09) then
+    if Arg_Dscr.Is_Set (10) then
       Ae_Re (Arg_Error'Identity,
         "Incompatible ""validate"" and ""mixed"" options");
     end if;
-    if Arg_Dscr.Is_Set (10) then
+    if Arg_Dscr.Is_Set (11) then
       Ae_Re (Arg_Error'Identity,
         "Incompatible ""validate"" and ""namespace"" options");
     end if;
-    if Arg_Dscr.Is_Set (11) then
+    if Arg_Dscr.Is_Set (12) then
       Ae_Re (Arg_Error'Identity,
         "Incompatible ""validate"" and ""normalize"" options");
     end if;

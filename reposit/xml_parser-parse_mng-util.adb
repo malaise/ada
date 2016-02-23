@@ -1164,6 +1164,12 @@ package body Util is
     Text := Result;
   end Remove_Entities;
 
+  -- Make text "For compatibility" (">" -> "&gt;");
+  procedure Make_Compatible (Text : in out As.U.Asu_Us) is
+  begin
+    Text := As.U.Tus (Str_Util.Substit (Text.Image, Stop & "", "&gt;"));
+  end Make_Compatible;
+
   -- Push current flow
   procedure Push_Flow (Flow : in out Flow_Type) is
   begin

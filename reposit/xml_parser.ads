@@ -17,7 +17,7 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "42";
+  Major_Version : constant String := "43";
   function Version return String;
 
   -----------
@@ -201,6 +201,7 @@ package Xml_Parser is
   -- On option, does not expand general entities nor set attributes with
   --  default values (usefull for a formatter)
   -- On option, keep separators unchanged in attributes and text
+  -- On option, make text compatible ('>' -> "&gt;")
   -- On option do not check compliance with Dtd
   -- On option force an external Dtd different from the DOCTYPE directive
   -- On option check and fill namespace informations
@@ -210,18 +211,19 @@ package Xml_Parser is
   -- May raise File_Error if error accessing the File_Name,
   --           Status_Error if Ctx is not clean
   Stdin : constant String := "";
-  procedure Parse (Ctx       : out Ctx_Type;
-                   File_Name : in String;
-                   Ok        : out Boolean;
-                   Comments  : in Boolean := False;
-                   Cdata     : in Cdata_Policy_List := Remove_Cdata_Markers;
-                   Expand    : in Boolean := True;
-                   Normalize : in Boolean := True;
-                   Use_Dtd   : in Boolean := True;
-                   Dtd_File  : in String  := "";
-                   Namespace : in Boolean := False;
-                   Warn_Cb   : in Warning_Callback_Access := null;
-                   Parse_Cb  : in Parse_Callback_Access := null);
+  procedure Parse (Ctx        : out Ctx_Type;
+                   File_Name  : in String;
+                   Ok         : out Boolean;
+                   Comments   : in Boolean := False;
+                   Cdata      : in Cdata_Policy_List := Remove_Cdata_Markers;
+                   Expand     : in Boolean := True;
+                   Normalize  : in Boolean := True;
+                   Compatible : in Boolean := False;
+                   Use_Dtd    : in Boolean := True;
+                   Dtd_File   : in String  := "";
+                   Namespace  : in Boolean := False;
+                   Warn_Cb    : in Warning_Callback_Access := null;
+                   Parse_Cb   : in Parse_Callback_Access := null);
   File_Error, Status_Error : exception;
 
   -- Return the current status of the parsing context
@@ -269,24 +271,26 @@ package Xml_Parser is
   -- On option skip CDATA sections or keep markers
   -- On option, does not expand general entities (usefull for a formatter)
   -- On option, keep separators unchanged in attributes and text
+  -- On option, make text compatible ('>' -> "&gt;")
   -- On option do not check compliance with Dtd
   -- On option force an external Dtd different from the DOCTYPE directive
   -- On option check and fill namespace informations
   -- May raise Status_Error if Ctx is not clean
-  procedure Parse_Prologue (Ctx       : out Ctx_Type;
-                            Str       : in String;
-                            Dtd       : out Dtd_Type;
-                            Ok        : out Boolean;
-                            Comments  : in Boolean := False;
-                            Cdata     : in Cdata_Policy_List
-                                      := Remove_Cdata_Markers;
-                            Expand    : in Boolean := True;
-                            Normalize : in Boolean := True;
-                            Use_Dtd   : in Boolean := True;
-                            Dtd_File  : in String  := "";
-                            Namespace : in Boolean := False;
-                            Warn_Cb   : in Warning_Callback_Access := null;
-                            Parse_Cb  : in Parse_Callback_Access := null);
+  procedure Parse_Prologue (Ctx        : out Ctx_Type;
+                            Str        : in String;
+                            Dtd        : out Dtd_Type;
+                            Ok         : out Boolean;
+                            Comments   : in Boolean := False;
+                            Cdata      : in Cdata_Policy_List
+                                       := Remove_Cdata_Markers;
+                            Expand     : in Boolean := True;
+                            Normalize  : in Boolean := True;
+                            Compatible : in Boolean := False;
+                            Use_Dtd    : in Boolean := True;
+                            Dtd_File   : in String  := "";
+                            Namespace  : in Boolean := False;
+                            Warn_Cb    : in Warning_Callback_Access := null;
+                            Parse_Cb   : in Parse_Callback_Access := null);
 
   -- Parse the elements (after the prologue) and the tail of a string with a dtd
   -- The options are inherited from the parsing of the prologue but the Dtd
@@ -313,12 +317,13 @@ package Xml_Parser is
   --  affect the check)
   procedure Check (Ctx : in out Ctx_Type;
                    Ok  : out Boolean;
-                   Expand    : in Trilean.Trilean := Trilean.Other;
-                   Normalize : in Trilean.Trilean := Trilean.Other;
-                   Use_Dtd   : in Trilean.Trilean := Trilean.Other;
-                   Dtd_File  : in String  := "";
-                   Namespace : in Trilean.Trilean := Trilean.Other;
-                   Warn_Cb   : in Warning_Callback_Access := null);
+                   Expand     : in Trilean.Trilean := Trilean.Other;
+                   Normalize  : in Trilean.Trilean := Trilean.Other;
+                   Compatible : in Trilean.Trilean := Trilean.Other;
+                   Use_Dtd    : in Trilean.Trilean := Trilean.Other;
+                   Dtd_File   : in String  := "";
+                   Namespace  : in Trilean.Trilean := Trilean.Other;
+                   Warn_Cb    : in Warning_Callback_Access := null);
 
   -----------------------------
   -- PROLOGUE, ROOT and TAIL --
@@ -812,6 +817,8 @@ private
     Cdata_Policy : Cdata_Policy_List := Remove_Cdata_Markers;
     -- Normalize separators in attributes and texts
     Normalize : Boolean := True;
+    -- Make text "compatible"
+    Compatible : Boolean := False;
     -- List of Elements with "xml:space 'preserve'" in dtd
     Preserved : As.U.Asu_Us;
     -- Use Dtd

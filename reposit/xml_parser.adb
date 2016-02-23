@@ -4,7 +4,7 @@ with Trace.Loggers, Exception_Messenger, Directory, Str_Util,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -333,18 +333,19 @@ package body Xml_Parser is
 
   -- Parse a Xml file, stdin if empty
   -- May raise File_Error, Parse_Error
-  procedure Parse (Ctx       : out Ctx_Type;
-                   File_Name : in String;
-                   Ok        : out Boolean;
-                   Comments  : in Boolean := False;
-                   Cdata     : in Cdata_Policy_List := Remove_Cdata_Markers;
-                   Expand    : in Boolean := True;
-                   Normalize : in Boolean := True;
-                   Use_Dtd   : in Boolean := True;
-                   Dtd_File  : in String  := "";
-                   Namespace : in Boolean := False;
-                   Warn_Cb   : in Warning_Callback_Access := null;
-                   Parse_Cb  : in Parse_Callback_Access := null) is
+  procedure Parse (Ctx        : out Ctx_Type;
+                   File_Name  : in String;
+                   Ok         : out Boolean;
+                   Comments   : in Boolean := False;
+                   Cdata      : in Cdata_Policy_List := Remove_Cdata_Markers;
+                   Expand     : in Boolean := True;
+                   Normalize  : in Boolean := True;
+                   Compatible : in Boolean := False;
+                   Use_Dtd    : in Boolean := True;
+                   Dtd_File   : in String  := "";
+                   Namespace  : in Boolean := False;
+                   Warn_Cb    : in Warning_Callback_Access := null;
+                   Parse_Cb   : in Parse_Callback_Access := null) is
   begin
     if Ctx.Status /= Clean then
       raise Status_Error;
@@ -370,6 +371,7 @@ package body Xml_Parser is
     Ctx.Expand := Expand;
     Ctx.Cdata_Policy := Cdata;
     Ctx.Normalize := Normalize;
+    Ctx.Compatible := Compatible;
     Ctx.Use_Dtd := Use_Dtd;
     Ctx.Dtd_File := As.U.Tus (Dtd_File);
     Ctx.Namespace := Namespace;
@@ -450,6 +452,7 @@ package body Xml_Parser is
     Ctx.Expand := True;
     Ctx.Cdata_Policy := Remove_Cdata_Markers;
     Ctx.Normalize := True;
+    Ctx.Compatible := False;
     Ctx.Use_Dtd := True;
     Ctx.Dtd_File.Set_Null;
     Ctx.Namespace := False;
@@ -566,20 +569,21 @@ package body Xml_Parser is
   -- Parse the prologue of a string
   -- may raise Status_Error if Ctx is not clean
   --    Parse_Error while parsing the string
-  procedure Parse_Prologue (Ctx       : out Ctx_Type;
-                            Str       : in String;
-                            Dtd       : out Dtd_Type;
-                            Ok        : out Boolean;
-                            Comments  : in Boolean := False;
-                            Cdata     : in Cdata_Policy_List
-                                      := Remove_Cdata_Markers;
-                            Expand    : in Boolean := True;
-                            Normalize : in Boolean := True;
-                            Use_Dtd   : in Boolean := True;
-                            Dtd_File  : in String  := "";
-                            Namespace : in Boolean := False;
-                            Warn_Cb   : in Warning_Callback_Access := null;
-                            Parse_Cb  : in Parse_Callback_Access := null) is
+  procedure Parse_Prologue (Ctx        : out Ctx_Type;
+                            Str        : in String;
+                            Dtd        : out Dtd_Type;
+                            Ok         : out Boolean;
+                            Comments   : in Boolean := False;
+                            Cdata      : in Cdata_Policy_List
+                                       := Remove_Cdata_Markers;
+                            Expand     : in Boolean := True;
+                            Normalize  : in Boolean := True;
+                            Compatible : in Boolean := False;
+                            Use_Dtd    : in Boolean := True;
+                            Dtd_File   : in String  := "";
+                            Namespace  : in Boolean := False;
+                            Warn_Cb    : in Warning_Callback_Access := null;
+                            Parse_Cb   : in Parse_Callback_Access := null) is
   begin
     if Ctx.Status /= Clean then
       raise Status_Error;
@@ -603,6 +607,7 @@ package body Xml_Parser is
     Ctx.Expand := Expand;
     Ctx.Cdata_Policy := Cdata;
     Ctx.Normalize := Normalize;
+    Ctx.Compatible := Compatible;
     Ctx.Use_Dtd := Use_Dtd;
     Ctx.Dtd_File := As.U.Tus (Dtd_File);
     Ctx.Namespace := Namespace;
@@ -695,12 +700,13 @@ package body Xml_Parser is
   --  (same effect as Xml_Parse.Parse)
   procedure Check (Ctx : in out Ctx_Type;
                    Ok  : out Boolean;
-                   Expand    : in Trilean.Trilean := Trilean.Other;
-                   Normalize : in Trilean.Trilean := Trilean.Other;
-                   Use_Dtd   : in Trilean.Trilean := Trilean.Other;
-                   Dtd_File  : in String  := "";
-                   Namespace : in Trilean.Trilean := Trilean.Other;
-                   Warn_Cb   : in Warning_Callback_Access := null) is
+                   Expand     : in Trilean.Trilean := Trilean.Other;
+                   Normalize  : in Trilean.Trilean := Trilean.Other;
+                   Compatible : in Trilean.Trilean := Trilean.Other;
+                   Use_Dtd    : in Trilean.Trilean := Trilean.Other;
+                   Dtd_File   : in String  := "";
+                   Namespace  : in Trilean.Trilean := Trilean.Other;
+                   Warn_Cb    : in Warning_Callback_Access := null) is
     use type Trilean.Trilean;
   begin
     -- Status must be Parsed_Prologue, Parsed_Elements or Init
@@ -719,6 +725,9 @@ package body Xml_Parser is
     end if;
     if Normalize /= Trilean.Other then
       Ctx.Normalize := Trilean.Tri2Boo (Normalize);
+    end if;
+    if Compatible /= Trilean.Other then
+      Ctx.Compatible := Trilean.Tri2Boo (Compatible);
     end if;
     if Use_Dtd /= Trilean.Other then
       Ctx.Use_Dtd := Trilean.Tri2Boo (Use_Dtd);
