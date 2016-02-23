@@ -192,7 +192,7 @@ Code (1)::
      algo are old and not secure.
 
 Dictio (3)::
-     Distributed data dictionnary that allows storing data, distributing this
+     Distributed data dictionary that allows storing data, distributing this
      data base on all the machines. Ensures correct insertion of new machines
      and periodic consistency checks. Recovery of data loss may be optimized
      (presently it resends all).

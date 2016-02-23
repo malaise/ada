@@ -457,7 +457,7 @@ procedure Xwords is
     end select;
 
     if Load then
-      -- Load dictionnary
+      -- Load dictionary
       begin
         Analist.Init (Words_Name.Image, Nouns_Name.Image);
         Ok := True;

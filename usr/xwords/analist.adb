@@ -41,7 +41,7 @@ package body Analist is
       raise Init_Error;
   end Init_Db;
 
-  -- Init database from a dictionnary (file with one word per line)
+  -- Init database from a dictionary (file with one word per line)
   -- Reset it if already init
   procedure Init (Words_File, Nouns_File : in String) is
   begin

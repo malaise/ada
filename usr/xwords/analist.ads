@@ -2,10 +2,10 @@ with As.U.Utils;
 package Analist is
 
   -- The maximum length supported
-  -- Longer words of the dictionnary are discarded
+  -- Longer words of the dictionary are discarded
   Max_Len : constant := 15;
 
-  -- Init database from a dictionnary (file with one word per line)
+  -- Init database from a dictionary (file with one word per line)
   -- Reset it if already init
   Init_Error : exception;
   procedure Init (Words_File, Nouns_File : in String);
