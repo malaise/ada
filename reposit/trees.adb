@@ -250,9 +250,6 @@ package body Trees is
                               Cell_Acc : in Cell_Access;
                               Elder    : in Boolean := True) is
     begin
-      -- No empty tree
-      Check_Callback (The_Tree);
-
       -- Not root
       if The_Tree.Curr = The_Tree.Root then
         raise Is_Root;
@@ -288,7 +285,7 @@ package body Trees is
                              Element  : in Element_Type) is
       Cell_Acc, Prev_Curr : Cell_Access;
     begin
-      -- Save current
+      -- Not in Cb (but tree can be empty)
       if The_Tree.In_Cb then
         raise In_Callback;
       end if;
@@ -347,7 +344,7 @@ package body Trees is
                             Eldest   : in Boolean := True) is
       Cell_Acc : Cell_Access;
     begin
-      -- No empty tree
+      -- No empty tree nor in Cb
       Check_Callback (The_Tree);
 
       -- Check number of children
@@ -371,7 +368,7 @@ package body Trees is
                               Elder    : in Boolean := True) is
       Cell_Acc : Cell_Access;
     begin
-      -- No empty tree
+      -- No empty tree nor in Cb
       Check_Callback (The_Tree);
 
       -- Not root
@@ -401,7 +398,7 @@ package body Trees is
     -- May raise No_Cell if The_Tree is empty
     procedure Save_Position (The_Tree : in out Tree_Type) is
     begin
-      -- No empty tree
+      -- No empty tree nor in Cb
       Check_Callback (The_Tree);
       Saved_Pool.Push (The_Tree.Save.all, The_Tree.Curr);
     end Save_Position;
@@ -410,7 +407,7 @@ package body Trees is
     -- May raise No_Saved_Position if no (more) saved position in the Lifo
     procedure Restore_Position (The_Tree : in out Tree_Type) is
     begin
-      -- No empty tree
+      -- No empty tree nor in Cb
       Check_Callback (The_Tree);
       if Saved_Pool.Is_Empty (The_Tree.Save.all) then
         raise No_Saved_Position;
@@ -423,7 +420,7 @@ package body Trees is
     procedure Pop_Position (The_Tree : in out Tree_Type) is
       Tmp_Cell : Cell_Access;
     begin
-      -- No empty tree
+      -- No empty tree nor in Cb
       Check_Callback (The_Tree);
       if Saved_Pool.Is_Empty (The_Tree.Save.all) then
         raise No_Saved_Position;
@@ -444,7 +441,7 @@ package body Trees is
                               Deallocate : in Boolean := False) is
       Cell_Acc : Cell_Access;
     begin
-      -- No empty tree
+      -- No empty tree nor in Cb
       Check_Callback (The_Tree);
 
       -- No saved position
@@ -517,7 +514,7 @@ package body Trees is
     procedure Delete_Tree (The_Tree : in out Tree_Type;
                      Deallocate : in Boolean := True) is
     begin
-      -- No empty tree
+      -- No empty tree nor in Cb
       Check_Callback (The_Tree);
 
       -- No saved position
@@ -599,7 +596,7 @@ package body Trees is
 
       Saved : Cell_Access;
     begin
-      -- No empty tree
+      -- No empty tree nor in Cb
       Check_Callback (The_Tree);
 
       -- Check that a pos is saved
@@ -636,7 +633,7 @@ package body Trees is
       Saved : Cell_Access;
       Old_Young : Order;
     begin
-      -- Check not in callback
+      -- No empty tree nor in Cb
       Check_Callback (The_Tree);
 
       -- Check that a pos is saved
@@ -671,7 +668,7 @@ package body Trees is
                           Elder    : in Boolean := True) is
       Saved : Cell_Access;
     begin
-      -- Check not in callback
+      -- No empty tree nor in Cb
       Check_Callback (The_Tree);
 
       -- Check that a pos is saved
@@ -739,7 +736,7 @@ package body Trees is
     -- May raise No_Cell if The_Tree is empty
     procedure Move_Root (The_Tree : in out Tree_Type) is
     begin
-      -- No empty tree
+      -- No empty tree nor in Cb
       Check_Callback (The_Tree);
 
       The_Tree.Curr := The_Tree.Root;
@@ -749,7 +746,7 @@ package body Trees is
     -- May raise No_Cell if no father (at root or tree is empty)
     procedure Move_Father (The_Tree : in out Tree_Type) is
     begin
-      -- No empty tree
+      -- No empty tree nor in Cb
       Check_Callback (The_Tree);
 
       if The_Tree.Curr.Father = null then
@@ -765,7 +762,7 @@ package body Trees is
                           Eldest   : in Boolean := True) is
       Child : Order;
     begin
-      -- No empty tree
+      -- No empty tree nor in Cb
       Check_Callback (The_Tree);
 
       Child := (if Eldest then Old else Young);
@@ -783,7 +780,7 @@ package body Trees is
                             Elder    : in Boolean := True) is
       Brother : Order;
     begin
-      -- No empty tree
+      -- No empty tree nor in Cb
       Check_Callback (The_Tree);
 
       Brother := (if Elder then Old else Young);
@@ -802,7 +799,7 @@ package body Trees is
     function Get_Position (The_Tree : Tree_Type) return Position_Access is
     begin
       -- No empty tree
-      Check_Callback (The_Tree);
+      Check_Empty (The_Tree);
       return (The_Tree.Curr, The_Tree.Magic);
     end Get_Position;
 
@@ -814,7 +811,7 @@ package body Trees is
       if Position.Magic /= The_Tree.Magic then
         raise No_Cell;
       end if;
-      -- No empty tree
+      -- No empty tree nor in Cb
       Check_Callback (The_Tree);
       The_Tree.Curr := Position.Cell_Acc;
     end Set_Position;
