@@ -119,24 +119,13 @@ package Channels is
     -- May raise Unknown_Destination if Host_Name is not known
     procedure Add_Destination (Host_Name : in String);
 
-    -- Add new destinations from a Ascii file
-    -- File format is:
-    -- <channel_list> ::= [ { <channel_declaration> } ]
-    -- <channel_declaration> ::= Channel { <channel_name> }
-    --                             [ { <host_declaration> } ]
-    --                           End_Channel
-    -- host_declaration ::= Host [ { <host_name> } ]
-
-    -- Example:
-    -- Channel test_tcp other
-    --   Host portillon ulysse
-    --   Host penelope
-    -- End_Channel
-
-    -- Notes:
-    -- # at the beginning of a line is comment
-    -- Line must be empty, or a comment, or start by either Channel, Host
-    --   or End_Channel
+    -- Add new destinations from a XML file, which may describe several channels
+    -- ex:
+    -- <Channels>
+    --   <Channel Name="test_tcp">
+    --     <Host>ulysse</Host>
+    --   </Channel>
+    -- </Channels>
     -- The same channel_name may appear several times in the file
     -- Destination_Already is not raised if a host is already added
     --  (by Add_Destination or within the same or another channel declaration

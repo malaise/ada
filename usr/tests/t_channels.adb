@@ -199,7 +199,7 @@ begin
 
     Basic_Proc.Put_Line_Output ("Adding dests from file");
     begin
-      Fifoc.Add_Destinations ("channels.xml");
+      Fifoc.Add_Destinations ("data/channels.xml");
     exception
       when Error : others =>
         Basic_Proc.Put_Line_Output ("Exception: "
