@@ -118,10 +118,12 @@ package body Hashed_List.Unique is
     Set (Item, Get_Access_Current (List_Type(List)).all);
   end Read;
 
-  function Read (List : in out Unique_List_Type) return Element_Type is
+  function Read (List : in out Unique_List_Type;
+                 Item : in Element_Type) return Element_Type is
   begin
-    return Item : Element_Type do
-      Read (List, Item);
+    return Result : Element_Type do
+      Set (Result, Item);
+      Read (List, Result);
     end return;
   end Read;
 

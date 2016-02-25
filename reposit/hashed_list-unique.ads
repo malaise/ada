@@ -52,7 +52,8 @@ package Hashed_List.Unique is
   -- May raise Not_In_List
   procedure Read (List : in out Unique_List_Type;
                   Item : in out Element_Type);
-  function  Read (List : in out Unique_List_Type) return Element_Type;
+  function  Read (List : in out Unique_List_Type;
+                  Item : in Element_Type) return Element_Type;
 
   -- Suppress the element matching in the list
   -- May raise Not_In_List
