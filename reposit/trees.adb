@@ -935,7 +935,8 @@ package body Trees is
     -- Iterate --
     -------------
     -- Iterate on current and children
-    function Recurs (Me         : in out Cell_Access;
+    function Recurs (The_Tree   : in out Tree_Type;
+                     Me         : in out Cell_Access;
                      Level      : in Natural;
                      Do_One_Acc : in Do_One_Access;
                      Elder      : in Boolean)  return Boolean is
@@ -943,8 +944,8 @@ package body Trees is
       Result : Iteration_Policy;
     begin
       -- Do_One on me
+      The_Tree.Curr := Me;
       Result := Do_One_Acc (Me.Data.all, Level);
-
 
       -- Give_Up or Skip if requested
       case Result is
@@ -958,7 +959,7 @@ package body Trees is
           -- Iterate on children, oldest first if Elder
           Next := Me.Children((if Elder then Old else Young));
           while Next /= null loop
-            if not Recurs (Next, Level + 1, Do_One_Acc, Elder) then
+            if not Recurs (The_Tree, Next, Level + 1, Do_One_Acc, Elder) then
               -- Propagate stop signal
               return False;
             end if;
@@ -977,7 +978,7 @@ package body Trees is
                   Level : Natural) return Iteration_Policy;
                        Elder      : in Boolean := True) is
 
-      Cell_Acc : Cell_Access;
+      Saved_Curr, Cell_Acc : Cell_Access;
       Dummy : Boolean;
     begin
       -- Not in callback
@@ -990,8 +991,10 @@ package body Trees is
       end if;
       -- Do it
       The_Tree.In_Cb := True;
+      Saved_Curr := The_Tree.Curr;
       Cell_Acc := The_Tree.Curr;
-      Dummy := Recurs (Cell_Acc, 0, Do_One_Acc, Elder);
+      Dummy := Recurs (The_Tree, Cell_Acc, 0, Do_One_Acc, Elder);
+      The_Tree.Curr := Saved_Curr;
       The_Tree.In_Cb := False;
     exception
       when others =>
