@@ -1,9 +1,9 @@
 with Ada.Exceptions;
-with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
+with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory, Trace;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V11.2";
+  Version : constant String := "V12.0";
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -18,10 +18,11 @@ procedure Lsadeps is
    09 => (True,  'I', As.U.Tus ("include"),   True, True, As.U.Tus ("dir_path")),
    10 => (True,  'R', As.U.Tus ("recursive"), True, True, As.U.Tus ("dir_path")),
    11 => (True,  'E', As.U.Tus ("exclude"),   True, True, As.U.Tus ("dir_name")),
-   12 => (False, 'l', As.U.Tus ("list"),  False),
-   13 => (False, 'a', As.U.Tus ("all"),  False),
-   14 => (False, 'C', As.U.Tus ("children"),  False),
-   15 => (False, 'b', As.U.Tus ("bodies"),  False));
+   12 => (False, 'l', As.U.Tus ("list"),     False),
+   13 => (False, 'a', As.U.Tus ("all"),      False),
+   14 => (False, 'C', As.U.Tus ("children"), False),
+   15 => (False, 'b', As.U.Tus ("bodies"),   False),
+   16 => (False, 'S', As.U.Tus ("shortest"), False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   Include_Index : constant Argument_Parser.The_Keys_Range := 9;
   Recursive_Index : constant Argument_Parser.The_Keys_Range := 10;
@@ -42,15 +43,17 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <target_unit> ::=  [<path>/]<unit>");
     Basic_Proc.Put_Line_Error (
-     " <options>     ::=  [ <specs> | <revert> ] [ <tree> | <direct> ] [ <bodies> ]");
+     " <options>     ::=  [ <specs> | <revert> ] [ <tree> | <shortest> | <direct> ]");
     Basic_Proc.Put_Line_Error (
-     "                    [ <files> ] [ <inclusions> ]");
+     "                    [ <bodies> ] [ <files> ] [ <inclusions> ]");
     Basic_Proc.Put_Line_Error (
      " <specs>       ::= " & Argument_Parser.Image (Keys(4)));
     Basic_Proc.Put_Line_Error (
      " <revert>      ::= " & Argument_Parser.Image (Keys(5)));
     Basic_Proc.Put_Line_Error (
      " <tree>        ::= " & Argument_Parser.Image (Keys(6)));
+    Basic_Proc.Put_Line_Error (
+     " <shortest>    ::= " & Argument_Parser.Image (Keys(16)));
     Basic_Proc.Put_Line_Error (
      " <direct>      ::= " & Argument_Parser.Image (Keys(7)));
     Basic_Proc.Put_Line_Error (
@@ -93,6 +96,8 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <tree> to show the tree of dependencies (instead of a sorted unique list),");
     Basic_Proc.Put_Line_Error (
+     " <shortest> to show the shortest dependencies from target_unit to path_unit,");
+    Basic_Proc.Put_Line_Error (
      " <direct> to show the direct dependencies between units,");
     Basic_Proc.Put_Line_Error (
      " <bodies> to include the dependencies of bodies in revert mode,");
@@ -121,7 +126,6 @@ procedure Lsadeps is
     raise Error_Raised;
   end Error;
 
-
   -- Option management
   List_Mode : Boolean := False;
   All_Mode : Boolean := False;
@@ -130,6 +134,7 @@ procedure Lsadeps is
   Specs_Mode : Boolean := False;
   Revert_Mode : Boolean := False;
   Tree_Mode : Boolean := False;
+  Shortest_Mode : Boolean := False;
   Direct_Mode : Boolean := False;
   Bodies_Mode : Boolean := False;
   Files_Mode : Boolean := False;
@@ -180,12 +185,17 @@ procedure Lsadeps is
   -- Add the paths of -I and -R dirtectives in the proper order
   procedure Add_Paths is separate;
 
+  -- Perfo severity
+  use type Trace.Severities;
+  Perfo : constant Trace.Severities := Trace.Debug * 2;
+
   use type As.U.Asu_Us;
 begin
   ---------------------
   -- PARSE ARGUMENTS --
   ---------------------
   Debug.Logger.Init;
+  Debug.Logger.Log (Perfo, "Starting");
   -- Parse keys and options
   Arg_Dscr := Argument_Parser.Parse (Keys);
   if not Arg_Dscr.Is_Ok then
@@ -237,6 +247,9 @@ begin
   if Bodies_Mode and then not Revert_Mode then
     Error ("Bodies mode is allowed only in revert mode");
   end if;
+  if Arg_Dscr.Is_Set (16) then
+    Shortest_Mode := True;
+  end if;
 
   -- Check mode
   if Arg_Dscr.Is_Set (3) then
@@ -276,6 +289,16 @@ begin
   -- Check not tree and direct
   if Tree_Mode and then Direct_Mode then
     Error ("Tree and Direct mode are mutually exclusive");
+  end if;
+
+  -- Check not shortest and tree
+  if Shortest_Mode then
+    if Tree_Mode then
+      Error ("Tree and Shortest mode are mutually exclusive");
+    else
+      -- Shortest triggers tree mode
+      Tree_Mode := True;
+    end if;
   end if;
 
   -- Check all in list
@@ -335,7 +358,7 @@ begin
           Target_Dir := As.U.Tus (Directory.Make_Full_Path (Directory.Dirname
             (Target_Dir.Image)));
         when others =>
-          Error ("Invalid path_dir " & Target.Image);
+          Error ("Invalid Path_Unit " & Target.Image);
       end;
     end if;
     -- Add target or current dir
@@ -379,6 +402,11 @@ begin
     Add_Paths;
   end if;
 
+  -- Shortest mode requires Path_Dir
+  if Path_Dir.Is_Null and then Shortest_Mode then
+    Error ("Shortest mode requires a Path_Unit");
+  end if;
+
   -- Path_Dir prevents Direct
   if not Path_Dir.Is_Null and then Direct_Mode then
     Error ("Path_Unit and Direct mode are mutually exclusive");
@@ -389,10 +417,13 @@ begin
     Error ("Children option requires a target unit");
   end if;
 
+  Debug.Logger.Log (Perfo, "Arguments parsed");
+
   ----------------------------
   -- BUILD LISTS OF SOURCES --
   ----------------------------
   Sourcer.Build_Lists;
+  Debug.Logger.Log (Perfo, "Lists built");
 
   ------------------------
   -- MOVE TO TARGET DIR --
@@ -416,6 +447,7 @@ begin
       -- Check failed
       Basic_Proc.Set_Error_Exit_Code;
     end if;
+    Debug.Logger.Log (Perfo, "Check done.");
     return;
   end if;
 
@@ -428,6 +460,7 @@ begin
   if not Path.Is_Null then
     Path_Dscr := Check_Unit (Path_Dir, Path, "Path");
   end if;
+  Debug.Logger.Log (Perfo, "Target checked");
 
   -----------------
   -- LIST TARGET --
@@ -435,6 +468,7 @@ begin
   if List_Mode then
     Output.List (Target.Image, Target_Dir.Image, List_Path.Image, Files_Mode,
                  All_Mode, Children_Mode);
+    Debug.Logger.Log (Perfo, "List done.");
     return;
   end if;
 
@@ -442,14 +476,17 @@ begin
   -- BUILD TREE OF SOURCES --
   ----------------------------
   Tree_Mng.Build (Target_Dscr, Specs_Mode, Revert_Mode,
-                  Tree_Mode, Direct_Mode, Bodies_Mode);
+                  Tree_Mode, Shortest_Mode, Files_Mode,
+                  Direct_Mode, Bodies_Mode);
+  Debug.Logger.Log (Perfo, "Tree built");
 
   -------------------
   -- PUT LIST/TREE --
   -------------------
   -- Back to original dir
   Check_Dir ("");
-  Output.Put (Revert_Mode, Tree_Mode, Files_Mode, Path_Dscr);
+  Output.Put (Revert_Mode, Tree_Mode, Shortest_Mode, Files_Mode, Path_Dscr);
+  Debug.Logger.Log (Perfo, "Dependency done.");
 
 exception
   when Error_Raised | Sourcer.Error_Raised | Output.Error_Raised =>

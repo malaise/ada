@@ -1,4 +1,5 @@
-with As.U.Utils, Dynamic_List, Str_Util, Basic_Proc, Parser;
+with As.U, Dynamic_List, Hashed_List.Unique, Str_Util, Basic_Proc, Parser,
+     Images;
 with Debug;
 package body Tree_Mng is
 
@@ -14,11 +15,32 @@ package body Tree_Mng is
 
   -- Do we build full tree or do we optimizeA (each entry only once)
   --  or do we do only first level
-  type Tree_Kind_List is (Full_Tree, Optimized, First_Level);
+  type Tree_Kind_List is (Full_Tree, Shortest_Way, Optimized, First_Level);
   Tree_Kind : Tree_Kind_List;
 
-  -- Optimization: unique list of <Path><File>
-  List : As.U.Utils.Asu_Unique_List_Mng.Unique_List_Type;
+  -- Optimization: unique list of (<Path><File>, Level)
+  type Cell is record
+    Name : As.U.Asu_Us;
+    Level : Positive;
+  end record;
+  type Cell_Access is access all Cell;
+  procedure Set (To : out Cell; Val : in Cell) is
+  begin
+    To := Val;
+  end Set;
+  function "=" (Current : Cell; Criteria : Cell) return Boolean is
+    use type As.U.Asu_Us;
+  begin
+    return Current.Name = Criteria.Name;
+  end "=";
+  function Key_Image (A_Cell : Cell) return String is
+  begin
+    return A_Cell.Name.Image;
+  end Key_Image;
+  package Cell_Hashed_List_Mng is
+      new Hashed_List (Cell, Cell_Access, Set, "=", Key_Image);
+  package Cell_Unique_List_Mng is new Cell_Hashed_List_Mng.Unique;
+  Got_List : Cell_Unique_List_Mng.Unique_List_Type;
 
   -- List of direct With from first Origin to current
   Rope : Sourcer.Src_List_Mng.Unique_List_Type;
@@ -30,12 +52,15 @@ package body Tree_Mng is
   end Is_Sep;
 
   -- Build a node
-  procedure Build_Node (Origin : in Sourcer.Src_Dscr;
-                        Specs_Mode, Revert_Mode, Bodies_Mode : in Boolean);
+  procedure Build_Node (Level : in Positive;
+                        Origin : in Sourcer.Src_Dscr;
+                        Specs_Mode, Revert_Mode,
+                        File_Mode, Bodies_Mode : in Boolean);
 
   -- Build the nodes with any unit withed in List, whatever Path
-  procedure Build_Witheds (Path, Witheds : in As.U.Asu_Us;
-                           Specs_Mode : in Boolean) is
+  procedure Build_Witheds (Level : in Positive;
+                           Path, Witheds : in As.U.Asu_Us;
+                           Specs_Mode, File_Mode : in Boolean) is
     Iter1 : Parser.Iterator;
     Name : Sourcer.Name_Dscr;
 
@@ -49,7 +74,7 @@ package body Tree_Mng is
       Src := Sourcer.Get_Unit (Path, Name.Unit);
       if not Src.Unit.Is_Null then
         -- Yes, local unit hides remote ones
-        Build_Node (Src, Specs_Mode, False, False);
+        Build_Node (Level, Src, Specs_Mode, False, File_Mode, False);
         return;
       end if;
       -- List all (remote) units with this withed name
@@ -83,7 +108,7 @@ package body Tree_Mng is
             raise Sourcer.Src_List_Mng.Not_In_List;
           end if;
         end if;
-        Build_Node (Src, Specs_Mode, False, False);
+        Build_Node (Level, Src, Specs_Mode, False, File_Mode, False);
       end loop;
     end Find_Units;
 
@@ -100,27 +125,29 @@ package body Tree_Mng is
     end loop;
   end Build_Witheds;
 
-  -- Build the subunits of List (with same path)
-  -- Else any unit withed in List, whatever Path
-  procedure Build_Subunits (List : in As.U.Asu_Us;
+  -- Build the subunits of Units (with same path)
+  -- Else any unit withed in Units, whatever Path
+  procedure Build_Subunits (Level : in Positive;
+                            Units : in As.U.Asu_Us;
                             Path : in As.U.Asu_Us;
                             Specs_Mode, Revert_Mode,
-                            Bodies_Mode : in Boolean) is
+                            File_Mode, Bodies_Mode : in Boolean) is
     Iter : Parser.Iterator;
     Crit : Sourcer.Src_Dscr;
   begin
-    if List.Is_Null then
+    if Units.Is_Null then
       return;
     end if;
-    -- Parse list with Parser and insert nodes
-    Iter.Set (List.Image, Is_Sep'Access);
+    -- Parse Units list with Parser and insert nodes
+    Iter.Set (Units.Image, Is_Sep'Access);
     loop
       Crit.Unit := As.U.Tus (Iter.Next_Word);
       exit when Crit.Unit.Is_Null;
       Crit.Kind := Sourcer.Subunit;
       Crit.Path := Path;
       Sourcer.List.Read (Crit);
-      Build_Node (Crit, Specs_Mode, Revert_Mode, Bodies_Mode);
+      Build_Node (Level, Crit, Specs_Mode, Revert_Mode,
+                  File_Mode, Bodies_Mode);
     end loop;
   end Build_Subunits;
 
@@ -162,8 +189,9 @@ package body Tree_Mng is
   package Src_List_Mng is new Dynamic_List (Sourcer.Src_Dscr);
   package Src_Dyn_List_Mng renames Src_List_Mng.Dyn_List;
 
-  procedure Build_Withings (Path, Name : in String;
-                            Bodies_Mode : in Boolean) is
+  procedure Build_Withings (Level : in Positive;
+                            Path, Name : in String;
+                            File_Mode, Bodies_Mode : in Boolean) is
     Withing : Sourcer.Withing_Dscr;
     Found : Boolean;
     Iter : Parser.Iterator;
@@ -171,7 +199,7 @@ package body Tree_Mng is
     Dscr : Sourcer.Src_Dscr;
     Hidding : Sourcer.Src_Dscr;
 
-    List : Src_Dyn_List_Mng.List_Type;
+    Src_List : Src_Dyn_List_Mng.List_Type;
     Moved : Boolean;
     use type As.U.Asu_Us;
 
@@ -198,36 +226,37 @@ package body Tree_Mng is
         -- See if it is local
         if Dscr.Path = Path then
           -- Yesss, add it to our list
-          List.Insert (Dscr);
+          Src_List.Insert (Dscr);
         else
           -- We are withed by a remote unit, see if we are hidden
           -- Search a unit (spec or standalone body) in Dscr Path with our name
           Hidding := Sourcer.Get_Unit (Dscr.Path, As.U.Tus (Name));
           if Hidding.Unit.Is_Null then
             -- We are not hidden, add it to our list
-            List.Insert (Dscr);
+            Src_List.Insert (Dscr);
           end if;
         end if;
       end;
     end loop;
 
     -- Insert in the tree each node of the list
-    if not List.Is_Empty then
-      List.Rewind;
+    if not Src_List.Is_Empty then
+      Src_List.Rewind;
       loop
-        List.Read (Dscr, Moved => Moved);
-        Build_Node (Dscr, True, True, Bodies_Mode);
+        Src_List.Read (Dscr, Moved => Moved);
+        Build_Node (Level, Dscr, True, True, File_Mode, Bodies_Mode);
         exit when not Moved;
       end loop;
     end if;
   end Build_Withings;
 
   -- Build children from list of children
-  procedure Build_Children (Path, Children : in As.U.Asu_Us;
-                            Bodies_Mode : in Boolean) is
+  procedure Build_Children (Level : in Positive;
+                            Path, Children : in As.U.Asu_Us;
+                            File_Mode, Bodies_Mode : in Boolean) is
     Iter : Parser.Iterator;
     Dscr : Sourcer.Src_Dscr;
-    List : Src_Dyn_List_Mng.List_Type;
+    Child_List : Src_Dyn_List_Mng.List_Type;
     Moved : Boolean;
     use type As.U.Asu_Us;
 
@@ -246,24 +275,26 @@ package body Tree_Mng is
           Basic_Proc.Put_Line_Error ("INTERNAL ERROR: with " & Str & ".");
           raise Sourcer.Src_List_Mng.Not_In_List;
         end if;
-        List.Insert (Dscr);
+        Child_List.Insert (Dscr);
       end;
     end loop;
 
     -- Insert in the tree each node of the list
-    if not List.Is_Empty then
-      List.Rewind;
+    if not Child_List.Is_Empty then
+      Child_List.Rewind;
       loop
-        List.Read (Dscr, Moved => Moved);
-        Build_Node (Dscr, True, True, Bodies_Mode);
+        Child_List.Read (Dscr, Moved => Moved);
+        Build_Node (Level, Dscr, True, True, File_Mode, Bodies_Mode);
         exit when not Moved;
       end loop;
     end if;
   end Build_Children;
 
   -- Build a node
-  procedure Build_Node (Origin : in Sourcer.Src_Dscr;
-                        Specs_Mode,  Revert_Mode, Bodies_Mode : in Boolean) is
+  procedure Build_Node (Level : in Positive;
+                        Origin : in Sourcer.Src_Dscr;
+                        Specs_Mode,  Revert_Mode,
+                        File_Mode, Bodies_Mode : in Boolean) is
     -- Clean rope and move up after processing node
     procedure Done is
     begin
@@ -276,6 +307,10 @@ package body Tree_Mng is
     Found : Boolean;
     Child : Sourcer.Src_Dscr;
     Kind : As.U.Asu_Us;
+    Crit : Cell;
+    -- Don't increase level of body and subunits in units mode
+    Sub_Level : constant Positive
+              := (if File_Mode then Level + 1 else Level);
     use type As.U.Asu_Us;
   begin
     -- Insert ourself
@@ -284,18 +319,32 @@ package body Tree_Mng is
       Tree.Insert_Father ((Origin, Looping => False));
       Rope.Insert (Origin);
     else
-      if Tree_Kind = Optimized then
-        -- Optim: locate and store <path><file>
-        List.Search (Origin.Path & Origin.File, Found);
+      if Tree_Kind = Optimized
+      or else Tree_Kind = Shortest_Way then
+        -- Optim: locate and store (<path><file>, Level)
+        Crit.Name := Origin.Path & Origin.File;
+        Crit.Level := 1;
+        Got_List.Search (Crit, Found);
         if Found then
-          -- This unit already exists
-          Debug.Logger.Log_Debug ("Optim skip "
-                                & Origin.Path.Image & Origin.File.Image);
-          return;
+          if Tree_Kind = Optimized then
+            -- This unit already exists
+            Debug.Logger.Log_Debug ("Optim skip " & Crit.Name.Image);
+            return;
+          elsif Got_List.Get_Access_Current.Level < Level then
+            -- This unit already exists at lower level
+            if Debug.Logger.Debug_On then
+              Debug.Logger.Log_Debug (
+                  "Optim skip " & Crit.Name.Image
+                & " " & Images.Integer_Image (Level)
+                & " cause found "
+                & Images.Integer_Image (Got_List.Get_Access_Current.Level));
+            end if;
+            return;
+          end if;
         end if;
-        Debug.Logger.Log_Debug ("Optim insert "
-                              & Origin.Path.Image & Origin.File.Image);
-        List.Insert (Origin.Path & Origin.File);
+        Debug.Logger.Log_Debug ("Optim insert " & Crit.Name.Image
+                              & " " & Images.Integer_Image (Level));
+        Got_List.Insert ( (Crit.Name, Level) );
       end if;
       Rope.Search (Origin, Found);
       if Found then
@@ -321,15 +370,18 @@ package body Tree_Mng is
     --            except in Bodies_Mode
     if not Revert_Mode then
       Kind :=  As.U.Tus ("withed");
-      Build_Witheds (Origin.Path, Origin.Witheds, Specs_Mode);
+      Build_Witheds (Level + 1, Origin.Path, Origin.Witheds,
+                     Specs_Mode, File_Mode);
     elsif Bodies_Mode
           or else Origin.Kind = Sourcer.Unit_Spec
           or else (Origin.Kind = Sourcer.Unit_Body
                    and then Origin.Standalone) then
       Kind :=  As.U.Tus ("withing");
-      Build_Withings (Origin.Path.Image, Origin.Unit.Image, Bodies_Mode);
+      Build_Withings (Level + 1, Origin.Path.Image, Origin.Unit.Image,
+                      File_Mode, Bodies_Mode);
       -- Also our children are dependent from us
-      Build_Children (Origin.Path, Origin.Children, Bodies_Mode);
+      Build_Children (Level + 1, Origin.Path, Origin.Children,
+                      File_Mode, Bodies_Mode);
     end if;
 
     -- A Child (spec or standalone body): Insert parent spec if not revert
@@ -342,7 +394,8 @@ package body Tree_Mng is
       Child.Kind := Sourcer.Unit_Spec;
       Child.Path := Origin.Path;
       Sourcer.List.Read (Child);
-      Build_Node (Child, Specs_Mode, Revert_Mode, Bodies_Mode);
+      Build_Node (Level + 1, Child, Specs_Mode, Revert_Mode,
+                  File_Mode, Bodies_Mode);
     end if;
 
     -- Insert body of spec
@@ -355,15 +408,16 @@ package body Tree_Mng is
         Child.Kind := Sourcer.Unit_Body;
         Child.Path := Origin.Path;
         Sourcer.List.Read (Child);
-        Build_Node (Child, Specs_Mode, Revert_Mode, Bodies_Mode);
+        Build_Node (Sub_Level, Child, Specs_Mode, Revert_Mode,
+                    File_Mode, Bodies_Mode);
       end if;
 
       -- A Body or subunit: Insert subunits
       if Origin.Kind = Sourcer.Unit_Body
         or else Origin.Kind = Sourcer.Subunit then
         Kind := As.U.Tus ("subunit");
-        Build_Subunits (Origin.Subunits, Origin.Path, Specs_Mode,
-                        Revert_Mode, Bodies_Mode);
+        Build_Subunits (Sub_Level, Origin.Subunits, Origin.Path, Specs_Mode,
+                        Revert_Mode, File_Mode, Bodies_Mode);
       end if;
     end if;
 
@@ -393,7 +447,9 @@ package body Tree_Mng is
   -- Build the tree of source dependencies of Origin
   procedure Build (Origin : in Sourcer.Src_Dscr;
                    Specs_Mode, Revert_Mode,
-                   Tree_Mode, Direct_Mode, Bodies_Mode : in Boolean) is
+                   Tree_Mode, Shortest_Mode,
+                   File_Mode, Direct_Mode,
+                   Bodies_Mode : in Boolean) is
   begin
     -- Full tree, optimized, or first level
     case Tree_Mode is
@@ -402,9 +458,17 @@ package body Tree_Mng is
           when True =>
             Error ("Cannot do direct mode with full tree");
           when False =>
-            Tree_Kind := Full_Tree;
+            case Shortest_Mode is
+              when True =>
+                Tree_Kind := Shortest_Way;
+              when False =>
+                Tree_Kind := Full_Tree;
+            end case;
         end case;
       when False =>
+        if Shortest_Mode then
+          Error ("Cannot do shortest mode without tree");
+        end if;
         case Direct_Mode is
           when True =>
             Tree_Kind := First_Level;
@@ -412,7 +476,7 @@ package body Tree_Mng is
             Tree_Kind := Optimized;
         end case;
     end case;
-    Build_Node (Origin, Specs_Mode, Revert_Mode, Bodies_Mode);
+    Build_Node (1, Origin, Specs_Mode, Revert_Mode, File_Mode, Bodies_Mode);
     Debug.Logger.Log_Debug ("Dumping tree:");
     if Debug.Logger.Debug_On then
       Tree.Iterate (Dump_One'Access, False);

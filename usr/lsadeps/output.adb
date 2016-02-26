@@ -5,8 +5,9 @@ package body Output is
   -- For tree/path indent
   Tab : constant String := "  ";
 
-  -- Are we in revert mode. Tree iterators need it
+  -- Are we in revert or shortest mode. Tree iterators need it
   Revert : Boolean := False;
+  Shortest : Boolean := False;
 
   -- Current directory
   Curr_Dir : As.U.Asu_Us;
@@ -37,9 +38,9 @@ package body Output is
     Basic_Proc.Put_Line_Output (Strip (Str));
   end Put_Line_Stripped;
 
-  ----------
-  -- TREE --
-  ----------
+  -----------------------
+  -- TREE and SHORTEST --
+  -----------------------
   -- Is Dscr a parent (spec for a body, body of a subunit)
   --  of current tree element
   function Is_Parent  (Parent, Current : Sourcer.Src_Dscr) return Boolean is
@@ -62,11 +63,87 @@ package body Output is
     end case;
   end Is_Parent;
 
+  -- Shortest needs 2 passes of scan
+  Pass : Positive := 1;
+  -- First pass to determine the shortest way
+  Best_Level : Integer := Integer'Last;
+  -- Second pass to store the current path and show it if its final
+  --  length is Best_Level
+  Way : As.U.Utils.Asu_Ua.Unb_Array;
+
+  -- Store (replace or append) an entry (unit/file) at a level
+  procedure Store (Name : in String; Level : in Natural) is
+  begin
+    if Level + 1 <= Way.Length then
+      Way.Replace_Element (Level + 1, As.U.Tus (Name));
+    elsif Level = Way.Length then
+      Way.Append (As.U.Tus (Name));
+    else
+      Debug.Logger.Log_Fatal ("Hole in the Way");
+      raise Error_Raised;
+    end if;
+  end Store;
+
+  -- Process one unit of the tree
+  function Tree_Unit_Process (Dscr  : Tree_Mng.Src_Dscr;
+                              Level : Natural;
+                              Name  : As.U.Asu_Us) return Boolean is
+    Str, Unit, Indent : As.U.Asu_Us;
+    use type As.U.Asu_Us;
+  begin
+    if Name.Is_Null then
+      -- Not a valid unit to process
+      return True;
+    end if;
+    if Shortest then
+      if Level > Best_Level then
+        -- Reached Best_Level, skip this branch
+        return False;
+      end if;
+      Unit := As.U.Tus (Sort.Make_Path (Dscr.Dscr.Path, Dscr.Dscr.Unit));
+      if Level = Best_Level and then Unit /= Path_Unit_Full then
+        -- Reached Best_Level, skip this branch
+        return False;
+      end if;
+      if Pass = 1 then
+        -- 1st pass: Determine shortest path
+        if Unit =  Path_Unit_Full then
+          -- Leaf
+          if Level < Best_Level then
+            Best_Level := Level;
+          end if;
+        end if;
+      else
+        -- 2nd: Detect and put shortests paths
+        -- Store current unit
+        Store (Strip (Unit.Image), Level);
+        -- Level is either < Best (and we have children) or Best
+        if Unit =  Path_Unit_Full then
+          -- Leaf of best level => put
+          for I in 0 .. Level loop
+            -- Put name
+            Basic_Proc.Put_Line_Output (Indent.Image
+                                      & Way.Element (I + 1).Image);
+            Indent.Append (Tab);
+          end loop;
+        end if;
+      end if;
+    else
+      -- Dump tree: Indent
+      for I in 1 .. Level loop
+        Str.Append (Tab);
+      end loop;
+      -- Put name
+      Str.Append (Strip (Sort.Make_Path (Dscr.Dscr.Path, Name)));
+      Basic_Proc.Put_Line_Output (Str.Image);
+    end if;
+    return True;
+  end Tree_Unit_Process;
+
   -- Dump Units of tree
   Level : Integer := -1;
   procedure Tree_Unit_Walker (Parent : in Sourcer.Src_Dscr) is
     Dscr : Tree_Mng.Src_Dscr;
-    Str : As.U.Asu_Us;
     Incr : Boolean := False;
     Name : As.U.Asu_Us;
     Nb_Children : Natural;
@@ -99,17 +176,16 @@ package body Output is
       else
         Name := Dscr.Dscr.Unit;
       end if;
-      if not Name.Is_Null then
-        for I in 1 .. Level loop
-          Str.Append (Tab);
-        end loop;
-        Str.Append (Strip (Sort.Make_Path (Dscr.Dscr.Path, Name)));
-        Basic_Proc.Put_Line_Output (Str.Image);
+      -- Got a valid unit
+      if not Tree_Unit_Process (Dscr, Level, Name) then
+        Level := Level - 1;
+        return;
       end if;
     end if;
 
     -- No recursion if looping
     if Dscr.Looping then
+      Level := Level - 1;
       return;
     end if;
 
@@ -140,27 +216,84 @@ package body Output is
       Dscr : in out Tree_Mng.Src_Dscr;
       Level : Natural) return Trees.Iteration_Policy is
     Str : As.U.Asu_Us;
-    use type Sourcer.Src_Kind_List;
   begin
+    -- Indent
     for I in 1 .. Level loop
       Str.Append (Tab);
     end loop;
-    -- File
+    -- Put name
     Str.Append (Strip (Sort.Make_Path (Dscr.Dscr.Path, Dscr.Dscr.File)));
     Basic_Proc.Put_Line_Output (Str.Image);
     return Trees.Go_On;
   end Tree_File_Iterator;
+
+  -- 1st pass: Determine shortest path
+  -- 2nd pass: Store path then put it
+  function Shortest_File_Iterator (
+      Dscr : in out Tree_Mng.Src_Dscr;
+      Level : Natural) return Trees.Iteration_Policy is
+    Unit, Indent : As.U.Asu_Us;
+    use type As.U.Asu_Us;
+  begin
+    if Level > Best_Level then
+      -- Reached Best_Level, skip this branch
+      return Trees.Skip;
+    end if;
+    Unit := As.U.Tus (Sort.Make_Path (Dscr.Dscr.Path, Dscr.Dscr.Unit));
+    if Level = Best_Level and then Unit /= Path_Unit_Full then
+      -- Reached Best_Level, skip this branch
+      return Trees.Skip;
+    end if;
+    if Pass = 1 then
+      if Unit =  Path_Unit_Full then
+        -- Leaf
+        if Level < Best_Level then
+          Best_Level := Level;
+        end if;
+      end if;
+    else
+      -- Second pass to put shortests paths
+      -- Store current file
+      Store (Strip (Sort.Make_Path (Dscr.Dscr.Path, Dscr.Dscr.File)), Level);
+      -- Level is either < Best (and we have children) or Best
+      if Unit =  Path_Unit_Full then
+        -- Leaf of best level => put
+        for I in 0 .. Level loop
+          -- Put name
+          Basic_Proc.Put_Line_Output (Indent.Image & Way.Element (I + 1).Image);
+          Indent.Append (Tab);
+        end loop;
+      end if;
+    end if;
+    return Trees.Go_On;
+  end Shortest_File_Iterator;
 
   -- Put tree of units or files
   procedure Put_Tree (File_Mode : in Boolean) is
     Dscr : Sourcer.Src_Dscr;
   begin
     if File_Mode then
-      Tree_Mng.Tree.Iterate (Tree_File_Iterator'Access, False);
+      if Shortest then
+        Tree_Mng.Tree.Iterate (Shortest_File_Iterator'Access, False);
+      else
+        Tree_Mng.Tree.Iterate (Tree_File_Iterator'Access, False);
+      end if;
     else
       Tree_Unit_Walker (Dscr);
     end if;
   end Put_Tree;
+
+  -- Put shortest paths of tree
+  procedure Put_Shortest (File_Mode : in Boolean) is
+  begin
+    -- First pass
+    Put_Tree (File_Mode);
+    Debug.Logger.Log_Debug ("Best level is" & Best_Level'Img);
+    -- Second  pass
+    Pass := Pass + 1;
+    Level := -1;
+    Put_Tree (File_Mode);
+  end Put_Shortest;
 
   ----------
   -- LIST --
@@ -264,6 +397,7 @@ package body Output is
     -- Sort this list
     Debug.Logger.Log_Debug ("Copying list");
     if Ulist.Is_Empty then
+      Debug.Logger.Log_Fatal ("No list of unit or file");
       raise Error_Raised;
     end if;
     Ulist.Rewind;
@@ -284,6 +418,9 @@ package body Output is
     end loop;
   end Put_List;
 
+  ----------
+  -- PATH --
+  ----------
   -- Put path from Root to Path_Unit or revert
   -- Ubnounded array of paths so far
   type Path_Rec is record
@@ -399,7 +536,7 @@ package body Output is
   end Put_Path;
 
   -- Put list/tree, normal/revert of units/files
-  procedure Put (Revert_Mode, Tree_Mode, File_Mode : in Boolean;
+  procedure Put (Revert_Mode, Tree_Mode, Shortest_Mode, File_Mode : in Boolean;
                  Path_Unit : in Sourcer.Src_Dscr) is
   begin
     Directory.Get_Current (Curr_Dir);
@@ -407,19 +544,26 @@ package body Output is
       Curr_Dir.Append ("/");
     end if;
     Revert := Revert_Mode;
+    Shortest := Shortest_Mode;
     Path_Unit_Full := Sort.Make_Path (Path_Unit.Path, Path_Unit.Unit);
-    if not Path_Unit.Unit.Is_Null then
-      -- Path from Root to Path_Unit or revert
+    if not Path_Unit.Unit.Is_Null and then not Shortest_Mode then
+      -- Show a path from Root to Path_Unit or revert
       Put_Path (File_Mode);
+    elsif Shortest_Mode then
+      -- Show shortest paths of the tree from Root to Path_Unit or revert
+      Put_Shortest (File_Mode);
     elsif Tree_Mode then
-      -- Tree from Root or reverse
+      -- Show tree from Root or reverse
       Put_Tree (File_Mode);
     else
-      -- List from Root or reverse
+      -- Show list from Root or reverse
      Put_List (File_Mode, True);
     end if;
   end Put;
 
+  ----------------
+  -- LIST UNITS --
+  ----------------
   -- Add a unit and its subunits
   -- For parsing list of subunits
   function Is_Sep (C : Character) return Boolean is

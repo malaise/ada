@@ -1,6 +1,6 @@
 lsadeps
 =======
-V11.2
+V12.0
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -19,10 +19,11 @@ Usage: lsadeps <version> | <help> | <depend> | <list> | <check>
  <help>        ::= -h | --help
  <depend>      ::= <options> <target_unit> [ <path_unit> ]
  <target_unit> ::=  [<path>/]<unit>
- <options>     ::=  [ <specs> | <revert> ] [ <tree> | <direct> ] [ <files> ] [ <bodies> ] [ <inclusions> ]
+ <options>     ::=  [ <specs> | <revert> ] [ <tree> | <shortest> | <direct> ] [ <files> ] [ <bodies> ] [ <inclusions> ]
  <specs>       ::= -s | --specs
  <revert>      ::= -r | --revert
  <tree>        ::= -t | --tree
+ <shortest>    ::= -S | --shortest
  <direct>      ::= -d | --direct
  <files>       ::= -f | --files
  <bodies>      ::= -b | --bodies
@@ -56,6 +57,9 @@ Other options are:
 
  - 'tree' to show the tree of dependencies (instead of a sorted unique list),
 
+ - 'shortest' to show the shortest dependency tree between <target_unit>
+and <path_unit> ,
+
  - 'direct' to show only the units that are directly dependent,
 
  - 'file' to show the file names (instead of unit names),
@@ -82,6 +86,7 @@ relative), while 'exclude' must specify simple directory names (no \'/').
 
 'Specs' and 'revert' modes are mutually exclusive. +
 'Tree' and 'direct' modes are mutually exclusive. +
+'Shortest' and 'tree' mode are mutually exclusive. +
 'path_unit' and 'direct' modes are mutually exclusive. +
 'bodies' is allowed only in 'revert' mode
 
@@ -93,10 +98,13 @@ revert dependecies.
 NOTE: When the 'tree' option is not set, the analysis of dependencies
 is optimized so that the same unit is not analyzed several times. As a
 consequence, the option 'path_unit' without 'tree' leads to display only
-one path between the specified units, *not necessarily the shortest*. +
+one path between the specified units, not necessarily the shortest. +
 Adding the 'tree' option to a 'path_unit' leads to build the whole tree of
 dependancies between the specified units and to display all the possible paths
-between them, which might be very time-consuming.
+between them, which might be very time-consuming. +
+The 'shortest' mode triggers internally the 'tree' mode with an optimization
+that keeps the shortest ways found so far and does not explore longer
+ways, which is far more efficient than building the full tree.
 
 List units
 ~~~~~~~~~~
@@ -155,6 +163,8 @@ withing them... recursively
 - path mode: shows the units withed by (or withing) each other between two units
 
 - tree option: show tree of dependencies instead of list
+
+- shortest option: build the tree and show the shortest path
 
 - direct option: show direct dependencies (show first level of tree)
 
@@ -339,8 +349,9 @@ If in reverse mode, build a tree of:
 
   unit - WihtingUnit
 
-If not in tree mode, keep a list of the PathUnit found so far and skip the processing
-of a unit if it is already known.
+If not in tree mode, keep a list of the PathUnit found so far and skip the
+processing of a unit if it is already known. In shortest mode, keep a list
+of units and best level found so far.
 
 Stop recursive search when reaching a non-standalone body or a subunit.
 
@@ -359,6 +370,10 @@ Dump the tree:
            - ParentSpec - WithsSpecs...
            - UnitBody - WithsSpecs...
                       - Subunits - WithSpecs...
+
+In shortest mode
+^^^^^^^^^^^^^^^^
+Put only the the branches that have (the same) minimal length.
 
 In direct mode
 ^^^^^^^^^^^^^^
