@@ -1,6 +1,6 @@
 lsadeps
 =======
-V12.0
+V13.0
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -19,11 +19,11 @@ Usage: lsadeps <version> | <help> | <depend> | <list> | <check>
  <help>        ::= -h | --help
  <depend>      ::= <options> <target_unit> [ <path_unit> ]
  <target_unit> ::=  [<path>/]<unit>
- <options>     ::=  [ <specs> | <revert> ] [ <tree> | <shortest> | <direct> ] [ <files> ] [ <bodies> ] [ <inclusions> ]
+ <options>     ::=  [ <specs> | <revert> ] [ <tree> | <fast> | <direct> ] [ <files> ] [ <bodies> ] [ <inclusions> ]
  <specs>       ::= -s | --specs
  <revert>      ::= -r | --revert
  <tree>        ::= -t | --tree
- <shortest>    ::= -S | --shortest
+ <fast>        ::= -F | --fast
  <direct>      ::= -d | --direct
  <files>       ::= -f | --files
  <bodies>      ::= -b | --bodies
@@ -55,10 +55,11 @@ units and the units withing <target_unit>... recursively.
 
 Other options are:
 
- - 'tree' to show the tree of dependencies (instead of a sorted unique list),
+ - 'tree' to show the full tree of dependencies (instead of a sorted unique
+list),
 
- - 'shortest' to show the shortest dependency tree between <target_unit>
-and <path_unit> ,
+ - 'fast' to fast scan and show the first dependency tree between <target_unit>
+and <path_unit>,
 
  - 'direct' to show only the units that are directly dependent,
 
@@ -86,7 +87,7 @@ relative), while 'exclude' must specify simple directory names (no \'/').
 
 'Specs' and 'revert' modes are mutually exclusive. +
 'Tree' and 'direct' modes are mutually exclusive. +
-'Shortest' and 'tree' mode are mutually exclusive. +
+'Fast' and 'tree' mode are mutually exclusive. +
 'path_unit' and 'direct' modes are mutually exclusive. +
 'bodies' is allowed only in 'revert' mode
 
@@ -96,15 +97,18 @@ compilation, so they are not listed. Option 'bodies' leads to list all the
 revert dependecies.
 
 NOTE: When the 'tree' option is not set, the analysis of dependencies
-is optimized so that the same unit is not analyzed several times. As a
-consequence, the option 'path_unit' without 'tree' leads to display only
-one path between the specified units, not necessarily the shortest. +
-Adding the 'tree' option to a 'path_unit' leads to build the whole tree of
-dependancies between the specified units and to display all the possible paths
-between them, which might be very time-consuming. +
-The 'shortest' mode triggers internally the 'tree' mode with an optimization
-that keeps the shortest ways found so far and does not explore longer
-ways, which is far more efficient than building the full tree.
+is optimized so that the same unit is not analyzed several times.
+
+NOTE: When the the option 'path_unit' is set: +
+ - The 'tree' option leads to build and display the whole tree of dependancies
+between target_unit and path_unit, which might be very time-consuming. +
+ - The default behaviour triggers internally the 'tree' mode with an
+optimization that keeps the shortest ways found so far and does not explore
+longer ways, which is far more efficient than building the full tree. This
+leads to display all the ways that have the same minumum depth. +
+ - The 'fast' option leads to event better optimize the scan so that each unit
+is analysed only once. This leads to display the first way found, so not
+necessarily the shortest.
 
 List units
 ~~~~~~~~~~

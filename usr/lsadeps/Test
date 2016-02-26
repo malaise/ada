@@ -39,10 +39,47 @@ check "-f lsadeps" "-laf"
 # Dependancy between 2 units
 cat << EOF > res2
 Lsadeps
+  Sort
+EOF
+check "lsadeps sort"
+
+# Fast dependancy between 2 units
+cat << EOF > res2
+Lsadeps
   Sourcer
     Sort
 EOF
-check "lsadeps sort"
+check "-F lsadeps sort"
+
+# Tree dependancy between 2 units
+cat << EOF > res2
+Lsadeps
+  Checker
+    Sourcer
+      Sort
+Lsadeps
+  Output
+    Sort
+Lsadeps
+  Output
+    Tree_Mng
+      Sourcer
+        Sort
+Lsadeps
+  Output
+    Sourcer
+      Sort
+Lsadeps
+  Sort
+Lsadeps
+  Tree_Mng
+    Sourcer
+      Sort
+Lsadeps
+  Sourcer
+    Sort
+EOF
+check "-t lsadeps sort"
 
 # Unit that exists
 cat << EOF > res2
