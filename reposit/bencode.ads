@@ -35,16 +35,21 @@ package Bencode is
   type Byte_Array is array (Positive range <>) of Byte;
 
 
-  -- Option Check_Dictio enables the check that Dictio keys are Bytes and
-  -- that they appear in crescent order
+  -- Option Dictio_Keys drives checks of the keys of the dictionaries:
+  type Dictio_Keys_Policy is (
+    Check, -- Check that Dictio keys are Bytes and appear in crescent order
+    Sort,  -- Check that Dictio keys are Bytes and sort them in crescent order
+    None); --No check and no sort
 
   -- Encode a Xml string into a Bencoded byte array
   function Xml2Bencode (Xml_Stream : String;
-                        Check_Dictio : Boolean := True) return Byte_Array;
+                        Keys_Policy : Dictio_Keys_Policy := None)
+           return Byte_Array;
 
   -- Decode a Bencoded byte array into a Xml stream
   function Bencode2Xml (Ben_Stream : Byte_Array;
-                        Check_Dictio : Boolean := True) return String;
+                        Keys_Policy : Dictio_Keys_Policy := None)
+           return String;
 
   -- When invalid Bencode or Xml format of the input
   -- The error is logged throught the Trace system

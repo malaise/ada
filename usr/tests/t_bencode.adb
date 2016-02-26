@@ -1,7 +1,7 @@
 with Basic_Proc, Argument, As.U, Text_Line, Bencode,
      Trilean, Hexa_Utils, Upper_Str;
 procedure T_Bencode is
-  Check : Boolean;
+  Policy : Bencode.Dictio_Keys_Policy;
   Num : Positive;
   Op : Trilean.Trilean;
   Ifile, Ofile : Text_Line.File_Type;
@@ -9,13 +9,17 @@ procedure T_Bencode is
 begin
 
   -- Parse arguments
-  -- Opt -nc
-  Check := True;
+  -- Opt -c or -s
+  Policy := Bencode.None;
   Num := 1;
-  if Argument.Get_Nbre_Arg = 2
-  and then Argument.Get_Parameter (1) = "-nc" then
-    Check := False;
-    Num := 2;
+  if Argument.Get_Nbre_Arg = 2 then
+    if Argument.Get_Parameter (1) = "-c" then
+      Policy := Bencode.Check;
+      Num := 2;
+    elsif Argument.Get_Parameter (1) = "-s" then
+      Policy := Bencode.Sort;
+      Num := 2;
+    end if;
   end if;
   -- Mode
   if Argument.Get_Nbre_Arg = Num
@@ -29,7 +33,7 @@ begin
     Op := Trilean.Other;
   else
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-                               & " [-nc ] -b2x | | [ -nc ] -x2b | -s2h");
+                               & " [ -c | -s ] -b2x | | [ -nc ] -x2b | -s2h");
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
@@ -54,12 +58,12 @@ begin
         for I in 1 .. Ibuf.Length loop
           Bytes(I) := Bencode.Byte(Character'Pos(Ibuf.Element (I)));
         end loop;
-        Obuf := As.U.Tus (Bencode.Bencode2Xml (Bytes, Check));
+        Obuf := As.U.Tus (Bencode.Bencode2Xml (Bytes, Policy));
       end;
     when Trilean.False =>
       declare
         Bytes : constant Bencode.Byte_Array
-              := Bencode.Xml2Bencode (Ibuf.Image, Check);
+              := Bencode.Xml2Bencode (Ibuf.Image, Policy);
       begin
         for I in Bytes'Range loop
           Obuf.Append (Character'Val(Natural(Bytes(I))));

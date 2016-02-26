@@ -396,20 +396,20 @@ echo "OK"
 title t_bencode
 BENCOD='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:e4:3Tab1:\t9:4Negativei-21ee'
 echo -en "$BENCOD" >exp
-XML=`echo -en $BENCOD | t_bencode -b2x 2>err`
-BDECOD=`echo -n $XML | t_bencode -x2b 2>>err`
+XML=`echo -en $BENCOD | t_bencode -c -b2x 2>err`
+BDECOD=`echo -n $XML | t_bencode -c -x2b 2>>err`
 echo -en "$BDECOD" >out
 comp err nul
 comp out exp
 
 BENCOD='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:e4:3Tab1:\t9:3Negativei-21ee'
 echo -en "$BENCOD" >exp
-XML=`echo -en $BENCOD | t_bencode -nc -b2x 2>err`
-BDECOD=`echo -n $XML | t_bencode -nc -x2b 2>>err`
+XML=`echo -en $BENCOD | t_bencode -b2x 2>err`
+BDECOD=`echo -n $XML | t_bencode -x2b 2>>err`
 echo -en "$BDECOD" >out
 comp err nul
 comp out exp
-echo -en $BENCOD | t_bencode -b2x >out 2>err
+echo -en $BENCOD | t_bencode -c -b2x >out 2>err
 if [ $? -ne 1 ] ; then
   cat err
   error "t_bencode shall have detected dictio error"
@@ -418,12 +418,12 @@ comp out nul
 
 BENCOD='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:ei21e1:\t9:3Negativei-21ee'
 echo -en "$BENCOD" >exp
-XML=`echo -en $BENCOD | t_bencode -nc -b2x 2>err`
-BDECOD=`echo -n $XML | t_bencode -nc -x2b 2>>err`
+XML=`echo -en $BENCOD | t_bencode -b2x 2>err`
+BDECOD=`echo -n $XML | t_bencode -x2b 2>>err`
 echo -en "$BDECOD" >out
 comp err nul
 comp out exp
-echo -en $BENCOD | t_bencode -b2x >out 2>err
+echo -en $BENCOD | t_bencode -c -b2x >out 2>err
 if [ $? -ne 1 ] ; then
   cat err
   error "t_bencode shall have detected dictio error"

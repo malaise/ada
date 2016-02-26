@@ -43,9 +43,122 @@ package body Bencode is
     return B >= Character'Pos('0') and then B <= Character'Pos('9');
   end Is_Digit;
 
+  -- Normalize a Bytes:
+  -- Either there is a "Str" and it is used i.o. the text => set the text
+  -- Or there is one text
+  procedure Normalize (Ctx : in out Xml_Parser.Generator.Ctx_Type;
+                       Node : in Xml_Parser.Node_Type) is
+    Nb_Attributes : Natural;
+    Text_Node : Xml_Parser.Node_Type;
+    Text : As.U.Asu_Us;
+    Attr : Xml_Parser.Attribute_Rec;
+    Dummy_Bytes : Ubytes.Unb_Array;
+    use type Xml_Parser.Node_Kind_List;
+  begin
+    -- Node must have at most one Text child
+    if Ctx.Get_Nb_Children (Node) > 1 then
+      Logger.Log_Error ("Bytes node must have at most one text child");
+      raise Format_Error;
+    elsif Ctx.Get_Nb_Children (Node) = 1 then
+      Text_Node := Ctx.Get_Child (Node, 1);
+      if Text_Node.Kind /= Xml_Parser.Text then
+        Logger.Log_Error ("Bytes node child must be text");
+        raise Format_Error;
+      end if;
+    end if;
+
+    -- Node can have one attribute "Str", if yes then use it instead of text
+    Nb_Attributes := Ctx.Get_Nb_Attributes (Node);
+    if Nb_Attributes > 1 then
+      Logger.Log_Error ("Invalid attributes of Bytes");
+      raise Format_Error;
+    elsif Nb_Attributes = 1 then
+      -- Set Bytes from Attribute "Str" if it is set
+      -- Check attribute name
+      Attr := Ctx.Get_Attribute (Node, 1);
+      if Attr.Name.Image /= Str_Name then
+        Logger.Log_Error ("Invalid attribute " & Attr.Name.Image
+                        & " of Bytes");
+        raise Format_Error;
+      end if;
+      -- Encode value in Text
+      Logger.Log_Debug ("Using Bytes attribute " & Attr.Value.Image);
+      for I in 1 .. Attr.Value.Length loop
+        Text.Append (Upper_Str (Hexa_Utils.Image (
+            Integer'(Character'Pos (Attr.Value.Element (I))), 2, '0')));
+      end loop;
+      -- Replace or add text
+      if Ctx.Get_Nb_Children (Node) = 1 then
+        Text_Node := Ctx.Get_Child (Node, 1);
+        Ctx.Set_Text (Text_Node, Text.Image);
+      else
+        Ctx.Add_Child (Node, Text.Image, Xml_Parser.Text, Text_Node);
+      end if;
+    else
+      -- Node must have one Text child
+      if Ctx.Get_Nb_Children (Node) /= 1 then
+        Logger.Log_Error ("Bytes node without Str must have one text child");
+        raise Format_Error;
+      end if;
+      -- Check length of text is even (Text node has laready been set)
+      Text := Ctx.Get_Text (Text_Node);
+      if Text.Length rem 2 /= 0 then
+        Logger.Log_Error ("Bytes text has an odd length");
+        raise Format_Error;
+      end if;
+      -- Check and encode Hexa number
+      Logger.Log_Debug ("Bytes text is " & Text.Image);
+      begin
+        for I in 1 .. Text.Length / 2 loop
+          -- Extract successive pairs of digits as bytes
+          Dummy_Bytes.Append (Byte(Natural'(
+              Hexa_Utils.Value (Text.Slice (I * 2 - 1, I * 2)))));
+        end loop;
+      exception
+        when others =>
+          Logger.Log_Error ("Invalid content of Bytes " & Text.Image);
+          raise Format_Error;
+      end;
+    end if;
+  end Normalize;
+
+  -- Sort the keys and data of a Dictio in 'lexical' order of keys
+  procedure Sort (Ctx : in out Xml_Parser.Generator.Ctx_Type;
+                  Dictio : in Xml_Parser.Node_Type) is
+    Last : constant Natural := Ctx.Get_Nb_Children (Dictio) / 2;
+    Kl, Kr : Xml_Parser.Node_Type;
+    Tl, Tr : As.U.Asu_Us;
+    Dl, Dr : Xml_Parser.Node_Type;
+  begin
+    -- Bubble sort pairs
+    for Index in 1 .. Last - 1 loop
+      for Bubbl in Index + 1 .. Last loop
+        -- Get both key (Byte) nodes
+        Kl := Ctx.Get_Child (Dictio, (Index-1)*2+1);
+        Kr := Ctx.Get_Child (Dictio, (Bubbl-1)*2+1);
+        Tl := Ctx.Get_Text (Ctx.Get_Child (Kl, 1));
+        Tr := Ctx.Get_Text (Ctx.Get_Child (Kr, 1));
+        -- Compare content of Text child of each
+        if Tl.Image = Tr.Image then
+          Logger.Log_Error ("Dictio key appears twice " & Tl.Image);
+          raise Format_Error;
+        elsif Tl.Image > Tr.Image then
+          -- Get both Data nodes
+          Dl := Ctx.Get_Child (Dictio, (Index-1)*2+2);
+          Dr := Ctx.Get_Child (Dictio, (Bubbl-1)*2+2);
+          -- Swap keys and data
+          Logger.Log_Debug ("Swapping " & Tl.Image & " and " & Tr.Image);
+          Ctx.Swap (Kl, Kr);
+          Ctx.Swap (Dl, Dr);
+        end if;
+      end loop;
+    end loop;
+  end Sort;
+
   -- Decode a Bencoded byte array into a Xml stream
   function Bencode2Xml (Ben_Stream : Byte_Array;
-                        Check_Dictio : Boolean := True) return String is
+                        Keys_Policy : Dictio_Keys_Policy := None)
+           return String is
     I : Positive;
     Last_Bytes : Ubytes.Unb_Array;
     Ctx : Xml_Parser.Generator.Ctx_Type;
@@ -212,11 +325,11 @@ package body Bencode is
         Logger.Log_Debug ("  Iterating in Dictio");
         Check ("iterating in dictio first");
         I := I + 1;
-        -- If Check_Dictio then each key must be Bytes
-        Res := Decode_Item (True, Check_Dictio);
+        -- If Policy /= None then each key must be Bytes
+        Res := Decode_Item (True, Keys_Policy /= None);
         exit when not Res;
-        -- If Check_Dictio then check that keys are crescent
-        if Check_Dictio and then not (Prev_Bytes < Last_Bytes) then
+        -- If Policy = Check then check that keys are strictly crescent
+        if Keys_Policy = Check and then not (Prev_Bytes < Last_Bytes) then
           Logger.Log_Error ("Dictio has not crescent keys"
                            & " at offset " & Images.Integer_Image (I));
           raise Format_Error;
@@ -226,10 +339,13 @@ package body Bencode is
         I := I + 1;
         Decode_Item;
       end loop;
-      -- Back to parent of list
+      -- Sort if requested
+      if Keys_Policy = Sort then
+        Sort (Ctx, Node);
+      end if;
+      -- Back to parent of dictio
       Node := Ctx.Get_Parent (Node);
       Logger.Log_Debug ("Got Dictio");
-      null;
     end Decode_Dictio;
 
     -- Decode an item, return True except if Allow_End and got 'e'
@@ -303,8 +419,9 @@ package body Bencode is
 
   -- Encode a Xml string into a Bencoded byte array
   function Xml2Bencode (Xml_Stream : String;
-                        Check_Dictio : Boolean := True) return Byte_Array is
-    Ctx : Xml_Parser.Ctx_Type;
+                        Keys_Policy : Dictio_Keys_Policy := None)
+           return Byte_Array is
+    Ctx : Xml_Parser.Generator.Ctx_Type;
     Dtd : Xml_Parser.Dtd_Type;
     Ok : Boolean;
     Last_Bytes : Ubytes.Unb_Array;
@@ -361,73 +478,26 @@ package body Bencode is
     end Encode_Int;
 
     procedure Encode_Bytes is
-      Nb_Attributes : Natural;
-      Text_Node : Xml_Parser.Node_Type;
       Text : As.U.Asu_Us;
-      Attr : Xml_Parser.Attribute_Rec;
       Bytes : Ubytes.Unb_Array;
       use type Xml_Parser.Node_Kind_List;
     begin
       Logger.Log_Debug ("Encoding Bytes");
 
-      -- Node must have at most one Text child
-      if Ctx.Get_Nb_Children (Node) > 1 then
-        Logger.Log_Error ("Bytes node must have at most one text child");
-        raise Format_Error;
-      elsif Ctx.Get_Nb_Children (Node) = 1 then
-        Text_Node := Ctx.Get_Child (Node, 1);
-        if Text_Node.Kind /= Xml_Parser.Text then
-          Logger.Log_Error ("Bytes node child must be text");
-          raise Format_Error;
-        end if;
-      end if;
-
-      -- Node can have one attribute "Str", if yes then use it instead of text
-      Nb_Attributes := Ctx.Get_Nb_Attributes (Node);
-      if Nb_Attributes > 1 then
-        Logger.Log_Error ("Invalid attributes of Bytes");
-        raise Format_Error;
-      elsif Nb_Attributes = 1 then
-        -- Set Bytes from Attribute "Str" if it is set
-        -- Check attribute name
-        Bytes.Set_Null;
-        Attr := Ctx.Get_Attribute (Node, 1);
-        if Attr.Name.Image /= Str_Name then
-          Logger.Log_Error ("Invalid attribute " & Attr.Name.Image
-                          & " of Bytes");
-          raise Format_Error;
-        end if;
-        -- Encode value as Bytes
-        Logger.Log_Debug ("Using Bytes attribute " & Attr.Value.Image);
-        for I in 1 .. Attr.Value.Length loop
-          Bytes.Append (Byte(Character'Pos (Attr.Value.Element (I))));
+      Normalize (Ctx, Node);
+      Text := Ctx.Get_Text (Ctx.Get_Child (Node, 1));
+      Logger.Log_Debug ("Bytes text is " & Text.Image);
+      begin
+        for I in 1 .. Text.Length / 2 loop
+          -- Extract successive pairs of digits as bytes
+          Bytes.Append (Byte(Natural'(
+              Hexa_Utils.Value (Text.Slice (I * 2 - 1, I * 2)))));
         end loop;
-      else
-        -- Node must have one Text child
-        if Ctx.Get_Nb_Children (Node) /= 1 then
-          Logger.Log_Error ("Bytes node without Str must have one text child");
+      exception
+        when others =>
+          Logger.Log_Error ("Invalid content of Bytes " & Text.Image);
           raise Format_Error;
-        end if;
-        -- Check length of text is even (Text node has laready been set)
-        Text := Ctx.Get_Text (Text_Node);
-        if Text.Length rem 2 /= 0 then
-          Logger.Log_Error ("Bytes text has an odd length");
-          raise Format_Error;
-        end if;
-        -- Check and encode Hexa number
-        Logger.Log_Debug ("Bytes text is " & Text.Image);
-        begin
-          for I in 1 .. Text.Length / 2 loop
-            -- Extract successive pairs of digits as bytes
-            Bytes.Append (Byte(Natural'(
-                Hexa_Utils.Value (Text.Slice (I * 2 - 1, I * 2)))));
-          end loop;
-        exception
-          when others =>
-            Logger.Log_Error ("Invalid content of Bytes " & Text.Image);
-            raise Format_Error;
-        end;
-      end if;
+      end;
 
       -- Done: put <len>:<bytes>
       Append (Images.Integer_Image (Bytes.Length) & ":");
@@ -468,6 +538,7 @@ package body Bencode is
 
     procedure Encode_Dictio is
       Nb_Children : Xml_Parser.Child_Range;
+      Child : Xml_Parser.Element_Type;
       Prev_Bytes : Ubytes.Unb_Array;
     begin
       Logger.Log_Debug ("Encoding Dictio");
@@ -479,6 +550,15 @@ package body Bencode is
                         & " has an odd number of children");
         raise Format_Error;
       end if;
+      -- Sort Dictio if requested
+      if Keys_Policy = Sort then
+        -- Ensure all Bytes keys are correct and complete
+        for I in 1 .. Ctx.Get_Nb_Children (Node) loop
+          Child := Ctx.Get_Child (Node, I);
+          Normalize (Ctx, Child);
+        end loop;
+        Sort (Ctx, Node);
+      end if;
       -- Iterate on each child
       declare
         Children : constant Xml_Parser.Nodes_Array
@@ -489,9 +569,9 @@ package body Bencode is
           Prev_Bytes := Last_Bytes;
           Node := Children(I);
           -- If Check_Dictio then each odd child must be bytes
-          Encode_Item (Check_Dictio and then I rem 2 = 1);
-          -- If Check_Dictio then check that keys are in crescent "lexico" order
-          if Check_Dictio and then I rem 2 = 1
+          Encode_Item (Keys_Policy /= None and then I rem 2 = 1);
+          -- If Check_Dictio then check that keys are strictly  crescent
+          if Keys_Policy /= None and then I rem 2 = 1
           and then not (Prev_Bytes < Last_Bytes) then
             Logger.Log_Error ("Dictio has not crescent keys "
                             & Ctx.Get_Name (Node));
