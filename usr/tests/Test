@@ -429,6 +429,20 @@ if [ $? -ne 1 ] ; then
   error "t_bencode shall have detected dictio error"
 fi
 comp out nul
+
+EXP='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:e9:3Negativei-21e4:3Tab1:\te'
+echo -en "$EXP" >exp
+BENCOD='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:e4:3Tab1:\t9:3Negativei-21ee'
+XML=`echo -en $BENCOD | t_bencode -s -b2x 2>err`
+BDECOD=`echo -n $XML | t_bencode -x2b 2>>err`
+echo -en "$BDECOD" >out
+comp err nul
+comp out exp
+XML=`echo -en $BENCOD | t_bencode -b2x 2>err`
+BDECOD=`echo -n $XML | t_bencode -s -x2b 2>>err`
+echo -en "$BDECOD" >out
+comp err nul
+comp out exp
 echo "OK"
 
 # t_bloc_io

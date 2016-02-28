@@ -55,6 +55,10 @@ package body Bencode is
     Dummy_Bytes : Ubytes.Unb_Array;
     use type Xml_Parser.Node_Kind_List;
   begin
+    if Ctx.Get_Name (Node) /= Bytes_Name then
+      Logger.Log_Error ("Expected a Bytes node, got " & Ctx.Get_Name (Node));
+      raise Format_Error;
+    end if;
     -- Node must have at most one Text child
     if Ctx.Get_Nb_Children (Node) > 1 then
       Logger.Log_Error ("Bytes node must have at most one text child");
@@ -103,7 +107,7 @@ package body Bencode is
       -- Check length of text is even (Text node has laready been set)
       Text := Ctx.Get_Text (Text_Node);
       if Text.Length rem 2 /= 0 then
-        Logger.Log_Error ("Bytes text has an odd length");
+        Logger.Log_Error ("Bytes text has an odd length " & Text.Image);
         raise Format_Error;
       end if;
       -- Check and encode Hexa number
@@ -554,8 +558,10 @@ package body Bencode is
       if Keys_Policy = Sort then
         -- Ensure all Bytes keys are correct and complete
         for I in 1 .. Ctx.Get_Nb_Children (Node) loop
-          Child := Ctx.Get_Child (Node, I);
-          Normalize (Ctx, Child);
+          if I rem 2 = 1 then
+            Child := Ctx.Get_Child (Node, I);
+            Normalize (Ctx, Child);
+          end if;
         end loop;
         Sort (Ctx, Node);
       end if;
