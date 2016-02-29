@@ -1,5 +1,5 @@
 with Normalization;
-package body C_Nbres is
+package body Complexes is
 
   use My_Math;
 
@@ -280,5 +280,5 @@ package body C_Nbres is
     return C;
   end Get;
 
-end C_Nbres;
+end Complexes;
 

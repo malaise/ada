@@ -1,5 +1,5 @@
 with My_Math;
-package C_Nbres is
+package Complexes is
 
   subtype Real is My_Math.Real;
 
@@ -75,5 +75,5 @@ package C_Nbres is
       Argument : Reducted_Radian;
     end record;
 
-end C_Nbres;
+end Complexes;
 

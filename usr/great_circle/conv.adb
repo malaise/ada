@@ -2,13 +2,13 @@ package body Conv is
   use My_Math;
 
   function Rad2Geo (Coord : Rad_Coord_Range) return Geo_Coord_Rec is
-    Deg : C_Nbres.Reducted_Degree;
+    Deg : Complexes.Reducted_Degree;
     Hr, Sr : My_Math.Real;
     Hi, Si : Natural;
     R : Geo_Coord_Rec;
   begin
     -- Convert to degrees (fraction)
-    Deg := C_Nbres.To_Degree(Coord);
+    Deg := Complexes.To_Degree(Coord);
 
     R.Deg := Deg_Range(My_Math.Trunc(My_Math.Real(Deg)));
 
@@ -46,36 +46,37 @@ package body Conv is
   end Rad2Geo;
 
   function Geo2Rad (Coord : Geo_Coord_Rec) return Rad_Coord_Range is
-    Deg : C_Nbres.Reducted_Degree;
-    use type C_Nbres.Degree;
+    Deg : Complexes.Reducted_Degree;
+    use type Complexes.Degree;
   begin
-    Deg := C_Nbres.Reducted_Degree(Coord.Deg);
-    Deg := Deg + C_Nbres.Reducted_Degree(Coord.Min) / 60.0;
-    Deg := Deg + C_Nbres.Reducted_Degree(Coord.Sec) / 60.0 / 60.0;
-    Deg := Deg + C_Nbres.Reducted_Degree(Coord.Hun) / 60.0 / 60.0 / 100.0;
-    return C_Nbres.To_Radian(Deg);
+    Deg := Complexes.Reducted_Degree(Coord.Deg);
+    Deg := Deg + Complexes.Reducted_Degree(Coord.Min) / 60.0;
+    Deg := Deg + Complexes.Reducted_Degree(Coord.Sec) / 60.0 / 60.0;
+    Deg := Deg + Complexes.Reducted_Degree(Coord.Hun) / 60.0 / 60.0 / 100.0;
+    return Complexes.To_Radian(Deg);
   end Geo2Rad;
 
   function Dec2Geo (Coord : Dec_Coord_Rec) return Geo_Coord_Rec is
-    Deg : C_Nbres.Degree;
-    Rad : C_Nbres.Reducted_Radian;
-    use type C_Nbres.Degree, C_Nbres.Reducted_Radian;
+    Deg : Complexes.Degree;
+    Rad : Complexes.Reducted_Radian;
+    use type Complexes.Degree, Complexes.Reducted_Radian;
   begin
-    Deg := C_Nbres.Degree(Coord.Deg)
-         + C_Nbres.Degree(Coord.Ten) / (C_Nbres.Degree(Ten_Range'Last) + 1.0);
-    Rad := C_Nbres.To_Radian (Deg);
+    Deg := Complexes.Degree(Coord.Deg)
+         + Complexes.Degree(Coord.Ten)
+           / (Complexes.Degree(Ten_Range'Last) + 1.0);
+    Rad := Complexes.To_Radian (Deg);
     return Rad2Geo (Rad);
   end Dec2Geo;
 
   function Geo2Dec (Coord : Geo_Coord_Rec) return Dec_Coord_Rec is
     Rad : Rad_Range;
-    Deg : C_Nbres.Degree;
+    Deg : Complexes.Degree;
     R : My_Math.Real;
     I : My_Math.Inte;
     Dec : Dec_Coord_Rec;
   begin
     Rad := Geo2Rad (Coord);
-    Deg := C_Nbres.To_Degree (Rad);
+    Deg := Complexes.To_Degree (Rad);
     R := My_Math.Round_At (My_Math.Real (Deg), -4);
     Dec.Deg := Deg_Range (My_Math.Trunc (R));
 

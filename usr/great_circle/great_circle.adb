@@ -1,4 +1,4 @@
-with My_Math, C_Nbres;
+with My_Math, Complexes;
 package body Great_Circle is
 
   use type Conv.Rad_Range;
@@ -30,7 +30,7 @@ package body Great_Circle is
     if Tmp > 1.0 and then Tmp - 1.0 < + Epsilon then
       return Conv.Pi;
     else
-      return C_Nbres.Reduct(2.0 * Conv.Rad_Range(My_Math.Arc_Sin(Tmp)));
+      return Complexes.Reduct(2.0 * Conv.Rad_Range(My_Math.Arc_Sin(Tmp)));
     end if;
   end Angle_Of_Chord;
 
@@ -68,8 +68,8 @@ package body Great_Circle is
 
     -- Compute delta of lat and log
     Lat_Lon_Rad_Delta :=
-              (X => C_Nbres.Reduct(Lat_Lon_Rad_B.X - Lat_Lon_Rad_A.X),
-               Y => C_Nbres.Reduct(Lat_Lon_Rad_B.Y - Lat_Lon_Rad_A.Y));
+              (X => Complexes.Reduct(Lat_Lon_Rad_B.X - Lat_Lon_Rad_A.X),
+               Y => Complexes.Reduct(Lat_Lon_Rad_B.Y - Lat_Lon_Rad_A.Y));
 
     -- Compute Chords A long, B long and lat
     Chord_Xa := Chord_Of_Angle (Lat_Lon_Rad_Delta.X,
@@ -123,12 +123,12 @@ package body Great_Circle is
         Heading_Rad_Angle := Conv.Pi;
       end if;
     else
-      Heading_Rad_Angle := C_Nbres.Reduct(C_Nbres.Radian(
+      Heading_Rad_Angle := Complexes.Reduct(Complexes.Radian(
                               My_Math.Arc_Cos(Cos_H)));
       Logger.Log_Debug ("Raw H : " & Heading_Rad_Angle'Img);
       -- Set heading < 0 if B is at west of A
       if Lat_Lon_Rad_Delta.X > Conv.Pi then
-        Heading_Rad_Angle := C_Nbres.Reduct(-Heading_Rad_Angle);
+        Heading_Rad_Angle := Complexes.Reduct(-Heading_Rad_Angle);
         Logger.Log_Debug ("West correction");
       end if;
     end if;

@@ -1,5 +1,5 @@
 -- Converts DegMinSec to Radians and vice versa
-with My_Math, C_Nbres;
+with My_Math, Complexes;
 package Conv is
 
   subtype Deg_Range is Natural range 0 .. 359;
@@ -25,10 +25,10 @@ package Conv is
   end record;
 
   -- Radians
-  subtype Rad_Range is C_Nbres.Radian;
+  subtype Rad_Range is Complexes.Radian;
   Pi : constant Rad_Range := Rad_Range(My_Math.Pi);
 
-  subtype Rad_Coord_Range is C_Nbres.Reducted_Radian;
+  subtype Rad_Coord_Range is Complexes.Reducted_Radian;
 
 
   -- Conversion DMS <-> Rad

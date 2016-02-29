@@ -476,9 +476,9 @@ comp out1 exp1
 comp out2 exp2
 echo "OK"
 
-# t_c_nbres
-title t_c_nbres
-try t_c_nbres 1 5 3 -2
+# t_complexes
+title t_complexes
+try t_complexes 1 5 3 -2
 cat << EOF >exp
 Got:  1.000000000000000E+00 + i * 5.000000000000000E+00
  in polar:  5.09901951359278E+00  1.37340076694502E+00rd  7.86900680000000E+01°
@@ -500,12 +500,12 @@ cat << EOF >exp
 Output flow:
 >t_channels<
 >t_channels.adb<
->t_c_nbres<
->t_c_nbres.adb<
 >t_color<
 >t_color.adb<
 >t_command<
 >t_command.adb<
+>t_complexes<
+>t_complexes.adb<
 >t_computer<
 >t_computer.adb<
 >t_con<

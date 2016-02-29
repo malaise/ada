@@ -1,4 +1,4 @@
-with C_Nbres;
+with Complexes;
 package body Lat_Lon is
 
   Max_Lat : constant Conv.Deg_Range := 90;
@@ -34,7 +34,7 @@ package body Lat_Lon is
 
   function Rad2Geo (Coord : Lat_Lon_Rad_Rec) return Lat_Lon_Geo_Rec is
     Lat_Lon_Geo : Lat_Lon_Geo_Rec;
-    use Conv, C_Nbres;
+    use Conv, Complexes;
   begin
     if Coord.X < 0.0 then
       -- West longitude
@@ -60,21 +60,21 @@ package body Lat_Lon is
 
   function Geo2Rad (Coord : Lat_Lon_Geo_Rec) return Lat_Lon_Rad_Rec is
     Lat_Lon_Rad : Lat_Lon_Rad_Rec;
-    use Conv, C_Nbres;
+    use Conv, Complexes;
   begin
     if Coord.Lon.East then
       -- East longitude
-      Lat_Lon_Rad.X := C_Nbres.Reduct(Conv.Geo2Rad(Coord.Lon.Coord));
+      Lat_Lon_Rad.X := Complexes.Reduct(Conv.Geo2Rad(Coord.Lon.Coord));
     else
       -- West longitude
-      Lat_Lon_Rad.X := C_Nbres.Reduct(-Conv.Geo2Rad(Coord.Lon.Coord));
+      Lat_Lon_Rad.X := Complexes.Reduct(-Conv.Geo2Rad(Coord.Lon.Coord));
     end if;
     if Coord.Lat.North then
       -- North latitude
-      Lat_Lon_Rad.Y := C_Nbres.Reduct(Conv.Geo2Rad(Coord.Lat.Coord));
+      Lat_Lon_Rad.Y := Complexes.Reduct(Conv.Geo2Rad(Coord.Lat.Coord));
     else
       -- South latitude
-      Lat_Lon_Rad.Y := C_Nbres.Reduct(-Conv.Geo2Rad(Coord.Lat.Coord));
+      Lat_Lon_Rad.Y := Complexes.Reduct(-Conv.Geo2Rad(Coord.Lat.Coord));
     end if;
     return Lat_Lon_Rad;
   end Geo2Rad;

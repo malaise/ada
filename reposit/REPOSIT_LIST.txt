@@ -296,9 +296,6 @@ byte_to_unicode (1)::
      Map a character (e.g. ISO-8859-xx) to unicode according to a xml-defined
      map.
 
-c_nbres (1)::
-     Complex numbers operations.
-
 c_types (1)::
      Types for portable interfacing with C.
 
@@ -316,6 +313,9 @@ clear_screen (1)::
 
 command (2)::
      Uses Proc_Family to fork-exec and collect output and error flows.
+
+complex (1)::
+     Complex numbers operations.
 
 computer (2)::
      Evaluate expressions based on numbers, variables, operations.
