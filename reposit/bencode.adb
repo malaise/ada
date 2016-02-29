@@ -271,14 +271,14 @@ package body Bencode is
           Str.Append (Character'Val(B));
         end if;
       end loop;
-      -- Insert element "Bytes", either emty or with text
+      -- Insert element "Bytes", either empty or with text
       Ctx.Add_Child (Node, Bytes_Name, Xml_Parser.Element, New_Node);
       -- Insert Str attribute if valid string
       if Valid then
         Ctx.Add_Attribute (New_Node, Str_Name, Str.Image);
       end if;
       if Tmp.Is_Null then
-        -- Ensure emty text in (formatted) output
+        -- Ensure empty text in (formatted) output
         Ctx.Set_Tag_Empty (New_Node, True);
       else
         -- Add text child
