@@ -30,5 +30,5 @@
 <!ELEMENT List (%Element;)*>
 
 <!-- A Dictionary is a sequence of pairs of elements -->
-<!ELEMENT Dictio ((%Element;),(%Element;))*>
+<!ELEMENT Dictio ((Bytes),(%Element;))*>
 
