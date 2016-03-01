@@ -15,7 +15,7 @@ package body Af_Dscr is
   Dscr_Set : Boolean := False;
 
   -- Colors from file
-  Init_Colors : array (Afpx_Typ.Absolute_Field_Range) of Afpx_Typ.Colors_Rec;
+  Init_Colors : array (Absolute_Field_Range) of Afpx_Typ.Colors_Rec;
 
   -- Chars from file
   Init_Str : Afpx_Typ.Char_Str;
@@ -32,8 +32,8 @@ package body Af_Dscr is
 
   -- Load a descriptor
   procedure Load_Files;
-  procedure Load_Dscr (Dscr_No : in Afpx_Typ.Descriptor_Range) is
-    Dscr_Index : Afpx_Typ.Descriptor_Range;
+  procedure Load_Dscr (Dscr_No : in Descriptor_Range) is
+    Dscr_Index : Descriptor_Range;
   begin
     -- Load Afpx files if needed
     Load_Files;
@@ -55,7 +55,7 @@ package body Af_Dscr is
 
     -- Save colors, copy chars
     for I in
-    Afpx_Typ.Absolute_Field_Range'First .. Dscrs(Dscr_No).Nb_Fields loop
+        Absolute_Field_Range'First .. Dscrs(Dscr_No).Nb_Fields loop
       Init_Colors(I) := Fields(I).Colors;
     end loop;
     Chars := Init_Str;
@@ -85,8 +85,8 @@ package body Af_Dscr is
   end Is_Set;
 
   -- Check if a descriptor is in use and if field is valid
-  procedure Check (Field_No : in Afpx_Typ.Absolute_Field_Range) is
-    use type Afpx_Typ.Absolute_Field_Range;
+  procedure Check (Field_No : in Absolute_Field_Range) is
+    use type Absolute_Field_Range;
   begin
 
     Check;
@@ -107,20 +107,20 @@ package body Af_Dscr is
 
   -- Check if descriptor has the list field active
   function Has_List return Boolean is
-    use type Afpx_Typ.Field_Kind_List;
+    use type Field_Kind_List;
   begin
     Check;
-    return Fields(Lfn).Kind = Afpx_Typ.Button;
+    return Fields(Lfn).Kind = Button_Field;
   end Has_List;
 
 
   -- Load a field
-  procedure Load_Field (Field_No : in Afpx_Typ.Absolute_Field_Range;
+  procedure Load_Field (Field_No : in Absolute_Field_Range;
         Load_Colors : in Boolean;
         Load_Chars  : in Boolean) is
     Field : constant Afpx_Typ.Field_Rec := Fields(Field_No);
     Nb_Chars : constant Positive := Field.Height * Field.Width;
-    use Afpx_Typ;
+    use type Absolute_Field_Range;
   begin
     Check (Field_No);
     Fields(Field_No).Activated := True;

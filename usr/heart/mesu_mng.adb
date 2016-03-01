@@ -1,7 +1,6 @@
 with Afpx, Normal, Dir_Mng;
 with Mesu_Edi, Pers_Mng, Mesu_Def, Mesu_Sel, Mesu_Nam, Pers_Lis, Mesu_Fil,
      Mesu_Prt, Mesu_Gra, Afpx_Xref;
-use Afpx;
 package body Mesu_Mng is
 
   procedure List_Mesures (Nb_Month : in Str_Mng.Offset_Range) is
@@ -28,6 +27,7 @@ package body Mesu_Mng is
       Pos_Pers : Integer;
       Person : Pers_Def.Person_Rec;
       Date_Aft, Date_Bef : Mesu_Def.Date_Str;
+      use type Afpx.Absolute_Field_Range;
     begin
       case Current_Field is
 
@@ -171,6 +171,7 @@ package body Mesu_Mng is
 
     end Check_Field;
 
+    use type Afpx.Absolute_Field_Range;
   begin
     Afpx.Use_Descriptor(Afpx_Xref.Main.Dscr_Num);
     Get_Handle.Cursor_Field := Afpx_Xref.Main.Person;
@@ -252,15 +253,16 @@ package body Mesu_Mng is
         Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
 
         case Ptg_Result.Event is
-          when Fd_Event | Timer_Event | Signal_Event | Refresh =>
+          when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+             | Afpx.Refresh =>
             null;
-          when Keyboard =>
+          when Afpx.Keyboard =>
 
             case Ptg_Result.Keyboard_Key is
-              when Return_Key =>
+              when Afpx.Return_Key =>
                 -- Check field and go to next if Ok
                 Check_Field (Get_Handle.Cursor_Field, False, Ok);
-              when Escape_Key =>
+              when Afpx.Escape_Key =>
                 -- Clear current field
                 if Get_Handle.Cursor_Field = Afpx_Xref.Main.Person  then
                   Afpx.Clear_Field (Afpx_Xref.Main.Person);
@@ -287,11 +289,11 @@ package body Mesu_Mng is
                 end if;
                 Get_Handle.Cursor_Col := 0;
                 Get_Handle.Insert := False;
-              when Break_Key =>
+              when Afpx.Break_Key =>
                 exit List;
             end case;
 
-          when Mouse_Button =>
+          when Afpx.Mouse_Button =>
 
             if Ptg_Result.Field_No = Afpx_Xref.Main.Add
             or else Ptg_Result.Field_No = Afpx_Xref.Main.Remove then

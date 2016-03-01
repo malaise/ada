@@ -36,27 +36,27 @@ package body Screen is
 
   procedure Reset is
     Scores : constant Common.Score_Array := Common.Get_Scores;
-    use Afpx;
+    use type Afpx.Absolute_Field_Range, Afpx.Descriptor_Range;
     use type Common.Game_Kind_List;
   begin
-    if not Is_Descriptor_Set
-    or else Get_Descriptor /= Afpx_Xref.Game.Dscr_Num then
-      Use_Descriptor (Afpx_Xref.Game.Dscr_Num);
+    if not Afpx.Is_Descriptor_Set
+    or else Afpx.Get_Descriptor /= Afpx_Xref.Game.Dscr_Num then
+      Afpx.Use_Descriptor (Afpx_Xref.Game.Dscr_Num);
     end if;
-    Encode_Field (Afpx_Xref.Game.Names, (0,  1),
+    Afpx.Encode_Field (Afpx_Xref.Game.Names, (0,  1),
                   "You: " & Normal (Scores(Common.Human), 3));
-    Encode_Field (Afpx_Xref.Game.Names, (0, 13),
+    Afpx.Encode_Field (Afpx_Xref.Game.Names, (0, 13),
                   "Me: " & Normal (Scores(Common.Machine), 3));
-    Clear_Field (Afpx_Xref.Game.Game);
-    Clear_Field (Afpx_Xref.Game.Play);
+    Afpx.Clear_Field (Afpx_Xref.Game.Game);
+    Afpx.Clear_Field (Afpx_Xref.Game.Play);
     if Common.Get_Game_Kind = Common.Nim then
-      Encode_Field (Afpx_Xref.Game.Game, (0,0), "   Nim");
-      Encode_Field (Afpx_Xref.Game.Play, (1,1), "Play Marienbad");
+      Afpx.Encode_Field (Afpx_Xref.Game.Game, (0,0), "   Nim");
+      Afpx.Encode_Field (Afpx_Xref.Game.Play, (1,1), "Play Marienbad");
     else
-      Encode_Field (Afpx_Xref.Game.Game, (0,0), "Marienbad");
-      Encode_Field (Afpx_Xref.Game.Play, (1,1), "   Play Nim");
+      Afpx.Encode_Field (Afpx_Xref.Game.Game, (0,0), "Marienbad");
+      Afpx.Encode_Field (Afpx_Xref.Game.Play, (1,1), "   Play Nim");
     end if;
-    Set_Field_Activation (Afpx_Xref.Game.Play, False);
+    Afpx.Set_Field_Activation (Afpx_Xref.Game.Play, False);
   end Reset;
 
   -- Init Bars activation

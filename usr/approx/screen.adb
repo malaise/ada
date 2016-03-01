@@ -98,7 +98,7 @@ package body Screen is
 
   -- Clear all menu dependant fields
   procedure Clear_Menu (Subtitle : in Boolean := False) is
-    use Afpx;
+    use type Afpx.Absolute_Field_Range;
   begin
     -- Inhibit all menu dependant fields
     for I in Menu_Fld_Range loop

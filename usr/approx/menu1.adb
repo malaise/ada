@@ -208,7 +208,7 @@ package body Menu1 is
     Data_Changed : Boolean;
     Saved_Index : Natural;
 
-    use Afpx;
+    use type Afpx.Absolute_Field_Range;
 
   begin
     Afpx.Use_Descriptor(Afpx_Xref.Points.Dscr_Num);

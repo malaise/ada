@@ -41,7 +41,7 @@ procedure T_Dscr is
          & ", " & Images.Integer_Image (Afpx.Get_Field_Height (I))
          & "x"  & Images.Integer_Image (Afpx.Get_Field_Width (I))
          & (if I in Afpx.Field_Range
-            and then Afpx.Get_Field_Kind (I) = Afpx.Get then
+            and then Afpx.Get_Field_Kind (I) = Afpx.Get_Field then
               "-" & Images.Integer_Image (Afpx.Get_Data_Len (I))
             else "") );
     end loop;
@@ -57,7 +57,7 @@ procedure T_Dscr is
     Get_Handle.Insert := False;
   end Set_Dscr;
 
-  use Afpx;
+  use type Afpx.Descriptor_Range;
 begin
 
   if Argument.Get_Nbre_Arg > 1 then

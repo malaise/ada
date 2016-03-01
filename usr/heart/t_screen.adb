@@ -29,7 +29,7 @@ procedure T_Screen is
 
   Act : Boolean;
 
-  use Afpx;
+  use type Afpx.Absolute_Field_Range, Afpx.Descriptor_Range;
 begin
   if Argument.Get_Nbre_Arg < 1 then
     return;
@@ -190,15 +190,15 @@ begin
 
     case Ptg_Result.Event is
 
-      when Refresh =>
+      when Afpx.Refresh =>
         null;
 
-      when Keyboard =>
+      when Afpx.Keyboard =>
 
         case Ptg_Result.Keyboard_Key is
-          when Return_Key | Break_Key =>
+          when Afpx.Return_Key | Afpx.Break_Key =>
             null;
-          when Escape_Key =>
+          when Afpx.Escape_Key =>
             -- Clear current field
             Afpx.Clear_Field (Get_Handle.Cursor_Field);
             Get_Handle.Cursor_Col := 0;
@@ -206,7 +206,7 @@ begin
             Allow_Undo := False;
         end case;
 
-      when Mouse_Button =>
+      when Afpx.Mouse_Button =>
 
         exit when Ptg_Result.Field_No = Exit_Button;
         if Dscr = 1 then

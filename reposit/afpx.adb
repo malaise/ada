@@ -1,13 +1,11 @@
 with Language;
-with Afpx_Typ;
 package body Afpx is
 
   Console : aliased Con_Io.Console;
   Af_Con_Io : Con_Io.Window;
   Size : Con_Io.Square;
 
-  Lfn : constant Afpx_Typ.Absolute_Field_Range
-      := Afpx_Typ.Absolute_Field_Range(List_Field_No);
+  Lfn : constant Absolute_Field_Range := List_Field_No;
   Afpx_Internal_Error : exception;
 
   package Af_Dscr is
@@ -24,7 +22,7 @@ package body Afpx is
     function Load_Size return Con_Io.Square;
 
     -- Load a descriptor, raise No_Descriptor if invalid No
-    procedure Load_Dscr (Dscr_No : in Afpx_Typ.Descriptor_Range);
+    procedure Load_Dscr (Dscr_No : in Descriptor_Range);
 
     -- Release a descriptor. Check will raise No_Descriptor
     procedure Release_Dscr;
@@ -37,21 +35,21 @@ package body Afpx is
 
     -- Check if a descriptor has been used (raise No_Descriptor)
     --  and if Field_No is valid in it (raise Invalid_Field)
-    procedure Check (Field_No : in Afpx_Typ.Absolute_Field_Range);
+    procedure Check (Field_No : in Absolute_Field_Range);
 
     -- Check if a descriptor has been used (raise No_Descriptor)
     -- and it has the list field active
     function Has_List return Boolean;
 
     -- Load a field's characters and/or colors from init
-    procedure Load_Field (Field_No : in Afpx_Typ.Absolute_Field_Range;
+    procedure Load_Field (Field_No : in Absolute_Field_Range;
                           Load_Colors : in Boolean;
                           Load_Chars  : in Boolean);
 
   end Af_Dscr;
 
 
-  function In_Field_Absolute (Field_No : in Afpx_Typ.Absolute_Field_Range;
+  function In_Field_Absolute (Field_No : in Absolute_Field_Range;
                               Square : in Con_Io.Square) return Boolean is
   begin
     return Afpx_Typ.In_Field_Absolute (Af_Dscr.Fields(Field_No), Square);
@@ -60,17 +58,17 @@ package body Afpx is
   package body Af_Dscr is separate;
 
 
-  function Next_Field (Field_No : Afpx_Typ.Absolute_Field_Range)
-                      return Afpx_Typ.Absolute_Field_Range is
-    Ret_No : Afpx_Typ.Absolute_Field_Range;
-    use Afpx_Typ;
+  function Next_Field (Field_No : Absolute_Field_Range)
+                      return Absolute_Field_Range is
+    Ret_No : Absolute_Field_Range;
+    use type Absolute_Field_Range;
   begin
     Ret_No := Field_No;
     loop
       if Ret_No /= Af_Dscr.Current_Dscr.Nb_Fields then
         Ret_No := Ret_No + 1;
       elsif Af_Dscr.Has_List then
-        Ret_No := Afpx_Typ.List_Field_No;
+        Ret_No := List_Field_No;
       else
         Ret_No := 1;
       end if;
@@ -79,10 +77,10 @@ package body Afpx is
     return Ret_No;
   end Next_Field;
 
-  function Prev_Field (Field_No : Afpx_Typ.Absolute_Field_Range)
-                      return Afpx_Typ.Absolute_Field_Range is
-    Ret_No : Afpx_Typ.Absolute_Field_Range;
-    use Afpx_Typ;
+  function Prev_Field (Field_No : Absolute_Field_Range)
+                      return Absolute_Field_Range is
+    Ret_No : Absolute_Field_Range;
+    use type Absolute_Field_Range;
   begin
     Ret_No := Field_No;
     loop
@@ -91,7 +89,7 @@ package body Afpx is
       elsif Ret_No /= 1 then
         Ret_No := Ret_No - 1;
       elsif Af_Dscr.Has_List then
-        Ret_No := Afpx_Typ.List_Field_No;
+        Ret_No := List_Field_No;
       else
         Ret_No := Af_Dscr.Current_Dscr.Nb_Fields;
       end if;
@@ -100,31 +98,29 @@ package body Afpx is
     return Ret_No;
   end Prev_Field;
 
-  function Next_Get_Field (Field_No : Afpx_Typ.Field_Range)
-                           return Afpx_Typ.Field_Range is
-    Fn : Afpx_Typ.Absolute_Field_Range;
-    use Afpx_Typ;
+  function Next_Get_Field (Field_No : Field_Range) return Field_Range is
+    Fn : Absolute_Field_Range;
+    use type Absolute_Field_Range, Field_Kind_List;
   begin
     Fn := Field_No;
     loop
       Fn := Next_Field(Fn);
       exit when Fn /= 0
-          and then Af_Dscr.Fields(Fn).Kind = Afpx_Typ.Get
+          and then Af_Dscr.Fields(Fn).Kind = Get_Field
           and then not Af_Dscr.Fields(Fn).Isprotected;
     end loop;
     return Fn;
   end Next_Get_Field;
 
-  function Prev_Get_Field (Field_No : Afpx_Typ.Field_Range)
-                          return Afpx_Typ.Field_Range is
-    Fn : Afpx_Typ.Absolute_Field_Range;
-    use Afpx_Typ;
+  function Prev_Get_Field (Field_No : Field_Range) return Field_Range is
+    Fn : Absolute_Field_Range;
+    use type Absolute_Field_Range, Field_Kind_List;
   begin
     Fn := Field_No;
     loop
       Fn := Prev_Field(Fn);
       exit when Fn /= 0
-          and then Af_Dscr.Fields(Fn).Kind = Afpx_Typ.Get
+          and then Af_Dscr.Fields(Fn).Kind = Get_Field
           and then not Af_Dscr.Fields(Fn).Isprotected;
     end loop;
     return Fn;
@@ -147,11 +143,11 @@ package body Afpx is
                           Background : out Con_Io.Effective_Colors);
 
     -- Put a whole field in attribute
-    procedure Put_Field (Field_No : in Afpx_Typ.Field_Range;
-                         State    : in State_List);
+    procedure Put_Fld (Field_No : in Field_Range;
+                       State    : in State_List);
 
     -- Erase a field (screen_background, screen_background)
-    procedure Erase_Field (Field_No : in Afpx_Typ.Absolute_Field_Range);
+    procedure Erase_Fld (Field_No : in Absolute_Field_Range);
 
     -- Force redisplay at next Ptg
     procedure Redisplay;
@@ -249,7 +245,7 @@ package body Afpx is
                             Clear_Screen : in Boolean := True) is
   begin
     Check_Ptg;
-    Af_Dscr.Load_Dscr (Afpx_Typ.Descriptor_Range (Descriptor_No));
+    Af_Dscr.Load_Dscr (Descriptor_No);
     if not Console.Is_Open then
       -- Done only once at first descriptor
       if Af_Dscr.Current_Dscr.Colors (Con_Io.Effective_Colors'First)
@@ -357,7 +353,7 @@ package body Afpx is
 
   -- Clear the content of a field
   procedure Clear_Field (Field_No : in Field_Range) is
-    Fn : constant Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Field_No);
+    Fn : constant Field_Range := Field_No;
     Field : Afpx_Typ.Field_Rec;
     Field_Size : Positive;
   begin
@@ -376,8 +372,7 @@ package body Afpx is
   procedure Reset_Field (Field_No : in Absolute_Field_Range;
                          Reset_Colors : in Boolean := True;
                          Reset_String : in Boolean := True) is
-    Fn : constant Afpx_Typ.Absolute_Field_Range
-       := Afpx_Typ.Absolute_Field_Range(Field_No);
+    Fn : constant Absolute_Field_Range := Field_No;
   begin
     Af_Dscr.Check(Fn);
     Af_Dscr.Load_Field (Fn, Reset_Colors, Reset_String);
@@ -388,8 +383,7 @@ package body Afpx is
   -- Field Height
   function Get_Field_Height (Field_No : Absolute_Field_Range)
                              return Height_Range is
-    Fn : constant Afpx_Typ.Absolute_Field_Range
-       := Afpx_Typ.Absolute_Field_Range(Field_No);
+    Fn : constant Absolute_Field_Range := Field_No;
   begin
     Af_Dscr.Check(Fn);
     return Af_Dscr.Fields(Fn).Height;
@@ -398,8 +392,7 @@ package body Afpx is
   -- Field width
   function Get_Field_Width (Field_No : in Absolute_Field_Range)
                             return Width_Range is
-    Fn : constant Afpx_Typ.Absolute_Field_Range
-       := Afpx_Typ.Absolute_Field_Range(Field_No);
+    Fn : constant Absolute_Field_Range := Field_No;
   begin
     Af_Dscr.Check(Fn);
     return Af_Dscr.Fields(Fn).Width;
@@ -409,8 +402,7 @@ package body Afpx is
   procedure Get_Field_Size (Field_No : in Absolute_Field_Range;
                             Height : out Height_Range;
                             Width  : out Width_Range) is
-    Fn : constant Afpx_Typ.Absolute_Field_Range
-       := Afpx_Typ.Absolute_Field_Range(Field_No);
+    Fn : constant Absolute_Field_Range := Field_No;
   begin
     Af_Dscr.Check(Fn);
     Height := Af_Dscr.Fields(Fn).Height;
@@ -420,12 +412,11 @@ package body Afpx is
   -- Data len
   function Get_Data_Len (Field_No : Absolute_Field_Range)
                          return Width_Range is
-    Fn : constant Afpx_Typ.Absolute_Field_Range
-       := Afpx_Typ.Absolute_Field_Range(Field_No);
-    use type Afpx_Typ.Field_Kind_List;
+    Fn : constant Absolute_Field_Range := Field_No;
+    use type Field_Kind_List;
   begin
     Af_Dscr.Check(Fn);
-    if Af_Dscr.Fields(Fn).Kind /= Afpx_Typ.Get then
+    if Af_Dscr.Fields(Fn).Kind /= Get_Field then
       raise Invalid_Field;
     end if;
     return Af_Dscr.Fields(Fn).Data_Len;
@@ -435,30 +426,28 @@ package body Afpx is
   -- Exceptions : No_Descriptor, Invalid_Field
   -- type Field_Kind_List is (Put, Button, Get);
   function Get_Field_Kind (Field_No : in Field_Range) return Field_Kind_List is
-    Fn : constant Afpx_Typ.Absolute_Field_Range
-       := Afpx_Typ.Absolute_Field_Range(Field_No);
+    Fn : constant Absolute_Field_Range := Field_No;
   begin
     Af_Dscr.Check(Fn);
-    case Af_Dscr.Fields(Fn).Kind is
-      when Afpx_Typ.Put => return Put;
-      when Afpx_Typ.Button => return Button;
-      when Afpx_Typ.Get => return Get;
-    end case;
+    return Af_Dscr.Fields(Fn).Kind;
   end Get_Field_Kind;
 
   function Is_Put_Kind    (Field_No : in Field_Range) return Boolean is
+    use type Field_Kind_List;
   begin
-    return Get_Field_Kind (Field_No) = Put;
+    return Get_Field_Kind (Field_No) = Put_Field;
   end Is_Put_Kind;
 
   function Is_Button_Kind (Field_No : in Field_Range) return Boolean is
+    use type Field_Kind_List;
   begin
-    return Get_Field_Kind (Field_No) = Button;
+    return Get_Field_Kind (Field_No) = Button_Field;
   end Is_Button_Kind;
 
   function Is_Get_Kind    (Field_No : in Field_Range) return Boolean is
+    use type Field_Kind_List;
   begin
-    return Get_Field_Kind (Field_No) = Get;
+    return Get_Field_Kind (Field_No) = Get_Field;
   end Is_Get_Kind;
 
   -- Encode a string in a row of a field
@@ -483,7 +472,7 @@ package body Afpx is
   procedure Encode_Field (Field_No : in Field_Range;
                           From_Pos : in Con_Io.Square;
                           Str      : in Unicode_Sequence) is
-    Fn : constant Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Field_No);
+    Fn : constant Field_Range := Field_No;
     Field : Afpx_Typ.Field_Rec;
     Init_Index : Afpx_Typ.Char_Str_Range;
   begin
@@ -522,8 +511,7 @@ package body Afpx is
                          Adjust   : Boolean := True) return String is
     Str : constant String
         := Language.Unicode_To_String (Decode_Field (Field_No, Row));
-    Fn : constant Afpx_Typ.Absolute_Field_Range
-       := Afpx_Typ.Absolute_Field_Range(Field_No);
+    Fn : constant Absolute_Field_Range := Field_No;
     Width : constant Width_Range := Af_Dscr.Fields(Fn).Data_Len;
   begin
     if not Adjust or else Str'Length = Width then
@@ -551,7 +539,7 @@ package body Afpx is
   function Decode_Field (Field_No : Field_Range;
                          Row      : Con_Io.Row_Range)
                          return Unicode_Sequence is
-    Fn : constant Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Field_No);
+    Fn : constant Field_Range := Field_No;
     Field : Afpx_Typ.Field_Rec;
     Init_Index : Afpx_Typ.Char_Str_Range;
   begin
@@ -585,8 +573,7 @@ package body Afpx is
                               Foreground : out Con_Io.Effective_Colors;
                               Background : out Con_Io.Effective_Colors;
                               Selected   : out Con_Io.Effective_Colors) is
-    Fn : constant Afpx_Typ.Absolute_Field_Range
-       := Afpx_Typ.Absolute_Field_Range(Field_No);
+    Fn : constant Absolute_Field_Range := Field_No;
     Field : Afpx_Typ.Field_Rec;
   begin
     Af_Dscr.Check(Fn);
@@ -601,19 +588,17 @@ package body Afpx is
                  Foreground : in Con_Io.Colors       := Con_Io.Current;
                  Background : in Con_Io.Colors := Con_Io.Current;
                  Selected   : in Con_Io.Colors := Con_Io.Current) is
-    Fn : constant Afpx_Typ.Absolute_Field_Range
-       := Afpx_Typ.Absolute_Field_Range(Field_No);
+    Fn : constant Absolute_Field_Range := Field_No;
     Field : Afpx_Typ.Field_Rec;
-    use Con_Io;
-    use Afpx_Typ;
+    use type Field_Kind_List, Con_Io.Colors;
   begin
     Af_Dscr.Check(Fn);
     Field := Af_Dscr.Fields(Fn);
 
     -- Check Selected is Current for put and button fields
     if Selected /= Con_Io.Current
-        and then (Field.Kind = Afpx_Typ.Put
-                  or else Field.Kind = Afpx_Typ.Button) then
+        and then (Field.Kind = Put_Field
+                  or else Field.Kind = Button_Field) then
       raise Invalid_Color;
     end if;
 
@@ -635,12 +620,11 @@ package body Afpx is
   -- Activate/Desactivate a field for further put_then_get
   procedure Set_Field_Activation (Field_No : in Absolute_Field_Range;
                                   Activate : in Boolean) is
-    Fn : constant Afpx_Typ.Absolute_Field_Range
-       := Afpx_Typ.Absolute_Field_Range(Field_No);
-    use Afpx_Typ;
+    Fn : constant Absolute_Field_Range := Field_No;
+    use type Absolute_Field_Range, Field_Kind_List;
   begin
-    if Fn = Afpx_Typ.List_Field_No
-    or else Af_Dscr.Fields(Fn).Kind = Afpx_Typ.Get then
+    if Fn = List_Field_No
+    or else Af_Dscr.Fields(Fn).Kind = Get_Field then
       Check_Ptg;
     end if;
     Af_Dscr.Check(Fn);
@@ -651,8 +635,7 @@ package body Afpx is
 
   function Get_Field_Activation (Field_No : in Absolute_Field_Range)
                                  return Boolean is
-    Fn : constant Afpx_Typ.Absolute_Field_Range
-       := Afpx_Typ.Absolute_Field_Range(Field_No);
+    Fn : constant Absolute_Field_Range := Field_No;
   begin
     Af_Dscr.Check(Fn);
     return Af_Dscr.Fields(Fn).Activated;
@@ -664,16 +647,15 @@ package body Afpx is
   -- Exceptions : No_Descriptor, Invalid_Field
   procedure Set_Field_Protection (Field_No : in Absolute_Field_Range;
                                   Protect  : in Boolean) is
-    Fn : constant Afpx_Typ.Absolute_Field_Range
-       := Afpx_Typ.Absolute_Field_Range(Field_No);
-    use Afpx_Typ;
+    Fn : constant Absolute_Field_Range := Field_No;
+    use type Absolute_Field_Range, Field_Kind_List;
   begin
-    if Fn = Afpx_Typ.List_Field_No
-    or else Af_Dscr.Fields(Fn).Kind = Afpx_Typ.Get then
+    if Fn = List_Field_No
+    or else Af_Dscr.Fields(Fn).Kind = Get_Field then
       Check_Ptg;
     end if;
     Af_Dscr.Check(Fn);
-    if Af_Dscr.Fields(Fn).Kind = Afpx_Typ.Put then
+    if Af_Dscr.Fields(Fn).Kind = Put_Field then
       raise Invalid_Field;
     end if;
     Af_Dscr.Fields(Fn).Isprotected := Protect;
@@ -683,12 +665,11 @@ package body Afpx is
 
   function Get_Field_Protection (Field_No : in Absolute_Field_Range)
                                  return Boolean is
-    Fn : constant Afpx_Typ.Absolute_Field_Range
-       := Afpx_Typ.Absolute_Field_Range(Field_No);
-     use Afpx_Typ;
+    Fn : constant Absolute_Field_Range := Field_No;
+    use type Absolute_Field_Range, Field_Kind_List;
   begin
     Af_Dscr.Check(Fn);
-    if Af_Dscr.Fields(Fn).Kind = Afpx_Typ.Put then
+    if Af_Dscr.Fields(Fn).Kind = Put_Field then
       raise Invalid_Field;
     end if;
     return Af_Dscr.Fields(Fn).Isprotected;
@@ -696,7 +677,6 @@ package body Afpx is
 
   -- Erase all the fields of the descriptor from the screen
   procedure Erase is
-    use Afpx_Typ;
   begin
     Check_Ptg;
     Af_Dscr.Check;
@@ -705,18 +685,17 @@ package body Afpx is
       if Af_Dscr.Fields (Lfn).Activated then
         raise List_In_Put;
       else
-        Af_Ptg.Erase_Field (Lfn);
+        Af_Ptg.Erase_Fld (Lfn);
       end if;
     end if;
     for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
-      Af_Ptg.Erase_Field (I);
+      Af_Ptg.Erase_Fld (I);
     end loop;
     Console.Flush;
   end Erase;
 
   -- Put all the fields of the descriptor on the screen
   procedure Put is
-    use Afpx_Typ;
   begin
     Check_Ptg;
     Af_Dscr.Check;
@@ -725,16 +704,16 @@ package body Afpx is
       if Af_Dscr.Fields (Lfn).Activated then
         raise List_In_Put;
       else
-        Af_Ptg.Erase_Field (Lfn);
+        Af_Ptg.Erase_Fld (Lfn);
       end if;
     end if;
 
     -- Put all fields
     for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
       if Af_Dscr.Fields (I).Activated then
-        Af_Ptg.Put_Field (I, Af_Ptg.Normal);
+        Af_Ptg.Put_Fld (I, Af_Ptg.Normal);
       else
-        Af_Ptg.Erase_Field (I);
+        Af_Ptg.Erase_Fld (I);
       end if;
     end loop;
     Console.Flush;
@@ -743,8 +722,8 @@ package body Afpx is
   -- Computes next cursor field after current one:
   function Next_Cursor_Field (From : Absolute_Field_Range)
                              return Absolute_Field_Range is
-    Start_No, Ret_No : Afpx_Typ.Absolute_Field_Range;
-    use Afpx_Typ;
+    Start_No, Ret_No : Absolute_Field_Range;
+    use type Absolute_Field_Range, Field_Kind_List;
   begin
     Af_Dscr.Check;
     -- Empty descriptor (or only a list)
@@ -752,7 +731,7 @@ package body Afpx is
       return 0;
     end if;
     -- Start at 1 if From is 0 or above Nb
-    Start_No := Afpx_Typ.Absolute_Field_Range(From);
+    Start_No := From;
     if Start_No = 0 or else Start_No > Af_Dscr.Current_Dscr.Nb_Fields then
       Start_No := 1;
     end if;
@@ -766,10 +745,10 @@ package body Afpx is
         Ret_No := 1;
       end if;
       -- Check it is a cursor field
-      if Af_Dscr.Fields(Ret_No).Kind = Afpx_Typ.Get
+      if Af_Dscr.Fields(Ret_No).Kind = Get_Field
           and then Af_Dscr.Fields(Ret_No).Activated
           and then not Af_Dscr.Fields(Ret_No).Isprotected then
-        return Absolute_Field_Range(Ret_No);
+        return Ret_No;
       elsif Ret_No = Start_No then
         -- All field checked without finding a cursor field
         return 0;
@@ -780,22 +759,22 @@ package body Afpx is
   -- Computes previous cursor field before current one:
   function Prev_Cursor_Field (From : Absolute_Field_Range)
                              return Absolute_Field_Range is
-    Ret_No : Afpx_Typ.Absolute_Field_Range;
-    use Afpx_Typ;
+    Ret_No : Absolute_Field_Range;
+    use type Absolute_Field_Range, Field_Kind_List;
   begin
     Af_Dscr.Check;
-    Ret_No := Afpx_Typ.Absolute_Field_Range(From);
+    Ret_No := From;
     loop
       if Ret_No /= 1 then
         Ret_No := Ret_No - 1;
       else
         Ret_No := Af_Dscr.Current_Dscr.Nb_Fields;
       end if;
-      if Af_Dscr.Fields(Ret_No).Kind = Afpx_Typ.Get
+      if Af_Dscr.Fields(Ret_No).Kind = Get_Field
           and then Af_Dscr.Fields(Ret_No).Activated
           and then not Af_Dscr.Fields(Ret_No).Isprotected then
-        return Absolute_Field_Range(Ret_No);
-      elsif Ret_No = Afpx_Typ.Absolute_Field_Range(From) then
+        return Ret_No;
+      elsif Ret_No = From then
         return 0;
       elsif From = 0 and then Ret_No = 1 then
         return 0;
@@ -941,8 +920,8 @@ package body Afpx is
        procedure (Action : in List_Change_List;
                   Status : in List_Status_Rec) := null) is
     Some_Get : Boolean;
-    Cf : Afpx_Typ.Field_Range;
-    use Afpx_Typ;
+    Cf : Field_Range;
+    use type Absolute_Field_Range, Field_Kind_List;
   begin
     -- No call to Put_Then_Get while syspended
     if Is_Suspended then
@@ -955,7 +934,7 @@ package body Afpx is
     -- Check if some active get field in the descriptor
     Some_Get := False;
     for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
-      if Af_Dscr.Fields(I).Kind = Afpx_Typ.Get
+      if Af_Dscr.Fields(I).Kind = Get_Field
           and then Af_Dscr.Fields (I).Activated
           and then not Af_Dscr.Fields (I).Isprotected then
         Some_Get := True;
@@ -965,12 +944,12 @@ package body Afpx is
     -- Check cursor pos if some get field active
     if Some_Get then
       if Get_Handle.Cursor_Field = List_Field_No then
-        Cf := Afpx_Typ.Field_Range(Next_Cursor_Field (List_Field_No));
+        Cf := Next_Cursor_Field (List_Field_No);
       else
-        Cf := Afpx_Typ.Field_Range(Get_Handle.Cursor_Field);
+        Cf := Get_Handle.Cursor_Field;
       end if;
       Af_Dscr.Check (Cf);
-      if Af_Dscr.Fields(Cf).Kind /= Afpx_Typ.Get
+      if Af_Dscr.Fields(Cf).Kind /= Get_Field
           or else  not Af_Dscr.Fields(Cf).Activated
           or else      Af_Dscr.Fields(Cf).Isprotected then
         raise Invalid_Field;
@@ -981,7 +960,7 @@ package body Afpx is
     else
       Cf := 1;
     end if;
-    Get_Handle.Cursor_Field := Field_Range(Cf);
+    Get_Handle.Cursor_Field := Cf;
 
     Af_Ptg.Ptg (Get_Handle, Result, Right_Select,
                 Some_Get, Cursor_Col_Cb, List_Change_Cb);

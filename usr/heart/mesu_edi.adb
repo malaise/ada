@@ -1,7 +1,6 @@
 with Con_Io, Afpx, Normal, Get_Line;
 with As.U.Utils;
 with Pers_Def, Pers_Mng, Mesu_Def, Mesu_Fil, Str_Mng, Afpx_Xref;
-use Afpx;
 -- with Mesu_Nam;
 -- Edition, Creation, deletion of mesure
 package body Mesu_Edi is
@@ -11,6 +10,7 @@ package body Mesu_Edi is
   procedure Encode (Person : in Pers_Def.Person_Rec;
                     Mesure : in Mesu_Def.Mesure_Rec) is
     Date_R : Str_Mng.Date_Str_Rec;
+    use type Afpx.Absolute_Field_Range;
   begin
     -- Person name and activity
     Afpx.Encode_Field (Afpx_Xref.Records.Person, (00, 00), Person.Name);
@@ -149,6 +149,7 @@ package body Mesu_Edi is
 
     -- Encode TZ afpx fields from Person
     procedure Encode_Tz is
+      use type Afpx.Absolute_Field_Range;
     begin
       -- Encode Tz
       for I in Pers_Def.Person_Tz_Array'Range loop
@@ -166,6 +167,7 @@ package body Mesu_Edi is
       Delta_Str : String (1 .. 3);
       Locok : Boolean;
       Import_File_Name : Import_File_Name_Str;
+      use type Afpx.Absolute_Field_Range;
     begin
       case Current_Field is
 
@@ -337,6 +339,7 @@ package body Mesu_Edi is
 
     end Check_Field;
 
+    use type Afpx.Absolute_Field_Range;
 
   begin
     -- Use descriptor
@@ -361,7 +364,6 @@ package body Mesu_Edi is
       Afpx.Set_Field_Activation (Afpx_Xref.Records.Import_File, False);
     end if;
 
-
     -- Set mesure
     if In_Create then
       -- Init date to current
@@ -370,7 +372,6 @@ package body Mesu_Edi is
       -- Load
       Mesure := Mesu_Fil.Load (File_Name);
     end if;
-
 
     Encode (Person, Mesure);
 
@@ -391,15 +392,16 @@ package body Mesu_Edi is
       Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
 
       case Ptg_Result.Event is
-        when Fd_Event | Timer_Event | Signal_Event | Refresh =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+           | Afpx.Refresh =>
           null;
-        when Keyboard =>
+        when Afpx.Keyboard =>
 
           case Ptg_Result.Keyboard_Key is
-            when Return_Key =>
+            when Afpx.Return_Key =>
               -- Check field and go to next if Ok
               Check_Field (Get_Handle.Cursor_Field, False, Ok);
-            when Escape_Key =>
+            when Afpx.Escape_Key =>
               -- Clear current field
               if Get_Handle.Cursor_Field = Afpx_Xref.Records.Person then
                 Afpx.Clear_Field (Afpx_Xref.Records.Person);
@@ -419,12 +421,12 @@ package body Mesu_Edi is
               end if;
               Get_Handle.Cursor_Col := 0;
               Get_Handle.Insert := False;
-            when Break_Key =>
+            when Afpx.Break_Key =>
               Exit_Program := True;
               exit;
           end case;
 
-        when Mouse_Button =>
+        when Afpx.Mouse_Button =>
           if Ptg_Result.Field_No = Afpx_Xref.Records.Quit then
             -- Exit
             Exit_Program := True;
@@ -565,6 +567,8 @@ package body Mesu_Edi is
 
     Get_Handle : Afpx.Get_Handle_Rec;
     Ptg_Result : Afpx.Result_Rec;
+
+    use type Afpx.Absolute_Field_Range;
   begin
 
     -- Load person
@@ -617,19 +621,20 @@ package body Mesu_Edi is
       Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
 
       case Ptg_Result.Event is
-        when Fd_Event | Timer_Event | Signal_Event | Refresh =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+           | Afpx.Refresh =>
           null;
-        when Keyboard =>
+        when Afpx.Keyboard =>
 
           case Ptg_Result.Keyboard_Key is
-            when Return_Key | Escape_Key =>
+            when Afpx.Return_Key | Afpx.Escape_Key =>
               null;
-            when Break_Key =>
+            when Afpx.Break_Key =>
               Exit_Program := True;
               exit;
           end case;
 
-        when Mouse_Button =>
+        when Afpx.Mouse_Button =>
 
           if Ptg_Result.Field_No = Afpx_Xref.Records.Cancel then
             -- Cancel

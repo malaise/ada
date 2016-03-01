@@ -13,7 +13,7 @@ package body Af_List is
 
   -- Open / Re-open the list window
   procedure Open is
-    use Afpx_Typ;
+    use type Field_Kind_List;
   begin
     -- Check there is a descriptor
     Af_Dscr.Check;
@@ -25,7 +25,7 @@ package body Af_List is
     Reset;
     Af_Dscr.Fields(Lfn).Modified := True;
     -- Check there is a window in the dscr
-    if Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
+    if Af_Dscr.Fields(Lfn).Kind = Button_Field then
       List_Window.Open (Console'Access,
                    Af_Dscr.Fields(Lfn).Upper_Left,
                    Af_Dscr.Fields(Lfn).Lower_Right);
@@ -405,7 +405,7 @@ package body Af_List is
       raise Not_Opened;
     end if;
     if Line_List.Is_Empty
-    or else not Af_Dscr.Fields(Afpx_Typ.List_Field_No).Activated then
+    or else not Af_Dscr.Fields(List_Field_No).Activated then
       -- List is empty or not active
       if Item_Id /= 0 then
         raise Line_List_Mng.Not_In_List;

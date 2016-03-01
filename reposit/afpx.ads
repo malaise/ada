@@ -1,19 +1,19 @@
 with As.U, Unicode, Con_Io, Dynamic_List;
+with Afpx_Typ;
 package Afpx is
 
   -- See also the comments in Afpx.dtd for the definitions of descriptors,
   --  list and fields (kind, geometry, colors).
 
   -- Descriptor, field index
-  type Descriptor_Range is new Positive range 1 .. 50;
-  type Absolute_Field_Range is new Natural range 0 .. 500;
-  subtype Field_Range is Absolute_Field_Range
-          range 1 .. Absolute_Field_Range 'Last;
-  List_Field_No : constant Absolute_Field_Range := 0;
+  subtype Descriptor_Range is Afpx_Typ.Descriptor_Range;
+  subtype Absolute_Field_Range is Afpx_Typ.Absolute_Field_Range;
+  subtype Field_Range is Afpx_Typ.Field_Range;
+  List_Field_No : constant Absolute_Field_Range := Afpx_Typ.List_Field_No;
 
   -- Width and height of a field
-  subtype Height_Range is Positive range 1 .. Con_Io.Last_Row + 1;
-  subtype Width_Range  is Positive range 1 .. Con_Io.Last_Col + 1;
+  subtype Height_Range is Afpx_Typ.Height_Range;
+  subtype Width_Range  is Afpx_Typ.Width_Range;
 
   -- The content of one row of one field (encode, decode)
   subtype Unicode_Number is Unicode.Unicode_Number;
@@ -115,7 +115,10 @@ package Afpx is
 
   -- Get field kind
   -- Exceptions : No_Descriptor, Invalid_Field
-  type Field_Kind_List is (Put, Button, Get);
+  subtype Field_Kind_List is Afpx_Typ.Field_Kind_List;
+  Get_Field    : constant Field_Kind_List := Afpx_Typ.Get;
+  Put_Field    : constant Field_Kind_List := Afpx_Typ.Put;
+  Button_Field : constant Field_Kind_List := Afpx_Typ.Button;
   function Get_Field_Kind (Field_No : in Field_Range) return Field_Kind_List;
   function Is_Put_Kind    (Field_No : in Field_Range) return Boolean;
   function Is_Button_Kind (Field_No : in Field_Range) return Boolean;

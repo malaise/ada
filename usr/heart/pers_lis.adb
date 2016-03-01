@@ -51,7 +51,7 @@ package body Pers_Lis is
     Pos : Natural;
     Ok : Boolean;
     Moved : Boolean;
-    use Afpx;
+    use type Afpx.Field_Range;
     use Pers_Def.Person_List_Mng;
 
     procedure Encode_Person is
@@ -239,15 +239,16 @@ package body Pers_Lis is
 
       case Ptg_Result.Event is
 
-        when Fd_Event | Timer_Event | Signal_Event | Refresh =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+           | Afpx.Refresh =>
           null;
-        when Keyboard =>
+        when Afpx.Keyboard =>
 
           case Ptg_Result.Keyboard_Key is
-            when Return_Key =>
+            when Afpx.Return_Key =>
               -- Check field and go to next if Ok
               Check_Field (Get_Handle.Cursor_Field, Ok);
-            when Escape_Key =>
+            when Afpx.Escape_Key =>
               -- Clear current field
               if Get_Handle.Cursor_Field = Afpx_Xref.Activity.Person  then
                 Afpx.Clear_Field (Afpx_Xref.Activity.Person);
@@ -258,12 +259,12 @@ package body Pers_Lis is
               end if;
               Get_Handle.Cursor_Col := 0;
               Get_Handle.Insert := False;
-            when Break_Key =>
+            when Afpx.Break_Key =>
               Exit_Program := True;
               exit;
           end case;
 
-        when Mouse_Button =>
+        when Afpx.Mouse_Button =>
 
           case Ptg_Result.Field_No is
             when Afpx_Xref.Activity.Records =>

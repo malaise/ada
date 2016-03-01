@@ -3,21 +3,21 @@ with Aski;
 separate (Afpx)
 package body Af_Ptg is
 
-  type Mouse_Action_Rec(Kind : Afpx_Typ.Field_Kind_List := Afpx_Typ.Put)
+  type Mouse_Action_Rec(Kind : Field_Kind_List := Put_Field)
   is record
     case Kind is
-      when Afpx_Typ.Put =>
+      when Put_Field =>
         -- Nothing to do, discarded, or list action already handled,
         -- no action put
         null;
-      when Afpx_Typ.Button =>
+      when Button_Field =>
         -- Double click in list
         -- Click and release in a Button field
-        But_Field_No : Afpx_Typ.Absolute_Field_Range;
+        But_Field_No : Absolute_Field_Range;
         But_Click_Square, But_Release_Square : Con_Io.Square;
-      when Afpx_Typ.Get =>
+      when Get_Field =>
         -- Click and release in a Get field
-        Get_Field_No : Afpx_Typ.Field_Range;
+        Get_Field_No : Field_Range;
         Click_Col : Con_Io.Col_Range;
     end case;
   end record;
@@ -34,7 +34,7 @@ package body Af_Ptg is
   Show_Click_Delay  : constant Ada.Calendar.Day_Duration := 0.03;
 
   -- Cursor field at end of prev Ptg
-  Prev_Cursor_Field : Afpx_Typ.Absolute_Field_Range := Afpx_Typ.List_Field_No;
+  Prev_Cursor_Field : Absolute_Field_Range := List_Field_No;
 
   -- Need to redisplay at next Ptg
   Need_Redisplay : Boolean := False;
@@ -60,8 +60,8 @@ package body Af_Ptg is
   end Set_Colors;
 
   -- Put a whole field
-  procedure Put_Field (Field_No : in Afpx_Typ.Field_Range;
-                       State    : in State_List) is
+  procedure Put_Fld (Field_No : in Field_Range;
+                     State    : in State_List) is
     Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
     Char_Index  : Afpx_Typ.Char_Str_Range;
     Foreground  : Con_Io.Effective_Colors;
@@ -88,10 +88,10 @@ package body Af_Ptg is
         Char_Index := Char_Index + Field.Data_Len;
       end if;
     end loop;
-  end Put_Field;
+  end Put_Fld;
 
   -- Erase a field (screen_background, screen_background)
-  procedure Erase_Field (Field_No : in Afpx_Typ.Absolute_Field_Range) is
+  procedure Erase_Fld (Field_No : in Absolute_Field_Range) is
     Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
     Spaces : constant Unicode_Sequence (1 .. Field.Width)
            := (others => Con_Io.Space);
@@ -105,10 +105,10 @@ package body Af_Ptg is
                       Background => Af_Con_Io.Get_Background,
                       Move       => False);
     end loop;
-  end Erase_Field;
+  end Erase_Fld;
 
   -- Col after last non space character of a field (or last col)
-  function Last_Col (Field_No :  Afpx_Typ.Field_Range)
+  function Last_Col (Field_No :  Field_Range)
            return Con_Io.Col_Range is
     Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
     Str : constant Unicode_Sequence (1 .. Field.Data_Len)
@@ -121,7 +121,7 @@ package body Af_Ptg is
   -- Click is valid if Left or Right button press
   -- Wheele and Middle button press are handled internally here
   function Valid_Click (List_Present : Boolean;
-                        Cursor_Field : Afpx_Typ.Absolute_Field_Range;
+                        Cursor_Field : Absolute_Field_Range;
                         Right_Select : Boolean;
                         List_Change_Cb : access
         procedure (Action : in List_Change_List;
@@ -153,7 +153,7 @@ package body Af_Ptg is
       when Con_Io.Middle =>
         Scroll := False;
         -- At least one active Get field
-        Valid := Af_Dscr.Fields(Cursor_Field).Kind = Afpx_Typ.Get
+        Valid := Af_Dscr.Fields(Cursor_Field).Kind = Get_Field
                  and then Af_Dscr.Fields(Cursor_Field).Activated
                  and then not Af_Dscr.Fields(Cursor_Field).Isprotected;
       when Con_Io.Up =>
@@ -228,7 +228,7 @@ package body Af_Ptg is
   -- Get selection is left to be achieved (restoring previous and setting
   --  new color)
   procedure Handle_Click (List_Present : in Boolean;
-                          Cursor_Field : in Afpx_Typ.Absolute_Field_Range;
+                          Cursor_Field : in Absolute_Field_Range;
                           Right_Select : in Boolean;
                           Result : out Mouse_Action_Rec;
                           List_Change_Cb : access
@@ -240,7 +240,7 @@ package body Af_Ptg is
     Click_Pos : Con_Io.Square;
     Click_But : Button_List;
     List_But : List_Button_List;
-    Click_Field : Afpx_Typ.Absolute_Field_Range;
+    Click_Field : Absolute_Field_Range;
     Release_Pos : Con_Io.Square;
     Click_Row_List : Con_Io.Row_Range;
     Click_On_Selected : Boolean;
@@ -271,16 +271,15 @@ package body Af_Ptg is
               Col => Pos.Col - Field.Upper_Left.Col);
     end Get_Relative;
 
-    use Afpx_Typ;
     use Ada.Calendar;
-    use type Button_List;
+    use type Button_List, Absolute_Field_Range, Field_Kind_List;
   begin
     -- Save and reset last selected id
     Loc_Last_Selected_Id := Last_Selected_Id;
     Last_Selected_Id := 0;
 
     -- Result event discarded
-    Result := (Kind => Afpx_Typ.Put);
+    Result := (Kind => Put_Field);
     if not Valid_Click (List_Present, Cursor_Field, Right_Select,
                         List_Change_Cb) then
       return;
@@ -316,9 +315,9 @@ package body Af_Ptg is
       -- Try to find a button or get field
       Click_Field := 0;
       for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
-        if Af_Dscr.Fields(I).Kind /= Afpx_Typ.Put and then
-           Af_Dscr.Fields(I).Activated            and then
-           not Af_Dscr.Fields(I).Isprotected      and then
+        if Af_Dscr.Fields(I).Kind /= Put_Field and then
+           Af_Dscr.Fields(I).Activated         and then
+           not Af_Dscr.Fields(I).Isprotected   and then
            In_Field_Absolute(I, Click_Pos) then
           Click_Field := I;
           exit;
@@ -332,9 +331,9 @@ package body Af_Ptg is
       -- Try to find a get field
       Click_Field := 0;
       for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
-        if Af_Dscr.Fields(I).Kind = Afpx_Typ.Get and then
-           Af_Dscr.Fields(I).Activated           and then
-           not Af_Dscr.Fields(I).Isprotected     and then
+        if Af_Dscr.Fields(I).Kind = Get_Field and then
+           Af_Dscr.Fields(I).Activated        and then
+           not Af_Dscr.Fields(I).Isprotected  and then
            In_Field_Absolute(I, Click_Pos) then
           Click_Field := I;
           exit;
@@ -359,7 +358,7 @@ package body Af_Ptg is
         Restore_Pos;
       else
         -- Reverse this Button/Get field
-        Put_Field (Click_Field, Clicked);
+        Put_Fld (Click_Field, Clicked);
       end if;
     end if;
 
@@ -406,7 +405,7 @@ package body Af_Ptg is
         and then Last_Selection_Time >= Click_Time - Double_Click_Delay then
           -- Double Left click
           Af_List.Put (Click_Row_List, Selected, False);
-          Result := (Kind => Afpx_Typ.Button, But_Field_No => Click_Field,
+          Result := (Kind => Button_Field, But_Field_No => Click_Field,
                      But_Click_Square => Get_Relative (Click_Pos),
                      But_Release_Square => Get_Relative (Release_Pos));
         elsif Click_But = Con_Io.Left then
@@ -508,26 +507,26 @@ package body Af_Ptg is
       -- Result is Put
       -- End of processing of click in list
 
-    elsif Field.Kind = Afpx_Typ.Get then
+    elsif Field.Kind = Get_Field then
       -- If field is get: restore color
-      Put_Field (Click_Field, Normal);
+      Put_Fld (Click_Field, Normal);
       if not Valid_Field
       or else (Click_But = Con_Io.Middle
                and then Click_Field = Cursor_Field)  then
         -- Invalid click/Release, or Middle button in current cursor field
         --  => Discard: keep cursor field and col
-        Result := (Kind => Afpx_Typ.Put);
+        Result := (Kind => Put_Field);
       else
-        Result := (Kind => Afpx_Typ.Get,
+        Result := (Kind => Get_Field,
                    Get_Field_No => Click_Field,
                    Click_Col => Click_Pos.Col
                     - Af_Dscr.Fields(Click_Field).Upper_Left.Col);
       end if;
     else
       -- If field is button: restore color
-      Put_Field (Click_Field, Normal);
+      Put_Fld (Click_Field, Normal);
       if Valid_Field then
-        Result := (Kind => Afpx_Typ.Button, But_Field_No => Click_Field,
+        Result := (Kind => Button_Field, But_Field_No => Click_Field,
                    But_Click_Square => Get_Relative (Click_Pos),
                    But_Release_Square => Get_Relative (Release_Pos));
       end if;
@@ -550,7 +549,7 @@ package body Af_Ptg is
     Sel_Len : Natural;
     -- Cursor (Get) field and its initial content
     Field : constant Afpx_Typ.Field_Rec
-          := Af_Dscr.Fields(Afpx_Typ.Field_Range(Handle.Cursor_Field));
+          := Af_Dscr.Fields(Handle.Cursor_Field);
     Column : constant  Con_Io.Col_Range := Handle.Cursor_Col;
     Index  : constant Afpx_Typ.Char_Str_Range := Field.Offset + Column + 1;
     Offset : Con_Io.Col_Range;
@@ -625,7 +624,7 @@ package body Af_Ptg is
                .. Field.Char_Index + Field.Data_Len - 1) := Str.To_Array;
     Af_Dscr.Current_Dscr.Modified := True;
     -- Update offset
-    Af_Dscr.Fields(Afpx_Typ.Field_Range(Handle.Cursor_Field)).Offset := Offset;
+    Af_Dscr.Fields(Handle.Cursor_Field).Offset := Offset;
 
     return Result;
   exception
@@ -635,7 +634,7 @@ package body Af_Ptg is
 
   -- Call the user callback to get cursor col
   function Get_Cursor_Col (
-                 Field_No : Afpx_Typ.Field_Range;
+                 Field_No : Field_Range;
                  New_Field : Boolean;
                  Pointer_Col : Con_Io.Col_Range;
                  Offset : Con_Io.Col_Range;
@@ -681,7 +680,7 @@ package body Af_Ptg is
           := Af_Dscr.Chars
               (Field.Char_Index .. Field.Char_Index + Field.Data_Len - 1);
     begin
-      Result := Cursor_Col_Cb (Afpx.Field_Range(Field_No),
+      Result := Cursor_Col_Cb (Field_No,
                                New_Field,
                                Pointer_Col,
                                Offset,
@@ -698,7 +697,7 @@ package body Af_Ptg is
       return Field.Width - 1;
   end Get_Cursor_Col;
 
-  function Significant_Char (Field_No : Afpx_Typ.Field_Range;
+  function Significant_Char (Field_No : Field_Range;
                              From_Head : Boolean)
            return Con_Io.Col_Range is
     Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields (Field_No);
@@ -717,7 +716,7 @@ package body Af_Ptg is
   procedure Redisplay is
   begin
     Need_Redisplay := True;
-    Prev_Cursor_Field := Afpx_Typ.List_Field_No;
+    Prev_Cursor_Field := List_Field_No;
   end Redisplay;
 
   -- Print the fields and the list, then gets
@@ -739,7 +738,7 @@ package body Af_Ptg is
      procedure (Action : in List_Change_List;
                 Status : in List_Status_Rec) := null) is
 
-    Cursor_Field : Afpx_Typ.Absolute_Field_Range;
+    Cursor_Field : Absolute_Field_Range;
     List_Present : Boolean;
     Field : Afpx_Typ.Field_Rec;
     Last : Natural;
@@ -756,8 +755,7 @@ package body Af_Ptg is
     Char : Unicode_Number;
     Index : Natural;
 
-    use Afpx_Typ;
-    use type Con_Io.Curs_Mvt;
+    use type Con_Io.Curs_Mvt, Afpx.Absolute_Field_Range;
 
   begin
     -- For callback of list init
@@ -773,10 +771,10 @@ package body Af_Ptg is
 
     -- Init Cursor field and its offset
     if Get_Active then
-      Cursor_Field := Afpx_Typ.Field_Range (Get_Handle.Cursor_Field);
+      Cursor_Field := Get_Handle.Cursor_Field;
       Af_Dscr.Fields(Cursor_Field).Offset := Get_Handle.Offset;
     else
-      Cursor_Field := Afpx_Typ.List_Field_No;
+      Cursor_Field := List_Field_No;
       Prev_Cursor_Field := Afpx_Typ.List_Field_No;
     end if;
 
@@ -820,7 +818,7 @@ package body Af_Ptg is
           null;
         elsif not Af_Dscr.Fields(Lfn).Activated then
           -- List not active
-          Erase_Field (Lfn);
+          Erase_Fld (Lfn);
         elsif Line_List.Is_Empty then
           -- Empty list
           Af_List.Display(1);
@@ -855,9 +853,9 @@ package body Af_Ptg is
             and then (I = Cursor_Field or else I = Prev_Cursor_Field) ) then
             Af_Dscr.Fields(I).Modified := False;
             if Af_Dscr.Fields(I).Activated then
-              Put_Field (I, Normal);
+              Put_Fld (I, Normal);
             else
-              Erase_Field (I);
+              Erase_Fld (I);
             end if;
           end if;
         end loop;
@@ -1039,7 +1037,7 @@ package body Af_Ptg is
             elsif Field.Move_Next then
               -- End (right) of previous field
               -- Restore normal color of previous field
-              Put_Field (Cursor_Field, Normal);
+              Put_Fld (Cursor_Field, Normal);
               Cursor_Field := Next_Get_Field (Cursor_Field);
               Get_Handle.Offset := Con_Io.Col_Range'First;
               Af_Dscr.Fields(Cursor_Field).Offset := Get_Handle.Offset;
@@ -1060,7 +1058,7 @@ package body Af_Ptg is
             elsif Field.Move_Prev then
               -- Left on previous field
               -- Restore normal color of previous field
-              Put_Field (Cursor_Field, Normal);
+              Put_Fld (Cursor_Field, Normal);
               Cursor_Field := Prev_Get_Field (Cursor_Field);
               Field := Af_Dscr.Fields(Cursor_Field);
               Field.Offset := Field.Data_Len - Field.Width;
@@ -1136,7 +1134,7 @@ package body Af_Ptg is
           if Get_Active then
             -- Tab in previous field
             -- Restore normal color of previous field
-            Put_Field (Cursor_Field, Normal);
+            Put_Fld (Cursor_Field, Normal);
             Cursor_Field := Next_Get_Field (Cursor_Field);
             Get_Handle.Offset := Con_Io.Col_Range'First;
             Af_Dscr.Fields(Cursor_Field).Offset := Get_Handle.Offset;
@@ -1152,7 +1150,7 @@ package body Af_Ptg is
           if Get_Active then
             -- Beginning of prev get field
             -- Restore normal color of previous field
-            Put_Field (Cursor_Field, Normal);
+            Put_Fld (Cursor_Field, Normal);
             Cursor_Field := Prev_Get_Field (Cursor_Field);
             Get_Handle.Offset := Con_Io.Col_Range'First;
             Af_Dscr.Fields(Cursor_Field).Offset := Get_Handle.Offset;
@@ -1193,7 +1191,7 @@ package body Af_Ptg is
             if Selection_Result = Sel_New_Field then
               -- Selection completed the field
               -- Restore normal color of previous field
-              Put_Field (Cursor_Field, Normal);
+              Put_Fld (Cursor_Field, Normal);
               Cursor_Field := Next_Get_Field (Cursor_Field);
               Get_Handle.Offset := Con_Io.Col_Range'First;
               Af_Dscr.Fields(Cursor_Field).Offset := Get_Handle.Offset;
@@ -1217,12 +1215,12 @@ package body Af_Ptg is
             Handle_Click (List_Present, Cursor_Field,
                           Right_Select, Click_Result, List_Change_Cb);
             case Click_Result.Kind is
-              when Afpx_Typ.Put =>
+              when Put_Field =>
                 null;
-              when Afpx_Typ.Get =>
+              when Get_Field =>
                 if Click_Result.Get_Field_No /= Cursor_Field then
                   -- Restore normal color of previous field
-                  Put_Field (Cursor_Field, Normal);
+                  Put_Fld (Cursor_Field, Normal);
                   -- Change field
                   Cursor_Field := Click_Result.Get_Field_No;
                   -- Update cursor col
@@ -1242,7 +1240,7 @@ package body Af_Ptg is
                       Af_Dscr.Fields(Cursor_Field).Offset,
                       Mouse, Cursor_Col_Cb);
                 end if;
-              when Afpx_Typ.Button =>
+              when Button_Field =>
                 -- End of put_then_get
                 if List_Present then
                   Af_List.Set_Current;
@@ -1250,10 +1248,9 @@ package body Af_Ptg is
                 Result := (Id_Selected_Right  =>
                              Af_List.Get_Status.Ids_Selected (List_Right),
                            Event        => Mouse_Button,
-                           Field_No =>
-                              Absolute_Field_Range(Click_Result.But_Field_No),
-                           Click_Pos => Click_Result.But_Click_Square,
-                           Release_Pos => Click_Result.But_Release_Square);
+                           Field_No     => Click_Result.But_Field_No,
+                           Click_Pos    => Click_Result.But_Click_Square,
+                           Release_Pos  => Click_Result.But_Release_Square);
                 Get_Handle.Insert := False;
                 Done := True;
             end case;
