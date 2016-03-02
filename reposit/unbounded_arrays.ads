@@ -193,12 +193,11 @@ package Unbounded_Arrays is
 private
 
   -- Default value is an empty array
-  Empty_Array : Element_Array (1 .. 0);
-  Null_Array : aliased Element_Array := Empty_Array;
-
+  subtype Empty_Array is Element_Array(1 .. 0);
+  Null_Access : constant Array_Access := new Empty_Array'(others => <>);
 
   type Unbounded_Array is new Ada.Finalization.Controlled with record
-    Ref : Array_Access := Null_Array'Access;
+    Ref : Array_Access := Null_Access;
     Last : Natural := 0;
   end record;
 

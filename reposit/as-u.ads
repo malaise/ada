@@ -153,12 +153,12 @@ package As.U is
 
 private
   type String_Access is access all String;
-  Empty_String : String(1 .. 0);
 
-  Null_String : aliased String := Empty_String;
+  subtype Empty_String is String(1 .. 0);
+  Null_access : constant String_Access := new Empty_String'((others => <>));
 
   type Asu_Us is new Ada.Finalization.Controlled with record
-    Ref : String_Access := Null_String'Access;
+    Ref : String_Access := Null_access;
     Last : Natural := 0;
   end record;
 

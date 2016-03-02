@@ -53,7 +53,7 @@ package body Unbounded_Arrays is
       if Item'Length = 0 then
         -- Item to store is empty
         Free (Within.Ref);
-        Within.Ref := Null_Array'Access;
+        Within.Ref := Null_Access;
       else
         -- Item to store fits in Ref, no need to re-alloc
         Within.Ref.all(1 .. Item'Length) := Item;
@@ -87,7 +87,7 @@ package body Unbounded_Arrays is
   begin
    -- Optim: avoid copying Null_Unb_Array
     Free (Target.Ref);
-    Target.Ref := Null_Array'Access;
+    Target.Ref := Null_Access;
     Target.Last := 0;
   end Set_Null;
 
@@ -597,12 +597,12 @@ package body Unbounded_Arrays is
   -- Life cycle
   overriding procedure Initialize (Object : in out Unbounded_Array) is
   begin
-    Object.Ref := Null_Array'Access;
+    Object.Ref := Null_Access;
     Object.Last := 0;
   end Initialize;
   overriding procedure Adjust (Object : in out Unbounded_Array) is
   begin
-    if Object.Ref /= Null_Array'Access then
+    if Object.Ref /= Null_Access then
       -- Real copy
       Object.Ref := new Element_Array'(
                         Object.Ref(1 .. Object.Last));
@@ -611,7 +611,7 @@ package body Unbounded_Arrays is
   overriding procedure Finalize (Object : in out Unbounded_Array) is
   begin
     Free (Object.Ref);
-    Object.Ref := Null_Array'Access;
+    Object.Ref := Null_Access;
     Object.Last := 0;
   end Finalize;
 

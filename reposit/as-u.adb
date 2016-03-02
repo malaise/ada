@@ -59,7 +59,7 @@ package body As.U is
       if Item'Length = 0 then
         -- Item to store is empty
         Free (Within.Ref);
-        Within.Ref := Null_String'Access;
+        Within.Ref := Null_Access;
       else
         -- Item to store fits in Reference, no need to re-alloc
         Within.Ref.all(1 .. Item'Length) := Item;
@@ -104,7 +104,7 @@ package body As.U is
   begin
     -- Optim: avoid copying Asu_Null
     Free (Target.Ref);
-    Target.Ref := Null_String'Access;
+    Target.Ref := Null_Access;
     Target.Last := 0;
   end Set_Null;
 
@@ -617,12 +617,12 @@ package body As.U is
   -- Life cycle
   overriding procedure Initialize (Object : in out Asu_Us) is
   begin
-    Object.Ref := Null_String'Access;
+    Object.Ref := Null_Access;
     Object.Last := 0;
   end Initialize;
   overriding procedure Adjust (Object : in out Asu_Us) is
   begin
-    if Object.Ref /= Null_String'Access then
+    if Object.Ref /= Null_Access then
       -- Real copy
       Object.Ref := new String'(Object.Ref(1 .. Object.Last));
     end if;
@@ -630,7 +630,7 @@ package body As.U is
   overriding procedure Finalize (Object : in out Asu_Us) is
   begin
     Free (Object.Ref);
-    Object.Ref := Null_String'Access;
+    Object.Ref := Null_Access;
     Object.Last := 0;
   end Finalize;
 
