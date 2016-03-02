@@ -110,8 +110,8 @@ package Argument_Parser is
 
   -- The following operations alow retreiving info per key
   -- Index is relative to the array provided as input
-  -- 0 means no key (any argument that is neither a key nor the option of a
-  --  char key).
+  -- No_Key_Index (0) means no key (any argument that is neither a key nor the
+  --  option of a char key).
   No_Key_Index : constant The_Keys_Index := 0;
 
   -- All the following operations may raise, if called with Index too high:
@@ -120,6 +120,8 @@ package Argument_Parser is
   -- Nb of occurences of the key, possibly 0
   function Get_Nb_Occurences (Dscr  : Parsed_Dscr;
                               Index : The_Keys_Index) return Natural;
+
+  -- True if Nb of occurences is not 0
   function Is_Set (Dscr  : Parsed_Dscr;
                    Index : The_Keys_Index) return Boolean;
 
@@ -146,13 +148,20 @@ private
   type Keys_Access is access The_Keys_Type;
 
   type Parsed_Dscr is new Ada.Finalization.Controlled with record
+    -- Result of parsing and associated error string
     Ok : Boolean := False;
     Error : As.U.Asu_Us := As.U.Asu_Null;
+    -- Copy of the keys provided for parsing
     The_Keys : Keys_Access;
+    -- Last argument parsed as a key
     Last_Pos_Key : Natural := 0;
+    -- First argument after all the keys
     First_Pos_After_Keys : Natural := 0;
+    -- Number of not-key arguements that are followed by some keys
     Nb_Embedded : Natural := 0;
+    -- Number of occurence of each key
     Nb_Occurences : Keyed_Array := (others => 0);
+    -- First occurence (in arguments) of each key
     First_Occurence : Keyed_Array := (others => 0);
   end record;
   overriding procedure Adjust (Dscr : in out Parsed_Dscr);

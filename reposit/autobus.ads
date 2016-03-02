@@ -35,29 +35,32 @@ package Autobus is
   --  partners either connect to it or get connected to it.
   -- Delivering a message consists in sending it in TCP successively to the all
   --  the partners, each of them dispatching the message to the local observers.
-  -- Each partner on a reliable bus can be either active (a polling ensures that
-  --  its death can always be detected) or passive (its sudden death can only be
-  --  detected by the closure of the TCP connection).
+  -- Each partner on a reliable bus can be
+  --  * either active: it periodically sends a live message, so that the other
+  --    partner cat detect its death in any circumstance with a watchdog,
+  --  * or passive: its sudden death can only be detected by the closure of the
+  --    TCP connection.
   --  Active mode can be useful for servers, while passive mode might be more
   --  convenient for clients.
   -- B. Multicast
-  -- Each message is sent in multicast (IPM) to the receiving applications and
+  -- Each message is sent in multicast (IPM) to the partners and
   --  dispatched to the observers. Some messages might be lost in the network.
 
-  -- Bus kinds can be mixed. In one process, a Bus is either Reliable (active or
-  --  passive) or Multicast. But different processes can communicate through
-  --  Buses of different kinds, providing of course that they have the same
-  --  address.
-  --  - A publisher Reliable sends in TCP while in Multicast it sends in IPM,
-  --  - A receiver Reliable receives Reliable and Multicast messages,
-  --  - A Multicast Bus receives the live messages of the Reliable Buses
-  --    connects to them, then it handles them as passive,
-  --  - Point to point sending follows the same logic: on a Reliable bus the
-  --    Host-Port must denote a known Reliable patner (which has a Reliable
-  --    or Multicast bus), while on a Multicast bus it is sent in point to
-  --    point UDP to the Host,
-  -- This way, any message sent through or to a reliable bus is reliable and
-  --  message sent through and to a Multicast bus is multicast.
+  -- Bus kinds can be mixed. In one process, a Bus is either Reliable (either
+  --  active or passive) or Multicast. But different processes can communicate
+  --  through Buses of different kinds, providing of course that they have the
+  --  same address.
+  --  - A Reliable publisher sends in TCP while in Multicast it sends in IPM,
+  --  - A Reliable receiver receives Reliable and Multicast messages,
+  --  - A  Multicast receiver receives the live messages of the Reliable
+  --    publishers connects with them, then it handles them as passive,
+  --  - Point to point sending (operation Send_To) follows the same logic:
+  --    * if either the local or remote Bus is reliable then the Host-Port must
+  --      denote the known Reliable patner
+  --    * if both Buses are Multicast, then the Host-Port is used to send
+  --      the message in point to point UDP to the Host,
+  -- This way, any message sent through or to a reliable bus is reliable, and
+  --  any message sent through and to a Multicast bus is multicast.
 
   -- Tuning the Bus:
   -- A XML file allows the default tuning for all the Buses, and also a specific
@@ -65,18 +68,18 @@ package Autobus is
   --  variable AUTOBUS_CONFIG.
   -- For the default values and also for each individual reliable Bus:
   -- - Heartbeat_Period is the period in seconds at which each process on
-  --    the Bus sends the alive message. It is used in combination with
-  --    Heartbeat_Max_Missed. Default 1.
+  --    the (reliaable active) Bus sends the alive message. It is used in
+  --    combination with Heartbeat_Max_Missed. Default 1.
   -- - Heartbeat_Max_Missed, the number of missing alive messages after which
   --    the partners consider that a a process is dead (or at least unreachable)
   --    and discard it from the list of partners. Default 3.
   -- - Timeout for connecting and for sending each TCP message. When it fails
   --    the corresponding partner is discarded. Default 0.5.
-  --    Note that the Timeout applies to each attempt of TCP connection. After
-  --    each timeout there is a new attempt... likely until the partner is
-  --    finally discarded because of alive timeout.
+  --    Note that the Timeout applies to each attempt of TCP connection to
+  --    a reliable active partner. After each timeout there is a new attempt...
+  --    likely until the partner is finally discarded because of alive timeout.
   -- - TTL for both IPM and TCP exchanges. Default 5.
-  -- - Passive_Factor for the number of Heartbeat after which passive partners
+  -- - Passive_Factor for the number of Heartbeats after which passive partners
   --    send an alive message. Default 10.
   -- For each Bus, two ways to set a specific network interface for IPM and TCP:
   -- - Alias defines the IP address of the interface to be used by a given host.
@@ -89,7 +92,7 @@ package Autobus is
   --    the hosts on the LAN, except for those which are previously defined
   --    in an Alias.
   -- Aliases and LANs are tested in the order of declaration and the first that
-  --  matches is selected. If none matches, then the bus listens to, and sends
+  --  matches is selected. If none matches, then the Bus listens to, and sends
   --  the IPM messages on the interface associated to the local host name.
   -- See the DTD Autobus.dtd for the format of the XML file.
 
