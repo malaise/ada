@@ -1,8 +1,8 @@
+--#IfNotDef NoAssert
 with Ada.Calendar;
-with Argument, Images, Basic_Proc, Environ, Upper_Str;
---#IfDef NoAssert
-pragma Unreferenced (Ada.Calendar, Argument, Images, Basic_Proc);
+with Argument, Images, Basic_Proc;
 --#EndifDef
+with Environ, Upper_Str;
 package body Assertion is
 
   -- Init (getenv) done?

@@ -1,3 +1,4 @@
+-- Note that the overall Assertion behavior can be de-activated at compile time
 package Assertion is
 
   -- Action can be Ignore (do nothing), Put_Trace (trace assertion error)
