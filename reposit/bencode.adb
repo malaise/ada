@@ -160,7 +160,7 @@ package body Bencode is
   end Sort;
 
   -- Decode a Bencoded byte array into a Xml stream
-  function Bencode2Xml (Ben_Stream : Byte_Array;
+  function Bencode2Xml (Ben_Array : Byte_Array;
                         Keys_Policy : Dictio_Keys_Policy := None)
            return String is
     I : Positive;
@@ -171,7 +171,7 @@ package body Bencode is
     -- Check that next byte can be read
     procedure Check (Action : in String) is
     begin
-      if I = Ben_Stream'Last then
+      if I = Ben_Array'Last then
         Logger.Log_Error ("Unexpected end of bencoded array at offset "
                         & Images.Integer_Image (I)
                         & " while " & Action);
@@ -192,7 +192,7 @@ package body Bencode is
       loop
         Check ("decoding an Int");
         I := I + 1;
-        B := Natural (Ben_Stream(I));
+        B := Natural (Ben_Array(I));
         if Is_Digit (B) then
           -- A digit, go on
           Tmp.Append (Character'Val(B));
@@ -241,7 +241,7 @@ package body Bencode is
       Logger.Log_Debug ("Decoding a Byte array");
       -- Get <digits>:
       loop
-        B := Natural (Ben_Stream(I));
+        B := Natural (Ben_Array(I));
         exit when B = Character'Pos(':');
         if not Is_Digit (B) then
           Logger.Log_Error ("Invalid char in Byte length " & Character'Val(B)
@@ -262,7 +262,7 @@ package body Bencode is
       for J in 1 .. Len loop
         Check ("reading a Bytes array");
         I := I + 1;
-        B := Natural (Ben_Stream(I));
+        B := Natural (Ben_Array(I));
         Tmp.Append (Upper_Str (Hexa_Utils.Image (B, 2, '0')));
         Last_Bytes.Append (Byte (B));
         Valid := Valid and then B >= Character'Pos(' ')
@@ -367,7 +367,7 @@ package body Bencode is
         end if;
       end Check_Bytes;
     begin
-      B := Natural (Ben_Stream(I));
+      B := Natural (Ben_Array(I));
       if B = Character'Pos('i') then
         -- An Int
         Check_Bytes;
@@ -408,9 +408,9 @@ package body Bencode is
     Ctx.Set_Name (Node, Bencode_Name);
     -- Process each item
     Logger.Log_Debug ("Decoding Bencoded array of length"
-                    & Natural'Image (Ben_Stream'Length));
-    I := Ben_Stream'First;
-    while I <= Ben_Stream'Last loop
+                    & Natural'Image (Ben_Array'Length));
+    I := Ben_Array'First;
+    while I <= Ben_Array'Last loop
       -- Decode item
       Decode_Item;
       -- Next item
@@ -422,7 +422,7 @@ package body Bencode is
 
 
   -- Encode a Xml string into a Bencoded byte array
-  function Xml2Bencode (Xml_Stream : String;
+  function Xml2Bencode (Xml_String : String;
                         Keys_Policy : Dictio_Keys_Policy := None)
            return Byte_Array is
     Ctx : Xml_Parser.Generator.Ctx_Type;
@@ -630,8 +630,8 @@ package body Bencode is
     -- Init logger
     Logger.Init (Logger_Name);
     Logger.Log_Debug ("Encoding to Bencode");
-    -- Parse the XML stream into a tree
-    Ctx.Parse_Prologue (Xml_Stream, Dtd, Ok, Use_Dtd => False);
+    -- Parse the XML string into a tree
+    Ctx.Parse_Prologue (Xml_String, Dtd, Ok, Use_Dtd => False);
     if not Ok then
       Logger.Log_Error ("Xml parsing error " & Ctx.Get_Parse_Error_Message);
       raise Format_Error;
