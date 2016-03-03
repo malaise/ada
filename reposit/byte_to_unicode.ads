@@ -1,5 +1,5 @@
 -- Convert a byte to a Unicode number accoding to a map
---  that is loaded from a xml definition
+--  that is loaded from a XML file
 with Unicode;
 package Byte_To_Unicode is
 
@@ -11,11 +11,11 @@ package Byte_To_Unicode is
   -- Load a (XML defined) map from File_Name (or stdin if "")
   -- The file defines the Code values that differ from the input Byte
   --  (the table is initialised to identity)
-  -- Raises File_Error if error accessing file
-  -- Raises Parse_Error if incorrect table (e.g. duplicate entry)
+  -- Raises File_Error if error accessing the file
+  -- Raises Parse_Error if the table is incorrect (e.g. duplicate entry)
   -- An error message is associated to the Parse_Error exception
   --  (error detected by the Xml_Parser or locally).
-  -- See byte2unicode.dtd for the format of the file
+  -- See Byte2unicode.dtd for the format of the file
   File_Error : exception;
   Parse_Error : exception;
   procedure Load (The_Map : out Map; File_Name : in String);

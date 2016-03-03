@@ -2,6 +2,7 @@ with Ada.Exceptions;
 with Xml_Parser, Lower_Str, Mixed_Str;
 package body Byte_To_Unicode is
 
+  -- Get the Int value of a string 16#...#, 0x... or ...
   function Value (Str : String) return Natural is
   begin
     if Str'Length >= 2
@@ -17,6 +18,7 @@ package body Byte_To_Unicode is
     end if;
   end Value;
 
+  -- Load the map
   procedure Load (The_Map : out Map; File_Name : in String) is
     Ctx : Xml_Parser.Ctx_Type;
     Ok : Boolean;
@@ -75,10 +77,9 @@ package body Byte_To_Unicode is
                "Exception " &
                Mixed_Str (Ada.Exceptions.Exception_Name (Error)) &
                " raised.");
-
   end Load;
 
-  -- Returns the Unicode corresponding to a given byte in the table
+  -- Return the Unicode corresponding to a given byte in the table
   -- If the map is not loaded, then return Code
   function Convert (The_Map : Map;
                     Code : Byte) return Unicode.Unicode_Number is
