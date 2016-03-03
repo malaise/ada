@@ -5,17 +5,18 @@ generic
   type Element_Type is private;
 package Bloc_Io is
 
+  -- File to read/write
   type File_Type is tagged limited private;
-
   type File_Mode is (In_File, Inout_File, Out_File);
 
+  -- Index of Element in file, or number of elements in a bloc
   type Count is range 0 .. Long_Integer'Last;
   subtype Positive_Count is Count range 1 .. Count'Last;
 
-  -- The array of Element read/written
+  -- The array of Elements read/written
   type Element_Array is array (Positive_Count range <>) of Element_Type;
 
-  -- Create / Open / Close stuff
+  -- Create / Open / Close file
   -- May raise Status or Name_Error
   procedure Create(File : in out File_Type;
                    Name : in String);
@@ -27,7 +28,7 @@ package Bloc_Io is
   procedure Close(File : in out File_Type);
   function Is_Open(File : in File_Type) return Boolean;
 
-  -- Read Element_Array'Length Elements from file
+  -- Read Element_Array'Length Elements from file (at index From)
   -- or raise End_Error
   -- May raise Status, Device or End_Error
   procedure Read(File : in File_Type;
@@ -36,7 +37,7 @@ package Bloc_Io is
   procedure Read(File : in File_Type;
                  Item : in out Element_Array);
 
-  -- Write Element_Array'Length Elements to file
+  -- Write Element_Array'Length Elements to file (at index To)
   -- May increase size
   -- May raise Status or Device_Error
   procedure Write(File : in File_Type;
@@ -46,7 +47,7 @@ package Bloc_Io is
                   Item : in Element_Array);
 
 
-  -- Amount of Elements in file
+  -- Number of Elements in file
   -- May raise Status or Device_Error
   function Size(File : in File_Type) return Count;
 
