@@ -155,10 +155,10 @@ private
   type String_Access is access all String;
 
   subtype Empty_String is String(1 .. 0);
-  Null_access : constant String_Access := new Empty_String'((others => <>));
+  Null_Access : constant String_Access := new Empty_String'((others => <>));
 
   type Asu_Us is new Ada.Finalization.Controlled with record
-    Ref : String_Access := Null_access;
+    Ref : String_Access := Null_Access;
     Last : Natural := 0;
   end record;
 
