@@ -17,7 +17,7 @@ package Basic_Proc is
   procedure New_Line_Error;
   procedure Flush_Error;
 
-  -- Get line from stdin up to Fl or Str'Last (strip tailing Lf if any)
+  -- Get line from stdin up to Lf or Str'Last (strip tailing Lf if any)
   End_Error : exception;
   procedure Get_Line (Item : out String;
                       Last : out Natural);
