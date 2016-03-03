@@ -1,4 +1,5 @@
 -- Bit operations
+with Long_Longs;
 package Bit_Ops is
 
   -- Bit and, bit or, bit neg, shift left and shift right
@@ -20,12 +21,13 @@ package Bit_Ops is
   function Shr (Val : Long_Integer; Bits : Integer) return Long_Integer;
 
   -- Operations on long long integers
-  function "And" (Left, Right : Long_Long_Integer) return Long_Long_Integer;
-  function "Or"  (Left, Right : Long_Long_Integer) return Long_Long_Integer;
-  function "Xor" (Left, Right : Long_Long_Integer) return Long_Long_Integer;
-  function "Not" (Val : Long_Long_Integer) return Long_Long_Integer;
-  function Shl (Val : Long_Long_Integer; Bits : Integer) return Long_Long_Integer;
-  function Shr (Val : Long_Long_Integer; Bits : Integer) return Long_Long_Integer;
+  use Long_Longs;
+  function "And" (Left, Right : Ll_Integer) return Ll_Integer;
+  function "Or"  (Left, Right : Ll_Integer) return Ll_Integer;
+  function "Xor" (Left, Right : Ll_Integer) return Ll_Integer;
+  function "Not" (Val : Ll_Integer) return Long_Long_Integer;
+  function Shl (Val : Ll_Integer; Bits : Integer) return Ll_Integer;
+  function Shr (Val : Ll_Integer; Bits : Integer) return Ll_Integer;
 
 end Bit_Ops;
 
