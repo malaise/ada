@@ -1,6 +1,9 @@
 with Chronos, Timers;
 package Chronos.Passive_Timers is
 
+  -- A passive timer is a kind of chorono that allows to know if a
+  --  timeout as expired (instead of reading time)
+  -- Timeout can be periodic or single shot (no period), see Timers
   type Passive_Timer is tagged limited private;
 
   -- Timer status, independant from the associated clock status
@@ -11,7 +14,8 @@ package Chronos.Passive_Timers is
   -- True if timer is not Deleted (not Stopped)
   function Running (Timer : Passive_Timer) return Boolean;
 
-  -- Arm a passive timer with a given period
+  -- Arm a passive timer, possibly with a given period
+  -- Timers with a period 0.0 are single shot
   -- Overwrites any previous setting on this timer
   -- May raise Invalid_Delay if Delay_Seconds is < 0
   Invalid_Delay : exception;
@@ -35,16 +39,20 @@ package Chronos.Passive_Timers is
   -- If yes and single shot timer, set it to raise Timer_Expired
   function Has_Expired (Timer : in out Passive_Timer) return Boolean;
 
-  -- When a timer has expired once and has no period (0.0) it is not re-armed
-  -- Calling Suspend, Resume or Has_Expired again on it will raise:
+  -- When a single shot timer has expired and Has_Expired has returned True,
+  --  then, as long as it is not re-started, calling Suspend, Resume
+  --  or Has_Expired again on it will raise:
   Timer_Expired : exception;
 
 private
   type Passive_Timer is tagged limited record
+    -- State and characteristics of the timer
     Running : Boolean := False;
     Period : Timers.Period_Range;
     Next_Expiration : Chronos.Time_Rec;
+    -- Underlying chrono
     Chrono : Chronos.Chrono_Type;
+    -- Single shot timer has expired and Has_Expired has already reported True
     Expired : Boolean;
   end record;
 

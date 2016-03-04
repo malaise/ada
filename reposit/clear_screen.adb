@@ -1,3 +1,4 @@
+-- Reset and clear the terminal
 with Sys_Calls, Console;
 procedure Clear_Screen is
   Dummy_Res : Boolean;

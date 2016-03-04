@@ -106,6 +106,18 @@ package body Directory is
     Dest := Val;
   end Set;
 
+  -- Closes a directory
+  procedure C_Closedir (Dir : System.Address);
+  pragma Import(C, C_Closedir, "closedir");
+
+  -- Desc deallocation
+  procedure Finalize (Dest : in Dir_Rec) is
+  begin
+    if Dest.Dir_Addr /= System.Null_Address then
+      C_Closedir (Dest.Dir_Addr);
+    end if;
+  end Finalize;
+
   -- Opens a directory for list of entries
   function C_Opendir (Name : System.Address) return System.Address;
   pragma Import(C, C_Opendir, "opendir");
@@ -175,10 +187,6 @@ package body Directory is
   begin
     C_Rewinddir (Get_Rec (Desc).Dir_Addr);
   end Rewind;
-
-  -- Closes a directory
-  procedure C_Closedir (Dir : System.Address);
-  pragma Import(C, C_Closedir, "closedir");
 
   procedure Close (Desc : in out Dir_Desc) is
     Rec : Dir_Rec := Get_Rec (Desc);

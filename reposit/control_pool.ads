@@ -1,4 +1,4 @@
--- Exclusive access to data in a pool
+-- Exclusive access to data in a pool (a mutex for each key)
 with Mutexes, Long_Long_Limited_List, Long_Long_Limited_Pool;
 generic
   type Key_Type is private;

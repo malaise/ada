@@ -1,8 +1,9 @@
 with As.U, Dynamic_List, Directory;
+-- Make a list of entries of a directory
 package Dir_Mng is
 
+  -- List of entries in a directory
   subtype File_Kind_List is Directory.File_Kind_List;
-
   type File_Entry_Rec is record
     Name : As.U.Asu_Us;
     Kind : File_Kind_List;

@@ -1,13 +1,14 @@
--- Stores variables and performs evaluation of an expression referencing them
--- Also performs basic computation of an expression like: a o b...
+-- Store variables and perform evaluation of an expression referencing them
+-- Also perform basic computation of an expression like: a o b...
 --  where operation "o" is an operator +, -, * or /,
 --  and operands "a" or "b" are either integers (num, +num and -num)
---  or references to internal variables ${Variable}
+--  or references to variables ${Variable}
 --  Supports parentheses
 -- Both support an optional external variable resolver
 with As.U, Hashed_List.Unique;
 package Computer is
 
+  -- A memory set
   type Memory_Type is tagged limited private;
 
   -- Variable management
@@ -60,15 +61,15 @@ package Computer is
                                    Resolver : in Resolver_Access);
 
   -- Resolve variables of an expresssion
-  -- Variable delimiters may be backslashed for no expansion but then they
-  --  must be both backslashed. Ex: \${Var\}
+  -- Variable delimiters may be backslashed for no expansion, but in this case
+  --  then they must be both backslashed. Ex: \${Var\}
   function Eval (Memory : in out Memory_Type;
                  Expression : in String) return String;
 
   -- Computation of expression
-  -- First, all variables are got or resolved and must lead to a valid
+  -- First, all the variables are resolved and must lead to a valid
   --  operator, operand or a parenthesis
-  -- The the operations are computed in the proper order
+  -- Then the operations are computed in the proper order
   -- May raise Invalid_Expression (space, parentheses, operations, values...)
   function Compute (Memory : in out Memory_Type;
                     Expression : in String) return Integer;
@@ -76,8 +77,8 @@ package Computer is
   -- On Set, Get or Is_Set if empty name
   Invalid_Variable : exception;
   -- On Set if a constant (not modifiable variable) with this name already
-  --  exists, if Modifiable is set but a variable (modifiable or not) with this
-  --  name already exists.
+  --  exists, or if Modifiable is set but a variable (modifiable or not) with
+  --  this name already exists.
   -- On Unset if a constant (not modifiable variable) with this name already
   -- exists.
   Constant_Exists : exception;
@@ -101,6 +102,8 @@ private
     -- Modifiable
     Modifiable : Boolean;
   end record;
+
+  -- Unique Hash list of variables
   type Var_Access is access all Var_Rec;
   procedure Set (To : out Var_Rec; Val : in Var_Rec);
   function Image (Element : Var_Rec) return String;
@@ -109,6 +112,7 @@ private
                                            Set, "=", Image);
   package Var_Mng is new Var_List_Mng.Unique;
 
+  -- Memory set
   type Memory_Type is tagged limited record
     Var_List : Var_Mng.Unique_List_Type;
     External_Resolver : Resolver_Access := null;

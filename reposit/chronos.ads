@@ -4,9 +4,10 @@ with Ada.Finalization, Ada.Calendar;
 with Perpet, Day_Mng, Virtual_Time;
 package Chronos is
 
+  -- Virtual time observer to be aware of changes
   type Chrono_Type is new Virtual_Time.Observer with private;
 
-  -- The time read at a chronometer (days and seconds)
+  -- The time read from a chronometer (days and seconds)
   subtype Time_Rec is Perpet.Delta_Rec;
   -- Same but with day duration split
   subtype Day_Range is Perpet.Day_Range;
@@ -26,7 +27,7 @@ package Chronos is
   -- No effect if it is already running
   procedure Start (A_Chrono : in out Chrono_Type);
 
-  -- Same and returns current virtual time (when chrono has started)
+  -- Same and return current virtual time (when the chrono has started)
   procedure Start (A_Chrono : in out Chrono_Type;
                    Vtime : out Virtual_Time.Time);
 
@@ -37,7 +38,7 @@ package Chronos is
   -- Get the status of the chrono
   function Get_Status (A_Chrono : Chrono_Type) return Status_List;
 
-  -- Reads the chrono
+  -- Read the chrono
   -- Chrono can be running or stopped
   function Read (A_Chrono : Chrono_Type) return Time_Rec;
   function Read (A_Chrono : Chrono_Type) return Date_Rec;
@@ -46,11 +47,11 @@ package Chronos is
   -- Does not stop it if it is running (but resets it to 0 anyway)
   procedure Reset (A_Chrono : in out Chrono_Type);
 
-  -- Raised by Read if chrono has reached a too high value
+  -- Raised by Read if the chrono has reached a too high value
   Time_Error : exception renames Ada.Calendar.Time_Error;
 
 
-  -- Attach the Chrono to a (new) clock (detach from previous clock if any)
+  -- Attach the Chrono to a (new) clock (detach it from any previous clock)
   -- Chrono must be stopped, it is reset
   -- Set A_Clock to null for real time clock
   -- By default, chronos are on real time clock (Clock is null)
@@ -68,7 +69,7 @@ private
                       and Virtual_Time.Observer with record
     -- Chrono status
     Status : Status_List := Stopped;
-    -- Time when it was started, when running
+    -- Time when it was (re)started, when running
     Start_Time : Virtual_Time.Time;
     -- Offset, when stopped or running
     Offset : Duration := 0.0;

@@ -1,4 +1,4 @@
--- Basic consol managment
+-- Basic management of the terminal console
 package Console is
 
   -- Clear screen

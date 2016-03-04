@@ -77,6 +77,11 @@ package Channels is
   -------------
   -- CHANNEL --
   -------------
+  -- The channel defines a TCP port and each destination is a host
+  -- A Publisher adds (one by one or with a file) som destinations
+  -- On each host a receiver can subscribe to the channel
+  -- When a publisher writes a message on a channel, all its destinations
+  --  (is subscribed) receiev it
   generic
     -- Name of the channel (tcp in services)
     Channel_Name : in String;
@@ -182,6 +187,8 @@ package Channels is
   ---------
   -- BUS --
   ---------
+  -- The bus defines a LAN (maybe IPM address) and a UDP port
+  --  on which publishers and subscribers can exchange (unreliable) messages
   generic
     -- Name of the bus (udp in services)
     Bus_Name : in String;

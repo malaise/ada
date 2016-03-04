@@ -1,16 +1,20 @@
 with As.U, X_Mng, Timers, Unicode, Aski.Unicode, Smart_Reference, Dynamic_List;
 package Con_Io is
 
+  -----------------
+  -- Definitions --
+  -----------------
   -- Propagation of Unicode definitions
   subtype Unicode_Number is Unicode.Unicode_Number;
   subtype Unicode_Sequence is Unicode.Unicode_Sequence;
   Space : Unicode_Number renames Aski.Unicode.Spc_U;
   Htab  : Unicode_Number renames Aski.Unicode.Ht_U;
 
-  -- The Font
+  -- The Font identifier
   subtype Font_No_Range is Natural range 0 .. 3;
 
-  -- Possible screen size, the xxx_range_last are Console dependent
+  -- Possible screen size
+  -- The xxx_range_last are Console dependent (functions are defined below)
   Row_Range_First : constant Natural := 0;
   Last_Row : constant := 255;
   Col_Range_First : constant Natural := 0;
@@ -18,7 +22,7 @@ package Con_Io is
   subtype Row_Range is Natural range Row_Range_First .. Last_Row;
   subtype Col_Range is Natural range Col_Range_First .. Last_Col;
 
-  -- Default screen size
+  -- Default screen size (80 x 25)
   Def_Row_Last : constant Row_Range := 24;
   Def_Col_Last : constant Row_Range := 79;
 
@@ -55,13 +59,16 @@ package Con_Io is
                      Color13 => As.U.Tus ("Yellow"),
                      Color14 => As.U.Tus ("Black") );
 
+  --------------------
+  -- Initialisation --
+  --------------------
   -- Set_Colors raises Already_Init if called after Initialise
   -- Console.Init raises Already_Init if called several times
   Already_Init : exception;
   -- Color_Of raises Unknown_Color if this color is not found
   Unknown_Color : exception;
 
-  -- Set colors to specific values, before initialisation
+  -- Set colors to specific names, before initialisation
   procedure Set_Colors (Color_Names : in Colors_Definition);
 
   -- Color <-> Name
@@ -77,13 +84,15 @@ package Con_Io is
   Default_Background : constant Effective_Colors := Effective_Colors'First;
   Default_Xor_Mode   : constant Effective_Xor_Modes := Xor_Off;
 
-
   -- Can be called to initialise the consoles manager (for example, if all
   --  the consoles are created by threads, this ensures that the initialisation
   --  is done with the main stack)
   -- It is called automatically when opening the first console
   procedure Initialise;
 
+  -------------
+  -- Console --
+  -------------
   -- One console
   type Console is tagged private;
   type Console_Access is access all Console;
@@ -145,7 +154,9 @@ package Con_Io is
   procedure Clear_Screen (Con        : in Console;
                           Background : in Colors := Current);
 
-
+  ------------
+  -- Window --
+  ------------
   -- Operations on window
   type Window is tagged private;
   type Window_Access is access all Window;
@@ -225,6 +236,9 @@ package Con_Io is
   function Position (Name : Window) return Square;
 
 
+  ---------
+  -- Put --
+  ---------
   -- Write a character at the current cursor position and with the
   --  curent attributes. Position can be set by using move.
   -- Lf is the only special Ascii character which is interpreted.
@@ -294,6 +308,9 @@ package Con_Io is
   procedure New_Line (Name   : in Window;
                       Number : in Positive := 1);
 
+  ------------------
+  -- Put Then Get --
+  ------------------
   -- Selection (in/out) management
   -- Set the selection to be transfered to other applications
   -- Resets selection if empty string
@@ -422,7 +439,9 @@ package Con_Io is
   function Get (Name     : Window;
                 Time_Out : Delay_Rec := Infinite_Delay) return Get_Result;
 
-
+  --------------
+  -- Graphics --
+  --------------
   -- Graphic operations on Screen window (with Screen attributes)
 
   -- Size of the line in pixels
@@ -505,7 +524,10 @@ package Con_Io is
   -- The area MUST be convex otherwise the graphic result is undefined
   procedure Fill_Area (Con : in Console; Xys : in Natural_Array);
 
-  -- Get dynmically the current position of pointer
+  -----------
+  -- Mouse --
+  -----------
+  -- Get dynmically the current position of mouse
   -- If valid is False, it means that the pointer
   -- is currently out of the screen, then X and Y are not significant
   procedure Get_Current_Pointer_Pos (Con   : in Console;
@@ -513,7 +535,7 @@ package Con_Io is
                                      X     : out X_Range;
                                      Y     : out Y_Range);
 
-  -- Enable cursor motion events
+  -- Enable mouse motion events
   procedure Enable_Motion_Events (Con : in Console;
                                   Motion_Enabled : in Boolean);
 
@@ -564,6 +586,9 @@ package Con_Io is
       Con             : Console;
       Coordinate_Mode : Coordinate_Mode_List := Row_Col) return Mouse_Event_Rec;
 
+  ----------------
+  -- Exceptions --
+  ----------------
   -- Failure when initialising the Con_Io or openging a Console
   Init_Failure : exception;
   -- Failure when opening a window
@@ -590,6 +615,7 @@ package Con_Io is
 private
 
   type Console_Data is record
+    -- Console characteristics
     Initialised : Boolean := False;
     Id : X_Mng.Line;
     Mouse_Status : X_Mng.Event_Kind := X_Mng.Timeout;
@@ -606,7 +632,7 @@ private
     Font_Height : Natural := 0;
     Font_Offset : Natural := 0;
     Screen_Window : Window_Access;
-    -- Cache of current attributes set to X
+    -- Cache of current attributes
     Line_Foreground : Effective_Colors := Default_Foreground;
     Line_Background : Effective_Colors := Default_Background;
     Line_Xor_Mode   : Effective_Xor_Modes := Default_Xor_Mode;

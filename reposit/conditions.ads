@@ -6,10 +6,10 @@ package Conditions is
   --  (broadcast).
   type Condition is tagged private;
 
+
   -- Before waiting on a condition the user must get access to it
   -- By starting to wait the application automatically releases the exclusive
   --  access to the condition
-
 
   -- Get access to the condition
   -- If delay is negative, wait until mutex is got
@@ -31,7 +31,7 @@ package Conditions is
   function Is_Owner (A_Condition : Condition) return Boolean;
 
 
-  -- Atomically release the mutex and block the calling task on the condition
+  -- Atomically release the access and block the calling task on the condition
   -- Upon successful return, the access to the condition is already granted
   --  again to the calling task
   -- The calling task must have already got access the the condition, otherwise

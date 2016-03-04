@@ -4,7 +4,7 @@ package Command is
 
   -- Output and error flow,
   --  either a list: one item per line without LineFeed, not rewinded
-  --  or a raw Asu_Us
+  --  or a raw Asu_Us with the LineFeeds
   type Flow_Format_Kind_List is (Str, List);
   subtype Line_Type is As.U.Asu_Us;
   package Res_Mng is new Dynamic_List (Line_Type);
@@ -19,10 +19,10 @@ package Command is
   end record;
   type Flow_Access is access all Flow_Rec;
 
-  -- Strategy to set/merge/propagate flows
-  -- Set each flow on its Flow_Rec
-  -- Set only Out_Flow to output flow (error flow is put on stderr)
-  -- Propagate each flow
+  -- Strategy to set/merge/propagate the flows
+  -- * Set each flow on its Flow_Rec
+  -- * Set only Out_Flow to output flow (error flow is put on stderr)
+  -- * Propagate output flow on stdout and error flow on stderr
   type Flow_Mixing_Policies is (Both, Only_Out, None);
 
   -- Kind of exit code
@@ -34,9 +34,9 @@ package Command is
   --   concatenated in a Many_String
   -- If Use_Shell, then issue a 'sh -c "Cmd"'. Cmd can then be either a
   --   Many_String as above or the program and arguments separated by spaces
-  -- Report or propagate output/error flow with proper kind
+  -- Report or propagate output/error flow with the proper kind
   -- Set resulting exit code
-  -- If Use_Shell, the shell can be specified to another than the default
+  -- If Use_Shell, then the shell can be specified to another than the default
   ---------------------------------------------------------------------------
   -- Because it waits for the asynchronous exit of the child, this         --
   --  function uses Event_Mng.Wait internally. As a consequence:           --                         --
@@ -53,10 +53,10 @@ package Command is
                      Exit_Code : out Exit_Code_Range;
                      Shell : in String := Default_Shell);
 
-  -- Terminate requested by Control C
+  -- Terminate requested by Control-C
   Terminate_Request : exception;
 
-  -- Could not spawn command or /bin/sh
+  -- Could not spawn command or /bin/sh or Shell
   Spawn_Error : exception;
 
 end Command;
