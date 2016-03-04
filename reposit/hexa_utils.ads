@@ -39,7 +39,7 @@ package Hexa_Utils is
   -- Value of an hexadecimal string (without 16#...#)
   -- Str must be a valid image with no trailing spaces,
   --  leading spaces are skipped
-  -- May raises Constraint_Error if Str is not valid or result is too large
+  -- Raises Constraint_Error if Str is not valid or result is too large
   function Value (Str : String) return Natural;
   function Value (Str : String) return Long_Longs.Ll_Natural;
   function Value (Str : String) return Long_Longs.Llu_Natural;

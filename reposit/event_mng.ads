@@ -32,7 +32,7 @@ package Event_Mng is
   -----------------------
   -- Signal management --
   -----------------------
-  -- Called on some signal: SigInt SigChld
+  -- Called on some signal: SigTerm (or SigInt), or SigChld
   type Sig_Callback is access procedure;
 
   -- Register a callback on signal
@@ -53,7 +53,7 @@ package Event_Mng is
   function Get_Sig_Child_Callback return Sig_Callback;
 
   -- Send a dummy signal
-  -- It always generates a Sig_Event but Callbacks are not called
+  -- It always generates a Sig_Event but no Callback is called
   -- Usefull to unblock a Wait or Pause
   procedure Send_Dummy_Signal;
 
@@ -65,12 +65,12 @@ package Event_Mng is
   -- Non-interactive programs and stand-alone libraries shall:
   --  - Check Are_Signals_Handled and store the result
   --  - Wait and catch signals...
-  --  - I not handled then Reset_Default_Signals_Policy
+  --  - If signals were not handled, then Reset_Default_Signals_Policy
 
-  -- Reset signal handling to default UNIX behaviour
+  -- Reset signal handling to the default UNIX behaviour
   -- Returns True if a Sig Term was received but not handled
   function Reset_Default_Signals_Policy return Boolean;
-  -- Reset signal handling to default UNIX behaviour
+  -- Reset signal handling to the default UNIX behaviour
   -- Kill ourself SIGTERM if a Sig Term was received but not handled
   procedure Reset_Default_Signals_Policy;
 
@@ -87,13 +87,13 @@ package Event_Mng is
   -- WARNING: This opeation is supposed to be called only by the main task.
   --          It shall NOT be called by tasks (use delay).
   --
-  -- Wait until a Terminate_Sig or Child_Sig with a callback set,
+  -- Wait until a Sig_Term or Child_Sig with a callback set,
   --   or until a Dummy_Sig,
   --   or until some timer expires and its callback returns True,
-  --   or until some fd event and its callback return True,
+  --   or until some fd event occur and its callback returns True,
   --   or until timeout
   -- Any negative timeout means infinite
-  -- The four operations end on any event or on timeout
+  -- The 4 variants return on any event or on timeout
   type Out_Event_List is (Timer_Event, Fd_Event, Signal_Event, Timeout);
 
   -- This uses virtual time and allows various specifications of delay
@@ -116,10 +116,10 @@ package Event_Mng is
   -- Usefull to wait a bit and still process timers and Fds transparently
   procedure Pause (Timeout_Ms : in Integer);
 
-  ----------------------
-  -- Event management --
-  ----------------------
-  -- This low level operation shall not be used by applications
+  -----------------------------
+  -- Event internal handling --
+ ------- ----------------------
+  -- This low-level operation shall NOT be called by applications
   -- Internal event got by another waiting point (X_Wait_Event?)
   subtype In_Event_List is Out_Event_List range Fd_Event .. Timeout;
   type Event_Rec (Kind : In_Event_List := Fd_Event) is record
@@ -133,7 +133,6 @@ package Event_Mng is
         null;
     end case;
   end record;
-
   -- Handle an internal event
   function Handle (Event : Event_Rec) return Out_Event_List;
 

@@ -1,4 +1,4 @@
--- Interface to forker process
+-- Interface to the forker process
 with System;
 with Aski, C_Types;
 package Forker is

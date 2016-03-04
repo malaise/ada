@@ -4,7 +4,7 @@
 with Ada.Finalization;
 with Long_Longs, Hash_Function;
 package Hashing is
-  -- Maxmum size of the primary hash table (16_777_215)
+  -- Maxmum size of the primary hash table (16#FFFFFF# = 16_777_215)
   subtype Max_Hash_Range is Hash_Function.Hash_Range;
   Max_Hash_Value : constant Max_Hash_Range := Max_Hash_Range'Last;
 
