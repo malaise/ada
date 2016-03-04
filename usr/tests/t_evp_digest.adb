@@ -1,13 +1,15 @@
-with Basic_Proc, Argument, Evp_Digest, Hexa_Utils, Images;
+with Basic_Proc, Argument, Evp_Digest, Hexa_Utils, Images, Lower_Str;
 procedure T_Evp_Digest is
 
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Output ("Usage : " & Argument.Get_Program_Name
         & " <algo>" & " { <text> | -- }");
-    Basic_Proc.Put_Line_Output ("<text> adds text, -- shows digest and resets");
+    Basic_Proc.Put_Line_Output (
+        """<text>"" adds text, ""--"" shows digest and resets");
+    Basic_Proc.Put_Line_Output ("or :    " & Argument.Get_Program_Name
+        & " list");
   end Usage;
-
 
   -- Get digest and put
   -- Is digest already shown
@@ -39,6 +41,21 @@ begin
     Usage;
     Basic_Proc.Set_Error_Exit_Code;
     return;
+  elsif Argument.Get_Nbre_Arg = 1
+  and then Argument.Get_Parameter (Occurence => 1) = "list" then
+    -- List all the digests
+    for Digest in Evp_Digest.Digest_List loop
+      begin
+        Ctx.Init (Digest);
+        Basic_Proc.Put_Line_Output (Lower_Str (Digest'Img) & " => OK");
+        Ctx.Reset;
+      exception
+        when Evp_Digest.Name_Error =>
+          Basic_Proc.Put_Line_Output (Lower_Str (Digest'Img)
+                                    & " => not implemented");
+      end;
+    end loop;
+    return;
   end if;
 
   -- Init context
@@ -56,6 +73,9 @@ begin
 
   -- Show if not shown yet
   Show (Ctx);
+
+  -- Done
+  Ctx.Reset;
 
 end T_Evp_Digest;
 

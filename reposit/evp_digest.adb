@@ -1,5 +1,5 @@
 -- Binding (thin) to some OpenSSL EVP_Digest function
-with Aski;
+with Aski, Lower_Str;
 package body Evp_Digest is
 
   -- Interfaces
@@ -44,8 +44,8 @@ package body Evp_Digest is
     end if;
   end Init;
 
-  procedure Init (Ctx : in out Context; Name : in String) is
-    Str4C : constant String := Name & Aski.Nul;
+  procedure Init (Ctx : in out Context; Digest_Name : in String) is
+    Str4C : constant String := Digest_Name & Aski.Nul;
     use type System.Address;
   begin
     -- Check that Ctx is not in use
@@ -64,6 +64,11 @@ package body Evp_Digest is
     Ctx.Evp_Md_Ctx := Evp_Md_Ctx_Create;
     Evp_Digestinit_Ex (Ctx.Evp_Md_Ctx, Ctx.Evp_Md, System.Null_Address);
     Ctx.Clean := False;
+  end Init;
+
+  procedure Init (Ctx : in out Context; Digest : in Digest_List) is
+  begin
+    Init (Ctx, Lower_Str (Digest'Img));
   end Init;
 
   function Is_Init (Ctx : in Context) return Boolean is
