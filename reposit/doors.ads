@@ -3,8 +3,8 @@ package Doors is
 
   -- A door is a waiting point on which one or several tasks may
   --  wait until the required number of waiters is reached.
-  -- Door is open at creation (Nb_Waiters = 1)
-  -- Door can be completely closed (Nb_Waiters = 0)
+  -- A door is open at creation (Nb_Waiters = 1)
+  -- A door can be completely closed (Nb_Waiters = 0)
   type Door is tagged private;
 
 
@@ -33,7 +33,9 @@ package Doors is
 
   -- Get/Set the number of waiters (door access should have been granted)
   -- Set the expected number of waiters
-  -- 0 Means that the door is closed, (until the number of waiters is set back
+  -- 1 (initial value for a newly created door) means that the door is open:
+  --   any waiter is immediately released
+  -- 0 means that the door is closed, (until the number of waiters is set back
   --  to a positive value)
   Open   : constant Natural := 1;
   Closed : constant Natural := 0;
@@ -66,9 +68,11 @@ package Doors is
 private
 
   -- Key
-  type Key_Type is new Boolean;
-  Fake : constant Key_Type := False;
-  Pass : constant Key_Type := True;
+  type Key_Type is record
+    Is_Pass : Boolean := False;
+  end record;
+  Fake : constant Key_Type := (others => <>);
+  Pass : constant Key_Type := (Is_Pass => True);
 
   type Door_Rec is record
     -- The expected number of waiters
