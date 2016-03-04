@@ -1,4 +1,5 @@
 with Sys_Calls, Timers;
+-- Event management
 package Event_Mng is
 
   -------------------

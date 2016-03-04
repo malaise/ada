@@ -21,7 +21,7 @@ package Control_Pool is
                      Key : in Key_Type);
   Key_Not_Got : exception;
 
-  -- Clear (from free list) the unused accesses
+  -- Clear (deallocate from the free list) the unused accesses
   procedure Clear (Pool : in out Controlled_Pool_Type);
 
 private
