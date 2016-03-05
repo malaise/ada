@@ -111,7 +111,7 @@ package body Directory is
   pragma Import(C, C_Closedir, "closedir");
 
   -- Desc deallocation
-  procedure Finalize (Dest : in Dir_Rec) is
+  procedure Finalize (Dest : in out Dir_Rec) is
   begin
     if Dest.Dir_Addr /= System.Null_Address then
       C_Closedir (Dest.Dir_Addr);

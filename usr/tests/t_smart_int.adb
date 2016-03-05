@@ -5,7 +5,7 @@ package body T_Smart_Int is
     Dest := Val;
   end Set;
 
-  procedure Fin (Val : in Lim) is
+  procedure Fin (Val : in out Lim) is
   begin
     Basic_Proc.Put_Line_Output ("Finalization of" & Val'Img);
   end Fin;

@@ -638,7 +638,7 @@ private
     Line_Xor_Mode   : Effective_Xor_Modes := Default_Xor_Mode;
   end record;
   procedure Set (Dest : in out Console_Data; Val : in Console_Data);
-  procedure Finalize (Con : in Console_Data);
+  procedure Finalize (Con : in out Console_Data);
   package Console_Ref_Mng is new Smart_Reference (Console_Data, Set, Finalize);
   type Console is new Console_Ref_Mng.Handle with null record;
   Null_Console : constant Console
@@ -658,7 +658,7 @@ private
     Current_Xor_Mode   : Effective_Xor_Modes := Default_Xor_Mode;
   end record;
   procedure Set (Dest : in out Window_Data; Val : in Window_Data);
-  procedure Finalize (Win : in Window_Data);
+  procedure Finalize (Win : in out Window_Data);
   package Window_Ref_Mng is new Smart_Reference (Window_Data, Set, Finalize);
   type Window is new Window_Ref_Mng.Handle with null record;
   Null_Window : constant Window

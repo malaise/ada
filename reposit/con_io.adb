@@ -34,7 +34,7 @@ package body Con_Io is
     Dest := Val;
   end Set;
   -- Console finalization is to close all windows
-  procedure Finalize (Con : in Console_Data) is
+  procedure Finalize (Con : in out Console_Data) is
     Id : X_Mng.Line := Con.Id;
     Win : Window;
     Moved : Boolean;
@@ -74,7 +74,7 @@ package body Con_Io is
   begin
     Dest := Val;
   end Set;
-  procedure Finalize (Win : in Window_Data) is
+  procedure Finalize (Win : in out Window_Data) is
     pragma Unreferenced (Win);
   begin
     Logger.Log_Debug ("Window finalization");
