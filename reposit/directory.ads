@@ -1,6 +1,5 @@
 with System;
 with As.U, Sys_Calls, Smart_Reference;
--- Management of directory and file names
 package Directory is
 
   Max_Dir_Name_Len : constant := 1024;
@@ -109,9 +108,8 @@ private
   end record;
 
   procedure Set (Dest : in out Dir_Rec; Val : in Dir_Rec);
-  procedure Finalize (Dest : in Dir_Rec);
   package Smart_Desc_Mng is new Smart_Reference (
-    Object => Dir_Rec, Set => Set, Finalize => Finalize);
+    Object => Dir_Rec, Set => Set);
 
   type Dir_Desc is new Smart_Desc_Mng.Handle with null record;
 
