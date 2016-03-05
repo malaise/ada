@@ -1,3 +1,4 @@
+-- A function that hashes Strings into Integers
 package Hash_Function is
 
   type Hash_Buffer is tagged private;

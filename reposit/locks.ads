@@ -1,3 +1,4 @@
+-- Open/Close or Wait on a lock
 package Locks is
 
   -- A lock

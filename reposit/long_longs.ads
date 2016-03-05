@@ -1,3 +1,4 @@
+-- Long long integers
 package Long_Longs is
 
   subtype Ll_Integer  is Long_Long_Integer;

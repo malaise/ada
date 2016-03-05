@@ -1,4 +1,5 @@
 with As.U;
+-- Fetch the content of an URL
 package Http is
 
   -------------------------------

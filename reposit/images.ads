@@ -1,4 +1,5 @@
 with Ada.Calendar;
+-- Various convertions from numbers to string
 package Images is
   -- Image of an integer (without leading space)
   generic

@@ -27,15 +27,17 @@
 --  literal then a cross reference. It is made of:
 --  * A token: The first 4 bits indicate the length of the literal run
 --    and the last 4 bits indicate the length of the cross reference
---  * Then, if the run is longer than 14, the token contains Fx and the
---    following (up to four) bytes contain the remaining of the length
---    Exemple, a length of 300 is coded as Fx FF 1E (15+255+30). (x is used
---    to code the length of the cross reference)
+--  * Then, if the run is longer than 14, the token contains Fx (x is used
+--    to code the length of the cross reference) and the following bytes
+--    (up to 8MB for a 2GB length) contain the remaining of the length,
+--    each byte adding up to FF to the length, until the (last) byte that i
+--    not FF.
+--    Exemple, a length of 300 is coded as Fx FF 1E (15+255+30).
 --  * Then the literal run (if any)
 --  * Then on two bytes litle endian the offset of the cross reference
 --    (1 for current - 1)
---  * Then, if the reference is longer than 14, the (up to four bytes) to
---    complete the length.
+--  * Then, if the reference is longer than 14, the bytes (up to 4MB for a 1GB
+--    reference) to complete the length.
 --  The last sequence contains only a token, possible extension of literal
 --   run length, and literals.
 

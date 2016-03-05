@@ -1,7 +1,7 @@
 -- Generic simple dynamic pool of limited private objects
 -- Simply push data in pool, and pop data as long as it is not empty
 -- Default policy is Lifo (Last In First Out)
---  but Fifo (First In First Out) is also possible
+--  but Fifo (First In First Out) policy can be used instead
 with Long_Long_Limited_Pool;
 generic
   type Data_Type is limited private;

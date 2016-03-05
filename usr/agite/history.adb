@@ -1,6 +1,7 @@
-with As.U, Con_Io, Afpx.Utils, Normal, Rounds, Language, Directory, Str_Util;
+with As.U, Con_Io, Afpx.Utils, Normal, Rounds, Language, Directory, Str_Util,
+     Aski;
 with Utils.X, Config, Details, View, Afpx_Xref, Restore, Checkout, Tags,
-     Branch, Confirm_Diff_Dir, Reset;
+     Branch, Confirm_Diff_Dir, Reset, Error;
 package body History is
 
   -- List Width
@@ -175,25 +176,50 @@ package body History is
       end if;
     end Do_Checkout;
 
-    -- Do a reorg
+    -- Do a reorg if no local modif
     function Do_Reorg return Boolean is
       Pos : Positive;
+      Changes : Git_If.File_List;
+      Change : Git_If.File_Entry_Rec;
+      Moved : Boolean;
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
       Logs.Move_At (Pos);
       Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
-      -- Reorg (success will lead to return to Directory)
-      if Branch.Reorg (Root, Log.Hash) then
-        return True;
-      else
-        -- Restore screen
-        Init;
-        Init_List (Logs);
-        Afpx.Line_List.Move_At (Pos);
-        Afpx.Update_List (Afpx.Center_Selected);
-        return False;
+
+      -- Check that no local modif
+      Git_If.List_Changes (Changes);
+      -- Discard local changes (that are not indexed), status "??"
+      if not Changes.Is_Empty then
+        Changes.Rewind;
+        loop
+          Changes.Read (Change, Git_If.File_Mng.Dyn_List.Current);
+          if Change.S2 = '?' and then Change.S3 = '?' then
+            Changes.Delete (Moved => Moved);
+            exit when not Moved;
+          elsif Changes.Check_Move then
+            Changes.Move_To;
+          else
+            exit;
+          end if;
+        end loop;
       end if;
+
+      if not Changes.Is_Empty then
+        -- Error if some modifs remain
+        Error ("Reorg", Root, "There are some local changes," & Aski.Lf
+                            & "Please stash or revert them first.");
+      elsif Branch.Reorg (Root, Log.Hash) then
+        -- Reorg (success will lead to return to Directory)
+        return True;
+      end if;
+      -- Check Ko or Reorg failed: Restore screen
+      Init;
+      Init_List (Logs);
+      Afpx.Line_List.Move_At (Pos);
+      Afpx.Update_List (Afpx.Center_Selected);
+      return False;
     end Do_Reorg;
 
     -- Do a hard reset

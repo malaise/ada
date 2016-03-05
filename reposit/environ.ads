@@ -1,25 +1,25 @@
 with As.U;
 package Environ is
 
-  -- Getenv for a String. Returns empty string if not set.
+  -- Getenv for a String. Returns empty string if ENV var is not set.
   function Getenv (Env_Name : String) return String;
 
-  -- Getenv for a String. Raises Name_Error if not set.
+  -- Getenv for a String. Raises Name_Error if ENV var is not set.
   Name_Error : exception;
   function Getenv_If_Set (Env_Name : String) return String;
 
   -- Getenv for a String.
-  -- Leave result and length unchanged if not set or trunc,
+  -- Leave result and length unchanged if ENV var is not set or trunc,
   --  otherwise set them.
   procedure Get_Str (Name : in String; Result : in out String;
                                        Length : in out Natural);
   -- Getenv for a unbounded string
-  -- Leave result unchanged if not set, otherwise set it.
+  -- Leave result unchanged if ENV var is not set, otherwise set it.
   procedure Get_Us (Name : in String; Result : in out As.U.Asu_Us);
 
   -- Getenv an Integer
-  -- First variant returns Default if not set or trunc or empty or if invalid
-  --   content
+  -- First variant returns Default if ENV var is not set or trunc or empty,
+  --  or if has an invalid content
   -- Second variant leaves Result unchanged in these cases
   function  Get_Int (Name : String; Default : Integer) return Integer;
   procedure Get_Int (Name : in String; Result : in out Integer);
@@ -37,12 +37,12 @@ package Environ is
   function  Get_Dur (Name : String; Default : Pos_Duration) return Pos_Duration;
   procedure Get_Dur (Name : in String; Result : in out Pos_Duration);
 
-  -- Is variable set
+  -- Is ENV var set
   function Is_Set (Name : String) return Boolean;
 
-  -- Is variable set and its lower case is "y" or "yes"
+  -- Is ENV var set and its lower case is "y" or "yes"
   function Is_Yes (Name : String) return Boolean;
-  -- Is variable set and its lower case is "n" or "no"
+  -- Is ENV var set and its lower case is "n" or "no"
   function Is_No (Name : String) return Boolean;
 
 end Environ;

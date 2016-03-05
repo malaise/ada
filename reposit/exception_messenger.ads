@@ -73,6 +73,7 @@ package Exception_Messenger is
   function Exception_Message (X : Ada.Exceptions.Exception_Occurrence_Access)
            return String;
 
+  -- Explicit deallocation of an Exception_Occurrence, just in case
   procedure Deallocate is new Ada.Unchecked_Deallocation (
     Ada.Exceptions.Exception_Occurrence,
     Ada.Exceptions.Exception_Occurrence_Access);

@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V29.01
+V29.02
 
 General purpose
 ---------------
@@ -1019,10 +1019,13 @@ anchor:XReorg[]
 .Reorg
 This button launches an interactive rebase of the commits that follow the
 selected one. This allows splitting, merging, modifing the comment of these
-commits.
+commits. +
+There is first a check that there is no local change in the repository (they
+would be lost).
 
 NOTE: The 'Reorg' is done by performing automatically successive
-xref:XCherry[cherry-picks] from the current branch to a temporary branch.
+xref:XCherry[cherry-picks] from the current branch to a temporary branch, then
+a hard reset of the current branch to the temporary branch. +
 See the how-to xref:XCherryReorg[interactively rebase a branch on itself]
 and the section xref:XCherryError[Error in cherry-pick] on how to handle
 errors during a reorg.

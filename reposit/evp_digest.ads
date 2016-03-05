@@ -13,14 +13,16 @@ package Evp_Digest is
 
 
   -- Initialize a context for use with a given digest kind
-  -- Valid names should be at least (depending on implementation):
-  --  md4 md5 sha sha1 dss1 sha224 sha256 sha384 sha512 ripemd160 whirlpool
+  -- Valid names should be (depending on implementation) the lowercase image of
+  type Digest_List is (Md2, Md4, Md5, Mdc2, Dss, Dss1, Ripemd160, Whirlpool,
+                       Sha, Sha1, Sha224, Sha256, Sha384, Sha512);
   -- May raise:
   -- If Name does not correspond to a known digest kind (see man EVP_DigestInit)
   Name_Error : exception;
   -- If Ctx is already init (and not reset)
   Status_Error : exception;
-  procedure Init (Ctx : in out Context; Name : in String);
+  procedure Init (Ctx : in out Context; Digest_Name : in String);
+  procedure Init (Ctx : in out Context; Digest : in Digest_List);
   function Is_Init (Ctx : in Context) return Boolean;
 
   -- Update the context with some text

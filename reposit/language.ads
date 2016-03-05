@@ -1,13 +1,15 @@
 with Unicode, Utf_8;
+-- Set the language for character encoding
 package Language is
 
-  -- When Get_Env, Lang_Utf_8 is set if a Getenv on "LANG" gives a value
-  --  containing "UTF-8" (any casing), otherwise it is Lang_C that is set.
-  -- Get_Env is the default behaviour of Get_Language if Set_Language has not
-  --  been called.
+  -- When called with Get_Env, then Lang_Utf_8 is set if a Getenv on "LANG"
+  --  gives a value containing "UTF-8" (any casing), otherwise it is Lang_C
+  --  that is set.
+  -- Get_Env is the default behaviour of Get_Language (if Set_Language has not
+  --  been called).
   -- Once set or got, the language should not be changed because several text
-  --  processing utilities depend on it, so any attempt to set language twice
-  --  will raise Language_Already_Set
+  --  processing utilities depend on it, so any attempt to set the language
+  --  twice will raise Language_Already_Set
   -- Use Force_Language to bypass this check at your own risks.
   type Language_Selection_List is (Lang_C, Lang_Utf_8, Get_Env);
   Language_Already_Set : exception;
@@ -79,7 +81,7 @@ package Language is
 
   -- The following operations take into account the
   --  fact that several characters of String may be used
-  --  to define one put character (slot).
+  --  to define one output character (slot).
   -- They may raise Invalid_Sequence exception
 
   -- Number of chars needed to complete Char and put it (in one slot)
