@@ -78,22 +78,39 @@ package body Ndbm is
     end if;
   end Check_Open;
 
+  procedure Set (Dest : in out Db_Rec; Val : in Db_Rec) is
+  begin
+    Dest := Val;
+  end Set;
+
+  procedure Finalize (Dest : in out Db_Rec) is
+    use type System.Address;
+  begin
+    if Dest.Db_Addr /= System.Null_Address then
+      Dbm_Close (Dest.Db_Addr);
+      Dest.Db_Addr := System.Null_Address;
+    end if;
+  end Finalize;
+
   ----------
   -- Open --
   ----------
   procedure Open (Db : in out Database; File_Name : in String) is
     Name_For_C : constant String := File_Name & Aski.Nul;
+    Addr : System.Address;
     use Bit_Ops;
+    use type System.Address;
   begin
     if Is_Open (Db) then
       raise Use_Error;
     end if;
-    Db.Acc := Dbm_Open (Name_For_C(1)'Address,
-                        O_Rdwr or O_Creat,
-                        C_Types.Uint32 (S_Irusr or S_Iwusr or S_Irgrp));
-    if not Is_Open (Db) then
+    Addr := Dbm_Open (Name_For_C(1)'Address,
+                      O_Rdwr or O_Creat,
+                      C_Types.Uint32 (S_Irusr or S_Iwusr or S_Irgrp));
+    if Addr = System.Null_Address then
       raise Name_Error;
     end if;
+    Db.Init ( (Db_Addr => Addr) );
   end Open;
 
   -----------
@@ -102,8 +119,8 @@ package body Ndbm is
   procedure Close (Db : in out Database) is
   begin
     Check_Open (Db);
-    Dbm_Close (Db.Acc);
-    Db.Acc := System.Null_Address;
+    Dbm_Close (Db.Get_Access.Db_Addr);
+    Db.Get_Access.Db_Addr := System.Null_Address;
   end Close;
 
   -------------
@@ -112,7 +129,7 @@ package body Ndbm is
   function Is_Open (Db : in Database) return Boolean is
     use type System.Address;
   begin
-    return Db.Acc /= System.Null_Address;
+    return Db.Is_Set and then Db.Get_Access.Db_Addr /= System.Null_Address;
   end Is_Open;
 
   -----------
@@ -127,7 +144,8 @@ package body Ndbm is
     The_Key.Dsize := Key_Len;
     The_Data.Dptr := D'Address;
     The_Data.Dsize := Data_Len;
-    Res := Dbm_Store (Db.Acc, The_Key'Address, The_Data'Address,
+    Res := Dbm_Store (Db.Get_Access.Db_Addr,
+                      The_Key'Address, The_Data'Address,
                       Dbm_Replace);
     if Res /= 0 then
       raise Ndbm_Error;
@@ -145,7 +163,7 @@ package body Ndbm is
     Check_Open (Db);
     The_Key.Dptr := K'Address;
     The_Key.Dsize := Key_Len;
-    Dbm_Fetch (Db.Acc, The_Key'Address, The_Data'Address);
+    Dbm_Fetch (Db.Get_Access.Db_Addr, The_Key'Address, The_Data'Address);
     if The_Data.Dptr = System.Null_Address then
       raise No_Data;
     end if;
@@ -163,7 +181,7 @@ package body Ndbm is
     Check_Open (Db);
     The_Key.Dptr := K'Address;
     The_Key.Dsize := Key_Len;
-    Res := Dbm_Delete (Db.Acc, The_Key'Address);
+    Res := Dbm_Delete (Db.Get_Access.Db_Addr, The_Key'Address);
     if Res /= 0 then
       raise No_Data;
     end if;
@@ -178,7 +196,7 @@ package body Ndbm is
     use type System.Address;
   begin
     Check_Open (Db);
-    Dbm_Firstkey (Db.Acc, The_Key'Address);
+    Dbm_Firstkey (Db.Get_Access.Db_Addr, The_Key'Address);
     if The_Key.Dptr = System.Null_Address then
       raise No_Data;
     end if;
@@ -195,20 +213,13 @@ package body Ndbm is
     use type System.Address;
   begin
     Check_Open (Db);
-    Dbm_Nextkey (Db.Acc, The_Key'Address);
+    Dbm_Nextkey (Db.Get_Access.Db_Addr, The_Key'Address);
     if The_Key.Dptr = System.Null_Address then
       raise No_Data;
     end if;
     Memcpy (K'Address, The_Key.Dptr, C_Types.Size_T (Key_Len));
     return K;
   end Next_Key;
-
-  overriding procedure Finalize (Db : in out Database) is
-  begin
-    if Is_Open (Db) then
-      Close (Db);
-    end if;
-  end Finalize;
 
 end Ndbm;
 
