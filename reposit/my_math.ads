@@ -1,4 +1,5 @@
 with Ada.Numerics;
+-- Mathematical types, constants and operations
 package My_Math is
 
   subtype Inte is Long_Long_Integer;

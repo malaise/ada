@@ -5,7 +5,7 @@ package Mutexes is
   -- Kind of mutex
   -- Simple is standard mutex providing exclusive acccess. Efficient.
   -- Read_Write allows several readers but one writer at a time.
-  --  This implementation is fair but somewhat CPU consuming because
+  --  This implementation is fair but somewhat CPU-consuming because
   --  the arrival of a reader while writer(s) are waiting triggers a
   --  re-evaluation to let it pass if it has a higher (task) priority.
   -- Write_Read is like Read_Write but it priviledges writer(s).

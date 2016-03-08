@@ -9,7 +9,7 @@ package Num_Letters is
   -- long scale:  Decilliard, Decillion .. Milliard           Max 10^606-1
   -- short scale: Decillion, Novemnonagintillion .. Billion   Max 10^306-1
   -- common: Million, Thousand, Hundred, Tenth and Unit
-  type Scale_List is (Short, Long);
+  type Scale_List is (Long, Short);
 
   -- Raises Constraint_Error if N is too large for the scale (see "Max" above)
   function Letters_Of (N : Number; Scale : Scale_List := Long) return String;

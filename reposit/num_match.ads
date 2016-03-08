@@ -1,4 +1,4 @@
--- Manages number maching criteria
+-- Check wether a number maches a criteria
 -- <criteria> ::= [ <specs> ]
 -- <specs>   ::= <spec> [ { , <spec> } ]
 -- <spec>    ::= <num> | <range>
@@ -6,7 +6,9 @@
 -- <num>     ::= Natural
 -- No num matches the empty spec "", every num matches the range "-"
 -- The order of the successive <spec> is not significant
--- Example:  "-5,10-15,7,30-"
+-- The match is true if the number matches at least one spec
+-- Example:  "-5,10-15,7,30-" covers any number below or equal to -5,
+--  7, numbers 10 to 15 included, and any number equal of larger than 30.
 generic
   type Integer_Type is range <>;
 package Num_Match is

@@ -18,7 +18,7 @@ package Output_Flows is
   function Get (Name : String) return Output_Flow;
   procedure Set (Flow : out Output_Flow; Name : in String);
 
-  -- Set a new flow on an already open File
+  -- Set a new flow on an already open Text_Line.File
   -- May raise Already_Error if a flow with the same name
   --  is already set
   procedure Set (Flow : out Output_Flow; Name : in String;

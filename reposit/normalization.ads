@@ -1,15 +1,11 @@
 with My_Math;
 package Normalization is
 
-  -- Puts an int in a string of fixed length.
-  -- If I is shorter than max, it is aligned at right or left
-  -- If I is longer, it is rounded if possible (otherwise truncated)
-
-  -- I : value to put in the returned string
-  -- Len : Number of characters of the returned string
-  -- Right : If string is shorter than Len character, align it at Right
-  --   or at left (not Right) and fill with Gap
-  -- Gap : When string is shorter than len, fill empty positions with Gap
+  -- Puts an int I in a string of fixed length Len.
+  -- If I fits in Len, then it is aligned at Right or left, and Len is
+  --  completed (left or Right) with the Gap character
+  -- If I is longer, then it is rounded to fit in Len - 1 and a
+  --  warning char ('!') is prepended (if Right) or appended (if left)
   generic
     type Int is range <>;
   function Normal_Gen (I     : Int;
@@ -18,7 +14,7 @@ package Normalization is
                        Gap   : Character := ' ') return String;
 
 
-  -- Normal_Gen for Integer, My_Math.Inte and Long_Long_Integer
+  -- Normal for Integer, My_Math.Inte and Long_Long_Integer
   function Normal_Int (I     : Integer;
                        Len   : Positive;
                        Right : Boolean := True;
@@ -62,7 +58,7 @@ package Normalization is
                           Len   : Positive;
                           Exp   : Positive) return String;
 
-  -- Puts a float F or a real R in a string of fixed length.
+  -- Puts a float F, a real R or a delta D in a string of fixed length.
   -- At least space/sign, then one digit, then a '.', then some fraction part,
   --  then some Gap character if needed
   -- Fore is the length before the dot, padded with spaces if needed

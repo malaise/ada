@@ -1,5 +1,5 @@
 with Aski, As.U;
--- Store several strings in one, (using a specific character as separator).
+-- Store several strings into one, (using a specific character as separator).
 package Many_Strings is
 
   -- Separator of strings in a Many_String image
@@ -9,7 +9,7 @@ package Many_Strings is
   -- A Many_String is a list of strings (possibly empty strings)
   --  separated by Separator
   -- No separator if there is no or one string
-  -- <many_strings> ::= <string> [ { <separator> <string> } ]
+  -- <many_strings> ::= <string> [ { <separator> [ <string> ] } ]
   -- <string> ::= [ { <char> } ]
   type Many_String is tagged private;
   Empty_String : constant Many_String;

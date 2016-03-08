@@ -20,12 +20,12 @@ package Multiget is
   type Multigetter is tagged limited private;
 
   -- Starts recording (recording is inactive by default)
-  -- Any Get performed while recording is active can be ungot.
+  -- Any Get performed while the recording is active can be ungot.
   -- No effect if recording is already active
   procedure Start_Recording (Getter : in out Multigetter);
 
   -- Stops recording
-  -- Still allows re-get to use recorded unget but new unget are impossible
+  -- Still allows get to return previously ungot items, new unget are impossible
   -- No effect if recording is already stopped
   procedure Stop_Recording (Getter : in out Multigetter);
 
@@ -33,9 +33,10 @@ package Multiget is
   function Is_Recording (Getter : Multigetter) return Boolean;
 
   -- The getting function
-  -- Calls Get_Item (User_Data) and return its result
+  -- If some items are ungot, then returns the last of them (and removes it)
+  -- otherwise calls Get_Item (User_Data) and returns its result
   -- Propagates any exception of the Get_Item (error or end of file...)
-  -- If recording, copies each Item got in a buffer (for further unget).
+  -- If recording, copies each item got in a buffer (for further unget).
   -- When the buffer is full, the oldest got item is overwritten by the new one
   function Get (Getter : in out Multigetter; User_Data : in User_Data_Type)
                 return Item_Type;
@@ -49,22 +50,22 @@ package Multiget is
   To_Many_Unget : exception;
   procedure Unget (Getter : in out Multigetter; Number : in Natural := 1);
 
-  -- Reset unget buffer
+  -- Resets the unget buffer
   procedure Reset (Getter : in out Multigetter);
 
 
 private
-  -- The buffer, in which current position is the "next to unget"
+  -- The buffer, in which the current position is the "next to unget"
   --  when Offset is 0.
   -- When Offset is 1, there is no next to unget any more. This way:
   -- Get_Position (From_First) - Offset is the number of possible ungets.
   -- Get_Position (From_Last)  - 1 is the number of possible re-gets.
   -- Items from current (included, except when Offset = 1) to first included
-  --  are the ones that can be ungot. So ungetting consists in moving current
-  --  position backwards.
+  --  are the ones that can be ungot. So ungetting consists in moving backwards
+  --  the current position.
   -- Items from current excluded to last included are the ones to be got.
   --  So getting consists in moving current position forward if possible, and
-  --  otherwise in getting from "outside" and appending to list.
+  --  otherwise in getting from "outside" and appending to the list.
   -- When recoding is inactive there cannot be any unget (previous items are
   --  removed from buffer) and getting consists in taking current item if
   --  possible, and otherwise getting from "outside".

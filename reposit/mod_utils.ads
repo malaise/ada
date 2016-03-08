@@ -10,16 +10,18 @@ package Mod_Utils is
     type Int is range <>;
   function Int_Smaller (Val, Crit : Int;
                         Last : Int) return Boolean;
-  generic
-    type Modulus is mod <>;
-  function Mod_Smaller (Val, Crit : Modulus;
-                        Last : Modulus) return Boolean;
+
   function Smaller (Val, Crit : Natural;
                     Last : Positive) return Boolean;
   function Smaller (Val, Crit : Long_Longs.Ll_Natural;
                     Last : Long_Longs.Ll_Positive) return Boolean;
   function Smaller (Val, Crit : Long_Longs.Llu_Natural;
                     Last : Long_Longs.Llu_Natural) return Boolean;
+
+  generic
+    type Modulus is mod <>;
+  function Mod_Smaller (Val, Crit : Modulus;
+                        Last : Modulus) return Boolean;
 
   -- Distance between two naturals
   -- if A <= B then B - A else A - B
