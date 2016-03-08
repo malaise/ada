@@ -9,7 +9,7 @@ package Afpx is
   subtype Descriptor_Range is Afpx_Typ.Descriptor_Range;
   subtype Absolute_Field_Range is Afpx_Typ.Absolute_Field_Range;
   subtype Field_Range is Afpx_Typ.Field_Range;
-  List_Field_No : constant Absolute_Field_Range := Afpx_Typ.List_Field_No;
+  List_Field_No : Absolute_Field_Range renames Afpx_Typ.List_Field_No;
 
   -- Width and height of a field
   subtype Height_Range is Afpx_Typ.Height_Range;
@@ -116,9 +116,9 @@ package Afpx is
   -- Get field kind
   -- Exceptions : No_Descriptor, Invalid_Field
   subtype Field_Kind_List is Afpx_Typ.Field_Kind_List;
-  Get_Field    : constant Field_Kind_List := Afpx_Typ.Get;
-  Put_Field    : constant Field_Kind_List := Afpx_Typ.Put;
-  Button_Field : constant Field_Kind_List := Afpx_Typ.Button;
+  Get_Field    : Field_Kind_List renames Afpx_Typ.Get;
+  Put_Field    : Field_Kind_List renames Afpx_Typ.Put;
+  Button_Field : Field_Kind_List renames Afpx_Typ.Button;
   function Get_Field_Kind (Field_No : in Field_Range) return Field_Kind_List;
   function Is_Put_Kind    (Field_No : in Field_Range) return Boolean;
   function Is_Button_Kind (Field_No : in Field_Range) return Boolean;

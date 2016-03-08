@@ -328,9 +328,9 @@ package Con_Io is
   subtype Delay_List is Timers.Delay_List;
   Infinite_Seconds : constant Duration := Timers.Infinite_Seconds;
   subtype Period_Range is Timers.Period_Range;
-  No_Period : constant Period_Range := Timers.No_Period;
+  No_Period : Period_Range renames Timers.No_Period;
   subtype Delay_Rec is Timers.Delay_Rec;
-  Infinite_Delay : constant Delay_Rec := Timers.Infinite_Delay;
+  Infinite_Delay : Delay_Rec renames Timers.Infinite_Delay;
 
 
   -- Get a string of at most width put characters. Width is deduced from

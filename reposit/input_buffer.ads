@@ -9,7 +9,7 @@ package Input_Buffer is
   -- GENERAL DEFINITIONS --
   -------------------------
   -- Default separator
-  Line_Feed : constant String := Text_Line.Line_Feed_Str;
+  Line_Feed : String renames Text_Line.Line_Feed_Str;
 
   -- Callback invoqued when a sentence has been identified in input flow
   --  (text ending by separator)
