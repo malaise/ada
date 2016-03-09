@@ -1,5 +1,5 @@
--- Various rounding and tuncating operations
--- See My_Math for details
+-- Various rounding and tuncating operations on basic types
+-- Also see My_Math that provides these operations on Long_Long and Real
 package Rounds is
   -- Round F at nearest integer
   function Round (F : Float) return Integer;

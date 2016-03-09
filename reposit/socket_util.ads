@@ -1,4 +1,4 @@
--- Use Tcp_Util addresses on socket
+-- Use on Socket the Tcp_Util way to designate an address (destination or port)
 with Socket, Tcp_Util;
 package Socket_Util is
 

@@ -35,8 +35,8 @@ package Select_File is
   Exit_Requested : exception;
 
   -- Get file name
-  -- Get field (text) is initialised with Current_File
-  -- Title field is set according to For_Read (and Read_Title and Write_Title)
+  -- The Get field (text) is initialised with Current_File
+  -- The Title field is set according to For_Read (and Read_Title / Write_Title)
   -- If Select_Current, then try to set selected entry in list to Current_File
   --  and center it
   function Get_File (Current_File   : String;

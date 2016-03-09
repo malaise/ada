@@ -2,18 +2,18 @@
 generic
 
   -- List of states
-  -- The initial state of the machine will be First of the list
+  -- The initial state of the machine will be the first of the state list
   type State_List is (<>);
 
   -- List of events
-  -- At modt one of these events can be defined as True in order to generate
+  -- At most one of these events can be defined as True in order to generate
   --  automatic transitions
   -- The Default event can be declared in this list to generate
   --  a transition on any unspecified event
   type Event_List is (<>);
 
-  -- Identifies (preferably uniquely) a machine so that the user callbacks
-  --  can know which machine is calling
+  -- Allows identifying (preferably uniquely) each machie, so that the user
+  --  callbacks can know which machine is calling
   type Machine_Id is (<>);
 
 package State_Machine is

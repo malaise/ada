@@ -1,4 +1,4 @@
--- Allow several objects to have references to a common object and
+-- Allow several objects to have references to a common object, and
 --  automatically de-allocate the referenced object when last user releases
 --  its reference
 with Ada.Finalization;

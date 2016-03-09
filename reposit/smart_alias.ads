@@ -2,7 +2,10 @@
 --  automatically inform when a user releases its reference
 with Ada.Finalization;
 generic
+  -- The type of object to handle
   type Object is limited private;
+  -- The notification that a Handle is released (destroyed or overritten),
+  --  with the number of access remaining after this release
   with procedure Released (Dest : access Object;
                            Nb_Access : in Natural) is null;
 package Smart_Alias is

@@ -27,12 +27,13 @@
 --    match)
 --  - If no match, then append the current byte as literal.
 --  - The compressed flow is a suite of sequences. A sequence starts with a
---    token, the 2 lowest bits of it indicate the kind of the sequence
+--    token. The 2 lowest bits of the first byte indicate the kind of the
+--    sequence
 --    * 00: a literal run, the 6 other bits L of the token indicate the
 --      length:
 --      - 0 <= L < 60, L = length - 1
---      - L = 60, the length - 1 is coded in the 1 following byte
---      - L = 61, length - 1 is coded in the 2 following bytes, littel endian
+--      - L = 60, length - 1 is coded in the 1 following byte
+--      - L = 61, length - 1 is coded in the 2 following bytes, little endian
 --      - L = 62, length - 1 is coded in the 3 following bytes, little endian
 --      - L = 63, length - 1 is coded in the 4 following bytes, little endian
 --    * 01: a reference with offset on 1 byte. The token is of the form:
@@ -41,7 +42,7 @@
 --    * 10: a reference with offset on 2 bytes. The token is of the form:
 --      LLLLLL10 OOOOOOOO oooooooo. LLLLLL is the length - 1 on 6 bits, and
 --      the token is followed by the offset on 16 bits, little endian
---    * 11: a reference with offset on 4 bytes. The token has
+--    * 11: a reference with offset on 4 bytes. The first byte is
 --      LLLLLL11, where LLLLLL is the length - 1 on 6 bits, and
 --      it is followed by the offset on 32 bits, little endian
 

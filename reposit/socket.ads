@@ -8,6 +8,10 @@ package Socket is
   No_Socket : constant Socket_Dscr;
 
   -- Available protocols on socket, UDP then TCP
+  -- Udp is UDP and IPM
+  -- Tcp is flows of bytes
+  -- Tcp_Header implements messages over TCP
+  -- Afux is TCP connection within the same host
   type Protocol_List is (Udp, Tcp, Tcp_Header, Tcp_Afux, Tcp_Header_Afux);
   subtype Tcp_Protocol_List is Protocol_List range Tcp .. Tcp_Header_Afux;
 
@@ -19,8 +23,8 @@ package Socket is
   --  then Link to the same port as this destination.
   --  It is possible to link dynamically to port (then the destination port
   --  that was set is not used).
-  --  It is possible to specify (before linking to port) a a specific receiving
-  --  interface. This is more efficient because  otherwise the multicast address
+  --  It is possible to specify (before linking to port) the receiving network
+  --  interface. This is more efficient because otherwise the multicast address
   --  is enabled on all the interfaces that are up and multicast-capable.
 
   -- A port
@@ -33,7 +37,7 @@ package Socket is
   -- The blocking / non-blocking modes
   --  Blocking emission and reception
   --  Blocking only connection and sending
-  --  All non blocking
+  --  Non blocking connection, emission and reception
   type Blocking_List is (Full_Blocking, Blocking_Send, Non_Blocking);
 
   -- The TTL, for TCP non Afux (default 64) and UDP/IPM (default 32)
@@ -44,32 +48,33 @@ package Socket is
   -- All the calls may raise Soc_Use_Err or Soc_Sys_Err
   Soc_Use_Err,   -- Socket should be open or not open
   Soc_Sys_Err,   -- System error (traced) and errno set (see Sys_Calls)
-  Soc_Dest_Err,  -- Destination should be set or not set
-  Soc_Link_Err,  -- Socket should be linked or not linked
-  Soc_Conn_Err,  -- Socket should be connected or not connected
+  Soc_Dest_Err,  -- Destination should be set or is already set
+  Soc_Link_Err,  -- Socket should be linked or is already linked
+  Soc_Conn_Err,  -- Socket should be connected or is already connected
                  --  or is already connecting
   Soc_Bcast_Err, -- Broadcast not allowed for this protocol
   Soc_Len_Err,   -- Lenght (message or name) too short
-  Soc_Reply_Err, -- Set_for_reply must not be set
+  Soc_Reply_Err, -- Set_For_Reply must not be set
   Soc_Tail_Err,  -- Sent msg len is not 0 while prev send raised Soc_Woul_Block
   Soc_Proto_Err, -- Call not allowed for this protocol
-  Soc_Fd_In_Use: -- Close while fd is used by x_select (see Event_Mng)
+  Soc_Fd_In_Use: -- Close while fd is used by x_select (see Get_Fd and
+                 --  Event_Mng Add/Del_Fd_Callback)
                  exception;
 
   -- Exceptions for failures
   -- Failures are (transient) consequences of external factors
-  Soc_Conn_Refused,   -- Connection refused (no dest process)
+  Soc_Conn_Refused,   -- Connection refused (no dest process linked)
   Soc_Name_Not_Found, -- Host/lan/service name not found
   Soc_Would_Block,    -- Connection, send or receive would block
   Soc_Conn_Lost,      -- Connection has been lost
   Soc_Addr_In_Use,    -- Address in use, maybe in close-wait state
-  Soc_Read_0,         -- Read returns 0, after a select => diconnection
+  Soc_Read_0,         -- Read returns 0, after a select => disconnection
   Soc_Reply_Iface:    -- Set_For_Reply could not set the IPM sending interface
                  exception;
 
   -- The following list describes which call may raise Soc_Would_Block on a
   --  non blocking socket and what the application should do it this case:
-  -- Receive: wait for read on fd and re-call Read with same arguments,
+  -- Receive: wait for read on fd and re-call Read with the same arguments,
   -- Send: wait for write on fd and call Re_Send, until Ok,
   -- Set_Destination (connect tcp): wait for write on fd then check result
   --   by calling Is_Connected.
@@ -119,9 +124,9 @@ package Socket is
   -- Get the protocol of a socket
   function Get_Protocol (Socket : in Socket_Dscr) return Protocol_List;
 
-  -------------------------------------
-  -- RECEPTION PORT - FD - RECEPTION --
-  -------------------------------------
+  -----------------------------
+  -- LINK - ACCEPT - RECEIVE --
+  -----------------------------
 
   -- Set the interface on which to link.
   -- For Tcp not Afux and for Udp (including Ipm)
@@ -175,9 +180,9 @@ package Socket is
                      Length        : out Natural;
                      Set_For_Reply : in Boolean := False);
 
-  -------------------------------------
-  -- DESTINATION PORT/HOST - SENDING --
-  -------------------------------------
+  ----------------------------------
+  -- DESTINATION PORT/HOST - SEND --
+  ----------------------------------
 
   -- Set the interface on which send mutlicast IP (udp_socket).
   -- To be set before setting destination.
@@ -251,46 +256,6 @@ package Socket is
   function Get_Destination_Host (Socket : Socket_Dscr) return Host_Id;
   function Get_Destination_Port (Socket : Socket_Dscr) return Port_Num;
 
-  -- Convert Port_Num to Port_Name and reverse (for a given protocol)
-  -- May raise Soc_Name_Not_Found if Name/Num is not found
-  function Port_Name_Of (Port : Port_Num; Protocol : Protocol_List)
-                        return String;
-  function Port_Num_Of  (Name : String; Protocol : Protocol_List)
-                        return Port_Num;
-
-  -- Convert Id to Host Name and reverse (not for LANs)
-  -- May raise Soc_Name_Not_Found if Name is not found
-  function Host_Name_Of (Id : Host_Id) return String;
-  function Host_Id_Of   (Name : String) return Host_Id;
-
-  -- Convert Id to LAN Name and reverse (not for hosts)
-  -- May raise Soc_Name_Not_Found if Name is not found
-  function Lan_Name_Of (Id : Host_Id) return String;
-  function Lan_Id_Of   (Name : String) return Host_Id;
-
-  -- Get local Host name and corresponding id
-  function Local_Host_Name return String;
-  function Local_Host_Id return Host_Id;
-  -- Get local LAN name (from local host) and corresponding id
-  function Local_Lan_Name return String;
-  function Local_Lan_Id return Host_Id;
-
-  -- Host_Id <-> 4 bytes of Ip address
-  subtype Byte is C_Types.Byte;
-  type Ip_Address is record
-    A, B, C, D : Byte; -- Network (natural) order
-  end record;
-  for Ip_Address'Size use 4 * System.Storage_Unit;
-
-  function Id2Addr (Id : Host_Id) return Ip_Address;
-  function Addr2Id (Addr : Ip_Address) return Host_Id;
-
-  -- Get the broadcast address for a given interface (designated by if_host) */
-  function Bcast_Of (If_Id : Host_Id) return Host_Id;
-
-  -- Get the id of local Host on a given LAN and netmask
-  function Host_Id_For (Lan, Netmask : Host_Id) return Host_Id;
-
   -- Send a message
   -- If Length is 0 then the full size of Message_Type is sent
   -- May raise Soc_Dest_Err if destination is not set
@@ -314,6 +279,50 @@ package Socket is
   -- May raise same exceptions as Send
   procedure Re_Send (Socket  : in Socket_Dscr);
 
+  ---------------
+  -- UTILITIES --
+  ---------------
+
+  -- Convert Port_Num to Port_Name and reverse (for a given protocol)
+  -- May raise Soc_Name_Not_Found if Name/Num is not found
+  function Port_Name_Of (Port : Port_Num; Protocol : Protocol_List)
+                        return String;
+  function Port_Num_Of  (Name : String; Protocol : Protocol_List)
+                        return Port_Num;
+
+  -- Convert Id to Host Name and reverse (not for LANs)
+  -- May raise Soc_Name_Not_Found if Name is not found
+  function Host_Name_Of (Id : Host_Id) return String;
+  function Host_Id_Of   (Name : String) return Host_Id;
+
+  -- Convert Id to LAN Name and reverse (not for hosts)
+  -- May raise Soc_Name_Not_Found if Name is not found
+  function Lan_Name_Of (Id : Host_Id) return String;
+  function Lan_Id_Of   (Name : String) return Host_Id;
+
+  -- Get local Host name and corresponding id
+  function Local_Host_Name return String;
+  function Local_Host_Id return Host_Id;
+
+  -- Get local LAN name (from local host) and corresponding id
+  function Local_Lan_Name return String;
+  function Local_Lan_Id return Host_Id;
+
+  -- Host_Id <-> 4 bytes of Ip address
+  subtype Byte is C_Types.Byte;
+  type Ip_Address is record
+    A, B, C, D : Byte; -- Network (natural) order
+  end record;
+  for Ip_Address'Size use 4 * System.Storage_Unit;
+
+  function Id2Addr (Id : Host_Id) return Ip_Address;
+  function Addr2Id (Addr : Ip_Address) return Host_Id;
+
+  -- Get the broadcast address for a given interface (designated by if_host)
+  function Bcast_Of (If_Id : Host_Id) return Host_Id;
+
+  -- Get the id of local Host on a given LAN and netmask
+  function Host_Id_For (Lan, Netmask : Host_Id) return Host_Id;
 private
 
   type Socket_Dscr is tagged record
