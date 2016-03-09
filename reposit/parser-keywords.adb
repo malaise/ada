@@ -39,7 +39,7 @@ package body Parser.Keywords is
   -- Set the sentence to parse, the parsing will start from the Next_Word
   procedure Set (Keys : in out Iterator; Iter : in Parser.Iterator) is
   begin
-    Parser.Copy (Keys.Iter, Iter);
+    Keys.Iter :=  Iter;
     Keys.End_Reached := False;
   end Set;
 

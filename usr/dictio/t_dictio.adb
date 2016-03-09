@@ -44,7 +44,7 @@ procedure T_Dictio is
   function Com_Fix_Mult (Unused_Rule : in Pattern.Rule_No;
                          Id   : in Pattern.Pattern_Id;
                          Unused_Nb_Match : in Natural;
-                         Iter : in Parser.Iterator) return Boolean is
+                         Iter : in out Parser.Iterator) return Boolean is
     Arg1 : constant String := Iter.Current_Word;
     Arg2 : constant String := Iter.Next_Word;
     use type Pattern.Pattern_Id;
@@ -65,7 +65,7 @@ procedure T_Dictio is
   function Com_Fix_Opt (Unused_Rule : in Pattern.Rule_No;
                         Id   : in Pattern.Pattern_Id;
                         Unused_Nb_Match : in Natural;
-                        Iter : in Parser.Iterator) return Boolean is
+                        Iter : in out Parser.Iterator) return Boolean is
     Arg1 : constant String := Iter.Current_Word;
     Arg2 : constant String := Iter.Next_Word;
     Arg3 : constant String := Iter.Next_Word;
@@ -87,7 +87,7 @@ procedure T_Dictio is
   function Com_Opt_Opt (Unused_Rule : in Pattern.Rule_No;
                         Id   : in Pattern.Pattern_Id;
                         Nb_Match : in Natural;
-                        Iter : in Parser.Iterator) return Boolean is
+                        Iter : in out Parser.Iterator) return Boolean is
     Arg1 : constant String := Iter.Current_Word;
     Arg2 : constant String := Iter.Next_Word;
     Alias_Name : constant String := "alias";
@@ -148,7 +148,7 @@ procedure T_Dictio is
   function Com (Unused_Rule : in Pattern.Rule_No;
                 Id   : in Pattern.Pattern_Id;
                 Unused_Nb_Match : in Natural;
-                Iter : in Parser.Iterator) return Boolean is
+                Iter : in out Parser.Iterator) return Boolean is
     Arg1 : constant String := Iter.Current_Word;
     use type Pattern.Pattern_Id;
   begin

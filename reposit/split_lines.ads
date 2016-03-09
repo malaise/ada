@@ -5,7 +5,7 @@
 -- if Max > 0 then keep the Max first lines
 -- if Max < 0 then keep the abs(Max) last lines
 with Parser, As.U.Utils;
-function Split_Lines (Iter   : Parser.Iterator;
+function Split_Lines (Iter   : in out Parser.Iterator;
                       Len    : Positive;
                       Indent : String;
                       Max    : Integer := 0)

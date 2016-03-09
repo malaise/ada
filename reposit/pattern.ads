@@ -33,7 +33,7 @@ package Pattern is
   type Match_Cb_Access is access function (Rule     : Rule_No;
                                            Id       : Pattern_Id;
                                            Nb_Match : Natural;
-                                           Iter     : Parser.Iterator)
+                                           Iter     : in out Parser.Iterator)
                                  return Boolean;
 
 

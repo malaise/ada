@@ -55,7 +55,7 @@ procedure T_Pattern is
   function Cli (Ru : in Pattern.Rule_No;
                 Pa : in Pattern.Pattern_Id;
                 Nb : in Natural;
-                It : in Parser.Iterator) return Boolean is
+                It : in out Parser.Iterator) return Boolean is
   begin
     Basic_Proc.Put_Output ("Called Cb (" & Pattern.Image (Ru) & ","
                                    & Pa'Img & ","
@@ -102,7 +102,7 @@ procedure T_Pattern is
   function Set (Unused_Ru : in Pattern.Rule_No;
                 Unused_Pa : in Pattern.Pattern_Id;
                 Unused_Nb : in Natural;
-                It        : in Parser.Iterator) return Boolean is
+                It        : in out Parser.Iterator) return Boolean is
     New_Pa : Pattern.Pattern_Id;
 
     Str : constant String := Parser.Image (It);
@@ -139,7 +139,7 @@ procedure T_Pattern is
   function Del (Unused_Ru : in Pattern.Rule_No;
                 Unused_Pa : in Pattern.Pattern_Id;
                 Unused_Nb : in Natural;
-                It        : in Parser.Iterator) return Boolean is
+                It        : in out Parser.Iterator) return Boolean is
     New_Pa : Pattern.Pattern_Id;
 
   begin
@@ -163,7 +163,7 @@ procedure T_Pattern is
   function Che (Unused_Ru : in Pattern.Rule_No;
                 Unused_Pa : in Pattern.Pattern_Id;
                 Unused_Nb : in Natural;
-                It        : in Parser.Iterator) return Boolean is
+                It        : in out Parser.Iterator) return Boolean is
     Str : constant String := Parser.Image (It);
     First : constant Natural := Parser.First_Index (It);
     Res : Boolean;
@@ -185,7 +185,7 @@ procedure T_Pattern is
   function Put (Unused_Ru : in Pattern.Rule_No;
                 Unused_Pa : in Pattern.Pattern_Id;
                 Unused_Nb : in Natural;
-                It        : in Parser.Iterator) return Boolean is
+                It        : in out Parser.Iterator) return Boolean is
     Str : constant String := Parser.Current_Word (It);
     Str1 : constant String := Parser.Next_Word (It);
     Pat2Put : Pattern.Pattern_Id;
@@ -228,7 +228,7 @@ procedure T_Pattern is
   function Hel (Unused_Ru : in Pattern.Rule_No;
                 Unused_Pa : in Pattern.Pattern_Id;
                 Unused_Nb : in Natural;
-                Unused_It : in Parser.Iterator) return Boolean is
+                Unused_It : in out Parser.Iterator) return Boolean is
   begin
     Basic_Proc.Put_Line_Output ("The following commands are supported:");
     Basic_Proc.Put_Line_Output ("  set <id> <pattern>");
@@ -241,9 +241,9 @@ procedure T_Pattern is
   end Hel;
 
   function Def (Ru : in Pattern.Rule_No;
-                 Pa : in Pattern.Pattern_Id;
-                 Nb : in Natural;
-                 It : in Parser.Iterator) return Boolean is
+                Pa : in Pattern.Pattern_Id;
+                Nb : in Natural;
+                It : in out Parser.Iterator) return Boolean is
 
   begin
     if Parser.Current_Word (It) /= "" then
@@ -256,7 +256,7 @@ procedure T_Pattern is
   function Exi (Ru : in Pattern.Rule_No;
                 Pa : in Pattern.Pattern_Id;
                 Nb : in Natural;
-                It : in Parser.Iterator) return Boolean is
+                It : in out Parser.Iterator) return Boolean is
   begin
     if Parser.Current_Word (It) = "" then
       Basic_Proc.Put_Line_Output ("Exiting");
@@ -272,7 +272,7 @@ procedure T_Pattern is
   function Auto (Ru : in Pattern.Rule_No;
                  Pa : in Pattern.Pattern_Id;
                  Nb : in Natural;
-                 It : in Parser.Iterator) return Boolean is
+                 It : in out Parser.Iterator) return Boolean is
     R : Pattern.Rule_No;
   begin
     if Parser.Current_Word (It) /= "" then

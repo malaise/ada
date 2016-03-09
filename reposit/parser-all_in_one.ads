@@ -14,7 +14,7 @@ package Parser.All_In_One is
   -- Reset the iterator, parse all words and separators, reset the iterator
   --  and return the parsed array.
   -- May raise Constraint_Error if Iter is not set.
-  function Parse_All (Iter : Iterator) return Parsed_Array;
+  function Parse_All (Iter : in out Iterator) return Parsed_Array;
 
 end Parser.All_In_One;
 

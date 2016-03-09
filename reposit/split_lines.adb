@@ -1,4 +1,4 @@
-function Split_Lines (Iter   : Parser.Iterator;
+function Split_Lines (Iter   : in out Parser.Iterator;
                       Len    : Positive;
                       Indent : String;
                       Max    : Integer := 0)

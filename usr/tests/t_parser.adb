@@ -64,7 +64,7 @@ begin
       declare
         Itt : Parser.Iterator;
       begin
-        Parser.Copy (Itt, It);
+        Itt := It;
         Parser.Set (Itt, Str, Is_Sep'Unrestricted_Access);
       end;
     end loop;
