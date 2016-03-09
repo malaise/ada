@@ -1,4 +1,4 @@
--- Conversion of romanic numbers (ex: VII) to anf from arabic (ex: 7)
+-- Conversion of romanic numbers (ex: VII) to and from arabic (ex: 7)
 package Romanic is
 
   -- The romanic typo
@@ -6,7 +6,8 @@ package Romanic is
   -- Longest supported is MMMMDCCCLXXXVIII (4888)
   -- Biggest supported is MMMMCMXCIX (4999)
   type Digit is ('I', 'V', 'X', 'L', 'C', 'D', 'M');
-  type Number is array (Positive range <>) of Digit;
+  subtype Index_Range is Positive range 1 .. 16;
+  type Number is array (Index_Range range <>) of Digit;
 
   subtype Arabic is Positive range 1 .. 4999;
 
