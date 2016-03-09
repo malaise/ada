@@ -22,7 +22,8 @@ package body Output_Flows is
     return Search (Flows, As.U.Tus (Name), From => Flows_Mng.Current_Absolute);
   end Search;
 
-  -- A cell is released, when there is one reference it is the list
+  -- A cell is released, when there is one reference it is the list itself,
+  --  so delete the flow
   procedure Released (Cell : access Cell_Type;
                       Nb_Access : in Natural) is
     Cell_Acc : Cell_Access := Cell_Access (Cell);
@@ -31,7 +32,7 @@ package body Output_Flows is
     Logger.Log (Trace.Debug, "Released of " & Cell_Acc.Name.Image
                     & " to" & Nb_Access'Img);
     if Nb_Access = 1 then
-      -- The last reference is the list
+      -- The last reference is the global list of flows
       if not Search (Cell_Acc.Name.Image) then
         Logger.Log (Trace.Error,
                     "Flow " & Cell_Acc.Name.Image & " not found in list");
@@ -42,6 +43,7 @@ package body Output_Flows is
       Flows.Deallocate (Moved => Dummy);
       Logger.Log (Trace.Debug, "Deleted");
     elsif Nb_Access = 0 then
+      -- As a result of the deallocation
       Logger.Log (Trace.Debug, "Finalizing " & Cell_Acc.Name.Image);
       -- No more reference
       if Cell_Acc.Kind = File then
