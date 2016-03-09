@@ -31,6 +31,8 @@ package Protected_Pool is
   Not_Found : exception;
 private
 
+  -- A protected pool is a global mutex and a hashed (on key) unique list
+  --  of elements
   type Element_Access is access all Element_Type;
   procedure Set (To : out Element_Type; Val : in Element_Type);
 

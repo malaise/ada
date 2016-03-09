@@ -7,20 +7,20 @@ package Perpet is
    Year  : Ada.Calendar.Year_Number;
    Month : Ada.Calendar.Month_Number) return Ada.Calendar.Day_Number;
 
-  -- Check date validity
+  -- Check date validity (Day versus Month and leap Year)
   function Is_Valid (
    Year  : Ada.Calendar.Year_Number;
    Month : Ada.Calendar.Month_Number;
    Day   : Ada.Calendar.Day_Number) return Boolean;
 
-  -- Nb of days
+  -- Nb of days (between dates)
   subtype Day_Range is Natural;
 
   -- Is a year leap
   function Is_Leap_Year (
    Year  : Ada.Calendar.Year_Number) return Boolean;
 
-  -- Number of days of a year
+  -- Number of days in a year
   function Nb_Days_Year (
    Year  : Ada.Calendar.Year_Number) return Day_Range;
 

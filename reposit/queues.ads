@@ -50,7 +50,7 @@ package Queues is
     --  or when popping if stack is empty
     Lifo_Full : exception;
     Lifo_Empty : exception;
-    -- Raised by look if no is > number of items in the stack
+    -- Raised by look if No is > number of items in the stack
     Lifo_Not : exception;
     type Pile_Type is array (No_Range) of Item;
   private
@@ -112,7 +112,7 @@ package Queues is
     --  or when popping if stack is empty
     Fifo_Full : exception;
     Fifo_Empty : exception;
-    -- Raised by look if no is > number of items in the stack
+    -- Raised by look if No is > number of items in the stack
     Fifo_Not : exception;
   private
     subtype Ptr_Range is Natural range 0 .. Size - 1;
@@ -184,7 +184,7 @@ package Queues is
     --  or when popping if stack is empty
     Prio_Full : exception;
     Prio_Empty : exception;
-    -- Raised by look if no is > number of items in the stack
+    -- Raised by look if No is > number of items in the stack
     Prio_Not : exception;
   private
     subtype Typ_Ptr is Natural range 0 .. Size - 1;
@@ -192,11 +192,13 @@ package Queues is
     -- Ptr_Out points to the first to pop
     --  fifo full  is raised if and only if ptr_in  = ptr_out and full
     --  fifo empty is raised if and only if ptr_in  = ptr_out and not full
-    type Item_Prio_Type is array (Typ_Ptr) of Item;
-    type Prio_Prio_Type is array (Typ_Ptr) of Priority;
+    type Cell is record
+      Prio : Priority;
+      Data : Item;
+    end record;
+    type File_Type is array (Typ_Ptr) of Cell;
     type Prio_Type is tagged record
-      File : Item_Prio_Type;
-      File_Prio : Prio_Prio_Type;
+      File : File_Type;
       Ptr_In  : Typ_Ptr := 0;
       Ptr_Out : Typ_Ptr := 0;
       Full : Boolean := False;
@@ -251,7 +253,7 @@ package Queues is
 
     -- Exceptions raised when popping if stack is empty
     Circ_Empty : exception;
-    -- Raised by look if no is > number of items in the stack
+    -- Raised by look if No is > number of items in the stack
     Circ_Not : exception;
 
   private

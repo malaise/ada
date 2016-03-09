@@ -2,7 +2,7 @@
 with Mutexes, U_Rand;
 package Rnd is
 
-  -- A random generator
+  -- A random generator, protected by a mutex
   type Generator is tagged limited private;
 
   -- A common global generator

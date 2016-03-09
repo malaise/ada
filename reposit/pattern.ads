@@ -8,7 +8,7 @@ package Pattern is
 
   -- A pattern is a list of terms separated by spaces or tabs
   --  (an empty pattern matches anything).
-  -- A term is string and may be:
+  -- A term is a string and may be:
   --  present once                          term
   --  optionnal                (0 or 1)     [ term ]
   --  repetitive               (1 or more ) { term }

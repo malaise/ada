@@ -246,8 +246,7 @@ package body Queues is
       elsif Queue.Ptr_In = Queue.Ptr_Out then
         -- Fifo empty, store X at its place
         Queue.Ptr_In := (Queue.Ptr_In + 1) mod Size;
-        Queue.File(Queue.Ptr_In) := X;
-        Queue.File_Prio(Queue.Ptr_In) := P;
+        Queue.File(Queue.Ptr_In) := (P, X);
       else
         -- Create empty slot
         Queue.Ptr_In := (Queue.Ptr_In + 1) mod Size;
@@ -256,15 +255,13 @@ package body Queues is
         loop
           J := (I - 1) mod Size;
           -- Compare prios and test limits
-          exit when (J = Queue.Ptr_Out) or else (Queue.File_Prio(J) >= P);
+          exit when (J = Queue.Ptr_Out) or else (Queue.File(J).Prio >= P);
           -- Shift
           Queue.File(I) := Queue.File(J);
-          Queue.File_Prio(I) := Queue.File_Prio(J);
           I := J;
         end loop;
         -- Store X
-        Queue.File(I) := X;
-        Queue.File_Prio(I) := P;
+        Queue.File(I) := (P, X);
       end if;
       Queue.Full := (Queue.Ptr_In = Queue.Ptr_Out);
     end Push;
@@ -276,7 +273,7 @@ package body Queues is
         raise Prio_Empty;
       end if;
       Queue.Ptr_Out := (Queue.Ptr_Out + 1) mod Size;
-      X := Queue.File(Queue.Ptr_Out);
+      X := Queue.File(Queue.Ptr_Out).Data;
       Queue.Full := False;
     end Pop;
     function Pop (Queue : in out Prio_Type) return Item is
@@ -307,7 +304,7 @@ package body Queues is
       then
         raise Prio_Not;
       else
-        X := Queue.File(Loc);
+        X := Queue.File(Loc).Data;
       end if;
     end Look_Last;
     function Look_Last (Queue : in out Prio_Type; No : in No_Range := 1)
@@ -339,7 +336,7 @@ package body Queues is
       then
         raise Prio_Not;
       else
-        X := Queue.File(Loc);
+        X := Queue.File(Loc).Data;
       end if;
     end Look_First;
     function Look_First (Queue : in out Prio_Type; No : in No_Range := 1)

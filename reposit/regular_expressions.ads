@@ -19,7 +19,7 @@ package Regular_Expressions is
   --  Language is used to detect the end of this sequence and
   --  set Last_Offset_Stop to the last byte of the sequence.
   -- 'abcab' matches '(ab)c\1*' at pos [1-5/5] [1-2/2]
-  -- 'to/to' matches 'to($)' 'at pos [4-5/5] [6-5/5]
+  -- 'to&to' matches 'to($)' 'at pos [4-5/5] [6-5/5]
   subtype Offset_Range is Integer;
   type Match_Cell is record
     First_Offset      :  Offset_Range;
@@ -27,7 +27,7 @@ package Regular_Expressions is
     Last_Offset_Stop  :  Offset_Range;
   end record;
   -- First cell (0) is the indexes of the string matching the regex
-  --  other cells (1 .. n) are the indexes os substrings
+  --  other cells (1 .. n) are the indexes of substrings
   type Match_Array is array (Natural range <>) of Match_Cell;
   -- Specific values
   No_Match_Array : Match_Array (1 .. 0);
@@ -39,7 +39,7 @@ package Regular_Expressions is
   -- By default:
   --  Case is sensitive,
   --  '^' and '$' do not match a newline in the middle of Str
-  --  '.' does not match all characters (e.g. new line, carriage return...)
+  --  '.' does not match special characters (e.g. line feed, carriage return...)
   procedure Compile (Compiled : in out Compiled_Pattern;
                      Ok : out Boolean;
                      Criteria : in String;
@@ -52,11 +52,11 @@ package Regular_Expressions is
                     Multi_Line : in Boolean := False;
                     Dot_All : in Boolean := False) return Boolean;
 
-  -- Check syntax of a regex (compiles it) , return True if OK
+  -- Check syntax of a regex (compiles it), return True if OK
   function Check (Criteria : String) return Boolean;
 
   -- Execute a regex
-  -- If Mach_Info is empty, N_Matched is set to 1 (match) or 0 (not match)
+  -- If Mach_Info is empty, then N_Matched is set to 1 (match) or 0 (not match)
   -- Otherwise N_Matched is set to 0 (not match) or to the last non empty slot
   --  of Match_Info
   -- Beware that some slots from 1 to N_Matched might have strange values:
@@ -143,8 +143,11 @@ private
 
   type Compiled_Pattern is limited
                 new Ada.Finalization.Limited_Controlled with record
+    -- Used to compile the regex with Utf8 flag
     Lang : Language.Language_Selection_List := Language.Get_Env;
+    -- The compiled regex
     Comp_Addr : System.Address := System.Null_Address;
+    -- Return code of compilation
     Error : Integer := 0;
   end record;
 

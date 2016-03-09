@@ -25,13 +25,15 @@ package Regex_Filters is
   procedure Clear_Filter (Filter : in out Regex_Filter);
 
 private
-  type Pattern_Access is access Regular_Expressions.Compiled_Pattern;
 
+  -- Store a compiled Regex and the Match flag
+  type Pattern_Access is access Regular_Expressions.Compiled_Pattern;
   type Filter_Cell is record
     Pattern : Pattern_Access;
     Match : Boolean;
   end record;
 
+  -- A filter is a dynamic list of cells
   package Filter_Dyn_List_Mng is new Dynamic_List (Filter_Cell);
   package Filter_List_Mng renames Filter_Dyn_List_Mng.Dyn_List;
 
