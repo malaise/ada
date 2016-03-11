@@ -79,6 +79,11 @@ begin
     return Traj_Err;
   end if;
 
+  if Set(Plan_S) and then Problem.Plan.Speed = 0.0 then
+    return Speed_Err;
+  end if;
+
   return Ok;
 
 end Check;
+

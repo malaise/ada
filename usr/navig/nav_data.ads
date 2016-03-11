@@ -24,6 +24,7 @@ package Nav_Data is
    Wind_Err,  -- Wind must be completly known or unknown
    Traj_Err,  -- If Traj_A is unknown, Traj_S must be unknown
    Drift_Err, -- If Drift is known, one in Traj_A or Plan_A must be unknown
+   Speed_Err, -- If Plane speed is known it must be > 0.0
    Val_Err,   -- If problem of computation (incompatible values)
    Ok);       -- Data are consistent
 

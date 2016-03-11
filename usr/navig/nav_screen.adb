@@ -339,6 +339,8 @@ package body Nav_Screen is
         W_Err.Put("If the route is unknown, the ground speed must be unknown as well.");
       when Nav_Data.Drift_Err =>
         W_Err.Put ( "If the drift is known, the heading or the route must be unknown.");
+      when Nav_Data.Speed_Err =>
+        W_Err.Put ( "If the plane speed is set, it cannot be null.");
       when Nav_Data.Val_Err =>
         W_Err.Put ("The values are not compatible.");
       when Nav_Data.Ok => null;
