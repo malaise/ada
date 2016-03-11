@@ -236,6 +236,7 @@ package body X is
                 Offset := Bases_Range (Status_List'Pos(Status)
                                      - Status_List'Pos(B1));
                 Afpx.Clear_Field (Base_Fs + Afpx.Field_Range(Offset) - 1);
+                Status := Status_List'Pred (Status);
               elsif Status in T2 .. Ready then
                 Afpx.Clear_Field (Target_F);
                 Status := T1;
