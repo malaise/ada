@@ -13,9 +13,7 @@ package Str_Util is
   -- Remove any multiple occurence of a character from string.
   -- Check from head or tail and return string.
   -- Example: ABCAD, Head -> ABCD  and  ABCAD, Tail -> BCAD
-  function Unique (From : String;
-                   From_Head : Boolean := True)
-           return String;
+  function Unique (From : String; From_Head : Boolean := True) return String;
 
   -- Overwrite a part of a string by a new one
   -- Do nothing if New_Str is empty
@@ -157,7 +155,7 @@ package Str_Util is
   -- If a separator is found then return Str up to this separator included,
   -- Else return Str
   -- Prerequisits Mini <= Length <= Maxi (else Constraint_Error).
-  -- Beware that Mini, Maxi and Length are not relative to Str
+  -- Beware that Mini, Maxi and Length are not relative to Str indexes
   -- Returns "" only if Str is empty.
   function Truncate (Str : String;
                      Length : Positive;
@@ -166,8 +164,8 @@ package Str_Util is
     function (Char : Character) return Boolean := Is_Separator'Access)
   return String;
 
-  -- Center a String Str in a fixed size
-  -- if Str <= Size pad with Gap before then after Str,
+  -- Center the string Str in a fixed size
+  -- if Str <= Size, then pad with Gap before then after Str,
   --  then after then before, then after then before...
   -- if Str > Size  raise Constraint_Error
   -- Examples:
@@ -188,7 +186,7 @@ package Str_Util is
   -- Locate the Nth occurence of a fragment within a string,
   --  between a given index (first/last if 0) and the end/beginning of the
   --  string, searching forward or backward
-  -- Returns the index in Within of the char matching the start of Fragment,
+  -- Return the index in Within of the char matching the start of Fragment,
   --  or 0 if not found or if Within or Fragment is empty
   function Locate (Within     : String;
                    Fragment   : String;
@@ -205,11 +203,13 @@ package Str_Util is
   --  or "${" and "}"), otherwise Inv_Delimiter is raised.
   -- Variables may be defined recursively (e.g. ${Foo${Bar}}).
   -- Delimiter number must match (as many stop as start and in consistent
-  --  sequence e.g. {}}{ is forbidden), otherwise the exception
+  --  sequence, e.g. "{}}{" is forbidden), otherwise the exception
   --  Delimiter_Mismatch is raised.
   -- On option Recursive, loops re-avaluating as long as possible (otherwise
   --  only one pass)
-  -- On option No_Check_Stop, extra stops are accepted ({}} is OK)
+  -- On option No_Check_Stop, extra stops are accepted ("{}}" is OK)
+  -- On option Skip_Backslashed, backslashed delimiters are skipped (and
+  --  the backslashesbefore the delimiters and backslash are removed)
   -- If no callback is set (Resolv = null) then variables are replaced by
   --  empty strings.
   function Eval_Variables (Str : String;
@@ -226,7 +226,7 @@ package Str_Util is
   --  starting searching from From_Index.
   -- An escape sequence is one escape character followed by the possible
   --  escaped characters. The escape character can escape itself.
-  --  (e.g. Escape="\na" will detect "\\" "\n" or "\a").
+  --  (e.g. Escape="\na" will detect "\\" "\n" and "\a").
   -- Returns the index in Within_Str of the escaped matching character
   --  (e.g. the '\', 'n' or 'a' following the first '\'), or 0 if not found.
   -- Also returns 0 if Escape is empty.
@@ -250,6 +250,7 @@ package Str_Util is
 
   -- Replace occurences of What by By in Str. One pass.
   -- If Skip_Backslashed, use Is_Backslash to detect \What and skip it
+  --  (but do not replace "\\" by "\" nor "\What" by "What")
   function Substit (Str, What, By : String;
                     Skip_Backslashed : Boolean := False) return String;
 

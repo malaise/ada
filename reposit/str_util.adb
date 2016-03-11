@@ -596,7 +596,8 @@ package body Str_Util is
 
     -- Check that Str_Index + Delimiter Length fits in Ustr and check if
     --  Ustr (Str_Index...) matches Delimiter
-    function Match (Str_Index : in Positive; Delimiter : in String) return Boolean is
+    function Match (Str_Index : in Positive; Delimiter : in String)
+                   return Boolean is
       Stop_Index : Natural;
     begin
       -- Compute index in Ustr of character matching Delimiter'Last
@@ -725,11 +726,32 @@ package body Str_Util is
     end if;
 
     -- Remove backslash for delimiters if they have been skipped
+    --  and replace '\\' by '\'
     if Skip_Backslashed then
-      Ustr := As.U.Tus (Substit (Ustr.Image, "\" & Start_Delimiter,
-                        Start_Delimiter));
-      Ustr := As.U.Tus (Substit (Ustr.Image, "\" & Stop_Delimiter,
-                        Stop_Delimiter));
+      Curr_Index := 1;
+      Last_Index := Ustr.Length;
+      loop
+        exit when Curr_Index >= Ustr.Length;
+        if Match (Curr_Index, "\\") then
+            -- Remove first '\' and skip second
+            Ustr.Delete (Curr_Index, Curr_Index);
+            Last_Index := Last_Index - 1;
+            Curr_Index := Curr_Index + 1;
+          elsif Match (Curr_Index, "\" & Start_Delimiter) then
+            -- Remove leading '\' and skip  delimiter
+            Ustr.Delete (Curr_Index, Curr_Index);
+            Last_Index := Last_Index - 1;
+            Curr_Index := Curr_Index + Start_Delimiter'Length;
+          elsif Match (Curr_Index, "\" & Stop_Delimiter) then
+            -- Remove leading '\' and skip  delimiter
+            Ustr.Delete (Curr_Index, Curr_Index);
+            Last_Index := Last_Index - 1;
+            Curr_Index := Curr_Index + Stop_Delimiter'Length;
+          else
+            -- One step forward
+            Curr_Index := Curr_Index + Stop_Delimiter'Length;
+          end if;
+       end loop;
     end if;
 
     -- Done
