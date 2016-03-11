@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser, Str_Util, Trilean;
 with Entities, Output, Targets, Lister, Exit_Code;
 procedure Als is
-  Version : constant String  := "V16.1";
+  Version : constant String  := "V17.0";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -44,7 +44,8 @@ procedure Als is
    35 => (False, Nkc, As.U.Tus ("len_alpha"),    False),
    36 => (False, 'q', As.U.Tus ("quiet"),        False),
    37 => (True,  Nkc, As.U.Tus ("discard_dir"),  True,  True, As.U.Tus ("criteria")),
-   38 => (False, 'b', As.U.Tus ("basename"),     True));
+   38 => (False, 'b', As.U.Tus ("basename"),     False),
+   39 => (False, Nkc, As.U.Tus ("nodir"),        False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Usage
@@ -115,6 +116,7 @@ procedure Als is
     Put_Line_Error ("  " & Key_Img(10) & "// Show a global list of entries (without dir names)");
     Put_Line_Error ("  " & Argument_Parser.Image(Keys(33)));
     Put_Line_Error ("                     // Show names of directories (default=when not empty)");
+    Put_Line_Error ("  " & Key_Img(39) & "// Do not show names of directories (--dir_name=never)");
     Put_Line_Error ("  " & Key_Img(21) & "// Also show number and total size of listed entries");
     Put_Line_Error ("  " & Key_Img(34) & "// Use UTC i.o. local time for date spec and output");
     Put_Line_Error ("  " & Key_Img(36) & "// Do not show entries");
@@ -362,6 +364,9 @@ begin
 
   -- Put dir names
   if Arg_Dscr.Is_Set (33) then
+    if Arg_Dscr.Is_Set (39) then
+      Error ("Invalid dir_name and nodir options");
+    end if;
     if Arg_Dscr.Get_Option (33) = "always" then
       Dir_Name := Trilean.True;
     elsif Arg_Dscr.Get_Option (33) = "never" then
@@ -369,6 +374,8 @@ begin
     else
       Error ("Invalid ""dir_name"" option");
     end if;
+  elsif Arg_Dscr.Is_Set (39) then
+    Dir_Name := Trilean.False;
   else
     -- Default names of non empty dirs
     Dir_Name := Trilean.Other;
