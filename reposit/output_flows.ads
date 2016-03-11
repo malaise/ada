@@ -5,7 +5,7 @@ package Output_Flows is
   --  a flow that is either Stdout, Stderr, synchronous or not, or a file.
   type Output_Flow is tagged private;
 
-  -- Get a flow
+  -- Get a flow. Create or reuse it.
   -- Predefined flows are (case sensitive)
   -- Text_Line flow on stdout / stderr
   Stdout_Name : constant String := "Stdout";
@@ -54,6 +54,7 @@ package Output_Flows is
 
 private
 
+  -- Data associated to a Flow
   type File_Access is access all Text_Line.File_Type;
 
   type Flow_Kinds is (File, Async_Stdout, Async_Stderr);
@@ -69,7 +70,7 @@ private
   end record;
   type Cell_Access is access all Cell_Type;
 
-
+  -- A Flow is a smart alias to data
   procedure Released (Cell : access Cell_Type; Nb_Access : in Natural);
   package Flow_Aliases is new Smart_Alias (Cell_Type, Released);
 
@@ -77,6 +78,7 @@ private
     Handle : Flow_Aliases.Handle;
   end record;
 
+  -- List of Flows with unique names (to allow reuse)
   package Flow_List_Mng is new  Dynamic_List (Flow_Aliases.Handle);
   package Flows_Mng renames Flow_List_Mng.Dyn_List;
   Flows : Flows_Mng.List_Type;
