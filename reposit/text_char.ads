@@ -23,7 +23,6 @@ package Text_Char is
   procedure Open_All (File : in out File_Type;
                       File_Name : in String := "");
 
-
   -- Close the file then the fd (if not stdin)
   -- May raise Status_Error if File is not open
   procedure Close_All (File : in out File_Type);
@@ -53,12 +52,12 @@ package Text_Char is
   -- May raise Status_Error if File is not open
   procedure Unget (File : in out File_Type; Char : in Character);
 
-  -- Uneget a string so that it will be the got later on
+  -- Unget a string so that it will be the got later on
   procedure Unget (File : in out File_Type; Str : in String);
   procedure Unget (File : in out File_Type; Str : in  As.U.Asu_Us);
 
 
-  -- Returns if the end of file is reached
+  -- Return if the end of file is reached
   -- May raise Status_Error if File is not open
   function End_Of_File (File : in out File_Type) return Boolean;
 

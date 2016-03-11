@@ -98,7 +98,7 @@ package Unbounded_Arrays is
   function "=" (Left  : Element_Array;
                 Right : Unbounded_Array) return Boolean;
 
-  -- Locate a Element or afragment
+  -- Locate a Element or a fragment
   function Locate (Within     : Unbounded_Array;
                    Element    : Element_Type;
                    From_Index : Natural := 0;
@@ -116,7 +116,7 @@ package Unbounded_Arrays is
 
 
   -- Overwrite a part of an array by a new one
-  -- Do nothing if New_Item is Asu_Null
+  -- Do nothing if New_Item is Null_Unb_Array or empty
   -- Append New_Item if Position = Source.Length + 1
   -- Extend Source if Position + New_Item.Length - 1 > Source.Length
   -- May raise Index_Error if Position > Source.Length + 1
@@ -129,7 +129,7 @@ package Unbounded_Arrays is
 
 
   -- Replace a slice by a new array
-  -- Delete chars if By is Asu_Null (except if High < Low)
+  -- Delete chars if By is Null_Unb_Array or empty (except if High < Low)
   -- Insert By before Low if High < Low
   -- Append By if Low = Source.Length + 1 (and High < Low)
   -- May raise Index_Error if Low > Source.Length + 1 or High > Source.Length
@@ -172,7 +172,7 @@ package Unbounded_Arrays is
 
   -- Delete trailing elements
   -- Delete elements from Source.Length - Number + 1 to Source.Length
-  -- Source becomes Asu_Null if Number >= Source.Length
+  -- Source becomes Null_Unb_Array if Number >= Source.Length
   procedure Trail (Source : in out Unbounded_Array;
                    Number : in Natural);
 

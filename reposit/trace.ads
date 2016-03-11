@@ -24,7 +24,7 @@ package Trace is
   -- Trace output is:
   -- "Date Process Logger Severity -> Message"
   -- Where Date     ::= YYyy/Mm/DdTHh:Mm:Ss.mmm
-  --       Process  ::= the basename of current process
+  --       Process  ::= the basename of the current process
   --       Logger   ::= the name of the logger, default "-"
   --       Severity ::= Fatal, Error, Info, Warning, Debug or a number
   --       Message  ::= the text of the log message
@@ -56,7 +56,7 @@ package Trace is
 
   -- BASIC LOGGER
   ---------------
-  -- All basic logers trace in stderr
+  -- All basic loggers write the traces in stderr
 
   -- Initialize the logger, either with a name or anonymous,
   --  and set its mask from ENV
@@ -85,8 +85,7 @@ package Trace is
     function Info_On    return Boolean;
     function Debug_On   return Boolean;
 
-    -- Log a message of a given severity (or even several severity levels)
-    --  severities)
+    -- Log a message of a given severity (or several severity levels)
     procedure Log (Severity : in Severities;
                    Message  : in String);
     procedure Log_Fatal   (Message  : in String);
@@ -95,11 +94,11 @@ package Trace is
     procedure Log_Info    (Message  : in String);
     procedure Log_Debug   (Message  : in String);
 
-    -- Flush logs of a logger
-    procedure Flush;
-
     -- Configure logger to flush or not each message (True by default)
     procedure Set_Flush (Each : in Boolean);
+
+    -- Flush logs of a logger
+    procedure Flush;
 
   end Basic_Logger;
 

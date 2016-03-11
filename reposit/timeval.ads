@@ -15,14 +15,15 @@ package Timeval is
   function Timeout2Delta (Timeout : C_Types.Timeval_T) return Perpet.Delta_Rec;
 
   -- Image of a Timeval, "Infinite" if Tv_Sec < 0 or Tv_Usec < 0
+  --  otherwise SS.uuuuuu
   function Image (Timeout : C_Types.Timeval_T) return String;
 
   -- Ensure that abs(Tv_Usec) < 1_000_000 and that Tv_Sec and Tv_Usec have the
   --  same sign
   procedure Normalize (Timeout : in out C_Types.Timeval_T);
 
-  -- If overflow on Tv_Sec in To_C_Timeout
-  -- If Timeout of To_Delta is < 0
+  -- If overflow on Tv_Sec in Delta2Timeout
+  -- If Timeout of Timeout2Delta is < 0
   Timeval_Error : exception;
 
 end Timeval;

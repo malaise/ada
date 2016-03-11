@@ -2,10 +2,13 @@
 with Ada.Finalization;
 package Trace.Loggers is
 
-  -- All the logers trace in a given flow, which can be set in the environment
-  --  variable <Process>_TRACEFILE="file"
+  -- See the parent package Trace for general informations about the
+  --  tracing mechanisms
+
+  -- All the loggers of a process trace in a given flow, which can be set in
+  --  the environment variable <Process>_TRACEFILE="file"
   --  where <Process> is the process name (no path, non alphanum characters
-  --         replaced by '_'))
+  --         replaced by '_')
   --        file is "stdout", "stderr", "async_stdout", "async_stderr",
   --         or any file name (see Output_Flows), possibly with
   --         ${PID}, ${CMD}, ${HOST} or ${DATE}, which are expanded.

@@ -1,7 +1,7 @@
 with Any_Def, Perpet, Virtual_Time, Smart_Reference, Dynamic_List;
 package Timers is
 
-  -- How to specify a timer, wait some seconds, some days or until a
+  -- How to specify a timer: wait some seconds, some days or until a
   --  specific time
   type Delay_List is (Delay_Sec, Delay_Del, Delay_Exp);
 
@@ -44,7 +44,7 @@ package Timers is
   type Timer_Id is tagged private;
   No_Timer : constant Timer_Id;
 
-  -- Timer status, independant from the associated clock status
+  -- Timer status (independant from the associated clock status)
   type Timer_Status is (Deleted,   -- Not created or deleted
                                    --  or single-shot expired
                         Running,   -- Will expire
@@ -83,7 +83,7 @@ package Timers is
                     Data       : in Timer_Data := No_Data);
 
   -- Delete a timer
-  -- May raise Invalid_Timer if timer is Deleted
+  -- May raise Invalid_Timer if the timer is Deleted
   Invalid_Timer : exception;
   procedure Delete (Id : in out Timer_Id);
 
@@ -114,7 +114,6 @@ package Timers is
                     Speed : in Virtual_Time.Speed_Range;
                     Clock : in Virtual_Time.Clock_Access);
 
-
 private
 
   -- Timer descriptor
@@ -138,7 +137,6 @@ private
   type Timer_Id is new Smart_Timer_Mng.Handle with null record;
   No_Timer : constant Timer_Id
            := (Smart_Timer_Mng.Null_Handle with others => <>);
-
 
 
   -- For Expiration --

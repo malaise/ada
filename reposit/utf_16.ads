@@ -51,7 +51,7 @@ package Utf_16 is
   -- Decodes a Utf-16 word to Wide_Character.
   -- May raise Invalid_Sequence or Not_Wide_Character
   function Decode (W : Word) return Wide_Character;
-  -- Encodes a Unicode as a Utf-16 word or sequence
+  -- Encodes a Wide_Character as a Utf-16 word or sequence
   function Encode (Wide_Char : Wide_Character) return Word;
   function Encode (Wide_Char : Wide_Character) return Sequence;
 

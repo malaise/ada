@@ -1,4 +1,4 @@
--- A boolean wth 3 values
+-- A boolean with 3 values
 package Trilean is
 
   -- Definition of values
@@ -9,7 +9,7 @@ package Trilean is
   pragma Warnings (On, "redefinition of entity * in Standard");
   Maybe : constant Trilean := Other;
 
-  -- Conversions between Boolean and trilean
+  -- Conversions between Boolean and Trilean
   ------------------------------------------
   -- Raises Constraint_Error if Val is Other
   function Tri2Boo (Val : Trilean) return Boolean;

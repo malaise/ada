@@ -17,7 +17,7 @@ package Tcp_Util is
 
   -- PROTOCOL DEFINITION --
   -------------------------
-  -- All kinds of TCP of Socket are supported by Connect_To and Accepti_From
+  -- All kinds of TCP of Socket are supported by Connect_To and Accept_From
   subtype Tcp_Protocol_List is Socket.Tcp_Protocol_List;
   -- Default TTL
   Default_Ttl : constant Socket.Ttl_Range := 0;
@@ -100,9 +100,9 @@ package Tcp_Util is
   -- May make several tries (one each Delta_Retry) before giving up
   -- Infinite retries if Nb_Tries = 0
   -- The Ttl is used (if supported by the TCP stack) to establish the
-  --  connection and in the established connection
+  --  connection, and later on to send on the established connection
   -- Returns True if immediate result could be achieved
-  --  (and the callback has already been called).
+  --  (and the connection callback has already been called).
   -- May raise Name_Error if Host.Name or Port.Name is unknown
   function Connect_To (Protocol      : in Tcp_Protocol_List;
                        Host          : in Remote_Host;
@@ -120,7 +120,7 @@ package Tcp_Util is
 
   -- Synchronously connect to a remote Host/Port
   -- The Ttl is used (if supported by the TCP stack) to establish the
-  --  connection and in the established connection
+  --  connection, and later on to send on the established connection
   -- Timeout = 0.0 may be used for infinite attempt
   -- Returns a valid Dscr (Open, Full blocking) if success, otherwise
   --  Socket.No_Socket
@@ -148,6 +148,7 @@ package Tcp_Util is
   -- Accept connections to a local port, possibly on a specific interface
   -- Dscr is open in mode Blocking_Send, and set to the accept connections
   -- Num is its port num (usefull when dynamic).
+  -- Link_If can be set in order to accept on a specific network interface
   -- May raise Name_Error if Port.Name is unknown
   procedure Accept_From (Protocol     : in Tcp_Protocol_List;
                          Port         : in Local_Port;
@@ -156,8 +157,9 @@ package Tcp_Util is
                          Num          : out Port_Num;
                          Link_If      : in Socket.Host_Id := Socket.Any_Host);
 
-  -- Abort further accepts on port (Af_Inet and Af_Unix may be on the same
-  --  port) and closes the Dscr.
+  -- Abort further accepts on port (Protocol is necessary because Af_Inet and
+  --  Af_Unix may be accepting in paralllel on the same port)
+  --  and closes the Dscr
   -- May raise No_Such
   procedure Abort_Accept (Protocol : in Tcp_Protocol_List; Num : in Port_Num);
 
@@ -185,7 +187,7 @@ package Tcp_Util is
   --    Socket.Conn_Lost or returns False.
   --    It tries asynchronously to re-send when possible until all the message
   --    is sent, then calls End_Of_Overflow_Callback.
-  --    If a timeout occurs or connection is lost during the retries,
+  --    If the timeout occurs or connection is lost during the retries,
   --    then it calls the Send_Error_Callback and closes the Dscr.
   -- May raise Soc_Dest_Err if destination is not set
   -- May raise Soc_Conn_Err if tcp and not connected
@@ -202,10 +204,10 @@ package Tcp_Util is
   --  success or error.
   -- If the socket is blocking then the callbacks are not used.
   -- If send is called on a non blocking socket and overflows and then the
-  --   socket is changed to blocking then a Timeout error is reported as
-  --   soon as possible (Timeout expiration or next attempt to re-send).
-  -- This function can be used on a UDP/IPM socket but adds no value compared
-  --  to Socket.Send
+  --  socket is changed to blocking then a Timeout error is reported as
+  --  soon as possible (Timeout expiration or next attempt to re-send).
+  -- This function can be used on a UDP/IPM socket but then it adds no value
+  --  compared to Socket.Send
   Timeout_Error : exception;
   generic
     type Message_Type is private;
@@ -218,7 +220,7 @@ package Tcp_Util is
 
   -- If a socket in overflow (send has returned False and End_Of_Overflow_Cb
   --  has not be called yet) has to be closed, then Abort_Send_and_Close
-  -- has to be called instead of Socket.Close
+  --  has to be called instead of Socket.Close
   -- The socket is closed.
   -- May raise No_Such
   procedure Abort_Send_And_Close (Dscr : in out Socket.Socket_Dscr);
