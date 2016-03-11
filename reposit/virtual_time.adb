@@ -66,7 +66,7 @@ package body Virtual_Time is
     Rtime : constant Time := Ada.Calendar.Clock;
     Vtime : constant Time := Virtual_Time_Of (A_Clock, Rtime);
   begin
-    if A_Clock.Speed /= 0.0 then
+    if A_Clock.Speed /= Frozen then
       raise Vtime_Error;
     end if;
     A_Clock.Refe_Time := Reference_Time;
@@ -110,9 +110,29 @@ package body Virtual_Time is
     A_Clock.Refe_Time := Now;
     -- Set new speed
     A_Clock.Speed := Speed;
+    -- Set Prev_Speed so that Resume will have no effect
+    A_Clock.Prev_Speed := Speed;
     Notify_Observers (A_Clock, A_Clock.Refe_Time, A_Clock.Virt_Time,
                       Prev_Speed);
   end Set_Speed;
+
+  -- Set speed to 0.0 and save previous speed for a later resume
+  procedure Suspend (A_Clock : in out Clock) is
+    Saved_Speed : Speed_Range;
+  begin
+    -- Set speed to 0.0 and save previous speed
+    Saved_Speed := A_Clock.Speed;
+    Set_Speed (A_Clock, Frozen);
+    A_Clock.Prev_Speed := Saved_Speed;
+  end Suspend;
+
+  -- Resume is suspended, no effect otherwise
+  procedure Resume (A_Clock : in out Clock) is
+  begin
+    if A_Clock.Speed = Frozen and then A_Clock.Prev_Speed /= Frozen then
+      Set_Speed (A_Clock, A_Clock.Prev_Speed);
+    end if;
+  end Resume;
 
   -- Get current speed
   function Get_Speed (A_Clock : Clock) return Speed_Range is
@@ -123,7 +143,7 @@ package body Virtual_Time is
   -- Return 1.0 if A_Clock is null
   function Get_Speed (A_Clock : Clock_Access) return Speed_Range is
   begin
-    return (if A_Clock = null then 1.0
+    return (if A_Clock = null then Std
             else Get_Speed (A_Clock.all));
   end Get_Speed;
 
@@ -153,7 +173,7 @@ package body Virtual_Time is
   begin
     -- (Cur_Virt - Ref_Virt) / (Cur_Real - Ref_Real) = Speed
     -- Cur_Real = (Cur_Virt - Ref_Virt) / speed + Ref_Real
-    if A_Clock.Speed = 0.0 then
+    if A_Clock.Speed = Frozen then
       raise Vtime_Error;
     end if;
     return (Virtual_Time - A_Clock.Virt_Time) / A_Clock.Speed

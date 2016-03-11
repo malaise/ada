@@ -2,7 +2,7 @@
 --  speed (from 0-frozen to 128 times faster than the real time).
 -- Observers are notified on the characteristic changes.
 -- Virtual clocks can be used for Chronos (and associated passive timers)
---  Timed queues and Timers.
+--  Timed queues, Timers...
 with Ada.Calendar;
 with Limited_List;
 package Virtual_Time is
@@ -43,8 +43,15 @@ package Virtual_Time is
 
   -- Set a new speed, change synchro point to current time
   type Speed_Range is new Duration range 0.0 .. 128.0;
+  Frozen : constant Speed_Range := 0.0;
+  Std : constant Speed_Range := 1.0;
   procedure Set_Speed (A_Clock : in out Clock;
                        Speed : in Speed_Range);
+
+  -- Set speed to 0.0 and save previous speed for a later resume
+  procedure Suspend (A_Clock : in out Clock);
+  -- Resume is suspended, no effect otherwise
+  procedure Resume (A_Clock : in out Clock);
 
   -- Get current speed
   function Get_Speed (A_Clock : Clock) return Speed_Range;
@@ -101,7 +108,9 @@ private
     Refe_Time : Time := Init;
     Virt_Time : Time := Init;
     -- Time speed
-    Speed : Speed_Range := 1.0;
+    Speed : Speed_Range := Std;
+    -- Previous speed when suspended
+    Prev_Speed : Speed_Range := Std;
     -- List of observers
     Observers : List_Mng.List_Type;
   end record;
