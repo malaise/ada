@@ -2,7 +2,7 @@ with Ada.Finalization;
 with As.U, Queues, Trees, Hashed_List.Unique, Text_Char,
      Unlimited_Pool, Byte_To_Unicode, Trilean, Magic_Numbers;
 -- Parse a Xml file or string.
--- Call callback while parsing or provide access to the tree after parsing.
+-- Call callback while parsing, or provide access to the tree after parsing.
 -- Limitations:
 --  * Only the System Id of the DOCTYPE and of external parsed ENTITY is used,
 --    Public Id (if any) is ignored.
@@ -123,13 +123,13 @@ package Xml_Parser is
 
   -- About the PARSING CALLBACK
   -----------------------------
-  -- When a callback is provided to Parse, then no tree is build but the nodes
+  -- When a callback is provided to Parse, then no tree is build, but the nodes
   --  are directly provided. Prologue items all have a level of 0 and no child
   -- Only elements have namespace, attributes and children.
   --  When it has children, an element is created (Creation = True,
   --  Has_Children = True), then its children (recusively) then it is closed
   --  (Creation = False), otherwise it is only created (Has_Children = False)
-  --  and Put_Empty set if it is an EmptyElemTag
+  --  and Empty_Info indicates if it is an EmptyElemTag
   -- Only PIs have a value
   -- Is_Mixed is set on element if this element has mixed content: children will
   --  be appended
@@ -178,7 +178,7 @@ package Xml_Parser is
     Is_Mixed : Boolean := False;
     -- True if parent is Mixed
     In_Mixed : Boolean := False;
-    -- True if node has children
+    -- True if node has children (of any kind)
     Has_Children : Boolean := False;
     -- Empty info
     Empty_Info : Empty_Info_List := Not_Empty;
@@ -198,7 +198,7 @@ package Xml_Parser is
   -- Parse a Xml file, stdin if File_Name is empty
   -- On option, allow retrieval of comments (usefull for a formatter)
   -- On option skip CDATA sections or keep CDATA markers
-  -- On option, does not expand general entities nor set attributes with
+  -- On option, do not expand general entities nor set attributes with
   --  default values (usefull for a formatter)
   -- On option, keep separators unchanged in attributes and text
   -- On option, make text compatible ('>' -> "&gt;")
@@ -242,7 +242,7 @@ package Xml_Parser is
   -----------------
   -- Parse a Dtd, stdin if File_Name is empty
   -- Optionally check for some warnings
-  -- The Dtd can then be used to Parse_Elements
+  -- The Dtd can then be used to Parse_Elements (after Parse_Prologue)
   -- Set Error to error string, or empty string if OK
   type Dtd_Type is limited private;
   procedure Parse_Dtd_File (
@@ -267,14 +267,6 @@ package Xml_Parser is
   -- Parse the prologue of a string
   -- Then one can call Get_Prologue on Ctx
   --  (Calling Get_Root_Element will raise Status_Error);
-  -- On option, allows retrieval of comments (usefull for a formatter)
-  -- On option skip CDATA sections or keep markers
-  -- On option, does not expand general entities (usefull for a formatter)
-  -- On option, keep separators unchanged in attributes and text
-  -- On option, make text compatible ('>' -> "&gt;")
-  -- On option do not check compliance with Dtd
-  -- On option force an external Dtd different from the DOCTYPE directive
-  -- On option check and fill namespace informations
   -- May raise Status_Error if Ctx is not clean
   procedure Parse_Prologue (Ctx        : out Ctx_Type;
                             Str        : in String;
@@ -314,7 +306,7 @@ package Xml_Parser is
   -- For Trileans, Other means "leave as it is" (which is the value
   --  by default or the one set in Parse)
   -- Comments and Cdata flags of the context are not modified (they don't
-  --  affect the check)
+  --  impact the check)
   procedure Check (Ctx : in out Ctx_Type;
                    Ok  : out Boolean;
                    Expand     : in Trilean.Trilean := Trilean.Other;
@@ -457,7 +449,7 @@ package Xml_Parser is
                       Element : Element_Type;
                       Index   : Child_Index) return Node_Type;
 
-  -- Get a brother of an node
+  -- Get a brother of a node
   -- May raise No_Brother
   No_Brother : exception;
   function Has_Brother (Ctx  : Ctx_Type;
@@ -468,11 +460,12 @@ package Xml_Parser is
                         Next : Boolean := True) return Node_Type;
 
   -- Get the father of a node
-  -- May raise No_Parent if Node is the Prologue, the Root_Element
-  --  or the Tail
+  -- May raise No_Parent if Node is the Prologue, the Root_Element or the Tail
   No_Parent : exception;
   function Get_Parent (Ctx  : Ctx_Type;
                        Node : Node_Type) return Element_Type;
+
+  -- Return True if Node is the Prologue, the Root_Element or the Tail
   function Is_Root (Ctx  : Ctx_Type;
                     Node : Node_Type) return Boolean;
 
@@ -499,11 +492,11 @@ package Xml_Parser is
   -------------------
   -- Specific TAGS --
   -------------------
-  -- It is Tag_Empty if:
+  -- An element is Tag_Empty if:
   --  - the element is parsed empty with the EmptyElemTag (</Element>)
-  --  - or Generator.Set_Tag_Empty (True) is called on the element
+  --  - or Generator.Set_Tag_Empty (True) has been called on the element
   -- Otherwise it is Def_Empty if the element is defined as EMPTY in the Dtd
-  -- Otherwise if Not_Empty
+  -- Otherwise it is Not_Empty
   function Get_Empty_Info (Ctx     : Ctx_Type;
                            Element : Element_Type) return Empty_Info_List;
 

@@ -25,7 +25,7 @@ package X_Mng is
     No_Font                 : Font;
   end record;
 
-  -- keyboard codes for 1 key
+  -- Keyboard codes for 1 key
   Kbd_Max_Code : constant := 4;
   subtype Kbd_Index_Code is Integer range 1 .. Kbd_Max_Code;
   type Kbd_Array is array (Kbd_Index_Code) of Byte;
@@ -46,6 +46,7 @@ package X_Mng is
                        Shift_Up, Shift_Down, Ctrl_Up, Ctrl_Down);
 
   -- Result of waiting (see Event_Mng for Events).
+  -- Tid is mouse (was touch input device)
   -- CARE:
   -- Calling X_Mng in a Timer, Fd or Signal callback will result in a
   --  deadlock
@@ -68,10 +69,9 @@ package X_Mng is
 
   -- Open a line on the host
   -- screen_id is integer, (a negative value for the default screen)
-  -- row and column are the coordonates of the upper-left corner of the
+  -- row and column are the coordinates of the upper-left corner of the
   --  window in the screen (in characters)
   -- heigh and width are the dimention of the window in characters
-  -- no_font can be 0 for (8x13) character, or 1 for (9x15)
   -- background and border are colors for the window
   -- line_id is the returned value (token for every further operation)
   procedure X_Open_Line(Line_Definition : in Line_Definition_Rec;
@@ -107,7 +107,7 @@ package X_Mng is
 
   ----- PUT and ATTRIBUTE MANAGEMENT -----
 
-  -- Set the attributes for a further put in the same window
+  -- Set the attributes for a further put in the same line
   -- The paper and ink are color numbers (from 0 to 13)
   -- The attributes are True or False
   procedure X_Set_Attributes(Line_Id     : in Line;
@@ -116,7 +116,7 @@ package X_Mng is
                              Underline   : in Boolean := False;
                              Inverse     : in Boolean := False);
 
-  -- Set the xor mode or a further put in the same window
+  -- Set the xor mode or a further put in the same line
   -- If Xor_More is set, all further puts and drawings will be in xor
   procedure X_Set_Xor_Mode(Line_Id     : in Line;
                            Xor_Mode    : in Boolean);
@@ -134,7 +134,7 @@ package X_Mng is
                        Car : in Byte;
                        Row, Column : in Natural);
 
-  -- Write a char with the attributes previously set
+  -- Write a char in xor mode and with the other attributes previously set
   -- The character is the one to be written
   procedure X_Overwrite_Char(Line_Id : in Line;
                              Car : in Byte;
@@ -234,12 +234,13 @@ package X_Mng is
   -- The area MUST be convex otherwise the graphic result is undefined
   procedure X_Fill_Area (Line_Id : in Line; Xys : in Natural_Array);
 
-  -- Set mouse cursor to '+' cross (graphic) or arrow
+  -- Set mouse pointer shape to '+' cross (graphic) or arrow
+  -- Grab it in the window or not
   procedure X_Set_Graphic_Pointer(Line_Id : in Line;
                                   Graphic : in Boolean;
                                   Grab : in Boolean);
 
-  -- Hide mouse
+  -- Hide mouse pointer
   procedure X_Hide_Graphic_Pointer(Line_Id : in Line;
                                    Grab : in Boolean);
 
@@ -247,7 +248,7 @@ package X_Mng is
   -- Wait until an event is availble
   -- If Timeout is a real delay (neither infinite nor expiration time) then
   --  it is updated with the time remaining
-  -- Kind is Keyboard or Tid (Press or Release or Motion) for this line,
+  -- Kind is Keyboard or Tid (mouse Press or Release or Motion) for this line,
   --  or Refresh or Exit_Request or Fd_Event or Timer_Event or Signal_Event...
   -- Timeout must be in real time (Clock = null) or Invalid_Timeout is raised
   -- CARE: Timer, Fd or Signal callbacks are invoked internally and calling
@@ -257,7 +258,7 @@ package X_Mng is
                          Timeout : in out Timers.Delay_Rec;
                          Kind : out Event_Kind);
 
-  -- Read the position on Tid in Row/Col or X/Y
+  -- Read the position on Tid (mouse) in Row/Col or X/Y
   -- The line_id must be the one given to X_Wait_Event
   -- Button can be left, middle or right
   -- Row and Column are the position of the "finger" on the Tid
@@ -267,7 +268,7 @@ package X_Mng is
                        Button  : out Button_List;
                        Row, Column : out Integer);
 
-  -- Read a key of a sequence
+  -- Read a keyboard key
   -- The line_id must be the one given to X_Wait_Event
   -- Control if control key was on
   -- Shift if Code and shift key was on
@@ -279,7 +280,7 @@ package X_Mng is
                        Code : out Boolean;
                        Key : out Kbd_Tab_Code);
 
-  -- Enable disable cursor motion events
+  -- Enable disable mouse motion events
   procedure X_Enable_Motion_Events (Line_Id : in Line;
                                     Motion_Enable : in Boolean);
 
