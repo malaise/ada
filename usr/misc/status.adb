@@ -1,5 +1,6 @@
--- Check if target file: $n is up to date comparing to source files:
---  $1, $2 .. $n-1. This is: target file exists and is newer that all sources.
+-- Check if target file $n is up to date comparing to source files
+--  $1, $2 .. $n-1.
+-- This is: target file exists and is newer that all the sources.
 -- exit 0  -->  $n file is ok (newer than all sources)
 -- exit 1  -->  $n file does not exist or is older than some sources
 -- exit 2  -->  Error: cannot read some source file(s)
