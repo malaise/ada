@@ -1,4 +1,4 @@
--- A is a square matrix and B is a vector of the same dimension
+-- A is a square matrix and B is a vector of the same dimension as A
 -- Resolution of A.X = B, where X is the vector of unknown values
 generic
 
@@ -8,8 +8,8 @@ package Syslin is
 
   -- The 3 sub types of indexes must have the same Length
   --  and be from 1 to Length
-  type Vector is array(Positive range <>) of Number;
-  type Matrix is array(Positive range <>, Positive range <>) of Number;
+  type Vector is array (Positive range <>) of Number;
+  type Matrix is array (Positive range <>, Positive range <>) of Number;
 
   -- The returned vector is indexed from 1 .. Length
   function Gauss (A : Matrix; B : Vector) return Vector;

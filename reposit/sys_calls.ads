@@ -3,11 +3,9 @@ with Ada.Calendar;
 with C_Types, Many_Strings, Basic_Proc;
 package Sys_Calls is
 
-  -- Call system (execute UNIX command)
-  function Call_System (Command : String) return Integer;
-
-
-  -- Unlink a file, returns True if done
+  -- Remove, rename, link a file
+  ------------------------------
+  -- Unlink (remove) a file, returns True if done
   function Unlink (File_Name : String) return Boolean;
   -- Unlink a file if possible, no error
   procedure Unlink (File_Name : String);
@@ -21,11 +19,15 @@ package Sys_Calls is
   procedure Link (Old_Path, New_Path : String; Hard : Boolean);
 
 
-  -- Errno and associated string
+  -- Errno
+  --------
+  -- Return last Errno and associated string
   function Errno return Integer;
   function Str_Error (Err : Integer) return String;
 
 
+  -- Output on stdout and stderr
+  ------------------------------
   -- Put line on stdout or stderr
   Io_Error : exception renames Basic_Proc.Io_Error;
   procedure Put_Output (Str : in String);
@@ -40,6 +42,8 @@ package Sys_Calls is
   procedure Flush_Error;
 
 
+  -- Environment
+  --------------
   -- Basic getenv, raises Env_Not_Set
   Env_Not_Set : exception;
   function Getenv (Env_Name : String) return String;
@@ -61,6 +65,8 @@ package Sys_Calls is
   procedure Unsetenv (Env_Name : in String);
 
 
+  -- Exit code
+  ------------
   -- Set exit code
   procedure Set_Exit_Code (Code : in Natural);
   -- Set ok or error exit code
@@ -69,6 +75,7 @@ package Sys_Calls is
 
 
   -- Unix File Descriptor
+  -----------------------
   type File_Desc is new C_Types.Int range 0 .. C_Types.Int'Last;
   -- File kind
   type File_Desc_Kind_List is (Tty,
@@ -79,16 +86,21 @@ package Sys_Calls is
   function Stderr return File_Desc;
 
 
+  -- File exists?
+  ---------------
   -- Result of file check
   type File_Status_List is (Found, Not_Found, Error);
+
   -- Check if file exists, no exception
   function File_Status (File_Name : String) return File_Status_List;
-  -- Check if file exists, Access_Error if Error
+  -- Check if file exists, raises Access_Error if Error
   function File_Check (File_Name : String) return Boolean;
   -- Check if file exists, no exception, True if Found
   function File_Found (File_Name : String) return Boolean;
 
 
+  -- File status
+  --------------
   -- Kind of file on disk (not tty)
   subtype File_Kind_List is File_Desc_Kind_List range File .. Unknown;
   -- File modif time, in GMT time
@@ -127,6 +139,8 @@ package Sys_Calls is
   function Gmt_Offset return Duration;
 
 
+  -- Unix users
+  -------------
   -- Get effective user/group Id of current process
   function Get_Effective_User_Id return Natural;
   function Get_Effective_Group_Id return Natural;
@@ -146,6 +160,8 @@ package Sys_Calls is
   function Get_Id_Of_Group_Name (Group_Name : String) return Natural;
 
 
+  -- TTYs
+  -------
   -- Modes for a tty. Return True if success
   type Tty_Mode_List is (
     Canonical,   -- Wait for Cr, Echo, Blocking
@@ -176,13 +192,8 @@ package Sys_Calls is
                            Status : out Get_Status_List;
                            C      : out Character);
 
-  -- Read / write on File_Desc
-  -- May raise System_Error (C read/write returned -1)
-  function Read  (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
-           return Natural;
-  function Write (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
-           return Natural;
-
+  -- Fd operations
+  ----------------
   -- Open / Create
   -- Fd has CLOEXEC set
   -- May raise Name_Error or System_Error
@@ -193,6 +204,13 @@ package Sys_Calls is
   -- Close
   -- May raise System_Error (not open)
   procedure Close (Fd : in File_Desc);
+
+  -- Read / write on File_Desc
+  -- May raise System_Error (C read/write returned -1)
+  function Read  (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
+           return Natural;
+  function Write (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
+           return Natural;
 
   -- Create a pipe
   -- Fds have CLOEXEC set
@@ -211,6 +229,8 @@ package Sys_Calls is
   procedure Set_Cloexec (Fd : in File_Desc; On : in Boolean);
 
 
+  -- Fork and Exec
+  ----------------
   -- Process Id
   type Pid is new Integer;
 
@@ -255,7 +275,12 @@ package Sys_Calls is
   -- May raise System_Error
   function Next_Dead return Death_Rec;
 
+  -- Call system (execute UNIX command synchronously), returns the exit code
+  function Call_System (Command : String) return Integer;
 
+
+  -- Exceptions
+  -------------
   -- Exceptions (of File_Stat, Open, Create, Link)
   Name_Error   : exception;
   Access_Error : exception;
