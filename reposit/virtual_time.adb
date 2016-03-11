@@ -110,28 +110,31 @@ package body Virtual_Time is
     A_Clock.Refe_Time := Now;
     -- Set new speed
     A_Clock.Speed := Speed;
-    -- Set Prev_Speed so that Resume will have no effect
-    A_Clock.Prev_Speed := Speed;
     Notify_Observers (A_Clock, A_Clock.Refe_Time, A_Clock.Virt_Time,
                       Prev_Speed);
   end Set_Speed;
 
   -- Set speed to 0.0 and save previous speed for a later resume
   procedure Suspend (A_Clock : in out Clock) is
-    Saved_Speed : Speed_Range;
   begin
-    -- Set speed to 0.0 and save previous speed
-    Saved_Speed := A_Clock.Speed;
+    if A_Clock.Suspended then
+      return;
+    end if;
+    -- Save previous speed and set speed to 0.0 and save previous speed
+    A_Clock.Prev_Speed := A_Clock.Speed;
     Set_Speed (A_Clock, Frozen);
-    A_Clock.Prev_Speed := Saved_Speed;
+    A_Clock.Suspended := True;
   end Suspend;
 
   -- Resume is suspended, no effect otherwise
   procedure Resume (A_Clock : in out Clock) is
   begin
-    if A_Clock.Speed = Frozen and then A_Clock.Prev_Speed /= Frozen then
-      Set_Speed (A_Clock, A_Clock.Prev_Speed);
+    if not A_Clock.Suspended then
+      return;
     end if;
+    -- Restore saved speed
+    Set_Speed (A_Clock, A_Clock.Prev_Speed);
+    A_Clock.Suspended := False;
   end Resume;
 
   -- Get current speed

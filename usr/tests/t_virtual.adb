@@ -121,6 +121,7 @@ procedure T_Virtual is
     end if;
   end Check_Queue;
 
+  use type Virtual_Time.Speed_Range;
 begin
   Put_Now;
   Basic_Proc.Put_Line_Output ("Starting real time chrono "
@@ -230,6 +231,35 @@ begin
   Put_Chrono;
   My_Queue.Expire;
   Check_Queue (1);
+
+  Basic_Proc.New_Line_Output;
+  Basic_Proc.Put_Line_Output ("Suspending and resuming");
+  My_Clock.Suspend;
+  My_Clock.Suspend;
+  Check_Events (5, 9);
+  if My_Clock.Get_Speed /= Virtual_Time.Frozen then
+    Basic_Proc.Put_Output ("Speed after suspend is "
+        & Virtual_Time.Speed_Range'Image (My_Clock.Get_Speed));
+    raise Check_Error;
+  end if;
+  My_Clock.Resume;
+  My_Clock.Resume;
+  Check_Events (6, 9);
+  if My_Clock.Get_Speed /= 10.0 then
+    Basic_Proc.Put_Output ("Speed after resume is "
+        & Virtual_Time.Speed_Range'Image (My_Clock.Get_Speed));
+    raise Check_Error;
+  end if;
+  My_Clock.Set_Speed (Virtual_Time.Frozen);
+  Check_Events (7, 9);
+  My_Clock.Suspend;
+  My_Clock.Resume;
+  Check_Events (9, 9);
+  if My_Clock.Get_Speed /= Virtual_Time.Frozen then
+    Basic_Proc.Put_Output ("Speed after resume frozen is "
+        & Virtual_Time.Speed_Range'Image (My_Clock.Get_Speed));
+    raise Check_Error;
+  end if;
 
   Basic_Proc.New_Line_Output;
   Basic_Proc.Put_Line_Output ("Done.");

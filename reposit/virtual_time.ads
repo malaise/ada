@@ -49,6 +49,7 @@ package Virtual_Time is
                        Speed : in Speed_Range);
 
   -- Set speed to 0.0 and save previous speed for a later resume
+  -- No effect if already suspended
   procedure Suspend (A_Clock : in out Clock);
   -- Resume is suspended, no effect otherwise
   procedure Resume (A_Clock : in out Clock);
@@ -111,6 +112,8 @@ private
     Speed : Speed_Range := Std;
     -- Previous speed when suspended
     Prev_Speed : Speed_Range := Std;
+    -- Is clock suspended (to avoid useless notifications)
+    Suspended : Boolean := False;
     -- List of observers
     Observers : List_Mng.List_Type;
   end record;
