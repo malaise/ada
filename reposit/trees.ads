@@ -15,7 +15,7 @@ package Trees is
   -- Amount of children of a father
   subtype Child_Range is Natural;
 
-  -- Waht to do after current item when iterating in tree
+  -- What to do after current item when iterating in tree
   subtype Iteration_Policy is Trilean.Trilean;
   -- Go_On scanning the tree, Skip subtree of current element, Give_Up
   Go_On   : constant Iteration_Policy := Trilean.True;
@@ -42,7 +42,7 @@ package Trees is
     -- Insertions --
     ----------------
     -- All insertions may raise Too_Many_Children if the amount of children
-    --  is Natural'Last
+    --  is already Natural'Last
 
     -- Insert a father of current position
     --  (insert the root if the tree is empty)
@@ -167,7 +167,7 @@ package Trees is
     -- May raise No_Cell if The_Tree is empty
     function Has_Father (The_Tree : Tree_Type) return Boolean;
 
-    -- Has current cell and elder/younger brother
+    -- Has current cell an elder/younger brother
     -- May raise No_Cell if The_Tree is empty
     function Has_Brother (The_Tree : Tree_Type;
                           Elder    : Boolean := True) return Boolean;
@@ -203,7 +203,7 @@ package Trees is
     -- WARNING:
     -- It is up to the user to ensure the validity of the access that he may
     --  store, versus changes of tree (deletion, swap...)
-    -- May raise No_Cell if The_Tree is empty
+    -- May raise No_Cell if tree is empty
     type Position_Access is private;
     No_Position : constant Position_Access;
     -- Retrieve current position
@@ -228,8 +228,8 @@ package Trees is
     -- Copy cell and sub-tree (from current position) of a tree
     --  as (elder or youger) son or brother of current position in another
     --  tree.
-    -- To can be empty but not From
-    -- Curent position of To is updated
+    -- To_Tree can be empty but not From_Tree
+    -- Curent position of To_Tree is updated
     -- May raise No_Cell if From_Tree is empty
     procedure Copy_Tree (To_Tree   : in out Tree_Type;
                          From_Tree : in Tree_Type;
@@ -265,10 +265,6 @@ package Trees is
     package Saved_Pool renames Saved_Pool_Manager.Upool;
     type Saved_Pool_Access is access Saved_Pool.Pool_Type;
 
-    -- Eldest/Youngest children, or Elder/Younger brothers
-    type Order is (Young, Old);
-    type Cell_Pair is array (Order) of Cell_Access;
-
     -- Access to current data
     type Element_Access is access all Element_Type;
 
@@ -283,13 +279,17 @@ package Trees is
     end record;
     overriding procedure Finalize (Tree : in out Tree_Type);
 
+    -- A position to get/set
     type Position_Access is record
-      Cell_Acc : Cell_Access;
       Magic : Magic_Numbers.Extended_Magic_Long := Magic_Numbers.Magic_Long0;
+      Cell_Acc : Cell_Access;
     end record;
     No_Position : constant Position_Access := (others => <>);
+
   end Tree;
 
+  -- Exceptions
+  -------------
   -- When inserting too many children
   Too_Many_Children : exception;
 

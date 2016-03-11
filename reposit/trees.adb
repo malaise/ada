@@ -10,6 +10,10 @@ package body Trees is
   --  one father (except root).
   package body Tree is
 
+    -- Eldest/Youngest children, or Elder/Younger brothers
+    type Order is (Young, Old);
+    type Cell_Pair is array (Order) of Cell_Access;
+
     -- A cell of tree
     type Cell_Rec is record
       Father   : Cell_Access := null;
@@ -800,7 +804,7 @@ package body Trees is
     begin
       -- No empty tree
       Check_Empty (The_Tree);
-      return (The_Tree.Curr, The_Tree.Magic);
+      return (The_Tree.Magic, The_Tree.Curr);
     end Get_Position;
 
     procedure Set_Position (The_Tree : in out Tree_Type;
