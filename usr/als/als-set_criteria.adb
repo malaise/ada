@@ -1,6 +1,8 @@
-with Many_Strings;
+with Many_Strings, Regular_Expressions;
+with Debug;
 separate (Als)
-procedure Set_Criteria (Criteria : in String;
+procedure Set_Criteria (Name     : in String;
+                        Criteria : in String;
                         Call     : in Call_Access) is
   First : constant Natural := Criteria'First;
   Last : constant Natural := Criteria'Last;
@@ -13,6 +15,8 @@ procedure Set_Criteria (Criteria : in String;
          := Str_Util.Split (Crit, ',');
   begin
     for I in 1 .. Many_Strings.Nb (Mstr) loop
+      Debug.Log ("  Adding " & Name & " template "
+               & Many_Strings.Nth (Mstr, I));
       Call (Many_Strings.Nth (Mstr, I), False);
     end loop;
   end Split_Template;
@@ -21,10 +25,12 @@ begin
   if Length >= 1
   and then Criteria(First) = Regex_Char then
     -- @regex -> regex, no split
+    Debug.Log ("  Adding " & Name & " regexp " & Criteria(First + 1 .. Last));
     Call (Criteria(First + 1 .. Last), True);
-  elsif Length >= 2
-  and then Criteria(First .. First + 1) = '\' & Regex_Char then
-    -- \@template -> @template
+  elsif Regular_Expressions.Match ("\\+" & Regex_Char & ".*",
+                                   Criteria(First .. Last),
+                                   Strict => True) then
+    -- \..\@template -> \..@template (skip first '\')
     Split_Template (Criteria(First + 1 .. Last));
   else
     -- template

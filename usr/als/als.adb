@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser, Str_Util, Trilean;
 with Entities, Output, Targets, Lister, Exit_Code;
 procedure Als is
-  Version : constant String  := "V16.0";
+  Version : constant String  := "V16.1";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -170,7 +170,8 @@ procedure Als is
   -- Set a file or dir, match or exclusion criteria, or dir discard criteria
   type Call_Access is access procedure (Template : in String;
                                         Regex    : in Boolean);
-  procedure Set_Criteria (Criteria : in String;
+  procedure Set_Criteria (Name     : in String;
+                          Criteria : in String;
                           Call     : in Call_Access) is separate;
   use type Entities.Date_Oper_List;
 begin
@@ -300,7 +301,8 @@ begin
   -- Add match template if any
   for I in 1 .. Arg_Dscr.Get_Nb_Occurences (16) loop
     begin
-      Set_Criteria (Arg_Dscr.Get_Option (16, I), Lister.Add_Match'Access);
+      Set_Criteria ("match", Arg_Dscr.Get_Option (16, I),
+                    Lister.Add_Match'Access);
     exception
       when Lister.Invalid_Template =>
         Error ("Invalid match template " & Arg_Dscr.Get_Option (16, I));
@@ -309,7 +311,8 @@ begin
   -- Add exclude template if any
   for I in 1 .. Arg_Dscr.Get_Nb_Occurences (17) loop
     begin
-      Set_Criteria (Arg_Dscr.Get_Option (17, I), Lister.Add_Exclude'Access);
+      Set_Criteria ("exclude", Arg_Dscr.Get_Option (17, I),
+                    Lister.Add_Exclude'Access);
     exception
       when Lister.Invalid_Template =>
         Error ("Invalid exclude template " & Arg_Dscr.Get_Option (17, I));
@@ -318,7 +321,8 @@ begin
   -- Add dir_match if any
   for I in 1 .. Arg_Dscr.Get_Nb_Occurences (18) loop
     begin
-      Set_Criteria (Arg_Dscr.Get_Option (18, I), Lister.Add_Dir_Match'Access);
+      Set_Criteria ("match dir", Arg_Dscr.Get_Option (18, I),
+                    Lister.Add_Dir_Match'Access);
     exception
       when Lister.Invalid_Template =>
         Error ("Invalid dir_match " & Arg_Dscr.Get_Option (18, I));
@@ -327,7 +331,8 @@ begin
   -- Add dir_exclude if any
   for I in 1 .. Arg_Dscr.Get_Nb_Occurences (19) loop
     begin
-      Set_Criteria (Arg_Dscr.Get_Option (19, I), Lister.Add_Dir_Exclude'Access);
+      Set_Criteria ("exclude dir",
+                    Arg_Dscr.Get_Option (19, I), Lister.Add_Dir_Exclude'Access);
     exception
       when Lister.Invalid_Template =>
         Error ("Invalid dir_match " & Arg_Dscr.Get_Option (19, I));
@@ -336,7 +341,8 @@ begin
   -- Add dir_discard if any
   for I in 1 .. Arg_Dscr.Get_Nb_Occurences (37) loop
     begin
-      Set_Criteria (Arg_Dscr.Get_Option (37, I), Lister.Add_Dir_Discard'Access);
+      Set_Criteria ("discard dir", Arg_Dscr.Get_Option (37, I),
+                    Lister.Add_Dir_Discard'Access);
     exception
       when Lister.Invalid_Template =>
         Error ("Invalid dir_match " & Arg_Dscr.Get_Option (37, I));

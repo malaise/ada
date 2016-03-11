@@ -1,6 +1,6 @@
 Als
 ===
-V16.0
+V16.1
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, the output format of each entry, and general
@@ -155,6 +155,37 @@ when combined with the recursive mode, it does not show the directory names
 as specific entries. +
 By default it shows the full relative path of each entry, except if the 
 "-b" option is provided (meaningfull only when merging).
+
+Criteria
+~~~~~~~~
+The criteria (provided for <match_name>, <exclude_name>, <match_dir>,
+<exclude_dir> and <discard_dir>) follows the following syntax:
+
+ * \'@<text>' considers '<text>' as a regular expression (possibly empty),
+ * \'\@<text>' considers '@<text>' as a series of file templates, the first
+template starting by "@",
+ * \'\\@<text>' considers '\@<text>' as a series of file templates, the first 
+template starting by "\@", +
+...
+
+ * other \'<text>' is considered as templates (possibly empty),
+'<template>,<template>...'.
+
+Also beware that template matching function considers the character \'\' as an
+escape character, so "\x" in the template matches the character \'x' in the
+file, whatever \'x', including the character \'\'.
+
+Examples:
+
+  "toto"    will match "@t.t."        (regex "t.t.")
+  "@toto"   will match "\@toto"       (patern "@toto",     checks "@toto")
+  "@toto"   will match "\\@toto"      (patern "\@toto",    checks "@toto")
+  "\@toto"  will match "\\\@toto"     (patern "\\@toto",   checks "\@toto")
+  "\@toto"  will match "\\\\@toto"    (patern "\\\@toto",  checks "\@toto"))
+  "\\@toto" will match "\\\\\@toto"   (patern "\\\\@toto", checks "\\@toto"))
+  "\toto"   will match "\\toto"       (pattern "\\toto",   checks "\toto"))
+  "\toto"   will match "\\\toto"      (pattern "\\\toto",  checks "\toto"))
+  "\\toto"  will match "\\\\toto"     (pattern "\\\\toto", checks "\\toto"))
 
 Name matching
 ~~~~~~~~~~~~~
