@@ -14,7 +14,7 @@ package body Task_Mng is
   end Callback;
 
   -- Start/restart/replace
-  procedure Start (Period : in Duration := Default_Period) is
+  procedure Start (Period : in Duration) is
     Expiration : Timers.Delay_Rec (Timers.Delay_Sec);
     New_Tid : Timers.Timer_Id;
   begin
