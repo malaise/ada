@@ -237,7 +237,7 @@ package body Game is
     Got_Event : Screen.Evt_Rec;
   begin
     -- Pause
-    Space.Clock.Set_Speed (0.0);
+    Space.Clock.Suspend;
     -- Wait until resume
     Screen.Init;
     Screen.Update (Flight_Status, Chrono.Read, True);
@@ -268,7 +268,7 @@ package body Game is
     Screen.Init;
     Screen.Update (Flight_Status, Chrono.Read, True);
     -- Resume
-    Space.Clock.Set_Speed (1.0);
+    Space.Clock.Resume;
 
     Screen.Refresh;
     return True;
