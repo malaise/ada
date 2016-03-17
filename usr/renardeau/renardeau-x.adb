@@ -242,7 +242,7 @@ package body X is
                 Status := T1;
               end if;
             when Clear_F =>
-              Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
+              Afpx.Reset_Descriptor;
               Reset := True;
               Status := B1;
               Prev_Status := Ready;

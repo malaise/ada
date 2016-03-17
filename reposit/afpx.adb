@@ -276,8 +276,15 @@ package body Afpx is
   function Get_Descriptor return Descriptor_Range is
   begin
     Af_Dscr.Check;
-    return Descriptor_Range(Af_Dscr.Current_Dscr.Dscr_Index);
+    return Af_Dscr.Current_Dscr.Dscr_Index;
   end Get_Descriptor;
+
+  -- Reset current descriptor (as if Use_Descriptor)
+  procedure Reset_Descriptor (Clear_Screen : in Boolean := True) is
+  begin
+    Af_Dscr.Check;
+    Use_Descriptor (Af_Dscr.Current_Dscr.Dscr_Index, Clear_Screen);
+  end Reset_Descriptor;
 
   -- Close the Console
   procedure Release_Descriptor is

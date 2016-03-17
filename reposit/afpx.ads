@@ -32,9 +32,14 @@ package Afpx is
   -- Exceptions : No_Descriptor (Descriptor not found)
   procedure Use_Descriptor (Descriptor_No : in Descriptor_Range;
                             Clear_Screen : in Boolean := True);
+
   -- Get current descriptor no
   -- Exceptions : No_Descriptor (no Descriptor in use)
   function Get_Descriptor return Descriptor_Range;
+
+  -- Reset current descriptor (as if Use_Descriptor)
+  -- Exceptions : No_Descriptor (no Descriptor in use)
+  procedure Reset_Descriptor (Clear_Screen : in Boolean := True);
 
   -- Close the Con_Io console
   -- Previous descriptor modifications (from encode, set_colors, put_then_get)
