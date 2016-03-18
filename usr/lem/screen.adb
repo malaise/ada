@@ -473,7 +473,7 @@ package body Screen is
     Screen.Set_Foreground (Con_Io.Color_Of ("Magenta"));
     Screen.Set_Xor_Mode (Con_Io.Xor_On);
     Center ("Game Paused", Y_Text);
-    Center ("Hit Space to resume", Y_Text - Y_Offset);
+    Center ("Click or hit key to resume", Y_Text - Y_Offset);
     Screen.Set_Xor_Mode (Con_Io.Xor_Off);
   end Put_Pause;
 

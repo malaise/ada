@@ -4,6 +4,8 @@ procedure Land_Lem is
   -- Result of a game
   -- Trigger a new environment at startup (as if prev game succeeded)
   Result : Game.Result_List := Game.Landed;
+  -- Is it the first game (to start it initially paused)
+  First : Boolean := True;
   use type Game.Result_List;
 begin
   Debug.Init;
@@ -17,7 +19,8 @@ begin
   -- Do one game until end
   loop
     -- Start a new game if success, otherwise redo the same
-    Result := Game.Play_One (Result = Game.Landed);
+    Result := Game.Play_One (First, Result = Game.Landed);
     exit when Result = Game.Aborted;
+    First := False;
   end loop;
 end Land_Lem;

@@ -13,7 +13,7 @@ package body Game is
   -- Return True if game goes on
   function Pause_Game (Flight_Status : Flight.Status_Rec) return Boolean;
 
-  function Play_One (New_Game : in Boolean) return Result_List is
+  function Play_One (Paused, New_Game : in Boolean) return Result_List is
     -- Flight (Lem) status
     Flight_Status : Flight.Status_Rec;
     -- Key reading result
@@ -69,6 +69,16 @@ package body Game is
     Flight_Status := Flight.Get_Status;
     Screen.Update (Flight_Status, Chrono.Read, True);
     Debug.Game.Log_Debug ("GAME: Init done");
+
+    -- Init as paused if requested
+    if Paused then
+      -- Initially paused
+      if not Pause_Game (Flight.Get_Status) then
+        -- Aborted while in pause
+        Screen.Close;
+        return Aborted;
+      end if;
+    end if;
 
     -- Play
     loop
@@ -255,14 +265,12 @@ package body Game is
           Screen.Update (Flight_Status, Chrono.Read, True);
           -- Redisplay screen about pause mode
           Screen.Put_Pause;
-        when Screen.Pause =>
-          exit;
         when Screen.Break =>
           -- Abort
           return False;
         when others =>
-          -- Arrows, clicks (remaining events): ignore
-          null;
+          -- Arrows, clicks...: unpause
+          exit;
       end case;
     end loop;
 
