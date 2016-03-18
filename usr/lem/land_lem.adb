@@ -16,6 +16,7 @@ begin
   Rnd.Gen.Randomize;
   -- Do one game until end
   loop
+    -- Start a new game if success, otherwise redo the same
     Result := Game.Play_One (Result = Game.Landed);
     exit when Result = Game.Aborted;
   end loop;

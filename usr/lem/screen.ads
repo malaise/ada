@@ -2,6 +2,9 @@ with Chronos;
 with Space, Flight;
 package Screen is
 
+  -- Open the screen (early, because this can take some time)
+  procedure Open;
+
   -- Reset screen. Display titles and moon ground
   procedure Init;
 

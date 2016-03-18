@@ -3,10 +3,10 @@ with Space, Screen, Flight, Moon, Lem, Debug;
 package body Game is
 
   -- Lem initial position (re-used when prev game lost)
-  Init_Position : Space.Position_Rec := Flight.Get_Init_Position;
+  Init_Position : Space.Position_Rec;
   Init_Speed : Lem.Speed_Rec;
 
-  -- Chronometer to display mission time:x
+  -- Chronometer to display mission time
   Chrono : Chronos.Chrono_Type;
 
   -- Pause the game
@@ -42,7 +42,9 @@ package body Game is
       return Status = Flight.Crashed or else Status = Flight.Lost;
     end Is_Failed;
   begin
-    -- Start (new) game
+    -- Open screen ASAP
+    Screen.Open;
+    -- Start new game or reuse previous setup
     if New_Game then
       Debug.Game.Log_Debug ("GAME: Starting new");
       -- Init Moon ground

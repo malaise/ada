@@ -94,15 +94,20 @@ package body Screen is
   -- Pointer grabbing switch
   Pointer_Grabbed : Boolean;
 
+  -- Open the screen
+  procedure Open is
+  begin
+    if not Console.Is_Open then
+      Console.Open (Def_Back => Con_Io.Color_Of ("Black"));
+      Screen.Set_To_Screen (Console'Access);
+    end if;
+  end Open;
+
   -- Reset screen. Display titles and moon ground
   procedure Init is
     use type My_Math.Real;
   begin
     -- Reset screen and hide mouse
-    if not Console.Is_Open then
-      Console.Open (Def_Back => Con_Io.Color_Of ("Black"));
-      Screen.Set_To_Screen (Console'Access);
-    end if;
     Screen.Clear;
     Pointer_Grabbed := False;
     if Argument.Is_Set (1, "g")
@@ -245,7 +250,10 @@ package body Screen is
     Console.Draw_Line (Tlf.X, Tlf.Y, Blf.X, Blf.Y);
     Console.Draw_Line (Tlf.X + 1, Tlf.Y, Blf.X + 1, Blf.Y);
     Console.Draw_Line (Trf.X, Trf.Y, Brf.X, Brf.Y);
-    Console.Draw_Line (Trf.X - 1, Trf.Y, Brf.X - 1, Brf.Y);
+    Console.Draw_Line (Trf.X - 1,
+                       Trf.Y,
+                       Brf.X - 1,
+                       Brf.Y);
   end Draw_Lem;
 
   -- Update (hide then draw) the gauges
