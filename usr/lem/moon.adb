@@ -47,9 +47,9 @@ package body Moon is
   begin
     -- Check if Hard_Level (-h or --hard argument)
     Hard_Level := False;
-    if Argument.Is_Set (1, "h")
-    and then Argument.Get_Parameter (1, "h") = "" then
-      -- "-h"
+    if Argument.Is_Set (1, "H")
+    and then Argument.Get_Parameter (1, "H") = "" then
+      -- "-H"
       Hard_Level := True;
     elsif Argument.Is_Set (1, "-hard")
     and then Argument.Get_Parameter (1, "-hard") = "" then
