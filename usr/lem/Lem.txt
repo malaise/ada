@@ -1,6 +1,6 @@
 Land the LEM
 ============
-V3.1
+V4.0
 
 The goal of the game is to land the LEM on the Moon.
 
@@ -17,7 +17,7 @@ The space
 The main area represents the space, the LEM and the Moon ground.
 
 The LEM must not reach the borders (up, left or right) of the space, otherwise
-it is lost. The ground shows at least one flat landing area.
+it is lost. The ground has at least one flat landing area.
 
 The gauges
 ~~~~~~~~~~
@@ -38,22 +38,24 @@ Below the indicator, a chronometer indicates the duration of the mission.
 
 Arguments of the program
 -------------------------
-When started with argument "-h" or --hard the game is harder because the landing
-area is thinner.
+When started with argument "-H" or "--hard" the game is harder because the
+landing area is thinner.
 
-When started with argument "-g" or --grab the mouse pointer is grabbed in the
+When started with argument "-g" or "--grab" the mouse pointer is grabbed in the
 game window. It can be grabbed / un-grabbed at any time by pressing the
 key ''g''.
 
-Option --help displays a summary of possible arguments. All other arguments
-are ignored.
+When started with argument "-p" or "--pause" the game is initially paused.
+
+Option "-h" or "--help" displays a summary of possible arguments. All other
+arguments are ignored.
 
 Commands of the game
 --------------------
 Hit ''g'' at any time to grab or un-grab the mouse pointer in the window (while
 within the window the pointer is hidden).
 
-Hit space while flying to pause or resume the game.
+Hit space while flying to pause the game, and resume with a click or any key.
 
 When flying and landed, the commands are the four arrows. Each arrow activates
 the corresponding engine.
@@ -272,5 +274,5 @@ Average autonomy is 152 s.
 
 .Practically,
 starting at full mass and applying a (decreasing) Y thrust to stay at a constant
-level, the mission duration is around 150 s.
+level, the mission duration before fuel exhaustion is around 150 s.
 
