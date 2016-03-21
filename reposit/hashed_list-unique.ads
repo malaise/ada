@@ -9,9 +9,9 @@ package Hashed_List.Unique is
   -- Storing an element leads to either
   --  - insertion (when the element is new)
   --  - replacement of the previous element by the new
-  --  - drop the new value and keep the original
+  --  - drop of the new value, keeping the original
 
-  type Unique_List_Type is new List_Type with null record;
+  type Unique_List_Type is new List_Type with private;
 
 
   -- Of course Search and Find will set not Found / raise Not_In_List
@@ -80,6 +80,10 @@ package Hashed_List.Unique is
 
   -- If internal inconsistency (on delete)
   Internal_Error : exception renames Hashed_List.Internal_Error;
+
+private
+
+  type Unique_List_Type is new List_Type with null record;
 
 end Hashed_List.Unique;
 
