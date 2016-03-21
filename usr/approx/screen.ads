@@ -45,7 +45,8 @@ package Screen is
       I_Clear, I_File_Name, I_X, I_Y, I_Xmin, I_Ymin, I_Xmax, I_Ymax,
       I_Degree, I_Scales, I_Wait,
       C_File_Exists, C_Delete_Point, C_Go_On, C_Data_Lost,
-      E_Done, E_File_Not_Found, E_Io_Error, E_File_Name,
+      E_Done, E_File_Not_Found, E_Access_Error, E_Io_Error, E_Format_Error,
+      E_File_Name,
       E_No_Data, E_Wrong_Degree, E_Wrong_Coordinate,
       E_Resolution_Problem, E_Curve_Problem, E_Curve_Active,
       E_Too_Many_Points);

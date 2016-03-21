@@ -64,30 +64,41 @@ package body Menu1 is
 
   -- Read a data file
   function Read_File (File_Name : in File.F_T_File_Name) return Boolean is
+    -- Clear points when read failes
+    procedure Clear is
+    begin
+      Points.P_Clear;
+      Set_Points_List;
+      File_Name_Txt.Set_Null;
+    end Clear;
   begin
     Screen.Put_Title (Screen.Read_Points);
     Encode_File_In_Get (File_Name);
-    if File.F_Exists(File_Name) then
+    if File.F_Exists (File_Name) then
       Screen.Put_Title (Screen.Read_Points);
       File_Name_Txt := As.U.Tus (File_Name);
       begin
         -- Get data in points and list
-        Points.P_Store (File.F_Read(File_Name));
+        Points.P_Store (File.F_Read (File_Name));
         Points.P_Saved;
         Set_Points_List;
         Screen.Put_Title (Screen.Data);
         return True;
       exception
-        when File.F_Access_Error | File.F_Io_Error =>
-          -- Error reading. Prev data is lost :-(
-          Points.P_Clear;
-          Set_Points_List;
-          File_Name_Txt.Set_Null;
-          Error(Screen.E_Io_Error);
+        -- Error reading. Prev data is lost :-(
+        when File.F_Access_Error =>
+          Clear;
+          Error (Screen.E_Access_Error);
+        when File.F_Io_Error =>
+          Clear;
+          Error (Screen.E_Io_Error);
+        when File.F_Format_Error =>
+          Clear;
+          Error(Screen.E_Format_Error);
       end;
     else
       -- Error but prev data is kept
-      Error(Screen.E_File_Not_Found);
+      Error (Screen.E_File_Not_Found);
     end if;
     return False;
   end Read_File;
@@ -172,6 +183,8 @@ package body Menu1 is
         Points.P_Saved;
         File_Name_Txt := Tmp_File_Name;
       exception
+        when File.F_Access_Error =>
+          Error (Screen.E_Access_Error);
         when others =>
           Error (Screen.E_Io_Error);
       end;

@@ -1,98 +1,88 @@
-with Ada.Sequential_Io;
-with My_Math;
+with As.U.Utils, Unbounded_Arrays, Text_Line, Get_Line, Sys_Calls;
+with Point_Str;
 package body File is
 
-  Magic_X : constant Points.P_T_Coordinate := 21.21;
+  -- Unbounded array of points
+  package Points_Array is new Unbounded_Arrays (Points.P_T_One_Point,
+                                                Points.P_T_The_Points);
 
-  -- Point sequential read/write
-  package F_Points_Io is new Ada.Sequential_Io (Points.P_T_One_Point);
-  use F_Points_Io;
+  -- File input
+  package My_Get_Line is new Get_Line;
 
   -- Read a file of points
   function F_Read (Name : F_T_File_Name) return Points.P_T_The_Points is
-    Size : Natural;
-    File : File_Type;
-    Magic_Point : Points.P_T_One_Point;
-    use My_Math;
+    Line : As.U.Utils.Asu_Ua.Unbounded_Array;
+    The_Points : Points_Array.Unb_Array;
+    A_Point : Points.P_T_One_Point;
   begin
+    -- Open the file
     begin
-      Open (File, In_File, Name);
+      My_Get_Line.Open (Name);
     exception
       when others => raise F_Access_Error;
     end;
-    Reset (File);
 
-    -- Check magic x and get size
-    Read (File, Magic_Point);
-    if Magic_Point.X /= Magic_X then
-      raise F_Io_Error;
-    end if;
-    Size := Natural(Magic_Point.Y);
-    -- Should be int
-    if Points.P_T_Coordinate(Size) /= Magic_Point.Y then
-      raise F_Io_Error;
-    end if;
+    -- Read the points
+    loop
+      My_Get_Line.Get_Words (Line);
+      if My_Get_Line.Get_Word_Number = 0 then
+        -- Empty line
+        null;
+      elsif My_Get_Line.Get_Word_Number = 2 then
+        -- Valid line
+        A_Point.X := Point_Str.Coordinate_Value(Line.Element (1).Image);
+        A_Point.Y := Point_Str.Coordinate_Value(Line.Element (2).Image);
+        The_Points.Append (A_Point);
+      else
+        raise F_Io_Error;
+      end if;
+      -- Read next line or End_Error
+      My_Get_Line.Read_Next_Line;
+    end loop;
 
-    -- Read the Size points
-    declare
-      The_Points : Points.P_T_The_Points (1 .. Size);
-    begin
-      for Index in 1 .. Size loop
-        Read (File, The_Points (Index));
-      end loop;
-      Close (File);
-      Points.P_Saved;
-      return (The_Points);
-    end;
   exception
+    when My_Get_Line.End_Error =>
+      -- Done
+      My_Get_Line.Close;
+      Points.P_Saved;
+      return The_Points.To_Array;
     when others =>
-      Close (File);
+      My_Get_Line.Close;
       raise F_Io_Error;
   end F_Read;
 
   -- Write the points in file
   procedure F_Write (Name : in F_T_File_Name;
-    The_Points : in Points.P_T_The_Points) is
-    File : File_Type;
+                     The_Points : in Points.P_T_The_Points) is
+    File : Text_Line.File_Type;
   begin
+    -- Create file
     begin
-      Open(File, Out_File, Name);
-      Delete(File);
-      Create(File, Out_File, Name);
-    exception
-      when Name_Error =>
-        -- New file
-        begin
-          Create (File, Out_File, Name);
-        exception
-          when others => raise F_Access_Error;
-        end;
-      when others => raise F_Access_Error;
-    end;
-    Write (File, (X => Magic_X,
-                  Y => Points.P_T_Coordinate(The_Points'Length)));
-    begin
-      for Index in The_Points'Range loop
-        Write (File, The_Points(Index));
-      end loop;
+      File.Create_All (Name);
     exception
       when others =>
-        Close (File);
-        raise F_Io_Error;
+        raise F_Access_Error;
     end;
+
+    -- Write the points
+    for I in The_Points'Range loop
+      File.Put_Line (
+          Point_Str.Coordinate_Image(The_Points(I).X) & "  " &
+          Point_Str.Coordinate_Image(The_Points(I).Y));
+    end loop;
+
     Points.P_Saved;
-    Close (File);
+    File.Close_All;
+  exception
+    when others =>
+      File.Close_All;
+      raise F_Io_Error;
   end F_Write;
 
   -- Check if file exists
   function F_Exists (Name : F_T_File_Name) return Boolean is
-    File : File_Type;
   begin
-    Open (File, In_File, Name);
-    Close (File);
-    return (True);
-  exception
-    when others => return False;
+    return Sys_Calls.File_Found (Name);
   end F_Exists;
 
 end File;

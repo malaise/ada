@@ -249,7 +249,9 @@ package body Screen is
     case Msg is
       when E_Done               => Encode_Info ("");
       when E_File_Not_Found     => Encode_Info ("File not found");
-      when E_Io_Error           => Encode_Info ("Error accessing file");
+      when E_Access_Error       => Encode_Info ("Error accessing file");
+      when E_Io_Error           => Encode_Info ("Error I/O on file");
+      when E_Format_Error       => Encode_Info ("Error invalid file format");
       when E_File_Name          => Encode_Info ("Error invalid file name");
       when E_No_Data            => Encode_Info ("Error, no data");
       when E_Wrong_Degree       => Encode_Info ("Error, invalid degree");

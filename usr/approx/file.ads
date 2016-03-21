@@ -15,7 +15,9 @@ package File is
 
   -- File not found (or protected...)
   F_Access_Error : exception;
-  -- read/Write error
+  -- Read/Write error
   F_Io_Error     : exception;
+  -- Input format error
+  F_Format_Error : exception;
 
 end File;

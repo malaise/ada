@@ -1,6 +1,0 @@
-#!/bin/bash
-# Import all .asc files as .app
-for file in *.asc ; do
-  echo $file
-  import $file `basename $file .asc`.app
-done
