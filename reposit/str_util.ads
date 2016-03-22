@@ -186,8 +186,9 @@ package Str_Util is
   -- Locate the Nth occurence of a fragment within a string,
   --  between a given index (first/last if 0) and the end/beginning of the
   --  string, searching forward or backward
-  -- Return the index in Within of the char matching the start of Fragment,
-  --  or 0 if not found or if Within or Fragment is empty
+  -- Return the index in Within of the char matching the start of Fragment
+  -- Return 0 if Index not in Within, if Within or Fragment is empty,
+  --  or if not found
   function Locate (Within     : String;
                    Fragment   : String;
                    From_Index : Natural := 0;
