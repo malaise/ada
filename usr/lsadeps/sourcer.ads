@@ -7,6 +7,8 @@ package Sourcer is
 
   -- Separator of units
   Separator : constant Character := '@';
+  -- Separator between unit and restricted (limited and/or private) mode
+  Restr_Separator : constant Character := '#';
 
   -- A parsed source descriptor
   type Src_Dscr is record
@@ -20,10 +22,15 @@ package Sourcer is
     File : As.U.Asu_Us;
     -- Standalone indicator: spec without body or body without spec
     Standalone : Boolean := False;
+    -- Private indicator for a child spec
+    Private_Child : Boolean := False;
     -- Unit name of parent (if Child or subunit)
     Parent : As.U.Asu_Us;
     -- List of withed units - @unit@unit...@unit@
     Witheds : As.U.Asu_Us;
+    -- List of restricted (limited and/or private) withed units
+    -- @mode#unit@mode#unit@, where mode is 'L', 'P' or 'B'
+    Restr_Witheds : As.U.Asu_Us;
     -- List of ancestors of withed units (if any) - @unit@unit...@unit@
     Witheds_Parents : As.U.Asu_Us;
     -- List of used units - @unit@unit...@unit@

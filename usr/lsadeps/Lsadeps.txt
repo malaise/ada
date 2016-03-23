@@ -1,6 +1,6 @@
 lsadeps
 =======
-V13.0
+V13.1
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -137,8 +137,16 @@ the spec or the body,
  - A child unit that withs a unit while this unit or a child is already withed
 by one of its parents. +
 
-It does not support any option (even includes), only one optional 'target'
-directory.
+The check of redundancy also considers the 'limited' and 'private' "with"
+directives. +
+For example: if the unit Unit spec contains 'private with U' then a child of
+Unit can contain 'with U', but neither the body of Unit, nor its subunits nor a
+private child unit of Unit can. +
+Other example: if a unit contains 'private with U', then it can also contain
+'limited private with U.Child' but not 'with U.Child'.
+
+This function does not support any option (even includes), only one optional
+'target' directory.
 
 Ada language selection
 ~~~~~~~~~~~~~~~~~~~~~~

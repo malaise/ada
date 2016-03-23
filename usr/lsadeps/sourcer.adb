@@ -74,6 +74,7 @@ package body Sourcer is
   begin
     Debug.Logger.Log_Debug (
             "  " & Image (Dscr)
+          & ", private: " & Mixed_Str (Dscr.Private_Child'Img)
           & ", standalone: " & Mixed_Str (Dscr.Standalone'Img)
           & ", parent: " & Dscr.Parent.Image & Lf
           & "  withed: " & Dscr.Witheds.Image & Lf
@@ -161,6 +162,8 @@ package body Sourcer is
     -- Are we in a with / a use statement
     In_With : Boolean;
     In_Use : Boolean;
+    -- Is it a private and/or limited with
+    In_Limited, In_Private : Boolean;
     -- Is prev delimiter a "."
     Prev_Dot : Boolean;
     -- Iterator on withed units to find their parents
@@ -214,13 +217,23 @@ package body Sourcer is
         Error ("Cannot open file " & Dscr.File.Image);
     end;
 
+    -- Init
+    In_With := False;
+    In_Use := False;
+    In_Limited := False;
+    In_Private := False;
+
     -- Parse until start of unit
     loop
       -- Get next keywork or identifier
       Next_Word (Txt, Context, Word, Lexic);
       if Lexic = Ada_Parser.Reserved_Word then
         Prev_Dot := False;
-        if Word.Image = "with" then
+        if Word.Image = "limited" then
+          In_Limited := True;
+        elsif Word.Image = "private" then
+          In_Private:= True;
+        elsif Word.Image = "with" then
           In_With := True;
         elsif Word.Image = "use" then
           In_Use := True;
@@ -229,6 +242,10 @@ package body Sourcer is
         or else Word.Image = "package"
         or else Word.Image = "generic" then
           -- End of context clause of unit (or child)
+          if Word.Image = "package" and then In_Private then
+            -- private child package
+            Dscr.Private_Child := True;
+          end if;
           exit;
         elsif Word.Image = "separate" then
           -- End of context clause of subunit
@@ -247,6 +264,8 @@ package body Sourcer is
         if Word.Image = ";" then
           In_With := False;
           In_Use := False;
+          In_Limited := False;
+          In_Private := False;
         end if;
       elsif In_With then
         -- Identifier in "with" statement, append in list of withed
@@ -256,8 +275,21 @@ package body Sourcer is
           Dscr.Witheds.Append (Separator);
         end if;
         Dscr.Witheds.Append (Word);
+        -- limited and/or private with
+        if In_Limited or else In_Private then
+          if Prev_Dot then
+            Dscr.Restr_Witheds.Append (".");
+          else
+            Dscr.Restr_Witheds.Append (Separator
+              & (if In_Limited then
+                  (if In_Private then 'B' else 'L')
+                  else 'P')
+              & Restr_Separator);
+          end if;
+          Dscr.Restr_Witheds.Append (Word);
+        end if;
       elsif In_Use then
-        -- Identifier in "use" statement, append in list of withed
+        -- Identifier in "use" statement, append in list of used
         if Prev_Dot then
           Dscr.Useds.Append (".");
         else
@@ -267,6 +299,14 @@ package body Sourcer is
       end if;
       -- Skip other (used) keywords
     end loop;
+
+    -- Append last separator
+    if not Dscr.Witheds.Is_Null then
+      Dscr.Witheds.Append (Separator);
+      if not Dscr.Restr_Witheds.Is_Null then
+        Dscr.Restr_Witheds.Append (Separator);
+      end if;
+    end if;
 
     -- Append Path for this unit name
     if Dscr.Kind = Unit_Spec
@@ -287,7 +327,6 @@ package body Sourcer is
     Full_Unit_Name := As.U.Tus (Directory.Build_File_Name
          (Dscr.Path.Image, Dscr.Unit.Image, ""));
     if not Dscr.Witheds.Is_Null then
-      Dscr.Witheds.Append (Separator);
       -- Scan each withed unit and append its parents if any
       Iterator.Set (Dscr.Witheds.Image, Is_Sep'Access);
       loop
