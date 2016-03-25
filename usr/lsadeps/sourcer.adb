@@ -724,5 +724,10 @@ package body Sourcer is
     return Parent;
   end Get_Root_Body;
 
+  function Short_Image (Unit : Src_Dscr) return String is
+  begin
+    return Unit.Unit.Image & "#" & Src_Codes(Unit.Kind);
+  end Short_Image;
+
 end Sourcer;
 

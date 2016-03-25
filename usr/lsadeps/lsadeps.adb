@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory, Trace;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V13.2";
+  Version : constant String := "V13.3";
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -183,7 +183,7 @@ procedure Lsadeps is
     return Dscr;
   end Check_Unit;
 
-  -- Checnge current dir
+  -- Change current dir
   procedure Change_Dir (Target : in String) is
   begin
     if Target /= "" then

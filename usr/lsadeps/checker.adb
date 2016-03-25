@@ -25,7 +25,7 @@ package body Checker is
     -- Locate "Unit@"
     Index := Str_Util.Locate (Within.Image, Rwith);
     -- Mode is just before
-    return (if Index = 0 then ' '
+    return (if Index = 0 then '-'
             else Within.Element (Index - 1));
   end Restricted_Of;
 
@@ -42,7 +42,7 @@ package body Checker is
   -- of this parent
   function Check_Curr_Restr (Parent, Child : Character) return Boolean is
   begin
-    if Child = ' ' or else Parent = 'B' or else Child = Parent then
+    if Child = '-' or else Parent = 'B' or else Child = Parent then
       -- Child is withed not restricted or Parent is limited private withed
       --  so withing the parent is useless
       return False;
@@ -52,7 +52,7 @@ package body Checker is
     elsif Parent = 'P' then
       -- Ok if child is not [ limited ] private
       return Child = 'L';
-    else -- Parent = ' '
+    else -- Parent = '-'
       return True;
     end if;
   end Check_Curr_Restr;
@@ -63,7 +63,7 @@ package body Checker is
   function Check_Restr (Parent, Child : Character;
                         Private_Child : Boolean) return Boolean is
   begin
-    if Parent = ' ' or else Child = 'B' or else Child = Parent then
+    if Parent = '-' or else Child = 'B' or else Child = Parent then
       -- Parent is unrestricted wihting, or child is limited private withing,
       -- so child is more restrictive or similar
       return False;
@@ -87,8 +87,9 @@ package body Checker is
                          Parent : Sourcer.Src_Dscr) return Boolean is
     Index, Stop : Natural;
     Awith : constant String := Sourcer.Separator & Unit & Sourcer.Separator;
-    Pwith : constant String := Sourcer.Restr_Separator & Unit & ".";
+    Pwith : constant String := Sourcer.Separator & Unit & ".";
     Current_Is_Private : constant Boolean := Is_Private (Current);
+    Withed : As.U.Asu_Us;
     Parent_Restr : Character;
     Result : Boolean := True;
   begin
@@ -96,35 +97,37 @@ package body Checker is
     if Str_Util.Locate (Parent.Witheds.Image, Awith) /= 0 then
       -- This parent withes the same unit
       Parent_Restr := Restricted_Of (Unit, Parent.Restr_Witheds);
-      Logger.Log_Debug ("    Our parent " & Sourcer.Image (Parent)
+      Logger.Log_Debug ("    Our parent " & Sourcer.Short_Image (Parent)
                       & " withes unit " & Parent_Restr);
       if not Check_Restr (Parent_Restr, Unit_Restr, Current_Is_Private) then
-        Basic_Proc.Put_Line_Output ("Unit " & Sourcer.Image (Current)
+        Basic_Proc.Put_Line_Output ("Unit " & Sourcer.Short_Image (Current)
             & " withes " & Unit
-            & " already withed by parent " & Sourcer.Image (Parent));
+            & " already withed by parent " & Sourcer.Short_Image (Parent));
         Result := False;
       end if;
     -- Check if parent withese a child of Unit
     elsif Str_Util.Locate (Parent.Witheds_Parents.Image, Awith) /= 0 then
       -- Check that each with of a child of this unit does not make this useless
+      Logger.Log_Debug ("      Our parent " & Sourcer.Short_Image (Parent)
+                      & " withes a parent of " & Unit);
       Index := 1;
       loop
-        -- Find unit as parent of restricted with: "#Unit."
-        Index := Str_Util.Locate (Parent.Restr_Witheds.Image, Pwith, Index);
+        -- Find unit as parent of with: "@Unit."
+        Index := Str_Util.Locate (Parent.Witheds.Image, Pwith, Index);
         exit when Index = 0;
-        -- Locate treminating separator '@'
-        Stop := Str_Util.Locate (Parent.Restr_Witheds.Image,
+        -- Locate terminating separator '@' and set the Withed name
+        Stop := Str_Util.Locate (Parent.Witheds.Image,
                                  Sourcer.Separator & "",
                                  From_Index => Index + Pwith'Length);
-        -- Restr tag of this with is just beore '#'
-        Parent_Restr := Parent.Restr_Witheds.Element (Index - 1);
-        Logger.Log_Debug ("      Our parent " & Sourcer.Image (Parent)
-                        & " withes unit " & Parent_Restr);
+        Withed := Parent.Witheds.Uslice (Index + 1, Stop - 1);
+        Parent_Restr := Restricted_Of (Withed.Image, Parent.Restr_Witheds);
+        Logger.Log_Debug ("      Our parent " & Sourcer.Short_Image (Parent)
+                        & " withes unit " & Withed.Image & " " & Parent_Restr);
         if not Check_Restr (Parent_Restr, Unit_Restr, Current_Is_Private) then
-          Basic_Proc.Put_Line_Output ("Unit " & Sourcer.Image (Current)
+          Basic_Proc.Put_Line_Output ("Unit " & Sourcer.Short_Image (Current)
               & " withes " & Unit
-              & " while its parent " & Sourcer.Image (Parent)
-              & " withes " & Parent.Restr_Witheds.Slice (Index + 1, Stop - 2));
+              & " while its parent " & Sourcer.Short_Image (Parent)
+              & " withes " & Withed.Image);
           Result := False;
         end if;
         Index := Stop;
@@ -154,7 +157,7 @@ package body Checker is
     Sourcer.List.Rewind;
     Check_All_Units: loop
       Sourcer.List.Read_Next (Current, Moved);
-      Logger.Log_Debug ("Processing Unit " & Sourcer.Image (Current));
+      Logger.Log_Debug ("Processing Unit " & Sourcer.Short_Image (Current));
       -- For a body (not standalone) or subunit, make the list of parents
       Parents.Delete_List;
       if Current.Kind /= Sourcer.Unit_Spec
@@ -164,7 +167,7 @@ package body Checker is
         Store_All_Parents: loop
           Parent := Sourcer.Get_Parent (Parent);
           Parents.Insert (Parent);
-          Logger.Log_Debug ("  Adding parent " & Sourcer.Image (Parent));
+          Logger.Log_Debug ("  Adding parent " & Sourcer.Short_Image (Parent));
           exit Store_All_Parents when
               Parent.Kind = Sourcer.Unit_Spec
               or else (Parent.Kind = Sourcer.Unit_Body
@@ -179,7 +182,7 @@ package body Checker is
         Parent := Sourcer.Get_Parent_Of_Child (Parent);
         exit when Parent.Unit.Is_Null;
         Parents.Insert (Parent);
-        Logger.Log_Debug ("  Adding parent " & Sourcer.Image (Parent));
+        Logger.Log_Debug ("  Adding parent " & Sourcer.Short_Image (Parent));
       end loop;
 
       -- Extract each with of current unit
@@ -203,7 +206,7 @@ package body Checker is
           if Str_Util.Locate (Current.Witheds.Image, Awith,
                                 Occurence => 2) /= 0 then
             -- Full unit appears twice in list of withed
-            Basic_Proc.Put_Line_Output ("Unit " & Sourcer.Image (Current)
+            Basic_Proc.Put_Line_Output ("Unit " & Sourcer.Short_Image (Current)
               & " withes twice " & Unit);
             Result := False;
           end if;
@@ -213,8 +216,8 @@ package body Checker is
           --   is less restrictive than with of U.Child)
           -- Get resctrited with mode of current
           Curr_Restr := Restricted_Of (Unit, Current.Restr_Witheds);
-          Logger.Log_Debug ("  Checking withed childrent of unit, withed "
-                          & Curr_Restr);
+          Logger.Log_Debug ("  Checking withed children of unit " & Unit
+                          &", withed " & Curr_Restr);
           Occ := 1;
           loop
             Index := Str_Util.Locate (Current.Witheds.Image, Pwith,
@@ -230,7 +233,8 @@ package body Checker is
                             & " of withed unit is withed " & Child_Restr);
             -- Check that withing both is usefull, considering restrictive with
             if not Check_Curr_Restr (Curr_Restr, Child_Restr) then
-              Basic_Proc.Put_Line_Output ("Unit " & Sourcer.Image (Current)
+              Basic_Proc.Put_Line_Output ("Unit "
+                & Sourcer.Short_Image (Current)
                 & " withes " & Unit & " and " & Child.Image);
               Result := False;
             end if;

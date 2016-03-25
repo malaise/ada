@@ -117,5 +117,7 @@ package Sourcer is
   -- Get Unit_Body of a subunit
   function Get_Root_Body (Sub : in Src_Dscr) return Src_Dscr;
 
+  -- Short image (unit#kind without path) of a unit
+  function Short_Image (Unit : Src_Dscr) return String;
 end Sourcer;
 
