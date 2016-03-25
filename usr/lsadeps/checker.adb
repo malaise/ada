@@ -1,13 +1,23 @@
-with Basic_Proc, As.U, Str_Util, Dynamic_List, Parser, Trace.Loggers;
+with Basic_Proc, As.U, Str_Util, Parser, Trace.Loggers, Long_Long_Limited_List;
 with Sourcer;
 package body Checker is
 
   -- A logger
   Logger : Trace.Loggers.Logger;
 
+  -- To sort the units in crescent order
+  procedure Set (To : out Sourcer.Src_Dscr; Val : in Sourcer.Src_Dscr) is
+  begin
+    To := Val;
+  end Set;
+  package Src_List_Mng is new Long_Long_Limited_List (Sourcer.Src_Dscr, Set);
+
   -- A dyn list of Sourcer dscrs
-  package Src_List_Mng is new Dynamic_List (Sourcer.Src_Dscr);
-  package Src_Dyn_List_Mng renames Src_List_Mng.Dyn_List;
+  function "<" (Left, Right : Sourcer.Src_Dscr) return Boolean is
+  begin
+    return Sourcer.Short_Image (Left) < Sourcer.Short_Image (Right);
+  end "<";
+  procedure Sort is new Src_List_Mng.Sort ("<");
 
   -- Separator of Withs
   function Is_Sep (C : Character) return Boolean is
@@ -136,14 +146,16 @@ package body Checker is
     return Result;
   end Check_Parent;
 
+
   -- Check redundant "with" and "use" clauses between spec/body/subunits
   --  within the whole list of units
   -- Return True if no redundance
   function Check return Boolean is
+    Currents : Src_List_Mng.List_Type;
     Result : Boolean := True;
     Current : Sourcer.Src_Dscr;
     Moved, Parent_Moved : Boolean;
-    Parents : Src_Dyn_List_Mng.List_Type;
+    Parents : Src_List_Mng.List_Type;
     Parent : Sourcer.Src_Dscr;
     Iter : Parser.Iterator;
     use type Sourcer.Src_Kind_List;
@@ -153,10 +165,19 @@ package body Checker is
       Logger.Log_Debug ("No source");
       return True;
     end if;
-    -- Scan all units. For each:
+    -- Copy all units in a dynamic list and sort it
     Sourcer.List.Rewind;
-    Check_All_Units: loop
+    loop
       Sourcer.List.Read_Next (Current, Moved);
+      Currents.Insert (Current);
+      exit when not Moved;
+    end loop;
+    Sort (Currents);
+
+    -- Scan all units. For each:
+    Currents.Rewind;
+    Check_All_Units: loop
+      Currents.Read (Current, Moved => Moved);
       Logger.Log_Debug ("Processing Unit " & Sourcer.Short_Image (Current));
       -- For a body (not standalone) or subunit, make the list of parents
       Parents.Delete_List;
@@ -184,6 +205,7 @@ package body Checker is
         Parents.Insert (Parent);
         Logger.Log_Debug ("  Adding parent " & Sourcer.Short_Image (Parent));
       end loop;
+      Sort (Parents);
 
       -- Extract each with of current unit
       Iter.Set (Current.Witheds.Image, Is_Sep'Access);
