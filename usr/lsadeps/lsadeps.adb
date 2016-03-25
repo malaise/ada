@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory, Trace;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V13.3";
+  Version : constant String := "V13.4";
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -392,6 +392,10 @@ begin
     end if;
     -- Target
     Target := As.U.Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index, 1));
+    if Target.Element (Target.Length) = '/' then
+      -- Target us aunit name (cannot be a dir)
+      Error ("Invalid Target_Unit");
+    end if;
     Target_Dir := As.U.Tus (Directory.Make_Full_Path (Directory.Dirname
         (Target.Image)));
     Check_Dir (Target_Dir.Image);
