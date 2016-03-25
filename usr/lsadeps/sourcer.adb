@@ -78,6 +78,7 @@ package body Sourcer is
           & ", standalone: " & Mixed_Str (Dscr.Standalone'Img)
           & ", parent: " & Dscr.Parent.Image & Lf
           & "  withed: " & Dscr.Witheds.Image & Lf
+          & "  rwith : " & Dscr.Restr_Witheds.Image & Lf
           & "  withPa: " & Dscr.Witheds_Parents.Image & Lf
           & "  used  : " & Dscr.Useds.Image);
   end Dump;

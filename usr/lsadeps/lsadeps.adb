@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory, Trace;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V13.1";
+  Version : constant String := "V13.2";
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -183,6 +183,21 @@ procedure Lsadeps is
     return Dscr;
   end Check_Unit;
 
+  -- Checnge current dir
+  procedure Change_Dir (Target : in String) is
+  begin
+    if Target /= "" then
+      begin
+        Directory.Change_Current (Directory.Make_Full_Path (Target));
+      exception
+        when others =>
+          Error ("Cannot change to target directory " & Target);
+      end;
+    end if;
+    Debug.Logger.Log_Debug ("In " &
+        Directory.Make_Full_Path (Directory.Get_Current));
+  end Change_Dir;
+
   -- Add the paths of -I and -R dirtectives in the proper order
   procedure Add_Paths is separate;
 
@@ -308,16 +323,20 @@ begin
 
   -- Save current dir and add it to paths (top prio)
   Directory.Get_Current (Current_Dir);
-  if not List_Mode then
+  if not List_Mode and then not Check_Mode then
     Sort.Add_Path (Current_Dir);
   end if;
 
   if Check_Mode then
-    -- An optional target directory
     if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) = 1 then
+      -- An optional target directory
       Target := As.U.Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index));
       Target_Dir := As.U.Tus (Directory.Make_Full_Path (Target.Image));
-    elsif Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 0 then
+      Sort.Add_Path (Target_Dir);
+    elsif Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) = 0 then
+      -- Current directory
+      Sort.Add_Path (Current_Dir);
+    else
       Error ("At most one target accepted");
     end if;
     Check_Dir (Target_Dir.Image);
@@ -429,24 +448,10 @@ begin
   Sourcer.Build_Lists;
   Debug.Logger.Log (Perfo, "Lists built");
 
-  ------------------------
-  -- MOVE TO TARGET DIR --
-  ------------------------
-  if not Target_Dir.Is_Null then
-    begin
-      Directory.Change_Current (Directory.Make_Full_Path (Target_Dir.Image));
-    exception
-      when others =>
-        Error ("Cannot change to target directory " & Target_Dir.Image);
-    end;
-  end if;
-  Debug.Logger.Log_Debug ("In " &
-      Directory.Make_Full_Path (Directory.Get_Current));
-
-  -----------------
-  -- CHECK UNITS --
-  -----------------
   if Check_Mode then
+    -----------------
+    -- CHECK UNITS --
+    -----------------
     if not Checker.Check then
       -- Check failed
       Basic_Proc.Set_Error_Exit_Code;
@@ -454,6 +459,11 @@ begin
     Debug.Logger.Log (Perfo, "Check done.");
     return;
   end if;
+
+  ------------------------
+  -- MOVE TO TARGET DIR --
+  ------------------------
+  Change_Dir (Target_Dir.Image);
 
   ------------------
   -- CHECK TARGET --
