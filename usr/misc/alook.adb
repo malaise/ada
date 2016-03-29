@@ -275,6 +275,10 @@ procedure Alook is
   Problem : constant Natural := 2;
   Exit_Code : Natural := All_Unchanged;
 
+  -- Ada language version (for keywords)
+  Version : Ada_Words.Keywords.Language_Versions
+          := Ada_Words.Keywords.Default_Version;
+
   -- Process one file
   function Do_One(File_Name : in String;
                   Do_It : in Boolean;
@@ -352,7 +356,7 @@ procedure Alook is
         return;
       end if;
       -- Identifier or reserved word
-      case Ada_Words.Keywords.Check_Keyword (Str) is
+      case Ada_Words.Keywords.Check_Keyword (Str, Version) is
         when Ada_Words.Keywords.True =>
           Is_Keyword := True;
         when Ada_Words.Keywords.Maybe =>
@@ -593,6 +597,7 @@ procedure Alook is
     Basic_Proc.Put_Line_Output ("Warnings on comments (on/off): if upper case");
   end Put_Usage;
 
+  Arg : As.U.Asu_Us;
 begin
 
   Logger.Init;
@@ -609,21 +614,33 @@ begin
   -- Process all remaining arguments (file names)
   for I in 1 .. Argument.Get_Nbre_Arg loop
 
+    Argument.Get_Parameter (Arg, I);
     -- Change verbose level?
-    if Argument.Get_Parameter (I) = "-d" then
+    if Arg.Image = "-d" then
       Logger.Add_Mask (Trace.Debug);
-    elsif Argument.Get_Parameter (I) = "-v" then
+    elsif Arg.Image = "-v" then
       Verbose_Level := Verbose;
-    elsif Argument.Get_Parameter (I) = "-s" then
+    elsif Arg.Image = "-s" then
       Verbose_Level := Silent;
-    elsif Argument.Get_Parameter (I) = "-n" then
+    elsif Arg.Image = "-n" then
       Verbose_Level := Normal;
-    elsif Argument.Get_Parameter (I) = "-t" then
+    elsif Arg.Image = "-t" then
       Verbose_Level := Test;
-    elsif Argument.Get_Parameter (I) = "-C" then
+    elsif Arg.Image = "-C" then
       Warn_Comment := True;
-    elsif Argument.Get_Parameter (I) = "-c" then
+    elsif Arg.Image = "-c" then
       Warn_Comment := False;
+    elsif Arg.Length >= 7
+    and then Arg.Slice (1, 5) = "--Ada" then
+      -- Change Ada language version
+      begin
+        Version := Ada_Words.Keywords.Language_Versions'Value(
+            Arg.Slice (3, Arg.Length));
+      exception
+        when others =>
+          Basic_Proc.Put_Line_Error ("Invalid Argument");
+          raise;
+      end;
     else
       -- Process file
       if Do_One (Argument.Get_Parameter (I),
