@@ -1,4 +1,5 @@
-with Any_Def, Perpet, Virtual_Time, Smart_Reference, Dynamic_List;
+private with Smart_Reference, Dynamic_List;
+with Any_Def, Perpet, Virtual_Time;
 package Timers is
 
   -- How to specify a timer: wait some seconds, some days or until a
@@ -105,16 +106,16 @@ package Timers is
   -- May raise Invalid_Timer if timer is Deleted
   function Remaining (Id : Timer_Id) return Perpet.Delta_Rec;
 
-  ----------------------------------------------------------------------------
 
-  -- Interface for the virtual clock, don't use
+private
+
+  -- Interface for the virtual clocks notification
   type Observer_Type is new Virtual_Time.Observer with null record;
   procedure Notify (An_Observer : in out Observer_Type;
                     Rtime, Vtime : in Virtual_Time.Time;
                     Speed : in Virtual_Time.Speed_Range;
                     Clock : in Virtual_Time.Clock_Access);
 
-private
 
   -- Timer descriptor
   subtype Exp_Rec is Delay_Rec(Delay_Exp);
