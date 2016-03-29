@@ -8,7 +8,7 @@ package body Init_Mng is
   --  is not new event to accept)
   Wr_Mutex : Mutexes.Mutex (Mutexes.Write_Read, False);
   -- The Read_Mutex is used to protect the pool for event delivery
-  --  because the Wr_Mutext allows several simultaneous readers
+  --  because the Wr_Mutex allows several simultaneous readers
   R_Mutex : Mutexes.Simple_Mutex;
 
   -- The pool of pending events: Fifo
@@ -39,12 +39,11 @@ package body Init_Mng is
   procedure Set_Handler (Handler : Event_Handler) is
     Event : Event_Type;
   begin
-    -- Acquire exclusive access if no event waiting to be accepted
-    --  and set new handler
+    -- Acquire exclusive access to the pool and set new handler
     Wr_Mutex.Get (Mutexes.Read);
     R_Mutex.Get;
     The_Handler := Handler;
-    -- Deliver pending events as long as no new event pending
+    -- Deliver pending events
     while The_Handler /= null and then not Event_Pool.Is_Empty loop
       -- Get pending event with exclusive access
       Event_Pool.Pop (Event);
