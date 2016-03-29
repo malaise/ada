@@ -2,7 +2,7 @@
 -- Several senders can connect to a reception Fifo
 -- Once connected, a Fifo is full duplex
 -- A Dictio must be up and running for Open to succeed
-with Socket, Tcp_Util, Dynamic_List;
+private with Socket, Tcp_Util, Dynamic_List;
 pragma Elaborate_All (Tcp_Util);
 package Fifos is
 
