@@ -2,14 +2,14 @@
 -- Bubble, Heapsort and Quicksort generic sorting                   --
 -- Instanciation:                                                   --
 --   define type typ_object of elements to sort (not limited)       --
---               typ_index of indexes of array (discret)        --
---               typ_array of array NOT CONTRAINED              --
+--               typ_index of indexes of array (discrete)           --
+--               typ_array of array NOT CONSTRAINED                 --
 --           one comparison function ("<") of two elements          --
 --  package My_Sort is new Sorts                                    --
 --    (Typ_Object, Typ_Index, Comparison, Typ_Array);               --
 --                                                                  --
 --  The procedures sort any slice of the array in crescent order    --
---    (inducted by the comparison fonction)                         --
+--    (inducted by the comparison function)                         --
 --  The exception Sort_Error is raised in any exception             --
 --   circumstance (i.e. memory overflow)                            --
 -- WARNING : It is mandarory for the "<" function to be strict      --
