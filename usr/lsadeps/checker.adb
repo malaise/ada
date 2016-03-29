@@ -90,7 +90,10 @@ package body Checker is
     end if;
   end Check_Restr;
 
-  -- Check that parent doesn't already with this withed unit or one child of it
+  -- Check that this parent doesn't already with this withed unit or a child
+  --  of it, or withes it consistently with restriction (check that unit is
+  --  withed by current more restrictively than the child by parent of current,
+  --  considering that the child can be a private child package)
   function Check_Parent (Current : Sourcer.Src_Dscr;
                          Unit : String;
                          Unit_Restr : Character;
@@ -180,6 +183,8 @@ package body Checker is
       Currents.Read (Current, Moved => Moved);
       Logger.Log_Debug ("Processing Unit " & Sourcer.Short_Image (Current));
       -- For a body (not standalone) or subunit, make the list of parents
+
+      -- Make a list of its parents
       Parents.Delete_List;
       if Current.Kind /= Sourcer.Unit_Spec
       and then not (Current.Kind = Sourcer.Unit_Body
@@ -236,7 +241,7 @@ package body Checker is
           -- If current unit withes a unit U and a child unit of U, check
           --  that this is consistent regarding restricted with (with of U
           --   is less restrictive than with of U.Child)
-          -- Get resctrited with mode of current
+          -- Get resctricted with mode of current
           Curr_Restr := Restricted_Of (Unit, Current.Restr_Witheds);
           Logger.Log_Debug ("  Checking withed children of unit " & Unit
                           &", withed " & Curr_Restr);
@@ -265,10 +270,8 @@ package body Checker is
           end loop;
 
           -- If there is no local "use", check that parents don't already with
-          --  this withed unit or one of its parents, or with it consistently
-          --  with restriction (check that a unit is withed by current more
-          --  restrictively than by a child of current, considering that
-          --  the child can be a private child package)
+          --  this withed unit or one of its children, or with it consistently
+          --  with restriction
           if Str_Util.Locate (Current.Useds.Image, Awith) = 0
           and then not Parents.Is_Empty then
             Parents.Rewind;
