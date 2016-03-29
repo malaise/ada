@@ -1,4 +1,4 @@
-with Images, Timeval;
+with Images, Timeval, Event_Mng.Handling;
 
 separate (X_Mng)
 package body Dispatch is
@@ -175,7 +175,7 @@ package body Dispatch is
 
       if Handle_Event then
         -- Handle non X nor wakeup event and convert
-        Evt_Out := Event_Mng.Handle (Evt_In);
+        Evt_Out := Event_Mng.Handling.Handle (Evt_In);
         Event := (case Evt_Out is
                     when Event_Mng.Timer_Event =>
                       (Internal => False, Kind => Timer_Event),

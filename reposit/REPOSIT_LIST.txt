@@ -365,6 +365,9 @@ euro_franc (1)::
 event_mng (2)::
      Multiplex reception of events (timers, fd, signals).
 
+event_mng.handling (1)::
+     Internal (and for X_Mng) operation for handling an event.
+
 evp_digest (1)::
      Compute Hash with OpenSSL.
 

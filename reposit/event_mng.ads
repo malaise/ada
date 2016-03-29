@@ -116,10 +116,22 @@ package Event_Mng is
   -- Usefull to wait a bit and still process timers and Fds transparently
   procedure Pause (Timeout_Ms : in Integer);
 
+  ----------------
+  -- Exceptions --
+  ----------------
+  -- When setting a Cb on a fd that has already a Cb
+  -- When deleting a Cb on a fd that has no Cb
+  Fd_Cb_Error : exception;
+
+  -- When Delay_Spec of Wait has a clock (i.e. is not real time)
+  Invalid_Delay : exception;
+
+
   -----------------------------
   -- Event internal handling --
  ------- ----------------------
-  -- This low-level operation shall NOT be called by applications
+  -- This type is used by a low-level operation that shall NOT be called
+  --  by applications
   -- Internal event got by another waiting point (X_Wait_Event?)
   subtype In_Event_List is Out_Event_List range Fd_Event .. Timeout;
   type Event_Rec (Kind : In_Event_List := Fd_Event) is record
@@ -133,18 +145,11 @@ package Event_Mng is
         null;
     end case;
   end record;
+
+private
+
   -- Handle an internal event
   function Handle (Event : Event_Rec) return Out_Event_List;
-
-  ----------------
-  -- Exceptions --
-  ----------------
-  -- When setting a Cb on a fd that has already a Cb
-  -- When deleting a Cb on a fd that has no Cb
-  Fd_Cb_Error : exception;
-
-  -- When Delay_Spec of Wait has a clock (i.e. is not real time)
-  Invalid_Delay : exception;
 
 end Event_Mng;
 
