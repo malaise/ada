@@ -30,16 +30,15 @@ begin
   end if;
 
   -- Copy = loop of read/write
-  for I in 1 .. In_Blocs_Nb loop
-    -- Bloc len for this iteration
-    if I /= In_Blocs_Nb then
-      Char_Io.Read  (In_File,  Chars);
-      Char_Io.Write (Out_File, Chars);
-    else
-      Char_Io.Read  (In_File,  Chars(1 .. Last_Bloc_Len));
-      Char_Io.Write (Out_File, Chars(1 .. Last_Bloc_Len));
-    end if;
+  for I in 1 .. In_Blocs_Nb  - 1 loop
+    -- Bloc len for the iteration
+    Char_Io.Read  (In_File,  Chars);
+    Char_Io.Write (Out_File, Chars);
   end loop;
+  -- Last bloc
+  Char_Io.Read  (In_File,  Chars(1 .. Last_Bloc_Len));
+  Char_Io.Write (Out_File, Chars(1 .. Last_Bloc_Len));
+
   -- Done, close
   Char_Io.Close (In_File);
   Char_Io.Close (Out_File);
