@@ -256,6 +256,10 @@ afpx_rnb (3)::
 any_def (1)::
      Definition of variant type that contains any value.
 
+app (2)::
+     Preprocessor that selects pieces of text and expands names according to
+     definitions.
+
 arbitrary arbitrary.prime_list arbitrary.factors arbitrary.fractions (2)::
      Arbitrary precision operations, prime factor decomposition, fractions.
 
@@ -314,7 +318,7 @@ clear_screen (1)::
 command (2)::
      Uses Proc_Family to fork-exec and collect output and error flows.
 
-complex (1)::
+complexes (1)::
      Complex numbers operations.
 
 computer (2)::
@@ -362,11 +366,8 @@ environ (2)::
 euro_franc (1)::
      Euro <--> Franc convertion.
 
-event_mng (2)::
+event_mng event_mng.handling (2)::
      Multiplex reception of events (timers, fd, signals).
-
-event_mng.handling (1)::
-     Internal (and for X_Mng) operation for handling an event.
 
 evp_digest (1)::
      Compute Hash with OpenSSL.
@@ -429,14 +430,14 @@ language (2)::
 locks (1)::
      Allow several tasks to wait until the lock is open.
 
-long_longs (1)::
-     Definition of long long integer and associated subtypes.
-
 long_long_limited_list limited_list dynamic_list (3)::
      Dynamic list of (limited) private objects, search/sort.
 
 long_long_limited_pool limited_pool unlimited_pool (2)::
      Simple pool of (limited) private objects, push/pop.
+
+long_longs (1)::
+     Definition of long long integer and associated subtypes.
 
 lower_char lower_str mixed_str upper_char upper_str (1)::
      Upper, lower, mixed string and character conversion.
@@ -548,7 +549,7 @@ snappy (2)::
 
 socket (2)::
      Socket (Udp/Tpc/Tcp_Header, Ipm, Afunix) operations. Relies on a quite
-complex C library.
+     complex C library.
 
 socket_util (1)::
      General Set_Dest and Link of socket.
@@ -592,7 +593,7 @@ timers timers.expiration (2)::
 timeval (1)::
      Conversion from and to timeval structure.
 
-trace trace.logger (2)::
+trace trace.loggers (2)::
      Tracing utility library and logger object.
 
 trees (2)::
@@ -600,9 +601,6 @@ trees (2)::
 
 trilean (1)::
      An enum with 3 values (False, True and Other, or Maybe).
-
-trunc (1)::
-     Trunc a float to lower integer
 
 u_rand (2)::
      Universal random number generator.
