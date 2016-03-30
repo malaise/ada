@@ -4,7 +4,7 @@ package Romanic is
   -- The romanic typo
   -------------------
   -- Longest supported is MMMMDCCCLXXXVIII (4888)
-  -- Biggest supported is MMMMCMXCIX (4999)
+  -- Largest supported is MMMMCMXCIX (4999)
   type Digit is ('I', 'V', 'X', 'L', 'C', 'D', 'M');
   subtype Index_Range is Positive range 1 .. 16;
   type Number is array (Index_Range range <>) of Digit;
