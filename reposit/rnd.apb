@@ -1,5 +1,8 @@
 with System;
 with Long_Longs, C_Types;
+--#IfNotDef Urand
+with My_Math;
+--#EndifDef
 package body Rnd is
 
   function C_Gettimeofday (Tv : System.Address; Tz : System.Address)
@@ -32,24 +35,28 @@ package body Rnd is
     -- The result of mutex allocation is always true, because infinite waiting
     Dummy_Ok : Boolean;
     F : Float;
-    I : U_Rand.Seed_Range_1;
 
     -- Gives a "random" number
-    function Init_Aleat return Float is
+    function Init_Rnd return Float is
       Tv : C_Types.Timeval_T;
       Dummy : Integer;
     begin
       Dummy := C_Gettimeofday (Tv'Address, System.Null_Address);
       return Float(Tv.Tv_Usec) / 1.0E6;
-    end Init_Aleat;
+    end Init_Rnd;
 
   begin
     -- 0 <= init <= 1 : Ok, otherwise random
-    F := (if 0.0 <= Init and then Init < 1.0 then Init else Init_Aleat);
-    I := U_Rand.Seed_Range_1 (F * Float(U_Rand.Seed_Range_1'Last - 1) + 1.0);
+    F := (if 0.0 <= Init and then Init < 1.0 then Init else Init_Rnd);
+
 
     Dummy_Ok := Gen.Lock.Get (-1.0);
-    U_Rand.Start (Gen.Ugen, New_I => I);
+--#IfDef Urand
+    Gen.Ugen.Start (New_I =>
+        U_Rand.Seed_Range_1 (F * Float(U_Rand.Seed_Range_1'Last - 1) + 1.0));
+--#ElseDef
+    Gen.Rnd_Nbre := F;
+--#EndifDef
     Gen.Randomized := True;
     Gen.Lock.Release;
   end Randomize;
@@ -69,12 +76,31 @@ package body Rnd is
   function Random (Gen : in out Generator;
                    Mini : in Float := 0.0; Maxi : in Float := 1.0)
                   return Float is
-    -- Returned value
+
+--#IfNotDef Urand
+    -- Native next random value
+    procedure Next (Nbre : in out Float) is
+      Nbre_2 : Float;
+    begin
+      -- (N + Pi)**5
+      Nbre := Nbre + My_Math.Pi;
+      Nbre_2 := Nbre * Nbre;
+      Nbre := Nbre_2 * Nbre_2 * Nbre;
+      -- Decimal part
+      Nbre := Nbre - Float(My_Math.Trunc(My_Math.Real(Nbre)));
+    end Next;
+--#EndifDef
+
     Val : Float;
     Dummy_Ok : Boolean;
   begin
     Dummy_Ok := Gen.Lock.Get (-1.0);
-    U_Rand.Next (Gen.Ugen, Val);
+--#IfDef Urand
+    Gen.Ugen.Next (Val);
+--#ElseDef
+    Next (Gen.Rnd_Nbre);
+    Val := Gen.Rnd_Nbre;
+--#EndifDef
     Gen.Lock.Release;
     -- Here 0 <= Val < 1
     return (if Mini >= Maxi then Val else Mini + (Val * (Maxi - Mini) ));
