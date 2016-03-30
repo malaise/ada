@@ -1,4 +1,5 @@
 with Sys_Calls, Timers;
+private with Trace;
 -- Event management
 package Event_Mng is
 
@@ -96,6 +97,9 @@ package Event_Mng is
   -- The 4 variants return on any event or on timeout
   type Out_Event_List is (Timer_Event, Fd_Event, Signal_Event, Timeout);
 
+  -- Used indernally in Handling child pacakge
+  subtype In_Event_List is Out_Event_List range Fd_Event .. Timeout;
+
   -- This uses virtual time and allows various specifications of delay
   --  (in real time)
   function Wait (Delay_Spec : Timers.Delay_Rec) return Out_Event_List;
@@ -126,30 +130,29 @@ package Event_Mng is
   -- When Delay_Spec of Wait has a clock (i.e. is not real time)
   Invalid_Delay : exception;
 
-
-  -----------------------------
-  -- Event internal handling --
- ------- ----------------------
-  -- This type is used by a low-level operation that shall NOT be called
-  --  by applications
-  -- Internal event got by another waiting point (X_Wait_Event?)
-  subtype In_Event_List is Out_Event_List range Fd_Event .. Timeout;
-  type Event_Rec (Kind : In_Event_List := Fd_Event) is record
-    case Kind is
-      when Fd_Event =>
-        Fd : File_Desc;
-        Read : Boolean;
-      when Signal_Event =>
-        null;
-      when Timeout =>
-        null;
-    end case;
-  end record;
-
 private
 
-  -- Handle an internal event
-  function Handle (Event : Event_Rec) return Out_Event_List;
+  -- For Handling child package
+
+  -- Logger for debug
+  package Logger is new Trace.Basic_Logger ("Event_Mng");
+
+  -- Get kind of last signal
+  type Signal_Kind_List is (Unknown_Sig, No_Sig, Dummy_Sig,
+                            Terminate_Sig, Child_Sig);
+  function Get_Signal_Kind return Signal_Kind_List;
+
+  -- Registered callbacks
+  function Get_Term_Cb return Sig_Callback;
+  function Get_Child_Cb return Sig_Callback;
+
+  -- Find the Cb of a read or write Fd
+  type Cb_Rec is record
+    Fd : File_Desc;
+    Read : Boolean;
+    Cb : Fd_Callback;
+  end record;
+  function Search_Cb (Cb : in out Cb_Rec) return Boolean;
 
 end Event_Mng;
 

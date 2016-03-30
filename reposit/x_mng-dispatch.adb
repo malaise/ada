@@ -112,7 +112,7 @@ package body Dispatch is
     C_Res : Result;
     -- For Event_Mng.Handle
     Handle_Event : Boolean;
-    Evt_In : Event_Mng.Event_Rec;
+    Evt_In : Event_Mng.Handling.Event_Rec;
     Evt_Out : Event_Mng.Out_Event_List;
 
     use type Ada.Calendar.Time, System.Address,

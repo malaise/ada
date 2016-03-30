@@ -1,6 +1,7 @@
 with System;
-with C_Types, Null_Procedure, Dynamic_List, Trace, Timeval, Perpet,
+with C_Types, Null_Procedure, Dynamic_List, Timeval, Perpet,
      Any_Def, My_Math, Virtual_Time, Timers.Expiration;
+with Event_Mng.Handling;
 package body Event_Mng is
 
   -------------
@@ -14,9 +15,6 @@ package body Event_Mng is
   begin
     return Boolean'Val(C_Types.Bool'Pos(C_Boolean));
   end For_Ada;
-
-  -- Logger for debug
-  package Logger is new Trace.Basic_Logger ("Event_Mng");
 
   ------------------------------------------------------------------
 
@@ -34,11 +32,6 @@ package body Event_Mng is
   pragma Import(C, C_Fd_Set, "evt_fd_set");
 
   -- Callback list
-  type Cb_Rec is record
-    Fd : File_Desc;
-    Read : Boolean;
-    Cb : Fd_Callback;
-  end record;
   package Cb_Dyn_Mng is new Dynamic_List(Cb_Rec);
   package Cb_Mng renames Cb_Dyn_Mng.Dyn_List;
   Cb_List : Cb_Mng.List_Type;
@@ -50,6 +43,22 @@ package body Event_Mng is
     return Cb1.Read = Cb2.Read and then Cb1.Fd = Cb2.Fd;
   end Same_Fd;
   function Cb_Search is new Cb_Mng.Search(Same_Fd);
+
+  -- Find the Cb of a read or write Fd
+  function Search_Cb (Cb : in out Cb_Rec) return Boolean is
+
+  begin
+    -- Complete criteria
+    Cb.Cb := null;
+    -- Search
+    if not Cb_Search (Cb_List, Cb, From => Cb_Mng.Absolute) then
+      return False;
+    else
+      -- Read
+      Cb_List.Read (Cb,  Cb_Mng.Current);
+      return True;
+    end if;
+  end Search_Cb;
 
   procedure Add_Fd_Callback (Fd : in File_Desc; Read : in Boolean;
                              Callback : in Fd_Callback) is
@@ -152,6 +161,15 @@ package body Event_Mng is
   Cb_Term_Sig : Sig_Callback := Null_Procedure'Access;
   Cb_Child_Sig : Sig_Callback := Null_Procedure'Access;
 
+  function Get_Term_Cb return Sig_Callback is
+  begin
+    return Cb_Term_Sig;
+  end Get_Term_Cb;
+  function Get_Child_Cb return Sig_Callback is
+  begin
+    return Cb_Child_Sig;
+  end Get_Child_Cb;
+
   procedure Set_Sig_Term_Callback (Callback : in Sig_Callback) is
   begin
     Cb_Term_Sig := Callback;
@@ -210,8 +228,6 @@ package body Event_Mng is
   end Are_Signals_Handled;
 
   -- PRIVATE. Get kind of last signal
-  type Signal_Kind_List is (Unknown_Sig, No_Sig, Dummy_Sig,
-                            Terminate_Sig, Child_Sig);
   function Get_Signal_Kind return Signal_Kind_List is
     Sig : Integer;
   begin
@@ -294,18 +310,19 @@ package body Event_Mng is
       -- Results
       if Fd = C_Sig_Event then
         -- Signal
-        Handle_Res := Handle ((Kind => Signal_Event));
+        Handle_Res := Event_Mng.Handling.Handle ((Kind => Signal_Event));
       elsif Fd = C_Wake_Event then
         -- Wake_up event => skip
         Handle_Res := Timeout;
       elsif Fd = C_No_Event or else Fd >= 0 then
         -- Expire timers?
-        Handle_Res := Handle ((Kind => Timeout));
+        Handle_Res := Event_Mng.Handling.Handle ((Kind => Timeout));
         if Handle_Res = Timeout and then Fd >= 0 then
           -- No timer event to report and a fd set: handle fd
-          Handle_Res := Handle ((Kind => Fd_Event,
-                          Fd => File_Desc(Fd),
-                          Read => For_Ada(Read)));
+          Handle_Res := Event_Mng.Handling.Handle (
+                           (Kind => Fd_Event,
+                            Fd => File_Desc(Fd),
+                            Read => For_Ada(Read)));
         end if;
       else
         Handle_Res := Timeout;
@@ -403,73 +420,6 @@ package body Event_Mng is
       or else Pause_Level.Inte < Loc_Level.Inte;
     end loop;
   end Pause;
-
-  ------------------------------------------------------------------
-  --------------------------
-  -- Low level operations --
-  --------------------------
-  function Handle (Event : Event_Rec) return Out_Event_List is
-    Cb_Searched : Cb_Rec;
-    Signal_Kind : Signal_Kind_List;
-  begin
-    Logger.Log_Debug ("Event_Mng.Handle event " & Event.Kind'Img);
-    case Event.Kind is
-      when Fd_Event =>
-        -- A FD event
-        Cb_Searched.Fd := Event.Fd;
-        Cb_Searched.Read := Event.Read;
-        Cb_Searched.Cb := null;
-        -- Search and read callback
-        if not Cb_Search (Cb_List, Cb_Searched, From => Cb_Mng.Absolute) then
-          Logger.Log_Debug ("**** Event_Mng.Handle: "
-                   & File_Desc'Image(Event.Fd)
-                   & " fd not found ****");
-        else
-          Cb_List.Read (Cb_Searched,  Cb_Mng.Current);
-          Logger.Log_Debug ("Event_Mng.Handle calling Cb on fd "
-                   & Event.Fd'Img & " " & Event.Read'Img);
-          -- Call it and propagate event if callback returns true
-          if Cb_Searched.Cb /= null then
-            if Cb_Searched.Cb (Cb_Searched.Fd, Cb_Searched.Read) then
-              return Fd_Event;
-            end if;
-          end if;
-        end if;
-      when Signal_Event =>
-        Signal_Kind := Get_Signal_Kind;
-        Logger.Log_Debug ("Event_Mng.Handle " & Signal_Kind'Img
-                 & " with term cb: " & Boolean'Image(Cb_Term_Sig /= null)
-                 & " and child cb: " & Boolean'Image(Cb_Child_Sig /= null));
-        case Signal_Kind is
-          when Unknown_Sig | No_Sig =>
-            -- No_Event
-            null;
-          when Dummy_Sig =>
-            -- Dummy signal: never call Cb but always generate event
-            return Signal_Event;
-          when Terminate_Sig =>
-            if Cb_Term_Sig /= null then
-              Cb_Term_Sig.all;
-              return Signal_Event;
-            end if;
-            -- else No_Event
-          when Child_Sig =>
-            if Cb_Child_Sig /= null then
-              Cb_Child_Sig.all;
-              return Signal_Event;
-            end if;
-            -- else No_Event
-        end case;
-      when Timeout =>
-        -- Nothing. Expire timers or return timeout
-        if Timers.Expiration.Expire then
-          Logger.Log_Debug ("Event_Mng.Handle: No_Event -> Timer_Event");
-          return Timer_Event;
-        end if;
-    end case;
-    return Timeout;
-
-  end Handle;
 
 end Event_Mng;
 
