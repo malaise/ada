@@ -1,4 +1,5 @@
-with Ada.Task_Identification;
+with Locks;
+private with Ada.Task_Identification;
 package Conditions is
 
   -- A condition is a waiting point on which one or several tasks may
@@ -30,16 +31,21 @@ package Conditions is
   -- Does current task have the access to the condition
   function Is_Owner (A_Condition : Condition) return Boolean;
 
-
-  -- Atomically release the access and block the calling task on the condition
+  -- If Key is Pass, then simply pass through the condition (return True)
+  subtype Key_Type is Locks.Key_Type;
+  Fake : Key_Type renames Locks.Fake;
+  Pass : Key_Type renames Locks.Pass;
+  -- Otherwise atomically release the access and block the calling task on the
+  -- condition
   -- Upon successful return, the access to the condition is already granted
   --  again to the calling task
   -- The calling task must have already got access the the condition, otherwise
   --   No_Access is raised
   No_Access : exception;
   function Wait (A_Condition  : Condition;
-                 Waiting_Time : Duration) return Boolean;
-  procedure Wait (A_Condition : in Condition);
+                 Waiting_Time : Duration;
+                 Key : Key_Type := Fake) return Boolean;
+  procedure Wait (A_Condition : in Condition; Key : in Key_Type := Fake);
 
 
   -- Unblock one of the waiting tasks

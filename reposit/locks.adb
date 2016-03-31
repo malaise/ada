@@ -32,9 +32,15 @@ package body Locks is
   -- Wait until the lock is open or timeout
   -- Return True if not timeout
   function Wait (A_Lock : Lock;
-                 Waiting_Time : Duration) return Boolean is
+                 Waiting_Time : Duration;
+                 Key : Key_Type := Fake) return Boolean is
     Result : Boolean;
   begin
+     if Key = Pass then
+      -- If Key is Pass, then simply return True
+      return True;
+    end if;
+
     if Waiting_Time < 0.0 then
       -- Negative delay : unconditional waiting
       A_Lock.Lock_Pointer.Wait;
@@ -52,8 +58,12 @@ package body Locks is
     return Result;
   end Wait;
 
-  procedure Wait (A_Lock : in Lock) is
+  procedure Wait (A_Lock : in Lock; Key : in Key_Type := Fake) is
   begin
+     if Key = Pass then
+      -- If Key is Pass, then simply return
+      return;
+    end if;
     A_Lock.Lock_Pointer.Wait;
   end Wait;
 

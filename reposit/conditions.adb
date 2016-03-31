@@ -131,9 +131,20 @@ package body Conditions is
   -- Upon successful return, the mutex is already allocated to the calling
   --   task
   function Wait (A_Condition  : Condition;
-                 Waiting_Time : Duration)  return Boolean is
+                 Waiting_Time : Duration;
+                 Key : Key_Type := Fake) return Boolean is
     Result : Boolean;
+    use type Key_Type;
   begin
+    if Key = Pass then
+      if not Is_Owner (A_Condition) then
+        raise No_Access;
+      else
+        -- If Key is Pass, then simply return True (access remains granted)
+        return True;
+      end if;
+    end if;
+
     if Waiting_Time < 0.0 then
       -- Negative delay : unconditional waiting
       A_Condition.Condition_Pointer.Wait;
@@ -151,8 +162,17 @@ package body Conditions is
     return Result;
   end Wait;
 
-  procedure Wait (A_Condition  : in Condition) is
+  procedure Wait (A_Condition  : in Condition; Key : in Key_Type := Fake) is
+    use type Key_Type;
   begin
+    if Key = Pass then
+      if not Is_Owner (A_Condition) then
+        raise No_Access;
+      else
+        -- If Key is Pass, then simply return (access remains granted)
+        return;
+      end if;
+    end if;
     A_Condition.Condition_Pointer.Wait;
   end Wait;
 

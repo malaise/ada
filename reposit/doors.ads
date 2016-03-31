@@ -53,8 +53,9 @@ package Doors is
 
 
   -- If Key is Pass, then simply pass through the door (return True)
-  type Key_Type is private;
-  Fake, Pass : constant Key_Type;
+  subtype Key_Type is Conditions.Key_Type;
+  Fake : Key_Type renames Conditions.Fake;
+  Pass : Key_Type renames Conditions.Pass;
   -- Otherwise *atomically* release access and block the calling task, until
   --   the required number of waiters is reached (new waiters arriving or
   ---  someone reducing the Nb_Waiters)
@@ -66,13 +67,6 @@ package Doors is
   procedure Wait (A_Door : in Door; Key : in Key_Type := Fake);
 
 private
-
-  -- Key
-  type Key_Type is record
-    Is_Pass : Boolean := False;
-  end record;
-  Fake : constant Key_Type := (others => <>);
-  Pass : constant Key_Type := (Is_Pass => True);
 
   type Door_Rec is record
     -- The expected number of waiters

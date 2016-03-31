@@ -97,6 +97,7 @@ package body Doors is
                  Waiting_Time : Duration;
                  Key : Key_Type := Fake) return Boolean is
     Result : Boolean;
+    use type Key_Type;
   begin
     Check_Access (A_Door);
     if Key = Pass then
