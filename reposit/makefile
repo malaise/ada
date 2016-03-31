@@ -17,9 +17,9 @@ PARGS_lzf.apb :=  # Debug # Fast | Slow # LocalTrace
 PARGS_snappy.apb := # Debug
 PARGS_rnd.aps := Urand
 PARGS_rnd.apb := Urand
-CLIBS_app = $(UTILS_SLIBS) $(PCRE_SLIBS)
-CLIBS_afpx_bld = $(PCRE_SLIBS) $(X11_SLIBS)
-CLIBS_afpx_rnb = $(PCRE_SLIBS) $(X11_SLIBS)
+CLIBS_app := $(UTILS_SLIBS) $(PCRE_SLIBS)
+CLIBS_afpx_bld := $(PCRE_SLIBS) $(X11_SLIBS)
+CLIBS_afpx_rnb := $(PCRE_SLIBS) $(X11_SLIBS)
 CLIBS_clear_screen := $(UTILS_SLIBS)
 
 HTML := true
