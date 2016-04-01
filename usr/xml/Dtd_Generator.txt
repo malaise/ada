@@ -1,6 +1,6 @@
 Dtd_Generator, elements of design
 =================================
-Version: V2.4
+Version: V2.5
 
 General principle
 -----------------
@@ -95,7 +95,7 @@ solution that leads to the minimum deviation.
 .Optimisation
 If both sequences have the same children in the same order, then the
 merge only consists in propagating the 'Mult' tags of the 'new' sequence into
-the 'previous' one (remember that the 'new' sequence deos not have tags 'Opt').
+the 'previous' one (remember that the 'new' sequence does not have tags 'Opt').
 
 .Exploration of the solutions
 The exploration algorithm does not depend on the 'Mult' tags but considers
@@ -212,9 +212,9 @@ from the first child of the 'current' and 'new' sequences:
 
 * Step_Both leads to possibly propagate the Mult tag from the current 'new'
 into the current 'current' and increment both indexes,
-* Skip_Cur leads to possibley set the current 'current' as Opt, and increment
+* Skip_Cur leads to possibly set the current 'current' as Opt, and increment
 'current' index
-* Insert_Val leads to insert, as Opt, the current 'new' before the current
+* Insert_Val leads to insert as Opt the current 'new' before the current
 'current' and increment both indexes (which leaves 'current' at the same
 element).
 
@@ -250,7 +250,7 @@ attributes as Required.
 Attribute definition of an element already known
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'previous' definition of an attribute has the same possible kinds as a
-a 'new' definition.
+'new' definition.
 
 Merging attribute definitions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
