@@ -10,13 +10,14 @@ ssize popn 1 setexit retall
 ] E popr
 
 # Function to check a time (tos), leave it at tos if OK
+#  second of stack is a boolean: true if negative value allowed
 [
 # Arg must be int or real, 0.0 <= Arg < 24 and frac < 0.60
 dup isinte [ toreal ] ifcall
 dup isreal ~ E pushr ifcall
-dup isneg E pushr ifcall
-dup 24.0 >= E pushr ifcall
-dup frac 0.60 >= E pushr ifcall
+swap ~ [ dup isneg E pushr ifcall ] ifcall
+dup absv 24.0 >= E pushr ifcall
+dup frac absv 0.60 >= E pushr ifcall
 ] C popr
 
 # Init sum, current oper (entry=true, leave=false)
@@ -28,19 +29,23 @@ true e popr
 # Loop to parse arguments
 [
 
-# Check if arg is a delta
+# Check if arg is a delta, check if arg is a string
 false d popr dup isstr
-[ true d popr
-# If yes, check after a leave
+[
+# Check for leading '~'
+dup 1 1 strsub "~" /= ifret
+# If yes, set d
+true d popr
+# Check it appears after an entry
 e pushr ~ E pushr ifcall
-# Check and remove leading '~'
-dup 1 1 strsub "~" /= E pushr ifcall dup strlen 2 swap strsub
-# and locate '.' to convert into int or real
+# Remove leading '~'
+dup strlen 2 swap strsub
+# And locate '.' to convert into int or real
 dup 1 "." strloc 0 = [ strinte ] [ strreal ] ifte call
 ] ifcall
 
 # Check time
-C pushr call
+d pushr swap C pushr call
 
 # Current time must be < previous if not a delta
 d pushr ~ [ dup p pushr >= E pushr ifcall dup p popr ] ifcall
@@ -57,6 +62,7 @@ ssize 0 = ifret
 
 # End Loop
 L pushr retacal ] L copyr call
+
 
 # Check not finishing with a leave
 e pushr E pushr ifcall
