@@ -1,4 +1,4 @@
-with As.U, Text_Line, Mutexes;
+private with As.U, Text_Line, Mutexes;
 -- Log messages in a file or flow
 package Trace is
 
@@ -23,7 +23,7 @@ package Trace is
 
   -- Trace output is:
   -- "Date Process Logger Severity -> Message"
-  -- Where Date     ::= YYyy/Mm/DdTHh:Mm:Ss.mmm
+  -- Where Date     ::= YYyy-Mm-DdTHh:Mm:Ss.mmm
   --       Process  ::= the basename of the current process
   --       Logger   ::= the name of the logger, default "-"
   --       Severity ::= Fatal, Error, Info, Warning, Debug or a number
