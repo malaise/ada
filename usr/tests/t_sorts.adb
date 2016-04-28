@@ -22,7 +22,7 @@ begin
   Nb_Loops := 0;
   if Argument.Get_Nbre_Arg = 1 then
     begin
-      Nb_Loops := Natural'Value (Argument.Get_Parameter(1));
+      Nb_Loops := Positive'Value (Argument.Get_Parameter(1));
     exception
       when Constraint_Error =>
         Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
@@ -30,9 +30,10 @@ begin
         Basic_Proc.Set_Error_Exit_Code;
         return;
     end;
+  else
+    Key_Pressed.Open (False);
   end if;
 
-  Key_Pressed.Open (False);
   Id_Loop := 0;
 
   loop
@@ -89,7 +90,6 @@ begin
 
       Id_Loop := Id_Loop + 1;
       exit when Id_Loop = Nb_Loops;
-      exit when Key_Pressed.Key_Pressed;
       if Nb_Loops = 0 then
         delay 1.0;
         exit when Key_Pressed.Key_Pressed;
