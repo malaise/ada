@@ -27,7 +27,7 @@ package Byte_To_Unicode is
 
 private
 
-  type Table_Array is array (Byte'Range) of Unicode.Unicode_Number;
+  type Table_Array is array (Byte) of Unicode.Unicode_Number;
   type Map is tagged record
     Loaded : Boolean := False;
     Table : Table_Array := (others => 0);

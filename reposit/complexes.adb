@@ -112,7 +112,7 @@ package body Complexes is
     if C.Part_Real < 0.0 then
       X_Pol.Argument := X_Pol.Argument + Pi;
     end if;
-    return (X_Pol);
+    return X_Pol;
   end To_Polar;
 
   function To_Complex (P : Polar)  return Complex is
@@ -120,7 +120,7 @@ package body Complexes is
   begin
     X_Cart.Part_Real := Real(P.Module) * Cos (Real(P.Argument));
     X_Cart.Part_Imag := Real(P.Module) * Sin (Real(P.Argument));
-    return (X_Cart);
+    return X_Cart;
   end To_Complex;
 
 
@@ -212,10 +212,10 @@ package body Complexes is
                               + Y.Part_Imag * Y.Part_Imag;
   begin
     return (Part_Real =>
-                ( (X.Part_Real * Y.Part_Real) + (X.Part_Imag * Y.Part_Imag) )
-                / Module_Y ,
-      Part_Imag =>
-                ( (X.Part_Imag * Y.Part_Real) - (X.Part_Real * Y.Part_Imag) )
+                (X.Part_Real * Y.Part_Real + X.Part_Imag * Y.Part_Imag)
+                / Module_Y,
+            Part_Imag =>
+                (X.Part_Imag * Y.Part_Real - X.Part_Real * Y.Part_Imag)
                 / Module_Y );
   end "/";
 
@@ -223,8 +223,8 @@ package body Complexes is
     Module_Y : constant Real := Y.Part_Real * Y.Part_Real
                               + Y.Part_Imag * Y.Part_Imag;
   begin
-    return (Part_Real => (  X * Y.Part_Real / Module_Y),
-            Part_Imag => (- X * Y.Part_Imag / Module_Y) );
+    return (Part_Real =>   X * Y.Part_Real / Module_Y,
+            Part_Imag => - X * Y.Part_Imag / Module_Y);
   end "/";
 
   function "/" (X : Complex; Y : Real) return Complex is

@@ -74,9 +74,8 @@ package body Queues.Timed is
     Moved : Boolean;
   begin
     -- List is always with current pos set to first
-    loop
-      -- Nothing when list is/becomes empty
-      exit when Queue.List.Is_Empty;
+   -- Nothing when list is/becomes empty
+    while not Queue.List.Is_Empty loop
       Queue.List.Read (Item, Item_List_Mng.Current);
       if Item.Timer.Has_Expired then
         -- Delete timer that has expired

@@ -287,7 +287,10 @@ package body Argument_Parser is
     Dscr.Ok := False;
     Is_Option := False;
     for I in 1 .. Argument.Get_Nbre_Arg loop
-      if not Is_Option then
+      if Is_Option then
+        Arg.Index := 0;
+        Arg.List.Set_Null;
+      else
         -- Parse this argument
         Parse_Arg (The_Keys, I, Dscr, Arg);
         if not Dscr.Ok then
@@ -297,9 +300,6 @@ package body Argument_Parser is
           end if;
           -- Else, not key argument
         end if;
-      else
-        Arg.Index := 0;
-        Arg.List.Set_Null;
       end if;
 
       -- Check this arg for Key_Can_Multiple, set terminator indexes

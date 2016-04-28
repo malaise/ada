@@ -96,28 +96,25 @@ package body As.B is
   begin
     if Val.Last > Target.Max then
       raise Length_Error;
-    else
-      Target.Ref(1 .. Val.Last) := Val.Ref(1 .. Val.Last);
-      Target.Last := Val.Last;
     end if;
+    Target.Ref(1 .. Val.Last) := Val.Ref(1 .. Val.Last);
+    Target.Last := Val.Last;
   end Set;
   procedure Set (Target : out Asb_Bs; Val : in String) is
   begin
     if Val'Length > Target.Max then
       raise Length_Error;
-    else
-      Target.Ref(1 .. Val'Length) := Val;
-      Target.Last := Val'Length;
     end if;
+    Target.Ref(1 .. Val'Length) := Val;
+    Target.Last := Val'Length;
   end Set;
   procedure Set (Target : out Asb_Bs; Val : in Character) is
   begin
     if 1 > Target.Max then
       raise Length_Error;
-    else
-      Target.Ref(1) := Val;
-      Target.Last := 1;
     end if;
+    Target.Ref(1) := Val;
+    Target.Last := 1;
   end Set;
 
   function Bslice (Source : Asb_Bs;

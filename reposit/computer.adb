@@ -548,12 +548,11 @@ package body Computer is
           if Higher_Prio then
             Trace ("End of higher prio");
             return;
-          else
-            -- Current level was at high prio and becomes
-            -- at low prio
-            Trace ("Lower prio");
-            M2 := M4;
           end if;
+          -- Current level was at high prio and becomes
+          -- at low prio
+          Trace ("Lower prio");
+          M2 := M4;
         else
           -- X * Y /, same level, keep /
           Unget_Member (Members_List, End_Reached);
@@ -564,17 +563,16 @@ package body Computer is
         if Level = 0 then
           Trace ("Unmatched ')'");
           raise Invalid_Expression;
-        else
-          -- X * Y ), level decreases
-          if Higher_Prio then
-            -- T + X * Y ), let calling level process the Close
-            Trace ("End of higher prio");
-            Unget_Member (Members_List, End_Reached);
-          end if;
-          Trace ("Level--");
-          Result := Compute_One (Result, M2.Kind, Tmp);
-          return;
         end if;
+        -- X * Y ), level decreases
+        if Higher_Prio then
+          -- T + X * Y ), let calling level process the Close
+          Trace ("End of higher prio");
+          Unget_Member (Members_List, End_Reached);
+        end if;
+        Trace ("Level--");
+        Result := Compute_One (Result, M2.Kind, Tmp);
+        return;
       elsif M4.Kind = None then
         -- End of expression
         if Level = 0 then

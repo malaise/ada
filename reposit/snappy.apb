@@ -223,17 +223,16 @@ package body Snappy is
   begin
 
     if Output'Length = 0 then
-      if Input'Length = 0 then
-        --#IfDef Debug
-        if Logger.Debug_On then
-          Log ("Empty input");
-        end if;
-        --#EndifDef
-        Outlen := 0;
-        return;
-      else
+      if Input'Length /= 0 then
         raise Too_Big;
       end if;
+      --#IfDef Debug
+      if Logger.Debug_On then
+        Log ("Empty input");
+      end if;
+      --#EndifDef
+      Outlen := 0;
+      return;
     end if;
     Out_Pos := Output'First;
 

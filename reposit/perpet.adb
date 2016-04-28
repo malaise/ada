@@ -270,7 +270,7 @@ package body Perpet is
                return Delta_Rec is
     Delta_Val : Delta_Rec;
     Rec_1, Rec_2 : Time_Rec;
-    use Ada.Calendar;
+    use type Ada.Calendar.Time;
   begin
     if Date_1 < Date_2 then
       raise Time_Error;

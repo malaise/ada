@@ -722,7 +722,7 @@ package body Num_Letters is
         end if;
         -- Muliplicator is a power of 10
         Factor := Factor
-               * (Arbitrary.Set (Integer'(10)) ** Arbitrary.Set (Word.Val));
+               * Arbitrary.Set (Integer'(10)) ** Arbitrary.Set (Word.Val);
         Word := Next_Word (Iter.all);
       elsif Word.Kind /= End_Reached then
         Logger.Log_Error ("Unexpected word " & Word.Word.Image);

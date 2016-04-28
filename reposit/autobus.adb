@@ -1,5 +1,5 @@
 with Ada.Unchecked_Deallocation, Ada.Exceptions;
-with Environ, Images, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng, Trace.Loggers,
+with Images, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng, Trace.Loggers,
      Long_Longs, As.U.Utils, Str_Util.Regex, Mod_Utils, Sys_Calls,
      Normal, Mixed_Str;
 package body Autobus is
@@ -266,7 +266,7 @@ package body Autobus is
   function Smaller (Val, Crit : As.U.Asu_Us) return Boolean is
     Nv, Nc : Addr_Num;
     Mv, Mc : Natural;
-    Sl : constant Addr_Num := Addr_Num (Slices);
+    Sl : constant Addr_Num := Slices;
     use type As.U.Asu_Us, Addr_Num;
   begin
     -- Convert to num
@@ -445,8 +445,7 @@ package body Autobus is
   begin
     Bus_Acc := Bus_Access(Buses.Access_Current);
     Bus_Acc.Partners.Rewind (Partner_Access_List_Mng.Next, False);
-    loop
-      exit when Bus_Acc.Partners.Is_Empty;
+    while not Bus_Acc.Partners.Is_Empty loop
       Bus_Acc.Partners.Read (Partner_Acc, Moved => Moved);
       Remove := False;
       if Remove_All then
@@ -463,11 +462,11 @@ package body Autobus is
         end if;
       end if;
       if Remove then
-        if not Partners.Search_Access (Partner_Acc) then
+        if Partners.Search_Access (Partner_Acc) then
+          Remove_Current_Partner (True);
+        else
           Log_Error ("Remove_Partners", "partner not found",
                      "in partners list");
-        else
-          Remove_Current_Partner (True);
         end if;
       end if;
       exit when not Moved;
@@ -843,7 +842,14 @@ package body Autobus is
     end if;
 
     -- Handle Alive
-    if not Partner_Found then
+    if Partner_Found then
+      -- Partner found
+      if Partner_Acc.Timer.Running then
+        -- This partner is known with a timer, restart its keep alive timer
+        Logger.Log (Live_Messages, "Processing Ipm live message");
+        Start_Partner_Timer (Partner_Acc.Bus);
+      end if;
+    else
       -- New (unknown yet) partner
       if Buses.Access_Current.Kind /= Multicast
       and then Smaller (Partner_Ipaddr, Partner.Bus.Ipaddr) then
@@ -852,8 +858,8 @@ package body Autobus is
         --  (and we will accept) then it will send its address
         Logger.Log_Debug ("Ipm: Waiting for connection from "
                         & Partner.Addr.Image);
-        Send_Adm ((if Partner.Bus.Kind = Active then Trilean.True
-                   else Trilean.False));
+        Send_Adm (if Partner.Bus.Kind = Active then Trilean.True
+                   else Trilean.False);
       else
         -- We are Multicast or partner >= Own: add partner and start connect
         Logger.Log_Debug ("Ipm: Connecting to new partner "
@@ -870,13 +876,6 @@ package body Autobus is
             Tcp_Connection_Cb'Access,
             Partner.Bus.Timeout, 0,
             Partner.Bus.Ttl);
-      end if;
-    else
-      -- Partner found
-      if Partner_Acc.Timer.Running then
-        -- This partner is known with a timer, restart its keep alive timer
-        Logger.Log (Live_Messages, "Processing Ipm live message");
-        Start_Partner_Timer (Partner_Acc.Bus);
       end if;
     end if;
     return False;
@@ -901,8 +900,8 @@ package body Autobus is
     Bus_Acc := Buses.Access_Current;
     if Bus_Acc.Kind = Active or else Bus_Acc.Passive_Timer.Has_Expired then
       Logger.Log (All_Timers, "Expiration of Bus passive timer");
-      Send_Adm ((if Bus_Acc.Kind = Active then Trilean.True
-                 else Trilean.False));
+      Send_Adm (if Bus_Acc.Kind = Active then Trilean.True
+                 else Trilean.False);
     end if;
 
     -- Check partners keep alive timers and remove dead ones
@@ -1144,8 +1143,7 @@ package body Autobus is
 
     -- Remove all subscribers
     Bus.Acc.Subscribers.Rewind (Subscriber_List_Mng.Next, False);
-    loop
-      exit when Bus.Acc.Subscribers.Is_Empty;
+    while not Bus.Acc.Subscribers.Is_Empty loop
       Remove_Current_Subscriber;
     end loop;
 
@@ -1192,8 +1190,7 @@ package body Autobus is
 
     -- Send message on each partner except on the shadow connection to ourself
     --  (so we send it to ourself only once).
-    loop
-      exit when Bus.Acc.Partners.Is_Empty;
+    while not Bus.Acc.Partners.Is_Empty loop
       Bus.Acc.Partners.Read (Partner_Acc, Moved => Moved);
       begin
         if Talk_To (Partner_Acc.State) then

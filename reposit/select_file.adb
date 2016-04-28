@@ -79,7 +79,7 @@ package body Select_File is
           end case;
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
-            when List_Scroll_Fld_Range'First .. List_Scroll_Fld_Range'Last =>
+            when List_Scroll_Fld_Range =>
               Scroll (Ptg_Result.Field_No);
             when Ok_Fld =>
               Res := True;
@@ -202,7 +202,7 @@ package body Select_File is
     function Is_Dir (File : String) return Boolean is
       Kind : Directory.File_Kind_List;
       File_Txt : As.U.Asu_Us;
-      use Directory;
+      use type Directory.File_Kind_List;
     begin
       File_Txt := As.U.Tus (File);
       Kind := Directory.File_Kind (File_Txt.Image);
@@ -407,7 +407,7 @@ package body Select_File is
 
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
-            when List_Scroll_Fld_Range'First .. List_Scroll_Fld_Range'Last =>
+            when List_Scroll_Fld_Range =>
               Scroll (Ptg_Result.Field_No);
 
             when Ok_Fld =>

@@ -12,7 +12,7 @@ package body Magic_Numbers is
     use type Magic_Long;
   begin
     -- Reminder of a random Long at Number'Last, + 1
-    return Magic_Int(Generate rem (Magic_Long(Magic_Int'Last)) + 1);
+    return Magic_Int(Generate rem Magic_Long(Magic_Int'Last) + 1);
   end Generate;
 
   function Generate return Magic_Long is

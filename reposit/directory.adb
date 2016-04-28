@@ -1,6 +1,6 @@
 with Aski, C_Types, Str_Util;
 package body Directory is
-  use System;
+  use type System.Address;
 
   subtype Dir_Str is String (1 .. 256);
 
@@ -393,12 +393,8 @@ package body Directory is
     end loop;
 
     -- "^/.." -> ""
-    loop
-      if Str_Util.Locate (Res.Image, Sep_Char & "..") = 1 then
-        Res.Delete (Start, 3);
-      else
-        exit;
-      end if;
+    while Str_Util.Locate (Res.Image, Sep_Char & "..") = 1 loop
+      Res.Delete (Start, 3);
     end loop;
 
     -- Remove tailing '/' except if only "/"
@@ -415,11 +411,11 @@ package body Directory is
   function Make_Full_Path (Path : String) return String is
   begin
     return Normalize_Path (
-        (if Path = "" then Get_Current & "/"
-         -- Path is already absolute => Normalize
-         elsif Path(Path'First) = '/' then Path
-         -- Path is relative, prepend current path & Normalize
-         else Get_Current & "/" & Path));
+        if Path = "" then Get_Current & "/"
+        -- Path is already absolute => Normalize
+        elsif Path(Path'First) = '/' then Path
+        -- Path is relative, prepend current path & Normalize
+        else Get_Current & "/" & Path);
   end Make_Full_Path;
 
   -- File name manipulation

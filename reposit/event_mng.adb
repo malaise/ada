@@ -301,11 +301,10 @@ package body Event_Mng is
       if C_Res /= Ok then
         Logger.Log_Debug ("Event_Mng.Wait.C_Wait -> ERROR");
         return Timeout;
-      else
-        Logger.Log_Debug ("Event_Mng.Wait.C_Wait -> "
-                 & Integer'Image(Fd)
-                 & " " & C_Types.Bool'Image(Read));
       end if;
+      Logger.Log_Debug ("Event_Mng.Wait.C_Wait -> "
+               & Integer'Image(Fd)
+               & " " & C_Types.Bool'Image(Read));
 
       -- Results
       if Fd = C_Sig_Event then

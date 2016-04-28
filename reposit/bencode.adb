@@ -303,7 +303,7 @@ package body Bencode is
       -- Insert element "List" with children
       Ctx.Add_Child (Node, List_Name, Xml_Parser.Element, Node);
       -- Insert items
-      while True loop
+      loop
         Logger.Log_Debug ("  Iterating in List");
         Check ("iterating in List");
         I := I + 1;
@@ -325,7 +325,7 @@ package body Bencode is
       Ctx.Add_Child (Node, Dictio_Name, Xml_Parser.Element, Node);
       -- Insert items by pairs
       Prev_Bytes.Set_Null;
-      while True loop
+      loop
         Logger.Log_Debug ("  Iterating in Dictio");
         Check ("iterating in dictio first");
         I := I + 1;

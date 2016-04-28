@@ -291,7 +291,7 @@ package body Arbitrary is
           T := To_Char(C) & T;
         end if;
         -- Shift this temp result and add to final result
-        T := T & ( (Lb - I) * '0');
+        T := T & (Lb - I) * '0';
         R := Add_No_Sign (R, T);
       end loop;
       Trim (R);
@@ -323,12 +323,11 @@ package body Arbitrary is
           Q := '0';
           R := A;
           return;
-        else
-          -- Same length, so first quotient is got by first digit
-          --  of A and B: Ca/Cb
-          St(1) := '0';
-          St(2) := Ca;
         end if;
+        -- Same length, so first quotient is got by first digit
+        --  of A and B: Ca/Cb
+        St(1) := '0';
+        St(2) := Ca;
       else
         -- A < 10 * B but has one more digit, so first quotien is got
         --  by 2 first digits of A / first digit of B
@@ -520,7 +519,7 @@ package body Arbitrary is
   begin
     if Pa /= Pb then
       -- If only one is positive, the other one is smaller
-      return (Pb);
+      return Pb;
     end if;
     if As.U.Asu_Us(A).Length /= As.U.Asu_Us(B).Length then
       -- If one is shorter, it is the smaller in abs
@@ -541,7 +540,7 @@ package body Arbitrary is
   begin
     if Pa /= Pb then
       -- If only one is positive, the other one is smaller
-      return (Pb);
+      return Pb;
     end if;
     if As.U.Asu_Us(A).Length /= As.U.Asu_Us(B).Length then
       -- If one is shorter, it is the smaller in abs
@@ -562,7 +561,7 @@ package body Arbitrary is
   begin
     if Pa /= Pb then
       -- If only one is positive, it is the bigger
-      return (Pa);
+      return Pa;
     end if;
     if As.U.Asu_Us(A).Length /= As.U.Asu_Us(B).Length then
       -- If one is larger, it is the larger in abs
@@ -583,7 +582,7 @@ package body Arbitrary is
   begin
     if Pa /= Pb then
       -- If only one is positive, it is the bigger
-      return (Pa);
+      return Pa;
     end if;
     if A.Length /= B.Length then
       --  If one is larger, it is the larger in abs
@@ -728,8 +727,7 @@ package body Arbitrary is
     if not Pb then
       raise Constraint_Error;
     end if;
-    loop
-      exit when I = Number_Zero;
+    while I /= Number_Zero loop
       R := R * A;
       I := I - Number_One;
     end loop;
@@ -836,9 +834,8 @@ package body Arbitrary is
     Rest := Basic.Sub_No_Sign (Slice, Basic.Mul_No_Sign (Sol, Sol));
 
     -- Main loop for one slice
-    One_Slice: loop
-      -- Done when no more slice
-      exit when Input.Length = 0;
+    -- Done when no more slice
+    One_Slice: while Input.Length /= 0 loop
       -- Extract next slice (of 2)
       Get_Slice (Input, Slice);
       -- Concat new slice to previous rest
@@ -896,9 +893,8 @@ package body Arbitrary is
   begin
     if N > Nb_Digits (A) then
       raise Constraint_Error;
-    else
-      return Basic.To_Digit (As.U.Asu_Us(A).Element (N + 1));
     end if;
+    return Basic.To_Digit (As.U.Asu_Us(A).Element (N + 1));
   end Nth_Digit;
 
   function Last_Digit (A : Number) return Digit is

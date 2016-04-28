@@ -365,9 +365,8 @@ package body Network is
     -- Make To_Node process the message
     if To_Node.Process_Message = null then
       return;
-    else
-      To_Node.Process_Message (From_Node'Unchecked_Access, Message);
     end if;
+    To_Node.Process_Message (From_Node'Unchecked_Access, Message);
   end Send_Message;
 
   -- Set processing of change of node data

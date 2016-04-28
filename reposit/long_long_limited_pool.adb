@@ -27,14 +27,14 @@ package body Long_Long_Limited_Pool is
     if Pool.Is_Empty then
       raise Empty_Pool;
     end if;
-    if not Lifo then
+    if Lifo then
+      -- Lifo means pop first and move to next
+      Pool.Get(Data);
+    else
       -- Fifo means pop last (and go to previous) then rewind to first
       Pool.Rewind (Pool_List_Mng.Prev);
       Pool.Get (Data, Pool_List_Mng.Prev);
       Pool.Rewind (Check_Empty => False);
-    else
-      -- Lifo means pop first and move to next
-      Pool.Get(Data);
     end if;
   end Pop;
 
@@ -57,14 +57,14 @@ package body Long_Long_Limited_Pool is
     if Pool.Is_Empty then
       raise Empty_Pool;
     end if;
-    if not Lifo then
+    if Lifo then
+      -- Lifo means read first
+      Pool.Read (Data, Pool_List_Mng.Current);
+    else
       -- Fifo means read last then rewind to first
       Pool.Rewind (Pool_List_Mng.Prev);
       Pool.Read (Data, Pool_List_Mng.Current);
       Pool.Rewind;
-    else
-      -- Lifo means read first
-      Pool.Read (Data, Pool_List_Mng.Current);
     end if;
   end Look;
 

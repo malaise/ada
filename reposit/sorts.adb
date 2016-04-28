@@ -66,20 +66,15 @@ package body Sorts is
         Son_Index := Heap_Index;
         Father_Index := Son_Index / 2;
 
+        -- The father must be greater than its son
         Sorting:
-        loop
-          -- The father must be greater than its son
-          if not (Heap(Son_Index) < Heap(Father_Index)) then
-            Exchange (Heap(Father_Index), Heap(Son_Index));
-            -- Exit if al the heap has been seen
-            exit Sorting when Father_Index = 1;
-            -- New indexes for father and son
-            Son_Index := Father_Index;
-            Father_Index := Son_Index / 2;
-          else
-            -- Exit as soon as no exchange
-            exit Sorting;
-          end if;
+        while not (Heap(Son_Index) < Heap(Father_Index)) loop
+          Exchange (Heap(Father_Index), Heap(Son_Index));
+          -- Exit if al the heap has been seen
+          exit Sorting when Father_Index = 1;
+          -- New indexes for father and son
+          Son_Index := Father_Index;
+          Father_Index := Son_Index / 2;
         end loop Sorting;
       end loop Build;
 
@@ -93,7 +88,7 @@ package body Sorts is
         -- Put the last heap element at the top
         Heap(1) := Heap(Heap_Index);
         -- Indexes of leaves: (firat_leaf, heap_index-1)
-        First_Leaf := ( (Heap_Index - 1) / 2) + 1;
+        First_Leaf := (Heap_Index - 1) / 2 + 1;
         Last_Leaf := Heap_Index - 1;
         -- Re-sort the top
         Father_Index := 1;

@@ -22,7 +22,7 @@ package body Byte_To_Unicode is
   procedure Load (The_Map : out Map; File_Name : in String) is
     Ctx : Xml_Parser.Ctx_Type;
     Ok : Boolean;
-    Set : array (Byte'Range) of Boolean := (others => False);
+    Set : array (Byte) of Boolean := (others => False);
     Code : Byte;
     Node : Xml_Parser.Element_Type;
     Child : Xml_Parser.Node_Type;

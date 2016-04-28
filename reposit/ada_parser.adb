@@ -73,11 +73,8 @@ package body Ada_Parser is
     loop
       -- Read as long as letter, digit or '_'
       Cc := Text_Char_Get (File);
-      if Cc in 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' then
-        Text.Append (Cc);
-      else
-        exit;
-      end if;
+      exit when Cc not in 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_';
+      Text.Append (Cc);
     end loop;
     -- For Cc we don't know
     Text_Char.Unget (File, Cc);
@@ -137,13 +134,10 @@ package body Ada_Parser is
         Text.Append (Upper_Char (Cc));
       elsif Cc in '+' | '-' then
         -- This is an operator ending the literal, except if after 'E' or 'e'
-        if Text.Element (Text.Length) = 'E' then
-          -- Sign after 'E' or 'e'
-          Text.Append (Cc);
-        else
-          -- Operator + or - after the literal
-          exit;
-        end if;
+        -- Operator + or - after the literal
+        exit when Text.Element (Text.Length) /= 'E';
+        -- Sign after 'E' or 'e'
+        Text.Append (Cc);
       else
         -- This Cc does not belong to literal any more
         exit;

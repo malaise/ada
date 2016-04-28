@@ -654,18 +654,18 @@ begin
   -- Map indexed by initial field nums xx and containing new nums XX
   -- (0 if deleted)
   for I in 1 .. Nb_Fields loop
-    Field_Map.Append ( (I) );
+    Field_Map.Append (I);
   end loop;
   case Action is
     when Insert | Copy =>
       -- Add offest to fields after Field_Num
       for I in Field_Numi + 1 .. Nb_Fields loop
-        Field_Map.Replace_Element (Positive(I), (I + Number) );
+        Field_Map.Replace_Element (Positive(I), I + Number);
       end loop;
     when Delete =>
       -- Set 0 to Number fields from Field_Num included
       for I in Field_Numd .. Field_Numd + Number - 1 loop
-        Field_Map.Replace_Element (Positive(I), (0) );
+        Field_Map.Replace_Element (Positive(I), 0);
       end loop;
       -- Sub offset to following fields
       for I in Field_Numd + Number .. Nb_Fields loop
@@ -694,7 +694,7 @@ begin
           end if;
         end if;
         if New_Num /= Old_Num then
-          Field_Map.Replace_Element (Positive(I), (New_Num));
+          Field_Map.Replace_Element (Positive(I), New_Num);
         end if;
       end loop;
   end case;
@@ -750,8 +750,7 @@ begin
     -- From Field included up to end of Dscr, update field num and variable
     -- references
     -- Same for Vars
-    loop
-      exit when not Xml_Parser.Is_Valid (Field);
+    while Xml_Parser.Is_Valid (Field) loop
 
       if Xml.Get_Name (Field) = Field_Name then
         -- Field num

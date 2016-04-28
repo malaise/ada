@@ -925,7 +925,7 @@ package body Util is
       end if;
 
       -- Verify that this entity is not already in the stack
-      if Search_Name (Name_Stack, (Starter & Name),
+      if Search_Name (Name_Stack, Starter & Name,
                      From => Name_List_Mng.Absolute) then
         Error (Ctx.Flow, "Recursive reference to entity "
                        & Starter & Name.Image);
@@ -943,7 +943,7 @@ package body Util is
           -- Push this entity name in the stack
           Name_Stack.Rewind;
         end if;
-        Name_Stack.Insert ( (Starter & Name), Name_List_Mng.Prev);
+        Name_Stack.Insert (Starter & Name, Name_List_Mng.Prev);
         Debug ("Expanding >" & Val.Image & "<");
         Expand_Internal (Ctx, Dtd, Val, Context, Start_Index, Name_Stack);
         Debug ("Expanded >" & Name.Image & "< as >" & Val.Image & "<");

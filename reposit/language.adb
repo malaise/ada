@@ -197,8 +197,7 @@ package body Language is
     else
       -- Encode Utf_8 sequences
       Index := Str'First;
-      loop
-        exit when Index > Str'Last;
+      while Index <= Str'Last loop
         -- Encode the Nb_Chars of this sequence
         begin
           Nb := Utf_8.Nb_Chars (Str(Index));
@@ -291,8 +290,7 @@ package body Language is
     else
       -- Encode Utf_8 sequences
       Index := Str'First;
-      loop
-        exit when Index > Str'Last;
+      while Index <= Str'Last loop
         -- Encode the Nb_Chars of this sequence
         begin
           Nb := Utf_8.Nb_Chars (Str(Index));
@@ -348,8 +346,7 @@ package body Language is
     -- Count effective put len
     Index := Str'First;
     Len := 0;
-    loop
-      exit when Index > Str'Last;
+    while Index <= Str'Last loop
       Len := Len + 1;
       -- Skip the Nb_Chars of this sequence
       Index := Index + Nb_Chars (Str(Index));

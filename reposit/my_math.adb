@@ -97,7 +97,7 @@ package body My_Math is
     end if;
 
     -- store  x in a string
-    Real_Io.Put(Str_Aux, abs(X), Dig - 1, Exp);
+    Real_Io.Put(Str_Aux, abs X , Dig - 1, Exp);
 
     -- compute exponent
     Str_Exp(1 .. Exp) := Str_Aux(Total - Exp + 1 .. Total);
@@ -295,7 +295,7 @@ package body My_Math is
                     Mode : Angle_Unit := Radian) return Real is
     Y : Real;
   begin
-    if abs (X) > 1.0 then
+    if abs X  > 1.0 then
       raise Math_Error;
     end if;
     Y := Real(Casin (C_Types.Double(X)));
@@ -312,7 +312,7 @@ package body My_Math is
                     Mode : Angle_Unit := Radian) return Real is
     Y   : Real;
   begin
-    if abs (X) > 1.0 then
+    if abs X > 1.0 then
       raise Math_Error;
     end if;
     Y := Real(Cacos (C_Types.Double(X)));

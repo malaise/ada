@@ -248,7 +248,7 @@ package body Regular_Expressions is
     C_Match_Info := (others => (1, 0));
     Cres := C_Regexec (Compiled.Comp_Addr,
                        To_Check4C'Address,
-                       C_Types.Size_T(Match_Info'Length),
+                       Match_Info'Length,
                        C_Match_Info'Address,
                        Eflags);
     -- Return if no match

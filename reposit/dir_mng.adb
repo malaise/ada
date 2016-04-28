@@ -33,8 +33,8 @@ package body Dir_Mng is
         File_Rec.Name := File_Name;
         begin
           File_Rec.Kind := Directory.File_Kind (
-              (if Dir = "" then File_Name.Image
-               else Dir & Path_Separator & File_Name.Image));
+              if Dir = "" then File_Name.Image
+              else Dir & Path_Separator & File_Name.Image);
         exception
           when Directory.Name_Error | Directory.Access_Error =>
             File_Rec.Kind := Directory.Unknown;

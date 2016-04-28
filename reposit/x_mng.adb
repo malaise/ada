@@ -756,7 +756,7 @@ package body X_Mng is
     Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Put_Char (Line_For_C_Id,
-                       C_Types.Int(Character'Pos(Car)),
+                       Character'Pos(Car),
                        C_Types.Int(Row), C_Types.Int(Column)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
@@ -829,7 +829,7 @@ package body X_Mng is
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Put_Char_Attributes (
                               Line_For_C_Id,
-                              C_Types.Int(Character'Pos(Car)),
+                              Character'Pos(Car),
                               C_Types.Int(Row),
                               C_Types.Int(Column),
                               C_Types.Int(Paper),
@@ -1041,8 +1041,8 @@ package body X_Mng is
     if not Res then
       raise X_Failure;
     end if;
-    X := Integer (X_For_C);
-    Y := Integer (Y_For_C);
+    X := X_For_C;
+    Y := Y_For_C;
   end X_Get_Current_Pointer_Position;
 
   ------------------------------------------------------------------
@@ -1317,7 +1317,7 @@ package body X_Mng is
   begin
     Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Bell (Integer(Repeat)) = Ok;
+    Res := X_Bell (Repeat) = Ok;
     Res := Res and then X_Flush = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then

@@ -27,11 +27,10 @@ package body Address_Ops is
     R2 : constant Readable_Address := To_Readable (Addr2);
     use type System.Address;
   begin
-    if Addr1 >= Addr2 then
-      return Long_Longs.Llu_Natural(R1 - R2);
-    else
+    if Addr1 < Addr2 then
       raise Constraint_Error;
     end if;
+    return Long_Longs.Llu_Natural(R1 - R2);
   end "-";
 
 

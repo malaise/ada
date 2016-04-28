@@ -732,8 +732,7 @@ package body Long_Long_Limited_List is
       New_Pos_First := 1;
       -- Search until end of list or found
       Found := False;
-      loop
-        exit when New_Pos = null;
+      while New_Pos /= null loop
         if New_Pos.Value'Unrestricted_Access = Criteria then
           -- Found
           Found := True;
@@ -769,11 +768,10 @@ package body Long_Long_Limited_List is
            return access Cell is
   begin
     if Is_Empty (List) then
-      if Check_Empty then
-        Check (List);
-      else
+      if not Check_Empty then
         return null;
       end if;
+      Check (List);
     end if;
     return List.Current;
   end Cell_Access_Current;
@@ -1017,8 +1015,7 @@ package body Long_Long_Limited_List is
       Rewind (List, Where => Where);
       Found := True;
     end if;
-    loop
-      exit when not Found;
+    while Found loop
       if Iteration /= null then
         -- Forbid calls from application
         List.In_Cb := True;

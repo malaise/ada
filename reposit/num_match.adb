@@ -30,11 +30,10 @@ package body Num_Match is
     -- Look for one (and only one) sep
     for I in Str'Range loop
       if Str(I) = Range_Sep then
-        if Index = 0 then
-          Index := I;
-        else
+        if Index /= 0 then
           raise Invalid_Criteria;
         end if;
+        Index := I;
       end if;
     end loop;
     return Index;

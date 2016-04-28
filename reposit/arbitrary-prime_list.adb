@@ -77,9 +77,8 @@ package body Arbitrary.Prime_List is
         Res := Res + One;
         Append (Res);
         return Res;
-      else
-        Res := Res + Two;
       end if;
+      Res := Res + Two;
       Square := Sqrt(Res);
 
       Rewind;
@@ -96,7 +95,7 @@ package body Arbitrary.Prime_List is
           Is_Prime := True;
           exit Divisor_Loop;
         end if;
-        if Tmp /= One and then (Res rem Tmp) = Zero then
+        if Tmp /= One and then Res rem Tmp = Zero then
           -- Res = Tmp * X, so Res is not prime
           Is_Prime := False;
           exit Divisor_Loop;

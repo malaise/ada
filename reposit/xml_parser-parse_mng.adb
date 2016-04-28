@@ -1339,10 +1339,9 @@ package body Parse_Mng  is
       -- At the end, Texts contains expanded text and CDATA
       --  with indication of last_Is_Text
       --  and Tail contains non expanded flow
+      -- Done when no more text to expand
       Cdata_In_Text:
-      loop
-        -- Done when no more text to expand
-        exit Cdata_In_Text when Text.Is_Null;
+      while not Text.Is_Null loop
         if Ctx.Expand then
           -- Expand Text and check if it generated a '<'
           Util.Expand_Text (Ctx, Adtd, Text, Ref_Xml, Index);

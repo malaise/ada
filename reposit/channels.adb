@@ -277,7 +277,7 @@ package body Channels is
       -- Append, Call callback
       Channel_Dscr.Replies.Rewind (Reply_List_Mng.Prev, False);
       Channel_Dscr.Replies.Insert (Dscr);
-      Read_Cb (Msg.Data, Len - (Msg.Diff'Size / Byte_Size), Msg.Diff);
+      Read_Cb (Msg.Data, Len - Msg.Diff'Size / Byte_Size, Msg.Diff);
       Channel_Dscr.Replies.Delete (Reply_List_Mng.Prev);
       return True;
     end Read_Cb;
@@ -306,17 +306,16 @@ package body Channels is
           when others => null;
         end;
         return;
-      else
-        -- Insert new sender
-        New_Dscr.Set_Blocking (Socket.Non_Blocking);
-        Channel_Dscr.Sends.Insert ( (Dscr => New_Dscr,
-                                     Fd   => New_Dscr.Get_Fd));
+      end if;
+      -- Insert new sender
+      New_Dscr.Set_Blocking (Socket.Non_Blocking);
+      Channel_Dscr.Sends.Insert ( (Dscr => New_Dscr,
+                                   Fd   => New_Dscr.Get_Fd));
 
-        -- Hook fd to receive data
-        if Channel_Dscr.Active then
-          Event_Mng.Add_Fd_Callback (New_Dscr.Get_Fd, True,
-                                Rec_Read_Cb'Unrestricted_Access);
-        end if;
+      -- Hook fd to receive data
+      if Channel_Dscr.Active then
+        Event_Mng.Add_Fd_Callback (New_Dscr.Get_Fd, True,
+                              Rec_Read_Cb'Unrestricted_Access);
       end if;
     end Accept_Cb;
 
@@ -683,7 +682,9 @@ package body Channels is
       Channel_Dscr.Dests.Rewind;
       loop
         Channel_Dscr.Dests.Read (Dest, Dest_List_Mng.Current);
-        if Dest.Dscr /= Socket.No_Socket then
+        if Dest.Dscr = Socket.No_Socket then
+          Res := False;
+        else
           begin
             Res := Channel_Send (Dest.Dscr, null, null,
                                  Channel_Dscr.Timeout, Msg, Len);
@@ -696,8 +697,6 @@ package body Channels is
               -- Other error
               Res := False;
           end;
-        else
-          Res := False;
         end if;
         if Send_Cb /= null then
           Send_Cb (Dest.Host_Name.Name.Image, Res);
@@ -883,7 +882,7 @@ package body Channels is
           return False;
       end;
       Bus_Dscr.Replies.Insert (Dscr.Get_Destination_Host);
-      Read_Cb (Msg.Data, Len - (Msg.Diff'Size / Byte_Size), Msg.Diff);
+      Read_Cb (Msg.Data, Len - Msg.Diff'Size / Byte_Size, Msg.Diff);
       Bus_Dscr.Replies.Delete (Bus_Reply_List_Mng.Prev);
       return True;
     exception

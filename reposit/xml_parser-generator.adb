@@ -61,7 +61,7 @@ package body Xml_Parser.Generator is
   -- Check validity of Num (deci or hexa)
   procedure Check_Num (Num : in String) is
   begin
-    if (Num(Num'First)) = 'x' then
+    if Num(Num'First) = 'x' then
       -- Hexa num
       if Num'Length = 1 then
         raise Invalid_Argument;
@@ -678,9 +678,8 @@ package body Xml_Parser.Generator is
     Cell.Nb_Attributes := 0;
     Tree.Replace (Cell);
     -- Del all attributes
-    loop
-      -- No more child?
-      exit when Tree.Children_Number = 0;
+    -- As lng as child
+    while Tree.Children_Number /= 0 loop
       Tree.Move_Child;
       Tree.Read (Cell);
       if Cell.Kind /= Attribute then

@@ -28,9 +28,8 @@ package body Timers.Expiration is
   begin
     Get_Mutex;
     One_True := False;
-    loop
-      -- Search first timer, exit when no more timer
-      exit when not First;
+    -- Search first timer, exit when no more timer
+    while First loop
 
       -- Get it
       Timer_List.Read (Id, Timer_List_Mng.Current);

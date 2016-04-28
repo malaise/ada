@@ -98,11 +98,11 @@ package body Chronos.Passive_Timers is
     if Timer.Chrono.Read < Timer.Next_Expiration then
       return False;
     else
-      if Timer.Period /= 0.0 then
+      if Timer.Period = 0.0 then
+        Timer.Expired := True;
+      else
         Timer.Next_Expiration :=
             Timer.Next_Expiration + Timer.Period;
-      else
-        Timer.Expired := True;
       end if;
       return True;
     end if;

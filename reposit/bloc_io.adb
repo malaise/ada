@@ -146,16 +146,16 @@ package  body Bloc_Io is
     -- Read
     Res := Fread(Item'Address,
                  C_Types.Size_T(Element_Size),
-                 C_Types.Size_T(Item'Length),
+                 Item'Length,
                  File.Ext_File);
     if Res < 0 then
       -- Check if error (otherwise End Of File)
       Iserr := Ferror(File.Ext_File);
       Clearerr(File.Ext_File);
-      if Iserr /= 0 then
-        raise Device_Error;
-      else
+      if Iserr = 0 then
         raise End_Error;
+      else
+        raise Device_Error;
       end if;
     end if;
   end Read;
@@ -185,11 +185,11 @@ package  body Bloc_Io is
     -- Write
     Res := Fwrite(Item'Address,
                   C_Types.Size_T(Element_Size),
-                  C_Types.Size_T(Item'Length),
+                  Item'Length,
                   File.Ext_File);
     if Res < 0 then
       raise Device_Error;
-    elsif Res /= C_Types.Size_T(Item'Length) then
+    elsif Res /= Item'Length then
       raise End_Error;
     end if;
     -- Workaround to a bug on Tru64

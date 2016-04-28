@@ -21,7 +21,7 @@ package body U_Rand is
     K := New_K;
     L := New_L;
     Gen.Ni := Range_3'Last;
-    Gen.Nj := (Range_3'Last/3) + 1;
+    Gen.Nj := Range_3'Last / 3 + 1;
     Gen.C := Init_C;
 
     for Ii in Range_3 loop
@@ -33,7 +33,7 @@ package body U_Rand is
         J := K;
         K := M;
         L := (53*L + 1) mod M2;
-        if ((L*M) mod 64) >= 32 then
+        if (L * M) mod 64 >= 32 then
           S := S + T;
         end if;
         T := 0.5*T;

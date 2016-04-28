@@ -58,7 +58,7 @@ package body Normalization is
       -- I is longer than the requested Len
       -- Round I at Len - 1 digits and cat the warning char
       declare
-        R : constant Float := Float(I) / (10.0 ** (L - Len + 1) );
+        R : constant Float := Float(I) / 10.0 ** (L - Len + 1);
         Ri : constant Int := Round (R);
         Imi : constant String := Int'Image (Ri);
         Fi : Natural := 1;
@@ -72,7 +72,7 @@ package body Normalization is
           -- Round has generated an extra digit (e.g. 99.8 -> 100)
           -- Skip last digit
           Li := Li - 1;
-        elsif Li - Fi + 1 = (Len - 1) then
+        elsif Li - Fi + 1 = Len - 1 then
           -- Round has not generated extra digit (e.g. 99.4 -> 99)
           null;
         else
@@ -165,7 +165,7 @@ package body Normalization is
       -- I is longer than the requested Len
       -- Round I at Len - 1 digits and cat the warning char
       declare
-        R : constant Float := Float(M) / (10.0 ** (L-Len+1) );
+        R : constant Float := Float(M) / 10.0 ** (L - Len + 1);
         Ri : constant Modulus := Round (R);
         Imi : constant String := Modulus'Image (Ri);
         Fi : Natural := 1;
@@ -179,7 +179,7 @@ package body Normalization is
           -- Round has generated an extra digit (e.g. 99.8 -> 100)
           -- Skip last digit
           Li := Li - 1;
-        elsif Li - Fi + 1 = (Len - 1) then
+        elsif Li - Fi + 1 = Len - 1 then
           -- Round has not generated extra digit (e.g. 99.4 -> 99)
           null;
         else
@@ -393,8 +393,8 @@ package body Normalization is
       -- Delete dot and sign
       Digit_Str.Delete (3, 3);
       Digit_Str.Delete (1, 1);
-      Digit_Str.Prepend (As.U."*" (abs(Exp) -1, '0'));
-      Digit_Str.Prepend ((if Neg then ("-0.") else " 0."));
+      Digit_Str.Prepend (As.U."*" (abs Exp  -1, '0'));
+      Digit_Str.Prepend ((if Neg then "-0." else " 0."));
       Idot := 3;
     else
       Idot := 3;

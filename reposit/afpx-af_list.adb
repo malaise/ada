@@ -361,10 +361,9 @@ package body Af_List is
           if Line_List.List_Length - Pos <  Height - 1 then
             -- Not enough items after current
             return Update(Bottom, Display);
-          else
-            -- Set current in top
-            First_Item_Id := Pos;
           end if;
+          -- Set current in top
+          First_Item_Id := Pos;
         end;
       when Bottom_Selected =>
         -- Set current List item in bottom in window (do ower best)
@@ -375,10 +374,9 @@ package body Af_List is
           if Pos < Height then
             -- Not enough items after current
             return Update(Top, Display);
-          else
-            -- Set current at bottom
-            First_Item_Id := Pos - Height + 1;
           end if;
+          -- Set current at bottom
+          First_Item_Id := Pos - Height + 1;
         end;
     end case;
 

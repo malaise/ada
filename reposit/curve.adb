@@ -1,6 +1,6 @@
 with Unicode, Language, Con_Io, Normal, Upper_Char, Normalization;
 package body Curve is
-  use My_Math;
+  use type T_Coordinate;
 
   -- Small font and look square
   Cur_Con_Io : aliased Con_Io.Console;
@@ -436,7 +436,7 @@ package body Curve is
             Action = Update and then
             Curr_Zoom_Mode /= Prev_Zoom_Mode)          or else
            (not Misc(M_Help) and then Action = Toggle) or else
-           (Action = Init)                             then
+           Action = Init                               then
           Put_Mode (Curr_Zoom_Mode);
         end if;
 
@@ -1110,14 +1110,13 @@ package body Curve is
           if Curr_Zoom_No = Zoom_No_Range'First then
             -- Exception in first draw is fatal
             raise;
-          else
-            -- try to go back to previous (which should be ok).
-            -- At least, we raise after 9 attempts!
-            Curr_Zoom_No := Curr_Zoom_No - 1;
-            Convert.Maj(Zoom_Array(Curr_Zoom_No));
-            Draw_Result := True;
-            Cur_Con_Io.Bell(3);
           end if;
+          -- try to go back to previous (which should be ok).
+          -- At least, we raise after 9 attempts!
+          Curr_Zoom_No := Curr_Zoom_No - 1;
+          Convert.Maj(Zoom_Array(Curr_Zoom_No));
+          Draw_Result := True;
+          Cur_Con_Io.Bell(3);
       end;
 
       if not Draw_Result then

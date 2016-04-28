@@ -201,13 +201,12 @@ package body Pattern is
   begin
     Logger.Init ("Pattern");
     Check_Rule (Rule);
-    if Storage.Pattern_Exists (Rule, Id) then
-      Put_Debug ("Del", "Delete pattern rule " & Image (Rule)
-                      & ", id " & Id'Img);
-      Storage.Delete_Current_Pattern;
-    else
+    if not Storage.Pattern_Exists (Rule, Id) then
       raise Invalid_Pattern;
     end if;
+    Put_Debug ("Del", "Delete pattern rule " & Image (Rule)
+                    & ", id " & Id'Img);
+    Storage.Delete_Current_Pattern;
   end Del;
 
 

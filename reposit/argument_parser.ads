@@ -21,7 +21,7 @@
 --    is considered as No_Key (even another "--").
 -- - an argument "-" is considered as a not a key (either option or No_Key).
 
-with Ada.Finalization;
+private with Ada.Finalization;
 with As.U;
 package Argument_Parser is
 

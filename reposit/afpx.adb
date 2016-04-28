@@ -260,7 +260,7 @@ package body Afpx is
               Font_No => 1,
               Row_Last => Size.Row,
               Col_Last => Size.Col,
-              Def_Back => (Af_Dscr.Current_Dscr.Background));
+              Def_Back => Af_Dscr.Current_Dscr.Background);
       Af_Con_Io.Set_To_Screen (Console'Access);
     end if;
     -- Done at each descriptor
@@ -691,9 +691,8 @@ package body Afpx is
     if Af_Dscr.Has_List then
       if Af_Dscr.Fields (Lfn).Activated then
         raise List_In_Put;
-      else
-        Af_Ptg.Erase_Fld (Lfn);
       end if;
+      Af_Ptg.Erase_Fld (Lfn);
     end if;
     for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
       Af_Ptg.Erase_Fld (I);
@@ -710,9 +709,8 @@ package body Afpx is
     if Af_Dscr.Has_List then
       if Af_Dscr.Fields (Lfn).Activated then
         raise List_In_Put;
-      else
-        Af_Ptg.Erase_Fld (Lfn);
       end if;
+      Af_Ptg.Erase_Fld (Lfn);
     end if;
 
     -- Put all fields

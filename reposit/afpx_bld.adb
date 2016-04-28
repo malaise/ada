@@ -145,7 +145,7 @@ procedure Afpx_Bld is
   procedure File_Error (Node : in Xp.Node_Type; Msg : in String) is
   begin
     Basic_Proc.Put_Line_Error ("Error in file " & List_File_Name.Image
-       & " at line " & Images.Integer_Image ((Ctx.Get_Line_No (Node)))
+       & " at line " & Images.Integer_Image (Ctx.Get_Line_No (Node))
        & ": " & Msg & ".");
     raise File_Syntax_Error;
   end File_Error;
@@ -340,7 +340,7 @@ procedure Afpx_Bld is
     end if;
     Colors_Loaded := True;
     -- Define variables Colorxy
-    for I in Con_Io.Effective_Colors'Range loop
+    for I in Con_Io.Effective_Colors loop
       Add_Variable (Node,
                     Mixed_Str (Con_Io.Effective_Colors'Image (I)),
                     Color_Defs(I).Image, False, True);

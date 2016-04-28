@@ -97,9 +97,8 @@ package body Xref is
       Fields.Read (Cell, Field_Dyn_List_Mng.Current);
       Prev_Line_No := Cell.Line_No;
       raise Identifier_Redefined;
-    else
-      Fields.Rewind (Where => Field_Dyn_List_Mng.Prev);
     end if;
+    Fields.Rewind (Where => Field_Dyn_List_Mng.Prev);
   end Set_Field_Name;
 
   -- Clean all dscr and field names
@@ -153,7 +152,6 @@ package body Xref is
               & " : constant Afpx.Field_Range := "
               & Normal (Positive (Cell.Num), 3, Gap => '0')
               & ";");
-          null;
         end if;
         if Fields.Is_Empty then
           -- Close last descriptor

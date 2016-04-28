@@ -309,7 +309,10 @@ package body Async_Stdin is
     function Insert_Put (U : in Unicode_Number) return Boolean is
       use type Unicode_Sequence, Uu.Unbounded_Array;
     begin
-      if not Insert_Mode then
+      if Insert_Mode then
+        -- Insert U at current position and move 1 right
+        Txt := Txt.Unb_Slice (1, Ind - 1) & U & Txt.Unb_Slice (Ind, Txt.Length);
+      else
         -- Overwrite mode
         if Ind <= Txt.Length then
           -- Replace current position by U
@@ -318,9 +321,6 @@ package body Async_Stdin is
           -- Append U
           Txt.Append (U);
         end if;
-      else
-        -- Insert U at current position and move 1 right
-        Txt := Txt.Unb_Slice (1, Ind - 1) & U & Txt.Unb_Slice (Ind, Txt.Length);
       end if;
       -- Move 1 right and redisplay
       Ind := Ind + 1;
@@ -418,169 +418,168 @@ package body Async_Stdin is
           if Seq.Is_Null then
             -- Valid ASCII character
             return Insert_Put (U);
-          else
-            -- Add C in sequence try to find one
-            Seq.Append (U);
-            declare
-              Str : constant Unicode_Sequence
-                  := Seq.Slice (2, Seq.Length);
-            begin
-              if Str = Arrow_Left_Seq then
-                -- Left if not at first
-                if Ind = 1 and then Echo then
-                  Sys_Calls.Put_Output (Bell);
-                else
-                  Ind := Ind - 1;
-                  if Echo then
-                    Console.Left;
-                  end if;
-                end if;
-                Seq := Uu_Null;
-              elsif Str = Arrow_Right_Seq then
-                -- Right if not at Last
-                if Ind = Txt.Length + 1 and then Echo then
-                  Sys_Calls.Put_Output (Bell);
-                else
-                  Ind := Ind + 1;
-                  if Echo then
-                    Console.Right;
-                  end if;
-                end if;
-                Seq := Uu_Null;
-              elsif Str = Home_Seq
-              or else Str = Home1_Seq
-              or else Str = Home2_Seq then
-                -- Home
-                Ind := 1;
+          end if;
+          -- Add C in sequence try to find one
+          Seq.Append (U);
+          declare
+            Str : constant Unicode_Sequence
+                := Seq.Slice (2, Seq.Length);
+          begin
+            if Str = Arrow_Left_Seq then
+              -- Left if not at first
+              if Ind = 1 and then Echo then
+                Sys_Calls.Put_Output (Bell);
+              else
+                Ind := Ind - 1;
                 if Echo then
-                  Console.Set_Col(First_Col);
+                  Console.Left;
                 end if;
-                Seq := Uu_Null;
-              elsif Str = End_Seq
-              or else Str = End1_Seq
-              or else Str = End2_Seq then
-                -- End
-                Ind := Txt.Length + 1;
+              end if;
+              Seq := Uu_Null;
+            elsif Str = Arrow_Right_Seq then
+              -- Right if not at Last
+              if Ind = Txt.Length + 1 and then Echo then
+                Sys_Calls.Put_Output (Bell);
+              else
+                Ind := Ind + 1;
                 if Echo then
-                  Console.Set_Col(First_Col + Ind - 1);
+                  Console.Right;
                 end if;
-                Seq := Uu_Null;
-              elsif Str = Delete_Seq then
-                -- Del
-                if Ind /= Txt.Length + 1 then
-                  -- Move shift tail
-                  Txt := Txt.Unb_Slice (1, Ind - 1)
-                       & Txt.Unb_Slice (Ind + 1, Txt.Length);
-                  if Echo then
-                    Console.Delete;
-                  end if;
+              end if;
+              Seq := Uu_Null;
+            elsif Str = Home_Seq
+            or else Str = Home1_Seq
+            or else Str = Home2_Seq then
+              -- Home
+              Ind := 1;
+              if Echo then
+                Console.Set_Col(First_Col);
+              end if;
+              Seq := Uu_Null;
+            elsif Str = End_Seq
+            or else Str = End1_Seq
+            or else Str = End2_Seq then
+              -- End
+              Ind := Txt.Length + 1;
+              if Echo then
+                Console.Set_Col(First_Col + Ind - 1);
+              end if;
+              Seq := Uu_Null;
+            elsif Str = Delete_Seq then
+              -- Del
+              if Ind /= Txt.Length + 1 then
+                -- Move shift tail
+                Txt := Txt.Unb_Slice (1, Ind - 1)
+                     & Txt.Unb_Slice (Ind + 1, Txt.Length);
+                if Echo then
+                  Console.Delete;
                 end if;
-                Seq := Uu_Null;
-              elsif Str = Arrow_Up_Seq then
-                -- Up
-                if At_Last then
-                  -- We have just stored a new string. Prev should get it
-                  History.Last;
-                else
-                  History.Prev;
-                end if;
-                At_Last := False;
-                Update;
-                Seq := Uu_Null;
-              elsif Str = Arrow_Down_Seq then
-                -- Down
-                if not At_Last then
-                  -- If we have just stored a new string. Down should ignore
-                  History.Next;
-                  Update;
-                end if;
-                Seq := Uu_Null;
-              elsif Str = Page_Up_Seq then
-                -- Page Up
-                History.First;
-                At_Last := False;
-                Update;
-                Seq := Uu_Null;
-              elsif Str = Page_Down_Seq then
-                -- Page Down
+              end if;
+              Seq := Uu_Null;
+            elsif Str = Arrow_Up_Seq then
+              -- Up
+              if At_Last then
+                -- We have just stored a new string. Prev should get it
                 History.Last;
-                At_Last := False;
+              else
+                History.Prev;
+              end if;
+              At_Last := False;
+              Update;
+              Seq := Uu_Null;
+            elsif Str = Arrow_Down_Seq then
+              -- Down
+              if not At_Last then
+                -- If we have just stored a new string. Down should ignore
+                History.Next;
                 Update;
-                Seq := Uu_Null;
-              elsif Str = Insert_Seq then
-                -- Insert
-                Insert_Mode := not Insert_Mode;
-                Seq := Uu_Null;
-              elsif Str = Ctrl_Suppr_Seq then
-                -- Clear line
-                Ind := 1;
-                Txt.Set_Null;
+              end if;
+              Seq := Uu_Null;
+            elsif Str = Page_Up_Seq then
+              -- Page Up
+              History.First;
+              At_Last := False;
+              Update;
+              Seq := Uu_Null;
+            elsif Str = Page_Down_Seq then
+              -- Page Down
+              History.Last;
+              At_Last := False;
+              Update;
+              Seq := Uu_Null;
+            elsif Str = Insert_Seq then
+              -- Insert
+              Insert_Mode := not Insert_Mode;
+              Seq := Uu_Null;
+            elsif Str = Ctrl_Suppr_Seq then
+              -- Clear line
+              Ind := 1;
+              Txt.Set_Null;
+              if Echo then
+                Console.Set_Col (First_Col);
+                Console.Erase_End_Line;
+              end if;
+              Seq := Uu_Null;
+            elsif Str = Shift_Suppr_Seq then
+              -- Clear to end
+              if Ind /= Txt.Length + 1 then
+                Txt.Delete (Ind, Txt.Length);
                 if Echo then
-                  Console.Set_Col (First_Col);
                   Console.Erase_End_Line;
                 end if;
-                Seq := Uu_Null;
-              elsif Str = Shift_Suppr_Seq then
-                -- Clear to end
-                if Ind /= Txt.Length + 1 then
-                  Txt.Delete (Ind, Txt.Length);
-                  if Echo then
-                    Console.Erase_End_Line;
-                  end if;
-                end if;
-                Seq := Uu_Null;
-
-              elsif   Str = Ctrl_Pgup_Seq
-              or else Str = Ctrl_Pgdw_Seq
-              or else Str = Ctrl_Left_Seq
-              or else Str = Ctrl_Right_Seq
-              or else Str = Ctrl_Up_Seq
-              or else Str = Ctrl_Down_Seq
-              or else Str = Shift_Left_Seq
-              or else Str = Shift_Right_Seq
-              or else Str = Shift_Up_Seq
-              or else Str = Shift_Down_Seq
-              or else Str = Ctrl_Shift_Left_Seq
-              or else Str = Ctrl_Shift_Right_Seq
-              or else Str = Ctrl_Shift_Up_Seq
-              or else Str = Ctrl_Shift_Down_Seq
-              or else Str = Ctrl_Shift_Pgup_Seq
-              or else Str = Ctrl_Shift_Pgdw_Seq
-              or else Str = Ctrl_Home_Seq
-              or else Str = Ctrl_End_Seq
-              or else Str = Shift_Home_Seq
-              or else Str = Shift_End_Seq
-              or else Str = Ctrl_Shift_Home_Seq
-              or else Str = Ctrl_Shift_End_Seq
-              or else Str = Ctrl_Insert_Seq
-              or else Str = Ctrl_Shift_Suppr_Seq then
-                -- Drop this sequence
-                Seq := Uu_Null;
-
-              -- From now: No sequence identified
-              elsif Seq.Length = Seq_Max_Length then
-                -- Sequence is not recognized
-                if Logger.Debug_On then
-                  -- Dump unrecognized sequence
-                  Logger.Log_Debug ("Unrecognized sequence");
-                  for I in 1 .. Seq.Length loop
-                    Logger.Log_Debug ("  " & Hexa_Utils.Image (Seq.Element(I)));
-                  end loop;
-                end if;
-                Seq := Uu_Null;
-                Store;
-                Txt.Append (Esc);
-                return True;
-              elsif Txt.Length + Seq.Length = Max then
-                -- Not enough final space to store sequence
-                Seq := Uu_Null;
-                Store;
-                Txt.Append (Esc);
-                return True;
-              -- else U is stored in Seq and we return False
               end if;
-            end;
-          end if;
+              Seq := Uu_Null;
+
+            elsif   Str = Ctrl_Pgup_Seq
+            or else Str = Ctrl_Pgdw_Seq
+            or else Str = Ctrl_Left_Seq
+            or else Str = Ctrl_Right_Seq
+            or else Str = Ctrl_Up_Seq
+            or else Str = Ctrl_Down_Seq
+            or else Str = Shift_Left_Seq
+            or else Str = Shift_Right_Seq
+            or else Str = Shift_Up_Seq
+            or else Str = Shift_Down_Seq
+            or else Str = Ctrl_Shift_Left_Seq
+            or else Str = Ctrl_Shift_Right_Seq
+            or else Str = Ctrl_Shift_Up_Seq
+            or else Str = Ctrl_Shift_Down_Seq
+            or else Str = Ctrl_Shift_Pgup_Seq
+            or else Str = Ctrl_Shift_Pgdw_Seq
+            or else Str = Ctrl_Home_Seq
+            or else Str = Ctrl_End_Seq
+            or else Str = Shift_Home_Seq
+            or else Str = Shift_End_Seq
+            or else Str = Ctrl_Shift_Home_Seq
+            or else Str = Ctrl_Shift_End_Seq
+            or else Str = Ctrl_Insert_Seq
+            or else Str = Ctrl_Shift_Suppr_Seq then
+              -- Drop this sequence
+              Seq := Uu_Null;
+
+            -- From now: No sequence identified
+            elsif Seq.Length = Seq_Max_Length then
+              -- Sequence is not recognized
+              if Logger.Debug_On then
+                -- Dump unrecognized sequence
+                Logger.Log_Debug ("Unrecognized sequence");
+                for I in 1 .. Seq.Length loop
+                  Logger.Log_Debug ("  " & Hexa_Utils.Image (Seq.Element(I)));
+                end loop;
+              end if;
+              Seq := Uu_Null;
+              Store;
+              Txt.Append (Esc);
+              return True;
+            elsif Txt.Length + Seq.Length = Max then
+              -- Not enough final space to store sequence
+              Seq := Uu_Null;
+              Store;
+              Txt.Append (Esc);
+              return True;
+            -- else U is stored in Seq and we return False
+            end if;
+          end;
         when Aski.Nul =>
           -- Non ASCII (UTF-8) character
           if Seq.Is_Null then
@@ -744,17 +743,16 @@ package body Async_Stdin is
     if User_Callback = null then
       if Cb = null then
         return;
-      else
-        Cb := null;
-        Result :=
+      end if;
+      Cb := null;
+      Result :=
             (if Stdio_Is_A_Tty then
                Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
                                        Sys_Calls.Canonical)
              else
                Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True));
-        if Active then
-          Event_Mng.Del_Fd_Callback (Sys_Calls.Stdin, True);
-        end if;
+      if Active then
+        Event_Mng.Del_Fd_Callback (Sys_Calls.Stdin, True);
       end if;
     else
       if Cb = null then
@@ -896,7 +894,9 @@ package body Async_Stdin is
   procedure Put_Out (Str : in String) is
     Dummy_Result : Boolean;
   begin
-    if Cb /= null then
+    if Cb = null then
+      Sys_Calls.Put_Output (Str);
+    else
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
       declare
         Buf : constant Unicode_Sequence := Line.Read_Buffer;
@@ -912,8 +912,6 @@ package body Async_Stdin is
         end if;
       end;
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
-    else
-      Sys_Calls.Put_Output (Str);
     end if;
   end Put_Out;
 
@@ -930,12 +928,12 @@ package body Async_Stdin is
   procedure Flush_Out is
     Dummy_Result : Boolean;
   begin
-    if Cb /= null then
+    if Cb = null then
+      Sys_Calls.Flush_Output;
+    else
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
       Sys_Calls.Flush_Output;
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
-    else
-      Sys_Calls.Flush_Output;
     end if;
   end Flush_Out;
 
@@ -943,48 +941,48 @@ package body Async_Stdin is
   procedure Put_Err (Str : in String) is
     Dummy_Result : Boolean;
   begin
-    if Cb /= null then
+    if Cb = null then
+      Sys_Calls.Put_Error (Str);
+    else
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
       Sys_Calls.Put_Error (Str);
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
-    else
-      Sys_Calls.Put_Error (Str);
     end if;
   end Put_Err;
 
   procedure Put_Line_Err (Str : in String) is
     Dummy_Result : Boolean;
   begin
-    if Cb /= null then
+    if Cb = null then
+      Sys_Calls.Put_Line_Error (Str);
+    else
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
       Sys_Calls.Put_Line_Error (Str);
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
-    else
-      Sys_Calls.Put_Line_Error (Str);
     end if;
   end Put_Line_Err;
 
   procedure New_Line_Err is
     Dummy_Result : Boolean;
   begin
-    if Cb /= null then
+    if Cb = null then
+      Sys_Calls.New_Line_Error;
+    else
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
       Sys_Calls.New_Line_Error;
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
-    else
-      Sys_Calls.New_Line_Error;
     end if;
   end New_Line_Err;
 
   procedure Flush_Err is
     Dummy_Result : Boolean;
   begin
-    if Cb /= null then
+    if Cb = null then
+      Sys_Calls.Flush_Error;
+    else
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
       Sys_Calls.Flush_Error;
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
-    else
-      Sys_Calls.Flush_Error;
     end if;
   end Flush_Err;
 

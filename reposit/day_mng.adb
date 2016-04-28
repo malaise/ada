@@ -1,6 +1,6 @@
 with My_Math;
 package body Day_Mng is
-  use My_Math;
+  use type My_Math.Real;
 
   Min_In_Hor : constant := 60;
   Sec_In_Min : constant := 60;

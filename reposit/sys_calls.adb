@@ -477,7 +477,7 @@ package body Sys_Calls is
     if Res = C_Error then
       raise System_Error;
     end if;
-    return Str (1 .. Integer(Res));
+    return Str (1 .. Res);
   end Get_Name_Of_Group_Id;
 
   function Get_Id_Of_Group_Name (Group_Name : String) return Natural is

@@ -1,4 +1,4 @@
-with Xml_Parser.Generator;
+with Environ, Xml_Parser.Generator;
 separate (Autobus)
 package body Config is
 

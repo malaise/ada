@@ -1,7 +1,7 @@
 with Bit_Ops;
 package body Hash_Function is
 
-  Nat_Max_Hash : constant Nat_Hash := Nat_Hash(Max_Hash);
+  Nat_Max_Hash : constant Nat_Hash := Max_Hash;
 
   -- For immediate computation
   function Hash (Str : in String) return Hash_Range is
@@ -25,7 +25,7 @@ package body Hash_Function is
     for I in Str'Range loop
       Buffer.Value := (Shl (Buffer.Value, 5)
                        + Buffer.Value
-                       + Natural (Character'Pos (Str(I)))) and Nat_Max_Hash;
+                       + Character'Pos (Str(I))) and Nat_Max_Hash;
     end loop;
 
   end Add;

@@ -730,8 +730,7 @@ package body Str_Util is
     if Skip_Backslashed then
       Curr_Index := 1;
       Last_Index := Ustr.Length;
-      loop
-        exit when Curr_Index >= Ustr.Length;
+      while Curr_Index < Ustr.Length loop
         if Match (Curr_Index, "\\") then
             -- Remove first '\' and skip second
             Ustr.Delete (Curr_Index, Curr_Index);
@@ -836,8 +835,7 @@ package body Str_Util is
     -- Do in reverse so the result of subst does no affect
     --  Is_Backslashed or index
     Index := Result.Length;
-    loop
-      exit when Index = 0;
+    while Index /= 0 loop
       if Result.Element (Index) = Separator then
         if Is_Backslashed (Result.Image, Index) then
           -- Replace '\' & Separator by Separator

@@ -62,8 +62,8 @@ package body Syslin is
       Pivot := abs A_T(Line, Line);
       Pivot_Line := Line;
       for Sub_Line in Dimension'Succ(Line) .. Dimension'Last loop
-        if abs(A_T(Sub_Line, Line)) > Pivot then
-          Pivot := abs(A_T(Sub_Line, Line));
+        if abs A_T(Sub_Line, Line) > Pivot then
+          Pivot := abs A_T(Sub_Line, Line);
           Pivot_Line := Sub_Line;
         end if;
       end loop;
@@ -112,7 +112,7 @@ package body Syslin is
     -- The mattrix A is now triangular
 
     -- Test wether last component is not nul
-    if abs(A_T(Dimension'Last, Dimension'Last)) < Epsilon then
+    if abs A_T(Dimension'Last, Dimension'Last) < Epsilon then
       raise Null_Determinant;
     end if;
 

@@ -7,7 +7,7 @@ package C_Types is
 
   subtype Char is Character;
 
-  type Short is new Integer range -(2 ** 15) .. 2 ** 15 - 1;
+  type Short is new Integer range -2 ** 15 .. 2 ** 15 - 1;
   for Short'Size use 16;
 
   subtype Int is Integer;

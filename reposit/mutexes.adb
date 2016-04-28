@@ -97,11 +97,10 @@ package body Mutexes is
         if Writer /= 1 and then not Full then
           Writer := Writer - 1;
           return;
-        else
-          -- Really releasing
-          Writer := 0;
-          Open := Swapping or else Queues(Current_Queue)'Count > 0;
         end if;
+        -- Really releasing
+        Writer := 0;
+        Open := Swapping or else Queues(Current_Queue)'Count > 0;
       else
         -- Called while no lock was got or not called by the writer
         raise Not_Owner;
@@ -206,9 +205,8 @@ package body Mutexes is
         if Writer /= 1 and then not Full then
           Writer := Writer - 1;
           return;
-        else
-          Writer := 0;
         end if;
+        Writer := 0;
       else
         -- Called while no lock was got or not called by the writer
         raise Not_Owner;

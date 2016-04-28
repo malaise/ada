@@ -119,7 +119,7 @@ package body Queues is
       end if;
       Queue.Ptr_In := (Queue.Ptr_In + 1) mod Size;
       Queue.File(Queue.Ptr_In) := X;
-      Queue.Full := (Queue.Ptr_In = Queue.Ptr_Out);
+      Queue.Full := Queue.Ptr_In = Queue.Ptr_Out;
     end Push;
 
     -- Pop an item
@@ -156,7 +156,7 @@ package body Queues is
       if      (Queue.Ptr_Out <  Queue.Ptr_In
                 and then (Loc <= Queue.Ptr_Out or else  Queue.Ptr_In < Loc) )
       or else (Queue.Ptr_In  <= Queue.Ptr_Out
-                and then (Loc <= Queue.Ptr_Out and then Queue.Ptr_In < Loc) )
+                and then Loc <= Queue.Ptr_Out and then Queue.Ptr_In < Loc)
       then
         raise Fifo_Not;
       else
@@ -188,7 +188,7 @@ package body Queues is
       if      (Queue.Ptr_Out <  Queue.Ptr_In
                 and then (Loc <= Queue.Ptr_Out or else  Queue.Ptr_In < Loc) )
       or else (Queue.Ptr_In  <= Queue.Ptr_Out
-                and then (Loc <= Queue.Ptr_Out and then Queue.Ptr_In < Loc) )
+                and then Loc <= Queue.Ptr_Out and then Queue.Ptr_In < Loc)
       then
         raise Fifo_Not;
       else
@@ -255,7 +255,7 @@ package body Queues is
         loop
           J := (I - 1) mod Size;
           -- Compare prios and test limits
-          exit when (J = Queue.Ptr_Out) or else (Queue.File(J).Prio >= P);
+          exit when J = Queue.Ptr_Out or else Queue.File(J).Prio >= P;
           -- Shift
           Queue.File(I) := Queue.File(J);
           I := J;
@@ -263,7 +263,7 @@ package body Queues is
         -- Store X
         Queue.File(I) := (P, X);
       end if;
-      Queue.Full := (Queue.Ptr_In = Queue.Ptr_Out);
+      Queue.Full := Queue.Ptr_In = Queue.Ptr_Out;
     end Push;
 
     -- Pop item with highest priority
@@ -300,7 +300,7 @@ package body Queues is
       if      (Queue.Ptr_Out <  Queue.Ptr_In
                 and then (Loc <= Queue.Ptr_Out or else  Queue.Ptr_In < Loc) )
       or else (Queue.Ptr_In  <= Queue.Ptr_Out
-                and then (Loc <= Queue.Ptr_Out and then Queue.Ptr_In < Loc) )
+                and then Loc <= Queue.Ptr_Out and then Queue.Ptr_In < Loc)
       then
         raise Prio_Not;
       else
@@ -332,7 +332,7 @@ package body Queues is
       if      (Queue.Ptr_Out <  Queue.Ptr_In
                 and then (Loc <= Queue.Ptr_Out or else  Queue.Ptr_In < Loc) )
       or else (Queue.Ptr_In  <= Queue.Ptr_Out
-                and then (Loc <= Queue.Ptr_Out and then Queue.Ptr_In < Loc) )
+                and then Loc <= Queue.Ptr_Out and then Queue.Ptr_In < Loc)
       then
         raise Prio_Not;
       else
@@ -388,7 +388,7 @@ package body Queues is
       end if;
       Queue.Ptr_In := (Queue.Ptr_In + 1) mod Size;
       Queue.File(Queue.Ptr_In) := X;
-      Queue.Full := (Queue.Ptr_In = Queue.Ptr_Out);
+      Queue.Full := Queue.Ptr_In = Queue.Ptr_Out;
     end Push;
 
     -- Pop an item
@@ -425,7 +425,7 @@ package body Queues is
       if      (Queue.Ptr_Out <  Queue.Ptr_In
                 and then (Loc <= Queue.Ptr_Out or else  Queue.Ptr_In < Loc) )
       or else (Queue.Ptr_In  <= Queue.Ptr_Out
-                and then (Loc <= Queue.Ptr_Out and then Queue.Ptr_In < Loc) )
+                and then Loc <= Queue.Ptr_Out and then Queue.Ptr_In < Loc)
       then
         raise Circ_Not;
       else
@@ -457,7 +457,7 @@ package body Queues is
       if      (Queue.Ptr_Out <  Queue.Ptr_In
                 and then (Loc <= Queue.Ptr_Out or else  Queue.Ptr_In < Loc) )
       or else (Queue.Ptr_In  <= Queue.Ptr_Out
-                and then (Loc <= Queue.Ptr_Out and then Queue.Ptr_In < Loc) )
+                and then Loc <= Queue.Ptr_Out and then Queue.Ptr_In < Loc)
       then
         raise Circ_Not;
       else

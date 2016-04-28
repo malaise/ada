@@ -123,8 +123,7 @@ package body Parser is
     if Iter.Is_Sep (Iter.Str.Element (Iter.First)) then
       -- Skip separators
       Iter.Sep := Iter.First;
-      loop
-        exit when not Iter.Is_Sep (Iter.Str.Element (Iter.First));
+      while Iter.Is_Sep (Iter.Str.Element (Iter.First)) loop
         if Iter.First = Iter.Len then
           -- String is terminating with separators
           Iter.State := Parsed;

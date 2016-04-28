@@ -593,8 +593,8 @@ package body Dtd is
       and then (Def_Char = 'D' or else Def_Char = 'F') then
         -- Enum and (default or fixed), check default is in enum
         --  and set the default in first pos
-        if (Str_Util.Locate (Enum.Image,
-              Info_Sep & Def_Val.Image & Info_Sep) = 0) then
+        if Str_Util.Locate (Enum.Image,
+              Info_Sep & Def_Val.Image & Info_Sep) = 0 then
           Util.Error (Ctx.Flow, "Default or fixed value "
                     & Def_Val.Image & " not in Enum");
         end if;
@@ -1046,9 +1046,8 @@ package body Dtd is
     if Char = '[' then
       Parse_Condition (Ctx, Adtd);
       return;
-    else
-      Util.Unget (Ctx.Flow);
     end if;
+    Util.Unget (Ctx.Flow);
     -- Now, expect KEYWORD and a space
     Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
     Word := Util.Get_Curr_Str (Ctx.Flow);
@@ -1146,7 +1145,7 @@ package body Dtd is
                       "Unexpected end of file while parsing internal dtd");
             end if;
         end;
-        if Char = (']') and then not External and then File then
+        if Char = ']' and then not External and then File then
           -- End of Internal definition in Xml file
           return;
         else

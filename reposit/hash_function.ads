@@ -21,7 +21,7 @@ package Hash_Function is
   function Get (Buffer : in Hash_Buffer) return Hash_Range;
 
 private
-  subtype Nat_Hash is Natural range 0 .. Natural(Max_Hash);
+  subtype Nat_Hash is Natural range 0 .. Max_Hash;
   type Hash_Buffer is tagged record
     Value : Nat_Hash := 0;
   end record;

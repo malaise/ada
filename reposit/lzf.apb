@@ -259,7 +259,7 @@ package body Lzf is
         end if;
         Outlen := 3;
         Output(Out_Pos - 1) := 1;
-        Output(Out_Pos   ) := Input(Input'First);
+        Output(Out_Pos    ) := Input(Input'First);
         Output(Out_Pos + 1) := Input(Input'First + 1);
         --#IfDef Debug
         if Logger.Debug_On then
@@ -338,7 +338,7 @@ package body Lzf is
                & " at pos " & Hexa_Utils.Image (Out_Pos - Literals - 1));
           end if;
           --#EndifDef
-          Output(Out_Pos - Literals - 1) := To_Byte ((Literals - 1));
+          Output(Out_Pos - Literals - 1) := To_Byte (Literals - 1);
           Literals := 0;
         end if;
 

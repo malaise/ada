@@ -163,7 +163,7 @@ package body Timers is
           when Delay_Sec => Perpet.To_Delta_Rec (Delay_Spec.Delay_Seconds),
           when Delay_Del => Delay_Spec.Delay_Delta,
           when Delay_Exp =>
-             (if (Delay_Spec.Expiration_Time > Start) then
+             (if Delay_Spec.Expiration_Time > Start then
                 Delay_Spec.Expiration_Time - Start
               else Default_Delta));
       Put_Debug ("Create",
@@ -467,7 +467,7 @@ package body Timers is
         -- Clock restarted at Rtime, compute expiration with new speed
         if Timer.Status = Running then
           Timer.Exp.Expiration_Time := Rtime
-              + (Timer.Remaining * Perpet.Natural_Duration(1.0 / New_Speed));
+              + Timer.Remaining * Perpet.Natural_Duration(1.0 / New_Speed);
           Put_Debug ("Update",
                      "restarted for "
                    & Images.Date_Image (Timer.Exp.Expiration_Time));

@@ -80,7 +80,7 @@ package body Evp_Digest is
   -- Update the context with some text
   -- May raise Status_Error if Ctx is not init or finalized
   procedure Update (Ctx : in out Context; Text : in String) is
-    Len : constant C_Types.Size_T := C_Types.Size_T (Text'Length);
+    Len : constant C_Types.Size_T := Text'Length;
   begin
     -- Check that Ctx is initialized
     if not Is_Init (Ctx) then
@@ -95,7 +95,7 @@ package body Evp_Digest is
   end Update;
 
   procedure Update (Ctx : in out Context; Bytes : in Byte_Array) is
-    Len : constant C_Types.Size_T := C_Types.Size_T (Bytes'Length);
+    Len : constant C_Types.Size_T := Bytes'Length;
   begin
     -- Check that Ctx is initialized
     if not Is_Init (Ctx) then

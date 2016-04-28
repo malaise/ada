@@ -271,7 +271,7 @@ package body Af_Ptg is
               Col => Pos.Col - Field.Upper_Left.Col);
     end Get_Relative;
 
-    use Ada.Calendar;
+    use type Ada.Calendar.Time;
     use type Button_List, Absolute_Field_Range, Field_Kind_List;
   begin
     -- Save and reset last selected id
@@ -1218,7 +1218,15 @@ package body Af_Ptg is
               when Put_Field =>
                 null;
               when Get_Field =>
-                if Click_Result.Get_Field_No /= Cursor_Field then
+                if Click_Result.Get_Field_No = Cursor_Field then
+                  -- Same field, update cursor col
+                  Get_Handle.Cursor_Col := Get_Cursor_Col (
+                      Cursor_Field,
+                      False,
+                      Click_Result.Click_Col,
+                      Af_Dscr.Fields(Cursor_Field).Offset,
+                      Mouse, Cursor_Col_Cb);
+                else
                   -- Restore normal color of previous field
                   Put_Fld (Cursor_Field, Normal);
                   -- Change field
@@ -1231,14 +1239,6 @@ package body Af_Ptg is
                       Af_Dscr.Fields(Cursor_Field).Offset,
                       Mouse, Cursor_Col_Cb);
                   Get_Handle.Insert := False;
-                else
-                  -- Same field, update cursor col
-                  Get_Handle.Cursor_Col := Get_Cursor_Col (
-                      Cursor_Field,
-                      False,
-                      Click_Result.Click_Col,
-                      Af_Dscr.Fields(Cursor_Field).Offset,
-                      Mouse, Cursor_Col_Cb);
                 end if;
               when Button_Field =>
                 -- End of put_then_get

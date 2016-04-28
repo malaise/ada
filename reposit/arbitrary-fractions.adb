@@ -199,7 +199,7 @@ package body Arbitrary.Fractions is
     if B = Zero then
       return One;
     elsif B < Zero then
-      return (Inverse (A) ** (-B));
+      return Inverse (A) ** (-B);
     else
       R := (A.Numerator ** B,
             A.Denominator ** B);

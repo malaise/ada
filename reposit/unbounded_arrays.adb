@@ -39,7 +39,7 @@ package body Unbounded_Arrays is
   -- Size computed to Add to Length
   function New_Size (Length : Natural; Add : Positive) return Positive is
   begin
-    return Length + Add + Growth_Offset + (Length / Growth_Factor);
+    return Length + Add + Growth_Offset + Length / Growth_Factor;
   end New_Size;
 
   -- Store Item in Unbounded array, re-alloc if necessary

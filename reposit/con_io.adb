@@ -405,7 +405,7 @@ package body Con_Io is
     Win_Data.Current_Background := Acc.Def_Background;
     Win_Data.Current_Xor_Mode   := Acc.Def_Xor_Mode;
     Name.Init (Win_Data);
-    Windows.Insert ( (Name) );
+    Windows.Insert (Name);
   exception
     when Constraint_Error =>
       raise Invalid_Square;
@@ -542,7 +542,7 @@ package body Con_Io is
   begin
     Check_Win (Name);
     Win := Name.Get_Access;
-    return (Win.Lower_Right.Row - Win.Upper_Left.Row);
+    return Win.Lower_Right.Row - Win.Upper_Left.Row;
   end Row_Range_Last;
 
   function Col_Range_Last  (Name : Window) return Row_Range is
@@ -550,7 +550,7 @@ package body Con_Io is
   begin
     Check_Win (Name);
     Win := Name.Get_Access;
-    return (Win.Lower_Right.Col - Win.Upper_Left.Col);
+    return Win.Lower_Right.Col - Win.Upper_Left.Col;
   end Col_Range_Last;
 
   -- True if the absolute square (relative to screen) is in the window.
@@ -591,10 +591,10 @@ package body Con_Io is
   begin
     Check_Win (Name);
     Win := Name.Get_Access;
-    if (Relative_Square.Row >
-        Win.Lower_Right.Row - Win.Upper_Left.Row) or else
-       (Relative_Square.Col >
-        Win.Lower_Right.Col - Win.Upper_Left.Col) then
+    if Relative_Square.Row >
+        Win.Lower_Right.Row - Win.Upper_Left.Row or else
+       Relative_Square.Col >
+        Win.Lower_Right.Col - Win.Upper_Left.Col then
       raise Invalid_Square;
     end if;
     return (Row => Relative_Square.Row + Win.Upper_Left.Row,
@@ -616,8 +616,8 @@ package body Con_Io is
   begin
     Check_Win (Name);
     Win := Name.Get_Access;
-    if (Row > Win.Lower_Right.Row - Win.Upper_Left.Row) or else
-       (Col > Win.Lower_Right.Col - Win.Upper_Left.Col) then
+    if Row > Win.Lower_Right.Row - Win.Upper_Left.Row or else
+       Col > Win.Lower_Right.Col - Win.Upper_Left.Col then
       raise Invalid_Square;
     end if;
     Win.Current_Pos := (Row, Col);
@@ -983,7 +983,6 @@ package body Con_Io is
                           Time_Out    : in Delay_Rec := Infinite_Delay) is
 
     X_Event : X_Mng.Event_Kind;
-    use X_Mng, Ada.Calendar;
     use type C_Types.Byte, Timers.Delay_Rec, Timers.Delay_List;
   begin
 
@@ -1664,8 +1663,7 @@ package body Con_Io is
     Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
-    X_Mng.X_Put_Char_Pixels (Acc.Id,
-              X_Mng.Byte(Character'Pos(C)), X, Acc.Y_Max - Y);
+    X_Mng.X_Put_Char_Pixels (Acc.Id, Character'Pos(C), X, Acc.Y_Max - Y);
   end Put;
 
   procedure Put (Con : in Console;
@@ -1682,8 +1680,7 @@ package body Con_Io is
     Lx := X;
     Ly := Acc.Y_Max - Y;
     for I in S'Range loop
-      X_Mng.X_Put_Char_Pixels (Acc.Id, X_Mng.Byte(Character'Pos(S(I))),
-                              Lx, Ly);
+      X_Mng.X_Put_Char_Pixels (Acc.Id, Character'Pos(S(I)), Lx, Ly);
       Lx := Lx + Acc.Font_Width;
     end loop;
   end Put;
@@ -1827,7 +1824,7 @@ package body Con_Io is
     Loc_Event : Mouse_Event_Rec(Coordinate_Mode);
     Button : X_Mng.Button_List;
     Row, Col : Integer;
-    use X_Mng;
+    use type X_Mng.Event_Kind, X_Mng.Button_List;
     Acc : access Console_Data;
   begin
     Check_Con (Con);

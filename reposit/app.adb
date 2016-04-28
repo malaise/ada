@@ -291,17 +291,18 @@ begin
   for I in 1 .. Arg_Dscr.Get_Nb_Occurences (No_Key_Index) loop
     Str := As.U.Tus (Arg_Dscr.Get_Option (No_Key_Index, I));
     Index := Str_Util.Locate (Str.Image, "=");
-    if Index = 0 then
-      -- "<name>"
-      Definition.Name := Str;
-      Definition.Value := As.U.Asu_Null;
-    elsif Index = 1 then
-      Error ("Invalid definition " & Str.Image);
-    else
-      -- "<name>=[<value>]"
-      Definition.Name := Str.Uslice (1, Index - 1);
-      Definition.Value := Str.Uslice (Index + 1, Str.Length);
-    end if;
+    case Index is
+      when 0 =>
+        -- "<name>"
+        Definition.Name := Str;
+        Definition.Value := As.U.Asu_Null;
+      when 1 =>
+        Error ("Invalid definition " & Str.Image);
+      when others =>
+        -- "<name>=[<value>]"
+        Definition.Name := Str.Uslice (1, Index - 1);
+        Definition.Value := Str.Uslice (Index + 1, Str.Length);
+    end case;
 
     -- Check, then add or replace
     Define (Definition);
