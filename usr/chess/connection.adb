@@ -35,7 +35,7 @@ package body Connection is
   function Action_Received return Boolean is
   begin
     return not Action_List.Is_Empty;
-  end;
+  end Action_Received;
 
   function Receive return Players.Action_Rec is
     Action : Players.Action_Rec;

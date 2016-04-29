@@ -35,6 +35,7 @@ package body Nav_Data is
   begin
 
     -- reduction of R
+    --## rule off conversion
     while Loc_R > Real (Nav_Types.T_Degree'Last) loop
       Loc_R := Loc_R -
        Real (Nav_Types.T_Common_Deg(Nav_Types.T_Degree'Last) + 1);
@@ -43,6 +44,7 @@ package body Nav_Data is
       Loc_R := Loc_R +
        Real (Nav_Types.T_Common_Deg(Nav_Types.T_Degree'Last) + 1);
     end loop;
+    --## rule on conversion
 
     -- split of degrees and minutes
     Deg := Nav_Types.T_Common_Deg (My_Math.Trunc(Loc_R) );

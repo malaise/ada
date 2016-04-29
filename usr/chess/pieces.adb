@@ -92,7 +92,9 @@ package body Pieces is
   -- Move a piece
   function "-" (From, To : Space.Row_Range) return Natural is
   begin
+    --## rule off Conversion
     return abs Integer(Space.Row_Range'Pos(From) - Space.Row_Range'Pos(To));
+    --## rule on Conversion
   end "-";
 
   procedure Move (Piece  : in Piece_Access;
