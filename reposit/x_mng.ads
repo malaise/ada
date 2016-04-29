@@ -1,5 +1,5 @@
 -- Low level access to X11 operations (put text / draw / get events)
-with System;
+private with System;
 with C_Types, As.U, Timers;
 package X_Mng is
 

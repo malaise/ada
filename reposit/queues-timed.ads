@@ -1,6 +1,7 @@
 -- Queue of items that are kept only for a limited time
-with Ada.Finalization;
-with Perpet, Dynamic_List, Virtual_Time, Chronos.Passive_Timers;
+private with Ada.Finalization;
+private with Dynamic_List, Chronos.Passive_Timers;
+with Perpet, Virtual_Time;
 generic
   -- Size of the queue, 0 for infinite
   Size : Natural;

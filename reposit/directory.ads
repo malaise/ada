@@ -1,5 +1,6 @@
-with System;
-with As.U, Sys_Calls, Smart_Reference;
+private with System;
+private with Smart_Reference;
+with As.U, Sys_Calls;
 -- Management of directory and file names
 package Directory is
 

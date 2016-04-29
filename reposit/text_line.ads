@@ -1,5 +1,5 @@
 -- Get lines (until Lf) of text from file
-with Ada.Finalization;
+private with Ada.Finalization;
 with As.U, Aski, Sys_Calls;
 package Text_Line is
 

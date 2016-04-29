@@ -1,7 +1,7 @@
 -- Interface to gdbm (dbm and ndbm) database manager, which implements
 --  a disk-persistent hash table
-with System;
-with Smart_Reference;
+private with System;
+private with Smart_Reference;
 generic
   type Key is private;
   type Data is private;

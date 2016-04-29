@@ -1,6 +1,6 @@
 -- Define a network of nodes, then propagate messages in this network
-with Ada.Finalization;
-with As.U, Limited_List;
+private with Ada.Finalization;
+private with Limited_List, As.U;
 generic
   -- The data to store in each node
   type Node_Data_Type is private;

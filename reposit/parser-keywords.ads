@@ -1,5 +1,6 @@
 -- Parser of keywords
-with Hashed_List.Unique;
+private with Hashed_List.Unique;
+with As.U;
 generic
   -- Private data stored with the keyword
   type Data_Type is private;

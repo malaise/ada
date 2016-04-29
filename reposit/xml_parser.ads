@@ -1,6 +1,7 @@
 with Ada.Finalization;
-with As.U, Queues, Trees, Hashed_List.Unique, Text_Char,
-     Unlimited_Pool, Byte_To_Unicode, Trilean, Magic_Numbers;
+private with Magic_Numbers, Queues, Text_Char, Byte_To_Unicode, Unlimited_Pool,
+             Hashed_List.Unique;
+with As.U, Trees, Trilean;
 -- Parse a Xml file or string.
 -- Call callback while parsing, or provide access to the tree after parsing.
 -- Limitations:

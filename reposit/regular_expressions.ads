@@ -1,6 +1,7 @@
 -- Binding to PCRE POSIX regular expression
-with System, Ada.Finalization;
-with Language;
+private with System;
+private with Ada.Finalization;
+private with Language;
 package Regular_Expressions is
 
   -- Get current PCRE version

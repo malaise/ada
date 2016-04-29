@@ -1,6 +1,7 @@
 -- Perform read/write of several Element_Type in file
-with System;
-with Ada.Io_Exceptions, Ada.Finalization;
+private with System;
+private with Ada.Finalization;
+with Ada.Io_Exceptions;
 generic
   type Element_Type is private;
 package Bloc_Io is

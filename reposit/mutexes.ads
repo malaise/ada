@@ -1,4 +1,4 @@
-with Ada.Task_Identification;
+private with Ada.Task_Identification;
 -- Mutex (single and Read_Write) management
 package Mutexes is
 

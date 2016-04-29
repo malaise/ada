@@ -1,4 +1,5 @@
 -- Parse all the string in one call
+with As.U;
 package Parser.All_In_One is
 
   -- The array of parsed element

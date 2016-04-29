@@ -1,6 +1,6 @@
 -- Allows navigation (lookup chars) within and possibly outside (around)
 --  a string
-with As.U;
+private with As.U;
 package Str_Util.Navigator is
 
   -- Returned when out of string

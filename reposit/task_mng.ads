@@ -1,4 +1,4 @@
-with Timers;
+private with Timers;
 generic
 
   -- The user-defined procedure that will be called periodically

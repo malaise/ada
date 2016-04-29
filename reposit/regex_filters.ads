@@ -1,7 +1,7 @@
 -- Set a list of regex expressions and success conditions
 -- Check a string versus the citeria one after the other
-with Ada.Finalization;
-with Dynamic_List, Regular_Expressions;
+private with Ada.Finalization;
+private with Dynamic_List, Regular_Expressions;
 package Regex_Filters is
 
   type Regex_Filter is tagged limited private;

@@ -1,6 +1,6 @@
 -- Protected pool of objects, each accessed by a unique key
 -- Access and modification of the Pool are protected by a mutex
-with Hashed_List.Unique, Mutexes;
+private with Hashed_List.Unique, Mutexes;
 generic
 
   type Element_Type is private;

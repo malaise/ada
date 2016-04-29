@@ -1,4 +1,5 @@
-with As.U, Dynamic_List, Text_Line, Smart_Alias;
+private with As.U, Dynamic_List, Smart_Alias;
+with Text_Line;
 package Output_Flows is
 
   -- An output flow provides Put_Line and Flush operations the same way on

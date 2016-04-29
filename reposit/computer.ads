@@ -5,7 +5,7 @@
 --  or references to variables ${Variable}
 --  Supports parentheses
 -- Both support an optional external variable resolver
-with As.U, Hashed_List.Unique;
+private with As.U, Hashed_List.Unique;
 package Computer is
 
   -- A memory set

@@ -1,7 +1,8 @@
 -- Simple API for reliable message passing
-with Ada.Finalization;
-with Socket, Regular_Expressions, As.U, Dynamic_List, Limited_List,
-     Timers, Chronos.Passive_Timers, Trilean;
+private with Ada.Finalization;
+private with Chronos.Passive_Timers, Dynamic_List, Regular_Expressions, Timers,
+             Limited_List;
+with Socket, As.U, Trilean;
 package Autobus is
 
   -- Concept

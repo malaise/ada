@@ -1,6 +1,6 @@
 -- Allow several objects to have references to a common object and
 --  automatically inform when a user releases its reference
-with Ada.Finalization;
+private with Ada.Finalization;
 generic
   -- The type of object to handle
   type Object is limited private;

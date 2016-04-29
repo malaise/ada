@@ -2,7 +2,8 @@
 -- Report the received string (text between separators)
 -- This is the same as Text_Line input except that the input flow is
 --  explicitly pushed by the application
-with As.U, Text_Line;
+private with As.U;
+with Text_Line;
 package Input_Buffer is
 
   -------------------------

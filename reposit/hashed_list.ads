@@ -1,4 +1,5 @@
-with Long_Longs, Long_Long_Limited_List, Hashing;
+private with Long_Long_Limited_List;
+with Long_Longs, Hashing;
 generic
   -- Type of the element of the list
   type Element_Type is limited private;

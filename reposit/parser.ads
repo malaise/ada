@@ -1,5 +1,5 @@
 -- Parse the words of a string according to a separator
-with As.U;
+private with As.U;
 package Parser is
 
   -- The function to define separating characters

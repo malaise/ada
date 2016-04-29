@@ -1,5 +1,5 @@
 -- Log messages in a flow or file
-with Ada.Finalization;
+private with Ada.Finalization;
 package Trace.Loggers is
 
   -- See the parent package Trace for general informations about the

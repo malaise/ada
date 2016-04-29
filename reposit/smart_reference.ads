@@ -1,7 +1,7 @@
 -- Allow several objects to have references to a common object, and
 --  automatically de-allocate the referenced object when last user releases
 --  its reference
-with Ada.Finalization;
+private with Ada.Finalization;
 generic
   -- Object shall NOT implement Ada.Finalization.(Limited_)Controlled
   type Object is limited private;

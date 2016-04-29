@@ -1,4 +1,5 @@
-with As.U, X_Mng, Timers, Unicode, Aski.Unicode, Smart_Reference, Dynamic_List;
+private with Smart_Reference, Dynamic_List;
+with As.U, X_Mng, Timers, Unicode, Aski.Unicode;
 package Con_Io is
 
   -----------------

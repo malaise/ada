@@ -1,5 +1,5 @@
 -- Unbounded array of elements
-with Ada.Finalization;
+private with Ada.Finalization;
 generic
   type Element_Type is private;
   type Element_Array is array (Positive range <>) of Element_Type;

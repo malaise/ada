@@ -1,4 +1,4 @@
-with Ada.Finalization;
+private with Ada.Finalization;
 package As.U is
 
   -- Unbounded strings

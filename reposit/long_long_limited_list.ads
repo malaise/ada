@@ -1,4 +1,4 @@
-with Ada.Finalization;
+private with Ada.Finalization;
 with Long_Longs;
 generic
   -- Type of the element of the list

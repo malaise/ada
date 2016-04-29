@@ -2,7 +2,8 @@
 -- Simply push data in pool, and pop data as long as it is not empty
 -- Default policy is Lifo (Last In First Out)
 --  but Fifo (First In First Out) is also possible
-with Long_Longs, Long_Long_Limited_List;
+private with Long_Long_Limited_List;
+with Long_Longs;
 generic
   type Data_Type is limited private;
   Lifo : Boolean := True;

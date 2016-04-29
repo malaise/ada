@@ -1,5 +1,5 @@
 -- Arbitrary precision numbers
-with As.U;
+private with As.U;
 package Arbitrary is
   type Number is private;
 

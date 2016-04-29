@@ -4,7 +4,7 @@
 -- Virtual clocks can be used for Chronos (and associated passive timers)
 --  Timed queues, Timers...
 with Ada.Calendar;
-with Limited_List;
+private with Limited_List;
 package Virtual_Time is
 
   -- A virtual clock

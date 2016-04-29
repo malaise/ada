@@ -1,6 +1,7 @@
 -- Simple chronometer that can be start/stop/reset...
 -- But also follows change of a virtual time if attached to it
-with Ada.Finalization, Ada.Calendar;
+private with Ada.Finalization;
+with Ada.Calendar;
 with Perpet, Day_Mng, Virtual_Time;
 package Chronos is
 

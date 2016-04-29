@@ -1,5 +1,6 @@
 -- Get/unget chars and strings from a file
-with As.U, Sys_Calls, Text_Line;
+private with Text_Line;
+with As.U, Sys_Calls;
 package Text_Char is
 
   -- The file type

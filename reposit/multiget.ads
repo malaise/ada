@@ -1,5 +1,5 @@
 -- Allows to get/unget/re-get items (from a input flow?)
-with Dynamic_List;
+private with Dynamic_List;
 generic
   -- The type of item got
   type Item_Type is private;

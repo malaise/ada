@@ -1,6 +1,6 @@
 -- Binding (thin) to some OpenSSL EVP_Digest function
-with Ada.Finalization;
-with System;
+private with System;
+private with Ada.Finalization;
 with C_Types;
 package Evp_Digest is
 
