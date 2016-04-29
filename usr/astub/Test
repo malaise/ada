@@ -1,6 +1,6 @@
 #!/bin/bash
 function clean {
-  rm -f test.adb
+  rm -f test.ads test.adb 
 }
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
@@ -8,6 +8,7 @@ if [ -f test.adb ] ; then
   echo "Removing previous test.adb"
   clean
 fi
+ln -s test.ads.ref test.ads
 make test.adb
 if [ $? -ne 0 ] ; then
   exit 1
