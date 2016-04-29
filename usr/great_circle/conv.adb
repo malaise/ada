@@ -1,5 +1,5 @@
 package body Conv is
-  use My_Math;
+  use type My_Math.Real;
 
   function Rad2Geo (Coord : Rad_Coord_Range) return Geo_Coord_Rec is
     Deg : Complexes.Reducted_Degree;

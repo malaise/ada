@@ -55,7 +55,6 @@ procedure T_Xml_Gen is
       null;
   end Check_Invalid_Attribute;
 
-  use Xml_Parser, Xml_Parser.Generator;
 begin
   -- Show warnings if "-w"
   if Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter (1) = "-w" then

@@ -181,7 +181,7 @@ begin
   else
     -- Let connection establish
     Event_Mng.Wait (100);
-    loop
+    loop --## rule line off Loop_While
       -- Wait until connected or nothing happens
       exit when Pipe_Fifo.Fifo_State (Fid) = Fifos.Connected
       or else Event_Mng.Wait (500) = Event_Mng.Timeout;

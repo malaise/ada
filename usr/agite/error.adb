@@ -58,8 +58,7 @@ begin
   -- De-activate navigation if list is short enough
   if Afpx.Line_List.List_Length <= Afpx.Get_Field_Height (Afpx.List_Field_No)
   then
-    for I in  Utils.X.List_Scroll_Fld_Range'First ..
-              Utils.X.List_Scroll_Fld_Range'Last loop
+    for I in  Utils.X.List_Scroll_Fld_Range loop
       Afpx.Set_Field_Activation (I, False);
     end loop;
   end if;
@@ -80,8 +79,7 @@ begin
 
       when Afpx.Mouse_Button =>
         case Ptg_Result.Field_No is
-           when Utils.X.List_Scroll_Fld_Range'First ..
-                Utils.X.List_Scroll_Fld_Range'Last =>
+           when Utils.X.List_Scroll_Fld_Range =>
               -- Scroll list
               Afpx.Utils.Scroll(
                 Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);

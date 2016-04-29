@@ -324,10 +324,10 @@ package body Str_Util is
       raise Constraint_Error;
     end if;
     -- Extract slice
-    return Normalize ((if To_Right then
-                         From(At_Index .. At_Index + Nb_Char - 1)
-                       else
-                         From(At_Index - Nb_Char + 1 .. At_Index)));
+    return Normalize (if To_Right then
+                        From(At_Index .. At_Index + Nb_Char - 1)
+                      else
+                        From(At_Index - Nb_Char + 1 .. At_Index));
   end Slice;
 
   -- Extract the Nb_Char first (if Head is set to True) or last characters

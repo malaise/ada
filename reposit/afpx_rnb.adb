@@ -669,7 +669,7 @@ begin
       end loop;
       -- Sub offset to following fields
       for I in Field_Numd + Number .. Nb_Fields loop
-        Field_Map.Replace_Element (Positive(I), (I - Number) );
+        Field_Map.Replace_Element (Positive(I), I - Number);
       end loop;
     when Move =>
       for I in 1 .. Nb_Fields loop

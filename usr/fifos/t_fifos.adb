@@ -116,7 +116,7 @@ begin
     & " kind " & Fifos.Fifo_Kind_List'Image(Test_Fifo.Fifo_Kind (Fid))
     & " is open");
 
-  loop
+  loop --## rule line off Loop_While
     pragma Warnings (Off, "variable ""*"" is not modified in loop body");
     exit when Signal;
     pragma Warnings (On,  "variable ""*"" is not modified in loop body");

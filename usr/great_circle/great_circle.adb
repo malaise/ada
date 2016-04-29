@@ -59,7 +59,7 @@ package body Great_Circle is
     Cos_H : My_Math.Real;
     Heading_Rad_Angle : Conv.Rad_Coord_Range;
 
-  use My_Math;
+  use type My_Math.Real;
   begin
 
     -- Convert args in lat_lon of A and B

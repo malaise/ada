@@ -338,8 +338,7 @@ package  body Sequences is
 
     -- Generate the corresponding sequence
     -- Revert the solution
-    loop
-      exit when Solution.Is_Empty;
+    while not Solution.Is_Empty loop
       Result.Push (Solution.Pop);
     end loop;
     -- Remove the solution corresponding to the root that we inserted in
@@ -348,8 +347,7 @@ package  body Sequences is
     -- Apply the solution
     Vali := 1;
     Intoi := 1;
-    loop
-      exit when Result.Is_Empty;
+    while not Result.Is_Empty loop
       Kind := Result.Pop;
       Dbg ("  Apply " &  Mixed_Str (Kind'Img));
       case Kind is

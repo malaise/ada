@@ -33,7 +33,7 @@ procedure Ex1 is
       select
         accept Service (No_Client : in Client_Range) do
           Print ("                           Service of", No_Client);
-          delay (1.0);
+          delay 1.0;
         end Service;
       or
         terminate;

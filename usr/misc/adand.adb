@@ -128,7 +128,7 @@ begin
     Basic_Proc.Put_Line_Error ("Error creating file " & File_Name.Image);
   end;
 
-  Pad := abs(Ind) * ' ';
+  Pad := abs Ind * ' ';
   L := 0;
   loop
     -- read file.bak line

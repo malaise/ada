@@ -1,3 +1,4 @@
+with Ada.Calendar;
 with Day_Mng, Perpet, Sys_Calls;
 separate (Als)
 
@@ -36,7 +37,7 @@ begin
   else
     raise Error_Exception;
   end if;
-  if Lstr'Length = (21) and then Lstr(7) = '-' and then Lstr(10) = '-'
+  if Lstr'Length = 21 and then Lstr(7) = '-' and then Lstr(10) = '-'
   and then Lstr(13) = 'T' and then Lstr(16) = ':' and then Lstr(19) = ':' then
     -- yyyy-mm-ddThh:mm:ss
     Year := Ada.Calendar.Year_Number'Value (Lstr(3 .. 6));
@@ -53,7 +54,7 @@ begin
     end if;
     Crit.Date := Ada.Calendar.Time_Of (Year, Month, Day,
                    Day_Mng.Pack (Hour, Minute, Second, Milli));
-  elsif Lstr'Length = (12) and then Lstr(7) = '-' and then Lstr(10) = '-' then
+  elsif Lstr'Length = 12 and then Lstr(7) = '-' and then Lstr(10) = '-' then
     -- yyyy-mm-dd
     Year := Ada.Calendar.Year_Number'Value (Lstr(3 .. 6));
     Month := Ada.Calendar.Month_Number'Value (Lstr(8 .. 9));
@@ -73,7 +74,7 @@ begin
     Crit.Date := Ada.Calendar.Time_Of (Year, Month, Day,
                    Day_Mng.Pack (Hour, Minute, Second, Milli));
 
-  elsif Lstr'Length = (11) and then Lstr(3) = 'T'
+  elsif Lstr'Length = 11 and then Lstr(3) = 'T'
   and then Lstr(6) = ':' and then Lstr(9) = ':' then
     -- Thh:mm:ss
     Hour := Day_Mng.T_Hours'Value (Lstr(4 .. 5));

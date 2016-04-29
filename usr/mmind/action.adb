@@ -27,7 +27,7 @@ package body Action is
   procedure Update_Try (Propal : in Common.Propal_Range) is
     Prop_State : constant Common.Propal_State_Rec
                := Common.Get_Propal_State (Propal);
-    use Common;
+    use type Common.Color_Range;
   begin
     for I in Common.Level_Range
      range Common.Level_Range'First .. Level loop
@@ -79,7 +79,8 @@ package body Action is
         Pos : Positive;
         Ins : Boolean;
         Mouse_Status : Con_Io.Mouse_Event_Rec;
-        use Screen, Con_Io;
+        use type Con_Io.Curs_Mvt, Con_Io.Mouse_Button_List,
+                 Con_Io.Mouse_Button_Status_List;
       begin
         Wait_Event:
         loop
@@ -89,7 +90,7 @@ package body Action is
             if Mouse_Status.Button = Con_Io.Left then
               -- exit on new event
               exit Wait_Event when Clicked
-                 xor (Mouse_Status.Status = Con_Io.Pressed);
+                 xor Mouse_Status.Status = Con_Io.Pressed;
             end if;
           elsif Stat = Con_Io.Refresh then
             Screen.Init (Level);
@@ -97,7 +98,7 @@ package body Action is
             declare
               Propal : Common.Propal_State_Rec(Level);
               Placed_Ok, Colors_Ok : Natural;
-              use Common;
+              use type Common.Try_List;
             begin
               for I in Common.Propal_Range loop
                 Propal := Common.Get_Propal_State(I);

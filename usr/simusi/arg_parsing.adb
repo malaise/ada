@@ -40,7 +40,7 @@ package body Arg_Parsing is
     when Argument.Argument_Not_Found =>
       -- Default: no flag
       null;
-  end;
+  end Check;
 
 end Arg_Parsing;
 

@@ -471,7 +471,7 @@ package body Af_List is
     Last_Top := Line_List.List_Length - Height + 1;
     -- Factor = (100 - 1) / (LastTop - 1)
     -- Top - 1 = (Percent - 1) / Factor
-    Index := Rounds.Roundiv ((Percent - 1) * (Last_Top - 1), (100 - 1)) + 1;
+    Index := Rounds.Roundiv ((Percent - 1) * (Last_Top - 1), 100 - 1) + 1;
     -- Ensure that result is not too high
     if Index > Line_List.List_Length then
       return Line_List.List_Length;

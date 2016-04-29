@@ -1966,7 +1966,7 @@ package body Parse_Mng  is
     -- Parse Dtd
     if not Ctx.Doctype.Int_Def.Is_Null then
       -- Internal directive
-      Dtd.Switch_Input (Ctx, Adtd, Ctx.Doctype.Int_Def, False);
+      Dtd.Switch_Input (Ctx, Adtd, Ctx.Doctype.Int_Def, False); --## rule line off Aliasing
       Adtd.Xml_Found := False;
     end if;
     if not Ctx.Dtd_File.Is_Null then

@@ -58,8 +58,7 @@ procedure Canon_Callback (Ctx  : in Xml_Parser.Ctx_Type;
     end Subchar;
   begin
     I := 1;
-    loop
-      exit when I > Len;
+    while I <= Len loop
       case Str.Element (I) is
         when '&' => Subchar ("&amp;");
         when '<' => Subchar ("&lt;");

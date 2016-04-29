@@ -11,7 +11,7 @@ procedure Mlbx_Overflow is
   function Next_Delay (No_Try : Natural;
                        Prev_Delay : Natural) return Natural is
   begin
-    return Prev_Delay + 10 * (5 ** No_Try);
+    return Prev_Delay + 10 * 5 ** No_Try;
   end Next_Delay;
 
 begin

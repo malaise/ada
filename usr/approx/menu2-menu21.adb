@@ -199,8 +199,7 @@ package body Menu21 is
           end case;
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
-            when Screen.List_Scroll_Fld_Range'First ..
-                 Screen.List_Scroll_Fld_Range'Last =>
+            when Screen.List_Scroll_Fld_Range'First =>
               Screen.Scroll(Ptg_Result.Field_No);
             when Screen.Ok_Button_Fld =>
               -- Back

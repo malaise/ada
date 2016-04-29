@@ -6,7 +6,7 @@ package body Utf_8 is
 
   -- Returns the number of chars of a sequence (coded in the 1st char)
   function Nb_Chars (First_Char : Character) return Len_Range is
-    use Bit_Ops;
+    use Bit_Ops; --## rule line off Use
     -- Byte value
     Val : constant Integer := Character'Pos (First_Char);
   begin
@@ -31,7 +31,7 @@ package body Utf_8 is
 
   -- Checks that a Utf-8 word is valid
   function Is_Valid (W : Word) return Boolean is
-    use Bit_Ops;
+    use Bit_Ops; --## rule line off Use
   begin
     -- Check that sequence is not empty
     if W'Length = 0 then

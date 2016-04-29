@@ -23,7 +23,7 @@ begin
     Test_File.Create_All (File_Name);
     for I in 1 .. 6 loop
       U_Rand.Next (Gen, Rnum);
-      Test_File.Put(Normalization.Normal_Fixed ((2.0**24) * Rnum,
+      Test_File.Put (Normalization.Normal_Fixed (2.0 ** 24 * Rnum,
                                                 A_Result'Length, 9, '0'));
       Test_File.New_Line;
     end loop;

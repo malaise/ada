@@ -358,8 +358,8 @@ package body Mesu_Mng is
               end if;
               -- Edit screen called
               exit Ptg;
-            elsif (Ptg_Result.Field_No = 0
-                   or else Ptg_Result.Field_No = Afpx_Xref.Main.Edit) then
+            elsif Ptg_Result.Field_No = 0
+            or else Ptg_Result.Field_No = Afpx_Xref.Main.Edit then
               -- Edit
               Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
               Str_Mng.Format_List_To_Mesure (Line, File_Name);

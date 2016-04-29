@@ -188,6 +188,7 @@ package body Lzf is
   function Hash (V : Future_Range) return Hash_Ref is
   pragma Inline (Hash);
   begin
+    --## rule off Parentheses
     return
     --#IfDef Slow
       (Shr (V xor Shl (V, 5), 3 * 8 - Hash_Log) - V * 5) and (Hash_Size - 1);
@@ -196,6 +197,7 @@ package body Lzf is
     --#ElseDef
       (Shr (V,                3 * 8 - Hash_Log) - V * 5) and (Hash_Size - 1);
     --#EndifDef
+    --## rule on Parentheses
   end Hash;
 
   -- Convert an int into a byte

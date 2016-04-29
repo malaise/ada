@@ -1,4 +1,4 @@
-with Random, As.U.Utils, Event_Mng;
+with Random, As.U.Utils;
 with Debug, Input_Dispatcher, Mcd_Parser, Io_Flow;
 pragma Elaborate_All (Random);
 package body Mcd_Mng is
@@ -582,7 +582,7 @@ package body Mcd_Mng is
         when Pi =>
           -- push value of Pi
           Push( (Kind => Real,
-                 Val_Real => My_Math.Real(My_Math.Pi)) );
+                 Val_Real => My_Math.Pi) );
         when Sin =>
           -- push sin(A)
           Pop(A); Push (Operations.Sin(A));
@@ -616,7 +616,7 @@ package body Mcd_Mng is
         when Exp =>
           -- push value of e
           Push( (Kind => Real,
-                 Val_Real => My_Math.Real(My_Math.E)) );
+                 Val_Real => My_Math.E) );
         when Ln =>
           -- push ln(A)
           Pop(A); Push (Operations.Ln(A));

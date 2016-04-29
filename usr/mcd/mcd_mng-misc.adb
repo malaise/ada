@@ -1,4 +1,5 @@
 with Ada.Calendar;
+with Event_Mng;
 with Regular_Expressions, Basic_Proc, Sys_Calls, Trace;
 
 separate (Mcd_Mng)

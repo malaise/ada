@@ -464,8 +464,7 @@ package body History is
               if Is_File then
                 Show (Show_View);
               end if;
-            when Utils.X.List_Scroll_Fld_Range'First ..
-                 Utils.X.List_Scroll_Fld_Range'Last =>
+            when Utils.X.List_Scroll_Fld_Range =>
               -- Scroll list
               Afpx.Utils.Scroll(
                  Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);

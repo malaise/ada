@@ -641,11 +641,9 @@ begin
               Nb_Enum := 0;
               loop
                 Val := As.U.Tus (Iter.Next_Word);
-                begin
-                  exit when Val.Is_Null;
-                  Last_Val := Val;
-                  Po ((if not First then "|" else "") & Val.Image);
-                end;
+                exit when Val.Is_Null;
+                Last_Val := Val;
+                Po ((if not First then "|" else "") & Val.Image);
                 First := False;
                 Nb_Enum := Nb_Enum + 1;
               end loop;
@@ -659,7 +657,7 @@ begin
           end case;
           -- Default
           if Attr.Kind /= Enum or else Nb_Enum /= 1 then
-            Po ((if Attr.Required then "#REQUIRED" else "#IMPLIED"));
+            Po (if Attr.Required then "#REQUIRED" else "#IMPLIED");
           else
             Po ("#FIXED """ & Last_Val.Image & """");
           end if;

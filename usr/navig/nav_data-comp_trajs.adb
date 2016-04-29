@@ -3,7 +3,7 @@ separate (Nav_Data)
 procedure Comp_Trajs (Data : in out T_Data) is
   -- Traj_S = Wind_S * Cos (Traj_A - Wind_A) + Plan_S * Cos (Traj_A - Plan_A)
   Crtw, Crtp : Real;
-  use Nav_Types;
+  use type Nav_Types.T_Angle;
 begin
   Crtw := My_Math.Cos ( To_Real
    (Nav_Types.T_Angle'(Data.Traj.Angle - Data.Wind.Angle) ), My_Math.Degree );

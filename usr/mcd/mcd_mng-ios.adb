@@ -5,7 +5,7 @@ separate (Mcd_Mng)
 
 package body Ios is
 
-  use My_Math;
+  use type My_Math.Real;
 
   -- Max len for int/real image
   Max_Image_Len : constant := 1024;

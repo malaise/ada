@@ -1,9 +1,8 @@
 with Ada.Exceptions;
 with Afpx, Con_Io, Normal, My_Math, As.B, Language, Basic_Proc;
 with Mesu_Def, Str_Mng, Mesu_Nam, Pers_Mng, Pers_Def, Mesu_Fil;
-use Pers_Def;
 package body Mesu_Gra is
-  use My_Math;
+  use type My_Math.Real;
 
   Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
@@ -47,6 +46,7 @@ package body Mesu_Gra is
   -- No of mesure of last Tz drawn
   Prev_Tz : Mesure_Range;
 
+  use type Pers_Def.Bpm_Range;
 
   -- From reality to screen
   function X_To_Screen (X : in Natural) return Con_Io.X_Range is
@@ -135,7 +135,7 @@ package body Mesu_Gra is
         end if;
         -- Y := A * X + B
         A := My_Math.Real (Y2 - Y1) / My_Math.Real (X2 - X1);
-        B := My_Math.Real(Y1) - (A * My_Math.Real(X1));
+        B := My_Math.Real(Y1) - A * My_Math.Real(X1);
         for X in X1 .. X2 loop
           Y := Con_Io.Y_Range(My_Math.Round (A * My_Math.Real(X) + B));
           Pixel (X, Y, In_Graphic);
@@ -154,7 +154,7 @@ package body Mesu_Gra is
         end if;
         -- X := A * Y + B
         A := My_Math.Real (X2 - X1) / My_Math.Real (Y2 - Y1);
-        B := My_Math.Real(X1) - (A * My_Math.Real(Y1));
+        B := My_Math.Real(X1) - A * My_Math.Real(Y1);
         for Y in Y1 .. Y2 loop
           X := Con_Io.X_Range(My_Math.Round (A * My_Math.Real(Y) + B));
           Pixel (X, Y, In_Graphic);
@@ -249,7 +249,7 @@ package body Mesu_Gra is
         Draw_Line (Xs_First, Y, Xs_Last - 4 * Console.Font_Width, Y);
         Console.Put (
                     Normal(Integer(Bpm), 3),
-                    Console.X_Max - (3 * Console.Font_Width),
+                    Console.X_Max - 3 * Console.Font_Width,
                     Y - Font_Offset_Height);
       end if;
     end loop;

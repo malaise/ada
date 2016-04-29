@@ -1,7 +1,6 @@
 with Ada.Calendar;
 with C_Types, X_Mng, Event_Mng, Timers, Argument, As.B, Null_Procedure,
      Language;
-use X_Mng;
 procedure T_X is
 
   Line_Def : constant X_Mng.Line_Definition_Rec := (
@@ -43,7 +42,7 @@ procedure T_X is
                             Row, 8);
   end Put;
 
-  use type Ada.Calendar.Time, C_Types.Byte;
+  use type Ada.Calendar.Time, C_Types.Byte, X_Mng.Event_Kind;
 
 begin
   Char_Offset := 0;
@@ -75,8 +74,9 @@ begin
       X_Mng.X_Put_String (Id, "Offset " & Char_Offset'Img, 7, 60);
       for I in 0 .. 15 loop
         for J in 0 .. 15 loop
-          Wchar := Wide_Character'Val((Integer(Char_Offset) * 256 + I * 16 + J));
-          X_Mng.X_Put_String (Id, Language.Wide_To_String(Wchar & ""), 8 + I, 60 + J);
+          Wchar := Wide_Character'Val(Integer(Char_Offset) * 256 + I * 16 + J);
+          X_Mng.X_Put_String (Id, Language.Wide_To_String (Wchar & ""),
+                              8 + I, 60 + J);
         end loop;
       end loop;
       X_Mng.X_Set_Attributes (Id, 0, 3, False, False, False);

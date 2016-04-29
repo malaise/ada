@@ -72,8 +72,8 @@ package body Dates is
 
     -- Split Time in days and seconds
     Neg := Time.Val_Inte < 0;
-    Days := Perpet.Day_Range (abs (Time.Val_Inte) / Millisecs_Per_Day);
-    Tmp_Inte := abs (Time.Val_Inte) rem Millisecs_Per_Day;
+    Days := Perpet.Day_Range (abs Time.Val_Inte / Millisecs_Per_Day);
+    Tmp_Inte := abs Time.Val_Inte rem Millisecs_Per_Day;
     Seconds := Ada.Calendar.Day_Duration(Tmp_Inte / 1000)
              + Ada.Calendar.Day_Duration(Tmp_Inte rem 1000) / 1000.0;
 

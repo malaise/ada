@@ -107,7 +107,7 @@ package body Regular_Expressions is
     Str4C : constant String := String4C (Criteria);
     Cflags : Integer := 0;
     use type System.Address, Language.Language_List;
-    use Bit_Ops;
+    use Bit_Ops; --## rule line off Use
   begin
     Check_Pcre_Version;
     Compiled.Lang := Language.Get_Language;
@@ -222,7 +222,7 @@ package body Regular_Expressions is
     J : Positive;
     use type System.Address;
     use type Language.Language_List;
-    use Bit_Ops;
+    use Bit_Ops; --## rule line off Use
   begin
     -- Init results
     Match_Info := (others => No_Match);

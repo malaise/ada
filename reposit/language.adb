@@ -80,7 +80,7 @@ package body Language is
   function Char_To_Unicode (C : Character) return Unicode_Number is
   begin
     return Character'Pos (C);
-  end;
+  end Char_To_Unicode;
   function Wide_To_Unicode (W : Wide_Character) return Unicode_Number is
   begin
     return Wide_Character'Pos (W);

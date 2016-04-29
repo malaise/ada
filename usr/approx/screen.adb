@@ -147,7 +147,7 @@ package body Screen is
           end case;
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
-            when List_Scroll_Fld_Range'First .. List_Scroll_Fld_Range'Last =>
+            when List_Scroll_Fld_Range =>
               Scroll(Ptg_Result.Field_No);
             when Ok_Button_Fld =>
               Res := True;

@@ -26,8 +26,8 @@ procedure Letterator is
   function Encode (B : Io_Manager.Byte) return Letter_Pair_T is
     use type Io_Manager.Byte;
   begin
-    return (Row => Cval (Cpos (Row_Range'First) + (B / 16)),
-            Col => Cval (Cpos (Col_Range'First) + (B rem 16)) );
+    return (Row => Cval (Cpos (Row_Range'First) + B / 16),
+            Col => Cval (Cpos (Col_Range'First) + B rem 16) );
   end Encode;
 
   function Decode (Pair : Letter_Pair_T) return Io_Manager.Byte is

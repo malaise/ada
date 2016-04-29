@@ -1,7 +1,6 @@
 with My_Math;
 separate (Resol)
 package body R_Compute is
-  use My_Syslin;
 
   subtype Number is Points.P_T_Coordinate;
 
@@ -25,7 +24,7 @@ package body R_Compute is
     -- Allocate on heap
     type Mattrix_Access is access  R_Compute.Matrix;
     A_Loc : constant Mattrix_Access := new Matrix (Index_Degree, Index_Point);
-    use My_Math;
+    use type My_Math.Real;
   begin
     -- Build local A matrix
     for Column in Index_Point loop

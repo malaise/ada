@@ -34,7 +34,7 @@ package body Lat_Lon is
 
   function Rad2Geo (Coord : Lat_Lon_Rad_Rec) return Lat_Lon_Geo_Rec is
     Lat_Lon_Geo : Lat_Lon_Geo_Rec;
-    use Conv, Complexes;
+    use type Complexes.Radian;
   begin
     if Coord.X < 0.0 then
       -- West longitude
@@ -60,7 +60,7 @@ package body Lat_Lon is
 
   function Geo2Rad (Coord : Lat_Lon_Geo_Rec) return Lat_Lon_Rad_Rec is
     Lat_Lon_Rad : Lat_Lon_Rad_Rec;
-    use Conv, Complexes;
+    use type Complexes.Radian;
   begin
     if Coord.Lon.East then
       -- East longitude

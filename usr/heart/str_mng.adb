@@ -80,7 +80,7 @@ package body Str_Mng is
   -- 0 <-> spaces
   -- others <-> value
   function To_Str (Bpm : Pers_Def.Bpm_Range) return Bpm_Str is
-    use Pers_Def;
+    use type Pers_Def.Bpm_Range;
   begin
     if Bpm = Pers_Def.Bpm_Range'First then
       return Bpm_Str'(others => ' ');

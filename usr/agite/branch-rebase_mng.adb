@@ -20,10 +20,9 @@ package body Rebase_Mng is
     -- Try "{Agite}@From.Tmp" and concat ".Tmp" as long as it already exists
     Branches.Rewind;
     Name := As.U.Tus ("{Agite}@" & From  & Suffix);
+    while Branch_Search (Branches, Name, From => Git_If.Branches_Mng.Absolute)
     loop
-      exit when not Branch_Search (Branches, Name,
-                                   From => Git_If.Branches_Mng.Absolute);
-        Name.Append (Suffix);
+      Name.Append (Suffix);
     end loop;
 
     -- Done

@@ -59,7 +59,7 @@ package body Fl_Time is
     Result : Time_Type;
   begin
     if Left.Positiv = Right.Positiv then
-      if not (Abs_Time(Left) < Abs_Time(Right)) then
+      if not (Abs_Time(Left) < Abs_Time(Right)) then --## rule line off Logical_Not
 
         if Left.Minutes >= Right.Minutes then
           Result.Minutes := Left.Minutes - Right.Minutes;

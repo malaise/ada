@@ -139,8 +139,7 @@ package body Data_Base is
 
     Pos := Item_List.Get_Position;
     Item := Read_First;
-    loop
-      exit when Item = No_Item;
+    while Item /= No_Item loop
       Buffer.Add (Item.Crc);
       Item := Read_Next;
     end loop;

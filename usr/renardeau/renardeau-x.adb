@@ -217,7 +217,7 @@ package body X is
               Status := Status_List'Succ (Status);
             when Digit_Fs .. Digit_Fs + 8 | Zero_F =>
               if Status in B1 .. B6 then
-                Offset := (Status_List'Pos(Status) - Status_List'Pos(B1) + 1);
+                Offset := Status_List'Pos(Status) - Status_List'Pos(B1) + 1;
                 Bases(Bases_Range(Offset)) :=
                           Get_Value (Ptg_Result.Field_No, 1);
                 Put_Base (Offset);
@@ -233,8 +233,7 @@ package body X is
               end if;
             when Undo_F =>
               if Status in B2 .. T1 then
-                Offset := Bases_Range (Status_List'Pos(Status)
-                                     - Status_List'Pos(B1));
+                Offset := Status_List'Pos(Status) - Status_List'Pos(B1);
                 Afpx.Clear_Field (Base_Fs + Afpx.Field_Range(Offset) - 1);
                 Status := Status_List'Pred (Status);
               elsif Status in T2 .. Ready then

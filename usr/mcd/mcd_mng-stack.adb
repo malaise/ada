@@ -1,4 +1,4 @@
-with Dynamic_List, Basic_Proc, Queues, Images;
+with Dynamic_List, Queues, Images;
 separate (Mcd_Mng)
 
 package body Stack is

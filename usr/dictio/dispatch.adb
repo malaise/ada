@@ -40,7 +40,7 @@ package body Dispatch is
   procedure Run is
   begin
     Event_Mng.Pause (Event_Mng.Infinite_Ms);
-  end;
+  end Run;
 
   procedure Quit is
     use type Status.Status_List;

@@ -75,7 +75,7 @@ package body Storage is
     if not Find_Rule (False) then
       return;
     end if;
-    loop
+    loop --## rule line off Loop_While
       exit when Del_Term;
       exit when not Find_Rule (True);
     end loop;

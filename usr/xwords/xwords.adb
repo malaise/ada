@@ -390,7 +390,7 @@ procedure Xwords is
       -- Move to Top
       Afpx.Line_List.Rewind;
 
-      if (Num = Search_Fld or else Num = Research_Fld) then
+      if Num = Search_Fld or else Num = Research_Fld then
         -- Set selection to first entry
         Set_Current_Selection;
       else

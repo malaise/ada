@@ -30,14 +30,14 @@ procedure Garde is
           accept Service_True (Client : in Integer) do
             Put_Line_Output ("  Service TRUE of " & Client'Img
                            & " condition " & Cond'Img);
-            delay (0.5);
+            delay 0.5;
           end Service_True;
       or
         when not Cond =>
           accept Service_False(Client : in Integer) do
             Put_Line_Output ("  Service FALSE of " & Client'Img
                            & " condition " & Cond'Img);
-            delay (0.5);
+            delay 0.5;
           end Service_False;
       or
         terminate;

@@ -20,7 +20,7 @@ procedure Recurs (Do_In_Dir : access procedure (Path   : in String;
     File : Dir_Mng.File_Entry_Rec;
     Moved : Boolean;
     Nb_Sons : Natural;
-    use Directory;
+    use type Directory.File_Kind_List;
 
     function Do_Here return Boolean is
       Result, Go_On : Boolean;

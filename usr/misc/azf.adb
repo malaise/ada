@@ -224,8 +224,8 @@ begin
   -- Header mode, lzf only
   if Compress then
     -- Prepare header
-    Header(1) := Lzf.Byte (Character'Pos ('Z'));
-    Header(2) := Lzf.Byte (Character'Pos ('V'));
+    Header(1) := Character'Pos ('Z');
+    Header(2) := Character'Pos ('V');
     -- Read, compress and write blocks
     loop
       Inl := Read (Inb.all, Max_Len_Header);
@@ -261,8 +261,8 @@ begin
       exit when Inl = 0;
       Logger.Log_Debug ("Read " & Inl'Img & " bytes");
       if Inl < Min_Len_Header
-      or else Header(1) /= Lzf.Byte (Character'Pos ('Z'))
-      or else Header(2) /= Lzf.Byte (Character'Pos ('V')) then
+      or else Header(1) /= Character'Pos ('Z')
+      or else Header(2) /= Character'Pos ('V') then
         Error ("Invalid header read");
         return;
       end if;

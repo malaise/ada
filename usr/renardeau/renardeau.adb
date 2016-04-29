@@ -181,7 +181,7 @@ procedure Renardeau is
   procedure Check_Reuse (C1, C2 : in Cell_Access;
                          Ok : out Boolean;
                          Used : out Used_Mask) is
-    use Bit_Ops;
+    use Bit_Ops; --## rule line off use
   begin
     Used := 0;
     if (C1.Used and C2.Used) /= 0 then

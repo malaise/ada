@@ -178,14 +178,14 @@ package body Replace_Pattern is
       Esc_Char := The_Pattern.Element (Got);
       -- In command or file, skip unexpected characters. Handle k|p, R and r
       if In_Command and then
-        (Esc_Char /= 'k'and then Esc_Char /= 'R' and then Esc_Char /= 'r') then
+        Esc_Char /= 'k'and then Esc_Char /= 'R' and then Esc_Char /= 'r' then
         -- Skip this char by settting Esc_Char tu Subst_Char, which:
         --  should not be in the original replace pattern
         --  is not in the Locate_Escape above
         --  is not in the case statement below
         Esc_Char := Subst_Char;
       elsif In_File and then
-        (Esc_Char /= 'p'and then Esc_Char /= 'R' and then Esc_Char /= 'r') then
+        Esc_Char /= 'p'and then Esc_Char /= 'R' and then Esc_Char /= 'r' then
         -- Skip this char by settting Esc_Char tu Subst_Char, which:
         --  should not be in the original replace pattern
         --  is not in the Locate_Escape above

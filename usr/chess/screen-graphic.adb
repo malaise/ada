@@ -73,7 +73,7 @@ package body Graphic is
     else
       Result.Square.Col :=
            Space.Col_Range'Val (Space.Col_Range'Pos(Space.Col_Range'Last)
-                              - ((X + Size2  - X0) / Size));
+                              - (X + Size2  - X0) / Size);
       Result.Square.Row :=
            Space.Row_Range'Val (Space.Row_Range'Pos(Space.Row_Range'Last)
                               - (Y + Size2  - Y0) / Size);

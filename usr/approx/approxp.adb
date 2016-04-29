@@ -6,7 +6,7 @@ procedure Approxp is
   begin
     Basic_Proc.Put_Line_Output ("Usage " & Argument.Get_Program_Name
                               & " [ <file_name> ]");
-  end;
+  end Usage;
 
 begin
   if Argument.Get_Nbre_Arg > 1 then

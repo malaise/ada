@@ -9,7 +9,7 @@ package body Mesu_Prt is
   procedure Print_Rec (Person : in Pers_Def.Person_Rec;
                        Mesure : in Mesu_Def.Mesure_Rec) is
     Last_Of_Line : Boolean;
-    use Pers_Def;
+    use type Pers_Def.Bpm_Range;
   begin
     if not Printer.Is_Open then
       Printer.Create_All (Printer_Name);

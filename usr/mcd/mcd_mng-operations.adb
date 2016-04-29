@@ -246,7 +246,7 @@ package body Operations is
 
   -- Inte->Inte
   function Bitneg  (X : Item_Rec) return Item_Rec is
-    use Bit_Ops;
+    use Bit_Ops; --## rule line off Use
   begin
     if X.Kind /= Inte then
       raise Invalid_Argument;
@@ -261,7 +261,7 @@ package body Operations is
 
   -- Inte,Inte->Inte
   function Bitand  (L, R : Item_Rec) return Item_Rec is
-    use Bit_Ops;
+    use Bit_Ops; --## rule line off Use
   begin
     if L.Kind /= Inte or else R.Kind /= Inte then
       raise Invalid_Argument;
@@ -275,7 +275,7 @@ package body Operations is
   end Bitand;
 
   function Bitor   (L, R : Item_Rec) return Item_Rec is
-    use Bit_Ops;
+    use Bit_Ops; --## rule line off Use
   begin
     if L.Kind /= Inte or else R.Kind /= Inte then
       raise Invalid_Argument;
@@ -289,7 +289,7 @@ package body Operations is
   end Bitor;
 
   function Bitxor  (L, R : Item_Rec) return Item_Rec is
-    use Bit_Ops;
+    use Bit_Ops; --## rule line off Use
   begin
     if L.Kind /= Inte or else R.Kind /= Inte then
       raise Invalid_Argument;

@@ -119,7 +119,7 @@ package body Screen is
     Afpx.Set_Field_Activation (Nb_Selected_Fld, Sublist_Active);
     Afpx.Encode_Field (Nb_Selected_Fld,
                        (0, 0),
-                       Normal(Integer(Selected),
+                       Normal(Selected,
                        Afpx.Get_Field_Width (Nb_Selected_Fld)));
     Afpx.Set_Field_Activation (Selected_Fld, Sublist_Active);
   end Encode_Nb_Oper;

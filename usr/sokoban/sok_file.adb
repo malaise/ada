@@ -120,7 +120,7 @@ package body Sok_File is
     begin
       Sok_Score_Mng.Create (Sok_Score_File, Sok_Score_Mng.Out_File,
          Sok_Score_Name);
-      for I in Sok_Types.Frame_Range'Range loop
+      for I in Sok_Types.Frame_Range loop
         Sok_Score_Mng.Write (Sok_Score_File, No_Score);
       end loop;
       Sok_Score_Mng.Close (Sok_Score_File);

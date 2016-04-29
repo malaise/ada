@@ -222,7 +222,7 @@ package body Ios is
       Wait_Def := Exp;
     end if;
 
-    loop
+    loop --## rule line off Loop_While
       -- Wait until timeout or an event
       exit when Event /= No_Event;
       -- On option wait until sentence ready

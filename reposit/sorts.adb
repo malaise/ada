@@ -22,7 +22,7 @@ package body Sorts is
       for Index in First_Index .. Typ_Index'Pred(Last_Index) loop
         for Bubble in Typ_Index'Succ(Index) .. Last_Index loop
           if Slice(Bubble) < Slice(Index) then
-            Exchange (Slice(Index), Slice(Bubble) );
+            Exchange (Slice(Index), Slice(Bubble)); --## rule line off Aliasing
           end if;
         end loop;
       end loop;
@@ -68,8 +68,8 @@ package body Sorts is
 
         -- The father must be greater than its son
         Sorting:
-        while not (Heap(Son_Index) < Heap(Father_Index)) loop
-          Exchange (Heap(Father_Index), Heap(Son_Index));
+        while not (Heap(Son_Index) < Heap(Father_Index)) loop --## rule line off Logical_Not
+          Exchange (Heap(Father_Index), Heap(Son_Index)); --## rule line off Aliasing
           -- Exit if al the heap has been seen
           exit Sorting when Father_Index = 1;
           -- New indexes for father and son
@@ -105,7 +105,7 @@ package body Sorts is
           end if;
           -- Father must be greater that its gretest son
           if Heap(Father_Index) < Heap(Son_Index) then
-            Exchange (Heap(Father_Index), Heap(Son_Index));
+            Exchange (Heap(Father_Index), Heap(Son_Index)); --## rule line off Aliasing
             Father_Index := Son_Index;
           else
             -- If no exchange, the heap is OK
@@ -159,7 +159,7 @@ package body Sorts is
 
           -- Exchange and go to next elements if not both in frontier
           if I_Left < I_Right then
-            Exchange (Slice(I_Left), Slice(I_Right));
+            Exchange (Slice(I_Left), Slice(I_Right)); --## rule line off Aliasing
             I_Left := Typ_Index'Succ (I_Left);
             I_Right := Typ_Index'Pred (I_Right);
           elsif I_Left = I_Right then

@@ -56,7 +56,7 @@ package body Text is
 
   function Row_Image (Row : Common.Row_Range) return Character is
   begin
-    return (Character'Val (Character'Pos ('A') + Row - 1));
+    return Character'Val (Character'Pos ('A') + Row - 1);
   end Row_Image;
 
   procedure Put_Title is

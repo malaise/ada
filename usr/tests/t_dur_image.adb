@@ -46,7 +46,7 @@ begin
     exit when Key_Pressed.Key_Pressed;
     if Nb_Loops = 0 then
       Basic_Proc.Put_Line_Output ("Hit a key to stop.");
-      delay (1.0);
+      delay 1.0;
     end if;
     exit when Key_Pressed.Key_Pressed;
   end loop;

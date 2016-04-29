@@ -20,8 +20,8 @@ package body Oper_Def is
       return Oper_1.Date.Month < Oper_2.Date.Month;
     elsif Oper_1.Date.Day /= Oper_2.Date.Day then
       return Oper_1.Date.Day < Oper_2.Date.Day;
-    elsif abs (Oper_1.Amount) /= abs (Oper_2.Amount) then
-      return abs (Oper_1.Amount) < abs (Oper_2.Amount);
+    elsif abs Oper_1.Amount /= abs Oper_2.Amount then
+      return abs Oper_1.Amount < abs Oper_2.Amount;
     elsif Oper_1.Kind /= Oper_2.Kind then
       return Oper_1.Kind < Oper_2.Kind;
     else
@@ -34,8 +34,8 @@ package body Oper_Def is
   --  mess all up.
   function Smaller (Oper_1, Oper_2 : Oper_Def.Oper_Rec) return Boolean is
   begin
-    if abs (Oper_1.Amount) /= abs (Oper_2.Amount) then
-      return abs (Oper_1.Amount) < abs (Oper_2.Amount);
+    if abs Oper_1.Amount /= abs Oper_2.Amount then
+      return abs Oper_1.Amount < abs Oper_2.Amount;
     elsif Oper_1.Date.Year /= Oper_2.Date.Year then
       return Oper_1.Date.Year < Oper_2.Date.Year;
     elsif Oper_1.Date.Month /= Oper_2.Date.Month then

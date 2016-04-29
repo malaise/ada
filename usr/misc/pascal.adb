@@ -31,7 +31,7 @@ begin
       No_Line) loop
 
       -- 6 elements per line of screen
-      if ((Index - 1) mod 6 = 0) and then (Index /= 1) then
+      if (Index - 1) mod 6 = 0 and then Index /= 1 then
         New_Line_Output;
         Put_Output ("-> ");
       end if;

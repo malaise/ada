@@ -1,6 +1,5 @@
 -- Purpose: solve a.x2 + b.x + c = 0
 with Argument, Basic_Proc, My_Math, Gets, Images;
-use My_Math;
 procedure Second is
 
   function Real_Image is new Images.Flo_Image (My_Math.Real);
@@ -10,6 +9,7 @@ procedure Second is
   -- Discriminant
   D : My_Math.Real;
 
+  use type My_Math.Real;
 begin
 
   -- Check number of arguments

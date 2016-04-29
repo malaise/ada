@@ -34,14 +34,14 @@ package body Scrambler_Gen is
     -- Init
     Rnd.Gen.Randomize;
     Nb_Remain := Id_Range'Last;
-    for I in Id_Range'Range loop
+    for I in Id_Range loop
       Remain(I) := I;
       Map(I) := I;
     end loop;
 
     -- Search random mapping
     if Symetric then
-      for I in Id_Range'Range loop
+      for I in Id_Range loop
         -- Skip entries already mapped
         if Map(I) = I then
           -- Forbid identity if symetric
@@ -81,7 +81,7 @@ package body Scrambler_Gen is
       end loop;
     else
       -- Not symetric
-      for I in Id_Range'Range loop
+      for I in Id_Range loop
         -- Random index in Remain (1 .. Nb_Remain);
         Id := Id_Random (Rnd.Gen.all, Maxi => Nb_Remain);
         -- So I -> Remain(Id)

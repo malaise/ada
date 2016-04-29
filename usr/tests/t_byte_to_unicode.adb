@@ -8,7 +8,7 @@ begin
 
   Map.Load (Argument.Get_Parameter(1));
 
-  for I in Byte_To_Unicode.Byte'Range loop
+  for I in Byte_To_Unicode.Byte loop
 
     Basic_Proc.Put_Output (Normal (I, 3) & " ");
     Basic_Proc.Put_Output (Image16 (I));

@@ -23,7 +23,7 @@ package body Hash_Function is
     use Bit_Ops;
   begin
     for I in Str'Range loop
-      Buffer.Value := (Shl (Buffer.Value, 5)
+      Buffer.Value := (Shl (Buffer.Value, 5) --## rule line off Parentheses
                        + Buffer.Value
                        + Character'Pos (Str(I))) and Nat_Max_Hash;
     end loop;

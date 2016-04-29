@@ -96,7 +96,7 @@ package body Screen is
   begin
     -- Init
     Init;
-    for I in Common.Index_Range'Range loop
+    for I in Common.Index_Range loop
       Selected(I) := False;
     end loop;
 
@@ -199,7 +199,7 @@ package body Screen is
     use type Common.Played_Result_List;
     use type Afpx.Event_List, Afpx.Absolute_Field_Range;
   begin
-    for I in Common.Index_Range'Range loop
+    for I in Common.Index_Range loop
       Afpx.Set_Field_Protection(I, True);
     end loop;
     -- Validate

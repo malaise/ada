@@ -5,7 +5,7 @@ procedure Comp_Speed (Data : in out T_Data) is
   A_T_W, A_T_P, A_P_W, A_P_T : Real;
   -- sin(Atw)/sin(Atp) and sin(Apw)/sin(Aps)
   S_Wp, S_Ws : Real;
-  use Nav_Types;
+  use type Nav_Types.T_Angle;
 begin
   -- Compute angles substractions
   A_T_W := To_Real (Angle => Data.Traj.Angle - Data.Wind.Angle);

@@ -130,7 +130,7 @@ package body Menu1 is
     Restore := Full;
     declare
       Kind : Directory.File_Kind_List;
-      use Directory;
+      use type Directory.File_Kind_List;
     begin
       if not Load then
         Tmp_File_Name := File_Name_Txt;
@@ -310,8 +310,7 @@ package body Menu1 is
             end case;
           when Afpx.Mouse_Button =>
             case Ptg_Result.Field_No is
-              when Screen.List_Scroll_Fld_Range'First ..
-                   Screen.List_Scroll_Fld_Range'Last =>
+              when Screen.List_Scroll_Fld_Range =>
                 Screen.Scroll(Ptg_Result.Field_No);
               when Screen.Exit_Button_Fld =>
                 if Exit_Prog then

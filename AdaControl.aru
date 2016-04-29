@@ -1,0 +1,17 @@
+-- Required:
+Use: check unnecessary_use_clause;
+check style (no_closing_name);
+check max_nesting (6);
+Aliasing : check parameter_aliasing (certain);
+check simplifiable_statements (block, handler, if, loop, null);
+Dead : check simplifiable_statements (dead);
+Loop_While : check simplifiable_statements (loop_for_while);
+
+check simplifiable_expressions (conversion, logical_true, logical_false, range);
+Parentheses : check simplifiable_expressions (parentheses);
+Logical_Not : check simplifiable_expressions (logical_not);
+check with_clauses (reduceable);
+
+-- Acceptable
+Aliasing : search parameter_aliasing (possible);
+

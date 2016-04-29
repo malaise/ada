@@ -232,7 +232,7 @@ package body Unit_Format is
         Dot : constant := Last -2;
         R : My_Math.Real;
         I : My_Math.Inte;
-        use My_Math;
+        use type My_Math.Real;
       begin
         -- Get Int value
         R := My_Math.Get (Str);

@@ -1,6 +1,7 @@
 with Normalization, Basic_Proc, Arg_Parsing;
 package body Display is
-  use Common;
+
+  use type Common.Cote_Kind;
 
   Not_Found : exception;
   Nb_Cote_Line : constant := 12;
@@ -105,7 +106,7 @@ package body Display is
       Nb_Printed := Nb_Printed + 1;
       if Kind = Common.Manufa then
         -- Check Inter
-        Val := Val + abs(Data.Manufas(Cote_No).Inter);
+        Val := Val + abs Data.Manufas(Cote_No).Inter;
       else
         -- Add Value
         if Plus then

@@ -146,8 +146,7 @@ package body File_Mng is
     Oper_Io.Write (File, Loc_Oper_1);
 
     -- Write other records
-    loop
-      exit when not Loc_List.Check_Move;
+    while Loc_List.Check_Move loop
       Loc_List.Move_To;
       Loc_List.Read (Loc_Oper, Oper_List_Mng.Current);
       Oper_Io.Write (File, Loc_Oper);

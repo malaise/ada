@@ -47,7 +47,7 @@ begin
         declare
           Try_State : constant Common.Try_List
                     := Common.Get_Propal_State (Cur_Selection.Try_No).Try;
-          use Common;
+          use type Common.Try_List;
         begin
           -- Check that this propal is completed and not already answered
           if Try_State = Common.Can_Try then
@@ -74,7 +74,7 @@ begin
         declare
           Propal_State : constant Common.Propal_State_Rec
                        := Common.Get_Propal_State (Cur_Selection.Propal_No);
-          use Common;
+          use type Common.Try_List, Common.Color_Range;
         begin
           -- Check that this propal is completed and not already answered
           if Propal_State.Try /= Common.Answered and then

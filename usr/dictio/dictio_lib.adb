@@ -243,7 +243,7 @@ package body Dictio_Lib is
 
     -- Wait until connected or delay
     Expiration := Virtual_Time.Current_Time + 0.5;
-    loop
+    loop --## rule line off Loop_While
       exit when Dictio_State /= Unavailable
            or else Event_Mng.Wait (100) = Event_Mng.Signal_Event
            or else Virtual_Time.Is_Reached (Expiration);
@@ -299,7 +299,7 @@ package body Dictio_Lib is
     Msg.Item.Kind := Kind;
     Send_Request;
     -- Wait for reply
-    loop
+    loop --## rule line off Loop_While
       exit when Read_Cb(Sys_Calls.Stdin, True);
     end loop;
     Check_Available;

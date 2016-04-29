@@ -72,7 +72,7 @@ package body Pers_Lis is
       Locok : Boolean;
       Tz_S  : Str_Mng.Bpm_Str;
       Tz    : Pers_Def.Bpm_Range;
-      use Pers_Def;
+      use type Pers_Def.Bpm_Range;
     begin
       case Current_Field is
 

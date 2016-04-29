@@ -6,7 +6,6 @@
 -- exit 2  -->  Error: cannot read some source file(s)
 -- exit 3  -->  Argument or internal error
 with Ada.Calendar;
-use Ada.Calendar;
 with Argument, Sys_Calls;
 procedure Status is
   -- The exit values
@@ -24,6 +23,7 @@ procedure Status is
   -- Modif time of target, current source
   Target_Time, Source_Time : Ada.Calendar.Time;
 
+  use type Ada.Calendar.Time;
 begin
 
   -- Check arguments, at least 2

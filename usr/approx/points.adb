@@ -13,7 +13,7 @@ package body Points is
   Storage : T_Storage;
 
   function Lt (Pl, Pr : in P_T_One_Point) return Boolean is
-    use My_Math;
+    use type My_Math.Real;
   begin
     return Pl.X < Pr.X or else
          (Pl.X = Pr.X and then Pl.Y < Pr.Y);

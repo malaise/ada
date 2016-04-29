@@ -311,10 +311,10 @@ begin
   -- Put "Ready on..." end-of-init message
   Log ("Accepting on port " & Port_Image (Port_Num) & " for " &
     (case Dump_Mode is
-       when Header => ("header"),
-       when Short => ("short"),
-       when Full => ("full"),
-       when Binary => ("binary")) & " dumps.");
+       when Header => "header",
+       when Short => "short",
+       when Full => "full",
+       when Binary => "binary" & " dumps."));
 
   -- Main loop until sigterm/sigint or timeout
   loop

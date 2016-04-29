@@ -200,7 +200,7 @@ package body Nav_Format is
     else
       -- dot and 1 digit
       Spe := Float(Integer'Value( Str(F..P-1) ));
-      Spe := Spe + ( Float(Integer'Value( Str(P+1..L) )) / 10.0);
+      Spe := Spe + Float(Integer'Value( Str(P+1..L) )) / 10.0;
     end if;
     Speed := Nav_Types.T_Speed (Spe);
     Res := Set;
@@ -248,7 +248,7 @@ package body Nav_Format is
     elsif P = L-1 then
       -- dot and 1 digit which is in 10 minutes
       declare
-        use Nav_Types;
+        use type Nav_Types.T_Minute;
       begin
         Angle.Degrees := Nav_Types.T_Degree'Value( Str(F..P-1) );
         Angle.Minutes := Nav_Types.T_Minute'Value( Str(P+1..L) )
@@ -291,7 +291,7 @@ package body Nav_Format is
 
     if S then
       -- signed drift at first signif char
-      Drift.Positiv := (Str (F) = '+');
+      Drift.Positiv := Str (F) = '+';
       loop
         F := F + 1;
         exit when Str(F) /= ' ';
@@ -307,7 +307,7 @@ package body Nav_Format is
     elsif P = L-1 then
       -- dot and 1 digit which is in 10 minutes
       declare
-        use Nav_Types;
+        use type Nav_Types.T_Minute;
       begin
         Drift.Degrees := Nav_Types.T_Deg_Drift'Value( Str(F..P-1) );
         Drift.Minutes := Nav_Types.T_Minute'Value( Str(P+1..L) )

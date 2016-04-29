@@ -42,7 +42,7 @@ package body Common is
   procedure Search (Dim : in Dim_Range) is
     Start_Time : Ada.Calendar.Time;
     Search_Duration : Float;
-    use Ada.Calendar;
+    use type Ada.Calendar.Time;
   begin
     Common.Dim := Dim;
     Dm1 := Dim - 1;

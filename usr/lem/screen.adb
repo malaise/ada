@@ -153,7 +153,7 @@ package body Screen is
     Fuxmin := Fun.X + Console.Font_Width * 4;
     Fuxmax := Last_X;
     Fuy := Fun.Y + 1;
-    Fufactor := My_Math.Real(Fuxmax - Fuxmin) / My_Math.Real(Lem.Max_Fuel);
+    Fufactor := My_Math.Real(Fuxmax - Fuxmin) / Lem.Max_Fuel;
     -- Horizontal speed
     Hsxmin := Hsn.X + Console.Font_Width * 4;
     Hsxmax := Last_X;

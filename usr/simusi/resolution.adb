@@ -1,5 +1,4 @@
-with Common, Data, Display;
-use Common, Data;
+with Data, Display;
 package body Resolution is
 
   -- Current kind of solving
@@ -18,6 +17,8 @@ package body Resolution is
     Start, Stop : Data.Eff_Line_Range;
   end record;
 
+  use type Common.Cote_Kind, Data.Eff_Cote_Range, Data.Eff_Line_Range;
+
   package Cote_Search is
     -- Init Level
     procedure Init;
@@ -34,11 +35,11 @@ package body Resolution is
     -- Cote is kind
     for I in Data.Eff_Cote_Range loop
       if Kind = Common.Manufa then
-        Start := Manufas(I).Start;
-        Stop := Manufas(I).Stop;
+        Start := Data.Manufas(I).Start;
+        Stop := Data.Manufas(I).Stop;
       else
-        Start := Designs(I).Start;
-        Stop := Designs(I).Stop;
+        Start := Data.Designs(I).Start;
+        Stop := Data.Designs(I).Stop;
       end if;
       G(Start, Stop) := True;
       G(Stop, Start) := True;
@@ -50,7 +51,7 @@ package body Resolution is
   package body Cote_Search is
     Gp : Bool_Mattrix;
 
-    type Bool_Vector is array (Eff_Cote_Range) of Boolean;
+    type Bool_Vector is array (Data.Eff_Cote_Range) of Boolean;
     Cote_Done : Bool_Vector;
 
     subtype Cote_Nb_Range is Natural range 0 .. Data.Eff_Cote_Range'Last;
@@ -135,7 +136,7 @@ package body Resolution is
     Way : Display.Way_Vector(1 .. Data.Eff_Line_Range'Last);
     subtype Way_Range is Natural range 0 .. Data.Eff_Line_Range'Last;
     Next, Prev : Way_Range;
-    Index : Eff_Line_Range;
+    Index : Data.Eff_Line_Range;
 
     procedure Push is
     begin
@@ -189,7 +190,7 @@ package body Resolution is
   begin
     Resolution.Kind := Kind;
     Init;
-    for I in Eff_Cote_Range loop
+    for I in Data.Eff_Cote_Range loop
       -- Search next cote
       Current_Cote := Cote_Search.Next_Cote;
       -- Find way of cote

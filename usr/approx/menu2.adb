@@ -22,7 +22,7 @@ package body Menu2 is
     -- Start computation, Solution is computed on main stack
     entry Start (Solution : in Resol.Vector; Ok : out Boolean);
     entry Stopped;
-  end;
+  end Curve_Task;
 
   package Menu21 is
 
@@ -78,7 +78,7 @@ package body Menu2 is
                     Polynom : Resol.Vector) return Points.P_T_Coordinate is
      Y : Points.P_T_Coordinate := 0.0;
      Bubble : Points.P_T_Coordinate := 1.0;
-     use My_Math;
+     use type My_Math.Real;
   begin
      -- Y = F(X) from vector
      for I in Polynom'Range loop
@@ -263,8 +263,7 @@ package body Menu2 is
           end case;
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
-            when Screen.List_Scroll_Fld_Range'First ..
-                 Screen.List_Scroll_Fld_Range'Last =>
+            when Screen.List_Scroll_Fld_Range =>
               Screen.Scroll(Ptg_Result.Field_No);
             when Screen.Exit_Button_Fld =>
               return;

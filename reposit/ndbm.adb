@@ -98,7 +98,7 @@ package body Ndbm is
   procedure Open (Db : in out Database; File_Name : in String) is
     Name_For_C : constant String := File_Name & Aski.Nul;
     Addr : System.Address;
-    use Bit_Ops;
+    use Bit_Ops; --## rule line off Use
     use type System.Address;
   begin
     if Is_Open (Db) then

@@ -61,7 +61,7 @@ procedure Impot_04 is
   function Get_Part (Message : String) return Positive is
     Val : My_Math.Real;
     Frac : My_Math.Real;
-    use My_Math;
+    use type My_Math.Real;
   begin
     loop
       begin
@@ -131,7 +131,7 @@ begin
 
   -- 2. CALCUL DU REVENU NET IMPOSABLE
   declare
-    use My_Math;
+    use type My_Math.Real;
   begin
     -- 2.1. Deductions diverses
     Charges_Deduites := 0.0;
@@ -190,9 +190,7 @@ begin
   end;
 
   -- 6. CALCUL DE L'IMPOT APRES CORRECTION
-  begin
-    Impot_Apres_Correction := Resultat;
-  end;
+  Impot_Apres_Correction := Resultat;
 
   -- 7. CALCUL DE L'IMPOT APRES DEDUCTION
   declare
@@ -226,11 +224,9 @@ begin
   Impot_Apres_Deduction := Resultat;
 
   -- IMPOT A PAYER
-  begin
-    Impot_A_Payer := Resultat;
-    New_Line_Output;
-    Ecrit ("Votre impot a payer est de", Impot_A_Payer, "euros.");
-  end;
+  Impot_A_Payer := Resultat;
+  New_Line_Output;
+  Ecrit ("Votre impot a payer est de", Impot_A_Payer, "euros.");
 
-end; -- IMPOT_xx
+end Impot_04;
 

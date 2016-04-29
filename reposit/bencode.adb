@@ -333,7 +333,8 @@ package body Bencode is
         Res := Decode_Item (True, Keys_Policy /= None);
         exit when not Res;
         -- If Policy = Check then check that keys are strictly crescent
-        if Keys_Policy = Check and then not (Prev_Bytes < Last_Bytes) then
+        if Keys_Policy = Check
+        and then not (Prev_Bytes < Last_Bytes) then --## rule line off Logical_Not
           Logger.Log_Error ("Dictio has not crescent keys"
                            & " at offset " & Images.Integer_Image (I));
           raise Format_Error;
@@ -435,7 +436,7 @@ package body Bencode is
     -- Append a Char or a String to the result
     procedure Append (C : in Character) is
     begin
-      Result.Append (Byte (Character'Pos (C)));
+      Result.Append (Character'Pos (C));
     end Append;
     procedure Append (Str : in String) is
     begin
@@ -578,7 +579,7 @@ package body Bencode is
           Encode_Item (Keys_Policy /= None and then I rem 2 = 1);
           -- If Check_Dictio then check that keys are strictly  crescent
           if Keys_Policy /= None and then I rem 2 = 1
-          and then not (Prev_Bytes < Last_Bytes) then
+          and then not (Prev_Bytes < Last_Bytes) then --## rule line off Logical_Not
             Logger.Log_Error ("Dictio has not crescent keys "
                             & Ctx.Get_Name (Node));
             raise Format_Error;

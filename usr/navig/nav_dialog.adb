@@ -171,7 +171,7 @@ package body Nav_Dialog is
     Angle : Nav_Types.T_Angle;
     Drift : Nav_Types.T_Drift;
     Res : Nav_Format.Format_Result;
-    use Nav_Format; -- for = tests
+    use type Nav_Format.Format_Result;
   begin
 
     -- get value and update data value if Set

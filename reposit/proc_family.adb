@@ -86,7 +86,7 @@ package body Proc_Family is
   -- The SigChild callback
   procedure Sig_Child_Cb is
   begin
-    loop
+    loop --## rule line off Loop_While
       exit when not Handle_Death;
     end loop;
   end Sig_Child_Cb;

@@ -1,6 +1,7 @@
 with My_Math, Curve;
-use My_Math;
 procedure T_Curve is
+
+  use type Curve.T_Coordinate;
 
   Points : constant Curve.T_The_Points (1 .. 9) :=
    (1 => (X => -4.0, Y =>  0.0),
@@ -16,7 +17,6 @@ procedure T_Curve is
   Bounds : Curve.T_Boundaries;
 
   X_Min, X_Max : Curve.T_Coordinate;
-
 
   function F(X : My_Math.Real) return My_Math.Real is
   begin

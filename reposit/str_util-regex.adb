@@ -230,9 +230,7 @@ package body Str_Util.Regex is
             Lower_Str (Newby.Slice (Case_Start, Esc - 2)));
         Case_Start := Esc - 1;
         Case_Char := Char;
-      else
-         -- Impossible, bug in Locate_Escape
-         null;
+      -- else Impossible, bug in Locate_Escape
       end if;
       exit when From > Newby.Length;
     end loop;

@@ -129,7 +129,7 @@ begin
   Start (Funny, 0.0, Timers.No_Period, True);
 
   -- Wait a bit
-  loop
+  loop --## rule line off Loop_While
     exit when Event_Mng.Wait (1_000);
   end loop;
 

@@ -15,7 +15,7 @@ procedure Scrambler_Generator is
   Symetric : Boolean := False;
 
   subtype Id_Range is Positive range 1 .. Positive(Types.Lid'Last) + 1;
-  Scrambler : String (Id_Range'Range);
+  Scrambler : String (Id_Range);
 
 begin
   -- One optionnal "-s"
@@ -35,7 +35,7 @@ begin
     Basic_Proc.Put_Output (C);
   end loop;
   Basic_Proc.New_Line_Output;
-  for I in Id_Range'Range loop
+  for I in Id_Range loop
     Basic_Proc.Put_Output (Scrambler(I));
   end loop;
   Basic_Proc.New_Line_Output;

@@ -1,4 +1,4 @@
-with Aski, As.U, As.B, Sys_Calls, Argument, Upper_Str, Normal, My_Math,
+with Aski, As.U, As.B, Sys_Calls, Argument, Upper_Str, Normal,
      Text_Line, Basic_Proc;
 with Grid_1, Grid_2, Vigenere;
 
@@ -9,7 +9,7 @@ procedure Code is
   -- Better not allocate that in stack, but in heap.
   type Access_Long_String is access Grid_2.Long_String;
   Str  : constant Access_Long_String
-       := new Grid_2.Long_String(1 .. My_Math.Inte(1_048_576));
+       := new Grid_2.Long_String(1 .. 1_048_576);
   File_Too_Long : exception;
 
 
@@ -60,8 +60,7 @@ procedure Code is
   procedure Decode_1 is
   begin
     Buff.Set_Null;
-    loop
-      exit when Si > Sl - 1;
+    while Si <= Sl - 1 loop
       Rec.Row := Str(Si);
       Rec.Col := Str(Si + 1);
       Si := Si + 2;

@@ -15,8 +15,7 @@ package body Compute is
     Result : Common.Bar_Status_Array;
   begin
     Result := (others => False);
-    loop
-      exit when Nb_Removed = How_Many;
+    while Nb_Removed /= How_Many loop
       Remove_One:
       loop
         Remove_Index := Rnd.Gen.Int_Random (Common.Bar_Range'First,

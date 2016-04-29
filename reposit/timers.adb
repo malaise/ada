@@ -388,7 +388,7 @@ package body Timers is
       -- Re-apply remaining delay (virtual) to current expiration (reference)
       Speed := Virtual_Time.Get_Speed (Timer.Clock);
       Timer.Exp.Expiration_Time := Virtual_Time.Current_Time (null)
-          + (Timer.Remaining * Perpet.Natural_Duration(1.0 / Speed));
+          + Timer.Remaining * Perpet.Natural_Duration(1.0 / Speed);
     end if;
     -- Update status and re-sort
     Timer.Status := Running;

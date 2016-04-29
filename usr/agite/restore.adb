@@ -14,8 +14,7 @@ begin
     Modified := False;
     -- Iterate on all the list except first
     Commits.Rewind;
-    loop
-      exit when not Commits.Check_Move;
+    while Commits.Check_Move loop
       Commits.Move_To;
       Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
       Modified := Modified
@@ -42,8 +41,7 @@ begin
               (if File = "/"  then "Full commit" else File)) then
     if File = "/" then
       Commits.Rewind;
-      loop
-        exit when not Commits.Check_Move;
+      while Commits.Check_Move loop
         Commits.Move_To;
         Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
         Modified := Git_If.Cat (Commit.File.Image, Hash,

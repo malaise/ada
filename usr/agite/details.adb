@@ -213,8 +213,7 @@ package body Details is
             when Afpx.List_Field_No =>
               -- Double click (View)
               Show (Show_View);
-            when Utils.X.List_Scroll_Fld_Range'First ..
-                 Utils.X.List_Scroll_Fld_Range'Last =>
+            when Utils.X.List_Scroll_Fld_Range =>
               -- Scroll list
               Afpx.Utils.Scroll (
                  Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);

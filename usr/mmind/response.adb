@@ -26,7 +26,7 @@ package body Response is
     Seen_Code, Seen_Propal : array (Column_Range) of Boolean
                          := (others => False);
     Response : Response_Rec := (Placed_Ok => 0, Colors_Ok=> 0);
-    use Common;
+    use type Common.Level_Range, Common.Color_Range;
   begin
     if Secret.Level /= Propal.Level then raise Constraint_Error; end if;
 

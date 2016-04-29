@@ -10,7 +10,9 @@ procedure Treat_Release (Go_On, Exit_Game : out Boolean) is
     end loop;
   end Put_Secret;
 
-  use Common, Screen;
+  use type Common.Propal_Range, Common.Color_Range, Common.Try_List,
+           Common.Level_Range,
+           Screen.Selection_List;
 
 begin
   -- Cancel click
@@ -74,7 +76,7 @@ begin
         end if;
         Playing := not Playing;
 
-      when Try =>
+      when Screen.Try =>
         if Last_Click.Try_No = Cur_Selection.Try_No then
           -- Valid try (already tested on click)
           declare
@@ -109,7 +111,7 @@ begin
                 end loop;
                 -- Answered impossible because of Next_Free
                 if Prop_State.Try = Common.Can_Try then
-                  Screen.Put_Try (Cur_Selection.Try_No, Can_Try);
+                  Screen.Put_Try (Cur_Selection.Try_No, Screen.Can_Try);
                 else
                   Screen.Put_Try (Cur_Selection.Try_No, Screen.Cannot_Try);
                 end if;
@@ -151,11 +153,11 @@ begin
         end if;
         Go_On := True;
         Exit_Game := False;
-      when Color =>
+      when Screen.Color =>
         Screen.Console.Bell;
         Go_On := True;
         Exit_Game := False;
-      when Propal =>
+      when Screen.Propal =>
         -- Move color in propal
         declare
           Prop_State : Common.Propal_State_Rec;
@@ -193,13 +195,13 @@ begin
         end;
         Go_On := True;
         Exit_Game := False;
-      when Nothing =>
+      when Screen.Nothing =>
         Go_On := True;
         Exit_Game := False;
     end case;
 
-  elsif Last_Click.Selection_Kind = Color and then
-        Cur_Selection.Selection_Kind = Propal then
+  elsif Last_Click.Selection_Kind = Screen.Color and then
+        Cur_Selection.Selection_Kind = Screen.Propal then
     -- Check that propal is valid
     if Cur_Selection.Propal_No >= First_Free then
       Common.Set_Color (Propal => Cur_Selection.Propal_No,
@@ -216,7 +218,7 @@ begin
     Go_On := True;
     Exit_Game := False;
 
-  elsif Last_Click.Selection_Kind = Propal then
+  elsif Last_Click.Selection_Kind = Screen.Propal then
     if Cur_Selection.Selection_Kind = Screen.Nothing and then
        Cur_Selection.Selection = Screen.Propal then
       -- Restore color

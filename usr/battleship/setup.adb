@@ -162,9 +162,9 @@ package body Setup is
       if Action = Setting or else Action = Positionning then
          -- Activate and protect the ship being set
          Ship_Fld := Afpx_Xref.Setup.Aircraftcarrier
-            + (Afpx.Absolute_Field_Range (
+            + Afpx.Absolute_Field_Range (
                 Fleet.Ship_List'Pos(Curr_Ship)
-              - Fleet.Ship_List'Pos(Fleet.Ship_List'First)) * 2);
+              - Fleet.Ship_List'Pos(Fleet.Ship_List'First)) * 2;
          Afpx.Set_Field_Activation (Ship_Fld, True);
          Afpx.Set_Field_Protection (Ship_Fld, True);
          Afpx.Set_Field_Colors (Ship_Fld,

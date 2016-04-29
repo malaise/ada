@@ -35,7 +35,7 @@ package body Complexes is
     Two_Pi : constant Radian := Reducted_Radian'Last;
     R : Radian;
   begin
-    N := Trunc (Real(A / (Two_Pi)));
+    N := Trunc (Real(A / Two_Pi));
     R := A - Radian(N) * Two_Pi;
     if R < 0.0 then R := R + Two_Pi; end if;
     return R;
@@ -266,7 +266,7 @@ package body Complexes is
   begin
     Real_Str := Normalization.Normal_Digits (Part_Real (C), Str_Width, Exp);
     Sign := (if Imag_Part >= 0.0 then '+' else '-');
-    Imag_Str := Normalization.Normal_Digits (abs (Imag_Part), Str_Width, Exp);
+    Imag_Str := Normalization.Normal_Digits (abs Imag_Part, Str_Width, Exp);
     return Real_Str & ' ' & Sign & " i *" & Imag_Str;
   end Put;
 

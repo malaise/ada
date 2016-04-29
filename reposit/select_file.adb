@@ -193,10 +193,10 @@ package body Select_File is
     -- Report an internal error
     procedure Error (Msg : in Error_List) is
     begin
-      Report_Error ((case Msg is
-                       when E_File_Not_Found     => "File not found",
-                       when E_Io_Error           => "Error accessing file",
-                       when E_File_Name          => "Error invalid file name"));
+      Report_Error (case Msg is
+                      when E_File_Not_Found     => "File not found",
+                      when E_Io_Error           => "Error accessing file",
+                      when E_File_Name          => "Error invalid file name");
     end Error;
 
     function Is_Dir (File : String) return Boolean is

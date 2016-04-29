@@ -53,7 +53,7 @@ begin
     Common.Set_Level_To_Stored;
     Action.Init;
 
-    loop
+    loop --## rule line off Loop_While
       exit when not Action.Play;
     end loop;
   end if;

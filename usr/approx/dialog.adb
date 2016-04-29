@@ -118,8 +118,7 @@ package body Dialog is
           end case;
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
-            when Screen.List_Scroll_Fld_Range'First ..
-                 Screen.List_Scroll_Fld_Range'Last =>
+            when Screen.List_Scroll_Fld_Range =>
               Screen.Scroll(Ptg_Result.Field_No);
             when Screen.Ok_Button_Fld =>
               if Decode then
@@ -204,8 +203,7 @@ package body Dialog is
           end case;
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
-            when Screen.List_Scroll_Fld_Range'First ..
-                 Screen.List_Scroll_Fld_Range'Last =>
+            when Screen.List_Scroll_Fld_Range =>
               Screen.Scroll(Ptg_Result.Field_No);
             when Screen.Ok_Button_Fld =>
               if Decode then

@@ -29,7 +29,7 @@ begin
   declare
     Pa, Ta, Wa : Nav_Types.T_Angle;
     A_Set : Boolean;
-    use Nav_Types;
+    use type Nav_Types.T_Angle;
   begin
     -- See if Plan_A and Traj_A are set
     if Set(Drift) then
@@ -63,8 +63,8 @@ begin
       if (Wa < Ta or else Wa > Ta + 180) and then
          (Pa < Ta or else Pa > Ta + 180) then
         return Angle_Err;
-      elsif (Wa > Ta and then Wa < Ta + 180) and then
-            (Pa > Ta and then Pa < Ta + 180) then
+      elsif Wa > Ta and then Wa < Ta + 180 and then
+            Pa > Ta and then Pa < Ta + 180 then
         return Angle_Err;
       end if;
 
@@ -74,7 +74,7 @@ begin
   if Set(Wind_S) /= Set(Wind_A) then
     -- Check wind. Angle and speed both set or both not set.
     return Wind_Err;
-  elsif (not Set(Traj_A)) and then Set(Traj_S) then
+  elsif not Set(Traj_A) and then Set(Traj_S) then
     -- Check trajectory. If angle is unknown then speed must be unknown
     return Traj_Err;
   end if;

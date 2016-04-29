@@ -56,7 +56,7 @@ begin
         Bytes : Bencode.Byte_Array (1 .. Ibuf.Length);
       begin
         for I in 1 .. Ibuf.Length loop
-          Bytes(I) := Bencode.Byte(Character'Pos(Ibuf.Element (I)));
+          Bytes(I) := Character'Pos(Ibuf.Element (I));
         end loop;
         Obuf := As.U.Tus (Bencode.Bencode2Xml (Bytes, Policy));
       end;

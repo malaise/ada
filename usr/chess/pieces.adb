@@ -92,7 +92,7 @@ package body Pieces is
   -- Move a piece
   function "-" (From, To : Space.Row_Range) return Natural is
   begin
-    return abs Integer(Space.Row_Range'Pos(From) - Space.Row_Range'Pos(To) );
+    return abs Integer(Space.Row_Range'Pos(From) - Space.Row_Range'Pos(To));
   end "-";
 
   procedure Move (Piece  : in Piece_Access;

@@ -630,7 +630,7 @@ begin
 
     -- Reflector: daynum 1 -> A, 2 -> B, 3 -> C, 1 -> A...
     -- No offset (A)
-    Reflector_Num := ((Day - 1) rem 3) + 1;
+    Reflector_Num := (Day - 1) rem 3 + 1;
     Reflector.Set (To_Letter (Reflector_Num) & 'A');
 
     declare
@@ -645,15 +645,15 @@ begin
           Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T)))(1..3);
 
       -- First rotor: Day modulo 1 .. 10 @ First letter of day name
-      Num := Store (((Day - 1) rem 10) + 1, 1);
+      Num := Store ((Day - 1) rem 10 + 1, 1);
       Rotors.Set (To_Letter (Num) & Day_3(1));
       Init_Offset.Set (Month_3(1));
       -- Second rotor: Day / 10 @ Second letter of day name
-      Num := Store ((Day / 10) + 1, 2);
+      Num := Store (Day / 10 + 1, 2);
       Rotors.Append (To_Letter (Num) & Day_3(2));
       Init_Offset.Append (Month_3(2));
       -- Third rotor: Month modulo 1 .. 10 @ Third letter of day name
-      Num := Store (((Month - 1) rem 10) + 1, 3);
+      Num := Store ((Month - 1) rem 10 + 1, 3);
       Rotors.Append (To_Letter (Num) & Day_3(3));
       Init_Offset.Append (Month_3(3));
     end;

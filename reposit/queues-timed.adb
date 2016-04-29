@@ -127,9 +127,8 @@ package body Queues.Timed is
     Litem : Loc_Item;
   begin
     -- List is always with current pos set to first
-    loop
-      -- Nothing when list is/becomes empty
-      exit when Queue.List.Is_Empty;
+    -- Nothing when list is/becomes empty
+    while not Queue.List.Is_Empty loop
       -- Get and delete entry
       Queue.List.Get (Litem);
       -- Stop and deallocate timer

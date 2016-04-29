@@ -140,7 +140,7 @@ begin
   end loop;
 
   -- Wait until Term_Cb
-  loop
+  loop --## rule line off Loop_While
     exit when Event_Mng.Wait (1_000) and then Main_Done;
   end loop;
 

@@ -1,4 +1,3 @@
-with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser, Str_Util, Trilean;
 with Entities, Output, Targets, Lister, Exit_Code;
 procedure Als is
@@ -95,7 +94,7 @@ procedure Als is
     Put_Line_Error ("    <duration>  ::= Y | M | D | h | m | s");
     Put_Line_Error ("                     // Keep files that match the date specification");
     Put_Line_Error ("                     //  (before, after or equal to a given date or delay)");
-    Put_Line_Error ("    " & Argument_Parser.Image(Keys((22))) & " is a shortcut to ""-d ge<date>""");
+    Put_Line_Error ("    " & Argument_Parser.Image(Keys(22)) & " is a shortcut to ""-d ge<date>""");
     Put_Line_Error ("How to show each entry (file or dir):");
     Put_Line_Error ("  " & Key_Img(03) & "// Show rights, owner, size, modif date, symlink target");
     Put_Line_Error ("  " & Key_Img(04) & "// One name per line");

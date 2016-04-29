@@ -12,12 +12,12 @@ procedure T_Regexp is
     (False, 'h', As.U.Tus ("help"), False));
   Dscr : Argument_Parser.Parsed_Dscr;
   Helps : constant array (Keys'Range) of As.U.Asu_Us := (
-    (As.U.Tus ("for silent check (exit code only)")),
-    (As.U.Tus ("for case insensitive")),
-    (As.U.Tus ("for multiline")),
-    (As.U.Tus ("for dot matches all")),
-    (As.U.Tus ("for strict matching (not only contains)")),
-    (As.U.Tus ("for help")));
+    As.U.Tus ("for silent check (exit code only)"),
+    As.U.Tus ("for case insensitive"),
+    As.U.Tus ("for multiline"),
+    As.U.Tus ("for dot matches all"),
+    As.U.Tus ("for strict matching (not only contains)"),
+    As.U.Tus ("for help"));
 
   procedure Error is
   begin

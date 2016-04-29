@@ -172,7 +172,6 @@ begin
         case Val.Kind is
           when Empty | Not_Empty =>
             Dbg ("  Choice then Empty => null");
-            null;
           when Sequence =>
             Dbg ("  Choice then Sequence => Choice merged");
             Into.Kind := Choice;
@@ -192,7 +191,6 @@ begin
         case Val.Kind is
           when Empty | Not_Empty =>
             Dbg ("  Mixed then Empty => null");
-            null;
           when Sequence =>
             Dbg ("  Mixed then Sequence => Mixed merged");
             Reduce (Val);

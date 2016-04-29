@@ -10,7 +10,7 @@ procedure T_Vigenere is
   begin
     Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
                         & "  -c | -d     <key>");
-  end;
+  end Usage;
 
 begin
   -- Check and get mode

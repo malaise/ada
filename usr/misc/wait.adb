@@ -12,7 +12,7 @@ procedure Wait is
   Int  : Integer;
   Last : Positive;
 
-  use Ada.Calendar;
+  use type Ada.Calendar.Time;
 
 begin
 

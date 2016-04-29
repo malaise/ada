@@ -17,9 +17,8 @@ procedure Parse_To_Ends (End_Criteria : in Words.Word_Array;
 begin
   -- Loop until End_Char outside parentheses (Level = 0)
   Parse_Word:
-  loop
-    -- Empty criteria matches anything
-    exit when End_Criteria'Length = 0;
+  -- Empty criteria matches anything
+  while End_Criteria'Length /= 0 loop
 
     -- Read next lexical element, cannot return ""
     Word := Parser_Ada.Multiparser.Get (True);

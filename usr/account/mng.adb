@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with Aski, As.B, Dynamic_List, Directory, Afpx, Select_File, Normal, Text_Line,
-     Environ, Sys_Calls, Images, Language, Perpet, Con_Io;
+     Environ, Sys_Calls, Images, Language, Perpet;
 with Oper_Def, File_Mng, Oper_Dyn_List_Mng, Screen, Unit_Format, Afpx_Xref;
 
 -- Manage the whole acount status
@@ -381,9 +381,7 @@ package body Mng is
       if not Can_Write then
         Screen.Ack_Error (Screen.File_Read_Only);
       end if;
-    else
-      -- User cancelled selection
-      null;
+    -- else User cancelled selection
     end if;
 
   end Load;

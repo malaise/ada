@@ -181,7 +181,7 @@ package body Arbitrary is
                          Carry : in out Natural; C : out Character) is
       R : Natural;
     begin
-      R := (To_Int(A) * To_Int(B)) + Carry;
+      R := To_Int(A) * To_Int(B) + Carry;
       Carry := R / 10;
       R := R rem 10;
       C := To_Char (R);

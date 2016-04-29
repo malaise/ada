@@ -169,7 +169,7 @@ package body Screen is
     Minutes : Day_Mng.T_Minutes := 0;
     Secs    : Day_Mng.T_Seconds := 0;
     Millisecs : Day_Mng.T_Millisec := 0;
-    use Ada.Calendar;
+    use type Ada.Calendar.Time;
   begin
     Screen.Move (2, 65);
     -- Not more than one day :-)

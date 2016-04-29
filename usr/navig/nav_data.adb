@@ -1,10 +1,10 @@
 -- Check of a navigation question coherency
 with My_Math;
-use My_Math;
 package body Nav_Data is
 
   -- For math computations of angles
   subtype Real is My_Math.Real;
+  use type Real;
 
   -- problem in computation
   Comp_Err : exception;
@@ -31,7 +31,7 @@ package body Nav_Data is
     Loc_R : Real := R;
     Deg : Nav_Types.T_Common_Deg;
     Min : Natural;
-    use Nav_Types;
+    use type Nav_Types.T_Angle, Nav_Types.T_Common_Deg;
   begin
 
     -- reduction of R
@@ -46,8 +46,8 @@ package body Nav_Data is
 
     -- split of degrees and minutes
     Deg := Nav_Types.T_Common_Deg (My_Math.Trunc(Loc_R) );
-    Min := Natural (My_Math.Round ( abs(My_Math.Frac(Loc_R)) *
-     ( Real(Nav_Types.T_Minute'Last) + 1.0) ) );
+    Min := Natural (My_Math.Round ( abs My_Math.Frac(Loc_R) *
+     (Real(Nav_Types.T_Minute'Last) + 1.0) ) );
 
     if Min > Natural(Nav_Types.T_Minute'Last) then
       Deg := Deg + 1;

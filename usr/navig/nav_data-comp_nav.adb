@@ -4,7 +4,7 @@ separate (Nav_Data)
 procedure Comp_Nav (Data : in out T_Data) is
   R : Real;
   Cw, Cp : Real;
-  use Nav_Types;
+  use type Nav_Types.T_Angle;
 begin
   -- Plan.Angle := Traj.Angle - Arc_Sin (Wind.Speed / Plan.Speed
   --  * Sin (Wind.Angle - Traj.Angle)

@@ -14,7 +14,7 @@ procedure Servprio is
   function My_Random is new Rnd.Discr_Random(Urgency);
 
   File : Text_Line.File_Type;
-  Name  : constant String := ("servprio.dat");
+  Name  : constant String := "servprio.dat";
 
   task Server is
     entry Init;

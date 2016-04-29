@@ -149,7 +149,7 @@ package body Screen is
 
   procedure Init (Level : in Common.Last_Level_Range) is
     Square : Con_Io.Square;
-    use Common;
+    use type Common.Level_Range, Common.Color_Range, Common.Propal_Range;
   begin
 
     if not Global_Win.Is_Open then
@@ -329,7 +329,7 @@ package body Screen is
     -- Character for row, col corner
     Chars  : array (1 .. 3) of Character;
     Square : Con_Io.Square;
-    use Common;
+    use type Common.Level_Range;
   begin
     if Level > Current_Level then
       raise Constraint_Error;
@@ -404,7 +404,7 @@ package body Screen is
    Level  : in Common.Level_Range;
    Color  : in Common.Color_Range) is
     Square : Con_Io.Square;
-    use Common;
+    use type Common.Level_Range, Common.Color_Range;
   begin
     if Level > Current_Level then
       raise Constraint_Error;
@@ -425,7 +425,6 @@ package body Screen is
    Propal : in Common.Propal_Range;
    Placed_Ok, Colors_Ok : in Natural) is
     Square : Con_Io.Square;
-    use Common;
   begin
     if Colors_Ok + Placed_Ok > Natural(Current_Level) then
       raise Constraint_Error;
@@ -621,7 +620,6 @@ package body Screen is
     -- Character for row, col corner
     Chars  : array (1 .. 3) of Character;
     Square : Con_Io.Square;
-    use Common;
   begin
     -- Set color and square in global
     if Selected then
@@ -662,13 +660,12 @@ package body Screen is
   begin
     return
      Common.Propal_Range (
-      Con_Io.Row_Range (Common.Max_Number_Propal) - (Row / 2) );
+      Con_Io.Row_Range (Common.Max_Number_Propal) - Row / 2 );
   end To_Propal;
 
   function Get_Selected (Where : Con_Io.Square) return Selection_Rec is
     Square : Con_Io.Square;
     Result : Selection_Rec;
-    use Common;
   begin
     Result := (Selection_Kind => Nothing, Selection => Nothing);
 
@@ -685,7 +682,7 @@ package body Screen is
       Result := (Selection_Kind => Propal,
                  Propal_No => To_Propal (Square.Row),
                  Column_No => Common.Level_Range(
-                               (Square.Col / (Propal_Col_Width+1))+1) );
+                               Square.Col / (Propal_Col_Width + 1) + 1) );
       return Result;
     elsif Try_Win.In_Window (Where) then
       Square := Try_Win.To_Relative (Where);
@@ -704,7 +701,7 @@ package body Screen is
       end if;
       Result := (
        Selection_Kind => Color,
-       Color_No => Common.Eff_Color_Range (1 + (Square.Row / 2)) );
+       Color_No => Common.Eff_Color_Range (1 + Square.Row / 2) );
       return Result;
     elsif Menu_Win.In_Window (Where) then
       Square := Menu_Win.To_Relative (Where);
@@ -713,7 +710,7 @@ package body Screen is
     elsif Level_Win.In_Window (Where) then
       Square := Level_Win.To_Relative (Where);
       Result.Selection := Level;
-      if (Square.Col) mod 2 /= 0 then
+      if Square.Col mod 2 /= 0 then
         return Result;
       end if;
       Result := (

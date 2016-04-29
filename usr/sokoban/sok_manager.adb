@@ -380,7 +380,7 @@ package body Sok_Manager is
         Dur : Ada.Calendar.Day_Duration;
       begin
         Sok_Time.Get_Time(Day, Dur);
-        if (Day < State.Score.Day )
+        if Day < State.Score.Day
         or else (Day = State.Score.Day
            and then Dur < State.Score.Dur) then
           State.Score.Day := Day;

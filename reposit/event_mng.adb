@@ -414,7 +414,7 @@ package body Event_Mng is
 
     -- Wait for this or a lower level pause expiration
     --  or a signal
-    loop
+    loop --## rule line off Loop_While
       exit when Wait (Wait_Timeout) = Signal_Event
       or else Pause_Level.Inte < Loc_Level.Inte;
     end loop;

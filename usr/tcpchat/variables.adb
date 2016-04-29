@@ -23,7 +23,8 @@ package body Variables is
     else
       Error ("ENV variable " & Name & " forbidden");
     end if;
-    raise Expand_Error;
+    raise Expand_Error; --## rule line off Dead
+    -- Pragma No_Return is only for procedures
     return Name;
   end Local;
 
