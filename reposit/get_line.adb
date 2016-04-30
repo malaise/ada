@@ -1,7 +1,7 @@
 with Sys_Calls, Str_Util;
 package body Get_Line is
 
-  F : Text_Line.File_Type;
+  File : Text_Line.File_Type;
   Fd : Sys_Calls.File_Desc;
   Current_Line : As.U.Utils.Asu_Ua.Unbounded_Array;
   Current_Line_No : Count;
@@ -17,11 +17,11 @@ package body Get_Line is
   procedure Open (File_Name : in String) is
   begin
     Current_Line_No := 0;
-    if F.Is_Open then
+    if File.Is_Open then
       raise Status_Error;
     end if;
     Fd := Sys_Calls.Open (File_Name, Sys_Calls.In_File);
-    F.Open (Text_Line.In_File, Fd);
+    File.Open (Text_Line.In_File, Fd);
     Read_Next_Line;
   exception
     when Sys_Calls.Name_Error =>
@@ -32,10 +32,10 @@ package body Get_Line is
 
   procedure Close is
   begin
-    if not F.Is_Open then
+    if not File.Is_Open then
       raise Status_Error;
     end if;
-    F.Close;
+    File.Close;
     Sys_Calls.Close (Fd);
   end Close;
 
@@ -88,7 +88,7 @@ package body Get_Line is
   -- Current line number
   function Get_Line_No return Positive_Count is
   begin
-    if not F.Is_Open then
+    if not File.Is_Open then
       raise Status_Error;
     end if;
     return Current_Line_No;
@@ -98,13 +98,13 @@ package body Get_Line is
   procedure Read_Next_Line is
   begin
     Parsed := False;
-    if not F.Is_Open then
+    if not File.Is_Open then
       raise Status_Error;
     end if;
 
     loop
       -- Get line from file, may raise End_Error
-      Buff := F.Get;
+      Buff := File.Get;
       if Buff.Is_Null then
         raise End_Error;
       end if;
@@ -148,7 +148,7 @@ package body Get_Line is
   -- Get the whole line (not parsed)
   procedure Get_Whole_Line (Line : in out Line_Txt) is
   begin
-    if not F.Is_Open then
+    if not File.Is_Open then
       raise Status_Error;
     end if;
     Line := Current_Whole_Line;
@@ -168,7 +168,7 @@ package body Get_Line is
   -- Get the first significant word of the line (not parsed)
   function Get_First_Word return String is
   begin
-    if not F.Is_Open then
+    if not File.Is_Open then
       raise Status_Error;
     end if;
     return First_Word.Image;
@@ -201,7 +201,7 @@ package body Get_Line is
   -- Number of words in currently loaded line
   function Get_Word_Number return Word_Count is
   begin
-    if not F.Is_Open then
+    if not File.Is_Open then
       raise Status_Error;
     end if;
     Parse_Words;
@@ -211,7 +211,7 @@ package body Get_Line is
   -- Words of the currently loaded line
   function Get_Words return Line_Array is
   begin
-    if not F.Is_Open then
+    if not File.Is_Open then
       raise Status_Error;
     end if;
     Parse_Words;
@@ -220,7 +220,7 @@ package body Get_Line is
 
   procedure Get_Words (Line : in out As.U.Utils.Asu_Ua.Unbounded_Array) is
   begin
-   if not F.Is_Open then
+   if not File.Is_Open then
       raise Status_Error;
     end if;
     Parse_Words;
