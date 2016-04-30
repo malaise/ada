@@ -29,7 +29,7 @@ package body File is
       My_Get_Line.Get_Words (Line);
     end Read_Next_Significant_Line;
 
-    use My_Math;
+    use type My_Math.Real;
   begin
     -- Open file
     begin
@@ -141,7 +141,7 @@ package body File is
       for I in 1 .. Dim loop
         for J in 1 .. Dim loop
           Loc_Mattrix(I, J) := Types.Cell_Range(
-             My_Math.Round (My_Math.Real((Input_Mattrix(I).all(J))) * 100.0));
+             My_Math.Round (My_Math.Real(Input_Mattrix(I).all(J)) * 100.0));
         end loop;
       end loop;
 

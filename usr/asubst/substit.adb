@@ -385,10 +385,9 @@ package body Substit is
     Nb_Subst := 0;
     Nb_Match := 0;
     Loc_Subst := 0;
-    loop
-      -- Done when file is already put in List mode
-      --   or when the amount of lines cannot be read
-      exit when Done_File or else not Read;
+    -- Done when file is already put in List mode
+    --   or when the amount of lines cannot be read
+    while not Done_File and then Read loop
       -- If grep is iterative with a replace and got something,
       --  then append a line feed
       if Grep and then Is_Iterative and then Loc_Subst /= 0

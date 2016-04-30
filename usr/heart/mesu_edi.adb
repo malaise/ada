@@ -145,7 +145,7 @@ package body Mesu_Edi is
 
     Ok : Boolean;
 
-    use Pers_Def;
+    use type Pers_Def.Bpm_Range;
 
     -- Encode TZ afpx fields from Person
     procedure Encode_Tz is
