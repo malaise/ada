@@ -1,6 +1,6 @@
 package body Hashed_List is
 
-  -- Check we are on in callback
+  -- Check if we are in callback
   procedure Check_Callback (List : in out List_Type) is
   begin
     if List.In_Cb then

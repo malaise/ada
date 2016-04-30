@@ -1,4 +1,4 @@
-with Chronos, Timers;
+with Timers;
 package Chronos.Passive_Timers is
 
   -- A passive timer is a kind of chorono that allows to know if a

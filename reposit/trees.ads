@@ -6,8 +6,9 @@
 --  some brothers (0 to N)
 --  one father.
 -- Root has no brother and no father
-with Ada.Finalization;
-with Unlimited_Pool, Magic_Numbers, Trilean;
+private with Ada.Finalization;
+private with Unlimited_Pool, Magic_Numbers;
+with Trilean;
 package Trees is
 
   -- Common definitions for all trees

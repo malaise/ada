@@ -1,7 +1,7 @@
 -- This hash package does not store the user's data but an access to it.
 -- The user needs to associate a unique access to each data
 --  (index in an array, access type...)
-with Ada.Finalization;
+private with Ada.Finalization;
 with Long_Longs, Hash_Function;
 package Hashing is
   -- Maxmum size of the primary hash table (16#FFFFFF# = 16_777_215)

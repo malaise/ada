@@ -205,12 +205,15 @@ private
     In_Cb : Boolean := False;
   end record;
 
-  -- For children
+  -- For children:
+  -- Search in hashing the (first or next) element matching criteria,
+  --  returns null if not found
   procedure Locate (List      : in out List_Type;
                     Crit      : in Element_Type;
                     Reset     : in Boolean;
                     Element   : out Element_Access;
                     Direction : in Direction_List := Forward);
+  -- Check if we are in callback
   procedure Check_Callback (List : in out List_Type);
 
 end Hashed_List;

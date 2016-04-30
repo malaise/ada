@@ -13,7 +13,7 @@ package Address_Ops is
   -- Raises Constraint_Error if Addr1 < Addr2
   function "-" (Addr1, Addr2 : System.Address) return Long_Longs.Llu_Natural;
 
-  -- Image of an address
+  -- Image of an address (ex: "16#6F3C#")
   function Image (Addr : System.Address) return String;
 
 end Address_Ops;
