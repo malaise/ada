@@ -13,6 +13,8 @@ package Field.Operations is
 
    procedure Step (Cell : in Cell_Location); -- Step on a cell
 
+   procedure Restore (Cell : in Cell_Location); -- Restore a cell status
+
    type Game_State_ID is (In_Progress, Won, Lost);
 
    function Game_State return Game_State_ID;

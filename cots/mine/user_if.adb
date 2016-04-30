@@ -226,6 +226,7 @@ package body User_IF is
       if not Restarting then
          if Field.Operations.Game_State /= Field.Operations.In_Progress then
             Show_Game_Over;
+            Field.Operations.Restore (Cell => (Row => Row, Column => Column) );
          else
             Field.Operations.Step (Cell => (Row => Row, Column => Column) );
          end if;

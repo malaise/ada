@@ -346,6 +346,34 @@ package body Field.Operations is
       end if;
    end Step;
 
+   -- Restore the cell activity (when end of game)
+   -- Stepped_On are inactive
+   procedure Restore (Cell : in Cell_Location) is
+     Info : constant Cell_Info := Mine_Field (Cell.Row, Cell.Column);
+   begin
+      case Info.State is
+          when Marked =>
+             -- Cell is marked
+             User_IF.Display_Mark (Cell);
+          when Stepped_On =>
+              if Info.Mine then
+                 -- Cell is a stepped-on mine
+                 User_IF.Display_Mine (Cell);
+              else
+                 -- Cell is clear and stepped-on
+                 User_IF.Display_Count (Info.Count, True, Cell);
+              end if;
+          when Normal =>
+              if Info.Count in Valid_Count then
+                  -- Not stepped and count is known
+                  User_IF.Display_Count (Info.Count, False, Cell);
+              else
+                  -- Not stepped and count is unknown
+                  User_IF.Display_Blank (Cell);
+              end if;
+      end case;
+   end Restore;
+
    -- The game is Lost when a mine has been stepped on, Won when all mines have been marked & all other cells stepped on,
    -- and In_Progress otherwise
    function Game_State return Game_State_ID is
