@@ -6,7 +6,7 @@ package body Types is
   -- Conversions
   function Id_Of (L : Letter) return Lid is
   begin
-    return Lid (Letter'Pos(L) - Offset); --## rule line off Conversion
+    return Lid (Letter'Pos(L) - Offset);
   end Id_Of;
   function Id_Of (P : Positive) return Lid is
   begin
