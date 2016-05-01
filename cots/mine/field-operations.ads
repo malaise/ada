@@ -9,6 +9,8 @@
 package Field.Operations is
    procedure Reset; -- Reset the mine field to its initial condition
 
+   procedure Init; -- Init the mine field before a step/mark
+
    procedure Mark (Cell : in Cell_Location); -- Mark a cell as having a mine, or unmark a marked cell
 
    procedure Step (Cell : in Cell_Location); -- Step on a cell
