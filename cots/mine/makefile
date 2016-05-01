@@ -4,11 +4,9 @@ include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 ADAVIEW := $(HOME)/ada/cots/pragmarc
 ADAWARN := false
 
-include $(TEMPLATES)/units.mk
-NOTUNITS := $(filter-out mine_detector,$(UNITS))
-
 EXES := mine_detector
 
+OPTIMIZED := mine_detector field field-operations user_if
 GARGS := `gtkada-config`
 
 include $(TEMPLATES)/ada.mk
