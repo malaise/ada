@@ -52,9 +52,15 @@ package body Commit is
             else Trilean.Other);
   end Staged;
 
+  -- Is E unknown
+  function Is_Unknown (E : Git_If.File_Entry_Rec) return Boolean is
+  begin
+    return E.S2 = '?' and then E.S3 = '?';
+  end Is_Unknown;
+
   -- Separator File entry and Afpx line
   Sep_File : constant Git_If.File_Entry_Rec
-           := (Kind => '-', S2 => '-', others => <>);
+           := (Kind => '-', S2 | S3 => '-', others => <>);
   Sep : constant Afpx.Line_Rec := (Len => Afpx.Line_Len_Range'Last,
                                    Str => (others => Character'Pos('-')) );
   function Is_Sep return Boolean is
@@ -84,6 +90,7 @@ package body Commit is
           & Ada.Exceptions.Exception_Name (Error)
           & " raised in commit on " & From.Name.Image);
   end Set;
+
   -- Init Afpx list
   procedure Init_List is new Afpx.Utils.Init_List (
     Git_If.File_Entry_Rec, Git_If.File_Mng, Set, False);
@@ -330,6 +337,7 @@ package body Commit is
       Current_Change : Git_If.File_Entry_Rec;
       Moved : Boolean;
       To_Commit : Boolean;
+      All_Unknown : Boolean;
       Pos : Natural := 0;
       Prev_Changes : Git_If.File_List;
       Changed : Boolean;
@@ -396,8 +404,10 @@ package body Commit is
         end if;
       end if;
 
-      -- Check if some changes are staged
+      -- Check if some changes are staged (To_Commit)
+      -- Check if there are only unknown files (All_Unknown)
       To_Commit := False;
+      All_Unknown := True;
       if not Changes.Is_Empty then
         Pos := Changes.Get_Position;
         -- See if at least one entry to commit
@@ -406,6 +416,10 @@ package body Commit is
           Changes.Read (Current_Change, Moved => Moved);
           if Is_Staged (Current_Change.S2) then
             To_Commit := True;
+          end if;
+          if not Is_Unknown (Current_Change)
+          and then Current_Change /= Sep_File then
+            All_Unknown := False;
           end if;
           exit when not Moved;
         end loop;
@@ -424,9 +438,10 @@ package body Commit is
       -- Allow commit if some stages and not forbidden
       Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Commit,
                                 not To_Commit or else Allow_Commit = Forbid);
-      -- Forbid Done if Commit required and still some files to stage or commit
+      -- Forbid Done if Commit required and still some known files
+      --  (to stage or commit)
       Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Back,
-          Allow_Commit = Require and then not Afpx.Line_List.Is_Empty);
+          Allow_Commit = Require and then not All_Unknown);
     end Reread;
 
     -- Edit

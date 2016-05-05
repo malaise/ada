@@ -8,7 +8,7 @@ package Commit is
   -- Handle a commit of modifications within a loop (of cherry-pick)
   -- Show button Quit instead of Push
   -- Allow modifications of content or only of comment
-  -- Forbid, allow commit or required it (no more staged)
+  -- Forbid, allow commit or require it (no more staged)
   type Commit_Allow_List is (Forbid, Allow, Require);
   -- Init comment from the one of the provided Hash
   function Handle (Root : String;
