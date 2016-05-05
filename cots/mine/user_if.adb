@@ -262,7 +262,6 @@ package body User_IF is
    begin -- Button_Press
       case Number is
       when 1 =>
-         Field.Operations.Init;
          return False;
       when 2=>
          null;
@@ -270,7 +269,6 @@ package body User_IF is
          if Field.Operations.Game_State /= Field.Operations.In_Progress then
             Show_Game_Over;
          else
-            Field.Operations.Init;
             Field.Operations.Mark (Cell => (Row => Row, Column => Column) );
          end if;
       when 4 .. 5 =>

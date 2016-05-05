@@ -21,7 +21,6 @@ package body Field.Operations is
       Mine    : Boolean     := False;
       Count   : Count_Value := Count_Value'First;
       Stepped : Boolean     := False;
-      Checked : Boolean     := False;
    end record;
 
    type Field_Set is array (Row_Id, Column_Id) of Cell_Info; -- A mine field
@@ -42,10 +41,6 @@ package body Field.Operations is
          return; -- Can't count a marked cell
       end if;
 
-      if Mine_Field (Cell.Row, Cell.Column).Checked then
-         return; -- Cell already checked
-      end if;
-
       if Mine_Field (Cell.Row, Cell.Column).Count not in Valid_Count then -- Cell has not been counted
          Mine_Field (Cell.Row, Cell.Column).Count := 0;
 
@@ -56,13 +51,13 @@ package body Field.Operations is
                end if;
             end loop Count_Columns;
          end loop Count_Rows;
-      end if;
 
-      User_IF.Display_Count (Count   => Mine_Field (Cell.Row, Cell.Column).Count,
-                             Stepped => Mine_Field (Cell.Row, Cell.Column).State = Stepped_On,
-                             Cell    => Cell
-                            )
-      ;
+         User_IF.Display_Count (Count   => Mine_Field (Cell.Row, Cell.Column).Count,
+                                Stepped => Mine_Field (Cell.Row, Cell.Column).State = Stepped_On,
+                                Cell    => Cell
+                               )
+         ;
+      end if;
    end Detect;
 
    procedure Set_Mine_Count (New_Mine_Count : in Natural) is
@@ -86,8 +81,7 @@ package body Field.Operations is
       Mine_Field := Field_Set'(others => (others => Cell_Info'(State   => Normal,
                                                                Mine    => False,
                                                                Count   => Count_Value'First,
-                                                               Stepped => False,
-                                                               Checked => False) ) );
+                                                               Stepped => False) ) );
       To_Mark := Num_Mines;
       Step_Count := 0;
 
@@ -139,18 +133,6 @@ package body Field.Operations is
 
       User_IF.Display_To_Go (To_Go => To_Mark);
    end Reset;
-
-   -- Init the mine field before a step/mark
-   procedure Init is
-     -- null;
-   begin
-      -- Reset all cells as not checked
-      Reset_Rows : for Row in Mine_Field'range (1) loop
-          Reset_Columns : for Column in Mine_Field'range (2) loop
-              Mine_Field (Row, Column).Checked := False;
-          end loop Reset_Columns;
-      end loop Reset_Rows;
-   end Init;
 
    function Stepped_On_Neighbor (Cell : Cell_Location) return Boolean is -- See if a cell has a stepped-on neighbor
       -- null;
@@ -331,8 +313,6 @@ package body Field.Operations is
                                   )
             ;
          end if;
-
-         Mine_Field (Cell.Row, Cell.Column).Checked := True;
 
          Auto_Step (Cell => Cell);
 
