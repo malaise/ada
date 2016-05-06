@@ -1,22 +1,23 @@
 -- PragmAda Reusable Component (PragmARC)
--- Copyright (C) 2000 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2013 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- Minimum and maximum functions for non-scalar values for which "<" is meaningful
 --
 -- History:
+-- 2013 Mar 01     J. Carter          V1.0--Initial Ada-07 version
+------------------------------------------------------------------
 -- 2000 May 01     J. Carter          V1.0--Initial release
 --
 generic -- PragmARC.Min_Max
-    type Element (<>) is limited private;
+    type Element (<>) is private;
 
-    with procedure Assign (To : out Element; From : in Element) is <>;
     with function "<" (Left : Element; Right : Element) return Boolean is <>;
 package PragmARC.Min_Max is
     pragma Pure;
 
-    procedure Min (Left, Right : Element; Item : out Element);
-    procedure Max (Left, Right : Element; Item : out Element);
+    function Min (Left : Element; Right : Element) return Element;
+    function Max (Left : Element; Right : Element) return Element;
 end PragmARC.Min_Max;
 --
 -- This is free software; you can redistribute it and/or modify it under

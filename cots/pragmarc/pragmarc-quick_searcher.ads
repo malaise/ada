@@ -3,7 +3,7 @@
 -- **************************************************************************
 --
 -- Fast string search routine; faster than Boyer-Moore for most reasonable search patterns
--- From COMMUNICATIONS OF THE ACM, 1990 Aug
+-- From Sunday, David, "A very fast substring search algorithm", COMMUNICATIONS OF THE ACM, 1990 Aug
 --
 -- History:
 -- 2000 May 01     J. Carter          V1.0--Initial release
@@ -39,4 +39,4 @@ end PragmARC.Quick_Searcher;
 -- this unit does not by itself cause the resulting executable to be
 -- covered by the GNU General Public License. This exception does not
 -- however invalidate any other reasons why the executable file might be
--- covered by the GNU Public License.
+-- covered by the GNU Public License. 

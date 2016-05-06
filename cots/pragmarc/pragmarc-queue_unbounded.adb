@@ -1,8 +1,10 @@
 -- PragmAda Reusable Component (PragmARC)
--- Copyright (C) 2002 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2013 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- History:
+-- 2013 Mar 01     J. Carter          V1.0--Initial Ada-07 version
+---------------------------------------------------------------------------------------------------
 -- 2002 Oct 01     J. Carter          V1.4--Added Context to Iterate; use mode out to allow scalars
 -- 2001 Jun 01     J. Carter          V1.3--Added Peek
 -- 2001 May 01     J. Carter          V1.2--Improved time complexity of Is_Empty
@@ -41,16 +43,16 @@ package body PragmARC.Queue_Unbounded is
          return Implementation.Length (Queue);
       end Length;
 
-      procedure Peek (Item : out Element) is
+      function Peek return Element is
          -- null;
       begin -- Peek
-         Implementation.Peek (Queue, Item);
+         return Implementation.Peek (Queue);
       end Peek;
 
-      procedure Iterate (Action : in Action_Ptr; Context : in out Context_Data'Class) is
-         procedure Local is new Implementation.Iterate (Context_Data => Context_Data'Class, Action => Action.all);
+      procedure Iterate (Action : access procedure (Item : in out Element; Continue : out Boolean) ) is
+         procedure Local is new Implementation.Iterate (Action => Action.all);
       begin -- Iterate
-         Local (Over => Queue, Context => Context);
+         Local (Over => Queue);
       end Iterate;
    end Handle;
 end PragmARC.Queue_Unbounded;

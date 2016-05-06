@@ -1,8 +1,12 @@
 -- PragmAda Reusable Component (PragmARC)
--- Copyright (C) 2002 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2013 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- History:
+-- 2013 Oct 01     J. Carter          V1.1--Added exception handler to Finalize
+-- 2013 Mar 01     J. Carter          V1.0--Initial Ada-07 version
+---------------------------------------------------------------------------------
+-- 2011 Jul 01     J. Carter          V1.4--Finalize may be called multiple times
 -- 2002 Oct 01     J. Carter          V1.3--Added Context to Iterate; use mode out to allow scalars
 -- 2002 May 01     J. Carter          V1.2--Added Assign
 -- 2001 May 01     J. Carter          V1.1--Added Is_Empty; eliminated some duplicated code
@@ -42,7 +46,6 @@ package body PragmARC.List_Unbounded_Unprotected is
    procedure Assign (To : out Handle; From : in Handle) is
       From_Pos : Position := First (From);
       New_Pos  : Position;
-      Item : Element;
    begin -- Assign
       if To.Off_List = From.Off_List then -- These are the same list
          return;
@@ -53,8 +56,7 @@ package body PragmARC.List_Unbounded_Unprotected is
       Copy : loop
          exit Copy when From_Pos = Off_List (From);
 
-         Get (From, From_Pos, Item);
-         Append (Into => To, Item => Item, After => Last (To), New_Pos => New_Pos);
+         Append (Into => To, Item => Get (From, From_Pos), After => Last (To), New_Pos => New_Pos);
          From_Pos := Next (From_Pos, From);
       end loop Copy;
    end Assign;
@@ -146,7 +148,7 @@ package body PragmARC.List_Unbounded_Unprotected is
       Check_Valid (List => Into, Pos => Before);
 
       Temp := Get;
-      Assign (To => Temp.Value, From => Item);
+      Temp.Value := Item;
       Temp.List_Id := Into.Off_List;
       Temp.Next := Before.Ptr; -- Link node into list
       Temp.Prev := Before.Ptr.Prev;
@@ -161,7 +163,7 @@ package body PragmARC.List_Unbounded_Unprotected is
       Check_Valid (List => Into, Pos => After);
 
       Temp := Get;
-      Assign (To => Temp.Value, From => Item);
+      Temp.Value := Item;
       Temp.List_Id := Into.Off_List;
       Temp.Next := After.Ptr.Next; -- Link node into list
       Temp.Prev := After.Ptr;
@@ -198,12 +200,12 @@ package body PragmARC.List_Unbounded_Unprotected is
       Pos := Position'(List_Id => null, Ptr => null); -- Make Pos invalid
    end Delete;
 
-   procedure Get (From : Handle; Pos : Position; Item : out Element) is
+   function Get (From : Handle; Pos : Position) return Element is
       -- null;
    begin -- Get
       Check_Valid_And_Not_Off (List => From, Pos => Pos);
 
-      Assign (Item, Pos.Ptr.Value);
+      return Pos.Ptr.Value;
    end Get;
 
    procedure Put (Into : in out Handle; Pos : in Position; Item : in Element) is
@@ -211,7 +213,7 @@ package body PragmARC.List_Unbounded_Unprotected is
    begin -- Put
       Check_Valid_And_Not_Off (List => Into, Pos => Pos);
 
-      Assign (To => Pos.Ptr.Value, From => Item);
+      Pos.Ptr.Value := Item;
    end Put;
 
    function Is_Empty (List : Handle) return Boolean is
@@ -237,11 +239,16 @@ package body PragmARC.List_Unbounded_Unprotected is
    procedure Finalize (Object : in out Handle) is
       -- null;
    begin -- Finalize
-      Clear (List => Object);
-      Dispose (X => Object.Off_List);
+      if Object.Off_List /= null then
+         Clear (List => Object);
+         Dispose (X => Object.Off_List);
+      end if;
+   exception -- Finalize
+   when others =>
+      null;
    end Finalize;
 
-   procedure Iterate (Over : in out Handle; Context : in out Context_Data) is
+   procedure Iterate (Over : in out Handle) is
       Pos      : Position := First (Over);
       Continue : Boolean;
       Item     : Element;
@@ -249,8 +256,8 @@ package body PragmARC.List_Unbounded_Unprotected is
       All_Nodes : loop
          exit All_Nodes when Pos = Off_List (Over);
 
-         Get (Over, Pos, Item);
-         Action (Item => Item, Context => Context, Pos => Pos, Continue => Continue);
+         Item := Get (Over, Pos);
+         Action (Item => Item, Pos => Pos, Continue => Continue);
          Put (Into => Over, Pos => Pos, Item => Item);
 
          exit All_Nodes when not Continue;
@@ -270,7 +277,7 @@ package body PragmARC.List_Unbounded_Unprotected is
       Subset_Length : Positive := 1;
       Left          : Link;
       Right         : Link;
-      Itemt          : Link;
+      Rest          : Link;
 
       procedure Unlink (Ptr : in Link) is -- Unlink merged node from its subset
          -- null;
@@ -320,15 +327,15 @@ package body PragmARC.List_Unbounded_Unprotected is
                Right.Prev.Next := null;
             end if;
 
-            Itemt := Right; -- Find end of right subset and beginning of rest of list
-            Find_Itemt : for I in 1 .. Subset_Length loop
-               exit Find_Itemt when Itemt = null;
+            Rest := Right; -- Find end of right subset and beginning of rest of list
+            Find_Rest : for I in 1 .. Subset_Length loop
+               exit Find_Rest when Rest = null;
 
-               Itemt := Itemt.Next;
-            end loop Find_Itemt;
+               Rest := Rest.Next;
+            end loop Find_Rest;
 
-            if Itemt /= null then -- Unlink right subset from rest of list
-               Itemt.Prev.Next := null;
+            if Rest /= null then -- Unlink right subset from rest of list
+               Rest.Prev.Next := null;
             end if;
 
             None_Empty : loop -- Merge the two subsets, Left & Right, until one becomes empty
@@ -352,7 +359,7 @@ package body PragmARC.List_Unbounded_Unprotected is
             Empty (Ptr => Left,  Temp => Temp); -- Add any remaining nodes in left  subset
             Empty (Ptr => Right, Temp => Temp); -- Add any remaining nodes in right subset
 
-            Left := Itemt; -- Repeat for rest of list
+            Left := Rest; -- Repeat for rest of list
          end loop All_Subsets;
 
          Subset_Length := 2 * Subset_Length;

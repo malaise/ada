@@ -1,16 +1,21 @@
 -- PragmAda Reusable Component (PragmARC)
--- Copyright (C) 2000 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2016 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- A Recursive Error Minimization (REM) neural network
 -- Easy to use, fast, & robust
 -- Need only specify Num_Input_Nodes, Num_Hidden_Nodes, Num_Output_Nodes, & Num_Patterns
 -- If Num_Patterns is not easily determined, set it & R to 1
--- Set New_Random_Weights to False & Num_Patterns to 1 to use a previously trained network
--- Set Weight_File_Name as desired
+-- Set Num_Patterns to 1 to use a previously trained network
 -- Default values for all other parameters should be satisfactory
 --
+-- Note: with GNAT, a unit that instantiates REM_NN_Wrapper.REM_NN should not use an optimization level above -O1
+--
 -- History:
+-- 2016 Mar 15     J. Carter          V2.2--Added Random_Weights
+-- 2015 Nov 01     J. Carter          V2.1--Removed unused generic parameter
+-- 2014 Jul 01     J. Carter          V2.0--Improved interface
+-- 2014 Jun 01     J. Carter          V1.1--Added concurrency and GNAT warning
 -- 2000 May 01     J. Carter          V1.0--Initial release
 --
 with System;
@@ -18,7 +23,7 @@ package PragmARC.REM_NN_Wrapper is
    type Real is digits System.Max_Digits; -- Inputs and outputs of the network
    subtype Natural_Real  is Real range 0.0              .. Real'Safe_Last;
    subtype Positive_Real is Real range Real'Model_Small .. Real'Safe_Last;
-   
+
    type Node_Set is array (Positive range <>) of Real;
 
    generic -- REM_NN
@@ -28,7 +33,6 @@ package PragmARC.REM_NN_Wrapper is
 
       Num_Patterns : Positive; -- # of different desired output sets to save & transition
 
-      New_Random_Weights          : Boolean := True; -- False to reuse weights for testing, use, etc.
       Input_To_Output_Connections : Boolean := True; -- Must be True if Num_Hidden_Nodes = 0
       Thinning_Active             : Boolean := True;
 
@@ -53,33 +57,72 @@ package PragmARC.REM_NN_Wrapper is
       Delta_Ec : Natural_Real := 0.001; -- A connection will be reactivated when its G value > Ec + Delta_Ec
 
       -- Random ranges: Random values will be selected from the range -X .. X, where X is one of:
-      Random_Weight_Range : Natural_Real := 0.1; -- Initial values for weights
       Random_E_Star_Range : Natural_Real := 0.001; -- If > 0, the network will add random noise to E*
-      Random_H_Star_Range : Natural_Real := 0.001; -- Ditto
-
-      -- File name: store, & possibly read, network values from this file
-      Weight_File_Name : String := "rem.wgt";
+      Random_H_Star_Range : Natural_Real := 0.001; -- Ditto for H*
 
       with procedure Get_Input (Pattern : in Positive; Input : out Node_Set; Desired : out Node_Set);
       -- Gets an input pattern & associated desired output pattern for this pattern #
-      -- Called during initialization & by Respond
-      -- IMPORTANT:
-      -- Since Get_Input is called during the initialization of this package, it must have been elaborated before this package
-      -- is instantiated
-      -- In practical terms, this means the procedure body of the actual procedure associated with Get_Input must occur before
-      -- the instantiation of this package
+      -- Called by Prepare_For_Training and Respond
    package REM_NN is
-      subtype Output_Id is Positive range 1 .. Num_Output_Nodes;
-      subtype Output_Set is Node_Set (Output_Id);
+      subtype Input_ID  is Positive range 1 .. Num_Input_Nodes;
+      subtype Hidden_ID is Positive range 1 .. Num_Hidden_Nodes;
+      subtype Output_ID is Positive range 1 .. Num_Output_Nodes;
+      subtype Output_Set is Node_Set (Output_ID);
 
-      procedure Respond (Pattern : in Positive; Output : out Output_Set);
+      Deriv_Lim : constant := 1.0E-4;
+
+      type Weight_Group is record
+         Weight     : Real    := 0.0;
+         Active     : Boolean := True;
+         G          : Real    := 2.0 * Ec;
+         Delta_W_Rm : Real    := 0.0;
+         Deriv_Rm   : Real    := Deriv_Lim;
+      end record;
+
+      type IH_Weight_Set is array (Input_ID, Hidden_ID) of Weight_Group;
+      type IO_Weight_Set is array (Input_ID, Output_ID) of Weight_Group;
+      type Hidden_Bias_Set is array (Hidden_ID) of Weight_Group;
+      type HO_Weight_Set is array (Hidden_ID, Output_ID) of Weight_Group;
+      type Output_Bias_Set is array (Output_ID) of Weight_Group;
+
+      type Weight_Info is record
+         IH_Weight   : IH_Weight_Set;
+         IO_Weight   : IO_Weight_Set;
+         Hidden_Bias : Hidden_Bias_Set;
+         HO_Weight   : HO_Weight_Set;
+         Output_Bias : Output_Bias_Set;
+      end record;
+
+      procedure Set_Weights (Weight : in Weight_Info);
+      -- Sets the network's weights to Weight. Should be called before using Prepare_For_Training, Respond, or Train
+
+      procedure Random_Weights (Max : in Positive_Real := 0.1);
+      -- Sets the network's weights to random values in -Max .. Max
+
+      procedure Read (File_Name : in String; Weight : out Weight_Info);
+      -- Reads Weight, written by this package, from File_Name
+
+      procedure Read (File_Name : in String);
+      -- Equivalent to passing the values obtained by calling Read to Set_Weights
+
+      procedure Prepare_For_Training;
+      -- If Num_Patterns > 1 or R > 1.0, this should be called once for a new set of weights before calling Train
+      -- Otherwise, this may be skipped
+
+      procedure Get_Weights (Weight : out Weight_Info);
+      -- Returns the current network weights in Weight
+
+      procedure Write (File_Name : in String; Weight : in Weight_Info);
+      -- Writes Weight to File_Name
+
+      procedure Write (File_Name : in String);
+      -- Equivalent to passing the values obtained by calling Get_Weights to Write
+
+      procedure Respond (Pattern : in Positive; Output : out Output_Set; Num_Tasks : in Positive := 1);
       -- Calls Get_Input for this pattern #, and propagates the input through the network to obtain the network's response
 
-      procedure Train;
+      procedure Train (Num_Tasks : in Positive := 1);
       -- Propagates error & derivative backward through the network, & updates the network's weights
-
-      procedure Save_Weights;
-      -- Saves the network's values in the files with supplied names
 
       Invalid_Architecture : exception;
       -- This package can be initialized with Num_Hidden_Nodes = 0 and Input_To_Output_Connections = False

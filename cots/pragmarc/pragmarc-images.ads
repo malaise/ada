@@ -25,13 +25,13 @@ package PragmARC.Images is
       type Number is mod <>;
    function Modular_Image (Value : Number; Width : Field := 0; Zero_Filled : Boolean := False; Base : Number_Base := 10)
    return String;
-   
+
    generic -- Float_Image
       type Number is digits <>;
    function Float_Image
       (Value : Number; Fore : Field := 2; Aft : Field := Number'digits - 1; Exp : Field := 3; Zero_Filled : Boolean := False)
    return String;
-   -- Returns an image of Value with at least Fore digits before the decimal point, padded with blanks or zeroes, accoreding
+   -- Returns an image of Value with at least Fore digits before the decimal point, padded with blanks or zeroes, according
    -- to Zero_Filled. Fore, Aft, and Exp have the same meanings as in Ada.Text_IO.Float_IO.
 end PragmARC.Images;
 --

@@ -1,8 +1,10 @@
 -- PragmAda Reusable Component (PragmARC)
--- Copyright (C) 2005 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2013 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- History:
+-- 2013 Oct 01     J. Carter          V1.2--Added exception handler to Finalize
+-- 2011 Jul 01     J. Carter          V1.1--Finalize may be called multiple times
 -- 2005 Jul 01     J. Carter          V1.0--Initial release
 --
 with Ada.Unchecked_Deallocation;
@@ -11,7 +13,7 @@ package body PragmARC.Safe_Pointers is
       Data  : Object;
       Count : Natural := 1;
    end record;
-   
+
    function "=" (Left : Safe_Pointer; Right : Safe_Pointer) return Boolean is
       -- null;
    begin -- "="
@@ -45,11 +47,16 @@ package body PragmARC.Safe_Pointers is
          if Item.Ptr.Count > 0 then
             Item.Ptr.Count := Item.Ptr.Count - 1;
          end if;
-         
+
          if Item.Ptr.Count = 0 then
             Free (Item.Ptr);
          end if;
+
+         Item.Ptr := null;
       end if;
+   exception -- Finalize
+   when others =>
+      null;
    end Finalize;
 
    function Get (Pointer : Safe_Pointer) return Object is

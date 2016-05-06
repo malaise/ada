@@ -1,8 +1,10 @@
 -- PragmAda Reusable Component (PragmARC)
--- Copyright (C) 2002 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2013 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- History:
+-- 2013 Mar 01     J. Carter          V1.0--Initial Ada-07 version
+---------------------------------------------------------------------------------------------------
 -- 2002 Oct 01     J. Carter          V1.3--Added Context to Iterate; use mode out to allow scalars
 -- 2002 May 01     J. Carter          V1.2--Added Assign
 -- 2001 May 01     J. Carter          V1.1--Improved time complexity of Empty
@@ -41,14 +43,13 @@ package body PragmARC.Bag_Unbounded_Unprotected is
 
    function Find (Key : Element; Bag : Handle) return Search_Result is
       Pos : Implementation.Position := Implementation.First (Bag.List);
-      Item : Element;
+
       use type Implementation.Position;
    begin -- Find
       Search : loop
          exit Search when Pos = Implementation.Off_List (Bag.List);
 
-         Implementation.Get (Bag.List, Pos, Item);
-         if Key = Item then
+         if Key = Implementation.Get (Bag.List, Pos) then
             return (Found => True, Pos => Pos);
          end if;
 
@@ -74,13 +75,11 @@ package body PragmARC.Bag_Unbounded_Unprotected is
       end if;
    end Update;
 
-   function Find (Key : Element; Bag : Handle) return Find_result is
+   function Find (Key : Element; Bag : Handle) return Find_Result is
       Temp : constant Search_Result := Find (Key, Bag);
-      Item : Element;
    begin -- Find
       if Temp.Found then
-         Implementation.Get (Bag.List, Temp.Pos, Item);
-         return (Found => True, Item => Item);
+         return (Found => True, Item => Implementation.Get (Bag.List, Temp.Pos) );
       else
          return (Found => False);
       end if;
@@ -98,18 +97,16 @@ package body PragmARC.Bag_Unbounded_Unprotected is
       return Implementation.Length (Bag.List);
    end Size;
 
-   procedure Iterate (Over : in out Handle; Context : in out Context_Data) is
-      procedure Action
-         (Item : in out Element; Context : in out Context_Data; Pos : in Implementation.Position; Continue : out Boolean)
-      is
+   procedure Iterate (Over : in out Handle) is
+      procedure Action (Item : in out Element; Pos : in Implementation.Position; Continue : out Boolean) is
          -- null;
       begin -- Action
-         Action (Item => Item, Context => Context, Continue => Continue);
+         Action (Item => Item, Continue => Continue);
       end Action;
 
-      procedure Iterate is new Implementation.Iterate (Context_Data => Context_Data, Action => Action);
+      procedure Iterate is new Implementation.Iterate (Action => Action);
    begin -- Iterate
-      Iterate (Over => Over.List, Context => Context);
+      Iterate (Over => Over.List);
    end Iterate;
 end PragmARC.Bag_Unbounded_Unprotected;
 --

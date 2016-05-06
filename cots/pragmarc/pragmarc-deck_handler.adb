@@ -1,13 +1,14 @@
 -- PragmAda Reusable Component (PragmARC)
--- Copyright (C) 2000 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2010 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- History:
+-- 2010 Oct 01     J. Carter          V1.2--Improved Shuffle
 -- 2000 May 01     J. Carter          V1.0--Initial release
 --
-with Ada.Numerics.Discrete_Random;
+with PragmARC.Universal_Random;
+with System;
 
-use Ada;
 package body PragmARC.Deck_Handler is
    function Is_Empty (Item : Handle) return Boolean is
       -- null;
@@ -28,19 +29,18 @@ package body PragmARC.Deck_Handler is
    end Size;
 
    procedure Shuffle (Item : in out Handle) is
-      subtype Placeholder is Positive range 1 .. Item.Count;
+      type Big is digits System.Max_Digits;
 
-      package Random is new Numerics.Discrete_Random (Placeholder);
+      package Random is new Universal_Random (Supplied_Real => Big);
 
       Temp  : Card;
       Index : Positive;
-      Gen   : Random.Generator;
    begin -- Shuffle
-      Random.Reset (Gen);
+      Random.Randomize;
 
-      Permute_All : for I in 1 .. Item.Count loop
+      Permute_All : for I in 1 .. Item.Count - 1 loop
          Temp := Item.Value (I);
-         Index := Random.Random (Gen);
+         Index := Random.Random_Int (I, Item.Count);
          Item.Value (I) := Item.Value (Index);
          Item.Value (Index) := Temp;
       end loop Permute_All;
@@ -62,6 +62,24 @@ package body PragmARC.Deck_Handler is
       To.Count := To.Count + 1;
       To.Value (To.Count) := Item;
    end Add;
+
+   procedure Insert (Item : in Card; Into : in out Handle; Before : in Positive) is
+      -- null;
+   begin -- Insert
+      if Into.Count >= Into.Max_Cards then
+         raise Full;
+      end if;
+
+      if Before > Into.Count then
+         Add (Item => Item, To => Into);
+
+         return;
+      end if;
+
+      Into.Value (Before + 1 .. Into.Count + 1) := Into.Value (Before .. Into.Count);
+      Into.Value (Before) := Item;
+      Into.Count := Into.Count + 1;
+   end Insert;
 
    procedure Deal (From : in out Handle; To : out Card) is
       -- null;
