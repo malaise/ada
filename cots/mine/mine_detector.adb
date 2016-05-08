@@ -9,6 +9,7 @@ with User_IF;
 procedure Mine_Detector is
    -- null;
 begin -- Mine_Detector
+   User_If.Init;
    Gtk.Main.Main;
 end Mine_Detector;
 --

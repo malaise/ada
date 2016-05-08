@@ -8,6 +8,8 @@
 --
 with Field;
 package User_IF is
+   procedure Init;
+
    procedure Display_Count (Count    : in Field.Valid_Count;
                             Stepped  : in Boolean;
                             Cell     : in Field.Cell_Location);

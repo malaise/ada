@@ -270,7 +270,7 @@ extern void posix2pcre_regfree(regex_t *preg) {
 #ifdef PCRE2
 static char version[512];
 extern const char * pcre_version (void) {
-  sprintf (version, "%d.%d", PCRE2_MAJOR, PCRE2_MINOR);
+  (void) pcre2_config (PCRE2_CONFIG_VERSION, version);
   return version;
 }
 #endif /* PCRE2 */
