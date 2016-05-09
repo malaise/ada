@@ -3,7 +3,7 @@
 /* PCRE1: PCRE V7.9 and after, but before PCRE2 (before V10.00), we can use */
 /*   pcreposix and pcre_version                                             */
 /* PCRE2: PCRE2 (V10.00 and after) we use pcreposix but need to define      */
-/*   pcre_version                                                           */
+/*   pcre_version (that calls pcre2_config)                                 */
 
 #ifdef PCRE0
 /* Options */
