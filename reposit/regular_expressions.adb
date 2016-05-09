@@ -341,13 +341,18 @@ package body Regular_Expressions is
   end Match;
 
   function Error (Compiled : in Compiled_Pattern) return String is
+    Buffer : String (1 .. 80);
     Len : C_Types.Size_T;
   begin
+    -- Get message if it fits in Buffer
     Len := C_Regerror (Compiled.Error, Compiled.Comp_Addr,
-                       System.Null_Address, 0);
+                       Buffer'Address, 0);
     if Len <= 0 then
       return "";
+    elsif Len <= Buffer'Length then
+      return Str_Util.Strip (Buffer (1 .. Integer(Len) - 1));
     end if;
+    -- Now we known the needed length
     declare
       Str : String (1 .. Integer(Len));
     begin
