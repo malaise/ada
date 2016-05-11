@@ -248,23 +248,6 @@ extern void regfree(regex_t *preg) {
 }
 #endif /* PCRE0 */
 
-/* POSIX2PCRE API */
-extern int posix2pcre_regcomp(regex_t *preg, const char *pattern, int cflags) {
-  return regcomp(preg, pattern, cflags);
-}
-extern int posix2pcre_regexec(regex_t *preg, const char *string, size_t nmatch,
-            regmatch_t pmatch[], int eflags) {
-  return regexec(preg, string, nmatch, pmatch, eflags);
-}
-extern size_t posix2pcre_regerror(int errcode, const regex_t *preg, char *errbuf,
-                size_t errbuf_size) {
-  return regerror(errcode, preg, errbuf, errbuf_size);
-}
-extern void posix2pcre_regfree(regex_t *preg) {
-  regfree(preg);
-}
-
-
 /* Return current version, e.g. "10.10" */
 #ifdef PCRE2
 static char version[512];
@@ -272,6 +255,46 @@ extern const char * pcre_version (void) {
   (void) pcre2_config (PCRE2_CONFIG_VERSION, version);
   return version;
 }
+
+/*************************************************
+*      Perl-Compatible Regular Expressions       *
+*************************************************/
+
+/* PCRE2 is a library of functions to support regular expressions whose syntax
+and semantics are as close as possible to those of the Perl 5 language.
+
+                       Written by Philip Hazel
+     Original API code Copyright (c) 1997-2012 University of Cambridge
+         New API code Copyright (c) 2016 University of Cambridge
+
+-----------------------------------------------------------------------------
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+
+    * Neither the name of the University of Cambridge nor the names of its
+      contributors may be used to endorse or promote products derived from
+      this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+-----------------------------------------------------------------------------
+*/
 
 /* From pcre2_internal.h */
 #define COMPILE_ERROR_BASE 100
@@ -387,11 +410,17 @@ static const char *const pstring[] = {
   "match failed"                     /* NOMATCH    */
 };
 
+extern size_t pcreposix_regerror(int errcode, const regex_t *preg,
+                                 char *errbuf, size_t errbuf_size);
+extern void pcreposix_regfree(regex_t *preg);
+extern int pcreposix_regcomp(regex_t *preg, const char *pattern, int cflags);
+extern int pcreposix_regexec(regex_t *preg, const char *string, size_t nmatch,
+                             regmatch_t pmatch[], int eflags);
 /*************************************************
 *          Translate error code to string        *
 *************************************************/
-size_t regerror(int errcode, const regex_t *preg, char *errbuf,
-                size_t errbuf_size) {
+extern size_t pcreposix_regerror(int errcode, const regex_t *preg,
+                                 char *errbuf, size_t errbuf_size) {
   int used;
   const char *message;
 
@@ -411,7 +440,7 @@ size_t regerror(int errcode, const regex_t *preg, char *errbuf,
 /*************************************************
 *           Free store held by a regex           *
 *************************************************/
-void regfree(regex_t *preg) {
+extern void pcreposix_regfree(regex_t *preg) {
   pcre2_match_data_free(preg->re_match_data);
   pcre2_code_free(preg->re_pcre2_code);
 }
@@ -429,7 +458,7 @@ Returns:      0 on success
               various non-zero codes on failure
 */
 
-int regcomp(regex_t *preg, const char *pattern, int cflags) {
+extern int pcreposix_regcomp(regex_t *preg, const char *pattern, int cflags) {
   PCRE2_SIZE erroffset;
   int errorcode;
   int options = 0;
@@ -485,8 +514,8 @@ for each match. If REG_NOSUB was specified at compile time, the
 PCRE_NO_AUTO_CAPTURE flag will be set. When this is the case, the nmatch and
 pmatch arguments are ignored, and the only result is yes/no/error. */
 
-int regexec(regex_t *preg, const char *string, size_t nmatch,
-            regmatch_t pmatch[], int eflags) {
+extern int pcreposix_regexec(regex_t *preg, const char *string, size_t nmatch,
+                             regmatch_t pmatch[], int eflags) {
   int rc, so, eo;
   int options = 0;
   pcre2_match_data *md = (pcre2_match_data *)preg->re_match_data;
@@ -549,7 +578,28 @@ int regexec(regex_t *preg, const char *string, size_t nmatch,
   }
 }
 
+#define regcomp pcreposix_regcomp
+#define regexec pcreposix_regexec
+#define regerror pcreposix_regerror
+#define regfree pcreposix_regfree
+
 #endif /* PCRE2 */
+
+/* POSIX2PCRE API */
+extern int posix2pcre_regcomp(regex_t *preg, const char *pattern, int cflags) {
+  return regcomp(preg, pattern, cflags);
+}
+extern int posix2pcre_regexec(regex_t *preg, const char *string, size_t nmatch,
+            regmatch_t pmatch[], int eflags) {
+  return regexec(preg, string, nmatch, pmatch, eflags);
+}
+extern size_t posix2pcre_regerror(int errcode, const regex_t *preg, char *errbuf,
+                size_t errbuf_size) {
+  return regerror(errcode, preg, errbuf, errbuf_size);
+}
+extern void posix2pcre_regfree(regex_t *preg) {
+  regfree(preg);
+}
 
 /* Memory management */
 extern void * malloc_regex (void) {
