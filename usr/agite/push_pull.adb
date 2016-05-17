@@ -227,6 +227,7 @@ package body Push_Pull is
                                 Afpx_Xref.Push_Pull.Title);
           Utils.X.Center_Field ("Select branch",
                                 Afpx_Xref.Push_Pull.Sub_Title);
+          -- Main action will be set by List_Change
           Utils.X.Center_Field ("???", Afpx_Xref.Push_Pull.Push);
           Utils.X.Center_Field ("Fetch", Afpx_Xref.Push_Pull.Push_Upstream);
           Afpx.Clear_Field (Afpx_Xref.Push_Pull.Entries);
@@ -238,7 +239,8 @@ package body Push_Pull is
       -- Get list of references
       if Menu = Pull_Branch then
         -- List local branches to check if remote exists locally
-        Git_If.List_Branches (Local => True, Remote => False, Branches => Branches);
+        Git_If.List_Branches (Local => True, Remote => False,
+                              Branches => Branches);
         -- List remote branches
         Git_If.List_Branches_Of (Remote.Image, Branches => List);
       else
@@ -248,7 +250,15 @@ package body Push_Pull is
       Init_List (List);
 
       Afpx.Utils.Protect_Field (Afpx_Xref.Push_Pull.Push, List.Is_Empty);
-      if not List.Is_Empty then
+      Afpx.Utils.Protect_Field (Afpx_Xref.Push_Pull.Push_Upstream,
+                                List.Is_Empty);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Push_Pull.Push_Force, List.Is_Empty);
+      if List.Is_Empty then
+        -- No action possible
+        Afpx.Clear_Field (Afpx_Xref.Push_Pull.Push);
+        Afpx.Clear_Field (Afpx_Xref.Push_Pull.Push_Upstream);
+        Afpx.Clear_Field (Afpx_Xref.Push_Pull.Push_Force);
+      else
         -- Move to "origin" for push and pull_remote,
         --  or <remote>/<branch> for pull_branch, or top
         if Menu /= Pull_Branch  then
