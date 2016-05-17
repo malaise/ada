@@ -480,9 +480,9 @@ extern int pcreposix_regexec(regex_t *preg, const char *string, size_t nmatch,
 /* When REG_NOSUB was specified, or if no vector has been passed in which to
 put captured strings, ensure that nmatch is zero. This will stop any attempt to
 write to pmatch. */
- 
+
 if ((preg->re_cflags & REG_NOSUB) != 0 || pmatch == NULL) nmatch = 0;
- 
+
 
   /* REG_STARTEND is a BSD extension, to allow for non-NUL-terminated strings.
   The man page from OS X says "REG_STARTEND affects only the location of the
