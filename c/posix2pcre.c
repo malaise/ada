@@ -296,55 +296,6 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------
 */
 
-/* From pcre2_internal.h */
-#define COMPILE_ERROR_BASE 100
-typedef struct pcre2_memctl {
-  void *    (*malloc)(size_t, void *);
-  void      (*free)(void *, void *);
-  void      *memory_data;
-} pcre2_memctl;
-
-/* From pcre2_intmodedep.h */
-#define CODE_BLOCKSIZE_TYPE size_t
-typedef struct pcre2_real_code {
-  pcre2_memctl memctl;            /* Memory control fields */
-  const uint8_t *tables;          /* The character tables */
-  void    *executable_jit;        /* Pointer to JIT code */
-  uint8_t  start_bitmap[32];      /* Bitmap for starting code unit < 256 */
-  CODE_BLOCKSIZE_TYPE blocksize;  /* Total (bytes) that was malloc-ed */
-  uint32_t magic_number;          /* Paranoid and endianness check */
-  uint32_t compile_options;       /* Options passed to pcre2_compile() */
-  uint32_t overall_options;       /* Options after processing the pattern */
-  uint32_t flags;                 /* Various state flags */
-  uint32_t limit_match;           /* Limit set in the pattern */
-  uint32_t limit_recursion;       /* Limit set in the pattern */
-  uint32_t first_codeunit;        /* Starting code unit */
-  uint32_t last_codeunit;         /* This codeunit must be seen */
-  uint16_t bsr_convention;        /* What \R matches */
-  uint16_t newline_convention;    /* What is a newline? */
-  uint16_t max_lookbehind;        /* Longest lookbehind (characters) */
-  uint16_t minlength;             /* Minimum length of match */
-  uint16_t top_bracket;           /* Highest numbered group */
-  uint16_t top_backref;           /* Highest numbered back reference */
-  uint16_t name_entry_size;       /* Size (code units) of table entries */
-  uint16_t name_count;            /* Number of name entries in the table */
-} pcre2_real_code_8;
-
-typedef struct pcre2_real_match_data {
-  pcre2_memctl     memctl;
-  const pcre2_real_code *code;    /* The pattern used for the match */
-  PCRE2_SPTR8      subject;       /* The subject that was matched */
-  PCRE2_SPTR       mark;          /* Pointer to last mark */
-  PCRE2_SIZE       leftchar;      /* Offset to leftmost code unit */
-  PCRE2_SIZE       rightchar;     /* Offset to rightmost code unit */
-  PCRE2_SIZE       startchar;     /* Offset to starting code unit */
-  uint16_t         matchedby;     /* Type of match (normal, JIT, DFA) */
-  uint16_t         oveccount;     /* Number of pairs */
-  int              rc;            /* The return code from the match */
-  PCRE2_SIZE       ovector[1];    /* The first field */
-} pcre2_real_match_data;
-
-
 
 /* Table to translate PCRE2 compile time error codes into POSIX error codes.
 Only a few PCRE2 errors with a value greater than 23 turn into special POSIX
@@ -410,6 +361,8 @@ static const char *const pstring[] = {
   "match failed"                     /* NOMATCH    */
 };
 
+#define COMPILE_ERROR_BASE 100
+
 extern size_t pcreposix_regerror(int errcode, const regex_t *preg,
                                  char *errbuf, size_t errbuf_size);
 extern void pcreposix_regfree(regex_t *preg);
@@ -467,7 +420,6 @@ extern int pcreposix_regcomp(regex_t *preg, const char *pattern, int cflags) {
   if ((cflags & REG_ICASE) != 0)    options |= PCRE2_CASELESS;
   if ((cflags & REG_NEWLINE) != 0)  options |= PCRE2_MULTILINE;
   if ((cflags & REG_DOTALL) != 0)   options |= PCRE2_DOTALL;
-  if ((cflags & REG_NOSUB) != 0)    options |= PCRE2_NO_AUTO_CAPTURE;
   if ((cflags & REG_UTF) != 0)      options |= PCRE2_UTF;
   if ((cflags & REG_UCP) != 0)      options |= PCRE2_UCP;
   if ((cflags & REG_UNGREEDY) != 0) options |= PCRE2_UNGREEDY;
@@ -494,7 +446,6 @@ extern int pcreposix_regcomp(regex_t *preg, const char *pattern, int cflags) {
   (void)pcre2_pattern_info((const pcre2_code *)preg->re_pcre2_code,
     PCRE2_INFO_CAPTURECOUNT, &re_nsub);
   preg->re_nsub = (size_t)re_nsub;
-  if ((options & PCRE2_NO_AUTO_CAPTURE) != 0) re_nsub = -1;
   preg->re_match_data = pcre2_match_data_create(re_nsub + 1, NULL);
 
   if (preg->re_match_data == NULL) {
@@ -526,11 +477,12 @@ extern int pcreposix_regexec(regex_t *preg, const char *string, size_t nmatch,
 
   ((regex_t *)preg)->re_erroffset = (size_t)(-1);  /* Only has meaning after compile */
 
-  /* When no string data is being returned, or no vector has been passed in which
-  to put it, ensure that nmatch is zero. */
-
-  if ((((pcre2_real_code_8 *)(preg->re_pcre2_code))->compile_options &
-    PCRE2_NO_AUTO_CAPTURE) != 0 || pmatch == NULL) nmatch = 0;
+/* When REG_NOSUB was specified, or if no vector has been passed in which to
+put captured strings, ensure that nmatch is zero. This will stop any attempt to
+write to pmatch. */
+ 
+if ((preg->re_cflags & REG_NOSUB) != 0 || pmatch == NULL) nmatch = 0;
+ 
 
   /* REG_STARTEND is a BSD extension, to allow for non-NUL-terminated strings.
   The man page from OS X says "REG_STARTEND affects only the location of the
@@ -552,10 +504,11 @@ extern int pcreposix_regexec(regex_t *preg, const char *string, size_t nmatch,
   /* Successful match */
   if (rc >= 0) {
     size_t i;
+    PCRE2_SIZE *ovector = pcre2_get_ovector_pointer(md);
     if ((size_t)rc > nmatch) rc = (int)nmatch;
     for (i = 0; i < (size_t)rc; i++) {
-      pmatch[i].rm_so = md->ovector[i*2];
-      pmatch[i].rm_eo = md->ovector[i*2+1];
+      pmatch[i].rm_so = ovector[i*2];
+      pmatch[i].rm_eo = ovector[i*2+1];
     }
     for (; i < nmatch; i++) pmatch[i].rm_so = pmatch[i].rm_eo = -1;
     return 0;
