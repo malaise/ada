@@ -30,7 +30,8 @@ package Afpx.Utils is
                      Keep_Tail : Boolean := True) return String;
 
 
-  -- Protect a field and "revert" its colors, or reset it to its default
+  -- Protect a field and "revert" its colors, or reset it to its default (keep
+  --  its Activation status)
   procedure Protect_Field (Field_No : in Afpx.Absolute_Field_Range;
                            Protect  : in Boolean);
 

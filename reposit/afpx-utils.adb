@@ -66,6 +66,7 @@ package body Afpx.Utils is
   procedure Protect_Field (Field_No : in Afpx.Absolute_Field_Range;
                            Protect  : in Boolean) is
     Foreground, Backround, Selected : Con_Io.Effective_Colors;
+    Activated : Boolean;
   begin
     if Protect then
       Afpx.Set_Field_Protection (Field_No, True);
@@ -74,7 +75,10 @@ package body Afpx.Utils is
             Foreground => Foreground,
             Background => Afpx.Get_Descriptor_Background);
     else
+      -- Reset all except field activation
+      Activated := Afpx.Get_Field_Activation (Field_No);
       Afpx.Reset_Field (Field_No, Reset_String => False);
+      Afpx.Set_Field_Activation (Field_No, Activated);
     end if;
   end Protect_Field;
 
