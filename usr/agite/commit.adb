@@ -1,4 +1,4 @@
-with Ada.Exceptions;
+with Ada.Exceptions, Ada.Calendar;
 with As.U, Directory, Afpx.Utils, Str_Util, Basic_Proc,
      Aski, Images, Trilean;
 with Utils.X, Config, Push_Pull, Afpx_Xref, Confirm, Error, Stash;
@@ -333,6 +333,9 @@ package body Commit is
     end Init;
 
     -- Re assess the status of changes
+    -- Duration and end time of last read
+    Last_Read_Duration : Duration := 0.0;
+    Last_Read_Time : Ada.Calendar.Time;
     procedure Reread (Force : in Boolean) is
       Current_Change : Git_If.File_Entry_Rec;
       Moved : Boolean;
@@ -342,6 +345,8 @@ package body Commit is
       Prev_Changes : Git_If.File_List;
       Changed : Boolean;
       Protect : Boolean;
+      Start_Time : constant Ada.Calendar.Time := Ada.Calendar.Clock;
+      use type Ada.Calendar.Time;
       use type Git_If.File_Entry_Rec;
     begin
       Changed := Force;
@@ -360,6 +365,8 @@ package body Commit is
       Git_If.List_Changes (Changes);
       Sort (Changes);
       Separate_List (Changes);
+      Last_Read_Time := Ada.Calendar.Clock;
+      Last_Read_Duration := Last_Read_Time - Start_Time;
       Utils.X.Encode_Branch (Afpx_Xref.Commit.Branch);
 
       -- Check lengths then content
@@ -443,6 +450,17 @@ package body Commit is
       Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Back,
           Allow_Commit = Require and then not All_Unknown);
     end Reread;
+
+    -- Reread (False) if not too long/too often
+    procedure Reread_If is
+      Current_Time : constant Ada.Calendar.Time := Ada.Calendar.Clock;
+      use type Ada.Calendar.Time;
+    begin
+      -- Reread if (Current - Last_End) >= Last_Duration
+      if Current_Time - Last_Read_Time >= Last_Read_Duration then
+        Reread (False);
+      end if;
+    end Reread_If;
 
     -- Edit
     procedure Do_Edit is
@@ -733,13 +751,13 @@ package body Commit is
 
        when Afpx.Timer_Event =>
          -- Reread branch and changes if they have changed
-         Reread (False);
+         Reread_If;
 
        when Afpx.Fd_Event | Afpx.Signal_Event =>
           null;
        when Afpx.Refresh =>
          -- Reread branch and changes if they have changed
-         Reread (False);
+         Reread_If;
       end case;
     end loop;
 
