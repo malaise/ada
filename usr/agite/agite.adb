@@ -1,4 +1,3 @@
-with Ada.Calendar;
 with As.U, Afpx.Utils, Basic_Proc, Images, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Environ;
 with Utils.X, Git_If, Config, Bookmarks, History, Tags, Commit, Push_Pull,
@@ -112,12 +111,9 @@ procedure Agite is
 
   -- Update list of files
   -- Duration and end time of last read
-  Last_Read_Duration : Duration := 0.0;
-  Last_Read_Time : Ada.Calendar.Time;
   procedure List_Files is
-    Start_Time : constant Ada.Calendar.Time := Ada.Calendar.Clock;
-    use type Ada.Calendar.Time;
   begin
+    Utils.Chrono.Start;
     -- Get info: Path if needed and list
     begin
       if Root.Is_Null then
@@ -132,8 +128,7 @@ procedure Agite is
         -- List dir content the normal way
         List_Files (Path.Image, Files);
     end;
-    Last_Read_Time := Ada.Calendar.Clock;
-    Last_Read_Duration := Last_Read_Time - Start_Time;
+    Utils.Chrono.Ended;
   end List_Files;
 
   -- To find current position back
@@ -426,11 +421,9 @@ procedure Agite is
 
   -- Reread (False) if not too long/too often
   procedure Reread_If is
-    Current_Time : constant Ada.Calendar.Time := Ada.Calendar.Clock;
-    use type Ada.Calendar.Time;
   begin
     -- Reread if (Current - Last_End) >= Last_Duration
-    if Current_Time - Last_Read_Time >= Last_Read_Duration then
+    if not Utils.Chrono.Overload then
       Reread (False);
     end if;
   end Reread_If;

@@ -25,5 +25,15 @@ package Utils is
   -- Exception on Ctrl C
   Exit_Requested : exception;
 
+  package Chrono is
+    -- Reset ad start a chrono (before calling a potentially long operation)
+    procedure Start;
+    -- Get intermediate time (end of potentially long operation)
+    procedure Ended;
+    -- Is current time not far enough after intermediate time (so calling
+    --  potentially long operation should ve avoided)
+    function Overload return Boolean;
+  end Chrono;
+
 end Utils;
 

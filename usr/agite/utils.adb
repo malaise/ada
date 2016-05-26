@@ -1,4 +1,4 @@
-with Str_Util, Many_Strings, Proc_Family;
+with Str_Util, Many_Strings, Proc_Family, Chronos;
 package body Utils is
 
   -- If Str fits Width then return Str, padded by spaces if not Align_Left
@@ -81,6 +81,41 @@ package body Utils is
       return "'" & Str_Util.Substit (Str, "'", "'\''", True) & "'";
     end if;
   end Protect_Text;
+
+  package body Chrono is
+    -- The Chrono
+    The_Chrono : Chronos.Chrono_Type;
+    -- Duration of the operation
+    Delta_Oper : Chronos.Time_Rec;
+
+    -- Reset ad start a chrono (before calling a potentially long operation)
+    procedure Start is
+    begin
+      -- Ensure that the chrono is stopped. Reset and restart it.
+      The_Chrono.Stop;
+      The_Chrono.Reset;
+      The_Chrono.Start;
+    end Start;
+
+    -- Get intermediate time (end of potentially long operation)
+    procedure Ended is
+    begin
+      -- Stop the chrono and save duration of operation
+      The_Chrono.Stop;
+      Delta_Oper := The_Chrono.Read;
+      -- Reset and restart the chrono
+      The_Chrono.Reset;
+      The_Chrono.Start;
+    end Ended;
+
+    -- Is current time not far enough after intermediate time (so calling
+    --  potentially long operation should be avoided)
+    function Overload return Boolean is
+      use type Chronos.Time_Rec;
+    begin
+      return The_Chrono.Read < Delta_Oper;
+    end Overload;
+  end Chrono;
 
 end Utils;
 
