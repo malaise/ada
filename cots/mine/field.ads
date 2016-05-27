@@ -1,10 +1,10 @@
 -- Mine Detector Game
--- Copyright (C) 2009 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2016 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- Encapsulates the definition of the mine field
 --
--- V6.0 2009 Aug 01
+-- V1.0/GTK3 2016 Feb 15
 --
 package Field is
    subtype Valid_Row    is Positive range 1 .. 16; -- Size of the mine field
@@ -25,4 +25,4 @@ end Field;
 -- OUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 -- or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 -- for more details. Free Software Foundation, 59 Temple Place - Suite
--- 330, Boston, MA 02111-1307, USA.     
+-- 330, Boston, MA 02111-1307, USA.

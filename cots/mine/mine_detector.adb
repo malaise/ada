@@ -1,8 +1,8 @@
 -- Mine Detector Game
--- Copyright (C) 2009 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2016 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
--- V6.0 2009 Aug 01
+-- V1.0/GTK3 2016 Feb 15
 --
 with Gtk.Main;
 with User_IF;
