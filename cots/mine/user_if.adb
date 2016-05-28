@@ -510,7 +510,7 @@ package body User_IF is
             Set_Name (Button (Row, Column), Image (Row, Column) );
             Set_Size_Request (Button (Row, Column), Button_Size, Button_Size);
             Toggle_Cb.Connect (Button (Row, Column), "toggled", Toggle'access);
-            Marker_Cb.Connect (Button (Row, Column), "button_press_event", Marker_Cb.To_Marshaller (Button_Press'access) );
+            Marker_Cb.Connect (Button (Row, Column), "button_release_event", Marker_Cb.To_Marshaller (Button_Press'access) );
             Attach (Table,
                     Button (Row, Column),
                     Glib.Guint (Column) - 1,
