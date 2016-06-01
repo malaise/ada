@@ -88,7 +88,7 @@ package body Utils is
     -- Duration of the operation
     Delta_Oper : Chronos.Time_Rec;
 
-    -- Reset ad start a chrono (before calling a potentially long operation)
+    -- Reset and start a chrono (before calling a potentially long operation)
     procedure Start is
     begin
       -- Ensure that the chrono is stopped. Reset and restart it.
@@ -109,7 +109,7 @@ package body Utils is
     end Ended;
 
     -- Is current time not far enough after intermediate time (so calling
-    --  potentially long operation should be avoided)
+    --  again the potentially long operation should be avoided)
     function Overload return Boolean is
       use type Chronos.Time_Rec;
     begin
