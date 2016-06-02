@@ -10,7 +10,7 @@ package body T_Smart_Int is
     Basic_Proc.Put_Line_Output ("Finalization of" & Val'Img);
   end Fin;
 
-  procedure Init (Dest : in out Lim; Val : in Integer) is
+  procedure Init (Dest : out Lim; Val : in Integer) is
   begin
     Dest := Lim(Val);
   end Init;

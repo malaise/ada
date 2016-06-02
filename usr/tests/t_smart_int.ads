@@ -4,7 +4,7 @@ package T_Smart_Int is
   procedure Set (Dest : out Lim; Val : in Lim);
   procedure Fin (Val : in out Lim);
 
-  procedure Init (Dest : in out Lim; Val : in Integer);
+  procedure Init (Dest : out Lim; Val : in Integer);
   function Image (Val : Lim) return String;
 private
   type Lim is new Integer;
