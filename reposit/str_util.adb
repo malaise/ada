@@ -58,7 +58,7 @@ package body Str_Util is
           else
             First := First - 1;
           end if;
-          Output(Last) := C;
+          Output(First) := C;
           Used(C) := True;
         end if;
       end loop;
