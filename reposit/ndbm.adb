@@ -78,7 +78,7 @@ package body Ndbm is
     end if;
   end Check_Open;
 
-  procedure Set (Dest : in out Db_Rec; Val : in Db_Rec) is
+  procedure Set (Dest : out Db_Rec; Val : in Db_Rec) is
   begin
     Dest := Val;
   end Set;

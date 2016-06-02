@@ -131,7 +131,7 @@ private
     Remaining : Perpet.Delta_Rec;
   end record;
 
-  procedure Set (Dest : in out Timer_Rec; Val : in Timer_Rec);
+  procedure Set (Dest : out Timer_Rec; Val : in Timer_Rec);
   package Smart_Timer_Mng is new Smart_Reference (
     Object => Timer_Rec, Set => Set);
 

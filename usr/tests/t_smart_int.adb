@@ -1,6 +1,6 @@
 with Basic_Proc;
 package body T_Smart_Int is
-  procedure Set (Dest : in out Lim; Val : in Lim) is
+  procedure Set (Dest : out Lim; Val : in Lim) is
   begin
     Dest := Val;
   end Set;

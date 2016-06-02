@@ -29,7 +29,7 @@ package body Con_Io is
   Logger : Trace.Loggers.Logger;
 
   -- Smart reference of Console and Window
-  procedure Set (Dest : in out Console_Data; Val : in Console_Data) is
+  procedure Set (Dest : out Console_Data; Val : in Console_Data) is
   begin
     Dest := Val;
   end Set;
@@ -70,7 +70,7 @@ package body Con_Io is
     end if;
   end Finalize;
 
-  procedure Set (Dest : in out Window_Data; Val : in Window_Data) is
+  procedure Set (Dest : out Window_Data; Val : in Window_Data) is
   begin
     Dest := Val;
   end Set;

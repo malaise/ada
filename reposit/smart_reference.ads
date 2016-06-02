@@ -5,7 +5,7 @@ private with Ada.Finalization;
 generic
   -- Object shall NOT implement Ada.Finalization.(Limited_)Controlled
   type Object is limited private;
-  with procedure Set (Dest : in out Object; Val : in Object);
+  with procedure Set (Dest : out Object; Val : in Object);
   with procedure Finalize (Dest : in out Object) is null;
 package Smart_Reference is
 

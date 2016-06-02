@@ -109,7 +109,7 @@ private
     Dir_Addr : System.Address := System.Null_Address;
   end record;
 
-  procedure Set (Dest : in out Dir_Rec; Val : in Dir_Rec);
+  procedure Set (Dest : out Dir_Rec; Val : in Dir_Rec);
   procedure Finalize (Dest : in out Dir_Rec);
   package Smart_Desc_Mng is new Smart_Reference (
     Object => Dir_Rec, Set => Set, Finalize => Finalize);

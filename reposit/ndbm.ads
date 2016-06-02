@@ -43,7 +43,7 @@ private
   type Db_Rec is record
     Db_Addr : System.Address := System.Null_Address;
   end record;
-  procedure Set (Dest : in out Db_Rec; Val : in Db_Rec);
+  procedure Set (Dest : out Db_Rec; Val : in Db_Rec);
   procedure Finalize (Dest : in out Db_Rec);
   package Smart_Db_Mng is new Smart_Reference (
     Object => Db_Rec, Set => Set, Finalize => Finalize);

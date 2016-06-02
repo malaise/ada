@@ -34,7 +34,7 @@ package body Timers is
   end Match;
   function Search_Clock is new Clocks_List_Mng.Search (Match);
 
-  procedure Set (Dest : in out Timer_Rec; Val : in Timer_Rec) is
+  procedure Set (Dest : out Timer_Rec; Val : in Timer_Rec) is
   begin
     Dest := Val;
   end Set;

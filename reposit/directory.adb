@@ -101,7 +101,7 @@ package body Directory is
   end Remove;
 
   -- Desc affectation
-  procedure Set (Dest : in out Dir_Rec; Val : in Dir_Rec) is
+  procedure Set (Dest : out Dir_Rec; Val : in Dir_Rec) is
   begin
     Dest := Val;
   end Set;
