@@ -137,7 +137,7 @@ private
 
   type Timer_Id is new Smart_Timer_Mng.Handle with null record;
   No_Timer : constant Timer_Id
-           := (Smart_Timer_Mng.Null_Handle with others => <>);
+           := (Smart_Timer_Mng.Null_Handle with null record);
 
 
   -- For Expiration --

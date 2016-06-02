@@ -643,7 +643,7 @@ private
   package Console_Ref_Mng is new Smart_Reference (Console_Data, Set, Finalize);
   type Console is new Console_Ref_Mng.Handle with null record;
   Null_Console : constant Console
-               := (Console_Ref_Mng.Null_Handle with others => <>);
+               := (Console_Ref_Mng.Null_Handle with null record);
 
 
   -- Windows are stored in a global list
@@ -663,7 +663,7 @@ private
   package Window_Ref_Mng is new Smart_Reference (Window_Data, Set, Finalize);
   type Window is new Window_Ref_Mng.Handle with null record;
   Null_Window : constant Window
-               := (Window_Ref_Mng.Null_Handle with others => <>);
+               := (Window_Ref_Mng.Null_Handle with null record);
 
   Screen_Data : constant Window_Data := (others => <>);
 
