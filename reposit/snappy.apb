@@ -485,6 +485,9 @@ package body Snappy is
                + Shl (Integer (Input (In_Pos + 2)), 16)
                + Shl (Integer (Input (In_Pos + 3)), 24);
           In_Pos := In_Pos + 4;
+        else
+          -- Invalid stream
+          raise Constraint_Error;
         end if;
 
         --#IfDef Debug
