@@ -1,0 +1,54 @@
+#!/bin/bash
+export ADACTL=~/adactl/src/adactl
+export RULES=~/ada/AdaControl.aru
+export PATH=$GNATPATH:$PATH
+export WDIR=AdaCtl
+
+# Help
+if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then
+  echo "Usage: `basename $0` [ -C | --only_clean | -c | --clean ]  [ <directory_path> " 1>&2
+  exit 1
+fi
+
+# Optional clean and only_clean
+export ADACONTROL=1
+export CLEAN=0
+if [ \( "$1" = "-C" \) -o \( "$1" = "--only_clean" \) ] ; then
+  shift
+  ADACONTROL=0
+  CLEAN=1
+elif [ \( "$1" = "-c" \) -o \( "$1" = "--clean" \) ] ; then
+  shift
+  CLEAN=1
+fi
+
+# Optional target
+if [ -n "$1" ] ; then
+  cd $1
+  echo "In `pwd`"
+fi
+
+if [ $ADACONTROL = 1 ] ; then
+  # List all views
+  views=`make -s --no-print-directory echoadaview`
+  incls=""
+  for view in $views ; do
+    incls="$incls""-I$view -T$view/$WDIR "
+  done
+
+  # Go in subdir
+  mkdir -p $WDIR
+  cd $WDIR
+
+  # AdaControl
+  $ADACTL -f $RULES ../*.ad? -- $incls
+
+  # Done
+  cd ..
+fi
+
+# Cleanup
+if [ $CLEAN = 1 ] ; then
+  rm -rf $WDIR
+fi
+
