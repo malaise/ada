@@ -12,12 +12,24 @@ export LIB=lib_$HOST
 
 # Function to guess ADAVIEW if necessary and possible
 function guessview {
+  MAKEFILE=""
   if [ -z "$ADAVIEW" ] ; then
-    if [ \( -f makefile \) -o \( -f Makefile \) ] ; then
-      export ADAVIEW=`make --no-print-directory echoadaview 2>/dev/null`
-      if [ $? -ne 0 ] ; then
-        export ADAVIEW=""
-      fi
+    if [ -f makefile ] ; then
+      MAKEFILE=makefile
+    fi
+    if [ -f Makefile ] ; then
+      MAKEFILE=Makefile
+    fi
+  fi
+  res=1
+  if [ -n "$MAKEFILE" ] ; then
+    grep ADAVIEW $MAKEFILE >/dev/null 2>&1
+    res=$?
+  fi
+  if [ $res -eq 0 ] ; then
+    export ADAVIEW=`make --no-print-directory echoadaview 2>/dev/null`
+    if [ $? -ne 0 ] ; then
+      export ADAVIEW=""
     fi
   fi
 }
