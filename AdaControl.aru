@@ -1,10 +1,3 @@
--- Required:
-Use: check unnecessary_use_clause;
-check style (no_closing_name);
-check max_nesting (6);
-Aliasing : check parameter_aliasing (certain);
-check with_clauses (reduceable);
-
 check simplifiable_statements (block, handler, if, loop, null);
 Dead : check simplifiable_statements (dead);
 Loop_While : check simplifiable_statements (loop_for_while);
@@ -14,6 +7,17 @@ Conversion : check simplifiable_expressions (conversion);
 Parentheses : check simplifiable_expressions (parentheses);
 Logical_Not : check simplifiable_expressions (logical_not);
 
--- Acceptable
-Aliasing : search parameter_aliasing (possible);
+Andor_Boolean : check expressions (and_boolean, or_boolean);
+check expressions (inconsistent_attribute_dimension);
+
+check case_statement (others_span, min 1);
+Char : check characters;
+check comments (pattern, "@@@");
+check max_blank_lines (2);
+check max_line_length (120);
+check max_nesting (6);
+Aliasing : check parameter_aliasing (possible);
+check style (no_closing_name);
+Use : check unnecessary_use_clause;
+check with_clauses (reduceable);
 

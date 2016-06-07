@@ -2,7 +2,7 @@ with Images, Basic_Proc, Utf_8, Rnd, Key_Pressed, Argument;
 procedure T_Utf8 is
   function Image16 is new Images.Int_Image16 (Natural);
 
-  Str : constant String := "aàâeéèêëiîïoôuùü";
+  Str : constant String := "aàâeéèêëiîïoôuùü"; --## rule line off Char
   Ucodes : constant array (Positive range <>) of Utf_8.Unicode_Number
          := (16#61#, 16#E0#, 16#E2#,
              16#65#, 16#E9#, 16#E8#, 16#EA#, 16#EB#,

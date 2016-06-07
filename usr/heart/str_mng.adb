@@ -107,8 +107,6 @@ package body Str_Mng is
     return Normal (Integer(Pid), 3, Gap => '0');
   end Pid_Str;
 
-
-
 --  type Date_Str_Rec is record
 --    Day : Str2;
 --    Month : Str2;

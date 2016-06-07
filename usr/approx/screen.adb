@@ -283,7 +283,6 @@ package body Screen is
   end Put_Point_Status;
 
 
-
   function Init_For_Main1 return Afpx.Field_Range is
   begin
     -- Disable Ok & cancel

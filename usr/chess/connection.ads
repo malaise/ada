@@ -22,7 +22,6 @@ package Connection is
   procedure Close;
 
 
-
   -- Error on connection or transfer
   Connection_Error : exception;
 

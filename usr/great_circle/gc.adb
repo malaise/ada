@@ -37,6 +37,7 @@ procedure Gc is
   Decode_Ok : Boolean;
   Need_Clean : Boolean := False;
 
+  Deg : constant String := "°"; --## rule line off Char
 
   use type Afpx.Field_Range, Afpx.Event_List, Afpx.Keyboard_Key_List;
 
@@ -59,8 +60,8 @@ procedure Gc is
     end if;
     if Afpx.Get_Field_Width (Field) <= 2 then
       Char := Afpx.Decode_Wide_Field (Field, 0)(1);
-      -- "°" -> ".", "'" -> " " and """[/]" becomes "°[/]"
-      if Char = Language.String_To_Wide("°")(1) then
+      -- "o" -> ".", "'" -> " " and """[/]" becomes "o[/]"
+      if Char = Language.String_To_Wide(Deg)(1) then
         Afpx.Encode_Wide_Field (Field, (0, 0), ".");
       elsif Char = ''' then
         Afpx.Encode_Wide_Field (Field, (0, 0), " ");
@@ -121,7 +122,7 @@ procedure Gc is
                           Point : out Lat_Lon.Lat_Lon_Geo_Rec;
                           Ok : out Boolean;
                           Cursor : in out Afpx.Field_Range) is
-    -- Two '"' added and two '°' instead of '.' in Afpx screen
+    -- Two '"' added and two 'o' instead of '.' in Afpx screen
     Point_Txt : As.B.Asb_Bs(String_Util.Geo_Str'Length+4);
   begin
     Point_Txt.Set_Null;
@@ -130,17 +131,17 @@ procedure Gc is
     end loop;
     Great_Circle.Logger.Log_Debug ("Decoded point: " & Point_Txt.Image);
     if Sexa_Mode then
-      -- Replace Ndd°mm'ss"/Eddd°mm'ss" by Ndd.mm.ss/Eddd.mm.ss
-      -- "°" has already been replaced by " " in Afpx.Decode_Field
-      Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, "°", "."));
+      -- Replace Nddomm'ss"/Edddomm'ss" by Ndd.mm.ss/Eddd.mm.ss
+      -- "o" has already been replaced by " " in Afpx.Decode_Field
+      Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, Deg, "."));
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, "'", "."));
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, """", ""));
       Great_Circle.Logger.Log_Debug ("Parsed point: " & Point_Txt.Image);
       Point := String_Util.Str2Geo(Point_Txt.Image);
     else
-      -- Replace Ndd.ij kl°/Eddd.ij kl° by Ndd.ijkl/Eddd.ijkl
-      -- "°" has already been replaced by " " in Afpx.Decode_Field
-      Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, "°", ""));
+      -- Replace Ndd.ij klo/Eddd.ij klo by Ndd.ijkl/Eddd.ijkl
+      -- "o" has already been replaced by " " in Afpx.Decode_Field
+      Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, Deg, ""));
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, " ", ""));
       Great_Circle.Logger.Log_Debug ("Parsed point: " & Point_Txt.Image);
       Point := Lat_Lon.Dec2Geo (String_Util.Str2Dec(Point_Txt.Image));
@@ -160,7 +161,7 @@ procedure Gc is
     if Sexa_Mode then
       declare
         Str : constant String := String_Util.Geoangle2Str(H);
-        -- Will append " and set ° and ' instead of 2 first .
+        -- Will append " and set o and ' instead of 2 first .
         Wstr : Wide_String (1 .. Str'Length + 1);
       begin
         Wstr := Language.String_To_Wide (Str) & '"';
@@ -172,7 +173,7 @@ procedure Gc is
     else
       declare
         Str : constant String := String_Util.Decangle2Str(Conv.Geo2Dec(H));
-        -- Will append °
+        -- Will append o
         Wstr : Wide_String (1 .. Str'Length + 1);
       begin
         Wstr := Language.String_To_Wide (Str) & Degree_Sign;

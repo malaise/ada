@@ -37,7 +37,6 @@ package body Sok_Save is
   end Push;
 
 
-
   function Pop return Sok_Movement.Saved_Data_Rec is
     Movement : Sok_Movement.Saved_Data_Rec;
   begin

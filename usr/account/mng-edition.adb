@@ -84,7 +84,7 @@ package body Edition is
     if Unit_Format.Get_Current_Unit = Unit_Format.Euros then
       Afpx.Reset_Field (Afpx_Xref.Edition.Unit);
       begin
-        Afpx.Encode_Field (Afpx_Xref.Edition.Unit, (0, 0), "€");
+        Afpx.Encode_Field (Afpx_Xref.Edition.Unit, (0, 0), "€"); --## rule line off Char
       exception
         when Afpx.String_Too_Long =>
           -- We are not in UTF-8

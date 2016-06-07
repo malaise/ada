@@ -111,8 +111,8 @@ package body Targets is
         end if;
         -- Recursive invocation
         Debug.Log ("Doing subdir " & Subdir.Image);
-        Found := Found or Do_Dir (Subdir.Image, Put_Dir_Names, Level + 1,
-                                  False);
+        Found := Found or --## rule line off Andor_Boolean
+                 Do_Dir (Subdir.Image, Put_Dir_Names, Level + 1, False);
         exit when not Moved;
       end loop;
       Subdirs.Delete_List (Deallocate => False);
@@ -159,10 +159,10 @@ package body Targets is
           Occurence => Args.Get_First_Pos_After_Keys) = "" then
       Debug.Log ("Doing dir .");
       -- No dir name if explicit dir_name=Always
-      Found := Found or Do_Dir (".",
-                           (if Put_Dir_Names = Trilean.True then Trilean.True
-                            else Trilean.False),
-                           1, True);
+      Found := Found or --## rule line off Andor_Boolean
+               Do_Dir (".", (if Put_Dir_Names = Trilean.True then Trilean.True
+                             else Trilean.False),
+                            1, True);
     end if;
 
     -- Process dirs that match
@@ -176,7 +176,8 @@ package body Targets is
           and then Directory.File_Kind (Dir) = Directory.Dir then
             -- Add this "Dir"
             Debug.Log ("Doing dir " & Dir);
-            Found := Found or Do_Dir (Dir, Put_Dir_Names, 1, True);
+            Found := Found or --## rule line off Andor_Boolean
+                     Do_Dir (Dir, Put_Dir_Names, 1, True);
           end if;
         exception
           when Directory.Name_Error =>

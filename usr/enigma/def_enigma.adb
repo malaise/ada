@@ -342,7 +342,7 @@ begin
       end loop;
 
       -- Set random number (3 to 4) of random rotors and rotor settings
-      -- rotor 10 has N°0
+      -- rotor 10 has No 0
       Nb_Rotors := Rnd.Gen.Int_Random (3, 4);
       declare
         Rot_Num : Rotor_Id;

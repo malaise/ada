@@ -518,8 +518,6 @@ package body Sok_Display is
       raise;
   end Get_No_Frame;
 
-
-
   procedure End_Of_Program is
   begin
     if Console.Is_Open then

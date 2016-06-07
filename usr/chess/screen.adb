@@ -281,7 +281,6 @@ package body Screen is
   end Manage_Mouse;
 
 
-
   function Get (Disp_Color : Space.Color_List;
                 Move_Color : Space.Color_List) return Players.Action_Rec is
     Str  : Wide_String (1 .. 5);

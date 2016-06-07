@@ -15,9 +15,7 @@ package body Parser.All_In_One is
   --   Str : Asu_Us;
   -- end record;
 
-
   -- type Parsed_Array is array (Positive range <>) of Parsed_Element_Rec;
-
 
 
   -- Reset the iterator, parse all words and separators, reset the iterator

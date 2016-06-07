@@ -371,7 +371,7 @@ begin
         Keep.Pop;
         Keep.Push (Keep.Look and then not Kept.Look
                    and then Check (Last_Name, True));
-        Kept.Push (Kept.Pop or Keep.Look);
+        Kept.Push (Kept.Pop or Keep.Look); --## rule line off Andor_Boolean
         Skip := True;
       elsif Match (Relsifnotdef, Line) then
         Logger.Log_Debug ("  Match ElsifNotDef " & Line.Image);
@@ -382,7 +382,7 @@ begin
         Keep.Pop;
         Keep.Push (Keep.Look and then not Kept.Look
                    and then not Check (Last_Name, False));
-        Kept.Push (Kept.Pop or Keep.Look);
+        Kept.Push (Kept.Pop or Keep.Look); --## rule line off Andor_Boolean
         Skip := True;
       elsif Match (Relsedef, Line) then
         Logger.Log_Debug ("  Match ElseDef " & Line.Image);

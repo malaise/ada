@@ -206,9 +206,6 @@ package body Nav_Format is
     Res := Set;
   end Value;
 
-
-
-
   -- from string to angle
   procedure Value (Str : in String; Angle : out Nav_Types.T_Angle;
    Res : out Format_Result; Pos : out Positive) is

@@ -201,8 +201,6 @@ package body Mesu_Mng is
       end if;
     end if;
 
-
-
     List:
     loop
       Allow_Undo := False;

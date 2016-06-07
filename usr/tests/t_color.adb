@@ -28,7 +28,7 @@ begin
       Screen.Move (Con_Io.Colors'Pos(I), 1);
       Screen.Put (Mixed_Str (Con_Io.Color_Name_Of (I) ));
       Screen.Move (Con_Io.Colors'Pos(I), 20);
-      Screen.Put ("^!@#$%&€*é$ê", Foreground => I, Move => False);
+      Screen.Put ("^!@#$%&€*é$ê", Foreground => I, Move => False); --## rule line off Char
       Screen.New_Line;
     end loop;
 

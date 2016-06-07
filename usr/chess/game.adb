@@ -222,7 +222,6 @@ package body Game is
   end Can_Move;
 
 
-
   -- Check a move is valid (no King in chess), commit and refresh screen
   function Do_Move (Action : Valid_Action_Rec) return Move_Status_List is
     Color : constant Space.Color_List

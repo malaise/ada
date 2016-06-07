@@ -570,7 +570,8 @@ package body Str_Util is
 
   -- Replace all variables by their values provided by the Resolv callback.
   -- A variable name is identified because it is within delimiters (strings).
-  -- Start and stop delimiters must be non empty and different (e.g. "(" and ")"  --  or "${" and "}"), otherwise Inv_Delimiter is raised.
+  -- Start and stop delimiters must be non empty and different (e.g. "(" and ")"
+  --  or "${" and "}"), otherwise Inv_Delimiter is raised.
   -- Variables may be defined recursively (e.g. ${Foo${Bar}}).
   -- Delimiter number must match (as many stop as start and in consistent
   --  sequence e.g. {}}{ s forbidden), otherwise the exception

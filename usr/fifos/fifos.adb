@@ -508,7 +508,6 @@ package body Fifos is
       end Fifo_Name_Of;
 
 
-
       procedure Split (Data : in String; Host : out Tcp_Util.Host_Name;
                                          Port : out Tcp_Util.Port_Num) is
         Txt : As.U.Asu_Us;

@@ -19,7 +19,7 @@ begin
   P := Complexes.To_Polar (C1);
   Basic_Proc.Put_Line_Output (" in polar: " & Complexes.Module(P)'Img & " "
                        & Complexes.Angle_Radian(P)'Img & "rd "
-                       & Complexes.Angle_Degree(P)'Img & "°");
+                       & Complexes.Angle_Degree(P)'Img & "°"); --## rule line off Char
 
   if Argument.Get_Nbre_Arg = 2 then
     return;

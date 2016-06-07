@@ -26,7 +26,6 @@ package Doors is
   procedure Release (A_Door : in Door);
 
 
-
   -- All the following operations require the caller to own the access
   -- to the door, otherwise they raise No_Access
   No_Access : exception;

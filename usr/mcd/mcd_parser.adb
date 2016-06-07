@@ -446,7 +446,8 @@ package body Mcd_Parser is
     Io_Flow.Put_Line ("Commands are strings read from standard input or from a bus/udp/tcp channel.");
     Io_Flow.Put_Line ("Separators are space and horizontal tab.");
     Io_Flow.Put_Line ("Comments start by '#', up to the end of line");
-    Io_Flow.Put_Line ("Item ::= <arbitrary> <fraction> <integer> <real> <boolean> <operator> <register> <subprogram> <string>");
+    Io_Flow.Put_Line ("Item ::= <arbitrary> <fraction> <integer> <real> <boolean> <operator> <register> "
+                    & "<subprogram> <string>");
     Io_Flow.Put_Line ("  <arbitrary>  ::= @<number>");
     Io_Flow.Put_Line ("  <fraction>   ::= @<number>:<number>");
     Io_Flow.Put_Line ("  <integer>    ::= <number> | <base>#<number>#");

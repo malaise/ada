@@ -317,7 +317,6 @@ package Long_Long_Limited_List is
                          From      : in Search_Kind_List) return Boolean;
 
 
-
   -- Search with exception
   ------------------------
   -- Search, may raise Not_In_List if the given element is not found

@@ -28,8 +28,6 @@ package body Sok_Movement is
     when others => raise Illegal_Movement;
   end New_Coordinate;
 
-
-
   -- try to do a movement
   -- Give frame, current position and movement to try
   procedure Do_Movement (
@@ -111,7 +109,6 @@ package body Sok_Movement is
         end case;
     end case;
 
-
     -- update old and new man position
     case Loc_Result is
       when Refused =>
@@ -145,7 +142,6 @@ package body Sok_Movement is
     -- Done
     Result := Loc_Result;
   end Do_Movement;
-
 
 
   -- to undo a movement

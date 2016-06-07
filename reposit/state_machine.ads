@@ -49,7 +49,6 @@ package State_Machine is
                               Report : in State_Report_Access);
 
 
-
   -- Procedure to report a transition, always on event
   type Transition_Report_Access is
        access procedure (Id : in Machine_Id;

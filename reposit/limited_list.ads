@@ -244,7 +244,6 @@ package Limited_List is
                                    Where    : in Direction := Next);
 
 
-
   -- Three different strategies to search:
   -- From_Current : Search starts from current item (that may match)
   -- Skip_Current : Search starts after/before current item
@@ -310,7 +309,6 @@ package Limited_List is
                          Where     : in Direction := Next;
                          Occurence : in Positive := 1;
                          From      : in Search_Kind_List) return Boolean;
-
 
 
   -- Search with exception
