@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ -z "$ADACTL" ] ; then
-  export ADACTL=/usr/local/adactl/src/adactl
+  export ADACTL=/usr/local/src/adactl/src/adactl
 fi
 if [ -z "$GNATPATH" ] ; then
   export GNATPATH=/usr/local/gnat/bin
