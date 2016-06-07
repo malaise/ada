@@ -111,7 +111,7 @@ private
   subtype Buffer_Index_Range is Natural range 0 .. Buffer_Size;
   subtype Buffer_Array is String (1 .. Buffer_Size);
   type File_Type is new Ada.Finalization.Limited_Controlled with record
-    Open : Boolean := False;
+    Opened : Boolean := False;
     Fd : Sys_Calls.File_Desc;
     Mode : File_Mode;
     Line_Feed : As.U.Asu_Us;

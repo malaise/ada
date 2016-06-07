@@ -90,7 +90,7 @@ private
 
   -- Logger
   type Logger is new Ada.Finalization.Controlled with record
-    Init : Boolean := False;
+    Inited : Boolean := False;
     Name : As.U.Asu_Us;
     Mask : Severities := 0;
     Flush : Boolean := True;

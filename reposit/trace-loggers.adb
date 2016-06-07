@@ -82,7 +82,7 @@ package body Trace.Loggers is
   procedure Init (A_Logger : in out Logger; Name : in String := "") is
   begin
     -- Init if necessary
-    if A_Logger.Init then
+    if A_Logger.Inited then
       return;
     end if;
     -- Global init if necessary
@@ -90,14 +90,14 @@ package body Trace.Loggers is
     -- Init the logger
     A_Logger.Name := As.U.Tus (Name);
     A_Logger.Mask := Get_Mask (Name);
-    A_Logger.Init := True;
+    A_Logger.Inited := True;
     Me.Log (Debug, "Init logger name " & Name
                  & " mask " & Image (A_Logger.Mask));
   end Init;
 
   procedure Reset (A_Logger : in out Logger; Name : in String) is
   begin
-    A_Logger.Init := False;
+    A_Logger.Inited := False;
     Me.Log (Debug, "Reset of logger " & A_Logger.Name.Image & " to " & Name);
     Init (A_Logger, Name);
     Set_Flush (A_Logger, True);
@@ -105,13 +105,13 @@ package body Trace.Loggers is
 
   function Is_Init (A_Logger : Logger) return Boolean is
   begin
-    return A_Logger.Init;
+    return A_Logger.Inited;
   end Is_Init;
 
   -- INTERNAL: raise Not_Init if not init
   procedure Check_Init (A_Logger : in Logger) is
   begin
-    if not A_Logger.Init then
+    if not A_Logger.Inited then
       raise Not_Init;
     end if;
   end Check_Init;
@@ -204,7 +204,7 @@ package body Trace.Loggers is
     Txt : As.U.Asu_Us;
   begin
     -- Init as anonymous if needed
-    if not A_Logger.Init then
+    if not A_Logger.Inited then
       Init (A_Logger, Name);
     end if;
     -- Check severity

@@ -9,7 +9,7 @@ package body Text_Line is
     if Is_Open (File) then
       raise Status_Error;
     end if;
-    File.Open := True;
+    File.Opened := True;
     File.Fd := Fd;
     File.Mode := Mode;
     File.Line_Feed := As.U.Tus (Line_Feed_Str);
@@ -28,7 +28,7 @@ package body Text_Line is
     if File.Mode = Out_File or else File.Mode = Inout_File then
       Flush (File);
     end if;
-    File.Open := False;
+    File.Opened := False;
   exception
     when Io_Error =>
       -- May be raised by Flush, for example if close is called following
@@ -107,7 +107,7 @@ package body Text_Line is
   -- Returns if a file is open
   function Is_Open (File : File_Type) return Boolean is
   begin
-    return File.Open;
+    return File.Opened;
   end Is_Open;
 
   -- Returns the associated file desc
