@@ -4,6 +4,8 @@ Main changes
 
 [horizontal]
 
+*2016/06/07*:: Fix some errors detected by AdaControl
+
 *2015/11/02*:: Add dtd_generator and move it, with xml_checker and dtd_checker,
 in a new subdir "xml"
 
