@@ -221,6 +221,9 @@ package Git_If is
   -- Drop a stash, return "" if Ok else the error
   function Drop_Stash (Num : Stash_Number) return String;
 
+  -- Rename a stash, return "" if Ok else the error
+  function Rename_Stash (Num : Stash_Number; Name : String) return String;
+
   -- List of tags
   type Tag_Entry_Rec is record
     Name : As.U.Asu_Us;

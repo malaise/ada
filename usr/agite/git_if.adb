@@ -73,7 +73,6 @@ package body Git_If is
       return Sys_Calls.Unknown;
   end Kind_Of;
 
-
   function Char_Of (Kind : Sys_Calls.File_Kind_List) return Character is
   begin
     case Kind is
@@ -1419,11 +1418,13 @@ package body Git_If is
        Stash.Num := Stash_Number'Value (Line.Slice (I1 + 1, I2 - 1));
        -- "}: WIP on " <branch> ":"
        -- "}: On " <branch> ":"
-       -- ":"
+       -- "}:"
        Stash.Branch := As.U.Asu_Null;
-       if Line.Slice (I2 + 3, I2 + 6) = "WIP " then
+       if Line.Length > I2 + 9
+       and then Line.Slice (I2 + 3, I2 + 9) = "WIP on " then
          I1 := I2 + 9;
-       elsif Line.Slice (I2 + 3, I2 + 5) = "On " then
+       elsif Line.Length > I2 + 5
+       and then Line.Slice (I2 + 3, I2 + 5) = "On " then
          I1 := I2 + 5;
        else
          Stash.Branch := As.U.Tus ("-");
@@ -1464,6 +1465,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("stash");
     Cmd.Cat ("save");
+    Cmd.Cat ("--");
     Cmd.Cat (Pt (Name));
     Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
@@ -1543,6 +1545,59 @@ package body Git_If is
       return "";
     end if;
   end Drop_Stash;
+
+  -- Rename a stash, return "" if Ok else the error
+  function Rename_Stash (Num : Stash_Number; Name : String) return String is
+    Cmd : Many_Strings.Many_String;
+    Stash_Name : As.U.Asu_Us;
+    Stash_Hash : Git_Hash;
+    use type As.U.Asu_Us;
+  begin
+    -- Drop the stash
+    Stash_Name := As.U.Tus ("stash@{" & Images.Integer_Image (Num) & "}");
+    Cmd.Set ("git");
+    Cmd.Cat ("stash");
+    Cmd.Cat ("drop");
+    Cmd.Cat (Stash_Name.Image);
+    Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      return Err_Flow_1.Str.Image;
+    end if;
+    -- Check the result: "Dropped stash@{<i>} (<SHA>)"
+    Stash_Name := As.U.Tus (Str_Util.Substit (Stash_Name.Image, "{", "\{"));
+    Stash_Name := As.U.Tus (Str_Util.Substit (Stash_Name.Image, "}", "\}"));
+    Stash_Name := "Dropped " & Stash_Name
+        & " \([0-9a-h]{" & Images.Integer_Image (Git_Hash'Length) & "}\)"
+        & Aski.Lf;
+    if not Regular_Expressions.Match (Stash_Name.Image,
+                                      Out_Flow_3.Str.Image,
+                                      Strict => True) then
+Basic_Proc.Put_Line_Error (">" & Stash_Name.Image & "<");
+Basic_Proc.Put_Line_Error (">" & Out_Flow_3.Str.Image & "<");
+      return "Unexpected result of drop: " & Out_Flow_3.Str.Image;
+    end if;
+    -- Extract stash SHA
+    Stash_Hash := Out_Flow_3.Str.Slice (
+        Str_Util.Locate (Out_Flow_3.Str.Image, "(") + 1,
+        Str_Util.Locate (Out_Flow_3.Str.Image, ")") - 1);
+    -- Store the commit in stash list
+    Cmd.Set ("git");
+    Cmd.Cat ("stash");
+    Cmd.Cat ("store");
+    Cmd.Cat ("-m");
+    Cmd.Cat (if Name = "" then "-" else Pt (Name));
+    Cmd.Cat ("-q");
+    Cmd.Cat (Stash_Hash);
+    Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      return Err_Flow_1.Str.Image;
+    end if;
+    return "";
+  end Rename_Stash;
 
   -- Internal: read tag Tag.Name and fill Tag
   procedure Read_Tag (Tag : in out Tag_Entry_Rec) is

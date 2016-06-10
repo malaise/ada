@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V29.09"/>
+  <Var Name="Version" Value="V29.10"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -1737,26 +1737,32 @@
       <Init Row="0" Col="2">Pop</Init>
     </Field>
     <Field Num="19" Kind="Button" Name="Del">
-      <Geometry Up="${Field_18.Low}+2" Left="${LmLeft}" Height="3"
+      <Geometry Up="${Field_18.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="2">Del</Init>
+      <Init Row="0" Col="2">Del</Init>
+    </Field>
+    <Field Num="20" Kind="Button" Name="Rename">
+      <Geometry Up="${Field_19.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Rename</Init>
     </Field>
 
-    <Field Num="20" Kind="Put">
-      <Geometry Up="${Field_19.Low}+1" Left="${LmLeft}" Height="1"
+    <Field Num="21" Kind="Put">
+      <Geometry Up="${Field_20.Low}+1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
-    <Field Num="21" Kind="Put">
+    <Field Num="22" Kind="Put">
       <Geometry Up="${Field_8.Low}+1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
 
-    <Field Num="22" Kind="Button" Name="Back">
+    <Field Num="23" Kind="Button" Name="Back">
       <Geometry Low="${List.Low}" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>

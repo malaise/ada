@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V29.09
+V29.10
 
 General purpose
 ---------------
@@ -1580,6 +1580,12 @@ it from the list and returns to the xref:XDir[directory] menu.
 Del::
 
 After confirmation, deletes (drops) the stash currently selected in the list.
+
+Rename::
+
+Select a stash, enter a message (or name) for the stash and click in the
+'rename' button. The entry selected is renamed after confirmation (and moved
+at the top of the list).
 
 .Back
 
