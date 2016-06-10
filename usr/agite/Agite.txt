@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V29.08
+V29.09
 
 General purpose
 ---------------
@@ -1536,7 +1536,8 @@ Stash
 anchor:XStash[]
 The 'stash' menu works on the global repository, not on the local directory. +
 The screen shows the list of stashes. Each entry has a stash number,
-the branch on which the stash was done and the text of the message.
+the branch on which the stash was done (or "-" if not known) and the text of
+the message.
 
 .Current branch and root
 

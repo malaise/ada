@@ -1419,13 +1419,23 @@ package body Git_If is
        Stash.Num := Stash_Number'Value (Line.Slice (I1 + 1, I2 - 1));
        -- "}: WIP on " <branch> ":"
        -- "}: On " <branch> ":"
-       if Line.Slice (I2 + 3, I2 + 5) = "WIP" then
+       -- ":"
+       Stash.Branch := As.U.Asu_Null;
+       if Line.Slice (I2 + 3, I2 + 6) = "WIP " then
          I1 := I2 + 9;
-       else
+       elsif Line.Slice (I2 + 3, I2 + 5) = "On " then
          I1 := I2 + 5;
+       else
+         Stash.Branch := As.U.Tus ("-");
        end if;
-       I2 := Str_Util.Locate (Line.Image, ":", I1);
-       Stash.Branch := Line.Uslice (I1 + 1, I2 - 1);
+       if Stash.Branch.Is_Null then
+         -- A branch name
+         I2 := Str_Util.Locate (Line.Image, ":", I1);
+         Stash.Branch := Line.Uslice (I1 + 1, I2 - 1);
+       else
+         -- No branch name ("-");
+         I2 := I2 + 1;
+       end if;
        -- ":" [ " <Name>" ]
        if I2 /= Line.Length then
          Stash.Name := Line.Uslice (I2 + 2, Line.Length);
