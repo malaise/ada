@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V29.10"/>
+  <Var Name="Version" Value="V29.11"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -739,7 +739,19 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="0">Restore</Init>
     </Field>
-    <Field Num="22" Kind="Button" Name="Back">
+    <Field Num="22" Kind="Put">
+      <Geometry Up="${Field_21.Low}+1" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">--------</Init>
+    </Field>
+    <Field Num="23" Kind="Put">
+      <Geometry Up="${Field_8.Low}+1" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">--------</Init>
+    </Field>
+    <Field Num="24" Kind="Button" Name="Back">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -747,13 +759,13 @@
     </Field>
 
     <!-- Copy Hash / date and comment -->
-    <Field Num="23" Kind="Button" Name="Copyhash">
+    <Field Num="25" Kind="Button" Name="Copyhash">
       <Geometry Up="${Field_14.Up}" Height="1" Width="8"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Copy</Init>
     </Field>
-    <Field Num="24" Kind="Button" Name="Copy">
+    <Field Num="26" Kind="Button" Name="Copy">
       <Geometry Up="${Field_15.Up}" Height="1" Width="8"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>

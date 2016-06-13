@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V29.10
+V29.11
 
 General purpose
 ---------------
@@ -1692,7 +1692,7 @@ it allows to either:
 or to 'Cancel'.
 
 .Called by the 'branch' or the 'history' menu,
-it allows to reset the current repository the a branch or commit.
+it allows to reset the current repository to a branch or to a commit.
 The reset can be 'Soft', 'Mixed' or 'Hard', and it is also possible to
 'Cancel'.
 
