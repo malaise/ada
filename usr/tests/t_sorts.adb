@@ -10,7 +10,7 @@ procedure T_Sorts is
   Last : Natural range 0 .. Index'Last;
   Init, Res_Bul, Res_Tas, Res_Rap : D_Arr;
 
-  package Tab_Sorts is new Sorts (Integer, Index, "<", Arr);
+  package Tab_Sorts is new Sorts (Integer, Index, "<", Arr); --## rule line off Generic_Aliasing
   Ok : Boolean;
   Current_Sort : String (1 .. 3);
 

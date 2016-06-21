@@ -62,7 +62,8 @@ begin
   declare
     subtype State_List is Positive range 1 .. Ctx.Get_Nb_Children (States);
     subtype Event_List is Positive range 1 .. Ctx.Get_Nb_Children (Events);
-    package Msm is new State_Machine (State_List, Event_List, Machine_List);
+    package Msm is new State_Machine
+        (State_List, Event_List, Machine_List); --## Rule line off Generic_Aliasing
     Mach, Unused : Msm.Machine_Type (The_One);
 
     State_Names : As.U.Asu_Array (State_List);

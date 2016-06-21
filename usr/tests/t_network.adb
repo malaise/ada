@@ -1,7 +1,7 @@
 with Ada.Exceptions;
 with Basic_Proc, Network;
 procedure T_Network is
-  package Mnet is new Network (Integer, Integer, Integer);
+  package Mnet is new Network (Integer, Integer, Integer); --## rule line off Generic_Aliasing
   N1, N2, N3 : Mnet.Node_Type;
 
   -- Display connections of N

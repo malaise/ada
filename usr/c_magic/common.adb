@@ -83,7 +83,7 @@ package body Common is
   -- To sort a part of the array
   package Sort is new Sorts (
    Typ_Object => Len_Range,
-   Typ_Index  => Len_Range,
+   Typ_Index  => Len_Range, --## rule line off Generic_Aliasing
    "<"        => "<",
    Typ_Array  => Lis_Array);
 

@@ -4,7 +4,8 @@ package body Unit_Format is
 
   Current_Unit : Units_List := Default_Unit;
 
-  package Mef is new Euro_Franc (Oper_Def.Amount_Range, Oper_Def.Amount_Range);
+  package Mef is new Euro_Franc (Oper_Def.Amount_Range,
+                                 Oper_Def.Amount_Range); --## rule line off Generic_Aliasing
 
   -- Date: 25/10/2001
   function Date_Image (Date : Oper_Def.Date_Rec) return Date_Str is

@@ -5,7 +5,8 @@ use type My_Math.Real;
 
 procedure E2F is
 
-  package Real_Ef is new Euro_Franc (My_Math.Real, My_Math.Real);
+  package Real_Ef is new Euro_Franc (My_Math.Real,
+                                     My_Math.Real); --## rule line off Generic_Aliasing
 
   Amount : My_Math.Real;
   To_Francs : Boolean;
