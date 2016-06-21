@@ -93,7 +93,7 @@ begin
         X_Mng.X_Set_Attributes (Id, 0, 3, False, False, False);
         Put (X_Mng.Event_Kind'Image(Kind));
       when X_Mng.Signal_Event =>
-        exit;
+        exit Main_Loop;
       when X_Mng.Tid_Press | X_Mng.Tid_Release =>
         X_Mng.X_Read_Tid (Id, True, Tid_Button, Tid_Row, Tid_Col);
         Put (X_Mng.Event_Kind'Image(Kind) & " " & X_Mng.Button_List'Image(Tid_Button)

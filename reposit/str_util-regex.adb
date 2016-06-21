@@ -319,9 +319,9 @@ package body Str_Util.Regex is
         exit Pass when Start > Last;
       end loop Pass;
       -- Done if no match occured during last pass
-      exit when not Match_Found;
+      exit Cycles when not Match_Found;
       -- Done when number of cycles reached
-      exit when Cycle = Nb_Cycles;
+      exit Cycles when Cycle = Nb_Cycles;
     end loop Cycles;
     -- Build and return result
     return Normalize (Within (Within'First .. I1 - 1)

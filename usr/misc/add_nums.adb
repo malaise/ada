@@ -79,7 +79,7 @@ begin
           Str_Sep : constant String := Parser.Prev_Separators (Iter);
         begin
           -- End of line?
-          exit when Str_Word = "";
+          exit Word when Str_Word = "";
           -- Is it -ij?
           if not Force_Positive
           and then Str_Sep'Length > 0

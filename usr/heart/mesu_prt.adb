@@ -90,7 +90,7 @@ package body Mesu_Prt is
       Print_Rec (Person, Mesure);
 
       -- Next line except if list empty or end of list
-      exit when Afpx.Line_List.Is_Empty
+      exit Print when Afpx.Line_List.Is_Empty
       or else not Afpx.Line_List.Check_Move;
 
       Afpx.Line_List.Move_To;

@@ -29,7 +29,7 @@ package body Players is
     One_Piece :
     loop
       Piece := Team.Get (Color);
-      exit when Piece = null;
+      exit One_Piece when Piece = null;
       declare
         Pos : constant Space.Square_Coordinate
             := Pieces.Pos_Of (Piece.all);

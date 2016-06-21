@@ -19,8 +19,15 @@ Aliasing : check parameter_aliasing (possible);
 check max_blank_lines (2);
 check max_line_length (120);
 check max_nesting (6);
-check statements (goto);
+check statements (goto, labelled);
+check statements (unnamed_exit);
 check style (no_closing_name);
 Use : check unnecessary_use_clause;
 check with_clauses (reduceable);
+
+check max_statement_nesting (block, 3);
+check max_statement_nesting (case, 5);
+check max_statement_nesting (if, 5);
+check max_statement_nesting (loop, 4);
+check max_statement_nesting (all, 7);
 
