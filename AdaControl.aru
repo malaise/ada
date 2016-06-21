@@ -13,6 +13,7 @@ check expressions (inconsistent_attribute_dimension);
 check case_statement (others_span, min 1);
 Char : check characters;
 check comments (pattern, "@@@");
+check entities (Unchecked_Conversion, Unchecked_Deallocation);
 check max_blank_lines (2);
 check max_line_length (120);
 check max_nesting (6);

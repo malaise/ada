@@ -1,4 +1,4 @@
-with Unchecked_Deallocation;
+with Ada.Unchecked_Deallocation;
 package body Network is
 
   procedure Set_Connection (To : out Connection_Info_Type;
@@ -388,7 +388,7 @@ package body Network is
   -- Finalization
   overriding procedure Finalize (A_Node : in out Node_Type) is
     procedure Deallocation_Of is new
-      Unchecked_Deallocation (Object => Connection_Mng.List_Type,
+      Ada.Unchecked_Deallocation (Object => Connection_Mng.List_Type,
                               Name => Connections_Access);
   begin
     -- Disconnect from network

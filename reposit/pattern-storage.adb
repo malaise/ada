@@ -1,8 +1,8 @@
-with Unchecked_Deallocation;
+with Ada.Unchecked_Deallocation;
 with Dynamic_List;
 separate (Pattern)
 package body Storage is
-  procedure Free is new Unchecked_Deallocation (String, Str_Access);
+  procedure Free is new Ada.Unchecked_Deallocation (String, Str_Access);
 
   -- Patterns and their Terms are in order in the list.
   -- Rules are mixed.

@@ -1,4 +1,4 @@
-with Unchecked_Deallocation;
+with Ada.Unchecked_Deallocation;
 with Mod_Utils;
 package body Long_Long_Limited_List is
   use type Ll_Natural;
@@ -39,7 +39,7 @@ package body Long_Long_Limited_List is
 
   -- Delete the full list
   procedure Deallocation_Of is new
-     Unchecked_Deallocation (Object=>Cell, Name=>Link);
+    Ada. Unchecked_Deallocation (Object=>Cell, Name=>Link);
   procedure Delete_List (List : in out List_Type;
                          Deallocate : in Boolean := True) is
     Local : Link;

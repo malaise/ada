@@ -1,10 +1,10 @@
-with Unchecked_Deallocation;
+with Ada.Unchecked_Deallocation;
 with Sys_Calls, Lower_Str, Str_Util;
 package body Environ is
 
   -- Don't allocate strings in stack (they may be too long)
   type String_Access is access String;
-  procedure Free is new Unchecked_Deallocation (String, String_Access);
+  procedure Free is new Ada.Unchecked_Deallocation (String, String_Access);
 
   -- Getenv for a String. Returns empty string if not set.
   function Getenv (Env_Name : String) return String is

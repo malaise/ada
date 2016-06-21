@@ -1,12 +1,12 @@
-with Ada.Text_Io, Unchecked_Conversion;
+with Ada.Text_Io, Ada.Unchecked_Conversion;
 package body Address_Ops is
 
   type Readable_Address is mod System.Memory_Size;
   package Addr_Io is new Ada.Text_Io.Modular_Io(Readable_Address);
 
-  function To_Readable is new Unchecked_Conversion (
+  function To_Readable is new Ada.Unchecked_Conversion (
     System.Address, Readable_Address);
-  function To_Address is new Unchecked_Conversion (
+  function To_Address is new Ada.Unchecked_Conversion (
     Readable_Address, System.Address);
 
   function "+" (Addr : System.Address; Offset : Long_Longs.Llu_Natural)

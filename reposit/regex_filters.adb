@@ -1,9 +1,9 @@
 -- Set la list of regex and success condition
 -- Check a string versus le citeria one after the other
-with Unchecked_Deallocation;
+with Ada.Unchecked_Deallocation;
 package body Regex_Filters is
 
-  procedure Free is new Unchecked_Deallocation (
+  procedure Free is new Ada.Unchecked_Deallocation (
                 Regular_Expressions.Compiled_Pattern,
                 Pattern_Access);
 

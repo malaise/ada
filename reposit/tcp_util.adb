@@ -1,5 +1,4 @@
-with Unchecked_Deallocation;
-with Ada.Exceptions;
+with Ada.Unchecked_Deallocation, Ada.Exceptions;
 with Dynamic_List, Timers, Event_Mng, Trace.Loggers, Socket_Util;
 package body Tcp_Util is
 
@@ -927,7 +926,7 @@ package body Tcp_Util is
     Rece_List : Rece_List_Mng.List_Type;
 
     type Message_Access is access Message_Type;
-    procedure Free_Message is new Unchecked_Deallocation
+    procedure Free_Message is new Ada.Unchecked_Deallocation
       (Message_Type, Message_Access);
 
     function Dscr_Match (R1, R2 : Rece_Rec) return Boolean is

@@ -1,4 +1,4 @@
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 -- Suppress warning than System.Bit_Ops is an internal GNAT unit
 --  thus not portable
@@ -11,9 +11,9 @@ with C_Types;
 
 package body Bit_Ops is
 
-  function To_Unsigned_32 is new Unchecked_Conversion
+  function To_Unsigned_32 is new Ada.Unchecked_Conversion
     (Source => Integer, Target => Interfaces.Unsigned_32);
-  function To_Integer is new Unchecked_Conversion
+  function To_Integer is new Ada.Unchecked_Conversion
     (Source => Interfaces.Unsigned_32, Target => Integer);
 
   function Shl_Long (L : C_Types.Long; Bits : C_Types.Int) return C_Types.Long;
@@ -21,9 +21,9 @@ package body Bit_Ops is
   function Shr_Long (L : C_Types.Long; Bits : C_Types.Int) return C_Types.Long;
   pragma Import (C, Shr_Long, "shr_long");
 
-  function To_Unsigned_64 is new Unchecked_Conversion
+  function To_Unsigned_64 is new Ada.Unchecked_Conversion
     (Source => Ll_Integer, Target => Interfaces.Unsigned_64);
-  function To_Ll_Integer is new Unchecked_Conversion
+  function To_Ll_Integer is new Ada.Unchecked_Conversion
     (Source => Interfaces.Unsigned_64, Target => Ll_Integer);
 
   -- Integer

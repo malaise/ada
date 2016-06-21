@@ -2,7 +2,7 @@
 -- With the 4 operations + - / * on integers
 -- With a random target integer number (100 to 999)
 -- Try to obtain the target or to get as close as possible to it
-with Unchecked_Deallocation;
+with Ada.Unchecked_Deallocation;
 with Argument, Images, Bit_Ops, Unbounded_Arrays, Basic_Proc;
 procedure Renardeau is
 
@@ -33,7 +33,7 @@ procedure Renardeau is
     Used : Used_Mask := 0;
     Next : Cell_Access;
   end record;
-  procedure Free is new Unchecked_Deallocation (Cell, Cell_Access);
+  procedure Free is new Ada.Unchecked_Deallocation (Cell, Cell_Access);
 
   -- X mode
   type Bases_Array is array (Bases_Range) of Positive;
