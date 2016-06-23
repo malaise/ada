@@ -10,6 +10,7 @@ Logical_Not : check simplifiable_expressions (logical_not);
 Andor_Boolean : check expressions (and_boolean, or_boolean);
 check expressions (inconsistent_attribute_dimension);
 
+check abnormal_function_return;
 check case_statement (others_span, min 1);
 Char : check characters;
 check comments (pattern, "@@@");
