@@ -293,13 +293,10 @@ Xwords (2)::
 Cots directories
 ----------------
 
-This directory mainly contains a copy of:
+This directory mainly contains a copy of pragmarc and mine_detector
+from http://pragmada.x10hosting.com/mindet.html (under GPL).
 
-- pragmarc and mine from http://pragmada.home.mchsi.com (under GPL)
-
-- LinXtris from http://sourceforge.net/projects/linxtris (under GPL)
-
-They use Gtk-Ada 2.2x.
+Mine detector uses Gtk-Ada GPL_2016 (GTK3).
 
 Testing
 -------
