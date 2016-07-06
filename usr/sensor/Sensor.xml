@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="Utf-8"?>
+<!DOCTYPE Sensor SYSTEM "Sensor.dtd">
+
+<Sensor>
+  <Rules>
+    <Rule Name="Antibot">echo ${Line} | /usr/bin/mail -s "Alert antibot" malaise</Rule>
+  </Rules>
+  <Filters>
+    <Filter File="/var/log/syslog" Rule="Antibot">IP in blacklist</Filter>
+  </Filters>
+</Sensor>
+

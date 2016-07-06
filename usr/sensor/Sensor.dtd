@@ -8,7 +8,7 @@
 <!ELEMENT Rule (#PCDATA)>
 <!-- In the action, the following variables are expanded: -->
 <!-- ${Line} : Line of the log that matches the filter -->
-<!-- ${Times} : Date and time at ISO format (YYyy-Mm-DdTHh:Mm:Ss.mmm) -->
+<!-- ${Time} : Date and time at ISO format (YYyy-Mm-DdTHh:Mm:Ss.mmm) -->
 <!-- ${Host}: Local host name -->
 
 <!-- List of filters, each defining: -->

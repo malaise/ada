@@ -4,9 +4,9 @@ ADAVIEW := $(REPOSIT)
 
 EXES := sensor
 
-CLIBS := $(PCRE_SLIBS)
+CLIBS := $(UTILS_SLIBS) $(PCRE_SLIBS)
 
-LARGS_sensor.stat := $(PCRE_ALIBS)
+LARGS_sensor.stat := $(UTILS_ALIBS) $(PCRE_ALIBS)
 
 TXT := Sensor
 DOCOPTS_Agite= -a toc

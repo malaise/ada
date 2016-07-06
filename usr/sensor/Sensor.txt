@@ -1,8 +1,49 @@
-- Take the configuration file as argument and parse it
-- Store the rules in a unique list (by name)
-- Store the filters in a dynamic list (history is a circular queue)
-- Arm a periodical time for each filter (user data being the position in list)
-- When a timer expires:
+Sensor
+======
+Version: V0.1
+
+Sensor scans several log files and raises alerts on some events (matching
+filters).
+
+Syntax and configuration
+------------------------
+...............................................................
+sensor <configuration file> | -h | --help | -v | --version
+...............................................................
+
+The XML configuration file defines several rules. +
+Each rule has a unique name and executes a predefined shell command. The
+definition of a command can refer to some variables of the form '${variable}'.
+The following variable names are automatically defined:
+
+- $\{Line} : Line of the log that matches the filter
+- $\{Time} : Date and time at ISO format (YYyy-Mm-DdTHh:Mm:Ss.mmm)
+- $\{Host}: Local host name
+
+All the other variables must be defined in the environment, otherwise this is
+an error. +
+ +
+The configuration file then defines filters. Each filter consists in:
+
+- a file name (the name of the file to scan)
+- an optional scanning period in seconds (default 10.0)
+- an optional tail size to scan (default 100 lines)
+- an history of alerts to store (default 10)
+- the name of the rule to execute
+
+
+Processing
+----------
+.Init
+ * Parse the argument and the configuration file
+ * Check the expansion of each rule (variables) and store the rules in a
+unique list (by name)
+ * Store the filters in a dynamic list (history is a circular queue), check
+that the referenced rule exists
+ * Arm a periodical time for each filter (user data being the position in list)
+ * When a timer expires:
+
+.When a timer expires:
  * Retrieve the filter
  * Exec a shell that makes tail on the file and grep -E the regex
  * If found, check each line of the result in the history
