@@ -6,6 +6,15 @@ procedure T_Bencode is
   Op : Trilean.Trilean;
   Ifile, Ofile : Text_Line.File_Type;
   Ibuf, Obuf, Tmp : As.U.Asu_Us;
+
+  procedure Usage is
+  begin
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+        & " [ -c | -s ] -b2x  |  -x2b  [ <file_name> ]");
+    Basic_Proc.Put_Line_Error (" or:   " & Argument.Get_Program_Name & " -s2h");
+    Basic_Proc.Set_Error_Exit_Code;
+  end Usage;
+
 begin
 
   -- Parse arguments
@@ -22,24 +31,26 @@ begin
     end if;
   end if;
   -- Mode
-  if Argument.Get_Nbre_Arg = Num
+  if Argument.Get_Nbre_Arg >= Num
   and then Argument.Get_Parameter (Num) = "-b2x" then
     Op := Trilean.True;
-  elsif Argument.Get_Nbre_Arg = Num
+    Num := Num + 1;
+  elsif Argument.Get_Nbre_Arg >= Num
   and then Argument.Get_Parameter (Num) = "-x2b" then
     Op := Trilean.False;
+    Num := Num + 1;
   elsif Argument.Get_Nbre_Arg = 1
   and then Argument.Get_Parameter (1) = "-s2h" then
     Op := Trilean.Other;
   else
-    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-                               & " [ -c | -s ] -b2x | | [ -nc ] -x2b | -s2h");
-    Basic_Proc.Set_Error_Exit_Code;
+    Usage;
     return;
   end if;
 
   -- Create flows
-  Ifile.Open_All (Text_Line.In_File);
+  Ifile.Open_All (Text_Line.In_File,
+      (if Argument.Get_Nbre_Arg = Num then Argument.Get_Parameter (Num)
+       else ""));
   Ofile.Open_All (Text_Line.Out_File);
 
   -- Read stdin
