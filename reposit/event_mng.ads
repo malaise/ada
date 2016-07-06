@@ -97,7 +97,7 @@ package Event_Mng is
   -- The 4 variants return on any event or on timeout
   type Out_Event_List is (Timer_Event, Fd_Event, Signal_Event, Timeout);
 
-  -- Used indernally in Handling child pacakge
+  -- Used internally in Handling child pacakge
   subtype In_Event_List is Out_Event_List range Fd_Event .. Timeout;
 
   -- This uses virtual time and allows various specifications of delay
