@@ -87,23 +87,23 @@ fi
 echo "OK"
 
 # Match dir pattern and file regexp
-title "In lib_*, match regexp *.o and"
-ls -1 lib_Linux/*.o > exp
-launch -M --match_dir="lib_*" -m "@.*\.o" * > res1
+title "In lib*, match regexp *.o and"
+ls -1 lib/*.o > exp
+launch -M --match_dir="lib*" -m "@.*\.o" * > res1
 cmp res1 exp > /dev/null 2>&1
 if [ $? -ne 0 ] ; then
-  error "als -M --match_dir='lib_*' -m '@.*\.o' * result res differs from exp"
+  error "als -M --match_dir='lib*' -m '@.*\.o' * result res differs from exp"
 fi
 rm exp res1
 echo "OK"
 
 # Exclude file regexp
-title "In lib_Linux, exclude regexp *.ali"
-ls -1 lib_Linux/*.o > exp
-launch -M -e "@.*\.ali" lib_Linux > res1
+title "In lib, exclude regexp *.ali"
+ls -1 lib/*.o > exp
+launch -M -e "@.*\.ali" lib > res1
 cmp res1 exp > /dev/null 2>&1
 if [ $? -ne 0 ] ; then
-  error "als -M -e '@.*\.ali' lib_Linux result res differs from exp"
+  error "als -M -e '@.*\.ali' lib result res differs from exp"
 fi
 rm exp res1
 echo "OK"
@@ -140,8 +140,8 @@ echo "OK"
 # Sort by size
 title "In ., reverse sort by size"
 res=`launch -sr1 | tail -1`
-if [ "$res" != "Als.html" ] ; then
-  error "als -sr1 last line is $res i.o. Als.html"
+if [ "$res" != "als.stat" ] ; then
+  error "als -sr1 last line is $res i.o. als.stat"
 fi
 echo "OK"
 

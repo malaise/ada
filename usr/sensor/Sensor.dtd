@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="Utf-8"?>
+<!ELEMENT Sensor (Rules, Filters)>
+
+<!-- List of rules, each uniquely identified by a name, -->
+<!ELEMENT Rules (Rule*)>
+<!ATTLIST Rule Name ID #REQUIRED>
+<!-- and each defining an action (shell command) to be executed. -->
+<!ELEMENT Rule (#PCDATA)>
+<!-- In the action, the following variables are expanded: -->
+<!-- ${Line} : Line of the log that matches the filter -->
+<!-- ${Times} : Date and time at ISO format (YYyy-Mm-DdTHh:Mm:Ss.mmm) -->
+<!-- ${Host}: Local host name -->
+
+<!-- List of filters, each defining: -->
+<!ELEMENT Filters (Filter*)>
+<!-- - the file to which it applies -->
+<!-- - the scanning period in seconds (float) -->
+<!-- - the number of tailing lines of the file to scan -->
+<!-- - the maximum number of known alerts to store in the history -->
+<!-- - the  rule to execute when a line of file matches and is not known -->
+<!--   in the history -->
+<!ATTLIST Filter File CDATA #REQUIRED
+                 Period CDATA "10.0"
+                 Tail CDATA "100"
+                 History CDATA "10"
+                 Rule IDREF #REQUIRED>
+<!ELEMENT Filter (#PCDATA)>
+<!-- - the criteria (regex) to scan -->
+

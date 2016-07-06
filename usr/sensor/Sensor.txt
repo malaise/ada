@@ -1,0 +1,10 @@
+- Take the configuration file as argument and parse it
+- Store the rules in a unique list (by name)
+- Store the filters in a dynamic list (history is a circular queue)
+- Arm a periodical time for each filter (user data being the position in list)
+- When a timer expires:
+ * Retrieve the filter
+ * Exec a shell that makes tail on the file and grep -E the regex
+ * If found, check each line of the result in the history
+ * If not found, store in the history and execute rule 
+
