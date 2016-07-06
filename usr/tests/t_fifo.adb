@@ -5,10 +5,8 @@ procedure T_Fifo is
   Size : constant := 5;
   N : Positive;
 
-  package My_Fifo is new Queues.Fifo (
-   Size => Size,
-   Item => Positive);
-  Fifo : My_Fifo.Fifo_Type;
+  package My_Fifo is new Queues.Fifo (Positive);
+  Fifo : My_Fifo.Fifo_Type(Size);
 
   procedure Dump is
     V : Positive;

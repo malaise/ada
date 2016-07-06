@@ -10,7 +10,7 @@ package body Queues.Timed is
   -- Check length before pushing (raise Timed_Full if list lenght is size)
   procedure Check_Length (Queue : in Timed_Type) is
   begin
-    if Size /= 0 and then Queue.List.List_Length = Size then
+    if Queue.Size /= 0 and then Queue.List.List_Length = Queue.Size then
       raise Timed_Full;
     end if;
   end Check_Length;

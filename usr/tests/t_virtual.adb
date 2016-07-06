@@ -101,8 +101,8 @@ procedure T_Virtual is
   end Check_Events;
 
   -- The timed queue and dump of it
-  package Int_Queue_Timed is new Queues.Timed (0, Integer);
-  My_Queue : Int_Queue_Timed.Timed_Type;
+  package Int_Queue_Timed is new Queues.Timed (Integer);
+  My_Queue : Int_Queue_Timed.Timed_Type(0);
   procedure Check_Queue (Expect : Natural) is
     Nb_Queue : Natural := 0;
     Val : Integer;

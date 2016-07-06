@@ -8,8 +8,8 @@ package body Stack is
   List, Extra_List : Stack_List.List_Type;
 
   -- Hitory of Last 3 popped items
-  package History_Mng is new Queues.Circ (3, Item_Rec);
-  History : History_Mng.Circ_Type;
+  package History_Mng is new Queues.Circ (Item_Rec);
+  History : History_Mng.Circ_Type(3);
 
   procedure Push (Item : in Item_Rec; Default_Stack : in Boolean := True) is
   begin

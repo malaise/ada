@@ -5,10 +5,8 @@ procedure T_Lifo is
   Size : constant := 5;
   N : Positive;
 
-  package My_Lifo is new Queues.Lifo (
-   Size => Size,
-   Item => Positive);
-  Lifo : My_Lifo.Lifo_Type;
+  package My_Lifo is new Queues.Lifo (Positive);
+  Lifo : My_Lifo.Lifo_Type(Size);
 
   procedure Dump is
     V : Positive;

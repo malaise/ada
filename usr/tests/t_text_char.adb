@@ -1,8 +1,8 @@
 with Argument, Text_Char, Sys_Calls, Rnd, Queues, As.U;
 procedure T_Text_Char is
   Qsize : constant := 5;
-  package Q is new Queues.Circ (Qsize, Character);
-  Circ : Q.Circ_Type;
+  package Q is new Queues.Circ (Character);
+  Circ : Q.Circ_Type(Qsize);
 
   File : Text_Char.File_Type;
   C, U : Character;

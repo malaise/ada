@@ -580,7 +580,7 @@ private
   Max_Buf_Len : constant := 21;
   -- Don't skip current data from recording
   No_Skip_Rec : constant Integer := -1;
-  package My_Circ is new Queues.Circ (Max_Buf_Len, Character);
+  package My_Circ is new Queues.Circ (Character);
 
   -- Current flow is...
   -- Guess is used for tracing (errors, warnings) and means "gesss from Ctx"
@@ -631,7 +631,7 @@ private
     -- To know how many where got before End_Error
     Nb_Got : Natural := 0;
     -- Circular buffer of read characters
-    Circ : My_Circ.Circ_Type;
+    Circ : My_Circ.Circ_Type (Max_Buf_Len);
     -- Error message
     Err_Msg : As.U.Asu_Us;
     -- Current significant string, loaded by Parse_Until_xxx

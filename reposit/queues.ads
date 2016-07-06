@@ -1,17 +1,17 @@
 package Queues is
+  subtype Len_Range is Natural range 0 .. Positive'Last;
+  subtype Size_Range is Len_Range range 1 .. Len_Range'Last;
+  subtype No_Range is Size_Range;
 
   generic
     -- Last in - first out
     -- Management of a stack of objects to be defined: type Object is...;
     -- Size of the stack: Size : Positive := ...;
     -- Instanciation: package My_Lifo is new Queues.Lifo (Size, Object);
-    Size : Positive;
     type Item is private;
   package Lifo is
-    type Lifo_Type is tagged private;
 
-    subtype Len_Range is Natural range 0 .. Size;
-    subtype No_Range is Positive range 1 .. Size;
+    type Lifo_Type (Size : Size_Range) is tagged private;
 
     -- Number of Items in Lifo
     function Length (Queue : Lifo_Type) return Len_Range;
@@ -45,17 +45,16 @@ package Queues is
     -- Clear the whole stack
     procedure Clear (Queue : in out Lifo_Type);
 
-
     -- Exceptions raised during push if the stack is full
     --  or when popping if stack is empty
     Lifo_Full : exception;
     Lifo_Empty : exception;
     -- Raised by look if No is > number of items in the stack
     Lifo_Not : exception;
-    type Pile_Type is array (No_Range) of Item;
   private
-    type Lifo_Type is tagged record
-      Pile : Pile_Type;
+    type Pile_Type is array (Size_Range range <>) of Item;
+    type Lifo_Type (Size : Size_Range) is tagged record
+      Pile : Pile_Type (1 .. Size);
       -- Ptr is the last pushed except if stack is empty
       --  then it is 0.
       Ptr : Len_Range := 0;
@@ -67,14 +66,10 @@ package Queues is
     -- Management of a queue of objects to be defined: type Object is...;
     -- Size of the stack: Size : Positive := ...;
     -- Instanciation: package My_Fifo is new Queues.Fifo (Size, Object);
-    Size : Positive;
     type Item is private;
   package Fifo is
 
-    type Fifo_Type is tagged private;
-
-    subtype Len_Range is Natural range 0 .. Size;
-    subtype No_Range is Positive range 1 .. Size;
+    type Fifo_Type (Size : Size_Range) is tagged private;
 
     -- Number of Items in Fifo
     function Length (Queue : Fifo_Type) return Len_Range;
@@ -115,17 +110,17 @@ package Queues is
     -- Raised by look if No is > number of items in the stack
     Fifo_Not : exception;
   private
-    subtype Ptr_Range is Natural range 0 .. Size - 1;
+    subtype Ptr_Range is Size_Range;
     -- Ptr_In  points to the last pushed
     -- Ptr_Out points to the first to pop
     --  fifo full  is raised if and only if ptr_in  = ptr_out and full
     --  fifo empty is raised if and only if ptr_in  = ptr_out and not full
-    type File_Type is array (Ptr_Range) of Item;
-    type Fifo_Type is tagged record
+    type File_Type is array (Size_Range range <>) of Item;
+    type Fifo_Type (Size : Size_Range) is tagged record
       Full : Boolean := False;
-      File : File_Type;
-      Ptr_In  : Ptr_Range := 0;
-      Ptr_Out : Ptr_Range := 0;
+      File : File_Type (1 .. Size);
+      Ptr_In  : Ptr_Range := 1;
+      Ptr_Out : Ptr_Range := 1;
     end record;
   end Fifo;
 
@@ -137,14 +132,11 @@ package Queues is
     -- Size of the stack: Size : Positive := ...;
     -- Instanciation:
     --  package My_Prio is new Queues.Prio (Size, Object, Priority);
-    Size : Positive;
     type Item is private;
     type Priority is range <>;
   package Prio is
-    type Prio_Type is tagged private;
 
-    subtype Len_Range is Natural range 0 .. Size;
-    subtype No_Range is Positive range 1 .. Size;
+    type Prio_Type (Size : Size_Range) is tagged private;
 
     -- Number of Items in Prio
     function Length (Queue : Prio_Type) return Len_Range;
@@ -187,7 +179,7 @@ package Queues is
     -- Raised by look if No is > number of items in the stack
     Prio_Not : exception;
   private
-    subtype Typ_Ptr is Natural range 0 .. Size - 1;
+    subtype Typ_Ptr is Len_Range;
     -- Ptr_In  points to the last pushed
     -- Ptr_Out points to the first to pop
     --  fifo full  is raised if and only if ptr_in  = ptr_out and full
@@ -196,9 +188,9 @@ package Queues is
       Prio : Priority;
       Data : Item;
     end record;
-    type File_Type is array (Typ_Ptr) of Cell;
-    type Prio_Type is tagged record
-      File : File_Type;
+    type File_Type is array (Size_Range range <>) of Cell;
+    type Prio_Type (Size : Size_Range) is tagged record
+      File : File_Type (1 .. Size);
       Ptr_In  : Typ_Ptr := 0;
       Ptr_Out : Typ_Ptr := 0;
       Full : Boolean := False;
@@ -210,13 +202,10 @@ package Queues is
     -- Management of a buffer of objects to be defined: type Object is...;
     -- Size of the stack: Size : Positive := ...;
     -- Instanciation: package My_Fifo is new Queues.Circ (Size, Object);
-    Size : Positive;
     type Item is private;
   package Circ is
-    type Circ_Type is tagged private;
 
-    subtype Len_Range is Natural range 0 .. Size;
-    subtype No_Range is Positive range 1 .. Size;
+    type Circ_Type (Size : Size_Range) is tagged private;
 
     -- Number of Items in Circ
     function Length (Queue : Circ_Type) return Len_Range;
@@ -257,14 +246,14 @@ package Queues is
     Circ_Not : exception;
 
   private
-    subtype Typ_Ptr is Natural range 0 .. Size - 1;
+    subtype Typ_Ptr is Len_Range;
     -- Ptr_In  points to the last pushed
     -- Ptr_Out points to the first to pop
     --  fifo full  is raised if and only if ptr_in  = ptr_out and full
     --  fifo empty is raised if and only if ptr_in  = ptr_out and not full
-    type File_Type is array (Typ_Ptr) of Item;
-    type Circ_Type is tagged record
-      File : File_Type;
+    type File_Type is array (Len_Range range <>) of Item;
+    type Circ_Type (Size : Size_Range) is tagged record
+      File : File_Type (0 .. Size);
       Ptr_In  : Typ_Ptr := 0;
       Ptr_Out : Typ_Ptr := 0;
       Full : Boolean := False;

@@ -4,12 +4,9 @@ private with Dynamic_List, Chronos.Passive_Timers;
 with Perpet, Virtual_Time;
 generic
   -- Size of the queue, 0 for infinite
-  Size : Natural;
   type Item is private;
 package Queues.Timed is
-  type Timed_Type is tagged limited private;
-
-  subtype Len_Range is Natural range 0 .. Size;
+  type Timed_Type (Size : Len_Range) is tagged limited private;
 
   -- Assign a virtual clock to the queue (the queue does not register but each
   --  Item will have a passive timer on this clock.
@@ -74,7 +71,8 @@ private
   -- List will always have current pos set to first
   package Item_Dyn_List_Mng is new Dynamic_List (Loc_Item);
   package Item_List_Mng renames Item_Dyn_List_Mng.Dyn_List;
-  type Timed_Type is new Ada.Finalization.Limited_Controlled with record
+  type Timed_Type (Size : Len_Range) is
+      new Ada.Finalization.Limited_Controlled with record
     Clock : Virtual_Time.Clock_Access := null;
     List : Item_List_Mng.List_Type;
   end record;

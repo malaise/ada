@@ -10,8 +10,8 @@ package body Mcd_Parser is
 
   -- Instruction stack for debug history
   -- 9 should be enough for user to identify the section
-  package Instr_Stack is new Queues.Circ(9, Item_Chrs_Rec);
-  Stack : Instr_Stack.Circ_Type;
+  package Instr_Stack is new Queues.Circ (Item_Chrs_Rec);
+  Stack : Instr_Stack.Circ_Type(9);
 
   Txt, Txts : As.U.Asu_Us;
 

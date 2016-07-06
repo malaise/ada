@@ -16,8 +16,8 @@ procedure T_Timeq is
   end Help;
 
   subtype Val_Range is Natural range 0 .. 9;
-  package Val_Queue is new Queues.Timed (5, Val_Range);
-  Vals : Val_Queue.Timed_Type;
+  package Val_Queue is new Queues.Timed (Val_Range);
+  Vals : Val_Queue.Timed_Type(5);
 
   function Equal (V1, V2 : Val_Range) return Boolean is
   begin

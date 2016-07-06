@@ -3,10 +3,8 @@ with Queues;
 -- salvage of movements for undo, save/restore ...
 package body Sok_Save is
 
-  package Movement_Lifo is new Queues.Lifo (
-   Size => Nbre_Save,
-   Item => Sok_Movement.Saved_Data_Rec);
-  Movements : Movement_Lifo.Lifo_Type;
+  package Movement_Lifo is new Queues.Lifo (Sok_Movement.Saved_Data_Rec);
+  Movements : Movement_Lifo.Lifo_Type(Nbre_Save);
 
   Index_Save : Positive range 1 .. Nbre_Save;
 

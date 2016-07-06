@@ -11,7 +11,7 @@ package body Queues is
     -- Push an item
     procedure Push (Queue : in out Lifo_Type; X : in Item) is
     begin
-      if Queue.Ptr = Size then
+      if Queue.Ptr = Queue.Size then
         raise Lifo_Full;
       end if;
       Queue.Ptr := Queue.Ptr + 1;
@@ -106,8 +106,8 @@ package body Queues is
       return (if Queue.Ptr_In > Queue.Ptr_Out then
                 Queue.Ptr_In - Queue.Ptr_Out
               elsif Queue.Ptr_In < Queue.Ptr_Out then
-                Queue.Ptr_In + Size - Queue.Ptr_Out
-              elsif Queue.Full then Size
+                Queue.Ptr_In + Queue.Size - Queue.Ptr_Out
+              elsif Queue.Full then Queue.Size
               else 0);
     end Length;
 
@@ -117,7 +117,7 @@ package body Queues is
       if Queue.Ptr_In = Queue.Ptr_Out and then Queue.Full then
         raise Fifo_Full;
       end if;
-      Queue.Ptr_In := (Queue.Ptr_In + 1) mod Size;
+      Queue.Ptr_In := Queue.Ptr_In mod Queue.Size + 1;
       Queue.File(Queue.Ptr_In) := X;
       Queue.Full := Queue.Ptr_In = Queue.Ptr_Out;
     end Push;
@@ -128,7 +128,7 @@ package body Queues is
       if Queue.Ptr_Out = Queue.Ptr_In and then not Queue.Full then
         raise Fifo_Empty;
       end if;
-      Queue.Ptr_Out := (Queue.Ptr_Out + 1) mod Size;
+      Queue.Ptr_Out := Queue.Ptr_Out mod Queue.Size + 1;
       X := Queue.File(Queue.Ptr_Out);
       Queue.Full := False;
     end Pop;
@@ -148,7 +148,7 @@ package body Queues is
       if Queue.Ptr_Out = Queue.Ptr_In and then not Queue.Full then
         raise Fifo_Empty;
       end if;
-      Loc := (Queue.Ptr_In - No + 1) mod Size;
+      Loc := (Queue.Ptr_In - No) mod Queue.Size + 1;
 
       -- Good if Ptr_Out < Loc <= Ptr_In
       -- or      Loc <= Ptr_In <= Ptr_Out
@@ -180,7 +180,7 @@ package body Queues is
       if Queue.Ptr_Out = Queue.Ptr_In and then not Queue.Full then
         raise Fifo_Empty;
       end if;
-      Loc := (Queue.Ptr_Out + No) mod Size;
+      Loc := (Queue.Ptr_Out + No - 1) mod Queue.Size + 1;
 
       -- Good if Ptr_Out < Loc <= Ptr_In
       -- or      Loc <= Ptr_In <= Ptr_Out
@@ -209,7 +209,7 @@ package body Queues is
       if Queue.Ptr_Out = Queue.Ptr_In and then not Queue.Full then
         raise Fifo_Empty;
       end if;
-      Queue.Ptr_In := (Queue.Ptr_In - 1) mod Size;
+      Queue.Ptr_In := (Queue.Ptr_In  - 2) mod Queue.Size + 1;
       Queue.Full := False;
     end Discard_Last;
 
@@ -230,8 +230,8 @@ package body Queues is
       return (if Queue.Ptr_In > Queue.Ptr_Out then
                 Queue.Ptr_In - Queue.Ptr_Out
               elsif Queue.Ptr_In < Queue.Ptr_Out then
-                Queue.Ptr_In + Size - Queue.Ptr_Out
-              elsif Queue.Full then Size
+                Queue.Ptr_In + Queue.Size - Queue.Ptr_Out
+              elsif Queue.Full then Queue.Size
               else 0);
     end Length;
 
@@ -245,15 +245,15 @@ package body Queues is
         raise Prio_Full;
       elsif Queue.Ptr_In = Queue.Ptr_Out then
         -- Fifo empty, store X at its place
-        Queue.Ptr_In := (Queue.Ptr_In + 1) mod Size;
+        Queue.Ptr_In := (Queue.Ptr_In + 1) mod Queue.Size;
         Queue.File(Queue.Ptr_In) := (P, X);
       else
         -- Create empty slot
-        Queue.Ptr_In := (Queue.Ptr_In + 1) mod Size;
+        Queue.Ptr_In := (Queue.Ptr_In + 1) mod Queue.Size;
         -- For each slot
         I := Queue.Ptr_In;
         loop
-          J := (I - 1) mod Size;
+          J := (I - 1) mod Queue.Size;
           -- Compare prios and test limits
           exit when J = Queue.Ptr_Out or else Queue.File(J).Prio >= P;
           -- Shift
@@ -272,7 +272,7 @@ package body Queues is
       if Queue.Ptr_Out = Queue.Ptr_In and then not Queue.Full then
         raise Prio_Empty;
       end if;
-      Queue.Ptr_Out := (Queue.Ptr_Out + 1) mod Size;
+      Queue.Ptr_Out := (Queue.Ptr_Out + 1) mod Queue.Size;
       X := Queue.File(Queue.Ptr_Out).Data;
       Queue.Full := False;
     end Pop;
@@ -292,7 +292,7 @@ package body Queues is
       if Queue.Ptr_Out = Queue.Ptr_In and then not Queue.Full then
         raise Prio_Empty;
       end if;
-      Loc := (Queue.Ptr_In - No + 1) mod Size;
+      Loc := (Queue.Ptr_In - No + 1) mod Queue.Size;
 
       -- Good if Ptr_Out < Loc <= Ptr_In
       -- or      Loc <= Ptr_In <= Ptr_Out
@@ -324,7 +324,7 @@ package body Queues is
       if Queue.Ptr_Out = Queue.Ptr_In and then not Queue.Full then
         raise Prio_Empty;
       end if;
-      Loc := (Queue.Ptr_Out + No) mod Size;
+      Loc := (Queue.Ptr_Out + No) mod Queue.Size;
 
       -- Good if Ptr_Out < Loc <= Ptr_In
       -- or      Loc <= Ptr_In <= Ptr_Out
@@ -353,7 +353,7 @@ package body Queues is
       if Queue.Ptr_Out = Queue.Ptr_In and then not Queue.Full then
         raise Prio_Empty;
       end if;
-      Queue.Ptr_In := (Queue.Ptr_In - 1) mod Size;
+      Queue.Ptr_In := (Queue.Ptr_In - 1) mod Queue.Size;
       Queue.Full := False;
     end Discard_Last;
 
@@ -374,8 +374,8 @@ package body Queues is
       return (if Queue.Ptr_In > Queue.Ptr_Out then
                 Queue.Ptr_In - Queue.Ptr_Out
               elsif Queue.Ptr_In < Queue.Ptr_Out then
-                Queue.Ptr_In + Size - Queue.Ptr_Out
-              elsif Queue.Full then Size
+                Queue.Ptr_In + Queue.Size - Queue.Ptr_Out
+              elsif Queue.Full then Queue.Size
               else 0);
     end Length;
 
@@ -384,9 +384,9 @@ package body Queues is
     begin
       if Queue.Ptr_In = Queue.Ptr_Out and then Queue.Full then
         -- Fifo full
-        Queue.Ptr_Out := (Queue.Ptr_Out + 1) mod Size;
+        Queue.Ptr_Out := (Queue.Ptr_Out + 1) mod Queue.Size;
       end if;
-      Queue.Ptr_In := (Queue.Ptr_In + 1) mod Size;
+      Queue.Ptr_In := (Queue.Ptr_In + 1) mod Queue.Size;
       Queue.File(Queue.Ptr_In) := X;
       Queue.Full := Queue.Ptr_In = Queue.Ptr_Out;
     end Push;
@@ -397,7 +397,7 @@ package body Queues is
       if Queue.Ptr_Out = Queue.Ptr_In and then not Queue.Full then
         raise Circ_Empty;
       end if;
-      Queue.Ptr_Out := (Queue.Ptr_Out + 1) mod Size;
+      Queue.Ptr_Out := (Queue.Ptr_Out + 1) mod Queue.Size;
       X := Queue.File(Queue.Ptr_Out);
       Queue.Full := False;
     end Pop;
@@ -417,7 +417,7 @@ package body Queues is
       if Queue.Ptr_Out = Queue.Ptr_In and then not Queue.Full then
         raise Circ_Empty;
       end if;
-      Loc := (Queue.Ptr_In - No + 1) mod Size;
+      Loc := (Queue.Ptr_In - No + 1) mod Queue.Size;
 
       -- Good if Ptr_Out < Loc <= Ptr_In
       -- or      Loc <= Ptr_In <= Ptr_Out
@@ -449,7 +449,7 @@ package body Queues is
       if Queue.Ptr_Out = Queue.Ptr_In and then not Queue.Full then
         raise Circ_Empty;
       end if;
-      Loc := (Queue.Ptr_Out + No) mod Size;
+      Loc := (Queue.Ptr_Out + No) mod Queue.Size;
 
       -- Good if Ptr_Out < Loc <= Ptr_In
       -- or      Loc <= Ptr_In <= Ptr_Out
@@ -478,7 +478,7 @@ package body Queues is
       if Queue.Ptr_Out = Queue.Ptr_In and then not Queue.Full then
         raise Circ_Empty;
       end if;
-      Queue.Ptr_In := (Queue.Ptr_In - 1) mod Size;
+      Queue.Ptr_In := (Queue.Ptr_In - 1) mod Queue.Size;
       Queue.Full := False;
     end Discard_Last;
 
