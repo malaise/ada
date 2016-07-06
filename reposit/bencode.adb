@@ -87,6 +87,9 @@ package body Bencode is
       end if;
       -- Encode value in Text
       Logger.Log_Debug ("Using Bytes attribute " & Attr.Value.Image);
+      -- Replace escape XML characters
+      Attr.Value := As.U.Tus (Xml_Parser.Generator.Xml2Text (
+          Xml_Parser.Generator.Xml2Attr (Attr.Value.Image)));
       for I in 1 .. Attr.Value.Length loop
         Text.Append (Upper_Str (Hexa_Utils.Image (
             Integer'(Character'Pos (Attr.Value.Element (I))), 2, '0')));
@@ -275,6 +278,8 @@ package body Bencode is
       Ctx.Add_Child (Node, Bytes_Name, Xml_Parser.Element, New_Node);
       -- Insert Str attribute if valid string
       if Valid then
+        Str := As.U.Tus (Xml_Parser.Generator.Attr2Xml (
+            Xml_Parser.Generator.Text2Xml (Str.Image)));
         Ctx.Add_Attribute (New_Node, Str_Name, Str.Image);
       end if;
       if Tmp.Is_Null then
