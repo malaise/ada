@@ -1,3 +1,4 @@
+with Basic_Proc;
 with Ada.Calendar;
 with As.U, Socket, Environ, Images, Hashed_List.Unique, Computer;
 package body Rules is
@@ -38,6 +39,7 @@ package body Rules is
   Variable : As.U.Asu_Us;
   function Resolver (Name : String) return String is
   begin
+Basic_Proc.Put_Line_Error ("resolver");
     return Environ.Getenv_If_Set (Name);
   exception
     when Environ.Name_Error =>
@@ -45,15 +47,23 @@ package body Rules is
       raise Unknown_Variable;
   end Resolver;
 
+  -- Init done once
+  Init_Done : Boolean := False;
+  procedure Init is
+  begin
+    if Init_Done then
+      return;
+    end if;
+    Memory.Set ("Host", Socket.Local_Host_Name, False, True);
+    Memory.Set_External_Resolver (Resolver'Access);
+    Init_Done := True;
+  end Init;
+
   -- Store a rule by name
   -- Init host
   procedure Store (Name : in String; Action : in String) is
   begin
-    if Rules.Is_Empty then
-      -- First item
-      Memory.Set ("Host", Socket.Local_Host_Name, False, True);
-      Memory.Set_External_Resolver (Resolver'Access);
-    end if;
+    Init;
     Rules.Insert ( (As.U.Tus (Name), As.U.Tus (Action) ) );
   end Store;
 
@@ -71,6 +81,7 @@ package body Rules is
   function Check_Action (Action : String) return String is
     Dummy : As.U.Asu_Us;
   begin
+    Init;
     Memory.Set ("Time", Get_Time, True, True);
     Memory.Set ("Line", "Line", True, True);
     Dummy := As.U.Tus (Memory.Eval (Action));
@@ -84,7 +95,6 @@ package body Rules is
 
   -- Read a rule and expand the action
   -- Init time and line
-  -- Unknown_Variable: exception;
   function Expand (Name : String; Line : String) return String is
     The_Rule : Rule;
   begin
@@ -96,6 +106,11 @@ package body Rules is
     Rules.Read (The_Rule);
     -- Expand
     return Memory.Eval (The_Rule.Action.Image);
+  exception
+    when Unique_Rules_Mng.Not_In_List =>
+      raise Unknown_Rule;
+    when Environ.Name_Error =>
+      raise Unknown_Variable;
   end Expand;
 
 end Rules;

@@ -50,11 +50,8 @@ begin
   Node := Ctx.Get_Child (Root, 1);
   for I in 1 .. Ctx.Get_Nb_Children (Node) loop
     Child := Ctx.Get_Child (Node, I);
-    -- Get name and check unicity
+    -- Get name
     Name := Ctx.Get_Attribute (Child, 1).Value;
-    if Rules.Exists (Name.Image) then
-      Basic_Proc.Put_Line_Error ("Rule " & Name.Image & " already defined.");
-    end if;
     -- Get action and check variables
     Text := Ctx.Get_Text (Ctx.Get_Child (Child, 1));
     Tmp := As.U.Tus (Rules.Check_Action (Text.Image));
@@ -126,7 +123,15 @@ begin
       return;
     end if;
     -- Ok, store
-    Filters.Store (Filter);
+    begin
+      Filters.Store (Filter);
+    exception
+      when Filters.File_Not_Found =>
+        Basic_Proc.Put_Line_Error ("Filter at line "
+              & Ctx.Get_Line_No (Child)'Img
+              & " is based on unknonw file " & Filter.File.Image);
+      return;
+    end;
   end loop;
 
   -- Init executor

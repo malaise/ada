@@ -8,10 +8,11 @@ package Rules is
 
   -- Check an action (variables)
   -- Return the error message or empty
+  Unknown_Variable : exception;
   function Check_Action (Action : String) return String;
 
   -- Read a rule and expand the action
-  Unknown_Variable: exception;
+  Unknown_Rule: exception;
   function Expand (Name : String; Line : String) return String;
 
 end Rules;

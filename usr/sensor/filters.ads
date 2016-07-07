@@ -10,7 +10,7 @@ package Filters is
   type Filter_Rec is record
     File : As.U.Asu_Us;
     Period : Timers.Period_Range;
-    Tail : Long_Longs.Ll_Positive;
+    Tail : Tail_Length;
     History : access Hist_Mng.Circ_Type;
     Rule : As.U.Asu_Us;
     Pattern : access Regular_Expressions.Compiled_Pattern;
@@ -21,11 +21,11 @@ package Filters is
   procedure Store (Filter : Filter_Rec);
 
   -- Get the number of stored filters
-  function Get_Number return Long_Longs.Ll_Natural;
+  function Get_Number return Long_Longs.Llu_Natural;
 
   -- Retrieve a filter
   No_Filter : exception;
-  function Get_Filter (Number : in Long_Longs.Ll_Positive) return Filter_Rec;
+  function Get_Filter (Number : in Long_Longs.Llu_Positive) return Filter_Rec;
 
 end Filters;
 
