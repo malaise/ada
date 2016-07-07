@@ -5,9 +5,6 @@
   <Rules>
     <Rule Name="Antibot">echo ${Line} | /usr/bin/mail -s "Alert antibot" malaise</Rule>
   </Rules>
-  <Rules>
-    <Rule Name="Antibot">echo ${Line} | /usr/bin/mail -s "Alert antibot" malaise</Rule>
-  </Rules>
   <Filters>
     <Filter File="/var/log/syslog" Rule="Antibot">IP in blacklist</Filter>
   </Filters>

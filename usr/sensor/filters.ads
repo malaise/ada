@@ -21,11 +21,11 @@ package Filters is
   procedure Store (Filter : Filter_Rec);
 
   -- Get the number of stored filters
-  function Get_Number return Long_Longs.Llu_Natural;
+  function Get_Number return Long_Longs.Ll_Natural;
 
   -- Retrieve a filter
   No_Filter : exception;
-  function Get_Filter (Number : in Long_Longs.Llu_Positive) return Filter_Rec;
+  function Get_Filter (Number : in Long_Longs.Ll_Positive) return Filter_Rec;
 
 end Filters;
 

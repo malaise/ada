@@ -29,20 +29,20 @@ package body Filters is
   end Store;
 
   -- Get the number of stored filters
-  function Get_Number return Long_Longs.Llu_Natural is
+  function Get_Number return Long_Longs.Ll_Natural is
   begin
-    return Filters.List_Length;
+    return Long_Longs.Ll_Natural (Filters.List_Length);
   end Get_Number;
 
   -- Retrieve a filter
-  function Get_Filter (Number : in Long_Longs.Llu_Positive) return Filter_Rec is
+  function Get_Filter (Number : in Long_Longs.Ll_Positive) return Filter_Rec is
     use type Long_Longs.Llu_Natural;
   begin
-    if Number > Filters.List_Length then
+    if Long_Longs.Llu_Positive (Number) > Filters.List_Length then
       raise No_Filter;
     end if;
     -- Read the filter
-    Filters.Move_At (Number);
+    Filters.Move_At (Long_Longs.Llu_Positive (Number));
     return Filter : Filter_Rec do
       Filters.Read (Filter, Filters_Mng.Current);
     end return;
