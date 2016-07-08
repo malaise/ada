@@ -11,9 +11,9 @@ package Filters is
     File : As.U.Asu_Us;
     Period : Timers.Period_Range;
     Tail : Tail_Length;
+    Pattern : access Regular_Expressions.Compiled_Pattern;
     History : access Hist_Mng.Circ_Type;
     Rule : As.U.Asu_Us;
-    Pattern : access Regular_Expressions.Compiled_Pattern;
   end record;
 
   -- Check and store a filter

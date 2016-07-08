@@ -90,6 +90,16 @@ begin
             & " has invalid tail size " & Ctx.Get_Attribute (Child, "Tail"));
         return;
     end;
+    -- Compile pattern
+    Text := Ctx.Get_Text (Ctx.Get_Child (Child, 1));
+    Filter.Pattern := new Regular_Expressions.Compiled_Pattern;
+    Filter.Pattern.Compile (Ok, Text.Image);
+    if not Ok then
+      Basic_Proc.Put_Line_Error ("Filter at line "
+            & Ctx.Get_Line_No (Child)'Img
+            & " uses invalid pattern => " & Filter.Pattern.Error);
+      return;
+    end if;
     -- No circular buffer if 0
     begin
       Hist_Size := Natural'Value (Ctx.Get_Attribute (Child, "History"));
@@ -110,16 +120,6 @@ begin
       Basic_Proc.Put_Line_Error ("Filter at line "
           & Ctx.Get_Line_No (Child)'Img
           & " refers to an unknown rule " & Filter.Rule.Image & ".");
-      return;
-    end if;
-    -- Compile pattern
-    Text := Ctx.Get_Text (Ctx.Get_Child (Child, 1));
-    Filter.Pattern := new Regular_Expressions.Compiled_Pattern;
-    Filter.Pattern.Compile (Ok, Text.Image);
-    if not Ok then
-      Basic_Proc.Put_Line_Error ("Filter at line "
-            & Ctx.Get_Line_No (Child)'Img
-            & " uses invalid pattern => " & Filter.Pattern.Error);
       return;
     end if;
     -- Ok, store

@@ -1,5 +1,5 @@
-with Event_Mng, Timers, Any_Def;
-with Rules, Filters;
+with Event_Mng, Timers, Any_Def, As.U.Utils, Sys_Calls;
+with Rules, Filters, Searcher;
 package body Executor is
 
   -- Exit request handler
@@ -12,11 +12,55 @@ package body Executor is
   -- The timer callbackl
   function Expire (Dummy_Id : in Timers.Timer_Id;
                    Data : in Timers.Timer_Data) return Boolean is
+    Filter : Filters.Filter_Rec;
+    Matches : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
+    Hist : As.U.Asu_Us;
+    Dummy : Integer;
+    use type As.U.Asu_Us;
   begin
      -- Retrieve the filter index from data and read it
-     -- Exec a shell that makes tail on the file and grep -E the regex
+     Filter := Filters.Get_Filter (Data.Inte);
+     -- Search the pattern in the tail of the file
+     Searcher.Search (Filter.File.Image, Filter.Tail, Filter.Pattern,
+                      Matches);
      -- If found, check each line of the result in the history
-     -- If not found in the history, store in the history and execute rule
+     if Matches.Is_Empty then
+       return False;
+     end if;
+     if Filter.History /= null then
+       for I in 1 .. Filter.History.Length loop
+         Hist := Filter.History.Look_First (I);
+         Matches.Rewind;
+         loop
+           -- Delete the matching lines that are already known
+           if Matches.Access_Current.all = Hist then
+             Matches.Delete;
+             if Matches.Is_Empty then
+               return False;
+             end if;
+           else
+             -- Check next matching line
+             exit when Matches.Get_Position (
+                 As.U.Utils.Asu_Dyn_List_Mng.From_Last) = 1;
+             Matches.Move_To;
+           end if;
+         end loop;
+       end loop;
+     end if;
+     -- Store the lines and execute rule
+     Matches.Rewind;
+     loop
+       -- Store in history
+       if Filter.History /= null then
+         Filter.History.Push (Matches.Access_Current.all);
+       end if;
+       -- Expand the rule and execute it
+       Dummy := Sys_Calls.Call_System (
+           Rules.Expand (Filter.Rule.Image,
+                         Matches.Access_Current.all.Image));
+       exit when Matches.Get_Position (
+           As.U.Utils.Asu_Dyn_List_Mng.From_Last) = 1;
+     end loop;
     return False;
   end Expire;
 

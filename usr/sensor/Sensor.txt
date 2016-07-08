@@ -45,7 +45,7 @@ that the referenced rule exists
 
 .When a timer expires:
  * Retrieve the filter
- * Exec a shell that makes tail on the file and grep -E the regex
- * If found, check each line of the result in the history
- * If not found, store in the history and execute rule 
+ * Extract the tail of the file and search the regex
+ * If found, check each line of the result versus the history
+ * If not found, store in the history and execute the rule 
 
