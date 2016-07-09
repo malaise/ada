@@ -20,7 +20,7 @@
 <!-- - the  rule to execute when a line of file matches and is not known -->
 <!--   in the history -->
 <!ATTLIST Filter File CDATA #REQUIRED
-                 Period CDATA "10.0"
+                 Period CDATA "60.0"
                  History CDATA "100"
                  Rule IDREF #REQUIRED
                  Tail CDATA "100">
