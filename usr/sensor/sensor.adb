@@ -1,7 +1,7 @@
 with Ada.Exceptions;
 with Argument, Basic_Proc, As.U, Long_Longs, Timers, Event_Mng, Xml_Parser,
      Regular_Expressions;
-with Rules, Filters, Executor;
+with Debug, Rules, Filters, Executor;
 procedure Sensor is
 
   Version : constant String := "V0.1";
@@ -22,6 +22,7 @@ procedure Sensor is
 
 begin
 
+  Debug.Logger.Init ("Sensor");
   Basic_Proc.Set_Error_Exit_Code;
   -- Help mode
   if Argument.Get_Nbre_Arg /= 1 then
@@ -38,6 +39,7 @@ begin
   end if;
 
   -- Parse configuration file
+  Debug.Log ("Parsing file " & Argument.Get_Parameter);
   Ctx.Parse (Argument.Get_Parameter, Ok);
   if not Ok then
     Basic_Proc.Put_Line_Error ("Parse error in config: "
@@ -61,6 +63,7 @@ begin
       return;
     end if;
     -- Store
+    Debug.Log ("Storing rule " & Name.Image);
     Rules.Store (Name.Image, Text.Image);
   end loop;
 
@@ -123,6 +126,7 @@ begin
       return;
     end if;
     -- Ok, store
+    Debug.Log ("Storing filter " & Text.Image & " on " & Filter.File.Image);
     begin
       Filters.Store (Filter);
     exception
@@ -138,12 +142,14 @@ begin
   Executor.Init;
 
   -- Main loop
+  Debug.Log ("Main loop");
   loop
     Event_Mng.Wait (Event_Mng.Infinite_Ms);
     exit when Executor.Exit_Requested;
   end loop;
 
   -- Done on SigTerm
+  Debug.Log ("Stopping");
   Basic_Proc.Set_Ok_Exit_Code;
 
 exception

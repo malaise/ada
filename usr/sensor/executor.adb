@@ -1,5 +1,5 @@
 with Event_Mng, Timers, Any_Def, As.U.Utils, Sys_Calls;
-with Rules, Filters, Searcher;
+with Debug, Rules, Filters, Searcher;
 package body Executor is
 
   -- Exit request handler
@@ -20,6 +20,7 @@ package body Executor is
   begin
      -- Retrieve the filter index from data and read it
      Filter := Filters.Get_Filter (Data.Inte);
+     Debug.Log ("Expiration of filter on " & Filter.File.Image);
      -- Search the pattern in the tail of the file
      Searcher.Search (Filter.File.Image, Filter.Tail, Filter.Pattern,
                       Matches);
@@ -34,6 +35,8 @@ package body Executor is
          loop
            -- Delete the matching lines that are already known
            if Matches.Access_Current.all = Hist then
+             Debug.Log ("  Match " & Matches.Access_Current.Image
+                        & " is in history");
              Matches.Delete;
              if Matches.Is_Empty then
                return False;
@@ -52,9 +55,15 @@ package body Executor is
      loop
        -- Store in history
        if Filter.History /= null then
+         Debug.Log ("  Saving " & Matches.Access_Current.Image);
          Filter.History.Push (Matches.Access_Current.all);
        end if;
        -- Expand the rule and execute it
+       if Debug.Logger.Debug_On then
+         Debug.Log ("  Action "
+             & Rules.Expand (Filter.Rule.Image,
+                             Matches.Access_Current.all.Image));
+       end if;
        Dummy := Sys_Calls.Call_System (
            Rules.Expand (Filter.Rule.Image,
                          Matches.Access_Current.all.Image));
