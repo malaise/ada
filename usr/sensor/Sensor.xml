@@ -3,7 +3,7 @@
 
 <Sensor>
   <Rules>
-    <Rule Name="Antibot">echo "${Line}" | /usr/bin/mail -s "Alert antibot" malaise</Rule>
+    <Rule Name="Antibot">echo "${Match}" | /usr/bin/mail -s "Alert antibot" malaise</Rule>
   </Rules>
   <Filters>
     <Filter File="/var/log/syslog" Rule="Antibot" Tail="10">IP in blacklist</Filter>

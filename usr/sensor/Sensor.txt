@@ -16,7 +16,7 @@ Each rule has a unique name and executes a predefined shell command. The
 definition of a command can refer to some variables of the form '${variable}'.
 The following variable names are automatically defined:
 
-- $\{Line} : Line of the log that matches the filter
+- $\{Match} : Lines of the log that match the filter
 - $\{Time} : Date and time at ISO format (YYyy-Mm-DdTHh:Mm:Ss.mmm)
 - $\{Host}: Local host name
 
@@ -47,5 +47,6 @@ that the referenced rule exists
  * Retrieve the filter
  * Extract the tail of the file and search the regex
  * If found, check each line of the result versus the history
- * If not found, store in the history and execute the rule 
+ * If not found, store in the history
+ * Execute the rule if some matches
 

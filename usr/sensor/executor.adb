@@ -1,4 +1,4 @@
-with Event_Mng, Timers, Any_Def, As.U.Utils, Sys_Calls;
+with Event_Mng, Timers, Any_Def, As.U.Utils, Sys_Calls, Aski;
 with Debug, Rules, Filters, Searcher;
 package body Executor is
 
@@ -15,6 +15,7 @@ package body Executor is
     Filter : Filters.Filter_Rec;
     Matches : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
     Hist : As.U.Asu_Us;
+    Result : As.U.Asu_Us;
     Dummy : Integer;
     use type As.U.Asu_Us;
   begin
@@ -24,10 +25,11 @@ package body Executor is
      -- Search the pattern in the tail of the file
      Searcher.Search (Filter.File.Image, Filter.Tail, Filter.Pattern,
                       Matches);
-     -- If found, check each line of the result in the history
+     -- Done if no match
      if Matches.Is_Empty then
        return False;
      end if;
+     -- If found, check each line of the result in the history
      if Filter.History /= null then
        for I in 1 .. Filter.History.Length loop
          Hist := Filter.History.Look_First (I);
@@ -43,14 +45,15 @@ package body Executor is
              end if;
            else
              -- Check next matching line
-             exit when Matches.Get_Position (
-                 As.U.Utils.Asu_Dyn_List_Mng.From_Last) = 1;
+             exit when not Matches.Check_Move;
              Matches.Move_To;
            end if;
          end loop;
        end loop;
      end if;
-     -- Store the lines and execute rule
+     -- Done if all already in history (all deleted)
+
+     -- Save the new lines in history and concat them
      Matches.Rewind;
      loop
        -- Store in history
@@ -58,18 +61,16 @@ package body Executor is
          Debug.Log ("  Saving " & Matches.Access_Current.Image);
          Filter.History.Push (Matches.Access_Current.all);
        end if;
-       -- Expand the rule and execute it
-       if Debug.Logger.Debug_On then
-         Debug.Log ("  Action "
-             & Rules.Expand (Filter.Rule.Image,
-                             Matches.Access_Current.all.Image));
-       end if;
-       Dummy := Sys_Calls.Call_System (
-           Rules.Expand (Filter.Rule.Image,
-                         Matches.Access_Current.all.Image));
+       Result := Result & Matches.Access_Current.all & Aski.Lf;
        exit when not Matches.Check_Move;
        Matches.Move_To;
      end loop;
+
+     -- Expand the rule and execute it
+     Debug.Log ("  Action "
+              & Rules.Expand (Filter.Rule.Image, Result.Image));
+     Dummy := Sys_Calls.Call_System (
+         Rules.Expand (Filter.Rule.Image, Result.Image));
     return False;
   end Expire;
 
