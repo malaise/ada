@@ -2,7 +2,7 @@ include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 
 ADAVIEW := $(REPOSIT)
 
-EXES := sensor
+EXES := sensor sensor.stat 
 
 CLIBS := $(UTILS_SLIBS) $(PCRE_SLIBS)
 
