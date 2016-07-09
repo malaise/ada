@@ -13,7 +13,7 @@ package Rules is
 
   -- Read a rule and expand the action
   Unknown_Rule: exception;
-  function Expand (Name : String; Line : String) return String;
+  function Expand (Name : String; Lines : String) return String;
 
 end Rules;
 

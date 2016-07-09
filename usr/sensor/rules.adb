@@ -1,6 +1,5 @@
-with Basic_Proc;
 with Ada.Calendar;
-with As.U, Socket, Environ, Images, Hashed_List.Unique, Computer;
+with As.U, Socket, Environ, Images, Hashed_List.Unique, Computer, Aski;
 package body Rules is
 
   -- Image of current time
@@ -39,7 +38,6 @@ package body Rules is
   Variable : As.U.Asu_Us;
   function Resolver (Name : String) return String is
   begin
-Basic_Proc.Put_Line_Error ("resolver");
     return Environ.Getenv_If_Set (Name);
   exception
     when Environ.Name_Error =>
@@ -83,7 +81,7 @@ Basic_Proc.Put_Line_Error ("resolver");
   begin
     Init;
     Memory.Set ("Time", Get_Time, True, True);
-    Memory.Set ("Line", "Line", True, True);
+    Memory.Set ("Match", "Line1" & Aski.lf & "Line2" & Aski.Lf, True, True);
     Dummy := As.U.Tus (Memory.Eval (Action));
     return "";
   exception
@@ -95,12 +93,12 @@ Basic_Proc.Put_Line_Error ("resolver");
 
   -- Read a rule and expand the action
   -- Init time and line
-  function Expand (Name : String; Line : String) return String is
+  function Expand (Name : String; Lines : String) return String is
     The_Rule : Rule;
   begin
     -- Set time ASAP
     Memory.Set ("Time", Get_Time, True, True);
-    Memory.Set ("Line", Line, True, True);
+    Memory.Set ("Match", Lines, True, True);
     -- Find rule
     The_Rule.Name := As.U.Tus (Name);
     Rules.Read (The_Rule);
