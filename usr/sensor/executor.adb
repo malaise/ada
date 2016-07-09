@@ -67,8 +67,8 @@ package body Executor is
        Dummy := Sys_Calls.Call_System (
            Rules.Expand (Filter.Rule.Image,
                          Matches.Access_Current.all.Image));
-       exit when Matches.Get_Position (
-           As.U.Utils.Asu_Dyn_List_Mng.From_Last) = 1;
+       exit when not Matches.Check_Move;
+       Matches.Move_To;
      end loop;
     return False;
   end Expire;

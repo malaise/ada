@@ -17,7 +17,7 @@ package body Searcher is
     end if;
     List.Rewind;
     loop
-      Debug.Logger.Log (Dump_Severity, List.Access_Current.Image);
+      Debug.Logger.Log (Dump_Severity,  " >" & List.Access_Current.Image & "<");
       exit when not List.Check_Move;
       List.Move_To;
     end loop;
@@ -45,7 +45,11 @@ package body Searcher is
     In_Prev : Boolean;
     -- Tempo buffer
     Buffer : As.U.Asu_Us;
-    use type Char_Io.Count, Char_Io.Element_Array;
+    -- Match cell
+    Cell : Regular_Expressions.Match_Cell;
+    Moved : Boolean;
+    use type Char_Io.Count, Char_Io.Element_Array,
+             Regular_Expressions.Match_Cell;
   begin
     -- Open file, compute nb of blocs and nb of chars in last bloc
     Char_Io.Open  (File, Char_Io.In_File, File_Name);
@@ -64,6 +68,8 @@ package body Searcher is
     Stop := 1;
     Len := Bloc_Size;
     Offset := Char_Io.Size (File) + 1;
+    Prev(Bloc_Size) := Aski.Lf;
+    Scan:
     for I in reverse 1 .. Blocs_Nb loop
       -- Stop is in previous bloc
       In_Prev := True;
@@ -78,7 +84,7 @@ package body Searcher is
       Char_Io.Read (File, Chars, Offset);
       -- Locate LFs
       for J in reverse 1 .. Len loop
-        if Chars(I) = Aski.Lf then
+        if Chars(J) = Aski.Lf then
           -- Got a Lf
           if In_Prev then
             -- Concat with head of previous bloc
@@ -88,19 +94,52 @@ package body Searcher is
             -- Extract line
             Buffer := As.U.Tus (String (Chars(J + 1 .. Stop - 1)));
           end if;
-          Matches.Insert (Buffer);
+          if not Buffer.Is_Null then
+            -- Insert in chrono order
+            Matches.Insert (Buffer, As.U.Utils.Asu_Dyn_List_Mng.Prev);
+          end if;
+          -- Done
           In_Prev := False;
           Stop := J;
+          Lfs := Lfs + 1;
+          -- First detected Lf (at end of file) will generate an dummy empty
+          --  line, so we take Tail+1 lines
+          exit Scan when Lfs > Tail;
         end if;
       end loop;
       Prev := Chars;
-    end loop;
+    end loop Scan;
 
     -- Dump this tail
     if Debug.Logger.Is_On (Dump_Severity) then
       Dump_List ("Tail", Matches);
     end if;
 
+    -- Remove all lines that do not match
+    if Matches.Is_Empty then
+      return;
+    end if;
+    Matches.Rewind;
+    loop
+      Cell := Regular_Expressions.Match (Pattern.all,
+                                         Matches.Access_Current.Image);
+      if Cell = Regular_Expressions.No_Match then
+        Matches.Delete (Moved => Moved);
+      else
+        Moved := Matches.Check_Move;
+        if Moved then
+          Matches.Move_To;
+        end if;
+      end if;
+      exit when not Moved;
+    end loop;
+
+    -- Dump the matching
+    if Debug.Logger.Is_On (Dump_Severity) then
+      Dump_List ("Matches", Matches);
+    end if;
+
+    Matches.Rewind (Check_Empty => False);
   end Search;
 
 end Searcher;
