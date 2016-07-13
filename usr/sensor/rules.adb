@@ -81,7 +81,7 @@ package body Rules is
   begin
     Init;
     Memory.Set ("Time", Get_Time, True, True);
-    Memory.Set ("Match", "Line1" & Aski.lf & "Line2" & Aski.Lf, True, True);
+    Memory.Set ("Match", "Line1" & Aski.Lf & "Line2" & Aski.Lf, True, True);
     Dummy := As.U.Tus (Memory.Eval (Action));
     return "";
   exception
