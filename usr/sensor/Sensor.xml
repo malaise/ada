@@ -4,9 +4,11 @@
 <Sensor>
   <Rules>
     <Rule Name="Antibot">echo "${Match}" | /usr/bin/mail -s "Alert antibot" malaise</Rule>
+    <Rule Name="RootLogin">echo -n "${Match}" >> /root/log/login</Rule>
   </Rules>
   <Filters>
-    <Filter File="/var/log/syslog" Rule="Antibot" Tail="10">IP in blacklist</Filter>
+    <Filter File="/var/log/syslog" Rule="Antibot">IP in blacklist</Filter>
+    <Filter File="/var/log/auth.log" Rule="RootLogin" >pam_unix\((su|sshd):session\): session opened for user root by</Filter>
   </Filters>
 </Sensor>
 
