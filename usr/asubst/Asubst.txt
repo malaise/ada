@@ -1,6 +1,6 @@
 Asubst
 ======
-V18.4
+V18.5
 
 Asubs is a command line tool that substitutes text within text. It finds
 occurences of text that match a pattern (regular expression), and replaces
@@ -20,7 +20,7 @@ stdout.
 WARNING: Regular expressions are powerful and automatic substitution can be
 dangerous, so use asubst with caution. Test your pattern with: +
 ++echo string | asubst <search_pattern> <replace_string>++ +
-and use option -s or -tv if unsure.
+and use option -s or -tV if unsure.
 
 See "man 3 pcre" for Perl Compatible Regular Expressions and "man 1 perlre"
 for Perl Regular Expressions.
@@ -60,8 +60,10 @@ setting ASUBST_UTF8 environment variable to "Y", "yes", "N" or "no" (with
 whatever casing). Finally, this setting can be altered in a way or the other by
 the options -a (--ascii), or -u (--utf8).
 
-If ASUBST_DEBUG environment variable is set to "Y" or "yes" (with whatever
+If 'asubst_TRACE' environment variable is set to "Debug" (with whatever
 casing) then asubst puts on stderr some debugging information.
+'asubst_TRACE_Substit', 'asubst_TRACE_Search' and 'asubst_TRACE_Replace' can
+also be set to "Debug" for mode detailed debugging information.
 
 Find pattern
 ------------
@@ -95,7 +97,7 @@ r        -> r                (r anywhere in line)
 
 .Multiple regex
 
-If there are some "\n" then they delimit several regex that will apply to
+If there are some "\n", then they delimit several regex that will apply to
 several lines.
 
 The search pattern is split into several regex and \n patterns. Each line of
@@ -155,7 +157,7 @@ NOTE: For regex numbers, each single regex and each delimiter counts for one.
 matching the substring J of the previous regex number I (0 < I < CurrentRegex),
 J = 0 for the complete string, (so "\R0x" = "\rx0").
 +
-NOTE: * Substrings are numbered in the order of the opening parenthesis, left
+NOTE: * Substrings are numbered in the order of the opening parentheses, left
 to right. +
 * Such back reference to a previous match degrades the performance because the
 regex is re-compiled at each try. +
@@ -180,8 +182,8 @@ matching the exclusion pattern will not be replaced.
 NOTE: Beware that it applies only to the fragment of text that matches the
 find pattern, not the full input text. +
 'Strictly' means that the full text must match the full pattern, e.g. "to"
-does not strictly match "o" but strictly matches ".o". +
-So in the exclusion regex a leading ''^'' and a tailing ''$'' are meaningless".
+does not strictly match "o" but strictly matches ".o". So, in the exclusion
+regex a leading ''^'' and a tailing ''$'' are meaningless".
 
 If set, the <exclude_regex> must have the same number of regex as the
 find pattern. +
