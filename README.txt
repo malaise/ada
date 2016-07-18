@@ -8,8 +8,7 @@ The software compiles with Ada 2012 (Gnat GPL 2014 to 2016) for Linux 32 and
 
 Some programs depend on anchor:XPCRE[] PCRE (Perl Compatible Regular Expressions) and work
 with version 7.8 or above (8.35 is OK), or PCRE2 (10.00 or above), and require
-the corresponding PCRE developpement package. The default is PCRE2 and can be
-changed by setting PCRE environment variable.
+the corresponding PCRE developpement package.
 
 Some programs depend on libssl for EVP digest.
 
@@ -23,17 +22,13 @@ The graphical library is based on X11 and needs:
 
 Finally, a C libray needs the lib gdbm developpement package.
 
-NOTE: You need to set in your environment ARCH=x86_64-linux-gnu or 
-ARCH=386-linux-gnu, depending on your architecture, and to set
-LIBRARY_PATH=/usr/lib/$ARCH.
-
-NOTE: Some programs require the stack size to be larger than the default
-maximum. Use for example 'ulimit -s 1048576' to allow a larger stack.
-
 NOTE: Some C includes and libraries are installed in '/usr/local'. The first
 time, you may need to install them as root then change their owner.
 You may also need to add '/usr/local/lib' in '/etc/ld.so.conf' (and do a
 'ldconfig').
+
+NOTE: Some programs require the stack size to be larger than the default
+maximum. Use for example 'ulimit -s 1048576' to allow a larger stack.
 
 Programs are rated from 1 (simple) to 3 (very complex), on subjective
 criteria.
@@ -239,6 +234,7 @@ Misc::
 - Azf (1) (un)compress a flow of bytes with Lzf.
 - Day_of_week (1) tells everything on today (or on another day).
 - G (1) is a game where to find the remaining of division by 3.
+- Lenv (1) lists environment variables whose name match a criteria.
 - Prime (1) searches prime numbers.
 - Renamer (1) is a 'Afpx' based HMI to rename files.
 - Status (1) evaluates if a target file needs to be rebuilt.
