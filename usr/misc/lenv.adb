@@ -1,16 +1,19 @@
 with Ada.Exceptions;
-with Sys_Calls, Argument, As.U, Directory, Regular_Expressions, Str_Util;
+with Sys_Calls, Argument, As.U, Directory, Regular_Expressions, Str_Util,
+     Dynamic_List;
 procedure Lenv is
 
   procedure Usage is
   begin
+    Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name &
+        " [ <value> ] { [ <modifier> | <criteria> ]}");
     Sys_Calls.Put_Line_Error (
-        "List environment variables whose name match a criteria.");
+        "List environment variables whose name match criteria.");
     Sys_Calls.Put_Line_Error (
-        "Print only the names or the names and the values.");
-    Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-        & " [ -v | --value ] [ <criteria> ]");
-    Sys_Calls.Put_Line_Error ("<criteria> ::= <pattern> | @<regex>");
+        "  <value>    ::= -v | --value    // Default is to put only variable names");
+    Sys_Calls.Put_Line_Error (
+        "  <modifier> ::= -s | --strict | -n | --not-strict    // Default is strict");
+    Sys_Calls.Put_Line_Error ("  <criteria> ::= <pattern> | @<regex>");
   end Usage;
 
   Give_Up : exception;
@@ -21,65 +24,111 @@ procedure Lenv is
     raise Give_Up;
   end Error;
 
-  -- Store the criteria and check if a name matches
+  -- Store the criteria and check if a name matches a criteria
   package Criteria is
-    procedure Set (Crit : in String);
+    procedure Store (Crit : in String; Strict : in Boolean);
     function Match (Name : String) return Boolean;
   end Criteria;
 
   package body Criteria is
-
+    -- Regex indicator in the criteria
     Rcrit : constant Character := '@';
-    Pattern : As.U.Asu_Us;
-    Regex : Regular_Expressions.Compiled_Pattern;
 
-    procedure Set (Crit : in String) is
+    -- List of stored criteria
+    type Criteria_Rec is record
+      Pattern : As.U.Asu_Us;
+      Regex : access Regular_Expressions.Compiled_Pattern;
+      Strict : Boolean := False;
+    end record;
+    package Crit_List_Mng is new Dynamic_List (Criteria_Rec);
+    package Crit_Mng renames Crit_List_Mng.Dyn_List;
+    List : Crit_Mng.List_Type;
+
+    procedure Store (Crit : in String; Strict : in Boolean) is
+      Criteria : Criteria_Rec;
       Result : Boolean;
     begin
       if Crit = "" then
         -- Empty pattern or regex
-        Pattern := As.U.Tus ("*");
+        Criteria.Strict := False;
+        Criteria.Pattern := As.U.Tus ("*");
       elsif Crit(Crit'First) = Rcrit then
         -- A regex: Store and compile
-        Pattern := As.U.Tus (Crit(Integer'Succ(Crit'First) .. Crit'Last));
-        Regex.Compile (Result, Pattern.Image);
+        Criteria.Strict := Strict;
+        Criteria.Pattern := As.U.Tus (Crit(Integer'Succ(Crit'First)
+                                           .. Crit'Last));
+        Criteria.Regex := new Regular_Expressions.Compiled_Pattern;
+        Criteria.Regex.Compile (Result, Criteria.Pattern.Image);
         if not Result then
-          Error ("Invalid regex " & Pattern.Image & " => " & Regex.Error);
+          Error ("Invalid regex " & Criteria.Pattern.Image
+               & " => " & Criteria.Regex.Error);
         end if;
       else
         -- A pattern: Store and check
-        Pattern := As.U.Tus (Crit);
+        Criteria.Strict := Strict;
+        Criteria.Pattern := As.U.Tus (Crit);
         begin
-          Result := Directory.File_Match ("Toto", Pattern.Image);
+          Result := Directory.File_Match ("Toto", Criteria.Pattern.Image);
         exception
           when Directory.Syntax_Error =>
-            Error ("Invalid pattern " & Pattern.Image);
+            Error ("Invalid pattern " & Criteria.Pattern.Image);
         end;
       end if;
-    end Set;
+      List.Insert (Criteria);
+    end Store;
 
     function Match (Name : String) return Boolean is
     begin
-      if Regex.Is_Free then
-        -- A pattern
-        return Directory.File_Match (Name, Pattern.Image);
-      else
-        -- A Regex: strict match
-        declare
-          Cell : constant Regular_Expressions.Match_Cell
-               := Regex.Match (Name);
-        begin
-          return Regular_Expressions.Strict_Match (Name, Cell);
-        end;
+      -- If no pattern sotred
+      if List.Is_Empty then
+        Store ("", False);
       end if;
+      -- Search the first match among the stored criteria
+      List.Rewind;
+      loop
+        if List.Access_Current.Regex = null then
+          -- A pattern
+          if List.Access_Current.Strict then
+            if Directory.File_Match (Name,
+                List.Access_Current.Pattern.Image) then
+              return True;
+            end if;
+          elsif Directory.File_Match (Name,
+                "*" & List.Access_Current.Pattern.Image & "*") then
+            return True;
+          end if;
+        else
+          -- A Regex: match
+          declare
+            Cell : constant Regular_Expressions.Match_Cell
+                 := List.Access_Current.Regex.Match (Name);
+            use type Regular_Expressions.Match_Cell;
+          begin
+            if List.Access_Current.Strict then
+              if Regular_Expressions.Strict_Match (Name, Cell) then
+                return True;
+              end if;
+            elsif Cell /= Regular_Expressions.No_Match then
+              return True;
+            end if;
+          end;
+        end if;
+        exit when not List.Check_Move;
+        List.Move_To;
+      end loop;
+      -- No match
+      return False;
     end Match;
   end Criteria;
 
   -- Print variable value?
   Value_Option : Boolean;
 
-  -- Max num of arguments
-  Max_Arg : Positive;
+  -- Strict or not
+  Strict : Boolean;
+
+  -- First argument after option
+  First_Arg : Positive;
 
   -- Variable Name and definition (Name=Value)
   Name, Var : As.U.Asu_Us;
@@ -103,18 +152,24 @@ begin
     Value_Option := True;
   end if;
 
-  -- Criteria
-  Max_Arg := (if Value_Option then 2 else 1);
-  if Argument.Get_Nbre_Arg > Max_Arg then
-    Error ("Invalid argument(s)");
-  elsif Argument.Get_Nbre_Arg = Max_Arg then
-    -- One criteria
-    Criteria.Set (Argument.Get_Parameter (Occurence =>
-        (if Value_Option then 2 else 1) ));
-  else
-    -- No criteria
-    Criteria.Set ("");
-  end if;
+  -- Store criteria
+  Strict := True;
+  First_Arg := (if Value_Option then 2 else 1);
+  for I in First_Arg .. Argument.Get_Nbre_Arg loop
+    if Argument.Get_Parameter (I) = "-s"
+    or else Argument.Get_Parameter (I) = "--strict" then
+      Strict := True;
+    elsif Argument.Get_Parameter (I) = "-n"
+    or else Argument.Get_Parameter (I) = "--not-strict" then
+      Strict := False;
+    else
+      -- One criteria
+      if Argument.Get_Parameter (Occurence => I)(1) = '-' then
+        Error ("Invalid argument " & String'(Argument.Get_Parameter (I)));
+      end if;
+      Criteria.Store (Argument.Get_Parameter (I), Strict);
+    end if;
+  end loop;
 
   -- Check all environment variables
   ----------------------------------
