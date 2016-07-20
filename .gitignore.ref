@@ -1,6 +1,7 @@
 # For normal libs
-lib
+lib/
 html/
+AdaCtl/
 AFPX.*
 .gitignore
 ada.gpr
