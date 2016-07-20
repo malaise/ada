@@ -94,18 +94,18 @@ procedure App is
 
   -- Check that a string of names ORed or ANDed matches a definition
   function Check (Names : As.U.Asu_Us; Ored : Boolean) return Boolean is
-    Cell : Regular_Expressions.Match_Cell;
+    Match : Boolean;
     Splitted : Many_Strings.Many_String;
     Name : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
     -- Check syntax of Names
     if Ored then
-      Cell := Valid_Or.Match (Names.Image);
+      Match := Valid_Or.Match (Names.Image, Strict => True);
     else
-      Cell := Valid_And.Match (Names.Image);
+      Match := Valid_And.Match (Names.Image, Strict => True);
     end if;
-    if not Regular_Expressions.Strict_Match (Names.Image, Cell) then
+    if not Match then
       Error ("Invalid names " & Names.Image & " in directive at line"
            & Line_No'Img);
     end if;
@@ -174,7 +174,7 @@ procedure App is
       & (if Name then "[[:blank:]]+([^[:blank:]]+)" else "")
       & (if Value then "([[:blank:]]+([^[:blank:]].*))?" else "[[:blank:]]*")
       & "$");
-    Regular_Expressions.Compile (Pattern, Ok,
+    Pattern.Compile (Ok,
         "^[[:blank:]]*" & Prefix.Image & Keyword
       & (if Name then "[[:blank:]]+([^[:blank:]]+)" else "")
       & (if Value then "([[:blank:]]+([^[:blank:]].*))?" else "[[:blank:]]*")

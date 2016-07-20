@@ -289,29 +289,24 @@ package body Regular_Expressions is
                   return Match_Array is
     Pattern : Compiled_Pattern;
     Ok : Boolean;
-    Matched : Natural;
-    Match_Info : Match_Array (1 .. Max_Match);
   begin
     Compile (Pattern, Ok, Criteria);
     if not Ok then
       raise No_Criteria;
     end if;
-    Exec (Pattern, To_Check, Matched, Match_Info);
-    Free (Pattern);
-    return Match_Info(1 .. Matched);
+    return Match (Pattern, To_Check, Max_Match);
   end Match;
 
-    -- Compare string To_Check to Pattern (Exec with default values)
-  -- Returns either No_Match or the Match_Cell (possibly Any_Match)
-  --  corresponding to Match_Info(1)
-  -- May raise No_Criteria if Criteria does not compile
-  function Match (Compiled : Compiled_Pattern; To_Check : String)
-                 return Match_Cell is
+   -- Compare string To_Check to Compiled_Pattern
+   -- Return a Match_Array of size between 0 (no match) and Max_M
+  function Match (Compiled : Compiled_Pattern;
+                  To_Check : String;
+                  Max_Match : Positive := 10) return Match_Array is
     Matched : Natural;
-    Match_Info : One_Match_Array;
+    Match_Info : Match_Array (1 .. Max_Match);
   begin
     Exec (Compiled, To_Check, Matched, Match_Info);
-    return Match_Info (1);
+    return Match_Info(1 .. Matched);
   end Match;
 
   -- Compare string To_Check to Criteria
@@ -319,6 +314,17 @@ package body Regular_Expressions is
   -- May raise No_Criteria if Criteria does not compile
   function Match (Criteria, To_Check : String) return Match_Cell is
     Match_Info : constant Match_Array := Match (Criteria, To_Check, 1);
+  begin
+    return (if Match_Info'Length = 0 then No_Match else Match_Info(1));
+  end Match;
+
+  -- Compare string To_Check to Pattern (Exec with default values)
+  -- Returns either No_Match or the Match_Cell (possibly Any_Match)
+  --  corresponding to Match_Info(1)
+  -- May raise No_Criteria if Criteria does not compile
+  function Match (Compiled : Compiled_Pattern; To_Check : String)
+                 return Match_Cell is
+    Match_Info : constant Match_Array := Match (Compiled, To_Check, 1);
   begin
     return (if Match_Info'Length = 0 then No_Match else Match_Info(1));
   end Match;
@@ -340,6 +346,24 @@ package body Regular_Expressions is
     end if;
   end Match;
 
+  -- Compare string To_Check to Compiled_Pattern
+  -- Returns True or False
+  function Match (Compiled : Compiled_Pattern;
+                  To_Check : String;
+                  Strict : Boolean) return Boolean is
+    Result : Match_Cell;
+  begin
+    Result := Match (Compiled, To_Check);
+    if not Strict then
+      -- Ok if match
+      return Result /= No_Match;
+    else
+      -- Ok if strict match
+      return Strict_Match (To_Check, Result);
+    end if;
+  end Match;
+
+  -- Get Compilation error
   function Error (Compiled : in Compiled_Pattern) return String is
     Buffer : String (1 .. 80);
     Len : C_Types.Size_T;
@@ -362,6 +386,7 @@ package body Regular_Expressions is
     end;
   end Error;
 
+  -- Free compiled (or error) pattern
   procedure Free (Compiled : in out Compiled_Pattern) is
     use type System.Address;
   begin
@@ -380,7 +405,6 @@ package body Regular_Expressions is
     return Compiled.Comp_Addr = System.Null_Address
            and then Compiled.Error = 0;
   end Is_Free;
-
 
   overriding procedure Finalize (Criteria : in out Compiled_Pattern) is
   begin

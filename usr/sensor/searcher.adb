@@ -45,11 +45,8 @@ package body Searcher is
     In_Prev : Boolean;
     -- Tempo buffer
     Buffer : As.U.Asu_Us;
-    -- Match cell
-    Cell : Regular_Expressions.Match_Cell;
     Moved : Boolean;
-    use type Char_Io.Count, Char_Io.Element_Array,
-             Regular_Expressions.Match_Cell;
+    use type Char_Io.Count, Char_Io.Element_Array;
   begin
     -- Open file, compute nb of blocs and nb of chars in last bloc
     Char_Io.Open  (File, Char_Io.In_File, File_Name);
@@ -121,15 +118,13 @@ package body Searcher is
     end if;
     Matches.Rewind;
     loop
-      Cell := Regular_Expressions.Match (Pattern.all,
-                                         Matches.Access_Current.Image);
-      if Cell = Regular_Expressions.No_Match then
-        Matches.Delete (Moved => Moved);
-      else
+      if Pattern.Match (Matches.Access_Current.Image, False) then
         Moved := Matches.Check_Move;
         if Moved then
           Matches.Move_To;
         end if;
+      else
+        Matches.Delete (Moved => Moved);
       end if;
       exit when not Moved;
     end loop;

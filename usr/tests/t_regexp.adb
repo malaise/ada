@@ -48,14 +48,14 @@ procedure T_Regexp is
     Ok : Boolean;
   begin
     -- Compile pattern
-    Regular_Expressions.Compile (Pattern, Ok, Str,
-                                 Case_Sensitive => not Case_Insensitive,
-                                 Multi_Line => Multi_Line,
-                                 Dot_All => Dot_All);
+    Pattern.Compile (Ok, Str,
+                     Case_Sensitive => not Case_Insensitive,
+                     Multi_Line => Multi_Line,
+                     Dot_All => Dot_All);
     if not Ok then
       if not Silent then
         Basic_Proc.Put_Line_Error ("Error compiling pattern >" & Str & "<");
-        Basic_Proc.Put_Line_Error (Regular_Expressions.Error (Pattern) & ".");
+        Basic_Proc.Put_Line_Error (Pattern.Error & ".");
       end if;
       raise Compile_Error;
     elsif Report then
@@ -87,7 +87,7 @@ begin
       "Infinite loop of silent Compile/Free to check memory... Ctrl C to end");
     loop
       Compile_Pattern ("titi", False);
-      Regular_Expressions.Free (Pattern);
+      Pattern.Free;
     end loop;
   elsif Argument.Get_Parameter = "-p" then
     -- Compile all args as pattern, keep 1st arg as THE pattern
@@ -137,16 +137,12 @@ begin
                                  "\n",
                                  Text_Line.Line_Feed_Str);
     begin
-      Regular_Expressions.Exec (Pattern,
-                                Str,
-                                N_Matched,
-                                Match_Info);
+      Pattern.Exec (Str, N_Matched, Match_Info);
       -- If Strict and if Str matches but not strictly
       --  (Str contains a string that matches but Str has more characters)
       -- then it doesn't match
-      if N_Matched /= 0 and then Strict
-      and then (Match_Info(1).First_Offset /= Str'First
-        or else Match_Info(1).Last_Offset_Stop /= Str'Last) then
+      if Strict
+      and then not Regular_Expressions.Strict_Match (Str, Match_Info) then
         N_Matched := 0;
       end if;
     end;

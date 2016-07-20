@@ -210,9 +210,9 @@ package body Search_Pattern is
     List.Insert (Upat);
     -- Get access to it and compile in this access
     List.Get_Access (Upat, Upat_Access);
-    Regular_Expressions.Compile (Upat_Access.Pat, Ok, Crit,
-                                 Case_Sensitive => Case_Sensitive,
-                                 Dot_All => Dot_All);
+    Upat_Access.Pat.Compile (Ok, Crit,
+                             Case_Sensitive => Case_Sensitive,
+                             Dot_All => Dot_All);
     if not Ok then
       Error ("Invalid pattern """ & Crit
         & """." & Line_Feed
@@ -852,9 +852,9 @@ package body Search_Pattern is
         Log.Sea ("Search pattern is " & Upat.Find_Str.Image);
         if Is_Regex then
           -- Compile regex
-          Regular_Expressions.Compile (Upat.Pat, Ok, Upat.Find_Str.Image,
-                                       Case_Sensitive => Upat.Case_Sensitive,
-                                       Dot_All => Upat.Dot_All);
+          Upat.Pat.Compile (Ok, Upat.Find_Str.Image,
+                            Case_Sensitive => Upat.Case_Sensitive,
+                            Dot_All => Upat.Dot_All);
           if not Ok then
             Sys_Calls.Put_Line_Error (
                 Argument.Get_Program_Name
@@ -868,9 +868,7 @@ package body Search_Pattern is
 
       -- Check. Note that indexes will be relative to Str
       if Is_Regex then
-        Regular_Expressions.Exec (Crit_Access.Pat,
-                                  Str(Start .. Str'Last),
-                                  Nmatch, Match);
+        Crit_Access.Pat.Exec (Str(Start .. Str'Last), Nmatch, Match);
         -- For exclusion, the match must be strict
         if not Search and then Nmatch >= 1 and then
             (Match(1).First_Offset /= Start

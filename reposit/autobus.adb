@@ -1466,8 +1466,7 @@ package body Autobus is
     -- Compile Filter
     if Filter /= "" then
       Subs.Filter := new Regular_Expressions.Compiled_Pattern;
-      Regular_Expressions.Compile (Subs.Filter.all, Ok, Filter,
-                                   Multi_Line => True, Dot_All => True);
+      Subs.Filter.Compile (Ok, Filter, Multi_Line => True, Dot_All => True);
       if not Ok then
         Logger.Log_Debug ("Subscriber.Init regexp error "
                         & Regular_Expressions.Error (Subs.Filter.all));
@@ -1528,8 +1527,6 @@ package body Autobus is
                       Bus     : in Bus_Access;
                       Local   : in Boolean) is
     Subs : Subscriber_Access;
-    Match_Info : Regular_Expressions.One_Match_Array;
-    N_Match : Natural;
     Ok : Boolean;
   begin
 
@@ -1547,9 +1544,7 @@ package body Autobus is
           Ok := True;
         else
           -- See if message strictly matches this Filter
-          Regular_Expressions.Exec (Subs.Filter.all, Message,
-                                    N_Match, Match_Info);
-          Ok := Regular_Expressions.Strict_Match (Message, Match_Info);
+          Ok := Subs.Filter.Match (Message, Strict => True);
         end if;
       end if;
       if Ok then

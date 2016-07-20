@@ -80,25 +80,25 @@ package Regular_Expressions is
                   End_Line_Match : in Boolean := True);
 
   -- Compare string To_Check to Criteria (Compile and Exec with default values)
+  -- or Compare string To_Check to Compiled_Pattern (Exec with default values)
   -- Return a Match_Array of size between 0 (no match) and the requested
   --  Max_Match, depending on how many substrigs have matched
   --  Max_Match = 10 allows up to 9 substrings
   -- May raise No_Criteria if Criteria does not compile
   function Match (Criteria, To_Check : String; Max_Match : Positive := 10)
                   return Match_Array;
-
-  -- Compare string To_Check to Pattern (Exec with default values)
-  -- Returns either No_Match or the Match_Cell (possibly Any_Match)
-  --  corresponding to Match_Info(1)
-  -- May raise No_Criteria if Criteria does not compile
-  function Match (Compiled : Compiled_Pattern; To_Check : String)
-                 return Match_Cell;
+  function Match (Compiled : Compiled_Pattern;
+                  To_Check : String;
+                  Max_Match : Positive := 10) return Match_Array;
 
   -- Compare string To_Check to Criteria (Compile and Exec with default values)
+  -- or Compare string To_Check to Compiled_Pattern (Exec with default values)
   -- Returns either No_Match or the Match_Cell (possibly Any_Match)
   --  corresponding to Match_Info(1)
   -- May raise No_Criteria if Criteria does not compile
   function Match (Criteria, To_Check : String) return Match_Cell;
+  function Match (Compiled : Compiled_Pattern; To_Check : String)
+                 return Match_Cell;
 
   -- Check that a Match_Cell (returned by Exec or Match) is valid
   --  i.e. it can be used to extract a matching (sub) string
@@ -116,6 +116,7 @@ package Regular_Expressions is
   function Strict_Match (To_Check : String; Cells : Match_Array) return Boolean;
 
   -- Compare string To_Check to Criteria (Compile and Exec with default values)
+  -- or Compare string To_Check to Compiled_Pattern (Exec with default values)
   -- If Strict is set, then True is returned if and only if the
   --  complete Str matches the criteria (i.e. First_Offset = To_Check'First
   --  and Last_Offset_Stop = To_Check'Last)
@@ -127,6 +128,9 @@ package Regular_Expressions is
   --  "^(to?|ti)$" and "ti|to?"
   -- May raise No_Criteria if Criteria does not compile
   function Match (Criteria, To_Check : String;
+                  Strict : Boolean) return Boolean;
+  function Match (Compiled : Compiled_Pattern;
+                  To_Check : String;
                   Strict : Boolean) return Boolean;
 
   -- Get Compilation error

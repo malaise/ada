@@ -9,10 +9,10 @@ package body Str_Util.Regex is
                      Criteria : in String;
                      Options : in Options_Rec) is
   begin
-    Regular_Expressions.Compile (Compiled, Ok, Criteria,
-                                 Options.Case_Sensitive,
-                                 Options.Multi_Line,
-                                 Options.Dot_All);
+    Compiled.Compile (Ok, Criteria,
+                      Options.Case_Sensitive,
+                      Options.Multi_Line,
+                      Options.Dot_All);
   end Compile;
 
 
@@ -26,9 +26,8 @@ package body Str_Util.Regex is
            return Regular_Expressions.Match_Cell is
     I1, I2 : Natural;
     Occ : Natural;
-    N_Match : Natural;
-    Info, Prev : Regular_Expressions.One_Match_Array;
-    use type Regular_Expressions.One_Match_Array;
+    Info, Prev : Regular_Expressions.Match_Cell;
+    use type Regular_Expressions.Match_Cell;
   begin
     -- Empty Within => No_match
     if Within'Length = 0 then
@@ -43,19 +42,19 @@ package body Str_Util.Regex is
     end if;
 
     Occ := 0;
-    Prev(1) := Regular_Expressions.Match_Cell(No_Match);
+    Prev := Regular_Expressions.Match_Cell(No_Match);
     if Forward then
       -- Loop as long as matches and until Occ different matching
       for I in I1 .. I2 loop
-        Regular_Expressions.Exec (Compiled, Within(I .. I2), N_Match, Info);
-        if N_Match = 0 then
+        Info := Compiled.Match (Within(I .. I2));
+        if Info = Regular_Expressions.No_Match then
           return Regular_Expressions.No_Match;
         elsif Info /= Prev then
           -- One new matching occurence
           Occ := Occ + 1;
           if Occ = Occurence then
             -- Correct occurence number
-            return Info(1);
+            return Info;
           end if;
           Prev := Info;
         end if;
@@ -63,13 +62,13 @@ package body Str_Util.Regex is
     else
       -- Loop until Occ different matching
       for I in reverse I1 .. I2 loop
-        Regular_Expressions.Exec (Compiled, Within(I .. I2), N_Match, Info);
+        Info := Compiled.Match (Within(I .. I2));
         if Info /= Prev then
           -- One new matching occurence
           Occ := Occ + 1;
           if Occ = Occurence then
             -- Correct occurence number
-            return Info(1);
+            return Info;
           end if;
           Prev := Info;
         end if;
@@ -307,8 +306,7 @@ package body Str_Util.Regex is
       Match_Found := False;
       Pass:
       loop
-        Regular_Expressions.Exec (Compiled, Working.Image(Start .. Last),
-          N_Match, Info);
+        Compiled.Exec (Working.Image(Start .. Last), N_Match, Info);
         -- No (more) match?
         exit Pass when N_Match = 0;
         -- A match, substitute and recompute Last
@@ -351,11 +349,9 @@ package body Str_Util.Regex is
       raise Invalid_Regular_Expression;
     end if;
     -- Execute regex
-    Regular_Expressions.Exec (Compiled, Str, N_Matched, Cells);
+    Compiled.Exec (Str, N_Matched, Cells);
     -- Empty slice if no strict match
-    if N_Matched <= 1
-    or else  Cells(1).First_Offset /= Str'First
-    or else  Cells(1).Last_Offset_Stop /= Str'Last then
+    if not Regular_Expressions.Strict_Match (Str, Cells) then
       declare
         Result : constant As.U.Utils.Asu_Array(1 .. 0) := (others => As.U.Asu_Null);
       begin

@@ -99,19 +99,10 @@ procedure Lenv is
           end if;
         else
           -- A Regex: match
-          declare
-            Cell : constant Regular_Expressions.Match_Cell
-                 := List.Access_Current.Regex.Match (Name);
-            use type Regular_Expressions.Match_Cell;
-          begin
-            if List.Access_Current.Strict then
-              if Regular_Expressions.Strict_Match (Name, Cell) then
-                return True;
-              end if;
-            elsif Cell /= Regular_Expressions.No_Match then
-              return True;
-            end if;
-          end;
+          if List.Access_Current.Regex.Match (Name,
+              List.Access_Current.Strict) then
+            return True;
+          end if;
         end if;
         exit when not List.Check_Move;
         List.Move_To;

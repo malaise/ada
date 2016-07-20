@@ -170,16 +170,15 @@ begin
 
   -- Compile regexps for expected texts
   -- #define mnemonic code
-  Regular_Expressions.Compile (Patc, Ok,
+  Patc.Compile (Ok,
      "^#define[[:blank:]]+(E[A-Z]+)[[:blank:]]+([0-9]+)[[:blank:]]*$");
   if not Ok then
-    Basic_Proc.Put_Line_Error ("ERROR, invalid regex: "
-          & Regular_Expressions.Error (Patc) & '.');
+    Basic_Proc.Put_Line_Error ("ERROR, invalid regex: " & Patc.Error & '.');
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
   -- #define mnemonic mnemonic
-  Regular_Expressions.Compile (Pata, Ok,
+  Pata.Compile (Ok,
     "^#define[[:blank:]]+(E[A-Z]+)[[:blank:]]+(E[A-Z]+)[[:blank:]]*$");
   if not Ok then
     Basic_Proc.Put_Line_Error ("ERROR, invalid regex: "
@@ -192,7 +191,7 @@ begin
   Flow.List.Rewind;
   for I in 1 .. Flow.List.List_Length loop
     Flow.List.Get (Line);
-    Regular_Expressions.Exec (Patc, Line.Image, Nb_Match, Matches);
+    Patc.Exec (Line.Image, Nb_Match, Matches);
     if Nb_Match = 3 then
       -- Valid line "#define mnemo code"
       begin
@@ -211,7 +210,7 @@ begin
         Defs.Insert (Def);
       end if;
     else
-      Regular_Expressions.Exec (Pata, Line.Image, Nb_Match, Matches);
+      Pata.Exec (Line.Image, Nb_Match, Matches);
       if  Nb_Match = 3 then
         -- Valid line "#define mnemo mnemo"
         -- Insert alias definition if it does not overwrite a code definition

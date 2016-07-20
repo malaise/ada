@@ -108,18 +108,17 @@ package body Matcher is
         else
           -- This is a Regexp, compile it
           Expanded := "^"  & Expanded & "$";
-          Regular_Expressions.Compile (Compiled, Ok, Expanded.Image);
+          Compiled.Compile (Ok, Expanded.Image);
           if not Ok then
             Error ("Cannot compile regex " & Expanded.Image
-              & " : " & Regular_Expressions.Error (Compiled));
+              & " : " & Compiled.Error);
             raise Match_Error;
           end if;
           Debug.Logger.Log_Debug ("Regex compiled " & Expanded.Image);
 
           -- Execute the regexp
-          Regular_Expressions.Exec (Compiled, Result.Image, N_Matched,
-                                    Match_Info);
-          if Match_Info(1) /= Regular_Expressions.No_Match then
+          Compiled.Exec (Result.Image, N_Matched, Match_Info);
+          if N_Matched /= 0 then
             Debug.Logger.Log_Debug ("Regex match " & N_Matched'Img);
             Ok := Node.Oper = Tree.Match;
             Assign := True;

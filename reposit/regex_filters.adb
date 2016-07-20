@@ -9,7 +9,7 @@ package body Regex_Filters is
 
   procedure Free (Cell : in out Filter_Cell) is
   begin
-    Regular_Expressions.Free(Cell.Pattern.all);
+    Cell.Pattern.Free;
     Free(Cell.Pattern);
   end Free;
 
@@ -24,7 +24,7 @@ package body Regex_Filters is
     Cell.Match := Match;
     Cell.Pattern := new Regular_Expressions.Compiled_Pattern;
     -- Compile expression
-    Regular_Expressions.Compile (Cell.Pattern.all, Ok, Criteria);
+    Cell.Pattern.Compile (Ok, Criteria);
     if Ok then
       -- Insert if Ok
       Filter.List.Insert(Cell);
@@ -47,7 +47,6 @@ package body Regex_Filters is
     Success : Boolean;
     Remains : Boolean;
     Cell : Filter_Cell;
-    N_Match : Natural;
     Match : Boolean;
   begin
     -- True if empty list
@@ -69,9 +68,7 @@ package body Regex_Filters is
         Loc_List.Read(Cell, Filter_List_Mng.Current);
       end if;
       -- Check regex and see if it must match
-      Regular_Expressions.Exec(Cell.Pattern.all, Str, N_Match,
-                               Regular_Expressions.No_Match_Array);
-      Match := N_Match = 1;
+      Match := Cell.Pattern.Match (Str, Strict => False);
       Success := Match = Cell.Match;
       -- Done if Success and then not Go_On_Success
       --  or else not Success and then Go_On_Success
