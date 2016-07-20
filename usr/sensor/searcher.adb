@@ -101,7 +101,7 @@ package body Searcher is
           Lfs := Lfs + 1;
           -- First detected Lf (at end of file) will generate an dummy empty
           --  line, so we take Tail+1 lines
-          exit Scan when Lfs > Tail;
+          exit Scan when Tail /= 0 and then Lfs > Tail;
         end if;
       end loop;
       Prev := Chars;

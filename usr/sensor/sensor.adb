@@ -1,10 +1,10 @@
 with Ada.Exceptions;
-with Argument, Basic_Proc, As.U, Long_Longs, Timers, Event_Mng, Xml_Parser,
+with Argument, Basic_Proc, As.U, Timers, Event_Mng, Xml_Parser,
      Regular_Expressions;
 with Debug, Rules, Filters, Executor;
 procedure Sensor is
 
-  Version : constant String := "V1.0";
+  Version : constant String := "V2.0";
 
   procedure Help is
   begin
@@ -76,6 +76,9 @@ begin
     begin
       Filter.Period := Timers.Period_Range'Value (
           Ctx.Get_Attribute (Child, "Period"));
+      if Filter.Period < 1.0 then
+        raise Constraint_Error;
+      end if;
     exception
       when others =>
         Basic_Proc.Put_Line_Error ("Filter at line"
@@ -84,7 +87,7 @@ begin
         return;
     end;
     begin
-      Filter.Tail := Long_Longs.Ll_Positive'Value (
+      Filter.Tail := Filters.Tail_Length'Value (
           Ctx.Get_Attribute (Child, "Tail"));
     exception
       when others =>

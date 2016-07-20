@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: V1.0
+Version: V2.0
 
 Sensor scans several log files and raises alerts on some events (matching
 filters).
@@ -26,8 +26,8 @@ an error. +
 The configuration file then defines filters. Each filter consists in:
 
 - a file name (the name of the file to scan)
-- an optional scanning period in seconds (default 60.0)
-- an optional tail size to scan (default 100 lines)
+- an optional scanning period in seconds (default 60.0, min 1.0)
+- an optional tail size to scan (default 100 lines, 0 for infinite)
 - an history of alerts to store (default 100)
 - the name of the rule to execute
 

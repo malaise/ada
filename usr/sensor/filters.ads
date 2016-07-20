@@ -5,7 +5,7 @@ package Filters is
   package Hist_Mng is new Queues.Circ (As.U.Asu_Us);
 
   -- Tail length
-  subtype Tail_Length is Long_Longs.Ll_Positive;
+  subtype Tail_Length is Long_Longs.Ll_Natural;
 
   type Filter_Rec is record
     File : As.U.Asu_Us;
