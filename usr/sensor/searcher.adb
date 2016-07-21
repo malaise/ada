@@ -1,4 +1,4 @@
-with Ada.Calendar;
+with Ada.Calendar, Ada.Exceptions;
 with Bloc_Io, Aski, Long_Longs, Trace, Date_Text, Day_Mng;
 with Debug;
 package body Searcher is
@@ -141,6 +141,8 @@ package body Searcher is
       -- Current and reference time (above which we drop)
       Current_Time := Ada.Calendar.Clock;
       Ref_Time := Current_Time - Duration (Seconds);
+      Debug.Logger.Log_Debug ("Time format >" & Time_Fmt.Image
+                            & "< len: " & Time_Len'Img);
 
       -- Remove all lines that are before ref
       Matches.Rewind;
@@ -168,10 +170,14 @@ package body Searcher is
           end if;
         else
           -- Drop
+          Debug.Logger.Log_Debug (" Old " & Matches.Access_Current.Image);
           Matches.Delete (Moved => Moved);
         end if;
         exit when not Moved;
       end loop;
+      if Debug.Logger.Is_On (Dump_Severity) then
+        Dump_List ("In time", Matches);
+      end if;
     end if;
 
     -- Remove all lines that do not match
@@ -186,6 +192,7 @@ package body Searcher is
           Matches.Move_To;
         end if;
       else
+        Debug.Logger.Log_Debug (" Unmatching " & Matches.Access_Current.Image);
         Matches.Delete (Moved => Moved);
       end if;
       exit when not Moved;
@@ -193,12 +200,14 @@ package body Searcher is
 
     -- Dump the matching
     if Debug.Logger.Is_On (Dump_Severity) then
-      Dump_List ("Matches", Matches);
+      Dump_List ("Matching", Matches);
     end if;
 
     Matches.Rewind (Check_Empty => False);
   exception
-    when others =>
+    when Error: others =>
+      Debug.Logger.Log_Debug ("Exception in Search "
+                            & Ada.Exceptions.Exception_Name (Error));
       Matches.Rewind (Check_Empty => False);
   end Search;
 

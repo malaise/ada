@@ -11,7 +11,7 @@
       <Criteria>IP in blacklist</Criteria>
     </Filter>
     <Filter File="/var/log/auth.log" Rule="RootLogin">
-      <Past>%b %m %H:%M:%S</Past>
+      <Past Seconds="3600">%b %d %H:%M:%S</Past>
       <Criteria>pam_unix\((su|sshd):session\): session opened for user root by</Criteria>
     </Filter>
   </Filters>

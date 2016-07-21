@@ -1,10 +1,10 @@
 with Ada.Exceptions;
 with Argument, Basic_Proc, Sys_Calls, As.U, Timers, Event_Mng, Xml_Parser,
-     File_Access, Regular_Expressions, Date_Text;
+     Regular_Expressions, Date_Text;
 with Debug, Rules, Filters, Executor;
 procedure Sensor is
 
-  Version : constant String := "V2.0";
+  Version : constant String := "V3.1";
 
   procedure Help is
   begin
@@ -74,25 +74,12 @@ begin
 
     -- Fill fields, checks types
     Filter.File := Ctx.Get_Attribute (Node, "File");
-    declare
-      File_Stat : Sys_Calls.File_Stat_Rec;
-      Can_Read, Dummy_Write, Dummy_Exec : Boolean;
-    begin
-      File_Stat := Sys_Calls.File_Stat (Filter.File.Image);
-      File_Access (Sys_Calls.Get_Effective_User_Id,
-                   Sys_Calls.Get_Effective_Group_Id,
-                   File_Stat.User_Id, File_Stat.Group_Id, File_Stat.Rights,
-                   Can_Read, Dummy_Write, Dummy_Exec);
-      if not Can_Read then
-        raise Sys_Calls.Access_Error;
-      end if;
-    exception
-      when others =>
-        Basic_Proc.Put_Line_Error ("Filter at line"
-            & Ctx.Get_Line_No (Node)'Img
-            & " refers to unreadable file " & Filter.File.Image);
-        return;
-    end;
+    if not Sys_Calls.File_Found (Filter.File.Image) then
+      Basic_Proc.Put_Line_Error ("Filter at line"
+          & Ctx.Get_Line_No (Node)'Img
+          & " refers to unreadable file " & Filter.File.Image);
+      return;
+    end if;
     -- Period
     begin
       Filter.Period := Timers.Period_Range'Value (

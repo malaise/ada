@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: V3.0
+Version: V3.1
 
 Sensor scans several log files and raises alerts on some events (matching
 filters).
