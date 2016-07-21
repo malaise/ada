@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: V2.0
+Version: V3.0
 
 Sensor scans several log files and raises alerts on some events (matching
 filters).
@@ -28,9 +28,11 @@ The configuration file then defines filters. Each filter consists in:
 - a file name (the name of the file to scan)
 - an optional scanning period in seconds (default 60.0, min 1.0)
 - an optional tail size to scan (default 100 lines, 0 for infinite)
+- an optional number of past seconds to scan (default 1 hour, 0 for infinite)
+and the format of time in the file
 - an history of alerts to store (default 100)
 - the name of the rule to execute
-
+- the criteria (regex) for lines to match
 
 Processing
 ----------
@@ -45,7 +47,8 @@ that the referenced rule exists
 
 .When a timer expires:
  * Retrieve the filter
- * Extract the tail of the file and search the regex
+ * Extract the tail then filter the past seconds of the file, and then search
+the regex
  * If found, check each line of the result versus the history
  * If not found, store in the history
  * Execute the rule if some matches

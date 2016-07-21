@@ -1,6 +1,6 @@
 with Ada.Exceptions;
-with Argument, Basic_Proc, As.U, Timers, Event_Mng, Xml_Parser,
-     Regular_Expressions;
+with Argument, Basic_Proc, Sys_Calls, As.U, Timers, Event_Mng, Xml_Parser,
+     File_Access, Regular_Expressions, Date_Text;
 with Debug, Rules, Filters, Executor;
 procedure Sensor is
 
@@ -15,7 +15,7 @@ procedure Sensor is
   -- Xml parsing
   Ctx : Xml_Parser.Ctx_Type;
   Ok : Boolean;
-  Root, Node, Child : Xml_Parser.Element_Type;
+  Root, Class, Node, Child : Xml_Parser.Element_Type;
   Name, Text, Tmp : As.U.Asu_Us;
   Filter : Filters.Filter_Rec;
   Hist_Size : Natural;
@@ -49,13 +49,13 @@ begin
   Root := Ctx.Get_Root_Element;
 
   -- Check and store rules
-  Node := Ctx.Get_Child (Root, 1);
-  for I in 1 .. Ctx.Get_Nb_Children (Node) loop
-    Child := Ctx.Get_Child (Node, I);
+  Class := Ctx.Get_Child (Root, 1);
+  for I in 1 .. Ctx.Get_Nb_Children (Class) loop
+    Node := Ctx.Get_Child (Class, I);
     -- Get name
-    Name := Ctx.Get_Attribute (Child, 1).Value;
+    Name := Ctx.Get_Attribute (Node, 1).Value;
     -- Get action and check variables
-    Text := Ctx.Get_Text (Ctx.Get_Child (Child, 1));
+    Text := Ctx.Get_Text (Ctx.Get_Child (Node, 1));
     Tmp := As.U.Tus (Rules.Check_Action (Text.Image));
     if not Tmp.Is_Null then
       Basic_Proc.Put_Line_Error ("Rule error on " & Name.Image
@@ -67,65 +67,119 @@ begin
     Rules.Store (Name.Image, Text.Image);
   end loop;
 
-  -- Store filters
-  Node := Ctx.Get_Child (Root, 2);
-  for I in 1 .. Ctx.Get_Nb_Children (Node) loop
-    Child := Ctx.Get_Child (Node, I);
+  -- Check and Store filters
+  Class := Ctx.Get_Child (Root, 2);
+  for I in 1 .. Ctx.Get_Nb_Children (Class) loop
+    Node := Ctx.Get_Child (Class, I);
+
     -- Fill fields, checks types
-    Filter.File := Ctx.Get_Attribute (Child, "File");
+    Filter.File := Ctx.Get_Attribute (Node, "File");
+    declare
+      File_Stat : Sys_Calls.File_Stat_Rec;
+      Can_Read, Dummy_Write, Dummy_Exec : Boolean;
+    begin
+      File_Stat := Sys_Calls.File_Stat (Filter.File.Image);
+      File_Access (Sys_Calls.Get_Effective_User_Id,
+                   Sys_Calls.Get_Effective_Group_Id,
+                   File_Stat.User_Id, File_Stat.Group_Id, File_Stat.Rights,
+                   Can_Read, Dummy_Write, Dummy_Exec);
+      if not Can_Read then
+        raise Sys_Calls.Access_Error;
+      end if;
+    exception
+      when others =>
+        Basic_Proc.Put_Line_Error ("Filter at line"
+            & Ctx.Get_Line_No (Node)'Img
+            & " refers to unreadable file " & Filter.File.Image);
+        return;
+    end;
+    -- Period
     begin
       Filter.Period := Timers.Period_Range'Value (
-          Ctx.Get_Attribute (Child, "Period"));
+          Ctx.Get_Attribute (Node, "Period"));
       if Filter.Period < 1.0 then
         raise Constraint_Error;
       end if;
     exception
       when others =>
         Basic_Proc.Put_Line_Error ("Filter at line"
-            & Ctx.Get_Line_No (Child)'Img
-            & " has invalid period " & Ctx.Get_Attribute (Child, "Period"));
+            & Ctx.Get_Line_No (Node)'Img
+            & " has invalid period " & Ctx.Get_Attribute (Node, "Period"));
         return;
     end;
+    -- Tail
     begin
       Filter.Tail := Filters.Tail_Length'Value (
-          Ctx.Get_Attribute (Child, "Tail"));
+          Ctx.Get_Attribute (Node, "Tail"));
     exception
       when others =>
         Basic_Proc.Put_Line_Error ("Filter at line "
-            & Ctx.Get_Line_No (Child)'Img
-            & " has invalid tail size " & Ctx.Get_Attribute (Child, "Tail"));
+            & Ctx.Get_Line_No (Node)'Img
+            & " has invalid tail size " & Ctx.Get_Attribute (Node, "Tail"));
         return;
     end;
-    -- Compile pattern
-    Text := Ctx.Get_Text (Ctx.Get_Child (Child, 1));
-    Filter.Pattern := new Regular_Expressions.Compiled_Pattern;
-    Filter.Pattern.Compile (Ok, Text.Image);
-    if not Ok then
-      Basic_Proc.Put_Line_Error ("Filter at line "
-            & Ctx.Get_Line_No (Child)'Img
-            & " uses invalid pattern => " & Filter.Pattern.Error);
-      return;
-    end if;
-    -- No circular buffer if 0
+    -- No history if 0
     begin
-      Hist_Size := Natural'Value (Ctx.Get_Attribute (Child, "History"));
+      Hist_Size := Natural'Value (Ctx.Get_Attribute (Node, "History"));
       if Hist_Size /= 0 then
         Filter.History := new Filters.Hist_Mng.Circ_Type (Hist_Size);
       end if;
     exception
       when others =>
         Basic_Proc.Put_Line_Error ("Filter at line "
-            & Ctx.Get_Line_No (Child)'Img
+            & Ctx.Get_Line_No (Node)'Img
             & " has invalid history size "
-            & Ctx.Get_Attribute (Child, "History"));
+            & Ctx.Get_Attribute (Node, "History"));
         return;
     end;
     -- Rule must be known
-    Filter.Rule := Ctx.Get_Attribute (Child, "Rule");
+    Filter.Rule := Ctx.Get_Attribute (Node, "Rule");
     if not Rules.Exists (Filter.Rule.Image) then
       Basic_Proc.Put_Line_Error ("Filter at line "
-          & Ctx.Get_Line_No (Child)'Img
+          & Ctx.Get_Line_No (Node)'Img
           & " refers to an unknown rule " & Filter.Rule.Image & ".");
+      return;
+    end if;
+    -- Optional past
+    if Ctx.Get_Nb_Children (Node) = 1 then
+      Filter.Seconds := 0;
+      -- Set Child to pattern
+      Child := Ctx.Get_Child (Node, 1);
+    else
+      -- Get seconds and time format
+      Child := Ctx.Get_Child (Node, 1);
+      begin
+        Filter.Seconds := Filters.Tail_Length'Value (
+          Ctx.Get_Attribute (Child, "Seconds"));
+      exception
+        when others =>
+          Basic_Proc.Put_Line_Error ("Filter at line "
+              & Ctx.Get_Line_No (Node)'Img
+              & " has invalid seconds " & Ctx.Get_Attribute (Node, "Seconds"));
+          return;
+      end;
+      Filter.Time_Format := Ctx.Get_Text (Ctx.Get_Child (Child, 1));
+      declare
+        Dummy_Len : Natural;
+      begin
+        Dummy_Len := Date_Text.Length (Filter.Time_Format.Image);
+      exception
+        when others =>
+          Basic_Proc.Put_Line_Error ("Filter at line "
+              & Ctx.Get_Line_No (Node)'Img
+              & " has invalid format " & Filter.Time_Format.Image);
+      end;
+      -- Set Child to pattern
+      Child := Ctx.Get_Child (Node, 2);
+    end if;
+    -- Compile pattern
+    Text := Ctx.Get_Text (Ctx.Get_Child (Child, 1));
+    Filter.Pattern := new Regular_Expressions.Compiled_Pattern;
+    Filter.Pattern.Compile (Ok, Text.Image);
+    if not Ok then
+      Basic_Proc.Put_Line_Error ("Filter at line "
+            & Ctx.Get_Line_No (Node)'Img
+            & " uses invalid pattern => " & Filter.Pattern.Error);
       return;
     end if;
     -- Ok, store
@@ -135,7 +189,7 @@ begin
     exception
       when Filters.File_Not_Found =>
         Basic_Proc.Put_Line_Error ("Filter at line "
-              & Ctx.Get_Line_No (Child)'Img
+              & Ctx.Get_Line_No (Node)'Img
               & " is based on unknonw file " & Filter.File.Image);
       return;
     end;

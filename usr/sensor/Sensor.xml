@@ -7,8 +7,13 @@
     <Rule Name="RootLogin">echo -n "${Match}" >> /root/log/login</Rule>
   </Rules>
   <Filters>
-    <Filter File="/var/log/syslog" Rule="Antibot">IP in blacklist</Filter>
-    <Filter File="/var/log/auth.log" Rule="RootLogin" >pam_unix\((su|sshd):session\): session opened for user root by</Filter>
+    <Filter File="/var/log/syslog" Rule="Antibot">
+      <Criteria>IP in blacklist</Criteria>
+    </Filter>
+    <Filter File="/var/log/auth.log" Rule="RootLogin">
+      <Past>%b %m %H:%M:%S</Past>
+      <Criteria>pam_unix\((su|sshd):session\): session opened for user root by</Criteria>
+    </Filter>
   </Filters>
 </Sensor>
 

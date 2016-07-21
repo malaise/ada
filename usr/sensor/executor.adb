@@ -23,7 +23,9 @@ package body Executor is
      Filter := Filters.Get_Filter (Data.Inte);
      Debug.Log ("Expiration of filter on " & Filter.File.Image);
      -- Search the pattern in the tail of the file
-     Searcher.Search (Filter.File.Image, Filter.Tail, Filter.Pattern,
+     Searcher.Search (Filter.File.Image, Filter.Tail,
+                      Filter.Seconds, Filter.Time_Format,
+                      Filter.Pattern,
                       Matches);
      -- Done if no match
      if Matches.Is_Empty then

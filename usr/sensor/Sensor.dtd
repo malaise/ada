@@ -24,6 +24,12 @@
                  Tail CDATA "100"
                  History CDATA "100"
                  Rule IDREF #REQUIRED>
-<!-- - the criteria (regex) to scan -->
-<!ELEMENT Filter (#PCDATA)>
+<!ELEMENT Filter (Past?,Criteria)>
 
+<!-- - the number of past seconds to scan (0 for infinite) -->
+<!ATTLIST Past Seconds CDATA "3600">
+<!-- - format of the time in the file (see Date_Text) -->
+<!ELEMENT Past (#PCDATA)>
+
+<!-- - the criteria (regex) to scan -->
+<!ELEMENT Criteria (#PCDATA)>

@@ -1,4 +1,5 @@
-with Bloc_Io, Aski, Long_Longs, Trace;
+with Ada.Calendar;
+with Bloc_Io, Aski, Long_Longs, Trace, Date_Text, Day_Mng;
 with Debug;
 package body Searcher is
 
@@ -23,12 +24,22 @@ package body Searcher is
     end loop;
   end Dump_List;
 
+  -- from a Time_Rec to a Calendar.Time
+  function Time_Of (Date : Date_Text.Date_Rec) return Ada.Calendar.Time is
+  begin
+    return Ada.Calendar.Time_Of (
+        Date.Years, Date.Months, Date.Days,
+        Day_Mng.Pack (Date.Hours, Date.Minutes, Date.Seconds, Date.Millisec));
+  end Time_Of;
+
   -- Search the Pattern in the Tail last lines of File
   -- Clear and set the list to the matching lines
   procedure Search (File_Name : in String;
-                    Tail    : in Filters.Tail_Length;
-                    Pattern : access Regular_Expressions.Compiled_Pattern;
-                    Matches : in out As.U.Utils.Asu_Dyn_List_Mng.List_Type) is
+                    Tail      : in Filters.Tail_Length;
+                    Seconds   : in Filters.Tail_Length;
+                    Time_Fmt  : in As.U.Asu_Us;
+                    Pattern   : access Regular_Expressions.Compiled_Pattern;
+                    Matches   : in out As.U.Utils.Asu_Dyn_List_Mng.List_Type) is
     -- Input blocs
     File : Char_Io.File_Type;
     Chars, Prev : Char_Io.Element_Array (1 .. Bloc_Size);
@@ -46,8 +57,17 @@ package body Searcher is
     -- Tempo buffer
     Buffer : As.U.Asu_Us;
     Moved : Boolean;
-    use type Char_Io.Count, Char_Io.Element_Array;
+    -- Length of time
+    Time_Len : Natural;
+    -- Time of record
+    Time : Date_Text.Date_Rec;
+    Current_Time, Line_Time, Ref_Time : Ada.Calendar.Time;
+    -- Current Year
+    use type Char_Io.Count, Char_Io.Element_Array, Ada.Calendar.Time;
   begin
+    -- Init out parameter
+    Matches.Delete_List;
+
     -- Open file, compute nb of blocs and nb of chars in last bloc
     Char_Io.Open  (File, Char_Io.In_File, File_Name);
     Size := Char_Io.Size (File);
@@ -59,8 +79,7 @@ package body Searcher is
       Last_Bloc_Len := Size rem Bloc_Size;
     end if;
 
-    -- Count linefeed (newline) backwards and store lines
-    Matches.Delete_List;
+    -- Count linefeed (newline) backwards and store tailing lines
     Lfs := 0;
     Stop := 1;
     Len := Bloc_Size;
@@ -112,6 +131,49 @@ package body Searcher is
       Dump_List ("Tail", Matches);
     end if;
 
+    -- Time filter
+    if Seconds /= 0 then
+      if Matches.Is_Empty then
+        return;
+      end if;
+      -- The length of the time in the line of text
+      Time_Len := Date_Text.Length (Time_Fmt.Image);
+      -- Current and reference time (above which we drop)
+      Current_Time := Ada.Calendar.Clock;
+      Ref_Time := Current_Time - Duration (Seconds);
+
+      -- Remove all lines that are before ref
+      Matches.Rewind;
+      loop
+        -- Extract date
+        Time := Date_Text.Scan (
+            Matches.Access_Current.Slice (1, Time_Len),
+            Time_Fmt.Image);
+        -- Fix year if it is not set
+        if Time.Years = Ada.Calendar.Year_Number'First then
+          Time.Years := Ada.Calendar.Year (Current_Time);
+          Line_Time := Time_Of (Time);
+          -- Adjust year to -1  if result is above current time
+          if Line_Time > Current_Time then
+            Time.Years := Time.Years - 1;
+            Line_Time := Time_Of (Time);
+          end if;
+        end if;
+        -- Remove lines before ref time
+        if Line_Time >= Ref_Time then
+          -- Keep
+          Moved := Matches.Check_Move;
+          if Moved then
+            Matches.Move_To;
+          end if;
+        else
+          -- Drop
+          Matches.Delete (Moved => Moved);
+        end if;
+        exit when not Moved;
+      end loop;
+    end if;
+
     -- Remove all lines that do not match
     if Matches.Is_Empty then
       return;
@@ -135,6 +197,9 @@ package body Searcher is
     end if;
 
     Matches.Rewind (Check_Empty => False);
+  exception
+    when others =>
+      Matches.Rewind (Check_Empty => False);
   end Search;
 
 end Searcher;
