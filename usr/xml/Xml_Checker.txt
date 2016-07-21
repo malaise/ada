@@ -290,7 +290,7 @@ of Xml_Parser. The differences are highlighted:
 | Width          | 80                   | 80
 | Split          | False                | False
 |=========================================================
-In order to trigger the default behaviour of the parser, xml_checker shalled
+In order to trigger the default behaviour of the parser, xml_checker shall
 be called with options: +
 '--tree --keep=none --expand'
 
