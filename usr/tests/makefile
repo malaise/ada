@@ -15,6 +15,7 @@ CLIBS_t_autobus := $(PCRE_SLIBS)
 CLIBS_t_bencode := $(PCRE_SLIBS)
 CLIBS_t_byte_to_unicode := $(PCRE_SLIBS)
 CLIBS_t_channels := $(PCRE_SLIBS)
+CLIBS_t_date_text := $(PCRE_SLIBS)
 CLIBS_t_delta_date := $(PCRE_SLIBS)
 CLIBS_t_evp_digest := ssl crypto
 CLIBS_t_regex_filters := $(PCRE_SLIBS)

@@ -1,0 +1,50 @@
+with Ada.Calendar;
+with Day_Mng;
+package Date_Text is
+
+  -- The full definition of a date
+  type Date_Rec is record
+    Years    : Ada.Calendar.Year_Number  := Ada.Calendar.Year_Number'First;
+    Months   : Ada.Calendar.Month_Number := Ada.Calendar.Month_Number'First;
+    Days     : Ada.Calendar.Day_Number   := Ada.Calendar.Day_Number'First;
+    Hours    : Day_Mng.T_Hours           := Day_Mng.T_Hours'First;
+    Minutes  : Day_Mng.T_Minutes         := Day_Mng.T_Minutes'First;
+    Seconds  : Day_Mng.T_Seconds         := Day_Mng.T_Seconds'First;
+    Millisec : Day_Mng.T_Millisec        := Day_Mng.T_Millisec'First;
+  end record;
+
+  -- The format string can contain:
+  -- %Y : year on 4 digits
+  -- %m : month number on 2 digits (01 to 12)
+  -- %b : english abreviated month name
+  --      (Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)
+  -- %B : english full month name
+  -- %d : day number in month
+  -- %H : hours on 2 digits
+  -- %M : minutes on 2 digits
+  -- %S : seconds on 2 digits
+  -- %s : milliseconds on 3 digits
+  -- %% : the '%' character
+  -- Other characters are output/scanned as such
+
+  -- A format is not valid if
+  -- -  it contains an unknown "%x" sequence
+  -- - it ends with the character '%'
+  -- - the "%B" sequence is immediately followed by another "%x" sequence
+  --   (except "%%")
+
+  -- Scan a String at a given Format
+  -- Any field of Date_Rec that is not set n Format is set to its default
+  -- Raise Invalid_Format if the format is not valid
+  -- Raise Invalid_String if the string does not match the format or defines
+  --  different values for the sale field
+  function Scan (Str : String; Format : String) return Date_Rec;
+
+  -- Put a date at a given format
+  -- Raise Invalid_Format if the format is not valid
+  function Put (Date : Date_Rec; Format : String) return String;
+
+  Invalid_Format, Invalid_String : exception;
+
+end Date_Text;
+
