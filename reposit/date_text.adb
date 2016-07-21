@@ -278,7 +278,13 @@ package body Date_Text is
         Istr := Istr + Text.Length  - 1;
         -- Handle indirection to a Num field
         if Fields(Fi).Kind = Enum then
-          Text := As.U.Tus (Fields(Fi).Conv_Scan (Text.Image));
+          begin
+            Text := As.U.Tus (Fields(Fi).Conv_Scan (Text.Image));
+          exception
+            when Constraint_Error =>
+              Logger.Log_Debug ("Exception when converting " & Text.Image);
+              raise Invalid_String;
+          end;
           Fi := Fields(Fi).Target;
           Logger.Log_Debug ("  Converted text >" & Text.Image & "<");
         end if;

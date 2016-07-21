@@ -98,6 +98,8 @@ Ada.Strings.Bounded with extra features.
 * 'Normalization', 'Images' and 'Gets' provide ways tro transform numeric 
 values to strings and reverse.
 
+* 'Date_Text' scans and puts dates in variable formats.
+
 * 'Many_Strings' allows storing several strings successively in a string and
 extracting them.
 
@@ -344,6 +346,9 @@ copy_file (1)::
 
 curve (3)::
      Draw a curve of function y=f(x) and draw a set of points in 2D.
+
+date_text (2)::
+     Scan or put a date at a given format.
 
 day_mng (2)::
      Split/pack a duration into hours, minutes, seconds.

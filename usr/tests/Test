@@ -78,7 +78,7 @@ function try {
     ok=0
     shift
   fi
-  $* >out 2>err
+  $@ >out 2>err
   res=$?
   if [ $ok -eq 1 ] ; then
     if [ $res -ne 0 ] ; then
@@ -564,6 +564,16 @@ cat << EOF >exp
 Host:       16#12345678#
 to Network: 16#78563412#
 to Host:    16#12345678#
+EOF
+comp err nul
+comp out exp
+echo "OK"
+
+# t_date_text
+title t_date_text
+t_date_text '%b %d %H:%M:%S' '%Y-%m-%dT%H:%M:%S:%s' 'Jul 21 10:45:54' >out 2>err
+cat << EOF >exp
+Input: Jul 21 10:45:54  Dump: 1901/07/21 10:45:54.000  Put: 1901-07-21T10:45:54:000
 EOF
 comp err nul
 comp out exp

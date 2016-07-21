@@ -5,7 +5,7 @@ procedure T_Date_Text is
   Date : Date_Text.Date_Rec;
   Time : Ada.Calendar.Time;
 begin
-  if Argument.Get_Nbre_Arg = 1 then
+  if Argument.Get_Nbre_Arg <= 1 then
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
         & " <scan_format> <put_format> { [ <string> ] }");
     Basic_Proc.Set_Error_Exit_Code;
