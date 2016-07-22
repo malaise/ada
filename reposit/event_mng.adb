@@ -367,16 +367,16 @@ package body Event_Mng is
   end Wait;
 
   -- The pause
-  Pause_Level : Any_Def.Any (Any_Def.Inte_Kind) := (Any_Def.Inte_Kind, 0);
+  Pause_Level : Any_Def.Any (Any_Def.Lint_Kind) := (Any_Def.Lint_Kind, 0);
 
   function Pause_Cb (Unused_Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data)
            return Boolean is
   begin
     -- Check this expiration versus current pause level
-    if Pause_Level.Inte >= Data.Inte then
+    if Pause_Level.Lint >= Data.Lint then
       -- Pop up to current level
-      Pause_Level.Inte := Data.Inte - 1;
+      Pause_Level.Lint := Data.Lint - 1;
     end if;
     Logger.Log_Debug ("Event_Mng.Pause.Cb " & Any_Def.Image (Data));
     return True;
@@ -384,13 +384,13 @@ package body Event_Mng is
 
   procedure Pause (Timeout_Ms : in Integer) is
     Tid : Timers.Timer_Id;
-    Loc_Level : Any_Def.Any (Any_Def.Inte_Kind);
+    Loc_Level : Any_Def.Any (Any_Def.Lint_Kind);
     Wait_Timeout : Integer;
     Dummy : Boolean;
     use type My_Math.Inte;
   begin
     -- Increment global pause level and store ours
-    Pause_Level.Inte := Pause_Level.Inte + 1;
+    Pause_Level.Lint := Pause_Level.Lint + 1;
     Loc_Level := Pause_Level;
     Logger.Log_Debug ("Event_Mng.Pause Push " & Any_Def.Image (Loc_Level));
 
@@ -416,7 +416,7 @@ package body Event_Mng is
     --  or a signal
     loop --## rule line off Loop_While
       exit when Wait (Wait_Timeout) = Signal_Event
-      or else Pause_Level.Inte < Loc_Level.Inte;
+      or else Pause_Level.Lint < Loc_Level.Lint;
     end loop;
   end Pause;
 

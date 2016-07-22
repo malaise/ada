@@ -1,8 +1,9 @@
 with Ada.Numerics;
+with Long_Longs;
 -- Mathematical types, constants and operations
 package My_Math is
 
-  subtype Inte is Long_Long_Integer;
+  subtype Inte is Long_Longs.Ll_Integer;
   -- This should generate the overflow checks
   --  (was subtype Real is Long_Float;)
   type Real is digits 15 range -1.79E308 .. 1.79E308;

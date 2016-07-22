@@ -20,7 +20,7 @@ package body Executor is
     use type As.U.Asu_Us;
   begin
      -- Retrieve the filter index from data and read it
-     Filter := Filters.Get_Filter (Data.Inte);
+     Filter := Filters.Get_Filter (Data.Lint);
      Debug.Log ("Expiration of filter on " & Filter.File.Image);
      -- Search the pattern in the tail of the file
      Searcher.Search (Filter.File.Image, Filter.Tail,
@@ -79,7 +79,7 @@ package body Executor is
   -- Init the executor (arms timers and sets handlers)
   procedure Init is
     Filter : Filters.Filter_Rec;
-    Data : Any_Def.Any (Any_Def.Inte_Kind);
+    Data : Any_Def.Any (Any_Def.Lint_Kind);
     Appointment : Timers.Delay_Rec  (Timers.Delay_Sec);
     Dummy_Id : Timers.Timer_Id;
   begin
@@ -92,7 +92,7 @@ package body Executor is
       Filter := Filters.Get_Filter (I);
       Appointment.Period := Filter.Period;
       -- Arm the timer
-      Data.Inte := I;
+      Data.Lint := I;
       Dummy_Id := Timers.Create (Appointment, Expire'Access, Data);
     end loop;
   end Init;

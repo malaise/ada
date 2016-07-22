@@ -1,5 +1,5 @@
 with System;
-with Trilean, As.U, My_Math;
+with Trilean, Long_Longs, My_Math, As.U;
 package Any_Def is
 
   -- An "any" is a multi-type container
@@ -7,7 +7,7 @@ package Any_Def is
   --  or access to an "any"
   type Any_Kind_List is (None_Kind,
                          Bool_Kind, Trilean_Kind,
-                         Inte_Kind, Integer_Kind,
+                         Lint_Kind, Integer_Kind,
                          Real_Kind, Float_Kind,
                          Str_Kind,
                          Address_Kind,
@@ -22,7 +22,7 @@ package Any_Def is
       when Bool_Kind    => Bool : Boolean;
       when Trilean_Kind => Tril : Trilean.Trilean;
       when Integer_Kind => Int  : Integer;
-      when Inte_Kind    => Inte : My_Math.Inte;
+      when Lint_Kind    => Lint : Long_Longs.Ll_Integer;
       when Real_Kind    => Real : My_Math.Real;
       when Float_Kind   => Flo  : Float;
       when Str_Kind     => Str  : As.U.Asu_Us;

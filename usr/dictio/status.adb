@@ -19,7 +19,7 @@ package body Status is
     end if;
 
     begin
-      New_Status := Status_List'Val(Data.Inte);
+      New_Status := Status_List'Val(Data.Lint);
     exception
       when others =>
         Dictio_Debug.Put (Dictio_Debug.Status,
@@ -55,14 +55,14 @@ package body Status is
     T : Timers.Delay_Rec;
   begin
     if Immediate then
-      Dummy := Timer_Cb (Timers.No_Timer, (Any_Def.Inte_Kind,
+      Dummy := Timer_Cb (Timers.No_Timer, (Any_Def.Lint_Kind,
                                            Status_List'Pos(Status)));
       -- No action on expiration of pendig timer
       Tid.Delete_If_Exists;
     else
       -- Create immediate timer with status (so we go back to main loop)
       T.Delay_Seconds := 0.0;
-      Tid.Create (T, Timer_Cb'Access, (Any_Def.Inte_Kind,
+      Tid.Create (T, Timer_Cb'Access, (Any_Def.Lint_Kind,
                                        Status_List'Pos(Status)));
     end if;
   end Set;

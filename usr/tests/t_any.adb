@@ -17,7 +17,7 @@ begin
       when Bool_Kind    => A1 := (Bool_Kind, True);
       when Trilean_Kind => A1 := (Trilean_Kind, Trilean.Other);
       when Integer_Kind => A1 := (Integer_Kind, 21);
-      when Inte_Kind    => A1 := (Inte_Kind, 2121);
+      when Lint_Kind    => A1 := (Lint_Kind, 2121);
       when Real_Kind    => A1 := (Real_Kind, 21.21);
       when Float_Kind   => A1 := (Float_Kind, 2121.2121);
       when Str_Kind     => A1 := (Str_Kind, As.U.Tus ("A string"));
