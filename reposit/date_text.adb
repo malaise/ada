@@ -171,7 +171,7 @@ package body Date_Text is
     Logger.Log_Debug ("Check_Format >" & Format & "<");
     -- Look for Esc sequences
     Ind := Format'First;
-    loop
+    while Ind <= Format'Last loop
       if Format(Ind) = Esc then
         if Ind = Format'Last then
           -- Tailing %
@@ -198,7 +198,6 @@ package body Date_Text is
           end if;
         end if;
       end if;
-      exit when Ind = Format'Last;
       Ind := Ind + 1;
     end loop;
   end Check_Format;
@@ -229,7 +228,16 @@ package body Date_Text is
   begin
     -- Init
     Init_Logger;
+    Logger.Log_Debug ("Scanning > " & Str & "< with format >" & Format & "<");
     Check_Format (Format);
+    if Format = "" then
+      if Str = "" then
+        return Result;
+      else
+        Logger.Log_Debug ("Expecting empty string");
+        raise Invalid_String;
+      end if;
+    end if;
     -- Scan the format and the string
     Ifor := Format'First;
     Istr := Str'First;
@@ -369,7 +377,7 @@ package body Date_Text is
     Check_Format (Format);
     -- Scan the format
     Ifor := Format'First;
-    loop
+    while  Ifor <= Format'Last loop
       -- Check if this is supposed to be a field
       if Format(Ifor) = Esc then
         if Format(Ifor + 1) = Esc then
@@ -403,8 +411,6 @@ package body Date_Text is
         Result.Append (Format(Ifor));
       end if;
 
-      -- Chek end conditions
-      exit when Ifor = Format'Last;
       Ifor := Ifor + 1;
     end loop;
     -- Done
@@ -430,7 +436,7 @@ package body Date_Text is
     -- Scan the format
     Ifor := Format'First;
     Result := 0;
-    loop
+    while Ifor <= Format'Last loop
       -- Check if this is supposed to be a field
       if Format(Ifor) = Esc then
         if Format(Ifor + 1) = Esc then
@@ -456,8 +462,6 @@ package body Date_Text is
         Result := Result + 1;
       end if;
 
-      -- Chek end conditions
-      exit when Ifor = Format'Last;
       Ifor := Ifor + 1;
     end loop;
     -- Done
