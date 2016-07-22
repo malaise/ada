@@ -14,9 +14,20 @@ begin
   Scan_Format := As.U.Tus (Argument.Get_Parameter (Occurence => 1));
   Put_Format  := As.U.Tus (Argument.Get_Parameter (Occurence => 2));
 
-  Basic_Proc.Put_Line_Output ("Lengths:"
-     & Natural'Image (Date_Text.Length (Scan_Format.Image))
-     & "  and" & Natural'Image (Date_Text.Length (Put_Format.Image)));
+  Basic_Proc.Put_Line_Output ("Lengths:");
+  begin
+    Basic_Proc.Put_Line_Output (
+        Natural'Image (Date_Text.Length (Scan_Format.Image)));
+  exception
+    when Date_Text.Unknown_Length => null;
+  end;
+  begin
+    Basic_Proc.Put_Line_Output (
+        Natural'Image (Date_Text.Length (Put_Format.Image)));
+  exception
+    when Date_Text.Unknown_Length => null;
+  end;
+
   for I in 3 .. Argument.Get_Nbre_Arg loop
     Date := Date_Text.Scan (Argument.Get_Parameter (Occurence => I),
                             Scan_Format.Image);

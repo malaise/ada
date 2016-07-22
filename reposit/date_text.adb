@@ -183,15 +183,18 @@ package body Date_Text is
         Char := Format(Ind);
         if Char /= Esc then
           Fi := Field_Of (Char);
-          -- Check that, if Field has unknonw length, then it is not immeditely
-          --  followed by an Esc
-          if Fields(Fi).Length = 0
-          and then Ind + 2 <= Format'Last
-          and then Format(Ind + 1) = Esc
-          and then Format(Ind + 2) /= Esc then
-             Logger.Log_Debug ("Esc " & Char & " followed by "
-                             & Format(Ind + 1 .. Ind + 2));
-            raise Invalid_Format;
+          -- Check that, if Field has unknown length, then it is not immediately
+          --  followed by an Esc (except EscEsc) nor by a lower-case letter
+          if Fields(Fi).Length = 0 and then Ind + 2 <= Format'Last then
+            if Format(Ind + 1) = Esc and then Format(Ind + 2) /= Esc then
+               Logger.Log_Debug ("Esc " & Char & " followed by "
+                               & Format(Ind + 1 .. Ind + 2));
+              raise Invalid_Format;
+            elsif Format(Ind + 1) >= 'a' and then Format(Ind + 1) <= 'z' then
+              Logger.Log_Debug ("Esc " & Char & " followed by "
+                              & Format(Ind + 1));
+              raise Invalid_Format;
+            end if;
           end if;
         end if;
       end if;
@@ -264,7 +267,7 @@ package body Date_Text is
           else
             -- Format defines the following character
             Next_Char := Format(Ifor + 1);
-            Next_Index := Str_Util.Locate (Str, Next_Char & "", Ifor + 1);
+            Next_Index := Str_Util.Locate (Str, Next_Char & "", Istr + 1);
             if Next_Index = 0 then
               Logger.Log_Debug ("Str does not provide expected " & Next_Char);
               raise Invalid_String;
