@@ -334,7 +334,7 @@ package body Date_Text is
         raise Invalid_String;
       end if;
 
-      -- Chek end conditions
+      -- Check end conditions
       if Ifor = Format'Last then
         -- Check that end of Str
         if Istr = Str'Last then
