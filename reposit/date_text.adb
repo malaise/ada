@@ -228,7 +228,7 @@ package body Date_Text is
   begin
     -- Init
     Init_Logger;
-    Logger.Log_Debug ("Scanning > " & Str & "< with format >" & Format & "<");
+    Logger.Log_Debug ("Scanning >" & Str & "< with format >" & Format & "<");
     Check_Format (Format);
     if Format = "" then
       if Str = "" then
