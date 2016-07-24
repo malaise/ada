@@ -482,7 +482,8 @@ procedure Agite is
   begin
     if File.S2 = '?' or else File.S2 = ' '
     or else File.S2 = 'U' or else File.S2 = 'M'
-    or else (File.S2 = 'A' and then File.S3 /= ' ') then
+    or else (File.S2 = 'A' and then File.S3 /= ' ')
+    or else (File.S2 = 'D' and then File.S3 = 'U') then
       if File.S3 = 'D' then
         -- File being deleted
         Git_If.Do_Rm (File.Name.Image);
