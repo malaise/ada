@@ -20,6 +20,7 @@ CLIBS_t_delta_date := $(PCRE_SLIBS)
 CLIBS_t_evp_digest := ssl crypto
 CLIBS_t_regex_filters := $(PCRE_SLIBS)
 CLIBS_t_regexp := $(PCRE_SLIBS)
+CLIBS_t_scanner := $(PCRE_SLIBS)
 CLIBS_t_state_machine := $(PCRE_SLIBS)
 CLIBS_t_string := $(PCRE_SLIBS)
 CLIBS_t_str_error := $(PCRE_SLIBS)

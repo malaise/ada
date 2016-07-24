@@ -98,7 +98,8 @@ Ada.Strings.Bounded with extra features.
 * 'Normalization', 'Images' and 'Gets' provide ways tro transform numeric 
 values to strings and reverse.
 
-* 'Date_Text' scans and puts dates in variable formats.
+* 'Scanner' scans booleans, intergers, reals... from a string according to a
+given format.
 
 * 'Many_Strings' allows storing several strings successively in a string and
 extracting them.
@@ -188,6 +189,8 @@ on which one can check the expiration from time to time.
 * 'Perpet' is a perpetual calendar.
 
 * 'Day_Mng' converts durations to and from hours/minutes/seconds/milliseconds.
+
+* 'Date_Text' scans and puts dates in variable formats.
 
 Forking child process
 ~~~~~~~~~~~~~~~~~~~~~
