@@ -138,10 +138,11 @@ cat >exp << EOF
 None_Kind: 
 Bool_Kind: True
 Trilean_Kind: Other
-Inte_Kind: 2121
 Integer_Kind: 21
-Real_Kind: 2.12100000000000E+01
-Float_Kind: 2.12121E+03
+Lint_Kind: 2121
+Duration_Kind: 21.210000000
+Float_Kind: 2.12100E+01
+Real_Kind: 2.12121210000000E+03
 Str_Kind: A string
 Address_Kind: 16#33C99#
 Access_Kind: ->Another string
@@ -573,7 +574,9 @@ echo "OK"
 title t_date_text
 t_date_text '%b %d %H:%M:%S' '%Y-%m-%dT%H:%M:%S:%s' 'Jul 21 10:45:54' >out 2>err
 cat << EOF >exp
-Lengths: 15  and 23
+Lengths:
+ 15
+ 23
 Input: Jul 21 10:45:54  Dump: 1901/07/21 10:45:54.000  Put: 1901-07-21T10:45:54:000
 EOF
 comp err nul

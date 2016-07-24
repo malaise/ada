@@ -24,10 +24,10 @@ package body Images is
   function Long_Image (L : Long_Integer) return String
            renames Loc_Long_Image;
 
-  -- Image of Long_Long_Integer
-  function Loc_Long_Long_Image is new Int_Image (Long_Long_Integer);
-  function Long_Long_Image (L : Long_Long_Integer) return String
-           renames Loc_Long_Long_Image;
+  -- Image of Long_Longs.Ll_Int
+  function Loc_Ll_Integer_Image is new Int_Image (Long_Longs.Ll_Integer);
+  function Ll_Integer_Image (L : Long_Longs.Ll_Integer) return String
+           renames Loc_Ll_Integer_Image;
 
   -- Image of Integer in base 16 (without leading space)
   -- 16#xxx#

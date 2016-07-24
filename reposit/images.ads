@@ -1,4 +1,5 @@
 with Ada.Calendar;
+with Long_Longs;
 -- Various convertions from numbers to string
 package Images is
   -- Image of an integer (without leading space)
@@ -9,9 +10,9 @@ package Images is
   -- Image of Integer
   function Integer_Image (I : Integer) return String;
 
-  -- Image of Long_Integer and Long_Long_Integer
+  -- Image of Long_Integer and Long_Longs.Ll_Integer
   function Long_Image (L : Long_Integer) return String;
-  function Long_Long_Image (L : Long_Long_Integer) return String;
+  function Ll_Integer_Image (L : Long_Longs.Ll_Integer) return String;
 
   -- Image of Integer in base 16 (without leading space)
   -- "16#XYZ#"
