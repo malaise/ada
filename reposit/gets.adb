@@ -3,6 +3,7 @@ package body Gets is
   package Llint_Io is new Ada.Text_Io.Integer_Io (Long_Longs.Ll_Integer);
   package Llmod_Io is new Ada.Text_Io.Modular_Io (Long_Longs.Llu_Natural);
   package Flo_Io is new Ada.Text_Io.Float_Io (Float);
+  package Real_Io is new Ada.Text_Io.Float_Io (My_Math.Real);
   package Dur_Io is new Ada.Text_Io.Fixed_Io (Duration);
 
   function Get_Int (Str : String) return Integer is
@@ -159,13 +160,68 @@ package body Gets is
   end Get_Llint_Or_Float;
 
 
-  function Get_Int_Float (Str : String) return Float is
-    Int_Float : Int_Or_Float_Rec;
+  function Get_Llint_Float (Str : String) return Float is
+    Llint_Float : Llint_Or_Float_Rec;
   begin
-    Int_Float := Get_Int_Or_Float (Str);
-    return (if Int_Float.Is_Float then Int_Float.Float_Value
-            else Float(Int_Float.Int_Value));
-  end Get_Int_Float;
+    Llint_Float := Get_Llint_Or_Float (Str);
+    return (if Llint_Float.Is_Float then Llint_Float.Float_Value
+            else Float(Llint_Float.Llint_Value));
+  end Get_Llint_Float;
+
+  function Get_Real (Str : String) return My_Math.Real is
+    R : My_Math.Real;
+    L : Positive;
+    Str_Len : Natural;
+  begin
+    -- Locate last significant character of Str
+    Str_Len := 0;
+    for J in reverse Str'Range loop
+      if Str_Len = 0 and then Str(J) /= ' ' then
+        Str_Len := J + 1 - Str'First;
+      end if;
+    end loop;
+    if Str_Len = 0 then
+      raise Constraint_Error;
+    end if;
+
+    Real_Io.Get (Str, R, L);
+
+    if L /= Str'Last then
+      raise Constraint_Error;
+    end if;
+    return R;
+  exception
+    when others =>
+      raise Constraint_Error;
+  end Get_Real;
+
+  function Get_Llint_Or_Real (Str : String) return Llint_Or_Real_Rec is
+    Dot_Found : Boolean;
+  begin
+    Dot_Found := False;
+    for J in Str'Range loop
+      if Str(J) = '.' then
+        Dot_Found := True;
+        exit;
+      end if;
+    end loop;
+
+    return (
+      if Dot_Found then (Is_Real => True,  Real_Value  => Get_Real (Str))
+                   else (Is_Real => False, Llint_Value => Get_Llint (Str)) );
+  exception
+    when others =>
+      raise Constraint_Error;
+  end Get_Llint_Or_Real;
+
+
+  function Get_Llint_Real (Str : String) return My_Math.Real is
+    Llint_Real : Llint_Or_Real_Rec;
+  begin
+    Llint_Real := Get_Llint_Or_Real (Str);
+    return (if Llint_Real.Is_Real then Llint_Real.Real_Value
+            else My_Math.Real(Llint_Real.Llint_Value));
+  end Get_Llint_Real;
 
 end Gets;
 
