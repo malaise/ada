@@ -33,6 +33,11 @@ package Aski is
   Lf_C  : constant Character := Lf;
   Lf_S  : constant String := Lf & "";
 
+  -- Vertical tab
+  Vt   : constant Character := Ada.Characters.Latin_1.Vt;
+  Vt_C : constant Character := Vt;
+  Vt_S : constant String := Vt & "";
+
   -- Form feed
   Ff    : constant Character := Ada.Characters.Latin_1.Ff;
   Ff_C  : constant Character := Ff;

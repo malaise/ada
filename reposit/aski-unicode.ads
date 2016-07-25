@@ -25,6 +25,9 @@ package Aski.Unicode is
   -- Line feed
   Lf_U  : constant Unicode_Number := Character'Pos (Lf);
 
+  -- Vertical tab
+  Vt_U  : constant Unicode_Number := Character'Pos (Vt);
+
   -- Form feed
   Ff_U  : constant Unicode_Number := Character'Pos (Ff);
 
