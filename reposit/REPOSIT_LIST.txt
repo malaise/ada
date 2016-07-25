@@ -98,8 +98,8 @@ Ada.Strings.Bounded with extra features.
 * 'Normalization', 'Images' and 'Gets' provide ways tro transform numeric 
 values to strings and reverse.
 
-* 'Scanner' scans booleans, intergers, reals... from a string according to a
-given format.
+* 'Scanner' scans booleans, integers, reals, strings... from a string, according
+to a given format.
 
 * 'Many_Strings' allows storing several strings successively in a string and
 extracting them.
@@ -538,7 +538,10 @@ romanic (1)::
      Decimal to romanic conversion (11 <--> XI).
 
 rounds (1)::
-     Round / trunc a float
+     Round / trunc a float.
+
+scanner (2)::
+     Scan a string and extract fields according to a given format.
 
 schedule (1)::
      Allow task schduling (delay 0.0).

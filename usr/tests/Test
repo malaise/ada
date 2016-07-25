@@ -1436,15 +1436,17 @@ echo "OK"
 
 # t_scanner
 title t_scanner
-t_scanner "%5b %t %d %r %i %s" "true  maybe 5.2 21.21 21 OK" >out 2>err
+t_scanner "%5b %t %d %r %l %i%w %s" "true  maybe 5.2 21.21 21 Try1-Try2 OK" >out 2>err
 cat << EOF >exp
 Length: Unknown
-Input: true  maybe 5.2 21.21 21 OK
+Input: true  maybe 5.2 21.21 21 Try1-Try2 OK
  > True
  > Other
  > 5.200000000
  > 2.12100000000000E+01
  > 21
+ > Try1
+ > -Try2
  > OK
 EOF
 comp err nul

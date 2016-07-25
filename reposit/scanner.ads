@@ -12,10 +12,13 @@ package Scanner is
   -- The format is a string that relies on the following types (<type>):
   -- b : Boolean
   -- t : Trilean
-  -- i : Integer (Long_Longs.ll_Integer)
+  -- l : Long integer (Long_Longs.ll_Integer)
   -- d : Duration
   -- r : Real (My_Math.Real)
   -- s : String (As.U.Asu_Us)
+  -- i : Identifier, "letter (underscore? letter_or_digit)*" in a Asu_Us
+  -- w : Word, any non-space sqience, in a Asu_Us
+
   --
   -- A reference to a type is indicated by the character '%',
   --  possibly followed by a length <len>, then followed by the type.
@@ -27,19 +30,23 @@ package Scanner is
   --  are expected (in any casing)
   -- t is the same as boolean, except that the strings "Other" and "Maybe" are
   --  also recognised
-  -- i can have a <len>, [ ]*[+-]?[0-9]+ is expected
+  -- l can have a <len>, [ ]*[+-]?[0-9]+ is expected
   -- d can have a <len>, [ ]*[+-]?[0-9]+(\.[0-9]+)? is expected
   -- r can have a <len>, [ ]*[+-]?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?
   --  is expected
   -- s must have a <len>, except at the end of the format (not followed by
   --  any character or type reference).
+  -- i can have a <len>, then [ ]*[_a-zA-Z0-9]+ is expected,
+  --  otherwise the leading [ ]* is not allowed
+  -- w can have a <len>, then [ ]*[^ \t\r\n\f\v]+ is expected,
+  --  otherwise the leading [ ]* is not allowed
   -- "%%" denotes the character '%'.
   -- Any other character in the format denotes the same character expected in
   --  the data
   -- Examples:
-  -- - "%i%s" will read an integer as long as possible and will complete
+  -- - "%l%s" will read aa long integer as long as possible and will complete
   --    with a string (possibly empty)
-  -- - "%2i%%%3s" will read 2 characters for an integer, check that there is
+  -- - "%2l%%%3s" will read 2 characters for a long, check that there is
   --    a '%', then read 3 characters in a string
 
   -- A format is invalid if:

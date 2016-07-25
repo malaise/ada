@@ -1,4 +1,4 @@
-with Trace.Loggers, As.U, Trilean, Gets, Mixed_Str, Regular_Expressions;
+with Trace.Loggers, As.U, Aski, Trilean, Gets, Mixed_Str, Regular_Expressions;
 package body Scanner is
 
   -- Convert a string into a sequence of Anys, according to a given format
@@ -24,14 +24,16 @@ package body Scanner is
     -- Len value if it is set
     Len_Value : Natural := 0;
   end record;
-  subtype Dscr_Range is Positive range 1 .. 6;
+  subtype Dscr_Range is Positive range 1 .. 8;
   Dscrs : constant array (Dscr_Range) of Dscr_Rec := (
       ('b', False, 5),
       ('t', False, 5),
-      ('i', False, 0),
+      ('l', False, 0),
       ('d', False, 0),
       ('r', False, 0),
-      ('s', True,  0));
+      ('s', True,  0),
+      ('i', False, 0),
+      ('w', False, 0) );
 
   -- Get descriptor of a char
   function Dscr_Of (Char : Character) return Dscr_Range is
@@ -48,7 +50,7 @@ package body Scanner is
   -- Is a char a digit
   function Is_Digit (Char : Character) return Boolean is
   begin
-    return Char >= '0' and then Char <= '9';
+    return Char in '0' .. '9';
   end Is_Digit;
 
   -- Scan length of a type, update index to point to next char (the type)
@@ -246,7 +248,7 @@ package body Scanner is
   begin
     case Char is
       when 'b' =>
-        -- Scan True or False (any casing) and update index
+        -- Boolean: Scan True or False (any casing) and update index
         if Len = 0 and then Ind + 3 <= Data'Last
         and then Mixed_Str (Data(Ind .. Ind + 3)) = "True" then
           Result := (Kind => Any_Def.Bool_Kind, Bool => True);
@@ -268,7 +270,8 @@ package body Scanner is
         Logger.Log_Debug ("  Got a " & Any_Def.Image (Result));
 
       when 't' =>
-        -- Scan True or False or Other or Maybe (any casing) and update index
+        -- Trilean: Scan True or False or Other or Maybe (any casing)
+        --  and update index
         if Len = 0 and then Ind + 3 <= Data'Last
         and then Mixed_Str (Data(Ind .. Ind + 3)) = "True" then
           Result := (Kind => Any_Def.Trilean_Kind, Tril => Trilean.True);
@@ -294,8 +297,8 @@ package body Scanner is
         end if;
         Logger.Log_Debug ("  Got a " & Any_Def.Image (Result));
 
-      when 'i' =>
-        -- Use Len or parse to get length
+      when 'l' =>
+        -- Long integer: Use Len or parse to get length
         if Len /= 0 then
           Stop := Ind + Len - 1;
         else
@@ -309,7 +312,8 @@ package body Scanner is
         end if;
         if not Regular_Expressions.Match ("[ ]*[+-]?[0-9]+", Data(Ind .. Stop),
                                           True) then
-          Logger.Log_Debug ("Invalid integer >" & Data(Ind .. Data'Last) & "<");
+          Logger.Log_Debug ("Invalid long int >"
+                          & Data(Ind .. Data'Last) & "<");
           raise Invalid_Data;
         end if;
         -- Get the int value
@@ -318,7 +322,7 @@ package body Scanner is
         Ind := Stop;
 
       when 'd' =>
-       -- Use Len or parse to get length
+       -- Decimal: Use Len or parse to get length
         if Len /= 0 then
           Stop := Ind + Len - 1;
         else
@@ -344,7 +348,7 @@ package body Scanner is
         Ind := Stop;
 
       when 'r' =>
-       -- Use Len or parse to get length
+       -- Real: Use Len or parse to get length
         if Len /= 0 then
           Stop := Ind + Len - 1;
         else
@@ -373,11 +377,47 @@ package body Scanner is
         Ind := Stop;
 
       when 's' =>
-        -- Use Len or up to Data'Last
+        -- String: Use Len or up to Data'Last
         if Len /= 0 then
           Stop := Ind + Len - 1;
         else
           Stop := Data'Last;
+        end if;
+        Result := (Kind => Any_Def.Str_Kind,
+                   Str => As.U.Tus (Data(Ind .. Stop)));
+        Ind := Stop;
+
+      when 'i' =>
+        -- Look for digits
+        if Len /= 0 then
+          Stop := Ind + Len - 1;
+        else
+          Stop := Ind - 1;
+          for I in Ind .. Data'Last loop
+            exit when Data(I) not in '_' | '0'..'9' | 'a'..'z' | 'A'..'Z';
+            Stop := I;
+          end loop;
+          if Stop < Data'First then
+            Logger.Log_Debug ("Empty identifier >"
+                            & Data(Ind .. Data'Last) & "<");
+            raise Invalid_Data;
+          end if;
+        end if;
+        Result := (Kind => Any_Def.Str_Kind,
+                   Str => As.U.Tus (Data(Ind .. Stop)));
+        Ind := Stop;
+
+      when 'w' =>
+        -- Look for non space
+        if Len /= 0 then
+          Stop := Ind + Len - 1;
+        else
+          Stop := Ind - 1;
+          for I in Ind .. Data'Last loop
+            exit when Data(I) in Aski.Spc | Aski.Ht | Aski.Cr | Aski.Lf
+                               | Aski.Ff | Aski.Vt;
+            Stop := I;
+          end loop;
         end if;
         Result := (Kind => Any_Def.Str_Kind,
                    Str => As.U.Tus (Data(Ind .. Stop)));
@@ -389,6 +429,11 @@ package body Scanner is
         raise Invalid_Format;
     end case;
     return Result;
+  exception
+    when Constraint_Error =>
+      Logger.Log_Debug ("Invalid data (too long?) >"
+                      & Data(Ind .. Data'Last) & "<");
+      raise Invalid_Data;
   end Scan_One;
 
   -- Scan the Data according to Format, return the sequence of refered
