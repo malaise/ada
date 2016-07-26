@@ -7,8 +7,8 @@ package body Date_Text is
 
   -- Maps fields of Date_Rec from/to indexes
   package Indexes is
-    -- Indexes of fields: 1 is year .. 7 is milliseconds
-    subtype Index_Range is Positive range 1 .. 7;
+    -- Indexes of fields: 1 is year .. 7 is microseconds
+    subtype Index_Range is Positive range 1 .. 8;
     -- Update To so that its Index field is set to Val
     procedure Set (To : in out Date_Rec;
                    Index : in Index_Range;
@@ -31,6 +31,7 @@ package body Date_Text is
         when 5 => To.Minutes  := Val;
         when 6 => To.Seconds  := Val;
         when 7 => To.Millisec := Val;
+        when 8 => To.Microsec := Val;
       end case;
     end Set;
 
@@ -44,7 +45,8 @@ package body Date_Text is
         when 4 => Val.Hours,
         when 5 => Val.Minutes,
         when 6 => Val.Seconds,
-        when 7 => Val.Millisec);
+        when 7 => Val.Millisec,
+        when 8 => Val.Microsec);
     end Get;
   end Indexes;
 
@@ -104,7 +106,7 @@ package body Date_Text is
   -- A field is either of kind num or enum
   type Field_Kind is (Num, Enum);
   -- How many fields are defined for format
-  subtype Field_Range is Positive range 1 .. 9;
+  subtype Field_Range is Positive range 1 .. 10;
   -- A field
   type Field_Rec (Kind : Field_Kind := Num) is record
     -- The character that represents the field in Format (after '%')
@@ -144,6 +146,8 @@ package body Date_Text is
     8 => (Num,  'S', 6, As.U.Tus ("2l"), Day_Mng.T_Seconds'First,
                                          Day_Mng.T_Seconds'Last),
     9 => (Num,  's', 7, As.U.Tus ("3l"), Day_Mng.T_Millisec'First,
+                                         Day_Mng.T_Millisec'Last),
+   10 => (Num,  'u', 8, As.U.Tus ("3l"), Day_Mng.T_Millisec'First,
                                          Day_Mng.T_Millisec'Last)
   );
   type Fields_Array is array (Positive range <>) of Field_Range;

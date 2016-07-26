@@ -11,6 +11,7 @@ package Date_Text is
     Minutes  : Day_Mng.T_Minutes         := Day_Mng.T_Minutes'First;
     Seconds  : Day_Mng.T_Seconds         := Day_Mng.T_Seconds'First;
     Millisec : Day_Mng.T_Millisec        := Day_Mng.T_Millisec'First;
+    Microsec : Day_Mng.T_Millisec        := Day_Mng.T_Millisec'First;
   end record;
 
   -- The format string can contain:
@@ -24,6 +25,7 @@ package Date_Text is
   -- %M : minutes on 2 digits
   -- %S : seconds on 2 digits
   -- %s : milliseconds on 3 digits
+  -- %u : microseconds on 3 digits (so sually after the millisec)
   -- %% : the '%' character
   -- Other characters are output/scanned as such
 
