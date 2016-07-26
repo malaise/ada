@@ -357,6 +357,8 @@ package Con_Io is
   --  if a callback has been activated on a signal reception (see event_mng)
   --  if a refresh is needed on the screen (see x_mng)
   -- Mouse_button event can only be generated if the mouse cursor is shown
+  -- Note: In some environments the Next/Prev Page mouse buttons are mapped to
+  --  the Page Up/Down keyboard events
 
   -- The returned string ends at last significant digit (padded with spaces),
   --  tailling spaces are parsed out and last is the index in Str of
@@ -555,7 +557,9 @@ package Con_Io is
   type Mouse_Button_Status_List is (Pressed, Released, Motion);
   -- List of buttons
   type Mouse_Button_List is (Left, Middle, Right, Motion, Up, Down,
-                             Shift_Up, Shift_Down, Ctrl_Up, Ctrl_Down);
+                             Shift_Up, Shift_Down, Ctrl_Up, Ctrl_Down,
+                             Pgup, Pgdown, Shift_Pgup, Shift_Pgdown,
+                             Ctrl_Pgup, Ctrl_Pgdown);
   -- Pointing buttons
   subtype Mouse_Pointing_List is Mouse_Button_List range Left .. Right;
   -- Mouse status

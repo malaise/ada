@@ -43,7 +43,9 @@ package X_Mng is
 
   -- Mouse buttons
   type Button_List is (None, Left, Middle, Right, Up, Down,
-                       Shift_Up, Shift_Down, Ctrl_Up, Ctrl_Down);
+                       Shift_Up, Shift_Down, Ctrl_Up, Ctrl_Down,
+                       Pgup, Pgdown, Shift_Pgup, Shift_Pgdown,
+                       Ctrl_Pgup, Ctrl_Pgdown);
 
   -- Result of waiting (see Event_Mng for Events).
   -- Tid is mouse (was touch input device)

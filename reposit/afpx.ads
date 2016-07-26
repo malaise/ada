@@ -257,16 +257,17 @@ package Afpx is
 
   -- User actions on the list:
   ----------------------------
-  -- These are the scrolling actions that are automatic bound on keys
-  --  and mouse wheel (as soon as the list is not empty):
-  --                    +---------------------------------------+
-  --                    | Arrow keys |  Page keys | Mouse wheel |
-  -- +------------------+------------+------------+-------------+
-  -- | Line Up/Down     |      V     |            |      V      |
-  -- | Page Up/Down     |    Shift   |      V     |    Shift    |
-  -- | 10 Pages Up/Down |    Ctrl    |    Shift   |     Ctrl    |
-  -- | Top/Bottom       |            |     Ctrl   |             |
-  -- +----------------------------------------------------------+
+  -- These are the scrolling actions that are automatic bound on keys,
+  --  mouse wheel and mouse buttons for next/prev page (as soon as the list is
+  --  not empty):
+  --                    +----------------------------------------------------+
+  --                    | Arrow keys |  Page keys | Mouse wheel | Mouse page |
+  -- +------------------+------------+------------+-------------+------------+
+  -- | Line Up/Down     |      V     |            |      V      |            |
+  -- | Page Up/Down     |    Shift   |      V     |    Shift    |      V     |
+  -- | 10 Pages Up/Down |    Ctrl    |    Shift   |     Ctrl    |    Shift   |
+  -- | Top/Bottom       |            |     Ctrl   |             |     Ctrl   |
+  -- +-----------------------------------------------------------------------+
 
   -- Selection in the list (with the mouse):
   -- When the list is active and not empty there is always one line selected,

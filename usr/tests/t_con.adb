@@ -149,6 +149,10 @@ procedure T_Con is
               W2.Put (" U");
             elsif Mouse_Event.Button = Con_Io.Down then
               W2.Put (" D");
+            elsif Mouse_Event.Button = Con_Io.Pgup then
+              W2.Put (" N");
+            elsif Mouse_Event.Button = Con_Io.Pgdown then
+              W2.Put (" P");
             end if;
             W2.Put (Normal(Mouse_Event.Row, 4)
                       & Normal(Mouse_Event.Col, 4));

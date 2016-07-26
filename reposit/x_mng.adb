@@ -1184,15 +1184,21 @@ package body X_Mng is
     end if;
     -- check returned coordinates
     Button := (case Loc_Button is
-                 when 1      => Left,
-                 when 2      => Middle,
-                 when 3      => Right,
-                 when 4      => Up,
-                 when 5      => Down,
-                 when 6      => Shift_Up,
-                 when 7      => Shift_Down,
-                 when 8      => Ctrl_Up,
-                 when 9      => Ctrl_Down,
+                 when  1      => Left,
+                 when  2      => Middle,
+                 when  3      => Right,
+                 when  4      => Up,
+                 when  5      => Down,
+                 when  6      => Shift_Up,
+                 when  7      => Shift_Down,
+                 when  8      => Ctrl_Up,
+                 when  9      => Ctrl_Down,
+                 when 10      => Pgup,
+                 when 11      => Pgdown,
+                 when 12      => Shift_Pgup,
+                 when 13      => Shift_Pgdown,
+                 when 14      => Ctrl_Pgup,
+                 when 15      => Ctrl_Pgdown,
                  when others => None);
     Row := Row_For_C;
     Column := Col_For_C;

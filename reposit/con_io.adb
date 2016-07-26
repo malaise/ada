@@ -1265,7 +1265,7 @@ package body Con_Io is
                 Stat := Down;
               end if;
               exit;
-            when 16#55# =>
+            when 16#17# | 16#55# =>
               -- Page Up
               if Ctrl then
                 Stat := Ctrl_Pgup;
@@ -1275,7 +1275,7 @@ package body Con_Io is
                 Stat := Pgup;
               end if;
               exit;
-            when 16#56# =>
+            when 16#16# | 16#56# =>
               -- Page Down
               if Ctrl then
                 Stat := Ctrl_Pgdown;
@@ -1424,7 +1424,7 @@ package body Con_Io is
               Stat := Down;
             end if;
             exit;
-          when 16#55# =>
+          when 16#17# | 16#55# =>
             -- Page Up
             Last := Parse;
             if Ctrl then
@@ -1435,7 +1435,7 @@ package body Con_Io is
               Stat := Pgup;
             end if;
             exit;
-          when 16#56# =>
+          when 16#16# | 16#56# =>
             -- Page Down
             Last := Parse;
             if Ctrl then
@@ -1876,6 +1876,18 @@ package body Con_Io is
             Loc_Event.Button := Ctrl_Up;
           when X_Mng.Ctrl_Down =>
             Loc_Event.Button := Ctrl_Down;
+          when X_Mng.Pgup =>
+            Loc_Event.Button := Pgup;
+          when X_Mng.Pgdown =>
+            Loc_Event.Button := Pgdown;
+          when X_Mng.Ctrl_Pgup =>
+            Loc_Event.Button := Ctrl_Pgup;
+          when X_Mng.Ctrl_Pgdown =>
+            Loc_Event.Button := Ctrl_Pgdown;
+          when X_Mng.Shift_Pgup =>
+            Loc_Event.Button := Shift_Pgup;
+          when X_Mng.Shift_Pgdown =>
+            Loc_Event.Button := Shift_Pgdown;
         end case;
         if Acc.Mouse_Status = X_Mng.Tid_Press then
           Loc_Event.Status := Pressed;

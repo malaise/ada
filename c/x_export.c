@@ -925,6 +925,24 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
            } else {
              win_id->button = 5;
            }
+        } else if (event.xbutton.button == 8) {
+          /* Prev page */
+          if ((event.xbutton.state & ControlMask) != 0) {
+             win_id->button = 15;
+           } else if ((event.xbutton.state & ShiftMask) != 0) {
+             win_id->button = 13;
+           } else {
+             win_id->button = 11;
+           }
+        } else if (event.xbutton.button == 9) {
+          /* Next page */
+          if ((event.xbutton.state & ControlMask) != 0) {
+             win_id->button = 14;
+           } else if ((event.xbutton.state & ShiftMask) != 0) {
+             win_id->button = 12;
+           } else {
+             win_id->button = 10;
+           }
         } else {
            break; /* Next Event */
         }
