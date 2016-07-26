@@ -1,5 +1,5 @@
-with Trace.Loggers, Mixed_Str, Normal, Images, Gets, As.U, Str_Util,
-     Regular_Expressions, Perpet;
+with Trace.Loggers, Mixed_Str, Normal, Images, Gets, As.U, Any_Def,
+     Unbounded_Arrays, Perpet, Scanner;
 package body Date_Text is
 
   -- Logger
@@ -111,8 +111,8 @@ package body Date_Text is
     Char : Character;
     -- The index in Date_Rec
     Index : Indexes.Index_Range;
-    -- The length  of the field (0 if unknown)
-    Length : Natural;
+    -- The Scanner format
+    Scanner_Format : As.U.Asu_Us;
     case Kind is
        when Num =>
          -- The min and max values
@@ -127,19 +127,29 @@ package body Date_Text is
 
   -- The fields in the Format
   Fields : constant array (Field_Range) of Field_Rec := (
-    1 => (Num,  'Y', 1, 4, Ada.Calendar.Year_Number'First,
-                           Ada.Calendar.Year_Number'Last),
-    2 => (Num,  'm', 2, 2, Ada.Calendar.Month_Number'First,
-                           Ada.Calendar.Month_Number'Last),
-    3 => (Enum, 'b', 2, 3, 2, Conv.Short2Num'Access, Conv.Num2Short'Access),
-    4 => (Enum, 'B', 2, 0, 2, Conv.Long2Num'Access,  Conv.Num2Long'Access),
-    5 => (Num,  'd', 3, 2, Ada.Calendar.Day_Number'First,
-                           Ada.Calendar.Day_Number'Last),
-    6 => (Num,  'H', 4, 2, Day_Mng.T_Hours'First,    Day_Mng.T_Hours'Last),
-    7 => (Num,  'M', 5, 2, Day_Mng.T_Minutes'First,  Day_Mng.T_Minutes'Last),
-    8 => (Num,  'S', 6, 2, Day_Mng.T_Seconds'First,  Day_Mng.T_Seconds'Last),
-    9 => (Num,  's', 7, 3, Day_Mng.T_Millisec'First, Day_Mng.T_Millisec'Last)
+    1 => (Num,  'Y', 1, As.U.Tus ("4l"), Ada.Calendar.Year_Number'First,
+                                         Ada.Calendar.Year_Number'Last),
+    2 => (Num,  'm', 2, As.U.Tus ("2l"), Ada.Calendar.Month_Number'First,
+                                         Ada.Calendar.Month_Number'Last),
+    3 => (Enum, 'b', 2, As.U.Tus ("3i"), 2, Conv.Short2Num'Access,
+                                            Conv.Num2Short'Access),
+    4 => (Enum, 'B', 2, As.U.Tus ("i"), 2, Conv.Long2Num'Access,
+                                           Conv.Num2Long'Access),
+    5 => (Num,  'd', 3, As.U.Tus ("2l"), Ada.Calendar.Day_Number'First,
+                                         Ada.Calendar.Day_Number'Last),
+    6 => (Num,  'H', 4, As.U.Tus ("2l"), Day_Mng.T_Hours'First,
+                                         Day_Mng.T_Hours'Last),
+    7 => (Num,  'M', 5, As.U.Tus ("2l"), Day_Mng.T_Minutes'First,
+                                         Day_Mng.T_Minutes'Last),
+    8 => (Num,  'S', 6, As.U.Tus ("2l"), Day_Mng.T_Seconds'First,
+                                         Day_Mng.T_Seconds'Last),
+    9 => (Num,  's', 7, As.U.Tus ("3l"), Day_Mng.T_Millisec'First,
+                                         Day_Mng.T_Millisec'Last)
   );
+  type Fields_Array is array (Positive range <>) of Field_Range;
+  package Unbounded_Fields_Array_Mng is new Unbounded_Arrays (
+      Field_Range, Fields_Array);
+  subtype Field_Sequence is Unbounded_Fields_Array_Mng.Unb_Array;
 
   -- Init the trace logger if necessary
   procedure Init_Logger is
@@ -161,14 +171,32 @@ package body Date_Text is
     raise Invalid_Format;
   end Field_Of;
 
+  -- Get length of a field => 0 if unknwon
+  function Get_Length (Fi : Field_Range) return Natural is
+    Char : Character;
+  begin
+    -- Format start with a digit?
+    Char := Fields(Fi).Scanner_Format.Element (1);
+    if Char in '0' .. '9' then
+      return Character'Pos (Char) - Character'Pos ('0');
+    else
+      return 0;
+    end if;
+  end Get_Length;
+
   -- Check a Format, raises Invalid_Format
   Esc : constant Character := '%';
-  procedure Check_Format (Format : String) is
+  procedure Check_Format (Format : in String;
+                          Scan_Fmt : out As.U.Asu_Us;
+                          Flds : out Field_Sequence) is
     Ind : Positive;
     Char : Character;
     Fi : Field_Range;
+    use type As.U.Asu_Us;
   begin
     Logger.Log_Debug ("Check_Format >" & Format & "<");
+    Scan_Fmt.Set_Null;
+    Flds.Set_Null;
     -- Look for Esc sequences
     Ind := Format'First;
     while Ind <= Format'Last loop
@@ -181,22 +209,29 @@ package body Date_Text is
         -- Check this is a known Esc sequence
         Ind := Ind + 1;
         Char := Format(Ind);
-        if Char /= Esc then
+        if Char = Esc then
+          Scan_Fmt.Append (Scanner.Esc & Scanner.Esc);
+        else
           Fi := Field_Of (Char);
           -- Check that, if Field has unknown length, then it is not immediately
           --  followed by an Esc (except EscEsc) nor by a lower-case letter
-          if Fields(Fi).Length = 0 and then Ind + 2 <= Format'Last then
+          if Get_Length (Fi) = 0
+          and then Ind + 2 <= Format'Last then
             if Format(Ind + 1) = Esc and then Format(Ind + 2) /= Esc then
                Logger.Log_Debug ("Esc " & Char & " followed by "
                                & Format(Ind + 1 .. Ind + 2));
               raise Invalid_Format;
-            elsif Format(Ind + 1) >= 'a' and then Format(Ind + 1) <= 'z' then
+            elsif Format(Ind + 1) in 'a' .. 'z' then
               Logger.Log_Debug ("Esc " & Char & " followed by "
                               & Format(Ind + 1));
               raise Invalid_Format;
             end if;
           end if;
+          Scan_Fmt.Append (Scanner.Esc & Fields(Fi).Scanner_Format);
+          Flds.Append (Fi);
         end if;
+      else
+        Scan_Fmt.Append (Format(Ind));
       end if;
       Ind := Ind + 1;
     end loop;
@@ -208,28 +243,27 @@ package body Date_Text is
   --  several occurences of the same field)
   -- Raise Invalid_String if the string does not match the format
   function Scan (Str : String; Format : String) return Date_Rec is
+    -- The format for Scanner
+    Scan_Fmt : As.U.Asu_Us;
+    -- The list of field descriptors
+    Flds : Field_Sequence;
+    -- The result of scanning
+    Anys : Scanner.Any_Sequence;
+    -- The target field index
+    Target : Field_Range;
     -- The fields in Result that are already set
     Set : array (Field_Range) of Boolean := (others => False);
-    -- Indexes in Str and Format
-    Istr, Ifor : Positive;
-    -- Is current char a field
-    Is_Field : Boolean;
-    Fi : Field_Range;
-    -- Tempo extracted text
-    Text : As.U.Asu_Us;
-    -- Expected character, and its index in Str
-    Next_Char : Character;
-    Next_Index : Natural;
     -- Extracted value
+    Text : As.U.Asu_Us;
     Val : Natural;
     -- The result
     Result : Date_Rec;
     use type Conv.Func;
   begin
-    -- Init
+    -- Init and check
     Init_Logger;
     Logger.Log_Debug ("Scanning >" & Str & "< with format >" & Format & "<");
-    Check_Format (Format);
+    Check_Format (Format, Scan_Fmt, Flds);
     if Format = "" then
       if Str = "" then
         return Result;
@@ -238,119 +272,71 @@ package body Date_Text is
         raise Invalid_String;
       end if;
     end if;
-    -- Scan the format and the string
-    Ifor := Format'First;
-    Istr := Str'First;
-    loop
-      -- Check if this is supposed to be a field
-      if Format(Ifor) = Esc then
-        if Format(Ifor + 1) = Esc then
-          -- %% in Format -> % in Str
-          Ifor := Ifor + 1;
-          Is_Field := False;
-        else
-          -- A field to scan
-          Ifor := Ifor + 1;
-          Is_Field := True;
-        end if;
-      else
-        Is_Field := False;
-      end if;
-      if Is_Field then
-        -- Find the field by char
-        Fi := Field_Of (Format(Ifor));
-        -- Scan text
-        if Fields(Fi).Length /= 0 then
-          -- Scan len chars (check enough Str length)
-          if Istr > Str'Last - Fields(Fi).Length  + 1 then
-            Logger.Log_Debug ("Str is too long for " & Fields(Fi).Char);
-            raise Invalid_String;
-          end if;
-          Text := As.U.Tus (Str (Istr .. Istr + Fields(Fi).Length  - 1));
-        else
-          -- Length unknown, depending on format, up to non-field or end
-          if Ifor = Format'Last then
-            -- End of Format (and of Str)
-            Text := As.U.Tus (Str (Istr .. Str'Last));
-          else
-            -- Format defines the following character
-            Next_Char := Format(Ifor + 1);
-            Next_Index := Str_Util.Locate (Str, Next_Char & "", Istr + 1);
-            if Next_Index = 0 then
-              Logger.Log_Debug ("Str does not provide expected " & Next_Char);
-              raise Invalid_String;
-            end if;
-            Text := As.U.Tus (Str (Istr .. Next_Index - 1));
-          end if;
-        end if;
-        Logger.Log_Debug ("  Parsed text >" & Text.Image
-                        & "< for %" & Format(Ifor));
-        -- Increment in Str to point to last char read
-        Istr := Istr + Text.Length  - 1;
-        -- Handle indirection to a Num field
-        if Fields(Fi).Kind = Enum then
-          begin
-            Text := As.U.Tus (Fields(Fi).Conv_Scan (Text.Image));
-          exception
-            when Constraint_Error =>
-              Logger.Log_Debug ("Exception when converting " & Text.Image);
-              raise Invalid_String;
-          end;
-          Fi := Fields(Fi).Target;
+    -- Check validity of scanning format
+    Logger.Log_Debug ("Scan format >" & Scan_Fmt.Image & "<");
+    declare
+      Dummy_Len : Natural;
+    begin
+      Dummy_Len := Scanner.Length (Scan_Fmt.Image);
+    exception
+      when Scanner.Invalid_Format =>
+        Logger.Log_Debug ("Invalid scanning format");
+        raise Invalid_Format;
+      when Scanner.Unknown_Length =>
+        null;
+    end;
+
+    -- Scan
+    Anys := Scanner.Scan (Str, Scan_Fmt.Image);
+    if Anys.Length /= Flds.Length then
+      Logger.Log_Debug ("Got" & Anys.Length'Img
+                      & " Anys for" & Flds.Length'Img & " Flds");
+      raise Invalid_String;
+    end if;
+    for I in 1 .. Anys.Length loop
+      -- Get the val
+      Target := Flds.Element(I);
+      if Fields(Flds.Element(I)).Kind = Enum then
+        begin
+          -- Convert into num string then to val
+          Text := As.U.Tus (Fields(Target).Conv_Scan (
+              Any_Def.Image (Anys.Element(I))));
           Logger.Log_Debug ("  Converted text >" & Text.Image & "<");
-        end if;
-        -- Check length of digits
-        if Fields(Fi).Length /= 0
-        and then not Regular_Expressions.Match (
-            "[0-9]{" & Images.Integer_Image (Fields(Fi).Length) & "}",
-            Text.Image, True) then
-          Logger.Log_Debug ("Invalid num " & Text.Image);
-          raise Invalid_String;
-        end if;
-        -- Convert to val
-        Val := Gets.Get_Int (Text.Image);
-        -- Check value
-        if Val < Fields(Fi).Min or else Val > Fields(Fi).Max then
-          Logger.Log_Debug ("Invalid value " & Images.Integer_Image (Val));
-          raise Invalid_String;
-        end if;
-        -- Check, if already set, that same value
-        if Set (Fields(Fi).Index)
-        and then Val /= Indexes.Get (Result, Fields(Fi).Index) then
-          Logger.Log_Debug ("New value " & Images.Integer_Image (Val)
-              & " differs from previous "
-              & Images.Integer_Image (Indexes.Get (Result, Fields(Fi).Index)));
-          raise Invalid_String;
-        end if;
-        -- Store value and set
-        Indexes.Set (Result, Fields(Fi).Index, Val);
-        Set (Fields(Fi).Index) := True;
-      elsif Str(Istr) /= Format(Ifor) then
-        -- Check that non-field character matches
-        Logger.Log_Debug ("Str(" & Images.Integer_Image (Istr)
-            & ")=" & Str(Istr)
-            & " /= Fmt(" & Images.Integer_Image (Ifor)
-            & ")=" & Format(Ifor));
+          Val := Gets.Get_Int (Text.Image);
+        exception
+          when Constraint_Error =>
+            Logger.Log_Debug ("Exception when converting " & Text.Image);
+            raise Invalid_String;
+        end;
+        Target := Fields(Flds.Element(I)).Target;
+      else
+        begin
+          -- Convert to val
+          Val := Natural (Anys.Element(I).Lint);
+        exception
+          when Constraint_Error =>
+            Logger.Log_Debug ("Invalid num " & Text.Image);
+            raise Invalid_String;
+        end;
+      end if;
+
+      -- Check value
+      if Val < Fields(Target).Min or else Val > Fields(Target).Max then
+        Logger.Log_Debug ("Invalid value " & Images.Integer_Image (Val));
         raise Invalid_String;
       end if;
 
-      -- Check end conditions
-      if Ifor = Format'Last then
-        -- Check that end of Str
-        if Istr = Str'Last then
-          exit;
-        else
-          Logger.Log_Debug ("Str longer that Format");
+      -- Check, if already set, that same value
+      if Set (Fields(Target).Index)
+      and then Val /= Indexes.Get (Result, Fields(Target).Index) then
+          Logger.Log_Debug ("New value " & Images.Integer_Image (Val)
+              & " differs from previous "
+              & Images.Integer_Image (Indexes.Get (Result, Fields(Target).Index)));
           raise Invalid_String;
         end if;
-      end if;
-      if Istr = Str'Last and then Ifor /= Format'Last then
-        -- Check that end of format
-        Logger.Log_Debug ("Str shorter that Format");
-        raise Invalid_String;
-      end if;
-      Ifor := Ifor + 1;
-      Istr := Istr + 1;
+        -- Store value and set
+        Indexes.Set (Result, Fields(Target).Index, Val);
+        Set (Fields(Target).Index) := True;
     end loop;
     -- Done
     return Result;
@@ -359,6 +345,9 @@ package body Date_Text is
   -- Put a date at a given format
   -- Raise Invalid_Format if the format is not valid (invalid %X or tailing %)
   function Put (Date : Date_Rec; Format : String) return String is
+    -- Dummy format for Scanner and the list of field descriptors
+    Dummy_Scan_Fmt : As.U.Asu_Us;
+    Dummy_Flds : Field_Sequence;
     -- Index in Format
     Ifor : Positive;
     -- Is current char a field
@@ -374,7 +363,7 @@ package body Date_Text is
   begin
     -- Init
     Init_Logger;
-    Check_Format (Format);
+    Check_Format (Format, Dummy_Scan_Fmt, Dummy_Flds);
     -- Scan the format
     Ifor := Format'First;
     while  Ifor <= Format'Last loop
@@ -402,7 +391,7 @@ package body Date_Text is
           Text := As.U.Tus (Fields(Fi).Conv_Put (Text.Image));
         else
           -- Put num pad with 0
-          Text := As.U.Tus (Normal (Val, Fields(Fi).Length, Gap => '0'));
+          Text := As.U.Tus (Normal (Val, Get_Length (Fi), Gap => '0'));
         end if;
         -- Put text
         Result.Append (Text);
@@ -421,6 +410,9 @@ package body Date_Text is
   -- Raise Invalid_Format if the format is not valid
   -- Raise Unknown_Length if the format refers to %B (variable length)
   function Length (Format : String) return Natural is
+    -- Dummy format for Scanner and the list of field descriptors
+    Dummy_Scan_Fmt : As.U.Asu_Us;
+    Dummy_Flds : Field_Sequence;
     -- Index in Format
     Ifor : Positive;
     -- Is current char a field
@@ -432,7 +424,7 @@ package body Date_Text is
   begin
     -- Init
     Init_Logger;
-    Check_Format (Format);
+    Check_Format (Format, Dummy_Scan_Fmt, Dummy_Flds);
     -- Scan the format
     Ifor := Format'First;
     Result := 0;
@@ -454,10 +446,10 @@ package body Date_Text is
       if Is_Field then
         Fi := Field_Of (Format(Ifor));
         -- Get the value
-        if Fields(Fi).Length = 0 then
+        if Get_Length (Fi) = 0 then
           raise Unknown_Length;
         end if;
-        Result := Result + Fields(Fi).Length;
+        Result := Result + Get_Length(Fi);
       else
         Result := Result + 1;
       end if;
