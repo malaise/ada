@@ -56,8 +56,8 @@ package Scanner is
 
   -- Compute the length of data induced by Format
   -- Raises Invalid_Format if Format is invalid
-  -- Raises Unknown_Length if Format refers to a <type> without specifying
-  --  the <len> (thus incluing any reference to a Boolean)
+  -- Raises Unknown_Length if Format is valid but refers to a <type> without
+  --  specifying the <len>
   function Length (Format : String) return Natural;
 
   -- Scan the Data according to Format, return the sequence of refered data

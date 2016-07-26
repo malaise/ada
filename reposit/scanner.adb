@@ -78,10 +78,12 @@ package body Scanner is
     Char : Character;
     Di : Dscr_Range;
     Len : Integer;
+    Unknown : Boolean;
     Total : Natural;
   begin
     Logger.Log_Debug ("Check_Format >" & Format & "<");
     -- Look for Esc sequences
+    Unknown := False;
     Total := 0;
     Ind := Format'First;
     while Ind <= Format'Last loop
@@ -119,9 +121,9 @@ package body Scanner is
           end if;
           -- Check and sum length
           if Len <= 0 then
+            Unknown := True;
             if not Allow_Unknown then
               Logger.Log_Debug ("Unknown length for " & Char);
-              raise Unknown_Length;
             end if;
           else
             Total := Total + Len;
@@ -133,6 +135,9 @@ package body Scanner is
       end if;
       Ind := Ind + 1;
     end loop;
+    if Unknown and then not Allow_Unknown then
+      raise Unknown_Length;
+    end if;
     return Total;
   end Check_Format;
 
