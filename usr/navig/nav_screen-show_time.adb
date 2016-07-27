@@ -4,19 +4,16 @@ with Normal, Day_Mng;
 
 separate (Nav_Screen)
 procedure Show_Time is
-  Year  : Ada.Calendar.Year_Number;
-  Month : Ada.Calendar.Month_Number;
-  Day   : Ada.Calendar.Day_Number;
-  Dur   : Ada.Calendar.Day_Duration;
+  Year  : Day_Mng.T_Years;
+  Month : Day_Mng.T_Months;
+  Day   : Day_Mng.T_Days;
   Hor : Day_Mng.T_Hours;
   Min : Day_Mng.T_Minutes;
   Sec : Day_Mng.T_Seconds;
   Mil : Day_Mng.T_Millisec;
 begin
-  -- get date and time
-  Ada.Calendar.Split (Ada.Calendar.Clock, Year, Month, Day, Dur);
-  -- compute time hours, minutes and seconds
-  Day_Mng.Split (Dur, Hor, Min, Sec, Mil);
+  -- Get date and ours, minutes and seconds
+  Day_Mng.Split (Ada.Calendar.Clock, Year, Month, Day, Hor, Min, Sec, Mil);
   -- put
   W_Time.Move ( (0, 0));
   W_Time.Put (

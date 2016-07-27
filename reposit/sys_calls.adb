@@ -406,9 +406,9 @@ package body Sys_Calls is
     if Res /= 0 then
       raise Constraint_Error;
     end if;
-    return Ada.Calendar.Time_Of (
-      Tm4C.Tm_Year, Tm4C.Tm_Mon, Tm4C.Tm_Mday,
-      Day_Mng.Pack (Tm4C.Tm_Hour, Tm4C.Tm_Min, Tm4C.Tm_Sec, 0));
+    return Day_Mng.Pack (
+        Tm4C.Tm_Year, Tm4C.Tm_Mon, Tm4C.Tm_Mday,
+        Tm4C.Tm_Hour, Tm4C.Tm_Min, Tm4C.Tm_Sec, 0);
   end Time_Of;
 
   -- Get offset of local time versus GMT

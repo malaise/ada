@@ -18,9 +18,9 @@ procedure T_Delta_Date is
   end Get;
 
   function Get return Ada.Calendar.Time is
-    Year : Ada.Calendar.Year_Number;
-    Month : Ada.Calendar.Month_Number;
-    Day : Ada.Calendar.Day_Number;
+    Year : Day_Mng.T_Years;
+    Month : Day_Mng.T_Months;
+    Day : Day_Mng.T_Days;
     Hour : Day_Mng.T_Hours;
     Minute : Day_Mng.T_Minutes;
     Second : Day_Mng.T_Seconds;
@@ -91,8 +91,8 @@ procedure T_Delta_Date is
             when others => Error;
           end;
         end loop;
-        return Ada.Calendar.Time_Of (Year, Month, Day,
-                   Day_Mng.Pack(Hour, Minute, Second, Millisec));
+        return Day_Mng.Pack (Year, Month, Day,
+                             Hour, Minute, Second, Millisec);
       exception
         when Ada.Calendar.Time_Error => Error;
       end;
@@ -100,9 +100,9 @@ procedure T_Delta_Date is
   end Get;
 
   function Parse (Str : String) return Ada.Calendar.Time is
-    Year : Ada.Calendar.Year_Number;
-    Month : Ada.Calendar.Month_Number;
-    Day : Ada.Calendar.Day_Number;
+    Year : Day_Mng.T_Years;
+    Month : Day_Mng.T_Months;
+    Day : Day_Mng.T_Days;
     Hour : Day_Mng.T_Hours;
     Minute : Day_Mng.T_Minutes;
     Second : Day_Mng.T_Seconds;
@@ -114,25 +114,24 @@ procedure T_Delta_Date is
        Str, True) then
       raise Error_Raised;
     end if;
-    Year := Ada.Calendar.Year_Number'Value (Lstr(1..4));
-    Month := Ada.Calendar.Month_Number'Value (Lstr(6..7));
-    Day := Ada.Calendar.Day_Number'Value (Lstr(9..10));
+    Year := Day_Mng.T_Years'Value (Lstr(1..4));
+    Month := Day_Mng.T_Months'Value (Lstr(6..7));
+    Day := Day_Mng.T_Days'Value (Lstr(9..10));
     Hour := Day_Mng.T_Hours'Value (Lstr(12..13));
     Minute := Day_Mng.T_Minutes'Value (Lstr(15..16));
     Second := Day_Mng.T_Seconds'Value (Lstr(18..19));
     Millisec := Day_Mng.T_Millisec'Value (Lstr(21..23));
-    return Ada.Calendar.Time_Of (Year, Month, Day,
-                   Day_Mng.Pack(Hour, Minute, Second, Millisec));
+    return Day_Mng.Pack (Year, Month, Day,
+                         Hour, Minute, Second, Millisec);
   exception
     when Constraint_Error | Ada.Calendar.Time_Error =>
       raise Error_Raised;
   end Parse;
 
   procedure Put (Date : in Ada.Calendar.Time) is
-    Year : Ada.Calendar.Year_Number;
-    Month : Ada.Calendar.Month_Number;
-    Day : Ada.Calendar.Day_Number;
-    Secs : Ada.Calendar.Day_Duration;
+    Year : Day_Mng.T_Years;
+    Month : Day_Mng.T_Months;
+    Day : Day_Mng.T_Days;
     Hour : Day_Mng.T_Hours;
     Minute : Day_Mng.T_Minutes;
     Second : Day_Mng.T_Seconds;
@@ -140,8 +139,7 @@ procedure T_Delta_Date is
 
     use Basic_Proc;
   begin
-    Ada.Calendar.Split (Date, Year, Month, Day, Secs);
-    Day_Mng.Split (Secs, Hour, Minute, Second, Millisec);
+    Day_Mng.Split (Date, Year, Month, Day, Hour, Minute, Second, Millisec);
     Put_Output (Normal(Year, 4, Gap => '0')); Put_Output ("/");
     Put_Output (Normal(Month, 2, Gap => '0')); Put_Output ("/");
     Put_Output (Normal(Day, 2, Gap => '0')); Put_Output (" ");
@@ -207,3 +205,4 @@ exception
     Error;
     Basic_Proc.Set_Error_Exit_Code;
 end T_Delta_Date;
+

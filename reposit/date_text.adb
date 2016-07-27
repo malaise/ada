@@ -129,16 +129,16 @@ package body Date_Text is
 
   -- The fields in the Format
   Fields : constant array (Field_Range) of Field_Rec := (
-    1 => (Num,  'Y', 1, As.U.Tus ("4l"), Ada.Calendar.Year_Number'First,
-                                         Ada.Calendar.Year_Number'Last),
-    2 => (Num,  'm', 2, As.U.Tus ("2l"), Ada.Calendar.Month_Number'First,
-                                         Ada.Calendar.Month_Number'Last),
+    1 => (Num,  'Y', 1, As.U.Tus ("4l"), Day_Mng.T_Years'First,
+                                         Day_Mng.T_Years'Last),
+    2 => (Num,  'm', 2, As.U.Tus ("2l"), Day_Mng.T_Months'First,
+                                         Day_Mng.T_Months'Last),
     3 => (Enum, 'b', 2, As.U.Tus ("3i"), 2, Conv.Short2Num'Access,
                                             Conv.Num2Short'Access),
     4 => (Enum, 'B', 2, As.U.Tus ("i"), 2, Conv.Long2Num'Access,
                                            Conv.Num2Long'Access),
-    5 => (Num,  'd', 3, As.U.Tus ("2l"), Ada.Calendar.Day_Number'First,
-                                         Ada.Calendar.Day_Number'Last),
+    5 => (Num,  'd', 3, As.U.Tus ("2l"), Day_Mng.T_Days'First,
+                                         Day_Mng.T_Days'Last),
     6 => (Num,  'H', 4, As.U.Tus ("2l"), Day_Mng.T_Hours'First,
                                          Day_Mng.T_Hours'Last),
     7 => (Num,  'M', 5, As.U.Tus ("2l"), Day_Mng.T_Minutes'First,

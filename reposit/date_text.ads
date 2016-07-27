@@ -1,12 +1,11 @@
-with Ada.Calendar;
 with Day_Mng;
 package Date_Text is
 
   -- The full definition of a date
   type Date_Rec is record
-    Years    : Ada.Calendar.Year_Number  := Ada.Calendar.Year_Number'First;
-    Months   : Ada.Calendar.Month_Number := Ada.Calendar.Month_Number'First;
-    Days     : Ada.Calendar.Day_Number   := Ada.Calendar.Day_Number'First;
+    Years    : Day_Mng.T_Years           := Day_Mng.T_Years'First;
+    Months   : Day_Mng.T_Months          := Day_Mng.T_Months'First;
+    Days     : Day_Mng.T_Days            := Day_Mng.T_Days'First;
     Hours    : Day_Mng.T_Hours           := Day_Mng.T_Hours'First;
     Minutes  : Day_Mng.T_Minutes         := Day_Mng.T_Minutes'First;
     Seconds  : Day_Mng.T_Seconds         := Day_Mng.T_Seconds'First;

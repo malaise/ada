@@ -53,10 +53,9 @@ procedure T_Dir is
 
   procedure Put_Date (Mtime : in Sys_Calls.Time_T) is
     T : Ada.Calendar.Time;
-    Year   : Ada.Calendar.Year_Number;
-    Month  : Ada.Calendar.Month_Number;
-    Day    : Ada.Calendar.Day_Number;
-    Dur    : Ada.Calendar.Day_Duration;
+    Year   : Day_Mng.T_Years;
+    Month  : Day_Mng.T_Months;
+    Day    : Day_Mng.T_Days;
     Hours    : Day_Mng.T_Hours;
     Minutes  : Day_Mng.T_Minutes;
     Seconds  : Day_Mng.T_Seconds;
@@ -64,8 +63,7 @@ procedure T_Dir is
     use type Ada.Calendar.Time;
   begin
     T := Sys_Calls.Time_Of (Mtime) + Sys_Calls.Gmt_Offset;
-    Ada.Calendar.Split (T, Year, Month, Day, Dur);
-    Day_Mng.Split (Dur, Hours, Minutes, Seconds, Millisec);
+    Day_Mng.Split (T, Year, Month, Day, Hours, Minutes, Seconds, Millisec);
     Basic_Proc.Put_Output (" " &
                Normal (Year, 4, Gap =>'0') & '/' &
                Normal (Month, 2, Gap =>'0') & '/' &

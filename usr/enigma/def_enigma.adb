@@ -66,9 +66,9 @@ procedure Def_Enigma is
 
   -- For date generation
   -- Date
-  Day   : Ada.Calendar.Day_Number;
-  Month : Ada.Calendar.Month_Number;
-  Year  : Ada.Calendar.Year_Number;
+  Year  : Day_Mng.T_Years;
+  Month : Day_Mng.T_Months;
+  Day   : Day_Mng.T_Days;
   T : Ada.Calendar.Time;
   Txt : As.B.Asb_Bs(256);
 
@@ -304,9 +304,9 @@ begin
         end if;
 
         begin
-          Day   := Ada.Calendar.Day_Number'Value   (Txt.Slice (1, 2));
-          Month := Ada.Calendar.Month_Number'Value (Txt.Slice (4, 5));
-          Year  := Ada.Calendar.Year_Number'Value  (Txt.Slice (7, 10));
+          Day   := Day_Mng.T_Days'Value   (Txt.Slice (1, 2));
+          Month := Day_Mng.T_Months'Value (Txt.Slice (4, 5));
+          Year  := Day_Mng.T_Years'Value  (Txt.Slice (7, 10));
         exception
           when others =>
             Usage;
@@ -580,8 +580,7 @@ begin
       Second   : constant Day_Mng.T_Seconds  := 0;
       Millisec : constant Day_Mng.T_Millisec := 0;
     begin
-      T := Ada.Calendar.Time_Of (Year, Month, Day,
-                 Day_Mng.Pack (Hour, Minute, Second, Millisec));
+      T := Day_Mng.Pack (Year, Month, Day, Hour, Minute, Second, Millisec);
     exception
       when others =>
         Usage;

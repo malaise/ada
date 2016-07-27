@@ -174,7 +174,8 @@ package body Screen is
     Screen.Move (2, 65);
     -- Not more than one day :-)
     begin
-      Day_Mng.Split (Ada.Calendar.Clock-Start_Time, Hours, Minutes, Secs, Millisecs);
+      Day_Mng.Split (Ada.Calendar.Clock-Start_Time,
+                     Hours, Minutes, Secs, Millisecs);
     exception
       when Constraint_Error | Ada.Calendar.Time_Error =>
         Start_Time := Ada.Calendar.Clock;

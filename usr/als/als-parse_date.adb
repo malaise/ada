@@ -6,10 +6,9 @@ function Parse_Date (Str : String) return Entities.Date_Spec_Rec is
   -- Local copy of input, so it starts at 1
   Lstr : constant String (1 .. Str'Length) := Str;
   -- Date and time fields
-  Year : Ada.Calendar.Year_Number;
-  Month : Ada.Calendar.Month_Number;
-  Day : Ada.Calendar.Day_Number;
-  Dur : Ada.Calendar.Day_Duration;
+  Year : Day_Mng.T_Years;
+  Month : Day_Mng.T_Months;
+  Day : Day_Mng.T_Days;
   Hour : Day_Mng.T_Hours;
   Minute : Day_Mng.T_Minutes;
   Second : Day_Mng.T_Seconds;
@@ -40,9 +39,9 @@ begin
   if Lstr'Length = 21 and then Lstr(7) = '-' and then Lstr(10) = '-'
   and then Lstr(13) = 'T' and then Lstr(16) = ':' and then Lstr(19) = ':' then
     -- yyyy-mm-ddThh:mm:ss
-    Year := Ada.Calendar.Year_Number'Value (Lstr(3 .. 6));
-    Month := Ada.Calendar.Month_Number'Value (Lstr(8 .. 9));
-    Day := Ada.Calendar.Day_Number'Value (Lstr(11 .. 12));
+    Year := Day_Mng.T_Years'Value (Lstr(3 .. 6));
+    Month := Day_Mng.T_Months'Value (Lstr(8 .. 9));
+    Day := Day_Mng.T_Days'Value (Lstr(11 .. 12));
     Hour := Day_Mng.T_Hours'Value (Lstr(14 .. 15));
     Minute := Day_Mng.T_Minutes'Value (Lstr(17 .. 18));
     Second := Day_Mng.T_Minutes'Value (Lstr(20 .. 21));
@@ -52,8 +51,7 @@ begin
     else
       Milli := 0;
     end if;
-    Crit.Date := Ada.Calendar.Time_Of (Year, Month, Day,
-                   Day_Mng.Pack (Hour, Minute, Second, Milli));
+    Crit.Date := Day_Mng.Pack (Year, Month, Day, Hour, Minute, Second, Milli);
   elsif Lstr'Length = 12 and then Lstr(7) = '-' and then Lstr(10) = '-' then
     -- yyyy-mm-dd
     Year := Ada.Calendar.Year_Number'Value (Lstr(3 .. 6));
@@ -76,6 +74,9 @@ begin
 
   elsif Lstr'Length = 11 and then Lstr(3) = 'T'
   and then Lstr(6) = ':' and then Lstr(9) = ':' then
+    -- Get current day
+    Day_Mng.Split (Ada.Calendar.Clock,
+                   Year, Month, Day, Hour, Minute, Second, Milli);
     -- Thh:mm:ss
     Hour := Day_Mng.T_Hours'Value (Lstr(4 .. 5));
     Minute := Day_Mng.T_Minutes'Value (Lstr(7 .. 8));
@@ -87,10 +88,7 @@ begin
       Milli := 0;
     end if;
     -- Apply to current day
-    Ada.Calendar.Split (Ada.Calendar.Clock,
-                        Year, Month, Day, Dur);
-    Crit.Date := Ada.Calendar.Time_Of (Year, Month, Day,
-                   Day_Mng.Pack (Hour, Minute, Second, Milli));
+    Crit.Date := Day_Mng.Pack (Year, Month, Day, Hour, Minute, Second, Milli);
   else
     -- <positive><letter>, where <letter> ::= Y|M|D|h|m|s
     declare

@@ -31,8 +31,9 @@ begin
   for I in 3 .. Argument.Get_Nbre_Arg loop
     Date := Date_Text.Scan (Argument.Get_Parameter (Occurence => I),
                             Scan_Format.Image);
-    Time := Ada.Calendar.Time_Of (Date.Years, Date.Months, Date.Days,
-        Day_Mng.Pack (Date.Hours, Date.Minutes, Date.Seconds, Date.Millisec));
+    Time := Day_Mng.Pack (Date.Years, Date.Months, Date.Days,
+                          Date.Hours, Date.Minutes, Date.Seconds,
+                          Date.Millisec);
     Basic_Proc.Put_Line_Output ("Input: "
         & Argument.Get_Parameter (Occurence => I)
         & "  Dump: " & Images.Date_Image (Time)

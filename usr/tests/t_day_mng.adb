@@ -9,7 +9,6 @@ procedure T_Day_Mng is
   Seconds  : Day_Mng.T_Seconds;
   Millisec : Day_Mng.T_Millisec;
 
-
 begin
 
   Main:
