@@ -56,14 +56,14 @@ procedure T_Dir is
     Year   : Day_Mng.T_Years;
     Month  : Day_Mng.T_Months;
     Day    : Day_Mng.T_Days;
-    Hours    : Day_Mng.T_Hours;
-    Minutes  : Day_Mng.T_Minutes;
-    Seconds  : Day_Mng.T_Seconds;
-    Millisec : Day_Mng.T_Millisec;
+    Hours     : Day_Mng.T_Hours;
+    Minutes   : Day_Mng.T_Minutes;
+    Seconds   : Day_Mng.T_Seconds;
+    Millisecs : Day_Mng.T_Millisecs;
     use type Ada.Calendar.Time;
   begin
     T := Sys_Calls.Time_Of (Mtime) + Sys_Calls.Gmt_Offset;
-    Day_Mng.Split (T, Year, Month, Day, Hours, Minutes, Seconds, Millisec);
+    Day_Mng.Split (T, Year, Month, Day, Hours, Minutes, Seconds, Millisecs);
     Basic_Proc.Put_Output (" " &
                Normal (Year, 4, Gap =>'0') & '/' &
                Normal (Month, 2, Gap =>'0') & '/' &

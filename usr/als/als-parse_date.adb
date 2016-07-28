@@ -1,22 +1,16 @@
 with Ada.Calendar;
-with Day_Mng, Perpet, Sys_Calls;
+with Perpet, Sys_Calls, Date_Text;
 separate (Als)
 
 function Parse_Date (Str : String) return Entities.Date_Spec_Rec is
   -- Local copy of input, so it starts at 1
   Lstr : constant String (1 .. Str'Length) := Str;
   -- Date and time fields
-  Year : Day_Mng.T_Years;
-  Month : Day_Mng.T_Months;
-  Day : Day_Mng.T_Days;
-  Hour : Day_Mng.T_Hours;
-  Minute : Day_Mng.T_Minutes;
-  Second : Day_Mng.T_Seconds;
-  Milli : Day_Mng.T_Millisec;
+  Date, Time : Date_Text.Date_Rec;
 
   -- Result
   Crit : Entities.Date_Spec_Rec;
-  use type Entities.Date_Oper_List, Ada.Calendar.Time;
+  use type Entities.Date_Oper_List;
 begin
   -- At least 4 characters xxNy
   if Lstr'Length < 4 then
@@ -39,62 +33,59 @@ begin
   if Lstr'Length = 21 and then Lstr(7) = '-' and then Lstr(10) = '-'
   and then Lstr(13) = 'T' and then Lstr(16) = ':' and then Lstr(19) = ':' then
     -- yyyy-mm-ddThh:mm:ss
-    Year := Day_Mng.T_Years'Value (Lstr(3 .. 6));
-    Month := Day_Mng.T_Months'Value (Lstr(8 .. 9));
-    Day := Day_Mng.T_Days'Value (Lstr(11 .. 12));
-    Hour := Day_Mng.T_Hours'Value (Lstr(14 .. 15));
-    Minute := Day_Mng.T_Minutes'Value (Lstr(17 .. 18));
-    Second := Day_Mng.T_Minutes'Value (Lstr(20 .. 21));
+    Date := Date_Text.Scan (Lstr(3 .. 21), "%Y-%m-%dT%H:%M:%S");
     if Crit.Oper = Entities.Less_Or_Equal
     or else Crit.Oper = Entities.Greater_Than then
-      Milli := 999;
+      Date.Millisecs := 999;
+      Date.Microsecs := 999;
     else
-      Milli := 0;
+      Date.Millisecs := 0;
+      Date.Microsecs := 0;
     end if;
-    Crit.Date := Day_Mng.Pack (Year, Month, Day, Hour, Minute, Second, Milli);
+    Crit.Date := Date_Text.Pack (Date);
   elsif Lstr'Length = 12 and then Lstr(7) = '-' and then Lstr(10) = '-' then
     -- yyyy-mm-dd
-    Year := Ada.Calendar.Year_Number'Value (Lstr(3 .. 6));
-    Month := Ada.Calendar.Month_Number'Value (Lstr(8 .. 9));
-    Day := Ada.Calendar.Day_Number'Value (Lstr(11 .. 12));
+    Date := Date_Text.Scan (Lstr(3 .. 12), "%Y-%m-%d");
     if Crit.Oper = Entities.Less_Or_Equal
     or else Crit.Oper = Entities.Greater_Than then
-      Hour := 23;
-      Minute := 59;
-      Second := 59;
-      Milli := 999;
+      Date.Hours := 23;
+      Date.Minutes := 59;
+      Date.Seconds := 59;
+      Date.Millisecs := 999;
+      Date.Microsecs := 999;
     else
-      Hour := 0;
-      Minute := 0;
-      Second := 0;
-      Milli := 0;
+      Date.Hours := 0;
+      Date.Minutes := 0;
+      Date.Seconds := 0;
+      Date.Millisecs := 0;
+      Date.Microsecs := 0;
     end if;
-    Crit.Date := Ada.Calendar.Time_Of (Year, Month, Day,
-                   Day_Mng.Pack (Hour, Minute, Second, Milli));
-
+    Crit.Date := Date_Text.Pack (Date);
   elsif Lstr'Length = 11 and then Lstr(3) = 'T'
   and then Lstr(6) = ':' and then Lstr(9) = ':' then
     -- Get current day
-    Day_Mng.Split (Ada.Calendar.Clock,
-                   Year, Month, Day, Hour, Minute, Second, Milli);
+    Date := Date_Text.Split (Ada.Calendar.Clock);
     -- Thh:mm:ss
-    Hour := Day_Mng.T_Hours'Value (Lstr(4 .. 5));
-    Minute := Day_Mng.T_Minutes'Value (Lstr(7 .. 8));
-    Second := Day_Mng.T_Minutes'Value (Lstr(10 .. 11));
+    Time := Date_Text.Scan (Lstr(3 .. 11), "T%H:%M:%S");
     if Crit.Oper = Entities.Less_Or_Equal
     or else Crit.Oper = Entities.Greater_Than then
-      Milli := 999;
+      Time.Millisecs := 999;
+      Date.Microsecs := 999;
     else
-      Milli := 0;
+      Time.Millisecs := 0;
+      Date.Microsecs := 0;
     end if;
     -- Apply to current day
-    Crit.Date := Day_Mng.Pack (Year, Month, Day, Hour, Minute, Second, Milli);
+    Time.Years  := Date.Years;
+    Time.Months := Date.Months;
+    Time.Days   := Date.Days;
+    Crit.Date := Date_Text.Pack (Time);
   else
     -- <positive><letter>, where <letter> ::= Y|M|D|h|m|s
     declare
       N : constant Positive := Positive'Value (Lstr(3 .. Lstr'Last-1));
       C : constant Character := Lstr(Lstr'Last);
-      use type Perpet.Duration_Rec;
+      use type Ada.Calendar.Time, Perpet.Duration_Rec;
     begin
       case C is
         when 'Y' =>
@@ -116,7 +107,11 @@ begin
   end if;
   -- Clock is in Local time, convert into UTC if requested
   if Utc then
-    Crit.Date := Crit.Date - Sys_Calls.Gmt_Offset;
+    declare
+      use type Ada.Calendar.Time;
+    begin
+      Crit.Date := Crit.Date - Sys_Calls.Gmt_Offset;
+    end;
   end if;
   return Crit;
 exception

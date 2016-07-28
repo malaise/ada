@@ -24,7 +24,7 @@ procedure T_Delta_Date is
     Hour : Day_Mng.T_Hours;
     Minute : Day_Mng.T_Minutes;
     Second : Day_Mng.T_Seconds;
-    Millisec : Day_Mng.T_Millisec;
+    Millisec : Day_Mng.T_Millisecs;
     use Basic_Proc;
   begin
     loop
@@ -106,7 +106,7 @@ procedure T_Delta_Date is
     Hour : Day_Mng.T_Hours;
     Minute : Day_Mng.T_Minutes;
     Second : Day_Mng.T_Seconds;
-    Millisec : Day_Mng.T_Millisec;
+    Millisec : Day_Mng.T_Millisecs;
     Lstr : constant String (1 .. Str'Length) := Str;
   begin
     if not Regular_Expressions.Match (
@@ -120,7 +120,7 @@ procedure T_Delta_Date is
     Hour := Day_Mng.T_Hours'Value (Lstr(12..13));
     Minute := Day_Mng.T_Minutes'Value (Lstr(15..16));
     Second := Day_Mng.T_Seconds'Value (Lstr(18..19));
-    Millisec := Day_Mng.T_Millisec'Value (Lstr(21..23));
+    Millisec := Day_Mng.T_Millisecs'Value (Lstr(21..23));
     return Day_Mng.Pack (Year, Month, Day,
                          Hour, Minute, Second, Millisec);
   exception
@@ -135,7 +135,7 @@ procedure T_Delta_Date is
     Hour : Day_Mng.T_Hours;
     Minute : Day_Mng.T_Minutes;
     Second : Day_Mng.T_Seconds;
-    Millisec : Day_Mng.T_Millisec;
+    Millisec : Day_Mng.T_Millisecs;
 
     use Basic_Proc;
   begin

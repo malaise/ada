@@ -8,7 +8,7 @@ file nav_screen-show_time
 NOTUNITS := t_scr
 EXES := navig
 
-CLIBS := $(X11_SLIBS)
+CLIBS := $(X11_SLIBS) $(PCRE_SLIBS)
 
 include $(TEMPLATES)/ada.mk
 

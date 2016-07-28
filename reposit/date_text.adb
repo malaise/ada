@@ -24,14 +24,14 @@ package body Date_Text is
                    Val : in Natural) is
     begin
       case Index is
-        when 1 => To.Years    := Val;
-        when 2 => To.Months   := Val;
-        when 3 => To.Days     := Val;
-        when 4 => To.Hours    := Val;
-        when 5 => To.Minutes  := Val;
-        when 6 => To.Seconds  := Val;
-        when 7 => To.Millisec := Val;
-        when 8 => To.Microsec := Val;
+        when 1 => To.Years     := Val;
+        when 2 => To.Months    := Val;
+        when 3 => To.Days      := Val;
+        when 4 => To.Hours     := Val;
+        when 5 => To.Minutes   := Val;
+        when 6 => To.Seconds   := Val;
+        when 7 => To.Millisecs := Val;
+        when 8 => To.Microsecs := Val;
       end case;
     end Set;
 
@@ -45,8 +45,8 @@ package body Date_Text is
         when 4 => Val.Hours,
         when 5 => Val.Minutes,
         when 6 => Val.Seconds,
-        when 7 => Val.Millisec,
-        when 8 => Val.Microsec);
+        when 7 => Val.Millisecs,
+        when 8 => Val.Microsecs);
     end Get;
   end Indexes;
 
@@ -145,10 +145,10 @@ package body Date_Text is
                                          Day_Mng.T_Minutes'Last),
     8 => (Num,  'S', 6, As.U.Tus ("2l"), Day_Mng.T_Seconds'First,
                                          Day_Mng.T_Seconds'Last),
-    9 => (Num,  's', 7, As.U.Tus ("3l"), Day_Mng.T_Millisec'First,
-                                         Day_Mng.T_Millisec'Last),
-   10 => (Num,  'u', 8, As.U.Tus ("3l"), Day_Mng.T_Millisec'First,
-                                         Day_Mng.T_Millisec'Last)
+    9 => (Num,  's', 7, As.U.Tus ("3l"), Day_Mng.T_Millisecs'First,
+                                         Day_Mng.T_Millisecs'Last),
+   10 => (Num,  'u', 8, As.U.Tus ("3l"), Day_Mng.T_Millisecs'First,
+                                         Day_Mng.T_Millisecs'Last)
   );
   type Fields_Array is array (Positive range <>) of Field_Range;
   package Unbounded_Fields_Array_Mng is new Unbounded_Arrays (
@@ -463,6 +463,25 @@ package body Date_Text is
     -- Done
     return Result;
   end Length;
+
+   -- Utilities to convert to/from Ada.Calendar.Time
+  function Split (Date : Ada.Calendar.Time) return Date_Rec is
+    Res : Date_Rec;
+    Micros : Day_Mng.T_Microsecs;
+  begin
+    Day_Mng.Splitu (Date, Res.Years, Res.Months, Res.Days,
+                    Res.Hours, Res.Minutes, Res.Seconds, Micros);
+    Res.Millisecs := Micros / 1000;
+    Res.Microsecs := Micros rem 1000;
+    return Res;
+  end Split;
+
+  function Pack (Date : Date_Rec) return Ada.Calendar.Time is
+  begin
+    return Day_Mng.Packu (Date.Years, Date.Months, Date.Days,
+                          Date.Hours, Date.Minutes, Date.Seconds,
+                          Date.Millisecs * 1000 + Date.Microsecs);
+  end Pack;
 
 end Date_Text;
 

@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Exceptions;
-with Bloc_Io, Aski, Long_Longs, Trace, Date_Text, Day_Mng;
+with Bloc_Io, Aski, Long_Longs, Trace, Date_Text;
 with Debug;
 package body Searcher is
 
@@ -27,9 +27,7 @@ package body Searcher is
   -- from a Time_Rec to a Calendar.Time
   function Time_Of (Date : Date_Text.Date_Rec) return Ada.Calendar.Time is
   begin
-    return Day_Mng.Pack (
-        Date.Years, Date.Months, Date.Days,
-        Date.Hours, Date.Minutes, Date.Seconds, Date.Millisec);
+    return Date_Text.Pack (Date);
   end Time_Of;
 
   -- Search the Pattern in the Tail last lines of File

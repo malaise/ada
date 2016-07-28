@@ -219,7 +219,7 @@ package body Sok_Display is
     Hours    : Day_Mng.T_Hours;
     Minutes  : Day_Mng.T_Minutes;
     Seconds  : Day_Mng.T_Seconds;
-    Millisec : Day_Mng.T_Millisec;
+    Millisec : Day_Mng.T_Millisecs;
     Str : String (1 .. Len_Days+16);
   begin
     Day_Mng.Split (Time, Hours, Minutes, Seconds, Millisec);

@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Basic_Proc, Argument, As.U, Date_Text, Day_Mng, Images;
+with Basic_Proc, Argument, As.U, Date_Text, Images;
 procedure T_Date_Text is
   Scan_Format, Put_Format : As.U.Asu_Us;
   Date : Date_Text.Date_Rec;
@@ -31,9 +31,7 @@ begin
   for I in 3 .. Argument.Get_Nbre_Arg loop
     Date := Date_Text.Scan (Argument.Get_Parameter (Occurence => I),
                             Scan_Format.Image);
-    Time := Day_Mng.Pack (Date.Years, Date.Months, Date.Days,
-                          Date.Hours, Date.Minutes, Date.Seconds,
-                          Date.Millisec);
+    Time := Date_Text.Pack (Date);
     Basic_Proc.Put_Line_Output ("Input: "
         & Argument.Get_Parameter (Occurence => I)
         & "  Dump: " & Images.Date_Image (Time)

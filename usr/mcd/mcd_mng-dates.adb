@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Perpet, Day_Mng, Normal;
+with Perpet, Day_Mng, Normal, Date_Text;
 separate (Mcd_Mng)
 
 package body Dates is
@@ -24,7 +24,7 @@ package body Dates is
     Hours  : Day_Mng.T_Hours;
     Mins   : Day_Mng.T_Minutes;
     Secs   : Day_Mng.T_Seconds;
-    Millis : Day_Mng.T_Millisec;
+    Millis : Day_Mng.T_Millisecs;
   begin
     -- Get days and dur sinc ref time
     Delta_D := Perpet."-" (Cal_Time, Ref_Cal_Time);
@@ -56,15 +56,9 @@ package body Dates is
     Tmp_Inte : My_Math.Inte;
     Seconds : Ada.Calendar.Day_Duration;
     Cal_Time : Ada.Calendar.Time;
-    Date  : Item_Rec (Chrs);
-    Year  : Ada.Calendar.Year_Number;
-    Month : Ada.Calendar.Month_Number;
-    Day   : Ada.Calendar.Day_Number;
+    Result  : Item_Rec (Chrs);
+    Date : Date_Text.Date_Rec;
     Dur   : Ada.Calendar.Day_Duration;
-    Hours  : Day_Mng.T_Hours;
-    Mins   : Day_Mng.T_Minutes;
-    Secs   : Day_Mng.T_Seconds;
-    Millis : Day_Mng.T_Millisec;
   begin
     if Time.Kind /= Inte then
       raise Invalid_Argument;
@@ -89,22 +83,15 @@ package body Dates is
     end if;
 
     -- Split date and seconds
-    Ada.Calendar.Split (Cal_Time, Year, Month, Day, Dur);
+    Ada.Calendar.Split (Cal_Time, Date.Years, Date.Months, Date.Days, Dur);
     if Dur /= 0.0 then
       raise Compute_Error;
     end if;
-    Day_Mng.Split (Seconds, Hours, Mins, Secs, Millis);
+    Day_Mng.Split (Dur, Date.Hours, Date.Minutes, Date.Seconds, Date.Millisecs);
 
     -- Format result in string
-    Date.Val_Text := As.U.Tus (
-            Normal (Year,  4, Gap => '0')
-      & "/" & Normal (Month, 2, Gap => '0')
-      & "/" & Normal (Day,   2, Gap => '0')
-      & "-" & Normal (Hours, 2, Gap => '0')
-      & ":" & Normal (Mins, 2,  Gap => '0')
-      & ":" & Normal (Secs, 2,  Gap => '0')
-      & "." & Normal (Millis, 3, Gap => '0') );
-    return Date;
+    Result.Val_Text := As.U.Tus (Date_Text.Put (Date, "%Y/%m/%d-%H:%M:%S.%s"));
+    return Result;
   exception
     when Constraint_Error =>
       raise Compute_Error;
@@ -115,11 +102,8 @@ package body Dates is
     Tmp_Inte : My_Math.Inte;
     Seconds : Ada.Calendar.Day_Duration;
     Days_Image : Item_Rec;
-    Hours  : Day_Mng.T_Hours;
-    Mins   : Day_Mng.T_Minutes;
-    Secs   : Day_Mng.T_Seconds;
-    Millis : Day_Mng.T_Millisec;
-    Date  : Item_Rec (Chrs);
+    Date : Date_Text.Date_Rec;
+    Result  : Item_Rec (Chrs);
     use type As.U.Asu_Us;
   begin
     if Time.Kind /= Inte or else Time.Val_Inte < 0 then
@@ -135,15 +119,13 @@ package body Dates is
     -- Get image (using format) of days
     Days_Image := Ios.Strof ((Kind => Inte,
                               Val_Inte => My_Math.Inte(Days)));
-    Day_Mng.Split (Seconds, Hours, Mins, Secs, Millis);
+    Day_Mng.Split (Seconds, Date.Hours, Date.Minutes, Date.Seconds,
+                   Date.Millisecs);
 
     -- Format result in string
-    Date.Val_Text := Days_Image.Val_Text
-      & "-" & Normal (Hours, 2, Gap => '0')
-      & ":" & Normal (Mins, 2,  Gap => '0')
-      & ":" & Normal (Secs, 2,  Gap => '0')
-      & "." & Normal (Millis, 3, Gap => '0');
-    return Date;
+    Result.Val_Text := Days_Image.Val_Text
+                     & Date_Text.Put (Date, "-%H:%M:%S.%s");
+    return Result;
   exception
     when Constraint_Error =>
       raise Compute_Error;
@@ -151,13 +133,7 @@ package body Dates is
 
   function Date_To_Time (Date : Item_Rec) return Item_Rec is
     Neg : Boolean;
-    Year  : Ada.Calendar.Year_Number;
-    Month : Ada.Calendar.Month_Number;
-    Day   : Ada.Calendar.Day_Number;
-    Hours  : Day_Mng.T_Hours;
-    Mins   : Day_Mng.T_Minutes;
-    Secs   : Day_Mng.T_Seconds;
-    Millis : Day_Mng.T_Millisec;
+    Date_Rec : Date_Text.Date_Rec;
     Cal_Time : Ada.Calendar.Time;
     Delta_D : Perpet.Delta_Rec;
     Res_Time : Item_Rec(Inte);
@@ -168,27 +144,18 @@ package body Dates is
       raise Invalid_Argument;
     end if;
 
-    -- Check format
-    if      Date.Val_Text.Element (05) /= '/'
-    or else Date.Val_Text.Element (08) /= '/'
-    or else Date.Val_Text.Element (11) /= '-'
-    or else Date.Val_Text.Element (14) /= ':'
-    or else Date.Val_Text.Element (17) /= ':'
-    or else Date.Val_Text.Element (20) /= '.' then
-      raise Invalid_Argument;
-    end if;
-
-    -- Extract (check values)
-    Year  := Ada.Calendar.Year_Number'Value  (Date.Val_Text.Slice (01, 04));
-    Month := Ada.Calendar.Month_Number'Value (Date.Val_Text.Slice (06, 07));
-    Day   := Ada.Calendar.Day_Number'Value   (Date.Val_Text.Slice (09, 10));
-    Hours := Day_Mng.T_Hours'Value           (Date.Val_Text.Slice (12, 13));
-    Mins  := Day_Mng.T_Minutes'Value         (Date.Val_Text.Slice (15, 16));
-    Secs  := Day_Mng.T_Seconds'Value         (Date.Val_Text.Slice (18, 19));
-    Millis := Day_Mng.T_Millisec'Value       (Date.Val_Text.Slice (21, 23));
+    -- Scan
+    begin
+      Date_Rec := Date_Text.Scan (Date.Val_Text.Slice (01, 23),
+                                 "%Y/%m/%d-%H:%M:%S.%s");
+    exception
+      when Date_Text.Invalid_String =>
+        raise Invalid_Argument;
+    end;
 
     -- Compute Time for the day (check validity)
-    Cal_Time := Ada.Calendar.Time_Of (Year, Month, Day);
+    Cal_Time := Ada.Calendar.Time_Of (Date_Rec.Years, Date_Rec.Months,
+                                      Date_Rec.Days);
 
     -- Compute delta days since reference
     Neg := Ada.Calendar."<" (Cal_Time, Ref_Cal_Time);
@@ -200,10 +167,14 @@ package body Dates is
 
     -- Convert to milliseconds
     Res_Time.Val_Inte := My_Math.Inte (Delta_D.Days);
-    Res_Time.Val_Inte :=   24 * Res_Time.Val_Inte + My_Math.Inte (Hours);
-    Res_Time.Val_Inte :=   60 * Res_Time.Val_Inte + My_Math.Inte (Mins);
-    Res_Time.Val_Inte :=   60 * Res_Time.Val_Inte + My_Math.Inte (Secs);
-    Res_Time.Val_Inte := 1000 * Res_Time.Val_Inte + My_Math.Inte (Millis);
+    Res_Time.Val_Inte :=   24 * Res_Time.Val_Inte
+                       + My_Math.Inte (Date_Rec.Hours);
+    Res_Time.Val_Inte :=   60 * Res_Time.Val_Inte
+                       + My_Math.Inte (Date_Rec.Minutes);
+    Res_Time.Val_Inte :=   60 * Res_Time.Val_Inte
+                       + My_Math.Inte (Date_Rec.Seconds);
+    Res_Time.Val_Inte := 1000 * Res_Time.Val_Inte
+                       + My_Math.Inte (Date_Rec.Millisecs);
 
     if Neg then
       Res_Time.Val_Inte := - Res_Time.Val_Inte;

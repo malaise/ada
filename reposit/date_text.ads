@@ -1,16 +1,17 @@
+with Ada.Calendar;
 with Day_Mng;
 package Date_Text is
 
   -- The full definition of a date
   type Date_Rec is record
-    Years    : Day_Mng.T_Years           := Day_Mng.T_Years'First;
-    Months   : Day_Mng.T_Months          := Day_Mng.T_Months'First;
-    Days     : Day_Mng.T_Days            := Day_Mng.T_Days'First;
-    Hours    : Day_Mng.T_Hours           := Day_Mng.T_Hours'First;
-    Minutes  : Day_Mng.T_Minutes         := Day_Mng.T_Minutes'First;
-    Seconds  : Day_Mng.T_Seconds         := Day_Mng.T_Seconds'First;
-    Millisec : Day_Mng.T_Millisec        := Day_Mng.T_Millisec'First;
-    Microsec : Day_Mng.T_Millisec        := Day_Mng.T_Millisec'First;
+    Years     : Day_Mng.T_Years     := Day_Mng.T_Years'First;
+    Months    : Day_Mng.T_Months    := Day_Mng.T_Months'First;
+    Days      : Day_Mng.T_Days      := Day_Mng.T_Days'First;
+    Hours     : Day_Mng.T_Hours     := Day_Mng.T_Hours'First;
+    Minutes   : Day_Mng.T_Minutes   := Day_Mng.T_Minutes'First;
+    Seconds   : Day_Mng.T_Seconds   := Day_Mng.T_Seconds'First;
+    Millisecs : Day_Mng.T_Millisecs := Day_Mng.T_Millisecs'First;
+    Microsecs : Day_Mng.T_Millisecs := Day_Mng.T_Millisecs'First;
   end record;
 
   -- The format string can contain:
@@ -24,7 +25,7 @@ package Date_Text is
   -- %M : minutes on 2 digits
   -- %S : seconds on 2 digits
   -- %s : milliseconds on 3 digits
-  -- %u : microseconds on 3 digits (so sually after the millisec)
+  -- %u : microseconds on 3 digits (so usually after the millisecond)
   -- %% : the '%' character
   -- Other characters are output/scanned as such
 
@@ -50,6 +51,10 @@ package Date_Text is
   -- Put a date at a given format
   -- Raise Invalid_Format if the format is not valid
   function Put (Date : Date_Rec; Format : String) return String;
+
+  -- Utilities to convert to/from Ada.Calendar.Time
+  function Split (Date : Ada.Calendar.Time) return Date_Rec;
+  function Pack  (Date : Date_Rec) return Ada.Calendar.Time;
 
   Invalid_Format, Invalid_String, Unknown_Length : exception;
 

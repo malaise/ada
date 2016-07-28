@@ -114,7 +114,7 @@ package body Images is
     Hours  : Day_Mng.T_Hours;
     Mins   : Day_Mng.T_Minutes;
     Secs   : Day_Mng.T_Seconds;
-    Millis : Day_Mng.T_Millisec;
+    Millis : Day_Mng.T_Millisecs;
   begin
     Day_Mng.Split (Dur, Hours, Mins, Secs, Millis);
     return Normal (Hours,  2, Gap => '0') & ':'

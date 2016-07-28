@@ -1,26 +1,16 @@
 -- time displaying
 with Ada.Calendar;
-with Normal, Day_Mng;
+with Date_Text;
 
 separate (Nav_Screen)
 procedure Show_Time is
-  Year  : Day_Mng.T_Years;
-  Month : Day_Mng.T_Months;
-  Day   : Day_Mng.T_Days;
-  Hor : Day_Mng.T_Hours;
-  Min : Day_Mng.T_Minutes;
-  Sec : Day_Mng.T_Seconds;
-  Mil : Day_Mng.T_Millisec;
+  Date : Date_Text.Date_Rec;
 begin
   -- Get date and ours, minutes and seconds
-  Day_Mng.Split (Ada.Calendar.Clock, Year, Month, Day, Hor, Min, Sec, Mil);
+  Date := Date_Text.Split (Ada.Calendar.Clock);
   -- put
   W_Time.Move ( (0, 0));
   W_Time.Put (
-   S =>
-    Normal(Day, 2, True, '0') & "/" & Normal(Month, 2, True, '0') &
-    "/" & Normal(Year, 4, True, '0') & " " &
-    Normal(Hor, 2, True, '0') & ":" & Normal(Min, 2, True, '0') & ":" &
-    Normal(Sec, 2, True, '0'));
+   S => Date_Text.Put (Date, "%d/%m/%Y %H:%M:%S"));
 end Show_Time;
 

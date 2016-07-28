@@ -168,7 +168,7 @@ package body Screen is
     Hours   : Day_Mng.T_Hours := 0;
     Minutes : Day_Mng.T_Minutes := 0;
     Secs    : Day_Mng.T_Seconds := 0;
-    Millisecs : Day_Mng.T_Millisec := 0;
+    Millisecs : Day_Mng.T_Millisecs := 0;
     use type Ada.Calendar.Time;
   begin
     Screen.Move (2, 65);

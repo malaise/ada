@@ -4,10 +4,10 @@ with Basic_Proc, Day_Mng, Gets;
 procedure T_Day_Mng is
 
   Dur : Ada.Calendar.Day_Duration;
-  Hours    : Day_Mng.T_Hours;
-  Minutes  : Day_Mng.T_Minutes;
-  Seconds  : Day_Mng.T_Seconds;
-  Millisec : Day_Mng.T_Millisec;
+  Hours     : Day_Mng.T_Hours;
+  Minutes   : Day_Mng.T_Minutes;
+  Seconds   : Day_Mng.T_Seconds;
+  Millisecs : Day_Mng.T_Millisecs;
 
 begin
 
@@ -31,14 +31,14 @@ begin
     end loop;
 
     Basic_Proc.Put_Line_Output(Dur'Img);
-    Day_Mng.Split (Dur, Hours, Minutes, Seconds, Millisec);
+    Day_Mng.Split (Dur, Hours, Minutes, Seconds, Millisecs);
 
     Basic_Proc.Put_Line_Output (Day_Mng.T_Hours'Image(Hours) & " h  "
                         & Day_Mng.T_Minutes'Image(Minutes) & " min  "
                         & Day_Mng.T_Seconds'Image(Seconds) & " sec  "
-                        & Day_Mng.T_Millisec'Image(Millisec) & " msec");
+                        & Day_Mng.T_Millisecs'Image(Millisecs) & " msec");
 
-    Dur := Day_Mng.Pack (Hours, Minutes, Seconds, Millisec);
+    Dur := Day_Mng.Pack (Hours, Minutes, Seconds, Millisecs);
 
     Basic_Proc.New_Line_Output;
 

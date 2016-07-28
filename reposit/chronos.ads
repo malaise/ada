@@ -17,7 +17,7 @@ package Chronos is
     Hours     : Day_Mng.T_Hours;
     Minutes   : Day_Mng.T_Minutes;
     Seconds   : Day_Mng.T_Seconds;
-    Millisecs : Day_Mng.T_Millisec;
+    Millisecs : Day_Mng.T_Millisecs;
   end record;
 
   -- Status of a chrono

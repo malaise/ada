@@ -10,7 +10,8 @@
 
 with Ada.Calendar;
 with As.B, Perpet, Argument, Day_Mng, Normal, Upper_Str, Rnd, Arbitrary,
-     Num_Letters, Basic_Proc, Str_Util, Parser, Trace.Loggers, Romanic;
+     Num_Letters, Basic_Proc, Str_Util, Parser, Trace.Loggers, Romanic,
+     Date_Text;
 with Types, Scrambler_Gen, Definition;
 procedure Def_Enigma is
 
@@ -25,21 +26,6 @@ procedure Def_Enigma is
     Basic_Proc.Put_Line_Error ("  <enigma_setting> ::= <back> [ <rotors> <init> ] [ <switches> ]");
     Basic_Proc.Set_Error_Exit_Code;
   end Usage;
-
-  function Is_Digit (C : Character) return Boolean is
-  begin
-    return C >= '0' and then C <= '9';
-  end Is_Digit;
-
-  function Is_Digit (S : String) return Boolean is
-  begin
-    for I in S'Range loop
-      if not Is_Digit (S(I)) then
-        return False;
-      end if;
-    end loop;
-    return True;
-  end Is_Digit;
 
   -- Argument parsing, action
   type Action_List is (Current_Date, Parse_Date, Random, Extract, Key);
@@ -296,17 +282,13 @@ begin
       if Txt.Length = 10
       and then Txt.Element (3) = '/'
       and then Txt.Element (6) = '/' then
-        if not Is_Digit (Txt.Slice (1, 2))
-        or else not Is_Digit (Txt.Slice (4, 5))
-        or else not Is_Digit (Txt.Slice (7, 10)) then
-          Usage;
-          return;
-        end if;
-
+        declare
+          Date : Date_Text.Date_Rec;
         begin
-          Day   := Day_Mng.T_Days'Value   (Txt.Slice (1, 2));
-          Month := Day_Mng.T_Months'Value (Txt.Slice (4, 5));
-          Year  := Day_Mng.T_Years'Value  (Txt.Slice (7, 10));
+          Date := Date_Text.Scan (Txt.Slice (1, 10), "%d/%m/%Y");
+          Day   := Date.Days;
+          Month := Date.Months;
+          Year  := Date.Years;
         exception
           when others =>
             Usage;
@@ -575,10 +557,10 @@ begin
   if Action = Current_Date or else Action = Parse_Date then
     -- Build time of 0h00 of date
     declare
-      Hour     : constant Day_Mng.T_Hours    := 0;
-      Minute   : constant Day_Mng.T_Minutes  := 0;
-      Second   : constant Day_Mng.T_Seconds  := 0;
-      Millisec : constant Day_Mng.T_Millisec := 0;
+      Hour     : constant Day_Mng.T_Hours     := 0;
+      Minute   : constant Day_Mng.T_Minutes   := 0;
+      Second   : constant Day_Mng.T_Seconds   := 0;
+      Millisec : constant Day_Mng.T_Millisecs := 0;
     begin
       T := Day_Mng.Pack (Year, Month, Day, Hour, Minute, Second, Millisec);
     exception
