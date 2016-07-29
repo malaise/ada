@@ -26,12 +26,20 @@ package Evp_Digest is
   function Is_Init (Ctx : in Context) return Boolean;
 
   -- Update the context with some text
-  -- May raise Status_Error if Ctx is not init or finalized
+  -- May raise Status_Error if Ctx is not init or reset
   procedure Update (Ctx : in out Context; Text : in String);
   procedure Update (Ctx : in out Context; Bytes : in Byte_Array);
 
-  -- Get the digest and empties the Ctx for new calls to Update
-  -- May raise Status_Error if Ctx is not init or finalized
+  -- Read the digest and let it ready for adding new updates
+  -- May raise Status_Error if Ctx is not init or reset
+  function Read (Ctx : in out Context) return Byte_Array;
+
+  -- Empty the Ctx for new calls to Update
+  -- May raise Status_Error if Ctx is not init or reset
+  procedure Clean (Ctx : in out Context) ;
+
+  -- Get the digest and empty the Ctx for new calls to Update
+  -- May raise Status_Error if Ctx is not init or reset
   function Get (Ctx : in out Context) return Byte_Array;
 
   -- Reset the context for a new Init
@@ -45,7 +53,7 @@ private
   Evp_Max_Md_Size : constant := 256;
 
   type Context is new Ada.Finalization.Limited_Controlled with record
-    Clean : Boolean := True;
+    Is_Clean : Boolean := True;
     Evp_Md_Ctx : System.Address := System.Null_Address;
     Evp_Md : System.Address := System.Null_Address;
   end record;

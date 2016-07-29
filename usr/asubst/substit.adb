@@ -1,6 +1,6 @@
 with As.U.Utils;
-with Argument, Sys_Calls, Text_Line, Temp_File, Regular_Expressions, Directory,
-     Copy_File, File_Access, Mixed_Str, Images, Basic_Proc, Long_Longs;
+with Argument, Sys_Calls.File_Access, Text_Line, Temp_File, Regular_Expressions,
+     Directory, Copy_File, Mixed_Str, Images, Basic_Proc, Long_Longs;
 with Search_Pattern, Replace_Pattern, Log;
 package body Substit is
 
@@ -69,9 +69,7 @@ package body Substit is
       Error ("Directory " & Dir_Name & " is of incorrect kind: "
            & Mixed_Str (Stat.Kind'Img));
     end if;
-    File_Access (Sys_Calls.Get_Effective_User_Id, Sys_Calls.Get_Effective_Group_Id,
-                 Stat.User_Id, Stat.Group_Id, Stat.Rights,
-                 Can_Read, Can_Write, Can_Exec);
+    Sys_Calls.File_Access.Has_Access (Stat, Can_Read, Can_Write, Can_Exec);
     -- Read => rx, Write => rwx
     if not Can_Read
     or else not Can_Exec
@@ -89,9 +87,7 @@ package body Substit is
       Error ("File " & File_Name & " is of incorrect kind: "
            & Mixed_Str (Stat.Kind'Img));
     end if;
-    File_Access (Sys_Calls.Get_Effective_User_Id, Sys_Calls.Get_Effective_Group_Id,
-                 Stat.User_Id, Stat.Group_Id, Stat.Rights,
-                 Can_Read, Can_Write, Can_Exec);
+    Sys_Calls.File_Access.Has_Access (Stat, Can_Read, Can_Write, Can_Exec);
     -- Read => r, Write => rw
     if not Can_Read
     or else (For_Write and then not Can_Write) then

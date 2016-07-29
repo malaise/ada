@@ -383,9 +383,6 @@ evp_digest (1)::
 exception_messenger (1)::
      Allow transmission of un-truncated long exception message.
 
-file_access (1)::
-     Decode Unix file access flags.
-
 file_hash (1)::
      Store the content of file (1 word per line) in a hashed dynlist.
 
@@ -577,8 +574,8 @@ state_machine (2)::
 str_util str_util.navigator str_util.regex (2)::
      Various string utilites, including regexp and navigation.
 
-sys_calls (2)::
-     Various low level Unix calls
+sys_calls sys_calls.file_access (2)::
+     Various low level Unix calls.
 
 syslin (2)::
      Linear system (Gauss) resolver.

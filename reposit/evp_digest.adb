@@ -63,7 +63,7 @@ package body Evp_Digest is
     -- Init context
     Ctx.Evp_Md_Ctx := Evp_Md_Ctx_Create;
     Evp_Digestinit_Ex (Ctx.Evp_Md_Ctx, Ctx.Evp_Md, System.Null_Address);
-    Ctx.Clean := False;
+    Ctx.Is_Clean := False;
   end Init;
 
   procedure Init (Ctx : in out Context; Digest : in Digest_List) is
@@ -86,9 +86,9 @@ package body Evp_Digest is
     if not Is_Init (Ctx) then
       raise Status_Error;
     end if;
-    if Ctx.Clean then
+    if Ctx.Is_Clean then
       Evp_Digestinit_Ex (Ctx.Evp_Md_Ctx, Ctx.Evp_Md, System.Null_Address);
-      Ctx.Clean := False;
+      Ctx.Is_Clean := False;
     end if;
 
     Evp_Digestupdate (Ctx.Evp_Md_Ctx, Text(Text'First)'Address, Len);
@@ -101,17 +101,17 @@ package body Evp_Digest is
     if not Is_Init (Ctx) then
       raise Status_Error;
     end if;
-    if Ctx.Clean then
+    if Ctx.Is_Clean then
       Evp_Digestinit_Ex (Ctx.Evp_Md_Ctx, Ctx.Evp_Md, System.Null_Address);
-      Ctx.Clean := False;
+      Ctx.Is_Clean := False;
     end if;
 
     Evp_Digestupdate (Ctx.Evp_Md_Ctx, Bytes(Bytes'First)'Address, Len);
   end Update;
 
-  -- Get the digest and empties the Ctx for new calls to Update
-  -- May raise Status_Error if Ctx is not init or finalized
-  function Get (Ctx : in out Context) return Byte_Array is
+  -- Read the digest and let it ready for adding new updates
+  -- May raise Status_Error if Ctx is not init or reset
+  function Read (Ctx : in out Context) return Byte_Array is
     Md : Byte_Array (1 .. Evp_Max_Md_Size);
     Len : C_Types.Uint32;
   begin
@@ -123,14 +123,27 @@ package body Evp_Digest is
     -- Get Md
     Evp_Digestfinal_Ex (Ctx.Evp_Md_Ctx, Md(Md'First)'Address, Len'Address);
 
-    -- Clean context
-    Evp_Md_Ctx_Cleanup (Ctx.Evp_Md_Ctx);
-    Ctx.Clean := True;
-
     -- Return valid part
     return Md (Md'First .. Md'First + Integer (Len) - 1);
-  end Get;
+  end Read;
 
+  -- Empty the Ctx for new calls to Update
+  -- May raise Status_Error if Ctx is not init or reset
+  procedure Clean (Ctx : in out Context) is
+  begin
+    -- Clean context
+    Evp_Md_Ctx_Cleanup (Ctx.Evp_Md_Ctx);
+    Ctx.Is_Clean := True;
+  end Clean;
+
+  -- Get the digest and empty the Ctx for new calls to Update
+  -- May raise Status_Error if Ctx is not init or finalized
+  function Get (Ctx : in out Context) return Byte_Array is
+    Md : constant Byte_Array := Read (Ctx);
+  begin
+    Clean (Ctx);
+    return Md;
+  end Get;
 
   -- Reset the context for a new Init
   -- May raise Status_Error if Ctx is not init or already reset

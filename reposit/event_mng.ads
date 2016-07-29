@@ -94,20 +94,20 @@ package Event_Mng is
   --   or until some fd event occur and its callback returns True,
   --   or until timeout
   -- Any negative timeout means infinite
-  -- The 4 variants return on any event or on timeout
   type Out_Event_List is (Timer_Event, Fd_Event, Signal_Event, Timeout);
 
   -- Used internally in Handling child pacakge
   subtype In_Event_List is Out_Event_List range Fd_Event .. Timeout;
 
-  -- This uses virtual time and allows various specifications of delay
+  -- The 4 variants return on any event or on timeout
+  -- This one uses virtual time and allows various specifications of delay
   --  (in real time)
   function Wait (Delay_Spec : Timers.Delay_Rec) return Out_Event_List;
 
-  -- These are in milliseconds of real time
-  -- The Boolean is True if an event and False if Timeout
+  -- These ones are in milliseconds of real time
   Infinite_Ms : constant Integer := -1;
   function Wait (Timeout_Ms : Integer) return Out_Event_List;
+  -- The Boolean is True if an event and False if Timeout
   function Wait (Timeout_Ms : Integer) return Boolean;
   procedure Wait (Timeout_Ms : Integer);
 
