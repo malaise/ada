@@ -221,6 +221,10 @@ Hungar (2)::
 Lem (2)::
      Game: land the LEM on the moon.
 
+Logrotator (1)::
+     Splits stdin into several files according to a given time period and
+     possibly to a maximum size for the files.
+
 Lsadeps (2)::
      Shows the list/tree of Ada units/files dependencies.
 
