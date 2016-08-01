@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V29.12
+V29.13
 
 General purpose
 ---------------
@@ -1285,12 +1285,14 @@ is a 'squash' or a 'fixup'.
 * \'S' denotes a cherry picked for 'squash', which will be applied and melt
 with the previous cherry. The comment of the cherry will be concatenated to
 the currently retained comment. If the next cherry is not a 'squash' nor a
-'fixup', then the result will be committed. The cherry's comment will be
-proposed for 'edition' of the comment of the overall commit.
+'fixup', then the overall comment will be proposed for 'edition' and the 
+overall result will be committed. 
 
 * \'F' denotes a cherry picked for 'fixup', which will be applied and melt
 with the previous cherry. If the next cherry is not a 'squash' nor a 'fixup',
-then the result will be committed with the currently retained comment.
+then the result will be committed with the currently retained comment (note
+that if the currently retained comment is empty then the current comment is
+retained).
 
 * ' ' denotes a cherry 'dropped', which will not be picked. +
 
@@ -1352,6 +1354,10 @@ After completion, Agite returns back in the xref:XDir[directory] menu.
 
 NOTE: To cancel the cherry-pick menu, simply ensure that no commit is selected
 (click on the 'Reset' button) and click on the 'Cancel' button.
+
+NOTE: If the selection is not valid (ex: first not merged nor dropped cherry
+is a squash or a fixup) then this button is de-activated and 'Error' is
+displayed instead.
 
 Commit
 ~~~~~~
@@ -1717,6 +1723,11 @@ Use-cases
   - 'Edit' the first cherry to meld,
   - 'Fixup' all the other cherries to meld
   - Check/modify the comment of the first commit, then click on 'Done'
+
+* Meld several cherries, discard the comment of the first cherry
+  - 'Reword' the first cherry to meld,
+  - 'Squash' all the other cherries
+  - Clear the comment of the first commit, then click on 'Done'
 
 * Split a cherry into several successive commits
   - 'Edit' the cherry
