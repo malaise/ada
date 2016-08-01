@@ -1,6 +1,7 @@
 include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 
 ADAVIEW := $(REPOSIT)
+ADACTL := true
 
 SUBUNITS := pieces-actions_of_bishop pieces-actions_of_king \
 pieces-actions_of_knight pieces-actions_of_pawn pieces-actions_of_queen \

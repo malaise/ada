@@ -1,6 +1,7 @@
 include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 
 ADAVIEW := $(REPOSIT)
+ADACTL := true
 
 SUBUNITS := def_enigma-xml
 EXES := anal_freq enigma scrambler_generator def_enigma letterator

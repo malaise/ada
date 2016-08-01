@@ -1,6 +1,7 @@
 include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 
 ADAVIEW := $(REPOSIT)
+ADACTL := true
 
 SUBUNITS := nav_data-add nav_data-check nav_data-comp_nav nav_data-comp_speed \
 nav_data-comp_trajs nav_data-set_before nav_data-set_drift_after \

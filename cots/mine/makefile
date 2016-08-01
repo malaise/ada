@@ -3,7 +3,6 @@ include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 
 ADAVIEW := $(HOME)/ada/cots/pragmarc
 ADAWARN := false
-NO_ADACTL := true
 
 EXES := mine_detector
 

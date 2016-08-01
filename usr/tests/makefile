@@ -2,6 +2,7 @@ include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 include $(TEMPLATES)/units.mk
 
 ADAVIEW := $(REPOSIT)
+ADACTL := true
 
 AFPX := true
 

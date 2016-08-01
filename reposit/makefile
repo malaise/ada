@@ -22,6 +22,7 @@ CLIBS_afpx_bld := $(PCRE_SLIBS) $(X11_SLIBS)
 CLIBS_afpx_rnb := $(PCRE_SLIBS) $(X11_SLIBS)
 CLIBS_clear_screen := $(UTILS_SLIBS)
 
+ADACTL := true
 HTML := true
 GNATHTMLOPT := -d
 
