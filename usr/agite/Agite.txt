@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V29.13
+V29.14
 
 General purpose
 ---------------
@@ -1018,8 +1018,8 @@ anchor:XReorg[]
 
 .Reorg
 This button launches an interactive rebase of the commits that follow the
-selected one. This allows splitting, merging, modifing the comment of these
-commits. +
+selected one. This allows splitting, merging, dropping, copying, modifing
+the comment of these commits. +
 There is first a check that there is no local change in the repository (they
 would be lost).
 
@@ -1706,59 +1706,59 @@ If cancelled it goes back to the calling menu, otherwise to the
 xref:XDir[directory] menu.
 
 
-Cherry-pick how-to
-------------------
+Cherry-pick advanced how-to
+---------------------------
 anchor:XCherryHowto[]
 
 Use-cases
 ~~~~~~~~~
 
 * Meld several cherries into one, keep or update the last comment
-  - 'Pick' the first cherry to meld
-  - 'Fixup' all the other cherries to meld except the last one
-  - 'Squash' the last cherry to meld
-  - Check/modify the comment of the last commit, then click on 'Done'
+  - 'Pick' the first cherry to meld,
+  - 'Fixup' all the other cherries to meld except the last one,
+  - 'Squash' the last cherry to meld,
+  - Check/modify the comment of the last commit, then click on 'Done'.
 
 * Meld a cherry with several following fixes
   - 'Edit' the first cherry to meld,
-  - 'Fixup' all the other cherries to meld
-  - Check/modify the comment of the first commit, then click on 'Done'
+  - 'Fixup' all the other cherries to meld,
+  - Check/modify the comment of the first commit, then click on 'Done'.
 
 * Meld several cherries, discard the comment of the first cherry
   - 'Reword' the first cherry to meld,
-  - 'Squash' all the other cherries
-  - Clear the comment of the first commit, then click on 'Done'
+  - 'Squash' all the other cherries,
+  - Clear the comment of the first commit, then click on 'Done'.
 
 * Split a cherry into several successive commits
-  - 'Edit' the cherry
-  - In the 'commit' screen, set the comment and stage the files for the first
-    commit, then commit. Set the comment and stage the files for the second
+  - 'Edit' the cherry,
+  - In the 'commit' screen, set the comment and stage the files for the first,
+    commit, then commit. Set the comment and stage the files for the second,
     commit, then commit... Finally, click on the 'Done' button.
 
 * Remove some files from a cherry
-  - 'Edit' the cherry
-  - In the 'commit' screen, leave staged the files to keep (unstage the files
-    to remove). Commit the change.
-  - Call the 'stash' menu and 'AddReset' the remaining files into a new stash.
-  - Click on the 'Done' button of the 'commit' menu.
+  - 'Edit' the cherry,
+  - In the 'commit' screen, leave staged the files to keep (unstage the files,
+    to remove), commit the change,
+  - Call the 'stash' menu and 'AddReset' the remaining files into a new stash,
+  - Click on the 'Done' button of the 'commit' menu,
   - During or after the cherry-pick operation, you can reuse or delete
     the stash.
 
 * Split a cherry into two commits separated by already existing commits
-  - 'Edit' the cherry
-  - 'Copy' the cherry
-  - 'Move' both copies at the proper position in the list
+  - 'Edit' the cherry,
+  - 'Copy' the cherry,
+  - 'Move' both copies at the proper position in the list,
   - In the first 'commit' screen, set the comment and stage the files for the
-    first commit, then commit and click on the 'Done' button
+    first commit, then commit and click on the 'Done' button,
   - In the second 'commit' screen, set the comment and stage the remaining
     files, then commit and click on the 'Done' button.
 
 * Rebase a branch along another
 anchor:XCherryRebase[]
-  - On the target branch, create a Tmp branch
-  - Cherry pick from the source branch into the Tmp branch, pick all
-  - xref:XBReset[Hard reset] the rebased branch to the Tmp branch
-  - Delete the Tmp branch
+  - On the target branch, create a Tmp branch,
+  - Cherry pick from the source branch into the Tmp branch, pick all,
+  - xref:XBReset[Hard reset] the rebased branch to the Tmp branch,
+  - Delete the Tmp branch.
 +
 NOTE: This is exactly how the xref:XRebase[rebase] is performed.
 
@@ -1766,11 +1766,11 @@ NOTE: This is exactly how the xref:XRebase[rebase] is performed.
 anchor:XCherryReorg[]
   - In the xref:XHist[history] menu on the rebased branch, select the commit
     that is just before the first commit to rebase, and
-    xref:XHistCheckout[check out] it as a Tmp branch
+    xref:XHistCheckout[check out] it as a Tmp branch,
   - Cherry pick from the original branch into the Tmp branch, modify the
-    selection as necessary
-  - xref:XBReset[Hard reset] the rebased branch to Tmp branch
-  - Delete the Tmp branch
+    selection as necessary,
+  - xref:XBReset[Hard reset] the rebased branch to the Tmp branch,
+  - Delete the Tmp branch.
 +
 NOTE: This is exactly how the xref:XReorg[reorg] is performed.
 
@@ -1781,17 +1781,17 @@ named "\{Agite}@"<source>".Tmp". If this branch already exists then another
 Handling error and restarting
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 anchor:XCherryError[]
-If a cherry fails to be applied, it is very likely a confict in the merge, so
-the xref:XCommit[commit] screen is called for manual resolution. Also, if
-a cherry is selected for 'Edit' (or 'Reword'), then the xref:XCommit[commit]
-screen is called within the loop of cherry-picks.
+If a cherry fails to be applied, it is very likely due to a confict in the
+merge, so the xref:XCommit[commit] screen is called for manual resolution. Also,
+if a cherry is selected for 'Edit' (or 'Reword'), then the xref:XCommit[commit]
+screen is called within the loop of cherry-picks. +
 At this point there are two possibilities: continue or cancel.
 
 Fix, commit and continue
 ^^^^^^^^^^^^^^^^^^^^^^^^
 Hopefully you can use the file edition and staging in order to resolve the
 conflict. You should then commit the changes and then click on the 'Done'
-button.  The loop will continue processing the remaining cherries.
+button. The loop will continue processing the remaining cherries.
 
 Cancel
 ^^^^^^
@@ -1801,17 +1801,17 @@ picking.  You are then back in the xref:XDir[directory] menu, from which you
 should fix the conflict and commit the result. Beware that you might be on a
 temporary branch. +
 Restarting the loop depends on wether the failure occured during a
-xref:XRebase[rebase] or xref:XReorg[reorg] or during a
+xref:XRebase[rebase] or xref:XReorg[reorg], or during a
 xref:XCherry[cherry-pick].
 
 Restart a rebase or reorg:: The current temporary branch contains the cherries
-picked so far, including tha last manual commit. +
- * You may launch a rebase or reorg of the same branch, and along the same branch
-or from the same reference as the previously interrupted rebase or reorg. Then
-Agite proposes to continue the rebase or reorg. You will be prompted to restart
-interactively the cherry-pick from the rebased branch into the temporary branch
-(you may probably need to skip (drop) the cherry that was committed
-manually). +
+picked so far, including the last manual commit. +
+ * You may launch a rebase or reorg of the same branch, and along the same
+branch or from the same reference as the previously interrupted rebase or reorg.
+Then Agite proposes to continue the rebase or reorg. You will be prompted to
+restart interactively the cherry-pick from the rebased branch into the
+temporary branch (you may probably need to skip (drop) the cherry that was
+committed manually). +
  * Alternatively, you can launch a xref:XCherry[cherry-pick] from the rebased
 or reorganized branch into the current temporary branch, and complete the
 process xref:XManualRestart[manually] as described below.
@@ -1830,7 +1830,7 @@ In case of a reorg or rebase, the temporary branch, named
 "\{Agite}@"<source>".Tmp', remains (with some commits already applied).
 You can complete the xref:XCherry[cherry-pick] manually on it, then hard-reset
 the rebased branch on it, then delete it, as described in the 
-xref:XCherryRebase[rebase] and the xref:XCherryReorg[reord] use-cases.
+xref:XCherryRebase[rebase] and the xref:XCherryReorg[reorg] use-cases.
 
 Rewriting history
 -----------------
