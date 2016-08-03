@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V29.14
+V29.15
 
 General purpose
 ---------------
@@ -340,28 +340,27 @@ of the current repository.
 anchor:XNavigation[]
 The navigation between the screens is as follows:
 
-                                               /-------------------------+
-                                +----------+  /       +------------+     |
-                            /-> | Branches |-/------->| CherryPick |--+  |
-                           /    +----------+          +------------+  |  |
-                          /     +-----------+                         |  |
-                         /----->| Bookmarks |                         |  |
-                        /       +-----------+         +-----+         |  |
-                       /                  /---------->| Tag |         |  |
-                      /                  /            +-----+         |  |
-                     /          +-------+-+           +--------+      |  |
-                    /---------->| History |<-+-----+->| Detail |<-----+  |
-                   /            +-------+-+   \   /   +--------+      |  |
-                  /             +------+ \     \ /    +----------+    |  |
-                 /--------------| Tags |--+-----+---->| Checkout |    |  |
-                /               +------+   \          +----------+    |  |
-  +---------- +/                +-------+   \         +------+        |  |
-  | Directory |---------------->| Commit|----+------->| Push |        |  |
-  +---------- +\                +-------+<-\          +------+        |  |
-                \                     |     \                         |  |
-                 \                    V      \                        |  |
-                  \             +-------+     \-----------------------+  |
-                   \----------->| Stash |      \-------------------------+
+                                   +-----------+
+                            /----->| Bookmarks |
+                           /       +-----------+
+                          /  +----------+             +------------+
+                         /-> | Branches |---+-------->| CherryPick |--+
+                        /    +----------+  /          +------------+  |
+                       /                  /---------->| Tag |         |
+                      /                  /            +-----+         |
+                     /          +-------+-+           +--------+      |
+                    /---------->| History |<-+-----+->| Detail |<-----+
+                   /            +-------+-+   \   /   +--------+      |
+                  /             +------+ \     \ /    +----------+    |
+                 /--------------| Tags |--+-----+---->| Checkout |    |
+                /               +------+   \          +----------+    |
+  +---------- +/                +-------+   \         +------+        |
+  | Directory |---------------->| Commit|----+------->| Push |        |
+  +---------- +\                +-------+<-\          +------+        |
+                \                     |     \                         |
+                 \                    V      \                        |
+                  \             +-------+     \-----------------------+ 
+                   \----------->| Stash |
                     \           +-------+
                      \          +------+
                       \-------->| Pull |
@@ -742,9 +741,14 @@ NOTE: The 'Rebase' is done by performing automatically successive
 xref:XCherry[cherry-picks] from the rebased branch to a temporary branch.
 See the how-to xref:XCherryRebase[rebase with cherry-pick] and the section
 xref:XCherryError[Error in cherry-pick] on how to handle errors during
-a rebase.
+a rebase. 
 
-CherryPk::
+NOTE: The selection of the commits to pick is automatic (based in current and
+right/left selected branches). For a manual edition of the selected commits
+(and for edition, folding options), please use the xref:XCherry[cherry-pick]
+action instead.
+
+CheryPk::
 
 Click on the 'CherryPk' button to launch the menu to xref:XCherry[cherry-pick]
 commits from the branch left-selected in the list (source) into the current
@@ -1023,8 +1027,8 @@ the comment of these commits. +
 There is first a check that there is no local change in the repository (they
 would be lost).
 
-NOTE: The 'Reorg' is done by performing automatically successive
-xref:XCherry[cherry-picks] from the current branch to a temporary branch, then
+NOTE: The 'Reorg' consists in a manual xref:XCherry[cherry-pick] of commits,
+then an automatic commit of these cherries into a temporary branch, then
 a hard reset of the current branch to the temporary branch. +
 See the how-to xref:XCherryReorg[interactively rebase a branch on itself]
 and the section xref:XCherryError[Error in cherry-pick] on how to handle
@@ -1282,13 +1286,13 @@ to split the commit...) in the xref:XCommit[commit] menu. It will be possible
 to leave some changes not committed, which has a sense if the next cherry
 is a 'squash' or a 'fixup'.
 
-* \'S' denotes a cherry picked for 'squash', which will be applied and melt
+* \'S' denotes a cherry picked for 'squash', which will be applied and folded
 with the previous cherry. The comment of the cherry will be concatenated to
 the currently retained comment. If the next cherry is not a 'squash' nor a
 'fixup', then the overall comment will be proposed for 'edition' and the 
 overall result will be committed. 
 
-* \'F' denotes a cherry picked for 'fixup', which will be applied and melt
+* \'F' denotes a cherry picked for 'fixup', which will be applied and folded
 with the previous cherry. If the next cherry is not a 'squash' nor a 'fixup',
 then the result will be committed with the currently retained comment (note
 that if the currently retained comment is empty then the current comment is
@@ -1338,8 +1342,8 @@ current branch. +
 An action to 'edit' or 'reword' launches the
 xref:XCommit[commit] menu.  It is possible to modify some files and the
 comment, and/or the selection of files, and to make several commits. 
-See the section xref:XCherryHowto[Cherry-pick how to] for more details on how
-to use the 'commit' menu in this context.
+See the section xref:XCherryHowto[Cherry-pick advanced how to] for more details
+on how to use the 'commit' menu in this context.
 
  * Clicking on the 'Done' button goes back to the loop
 of picking the cherries (possibly with some files not yet committed).
@@ -1356,7 +1360,7 @@ NOTE: To cancel the cherry-pick menu, simply ensure that no commit is selected
 (click on the 'Reset' button) and click on the 'Cancel' button.
 
 NOTE: If the selection is not valid (ex: first not merged nor dropped cherry
-is a squash or a fixup) then this button is de-activated and 'Error' is
+is a squash or a fixup) then this button is de-activated and 'FoldPrev' is
 displayed instead.
 
 Commit
@@ -1713,19 +1717,19 @@ anchor:XCherryHowto[]
 Use-cases
 ~~~~~~~~~
 
-* Meld several cherries into one, keep or update the last comment
-  - 'Pick' the first cherry to meld,
-  - 'Fixup' all the other cherries to meld except the last one,
-  - 'Squash' the last cherry to meld,
+* Fold several cherries into one, keep or update the last comment
+  - 'Pick' the first cherry to fold,
+  - 'Fixup' all the other cherries to fold except the last one,
+  - 'Squash' the last cherry to fold,
   - Check/modify the comment of the last commit, then click on 'Done'.
 
-* Meld a cherry with several following fixes
-  - 'Edit' the first cherry to meld,
-  - 'Fixup' all the other cherries to meld,
+* Fold a cherry with several following fixes
+  - 'Edit' the first cherry to fold,
+  - 'Fixup' all the other cherries to fold,
   - Check/modify the comment of the first commit, then click on 'Done'.
 
-* Meld several cherries, discard the comment of the first cherry
-  - 'Reword' the first cherry to meld,
+* Fold several cherries, discard the comment of the first cherry
+  - 'Reword' the first cherry to fold,
   - 'Squash' all the other cherries,
   - Clear the comment of the first commit, then click on 'Done'.
 

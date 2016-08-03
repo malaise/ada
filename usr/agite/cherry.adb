@@ -1,4 +1,4 @@
-with As.U, Afpx.Utils, Dynamic_List, Mixed_Str, Trilean;
+with As.U, Afpx.Utils, Dynamic_List, Mixed_Str;
 with Utils.X, Git_If, Details, Afpx_Xref, Confirm, Error, Commit;
 package body Cherry is
 
@@ -334,15 +334,16 @@ package body Cherry is
     end case;
   end Cherry_Action;
 
-  -- Selection is valid (True) if
-  -- - at least one cherry is selected otherwise we can cancel (False)
-  -- - the first selected is not a fixup nor squash (other)
-  function Valid_Cherries return Trilean.Trilean is
+  -- Selection is valid (OK) if
+  -- - at least one cherry is selected, otherwise we can cancel (Empty)
+  -- - the first selected is not a fixup nor squash otherwise (FoldPrev)
+  type Valid_List is (Ok, Empty, Foldprev);
+  function Valid_Cherries return Valid_List is
     Pos : Positive;
     Status : Cherry_Status_List;
   begin
     if Nb_Cherries = 0 then
-      return Trilean.False;
+      return Empty;
     end if;
     -- Read status of first selected cherry
     Pos := Cherries.Get_Position;
@@ -357,10 +358,10 @@ package body Cherry is
     Cherries.Move_At (Pos);
     -- It must not be fixup or squash
     if Status = Fixup or else Status = Squash then
-      return Trilean.Other;
+      return Foldprev;
     end if;
     -- OK
-    return Trilean.True;
+    return Ok;
   end Valid_Cherries;
 
   -- Confirm (if Interactive) and do the Cherry-pick,
@@ -682,12 +683,15 @@ package body Cherry is
       -- Go only if the selection is valid, Cancel only if it is empty
       Afpx.Reset_Field (Afpx_Xref.Cherry.Go);
       case Valid_Cherries is
-        when Trilean.True =>
+        when Ok =>
+          -- Ok: keep Go button active
           null;
-        when Trilean.False =>
+        when Empty =>
+          -- No cherry picked: we can cancel
           Afpx.Encode_Field (Afpx_Xref.Cherry.Go, (1, 1), "Cancel");
-        when Trilean.Other =>
-          Afpx.Encode_Field (Afpx_Xref.Cherry.Go, (1, 1), "Error");
+        when Foldprev =>
+          -- Folding a cherry without previous => Disable
+          Afpx.Encode_Field (Afpx_Xref.Cherry.Go, (1, 0), "FoldPrev");
           Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Go, True);
       end case;
       Afpx.Put_Then_Get (Get_Handle, Ptg_Result, Right_Select => True,
