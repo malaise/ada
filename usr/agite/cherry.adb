@@ -3,7 +3,7 @@ with Utils.X, Git_If, Details, Afpx_Xref, Confirm, Error, Commit;
 package body Cherry is
 
   -- A log with cherry status
-  type Cherry_Status_List is (Merged, Pick, Reword, Edit, Squash, Fixup,
+  type Cherry_Status_List is (Merged, Pick, Wipe, Reword, Edit, Squash, Fixup,
                               Drop);
   type Cherry_Rec is record
     Status : Cherry_Status_List := Merged;
@@ -39,6 +39,7 @@ package body Cherry is
       (case From.Status is
          when Merged => "=",
          when Pick   => "P",
+         when Wipe   => "W",
          when Reword => "R",
          when Edit   => "E",
          when Squash => "S",
@@ -187,7 +188,7 @@ package body Cherry is
   end Read;
 
   -- Actions
-  type Cherry_Actions is (Toggle, Drop, Pick, Reword, Edit, Fixup, Squash,
+  type Cherry_Actions is (Toggle, Drop, Wipe, Pick, Reword, Edit, Fixup, Squash,
                           Copy, Move_Up, Move_Down, Reset);
   procedure Cherry_Action (Action : in Cherry_Actions;
                            Left_Sel : in Natural) is
@@ -291,6 +292,8 @@ package body Cherry is
         end if;
       when Pick =>
         Apply (Pick);
+      when Wipe =>
+        Apply (Wipe);
       when Reword =>
         Apply (Reword);
       when Edit =>
@@ -336,30 +339,70 @@ package body Cherry is
 
   -- Selection is valid (OK) if
   -- - at least one cherry is selected, otherwise we can cancel (Empty)
-  -- - the first selected is not a fixup nor squash otherwise (FoldPrev)
-  type Valid_List is (Ok, Empty, Foldprev);
+  -- - the first selected is not a fixup nor squash, otherwise (FoldPrev)
+  -- - a Wipe is folowed, possibly by Fixup, then a Squash, otherwise (EmptyCmt)
+  type Valid_List is (Ok, Empty, Foldprev, Emptycmt);
   function Valid_Cherries return Valid_List is
     Pos : Positive;
+    First_Set : Boolean;
+    After_Wipe : Boolean;
     Status : Cherry_Status_List;
   begin
     if Nb_Cherries = 0 then
       return Empty;
     end if;
-    -- Read status of first selected cherry
+
+    -- Save position
     Pos := Cherries.Get_Position;
+
+    -- Loop for checks
+    First_Set := False;
+    After_Wipe := False;
     Cherries.Rewind;
     loop
       Status := Cherries.Access_Current.Status;
-      exit when Status /= Drop and then Status /= Merged;
-      -- Normally this should be possible because Nb_Cherries /= 0, but well
+
+      -- Skip not selected
+      if Status /= Drop and then Status /= Merged then
+
+        -- Read status of first selected cherry
+        if not First_Set then
+          -- First status must not be fixup or squash
+          if Status = Fixup or else Status = Squash then
+            Cherries.Move_At (Pos);
+            return Foldprev;
+          end if;
+          First_Set := True;
+        end if;
+
+        -- Wipe must be followed by [ Fixup ]  then a Squash
+        if After_Wipe then
+          if Status = Squash then
+            -- Ok (so far)
+            After_Wipe := False;
+          elsif Status /= Fixup then
+            Cherries.Move_At (Pos);
+            return Emptycmt;
+          end if;
+        elsif Status = Wipe then
+          After_Wipe := True;
+        end if;
+
+      end if;
+
+      -- Normally this should be possible because Nb_Cherries /= 0, but well...
       exit when not Cherries.Check_Move;
       Cherries.Move_To;
     end loop;
+
+    -- Restore position
     Cherries.Move_At (Pos);
-    -- It must not be fixup or squash
-    if Status = Fixup or else Status = Squash then
-      return Foldprev;
+
+    -- List ended without a squash after a wipe
+    if After_Wipe then
+      return Emptycmt;
     end if;
+
     -- OK
     return Ok;
   end Valid_Cherries;
@@ -433,7 +476,7 @@ package body Cherry is
             when Squash | Fixup =>
               Next_Meld := True;
               exit;
-            when Pick | Reword | Edit =>
+            when Pick | Wipe | Reword | Edit =>
               Next_Meld := False;
               exit;
           end case;
@@ -455,6 +498,9 @@ package body Cherry is
         when Pick | Reword | Edit =>
           -- Set comment
           Commit.Set_Comment (Commit.Get_Comment (Cherry.Commit.Hash));
+        when Wipe =>
+          -- Erase comment
+          Commit.Set_Comment ("");
       end case;
 
       -- Process the cherry
@@ -486,7 +532,7 @@ package body Cherry is
                 -- User gave up
                 return Error;
               end if;
-            when Pick | Squash | Fixup =>
+            when Pick | Wipe | Squash | Fixup =>
               -- Cherry already applied not committed
               null;
           end case;
@@ -494,6 +540,16 @@ package body Cherry is
       else
         -- Next is neither Squash nor Fixup: commit
         case Cherry.Status is
+          when Wipe =>
+            -- Normally, this should not occur because
+            --  of previous validity check
+            Error ("Cherry pick from", Branch, "Wipe leads to empty commit");
+            -- Propose manual resolution
+            if not Commit.Handle (Root, Image (Cherry.Status),
+                                  Curr_Comment) then
+              -- User gave up
+              return Error;
+            end if;
           when Merged | Drop =>
             null;
           when Pick =>
@@ -627,6 +683,7 @@ package body Cherry is
       -- Disable buttons if empty list, Right selection...
       Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Detail, Empty or else Right);
       Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Pick, Empty);
+      Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Wipe, Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Reword, Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Edit, Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Squash, Empty);
@@ -693,6 +750,10 @@ package body Cherry is
           -- Folding a cherry without previous => Disable
           Afpx.Encode_Field (Afpx_Xref.Cherry.Go, (1, 0), "FoldPrev");
           Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Go, True);
+        when Emptycmt =>
+          -- A wipe cherry is not folloed by a squash => Disable
+          Afpx.Encode_Field (Afpx_Xref.Cherry.Go, (1, 0), "EmptyCmt");
+          Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Go, True);
       end case;
       Afpx.Put_Then_Get (Get_Handle, Ptg_Result, Right_Select => True,
                          List_Change_Cb => List_Change'Access);
@@ -724,6 +785,9 @@ package body Cherry is
             when Afpx_Xref.Cherry.Pick =>
               -- Pick
               Cherry_Action (Pick, Ptg_Result.Id_Selected_Right);
+            when Afpx_Xref.Cherry.Wipe =>
+              -- Wipe
+              Cherry_Action (Wipe, Ptg_Result.Id_Selected_Right);
             when Afpx_Xref.Cherry.Reword =>
               -- Reword
               Cherry_Action (Reword, Ptg_Result.Id_Selected_Right);

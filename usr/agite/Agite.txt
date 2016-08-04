@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V29.15
+V29.16
 
 General purpose
 ---------------
@@ -1275,6 +1275,10 @@ The first letter of each line describes the status of the cherry:
 (non-merged non-dropped) cherry is not a 'squash' or a 'fixup', then
 the result will be commited with the cherries's comment.
 
+* \'W' denotes a cherry picked for 'wipe-up', which will be applied with an
+empty comment of the commit, which is valid only if the next (non-merged
+non-dropped) cherry is (possibly after some 'fixup') a 'squash'.
+
 * \'R' denotes a cherry picked for 'rewording', which will be applied then
 proposed for edition of the comment of the commit in the xref:XCommit[commit]
 menu. It will be possible to edit the comment, commit the change (if the next
@@ -1305,7 +1309,8 @@ By default, all the non-merged commits are selected as 'picked'.
 Double-clicking on an entry of the list toggles its selection from 'dropped'
 to 'picked' and vice versa.
 
-NOTE: The logic is the same as in Git interactive rebase.
+NOTE: The logic is the same as in Git interactive rebase (except that Git does
+note implement the 'Wipe' status.
 
 NOTE: The commits that have already been merged through the \'fast forward'
 mechanism are not listed at all.
@@ -1359,9 +1364,11 @@ After completion, Agite returns back in the xref:XDir[directory] menu.
 NOTE: To cancel the cherry-pick menu, simply ensure that no commit is selected
 (click on the 'Reset' button) and click on the 'Cancel' button.
 
-NOTE: If the selection is not valid (ex: first not merged nor dropped cherry
-is a squash or a fixup) then this button is de-activated and 'FoldPrev' is
-displayed instead.
+NOTE: If the selection is not valid then this button is de-activated and
+displays the cause of error: +
+ * 'FoldPrev' if first not merged nor dropped cherry is a squash or a fixup, +
+ * 'EmptyCmt' if a wipe-up would not followed by a squash would lead to an empty
+comment.
 
 Commit
 ~~~~~~
@@ -1721,17 +1728,17 @@ Use-cases
   - 'Pick' the first cherry to fold,
   - 'Fixup' all the other cherries to fold except the last one,
   - 'Squash' the last cherry to fold,
-  - Check/modify the comment of the last commit, then click on 'Done'.
+  - Check/modify the comment of the last commit, 'Commit' then click on 'Done'.
 
 * Fold a cherry with several following fixes
-  - 'Edit' the first cherry to fold,
+  - 'Reword' the first cherry to fold,
   - 'Fixup' all the other cherries to fold,
-  - Check/modify the comment of the first commit, then click on 'Done'.
+  - Check/modify the comment of the first commit then click on 'Done'.
 
 * Fold several cherries, discard the comment of the first cherry
-  - 'Reword' the first cherry to fold,
+  - 'Wipe-up' the first cherry to fold,
   - 'Squash' all the other cherries,
-  - Clear the comment of the first commit, then click on 'Done'.
+  - Check/modify the comment of the last commit, 'Commit' then click on 'Done'.
 
 * Split a cherry into several successive commits
   - 'Edit' the cherry,
