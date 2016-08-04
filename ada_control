@@ -1,12 +1,11 @@
 #!/bin/bash
-if [ -z "$ADACTL" ] ; then
-  export ADACTL=/usr/local/src/adactl/src/adactl
+if [ -z "$ADACONTROL_PATH" ] ; then
+  export ADACONTROL_PATH=/usr/local/src/adactl/src/adactl
 fi
 if [ -z "$GNATPATH" ] ; then
   export GNATPATH=/usr/local/gnat/bin
 fi
 export RULES=~/ada/AdaControl.aru
-export PATH=$GNATPATH:$PATH
 export WDIR=AdaCtl
 
 # Help
@@ -16,11 +15,11 @@ if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then
 fi
 
 # Optional clean and only_clean
-export ADACONTROL=1
+export DO_CALL=1
 export CLEAN=0
 if [ \( "$1" = "-C" \) -o \( "$1" = "--only_clean" \) ] ; then
   shift
-  ADACONTROL=0
+  DO_CALL=0
   CLEAN=1
 elif [ \( "$1" = "-c" \) -o \( "$1" = "--clean" \) ] ; then
   shift
@@ -33,9 +32,9 @@ if [ -n "$1" ] ; then
   echo "In `pwd`"
 fi
 
-if [ $ADACONTROL = 1 ] ; then
+if [ $DO_CALL = 1 ] ; then
   # PATH to GNAT
-  export PATH=$GNATPATH/bin:$PATH
+  export PATH=$GNATPATH:$PATH
   # List all views
   views=`make -s --no-print-directory echoadaview`
   incls=""
@@ -48,7 +47,7 @@ if [ $ADACONTROL = 1 ] ; then
   cd $WDIR
 
   # AdaControl
-  $ADACTL -f $RULES ../*.ad? -- $incls
+  $ADACONTROL_PATH -f $RULES ../*.ad? -- $incls
 
   # Done
   cd ..
