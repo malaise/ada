@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Perpet, Day_Mng, Normal, Date_Text;
+with Perpet, Day_Mng, Date_Text;
 separate (Mcd_Mng)
 
 package body Dates is
