@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V29.16
+V29.17
 
 General purpose
 ---------------
@@ -1567,42 +1567,44 @@ The possible actions on the list of stashes are:
 
 AddAppl::
 
-Enter a message (or name) for the stash, and click in the 'AddAppl' button
-or press the Return key. Agit stashes the current repository (which performs a
-'git reset --hard'), then applies it (which restores the content of the
-repository), then returns to the xref:XDir[directory] menu. +
+Stash and re-apply: Enter a message (or name) for the stash, and click in the
+'AddAppl' button or press the Return key. Agit stashes the current repository
+(which performs a 'git reset --hard'), then applies it (which restores the
+content of the repository), then returns to the xref:XDir[directory] menu. +
 The new stash has been inserted in the list. +
 
 NOTE: You can un-apply this stash ('git reset --hard') by selecting the entry
-'/' of the xref:XDir[directory] list and cliking on the xref:XRevert[revert]
+"'/'" of the xref:XDir[directory] list and cliking on the xref:XRevert[revert]
 button.
 
 AddReset::
 
-Enter a message (or name) for the stash and click in the 'AddReset' button.
-Agit stashes the current repository, which performs a 'git reset
---hard', then returns to the xref:XDir[directory] menu. +
+Stash and reset: Enter a message (or name) for the stash and click in the
+'AddReset' button. Agit stashes the current repository, which performs a
+'git reset --hard', then returns to the xref:XDir[directory] menu. +
 The new stash has been inserted in the list. +
 
 Apply::
 
-Applies the stash currently selected in the list and returns to the
+Apply a saved stash: Applies the stash currently selected in the list and returns to the
 xref:XDir[directory] menu. A double click on an entry has the same effect.
 
 Pop::
 
-After confirmation, applies the stash currently selected in the list, removes
-it from the list and returns to the xref:XDir[directory] menu.
+Delete and apply a saved stash: After confirmation, applies the stash currently
+selected in the list, removes it from the list and returns to the
+xref:XDir[directory] menu.
 
 Del::
 
-After confirmation, deletes (drops) the stash currently selected in the list.
+Delete a saved stash: After confirmation, deletes (drops) the stash currently
+selected in the list.
 
 Rename::
 
-Select a stash, enter a message (or name) for the stash and click in the
-'rename' button. The entry selected is renamed after confirmation (and moved
-at the top of the list).
+Rename a saved stash: Select a stash, enter a message (or name) for the stash
+and click in the 'rename' button. The entry selected is renamed after
+confirmation (and moved at the top of the list).
 
 .Back
 
@@ -1700,22 +1702,26 @@ Reset
 anchor:XReset[]
 This menu has two modes:
 
-.Called by the 'directory' menu,
+.Called by the xref:XBranches[branches] or the xref:XHist[history] menu,
+it allows to reset the current repository to a branch or to a commit. +
+The reset can be:
+
+* 'Soft': reset only the HEAD of current branch (not the index nor the
+worktree),
+* 'Mixed': reset the HEAD and the index (not the worktree),
+* 'Hard': reset the HEAD, the index and the worktree,
+* and it is also possible to 'Cancel'.
+
+.Called by the xref:XDir[directory] menu,
 it allows to either:
 
-* 'Hard' reset the current repository to HEAD
-* 'Cleanup' from the current repository the untracked files and directories
+* 'Hard' reset (the index and worktree) to the HEAD of current branch,
+* 'Cleanup' from the current repository the untracked files and directories,
+* or to 'Cancel'.
 
-or to 'Cancel'.
-
-.Called by the 'branch' or the 'history' menu,
-it allows to reset the current repository to a branch or to a commit.
-The reset can be 'Soft', 'Mixed' or 'Hard', and it is also possible to
-'Cancel'.
 
 If cancelled it goes back to the calling menu, otherwise to the
 xref:XDir[directory] menu.
-
 
 Cherry-pick advanced how-to
 ---------------------------
@@ -1845,22 +1851,26 @@ xref:XCherryRebase[rebase] and the xref:XCherryReorg[reorg] use-cases.
 
 Rewriting history
 -----------------
-Rewriting history can have serious consequences if you modify commits that
-have already been published and pulled by some other repositories. This is why
-this section lists the functions of Agite that alter the history:
+Rewriting the history can have serious consequences if you modify commits that
+have already been published, and have been pulled by some other repositories. +
+The four functions of Agite that alter the history are:
 
-* The xref:XReset[reset] function of the xref:XBranches[branches] and of the 
+* The xref:XReset[reset] functions of the xref:XBranches[branches] and of the 
 xref:XHist[history] menus rewrites the history of the reset branch,
 * The xref:XRebase[rebase] function of the xref:XBranches[branches] menu
-rewrites the history of the rebased branch,
+rewrites the history of the rebased branch (which is reset),
 * The xref:XReorg[reorg] function of the xref:XHist[history] menu rewrites
-the history of the current branch.
+the history of the current branch (which is reset).
 
-NOTE: The xref:XCherry[cherry-pick] function does not rewrite history because
-it applies commits to the target branch, which evolves naturally. +
+The confirmation request for these actions warns you (in red) that the history
+will be rewritten.
+
+NOTE: The xref:XCherry[cherry-pick] function does not rewrite the history
+because it applies commits to the target branch, which evolves naturally. +
 The xref:XReset[reset] function triggered by the xref:XRevert[revert] buton
-on \'.\' of the xref:XDir[directory] menu does not rewrite history
-because it resets hard the repository to the current branch head.
+on \'.\' of the xref:XDir[directory] menu does not rewrite the history
+because it resets the repository to the current branch head (which is the
+history).
 
 Scope of the operations
 -----------------------

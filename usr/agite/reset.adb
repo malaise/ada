@@ -21,6 +21,8 @@ begin
       -- Comment of target commit
       Utils.X.Encode_Field (Comment, Afpx_Xref.Reset.Comment);
     end if;
+    Utils.X.Center_Field ("WARNING: This operation will alter the history",
+                          Afpx_Xref.Reset.Warning);
     Afpx.Set_Field_Activation (Afpx_Xref.Reset.Clean, False);
   else
     -- No ref => Hard reset to head or clean unstage

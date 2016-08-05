@@ -2,6 +2,7 @@ with Afpx;
 with Utils.X, Afpx_Xref;
 -- Confirm: OK/Cancel or Yes/No, show (protected) of hide the list
 function Confirm (Title, Msg : String;
+                  Warning : String := "";
                   Ok_Cancel : Boolean := True;
                   Show_List : Boolean := False) return Boolean is
   -- Afpx stuff
@@ -12,6 +13,9 @@ begin
   Afpx.Use_Descriptor (Afpx_Xref.Confirm.Dscr_Num);
   Utils.X.Center_Field (Title, Afpx_Xref.Confirm.Action);
   Utils.X.Center_Field (Msg, Afpx_Xref.Confirm.Name);
+  if Warning /= "" then
+    Utils.X.Center_Field ("WARNING: " & Warning, Afpx_Xref.Confirm.Warning);
+  end if;
   -- Yes / No
   if not Ok_Cancel then
     Utils.X.Center_Field ("Yes", Afpx_Xref.Confirm.Ok);
