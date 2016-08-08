@@ -1,7 +1,7 @@
 with Ada.Text_Io;
 package body Gets is
   package Llint_Io is new Ada.Text_Io.Integer_Io (Long_Longs.Ll_Integer);
-  package Llmod_Io is new Ada.Text_Io.Modular_Io (Long_Longs.Llu_Natural);
+  package Llunat_Io is new Ada.Text_Io.Modular_Io (Long_Longs.Llu_Natural);
   package Flo_Io is new Ada.Text_Io.Float_Io (Float);
   package Real_Io is new Ada.Text_Io.Float_Io (My_Math.Real);
   package Dur_Io is new Ada.Text_Io.Fixed_Io (Duration);
@@ -43,7 +43,7 @@ package body Gets is
       raise Constraint_Error;
   end Get_Llint;
 
-  function Get_Llmod (Str : String) return Long_Longs.Llu_Natural is
+  function Get_Llunat (Str : String) return Long_Longs.Llu_Natural is
     I : Long_Longs.Llu_Natural;
     L : Positive;
     Str_Len : Natural;
@@ -59,7 +59,7 @@ package body Gets is
       raise Constraint_Error;
     end if;
 
-    Llmod_Io.Get (Str, I, L);
+    Llunat_Io.Get (Str, I, L);
 
     if L /= Str'Last then
       raise Constraint_Error;
@@ -68,7 +68,7 @@ package body Gets is
   exception
     when others =>
       raise Constraint_Error;
-  end Get_Llmod;
+  end Get_Llunat;
 
   function Get_Float (Str : String) return Float is
     F : Float;

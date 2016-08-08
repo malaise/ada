@@ -1,12 +1,12 @@
 with Long_Longs, My_Math;
 package Gets is
-  -- Get an Integer, a LL_Integer, a LL_Mod_Natural, a Float, a Real, a Duration
+  -- Get an Integer, a Ll_Integer, a Llu_Natural, a Float, a Real, a Duration
   -- Str must be a valid image with no trailing spaces,
   --  leading spaces are skipped
   -- May raise Constraint_Error
   function Get_Int (Str : String) return Integer;
   function Get_Llint (Str : String) return Long_Longs.Ll_Integer;
-  function Get_Llmod (Str : String) return Long_Longs.Llu_Natural;
+  function Get_Llunat (Str : String) return Long_Longs.Llu_Natural;
   function Get_Float (Str : String) return Float;
   function Get_Real (Str : String) return My_Math.Real;
   function Get_Dur (Str : String) return Duration;

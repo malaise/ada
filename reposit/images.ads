@@ -12,7 +12,7 @@ package Images is
 
   -- Image of Long_Integer and Long_Longs.Ll_Integer
   function Long_Image (L : Long_Integer) return String;
-  function Ll_Integer_Image (L : Long_Longs.Ll_Integer) return String;
+  function Llint_Image (L : Long_Longs.Ll_Integer) return String;
 
   -- Image of Integer in base 16 (without leading space)
   -- "16#XYZ#"
@@ -34,6 +34,8 @@ package Images is
   generic
     type Modul is mod <>;
   function Mod_Image (M : Modul) return String;
+  -- Image of a Long_Longs.Llu_Natural
+  function Llunat_Image (U : Long_Longs.Llu_Natural) return String;
 
 
   -- Image of a duration (without leading space)

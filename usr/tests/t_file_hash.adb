@@ -25,7 +25,7 @@ begin
      loop
         List.Read_Current (Line);
         Basic_Proc.Put_Line_Output ("FOUND at line "
-                                  & Images.Ll_Integer_Image (Line.No)
+                                  & Images.Llint_Image (Line.No)
                                   & " >" & Line.Txt.Image & "<");
         List.Search_Next (Line, Found);
         exit when not Found;
