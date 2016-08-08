@@ -23,7 +23,7 @@ package Assertion is
   function Get return Action_List;
 
   -- Do nothing if What is True, else do Action
-  -- If Action is Default, do the Action Set or defined in ENV
+  -- If Action is Default, then do the Action that was Set or defined in ENV
   procedure Assert (What : in Boolean; Trace : in String := "";
                     Action : in Assert_Action_List := Default);
 

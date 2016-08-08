@@ -18,7 +18,6 @@ package body Assertion is
     if Init_Done then
       return;
     end if;
-    Init_Done := True;
     -- Set Action according to env variable Action_Name
     Action_Str := (others => '-');
     Len := Action_Str'Last;
@@ -28,6 +27,11 @@ package body Assertion is
                elsif Action_Str (1 .. Len) = "TRACE"  then Put_Trace
                elsif Action_Str (1 .. Len) = "RAISE"  then Raise_Exception
                else Default_Action);
+    Init_Done := True;
+  exception
+    when others =>
+      Init_Done := True;
+      raise;
   end Init;
 
   -- Set/Change action (preempts env variable)
