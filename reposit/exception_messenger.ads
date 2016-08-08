@@ -47,7 +47,9 @@ package Exception_Messenger is
   --       Ada.Exceptions.Save_Occurrence (Loc_Occ, Error_Occ);
   --       Exception_Messenger.Exception_Message (Loc_Occ, Unb_String);
   --       -- or
-  --        Str := Exception_Messenger.Exception_Message (Loc_Occ);
+  --       declare
+  --         Str : constant String
+  --             := Exception_Messenger.Exception_Message (Loc_Occ);
   --     end;
   procedure Exception_Message (X : in out Ada.Exceptions.Exception_Occurrence;
                                M : out As.U.Asu_Us);
@@ -73,7 +75,7 @@ package Exception_Messenger is
   function Exception_Message (X : Ada.Exceptions.Exception_Occurrence_Access)
            return String;
 
-  -- Explicit deallocation of an Exception_Occurrence, just in case
+  -- Explicit deallocation of an Exception_Occurrence
   procedure Deallocate is new Ada.Unchecked_Deallocation (
     Ada.Exceptions.Exception_Occurrence,
     Ada.Exceptions.Exception_Occurrence_Access);
