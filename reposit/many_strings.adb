@@ -1,11 +1,9 @@
 package body Many_Strings is
 
-  Sep : constant Character := Separator;
-
   -- Clear
   procedure Reset (Str : in out Many_String) is
   begin
-    Str.Ustr.Set_Null;
+    Str := Empty_String;
   end Reset;
   function Empty return Many_String is
   begin
@@ -15,236 +13,218 @@ package body Many_Strings is
   -- True if Str is really empty (no separator nor string)
   function Is_Empty (Str : Many_String) return Boolean is
   begin
-    return Str.Ustr.Is_Null;
+    return Str = Empty_String;
   end Is_Empty;
 
-  -- Init
-  function Set (From : String) return Many_String is
+  subtype Unb_Array is Asu_Ua.Unb_Array;
+
+  -- Normalize a Many_String
+  -- Split any substring delimited by Separator
+  procedure Normalize (M : in out Many_String) is
+    Index : Natural;
+    Len : Natural;
+    Str : As.U.Asu_Us;
   begin
-    return (Ustr => As.U.Tus (From));
-  end Set;
-  function Set (From : As.U.Asu_Us) return Many_String is
-  begin
-    return (Ustr => From);
-  end Set;
-  function Set (From : As.U.Asu_Array) return Many_String is
-    Result : Many_String := Empty_String;
-  begin
-    for I in From'Range loop
-      Cat (Result, From(I));
+    -- Scan all Unb strings
+    Index := 1;
+    loop
+      -- Look for separator
+      Len := M.Element (Index).Length;
+      A_String : for I in 1 .. Len loop
+        if M.Element(Index).Element(I) = Separator then
+          -- Insert tail after current Unb string
+          Str := M.Element(Index);
+          M.Insert (Index + 1, Str.Uslice (I + 1, Len));
+          -- Delete separator and tail from current
+          Str.Delete (I, Len);
+          M.Replace_Element (Index, Str);
+          -- Switch to next (new) Unb
+          exit A_String;
+        end if;
+      end loop A_String;
+      exit when Index = M.Length;
+      Index := Index + 1;
     end loop;
+  end Normalize;
+
+  -- Init functions, rely on procedures
+  function Set (From : String) return Many_String is
+    Result : Many_String;
+  begin
+    Set (Result, From);
     return Result;
   end Set;
+  function Set (From : As.U.Asu_Us) return Many_String is
+    Result : Many_String;
+  begin
+    Set (Result, From);
+    return Result;
+  end Set;
+  function Set (From : As.U.Asu_Array) return Many_String is
+    Result : Many_String;
+  begin
+    Set (Result, From);
+    return Result;
+  end Set;
+
+  -- Init procedures
   procedure Set (Str : in out Many_String; From : in String) is
   begin
-    Str.Ustr := As.U.Tus (From);
+    Set (Str, As.U.Tus (From));
   end Set;
+  -- The two Set operations that do something
   procedure Set (Str : in out Many_String; From : in As.U.Asu_Us) is
   begin
-    Str.Ustr := From;
+    Unb_Array(Str).Set (From);
+    Normalize (Str);
   end Set;
   procedure Set (Str : in out Many_String; From : in As.U.Asu_Array) is
   begin
     Reset (Str);
     for I in From'Range loop
-      Cat (Str, From(I));
+      Str.Append (From(I));
     end loop;
+    Normalize (Str);
   end Set;
 
-  -- Concatenation
+  -- Concatenation functions, rely on procedures
   function Cat (Str : Many_String; What : String) return Many_String is
-    use type As.U.Asu_Us;
+    Result : Many_String := Str;
   begin
-    if Str.Ustr.Is_Null then
-      return Set (What);
-    elsif What = "" then
-      return Str;
-    else
-      return (Ustr => Str.Ustr & Sep & What);
-    end if;
+    Cat (Result, What);
+    return Result;
   end Cat;
   function Cat (Str : Many_String; What : As.U.Asu_Us) return Many_String is
+    Result : Many_String := Str;
   begin
-    return Cat (Str, What.Image);
+    Cat (Result, What);
+    return Result;
   end Cat;
   function Cat (Str : Many_String; What : Many_String) return Many_String is
+    Result : Many_String := Str;
   begin
-    return Cat (Str, What.Ustr.Image);
+    Cat (Result, What);
+    return Result;
   end Cat;
 
+  -- Concatenation procedures
   procedure Cat (Str : in out Many_String; What : in String) is
   begin
-    Str := Cat (Str, What);
+    Cat (Str, As.U.Tus (What));
   end Cat;
   procedure Cat (Str : in out Many_String; What : in As.U.Asu_Us) is
+    Tmp : constant Many_String := Set (What);
   begin
-    Str := Cat (Str, What.Image);
+    Cat (Str, Tmp);
   end Cat;
   procedure Cat (Str : in out Many_String; What : in Many_String) is
   begin
-    Str := Cat (Str, What.Ustr.Image);
+    Str.Append (What);
   end Cat;
+
+  -- Same, but do nothing of What is empty
+  -- Catif functions, rely on procedures
+  function Catif (Str : Many_String; What : String) return Many_String is
+    Result : Many_String := Str;
+  begin
+    Catif (Result, What);
+    return Result;
+  end Catif;
+  function Catif (Str : Many_String; What : As.U.Asu_Us) return Many_String is
+    Result : Many_String := Str;
+  begin
+    Catif (Result, What);
+    return Result;
+  end Catif;
+  function Catif (Str : Many_String; What : Many_String) return Many_String is
+    Result : Many_String := Str;
+  begin
+    Catif (Result, What);
+    return Result;
+  end Catif;
+
+  -- Catif procedures
+  procedure Catif (Str : in out Many_String; What : in String) is
+  begin
+    Str := Catif (Str, As.U.Tus (What));
+  end Catif;
+  procedure Catif (Str : in out Many_String; What : in As.U.Asu_Us) is
+  begin
+    if not What.Is_Null then
+      Cat (Str, What);
+    end if;
+  end Catif;
+  procedure Catif (Str : in out Many_String; What : in Many_String) is
+  begin
+    if not What.Is_Null then
+      Cat (Str, What);
+    end if;
+  end Catif;
 
   -- String image
   function Image (Str : Many_String) return String is
   begin
-    return Str.Ustr.Image;
+    return Image (Str, Separator);
   end Image;
   function Image (Str : Many_String) return As.U.Asu_Us is
   begin
-    return Str.Ustr;
+    return Image (Str, Separator);
   end Image;
 
   function Image (Str : Many_String; Separator : in Character) return String is
-    Result : String (1 .. Str.Ustr.Length) := Str.Ustr.Image;
   begin
-    for I in Result'Range loop
-      if Result(I) = Many_Strings.Separator then
-        Result(I) := Separator;
-      end if;
-    end loop;
-    return Result;
+    return Image(Str, Separator).Image;
   end Image;
   function Image (Str : Many_String; Separator : in Character)
            return As.U.Asu_Us is
+    Result : As.U.Asu_Us;
   begin
-    return As.U.Tus (Image (Str, Separator));
+    for I in 1 .. Str.Length loop
+      if I /= 1 then
+        Result.Append (Separator);
+      end if;
+      Result.Append (Str.Element (I));
+    end loop;
+    return Result;
   end Image;
 
-  -- Decode
+  -- Count number of substrings
   function Nb (Str : Many_String) return Positive is
-    N : Natural;
   begin
-    N := 1;
-    for I in 1 .. Str.Ustr.Length loop
-      if Str.Ustr.Element (I) = Sep then
-        N := N + 1;
-      end if;
-    end loop;
-    return N;
+    if Str.Length /= 0 then
+      return Str.Length;
+    else
+      return 1;
+    end if;
   end Nb;
 
-  -- Internal: get indexes in Str of Nth substring
-  procedure Indexes (Str : in String; N : in Positive;
-                     Start : out Positive; Stop : out Natural) is
-    Last : constant Natural := Str'Last;
-
-    -- Returns 0 if not found
-    function Next (I : Natural) return Natural is
-    begin
-      for J in I .. Last loop
-        if Str(J) = Sep then
-          return J;
-        end if;
-      end loop;
-      return 0;
-    end Next;
-
-  begin
-    -- Specific to empty string
-    if Str = "" then
-      if N = 1 then
-        Start := 1;
-        Stop := 0;
-        return;
-      else
-        raise String_Error;
-      end if;
-    end if;
-
-    -- Init search of string
-    Start := 1;
-
-    -- Next string
-    for Num in 1 .. N loop
-      Stop := Next (Start);
-      exit when Num = N;
-      -- Check for end of string
-      if Stop = 0 then
-        raise String_Error;
-      end if;
-      Start := Stop + 1;
-    end loop;
-
-    -- Got it. Stop means Last or a Sep
-    if Stop = 0 then
-      Stop := Last;
-    else
-      Stop := Stop - 1;
-    end if;
-  end Indexes;
-
   function Nth (Str : Many_String; N : Positive) return String is
-    Start : Positive;
-    Stop : Natural;
   begin
-    Indexes (Str.Ustr.Image, N, Start, Stop);
-    if Stop = 0 then
-      return "";
-    else
-      return Str.Ustr.Slice (Start, Stop);
-    end if;
+    return Nth (Str, N).Image;
   end Nth;
   function Nth (Str : Many_String; N : Positive) return As.U.Asu_Us is
-    Start : Positive;
-    Stop : Natural;
   begin
-    Indexes (Str.Ustr.Image, N, Start, Stop);
-    if Stop = 0 then
-      return As.U.Asu_Null;
+    if Str.Length /= 0 then
+      return Str.Element (N);
     else
-      return Str.Ustr.Uslice (Start, Stop);
+     return As.U.Asu_Null;
     end if;
+  exception
+    when Asu_Ua.Index_Error =>
+      raise String_Error;
   end Nth;
 
   -- Split a Many_String into strings
   function Split (Str : Many_String) return As.U.Asu_Array is
-    Empty : constant As.U.Asu_Array(1 .. 0) := (others => <>);
-    Start : Natural;
-    Nb : Positive;
-
   begin
-    -- Specific to empty string
-    if Str = Empty_String then
-      return Empty;
+    if Str.Length /= 0 then
+      return Str.To_Array;
+    else
+      return Result : constant As.U.Asu_Array (1 .. 1)
+                    := (others => As.U.Asu_Null) do
+        null;
+      end return;
     end if;
-
-    -- Count Nb of separators
-    Nb := 1;
-    for I in 1 .. Str.Ustr.Length loop
-      if Str.Ustr.Element (I) = Sep then
-        Nb := Nb + 1;
-      end if;
-    end loop;
-
-    declare
-      Result : As.U.Asu_Array(1 .. Nb);
-    begin
-      -- Init index in result and start of next string
-      Nb := 1;
-      Start := 1;
-
-      -- Next string
-      for I in 1 .. Str.Ustr.Length loop
-        if Str.Ustr.Element (I) = Sep then
-          -- Store previous string
-          Result(Nb) := Str.Ustr.Uslice (Start, I - 1);
-          Nb := Nb + 1;
-          Start := I + 1;
-        end if;
-        -- Handle end of string
-        if I = Str.Ustr.Length then
-          -- If Str ends by a Set then last element of Result is empty,
-          --  which is already the case
-          if Str.Ustr.Element (I) /= Sep then
-            -- Str ends by a non Sep: append last string
-            Result(Nb) := Str.Ustr.Uslice (Start, I);
-          end if;
-          exit;
-        end if;
-      end loop;
-      return Result;
-    end;
   end Split;
 
 end Many_Strings;

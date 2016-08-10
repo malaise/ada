@@ -1075,6 +1075,7 @@ Got 3 substrings:
 >toto<
 >titi<
 >tata<
+2nd substring >titi<
 After split:
 >toto<
 >titi<

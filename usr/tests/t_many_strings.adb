@@ -12,7 +12,6 @@ procedure T_Many_Strings is
     end loop;
   end Put;
 
-
 begin
 
   -- Build String (may raise Constraint_Error if args too long)
@@ -25,6 +24,10 @@ begin
   Basic_Proc.Put_Line_Output ("Got" & L'Img & " substrings:");
   -- Decode substrings
   Put (Str);
+
+  if L >= 2 then
+    Basic_Proc.Put_Line_Output ("2nd substring >" & Str.Nth(2) & "<");
+  end if;
 
   -- Split and set back
   declare
