@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V29.18
+V29.19
 
 General purpose
 ---------------
@@ -1025,7 +1025,10 @@ This button launches an interactive rebase of the commits that follow the
 selected one. This allows splitting, merging, dropping, copying, modifing
 the comment of these commits. +
 There is first a check that there is no local change in the repository (they
-would be lost).
+would be lost). +
+This function is only active when in the root directory of the current
+repository, so that the current list of commits is exactly the one that will
+be reorganized.
 
 NOTE: The 'Reorg' consists in a manual xref:XCherry[cherry-pick] of commits,
 then an automatic commit of these cherries into a temporary branch, then

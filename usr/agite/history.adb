@@ -56,6 +56,9 @@ package body History is
                   Is_File : in Boolean;
                   Allow_Modif : in Boolean;
                   Hash : in Git_If.Git_Hash := Git_If.No_Hash) is
+    -- Are we in root
+    In_Root : Boolean;
+
     -- Afpx stuff
     Get_Handle  : Afpx.Get_Handle_Rec;
     Ptg_Result  : Afpx.Result_Rec;
@@ -85,6 +88,7 @@ package body History is
                             elsif Path /= "" then Path
                             else "/"),
                             Afpx_Xref.History.File);
+      In_Root := Path = "" and then Name = "";
     end Init;
 
     -- Show delta from current in list to comp
@@ -297,6 +301,7 @@ package body History is
       -- No View, Detail, Restore, Checkout, Reorg, Reset nor Tag if RightSelect
       -- Protect buttons View and restore on dirs
       -- Protect Restore, Checkout, Reorg and Reset if no modif allowed
+      -- Protect reorg if not in root
       Afpx.Utils.Protect_Field (Afpx_Xref.History.View,
                                 not Is_File or else Right or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Diff,
@@ -309,7 +314,8 @@ package body History is
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Checkout,
                                 not Allow_Modif or else Right or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Reorg,
-                                not Allow_Modif or else Right or else Empty);
+                                not Allow_Modif or else Right or else Empty
+                                or else not In_Root);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Reset,
                                 not Allow_Modif or else Right or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag,
