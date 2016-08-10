@@ -1,7 +1,7 @@
 with Ada.Exceptions;
 with As.U, Directory, Afpx.Utils, Str_Util, Basic_Proc,
      Aski, Images, Trilean;
-with Utils.X, Config, Push_Pull, Afpx_Xref, Confirm, Error, Stash;
+with Utils.X, Config, Push_Pull, Afpx_Xref, Confirm, Error, Stash, Reset;
 package body Commit is
 
   -- The text of the comment
@@ -207,7 +207,7 @@ package body Commit is
         end if;
       end loop;
     end if;
- end Encode_Comment;
+  end Encode_Comment;
 
   -- Delete a line
   procedure Delete_Line (Line_No : in Positive) is
@@ -278,6 +278,9 @@ package body Commit is
     Get_Handle : Afpx.Get_Handle_Rec;
     Ptg_Result   : Afpx.Result_Rec;
 
+    -- Reset result
+    Dummy_Result : Boolean;
+
     -- Reset Ptg stuff
     procedure Reset_Ptg is
     begin
@@ -325,6 +328,8 @@ package body Commit is
       if In_Loop then
         Afpx.Encode_Field (Afpx_Xref.Commit.Back, (1, 2), "Done");
         Afpx.Encode_Field (Afpx_Xref.Commit.Push, (1, 1), "Quit");
+      else
+        Afpx.Set_Field_Activation (Afpx_Xref.Commit.Reset, False);
       end if;
       -- Change title
       if Title /= "" then
@@ -684,12 +689,18 @@ package body Commit is
               Reread (True);
             when Afpx_Xref.Commit.Edit =>
               Do_Edit;
+            when Afpx_Xref.Commit.Diff =>
+              Do_Diff;
             when Afpx_Xref.Commit.Stash =>
               Stash.Handle (Root);
               Init (In_Loop, Title);
               Reread (True);
-            when Afpx_Xref.Commit.Diff =>
-              Do_Diff;
+            when Afpx_Xref.Commit.Reset =>
+              -- Allow only hard reset to head
+              Dummy_Result := Reset (Root, "", Only_Hard => True);
+              Init (In_Loop, Title);
+              Reread (True);
+
             when Afpx_Xref.Commit.Stage =>
               -- Stage button
               Do_Stage (True, True);

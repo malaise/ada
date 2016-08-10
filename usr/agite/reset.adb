@@ -3,6 +3,8 @@ with Utils.X, Afpx_Xref, Git_If;
 -- Reset (soft/mixed/hard) or clean
 function Reset (Root : String;
                 Ref : String;
+                Only_Hard : Boolean := False;
+                Allow_Clean : Boolean := False;
                 Comment : String := "") return Boolean is
   -- Afpx stuff
   Get_Handle : Afpx.Get_Handle_Rec;
@@ -14,8 +16,13 @@ begin
   Utils.X.Encode_Branch (Afpx_Xref.Reset.Branch);
   Utils.X.Encode_Field (Root, Afpx_Xref.Reset.Root);
 
+  -- Tuning
+  Afpx.Set_Field_Activation (Afpx_Xref.Reset.Clean, Allow_Clean);
+  Afpx.Set_Field_Activation (Afpx_Xref.Reset.Mixed, not Only_Hard);
+  Afpx.Set_Field_Activation (Afpx_Xref.Reset.Soft,  not Only_Hard);
+
   if Ref /= "" then
-    -- A ref => Soft / Mixed : hard reset to ref
+    -- A ref => Hard / Soft / Mixed reset to ref
     Utils.X.Center_Field ("Reset to " & Ref, Afpx_Xref.Reset.Title);
     if Comment /= "" then
       -- Comment of target commit
@@ -23,14 +30,10 @@ begin
     end if;
     Utils.X.Center_Field ("WARNING: This operation will alter the history",
                           Afpx_Xref.Reset.Warning);
-    Afpx.Set_Field_Activation (Afpx_Xref.Reset.Clean, False);
   else
-    -- No ref => Hard reset to head or clean unstage
+    -- No ref => Hard / Soft / Mixed reset to head or clean
     Utils.X.Center_Field ("Reset to HEAD", Afpx_Xref.Reset.Title);
-    Afpx.Set_Field_Activation (Afpx_Xref.Reset.Soft, False);
-    Afpx.Set_Field_Activation (Afpx_Xref.Reset.Mixed, False);
   end if;
-
 
   -- Main loop
   loop

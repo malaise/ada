@@ -508,7 +508,7 @@ procedure Agite is
       -- Handle Dir
       if File.Name.Image = "." then
         -- Hard reset to head or clean
-        Dummy := Reset (Root.Image, "");
+        Dummy := Reset (Root.Image, "", Allow_Clean => True);
         Position := 1;
       elsif File.Name.Image = ".." then
         return;

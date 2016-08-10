@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V29.19
+V20.00
 
 General purpose
 ---------------
@@ -379,8 +379,8 @@ The 'cherry-pick' menu calls the 'detail' menu, but without allowing it to call
 the 'history' menu. +
 The 'cherry-pick' menu calls the 'commit' menu, but without allowing it to call
 the 'push' menu. +
-The 'reset' menu is called by the 'directory', the 'history' and the 'branch'
-menus.
+The 'reset' menu is called by the 'directory', the 'history', the 'branch' and
+the 'commit' menus.
 
 NOTE: All the screen transitions are based on the 'call-return' scheme. +
 So please note the double arrow between 'history' and 'detail': from the
@@ -600,9 +600,9 @@ This button reverts the local change on the current entry. +
 First, a simple screen asks to confirm or cancel the operation. +
 Then, depending on the type of the current entry:
 
-- If it is \'./' then Agite calls the xref:XReset[reset] menu to 'hard reset to
-head' or to 'clean the untracked files and directories' of the 
-*whole repository*, not only the current directory.
+- If it is \'./' then Agite calls the xref:XReset[reset] menu to 'reset (hard,
+mixed or soft) to head' or to 'clean the untracked files and directories' of
+the *whole repository*, not only the current directory.
 - If it is a subdirectory (not \'./') then it is deleted, which
 succeeds only if it is empty.
 - If it is a file or a symbolic link,
@@ -620,12 +620,12 @@ committed content and the new one is reset as unknown by Git
 +
 Note: The Revert button is not active on \'../'.
 +
-Note: It is also possible to 'reset --hard' the whole repository to the head
-of a given branch, including current branch, through the xref:XBReset[Reset]
-button of the xref:XBranches[branches] menu.
-It is also possible to 'reset --hard' the whole repository to a given commit,
-including current head, through the xref:XHReset[Reset] button of the
-xref:XHist[history] menu
+Note: It is also possible to 'reset hard, mixed or soft' the whole repository
+to the head of a given branch, including current branch, through the
+xref:XBReset[Reset] button of the xref:XBranches[branches] menu.
+It is also possible to 'reset hard, mixed or soft' the whole repository to a
+given commit, including current head, through the xref:XHReset[Reset] button of
+the xref:XHist[history] menu
 
 .Other actions
 
@@ -1707,9 +1707,10 @@ Moves back to the xref:XSelRemote[remote selection] menu without action.
 Reset
 ~~~~~
 anchor:XReset[]
-This menu has two modes:
+This menu has three modes:
 
 .Called by the xref:XBranches[branches] or the xref:XHist[history] menu,
+
 it allows to reset the current repository to a branch or to a commit. +
 The reset can be:
 
@@ -1719,16 +1720,25 @@ worktree),
 * 'Hard': reset the HEAD, the index and the worktree,
 * and it is also possible to 'Cancel'.
 
-.Called by the xref:XDir[directory] menu,
-it allows to either:
-
-* 'Hard' reset (the index and worktree) to the HEAD of current branch,
-* 'Cleanup' from the current repository the untracked files and directories,
-* or to 'Cancel'.
-
-
-If cancelled it goes back to the calling menu, otherwise to the
+If cancelled, it goes back to the calling menu, otherwise to the
 xref:XDir[directory] menu.
+
+.Called by the xref:XDir[directory] menu,
+
+it allows the same kinds of reset as above, but to the HEAD of current branch.
+It also allows to 'Cleanup' from the current repository the untracked files
+and directories,
+
+If cancelled, it goes back to the calling menu, otherwise to the
+xref:XDir[directory] menu.
+
+.Called by the xref:XCommit[commit] menu during a xref:XCherry[cherry pick],
+
+it allows to hard reset the current repository to HEAD (which resets the
+remaining changes of the current commit).
+
+It is also possible to cancel and return to the xref:XCommit[commit] menu
+of the xref:XCherry[cherry pick].
 
 Cherry-pick advanced how-to
 ---------------------------
@@ -1756,9 +1766,12 @@ Use-cases
 
   - xref:XStashReset[Stash and reset] the local changes,
   - Move to xref:XRoot[root], xref:XReorg[reorg] from the one but last commit, 
-    and select the commit for 'Edition'
-  - In the xref:XCommit[commit] menu, xref:XPopStash[pop the stash],
-    xref:XStage[stage] the changes to fold, click on 'Commit' then on 'Done'. +
+    and select the commit for 'Edition',
+  - In the xref:XCommit[commit] menu, xref:XApplyStash[apply the stash],
+    xref:XStage[stage] the changes to fold, click on 'Commit',
+  - Click on xref:XReset[reset] then on 'Hard',
+  - Back in then xref:XCommit[commit] menu, click on 'Done'.
+  - Finally, xref:XPopStash[pop the stash]. +
     The remaining changes are locally to be committed.
 
 => If some of the locally changed files are not to be folded and are already
@@ -1903,7 +1916,13 @@ because it applies commits to the target branch, which evolves naturally. +
 The xref:XReset[reset] function triggered by the xref:XRevert[revert] buton
 on \'.\' of the xref:XDir[directory] menu does not rewrite the history
 because it resets the repository to the current branch head (which is the
-history).
+history). +
+The The xref:XReset[reset] function triggered by the xref:XHist[history] on
+the first commit of the list is in fact a reset to the HEAD of current branch
+and does not rewrite the history. +
+The The xref:XReset[reset] function triggered by the xref:XBranches[branches]
+on the current branch is in fact a reset to the HEAD of current branch
+and does not rewrite the history. +
 
 Scope of the operations
 -----------------------

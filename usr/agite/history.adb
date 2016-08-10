@@ -230,14 +230,21 @@ package body History is
     function Do_Reset return Boolean is
       Pos : Positive;
       Str : As.U.Asu_Us;
+      Res : Boolean;
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
       Logs.Move_At (Pos);
       Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
       -- Reset
-      Str := As.U.Tus (Str_Util.Strip (Image1 (Log) & " " & Image2 (Log)));
-      if Reset (Root, Log.Hash, Str.Image) then
+      if Pos = 1 then
+        -- In fact this is a reset to head  (no warning on history change)
+        Res := Reset (Root, "");
+      else
+        Str := As.U.Tus (Str_Util.Strip (Image1 (Log) & " " & Image2 (Log)));
+        Res := Reset (Root, Log.Hash, Comment => Str.Image);
+      end if;
+      if Res then
         return True;
       else
         -- Restore screen

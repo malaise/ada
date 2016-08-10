@@ -204,7 +204,7 @@ package body Branch is
     Refi : Natural;
     Message1, Message2, Result : As.U.Asu_Us;
     Done : Boolean;
-    use type Cherry.Result_List;
+    use type Cherry.Result_List, As.U.Asu_Us;
   begin
     -- Retrieve current name
     if Action /= Create then
@@ -371,7 +371,13 @@ package body Branch is
         return Done;
       when Reset =>
         Previous_Branch := Sel_Name;
-        Done := Reset (Root.Image, Sel_Name.Image);
+        if Sel_Name = Current_Branch then
+          -- Rabse to HEAD of current branch
+          Done := Reset (Root.Image, "");
+        else
+          -- Rabse to another branch
+          Done := Reset (Root.Image, Sel_Name.Image);
+        end if;
         if not Done then
           Init;
           Reread (False);
