@@ -412,8 +412,8 @@ indicated in the title of the X window of Agite).
 
 .Directories
 Root::
-This line shows the root directory of the current Git repository. Clicking in
-this field changes the current directory to the root.
+anchor:XRoot[]This line shows the root directory of the current Git repository.
+Clicking in this field changes the current directory to the root.
 
 anchor:XGo[]
 
@@ -1457,14 +1457,15 @@ xref:XConfPeriod[period] configuration option). This button explicitly refreshes
 the current list and status of changes.
 
 Stage::
-Stage (add/rm) the current file (selected in list) or change, and move to next.
+anchor:XStage[]Stage (add/rm) the current file (selected in list) or change,
+and move to next.
 
 Unstage::
 Unstage (reset) the current file (selected in list) or change and move to next.
 
 StageAll::
-Stage all the changes that are unstaged. Also proposes to add the untracked
-(new) files.
+anchor:XStageAll[]Stage all the changes that are unstaged. Also proposes to add
+the untracked (new) files.
 
 NOTE: The Stage, and StageAll buttons do not stage the files that are in the
 status 'U' (updated but unmerged), see the xref:XAdd[Add] function.
@@ -1570,10 +1571,11 @@ The possible actions on the list of stashes are:
 
 AddAppl::
 
-Stash and re-apply: Enter a message (or name) for the stash, and click in the
-'AddAppl' button or press the Return key. Agit stashes the current repository
-(which performs a 'git reset --hard'), then applies it (which restores the
-content of the repository), then returns to the xref:XDir[directory] menu. +
+anchor:XStashApply[]Stash and re-apply: Enter a message (or name) for the stash,
+and click in the 'AddAppl' button or press the Return key. Agit stashes the
+current repository (which performs a 'git reset --hard'), then applies it
+(which restores the content of the repository), then returns to the
+xref:XDir[directory] menu. +
 The new stash has been inserted in the list. +
 
 NOTE: You can un-apply this stash ('git reset --hard') by selecting the entry
@@ -1582,21 +1584,23 @@ button.
 
 AddReset::
 
-Stash and reset: Enter a message (or name) for the stash and click in the
-'AddReset' button. Agit stashes the current repository, which performs a
-'git reset --hard', then returns to the xref:XDir[directory] menu. +
+anchor:XStashReset[]Stash and reset: Enter a message (or name) for the stash
+and click in the 'AddReset' button. Agit stashes the current repository,
+which performs a 'git reset --hard', then returns to the xref:XDir[directory]
+menu. +
 The new stash has been inserted in the list. +
 
 Apply::
 
-Apply a saved stash: Applies the stash currently selected in the list and returns to the
-xref:XDir[directory] menu. A double click on an entry has the same effect.
+anchor:XApplyStash[]Apply a saved stash: Applies the stash currently selected
+in the list and returns to the xref:XDir[directory] menu. A double click on an
+entry has the same effect.
 
 Pop::
 
-Delete and apply a saved stash: After confirmation, applies the stash currently
-selected in the list, removes it from the list and returns to the
-xref:XDir[directory] menu.
+anchor:XPopStash[]Delete and apply a saved stash: After confirmation, applies
+the stash currently selected in the list, removes it from the list and returns
+to the xref:XDir[directory] menu.
 
 Del::
 
@@ -1744,6 +1748,32 @@ Use-cases
   - 'Fixup' all the other cherries to fold,
   - Check/modify the comment of the first commit then click on 'Done'.
 
+* Fold some local changes with the last cherry
++
+--
+=> If none of the locally changed files are modified in the cherry, or if they
+   are to be folded
+
+  - xref:XStashReset[Stash and reset] the local changes,
+  - Move to xref:XRoot[root], xref:XReorg[reorg] from the one but last commit, 
+    and select the commit for 'Edition'
+  - In the xref:XCommit[commit] menu, xref:XPopStash[pop the stash],
+    xref:XStage[stage] the changes to fold, click on 'Commit' then on 'Done'. +
+    The remaining changes are locally to be committed.
+
+=> If some of the locally changed files are not to be folded and are already
+   modified in the cherry
+
+  - xref:XStashApply[Stash and apply] the local changes (e.g. as "Global"),
+  - xref:XRevert[Revert] one by one the changes not to be folded,
+  - xref:XStashReset[Stash and reset] the remaining changes (e.g. as "Fold"),
+  - Launch the xref:XReorg[reorg] reorg as above,
+  - In the commit menu, xref:XPopStash[pop the stash] "Fold",
+    xref:XStageAll[stage all] the changes, click on 'Commit' then on 'Done',
+  - Finally, xref:XPopStash[pop the stash] "Global". +
+    The remaining changes are locally to be committed.
+--
+
 * Fold several cherries, discard the comment of the first cherry
   - 'Wipe-up' the first cherry to fold,
   - 'Squash' all the other cherries,
@@ -1751,16 +1781,16 @@ Use-cases
 
 * Split a cherry into several successive commits
   - 'Edit' the cherry,
-  - In the 'commit' screen, set the comment and stage the files for the first,
-    commit, then commit. Set the comment and stage the files for the second,
-    commit, then commit... Finally, click on the 'Done' button.
+  - In the 'commit' screen, set the comment and stage the files for the first
+    commit, then 'Commit'. Set the comment and stage the files for the second
+    commit, then 'Commit'... Finally, click on 'Done'.
 
 * Remove some files from a cherry
   - 'Edit' the cherry,
   - In the 'commit' screen, leave staged the files to keep (unstage the files,
     to remove), commit the change,
   - Call the 'stash' menu and 'AddReset' the remaining files into a new stash,
-  - Click on the 'Done' button of the 'commit' menu,
+  - Click on 'Done'.
   - During or after the cherry-pick operation, you can reuse or delete
     the stash.
 
@@ -1771,7 +1801,7 @@ Use-cases
   - In the first 'commit' screen, set the comment and stage the files for the
     first commit, then commit and click on the 'Done' button,
   - In the second 'commit' screen, set the comment and stage the remaining
-    files, then commit and click on the 'Done' button.
+    files, then 'Commit' and click on 'Done'.
 
 * Rebase a branch along another
 anchor:XCherryRebase[]
