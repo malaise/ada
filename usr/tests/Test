@@ -1071,6 +1071,7 @@ echo "OK"
 title t_many_strings
 try t_many_strings toto titi tata
 cat << EOF >exp
+Autotest OK.
 Got 3 substrings:
 >toto<
 >titi<
@@ -1082,6 +1083,7 @@ After split:
 >tata<
 This should raise String_Error
 String_Error raised.
+Arg test OK.
 EOF
 comp err nul
 comp out exp

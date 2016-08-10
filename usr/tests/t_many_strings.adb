@@ -1,6 +1,11 @@
 with Basic_Proc, Argument, Many_Strings, As.U;
 
 procedure T_Many_Strings is
+  -- Automatic test is:
+  -- Empty, Empty, "toto", Empty, "titi", Empty, Empty, Empty
+  Auto_Res : constant As.U.Asu_Array
+           := (As.U.Asu_Null, As.U.Asu_Null, As.U.Tus ("toto"), As.U.Asu_Null,
+               As.U.Tus ("titi"), As.U.Asu_Null, As.U.Asu_Null, As.U.Asu_Null);
   Str : Many_Strings.Many_String;
   L : Positive;
 
@@ -12,8 +17,45 @@ procedure T_Many_Strings is
     end loop;
   end Put;
 
-begin
+  use type As.U.Asu_Us, As.U.Asu_Array;
 
+begin
+  -- The automatic part
+  -------------------------------------
+  -- Set Empty, Empty, "toto", Empty,
+  -- then "titi", Empty, Empty, Empty
+  Str.Set (Many_Strings.Separator & Many_Strings.Separator & "toto"
+         & Many_Strings.Separator);
+  Str.Cat ("titi" & Many_Strings.Separator);
+  Str.Cat ("" & Many_Strings.Separator);
+
+  -- test words
+  for I in 1 .. Str.Nb loop
+    if Str.Nth (I) /= Auto_Res(I) then
+      Basic_Proc.Put_Line_Error ("ERROR: element No" & I'Img
+        & ">" & Str.Nth (I) & "< differs from expected >" & Auto_Res(I).Image
+        & "<");
+      Basic_Proc.Set_Error_Exit_Code;
+      return;
+    end if;
+  end loop;
+
+  -- Test Split
+  declare
+    A : constant As.U.Asu_Array := Str.Split;
+  begin
+    if A /= Auto_Res then
+      Basic_Proc.Put_Line_Error ("ERROR: Split does not match");
+      Put (Str);
+      Basic_Proc.Set_Error_Exit_Code;
+      return;
+    end if;
+  end;
+  Basic_Proc.Put_Line_Output ("Autotest OK.");
+
+  -- The part that depends on arguments
+  -------------------------------------
+  Str.Reset;
   -- Build String (may raise Constraint_Error if args too long)
   for I in 1 .. Argument.Get_Nbre_Arg loop
     Str.Cat (Argument.Get_Parameter (Occurence => I));
@@ -49,6 +91,7 @@ begin
     when Many_Strings.String_Error =>
       Basic_Proc.Put_Line_Output ("String_Error raised.");
   end;
+  Basic_Proc.Put_Line_Output ("Arg test OK.");
 
 end T_Many_Strings;
 
