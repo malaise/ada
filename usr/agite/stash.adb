@@ -127,7 +127,7 @@ package body Stash is
           "Ready to "
         & (case Oper is
             when Stash_Addapl => "",
-            when Stash_Addrst => "add ",
+            when Stash_Addrst => "add",
             when Stash_Apl    => "apply",
             when Stash_Pop    => "apply and delete",
             when Stash_Del    => "del",
