@@ -142,7 +142,7 @@ package Unbounded_Arrays is
                      High     : in Natural;
                      By       : in Element_Array);
 
-  -- Insert an element or array before a given position
+  -- Insert an element or array before the given position
   -- Append if Before = Source.Length + 1
   -- May raise Index_Error if Before > Source.Length + 1
   procedure Insert (Source   : in out Unbounded_Array;

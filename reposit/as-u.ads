@@ -105,7 +105,7 @@ package As.U is
                      High     : in Natural;
                      By       : in String);
 
-  -- Insert a character or string before the  given position
+  -- Insert a character or string before the given position
   -- Append if Before = Source.Length + 1
   -- May raise Index_Error if Before > Source.Length + 1
   procedure Insert (Source   : in out Asu_Us;
