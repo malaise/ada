@@ -23,6 +23,7 @@ package body Details is
   procedure Handle (Root : in String;
                     Rev_Tag : in String;
                     Allow_Modif : in Boolean;
+                    Allow_Tag : in Boolean;
                     Tag_Date, Tag_Comment : in String := "") is
 
     -- Afpx stuff
@@ -51,7 +52,6 @@ package body Details is
       Utils.X.Encode_Branch (Afpx_Xref.Details.Branch);
 
       -- Allow modifications (Hist that can recall Detail, restore) or not
-      Afpx.Set_Field_Activation (Afpx_Xref.Details.History, Allow_Modif);
       Afpx.Set_Field_Activation (Afpx_Xref.Details.Restore, Allow_Modif);
 
       -- Get commit details
@@ -124,10 +124,13 @@ package body Details is
               View (Commit.File.Image, Hash);
             end if;
           when Show_Hist =>
+            -- History on current hash. Allow or not modif and tag
             if Commit.File.Image = "/" then
-              History.List (Root, "", "", False, Allow_Modif, Hash);
+              History.List (Root, "", "", False, Allow_Modif, Allow_Tag,
+                            Hash);
             else
-              History.List (Root, Path, File, True, Allow_Modif, Hash);
+              History.List (Root, Path, File, True, Allow_Modif, Allow_Tag,
+                            Hash);
             end if;
             -- Re init sreen
             Init (False);

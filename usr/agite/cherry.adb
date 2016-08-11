@@ -708,8 +708,8 @@ package body Cherry is
       -- This will also save/restore current position
       Cherries.Move_At (Ref);
       Cherries.Read (Cherry, Cherries_Mng.Dyn_List.Current);
-      -- Prevent modif in Cherry_Pick
-      Details.Handle (Root, Cherry.Commit.Hash, False);
+      -- Prevent modif and tagging in Cherry_Pick
+      Details.Handle (Root, Cherry.Commit.Hash, False, False);
       Init;
       Init_Cherry (Cherries);
       Afpx.Update_List (Afpx.Center_Selected);

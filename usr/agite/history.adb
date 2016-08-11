@@ -55,6 +55,7 @@ package body History is
   procedure List (Root, Path, Name : in String;
                   Is_File : in Boolean;
                   Allow_Modif : in Boolean;
+                  Allow_Tag : in Boolean;
                   Hash : in Git_If.Git_Hash := Git_If.No_Hash) is
     -- Are we in root
     In_Root : Boolean;
@@ -288,7 +289,7 @@ package body History is
           View (Path & Name, Log.Hash);
         when Show_Details =>
           -- Allow modif
-          Details.Handle (Root, Log.Hash, Allow_Modif);
+          Details.Handle (Root, Log.Hash, Allow_Modif, Allow_Tag);
           Init;
           Init_List (Logs);
           Afpx.Update_List (Afpx.Center_Selected);
@@ -298,9 +299,10 @@ package body History is
     -- Update the list status
     procedure List_Change (Unused_Action : in Afpx.List_Change_List;
                            Status : in Afpx.List_Status_Rec) is
-      -- Right selection in list
-      Right : constant Boolean
-            := Status.Ids_Selected (Afpx.List_Right) /= 0;
+      -- Left and Right selection in list
+      Left  : constant Natural := Status.Ids_Selected (Afpx.List_Left);
+      Right : constant Natural := Status.Ids_Selected (Afpx.List_Right);
+      Right_Set : constant Boolean := Right /= 0;
       Empty : constant Boolean := Logs.Is_Empty;
       Percent : Afpx.Percent_Range;
       Row : Con_Io.Row_Range;
@@ -308,25 +310,30 @@ package body History is
       -- No View, Detail, Restore, Checkout, Reorg, Reset nor Tag if RightSelect
       -- Protect buttons View and restore on dirs
       -- Protect Restore, Checkout, Reorg and Reset if no modif allowed
-      -- Protect reorg if not in root
+      -- Protect reorg if not in root or on first commit
+      -- Protect Tag if not allowed
       Afpx.Utils.Protect_Field (Afpx_Xref.History.View,
-                                not Is_File or else Right or else Empty);
+                                not Is_File or else Right_Set or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Diff,
                                 Logs.List_Length <= 1);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Details,
-                                Right or else Empty);
+                                Right_Set or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore,
                                 not Is_File or else not Allow_Modif
-                                or else Right or else Empty);
+                                or else Right_Set or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Checkout,
-                                not Allow_Modif or else Right or else Empty);
+                                not Allow_Modif or else Right_Set
+                                or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Reorg,
-                                not Allow_Modif or else Right or else Empty
-                                or else not In_Root);
+                                not Allow_Modif or else Right_Set
+                                or else Empty
+                                or else not In_Root
+                                or else Left = 1);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Reset,
-                                not Allow_Modif or else Right or else Empty);
+                                not Allow_Modif or else Right_Set
+                                or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag,
-                                Right or else Empty);
+                                Right_Set or else Empty or else not Allow_Tag);
       -- Put percent value and "scroll bar"
       Percent := Afpx.Get_List_Percent;
       Afpx.Clear_Field (Afpx_Xref.History.Scroll);
@@ -345,12 +352,10 @@ package body History is
         Afpx.Encode_Field (Afpx_Xref.History.Percent, (0, 0), "-");
       end if;
       -- Put Ids selected
-      Afpx.Encode_Field (Afpx_Xref.History.Leftsel, (0, 0),
-           Normal (Status.Ids_Selected(Afpx.List_Left),
-                   Afpx.Get_Field_Width (Afpx_Xref.History.Leftsel), False));
-      Afpx.Encode_Field (Afpx_Xref.History.Rightsel, (0, 0),
-           Normal (Status.Ids_Selected(Afpx.List_Right),
-                   Afpx.Get_Field_Width (Afpx_Xref.History.Rightsel), False));
+      Afpx.Encode_Field (Afpx_Xref.History.Leftsel, (0, 0), Normal (
+          Left, Afpx.Get_Field_Width (Afpx_Xref.History.Leftsel), False));
+      Afpx.Encode_Field (Afpx_Xref.History.Rightsel, (0, 0), Normal (
+          Right, Afpx.Get_Field_Width (Afpx_Xref.History.Rightsel), False));
       -- Activate button "All" if not all read
       Afpx.Utils.Protect_Field (Afpx_Xref.History.List_All, All_Read);
     end List_Change;

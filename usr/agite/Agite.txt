@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V20.00
+V30.01
 
 General purpose
 ---------------
@@ -374,11 +374,12 @@ necessary.
 
 NOTE: The 'history' and 'tags' menus call the 'detail' and 'checkout' menus. +
 The 'tags' and 'commit' menus call the 'push' menu. +
-The 'tags' menu calls the 'history' menu. +
-The 'cherry-pick' menu calls the 'detail' menu, but without allowing it to call
-the 'history' menu. +
-The 'cherry-pick' menu calls the 'commit' menu, but without allowing it to call
-the 'push' menu. +
+The 'tags' menu calls the 'history' menu without allowing modifications, and
+the 'detail' menu without allowing modifications nor tagging. +
+The 'cherry-pick' menu calls the 'detail' menu, but without allowing
+modifications. +
+The 'cherry-pick' menu calls the 'commit' menu in a specific mode where is does
+not allow to call the 'push' menu. +
 The 'reset' menu is called by the 'directory', the 'history', the 'branch' and
 the 'commit' menus.
 
@@ -563,7 +564,8 @@ Diff::
 *On a file*, this button launches the graphical difference tool (defined in
 the xref:XConfDiff[differator] entry of the configuration file) to show the
 current modifications (if any) of the selected file. It shows the differences
-between the currently modified file and the version in Git HEAD. +
+between the currently modified file and the version at the head of current
+branch. +
 On a un-modified file it shows the last update of the file (the difference
 introduced by the last commit involving the file).
 +
@@ -688,7 +690,7 @@ menu in case of success:
 
 Checkout::
 
-Click in the 'Checkout' button to checkout, after confirmation, the HEAD of
+Click in the 'Checkout' button to checkout, after confirmation, the head of
 the branch selected in the list. If the selected branch is a remote tracking
 branch (and the corresponding local branch does not exist), then it is
 checked out as a new local branch. +
@@ -1000,7 +1002,8 @@ anchor:XRestore[]
 This button causes Agite to check that the current file is not locally
 modified. If not, Agite asks for confirmation then checkouts the file in the
 version currently (left-)selected in the history. The file will be tagged as
-\'M' (modified) if this version differs from the Git HEAD one. +
+\'M' (modified) if this version differs from the one at the head of current
+branch. +
 This function is not active on the history of a directory (but restoring a
 whole commit is possible from the xref:XDetail[detail] menu).
 
@@ -1009,7 +1012,7 @@ anchor:XHistCheckout[]
 .Checkout
 This button button launches the xref:XCheckout[checkout] menu that allows
 checking out the selected commit (either in a new branch or as detached from
-HEAD).
+the head).
 
 NOTE: There is a major difference between the 'Restore' and the 'Checkout'
 operations. +
@@ -1170,7 +1173,7 @@ state.
 "You can look around, make experimental changes and commit them, and you can
 discard any commits you make in this state without impacting any branches by
 performing another checkout" (another commit earlier in the same branch,
-or the HEAD of any xref:XBranches[branch], including the current branch,
+or the head of any xref:XBranches[branch], including the current branch,
 master...).
 
 .Checkout
@@ -1483,7 +1486,7 @@ file only if the local changes of this file are staged, otherwise applying the
 stash will be rejected.
 
 Diff::
-Show the difference between the current change and the HEAD for the current file
+Show the difference between the current change and the head for the current file
 (selected in list).
 
 .Commit
@@ -1714,10 +1717,10 @@ This menu has three modes:
 it allows to reset the current repository to a branch or to a commit. +
 The reset can be:
 
-* 'Soft': reset only the HEAD of current branch (not the index nor the
+* 'Soft': reset only the head of current branch (not the index nor the
 worktree),
-* 'Mixed': reset the HEAD and the index (not the worktree),
-* 'Hard': reset the HEAD, the index and the worktree,
+* 'Mixed': reset the head and the index (not the worktree),
+* 'Hard': reset the head, the index and the worktree,
 * and it is also possible to 'Cancel'.
 
 If cancelled, it goes back to the calling menu, otherwise to the
@@ -1725,16 +1728,15 @@ xref:XDir[directory] menu.
 
 .Called by the xref:XDir[directory] menu,
 
-it allows the same kinds of reset as above, but to the HEAD of current branch.
+it allows the same kinds of reset as above, but to the head of current branch.
 It also allows to 'Cleanup' from the current repository the untracked files
 and directories,
 
-If cancelled, it goes back to the calling menu, otherwise to the
-xref:XDir[directory] menu.
+It goes back to the xref:XDir[directory] menu.
 
 .Called by the xref:XCommit[commit] menu during a xref:XCherry[cherry pick],
 
-it allows to hard reset the current repository to HEAD (which resets the
+it allows to hard reset the current repository to head (which resets the
 remaining changes of the current commit).
 
 It is also possible to cancel and return to the xref:XCommit[commit] menu
@@ -1918,10 +1920,10 @@ on \'.\' of the xref:XDir[directory] menu does not rewrite the history
 because it resets the repository to the current branch head (which is the
 history). +
 The The xref:XReset[reset] function triggered by the xref:XHist[history] on
-the first commit of the list is in fact a reset to the HEAD of current branch
+the first commit of the list is in fact a reset to the head of current branch
 and does not rewrite the history. +
 The The xref:XReset[reset] function triggered by the xref:XBranches[branches]
-on the current branch is in fact a reset to the HEAD of current branch
+on the current branch is in fact a reset to the head of current branch
 and does not rewrite the history. +
 
 Scope of the operations

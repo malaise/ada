@@ -202,14 +202,16 @@ begin
           when Afpx_Xref.List_Tags.List =>
             Read_Tags (True);
           when Afpx_Xref.List_Tags.Create =>
-            History.List (Root, "", "", False, False);
+            -- Forbid modif but allow tagging
+            History.List (Root, "", "", False, False, True);
             Restore (False, True);
           when Afpx_Xref.List_Tags.Details =>
             -- Details of tag selected
             Tags_List.Move_At (Afpx.Line_List.Get_Position);
             Tags_List.Read (Current_Tag, Git_If.Tag_Mng.Dyn_List.Current);
             Save;
-            Details.Handle (Root, Current_Tag.Name.Image, True,
+            -- No modif nor tagging
+            Details.Handle (Root, Current_Tag.Name.Image, False, False,
                 (if Current_Tag.Annotated then Current_Tag.Date
                  else ""),
                 (if Current_Tag.Annotated then Current_Tag.Comment.Image
