@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V30.01
+V30.02
 
 General purpose
 ---------------
@@ -1397,14 +1397,21 @@ Append the user name and email address to the comment.
 Clear all the comment fields. (You can use Ctrl + Suppr to clear only the
 current line of the comment.
 
-.InsLine
+.InsL
 
 Insert a blank line in the comment above the current one. Drops the last line
 of the comment if it exceeds the maximum number of lines (7).
 
-.DelLine
+.DelL
 
 Delete the current line of the comment.
+
+.MergeL
+Merge the current line with the next line.
+
+.SplitL
+Split in two the current line before the current position.  Drops the last line
+of the comment if it exceeds the maximum number of lines (7).
 
 .Copy
 Copy the text of the comment in the xref:XX11Selection[X11 selection buffer].

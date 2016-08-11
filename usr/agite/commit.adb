@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with As.U, Directory, Afpx.Utils, Str_Util, Basic_Proc,
-     Aski, Images, Trilean;
+     Aski, Images, Trilean, Con_Io;
 with Utils.X, Config, Push_Pull, Afpx_Xref, Confirm, Error, Stash, Reset;
 package body Commit is
 
@@ -209,9 +209,10 @@ package body Commit is
     end if;
   end Encode_Comment;
 
-  -- Delete a line
-  procedure Delete_Line (Line_No : in Positive) is
-    Start, Stop : Positive;
+  -- Locate line Line_No (Start and Stop(Lf)) in the comment
+  -- Set Start to 1 and and Stop to 0 if not found
+  procedure Locate_Line (Line_No : in Positive;
+                         Start : out Positive; Stop : out Natural) is
     Line_Nb : Natural;
   begin
     -- Locate start (first char) and stop (Lf) of Line_No
@@ -222,40 +223,72 @@ package body Commit is
         -- Got a line
         Line_Nb := Line_Nb + 1;
         Stop := I;
-        exit when Line_Nb = Line_No;
+        if Line_Nb = Line_No then
+          return;
+        end if;
         Start := Stop + 1;
       end if;
     end loop;
+    -- Not found
+    Start := 1;
+    Stop := 0;
+  end Locate_Line;
+
+  -- Delete a line
+  procedure Delete_Line (Line_No : in Positive) is
+    Start : Positive;
+    Stop : Natural;
+  begin
+    -- Locate line
+    Locate_Line (Line_No, Start, Stop);
     -- Delete line if it exists
-    if Line_Nb = Line_No then
+    if Stop /= 0 then
       Comment.Delete (Start, Stop);
     end if;
   end Delete_Line;
 
   -- Insert an empty line before current in comment
   procedure Insert_Line (Line_No : in Positive) is
-    Start, Stop : Positive;
-    Line_Nb : Natural;
+    Start : Positive;
+    Stop : Natural;
   begin
-    -- Locate start (first char) and stop (Lf) of Line_No
-    Line_Nb := 0;
-    Start := 1;
-    for I in 1 .. Comment.Length loop
-      if Comment.Element (I) = Aski.Lf then
-        -- Got a line
-        Line_Nb := Line_Nb + 1;
-        Stop := I;
-        exit when Line_Nb = Line_No;
-        Start := Stop + 1;
-      end if;
-    end loop;
+    -- Locate line
+    Locate_Line (Line_No, Start, Stop);
     -- Insert line before current if it exists
-    if Line_Nb = Line_No then
+    if Stop /= 0 then
       Comment.Insert (Start, Aski.Lf);
       -- Delete extra last line if it exists
       Delete_Line (Nb_Row_Comment + 1);
     end if;
   end Insert_Line;
+
+  -- Merge current line with the next
+  procedure Merge_Line (Line_No : in Positive) is
+    Start : Positive;
+    Stop : Natural;
+  begin
+    -- Locate line
+    Locate_Line (Line_No, Start, Stop);
+    -- Delete the Lf if it exists
+    if Stop /= 0 then
+      Comment.Delete (Stop, Stop);
+    end if;
+  end Merge_Line;
+
+  -- Split current line before current cursor position
+  procedure Split_Line (Line_No : in Positive;
+                        Cursor_Pos : in Con_Io.Col_Range) is
+    Start : Positive;
+    Stop : Natural;
+  begin
+    -- Locate line
+    Locate_Line (Line_No, Start, Stop);
+    -- Insert a Lf before Cursor pos
+    if Stop /= 0 then
+      Comment.Insert (Start + Cursor_Pos, Aski.Lf);
+    end if;
+  end Split_Line;
+
 
   -- Handle the commit of modifications
   -- Show button Done instead of Back, Quit instead of Push
@@ -301,7 +334,7 @@ package body Commit is
       Delete_Line (Get_Line_No);
       Get_Handle.Cursor_Col := 0;
       Encode_Comment;
-     end Delete_Line;
+    end Delete_Line;
 
     -- Insert an empty line before current in comment
     procedure Insert_Line is
@@ -311,7 +344,32 @@ package body Commit is
       Get_Handle.Cursor_Col := 0;
       Delete_Line (Nb_Row_Comment + 1);
       Encode_Comment;
-     end Insert_Line;
+    end Insert_Line;
+
+    -- Merge current line with the next
+    procedure Merge_Line is
+    begin
+      Decode_Comment;
+      if Get_Line_No /= Nb_Row_Comment then
+        Merge_Line (Get_Line_No);
+        Get_Handle.Cursor_Col := 0;
+      end if;
+      Encode_Comment;
+    end Merge_Line;
+
+    -- Split current line before current cursor position
+    procedure Split_Line is
+      use type Afpx.Absolute_Field_Range;
+    begin
+      Decode_Comment;
+      Split_Line (Get_Line_No, Get_Handle.Cursor_Col);
+      if Get_Line_No /= Nb_Row_Comment then
+        Get_Handle.Cursor_Field := Get_Handle.Cursor_Field + 1;
+        Get_Handle.Cursor_Col := 0;
+      end if;
+      Delete_Line (Nb_Row_Comment + 1);
+      Encode_Comment;
+    end Split_Line;
 
     -- Init screen
     procedure Init (In_Loop : in Boolean;
@@ -728,6 +786,12 @@ package body Commit is
             when Afpx_Xref.Commit.Del_Line =>
               -- DelLine button
               Delete_Line;
+            when Afpx_Xref.Commit.Merge_Line =>
+              -- MergeLine button
+              Merge_Line;
+            when Afpx_Xref.Commit.Split_Line =>
+              -- SplitLine button
+              Split_Line;
             when Afpx_Xref.Commit.Commit =>
               -- Commit button
               Do_Commit;
