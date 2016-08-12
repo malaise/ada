@@ -107,7 +107,7 @@ package Text_Line is
 
 private
   -- A cache of read characters
-  Buffer_Size : constant := 1024;
+  Buffer_Size : constant := 32768;
   subtype Buffer_Index_Range is Natural range 0 .. Buffer_Size;
   subtype Buffer_Array is String (1 .. Buffer_Size);
   type File_Type is new Ada.Finalization.Limited_Controlled with record
