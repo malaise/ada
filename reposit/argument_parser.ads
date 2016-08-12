@@ -155,9 +155,11 @@ private
     The_Keys : Keys_Access;
     -- Last argument parsed as a key
     Last_Pos_Key : Natural := 0;
+    -- Position of stop indicator ("--") if any
+    Stop_Pos : Natural := 0;
     -- First argument after all the keys
     First_Pos_After_Keys : Natural := 0;
-    -- Number of not-key arguements that are followed by some keys
+    -- Number of not-key arguments that are followed by some keys
     Nb_Embedded : Natural := 0;
     -- Number of occurence of each key
     Nb_Occurences : Keyed_Array := (others => 0);

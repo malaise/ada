@@ -323,7 +323,7 @@ package body Argument_Parser is
           Dscr.First_Pos_After_Keys := I + 2;
           Is_Option := True;
         else
-          -- Nex arg is not key
+          -- Next arg is not key
           Dscr.First_Pos_After_Keys := I + 1;
           Is_Option := False;
         end if;
@@ -357,23 +357,26 @@ package body Argument_Parser is
           Dscr.First_Pos_After_Keys := I + 2;
           Is_Option := True;
         else
-          -- Nex arg is not key
+          -- Next arg is not key
           Dscr.First_Pos_After_Keys := I + 1;
           Is_Option := False;
         end if;
       elsif Argument.Get_Parameter (I) = "--" then
         -- Done at first "--"
+        Dscr.Stop_Pos := I;
         -- All remaining are arguments
         Dscr.Nb_Occurences(No_Key_Index) := Dscr.Nb_Occurences(No_Key_Index)
                                + Argument.Get_Nbre_Arg - I;
         -- This "--" is not a No_Key
-        if Dscr.First_Pos_After_Keys = I then
+        if Dscr.First_Pos_After_Keys = I
+        or else Dscr.First_Pos_After_Keys = 0 then
           Dscr.First_Pos_After_Keys := I + 1;
         end if;
         if Dscr.Nb_Occurences(No_Key_Index) /= 0
         and then Dscr.First_Occurence(No_Key_Index) = 0 then
           Dscr.First_Occurence(No_Key_Index) := I + 1;
         end if;
+        -- Stop parsing
         exit;
       else
         -- Not key
@@ -636,10 +639,24 @@ package body Argument_Parser is
 
     -- Handle No_Key_Index
     if Index = No_Key_Index then
-      if Occurence > Dscr.Nb_Occurences(Index) then
+      if Occurence > Dscr.Nb_Occurences(No_Key_Index) then
         raise Invalid_Occurence;
       elsif Occurence = 1 then
         return Dscr.First_Occurence(No_Key_Index);
+      elsif Dscr.Nb_Embedded = 0 then
+        -- Optim for the case where there are many many non embedded arguments:
+        -- If no embedded argument, then, instead of checking each argument,
+        --  Simply add Occurence to first No_Key.
+        Loc := Dscr.First_Occurence(No_Key_Index) + Occurence - 1;
+        -- Skip the stop mark ("--") if any
+        if Dscr.Stop_Pos /= 0
+        --  and if it is within the No_Keys
+        and then Dscr.Stop_Pos > Dscr.First_Occurence(No_Key_Index)
+        --  and if occurence is above it
+        and then Loc >= Dscr.Stop_Pos then
+          Loc := Loc + 1;
+        end if;
+        return Loc;
       end if;
       -- Iterate from first occurence to last argument
       Loc := 0;
