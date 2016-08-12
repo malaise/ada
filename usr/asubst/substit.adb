@@ -4,6 +4,14 @@ with Argument, Sys_Calls.File_Access, Text_Line, Temp_File, Regular_Expressions,
 with Search_Pattern, Replace_Pattern, Log;
 package body Substit is
 
+  -- User and group IDs
+  User_Id, Group_Id : Natural;
+  procedure Init is
+  begin
+    User_Id  := Sys_Calls.Get_Effective_User_Id;
+    Group_Id := Sys_Calls.Get_Effective_Group_Id;
+  end Init;
+
   -- List of strings
   package Line_List_Mng renames As.U.Utils.Asu_Dyn_List_Mng;
   Line_List : Line_List_Mng.List_Type;
@@ -35,59 +43,70 @@ package body Substit is
   procedure Error (Msg : in String; Give_Up : in Boolean := True);
 
   -- Check that this is a file we can read and write
+  -- Optim : cache of previous dir name, in order to skip access check
+  Prev_Path_Name : As.U.Asu_Us;
   procedure Check_File (File_Name : in String;
                         For_Write : in Boolean) is
     Path_Name : constant String := Directory.Dirname (File_Name);
-    use type Sys_Calls.File_Kind_List;
-    -- Get dir name of file, following symbolic links
-    function Dir_Name return String is
-      Stat : Sys_Calls.File_Stat_Rec;
+    use type As.U.Asu_Us, Sys_Calls.File_Kind_List;
+    -- Set name and stat of path of file, following symbolic links
+    Dir_Name : As.U.Asu_Us;
+    Dir_Stat : Sys_Calls.File_Stat_Rec;
+    procedure Set_Dir is
     begin
       if Path_Name = "" then
-        return "./";
+        Dir_Name := As.U.Tus ( "./");
+        Dir_Stat := Sys_Calls.File_Stat (Dir_Name.Image);
       else
-        Stat := Sys_Calls.File_Stat (Path_Name);
-        if Stat.Kind = Sys_Calls.Link then
+        Dir_Stat := Sys_Calls.File_Stat (Path_Name);
+        if Dir_Stat.Kind = Sys_Calls.Link then
           -- Resolve sym link recursively
-          return Directory.Read_Link (Path_Name);
+          Dir_Name := As.U.Tus (Directory.Read_Link (Path_Name));
         else
           -- Kind is checked later
-          return Path_Name;
+          Dir_Name := As.U.Tus (Path_Name);
         end if;
       end if;
     exception
       when others =>
         Error ("Cannot access directory " & Path_Name);
         raise Substit_Error;
-    end Dir_Name;
-    Stat : Sys_Calls.File_Stat_Rec;
+    end Set_Dir;
+
+    File_Stat : Sys_Calls.File_Stat_Rec;
     Can_Read, Can_Write, Can_Exec : Boolean;
   begin
-    -- Directory must be a dir with (w)rx access
-    Stat := Sys_Calls.File_Stat (Dir_Name);
-    if Stat.Kind /= Sys_Calls.Dir then
-      Error ("Directory " & Dir_Name & " is of incorrect kind: "
-           & Mixed_Str (Stat.Kind'Img));
+    if Path_Name /= Prev_Path_Name then
+      Prev_Path_Name := As.U.Tus (Path_Name);
+      -- Directory must be a dir with (w)rx access
+      Set_Dir;
+      if Dir_Stat.Kind /= Sys_Calls.Dir then
+        Error ("Directory " & Dir_Name.Image & " is of incorrect kind: "
+             & Mixed_Str (Dir_Stat.Kind'Img));
+      end if;
+      Sys_Calls.File_Access.Has_Access (User_Id, Group_Id, Dir_Stat,
+                                        Can_Read, Can_Write, Can_Exec);
+      -- Read => rx, Write => rwx
+      if not Can_Read
+      or else not Can_Exec
+      or else (For_Write and then not Can_Write) then
+        Error ("Directory " & Dir_Name.Image & " has incorrect access rights");
+      end if;
     end if;
-    Sys_Calls.File_Access.Has_Access (Stat, Can_Read, Can_Write, Can_Exec);
-    -- Read => rx, Write => rwx
-    if not Can_Read
-    or else not Can_Exec
-    or else (For_Write and then not Can_Write) then
-      Error ("Directory " & Dir_Name & " has incorrect access rights");
-    end if;
+
     -- This must be a file, with rw access
     begin
-      Stat := Sys_Calls.File_Stat (File_Name);
+      File_Stat := Sys_Calls.File_Stat (File_Name);
     exception
       when others =>
         Error ("Cannot access file " & File_Name);
     end;
-    if Stat.Kind /= Sys_Calls.File then
+    if File_Stat.Kind /= Sys_Calls.File then
       Error ("File " & File_Name & " is of incorrect kind: "
-           & Mixed_Str (Stat.Kind'Img));
+           & Mixed_Str (File_Stat.Kind'Img));
     end if;
-    Sys_Calls.File_Access.Has_Access (Stat, Can_Read, Can_Write, Can_Exec);
+    Sys_Calls.File_Access.Has_Access (User_Id, Group_Id, File_Stat,
+                                      Can_Read, Can_Write, Can_Exec);
     -- Read => r, Write => rw
     if not Can_Read
     or else (For_Write and then not Can_Write) then

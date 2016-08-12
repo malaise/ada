@@ -6,6 +6,9 @@ package Substit is
   package Subst_Match is new Num_Match (Integer);
   subtype Subst_Natural is Natural;
 
+  -- Init the service
+  procedure Init;
+
   -- Process one file (stdin -> stdout if File_Name is Std_In_Out)
   -- Make a backup file, display substitutions, and test mode on option
   -- Return the number of substitutions
