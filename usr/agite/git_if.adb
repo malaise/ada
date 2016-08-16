@@ -678,7 +678,7 @@ package body Git_If is
  -- Stop at Max if not 0
   -- Returns wether the end of list is reached at or before Max
   -- May raise anonymous exception Log_Error
-  procedure List_Log (Path : in String;
+  procedure List_Log (Branch, Path : in String;
                       Max : in Natural;
                       Log : in out Log_List;
                       End_Reached : out Boolean) is
@@ -699,8 +699,13 @@ package body Git_If is
       Cmd.Cat ("-n");
       Cmd.Cat (Images.Integer_Image (Max + 1));
     end if;
-    Cmd.Cat ("--");
-    Cmd.Cat (Pt (Path));
+    if Branch /= "" then
+      Cmd.Cat (Branch);
+    end if;
+    if Path /= "" then
+      Cmd.Cat ("--");
+      Cmd.Cat (Pt (Path));
+    end if;
     Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -887,17 +892,35 @@ package body Git_If is
 
   -- Launch a diff (asynchronous)
   procedure Launch_Diff (Differator, File_Name : in String) is
+   Cmd : constant String
+       := "git difftool -y " & " -x " & Differator & " HEAD -- "
+        & Pt (File_Name);
   begin
-    Utils.Launch ("git difftool -y " & " -x " & Differator
-                & " HEAD -- " & Pt (File_Name));
+    -- Log call
+    if not Logger.Is_Init then
+      Logger.Init ("Git");
+    end if;
+    if Logger.Info_On  then
+      Logger.Log_Info (Cmd);
+    end if;
+    Utils.Launch (Cmd);
   end Launch_Diff;
 
   -- Launch a diff (asynchronous) from Comp to Ref
   procedure Launch_Delta (Differator, File_Name : in String;
                           Ref_Rev, Comp_Rev : in String) is
+    Cmd : constant String
+        := "git difftool -y " & " -x " & Differator & " " & Ref_Rev
+         & " " & Comp_Rev & " -- " & Pt (File_Name);
   begin
-    Utils.Launch ("git difftool -y " & " -x " & Differator
-          & " " & Ref_Rev & " " & Comp_Rev & " -- " & Pt (File_Name));
+    -- Log call
+    if not Logger.Is_Init then
+      Logger.Init ("Git");
+    end if;
+    if Logger.Info_On  then
+      Logger.Log_Info (Cmd);
+    end if;
+    Utils.Launch (Cmd);
   end Launch_Delta;
 
    -- Launch a revert (checkout) synchronous
@@ -1574,8 +1597,6 @@ package body Git_If is
     if not Regular_Expressions.Match (Stash_Name.Image,
                                       Out_Flow_3.Str.Image,
                                       Strict => True) then
-Basic_Proc.Put_Line_Error (">" & Stash_Name.Image & "<");
-Basic_Proc.Put_Line_Error (">" & Out_Flow_3.Str.Image & "<");
       return "Unexpected result of drop: " & Out_Flow_3.Str.Image;
     end if;
     -- Extract stash SHA

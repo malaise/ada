@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V30.02
+V31.00
 
 General purpose
 ---------------
@@ -340,31 +340,33 @@ of the current repository.
 anchor:XNavigation[]
 The navigation between the screens is as follows:
 
-                                   +-----------+
-                            /----->| Bookmarks |
-                           /       +-----------+
-                          /  +----------+             +------------+
-                         /-> | Branches |---+-------->| CherryPick |--+
-                        /    +----------+  /          +------------+  |
-                       /                  /---------->| Tag |         |
-                      /                  /            +-----+         |
-                     /          +-------+-+           +--------+      |
-                    /---------->| History |<-+-----+->| Detail |<-----+
-                   /            +-------+-+   \   /   +--------+      |
-                  /             +------+ \     \ /    +----------+    |
-                 /--------------| Tags |--+-----+---->| Checkout |    |
-                /               +------+   \          +----------+    |
-  +---------- +/                +-------+   \         +------+        |
-  | Directory |---------------->| Commit|----+------->| Push |        |
-  +---------- +\                +-------+<-\          +------+        |
-                \                     |     \                         |
-                 \                    V      \                        |
-                  \             +-------+     \-----------------------+ 
-                   \----------->| Stash |
-                    \           +-------+
-                     \          +------+
-                      \-------->| Pull |
-                                +------+
+                                  +-----------+
+                              /-->| Bookmarks |
+                             /    +-----------+
+                            /     +----------+          +------------+
+                           /----->| Branches |--+------>| CherryPick |--+
+                          /       +---+------+ /        +------------+  |
+                         /            |       /                         |
+                        /             |      /          +-----+         |
+                       /              |     /---------->| Tag |         |
+                      /               V    /            +-----+         |
+                     /            +-------+-+           +--------+      |
+                    /------------>| History |<-+-----+->| Detail |<-----+
+                   /              +-------+-+   \   /   +--------+      |
+                  /               +------+ \     \ /    +----------+    |
+                 /----------------| Tags |--+-----+---->| Checkout |    |
+                /                 +------+   \          +----------+    |
+  +---------- +/                  +-------+   \         +------+        |
+  | Directory |------------------>| Commit|----+------->| Push |        |
+  +---------- +\                  +---+---+<-\          +------+        |
+                \                     |       \                         |
+                 \                    V        \                        |
+                  \               +-------+     \-----------------------+ 
+                   \------------->| Stash |
+                    \             +-------+
+                     \            +------+
+                      \---------->| Pull |
+                                  +------+
                      +-------+
                      | Reset |
                      +-------+
@@ -376,6 +378,8 @@ NOTE: The 'history' and 'tags' menus call the 'detail' and 'checkout' menus. +
 The 'tags' and 'commit' menus call the 'push' menu. +
 The 'tags' menu calls the 'history' menu without allowing modifications, and
 the 'detail' menu without allowing modifications nor tagging. +
+The 'branches'  menu calls the 'history' menu without allowing modifications
+nor tagging. +
 The 'cherry-pick' menu calls the 'detail' menu, but without allowing
 modifications. +
 The 'cherry-pick' menu calls the 'commit' menu in a specific mode where is does
@@ -578,7 +582,7 @@ no modified file under the selected directory.
 
 anchor:XHistory[]
 
-History::
+Hist::
 This button activates the xref:XHist[history] menu that shows the history of
 the current file or directory.
 
@@ -695,6 +699,11 @@ the branch selected in the list. If the selected branch is a remote tracking
 branch (and the corresponding local branch does not exist), then it is
 checked out as a new local branch. +
 Double clicking on an entry of the list has the same effect.
+
+Hist::
+
+This button activates the xref:XHist[history] menu that shows the history of
+the branch selected in the list. No modification is allowed in this mode.
 
 Merge::
 
@@ -1220,7 +1229,8 @@ The list contains the matching tags, sorted by date:
 
 .Create
 This button launches the xref:XHist[history] menu of the root of the
-repository, which allows selecting a commit and xref:XTag[tagging] it.
+repository, which allows selecting a commit and xref:XTag[tagging] it. No
+modification (except tagging) is allowed in this mode.
 
 .Actions
 
@@ -1965,7 +1975,8 @@ Current repository
 The following functions and screens apply to the current repository:
 
 * 'Branch' screen allows several operations on branches on the current
-repository, including 'Merge', 'Rebase' and 'Cherry pick'
+repository and ancestors, including 'History', 'Merge', 'Rebase' and
+'Cherry pick'
 
 * 'Root' button moves to the root directory of the current repository,
 

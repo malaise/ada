@@ -79,11 +79,11 @@ package Git_If is
   package Log_Mng is new Dynamic_List (Log_Entry_Rec);
   subtype Log_List is Log_Mng.Dyn_List.List_Type;
 
-  -- List the log of a dir or file
+  -- List the log on a branch of a dir or file
   -- Stop at Max if not 0
   -- Returns wether the end of list is reached at or before Max
   -- May raise anonymous exception Log_Error
-  procedure List_Log (Path : in String;
+  procedure List_Log (Branch, Path : in String;
                       Max : in Natural;
                       Log : in out Log_List;
                       End_Reached : out Boolean);

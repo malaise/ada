@@ -203,7 +203,7 @@ begin
             Read_Tags (True);
           when Afpx_Xref.List_Tags.Create =>
             -- Forbid modif but allow tagging
-            History.List (Root, "", "", False, False, True);
+            History.List (Root, "", "", History.Dir, False, True);
             Restore (False, True);
           when Afpx_Xref.List_Tags.Details =>
             -- Details of tag selected

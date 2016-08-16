@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with As.U, Directory, Afpx.Utils, Basic_Proc, Unicode, Str_Util, Dynamic_List;
-with Git_If, Utils.X, Afpx_Xref, Confirm, Error, Cherry, Reset, Commit;
+with Git_If, Utils.X, Afpx_Xref, Confirm, Error, History, Cherry, Reset, Commit;
 package body Branch is
 
   -- List width
@@ -192,8 +192,8 @@ package body Branch is
   package body Rebase_Mng is separate;
 
   -- Actions on branches
-  type Action_List is (Create, Rename, Delete, Checkout, Merge, True_Merge,
-                       Rebase, Cherry_Pick, Reset);
+  type Action_List is (Create, Rename, Delete, Checkout, Hist,
+                       Merge, True_Merge, Rebase, Cherry_Pick, Reset);
   function Do_Action (Action : in Action_List;
                       Ref : in Natural := 0) return Boolean is
     Sel_Name, New_Name, Ref_Name, Tmp_Name : As.U.Asu_Us;
@@ -249,10 +249,11 @@ package body Branch is
     -- Cancel if not confirm
     if Action /= Create and then Action /= Rename
     and then Action /= Rebase and then Action /= Cherry_Pick
-    and then Action /= Reset then
+    and then Action /= Reset and then Action /= Hist then
       if not Confirm (
           (case Action is
-             when Create | Rename | Rebase | Cherry_Pick | Reset => "???",
+             when Create | Rename | Hist | Rebase | Cherry_Pick | Reset =>
+               "???",
              when Delete     =>
                (if Ref = 0 then "Delete branch " & Sel_Name.Image
                 else "Delete branches from " & Sel_Name.Image),
@@ -260,7 +261,7 @@ package body Branch is
              when Merge      => "Merge branch " & Sel_Name.Image,
              when True_Merge => "True Merge branch " & Sel_Name.Image),
           (case Action is
-             when Create | Rename | Rebase | Cherry_Pick | Reset
+             when Create | Rename | Hist | Rebase | Cherry_Pick | Reset
                 | Checkout => "",
              when Delete =>
                (if Ref = 0 then "" else "to " & Ref_Name.Image),
@@ -341,6 +342,9 @@ package body Branch is
           -- Set comment for on going manual commit
           Commit.Set_Comment (Comment.Image);
         end if;
+      when Hist =>
+        History.List (Root.Image, Sel_Name.Image, "", History.Br, False, False);
+        Init;
       when True_Merge =>
         Message1 := As.U.Tus ("True merging branch " & Sel_Name.Image);
         Previous_Branch := Sel_Name;
@@ -431,6 +435,7 @@ package body Branch is
                               On_Current
                               or else (Remote and then Has_Local)
                               or else Right);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.History, Right);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Merge,
                               On_Current or else Right);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.True_Merge,
@@ -500,6 +505,8 @@ package body Branch is
               if Do_Action (Checkout) then
                 exit;
               end if;
+            when Afpx_Xref.Branches.History =>
+              Dummy_Res := Do_Action (Hist);
             when Afpx_Xref.Branches.Merge =>
               if Do_Action (Merge) then
                 exit;

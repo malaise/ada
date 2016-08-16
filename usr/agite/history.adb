@@ -53,7 +53,7 @@ package body History is
   -- Or the cherry-pick from a branch
   -- Handle the history of a file or dir
   procedure List (Root, Path, Name : in String;
-                  Is_File : in Boolean;
+                  Kind : in Kind_List;
                   Allow_Modif : in Boolean;
                   Allow_Tag : in Boolean;
                   Hash : in Git_If.Git_Hash := Git_If.No_Hash) is
@@ -84,11 +84,14 @@ package body History is
       Utils.X.Encode_Branch (Afpx_Xref.History.Branch);
 
       -- Encode file/dir
-      Utils.X.Encode_Field ((if Is_File then Path & Name
-                            elsif Name /= "" then Path & Name & "/"
-                            elsif Path /= "" then Path
-                            else "/"),
-                            Afpx_Xref.History.File);
+      Utils.X.Encode_Field (
+          (case Kind is
+             when File => Path & Name,
+             when Dir => (if Name /= "" then Path & Name & "/"
+                          elsif Path /= "" then Path
+                          else "/"),
+             when Br => "Br: " & Path),
+          Afpx_Xref.History.File);
       In_Root := Path = "" and then Name = "";
     end Init;
 
@@ -96,14 +99,17 @@ package body History is
     procedure Show_Delta (Ref : in Natural) is
       Comp : Positive;
       Ref_Hash, Comp_Hash : Git_If.Git_Hash;
+      File_Name : As.U.Asu_Us;
     begin
       -- Confim if diff on a dir
-      if not Is_File then
+      if Kind /= File then
         if not Confirm_Diff_Dir (Path, Name) then
           Init;
+          Afpx.Update_List (Afpx.Center_Selected);
           return;
         end if;
         Init;
+        Afpx.Update_List (Afpx.Center_Selected);
       end if;
 
       -- Save position in List
@@ -127,13 +133,17 @@ package body History is
       -- Restore position in List
       Afpx.Line_List.Move_At (Comp);
 
+      -- Set file name: non if in branch
+      if Kind /= Br then
+        File_Name := As.U.Tus (Root & Path & Name);
+      end if;
       -- Call delta
       if Ref_Hash = Git_If.No_Hash then
         -- Only Left selection: Hash^ and Hash
-        Git_If.Launch_Delta (Config.Differator, Root & Path & Name,
+        Git_If.Launch_Delta (Config.Differator, File_Name.Image,
                              Comp_Hash & "^", Comp_Hash);
       else
-        Git_If.Launch_Delta (Config.Differator, Root & Path & Name,
+        Git_If.Launch_Delta (Config.Differator, File_Name.Image,
                              Ref_Hash, Comp_Hash);
       end if;
     end Show_Delta;
@@ -313,13 +323,13 @@ package body History is
       -- Protect reorg if not in root or on first commit
       -- Protect Tag if not allowed
       Afpx.Utils.Protect_Field (Afpx_Xref.History.View,
-                                not Is_File or else Right_Set or else Empty);
+                                Kind /= File or else Right_Set or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Diff,
                                 Logs.List_Length <= 1);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Details,
                                 Right_Set or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore,
-                                not Is_File or else not Allow_Modif
+                                Kind /= File or else not Allow_Modif
                                 or else Right_Set or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Checkout,
                                 not Allow_Modif or else Right_Set
@@ -395,36 +405,43 @@ package body History is
         Max := Config.History_Len;
       end if;
       -- Get history list
-      if Path = "" and then Name = ""
-      and then Directory.Get_Current = Directory.Normalize_Path (Root) then
-        -- Log in (the root dir of) a bare repository
-        --  fails if we provide the full (Root) path
-        --  but is OK with '.'
-        -- Use '.' if we are in root and target dir is root
-        -- and in a bare repository, otherwise ""
-        Git_If.List_Log ((if Git_If.Is_Bare then "." else ""),
+      if Kind = Br then
+        Git_If.List_Log (Path, "",
                          Max,
                          Logs,
                          All_Read);
       else
-        -- Log
-        Git_If.List_Log (Root & Path & Name,
-                         Max,
-                         Logs,
-                         All_Read);
+        if Path = "" and then Name = ""
+        and then Directory.Get_Current = Directory.Normalize_Path (Root) then
+          -- Log in (the root dir of) a bare repository
+          --  fails if we provide the full (Root) path
+          --  but is OK with '.'
+          -- Use '.' if we are in root and target dir is root
+          -- and in a bare repository, otherwise ""
+          Git_If.List_Log ("", (if Git_If.Is_Bare then "." else ""),
+                           Max,
+                           Logs,
+                           All_Read);
+        else
+          -- Log
+          Git_If.List_Log ("", Root & Path & Name,
+                           Max,
+                           Logs,
+                           All_Read);
+        end if;
       end if;
-  end Reread;
+    end Reread;
 
-  -- Read all entries and update
-  procedure Do_Read_All is
-    Pos : Positive;
-  begin
-    Pos := Afpx.Line_List.Get_Position;
-    Reread (True);
-    Init_List (Logs);
-    Afpx.Line_List.Move_At (Pos);
-    Afpx.Update_List (Afpx.Center_Selected);
-  end Do_Read_All;
+    -- Read all entries and update
+    procedure Do_Read_All is
+      Pos : Positive;
+    begin
+      Pos := Afpx.Line_List.Get_Position;
+      Reread (True);
+      Init_List (Logs);
+      Afpx.Line_List.Move_At (Pos);
+      Afpx.Update_List (Afpx.Center_Selected);
+    end Do_Read_All;
 
   begin
     -- Init Afpx
@@ -478,10 +495,8 @@ package body History is
               -- List all the entries
               Do_Read_All;
             when Afpx_Xref.History.View =>
-              -- View => View if file
-              if Is_File then
-                Show (Show_View);
-              end if;
+              -- View
+              Show (Show_View);
             when Utils.X.List_Scroll_Fld_Range =>
               -- Scroll list
               Afpx.Utils.Scroll(

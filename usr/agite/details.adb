@@ -126,11 +126,11 @@ package body Details is
           when Show_Hist =>
             -- History on current hash. Allow or not modif and tag
             if Commit.File.Image = "/" then
-              History.List (Root, "", "", False, Allow_Modif, Allow_Tag,
-                            Hash);
+              History.List (Root, "", "", History.Dir, Allow_Modif,
+                            Allow_Tag, Hash);
             else
-              History.List (Root, Path, File, True, Allow_Modif, Allow_Tag,
-                            Hash);
+              History.List (Root, Path, File, History.File, Allow_Modif,
+                            Allow_Tag, Hash);
             end if;
             -- Re init sreen
             Init (False);
