@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V31.00
+V31.01
 
 General purpose
 ---------------
@@ -2038,7 +2038,7 @@ version 1.7.0 or above:
 <file>',
 
 * A function lists the commits on a dir or file by calling
-'git log --date=iso \-- <dir_or_file>',
+'git log --date=iso [ -n <max> ] [ <branch> ] \-- [ <dir_or_file> ]',
 
 * A functions gets the hash of the last commit by calling 'git log
 --pretty=format:"%H" -n -1 -- <pwd>',
@@ -2120,6 +2120,9 @@ and 'git config user.email',
 
 * Three functions apply/pop/drop a stash by calling 'git stash apply/pop/drop
 -q stash@{<num>}',
+
+* A function stores a dropped stash (for renaming) by calling 'git stash store
+-m [ - | <name> ] -q <ref>',
 
 * A function shows a tag by calling 'git show --date=iso --quiet
 -s <tag> \--',
