@@ -34,9 +34,7 @@ package body History is
         "", List_Width, Line, False);
   end Set;
 
-  ----------------
-  -- For LIST mode
-  ----------------
+  -- List mode
   procedure Init_List is new Afpx.Utils.Init_List (
     Git_If.Log_Entry_Rec, Git_If.Log_Mng, Set, False);
 
@@ -48,6 +46,27 @@ package body History is
   end List_Hash_Match;
   function List_Hash_Search is
            new Git_If.Log_Mng.Dyn_List.Search (List_Hash_Match);
+
+  -- Get the Hash of remote HEAD
+  function Remote_Head (Branch : in String) return Git_If.Git_Hash is
+    Remote : As.U.Asu_Us;
+    Remotes : Git_If.Log_List;
+    Dummy_End : Boolean;
+  begin
+    -- Try to read remote branch name
+    Remote := As.U.Tus (Git_If.Remote_Branch (Branch));
+    if Remote.Is_Null then
+      return Git_If.No_Hash;
+    end if;
+    -- Log its HEAD
+    Git_If.List_Log (Remote.Image, "", 1, Remotes, Dummy_End);
+    if Remotes.Is_Empty then
+      return Git_If.No_Hash;
+    end if;
+    -- Got it
+    Remotes.Rewind;
+    return Remotes.Access_Current.Hash;
+  end Remote_Head;
 
   -- Handle the history of a file or dir
   -- Or the cherry-pick from a branch
@@ -67,11 +86,8 @@ package body History is
 
     -- The log
     Logs : Git_If.Log_List;
-    Log : Git_If.Log_Entry_Rec;
     All_Read : Boolean;
 
-    -- Search found
-    Dummy : Boolean;
 
     -- Init Afpx
     procedure Init is
@@ -92,7 +108,7 @@ package body History is
                           else "/"),
              when Br => "Br: " & Path),
           Afpx_Xref.History.File);
-      In_Root := Path = "" and then Name = "";
+      In_Root := Kind = Br or else (Path = "" and then Name = "");
     end Init;
 
     -- Show delta from current in list to comp
@@ -100,6 +116,7 @@ package body History is
       Comp : Positive;
       Ref_Hash, Comp_Hash : Git_If.Git_Hash;
       File_Name : As.U.Asu_Us;
+      Log : Git_If.Log_Entry_Rec;
     begin
       -- Confim if diff on a dir
       if Kind /= File then
@@ -151,6 +168,7 @@ package body History is
     -- Do a restore
     procedure Do_Restore is
       Pos : Positive;
+      Log : Git_If.Log_Entry_Rec;
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
@@ -169,6 +187,7 @@ package body History is
     function Do_Checkout return Boolean is
       Pos : Positive;
       Commit : As.U.Asu_Us;
+      Log : Git_If.Log_Entry_Rec;
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
@@ -197,6 +216,7 @@ package body History is
       Changes : Git_If.File_List;
       Change : Git_If.File_Entry_Rec;
       Moved : Boolean;
+      Log : Git_If.Log_Entry_Rec;
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
@@ -242,6 +262,7 @@ package body History is
       Pos : Positive;
       Str : As.U.Asu_Us;
       Res : Boolean;
+      Log : Git_If.Log_Entry_Rec;
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
@@ -270,6 +291,7 @@ package body History is
     -- Do a tag
     procedure Do_Tag is
       Pos : Positive;
+      Log : Git_If.Log_Entry_Rec;
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
@@ -288,6 +310,7 @@ package body History is
     type Show_List is (Show_View, Show_Details);
     procedure Show (What : in Show_List) is
       Ref : Positive;
+      Log : Git_If.Log_Entry_Rec;
     begin
       -- Read reference hash in Logs
       Ref := Afpx.Line_List.Get_Position;
@@ -443,21 +466,58 @@ package body History is
       Afpx.Update_List (Afpx.Center_Selected);
     end Do_Read_All;
 
-  begin
+    -- List root
+    procedure List_Root is
+      Pos : Natural;
+    begin
+      -- Save position in List and read it
+      if Afpx.Line_List.Is_Empty then
+        Pos := 0;
+      else
+        Pos := Afpx.Line_List.Get_Position;
+      end if;
+      List (Root, "", "", Dir, Allow_Modif, Allow_Tag);
+      -- Restore screen
+      Init;
+      -- Get history list with default length
+      Reread (False);
+      Init_List (Logs);
+      if Pos /= 0 then
+        Afpx.Line_List.Move_At (Pos);
+        Afpx.Update_List (Afpx.Center_Selected);
+      end if;
+    end List_Root;
+
+    -- A log
+    Log : Git_If.Log_Entry_Rec;
+    -- Search found
+    Dummy : Boolean;
+
+  begin -- List
+
     -- Init Afpx
     Init;
 
     -- Get history list with default length
     Reread (False);
 
+    -- Set current entry
+    Log.Hash := Git_If.No_Hash;
     if Hash /= Git_If.No_Hash then
       -- Set current to Hash provided
       Log.Hash := Hash;
+    elsif In_Root then
+      -- Set current to HEAD of remote (if possible)
+      Log.Hash := Remote_Head (if Kind = Br then Path else "");
+    end if;
+    if Log.Hash /= Git_If.No_Hash then
       Dummy := List_Hash_Search (Logs, Log,
                    From => Git_If.Log_Mng.Dyn_List.Absolute);
     end if;
+
     -- Encode history
     Init_List (Logs);
+    Afpx.Update_List (Afpx.Center_Selected);
 
     -- Disable buttons if empty list
     if Logs.Is_Empty then
@@ -467,6 +527,10 @@ package body History is
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Checkout, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag, True);
+    end if;
+    -- Disable Root if already on root (including hist of branch)
+    if Kind = Br or else Path = "" then
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Root, True);
     end if;
 
     -- Main loop
@@ -494,6 +558,9 @@ package body History is
             when Afpx_Xref.History.List_All =>
               -- List all the entries
               Do_Read_All;
+            when Afpx_Xref.History.Root =>
+              -- List root
+              List_Root;
             when Afpx_Xref.History.View =>
               -- View
               Show (Show_View);

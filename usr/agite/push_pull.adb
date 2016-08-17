@@ -262,7 +262,7 @@ package body Push_Pull is
         -- Move to "origin" for push and pull_remote,
         --  or <remote>/<branch> for pull_branch, or top
         if Menu /= Pull_Branch  then
-          Origin := As.U.Tus ("origin");
+          Origin := As.U.Tus (Git_If.Default_Origin);
         elsif not Curr_Branch.Is_Null then
           Origin := As.U.Tus (Curr_Branch.Image);
         end if;

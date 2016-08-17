@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V31.01
+V31.02
 
 General purpose
 ---------------
@@ -703,7 +703,8 @@ Double clicking on an entry of the list has the same effect.
 Hist::
 
 This button activates the xref:XHist[history] menu that shows the history of
-the branch selected in the list. No modification is allowed in this mode.
+the branch selected in the list. No modification is allowed in this mode if
+the selected branch is not the current branch.
 
 Merge::
 
@@ -924,15 +925,25 @@ and lists the history of the commits of all the files in the directory
 and in its sub-directories.
 
 .List
+
+Content::
 The list shows, for each entry, the date of the commit (format YYMMDD:HHMM),
 a space, then the comment (up to two lines, separated by \'$\') of the commit. +
 If the entry is a merge (which is possible only when showing the history of
 the root of the repository), then the separator between the date and the comment
 becomes a \'>'.
 
+Initial selection::
+If called from the xref:XDetail[detail] menu, the current entry is set
+to the the one that was detailed. Otherwise, if current directory is the root
+of the repository (including when listing the history of a given branch, or for
+setting a tag), agite will try to set the current entry to the head of the
+remote of the displayed branch. Otherwise it is set to the current head.
+
+Navigation::
 Navigation in the list is the same as the xref:XNavig[navigation] in the
 directory menu, with the mouse wheel, the keyboard and buttons.
-
++
 The list can be very long, so there are several extra features on the history
 list:
 
@@ -955,6 +966,12 @@ anchor:XListAll[]
 If the xref:XHistoryLen[history length] is reduced by configuration and leads
 to display only some entries, then this button allows showing all the entries
 of the history (which can take some time).
+
+.Root
+If the current history does not apply on the root directory, then this button
+is active and allows listing the full history of the repository, for the
+current or selected branch. The history of root is the only way to see the
+merge commits (see 'List' above) and to xref:XReorg[reorg] the current branch.
 
 anchor:XView[]
 
@@ -1039,7 +1056,7 @@ the comment of these commits. +
 There is first a check that there is no local change in the repository (they
 would be lost). +
 This function is only active when in the root directory of the current
-repository, so that the current list of commits is exactly the one that will
+branch, so that the current list of commits is exactly the one that will
 be reorganized.
 
 NOTE: The 'Reorg' consists in a manual xref:XCherry[cherry-pick] of commits,
@@ -1928,7 +1945,9 @@ rewrites the history of the rebased branch (which is reset),
 the history of the current branch (which is reset).
 
 The confirmation request for these actions warns you (in red) that the history
-will be rewritten.
+will be rewritten. Besides, the xref:XHist[history] menu on root sets the
+initial entry to the head of the corresponding tracking branch, which should
+be a safe reference for a xref:XReorg[reorg].
 
 NOTE: The xref:XCherry[cherry-pick] function does not rewrite the history
 because it applies commits to the target branch, which evolves naturally. +
@@ -1936,10 +1955,10 @@ The xref:XReset[reset] function triggered by the xref:XRevert[revert] buton
 on \'.\' of the xref:XDir[directory] menu does not rewrite the history
 because it resets the repository to the current branch head (which is the
 history). +
-The The xref:XReset[reset] function triggered by the xref:XHist[history] on
+The xref:XReset[reset] function triggered by the xref:XHist[history] on
 the first commit of the list is in fact a reset to the head of current branch
 and does not rewrite the history. +
-The The xref:XReset[reset] function triggered by the xref:XBranches[branches]
+The xref:XReset[reset] function triggered by the xref:XBranches[branches]
 on the current branch is in fact a reset to the head of current branch
 and does not rewrite the history. +
 
@@ -2101,6 +2120,9 @@ calling 'git difftool -y -x <differator> <ref_HSA1_hash> <comp_HSA1_hash>
 * A function lists the local branches by calling 'git branch' or lists the
 remote tracking branches by calling 'git branch -r' or lists both by calling
 'git branch -a',
+
+* A function gets the name of a remote tracking branch by calling 'git branch
+-vv',
 
 * A function lists the branches of a remote reference by calling 'git
 ls-remote --heads <reference>',

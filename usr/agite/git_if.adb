@@ -1357,6 +1357,82 @@ package body Git_If is
     end if;
   end Merge_Branch;
 
+  -- Get the name of the remote tracking banch of a branch (or current)
+  -- Return "" if error or no remote tracking branch found
+  function Remote_Branch (Name : in String := "") return String is
+    Cmd : Many_Strings.Many_String;
+    Line : As.U.Asu_Us;
+    Crit : Regular_Expressions.Compiled_Pattern;
+    Ok : Boolean;
+    Index : Natural;
+    use type As.U.Asu_Us;
+  begin
+    -- Get first line of status -b
+    Cmd.Set ("git");
+    Cmd.Cat ("branch");
+    Cmd.Cat ("-vv");
+    Execute (Cmd, True, Command.Both,
+        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git branch -vv: "
+                               & Err_Flow_1.Str.Image);
+      return "";
+    end if;
+    if Out_Flow_1.List.Is_Empty then
+      return "";
+    end if;
+    -- Scan
+    -- Line is [*]<space><branch><spaces><hash>[<space><remote>]<space><comment>
+    -- * branch may be "(xxx)" containing spaces or a name
+    -- * hash is on 7 digits
+    -- * remote is '['<name>[: ahead x]']'
+    Crit.Compile (Ok, "^[* ] (\([^)]*\)|[^ ]+) +[0-9a-f]{7} (\[[^]]+\])?.*");
+    if not Ok  then
+      Basic_Proc.Put_Line_Error ("Remote_Branch regex error");
+      return "";
+    end if;
+    Out_Flow_1.List.Rewind;
+    loop
+      Out_Flow_1.List.Read (Line, Command.Res_Mng.Dyn_List.Current);
+      declare
+        Res : constant Regular_Expressions.Match_Array
+            := Crit.Match (Line.Image, 3);
+      begin
+        -- The line must match and lead to at least a substring
+        if Res'Length >= 2
+        -- Current branch or expected Name
+        and then ( (Name = "" and then Line.Element (1) = '*')
+          or else Name = Line.Slice (Res(2).First_Offset,
+                                     Res(2).Last_Offset_Stop) ) then
+          -- Match
+          if Res'Length = 2 then
+            -- No remote tracking branch
+            return "";
+          else
+            -- Store the remote tracking info skip "[]"
+            Line := Line.Uslice (Res(3).First_Offset + 1,
+                                 Res(3).Last_Offset_Stop - 1);
+            exit;
+          end if;
+        end if;
+      end;
+      if not Out_Flow_1.List.Check_Move then
+        -- End of list without match
+        return "";
+      end if;
+      -- Scan next
+      Out_Flow_1.List.Move_To;
+    end loop;
+    -- Now Line contains <name>[: ahead x]
+    --  keep head before ':'
+    Index := Str_Util.Locate (Line.Image, ":");
+    if Index= 0 then
+      return Line.Image;
+    else
+      return Line.Slice (1, Index - 1);
+    end if;
+  end Remote_Branch;
+
   -- Get current user email
   function Get_User return String is
     Cmd : Many_Strings.Many_String;

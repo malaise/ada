@@ -25,10 +25,9 @@ package body Branch is
   --  when being re-called
   Previous_Branch : As.U.Asu_Us;
 
-  -- The local branches and the listed branches
-  Locals : Git_If.Branches_Mng.List_Type;
-  -- Keep for each branch its name, is it remote, local name and
-  --  does local branch exist
+  -- List of branches
+  -- Keep for each branch its name and wether it is remote
+  -- If yes: local name and does this local branch exist
   type Branch_Rec_Type is record
     Name : As.U.Asu_Us;
     Is_Remote : Boolean := False;
@@ -36,8 +35,10 @@ package body Branch is
     Has_Local : Boolean := False;
   end record;
   package Branches_Mng is new Dynamic_List (Branch_Rec_Type);
-  Branches : Branches_Mng.Dyn_List.List_Type;
 
+  -- The local branches and the list of all branches
+  Locals : Git_If.Branches_Mng.List_Type;
+  Branches : Branches_Mng.Dyn_List.List_Type;
 
   -- Init Afpx list from Branches
   procedure Set (Line : in out Afpx.Line_Rec;
@@ -73,13 +74,70 @@ package body Branch is
     Get_Handle := (others => <>);
   end Init;
 
-  -- Re assess the list of branches
-  procedure Reread (Restore : in Boolean) is
+  -- List the branches: result of listing of remotes and locals, skipping HEADs
+  --  and stripping "remotes/"
+  -- Keep for each branch its name and wether it is remote
+  -- If yes: local name and does this local branch exist
+  procedure List_Branches (List : in out Branches_Mng.Dyn_List.List_Type);
+
+  -- List all the branches
+  procedure List_Branches (List : in out Branches_Mng.Dyn_List.List_Type) is
+    Alls : Git_If.Branches_Mng.List_Type;
     Branch : As.U.Asu_Us;
     Branch_Rec : Branch_Rec_Type;
-    Alls : Git_If.Branches_Mng.List_Type;
     Sep_Index : Natural;
+  begin
+    -- Get the list of local and remote branches
+    Git_If.List_Branches (Local => True, Remote => True, Branches => Alls);
+    -- Filter out entry [Xxx/]"HEAD"
+    --  and filter out leading "remotes/" from entries
+    List.Delete_List;
+    if not Alls.Is_Empty then
+      Alls.Rewind;
+      loop
+        Alls.Read (Branch, Git_If.Branches_Mng.Current);
+        -- Last slash
+        Sep_Index := Str_Util.Locate (Branch.Image, Sep, Forward => False);
+        if Branch.Slice (Sep_Index + 1, Branch.Length) /= "HEAD" then
+          -- Else skip this branch
+          -- Fill record: First slash
+          Sep_Index := Str_Util.Locate (Branch.Image, Sep, Forward => True);
+          if Branch.Slice (1, Sep_Index) = "remotes/" then
+            -- This is a remote branch: remove leading "remotes/"
+            Branch_Rec.Is_Remote := True;
+            Branch.Delete (1, Sep_Index);
+            -- Last slash
+            Sep_Index := Str_Util.Locate (Branch.Image, Sep, Forward => False);
+            if Sep_Index = 0 then
+              -- No name of remote reference???
+              Branch_Rec.Local := Branch;
+            else
+              -- Tail after last slash
+              Branch_Rec.Local := Branch.Uslice (Sep_Index + 1, Branch.Length);
+            end if;
+            Branch_Rec.Has_Local :=
+                Search (Locals, Branch_Rec.Local,
+                        From => Git_If.Branches_Mng.Absolute);
+          else
+            Branch_Rec := (others => <>);
+          end if;
+          Branch_Rec.Name := Branch;
+          List.Insert (Branch_Rec);
+        end if;
+        -- Move to next if possible
+        if Alls.Check_Move then
+          Alls.Move_To;
+        else
+          exit;
+        end if;
+      end loop;
+    end if;
+  end List_Branches;
+
+  -- Re assess the list of branches
+  procedure Reread (Restore : in Boolean) is
     Line : Afpx.Line_Rec;
+    Branch_Rec : Branch_Rec_Type;
   begin
     -- Encode current branch
     Utils.X.Encode_Branch (Afpx_Xref.Branches.Branch);
@@ -100,51 +158,8 @@ package body Branch is
 
     -- Get the list of local branches
     Git_If.List_Branches (Local => True, Remote => False, Branches => Locals);
-    -- Get the list of local and remote branches
-    Git_If.List_Branches (Local => True, Remote => True, Branches => Alls);
-    -- Filter out entry [Xxx/]"HEAD"
-    --  and filter out leading "remotes/" from entries
-    Branches.Delete_List;
-    if not Alls.Is_Empty then
-      Alls.Rewind;
-      loop
-        Alls.Read (Branch, Git_If.Branches_Mng.Current);
-        -- Last slash
-        Sep_Index := Str_Util.Locate (Branch.Image, Sep, Forward => False);
-        if Branch.Slice (Sep_Index + 1, Branch.Length) /= "HEAD" then
-          -- Else do not copy
-          -- Fill record
-          -- First slash
-          Sep_Index := Str_Util.Locate (Branch.Image, Sep, Forward => True);
-          if Branch.Slice (1, Sep_Index) = "remotes/" then
-            Branch.Delete (1, Sep_Index);
-            Branch_Rec.Is_Remote := True;
-            -- Last slash
-            Sep_Index := Str_Util.Locate (Branch.Image, Sep, Forward => False);
-            if Sep_Index = 0 then
-              -- No name of remote reference???
-              Branch_Rec.Local := Branch;
-            else
-              -- Tail after last slash
-              Branch_Rec.Local := Branch.Uslice (Sep_Index + 1, Branch.Length);
-            end if;
-            Branch_Rec.Has_Local :=
-                Search (Locals, Branch_Rec.Local,
-                        From => Git_If.Branches_Mng.Absolute);
-          else
-            Branch_Rec := (others => <>);
-          end if;
-          Branch_Rec.Name := Branch;
-          Branches.Insert (Branch_Rec);
-        end if;
-        -- Move to next if possible
-        if Alls.Check_Move then
-          Alls.Move_To;
-        else
-          exit;
-        end if;
-      end loop;
-    end if;
+    -- Get the list of all branches
+    List_Branches (Branches);
 
     -- Encode the Afpx list
     Init_List (Branches);
@@ -343,7 +358,9 @@ package body Branch is
           Commit.Set_Comment (Comment.Image);
         end if;
       when Hist =>
-        History.List (Root.Image, Sel_Name.Image, "", History.Br, False, False);
+        -- History of branch. Allow modif and tag if current branch
+        History.List (Root.Image, Sel_Name.Image, "", History.Br,
+                      Sel_Name = Current_Branch, Sel_Name = Current_Branch);
         Init;
       when True_Merge =>
         Message1 := As.U.Tus ("True merging branch " & Sel_Name.Image);

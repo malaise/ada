@@ -154,6 +154,9 @@ package Git_If is
   -- Launch a commit synchronous, return "" if OK, else the error
   function Do_Commit (Comment : String) return String;
 
+  -- Default name of origin in a tracking branch
+  Default_Origin : constant String := "origin";
+
   -- Launch a push synchronous (of current branch or tag),
   --  optionnaly add --set-upstream (on branch)
   --  optionnaly add -- force
@@ -192,6 +195,10 @@ package Git_If is
                          Comment : String;
                          No_Fast_Forward : Boolean;
                          No_Commit : Boolean) return String;
+
+  -- Get the name of the remote tracking banch of a branch (or current)
+  -- Return "" if error or no remote tracking branch found
+  function Remote_Branch (Name : in String := "") return String;
 
   -- Get current user name and email
   function Get_User return String;
