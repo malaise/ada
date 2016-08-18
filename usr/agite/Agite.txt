@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V31.02
+V31.04
 
 General purpose
 ---------------
@@ -496,7 +496,10 @@ first, then click on a character.
 
 The list itself::
 The list shows the directories then the files of the
-xref:XGo[current directory], in alphabetical order.
+xref:XGo[current directory], in alphabetical order. +
+The criteria of '.gitignore' are used for listing the files, but not the
+directories. The ignored directory are listed anyway, with their files
+being ignored but not their subdirectories.
 +
 Each directory starts with three spaces then the name then a \'/'.
 +
@@ -1563,7 +1566,7 @@ workstree.
 
 This lists the known remote repositories, from which you can select the
 target. +
-If the remote ''orign'' is defined then it is selected by default.
+If the remote of the current branch is defined, then it is selected by default.
 
 .Push
 
@@ -1675,7 +1678,7 @@ repository.
 .List of remote repositories
 
 This lists all the known remote repositories.
-If the remote ''orign'' is defined then it is selected by default.
+If the remote of the current branch is defined, then it is selected by default.
 
 .Fetch
 This button asks for confirmation then fetches all the known remote branches
