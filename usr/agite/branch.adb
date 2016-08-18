@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with As.U, Directory, Afpx.Utils, Basic_Proc, Unicode, Str_Util, Dynamic_List;
+with Directory, Afpx.Utils, Basic_Proc, Unicode, Str_Util;
 with Git_If, Utils.X, Afpx_Xref, Confirm, Error, History, Cherry, Reset, Commit;
 package body Branch is
 
@@ -24,17 +24,6 @@ package body Branch is
   -- The branch previously selected (when moving back from a sub-menu or
   --  when being re-called
   Previous_Branch : As.U.Asu_Us;
-
-  -- List of branches
-  -- Keep for each branch its name and wether it is remote
-  -- If yes: local name and does this local branch exist
-  type Branch_Rec_Type is record
-    Name : As.U.Asu_Us;
-    Is_Remote : Boolean := False;
-    Local : As.U.Asu_Us;
-    Has_Local : Boolean := False;
-  end record;
-  package Branches_Mng is new Dynamic_List (Branch_Rec_Type);
 
   -- The local branches and the list of all branches
   Locals : Git_If.Branches_Mng.List_Type;
@@ -78,9 +67,6 @@ package body Branch is
   --  and stripping "remotes/"
   -- Keep for each branch its name and wether it is remote
   -- If yes: local name and does this local branch exist
-  procedure List_Branches (List : in out Branches_Mng.Dyn_List.List_Type);
-
-  -- List all the branches
   procedure List_Branches (List : in out Branches_Mng.Dyn_List.List_Type) is
     Alls : Git_If.Branches_Mng.List_Type;
     Branch : As.U.Asu_Us;

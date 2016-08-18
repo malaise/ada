@@ -1,5 +1,5 @@
 with As.U.Utils, Afpx.Utils, Str_Util, Mixed_Str;
-with Utils.X, Git_If, Afpx_Xref, Error, Confirm;
+with Utils.X, Git_If, Afpx_Xref, Error, Confirm, Branch;
 package body Push_Pull is
 
   type Menu_List is (Push, Pull_Remote, Pull_Branch);
@@ -170,6 +170,16 @@ package body Push_Pull is
                                Action /= Fetch);
   end List_Change;
 
+  -- Search in all branches
+  function Branch_Match  (Current, Criteria : Branch.Branch_Rec_Type)
+           return Boolean is
+    use type As.U.Asu_Us;
+  begin
+    return Current.Name = Criteria.Name;
+  end Branch_Match;
+  function Search_All_Branches is new Branch.Branches_Mng.Dyn_List.Search
+      (Branch_Match);
+
   -- Handle the Push, the Pull_Branch and the Pull
   function Do_Handle (Root : String;
                       Menu : Menu_List;
@@ -179,11 +189,17 @@ package body Push_Pull is
     Ptg_Result   : Afpx.Result_Rec;
     -- Result of Push or Pull
     Result : Boolean;
-    -- Origin
-    Origin : As.U.Asu_Us;
     use type Afpx.Absolute_Field_Range, As.U.Asu_Us;
 
     procedure Init is
+      Current_Branch : As.U.Asu_Us;
+      -- List of all the branches
+      All_Branch : Branch.Branch_Rec_Type;
+      All_Branches : Branch.Branches_Mng.Dyn_List.List_Type;
+      -- Origin of the current branch
+      Origin : As.U.Asu_Us;
+      -- Index of last '/'
+      Index : Natural;
     begin
       -- Afpx stuff
       Afpx.Use_Descriptor (Afpx_Xref.Push_Pull.Dscr_Num);
@@ -193,7 +209,9 @@ package body Push_Pull is
       Utils.X.Encode_Field (Root, Afpx_Xref.Push_Pull.Root);
 
       -- Encode current branch
-      Utils.X.Encode_Branch (Afpx_Xref.Push_Pull.Branch);
+      Current_Branch := As.U.Tus (Git_If.Current_Branch);
+      Utils.X.Encode_Field (Utils.X.Branch_Image (Current_Branch.Image),
+                            Afpx_Xref.Push_Pull.Branch);
 
       -- Get current branch
       Curr_Branch := As.U.Tus (Git_If.Current_Branch);
@@ -259,10 +277,36 @@ package body Push_Pull is
         Afpx.Clear_Field (Afpx_Xref.Push_Pull.Push_Upstream);
         Afpx.Clear_Field (Afpx_Xref.Push_Pull.Push_Force);
       else
-        -- Move to "origin" for push and pull_remote,
-        --  or <remote>/<branch> for pull_branch, or top
-        if Menu /= Pull_Branch  then
-          Origin := As.U.Tus (Git_If.Default_Origin);
+        -- For push and pull_remote, move to the origin of current branch if
+        --  possible, otherwise to "origin"
+        -- For pull_branch, move to <remote>/<branch> if possible, otherwise to
+        --  top
+        if Menu /= Pull_Branch then
+          -- Get the name of the remote tracking branch
+          Origin := As.U.Tus (Git_If.Remote_Branch);
+          if not Origin.Is_Null then
+            -- Search this origin in the branches
+            Branch.List_Branches (All_Branches);
+            All_Branch.Name := Origin;
+            if Search_All_Branches (All_Branches, All_Branch,
+                From => Branch.Branches_Mng.Dyn_List.Absolute) then
+              -- The remote of current branch is found
+              -- Keep the head up to last '/'
+              Index := Str_Util.Locate (Origin.Image, Git_If.Separator & "",
+                                        Forward => False);
+              if Index /= 0 then
+                Origin.Delete (Index, Origin.Length);
+              else
+                Origin.Set_Null;
+              end if;
+            else
+              Origin.Set_Null;
+            end if;
+          end if;
+          if Origin.Is_Null then
+            -- Remote of current not found => look for "origin"
+            Origin := As.U.Tus (Git_If.Default_Origin);
+          end if;
         elsif not Curr_Branch.Is_Null then
           Origin := As.U.Tus (Curr_Branch.Image);
         end if;

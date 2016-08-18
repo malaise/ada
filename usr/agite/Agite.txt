@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V31.04
+V31.03
 
 General purpose
 ---------------
@@ -496,10 +496,7 @@ first, then click on a character.
 
 The list itself::
 The list shows the directories then the files of the
-xref:XGo[current directory], in alphabetical order. +
-The criteria of '.gitignore' are used for listing the files, but not the
-directories. The ignored directory are listed anyway, with their files
-being ignored but not their subdirectories.
+xref:XGo[current directory], in alphabetical order.
 +
 Each directory starts with three spaces then the name then a \'/'.
 +
