@@ -151,45 +151,43 @@ package body Details is
     end Show;
 
     -- Copy Hash or Comment as X selection
-    procedure Copy_Selection (Copy_Comment : in Boolean) is
+    type Copy_Source_List is (Copy_Hash, Copy_Date, Copy_Comment);
+    procedure Copy_Selection (Copy_Source : in Copy_Source_List) is
       Result : As.U.Asu_Us;
       use type As.U.Asu_Us;
     begin
-      if Copy_Comment then
-        -- Skip tailing empty lines. No LineFeed after last line
-        for I in reverse Comment'Range loop
-          if not Comment(I).Is_Null or else not Result.Is_Null then
-            if Result.Is_Null then
-              Result := Comment(I);
-            else
-              Result := Comment(I) & Aski.Lf & Result;
+      case Copy_Source is
+        when Copy_Hash =>
+          Afpx.Set_Selection (Hash);
+        when Copy_Date =>
+          Afpx.Set_Selection (Date);
+        when Copy_Comment =>
+          -- Skip tailing empty lines. No LineFeed after last line
+          for I in reverse Comment'Range loop
+            if not Comment(I).Is_Null or else not Result.Is_Null then
+              if Result.Is_Null then
+                Result := Comment(I);
+              else
+                Result := Comment(I) & Aski.Lf & Result;
+              end if;
             end if;
-          end if;
-        end loop;
-        -- Prepend date
-        if Result.Is_Null then
-          Result := As.U.Tus (Date);
-        else
-          Result := As.U.Tus (Date) & Aski.Lf & Result;
-        end if;
-        Afpx.Set_Selection (Result.Image);
-      else
-        Afpx.Set_Selection (Hash);
-      end if;
+          end loop;
+          Afpx.Set_Selection (Result.Image);
+      end case;
     end Copy_Selection;
 
-  -- Update the list status
-  procedure List_Change (Unused_Action : in Afpx.List_Change_List;
-                         Unused_Status : in Afpx.List_Status_Rec) is
+    -- Update the list status
+    procedure List_Change (Unused_Action : in Afpx.List_Change_List;
+                           Unused_Status : in Afpx.List_Status_Rec) is
 
-  begin
-    if Afpx.Line_List.Is_Empty then
-      return;
-    end if;
-     -- No view on '/', first entry if list is not empty
-     Afpx.Utils.Protect_Field (Afpx_Xref.Details.View,
-                               Afpx.Line_List.Get_Position = 1);
-  end List_Change;
+    begin
+      if Afpx.Line_List.Is_Empty then
+        return;
+      end if;
+       -- No view on '/', first entry if list is not empty
+       Afpx.Utils.Protect_Field (Afpx_Xref.Details.View,
+                                 Afpx.Line_List.Get_Position = 1);
+    end List_Change;
 
   begin
     -- Full init
@@ -237,10 +235,13 @@ package body Details is
               return;
             when Afpx_Xref.Details.Copyhash =>
               -- Copy hash to clipboard
-              Copy_Selection (False);
-            when Afpx_Xref.Details.Copy =>
+              Copy_Selection (Copy_Hash);
+            when Afpx_Xref.Details.Copydate =>
+              -- Copy commit date to clipboard
+              Copy_Selection (Copy_Date);
+            when Afpx_Xref.Details.Copycomment =>
               -- Copy commit comment to clipboard
-              Copy_Selection (True);
+              Copy_Selection (Copy_Comment);
             when others =>
               -- Other button?
               null;

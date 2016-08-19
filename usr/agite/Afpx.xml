@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V31.07"/>
+  <Var Name="Version" Value="V31.08"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -692,7 +692,7 @@
 
     <!-- Tag: Date and Comment -->
     <Field Num="12" Kind="Put" Name="Tag_Date">
-      <Geometry Up="${Field_11.Low}+2" Left="18" Height="1" Width="19"/>
+      <Geometry Up="${Field_11.Low}+2" Left="8" Height="1" Width="19"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="13" Kind="Put" Name="Tag_Comment">
@@ -706,77 +706,83 @@
       <Geometry Up="${Field_13.Low}+2" Left="1" Height="1" Width="40"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="15" Kind="Put" Name="Date">
-      <Geometry Up="${Field_14.Low}+2" Left="${Field_12.Left}" Height="1"
+    <Field Num="15" Kind="Button" Name="Copyhash">
+      <Geometry Up="${Field_14.Up}" Height="1" Width="8"
+                Right="${Screen.Width}-2"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">CpHash</Init>
+    </Field>
+    <Field Num="16" Kind="Put" Name="Merged">
+      <Geometry Up="${Field_14.Low}+2" Left="1" Height="1" Width="5"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
+    <Field Num="17" Kind="Put" Name="Date">
+      <Geometry Up="${Field_16.Low}" Left="${Field_12.Left}" Height="1"
                 Width="19"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="16" Kind="Put" Name="Merged">
-      <Geometry Up="${Field_15.Low}" Left="3" Height="1" Width="5"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
+    <Field Num="18" Kind="Button" Name="Copydate">
+      <Geometry Up="${Field_17.Up}" Right="${Field_15.Left}-2" Height="1"
+                Width="8"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">CpDate</Init>
     </Field>
-    <Field Num="17" Kind="Put" Name="Comment">
-      <Geometry Up="${Field_15.Low}+1" Left="1" Low="${List.Up}-1"
+    <Field Num="19" Kind="Put" Name="Comment">
+      <Geometry Up="${Field_16.Low}+1" Left="1" Low="${List.Up}-1"
                 Right="${Screen.Right}-1"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
+    <Field Num="20" Kind="Button" Name="Copycomment">
+      <Geometry Up="${Field_18.Up}" Height="1" Width="8"
+                Right="${Screen.Width}-2"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">CpComm</Init>
+    </Field>
 
     <!-- View, History, Diff, Restore, Back -->
-    <Field Num="18" Kind="Button" Name="View">
+    <Field Num="21" Kind="Button" Name="View">
       <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">View</Init>
     </Field>
-    <Field Num="19" Kind="Button" Name="Diff">
-      <Geometry Up="${Field_18.Low}+2" Left="${LmLeft}" Height="1"
+    <Field Num="22" Kind="Button" Name="Diff">
+      <Geometry Up="${Field_21.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Diff</Init>
     </Field>
-    <Field Num="20" Kind="Button" Name="History">
-      <Geometry Up="${Field_19.Low}+2" Left="${LmLeft}" Height="1"
+    <Field Num="23" Kind="Button" Name="History">
+      <Geometry Up="${Field_22.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Hist</Init>
     </Field>
-    <Field Num="21" Kind="Button" Name="Restore">
-      <Geometry Up="${Field_20.Low}+2" Left="${LmLeft}" Height="1"
+    <Field Num="24" Kind="Button" Name="Restore">
+      <Geometry Up="${Field_23.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="0">Restore</Init>
     </Field>
-    <Field Num="22" Kind="Put">
-      <Geometry Up="${Field_21.Low}+1" Left="${LmLeft}" Height="1"
+    <Field Num="25" Kind="Put">
+      <Geometry Up="${Field_24.Low}+1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
-    <Field Num="23" Kind="Put">
+    <Field Num="26" Kind="Put">
       <Geometry Up="${Field_8.Low}+1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
-    <Field Num="24" Kind="Button" Name="Back">
+    <Field Num="27" Kind="Button" Name="Back">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Back</Init>
     </Field>
 
-    <!-- Copy Hash / date and comment -->
-    <Field Num="25" Kind="Button" Name="Copyhash">
-      <Geometry Up="${Field_14.Up}" Height="1" Width="8"
-                Right="${Screen.Width}-2"/>
-      <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">Copy</Init>
-    </Field>
-    <Field Num="26" Kind="Button" Name="Copy">
-      <Geometry Up="${Field_15.Up}" Height="1" Width="8"
-                Right="${Screen.Width}-2"/>
-      <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">Copy</Init>
-    </Field>
+    
   </Descriptor>
 
   <!-- Confirmation screen -->

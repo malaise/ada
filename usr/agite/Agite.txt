@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V31.07
+V31.08
 
 General purpose
 ---------------
@@ -1136,11 +1136,12 @@ information:
 .Tag and commit information
 Then, in both cases, there is the information on the commmit:
 
-* The SHA-1 hash of the commit, that you can '*copy*' into the X11 selection
-buffer,
+* The SHA-1 hash of the commit, that you can copy into the X11 selection buffer
+by clicking on 'PpHash',
 * If the entry is a merge, this is indicated by the word "Merge",
-* The date and the comment of the commit (up to seven lines), that you can
-also alternatively '*copy*' into the X11 selection buffer, 
+* The date of the commit, that you can alternatively copy with 'CpDate',
+* The comment of the commit (up to seven lines), that you can also alternatively
+copy with 'CpComm', 
 * The list of all the files in the commit, each preceded by a letter:
 ** M Modified,
 ** T Type modified,
