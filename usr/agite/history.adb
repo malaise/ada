@@ -77,7 +77,7 @@ package body History is
                   Allow_Tag : in Boolean;
                   Hash : in Git_If.Git_Hash := Git_If.No_Hash) is
     -- Are we in root
-    In_Root : Boolean;
+    On_Root : Boolean;
 
     -- Afpx stuff
     Get_Handle  : Afpx.Get_Handle_Rec;
@@ -108,7 +108,7 @@ package body History is
                           else "/"),
              when Br => "Br: " & Path),
           Afpx_Xref.History.File);
-      In_Root := Kind = Br or else (Path = "" and then Name = "");
+      On_Root := Kind = Br or else (Path = "" and then Name = "");
     end Init;
 
     -- Show delta from current in list to comp
@@ -150,7 +150,7 @@ package body History is
       -- Restore position in List
       Afpx.Line_List.Move_At (Comp);
 
-      -- Set file name: non if in branch
+      -- Set file name: none if in branch
       if Kind /= Br then
         File_Name := As.U.Tus (Root & Path & Name);
       end if;
@@ -360,7 +360,7 @@ package body History is
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Reorg,
                                 not Allow_Modif or else Right_Set
                                 or else Empty
-                                or else not In_Root
+                                or else not On_Root
                                 or else Left = 1);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Reset,
                                 not Allow_Modif or else Right_Set
@@ -506,7 +506,7 @@ package body History is
     if Hash /= Git_If.No_Hash then
       -- Set current to Hash provided
       Log.Hash := Hash;
-    elsif In_Root then
+    elsif On_Root then
       -- Set current to HEAD of remote (if possible)
       Log.Hash := Remote_Head (if Kind = Br then Path else "");
     end if;
@@ -529,7 +529,7 @@ package body History is
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag, True);
     end if;
     -- Disable Root if already on root (including hist of branch)
-    if Kind = Br or else Path = "" then
+    if On_Root then
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Root, True);
     end if;
 
