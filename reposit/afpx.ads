@@ -118,6 +118,13 @@ package Afpx is
   function Get_Data_Len (Field_No : Absolute_Field_Range)
                          return Width_Range;
 
+  -- Set the offset of a get field
+  -- Exceptions : No_Descriptor (no Descriptor in use),
+  --              Invalid_Field (Field_No too big or not a Get field)
+  --              Invalid_Col (Offset is above Data_Len - Width)
+  procedure Set_Offset (Field_No : in Absolute_Field_Range;
+                        Offset : in Con_Io.Col_Range := 0);
+
   -- Get field kind
   -- Exceptions : No_Descriptor, Invalid_Field
   subtype Field_Kind_List is Afpx_Typ.Field_Kind_List;
@@ -208,6 +215,7 @@ package Afpx is
   function  Get_Field_Protection (Field_No : in Absolute_Field_Range)
                                   return Boolean;
 
+
   -- Erase all the fields of the descriptor from the screen
   -- Fill the fields on the screen with current screen's background color,
   --  but the content of the fields is not affected
@@ -216,7 +224,7 @@ package Afpx is
   procedure Erase;
 
   -- Put a descriptor content
-  -- The list is any has to be de-activated
+  -- The list, if any, has to be de-activated
   -- Exceptions : No_Descriptor, List_In_Put
   procedure Put;
 

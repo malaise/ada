@@ -367,6 +367,7 @@ package body Commit is
       Decode_Comment;
       Split_Line (Get_Line_No, Get_Handle.Cursor_Col + Get_Handle.Offset);
       if Get_Line_No /= Nb_Row_Comment then
+        Afpx.Set_Offset (Get_Handle.Cursor_Field);
         Get_Handle.Cursor_Field := Get_Handle.Cursor_Field + 1;
         Get_Handle.Cursor_Col := 0;
         Get_Handle.Offset := 0;

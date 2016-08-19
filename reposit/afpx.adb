@@ -429,6 +429,22 @@ package body Afpx is
     return Af_Dscr.Fields(Fn).Data_Len;
   end Get_Data_Len;
 
+  -- Offset
+  procedure Set_Offset (Field_No : in Absolute_Field_Range;
+                        Offset : in Con_Io.Col_Range := 0) is
+    Fn : constant Absolute_Field_Range := Field_No;
+    use type Field_Kind_List;
+  begin
+    Af_Dscr.Check(Fn);
+    if Af_Dscr.Fields(Fn).Kind /= Get_Field then
+      raise Invalid_Field;
+    end if;
+    if Offset > Af_Dscr.Fields(Fn).Data_Len - Af_Dscr.Fields(Fn).Width then
+      raise Invalid_Col;
+    end if;
+    Af_Dscr.Fields(Fn).Offset := Offset;
+  end Set_Offset;
+
   -- Get field kind
   -- Exceptions : No_Descriptor, Invalid_Field
   -- type Field_Kind_List is (Put, Button, Get);
