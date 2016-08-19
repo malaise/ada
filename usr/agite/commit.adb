@@ -333,6 +333,7 @@ package body Commit is
       Decode_Comment;
       Delete_Line (Get_Line_No);
       Get_Handle.Cursor_Col := 0;
+      Get_Handle.Offset := 0;
       Encode_Comment;
     end Delete_Line;
 
@@ -342,6 +343,7 @@ package body Commit is
       Decode_Comment;
       Insert_Line (Get_Line_No);
       Get_Handle.Cursor_Col := 0;
+      Get_Handle.Offset := 0;
       Delete_Line (Nb_Row_Comment + 1);
       Encode_Comment;
     end Insert_Line;
@@ -353,6 +355,7 @@ package body Commit is
       if Get_Line_No /= Nb_Row_Comment then
         Merge_Line (Get_Line_No);
         Get_Handle.Cursor_Col := 0;
+        Get_Handle.Offset := 0;
       end if;
       Encode_Comment;
     end Merge_Line;
@@ -362,10 +365,11 @@ package body Commit is
       use type Afpx.Absolute_Field_Range;
     begin
       Decode_Comment;
-      Split_Line (Get_Line_No, Get_Handle.Cursor_Col);
+      Split_Line (Get_Line_No, Get_Handle.Cursor_Col + Get_Handle.Offset);
       if Get_Line_No /= Nb_Row_Comment then
         Get_Handle.Cursor_Field := Get_Handle.Cursor_Field + 1;
         Get_Handle.Cursor_Col := 0;
+        Get_Handle.Offset := 0;
       end if;
       Delete_Line (Nb_Row_Comment + 1);
       Encode_Comment;
