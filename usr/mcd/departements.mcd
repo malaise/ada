@@ -147,7 +147,7 @@ D pushr retacal ] D popr
 rnd N pushr toreal * trunc 1 +
 # Put its Num during a seconds
 dup n swap pusha put ": " put a pushr sleep
-# Put its Name during p seconds
+# Put its Name and wait for input (drop it)
 N swap pusha putl inkey pop
 # Loop
 M pushr retacal ] M copyr call
