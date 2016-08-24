@@ -66,6 +66,10 @@ package My_Math is
   function Arc_Cos (X : Real; Mode : Angle_Unit := Radian) return Real;
   -- arc tangent returned on -pi/2 .. pi/2
   function Arc_Tan  (X : Real; Mode : Angle_Unit := Radian) return Real;
+  -- arc tangent function of two variables on -pi .. pi
+  -- Principal value of Arc_Tan (Y/X), using the signs of Y and X to
+  --  determine the quadrant of the result
+  function Arc_Tan2 (Y, X : Real; Mode : Angle_Unit := Radian) return Real;
 
   -- Exception raised in case of invalid argument or numeric error
   Math_Error : exception;

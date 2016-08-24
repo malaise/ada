@@ -35,6 +35,9 @@ package body My_Math is
   function Catan (X : C_Types.Double) return C_Types.Double;
   pragma Import (C, Catan, "atan");
 
+  function Catan2 (Y, X : C_Types.Double) return C_Types.Double;
+  pragma Import (C, Catan2, "atan2");
+
   --------------------------
   -- Constants for computing
   --------------------------
@@ -310,7 +313,7 @@ package body My_Math is
 
   function Arc_Cos (X    : Real;
                     Mode : Angle_Unit := Radian) return Real is
-    Y   : Real;
+    Y : Real;
   begin
     if abs X > 1.0 then
       raise Math_Error;
@@ -327,7 +330,7 @@ package body My_Math is
 
   function Arc_Tan (X    : Real;
                     Mode : Angle_Unit := Radian) return Real is
-    Y       : Real;
+    Y : Real;
   begin
     Y := Real(Catan (C_Types.Double(X)));
     if Mode = Degree then
@@ -338,6 +341,20 @@ package body My_Math is
     when others =>
       raise Math_Error;
   end Arc_Tan;
+
+  function Arc_Tan2 (Y, X : Real;
+                    Mode : Angle_Unit := Radian) return Real is
+    Z : real;
+  begin
+    Z := Real(Catan2 (C_Types.Double(Y), C_Types.Double(X)));
+    if Mode = Degree then
+      Z := Z / Pi_Hundred_Heighty;
+    end if;
+    return Z;
+   exception
+    when others =>
+      raise Math_Error;
+  end Arc_Tan2;
 
 end My_Math;
 
