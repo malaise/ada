@@ -21,6 +21,7 @@ package body Details is
 
 
   procedure Handle (Root : in String;
+                    Branch : in String;
                     Rev_Tag : in String;
                     Allow_Modif : in Boolean;
                     Allow_Tag : in Boolean;
@@ -50,6 +51,13 @@ package body Details is
 
       -- Encode current branch
       Utils.X.Encode_Branch (Afpx_Xref.Details.Branch);
+
+      -- Encode target branch
+      if Branch /= "" then
+        Utils.X.Encode_Field ("Br:", Afpx_Xref.Details.Target_Branch);
+        Utils.X.Encode_Field (Branch, Afpx_Xref.Details.Target_Branch_Name);
+      end if;
+
 
       -- Allow modifications (Hist that can recall Detail, restore) or not
       Afpx.Set_Field_Activation (Afpx_Xref.Details.Restore, Allow_Modif);
@@ -126,10 +134,10 @@ package body Details is
           when Show_Hist =>
             -- History on current hash. Allow or not modif and tag
             if Commit.File.Image = "/" then
-              History.List (Root, "", "", History.Dir, Allow_Modif,
+              History.List (Root, Branch, "", "", False, Allow_Modif,
                             Allow_Tag, Hash);
             else
-              History.List (Root, Path, File, History.File, Allow_Modif,
+              History.List (Root, Branch, Path, File, True, Allow_Modif,
                             Allow_Tag, Hash);
             end if;
             -- Re init sreen

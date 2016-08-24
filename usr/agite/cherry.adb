@@ -709,7 +709,7 @@ package body Cherry is
       Cherries.Move_At (Ref);
       Cherries.Read (Cherry, Cherries_Mng.Dyn_List.Current);
       -- Prevent modif and tagging in Cherry_Pick
-      Details.Handle (Root, Cherry.Commit.Hash, False, False);
+      Details.Handle (Root, Branch, Cherry.Commit.Hash, False, False);
       Init;
       Init_Cherry (Cherries);
       Afpx.Update_List (Afpx.Center_Selected);

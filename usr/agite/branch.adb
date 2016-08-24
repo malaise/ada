@@ -345,7 +345,7 @@ package body Branch is
         end if;
       when Hist =>
         -- History of branch. Allow modif and tag if current branch
-        History.List (Root.Image, Sel_Name.Image, "", History.Br,
+        History.List (Root.Image, Sel_Name.Image, "", "", False,
                       Sel_Name = Current_Branch, Sel_Name = Current_Branch);
         Init;
       when True_Merge =>

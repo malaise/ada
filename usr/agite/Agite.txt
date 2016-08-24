@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V31.08
+V31.09
 
 General purpose
 ---------------
@@ -707,7 +707,9 @@ Hist::
 
 This button activates the xref:XHist[history] menu that shows the history of
 the branch selected in the list. No modification is allowed in this mode if
-the selected branch is not the current branch.
+the selected branch is not the current branch. All the navigation between
+xref:XHist[history] and xref:XDetail[detail] menus will apply to the selected
+branch.
 
 Merge::
 
@@ -918,10 +920,13 @@ History
 ~~~~~~~
 anchor:XHist[]
 On a file, this menu shows the relative path of the selected file,
-and lists the history of all the commits on current branch that have affected
-this file. +
+and lists the history of all the commits (on the selected branch) that have
+affected this file. +
 Git notes are discarded. +
 The newest release (head) is on top.
+
+It displays on top of screen the current branch, and below, if different,
+the branch currenly listed.
 
 In case of a directory the menu shows the relative path of the directory
 and lists the history of the commits of all the files in the directory
@@ -1121,6 +1126,9 @@ Detail
 ~~~~~~
 anchor:XDetail[]
 The 'detail' menu shows the details of a commit or a tag:
+
+It displays on top of screen the current branch, and below, if different,
+the branch currenly displayed.
 
 .Title
 In case of a tag, the title recalls the name of the tag (in case of a commit

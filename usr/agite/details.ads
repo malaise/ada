@@ -4,6 +4,7 @@ package Details is
   -- Allow_Tad (passed to Hist) or not
   -- Or of a Tag and associated commit
   procedure Handle (Root : in String;
+                    Branch : in String;
                     Rev_Tag : in String;
                     Allow_Modif : in Boolean;
                     Allow_Tag : in Boolean;

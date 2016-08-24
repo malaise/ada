@@ -4,6 +4,8 @@ with Utils.X, Config, Details, View, Afpx_Xref, Restore, Checkout, Tags,
      Branch, Confirm_Diff_Dir, Reset, Error;
 package body History is
 
+  package Branches renames Branch;
+
   -- List Width
   List_Width : Afpx.Width_Range;
 
@@ -48,13 +50,13 @@ package body History is
            new Git_If.Log_Mng.Dyn_List.Search (List_Hash_Match);
 
   -- Get the Hash of remote HEAD
-  function Remote_Head (Branch : in String) return Git_If.Git_Hash is
+  function Remote_Head (Of_Branch : in String) return Git_If.Git_Hash is
     Remote : As.U.Asu_Us;
     Remotes : Git_If.Log_List;
     Dummy_End : Boolean;
   begin
     -- Try to read remote branch name
-    Remote := As.U.Tus (Git_If.Remote_Branch (Branch));
+    Remote := As.U.Tus (Git_If.Remote_Branch (Of_Branch));
     if Remote.Is_Null then
       return Git_If.No_Hash;
     end if;
@@ -71,8 +73,8 @@ package body History is
   -- Handle the history of a file or dir
   -- Or the cherry-pick from a branch
   -- Handle the history of a file or dir
-  procedure List (Root, Path, Name : in String;
-                  Kind : in Kind_List;
+  procedure List (Root, Branch, Path, Name : in String;
+                  Is_File : in Boolean;
                   Allow_Modif : in Boolean;
                   Allow_Tag : in Boolean;
                   Hash : in Git_If.Git_Hash := Git_If.No_Hash) is
@@ -99,16 +101,19 @@ package body History is
       -- Encode current branch
       Utils.X.Encode_Branch (Afpx_Xref.History.Branch);
 
+      -- Encode target branch
+      if Branch /= "" then
+        Utils.X.Encode_Field ("Br:", Afpx_Xref.History.Target_Branch);
+        Utils.X.Encode_Field (Branch, Afpx_Xref.History.Target_Branch_Name);
+      end if;
       -- Encode file/dir
       Utils.X.Encode_Field (
-          (case Kind is
-             when File => Path & Name,
-             when Dir => (if Name /= "" then Path & Name & "/"
-                          elsif Path /= "" then Path
-                          else "/"),
-             when Br => "Br: " & Path),
+          (if Is_File then Path & Name
+           elsif Name /= "" then Path & Name & "/"
+           elsif Path /= "" then Path
+           else "/"),
           Afpx_Xref.History.File);
-      On_Root := Kind = Br or else (Path = "" and then Name = "");
+      On_Root := Path = "" and then Name = "";
     end Init;
 
     -- Show delta from current in list to comp
@@ -119,7 +124,7 @@ package body History is
       Log : Git_If.Log_Entry_Rec;
     begin
       -- Confim if diff on a dir
-      if Kind /= File then
+      if not Is_File then
         if not Confirm_Diff_Dir (Path, Name) then
           Init;
           Afpx.Update_List (Afpx.Center_Selected);
@@ -150,10 +155,8 @@ package body History is
       -- Restore position in List
       Afpx.Line_List.Move_At (Comp);
 
-      -- Set file name: none if in branch
-      if Kind /= Br then
-        File_Name := As.U.Tus (Root & Path & Name);
-      end if;
+      -- Set file name
+      File_Name := As.U.Tus (Root & Path & Name);
       -- Call delta
       if Ref_Hash = Git_If.No_Hash then
         -- Only Left selection: Hash^ and Hash
@@ -245,7 +248,7 @@ package body History is
         -- Error if some modifs remain
         Error ("Reorg", Root, "There are some local changes," & Aski.Lf
                             & "Please stash or revert them first.");
-      elsif Branch.Reorg (Root, Log.Hash) then
+      elsif Branches.Reorg (Root, Log.Hash) then
         -- Reorg (success will lead to return to Directory)
         return True;
       end if;
@@ -322,7 +325,7 @@ package body History is
           View (Path & Name, Log.Hash);
         when Show_Details =>
           -- Allow modif
-          Details.Handle (Root, Log.Hash, Allow_Modif, Allow_Tag);
+          Details.Handle (Root, Branch, Log.Hash, Allow_Modif, Allow_Tag);
           Init;
           Init_List (Logs);
           Afpx.Update_List (Afpx.Center_Selected);
@@ -346,13 +349,13 @@ package body History is
       -- Protect reorg if not in root or on first commit
       -- Protect Tag if not allowed
       Afpx.Utils.Protect_Field (Afpx_Xref.History.View,
-                                Kind /= File or else Right_Set or else Empty);
+                                not Is_File or else Right_Set or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Diff,
                                 Logs.List_Length <= 1);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Details,
                                 Right_Set or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore,
-                                Kind /= File or else not Allow_Modif
+                                not Is_File or else not Allow_Modif
                                 or else Right_Set or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Checkout,
                                 not Allow_Modif or else Right_Set
@@ -428,30 +431,23 @@ package body History is
         Max := Config.History_Len;
       end if;
       -- Get history list
-      if Kind = Br then
-        Git_If.List_Log (Path, "",
+      if Path = "" and then Name = ""
+      and then Directory.Get_Current = Directory.Normalize_Path (Root) then
+        -- Log in (the root dir of) a bare repository
+        --  fails if we provide the full (Root) path
+        --  but is OK with '.'
+        -- Use '.' if we are in root and target dir is root
+        -- and in a bare repository, otherwise ""
+        Git_If.List_Log (Branch, (if Git_If.Is_Bare then "." else ""),
                          Max,
                          Logs,
                          All_Read);
       else
-        if Path = "" and then Name = ""
-        and then Directory.Get_Current = Directory.Normalize_Path (Root) then
-          -- Log in (the root dir of) a bare repository
-          --  fails if we provide the full (Root) path
-          --  but is OK with '.'
-          -- Use '.' if we are in root and target dir is root
-          -- and in a bare repository, otherwise ""
-          Git_If.List_Log ("", (if Git_If.Is_Bare then "." else ""),
-                           Max,
-                           Logs,
-                           All_Read);
-        else
-          -- Log
-          Git_If.List_Log ("", Root & Path & Name,
-                           Max,
-                           Logs,
-                           All_Read);
-        end if;
+        -- Log
+        Git_If.List_Log (Branch, Root & Path & Name,
+                         Max,
+                         Logs,
+                         All_Read);
       end if;
     end Reread;
 
@@ -476,7 +472,7 @@ package body History is
       else
         Pos := Afpx.Line_List.Get_Position;
       end if;
-      List (Root, "", "", Dir, Allow_Modif, Allow_Tag);
+      List (Root, Branch, "", "", False, Allow_Modif, Allow_Tag);
       -- Restore screen
       Init;
       -- Get history list with default length
@@ -508,7 +504,7 @@ package body History is
       Log.Hash := Hash;
     elsif On_Root then
       -- Set current to HEAD of remote (if possible)
-      Log.Hash := Remote_Head (if Kind = Br then Path else "");
+      Log.Hash := Remote_Head (Branch);
     end if;
     if Log.Hash /= Git_If.No_Hash then
       Dummy := List_Hash_Search (Logs, Log,
