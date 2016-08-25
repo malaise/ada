@@ -344,7 +344,7 @@ package body My_Math is
 
   function Arc_Tan2 (Y, X : Real;
                     Mode : Angle_Unit := Radian) return Real is
-    Z : real;
+    Z : Real;
   begin
     Z := Real(Catan2 (C_Types.Double(Y), C_Types.Double(X)));
     if Mode = Degree then
