@@ -511,13 +511,13 @@ package body Branch is
             when Afpx_Xref.Branches.History =>
               Dummy_Res := Do_Action (Hist);
             when Afpx_Xref.Branches.Merge =>
-              if Do_Action (Merge) then
-                exit;
-              end if;
+              -- Return to directory if ok or error
+              Dummy_Res := Do_Action (Merge);
+              exit;
             when Afpx_Xref.Branches.True_Merge =>
-              if Do_Action (True_Merge) then
-                exit;
-              end if;
+              -- Return to directory if ok or error
+              Dummy_Res := Do_Action (True_Merge);
+              exit;
             when Afpx_Xref.Branches.Rebase =>
               if Do_Action (Rebase, Ptg_Result.Id_Selected_Right) then
                 exit;

@@ -1334,6 +1334,7 @@ package body Git_If is
                          No_Fast_Forward : Boolean;
                          No_Commit : Boolean) return String is
     Cmd : Many_Strings.Many_String;
+    Res : As.U.Asu_Us;
   begin
     Cmd.Set ("git");
     Cmd.Cat ("merge");
@@ -1351,7 +1352,17 @@ package body Git_If is
         Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      return Err_Flow_1.Str.Image;
+      if not Out_Flow_3.Str.Is_Null then
+        Res := Out_Flow_3.Str;
+        if not Err_Flow_1.Str.Is_Null then
+          Res.Append (Aski.Lf & Err_Flow_1.Str.Image);
+        end if;
+      elsif not Err_Flow_1.Str.Is_Null then
+        Res := Err_Flow_1.Str;
+      else
+        Res := As.U.Tus ("Merge error");
+      end if;
+      return Res.Image;
     else
       return "";
     end if;
