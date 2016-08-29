@@ -363,12 +363,17 @@ procedure Agite is
 
   -- Check validity of current directory
   Lost_Dir : exception;
-  function Check_Dir return Boolean is
+  function Check_Dir (Target : in String := "") return Boolean is
     Dir : As.U.Asu_Us;
   begin
     begin
       -- Check validity of current directory
-      Dir := As.U.Tus (Directory.Get_Current);
+      if Target = "" then
+        Dir := As.U.Tus (Directory.Get_Current);
+      else
+        Dir := As.U.Tus (Target);
+        Directory.Change_Current (Dir.Image);
+      end if;
       Last_Valid_Dir := Dir;
       return True;
     exception
@@ -376,7 +381,7 @@ procedure Agite is
         -- Fallback hereafter
         null;
     end;
-    -- Fallback to las valid dir or one of its parents
+    -- Fallback to last valid dir or one of its parents
     Dir := Last_Valid_Dir;
     loop
       begin
@@ -405,7 +410,11 @@ procedure Agite is
     Init_Afpx;
     return False;
   end Check_Dir;
-
+  procedure Check_Dir (Target : in String := "") is
+    Dummy : Boolean;
+  begin
+    Dummy := Check_Dir (Target);
+  end Check_Dir;
   -- Refresh list of files
   -- If Set_Dir then change dir to "."
   -- Try to restore current pos
@@ -443,8 +452,9 @@ procedure Agite is
     -- Init Afpx
     Init_Afpx;
 
-    -- Init dir
-    Change_Dir (Dir);
+    -- Init dir, operations (checkout) may remove current branch
+    Check_Dir (Dir);
+    Change_Dir (".");
 
     -- Init list
     if Pos /= 0 and then Pos <= Afpx.Line_List.List_Length then
