@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Sys_Calls, Argument, As.U, Directory, Regular_Expressions, Str_Util,
+with Sys_Calls, Argument, As.U, Directory, Reg_Exp, Str_Util,
      Dynamic_List;
 procedure Lenv is
 
@@ -37,7 +37,7 @@ procedure Lenv is
     -- List of stored criteria
     type Criteria_Rec is record
       Pattern : As.U.Asu_Us;
-      Regex : access Regular_Expressions.Compiled_Pattern;
+      Regex : access Reg_Exp.Compiled_Pattern;
       Strict : Boolean := False;
     end record;
     package Crit_List_Mng is new Dynamic_List (Criteria_Rec);
@@ -57,7 +57,7 @@ procedure Lenv is
         Criteria.Strict := Strict;
         Criteria.Pattern := As.U.Tus (Crit(Integer'Succ(Crit'First)
                                            .. Crit'Last));
-        Criteria.Regex := new Regular_Expressions.Compiled_Pattern;
+        Criteria.Regex := new Reg_Exp.Compiled_Pattern;
         Criteria.Regex.Compile (Result, Criteria.Pattern.Image);
         if not Result then
           Error ("Invalid regex " & Criteria.Pattern.Image

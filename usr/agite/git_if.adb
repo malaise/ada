@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Environ, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng, Str_Util,
-     Aski, Images, Regular_Expressions, Afpx, Trace.Loggers;
+     Aski, Images, Reg_Exp, Afpx, Trace.Loggers;
 with Utils;
 package body Git_If is
 
@@ -1373,7 +1373,7 @@ package body Git_If is
   function Remote_Branch (Name : in String := "") return String is
     Cmd : Many_Strings.Many_String;
     Line : As.U.Asu_Us;
-    Crit : Regular_Expressions.Compiled_Pattern;
+    Crit : Reg_Exp.Compiled_Pattern;
     Ok : Boolean;
     Index : Natural;
     use type As.U.Asu_Us;
@@ -1406,7 +1406,7 @@ package body Git_If is
     loop
       Out_Flow_1.List.Read (Line, Command.Res_Mng.Dyn_List.Current);
       declare
-        Res : constant Regular_Expressions.Match_Array
+        Res : constant Reg_Exp.Match_Array
             := Crit.Match (Line.Image, 3);
       begin
         -- The line must match and lead to at least a substring
@@ -1681,7 +1681,7 @@ package body Git_If is
     Stash_Name := "Dropped " & Stash_Name
         & " \([0-9a-h]{" & Images.Integer_Image (Git_Hash'Length) & "}\)"
         & Aski.Lf;
-    if not Regular_Expressions.Match (Stash_Name.Image,
+    if not Reg_Exp.Match (Stash_Name.Image,
                                       Out_Flow_3.Str.Image,
                                       Strict => True) then
       return "Unexpected result of drop: " & Out_Flow_3.Str.Image;
@@ -1781,7 +1781,7 @@ package body Git_If is
       Out_Flow_2.List.Read (Line);
       exit when Line.Length = Commit_Str'Length + Git_Hash'Length
       and then Line.Slice (1, Commit_Str'Length) = Commit_Str
-      and then Regular_Expressions.Match (
+      and then Reg_Exp.Match (
                    "[0-9a-z]{40}",
                    Line.Slice (Commit_Str'Length + 1, Line.Length),
                    Strict => True);

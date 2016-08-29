@@ -1,4 +1,4 @@
-with Long_Longs, Regular_Expressions;
+with Long_Longs, Reg_Exp;
 package Search_Pattern is
 
   subtype Ll_Natural  is Long_Longs.Llu_Natural;
@@ -89,7 +89,7 @@ package Search_Pattern is
   -- Raises No_Regex if last Checks did not succeed
   -- May raise Substr_Len_Error if Utf8 sequence leads to exceed
   --  string length
-  function Str_Indexes return Regular_Expressions.Match_Cell;
+  function Str_Indexes return Reg_Exp.Match_Cell;
 
 end Search_Pattern;
 

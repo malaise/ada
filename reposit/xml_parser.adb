@@ -1,6 +1,6 @@
 with Ada.Exceptions, Ada.Unchecked_Deallocation;
 with Trace.Loggers, Exception_Messenger, Directory, Str_Util,
-     Regular_Expressions;
+     Reg_Exp;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
@@ -1424,6 +1424,6 @@ package body Xml_Parser is
   end Adjust;
 begin
   -- Ensure that Invalid_Pcre_Version exception is not masked
-  Regular_Expressions.Check_Pcre_Version;
+  Reg_Exp.Check_Pcre_Version;
 end Xml_Parser;
 

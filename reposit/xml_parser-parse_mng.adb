@@ -591,7 +591,7 @@ package body Parse_Mng  is
                     & Ctx.Flow.Curr_Flow.Encod'Img);
         end if;
       elsif Upper_Str (Attribute_Value.Image) = "ISO-8859-1"
-      or else Regular_Expressions.Match ("([A-Z]{2}-)?ASCII",
+      or else Reg_Exp.Match ("([A-Z]{2}-)?ASCII",
                                          Upper_Str (Attribute_Value.Image),
                                          Strict => True) then
         -- Guessing set encoding to Utf8 for any byte-based format

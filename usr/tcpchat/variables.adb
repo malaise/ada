@@ -1,4 +1,4 @@
-with Computer, Environ, Regular_Expressions, Images;
+with Computer, Environ, Reg_Exp, Images;
 with Error, Debug;
 package body Variables is
 
@@ -66,8 +66,8 @@ package body Variables is
     -- Must not be empty, start by '$', contain a '=' or be a number
     if Name.Is_Null
     or else Name.Element (1) = Ext_Ref
-    or else Regular_Expressions.Match ("=", Name.Image, False)
-    or else Regular_Expressions.Match ("[0-9]+", Name.Image, True) then
+    or else Reg_Exp.Match ("=", Name.Image, False)
+    or else Reg_Exp.Match ("[0-9]+", Name.Image, True) then
       Error ("Invalid variable name " & Name.Image);
       raise Invalid_Name;
     end if;
@@ -99,7 +99,7 @@ package body Variables is
   procedure Set_Volatile (Name, Value : in As.U.Asu_Us) is
   begin
     -- Must be a number
-    if not Regular_Expressions.Match ("[0-9]+", Name.Image, True) then
+    if not Reg_Exp.Match ("[0-9]+", Name.Image, True) then
       Error ("Invalid volatile variable name " & Name.Image);
       raise Invalid_Name;
     end if;

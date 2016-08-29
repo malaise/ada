@@ -4,7 +4,7 @@ with Ada.Unchecked_Deallocation;
 package body Regex_Filters is
 
   procedure Free is new Ada.Unchecked_Deallocation (
-                Regular_Expressions.Compiled_Pattern,
+                Reg_Exp.Compiled_Pattern,
                 Pattern_Access);
 
   procedure Free (Cell : in out Filter_Cell) is
@@ -22,7 +22,7 @@ package body Regex_Filters is
   begin
     -- Create/init cell
     Cell.Match := Match;
-    Cell.Pattern := new Regular_Expressions.Compiled_Pattern;
+    Cell.Pattern := new Reg_Exp.Compiled_Pattern;
     -- Compile expression
     Cell.Pattern.Compile (Ok, Criteria);
     if Ok then

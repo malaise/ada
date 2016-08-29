@@ -5,7 +5,7 @@ package body Search_Pattern is
 
   -- 0 to 16 substring indexes
   subtype Substr_Array is
-      Regular_Expressions.Match_Array (Nb_Sub_String_Range);
+      Reg_Exp.Match_Array (Nb_Sub_String_Range);
 
   -- Unbounded array of back references (inter-regex)
   subtype Byte is Natural range 0 .. 255;
@@ -50,7 +50,7 @@ package body Search_Pattern is
     -- String to search (and Regex depending on Is_regex)
     Find_Str : As.U.Asu_Us;
     Case_Sensitive, Dot_All : Boolean;
-    Pat : Regular_Expressions.Compiled_Pattern;
+    Pat : Reg_Exp.Compiled_Pattern;
     -- Inter-regex back references
     Backrefs : Backref_Ua;
     -- The complete string from input flow that matches
@@ -217,7 +217,7 @@ package body Search_Pattern is
       Error ("Invalid pattern """ & Crit
         & """." & Line_Feed
         & "Error (from PCRE) is: "
-        & Regular_Expressions.Error(Upat_Access.Pat));
+        & Reg_Exp.Error(Upat_Access.Pat));
     end if;
   end Add;
 
@@ -775,7 +775,7 @@ package body Search_Pattern is
     Crit_Access, Upat_Access : Line_Pat_Acc;
     -- Check result
     Nmatch : Natural;
-    Match : Regular_Expressions.Match_Array
+    Match : Reg_Exp.Match_Array
                (1 .. Nb_Sub_String_Range'Last + 1);
     -- Backref, Index of Backref in string, and result of recompilation
     Backref : Backref_Rec;
@@ -947,8 +947,8 @@ package body Search_Pattern is
                       Sub_String_Index : Nb_Sub_String_Range)
            return String is
     Upat_Access : Line_Pat_Acc;
-    Cell : Regular_Expressions.Match_Cell;
-    use type Regular_Expressions.Match_Cell;
+    Cell : Reg_Exp.Match_Cell;
+    use type Reg_Exp.Match_Cell;
   begin
     -- Get access to the pattern
     Upat_Access := Get_Search_Access (Regex_Index);
@@ -962,7 +962,7 @@ package body Search_Pattern is
       raise Substr_Len_Error;
     end if;
     -- Return the slice
-    if Cell = Regular_Expressions.No_Match then
+    if Cell = Reg_Exp.No_Match then
       -- Empty match
       return "";
     else
@@ -994,9 +994,9 @@ package body Search_Pattern is
   -- Raises No_Regex if last Check did not succeed
   -- May raise Substr_Len_Error if Utf8 sequence leads to exceed
   --  string length
-  function Str_Indexes return Regular_Expressions.Match_Cell is
+  function Str_Indexes return Reg_Exp.Match_Cell is
     Upat_Access : Line_Pat_Acc;
-    Cell : Regular_Expressions.Match_Cell;
+    Cell : Reg_Exp.Match_Cell;
     Nbre : Ll_Natural;
     use type Ll_Natural;
   begin

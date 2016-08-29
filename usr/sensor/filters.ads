@@ -1,4 +1,4 @@
-with As.U, Long_Longs, Timers, Queues, Regular_Expressions;
+with As.U, Long_Longs, Timers, Queues, Reg_Exp;
 package Filters is
 
   -- Circular list to store history
@@ -15,7 +15,7 @@ package Filters is
     Rule : As.U.Asu_Us;
     Seconds : Tail_Length;
     Time_Format : As.U.Asu_Us;
-    Pattern : access Regular_Expressions.Compiled_Pattern;
+    Pattern : access Reg_Exp.Compiled_Pattern;
   end record;
 
   -- Check and store a filter

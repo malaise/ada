@@ -525,7 +525,7 @@ recurs (1)::
 regex_filters (2)::
      Check a string versus chained regex criteria.
 
-regular_expressions (2)::
+reg_exp (2)::
      Check a string versus a regular expression.
 
 rnd (1)::
@@ -696,7 +696,7 @@ Multiget:: astub
 
 Parser:: dictio
 
-Regular_Expressions:: asubst
+Reg_Exp:: asubst
 
 Select_File:: account
 

@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Perpet, Day_Mng, Normal, Basic_Proc, Argument, Regular_Expressions,
+with Perpet, Day_Mng, Normal, Basic_Proc, Argument, Reg_Exp,
      Gets, Images;
 procedure T_Delta_Date is
 
@@ -109,7 +109,7 @@ procedure T_Delta_Date is
     Millisec : Day_Mng.T_Millisecs;
     Lstr : constant String (1 .. Str'Length) := Str;
   begin
-    if not Regular_Expressions.Match (
+    if not Reg_Exp.Match (
        "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}",
        Str, True) then
       raise Error_Raised;

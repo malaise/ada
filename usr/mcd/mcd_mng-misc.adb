@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with Event_Mng;
-with Regular_Expressions, Basic_Proc, Sys_Calls, Trace;
+with Reg_Exp, Basic_Proc, Sys_Calls, Trace;
 
 separate (Mcd_Mng)
 package body Misc is
@@ -174,21 +174,21 @@ package body Misc is
   end Set_Debug;
 
   function Reg_Match (Pattern, Str : Item_Rec) return Item_Rec is
-    Res : Regular_Expressions.Match_Cell;
-    use type Regular_Expressions.Match_Cell;
+    Res : Reg_Exp.Match_Cell;
+    use type Reg_Exp.Match_Cell;
   begin
     if Pattern.Kind /= Chrs or else Str.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Res := Regular_Expressions.Match (Pattern.Val_Text.Image,
+    Res := Reg_Exp.Match (Pattern.Val_Text.Image,
                                       Str.Val_Text.Image);
-    if Res = Regular_Expressions.No_Match then
+    if Res = Reg_Exp.No_Match then
       return (Kind => Inte, Val_Inte => 0);
     else
       return (Kind => Inte, Val_Inte => My_Math.Inte(Res.First_Offset));
     end if;
   exception
-    when Regular_Expressions.No_Criteria =>
+    when Reg_Exp.No_Criteria =>
       raise Invalid_Argument;
   end Reg_Match;
 

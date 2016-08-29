@@ -182,7 +182,7 @@ package body Dtd is
     -- Remove any ','
     Res := As.U.Tus (Str_Util.Substit (Res.Image, ",", ""));
     -- Now compile to check it
-    if not Regular_Expressions.Check (Res.Image) then
+    if not Reg_Exp.Check (Res.Image) then
       Debug ("Dtd regex does node compile >" & Res.Image & "<");
       Util.Error (Ctx.Flow, "Invalid children definition");
     end if;
@@ -1567,7 +1567,7 @@ package body Dtd is
         end if;
         -- Strictly check that list matches criteria
         -- Regexp is lazy, the ^ and $ make it know that we want the full match
-        if not Regular_Expressions.Match ("^(" & Info.List.Image & ")$",
+        if not Reg_Exp.Match ("^(" & Info.List.Image & ")$",
                 Childstr.Image, Strict => True) then
           Util.Error (Ctx.Flow, "According to dtd, element " & Name.Image
                     & " allows children " & Strip_Sep (Info.List)
@@ -1586,7 +1586,7 @@ package body Dtd is
       & "be used for EMPTY elements");
     end if;
   exception
-    when Regular_Expressions.No_Criteria =>
+    when Reg_Exp.No_Criteria =>
       -- Normally it was checks at parsing
       Debug ("Dtd regex does not compile for check " & Info.List.Image);
       raise Internal_Error;

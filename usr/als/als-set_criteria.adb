@@ -1,4 +1,4 @@
-with Many_Strings, Regular_Expressions;
+with Many_Strings, Reg_Exp;
 with Debug;
 separate (Als)
 procedure Set_Criteria (Name     : in String;
@@ -27,7 +27,7 @@ begin
     -- @regex -> regex, no split
     Debug.Log ("  Adding " & Name & " regexp " & Criteria(First + 1 .. Last));
     Call (Criteria(First + 1 .. Last), True);
-  elsif Regular_Expressions.Match ("\\+" & Regex_Char & ".*",
+  elsif Reg_Exp.Match ("\\+" & Regex_Char & ".*",
                                    Criteria(First .. Last),
                                    Strict => True) then
     -- \..\@template -> \..@template (skip first '\')

@@ -15,7 +15,7 @@ package body Filters is
   --   Tail : Long_Longs.Ll_Positive;
   --   Hist : access Hist_Mng.Circ_Type;
   --   Rule : As.U.Asu_Us;
-  --   Pattern : access Regular_Expressions.Compiled_Pattern;
+  --   Pattern : access Reg_Exp.Compiled_Pattern;
   -- end record;
 
   -- Check and store a filter

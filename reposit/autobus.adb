@@ -390,7 +390,7 @@ package body Autobus is
   -- Remove current (in current Bus list) subscriber
   --  and move to next
   procedure Deallocate is new Ada.Unchecked_Deallocation (
-            Regular_Expressions.Compiled_Pattern, Filter_Access);
+            Reg_Exp.Compiled_Pattern, Filter_Access);
   procedure Remove_Current_Subscriber is
     Subscriber_Acc : Subscriber_Access;
     Moved : Boolean;
@@ -408,7 +408,7 @@ package body Autobus is
     Subscriber_Acc.Client.Acc := null;
     -- Free Filter and delete from Bus list
     if Subscriber_Acc.Filter /= null then
-      Regular_Expressions.Free (Subscriber_Acc.Filter.all);
+      Reg_Exp.Free (Subscriber_Acc.Filter.all);
       Deallocate (Subscriber_Acc.Filter);
     end if;
     Buses.Access_Current.Subscribers.Delete (Moved => Moved);
@@ -1465,12 +1465,12 @@ package body Autobus is
 
     -- Compile Filter
     if Filter /= "" then
-      Subs.Filter := new Regular_Expressions.Compiled_Pattern;
+      Subs.Filter := new Reg_Exp.Compiled_Pattern;
       Subs.Filter.Compile (Ok, Filter, Multi_Line => True, Dot_All => True);
       if not Ok then
         Logger.Log_Debug ("Subscriber.Init regexp error "
-                        & Regular_Expressions.Error (Subs.Filter.all));
-        Regular_Expressions.Free (Subs.Filter.all);
+                        & Reg_Exp.Error (Subs.Filter.all));
+        Reg_Exp.Free (Subs.Filter.all);
         Deallocate (Subs.Filter);
         raise Invalid_Filter;
       end if;

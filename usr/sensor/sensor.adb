@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Argument, Basic_Proc, Sys_Calls, As.U, Timers, Event_Mng, Xml_Parser,
-     Regular_Expressions, Date_Text;
+     Reg_Exp, Date_Text;
 with Debug, Rules, Filters, Executor;
 procedure Sensor is
 
@@ -161,7 +161,7 @@ begin
     end if;
     -- Compile pattern
     Text := Ctx.Get_Text (Ctx.Get_Child (Child, 1));
-    Filter.Pattern := new Regular_Expressions.Compiled_Pattern;
+    Filter.Pattern := new Reg_Exp.Compiled_Pattern;
     Filter.Pattern.Compile (Ok, Text.Image);
     if not Ok then
       Basic_Proc.Put_Line_Error ("Filter at line "

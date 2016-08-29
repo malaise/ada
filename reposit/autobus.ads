@@ -1,6 +1,6 @@
 -- Simple API for reliable message passing
 private with Ada.Finalization;
-private with Chronos.Passive_Timers, Dynamic_List, Regular_Expressions, Timers,
+private with Chronos.Passive_Timers, Dynamic_List, Reg_Exp, Timers,
              Limited_List;
 with Socket, As.U, Trilean;
 package Autobus is
@@ -274,7 +274,7 @@ private
   package Partner_Access_List_Mng renames Partner_Access_Dyn_List_Mng.Dyn_List;
 
   -- List of Subscribers
-  type Filter_Access is access Regular_Expressions.Compiled_Pattern;
+  type Filter_Access is access Reg_Exp.Compiled_Pattern;
   type Observer_Access is access all Observer_Type'Class;
   type Subscriber_Rec is record
     -- Bus

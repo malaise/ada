@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Basic_Proc, Sys_Calls, Normal, As.U, Regular_Expressions,
+with Basic_Proc, Sys_Calls, Normal, As.U, Reg_Exp,
      Str_Util, Command, Many_Strings, Argument, Parser,
      Hashed_List.Unique, Unbounded_Arrays, Dynamic_List, Images;
 procedure T_Str_Error is
@@ -11,10 +11,10 @@ procedure T_Str_Error is
   Line : As.U.Asu_Us;
 
   -- Paterns to match and result of exec
-  Patc, Pata : Regular_Expressions.Compiled_Pattern;
+  Patc, Pata : Reg_Exp.Compiled_Pattern;
   Ok : Boolean;
   Nb_Match : Natural;
-  Matches : Regular_Expressions.Match_Array (1 .. 3);
+  Matches : Reg_Exp.Match_Array (1 .. 3);
   Valid : Boolean;
 
   -- Max len of mnemonic
@@ -182,7 +182,7 @@ begin
     "^#define[[:blank:]]+(E[A-Z]+)[[:blank:]]+(E[A-Z]+)[[:blank:]]*$");
   if not Ok then
     Basic_Proc.Put_Line_Error ("ERROR, invalid regex: "
-          & Regular_Expressions.Error (Pata) & '.');
+          & Reg_Exp.Error (Pata) & '.');
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
@@ -329,7 +329,7 @@ begin
   -- Process arguments
   for I in 1 .. Argument.Get_Nbre_Arg loop
     Argument.Get_Parameter (Line, Occurence => I);
-    if Regular_Expressions.Match ("E[A-Z]*", Line.Image, True) then
+    if Reg_Exp.Match ("E[A-Z]*", Line.Image, True) then
       -- A mnemonic, read its definition
       Def.Name := Line;
       Defs.Search (Def, Found);
@@ -339,7 +339,7 @@ begin
       else
         Basic_Proc.Put_Line_Output (Line.Image & " => Mnemonic not found");
       end if;
-    elsif Regular_Expressions.Match ("[1-9][0-9]*", Line.Image, True) then
+    elsif Reg_Exp.Match ("[1-9][0-9]*", Line.Image, True) then
       -- A code, read it
       Def.Name.Set_Null;
       begin

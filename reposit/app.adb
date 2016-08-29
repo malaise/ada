@@ -1,6 +1,6 @@
 with Basic_Proc, Trace.Loggers, As.U, Argument, Argument_Parser, Long_Longs,
      Mixed_Str, Str_Util.Regex, Ada_Words, Text_Line, Unbounded_Arrays,
-     Many_Strings, Regular_Expressions, Unlimited_Pool;
+     Many_Strings, Reg_Exp, Unlimited_Pool;
 procedure App is
 
   Version : constant String := "V02.01";
@@ -90,7 +90,7 @@ procedure App is
 
   -- Regex associated to
   -- Valid <name>{|[<name>]} or <name>{&[<name>]}
-  Valid_Or, Valid_And : Regular_Expressions.Compiled_Pattern;
+  Valid_Or, Valid_And : Reg_Exp.Compiled_Pattern;
 
   -- Check that a string of names ORed or ANDed matches a definition
   function Check (Names : As.U.Asu_Us; Ored : Boolean) return Boolean is
@@ -153,13 +153,13 @@ procedure App is
   -- The regexes associated to the prefix and various keywords
   --------------
   Rdef, Rifdef, Rifnotdef, Relsifdef, Relsifnotdef, Relsedef, Rendifdef,
-  Rrefdef, Rdefine : Regular_Expressions.Compiled_Pattern;
+  Rrefdef, Rdefine : Reg_Exp.Compiled_Pattern;
 
   Refdef_Str : constant String := "RefDef";
 
   -- Compile a regex, with or without a name, with or without a value
   -- Report error
-  procedure Compile (Pattern : in out Regular_Expressions.Compiled_Pattern;
+  procedure Compile (Pattern : in out Reg_Exp.Compiled_Pattern;
                      Keyword : in String;
                      Name : in Boolean;
                      Value : in Boolean := False) is
@@ -181,23 +181,23 @@ procedure App is
       & "$");
     if not Ok then
       Error ("Regex " & Keyword & " does not compile: "
-           & Regular_Expressions.Error (Pattern));
+           & Reg_Exp.Error (Pattern));
     end if;
   end Compile;
 
   -- Check if Str strictly matches the Regex
   -- Store last name and last value if they are set
   Last_Name, Last_Value : As.U.Asu_Us;
-  function Match (Pattern : Regular_Expressions.Compiled_Pattern;
+  function Match (Pattern : Reg_Exp.Compiled_Pattern;
                   Str : As.U.Asu_Us) return Boolean is
     N : Natural;
-    Info : Regular_Expressions.Match_Array (1 .. 4);
+    Info : Reg_Exp.Match_Array (1 .. 4);
     Result : Boolean;
   begin
-    Regular_Expressions.Exec (Pattern, Str.Image, N, Info);
+    Reg_Exp.Exec (Pattern, Str.Image, N, Info);
     -- Check strict match
     Result := N >= 1
-              and then Regular_Expressions.Strict_Match (Str.Image, Info(1));
+              and then Reg_Exp.Strict_Match (Str.Image, Info(1));
     -- Store name (first substring, info(2))
     if N >= 2 then
       Last_Name := Str.Uslice (Info(2).First_Offset, Info(2).Last_Offset_Stop);

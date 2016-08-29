@@ -1,4 +1,4 @@
-with Argument, Argument_Parser, Regular_Expressions, Images, Str_Util,
+with Argument, Argument_Parser, Reg_Exp, Images, Str_Util,
      Text_Line, Basic_Proc, As.U;
 
 procedure T_Regexp is
@@ -41,7 +41,7 @@ procedure T_Regexp is
   Strict : Boolean := False;
   Start : Natural := 1;
   Ok : Boolean;
-  Pattern : Regular_Expressions.Compiled_Pattern;
+  Pattern : Reg_Exp.Compiled_Pattern;
   Arg_Error, Compile_Error : exception;
 
   procedure Compile_Pattern (Str : in String; Report : in Boolean := True) is
@@ -68,7 +68,7 @@ procedure T_Regexp is
 
   subtype Match_Result is Natural range 0 .. 50;
   subtype Match_Range is Positive range 1 .. Match_Result'Last;
-  Match_Info : Regular_Expressions.Match_Array (Match_Range);
+  Match_Info : Reg_Exp.Match_Array (Match_Range);
   N_Matched : Match_Result;
 begin
   if Argument.Get_Nbre_Arg < 1 then
@@ -142,7 +142,7 @@ begin
       --  (Str contains a string that matches but Str has more characters)
       -- then it doesn't match
       if Strict
-      and then not Regular_Expressions.Strict_Match (Str, Match_Info) then
+      and then not Reg_Exp.Strict_Match (Str, Match_Info) then
         N_Matched := 0;
       end if;
     end;

@@ -2,21 +2,21 @@
 --  based on regular expressions (extended, case sensitive and matching
 --  newline).
 with As.U.Utils;
-with Regular_Expressions;
+with Reg_Exp;
 package Str_Util.Regex is
 
-  -- Result of search, from Regular_Expressions
+  -- Result of search, from Reg_Exp
   -- subtype Offset_Range is Integer;
   -- type Match_Cell is record
   --   First_Offset :  Offset_Range;
   --   Last_Offset_Start :  Offset_Range;
   --   Last_Offset_Stop  :  Offset_Range;
   -- end record;
-  type Search_Result is new Regular_Expressions.Match_Cell;
+  type Search_Result is new Reg_Exp.Match_Cell;
 
   -- Result of search when no match found
   No_Match : constant Search_Result
-           := Search_Result(Regular_Expressions.No_Match);
+           := Search_Result(Reg_Exp.No_Match);
 
   -- Raised by Locate or Replace if Within is not Empty and an Index is not
   -- in Within'Range

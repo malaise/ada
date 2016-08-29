@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with As.U.Utils, Environ, Argument, Argument_Parser, Basic_Proc, Language,
-     Mixed_Str, Text_Line, Regular_Expressions;
+     Mixed_Str, Text_Line, Reg_Exp;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Log;
 procedure Asubst is
 
@@ -342,7 +342,7 @@ begin
     else
       Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & " " & Version);
       Basic_Proc.Put_Line_Error ("PCRE "
-                               & Regular_Expressions.Get_Pcre_Version);
+                               & Reg_Exp.Get_Pcre_Version);
       Basic_Proc.Set_Exit_Code (Error_Exit_Code);
     end if;
     return;

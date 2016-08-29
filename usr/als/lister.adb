@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Basic_Proc, Argument, Sys_Calls, Regular_Expressions, Directory,
+with Basic_Proc, Argument, Sys_Calls, Reg_Exp, Directory,
      Dynamic_List;
 with Exit_Code, Debug;
 package body Lister is
@@ -69,7 +69,7 @@ package body Lister is
       end;
     else
       -- Check that regex is Ok
-      if not Regular_Expressions.Check (Template) then
+      if not Reg_Exp.Check (Template) then
         raise Invalid_Template;
       end if;
     end if;
@@ -139,7 +139,7 @@ package body Lister is
   begin
     if Regex then
       -- Basename v.s. regex
-      return Regular_Expressions.Match (Template, Directory.Basename (File),
+      return Reg_Exp.Match (Template, Directory.Basename (File),
                                         Strict => True);
     else
       -- Basename v.s. template

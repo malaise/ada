@@ -1,6 +1,6 @@
 -- Posix regular expression
 with Aski, C_Types, Bit_Ops, Utf_8, Str_Util, Gets;
-package body Regular_Expressions is
+package body Reg_Exp is
 
   -- C interface --
   subtype C_Offset_Range is Integer;
@@ -411,5 +411,5 @@ package body Regular_Expressions is
     Free (Criteria);
   end Finalize;
 
-end Regular_Expressions;
+end Reg_Exp;
 

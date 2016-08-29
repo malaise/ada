@@ -1,5 +1,5 @@
 with As.U.Utils;
-with Argument, Sys_Calls.File_Access, Text_Line, Temp_File, Regular_Expressions,
+with Argument, Sys_Calls.File_Access, Text_Line, Temp_File, Reg_Exp,
      Directory, Copy_File, Mixed_Str, Images, Basic_Proc, Long_Longs;
 with Search_Pattern, Replace_Pattern, Log;
 package body Substit is
@@ -506,9 +506,9 @@ package body Substit is
                             Done_File      : out Boolean) is
 
     Current : Positive;
-    Match_Res : Regular_Expressions.Match_Cell;
+    Match_Res : Reg_Exp.Match_Cell;
     Matches : Boolean;
-    use type Regular_Expressions.Match_Cell, Search_Pattern.Ll_Natural;
+    use type Reg_Exp.Match_Cell, Search_Pattern.Ll_Natural;
   begin
     Done_File := False;
     -- Optimization if simple substit of a char by a char, no regex
@@ -547,7 +547,7 @@ package body Substit is
                & "< from" & Match_Res.First_Offset'Img
                & " to" & Match_Res.Last_Offset_Stop'Img);
       else
-        Match_Res := Regular_Expressions.No_Match;
+        Match_Res := Reg_Exp.No_Match;
       end if;
 
       -- Check if this matching pattern matches the exclusion rule
@@ -580,11 +580,11 @@ package body Substit is
       if Grep_Invert then
         if Line.all.Image = In_File.Get_Line_Feed then
           Matches := False;
-          Match_Res := Regular_Expressions.No_Match;
+          Match_Res := Reg_Exp.No_Match;
           Log.Sub ("Match delimiter discarded because grep inversion");
         elsif Line.all.Is_Null then
           Matches := False;
-          Match_Res := Regular_Expressions.No_Match;
+          Match_Res := Reg_Exp.No_Match;
           Log.Sub ("Match empty discarded because grep inversion");
         elsif Matches then
           -- Line matching becomes not matching
@@ -592,7 +592,7 @@ package body Substit is
           Log.Sub ("Match >" & Line.all.Slice (Match_Res.First_Offset,
                                                Match_Res.Last_Offset_Stop)
                    & "< discarded because grep inversion");
-          Match_Res := Regular_Expressions.No_Match;
+          Match_Res := Reg_Exp.No_Match;
         else
           -- Line not matching becomes full matching
           Matches := True;
@@ -606,7 +606,7 @@ package body Substit is
 
       if not Matches then
         -- Search next match if any
-        exit when Match_Res = Regular_Expressions.No_Match;
+        exit when Match_Res = Reg_Exp.No_Match;
         Current := Match_Res.First_Offset + 1;
         exit when Current > Line.all.Length;
       else
@@ -722,7 +722,7 @@ package body Substit is
                          Nb_Match       : in out Subst_Natural;
                          Loc_Subst      : out Subst_Natural;
                          Done_File      : out Boolean) is
-    Match_Res : Regular_Expressions.Match_Cell;
+    Match_Res : Reg_Exp.Match_Cell;
     Line, First_Line, Last_Line : access As.U.Asu_Us;
     Matches, Excluded : Boolean;
 

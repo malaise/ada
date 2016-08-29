@@ -1,4 +1,4 @@
-with Trace.Loggers, As.U, Aski, Trilean, Gets, Mixed_Str, Regular_Expressions;
+with Trace.Loggers, As.U, Aski, Trilean, Gets, Mixed_Str, Reg_Exp;
 package body Scanner is
 
   -- Convert a string into a sequence of Anys, according to a given format
@@ -315,7 +315,7 @@ package body Scanner is
           Logger.Log_Debug ("Data too short >" & Data(Ind .. Data'Last) & "<");
           raise Invalid_Data;
         end if;
-        if not Regular_Expressions.Match ("[ ]*[+-]?[0-9]+", Data(Ind .. Stop),
+        if not Reg_Exp.Match ("[ ]*[+-]?[0-9]+", Data(Ind .. Stop),
                                           True) then
           Logger.Log_Debug ("Invalid long int >"
                           & Data(Ind .. Data'Last) & "<");
@@ -341,7 +341,7 @@ package body Scanner is
           Logger.Log_Debug ("Data too short >" & Data(Ind .. Data'Last) & "<");
           raise Invalid_Data;
         end if;
-        if not Regular_Expressions.Match ("[ ]*[+-]?[0-9]+(\.[0-9]+)?",
+        if not Reg_Exp.Match ("[ ]*[+-]?[0-9]+(\.[0-9]+)?",
                                           Data(Ind .. Stop), True) then
           Logger.Log_Debug ("Invalid duration >"
                           & Data(Ind .. Data'Last) & "<");
@@ -369,7 +369,7 @@ package body Scanner is
           Logger.Log_Debug ("Data too short >" & Data(Ind .. Data'Last) & "<");
           raise Invalid_Data;
         end if;
-        if not Regular_Expressions.Match (
+        if not Reg_Exp.Match (
             "[ ]*[+-]?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?",
             Data(Ind .. Stop), True) then
           Logger.Log_Debug ("Invalid real >"

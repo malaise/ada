@@ -1,5 +1,5 @@
 with As.U.Utils;
-with Regular_Expressions, Str_Util.Regex, Any_Def, Images, Mixed_Str;
+with Reg_Exp, Str_Util.Regex, Any_Def, Images, Mixed_Str;
 with Variables, Debug, Error;
 package body Matcher is
 
@@ -26,13 +26,13 @@ package body Matcher is
                     Str : As.U.Asu_Us;
                     Check_Only : Boolean) return Boolean is
     Expanding, Expanded, Result : As.U.Asu_Us;
-    Compiled : Regular_Expressions.Compiled_Pattern;
+    Compiled : Reg_Exp.Compiled_Pattern;
     Ok : Boolean;
     N_Matched : Natural;
-    Match_Info : Regular_Expressions.Match_Array (1 .. 10);
+    Match_Info : Reg_Exp.Match_Array (1 .. 10);
     Assign : Boolean;
     V1, V2 : Integer;
-    use type Regular_Expressions.Match_Cell, Any_Def.Any_Kind_List,
+    use type Reg_Exp.Match_Cell, Any_Def.Any_Kind_List,
              Tree.Node_Kind, Tree.Oper_List, Tree.Eval_List, As.U.Asu_Us;
   begin
 
@@ -157,7 +157,7 @@ package body Matcher is
       -- ${0} is first match ...
       Expanding := As.U.Tus (Images.Integer_Image (I - 1));
       if I <= N_Matched
-      and then Regular_Expressions.Valid_Match (Match_Info(I)) then
+      and then Reg_Exp.Valid_Match (Match_Info(I)) then
         Expanded := Result.Uslice (Match_Info(I).First_Offset,
                                    Match_Info(I).Last_Offset_Stop);
       else
@@ -205,7 +205,7 @@ package body Matcher is
        Value => (Kind => Any_Def.Str_Kind,
                  Str  => Statement.Uslice (Index + 1, Statement.Length)));
     -- Name must match varable construction (Ada) rules
-    if not Regular_Expressions.Match (
+    if not Reg_Exp.Match (
       "[A-Za-z](_?[A-Za-z0-9])*", Node.Assign(I).Name.Image, True) then
       Error ("Invalid variable name in assignment "
            & Node.Assign(I).Name.Image);
@@ -225,7 +225,7 @@ package body Matcher is
     end;
     -- Check that value does not contain refs > 9 ("\$\{[0-9][0-9]+\}")
     --  and does not contain "="
-    if Regular_Expressions.Match ("(\$\{[0-9][0-9]+\}|=)",
+    if Reg_Exp.Match ("(\$\{[0-9][0-9]+\}|=)",
             Node.Assign(I).Value.Str.Image, False) then
       Error ("Invalid value in assignment "
            & Node.Assign(I).Value.Str.Image);

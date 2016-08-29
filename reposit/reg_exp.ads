@@ -2,7 +2,7 @@
 private with System;
 private with Ada.Finalization;
 private with Language;
-package Regular_Expressions is
+package Reg_Exp is
 
   -- Get current PCRE version
   function Get_Pcre_Version return String;
@@ -158,5 +158,5 @@ private
 
   overriding procedure Finalize  (Criteria : in out Compiled_Pattern);
 
-end Regular_Expressions;
+end Reg_Exp;
 

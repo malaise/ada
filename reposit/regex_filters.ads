@@ -1,7 +1,7 @@
 -- Set a list of regex expressions and success conditions
 -- Check a string versus the citeria one after the other
 private with Ada.Finalization;
-private with Dynamic_List, Regular_Expressions;
+private with Dynamic_List, Reg_Exp;
 package Regex_Filters is
 
   type Regex_Filter is tagged limited private;
@@ -27,7 +27,7 @@ package Regex_Filters is
 private
 
   -- Store a compiled Regex and the Match flag
-  type Pattern_Access is access Regular_Expressions.Compiled_Pattern;
+  type Pattern_Access is access Reg_Exp.Compiled_Pattern;
   type Filter_Cell is record
     Pattern : Pattern_Access;
     Match : Boolean;

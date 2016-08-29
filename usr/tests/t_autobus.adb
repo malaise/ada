@@ -15,7 +15,7 @@
 --  * Exit after sending 3 messages
 with Ada.Exceptions;
 with Basic_Proc, Event_Mng, Str_Util, Mixed_Str, As.U, Async_Stdin,
-     Argument, Argument_Parser, Trilean, Aski, Regular_Expressions;
+     Argument, Argument_Parser, Trilean, Aski, Reg_Exp;
 with Autobus;
 procedure T_Autobus is
 
@@ -168,14 +168,14 @@ procedure T_Autobus is
     Do_Sendto := Send_Mode;
     if Do_Sendto then
       declare
-        Matches : constant Regular_Expressions.Match_Array
-                := Regular_Expressions.Match (
+        Matches : constant Reg_Exp.Match_Array
+                := Reg_Exp.Match (
                      Send_Str & " +([^ ]+) +(.+)", Msg.Image, 3);
       begin
         -- Check that string matches
         Do_Sendto := Matches'Length = 3
-            and then Regular_Expressions.Strict_Match (Msg.Image, Matches(1))
-            and then Regular_Expressions.Valid_Match (Matches(1));
+            and then Reg_Exp.Strict_Match (Msg.Image, Matches(1))
+            and then Reg_Exp.Valid_Match (Matches(1));
         if Do_Sendto then
           Addr := Msg.Uslice (Matches(2).First_Offset,
                               Matches(2).Last_Offset_Stop);

@@ -4,7 +4,7 @@ with Hexa_Utils, Upper_Str, Lower_Str, Mixed_Str;
 package body Str_Util.Regex is
 
   -- Internal: compile regex
-  procedure Compile (Compiled : in out Regular_Expressions.Compiled_Pattern;
+  procedure Compile (Compiled : in out Reg_Exp.Compiled_Pattern;
                      Ok : out Boolean;
                      Criteria : in String;
                      Options : in Options_Rec) is
@@ -18,20 +18,20 @@ package body Str_Util.Regex is
 
   -- Internal Locate with Regex compiled
   function Locate (Within     : String;
-                   Compiled   : Regular_Expressions.Compiled_Pattern;
+                   Compiled   : Reg_Exp.Compiled_Pattern;
                    From_Index : Natural;
                    To_Index   : Natural;
                    Forward    : Boolean;
                    Occurence  : Positive)
-           return Regular_Expressions.Match_Cell is
+           return Reg_Exp.Match_Cell is
     I1, I2 : Natural;
     Occ : Natural;
-    Info, Prev : Regular_Expressions.Match_Cell;
-    use type Regular_Expressions.Match_Cell;
+    Info, Prev : Reg_Exp.Match_Cell;
+    use type Reg_Exp.Match_Cell;
   begin
     -- Empty Within => No_match
     if Within'Length = 0 then
-      return Regular_Expressions.No_Match;
+      return Reg_Exp.No_Match;
     end if;
     -- Initialise indexes
     I1 := (if From_Index = 0 then Within'First else From_Index);
@@ -42,13 +42,13 @@ package body Str_Util.Regex is
     end if;
 
     Occ := 0;
-    Prev := Regular_Expressions.Match_Cell(No_Match);
+    Prev := Reg_Exp.Match_Cell(No_Match);
     if Forward then
       -- Loop as long as matches and until Occ different matching
       for I in I1 .. I2 loop
         Info := Compiled.Match (Within(I .. I2));
-        if Info = Regular_Expressions.No_Match then
-          return Regular_Expressions.No_Match;
+        if Info = Reg_Exp.No_Match then
+          return Reg_Exp.No_Match;
         elsif Info /= Prev then
           -- One new matching occurence
           Occ := Occ + 1;
@@ -73,10 +73,10 @@ package body Str_Util.Regex is
           Prev := Info;
         end if;
       end loop;
-      return Regular_Expressions.No_Match;
+      return Reg_Exp.No_Match;
     end if;
     -- Just to be safe
-    return Regular_Expressions.No_Match;
+    return Reg_Exp.No_Match;
   end Locate;
 
 
@@ -95,7 +95,7 @@ package body Str_Util.Regex is
                    Occurence  : Positive := 1;
                    Options    : Options_Rec := Default_Options)
            return Search_Result is
-    Compiled : Regular_Expressions.Compiled_Pattern;
+    Compiled : Reg_Exp.Compiled_Pattern;
     Ok : Boolean;
   begin
     -- Compile regex
@@ -115,7 +115,7 @@ package body Str_Util.Regex is
   -- Start is set to the first char after new string (maybe above Working)
   procedure Substit (Working : in out As.U.Asu_Us;
                      N_Match : in Positive;
-                     Info    : in Regular_Expressions.Match_Array;
+                     Info    : in Reg_Exp.Match_Array;
                      By      : in String;
                      Start   : out Natural) is
     -- New By after substitution of \0, \1...
@@ -125,7 +125,7 @@ package body Str_Util.Regex is
     From : Positive;
     Char : Character;
     Info_Index : Positive;
-    Linfo : constant Regular_Expressions.Match_Array := Info;
+    Linfo : constant Reg_Exp.Match_Array := Info;
     Case_Start : Positive;
     Case_Char : Character;
   begin
@@ -262,13 +262,13 @@ package body Str_Util.Regex is
     I1, I2 : Natural;
     Working : As.U.Asu_Us;
     -- Regex compilation
-    Compiled : Regular_Expressions.Compiled_Pattern;
+    Compiled : Reg_Exp.Compiled_Pattern;
     Ok : Boolean;
     -- Nb of cycles
     Cycle : Positive;
     -- Match info: allow expansion of \0, \1 to 9
     N_Match : Natural;
-    Info : Regular_Expressions.Match_Array(1 .. 10);
+    Info : Reg_Exp.Match_Array(1 .. 10);
     Match_Found : Boolean;
     -- Current startup point and Last char of Working
     Start : Positive;
@@ -338,9 +338,9 @@ package body Str_Util.Regex is
            return As.U.Utils.Asu_Array is
     -- Regex compilation
     Ok : Boolean;
-    Compiled : Regular_Expressions.Compiled_Pattern;
+    Compiled : Reg_Exp.Compiled_Pattern;
     -- One extra cell (the first) to store global indexes
-    Cells : Regular_Expressions.Match_Array (1 .. Max_Slices + 1);
+    Cells : Reg_Exp.Match_Array (1 .. Max_Slices + 1);
     N_Matched : Natural;
   begin
     -- Compile regex
@@ -351,7 +351,7 @@ package body Str_Util.Regex is
     -- Execute regex
     Compiled.Exec (Str, N_Matched, Cells);
     -- Empty slice if no strict match
-    if not Regular_Expressions.Strict_Match (Str, Cells) then
+    if not Reg_Exp.Strict_Match (Str, Cells) then
       declare
         Result : constant As.U.Utils.Asu_Array(1 .. 0) := (others => As.U.Asu_Null);
       begin
@@ -379,14 +379,14 @@ package body Str_Util.Regex is
            return As.U.Utils.Asu_Array is
     -- Regex compilation
     Ok : Boolean;
-    Compiled : Regular_Expressions.Compiled_Pattern;
+    Compiled : Reg_Exp.Compiled_Pattern;
     -- The match results
-    Cell : Regular_Expressions.Match_Cell;
+    Cell : Reg_Exp.Match_Cell;
     -- Result
     Result : As.U.Utils.Asu_Ua.Unb_Array;
     -- For Locate
     From_Index : Natural;
-    use type  Regular_Expressions.Match_Cell;
+    use type  Reg_Exp.Match_Cell;
   begin
     -- Compile regex
     Compile (Compiled, Ok, Separator, Options);
@@ -401,7 +401,7 @@ package body Str_Util.Regex is
     loop
       -- First occurent in tail
       Cell := Locate (Str, Compiled, From_Index, 0, True, 1);
-      if Cell /= Regular_Expressions.No_Match then
+      if Cell /= Reg_Exp.No_Match then
           -- A match
         if Cell.Last_Offset_Start = Str'First then
           -- Str starts by a match, insert Asu_Null
