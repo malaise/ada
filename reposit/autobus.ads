@@ -53,14 +53,14 @@ package Autobus is
   --  same address.
   --  - A Reliable publisher sends in TCP while in Multicast it sends in IPM,
   --  - A Reliable receiver receives Reliable and Multicast messages,
-  --  - A  Multicast receiver receives the live messages of the Reliable
-  --    publishers connects with them, then it handles them as passive,
+  --  - A Multicast receiver receives the live messages of the Reliable
+  --    publishers, connects with them, then it handles them as passive,
   --  - Point to point sending (operation Send_To) follows the same logic:
-  --    * if either the local or remote Bus is reliable then the Host-Port must
+  --    * if either the local or remote Bus is Reliable then the Host-Port must
   --      denote the known Reliable patner
   --    * if both Buses are Multicast, then the Host-Port is used to send
   --      the message in point to point UDP to the Host,
-  -- This way, any message sent through or to a reliable bus is reliable, and
+  -- This way, any message sent through or to a Reliable bus is reliable, and
   --  any message sent through and to a Multicast bus is multicast.
 
   -- Tuning the Bus:

@@ -16,8 +16,8 @@ package Scanner is
   -- d : Duration
   -- r : Real (My_Math.Real)
   -- s : String (As.U.Asu_Us)
-  -- i : Identifier, "letter (underscore? letter_or_digit)*" in a Asu_Us
-  -- w : Word, any non-space sqience, in a Asu_Us
+  -- i : Identifier, "(letter | digit | '_')+" in a Asu_Us
+  -- w : Word, any non-space sequence, in a Asu_Us
 
   --
   -- A reference to a type is indicated by the character '%',
@@ -26,7 +26,7 @@ package Scanner is
   --  otherwise as many as possible valid (for the <type>) characters will
   -- be read.
   -- b can have a <Len>, if set it must be 5, and then " True", "True " or
-  --  or "False" (in any casing) are expected, otherwise only "True" or "False"
+  --  "False" (in any casing) are expected, otherwise only "True" or "False"
   --  are expected (in any casing)
   -- t is the same as boolean, except that the strings "Other" and "Maybe" are
   --  also recognised
@@ -44,15 +44,15 @@ package Scanner is
   -- Any other character in the format denotes the same character expected in
   --  the data
   -- Examples:
-  -- - "%l%s" will read aa long integer as long as possible and will complete
+  -- - "%l%s" will read a long integer as long as possible and will complete
   --    with a string (possibly empty)
-  -- - "%2l%%%3s" will read 2 characters for a long, check that there is
-  --    a '%', then read 3 characters in a string
+  -- - "%2l%%%3se" will read 2 characters for a long, check that there is
+  --    a '%', then read 3 characters in a string, then check there is a 'e'
 
   -- A format is invalid if:
   -- - it contains an unsupported "%[<len>]<type>" sequence
   -- - it ends with the character '%'
-  -- - the "%s" sequence appears somewhere else than at the end of the foramt
+  -- - the "%s" sequence appears somewhere else than at the end of the format
 
   -- Compute the length of data induced by Format
   -- Raises Invalid_Format if Format is invalid
