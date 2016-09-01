@@ -417,7 +417,9 @@ package Con_Io is
 
   -- Idem but, if Extra, then any change of the string length (Suppr, Insert...)
   --   ends Ptg before modifying Str
-  -- Returns the inserted char or space
+  -- On Insert, sets Stat to Insert and returns the Char to insert (at Pos)
+  -- otherwise (backspace, Suppr...) sets Stat to the extra cursor movement and
+  --  returns a space
   function Put_Then_Get (Name       : in Window;
                          Extra      : in Boolean;
                          Str        : in out Unicode_Sequence;
@@ -484,7 +486,6 @@ package Con_Io is
   procedure Draw_Point (Con : in Console;
                         X   : in X_Range;
                         Y   : in Y_Range);
-
 
   -- Draw a line between 2 points, with screen foreground
   --  and current Xor mode on screen background
