@@ -3,7 +3,7 @@ with Aski, Images, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "2";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -559,10 +559,9 @@ package body Xml_Parser.Generator is
     Ctx.Prologue.Insert_Father (Cell);
   end Clear_Prologue;
 
-  ----------------------
-  -- TREE OF ELEMENTS --
-  ----------------------
-
+  ------------------------------
+  -- TREE OF ELEMENTS or TAIL --
+  ------------------------------
   -- Move to a node in Elements or Tail
   procedure Move_To_Node_Elementail (Ctx  : in out Ctx_Type;
                                      Node : in Node_Type;
@@ -574,6 +573,143 @@ package body Xml_Parser.Generator is
     Move_To (Ctx, Node, Tree);
   end Move_To_Node_Elementail;
 
+  -- INTERNAL op
+  function Internal_Kind_Of (Kind : Node_Kind_List) return Internal_Kind_List is
+  begin
+    return (case Kind is
+              when Element => Element,
+              when Text    => Text,
+              when Pi      => Pi,
+              when Comment => Comment);
+  end Internal_Kind_Of;
+
+  -- INTERNAL: Set kind and name of a cell; Check
+  procedure Set (Cell : in out My_Tree_Cell;
+                 Kind : in Node_Kind_List;
+                 Name : in String) is
+  begin
+    Cell.Kind := Internal_Kind_Of (Kind);
+    Cell.Nb_Attributes := 0;
+    -- Default for all but Pi. Set_Pi will overwrite
+    Cell.Name := As.U.Tus (Name);
+    case Kind is
+      when Element =>
+        Check_Name (Name);
+      when Text =>
+        Check_Text (Name);
+      when Pi =>
+        Set_Pi (Cell, Name);
+      when Comment =>
+        Check_Comment (Name);
+    end case;
+  end Set;
+
+  -- Insert a child element, text or comment, and move to it
+  procedure Add_Child (Ctx      : in out Ctx_Type;
+                       Element  : in Element_Type;
+                       Name     : in String;
+                       Kind     : in Node_Kind_List;
+                       New_Node : out Node_Type;
+                       Append   : in Boolean := True) is
+    Tree : Tree_Acc;
+    Father, Cell : My_Tree_Cell;
+  begin
+    -- Set the Cell, check name
+    Set (Cell, Kind, Name);
+    -- Move to Element, must be in Elements or Tail
+    Move_To_Node_Elementail (Ctx, Element, Tree);
+    Tree.Read (Father);
+    -- Forbid inserting Element or Text in tail
+    if Element.Branch = Tail_Br
+    and then (Kind = Xml_Parser.Element or else Kind = Xml_Parser.Text) then
+      raise Invalid_Node;
+    end if;
+    -- Insert
+    if Append or else Father.Nb_Attributes = 0 then
+      Tree.Insert_Child (Cell, not Append);
+    else
+      -- Insert after attributes
+      Tree.Move_Child;
+      for I in 1 .. Father.Nb_Attributes - 1 loop
+        Tree.Move_Brother (False);
+      end loop;
+      Tree.Insert_Brother (Cell, False);
+    end if;
+    New_Node := (Kind => Kind,
+                 Magic => Ctx.Magic,
+                 Branch => Element.Branch,
+                 Tree_Access => Tree.Get_Position);
+  end Add_Child;
+
+  -- Insert a brother element, text or comment, and move to it
+  procedure Add_Brother (Ctx      : in out Ctx_Type;
+                         Node     : in Node_Type;
+                         Name     : in String;
+                         Kind     : in Node_Kind_List;
+                         New_Node : out Node_Type;
+                         Next     : in Boolean := True) is
+    Tree : Tree_Acc;
+    Brother, Cell : My_Tree_Cell;
+  begin
+    -- Set the Cell
+    Set (Cell, Kind, Name);
+    -- Move to Node, must be in Elements or Tail
+    Move_To_Node_Elementail (Ctx, Node, Tree);
+    Tree.Read (Brother);
+    -- Forbid inserting Element or Text in tail
+    if Node.Branch = Tail_Br
+    and then (Kind = Element or else Kind = Text) then
+      raise Invalid_Node;
+    end if;
+    -- Forbid inserting a brother to root (of elements or tail)
+    if not Tree.Has_Father then
+      raise Invalid_Node;
+    end if;
+    -- Insert
+    Tree.Insert_Brother (Cell, not Next);
+    New_Node := (Kind => Kind,
+                 Magic => Ctx.Magic,
+                 Branch => Node.Branch,
+                 Tree_Access => Tree.Get_Position);
+  end Add_Brother;
+
+  -- Set the PITarget and data of a Pi
+  -- Content must have the form "<PITarget> [ <spaces> <Pi_Data> ]"
+  procedure Set_Pi (Ctx     : in out Ctx_Type;
+                    Pi    : in out Pi_Type;
+                    Content : in String) is
+    Tree : Tree_Acc;
+    Cell : My_Tree_Cell;
+  begin
+    -- Check Pi info
+    Set_Pi (Cell, Content);
+    -- Move to node, must be in Elements or Tail
+    Move_To_Node_Elementail (Ctx, Pi, Tree);
+    -- Update Pi
+    Tree.Read (Cell);
+    Set_Pi (Cell, Content);
+    Tree.Replace (Cell);
+  end Set_Pi;
+
+  -- Set the text of a Comment
+  procedure Set_Comment (Ctx     : in out Ctx_Type;
+                         Comment : in out Comment_Type;
+                         Content : in String) is
+    Tree : Tree_Acc;
+    Cell : My_Tree_Cell;
+  begin
+    Check_Comment (Content);
+    -- Move to node, must be in Elements or Tail
+    Move_To_Node_Elementail (Ctx, Comment, Tree);
+    -- Update Text
+    Tree.Read (Cell);
+    Cell.Name := As.U.Tus (Content);
+    Tree.Replace (Cell);
+  end Set_Comment;
+
+  ----------------------
+  -- TREE OF ELEMENTS --
+  ----------------------
   -- Move to a node in Elements
   procedure Move_To_Node_Element (Ctx  : in out Ctx_Type;
                                   Node : in Node_Type;
@@ -584,17 +720,6 @@ package body Xml_Parser.Generator is
     end if;
     Move_To (Ctx, Node, Tree);
   end Move_To_Node_Element;
-
-
-  -- Internal op
-  function Internal_Kind_Of (Kind : Node_Kind_List) return Internal_Kind_List is
-  begin
-    return (case Kind is
-              when Element => Element,
-              when Text    => Text,
-              when Pi      => Pi,
-              when Comment => Comment);
-  end Internal_Kind_Of;
 
   -- Set (change) the name of an element
   -- May raise Invalid_Argument if invalid name
@@ -799,96 +924,6 @@ package body Xml_Parser.Generator is
     raise Attribute_Not_Found;
   end Del_Attribute;
 
-  -- INTERNAL: Set kind and name of a cell; Check
-  procedure Set (Cell : in out My_Tree_Cell;
-                 Kind : in Node_Kind_List;
-                 Name : in String) is
-  begin
-    Cell.Kind := Internal_Kind_Of (Kind);
-    Cell.Nb_Attributes := 0;
-    -- Default for all but Pi. Set_Pi will overwrite
-    Cell.Name := As.U.Tus (Name);
-    case Kind is
-      when Element =>
-        Check_Name (Name);
-      when Text =>
-        Check_Text (Name);
-      when Pi =>
-        Set_Pi (Cell, Name);
-      when Comment =>
-        Check_Comment (Name);
-    end case;
-  end Set;
-
-  -- Insert a child element, text or comment, and move to it
-  procedure Add_Child (Ctx      : in out Ctx_Type;
-                       Element  : in Element_Type;
-                       Name     : in String;
-                       Kind     : in Node_Kind_List;
-                       New_Node : out Node_Type;
-                       Append   : in Boolean := True) is
-    Tree : Tree_Acc;
-    Father, Cell : My_Tree_Cell;
-  begin
-    -- Set the Cell, check name
-    Set (Cell, Kind, Name);
-    -- Move to Element, must be in Elements or Tail
-    Move_To_Node_Elementail (Ctx, Element, Tree);
-    Tree.Read (Father);
-    -- Forbid inserting Element or Text in tail
-    if Element.Branch = Tail_Br
-    and then (Kind = Xml_Parser.Element or else Kind = Xml_Parser.Text) then
-      raise Invalid_Node;
-    end if;
-    -- Insert
-    if Append or else Father.Nb_Attributes = 0 then
-      Tree.Insert_Child (Cell, not Append);
-    else
-      -- Insert after attributes
-      Tree.Move_Child;
-      for I in 1 .. Father.Nb_Attributes - 1 loop
-        Tree.Move_Brother (False);
-      end loop;
-      Tree.Insert_Brother (Cell, False);
-    end if;
-    New_Node := (Kind => Kind,
-                 Magic => Ctx.Magic,
-                 Branch => Element.Branch,
-                 Tree_Access => Tree.Get_Position);
-  end Add_Child;
-
-  -- Insert a brother element, text or comment, and move to it
-  procedure Add_Brother (Ctx      : in out Ctx_Type;
-                         Node     : in Node_Type;
-                         Name     : in String;
-                         Kind     : in Node_Kind_List;
-                         New_Node : out Node_Type;
-                         Next     : in Boolean := True) is
-    Tree : Tree_Acc;
-    Brother, Cell : My_Tree_Cell;
-  begin
-    -- Set the Cell
-    Set (Cell, Kind, Name);
-    -- Move to Node, must be in Elements or Tail
-    Move_To_Node_Elementail (Ctx, Node, Tree);
-    Tree.Read (Brother);
-    -- Forbid inserting Element or Text in tail
-    if Node.Branch = Tail_Br
-    and then (Kind = Element or else Kind = Text) then
-      raise Invalid_Node;
-    end if;
-    -- Forbid inserting a brother to root (of elements or tail)
-    if not Tree.Has_Father then
-      raise Invalid_Node;
-    end if;
-    -- Insert
-    Tree.Insert_Brother (Cell, not Next);
-    New_Node := (Kind => Kind,
-                 Magic => Ctx.Magic,
-                 Branch => Node.Branch,
-                 Tree_Access => Tree.Get_Position);
-  end Add_Brother;
-
   -- Swap two elements (and their children)
   procedure Swap (Ctx  : in out Ctx_Type;
                   Elt1 : in out Element_Type;
@@ -955,24 +990,6 @@ package body Xml_Parser.Generator is
     Tree.Replace (Cell);
   end Set_Tag_Empty;
 
-  -- Set the PITarget and data of a Pi
-  -- Content must have the form "<PITarget> [ <spaces> <Pi_Data> ]"
-  procedure Set_Pi (Ctx     : in out Ctx_Type;
-                    Pi    : in out Pi_Type;
-                    Content : in String) is
-    Tree : Tree_Acc;
-    Cell : My_Tree_Cell;
-  begin
-    -- Check Pi info
-    Set_Pi (Cell, Content);
-    -- Move to node, must be in Elements or Tail
-    Move_To_Node_Elementail (Ctx, Pi, Tree);
-    -- Update Pi
-    Tree.Read (Cell);
-    Set_Pi (Cell, Content);
-    Tree.Replace (Cell);
-  end Set_Pi;
-
   -- Set the text of a Text element
   procedure Set_Text (Ctx     : in out Ctx_Type;
                       Text    : in out Text_Type;
@@ -989,22 +1006,9 @@ package body Xml_Parser.Generator is
     Tree.Replace (Cell);
   end Set_Text;
 
-  -- Set the text of a Comment
-  procedure Set_Comment (Ctx     : in out Ctx_Type;
-                         Comment : in out Comment_Type;
-                         Content : in String) is
-    Tree : Tree_Acc;
-    Cell : My_Tree_Cell;
-  begin
-    Check_Comment (Content);
-    -- Move to node, must be in Elements or Tail
-    Move_To_Node_Elementail (Ctx, Comment, Tree);
-    -- Update Text
-    Tree.Read (Cell);
-    Cell.Name := As.U.Tus (Content);
-    Tree.Replace (Cell);
-  end Set_Comment;
-
+  -----------------------
+  -- COMMON OPERATIONS --
+  -----------------------
   -- Delete current node and its children
   -- May raise Invalid_Node if being Prologue or Element root
   procedure Delete_Node (Ctx      : in out Ctx_Type;

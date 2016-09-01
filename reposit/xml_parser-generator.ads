@@ -87,6 +87,59 @@ package Xml_Parser.Generator is
   -- Clear the whole prologue
   procedure Clear_Prologue (Ctx : in out Ctx_Type);
 
+  -------------------------------------------
+  -- Elements and Tail specific operations --
+  -------------------------------------------
+  -- May raise Invalid_Node if used in Prologue
+  --  or if Adding an Element or Text to the Tail
+
+  -- Insert a child element, text, Pi or comment, and move to it
+  -- For a Text, the Name is the text
+  -- For a Pi the Name is "<PITarget> [ <spaces> <Pi_Data> ]"
+  -- For a Comment the Name is the comment
+  -- May raise Invalid_Argument if Name is not valid for the Kind (see
+  --  Set_Name/Pi/Text/Comment)
+  -- May raise Invalid_Node if in Prologue
+  --   or if Kind is an Element or Text in Tail
+  procedure Add_Child (Ctx      : in out Ctx_Type;
+                       Element  : in Element_Type;
+                       Name     : in String;
+                       Kind     : in Node_Kind_List;
+                       New_Node : out Node_Type;
+                       Append   : in Boolean := True);
+
+  -- Insert a brother element, text, Pi or comment, and move to it
+  -- For a Text, the Name is the text
+  -- For a Pi the Name is "<PITarget> [ <spaces> <Pi_Data> ]"
+  -- For a Comment the Name is the comment
+  -- May raise Invalid_Argument if Name is not valid for the Kind (see
+  --  Set_Name/Pi/Text/Comment)
+  -- May raise Invalid_Node if in Prologue
+  -- May raise Invalid_Node if in Prologue
+  --   or if Kind is an Element or a Text in Tail
+  --   or adding a brother to the root element or the the tail element
+  procedure Add_Brother (Ctx      : in out Ctx_Type;
+                         Node     : in Node_Type;
+                         Name     : in String;
+                         Kind     : in Node_Kind_List;
+                         New_Node : out Node_Type;
+                         Next     : in Boolean := True);
+
+  -- Set/change the PITarget and data of a Pi
+  -- Content must have the form "<PITarget> [ <spaces> <Pi_Data> ]"
+  -- May raise Invalid_Argument if
+  --  - PITarget is not a valid name
+  --  - Pi_Data is not a valid Pi dada (i.e. contains "?>")
+  procedure Set_Pi (Ctx     : in out Ctx_Type;
+                    Pi    : in out Pi_Type;
+                    Content : in String);
+
+  -- Set/change the text of a Comment
+  -- May raise Invalid_Argument if Content is no valid (i.e. contains "--")
+  procedure Set_Comment (Ctx     : in out Ctx_Type;
+                         Comment : in out Comment_Type;
+                         Content : in String);
+
   ----------------------------------
   -- Elements specific operations --
   ----------------------------------
@@ -138,38 +191,6 @@ package Xml_Parser.Generator is
                            Element : in out Element_Type;
                            Name : in String);
 
-  -- Insert a child element, text, Pi or comment, and move to it
-  -- For a Text, the Name is the text
-  -- For a Pi the Name is "<PITarget> [ <spaces> <Pi_Data> ]"
-  -- For a Comment the Name is the comment
-  -- May raise Invalid_Argument if Name is not valid for the Kind (see
-  --  Set_Name/Pi/Text/Comment)
-  -- May raise Invalid_Node if in Prologue
-  --   or if Kind is an Element or Text in Tail
-  procedure Add_Child (Ctx      : in out Ctx_Type;
-                       Element  : in Element_Type;
-                       Name     : in String;
-                       Kind     : in Node_Kind_List;
-                       New_Node : out Node_Type;
-                       Append   : in Boolean := True);
-
-  -- Insert a brother element, text, Pi or comment, and move to it
-  -- For a Text, the Name is the text
-  -- For a Pi the Name is "<PITarget> [ <spaces> <Pi_Data> ]"
-  -- For a Comment the Name is the comment
-  -- May raise Invalid_Argument if Name is not valid for the Kind (see
-  --  Set_Name/Pi/Text/Comment)
-  -- May raise Invalid_Node if in Prologue
-  -- May raise Invalid_Node if in Prologue
-  --   or if Kind is an Element or a Text in Tail
-  --   or adding a brother to the root element or the the tail element
-  procedure Add_Brother (Ctx      : in out Ctx_Type;
-                         Node     : in Node_Type;
-                         Name     : in String;
-                         Kind     : in Node_Kind_List;
-                         New_Node : out Node_Type;
-                         Next     : in Boolean := True);
-
   -- Swap two elements (and their children)
   -- May raise Invalid_Node if one is in Prologue or in Tail
   -- May raise Invalid_Node is one is ancestor of the other
@@ -199,14 +220,6 @@ package Xml_Parser.Generator is
                            Element    : in out Element_Type;
                            Tag_Empty  : in Boolean);
 
-  -- Set/change the PITarget and data of a Pi
-  -- Content must have the form "<PITarget> [ <spaces> <Pi_Data> ]"
-  -- May raise Invalid_Argument if
-  --  - PITarget is not a valid name
-  --  - Pi_Data is not a valid Pi dada (i.e. contains "?>")
-  procedure Set_Pi (Ctx     : in out Ctx_Type;
-                    Pi    : in out Pi_Type;
-                    Content : in String);
 
   -- Set/change the text of a Text element
   -- May raise Invalid_Argument if Content contains
@@ -216,12 +229,6 @@ package Xml_Parser.Generator is
   procedure Set_Text (Ctx     : in out Ctx_Type;
                       Text    : in out Text_Type;
                       Content : in String);
-
-  -- Set/change the text of a Comment
-  -- May raise Invalid_Argument if Content is no valid (i.e. contains "--")
-  procedure Set_Comment (Ctx     : in out Ctx_Type;
-                         Comment : in out Comment_Type;
-                         Content : in String);
 
   -----------------------
   -- Common operations --
