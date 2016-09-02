@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V31.12
+V31.13
 
 General purpose
 ---------------
@@ -850,7 +850,7 @@ anchor:XAddCurr[]
 anchor:XAddSep[]
 The buttons 'AddCur' and 'AddSep' insert a named or anonymous (depending
 on the field 'Name') bookmark or separator, below the current entry. +
-This text field 'Name:' can scroll horizontally to accomodate to long
+This get field 'Name' can scroll horizontally to accomodate to long
 paths.
 
 anchor:XGoto[]
@@ -872,8 +872,9 @@ The edition can be cancelled by clicking in the 'Cancel' button or with the
 'Esc' key.
 
 NOTE: As a consequence, it is possible to change a separator into a bookmark
-and reverse, but it is not possible to clear the name of an existing
-bookmark or separator.
+and reverse, it is possible to change an anonymous separator or bookmark into
+a named separator or bookmark, but it is not possible to clear the name of an
+existing bookmark or separator.
 
 The current bookmark or separator can be deleted with the button 'Del',
 after confirmation if it is a bookmark.
@@ -1446,12 +1447,13 @@ of the comment if it exceeds the maximum number of lines (7).
 Delete the current line of the comment.
 
 .MergeL
-Merge the current line with the next line. If the resulting line is too long,
-then its tail is dropped.
+Merge the current line with the next line. If the resulting line is too long
+(more than 75 characters), then its tail is dropped.
 
 .SplitL
-Split in two the current line before the current position.  Drops the last line
-of the comment if it exceeds the maximum number of lines (7).
+Split in two the current line before the current position (as a key 'Return'
+would do). Drops the last line of the comment if it exceeds the maximum number
+of lines (7).
 
 .Copy
 Copy the text of the comment in the xref:XX11Selection[X11 selection buffer].
@@ -1467,7 +1469,7 @@ Shift + Suppr, move to the last character of a line by hitting Ctrl
 
 NOTE: The comment must not be empty when committing.
 
-.List of change
+.List of changes
 
 This list shows all the current changes in the repository, with 3 letters of
 status for each file:
@@ -1482,13 +1484,13 @@ of unresolved conflicts),
 The list is sorted according to these three categories, separated by dummy
 entries "-----------------".
 
-* The second column ('I') shows the changes in the index (that will be
+* The second column ('I') shows the kind of change in the index (that will be
 committed),
-* The third column ('L') shows the changes local to the repository (that will
-not be committed).
+* The third column ('L') shows the kind of change local to the repository (that
+will *NOT* be committed).
 
-You can select a file and show its local differences, stage or unstage its
-changes.
+You can select a file edit it or show its local differences, stage or unstage
+its changes.
 
 .Actions
 
@@ -1517,8 +1519,8 @@ StageAll::
 anchor:XStageAll[]Stage all the changes that are unstaged. Also proposes to add
 the untracked (new) files.
 
-NOTE: The Stage, and StageAll buttons do not stage the files that are in the
-status 'U' (updated but unmerged), see the xref:XAdd[Add] function.
+NOTE: The Stage and StageAll buttons also add the files that are in the
+status 'U' (updated but unmerged), as the xref:XAdd[Add] function.
 
 NOTE: The Stage, Unstage and StageAll buttons are active only if there are local
 changes.
