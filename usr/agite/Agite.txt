@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V31.13
+V31.14
 
 General purpose
 ---------------
@@ -1540,14 +1540,16 @@ Show the difference between the current change and the head for the current file
 
 .Commit
 
-Commit the staged changes.
-
-NOTE: Ensure to enter a comment before committing.
-
+Commit the staged changes. +
 If the commit succeeds then the list of changes is updated, otherwise
 the error is reported through a specific screen.
 
-NOTE: The Commit button is active only if there are staged change.
+NOTE: Ensure to enter a comment before committing, otherwise the operaton will
+be rejected.
+
+NOTE: The Commit button is active only if there are some staged changes. +
+The text of the button is in red if there are some unstaged changes (except
+when editing commits during a xref:XCherry[cherry pick] session).
 
 .Push
 

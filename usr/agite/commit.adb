@@ -415,13 +415,14 @@ package body Commit is
     procedure Reread (Force : in Boolean) is
       Current_Change : Git_If.File_Entry_Rec;
       Moved : Boolean;
-      To_Commit : Boolean;
+      Some_Staged : Boolean;
+      Some_Unstaged : Boolean;
       All_Unknown : Boolean;
       Pos : Natural := 0;
       Prev_Changes : Git_If.File_List;
       Changed : Boolean;
       Protect : Boolean;
-      use type Git_If.File_Entry_Rec;
+      use type Git_If.File_Entry_Rec, Trilean.Trilean;
     begin
       Changed := Force;
       -- Save current position and entry
@@ -485,9 +486,10 @@ package body Commit is
         end if;
       end if;
 
-      -- Check if some changes are staged (To_Commit)
+      -- Check if some changes are staged
       -- Check if there are only unknown files (All_Unknown)
-      To_Commit := False;
+      Some_Staged := False;
+      Some_Unstaged := False;
       All_Unknown := True;
       if not Changes.Is_Empty then
         Pos := Changes.Get_Position;
@@ -496,11 +498,17 @@ package body Commit is
         loop
           Changes.Read (Current_Change, Moved => Moved);
           if Is_Staged (Current_Change.S2) then
-            To_Commit := True;
+            Some_Staged := True;
           end if;
-          if not Is_Unknown (Current_Change)
-          and then Current_Change /= Sep_File then
-            All_Unknown := False;
+          if Current_Change /= Sep_File then
+            if not Is_Unknown (Current_Change) then
+              -- This is a known file
+              All_Unknown := False;
+              if Staged (Current_Change) /= Trilean.True then
+                -- Not fully staged
+                Some_Unstaged := True;
+              end if;
+            end if;
           end if;
           exit when not Moved;
         end loop;
@@ -517,8 +525,17 @@ package body Commit is
       Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Diff,
                                 Afpx.Line_List.Is_Empty);
       -- Allow commit if some stages and not forbidden
+      Afpx.Reset_Field (Afpx_Xref.Commit.Commit);
       Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Commit,
-                                not To_Commit or else Allow_Commit = Forbid);
+                                not Some_Staged or else Allow_Commit = Forbid);
+      -- If nNot in a cherry pick and some changes are unstaged => Warn
+      if not Afpx.Get_Field_Protection (Afpx_Xref.Commit.Commit)
+      and then not In_Loop
+      and then Some_Unstaged then
+        Afpx.Set_Field_Colors (Afpx_Xref.Commit.Commit,
+                               Con_Io.Color_Of ("Red"));
+      end if;
+         
       -- Forbid Done if Commit required and still some known files
       --  (to stage or commit)
       Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Back,
