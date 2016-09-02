@@ -16,13 +16,15 @@ package Utils.X is
   --  procuste, preserve tail or head
   procedure Encode_Field (Text : in String;
                           Field : in Afpx.Field_Range;
-                          Keep_Tail : in Boolean := True);
+                          Keep_Tail : in Boolean := True;
+                          Show_Cut : Boolean := True);
 
   -- Clear field and Center Text in 1st column of Field (row 0 or 1)
   --  procuste, preserve head or not
   procedure Center_Field (Text : in String;
                           Field : in Afpx.Field_Range;
-                          Keep_Head : in Boolean := True);
+                          Keep_Head : in Boolean := True;
+                          Show_Cut : Boolean := True);
 
 end Utils.X;
 

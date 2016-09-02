@@ -28,18 +28,21 @@ package body Utils.X is
   --  procuste, preserve tail or head
   procedure Encode_Field (Text : in String;
                           Field : in Afpx.Field_Range;
-                          Keep_Tail : in Boolean := True) is
+                          Keep_Tail : in Boolean := True;
+                          Show_Cut : Boolean := True) is
   begin
-    Afpx.Utils.Encode_Field (Text, Field, Row (Field), True, Keep_Tail);
+    Afpx.Utils.Encode_Field (Text, Field, Row (Field), True, Keep_Tail,
+                             Show_Cut);
   end Encode_Field;
 
   -- Clear field and Center Text in 1st column of Field (row 0 or 1)
   --  procuste, preserve head
   procedure Center_Field (Text : in String;
                           Field : in Afpx.Field_Range;
-                          Keep_Head : in Boolean := True) is
+                          Keep_Head : in Boolean := True;
+                          Show_Cut : Boolean := True) is
   begin
-    Afpx.Utils.Center_Field (Text, Field, Row (Field), Keep_Head);
+    Afpx.Utils.Center_Field (Text, Field, Row (Field), Keep_Head, Show_Cut);
   end Center_Field;
 
 end Utils.X;

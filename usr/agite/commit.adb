@@ -38,6 +38,8 @@ package body Commit is
 
   -- List width
   List_Width : Afpx.Width_Range;
+  -- Comment width
+  Comment_Width : Afpx.Width_Range;
 
   function Is_Staged (C : Character) return Boolean is
   begin
@@ -200,7 +202,10 @@ package body Commit is
       Field := Afpx_Xref.Commit.Comment1;
       for I in 1 .. Comment.Length loop
         if Comment.Element (I) = Aski.Lf then
-          Utils.X.Encode_Field (Comment.Slice (Prev, I - 1), Field);
+          -- Silently trunk tail
+          Utils.X.Encode_Field (Comment.Slice (Prev, I - 1), Field,
+                                Keep_Tail => False,
+                                Show_Cut => False);
           exit when Field = Afpx_Xref.Commit.Comment7;
           Field := Field + 1;
           Prev := I + 1;
@@ -272,6 +277,11 @@ package body Commit is
     -- Delete the Lf if it exists
     if Stop /= 0 then
       Comment.Delete (Stop, Stop);
+    end if;
+    -- Procuste the length of the new line (Lf will be removed when encoding)
+    Stop := Str_Util.Locate (Comment.Image, Aski.Lf & "", Stop);
+    if Stop /= 0 and then Stop - Start > Comment_Width then
+      Comment.Delete (Start + Comment_Width, Stop - 1);
     end if;
   end Merge_Line;
 
@@ -707,6 +717,7 @@ package body Commit is
 
     -- List width
     List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
+    Comment_Width := Afpx.Get_Data_Len (Afpx_Xref.Commit.Comment1);
 
     -- Encode Changes
     Reread (True);
