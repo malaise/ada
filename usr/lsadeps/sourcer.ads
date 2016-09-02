@@ -26,7 +26,8 @@ package Sourcer is
     Private_Child : Boolean := False;
     -- Unit name of parent (if Child or subunit)
     Parent : As.U.Asu_Us;
-    -- List of withed units - @unit@unit...@unit@
+    -- List of withed units, including restricted (limited and/or private) with
+    -- @unit@unit...@unit@
     Witheds : As.U.Asu_Us;
     -- List of restricted (limited and/or private) withed units
     -- @mode#unit@mode#unit@, where mode is 'L', 'P' or 'B'

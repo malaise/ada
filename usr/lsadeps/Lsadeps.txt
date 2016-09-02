@@ -1,6 +1,6 @@
 lsadeps
 =======
-V13.6
+V13.7
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -19,7 +19,7 @@ Usage: lsadeps <version> | <help> | <depend> | <list> | <check>
  <help>        ::= -h | --help
  <depend>      ::= <options> <target_unit> [ <path_unit> ]
  <target_unit> ::=  [<path>/]<unit>
- <options>     ::=  [ <specs> | <revert> ] [ <tree> | <fast> | <direct> ] [ <files> ] [ <bodies> ] [ <inclusions> ]
+ <options>     ::=  [ <specs> | <revert> ] [ <tree> | <fast> | <direct> ] [ <files> ] [ <bodies> ] [ <restrict> ] [ <inclusions> ]
  <specs>       ::= -s | --specs
  <revert>      ::= -r | --revert
  <tree>        ::= -t | --tree
@@ -27,6 +27,7 @@ Usage: lsadeps <version> | <help> | <depend> | <list> | <check>
  <direct>      ::= -d | --direct
  <files>       ::= -f | --files
  <bodies>      ::= -b | --bodies
+ <restrict>    ::= --restrict
  <inclusions   ::= { <include> | <recursive> | <exclude> }
  <dir>         ::= -I <dir> | --include=<dir_path>
  <recursive>   ::= -R <dir> | --recursive=<dir_path>
@@ -67,6 +68,9 @@ and <path_unit>,
 
  - 'bodies' to show, in revert mode, the units that depend from each other by
    "with" in the body,
+
+ - 'restrict' to skip restricted with ("private with", "limited with" and
+"limited private with"),
 
  - 'inclusions' to add some directories or some directory trees to the search
 path. +

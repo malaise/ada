@@ -3,18 +3,19 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory, Trace;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V13.6";
+  Version : constant String := "V13.7";
 
   -- The keys and descriptor of parsed keys
+  Nok : Character renames Argument_Parser.No_Key_Char;
   Keys : constant Argument_Parser.The_Keys_Type := (
    01 => (False, 'h', As.U.Tus ("help"),    False),
-   02 => (False, 'v', As.U.Tus ("version"), False),
-   03 => (False, 'c', As.U.Tus ("check"),   False),
-   04 => (False, 's', As.U.Tus ("specs"),   False),
-   05 => (False, 'r', As.U.Tus ("revert"),  False),
-   06 => (False, 't', As.U.Tus ("tree"),    False),
-   07 => (False, 'd', As.U.Tus ("direct"),  False),
-   08 => (False, 'f', As.U.Tus ("files"),   False),
+   02 => (False, 'v', As.U.Tus ("version"),  False),
+   03 => (False, 'c', As.U.Tus ("check"),    False),
+   04 => (False, 's', As.U.Tus ("specs"),    False),
+   05 => (False, 'r', As.U.Tus ("revert"),   False),
+   06 => (False, 't', As.U.Tus ("tree"),     False),
+   07 => (False, 'd', As.U.Tus ("direct"),   False),
+   08 => (False, 'f', As.U.Tus ("files"),    False),
    09 => (True,  'I', As.U.Tus ("include"),   True, True, As.U.Tus ("dir_path")),
    10 => (True,  'R', As.U.Tus ("recursive"), True, True, As.U.Tus ("dir_path")),
    11 => (True,  'E', As.U.Tus ("exclude"),   True, True, As.U.Tus ("dir_name")),
@@ -22,7 +23,8 @@ procedure Lsadeps is
    13 => (False, 'a', As.U.Tus ("all"),      False),
    14 => (False, 'C', As.U.Tus ("children"), False),
    15 => (False, 'b', As.U.Tus ("bodies"),   False),
-   16 => (False, 'F', As.U.Tus ("fast"), False));
+   16 => (False, 'F', As.U.Tus ("fast"),     False),
+   17 => (False, Nok, As.U.Tus ("restrict"), False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   Include_Index : constant Argument_Parser.The_Keys_Range := 9;
   Recursive_Index : constant Argument_Parser.The_Keys_Range := 10;
@@ -60,6 +62,8 @@ procedure Lsadeps is
      " <files>       ::= " & Argument_Parser.Image (Keys(8)));
     Basic_Proc.Put_Line_Error (
      " <bodies>      ::= " & Argument_Parser.Image (Keys(15)));
+    Basic_Proc.Put_Line_Error (
+     " <restrict>    ::= " & Argument_Parser.Image (Keys(17)));
     Basic_Proc.Put_Line_Error (
      " <inclusions>  ::= { <include> | <recursive> | <exclude> }");
     Basic_Proc.Put_Line_Error (
@@ -102,6 +106,8 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <bodies> to include the dependencies of bodies in revert mode,");
     Basic_Proc.Put_Line_Error (
+     " <restrict> to discard restricted (limited / private) with,");
+    Basic_Proc.Put_Line_Error (
      " <file> to show the file names (instead of unit names),");
     Basic_Proc.Put_Line_Error (
      " <inclusions> to add some directories or some directory trees to the search");
@@ -137,6 +143,7 @@ procedure Lsadeps is
   Fast_Mode : Boolean := False;
   Direct_Mode : Boolean := False;
   Bodies_Mode : Boolean := False;
+  Restrict_Mode : Boolean := False;
   Files_Mode : Boolean := False;
   Target, Target_Dir : As.U.Asu_Us;
   Path, Path_Dir : As.U.Asu_Us;
@@ -263,6 +270,12 @@ begin
   if Bodies_Mode and then not Revert_Mode then
     Error ("Bodies mode is allowed only in revert mode");
   end if;
+  if Arg_Dscr.Is_Set (17) then
+    Restrict_Mode := True;
+  end if;
+  if Bodies_Mode and then Restrict_Mode then
+    Error ("Restrict mode is not allowed in bodies mode");
+  end if;
   if Arg_Dscr.Is_Set (16) then
     Fast_Mode := True;
   end if;
@@ -271,7 +284,7 @@ begin
   if Arg_Dscr.Is_Set (3) then
     -- No option
     if Specs_Mode or else Revert_Mode or else Tree_Mode or else Direct_Mode
-    or else Files_Mode then
+    or else Files_Mode or else Bodies_Mode or else Restrict_Mode then
       Error ("Check mode does not support options");
     end if;
     -- No include
@@ -286,7 +299,7 @@ begin
   if Arg_Dscr.Is_Set (12) then
     -- No option except File and all
     if Specs_Mode or else Revert_Mode or else Tree_Mode
-    or else Direct_Mode then
+    or else Direct_Mode or else Bodies_Mode or else Restrict_Mode then
       Error ("List mode only supports file, all or children options");
     end if;
     -- No include
@@ -495,7 +508,7 @@ begin
   ----------------------------
   Tree_Mng.Build (Target_Dscr, Specs_Mode, Revert_Mode,
                   Tree_Mode, Shortest, Files_Mode,
-                  Direct_Mode, Bodies_Mode);
+                  Direct_Mode, Bodies_Mode, Restrict_Mode);
   Debug.Logger.Log (Perfo, "Tree built");
 
   -------------------

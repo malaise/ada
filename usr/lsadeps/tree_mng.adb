@@ -13,10 +13,16 @@ package body Tree_Mng is
     raise Error_Raised;
   end Error;
 
-  -- Do we build full tree or do we optimizeA (each entry only once)
+  -- Do we build full tree or do we optimize (each entry only once)
   --  or do we do only first level
   type Tree_Kind_List is (Full_Tree, Shortest_Way, Optimized, First_Level);
   Tree_Kind : Tree_Kind_List;
+
+  -- Do we display files or units
+  File_Mode : Boolean;
+
+  -- Do we handle restricted with (limited / private with)
+  Restrict_Mode : Boolean;
 
   -- Optimization: unique list of (<Path><File>, Level)
   type Cell is record
@@ -55,12 +61,22 @@ package body Tree_Mng is
   procedure Build_Node (Level : in Positive;
                         Origin : in Sourcer.Src_Dscr;
                         Specs_Mode, Revert_Mode,
-                        File_Mode, Bodies_Mode : in Boolean);
+                        Bodies_Mode : in Boolean);
 
-  -- Build the nodes with any unit withed in List, whatever Path
+  -- Is Name in the restricted with
+  function Is_Restricted_With (Name, Restr_Witheds : String) return Boolean is
+  begin
+    -- True if #Name@ appears in Restr_Witheds
+    return Str_Util.Locate (Restr_Witheds,
+          Sourcer.Restr_Separator & Name & Sourcer.Separator) /= 0;
+  end Is_Restricted_With;
+
+  -- Build the nodes with any unit withed in List,
+  -- For each unit: select unit in Path if it exists,
+  --  otherwise look everywhere and add all the units found
   procedure Build_Witheds (Level : in Positive;
-                           Path, Witheds : in As.U.Asu_Us;
-                           Specs_Mode, File_Mode : in Boolean) is
+                           Path, Witheds, Restr_Witheds : in As.U.Asu_Us;
+                           Specs_Mode : in Boolean) is
     Iter1 : Parser.Iterator;
     Name : Sourcer.Name_Dscr;
 
@@ -74,7 +90,7 @@ package body Tree_Mng is
       Src := Sourcer.Get_Unit (Path, Name.Unit);
       if not Src.Unit.Is_Null then
         -- Yes, local unit hides remote ones
-        Build_Node (Level, Src, Specs_Mode, False, File_Mode, False);
+        Build_Node (Level, Src, Specs_Mode, False, False);
         return;
       end if;
       -- List all (remote) units with this withed name
@@ -108,7 +124,7 @@ package body Tree_Mng is
             raise Sourcer.Src_List_Mng.Not_In_List;
           end if;
         end if;
-        Build_Node (Level, Src, Specs_Mode, False, File_Mode, False);
+        Build_Node (Level, Src, Specs_Mode, False, False);
       end loop;
     end Find_Units;
 
@@ -121,7 +137,11 @@ package body Tree_Mng is
     loop
       Name.Unit := As.U.Tus (Iter1.Next_Word);
       exit when Name.Unit.Is_Null;
-      Find_Units;
+      if not Restrict_Mode
+      or else not Is_Restricted_With (Name.Unit.Image, Restr_Witheds.Image) then
+        -- Not handling restricted with, or this unit is not restricted
+        Find_Units;
+      end if;
     end loop;
   end Build_Witheds;
 
@@ -131,7 +151,7 @@ package body Tree_Mng is
                             Units : in As.U.Asu_Us;
                             Path : in As.U.Asu_Us;
                             Specs_Mode, Revert_Mode,
-                            File_Mode, Bodies_Mode : in Boolean) is
+                            Bodies_Mode : in Boolean) is
     Iter : Parser.Iterator;
     Crit : Sourcer.Src_Dscr;
   begin
@@ -146,8 +166,7 @@ package body Tree_Mng is
       Crit.Kind := Sourcer.Subunit;
       Crit.Path := Path;
       Sourcer.List.Read (Crit);
-      Build_Node (Level, Crit, Specs_Mode, Revert_Mode,
-                  File_Mode, Bodies_Mode);
+      Build_Node (Level, Crit, Specs_Mode, Revert_Mode, Bodies_Mode);
     end loop;
   end Build_Subunits;
 
@@ -191,7 +210,7 @@ package body Tree_Mng is
 
   procedure Build_Withings (Level : in Positive;
                             Path, Name : in String;
-                            File_Mode, Bodies_Mode : in Boolean) is
+                            Bodies_Mode : in Boolean) is
     Withing : Sourcer.Withing_Dscr;
     Found : Boolean;
     Iter : Parser.Iterator;
@@ -223,17 +242,22 @@ package body Tree_Mng is
         exit when Str = "";
         -- Get spec or body withing us
         Dscr := Get_Wither (Name, Str);
-        -- See if it is local
-        if Dscr.Path = Path then
-          -- Yesss, add it to our list
-          Src_List.Insert (Dscr);
-        else
-          -- We are withed by a remote unit, see if we are hidden
-          -- Search a unit (spec or standalone body) in Dscr Path with our name
-          Hidding := Sourcer.Get_Unit (Dscr.Path, As.U.Tus (Name));
-          if Hidding.Unit.Is_Null then
-            -- We are not hidden, add it to our list
+        -- Skip restricted with if requested
+        if not Restrict_Mode
+        or else not Is_Restricted_With (Name, Dscr.Restr_Witheds.Image) then
+          -- See if it is local
+          if Dscr.Path = Path then
+            -- Yesss, add it to our list
             Src_List.Insert (Dscr);
+          else
+            -- We are withed by a remote unit, see if we are hidden
+            -- Search a unit (spec or standalone body) in Dscr Path
+            --  with our name
+            Hidding := Sourcer.Get_Unit (Dscr.Path, As.U.Tus (Name));
+            if Hidding.Unit.Is_Null then
+              -- We are not hidden, add it to our list
+              Src_List.Insert (Dscr);
+            end if;
           end if;
         end if;
       end;
@@ -244,7 +268,7 @@ package body Tree_Mng is
       Src_List.Rewind;
       loop
         Src_List.Read (Dscr, Moved => Moved);
-        Build_Node (Level, Dscr, True, True, File_Mode, Bodies_Mode);
+        Build_Node (Level, Dscr, True, True, Bodies_Mode);
         exit when not Moved;
       end loop;
     end if;
@@ -253,7 +277,7 @@ package body Tree_Mng is
   -- Build children from list of children
   procedure Build_Children (Level : in Positive;
                             Path, Children : in As.U.Asu_Us;
-                            File_Mode, Bodies_Mode : in Boolean) is
+                            Bodies_Mode : in Boolean) is
     Iter : Parser.Iterator;
     Dscr : Sourcer.Src_Dscr;
     Child_List : Src_Dyn_List_Mng.List_Type;
@@ -284,7 +308,7 @@ package body Tree_Mng is
       Child_List.Rewind;
       loop
         Child_List.Read (Dscr, Moved => Moved);
-        Build_Node (Level, Dscr, True, True, File_Mode, Bodies_Mode);
+        Build_Node (Level, Dscr, True, True, Bodies_Mode);
         exit when not Moved;
       end loop;
     end if;
@@ -294,7 +318,7 @@ package body Tree_Mng is
   procedure Build_Node (Level : in Positive;
                         Origin : in Sourcer.Src_Dscr;
                         Specs_Mode,  Revert_Mode,
-                        File_Mode, Bodies_Mode : in Boolean) is
+                        Bodies_Mode : in Boolean) is
     -- Clean rope and move up after processing node
     procedure Done is
     begin
@@ -371,17 +395,17 @@ package body Tree_Mng is
     if not Revert_Mode then
       Kind :=  As.U.Tus ("withed");
       Build_Witheds (Level + 1, Origin.Path, Origin.Witheds,
-                     Specs_Mode, File_Mode);
+                     Origin.Restr_Witheds, Specs_Mode);
     elsif Bodies_Mode
           or else Origin.Kind = Sourcer.Unit_Spec
           or else (Origin.Kind = Sourcer.Unit_Body
                    and then Origin.Standalone) then
       Kind :=  As.U.Tus ("withing");
       Build_Withings (Level + 1, Origin.Path.Image, Origin.Unit.Image,
-                      File_Mode, Bodies_Mode);
+                      Bodies_Mode);
       -- Also our children are dependent from us
       Build_Children (Level + 1, Origin.Path, Origin.Children,
-                      File_Mode, Bodies_Mode);
+                      Bodies_Mode);
     end if;
 
     -- A Child (spec or standalone body): Insert parent spec if not revert
@@ -394,8 +418,7 @@ package body Tree_Mng is
       Child.Kind := Sourcer.Unit_Spec;
       Child.Path := Origin.Path;
       Sourcer.List.Read (Child);
-      Build_Node (Level + 1, Child, Specs_Mode, Revert_Mode,
-                  File_Mode, Bodies_Mode);
+      Build_Node (Level + 1, Child, Specs_Mode, Revert_Mode, Bodies_Mode);
     end if;
 
     -- Insert body of spec
@@ -408,8 +431,7 @@ package body Tree_Mng is
         Child.Kind := Sourcer.Unit_Body;
         Child.Path := Origin.Path;
         Sourcer.List.Read (Child);
-        Build_Node (Sub_Level, Child, Specs_Mode, Revert_Mode,
-                    File_Mode, Bodies_Mode);
+        Build_Node (Sub_Level, Child, Specs_Mode, Revert_Mode, Bodies_Mode);
       end if;
 
       -- A Body or subunit: Insert subunits
@@ -417,7 +439,7 @@ package body Tree_Mng is
         or else Origin.Kind = Sourcer.Subunit then
         Kind := As.U.Tus ("subunit");
         Build_Subunits (Sub_Level, Origin.Subunits, Origin.Path, Specs_Mode,
-                        Revert_Mode, File_Mode, Bodies_Mode);
+                        Revert_Mode, Bodies_Mode);
       end if;
     end if;
 
@@ -449,8 +471,11 @@ package body Tree_Mng is
                    Specs_Mode, Revert_Mode,
                    Tree_Mode, Shortest_Mode,
                    File_Mode, Direct_Mode,
-                   Bodies_Mode : in Boolean) is
+                   Bodies_Mode, Restrict_Mode : in Boolean) is
   begin
+    -- Global (constants) file and restrict modes
+    Standard.Tree_Mng.File_Mode := File_Mode;
+    Standard.Tree_Mng.Restrict_Mode := Restrict_Mode;
     -- Full tree, optimized, or first level
     case Tree_Mode is
       when True =>
@@ -476,7 +501,7 @@ package body Tree_Mng is
             Tree_Kind := Optimized;
         end case;
     end case;
-    Build_Node (1, Origin, Specs_Mode, Revert_Mode, File_Mode, Bodies_Mode);
+    Build_Node (1, Origin, Specs_Mode, Revert_Mode, Bodies_Mode);
     Debug.Logger.Log_Debug ("Dumping tree:");
     if Debug.Logger.Debug_On then
       Tree.Iterate (Dump_One'Access, False);
