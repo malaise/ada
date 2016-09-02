@@ -100,7 +100,7 @@ package body Output is
         -- Reached Best_Level, skip this branch
         return False;
       end if;
-      Unit := As.U.Tus (Sort.Make_Path (Dscr.Dscr.Path, Dscr.Dscr.Unit));
+      Unit := As.U.Tus (Sort.Make_Path (Dscr.Dscr.Path, Name));
       if Level = Best_Level and then Unit /= Path_Unit_Full then
         -- Reached Best_Level, skip this branch
         return False;

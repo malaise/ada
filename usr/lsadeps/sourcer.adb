@@ -131,11 +131,17 @@ package body Sourcer is
     Withing_List.Search (Dscr, Found);
     if Found then
       Withing_List.Read (Dscr);
-      Dscr.Withings.Append (Path_Name & Separator);
+      -- Insert if not yet present, which can occur if Name spec withes Withed
+      --  and body or subunit of Name withes a child of Withed
+      if Str_Util.Locate (Dscr.Withings.Image,
+                          Separator & Path_Name.Image & Separator) = 0 then
+        Dscr.Withings.Append (Path_Name & Separator);
+        Withing_List.Insert (Dscr);
+      end if;
     else
       Dscr.Withings.Set (Separator & Path_Name & Separator);
+      Withing_List.Insert (Dscr);
     end if;
-    Withing_List.Insert (Dscr);
   end Add_Withing;
 
   -- Parse a file
