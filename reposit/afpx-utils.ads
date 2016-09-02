@@ -22,12 +22,14 @@ package Afpx.Utils is
 
 
   -- If Str fits Width then return Str, padded with space if no Align_Left
-  -- else return ">>" & tail to match Width (if Keep_Tail)
-  --   or return head to match Width and "<<" (if not Keep_Tail)
+  -- elsif Show_Cut return ">>" & tail to match Width (if Keep_Tail)
+  --             or return head to match Width and "<<" (if not Keep_Tail)
+  -- else return tail or head
   function Procuste (Str : String;
                      Len : Positive;
                      Align_Left : Boolean := True;
-                     Keep_Tail : Boolean := True) return String;
+                     Keep_Tail : Boolean := True;
+                     Show_Cut : Boolean := True) return String;
 
 
   -- Protect a field and "revert" its colors, or reset it to its default (keep
@@ -39,7 +41,8 @@ package Afpx.Utils is
   procedure Encode_Line (Head, Text, Tail : in String;
                          Width : in Afpx.Width_Range;
                          Line : in out Afpx.Line_Rec;
-                         Keep_Tail : in Boolean := True);
+                         Keep_Tail : in Boolean := True;
+                         Show_Cut : Boolean := True);
 
   -- Encode Text in 1st column of Row of Field, procuste,
   --  preserve Tail or head
@@ -47,15 +50,16 @@ package Afpx.Utils is
                           Field : in Afpx.Field_Range;
                           Row : in Con_Io.Row_Range;
                           Clear : in Boolean := True;
-                          Keep_Tail : in Boolean := True);
+                          Keep_Tail : in Boolean := True;
+                          Show_Cut : Boolean := True);
 
   -- Clear field and Center Text in 1st column of Field (row 0 or 1)
   --  procuste, preserve head
   procedure Center_Field (Text : in String;
                           Field : in Afpx.Field_Range;
                           Row : in Con_Io.Row_Range;
-                          Keep_Head : in Boolean := True);
-
+                          Keep_Head : in Boolean := True;
+                          Show_Cut : Boolean := True);
 
 end Afpx.Utils;
 

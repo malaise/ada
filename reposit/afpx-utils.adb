@@ -53,13 +53,14 @@ package body Afpx.Utils is
   function Procuste (Str : String;
                      Len : Positive;
                      Align_Left : Boolean := True;
-                     Keep_Tail : Boolean := True) return String is
+                     Keep_Tail : Boolean := True;
+                     Show_Cut : Boolean := True) return String is
   begin
     return Str_Util.Procuste (Str, Len, Align_Left, ' ',
                               Trunc_Head => Keep_Tail,
                               Show_Trunc => True,
-                              Head_Mark  => ">>",
-                              Tail_Mark  => "<<");
+                              Head_Mark  => (if Show_Cut then ">>" else ""),
+                              Tail_Mark  => (if Show_Cut then "<<" else ""));
   end Procuste;
 
   -- Protect a field and "revert" its colors, or reset it to its default
@@ -86,11 +87,12 @@ package body Afpx.Utils is
   procedure Encode_Line (Head, Text, Tail : in String;
                          Width : in Afpx.Width_Range;
                          Line : in out Afpx.Line_Rec;
-                         Keep_Tail : in Boolean := True) is
+                         Keep_Tail : in Boolean := True;
+                         Show_Cut : Boolean := True) is
   begin
     Afpx.Encode_Line (Line,
         Head & Procuste (Text, Width - Head'Length - Tail'Length,
-                         True, Keep_Tail)
+                         True, Keep_Tail, Show_Cut)
              & Tail);
   end Encode_Line;
 
@@ -100,7 +102,8 @@ package body Afpx.Utils is
                           Field : in Afpx.Field_Range;
                           Row : in Con_Io.Row_Range;
                           Clear : in Boolean := True;
-                          Keep_Tail : in Boolean := True) is
+                          Keep_Tail : in Boolean := True;
+                          Show_Cut : Boolean := True) is
   begin
     if Clear then
       Afpx.Clear_Field (Field);
@@ -109,7 +112,7 @@ package body Afpx.Utils is
         Procuste (Text,
                    (if Afpx.Is_Get_Kind (Field) then Afpx.Get_Data_Len (Field)
                     else Afpx.Get_Field_Width (Field)),
-                   True, Keep_Tail));
+                   True, Keep_Tail, Show_Cut));
   end Encode_Field;
 
   -- Clear field and Center Text in 1st column of Field (row 0 or 1)
@@ -117,7 +120,8 @@ package body Afpx.Utils is
   procedure Center_Field (Text : in String;
                           Field : in Afpx.Field_Range;
                           Row : in Con_Io.Row_Range;
-                          Keep_Head : in Boolean := True) is
+                          Keep_Head : in Boolean := True;
+                          Show_Cut : Boolean := True) is
   begin
     Afpx.Clear_Field (Field);
     if Text'Length <= Afpx.Get_Field_Width (Field) then
@@ -126,7 +130,7 @@ package body Afpx.Utils is
     else
       Afpx.Encode_Field (Field, (Row, 0),
           Procuste (Text, Afpx.Get_Field_Width (Field),
-                    True, not Keep_Head));
+                    True, not Keep_Head, Show_Cut));
     end if;
   end Center_Field;
 
