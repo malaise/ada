@@ -210,7 +210,7 @@ package Tcp_Util is
   --  compared to Socket.Send
   Timeout_Error : exception;
   generic
-    type Message_Type is private;
+    type Message_Type (<>) is private;
   function Send (Dscr               : in Socket.Socket_Dscr;
                  End_Of_Overflow_Cb : in End_Overflow_Callback_Access;
                  Send_Error_Cb      : in Send_Error_Callack_Access;
