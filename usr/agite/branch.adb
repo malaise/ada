@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Directory, Afpx.Utils, Basic_Proc, Unicode, Str_Util;
+with Directory, Afpx.Utils, Basic_Proc, Unicode, Str_Util, Con_Io;
 with Git_If, Utils.X, Afpx_Xref, Confirm, Error, History, Cherry, Reset, Commit;
 package body Branch is
 
@@ -443,16 +443,29 @@ package body Branch is
                               On_Current or else Right);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.True_Merge,
                               On_Current or else Right);
+
+    Afpx.Reset_Field (Afpx_Xref.Branches.Rebase);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rebase,
                               On_Current or else Remote);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Cherry_Pick,
                               On_Current);
+    Afpx.Reset_Field (Afpx_Xref.Branches.Reset);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Reset,
                               Remote or else Right);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rename,
                               On_Current or else Remote or else Right);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Delete,
                               On_Current);
+    -- Set Rebase and Reset (not to current branch) in red
+    if not Afpx.Get_Field_Protection (Afpx_Xref.Branches.Rebase) then
+      Afpx.Set_Field_Colors (Afpx_Xref.Branches.Rebase,
+                               Con_Io.Color_Of ("Red"));
+    end if;
+    if not Afpx.Get_Field_Protection (Afpx_Xref.Branches.Reset)
+    and then not On_Current then
+      Afpx.Set_Field_Colors (Afpx_Xref.Branches.Reset,
+                               Con_Io.Color_Of ("Red"));
+    end if;
   end List_Change;
 
   -- Handle the Branches
