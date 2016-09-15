@@ -415,6 +415,7 @@ procedure Agite is
   begin
     Dummy := Check_Dir (Target);
   end Check_Dir;
+
   -- Refresh list of files
   -- If Set_Dir then change dir to "."
   -- Try to restore current pos
@@ -447,14 +448,22 @@ procedure Agite is
   package body Timer is separate;
 
   -- Init screen
-  procedure Init (Pos : in Natural; Dir : in String := "") is
+  procedure Init (Pos : in Natural;
+                  Dir : in String := "";
+                  Is_Current : in Boolean := True) is
   begin
     -- Init Afpx
     Init_Afpx;
 
     -- Init dir, operations (checkout) may remove current branch
-    Check_Dir (Dir);
-    Change_Dir (".");
+    if Is_Current then
+      -- Operations (checkout) may remove current directory
+      Check_Dir (Dir);
+      Change_Dir (".");
+    else
+      -- Operations (bookmark) may change to a new directory
+      Change_Dir (Dir);
+    end if;
 
     -- Init list
     if Pos /= 0 and then Pos <= Afpx.Line_List.List_Length then
@@ -872,7 +881,8 @@ procedure Agite is
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Revert, Dotdot);
   end List_Change;
 
-begin
+begin -- Agite
+
   -- Check/Parse arguments
   Arg_Dscr := Argument_Parser.Parse (Keys);
   if not Arg_Dscr.Is_Ok then
@@ -1018,7 +1028,7 @@ begin
               declare
                 New_Dir : constant String := Bookmarks.Handle;
               begin
-                Init (0, New_Dir);
+                Init (0, New_Dir, False);
               end;
             when Afpx_Xref.Main.Pushd =>
               -- PushD
