@@ -528,14 +528,14 @@ package body Commit is
       Afpx.Reset_Field (Afpx_Xref.Commit.Commit);
       Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Commit,
                                 not Some_Staged or else Allow_Commit = Forbid);
-      -- If nNot in a cherry pick and some changes are unstaged => Warn
+      -- If not in a cherry pick and some changes are unstaged => Warn
       if not Afpx.Get_Field_Protection (Afpx_Xref.Commit.Commit)
       and then not In_Loop
       and then Some_Unstaged then
         Afpx.Set_Field_Colors (Afpx_Xref.Commit.Commit,
                                Con_Io.Color_Of ("Red"));
       end if;
-         
+
       -- Forbid Done if Commit required and still some known files
       --  (to stage or commit)
       Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Back,

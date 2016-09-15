@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V31.14
+V31.15
 
 General purpose
 ---------------
@@ -1961,10 +1961,13 @@ rewrites the history of the rebased branch (which is reset),
 * The xref:XReorg[reorg] function of the xref:XHist[history] menu rewrites
 the history of the current branch (which is reset).
 
-The confirmation request for these actions warns you (in red) that the history
-will be rewritten. Besides, the xref:XHist[history] menu on root sets the
+The confirmation menu for these actions warns you (in red) that the history
+will be rewritten. +
+Besides, the xref:XHist[history] menu on root sets the
 initial entry to the head of the corresponding tracking branch, which should
-be a safe reference for a xref:XReorg[reorg].
+be a safe reference for a xref:XReorg[reorg] or xref:XHReset[reset]. When the
+reference is set to below (before) the head of the remote, then these both
+buttons become red.
 
 NOTE: The xref:XCherry[cherry-pick] function does not rewrite the history
 because it applies commits to the target branch, which evolves naturally. +

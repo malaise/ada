@@ -332,6 +332,9 @@ package body History is
       end case;
     end Show;
 
+    -- Index of remote head (0 if unknown)
+    Remote_Head_Index : Natural;
+
     -- Update the list status
     procedure List_Change (Unused_Action : in Afpx.List_Change_List;
                            Status : in Afpx.List_Status_Rec) is
@@ -360,16 +363,30 @@ package body History is
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Checkout,
                                 not Allow_Modif or else Right_Set
                                 or else Empty);
+      Afpx.Reset_Field (Afpx_Xref.History.Reorg);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Reorg,
                                 not Allow_Modif or else Right_Set
                                 or else Empty
                                 or else not On_Root
                                 or else Left = 1);
+      Afpx.Reset_Field (Afpx_Xref.History.Reset);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Reset,
                                 not Allow_Modif or else Right_Set
-                                or else Empty);
+                                or else Empty
+                                or else not On_Root);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag,
                                 Right_Set or else Empty or else not Allow_Tag);
+      -- Set in Red the Reorg et Reset if current ref is below remote head
+      if not Afpx.Get_Field_Protection (Afpx_Xref.History.Reorg)
+      and then Remote_Head_Index /= 0 and then Left > Remote_Head_Index then
+        Afpx.Set_Field_Colors (Afpx_Xref.History.Reorg,
+                               Con_Io.Color_Of ("Red"));
+      end if;
+      if not Afpx.Get_Field_Protection (Afpx_Xref.History.Reset)
+      and then Remote_Head_Index /= 0 and then Left > Remote_Head_Index then
+        Afpx.Set_Field_Colors (Afpx_Xref.History.Reset,
+                               Con_Io.Color_Of ("Red"));
+      end if;
       -- Put percent value and "scroll bar"
       Percent := Afpx.Get_List_Percent;
       Afpx.Clear_Field (Afpx_Xref.History.Scroll);
@@ -487,7 +504,9 @@ package body History is
     -- A log
     Log : Git_If.Log_Entry_Rec;
     -- Search found
-    Dummy : Boolean;
+    Found : Boolean;
+    -- Do we set remote head
+    Set_Remote_Head : Boolean;
 
   begin -- List
 
@@ -499,16 +518,23 @@ package body History is
 
     -- Set current entry
     Log.Hash := Git_If.No_Hash;
+    Set_Remote_Head := False;
+    Remote_Head_Index := 0;
+    Found := False;
     if Hash /= Git_If.No_Hash then
       -- Set current to Hash provided
       Log.Hash := Hash;
     elsif On_Root then
       -- Set current to HEAD of remote (if possible)
       Log.Hash := Remote_Head (Branch);
+      Set_Remote_Head := True;
     end if;
     if Log.Hash /= Git_If.No_Hash then
-      Dummy := List_Hash_Search (Logs, Log,
+      Found := List_Hash_Search (Logs, Log,
                    From => Git_If.Log_Mng.Dyn_List.Absolute);
+    end if;
+    if Set_Remote_Head and then Found then
+      Remote_Head_Index := Logs.Get_Position;
     end if;
 
     -- Encode history
