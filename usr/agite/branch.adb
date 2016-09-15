@@ -165,6 +165,8 @@ package body Branch is
     -- Set field activity: only Create
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Checkout,
                               Afpx.Line_List.Is_Empty);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Branches.History,
+                              Afpx.Line_List.Is_Empty);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Merge,
                               Afpx.Line_List.Is_Empty);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.True_Merge,

@@ -1169,10 +1169,12 @@ package body Git_If is
         end if;
         exit when not Moved;
       end loop;
+      -- No active branch???
+      -- Even in the middle of a rebase there is a "* (no branch)"
+      return Error;
     end if;
-    -- No active branch???
-    -- Even in the middle of a rebase there is a "* (no branch)"
-    return Error;
+    -- No branch at all (empty repository)
+    return "";
   exception
     when others =>
       return Error;
