@@ -45,13 +45,19 @@ package Images is
                       return String;
 
   -- Return String image "Hh:Mm:Ss.mmm" (12 Characters) of a day duration
-  function Dur_Image (Dur : Ada.Calendar.Day_Duration) return String;
+  -- On option, separate milliseconds by a comma instead of dot
+  --  (ISO 8601 recommendation)
+  function Dur_Image (Dur   : Ada.Calendar.Day_Duration;
+                      Comma : Boolean := False) return String;
 
   -- Return String image "YYyy/Mm/Dd Hh:Mm:Ss.mmm" of a time
-  -- Alternatively uses  "YYyy-Mm-DdTHh:Mm:Ss.mmm", the ISO 8601 format
-  -- 23 characters in both cases
+  -- Alternatively uses  "YYyy-Mm-DdTHh:Mm:Ss.mmm", ISO 8601 format with dot
+  -- Alternatively uses  "YYyy-Mm-DdTHh:Mm:Ss,mmm", ISO 8601 format with comma
+  --  (ISO recommends to use comma and tolerates dot)
+  -- 23 characters in all cases
+  type Date_Format_List is (Default, Iso_Dot, Iso_Comma);
   function Date_Image (Date : Ada.Calendar.Time;
-                       Iso  : Boolean := False) return String;
+                       Format  : Date_Format_List := Default) return String;
 
 end Images;
 

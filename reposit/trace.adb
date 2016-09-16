@@ -181,7 +181,7 @@ package body Trace is
                    Severity : in Severities;
                    Message  : in String) return String is
   begin
-    return Images.Date_Image (Ada.Calendar.Clock, Iso => True)
+    return Images.Date_Image (Ada.Calendar.Clock, Format => Images.Iso_Dot)
          & " " & Process.Image
          & " " & (if Name = "" then "-" else Name)
          & " " & Image (Severity)

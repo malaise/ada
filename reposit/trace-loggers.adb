@@ -36,7 +36,8 @@ package body Trace.Loggers is
     Memory.Set ("PID", Pid_Image (Sys_Calls.Get_Pid), False, True);
     Memory.Set ("CMD", Process.Image, False, True);
     Memory.Set ("HOST", Socket.Local_Host_Name, False, True);
-    Memory.Set ("DATE", Images.Date_Image (Ada.Calendar.Clock, Iso => True),
+    Memory.Set ("DATE", Images.Date_Image (Ada.Calendar.Clock,
+                                           Format => Images.Iso_Dot),
                 False, True);
 
     -- Get flow name and init flow
