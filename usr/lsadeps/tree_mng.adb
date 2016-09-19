@@ -501,8 +501,15 @@ package body Tree_Mng is
             Tree_Kind := Optimized;
         end case;
     end case;
+    -- Clean tree
+    if not Tree.Is_Empty then
+      Tree.Move_Root;
+      Tree.Delete_Tree;
+   end if;
+    -- Build tree
     Build_Node (1, Origin, Specs_Mode, Revert_Mode, Bodies_Mode);
     Debug.Logger.Log_Debug ("Dumping tree:");
+    -- Dump debug
     if Debug.Logger.Debug_On then
       Tree.Iterate (Dump_One'Access, False);
     end if;
