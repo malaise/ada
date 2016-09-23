@@ -445,8 +445,8 @@ package body Bencode is
     end Append;
     procedure Append (Str : in String) is
     begin
-      for I in Str'Range loop
-        Append (Str(I));
+      for C of Str loop
+        Append (C);
       end loop;
     end Append;
 
@@ -530,8 +530,8 @@ package body Bencode is
         Children : constant Xml_Parser.Nodes_Array
                  := Ctx.Get_Children (Node);
       begin
-        for I in Children'Range loop
-          Node := Children(I);
+        for Child of Children loop
+          Node := Child;
           Encode_Item;
         end loop;
       end;

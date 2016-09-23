@@ -133,7 +133,7 @@ package body Con_Io is
   function Color_Of (Name : String) return Effective_Colors is
     Lower_Name : constant String := Lower_Str (Name);
   begin
-    for I in The_Color_Names'Range loop
+   for I in The_Color_Names'Range loop
       if Lower_Str (The_Color_Names(I).Image) = Lower_Name then
         return I;
       end if;
@@ -1572,7 +1572,7 @@ package body Con_Io is
                  Background : in Colors := Current;
                  Time_Out   : in Delay_Rec :=  Infinite_Delay;
                  Echo       : in Boolean := True) is
-    Lstr : Unicode_Sequence(Str'Range ) := (others => Space);
+    Lstr : Unicode_Sequence(Str'Range) := (others => Space);
     Lpos : Positive;
     Lins : Boolean;
   begin
@@ -1679,8 +1679,8 @@ package body Con_Io is
     Set_Screen_Attributes (Con);
     Lx := X;
     Ly := Acc.Y_Max - Y;
-    for I in S'Range loop
-      X_Mng.X_Put_Char_Pixels (Acc.Id, Character'Pos(S(I)), Lx, Ly);
+    for C of S loop
+      X_Mng.X_Put_Char_Pixels (Acc.Id, Character'Pos(C), Lx, Ly);
       Lx := Lx + Acc.Font_Width;
     end loop;
   end Put;
@@ -1757,9 +1757,9 @@ package body Con_Io is
     Set_Screen_Attributes (Con);
     -- Fix the Ys, each second index of Xys
     Y := False;
-    for I in Loc_Xys'Range loop
+    for Xy of Loc_Xys loop
       if Y then
-        Loc_Xys(I) := Acc.Y_Max - Loc_Xys(I);
+        Xy := Acc.Y_Max - Xy;
       end if;
       Y := not Y;
     end loop;

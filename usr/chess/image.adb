@@ -117,10 +117,10 @@ package body Image is
     declare
       Space_Found : Boolean := False;
     begin
-      for I in Str'Range loop
-        if Space_Found and then Str(I) /= ' ' then
+      for C of Str loop
+        if Space_Found and then C /= ' ' then
           raise Value_Error;
-        elsif not Space_Found and then Str(I) = ' ' then
+        elsif not Space_Found and then C = ' ' then
           Space_Found := True;
         end if;
       end loop;

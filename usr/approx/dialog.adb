@@ -238,7 +238,7 @@ package body Dialog is
     for I in Polynom'Range loop
       -- factor * X^ijkl
       Insert (Point_Str.Coordinate_Image(Polynom(I))
-        & " * X^" & Normal (I-1, Screen.Max_Degree_Width, Gap => '0'));
+        & " * X^" & Normal (I - 1, Screen.Max_Degree_Width, Gap => '0'));
     end loop;
     -- Rewind
     Afpx.Line_List.Rewind;

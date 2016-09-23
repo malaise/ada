@@ -25,12 +25,12 @@ package body Commit is
     Git_If.List_Commit (Ref, Hash, Merged, Date, Comment_Array, Commit);
     -- Append rows, starting from last non-empty
     Do_Copy := False;
-    for I in reverse Comment_Array'Range loop
-      if not Comment_Array(I).Is_Null then
+    for Row of reverse Comment_Array loop
+      if not Row.Is_Null then
         Do_Copy := True;
       end if;
       if Do_Copy then
-        Result.Prepend (Comment_Array(I).Image & Aski.Lf);
+        Result.Prepend (Row.Image & Aski.Lf);
       end if;
     end loop;
     return Result;

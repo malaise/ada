@@ -17,8 +17,8 @@ procedure T_Bloc_Io is
   procedure Dump (Slice : in Int_Io.Element_Array) is
   begin
     Basic_Proc.Put_Output("Dump: ");
-    for I in Slice'Range loop
-      Basic_Proc.Put_Output(Integer'Image(Slice(I)) & " ");
+    for S of Slice loop
+      Basic_Proc.Put_Output(Integer'Image(S) & " ");
     end loop;
     Basic_Proc.New_Line_Output;
   end Dump;

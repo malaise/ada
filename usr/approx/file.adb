@@ -65,10 +65,10 @@ package body File is
     end;
 
     -- Write the points
-    for I in The_Points'Range loop
+    for Point of The_Points loop
       File.Put_Line (
-          Point_Str.Coordinate_Image(The_Points(I).X) & "  " &
-          Point_Str.Coordinate_Image(The_Points(I).Y));
+          Point_Str.Coordinate_Image(Point.X) & "  " &
+          Point_Str.Coordinate_Image(Point.Y));
     end loop;
 
     Points.P_Saved;

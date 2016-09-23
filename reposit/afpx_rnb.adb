@@ -786,12 +786,12 @@ begin
             Error ("INTERNAL ERROR: Invalid Geometry");
         end;
         Changed := False;
-        for I in Geometry'Range loop
-          Update (Geometry(I).Value, Xml.Get_Line_No (Tmp_Node), Updated);
+        for Geo of Geometry loop
+          Update (Geo.Value, Xml.Get_Line_No (Tmp_Node), Updated);
           Changed := Changed or else Updated;
           if Updated then
             Logger.Log_Debug ("Update Geometry " &
-              Geometry(I).Name.Image & " to " & Geometry(I).Value.Image);
+              Geo.Name.Image & " to " & Geo.Value.Image);
           end if;
         end loop;
         if Changed then

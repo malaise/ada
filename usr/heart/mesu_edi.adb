@@ -65,8 +65,8 @@ package body Mesu_Edi is
       return;
     end if;
     -- Check no ':' (file has to be on current drive)
-    for I in Import_File_Name'Range loop
-      if Import_File_Name(I) = ':' then
+    for C of Import_File_Name loop
+      if C = ':' then
         return;
       end if;
     end loop;

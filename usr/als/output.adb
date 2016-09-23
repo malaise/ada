@@ -341,13 +341,13 @@ package body Output is
           return Normal (Natural(Size), 4);
         end if;
         Kilos := Lister.Size_Type(Size);
-        for I in Multipliers'Range loop
+        for Mult of Multipliers loop
           Split (Kilos, Kilosi, Kilosf);
           if Kilosi < 10 then
             -- This is the proper multiplier
             -- y.zM
             return Total_Image (Kilosi) & '.'
-                 & Total_Image (Kilosf) & Multipliers(I);
+                 & Total_Image (Kilosf) & Mult;
           else
             if Kilosf > 5 then
               -- Round
@@ -355,7 +355,7 @@ package body Output is
             end if;
             if Kilosi < 1000 then
               -- yyM or yyyM
-              return Normal (Natural(Kilosi), 3) & Multipliers(I);
+              return Normal (Natural(Kilosi), 3) & Mult;
             end if;
           end if;
           Kilos := Kilosi;

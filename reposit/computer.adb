@@ -287,8 +287,8 @@ package body Computer is
     -- Replace each operator and parenthese 'op' by ' op '
     Exp := As.U.Tus (Expression);
     -- No space not Htab
-    for I in Expression'Range loop
-      if Parser.Is_Space_Or_Htab_Function (Expression(I)) then
+    for C of Expression loop
+      if Parser.Is_Space_Or_Htab_Function (C) then
         raise Invalid_Expression;
       end if;
     end loop;

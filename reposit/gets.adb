@@ -144,8 +144,8 @@ package body Gets is
     Dot_Found : Boolean;
   begin
     Dot_Found := False;
-    for J in Str'Range loop
-      if Str(J) = '.' then
+    for C of Str loop
+      if C = '.' then
         Dot_Found := True;
         exit;
       end if;
@@ -199,8 +199,8 @@ package body Gets is
     Dot_Found : Boolean;
   begin
     Dot_Found := False;
-    for J in Str'Range loop
-      if Str(J) = '.' then
+    for C of Str loop
+      if C = '.' then
         Dot_Found := True;
         exit;
       end if;

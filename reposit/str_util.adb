@@ -190,7 +190,7 @@ package body Str_Util is
     -- Parses spaces and tabs (Ht) from the head/tail of a string
     -- Returns the position of the first/last character or 0 if
     --  all the string is spaces or tabs (or empty)
-    function Parse_Spaces (Str : String;
+   function Parse_Spaces (Str : String;
                            From_Head : Boolean := True)
              return Natural is
     begin
@@ -214,6 +214,7 @@ package body Str_Util is
         return 0;
       end if;
     end Parse_Spaces;
+
     Start, Stop : Natural;
   begin
     case From is
@@ -789,8 +790,8 @@ package body Str_Util is
         if (I - Start) rem 2 = 0 then
           -- Odd number of Esc is an escape: "\\\n" -> '\''\n'
           -- Check if the following letter is within the Escape chars
-          for K in Escape'Range loop
-            if Within_Str(I + 1) = Escape(K) then
+          for Esc of Escape loop
+            if Within_Str(I + 1) = Esc then
               -- The character following '\' is one of the expected
               return I + 1;
             end if;

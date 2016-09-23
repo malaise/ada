@@ -61,9 +61,8 @@ begin
   end if;
 
   -- Take by one
-  for Col in Col_Offsets'Range loop
-    Space.Board.What_Is_At (Piece.Square, Col_Offsets(Col), Row_Offset,
-                            New_Pos, Dest_Piece);
+  for Col of Col_Offsets loop
+    Space.Board.What_Is_At (Piece.Square, Col, Row_Offset, New_Pos, Dest_Piece);
     if New_Pos.Valid
     and then Dest_Piece /= null then
       if Dest_Piece.Color /= Piece.Color then
@@ -79,18 +78,17 @@ begin
   end loop;
 
   -- Take "en passant"
-  for Col in Col_Offsets'Range loop
+  for Col of Col_Offsets loop
     -- Is there a opposing pawn behind me which has just moved by two
-    Space.Board.What_Is_At (Piece.Square, Col_Offsets(Col), 0,
-                            Tmp_Pos, Dest_Piece);
+    Space.Board.What_Is_At (Piece.Square, Col, 0, Tmp_Pos, Dest_Piece);
     if Tmp_Pos.Valid
     and then Dest_Piece /= null
     and then Dest_Piece.Kind = Pawn
     and then Dest_Piece.Color /= Piece.Color
     and then Pawn_Moved_Two (Dest_Piece.Color) = Dest_Piece then
       -- I move by one row and one col, taking the pawn
-      Space.Board.What_Is_At (Piece.Square, Col_Offsets(Col), Row_Offset,
-                              New_Pos, Dest_Piece);
+      Space.Board.What_Is_At (Piece.Square, Col, Row_Offset, New_Pos,
+                              Dest_Piece);
       if Dest_Piece /= null then
         raise Pep_Error;
       end if;

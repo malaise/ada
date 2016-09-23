@@ -50,8 +50,8 @@ package body Bookmarks is
     Bookmarks : constant Config.Bookmark_Array := Config.Get_Bookmarks;
   begin
     Afpx.Line_List.Delete_List;
-    for I in Bookmarks'Range loop
-      Insert_List (Bookmarks(I));
+    for Bookmark of Bookmarks loop
+      Insert_List (Bookmark);
     end loop;
     if not Afpx.Line_List.Is_Empty then
       Afpx.Line_List.Rewind;

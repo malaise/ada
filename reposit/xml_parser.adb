@@ -1016,9 +1016,9 @@ package body Xml_Parser is
     Attributes : constant Attributes_Array
                := Get_Attributes (Ctx, Element);
   begin
-    for I in Attributes'Range loop
-      if Attributes(I).Name.Image = Name then
-        return Attributes(I).Value;
+    for Attr of Attributes loop
+      if Attr.Name.Image = Name then
+        return Attr.Value;
       end if;
     end loop;
     raise Attribute_Not_Found;

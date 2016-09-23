@@ -24,7 +24,7 @@ procedure T_Dir is
     Int_Io.Put (Str, Rights, Base => 8);
     for I in Str'Range loop
       if Str(I) = '#' then
-        F := I+1;
+        F := I + 1;
         exit;
       end if;
     end loop;

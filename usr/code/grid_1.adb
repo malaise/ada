@@ -45,8 +45,8 @@ package body Grid_1 is
   begin
     Stripped_Key.Set_Null;
     -- Store stripped key
-    for I in Key'Range loop
-      Char := Filter(Key(I));
+    for K of Key loop
+      Char := Filter(K);
       if Char /= Aski.Nul then
         if Stripped_Key.Locate (Char & "") = 0 then
           Stripped_Key.Append (Char);
@@ -63,8 +63,8 @@ package body Grid_1 is
       -- Store stripped key then other chars in data
       Row := Row_Coordinate'First;
       Col := Col_Coordinate'First;
-      for I in Sorted_Key'Range loop
-        Store (Sorted_Key(I), False);
+      for K of Sorted_Key loop
+        Store (K, False);
       end loop;
     end;
     Store (Aski.Lf, True);

@@ -29,13 +29,13 @@ begin
   end if;
 
   Basic_Proc.Put_Line_Output (Str);
-  for I in Ucodes'Range loop
+  for I of Ucodes loop
     declare
-      Ustr : constant Wide_String := Utf_16.Encode(Ucodes(I));
+      Ustr : constant Wide_String := Utf_16.Encode(I);
     begin
       Ada.Wide_Text_Io.Put (Ustr);
-      for J in Ustr'Range loop
-        Basic_Proc.Put_Output (" " & Image16 (Wide_Character'Pos (Ustr(J))));
+      for J of Ustr loop
+        Basic_Proc.Put_Output (" " & Image16 (Wide_Character'Pos (J)));
       end loop;
     end;
     Basic_Proc.New_Line_Output;
@@ -54,8 +54,8 @@ begin
       begin
         Basic_Proc.Put_Output (Image16 (U1));
         Basic_Proc.Put_Output (" ->");
-        for I in Str'Range loop
-          Basic_Proc.Put_Output (" " & Image16 (Wide_Character'Pos (Str(I))));
+        for C of Str loop
+          Basic_Proc.Put_Output (" " & Image16 (Wide_Character'Pos (C)));
         end loop;
         Basic_Proc.Put_Output (" -> ");
 

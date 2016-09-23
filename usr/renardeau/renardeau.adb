@@ -418,23 +418,22 @@ begin
       Num_Target : constant Num := Num(Target);
     begin
       Lowest_Result := Lowest_Result_Init;
-      for I in Results'Range loop
-        Curr := Results(I);
-        while Curr /= null loop
-          if abs (Curr.Value - Num_Target) < Lowest_Result then
+      for Res of Results loop
+        while Res /= null loop
+          if abs (Res.Value - Num_Target) < Lowest_Result then
             -- Store if best result so far
-            Result := Curr;
-            Lowest_Result := abs (Curr.Value - Num_Target);
+            Result := Res;
+            Lowest_Result := abs (Res.Value - Num_Target);
           end if;
-          if Curr.Value = Num_Target then
+          if Res.Value = Num_Target then
             -- Store if Target reached and best complexity so far
-            Complexity := Compute_Complexity (Curr);
+            Complexity := Compute_Complexity (Res);
             if Complexity < Lowest_Complexity then
               Lowest_Complexity := Complexity;
-              Result := Curr;
+              Result := Res;
             end if;
           end if;
-          Curr := Curr.Next;
+          Res := Res.Next;
         end loop;
      end loop;
    end;

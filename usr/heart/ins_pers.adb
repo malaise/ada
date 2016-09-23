@@ -21,8 +21,8 @@ procedure Ins_Pers is
       Basic_Proc.New_Line_Output;
     end if;
     Basic_Proc.Put_Output (" Training Zones: ");
-    for I in Person.Tz'Range loop
-      Basic_Proc.Put_Output (Normal(Integer(Person.Tz(I)), 4));
+    for Tz of Person.Tz loop
+      Basic_Proc.Put_Output (Normal(Integer(Tz), 4));
     end loop;
     Basic_Proc.New_Line_Output;
   end Put;

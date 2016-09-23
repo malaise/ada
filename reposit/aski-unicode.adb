@@ -8,8 +8,8 @@ package body Aski.Unicode is
 
   function Is_Strict (S : Unicode_Sequence) return Boolean is
   begin
-    for I in S'Range loop
-      if not Is_Strict (S(I)) then
+    for C of S loop
+      if not Is_Strict (C) then
         return False;
       end if;
     end loop;

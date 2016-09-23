@@ -164,11 +164,11 @@ package body Misc is
     if Set.Kind /= Bool then
       raise Invalid_Argument;
     end if;
-    for L in Debug.Loggers'Range loop
+    for Logger of Debug.Loggers loop
       if Set.Val_Bool then
-        Debug.Loggers(L).Add_Mask (Trace.Debug);
+        Logger.Add_Mask (Trace.Debug);
       else
-        Debug.Loggers(L).Del_Mask (Trace.Debug);
+        Logger.Del_Mask (Trace.Debug);
       end if;
     end loop;
   end Set_Debug;

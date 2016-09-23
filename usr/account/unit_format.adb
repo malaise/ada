@@ -175,8 +175,8 @@ package body Unit_Format is
 
     function Has_Dot (S : String) return Boolean is
     begin
-      for I in S'Range loop
-        if S(I) = '.' then return True; end if;
+      for C of S loop
+        if C = '.' then return True; end if;
       end loop;
       return False;
     end Has_Dot;

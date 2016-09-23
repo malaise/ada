@@ -91,8 +91,8 @@ package body Dtd is
 
     function Is_Sep (C : Character) return Boolean is
     begin
-      for I in Seps'Range loop
-        if C = Seps(I) then
+      for S of Seps loop
+        if C = S then
           return True;
         end if;
       end loop;

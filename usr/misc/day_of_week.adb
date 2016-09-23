@@ -31,8 +31,8 @@ procedure Day_Of_Week is
 
   function Is_Digit (S : String) return Boolean is
   begin
-    for I in S'Range loop
-      if not Is_Digit (S(I)) then
+    for C of S loop
+      if not Is_Digit (C) then
         return False;
       end if;
     end loop;

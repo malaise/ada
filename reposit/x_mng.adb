@@ -498,7 +498,7 @@ package body X_Mng is
     if Colors_Set then
       Max_Len := 1;
       for I in Colors'Range loop
-        Len :=Colors(I).Length;
+        Len := Colors(I).Length;
         if Len = 0 then
           Logger.Log_Debug ("X_Initialise, incorrect empty color at " & I'Img);
           raise X_Failure;

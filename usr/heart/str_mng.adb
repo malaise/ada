@@ -11,8 +11,8 @@ package body Str_Mng is
   -- Has the str some spaces
   function Has_Spaces (Str : String) return Boolean is
   begin
-    for I in Str'Range loop
-      if Str(I) = ' ' then
+    for C of Str loop
+      if C = ' ' then
         return True;
       end if;
     end loop;
@@ -64,8 +64,8 @@ package body Str_Mng is
   begin
 
     Space_Found := False;
-    for I in Str'Range loop
-      if Str(I) = ' ' then
+    for C of Str loop
+      if C = ' ' then
         Space_Found := True;
       else
         if Space_Found then

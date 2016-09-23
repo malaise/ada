@@ -28,13 +28,13 @@ begin
   end if;
 
   Basic_Proc.Put_Line_Output (Str);
-  for I in Ucodes'Range loop
+  for I of Ucodes loop
     declare
-      Ustr : constant String := Utf_8.Encode(Ucodes(I));
+      Ustr : constant String := Utf_8.Encode(I);
     begin
       Basic_Proc.Put_Output (Ustr);
-      for J in Ustr'Range loop
-        Basic_Proc.Put_Output (" " & Image16 (Character'Pos (Ustr(J))));
+      for J of Ustr loop
+        Basic_Proc.Put_Output (" " & Image16 (Character'Pos (J)));
       end loop;
     end;
     Basic_Proc.New_Line_Output;
@@ -52,8 +52,8 @@ begin
     declare
       Str : constant Utf_8.Word := Utf_8.Encode (U1);
     begin
-      for I in Str'Range loop
-        Basic_Proc.Put_Output (" " & Image16 (Character'Pos (Str(I))));
+      for C of Str loop
+        Basic_Proc.Put_Output (" " & Image16 (Character'Pos (C)));
       end loop;
       Basic_Proc.Put_Output (" -> ");
 

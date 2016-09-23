@@ -70,8 +70,8 @@ begin
   Basic_Proc.Put_Line_Output (Hash);
   Basic_Proc.Put_Line_Output ("Merged: " & Merged'Img);
   Basic_Proc.Put_Line_Output (Date);
-  for I in Comment'Range loop
-    Basic_Proc.Put_Line_Output (Comment(I).Image);
+  for Row of Comment loop
+    Basic_Proc.Put_Line_Output (Row.Image);
   end loop;
   if Commits.Is_Empty then
      Basic_Proc.Put_Line_Output ("No File");

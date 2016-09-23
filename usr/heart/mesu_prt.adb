@@ -19,8 +19,8 @@ package body Mesu_Prt is
     Printer.Put ("Comment: " & Mesure.Comment
                 & "   Delta: " & Normal(Integer(Mesure.Sampling_Delta), 3)
                 & "    TZ: ");
-    for I in Pers_Def.Person_Tz_Array'Range loop
-      Printer.Put (Str_Mng.To_Str(Mesure.Tz(I)) & " ");
+    for Tz of Mesure.Tz loop
+      Printer.Put (Str_Mng.To_Str(Tz) & " ");
     end loop;
     Printer.New_Line;
     Last_Of_Line := False;

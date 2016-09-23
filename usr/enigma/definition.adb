@@ -88,11 +88,11 @@ package body Definition is
     Id : Types.Lid;
   begin
     -- No need to check lenght because more than 26 Carries would lead to dup
-    for I in Str'Range loop
-      if Str(I) not in Types.Letter then
+    for C of Str loop
+      if C not in Types.Letter then
         return False;
       end if;
-      Id := Types.Id_Of (Str(I));
+      Id := Types.Id_Of (C);
       if Set(Id) then
         return False;
       end if;
@@ -246,8 +246,8 @@ package body Definition is
       -- Set scrambler
       Set (Def.Rotors(Rotor_Id).Scrambler, Scrambler);
       -- Set carries
-      for I in Carries'Range loop
-        Def.Rotors(Rotor_Id).Carries(Types.Id_Of (Carries(I))) := True;
+      for Carry of Carries loop
+        Def.Rotors(Rotor_Id).Carries(Types.Id_Of (Carry)) := True;
       end loop;
     end;
     -- Set Offset and initial position
@@ -412,8 +412,8 @@ package body Definition is
       declare
         Str : constant String := Argument.Get_Parameter (1, Rotors_Key);
       begin
-        for I in Str'Range loop
-          if Str(I) = '@' then
+        for C of Str loop
+          if C = '@' then
             Rotor_Nb := Rotor_Nb + 1;
           end if;
         end loop;

@@ -242,10 +242,10 @@ package body Tree is
     if Node.Kind = Expect or else Node.Kind = Read
     or else Node.Kind = Parse then
       Text.Append ("Assign: " );
-      for I in Node.Assign'Range loop
-        exit when Node.Assign(I).Value.Kind = Any_Def.None_Kind;
-        Text.Append (Node.Assign(I).Name.Image & "="
-                   & Node.Assign(I).Value.Str.Image & " ");
+      for Assign of Node.Assign loop
+        exit when Assign.Value.Kind = Any_Def.None_Kind;
+        Text.Append (Assign.Name.Image & "="
+                   & Assign.Value.Str.Image & " ");
       end loop;
     end if;
 

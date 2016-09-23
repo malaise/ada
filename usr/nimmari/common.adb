@@ -75,8 +75,8 @@ package body Common is
   function Nb_Bars (Status : Bar_Status_Array) return Full_Bar_Range is
     Res : Common.Full_Bar_Range := 0;
   begin
-    for I in reverse Status'Range loop
-      if Status(I) then
+    for Stat of reverse Status loop
+      if Stat then
         Res := Res + 1;
       end if;
     end loop;

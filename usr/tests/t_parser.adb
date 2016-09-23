@@ -78,9 +78,9 @@ begin
     Parsed : constant Parser.All_In_One.Parsed_Array
            := Parser.All_In_One.Parse_All (It);
   begin
-    for I in Parsed'Range loop
-      Basic_Proc.Put_Line_Output ("Got >" & Parsed(I).Str.Image
-       & "< of kind " & Mixed_Str (Parsed(I).Kind'Img) );
+    for P of Parsed loop
+      Basic_Proc.Put_Line_Output ("Got >" & P.Str.Image
+       & "< of kind " & Mixed_Str (P.Kind'Img) );
     end loop;
   end;
   Parser.Del (It);

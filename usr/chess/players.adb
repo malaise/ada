@@ -45,11 +45,11 @@ package body Players is
         if Piece_Kind = Pieces.King then
           King_Found := True;
         end if;
-        for I in Arr'Range loop
-          Actions(Color).Insert ((True, Piece_Kind, Pos, Arr(I)) );
+        for A of Arr loop
+          Actions(Color).Insert ((True, Piece_Kind, Pos, A) );
           if Debug.Get (Debug.Think) then
             Basic_Proc.Put_Output ("-> ");
-            Debug.Put (Valid_Action_Rec'(True, Piece_Kind, Pos, Arr(I)));
+            Debug.Put (Valid_Action_Rec'(True, Piece_Kind, Pos, A));
             Basic_Proc.New_Line_Output;
           end if;
         end loop;

@@ -228,8 +228,8 @@ package body Utf_8 is
   function Encode (Unicode : Unicode_Sequence) return Sequence is
     Result : As.U.Asu_Us;
   begin
-    for I in Unicode'Range loop
-      Result.Append (Encode (Unicode(I)));
+    for U of Unicode loop
+      Result.Append (Encode (U));
     end loop;
     return Result.Image;
   end Encode;

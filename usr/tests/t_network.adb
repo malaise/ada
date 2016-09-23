@@ -9,9 +9,8 @@ procedure T_Network is
     N_Conn : constant Mnet.Connection_Array := N.List_Connections;
   begin
     Basic_Proc.Put_Output (N.Get_Name & " -> ");
-    for I in N_Conn'Range loop
-      Basic_Proc.Put_Output (N_Conn(I).Node.Get_Name
-                           & " " & N_Conn(I).Data'Img & ", ");
+    for Conn of N_Conn loop
+      Basic_Proc.Put_Output (Conn.Node.Get_Name & " " & Conn.Data'Img & ", ");
     end loop;
     Basic_Proc.New_Line_Output;
   end Put_Connections;

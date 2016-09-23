@@ -76,8 +76,8 @@ begin
         Bytes : constant Bencode.Byte_Array
               := Bencode.Xml2Bencode (Ibuf.Image, Policy);
       begin
-        for I in Bytes'Range loop
-          Obuf.Append (Character'Val(Natural(Bytes(I))));
+        for Byte of Bytes loop
+          Obuf.Append (Character'Val(Natural(Byte)));
         end loop;
       end;
     when Trilean.Other =>

@@ -223,7 +223,6 @@ package body Mesu_Gra is
 
   procedure Draw_Tz (Show : in Boolean) is
     Tz_Color    : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Red");
-    Bpm : Pers_Def.Bpm_Range;
     Y : Con_Io.Y_Range;
     Mesure_Index : Mesure_Range;
   begin
@@ -242,8 +241,7 @@ package body Mesu_Gra is
       Prev_Tz := Mesure_Index;
     end if;
 
-    for I in Pers_Def.Person_Tz_Array'Range loop
-      Bpm := Mesure_Array(Mesure_Index).Mesure.Tz(I);
+    for Bpm of Mesure_Array(Mesure_Index).Mesure.Tz loop
       if Bpm >= Y_First then
         Y := Y_To_Screen(Bpm);
         Draw_Line (Xs_First, Y, Xs_Last - 4 * Console.Font_Width, Y);
@@ -422,13 +420,13 @@ package body Mesu_Gra is
         end if;
       end loop;
       -- Scan Tz
-      for J in Pers_Def.Person_Tz_Array'Range loop
-        if Mesure_Array(I).Mesure.Tz(J) /= Pers_Def.Bpm_Range'First then
-          if Y_First > Mesure_Array(I).Mesure.Tz(J) then
-            Y_First := Mesure_Array(I).Mesure.Tz(J);
+      for Tz of Mesure_Array(I).Mesure.Tz loop
+        if Tz /= Pers_Def.Bpm_Range'First then
+          if Y_First > Tz then
+            Y_First := Tz;
           end if;
-          if Y_Last < Mesure_Array(I).Mesure.Tz(J) then
-            Y_Last := Mesure_Array(I).Mesure.Tz(J);
+          if Y_Last < Tz then
+            Y_Last := Tz;
           end if;
         end if;
       end loop;

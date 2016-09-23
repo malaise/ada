@@ -146,12 +146,11 @@ package body Network is
     end if;
     -- Rewind and copy
     Of_Node.Connections.Rewind;
-    for I in Connections'Range loop
+    for C of Connections loop
       Of_Node.Connections.Read (Connection, Moved => Moved);
-      Connections(I) := (
-       Key => Connection_Key_Type(Of_Node.Connections.Access_Current),
-       Node => Connection.Node,
-       Data => Connection.Data);
+      C := (Key => Connection_Key_Type(Of_Node.Connections.Access_Current),
+            Node => Connection.Node,
+            Data => Connection.Data);
     end loop;
     return Connections;
   end List_Connections;

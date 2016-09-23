@@ -196,8 +196,8 @@ package body Pieces is
       -- Scan list if not empty
       if not Action_List.Is_Empty then
         Action_List.Rewind;
-        for I in Result'Range loop
-           Action_List.Get (Result(I));
+        for R of Result loop
+           Action_List.Get (R);
         end loop;
       end if;
       return Result;

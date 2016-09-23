@@ -135,10 +135,10 @@ procedure T_Xml_String is
         Basic_Proc.Put_Output ("<?" & Name);
         Put_Attributes (Elt, 0, 2 + Name'Length);
         Basic_Proc.Put_Line_Output ("?>");
-        for I in Children'Range loop
-          if Children(I).Kind = Xml_Parser.Pi then
+        for Child of Children loop
+          if Child.Kind = Xml_Parser.Pi then
             -- Put PIs
-            Put_Pi (Children(I));
+            Put_Pi (Child);
           end if;
         end loop;
       end if;

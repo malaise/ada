@@ -158,17 +158,17 @@ package body Language is
     W : Wide_Character;
   begin
     if Get_Language /= Lang_Utf_8 then
-      for I in Str'Range loop
-        S.Append (Wide_To_Char (Str(I)));
+      for C of Str loop
+        S.Append (Wide_To_Char (C));
       end loop;
     else
-      for I in Str'Range loop
-        W := Str(I);
+      for C of Str loop
+        W := C;
         if W <= Wide_Last_Char then
           -- Optim
-          S.Append (Wide_To_Char (Str(I)));
+          S.Append (Wide_To_Char (C));
         else
-          S.Append (Utf_8.Encode (Str(I)));
+          S.Append (Utf_8.Encode (C));
         end if;
       end loop;
     end if;
@@ -191,8 +191,8 @@ package body Language is
     Nb : Utf_8.Len_Range;
   begin
     if Get_Language /= Lang_Utf_8 then
-      for I in Str'Range loop
-        Ada.Strings.Wide_Unbounded.Append (Ws, Char_To_Wide(Str(I)));
+      for C of Str loop
+        Ada.Strings.Wide_Unbounded.Append (Ws, Char_To_Wide(C));
       end loop;
     else
       -- Encode Utf_8 sequences
@@ -248,18 +248,18 @@ package body Language is
     U : Unicode_Number;
   begin
     if Get_Language /= Lang_Utf_8 then
-      for I in Str'Range loop
-        S.Append (Unicode_To_Char (Str(I)));
+      for C of Str loop
+        S.Append (Unicode_To_Char (C));
       end loop;
     else
-      for I in Str'Range loop
-        U := Str(I);
+      for C of Str loop
+        U := C;
         -- Optim
         if U <= Unicode_Last_Char then
           -- Optim
-          S.Append (Unicode_To_Char (Str(I)));
+          S.Append (Unicode_To_Char (C));
         else
-          S.Append (Utf_8.Encode (Str(I)));
+          S.Append (Utf_8.Encode (C));
         end if;
       end loop;
     end if;
@@ -284,8 +284,8 @@ package body Language is
     Nb : Utf_8.Len_Range;
   begin
     if Get_Language /= Lang_Utf_8 then
-      for I in Str'Range loop
-        Unbounded_Unicode.Append (Us, Char_To_Unicode (Str(I)));
+      for C of Str loop
+        Unbounded_Unicode.Append (Us, Char_To_Unicode (C));
       end loop;
     else
       -- Encode Utf_8 sequences
@@ -384,10 +384,10 @@ package body Language is
     Indexes : constant Index_Array := All_Indexes_Of (Str);
     Last : Natural;
   begin
-    for I in reverse Indexes'Range loop
-      if Indexes(I) <= Len then
+    for Index of reverse Indexes loop
+      if Index <= Len then
         -- Compute Last Str index for Indexes(I)
-        Last := Indexes(I);
+        Last := Index;
         Last := Last + Nb_Chars (Str(Last));
         if Last - Str'First + 1 <= Len then
           -- Last leads to a string shorter or equal to Len

@@ -275,8 +275,8 @@ package body Argument_Parser is
         and then Str(Str'First) = '-' then
           raise Invalid_Key;
         end if;
-        for J in Str'Range loop
-          if Str(J) <= ' ' or else Str(J) > '~' then
+        for C of Str loop
+          if C <= ' ' or else C > '~' then
             raise Invalid_Key;
           end if;
         end loop;
@@ -577,9 +577,9 @@ package body Argument_Parser is
       end if;
     end;
     -- Now we need to know if this key allows options
-    for I in The_Keys'Range loop
-      if The_Keys(I).Key_Char = Char then
-        return The_Keys(I).Key_Can_Option;
+    for Key of The_Keys loop
+      if Key.Key_Char = Char then
+        return Key.Key_Can_Option;
       end if;
     end loop;
     -- Normaly we should have found the key

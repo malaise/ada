@@ -171,12 +171,12 @@ package body Details is
           Afpx.Set_Selection (Date);
         when Copy_Comment =>
           -- Skip tailing empty lines. No LineFeed after last line
-          for I in reverse Comment'Range loop
-            if not Comment(I).Is_Null or else not Result.Is_Null then
+          for Row of reverse Comment loop
+            if not Row.Is_Null or else not Result.Is_Null then
               if Result.Is_Null then
-                Result := Comment(I);
+                Result := Row;
               else
-                Result := Comment(I) & Aski.Lf & Result;
+                Result := Row & Aski.Lf & Result;
               end if;
             end if;
           end loop;

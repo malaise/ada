@@ -81,8 +81,8 @@ package body Menu2 is
      use type My_Math.Real;
   begin
      -- Y = F(X) from vector
-     for I in Polynom'Range loop
-       Y := Y + Polynom(I) * Bubble;
+     for Deg of Polynom loop
+       Y := Y + Deg * Bubble;
        Bubble := Bubble * X;
      end loop;
      return Y;

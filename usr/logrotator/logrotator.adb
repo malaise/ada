@@ -35,9 +35,9 @@ procedure Logrotator is
     Basic_Proc.Put_Line_Error (
      "Usage: " & Argument.Get_Program_Name
                & " [ <period> ] [ <cycle> ] [ <size> ] <file_name>");
-    for I in Keys'Range loop
+    for Key of Keys loop
       Basic_Proc.Put_Line_Error (
-        "  " & Argument_Parser.Image (Keys(I)));
+        "  " & Argument_Parser.Image (Key));
     end loop;
     Basic_Proc.Put_Line_Error (
      "Default is a cycle of 9 times 1 day"

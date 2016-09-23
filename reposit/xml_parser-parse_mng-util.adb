@@ -218,8 +218,8 @@ package body Util is
         return False;
       end if;
       -- Other chars must be Is_Valid_In_Name
-      for I in Unicodes'Range loop
-        if not Is_Valid_In_Name (Unicodes(I)) then
+      for U of Unicodes loop
+        if not Is_Valid_In_Name (U) then
           return False;
         end if;
       end loop;
@@ -239,8 +239,8 @@ package body Util is
     I1, I2 : Natural;
     function Is_Sep (C : Character) return Boolean is
     begin
-      for I in Seps'Range loop
-        if C = Seps(I) then
+      for Sep of Seps loop
+        if C = Sep then
           return True;
         end if;
       end loop;
@@ -519,8 +519,8 @@ package body Util is
   procedure Get (Flow : in out Flow_Type; Str : out String) is
   begin
     Flow.Nb_Got := 0;
-    for I in Str'Range loop
-      Str(I) := Get (Flow);
+    for C of Str loop
+      C := Get (Flow);
       Flow.Nb_Got := Flow.Nb_Got + 1;
     end loop;
   end Get;
@@ -579,8 +579,8 @@ package body Util is
   procedure Insert (Flow : in out Flow_Type;  Str : in String) is
   begin
     if Flow.Curr_Flow.Is_File then
-      for I in reverse Str'Range loop
-        Flow.Curr_Flow.File.Unget (Str(I));
+      for C of reverse Str loop
+        Flow.Curr_Flow.File.Unget (C);
       end loop;
     else
       -- Insert Str after current pos (last read)
@@ -649,9 +649,9 @@ package body Util is
   -- Replace all separators by spaces
   procedure Fix_Spaces (Str : in out String) is
   begin
-    for I in Str'Range loop
-      if Is_Separator (Str(I)) then
-        Str(I) := Space;
+    for C of Str loop
+      if Is_Separator (C) then
+        C := Space;
       end if;
     end loop;
   end Fix_Spaces;
@@ -696,11 +696,11 @@ package body Util is
     loop
       Char := Get (Flow);
       -- Compare to each char of the criteria
-      for I in Criteria'Range loop
-        if Criteria(I) = Space then
+      for Crit of Criteria loop
+        if Crit = Space then
           exit This_Char when Is_Separator (Char);
         else
-          exit This_Char when Char = Criteria(I);
+          exit This_Char when Char = Crit;
         end if;
       end loop;
       Flow.Curr_Str.Append (Char);
@@ -783,10 +783,8 @@ package body Util is
   -- INTERNAL: Verify proper nesting of parenths
   function Check_Nesting (Str : String) return Boolean is
     Level : Natural := 0;
-    Char : Character;
   begin
-    for I in Str'Range loop
-      Char := Str(I);
+    for Char of Str loop
       if Char = '(' then
         Level := Level + 1;
       elsif Char = ')' then

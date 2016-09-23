@@ -7,9 +7,9 @@ procedure T_Temp_File is
 begin
   Sys_Calls.Put_Line_Output ("Creating " & Names'Last'Img & " temp files in "
                       & Temp_Dir & ":");
-  for I in Names'Range loop
-    Names(I) := new String'(Temp_File.Create (Temp_Dir, "tmp"));
-    Sys_Calls.Put_Line_Output ("Created temp file " & Names(I).all);
+  for Name of Names loop
+    Name := new String'(Temp_File.Create (Temp_Dir, "tmp"));
+    Sys_Calls.Put_Line_Output ("Created temp file " & Name.all);
   end loop;
   Sys_Calls.New_Line_Output;
 
@@ -52,8 +52,8 @@ begin
   Sys_Calls.New_Line_Output;
 
   Sys_Calls.Put_Line_Output ("Cleaning temp files.");
-  for I in Names'Range loop
-    Sys_Calls.Unlink (Names(I).all);
+  for Name of Names loop
+    Sys_Calls.Unlink (Name.all);
   end loop;
   Sys_Calls.New_Line_Output;
 

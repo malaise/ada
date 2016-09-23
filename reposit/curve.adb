@@ -33,12 +33,12 @@ package body Curve is
       Loc_X_Min := T_Coordinate'Last;
       Loc_X_Max := T_Coordinate'First;
 
-      for I in Points'Range loop
-        if Points(I).X < Loc_X_Min then
-          Loc_X_Min := Points(I).X;
+      for Point of Points loop
+        if Point.X < Loc_X_Min then
+          Loc_X_Min := Point.X;
         end if;
-        if Points(I).X > Loc_X_Max then
-          Loc_X_Max := Points(I).X;
+        if Point.X > Loc_X_Max then
+          Loc_X_Max := Point.X;
         end if;
       end loop;
     end if;
@@ -219,14 +219,14 @@ package body Curve is
            Y_Max => My_Math.Real'First);
 
           -- Find lowest and greatest Y of points in X_min .. X_max
-          for I in Points'Range loop
-            if Points(I).X
+          for Point of Points loop
+            if Point.X
                in Real_Boundaries.X_Min .. Real_Boundaries.X_Max then
-              if Points(I).Y < Real_Boundaries.Y_Min then
-                Real_Boundaries.Y_Min := Points(I).Y;
+              if Point.Y < Real_Boundaries.Y_Min then
+                Real_Boundaries.Y_Min := Point.Y;
               end if;
-              if Points(I).Y > Real_Boundaries.Y_Max then
-                Real_Boundaries.Y_Max := Points(I).Y;
+              if Point.Y > Real_Boundaries.Y_Max then
+                Real_Boundaries.Y_Max := Point.Y;
               end if;
             end if;
           end loop;
@@ -507,11 +507,11 @@ package body Curve is
         begin
           X_S := X_Real_Screen (X);
           Y_S := Y_Real_Screen (Y);
-          for I in Point_Pixels'Range loop
+          for Pixel of Point_Pixels loop
             begin
-              In_Frame (X_S + Point_Pixels(I).X, Y_S + Point_Pixels(I).Y);
-              Cur_Con_Io.Draw_Point (X_S + Point_Pixels(I).X,
-                                     Y_S + Point_Pixels(I).Y);
+              In_Frame (X_S + Pixel.X, Y_S + Pixel.Y);
+              Cur_Con_Io.Draw_Point (X_S + Pixel.X,
+                                     Y_S + Pixel.Y);
             exception
               when others => null;
             end;
@@ -522,8 +522,8 @@ package body Curve is
 
       begin
         Screen.Set_Foreground (Con_Io.Color_Of ("Red"));
-        for I in Points'Range loop
-          Draw_Point (Points(I).X, Points(I).Y);
+        for Point of Points loop
+          Draw_Point (Point.X, Point.Y);
         end loop;
         if Misc (M_Help) then
           Toggle_Help_Misc (M_Points);

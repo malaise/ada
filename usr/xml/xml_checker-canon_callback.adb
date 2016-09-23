@@ -146,8 +146,8 @@ begin
 
   -- Replace characters in attribute values and texts
   if Clone.Kind = Xml_Parser.Element and then Clone.Attributes /= null then
-    for I in Clone.Attributes'Range loop
-      Fix_Chars (Clone.Attributes(I).Value, False);
+    for Attr of Clone.Attributes.all loop
+      Fix_Chars (Attr.Value, False);
     end loop;
   elsif Clone.Kind = Xml_Parser.Text then
     Fix_Chars (Clone.Name, True);

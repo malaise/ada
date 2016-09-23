@@ -155,8 +155,8 @@ package body Screen is
   procedure Update_Board (Color : in Space.Color_List;
                           Squares : in Space.Square_Array) is
   begin
-    for N in Squares'Range loop
-      Display_Square(Color, Squares(N));
+    for Square of Squares loop
+      Display_Square(Color, Square);
     end loop;
   end Update_Board;
 

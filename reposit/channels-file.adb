@@ -26,10 +26,10 @@ package body File is
                := Ctx.Get_Children (Root);
       Name : Xml_Parser.Attribute_Rec;
     begin
-      for I in Channels'Range loop
-        Name := Ctx.Get_Attribute (Channels(I), 1);
+      for Channel of Channels loop
+        Name := Ctx.Get_Attribute (Channel, 1);
         if Name.Value.Image = Channel_Name then
-          Chn := Channels(I);
+          Chn := Channel;
           Nod := Xml_Parser.No_Node;
           exit;
         end if;

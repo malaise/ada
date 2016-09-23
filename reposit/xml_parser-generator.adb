@@ -73,8 +73,8 @@ package body Xml_Parser.Generator is
       end loop;
     else
       -- Deci num
-      for I in Num'Range loop
-        if Num(I) not in '0' .. '9' then
+      for N of Num loop
+        if N not in '0' .. '9' then
           raise Invalid_Argument;
         end if;
       end loop;
@@ -766,9 +766,9 @@ package body Xml_Parser.Generator is
     Cell : My_Tree_Cell;
   begin
     -- Check input attributes
-    for I in Attributes'Range loop
-      Check_Name (Attributes(I).Name.Image);
-      Check_Attribute (Attributes(I).Name.Image);
+    for Attr of Attributes loop
+      Check_Name (Attr.Name.Image);
+      Check_Attribute (Attr.Name.Image);
     end loop;
     -- Move to Element, must be in Elements
     Move_To_Node_Element (Ctx, Element, Tree);
@@ -781,10 +781,10 @@ package body Xml_Parser.Generator is
     -- Add these attributes
     Cell.Kind := Attribute;
     Cell.Nb_Attributes := 0;
-    for I in reverse Attributes'Range loop
-      Check_Name (Attributes(I).Name.Image);
-      Cell.Name := Attributes(I).Name;
-      Cell.Value := Attributes(I).Value;
+    for Attr of reverse Attributes loop
+      Check_Name (Attr.Name.Image);
+      Cell.Name := Attr.Name;
+      Cell.Value := Attr.Value;
       Tree.Insert_Child (Cell);
       Tree.Move_Father;
     end loop;
@@ -1245,10 +1245,8 @@ package body Xml_Parser.Generator is
   function Normalize (Str : String) return String is
     Res : As.U.Asu_Us;
     Prev_Is_Space : Boolean := False;
-    Char : Character;
   begin
-    for I in Str'Range loop
-      Char := Str(I);
+    for Char of Str loop
       if Is_Separator (Char) then
         -- A space
         if not Prev_Is_Space then

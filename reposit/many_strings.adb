@@ -81,8 +81,8 @@ package body Many_Strings is
   procedure Set (Str : in out Many_String; From : in As.U.Asu_Array) is
   begin
     Reset (Str);
-    for I in From'Range loop
-      Str.Append (From(I));
+    for C of From loop
+      Str.Append (C);
     end loop;
     Normalize (Str);
   end Set;

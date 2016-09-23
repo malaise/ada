@@ -241,23 +241,23 @@ procedure Afpx_Bld is
       Err_Val : Asu_Us;
       P : Positive;
     begin
-      for I in Attrs'Range loop
-        Err_Val := Attrs(I).Value;
+      for Attr of Attrs loop
+        Err_Val := Attr.Value;
         -- Load upper left then lower right
-        if Match (Attrs(I).Name, "Height") then
+        if Match (Attr.Name, "Height") then
           Height := True;
-          P := Memory.Compute (Attrs(I).Value.Image);
+          P := Memory.Compute (Attr.Value.Image);
           Size.Row := Con_Io.Row_Range(P - 1);
           -- Add constant persistent
           Add_Variable (Root, "Screen.Height", Geo_Image (Size.Row + 1), False, True);
-        elsif Match (Attrs(I).Name, "Width") then
+        elsif Match (Attr.Name, "Width") then
           Width := True;
-          P := Memory.Compute (Attrs(I).Value.Image);
+          P := Memory.Compute (Attr.Value.Image);
           Size.Col := Con_Io.Col_Range(P - 1);
           -- Add constant persistent
           Add_Variable (Root, "Screen.Width", Geo_Image (Size.Col + 1), False, True);
         else
-          File_Error (Root, "Invalid Size " & Attrs(I).Name);
+          File_Error (Root, "Invalid Size " & Attr.Name);
         end if;
       end loop;
     exception
@@ -417,45 +417,39 @@ procedure Afpx_Bld is
       Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
       Err_Val : Asu_Us;
     begin
-      for I in Attrs'Range loop
-        Err_Val := Attrs(I).Value;
+      for Attr of  Attrs loop
+        Err_Val := Attr.Value;
         -- Load upper left and lower right
-        if Match (Attrs(I).Name, "Up") then
+        if Match (Attr.Name, "Up") then
           Up := True;
           Nb_Verti := Nb_Verti + 1;
-          Fields(Fn).Upper_Left.Row :=
-               Memory.Compute (Attrs(I).Value.Image);
+          Fields(Fn).Upper_Left.Row := Memory.Compute (Attr.Value.Image);
           Add_Geo ("Up", Fields(Fn).Upper_Left.Row);
-        elsif Match (Attrs(I).Name, "Left") then
+        elsif Match (Attr.Name, "Left") then
           Left := True;
           Nb_Horiz := Nb_Horiz + 1;
-          Fields(Fn).Upper_Left.Col :=
-               Memory.Compute (Attrs(I).Value.Image);
+          Fields(Fn).Upper_Left.Col := Memory.Compute (Attr.Value.Image);
           Add_Geo ("Left", Fields(Fn).Upper_Left.Col);
-        elsif Match (Attrs(I).Name, "Low") then
+        elsif Match (Attr.Name, "Low") then
           Low := True;
           Nb_Verti := Nb_Verti + 1;
-          Fields(Fn).Lower_Right.Row :=
-               Memory.Compute (Attrs(I).Value.Image);
+          Fields(Fn).Lower_Right.Row := Memory.Compute (Attr.Value.Image);
           Add_Geo ("Low", Fields(Fn).Lower_Right.Row);
-        elsif Match (Attrs(I).Name, "Right") then
+        elsif Match (Attr.Name, "Right") then
           Right := True;
           Nb_Horiz := Nb_Horiz + 1;
-          Fields(Fn).Lower_Right.Col :=
-               Memory.Compute (Attrs(I).Value.Image);
+          Fields(Fn).Lower_Right.Col := Memory.Compute (Attr.Value.Image);
           Add_Geo ("Right", Fields(Fn).Lower_Right.Col);
-        elsif Match (Attrs(I).Name, "Height") then
+        elsif Match (Attr.Name, "Height") then
           Nb_Verti := Nb_Verti + 1;
-          Fields(Fn).Height :=
-               Memory.Compute (Attrs(I).Value.Image);
+          Fields(Fn).Height := Memory.Compute (Attr.Value.Image);
           Add_Geo ("Height", Fields(Fn).Height);
-        elsif Match (Attrs(I).Name, "Width") then
+        elsif Match (Attr.Name, "Width") then
           Nb_Horiz := Nb_Horiz + 1;
-          Fields(Fn).Width :=
-               Memory.Compute (Attrs(I).Value.Image);
+          Fields(Fn).Width := Memory.Compute (Attr.Value.Image);
           Add_Geo ("Width", Fields(Fn).Width);
         else
-          File_Error (Node, "Invalid geometry " & Attrs(I).Name);
+          File_Error (Node, "Invalid geometry " & Attr.Name);
         end if;
       end loop;
     exception
@@ -540,19 +534,19 @@ procedure Afpx_Bld is
       Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
       Err_Val : Asu_Us;
     begin
-      for I in Attrs'Range loop
-        Err_Val := Attrs(I).Value;
-        if Match (Attrs(I).Name, "Move_Prev") then
+      for Attr of Attrs loop
+        Err_Val := Attr.Value;
+        if Match (Attr.Name, "Move_Prev") then
           Fields(Fn).Move_Prev := Boolean'Value (
-                 Memory.Eval (Attrs(I).Value.Image));
-        elsif Match (Attrs(I).Name, "Move_Next") then
+                 Memory.Eval (Attr.Value.Image));
+        elsif Match (Attr.Name, "Move_Next") then
           Fields(Fn).Move_Next := Boolean'Value (
-                 Memory.Eval (Attrs(I).Value.Image));
-        elsif Match (Attrs(I).Name, "Data_Len") then
+                 Memory.Eval (Attr.Value.Image));
+        elsif Match (Attr.Name, "Data_Len") then
           Fields(Fn).Data_Len := Afpx_Typ.Width_Range'Value (
-                 Memory.Eval (Attrs(I).Value.Image));
+                 Memory.Eval (Attr.Value.Image));
         else
-          File_Error (Node, "Invalid get tuning " & Attrs(I).Name);
+          File_Error (Node, "Invalid get tuning " & Attr.Name);
         end if;
       end loop;
     exception
@@ -585,28 +579,28 @@ procedure Afpx_Bld is
       Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
       Err_Val : Asu_Us;
     begin
-      for I in Attrs'Range loop
-        Err_Val := Attrs(I).Value;
-        if Match (Attrs(I).Name, "Foreground") then
+      for Attr of Attrs loop
+        Err_Val := Attr.Value;
+        if Match (Attr.Name, "Foreground") then
           Foreground := True;
           Fields(Fn).Colors.Foreground := Con_Io.Color_Of (
-                 Memory.Eval (Attrs(I).Value.Image));
+                 Memory.Eval (Attr.Value.Image));
           Add_Variable (Node, Name_Of (Fn) & "." & "Foreground",
               Color_Image (Fields(Fn).Colors.Foreground), False, False);
-        elsif Match (Attrs(I).Name, "Background") then
+        elsif Match (Attr.Name, "Background") then
           Background := True;
           Fields(Fn).Colors.Background := Con_Io.Color_Of (
-                 Memory.Eval (Attrs(I).Value.Image));
+                 Memory.Eval (Attr.Value.Image));
           Add_Variable (Node, Name_Of (Fn) & "." & "Background",
               Color_Image (Fields(Fn).Colors.Background), False, False);
-        elsif Match (Attrs(I).Name, "Selected") then
+        elsif Match (Attr.Name, "Selected") then
           Selected := True;
           Fields(Fn).Colors.Selected := Con_Io.Color_Of (
-                 Memory.Eval (Attrs(I).Value.Image));
+                 Memory.Eval (Attr.Value.Image));
           Add_Variable (Node, Name_Of (Fn) & "." & "Selected",
               Color_Image (Fields(Fn).Colors.Selected), False, False);
         else
-          File_Error (Node, "Invalid Color " & Attrs(I).Name);
+          File_Error (Node, "Invalid Color " & Attr.Name);
         end if;
       end loop;
 
@@ -695,10 +689,10 @@ procedure Afpx_Bld is
     Fields(No).Activated := True;
     Fields(No).Isprotected := False;
     Fields(No).Offset := 0;
-    for I in Attrs'Range loop
-      if Match (Attrs(I).Name, "Num") then
+    for Attr of Attrs loop
+      if Match (Attr.Name, "Num") then
         begin
-          if Afpx_Typ.Field_Range'Value(Attrs(I).Value.Image) /= No then
+          if Afpx_Typ.Field_Range'Value(Attr.Value.Image) /= No then
             raise Constraint_Error;
           end if;
         exception
@@ -706,21 +700,20 @@ procedure Afpx_Bld is
             File_Error (Node,
                         "Invalid field number. They must crescent positives");
         end;
-      elsif Match (Attrs(I).Name, "Kind") then
-        if not Match (Attrs(I).Value, "Put")
-        and then not Match (Attrs(I).Value, "Get")
-        and then not Match (Attrs(I).Value, "Button") then
+      elsif Match (Attr.Name, "Kind") then
+        if not Match (Attr.Value, "Put")
+        and then not Match (Attr.Value, "Get")
+        and then not Match (Attr.Value, "Button") then
           File_Error (Node, "Invalid field kind. Put, Get or Button expected");
         end if;
-        Fields(No).Kind := Afpx_Typ.Field_Kind_List'Value(
-                                  Attrs(I).Value.Image);
-      elsif Match (Attrs(I).Name, "Name") then
+        Fields(No).Kind := Afpx_Typ.Field_Kind_List'Value(Attr.Value.Image);
+      elsif Match (Attr.Name, "Name") then
         begin
-          Name := As.U.Tus (Memory.Eval (Attrs(I).Value.Image));
+          Name := As.U.Tus (Memory.Eval (Attr.Value.Image));
         exception
           when Computer.Unknown_Variable =>
             File_Error (Node, "Unknown variable when evaluating "
-                            & Attrs(I).Value.Image);
+                            & Attr.Value.Image);
         end;
       end if;
     end loop;
@@ -785,20 +778,20 @@ procedure Afpx_Bld is
                     := Ctx.Get_Attributes (Child);
         Err_Val : Asu_Us;
       begin
-        for I in Child_Attrs'Range loop
-          Err_Val := Child_Attrs(I).Value;
-          if Match (Child_Attrs(I).Name, "Row") then
+        for Child_Attr of Child_Attrs loop
+          Err_Val := Child_Attr.Value;
+          if Match (Child_Attr.Name, "Row") then
             Finit_Square.Row :=
-             Memory.Compute(Child_Attrs(I).Value.Image);
-          elsif Match (Child_Attrs(I).Name, "Col") then
+             Memory.Compute(Child_Attr.Value.Image);
+          elsif Match (Child_Attr.Name, "Col") then
             Finit_Square.Col :=
-             Memory.Compute(Child_Attrs(I).Value.Image);
-          elsif Match (Child_Attrs(I).Name, "xml:space") then
+             Memory.Compute(Child_Attr.Value.Image);
+          elsif Match (Child_Attr.Name, "xml:space") then
             -- Discard
             null;
           else
             File_Error (Child, "Invalid Init attribute "
-                             & Child_Attrs(I).Value);
+                             & Child_Attr.Value);
           end if;
         end loop;
       exception
@@ -905,8 +898,8 @@ procedure Afpx_Bld is
     Child : Xp.Node_Type;
     List_Allowed : Boolean;
   begin
-    for I in Attrs'Range loop
-      if Match (Attrs(I).Name, "Num") then
+    for Attr of Attrs loop
+      if Match (Attr.Name, "Num") then
         begin
           Dscr_No := Afpx_Typ.Descriptor_Range'Value (
                       Ctx.Get_Attribute (Node, 1).Value.Image);
@@ -927,25 +920,25 @@ procedure Afpx_Bld is
           Name :=
              As.U.Tus ("Dscr_" &  Normal(Integer(Dscr_No), 2, Gap => '0'));
         end if;
-      elsif Match (Attrs(I).Name, "Background") then
+      elsif Match (Attr.Name, "Background") then
         Background := True;
         begin
           Descriptors(Dscr_No).Background :=
-              Con_Io.Color_Of (Memory.Eval (Attrs(I).Value.Image));
+              Con_Io.Color_Of (Memory.Eval (Attr.Value.Image));
         exception
           when Computer.Unknown_Variable =>
             File_Error (Node, "Unknown variable when evaluating "
-                            & Attrs(I).Value.Image);
+                            & Attr.Value.Image);
           when others =>
             File_Error (Node, "Invalid background specification");
         end;
-      elsif Match (Attrs(I).Name, "Name") then
+      elsif Match (Attr.Name, "Name") then
         begin
-          Name := As.U.Tus (Memory.Eval (Attrs(I).Value.Image));
+          Name := As.U.Tus (Memory.Eval (Attr.Value.Image));
         exception
           when Computer.Unknown_Variable =>
             File_Error (Node, "Unknown variable when evaluating "
-                            & Attrs(I).Value.Image);
+                            & Attr.Value.Image);
         end;
       end if;
     end loop;

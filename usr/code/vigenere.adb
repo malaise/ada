@@ -29,11 +29,11 @@ package body Vigenere is
     if Key'Length = 0 then
       raise Empty_Key;
     end if;
-    for I in Res'Range loop
-      Res(I) := Char2Car (Res(I));
+    for C of Res loop
+      C := Char2Car (C);
       -- No space in key, put A
-      if Res(I) = ' ' then
-        Res(I) := Car'First;
+      if C = ' ' then
+        C := Car'First;
       end if;
     end loop;
     return Res;
@@ -42,15 +42,14 @@ package body Vigenere is
   procedure Encode (Key : in String; Str : in out Long_String) is
     Carkey : constant String := Key2Car (Key);
     Kindex : Positive;
-    C : Character;
     Cindex, Offset : Car_Index;
     T : Positive;
   begin
     Kindex := 1;
     -- Encode each character one by one
-    for I in Str'Range loop
+    for C of Str loop
       -- This character to encode
-      C := Char2Car(Str(I));
+      C := Char2Car(C);
       if C /= ' ' then
         -- Index of Car corresponding to this character
         Cindex := Car2Index(C);
@@ -70,8 +69,6 @@ package body Vigenere is
           Kindex := Carkey'First;
         end if;
       end if;
-      -- Store
-      Str(I) := C;
     end loop;
   end Encode;
 

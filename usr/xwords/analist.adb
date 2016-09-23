@@ -152,10 +152,10 @@ package body Analist is
           Used := (others => False);
 
           -- See if each letter of Word exists in Letters
-          for I in Word'Range loop
+          for W of Word loop
             Letter_Valid := False;
             for J in Letters'Range loop
-              if Word(I) = Letters(J) and then not Used(J) then
+              if W = Letters(J) and then not Used(J) then
                 -- This letter is in Letters and not used yet => valid
                 Used(J) := True;
                 Letter_Valid := True;

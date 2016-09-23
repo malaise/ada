@@ -169,16 +169,16 @@ package body Matcher is
     end loop;
 
     -- Assign variables
-    for I in Node.Assign'Range loop
-      exit when Node.Assign(I).Value.Kind = Any_Def.None_Kind;
-      Expanding := Node.Assign(I).Value.Str;
+    for Assign of  Node.Assign loop
+      exit when Assign.Value.Kind = Any_Def.None_Kind;
+      Expanding := Assign.Value.Str;
       Expanded := Variables.Expand (Expanding, Variables.Local_Env);
       if Str_Util.Locate (Expanded.Image, "=") /= 0 then
         Error ("Invalid value in assignment " & Expanded.Image);
         raise Match_Error;
       end if;
-      Variables.Set (Node.Assign(I).Name, Expanded);
-      Debug.Logger.Log_Debug ("Assigned >" & Node.Assign(I).Name.Image
+      Variables.Set (Assign.Name, Expanded);
+      Debug.Logger.Log_Debug ("Assigned >" & Assign.Name.Image
                             & "< = >" & Expanded.Image & "<");
     end loop;
     Variables.Clear_Volatiles;

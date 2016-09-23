@@ -12,8 +12,8 @@ begin
     The_Points : constant Points.P_T_The_Points(1 .. Points.P_Nb)
                := Points.P_The_Points;
   begin
-    for I in The_Points'Range loop
-      Afpx.Line_List.Insert (Point_Str.Encode_Rec(The_Points(I)));
+    for Point of The_Points loop
+      Afpx.Line_List.Insert (Point_Str.Encode_Rec(Point));
     end loop;
   end;
   -- Rewind

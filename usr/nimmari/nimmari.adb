@@ -40,8 +40,8 @@ procedure Nimmari is
     if not Logger.Debug_On then
       return;
     end if;
-    for I in Bars'Range loop
-      if Bars(I) then
+    for Bar of Bars loop
+      if Bar then
         Txt.Append ("I ");
       else
         Txt.Append ("- ");

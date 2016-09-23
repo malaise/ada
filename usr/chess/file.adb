@@ -264,16 +264,16 @@ package body File is
       declare
         Str : constant Image.Move_Str := Image.Move_Image(Action, Result);
       begin
-        for I in Str'Range loop
-          Chess_Io.Write (The_File, Str(I));
+        for C of Str loop
+          Chess_Io.Write (The_File, C);
         end loop;
       end;
     else
       declare
         Str : constant Image.Move_Str := "   ----   ";
       begin
-        for I in Str'Range loop
-          Chess_Io.Write (The_File, Str(I));
+        for C of Str loop
+          Chess_Io.Write (The_File, C);
         end loop;
       end;
     end if;

@@ -84,8 +84,8 @@ package body Registers is
 
   procedure Clear_All is
   begin
-    for R in Registers_Array'Range loop
-      Registers_Array(R) := Empty_Rec;
+    for Register of Registers_Array loop
+      Register := Empty_Rec;
     end loop;
   end Clear_All;
 

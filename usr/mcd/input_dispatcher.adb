@@ -42,8 +42,8 @@ package body Input_Dispatcher is
   Sds : constant String := """:";
   function Is_Sd (C : Character) return Boolean is
   begin
-    for I in Sds'Range loop
-      if Sds(I) = C then
+    for Sd of Sds loop
+      if Sd = C then
         return True;
       end if;
     end loop;

@@ -145,8 +145,8 @@ package body Utf_16 is
   function Encode (Unicode : Unicode_Sequence) return Sequence is
     Result : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
   begin
-    for I in Unicode'Range loop
-      Ada.Strings.Wide_Unbounded.Append (Result, Encode (Unicode(I)));
+    for U of Unicode loop
+      Ada.Strings.Wide_Unbounded.Append (Result, Encode (U));
     end loop;
     return Ada.Strings.Wide_Unbounded.To_Wide_String (Result);
   end Encode;
@@ -192,8 +192,8 @@ package body Utf_16 is
 
   procedure Swap (Seq : in out Sequence) is
   begin
-    for I in Seq'Range loop
-      Swap (Seq(I));
+    for W of Seq loop
+      Swap (W);
     end loop;
   end Swap;
 
@@ -212,8 +212,8 @@ package body Utf_16 is
     use Bit_Ops;
   begin
     J := 1;
-    for I in Seq'Range loop
-      Val := Wide_Character'Pos (Seq(I));
+    for W of Seq loop
+      Val := Wide_Character'Pos (W);
       Str(J + 0) := Character'Val (Shr (Val and 16#FF00#, 8));
       Str(J + 1) := Character'Val (Val and 16#00FF#);
       J := J + 2;

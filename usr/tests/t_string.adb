@@ -482,8 +482,8 @@ begin
                                               Str1(1 .. Nat1), Pos1);
             begin
               Basic_Proc.Put_Line_Output ("Split into: ");
-              for I in Lstr'Range loop
-                Basic_Proc.Put_Line_Output (">" & Lstr(I).Image & "<");
+              for Word of Lstr loop
+                Basic_Proc.Put_Line_Output (">" & Word.Image & "<");
               end loop;
             end;
 

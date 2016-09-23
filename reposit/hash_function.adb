@@ -22,10 +22,10 @@ package body Hash_Function is
   procedure Add (Buffer : in out Hash_Buffer; Str : in String) is
     use Bit_Ops;
   begin
-    for I in Str'Range loop
+    for C of Str loop
       Buffer.Value := (Shl (Buffer.Value, 5) --## rule line off Parentheses
                        + Buffer.Value
-                       + Character'Pos (Str(I))) and Nat_Max_Hash;
+                       + Character'Pos (C)) and Nat_Max_Hash;
     end loop;
 
   end Add;

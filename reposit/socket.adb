@@ -531,7 +531,7 @@ package body Socket is
     Check_Ok;
     for I in Name'Range loop
       if Name(I) = Nul then
-        return Name(1 .. I-1);
+        return Name(1 .. I - 1);
       end if;
     end loop;
     raise Soc_Len_Err;
@@ -556,7 +556,7 @@ package body Socket is
     Check_Ok;
     for I in Name'Range loop
       if Name(I) = Nul then
-        return Name(1 .. I-1);
+        return Name(1 .. I - 1);
       end if;
     end loop;
     raise Soc_Len_Err;
@@ -579,7 +579,7 @@ package body Socket is
     Check_Ok;
     for I in Name'Range loop
       if Name(I) = Nul then
-        return Name(1 .. I-1);
+        return Name(1 .. I - 1);
       end if;
     end loop;
     raise Soc_Len_Err;
@@ -602,7 +602,7 @@ package body Socket is
     Check_Ok;
     for I in Name'Range loop
       if Name(I) = Nul then
-        return Name(1 .. I-1);
+        return Name(1 .. I - 1);
       end if;
     end loop;
     raise Soc_Len_Err;
@@ -624,7 +624,7 @@ package body Socket is
     Check_Ok;
     for I in Name'Range loop
       if Name(I) = Nul then
-        return Name(1 .. I-1);
+        return Name(1 .. I - 1);
       end if;
     end loop;
     raise Soc_Len_Err;

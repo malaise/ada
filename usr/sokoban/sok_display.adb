@@ -476,9 +476,9 @@ package body Sok_Display is
 
         when Con_Io.Ret =>
           -- Digit or space allowed
-          for I in Str'Range loop
-            if Language.Unicode_To_Char (Str(I)) not in '0' .. '9'
-            and then Language.Unicode_To_Char (Str(I)) /= ' ' then
+          for C of Str loop
+            if Language.Unicode_To_Char (C) not in '0' .. '9'
+            and then Language.Unicode_To_Char (C) /= ' ' then
               raise Format_Error;
             end if;
           end loop;

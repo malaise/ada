@@ -30,23 +30,23 @@ begin
       -- Not in parentheses
       -- Check current word vs each criteria
       Check_Criteria:
-      for I in End_Criteria'Range loop
-        if Word.Lexic = End_Criteria(I).Lexic then
+      for Crit of End_Criteria loop
+        if Word.Lexic = Crit.Lexic then
           -- Lexic match, check text if necessary
           if Word.Lexic = Parser_Ada.Reserved_Word
           or else Word.Lexic = Parser_Ada.Delimiter then
             -- Text must match for reserved word or delimiter
-            if Word.Text = End_Criteria(I).Text then
+            if Word.Text = Crit.Text then
               exit Parse_Word;
             end if;
           elsif Word.Lexic = Parser_Ada.Separator then
             if Word.Text = As.U.Asu_Us'(Common.Line_Feed) then
-              if End_Criteria(I).Text = As.U.Asu_Us'(Common.Line_Feed) then
+              if Crit.Text = As.U.Asu_Us'(Common.Line_Feed) then
                 -- Line feed matches line_feed
                 exit Parse_Word;
               end if;
             else
-              if End_Criteria(I).Text /= As.U.Asu_Us'(Common.Line_Feed) then
+              if Crit.Text /= As.U.Asu_Us'(Common.Line_Feed) then
                 -- Not line feed matches not line_feed
                 exit Parse_Word;
               end if;

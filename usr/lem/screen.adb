@@ -187,9 +187,9 @@ package body Screen is
     J := J + 1;
     Screen_Ground(J) := First_Y;
     J := J + 1;
-    for I in Ground'Range loop
+    for Point of Ground loop
       -- Convert this ground point to screen
-      Screen_Point := To_Screen (Ground (I));
+      Screen_Point := To_Screen (Point);
       -- Store X then Y
       Screen_Ground(J) := Screen_Point.X;
       J := J + 1;

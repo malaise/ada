@@ -189,16 +189,16 @@ package body Config is
         Ok := False;
       end if;
 
-      for Bus in Buses'Range loop
+      for Bus of Buses loop
         -- Get bus config
-        Name := Ctx.Get_Attribute (Buses(Bus), 1).Value;
+        Name := Ctx.Get_Attribute (Bus, 1).Value;
         if Check_Bus (Name.Image) then
           Log_Cfg.Log_Debug ("Got bus " & Name.Image);
-          if Check_Attributes (Buses(Bus)) then
+          if Check_Attributes (Bus) then
             -- Store config for this bus
-            Bus_Conf_List.Insert ( (Name, Buses(Bus)) );
+            Bus_Conf_List.Insert ( (Name, Bus) );
             Log_Cfg.Log_Debug ("  Got config "
-                 & Image (Ctx.Get_Attributes (Buses(Bus))));
+                 & Image (Ctx.Get_Attributes (Bus)));
           else
             Ok := False;
           end if;
@@ -206,21 +206,19 @@ package body Config is
           Ok := False;
         end if;
 
-        for I in 1 .. Ctx.Get_Nb_Children (Buses(Bus)) loop
-          Node := Ctx.Get_Child (Buses(Bus), I);
+        for I in 1 .. Ctx.Get_Nb_Children (Bus) loop
+          Node := Ctx.Get_Child (Bus, I);
           if Ctx.Get_Name (Node) = "LANs" then
             -- Check LAN definitions
             declare
               Lans : constant Xml_Parser.Nodes_Array
                    := Ctx.Get_Children(Node);
             begin
-              for Lan in Lans'Range loop
-                if not Check_Address (Ctx.Get_Attribute (Lans(Lan),
-                                                         "Address")) then
+              for Lan of Lans loop
+                if not Check_Address (Ctx.Get_Attribute (Lan, "Address")) then
                   Ok := False;
                 end if;
-                if not Check_Address (Ctx.Get_Attribute (Lans(Lan),
-                                                         "Netmask")) then
+                if not Check_Address (Ctx.Get_Attribute (Lan, "Netmask")) then
                   Ok := False;
                 end if;
               end loop;
@@ -231,9 +229,8 @@ package body Config is
               Aliases : constant Xml_Parser.Nodes_Array
                       := Ctx.Get_Children(Node);
             begin
-              for Alias in Aliases'Range loop
-                if not Check_Address (Ctx.Get_Attribute (Aliases(Alias),
-                                                       "Address")) then
+              for Alias of Aliases loop
+                if not Check_Address (Ctx.Get_Attribute (Alias, "Address")) then
                   Ok := False;
                 end if;
               end loop;
@@ -405,9 +402,9 @@ package body Config is
           Aliases : constant Xml_Parser.Nodes_Array
                   := Ctx.Get_Children(Node);
         begin
-          for Alias in Aliases'Range loop
-            if Ctx.Get_Attribute (Aliases(Alias), "Name") = Local_Host_Name then
-              Host_Id := Id_Of (Aliases(Alias), "Address");
+          for Alias of Aliases loop
+            if Ctx.Get_Attribute (Alias, "Name") = Local_Host_Name then
+              Host_Id := Id_Of (Alias, "Address");
               Log_Cfg.Log_Debug ("Found Alias Name " & Local_Host_Name
                    & " to " & Ip_Addr.Image (Host_Id));
               return Host_Id;
@@ -420,15 +417,15 @@ package body Config is
           Lans : constant Xml_Parser.Nodes_Array
                := Ctx.Get_Children(Node);
         begin
-          for Lan in Lans'Range loop
+          for Lan of Lans loop
             -- See if current LAN/Netmask is one of current interfaces
             begin
               Host_Id :=  Socket.Host_Id_For (
-                  Lan     => Id_Of (Lans(Lan), "Address"),
-                  Netmask => Id_Of (Lans(Lan), "Netmask"));
+                  Lan     => Id_Of (Lan, "Address"),
+                  Netmask => Id_Of (Lan, "Netmask"));
               Log_Cfg.Log_Debug ("Found LAN Address "
-                   & Ctx.Get_Attribute (Lans(Lan), "Address")
-                   & " Netmask " & Ctx.Get_Attribute (Lans(Lan), "Netmask")
+                   & Ctx.Get_Attribute (Lan, "Address")
+                   & " Netmask " & Ctx.Get_Attribute (Lan, "Netmask")
                    & " to " & Ip_Addr.Image (Host_Id));
               return Host_Id;
             exception
