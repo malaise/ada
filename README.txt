@@ -225,7 +225,7 @@ Logrotator (1)::
      Splits stdin into several files according to a given time period and
      possibly to a maximum size for the files.
 
-Lsadeps (2)::
+Lsadeps (3)::
      Shows the list/tree of Ada units/files dependencies.
 
 Mcd (3)::
@@ -266,6 +266,10 @@ Pipe (1)::
 
 Renardeau (2)::
      Computes a target number by combining base numbers.
+
+Sensor (1)::
+     Scans several log files and raises alerts on some events (matching
+filters).
 
 Simusi (2)::
      Machining simulation. (Tough algo).
