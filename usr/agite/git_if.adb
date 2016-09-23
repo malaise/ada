@@ -695,6 +695,8 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("log");
     Cmd.Cat ("--date=iso");
+    Cmd.Cat ("--full-history");
+    Cmd.Cat ("--sparse");
     if Max /= 0 then
       Cmd.Cat ("-n");
       Cmd.Cat (Images.Integer_Image (Max + 1));

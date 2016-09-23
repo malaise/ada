@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V31.17
+V31.20
 
 General purpose
 ---------------
@@ -938,8 +938,7 @@ and in its sub-directories.
 Content::
 The list shows, for each entry, the date of the commit (format YYMMDD:HHMM),
 a space, then the comment (up to two lines, separated by \'$\') of the commit. +
-If the entry is a merge (which is possible only when showing the history of
-the root of the repository), then the separator between the date and the comment
+If the entry is a merge, then the separator between the date and the comment
 becomes a \'>'.
 
 Initial selection::
@@ -979,8 +978,9 @@ of the history (which can take some time).
 .Root
 If the current history does not apply on the root directory, then this button
 is active and allows listing the full history of the repository, for the
-current or selected branch. The history of root is the only way to see the
-merge commits (see 'List' above) and to xref:XReorg[reorg] the current branch.
+current or selected branch. The history of root is the only way
+to xref:XReorg[reorg] the current branch or to xref:XReset[reset] it to a 
+previous commit.
 
 anchor:XView[]
 
@@ -2080,7 +2080,8 @@ version 1.7.0 or above:
 <file>',
 
 * A function lists the commits on a dir or file by calling
-'git log --date=iso [ -n <max> ] [ <branch> ] \-- [ <dir_or_file> ]',
+'git log --date=iso --full-history --sparse [ -n <max> ] [ <branch> ]
+[ \-- <dir_or_file> ]',
 
 * A functions gets the hash of the last commit by calling 'git log
 --pretty=format:"%H" -n -1 -- <pwd>',

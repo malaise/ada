@@ -449,22 +449,15 @@ package body History is
       end if;
       -- Get history list
       if Path = "" and then Name = ""
-      and then Directory.Get_Current = Directory.Normalize_Path (Root) then
-        -- Log in (the root dir of) a bare repository
-        --  fails if we provide the full (Root) path
-        --  but is OK with '.'
-        -- Use '.' if we are in root and target dir is root
-        -- and in a bare repository, otherwise ""
-        Git_If.List_Log (Branch, (if Git_If.Is_Bare then "." else ""),
-                         Max,
-                         Logs,
-                         All_Read);
+      and then Directory.Get_Current = Directory.Normalize_Path (Root)
+      and then Git_If.Is_Bare then
+          -- Log in (the root dir of) a bare repository
+          --  fails if we provide the full (Root) path
+          --  but is OK with ""
+        Git_If.List_Log (Branch, "", Max, Logs, All_Read);
       else
-        -- Log
-        Git_If.List_Log (Branch, Root & Path & Name,
-                         Max,
-                         Logs,
-                         All_Read);
+        -- Log the target
+        Git_If.List_Log (Branch, Root & Path & Name, Max, Logs, All_Read);
       end if;
     end Reread;
 
