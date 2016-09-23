@@ -3,7 +3,7 @@ with Long_Longs, Aski, Basic_Proc, Argument, Argument_Parser, As.U, Normal,
      Trace.Loggers, Text_Line, Timers, Chronos.Passive_Timers;
 procedure Logrotator is
   -- Current version
-  Version : constant String := "1.0";
+  Version : constant String := "1.1";
 
   -- Trace logger
   Logger : Trace.Loggers.Logger;
