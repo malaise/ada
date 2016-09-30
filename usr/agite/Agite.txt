@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V31.20
+V31.21
 
 General purpose
 ---------------
@@ -706,10 +706,10 @@ Double clicking on an entry of the list has the same effect.
 Hist::
 
 This button activates the xref:XHist[history] menu that shows the history of
-the branch selected in the list. No modification is allowed in this mode if
-the selected branch is not the current branch. All the navigation between
-xref:XHist[history] and xref:XDetail[detail] menus will apply to the selected
-branch.
+the root of the branch selected in the list. No modification is allowed in this
+mode if the selected branch is not the current branch. All the navigation
+between xref:XHist[history] and xref:XDetail[detail] menus will apply to the
+selected branch.
 
 Merge::
 
@@ -921,7 +921,7 @@ History
 ~~~~~~~
 anchor:XHist[]
 On a file, this menu shows the relative path of the selected file,
-and lists the history of all the commits (on the selected branch) that have
+and lists the history of the commits (on the selected branch) that have
 affected this file. +
 Git notes are discarded. +
 The newest release (head) is on top.
@@ -929,9 +929,9 @@ The newest release (head) is on top.
 It displays on top of screen the current branch, and below, if different,
 the branch currenly listed.
 
-In case of a directory the menu shows the relative path of the directory
-and lists the history of the commits of all the files in the directory
-and in its sub-directories.
+In case of a directory, the menu shows the relative path of the directory
+and lists the history of the commits that have affected the files of the
+directory and its sub-directories.
 
 .List
 
@@ -978,9 +978,9 @@ of the history (which can take some time).
 .Root
 If the current history does not apply on the root directory, then this button
 is active and allows listing the full history of the repository, for the
-current or selected branch. The history of root is the only way
-to xref:XReorg[reorg] the current branch or to xref:XReset[reset] it to a 
-previous commit.
+current or selected branch. The history of root is the only way to
+xref:XReorg[reorg] the current branch or to xref:XReset[reset] it to a previous
+commit.
 
 anchor:XView[]
 
@@ -2080,7 +2080,7 @@ version 1.7.0 or above:
 <file>',
 
 * A function lists the commits on a dir or file by calling
-'git log --date=iso --full-history --sparse [ -n <max> ] [ <branch> ]
+'git log --date=iso --full-history [ --sparse ] [ -n <max> ] [ <branch> ] 
 [ \-- <dir_or_file> ]',
 
 * A functions gets the hash of the last commit by calling 'git log

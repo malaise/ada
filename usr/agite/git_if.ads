@@ -81,10 +81,12 @@ package Git_If is
 
   -- List the log on a branch of a dir or file
   -- Stop at Max if not 0
+  -- Set --sparse (when on root) to log full reposit history (including merges)
   -- Returns wether the end of list is reached at or before Max
   -- May raise anonymous exception Log_Error
   procedure List_Log (Branch, Path : in String;
                       Max : in Natural;
+                      Sparse : in Boolean;
                       Log : in out Log_List;
                       End_Reached : out Boolean);
 

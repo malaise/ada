@@ -61,7 +61,7 @@ package body History is
       return Git_If.No_Hash;
     end if;
     -- Log its HEAD
-    Git_If.List_Log (Remote.Image, "", 1, Remotes, Dummy_End);
+    Git_If.List_Log (Remote.Image, "", 1, True, Remotes, Dummy_End);
     if Remotes.Is_Empty then
       return Git_If.No_Hash;
     end if;
@@ -448,16 +448,24 @@ package body History is
         Max := Config.History_Len;
       end if;
       -- Get history list
-      if Path = "" and then Name = ""
-      and then Directory.Get_Current = Directory.Normalize_Path (Root)
-      and then Git_If.Is_Bare then
+      if Path = "" and then Name = "" then
+        if Directory.Get_Current = Directory.Normalize_Path (Root) then
           -- Log in (the root dir of) a bare repository
           --  fails if we provide the full (Root) path
           --  but is OK with ""
-        Git_If.List_Log (Branch, "", Max, Logs, All_Read);
+          -- So use "" if we are in root and if target dir is root
+          Git_If.List_Log (Branch, "", Max, True, Logs, All_Read);
+        else
+          -- Use root as the target dir name and set sparse for the full
+          --  history
+          Git_If.List_Log (Branch, Root, Max, True, Logs, All_Read);
+        end if;
       else
-        -- Log the target
-        Git_If.List_Log (Branch, Root & Path & Name, Max, Logs, All_Read);
+        -- Log the non-root target
+        -- Not sparse (so no merge) otherwise we get the history of the full
+        --  repository
+        Git_If.List_Log (Branch, Root & Path & Name, Max, False, Logs,
+                         All_Read);
       end if;
     end Reread;
 

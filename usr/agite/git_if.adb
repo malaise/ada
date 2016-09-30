@@ -675,11 +675,13 @@ package body Git_If is
   end Read_Block;
 
   -- List the log of a dir or file
- -- Stop at Max if not 0
+  -- Stop at Max if not 0
+  -- Set --sparse (when on root) to log full reposit history (including merges)
   -- Returns wether the end of list is reached at or before Max
   -- May raise anonymous exception Log_Error
   procedure List_Log (Branch, Path : in String;
                       Max : in Natural;
+                      Sparse : in Boolean;
                       Log : in out Log_List;
                       End_Reached : out Boolean) is
     Cmd : Many_Strings.Many_String;
@@ -696,10 +698,12 @@ package body Git_If is
     Cmd.Cat ("log");
     Cmd.Cat ("--date=iso");
     Cmd.Cat ("--full-history");
-    Cmd.Cat ("--sparse");
     if Max /= 0 then
       Cmd.Cat ("-n");
       Cmd.Cat (Images.Integer_Image (Max + 1));
+    end if;
+    if Sparse then
+      Cmd.Cat ("--sparse");
     end if;
     if Branch /= "" then
       Cmd.Cat (Branch);
