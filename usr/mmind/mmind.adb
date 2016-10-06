@@ -1,4 +1,4 @@
--- Mastem mind (graphic or text mode)
+-- Master mind (graphic or text mode)
 with Basic_Proc, Argument;
 with Common, Action, Mmind_Asc;
 

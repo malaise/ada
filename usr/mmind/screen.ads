@@ -70,8 +70,8 @@ package Screen is
   ----------
   -- HELP --
   ----------
-  type Help_State is (Released, Click_Color, Click_Propal, Click_Other,
-                      Start, Discarded);
+  type Help_State is (Released, Released_Try, Click_Color, Click_Propal,
+                      Click_Other, Start, Discarded);
   procedure Put_Help (Help : in Help_State);
 
 

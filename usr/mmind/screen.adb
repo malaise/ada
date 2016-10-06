@@ -555,7 +555,7 @@ package body Screen is
   begin
     Help_Win.Clear;
     case Help is
-      when Released =>
+      when Released | Released_Try =>
         Help_Win.Move;
         Help_Win.Put_Line ("Select :");
         Help_Win.New_Line;
@@ -565,9 +565,11 @@ package body Screen is
         Help_Win.Put_Line (" -> A proposition to clear");
         Help_Win.Put_Line ("     or move it.");
         Help_Win.New_Line;
-        Help_Win.Put_Line (" -> A try to get answer");
-        Help_Win.Put_Line ("     to a try.");
-        Help_Win.New_Line;
+        if Help = Released_Try then
+          Help_Win.Put_Line (" -> A try to get answer");
+          Help_Win.Put_Line ("     to a try.");
+          Help_Win.New_Line;
+        end if;
         Help_Win.Put_Line (" -> A menu option :");
         Help_Win.Put_Line ("     Give-up.");
         Help_Win.Put_Line ("     Exit.");
