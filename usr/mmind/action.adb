@@ -116,8 +116,13 @@ package body Action is
             end;
             if Playing then
               Screen.Put_Start_Giveup (Start => False, Selected => False);
-              Common.Possible_Selections (Can_Try, Can_Propose);
-              Screen.Put_Help (Screen.Released, Can_Try, Can_Propose);
+              -- Redraw help
+              if Clicked then
+                Treat_Click;
+              else
+                Common.Possible_Selections (Can_Try, Can_Propose);
+                Screen.Put_Help (Screen.Released, Can_Try, Can_Propose);
+              end if;
               Screen.Put_Current_Level (Level);
             else
               declare
