@@ -70,9 +70,11 @@ package Screen is
   ----------
   -- HELP --
   ----------
-  type Help_State is (Released, Released_Try, Click_Color, Click_Propal,
-                      Click_Other, Start, Discarded);
-  procedure Put_Help (Help : in Help_State);
+  type Help_State is (Released, Click_Color, Click_Propal, Click_Other,
+                      Start, Discarded);
+  -- Can_xxx are meaningfull when Released
+  procedure Put_Help (Help : in Help_State;
+                      Can_Try, Can_Propose : in Boolean := False);
 
 
   -----------

@@ -551,21 +551,24 @@ package body Screen is
   ----------
   -- HELP --
   ----------
-  procedure Put_Help (Help : in Help_State) is
+  procedure Put_Help (Help : in Help_State;
+                      Can_Try, Can_Propose : in Boolean := False) is
   begin
     Help_Win.Clear;
     case Help is
-      when Released | Released_Try =>
+      when Released =>
         Help_Win.Move;
         Help_Win.Put_Line ("Select :");
         Help_Win.New_Line;
         Help_Win.Put_Line (" -> A color to set");
         Help_Win.Put_Line ("     it in a proposition.");
         Help_Win.New_Line;
-        Help_Win.Put_Line (" -> A proposition to clear");
-        Help_Win.Put_Line ("     or move it.");
-        Help_Win.New_Line;
-        if Help = Released_Try then
+        if Can_Propose then
+          Help_Win.Put_Line (" -> A proposition to clear");
+          Help_Win.Put_Line ("     or move it.");
+          Help_Win.New_Line;
+        end if;
+        if Can_Try then
           Help_Win.Put_Line (" -> A try to get answer");
           Help_Win.Put_Line ("     to a try.");
           Help_Win.New_Line;

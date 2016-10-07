@@ -51,10 +51,12 @@ package Common is
    Level  : in Level_Range;
    Color  : in Color_Range);
 
+  -- State of try area
   procedure Set_Try_State (
    Propal : in Propal_Range;
    Try    : in Try_List);
 
+  -- Answer value
   procedure Set_Answer (
    Propal : in Propal_Range;
    Placed_Ok, Colors_Ok : in Natural);
@@ -63,7 +65,11 @@ package Common is
    Propal : in Propal_Range;
    Placed_Ok, Colors_Ok : out Natural);
 
+  -- Reset all the states
   procedure Reset_State;
+
+  -- Can the player select a try, a proposal
+  procedure Possible_Selections (Can_Try, Can_Propose : out Boolean);
 
 end Common;
 

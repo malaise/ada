@@ -245,18 +245,10 @@ begin
 
   if Playing then
     declare
-      Propal : Common.Propal_State_Rec(Common.Get_Level);
-      Can_Try_One : Boolean := False;
+      Can_Try, Can_Propose : Boolean;
     begin
-      for I in Common.Propal_Range loop
-        Propal := Common.Get_Propal_State(I);
-        if Propal.Try = Common.Can_Try then
-          Can_Try_One := True;
-          exit;
-        end if;
-      end loop;
-      Screen.Put_Help (if Can_Try_One then Screen.Released_Try
-                                      else Screen.Released);
+      Common.Possible_Selections (Can_Try, Can_Propose);
+      Screen.Put_Help (Screen.Released, Can_Try, Can_Propose);
     end;
   else
     Screen.Put_Help (Screen.Start);

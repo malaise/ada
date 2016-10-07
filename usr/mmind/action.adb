@@ -51,7 +51,7 @@ package body Action is
   function Play return Boolean is
     Clicked : Boolean := False;
     Go_On, Exit_Game : Boolean;
-    Can_Try_One : Boolean;
+    Can_Try, Can_Propose : Boolean;
     Scr : constant Con_Io.Window := Con_Io.Get_Screen (Screen.Console'Access);
   begin
 
@@ -101,14 +101,12 @@ package body Action is
               Placed_Ok, Colors_Ok : Natural;
               use type Common.Try_List;
             begin
-              Can_Try_One := False;
               for I in Common.Propal_Range loop
                 Propal := Common.Get_Propal_State(I);
                 for J in 1 .. Level loop
                   Screen.Put_Color (I, J, Propal.Propal_Color(J));
                 end loop;
                 if Propal.Try = Common.Can_Try then
-                  Can_Try_One := True;
                   Screen.Put_Try (I, Screen.Can_Try);
                 elsif Propal.Try = Common.Answered then
                   Common.Get_Answer (I, Placed_Ok, Colors_Ok);
@@ -118,8 +116,8 @@ package body Action is
             end;
             if Playing then
               Screen.Put_Start_Giveup (Start => False, Selected => False);
-              Screen.Put_Help (if Can_Try_One then Screen.Released_Try
-                               else Screen.Released);
+              Common.Possible_Selections (Can_Try, Can_Propose);
+              Screen.Put_Help (Screen.Released, Can_Try, Can_Propose);
               Screen.Put_Current_Level (Level);
             else
               declare
