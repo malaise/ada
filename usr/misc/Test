@@ -107,7 +107,7 @@ fi
 # Default
 if [ "$1"  != "--none" ] ; then
   # Azf on lzf, lz4 and snappy
-  for file in `ls *.ads *.adb lib_Linux/*` ; do
+  for file in `ls *.ads *.adb lib/*` ; do
     azf_one $file
     azf_one --lz4 $file
     azf_one --snappy $file
