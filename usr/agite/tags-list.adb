@@ -1,6 +1,6 @@
 with Afpx.Utils, Str_Util;
-with Utils.X, Afpx_Xref, Config, History, Details, Confirm, Checkout,
-     Push_Pull;
+with Utils.X, Utils.Store, Afpx_Xref, Config, History, Details, Confirm,
+     Checkout, Push_Pull;
 separate (Tags)
 
 procedure List (Root : in String) is
@@ -244,6 +244,11 @@ begin
             Dummy_Res := Push_Pull.Handle (Root, Pull => False,
                                            Tag => Current_Tag.Name.Image);
             Restore (True, False);
+          when Afpx_Xref.List_Tags.Mark =>
+            -- Store hash of current tag
+            Tags_List.Move_At (Afpx.Line_List.Get_Position);
+            Tags_List.Read (Current_Tag, Git_If.Tag_Mng.Dyn_List.Current);
+            Utils.Store.Hash := Current_Tag.Hash;
           when Afpx_Xref.List_Tags.Back =>
             return;
           when others =>

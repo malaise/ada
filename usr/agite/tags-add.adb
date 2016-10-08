@@ -1,5 +1,5 @@
 with Afpx.Utils, Str_Util, Directory;
-with Utils.X, Afpx_Xref, Error, Config, View;
+with Utils.X, Utils.Store, Afpx_Xref, Error, Config, View;
 separate (Tags)
 procedure Add (Root : in String; Rev : in Git_If.Git_Hash) is
 
@@ -156,6 +156,8 @@ begin
             Show (Show_View);
           when Afpx_Xref.Add_Tag.Diff =>
             Show (Show_Diff);
+          when Afpx_Xref.Add_Tag.Mark =>
+            Utils.Store.Hash := Hash;
           when Afpx_Xref.Add_Tag.Tag_Annotated =>
             -- Tag annotated
             if Add_Tag (True) then

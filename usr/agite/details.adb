@@ -1,5 +1,5 @@
 with Aski, As.U, Afpx.Utils, Directory;
-with Utils.X, Git_If, View, History, Config, Afpx_Xref, Restore,
+with Utils.X, Utils.Store, Git_If, View, History, Config, Afpx_Xref, Restore,
      Confirm_Diff_Dir;
 package body Details is
 
@@ -238,6 +238,9 @@ package body Details is
             when Afpx_Xref.Details.Restore =>
               -- Restore
               Do_Restore;
+            when Afpx_Xref.Details.Mark =>
+              -- Store current hash
+              Utils.Store.Hash := Hash;
             when Afpx_Xref.Details.Back =>
               -- Back
               return;

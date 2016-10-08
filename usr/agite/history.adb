@@ -1,7 +1,7 @@
 with As.U, Con_Io, Afpx.Utils, Normal, Rounds, Language, Directory, Str_Util,
      Aski;
-with Utils.X, Config, Details, View, Afpx_Xref, Restore, Checkout, Tags,
-     Branch, Confirm_Diff_Dir, Reset, Error;
+with Utils.X, Utils.Store, Config, Details, View, Afpx_Xref, Restore, Checkout,
+     Tags, Branch, Confirm_Diff_Dir, Reset, Error;
 package body History is
 
   package Branches renames Branch;
@@ -309,6 +309,26 @@ package body History is
       Afpx.Update_List (Afpx.Center_Selected);
     end Do_Tag;
 
+    -- Store current hash
+    procedure Do_Mark is
+    begin
+      Logs.Move_At (Afpx.Line_List.Get_Position);
+      Utils.Store.Hash := Logs.Access_Current.Hash;
+    end Do_Mark;
+
+    -- Search stored hash
+    procedure Do_Search is
+      Log : Git_If.Log_Entry_Rec;
+    begin
+      Log.Hash := Utils.Store.Hash;
+      if List_Hash_Search (Logs, Log,
+                   From => Git_If.Log_Mng.Dyn_List.Absolute) then
+        -- Move to found
+        Afpx.Line_List.Move_At (Logs.Get_Position);
+        Afpx.Update_List (Afpx.Center_Selected);
+      end if;
+    end Do_Search;
+
     -- View file or commit details
     type Show_List is (Show_View, Show_Details);
     procedure Show (What : in Show_List) is
@@ -376,6 +396,9 @@ package body History is
                                 or else not On_Root);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag,
                                 Right_Set or else Empty or else not Allow_Tag);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Mark, Empty);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Search,
+          Empty or else Utils.Store.Hash = Git_If.No_Hash);
       -- Set in Red the Reorg et Reset if current ref is below remote head
       if not Afpx.Get_Field_Protection (Afpx_Xref.History.Reorg)
       and then Remote_Head_Index /= 0 and then Left > Remote_Head_Index then
@@ -504,7 +527,7 @@ package body History is
 
     -- A log
     Log : Git_If.Log_Entry_Rec;
-    -- Search found
+    -- Head of remote found
     Found : Boolean;
     -- Do we set remote head
     Set_Remote_Head : Boolean;
@@ -614,13 +637,19 @@ package body History is
                 return;
               end if;
             when Afpx_Xref.History.Reset =>
-              -- Reorg
+              -- Reset
               if Do_Reset then
                 return;
               end if;
             when Afpx_Xref.History.Tag =>
               -- Tag
               Do_Tag;
+            when Afpx_Xref.History.Mark =>
+              -- Store current hash
+              Do_Mark;
+            when Afpx_Xref.History.Search =>
+              -- Search stored hash
+              Do_Search;
             when Afpx_Xref.History.Back =>
               -- Back
               return;

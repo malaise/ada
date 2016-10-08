@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V31.21
+V32.00
 
 General purpose
 ---------------
@@ -1084,6 +1084,15 @@ the repository to the (left) selected commit.
 This button button launches the xref:XTag[tag] menu that allows tagging the 
 selected commit.
 
+.Mark
+Stores the hash of the commit currently left-selected, for later
+xref:XSearch[Search].
+
+.Search
+anchor:XSearch[]
+Searches the commit that corresponds to the previously marked hash. If found,
+it becomes left-selected.
+
 .Back
 This button returns to the xref:XDir[directory] menu.
 
@@ -1117,6 +1126,8 @@ introduced by this commit on a file.
 
 You can:
 
+* 'Mark' the current commit for later xref:XSearch[search] in the
+xref:XHist[history] menu.
 * Enter the tag name in the 'Tag name' field.
 * If you want to create an annotated tag, then enter the tag comment in the
 'Comment' field.
@@ -1190,6 +1201,11 @@ started,
 * clicking on the button 'Hist' shows the full history of the repository,
 * clicking on the button 'Restore' restores all the files of the commit,
 if none of them is locally modified, and after a confirmation.
+
+In both cases:
+
+* clicking on the button 'Mark' saves the current commit for later
+xref:XSearch[search] in the xref:XHist[history] menu.
 
 NOTE: Clicking on 'Hist' leads to call a new function that shows the history, as
 explained in the section on xref:XNavigation[navigation].
@@ -1284,6 +1300,11 @@ Push::
 
 This button button launches the xref:XPush[push] menu that allows pushing
 the selected tag into a selected remote repository.
+
+Mark::
+
+This button saves the hash of the current commit for later xref:XSearch[search]
+in the xref:XHist[history] menu.
 
 .Back
 
