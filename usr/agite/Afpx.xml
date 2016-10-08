@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V32.00"/>
+  <Var Name="Version" Value="V32.01"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -237,22 +237,22 @@
       <Init Row="0" Col="1">Stash</Init>
     </Field>
     <Field Num="37" Kind="Put">
-      <Geometry Up="${Field_36.Low}+1" Left="${LmLeft}" Height="1"
+      <Geometry Up="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
-    <Field Num="38" Kind="Button" Name="Quit">
+    <Field Num="38" Kind="Put">
+      <Geometry Low="${Field_8.Low}+1" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">--------</Init>
+    </Field>
+    <Field Num="39" Kind="Button" Name="Quit">
       <Geometry Height="1" Left="${LmLeft}" Low="${List.Low}"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Exit</Init>
-    </Field>
-    <Field Num="39" Kind="Put">
-      <Geometry Low="${Field_38.Up}-1" Left="${LmLeft}" Height="1"
-                Width="${LmWidth}"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">--------</Init>
     </Field>
   </Descriptor>
 
@@ -389,8 +389,20 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Del</Init>
     </Field>
+    <Field Num="20" Kind="Put">
+      <Geometry Low="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">--------</Init>
+    </Field>
+    <Field Num="21" Kind="Put">
+      <Geometry Low="${Field_8.Low}+1" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">--------</Init>
+    </Field>
 
-    <Field Num="20" Kind="Button" Name="Back">
+    <Field Num="22" Kind="Button" Name="Back">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -608,14 +620,14 @@
       <Init Row="0" Col="1">Search</Init>
     </Field>
     <Field Num="34" Kind="Put">
-      <Geometry Up="${Field_33.Low}+1" Left="${LmLeft}" Height="1"
+      <Geometry Up="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
 
     <Field Num="35" Kind="Put">
-      <Geometry Up="${List.Low}-1" Left="${LmLeft}" Height="1"
+      <Geometry Up="${Field_8.Low}+1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
@@ -800,7 +812,7 @@
       <Init Row="0" Col="2">Mark</Init>
     </Field>
     <Field Num="28" Kind="Put">
-      <Geometry Up="${Field_27.Low}+1" Left="${LmLeft}" Height="1"
+      <Geometry Up="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
@@ -1082,7 +1094,7 @@
       <Init Row="0" Col="2">Mark</Init>
     </Field>
     <Field Num="21" Kind="Put">
-      <Geometry Up="${Field_20.Low}+1" Left="${LmLeft}" Height="1"
+      <Geometry Up="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
@@ -1289,7 +1301,7 @@
       <Init Row="0" Col="2">Mark</Init>
     </Field>
     <Field Num="18" Kind="Put">
-      <Geometry Up="${Field_17.Low}+1" Left="${LmLeft}" Height="1"
+      <Geometry Up="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
@@ -1566,25 +1578,31 @@
       <Init Row="0" Col="2">Reset</Init>
     </Field>
     <Field Num="37" Kind="Put">
-      <Geometry Up="${Field_36.Low}+1" Left="${LmLeft}" Height="1"
+      <Geometry Up="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">--------</Init>
+    </Field>
+    <Field Num="38" Kind="Put">
+      <Geometry Up="${Field_8.Low}+1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
 
     <!-- Commit, Push and back -->
-    <Field Num="38" Kind="Button" Name="Commit">
+    <Field Num="39" Kind="Button" Name="Commit">
       <Geometry Up="${List.Low}+2" Left="1" Height="3" Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Commit</Init>
     </Field>
-    <Field Num="39" Kind="Button" Name="Push">
-      <Geometry Up="${Field_38.Up}" Left="24" Height="3" Width="6"/>
+    <Field Num="40" Kind="Button" Name="Push">
+      <Geometry Up="${Field_39.Up}" Left="24" Height="3" Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Push</Init>
     </Field>
-    <Field Num="40" Kind="Button" Name="Back">
-      <Geometry Up="${Field_38.Up}" Height="3" Right="${Screen.Width}-2"
+    <Field Num="41" Kind="Button" Name="Back">
+      <Geometry Up="${Field_39.Up}" Height="3" Right="${Screen.Width}-2"
                 Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Back</Init>
@@ -1703,28 +1721,40 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Prune</Init>
     </Field>
+    <Field Num="17" Kind="Put">
+      <Geometry Up="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">--------</Init>
+    </Field>
+    <Field Num="18" Kind="Put">
+      <Geometry Up="${Field_8.Low}+1" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">--------</Init>
+    </Field>
 
 
     <!-- Push(Push) or OK/Pull/Fetch/Checkou(Pull), Push-Upstream, Push-Force, and Back -->
-    <Field Num="17" Kind="Button" Name="Push">
+    <Field Num="19" Kind="Button" Name="Push">
       <Geometry Up="${List.Low}+2" Left="1" Height="3" Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Push</Init>
     </Field>
-    <Field Num="18" Kind="Button" Name="Push_Upstream">
-      <Geometry Up="${Field_17.Up}+1" Left="${Field_17.Right}+2" Height="1"
+    <Field Num="20" Kind="Button" Name="Push_Upstream">
+      <Geometry Up="${Field_19.Up}+1" Left="${Field_19.Right}+2" Height="1"
                 Width="10"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Upstream</Init>
     </Field>
-    <Field Num="19" Kind="Button" Name="Push_Force">
-      <Geometry Up="${Field_17.Up}+1" Left="${Field_18.Right}+2" Height="1"
+    <Field Num="21" Kind="Button" Name="Push_Force">
+      <Geometry Up="${Field_19.Up}+1" Left="${Field_20.Right}+2" Height="1"
                 Width="7"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Force</Init>
     </Field>
-    <Field Num="20" Kind="Button" Name="Back">
-      <Geometry Up="${Field_17.Up}" Height="3" Left="${LmLeft}"
+    <Field Num="22" Kind="Button" Name="Back">
+      <Geometry Up="${Field_19.Up}" Height="3" Left="${LmLeft}"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Back</Init>
@@ -1868,7 +1898,7 @@
     </Field>
 
     <Field Num="21" Kind="Put">
-      <Geometry Up="${Field_20.Low}+1" Left="${LmLeft}" Height="1"
+      <Geometry Up="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
@@ -2042,7 +2072,7 @@
     </Field>
 
     <Field Num="24" Kind="Put">
-      <Geometry Up="${Field_23.Low}+1" Left="${LmLeft}" Height="1"
+      <Geometry Up="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
@@ -2224,14 +2254,14 @@
     </Field>
 
     <Field Num="25" Kind="Put">
-      <Geometry Up="${Field_24.Low}+1" Left="${LmLeft}" Height="1"
+      <Geometry Up="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
 
     <Field Num="26" Kind="Put">
-      <Geometry Up="${List.Low}-3" Left="${LmLeft}" Height="1"
+      <Geometry Up="${Field_8.Low}+1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
