@@ -26,9 +26,16 @@ A preprocessing directive is a line that:
  * possibly starts with some spaces and horizontal tabulations
  * followed by a 'prefix'
  * followed by at least a space or a tab
- * followed by a 'keyword'.  Some keywords must be followed by:
+ * followed by a 'keyword'. +
+   Some keywords must be followed by:
   - at least a space or a tab
   - a 'name'
+
++
+Some keywords also require the 'name' to be followed by:
+
+  - at least a space or a tab
+  - a 'value'
 * possibly followed by some spaces and horizontal tabulations
 
 
@@ -87,7 +94,7 @@ Defines or re-defines a value for <name>.
 app looks for lines of text stricly matching (depending on the keyword) the
 following regular expressions:
 
-   ^[[:blank:]]*<prefix><keyword>[[:blank:]]+<name>[[:blank:]]*$
+   ^[[:blank:]]*<prefix><keyword>[[:blank:]]+<names>[[:blank:]]*$
 
 or
 
@@ -120,6 +127,7 @@ Errors
 ------
 The following errors are reported:
 
+ * Invalid name or names,
  * ElsifDef, ElsifNotDef or ElseDef not after a IfDef or a IfNotDef.
  * ElseDef not followed by EndifDef.
  * A block not terminated by EndifDef.

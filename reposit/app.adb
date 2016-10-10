@@ -403,14 +403,20 @@ begin
         Skip := True;
       elsif Keep.Look and then Match (Rrefdef, Line) then
         Logger.Log_Debug ("  Match RefDef " & Line.Image);
+        if not Ada_Words.Is_Identifier (Last_Name.Image) then
+          Error ("Invalid name " & Last_Name.Image & " at line " & Line_No'Img);
+        end if;
         -- A reference: replace in Str
         Str := As.U.Tus (Str_Util.Regex.Substit (
           Str.Image,
           Prefix.Image & Refdef_Str & "[[:blank:]]+" & Last_Name.Image & ".*",
           Value_Of (Last_Name)));
-        Logger.Log_Debug ("  Replaced by " & Text_Line.Trim (Line.Image));
+        Logger.Log_Debug ("  Replaced by " & Text_Line.Trim (Str.Image));
       elsif Keep.Look and then Match (Rdefine, Line) then
         Logger.Log_Debug ("  Match Define " & Line.Image);
+        if not Ada_Words.Is_Identifier (Last_Name.Image) then
+          Error ("Invalid name " & Last_Name.Image & " at line " & Line_No'Img);
+        end if;
         -- A definition, store
         Definition.Name := Last_Name;
         Definition.Value := Last_Value;
