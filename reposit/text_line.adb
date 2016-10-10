@@ -337,7 +337,8 @@ package body Text_Line is
   begin
     if Line_Feed'Length = 1 then
       -- Line_Feed is a char => optim
-      if Line.Length > 1 then
+      if Line.Length >= 1
+      and then Line.Slice (Line.Length, Line.Length) = Line_Feed then
         Line.Delete (Line.Length, Line.Length);
       end if;
     else
@@ -353,7 +354,8 @@ package body Text_Line is
   function Trim (Line : String;
                  Line_Feed : in String := Line_Feed_Str) return String is
   begin
-    if Line_Feed'Length = 1 then
+    if Line_Feed'Length = 1
+      and then Line (Line'Last .. Line'Last) = Line_Feed then
       -- Line_Feed is a char => optim
       if Line'Length > 1 then
         return Line(Line'First .. Line'Last - 1);
