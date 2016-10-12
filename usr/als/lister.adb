@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Basic_Proc, Argument, Sys_Calls, Reg_Exp, Directory,
+with Basic_Proc, Argument, Sys_Calls.File_Access, Reg_Exp, Directory,
      Dynamic_List;
 with Exit_Code, Debug;
 package body Lister is
@@ -23,12 +23,14 @@ package body Lister is
 
   -- Slection criteria
   Only_Dirs, Only_Files, Only_Others : Boolean := False;
+  Only_Writes, Only_Exes, Only_Noread : Boolean := False;
   Only_Links : Link_Criteria_List := No_Link;
   Follow_Links : Boolean := False;
   Date1, Date2 : Entities.Date_Spec_Rec;
   Utc : Boolean := False;
   -- Set selection criteria
-  procedure Set_Criteria (Only_Dirs, Only_Files : in Boolean;
+  procedure Set_Criteria (Only_Dirs, Only_Files,
+                          Only_Writes, Only_Exes, Only_Noread : in Boolean;
                           Only_Links : in Link_Criteria_List;
                           Only_Others : in Boolean;
                           Follow_Links : in Boolean;
@@ -37,6 +39,9 @@ package body Lister is
   begin
     Lister.Only_Dirs := Only_Dirs;
     Lister.Only_Files := Only_Files;
+    Lister.Only_Writes := Only_Writes;
+    Lister.Only_Exes := Only_Exes;
+    Lister.Only_Noread := Only_Noread;
     Lister.Only_Links := Only_Links;
     Lister.Only_Others := Only_Others;
     Lister.Follow_Links := Follow_Links;
@@ -134,6 +139,31 @@ package body Lister is
     end if;
   end Match;
 
+  -- Does and entity access rights match write and exec criteria
+  function Match (File_User, File_Group : Natural;
+                  File_Rights : Natural) return Boolean is
+    Can_Read, Can_Write, Can_Exec : Boolean;
+  begin
+    -- No Writes restriction or else Can_Write
+    -- No Exes restriction or else Can_Exec
+    -- No Read restriction or else not Can_Read
+    if Only_Writes or else Only_Exes or else Only_Noread then
+      -- Get access rights of current user on this entry
+      Sys_Calls.File_Access.Has_Access (File_User, File_Group, File_Rights,
+                                        Can_Read, Can_Write, Can_Exec);
+      if Only_Writes and then not Can_Write then
+        return False;
+      end if;
+      if Only_Exes and then not Can_Exec then
+        return False;
+      end if;
+      if Only_Noread and then Can_Read then
+        return False;
+      end if;
+    end if;
+    return True;
+  end Match;
+
   -- Does a file/dir name (without path) match a template or regex
   function Match (File, Template : String; Regex : Boolean) return Boolean is
   begin
@@ -155,9 +185,10 @@ package body Lister is
     Debug.Log ("  Checking match for " & Ent.Name.Image);
     -- Check file type and date
     if not Match (Ent.Kind, Ent.Link_Ok)
+    or else not Match (Ent.User_Id, Ent.Group_Id, Ent.Rights)
     or else not Match (Ent.Modif_Time, Date1)
     or else not Match (Ent.Modif_Time, Date2) then
-      Debug.Log ("    Kind or date mismatch");
+      Debug.Log ("    Kind or rights or date mismatch");
       return False;
     end if;
     -- Check versus exclusion templates

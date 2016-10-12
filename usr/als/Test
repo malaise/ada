@@ -108,6 +108,18 @@ fi
 rm exp res1
 echo "OK"
 
+# Executable
+title "In ., executables"
+echo "als  als.stat  lib  Test" > exp
+als -x > res1
+cmp res1 exp > /dev/null 2>&1
+if [ $? -ne 0 ] ; then
+  error "als -x' result res differs from exp"
+fi
+rm exp res1
+echo "OK"
+
+
 # New file
 title "In ., new file"
 export DELAY=2s
