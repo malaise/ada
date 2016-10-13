@@ -1,7 +1,7 @@
 with As.U, Basic_Proc, Argument, Argument_Parser, Str_Util, Trilean;
 with Entities, Output, Targets, Lister, Exit_Code;
 procedure Als is
-  Version : constant String  := "V18.0";
+  Version : constant String  := "V19.0";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -45,9 +45,7 @@ procedure Als is
    37 => (True,  Nkc, As.U.Tus ("discard_dir"),  True,  True, As.U.Tus ("criteria")),
    38 => (False, 'b', As.U.Tus ("basename"),     False),
    39 => (False, Nkc, As.U.Tus ("nodir"),        False),
-   40 => (False, 'w', As.U.Tus ("writable"),     False),
-   41 => (False, 'x', As.U.Tus ("executable"),   False),
-   42 => (False, Nkc, As.U.Tus ("not_readable"), False));
+   40 => (True,  Nkc, As.U.Tus ("access"),       False, True, As.U.Tus ("rights")) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Usage
@@ -72,13 +70,14 @@ procedure Als is
     Put_Line_Error ("  " & Key_Img(14) & "// Show only symbolic links");
     Put_Line_Error ("  " & Key_Img(15) & "// Show only regular files");
     Put_Line_Error ("  " & Key_Img(32) & "// Show other entries (device, pipe, socket...)");
-    Put_Line_Error ("  " & Key_Img(40) & "// Show only entries writable by current user");
-    Put_Line_Error ("  " & Key_Img(41) & "// Show only entries executable by current user");
     Put_Line_Error ("  " & Key_Img(28) & "// Show only broken symbolic links");
     Put_Line_Error ("  " & Key_Img(07) & "// Scan directories recursively");
     Put_Line_Error ("  " & Key_Img(24) & "// Scan only to given depth (needs ""-R"")");
     Put_Line_Error ("  " & Key_Img(31) & "// Skip directories from arguments");
-    Put_Line_Error ("  " & Key_Img(42) & "// Show only entries not readable by current user");
+    Put_Line_Error ("  " & Key_Img(40) & "// Show only file with the given access for current user");
+    Put_Line_Error ("                     //   ex: ""rw*"" read and write, exec or not");
+    Put_Line_Error ("                     //       ""r-x"" read, not write, exec");
+
     Put_Line_Error ("  <match_name>   ::= " & Argument_Parser.Image(Keys(16)));
     Put_Line_Error ("    <criteria>   ::= <templates> | @<regex>");
     Put_Line_Error ("    <templates>  ::= <template> [ { ,<template> } ]");
@@ -170,9 +169,7 @@ procedure Als is
   Utc : Boolean;
   Quiet : Boolean;
   Basename : Boolean;
-  List_Only_Writes : Boolean;
-  List_Only_Exes : Boolean;
-  List_Only_Noread : Boolean;
+  Access_Rights : Lister.Access_Rights;
 
   -- Parse a date argument
   function Parse_Date (Str : String) return Entities.Date_Spec_Rec is separate;
@@ -254,9 +251,38 @@ begin
   Sort_By_Len := Arg_Dscr.Is_Set (35);
   Depth := 0;
   Quiet := Arg_Dscr.Is_Set (36);
-  List_Only_Writes := Arg_Dscr.Is_Set (40);
-  List_Only_Exes := Arg_Dscr.Is_Set (41);
-  List_Only_Noread := Arg_Dscr.Is_Set (42);
+
+  -- Access rights
+  Access_Rights := (others => Trilean.Other);
+  if Arg_Dscr.Is_Set (40) then
+    declare
+      -- Using a String raises Constraint_Error when reading it,
+      -- with GNAT GPL 2016
+       Str : constant As.U.Asu_Us := As.U.Tus (Arg_Dscr.Get_Option(40, 1));
+      procedure Set (I : in Lister.Rights_List; Key : in Character) is
+         Char : constant Character
+              := Str.Element(Lister.Rights_List'Pos(I) + 1);
+        use Trilean;
+      begin
+        -- key ('r', 'w', or 'x') => needs access, '-' => needs no access
+        -- '*' => no criteria
+        if    Char = Key then Access_Rights(I) := True;
+        elsif Char = '-' then Access_Rights(I) := False;
+        elsif Char /= '*' then raise Constraint_Error;
+        end if;
+      end Set;
+    begin
+      if Str.Length /= 3 then
+        raise Constraint_Error;
+      end if;
+      Set (Lister.Read,  'r');
+      Set (Lister.Write, 'w');
+      Set (Lister.Exec,  'x');
+    exception
+      when Constraint_Error =>
+        Error ("Invalid specification of access rights");
+    end;
+  end if;
 
   -- Check sorting
   if          (Sort_By_Time and then Sort_By_Size)
@@ -461,7 +487,7 @@ begin
 
   -- Set selection criteria in Lister, activate Total computation
   Lister.Set_Criteria (List_Only_Dirs, List_Only_Files,
-                       List_Only_Writes, List_Only_Exes, List_Only_Noread,
+                       Access_Rights,
                        List_Only_Links, List_Only_Others,
                        Follow_Links, Date1, Date2, Utc);
   if Put_Total then

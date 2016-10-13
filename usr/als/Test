@@ -108,17 +108,26 @@ fi
 rm exp res1
 echo "OK"
 
-# Executable
-title "In ., executables"
+# Access rights
+title "In ., executables and not readable"
 echo "als  als.stat  lib  Test" > exp
-als -x > res1
+als --access='**x' > res1
 cmp res1 exp > /dev/null 2>&1
 if [ $? -ne 0 ] ; then
-  error "als -x' result res differs from exp"
+  error "als --access=**x result res differs from exp"
 fi
-rm exp res1
-echo "OK"
 
+touch NewFile
+chmod -r NewFile
+echo "NewFile" > exp
+als --access='-**' > res1
+cmp res1 exp > /dev/null 2>&1
+if [ $? -ne 0 ] ; then
+  error "als --access=-** result res differs from exp"
+fi
+
+rm exp res1 NewFile
+echo "OK"
 
 # New file
 title "In ., new file"

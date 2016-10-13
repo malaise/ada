@@ -22,26 +22,27 @@ package body Lister is
   procedure Add_Size (Size : in Sys_Calls.Off_T; Count : in Boolean);
 
   -- Slection criteria
-  Only_Dirs, Only_Files, Only_Others : Boolean := False;
-  Only_Writes, Only_Exes, Only_Noread : Boolean := False;
+  Only_Dirs, Only_Files, Only_Others, Only_Rights : Boolean := False;
+  Rights : Access_Rights;
   Only_Links : Link_Criteria_List := No_Link;
   Follow_Links : Boolean := False;
   Date1, Date2 : Entities.Date_Spec_Rec;
   Utc : Boolean := False;
   -- Set selection criteria
-  procedure Set_Criteria (Only_Dirs, Only_Files,
-                          Only_Writes, Only_Exes, Only_Noread : in Boolean;
+  procedure Set_Criteria (Only_Dirs, Only_Files : in Boolean;
+                          Rights : in Access_Rights;
                           Only_Links : in Link_Criteria_List;
                           Only_Others : in Boolean;
                           Follow_Links : in Boolean;
                           Date1, Date2 : in Entities.Date_Spec_Rec;
                           Utc : in Boolean) is
+    use Trilean;
   begin
     Lister.Only_Dirs := Only_Dirs;
     Lister.Only_Files := Only_Files;
-    Lister.Only_Writes := Only_Writes;
-    Lister.Only_Exes := Only_Exes;
-    Lister.Only_Noread := Only_Noread;
+    Lister.Rights := Rights;
+    Only_Rights := Rights(Read) /= Other or else Rights(Write) /= Other
+           or else Rights(Exec) /= Other;
     Lister.Only_Links := Only_Links;
     Lister.Only_Others := Only_Others;
     Lister.Follow_Links := Follow_Links;
@@ -139,29 +140,28 @@ package body Lister is
     end if;
   end Match;
 
-  -- Does and entity access rights match write and exec criteria
+  -- Does and entity access rights match read, write and exec criteria
   function Match (File_User, File_Group : Natural;
                   File_Rights : Natural) return Boolean is
     Can_Read, Can_Write, Can_Exec : Boolean;
+    function Match (Crit : Trilean.Trilean; Can : Boolean) return Boolean is
+      use Trilean;
+    begin
+      -- Always True if Crit is Other, otherwise True if Can = Crit;
+      return (if Crit = Other then True else Can = Tri2Boo (Crit));
+    end Match;
+
   begin
-    -- No Writes restriction or else Can_Write
-    -- No Exes restriction or else Can_Exec
-    -- No Read restriction or else not Can_Read
-    if Only_Writes or else Only_Exes or else Only_Noread then
-      -- Get access rights of current user on this entry
-      Sys_Calls.File_Access.Has_Access (File_User, File_Group, File_Rights,
-                                        Can_Read, Can_Write, Can_Exec);
-      if Only_Writes and then not Can_Write then
-        return False;
-      end if;
-      if Only_Exes and then not Can_Exec then
-        return False;
-      end if;
-      if Only_Noread and then Can_Read then
-        return False;
-      end if;
+    if not Only_Rights then
+      -- No criteria on access rights
+      return True;
     end if;
-    return True;
+    -- Get access rights of current user on this entry
+    Sys_Calls.File_Access.Has_Access (File_User, File_Group, File_Rights,
+                                      Can_Read, Can_Write, Can_Exec);
+    return   Match (Rights(Read),  Can_Read)
+    and then Match (Rights(Write), Can_Write)
+    and then Match (Rights(Exec),  Can_Exec);
   end Match;
 
   -- Does a file/dir name (without path) match a template or regex

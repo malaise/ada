@@ -7,8 +7,10 @@ package Lister is
 
   -- Set selection criteria
   type Link_Criteria_List is (All_Links, Broken_Links, No_Link);
-  procedure Set_Criteria (Only_Dirs, Only_Files,
-                          Only_Writes, Only_Exes, Only_Noread : in Boolean;
+  type Rights_List is (Read, Write, Exec);
+  type Access_Rights is array (Rights_List) of Trilean.Trilean;
+  procedure Set_Criteria (Only_Dirs, Only_Files : in Boolean;
+                          Rights : in Access_Rights;
                           Only_Links : in Link_Criteria_List;
                           Only_Others : in Boolean;
                           Follow_Links : in Boolean;

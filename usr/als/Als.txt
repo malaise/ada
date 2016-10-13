@@ -1,6 +1,6 @@
 Als
 ===
-V18.0
+V19.0
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, the output format of each entry, and general
@@ -39,8 +39,6 @@ Specify which entry to select
   -F (--files)               Show only regular files
   -O (--others)              Show only other entries (character or block device,
                                pipe, socket)
-  -w (--writable)            Show only entries writable by current user
-  -x (--executable)          Show only entries executable by current user
   -B (--broken_links)        Show only broken symbolic links
 
   -R (--recursive)           Scan directories recursively
@@ -48,7 +46,9 @@ Specify which entry to select
 
   --skip_dirs                Skip directories from arguments
                                (useful when calling "als *")
-  --not_readable             Show only entries not readable by current user
+  --access=<rights>          Show only file with the given access for current user
+                               ex: "rw*" read and write, exec or not
+                                   "r-x" read, not write, exec
 
   <match_name> ::= -m <criteria> | --match=<criteria>
     <criteria> ::= <templates> | @<regex>
