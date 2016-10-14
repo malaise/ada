@@ -150,7 +150,7 @@
       <Geometry Up="${Field_23.Up}" Left="${Field_23.Right}+2" Height="3"
                 Right="${Field_22.Right}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">E N T E R</Init>
+      <Init Row="1" Col="1">S O L V E</Init>
     </Field>
 
     <Field Num="25" Kind="Button" Name="Undo_F">
