@@ -3,7 +3,7 @@ Als
 V19.0
 
 Als lists files, directory contents... It supports several powerful options
-for the selection of entries, the output format of each entry, and general
+for the selection of entries, for the output format of each entry, and general
 formatting options.
 
 General syntax
@@ -211,6 +211,27 @@ then the content of the directory is skipped but its subdirectories are scanned.
 * If the name matches a 'match_dir' criteria (or if there is none)
 and does not match any 'exclude_dir' criteria (or if there is none), then the
 content of the directory is listed and the subdirectories are scanned.
+
+Access rights
+~~~~~~~~~~~~~
+The general syntax for specifying the access rights is:
+
+  --access=rwx
+
+where any of the three letters \'r', \'w' and \'x' can be replaced by \'-' or
+\'*'.  +
+
+ * 'r' means that the entry must be readable
+ * 'w' means that the entry must be writable
+ * 'x' means that the entry must be executable
+ * '-' instead of a letter means that the entry must not have the corresponding
+access right
+ * '*' instead of a letter means that the entry can have or can not have the
+corresponding access right
+
+So the default mode (no criteria) corresponds to: '--access=\***', the list of
+read-only items is specified with '--access=r--' and the list of readable and
+executable items is specified with '--access=r*x'.
 
 Als exit codes
 --------------
