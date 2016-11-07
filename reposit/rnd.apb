@@ -1,8 +1,8 @@
 with System;
 with Long_Longs, C_Types;
---#IfNotDef Urand
+--#@IfNotDef Urand
 with My_Math;
---#EndifDef
+--#@EndifDef
 package body Rnd is
 
   function C_Gettimeofday (Tv : System.Address; Tz : System.Address)
@@ -51,12 +51,12 @@ package body Rnd is
 
 
     Dummy_Ok := Agen.Lock.Get (-1.0);
---#IfDef Urand
+--#@IfDef Urand
     Agen.Ugen.Start (New_I =>
         U_Rand.Seed_Range_1 (F * Float(U_Rand.Seed_Range_1'Last - 1) + 1.0));
---#ElseDef
+--#@ElseDef
     Agen.Rnd_Nbre := F;
---#EndifDef
+--#@EndifDef
     Agen.Randomized := True;
     Agen.Lock.Release;
   end Randomize;
@@ -77,7 +77,7 @@ package body Rnd is
                    Mini : in Float := 0.0; Maxi : in Float := 1.0)
                   return Float is
 
---#IfNotDef Urand
+--#@IfNotDef Urand
     -- Native next random value
     procedure Next (Nbre : in out Float) is
       Nbre_2 : Float;
@@ -89,18 +89,18 @@ package body Rnd is
       -- Decimal part
       Nbre := Nbre - Float(My_Math.Trunc(My_Math.Real(Nbre)));
     end Next;
---#EndifDef
+--#@EndifDef
 
     Val : Float;
     Dummy_Ok : Boolean;
   begin
     Dummy_Ok := Agen.Lock.Get (-1.0);
---#IfDef Urand
+--#@IfDef Urand
     Agen.Ugen.Next (Val);
---#ElseDef
+--#@ElseDef
     Next (Agen.Rnd_Nbre);
     Val := Agen.Rnd_Nbre;
---#EndifDef
+--#@EndifDef
     Agen.Lock.Release;
     -- Here 0 <= Val < 1
     return (if Mini >= Maxi then Val else Mini + Val * (Maxi - Mini));

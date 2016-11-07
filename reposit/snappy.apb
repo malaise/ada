@@ -47,13 +47,13 @@
 --      it is followed by the offset on 32 bits, little endian
 
 with Bit_Ops; use Bit_Ops;
---#IfDef Debug
+--#@IfDef Debug
 with Trace, Hexa_Utils;
---#EndifDef
+--#@EndifDef
 pragma Optimize (Time);
 package body Snappy is
 
-  --#IfDef Debug
+  --#@IfDef Debug
   -- Trace logger
   package Logger is new Trace.Basic_Logger ("Snappy");
   procedure Log (Msg : in String) is
@@ -65,7 +65,7 @@ package body Snappy is
   function Image is new Hexa_Utils.Mod_Image (Byte);
   -- Image of a signed integer
   function Image is new Hexa_Utils.Int_Image (Integer);
-  --#EndifDef
+  --#@EndifDef
 
   -- The number of entries in the hash table. The size is a trade-off between
   --  hash collisions (reduced compression) and speed (amount that fits in CPU
@@ -165,13 +165,13 @@ package body Snappy is
                           Out_Pos : in out Positive;
                           Output : in out Byte_Array) is
   begin
-    --#IfDef Debug
+    --#@IfDef Debug
     if Logger.Debug_On then
       Log ("  Write ref off " & Hexa_Utils.Image (Off)
          & ", len " & Hexa_Utils.Image (Len)
          & ", at outpos " & Hexa_Utils.Image (Out_Pos));
     end if;
-    --#EndifDef
+    --#@EndifDef
     if Len <= 16#0B# and then Off <= 16#7FF# then
       -- OOOLLL01 OOOOOOOO   (with L = Len-4)
       Output(Out_Pos) := To_Byte (
@@ -226,24 +226,24 @@ package body Snappy is
       if Input'Length /= 0 then
         raise Too_Big;
       end if;
-      --#IfDef Debug
+      --#@IfDef Debug
       if Logger.Debug_On then
         Log ("Empty input");
       end if;
-      --#EndifDef
+      --#@EndifDef
       Outlen := 0;
       return;
     end if;
     Out_Pos := Output'First;
 
-    --#IfDef Debug
+    --#@IfDef Debug
     if Logger.Debug_On then
       Log ("Starting encoding indexes " & Hexa_Utils.Image (Input'First)
          & " .. " & Hexa_Utils.Image (Input'Last)
          & " into " & Hexa_Utils.Image (Output'First)
          & " .. " & Hexa_Utils.Image (Output'Last));
     end if;
-    --#EndifDef
+    --#@EndifDef
 
     -- Init
     Hash_Table := (others => Default_Hash);
@@ -258,7 +258,7 @@ package body Snappy is
       Ref := Hash_Table(Hashed);
       Hash_Table(Hashed) := In_Pos;
       Off := In_Pos - Ref;
-      --#IfDef Debug
+      --#@IfDef Debug
       if Logger.Debug_On then
         Log ("At Inpos " & Hexa_Utils.Image (In_Pos)
            & ", Byte " & Image (Input(Input'First + In_Pos))
@@ -268,26 +268,26 @@ package body Snappy is
                          else Hexa_Utils.Image (Ref)) );
 
       end if;
-      --#EndifDef
+      --#@EndifDef
 
       if Seq /= Build (Input, Ref) then
         -- Seq do not match
-        --#IfDef Debug
+        --#@IfDef Debug
         if Logger.Debug_On then
           Log ("No match");
         end if;
-        --#EndifDef
+        --#@EndifDef
 
         -- No match: search another following byte
         if Nb_Try > Incompressible then
           -- After Uncompressible failures we consider that the flow is not
           --  compressible, so we increase the step
           Match_Step := Match_Step + 1;
-          --#IfDef Debug
+          --#@IfDef Debug
           if Logger.Debug_On then
             Log ("Step becomes" & Match_Step'Img);
           end if;
-          --#EndifDef
+          --#@EndifDef
         end if;
         Nb_Try := Nb_Try + 1;
         In_Pos := In_Pos + Match_Step;
@@ -300,12 +300,12 @@ package body Snappy is
         -- Encode the length of literal run seen so far
         Nb_Literals := In_Pos - Anchor;
         if Nb_Literals /= 0 then
-          --#IfDef Debug
+          --#@IfDef Debug
           if Logger.Debug_On then
             Log ("Match after " & Hexa_Utils.Image (Nb_Literals)
                & " literals, write at outpos " & Hexa_Utils.Image (Out_Pos));
           end if;
-          --#EndifDef
+          --#@EndifDef
 
           -- Encode literals
           Encode_Literals (Nb_Literals, Anchor, Input, Out_Pos, Output);
@@ -320,11 +320,11 @@ package body Snappy is
                = Input(Input'First + In_Pos + Nb_Match) loop
           Nb_Match := Nb_Match + 1;
         end loop;
-        --#IfDef Debug
+        --#@IfDef Debug
         if Logger.Debug_On then
           Log ("Match length " & Hexa_Utils.Image (Nb_Match));
         end if;
-        --#EndifDef
+        --#@EndifDef
         In_Pos := In_Pos + Nb_Match;
 
         -- Write reference blocks, keep last 4 bytes
@@ -357,11 +357,11 @@ package body Snappy is
     -- Encode length of last literals
     Nb_Literals := Input'Length - Anchor;
     if Nb_Literals /= 0 then
-      --#IfDef Debug
+      --#@IfDef Debug
       if Logger.Debug_On then
         Log ("Copy last " & Hexa_Utils.Image (Nb_Literals) & " literals");
       end if;
-      --#EndifDef
+      --#@EndifDef
       -- Encode literals
       Encode_Literals (Nb_Literals, Anchor, Input, Out_Pos, Output);
     end if;
@@ -369,12 +369,12 @@ package body Snappy is
     -- Done
     Outlen := Out_Pos - Output'First;
 
-  --#IfDef Debug
-  --#ElseDef
+  --#@IfDef Debug
+  --#@ElseDef
   exception
     when Constraint_Error =>
       raise Too_Big;
-  --#EndifDef
+  --#@EndifDef
   end Compress;
 
   -- Uncompress Input into Output
@@ -387,33 +387,33 @@ package body Snappy is
   begin
 
     if Input'Length = 0 then
-      --#IfDef Debug
+      --#@IfDef Debug
       if Logger.Debug_On then
         Log ("Empty input");
       end if;
-      --#EndifDef
+      --#@EndifDef
       Outlen := 0;
       return;
     end if;
 
     In_Pos := Input'First;
     Out_Pos := Output'First;
-    --#IfDef Debug
+    --#@IfDef Debug
     if Logger.Debug_On then
       Log ("First index is " & Hexa_Utils.Image (In_Pos));
     end if;
-    --#EndifDef
+    --#@EndifDef
     loop
       -- Get control char: literals-run or backref
       Ctrl := Integer (Input(In_Pos));
       Kind := Ctrl and 16#3#;
-      --#IfDef Debug
+      --#@IfDef Debug
       if Logger.Debug_On then
         Log ("At index " & Hexa_Utils.Image (In_Pos)
            & ", outpos " & Hexa_Utils.Image (Out_Pos)
            & ", kind " & Hexa_Utils.Image (Kind));
       end if;
-      --#EndifDef
+      --#@EndifDef
       In_Pos := In_Pos + 1;
 
       if Kind = 0 then
@@ -448,14 +448,14 @@ package body Snappy is
         end case;
         Len := Len + 1;
 
-        --#IfDef Debug
+        --#@IfDef Debug
         if Logger.Debug_On then
           Log ("Got " & Hexa_Utils.Image (Len) & " litterals");
           for I in In_Pos .. In_Pos + Len - 1 loop
              Log ("  Literal " & Image (Input(I)));
           end loop;
         end if;
-        --#EndifDef
+        --#@EndifDef
         -- Copy to output and move forward this many bytes
         if Out_Pos + Len > Output'Last then
           raise Too_Big;
@@ -490,12 +490,12 @@ package body Snappy is
           raise Constraint_Error;
         end if;
 
-        --#IfDef Debug
+        --#@IfDef Debug
         if Logger.Debug_On then
           Log ("Got a backref of len " & Hexa_Utils.Image (Len)
              & " and offset " & Hexa_Utils.Image (Off));
         end if;
-        --#EndifDef
+        --#@EndifDef
 
         -- Copy the *back-reference* bytes from the given
         --  location in output to current position
@@ -504,19 +504,19 @@ package body Snappy is
         end if;
         Off := Out_Pos - Off;
         -- Areas may overlap! so we must copy byte per byte
-        --#IfDef Debug
+        --#@IfDef Debug
         if Logger.Debug_On then
           Log ("  Copying from " & Hexa_Utils.Image (Off)
              & " to " & Hexa_Utils.Image (Off + Len - 1)
              & " into " & Hexa_Utils.Image (Out_Pos));
         end if;
-        --#EndifDef
+        --#@EndifDef
         for I in 0 .. Len - 1 loop
-          --#IfDef Debug
+          --#@IfDef Debug
           if Logger.Debug_On then
             Log ("  --> " & Image (Output(Off + I)));
           end if;
-          --#EndifDef
+          --#@EndifDef
           Output(Out_Pos + I) := Output(Off + I);
         end loop;
         Out_Pos := Out_Pos + Len;

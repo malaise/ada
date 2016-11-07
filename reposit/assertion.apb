@@ -1,7 +1,7 @@
---#IfNotDef NoAssert
+--#@IfNotDef NoAssert
 with Ada.Calendar;
 with Argument, Images, Basic_Proc;
---#EndifDef
+--#@EndifDef
 with Environ, Upper_Str;
 package body Assertion is
 
@@ -55,11 +55,11 @@ package body Assertion is
   --  Else do nothing
   procedure Assert (What : in Boolean; Trace : in String := "";
                     Action : in Assert_Action_List := Default) is
---#IfDef NoAssert
+--#@IfDef NoAssert
     pragma Unreferenced (What, Trace, Action);
   begin
     null;
---#ElseDef
+--#@ElseDef
     To_Do : Action_List;
   begin
     if What then
@@ -94,7 +94,7 @@ package body Assertion is
 
     -- Action is to raise exception
     raise Assert_Error;
---#EndifDef
+--#@EndifDef
   end Assert;
 
 end Assertion;

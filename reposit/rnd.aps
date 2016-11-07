@@ -1,8 +1,8 @@
 -- Pseudo random number generator
 private with Mutexes;
---#IfDef Urand
+--#@IfDef Urand
 private with U_Rand;
---#EndifDef
+--#@EndifDef
 package Rnd is
 
   -- A random generator, protected by a mutex
@@ -52,11 +52,11 @@ private
   type Generator is tagged limited record
     Randomized : Boolean := False;
     Lock : Mutexes.Simple_Mutex;
---#IfDef Urand
+--#@IfDef Urand
     Ugen : U_Rand.Generator;
---#ElseDef
+--#@ElseDef
     Rnd_Nbre : Float := 0.0;
---#EndifDef
+--#@EndifDef
   end record;
 
   -- A global generator

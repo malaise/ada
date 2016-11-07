@@ -48,13 +48,13 @@
 --  - Copy the reference from output
 
 with Bit_Ops; use Bit_Ops;
---#IfDef Debug
+--#@IfDef Debug
 with Trace, Hexa_Utils;
---#EndifDef
+--#@EndifDef
 pragma Optimize (Time);
 package body Lz4 is
 
-  --#IfDef Debug
+  --#@IfDef Debug
   -- Trace logger
   package Logger is new Trace.Basic_Logger ("Lz4");
   procedure Log (Msg : in String) is
@@ -66,7 +66,7 @@ package body Lz4 is
   function Image is new Hexa_Utils.Mod_Image (Byte);
   -- Image of a signed integer
   function Image is new Hexa_Utils.Int_Image (Integer);
-  --#EndifDef
+  --#@EndifDef
 
   -- The number of entries in the hash table. The size is a trade-off between
   --  hash collisions (reduced compression) and speed (amount that fits in CPU
@@ -166,24 +166,24 @@ package body Lz4 is
       if Input'Length /= 0 then
         raise Too_Big;
       end if;
-      --#IfDef Debug
+      --#@IfDef Debug
       if Logger.Debug_On then
         Log ("Empty input");
       end if;
-      --#EndifDef
+      --#@EndifDef
       Outlen := 0;
       return;
     end if;
     Out_Pos := Output'First;
 
-    --#IfDef Debug
+    --#@IfDef Debug
     if Logger.Debug_On then
       Log ("Starting encoding indexes " & Hexa_Utils.Image (Input'First)
          & " .. " & Hexa_Utils.Image (Input'Last)
          & " into " & Hexa_Utils.Image (Output'First)
          & " .. " & Hexa_Utils.Image (Output'Last));
     end if;
-    --#EndifDef
+    --#@EndifDef
 
     -- Init
     Hash_Table := (others => Default_Hash);
@@ -197,7 +197,7 @@ package body Lz4 is
       Ref := Hash_Table(Hashed);
       Hash_Table(Hashed) := In_Pos;
       Off := In_Pos - Ref;
-      --#IfDef Debug
+      --#@IfDef Debug
       if Logger.Debug_On then
         Log ("At Inpos " & Hexa_Utils.Image (In_Pos)
            & ", Byte " & Image (Input(Input'First + In_Pos))
@@ -207,18 +207,18 @@ package body Lz4 is
                          else Hexa_Utils.Image (Ref)) );
 
       end if;
-      --#EndifDef
+      --#@EndifDef
 
       if Ref = Default_Hash                    -- No reference
       or else Off >= Max_Off                   -- Reference too far backwards
       or else Seq /= Build (Input, Ref)        -- Seq do not match
       or else In_Pos >= Input'Length - 11 then -- The last match is before the
                                                --  last 12 bytes
-        --#IfDef Debug
+        --#@IfDef Debug
         if Logger.Debug_On then
           Log ("No match");
         end if;
-        --#EndifDef
+        --#@EndifDef
 
         -- No match: search another following byte
         if In_Pos - Anchor > Unmatch_Limit then
@@ -226,12 +226,12 @@ package body Lz4 is
           --  compressible, so we increase the step and the limit
           Unmatch_Limit := Shl (Unmatch_Limit, 1);
           Match_Step := Match_Step + 1 + Shr (Match_Step, 2);
-          --#IfDef Debug
+          --#@IfDef Debug
           if Logger.Debug_On then
             Log ("Step becomes" & Match_Step'Img
                & " and limit" & Unmatch_Limit'Img);
           end if;
-          --#EndifDef
+          --#@EndifDef
         end if;
         In_Pos := In_Pos + Match_Step;
       elsif Match_Step > 1 then
@@ -240,11 +240,11 @@ package body Lz4 is
         Hash_Table(Hashed) := Ref;
         In_Pos := In_Pos - (Match_Step - 1);
         Match_Step := 1;
-        --#IfDef Debug
+        --#@IfDef Debug
         if Logger.Debug_On then
           Log ("Match while stepping, restart at " & Hexa_Utils.Image (In_Pos));
         end if;
-        --#EndifDef
+        --#@EndifDef
       else
         -- Match while stepping by one
 
@@ -253,12 +253,12 @@ package body Lz4 is
 
         -- Encode then length of literal run seen so far
         Nb_Literals := In_Pos - Anchor;
-        --#IfDef Debug
+        --#@IfDef Debug
         if Logger.Debug_On then
           Log ("Match after " & Hexa_Utils.Image (Nb_Literals)
              & " literals, write at outpos " & Hexa_Utils.Image (Out_Pos));
         end if;
-        --#EndifDef
+        --#@EndifDef
         Token_Pos := Out_Pos;
         if Nb_Literals < 16#F# then
           -- Stored in 4 bits (upper quartet of token)
@@ -295,12 +295,12 @@ package body Lz4 is
 
         -- Encode the length - 4
         Nb_Match := In_Pos - Anchor;
-        --#IfDef Debug
+        --#@IfDef Debug
         if Logger.Debug_On then
           Log ("Match length " & Hexa_Utils.Image (Nb_Match + 4)
              & " at offset " & Hexa_Utils.Image (Off));
         end if;
-        --#EndifDef
+        --#@EndifDef
         if Nb_Match < 16#F# then
           -- Stored in 4 bits (lower quartet of token)
           Output(Token_Pos) :=
@@ -320,11 +320,11 @@ package body Lz4 is
 
     -- Encode length of last literals
     Nb_Literals := Input'Length - Anchor;
-    --#IfDef Debug
+    --#@IfDef Debug
     if Logger.Debug_On then
       Log ("Copy last " & Hexa_Utils.Image (Nb_Literals) & " literals");
     end if;
-    --#EndifDef
+    --#@EndifDef
     if Nb_Literals < 16#F# then
       -- Stored in 4 bits (upper quartet of token)
       Output(Out_Pos) := To_Byte (Shl (Nb_Literals, 4));
@@ -345,12 +345,12 @@ package body Lz4 is
     -- Done
     Outlen := Out_Pos - Output'First;
 
-  --#IfDef Debug
-  --#ElseDef
+  --#@IfDef Debug
+  --#@ElseDef
   exception
     when Constraint_Error =>
       raise Too_Big;
-  --#EndifDef
+  --#@EndifDef
   end Compress;
 
   -- Uncompress Input into Output
@@ -373,25 +373,25 @@ package body Lz4 is
     use type C_Types.Byte;
   begin
 
-    --#IfDef Debug
+    --#@IfDef Debug
     if Logger.Debug_On then
       Log ("Starting decoding indexes " & Hexa_Utils.Image (Input'First)
          & " .. " & Hexa_Utils.Image (Input'Last)
          & " into " & Hexa_Utils.Image (Output'First)
          & " .. " & Hexa_Utils.Image (Output'Last));
     end if;
-    --#EndifDef
+    --#@EndifDef
 
     -- Main loop
     while In_Pos < Input'Last loop
       -- Read token
       Token := Natural (Input(In_Pos));
-      --#IfDef Debug
+      --#@IfDef Debug
       if Logger.Debug_On then
         Log ("At index " & Hexa_Utils.Image (In_Pos)
            & " got token " & Image (Input(In_Pos)));
       end if;
-      --#EndifDef
+      --#@EndifDef
       In_Pos := In_Pos + 1;
 
       -- Extract length of the literals run
@@ -404,11 +404,11 @@ package body Lz4 is
         Nb_Literals := Nb_Literals + Natural (Input(In_Pos));
         In_Pos := In_Pos + 1;
       end if;
-      --#IfDef Debug
+      --#@IfDef Debug
       if Logger.Debug_On then
         Log ("Got literal length " & Hexa_Utils.Image (Nb_Literals));
       end if;
-      --#EndifDef
+      --#@EndifDef
 
       -- Copy literals
       Output(Out_Pos .. Out_Pos + Nb_Literals - 1)
@@ -422,11 +422,11 @@ package body Lz4 is
       -- Get match offset, little endian
       Off := Natural(Input(In_Pos)) + Shl (Natural(Input(In_Pos + 1)), 8);
       In_Pos := In_Pos + 2;
-      --#IfDef Debug
+      --#@IfDef Debug
       if Logger.Debug_On then
         Log ("Got match offset " & Hexa_Utils.Image (Off));
       end if;
-      --#EndifDef
+      --#@EndifDef
 
       -- Get match length
       Nb_Match := Token and 16#0F#;
@@ -439,11 +439,11 @@ package body Lz4 is
         In_Pos := In_Pos + 1;
       end if;
       Nb_Match := Nb_Match + 4;
-      --#IfDef Debug
+      --#@IfDef Debug
       if Logger.Debug_On then
         Log ("Got match length " & Hexa_Utils.Image (Nb_Match));
       end if;
-      --#EndifDef
+      --#@EndifDef
 
       -- Copy matching sequence from Output to Output
       -- Areas may overlap! so we must copy byte per byte
@@ -458,12 +458,12 @@ package body Lz4 is
 
     Outlen := Out_Pos - Output'First;
 
-  --#IfDef Debug
-  --#ElseDef
+  --#@IfDef Debug
+  --#@ElseDef
   exception
     when Constraint_Error =>
       raise Too_Big;
-  --#EndifDef
+  --#@EndifDef
   end Uncompress;
 
 end Lz4;

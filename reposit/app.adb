@@ -3,7 +3,7 @@ with Basic_Proc, Trace.Loggers, As.U, Argument, Argument_Parser, Long_Longs,
      Many_Strings, Reg_Exp, Unlimited_Pool;
 procedure App is
 
-  Version : constant String := "V02.01";
+  Version : constant String := "V03.00";
 
   -- Log an error and raise
   Raised_Error : exception;
@@ -153,7 +153,7 @@ procedure App is
   -- The regexes associated to the prefix and various keywords
   --------------
   Rdef, Rifdef, Rifnotdef, Relsifdef, Relsifnotdef, Relsedef, Rendifdef,
-  Rrefdef, Rdefine : Reg_Exp.Compiled_Pattern;
+  Rrefdef, Rdefine, Rother : Reg_Exp.Compiled_Pattern;
 
   Refdef_Str : constant String := "RefDef";
 
@@ -323,6 +323,7 @@ begin
   Compile (Rendifdef, "EndifDef", False);
   Compile (Rrefdef, Refdef_Str, True);
   Compile (Rdefine, "Define", True, True);
+  Compile (Rother, ".*", False);
 
   -- Open stdin and stdout flows
   In_Flow.Open_All (Text_Line.In_File);
@@ -401,27 +402,33 @@ begin
         Lines.Pop;
         Last_Else := False;
         Skip := True;
-      elsif Keep.Look and then Match (Rrefdef, Line) then
-        Logger.Log_Debug ("  Match RefDef " & Line.Image);
-        if not Ada_Words.Is_Identifier (Last_Name.Image) then
-          Error ("Invalid name " & Last_Name.Image & " at line " & Line_No'Img);
+      elsif Match (Rrefdef, Line) then
+        if Keep.Look then
+          Logger.Log_Debug ("  Match RefDef " & Line.Image);
+          if not Ada_Words.Is_Identifier (Last_Name.Image) then
+            Error ("Invalid name " & Last_Name.Image & " at line " & Line_No'Img);
+          end if;
+          -- A reference: replace in Str
+          Str := As.U.Tus (Str_Util.Regex.Substit (
+            Str.Image,
+            Prefix.Image & Refdef_Str & "[[:blank:]]+" & Last_Name.Image & ".*",
+            Value_Of (Last_Name)));
+          Logger.Log_Debug ("  Replaced by " & Text_Line.Trim (Str.Image));
         end if;
-        -- A reference: replace in Str
-        Str := As.U.Tus (Str_Util.Regex.Substit (
-          Str.Image,
-          Prefix.Image & Refdef_Str & "[[:blank:]]+" & Last_Name.Image & ".*",
-          Value_Of (Last_Name)));
-        Logger.Log_Debug ("  Replaced by " & Text_Line.Trim (Str.Image));
-      elsif Keep.Look and then Match (Rdefine, Line) then
-        Logger.Log_Debug ("  Match Define " & Line.Image);
-        if not Ada_Words.Is_Identifier (Last_Name.Image) then
-          Error ("Invalid name " & Last_Name.Image & " at line " & Line_No'Img);
+      elsif Match (Rdefine, Line) then
+        if Keep.Look then
+          Logger.Log_Debug ("  Match Define " & Line.Image);
+          if not Ada_Words.Is_Identifier (Last_Name.Image) then
+            Error ("Invalid name " & Last_Name.Image & " at line " & Line_No'Img);
+          end if;
+          -- A definition, store
+          Definition.Name := Last_Name;
+          Definition.Value := Last_Value;
+          Define (Definition);
+          Skip := True;
         end if;
-        -- A definition, store
-        Definition.Name := Last_Name;
-        Definition.Value := Last_Value;
-        Define (Definition);
-        Skip := True;
+      elsif Match (Rother, Line) then
+        Error ("Invalid keyword " & Line.Image & " at line " & Line_No'Img);
       end if;
     end if;
 

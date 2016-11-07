@@ -1,9 +1,9 @@
 App
 ===
 
-Version 02.01
+Version 03.00
 
-App is a pre-processor that selects pieces of text and expands names
+App is a pre-processor. it selects pieces of text and expands names
 according to definitions.
 
 Syntax
@@ -44,7 +44,7 @@ The 'prefix' is "#" by default, but a different string can be specified as
 argument.
 
 NOTE: Beware that the search is based on regular expressions, so it might be
-necessary to backslash some specific characters of the prefix definition
+necessary to backslash some specific characters in the definition of the prefix
 ('\*', '+', '?', '(', ')', '|', '.', '['...). +
 Example, for a C comment followed by a sharp, use "prefix=/\*#".
 
@@ -91,8 +91,8 @@ Define <name> <value>::
 Defines or re-defines a value for <name>.
 
 .Regular expressions
-app looks for lines of text stricly matching (depending on the keyword) the
-following regular expressions:
+app looks for lines of text stricly matching the following regular expressions
+(depending on the keyword):
 
    ^[[:blank:]]*<prefix><keyword>[[:blank:]]+<names>[[:blank:]]*$
 
@@ -127,8 +127,8 @@ Errors
 ------
 The following errors are reported:
 
+ * Invalid keyword,
  * Invalid name or names,
  * ElsifDef, ElsifNotDef or ElseDef not after a IfDef or a IfNotDef.
- * ElseDef not followed by EndifDef.
  * A block not terminated by EndifDef.
 
