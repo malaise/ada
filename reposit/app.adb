@@ -3,7 +3,7 @@ with Basic_Proc, Trace.Loggers, As.U, Argument, Argument_Parser, Long_Longs,
      Many_Strings, Reg_Exp, Unlimited_Pool;
 procedure App is
 
-  Version : constant String := "V03.00";
+  Version : constant String := "V03.01";
 
   -- Log an error and raise
   Raised_Error : exception;
@@ -440,6 +440,11 @@ begin
       Out_Flow.Put (Str.Image);
     end if;
   end loop;
+
+  -- Check all blocks are closed
+  if Keep.Length /= 1 then
+    Error ("Unterminated directive at end of file" & Integer'image (Keep.Length));
+  end if;
 
   -- Done
   Out_Flow.Close_All;

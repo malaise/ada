@@ -1,7 +1,7 @@
 App
 ===
 
-Version 03.00
+Version 03.01
 
 App is a pre-processor. it selects pieces of text and expands names
 according to definitions.
@@ -64,13 +64,13 @@ IfNotDef <names>::
 If none of the names is defined in the arguments, then the text following
 the line is kept, up to the next preprocessing directive.
 
-ElsIfDef <names>::
+ElsifDef <names>::
 <names> is one name, or several names separated by \'|'. +
 If no preceeding directive has been selected and if one of the names
 is defined in the arguments, then the text following
 the line is kept, up to the next preprocessing directive.
 
-ElsIfNotDef <names>::
+ElsifNotDef <names>::
 <names> is one name, or several names separated by \'&'. +
 If no preceeding directive has been selected and if none of the names
 is defined in the arguments, then the text following
