@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V32.01
+V32.03
 
 General purpose
 ---------------
@@ -1434,7 +1434,7 @@ NOTE: To cancel the cherry-pick menu, simply ensure that no commit is selected
 NOTE: If the selection is not valid then this button is de-activated and
 displays the cause of error: +
  * 'FoldPrev' if first not merged nor dropped cherry is a squash or a fixup, +
- * 'EmptyCmt' if a wipe-up would not followed by a squash would lead to an empty
+ * 'EmptyCmt' if a wipe-up not followed by a squash would lead to an empty
 comment.
 
 Commit
@@ -1909,7 +1909,11 @@ anchor:XCherryReorg[]
   - xref:XBReset[Hard reset] the rebased branch to the Tmp branch,
   - Delete the Tmp branch.
 +
-NOTE: This is exactly how the xref:XReorg[reorg] is performed.
+NOTE: This is exactly how the xref:XReorg[reorg] is performed. +
+As a consequence, if no commit is selected during the cherry pick, then the
+xref:XReorg[reorg] is cancelled: A reorg that only drops several last
+consecutive commits is achieved through a xref:XHReset[hard reset] to the first
+commit that has to be kept.
 
 NOTE: xref:XRebase[Rebase] and xref:XReorg[reorg] create a temporary branch
 named "\{Agite}@"<source>".Tmp". If this branch already exists then another
