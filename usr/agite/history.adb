@@ -71,8 +71,7 @@ package body History is
   end Remote_Head;
 
   -- Handle the history of a file or dir
-  -- Or the cherry-pick from a branch
-  -- Handle the history of a file or dir
+  --  possibly on a  given branch
   procedure List (Root, Branch, Path, Name : in String;
                   Is_File : in Boolean;
                   Allow_Modif : in Boolean;
@@ -599,8 +598,10 @@ package body History is
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
             when Afpx.List_Field_No  =>
-              -- Double click or View => View if List file, Toggle cherry
-              Show (Show_View);
+              if Is_File then
+                -- Double click or View => View if List file
+                Show (Show_View);
+              end if;
             when Afpx_Xref.History.List_All =>
               -- List all the entries
               Do_Read_All;
