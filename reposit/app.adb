@@ -443,7 +443,7 @@ begin
 
   -- Check all blocks are closed
   if Keep.Length /= 1 then
-    Error ("Unterminated directive at end of file" & Integer'image (Keep.Length));
+    Error ("Unterminated directive at end of file" & Integer'Image (Keep.Length));
   end if;
 
   -- Done
