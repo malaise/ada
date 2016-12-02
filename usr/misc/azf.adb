@@ -6,6 +6,9 @@ procedure Azf is
   -- Max buffer size in Mega Bytes
   Max_Buffer_Size : constant := 1024;
 
+  -- Default buffer size in Mega Bytes
+  Buffer_Size : Positive := 1;
+
   Logger : Trace.Loggers.Logger;
 
   procedure Help is
@@ -14,9 +17,10 @@ procedure Azf is
         &  " [ -s <buffer_size> | -H ] -c | -d | -h");
     Basic_Proc.Put_Line_Error (" -c | --compress              : Compress stdin to stdout");
     Basic_Proc.Put_Line_Error (" -d | --decompress            : Uncompress stdin to stdout");
-    Basic_Proc.Put_Line_Error (" -s <MB> | --buffer_size=<MB> : Set buffer size in Mega Bytes (max "
-                           & Images.Integer_Image (Max_Buffer_Size) & ")");
     Basic_Proc.Put_Line_Error (" -H | --headers               : Use lzf header (and buffer of 64 kB)");
+    Basic_Proc.Put_Line_Error (" -s <MB> | --buffer_size=<MB> : Set buffer size in Mega Bytes " &
+      "(max=" & Images.Integer_Image (Max_Buffer_Size) &
+      ", def=" & Images.Integer_Image (Buffer_Size) & ")");
     Basic_Proc.Put_Line_Error (" --lz4                        : Use lz4 instead of lzf");
     Basic_Proc.Put_Line_Error (" --snappy                     : Use snappy instead of lzf");
     Basic_Proc.Put_Line_Error (" -h | --help                  : Display this help");
@@ -45,8 +49,6 @@ begin
   -- Header mode
   Header_Mode : Boolean := False;
 
-  -- Buffer size
-  Buffer_Size : Positive := 1;
 
   -- Use lzf, lz4 or snappy
   type Algo_List is (Lzf_Algo, Lz4_Algo, Snappy_Algo);
