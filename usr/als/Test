@@ -4,7 +4,7 @@ export N1=0
 export NE=0
 
 function clean {
-  rm -f BrokenLink exp res1 NewFile
+  rm -f BrokenLink exp res NewFile
 }
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
@@ -89,30 +89,30 @@ echo "OK"
 # Match dir pattern and file regexp
 title "In lib*, match regexp *.o and"
 ls -1 lib/*.o > exp
-launch -M --match_dir="lib*" -m "@.*\.o" * > res1
-cmp res1 exp > /dev/null 2>&1
+launch -M --match_dir="lib*" -m "@.*\.o" * > res
+cmp res exp > /dev/null 2>&1
 if [ $? -ne 0 ] ; then
   error "als -M --match_dir='lib*' -m '@.*\.o' * result res differs from exp"
 fi
-rm exp res1
+rm exp res
 echo "OK"
 
 # Exclude file regexp
 title "In lib, exclude regexp *.ali"
 ls -1 lib/*.o > exp
-launch -M -e "@.*\.ali" lib > res1
-cmp res1 exp > /dev/null 2>&1
+launch -M -e "@.*\.ali" lib > res
+cmp res exp > /dev/null 2>&1
 if [ $? -ne 0 ] ; then
   error "als -M -e '@.*\.ali' lib result res differs from exp"
 fi
-rm exp res1
+rm exp res
 echo "OK"
 
 # Access rights
 title "In ., executables and not readable"
 echo "als  als.stat  lib  Test" > exp
-als --access='**x' > res1
-cmp res1 exp > /dev/null 2>&1
+als --access='**x' > res
+cmp res exp > /dev/null 2>&1
 if [ $? -ne 0 ] ; then
   error "als --access=**x result res differs from exp"
 fi
@@ -120,21 +120,21 @@ fi
 touch NewFile
 chmod -r NewFile
 echo "NewFile" > exp
-als --access='-**' > res1
-cmp res1 exp > /dev/null 2>&1
+als --access='-**' > res
+cmp res exp > /dev/null 2>&1
 if [ $? -ne 0 ] ; then
   error "als --access=-** result res differs from exp"
 fi
 
-rm exp res1 NewFile
+rm exp res NewFile
 echo "OK"
 
 # New file
 title "In ., new file"
 export DELAY=2s
 touch NewFile
-res=`launch -n $DELAY`
-if [ "$res" != "NewFile" ] ; then
+result=`launch -n $DELAY`
+if [ "$result" != "NewFile" ] ; then
   error "als -n $DELAY finds $res i.o. NewFile"
 fi
 rm NewFile
@@ -142,36 +142,36 @@ echo "OK"
 
 # Long output
 title "In ., long format and date-iso"
-res=`launch -l --date_iso als | sed -r 's/ +/ /g'`
+result=`launch -l --date_iso als | sed -r 's/ +/ /g'`
 exp=`ls -l --time-style="+%Y-%m-%dT%H:%M:%S" als | cut -d ' ' -f 1,3-`
-if [ "$res" != "$exp" ] ; then
-  error "als -l --date_iso is $res i.o. $exp"
+if [ "$result" != "$exp" ] ; then
+  error "als -l --date_iso is $result i.o. $exp"
 fi
 echo "OK"
 
 # Long output in UTC
 title "In ., long format and date-iso in UTC"
-res=`launch -lU --date_iso als | sed -r 's/ +/ /g'`
+result=`launch -lU --date_iso als | sed -r 's/ +/ /g'`
 exp=`TZ=UTC ls -l --time-style="+%Y-%m-%dT%H:%M:%S" als | cut -d ' ' -f 1,3-`
-if [ "$res" != "$exp" ] ; then
-  error "als -lU --date_iso is $res i.o. $exp"
+if [ "$result" != "$exp" ] ; then
+  error "als -lU --date_iso is $result i.o. $exp"
 fi
 echo "OK"
 
 # Sort by size
 title "In ., reverse sort by size"
-res=`launch -sr1 | tail -1`
-if [ "$res" != "als.stat" ] ; then
-  error "als -sr1 last line is $res i.o. als.stat"
+result=`launch -sr1 | tail -1`
+if [ "$result" != "als.stat" ] ; then
+  error "als -sr1 last line is $result i.o. als.stat"
 fi
 echo "OK"
 
 # Sort by date
 title "In ., reverse sort by date"
 touch NewFile
-res=`launch -tr1 | tail -1`
-if [ "$res" != "NewFile" ] ; then
-  error "als -tr1 last line is $res i.o. NewFile"
+result=`launch -tr1 | tail -1`
+if [ "$result" != "NewFile" ] ; then
+  error "als -tr1 last line is $result i.o. NewFile"
 fi
 rm NewFile
 echo "OK"
