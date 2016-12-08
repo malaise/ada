@@ -440,16 +440,16 @@ package body Screen is
   begin
     case Reason is
       when Flight.Landed =>
-        Screen.Set_Foreground (Con_Io.Color_Of ("Lime_Green"));
+        Screen.Set_Foreground (Con_Io.Color_Of ("Orange"));
         Center ("You landed the LEM", Y_Text);
       when Flight.Safe_Landed =>
         Screen.Set_Foreground (Con_Io.Color_Of ("Lime_Green"));
         Center ("You landed the LEM safely", Y_Text);
       when Flight.Lost =>
-        Screen.Set_Foreground (Con_Io.Color_Of ("Magenta"));
+        Screen.Set_Foreground (Con_Io.Color_Of ("Red"));
         Center ("You lost the LEM", Y_Text);
       when Flight.Crashed =>
-        Screen.Set_Foreground (Con_Io.Color_Of ("Magenta"));
+        Screen.Set_Foreground (Con_Io.Color_Of ("Red"));
         Center ("You crashed the LEM", Y_Text);
     end case;
     Screen.Set_Foreground (Con_Io.Color_Of ("Light_Grey"));
