@@ -110,7 +110,7 @@ package body Sok_File is
     -- Read first and last frames
     Read (Sok_Types.Frame_Range'First, Dummy_Frame);
     Read (Sok_Types.Frame_Range'Last,  Dummy_Frame);
-    if Sys_Calls.File_Found (Sok_Score_Name) then
+    if Sys_Calls.File_Found (Sok_File_Dir.Image & Sok_Score_Name) then
       -- Read first and last scores
       Dummy_Score := Read_Score (Sok_Types.Frame_Range'First);
       Dummy_Score := Read_Score (Sok_Types.Frame_Range'Last);
@@ -119,7 +119,7 @@ package body Sok_File is
     -- Create empty scores if necessary
     begin
       Sok_Score_Mng.Create (Sok_Score_File, Sok_Score_Mng.Out_File,
-         Sok_Score_Name);
+         Sok_File_Dir.Image & Sok_Score_Name);
       for I in Sok_Types.Frame_Range loop
         Sok_Score_Mng.Write (Sok_Score_File, No_Score);
       end loop;
@@ -211,14 +211,14 @@ package body Sok_File is
     -- Be sure that there is no file
     begin
       Sok_State_Mng.Open (Sok_State_File, Sok_State_Mng.In_File,
-       Sok_State_Name);
+       Sok_File_Dir.Image & Sok_State_Name);
       Sok_State_Mng.Delete (Sok_State_File);
     exception
       when Sok_State_Mng.Name_Error => null;
     end;
     begin
       Sok_Saved_Mng.Open (Sok_Saved_File, Sok_Saved_Mng.In_File,
-       Sok_Saved_Name);
+       Sok_File_Dir.Image & Sok_Saved_Name);
       Sok_Saved_Mng.Delete (Sok_Saved_File);
     exception
       when Sok_Saved_Mng.Name_Error => null;
@@ -226,9 +226,9 @@ package body Sok_File is
 
     -- Now create new files
     Sok_State_Mng.Create (Sok_State_File, Sok_State_Mng.Out_File,
-     Sok_State_Name);
+     Sok_File_Dir.Image & Sok_State_Name);
     Sok_Saved_Mng.Create (Sok_Saved_File, Sok_Saved_Mng.Out_File,
-     Sok_Saved_Name);
+     Sok_File_Dir.Image & Sok_Saved_Name);
 
     -- fill state to be saved
     Sok_Time.Get_Time (File_State.Day, File_State.Dur);
@@ -268,9 +268,9 @@ package body Sok_File is
   begin
     begin
       Sok_State_Mng.Open (Sok_State_File, Sok_State_Mng.In_File,
-       Sok_State_Name);
+       Sok_File_Dir.Image & Sok_State_Name);
       Sok_Saved_Mng.Open (Sok_Saved_File, Sok_Saved_Mng.In_File,
-       Sok_Saved_Name);
+       Sok_File_Dir.Image & Sok_Saved_Name);
     exception
       when -- Sok_State_Mng.Name_Error |
            Sok_Saved_Mng.Name_Error =>
@@ -319,7 +319,7 @@ package body Sok_File is
   begin
     if Name = "" then
       Sok_Score_Mng.Open (Sok_Score_File, Sok_Score_Mng.In_File,
-       Sok_Score_Name);
+       Sok_File_Dir.Image & Sok_Score_Name);
     else
       Sok_Score_Mng.Open (Sok_Score_File, Sok_Score_Mng.In_File, Name);
     end if;
@@ -337,7 +337,7 @@ package body Sok_File is
     Sok_Score_File : Sok_Score_Mng.File_Type;
   begin
     Sok_Score_Mng.Open (Sok_Score_File, Sok_Score_Mng.Out_File,
-     Sok_Score_Name);
+     Sok_File_Dir.Image & Sok_Score_Name);
     Sok_Score_Mng.Write (Sok_Score_File, Score,
       Sok_Score_Mng.Positive_Count(No));
     Sok_Score_Mng.Close (Sok_Score_File);
@@ -350,7 +350,7 @@ package body Sok_File is
    Sok_Score_File : Sok_Score_Mng.File_Type;
   begin
     Sok_Score_Mng.Open (Sok_Score_File, Sok_Score_Mng.Out_File,
-     Sok_Score_Name);
+     Sok_File_Dir.Image & Sok_Score_Name);
     Sok_Score_Mng.Write (Sok_Score_File, No_Score,
       Sok_Score_Mng.Positive_Count(No));
     Sok_Score_Mng.Close (Sok_Score_File);
