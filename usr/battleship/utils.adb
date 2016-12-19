@@ -1,7 +1,6 @@
 with Trace.Loggers;
 package body Utils is
 
-
   -- Debug modes
   Comm_Logger : Trace.Loggers.Logger;
   Setup_Logger : Trace.Loggers.Logger;

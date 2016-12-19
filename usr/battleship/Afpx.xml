@@ -997,7 +997,7 @@
     </Field>
     <Field Num="106" Kind="Put" Name="Loose">
       <Geometry Up="${TopG}+23" Left="${LeftG}+15" Height="1" Width="9"/>
-      <Colors Foreground="Black" Background="${Default_Background}"/>
+      <Colors Foreground="Red" Background="${Default_Background}"/>
       <Init Row="0" Col="0">You loose</Init>
     </Field>
 
@@ -1453,7 +1453,7 @@
     </Field>
     <Field Num="210" Kind="Put" Name="Win">
       <Geometry Up="${TopG}+23" Left="${LeftG}+16" Height="1" Width="7"/>
-      <Colors Foreground="Black" Background="${Default_Background}"/>
+      <Colors Foreground="Lime_Green" Background="${Default_Background}"/>
       <Init Row="0" Col="0">You win</Init>
     </Field>
 

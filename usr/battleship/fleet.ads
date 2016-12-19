@@ -9,12 +9,15 @@ package Fleet is
 
   -- Length of a ship
   subtype Ship_Len_Range is Positive range 1 .. 5;
-  function Length (Ship : Ship_List) return Ship_Len_Range;
+  Length : constant array (Ship_List) of Ship_Len_Range := (
+      Carrier => 5,
+      Battleship => 4,
+      Cruiser => 3,
+      Sub1 | Sub2 => 2);
 
   -- Position of our ships
   type Pos_List is array (Ship_Len_Range) of Utils.Coord;
   My_Ships : array (Ship_List) of Pos_List;
-
 
 end Fleet;
 
