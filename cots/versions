@@ -1,9 +1,11 @@
-http://home.earthlink.net/~jrcarter010
+http://pragmada.x10hosting.com/mindet.html
 
-mine_detector is version 4.3
- + a patch in user_if.adb to handle mouse buttons 4 and 5.
- + a makefile (that uses GtkAda 1.2.12)
+pragmarc is version 2016 Dec 10
 
-pragmarc is version 2005 Jul 01 with some file renaming for Gnat:
- - a new file name for pragmarc-assertion_handler.adb.noassert
+mine_detector is version V6.4 2016 Jun 01
+ + a patch in field-operations to freeze the cell status at end of game
+ + a patch in field-operations to optimize the auto-step
+ + a patch in user-if of the constructor of Table to compile with GtkAda 2.18.0
+ + a makefile (that uses GtkAda 2.18.0)
+
 
