@@ -1,6 +1,6 @@
 -- Check that file (arg 1) is made of lines
 --  each with one word of lower case letters and a Line_Feed
-with Sys_Calls, Argument, Text_Line, My_Math;
+with Sys_Calls, Argument, Text_Line, Long_Longs;
 procedure Words_Check is
 
   -- Abnormal error exit code
@@ -11,7 +11,7 @@ procedure Words_Check is
   In_Txt : Text_Line.File_Type;
 
   -- Current line number
-  Line_No : My_Math.Inte;
+  Line_No : Long_Longs.Ll_Positive;
 
   -- Allowed characters
   subtype Letter_Range is Character range 'a' .. 'z';

@@ -1,12 +1,12 @@
 with Ada.Exceptions;
-with Argument, My_Math, Sys_Calls, Normal, Mixed_Str, Upper_Str, Hexa_Utils;
+with Argument, Long_Longs, Sys_Calls, Normal, Mixed_Str, Upper_Str, Hexa_Utils;
 -- Analyse the frequency of each byte of stdin
 procedure Anal_Freq is
   -- Put all letters or only non-null
   Put_All : Boolean;
   -- Number of char read and anb of occurence of each
-  Nb_Read : My_Math.Inte := 0;
-  Table : array (Character) of My_Math.Inte := (others => 0);
+  Nb_Read : Long_Longs.Ll_Integer := 0;
+  Table : array (Character) of Long_Longs.Ll_Integer := (others => 0);
   -- Char read and its pos
   Char : Character;
   Pos : Natural;
