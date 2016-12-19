@@ -1,4 +1,4 @@
-with Argument, Basic_Proc, Text_Line, Sys_Calls, As.U;
+with Argument, Basic_Proc, Text_Line, Sys_Calls, As.U, Long_Longs;
 with Vigenere;
 procedure T_Vigenere is
 
@@ -45,10 +45,10 @@ begin
   end if;
 
   declare
-    Lstr : Vigenere.Long_String(1 .. Vigenere.Long_Positive (Str.Length));
+    Lstr : Vigenere.Long_String(1 .. Long_Longs.Ll_Positive (Str.Length));
   begin
     for I in 1 .. Str.Length loop
-      Lstr(Vigenere.Long_Positive(I)) := Str.Element(I);
+      Lstr(Long_Longs.Ll_Positive (I)) := Str.Element(I);
     end loop;
     if Code then
       Vigenere.Encode (Argument.Get_Parameter(Occurence => 2), Lstr);
@@ -56,7 +56,7 @@ begin
       Vigenere.Decode (Argument.Get_Parameter(Occurence => 2), Lstr);
     end if;
     for I in 1 .. Str.Length loop
-      Str.Replace_Element(I, Lstr(Vigenere.Long_Positive(I)));
+      Str.Replace_Element(I, Lstr(Long_Longs.Ll_Positive (I)));
     end loop;
     Basic_Proc.Put_Output (Str.Image);
   end;

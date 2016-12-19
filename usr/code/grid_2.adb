@@ -1,9 +1,8 @@
-with My_Math;
-use My_Math;
+with My_Math, Long_Longs;
 package body Grid_2 is
 
-  subtype Long_Natural is My_Math.Inte range 0 .. My_Math.Inte'Last;
-  subtype Long_Positive is Vigenere.Long_Positive;
+  subtype Long_Natural is Long_Longs.Ll_Natural;
+  subtype Long_Positive is Long_Longs.Ll_Positive;
 
   Dimension : My_Math.Inte;
   First_Row : My_Math.Inte;
@@ -13,7 +12,7 @@ package body Grid_2 is
 
   procedure Initialize (Key_Length, Text_Length : in My_Math.Inte) is
     R : My_Math.Real;
-
+    use My_Math;
   begin
     R := My_Math.Real(Key_Length) + My_Math.Real(Text_Length);
     Dimension := Trunc(My_Math.Sqrt(R)) + 1;

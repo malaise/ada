@@ -1,12 +1,12 @@
 with Aski, As.U, As.B, Sys_Calls, Argument, Upper_Str, Normal,
-     Text_Line, Basic_Proc;
-with Grid_1, Grid_2, Vigenere;
+     Text_Line, Basic_Proc, Long_Longs;
+with Vigenere, Grid_1, Grid_2;
 
 procedure Code is
   Code : Boolean;
   Buff : As.U.Asu_Us;
   Rec : Grid_1.Coordinate_Rec;
-  -- Better not allocate that in stack, but in heap.
+  -- Better not allocate that in stack, but rather in heap.
   type Access_Long_String is access Grid_2.Long_String;
   Str  : constant Access_Long_String
        := new Grid_2.Long_String(1 .. 1_048_576);
@@ -19,8 +19,8 @@ procedure Code is
   Key_Str : String (1 .. Key.Max);
   In_File  : Text_Line.File_Type;
   Out_File : Text_Line.File_Type;
-  Sl : Vigenere.Long_Positive;
-  Si : Vigenere.Long_Positive;
+  Sl : Long_Longs.Ll_Positive;
+  Si : Long_Longs.Ll_Positive;
   C : Character;
   Is_A_Tty : Boolean;
 
