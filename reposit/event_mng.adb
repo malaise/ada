@@ -1,6 +1,6 @@
 with System;
 with C_Types, Null_Procedure, Dynamic_List, Timeval, Perpet,
-     Any_Def, My_Math, Virtual_Time, Timers.Expiration;
+     Any_Def, Virtual_Time, Timers.Expiration;
 with Event_Mng.Handling;
 package body Event_Mng is
 
@@ -387,7 +387,6 @@ package body Event_Mng is
     Loc_Level : Any_Def.Any (Any_Def.Lint_Kind);
     Wait_Timeout : Integer;
     Dummy : Boolean;
-    use type My_Math.Inte;
   begin
     -- Increment global pause level and store ours
     Pause_Level.Lint := Pause_Level.Lint + 1;
