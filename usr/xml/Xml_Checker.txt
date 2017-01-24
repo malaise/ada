@@ -1,6 +1,6 @@
 Xml_Checker
 ===========
-Version: V25.0
+Version: V25.1
 
 'Parser version: V43.0 +
 Generator version: V19.2 +
@@ -59,7 +59,7 @@ warning messages). The xref:Exit[exit code] indicates success or failure.
 
 anchor:Progress[]-p | --progress: :: for only output a progress bar like this:
 
-  |-------------------------------------------------|
+  |--------------------------------------------------|
   |=================================
 +
 then exit.

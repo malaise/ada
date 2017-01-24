@@ -5,7 +5,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
      Trace.Loggers, Mixed_Str;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V25.0";
+  Version : constant String := "V25.1";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -57,8 +57,8 @@ procedure Xml_Checker is
 
   -- Total Nb of lines of current file (when progress)
   Lines : Natural;
-  -- Progress factor (Nb of signs)
-  Progress_Factor : constant := 50;
+  -- Progress factor (Nb of signs + 1)
+  Progress_Factor : constant := 51;
 
   -- Warning detection
   procedure Warning (Unused_Ctx : in  Xml_Parser.Ctx_Type; Msg : in String) is
@@ -748,7 +748,11 @@ procedure Xml_Checker is
       -- Count lines and prepare output
       Count_Lines (Get_File_Name (Index, False));
       Prev_Progress := 0;
-      Out_Flow.Put_Line ("|-------------------------------------------------|");
+      Out_Flow.Put ("|");
+      for I in 1 .. Progress_Factor - 1 loop
+        Out_Flow.Put ("-");
+      end loop;
+      Out_Flow.Put_Line ("|");
       Out_Flow.Put ("|");
       Out_Flow.Flush;
       Dummy := Sys_Calls.Set_Tty_Attr (Out_Flow.Get_Fd, Sys_Calls.Char);
