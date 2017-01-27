@@ -1,6 +1,6 @@
 Xml_Checker
 ===========
-Version: V25.1
+Version: V25.2
 
 'Parser version: V43.0 +
 Generator version: V19.2 +
@@ -64,9 +64,9 @@ anchor:Progress[]-p | --progress: :: for only output a progress bar like this:
 +
 then exit.
 +
-Note that after the parsing and the completion of the progress bar,
-xml_checker performs the check that all the IDREFs are defined as IDs, which
-may take a significant time that is not monitored.
+Note that the \'=' bar reflects the progression of the parsing of the lines.
+After the last \'=' and before the ending \'|', xml_checker checks that all the
+IDREFs are defined as IDs, which may take a significant time.
 +
 Note that it is not possible to monitor the progress in "xref:Tree[tree]" mode,
 so these options are exclusive.

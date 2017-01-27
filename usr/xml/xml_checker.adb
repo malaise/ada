@@ -5,7 +5,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
      Trace.Loggers, Mixed_Str;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V25.1";
+  Version : constant String := "V25.2";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -57,8 +57,8 @@ procedure Xml_Checker is
 
   -- Total Nb of lines of current file (when progress)
   Lines : Natural;
-  -- Progress factor (Nb of signs + 1)
-  Progress_Factor : constant := 51;
+  -- Progress factor (Nb of signs)
+  Progress_Factor : constant := 50;
 
   -- Warning detection
   procedure Warning (Unused_Ctx : in  Xml_Parser.Ctx_Type; Msg : in String) is
@@ -394,7 +394,7 @@ procedure Xml_Checker is
         -- Update progress
         Curr_Progress := Node.Line_No * Progress_Factor / Lines;
         if Curr_Progress /= Prev_Progress
-        and then Curr_Progress < Progress_Factor then
+        and then Curr_Progress <= Progress_Factor then
           for I in Prev_Progress + 1 .. Curr_Progress loop
             Out_Flow.Put ("=");
           end loop;
@@ -749,7 +749,7 @@ procedure Xml_Checker is
       Count_Lines (Get_File_Name (Index, False));
       Prev_Progress := 0;
       Out_Flow.Put ("|");
-      for I in 1 .. Progress_Factor - 1 loop
+      for I in 1 .. Progress_Factor loop
         Out_Flow.Put ("-");
       end loop;
       Out_Flow.Put_Line ("|");
@@ -789,7 +789,7 @@ procedure Xml_Checker is
       end if;
       if Output_Kind = Progress and then Index /= 0 then
         -- Terminate progress bar
-        for I in Prev_Progress + 1 .. Progress_Factor - 1 loop
+        for I in Prev_Progress + 1 .. Progress_Factor loop
           Out_Flow.Put ("=");
         end loop;
         Out_Flow.Put ("|");
