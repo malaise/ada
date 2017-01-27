@@ -220,10 +220,6 @@ package body Git_If is
       return True;
     elsif El2.Kind = '/' then
       return False;
-    elsif El1.Kind = '?' then
-      return False;
-    elsif El2.Kind = '?' then
-      return True;
     else
       -- File or link
       return El1.Name < El2.Name;
@@ -322,7 +318,7 @@ package body Git_If is
       return;
     end if;
 
-    -- Git status --porcelain"
+    -- Git status --porcelain
     Cmd.Set ("git");
     Cmd.Cat ("status");
     Cmd.Cat ("--porcelain");
@@ -406,7 +402,7 @@ package body Git_If is
       end loop;
     end if;
 
-    -- Sort the list because of insertion of dirs and deleted
+    -- Sort the list because of insertion of dirs, untracked and deleted files
     File_Sort (Files);
 
     -- Finally insert "." then ".." at head
