@@ -583,9 +583,9 @@ package body Dispatch is
               Log ("Prepare", New_Client, "X refresh => refresh_all");
               Selected := First;
               Refresh_All := True;
-              for I in Client_Range loop
-                if Clients(I).Used then
-                  Clients(Client).Refreshing := False;
+              for A_Client of Clients loop
+                if A_Client.Used then
+                  A_Client.Refreshing := False;
                 end if;
               end loop;
               Clients(Selected).Refreshing := True;
