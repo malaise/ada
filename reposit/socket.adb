@@ -39,6 +39,16 @@ package body Socket is
     return Str & Nul;
   end C_Str;
 
+  function Strip (C_Str : String) return String is
+  begin
+    for I in C_Str'Range loop
+      if C_Str(I) = Nul then
+        return C_Str(C_Str'First .. I - C_Str'First);
+      end if;
+    end loop;
+    raise Soc_Len_Err;
+  end Strip;
+
   type C_Protocol is new Protocol_List;
   for C_Protocol'Size use 32;
 
@@ -529,12 +539,7 @@ package body Socket is
     Res := Soc_Port_Name_Of (Word (Port), C_Protocol(Protocol),
                              Name'Address, Name'Length);
     Check_Ok;
-    for I in Name'Range loop
-      if Name(I) = Nul then
-        return Name(1 .. I - 1);
-      end if;
-    end loop;
-    raise Soc_Len_Err;
+    return Strip (Name);
   end Port_Name_Of;
 
   function Port_Num_Of  (Name : String; Protocol : Protocol_List)
@@ -554,12 +559,7 @@ package body Socket is
   begin
     Res := Soc_Host_Name_Of (Id'Address, Name'Address, Name'Length);
     Check_Ok;
-    for I in Name'Range loop
-      if Name(I) = Nul then
-        return Name(1 .. I - 1);
-      end if;
-    end loop;
-    raise Soc_Len_Err;
+    return Strip (Name);
   end Host_Name_Of;
 
   function Host_Id_Of (Name : String) return Host_Id is
@@ -577,12 +577,7 @@ package body Socket is
   begin
     Res := Soc_Lan_Name_Of (Id'Address, Name'Address, Name'Length);
     Check_Ok;
-    for I in Name'Range loop
-      if Name(I) = Nul then
-        return Name(1 .. I - 1);
-      end if;
-    end loop;
-    raise Soc_Len_Err;
+    return Strip (Name);
   end Lan_Name_Of;
 
   function Lan_Id_Of (Name : String) return Host_Id is
@@ -600,12 +595,7 @@ package body Socket is
   begin
     Res := Soc_Get_Local_Host_Name (Name'Address, Name'Length);
     Check_Ok;
-    for I in Name'Range loop
-      if Name(I) = Nul then
-        return Name(1 .. I - 1);
-      end if;
-    end loop;
-    raise Soc_Len_Err;
+    return Strip (Name);
   end Local_Host_Name;
 
   function Local_Host_Id return Host_Id is
@@ -622,12 +612,7 @@ package body Socket is
   begin
     Res := Soc_Get_Local_Lan_Name (Name'Address, Name'Length);
     Check_Ok;
-    for I in Name'Range loop
-      if Name(I) = Nul then
-        return Name(1 .. I - 1);
-      end if;
-    end loop;
-    raise Soc_Len_Err;
+    return Strip (Name);
   end Local_Lan_Name;
 
   function Local_Lan_Id return Host_Id is
