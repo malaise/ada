@@ -264,10 +264,10 @@ package body Hashing is
       procedure Clear_All (Table : in out Hash_Table) is
         Ca, Cn : Cell_Access;
       begin
-        for I in Hash_Range loop
-          Ca := Table.Arr(I).First;
-          Table.Arr(I).First := null;
-          Table.Arr(I).Current := null;
+        for Hn of Table.Arr loop
+          Ca := Hn.First;
+          Hn.First := null;
+          Hn.Current := null;
 
           while Ca /= null loop
             Cn := Ca.Next;

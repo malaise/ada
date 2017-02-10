@@ -1,13 +1,13 @@
 -- Convert the characters of Str into lower char
 with Lower_Char;
 function Lower_Str (Str : String) return String is
-  Str_Loc : String (Str'Range);
+  Result : String := Str;
 begin
 
-  for I in Str_Loc'Range loop
-    Str_Loc(I) := Lower_Char (Str(I));
+  for C of Result loop
+    C := Lower_Char (C);
   end loop;
-  return Str_Loc;
+  return Result;
 
 end Lower_Str;
 

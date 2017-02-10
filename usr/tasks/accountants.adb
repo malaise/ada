@@ -101,8 +101,8 @@ begin
     Family(I).Birth(I);
   end loop;
   delay 30.0;
-  for I in Family'Range loop
-    Family(I).Dye;
+  for A of Family loop
+    A.Dye;
   end loop;
   Protected_Put.Put_Line_Output (
     "Heritage is " & Images.Integer_Image (Account.Read));

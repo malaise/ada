@@ -1,13 +1,13 @@
 -- Convert the characters of Str into upper char
 with Upper_Char;
 function Upper_Str (Str : String) return String is
-  Str_Loc : String (Str'Range);
+  Result : String := Str;
 begin
 
-  for I in Str_Loc'Range loop
-    Str_Loc(I) := Upper_Char (Str(I));
+  for C of Result loop
+    C := Upper_Char (C);
   end loop;
-  return Str_Loc;
+  return Result;
 
 end Upper_Str;
 
