@@ -358,6 +358,7 @@ procedure Agite is
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Commit, Root.Is_Null);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Pull, Root.Is_Null);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Tags, Root.Is_Null);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Reset, Root.Is_Null);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Stash, Root.Is_Null);
   end Change_Dir;
 
@@ -526,11 +527,9 @@ procedure Agite is
 
     if File.Kind = '/' then
       -- Handle Dir
-      if File.Name.Image = "." then
-        -- Hard reset to head or clean
-        Dummy := Reset (Root.Image, "", Allow_Clean => True);
-        Position := 1;
-      elsif File.Name.Image = ".." then
+      if File.Name.Image = "."
+      or else File.Name.Image = ".." then
+        -- Nothing on . or ..
         return;
       elsif Confirm ("Ready to remove directory:",
                      Directory.Build_File_Name (Path.Image, Name, "")) then
@@ -646,6 +645,15 @@ procedure Agite is
     Commit.Handle (Root.Image);
     Init (Position, Curr_Dir);
   end Do_Commit;
+
+  procedure Do_Reset is
+    Curr_Dir : constant String := Directory.Get_Current;
+    Dummy : Boolean;
+  begin
+    Position := Afpx.Line_List.Get_Position;
+    Dummy := Reset (Root.Image, "", Allow_Clean => True);
+    Init (Position, Curr_Dir);
+  end Do_Reset;
 
   procedure Do_Stash is
     Curr_Dir : constant String := Directory.Get_Current;
@@ -878,7 +886,8 @@ procedure Agite is
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Diff, Dotdot or else Untracked);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.History, Dotdot or else Untracked);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Add, Dotdot);
-    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Revert, Dotdot);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Revert,
+                              Dotdot or else File.Name.Image = ".");
   end List_Change;
 
 begin -- Agite
@@ -1065,7 +1074,11 @@ begin -- Agite
               -- History
               List_Action (History);
             when Afpx_Xref.Main.Tags =>
+              -- Tags
               List_Tags;
+            when Afpx_Xref.Main.Reset =>
+              -- Reset
+              Do_Reset;
             when Afpx_Xref.Main.Stash =>
               -- Stash
               Do_Stash;

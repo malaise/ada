@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V32.06"/>
+  <Var Name="Version" Value="V33.00"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -189,10 +189,10 @@
       <Init Row="0" Col="2">Edit</Init>
     </Field>
     <Field Num="29" Kind="Button" Name="Diff">
-      <Geometry Up="${Field_28.Low}+2" Left="${LmLeft}" Height="3"
+      <Geometry Up="${Field_28.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="2">Diff</Init>
+      <Init Row="0" Col="2">Diff</Init>
     </Field>
     <Field Num="30" Kind="Button" Name="History">
       <Geometry Up="${Field_29.Low}+2" Left="${LmLeft}" Height="1"
@@ -230,25 +230,31 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Tags</Init>
     </Field>
-    <Field Num="36" Kind="Button" Name="Stash">
+    <Field Num="36" Kind="Button" Name="Reset">
       <Geometry Up="${Field_35.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Reset</Init>
+    </Field>
+    <Field Num="37" Kind="Button" Name="Stash">
+      <Geometry Up="${Field_36.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Stash</Init>
     </Field>
-    <Field Num="37" Kind="Put">
+    <Field Num="38" Kind="Put">
       <Geometry Up="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
-    <Field Num="38" Kind="Put">
+    <Field Num="39" Kind="Put">
       <Geometry Low="${Field_8.Low}+1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
-    <Field Num="39" Kind="Button" Name="Quit">
+    <Field Num="40" Kind="Button" Name="Quit">
       <Geometry Height="1" Left="${LmLeft}" Low="${List.Low}"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>

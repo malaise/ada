@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V32.06
+V33.00
 
 General purpose
 ---------------
@@ -606,15 +606,11 @@ anchor:XRevert[]
 
 Revert::
 This button reverts the local change on the current entry. +
+First, a simple screen asks to confirm or cancel the operation, which depends 
+on the type of the current entry, then:
 +
-If it is \'./' then Agite calls the xref:XReset[reset] menu to 'reset (hard,
-mixed or soft) to head' or to 'clean the untracked files and directories' of
-the *whole repository*, not only the current directory. +
-+
-Otherwise, first, a simple screen asks to confirm or cancel the operation. +
-Then, depending on the type of the current entry:
-
-- If it is a subdirectory (not \'./') then it is deleted, which
+--
+- If it is a subdirectory (not \'./' nor \'../') then it is deleted, which
 succeeds only if it is empty.
 - If it is a file or a symbolic link,
  * if unknown by Git, then it is removed,
@@ -627,16 +623,9 @@ content
  * if known by Git and renamed, then the original file is restored to its last
 committed content and the new one is reset as unknown by Git
  * if up to date in Git, then it is removed from Git
-
+--
 +
-Note: The Revert button is not active on \'../'.
-+
-Note: It is also possible to 'reset hard, mixed or soft' the whole repository
-to the head of a given branch, including current branch, through the
-xref:XBReset[Reset] button of the xref:XBranches[branches] menu.
-It is also possible to 'reset hard, mixed or soft' the whole repository to a
-given commit, including current head, through the xref:XHReset[Reset] button of
-the xref:XHist[history] menu
+NOTE: The Revert button is not active on \'./' and on \'../'.
 
 .Other actions
 
@@ -663,6 +652,18 @@ or checking out a branch from a remote repository;
 Tags::
 This button launches the xref:XTags[tags] screen that allows managing the
 tags.
+
+Reset::
+This button launches the xref:XReset[reset] menu to 'reset (hard,
+mixed or soft) to head' or to 'clean the untracked files and directories' of
+the *whole repository*, not only the current directory.
++
+NOTE: It is also possible to 'reset hard, mixed or soft' the whole repository
+to the head of a given branch (including current branch) through the
+xref:XBReset[Reset] button of the xref:XBranches[branches] menu.
+It is also possible to 'reset hard, mixed or soft' the whole repository to a
+given commit (including current head) through the xref:XHReset[Reset] button of
+the xref:XHist[history] menu
 
 Stash::
 This button launches the xref:XStash[stash] screen that allows managing the
