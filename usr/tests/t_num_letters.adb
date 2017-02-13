@@ -9,7 +9,7 @@ procedure T_Num_Letters is
   Kind : Input_Kind_List;
 
   function Image (N : Num_Letters.Number) return String is
-    Str : constant String := Arbitrary.Image (N);
+    Str : constant String := N.Image;
   begin
     return Str (2 ..Str'Last);
   end Image;
@@ -64,7 +64,7 @@ begin
     if Kind = Number then
       -- A number
       begin
-        N := Arbitrary.Set (Num.Image);
+        N.Set (Num.Image);
       exception
         when Constraint_Error =>
           Basic_Proc.Put_Line_Output ("Invalid number");

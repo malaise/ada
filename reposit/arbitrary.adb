@@ -420,6 +420,10 @@ package body Arbitrary is
     Syntax.Check (N);
     return N;
   end Set;
+  procedure Set (N: out Number; V : in String) is
+  begin
+    N := Set (V);
+  end Set;
 
   function Strip (V : String) return String is
   begin
@@ -431,15 +435,27 @@ package body Arbitrary is
   begin
     return Set_Uncheck (Strip (V'Img));
   end Set;
+  procedure Set (N: out Number; V : in Integer) is
+  begin
+    N := Set (V);
+  end Set;
 
   function Set (V : Long_Integer) return Number is
   begin
     return Set_Uncheck (Strip (V'Img));
   end Set;
+  procedure Set (N: out Number; V : in Long_Integer) is
+  begin
+    N := Set (V);
+  end Set;
 
-  function Set (V : Long_Long_Integer) return Number is
+  function Set (V : Long_Longs.Ll_Integer) return Number is
   begin
     return Set_Uncheck (Strip (V'Img) );
+  end Set;
+  procedure Set (N: out Number; V : in Long_Longs.Ll_Integer) is
+  begin
+    N := Set (V);
   end Set;
 
   function Is_Set (V : Number) return Boolean is

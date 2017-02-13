@@ -458,7 +458,7 @@ package body Num_Letters is
 
   function Letters_Of (N : Number; Scale : Scale_List := Long) return String is
     -- Image: +xxxx
-    Tmp : constant String := Arbitrary.Image (N);
+    Tmp : constant String := N.Image;
     -- Digits, skip '+'
     Img : constant String (1 .. Tmp'Length - 1)
         := Tmp (Integer'Succ(Tmp'First) .. Tmp'Last);
@@ -670,11 +670,11 @@ package body Num_Letters is
         Tmp_Word := Next_Word (Iter.all);
         if Tmp_Word.Kind = Hundred then
           -- Units hundred
-          Factor := Arbitrary.Set (Word.Val * Tmp_Word.Val);
+          Factor.Set (Word.Val * Tmp_Word.Val);
           Word := Next_Word (Iter.all);
         else
           -- Units
-          Factor := Arbitrary.Set (Word.Val);
+          Factor.Set (Word.Val);
           Word := Tmp_Word;
           Done := True;
         end if;

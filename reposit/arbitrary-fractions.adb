@@ -47,11 +47,24 @@ package body Arbitrary.Fractions is
   end Reduce;
 
   -- Constructor
+  function Set (Numerator : Number) return Fraction is
+  begin
+    return (Numerator, One);
+  end Set;
+  procedure Set (F : out Fraction; Numerator : in Number) is
+  begin
+    F := Set (Numerator);
+  end Set;
+
   function Set (Numerator, Denominator : Number) return Fraction is
     F : Fraction := (Numerator, Denominator);
   begin
     Reduce (F);
     return F;
+  end Set;
+  procedure Set (F : out Fraction; Numerator, Denominator : in Number) is
+  begin
+    F := Set (Numerator, Denominator);
   end Set;
 
   -- Image

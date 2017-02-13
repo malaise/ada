@@ -1,13 +1,19 @@
 -- Arbitrary precision numbers
+with Long_Longs;
 private with As.U;
 package Arbitrary is
-  type Number is private;
+  type Number is tagged private;
 
   -- Constructor
   function Set (V : String) return Number;
+  procedure Set (N: out Number; V : in String);
   function Set (V : Integer) return Number;
+  procedure Set (N: out Number; V : in Integer);
   function Set (V : Long_Integer) return Number;
-  function Set (V : Long_Long_Integer) return Number;
+  procedure Set (N: out Number; V : in Long_Integer);
+  function Set (V : Long_Longs.Ll_Integer) return Number;
+  procedure Set (N: out Number; V : in Long_Longs.Ll_Integer);
+
   function Is_Set (V : Number) return Boolean;
 
   -- Basic "constants"

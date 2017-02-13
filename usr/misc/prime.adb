@@ -16,7 +16,8 @@ procedure Prime is
   package Plm renames Arbitrary.Factors.Nb_List_Mng;
 
   -- What should we do
-  type Mode_List is (List_All, List, From, Is_Prime, Next, Prev, Factors, Hcd, Lcm);
+  type Mode_List is (List_All, List, From, Is_Prime, Next, Prev,
+                     Factors, Hcd, Lcm);
   Mode : Mode_List;
 
   -- Arguments, numbers
@@ -61,7 +62,7 @@ procedure Prime is
 
   -- Remove the leading '+'
   function Image (P : Positive_Number) return String is
-    Str : constant String := Arbitrary.Image (P);
+    Str : constant String := P.Image;
   begin
     return Str (2 .. Str'Last);
   end Image;
@@ -80,7 +81,7 @@ procedure Prime is
   function  Positive_Number_Value (Str : String) return Positive_Number is
     R : Positive_Number;
   begin
-    R := Arbitrary.Set (Str);
+    R.Set (Str);
     if R <= Zero then
       raise Constraint_Error;
     end if;

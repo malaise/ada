@@ -29,9 +29,9 @@ package body Debug is
     end if;
     case Item.Kind is
       when Arbi =>
-        Text.Append ("@" & Arbitrary.Image(Item.Val_Arbi));
+        Text.Append ("@" & Item.Val_Arbi.Image);
       when Frac =>
-        Text.Append ("@" & Arbitrary.Fractions.Image(Item.Val_Frac));
+        Text.Append ("@" & Item.Val_Frac.Image);
       when Inte =>
         Text.Append (Item.Val_Inte'Img);
       when Real =>

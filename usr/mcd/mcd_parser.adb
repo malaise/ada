@@ -330,11 +330,11 @@ package body Mcd_Parser is
       begin
         Instr_Stack.Push (Stack, Item_Chrs);
         if I = 0 then
-          N := Arbitrary.Set (Txt.Slice(2, Txt.Length));
+          N.Set (Txt.Slice(2, Txt.Length));
           return (Kind => Mcd_Mng.Arbi, Val_Arbi => N);
         else
-          N := Arbitrary.Set (Txt.Slice(2, I - 1));
-          D := Arbitrary.Set (Txt.Slice(I + 1, Txt.Length));
+          N.Set (Txt.Slice(2, I - 1));
+          D.Set (Txt.Slice(I + 1, Txt.Length));
           return (Kind => Mcd_Mng.Frac,
                   Val_Frac => Arbitrary.Fractions.Set (N, D));
         end if;

@@ -53,11 +53,11 @@ procedure T_Arbitrary is
            N : in Arbitrary.Number;
            I : in Integer) is
   begin
-    if Arbitrary.Image (N) /= Image (I) then
+    if N.Image /= Image (I) then
       Basic_Proc.Put_Output ("ERROR on " &
-        Arbitrary.Image (A) & " " & Oper & " " & Arbitrary.Image (B) & ". ");
+        Arbitrary.Image (A) & " " & Oper & " " & B.Image & ". ");
       Basic_Proc.Put_Line_Output ("Expected " & Image (I)
-             & ", got " & Arbitrary.Image (N) & ".");
+             & ", got " & N.Image & ".");
       raise Abort_Error;
     end if;
   end Check;
@@ -71,7 +71,7 @@ procedure T_Arbitrary is
   begin
     if Nb /= Ib then
       Basic_Proc.Put_Output ("ERROR on " &
-        Arbitrary.Image (A) & " " & Oper & " " & Arbitrary.Image (B) & ". ");
+        A.Image & " " & Oper & " " & B.Image & ". ");
       Basic_Proc.Put_Line_Output ("Expected " & Image (Ib)
              & ", got " & Image (Nb) & ".");
       raise Abort_Error;
@@ -103,14 +103,14 @@ begin
     -- One or two args
     A := Set (1);
 
-    Basic_Proc.Put_Line_Output ("A is        " & Arbitrary.Image(A));
+    Basic_Proc.Put_Line_Output ("A is        " & A.Image);
     Basic_Proc.Put_Line_Output ("abs A is    " & Arbitrary.Image(abs A));
     Basic_Proc.Put_Line_Output ("-A is       " & Arbitrary.Image(-A));
     Basic_Proc.Put_Line_Output ("A positive  "
                               & Image(Arbitrary.Is_Positive(A)));
     begin
       Basic_Proc.Put_Line_Output ("Sqrt(A)     "
-                                & Arbitrary.Image(Arbitrary.Sqrt(A)));
+                                & A.Sqrt.Image);
     exception
       when Constraint_Error =>
         Basic_Proc.Put_Line_Output ("Constraint_Error on Sqrt(A)");
@@ -212,13 +212,13 @@ begin
   Key_Pressed.Open (False);
 
   -- Setting from different types
-  A := Arbitrary.Set(Integer'(21));
-  A := Arbitrary.Set(Long_Integer'(21));
-  A := Arbitrary.Set(Long_Long_Integer'(21));
+  A.Set(Integer'(21));
+  A.Set(Long_Integer'(21));
+  A.Set(Long_Long_Integer'(21));
 
   -- Setting empty
   begin
-    A := Arbitrary.Set("");
+    A.Set("");
     Basic_Proc.Put_Line_Output ("ERROR: Set("""") should have raised "
                         & "Constraint_Error");
     raise Abort_Error;
@@ -227,14 +227,14 @@ begin
       Basic_Proc.Put_Line_Output ("Set("""")  raises Constraint_Error, OK.");
   end;
 
-  if Arbitrary.Is_Set (A) then
+  if A.Is_Set then
     Basic_Proc.Put_Line_Output ("A is set, OK.");
   else
     Basic_Proc.Put_Line_Output ("ERROR: A is not set.");
     raise Abort_Error;
   end if;
 
-  if not Arbitrary.Is_Set (Nul) then
+  if not Nul.Is_Set then
     Basic_Proc.Put_Line_Output ("Nul is not set, OK.");
   else
     Basic_Proc.Put_Line_Output ("ERROR: Nul is set.");
@@ -248,14 +248,13 @@ begin
 
   loop
     Ia := Random;
-    Na := Arbitrary.Set (Ia);
+    Na.Set (Ia);
     Ib := Random;
     if Ib > 0 and then abs Ib < 100 then
       Ib := 0;
     end if;
-    Nb := Arbitrary.Set (Ib);
-    Basic_Proc.Put_Line_Output (Arbitrary.Image (Na)
-              & " and " & Arbitrary.Image (Nb));
+    Nb.Set (Ib);
+    Basic_Proc.Put_Line_Output (Na.Image & " and " & Nb.Image);
 
     -- Unary operators
     Check (Nul, "abs", Na, abs Na, abs Ia);
@@ -328,10 +327,10 @@ begin
     -- Sqrt
     if Ib >= 0 then
       Ic := Integer(My_Math.Trunc (My_Math.Sqrt (My_Math.Real(Ib))));
-      Check (Nul, "Sqrt", Nb, Arbitrary.Sqrt (Nb), Ic);
+      Check (Nul, "Sqrt", Nb, Nb.Sqrt, Ic);
     else
       begin
-        A := Arbitrary.Sqrt (Nb);
+        A := Nb.Sqrt;
         Basic_Proc.Put_Line_Output ("ERROR: Sqrt should have raised " &
                               "Constraint_Error");
         raise Abort_Error;
@@ -354,7 +353,7 @@ begin
       end loop;
       if C /= Na then
         Basic_Proc.Put_Line_Output ("ERROR: Prime decomposition of " &
-              Arbitrary.Image (Na) & " does not mutiply to itself");
+              Na.Image & " does not mutiply to itself");
         raise Abort_Error;
       end if;
     elsif Ia <= 1 then

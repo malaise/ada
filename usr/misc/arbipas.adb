@@ -9,7 +9,7 @@ procedure Arbipas is
 
 
   procedure Put_Number (N : Arbitrary.Number) is
-    Str : constant String := Arbitrary.Image (N);
+    Str : constant String := N.Image;
   begin
     Basic_Proc.Put_Output (Str(2 .. Str'Last));
   end Put_Number;

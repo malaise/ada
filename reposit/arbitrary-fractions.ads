@@ -1,9 +1,12 @@
 package Arbitrary.Fractions is
 
-  type Fraction is private;
+  type Fraction is tagged private;
 
   -- Constructor
+  function Set (Numerator : Number) return Fraction;
+  procedure Set (F : out Fraction; Numerator : in Number);
   function Set (Numerator, Denominator : Number) return Fraction;
+  procedure Set (F : out Fraction; Numerator, Denominator : in Number);
 
   -- Image: "Numerator:Denominator"
   function Image (F : Fraction) return String;
@@ -39,7 +42,7 @@ private
 
   -- Always reduced
   -- Sign is always on numerator
-  type Fraction is record
+  type Fraction is tagged record
     Numerator   : Number;
     Denominator : Number;
   end record;
