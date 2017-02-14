@@ -7,8 +7,8 @@ The software compiles with Ada 2012 (Gnat GPL 2014 to 2016) for Linux 32 and
 64 bits.
 
 Some programs depend on anchor:XPCRE[] PCRE (Perl Compatible Regular Expressions) and work
-with version 7.8 or above (8.35 is OK), or PCRE2 (10.00 or above), and require
-the corresponding PCRE developpement package.
+with version 7.8 or above (8.35 is OK), or PCRE2, version 10.00 or above
+(10.22 is OK), and require the corresponding PCRE developpement package.
 
 Some programs depend on libssl for EVP digest.
 
