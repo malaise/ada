@@ -176,8 +176,8 @@ package body Ada_Parser is
 
   -- Parsing of one word
   -- Sets Text to "" (and Lexic to Separator) when end of file
-  procedure Parse_Next (File : in out Text_Char.File_Type;
-                        Context : in out Parsing_Context;
+  procedure Parse_Next (Context : in out Parsing_Context;
+                        File : in out Text_Char.File_Type;
                         Text : out As.U.Asu_Us;
                         Lexic : out Lexical_Kind_List;
                         Raise_End : in Boolean := False;
@@ -318,7 +318,7 @@ package body Ada_Parser is
   begin
     -- Loop until end of file
     loop
-      Parse_Next (File, Context, Text, Lexic, False, Version);
+      Parse_Next (Context, File, Text, Lexic, False, Version);
       exit when Text.Is_Null;
       -- Call callback
       Cb (Text.Image, Lexic);

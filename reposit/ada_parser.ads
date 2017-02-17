@@ -40,9 +40,9 @@ package Ada_Parser is
   -- Set Text to "" (and Lexic to Separator) when end of file
   --  or raises End_Error
   -- May raise Syntax_Error
-  type Parsing_Context is private;
-  procedure Parse_Next (File : in out Text_Char.File_Type;
-                        Context : in out Parsing_Context;
+  type Parsing_Context is tagged private;
+  procedure Parse_Next (Context : in out Parsing_Context;
+                        File : in out Text_Char.File_Type;
                         Text : out As.U.Asu_Us;
                         Lexic : out Lexical_Kind_List;
                         Raise_End : in Boolean := False;
@@ -56,7 +56,7 @@ package Ada_Parser is
   End_Error : exception;
 
 private
-  type Parsing_Context is record
+  type Parsing_Context is tagged record
     -- Previous significant lexical element (not comment nor separator)
     -- for knowing if access, delta, digits or range are reserved words
     -- or qualifiers

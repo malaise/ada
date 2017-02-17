@@ -112,8 +112,8 @@ package body Sourcer is
     use type Ada_Parser.Lexical_Kind_List;
   begin
     loop
-      Ada_Parser.Parse_Next (Txt, Ctx, Word, Lexic, Raise_End => True,
-                             Version => Language_Version);
+      Ctx.Parse_Next (Txt, Word, Lexic, Raise_End => True,
+                      Version => Language_Version);
       exit when Lexic = Ada_Parser.Reserved_Word
       or else Lexic = Ada_Parser.Identifier
       or else Lexic = Ada_Parser.Delimiter;
