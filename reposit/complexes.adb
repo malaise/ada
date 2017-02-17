@@ -10,11 +10,19 @@ package body Complexes is
   begin
     return (Part_Real => Real_Part, Part_Imag => Imag_Part);
   end Create_Complex;
+  procedure Set (C : out Complex; Real_Part, Imag_Part : in Real) is
+  begin
+    C := Create_Complex (Real_Part, Imag_Part);
+  end Set;
 
   function Create_Complex (Real_Part : Real) return Complex is
   begin
     return (Part_Real => Real_Part, Part_Imag => 0.0);
   end Create_Complex;
+  procedure Set (C : out Complex; Real_Part : in Real) is
+  begin
+    C := Create_Complex (Real_Part);
+  end Set;
 
   function Part_Real (C : Complex) return Real is
   begin
@@ -259,7 +267,7 @@ package body Complexes is
   Exp : constant := 2;
   subtype Image_Str is String (1 .. Str_Width);
 
-  function Put (C : Complex) return String is
+  function Image (C : Complex) return String is
     Imag_Part : constant Real := Part_Imag (C);
     Real_Str, Imag_Str : Image_Str;
     Sign : Character;
@@ -268,7 +276,7 @@ package body Complexes is
     Sign := (if Imag_Part >= 0.0 then '+' else '-');
     Imag_Str := Normalization.Normal_Digits (abs Imag_Part, Str_Width, Exp);
     return Real_Str & ' ' & Sign & " i *" & Imag_Str;
-  end Put;
+  end Image;
 
   function Get (X, Y : String) return Complex is
     Real_Part, Imag_Part : Real;
@@ -278,6 +286,10 @@ package body Complexes is
     Imag_Part := My_Math.Get (Y);
     C := Create_Complex (Real_Part, Imag_Part);
     return C;
+  end Get;
+  procedure Get (C : out Complex; X, Y : in String) is
+  begin
+    C := Get (X, Y);
   end Get;
 
 end Complexes;

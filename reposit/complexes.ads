@@ -4,10 +4,12 @@ package Complexes is
   subtype Real is My_Math.Real;
 
   -- Complex type
-  type Complex is private;
+  type Complex is tagged private;
   I : constant Complex;
   function Create_Complex (Real_Part, Imag_Part : Real) return Complex;
-  function Create_Complex (Real_Part : Real)            return Complex;
+  procedure Set (C : out Complex; Real_Part, Imag_Part : in Real);
+  function Create_Complex (Real_Part : Real) return Complex;
+  procedure Set (C : out Complex; Real_Part : in Real);
   function Part_Real (C : Complex) return Real;
   function Part_Imag (C : Complex) return Real;
 
@@ -59,21 +61,23 @@ package Complexes is
 
   function "**" (X : Complex; Y : Real)   return Complex;
 
-  function Put (C : Complex) return String;
+  function Image (C : Complex) return String;
   function Get (X, Y : String) return Complex;
+  procedure Get (C : out Complex; X, Y : in String);
 
   private
-    type Complex is record
+    type Complex is tagged record
       Part_Real : Real;
       Part_Imag : Real;
     end record;
 
-    I : constant Complex := (0.0, 1.0);
 
     type Polar is record
       Module   : Typ_Module;
       Argument : Reducted_Radian;
     end record;
+
+    I : constant Complex := (0.0, 1.0);
 
 end Complexes;
 

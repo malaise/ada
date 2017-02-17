@@ -12,11 +12,11 @@ begin
     return;
   end if;
 
-  C1 := Complexes.Get (Argument.Get_Parameter (Occurence => 1),
-                    Argument.Get_Parameter (Occurence => 2));
-  Basic_Proc.Put_Line_Output ("Got: " & Complexes.Put (C1));
+  C1.Get (Argument.Get_Parameter (Occurence => 1),
+          Argument.Get_Parameter (Occurence => 2));
+  Basic_Proc.Put_Line_Output ("Got: " & C1.Image);
   -- Do things with 1 complex
-  P := Complexes.To_Polar (C1);
+  P := C1.To_Polar;
   Basic_Proc.Put_Line_Output (" in polar: " & Complexes.Module(P)'Img & " "
                        & Complexes.Angle_Radian(P)'Img & "rd "
                        & Complexes.Angle_Degree(P)'Img & "°"); --## rule line off Char
@@ -25,15 +25,15 @@ begin
     return;
   end if;
   -- Do things with 2 complexes
-  C2 := Complexes.Get (Argument.Get_Parameter (Occurence => 3),
-                       Argument.Get_Parameter (Occurence => 4));
-  Basic_Proc.Put_Line_Output ("Got: " & Complexes.Put (C2));
+  C2.Get (Argument.Get_Parameter (Occurence => 3),
+          Argument.Get_Parameter (Occurence => 4));
+  Basic_Proc.Put_Line_Output ("Got: " & C2.Image);
 
-  Basic_Proc.Put_Line_Output (" A+B: " & Complexes.Put (C1 + C2));
-  Basic_Proc.Put_Line_Output (" A-B: " & Complexes.Put (C1 - C2));
-  Basic_Proc.Put_Line_Output (" A*B: " & Complexes.Put (C1 * C2));
-  Basic_Proc.Put_Line_Output (" A/B: " & Complexes.Put (C1 / C2));
+  Basic_Proc.Put_Line_Output (" A+B: " & Complexes.Image (C1 + C2));
+  Basic_Proc.Put_Line_Output (" A-B: " & Complexes.Image (C1 - C2));
+  Basic_Proc.Put_Line_Output (" A*B: " & Complexes.Image (C1 * C2));
+  Basic_Proc.Put_Line_Output (" A/B: " & Complexes.Image (C1 / C2));
   Basic_Proc.Put_Line_Output (" A**B.real: "
-                      & Complexes.Put (C1 ** Complexes.Part_Real(C2)));
+                      & Complexes.Image (C1 ** C2.Part_Real));
 end T_Complexes;
 
