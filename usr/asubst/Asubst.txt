@@ -1,6 +1,6 @@
 Asubst
 ======
-V18.6
+V18.7
 
 Asubs is a command line tool that substitutes text within text. It finds
 occurences of text that match a pattern (regular expression), and replaces
@@ -63,7 +63,7 @@ the options -a (--ascii), or -u (--utf8).
 If 'asubst_TRACE' environment variable is set to "Debug" (with whatever
 casing) then asubst puts on stderr some debugging information.
 'asubst_TRACE_Substit', 'asubst_TRACE_Search' and 'asubst_TRACE_Replace' can
-also be set to "Debug" for mode detailed debugging information.
+also be set to "Debug" for more detailed debugging information.
 
 Find pattern
 ------------
