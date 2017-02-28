@@ -3,7 +3,7 @@
 with As.U.Utils, Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings,
      Str_Util, Lower_Str, Environ, Images, Event_Mng, Afpx_Xref,
      Mutexes, Protected_Var, Trilean, Rounds, Normal;
-with Cmd, Analist;
+with Cmd, Analist, Icon;
 procedure Xwords is
 
   -- Name of ENV variable for anagrams dictionary
@@ -507,6 +507,8 @@ begin
 
   -- Init Afpx
   Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
+  Afpx.Get_Console.Set_Icon (Icon.Xwords_Xpm);
+
   Get_Handle:= (others => <>);
   Get_Handle.Cursor_Field := Get_Fld;
 
