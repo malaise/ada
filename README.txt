@@ -16,7 +16,8 @@ The 'asciidoc' suite is used for the generation of the documentation.
 
 The graphical library is based on X11 and needs:
 
-* the X11 developpement package,
+* the X11 development package,
+* the XPM development package,
 * the font packages 75dpi and 100dpi and the corresponding transcoded (from
   ISO 10646-1) versions.
 

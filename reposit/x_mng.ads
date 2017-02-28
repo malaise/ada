@@ -57,6 +57,9 @@ package X_Mng is
      Exit_Request,
      Timer_Event, Fd_Event, Signal_Event, Timeout);
 
+  -- Icon for a line
+  type Icon_Pixmap is array (Positive range <>) of As.U.Asu_Us;
+
   ----- EXCEPTIONS -----
 
   X_Failure : exception;
@@ -98,6 +101,10 @@ package X_Mng is
   -- This name will be displayed by the window manager if possible
   procedure X_Set_Line_Name (Line_Id : in Line;
                              Line_Name : in String);
+
+  -- Set the icon of the line (at xpm format)
+  procedure X_Set_Icon (Line_Id : in Line;
+                        Icon : in Icon_Pixmap);
 
   -- Flush all the outputs of all the lines on the Display
   procedure X_Flush(Line_Id : in Line);

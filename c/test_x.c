@@ -6,6 +6,7 @@
 
 #include "timeval.h"
 #include "x_export.h"
+#include "test_x.xpm"
 
 #define CLL "                                                      "
 
@@ -143,6 +144,11 @@ boolean read;
   }
   if (i != 0) {
     printf ("ERROR OPEN LINE\n");
+    exit (1);
+  }
+  i = x_set_icon (line, test_x_xpm);
+  if (i != 0) {
+    printf ("ERROR SET ICON\n");
     exit (1);
   }
 

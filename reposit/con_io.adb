@@ -262,6 +262,12 @@ package body Con_Io is
     X_Mng.X_Set_Line_Name (Con.Get_Access.Id, Name);
   end Set_Name;
 
+  procedure Set_Icon (Con : in Console; Icon : in Icon_Pixmap) is
+  begin
+    Check_Con (Con);
+    X_Mng.X_Set_Icon (Con.Get_Access.Id, Icon);
+  end Set_Icon;
+
   -- Suspend and resume con_io
   procedure Suspend (Con : in Console) is
   begin

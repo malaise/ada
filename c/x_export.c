@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <X11/cursorfont.h>
 #include <X11/Xatom.h>
+#include <X11/xpm.h>
 
 #include "x_export.h"
 #include "x_screen.h"
@@ -203,7 +204,34 @@ extern int x_set_line_name (void *line_id, const char *line_name) {
     return (WAIT_OK);
 }
 
+/* Define icon */
+extern int x_set_icon (void *line_id, const char **pixmap) {
+    t_window *win_id = (t_window*) line_id;
+    char **icon_def = (char**)(unsigned long)pixmap;
+    Pixmap icon_pixmap;
+    XWMHints* win_hints;
+    int result;
 
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (WAIT_ERR);
+    }
+
+    result = XpmCreatePixmapFromData (local_server.x_server, win_id->x_window,
+                                      icon_def, &icon_pixmap, NULL, NULL);
+    if (result < 0) {
+#ifdef DEBUG
+        printf ("X_EXPORT : Can't create pixmap for icon\n");
+#endif
+        return (WAIT_ERR);
+    }
+    win_hints = XAllocWMHints();
+    win_hints->flags = IconPixmapHint;
+    win_hints->icon_pixmap = icon_pixmap;
+    XSetWMHints(local_server.x_server, win_id->x_window, win_hints);
+    XFree(win_hints);
+    return (WAIT_OK);
+}
 
 /* Flushes all the lines on this host line */
 extern int x_flush (void) {

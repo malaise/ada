@@ -119,6 +119,10 @@ package Con_Io is
   -- Set console name (X11 window title)
   procedure Set_Name (Con : in Console; Name : in String);
 
+  -- Set console icon
+  subtype Icon_Pixmap is X_Mng.Icon_Pixmap;
+  procedure Set_Icon (Con : in Console; Icon : in Icon_Pixmap);
+
   -- Suspend and resume a console
   -- If a program wants to open several consoles, there are two options:
   -- - One task per console, each task calls *Get and receives its

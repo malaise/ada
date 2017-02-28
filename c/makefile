@@ -15,7 +15,7 @@ OBJS_libx_mng := x_color x_font x_line x_export x_file x_key x_screen
 CARGS_posix2pcre := $(PCRE_INCL)
 
 LIBS_test_x := libx_mng libcutil 
-LARGS_test_x := -lX11
+LARGS_test_x := -lXpm -lX11
 
 DEST_LIBS := /usr/local/lib
 INST_LIBS = $(LIBS)

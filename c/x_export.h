@@ -41,6 +41,8 @@ extern int x_close_line (void *line_id);
 
 extern int x_set_line_name (void *line_id, const char *line_name);
 
+extern int x_set_icon (void *line_id, const char **pixmap);
+
 extern int x_flush (void);
 
 extern int x_clear_line (void *line_id);

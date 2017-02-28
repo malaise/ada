@@ -89,6 +89,14 @@ package body X_Mng is
   pragma Import(C, X_Set_Line_Name, "x_set_line_name");
 
   ------------------------------------------------------------------
+  -- Set the icon of a line
+  -- int x_set_icon (void *line_id, const char **pixmap);
+  ------------------------------------------------------------------
+  function X_Set_Icon (Line_Id   : Line_For_C;
+                       Icon : System.Address) return Result;
+  pragma Import(C, X_Set_Icon, "x_set_icon");
+
+  ------------------------------------------------------------------
   -- Flushes all the lines of the host (really display them)
   -- int x_flush (void)
   ------------------------------------------------------------------
@@ -680,6 +688,49 @@ package body X_Mng is
       raise X_Failure;
     end if;
   end X_Set_Line_Name;
+
+  ------------------------------------------------------------------
+  procedure X_Set_Icon (Line_Id : in Line;
+                        Icon : in Icon_Pixmap) is
+    Icon_For_C : array (1 .. Icon'Length) of System.Address;
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
+    Len, Length : Natural;
+  begin
+    Check (Line_Id);
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    -- Make the array of C strings
+    -- Longest string of the Icon
+    Length := 0;
+    for I in Icon'Range loop
+      Len := Icon(I).Length;
+      if Len > Length then
+        Length := Len;
+      end if;
+    end loop;
+    declare
+      subtype Line_Str is String (1 .. Length + 1);
+      Buffer : array (Icon_For_C'Range) of Line_Str
+             := (others => (others => ' '));
+      J : Natural;
+    begin
+      -- Copy strings and append Nul
+      J := Icon'First;
+      for I in Buffer'Range loop
+        Buffer(I)(1 .. Icon(J).Length + 1)
+                    := Icon(J).Image & Aski.Nul;
+        Icon_For_C(I) := Buffer(I)(Buffer(I)'First)'Address;
+        J := J + 1;
+      end loop;
+      -- Set icon
+      Res := X_Set_Icon(Line_For_C_Id,
+                        Icon_For_C(Icon_For_C'First)'Address) = Ok;
+    end;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
+    end if;
+  end X_Set_Icon;
 
   ------------------------------------------------------------------
   procedure X_Flush (Line_Id : in Line) is
