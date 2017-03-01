@@ -2,6 +2,7 @@
 -- Copyright (C) 2015 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
+-- V6.2 2017 Mar 01 Add icon
 -- V6.1 2015 Dec 01 Corrected initial levels selection
 -- V6.1 2012 Aug 01 GTKAda changed
 -- V6.0 2009 Aug 01
@@ -35,6 +36,7 @@ with Ada.Strings.Unbounded;
 with System;
 
 with Field.Operations;
+with Icon;
 
 use Ada;
 use Ada.Characters;
@@ -489,6 +491,7 @@ package body User_IF is
       Set_Size_Request (Window, 0, 0);
       Set_Position (Window, Win_Pos_Center);
       Set_Title (Window, "Mine Detector");
+      Set_Icon (Window, Icon.Mine_Icon);
       Window_Cb.Connect (Window, "delete_event",
                          Window_Cb.To_Marshaller (When_Close'Access) );
       Gtk_New_Hbox (Box => Box, Spacing => 2);
