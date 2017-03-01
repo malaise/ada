@@ -2,7 +2,7 @@ with As.U, Con_Io;
 package Icon is
   Agite_Xpm : constant Con_Io.Icon_Pixmap := (
     As.U.Tus ("32 32 4 1"),
-    As.U.Tus ("  c #FFFFFF"),
+    As.U.Tus ("  c #969696"),
     As.U.Tus (". c #007F00"),
     As.U.Tus ("+ c #000000"),
     As.U.Tus ("@ c #8B4513"),
