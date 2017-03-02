@@ -82,11 +82,11 @@ package body X_Mng is
 
   ------------------------------------------------------------------
   -- Set the name of a line
-  -- int x_set_line_name (void *line_id, const char *name);
+  -- int x_set_name (void *line_id, const char *name);
   ------------------------------------------------------------------
-  function X_Set_Line_Name (Line_Id   : Line_For_C;
-                            Line_Name : System.Address) return Result
-    with Import => True, Convention => C, External_Name => "x_set_line_name";
+  function X_Set_Name (Line_Id   : Line_For_C;
+                       Name : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "x_set_name";
 
   ------------------------------------------------------------------
   -- Set the icon of a line
@@ -678,22 +678,22 @@ package body X_Mng is
   end X_Is_Suspended;
 
   ------------------------------------------------------------------
-  procedure X_Set_Line_Name (Line_Id : in Line;
-                             Line_Name : in String) is
-    Line_Name_For_C : constant String(1 .. Line_Name'Length+1)
-                    := Line_Name & Aski.Nul;
+  procedure X_Set_Name (Line_Id : in Line;
+                        Name : in String) is
+    Name_For_C : constant String(1 .. Name'Length+1)
+               := Name & Aski.Nul;
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
     Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Set_Line_Name(Line_For_C_Id,
-                       Line_Name_For_C(Line_Name_For_C'First)'Address) = Ok;
+    Res := X_Set_Name(Line_For_C_Id,
+                      Name_For_C(Name_For_C'First)'Address) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
     end if;
-  end X_Set_Line_Name;
+  end X_Set_Name;
 
   ------------------------------------------------------------------
   procedure X_Set_Icon (Line_Id : in Line;

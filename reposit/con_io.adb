@@ -198,7 +198,7 @@ package body Con_Io is
     Line.Width  := Col_Last - Col_Range_First + 1;
     X_Mng.X_Open_Line (Line, Con_Data.Id);
     Logger.Log_Debug ("Console opened");
-    X_Mng.X_Set_Line_Name (Con_Data.Id, Argument.Get_Program_Name);
+    X_Mng.X_Set_Name (Con_Data.Id, Argument.Get_Program_Name);
     Logger.Log_Debug ("Console name set");
     Con_Data.Mouse_Status := Mouse_Discard;
     X_Mng.X_Get_Graphic_Characteristics(Con_Data.Id,
@@ -259,7 +259,7 @@ package body Con_Io is
   procedure Set_Name (Con : in Console; Name : in String) is
   begin
     Check_Con (Con);
-    X_Mng.X_Set_Line_Name (Con.Get_Access.Id, Name);
+    X_Mng.X_Set_Name (Con.Get_Access.Id, Name);
   end Set_Name;
 
   procedure Set_Icon (Con : in Console; Icon : in Icon_Pixmap) is

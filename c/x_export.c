@@ -188,7 +188,7 @@ extern int x_close_line (void *line_id) {
 }
 
 /* Set line name */
-extern int x_set_line_name (void *line_id, const char *line_name) {
+extern int x_set_name (void *line_id, const char *name) {
 
     t_window *win_id = (t_window*) line_id;
 
@@ -197,7 +197,7 @@ extern int x_set_line_name (void *line_id, const char *line_name) {
         return (WAIT_ERR);
     }
 
-    (void) XStoreName(local_server.x_server, win_id->x_window, line_name);
+    (void) XStoreName(local_server.x_server, win_id->x_window, name);
     /* Strange: it works but returns error */
     /*    return ((result == Success) ? WAIT_OK : WAIT_ERR); */
     local_server.modified = TRUE;

@@ -39,7 +39,7 @@ extern int x_open_line (int screen_id,
 
 extern int x_close_line (void *line_id);
 
-extern int x_set_line_name (void *line_id, const char *line_name);
+extern int x_set_name (void *line_id, const char *name);
 
 extern int x_set_icon (void *line_id, const char **pixmap);
 

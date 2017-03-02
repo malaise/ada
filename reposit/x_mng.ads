@@ -99,8 +99,8 @@ package X_Mng is
 
   -- Set the name of a line
   -- This name will be displayed by the window manager if possible
-  procedure X_Set_Line_Name (Line_Id : in Line;
-                             Line_Name : in String);
+  procedure X_Set_Name (Line_Id : in Line;
+                        Name : in String);
 
   -- Set the icon of the line (at xpm format)
   procedure X_Set_Icon (Line_Id : in Line;

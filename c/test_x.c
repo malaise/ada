@@ -146,7 +146,7 @@ boolean read;
     printf ("ERROR OPEN LINE\n");
     exit (1);
   }
-  i = x_set_line_name (line, "test_x");
+  i = x_set_name (line, "test_x");
   if (i != 0) {
     printf ("ERROR SET LINE NAME\n");
     exit (1);
