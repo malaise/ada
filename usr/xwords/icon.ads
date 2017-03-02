@@ -2,7 +2,7 @@ with As.U, Con_Io;
 package Icon is
   Xwords_Xpm : constant Con_Io.Icon_Pixmap := (
     As.U.Tus ("48 48 26 1"),
-    As.U.Tus ("  c None"),
+    As.U.Tus ("  c #969696"),
     As.U.Tus (". c #0E0E09"),
     As.U.Tus ("+ c #211F1A"),
     As.U.Tus ("@ c #35322A"),
