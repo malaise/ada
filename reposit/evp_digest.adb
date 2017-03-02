@@ -3,35 +3,38 @@ with Aski, Lower_Str;
 package body Evp_Digest is
 
   -- Interfaces
-  procedure Openssl_Add_All_Digests;
-  pragma Import (C, Openssl_Add_All_Digests, "OpenSSL_add_all_digests");
+  procedure Openssl_Add_All_Digests
+    with Import => True, Convention => C,
+         External_Name => "OpenSSL_add_all_digests";
 
-  function Evp_Get_Digestbyname (Name : System.Address) return System.Address;
-  pragma Import (C, Evp_Get_Digestbyname, "EVP_get_digestbyname");
+  function Evp_Get_Digestbyname (Name : System.Address) return System.Address
+    with Import => True, Convention => C,
+         External_Name => "EVP_get_digestbyname";
 
-  function Evp_Md_Ctx_Create return System.Address;
-  pragma Import (C, Evp_Md_Ctx_Create, "EVP_MD_CTX_create");
+  function Evp_Md_Ctx_Create return System.Address
+    with Import => True, Convention => C, External_Name => "EVP_MD_CTX_create";
 
   procedure Evp_Digestinit_Ex (Ctx : in System.Address;
                                Md : in System.Address;
-                               Engine : in System.Address);
-  pragma Import (C, Evp_Digestinit_Ex, "EVP_DigestInit_ex");
+                               Engine : in System.Address)
+    with Import => True, Convention => C, External_Name => "EVP_DigestInit_ex";
 
   procedure Evp_Digestupdate (Ctx : in System.Address;
                               Msg : in System.Address;
-                              Len : in C_Types.Size_T);
-  pragma Import (C, Evp_Digestupdate, "EVP_DigestUpdate");
+                              Len : in C_Types.Size_T)
+    with Import => True, Convention => C, External_Name => "EVP_DigestUpdate";
 
   procedure Evp_Digestfinal_Ex (Ctx : in System.Address;
                                 Md  : in System.Address;
-                                Len : in System.Address);
-  pragma Import (C, Evp_Digestfinal_Ex, "EVP_DigestFinal_ex");
+                                Len : in System.Address)
+    with Import => True, Convention => C,
+         External_Name =>  "EVP_DigestFinal_ex";
 
-  procedure Evp_Md_Ctx_Cleanup (Ctx : in System.Address);
-  pragma Import (C, Evp_Md_Ctx_Cleanup, "EVP_MD_CTX_cleanup");
+  procedure Evp_Md_Ctx_Cleanup (Ctx : in System.Address)
+    with Import => True, Convention => C, External_Name => "EVP_MD_CTX_cleanup";
 
-  procedure Evp_Md_Ctx_Destroy (Ctx : in System.Address);
-  pragma Import (C, Evp_Md_Ctx_Destroy, "EVP_MD_CTX_destroy");
+  procedure Evp_Md_Ctx_Destroy (Ctx : in System.Address)
+    with Import => True, Convention => C, External_Name => "EVP_MD_CTX_destroy";
 
   -- Global init
   Initialized : Boolean := False;

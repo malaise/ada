@@ -16,10 +16,10 @@ package body Bit_Ops is
   function To_Integer is new Ada.Unchecked_Conversion
     (Source => Interfaces.Unsigned_32, Target => Integer);
 
-  function Shl_Long (L : C_Types.Long; Bits : C_Types.Int) return C_Types.Long;
-  pragma Import (C, Shl_Long, "shl_long");
-  function Shr_Long (L : C_Types.Long; Bits : C_Types.Int) return C_Types.Long;
-  pragma Import (C, Shr_Long, "shr_long");
+  function Shl_Long (L : C_Types.Long; Bits : C_Types.Int) return C_Types.Long
+    with Import => True, Convention => C, External_Name => "shl_long";
+  function Shr_Long (L : C_Types.Long; Bits : C_Types.Int) return C_Types.Long
+    with Import => True, Convention => C, External_Name => "shr_long";
 
   function To_Unsigned_64 is new Ada.Unchecked_Conversion
     (Source => Ll_Integer, Target => Interfaces.Unsigned_64);

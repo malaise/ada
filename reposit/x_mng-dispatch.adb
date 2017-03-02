@@ -15,8 +15,8 @@ package body Dispatch is
   -- Wake-up the task that is in select
   -- void evt_wake_up (void)
   ------------------------------------------------------------------
-  procedure C_Wake_Up;
-  pragma Import(C, C_Wake_Up, "evt_wake_up");
+  procedure C_Wake_Up
+    with Import => True, Convention => C, External_Name => "evt_wake_up";
   procedure Wake_Up is
   begin
     C_Wake_Up;
@@ -28,8 +28,8 @@ package body Dispatch is
   ------------------------------------------------------------------
   function X_Select (P_Fd : System.Address;
                      P_Read : System.Address;
-                     P_Timeout : System.Address) return Result;
-  pragma Import(C, X_Select, "x_select");
+                     P_Timeout : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "x_select";
 
   ------------------------------------------------------------------
   -- Process a X event (Tid or Keyboard or other)
@@ -37,8 +37,8 @@ package body Dispatch is
   ------------------------------------------------------------------
   function X_Process_Event(P_Line_Id : System.Address;
                            P_Kind    : System.Address;
-                           P_Next    : System.Address) return Result;
-  pragma Import(C, X_Process_Event, "x_process_event");
+                           P_Next    : System.Address) return Result
+    with  Import => True, Convention => C, External_Name => "x_process_event";
 
 
   -- Prepare the registration of a new task

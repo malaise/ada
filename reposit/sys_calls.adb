@@ -5,15 +5,15 @@ package body Sys_Calls is
   -- Common utilities
   C_Error  : constant C_Types.Int := -1;
 
-  function C_Strlen (S : System.Address) return C_Types.Size_T;
-  pragma Import (C, C_Strlen, "strlen");
+  function C_Strlen (S : System.Address) return C_Types.Size_T
+    with Import => True, Convention => C, External_Name => "strlen";
 
-  function C_Strcpy (Dest, Src : System.Address) return System.Address;
-  pragma Import (C, C_Strcpy, "strcpy");
+  function C_Strcpy (Dest, Src : System.Address) return System.Address
+    with Import => True, Convention => C, External_Name => "strcpy";
 
   function C_Memcpy (Dest, Src : System.Address; Size : C_Types.Size_T)
-                    return System.Address;
-  pragma Import (C, C_Memcpy, "memcpy");
+                    return System.Address
+    with Import => True, Convention => C, External_Name => "memcpy";
 
   function Str_For_C (Str : String) return String is
   begin
@@ -60,16 +60,16 @@ package body Sys_Calls is
   -- Call system
   function Call_System (Command : String) return Integer is
     Command4C : constant String := Str_For_C (Command);
-    function C_System (Command : System.Address) return C_Types.Int;
-    pragma Import (C, C_System, "system");
+    function C_System (Command : System.Address) return C_Types.Int
+      with Import => True, Convention => C, External_Name => "system";
   begin
     return C_System (Command4C'Address);
   end Call_System;
 
   -- Remove a file
   function Unlink (File_Name : String) return Boolean is
-    function C_Unlink (Pathname: System.Address) return C_Types.Int;
-    pragma Import (C, C_Unlink, "unlink");
+    function C_Unlink (Pathname: System.Address) return C_Types.Int
+      with Import => True, Convention => C, External_Name => "unlink";
     File_Name4C : constant String := Str_For_C (File_Name);
     Res : C_Types.Int;
   begin
@@ -84,8 +84,8 @@ package body Sys_Calls is
 
   -- Rename/move a file
   function Rename (Src, Dest : String) return Boolean is
-    function C_Rename (Oldpath, Newpath : System.Address) return C_Types.Int;
-    pragma Import (C, C_Rename, "rename");
+    function C_Rename (Oldpath, Newpath : System.Address) return C_Types.Int
+      with Import => True, Convention => C, External_Name => "rename";
     Src4C : constant String := Str_For_C (Src);
     Dest4C : constant String := Str_For_C (Dest);
     Res : C_Types.Int;
@@ -100,11 +100,11 @@ package body Sys_Calls is
   Eexist : constant := 17;
   procedure Link (Old_Path, New_Path : String; Hard : Boolean) is
     function C_Hard_Link (Old_Path, New_Path : System.Address)
-                         return C_Types.Int;
-    pragma Import (C, C_Hard_Link, "link");
+                         return C_Types.Int
+      with Import => True, Convention => C, External_Name => "link";
     function C_Sym_Link (Old_Path, New_Path : System.Address)
-                        return C_Types.Int;
-    pragma Import (C, C_Sym_Link, "symlink");
+                        return C_Types.Int
+      with Import => True, Convention => C, External_Name => "symlink";
     Old4C : constant String := Old_Path & Aski.Nul;
     New4C : constant String := New_Path & Aski.Nul;
     Res : C_Types.Int;
@@ -125,16 +125,16 @@ package body Sys_Calls is
 
   -- Errno and associated string
   function Errno return Integer is
-    function C_Get_Errno return C_Types.Int;
-    pragma Import (C, C_Get_Errno, "get_errno");
+    function C_Get_Errno return C_Types.Int
+      with Import => True, Convention => C, External_Name => "get_errno";
   begin
     return C_Get_Errno;
   end Errno;
 
   function Str_Error (Err : Integer) return String is
     function C_Strerror (Errnum: C_Types.Int)
-             return Interfaces.C.Strings.Chars_Ptr;
-    pragma Import (C, C_Strerror, "strerror");
+             return Interfaces.C.Strings.Chars_Ptr
+      with Import => True, Convention => C, External_Name => "strerror";
   begin
     return Str_From_C (C_Strerror (Err));
   end Str_Error;
@@ -154,8 +154,8 @@ package body Sys_Calls is
 
   -- Basic getenv, raises Env_Unset
   function Getenv (Env_Name : String) return String is
-    function C_Getenv (Name : in System.Address) return System.Address;
-    pragma Import (C, C_Getenv, "getenv");
+    function C_Getenv (Name : in System.Address) return System.Address
+      with Import => True, Convention => C, External_Name => "getenv";
     use type System.Address;
     Name4C : constant String := Str_For_C (Env_Name);
     Addr : System.Address;
@@ -209,8 +209,8 @@ package body Sys_Calls is
 
   -- Number of variables in env
   function Environ_Len return Natural is
-    function C_Env_Len return C_Types.Int;
-    pragma Import (C, C_Env_Len, "env_len");
+    function C_Env_Len return C_Types.Int
+      with Import => True, Convention => C, External_Name => "env_len";
   begin
     if Loc_Env_Len < 0 then
       Loc_Env_Len := C_Env_Len;
@@ -220,8 +220,8 @@ package body Sys_Calls is
 
   -- Nth env variable ("name=value" or "")
   function Environ_Val (Index : Positive) return String is
-    function C_Env_Val (Index : C_Types.Int) return System.Address;
-    pragma Import (C, C_Env_Val, "env_val");
+    function C_Env_Val (Index : C_Types.Int) return System.Address
+      with Import => True, Convention => C, External_Name => "env_val";
     Str_Addr : System.Address;
     use type System.Address;
   begin
@@ -244,8 +244,8 @@ package body Sys_Calls is
   -- Setenv / Unsetenv
   procedure Setenv (Env_Name : in String; Env_Value : in String) is
     function C_Setenv (Name : System.Address; Value : System.Address;
-                       Overwrite : Integer) return Integer;
-    pragma Import (C, C_Setenv, "setenv");
+                       Overwrite : Integer) return Integer
+      with Import => True, Convention => C, External_Name => "setenv";
     Name4C : constant String := Str_For_C (Env_Name);
     Value4C : constant String := Str_For_C (Env_Value);
   begin
@@ -255,8 +255,8 @@ package body Sys_Calls is
   end Setenv;
 
   procedure Unsetenv (Env_Name : in String) is
-    function C_Unsetenv (Name : System.Address) return Integer;
-    pragma Import (C, C_Unsetenv, "unsetenv");
+    function C_Unsetenv (Name : System.Address) return Integer
+      with Import => True, Convention => C, External_Name => "unsetenv";
     Name4C : constant String := Str_For_C (Env_Name);
   begin
     if C_Unsetenv (Name4C'Address) /= 0 then
@@ -274,11 +274,11 @@ package body Sys_Calls is
   function File_Desc_Kind (Fd : File_Desc) return File_Desc_Kind_List is
     Fd4C : constant Integer := Integer(Fd);
     Stat4C : C_Stat_Rec;
-    function C_Is_A_Tty (Fd : C_Types.Int) return C_Types.Int;
-    pragma Import (C, C_Is_A_Tty, "isatty");
+    function C_Is_A_Tty (Fd : C_Types.Int) return C_Types.Int
+      with Import => True, Convention => C, External_Name => "isatty";
     function C_Fd_Stat (Fd : C_Types.Int; Stat : System.Address)
-             return C_Types.Int;
-    pragma Import (C, C_Fd_Stat, "fd_stat");
+             return C_Types.Int
+      with Import => True, Convention => C, External_Name => "fd_stat";
   begin
     if C_Is_A_Tty (Fd4C) = 1 then
       return Tty;
@@ -308,8 +308,8 @@ package body Sys_Calls is
   -- For file exists and stat
   Enoent : constant :=  2;
   function C_File_Stat (File_Name : System.Address; Stat : System.Address)
-           return C_Types.Int;
-  pragma Import (C, C_File_Stat, "file_stat");
+           return C_Types.Int
+    with Import => True, Convention => C, External_Name => "file_stat";
 
   -- Check if file exists, no exception
   function File_Status (File_Name : String) return File_Status_List is
@@ -367,8 +367,8 @@ package body Sys_Calls is
   -- Set file mode
   procedure Set_Rights (File_Name : in String; Rights : in Natural) is
     function C_Chmod (File_Name : System.Address; Mode : C_Types.Mode_T)
-             return C_Types.Int;
-    pragma Import (C, C_Chmod, "chmod");
+             return C_Types.Int
+      with Import => True, Convention => C, External_Name => "chmod";
     File_Name4C : constant String := Str_For_C (File_Name);
     Res : C_Types.Int;
     use Bit_Ops; --## rule line off Use
@@ -398,8 +398,8 @@ package body Sys_Calls is
     Tm4C  : C_Tm_T;
     function C_Time_To_Tm (Time_P  : System.Address;
                            My_Tm_P : System.Address)
-             return C_Types.Int;
-    pragma Import (C, C_Time_To_Tm, "time_to_tm");
+             return C_Types.Int
+      with Import => True, Convention => C, External_Name => "time_to_tm";
     Res : C_Types.Int;
   begin
     Res := C_Time_To_Tm (Time'Address, Tm4C'Address);
@@ -413,23 +413,23 @@ package body Sys_Calls is
 
   -- Get offset of local time versus GMT
   function Gmt_Offset return Duration is
-    function C_Gmt_Offset return C_Types.Long;
-    pragma Import (C, C_Gmt_Offset, "gmt_offset");
+    function C_Gmt_Offset return C_Types.Long
+      with Import => True, Convention => C, External_Name => "gmt_offset";
   begin
     return Duration (C_Gmt_Offset);
   end Gmt_Offset;
 
   -- Get effective user/group Id
   function Get_Effective_User_Id return Natural is
-    function C_Geteuid return C_Types.Uid_T;
-    pragma Import (C, C_Geteuid, "geteuid");
+    function C_Geteuid return C_Types.Uid_T
+      with Import => True, Convention => C, External_Name => "geteuid";
   begin
     return Natural(C_Geteuid);
   end Get_Effective_User_Id;
 
   function Get_Effective_Group_Id return Natural is
-    function C_Getegid return C_Types.Uid_T;
-    pragma Import (C, C_Getegid, "getegid");
+    function C_Getegid return C_Types.Uid_T
+      with Import => True, Convention => C, External_Name => "getegid";
   begin
     return Natural(C_Getegid);
   end Get_Effective_Group_Id;
@@ -439,8 +439,9 @@ package body Sys_Calls is
     Str : String (1 .. 1024);
     Res : C_Types.Int;
     function C_Get_User_Name_Of_Uid (Uid : C_Types.Int;
-                                     Name : System.Address) return C_Types.Int;
-    pragma Import (C, C_Get_User_Name_Of_Uid, "get_user_name_of_uid");
+                                     Name : System.Address) return C_Types.Int
+      with Import => True, Convention => C,
+           External_Name => "get_user_name_of_uid";
   begin
     Res := C_Get_User_Name_Of_Uid (User_Id, Str(Str'First)'Address);
     if Res = C_Error then
@@ -455,8 +456,9 @@ package body Sys_Calls is
     Ids : Ids_Rec;
     function C_Get_Ids_Of_User_Name (Name : System.Address;
                                      Uid : System.Address;
-                                     Gid : System.Address) return C_Types.Int;
-    pragma Import (C, C_Get_Ids_Of_User_Name, "get_ids_of_user_name");
+                                     Gid : System.Address) return C_Types.Int
+      with Import => True, Convention => C,
+           External_Name => "get_ids_of_user_name";
   begin
     Res := C_Get_Ids_Of_User_Name (User_Name4C'Address,
                    Ids.User_Id'Address, Ids.Group_Id'Address);
@@ -470,8 +472,9 @@ package body Sys_Calls is
     Str : String (1 .. 1024);
     Res : C_Types.Int;
     function C_Get_Group_Name_Of_Gid (Gid : C_Types.Int;
-                                      Name : System.Address) return C_Types.Int;
-    pragma Import (C, C_Get_Group_Name_Of_Gid, "get_group_name_of_gid");
+                                      Name : System.Address) return C_Types.Int
+      with Import => True, Convention => C,
+           External_Name => "get_group_name_of_gid";
   begin
     Res := C_Get_Group_Name_Of_Gid (Group_Id, Str(Str'First)'Address);
     if Res = C_Error then
@@ -485,8 +488,9 @@ package body Sys_Calls is
     Res : C_Types.Int;
     Id : Natural;
     function C_Get_Gid_Of_Group_Name (Name : System.Address;
-                                     Gid : System.Address) return C_Types.Int;
-    pragma Import (C, C_Get_Gid_Of_Group_Name, "get_gid_of_group_name");
+                                     Gid : System.Address) return C_Types.Int
+      with Import => True, Convention => C,
+           External_Name => "get_gid_of_group_name";
   begin
     Res := C_Get_Gid_Of_Group_Name (Group_Name4C'Address, Id'Address);
     if Res = C_Error then
@@ -506,8 +510,8 @@ package body Sys_Calls is
       Asynchronous => 4,
       Transparent  => 5);
     function C_Set_Tty_Attr (Fd : C_Types.Int; Mode : C_Types.Int)
-                            return C_Types.Int;
-    pragma Import (C, C_Set_Tty_Attr, "set_tty_attr");
+                            return C_Types.Int
+      with Import => True, Convention => C, External_Name => "set_tty_attr";
   begin
     return C_Set_Tty_Attr (Integer(Fd), Tty_Modes_For_C(Tty_Mode)) = 0;
   end Set_Tty_Attr;
@@ -516,16 +520,16 @@ package body Sys_Calls is
   -- Set blocking mode for a non tty
   function Set_Blocking (Fd : File_Desc; Blocking : Boolean) return Boolean is
     function C_Set_Blocking (Fd : C_Types.Int; Blocking : C_Types.Int)
-                            return C_Types.Int;
-    pragma Import (C, C_Set_Blocking, "set_blocking");
+                            return C_Types.Int
+      with Import => True, Convention => C, External_Name => "set_blocking";
   begin
     return C_Set_Blocking (Integer(Fd), (if Blocking then 1 else 0)) = 0;
   end Set_Blocking;
 
   -- Is blocking (for tty or not)
   function Is_Blocking (Fd : File_Desc) return Boolean is
-    function C_Get_Blocking (Fd : C_Types.Int) return C_Types.Int;
-    pragma Import (C, C_Get_Blocking, "get_blocking");
+    function C_Get_Blocking (Fd : C_Types.Int) return C_Types.Int
+      with Import => True, Convention => C, External_Name => "get_blocking";
     Res : C_Types.Int;
   begin
     Res := C_Get_Blocking (Integer(Fd));
@@ -539,8 +543,8 @@ package body Sys_Calls is
   procedure Get_Immediate (Fd : File_Desc;
                            Status : out Get_Status_List;
                            C      : out Character) is
-    function C_Get_Immediate (Fd : C_Types.Int) return C_Types.Int;
-    pragma Import (C, C_Get_Immediate, "get_immediate");
+    function C_Get_Immediate (Fd : C_Types.Int) return C_Types.Int
+      with Import => True, Convention => C, External_Name => "get_immediate";
     C_None   : constant Integer := -2;
     C_Closed : constant Integer := -3;
     Res : C_Types.Int;
@@ -566,8 +570,8 @@ package body Sys_Calls is
   -- May raise Name_Error
   function Create (Name : String) return File_Desc is
     Name4C : constant String := Name & Aski.Nul;
-    function C_Fd_Create (Path : System.Address) return C_Types.Int;
-    pragma Import (C, C_Fd_Create, "fd_create");
+    function C_Fd_Create (Path : System.Address) return C_Types.Int
+      with Import => True, Convention => C, External_Name => "fd_create";
     Res : C_Types.Int;
   begin
     Res := C_Fd_Create (Name4C'Address);
@@ -587,8 +591,8 @@ package body Sys_Calls is
       Out_File   => 1,
       Inout_File => 2);
     function C_Fd_Open (Path : System.Address; Mode : C_Types.Int)
-                       return C_Types.Int;
-    pragma Import (C, C_Fd_Open, "fd_open");
+                       return C_Types.Int
+      with Import => True, Convention => C, External_Name => "fd_open";
     Res : C_Types.Int;
   begin
     Res := C_Fd_Open (Name4C'Address, Modes4C(Mode));
@@ -606,8 +610,8 @@ package body Sys_Calls is
     function C_Fd_Int_Read  (Fd     : C_Types.Int;
                              Buffer : System.Address;
                              Nbytes : C_Types.Int)
-             return C_Types.Int;
-    pragma Import (C, C_Fd_Int_Read, "fd_int_read");
+             return C_Types.Int
+      with Import => True, Convention => C, External_Name => "fd_int_read";
     Res : C_Types.Int;
   begin
     Res := C_Fd_Int_Read (Integer(Fd), Buffer, Nbytes);
@@ -625,8 +629,8 @@ package body Sys_Calls is
     function C_Fd_Int_Write (Fd     : C_Types.Int;
                              Buffer : System.Address;
                              Nbytes : C_Types.Int)
-             return C_Types.Int;
-    pragma Import (C, C_Fd_Int_Write, "fd_int_write");
+             return C_Types.Int
+      with Import => True, Convention => C, External_Name => "fd_int_write";
     Res : C_Types.Int;
   begin
     Res := C_Fd_Int_Write (Integer(Fd), Buffer, Nbytes);
@@ -641,8 +645,8 @@ package body Sys_Calls is
 
   -- Close
   procedure Close (Fd : in File_Desc) is
-    function C_Fd_Close (Fd : C_Types.Int) return C_Types.Int;
-    pragma Import (C, C_Fd_Close, "fd_close");
+    function C_Fd_Close (Fd : C_Types.Int) return C_Types.Int
+      with Import => True, Convention => C, External_Name => "fd_close";
   begin
     if C_Fd_Close (Integer(Fd)) /= 0 then
       raise System_Error;
@@ -651,8 +655,8 @@ package body Sys_Calls is
 
   -- Create a pipe
   procedure Pipe (Fd1, Fd2 : out File_Desc) is
-    function C_Fd_Pipe (Fd1, Fd2 : in System.Address) return C_Types.Int;
-    pragma Import (C, C_Fd_Pipe, "fd_pipe");
+    function C_Fd_Pipe (Fd1, Fd2 : in System.Address) return C_Types.Int
+      with Import => True, Convention => C, External_Name => "fd_pipe";
   begin
     if C_Fd_Pipe (Fd1'Address, Fd2'Address) /= 0 then
       raise System_Error;
@@ -664,8 +668,8 @@ package body Sys_Calls is
   -- Duplicate a file descriptor, using smallest or Start_At
   -- May raise System_Error
   function Dup (To_Copy : in File_Desc) return File_Desc is
-    function C_Dup (Oldfd : in C_Types.Int) return C_Types.Int;
-    pragma Import (C, C_Dup, "dup");
+    function C_Dup (Oldfd : in C_Types.Int) return C_Types.Int
+      with Import => True, Convention => C, External_Name => "dup";
     Res : C_Types.Int;
   begin
     Res := C_Dup (Integer (To_Copy));
@@ -677,8 +681,8 @@ package body Sys_Calls is
 
   function Dup2 (To_Copy, Set_Fd : in File_Desc) return File_Desc is
    function C_Dup2 (Oldfd : in C_Types.Int; Newfd : C_Types.Int)
-                   return C_Types.Int;
-    pragma Import (C, C_Dup2, "dup2");
+                   return C_Types.Int
+      with Import => True, Convention => C, External_Name => "dup2";
     Res : C_Types.Int;
   begin
     Res := C_Dup2 (C_Types.Int (To_Copy), C_Types.Int (Set_Fd));
@@ -692,8 +696,8 @@ package body Sys_Calls is
   -- Set CLOEXEC to true on Fd
   procedure Set_Cloexec (Fd : in File_Desc; On : in Boolean) is
     function C_Fcntl (Fd : in Integer; Cmd : in Integer; Arg : C_Types.Long)
-             return C_Types.Int;
-    pragma Import (C, C_Fcntl, "fcntl");
+             return C_Types.Int
+      with Import => True, Convention => C, External_Name => "fcntl";
     Stat, Res : C_Types.Int;
     C_F_Getfd : constant C_Types.Int := 1;
     C_F_Setfd : constant C_Types.Int := 2;
@@ -720,15 +724,15 @@ package body Sys_Calls is
 
   -- Get current / parent pid
   function Get_Pid return Pid is
-    function C_Getpid return C_Types.Pid_T;
-    pragma Import (C, C_Getpid, "getpid");
+    function C_Getpid return C_Types.Pid_T
+      with Import => True, Convention => C, External_Name => "getpid";
   begin
     return Pid(C_Getpid);
   end Get_Pid;
 
   function Get_Parent_Pid return Pid is
-    function C_Getppid return C_Types.Pid_T;
-    pragma Import (C, C_Getppid, "getppid");
+    function C_Getppid return C_Types.Pid_T
+      with Import => True, Convention => C, External_Name => "getppid";
   begin
     return Pid(C_Getppid);
   end Get_Parent_Pid;
@@ -736,8 +740,8 @@ package body Sys_Calls is
   -- Kill
   procedure Kill (Dest_Pid : in Pid; Signal_No : in Kill_Signal_Range) is
     function C_Kill (Dest_Pid : C_Types.Pid_T; Signal : C_Types.Int)
-             return Integer;
-    pragma Import (C, C_Kill, "kill");
+             return Integer
+      with Import => True, Convention => C, External_Name => "kill";
   begin
     if C_Kill (Integer(Dest_Pid), Signal_No) /= 0 then
       raise System_Error;
@@ -746,8 +750,8 @@ package body Sys_Calls is
 
   -- Process procreation (fork)
   procedure Procreate (Child : out Boolean; Child_Pid : out Pid) is
-    function C_Procreate return C_Types.Pid_T;
-    pragma Import (C, C_Procreate, "procreate");
+    function C_Procreate return C_Types.Pid_T
+      with Import => True, Convention => C, External_Name => "procreate";
     Res : C_Types.Int;
   begin
     Res := C_Procreate;
@@ -764,8 +768,8 @@ package body Sys_Calls is
 
   -- Process mutation (exec)
   procedure Mutate (Program : in Many_Strings.Many_String) is
-    procedure C_Mutate (Args : in System.Address; Len : in C_Types.Int);
-    pragma Import  (C, C_Mutate, "mutate");
+    procedure C_Mutate (Args : in System.Address; Len : in C_Types.Int)
+      with Import => True, Convention => C, External_Name => "mutate";
     Str4C : constant String := Program.Image & Aski.Nul;
   begin
     C_Mutate (Str4C'Address, Str4C'Length);
@@ -773,8 +777,8 @@ package body Sys_Calls is
 
   procedure Suicide is
     Suicide_Failed : exception;
-    procedure C_Exit (Status : in C_Types.Int);
-    pragma Import  (C, C_Exit, "exit");
+    procedure C_Exit (Status : in C_Types.Int)
+      with Import => True, Convention => C, External_Name => "exit";
   begin
     -- Exit 1
     C_Exit (1);
@@ -789,8 +793,8 @@ package body Sys_Calls is
   C_Stopped  : constant Integer := 3;
 
   function Next_Dead return Death_Rec is
-    procedure C_Next_Dead (Cause, Pid, Code : in System.Address);
-    pragma Import  (C, C_Next_Dead, "next_dead");
+    procedure C_Next_Dead (Cause, Pid, Code : in System.Address)
+      with Import => True, Convention => C, External_Name => "next_dead";
     Cpid, Cause, Code : C_Types.Int;
   begin
     C_Next_Dead (Cause'Address, Cpid'Address, Code'Address);

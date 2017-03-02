@@ -6,8 +6,8 @@ with My_Math;
 package body Rnd is
 
   function C_Gettimeofday (Tv : System.Address; Tz : System.Address)
-  return Integer;
-  pragma Import (C, C_Gettimeofday, "gettimeofday");
+  return Integer
+    with Import => True, Convention => C, External_Name => "gettimeofday";
 
   -- Return Long_Long equal or below X
   function To_Long_Long (X : Float) return Long_Longs.Ll_Integer is

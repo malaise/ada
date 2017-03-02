@@ -31,42 +31,42 @@ package body Ndbm is
   -- Imported C functions --
   --------------------------
   procedure Memcpy (Dest, Src : in System.Address;
-                    N : in C_Types.Size_T);
-  pragma Import (C, Memcpy, "memcpy");
+                    N : in C_Types.Size_T)
+    with Import => True, Convention => C, External_Name => "memcpy";
 
   function Dbm_Open (File_Name : System.Address;
                      Flags : C_Types.Int;
                      Mode  : C_Types.Mode_T)
-           return System.Address;
-  pragma Import (C, Dbm_Open, "dbm_open");
+           return System.Address
+    with Import => True, Convention => C, External_Name => "dbm_open";
 
-  procedure Dbm_Close (Db : in System.Address);
-  pragma Import (C, Dbm_Close, "dbm_close");
+  procedure Dbm_Close (Db : in System.Address)
+    with Import => True, Convention => C, External_Name => "dbm_close";
 
   function Dbm_Store (Db   : in System.Address;
                       Key  : in System.Address;
                       Data : in System.Address;
                       Mode : in C_Types.Int)
-           return C_Types.Int;
-  pragma Import (C, Dbm_Store, "c_dbm_store");
+           return C_Types.Int
+    with Import => True, Convention => C, External_Name => "c_dbm_store";
 
   procedure Dbm_Fetch (Db   : in System.Address;
                        Key  : in System.Address;
-                       Data : in System.Address);
-  pragma Import (C, Dbm_Fetch, "c_dbm_fetch");
+                       Data : in System.Address)
+    with Import => True, Convention => C, External_Name => "c_dbm_fetch";
 
   function Dbm_Delete (Db  : in System.Address;
                        Key : in System.Address)
-           return C_Types.Int;
-  pragma Import (C, Dbm_Delete, "c_dbm_delete");
+           return C_Types.Int
+    with Import => True, Convention => C, External_Name => "c_dbm_delete";
 
   procedure Dbm_Firstkey (Db  : in System.Address;
-                          Key : in System.Address);
-  pragma Import (C, Dbm_Firstkey, "c_dbm_firstkey");
+                          Key : in System.Address)
+    with Import => True, Convention => C, External_Name =>  "c_dbm_firstkey";
 
   procedure Dbm_Nextkey (Db  : in System.Address;
-                         Key : in System.Address);
-  pragma Import (C, Dbm_Nextkey, "c_dbm_nextkey");
+                         Key : in System.Address)
+    with Import => True, Convention => C, External_Name => "c_dbm_nextkey";
 
   ------------------------
   -- Internal functions --

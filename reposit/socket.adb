@@ -56,142 +56,157 @@ package body Socket is
   for C_Blocking_Mode'Size use 32;
 
   function Soc_Open (S_Addr : System.Address;
-                     Protocol : C_Protocol) return Result;
-  pragma Import (C, Soc_Open, "soc_open");
-  function Soc_Close (S_Addr : System.Address) return Result;
-  pragma Import (C, Soc_Close, "soc_close");
+                     Protocol : C_Protocol) return Result
+    with Import => True, Convention => C, External_Name => "soc_open";
+  function Soc_Close (S_Addr : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_close";
 
   function Soc_Set_Blocking (S_Addr : System.Address;
-                             Block  : C_Blocking_Mode) return Result;
-  pragma Import (C, Soc_Set_Blocking, "soc_set_blocking");
+                             Block  : C_Blocking_Mode) return Result
+    with Import => True, Convention => C, External_Name => "soc_set_blocking";
   function Soc_Get_Blocking (S_Addr : System.Address;
-                             Block  : System.Address) return Result;
-  pragma Import (C, Soc_Get_Blocking, "soc_get_blocking");
+                             Block  : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_get_blocking";
   function Soc_Get_Protocol (S_Addr : System.Address;
-                             Protocol  : System.Address) return Result;
-  pragma Import (C, Soc_Get_Protocol, "soc_get_protocol");
-  function Soc_Set_Ttl (S_Addr : System.Address; Ttl : Byte) return Result;
-  pragma Import (C, Soc_Set_Ttl, "soc_set_ttl");
+                             Protocol  : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_get_protocol";
+  function Soc_Set_Ttl (S_Addr : System.Address; Ttl : Byte) return Result
+    with Import => True, Convention => C, External_Name => "soc_set_ttl";
   function Soc_Get_Ttl (S_Addr : System.Address;
-                        Ttl : System.Address) return Result;
-  pragma Import (C, Soc_Get_Ttl, "soc_get_ttl");
+                        Ttl : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_get_ttl";
 
   function Soc_Set_Rece_Interface (S_Addr : System.Address;
-                                   Host   : System.Address) return Result;
-  pragma Import (C, Soc_Set_Rece_Interface, "soc_set_rece_interface");
+                                   Host   : System.Address) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_set_rece_interface";
   function Soc_Link_Service (S : System.Address;
-                             Service : System.Address) return Result;
-  pragma Import (C, Soc_Link_Service, "soc_link_service");
+                             Service : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_link_service";
   function Soc_Link_Port (S : System.Address;
-                          Port : Word) return Result;
-  pragma Import (C, Soc_Link_Port, "soc_link_port");
-  function Soc_Link_Dynamic (S : System.Address) return Result;
-  pragma Import (C, Soc_Link_Dynamic, "soc_link_dynamic");
+                          Port : Word) return Result
+    with Import => True, Convention => C, External_Name => "soc_link_port";
+  function Soc_Link_Dynamic (S : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_link_dynamic";
   function Soc_Get_Linked_Port (S : System.Address;
-                                Port : System.Address) return Result;
-  pragma Import (C, Soc_Get_Linked_Port, "soc_get_linked_port");
+                                Port : System.Address) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_get_linked_port";
   function Soc_Get_Id (S : System.Address;
-                       Fd : System.Address) return Result;
-  pragma Import (C, Soc_Get_Id, "soc_get_id");
-  function Soc_Accept (S : System.Address; N :  System.Address) return Result;
-  pragma Import (C, Soc_Accept, "soc_accept");
+                       Fd : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_get_id";
+  function Soc_Accept (S : System.Address; N :  System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_accept";
   function Soc_Receive (S : System.Address;
                         Message       : System.Address;
                         Length        : C_Types.Int;
-                        Set_For_Reply : C_Types.Bool) return Result;
-  pragma Import (C, Soc_Receive, "soc_receive");
+                        Set_For_Reply : C_Types.Bool) return Result
+    with Import => True, Convention => C, External_Name => "soc_receive";
 
   function Soc_Set_Send_Ipm_Interface (S_Addr : System.Address;
-                                       Host   : System.Address) return Result;
-  pragma Import (C, Soc_Set_Send_Ipm_Interface, "soc_set_send_ipm_interface");
+                                       Host   : System.Address) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_set_send_ipm_interface";
   function Soc_Set_Dest_Name_Service (S : System.Address;
                                       Host_Lan : System.Address;
                                       Lan      : C_Types.Bool;
-                                      Service  : System.Address) return Result;
-  pragma Import (C, Soc_Set_Dest_Name_Service, "soc_set_dest_name_service");
+                                      Service  : System.Address) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_set_dest_name_service";
   function Soc_Set_Dest_Name_Port (S : System.Address;
                                    Host_Lan : System.Address;
                                    Lan      : C_Types.Bool;
-                                   Port     : Word) return Result;
-  pragma Import (C, Soc_Set_Dest_Name_Port, "soc_set_dest_name_port");
+                                   Port     : Word) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_set_dest_name_port";
   function Soc_Set_Dest_Host_Service (S : System.Address;
                                       Host : System.Address;
-                                      Service  : System.Address) return Result;
-  pragma Import (C, Soc_Set_Dest_Host_Service, "soc_set_dest_host_service");
+                                      Service  : System.Address) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_set_dest_host_service";
   function Soc_Set_Dest_Host_Port (S : System.Address;
                                    Host : System.Address;
-                                   Port : Word) return Result;
-  pragma Import (C, Soc_Set_Dest_Host_Port, "soc_set_dest_host_port");
+                                   Port : Word) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_set_dest_host_port";
 
   function Soc_Change_Dest_Name (S : System.Address;
                                  Host_Lan : System.Address;
-                                 Lan      : C_Types.Bool) return Result;
-  pragma Import (C, Soc_Change_Dest_Name, "soc_change_dest_name");
+                                 Lan      : C_Types.Bool) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_change_dest_name";
   function Soc_Change_Dest_Host (S : System.Address;
-                                 Host : System.Address) return Result;
-  pragma Import (C, Soc_Change_Dest_Host, "soc_change_dest_host");
+                                 Host : System.Address) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_change_dest_host";
   function Soc_Change_Dest_Service (S : System.Address;
-                                    Service : System.Address) return Result;
-  pragma Import (C, Soc_Change_Dest_Service, "soc_change_dest_service");
+                                    Service : System.Address) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_change_dest_service";
   function Soc_Change_Dest_Port (S : System.Address;
-                                 Port : Word) return Result;
-  pragma Import (C, Soc_Change_Dest_Port, "soc_change_dest_port");
+                                 Port : Word) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_change_dest_port";
 
   function Soc_Is_Connected (S : System.Address;
-                             P_Connected : System.Address) return Result;
-  pragma Import (C, Soc_Is_Connected, "soc_is_connected");
+                             P_Connected : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_is_connected";
 
   function Soc_Get_Dest_Host (S : System.Address;
-                              Host : System.Address) return Result;
-  pragma Import (C, Soc_Get_Dest_Host, "soc_get_dest_host");
+                              Host : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_get_dest_host";
   function Soc_Get_Dest_Port (S : System.Address;
-                              Port : System.Address) return Result;
-  pragma Import (C, Soc_Get_Dest_Port, "soc_get_dest_port");
+                              Port : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_get_dest_port";
 
   function Soc_Port_Name_Of (Port : Word;
                              Protocol : C_Protocol;
                              Name : System.Address;
-                             Len  : C_Types.Uint32) return Result;
-  pragma Import (C, Soc_Port_Name_Of, "soc_port_name_of");
+                             Len  : C_Types.Uint32) return Result
+    with Import => True, Convention => C, External_Name => "soc_port_name_of";
   function Soc_Port_Of (Name : System.Address;
                         Protocol : C_Protocol;
-                        Port : System.Address) return Result;
-  pragma Import (C, Soc_Port_Of, "soc_port_of");
+                        Port : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_port_of";
   function Soc_Host_Name_Of (Host : System.Address; Name : System.Address;
-                             Len  : C_Types.Uint32) return Result;
-  pragma Import (C, Soc_Host_Name_Of, "soc_host_name_of");
+                             Len  : C_Types.Uint32) return Result
+    with Import => True, Convention => C, External_Name => "soc_host_name_of";
   function Soc_Host_Of (Name : System.Address;
-                        Id   : System.Address) return Result;
-  pragma Import (C, Soc_Host_Of, "soc_host_of");
+                        Id   : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_host_of";
   function Soc_Lan_Name_Of (Lan : System.Address; Name : System.Address;
-                            Len  : C_Types.Uint32) return Result;
-  pragma Import (C, Soc_Lan_Name_Of, "soc_lan_name_of");
+                            Len  : C_Types.Uint32) return Result
+    with Import => True, Convention => C, External_Name => "soc_lan_name_of";
   function Soc_Lan_Of (Name : System.Address;
-                       Id   : System.Address) return Result;
-  pragma Import (C, Soc_Lan_Of, "soc_lan_of");
+                       Id   : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_lan_of";
   function Soc_Get_Local_Host_Name (Name : System.Address;
                                     Host_Name_Len : C_Types.Uint32)
-           return Result;
-  pragma Import (C, Soc_Get_Local_Host_Name, "soc_get_local_host_name");
-  function Soc_Get_Local_Host_Id(Id : System.Address) return Result;
-  pragma Import (C, Soc_Get_Local_Host_Id, "soc_get_local_host_id");
+           return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_get_local_host_name";
+  function Soc_Get_Local_Host_Id(Id : System.Address) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_get_local_host_id";
   function Soc_Get_Local_Lan_Name (Name : System.Address;
-                                   Lan_Name_Len : C_Types.Uint32) return Result;
-  pragma Import (C, Soc_Get_Local_Lan_Name, "soc_get_local_lan_name");
-  function Soc_Get_Local_Lan_Id(Id : System.Address) return Result;
-  pragma Import (C, Soc_Get_Local_Lan_Id, "soc_get_local_lan_id");
+                                   Lan_Name_Len : C_Types.Uint32) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_get_local_lan_name";
+  function Soc_Get_Local_Lan_Id(Id : System.Address) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_get_local_lan_id";
 
-  function Soc_Get_Bcast(If_Host, Bcast_Host : System.Address) return Result;
-  pragma Import (C, Soc_Get_Bcast, "soc_get_bcast");
-  function Soc_Get_Host_Iface (Lan, Netmask, Id : System.Address) return Result;
-  pragma Import (C, Soc_Get_Host_Iface, "soc_get_host_iface");
+  function Soc_Get_Bcast(If_Host, Bcast_Host : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_get_bcast";
+  function Soc_Get_Host_Iface (Lan, Netmask, Id : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_get_host_iface";
 
   function Soc_Send (S : System.Address;
                      Message : System.Address;
-                     Length  : C_Types.Uint32) return Result;
-  pragma Import (C, Soc_Send, "soc_send");
-  function Soc_Resend (S : System.Address) return Result;
-  pragma Import (C, Soc_Resend, "soc_resend");
+                     Length  : C_Types.Uint32) return Result
+    with Import => True, Convention => C, External_Name => "soc_send";
+  function Soc_Resend (S : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "soc_resend";
 
   --------------------
   -- IMPLEMENTATION --

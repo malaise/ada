@@ -5,38 +5,38 @@ package body My_Math is
   package Inte_Io is new Ada.Text_Io.Integer_Io (Inte);
   package Real_Io is new Ada.Text_Io.Float_Io (Real);
 
-  function Cpow (X, Y : C_Types.Double) return C_Types.Double;
-  pragma Import (C, Cpow, "pow");
+  function Cpow (X, Y : C_Types.Double) return C_Types.Double
+    with Import => True, Convention => C, External_Name => "pow";
 
-  function Csqrt (X : C_Types.Double) return C_Types.Double;
-  pragma Import (C, Csqrt, "sqrt");
+  function Csqrt (X : C_Types.Double) return C_Types.Double
+    with Import => True, Convention => C, External_Name => "sqrt";
 
-  function Clog10 (X : C_Types.Double) return C_Types.Double;
-  pragma Import (C, Clog10, "log10");
+  function Clog10 (X : C_Types.Double) return C_Types.Double
+    with Import => True, Convention => C, External_Name => "log10";
 
-  function Clog (X : C_Types.Double) return C_Types.Double;
-  pragma Import (C, Clog, "log");
+  function Clog (X : C_Types.Double) return C_Types.Double
+    with Import => True, Convention => C, External_Name => "log";
 
-  function Csin (X : C_Types.Double) return C_Types.Double;
-  pragma Import (C, Csin, "sin");
+  function Csin (X : C_Types.Double) return C_Types.Double
+    with Import => True, Convention => C, External_Name => "sin";
 
-  function Ccos (X : C_Types.Double) return C_Types.Double;
-  pragma Import (C, Ccos, "cos");
+  function Ccos (X : C_Types.Double) return C_Types.Double
+    with Import => True, Convention => C, External_Name => "cos";
 
-  function Ctan (X : C_Types.Double) return C_Types.Double;
-  pragma Import (C, Ctan, "tan");
+  function Ctan (X : C_Types.Double) return C_Types.Double
+    with Import => True, Convention => C, External_Name => "tan";
 
-  function Casin (X : C_Types.Double) return C_Types.Double;
-  pragma Import (C, Casin, "asin");
+  function Casin (X : C_Types.Double) return C_Types.Double
+    with Import => True, Convention => C, External_Name => "asin";
 
-  function Cacos (X : C_Types.Double) return C_Types.Double;
-  pragma Import (C, Cacos, "acos");
+  function Cacos (X : C_Types.Double) return C_Types.Double
+    with Import => True, Convention => C, External_Name => "acos";
 
-  function Catan (X : C_Types.Double) return C_Types.Double;
-  pragma Import (C, Catan, "atan");
+  function Catan (X : C_Types.Double) return C_Types.Double
+    with Import => True, Convention => C, External_Name => "atan";
 
-  function Catan2 (Y, X : C_Types.Double) return C_Types.Double;
-  pragma Import (C, Catan2, "atan2");
+  function Catan2 (Y, X : C_Types.Double) return C_Types.Double
+    with Import => True, Convention => C, External_Name => "atan2";
 
   --------------------------
   -- Constants for computing

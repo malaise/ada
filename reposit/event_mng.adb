@@ -22,14 +22,14 @@ package body Event_Mng is
   -- Fd management --
   -------------------
 
-  function C_Add_Fd (Fd : C_Types.Int; Read : C_Types.Bool) return C_Types.Int;
-  pragma Import(C, C_Add_Fd, "evt_add_fd");
+  function C_Add_Fd (Fd : C_Types.Int; Read : C_Types.Bool) return C_Types.Int
+    with Import=> True, Convention => C, External_Name => "evt_add_fd";
 
-  function C_Del_Fd (Fd : C_Types.Int; Read : C_Types.Bool) return C_Types.Int;
-  pragma Import(C, C_Del_Fd, "evt_del_fd");
+  function C_Del_Fd (Fd : C_Types.Int; Read : C_Types.Bool) return C_Types.Int
+    with Import=> True, Convention => C, External_Name => "evt_del_fd";
 
-  function C_Fd_Set (Fd : C_Types.Int; Read : C_Types.Bool) return C_Types.Bool;
-  pragma Import(C, C_Fd_Set, "evt_fd_set");
+  function C_Fd_Set (Fd : C_Types.Int; Read : C_Types.Bool) return C_Types.Bool
+    with Import=> True, Convention => C, External_Name =>  "evt_fd_set";
 
   -- Callback list
   package Cb_Dyn_Mng is new Dynamic_List(Cb_Rec);
@@ -146,17 +146,18 @@ package body Event_Mng is
   C_Sig_Child     : constant Integer :=  1;
   C_Sig_Terminate : constant Integer :=  2;
 
-  procedure C_Send_Dummy_Signal;
-  pragma Import(C, C_Send_Dummy_Signal, "send_dummy_signal");
+  procedure C_Send_Dummy_Signal
+    with Import=> True, Convention => C, External_Name => "send_dummy_signal";
 
-  function C_Get_Signal return C_Types.Int;
-  pragma Import(C, C_Get_Signal, "get_signal");
+  function C_Get_Signal return C_Types.Int
+    with Import=> True, Convention => C, External_Name => "get_signal";
 
-  function C_Reset_Default_Signals return C_Types.Int;
-  pragma Import(C, C_Reset_Default_Signals, "reset_default_signals");
+  function C_Reset_Default_Signals return C_Types.Int
+    with Import=> True, Convention => C,
+         External_Name => "reset_default_signals";
 
-  function C_Signal_Handling_Set return C_Types.Bool;
-  pragma Import(C, C_Signal_Handling_Set, "signal_handling_set");
+  function C_Signal_Handling_Set return C_Types.Bool
+    with Import=> True, Convention => C, External_Name => "signal_handling_set";
 
   Cb_Term_Sig : Sig_Callback := Null_Procedure'Access;
   Cb_Child_Sig : Sig_Callback := Null_Procedure'Access;
@@ -252,8 +253,8 @@ package body Event_Mng is
   C_Wake_Event : constant Integer := -3;
   function C_Wait (P_Fd : System.Address;
                    P_Read : System.Address;
-                   P_Timeout : System.Address) return C_Types.Int;
-  pragma Import(C, C_Wait, "evt_wait");
+                   P_Timeout : System.Address) return C_Types.Int
+    with Import=> True, Convention => C, External_Name => "evt_wait";
 
   function Wait (Delay_Spec : Timers.Delay_Rec) return Out_Event_List is
     Fd    : Integer;

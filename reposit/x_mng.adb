@@ -30,8 +30,8 @@ package body X_Mng is
     return Bool_For_C'Val(Boolean'Pos(Ada_Boolean));
   end For_C;
 
-  function C_Strlen (S : System.Address) return C_Types.Size_T;
-  pragma Import (C, C_Strlen, "strlen");
+  function C_Strlen (S : System.Address) return C_Types.Size_T
+    with Import => True, Convention => C, External_Name => "strlen";
 
 
   ------------------------------------------------------------------
@@ -41,22 +41,22 @@ package body X_Mng is
   -- int x_initialise (const char *server_name, const char *color_names[]);
   ------------------------------------------------------------------
   function X_Initialise (Server_Name : System.Address;
-                         Color_Names : System.Address) return Result;
-  pragma Import(C, X_Initialise, "x_initialise");
+                         Color_Names : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "x_initialise";
 
   ------------------------------------------------------------------
   -- Suspend processing of X events (as long as no Line)
   -- int x_suspend (void)
   ------------------------------------------------------------------
-  function X_Suspend return Result;
-  pragma Import(C, X_Suspend, "x_suspend");
+  function X_Suspend return Result
+    with Import => True, Convention => C, External_Name => "x_suspend";
 
   ------------------------------------------------------------------
   -- Resume processing of X events
   -- int x_resume (void)
   ------------------------------------------------------------------
-  function X_Resume return Result;
-  pragma Import(C, X_Resume, "x_resume");
+  function X_Resume return Result
+    with Import => True, Convention => C, External_Name => "x_resume";
 
   ------------------------------------------------------------------
   -- Opens a line
@@ -70,45 +70,45 @@ package body X_Mng is
                         Height, Width      : C_Types.Int;
                         Background, Border : C_Types.Int;
                         No_Font            : C_Types.Int;
-                        P_Line_Id          : System.Address) return Result;
-  pragma Import(C, X_Open_Line, "x_open_line");
+                        P_Line_Id          : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "x_open_line";
 
   ------------------------------------------------------------------
   -- Closes a line
   -- int x_close_line (void *line_id);
   ------------------------------------------------------------------
-  function X_Close_Line(Line_Id : Line_For_C) return Result;
-  pragma Import(C, X_Close_Line, "x_close_line");
+  function X_Close_Line(Line_Id : Line_For_C) return Result
+    with Import => True, Convention => C, External_Name => "x_close_line";
 
   ------------------------------------------------------------------
   -- Set the name of a line
-  -- int x_set_line_name (void *line_id, const char *line_name);
+  -- int x_set_line_name (void *line_id, const char *name);
   ------------------------------------------------------------------
   function X_Set_Line_Name (Line_Id   : Line_For_C;
-                            Line_Name : System.Address) return Result;
-  pragma Import(C, X_Set_Line_Name, "x_set_line_name");
+                            Line_Name : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "x_set_line_name";
 
   ------------------------------------------------------------------
   -- Set the icon of a line
   -- int x_set_icon (void *line_id, const char **pixmap);
   ------------------------------------------------------------------
   function X_Set_Icon (Line_Id   : Line_For_C;
-                       Icon : System.Address) return Result;
-  pragma Import(C, X_Set_Icon, "x_set_icon");
+                       Icon : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "x_set_icon";
 
   ------------------------------------------------------------------
   -- Flushes all the lines of the host (really display them)
   -- int x_flush (void)
   ------------------------------------------------------------------
-  function X_Flush return Result;
-  pragma Import(C, X_Flush, "x_flush");
+  function X_Flush return Result
+    with Import => True, Convention => C, External_Name => "x_flush";
 
   ------------------------------------------------------------------
   -- Clears a line
   -- int x_clear_line (void *line_id);
   ------------------------------------------------------------------
-  function X_Clear_Line(Line_Id : Line_For_C) return Result;
-  pragma Import(C, X_Clear_Line, "x_clear_line");
+  function X_Clear_Line(Line_Id : Line_For_C) return Result
+    with Import => True, Convention => C, External_Name => "x_clear_line";
 
   ------------------------------------------------------------------
   -- Sets the attributes for a further put in the same window
@@ -121,16 +121,16 @@ package body X_Mng is
                             Paper, Ink  : C_Types.Int;
                             Superbright : Bool_For_C;
                             Underline   : Bool_For_C;
-                            Inverse     : Bool_For_C) return Result;
-  pragma Import(C, X_Set_Attributes, "x_set_attributes");
+                            Inverse     : Bool_For_C) return Result
+    with Import => True, Convention => C, External_Name => "x_set_attributes";
 
   ------------------------------------------------------------------
   -- Set Xor mode for further outputs
   -- int x_set_xor_mode (void *line_id, boolean xor_mode);
   ------------------------------------------------------------------
   function X_Set_Xor_Mode(Line_Id : Line_For_C;
-                          Xor_Mode  : Bool_For_C) return Result;
-  pragma Import(C, X_Set_Xor_Mode, "x_set_xor_mode");
+                          Xor_Mode  : Bool_For_C) return Result
+    with Import => True, Convention => C, External_Name => "x_set_xor_mode";
 
   ------------------------------------------------------------------
   -- Writes a char whith the attributes previously set
@@ -138,8 +138,8 @@ package body X_Mng is
   ------------------------------------------------------------------
   function X_Put_Char(Line_Id     : Line_For_C;
                       Car         : C_Types.Int;
-                      Row, Column : in C_Types.Int) return Result;
-  pragma Import(C, X_Put_Char, "x_put_char");
+                      Row, Column : in C_Types.Int) return Result
+    with Import=> True, Convention => C, External_Name => "x_put_char";
 
   ------------------------------------------------------------------
   -- Writes a char whith the attributes previously set
@@ -149,8 +149,8 @@ package body X_Mng is
   ------------------------------------------------------------------
   function X_Overwrite_Char(Line_Id     : Line_For_C;
                             Car         : C_Types.Int;
-                            Row, Column : in C_Types.Int) return Result;
-  pragma Import(C, X_Overwrite_Char, "x_overwrite_char");
+                            Row, Column : in C_Types.Int) return Result
+    with Import => True, Convention => C, External_Name => "x_overwrite_char";
 
   ------------------------------------------------------------------
   -- Writes a string at location with the attributes previously set
@@ -160,8 +160,8 @@ package body X_Mng is
   function X_Put_String(Line_Id     : Line_For_C;
                         Str_Addr    : System.Address;
                         Length      : C_Types.Int;
-                        Row, Column : C_Types.Int) return Result;
-  pragma Import(C, X_Put_String, "x_put_string");
+                        Row, Column : C_Types.Int) return Result
+    with Import => True, Convention => C, External_Name => "x_put_string";
 
   ------------------------------------------------------------------
   -- Writes a char on a line with specified characteristics
@@ -177,8 +177,9 @@ package body X_Mng is
                                  Superbright : Bool_For_C;
                                  Underline   : Bool_For_C;
                                  Inverse     : Bool_For_C)
-   return Result;
-  pragma Import(C, X_Put_Char_Attributes, "x_put_char_attributes");
+   return Result
+    with Import => True, Convention => C,
+         External_Name => "x_put_char_attributes";
 
   ------------------------------------------------------------------
   -- Draws a rectangle (width * height) from position
@@ -188,8 +189,8 @@ package body X_Mng is
   ------------------------------------------------------------------
   function X_Draw_Area(Line_Id       : Line_For_C;
                        Width, Height : C_Types.Int;
-                       Row, Column   : C_Types.Int) return Result;
-  pragma Import(C, X_Draw_Area, "x_draw_area");
+                       Row, Column   : C_Types.Int) return Result
+    with Import => True, Convention => C, External_Name => "x_draw_area";
 
   ------------------------------------------------------------------
   -- Puts a char with current characteristics
@@ -198,8 +199,8 @@ package body X_Mng is
   ------------------------------------------------------------------
   function X_Put_Char_Pixels(Line_Id : Line_For_C;
                              Car     : C_Types.Int;
-                             X, Y    : C_Types.Int) return Result;
-  pragma Import(C, X_Put_Char_Pixels, "x_put_char_pixels");
+                             X, Y    : C_Types.Int) return Result
+    with Import => True, Convention => C, External_Name => "x_put_char_pixels";
 
   ------------------------------------------------------------------
   -- Gets the graphic characteristics of a line when it was created
@@ -212,8 +213,9 @@ package body X_Mng is
                                          Font_Width    : System.Address;
                                          Font_Height   : System.Address;
                                          Font_Offset   : System.Address)
-           return Result;
-  pragma Import(C, X_Get_Graphic_Characteristics, "x_get_graph_charact");
+           return Result
+    with Import => True, Convention => C,
+         External_Name => "x_get_graph_charact";
 
   ------------------------------------------------------------------
   -- Gets the normal font name of the line
@@ -221,40 +223,40 @@ package body X_Mng is
 ------------------------------------------------------------------
   function X_Get_Font_Name (Line_Id : Line_For_C;
                             Font_Name : System.Address;
-                            Name_Len  : C_Types.Int) return Result;
-  pragma Import(C, X_Get_Font_Name, "x_get_font_name");
+                            Name_Len  : C_Types.Int) return Result
+    with Import => True, Convention => C, External_Name => "x_get_font_name";
 
   ------------------------------------------------------------------
   -- Draw a point with current characteristics
   -- int x_draw_point (void *line_id, int x, int y);
   ------------------------------------------------------------------
   function X_Draw_Point(Line_Id : Line_For_C;
-                        X, Y    : C_Types.Int) return Result;
-  pragma Import(C, X_Draw_Point, "x_draw_point");
+                        X, Y    : C_Types.Int) return Result
+    with Import => True, Convention => C, External_Name => "x_draw_point";
 
   ------------------------------------------------------------------
   -- Draw a line with current characteristics
   -- int x_draw_line (void *line_id, int x1, int y1, int x2, int y2);
   ------------------------------------------------------------------
   function X_Draw_Line(Line_Id : Line_For_C;
-                       X1, Y1, X2, Y2 : Natural) return Result;
-  pragma Import(C, X_Draw_Line, "x_draw_line");
+                       X1, Y1, X2, Y2 : Natural) return Result
+    with Import => True, Convention => C, External_Name => "x_draw_line";
 
   ------------------------------------------------------------------
   -- Draw a rectangle with current characteristics
   -- int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2);
   ------------------------------------------------------------------
   function X_Draw_Rectangle(Line_Id : Line_For_C;
-                            X1, Y1, X2, Y2 : Natural) return Result;
-  pragma Import(C, X_Draw_Rectangle, "x_draw_rectangle");
+                            X1, Y1, X2, Y2 : Natural) return Result
+    with Import => True, Convention => C, External_Name => "x_draw_rectangle";
 
   ------------------------------------------------------------------
   -- Fill a rectangle with current characteristics
   -- int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2);
   ------------------------------------------------------------------
   function X_Fill_Rectangle(Line_Id : Line_For_C;
-                            X1, Y1, X2, Y2 : Natural) return Result;
-  pragma Import(C, X_Fill_Rectangle, "x_fill_rectangle");
+                            X1, Y1, X2, Y2 : Natural) return Result
+    with Import => True, Convention => C, External_Name => "x_fill_rectangle";
 
   ------------------------------------------------------------------
   -- Draw points in a rectangle, starting at x1, y1 and of width * height pixels
@@ -264,8 +266,8 @@ package body X_Mng is
   function X_Draw_Points(Line_Id : Line_For_C;
                          X1, Y1 : Natural;
                          Width, Height : Natural;
-                         Points : System.Address) return Result;
-  pragma Import(C, X_Draw_Points, "x_draw_points");
+                         Points : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "x_draw_points";
 
   ------------------------------------------------------------------
   -- Fill an area defined by several points (X, Y)
@@ -274,8 +276,8 @@ package body X_Mng is
   ------------------------------------------------------------------
   function X_Fill_Area (Line_Id : Line_For_C;
                         Xys : System.Address;
-                        Nb_Points : C_Types.Int) return Result;
-  pragma Import(C, X_Fill_Area, "x_fill_area");
+                        Nb_Points : C_Types.Int) return Result
+    with Import => True, Convention => C, External_Name => "x_fill_area";
 
   ------------------------------------------------------------------
   -- Get current position in pixels, independently from events
@@ -283,8 +285,8 @@ package body X_Mng is
   ------------------------------------------------------------------
   function X_Get_Current_Pointer_Position(Line_Id : Line_For_C;
                                           X, Y : System.Address)
-           return Result;
-  pragma Import(C, X_Get_Current_Pointer_Position, "x_get_pointer_pos");
+           return Result
+    with Import => True, Convention => C, External_Name => "x_get_pointer_pos";
 
   ------------------------------------------------------------------
   -- Set mouse pointer in graphic (cross) or standard (arrow)
@@ -292,16 +294,18 @@ package body X_Mng is
   ------------------------------------------------------------------
   function X_Set_Graphic_Pointer(Line_Id : Line_For_C;
                                  Graphic : Bool_For_C;
-                                 Grab : Bool_For_C) return Result;
-  pragma Import(C, X_Set_Graphic_Pointer, "x_set_graphic_pointer");
+                                 Grab : Bool_For_C) return Result
+    with Import => True, Convention => C,
+         External_Name => "x_set_graphic_pointer";
 
   ------------------------------------------------------------------
   -- Hide mouse pointer
   -- int x_hide_graphic_pointer (void *line_id);
   ------------------------------------------------------------------
   function X_Hide_Graphic_Pointer(Line_Id : Line_For_C;
-                                  Grab : Bool_For_C) return Result;
-  pragma Import(C, X_Hide_Graphic_Pointer, "x_hide_graphic_pointer");
+                                  Grab : Bool_For_C) return Result
+    with Import => True, Convention => C,
+         External_Name => "x_hide_graphic_pointer";
 
   ------------------------------------------------------------------
   -- Reads the position on Tid
@@ -311,8 +315,8 @@ package body X_Mng is
   function X_Read_Tid(Line_Id         : Line_For_C;
                       Row_Col         : Bool_For_C;
                       P_Button        : System.Address;
-                      P_Row, P_Column : System.Address) return Result;
-  pragma Import(C, X_Read_Tid, "x_read_tid");
+                      P_Row, P_Column : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "x_read_tid";
 
   ------------------------------------------------------------------
   -- Reads a key of a sequence
@@ -323,8 +327,8 @@ package body X_Mng is
                       P_Shift   : System.Address;
                       P_Code    : System.Address;
                       P_Keys    : System.Address;
-                      P_Nbre    : System.Address) return Result;
-  pragma Import(C, X_Read_Key, "x_read_key");
+                      P_Nbre    : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "x_read_key";
 
   ------------------------------------------------------------------
   -- Propose selection to others
@@ -332,15 +336,16 @@ package body X_Mng is
 
   ------------------------------------------------------------------
   function X_Set_Selection (Line_Id : Line_For_C;
-                            Selection : System.Address) return Result;
-  pragma Import(C, X_Set_Selection, "x_set_selection");
+                            Selection : System.Address) return Result
+    with Import => True, Convention => C, External_Name => "x_set_selection";
 
   ------------------------------------------------------------------
   -- Request selection from others
   -- extern int x_request_selection (void *line_id);
   ------------------------------------------------------------------
-  function X_Request_Selection (Line_Id : Line_For_C) return Result;
-  pragma Import(C, X_Request_Selection, "x_request_selection");
+  function X_Request_Selection (Line_Id : Line_For_C) return Result
+    with Import => True, Convention => C,
+         External_Name => "x_request_selection";
 
   ------------------------------------------------------------------
   -- Get requested selection
@@ -348,23 +353,24 @@ package body X_Mng is
   ------------------------------------------------------------------
   function X_Get_Selection (Line_Id : Line_For_C;
                              Selection : System.Address;
-                             Len : C_Types.Int) return Result;
-  pragma Import(C, X_Get_Selection, "x_get_selection");
+                             Len : C_Types.Int) return Result
+    with Import => True, Convention => C, External_Name => "x_get_selection";
 
   ------------------------------------------------------------------
   -- Enable / disable cursor motion events
   -- extern int x_enable_motion_events (void *line_id, boolean enable_motion);
   ------------------------------------------------------------------
   function X_Enable_Motion_Events (Line_Id : Line_For_C;
-                                   Motion_Enable : Bool_For_C) return Result;
-  pragma Import(C, X_Enable_Motion_Events, "x_enable_motion_events");
+                                   Motion_Enable : Bool_For_C) return Result
+    with Import => True, Convention => C,
+         External_Name => "x_enable_motion_events";
 
   ------------------------------------------------------------------
   -- Rings a bell several times
   -- int x_bell (int nbre_bell;
   ------------------------------------------------------------------
-  function X_Bell (Repeat : C_Types.Int) return Result;
-  pragma Import(C, X_Bell, "x_bell");
+  function X_Bell (Repeat : C_Types.Int) return Result
+    with Import => True, Convention => C, External_Name => "x_bell";
 
 
   ------------------------------------------------------------------

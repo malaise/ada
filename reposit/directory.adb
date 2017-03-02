@@ -14,8 +14,8 @@ package body Directory is
   -- For Open_Error else Access_Error
   Einval : constant := 22;
 
-  function C_Strlen (S : System.Address) return C_Types.Size_T;
-  pragma Import(C, C_Strlen, "strlen");
+  function C_Strlen (S : System.Address) return C_Types.Size_T
+    with Import => True, Convention => C, External_Name => "strlen";
 
   function Str_For_C (Str : String) return String is
   begin
@@ -24,8 +24,8 @@ package body Directory is
 
   -- Returns current working directory
   function C_Getcwd (Buf : System.Address; Size : C_Types.Size_T)
-           return System.Address;
-  pragma Import(C, C_Getcwd, "getcwd");
+           return System.Address
+    with Import => True, Convention => C, External_Name => "getcwd";
 
   function Get_Current return String is
     Addr : System.Address;
@@ -53,8 +53,8 @@ package body Directory is
   end Get_Current;
 
   -- Changes current working directory
-  function C_Chdir (Path : System.Address) return C_Types.Int;
-  pragma Import(C, C_Chdir, "chdir");
+  function C_Chdir (Path : System.Address) return C_Types.Int
+    with Import => True, Convention => C, External_Name => "chdir";
 
   procedure Change_Current (New_Dir : in String) is
     C_New_Dir : constant String := Str_For_C(New_Dir);
@@ -69,8 +69,8 @@ package body Directory is
   end Change_Current;
 
   -- Creates a new directory
-  function C_Dir_Create (Path : System.Address) return C_Types.Int;
-  pragma Import(C, C_Dir_Create, "dir_create");
+  function C_Dir_Create (Path : System.Address) return C_Types.Int
+    with Import => True, Convention => C, External_Name =>  "dir_create";
 
   procedure Create (New_Dir : in String) is
     C_New_Dir : constant String := Str_For_C(New_Dir);
@@ -85,8 +85,8 @@ package body Directory is
   end Create;
 
   -- Removes a new directory
-  function C_Rmdir (Path : System.Address) return C_Types.Int;
-  pragma Import(C, C_Rmdir, "rmdir");
+  function C_Rmdir (Path : System.Address) return C_Types.Int
+    with Import => True, Convention => C, External_Name => "rmdir";
 
   procedure Remove (New_Dir : in String) is
     C_New_Dir : constant String := Str_For_C(New_Dir);
@@ -107,8 +107,8 @@ package body Directory is
   end Set;
 
   -- Closes a directory
-  procedure C_Closedir (Dir : System.Address);
-  pragma Import(C, C_Closedir, "closedir");
+  procedure C_Closedir (Dir : System.Address)
+    with Import => True, Convention => C, External_Name => "closedir";
 
   -- Desc deallocation
   procedure Finalize (Dest : in out Dir_Rec) is
@@ -119,8 +119,8 @@ package body Directory is
   end Finalize;
 
   -- Opens a directory for list of entries
-  function C_Opendir (Name : System.Address) return System.Address;
-  pragma Import(C, C_Opendir, "opendir");
+  function C_Opendir (Name : System.Address) return System.Address
+    with Import => True, Convention => C, External_Name => "opendir";
 
   function Open (Dir_Name : in String) return Dir_Desc is
     C_Dir_Name : constant String := Str_For_C(Dir_Name);
@@ -143,8 +143,8 @@ package body Directory is
 
   -- Gets next entry of the opened directory
   function C_Readdir (Dir : System.Address; Name : System.Address)
-           return C_Types.Int;
-  pragma Import(C, C_Readdir, "read_dir");
+           return C_Types.Int
+    with Import => True, Convention => C, External_Name => "read_dir";
 
   function Get_Rec (Desc : Dir_Desc) return Dir_Rec is
     Rec : Dir_Rec;
@@ -180,8 +180,8 @@ package body Directory is
   end Next_Entry;
 
   -- Reset entries for the first
-  procedure C_Rewinddir (Dir : System.Address);
-  pragma Import(C, C_Rewinddir, "rewinddir");
+  procedure C_Rewinddir (Dir : System.Address)
+    with Import => True, Convention => C, External_Name => "rewinddir";
 
   procedure Rewind (Desc : in Dir_Desc) is
   begin
@@ -230,8 +230,8 @@ package body Directory is
   function C_Readlink (Path : System.Address;
                        Buf  : System.Address;
                        Bufsiz : C_Types.Size_T)
-           return C_Types.Size_T;
-  pragma Import(C, C_Readlink, "readlink");
+           return C_Types.Size_T
+    with Import => True, Convention => C, External_Name => "readlink";
 
   -- May raise Name_Error if File_Name does not exist
   --           Open_Error if File_Name is not a link
@@ -312,8 +312,8 @@ package body Directory is
   function C_Fnmatch (Pattern : System.Address;
                       Strings : System.Address;
                       Flags : C_Types.Int)
-           return C_Types.Int;
-  pragma Import(C, C_Fnmatch, "fnmatch");
+           return C_Types.Int
+    with Import => True, Convention => C, External_Name => "fnmatch";
   File_Matches : constant := 0;
   File_Not_Matches : constant := 1;
 

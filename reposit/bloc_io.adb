@@ -12,40 +12,39 @@ package  body Bloc_Io is
   Write_Str : constant String := "r+" & Nul;
 
   function Fopen(Path : in System.Address;
-                 Mode : in System.Address) return System.Address;
-  pragma Import (C, Fopen, "fopen");
+                 Mode : in System.Address) return System.Address
+    with Import => True, Convention => C, External_Name => "fopen";
 
-  function Fclose(File : System.Address) return C_Types.Int;
-  pragma Import (C, Fclose, "fclose");
+  function Fclose(File : System.Address) return C_Types.Int
+    with Import => True, Convention => C, External_Name => "fclose";
 
   function Fread(To : System.Address;
                  Size_Item : C_Types.Size_T;
                  Num_Item  : C_Types.Size_T;
-                 File : System.Address) return C_Types.Size_T;
-  pragma Import (C, Fread, "fread");
+                 File : System.Address) return C_Types.Size_T
+    with Import => True, Convention => C, External_Name => "fread";
 
   function Fwrite(To : System.Address;
                   Size_Item : C_Types.Size_T;
                   Num_Item  : C_Types.Size_T;
-                  File : System.Address) return C_Types.Size_T;
-  pragma Import (C, Fwrite, "fwrite");
+                  File : System.Address) return C_Types.Size_T
+    with Import => True, Convention => C, External_Name => "fwrite";
 
   Seek_Set : constant Integer := 0;
   Seek_End : constant Integer := 2;
   function Fseek(File : System.Address;
                  Offset : C_Types.Long;
-                 Whence : C_Types.Int) return C_Types.Int;
-  pragma Import (C, Fseek, "fseek");
+                 Whence : C_Types.Int) return C_Types.Int
+    with Import => True, Convention => C, External_Name => "fseek";
 
-  function Ftell(File : System.Address) return C_Types.Long;
-  pragma Import (C, Ftell, "ftell");
+  function Ftell(File : System.Address) return C_Types.Long
+    with Import => True, Convention => C, External_Name => "ftell";
 
-  function Ferror(File : System.Address) return C_Types.Int;
-  pragma Import (C, Ferror, "ferror");
+  function Ferror(File : System.Address) return C_Types.Int
+    with Import => True, Convention => C, External_Name => "ferror";
 
-
-  procedure Clearerr(File : System.Address);
-  pragma Import (C, Clearerr, "clearerr");
+  procedure Clearerr(File : System.Address)
+    with Import => True, Convention => C, External_Name => "clearerr";
 
   ---------------
   -- Functions --
