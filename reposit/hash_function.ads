@@ -15,7 +15,8 @@ package Hash_Function is
   procedure Rst (Buffer : in out Hash_Buffer);
 
   -- Add Str to the currently computed hash value
-  procedure Add (Buffer : in out Hash_Buffer; Str : in String);
+  procedure Add (Buffer : in out Hash_Buffer; Str : in String)
+    with Inline => True;
 
   -- Get the currently computed hash value (which is not reset)
   function Get (Buffer : in Hash_Buffer) return Hash_Range;

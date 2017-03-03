@@ -28,7 +28,6 @@ package body Bit_Ops is
 
   -- Integer
   function "And" (Left, Right : Integer) return Integer is
-  pragma Inline ("And");
     Res : Integer;
   begin
     System.Bit_Ops.Bit_And (Left'Address, Left'Size,
@@ -38,7 +37,6 @@ package body Bit_Ops is
   end "And";
 
   function "Or"  (Left, Right : Integer) return Integer is
-  pragma Inline ("Or");
     Res : Integer;
   begin
     System.Bit_Ops.Bit_Or (Left'Address, Left'Size,
@@ -48,7 +46,6 @@ package body Bit_Ops is
   end "Or";
 
   function "Xor" (Left, Right : Integer) return Integer is
-  pragma Inline ("Xor");
     Res : Integer;
   begin
     System.Bit_Ops.Bit_Xor (Left'Address, Left'Size,
@@ -58,7 +55,6 @@ package body Bit_Ops is
   end "Xor";
 
   function "Not" (Val : Integer) return Integer is
-  pragma Inline ("Not");
     Res : Integer;
   begin
     System.Bit_Ops.Bit_Not (Val'Address, Val'Size,
@@ -67,20 +63,17 @@ package body Bit_Ops is
   end "Not";
 
   function Shl (Val : Integer; Bits : Integer) return Integer is
-  pragma Inline (Shl);
   begin
     return To_Integer(Interfaces.Shift_Left(To_Unsigned_32(Val), Bits));
   end Shl;
 
   function Shr (Val : Integer; Bits : Integer) return Integer is
-  pragma Inline (Shr);
   begin
     return To_Integer(Interfaces.Shift_Right(To_Unsigned_32(Val), Bits));
   end Shr;
 
   -- Long_Integer
   function "And" (Left, Right : Long_Integer) return Long_Integer is
-  pragma Inline ("And");
     Res : Long_Integer;
   begin
     System.Bit_Ops.Bit_And (Left'Address, Left'Size,
@@ -90,7 +83,6 @@ package body Bit_Ops is
   end "And";
 
   function "Or"  (Left, Right : Long_Integer) return Long_Integer is
-  pragma Inline ("Or");
     Res : Long_Integer;
   begin
     System.Bit_Ops.Bit_Or (Left'Address, Left'Size,
@@ -100,7 +92,6 @@ package body Bit_Ops is
   end "Or";
 
   function "Xor" (Left, Right : Long_Integer) return Long_Integer is
-  pragma Inline ("Xor");
     Res : Long_Integer;
   begin
     System.Bit_Ops.Bit_Xor (Left'Address, Left'Size,
@@ -110,7 +101,6 @@ package body Bit_Ops is
   end "Xor";
 
   function "Not" (Val : Long_Integer) return Long_Integer is
-  pragma Inline ("Not");
     Res : Long_Integer;
   begin
     System.Bit_Ops.Bit_Not (Val'Address, Val'Size,
@@ -119,20 +109,17 @@ package body Bit_Ops is
   end "Not";
 
   function Shl (Val : Long_Integer; Bits : Integer) return Long_Integer is
-  pragma Inline (Shl);
   begin
     return Shl_Long(Val, Bits);
   end Shl;
 
   function Shr (Val : Long_Integer; Bits : Integer) return Long_Integer is
-  pragma Inline (Shr);
   begin
     return Shr_Long(Val, Bits);
   end Shr;
 
   -- Long_Long_Integer
   function "And" (Left, Right : Ll_Integer) return Ll_Integer is
-  pragma Inline ("And");
     Res : Ll_Integer;
   begin
     System.Bit_Ops.Bit_And (Left'Address, Left'Size,
@@ -142,7 +129,6 @@ package body Bit_Ops is
   end "And";
 
   function "Or"  (Left, Right : Ll_Integer) return Ll_Integer is
-  pragma Inline ("Or");
     Res : Ll_Integer;
   begin
     System.Bit_Ops.Bit_Or (Left'Address, Left'Size,
@@ -152,7 +138,6 @@ package body Bit_Ops is
   end "Or";
 
   function "Xor" (Left, Right : Ll_Integer) return Ll_Integer is
-  pragma Inline ("Xor");
     Res : Ll_Integer;
   begin
     System.Bit_Ops.Bit_Xor (Left'Address, Left'Size,
@@ -162,7 +147,6 @@ package body Bit_Ops is
   end "Xor";
 
   function "Not" (Val : Ll_Integer) return Ll_Integer is
-  pragma Inline ("Not");
     Res : Ll_Integer;
   begin
     System.Bit_Ops.Bit_Not (Val'Address, Val'Size, Res'Address);
@@ -170,13 +154,11 @@ package body Bit_Ops is
   end "Not";
 
   function Shl (Val : Ll_Integer; Bits : Integer) return Ll_Integer is
-  pragma Inline (Shl);
   begin
     return To_Ll_Integer(Interfaces.Shift_Left (To_Unsigned_64(Val), Bits));
   end Shl;
 
   function Shr (Val : Ll_Integer; Bits : Integer) return Ll_Integer is
-  pragma Inline (Shr);
   begin
     return To_Ll_Integer(Interfaces.Shift_Right (To_Unsigned_64(Val), Bits));
   end Shr;

@@ -57,8 +57,7 @@ package body Lz4 is
   --#@IfDef Debug
   -- Trace logger
   package Logger is new Trace.Basic_Logger ("Lz4");
-  procedure Log (Msg : in String) is
-  pragma Inline (Log);
+  procedure Log (Msg : in String) with Inline => True is
   begin
     Logger.Log_Debug (Msg);
   end Log;
@@ -91,8 +90,8 @@ package body Lz4 is
 
   -- Init the future
   -- Bytes at Pos, Pos+1, Pos+2, Pos+3
-  function Build (A : Byte_Array; I : Natural) return Seq_Type is
-  pragma Inline (Build);
+  function Build (A : Byte_Array; I : Natural) return Seq_Type
+    with Inline => True is
   begin
     return Shl (Integer(A(A'First + I + 0)), 24)
         or Shl (Integer(A(A'First + I + 1)), 16)
@@ -101,16 +100,14 @@ package body Lz4 is
   end Build;
 
   -- Compute the hash value of a Seq
-  function Hash (V : Seq_Type) return Hash_Ref is
-  pragma Inline (Hash);
+  function Hash (V : Seq_Type) return Hash_Ref with Inline => True is
   begin
     return Hash_Ref (Shr (Long_Long_Integer (V) * 2654435761, 32 - Hash_Log)
                      and Hash_Mask);
   end Hash;
 
   -- Convert an int into a byte
-  function To_Byte (I : Natural) return Byte is
-  pragma Inline (To_Byte);
+  function To_Byte (I : Natural) return Byte with Inline => True is
   begin
     return Byte (I and 16#FF#);
   end To_Byte;

@@ -29,7 +29,6 @@ package body Hash_Function is
     end loop;
 
   end Add;
-  pragma Inline (Add);
 
   -- Get currently computed hash value (which is not reset)
   function Get (Buffer : in Hash_Buffer) return Hash_Range is

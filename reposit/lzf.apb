@@ -76,15 +76,13 @@ package body Lzf is
     function Debug_On return Boolean;
   end Logger;
   package body Logger is
-    function Debug_On return Boolean is
-    pragma Inline (Debug_On);
+    function Debug_On return Boolean with Inline => True is
     begin
       -- Static activation of traces
       return False;
     end Debug_On;
   end Logger;
-  procedure Log (Msg : in String) is
-  pragma Inline (Log);
+  procedure Log (Msg : in String) with Inline => True is
   begin
     Ada.Text_Io.Put_Line (Ada.Text_Io.Standard_Error, Msg);
   end Log;
@@ -112,8 +110,7 @@ package body Lzf is
     --#@ElseDef
   -- Trace logger
   package Logger is new Trace.Basic_Logger ("Lzf");
-  procedure Log (Msg : in String) is
-  pragma Inline (Log);
+  procedure Log (Msg : in String) with Inline => True is
   begin
     Logger.Log_Debug (Msg);
   end Log;
@@ -169,8 +166,8 @@ package body Lzf is
   -- Return the integer with the first two bytes 0, then the byte at the
   --  index and the byte at index + 1
   subtype Future_Range is Natural;
-  function First (A : Byte_Array; I : Natural) return Future_Range is
-  pragma Inline (First);
+  function First (A : Byte_Array; I : Natural) return Future_Range
+    with Inline => True is
   begin
     return Shl (Integer(A(A'First + I)), 8) or Integer(A(A'First + I + 1));
   end First;
@@ -178,15 +175,13 @@ package body Lzf is
   -- Update the future with current position
   -- Shift the value 1 byte left, and add the byte at index inPos+2
   function Next (V : Future_Range; A : Byte_Array; I : Natural)
-                return Future_Range is
-  pragma Inline (Next);
+                return Future_Range with Inline => True is
   begin
     return Shl (V and 16#FFFF#, 8) or Integer(A(A'First + I + 2));
   end Next;
 
   -- Compute the hash value of a future
-  function Hash (V : Future_Range) return Hash_Ref is
-  pragma Inline (Hash);
+  function Hash (V : Future_Range) return Hash_Ref with Inline => True is
   begin
     --## rule off Parentheses
     return
@@ -201,8 +196,7 @@ package body Lzf is
   end Hash;
 
   -- Convert an int into a byte
-  function To_Byte (I : Natural) return Byte is
-  pragma Inline (To_Byte);
+  function To_Byte (I : Natural) return Byte with Inline => True is
   begin
     return Byte (I and 16#FF#);
   end To_Byte;
