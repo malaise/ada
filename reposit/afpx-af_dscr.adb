@@ -1,5 +1,5 @@
 with Ada.Direct_Io;
-with Environ, Basic_Proc;
+with Basic_Proc;
 separate (Afpx)
 package body Af_Dscr is
 

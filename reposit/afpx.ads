@@ -414,6 +414,12 @@ package Afpx is
   -- Reset Handle (all fields except Cursor_Field)
   procedure Reset (Handle : in out Get_Handle_Rec);
 
+  -- Set double-click delay for Put_Then_Get
+  -- Can also be defined by ENV varialbe AFPX_DOUBLE_CLICK_DELAY (in ms)
+  subtype Double_Click_Delay_Range is Duration range 0.100 .. 0.900;
+  procedure Set_Double_Click_Delay (
+    Double_Click_Delay : in Double_Click_Delay_Range);
+
   -- Print the fields and the list (if Redisplay has been called or is needed),
   --  then gets.
   --  justify a redisplay, by instance when Result.Event was Refresh. It is

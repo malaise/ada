@@ -30,7 +30,8 @@ package body Af_Ptg is
   -- Time and list Id of first click
   Last_Selected_Id : Natural;
   Last_Selection_Time : Ada.Calendar.Time;
-  Double_Click_Delay  : constant Ada.Calendar.Day_Duration := 0.3;
+  Double_Click_Delay : Double_Click_Delay_Range
+                     := Default_Double_Click_Delay;
   Show_Click_Delay  : constant Ada.Calendar.Day_Duration := 0.03;
 
   -- Cursor field at end of prev Ptg
@@ -58,6 +59,14 @@ package body Af_Ptg is
         Background := Field.Colors.Selected;
     end case;
   end Set_Colors;
+
+  -- Set double-click delay
+  procedure Set_Double_Click_Delay (
+      Double_Click_Delay : in Double_Click_Delay_Range) is
+  begin
+    Af_Ptg.Double_Click_Delay := Double_Click_Delay;
+  end Set_Double_Click_Delay;
+
 
   -- Put a whole field
   procedure Put_Fld (Field_No : in Field_Range;

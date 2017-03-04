@@ -1,4 +1,4 @@
-with Language;
+with Environ, Language;
 package body Afpx is
 
   Console : aliased Con_Io.Console;
@@ -142,6 +142,11 @@ package body Afpx is
                           Foreground : out Con_Io.Effective_Colors;
                           Background : out Con_Io.Effective_Colors);
 
+    -- Set double-click delay
+    Default_Double_Click_Delay : constant Double_Click_Delay_Range := 0.500;
+    procedure Set_Double_Click_Delay (
+      Double_Click_Delay : in Double_Click_Delay_Range);
+
     -- Put a whole field in attribute
     procedure Put_Fld (Field_No : in Field_Range;
                        State    : in State_List);
@@ -240,6 +245,20 @@ package body Afpx is
     Width := Size.Col + 1;
   end Get_Screen_Size;
 
+  -- Local procedure to init double click dlay from ENV
+  procedure Init_Double_Click_Delay_From_Env is
+    Ms : Positive;
+    Double_Click_Delay : Double_Click_Delay_Range;
+  begin
+    Ms := Positive'Value (Environ.Getenv ("AFPX_DOUBLE_CLICK_DELAY"));
+    Double_Click_Delay := Duration (Ms) / 1000.0;
+    Af_Ptg.Set_Double_Click_Delay (Double_Click_Delay);
+  exception
+    when others =>
+      -- Invalid ENV value => discard
+      null;
+  end Init_Double_Click_Delay_From_Env;
+
   -- Set current descriptor (read descriptor description)
   procedure Use_Descriptor (Descriptor_No : in Descriptor_Range;
                             Clear_Screen : in Boolean := True) is
@@ -262,6 +281,8 @@ package body Afpx is
               Col_Last => Size.Col,
               Def_Back => Af_Dscr.Current_Dscr.Background);
       Af_Con_Io.Set_To_Screen (Console'Access);
+      -- Init double screen delay from ENV
+      Init_Double_Click_Delay_From_Env;
     end if;
     -- Done at each descriptor
     Af_List.Open;
@@ -911,6 +932,11 @@ package body Afpx is
    -- Get position in list corresponding to Percent
   function Get_List_Index (Percent : Percent_Range) return Natural
            renames Af_List.Get_Index;
+
+  procedure Set_Double_Click_Delay (
+    Double_Click_Delay : in Double_Click_Delay_Range)
+    renames Af_Ptg.Set_Double_Click_Delay;
+
 
   -- Force redisplay at next Put_Then_Get
   procedure Redisplay is
