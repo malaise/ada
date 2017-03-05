@@ -415,7 +415,7 @@ package Afpx is
   procedure Reset (Handle : in out Get_Handle_Rec);
 
   -- Set double-click delay for Put_Then_Get
-  -- Can also be defined by ENV varialbe AFPX_DOUBLE_CLICK_DELAY (in ms)
+  -- Can also be defined by ENV variable AFPX_DOUBLE_CLICK_DELAY (in ms)
   subtype Double_Click_Delay_Range is Duration range 0.100 .. 0.900;
   procedure Set_Double_Click_Delay (
     Double_Click_Delay : in Double_Click_Delay_Range);
