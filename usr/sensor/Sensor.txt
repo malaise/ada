@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: V3.1
+Version: V3.2
 
 Sensor scans several log files and raises alerts on some events (matching
 filters).
@@ -13,8 +13,8 @@ sensor <configuration file> | -h | --help | -v | --version
 
 The XML configuration file defines several rules. +
 Each rule has a unique name and executes a predefined shell command. The
-definition of a command can refer to some variables of the form '${variable}'.
-The following variable names are automatically defined:
+definition of a command can refer to some variables of the form
+'${variable}'. The following variable names are automatically defined:
 
 - $\{Match} : Lines of the log that match the filter
 - $\{Time} : Date and time at ISO format (YYyy-Mm-DdTHh:Mm:Ss.mmm)
@@ -25,14 +25,35 @@ an error. +
  +
 The configuration file then defines filters. Each filter consists in:
 
-- a file name (the name of the file to scan)
+- the name of the file to scan
 - an optional scanning period in seconds (default 60.0, min 1.0)
 - an optional tail size to scan (default 100 lines, 0 for infinite)
 - an optional number of past seconds to scan (default 1 hour, 0 for infinite)
 and the format of time in the file
 - an history of alerts to store (default 100)
 - the name of the rule to execute
-- the criteria (regex) for lines to match
+- an optional number of past seconds to scan (and the format of time in the
+scanned file)
+- the criteria (regular expression) to match
+
+Example:
+.......................................
+
+<?xml version="1.0" encoding="Utf-8"?>
+<!DOCTYPE Sensor SYSTEM "Sensor.dtd">
+<Sensor>
+  <Rules>
+    <Rule Name="RootLogin">echo -n "${Match}" >> /root/log/login</Rule>
+  </Rules>
+  <Filters>
+    <Filter File="/var/log/auth.log" Rule="RootLogin">
+      <Past Seconds="3600">%b %d %H:%M:%S</Past>
+      <Criteria>pam_unix\((su|sshd):session\): session opened for user root by</Criteria>
+    </Filter>
+  </Filters>
+</Sensor>
+
+.......................................
 
 Processing
 ----------
@@ -41,9 +62,8 @@ Processing
  * Check the expansion of each rule (variables) and store the rules in a
 unique list (by name)
  * Store the filters in a dynamic list (history is a circular queue), check
-that the referenced rule exists
+time format, regular expression, and that the referenced rule exists
  * Arm a periodical time for each filter (user data being the position in list)
- * When a timer expires:
 
 .When a timer expires:
  * Retrieve the filter

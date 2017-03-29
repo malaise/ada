@@ -4,7 +4,7 @@ with Argument, Basic_Proc, Sys_Calls, As.U, Timers, Event_Mng, Xml_Parser,
 with Debug, Rules, Filters, Executor;
 procedure Sensor is
 
-  Version : constant String := "V3.1";
+  Version : constant String := "V3.2";
 
   procedure Help is
   begin
