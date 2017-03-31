@@ -59,7 +59,7 @@ elif [ "$1" = "-ix" ] ; then
   clean
   echo "Done."
   exit
-elif [ "$1" != "" ] ; then
+elif [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then
   echo "Usage: `basename $0` [ -ix | -clean ]" 2>&1
   exit 1
 fi
@@ -111,30 +111,51 @@ function comp {
   fi
 }
 
-# t_ada_parser
-title t_ada_parser
-export INPUT=t_ada_parser.adb
-try t_ada_parser $INPUT
-comp out $INPUT
-NB=`wc -l err | awk '{print $1}'`
-export ENB=635
-if [ $NB -ne $ENB ] ; then
-  error "File err has incorrect length $NB i.o. $ENB."
+# Does $1 match $2 or is $1 "ALL"
+function match {
+  if [ \( "$1" = "$2" \) -o \( "$1" = "ALL" \) ] ; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+
+# Start list of function
+arg="$1"
+if [ -z "$arg" ] ; then
+  arg="ALL"
 fi
-echo "OK"
+
+# t_ada_parser
+if `match $arg t_ada_parser` ; then
+  title t_ada_parser
+  export INPUT=t_ada_parser.adb
+  try t_ada_parser $INPUT
+  comp out $INPUT
+  NB=`wc -l err | awk '{print $1}'`
+  export ENB=635
+  if [ $NB -ne $ENB ] ; then
+    error "File err has incorrect length $NB i.o. $ENB."
+  fi
+  echo "OK"
+fi
 
 # t_afpx_rnb
-title t_afpx_rnb...
-t_afpx_rnb >/dev/null 2>&1
-if [ $? -ne 0 ] ; then
-  error "t_afpx_rnb has failed".
+if `match $arg t_afpx_rnb` ; then
+  title t_afpx_rnb...
+  t_afpx_rnb >/dev/null 2>&1
+  if [ $? -ne 0 ] ; then
+    error "t_afpx_rnb has failed".
+  fi
+  echo "OK"
 fi
-echo "OK"
 
 # t_any
-title t_any
-try t_any
-cat >exp << EOF
+if `match $arg t_any` ; then
+  title t_any
+  try t_any
+  cat >exp << EOF
 None_Kind: 
 Bool_Kind: True
 Trilean_Kind: Other
@@ -147,18 +168,22 @@ Str_Kind: A string
 Address_Kind: 16#33C99#
 Access_Kind: ->Another string
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_app
-title t_app
-t_app
+if `match $arg t_app` ; then
+  title t_app
+  t_app
+fi
 
 # t_arbitrary
-title t_arbitrary
-try t_arbitrary 21
-cat >exp << EOF
+if `match $arg t_arbitrary` ; then
+  title t_arbitrary
+  try t_arbitrary 21
+  cat >exp << EOF
 A is        +21
 abs A is    +21
 -A is       -21
@@ -166,11 +191,11 @@ A positive  True
 Sqrt(A)     +4
 Digits: 2 and 1
 EOF
-comp err nul
-comp out exp
+  comp err nul
+  comp out exp
 
-try t_arbitrary 3 7
-cat >exp << EOF
+  try t_arbitrary 3 7
+  cat >exp << EOF
 A is        +3
 abs A is    +3
 -A is       -3
@@ -200,17 +225,19 @@ A rem B is +3
 A mod B is +3
 A ** B is  +2187
 EOF
-comp err nul
-comp out exp
-try t_arbitrary -a 1000
-comp err nul
-echo "OK"
+  comp err nul
+  comp out exp
+  try t_arbitrary -a 1000
+  comp err nul
+  echo "OK"
+fi
 
 # t_arg
-title t_arg
-echo -e "K\na1\n1\nY\n2\nA\n1\nE" | try t_arg -a1v1 -a2
-echo >>out
-cat >exp << EOF
+if `match $arg t_arg` ; then
+  title t_arg
+  echo -e "K\na1\n1\nY\n2\nA\n1\nE" | try t_arg -a1v1 -a2
+  echo >>out
+ cat >exp << EOF
 >< >t_arg<
  2 arguments.
 E : Exit
@@ -253,16 +280,18 @@ N : Not_key
 A : Any_arg
 Enter the letter of your choice : 
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_arg_parser
-title t_arg_parser
-try t_arg_parser auto
+if `match $arg t_arg_parser` ; then
+  title t_arg_parser
+  try t_arg_parser auto
 
-try t_arg_parser -f -m  -m no -o opt -c -t -c 2
-cat >exp << EOF
+  try t_arg_parser -f -m  -m no -o opt -c -t -c 2
+  cat >exp << EOF
 -f | --first                 A first single key
 -s | --second                A second single key
 -t | --third                 A third single key
@@ -287,81 +316,91 @@ Key c combi is found on 2 occurences.
   Kind: Chr  Position:  7  Option ><
   Kind: Chr  Position:  9  Option >2<
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_asb 
-title t_asb
-try t_asb
-comp err nul
-comp out data/t_asbu.ref
-echo "OK"
+if `match $arg t_asb` ; then
+  title t_asb
+  try t_asb
+  comp err nul
+  comp out data/t_asbu.ref
+  echo "OK"
+fi
 
 # t_asu 
-title t_asu
-try t_asu
-comp err nul
-comp out data/t_asbu.ref
-echo "OK"
+if `match $arg t_asu` ; then
+  title t_asu
+  try t_asu
+  comp err nul
+  comp out data/t_asbu.ref
+  echo "OK"
+fi
 
 # t_assert
-title t_assert
-cat >exp << EOF
+if `match $arg t_assert` ; then
+  title t_assert
+  cat >exp << EOF
 This program is normally silent
 Set ENV variable ASSERT_ACTION to TRACE to see the 3 traces
  or to RAISE to raise first exception.
 EOF
-try t_assert
-comp err nul
-comp out exp
+  try t_assert
+  comp err nul
+  comp out exp
 
-export ASSERT_ACTION=TRACE
-try t_assert
-comp out exp
-comp -n err nul
+  export ASSERT_ACTION=TRACE
+  try t_assert
+  comp out exp
+  comp -n err nul
 
-export ASSERT_ACTION=RAISE
-try -n t_assert
-comp out exp
-comp -n err nul
-echo "OK"
+  export ASSERT_ACTION=RAISE
+  try -n t_assert
+  comp out exp
+  comp -n err nul
+  echo "OK"
+fi
 
 # t_async
+if `match $arg t_async` ; then
 title t_async
-t_async -n -s 20000 >out1 2>err1 & 
-export PID=$!
-sleep 0.5
-echo -e "Toto\nTiti\nTata" | try t_async -c localhost:20000
-sleep 0.5
-kill $PID
-cat << EOF >exp
+  t_async -n -s 20000 >out1 2>err1 & 
+  export PID=$!
+  sleep 0.5
+  echo -e "Toto\nTiti\nTata" | try t_async -c localhost:20000
+  sleep 0.5
+  kill $PID
+  cat << EOF >exp
 Toto
 Titi
 Tata
 EOF
-cat  << EOF >exp1
+  cat  << EOF >exp1
 connected
 disconnected
 EOF
-cat  << EOF >exp2
+  cat  << EOF >exp2
 connected
 EOF
-comp out1 exp
-comp err1 exp1
-comp err exp2
-echo "OK"
+  comp out1 exp
+  comp err1 exp1
+  comp err exp2
+  echo "OK"
+fi
 
 # t_autobus
-title t_autobus
-export AUTOBUS_CONFIG=data/Autobus.xml
-t_autobus -a >out1 2>err1 &
-export PID=$!
-sleep 0.7
-try t_autobus -a Ah que coucou
-kill $PID
-echo >>out1
-cat << EOF >exp
+if `match $arg t_autobus` ; then
+  title t_autobus
+  export AUTOBUS_CONFIG=data/Autobus.xml
+  t_autobus -a >out1 2>err1 &
+  export PID=$!
+  sleep 0.7
+  try t_autobus -a Ah que coucou
+  kill $PID
+  echo >>out1
+  cat << EOF >exp
 Received Ah que coucou -> Replying Coucou!
 Spyed >Ah que coucou<
 Received Ah que coucou -> Replying Coucou!
@@ -371,116 +410,126 @@ Spyed >Ah que coucou<
 Closing.
 Done.
 EOF
-comp err1 nul
-comp err nul
-comp out1 exp
-echo "OK"
+  comp err1 nul
+  comp err nul
+  comp out1 exp
+  echo "OK"
+fi
 
 # t_basic
-title t_basic
-echo -e "tata\ntete\ntiti\ntoto\ntutu" | t_basic >out 2>err
-cat << EOF >exp
+if `match $arg t_basic` ; then
+  title t_basic
+  echo -e "tata\ntete\ntiti\ntoto\ntutu" | t_basic >out 2>err
+  cat << EOF >exp
 tata
 tete
 titi
 toto
 tutu
 EOF
-cat << EOF >exp1
+  cat << EOF >exp1
 End_Error
 EOF
-comp out exp
-comp err exp1
-echo "OK"
+  comp out exp
+  comp err exp1
+  echo "OK"
+fi
 
 # t_bencode
-title t_bencode
-BENCOD='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:e4:3Tab1:\t9:4Negativei-21ee'
-echo -en "$BENCOD" >exp
-XML=`echo -en $BENCOD | t_bencode -c -b2x 2>err`
-BDECOD=`echo -n $XML | t_bencode -c -x2b 2>>err`
-echo -en "$BDECOD" >out
-comp err nul
-comp out exp
+if `match $arg t_bencode` ; then
+  title t_bencode
+  BENCOD='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:e4:3Tab1:\t9:4Negativei-21ee'
+  echo -en "$BENCOD" >exp
+  XML=`echo -en $BENCOD | t_bencode -c -b2x 2>err`
+  BDECOD=`echo -n $XML | t_bencode -c -x2b 2>>err`
+  echo -en "$BDECOD" >out
+  comp err nul
+  comp out exp
 
-BENCOD='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:e4:3Tab1:\t9:3Negativei-21ee'
-echo -en "$BENCOD" >exp
-XML=`echo -en $BENCOD | t_bencode -b2x 2>err`
-BDECOD=`echo -n $XML | t_bencode -x2b 2>>err`
-echo -en "$BDECOD" >out
-comp err nul
-comp out exp
-echo -en $BENCOD | t_bencode -c -b2x >out 2>err
-if [ $? -ne 1 ] ; then
-  cat err
-  error "t_bencode shall have detected dictio error"
+  BENCOD='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:e4:3Tab1:\t9:3Negativei-21ee'
+  echo -en "$BENCOD" >exp
+  XML=`echo -en $BENCOD | t_bencode -b2x 2>err`
+  BDECOD=`echo -n $XML | t_bencode -x2b 2>>err`
+  echo -en "$BDECOD" >out
+  comp err nul
+  comp out exp
+  echo -en $BENCOD | t_bencode -c -b2x >out 2>err
+  if [ $? -ne 1 ] ; then
+    cat err
+    error "t_bencode shall have detected dictio error"
+  fi
+  comp out nul
+
+  BENCOD='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:ei21e1:\t9:3Negativei-21ee'
+  echo -en "$BENCOD" >exp
+  XML=`echo -en $BENCOD | t_bencode -b2x 2>err`
+  BDECOD=`echo -n $XML | t_bencode -x2b 2>>err`
+  echo -en "$BDECOD" >out
+  comp err nul
+  comp out exp
+  echo -en $BENCOD | t_bencode -c -b2x >out 2>err
+  if [ $? -ne 1 ] ; then
+    cat err
+    error "t_bencode shall have detected dictio error"
+  fi
+  comp out nul
+
+  EXP='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:e9:3Negativei-21e4:3Tab1:\te'
+  echo -en "$EXP" >exp
+  BENCOD='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:e4:3Tab1:\t9:3Negativei-21ee'
+  XML=`echo -en $BENCOD | t_bencode -s -b2x 2>err`
+  BDECOD=`echo -n $XML | t_bencode -x2b 2>>err`
+  echo -en "$BDECOD" >out
+  comp err nul
+  comp out exp
+  XML=`echo -en $BENCOD | t_bencode -b2x 2>err`
+  BDECOD=`echo -n $XML | t_bencode -s -x2b 2>>err`
+  echo -en "$BDECOD" >out
+  comp err nul
+  comp out exp
+  echo "OK"
 fi
-comp out nul
-
-BENCOD='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:ei21e1:\t9:3Negativei-21ee'
-echo -en "$BENCOD" >exp
-XML=`echo -en $BENCOD | t_bencode -b2x 2>err`
-BDECOD=`echo -n $XML | t_bencode -x2b 2>>err`
-echo -en "$BDECOD" >out
-comp err nul
-comp out exp
-echo -en $BENCOD | t_bencode -c -b2x >out 2>err
-if [ $? -ne 1 ] ; then
-  cat err
-  error "t_bencode shall have detected dictio error"
-fi
-comp out nul
-
-EXP='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:e9:3Negativei-21e4:3Tab1:\te'
-echo -en "$EXP" >exp
-BENCOD='6:Dictiod7:1OneInti1e8:2TwoListli10e6:Eleven5:Empty0:e4:3Tab1:\t9:3Negativei-21ee'
-XML=`echo -en $BENCOD | t_bencode -s -b2x 2>err`
-BDECOD=`echo -n $XML | t_bencode -x2b 2>>err`
-echo -en "$BDECOD" >out
-comp err nul
-comp out exp
-XML=`echo -en $BENCOD | t_bencode -b2x 2>err`
-BDECOD=`echo -n $XML | t_bencode -s -x2b 2>>err`
-echo -en "$BDECOD" >out
-comp err nul
-comp out exp
-echo "OK"
 
 # t_bloc_io
-title t_bloc_io
-try t_bloc_io
-try t_bloc_io
-tail -3 out >tmp
-cat << EOF >exp
+if `match $arg t_bloc_io` ; then
+  title t_bloc_io
+  try t_bloc_io
+  try t_bloc_io
+  tail -3 out >tmp
+  cat << EOF >exp
 Dump:  42 
 Set index to  5371
 Dump:  21 -1 -2  21 
 EOF
-comp err nul
-comp tmp exp
-echo "OK"
+  comp err nul
+  comp tmp exp
+  echo "OK"
+fi
 
 # t_byte_to_unicode
-title t_byte_to_unicode
-try t_byte_to_unicode data/ISO-8859-9.xml
-grep -E "^222" out >out1
-tail -2 out >out2
-cat << EOF >exp1
+if `match $arg t_byte_to_unicode` ; then
+  title t_byte_to_unicode
+  try t_byte_to_unicode data/ISO-8859-9.xml
+  grep -E "^222" out >out1
+  tail -2 out >out2
+  cat << EOF >exp1
 222 16#DE# ->   350 16#15E#
 EOF
-cat << EOF >exp2
+  cat << EOF >exp2
 254 16#FE# ->   351 16#15F#
 255 16#FF# ->   255 16#FF#
 EOF
-comp err nul
-comp out1 exp1
-comp out2 exp2
-echo "OK"
+  comp err nul
+  comp out1 exp1
+  comp out2 exp2
+  echo "OK"
+fi
 
 # t_complexes
-title t_complexes
-try t_complexes 1 5 3 -2
-cat << EOF >exp
+if `match $arg t_complexes` ; then
+  title t_complexes
+  try t_complexes 1 5 3 -2
+  cat << EOF >exp
 Got:  1.000000000000000E+00 + i * 5.000000000000000E+00
  in polar:  5.09901951359278E+00  1.37340076694502E+00rd  7.86900680000000E+01°
 Got:  3.000000000000000E+00 - i * 2.000000000000000E+00
@@ -490,14 +539,16 @@ Got:  3.000000000000000E+00 - i * 2.000000000000000E+00
  A/B: -5.384615384615380E-01 + i * 1.307692307692310E+00
  A**B.real: -7.400000000000000E+01 - i * 1.100000000000000E+02
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_command
-title t_command
-try t_command -s /bin/ls t_c*
-cat << EOF >exp
+if `match $arg t_command` ; then
+  title t_command
+  try t_command -s /bin/ls t_c*
+  cat << EOF >exp
 Output flow:
 >t_channels<
 >t_channels.adb<
@@ -525,69 +576,81 @@ Error flow:
 
 Exit code:  0
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_computer
-title t_computer
-try t_computer "V1=5" "V2=2" '3*(${V1}+${V2})'
-cat << EOF >exp
+if `match $arg t_computer` ; then
+  title t_computer
+  try t_computer "V1=5" "V2=2" '3*(${V1}+${V2})'
+  cat << EOF >exp
 Evaluation: 
 3*(5+2)
 Computation: 
  21
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_cond
-title t_cond...
-try t_cond
-comp err nul
-echo "OK"
+if `match $arg t_cond` ; then
+  title t_cond...
+  try t_cond
+  comp err nul
+  echo "OK"
+fi
 
 # t_control_pool
-title t_control_pool...
-t_control_pool >out 2>err &
-PID=$!
-sleep 3
-kill $PID
-sleep 5
-comp err nul
-echo "OK"
+if `match $arg t_control_pool` ; then
+  title t_control_pool...
+  t_control_pool >out 2>err &
+  PID=$!
+  sleep 3
+  kill $PID
+  sleep 5
+  comp err nul
+  echo "OK"
+fi
 
 # t_conv
-title t_conv
-try t_conv
-cat << EOF >exp
+if `match $arg t_conv` ; then
+  title t_conv
+  try t_conv
+  cat << EOF >exp
 Host:       16#12345678#
 to Network: 16#78563412#
 to Host:    16#12345678#
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_date_text
-title t_date_text
-t_date_text '%b %d %H:%M:%S' '%Y-%m-%dT%H:%M:%S:%s' 'Jul 21 10:45:54' >out 2>err
-cat << EOF >exp
+if `match $arg t_date_text` ; then
+  title t_date_text
+  t_date_text '%b %d %H:%M:%S' '%Y-%m-%dT%H:%M:%S:%s' 'Jul 21 10:45:54' >out 2>err
+  cat << EOF >exp
 Lengths:
  15
  23
 Input: Jul 21 10:45:54  Dump: 1901/07/21 10:45:54.000  Put: 1901-07-21T10:45:54:000
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_day_mng
-title t_day_mng
-echo  -e "5\n600\n57000\n" | try t_day_mng 
-echo >>out
-cat << EOF >exp
+if `match $arg t_day_mng` ; then
+  title t_day_mng
+  echo  -e "5\n600\n57000\n" | try t_day_mng 
+  echo >>out
+  cat << EOF >exp
 Enter a duration:  5.000000000
  0 h   0 min   5 sec   0 msec
 
@@ -599,39 +662,45 @@ Enter a duration:  57000.000000000
 
 Enter a duration: 
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_dd
-title t_dd
-try t_dd 10000
-cat << EOF >exp
+if `match $arg t_dd` ; then
+  title t_dd
+  try t_dd 10000
+  cat << EOF >exp
 This test succeeds if no STORAGE_ERROR is raised.
 Performinig  10000 iterations, each of them consisting in
  allocating  256 objects of  1024 bytes then freeing them.
 Test successful.
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_delta_date
-title t_delta_date
-try t_delta_date 2012-07-02T15:47:12.514 1963-10-25T21:21:21.210
-cat << EOF >exp
+if `match $arg t_delta_date` ; then
+  title t_delta_date
+  try t_delta_date 2012-07-02T15:47:12.514 1963-10-25T21:21:21.210
+  cat << EOF >exp
 2012/07/02 15:47:12.514 is a MONDAY
 1963/10/25 21:21:21.210 is a FRIDAY
  Date1 - Date2: 17782 days 66351.304 sec
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_dirname
-title t_dirname
-try t_dirname
-cat << EOF >exp
+if `match $arg t_dirname` ; then
+  title t_dirname
+  try t_dirname
+  cat << EOF >exp
 Dirname /tools/toto.ads: /tools/
 Dirname toto.ads: 
 Dirname /toto.ads: /
@@ -647,14 +716,16 @@ Make_Full "": /home/malaise/ada/usr/tests
 Make_Full ".": /home/malaise/ada/usr/tests
 Make_Full dir1/../dirok/./dir3/../toto.ads: /home/malaise/ada/usr/tests/dirok/toto.ads
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_dl
-title t_dl
-try t_dl --auto
-cat << EOF >exp
+if `match $arg t_dl` ; then
+  title t_dl
+  try t_dl --auto
+  cat << EOF >exp
 Adds 10 elements
 Reads 5 elements from the last one: 10 09 08 07 06 
 List length: 10 
@@ -694,50 +765,59 @@ Make the following automatic list: 21 05 30 31 07 21 23 12
 After sorting it: 05 07 12 21 21 23 30 31 
 Copied/Inserted in a new list between 21 and 12: 21 05 07 12 21 21 23 30 31 12 
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_door
-title t_door...
-comp err nul
-try t_door
-echo "OK"
+if `match $arg t_door` ; then
+  title t_door...
+  try t_door
+  comp err nul
+  echo "OK"
+fi
 
 # t_dur_image
-title t_dur_image
-try t_dur_image 1000
-comp err nul
-echo "OK"
+if `match $arg t_dur_image` ; then
+  title t_dur_image
+  try t_dur_image 1000
+  comp err nul
+  echo "OK"
+fi
 
 # t_evp digest
-title t_evp_digest
-try t_evp_digest sha1 tototititata
-cat << EOF >exp
+if `match $arg t_evp_digest` ; then
+  title t_evp_digest
+  try t_evp_digest sha1 tototititata
+  cat << EOF >exp
 f56dfd658d9bf8e36df4223218f5e9cec128e287 (20)
 EOF
-comp err nul
-comp out exp
-echo "OK"
-
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_exception_messenger
-title t_exception_messenger
-try t_exception_messenger
-cat << EOF >exp
+if `match $arg t_exception_messenger` ; then
+  title t_exception_messenger
+  try t_exception_messenger
+  cat << EOF >exp
 Checking >The message<
 Ok
 Checking a long message
 Ok
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_fifo
-title t_fifo
-try t_fifo
-cat << EOF >exp
+if `match $arg t_fifo` ; then
+  title t_fifo
+  try t_fifo
+  cat << EOF >exp
 Fifo size is  5
 Push  1
 Look  1 -->  1
@@ -824,45 +904,51 @@ Look done
 Pop ==>  10
 FIFO empty
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_file_hash
-title t_file_hash
-try t_file_hash t_file_hash.adb begin
-cat << EOF >exp
+if `match $arg t_file_hash` ; then
+  title t_file_hash
+  try t_file_hash t_file_hash.adb begin
+  cat << EOF >exp
 begin -> 
 FOUND at line 9 >begin<
 EOF
-comp err nul
-comp out exp
+  comp err nul
+  comp out exp
 
-try t_file_hash t_file_hash.adb procedure
-cat << EOF >exp
+  try t_file_hash t_file_hash.adb procedure
+  cat << EOF >exp
 procedure -> 
 NOT FOUND
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_fork
-title t_fork
-try t_fork /bin/ls
-comp err nul
+if `match $arg t_fork` ; then
+  title t_fork
+  try t_fork /bin/ls
+  comp err nul
 
-try -n t_fork /bin/lsd
-cat << EOF >exp
+  try -n t_fork /bin/lsd
+  cat << EOF >exp
 Child mutation has failed!
 EOF
-comp err exp
-echo "OK"
+  comp err exp
+  echo "OK"
+fi
 
 # t_fraction
-title t_fraction
-try t_fraction 1:3 1:6
-cat << EOF >exp
+if `match $arg t_fraction` ; then
+  title t_fraction
+  try t_fraction 1:3 1:6
+  cat << EOF >exp
 A is        +1:3
 abs A is    +1:3
 -A is       -1:3
@@ -881,35 +967,39 @@ A / B is   +2:1
 A ** B.Num is +1:3
 Set (1,0) raises Constraint_Error, OK.
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_getenv
-title t_getenv
-unset GETENV
-try -n t_getenv
-cat << EOF >exp
+if `match $arg t_getenv` ; then
+  title t_getenv
+  unset GETENV
+  try -n t_getenv
+  cat << EOF >exp
 GETENV Not set
 EOF
-tail -1 out >tmp
-comp err nul
-comp tmp exp
+  tail -1 out >tmp
+  comp err nul
+  comp tmp exp
 
-export GETENV="test is OK."
-try t_getenv
-cat << EOF >exp
+  export GETENV="test is OK."
+  try t_getenv
+  cat << EOF >exp
 GETENV ->test is OK.<
 EOF
-tail -1 out >tmp
-comp err nul
-comp tmp exp
-echo "OK"
+  tail -1 out >tmp
+  comp err nul
+  comp tmp exp
+  echo "OK"
+fi
 
 # t_get_line
-title t_get_line
-try t_get_line t_get_line.adb
-cat << EOF >exp
+if `match $arg t_get_line` ; then
+  title t_get_line
+  try t_get_line t_get_line.adb
+  cat << EOF >exp
 003 ->   5:>with<>Argument,<>Get_Line,<>Normal,<>Basic_Proc;<
 004 ->   3:>procedure<>T_Get_Line<>is<
 006 ->   1:>begin<
@@ -950,27 +1040,33 @@ cat << EOF >exp
 050 ->   2:>end<>T_Get_Line;<
 Done.
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_init_mng
-title t_init_mng...
-try t_init_mng
-comp err nul
-echo "OK"
+if `match $arg t_init_mng` ; then
+  title t_init_mng...
+  try t_init_mng
+  comp err nul
+  echo "OK"
+fi
 
 # t_input_buffer
-title t_input_buffer
-try t_input_buffer t_input_buffer.adb
-comp err nul
-comp out t_input_buffer.adb
-echo "OK"
+if `match $arg t_input_buffer` ; then
+  title t_input_buffer
+  try t_input_buffer t_input_buffer.adb
+  comp err nul
+  comp out t_input_buffer.adb
+  echo "OK"
+fi
 
 # t_lifo
-title t_lifo
-try t_lifo
-cat << EOF >exp
+if `match $arg t_lifo` ; then
+  title t_lifo
+  try t_lifo
+  cat << EOF >exp
 Lifo size is  5
 Push  1
 Look  1 -->  1
@@ -1057,20 +1153,24 @@ Look done
 Pop ==>  6
 LIFO empty
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_lock
-title t_lock...
-try t_lock
-comp err nul
-echo "OK"
+if `match $arg t_lock` ; then
+  title t_lock...
+  try t_lock
+  comp err nul
+  echo "OK"
+fi
 
 # t_many_strings
-title t_many_strings
-try t_many_strings toto titi tata
-cat << EOF >exp
+if `match $arg t_many_strings` ; then
+  title t_many_strings
+  try t_many_strings toto titi tata
+  cat << EOF >exp
 Autotest OK.
 Got 3 substrings:
 >toto<
@@ -1085,15 +1185,17 @@ This should raise String_Error
 String_Error raised.
 Arg test OK.
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_math
-title t_math
-echo -ne "21.0\n6.5\n" | try t_math 
-echo >>out
-cat << EOF >exp
+if `match $arg t_math` ; then
+  title t_math
+  echo -ne "21.0\n6.5\n" | try t_math 
+  echo >>out
+  cat << EOF >exp
 Enter a real R1 : ? int   (R1) 2.10000000000000E+01
 frac  (R1) 0.00000000000000E+00
 round (R1) 21
@@ -1114,14 +1216,16 @@ Enter another real R2 : ?  roundiv (round(R1), round(R2)) 3
 
 Enter a real R1 : ? 
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_mut
-title t_mut...
-echo -e "b\nw\ni\nw\nw\nw\nt\nt\n" | try t_mut s
-cat << EOF >exp
+if `match $arg t_mut` ; then
+  title t_mut...
+  echo -e "b\nw\ni\nw\nw\nw\nt\nt\n" | try t_mut s
+  cat << EOF >exp
     Start of critical section for   1
     Mutex not free for   2
     Mutex not free for   2
@@ -1135,14 +1239,16 @@ cat << EOF >exp
 
 Done.
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_network
-title t_network
-try t_network
-cat << EOF >exp
+if `match $arg t_network` ; then
+  title t_network
+  try t_network
+  cat << EOF >exp
 Creating Node1 to 3.
 Connecting 1-2 1-3 2-3 3-2
 Node1 -> Node2  2, Node3  3, 
@@ -1163,42 +1269,48 @@ Node2 ->
 Node3 -> 
 Done.
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_normal
-title t_normal
-echo -en "21\n5\ntrue\n*\n" | try t_normal
-echo "" >>out
-cat << EOF >exp
+if `match $arg t_normal` ; then
+  title t_normal
+  echo -en "21\n5\ntrue\n*\n" | try t_normal
+  echo "" >>out
+  cat << EOF >exp
 I ? : LEN ? : RIGHT ? : GAP ? : 0         1         2         3         4         5
 012345678901234567890123456789012345678901234567890
 >***21<
 
 I ? : 
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_normalization
-title t_normalization
-try t_normalization -a
-cat << EOF >exp
+if `match $arg t_normalization` ; then
+  title t_normalization
+  try t_normalization -a
+  cat << EOF >exp
  3.14159E+00 10 3 > 3.14E+000< >  3.14159@< >  3.14159@< -> OK
  3.14159E+01 10 3 > 3.14E+001< > 31.415899< > 31.41589@< -> OK
  1.00000E+01 10 3 > 1.00E+001< > 10.0@@@@@< > 10.00000@< -> OK
  1.01000E+01 10 3 > 1.01E+001< > 10.1@@@@@< > 10.10000@< -> OK
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_num_letters
-title t_num_letters
-try t_num_letters 1 2 3 4 5 6 7 8 9 0 21 1000000000000 -s 1000000000
-cat << EOF >exp
+  if `match $arg t_num_letters` ; then
+  title t_num_letters
+  try t_num_letters 1 2 3 4 5 6 7 8 9 0 21 1000000000000 -s 1000000000
+  cat << EOF >exp
 one
 two
 three
@@ -1213,56 +1325,62 @@ twenty one
 one billion
 one billion
 EOF
-comp err nul
-comp out exp
-for i in 1 2 3 4 5 6 7 8 9 10 ; do
-  v=`t_rnd 2147483647`
-  t_num_letters $v >exp
-  t_num_letters `cat exp` >out1
-  t_num_letters `cat out1` >out
   comp err nul
   comp out exp
-done
-echo "OK"
+  for i in 1 2 3 4 5 6 7 8 9 10 ; do
+    v=`t_rnd 2147483647`
+    t_num_letters $v >exp
+    t_num_letters `cat exp` >out1
+    t_num_letters `cat out1` >out
+    comp err nul
+    comp out exp
+  done
+  echo "OK"
+fi
 
 # t_num_match
-title t_num_match
-try t_num_match 21 1-5,30-40
-cat << EOF >exp
+if `match $arg t_num_match` ; then
+  title t_num_match
+  try t_num_match 21 1-5,30-40
+  cat << EOF >exp
  21 does not match >1-5,30-40<
 1, 2, 3, 4, 5, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40
 EOF
-comp err nul
-comp out exp
-try t_num_match 21 -5,30-40,20-
-cat << EOF >exp
+  comp err nul
+  comp out exp
+  try t_num_match 21 -5,30-40,20-
+  cat << EOF >exp
  21 matches >-5,30-40,20-<
 0, 1, 2, 3, 4, 5, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 20, 21
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_output_flows
-title t_output_flows
-try t_output_flows
-cat << EOF >exp
+if `match $arg t_output_flows` ; then
+  title t_output_flows
+  try t_output_flows
+  cat << EOF >exp
 Got stdout
 Got async stderr
 File OK
 Test OK
 EOF
-cat << EOF >exp1
+  cat << EOF >exp1
 Stderr OK
 EOF
-comp out exp
-comp err exp1
-echo "OK"
+  comp out exp
+  comp err exp1
+  echo "OK"
+fi
 
 # t_parser
-title t_parser
-try t_parser , toto,titi,ta,ta,,
-cat << EOF >exp
+if `match $arg t_parser` ; then
+  title t_parser
+  try t_parser , toto,titi,ta,ta,,
+  cat << EOF >exp
 Parsing >toto,titi,ta,ta,,< with separator ',':
 >toto< >titi< >ta< >ta< >< 
 
@@ -1285,14 +1403,16 @@ Got >,,< of kind Separators
 
 Done.
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_passive_timers
-title t_passive_timers...
-try t_passive_timers
-cat << EOF >exp
+if `match $arg t_passive_timers` ; then
+  title t_passive_timers...
+  try t_passive_timers
+  cat << EOF >exp
 Starting T1(10, 10) and T2(2, 2)
  and checking each sec until T1 expiration
 T1 has not Expired
@@ -1327,15 +1447,17 @@ T3 has not Expired
 T3 has Expired
 Exception Timer_Expired (OK)
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_perpet
-title t_perpet
-echo -en "1963\n10\n25\n21\n3\n210\n" | try t_perpet
-echo "" >>out
-cat << EOF >exp
+if `match $arg t_perpet` ; then
+  title t_perpet
+  echo -en "1963\n10\n25\n21\n3\n210\n" | try t_perpet
+  echo "" >>out
+  cat << EOF >exp
 Base :
 Year -> Month -> Day -> 
 Delta :
@@ -1350,97 +1472,112 @@ Days ->  Base + Delta: 1964 5 22
 Delta :
 Years -> 
 EOF
-comp err nul
-comp out exp
-echo "OK"
-
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_proc_father
-title t_proc_father...
-try t_proc_father t_proc_child
-echo "OK"
+if `match $arg t_proc_father` ; then
+  title t_proc_father...
+  try t_proc_father t_proc_child
+  echo "OK"
+fi
 
 # t_read_write
-title t_read_write...
-try t_read_write
-echo "OK"
+if `match $arg t_read_write` ; then
+  title t_read_write...
+  try t_read_write
+  echo "OK"
+fi
 
 # t_recursive_mutex
-title t_recursive_mutex
-try t_recursive_mutex
-echo "OK"
+if `match $arg t_recursive_mutex` ; then
+  title t_recursive_mutex
+  try t_recursive_mutex
+  echo "OK"
+fi
 
 # t_regex_filters
-title t_regex_filters
-echo -e "toto\ntiti\nlolo\nlili\n" | try t_regex_filters T t.t. T .i.i F
-cat << EOF >exp
+if `match $arg t_regex_filters` ; then
+  title t_regex_filters
+  echo -e "toto\ntiti\nlolo\nlili\n" | try t_regex_filters T t.t. T .i.i F
+  cat << EOF >exp
 Check toto -> True
 Check titi -> False
 Check lolo -> False
 Check lili -> False
 EOF
-comp err nul
-comp out exp
-echo -e "toto\ntiti\nlolo\nlili\n" | try t_regex_filters F t.t. T .i.i F
-cat << EOF >exp
+  comp err nul
+  comp out exp
+  echo -e "toto\ntiti\nlolo\nlili\n" | try t_regex_filters F t.t. T .i.i F
+  cat << EOF >exp
 Check toto -> True
 Check titi -> True
 Check lolo -> True
 Check lili -> False
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_regexp
-title t_regexp
-try t_regexp "t.t." toto
-cat << EOF >exp
+if `match $arg t_regexp` ; then
+  title t_regexp
+  try t_regexp "t.t." toto
+  cat << EOF >exp
 String >toto< matches at pos [1-4/4]
 EOF
-comp err nul
-comp out exp
-try -n t_regexp "t.t." tolo
-cat << EOF >exp
+  comp err nul
+  comp out exp
+  try -n t_regexp "t.t." tolo
+  cat << EOF >exp
 String >tolo< does not match
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_romanic
-title t_romanic
-try t_romanic
-try t_romanic 1963
-cat << EOF >exp
+if `match $arg t_romanic` ; then
+  title t_romanic
+  try t_romanic
+  try t_romanic 1963
+  cat << EOF >exp
 1963 -> MCMLXIII
 EOF
-comp err nul
-comp out exp
-try t_romanic MMXII
-cat << EOF >exp
+  comp err nul
+  comp out exp
+  try t_romanic MMXII
+  cat << EOF >exp
 MMXII ->  2012
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_round_at
-title t_round_at
-try t_round_at 215.0 1
-cat << EOF >exp
+if `match $arg t_round_at` ; then
+  title t_round_at
+  try t_round_at 215.0 1
+  cat << EOF >exp
 Digits:  3
 Image ->  2.20000000000000E+02
 Normalization ->  2.200E+02
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_scanner
-title t_scanner
-t_scanner "%5b %t %d %r %l %i%w %s" "true  maybe 5.2 21.21 21 Try1-Try2 OK" >out 2>err
-cat << EOF >exp
+if `match $arg t_scanner` ; then
+  title t_scanner
+  t_scanner "%5b %t %d %r %l %i%w %s" "true  maybe 5.2 21.21 21 Try1-Try2 OK" >out 2>err
+  cat << EOF >exp
 Length: Unknown
 Input: true  maybe 5.2 21.21 21 Try1-Try2 OK
  > True
@@ -1452,14 +1589,16 @@ Input: true  maybe 5.2 21.21 21 Try1-Try2 OK
  > -Try2
  > OK
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_smart_alias
-title t_smart_alias
-try t_smart_alias
-cat << EOF >exp
+if `match $arg t_smart_alias` ; then
+  title t_smart_alias
+  try t_smart_alias
+  cat << EOF >exp
 Test: Begin - Initializing R1 to 21 and R3 to 23
 Test: R1 and R3 set - Setting R2 to R1
 Test: Dereferencing R3
@@ -1472,14 +1611,16 @@ Test: Set R1 to R3. Got R1= 23 and R3= 23 - Releasing R3
 Test: R3 released - The end: garbage collecting
 Finalization of 23
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_smart_ref
-title t_smart_ref
-try t_smart_ref
-cat << EOF >exp
+if `match $arg t_smart_ref` ; then
+  title t_smart_ref
+  try t_smart_ref
+  cat << EOF >exp
 Test: Begin - Initializing R1 to 21 and R3 to 23
 Test: R1 and R3 set - Setting R2 to R1
 Test: Dereferencing R3
@@ -1492,62 +1633,74 @@ Test: Set R1 to R3. Got R1= 23 and R3= 23 - Releasing R3
 Test: R3 released - The end: garbage collecting
 Finalization of 23
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_sorts
-title t_sorts
-try t_sorts 10000
-comp err nul
-echo "OK"
+if `match $arg t_sorts` ; then
+  title t_sorts
+  try t_sorts 10000
+  comp err nul
+  echo "OK"
+fi
 
 # t_state_machine
-title t_state_machine
-echo  -e "Success\nFailure\nSuccess\n" | try t_state_machine data/StateMachine.xml Test
-tail -3 out | head -1 >out1
-cat << EOF >exp
+if `match $arg t_state_machine` ; then
+  title t_state_machine
+  echo  -e "Success\nFailure\nSuccess\n" | try t_state_machine data/StateMachine.xml Test
+  tail -3 out | head -1 >out1
+  cat << EOF >exp
 True Default Start Failure Success Attach Detach  ? Transition: Starting -- Success  -> Ok      
 EOF
-comp err nul
-comp out1 exp
-echo "OK"
+  comp err nul
+  comp out1 exp
+  echo "OK"
+fi
 
 # t_stdin
-title t_stdin
-mknod pipe p
-cat < pipe >out 2>err &
-echo "Toto" | t_stdin pipe
-sleep 1
-rm pipe
-cat << EOF >exp
+if `match $arg t_stdin` ; then
+  title t_stdin
+  mknod pipe p
+  cat < pipe >out 2>err &
+  echo "Toto" | t_stdin pipe
+  sleep 1
+  rm pipe
+  cat << EOF >exp
 Toto
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_str_error
-title t_str_error
-try t_str_error 21
-cat << EOF >exp
+if `match $arg t_str_error` ; then
+  title t_str_error
+  try t_str_error 21
+  cat << EOF >exp
  21 EISDIR          -> Is a directory
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_string 
-title t_string
-try t_string -a
-comp err nul
-comp out data/t_asbu.ref
-echo "OK"
+if `match $arg t_string` ; then
+  title t_string
+  try t_string -a
+  comp err nul
+  comp out data/t_asbu.ref
+  echo "OK"
+fi
 
 # t_strnav
-title t_strnav
-try t_strnav
-cat << EOF >exp
+if `match $arg t_strnav` ; then
+  title t_strnav
+  try t_strnav
+  cat << EOF >exp
 Init navig to "1234567890", (starting at 8 from init string)
 Move by 4 forward (move at 12, containing 5)
 Set No_Char to '-'
@@ -1619,37 +1772,41 @@ Lookup  10 -> -
 Image:
 1234567890
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_syslin
-title t_syslin
-try t_syslin syslin3.dat
-cat << EOF >exp
+if `match $arg t_syslin` ; then
+  title t_syslin
+  try t_syslin syslin3.dat
+  cat << EOF >exp
 > 3  2  1   0<
 > 2  1 -1   5<
 > 1  1  2   8<
 Unable to solve: Determinant is nul.
 EOF
-comp err nul
-comp out exp
-try t_syslin syslin2.dat
-cat << EOF >exp
+  comp err nul
+  comp out exp
+  try t_syslin syslin2.dat
+  cat << EOF >exp
 >2   1      7<
 >1   2      8<
 X(  1) = 2.00000E+00
 X(  2) = 3.00000E+00
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_temp_file
-title t_temp_file
-try t_temp_file
-tail -9 out >out1
-cat << EOF >exp
+if `match $arg t_temp_file` ; then
+  title t_temp_file
+  try t_temp_file
+  tail -9 out >out1
+  cat << EOF >exp
 Checking exception on yet another temp file:
 Raises No_More_Temp OK
 
@@ -1660,32 +1817,37 @@ Cleaning temp files.
 
 Done.
 EOF
-comp err nul
-comp out1 exp
-echo "OK"
-
+  comp err nul
+  comp out1 exp
+  echo "OK"
+fi
 
 # t_text_char
-title t_text_char
-try t_text_char t_text_char.adb
-comp err nul
-comp out t_text_char.adb
-echo "OK"
+if `match $arg t_text_char` ; then
+  title t_text_char
+  try t_text_char t_text_char.adb
+  comp err nul
+  comp out t_text_char.adb
+  echo "OK"
+fi
 
 # t_text_line
-title t_text_line
-cat t_text_line.adb | try t_text_line
-cat t_text_line.adb >exp
-echo >>exp
-comp err nul
-comp out exp
-echo "OK"
+if `match $arg t_text_line` ; then
+  title t_text_line
+  cat t_text_line.adb | try t_text_line
+  cat t_text_line.adb >exp
+  echo >>exp
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_timeq
-title t_timeq...
-echo -e "A\nX\n" | try t_timeq
-echo >>out
-cat << EOF >exp
+if `match $arg t_timeq` ; then
+  title t_timeq...
+  echo -e "A\nX\n" | try t_timeq
+  echo >>out
+  cat << EOF >exp
 Insert(Value, Duration) Pop Read(Value) Expire Clear eXit Autotest> 
 Ivd | P | Rv | E | C | X | A ? Putting 11 22 44 55 66 and waiting 3 seconds
 Popping first without expire
@@ -1711,29 +1873,31 @@ Putting 11 and 66, cleaning then popping all
 End of auto test.
 Ivd | P | Rv | E | C | X | A ? 
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_trace
-title t_trace
-cat << EOF >out1
+if `match $arg t_trace` ; then
+  title t_trace
+  cat << EOF >out1
 Starting
 Done
 EOF
-export t_trace_TRACE_ALL='0'
-try t_trace
-comp err nul
-comp out out1
-unset t_trace_TRACE_ALL
+  export t_trace_TRACE_ALL='0'
+  try t_trace
+  comp err nul
+  comp out out1
+  unset t_trace_TRACE_ALL
 
-function strip_date {
-  cat $1 | cut -d ' ' -f 2- >tmp
-  mv tmp $1
-}
+  function strip_date {
+    cat $1 | cut -d ' ' -f 2- >tmp
+    mv tmp $1
+  }
 
-export t_trace_TRACE='Info+'
-cat << EOF >err1
+  export t_trace_TRACE='Info+'
+  cat << EOF >err1
 t_trace - Error -> Bloga Error
 t_trace Blogn Error -> Blogn Error
 t_trace - Error -> Loga Error
@@ -1743,13 +1907,13 @@ t_trace - Warning -> Loga Warning
 t_trace - Info -> Bloga Info
 t_trace - Info -> Loga Info
 EOF
-try t_trace
-strip_date err
-comp out out1
-comp err err1
+  try t_trace
+  strip_date err
+  comp out out1
+  comp err err1
 
-export t_trace_TRACE_Logn='Debug|Info'
-cat << EOF >err1
+  export t_trace_TRACE_Logn='Debug|Info'
+  cat << EOF >err1
 t_trace - Error -> Bloga Error
 t_trace Blogn Error -> Blogn Error
 t_trace - Error -> Loga Error
@@ -1761,17 +1925,18 @@ t_trace - Info -> Loga Info
 t_trace Logn Info -> Logn Info
 t_trace Logn Debug -> Logn Debug
 EOF
-try t_trace
-strip_date err
-comp out out1
-comp err err1
-
-echo "OK"
+  try t_trace
+  strip_date err
+  comp out out1
+  comp err err1
+  echo "OK"
+fi
 
 # t_trees
-title t_trees
-try t_trees
-cat << EOF >exp
+if `match $arg t_trees` ; then
+  title t_trees
+  try t_trees
+  cat << EOF >exp
 Inserting 1 as root
 Inserting 11 to 15 as root children
  1
@@ -1892,14 +2057,16 @@ T'
 Clearing all
 Empty OK.
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_ul
-title t_ul
-try t_ul USER 1 ENV=True ENV ENV=False ENV
-cat << EOF >exp
+if `match $arg t_ul` ; then
+  title t_ul
+  try t_ul USER 1 ENV=True ENV ENV=False ENV
+  cat << EOF >exp
 Processing arguments:
 Got >USER<->$USER<
 Var >1< is not set.
@@ -1908,14 +2075,16 @@ Got >ENV<->True<
 Inserted >ENV=False<
 Got >ENV<->False<
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_unbounded_arrays
-title t_unbounded_arrays
-try t_unbounded_arrays
-cat << EOF >exp
+if `match $arg t_unbounded_arrays` ; then
+  title t_unbounded_arrays
+  try t_unbounded_arrays
+  cat << EOF >exp
 Empty array:
 Length 0
 Content 
@@ -1959,14 +2128,16 @@ Array of 21, 22
 Image >21, 22<
 Done.
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_urand
-title t_urand
-try t_urand
-cat << EOF >exp
+if `match $arg t_urand` ; then
+  title t_urand
+  try t_urand
+  cat << EOF >exp
 Expected Results    Actual Results
   6533892.00           6533892.00
  14220222.00          14220222.00
@@ -1978,49 +2149,61 @@ Expected Results    Actual Results
 
 Random Number Generator Consistent
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_utf
-title t_utf
-try t_utf U+E7
-cat << EOF >exp
+if `match $arg t_utf` ; then
+  title t_utf
+  try t_utf U+E7
+  cat << EOF >exp
 U+0000E7 : 00E7      : C3 A7       : ç
 EOF
-comp err nul
-comp out exp
-echo "OK"
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
 
 # t_utf8
-title t_utf8
-try t_utf8 10000
-comp err nul
-echo "OK"
+if `match $arg t_utf8` ; then
+  title t_utf8
+  try t_utf8 10000
+  comp err nul
+  echo "OK"
+fi
 
 # t_utf16
-title t_utf16
-try t_utf16 1000
-comp err nul
-echo "OK"
+if `match $arg t_utf16` ; then
+  title t_utf16
+  try t_utf16 1000
+  comp err nul
+  echo "OK"
+fi
 
 # t_virtual
-title t_virtual...
-try t_virtual
-comp err nul
-echo "OK"
+if `match $arg t_virtual` ; then
+  title t_virtual...
+  try t_virtual
+  comp err nul
+  echo "OK"
+fi
 
 # t_xml_gen
-title t_xml_gen
-try t_xml_gen
-comp out ../misc/variables.xml 
-comp err nul
-echo "OK"
+if `match $arg t_xml_gen` ; then
+  title t_xml_gen
+  try t_xml_gen
+  comp out ../misc/variables.xml 
+  comp err nul
+  echo "OK"
+fi
 
 # t_xml_string
-title t_xml_string
-try t_xml_string data/xml_1.xml
-cat << EOF >exp
+if `match $arg t_xml_string` ; then
+  title t_xml_string
+  try t_xml_string data/xml_1.xml
+  cat << EOF >exp
 Parsing file data/dtd_1.dtd
 Parsing string of file data/dtd_2.dtd
 Parsing file data/dtd_3.dtd
@@ -2038,10 +2221,10 @@ Got Elements:
 <try xml:space="preserve">This text is in <bold>bold</bold>.</try>
   ---------------------------------------------------------------------------
 EOF
-comp err nul
-comp out exp
-try t_xml_string data/xml_2.xml
-cat << EOF >exp
+  comp err nul
+  comp out exp
+  try t_xml_string data/xml_2.xml
+  cat << EOF >exp
 Parsing file data/dtd_1.dtd
 Parsing string of file data/dtd_2.dtd
 Parsing file data/dtd_3.dtd
@@ -2060,10 +2243,10 @@ Got Elements:
  and this one is in <italic>italic</italic>.</try>
   ---------------------------------------------------------------------------
 EOF
-comp err nul
-comp out exp
-try t_xml_string data/xml_3.xml
-cat << EOF >exp
+  comp err nul
+  comp out exp
+  try t_xml_string data/xml_3.xml
+  cat << EOF >exp
 Parsing file data/dtd_1.dtd
 Parsing string of file data/dtd_2.dtd
 Parsing file data/dtd_3.dtd
@@ -2083,10 +2266,10 @@ Got Elements:
  and this one is in <superscript>superscript</superscript>.</try>
   ---------------------------------------------------------------------------
 EOF
-comp err nul
-comp out exp
-try -n t_xml_string data/xml_3_nok.xml
-cat << EOF >exp
+  comp err nul
+  comp out exp
+  try -n t_xml_string data/xml_3_nok.xml
+  cat << EOF >exp
 Parsing file data/dtd_1.dtd
 Parsing string of file data/dtd_2.dtd
 Parsing file data/dtd_3.dtd
@@ -2102,12 +2285,13 @@ Selected Dtd: 2
 Parsing remaining of string
   ---------------------------------------------------------------------------
 EOF
-cat << EOF >exp1
+  cat << EOF >exp1
 Xml_Parser error at line 7 of xml: Element superscript is not defined in dtd.
 EOF
-comp out exp
-comp err exp1
-echo "OK"
+  comp out exp
+  comp err exp1
+  echo "OK"
+fi
 
 clean
 echo "Done."
