@@ -738,7 +738,7 @@ package body Sys_Calls is
   end Get_Parent_Pid;
 
   -- Kill
-  procedure Kill (Dest_Pid : in Pid; Signal_No : in Kill_Signal_Range) is
+  procedure Send_Signal (Dest_Pid : in Pid; Signal_No : in Sent_Signal_Range) is
     function C_Kill (Dest_Pid : C_Types.Pid_T; Signal : C_Types.Int)
              return Integer
       with Import => True, Convention => C, External_Name => "kill";
@@ -746,7 +746,18 @@ package body Sys_Calls is
     if C_Kill (Integer(Dest_Pid), Signal_No) /= 0 then
       raise System_Error;
     end if;
-  end Kill;
+  end Send_Signal;
+
+  -- Block or unblock a signal
+  procedure Allow_Signal (Signal_No : in Signal_Range; Allow : in Boolean) is
+    function C_Sig_Block (Allow : C_Types.Int; Signum : C_Types.Int)
+             return Integer
+      with Import => True, Convention => C, External_Name => "sig_block";
+  begin
+    if C_Sig_Block ( (if Allow then 1 else 0), Signal_No) /= 0 then
+      raise System_Error;
+    end if;
+  end Allow_Signal;
 
   -- Process procreation (fork)
   procedure Procreate (Child : out Boolean; Child_Pid : out Pid) is

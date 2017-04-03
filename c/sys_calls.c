@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <pwd.h>
@@ -366,6 +367,18 @@ extern int fd_pipe (int *fd1, int *fd2) {
       return ERROR;
     }
   }
+}
+
+/* Block/unblock a signal */
+extern int sig_block (int allow, int signum) {
+  sigset_t sigset;
+
+  if (sigemptyset (&sigset) != 0) return (-1);
+  if (sigaddset (&sigset, signum) != 0) return (-1);
+  if (sigprocmask ( (allow ? SIG_UNBLOCK : SIG_BLOCK), &sigset, NULL) != 0) {
+    return (-1);
+  }
+  return 0;
 }
 
 /* Fork. >0 : father, pid of child, <0 : child, -pid, 0 : error */

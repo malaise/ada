@@ -219,7 +219,7 @@ package body Event_Mng is
     Sigterm : constant := 15;
   begin
     if Reset_Default_Signals_Policy then
-      Sys_Calls.Kill (Sys_Calls.Get_Pid, Sigterm);
+      Sys_Calls.Send_Signal (Sys_Calls.Get_Pid, Sigterm);
     end if;
   end Reset_Default_Signals_Policy;
 

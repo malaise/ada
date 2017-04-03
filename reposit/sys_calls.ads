@@ -238,11 +238,14 @@ package Sys_Calls is
   function Get_Pid return Pid;
   function Get_Parent_Pid return Pid;
 
-  -- Kill a process
+  -- Send a signal to a process
   -- May raise System_Error
-  subtype Kill_Signal_Range is Natural range 0 .. 64;
-  subtype Signal_Range is Kill_Signal_Range range 1 .. Kill_Signal_Range'Last;
-  procedure Kill (Dest_Pid : in Pid; Signal_No : in Kill_Signal_Range);
+  subtype Sent_Signal_Range is Natural range 0 .. 64;
+  subtype Signal_Range is Sent_Signal_Range range 1 .. Sent_Signal_Range'Last;
+  procedure Send_Signal (Dest_Pid : in Pid; Signal_No : in Sent_Signal_Range);
+
+  -- Block or unblock a signal
+  procedure Allow_Signal (Signal_No : in Signal_Range; Allow : in Boolean);
 
   -- Process procreation (fork)
   -- May raise System_Error

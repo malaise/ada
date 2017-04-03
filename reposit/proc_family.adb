@@ -1,6 +1,8 @@
 with Dynamic_List, Event_Mng, Environ;
 package body Proc_Family is
 
+  Sig_Child : constant Sys_Calls.Signal_Range := 17;
+
   -- List of running children
   type Child_Rec is record
     Child_Pid : Sys_Calls.Pid;
@@ -13,12 +15,32 @@ package body Proc_Family is
   Child_List : Child_List_Mng.List_Type;
 
   -- Find a child by Pid
-  function Same_Pid (E1, E2 : Child_Rec) return Boolean is
+  function Same_Pid (Curr, Crit : Child_Rec) return Boolean is
     use type Sys_Calls.Pid;
   begin
-    return E1.Child_Pid = E2.Child_Pid;
+    return Curr.Child_Pid = Crit.Child_Pid;
   end Same_Pid;
   function Search_Pid is new Child_List_Mng.Search (Same_Pid);
+
+  -- List of pending death events
+  --   when signchild is called before father has registered the child
+  package Death_Dyn_List_Mng is new Dynamic_List (Sys_Calls.Death_Rec);
+  package Death_List_Mng renames Death_Dyn_List_Mng.Dyn_List;
+  Death_List : Death_List_Mng.List_Type;
+
+  -- Find a death by pid
+  -- Crit must have cause Exited
+  function Same_Pid (Curr, Crit : Sys_Calls.Death_Rec) return Boolean is
+    use type Sys_Calls.Death_Info_List, Sys_Calls.Pid;
+  begin
+    return (case Curr.Cause is
+      when Sys_Calls.No_Dead => False,
+      when Sys_Calls.Exited => Curr.Exited_Pid = Crit.Exited_Pid,
+      when Sys_Calls.Signaled => Curr.Signaled_Pid = Crit.Exited_Pid,
+      when Sys_Calls.Stopped => False);
+  end Same_Pid;
+  function Search_Pid is new Death_List_Mng.Search (Same_Pid);
+
 
   -- Close a Fd, no exception
   procedure Close (Fd : in Sys_Calls.File_Desc) is
@@ -30,7 +52,9 @@ package body Proc_Family is
   end Close;
 
   -- Handle the death of a child. Returns False when no more child
-  function Handle_Death return Boolean is
+  -- If In_Death is no set to No_Dead, then use it, othervise use the one of
+  --  Sys_Calls.Next_Dead
+  function Handle_Death (In_Death : Sys_Calls.Death_Rec) return Boolean is
     Death_Dscr : Sys_Calls.Death_Rec;
     Child  : Child_Rec;
     Report : Death_Rec;
@@ -38,7 +62,11 @@ package body Proc_Family is
     use type Sys_Calls.Death_Info_List;
   begin
     -- Get death description
-    Death_Dscr := Sys_Calls.Next_Dead;
+    if In_Death.Cause /= Sys_Calls.No_Dead then
+      Death_Dscr := In_Death;
+    else
+      Death_Dscr := Sys_Calls.Next_Dead;
+    end if;
 
     -- Done when No_Dead, ignore Stopped
     case Death_Dscr.Cause is
@@ -59,7 +87,9 @@ package body Proc_Family is
     -- Find child in list
     if not Search_Pid (Child_List, Child,
                        From => Child_List_Mng.Current_Absolute) then
-      -- Skip
+      -- We are called before the child insertion
+      -- Insert Dead in pending list and skip
+      Death_List.Insert (Death_Dscr);
       return True;
     end if;
 
@@ -83,11 +113,15 @@ package body Proc_Family is
     return True;
   end Handle_Death;
 
+
   -- The SigChild callback
   procedure Sig_Child_Cb is
+    No_Dead : constant Sys_Calls.Death_Rec (Sys_Calls.No_Dead)
+            := (others => <>);
   begin
     loop --## rule line off Loop_While
-      exit when not Handle_Death;
+      -- Handle successive Sys_Calls.Next_dead
+      exit when not Handle_Death (No_Dead);
     end loop;
   end Sig_Child_Cb;
 
@@ -130,6 +164,8 @@ package body Proc_Family is
                   Death_Report  : Death_Callback_Access := null)
            return Spawn_Result_Rec is
     Child : Child_Rec;
+    Death : Sys_Calls.Death_Rec;
+    Dummy : Boolean;
     Result : Spawn_Result_Rec;
     Failure : constant Spawn_Result_Rec := (Ok => False, Open => False);
 
@@ -207,8 +243,23 @@ package body Proc_Family is
         Child.Fd_Out := Result.Fd_Out;
         Child.Fd_Err := Result.Fd_Err;
       end if;
+      -- Block sigchild while inserting child
+      Sys_Calls.Allow_Signal (Sig_Child, False);
       Child.Child_Pid := Result.Child_Pid;
       Child_List.Insert (Child);
+      Sys_Calls.Allow_Signal (Sig_Child, True);
+      -- Check if pending signchild (occured between Procreate and Block)
+    -- Find child in list
+    Death := (Cause => Sys_Calls.Exited,
+              Exited_Pid => Result.Child_Pid,
+              Exit_Code => 0);
+    if Search_Pid (Death_List, Death,
+                   From => Death_List_Mng.Current_Absolute) then
+      -- Handle this pending dead
+      Death_List.Get (Death, Moved => Dummy);
+      Dummy := Handle_Death (Death);
+    end if;
+
       -- Success
       return Result;
     end if;

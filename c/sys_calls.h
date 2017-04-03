@@ -88,6 +88,9 @@ extern int fd_int_write (int fd, void *buffer, int nbytes);
 extern int fd_close (int fd);
 extern int fd_pipe (int *fd1, int *fd2);
 
+/* Block/unblock a signal */
+extern int sig_block (int allow, int signum);
+
 
 /* Fork. >0 : father, pid of child, <0 : child, -pid, 0 : error */
 extern int procreate (void);
