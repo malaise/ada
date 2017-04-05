@@ -248,17 +248,17 @@ package body Proc_Family is
       Child.Child_Pid := Result.Child_Pid;
       Child_List.Insert (Child);
       Sys_Calls.Allow_Signal (Sig_Child, True);
-      -- Check if pending signchild (occured between Procreate and Block)
-    -- Find child in list
-    Death := (Cause => Sys_Calls.Exited,
-              Exited_Pid => Result.Child_Pid,
-              Exit_Code => 0);
-    if Search_Pid (Death_List, Death,
-                   From => Death_List_Mng.Current_Absolute) then
-      -- Handle this pending dead
-      Death_List.Get (Death, Moved => Dummy);
-      Dummy := Handle_Death (Death);
-    end if;
+      -- Check if pending sigchild (occured between Procreate and Block)
+      -- Find child by pid in list of pending
+      Death := (Cause => Sys_Calls.Exited,
+                Exited_Pid => Result.Child_Pid,
+                Exit_Code => 0);
+      if Search_Pid (Death_List, Death,
+                     From => Death_List_Mng.Current_Absolute) then
+        -- Handle this pending dead
+        Death_List.Get (Death, Moved => Dummy);
+        Dummy := Handle_Death (Death);
+      end if;
 
       -- Success
       return Result;
