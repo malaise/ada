@@ -28,9 +28,6 @@ package body Command is
   -- Aborted by sigterm
   Aborted : Boolean;
 
-  -- Current_Pid
-  Current_Pid : Sys_Calls.Pid;
-
   -- Termination callback
   Prev_Term_Cb : aliased Event_Mng.Sig_Callback;
   procedure Term_Cb is
@@ -47,18 +44,6 @@ package body Command is
   procedure Death_Cb (Death_Report : in Proc_Family.Death_Rec) is
     use type Sys_Calls.Death_Info_List, Sys_Calls.Pid;
   begin
-    case Death_Report.Cause is
-      when Sys_Calls.Exited =>
-        if Death_Report.Exited_Pid /= Current_Pid then
-          Logger.Log_Debug ("Death Cb bad exit pid");
-          return;
-        end if;
-      when Sys_Calls.Signaled  =>
-        if Death_Report.Signaled_Pid /= Current_Pid then
-          Logger.Log_Debug ("Death Cb bad signal pid");
-          return;
-        end if;
-    end case;
     if Logger.Debug_On then
       Logger.Log_Debug ("Death Cb "
                       & Death_Report.Cause'Img);
@@ -192,6 +177,7 @@ package body Command is
     if Mix_Policy = Both then
       Reset_Flow (Err_Flow.all);
     end if;
+    Child_Done := False;
     Dscrs(True).Done := False;
     Dscrs(True).Flow := Out_Flow;
     Dscrs(True).Buff.Set (Insert_Out'Access);
@@ -237,7 +223,6 @@ package body Command is
     end if;
 
     -- Init Cb for out/err flow
-    Current_Pid := Spawn_Result.Child_Pid;
     Output_Fd := Spawn_Result.Fd_Out;
     Command.Mix_Policy := Mix_Policy;
     Dummy_Res := Sys_Calls.Set_Blocking (Spawn_Result.Fd_Out, False);
@@ -251,8 +236,8 @@ package body Command is
     -- Wait until child ends and no more out/err data
     --  or aborted by sigterm
     loop
-      Event_Mng.Wait (Event_Mng.Infinite_Ms);
       exit when Child_Done and then Dscrs(True).Done and then Dscrs(False).Done;
+      Event_Mng.Wait (Event_Mng.Infinite_Ms);
       if Aborted then
         Mut.Release;
         raise Terminate_Request;

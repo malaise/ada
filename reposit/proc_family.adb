@@ -1,7 +1,12 @@
-with Dynamic_List, Event_Mng, Environ;
+with Dynamic_List, Event_Mng, Environ, Trace.Loggers;
 package body Proc_Family is
 
   Sig_Child : constant Sys_Calls.Signal_Range := 17;
+  No_Dead : constant Sys_Calls.Death_Rec (Sys_Calls.No_Dead)
+          := (others => <>);
+
+  -- Debug option
+  Logger : Trace.Loggers.Logger;
 
   -- List of running children
   type Child_Rec is record
@@ -63,8 +68,10 @@ package body Proc_Family is
   begin
     -- Get death description
     if In_Death.Cause /= Sys_Calls.No_Dead then
+      Logger.Log_Debug ("Handle death from main");
       Death_Dscr := In_Death;
     else
+      Logger.Log_Debug ("Handle death from signal");
       Death_Dscr := Sys_Calls.Next_Dead;
     end if;
 
@@ -89,10 +96,12 @@ package body Proc_Family is
                        From => Child_List_Mng.Current_Absolute) then
       -- We are called before the child insertion
       -- Insert Dead in pending list and skip
+      Logger.Log_Debug ("Child not found");
       Death_List.Insert (Death_Dscr);
       return True;
     end if;
 
+    Logger.Log_Debug ("Child found");
     Child_List.Get (Child, Moved => Moved);
 
     -- Call Cb if set
@@ -110,19 +119,20 @@ package body Proc_Family is
     end if;
 
     -- Done
+    Logger.Log_Debug ("Death handled");
     return True;
   end Handle_Death;
 
 
   -- The SigChild callback
   procedure Sig_Child_Cb is
-    No_Dead : constant Sys_Calls.Death_Rec (Sys_Calls.No_Dead)
-            := (others => <>);
   begin
+    Logger.Log_Debug ("Sig child");
     loop --## rule line off Loop_While
       -- Handle successive Sys_Calls.Next_dead
       exit when not Handle_Death (No_Dead);
     end loop;
+    Logger.Log_Debug ("No more child");
   end Sig_Child_Cb;
 
   -- Image of a fd, of a pid
@@ -171,6 +181,8 @@ package body Proc_Family is
 
     I_Am_Child : Boolean;
   begin
+    Logger.Init ("Proc_Family");
+    Logger.Log_Debug ("Spawning");
     -- Init if needed
     Event_Mng.Set_Sig_Child_Callback (Sig_Child_Cb'Access);
     -- Init Child rec
@@ -247,6 +259,7 @@ package body Proc_Family is
       Sys_Calls.Allow_Signal (Sig_Child, False);
       Child.Child_Pid := Result.Child_Pid;
       Child_List.Insert (Child);
+      Logger.Log_Debug ("Child inserted");
       Sys_Calls.Allow_Signal (Sig_Child, True);
       -- Check if pending sigchild (occured between Procreate and Block)
       -- Find child by pid in list of pending
@@ -258,9 +271,14 @@ package body Proc_Family is
         -- Handle this pending dead
         Death_List.Get (Death, Moved => Dummy);
         Dummy := Handle_Death (Death);
+        Logger.Log_Debug ("Pending dead");
+      else
+        -- In case sigchild has been lost
+        Dummy := Handle_Death (No_Dead);
       end if;
 
       -- Success
+      Logger.Log_Debug ("Spawned");
       return Result;
     end if;
 
