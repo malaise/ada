@@ -1,5 +1,5 @@
 with Mutexes, Schedule, Rnd, Normal, Argument, Basic_Proc, Protected_Put;
-
+-- Test Read-Write mutex
 procedure T_Read_Write is
   pragma Priority(10);
 
@@ -97,7 +97,7 @@ begin
   elsif Argument.Get_Parameter = "wr" then
     Lock := new Mutexes.Mutex (Mutexes.Write_Read, False);
   else
-    Error ("unexpected argument " & Argument.Get_Parameter);
+    Error ("Unexpected argument " & Argument.Get_Parameter);
     return;
   end if;
 
