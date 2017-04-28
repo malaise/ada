@@ -38,6 +38,7 @@ procedure T_Read_Write is
     accept Num (I : in Range_Task) do
       Index := I;
     end Num;
+    Put_Line (Index, "started");
     -- Work until termination requested in Critical
     loop
       Schedule;
@@ -104,6 +105,7 @@ begin
   Rnd.Gen.Randomize;
 
   -- Give to each actor it's name
+  Protected_Put.Put_Line_Output ("Starting");
   for I in Range_Task loop
     Tasks(I).Num (I);
   end loop;
@@ -112,6 +114,7 @@ begin
   for I in Range_Task loop
     Tasks(I).Done;
   end loop;
+  Protected_Put.Put_Line_Output ("Done");
 
 end T_Read_Write;
 
