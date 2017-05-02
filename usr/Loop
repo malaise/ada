@@ -8,9 +8,10 @@ fi
 res=0
 let n=0+1
 while [ $res -eq 0 ] ; do
-  echo "Iteration "$n"."
+  echo "Iteration "$n":"
   $PROG
   if [ $? -ne 0 ] ; then
+    echo "Failed!"
     exit 1
   fi
   let n=$n+1
