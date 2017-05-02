@@ -62,7 +62,9 @@ procedure T_Read_Write is
 
       if Res then
         -- Wait a bit
+        Put_Line (Index, "waiting");
         delay Duration (Rnd.Gen.Int_Random (1, 5)) / 10.0;
+        Put_Line (Index, "waited");
 
         -- Release lock
         Put_Line (Index, "release");
