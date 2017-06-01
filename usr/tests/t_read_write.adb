@@ -1,4 +1,6 @@
-with Mutexes, Schedule, Rnd, Normal, Argument, Basic_Proc, Protected_Put;
+with Ada.Calendar;
+with Mutexes, Schedule, Rnd, Normal, Argument, Basic_Proc, Protected_Put,
+     Images;
 -- Test Read-Write mutex
 procedure T_Read_Write is
   pragma Priority(10);
@@ -15,7 +17,10 @@ procedure T_Read_Write is
 
   procedure Put_Line (Index : in Range_Task; Msg : in String) is
   begin
-    Protected_Put.Put_Line_Output (Normal (Index, 3) & " " & Msg);
+    Protected_Put.Put_Line_Output (
+        Images.Date_Image (Ada.Calendar.Clock, Images.Iso_Dot)
+      & " " & Normal (Index, 3)
+      & " " & Msg);
   end Put_Line;
 
   function Image (D : Duration) return String is
