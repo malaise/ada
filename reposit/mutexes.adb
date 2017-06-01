@@ -138,10 +138,12 @@ package body Mutexes is
           Open := Queues (Queue)'Count /= 0;
         else
           -- Write lock:
+          -- If we are here, it means that the gate is open so no writer
+          --  has already got the lock
           -- Either we get the lock (queue is closed until we release)
           -- or we queue (no currently queueing read can pass)
           -- so in both case, the queue is closed
-          -- Note that a new request may re-open the queue and pass
+          -- Note that a new request may re-open the queue and enter
           --  before us if it as a better prio
           Open := False;
           if Readers = 0 then

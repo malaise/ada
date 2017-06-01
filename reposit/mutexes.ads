@@ -121,8 +121,8 @@ private
     -- The status of the queue:
     -- Swapping or not
     Swapping : Boolean := False;
-    -- If not zwapping, open or not
-    -- if swapping, will be open or not
+    -- If not swapping, is the mutex open or not
+    -- if swapping, will it be open or not
     Open : Boolean := False;
 
   end Rw_Mutex_Protect;
