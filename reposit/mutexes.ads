@@ -123,7 +123,7 @@ private
     Swapping : Boolean := False;
     -- If not swapping, is the mutex open or not
     -- if swapping, will it be open or not
-    Open : Boolean := False;
+    Open : Boolean := True;
 
   end Rw_Mutex_Protect;
 

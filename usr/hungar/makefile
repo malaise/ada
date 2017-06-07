@@ -5,7 +5,7 @@ ADACTL := true
 
 EXES := hungar generate
 
-CLIBS_hungar := $(UTILS_SLIBS)
+CLIBS := $(UTILS_SLIBS)
 
 include $(TEMPLATES)/ada.mk
 

@@ -14,6 +14,7 @@ OPTIMIZED := snappy lzf lz4
 PARGS_assertion.apb := # NoAssert
 PARGS_lz4.apb :=  # Debug
 PARGS_lzf.apb :=  # Debug # Fast | Slow # LocalTrace
+PARGS_mutexes.apb := # Debug
 PARGS_snappy.apb := # Debug
 PARGS_rnd.aps := Urand
 PARGS_rnd.apb := Urand

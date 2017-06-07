@@ -6,8 +6,7 @@ ADACTL := true
 
 EXES := $(UNITS)
 
-CLIBS_accountants := $(UTILS_SLIBS)
-CLIBS_servprio := $(UTILS_SLIBS)
+CLIBS := $(UTILS_SLIBS)
 
 include $(TEMPLATES)/ada.mk
 
