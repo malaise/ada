@@ -19,7 +19,7 @@ procedure T_Read_Write is
   begin
     Protected_Put.Put_Line_Output (
         Images.Date_Image (Ada.Calendar.Clock, Images.Iso_Dot)
-      & " " & Normal (Index, 3)
+      & " " & Normal (Index, 2)
       & " " & Msg);
   end Put_Line;
 
