@@ -1,4 +1,4 @@
-with Ada.Calendar;
+with Ada.Calendar, Ada.Task_Identification;
 with Mutexes, Schedule, Rnd, Normal, Argument, Basic_Proc, Protected_Put,
      Images;
 -- Test Read-Write mutex
@@ -43,7 +43,9 @@ procedure T_Read_Write is
     accept Num (I : in Range_Task) do
       Index := I;
     end Num;
-    Put_Line (Index, "started");
+    Put_Line (Index ,
+      "Task started, id "
+    & Ada.Task_Identification.Image (Ada.Task_Identification.Current_Task));
     -- Work until termination requested in Critical
     loop
       Schedule;
