@@ -235,8 +235,9 @@ package body Command is
 
     -- Wait until child ends and no more out/err data
     --  or aborted by sigterm
-    loop
-      exit when Child_Done and then Dscrs(True).Done and then Dscrs(False).Done;
+    while not (Child_Done
+               and then Dscrs(True).Done
+               and then Dscrs(False).Done) loop
       Event_Mng.Wait (Event_Mng.Infinite_Ms);
       if Aborted then
         Mut.Release;
