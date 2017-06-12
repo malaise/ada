@@ -8,7 +8,7 @@ fi
 res=0
 let n=0+1
 while [ $res -eq 0 ] ; do
-  echo "Iteration "$n":"
+  echo `date +"%Y-%m-%dT%H:%M:%S"`" Iteration "$n":"
   $PROG
   if [ $? -ne 0 ] ; then
     echo "Failed!"
