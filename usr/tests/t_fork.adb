@@ -70,7 +70,7 @@ begin
 
 
     loop
-      Event_Mng.Pause (Event_Mng.Infinite_Ms);
+      Event_Mng.Pause (3_000);
       pragma Warnings (Off, "variable ""*"" is not modified in loop body");
       exit when Done;
       pragma Warnings (On,  "variable ""*"" is not modified in loop body");
