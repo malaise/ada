@@ -88,6 +88,8 @@ procedure T_Proc_Father is
 
   Fd1, Fd2 : Sys_Calls.File_Desc;
 
+  Event : Boolean;
+
 begin
   -- Fd1 should be closed on child but not fd2
   Fd1 := Sys_Calls.Open (Argument.Get_Program_Name, Sys_Calls.In_File);
@@ -142,9 +144,11 @@ begin
                              Fd_Cb'Unrestricted_Access);
 
   loop
-    Event_Mng.Wait (Event_Mng.Infinite_Ms);
+    Event := Event_Mng.Wait (3_000);
+    -- Sigterm or child completed (dead detected or timeout)
     exit when Done
-              or else (Child_Dead and then Child_Disconnected);
+              or else ( (Child_Dead or else not Event)
+                         and then Child_Disconnected);
   end loop;
 
   Sys_Calls.Set_Exit_Code (Result);

@@ -6,13 +6,11 @@ procedure T_Fork is
   Child : Boolean;
   Child_Pid : Sys_Calls.Pid;
 
-  Done : Boolean := False;
 
   procedure Sig_Term_Cb is
   begin
     Basic_Proc.Put_Line_Output ("Aborted by user");
     Basic_Proc.Set_Error_Exit_Code;
-    Done := True;
   end Sig_Term_Cb;
 
   procedure Sig_Child_Cb is
@@ -25,17 +23,14 @@ procedure T_Fork is
         when Sys_Calls.No_Dead =>
           exit;
         when Sys_Calls.Exited =>
-          Done := True;
           Basic_Proc.Set_Exit_Code (Death_Dscr.Exit_Code);
           Basic_Proc.Put_Line_Output ("Child pid " & Death_Dscr.Exited_Pid'Img
              & " has exited code " &  Death_Dscr.Exit_Code'Img);
         when Sys_Calls.Signaled =>
-          Done := True;
           Basic_Proc.Set_Error_Exit_Code;
           Basic_Proc.Put_Line_Output ("Child pid " & Death_Dscr.Signaled_Pid'Img
              & " has exited on signal " &  Death_Dscr.Signal'Img);
         when Sys_Calls.Stopped =>
-          Done := True;
           Basic_Proc.Set_Error_Exit_Code;
           Basic_Proc.Put_Line_Output ("Child pid " & Death_Dscr.Stopped_Pid'Img
              & " has been stopped");
@@ -68,14 +63,7 @@ begin
     Basic_Proc.Put_Line_Output ("I am father pid " & Sys_Calls.Get_Pid'Img
          & " of child  pid " & Child_Pid'Img);
 
-
-    loop
-      Event_Mng.Pause (3_000);
-      pragma Warnings (Off, "variable ""*"" is not modified in loop body");
-      exit when Done;
-      pragma Warnings (On,  "variable ""*"" is not modified in loop body");
-    end loop;
-
+    Event_Mng.Pause (3_000);
   end if;
 
 exception
