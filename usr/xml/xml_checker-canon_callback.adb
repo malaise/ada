@@ -216,9 +216,12 @@ begin
 
   -- Update for next call
   Stage := Clone.Stage;
-  -- Ensure that Node attributes are not deallocated twice
+  -- GNAT GPL >= 2017 and <= 2016
   pragma Warnings (Off, "possibly useless assignment to ""*"", value might not be referenced");
+  pragma Warnings (Off, "useless assignment to ""*"", value never referenced");
+  -- Ensure that Node attributes are not deallocated twice
   Clone.Attributes := null;
+  pragma Warnings (On,  "useless assignment to ""*"", value never referenced");
   pragma Warnings (On,  "possibly useless assignment to ""*"", value might not be referenced");
 end Canon_Callback;
 
