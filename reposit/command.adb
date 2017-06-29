@@ -238,7 +238,7 @@ package body Command is
     while not (Child_Done
                and then Dscrs(True).Done
                and then Dscrs(False).Done) loop
-      Event_Mng.Wait (Event_Mng.Infinite_Ms);
+      Event_Mng.Wait (500);
       if Aborted then
         Mut.Release;
         raise Terminate_Request;
