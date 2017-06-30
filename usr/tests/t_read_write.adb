@@ -1,27 +1,37 @@
 with Ada.Calendar, Ada.Task_Identification;
 with Mutexes, Schedule, Rnd, Normal, Argument, Basic_Proc, Protected_Put,
-     Images;
+     Protected_Var, Images;
 -- Test Read-Write mutex
 procedure T_Read_Write is
   pragma Priority(10);
 
-  Lock : access Mutexes.Mutex;
-
+  -- The number of tasks
   subtype Range_Task is Positive range 1 .. 10;
 
+  -- Date of last output of a task
+  package Protected_Time is new Protected_Var (Ada.Calendar.Time);
+  Last_Time : Protected_Time.Protected_T;
+  use type Ada.Calendar.Time;
+  -- Delay of inactivity
+  Inactivity : constant Duration := 5.0;
+
+  -- Put a task activity
+  procedure Put_Line (Index : in Range_Task; Msg : in String) is
+  begin
+    Last_Time.Set (Ada.Calendar.Clock);
+    Protected_Put.Put_Line_Output (
+        Images.Date_Image (Last_Time.Get, Images.Iso_Dot)
+      & " " & Normal (Index, 2)
+      & " " & Msg);
+  end Put_Line;
+  Lock : access Mutexes.Mutex;
+
+  -- The client tasks
   task type T is
    pragma Priority(10);
     entry Num (I : in Range_Task);
     entry Done;
   end T;
-
-  procedure Put_Line (Index : in Range_Task; Msg : in String) is
-  begin
-    Protected_Put.Put_Line_Output (
-        Images.Date_Image (Ada.Calendar.Clock, Images.Iso_Dot)
-      & " " & Normal (Index, 2)
-      & " " & Msg);
-  end Put_Line;
 
   function Image (D : Duration) return String is
     Str : constant String := D'Img;
@@ -68,7 +78,7 @@ procedure T_Read_Write is
       end if;
 
       if Res then
-        -- Wait a bit
+        -- Got it: Work (wait) from 0.1 to 0.5
         Put_Line (Index, "waiting");
         delay Duration (Rnd.Gen.Int_Random (1, 5)) / 10.0;
         Put_Line (Index, "waited");
@@ -87,7 +97,10 @@ procedure T_Read_Write is
   end T;
 
   Tasks : array (Range_Task) of T;
+  Runs  : array (Range_Task) of Boolean;
+  Nb_Run : Natural;
 
+  -- Log an error
   procedure Error (Msg : in String) is
   begin
     Basic_Proc.Put_Line_Error ("Error: " & Msg);
@@ -96,6 +109,7 @@ procedure T_Read_Write is
     Basic_Proc.Set_Error_Exit_Code;
   end Error;
 
+-- The main: activate and monitor the tasks
 begin
   if Argument.Get_Nbre_Arg > 1 then
     Error ("Too many arguments");
@@ -115,14 +129,44 @@ begin
 
   -- Give to each actor it's name
   Protected_Put.Put_Line_Output ("Starting");
+  Nb_Run := 0;
   for I in Range_Task loop
     Tasks(I).Num (I);
+    Runs(I) := True;
+    Nb_Run := Nb_Run + 1;
   end loop;
 
-  -- Wait until termination of each actor
-  for I in Range_Task loop
-    Tasks(I).Done;
-  end loop;
+  -- Wait until termination of all tasks
+  Main: while Nb_Run /= 0 loop
+
+    -- Try to terminate tasks: wait 1s altogether
+    for I in Range_Task loop
+      if Runs(I) then
+        select
+          Tasks(I).Done;
+          Runs(I) := False;
+          Nb_Run := Nb_Run - 1;
+        or
+          delay 1.0 / Duration(Nb_Run);
+        end select;
+      end if;
+    end loop;
+
+    -- Monitor activity
+    if Ada.Calendar.Clock - Last_Time.Get > Inactivity then
+      -- Deadlock detected => abort tasks
+      Protected_Put.Put_Line_Output ("Deadlock detected, aborting");
+      Basic_Proc.Set_Error_Exit_Code;
+      for I in Range_Task loop
+        if Runs(I) then
+          abort Tasks(I);
+          -- This will exit Main
+          Nb_Run := Nb_Run - 1;
+        end if;
+      end loop;
+    end if;
+  end loop Main;
+
   Protected_Put.Put_Line_Output ("Done");
 
 end T_Read_Write;
