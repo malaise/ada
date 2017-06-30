@@ -6,7 +6,8 @@ package Protected_Var is
 
   -- A variable of type T protected by a mutex
   subtype Mutex_Kind is Mutexes.Mutex_Kind;
-  type Protected_T (Kind : Mutex_Kind) is tagged limited private;
+  type Protected_T (Kind : Mutex_Kind := Mutexes.Simple)
+                   is tagged limited private;
 
   -- Set Val to Var, protect the operation by a mutex (infinite wait)
   procedure Set (Var : in out Protected_T; Val : in T);
@@ -16,7 +17,8 @@ package Protected_Var is
 
 private
 
-  type Protected_T (Kind : Mutex_Kind) is tagged limited record
+  type Protected_T (Kind : Mutex_Kind := Mutexes.Simple)
+                   is tagged limited record
     Mutex : Mutexes.Mutex (Kind, False);
     Val : T;
   end record;
