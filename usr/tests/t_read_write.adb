@@ -6,7 +6,9 @@ procedure T_Read_Write is
   pragma Priority(10);
 
   -- The number of tasks
-  subtype Range_Task is Positive range 1 .. 10;
+  subtype Range_Actor is Natural range 0 .. 10;
+  Main_Index : constant Range_Actor := 0;
+  subtype Range_Task is Positive range 1 .. Range_Actor'Last;
 
   -- Date of last output of a task
   package Protected_Time is new Protected_Var (Ada.Calendar.Time);
@@ -16,13 +18,23 @@ procedure T_Read_Write is
   Inactivity : constant Duration := 5.0;
 
   -- Put a task activity
-  procedure Put_Line (Index : in Range_Task; Msg : in String) is
+  procedure Put_Line (Index : in Range_Actor; Msg : in String;
+                      Output : in Boolean := True) is
   begin
     Last_Time.Set (Ada.Calendar.Clock);
-    Protected_Put.Put_Line_Output (
-        Images.Date_Image (Last_Time.Get, Images.Iso_Dot)
-      & " " & Normal (Index, 2)
-      & " " & Msg);
+    declare
+      Date : constant String
+           := Images.Date_Image (Last_Time.Get, Images.Iso_Dot);
+      Str : constant String
+          := (if Index in Range_Task then Normal (Index, 2) else "Main")
+           & " " & Msg;
+    begin
+      if Output then
+        Protected_Put.Put_Line_Output (Date & " " & Str);
+      else
+        Protected_Put.Put_Line_Error (Date & " Error: " & Str);
+      end if;
+    end;
   end Put_Line;
   Lock : access Mutexes.Mutex;
 
@@ -100,10 +112,10 @@ procedure T_Read_Write is
   Runs  : array (Range_Task) of Boolean;
   Nb_Run : Natural;
 
-  -- Log an error
+  -- Log an (init) error
   procedure Error (Msg : in String) is
   begin
-    Basic_Proc.Put_Line_Error ("Error: " & Msg);
+    Put_Line (Main_Index, Msg, Output => False);
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
        & " rw | wr");
     Basic_Proc.Set_Error_Exit_Code;
@@ -128,7 +140,7 @@ begin
   Rnd.Gen.Randomize;
 
   -- Give to each actor it's name
-  Protected_Put.Put_Line_Output ("Starting");
+  Put_Line (Main_Index, "Starting");
   Nb_Run := 0;
   for I in Range_Task loop
     Tasks(I).Num (I);
@@ -155,7 +167,7 @@ begin
     -- Monitor activity
     if Ada.Calendar.Clock - Last_Time.Get > Inactivity then
       -- Deadlock detected => abort tasks
-      Protected_Put.Put_Line_Output ("Deadlock detected, aborting");
+      Put_Line (Main_Index, "Deadlock detected, aborting");
       Basic_Proc.Set_Error_Exit_Code;
       for I in Range_Task loop
         if Runs(I) then
@@ -167,7 +179,7 @@ begin
     end if;
   end loop Main;
 
-  Protected_Put.Put_Line_Output ("Done");
+  Put_Line (Main_Index, "Done");
 
 end T_Read_Write;
 
