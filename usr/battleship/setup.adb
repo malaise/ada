@@ -399,14 +399,9 @@ package body Setup is
             end if;
           when Positionning =>
             -- Check if this is a valid extremity
-            Found := False;
             Start := Fleet.My_Ships(Curr_Ship)(1);
             Stop := Utils.Fld2Coord (Afpx_Xref.Setup.Grid, Fld);
-            for I in 1 .. Valid_Nb loop
-              if Valids(I) = Stop then
-                Found := True;
-              end if;
-            end loop;
+            Found := (for some I in 1 .. Valid_Nb => Valids(I) = Stop);
             if Found then
               -- Cancel proposed cells
               for I in 1 .. Valid_Nb loop

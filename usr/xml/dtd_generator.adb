@@ -327,13 +327,8 @@ procedure Dtd_Generator is
                end if;
              when Mixed =>
                -- Element after Mixed: Insert element only if it is new
-               Found := False;
-               for I in 1 .. Cur_Elt.Children.Length loop
-                 if Cur_Elt.Children.Element (I).Name = Cur_Name then
-                   Found := True;
-                   exit;
-                 end if;
-               end loop;
+               Found := (for some I in 1 .. Cur_Elt.Children.Length =>
+                 Cur_Elt.Children.Element (I).Name = Cur_Name);
                if Found then
                  Dbg ("  Element " & Cur_Name.Image & " already in mixed");
                else

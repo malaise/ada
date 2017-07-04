@@ -143,13 +143,7 @@ package body Gets is
   function Get_Llint_Or_Float (Str : String) return Llint_Or_Float_Rec is
     Dot_Found : Boolean;
   begin
-    Dot_Found := False;
-    for C of Str loop
-      if C = '.' then
-        Dot_Found := True;
-        exit;
-      end if;
-    end loop;
+    Dot_Found := (for some C of Str => C = '.');
 
     return (
       if Dot_Found then (Is_Float => True,  Float_Value => Get_Float (Str))
@@ -198,13 +192,7 @@ package body Gets is
   function Get_Llint_Or_Real (Str : String) return Llint_Or_Real_Rec is
     Dot_Found : Boolean;
   begin
-    Dot_Found := False;
-    for C of Str loop
-      if C = '.' then
-        Dot_Found := True;
-        exit;
-      end if;
-    end loop;
+    Dot_Found := (for some C of Str => C = '.');
 
     return (
       if Dot_Found then (Is_Real => True,  Real_Value  => Get_Real (Str))

@@ -283,23 +283,15 @@ package body Euristic is
     begin
       if not Done and then Logger.Debug_On then
         for Row in Index_Range loop
-          Found := False;
-          for I in 1 .. Nb_Zero loop
-            if Zero_Desc(I).State = Squared and then Zero_Desc(I).Row = Row then
-              Found := True;
-              exit;
-            end if;
-          end loop;
-          Logger.Log_Debug ("Row " & Index_Range'Image(Row) & " has no zero");
+          Found := (for some I in 1 .. Nb_Zero =>
+            Zero_Desc(I).State = Squared and then Zero_Desc(I).Row = Row);
+          if not Found then
+            Logger.Log_Debug ("Row " & Index_Range'Image(Row) & " has no zero");
+          end if;
         end loop;
         for Col in Index_Range loop
-          Found := False;
-          for I in 1 .. Nb_Zero loop
-            if Zero_Desc(I).State = Squared and then Zero_Desc(I).Col = Col then
-              Found := True;
-              exit;
-            end if;
-          end loop;
+          Found := (for some I in 1 .. Nb_Zero =>
+            Zero_Desc(I).State = Squared and then Zero_Desc(I).Col = Col);
           if not Found then
             Logger.Log_Debug ("Col " & Index_Range'Image(Col) & " has no zero");
           end if;
