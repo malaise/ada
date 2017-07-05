@@ -979,15 +979,10 @@ package body Afpx is
     In_Ptg := True;
     Af_Dscr.Check;
     -- Check if some active get field in the descriptor
-    Some_Get := False;
-    for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
-      if Af_Dscr.Fields(I).Kind = Get_Field
-          and then Af_Dscr.Fields (I).Activated
-          and then not Af_Dscr.Fields (I).Isprotected then
-        Some_Get := True;
-        exit;
-      end if;
-    end loop;
+    Some_Get := (for some I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields =>
+        Af_Dscr.Fields(I).Kind = Get_Field
+        and then Af_Dscr.Fields (I).Activated
+        and then not Af_Dscr.Fields (I).Isprotected);
     -- Check cursor pos if some get field active
     if Some_Get then
       if Get_Handle.Cursor_Field = List_Field_No then

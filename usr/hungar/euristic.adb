@@ -36,7 +36,9 @@ package body Euristic is
       -- Search lowest elem of row
       Lowest := Types.Cell_Range'Last;
       for Col in 1 .. Mattrix.Dim loop
-        if Mattrix.Notes(Row, Col) < Lowest then Lowest := Mattrix.Notes(Row, Col); end if;
+        if Mattrix.Notes(Row, Col) < Lowest then
+          Lowest := Mattrix.Notes(Row, Col);
+        end if;
       end loop;
       -- Substract it from each element
       if Lowest /= 0 then
@@ -51,7 +53,9 @@ package body Euristic is
       -- Search lowest elem of col
       Lowest := Types.Cell_Range'Last;
       for Row in 1 .. Mattrix.Dim loop
-        if Mattrix.Notes(Row, Col) < Lowest then Lowest := Mattrix.Notes(Row, Col); end if;
+        if Mattrix.Notes(Row, Col) < Lowest then
+          Lowest := Mattrix.Notes(Row, Col);
+        end if;
       end loop;
       -- Substract it from each element
       if Lowest /= 0 then
@@ -347,13 +351,7 @@ package body Euristic is
     for Row in Index_Range loop
       -- No squared zero ?
       Ok := True;
-      for Col in Index_Range loop
-        if Transfer(Row, Col) = Squared then
-          -- Squared zero
-          Ok := False;
-          exit;
-        end if;
-      end loop;
+      Ok := (for all Col in Index_Range => Transfer(Row, Col) /= Squared);
       if Ok then
         Marked_Row(Row) := True;
         if Logger.Debug_On then

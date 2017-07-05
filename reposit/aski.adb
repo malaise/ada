@@ -8,12 +8,7 @@ package body Aski is
 
   function Is_Strict (S : String) return Boolean is
   begin
-    for C of S loop
-      if not Is_Strict (C) then
-        return False;
-      end if;
-    end loop;
-    return True;
+    return (for all C of S => Is_Strict (C));
   end Is_Strict;
 
 end Aski;

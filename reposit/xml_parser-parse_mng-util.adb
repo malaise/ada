@@ -218,12 +218,7 @@ package body Util is
         return False;
       end if;
       -- Other chars must be Is_Valid_In_Name
-      for U of Unicodes loop
-        if not Is_Valid_In_Name (U) then
-          return False;
-        end if;
-      end loop;
-      return True;
+      return (for all U of Unicodes => Is_Valid_In_Name (U));
     end;
   exception
     when Utf_8.Invalid_Sequence =>
@@ -239,12 +234,7 @@ package body Util is
     I1, I2 : Natural;
     function Is_Sep (C : Character) return Boolean is
     begin
-      for Sep of Seps loop
-        if C = Sep then
-          return True;
-        end if;
-      end loop;
-      return False;
+      return (for some Sep of Seps => C = Sep);
     end Is_Sep;
   begin
     -- Must not be empty
@@ -609,12 +599,7 @@ package body Util is
 
   function Is_Separators (Str : As.U.Asu_Us) return Boolean is
   begin
-    for I in 1 .. Str.Length loop
-      if not Is_Separator (Str.Element (I) ) then
-        return False;
-      end if;
-    end loop;
-    return True;
+    return (for all I in 1 .. Str.Length => Is_Separator (Str.Element (I)));
   end Is_Separators;
 
   -- Skip separators until a significant char (not separator) is got

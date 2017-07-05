@@ -55,13 +55,8 @@ begin
     Tab_Sorts.Quick_Sort  (Res_Rap(1..Last));
     Current_Sort := "   ";
 
-    Ok := True;
-    for I in 1 .. Last loop
-      if Res_Bul(I) /= Res_Tas(I) or else Res_Bul(I) /= Res_Rap(I) then
-        Ok := False;
-        exit;
-      end if;
-    end loop;
+    Ok := (for all I in 1 .. Last =>
+        Res_Bul(I) = Res_Tas(I) and then Res_Bul(I) = Res_Rap(I));
 
     if not Ok then
       Basic_Proc.Put_Line_Error ("ERROR:");

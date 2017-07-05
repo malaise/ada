@@ -42,12 +42,7 @@ package body Input_Dispatcher is
   Sds : constant String := """:";
   function Is_Sd (C : Character) return Boolean is
   begin
-    for Sd of Sds loop
-      if Sd = C then
-        return True;
-      end if;
-    end loop;
-    return False;
+    return (for some Sd of Sds => C = Sd);
   end Is_Sd;
 
   -- Remove first and last string delimiters

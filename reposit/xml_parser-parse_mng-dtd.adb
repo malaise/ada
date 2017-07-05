@@ -91,12 +91,7 @@ package body Dtd is
 
     function Is_Sep (C : Character) return Boolean is
     begin
-      for S of Seps loop
-        if C = S then
-          return True;
-        end if;
-      end loop;
-      return False;
+      return (for some S of Seps => C = S);
     end Is_Sep;
 
     -- Check no mix of ',' and '|' in a parenthesis level

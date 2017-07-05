@@ -43,12 +43,8 @@ package body Utf_8 is
       return False;
     end if;
     -- Check that all but first bytes start by 2#10#
-    for I in Len_Range'Succ(W'First) .. W'Last loop
-      if Integer'(Character'Pos(W(I)) and 2#1100_0000#) /= 2#1000_0000# then
-        return False;
-      end if;
-    end loop;
-    return True;
+    return (for all I in Len_Range'Succ(W'First) .. W'Last =>
+        Integer'(Character'Pos(W(I)) and 2#1100_0000#) = 2#1000_0000#);
   exception
     when Invalid_Sequence =>
       return False;

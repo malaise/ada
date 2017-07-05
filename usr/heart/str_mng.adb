@@ -11,12 +11,7 @@ package body Str_Mng is
   -- Has the str some spaces
   function Has_Spaces (Str : String) return Boolean is
   begin
-    for C of Str loop
-      if C = ' ' then
-        return True;
-      end if;
-    end loop;
-    return False;
+    return (for some C of Str => C = ' ');
   end Has_Spaces;
 
   -- Parse spaces from a string

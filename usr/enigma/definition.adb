@@ -321,11 +321,10 @@ package body Definition is
     end if;
 
     -- Only last rotor can have no carry
-    for I in 1 .. Def.Nb_Rotors - 1 loop
-      if Def.Rotors(I).Carries = No_Carry  then
-        Error ("Only last rotor can have no carry");
-      end if;
-    end loop;
+    if (for some I in 1 .. Def.Nb_Rotors - 1 =>
+          Def.Rotors(I).Carries = No_Carry)  then
+      Error ("Only last rotor can have no carry");
+    end if;
 
     Iter.Del;
   end Set_Rotors;

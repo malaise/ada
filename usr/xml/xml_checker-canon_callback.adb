@@ -125,8 +125,8 @@ begin
           for J in Node_Attrs'Range loop
             if Node_Attrs(J).Name = Xmlns & ":" & Attrs(I).Prefix then
               -- Yes, found it, store Uri, done for this one
-               Attrs(I).Uri := Node_Attrs(J).Value;
-               exit;
+              Attrs(I).Uri := Node_Attrs(J).Value;
+              exit;
             end if;
           end loop;
         end if;

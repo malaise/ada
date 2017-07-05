@@ -195,7 +195,7 @@ procedure Tcp_Spy is
     elsif Dump_Mode = Binary then
       -- Binary dump
       for I in 1 .. Length loop
-        Text_Line.Put (File, Character'Val (Data(I)) & "");
+       Text_Line.Put (File, Character'Val (Data(I)) & "");
       end loop;
     elsif Dump_Mode = Short and then Length > Short_Data_Len then
       Dump_Data (Data, Short_Data_Len);

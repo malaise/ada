@@ -269,13 +269,8 @@ package  body Sequences is
     -- Length of Val has already been through Check_Elements
     Same_Names := False;
     if Intolen = Vallen then
-      Same_Names := True;
-      for I in 1 .. Intolen loop
-        if Into.Children.Element (I).Name /= Val.Children.Element (I).Name then
-          Same_Names := False;
-          exit;
-        end if;
-      end loop;
+      Same_Names := (for all I in 1 .. Intolen =>
+          Into.Children.Element (I).Name = Val.Children.Element (I).Name);
     end if;
     if Same_Names then
       Dbg("Optim");

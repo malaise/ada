@@ -106,7 +106,7 @@ begin
         Txt.Set (X_Mng.Event_Kind'Image(Kind));
         Txt.Append (" " & Control'Img & " " & Shift'Img & " " & Code'Img);
         for I in 1 .. Kbd_Codes.Nbre loop
-           Txt.Append (" " & X_Mng.Byte'Image(Kbd_Codes.Tab(I)));
+          Txt.Append (" " & X_Mng.Byte'Image(Kbd_Codes.Tab(I)));
         end loop;
         Put (Txt.Image);
         -- Ctrl C

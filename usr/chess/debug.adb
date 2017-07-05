@@ -16,12 +16,7 @@ package body Debug is
 
   function Some_Is return Boolean is
   begin
-    for K in Debug_List loop
-      if Get (K) then
-        return True;
-      end if;
-    end loop;
-    return False;
+    return (for some K in Debug_List => Get (K));
   end Some_Is;
 
   procedure Put (Square : in Space.Square_Coordinate) is

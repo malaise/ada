@@ -36,8 +36,8 @@ begin
       "Starting T1(1, 1) and checking 5 times each 0.5s");
   T1.Start ( (Timers.Delay_Sec, null, 1.0, 1.0) );
   for I in 1 .. 5 loop
-      Put ("T1", T1.Has_Expired);
-      delay 0.5;
+    Put ("T1", T1.Has_Expired);
+    delay 0.5;
   end loop;
 
   -- Test Timer_Expired

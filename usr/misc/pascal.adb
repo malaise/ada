@@ -27,8 +27,8 @@ begin
     Put_Line_Output (" : ");
 
     Put_Output ("   ");
-    for Index in Typ_Index range Typ_Index'First .. Typ_No_Line'Succ(
-      No_Line) loop
+    for Index in Typ_Index
+        range Typ_Index'First .. Typ_No_Line'Succ(No_Line) loop
 
       -- 6 elements per line of screen
       if (Index - 1) mod 6 = 0 and then Index /= 1 then
