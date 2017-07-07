@@ -34,13 +34,9 @@ package body Game is
              Chronos.Status_List;
 
     function Is_Landed (Status : Flight.Status_List) return Boolean is
-    begin
-      return Status = Flight.Landed or else Status = Flight.Safe_Landed;
-    end Is_Landed;
+      (Status = Flight.Landed or else Status = Flight.Safe_Landed);
     function Is_Failed (Status : Flight.Status_List) return Boolean is
-    begin
-      return Status = Flight.Crashed or else Status = Flight.Lost;
-    end Is_Failed;
+      (Status = Flight.Crashed or else Status = Flight.Lost);
   begin
     -- Open screen ASAP
     Screen.Open;

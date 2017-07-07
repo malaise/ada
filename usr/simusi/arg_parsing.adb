@@ -4,20 +4,11 @@ package body Arg_Parsing is
   Verbose_Flag : Boolean;
   Pm, Pd : Positive;
 
-  function Manufa_File_Name return String is
-  begin
-    return Argument.Get_Parameter (Pm);
-  end Manufa_File_Name;
+  function Manufa_File_Name return String is (Argument.Get_Parameter (Pm));
 
-  function Design_File_Name return String is
-  begin
-    return Argument.Get_Parameter (Pd);
-  end Design_File_Name;
+  function Design_File_Name return String is (Argument.Get_Parameter (Pd));
 
-  function Verbose return Boolean is
-  begin
-    return Verbose_Flag;
-  end Verbose;
+  function Verbose return Boolean is (Verbose_Flag);
 
   procedure Check is
   begin

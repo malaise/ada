@@ -144,9 +144,7 @@ package body File is
     Design_Cote : Design_Cote_Rec;
 
     function Are_Dup (C1, C2 : in Cote_Rec) return Boolean is
-    begin
-      return  C1.Start = C2.Start and then C1.Stop = C2.Stop;
-    end Are_Dup;
+      (C1.Start = C2.Start and then C1.Stop = C2.Stop);
   begin
     begin
       Arg_Parsing.Check;

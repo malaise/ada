@@ -59,10 +59,7 @@ package body Resol is
     when others => raise R_Degree_Out;
   end R_Set_Degree;
 
-  function R_Degree return R_T_Degree is
-  begin
-    return The_Degree - 1;
-  end R_Degree;
+  function R_Degree return R_T_Degree is (The_Degree - 1);
 
   procedure R_Points_Modification is
   begin

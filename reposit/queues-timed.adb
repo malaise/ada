@@ -103,9 +103,7 @@ package body Queues.Timed is
                   Found  : out Boolean) is
     Litem : Loc_Item;
     function Lequal (Current, Criteria : Loc_Item) return Boolean is
-    begin
-      return Equal (Current.Data, Criteria.Data);
-    end Lequal;
+      (Equal (Current.Data, Criteria.Data));
   begin
     -- Make room first
     Expire (Queue);

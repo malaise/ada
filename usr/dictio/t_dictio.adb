@@ -95,15 +95,9 @@ procedure T_Dictio is
     Name_Is_Alias : Boolean := False;
 
     function Get_Name return String is
-    begin
-      if Alias then
-        return Arg1;
-      elsif Name_Is_Alias then
-        return Alias_Name;
-      else
-        return Arg1;
-      end if;
-    end Get_Name;
+      (if Alias then Arg1
+       elsif Name_Is_Alias then Alias_Name
+       else Arg1);
 
     use type Pattern.Pattern_Id;
   begin

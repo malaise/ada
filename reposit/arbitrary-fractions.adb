@@ -48,9 +48,7 @@ package body Arbitrary.Fractions is
 
   -- Constructor
   function Set (Numerator : Number) return Fraction is
-  begin
-    return (Numerator, One);
-  end Set;
+    ((Numerator, One));
   procedure Set (F : out Fraction; Numerator : in Number) is
   begin
     F := Set (Numerator);
@@ -75,52 +73,30 @@ package body Arbitrary.Fractions is
   end Image;
 
   -- Basic "constants"
-  function Zero return Fraction is
-  begin
-    return (Zero, One);
-  end Zero;
+  function Zero return Fraction is ( (Zero, One) );
 
-  function One  return Fraction is
-  begin
-    return (One, One);
-  end One;
+  function One  return Fraction is ( (One, One) );
 
-  function Two  return Fraction is
-  begin
-    return (Two, One);
-  end Two;
+  function Two  return Fraction is ( (Two, One) );
 
 
   -- Extractors
-  function Numerator (F : Fraction) return Number is
-  begin
-    return F.Numerator;
-  end Numerator;
+  function Numerator (F : Fraction) return Number is (F.Numerator);
 
-  function Denominator (F : Fraction) return Number is
-  begin
-    return F.Denominator;
-  end Denominator;
+  function Denominator (F : Fraction) return Number is (F.Denominator);
 
 
   -- Basic unitary operations
   function "abs" (A : Fraction) return Fraction is
-  begin
-    return (abs A.Numerator, A.Denominator);
-  end "abs";
+    ( (abs A.Numerator, A.Denominator) );
 
   function "-" (A : Fraction) return Fraction is
-  begin
-    return (- A.Numerator, A.Denominator);
-  end "-";
-
+    ( (- A.Numerator, A.Denominator) );
 
   -- Basic comparisons
   function "=" (A, B : Fraction) return Boolean is
-  begin
-    return A.Numerator = B.Numerator
-    and then A.Denominator = B.Denominator;
-  end "=";
+    (A.Numerator = B.Numerator
+     and then A.Denominator = B.Denominator);
 
   function "<" (A, B : Fraction) return Boolean is
     H, Rda, Rdb : Number;
@@ -134,9 +110,7 @@ package body Arbitrary.Fractions is
   end "<";
 
   function "<=" (A, B : Fraction) return Boolean is
-  begin
-    return A = B or else A < B;
-  end "<=";
+    (A = B or else A < B);
 
   function ">" (A, B : Fraction) return Boolean is
     H, Rda, Rdb : Number;
@@ -150,9 +124,7 @@ package body Arbitrary.Fractions is
   end ">";
 
   function ">=" (A, B : Fraction) return Boolean is
-  begin
-    return A = B or else A > B;
-  end ">=";
+    (A = B or else A > B);
 
 
   -- Basic operations
@@ -174,9 +146,7 @@ package body Arbitrary.Fractions is
   end "+";
 
   function "-" (A, B : Fraction) return Fraction is
-  begin
-    return A + (-B);
-  end "-";
+    (A + (-B));
 
   function "*" (A, B : Fraction) return Fraction is
     F1, F2, R : Fraction;
@@ -202,9 +172,7 @@ package body Arbitrary.Fractions is
   end Inverse;
 
   function "/" (A, B : Fraction) return Fraction is
-  begin
-    return A * Inverse (B);
-  end "/";
+    (A * Inverse (B));
 
   function "**" (A : Fraction; B : Number) return Fraction is
     R : Fraction;

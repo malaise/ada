@@ -7,46 +7,29 @@ package body Trace is
   -------------------
   -- Operations on Severities
   function "And" (L, R : Severities) return Severities is
-  begin
-    return Severities(Bit_Ops."And" (Natural(L), Natural(R)));
-  end "And";
+    (Severities(Bit_Ops."And" (Natural(L), Natural(R))));
   function "Or" (L, R : Severities) return Severities is
-  begin
-    return Severities(Bit_Ops."Or" (Natural(L), Natural(R)));
-  end "Or";
+    (Severities(Bit_Ops."Or" (Natural(L), Natural(R))));
   function "Xor" (L, R : Severities) return Severities is
-  begin
-    return Severities(Bit_Ops."Xor" (Natural(L), Natural(R)));
-  end "Xor";
+    (Severities(Bit_Ops."Xor" (Natural(L), Natural(R))));
 
-  function Errors return Severities is
-  begin
-    return Fatal or Error;
-  end Errors;
-  function Infos return Severities is
-  begin
-    return Warning or Info;
-  end Infos;
+  function Errors return Severities is (Fatal or Error);
+  function Infos return Severities is (Warning or Info);
 
   -- Image of a severity mask
   function Image (Severity : Severities) return String is
-  begin
-    return (case Severity is
+    (case Severity is
         when Fatal   => "Fatal",
         when Error   => "Error",
         when Warning => "Warning",
         when Info    => "Info",
         when Debug   => "Debug",
         when others  => Hexa_Utils.Image (Natural(Severity)));
-  end Image;
 
   -- Parse a severity string
   -- Parsing error on a severity leads to default severity, except for
   --  numeric values too high, which are discarded.
-  function Sep (C : Character) return Boolean is
-  begin
-    return C = '|';
-  end Sep;
+  function Sep (C : Character) return Boolean is (C = '|');
 
   function Parse (Str : String) return Severities is
     Valid : Boolean;
@@ -180,13 +163,11 @@ package body Trace is
   function Format (Name     : in String;
                    Severity : in Severities;
                    Message  : in String) return String is
-  begin
-    return Images.Date_Image (Ada.Calendar.Clock, Format => Images.Iso_Dot)
+    (Images.Date_Image (Ada.Calendar.Clock, Format => Images.Iso_Dot)
          & " " & Process.Image
          & " " & (if Name = "" then "-" else Name)
          & " " & Image (Severity)
-         & " -> " & Message;
-  end Format;
+         & " -> " & Message);
 
   -- Basic_Logger
   package body Basic_Logger is

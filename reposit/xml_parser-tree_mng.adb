@@ -302,7 +302,7 @@ package body Tree_Mng is
   end Set_Xml_Attribute;
 
   function Xml_Existst (Prologue : in out My_Tree.Tree_Type) return Boolean is
-   Cell : My_Tree_Cell;
+    Cell : My_Tree_Cell;
   begin
     if Prologue.Is_Empty then
       return False;

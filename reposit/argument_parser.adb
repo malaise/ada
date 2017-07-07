@@ -422,10 +422,7 @@ package body Argument_Parser is
   end Reset;
 
   -- Was parsing OK
-  function Is_Ok (Dscr : Parsed_Dscr) return Boolean is
-  begin
-    return Dscr.Ok;
-  end Is_Ok;
+  function Is_Ok (Dscr : Parsed_Dscr) return Boolean is (Dscr.Ok);
 
   -- Error string
   -- Possible returned strings:
@@ -436,9 +433,7 @@ package body Argument_Parser is
   --  "Argument <arg> at pos <i> appears several times."
   --  "Argument <arg> at pos <i> appears shall not have option."
   function Get_Error (Dscr : Parsed_Dscr) return String is
-  begin
-    return (if Dscr.Ok then "OK." else Dscr.Error.Image);
-  end Get_Error;
+    (if Dscr.Ok then "OK." else Dscr.Error.Image);
 
 
   -- All the following operations may raise
@@ -504,9 +499,7 @@ package body Argument_Parser is
 
   function Is_Set (Dscr  : Parsed_Dscr;
                    Index : The_Keys_Index) return Boolean is
-  begin
-    return Get_Nb_Occurences (Dscr, Index) /= 0;
-  end Is_Set;
+    (Get_Nb_Occurences (Dscr, Index) /= 0);
 
   -- Does an argument match the key, returns the option or No_Match if not match
   function Match (Arg_No : Positive; Key : A_Key_Type) return String is

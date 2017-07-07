@@ -83,10 +83,8 @@ package body Byte_To_Unicode is
   -- If the map is not loaded, then return Code
   function Convert (The_Map : Map;
                     Code : Byte) return Unicode.Unicode_Number is
-  begin
-    return (if The_Map.Loaded then The_Map.Table (Code)
-            else Code);
-  end Convert;
+    (if The_Map.Loaded then The_Map.Table (Code)
+     else Code);
 
 end Byte_To_Unicode;
 

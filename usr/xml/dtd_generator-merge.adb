@@ -10,9 +10,7 @@ procedure Merge (Into : in out Element_Type; Val : in out Element_Type) is
 
   -- False if Val exceeds Max Deviation
   function Check_Deviation (Val : Integer) return Boolean is
-  begin
-    return Max_Deviation = 0 or else Val <= Max_Deviation;
-  end Check_Deviation;
+    (Max_Deviation = 0 or else Val <= Max_Deviation);
 
   -- Append to Into the children that are new in Val
   -- Don't care about Opt and Mult cause result will be a Choice or Mixed
@@ -50,11 +48,9 @@ procedure Merge (Into : in out Element_Type; Val : in out Element_Type) is
   -- Image of a sequence
   function Sequence_Image (Children : Child_Unbs.Unb_Array) return String is
     function Image (Child : Child_Type) return String is
-    begin
-      return Child.Name.Image
-          & (if Child.Opt then (if Child.Mult then "*" else "?")
-             else (if Child.Mult then "+" else ""));
-    end Image;
+      (Child.Name.Image
+     & (if Child.Opt then (if Child.Mult then "*" else "?")
+        else (if Child.Mult then "+" else "")));
     Res : As.U.Asu_Us;
   begin
     for I in 1 .. Children.Length loop

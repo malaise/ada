@@ -19,9 +19,7 @@ package body Bookmarks is
 
   -- Expand Env variables from path of bookmark
   function Dir_Of (Index : in Positive) return String is
-  begin
-    return Mem.Eval (As.U.Image (Config.Get_Bookmarks (Index).Path));
-  end Dir_Of;
+    (Mem.Eval (As.U.Image (Config.Get_Bookmarks (Index).Path)));
 
   -- Insert in Afpx list the image of a bookmark (normalized if necessary)
   List_Width : Afpx.Width_Range;

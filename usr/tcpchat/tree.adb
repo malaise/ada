@@ -41,9 +41,7 @@ package body Tree is
 
   -- Strip leading and tailing spaces
   function Strip (Txt : As.U.Asu_Us) return As.U.Asu_Us is
-  begin
-    return As.U.Tus (Str_Util.Strip (Txt.Image, Str_Util.Both));
-  end Strip;
+    (As.U.Tus (Str_Util.Strip (Txt.Image, Str_Util.Both)));
 
   -- Node Kind is already set, Name as well if needed
   -- Timeout is initialised to default
@@ -539,10 +537,7 @@ package body Tree is
   -------------
   -- Utility --
   -------------
-  function Get_Version return String is
-  begin
-    return Version.Image;
-  end Get_Version;
+  function Get_Version return String is (Version.Image);
 
   procedure Set_Position (Position : in Position_Access) is
   begin

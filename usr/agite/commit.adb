@@ -42,23 +42,17 @@ package body Commit is
   Comment_Width : Afpx.Width_Range;
 
   function Is_Staged (C : Character) return Boolean is
-  begin
-    return C /= ' ' and then C /= '?' and then C /= '-';
-  end Is_Staged;
+    (C /= ' ' and then C /= '?' and then C /= '-');
 
   -- Is E Staged
   function Staged (E : Git_If.File_Entry_Rec) return Trilean.Trilean is
-  begin
-    return (if    not Is_Staged (E.S2) then Trilean.False
-            elsif not Is_Staged (E.S3) then Trilean.True
-            else Trilean.Other);
-  end Staged;
+    (if    not Is_Staged (E.S2) then Trilean.False
+     elsif not Is_Staged (E.S3) then Trilean.True
+     else Trilean.Other);
 
   -- Is E unknown
   function Is_Unknown (E : Git_If.File_Entry_Rec) return Boolean is
-  begin
-    return E.S2 = '?' and then E.S3 = '?';
-  end Is_Unknown;
+    (E.S2 = '?' and then E.S3 = '?');
 
   -- Separator File entry and Afpx line
   Sep_File : constant Git_If.File_Entry_Rec
@@ -882,20 +876,13 @@ package body Commit is
                    Hash_For_Comment : Git_If.Git_Hash;
                    Allow_Modif : Boolean := True;
                    Allow_Commit : Commit_Allow_List := Allow) return Boolean is
-  begin
-    return Common_Handle (Root, True, Title, Hash_For_Comment,
-                          Allow_Modif, Allow_Commit);
-  end Handle;
+    (Common_Handle (Root, True, Title, Hash_For_Comment,
+                    Allow_Modif, Allow_Commit));
 
   -- Get comment of a commit or comment previously entered
   function Get_Comment (Hash : Git_If.Git_Hash) return String is
-  begin
-    if Hash /= Git_If.No_Hash then
-      return Encode_Commit (Hash).Image;
-    else
-      return Comment.Image;
-    end if;
-  end Get_Comment;
+    (if Hash /= Git_If.No_Hash then Encode_Commit (Hash).Image
+     else Comment.Image);
 
   -- Set default comment for next commit
   procedure Set_Comment (Str : in String) is

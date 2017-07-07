@@ -102,13 +102,8 @@ package body Screen is
   end Display_Square;
 
   function Get_Mouse_Event (Color : Space.Color_List) return Mouse_Event_Rec is
-  begin
-    if Graphic_Mode then
-      return Graphic.Get_Mouse_Event (Color);
-    else
-      return Text.Get_Mouse_Event (Color);
-    end if;
-  end Get_Mouse_Event;
+    (if Graphic_Mode then Graphic.Get_Mouse_Event (Color)
+     else Text.Get_Mouse_Event (Color));
 
   procedure Display_Promotion (Move_Color : in Space.Color_List) is
   begin
@@ -120,13 +115,8 @@ package body Screen is
   end Display_Promotion;
 
   function Get_Promotion (Click : in Boolean) return Pieces.Piece_Kind_List is
-  begin
-    if Graphic_Mode then
-      return Graphic.Get_Promotion (Click);
-    else
-      return Text.Get_Promotion (Click);
-    end if;
-  end Get_Promotion;
+    (if Graphic_Mode then Graphic.Get_Promotion (Click)
+     else Text.Get_Promotion (Click));
 
 
   -- Redisplay the board

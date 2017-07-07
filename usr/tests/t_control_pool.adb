@@ -22,11 +22,8 @@ procedure T_Control_Pool is
 
   -- (Rounded) image of a duration
   function Dur_Image (Dur : in Duration) return String is
-  begin
     -- 3 digits after dot and no Plus sign
-    return (if Dur >= 0.0 then Images.Dur_Image (Dur, 3, False) & "s"
-            else "Infinite");
-  end Dur_Image;
+    (if Dur >= 0.0 then Images.Dur_Image (Dur, 3, False) & "s" else "Infinite");
 
   -- The clients of resources
   subtype Client_Range is Positive range 1 .. 9;

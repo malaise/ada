@@ -17,10 +17,7 @@ package body Network is
   end Set_Name;
 
   -- Returns the name of a node
-  function Get_Name (Of_Node : Node_Type) return String is
-  begin
-    return Of_Node.Name.Image;
-  end Get_Name;
+  function Get_Name (Of_Node : Node_Type) return String is (Of_Node.Name.Image);
 
   -- Set data of a node
   procedure Set_Data (Of_Node : in out Node_Type; Data : in Node_Data_Type) is
@@ -34,9 +31,7 @@ package body Network is
 
   -- Returns the data of a node
   function Get_Data (Of_Node : Node_Type) return Node_Data_Type is
-  begin
-    return Of_Node.Data;
-  end Get_Data;
+    (Of_Node.Data);
 
 
   ----------------
@@ -88,13 +83,8 @@ package body Network is
 
   -- Gets the number of connections of of_Node
   function Nb_Connections (Of_Node : Node_Type) return Connection_Number is
-  begin
-    if Of_Node.Connections = null then
-      return 0;
-    else
-      return Of_Node.Connections.List_Length;
-    end if;
-  end Nb_Connections;
+    (if Of_Node.Connections = null then 0
+     else Of_Node.Connections.List_Length);
 
   -- Gets a connection of Of_Node, by index
   -- Raises No_Connection if incorrect index

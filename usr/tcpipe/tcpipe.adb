@@ -45,10 +45,7 @@ procedure Tcpipe is
   Partner_Addr : As.U.Asu_Us;
 
   -- For parsing ports
-  function Separing (C : Character) return Boolean is
-  begin
-    return C = ',';
-  end Separing;
+  function Separing (C : Character) return Boolean is (C = ',');
 
   -- For CtrlC
   Break : Boolean := False;

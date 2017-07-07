@@ -8,20 +8,13 @@ package body Virtual_Time is
 
   -- Get current time
   function Current_Time (A_Clock : Clock) return Time is
-  begin
-    return Virtual_Time_Of (A_Clock, Ada.Calendar.Clock);
-  end Current_Time;
+    (Virtual_Time_Of (A_Clock, Ada.Calendar.Clock));
 
   -- Use Ada.Calendar.Clock if A_Clock is null
   function Current_Time (A_Clock : Clock_Access := null) return Time is
-  begin
-    if A_Clock = null then
-      -- No clock => real time
-      return Ada.Calendar.Clock;
-    else
-      return Current_Time (A_Clock.all);
-    end if;
-  end Current_Time;
+    -- No clock => real time
+    (if A_Clock = null then Ada.Calendar.Clock
+     else Current_Time (A_Clock.all));
 
   -- Is Time reached
   function Is_Reached (Expiration_Time : Time;
@@ -138,17 +131,11 @@ package body Virtual_Time is
   end Resume;
 
   -- Get current speed
-  function Get_Speed (A_Clock : Clock) return Speed_Range is
-  begin
-    return A_Clock.Speed;
-  end Get_Speed;
+  function Get_Speed (A_Clock : Clock) return Speed_Range is (A_Clock.Speed);
 
   -- Return 1.0 if A_Clock is null
   function Get_Speed (A_Clock : Clock_Access) return Speed_Range is
-  begin
-    return (if A_Clock = null then Std
-            else Get_Speed (A_Clock.all));
-  end Get_Speed;
+    (if A_Clock = null then Std else Get_Speed (A_Clock.all));
 
   -- Get Virtual time corresponding to a Reference time
   function Virtual_Time_Of (A_Clock : Clock;
@@ -164,10 +151,8 @@ package body Virtual_Time is
   -- Return Reference_Time if A_Clock is null
   function Virtual_Time_Of (A_Clock : Clock_Access;
                             Reference_Time : Time) return Time is
-  begin
-    return (if A_Clock = null then Reference_Time
-           else Virtual_Time_Of (A_Clock.all, Reference_Time));
-  end Virtual_Time_Of;
+    (if A_Clock = null then Reference_Time
+     else Virtual_Time_Of (A_Clock.all, Reference_Time));
 
   -- Get Reference time corresponding to a Virtual time
   function Reference_Time_Of (A_Clock : Clock;
@@ -186,13 +171,8 @@ package body Virtual_Time is
   -- Return Virtual_Time is A_Clock is null
   function Reference_Time_Of (A_Clock : Clock_Access;
                               Virtual_Time : Time) return Time is
-  begin
-    if A_Clock = null then
-      return Virtual_Time;
-    else
-      return Reference_Time_Of (A_Clock.all, Virtual_Time);
-    end if;
-  end Reference_Time_Of;
+    (if A_Clock = null then Virtual_Time
+     else Reference_Time_Of (A_Clock.all, Virtual_Time));
 
   -- Add a new observer
   procedure Add_Observer (A_Clock : in out Clock;

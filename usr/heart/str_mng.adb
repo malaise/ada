@@ -10,9 +10,7 @@ package body Str_Mng is
 
   -- Has the str some spaces
   function Has_Spaces (Str : String) return Boolean is
-  begin
-    return (for some C of Str => C = ' ');
-  end Has_Spaces;
+    (for some C of Str => C = ' ');
 
   -- Parse spaces from a string
   procedure Parse (Str : in out String) is
@@ -98,9 +96,7 @@ package body Str_Mng is
   end To_Bpm;
 
   function Pid_Str (Pid : Pers_Def.Pid_Range) return Mesu_Nam.File_Pid_Str is
-  begin
-    return Normal (Integer(Pid), 3, Gap => '0');
-  end Pid_Str;
+    (Normal (Integer(Pid), 3, Gap => '0'));
 
 --  type Date_Str_Rec is record
 --    Day : Str2;
@@ -220,7 +216,7 @@ package body Str_Mng is
   end To_Date_Str;
 
   function Current_Date (Offset : Offset_Range := 0)
-  return Mesu_Def.Date_Str is
+                        return Mesu_Def.Date_Str is
     Current_Time : Ada.Calendar.Time := Ada.Calendar.Clock;
     Years  : Ada.Calendar.Year_Number;
     Months : Ada.Calendar.Month_Number;
@@ -238,7 +234,7 @@ package body Str_Mng is
   end Current_Date;
 
   function Current_Date_Printed (Offset : Offset_Range := 0)
-  return Printed_Date_Str is
+                                return Printed_Date_Str is
   begin
     return To_Printed_Str (Current_Date(Offset));
   end Current_Date_Printed;

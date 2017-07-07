@@ -10,9 +10,7 @@ package body Control_Pool is
 
   -- Search in pool for a key
   function Same_Key (Current, Criteria : Cell_Type) return Boolean is
-  begin
-    return Current.Key = Criteria.Key;
-  end Same_Key;
+    (Current.Key = Criteria.Key);
   function Search is new Used_Mutex_List.Search(Same_Key);
 
   -- Pool of free mutexes

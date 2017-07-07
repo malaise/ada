@@ -96,9 +96,7 @@ package body Utf_8 is
                     Unicode : out Unicode_Number) is
     First : constant Positive := Seq'First;
     function Byte_Of (I : Len_Range) return Natural is
-    begin
-      return Character'Pos (Seq(First + I - 1));
-    end Byte_Of;
+      (Character'Pos (Seq(First + I - 1)));
 
     use Bit_Ops;
   begin
@@ -194,9 +192,7 @@ package body Utf_8 is
   end Encode;
 
   function Encode (Unicode : Unicode_Number) return Sequence is
-  begin
-    return Sequence (Word'(Encode (Unicode)));
-  end Encode;
+    (Sequence (Word'(Encode (Unicode))));
 
   -- Decodes a Utf-8 sequence (of sequences) to Unicode sequence.
   -- May raise Invalid_Sequence
@@ -244,14 +240,10 @@ package body Utf_8 is
 
   -- Encodes a Wide_Character as a Utf-8 word or sequence
   function Encode (Wide_Char : Wide_Character) return Word is
-  begin
-    return Encode (Wide_Character'Pos (Wide_Char));
-  end Encode;
+    (Encode (Wide_Character'Pos (Wide_Char)));
 
   function Encode (Wide_Char : Wide_Character) return Sequence is
-  begin
-    return Sequence (Word'(Encode (Wide_Char)));
-  end Encode;
+    (Sequence (Word'(Encode (Wide_Char))));
 
 end Utf_8;
 

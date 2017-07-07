@@ -49,9 +49,7 @@ package body Replace_Pattern is
   end Set;
   -- Access by index in The_Pattern
   function Image (Element : Substit_Action_Rec) return String is
-  begin
-    return Element.Index'Img;
-  end Image;
+    (Element.Index'Img);
   function "=" (Current : Substit_Action_Rec; Criteria : Substit_Action_Rec)
                return Boolean is
   begin
@@ -82,8 +80,8 @@ package body Replace_Pattern is
 
   -- Check and get an hexa code from The_Pattern (Index .. Index + 1)
   function Get_Hexa (Index : Positive; Hexa : in Boolean) return Byte is
-   Error_Msg : As.U.Asu_Us;
-   Result : Byte;
+    Error_Msg : As.U.Asu_Us;
+    Result : Byte;
   begin
     -- Set error message
     if Hexa then
@@ -387,16 +385,10 @@ package body Replace_Pattern is
   end Parse;
 
   -- Returns if pattern is empty
-  function Is_Empty return Boolean is
-  begin
-    return The_Pattern.Is_Null;
-  end Is_Empty;
+  function Is_Empty return Boolean is (The_Pattern.Is_Null);
 
   -- Return replace pattern
-  function Get return String is
-  begin
-    return The_Pattern.Image;
-  end Get;
+  function Get return String is (The_Pattern.Image);
 
   -- Extract a substring of string matching a regex
   function Matchstring (Kind : Extraction_List; Nth : Byte) return String is
@@ -443,18 +435,11 @@ package body Replace_Pattern is
   -- Return the converted Str(Start .. Stop)
   function Casestring (Str : String;
                        Action : Case_Mode_List) return String is
-  begin
-    case Action is
-      when Start_Uppercase =>
-        return Upper_Str (Str);
-      when Start_Lowercase =>
-        return Lower_Str (Str);
-      when Start_Mixedcase =>
-        return Mixed_Str (Str);
-      when Stop_Case =>
-       return Str;
-    end case;
-  end Casestring;
+    (case Action is
+       when Start_Uppercase => Upper_Str (Str),
+       when Start_Lowercase => Lower_Str (Str),
+       when Start_Mixedcase => Mixed_Str (Str),
+       when Stop_Case       => Str);
 
   -- Return the replacing string
   type If_Status_List is (None, If_Ok, If_Ko, In_Else);

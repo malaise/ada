@@ -4,9 +4,7 @@ package body Doors is
   -- Get access to the condition
   function Get (A_Door : Door;
                 Waiting_Time : Duration) return Boolean is
-  begin
-    return A_Door.Door_Pointer.Cond.Get (Waiting_Time);
-  end Get;
+    (A_Door.Door_Pointer.Cond.Get (Waiting_Time));
 
   -- Get access to the condition : infinite wait
   procedure Get (A_Door : in Door) is

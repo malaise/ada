@@ -72,7 +72,6 @@ package body Images is
   -- Image of a duration (without leading space)
   function Dur_Image (Dur : Duration; Nb_Digits : Natural; Plus : Boolean)
                       return String is
-
      D : Duration;
      Str : As.U.Asu_Us;
      Dot : Natural;

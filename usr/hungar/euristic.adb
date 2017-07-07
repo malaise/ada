@@ -102,19 +102,12 @@ package body Euristic is
     -- Instantiate sorting
     -- Free zeros first, in order of crescent Sigma, then slashed then squared zeros
     function "<" (Left, Right : Zero_Desc_Rec) return Boolean is
-    begin
-      if Left.State = Free then
-        if Right.State /= Free then
-          -- Left Free and not Right
-          return True;
-        else
-          -- Left and Right Free
-          return Left.Sigma < Right.Sigma;
-        end if;
-      else
-        return Left.State = Slashed and then Right.State = Squared;
-      end if;
-    end "<";
+      (if Left.State = Free then
+         -- Left Free and not Right
+        (if Right.State /= Free then True
+         -- Left and Right Free
+         else Left.Sigma < Right.Sigma)
+       else Left.State = Slashed and then Right.State = Squared);
 
   begin
     Logger.Log_Debug ("Euristic search start.");

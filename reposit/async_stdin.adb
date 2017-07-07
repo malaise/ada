@@ -646,10 +646,7 @@ package body Async_Stdin is
       return Res.To_Array;
     end Read_Buffer;
 
-    function Read_Col return Positive is
-    begin
-      return Ind;
-    end Read_Col;
+    function Read_Col return Positive is (Ind);
 
     procedure Clear_History is
     begin
@@ -785,10 +782,7 @@ package body Async_Stdin is
     end if;
   end Set_Async;
 
-  function Is_Set return Boolean is
-  begin
-    return Cb /= null;
-  end Is_Set;
+  function Is_Set return Boolean is (Cb /= null);
 
   -- Activate asynchronous data to trigger callback
   procedure Activate (Allow_Input : Boolean := True) is
@@ -811,10 +805,7 @@ package body Async_Stdin is
     end if;
   end Activate;
 
-  function Is_Active return Boolean is
-  begin
-    return Active;
-  end Is_Active;
+  function Is_Active return Boolean is (Active);
 
   -- Clear internal buffer of pending characters
   procedure Clear_Pending is
@@ -885,10 +876,8 @@ package body Async_Stdin is
 
   -- Strip last character if Str if it is a control char (before space)
   function Strip_Last_Control (Str : String) return String is
-  begin
-    return (if Str'Length = 0 or else Str(Str'Last) >= ' ' then Str
-            else Str (Str'First .. Str'Last - 1));
-  end Strip_Last_Control;
+    (if Str'Length = 0 or else Str(Str'Last) >= ' ' then Str
+     else Str (Str'First .. Str'Last - 1));
 
   -- Put on stdout when in async
   procedure Put_Out (Str : in String) is

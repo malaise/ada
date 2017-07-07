@@ -281,10 +281,8 @@ package body Af_Ptg is
       end if;
     end Restore_Pos;
     function Get_Relative (Pos : Con_Io.Square) return Con_Io.Square is
-    begin
-      return (Row => Pos.Row - Field.Upper_Left.Row,
-              Col => Pos.Col - Field.Upper_Left.Col);
-    end Get_Relative;
+      ((Row => Pos.Row - Field.Upper_Left.Row,
+        Col => Pos.Col - Field.Upper_Left.Col));
 
     use type Ada.Calendar.Time;
     use type Button_List, Absolute_Field_Range, Field_Kind_List;

@@ -81,9 +81,7 @@ package body File is
 
   -- Check if file exists
   function F_Exists (Name : F_T_File_Name) return Boolean is
-  begin
-    return Sys_Calls.File_Found (Name);
-  end F_Exists;
+    (Sys_Calls.File_Found (Name));
 
 end File;
 

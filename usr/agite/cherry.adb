@@ -12,15 +12,11 @@ package body Cherry is
   package Cherries_Mng is new Dynamic_List (Cherry_Rec);
   -- Search by Hash
   function Match (Current, Criteria : Cherry_Rec) return Boolean is
-  begin
-    return Current.Commit.Hash = Criteria.Commit.Hash;
-  end Match;
+    (Current.Commit.Hash = Criteria.Commit.Hash);
   function Search_Hash is new Cherries_Mng.Dyn_List.Search (Match);
 
   function Image (Status : Cherry_Status_List) return String is
-  begin
-    return Mixed_Str (Status'Img);
-  end Image;
+    (Mixed_Str (Status'Img));
 
   -- The cherries
   Cherries : Cherries_Mng.Dyn_List.List_Type;
@@ -34,9 +30,7 @@ package body Cherry is
   -- Encoding Afpx line
   ---------------------
   function Image1 (From : in Cherry_Rec) return String is
-  begin
-    return
-      (case From.Status is
+    ( (case From.Status is
          when Merged => "=",
          when Pick   => "P",
          when Wipe   => "W",
@@ -49,17 +43,13 @@ package body Cherry is
       -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD HH:MM "
       & From.Commit.Date(03 .. 04) & From.Commit.Date(06 .. 07)
       & From.Commit.Date(09 .. 10) & '-'
-      & From.Commit.Date(12 .. 13) & From.Commit.Date(15 .. 16) & ' ';
-  end Image1;
+      & From.Commit.Date(12 .. 13) & From.Commit.Date(15 .. 16) & ' ');
   function Image2 (From : in Cherry_Rec) return String is
-  begin
-    return
-      -- 1 or 2 lines of comment
-      From.Commit.Comment(1).Image
-      & (if not From.Commit.Comment(2).Is_Null then
-           "$" & From.Commit.Comment(2).Image
-         else "");
-  end Image2;
+    -- 1 or 2 lines of comment
+    (From.Commit.Comment(1).Image
+   & (if not From.Commit.Comment(2).Is_Null then
+        "$" & From.Commit.Comment(2).Image
+      else ""));
 
   -- Confirm list
   Confirm_Width : Afpx.Width_Range;

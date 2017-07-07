@@ -13,10 +13,7 @@ package body Menu21 is
     The_Bounds_Set := False;
   end Reset_Bounds;
 
-  function Bounds_Set return Boolean is
-  begin
-    return The_Bounds_Set;
-  end Bounds_Set;
+  function Bounds_Set return Boolean is (The_Bounds_Set);
 
   procedure Get_Bounds (Set : out Boolean; Bounds : out Curve.T_Boundaries) is
   begin

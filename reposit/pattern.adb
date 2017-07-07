@@ -322,13 +322,8 @@ package body Pattern is
 
     -- Get Parser.Current_Word, in lower case or not
     function Current_Word return String is
-    begin
-      if Case_Sensitive then
-        return Parser.Current_Word (Iter);
-      else
-        return Lower_Str (Parser.Current_Word (Iter));
-      end if;
-    end Current_Word;
+      (if Case_Sensitive then Parser.Current_Word (Iter)
+       else Lower_Str (Parser.Current_Word (Iter)));
 
     -- Pull one term
     function Pull return Boolean is
@@ -378,7 +373,7 @@ package body Pattern is
 
     -- Cleanup and verdict. Return True if OK and Cb returned True.
     function Conclude return Boolean is
-    Res : Boolean := False;
+      Res : Boolean := False;
     begin
       if Term.Cb = null then
         Put_Debug ("Check", "Cb is null");
@@ -520,10 +515,7 @@ package body Pattern is
 
 
   -- Rule image
-  function Image (Rule : Rule_No) return String is
-  begin
-    return Rule.No'Img;
-  end Image;
+  function Image (Rule : Rule_No) return String is (Rule.No'Img);
 
   -- May raise No_Rule if no rule is available.
   function Get_Free_Rule return Rule_No is

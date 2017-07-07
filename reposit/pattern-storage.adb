@@ -12,27 +12,21 @@ package body Storage is
 
   -- Search first term of pattern in rule
   function Pattern_Match (Curr, Crit : Term_Rec) return Boolean is
-  begin
-    return Curr.Rule = Crit.Rule
-           and then Curr.Str_Acc /= null
-           and then Curr.Id = Crit.Id;
-  end Pattern_Match;
+    (Curr.Rule = Crit.Rule
+     and then Curr.Str_Acc /= null
+     and then Curr.Id = Crit.Id);
   function Search_Pattern is new Term_List_Mng.Search (Pattern_Match);
 
   -- Search first term of next pattern of same rule
   function Pattern_After (Curr, Crit : Term_Rec) return Boolean is
-  begin
-    return Curr.Rule = Crit.Rule
-           and then Curr.Str_Acc /= null
-           and then Curr.Id > Crit.Id;
-  end Pattern_After;
+    (Curr.Rule = Crit.Rule
+     and then Curr.Str_Acc /= null
+     and then Curr.Id > Crit.Id);
   function Next_Pattern is new Term_List_Mng.Search (Pattern_After);
 
   -- Search first term of first pattern of rule
   function Rule_Match (Curr, Crit : Term_Rec) return Boolean is
-  begin
-    return Curr.Rule = Crit.Rule;
-  end Rule_Match;
+    (Curr.Rule = Crit.Rule);
   function Search_Rule is new Term_List_Mng.Search (Rule_Match);
 
   -- Return an unused rule

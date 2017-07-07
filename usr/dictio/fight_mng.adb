@@ -15,10 +15,7 @@ package body Fight_Mng is
 
   Fight_Actions : Fight_Action;
 
-  function In_Fight return Boolean is
-  begin
-    return Tid.Exists;
-  end In_Fight;
+  function In_Fight return Boolean is (Tid.Exists);
 
   procedure Start (New_Status : in Status.Status_List;
                    Timeout : in Duration;

@@ -19,9 +19,7 @@ procedure T_Curve is
   X_Min, X_Max : Curve.T_Coordinate;
 
   function F(X : My_Math.Real) return My_Math.Real is
-  begin
-    return 4.0 * X**3 + 3.0 * X**2 + 2.0 * X + 1.0;
-  end F;
+    (4.0 * X**3 + 3.0 * X**2 + 2.0 * X + 1.0);
 
   procedure My_Draw is new Curve.Draw(F);
 

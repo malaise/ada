@@ -12,17 +12,13 @@ package body Romanic is
 
   -- Character <-> Digit conversion
   function D2C (D : Digit) return Character is
-  begin
-    case D is
-      when 'I' => return 'I';
-      when 'V' => return 'V';
-      when 'X' => return 'X';
-      when 'L' => return 'L';
-      when 'C' => return 'C';
-      when 'D' => return 'D';
-      when 'M' => return 'M';
-    end case;
-  end D2C;
+    (case D is when 'I' => 'I',
+               when 'V' => 'V',
+               when 'X' => 'X',
+               when 'L' => 'L',
+               when 'C' => 'C',
+               when 'D' => 'D',
+               when 'M' => 'M');
   function C2D (C : Character) return Digit is
   begin
     case C is
@@ -51,24 +47,16 @@ package body Romanic is
     None : constant Character := '-';
     Cur_Index : Positive := R'First;
     function Prev return Character is
-    begin
-      return (if Cur_Index > R'First then D2C(R(Cur_Index - 1)) else None);
-    end Prev;
+      (if Cur_Index > R'First then D2C(R(Cur_Index - 1)) else None);
 
     function Current return Character is
-    begin
-      return (if Cur_Index <= R'Last then D2C(R(Cur_Index)) else None);
-    end Current;
+       (if Cur_Index <= R'Last then D2C(R(Cur_Index)) else None);
 
     function Next return Character is
-    begin
-      return (if Cur_Index + 1 <= R'Last then D2C(R(Cur_Index + 1)) else None);
-    end Next;
+      (if Cur_Index + 1 <= R'Last then D2C(R(Cur_Index + 1)) else None);
 
     function Next_Next return Character is
-    begin
-      return (if Cur_Index + 2 <= R'Last then D2C(R(Cur_Index + 2)) else None);
-    end Next_Next;
+      (if Cur_Index + 2 <= R'Last then D2C(R(Cur_Index + 2)) else None);
 
     function Value (C : Character) return Natural is
     begin

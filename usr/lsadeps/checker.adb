@@ -14,16 +14,11 @@ package body Checker is
 
   -- A dyn list of Sourcer dscrs
   function "<" (Left, Right : Sourcer.Src_Dscr) return Boolean is
-  begin
-    return Sourcer.Short_Image (Left) < Sourcer.Short_Image (Right);
-  end "<";
+    (Sourcer.Short_Image (Left) < Sourcer.Short_Image (Right));
   procedure Sort is new Src_List_Mng.Sort ("<");
 
   -- Separator of Withs
-  function Is_Sep (C : Character) return Boolean is
-  begin
-    return C = Sourcer.Separator;
-  end Is_Sep;
+  function Is_Sep (C : Character) return Boolean is (C = Sourcer.Separator);
 
   -- Restricted mode of unit (in @mode#Unit@...)
   function Restricted_Of (Unit : String; Within : As.U.Asu_Us)
@@ -51,44 +46,34 @@ package body Checker is
   -- Check that current unit withes a parent less restrictively than a child
   -- of this parent
   function Check_Curr_Restr (Parent, Child : Character) return Boolean is
-  begin
-    if Child = '-' or else Parent = 'B' or else Child = Parent then
+    (if Child = '-' or else Parent = 'B' or else Child = Parent then
       -- Child is withed not restricted or Parent is limited private withed
       --  so withing the parent is useless
-      return False;
-    elsif Parent = 'L' then
-      -- Ok if child is not limited [ private ]
-      return Child = 'P';
-    elsif Parent = 'P' then
-      -- Ok if child is not [ limited ] private
-      return Child = 'L';
-    else -- Parent = '-'
-      return True;
-    end if;
-  end Check_Curr_Restr;
+      False
+     -- Ok if child is not limited [ private ]
+     elsif Parent = 'L' then Child = 'P'
+     -- Ok if child is not [ limited ] private
+     elsif Parent = 'P' then Child = 'L'
+     -- Parent = '-'
+     else True);
 
   -- Check that a unit is withed by current parent more restrictively than by a
   --  child of current parent
   -- Consider the fact that child can be a private child package
   function Check_Restr (Parent, Child : Character;
                         Private_Child : Boolean) return Boolean is
-  begin
-    if Parent = '-' or else Child = 'B' or else Child = Parent then
+    (if Parent = '-' or else Child = 'B' or else Child = Parent then
       -- Parent is unrestricted wihting, or child is limited private withing,
       -- so child is more restrictive or similar
-      return False;
-    elsif Parent = 'B' then
-      -- Parent is limited private withing and not child => OK
-      return  True;
-    elsif Parent = 'L' then
-      -- Ok if child is not limited [ private ] withing
-      return Child /= 'L';
-    else -- Parent = 'P'
-      -- Ok if child is not [ limited ] private withing
-      --  if it is [ private ] withing it must not be a private child
-      return Child = 'L' or else not Private_Child;
-    end if;
-  end Check_Restr;
+       False
+     -- Parent is limited private withing and not child => OK
+     elsif Parent = 'B' then True
+     -- Ok if child is not limited [ private ] withing
+     elsif Parent = 'L' then Child /= 'L'
+     -- Parent = 'P'
+     -- Ok if child is not [ limited ] private withing
+     --  if it is [ private ] withing it must not be a private child
+     else Child = 'L' or else not Private_Child);
 
   -- Check that this parent doesn't already with this withed unit or a child
   --  of it, or withes it consistently with restriction (check that unit is

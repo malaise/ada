@@ -5,16 +5,10 @@ package body Many_Strings is
   begin
     Str := Empty_String;
   end Reset;
-  function Empty return Many_String is
-  begin
-    return Empty_String;
-  end Empty;
+  function Empty return Many_String is (Empty_String);
 
   -- True if Str is really empty (no separator nor string)
-  function Is_Empty (Str : Many_String) return Boolean is
-  begin
-    return Str = Empty_String;
-  end Is_Empty;
+  function Is_Empty (Str : Many_String) return Boolean is (Str = Empty_String);
 
   subtype Unb_Array is Asu_Ua.Unb_Array;
 
@@ -162,19 +156,12 @@ package body Many_Strings is
   end Catif;
 
   -- String image
-  function Image (Str : Many_String) return String is
-  begin
-    return Image (Str, Separator);
-  end Image;
+  function Image (Str : Many_String) return String is (Image (Str, Separator));
   function Image (Str : Many_String) return As.U.Asu_Us is
-  begin
-    return Image (Str, Separator);
-  end Image;
-
+    (Image (Str, Separator));
   function Image (Str : Many_String; Separator : in Character) return String is
-  begin
-    return Image(Str, Separator).Image;
-  end Image;
+    (Image(Str, Separator).Image);
+
   function Image (Str : Many_String; Separator : in Character)
            return As.U.Asu_Us is
     Result : As.U.Asu_Us;
@@ -190,18 +177,13 @@ package body Many_Strings is
 
   -- Count number of substrings
   function Nb (Str : Many_String) return Positive is
+    Len : constant Natural := Str.Length;
   begin
-    if Str.Length /= 0 then
-      return Str.Length;
-    else
-      return 1;
-    end if;
+    return (if Len /= 0 then Len else 1);
   end Nb;
 
   function Nth (Str : Many_String; N : Positive) return String is
-  begin
-    return Nth (Str, N).Image;
-  end Nth;
+    (Nth (Str, N).Image);
   function Nth (Str : Many_String; N : Positive) return As.U.Asu_Us is
   begin
     if Str.Length /= 0 then

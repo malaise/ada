@@ -50,25 +50,17 @@ package body Mesu_Gra is
 
   -- From reality to screen
   function X_To_Screen (X : in Natural) return Con_Io.X_Range is
-  begin
-    return Con_Io.X_Range(Float(X - X_First) * X_Factor) + Xs_First;
-  end X_To_Screen;
+    (Con_Io.X_Range(Float(X - X_First) * X_Factor) + Xs_First);
 
   function Y_To_Screen (Bpm : in Pers_Def.Bpm_Range) return Con_Io.Y_Range is
-  begin
-    return Con_Io.Y_Range(Float(Bpm - Y_First) * Y_Factor) + Ys_First;
-  end Y_To_Screen;
+    (Con_Io.Y_Range(Float(Bpm - Y_First) * Y_Factor) + Ys_First);
 
   -- From reality to screen
   function X_To_Screen_Secure (X : in Natural) return Integer is
-  begin
-    return Integer(Float(X - X_First) * X_Factor) + Xs_First;
-  end X_To_Screen_Secure;
+    (Integer(Float(X - X_First) * X_Factor) + Xs_First);
 
   function Y_To_Screen_Secure (Bpm : in Pers_Def.Bpm_Range) return Integer is
-  begin
-    return Integer(Float(Bpm - Y_First) * Y_Factor) + Ys_First;
-  end Y_To_Screen_Secure;
+    (Integer(Float(Bpm - Y_First) * Y_Factor) + Ys_First);
 
   procedure Pixel (X : in Integer; Y : in Integer; In_Graphic : in Boolean) is
   begin

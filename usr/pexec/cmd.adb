@@ -28,10 +28,7 @@ package body Cmd is
   end Print_Usage;
 
   -- For parsing commands
-  function Is_Sep (C : Character) return Boolean is
-  begin
-    return C = ';';
-  end Is_Sep;
+  function Is_Sep (C : Character) return Boolean is (C = ';');
 
   procedure Parse (No_Action,      No_Name_Of_Dir,
                    Not_In_Current, First_Level_Only, Leaves_Only,

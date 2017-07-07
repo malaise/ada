@@ -167,10 +167,7 @@ package body Argument is
     return Pos;
   end Get_Position;
 
-  function Get_Nbre_Arg return Natural is
-  begin
-    return Count;
-  end Get_Nbre_Arg;
+  function Get_Nbre_Arg return Natural is (Count);
 
   -- Analyse of argument(0)
 

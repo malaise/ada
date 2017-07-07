@@ -84,10 +84,7 @@ package body Search_Pattern is
     To.Substrs := Val.Substrs;
   end Set;
   -- Unicity of pattern num
-  function Image (Line_Pat : Line_Pat_Rec) return String is
-  begin
-    return Line_Pat.Num'Img;
-  end Image;
+  function Image (Line_Pat : Line_Pat_Rec) return String is (Line_Pat.Num'Img);
   function "=" (Current : Line_Pat_Rec; Criteria : Line_Pat_Rec)
                return Boolean is
     use type Ll_Natural;
@@ -121,10 +118,7 @@ package body Search_Pattern is
   -- Delimiter
   Delimiter : As.U.Asu_Us;
   -- Get the delimiter
-  function Get_Delimiter return String is
-  begin
-    return Delimiter.Image;
-  end Get_Delimiter;
+  function Get_Delimiter return String is (Delimiter.Image);
 
   -- Reports a parsing error
   type Pattern_Kind_List is (Search_Kind, Exclude_Kind, Delimiter_Kind);
@@ -224,18 +218,10 @@ package body Search_Pattern is
   -- Start line and stop line strings in regex
   Start_Char : constant Character := '^';
   function Start_String (Delim : in Boolean) return String is
-  begin
-    if Delim then return "" & Start_Char;
-    else return "";
-    end if;
-  end Start_String;
+    (if Delim then "" & Start_Char else "");
   Stop_Char : constant Character := '$';
   function Stop_String (Delim : in Boolean) return String is
-  begin
-    if Delim then return "" & Stop_Char;
-    else return "";
-    end if;
-  end Stop_String;
+    (if Delim then "" & Stop_Char else "");
 
   -- Parses a pattern (splits it or not in several items of List)
   -- Reports errors on stderr and raises Parse_Error.
@@ -251,7 +237,7 @@ package body Search_Pattern is
 
     -- Check and get an hexa code from The_Pattern (Index .. Index + 1)
     function Get_Hexa (Index : Positive) return Byte is
-     Result : Byte;
+      Result : Byte;
     begin
       -- First digit: 16 * C
       if Index > The_Pattern.Length then
@@ -316,18 +302,12 @@ package body Search_Pattern is
 
     -- Return True if Pattern(Start) = '^' and Patern(Stop) = '$' (not "\$")
     function Check_Start (Start : Positive) return Boolean is
-    begin
-      return The_Pattern.Element (Start) = Start_Char;
-    end Check_Start;
+      (The_Pattern.Element (Start) = Start_Char);
     function Check_Stop (Stop : Positive) return Boolean is
-    begin
-      return The_Pattern.Element (Stop) = Stop_Char
-        and then not Str_Util.Is_Backslashed (The_Pattern.Image, Stop);
-    end Check_Stop;
+      (The_Pattern.Element (Stop) = Stop_Char
+       and then not Str_Util.Is_Backslashed (The_Pattern.Image, Stop));
     function Check_Iterative (Start, Stop : Positive) return Boolean is
-    begin
-      return not Check_Start (Start) and then not Check_Stop (Stop);
-    end Check_Iterative;
+      (not Check_Start (Start) and then not Check_Stop (Stop));
 
     -- Indexes in Pattern
     Start_Index : Positive;
@@ -744,10 +724,7 @@ package body Search_Pattern is
   end Overlaps;
 
   -- Is an exclude pattern set
-  function Has_Exclude return Boolean is
-  begin
-    return not Exclude_List.Is_Empty;
-  end Has_Exclude;
+  function Has_Exclude return Boolean is (not Exclude_List.Is_Empty);
 
   -- Returns the number of substrings of one regex
   -- Raises No_Regex if the Regex_Index is higher than

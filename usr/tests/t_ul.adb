@@ -19,10 +19,7 @@ procedure T_Ul is
     To.Name.Set (Val.Name);
     To.Val.Set (Val.Val);
   end Set;
-  function Image (Element : Var_Rec) return String is
-  begin
-    return Element.Name.Image;
-  end Image;
+  function Image (Element : Var_Rec) return String is (Element.Name.Image);
   function "=" (Current : Var_Rec; Criteria : Var_Rec) return Boolean is
     use type As.B.Asb_Bs;
   begin

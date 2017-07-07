@@ -104,22 +104,16 @@ package body Lat_Lon is
   end Is_Lat_Lon_Ok;
 
   function Dec2Geo (Coord : Lat_Lon_Dec_Rec) return Lat_Lon_Geo_Rec is
-  begin
-    return (
-      Lat => (North => Coord.Lat.North,
-              Coord => Conv.Dec2Geo (Coord.Lat.Coord)),
-      Lon => (East  => Coord.Lon.East,
-              Coord => Conv.Dec2Geo (Coord.Lon.Coord)) );
-  end Dec2Geo;
+    ( (Lat => (North => Coord.Lat.North,
+               Coord => Conv.Dec2Geo (Coord.Lat.Coord)),
+       Lon => (East  => Coord.Lon.East,
+               Coord => Conv.Dec2Geo (Coord.Lon.Coord))));
 
   function Geo2Dec (Coord : Lat_Lon_Geo_Rec) return Lat_Lon_Dec_Rec is
-  begin
-    return (
-      Lat => (North => Coord.Lat.North,
-              Coord => Conv.Geo2Dec (Coord.Lat.Coord)),
-      Lon => (East  => Coord.Lon.East,
-              Coord => Conv.Geo2Dec (Coord.Lon.Coord)) );
-  end Geo2Dec;
+    ( (Lat => (North => Coord.Lat.North,
+               Coord => Conv.Geo2Dec (Coord.Lat.Coord)),
+       Lon => (East  => Coord.Lon.East,
+               Coord => Conv.Geo2Dec (Coord.Lon.Coord))) );
 
 end Lat_Lon;
 

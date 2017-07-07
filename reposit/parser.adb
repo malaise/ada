@@ -6,10 +6,7 @@ package body Parser is
            Str_Util.Is_Separator;
 
   -- Is iterator created and not deleted
-  function Is_Set (Iter : Iterator) return Boolean is
-  begin
-    return Iter.State /= Unset;
-  end Is_Set;
+  function Is_Set (Iter : Iterator) return Boolean is (Iter.State /= Unset);
 
   procedure Clear (Iter : in out Iterator) is
   begin

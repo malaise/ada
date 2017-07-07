@@ -108,11 +108,7 @@ package body Moon is
   -- The array of points defining the ground
   -- First point has X = 0.0, last point has X = Space.X_Max
   --  and points are equi-distant on X
-  function Get_Ground return Ground_Array is
-  begin
-    return Ground;
-  end Get_Ground;
-
+  function Get_Ground return Ground_Array is (Ground);
 
 end Moon;
 

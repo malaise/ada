@@ -425,14 +425,8 @@ package body Screen is
   -- Put game end
   -- subtype End_Reason_List is Flight.Status_List
   --                            range Flight.Landed .. Flight.Lost;
-  function Y_Text return Con_Io.Y_Range is
-  begin
-    return 20 * Console.Font_Height;
-  end Y_Text;
-  function Y_Offset return Con_Io.Y_Range is
-  begin
-    return 3 * Console.Font_Height / 2;
-  end Y_Offset;
+  function Y_Text return Con_Io.Y_Range is (20 * Console.Font_Height);
+  function Y_Offset return Con_Io.Y_Range is (3 * Console.Font_Height / 2);
 
   procedure Put_End (Reason : in End_Reason_List) is
     use type Flight.Status_List;

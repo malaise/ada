@@ -4,20 +4,15 @@ package body Afpx_Typ is
   -- Check if square (relative to field) is in field
   function In_Field (Field  : in Field_Rec;
                      Square : in Con_Io.Square) return Boolean is
-  begin
-    return   Square.Row < Field.Height
-    and then Square.Col < Field.Data_Len;
-  end In_Field;
+    (Square.Row < Field.Height and then Square.Col < Field.Data_Len);
 
   -- Check if square (absolute) is in field
   function In_Field_Absolute (Field  : in Field_Rec;
                               Square : in Con_Io.Square) return Boolean is
-  begin
-    return   Square.Row >= Field.Upper_Left.Row
-    and then Square.Row <= Field.Lower_Right.Row
-    and then Square.Col >= Field.Upper_Left.Col
-    and then Square.Col <= Field.Lower_Right.Col;
-  end In_Field_Absolute;
+    (Square.Row >= Field.Upper_Left.Row
+     and then Square.Row <= Field.Lower_Right.Row
+     and then Square.Col >= Field.Upper_Left.Col
+     and then Square.Col <= Field.Lower_Right.Col);
 
   -- Make Con_Io.Colors_Definition from Dscr Color_Names
   function To_Def (Names : Color_Names) return Con_Io.Colors_Definition is

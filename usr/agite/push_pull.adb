@@ -429,12 +429,7 @@ package body Push_Pull is
   function Handle (Root : String;
                    Pull : Boolean;
                    Tag : String := "") return Boolean is
-  begin
-    if Pull then
-      return Do_Handle (Root, Pull_Remote, "");
-    else
-      return Do_Handle (Root, Push, Tag);
-    end if;
-  end Handle;
+    (if Pull then Do_Handle (Root, Pull_Remote, "")
+    else          Do_Handle (Root, Push, Tag));
 end Push_Pull;
 

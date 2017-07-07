@@ -14,9 +14,7 @@ package body Screen is
 
   -- Return width of Get field
   function Get_Get_Width return Afpx.Width_Range is
-  begin
-    return Afpx.Get_Field_Width (Get_Fld);
-  end Get_Get_Width;
+    (Afpx.Get_Field_Width (Get_Fld));
 
 
   procedure Put_Title (S_Action : in S_Action_List; Option : in Boolean := False) is

@@ -165,10 +165,7 @@ procedure Alook is
       return Curr_Bloc(Sub_Index);
     end Next_Char;
 
-    function Curr_Index return Count is
-    begin
-      return Curr_Count;
-    end Curr_Index;
+    function Curr_Index return Count is (Curr_Count);
 
     -- Update a string at a given offset
     Bloc_Error : exception;
@@ -324,10 +321,7 @@ procedure Alook is
     Word : As.U.Asu_Us;
 
     -- Is Char an upper case
-    function Is_Upper (Char : Character) return Boolean is
-    begin
-      return Char in 'A' .. 'Z';
-    end Is_Upper;
+    function Is_Upper (Char : Character) return Boolean is (Char in 'A' .. 'Z');
 
     -- Check if word case is correct
     procedure Check_Word is

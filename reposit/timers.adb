@@ -54,9 +54,7 @@ package body Timers is
   end Delay_Image;
 
   function Cb_Image (Callback : Timer_Callback) return String is
-  begin
-    return (if Callback = null then "*** No callback *** " else "");
-  end Cb_Image;
+    (if Callback = null then "*** No callback *** " else "");
 
   procedure Put_Debug (Proc : in String; Msg : in String) is
   begin
@@ -115,9 +113,7 @@ package body Timers is
 
   -- True if timer is not Deleted
   function Exists (Id : in Timer_Id) return Boolean is
-  begin
-    return Status (Id) /= Deleted;
-  end Exists;
+    (Status (Id) /= Deleted);
 
   -- Create a new timer
   -- May raise Invalid_Delay if Delay_Seconds is < 0

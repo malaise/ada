@@ -375,12 +375,8 @@ package body Num_Letters is
 
   -- Name of 0 .. 9
   function Make1 (Str : Str1) return String is
-  begin
-    if Str = "0" then
-      return "";
-    end if;
-    return Names(Character'Pos (Str(1)) - Character'Pos ('0')).all;
-  end Make1;
+    (if Str = "0" then ""
+     else Names(Character'Pos (Str(1)) - Character'Pos ('0')).all);
 
   -- Name of 00 .. 99
   function Make2 (Str : Str2) return String is

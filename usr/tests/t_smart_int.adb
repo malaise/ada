@@ -14,9 +14,6 @@ package body T_Smart_Int is
   begin
     Dest := Lim(Val);
   end Init;
-  function Image (Val : Lim) return String is
-  begin
-    return Val'Img;
-  end Image;
+  function Image (Val : Lim) return String is (Val'Img);
 end T_Smart_Int;
 

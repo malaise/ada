@@ -3,21 +3,13 @@ with Debug;
 package body Sort is
 
   function Make_Path (Path, Unit : As.U.Asu_Us) return As.U.Asu_Us is
-  begin
-    return As.U.Tus (Make_Path (Path, Unit));
-  end Make_Path;
+    (As.U.Tus (Make_Path (Path, Unit)));
   function Make_Path (Path, Unit : As.U.Asu_Us) return String is
-  begin
-    return Make_Path (Path.Image, Unit.Image);
-  end Make_Path;
+    (Make_Path (Path.Image, Unit.Image));
   function Make_Path (Path, Unit : String) return As.U.Asu_Us is
-  begin
-    return As.U.Tus (Make_Path (Path, Unit));
-  end Make_Path;
+    (As.U.Tus (Make_Path (Path, Unit)));
   function Make_Path (Path, Unit : String) return String is
-  begin
-    return Directory.Build_File_Name (Path, Unit, "");
-  end Make_Path;
+    (Directory.Build_File_Name (Path, Unit, ""));
 
   -- Unique list of prios
   type Prio_Rec is record
@@ -34,19 +26,13 @@ package body Sort is
   begin
     return L.Path = R.Path;
   end "=";
-  function Image (Elt : Prio_Rec) return String is
-  begin
-    return Elt.Path.Image;
-  end Image;
+  function Image (Elt : Prio_Rec) return String is (Elt.Path.Image);
   package H_Prio_List_Mng is new Hashed_List (
        Prio_Rec, Prio_Access, Set, "=" , Image);
   package Prio_Ulist_Mng is new H_Prio_List_Mng.Unique;
   Prio_Ulist : Prio_Ulist_Mng.Unique_List_Type;
 
-  function Less_Than (E1, E2 : Prio_Rec) return Boolean is
-  begin
-    return E1.Prio < E2.Prio;
-  end Less_Than;
+  function Less_Than (E1, E2 : Prio_Rec) return Boolean is (E1.Prio < E2.Prio);
   package Prio_Dyn_List_Mng is new Dynamic_List (Prio_Rec);
   package Prio_List_Mng renames Prio_Dyn_List_Mng.Dyn_List;
   procedure Prio_Sort is new Prio_List_Mng.Sort (Less_Than);

@@ -355,17 +355,9 @@ procedure Xml_Checker is
   -- Return a file name
   function Get_File_Name (Occurence : in Natural;
                           For_Message : in Boolean) return String is
-  begin
-    if Occurence = 0 then
-      if For_Message then
-        return "Stdin";
-      else
-        return Xml_Parser.Stdin;
-      end if;
-    else
-      return Arg_Dscr.Get_Option (No_Key_Index, Occurence);
-    end if;
-  end Get_File_Name;
+    (if Occurence = 0 then
+       (if For_Message then "Stdin" else Xml_Parser.Stdin)
+     else Arg_Dscr.Get_Option (No_Key_Index, Occurence));
 
   -- To Store Previous progress
   Prev_Progress : Natural;

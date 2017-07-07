@@ -42,9 +42,7 @@ package body Registers is
   end Ind2Reg;
 
   function Is_Register (C : in Character) return Boolean is
-  begin
-    return C in 'A' .. 'Z' or else C in 'a' .. 'z';
-  end Is_Register;
+    (C in 'A' .. 'Z' or else C in 'a' .. 'z');
 
   procedure Check_Reg (Reg : in Item_Rec) is
   begin
@@ -90,10 +88,8 @@ package body Registers is
   end Clear_All;
 
   function Is_Empty (Reg : Item_Rec) return Item_Rec is
-  begin
-    return (Kind => Bool,
-            Val_Bool => Registers_Array(Reg2Ind(Reg)) = Empty_Rec);
-  end Is_Empty;
+    ( (Kind => Bool,
+       Val_Bool => Registers_Array(Reg2Ind(Reg)) = Empty_Rec) );
 
   procedure Next (Reg : in out Item_Rec) is
   begin
@@ -120,14 +116,10 @@ package body Registers is
   end Prev;
 
   function Index_Of (Reg : Item_Rec) return Item_Rec is
-  begin
-    return (Kind => Inte, Val_Inte => My_Math.Inte(Reg2Ind(Reg)));
-  end Index_Of;
+    ( (Kind => Inte, Val_Inte => My_Math.Inte(Reg2Ind(Reg))) );
 
   function Register_At (Index : Item_Rec) return Item_Rec is
-  begin
-    return (Kind => Regi, Val_Regi => Ind2Reg(Index));
-  end Register_At;
+    ( (Kind => Regi, Val_Regi => Ind2Reg(Index)) );
 
   -- Array: store / retrieve Var[Index]
   -- Var must be a register; Index must be Inte (otherwise Invalid_Argument)
@@ -175,10 +167,7 @@ package body Registers is
   begin
     To := Val;
   end Set;
-  function Key_Image (Element : Storage_Rec) return String is
-  begin
-    return Element.Key;
-  end Key_Image;
+  function Key_Image (Element : Storage_Rec) return String is (Element.Key);
   function "=" (Current : Storage_Rec; Criteria : Storage_Rec)
                return Boolean is
   begin

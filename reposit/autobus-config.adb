@@ -35,9 +35,7 @@ package body Config is
   -- Each bus address is prefixed by "A-" to make it XML ID
   Bus_Prefix : constant String := "A-";
   function Bus_Id (Bus_Name : String) return String is
-  begin
-    return Bus_Prefix & Bus_Name;
-  end Bus_Id;
+    (Bus_Prefix & Bus_Name);
 
   -- Get an attribute, raise Config_Error
   function Get_Attribute (Node : Xml_Parser.Element_Type;
@@ -368,9 +366,7 @@ package body Config is
   -- Get Host_Id corerspondig to the address that is attribute of a node
   function Id_Of (Node : Xml_Parser.Element_Type; Attribute : String)
                  return Socket.Host_Id is
-  begin
-    return Ip_Addr.Parse (Ctx.Get_Attribute (Node, Attribute)).Id;
-  end Id_Of;
+    (Ip_Addr.Parse (Ctx.Get_Attribute (Node, Attribute)).Id);
 
   -- Return the Host_Id denoting the interface to use
   function Get_Interface (Name : String) return Socket.Host_Id is

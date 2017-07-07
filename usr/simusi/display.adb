@@ -19,13 +19,8 @@ package body Display is
   end Put_It;
 
   function Other_Kind (Kind : Common.Cote_Kind) return Common.Cote_Kind is
-  begin
-    if Kind = Common.Manufa then
-      return Common.Design;
-    else
-      return Common.Manufa;
-    end if;
-  end Other_Kind;
+    (if Kind = Common.Manufa then Common.Design
+     else Common.Manufa);
 
   procedure Search (Kind : in Common.Cote_Kind;
                     Start, Stop : in Data.Eff_Line_Range;
@@ -66,13 +61,8 @@ package body Display is
   end Search;
 
   function Char (Kind : in Common.Cote_Kind) return Character is
-  begin
-    if Kind = Common.Manufa then
-      return 'M';
-    else
-      return 'S';
-    end if;
-  end Char;
+    (if Kind = Common.Manufa then 'M'
+     else 'S');
 
   procedure Print (Kind : in Common.Cote_Kind;
                    Cote : in Data.Eff_Cote_Range;

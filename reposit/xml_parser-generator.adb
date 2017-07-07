@@ -4,10 +4,7 @@ package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
   Minor_Version : constant String := "2";
-  function Version return String is
-  begin
-    return "V" & Major_Version & "." & Minor_Version;
-  end Version;
+  function Version return String is ("V" & Major_Version & "." & Minor_Version);
 
   -- Common delimiter definitions
   Cdata_Start : constant String := "<![CDATA[";
@@ -136,12 +133,10 @@ package body Xml_Parser.Generator is
 
   -- Detect separator
   function Is_Separator (Char : Character) return Boolean is
-  begin
-    return  Char = Aski.Spc
-    or else Char = Aski.Lf
-    or else Char = Aski.Cr
-    or else Char = Aski.Ht;
-  end Is_Separator;
+    (Char = Aski.Spc
+     or else Char = Aski.Lf
+     or else Char = Aski.Cr
+     or else Char = Aski.Ht);
 
   Xml_Name : constant As.U.Asu_Us := As.U.Tus ("xml");
   -- Init prologue and empty root element if needed
@@ -575,13 +570,10 @@ package body Xml_Parser.Generator is
 
   -- INTERNAL op
   function Internal_Kind_Of (Kind : Node_Kind_List) return Internal_Kind_List is
-  begin
-    return (case Kind is
-              when Element => Element,
-              when Text    => Text,
-              when Pi      => Pi,
-              when Comment => Comment);
-  end Internal_Kind_Of;
+    (case Kind is when Element => Element,
+                  when Text    => Text,
+                  when Pi      => Pi,
+                  when Comment => Comment);
 
   -- INTERNAL: Set kind and name of a cell; Check
   procedure Set (Cell : in out My_Tree_Cell;
@@ -1485,14 +1477,10 @@ package body Xml_Parser.Generator is
     Closed : Boolean := False;
     -- Do we indent these outputs
     function Do_Indent_Child return Boolean is
-    begin
-      return Do_Indent_Child (Format, Stage, Ctx.Normalize, Is_Mixed,
-                              Empty_Info, Nb_Children /= 0);
-    end Do_Indent_Child;
+      (Do_Indent_Child (Format, Stage, Ctx.Normalize, Is_Mixed,
+                        Empty_Info, Nb_Children /= 0));
     function Do_Indent_Parent return Boolean is
-    begin
-      return Do_Indent_Parent (Format, Stage, Ctx.Normalize, In_Mixed);
-    end Do_Indent_Parent;
+      (Do_Indent_Parent (Format, Stage, Ctx.Normalize, In_Mixed));
     -- Terminate tag after children
     procedure Close is
     begin
@@ -1741,16 +1729,12 @@ package body Xml_Parser.Generator is
                   Namespace : Boolean := False) return String is
     -- Do we indent these outputs
     function Do_Indent_Child return Boolean is
-    begin
-      return Do_Indent_Child (Format, Update.Stage, Ctx.Normalize,
-                              Update.Is_Mixed, Update.Empty_Info,
-                              Update.Has_Children);
-    end Do_Indent_Child;
+      (Do_Indent_Child (Format, Update.Stage, Ctx.Normalize,
+                        Update.Is_Mixed, Update.Empty_Info,
+                        Update.Has_Children));
     function Do_Indent_Parent return Boolean is
-    begin
-      return Do_Indent_Parent (Format, Update.Stage, Ctx.Normalize,
-                               Update.In_Mixed);
-    end Do_Indent_Parent;
+      (Do_Indent_Parent (Format, Update.Stage, Ctx.Normalize,
+                         Update.In_Mixed));
     Elt_Name : As.U.Asu_Us;
     Flow : Flow_Dscr(Use_File => False);
     Indent : constant String (1 .. 2 * Update.Level) := (others => ' ');

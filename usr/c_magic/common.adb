@@ -21,19 +21,13 @@ package body Common is
 
   -- Real -> integer : round or trunc
   function Trunc (X : in Float) return Integer is
-  begin
-    return Integer(My_Math.Trunc (My_Math.Real(X)));
-  end Trunc;
+    (Integer(My_Math.Trunc (My_Math.Real(X))));
 
   function Round (X : in Float) return Integer is
-  begin
-    return Integer(My_Math.Round (My_Math.Real(X)));
-  end Round;
+    (Integer(My_Math.Round (My_Math.Real(X))));
 
   function Frac (X : in Float) return Float is
-  begin
-    return Float(My_Math.Frac (My_Math.Real(X)));
-  end Frac;
+    (Float(My_Math.Frac (My_Math.Real(X))));
 
   -- Recursive procedure to try a a level
   procedure Try (Cur : Len_Range);

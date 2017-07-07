@@ -22,10 +22,7 @@ procedure Afpx_Bld is
 
   -- Unbounded strings
   subtype Asu_Us is As.U.Asu_Us;
-  function "&" (Str : String; Us : Asu_Us) return String is
-  begin
-    return Str & Us.Image;
-  end "&";
+  function "&" (Str : String; Us : Asu_Us) return String is (Str & Us.Image);
 
   -- Inputs name
   Default_List_File_Name : constant String := "Afpx.xml";
@@ -137,10 +134,8 @@ procedure Afpx_Bld is
   end Close;
 
   function Match (Str : Asu_Us; Keyword : String) return Boolean is
-  begin
     -- Maybe one day we allow uppercase and lowercase keywords?
-    return Str.Image = Keyword;
-  end Match;
+    (Str.Image = Keyword);
 
   procedure File_Error (Node : in Xp.Node_Type; Msg : in String) is
   begin
@@ -151,10 +146,7 @@ procedure Afpx_Bld is
   end File_Error;
 
   -- For parsing variable names
-  function Is_Dot (C : Character) return Boolean is
-  begin
-    return C = '.';
-  end Is_Dot;
+  function Is_Dot (C : Character) return Boolean is (C = '.');
 
   -- Check a variable and add it to computer
   procedure Add_Variable (Node : in Xp.Node_Type;
@@ -327,9 +319,7 @@ procedure Afpx_Bld is
   end Name_Of;
 
   function Color_Image (Color : Con_Io.Effective_Colors) return String is
-  begin
-    return Mixed_Str (Con_Io.Color_Name_Of (Color));
-  end Color_Image;
+    (Mixed_Str (Con_Io.Color_Name_Of (Color)));
 
   -- Load the variables with names of colors
   procedure Load_Color_Names (Node : in Xp.Node_Type) is

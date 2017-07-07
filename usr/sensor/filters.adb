@@ -30,9 +30,7 @@ package body Filters is
 
   -- Get the number of stored filters
   function Get_Number return Long_Longs.Ll_Natural is
-  begin
-    return Long_Longs.Ll_Natural (Filters.List_Length);
-  end Get_Number;
+    (Long_Longs.Ll_Natural (Filters.List_Length));
 
   -- Retrieve a filter
   function Get_Filter (Number : in Long_Longs.Ll_Positive) return Filter_Rec is

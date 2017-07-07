@@ -10,10 +10,7 @@ procedure List (Root : in String) is
 
   -- Image of a tag
   function Image (Tag : Git_If.Tag_Entry_Rec) return String is
-  begin
-    return Tag.Name.Image
-         & (if Tag.Annotated then " " & Tag.Comment.Image else "");
-  end Image;
+    (Tag.Name.Image & (if Tag.Annotated then " " & Tag.Comment.Image else ""));
 
   -- Encode a line of list
   procedure Set (Line : in out Afpx.Line_Rec;
@@ -51,21 +48,12 @@ procedure List (Root : in String) is
 
   -- To sort tags by date, return false if A before B so newest tags first
   function Less_Than (A, B : in Git_If.Tag_Entry_Rec) return Boolean is
-  begin
-    if A.Date /= Git_If.No_Date and then B.Date /= Git_If.No_Date then
-      if A.Date /= B.Date then
-        return A.Date > B.Date;
-      else
-        return A.Name.Image > B.Name.Image;
-      end if;
-    elsif A.Date /= Git_If.No_Date then
-      return True;
-    elsif B.Date /= Git_If.No_Date then
-      return False;
-    else
-      return A.Name.Image > B.Name.Image;
-    end if;
-  end Less_Than;
+    (if A.Date /= Git_If.No_Date and then B.Date /= Git_If.No_Date then
+       (if A.Date /= B.Date then A.Date > B.Date
+        else A.Name.Image > B.Name.Image)
+     elsif A.Date /= Git_If.No_Date then True
+     elsif B.Date /= Git_If.No_Date then False
+     else A.Name.Image > B.Name.Image);
   procedure Sort is new Git_If.Tag_Mng.Dyn_List.Sort (Less_Than);
 
   -- Read the template

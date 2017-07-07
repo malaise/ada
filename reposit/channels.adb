@@ -284,10 +284,7 @@ package body Channels is
 
     function Rec_Read_Cb (Fd : in Event_Mng.File_Desc;
                           Unused_Read : in Boolean)
-                     return Boolean is
-    begin
-      return Read_Cb (True, Fd);
-    end Rec_Read_Cb;
+                     return Boolean is (Read_Cb (True, Fd));
 
     procedure Accept_Cb (Unused_Local_Port_Num  : in Tcp_Util.Port_Num;
                          Unused_Local_Dscr      : in Socket.Socket_Dscr;
@@ -379,10 +376,7 @@ package body Channels is
 
     function Snd_Read_Cb (Fd : in Event_Mng.File_Desc;
                           Unused_Read : in Boolean)
-                     return Boolean is
-    begin
-      return Read_Cb (False, Fd);
-    end Snd_Read_Cb;
+                     return Boolean is (Read_Cb (False, Fd));
 
     procedure Connect_Cb (Remote_Host_Id         : in Tcp_Util.Host_Id;
                           Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
@@ -646,10 +640,7 @@ package body Channels is
     end Activate;
 
     -- Is reception active?
-    function Is_Active return Boolean is
-    begin
-      return Channel_Dscr.Active;
-    end Is_Active;
+    function Is_Active return Boolean is (Channel_Dscr.Active);
 
     -- Send a message to all recipients
     procedure Write (Message : in Message_Type;

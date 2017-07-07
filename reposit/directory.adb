@@ -18,9 +18,7 @@ package body Directory is
     with Import => True, Convention => C, External_Name => "strlen";
 
   function Str_For_C (Str : String) return String is
-  begin
-    return Str & Aski.Nul;
-  end Str_For_C;
+    (Str & Aski.Nul);
 
   -- Returns current working directory
   function C_Getcwd (Buf : System.Address; Size : C_Types.Size_T)
@@ -409,14 +407,12 @@ package body Directory is
 
    -- Get full path of a path
   function Make_Full_Path (Path : String) return String is
-  begin
-    return Normalize_Path (
+    (Normalize_Path (
         if Path = "" then Get_Current & "/"
         -- Path is already absolute => Normalize
         elsif Path(Path'First) = '/' then Path
         -- Path is relative, prepend current path & Normalize
-        else Get_Current & "/" & Path);
-  end Make_Full_Path;
+        else Get_Current & "/" & Path) );
 
   -- File name manipulation
   Dot :  constant String := ".";
@@ -480,10 +476,8 @@ package body Directory is
   function Build_File_Name (Dirname : String; File_Prefix, File_Suffix : in String)
            return String is
     function Build_Name return String is
-    begin
-      return (if File_Suffix = "" then File_Prefix
-              else File_Prefix & Dot & File_Suffix);
-    end Build_Name;
+      (if File_Suffix = "" then File_Prefix
+       else File_Prefix & Dot & File_Suffix);
   begin
     return (if Dirname = "" then Build_Name
             elsif Dirname(Dirname'Last) = Sep_Char then Dirname & Build_Name

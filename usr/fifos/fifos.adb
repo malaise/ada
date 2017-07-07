@@ -77,9 +77,7 @@ package body Fifos is
 
       -- Get access to current record
       function Access_Current return access Fifo_Rec is
-      begin
-        return Fifo_List.Access_Current;
-      end Access_Current;
+        (Fifo_List.Access_Current);
 
       -- Delete current record and move to next
       procedure Del_Current is
@@ -95,18 +93,13 @@ package body Fifos is
       end Rewind;
 
       -- Is list empty?
-      function Empty return Boolean is
-      begin
-        return Fifo_List.Is_Empty;
-      end Empty;
+      function Empty return Boolean is (Fifo_List.Is_Empty);
 
       -- Search by name
       function Same_Name (El1, El2 : Fifo_Rec) return Boolean is
-      begin
-        return   El1.Kind = El2.Kind
-        and then El1.Len = El2.Len
-        and then El1.Name (1 .. El1.Len) = El2.Name (1 .. El2.Len);
-      end Same_Name;
+        (El1.Kind = El2.Kind
+         and then El1.Len = El2.Len
+         and then El1.Name (1 .. El1.Len) = El2.Name (1 .. El2.Len));
       function Search_Name is new Fifo_List_Mng.Search (Same_Name);
 
       function Search_By_Name (Kind : Fifo_Kind_List;

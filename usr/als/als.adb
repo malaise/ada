@@ -50,9 +50,7 @@ procedure Als is
 
   -- Usage
   function Key_Img (I : Argument_Parser.The_Keys_Range) return String is
-  begin
-    return Str_Util.Procuste (Argument_Parser.Image(Keys(I)), 19);
-  end Key_Img;
+    (Str_Util.Procuste (Argument_Parser.Image(Keys(I)), 19));
 
   procedure Usage is
     use Basic_Proc;

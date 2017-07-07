@@ -154,15 +154,9 @@ package body Get_Line is
     Line := Current_Whole_Line;
   end Get_Whole_Line;
 
-  function Get_Whole_Line return Line_Txt is
-  begin
-    return Current_Whole_Line;
-  end Get_Whole_Line;
+  function Get_Whole_Line return Line_Txt is (Current_Whole_Line);
 
-  function Get_Whole_Line return String is
-  begin
-    return Current_Whole_Line.Image;
-  end Get_Whole_Line;
+  function Get_Whole_Line return String is (Current_Whole_Line.Image);
 
 
   -- Get the first significant word of the line (not parsed)

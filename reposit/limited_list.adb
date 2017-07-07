@@ -4,9 +4,7 @@ package body Limited_List is
   function Check_Move (List : in List_Type;
                        Where : Direction := Next;
                        Check_Empty : in Boolean := True) return Boolean is
-  begin
-    return List.List.Check_Move (My_List.Direction (Where), Check_Empty);
-  end Check_Move;
+    (List.List.Check_Move (My_List.Direction (Where), Check_Empty));
 
   -- Read the current item then moves to another item
   -- May raise Not_In_List (no read nor movement done)
@@ -18,9 +16,7 @@ package body Limited_List is
   end Read;
   function  Read (List : in out List_Type;
                   Move : in Movement := Next) return Element_Type is
-  begin
-    return List.List.Read (My_List.Movement (Move));
-  end Read;
+    (List.List.Read (My_List.Movement (Move)));
 
   -- Read anyway. Set Moved to True if movement was possible (and done)
   --  and False otherwise (no movement done)
@@ -76,9 +72,7 @@ package body Limited_List is
   end Get;
   function  Get (List : in out List_Type;
                  Move : in Direction := Next) return Element_Type is
-  begin
-    return List.List.Get (My_List.Movement (Move));
-  end Get;
+    (List.List.Get (My_List.Movement (Move)));
 
   -- Get anyway. Set Moved to True if movement was possible (and done)
   --  or if list becomes empty, and False otherwise (movement done in the
@@ -195,25 +189,18 @@ package body Limited_List is
   end Permute;
 
   -- Return without exception
-  function Is_Empty (List : List_Type) return Boolean is
-  begin
-    return List.List.Is_Empty;
-  end Is_Empty;
+  function Is_Empty (List : List_Type) return Boolean is (List.List.Is_Empty);
 
   -- Return the number of elements in the list (0 if empty, no exception)
   function List_Length (List : List_Type) return Natural is
-  begin
-    return Natural (List.List.List_Length);
-  end List_Length;
+    (Natural (List.List.List_Length));
 
   -- Get position from first or last item in list
   -- For first item of list, Get_Position returns 1
   -- May raise Empty_List
   function Get_Position (List : List_Type;
                          From : Reference := From_First) return Positive is
-  begin
-    return Positive (List.List.Get_Position (My_List.Reference (From)));
-  end Get_Position;
+    (Positive (List.List.Get_Position (My_List.Reference (From))));
 
   -- These three calls allow sharing the same list among several
   --  software layers. Each time the list is modified, a flag is set
@@ -227,9 +214,7 @@ package body Limited_List is
   end Set_Modified;
 
   function Is_Modified (List : List_Type) return Boolean is
-  begin
-    return List.List.Is_Modified;
-  end Is_Modified;
+    (List.List.Is_Modified);
 
   procedure Modification_Ack (List : in out List_Type) is
   begin
@@ -264,9 +249,7 @@ package body Limited_List is
   function Access_Current (List : List_Type;
                            Check_Empty : in Boolean := True)
            return access Element_Type is
-  begin
-    return List.List.Access_Current (Check_Empty);
-  end Access_Current;
+    (List.List.Access_Current (Check_Empty));
 
   -- Search the element that is at the provided access (move to it)
   -- Return True if the matching item is found, then the current position is
@@ -274,9 +257,7 @@ package body Limited_List is
   -- Does not raise Empty_List.
   function Search_Access (List      : in out List_Type;
                           Criteria  : access Element_Type) return Boolean is
-  begin
-    return List.List.Search_Access (Criteria);
-  end Search_Access;
+    (List.List.Search_Access (Criteria));
 
   -- Access to the cell (that stores data) for deleting it without searching
   -- Get direct access to the current Cell (that stores the current Element)
@@ -285,9 +266,7 @@ package body Limited_List is
   function Cell_Access_Current (List : List_Type;
                                 Check_Empty : in Boolean := True)
            return access Cell is
-  begin
-    return List.List.Cell_Access_Current (Check_Empty);
-  end Cell_Access_Current;
+    (List.List.Cell_Access_Current (Check_Empty));
 
   -- Delete current element and rewind the list
   -- Rewinding is necessary because the impact of this deletion on current

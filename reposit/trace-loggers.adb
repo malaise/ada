@@ -104,10 +104,7 @@ package body Trace.Loggers is
     Set_Flush (A_Logger, True);
   end Reset;
 
-  function Is_Init (A_Logger : Logger) return Boolean is
-  begin
-    return A_Logger.Inited;
-  end Is_Init;
+  function Is_Init (A_Logger : Logger) return Boolean is (A_Logger.Inited);
 
   -- INTERNAL: raise Not_Init if not init
   procedure Check_Init (A_Logger : in Logger) is

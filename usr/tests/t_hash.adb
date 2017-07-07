@@ -24,10 +24,7 @@ procedure T_Hash is
       return "";
   end Str;
 
-  function Image (I : Positive) return String is
-  begin
-    return Normal (I, 3, Gap => '0');
-  end Image;
+  function Image (I : Positive) return String is (Normal (I, 3, Gap => '0'));
 
   procedure Dump (I : in Data_Access) is
   begin

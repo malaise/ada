@@ -53,17 +53,10 @@ package body Intra_Dictio is
 
 
   function Kind_Image (C : Character) return String is
-  begin
-    if C = Stat_Kind then
-      return "Stat";
-    elsif C = Data_Kind then
-      return "Data";
-    elsif C = Sync_Kind then
-      return "Sync";
-    else
-      return "Unkn";
-    end if;
-  end Kind_Image;
+    (if C = Stat_Kind then "Stat"
+     elsif C = Data_Kind then "Data"
+     elsif C = Sync_Kind then "Sync"
+     else "Unkn");
 
   function Stat_Image (C : Character) return String is
     Stat : Status.Status_List;

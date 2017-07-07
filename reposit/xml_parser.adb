@@ -6,9 +6,7 @@ package body Xml_Parser is
   -- Version incremented at each significant change
   Minor_Version : constant String := "0";
   function Version return String is
-  begin
-    return "V" & Major_Version & "." & Minor_Version;
-  end Version;
+    ("V" & Major_Version & "." & Minor_Version);
 
   -- Used in Tree_Mng when building a new update
   procedure Deallocate is new Ada.Unchecked_Deallocation
@@ -19,10 +17,7 @@ package body Xml_Parser is
   begin
     To := Val;
   end Set;
-  function Image (Element : Id_Cell) return String is
-  begin
-    return Element.Name.Image;
-  end Image;
+  function Image (Element : Id_Cell) return String is (Element.Name.Image);
   function "=" (Current : Id_Cell; Criteria : Id_Cell) return Boolean is
     use type As.U.Asu_Us;
   begin
@@ -154,9 +149,7 @@ package body Xml_Parser is
     To := Val;
   end Set;
   function Image (Entity : Entity_Type) return String is
-  begin
-    return (if Entity.Parameter then "%" else "") & Entity.Name.Image;
-  end Image;
+    (if Entity.Parameter then "%" else "") & Entity.Name.Image;
   -- Entities differ if one is parameter and not the other
   --  or if names differ
   function "=" (Current : Entity_Type; Criteria : Entity_Type) return Boolean is
@@ -172,9 +165,7 @@ package body Xml_Parser is
     To := Val;
   end Set;
   function Image (Unparsed : Unparsed_Type) return String is
-  begin
-    return (if Unparsed.Is_Entity then "E:" else "N:") & Unparsed.Name.Image;
-  end Image;
+    (if Unparsed.Is_Entity then "E:" else "N:") & Unparsed.Name.Image;
   function "=" (Current : Unparsed_Type; Criteria : Unparsed_Type)
                return Boolean is
     use type As.U.Asu_Us;
@@ -188,10 +179,7 @@ package body Xml_Parser is
   begin
     To := Val;
   end Set;
-  function Image (Element : Info_Rec) return String is
-  begin
-    return Element.Name.Image;
-  end Image;
+  function Image (Element : Info_Rec) return String is (Element.Name.Image);
   function "=" (Current : Info_Rec; Criteria : Info_Rec) return Boolean is
     use type As.U.Asu_Us;
   begin
@@ -204,9 +192,7 @@ package body Xml_Parser is
     To := Val;
   end Set;
   function Image (Namespace : Namespace_Type) return String is
-  begin
-    return Namespace.Prefix.Image;
-  end Image;
+    (Namespace.Prefix.Image);
   function "=" (Current : Namespace_Type; Criteria : Namespace_Type)
                return Boolean is
     use type As.U.Asu_Us;
@@ -407,10 +393,7 @@ package body Xml_Parser is
   end Parse;
 
   -- Return current status of context
-  function Get_Status (Ctx : Ctx_Type) return Ctx_Status_List is
-  begin
-    return Ctx.Status;
-  end Get_Status;
+  function Get_Status (Ctx : Ctx_Type) return Ctx_Status_List is (Ctx.Status);
 
   -- Return the error message if Parse_Error
   function Get_Parse_Error_Message (Ctx : Ctx_Type) return String is
@@ -904,9 +887,7 @@ package body Xml_Parser is
   -- Get the name of an element
   function Get_Name (Ctx     : Ctx_Type;
                      Element : Element_Type) return String is
-  begin
-    return Get_Name (Ctx, Element).Image;
-  end Get_Name;
+    (Get_Name (Ctx, Element).Image);
 
   function Get_Name (Ctx     : Ctx_Type;
                      Element : Element_Type) return As.U.Asu_Us is
@@ -1027,9 +1008,7 @@ package body Xml_Parser is
   function Get_Attribute (Ctx     : Ctx_Type;
                           Element : Element_Type;
                           Name    : String) return String is
-  begin
-    return Get_Attribute (Ctx, Element, Name).Image;
-  end Get_Attribute;
+    (Get_Attribute (Ctx, Element, Name).Image);
 
   --------------------------
   -- PI, TEXT and COMMENT --
@@ -1037,9 +1016,7 @@ package body Xml_Parser is
   -- Get the Target of a PI
   function Get_Target (Ctx     : Ctx_Type;
                        Pi_Node : Pi_Type) return String is
-  begin
-    return Get_Target (Ctx, Pi_Node).Image;
-  end Get_Target;
+    (Get_Target (Ctx, Pi_Node).Image);
 
   function Get_Target (Ctx     : Ctx_Type;
                        Pi_Node : Pi_Type) return As.U.Asu_Us is
@@ -1052,9 +1029,7 @@ package body Xml_Parser is
   -- Get a PI data
   function Get_Pi (Ctx : in Ctx_Type;
                    Pi_Node : Pi_Type) return String is
-  begin
-    return Get_Pi (Ctx, Pi_Node).Image;
-  end Get_Pi;
+    (Get_Pi (Ctx, Pi_Node).Image);
 
   function Get_Pi (Ctx : in Ctx_Type;
                    Pi_Node : Pi_Type) return As.U.Asu_Us is
@@ -1067,9 +1042,7 @@ package body Xml_Parser is
    -- TEXT
   function  Get_Text (Ctx  : Ctx_Type;
                       Text : Text_Type) return String is
-  begin
-    return Get_Text (Ctx, Text).Image;
-  end Get_Text;
+    (Get_Text (Ctx, Text).Image);
 
   function Get_Text (Ctx  : Ctx_Type;
                      Text : Text_Type) return As.U.Asu_Us is
@@ -1084,9 +1057,7 @@ package body Xml_Parser is
   end Get_Text;
 
   function Is_Separators (Text : String) return Boolean is
-  begin
-    return Is_Separators (As.U.Tus (Text));
-  end Is_Separators;
+    (Is_Separators (As.U.Tus (Text)));
 
   function Is_Separators (Text : As.U.Asu_Us) return Boolean
            renames Parse_Mng.Is_Separators;
@@ -1094,9 +1065,7 @@ package body Xml_Parser is
    -- Comment
   function Get_Comment (Ctx     : Ctx_Type;
                         Comment : Comment_Type) return String is
-  begin
-    return Get_Comment (Ctx, Comment).Image;
-  end Get_Comment;
+    (Get_Comment (Ctx, Comment).Image);
 
   function Get_Comment (Ctx     : Ctx_Type;
                         Comment : Comment_Type) return As.U.Asu_Us is
@@ -1374,7 +1343,8 @@ package body Xml_Parser is
 
   -- Is this element Mixed: either Mixed in Dtd or its first child is Text
   function Get_Is_Mixed (Ctx     : Ctx_Type;
-                         Element : Element_Type) return Boolean is    Cell : constant My_Tree_Cell
+                         Element : Element_Type) return Boolean is
+    Cell : constant My_Tree_Cell
          := Get_Cell (Get_Tree (Ctx, Element), Element);
   begin
     return Cell.Is_Mixed;

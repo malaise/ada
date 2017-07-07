@@ -30,20 +30,16 @@ package body Input_Dispatcher is
 
   -- Word separator
   function Is_Separator (C : in Character) return Boolean is
-  begin
     -- Space and Tab, Lf (Unix standard) and Cr (cause Dos newline is CrLf)
-    return     C = ' '
-       or else C = Aski.Ht
-       or else C = Aski.Lf
-       or else C = Aski.Cr;
-  end Is_Separator;
+    (C = ' '
+     or else C = Aski.Ht
+     or else C = Aski.Lf
+     or else C = Aski.Cr);
 
   -- Check that a Character is a Sd
   Sds : constant String := """:";
   function Is_Sd (C : Character) return Boolean is
-  begin
-    return (for some Sd of Sds => C = Sd);
-  end Is_Sd;
+    (for some Sd of Sds => C = Sd);
 
   -- Remove first and last string delimiters
   --  and replace the pairs of delimiters by one delimiter
@@ -188,9 +184,7 @@ package body Input_Dispatcher is
   -- Next string to parse, also current string
   --  if Next_Str_Word raised String_Error
   function Current_String return String is
-  begin
-   return Cur_Str.Slice (Cur_Index , Stop_Index);
-  end Current_String;
+   (Cur_Str.Slice (Cur_Index , Stop_Index));
 
   -- Extract first word of current or new (Str) string
   function First_Str_Word (Str : As.U.Asu_Us := As.U.Asu_Null)

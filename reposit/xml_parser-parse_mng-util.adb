@@ -121,18 +121,14 @@ package body Util is
 
   -- Current line of input
   function Get_Line_No (Flow : Flow_Type) return Natural is
-  begin
-    return Flow.Curr_Flow.Line;
-  end Get_Line_No;
+    (Flow.Curr_Flow.Line);
 
   ------------------
   -- Syntax check --
   ------------------
  -- Encoding name check
   function Is_Letter (Char : Character) return Boolean is
-  begin
-    return Char in 'a' .. 'z' | 'A' .. 'Z';
-  end Is_Letter;
+    (Char in 'a' .. 'z' | 'A' .. 'Z');
 
   function Is_Valid_Encoding (Name : As.U.Asu_Us) return Boolean is
     Char : Character;
@@ -173,8 +169,7 @@ package body Util is
   end Is_Valid_Pubid;
 
   function Is_Valid_Start (U : Utf_8.Unicode_Number) return Boolean is
-  begin
-    return  (Character'Pos('a') <= U and then U <= Character'Pos('z'))
+    ( (Character'Pos('a') <= U and then U <= Character'Pos('z'))
     or else (Character'Pos('A') <= U and then U <= Character'Pos('Z'))
     or else U = Character'Pos (':')
     or else U = Character'Pos ('_')
@@ -186,19 +181,16 @@ package body Util is
     or else (16#2070# <= U and then U <= 16#218F#)
     or else (16#2C00# <= U and then U <= 16#2FEF#)
     or else (16#3001# <= U and then U <= 16#D7FF#)
-    or else (16#F900# <= U and then U <= 16#FDCF#);
-  end Is_Valid_Start;
+    or else (16#F900# <= U and then U <= 16#FDCF#) );
   function Is_Valid_In_Name (U : Utf_8.Unicode_Number) return Boolean is
-  begin
-    return  U = Character'Pos ('-')
+    (U = Character'Pos ('-')
     or else U = Character'Pos ('.')
     or else (Character'Pos('0') <= U and then U <= Character'Pos('9'))
     or else Is_Valid_Start (U)
     or else U= 16#B7#
     or else (16#300# <= U and then U <= 16#36F#)
     or else U= 16#203F#
-    or else U= 16#2040#;
-  end Is_Valid_In_Name;
+    or else U= 16#2040#);
 
   -- Check that a Name is correct
   function Name_Ok (Name : As.U.Asu_Us;
@@ -233,9 +225,7 @@ package body Util is
     S : constant String(1 .. Str.Length) := Str.Image;
     I1, I2 : Natural;
     function Is_Sep (C : Character) return Boolean is
-    begin
-      return (for some Sep of Seps => C = Sep);
-    end Is_Sep;
+      (for some Sep of Seps => C = Sep);
   begin
     -- Must not be empty
     if S = "" then
@@ -280,12 +270,10 @@ package body Util is
   -----------------------
   -- Image of a flow kind (xml, dtd or external entity)
   function Flow_Image (Flow_Kind : Flow_Kind_List) return String is
-  begin
-    return (case Flow_Kind is
-             when Xml_Flow | Int_Dtd_Flow => "xml",
-             when Dtd_Flow => "dtd",
-             when Ext_Flow => "external entity");
-  end Flow_Image;
+    (case Flow_Kind is
+      when Xml_Flow | Int_Dtd_Flow => "xml",
+      when Dtd_Flow => "dtd",
+      when Ext_Flow => "external entity");
 
   function Build_Error (Flow : in Flow_Type;
                         Is_Error : in Boolean;
@@ -590,17 +578,13 @@ package body Util is
   -------------
   -- Detect separator
   function Is_Separator (Char : Character) return Boolean is
-  begin
-    return Char = Space
-    or else Char = Aski.Lf
-    or else Char = Aski.Cr
-    or else Char = Aski.Ht;
-  end Is_Separator;
+    (Char = Space
+     or else Char = Aski.Lf
+     or else Char = Aski.Cr
+     or else Char = Aski.Ht);
 
   function Is_Separators (Str : As.U.Asu_Us) return Boolean is
-  begin
-    return (for all I in 1 .. Str.Length => Is_Separator (Str.Element (I)));
-  end Is_Separators;
+    (for all I in 1 .. Str.Length => Is_Separator (Str.Element (I)));
 
   -- Skip separators until a significant char (not separator) is got
   procedure Skip_Separators (Flow : in out Flow_Type) is

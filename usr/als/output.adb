@@ -56,17 +56,11 @@ package body Output is
 
   -- Get full path of a path
   function Make_Full_Path (Path : String) return String is
-  begin
-    if Path = "" then
-      return Directory.Normalize_Path (Curdir.Image);
-    elsif Path(Path'First) = '/' then
-      -- Path is already absolute => Normalize
-      return Directory. Normalize_Path (Path);
-    else
-      -- Path is relative, prepend current path & Normalize
-      return Directory.Normalize_Path (Curdir.Image & "/" & Path);
-    end if;
-  end Make_Full_Path;
+    (if Path = "" then Directory.Normalize_Path (Curdir.Image)
+     -- Path is already absolute => Normalize
+     elsif Path(Path'First) = '/' then Directory. Normalize_Path (Path)
+     -- Path is relative, prepend current path & Normalize
+     else Directory.Normalize_Path (Curdir.Image & "/" & Path));
 
   -- Sorting function for 2 paths
   function "<" (S1, S2 : As.U.Asu_Us) return Boolean is
@@ -170,20 +164,12 @@ package body Output is
   procedure Sort is new Entities.Entity_List_Mng.Sort (Less_Than);
 
   -- Is separator explicitely set (or is it the default)
-  function Separator_Set return Boolean is
-  begin
-    return not Separator.Is_Null;
-  end Separator_Set;
+  function Separator_Set return Boolean is (not Separator.Is_Null);
 
   -- Return current separator
   function Get_Separator return String is
-  begin
-    if Separator_Set then
-      return Separator.Image;
-    else
-      return Default_Separator;
-    end if;
-  end Get_Separator;
+    (if Separator_Set then Separator.Image
+     else Default_Separator);
 
   -- Split a size in X.y thousands of it
   Kilo : constant Lister.Size_Type := 1024;

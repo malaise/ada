@@ -662,11 +662,8 @@ package body Screen is
   -- SELECTION --
   ---------------
   function To_Propal (Row : Con_Io.Row_Range) return Common.Propal_Range is
-  begin
-    return
-     Common.Propal_Range (
-      Con_Io.Row_Range (Common.Max_Number_Propal) - Row / 2 );
-  end To_Propal;
+    (Common.Propal_Range (
+       Con_Io.Row_Range (Common.Max_Number_Propal) - Row / 2) );
 
   function Get_Selected (Where : Con_Io.Square) return Selection_Rec is
     Square : Con_Io.Square;

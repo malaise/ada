@@ -5,13 +5,11 @@ package body Matcher is
 
   function Expand (Txt  : As.U.Asu_Us;
                    Mode : Tree.Eval_List) return As.U.Asu_Us is
-  begin
-    return (case Mode is
-          when Tree.None    => Txt,
-          when Tree.Resolve => Variables.Expand (Txt, Variables.Local_Env),
-          when Tree.Compute =>
+    (case Mode is
+      when Tree.None    => Txt,
+      when Tree.Resolve => Variables.Expand (Txt, Variables.Local_Env),
+      when Tree.Compute =>
             Variables.Compute (Variables.Expand (Txt, Variables.Local_Env)));
-  end Expand;
 
   -- If Node.Eval is Resolve or Compute, then
   -- - Expand Node.Critext. If Compute and Node.Oper is not Match nor Notmatch
@@ -310,9 +308,7 @@ package body Matcher is
   -- Do the real test
   function Match (Node : Tree.Node_Rec;
                   Str : As.U.Asu_Us := As.U.Asu_Null) return Boolean is
-  begin
-    return Compute (Node, Str, False);
-  end Match;
+    (Compute (Node, Str, False));
 
 end Matcher;
 

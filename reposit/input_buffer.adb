@@ -94,9 +94,7 @@ package body Input_Buffer is
 
   -- Is the buffer Buf set?
   function Is_Set (Buf : Buffer) return Boolean is
-  begin
-    return not Buf.Delim.Is_Null;
-  end Is_Set;
+    (not Buf.Delim.Is_Null);
 
   -- Reset the buffer, which becomes not set
   procedure Reset (Buf : in out Buffer) is

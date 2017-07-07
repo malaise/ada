@@ -48,14 +48,12 @@ package body Rebase_Mng is
     Tmp_Branch : As.U.Asu_Us;
     use type As.U.Asu_Us;
     function Do_Confirm return Boolean is
-    begin
-      return Confirm (
+      (Confirm (
         (if Restart then "Continue the rebase" else "Rebase")
         & " of branch " & Current_Branch.Image
         & (if Reference_Branch /= "" then " from " & Reference_Branch else ""),
         "on " & Target_Branch,
-        (if Restart then "" else "This operation will alter the history"));
-    end Do_Confirm;
+        (if Restart then "" else "This operation will alter the history")) );
   begin
     Current_Branch := As.U.Tus (Git_If.Current_Branch);
     -- Check if same rebase as previous and temporary branch still here

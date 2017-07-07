@@ -213,9 +213,7 @@ package body Trees is
 
     -- Check if tree is empty
     function Is_Empty (The_Tree : in Tree_Type) return Boolean is
-    begin
-      return The_Tree.Curr = null;
-    end Is_Empty;
+      (The_Tree.Curr = null);
 
     -- Insert a cell (and subtree) as child
     procedure Insert_Child (The_Tree : in out Tree_Type;

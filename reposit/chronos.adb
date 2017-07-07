@@ -3,9 +3,7 @@ package body Chronos is
   -- Get current time of a chrono
   function Current_Time (A_Chrono : Chrono_Type)
                         return Virtual_Time.Time is
-  begin
-    return Virtual_Time.Current_Time (A_Chrono.Clock);
-  end Current_Time;
+    (Virtual_Time.Current_Time (A_Chrono.Clock));
 
   -- Clock has changed at Vtime
   overriding procedure Notify (An_Observer : in out Chrono_Type;
@@ -62,9 +60,7 @@ package body Chronos is
 
   -- Get the status of the chrono
   function Get_Status (A_Chrono : Chrono_Type) return Status_List is
-  begin
-    return A_Chrono.Status;
-  end Get_Status;
+    (A_Chrono.Status);
 
   -- Reads the chrono
   -- Chrono can be running or stopped
@@ -136,10 +132,7 @@ package body Chronos is
 
   -- Get the clock attached to the Chrono (null if real time)
   function Get_Clock (A_Chrono : in Chrono_Type)
-                     return Virtual_Time.Clock_Access is
-  begin
-    return A_Chrono.Clock;
-  end Get_Clock;
+                     return Virtual_Time.Clock_Access is (A_Chrono.Clock);
 
   -- Finalize: Stop and detach from that clock
   overriding procedure Finalize (Chrono : in out Chrono_Type) is

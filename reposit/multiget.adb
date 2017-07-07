@@ -43,9 +43,7 @@ package body Multiget is
 
   -- Is recording active or not
   function Is_Recording (Getter : Multigetter) return Boolean is
-  begin
-    return Getter.Recording;
-  end Is_Recording;
+    (Getter.Recording);
 
 
   -- The getting function
@@ -97,13 +95,8 @@ package body Multiget is
 
   -- Returns the number of Unget that can be done (0 when recording is not active)
   function Nb_Unget (Getter : Multigetter) return Unget_Range is
-  begin
-    if not Getter.Recording or else Getter.Item_List.Is_Empty then
-      return 0;
-    end if;
-    return Getter.Item_List.Get_Position - Getter.Offset;
-  end Nb_Unget;
-
+    (if not Getter.Recording or else Getter.Item_List.Is_Empty then 0
+     else Getter.Item_List.Get_Position - Getter.Offset);
 
   -- Ungets one or several gets (0 for all, Nb_Unget)
   -- Raises To_Many_Unget if Number > Nb_Unget (e.g. recording inactive)

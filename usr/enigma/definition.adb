@@ -51,14 +51,9 @@ package body Definition is
 
   -- Return the configuration file name
   function File_Name return String is
-  begin
-    if not Environ.Is_Set (File_Var_Name)
-    or else Environ.Getenv (File_Var_Name) = "" then
-      return Default_File_Name;
-    else
-      return Environ.Getenv (File_Var_Name);
-    end if;
-  end File_Name;
+    (if not Environ.Is_Set (File_Var_Name)
+     or else Environ.Getenv (File_Var_Name) = "" then Default_File_Name
+     else Environ.Getenv (File_Var_Name));
 
   -- Get the Carries definition of a Rotor
   function Get_Carries (Node : Xml_Parser.Element_Type) return String is
@@ -262,10 +257,7 @@ package body Definition is
   end Set_Rotor;
 
   -- Delimiter in Rotors string
-  function Separing (C : Character) return Boolean is
-  begin
-    return C = '#';
-  end Separing;
+  function Separing (C : Character) return Boolean is (C = '#');
 
   -- Set the rotors
   procedure Set_Rotors (Children : in Xml_Parser.Nodes_Array;
@@ -560,10 +552,7 @@ package body Definition is
 
   -- Translate a letter through a scrambler
   function Translate (Scrambler : Scrambler_Type; A_Letter : Types.Lid)
-           return Types.Lid is
-  begin
-    return Scrambler.Mapping(A_Letter);
-  end Translate;
+           return Types.Lid is (Scrambler.Mapping(A_Letter));
 
   -- Return the revert scrambler
   function Revert (Scrambler : Scrambler_Type) return Scrambler_Type is

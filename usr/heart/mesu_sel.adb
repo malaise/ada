@@ -30,25 +30,17 @@ package body Mesu_Sel is
   end Save_List;
 
   function Date_Match (Date, After, Before : Mesu_Def.Date_Str)
-  return Boolean is
-  begin
-    if Str_Mng.Is_Spaces (After) and then Str_Mng.Is_Spaces (Before) then
-      -- No criteria : date matches
-      return True;
-    elsif Str_Mng.Is_Spaces (After) then
-      -- Only before : Date has to be < before
-      return Date < Before;
-    elsif Str_Mng.Is_Spaces (Before) then
-      -- Only after : date has to be >= after
-      return Date >= After;
-    elsif After <= Before then
-      -- After <= Before : has to be after <= date < before
-      return Date >= After and then Date < Before;
-    else
-      -- After > Before : has to be after >= date or  date < before
-      return Date >= After or else Date < Before;
-    end if;
-  end Date_Match;
+                      return Boolean is
+     -- No criteria : date matches
+    (if Str_Mng.Is_Spaces (After) and then Str_Mng.Is_Spaces (Before) then True
+     -- Only before : Date has to be < before
+    elsif Str_Mng.Is_Spaces (After) then Date < Before
+     -- Only after : date has to be >= after
+    elsif Str_Mng.Is_Spaces (Before) then Date >= After
+     -- After <= Before : has to be after <= date < before
+    elsif After <= Before then Date >= After and then Date < Before
+     -- After > Before : has to be after >= date or  date < before
+    else Date >= After or else Date < Before);
 
   function Same_File (L1, L2 : Line_Rec) return Boolean is
     F1, F2 : Mesu_Nam.File_Name_Str;
@@ -76,7 +68,6 @@ package body Mesu_Sel is
 
   function File_Search is new Line_List_Mng.Search (Same_File);
   procedure File_Sort   is new Line_List_Mng.Sort   (Less_Than);
-
 
   -- Add records to selection
   procedure Add_Selection (Criteria : in Criteria_Rec) is

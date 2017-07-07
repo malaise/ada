@@ -16,10 +16,7 @@ package body Great_Circle is
   -- Lenght of the Chord of an angle, and reverse
   function Chord_Of_Angle (Angle : Conv.Rad_Range; Radius : Lat_Lon.Distance)
                           return Lat_Lon.Distance is
-  begin
-    return 2.0 * Radius * Lat_Lon.Distance(My_Math.Sin(
-                          Real(Angle / 2.0)));
-  end Chord_Of_Angle;
+    (2.0 * Radius * Lat_Lon.Distance(My_Math.Sin( Real(Angle / 2.0))));
 
   function Angle_Of_Chord (Chord : Lat_Lon.Distance; Radius : Lat_Lon.Distance)
                           return Conv.Rad_Coord_Range is

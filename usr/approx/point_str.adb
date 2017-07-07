@@ -38,13 +38,11 @@ package body Point_Str is
   end Encode_Rec;
 
   function Decode_Rec (Rec : Afpx.Line_Rec) return Points.P_T_One_Point is
-  begin
-    return (X => Coordinate_Value(Language.Copy (
-       Rec.Str(1 .. Coordinate_String_Len))),
-            Y => Coordinate_Value(Language.Copy (
-       Rec.Str(Coordinate_String_Len + 2 ..  2 * Coordinate_String_Len + 1))) );
-  end Decode_Rec;
-
+    ( (X => Coordinate_Value(Language.Copy (
+              Rec.Str(1 .. Coordinate_String_Len))),
+       Y => Coordinate_Value(Language.Copy (
+              Rec.Str(Coordinate_String_Len + 2 ..
+                      2 * Coordinate_String_Len + 1))) ) );
 
 end Point_Str;
 

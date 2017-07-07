@@ -39,10 +39,7 @@ package body Tree_Mng is
   begin
     return Current.Name = Criteria.Name;
   end "=";
-  function Key_Image (A_Cell : Cell) return String is
-  begin
-    return A_Cell.Name.Image;
-  end Key_Image;
+  function Key_Image (A_Cell : Cell) return String is (A_Cell.Name.Image);
   package Cell_Hashed_List_Mng is
       new Hashed_List (Cell, Cell_Access, Set, "=", Key_Image);
   package Cell_Unique_List_Mng is new Cell_Hashed_List_Mng.Unique;
@@ -52,10 +49,7 @@ package body Tree_Mng is
   Rope : Sourcer.Src_List_Mng.Unique_List_Type;
 
   -- For parsing list of With / subunits
-  function Is_Sep (C : Character) return Boolean is
-  begin
-    return C = Sourcer.Separator;
-  end Is_Sep;
+  function Is_Sep (C : Character) return Boolean is (C = Sourcer.Separator);
 
   -- Build a node
   procedure Build_Node (Level : in Positive;
@@ -65,11 +59,9 @@ package body Tree_Mng is
 
   -- Is Name in the restricted with
   function Is_Restricted_With (Name, Restr_Witheds : String) return Boolean is
-  begin
     -- True if #Name@ appears in Restr_Witheds
-    return Str_Util.Locate (Restr_Witheds,
-          Sourcer.Restr_Separator & Name & Sourcer.Separator) /= 0;
-  end Is_Restricted_With;
+    (Str_Util.Locate (Restr_Witheds,
+          Sourcer.Restr_Separator & Name & Sourcer.Separator) /= 0);
 
   -- Build the nodes with any unit withed in List,
   -- For each unit: select unit in Path if it exists,
@@ -174,11 +166,9 @@ package body Tree_Mng is
   function Get_Wither (Name, Withing : in String) return Sourcer.Src_Dscr is
     Crit : constant String := Sourcer.Separator & Name & Sourcer.Separator;
     Dscr : Sourcer.Src_Dscr;
-    function Withes  return Boolean is
-    begin
-      return Str_Util.Locate (Dscr.Witheds.Image, Crit) /= 0
-      or else Str_Util.Locate (Dscr.Witheds_Parents.Image, Crit) /= 0;
-    end Withes;
+    function Withes return Boolean is
+      (Str_Util.Locate (Dscr.Witheds.Image, Crit) /= 0
+       or else Str_Util.Locate (Dscr.Witheds_Parents.Image, Crit) /= 0);
 
   begin
     Dscr := Sourcer.Get_Unit (As.U.Tus (Withing));

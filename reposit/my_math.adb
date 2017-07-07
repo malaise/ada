@@ -127,10 +127,7 @@ package body My_Math is
     return (if Neg then -Result else Result);
   end Int;
 
-  function Frac (X : Real) return Real is
-  begin
-    return X - Int(X);
-  end Frac;
+  function Frac (X : Real) return Real is (X - Int(X));
 
   -- Real to inte : round or trunc
   function Round (X : Real) return Inte is
@@ -174,9 +171,7 @@ package body My_Math is
 
   -- Rounded result of division
   function Roundiv (A, B : Inte) return Inte is
-  begin
-    return My_Math.Round (My_Math.Real(A) / My_Math.Real(B));
-  end Roundiv;
+    (My_Math.Round (My_Math.Real(A) / My_Math.Real(B)));
 
   -- Round R at N digits.
   -- If N is positive then it applies to the int part
@@ -243,10 +238,7 @@ package body My_Math is
       raise Math_Error;
   end Lg;
 
-  function Exp (X : Real := 1.0) return Real is
-  begin
-    return E ** X;
-  end Exp;
+  function Exp (X : Real := 1.0) return Real is (E ** X);
 
   -- Ln
   function Ln (X : Real) return Real is

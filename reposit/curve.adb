@@ -141,9 +141,7 @@ package body Curve is
 
       -- Screen coordinates of the frame
       function Get_Screen_Boundaries return T_Screen_Boundaries is
-      begin
-        return Screen_Boundaries;
-      end Get_Screen_Boundaries;
+        (Screen_Boundaries);
 
       -- Is point (pixels) inside the frame (raise Out_Of_Frame if not)
       procedure In_Frame (X_S, Y_S : in Integer) is
@@ -185,17 +183,11 @@ package body Curve is
 
       function X_Screen_Real (X_Screen : Con_Io.X_Range)
                              return T_Coordinate is
-      begin
-        return (T_Coordinate(X_Screen)-Conversion.Offset_X)
-             / Conversion.Factor_X;
-      end X_Screen_Real;
+        ((T_Coordinate(X_Screen) - Conversion.Offset_X) / Conversion.Factor_X);
 
       function Y_Screen_Real (Y_Screen : Con_Io.Y_Range)
                              return T_Coordinate is
-      begin
-        return (T_Coordinate(Y_Screen)-Conversion.Offset_Y)
-             / Conversion.Factor_Y;
-      end Y_Screen_Real;
+        ((T_Coordinate(Y_Screen) - Conversion.Offset_Y) / Conversion.Factor_Y);
 
       -- Compute real_boundaries, screen_boundaries and conversion
       -- from the points and new boundaries

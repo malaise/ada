@@ -63,14 +63,10 @@ package body Bit_Ops is
   end "Not";
 
   function Shl (Val : Integer; Bits : Integer) return Integer is
-  begin
-    return To_Integer(Interfaces.Shift_Left(To_Unsigned_32(Val), Bits));
-  end Shl;
+    (To_Integer(Interfaces.Shift_Left(To_Unsigned_32(Val), Bits)));
 
   function Shr (Val : Integer; Bits : Integer) return Integer is
-  begin
-    return To_Integer(Interfaces.Shift_Right(To_Unsigned_32(Val), Bits));
-  end Shr;
+    (To_Integer(Interfaces.Shift_Right(To_Unsigned_32(Val), Bits)));
 
   -- Long_Integer
   function "And" (Left, Right : Long_Integer) return Long_Integer is
@@ -109,14 +105,10 @@ package body Bit_Ops is
   end "Not";
 
   function Shl (Val : Long_Integer; Bits : Integer) return Long_Integer is
-  begin
-    return Shl_Long(Val, Bits);
-  end Shl;
+    (Shl_Long(Val, Bits));
 
   function Shr (Val : Long_Integer; Bits : Integer) return Long_Integer is
-  begin
-    return Shr_Long(Val, Bits);
-  end Shr;
+    (Shr_Long(Val, Bits));
 
   -- Long_Long_Integer
   function "And" (Left, Right : Ll_Integer) return Ll_Integer is
@@ -154,14 +146,10 @@ package body Bit_Ops is
   end "Not";
 
   function Shl (Val : Ll_Integer; Bits : Integer) return Ll_Integer is
-  begin
-    return To_Ll_Integer(Interfaces.Shift_Left (To_Unsigned_64(Val), Bits));
-  end Shl;
+    (To_Ll_Integer(Interfaces.Shift_Left (To_Unsigned_64(Val), Bits)));
 
   function Shr (Val : Ll_Integer; Bits : Integer) return Ll_Integer is
-  begin
-    return To_Ll_Integer(Interfaces.Shift_Right (To_Unsigned_64(Val), Bits));
-  end Shr;
+    (To_Ll_Integer(Interfaces.Shift_Right (To_Unsigned_64(Val), Bits)));
 
 end Bit_Ops;
 

@@ -115,9 +115,7 @@ package body Utf_16 is
   end Encode;
 
   function Encode (Unicode : Unicode_Number) return Sequence is
-  begin
-    return Sequence (Word'(Encode (Unicode)));
-  end Encode;
+    (Sequence (Word'(Encode (Unicode))));
 
   -- Decodes a Utf-16 sequence (of words) to Unicode sequence.
   -- May raise Invalid_Sequence
@@ -165,14 +163,10 @@ package body Utf_16 is
 
   -- Encodes a Unicode as a Utf-16 word or sequence
   function Encode (Wide_Char : Wide_Character) return Word is
-  begin
-    return Encode (Wide_Character'Pos (Wide_Char));
-  end Encode;
+    (Encode (Wide_Character'Pos (Wide_Char)));
 
   function Encode (Wide_Char : Wide_Character) return Sequence is
-  begin
-    return Sequence (Word'(Encode (Wide_Char)));
-  end Encode;
+    (Sequence (Word'(Encode (Wide_Char))));
 
   -- Swap a sequence BE <-> LE (big endian <-> little endian)
   procedure Swap (Wide_Char : in out Wide_Character) is

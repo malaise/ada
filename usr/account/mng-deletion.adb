@@ -31,10 +31,7 @@ package body Deletion is
   end Flag_Undeleted;
 
   -- Get number of flagged operations
-  function Get_Nb_Deleted return Oper_Nb_Range is
-  begin
-    return Nb_Deleted;
-  end Get_Nb_Deleted;
+  function Get_Nb_Deleted return Oper_Nb_Range is (Nb_Deleted);
 
   -- Delete all flagged operation
   procedure Commit_Deletions is

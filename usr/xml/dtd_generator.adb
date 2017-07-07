@@ -93,10 +93,7 @@ procedure Dtd_Generator is
 
   -- Separator of different values of enum in data and iterator
   Sep : constant Character := '#';
-  function Is_Sep (C : Character) return Boolean is
-  begin
-    return C = Sep;
-  end Is_Sep;
+  function Is_Sep (C : Character) return Boolean is (C = Sep);
   Iter : Parser.Iterator;
 
   -- Kind of children of the element
@@ -158,10 +155,7 @@ procedure Dtd_Generator is
     -- Sale Name
     return Current.Name = Criteria.Name;
   end "=";
-  function Image (Element : Element_Type) return String is
-  begin
-    return Element.Name.Image;
-  end Image;
+  function Image (Element : Element_Type) return String is (Element.Name.Image);
   package Elem_Hash is new Hashed_List (Element_Type, Element_Access, Set,
                                         "=", Image);
   package Elem_Unique is new Elem_Hash.Unique;
@@ -170,9 +164,7 @@ procedure Dtd_Generator is
   -- Sorted List of elements (by order)
   package Elem_List is new Limited_List (Element_Type, Set);
   function Less_Than (El1, El2 : Element_Type) return Boolean is
-  begin
-    return El1.Order < El2.Order;
-  end Less_Than;
+    (El1.Order < El2.Order);
   procedure Sort_Elements is new Elem_List.Sort (Less_Than);
   Sorted_Elements : Elem_List.List_Type;
 
@@ -198,9 +190,7 @@ procedure Dtd_Generator is
   -- False if max elements would be exceeded by adding offset
   function Check_Elements (Number : in Natural;
                            Offset : Integer := 1) return Boolean is
-  begin
-    return Max_Elements = 0 or else Number + Offset <= Max_Elements;
-  end Check_Elements;
+    (Max_Elements = 0 or else Number + Offset <= Max_Elements);
 
   -- Merge current element (children and attributes) with definition
   --  elaborated so far

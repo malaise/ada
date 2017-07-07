@@ -98,7 +98,6 @@ package body Gets is
   end Get_Float;
 
   function Get_Dur (Str : String) return Duration is
-
     D : Duration;
     L : Positive;
     Str_Len : Natural;

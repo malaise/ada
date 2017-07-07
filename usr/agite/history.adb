@@ -11,20 +11,14 @@ package body History is
 
   -- Full image of a commit: Date, then Comment
   function Image1 (Log : Git_If.Log_Entry_Rec) return String is
-  begin
-    return
-        -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD HH:MM "
-        Log.Date(03 .. 04) & Log.Date(06 .. 07) & Log.Date(09 .. 10) & '-'
-        & Log.Date(12 .. 13) & Log.Date(15 .. 16);
-  end Image1;
+    -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD HH:MM "
+    (Log.Date(03 .. 04) & Log.Date(06 .. 07) & Log.Date(09 .. 10) & '-'
+   & Log.Date(12 .. 13) & Log.Date(15 .. 16));
   function Image2 (Log : Git_If.Log_Entry_Rec) return String is
-  begin
-    return
-        -- 1 or 2 lines of comment
-        Log.Comment(1).Image
-        & (if not Log.Comment(2).Is_Null then "$" & Log.Comment(2).Image
-           else "");
-  end Image2;
+    -- 1 or 2 lines of comment
+    (Log.Comment(1).Image
+   & (if not Log.Comment(2).Is_Null then "$" & Log.Comment(2).Image
+      else "") );
 
   -- Encode a commit on a given length
   procedure Set (Line : in out Afpx.Line_Rec;
@@ -42,10 +36,7 @@ package body History is
 
   -- To search matching hash in Log
   function List_Hash_Match (Current, Criteria : Git_If.Log_Entry_Rec)
-           return Boolean is
-  begin
-    return Current.Hash = Criteria.Hash;
-  end List_Hash_Match;
+           return Boolean is (Current.Hash = Criteria.Hash);
   function List_Hash_Search is
            new Git_If.Log_Mng.Dyn_List.Search (List_Hash_Match);
 

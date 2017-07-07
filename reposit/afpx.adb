@@ -51,9 +51,7 @@ package body Afpx is
 
   function In_Field_Absolute (Field_No : in Absolute_Field_Range;
                               Square : in Con_Io.Square) return Boolean is
-  begin
-    return Afpx_Typ.In_Field_Absolute (Af_Dscr.Fields(Field_No), Square);
-  end In_Field_Absolute;
+    (Afpx_Typ.In_Field_Absolute (Af_Dscr.Fields(Field_No), Square));
 
   package body Af_Dscr is separate;
 
@@ -317,10 +315,7 @@ package body Afpx is
   end Release_Descriptor;
 
   -- Is a descriptor in use
-  function Is_Descriptor_Set return Boolean is
-  begin
-    return Af_Dscr.Is_Set;
-  end Is_Descriptor_Set;
+  function Is_Descriptor_Set return Boolean is (Af_Dscr.Is_Set);
 
   -- The Con_Io Console used by Afpx
   function Get_Console return Con_Io.Console is

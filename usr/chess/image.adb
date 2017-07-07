@@ -32,10 +32,8 @@ package body Image is
     Str : Move_Str := (others => ' ');
 
     function Image (Square : in Space.Square_Coordinate) return String is
-    begin
-      return Lower_Str (Space.Col_Range'Image(Square.Col))
-                     & Normal(Integer(Square.Row), 1);
-    end Image;
+      (Lower_Str (Space.Col_Range'Image(Square.Col))
+                & Normal(Integer(Square.Row), 1));
 
 
     use type Space.Col_Range;

@@ -37,10 +37,7 @@ procedure T_Str_Error is
   begin
     return Current.Name = Criteria.Name;
   end "=";
-  function Key_Image (Element : Def_Rec) return String is
-  begin
-    return Element.Name.Image;
-  end Key_Image;
+  function Key_Image (Element : Def_Rec) return String is (Element.Name.Image);
   package Hash_Def_Mng is new Hashed_List (Def_Rec, Def_Access,
     Set, "=", Key_Image);
   package Unique_Def_Mng is new Hash_Def_Mng.Unique;
@@ -65,14 +62,10 @@ procedure T_Str_Error is
   package Codes_List_Mng renames Codes_Dyn_List_Mng.Dyn_List;
   Codes : Codes_List_Mng.List_Type;
   function Less_Than (El1, El2 : Code_Rec) return Boolean is
-  begin
-    return El1.Code < El2.Code;
-  end Less_Than;
+    (El1.Code < El2.Code);
   procedure Sort is new Codes_List_Mng.Sort (Less_Than);
   function Match (Current, Criteria : Code_Rec) return Boolean is
-  begin
-    return Current.Code = Criteria.Code;
-  end Match;
+    (Current.Code = Criteria.Code);
   function Search is new Codes_List_Mng.Search (Match);
   Found : Boolean;
 

@@ -142,9 +142,7 @@ package body Con_Io is
   end Color_Of;
 
   function Color_Name_Of (Color : Effective_Colors) return String is
-  begin
-    return The_Color_Names(Color).Image;
-  end Color_Name_Of;
+    (The_Color_Names(Color).Image);
 
   -- Internal
   procedure Set_Attributes (Con : in Console;
@@ -252,9 +250,7 @@ package body Con_Io is
   end Close;
 
   function Is_Open (Con : Console) return Boolean is
-  begin
-    return Con /= Null_Console and then Con.Get_Access.Initialised;
-  end Is_Open;
+    (Con /= Null_Console and then Con.Get_Access.Initialised);
 
   procedure Set_Name (Con : in Console; Name : in String) is
   begin
@@ -440,9 +436,7 @@ package body Con_Io is
   end Close;
 
   function Is_Open (Name : Window) return Boolean is
-  begin
-    return Name /= Null_Window and then Name.Get_Access.Open;
-  end Is_Open;
+    (Name /= Null_Window and then Name.Get_Access.Open);
 
   -- Get Console of a window
   function Get_Console (Name : Window_Access) return Console is
@@ -1126,13 +1120,8 @@ package body Con_Io is
     -- Return slice of Str between 2 positions
     function Slice (First_Pos : Positive;
                     Last_Pos  : Natural) return String is
-    begin
-      if Last_Pos < First_Pos then
-        return "";
-      else
-        return Lstr.Slice (Indexes(First_Pos), End_Index_Of (Last_Pos));
-      end if;
-    end Slice;
+      (if Last_Pos < First_Pos then ""
+       else Lstr.Slice (Indexes(First_Pos), End_Index_Of (Last_Pos)));
 
     -- Overwrite a slice of Str by a string
     procedure Overwrite (At_Pos : Positive; By : String) is

@@ -61,10 +61,7 @@ package body Output is
 
   -- Is character a separator of Ada statement
   function Separates (Char : Character) return Boolean is
-  begin
-    return Ada_Words.Is_Separator (Char)
-    or else Ada_Words.Is_Delimiter (Char);
-  end Separates;
+    (Ada_Words.Is_Separator (Char) or else Ada_Words.Is_Delimiter (Char));
 
   -- Low level output procedure to filter successive Line_Feed
   Prev_Tail : As.U.Asu_Us;

@@ -9,15 +9,9 @@ package body Debug is
     Debug_Status(Kind) := On;
   end Set;
 
-  function Get (Kind : in Debug_List) return Boolean is
-  begin
-    return Debug_Status(Kind);
-  end Get;
+  function Get (Kind : in Debug_List) return Boolean is (Debug_Status(Kind));
 
-  function Some_Is return Boolean is
-  begin
-    return (for some K in Debug_List => Get (K));
-  end Some_Is;
+  function Some_Is return Boolean is (for some K in Debug_List => Get (K));
 
   procedure Put (Square : in Space.Square_Coordinate) is
   begin

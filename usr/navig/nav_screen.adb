@@ -132,27 +132,21 @@ package body Nav_Screen is
 
   -- Row of a field in get and result areas
   function Fld_Row (Field : Nav_Data.T_List_Data) return Con_Io.Row_Range is
-  begin
-    case Field is
-      when Nav_Data.Wind_S => return 0;
-      when Nav_Data.Wind_A => return 1;
-      when Nav_Data.Plan_S => return 3;
-      when Nav_Data.Plan_A => return 4;
-      when Nav_Data.Traj_S => return 6;
-      when Nav_Data.Traj_A => return 7;
-      when Nav_Data.Drift  => return 9;
-    end case;
-  end Fld_Row;
+    (case Field is
+       when Nav_Data.Wind_S => 0,
+       when Nav_Data.Wind_A => 1,
+       when Nav_Data.Plan_S => 3,
+       when Nav_Data.Plan_A => 4,
+       when Nav_Data.Traj_S => 6,
+       when Nav_Data.Traj_A => 7,
+       when Nav_Data.Drift  => 9);
 
   -- Col of a field in get and result areas
   function Fld_Col (Field : Nav_Data.T_List_Data) return Con_Io.Row_Range is
-  begin
-    case Field is
-      when Nav_Data.Wind_S | Nav_Data.Plan_S | Nav_Data.Traj_S => return 1;
-      when Nav_Data.Wind_A | Nav_Data.Plan_A | Nav_Data.Traj_A => return 1;
-      when Nav_Data.Drift  => return 0;
-    end case;
-  end Fld_Col;
+    (case Field is
+       when Nav_Data.Wind_S | Nav_Data.Plan_S | Nav_Data.Traj_S => 1,
+       when Nav_Data.Wind_A | Nav_Data.Plan_A | Nav_Data.Traj_A => 1,
+       when Nav_Data.Drift  => 0);
 
   -- Get a problem data field
   procedure Get (Field : in Nav_Data.T_List_Data;
@@ -239,19 +233,12 @@ package body Nav_Screen is
     Cur_Operation : Operation;
 
     function Act_Col (Oper : Operation) return Con_Io.Col_Range is
-    begin
-      case Oper is
-        when Compute =>
-         return Comp_Wid + 1;
-        when Quit    =>
-         return Comp_Wid + Act_Off + Quit_Wid + 1;
-        when Help    =>
-         return Comp_Wid + Act_Off + Quit_Wid + Act_Off + Help_Wid + 1;
-        when Clear   =>
-         return Comp_Wid + Act_Off + Quit_Wid + Act_Off + Help_Wid
-          + Act_Off + Clea_Wid + 1;
-      end case;
-    end Act_Col;
+      (case Oper is
+         when Compute => Comp_Wid + 1,
+         when Quit    => Comp_Wid + Act_Off + Quit_Wid + 1,
+         when Help    => Comp_Wid + Act_Off + Quit_Wid + Act_Off + Help_Wid + 1,
+         when Clear   => Comp_Wid + Act_Off + Quit_Wid + Act_Off + Help_Wid
+                       + Act_Off + Clea_Wid + 1);
     use type Con_Io.Curs_Mvt;
   begin
     -- Reuse previous operation if initial is not valid (ex Refresh)

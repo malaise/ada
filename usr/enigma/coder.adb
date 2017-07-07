@@ -3,13 +3,9 @@ with Definition;
 package body Coder is
 
   function Limage (L : Types.Lid) return String is
-  begin
-    return Images.Integer_Image (Natural (L));
-  end Limage;
+    (Images.Integer_Image (Natural (L)));
   function Image (L : Types.Lid) return String is
-  begin
-    return Limage (L) & "=" & Types.Letter_Of (L);
-  end Image;
+    (Limage (L) & "=" & Types.Letter_Of (L));
 
   -- Debug
   Logger : Trace.Loggers.Logger;

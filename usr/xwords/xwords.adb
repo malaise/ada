@@ -84,10 +84,7 @@ procedure Xwords is
   end Us2Afpx;
 
   -- Purge trailing spaces
-  function Strip (Str : String) return String is
-  begin
-    return Str_Util.Strip (Str);
-  end Strip;
+  function Strip (Str : String) return String is (Str_Util.Strip (Str));
 
   -- Set Afpx selection to current item in list
   procedure Set_Current_Selection is
@@ -219,9 +216,7 @@ procedure Xwords is
 
   -- Is Ananouns set
   function Ananouns_Set return Boolean is
-  begin
-    return Afpx.Decode_Field (Ananouns_Fld, 0) /= " ";
-  end Ananouns_Set;
+    (Afpx.Decode_Field (Ananouns_Fld, 0) /= " ");
 
   -- List anagrams of word
   procedure Do_Anagrams is

@@ -29,10 +29,7 @@ package body Conditions is
 
     -- Current task has access?
     function Owns return Boolean is
-    begin
-      return not Free
-      and then Ada.Task_Identification.Current_Task = Owner;
-    end Owns;
+      (not Free and then Ada.Task_Identification.Current_Task = Owner);
 
     -- The entry to register to wait (release mutex)
     entry Wait when True is
@@ -122,9 +119,7 @@ package body Conditions is
 
   -- Does current task have the access to the condition
   function Is_Owner (A_Condition : Condition) return Boolean is
-  begin
-    return A_Condition.Condition_Pointer.Owns;
-  end Is_Owner;
+    (A_Condition.Condition_Pointer.Owns);
 
   -- The calling task must own the condition's mutex
   -- Atomically release the mutex and block the calling task on the condition

@@ -10,13 +10,11 @@ package body Perpet is
 
   -- Is a year leap
   function Is_Leap_Year (Year  : Ada.Calendar.Year_Number) return Boolean is
-  begin
     -- Year is multiple of 4 and not 100, or multiple of 400
     -- the parenthesis tend to optimize:
     --  return False asap in case of year not multiple of 4
-    return Year rem 4 = 0 and then
-     (Year rem 100 /= 0 or else Year rem 400 = 0);
-  end Is_Leap_Year;
+    (Year rem 4 = 0 and then
+     (Year rem 100 /= 0 or else Year rem 400 = 0));
 
   -- Number of days of a month
   function Nb_Days_Month (
@@ -40,9 +38,7 @@ package body Perpet is
 
   -- Number of days of a year
   function Nb_Days_Year (Year : Ada.Calendar.Year_Number) return Day_Range is
-  begin
-    return (if Is_Leap_Year (Year) then 366 else 365);
-  end Nb_Days_Year;
+    (if Is_Leap_Year (Year) then 366 else 365);
 
   -- Check date validity
   function Is_Valid (
@@ -67,12 +63,10 @@ package body Perpet is
   end Split;
 
   function Time_Of (Rec : Time_Rec) return Ada.Calendar.Time is
-  begin
-    return Ada.Calendar.Time_Of (Year    => Rec.Year,
-                             Month   => Rec.Month,
-                             Day     => Rec.Day,
-                             Seconds => Rec.Seconds);
-  end Time_Of;
+    (Ada.Calendar.Time_Of (Year    => Rec.Year,
+                           Month   => Rec.Month,
+                           Day     => Rec.Day,
+                           Seconds => Rec.Seconds));
 
   -- Add years & months to a time_rec
   function "+" (Date : Time_Rec; Months : Duration_Rec) return Time_Rec is
@@ -246,11 +240,9 @@ package body Perpet is
 
   -- Delta_rec comparison
   function "<" (Delta_1, Delta_2 : Delta_Rec) return Boolean is
-  begin
-    return Delta_1.Days < Delta_2.Days
-        or else (Delta_1.Days = Delta_2.Days
-            and then Delta_1.Secs < Delta_2.Secs);
-  end "<";
+    (Delta_1.Days < Delta_2.Days
+       or else (Delta_1.Days = Delta_2.Days
+         and then Delta_1.Secs < Delta_2.Secs));
 
   -- Duration to Delta_Rec
   function To_Delta_Rec (Dur : Natural_Duration) return Delta_Rec is
@@ -396,9 +388,7 @@ package body Perpet is
 
   -- Sub a duration to delta, may raise Time_Error if result < 0
   function "-" (Delta_Date : Delta_Rec; Dur : Duration) return Delta_Rec is
-  begin
-    return Delta_Date + (-Dur);
-  end "-";
+    (Delta_Date + (-Dur));
 
   -- Multiply a delta by a factor
   function "*" (Delta_Date : Delta_Rec;
@@ -495,9 +485,7 @@ package body Perpet is
 
   function Get_Month_Name (Number : Ada.Calendar.Month_Number)
                           return Month_Name_List is
-  begin
-    return Month_Name_List'Val(Natural(Number) - 1);
-  end Get_Month_Name;
+    (Month_Name_List'Val(Natural(Number) - 1));
 
 end Perpet;
 

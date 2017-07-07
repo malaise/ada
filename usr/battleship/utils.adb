@@ -38,18 +38,9 @@ package body Utils is
     Play_Logger.Log_Error (Msg);
   end Err_Play;
 
-  function Dbg_Comm return Boolean is
-  begin
-    return Comm_Logger.Debug_On;
-  end Dbg_Comm;
-  function Dbg_Setup return Boolean is
-  begin
-    return Setup_Logger.Debug_On;
-  end Dbg_Setup;
-  function Dbg_Play return Boolean is
-  begin
-    return Play_Logger.Debug_On;
-  end Dbg_Play;
+  function Dbg_Comm return Boolean is (Comm_Logger.Debug_On);
+  function Dbg_Setup return Boolean is (Setup_Logger.Debug_On);
+  function Dbg_Play return Boolean is (Play_Logger.Debug_On);
 
   -- Image in 2 chars (10 -> a)
   function Image (C : Coord) return Str2 is

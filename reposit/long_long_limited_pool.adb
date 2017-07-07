@@ -2,15 +2,10 @@ package body Long_Long_Limited_Pool is
 
   -- Check if pool is not empty, get number of elements in pool
   function Is_Empty (Pool : in Pool_Type) return Boolean is
-  begin
     -- The one of the list
-    return Pool_List_Mng.List_Type(Pool).Is_Empty;
-  end Is_Empty;
+    (Pool_List_Mng.List_Type(Pool).Is_Empty);
 
-  function Length (Pool : in Pool_Type) return Ll_Natural is
-  begin
-    return Pool.List_Length;
-  end Length;
+  function Length (Pool : in Pool_Type) return Ll_Natural is (Pool.List_Length);
 
   -- Add in beginning of list
   procedure Push (Pool : in out Pool_Type; Data : in Data_Type) is

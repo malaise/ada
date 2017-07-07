@@ -4,13 +4,8 @@ package body Utils.X is
 
   -- Image of a Git branch
   function Branch_Image (Git_Branch : String) return String is
-  begin
-    if Git_Branch = "" then
-      return "?";
-    else
-      return Git_Branch;
-    end if;
-  end Branch_Image;
+    (if Git_Branch = "" then "?"
+     else Git_Branch);
 
   -- Encode current branch
   procedure Encode_Branch (Field_No : in Afpx.Absolute_Field_Range) is
@@ -20,9 +15,7 @@ package body Utils.X is
 
   -- Row for encoding in a field
   function Row (Field : Afpx.Field_Range) return Con_Io.Row_Range is
-  begin
-    return (if Afpx.Get_Field_Height (Field) = 1 then 0 else 1);
-  end Row;
+    (if Afpx.Get_Field_Height (Field) = 1 then 0 else 1);
 
   -- Clear field and encode Text in 1st column of Field (row 0)
   --  procuste, preserve tail or head

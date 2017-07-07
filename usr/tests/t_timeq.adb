@@ -19,10 +19,7 @@ procedure T_Timeq is
   package Val_Queue is new Queues.Timed (Val_Range);
   Vals : Val_Queue.Timed_Type(5);
 
-  function Equal (V1, V2 : Val_Range) return Boolean is
-  begin
-    return V1 = V2;
-  end Equal;
+  function Equal (V1, V2 : Val_Range) return Boolean is (V1 = V2);
 
   -- Read a value, return True if read
   function  Read (I : Val_Range) return Boolean is

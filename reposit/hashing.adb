@@ -143,14 +143,10 @@ package body Hashing is
       -- Depth
       function Depth (Table : Hash_Table; Index : Hash_Range)
                      return Depth_Range is
-      begin
-        return Table.Arr(Index).Depth;
-      end Depth;
+        (Table.Arr(Index).Depth);
       function Depth (Table : Hash_Table; Key   : String)
                      return Depth_Range is
-      begin
-        return Table.Arr(Hash_Func(Key)).Depth;
-      end Depth;
+        (Table.Arr(Hash_Func(Key)).Depth);
 
       -- To get next Index matching Key
       procedure Find_Next (Table     : in out Hash_Table;
@@ -193,9 +189,7 @@ package body Hashing is
                           Key       : in String;
                           Direction : in Direction_List := Forward)
                return Found_Rec is
-      begin
-        return Find_Next (Table, Hash_Func(Key), Direction);
-      end Find_Next;
+        (Find_Next (Table, Hash_Func(Key), Direction));
 
       -- To re-read data previously found at Index or Key
       procedure Re_Read (Table : in out Hash_Table;
@@ -207,14 +201,12 @@ package body Hashing is
 
       function Re_Read (Table : in out Hash_Table;
                         Index : in Hash_Range) return Found_Rec is
-      begin
-        return (if Table.Arr(Index).First = null
-                or else Table.Arr(Index).Current = null then
-                  -- Empty or not found
-                  Not_Found_Rec
-                else
-                  (Found => True, Data => Table.Arr(Index).Current.Data));
-      end Re_Read;
+        (if Table.Arr(Index).First = null
+            or else Table.Arr(Index).Current = null then
+              -- Empty or not found
+              Not_Found_Rec
+         else
+           (Found => True, Data => Table.Arr(Index).Current.Data));
 
       procedure Re_Read (Table : in out Hash_Table;
                          Key   : in String;
@@ -225,9 +217,7 @@ package body Hashing is
 
       function Re_Read (Table : in out Hash_Table;
                         Key   : in String) return Found_Rec is
-      begin
-        return Re_Read (Table, Hash_Func(Key));
-      end Re_Read;
+        (Re_Read (Table, Hash_Func(Key)));
 
       -- Dump hash value of key and lists all data found for key
       procedure Dump (Table     : in Hash_Table;

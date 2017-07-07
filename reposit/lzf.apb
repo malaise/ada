@@ -76,11 +76,8 @@ package body Lzf is
     function Debug_On return Boolean;
   end Logger;
   package body Logger is
-    function Debug_On return Boolean with Inline => True is
-    begin
-      -- Static activation of traces
-      return False;
-    end Debug_On;
+    -- Static activation of traces
+    function Debug_On return Boolean is (False) with Inline => True;
   end Logger;
   procedure Log (Msg : in String) with Inline => True is
   begin
@@ -166,40 +163,34 @@ package body Lzf is
   -- Return the integer with the first two bytes 0, then the byte at the
   --  index and the byte at index + 1
   subtype Future_Range is Natural;
-  function First (A : Byte_Array; I : Natural) return Future_Range
-    with Inline => True is
-  begin
-    return Shl (Integer(A(A'First + I)), 8) or Integer(A(A'First + I + 1));
-  end First;
+  function First (A : Byte_Array; I : Natural) return Future_Range is
+    (Shl (Integer(A(A'First + I)), 8) or Integer(A(A'First + I + 1)) )
+    with Inline => True;
 
   -- Update the future with current position
   -- Shift the value 1 byte left, and add the byte at index inPos+2
   function Next (V : Future_Range; A : Byte_Array; I : Natural)
-                return Future_Range with Inline => True is
-  begin
-    return Shl (V and 16#FFFF#, 8) or Integer(A(A'First + I + 2));
-  end Next;
+                return Future_Range is
+    (Shl (V and 16#FFFF#, 8) or Integer(A(A'First + I + 2)) )
+    with Inline => True;
 
   -- Compute the hash value of a future
-  function Hash (V : Future_Range) return Hash_Ref with Inline => True is
-  begin
+  function Hash (V : Future_Range) return Hash_Ref is
     --## rule off Parentheses
-    return
+    (
     --#@IfDef Slow
-      (Shr (V xor Shl (V, 5), 3 * 8 - Hash_Log) - V * 5) and (Hash_Size - 1);
+      (Shr (V xor Shl (V, 5), 3 * 8 - Hash_Log) - V * 5) and (Hash_Size - 1)
     --#@ElsifDef Fast
-      (Shr (V,                3 * 8 - Hash_Log) - V)     and (Hash_Size - 1);
+      (Shr (V,                3 * 8 - Hash_Log) - V)     and (Hash_Size - 1)
     --#@ElseDef
-      (Shr (V,                3 * 8 - Hash_Log) - V * 5) and (Hash_Size - 1);
+      (Shr (V,                3 * 8 - Hash_Log) - V * 5) and (Hash_Size - 1)
     --#@EndifDef
+    ) with Inline => True;
     --## rule on Parentheses
-  end Hash;
 
   -- Convert an int into a byte
-  function To_Byte (I : Natural) return Byte with Inline => True is
-  begin
-    return Byte (I and 16#FF#);
-  end To_Byte;
+  function To_Byte (I : Natural) return Byte is
+    (Byte (I and 16#FF#)) with Inline => True;
 
   -- Compress Input into Output
   -- Outlen is less than 104% of Input length

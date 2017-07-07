@@ -12,19 +12,12 @@ package body Nav_Data is
   -- Utilities to convert angles
   -- From angle to real
   function To_Real (Angle : Nav_Types.T_Angle) return Real is
-  begin
-    return Real (Angle.Degrees) + Real (Angle.Minutes) / 60.0;
-  end To_Real;
+    (Real (Angle.Degrees) + Real (Angle.Minutes) / 60.0);
 
   -- From drift to real
   function To_Real (Drift : Nav_Types.T_Drift) return Real is
-  begin
-    if Drift.Positiv then
-      return Real (Drift.Degrees) + Real (Drift.Minutes) / 60.0;
-    else
-      return - (Real (Drift.Degrees) + Real (Drift.Minutes) / 60.0);
-    end if;
-  end To_Real;
+    (if Drift.Positiv then Real (Drift.Degrees) + Real (Drift.Minutes) / 60.0
+     else - (Real (Drift.Degrees) + Real (Drift.Minutes) / 60.0));
 
   -- From real to angle
   function To_Angle (R : Real) return Nav_Types.T_Angle is

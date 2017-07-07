@@ -77,14 +77,10 @@ package body Mod_Utils is
   -- if A <= B then B - A else A - B
   -- Raises Constraint_Error if A < 0 or B < 0
   function Dist (A, B : Natural) return Natural is
-  begin
-    return (if A <= B then B - A else A - B);
-  end Dist;
+    (if A <= B then B - A else A - B);
 
   function Dist (A, B : Long_Longs.Ll_Natural) return Long_Longs.Ll_Natural is
-  begin
-    return (if A <= B then B - A else A - B);
-  end Dist;
+    (if A <= B then B - A else A - B);
 
   -- Shortest distance between two modulus
   -- Say D is the raw distance: Max (A, B) - Min (A, B)

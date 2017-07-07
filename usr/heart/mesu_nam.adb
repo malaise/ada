@@ -28,14 +28,9 @@ package body Mesu_Nam is
   end Trunc;
 
   function Round (Date_For_File : Date_For_File_Str) return File_Date_Str is
-  begin
-    if Date_For_File (1 .. 2) < Discriminant_For_Dates then
-      return "20" & Date_For_File;
-    else
-      return "19" & Date_For_File;
-    end if;
-  end Round;
-
+    (if Date_For_File (1 .. 2) < Discriminant_For_Dates then
+       "20" & Date_For_File
+     else "19" & Date_For_File);
 
   function Valid_Date (Date : File_Date_Str) return Boolean is
     Year  : Ada.Calendar.Year_Number;

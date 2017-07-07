@@ -14,10 +14,8 @@ package body Computer is
     To := Val;
   end Set;
   function Image (Element : Var_Rec) return String is
-  begin
-    return (if Element.Persistent then "P" else "V")
-           & " " & Element.Name.Image;
-  end Image;
+    ( (if Element.Persistent then "P" else "V")
+      & " " & Element.Name.Image);
   function "=" (Current : Var_Rec ; Criteria : Var_Rec ) return Boolean is
     use type As.U.Asu_Us;
   begin
@@ -275,9 +273,7 @@ package body Computer is
 
   function Eval (Memory : in out Memory_Type;
                  Expression : in String) return String is
-  begin
-    return Internal_Eval (Memory, Expression, Check => False);
-  end Eval;
+    (Internal_Eval (Memory, Expression, Check => False));
 
   -- Fix expression
   function Fix (Memory : in out Memory_Type;
@@ -444,13 +440,11 @@ package body Computer is
   function Compute_One (I1 : Integer;
                         Op : Oper_Kind_List;
                         I2 : Integer) return Integer is
-  begin
-    return (case Op is
-              when Add  => I1 + I2,
-              when Sub  => I1 - I2,
-              when Mult => I1 * I2,
-              when Div  => I1 / I2);
-  end Compute_One;
+    (case Op is
+       when Add  => I1 + I2,
+       when Sub  => I1 - I2,
+       when Mult => I1 * I2,
+       when Div  => I1 / I2);
 
   -- Compute an expression
   -- Level is the level of parentheses (0 at startup)

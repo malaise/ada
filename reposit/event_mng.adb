@@ -12,9 +12,7 @@ package body Event_Mng is
   Ok : constant C_Types.Int := 0;
 
   function For_Ada(C_Boolean : in C_Types.Bool) return Boolean is
-  begin
-    return Boolean'Val(C_Types.Bool'Pos(C_Boolean));
-  end For_Ada;
+    (Boolean'Val(C_Types.Bool'Pos(C_Boolean)));
 
   ------------------------------------------------------------------
 
@@ -162,14 +160,8 @@ package body Event_Mng is
   Cb_Term_Sig : Sig_Callback := Null_Procedure'Access;
   Cb_Child_Sig : Sig_Callback := Null_Procedure'Access;
 
-  function Get_Term_Cb return Sig_Callback is
-  begin
-    return Cb_Term_Sig;
-  end Get_Term_Cb;
-  function Get_Child_Cb return Sig_Callback is
-  begin
-    return Cb_Child_Sig;
-  end Get_Child_Cb;
+  function Get_Term_Cb  return Sig_Callback is (Cb_Term_Sig);
+  function Get_Child_Cb return Sig_Callback is (Cb_Child_Sig);
 
   procedure Set_Sig_Term_Callback (Callback : in Sig_Callback) is
   begin
@@ -182,26 +174,14 @@ package body Event_Mng is
   end Set_Sig_Child_Callback;
 
   -- Return current Cb
-  function Get_Sig_Term_Callback return Sig_Callback is
-  begin
-    return Cb_Term_Sig;
-  end Get_Sig_Term_Callback;
+  function Get_Sig_Term_Callback  return Sig_Callback is (Cb_Term_Sig);
 
-  function Get_Sig_Child_Callback return Sig_Callback is
-  begin
-    return Cb_Child_Sig;
-  end Get_Sig_Child_Callback;
+  function Get_Sig_Child_Callback return Sig_Callback is (Cb_Child_Sig);
 
   -- Is a callback set on signals
-  function Sig_Term_Callback_Set return Boolean is
-  begin
-    return Cb_Term_Sig /= null;
-  end Sig_Term_Callback_Set;
+  function Sig_Term_Callback_Set  return Boolean is (Cb_Term_Sig /= null);
 
-  function Sig_Child_Callback_Set return Boolean is
-  begin
-    return Cb_Child_Sig /= null;
-  end Sig_Child_Callback_Set;
+  function Sig_Child_Callback_Set return Boolean is (Cb_Child_Sig /= null);
 
   procedure Send_Dummy_Signal is
   begin
@@ -224,9 +204,7 @@ package body Event_Mng is
   end Reset_Default_Signals_Policy;
 
   function Are_Signals_Handled return Boolean is
-  begin
-    return Boolean(C_Signal_Handling_Set);
-  end Are_Signals_Handled;
+    (Boolean(C_Signal_Handling_Set));
 
   -- PRIVATE. Get kind of last signal
   function Get_Signal_Kind return Signal_Kind_List is

@@ -26,9 +26,7 @@ package body X_Mng is
   for Bool_For_C'Size use 32;
 
   function For_C(Ada_Boolean : in Boolean) return Bool_For_C is
-  begin
-    return Bool_For_C'Val(Boolean'Pos(Ada_Boolean));
-  end For_C;
+    (Bool_For_C'Val(Boolean'Pos(Ada_Boolean)));
 
   function C_Strlen (S : System.Address) return C_Types.Size_T
     with Import => True, Convention => C, External_Name => "strlen";

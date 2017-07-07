@@ -850,14 +850,8 @@ procedure Agite is
   begin
     Push_Dir;
   end Init_Dir;
-  function Can_Push return Boolean is
-  begin
-    return True;
-  end Can_Push;
-  function Can_Pop return Boolean is
-  begin
-    return True;
-  end Can_Pop;
+  function Can_Push return Boolean is (True);
+  function Can_Pop  return Boolean is (True);
 
   --- Update the list status
   procedure List_Change (Unused_Action : in Afpx.List_Change_List;

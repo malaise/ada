@@ -34,10 +34,7 @@ package body Socket is
   type Word is new C_Types.Uint16;
   for Word'Size use 2 * Byte_Size;
 
-  function C_Str (Str : String) return String is
-  begin
-    return Str & Nul;
-  end C_Str;
+  function C_Str (Str : String) return String is (Str & Nul);
 
   function Strip (C_Str : String) return String is
   begin
@@ -640,16 +637,10 @@ package body Socket is
 
   -- Host_Id <-> 4 bytes of Ip address
   function L_Id2Addr is new Ada.Unchecked_Conversion (Host_Id, Ip_Address);
-  function Id2Addr (Id : Host_Id) return Ip_Address is
-  begin
-    return L_Id2Addr(Id);
-  end Id2Addr;
+  function Id2Addr (Id : Host_Id) return Ip_Address is (L_Id2Addr(Id));
 
   function L_Addr2Id is new Ada.Unchecked_Conversion (Ip_Address, Host_Id);
-  function Addr2Id (Addr : Ip_Address) return Host_Id is
-  begin
-    return L_Addr2Id(Addr);
-  end Addr2Id;
+  function Addr2Id (Addr : Ip_Address) return Host_Id is (L_Addr2Id(Addr));
 
    -- Broadcast address for an interface
   function Bcast_Of (If_Id : Host_Id) return Host_Id is

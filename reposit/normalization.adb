@@ -432,9 +432,7 @@ package body Normalization is
                          Len   : Positive;
                          Fore  : Positive;
                          Gap   : Character := ' ') return String is
-  begin
-    return Normal_Fixed (My_Math.Real(F), Len, Fore, Gap);
-  end Normal_Fixed;
+    (Normal_Fixed (My_Math.Real(F), Len, Fore, Gap));
 
   function Normal_Fixed (R     : My_Math.Real;
                          Len   : Positive;

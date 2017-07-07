@@ -9,11 +9,9 @@ package body Unit_Format is
 
   -- Date: 25/10/2001
   function Date_Image (Date : Oper_Def.Date_Rec) return Date_Str is
-  begin
-    return Normal (Date.Day, 2, Gap => '0') & '/'
-         & Normal (Date.Month, 2, Gap => '0') & '/'
-         & Normal (Date.Year, 4, Gap => '0');
-  end Date_Image;
+    (Normal (Date.Day, 2, Gap => '0') & '/'
+   & Normal (Date.Month, 2, Gap => '0') & '/'
+   & Normal (Date.Year, 4, Gap => '0'));
 
   function Date_Value (Str : Date_Str) return Oper_Def.Date_Rec is
     Date : Oper_Def.Date_Rec;
@@ -32,25 +30,17 @@ package body Unit_Format is
 
   -- Short date: 25/10/01
   function Short_Date_Image (Date : Oper_Def.Date_Rec) return Short_Date_Str is
-  begin
-    return Normal (Date.Day, 2, Gap => '0') & '/'
-         & Normal (Date.Month, 2, Gap => '0') & '/'
-         & Normal (Date.Year, 4, Gap => '0')(3..4);
-  end Short_Date_Image;
+    (Normal (Date.Day, 2, Gap => '0') & '/'
+   & Normal (Date.Month, 2, Gap => '0') & '/'
+   & Normal (Date.Year, 4, Gap => '0')(3..4));
 
   -- Short status: Yes No Def
   function Short_Status_Image (Status : Oper_Def.Status_List)
            return Short_Status_Str is
-  begin
-    case Status is
-      when Oper_Def.Entered =>
-        return "Yes";
-      when Oper_Def.Not_Entered =>
-        return "No ";
-      when Oper_Def.Defered =>
-        return "Def";
-    end case;
-  end Short_Status_Image;
+    (case Status is
+       when Oper_Def.Entered     => "Yes",
+       when Oper_Def.Not_Entered => "No ",
+       when Oper_Def.Defered     => "Def");
 
   function Short_Status_Value (Str : Short_Status_Str)
            return Oper_Def.Status_List is
@@ -69,20 +59,12 @@ package body Unit_Format is
   -- Short kind:Cheq Card Tran Draw
   function Short_Kind_Image (Kind : Oper_Def.Kind_List)
            return Short_Kind_Str is
-  begin
-    case Kind is
-      when Oper_Def.Cheque =>
-        return "Cheq";
-      when Oper_Def.Credit =>
-        return "Cred";
-      when Oper_Def.Transfer =>
-        return "Xfer";
-      when Oper_Def.Withdraw =>
-        return "Draw";
-      when Oper_Def.Savings =>
-        return "Save";
-    end case;
-  end Short_Kind_Image;
+    (case Kind is
+       when Oper_Def.Cheque   => "Cheq",
+       when Oper_Def.Credit   => "Cred",
+       when Oper_Def.Transfer => "Xfer",
+       when Oper_Def.Withdraw => "Draw",
+       when Oper_Def.Savings  => "Save");
 
   function Short_Kind_Value (Str : Short_Kind_Str)
            return Oper_Def.Kind_List is
@@ -102,10 +84,7 @@ package body Unit_Format is
 
 
   -- Current unit switching
-  function Get_Current_Unit return Units_List is
-  begin
-    return Current_Unit;
-  end Get_Current_Unit;
+  function Get_Current_Unit return Units_List is (Current_Unit);
 
   procedure Set_Unit_To (Unit : Units_List) is
   begin
@@ -174,9 +153,7 @@ package body Unit_Format is
 
 
     function Has_Dot (S : String) return Boolean is
-    begin
-      return (for some C of S => C = '.');
-    end Has_Dot;
+      (for some C of S => C = '.');
 
   begin
     -- Get amount or int from significant characters
@@ -251,15 +228,13 @@ package body Unit_Format is
 
   -- Full operation image/value
   function Image (Rec : Oper_Def.Oper_Rec) return Oper_Str is
-  begin
-    return Language.String_To_Wide (Date_Image (Rec.Date)
-                                  & Image(Rec.Amount, True)
-                                  & Short_Kind_Image (Rec.Kind)
-                                  & Short_Status_Image (Rec.Status))
-         & Rec.Destination
-         & Rec.Comment
-         & Rec.Reference;
-  end Image;
+    (Language.String_To_Wide (Date_Image (Rec.Date)
+                            & Image(Rec.Amount, True)
+                            & Short_Kind_Image (Rec.Kind)
+                            & Short_Status_Image (Rec.Status))
+     & Rec.Destination
+     & Rec.Comment
+     & Rec.Reference);
 
   function Value (Str : Oper_Str) return Oper_Def.Oper_Rec is
     Oper : Oper_Def.Oper_Rec;

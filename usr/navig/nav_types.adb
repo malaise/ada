@@ -46,9 +46,7 @@ package body Nav_Types is
 
   -- Add two angles to get an angle
   function "+" (A1 : T_Angle; A2 : T_Degree) return T_Angle is
-  begin
-    return "+" (A1 => A1, A2 => (Degrees => A2, Minutes => 0));
-  end "+";
+    ("+" (A1 => A1, A2 => (Degrees => A2, Minutes => 0)));
 
   -- Sub 2 angles to get an angle
   function "-" (A1, A2 : T_Angle) return T_Angle is
@@ -81,41 +79,21 @@ package body Nav_Types is
   end "-";
 
   function ">" (A1, A2 : T_Angle) return Boolean is
-  begin
-    if A1.Degrees /= A2.Degrees then
-      return A1.Degrees > A2.Degrees;
-    else
-      return A1.Minutes > A2.Minutes;
-    end if;
-  end ">";
+    (if A1.Degrees /= A2.Degrees then A1.Degrees > A2.Degrees
+     else A1.Minutes > A2.Minutes);
 
   function "<" (A1, A2 : T_Angle) return Boolean is
-  begin
-    if A1.Degrees /= A2.Degrees then
-      return A1.Degrees < A2.Degrees;
-    else
-      return A1.Minutes < A2.Minutes;
-    end if;
-  end "<";
+    (if A1.Degrees /= A2.Degrees then A1.Degrees < A2.Degrees
+     else A1.Minutes < A2.Minutes);
 
   function "+" (A : T_Angle; D : T_Drift) return T_Angle is
-  begin
     -- Add minutes
-    if D.Positiv then
-      return A + T_Angle'(D.Degrees, D.Minutes);
-    else
-      return A - T_Angle'(D.Degrees, D.Minutes);
-    end if;
-  end "+";
+    (if D.Positiv then A + T_Angle'(D.Degrees, D.Minutes)
+     else A - T_Angle'(D.Degrees, D.Minutes));
 
   function "-" (A : T_Angle; D : T_Drift) return T_Angle is
-  begin
-    if D.Positiv then
-      return A - T_Angle'(D.Degrees, D.Minutes);
-    else
-      return A + T_Angle'(D.Degrees, D.Minutes);
-    end if;
-  end "-";
+    (if D.Positiv then A - T_Angle'(D.Degrees, D.Minutes)
+     else A + T_Angle'(D.Degrees, D.Minutes));
 
   function "-" (A1, A2 : T_Angle) return T_Drift is
     A3 : T_Angle;

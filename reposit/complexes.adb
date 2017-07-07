@@ -7,32 +7,22 @@ package body Complexes is
   -- COMPLEX TYPE --
   ------------------
   function Create_Complex (Real_Part, Imag_Part : Real) return Complex is
-  begin
-    return (Part_Real => Real_Part, Part_Imag => Imag_Part);
-  end Create_Complex;
+    ((Part_Real => Real_Part, Part_Imag => Imag_Part));
   procedure Set (C : out Complex; Real_Part, Imag_Part : in Real) is
   begin
     C := Create_Complex (Real_Part, Imag_Part);
   end Set;
 
   function Create_Complex (Real_Part : Real) return Complex is
-  begin
-    return (Part_Real => Real_Part, Part_Imag => 0.0);
-  end Create_Complex;
+    ((Part_Real => Real_Part, Part_Imag => 0.0));
   procedure Set (C : out Complex; Real_Part : in Real) is
   begin
     C := Create_Complex (Real_Part);
   end Set;
 
-  function Part_Real (C : Complex) return Real is
-  begin
-    return C.Part_Real;
-  end Part_Real;
+  function Part_Real (C : Complex) return Real is (C.Part_Real);
 
-  function Part_Imag (C : Complex) return Real is
-  begin
-    return C.Part_Imag;
-  end Part_Imag;
+  function Part_Imag (C : Complex) return Real is (C.Part_Imag);
 
 
   ---------------------
@@ -81,29 +71,17 @@ package body Complexes is
   -- POLAR REPRESENTATION --
   --------------------------
   function Create_Polar (M : Typ_Module; A : Radian) return Polar is
-  begin
-    return (Module => M, Argument => Reduct(A));
-  end Create_Polar;
+    ((Module => M, Argument => Reduct(A)));
 
   function Create_Polar (M : Typ_Module; A : Degree) return Polar is
-  begin
-    return (Module => M, Argument => To_Radian(A));
-  end Create_Polar;
+    ((Module => M, Argument => To_Radian(A)));
 
-  function Module (P : Polar) return Typ_Module is
-  begin
-    return P.Module;
-  end Module;
+  function Module (P : Polar) return Typ_Module is (P.Module);
 
-  function Angle_Radian (P : Polar) return Reducted_Radian is
-  begin
-    return P.Argument;
-  end Angle_Radian;
+  function Angle_Radian (P : Polar) return Reducted_Radian is (P.Argument);
 
   function Angle_Degree (P : Polar) return Reducted_Degree is
-  begin
-    return To_Degree (P.Argument);
-  end Angle_Degree;
+    (To_Degree (P.Argument) );
 
 
   ----------------
@@ -136,82 +114,58 @@ package body Complexes is
   -- OPERATIONS --
   ----------------
   function "+" (X, Y : Complex) return Complex is
-  begin
-    return (Part_Real => X.Part_Real + Y.Part_Real,
-            Part_Imag => X.Part_Imag + Y.Part_Imag);
-  end "+";
+    ( (Part_Real => X.Part_Real + Y.Part_Real,
+       Part_Imag => X.Part_Imag + Y.Part_Imag) );
 
   function "+" (X : Real; Y : Complex) return Complex is
-  begin
-    return (Part_Real => X   + Y.Part_Real,
-            Part_Imag =>       Y.Part_Imag);
-  end "+";
+    ( (Part_Real => X   + Y.Part_Real,
+       Part_Imag =>       Y.Part_Imag) );
 
   function "+" (X : Complex; Y : Real) return Complex is
-  begin
-    return (Part_Real => X.Part_Real + Y,
-            Part_Imag => X.Part_Imag);
-  end "+";
+    ( (Part_Real => X.Part_Real + Y,
+       Part_Imag => X.Part_Imag) );
 
   function "+" (X : Real; Y : Real) return Complex is
-  begin
-    return (Part_Real => X + Y,
-            Part_Imag => 0.0);
-  end "+";
+    ( (Part_Real => X + Y,
+       Part_Imag => 0.0) );
 
   -----------------------------------------------------------------------------
 
   function "-" (X, Y : Complex) return Complex is
-  begin
-    return (Part_Real => X.Part_Real - Y.Part_Real,
-            Part_Imag => X.Part_Imag - Y.Part_Imag);
-  end "-";
+    ( (Part_Real => X.Part_Real - Y.Part_Real,
+       Part_Imag => X.Part_Imag - Y.Part_Imag) );
 
   function "-" (X : Real; Y : Complex) return Complex is
-  begin
-    return (Part_Real => X   - Y.Part_Real,
-            Part_Imag =>     - Y.Part_Imag);
-  end "-";
+    ( (Part_Real => X   - Y.Part_Real,
+       Part_Imag =>     - Y.Part_Imag) );
 
   function "-" (X : Complex; Y : Real) return Complex is
-  begin
-    return (Part_Real => X.Part_Real - Y,
-            Part_Imag => X.Part_Imag);
-  end "-";
+    ( (Part_Real => X.Part_Real - Y,
+       Part_Imag => X.Part_Imag) );
 
   function "-" (X : Real; Y : Real) return Complex is
-  begin
-    return (Part_Real => X - Y,
-            Part_Imag => 0.0);
-  end "-";
+    ( (Part_Real => X - Y,
+       Part_Imag => 0.0) );
 
   -----------------------------------------------------------------------------
 
   function "*" (X, Y : Complex) return Complex is
-  begin
-    return (Part_Real => X.Part_Real * Y.Part_Real
-                       - X.Part_Imag * Y.Part_Imag,
-            Part_Imag => X.Part_Real * Y.Part_Imag
-                       + X.Part_Imag * Y.Part_Real);
-  end "*";
+    ( (Part_Real => X.Part_Real * Y.Part_Real
+                  - X.Part_Imag * Y.Part_Imag,
+       Part_Imag => X.Part_Real * Y.Part_Imag
+                  + X.Part_Imag * Y.Part_Real) );
 
   function "*" (X : Real; Y : Complex) return Complex is
-  begin
-    return (Part_Real => X * Y.Part_Real,
-            Part_Imag => X * Y.Part_Imag);
-  end "*";
+    ( (Part_Real => X * Y.Part_Real,
+       Part_Imag => X * Y.Part_Imag) );
 
   function "*" (X : Complex; Y : Real) return Complex is
-  begin
-    return (Part_Real => X.Part_Real * Y,
-            Part_Imag => X.Part_Imag * Y);
-  end "*";
+    ( (Part_Real => X.Part_Real * Y,
+       Part_Imag => X.Part_Imag * Y) );
 
   function "*" (X : Real; Y : Real) return Complex is
-  begin
-    return (Part_Real => X * Y,
-            Part_Imag => 0.0);
-  end "*";
+    ( (Part_Real => X * Y,
+       Part_Imag => 0.0) );
 
   -----------------------------------------------------------------------------
 
@@ -236,16 +190,12 @@ package body Complexes is
   end "/";
 
   function "/" (X : Complex; Y : Real) return Complex is
-  begin
-    return (Part_Real => X.Part_Real / Y,
-            Part_Imag => X.Part_Imag / Y);
-  end "/";
+    ( (Part_Real => X.Part_Real / Y,
+       Part_Imag => X.Part_Imag / Y) );
 
   function "/" (X : Real; Y : Real) return Complex is
-  begin
-    return (Part_Real => X / Y,
-            Part_Imag => 0.0);
-  end "/";
+    ( (Part_Real => X / Y,
+       Part_Imag => 0.0) );
 
   -----------------------------------------------------------------------------
 

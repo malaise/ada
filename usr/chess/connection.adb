@@ -32,10 +32,7 @@ package body Connection is
   Action_List : Action_List_Mng.List_Type;
 
   -- Has an action been received and get it
-  function Action_Received return Boolean is
-  begin
-    return not Action_List.Is_Empty;
-  end Action_Received;
+  function Action_Received return Boolean is (not Action_List.Is_Empty);
 
   function Receive return Players.Action_Rec is
     Action : Players.Action_Rec;

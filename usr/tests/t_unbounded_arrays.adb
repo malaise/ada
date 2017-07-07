@@ -22,9 +22,7 @@ procedure T_Unbounded_Arrays is
   end Image;
 
   function Image (N : Natua.Unbounded_Array) return String is
-  begin
-    return ">" & Image(N.To_Array) & "<";
-  end Image;
+    (">" & Image(N.To_Array) & "<");
 
 begin
 

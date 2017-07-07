@@ -73,10 +73,7 @@ package body One_File_Statements is
       end loop;
     end Skip_Until;
 
-    function Line_No return Positive is
-    begin
-      return Current.Lines;
-    end Line_No;
+    function Line_No return Positive is (Current.Lines);
 
   begin
 

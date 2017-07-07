@@ -3,36 +3,23 @@ package body Fl_Time is
   Max_Min : constant Integer := Integer (Minutes_Range'Last) + 1;
 
   function Abs_Time (Val : Time_Type) return Time_Type is
-  begin
-    return (Positiv => True,
-            Hours   => Val.Hours,
-            Minutes => Val.Minutes);
-  end Abs_Time;
+    ((Positiv => True,
+      Hours   => Val.Hours,
+      Minutes => Val.Minutes));
 
   function "-" (Val : Time_Type) return Time_Type is
-  begin
-    return (Positiv => not Val.Positiv,
-            Hours   => Val.Hours,
-            Minutes => Val.Minutes);
-  end "-";
+    ((Positiv => not Val.Positiv,
+      Hours   => Val.Hours,
+      Minutes => Val.Minutes));
 
   function "<" (Left, Right : Time_Type) return Boolean is
-  begin
-    if Left.Positiv = Right.Positiv then
-      -- Same sign
-      if Left.Positiv then
-        return
-         Left.Hours < Right.Hours or else
-         (Left.Hours = Right.Hours and then Left.Minutes < Right.Minutes);
-      else
-        return
-         Left.Hours > Right.Hours or else
-         (Left.Hours = Right.Hours and then Left.Minutes > Right.Minutes);
-      end if;
-    else
-      return Right.Positiv;
-    end if;
-  end "<";
+    (if Left.Positiv = Right.Positiv then
+       -- Same sign
+      (if Left.Positiv then Left.Hours < Right.Hours or else
+         (Left.Hours = Right.Hours and then Left.Minutes < Right.Minutes)
+       else Left.Hours > Right.Hours or else
+         (Left.Hours = Right.Hours and then Left.Minutes > Right.Minutes))
+    else Right.Positiv);
 
   function "+" (Left, Right : Time_Type) return Time_Type is
     Result : Time_Type;

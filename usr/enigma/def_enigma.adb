@@ -42,13 +42,9 @@ procedure Def_Enigma is
   -- String image
   Letter_Offset : constant := Character'Pos('A') - 1;
   function To_Letter (Id : Id_Range) return Character is
-  begin
-    return Character'Val(Id + Letter_Offset);
-  end To_Letter;
+    (Character'Val(Id + Letter_Offset));
   function To_Id (L : Character) return Id_Range is
-  begin
-    return Character'Pos(L) - Letter_Offset;
-  end To_Id;
+    (Character'Pos(L) - Letter_Offset);
 
   -- For date generation
   -- Date
@@ -474,10 +470,7 @@ begin
     -- Extract rotors and check Nb versus offsets
     declare
       -- Delimiter in Rotors string
-      function Separing (C : Character) return Boolean is
-      begin
-        return C = '#';
-      end Separing;
+      function Separing (C : Character) return Boolean is (C = '#');
       Iter : Parser.Iterator;
       Id : Natural;
     begin

@@ -120,15 +120,11 @@ package body Smart_Reference is
   -- CARE: Don't use an access outside the scope of the Handle
   --  that was used to get the access
   function Get_Access (Reference : Handle) return access Object is
-  begin
-    return Reference.Box_Access.Obj'Unrestricted_Access;
-  end Get_Access;
+    (Reference.Box_Access.Obj'Unrestricted_Access);
 
   -- Is a Handle set
   function Is_Set (Reference : Handle) return Boolean is
-  begin
-    return Reference.Box_Access /= null;
-  end Is_Set;
+    (Reference.Box_Access /= null);
 
 end Smart_Reference;
 

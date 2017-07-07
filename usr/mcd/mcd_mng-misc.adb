@@ -143,10 +143,7 @@ package body Misc is
     return False;
   end Do_Delay;
 
-  function Check_Break return Boolean is
-  begin
-    return Do_Delay (0.0);
-  end Check_Break;
+  function Check_Break return Boolean is (Do_Delay (0.0));
 
   function Do_Delay (The_Delay : Item_Rec) return Boolean is
   begin

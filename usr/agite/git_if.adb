@@ -74,19 +74,14 @@ package body Git_If is
   end Kind_Of;
 
   function Char_Of (Kind : Sys_Calls.File_Kind_List) return Character is
-  begin
-    case Kind is
-      when Sys_Calls.File => return ' ';
-      when Sys_Calls.Link => return '@';
-      when Sys_Calls.Dir  => return '/';
-      when others         => return '?';
-    end case;
-  end Char_Of;
+    (case Kind is
+       when Sys_Calls.File => ' ',
+       when Sys_Calls.Link => '@',
+       when Sys_Calls.Dir  => '/',
+       when others         => '?');
 
   function Char_Of (Path : String) return Character is
-  begin
-    return Char_Of (Kind_Of (Path));
-  end Char_Of;
+    (Char_Of (Kind_Of (Path)));
 
   -- Current Git version
   function Get_Version return Version_Rec is

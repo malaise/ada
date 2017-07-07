@@ -13,10 +13,7 @@ package body Sourcer is
   Language_Version_Name : constant String := "LSADEPS_LANGUAGE";
 
   -- Is separator for iterator
-  function Is_Sep (C : Character) return Boolean is
-  begin
-    return C = Separator;
-  end Is_Sep;
+  function Is_Sep (C : Character) return Boolean is (C = Separator);
 
   -- Operations for unique list of Src_Dscr
   subtype Src_Code is String (1 .. 2);
@@ -26,17 +23,12 @@ package body Sourcer is
     To := Val;
   end Set;
   function "=" (Current : Src_Dscr; Criteria : Src_Dscr) return Boolean is
-  begin
-    return Current.Kind = Criteria.Kind
-    and then
-     Sort.Make_Path (Current.Path, Current.Unit) =
-     Sort.Make_Path (Criteria.Path, Criteria.Unit);
-  end "=";
+    (Current.Kind = Criteria.Kind
+     and then Sort.Make_Path (Current.Path, Current.Unit)
+            = Sort.Make_Path (Criteria.Path, Criteria.Unit));
   function Image (Element : Src_Dscr) return String is
-  begin
-    return Sort.Make_Path (Element.Path, Element.Unit)
-         & "#" & Src_Codes(Element.Kind);
-  end Image;
+    (Sort.Make_Path (Element.Path, Element.Unit)
+   & "#" & Src_Codes(Element.Kind));
 
   -- Operations for unique list of Name_Dscr
   procedure Set (To : out Name_Dscr; Val : in Name_Dscr) is
@@ -48,10 +40,7 @@ package body Sourcer is
   begin
     return Current.Unit = Criteria.Unit;
   end "=";
-  function Image (Element : Name_Dscr) return String is
-  begin
-    return Element.Unit.Image;
-  end Image;
+  function Image (Element : Name_Dscr) return String is (Element.Unit.Image);
 
   -- Operations for unique list of Withing_Dscr
   procedure Set (To : out Withing_Dscr; Val : in Withing_Dscr) is begin
@@ -63,10 +52,7 @@ package body Sourcer is
   begin
     return Current.Unit = Criteria.Unit;
   end "=";
-  function Image (Element : Withing_Dscr) return String is
-  begin
-    return Element.Unit.Image;
-  end Image;
+  function Image (Element : Withing_Dscr) return String is (Element.Unit.Image);
 
   -- Dump a unit dscr
   procedure Dump (Dscr : in Src_Dscr) is
@@ -596,9 +582,7 @@ package body Sourcer is
 
   -- Does a unit name contain a '.'
   function Has_Dot (Unit : in As.U.Asu_Us) return Boolean is
-  begin
-    return Str_Util.Locate (Unit.Image, ".") /= 0;
-  end Has_Dot;
+    (Str_Util.Locate (Unit.Image, ".") /= 0);
 
   -- Get parent of Dscr (body or subunit)
   -- Return Dscr itself if it is a spec or a standalone body
@@ -686,10 +670,8 @@ package body Sourcer is
     end if;
   end Get_Unit;
   function Get_Unit (Path_Unit : in As.U.Asu_Us) return Src_Dscr is
-  begin
-    return Get_Unit (As.U.Tus (Directory.Dirname (Path_Unit.Image)),
-                     As.U.Tus (Directory.Basename (Path_Unit.Image)));
-  end Get_Unit;
+    (Get_Unit (As.U.Tus (Directory.Dirname (Path_Unit.Image)),
+               As.U.Tus (Directory.Basename (Path_Unit.Image))));
 
   -- Get Unit_Body of a spec if any
   -- Return a Dscr with empty Unit if standalone spec
@@ -731,9 +713,7 @@ package body Sourcer is
   end Get_Root_Body;
 
   function Short_Image (Unit : Src_Dscr) return String is
-  begin
-    return Unit.Unit.Image & "#" & Src_Codes(Unit.Kind);
-  end Short_Image;
+    (Unit.Unit.Image & "#" & Src_Codes(Unit.Kind));
 
 end Sourcer;
 

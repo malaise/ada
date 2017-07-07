@@ -15,9 +15,7 @@ procedure Add_Nums is
 
   -- Separator for parsing line: any non digit
   function Separates (C : Character) return Boolean is
-  begin
-    return C < '0' or else C > '9';
-  end Separates;
+    (C < '0' or else C > '9');
 
   -- Put usage
   procedure Usage is

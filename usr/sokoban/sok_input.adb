@@ -100,10 +100,7 @@ package body Sok_Input is
     end loop;
   end Get_Key;
 
-  function Get_Mouse return Mouse_Event_Rec is
-  begin
-    return Mouse_Event;
-  end Get_Mouse;
+  function Get_Mouse return Mouse_Event_Rec is (Mouse_Event);
 
   procedure Pause is
     Str  : Con_Io.Unicode_Sequence (1 .. 0);

@@ -61,10 +61,7 @@ package body Http is
   end Timer_Cb;
 
   -- For parsing status line of reply
-  function Is_Space (C : Character) return Boolean is
-  begin
-    return C = ' ';
-  end Is_Space;
+  function Is_Space (C : Character) return Boolean is (C = ' ');
 
   -- Message reception Cb, until disconnection
   function Read_Cb (Unused_Dscr : Socket.Socket_Dscr;
@@ -249,10 +246,7 @@ package body Http is
 
   ---------------------------------------------------------------------------
   -- For parsing URL
-  function Is_Slash (C : Character) return Boolean is
-  begin
-    return C = '/';
-  end Is_Slash;
+  function Is_Slash (C : Character) return Boolean is (C = '/');
 
   function Get (Url : String) return Result_Type is
     use type Ada.Calendar.Time;

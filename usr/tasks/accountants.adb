@@ -26,10 +26,7 @@ procedure Accountants is
       end if;
     end Withdraw;
 
-    function Read return Natural is
-    begin
-      return Balance;
-    end Read;
+    function Read return Natural is (Balance);
   end Account;
 
   -- Actions

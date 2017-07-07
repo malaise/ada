@@ -22,21 +22,9 @@ package body Moves is
   Looped : Boolean := False;
 
   function Next (P : Moves_Range) return Moves_Range is
-  begin
-    if P /= Moves_Range'Last then
-      return P + 1;
-    else
-      return Moves_Range'First;
-    end if;
-  end Next;
+    (if P /= Moves_Range'Last then P + 1 else Moves_Range'First);
   function Prev (P : Moves_Range) return Moves_Range is
-  begin
-    if P /= Moves_Range'First then
-      return P - 1;
-    else
-      return Moves_Range'Last;
-    end if;
-  end Prev;
+    (if P /= Moves_Range'First then P - 1 else Moves_Range'Last);
 
   procedure Add_Move (Color  : in Space.Color_List;
                       Action : in Game.Valid_Action_Rec;

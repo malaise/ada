@@ -139,9 +139,7 @@ package body Autobus is
   -- Image of a full address
   function Image (Host : Socket.Host_Id; Port : Socket.Port_Num)
                  return String is
-  begin
-    return Ip_Addr.Image (Host, Port);
-  end Image;
+    (Ip_Addr.Image (Host, Port));
 
   -- Traces
   Logger : Trace.Loggers.Logger;
@@ -197,9 +195,7 @@ package body Autobus is
   end Partner_Match_Hpm;
   -- By access
   function Partner_Match_Acc (Curr, Crit : Partner_Access) return Boolean is
-  begin
-    return Curr = Crit;
-  end Partner_Match_Acc;
+    (Curr = Crit);
 
   -- Search Bus
   -- By admin socket
@@ -911,9 +907,7 @@ package body Autobus is
 
   -- Is a partner connected (connection is not Init nor Shadow)
   function Talk_To (State : Partner_State_List) return Boolean is
-  begin
-    return State /= Init and then State /= Shadow;
-  end Talk_To;
+    (State /= Init and then State /= Shadow);
 
   -- Check that message is not empty and not too long
   procedure Check_Message (Msg : in String) is
@@ -1094,10 +1088,7 @@ package body Autobus is
   end Init;
 
   -- Is a Bus initialised
-  function Is_Init (Bus : Bus_Type) return Boolean is
-  begin
-    return Bus.Acc /= null;
-  end Is_Init;
+  function Is_Init (Bus : Bus_Type) return Boolean is (Bus.Acc /= null);
 
   -- Reset a Bus (make it re-usable)
   procedure Reset (Bus : in out Bus_Type) is
@@ -1289,9 +1280,7 @@ package body Autobus is
     (Reliable => 'R', Multicast => 'M');
   -- Returns "/R" or "/M"
   function Mode_Suffix (Mode : in Mode_List) return String is
-  begin
-    return '/' & Mode_List_Image(Mode);
-  end Mode_Suffix;
+    ('/' & Mode_List_Image(Mode));
 
   -- Send a message to one process
   procedure Send_To (Bus : in out Bus_Type;
@@ -1493,9 +1482,7 @@ package body Autobus is
 
   -- Is a Subscriber initialised
   function Is_Init (Subscriber : Subscriber_Type) return Boolean is
-  begin
-    return Subscriber.Acc /= null;
-  end Is_Init;
+    (Subscriber.Acc /= null);
 
   -- Reset a Subscriber (make it re-usable)
   procedure Reset (Subscriber : in out Subscriber_Type) is

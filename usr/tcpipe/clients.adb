@@ -23,10 +23,7 @@ package body Clients is
   begin
     return Current.Dscr.Image = Criteria.Dscr.Image;
   end "=";
-  function Image (Element : Client_Rec) return String is
-  begin
-    return Element.Dscr.Image;
-  end Image;
+  function Image (Element : Client_Rec) return String is (Element.Dscr.Image);
 
   package Client_List_Mng is new Hashed_List (Client_Rec, Client_Access,
                                                Set, "=", Image);
@@ -369,15 +366,11 @@ package body Clients is
   function Local_Receive (Dscr    : Socket.Socket_Dscr;
                           Message : Common.Data_Type;
                           Length  : Natural) return Boolean is
-  begin
-    return Receive (Dscr, True, Message, Length);
-  end Local_Receive;
+    (Receive (Dscr, True, Message, Length));
   function Remote_Receive (Dscr    : Socket.Socket_Dscr;
                           Message : Common.Data_Type;
                           Length  : Natural) return Boolean is
-  begin
-    return Receive (Dscr, False, Message, Length);
-  end Remote_Receive;
+    (Receive (Dscr, False, Message, Length));
 
   -- Set reception callback on connection from/to client
   procedure Set_Callbacks (Dscr : in Socket.Socket_Dscr;

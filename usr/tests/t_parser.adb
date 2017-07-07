@@ -3,19 +3,11 @@ procedure T_Parser is
 
   Sep : Character := '.';
 
-  function Is_Sep (C : Character) return Boolean is
-  begin
-    return C = Sep;
-  end Is_Sep;
+  function Is_Sep (C : Character) return Boolean is (C = Sep);
 
   function Str return String is
-  begin
-    if Argument.Get_Nbre_Arg = 1 then
-      return "";
-    else
-      return Argument.Get_Parameter(Occurence => 2);
-    end if;
-  end Str;
+    (if Argument.Get_Nbre_Arg = 1 then ""
+     else Argument.Get_Parameter(Occurence => 2));
 
   It : Parser.Iterator;
 

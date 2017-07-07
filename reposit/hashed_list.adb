@@ -217,25 +217,18 @@ package body Hashed_List is
   end Delete_List;
 
   -- Return without exception
-  function Is_Empty (List : List_Type) return Boolean is
-  begin
-    return List.List.Is_Empty;
-  end Is_Empty;
+  function Is_Empty (List : List_Type) return Boolean is (List.List.Is_Empty);
 
   -- Return the number of elements in the list (0 if empty, no exception)
   function List_Length (List : List_Type) return Ll_Natural is
-  begin
-    return List.List.List_Length;
-  end List_Length;
+    (List.List.List_Length);
 
   -- These two calls allow sharing the same list among several
   --  software layers. Each time the list is modified, a flag is set
   --  which allow another layer to test it and reset it for further
   --  testing
   function Is_Modified (List : List_Type) return Boolean is
-  begin
-    return List.List.Is_Modified;
-  end Is_Modified;
+    (List.List.Is_Modified);
 
   procedure Modification_Ack (List : in out List_Type) is
   begin

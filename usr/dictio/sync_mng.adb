@@ -31,10 +31,7 @@ package body Sync_Mng is
                     := (Sync_Listen_Timeout + Online_Mng.Alive_Period) / 2;
 
 
-  function Timer_Active return Boolean is
-  begin
-    return Timer_Id.Exists;
-  end Timer_Active;
+  function Timer_Active return Boolean is (Timer_Id.Exists);
 
   procedure Cancel_Timer is
   begin
@@ -212,9 +209,7 @@ package body Sync_Mng is
   ------------------------------------------------------------
 
   function In_Sync return Boolean is
-  begin
-    return Timer_Active or else Sending_Status = Send;
-  end In_Sync;
+    (Timer_Active or else Sending_Status = Send);
 
   procedure Cancel is
   begin

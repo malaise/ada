@@ -15,15 +15,10 @@ package body Arbitrary is
   end Syntax;
 
   package body Syntax is
-    function Is_Digit (C : Character) return Boolean is
-    begin
-      return C in C_Digit;
-    end Is_Digit;
+    function Is_Digit (C : Character) return Boolean is (C in C_Digit);
 
     function Is_Sign (C : Character) return Boolean is
-    begin
-      return C = '-' or else C = '+';
-    end Is_Sign;
+        (C = '-' or else C = '+');
 
     function Check (V : Number) return Boolean is
     begin
@@ -87,15 +82,11 @@ package body Arbitrary is
 
     -- Int <-> char
     function To_Int (C : C_Digit) return I_Digit is
-    begin
-      return Character'Pos(C) - Zero_Pos;
-    end To_Int;
+      (Character'Pos(C) - Zero_Pos);
     function To_Digit (C : C_Digit) return Digit renames To_Int;
 
     function To_Char (I : Digit) return C_Digit is
-    begin
-      return Character'Val(I + Zero_Pos);
-    end To_Char;
+      (Character'Val(I + Zero_Pos));
 
     -- Normalize a number: no leading 0 except +0
     procedure Normalize (A : in out Number) is
@@ -128,9 +119,7 @@ package body Arbitrary is
     end Make;
 
     function Extract (N : Number) return As.U.Asu_Us is
-    begin
-      return As.U.Asu_Us(N).Tail (As.U.Asu_Us(N).Length - 1);
-    end Extract;
+      (As.U.Asu_Us(N).Tail (As.U.Asu_Us(N).Length - 1));
 
     -- Remove heading 0s
     procedure Trim (A : in out As.U.Asu_Us) is
@@ -426,24 +415,17 @@ package body Arbitrary is
   end Set;
 
   function Strip (V : String) return String is
-  begin
-    return (if V(V'First) = ' ' then V(Natural'Succ(V'First) .. V'Last)
-            else V);
-  end Strip;
+    (if V(V'First) = ' ' then V(Natural'Succ(V'First) .. V'Last) else V);
 
   function Set (V : Integer) return Number is
-  begin
-    return Set_Uncheck (Strip (V'Img));
-  end Set;
+    (Set_Uncheck (Strip (V'Img)));
   procedure Set (N: out Number; V : in Integer) is
   begin
     N := Set (V);
   end Set;
 
   function Set (V : Long_Integer) return Number is
-  begin
-    return Set_Uncheck (Strip (V'Img));
-  end Set;
+    (Set_Uncheck (Strip (V'Img)));
   procedure Set (N: out Number; V : in Long_Integer) is
   begin
     N := Set (V);
@@ -458,43 +440,22 @@ package body Arbitrary is
     N := Set (V);
   end Set;
 
-  function Is_Set (V : Number) return Boolean is
-  begin
-    return As.U.Asu_Us(V).Length >= 2;
-  end Is_Set;
+  function Is_Set (V : Number) return Boolean is (As.U.Asu_Us(V).Length >= 2);
 
   -- "Constants"
-  function Zero return Number is
-  begin
-    return Number_Zero;
-  end Zero;
+  function Zero return Number is (Number_Zero);
 
-  function One  return Number is
-  begin
-    return Number_One;
-  end One;
+  function One  return Number is (Number_One);
 
-  function Two  return Number is
-  begin
-    return Number_Two;
-  end Two;
+  function Two  return Number is (Number_Two);
 
   -- Image
-  function Image (V : Number) return String is
-  begin
-    return As.U.Asu_Us(V).Image;
-  end Image;
+  function Image (V : Number) return String is (As.U.Asu_Us(V).Image);
 
-  function Length (V : Number) return Natural is
-  begin
-    return As.U.Asu_Us(V).Length;
-  end Length;
+  function Length (V : Number) return Natural is (As.U.Asu_Us(V).Length);
 
   -- Is a Number positive (True for 0)
-  function Is_Positive (V : Number) return Boolean is
-  begin
-    return Basic.Check_Is_Pos (V);
-  end Is_Positive;
+  function Is_Positive (V : Number) return Boolean is (Basic.Check_Is_Pos (V));
 
   -- Absolute and Neg
   function "abs" (A : Number) return Number is
@@ -644,10 +605,7 @@ package body Arbitrary is
     return Basic.Make ((if Pos then '+' else '-') & C);
   end "+";
 
-  function "-" (A, B : Number) return Number is
-  begin
-    return A + (-B);
-  end "-";
+  function "-" (A, B : Number) return Number is (A + (-B));
 
   function "*" (A, B : Number) return Number is
     Pa : constant Boolean := Basic.Check_Is_Pos (A);
@@ -813,9 +771,7 @@ package body Arbitrary is
 
     -- Remove last digit of a number
     function Get_Head (N : As.U.Asu_Us) return As.U.Asu_Us is
-    begin
-      return N.Uslice (1, N.Length - 1);
-    end Get_Head;
+      (N.Uslice (1, N.Length - 1));
 
     -- The input
     Input : As.U.Asu_Us;

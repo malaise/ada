@@ -194,9 +194,7 @@ package body Pers_Mng is
 
 
   function Order_Name (Left, Right : Pers_Def.Person_Rec) return Boolean is
-  begin
-    return Left.Name < Right.Name;
-  end Order_Name;
+    (Left.Name < Right.Name);
   procedure Sort_Name is new Pers_Def.Person_List_Mng.Sort (Order_Name);
 
   -- Get first and last index (in list) of persons with the provided name

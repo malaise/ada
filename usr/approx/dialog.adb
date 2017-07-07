@@ -4,14 +4,8 @@ package body Dialog is
 
   -- If points are not saved, ask for confirmation
   function Confirm_Lost return Boolean is
-  begin
-    if Points.P_Saved then
-      return True;
-    else
-      return Screen.Confirm(Screen.C_Data_Lost, True);
-    end if;
-  end Confirm_Lost;
-
+    (if Points.P_Saved then True
+     else Screen.Confirm(Screen.C_Data_Lost, True));
 
   -- Remove trailing spaces. No heading nor intermediate spaces allowed
   function Parse_Spaces (Txt : in out As.U.Asu_Us) return Boolean is
@@ -40,13 +34,8 @@ package body Dialog is
 
 
   function Parse_Leading_Space (Str : String) return String is
-  begin
-    if Str(Str'First) = ' ' then
-      return Str(Natural'Succ(Str'First) .. Str'Last);
-    else
-      return Str;
-    end if;
-  end Parse_Leading_Space;
+    (if Str(Str'First) = ' ' then Str(Natural'Succ(Str'First) .. Str'Last)
+     else Str);
 
   -- Get a coordinate
   --  If Set is set in, then a Put_Then_Get is performed, else a Get

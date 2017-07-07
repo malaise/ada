@@ -1,24 +1,13 @@
 package body Space is
 
   function Opponent (Color : Color_List) return Color_List is
-  begin
-    if Color = White then
-      return Black;
-    else
-      return White;
-    end if;
-  end Opponent;
+    (if Color = White then Black else White);
 
   function Color_Of_Square (Square : Square_Coordinate) return Color_List is
-  begin
     -- A1 (bottom left) is black
-    if (Row_Range'Pos(Square.Row)
-      + Col_Range'Pos(Square.Col)) mod 2 = 0 then
-      return White;
-    else
-      return Black;
-    end if;
-  end Color_Of_Square;
+    (if (Row_Range'Pos(Square.Row) + Col_Range'Pos(Square.Col)) mod 2 = 0 then
+      White
+    else Black);
 
   function Compute_Movement (Orig_Square : Square_Coordinate;
                              Col_Offset, Row_Offset : Movement_Range)

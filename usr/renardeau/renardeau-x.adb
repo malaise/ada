@@ -45,17 +45,14 @@ package body X is
   -- Put field associated to status
   subtype Put_List is Status_List range B1 .. T3;
   function Field_Of (Put : Put_List) return Afpx.Field_Range is
-  begin
-    case Put is
-      when B1 => return Base_Fs + 0;
-      when B2 => return Base_Fs + 1;
-      when B3 => return Base_Fs + 2;
-      when B4 => return Base_Fs + 3;
-      when B5 => return Base_Fs + 4;
-      when B6 => return Base_Fs + 5;
-      when T1 .. T3 => return Target_F;
-    end case;
-  end Field_Of;
+    (case Put is
+       when B1 => Base_Fs + 0,
+       when B2 => Base_Fs + 1,
+       when B3 => Base_Fs + 2,
+       when B4 => Base_Fs + 3,
+       when B5 => Base_Fs + 4,
+       when B6 => Base_Fs + 5,
+       when T1 .. T3 => Target_F);
 
   procedure Activate_Fields (Status : in Status_List; Force : in Boolean) is
     -- Field active
@@ -149,10 +146,8 @@ package body X is
     -- Get a value from a field at a row
     function Get_Value (Field : in Afpx.Field_Range; Row : in Con_Io.Row_Range)
              return Natural is
-    begin
-      return Natural'Value (Str_Util.Strip (Afpx.Decode_Field (Field, Row),
-                                            Str_Util.Both));
-    end Get_Value;
+      (Natural'Value (Str_Util.Strip (Afpx.Decode_Field (Field, Row),
+                                      Str_Util.Both)));
 
     procedure Put_Base (No : Natural) is
       Val : constant Natural := Bases(Bases_Range(No));

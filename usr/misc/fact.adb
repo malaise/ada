@@ -10,13 +10,7 @@ procedure Fact is
   Resultat : Real;
 
   function Calcul_Factoriel (N : Real) return Real is
-  begin
-    if N = 0.0 then
-      return 1.0;
-    else
-      return N * Calcul_Factoriel (N - 1.0);
-    end if;
-  end Calcul_Factoriel;
+    (if N = 0.0 then 1.0 else N * Calcul_Factoriel (N - 1.0));
 
 begin
   Put_Line_Output ("Computation of the factorial of a number:");

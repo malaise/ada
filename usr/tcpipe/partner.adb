@@ -107,10 +107,7 @@ package body Partner is
       raise Invalid_Addr;
   end Init;
 
-  function Is_Connected return Boolean is
-  begin
-    return Rem_Dscr.Is_Open;
-  end Is_Connected;
+  function Is_Connected return Boolean is (Rem_Dscr.Is_Open);
 
   -- Close connection or cancel attempts
   -- No error

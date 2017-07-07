@@ -6,10 +6,7 @@ package body Long_Long_Limited_List is
   Free_List : Link := null;
 
   -- Utilities
-  function Is_Empty (List : List_Type) return Boolean is
-  begin
-    return List.First = null;
-  end Is_Empty;
+  function Is_Empty (List : List_Type) return Boolean is (List.First = null);
 
   procedure Check (List : in List_Type) is
   begin
@@ -25,10 +22,7 @@ package body Long_Long_Limited_List is
     end if;
   end Check_In;
 
-  function Check_In (Pos : in Link) return Boolean is
-  begin
-    return Pos /= null;
-  end Check_In;
+  function Check_In (Pos : in Link) return Boolean is ( Pos /= null);
 
   procedure Check_Cb (List : in List_Type) is
   begin
@@ -91,9 +85,7 @@ package body Long_Long_Limited_List is
 
   -- Next <-> Prev
   function Other_Way (Where : Direction) return Direction is
-  begin
-    return (if Where = Next then Prev else Next);
-  end Other_Way;
+    (if Where = Next then Prev else Next);
 
   -- Check movement
   function Check_Move (List : in List_Type;
@@ -623,9 +615,7 @@ package body Long_Long_Limited_List is
 
   -- Returns the number of elements in the list (0 if empty)
   function List_Length (List : List_Type) return Ll_Natural is
-  begin
-    return (if Is_Empty (List) then 0 else List.Pos_First + List.Pos_Last - 1);
-  end List_Length;
+    (if Is_Empty (List) then 0 else List.Pos_First + List.Pos_Last - 1);
 
 
   -- Get position from first or last item in list
@@ -646,10 +636,7 @@ package body Long_Long_Limited_List is
     List.Modified := False;
   end Set_Modified;
 
-  function Is_Modified (List : List_Type) return Boolean is
-  begin
-    return List.Modified;
-  end Is_Modified;
+  function Is_Modified (List : List_Type) return Boolean is (List.Modified);
 
   procedure Modification_Ack (List : in out List_Type)is
   begin
@@ -979,9 +966,7 @@ package body Long_Long_Limited_List is
                           Occurence : in Ll_Positive := 1;
                           From      : in Search_Kind_List) is
     function Loc_Match (Current, Criteria : Element_Type) return Boolean is
-    begin
-      return Match (Current, Criteria);
-    end Loc_Match;
+      (Match (Current, Criteria));
   begin
     if not Search_Match (List, Loc_Match'Unrestricted_Access,
                          Criteria, Where, Occurence, From) then

@@ -76,9 +76,7 @@ package body Text_Char is
 
   -- Returns if a file is open
   function Is_Open (File : File_Type) return Boolean is
-  begin
-    return File.Line_File.Is_Open;
-  end Is_Open;
+    (File.Line_File.Is_Open);
 
   -- Returns the associated file desc
   -- May raise Status_Error if File is not open
@@ -223,10 +221,7 @@ package body Text_Char is
     return Res;
   end Get;
 
-  function Get (File : in out File_Type) return String is
-  begin
-    return Get (File).Image;
-  end Get;
+  function Get (File : in out File_Type) return String is (Get (File).Image);
 
   -- Unget a char so that it will be the next got
   -- May raise Status_Error if File is not open

@@ -157,7 +157,6 @@ package body String_Util is
 
   function Dec2Str (Dec : Lat_Lon.Lat_Lon_Dec_Rec) return Dec_Str is
     Str : Dec_Str;
-
   begin
     -- Set / and .
     Str(4) := '.';

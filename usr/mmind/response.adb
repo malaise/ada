@@ -56,10 +56,7 @@ package body Response is
     return Response;
   end Respond;
 
-  function  Get_Code return Color_Rec is
-  begin
-    return Secret;
-  end Get_Code;
+  function  Get_Code return Color_Rec is (Secret);
 
 end Response;
 

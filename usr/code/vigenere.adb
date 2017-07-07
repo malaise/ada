@@ -5,13 +5,9 @@ package body Vigenere is
   subtype Car is Character range 'A' .. 'Z';
   subtype Car_Index is Positive range 1 .. 26;
   function Car2Index (C : Car) return Car_Index is
-  begin
-    return Character'Pos(C) - Character'Pos(Car'First) + 1;
-  end Car2Index;
+    (Character'Pos(C) - Character'Pos(Car'First) + 1);
   function Index2Car (I : Car_Index) return Car is
-  begin
-    return Character'Val(Character'Pos(Car'First) + I - 1);
-  end Index2Car;
+    (Character'Val(Character'Pos(Car'First) + I - 1));
   -- Allow lower or upper case -> return upper, else space
   function Char2Car (C : Character) return Character is
     R : Character;

@@ -14,14 +14,10 @@ procedure Letterator is
   end record;
 
   function Cpos (Char : Character) return Io_Manager.Byte is
-  begin
-    return Io_Manager.Byte(Character'Pos (Char));
-  end Cpos;
+    (Io_Manager.Byte(Character'Pos (Char)));
 
   function Cval (B : Io_Manager.Byte) return Character is
-  begin
-    return Character'Val (Natural(B));
-  end Cval;
+    (Character'Val (Natural(B)));
 
   function Encode (B : Io_Manager.Byte) return Letter_Pair_T is
     use type Io_Manager.Byte;

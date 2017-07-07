@@ -39,9 +39,7 @@ package body Bencode is
 
   -- Is Byte from '0' to '9'
   function Is_Digit (B : Positive) return Boolean is
-  begin
-    return B >= Character'Pos('0') and then B <= Character'Pos('9');
-  end Is_Digit;
+    (B >= Character'Pos('0') and then B <= Character'Pos('9'));
 
   -- Normalize a Bytes:
   -- Either there is a "Str" and it is used i.o. the text => set the text

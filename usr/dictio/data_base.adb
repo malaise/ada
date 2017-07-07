@@ -29,15 +29,11 @@ package body Data_Base is
 
   -- Crc image
   function Image (Crc : Hash.Hash_Range) return Item_Crc is
-  begin
-    return Normal (Integer(Crc), Item_Crc'Length, Gap => '0');
-  end Image;
+    (Normal (Integer(Crc), Item_Crc'Length, Gap => '0'));
 
   -- Crc of a string
   function Crc_Of (Str : String) return Item_Crc is
-  begin
-    return Image (Hash.Hash_Def_Func (Str));
-  end Crc_Of;
+    (Image (Hash.Hash_Def_Func (Str)));
 
   procedure Set (Item : in Item_Rec) is
     Itm : Item_Rec;
@@ -94,10 +90,7 @@ package body Data_Base is
     Item_List.Delete_List;
   end Reset;
 
-  function Nb_Item return Natural is
-  begin
-    return Item_List.List_Length;
-  end Nb_Item;
+  function Nb_Item return Natural is (Item_List.List_Length);
 
 
   -- Item_Name is empty when no more item

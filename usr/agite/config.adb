@@ -121,41 +121,27 @@ package body Config is
 
   -- X terminal
   function Xterm_Name return String is
-  begin
-    return Ctx.Get_Attribute (Ctx.Get_Child (Root, 1), "Name");
-  end Xterm_Name;
+    (Ctx.Get_Attribute (Ctx.Get_Child (Root, 1), "Name"));
   function Xterm return String is
-  begin
-    return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 1), 1));
-  end Xterm;
+    (Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 1), 1)));
 
   -- Editor GUI
   function Editor return String is
-  begin
-    return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 2), 1));
-  end Editor;
+    (Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 2), 1)));
 
   -- Viewer GUI
   function Viewer return String is
-  begin
-    return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 3), 1));
-  end Viewer;
+    (Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 3), 1)));
 
   -- Diff GUI
   function Differator return String is
-  begin
-    return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 4), 1));
-  end Differator;
+    (Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 4), 1)));
 
   -- Make command
   function Make_Name return String is
-  begin
-    return Ctx.Get_Attribute (Ctx.Get_Child (Root, 5), "Name");
-  end Make_Name;
+    (Ctx.Get_Attribute (Ctx.Get_Child (Root, 5), "Name"));
   function Make return String is
-  begin
-    return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 5), 1));
-  end Make;
+    (Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 5), 1)));
 
   -- Refresh Period
   function Period return Duration is

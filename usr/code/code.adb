@@ -25,13 +25,8 @@ procedure Code is
   Is_A_Tty : Boolean;
 
   function Echo (On : in Boolean) return Boolean is
-  begin
-    if On then
-      return Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, Sys_Calls.Canonical);
-    else
-      return Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, Sys_Calls.No_Echo);
-    end if;
-  end Echo;
+    (Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
+       (if On then Sys_Calls.Canonical else Sys_Calls.No_Echo)));
 
   procedure Code_1 is
   begin

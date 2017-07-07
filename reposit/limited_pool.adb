@@ -2,14 +2,10 @@ package body Limited_Pool is
 
   -- Check if pool is not empty, get number of elements in pool
   function Is_Empty (Pool : in Pool_Type) return Boolean is
-  begin
-    return Pool.Pool.Is_Empty;
-  end Is_Empty;
+    (Pool.Pool.Is_Empty);
 
   function Length (Pool : in Pool_Type) return Natural is
-  begin
-    return Natural (Pool.Pool.Length);
-  end Length;
+    (Natural (Pool.Pool.Length));
 
   -- Add in pool
   procedure Push (Pool : in out Pool_Type; Data : in Data_Type) is
@@ -26,10 +22,7 @@ package body Limited_Pool is
     Pool.Pool.Pop (Data);
   end Pop;
 
-  function Pop (Pool : in out Pool_Type) return Data_Type is
-  begin
-    return Pool.Pool.Pop;
-  end Pop;
+  function Pop (Pool : in out Pool_Type) return Data_Type is (Pool.Pool.Pop);
 
   procedure Pop (Pool : in out Pool_Type) is
   begin

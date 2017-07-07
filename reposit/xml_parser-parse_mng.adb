@@ -17,9 +17,7 @@ package body Parse_Mng  is
                         Ref_Entity, Ref_Dtd, Ref_Dtd_Mark, Ref_Dtd_Content);
   -- Is a context in dtd
   function In_Dtd (Context : Context_List) return Boolean is
-  begin
-    return Context >= Ref_Entity;
-  end In_Dtd;
+    (Context >= Ref_Entity);
 
   -- Expand the content of an external parsed entity
   -- Non recursive
@@ -1879,10 +1877,7 @@ package body Parse_Mng  is
   end Parse_Xml;
 
   -- Propagate Dtd convention
-  function String_Flow return String is
-  begin
-    return Dtd.String_Flow;
-  end String_Flow;
+  function String_Flow return String is (Dtd.String_Flow);
 
   -- Parse a standalone Dtd Flow
   procedure Parse_Dtd (Ctx : in out Ctx_Type;

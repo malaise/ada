@@ -26,9 +26,7 @@ package body Points is
     Typ_Array  => P_T_The_Points);
 
   function P_The_Points return P_T_The_Points is
-  begin
-    return Storage.The_Points(1 .. Storage.Number);
-  end P_The_Points;
+    (Storage.The_Points(1 .. Storage.Number));
 
   function P_One_Point (Index : in Positive) return P_T_One_Point is
   begin
@@ -106,19 +104,10 @@ package body Points is
     Storage.Saved := True;
   end P_Saved;
 
-  function P_Saved return Boolean is
-  begin
-    return Storage.Saved;
-  end P_Saved;
+  function P_Saved return Boolean is (Storage.Saved);
 
-  function P_Empty return Boolean is
-  begin
-    return Storage.Number = 0;
-  end P_Empty;
+  function P_Empty return Boolean is (Storage.Number = 0);
 
-  function P_Nb return Natural is
-  begin
-    return Storage.Number;
-  end P_Nb;
+  function P_Nb return Natural is (Storage.Number);
 
 end Points;

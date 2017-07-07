@@ -232,13 +232,9 @@ package body Sok_Manager is
   function Play_Frame return Boolean is
 
     Key : Sok_Input.Key_List;
-
     Result : Sok_Movement.Result_List;
-
     Saved_Pos : Sok_Types.Coordinate_Rec;
-
     Poped_Data : Sok_Movement.Saved_Data_Rec;
-
     use type Sok_Input.Key_List;
 
   begin

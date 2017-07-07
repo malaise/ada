@@ -11,10 +11,7 @@ package body Local_Host_Name is
     Lhn := As.U.Tus (Name);
   end Set;
 
-  function Get return String is
-  begin
-    return Lhn.Image;
-  end Get;
+  function Get return String is (Lhn.Image);
 
   procedure Get (Name : out Host_Name) is
   begin

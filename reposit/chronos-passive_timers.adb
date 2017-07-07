@@ -2,18 +2,12 @@ package body Chronos.Passive_Timers is
 
   -- Timer status, independant from the associated clock status
   function Status (Timer : Passive_Timer) return Timer_Status is
-  begin
-    return (
-      if not Timer.Running then Timers.Deleted
+     (if not Timer.Running then Timers.Deleted
       elsif Timer.Chrono.Get_Status = Chronos.Stopped then Timers.Suspended
       else Timers.Running);
-  end Status;
 
   -- True if timer is not Deleted
-  function Running (Timer : Passive_Timer) return Boolean is
-  begin
-    return Timer.Running;
-  end Running;
+  function Running (Timer : Passive_Timer) return Boolean is (Timer.Running);
 
   -- Arm a passive timer with a given period
   -- Overwrites any previous setting on this timer

@@ -12,9 +12,7 @@ package body Exception_Messenger is
     return Current.Name = Criteria.Name;
   end "=";
   function Image (Element : Exception_Info) return String is
-  begin
-    return Element.Name.Image;
-  end Image;
+    (Element.Name.Image);
 
   package Msg_Pool is new Protected_Pool (Exception_Info, "=", Image);
   Pool : Msg_Pool.Pool_Type;
@@ -73,15 +71,11 @@ package body Exception_Messenger is
 
   function Exception_Message (X : in out Ada.Exceptions.Exception_Occurrence)
            return String is
-  begin
-    return Get_Message (Ada.Exceptions.Exception_Message (X));
-  end Exception_Message;
+    (Get_Message (Ada.Exceptions.Exception_Message (X)));
 
   function Exception_Message (X : Ada.Exceptions.Exception_Occurrence_Access)
                              return String is
-  begin
-    return Get_Message (Ada.Exceptions.Exception_Message (X.all));
-  end Exception_Message;
+    (Get_Message (Ada.Exceptions.Exception_Message (X.all)));
 
 end Exception_Messenger;
 

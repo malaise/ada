@@ -44,14 +44,9 @@ package body Timeval is
   end Timeout2Delta;
 
   function Image (Timeout : C_Types.Timeval_T) return String is
-  begin
-    if Timeout.Tv_Sec < 0 or else Timeout.Tv_Usec < 0 then
-      return "Infinite";
-    else
-      return Sec_Image (Timeout.Tv_Sec) & "."
-           & Normal (Integer (Timeout.Tv_Usec), 6, Gap => '0');
-    end if;
-  end Image;
+    (if Timeout.Tv_Sec < 0 or else Timeout.Tv_Usec < 0 then "Infinite"
+     else Sec_Image (Timeout.Tv_Sec) & "."
+        & Normal (Integer (Timeout.Tv_Usec), 6, Gap => '0'));
 
   -- Ensure that abs(Tv_Usec) < 1_000_000 and that Tv_Sec and Tv_Usec have the
   --  same sign

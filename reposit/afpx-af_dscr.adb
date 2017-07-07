@@ -79,10 +79,7 @@ package body Af_Dscr is
   end Check;
 
   -- Check if a descriptor is being used
-  function Is_Set return Boolean is
-  begin
-    return Dscr_Set;
-  end Is_Set;
+  function Is_Set return Boolean is (Dscr_Set);
 
   -- Check if a descriptor is in use and if field is valid
   procedure Check (Field_No : in Absolute_Field_Range) is

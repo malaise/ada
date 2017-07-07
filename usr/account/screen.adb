@@ -84,10 +84,7 @@ package body Screen is
     Afpx.Set_Field_Activation (Show_Oper_Fld, Sublist_Active);
   end Set_Sublist;
 
-  function Is_Sublist return Boolean is
-  begin
-    return Sublist_Active;
-  end Is_Sublist;
+  function Is_Sublist return Boolean is (Sublist_Active);
 
   -- Reset to default screen
   procedure Reset is

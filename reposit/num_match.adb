@@ -16,10 +16,7 @@ package body Num_Match is
   -- Separator of criteria
   Spec_Sep : constant Character := ',';
   Str_Spec_Sep : constant String := Spec_Sep & "";
-  function Is_Sep (C : Character) return Boolean is
-  begin
-    return C = Spec_Sep;
-  end Is_Sep;
+  function Is_Sep (C : Character) return Boolean is (C = Spec_Sep);
 
   -- Locate Range_Sep in Str (0 if not found)
   function Range_Sep_Index (Str : in String) return Natural is

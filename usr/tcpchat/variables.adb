@@ -7,10 +7,7 @@ package body Variables is
   Ext_Ref : constant Character := '$';
 
   -- Dummy variable resolver for check
-  function Dummy (Name : String) return String is
-  begin
-    return Name;
-  end Dummy;
+  function Dummy (Name : String) return String is (Name);
 
   -- Variable resolver that forbids ENV variables
   function Local (Name : String) return String is
@@ -120,9 +117,7 @@ package body Variables is
   -- Expand the expression
   function Expand (Text : As.U.Asu_Us;
                    Exp_Mode : Exp_Mode_List) return String is
-  begin
-    return Expand (Text, Exp_Mode).Image;
-  end Expand;
+    (Expand (Text, Exp_Mode).Image);
 
   function Expand (Text : As.U.Asu_Us;
                    Exp_Mode : Exp_Mode_List) return As.U.Asu_Us is

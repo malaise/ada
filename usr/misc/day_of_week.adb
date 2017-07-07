@@ -25,14 +25,10 @@ procedure Day_Of_Week is
   end Usage;
 
   function Is_Digit (C : Character) return Boolean is
-  begin
-    return C >= '0' and then C <= '9';
-  end Is_Digit;
+    (C >= '0' and then C <= '9');
 
   function Is_Digit (S : String) return Boolean is
-  begin
-    return (for all C of S => Is_Digit (C));
-  end Is_Digit;
+    (for all C of S => Is_Digit (C));
 
 begin
   -- Build time of 00h00 of today

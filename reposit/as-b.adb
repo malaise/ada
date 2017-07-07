@@ -62,15 +62,9 @@ package body As.B is
     Target.Last := 0;
   end Set_Null;
 
-  function Is_Null (Source : Asb_Bs) return Boolean is
-  begin
-    return Source.Last = 0;
-  end Is_Null;
+  function Is_Null (Source : Asb_Bs) return Boolean is (Source.Last = 0);
 
-  function Length (Source : Asb_Bs) return Natural is
-  begin
-    return Source.Last;
-  end Length;
+  function Length (Source : Asb_Bs) return Natural is (Source.Last);
 
   function Tbs (Str : String) return Asb_Bs is
     Res : Asb_Bs(Str'Length);
@@ -87,10 +81,7 @@ package body As.B is
     return Res;
   end Tbs;
 
-  function Image (Str : Asb_Bs) return String is
-  begin
-    return Str.Ref (1 .. Str.Last);
-  end Image;
+  function Image (Str : Asb_Bs) return String is (Str.Ref (1 .. Str.Last));
 
   procedure Set (Target : out Asb_Bs; Val : in Asb_Bs) is
   begin
@@ -228,69 +219,39 @@ package body As.B is
   end Replace_Element;
 
   function "="  (Left, Right : Asb_Bs) return Boolean is
-  begin
-    return Left.Ref(1 .. Left.Last) = Right.Ref(1 .. Right.Last);
-  end "=";
+    (Left.Ref(1 .. Left.Last) = Right.Ref(1 .. Right.Last));
   function "="  (Left : Asb_Bs; Right : String) return Boolean is
-  begin
-    return Left.Ref(1 .. Left.Last) = Right;
-  end "=";
+    (Left.Ref(1 .. Left.Last) = Right);
   function "="  (Left : String; Right : Asb_Bs) return Boolean is
-  begin
-    return Left = Right.Ref(1 .. Right.Last);
-  end "=";
+    (Left = Right.Ref(1 .. Right.Last));
 
   function "<"  (Left, Right : Asb_Bs) return Boolean is
-  begin
-    return Left.Ref(1 .. Left.Last) < Right.Ref(1 .. Right.Last);
-  end "<";
+    (Left.Ref(1 .. Left.Last) < Right.Ref(1 .. Right.Last));
   function "<"  (Left : Asb_Bs; Right : String) return Boolean is
-  begin
-    return Left.Ref(1 .. Left.Last) < Right;
-  end "<";
+    (Left.Ref(1 .. Left.Last) < Right);
   function "<"  (Left : String; Right : Asb_Bs) return Boolean is
-  begin
-    return Left < Right.Ref(1 .. Right.Last);
-  end "<";
+    (Left < Right.Ref(1 .. Right.Last));
 
   function "<=" (Left, Right : Asb_Bs) return Boolean is
-  begin
-    return Left.Ref(1 .. Left.Last) <= Right.Ref(1 .. Right.Last);
-  end "<=";
+    (Left.Ref(1 .. Left.Last) <= Right.Ref(1 .. Right.Last));
   function "<=" (Left : Asb_Bs; Right : String) return Boolean is
-  begin
-    return Left.Ref(1 .. Left.Last) <= Right;
-  end "<=";
+    (Left.Ref(1 .. Left.Last) <= Right);
   function "<=" (Left : String; Right : Asb_Bs) return Boolean is
-  begin
-    return Left <= Right.Ref(1 .. Right.Last);
-  end "<=";
+    (Left <= Right.Ref(1 .. Right.Last));
 
   function ">"  (Left, Right : Asb_Bs) return Boolean is
-  begin
-    return Left.Ref(1 .. Left.Last) > Right.Ref(1 .. Right.Last);
-  end ">";
+    (Left.Ref(1 .. Left.Last) > Right.Ref(1 .. Right.Last));
   function ">"  (Left : Asb_Bs; Right : String) return Boolean is
-  begin
-    return Left.Ref(1 .. Left.Last) > Right;
-  end ">";
+    (Left.Ref(1 .. Left.Last) > Right);
   function ">"  (Left : String; Right : Asb_Bs) return Boolean is
-  begin
-    return Left > Right.Ref(1 .. Right.Last);
-  end ">";
+    (Left > Right.Ref(1 .. Right.Last));
 
   function ">=" (Left, Right : Asb_Bs) return Boolean is
-  begin
-    return Left.Ref(1 .. Left.Last) >= Right.Ref(1 .. Right.Last);
-  end ">=";
+    (Left.Ref(1 .. Left.Last) >= Right.Ref(1 .. Right.Last));
   function ">=" (Left : Asb_Bs; Right : String) return Boolean is
-  begin
-    return Left.Ref(1 .. Left.Last) >= Right;
-  end ">=";
+    (Left.Ref(1 .. Left.Last) >= Right);
   function ">=" (Left : String; Right : Asb_Bs) return Boolean is
-  begin
-    return Left >= Right.Ref(1 .. Right.Last);
-  end ">=";
+    (Left >= Right.Ref(1 .. Right.Last));
 
   function Locate (Within     : Asb_Bs;
                    Fragment   : String;

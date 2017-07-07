@@ -3,10 +3,7 @@ package body Queues is
   package body Lifo is
 
     -- Number of Items in Lifo
-    function Length (Queue : Lifo_Type) return Len_Range is
-    begin
-      return Queue.Ptr;
-    end Length;
+    function Length (Queue : Lifo_Type) return Len_Range is (Queue.Ptr);
 
     -- Push an item
     procedure Push (Queue : in out Lifo_Type; X : in Item) is
@@ -102,14 +99,11 @@ package body Queues is
 
     -- Number of Items in Fifo
     function Length (Queue : Fifo_Type) return Len_Range is
-    begin
-      return (if Queue.Ptr_In > Queue.Ptr_Out then
-                Queue.Ptr_In - Queue.Ptr_Out
-              elsif Queue.Ptr_In < Queue.Ptr_Out then
-                Queue.Ptr_In + Queue.Size - Queue.Ptr_Out
-              elsif Queue.Full then Queue.Size
-              else 0);
-    end Length;
+      (if Queue.Ptr_In > Queue.Ptr_Out then Queue.Ptr_In - Queue.Ptr_Out
+       elsif Queue.Ptr_In < Queue.Ptr_Out then
+         Queue.Ptr_In + Queue.Size - Queue.Ptr_Out
+       elsif Queue.Full then Queue.Size
+       else 0);
 
     -- Push an item
     procedure Push (Queue : in out Fifo_Type; X : in Item) is
@@ -226,14 +220,11 @@ package body Queues is
 
     -- Number of Items in Prio
     function Length (Queue : Prio_Type) return Len_Range is
-    begin
-      return (if Queue.Ptr_In > Queue.Ptr_Out then
-                Queue.Ptr_In - Queue.Ptr_Out
-              elsif Queue.Ptr_In < Queue.Ptr_Out then
-                Queue.Ptr_In + Queue.Size - Queue.Ptr_Out
-              elsif Queue.Full then Queue.Size
-              else 0);
-    end Length;
+      (if Queue.Ptr_In > Queue.Ptr_Out then Queue.Ptr_In - Queue.Ptr_Out
+       elsif Queue.Ptr_In < Queue.Ptr_Out then
+         Queue.Ptr_In + Queue.Size - Queue.Ptr_Out
+       elsif Queue.Full then Queue.Size
+       else 0);
 
     -- Push an item
     procedure Push (Queue : in out Prio_Type;
@@ -370,14 +361,11 @@ package body Queues is
 
     -- Number of Items in Circ
     function Length (Queue : Circ_Type) return Len_Range is
-    begin
-      return (if Queue.Ptr_In > Queue.Ptr_Out then
-                Queue.Ptr_In - Queue.Ptr_Out
-              elsif Queue.Ptr_In < Queue.Ptr_Out then
-                Queue.Ptr_In + Queue.Size - Queue.Ptr_Out
-              elsif Queue.Full then Queue.Size
-              else 0);
-    end Length;
+      (if Queue.Ptr_In > Queue.Ptr_Out then Queue.Ptr_In - Queue.Ptr_Out
+       elsif Queue.Ptr_In < Queue.Ptr_Out then
+         Queue.Ptr_In + Queue.Size - Queue.Ptr_Out
+       elsif Queue.Full then Queue.Size
+       else 0);
 
     -- Push an item
     procedure Push (Queue : in out Circ_Type; X : in Item) is

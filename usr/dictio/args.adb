@@ -33,22 +33,13 @@ package body Args is
       Usage;
   end Init;
 
-  function Get_Bus return String is
-  begin
-    return Argument.Get_Parameter(1, "b");
-  end Get_Bus;
+  function Get_Bus return String is (Argument.Get_Parameter(1, "b"));
 
 
-  function Get_Client_Port return String is
-  begin
-    return Argument.Get_Parameter(1, "p");
-  end Get_Client_Port;
+  function Get_Client_Port return String is (Argument.Get_Parameter(1, "p"));
 
 
-  function Get_Prio return Prio_Str is
-  begin
-    return Prio;
-  end Get_Prio;
+  function Get_Prio return Prio_Str is (Prio);
 
 end Args;
 

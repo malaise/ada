@@ -71,9 +71,7 @@ package body Io_Flow is
   end Init_Default;
 
   function Is_Stdio return Boolean is
-  begin
-    return Io_Mode = Stdio_Tty or else Io_Mode = Stdio_Not_Tty;
-  end Is_Stdio;
+    (Io_Mode = Stdio_Tty or else Io_Mode = Stdio_Not_Tty);
 
   procedure Init (Default : in Boolean := False) is
     use type Sys_Calls.File_Desc_Kind_List;
@@ -612,13 +610,8 @@ package body Io_Flow is
   end Socket_Rece_Cb;
 
   function Socket_Is_Active return Boolean is
-  begin
-    if not Soc.Is_Open and then Io_Mode = Tcp then
-      return Tcp_Active;
-    else
-      return Soc.Is_Open and then Event_Mng.Fd_Callback_Set (Soc.Get_Fd, True);
-    end if;
-  end Socket_Is_Active;
+    (if not Soc.Is_Open and then Io_Mode = Tcp then Tcp_Active
+    else Soc.Is_Open and then Event_Mng.Fd_Callback_Set (Soc.Get_Fd, True));
 
   procedure Activate_Socket (Active : in Boolean) is
   begin

@@ -38,9 +38,7 @@ package body Unbounded_Arrays is
 
   -- Size computed to Add to Length
   function New_Size (Length : Natural; Add : Positive) return Positive is
-  begin
-    return Length + Add + Growth_Offset + Length / Growth_Factor;
-  end New_Size;
+    (Length + Add + Growth_Offset + Length / Growth_Factor);
 
   -- Store Item in Unbounded array, re-alloc if necessary
   procedure Store (Within : in out Unbounded_Array;
@@ -93,14 +91,9 @@ package body Unbounded_Arrays is
 
   -- Length and element
   function Is_Null (Source : Unbounded_Array) return Boolean is
-  begin
-    return Source = Null_Unbounded_Array;
-  end Is_Null;
+    (Source = Null_Unbounded_Array);
 
-  function Length (Source : Unbounded_Array) return Natural is
-  begin
-    return Source.Last;
-  end Length;
+  function Length (Source : Unbounded_Array) return Natural is (Source.Last);
 
   -- Conversions
   function To_Unbounded_Array (Source : Element_Type) return Unbounded_Array is
@@ -126,9 +119,7 @@ package body Unbounded_Arrays is
   end To_Unbounded_Array;
 
   function To_Array (Source : Unbounded_Array) return Element_Array is
-  begin
-    return Source.Ref(1 .. Source.Last);
-  end To_Array;
+    (Source.Ref(1 .. Source.Last));
 
   procedure Set (Target : out Unbounded_Array; Val : in Unbounded_Array) is
   begin
@@ -294,20 +285,13 @@ package body Unbounded_Arrays is
   -- Comparisons
   function "=" (Left  : Unbounded_Array;
                 Right : Unbounded_Array) return Boolean is
-  begin
-    return Left.Ref.all(1 .. Left.Last) =
-           Right.Ref.all(1 .. Right.Last);
-  end "=";
+    (Left.Ref.all(1 .. Left.Last) = Right.Ref.all(1 .. Right.Last));
   function "=" (Left  : Unbounded_Array;
                 Right : Element_Array) return Boolean is
-  begin
-    return Left.Ref.all(1 .. Left.Last) = Right;
-  end "=";
+    (Left.Ref.all(1 .. Left.Last) = Right);
   function "=" (Left  : Element_Array;
                 Right : Unbounded_Array) return Boolean is
-  begin
-    return Left = Right.Ref.all(1 .. Right.Last);
-  end "=";
+    (Left = Right.Ref.all(1 .. Right.Last));
 
   --Locate
   function Locate (Within     : Unbounded_Array;

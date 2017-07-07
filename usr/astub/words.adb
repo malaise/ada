@@ -54,14 +54,10 @@ package body Words is
   end Read;
 
   function Read (Index : in Natural := 0) return As.U.Asu_Us is
-  begin
-    return Read (Index).Text;
-  end Read;
+    (Read (Index).Text);
 
   function Read (Index : in Natural := 0) return String is
-  begin
-    return Read (Index).Image;
-  end Read;
+    (Read (Index).Image);
 
   -- Get --
   function Get (Index : in Natural := 0) return Word_Rec is
@@ -73,14 +69,10 @@ package body Words is
   end Get;
 
   function Get (Index : in Natural := 0) return As.U.Asu_Us is
-  begin
-    return Get (Index).Text;
-  end Get;
+    (Get (Index).Text);
 
   function Get (Index : in Natural := 0) return String is
-  begin
-    return Get (Index).Image;
-  end Get;
+    (Get (Index).Image);
 
   -- Concat --
   function Concat (From_Index : in Positive := 1;
@@ -102,16 +94,11 @@ package body Words is
 
   function Concat (From_Index : in Positive := 1;
                    To_Index : Natural := 0) return String is
-  begin
-    return Concat (From_Index, To_Index).Image;
-  end Concat;
+    (Concat (From_Index, To_Index).Image);
 
 
   -- Returns the number of words stored
-  function Length return Natural is
-  begin
-    return Words_List.List_Length;
-  end Length;
+  function Length return Natural is (Words_List.List_Length);
 
   -- Add --
   procedure Add (Word : in Word_Rec) is
@@ -156,17 +143,12 @@ package body Words is
   function Search (Lexic : in Parser_Ada.Lexical_Kind_List;
                    Word : in As.U.Asu_Us;
                    From_Index : Positive := 1) return Natural is
-
-  begin
-    return Search ( (Lexic, Word), From_Index );
-  end Search;
+    (Search ( (Lexic, Word), From_Index));
 
   function Search (Lexic : Parser_Ada.Lexical_Kind_List;
                    Word : String;
                    From_Index : Positive := 1) return Natural is
-  begin
-    return Search (Lexic, As.U.Tus (Word), From_Index);
-  end Search;
+    (Search (Lexic, As.U.Tus (Word), From_Index));
 
 end Words;
 

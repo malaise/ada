@@ -32,7 +32,8 @@ package body Graphic is
     subtype Piece_Map is Con_Io.Byte_Array (1 .. Piece_Size * Piece_Size);
     type Piece_Map_Access is access all Piece_Map;
 
-    function Get_Bitmap (Kind : in Pieces.Piece_Kind_List) return Piece_Map_Access;
+    function Get_Bitmap (Kind : in Pieces.Piece_Kind_List)
+                        return Piece_Map_Access;
 
   end Bitmaps;
   package body Bitmaps is separate;

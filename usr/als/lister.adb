@@ -166,16 +166,11 @@ package body Lister is
 
   -- Does a file/dir name (without path) match a template or regex
   function Match (File, Template : String; Regex : Boolean) return Boolean is
-  begin
-    if Regex then
-      -- Basename v.s. regex
-      return Reg_Exp.Match (Template, Directory.Basename (File),
-                                        Strict => True);
-    else
-      -- Basename v.s. template
-      return Directory.File_Match (Directory.Basename (File), Template);
-    end if;
-  end Match;
+     -- Basename v.s. regex
+    (if Regex then Reg_Exp.Match (Template, Directory.Basename (File),
+                                  Strict => True)
+     -- Basename v.s. template
+     else Directory.File_Match (Directory.Basename (File), Template));
 
   -- Does an entity match all criteria
   function Match (Ent : Entities.Entity) return Boolean is
@@ -601,15 +596,9 @@ package body Lister is
     Total_Active := True;
   end Activate_Total;
 
-  function Get_Total return Size_Type is
-  begin
-    return Total_Size;
-  end Get_Total;
+  function Get_Total return Size_Type is (Total_Size);
 
-  function Get_Number return Natural is
-  begin
-    return Total_Number;
-  end Get_Number;
+  function Get_Number return Natural is (Total_Number);
 
   procedure Add_Size (Size : in Sys_Calls.Off_T; Count : in Boolean) is
   begin

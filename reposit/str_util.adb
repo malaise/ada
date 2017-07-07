@@ -337,15 +337,9 @@ package body Str_Util is
   -- Raises Constraint_Error if Nb_Char is more than From'Length.
   function Extract (From : String;
                     Nb_Char : Natural;
-                    Head : Boolean := True)
-           return String is
-  begin
-    if Head then
-      return Slice (From, From'First, Nb_Char, True);
-    else
-      return Slice (From, From'Last,  Nb_Char, False);
-    end if;
-  end Extract;
+                    Head : Boolean := True) return String is
+    (if Head then Slice (From, From'First, Nb_Char, True)
+     else Slice (From, From'Last,  Nb_Char, False));
 
   -- Puts a string Str in a string of fixed length Len.
   -- If Str is shorter than Len, it is aligned at right or left and padded
@@ -413,9 +407,8 @@ package body Str_Util is
   -- Looks for separator character
   -- Default Separator function, True for Space and Ht.
   function Is_Separator (Char : Character) return Boolean is
-  begin
-    return Char = Aski.Spc or else Char = Aski.Ht;
-  end Is_Separator;
+    (Char = Aski.Spc or else Char = Aski.Ht);
+
   -- If Str is shorter or equal to Length, return Str'Last
   -- Else try to find a separator before Length, up to Mini
   -- Else try to find a separator after  Length, up to Maxi
@@ -432,10 +425,7 @@ package body Str_Util is
   return String is
     Strlen : constant Natural := Str'Length;
     -- Corresponding index in Str
-    function Indof (I : Positive) return Positive is
-    begin
-      return I - 1 + Str'First;
-    end Indof;
+    function Indof (I : Positive) return Positive is (I - 1 + Str'First);
   begin
     if Mini > Length or else Length > Maxi then
       raise Constraint_Error;

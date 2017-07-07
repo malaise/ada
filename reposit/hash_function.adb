@@ -32,9 +32,7 @@ package body Hash_Function is
 
   -- Get currently computed hash value (which is not reset)
   function Get (Buffer : in Hash_Buffer) return Hash_Range is
-  begin
-    return Hash_Range (Buffer.Value);
-  end Get;
+    (Hash_Range (Buffer.Value));
 
 end Hash_Function;
 

@@ -24,13 +24,8 @@ package body Output is
 
   -- Strip path of Str if current dir
   function Strip (Str : String) return String is
-  begin
-    if Directory.Dirname (Str) = Curr_Dir.Image then
-      return Directory.Basename (Str);
-    else
-      return Str;
-    end if;
-  end Strip;
+    (if Directory.Dirname (Str) = Curr_Dir.Image then Directory.Basename (Str)
+     else Str);
 
   -- Put_Line a stripped string
   procedure Put_Line_Stripped (Str : in String) is
@@ -566,10 +561,7 @@ package body Output is
   ----------------
   -- Add a unit and its subunits
   -- For parsing list of subunits
-  function Is_Sep (C : Character) return Boolean is
-  begin
-    return C = Sourcer.Separator;
-  end Is_Sep;
+  function Is_Sep (C : Character) return Boolean is (C = Sourcer.Separator);
   procedure Add_Unit (Str : in As.U.Asu_Us; File_Mode : Boolean) is
     Spec_Dscr, Body_Dscr : Sourcer.Src_Dscr;
     Iter : Parser.Iterator;

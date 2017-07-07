@@ -289,20 +289,9 @@ package body Sys_Calls is
     return File_Kind_Of (Stat4C.C_Mode);
   end File_Desc_Kind;
 
-  function Stdin return File_Desc is
-  begin
-    return 0;
-  end Stdin;
-
-  function Stdout return File_Desc is
-  begin
-    return 1;
-  end Stdout;
-
-  function Stderr return File_Desc is
-  begin
-    return 2;
-  end Stderr;
+  function Stdin  return File_Desc is (0);
+  function Stdout return File_Desc is (1);
+  function Stderr return File_Desc is (2);
 
 
   -- For file exists and stat
@@ -335,10 +324,7 @@ package body Sys_Calls is
 
   -- Check if file exists, no exception, True if Found
   function File_Found (File_Name : String) return Boolean is
-  begin
-    return File_Status (File_Name) = Found;
-  end File_Found;
-
+    (File_Status (File_Name) = Found);
 
   -- File stat
   function File_Stat (File_Name : String) return File_Stat_Rec is

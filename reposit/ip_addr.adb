@@ -77,19 +77,14 @@ package body Ip_Addr is
 
   -- Image of an Ip address: "xxx.yyy.zzz.ttt"
   function Image  (Addr : Socket.Ip_Address) return String is
-  begin
-    return Byte_Image (Addr.A) & '.'
-         & Byte_Image (Addr.B) & '.'
-         & Byte_Image (Addr.C) & '.'
-         & Byte_Image (Addr.D);
-  end Image;
+    (Byte_Image (Addr.A) & '.'
+   & Byte_Image (Addr.B) & '.'
+   & Byte_Image (Addr.C) & '.'
+   & Byte_Image (Addr.D));
 
   -- Image of a host Id
   function Image  (Host : Socket.Host_Id) return String is
-  begin
-    return Image (Socket.Id2Addr (Host));
-  end Image;
-
+    (Image (Socket.Id2Addr (Host)));
 
   -- If Port is a num between 0 and 65535 then
   --   return the Tcp_Util.Remote_Port (Tcp_Util.Port_Num_Spec)
@@ -167,14 +162,10 @@ package body Ip_Addr is
   -- Image <addr>:<port> (xxx.yyy.zzz.ttt:pppp) of an Addr and Port
   function Image  (Addr : Socket.Ip_Address;
                    Port : Socket.Port_Num) return String is
-  begin
-    return Image (Addr) & Sep & Image (Port);
-  end Image;
+    (Image (Addr) & Sep & Image (Port));
   function Image  (Host : Socket.Host_Id;
                    Port : Socket.Port_Num) return String is
-  begin
-    return Image (Host) & Sep & Image (Port);
-  end Image;
+    (Image (Host) & Sep & Image (Port));
 
 
   -- Resolve a remote Host or LAN

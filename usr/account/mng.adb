@@ -772,10 +772,7 @@ package body Mng is
   end Show_All;
 
   -- Get data
-  function Is_Saved return Boolean is
-  begin
-    return Account_Saved;
-  end Is_Saved;
+  function Is_Saved return Boolean is (Account_Saved);
 
 end Mng;
 

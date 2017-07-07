@@ -11,9 +11,7 @@ package body Scrambler_Gen is
     -- String image
     Offset : constant := Character'Pos('A') - 1;
     function To_Letter (Id : Id_Range) return Character is
-    begin
-      return Character'Val(Id + Offset);
-    end To_Letter;
+      (Character'Val(Id + Offset));
 
     -- Array of assigned letters
     Map : array (Id_Range) of Id_Range;

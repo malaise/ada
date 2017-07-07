@@ -3,44 +3,29 @@ package body Ada_Words is
 
   -- Ada separators
   function Is_Separator (C : Character) return Boolean is
-  begin
-    return C = ' ' or else C = Ada.Characters.Latin_1.Ht
-                   or else C = Ada.Characters.Latin_1.Lf;
-  end Is_Separator;
+    (C = ' ' or else C = Ada.Characters.Latin_1.Ht
+             or else C = Ada.Characters.Latin_1.Lf);
 
   -- Ada delimiters
   function Is_Delimiter (C : Character) return Boolean is
-  begin
-    case C is
-      when '&' | ''' | '(' | ')' | '*' | '+' | ',' | '-' | '.' |
-           '/' | ':' | ';' | '<' | '=' | '>' | '|' =>
-        return True;
-      when others =>
-        return False;
-    end case;
-  end Is_Delimiter;
+    (case C is
+       when '&' | ''' | '(' | ')' | '*' | '+' | ',' | '-' | '.' |
+            '/' | ':' | ';' | '<' | '=' | '>' | '|' => True,
+       when others => False);
 
   -------------------------------------------------------------
 
   function Is_Upper_Letter (C : Character) return Boolean is
-  begin
-    return C in 'A' .. 'Z';
-  end Is_Upper_Letter;
+    (C in 'A' .. 'Z');
 
   function Is_Lower_Letter (C : Character) return Boolean is
-  begin
-    return C in 'a' .. 'z';
-  end Is_Lower_Letter;
+    (C in 'a' .. 'z');
 
   function Is_Digit (C : Character) return Boolean is
-  begin
-    return C in '0' .. '9';
-  end Is_Digit;
+    (C in '0' .. '9');
 
   function Is_Letter (C : Character) return Boolean is
-  begin
-    return Is_Lower_Letter (C) or else Is_Upper_Letter (C);
-  end Is_Letter;
+    (Is_Lower_Letter (C) or else Is_Upper_Letter (C));
 
 
   -- Is Word a valid identifier

@@ -20,9 +20,7 @@ package body Hashed_List.Unique is
 
   function Search (List : in out Unique_List_Type;
                    Crit : in Element_Type) return Boolean is
-  begin
-    return Search_First (List_Type (List), Crit);
-  end Search;
+    (Search_First (List_Type (List), Crit));
 
   procedure Find (List : in out Unique_List_Type;
                   Crit : in Element_Type) is

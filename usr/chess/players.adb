@@ -171,18 +171,14 @@ package body Players is
 
   -- Check an action exists the the list
   function Same (Action, Ref : Valid_Action_Rec) return Boolean is
-  begin
-    return Action = Ref;
-  end Same;
+    (Action = Ref);
 
   function Search_Same_Action is new Action_List_Mng.Search (Same);
 
   function Action_Exists (Color : Space.Color_List;
                           Action : Valid_Action_Rec) return Boolean is
-  begin
-    return Search_Same_Action (Actions(Color), Action,
-                               From => Action_List_Mng.Absolute);
-  end Action_Exists;
+    (Search_Same_Action (Actions(Color), Action,
+                         From => Action_List_Mng.Absolute));
 
 end Players;
 

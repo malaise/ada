@@ -265,15 +265,10 @@ procedure Renardeau is
 
   -- Compute complexity of a cell
   function Compute_Complexity (Current : Cell_Access) return Natural is
-  begin
-    if Current = null then
-      return 0;
-    else
-      return Compute_Complexity (Current.Left) * 10
-           + Compute_Complexity (Current.Right) * 10
-           + 1;
-    end if;
-  end Compute_Complexity;
+    (if Current = null then 0
+     else Compute_Complexity (Current.Left) * 10
+        + Compute_Complexity (Current.Right) * 10
+        + 1);
 
   -- Inputs
   Bases : Bases_Array;

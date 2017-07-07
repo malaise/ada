@@ -144,10 +144,7 @@ package body Output_Flows is
   end Release;
 
   -- Is a flow set
-  function Is_Set (Flow : Output_Flow) return Boolean is
-  begin
-    return Flow.Handle.Is_Set;
-  end Is_Set;
+  function Is_Set (Flow : Output_Flow) return Boolean is (Flow.Handle.Is_Set);
 
   -- Get the name of a flow
   function Get_Name (Flow : Output_Flow) return String is

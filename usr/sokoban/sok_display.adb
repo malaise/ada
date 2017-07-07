@@ -66,10 +66,7 @@ package body Sok_Display is
       raise;
   end Init;
 
-  function Get_Console return Con_Io.Console is
-  begin
-    return Console;
-  end Get_Console;
+  function Get_Console return Con_Io.Console is (Console);
 
   procedure Put_Help (Help : in Action_List) is
   begin

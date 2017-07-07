@@ -3,10 +3,7 @@ with As.U, Socket, Environ, Images, Hashed_List.Unique, Computer, Aski;
 package body Rules is
 
   -- Image of current time
-  function Get_Time return String is
-  begin
-    return Images.Date_Image (Ada.Calendar.Clock);
-  end Get_Time;
+  function Get_Time return String is (Images.Date_Image (Ada.Calendar.Clock));
 
   -- Unique list of rules
   type Rule is record
@@ -22,10 +19,7 @@ package body Rules is
   begin
    return Current.Name = Criteria.Name;
   end "=";
-  function Key_Image (Element : Rule) return String is
-  begin
-    return Element.Name.Image;
-  end Key_Image;
+  function Key_Image (Element : Rule) return String is (Element.Name.Image);
   package Rules_List_Mng is new Hashed_List (Rule, Rule_Access,
                                              Set, "=", Key_Image);
   package Unique_Rules_Mng is new Rules_List_Mng.Unique;

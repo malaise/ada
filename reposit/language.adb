@@ -54,53 +54,33 @@ package body Language is
 
   -- Utf_8.Nb_Char or 1
   function Nb_Chars (Char : Character) return Positive is
-  begin
-    return (if Get_Language /= Lang_Utf_8 then 1
-            else Utf_8.Nb_Chars (Char));
-  end Nb_Chars;
+    (if Get_Language /= Lang_Utf_8 then 1
+     else Utf_8.Nb_Chars (Char));
 
   -- Raw translation from Wide_Character to and from Character
   function Is_Char (W : Wide_Character) return Boolean is
-  begin
-    return W <= Wide_Last_Char;
-  end Is_Char;
+    (W <= Wide_Last_Char);
   function Is_Char (U : Unicode_Number) return Boolean is
-  begin
-    return U <= Unicode_Last_Char;
-  end Is_Char;
+    (U <= Unicode_Last_Char);
   function Is_Wide (U : Unicode_Number) return Boolean is
-  begin
-    return U <= Unicode_Last_Wide;
-  end Is_Wide;
+    (U <= Unicode_Last_Wide);
 
   function Char_To_Wide (C : Character) return Wide_Character is
-  begin
-    return Wide_Character'Val (Character'Pos (C));
-  end Char_To_Wide;
+    (Wide_Character'Val (Character'Pos (C)));
   function Char_To_Unicode (C : Character) return Unicode_Number is
-  begin
-    return Character'Pos (C);
-  end Char_To_Unicode;
+    (Character'Pos (C));
   function Wide_To_Unicode (W : Wide_Character) return Unicode_Number is
-  begin
-    return Wide_Character'Pos (W);
-  end Wide_To_Unicode;
+    (Wide_Character'Pos (W));
 
   function Wide_To_Char (W : Wide_Character) return Character is
-  begin
-    return (if W <= Wide_Last_Char then Character'Val (Wide_Character'Pos (W))
-            else Default_Char);
-  end Wide_To_Char;
+    (if W <= Wide_Last_Char then Character'Val (Wide_Character'Pos (W))
+     else Default_Char);
   function Unicode_To_Char (U : Unicode_Number) return Character is
-  begin
-    return (if U <= Unicode_Last_Char then Character'Val (U)
-            else Default_Char);
-  end Unicode_To_Char;
+    (if U <= Unicode_Last_Char then Character'Val (U)
+     else Default_Char);
   function Unicode_To_Wide (U : Unicode_Number) return Wide_Character is
-  begin
-    return (if U <= Unicode_Last_Wide then Wide_Character'Val (U)
-            else Char_To_Wide (Default_Char));
-  end Unicode_To_Wide;
+    (if U <= Unicode_Last_Wide then Wide_Character'Val (U)
+     else Char_To_Wide (Default_Char));
 
   function Copy (W : Wide_String) return String is
     S : String (W'Range);
@@ -176,13 +156,9 @@ package body Language is
   end Wide_To_String;
 
   function "&" (Left : String; Right : Wide_String) return String is
-  begin
-    return Left & Wide_To_String (Right);
-  end "&";
+    (Left & Wide_To_String (Right));
   function "&" (Left : Wide_String; Right : String) return String is
-  begin
-    return Wide_To_String (Left) & Right;
-  end "&";
+    (Wide_To_String (Left) & Right);
 
   function String_To_Wide (Str : String) return Wide_String is
     Ws : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
@@ -226,21 +202,13 @@ package body Language is
   end String_To_Wide;
 
   function "&" (Left : String; Right : Wide_String) return Wide_String is
-  begin
-    return String_To_Wide (Left) & Right;
-  end "&";
+    (String_To_Wide (Left) & Right);
   function "&" (Left : Wide_String; Right : String) return Wide_String is
-  begin
-    return Left & String_To_Wide (Right);
-  end "&";
+    (Left & String_To_Wide (Right));
   function "=" (Left : String; Right : Wide_String) return Boolean is
-  begin
-    return String_To_Wide (Left) = Right;
-  end "=";
+    (String_To_Wide (Left) = Right);
   function "=" (Left : Wide_String; Right : String) return Boolean is
-  begin
-    return Left = String_To_Wide (Right);
-  end "=";
+    (Left = String_To_Wide (Right));
 
   -- Conversion to and from unicode sequence according to language
   function Unicode_To_String (Str : Unicode_Sequence) return String is
@@ -267,13 +235,9 @@ package body Language is
   end Unicode_To_String;
 
   function "&" (Left : String; Right : Unicode_Sequence) return String is
-  begin
-    return Left & Unicode_To_String (Right);
-  end "&";
+    (Left & Unicode_To_String (Right));
   function "&" (Left : Unicode_Sequence; Right : String) return String is
-  begin
-    return Unicode_To_String (Left) & Right;
-  end "&";
+    (Unicode_To_String (Left) & Right);
 
   package Unbounded_Unicode is new Unbounded_Arrays (Unicode_Number,
                                                      Unicode_Sequence);

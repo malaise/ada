@@ -20,9 +20,7 @@ procedure T_Utf is
   end Error;
 
   function Get_Value (Str : String) return Natural is
-  begin
-    return Gets.Get_Int ("16#" & Str & "#");
-  end Get_Value;
+    (Gets.Get_Int ("16#" & Str & "#"));
 
   procedure Put (Str : in String) renames Basic_Proc.Put_Output;
   procedure Put (N : in Natural; Width : in Positive) is

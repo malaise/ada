@@ -25,7 +25,7 @@ package body Nav_Format is
 
   -- from angle to string
   function Imag (Angle : Nav_Types.T_Angle; Set : Boolean := True)
-   return String is
+                return String is
     Str_Unset : constant String := "      ";
     Str : String (1 .. Str_Unset'Last);
   begin
@@ -41,7 +41,7 @@ package body Nav_Format is
 
   -- from drift to string
   function Imag (Drift : Nav_Types.T_Drift; Set : Boolean := True)
-   return String is
+                return String is
     Str_Unset : constant String := "       ";
     Str : String (1 .. Str_Unset'Last);
   begin
@@ -61,9 +61,7 @@ package body Nav_Format is
   end Imag;
 
   function Is_Digit (C : Character) return Boolean is
-  begin
-    return C >= '0' and then C <= '9';
-  end Is_Digit;
+    (C >= '0' and then C <= '9');
 
 
   -- to check generaly the string:

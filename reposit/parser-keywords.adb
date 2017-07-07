@@ -10,10 +10,7 @@ package body Parser.Keywords is
   begin
     return Current.Keyword = Criteria.Keyword;
   end "=";
-  function Image (Cell : Cell_Type) return String is
-  begin
-    return Cell.Keyword.Image;
-  end Image;
+  function Image (Cell : Cell_Type) return String is (Cell.Keyword.Image);
 
 
   -- Add a keyword

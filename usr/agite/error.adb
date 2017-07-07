@@ -8,10 +8,7 @@ procedure Error (Action, Target, Text : in String) is
   Af_Line : Afpx.Line_Rec;
 
   -- To split text
-  function Is_Lf (C : Character) return Boolean is
-  begin
-    return C = Aski.Lf_C;
-  end Is_Lf;
+  function Is_Lf (C : Character) return Boolean is (C = Aski.Lf_C);
   Line_Iter, Word_Iter : Parser.Iterator;
   Line : As.U.Asu_Us;
   Texts : As.U.Utils.Asu_Ua.Unb_Array;

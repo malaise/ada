@@ -20,10 +20,8 @@ package body Hexa_Utils is
   -- Convert an hexadecimal digit into the corresponding character
   -- Lower case
   function Hexa_To_Char (H : Hexa_Digit) return Character is
-  begin
-    return (if H < 10 then Character'Val (Character'Pos('0') + H)
-            else Character'Val (Character'Pos('a') + H - 10));
-  end Hexa_To_Char;
+    (if H < 10 then Character'Val (Character'Pos('0') + H)
+     else Character'Val (Character'Pos('a') + H - 10));
 
   -- Image in hexadecimal of an integer
   -- Lower case, no leading space

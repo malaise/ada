@@ -2,7 +2,6 @@ separate (Sok_Manager)
 
 function Sok_Menu (Done : Boolean) return Menu_Result_List is
 
-
   Cur_Action : Sok_Display.Menu_Action_List := Sok_Display.Reset;
   Prev_Click, Curr_Click : Sok_Display.Got_Action_List := Sok_Display.Done;
   Key : Sok_Input.Key_List;

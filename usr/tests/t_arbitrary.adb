@@ -26,25 +26,14 @@ procedure T_Arbitrary is
 
   Max : constant Positive
       := Positive(My_Math.Sqrt (My_Math.Real(Integer'Last))) - 2;
-  function Random return Integer is
-  begin
-    return Rnd.Gen.Int_Random (-Max, Max);
-  end Random;
+  function Random return Integer is (Rnd.Gen.Int_Random (-Max, Max));
 
   function Image (I : Integer) return String is
-  begin
-    if I < 0 then
-      return Images.Integer_Image (I);
-    else
-      -- Add the '+'
-      return '+' & Images.Integer_Image (I);
-    end if;
-  end Image;
+    (if I < 0 then Images.Integer_Image (I)
+     -- Add the '+'
+     else '+' & Images.Integer_Image (I));
 
-  function Image (B : Boolean) return String is
-  begin
-   return Mixed_Str (B'Img);
-  end Image;
+  function Image (B : Boolean) return String is (Mixed_Str (B'Img));
 
   procedure Check (
            A : in Arbitrary.Number;

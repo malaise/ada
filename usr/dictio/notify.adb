@@ -11,10 +11,7 @@ package body Notify is
   package Notif_List_Mng renames Notif_Dyn_List_Mng.Dyn_List;
   Notif_List : Notif_List_Mng.List_Type;
 
-  function Full_Match (Elt1, Elt2 : Notif_Rec) return Boolean is
-  begin
-    return Elt1 = Elt2;
-  end Full_Match;
+  function Full_Match (Elt1, Elt2 : Notif_Rec) return Boolean is (Elt1 = Elt2);
   function Full_Search is new Notif_List_Mng.Search (Full_Match);
 
   function Client_Match (Elt1, Elt2 : Notif_Rec) return Boolean is

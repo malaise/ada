@@ -9,10 +9,7 @@ package body Reg_Exp is
     Stop_Offset  : C_Offset_Range;
   end record;
   type C_Match_Array is array (Natural range <>) of C_Match_Cell;
-  function String4C (Str : String) return String is
-  begin
-    return Str & Aski.Nul;
-  end String4C;
+  function String4C (Str : String) return String is (Str & Aski.Nul);
 
   -- Flags defined in C (those in coment are not used)
   C_Icase    : constant Integer := 16#0001#;
@@ -178,10 +175,8 @@ package body Reg_Exp is
 
   -- Check that a Match_Cell can be used to extract matching (sub) string
   function Valid_Match (Cell : Match_Cell) return Boolean is
-  begin
-    return Cell.First_Offset /= 0
-           and then Cell.Last_Offset_Stop >= Cell.First_Offset;
-  end Valid_Match;
+    (Cell.First_Offset /= 0
+     and then Cell.Last_Offset_Stop >= Cell.First_Offset);
 
   -- Check that a Match_Cell or Match_Array (returned by Exec or Match)
   --  matches strictly the string Str
@@ -192,21 +187,14 @@ package body Reg_Exp is
   --  strictly matches "" but is not valid)
   function Strict_Match (To_Check : String; Cell : Match_Cell)
            return Boolean is
-  begin
-    return Cell /= No_Match
-           and then Cell.First_Offset = To_Check'First
-           and then Cell.Last_Offset_Stop = To_Check'Last;
-  end Strict_Match;
+    (Cell /= No_Match
+     and then Cell.First_Offset = To_Check'First
+     and then Cell.Last_Offset_Stop = To_Check'Last);
 
   function Strict_Match (To_Check : String; Cells : Match_Array)
            return Boolean is
-  begin
-    if Cells'Length = 0 then
-      return False;
-    else
-      return Strict_Match (To_Check, Cells(Cells'First));
-    end if;
-  end Strict_Match;
+    (if Cells'Length = 0 then False
+     else Strict_Match (To_Check, Cells(Cells'First)));
 
   -- Exec regex
   procedure Exec (Compiled : in Compiled_Pattern;

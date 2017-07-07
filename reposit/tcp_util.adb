@@ -49,9 +49,7 @@ package body Tcp_Util is
 
   -- Search Connecting_Rec by Host, Port
   function Dest_Match (R1, R2 : Connecting_Rec) return Boolean is
-  begin
-    return R1.Host = R2.Host and then R1.Port = R2.Port;
-  end Dest_Match;
+    (R1.Host = R2.Host and then R1.Port = R2.Port);
   function Find_By_Dest is new Con_List_Mng.Search (Dest_Match);
 
   -- Search Connecting_Rec by Fd

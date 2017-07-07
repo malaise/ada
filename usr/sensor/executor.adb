@@ -98,10 +98,7 @@ package body Executor is
   end Init;
 
   -- Has exit been requested
-  function Exit_Requested return Boolean is
-  begin
-    return Do_Exit;
-  end Exit_Requested;
+  function Exit_Requested return Boolean is (Do_Exit);
 
 end Executor;
 

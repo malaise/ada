@@ -6,10 +6,7 @@ package body Xref is
   Dscr_Num : constant String := "Dscr_Num";
   -- When an identifier is redefined, get line of previous definition
   Prev_Line_No : Natural := 0;
-  function Prev_Name_Line return Natural is
-  begin
-    return Prev_Line_No;
-  end Prev_Name_Line;
+  function Prev_Name_Line return Natural is (Prev_Line_No);
 
 
   procedure Check_Identifier (Name : in String) is

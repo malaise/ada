@@ -109,24 +109,18 @@ package body Rnd is
   function Discr_Random (Agen : in out Generator;
                          Mini : in Num := Num'First; Maxi : in Num := Num'Last)
            return Num is
-  begin
-    return
-      Num'Val (
-        To_Long_Long (
-          Random (Agen, Float (Num'Pos (Mini)), Float (Num'Pos (Maxi)) + 1.0)
-        )
-      );
-  end Discr_Random;
+    (Num'Val (
+       To_Long_Long (
+         Random (Agen, Float (Num'Pos (Mini)), Float (Num'Pos (Maxi)) + 1.0)
+       )
+    ));
 
   function Int_Random (Agen : in out Generator;
                        Mini : Integer := 0; Maxi : Integer := 1)
            return Integer is
-  begin
-    return
-      Integer (
-       To_Long_Long (Random (Agen, Float (Mini), Float (Maxi) + 1.0) )
-      );
-  end Int_Random;
+    (Integer (
+      To_Long_Long (Random (Agen, Float (Mini), Float (Maxi) + 1.0) )
+    ));
 
   function Mod_Random (Agen : in out Generator;
                        Mini : in Modulus := Modulus'First;
@@ -150,18 +144,12 @@ package body Rnd is
   function Float_Random (Agen : in out Generator;
                          Mini : in Float := 0.0; Maxi : in Float := 1.0)
            return Float is
-  begin
-    return
-      Random (Agen, Mini, Maxi);
-  end Float_Random;
+    (Random (Agen, Mini, Maxi));
 
   function Dur_Random (Agen : in out Generator;
                        Mini : in Duration := 0.0; Maxi : in Duration := 1.0)
            return Duration is
-  begin
-    return
-      Duration (Random (Agen, Float(Mini), Float(Maxi) ) );
-  end Dur_Random;
+    (Duration (Random (Agen, Float(Mini), Float(Maxi) ) ));
 
 end Rnd;
 

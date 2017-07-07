@@ -13,28 +13,20 @@ package body Operations is
   end Is_True;
 
   function Is_Arbi_Or_Inte_Or_Real (X : Item_Rec) return Boolean is
-  begin
-    return X.Kind = Arbi or else X.Kind = Inte or else X.Kind = Real;
-  end Is_Arbi_Or_Inte_Or_Real;
+    (X.Kind = Arbi or else X.Kind = Inte or else X.Kind = Real);
 
   function Is_Arbi_Or_Frac_Or_Inte_Or_Real (X : Item_Rec) return Boolean is
-  begin
-    return X.Kind = Arbi or else X.Kind = Frac
-   or else X.Kind = Inte or else X.Kind = Real;
-  end Is_Arbi_Or_Frac_Or_Inte_Or_Real;
+    (X.Kind = Arbi or else X.Kind = Frac
+     or else X.Kind = Inte or else X.Kind = Real);
 
   function Is_Arbi_Or_Inte (X : Item_Rec) return Boolean is
-  begin
-    return X.Kind = Arbi or else X.Kind = Inte;
-  end Is_Arbi_Or_Inte;
+    (X.Kind = Arbi or else X.Kind = Inte);
 
   function Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi
     (X : Item_Rec) return Boolean is
-  begin
-    return X.Kind = Arbi or else X.Kind = Frac
-   or else X.Kind = Inte or else X.Kind = Real
-   or else X.Kind = Bool or else X.Kind = Chrs or else X.Kind = Regi;
-  end Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi;
+    (X.Kind = Arbi or else X.Kind = Frac
+     or else X.Kind = Inte or else X.Kind = Real
+     or else X.Kind = Bool or else X.Kind = Chrs or else X.Kind = Regi);
 
   -- Arbi,Arbi->Arbi or Frac,Frac->Frac or Inte,Inte->Inte or Real,Real->Real
   function Add     (L, R : Item_Rec) return Item_Rec is
@@ -740,14 +732,10 @@ package body Operations is
   end Frac;
 
   function Maxint return Item_Rec is
-  begin
-    return (Kind => Inte, Val_Inte => My_Math.Inte'Last);
-  end Maxint;
+    ( (Kind => Inte, Val_Inte => My_Math.Inte'Last) );
 
   function Minint return Item_Rec is
-  begin
-    return (Kind => Inte, Val_Inte => My_Math.Inte'First);
-  end Minint;
+    ( (Kind => Inte, Val_Inte => My_Math.Inte'First) );
 
   -- Inte,Real->Inte or Real
   function Roundif (X : Item_Rec) return Item_Rec is
@@ -863,44 +851,28 @@ package body Operations is
 
   -- *->Bool
   function Isarbi  (X : Item_Rec) return Item_Rec is
-  begin
-    return (Kind => Bool, Val_Bool => X.Kind = Arbi);
-  end Isarbi;
+    ( (Kind => Bool, Val_Bool => X.Kind = Arbi) );
 
   function Isfrac  (X : Item_Rec) return Item_Rec is
-  begin
-    return (Kind => Bool, Val_Bool => X.Kind = Frac);
-  end Isfrac;
+    ( (Kind => Bool, Val_Bool => X.Kind = Frac) );
 
   function Isinte  (X : Item_Rec) return Item_Rec is
-  begin
-    return (Kind => Bool, Val_Bool => X.Kind = Inte);
-  end Isinte;
+    ( (Kind => Bool, Val_Bool => X.Kind = Inte) );
 
   function Isreal  (X : Item_Rec) return Item_Rec is
-  begin
-    return (Kind => Bool, Val_Bool => X.Kind = Real);
-  end Isreal;
+    ( (Kind => Bool, Val_Bool => X.Kind = Real) );
 
   function Isbool  (X : Item_Rec) return Item_Rec is
-  begin
-    return (Kind => Bool, Val_Bool => X.Kind = Bool);
-  end Isbool;
+    ( (Kind => Bool, Val_Bool => X.Kind = Bool) );
 
   function Isstr  (X : Item_Rec) return Item_Rec is
-  begin
-    return (Kind => Bool, Val_Bool => X.Kind = Chrs);
-  end Isstr;
+    ( (Kind => Bool, Val_Bool => X.Kind = Chrs) );
 
   function Isreg  (X : Item_Rec) return Item_Rec is
-  begin
-    return (Kind => Bool, Val_Bool => X.Kind = Regi);
-  end Isreg;
+    ( (Kind => Bool, Val_Bool => X.Kind = Regi) );
 
   function Isprog  (X : Item_Rec) return Item_Rec is
-  begin
-    return (Kind => Bool, Val_Bool => X.Kind = Prog);
-  end Isprog;
+    ( (Kind => Bool, Val_Bool => X.Kind = Prog) );
 
   -- Arbi->Bool or Inte->Bool or Real->Bool
   function Ispos  (X : Item_Rec) return Item_Rec is
@@ -1006,7 +978,6 @@ package body Operations is
     when others =>
       raise Compute_Error;
   end Bolxor;
-
 
   -- Bool->Bool
   function Bolneg  (X : Item_Rec) return Item_Rec is

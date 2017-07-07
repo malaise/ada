@@ -105,10 +105,7 @@ package body Text_Line is
   end Close_All;
 
   -- Returns if a file is open
-  function Is_Open (File : File_Type) return Boolean is
-  begin
-    return File.Opened;
-  end Is_Open;
+  function Is_Open (File : File_Type) return Boolean is (File.Opened);
 
   -- Returns the associated file desc
   -- May raise Status_Error if File is not open
@@ -149,10 +146,7 @@ package body Text_Line is
   --  the end of file has been reached.
   -- May raise Status_Error if File is not open of Out_File
   -- May raise Read_Error if IO error
-  function Get (File : in out File_Type) return String is
-  begin
-    return Get (File).Image;
-  end Get;
+  function Get (File : in out File_Type) return String is (Get (File).Image);
 
   -- Internal procedure that reads a buffer (or up to end of file)
   procedure Read (File : in out File_Type; Done : out Boolean) is

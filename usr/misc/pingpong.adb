@@ -111,15 +111,11 @@ procedure Pingpong is
     To := Val;
   end Set;
   function "=" (Current : Info_Type; Criteria : Info_Type) return Boolean is
-  begin
-    return Current.Host.Host_Name_Len = Criteria.Host.Host_Name_Len
-    and then Current.Host.Host_Name(1 .. Current.Host.Host_Name_Len)
-           = Criteria.Host.Host_Name(1 .. Criteria.Host.Host_Name_Len);
-  end "=";
+    (Current.Host.Host_Name_Len = Criteria.Host.Host_Name_Len
+     and then Current.Host.Host_Name(1 .. Current.Host.Host_Name_Len)
+            = Criteria.Host.Host_Name(1 .. Criteria.Host.Host_Name_Len));
   function Key_Image (Element : Info_Type) return String is
-  begin
-    return Element.Host.Host_Name(1 .. Element.Host.Host_Name_Len);
-  end Key_Image;
+    (Element.Host.Host_Name(1 .. Element.Host.Host_Name_Len));
   package H_Info_List_Mng is new Hashed_List (Info_Type, Info_Access, Set,
                                             "=", Key_Image);
   package Info_List_Mng is new H_Info_List_Mng.Unique;

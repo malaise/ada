@@ -125,10 +125,8 @@ package body Menu2 is
 
   package body Curve_Data is
     function Curve_F_X (X : Points.P_T_Coordinate)
-                    return Points.P_T_Coordinate is
-    begin
-      return F_X (X, The_Solution(1 .. The_Degree + 1));
-    end Curve_F_X;
+                       return Points.P_T_Coordinate is
+      (F_X (X, The_Solution(1 .. The_Degree + 1)));
     procedure My_Draw is new Curve.Draw (Curve_F_X);
     procedure Curve_Draw (Boundaries : in Curve.T_Boundaries;
                           Points : in Curve.T_The_Points) is

@@ -55,9 +55,7 @@ package body Text is
   end Intro;
 
   function Row_Image (Row : Common.Row_Range) return Character is
-  begin
-    return Character'Val (Character'Pos ('A') + Row - 1);
-  end Row_Image;
+    (Character'Val (Character'Pos ('A') + Row - 1));
 
   procedure Put_Title is
     Scores : constant Common.Score_Array := Common.Get_Scores;

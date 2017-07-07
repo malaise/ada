@@ -48,10 +48,7 @@ package body Scanner is
   end Dscr_Of;
 
   -- Is a char a digit
-  function Is_Digit (Char : Character) return Boolean is
-  begin
-    return Char in '0' .. '9';
-  end Is_Digit;
+  function Is_Digit (Char : Character) return Boolean is (Char in '0' .. '9');
 
   -- Scan length of a type, update index to point to next char (the type)
   function Get_Length (Format : in String; Ind : in out Positive)

@@ -9,20 +9,9 @@ package body Common is
 
 
   -- Line feed string
-  function Line_Feed return As.U.Asu_Us is
-  begin
-    return Lfu;
-  end Line_Feed;
-
-  function Line_Feed return String is
-  begin
-    return Lfs;
-  end Line_Feed;
-
-  function Line_Feed return Character is
-  begin
-    return Lfc;
-  end Line_Feed;
+  function Line_Feed return As.U.Asu_Us is (Lfu);
+  function Line_Feed return String      is (Lfs);
+  function Line_Feed return Character   is (Lfc);
 
   -- Put error message on stderr and raises Syntax_Error
   procedure Error (Msg : in String) is

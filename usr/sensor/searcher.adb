@@ -26,9 +26,7 @@ package body Searcher is
 
   -- from a Time_Rec to a Calendar.Time
   function Time_Of (Date : Date_Text.Date_Rec) return Ada.Calendar.Time is
-  begin
-    return Date_Text.Pack (Date);
-  end Time_Of;
+    (Date_Text.Pack (Date));
 
   -- Search the Pattern in the Tail last lines of File
   -- Clear and set the list to the matching lines

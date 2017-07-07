@@ -11,10 +11,7 @@ package body File_Hash is
   begin
     return Current.Txt = Criteria.Txt;
   end "=";
-  function Key_Image (Element : Line_Rec) return String is
-  begin
-    return Element.Txt.Image;
-  end Key_Image;
+  function Key_Image (Element : Line_Rec) return String is (Element.Txt.Image);
 
   -- The goal is to store the hash of the line (0 to FFF) and a reasonable
   --  length of the line (x?) in *FFF.

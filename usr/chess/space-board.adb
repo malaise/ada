@@ -120,15 +120,10 @@ package body Space.Board is
 
   -- Null if empty
   function Piece_At (Square : Square_Coordinate) return Pieces.Piece_Access is
-  begin
-    return The_Board(Square.Col, Square.Row);
-  end Piece_At;
+    (The_Board(Square.Col, Square.Row));
 
   function Orig_Piece_Id_At (Square : Square_Coordinate)
-           return Orig_Piece_Id is
-  begin
-    return Initial_Board(Square.Col, Square.Row);
-  end Orig_Piece_Id_At;
+           return Orig_Piece_Id is (Initial_Board(Square.Col, Square.Row));
 
   procedure What_Is_At (Square : in Square_Coordinate;
                         Col_Offset, Row_Offset : in Movement_Range;

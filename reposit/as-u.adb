@@ -44,9 +44,7 @@ package body As.U is
 
   -- Size computed to Add to Length
   function New_Size (Length : Natural; Add : Positive) return Positive is
-  begin
-    return Length + Add + Growth_Offset + Length / Growth_Factor;
-  end New_Size;
+    (Length + Add + Growth_Offset + Length / Growth_Factor);
 
   -- Store Item in Unbounded array, re-alloc if necessary
   procedure Store (Within : in out Asu_Us;
@@ -108,15 +106,9 @@ package body As.U is
     Target.Last := 0;
   end Set_Null;
 
-  function Is_Null (Source : Asu_Us) return Boolean is
-  begin
-    return Source = Asu_Null;
-  end Is_Null;
+  function Is_Null (Source : Asu_Us) return Boolean is (Source = Asu_Null);
 
-  function Length (Source : Asu_Us) return Natural is
-  begin
-    return Source.Last;
-  end Length;
+  function Length (Source : Asu_Us) return Natural is (Source.Last);
 
   function Tus (Str : String) return Asu_Us is
     Res : Asu_Us;
@@ -139,10 +131,7 @@ package body As.U is
     return Res;
   end Tus;
 
-  function Image (Str : Asu_Us) return String is
-  begin
-    return Str.Ref (1 .. Str.Last);
-  end Image;
+  function Image (Str : Asu_Us) return String is (Str.Ref (1 .. Str.Last));
 
   procedure Set (Target : out Asu_Us; Val : in Asu_Us) is
   begin
@@ -284,69 +273,39 @@ package body As.U is
   end Replace_Element;
 
   function "="  (Left, Right : Asu_Us) return Boolean is
-  begin
-    return Left.Ref.all(1 .. Left.Last) = Right.Ref.all(1 .. Right.Last);
-  end "=";
+    (Left.Ref.all(1 .. Left.Last) = Right.Ref.all(1 .. Right.Last));
   function "="  (Left : Asu_Us; Right : String) return Boolean is
-  begin
-    return Left.Ref.all(1 .. Left.Last) = Right;
-  end "=";
+    (Left.Ref.all(1 .. Left.Last) = Right);
   function "="  (Left : String; Right : Asu_Us) return Boolean is
-  begin
-    return Left = Right.Ref.all(1 .. Right.Last);
-  end "=";
+    (Left = Right.Ref.all(1 .. Right.Last));
 
   function "<"  (Left, Right : Asu_Us) return Boolean is
-  begin
-    return Left.Ref.all(1 .. Left.Last) < Right.Ref.all(1 .. Right.Last);
-  end "<";
+    (Left.Ref.all(1 .. Left.Last) < Right.Ref.all(1 .. Right.Last));
   function "<"  (Left : Asu_Us; Right : String) return Boolean is
-  begin
-    return Left.Ref.all(1 .. Left.Last) < Right;
-  end "<";
+    (Left.Ref.all(1 .. Left.Last) < Right);
   function "<"  (Left : String; Right : Asu_Us) return Boolean is
-  begin
-    return Left < Right.Ref.all(1 .. Right.Last);
-  end "<";
+    (Left < Right.Ref.all(1 .. Right.Last));
 
   function "<=" (Left, Right : Asu_Us) return Boolean is
-  begin
-    return Left.Ref.all(1 .. Left.Last) <= Right.Ref.all(1 .. Right.Last);
-  end "<=";
+    (Left.Ref.all(1 .. Left.Last) <= Right.Ref.all(1 .. Right.Last));
   function "<=" (Left : Asu_Us; Right : String) return Boolean is
-  begin
-    return Left.Ref.all(1 .. Left.Last) <= Right;
-  end "<=";
+    (Left.Ref.all(1 .. Left.Last) <= Right);
   function "<=" (Left : String; Right : Asu_Us) return Boolean is
-  begin
-    return Left <= Right.Ref.all(1 .. Right.Last);
-  end "<=";
+    (Left <= Right.Ref.all(1 .. Right.Last));
 
   function ">"  (Left, Right : Asu_Us) return Boolean is
-  begin
-    return Left.Ref.all(1 .. Left.Last) > Right.Ref.all(1 .. Right.Last);
-  end ">";
+    (Left.Ref.all(1 .. Left.Last) > Right.Ref.all(1 .. Right.Last));
   function ">"  (Left : Asu_Us; Right : String) return Boolean is
-  begin
-    return Left.Ref.all(1 .. Left.Last) > Right;
-  end ">";
+    (Left.Ref.all(1 .. Left.Last) > Right);
   function ">"  (Left : String; Right : Asu_Us) return Boolean is
-  begin
-    return Left > Right.Ref.all(1 .. Right.Last);
-  end ">";
+    (Left > Right.Ref.all(1 .. Right.Last));
 
   function ">=" (Left, Right : Asu_Us) return Boolean is
-  begin
-    return Left.Ref.all(1 .. Left.Last) >= Right.Ref.all(1 .. Right.Last);
-  end ">=";
+    (Left.Ref.all(1 .. Left.Last) >= Right.Ref.all(1 .. Right.Last));
   function ">=" (Left : Asu_Us; Right : String) return Boolean is
-  begin
-    return Left.Ref.all(1 .. Left.Last) >= Right;
-  end ">=";
+    (Left.Ref.all(1 .. Left.Last) >= Right);
   function ">=" (Left : String; Right : Asu_Us) return Boolean is
-  begin
-    return Left >= Right.Ref.all(1 .. Right.Last);
-  end ">=";
+    (Left >= Right.Ref.all(1 .. Right.Last));
 
   function Locate (Within     : Asu_Us;
                    Fragment   : String;

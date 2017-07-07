@@ -13,16 +13,11 @@ package body Str_Util.Navigator is
 
   -- Length
   function Length (Navig : Navigator_Type) return Natural is
-  begin
-    return Navig.Str.Length;
-  end Length;
+    (Navig.Str.Length);
 
   -- Current position. Index is relative to the string
   -- (Str'First at the beginning)
-  function Position (Navig : Navigator_Type) return Integer is
-  begin
-    return Navig.Current;
-  end Position;
+  function Position (Navig : Navigator_Type) return Integer is (Navig.Current);
 
    -- Is a position within bounds
   function In_Bounds (Navig : Navigator_Type;
@@ -67,9 +62,7 @@ package body Str_Util.Navigator is
   end Set_No_Char;
 
   function Get_No_Char (Navig : Navigator_Type) return Character is
-  begin
-    return Navig.No_Char;
-  end Get_No_Char;
+    (Navig.No_Char);
 
 
   -- Lookup a character
@@ -94,10 +87,7 @@ package body Str_Util.Navigator is
   end Lookup;
 
   -- Return the String (from 1 to Length) stored in the Navigator
-  function Image (Navig  : Navigator_Type) return String is
-  begin
-    return Navig.Str.Image;
-  end Image;
+  function Image (Navig  : Navigator_Type) return String is (Navig.Str.Image);
 
 end Str_Util.Navigator;
 

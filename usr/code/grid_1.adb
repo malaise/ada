@@ -10,15 +10,9 @@ package body Grid_1 is
 
   -- Return a valid character for text
   function Filter (C : Character) return Character is
-  begin
-    if (C >= ' ' and then C <= '~') or else C = Aski.Lf then
-      return C;
-    elsif C = Aski.Ht then
-      return ' ';
-    else
-      return Aski.Nul;
-    end if;
-  end Filter;
+    (if (C >= ' ' and then C <= '~') or else C = Aski.Lf then C
+     elsif C = Aski.Ht then ' '
+     else Aski.Nul);
 
   -- Init Data
   procedure Initialize (Key : in String) is

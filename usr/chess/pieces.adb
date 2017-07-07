@@ -84,18 +84,13 @@ package body Pieces is
   end Id_Of;
 
   function Pos_Of (Piece : Basic_Piece'Class)
-                  return Space.Square_Coordinate is
-  begin
-    return Piece.Square;
-  end Pos_Of;
+                  return Space.Square_Coordinate is (Piece.Square);
 
   -- Move a piece
   function "-" (From, To : Space.Row_Range) return Natural is
-  begin
     --## rule off Conversion
-    return abs Integer(Space.Row_Range'Pos(From) - Space.Row_Range'Pos(To));
+    (abs Integer(Space.Row_Range'Pos(From) - Space.Row_Range'Pos(To)));
     --## rule on Conversion
-  end "-";
 
   procedure Move (Piece  : in Piece_Access;
                   To     : in Space.Square_Coordinate;

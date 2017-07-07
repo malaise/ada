@@ -16,9 +16,7 @@ procedure Add_Paths is
   -- The list of includes
   Includes : Arg_List_Mng.List_Type;
   function Less_Than (E1, E2 : Arg_Rec) return Boolean is
-  begin
-    return E1.Position < E2.Position;
-  end Less_Than;
+    (E1.Position < E2.Position);
   procedure Sort_Args is new Arg_List_Mng.Sort (Less_Than);
 
   -- Store all occurences of index in includes

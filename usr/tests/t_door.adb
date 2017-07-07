@@ -8,10 +8,7 @@ procedure T_Door is
   Nb_Loops : constant := 3;
   Nb_Waiters : constant := 3;
   Stopping : Boolean := False;
-  function Stop return Boolean is
-  begin
-    return Stopping;
-  end Stop;
+  function Stop return Boolean is (Stopping);
   procedure Stop is
   begin
     Stopping := True;

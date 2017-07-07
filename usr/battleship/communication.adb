@@ -9,10 +9,7 @@ package body Communication is
   begin
     Sig := True;
   end Signal_Cb;
-  function Sig_Received return Boolean is
-  begin
-    return Sig;
-  end Sig_Received;
+  function Sig_Received return Boolean is (Sig);
 
   -- General state
   Server : Boolean;

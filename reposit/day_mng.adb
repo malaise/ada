@@ -148,10 +148,8 @@ package body Day_Mng is
                  Minutes   : T_Minutes;
                  Seconds   : T_Seconds;
                  Millisecs : T_Millisecs) return Ada.Calendar.Time is
-  begin
-    return Ada.Calendar.Time_Of (Year, Month, Day,
-                                 Pack (Hours, Minutes, Seconds, Millisecs));
-  end Pack;
+    (Ada.Calendar.Time_Of (Year, Month, Day,
+                           Pack (Hours, Minutes, Seconds, Millisecs)) );
 
   function Packu (Year      : T_Years;
                   Month     : T_Months;
@@ -160,10 +158,8 @@ package body Day_Mng is
                   Minutes   : T_Minutes;
                   Seconds   : T_Seconds;
                   Microsecs : T_Microsecs) return Ada.Calendar.Time is
-  begin
-    return Ada.Calendar.Time_Of (Year, Month, Day,
-                                 Pack (Hours, Minutes, Seconds, Microsecs));
-  end Packu;
+    (Ada.Calendar.Time_Of (Year, Month, Day,
+                           Pack (Hours, Minutes, Seconds, Microsecs)) );
 
 end Day_Mng;
 

@@ -16,10 +16,7 @@ package body Lem is
   Current_Fuel : Fuel_Range := 0.0;
 
   -- Get current level (mass) of fuel
-  function Get_Fuel return Fuel_Range is
-  begin
-    return Current_Fuel;
-  end Get_Fuel;
+  function Get_Fuel return Fuel_Range is (Current_Fuel);
 
 
   ----------------
@@ -29,10 +26,8 @@ package body Lem is
   -- Acceleration * Mass -> Thrust
   function "*" (Acceleration : in Acceleration_Range;
                 Mass : in Mass_Range) return Thrust_Range is
-  begin
-    return Y_Thrust_Range (My_Math.Trunc(My_Math.Real(Acceleration)
-                                       * My_Math.Real(Mass)));
-  end "*";
+    (Y_Thrust_Range (My_Math.Trunc(My_Math.Real(Acceleration)
+                                 * My_Math.Real(Mass))));
 
   -- Thrust * Duration -> Fuel quantity
   subtype Pos_Thrust is Thrust_Range range 0 .. Thrust_Range'Last;
@@ -49,23 +44,17 @@ package body Lem is
   -- Thrust / Mass -> Acceleration
   function "/" (Thrust : Thrust_Range; Mass : Mass_Range)
                return Acceleration_Range is
-  begin
-    return Acceleration_Range (My_Math.Real (Thrust) / My_Math.Real (Mass));
-  end "/";
+    (Acceleration_Range (My_Math.Real (Thrust) / My_Math.Real (Mass)));
 
   -- Acceleration * Duration -> Speed
   function "*" (Acceleration : Acceleration_Range; Dur : in Duration)
                return Speed_Range is
-  begin
-   return Speed_Range (My_Math.Real(Acceleration) * My_Math.Real(Dur));
-  end "*";
+    (Speed_Range (My_Math.Real(Acceleration) * My_Math.Real(Dur)));
 
   -- Speed * Duration -> Position
   function "*" (Speed : Speed_Range; Dur : in Duration)
                return Position_Range is
-  begin
-   return Position_Range (My_Math.Real(Speed) * My_Math.Real(Dur));
-  end "*";
+    ( Position_Range (My_Math.Real(Speed) * My_Math.Real(Dur)));
 
 
   ------------
@@ -118,10 +107,7 @@ package body Lem is
   end Set_Y_Thrust;
 
   -- Get current Y thrust
-  function Get_Y_Thrust return Y_Thrust_Range is
-  begin
-    return Current_Y_Thrust;
-  end Get_Y_Thrust;
+  function Get_Y_Thrust return Y_Thrust_Range is (Current_Y_Thrust);
 
 
   ---------------
@@ -155,8 +141,10 @@ package body Lem is
   function Speed_At (Delta_Time : Duration) return Speed_Rec is
   begin
     return (
-      X_Speed => Current_Speed.X_Speed + Current_Acceleration.X_Acc * Delta_Time,
-      Y_Speed => Current_Speed.Y_Speed + Current_Acceleration.Y_Acc * Delta_Time);
+      X_Speed => Current_Speed.X_Speed
+               + Current_Acceleration.X_Acc * Delta_Time,
+      Y_Speed => Current_Speed.Y_Speed
+               + Current_Acceleration.Y_Acc * Delta_Time);
   exception
     when Constraint_Error =>
       raise Speed_Exceeded;
@@ -173,10 +161,8 @@ package body Lem is
   -- At present, init speed is set to -1 <= X = 1
   --  and -10 <= Y <= 0
   function Get_Init_Speed return Speed_Rec is
-  begin
-    return (X_Speed => Speed_Range(Rnd.Gen.Float_Random(-1.0, 1.0)),
-            Y_Speed => - Speed_Range(Rnd.Gen.Float_Random(0.0, 10.0)));
-  end Get_Init_Speed;
+    ( (X_Speed => Speed_Range(Rnd.Gen.Float_Random(-1.0, 1.0)),
+       Y_Speed => - Speed_Range(Rnd.Gen.Float_Random(0.0, 10.0))) );
 
   -- Position in space
   Current_Position : Position_Rec := (0.0, 0.0);
@@ -332,10 +318,7 @@ package body Lem is
 
   -- Landed as soon as Set_Landed_Position called
   --  and as long as not taking off
-  function Is_Landed return Boolean is
-  begin
-    return Landed;
-  end Is_Landed;
+  function Is_Landed return Boolean is (Landed);
 
 end Lem;
 

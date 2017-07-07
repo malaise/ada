@@ -1161,10 +1161,7 @@ package body Mcd_Mng is
       Handle_Break;
   end New_Item;
 
-  function Check_Empty_Stack return Boolean is
-  begin
-    return Stack.Stack_Size = 0;
-  end Check_Empty_Stack;
+  function Check_Empty_Stack return Boolean is (Stack.Stack_Size = 0);
 
 begin
   Random.Gen.Randomize;

@@ -37,8 +37,7 @@ package body Date_Text is
 
     -- Get the Index field of Val
     function Get (Val : in Date_Rec; Index : in Index_Range) return Natural is
-    begin
-      return (case Index is
+      (case Index is
         when 1 => Val.Years,
         when 2 => Val.Months,
         when 3 => Val.Days,
@@ -47,7 +46,6 @@ package body Date_Text is
         when 6 => Val.Seconds,
         when 7 => Val.Millisecs,
         when 8 => Val.Microsecs);
-    end Get;
   end Indexes;
 
   -- Convertion functions for month
@@ -477,11 +475,9 @@ package body Date_Text is
   end Split;
 
   function Pack (Date : Date_Rec) return Ada.Calendar.Time is
-  begin
-    return Day_Mng.Packu (Date.Years, Date.Months, Date.Days,
-                          Date.Hours, Date.Minutes, Date.Seconds,
-                          Date.Millisecs * 1000 + Date.Microsecs);
-  end Pack;
+    (Day_Mng.Packu (Date.Years, Date.Months, Date.Days,
+                    Date.Hours, Date.Minutes, Date.Seconds,
+                    Date.Millisecs * 1000 + Date.Microsecs) );
 
 end Date_Text;
 

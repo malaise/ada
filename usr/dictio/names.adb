@@ -3,10 +3,7 @@ with Data_Base, Dictio_Debug;
 package body Names is
 
   -- For parsing
-  function Is_Sep (C : Character) return Boolean is
-  begin
-    return C = Sep;
-  end Is_Sep;
+  function Is_Sep (C : Character) return Boolean is (C = Sep);
   Sep_Access : constant Parser.Separing_Function := Is_Sep'Access;
 
   -- Max name length

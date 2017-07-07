@@ -61,10 +61,7 @@ package body Mutexes is
 
     -- Is current task owning the lock
     function Mutex_Owns return Boolean is
-    begin
-      return Count > 0
-             and then Ada.Task_Identification.Current_Task = Owner;
-    end Mutex_Owns;
+      (Count > 0 and then Ada.Task_Identification.Current_Task = Owner);
 
     -- The queue
     entry Waiting_Queue when Count = 0 is
@@ -134,10 +131,7 @@ package body Mutexes is
     end Mutex_Release;
 
     function Mutex_Owns return Boolean is
-    begin
-      return Writer /= 0
-      and then Ada.Task_Identification.Current_Task = Owner;
-    end Mutex_Owns;
+      (Writer /= 0 and then Ada.Task_Identification.Current_Task = Owner);
 
     -- Two queues, one active at a time
     -- Passes when swapping queues or else when open
@@ -250,10 +244,7 @@ package body Mutexes is
     end Mutex_Release;
 
     function Mutex_Owns return Boolean is
-    begin
-      return Writer /= 0
-      and then Ada.Task_Identification.Current_Task = Owner;
-    end Mutex_Owns;
+      (Writer /= 0 and then Ada.Task_Identification.Current_Task = Owner);
 
     -- The queue for readers. Open when no writer waiting nor writing
     entry Reading_Queue when Writing_Queue'Count = 0 and then Writer = 0 is
@@ -323,9 +314,7 @@ package body Mutexes is
   end Get;
 
   function Get (A_Mutex : in out Mutex) return Boolean is
-  begin
-    return Get (A_Mutex, -1.0, Read);
-  end Get;
+    (Get (A_Mutex, -1.0, Read));
 
   -- Get a mutex : infinite wait
   procedure Get (A_Mutex      : in out Mutex;
@@ -351,17 +340,11 @@ package body Mutexes is
 
   -- Does current task own the mutex (for write)
   function Is_Owner (A_Mutex : Mutex) return Boolean is
-  begin
     -- Request releasing
-    case A_Mutex.Kind is
-      when Simple =>
-        return A_Mutex.Si_Mutex.Mutex_Owns;
-      when Read_Write =>
-        return A_Mutex.Rw_Mutex.Mutex_Owns;
-      when Write_Read =>
-        return A_Mutex.Wr_Mutex.Mutex_Owns;
-    end case;
-  end Is_Owner;
+    (case A_Mutex.Kind is
+       when Simple     => A_Mutex.Si_Mutex.Mutex_Owns,
+       when Read_Write => A_Mutex.Rw_Mutex.Mutex_Owns,
+       when Write_Read => A_Mutex.Wr_Mutex.Mutex_Owns);
 
 end Mutexes;
 

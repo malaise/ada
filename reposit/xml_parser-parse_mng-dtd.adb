@@ -4,10 +4,7 @@ package body Dtd is
 
  -- Separator within Info name and list
   Info_Sep : constant Character := '#';
-  function Is_Sep (C : Character) return Boolean is
-  begin
-    return C = Info_Sep;
-  end Is_Sep;
+  function Is_Sep (C : Character) return Boolean is (C = Info_Sep);
 
   -- Image of line_no without leading space
   function Line_Image (I : Integer) return String renames Images.Integer_Image;
@@ -90,9 +87,7 @@ package body Dtd is
     Dummy : Positive;
 
     function Is_Sep (C : Character) return Boolean is
-    begin
-      return (for some S of Seps => C = S);
-    end Is_Sep;
+      (for some S of Seps => C = S);
 
     -- Check no mix of ',' and '|' in a parenthesis level
     function Check_Level (N : in Positive) return Positive is
@@ -372,14 +367,8 @@ package body Dtd is
     -- Parser iterator
     Iter : Parser.Iterator;
 
-    function Try (Str : String) return Boolean is
-    begin
-      return Util.Try (Ctx.Flow, Str);
-    end Try;
-    function Get return Character is
-    begin
-      return Util.Get (Ctx.Flow);
-    end Get;
+    function Try (Str : String) return Boolean is (Util.Try (Ctx.Flow, Str));
+    function Get return Character is (Util.Get (Ctx.Flow));
 
     use type As.U.Asu_Us;
   begin
@@ -2161,10 +2150,8 @@ package body Dtd is
 
   -- Has this element the xml:spaces=preserve
   function Has_Preserve (Ctx : Ctx_Type; Elt  : As.U.Asu_Us) return Boolean is
-  begin
-    return Str_Util.Locate (Ctx.Preserved.Image,
-                              Info_Sep & Elt.Image & Info_Sep) /= 0;
-  end Has_Preserve;
+    (Str_Util.Locate (Ctx.Preserved.Image,
+                      Info_Sep & Elt.Image & Info_Sep) /= 0);
 
   -- Add current element to list of children
   procedure Add_Current_Element (List : in out As.U.Asu_Us;

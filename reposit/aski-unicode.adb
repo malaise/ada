@@ -1,15 +1,10 @@
 package body Aski.Unicode is
 
   -- Are strict ANSI the characters from 0 (Nul) to 127 (Del) included
-  function Is_Strict (U : Unicode_Number)   return Boolean is
-  begin
-    return U <= Del_U;
-  end Is_Strict;
+  function Is_Strict (U : Unicode_Number)   return Boolean is (U <= Del_U);
 
   function Is_Strict (S : Unicode_Sequence) return Boolean is
-  begin
-    return (for all C of S => Is_Strict (C));
-  end Is_Strict;
+    (for all C of S => Is_Strict (C));
 
   -- Conversion from strict ANSI to Unicode and reverse
   -- Raise Constraint_Error if a character or unicode is not strict
