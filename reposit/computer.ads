@@ -5,7 +5,7 @@
 --  or references to variables ${Variable}
 --  Supports parentheses
 -- Both support an optional external variable resolver
-private with As.U, Hashed_List.Unique;
+private with As.U, Hashed_List.Unique, Environ;
 package Computer is
 
   -- A memory set
@@ -53,12 +53,15 @@ package Computer is
 
 
   -- External resolver of variables:
-  -- If a variable is not Set, then Eval or Compute will call this resolver.
+  -- If a variable is not Set, then Eval or Compute will call this resolver
   -- If no resolver is set (null) then Unknown_Variable is raised
-  -- If this resolver raises any exeption, then Unknown_Variable is raised
+  -- If this resolver raises any exception, then Unknown_Variable is raised
   type Resolver_Access is access function (Name : String) return String;
   procedure Set_External_Resolver (Memory : in out Memory_Type;
                                    Resolver : in Resolver_Access);
+
+  -- Convenient resolver searching environment variables
+  Env_Resolver : constant Resolver_Access;
 
   -- Resolve variables of an expresssion
   -- Variable delimiters may be backslashed for no expansion, but in this case
@@ -118,5 +121,7 @@ private
     External_Resolver : Resolver_Access := null;
   end record;
 
+  -- Resolver based on Getenv
+  Env_Resolver : constant Resolver_Access := Environ.Getenv_If_Set'Access;
 end Computer;
 

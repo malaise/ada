@@ -1,4 +1,4 @@
-with Basic_Proc, Argument, Computer, Str_Util, Environ;
+with Basic_Proc, Argument, Computer, Str_Util;
 procedure T_Computer is
   procedure Usage is
   begin
@@ -14,7 +14,7 @@ begin
     Usage;
     return;
   end if;
-  Mem.Set_External_Resolver (Environ.Getenv_If_Set'Access);
+  Mem.Set_External_Resolver (Computer.Env_Resolver);
   -- All args but last are variables
   for I in 1 .. Argument.Get_Nbre_Arg - 1 loop
     declare
