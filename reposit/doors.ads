@@ -52,14 +52,17 @@ package Doors is
 
 
   -- If Key is Pass, then simply pass through the door (return True)
+  -- By default a Key is Fake
   subtype Key_Type is Conditions.Key_Type;
   Fake : Key_Type renames Conditions.Fake;
   Pass : Key_Type renames Conditions.Pass;
   -- Otherwise *atomically* release access and block the calling task, until
   --   the required number of waiters is reached (new waiters arriving or
-  ---  someone reducing the Nb_Waiters)
+  --   someone reducing the Nb_Waiters)
+  -- If the Waiting_Time is reached, then Wait returns False and the current
+  --   task does not have access to the door
   -- Upon successful return, the access to the door is already granted to the
-  --  calling task
+  --   calling task
   function Wait (A_Door : Door;
                  Waiting_Time : Duration;
                  Key : Key_Type := Fake) return Boolean;

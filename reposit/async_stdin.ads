@@ -11,7 +11,7 @@ package Async_Stdin is
 
   -- Set asynchronous mode for stdin
   -- User callback is called when Max_Chars characters are entered
-  --  or at each control char (i.e. before space)
+  --  or at each control char (i.e. before space in the ASCII table)
   -- The following specific keys are handled:
   --  - Backspace, suppr, left and right arrows, Home and End (move cursor)
   --  - CtrlSuppr (clear line) and ShiftSuppr (clear to end of line)
@@ -20,15 +20,17 @@ package Async_Stdin is
   --  - Tab (searchg in history)
   -- History size can be tuned with ENV ASYNC_STDIN_HISTORY_SIZE (default 20)
   -- If a unrecognized sequence is entered, then the user callback is called
-  --  with the characters got so far and the Esc char
+  --  with the characters got so far and the ASCII Esc char
   -- User callback is called with empty string in case of error
   -- Set null callback to restore normal behaviour
-  -- Asynchronous mode relies on a Event_Mng Fd Callback which
+  -- Input chars are displayed (if Echo) from Left_Col to
+  --  Left_Col + Max_Chars - 1
+  -- Asynchronous mode relies on a Event_Mng Fd Callback, which
   --  returns the result of the User_Callback. So Event_Mng will report
   --  a Fd_Event if User_Callback returns True
   procedure Set_Async (User_Callback : in User_Callback_Access := null;
                        Max_Chars : in Max_Chars_Range := 1;
-                       First_Col : in Max_Chars_Range := 1;
+                       Left_Col  : in Max_Chars_Range := 1;
                        Echo      : in Boolean := True);
   function Is_Set return Boolean;
 

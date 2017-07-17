@@ -194,17 +194,16 @@ package Afpx is
     Background : in Con_Io.Colors := Con_Io.Current;
     Selected   : in Con_Io.Colors := Con_Io.Current);
 
-  -- Activate/Desactivate a field for further put_then_gets
+  -- Activate/Desactivate a field for further Put_Then_Get
   -- All fields are activated by default (when Use_Descriptor or Reset_Field)
-  -- A non active field is not displayed by put_then get
-  --  (when Use_Descriptor or Reset_Field)
+  -- A non active field is not displayed by Put_Then_Get
   -- Exceptions : No_Descriptor, Invalid_Field
   procedure Set_Field_Activation (Field_No : in Absolute_Field_Range;
                                   Activate : in Boolean);
   function  Get_Field_Activation (Field_No : in Absolute_Field_Range)
                                   return Boolean;
 
-  -- Protect/Unprotect the List, a Get or Button for further put_then_gets
+  -- Protect/Unprotect the List, a Get or Button for further Put_Then_Get
   -- A protected get field is displayed like a put field
   -- A protected button field is displayed like a put (but no click/release)
   -- A protected list is displayed (but no item can be selected)
@@ -290,7 +289,7 @@ package Afpx is
 
   -- During Put_Then_Get execution the List_Change_Cb callback reports all the
   --  changes in the list (scroll, selection, change of content).
-  -- When Put_Then_get returns, some information can also be obtained but
+  -- When Put_Then_Get returns, some information can also be obtained but
   --   nothing about which part of the list was displayed:
   --  - The current element of the Line_List is the one left-selected
   --  - The right-selected is set in Put_Then_Get result (Id_Selected_Right)
@@ -369,7 +368,7 @@ package Afpx is
   --  - scroll by keyboard or wheel
   -- Beware that modifying the list (including changing the current position)
   --  affects the ongoing Put_Then_Get
-  -- Note: A double click in a new line tiggers a Left_Selection notification,
+  -- Note: A double click in a line tiggers a Left_Selection notification,
   --  then the end of Put_Then_Get
   type List_Change_List is (Init, Left_Selection, Right_Selection, Scroll);
   type List_Button_List is (List_Left, List_Right);
@@ -422,12 +421,10 @@ package Afpx is
 
   -- Print the fields and the list (if Redisplay has been called or is needed),
   --  then gets.
-  --  justify a redisplay, by instance when Result.Event was Refresh. It is
-  --  always reset to False by Put_Then_Get.
   -- In List: See above section on "User actions on the list".
   --   mouse click changes current list element (or Id_Selected_Right),
   --   Up/Down arrow, Page Up/Down, Ctrl Page Up/Down scrolls the list,
-  --   double click terminates Put_Then Get (Mouse_Button, List_Field_No).
+  --   double click terminates Put_Then_Get (Mouse_Button, List_Field_No).
   -- In Put fields: nothing.
   -- In Get fields:
   --   Home and End move to the boundaries of the get area (see Con_Io), while

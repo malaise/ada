@@ -14,12 +14,12 @@ package Bencode is
   Bytes_Name : constant String := "Bytes";
   --   with an optional text composed of bytes in hexadecimal
   --   (so 2 digits per byte), in uppercase
-  --   and an aoptional attribute named
+  --   and an optional attribute named
   Str_Name : constant String := "Str";
   -- If all the bytes of the array are printable (from ' ' to '~') then,
   --   after decoding from Bencoded, the attribute contains the readable string
-  -- If it is set for the for the conversion from Xml to Bencoded,
-  --   then it is used instead of the text
+  -- If it is set for the conversion from Xml to Bencoded, then the attribute
+  --   is used instead of the text
 
   -- List is an element named
   List_Name : constant String := "List";

@@ -729,7 +729,7 @@ package body Async_Stdin is
   -- Set null callback to restore normal behaviour
   procedure Set_Async (User_Callback : in User_Callback_Access := null;
                        Max_Chars : in Max_Chars_Range := 1;
-                       First_Col : in Max_Chars_Range := 1;
+                       Left_Col  : in Max_Chars_Range := 1;
                        Echo      : in Boolean := True) is
     Result : Boolean;
     use type Sys_Calls.File_Desc_Kind_List;
@@ -771,7 +771,7 @@ package body Async_Stdin is
                                      Fd_Callback'Access);
         end if;
         Cb := User_Callback;
-        Async_Stdin.First_Col := First_Col;
+        First_Col := Left_Col;
         Async_Stdin.Echo := Echo;
         if Stdio_Is_A_Tty and then Echo then
           Console.Set_Col (First_Col);

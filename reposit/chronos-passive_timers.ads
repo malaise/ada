@@ -34,12 +34,12 @@ package Chronos.Passive_Timers is
   -- No action if timer is not suspended
   procedure Resume (Timer : in out Passive_Timer);
 
-  -- Checks if timer expiration time (Prev_Exp + Period) is reached
+  -- Check if timer expiration time (Prev_Exp + Period) is reached
   -- If yes, and periodical, add Period to expiration time
-  -- If yes and single shot timer, set it to raise Timer_Expired
+  -- If yes and single shot, set it to raise Timer_Expired
   function Has_Expired (Timer : in out Passive_Timer) return Boolean;
 
-  -- When a single shot timer has expired and Has_Expired has returned True,
+  -- When a single shot timer has expired and Has_Expired has returned True
   --  then, as long as it is not re-started, calling Suspend, Resume
   --  or Has_Expired again on it will raise:
   Timer_Expired : exception;

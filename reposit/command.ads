@@ -37,13 +37,13 @@ package Command is
   -- Report or propagate output/error flow with the proper kind
   -- Set resulting exit code
   -- If Use_Shell, then the shell can be specified to another than the default
-  ---------------------------------------------------------------------------
-  -- Because it waits for the asynchronous exit of the child, this         --
-  --  function uses Event_Mng.Wait internally. As a consequence:           --                         --
-  --  * X11 programs shall Suspend ALL the X objects X_Line/Con_Io/Afpx    --
-  --    before calling this function, then Resume the X objects afterwards,--
-  --  * This function is protected agains parallel execution with a mutex. --
-  ---------------------------------------------------------------------------
+  ----------------------------------------------------------------------------
+  -- Because it waits for the asynchronous exit of the child, this          --
+  --  function uses Event_Mng.Wait internally. As a consequence:            --                         --
+  --  * X11 programs shall Suspend ALL the X objects X_Line/Con_Io/Afpx     --
+  --    before calling this function, then Resume the X objects afterwards, --
+  --  * This function is protected with a mutex against parallel execution. --
+  ----------------------------------------------------------------------------
   Default_Shell : constant String := "/bin/sh";
   procedure Execute (Cmd : in Many_Strings.Many_String;
                      Use_Shell : in Boolean;
