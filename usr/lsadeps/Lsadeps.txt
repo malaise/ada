@@ -1,6 +1,6 @@
 lsadeps
 =======
-V13.8
+V13.10
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -50,7 +50,7 @@ Alternative modes are:
  - 'specs' to show only units withed by specs and standalone bodies.
 
  - 'revert' to show units depending on <target_unit>, which are its child
-units and the units withing <target_unit>... recursively.
+units and the units which spec withes <target_unit>... recursively.
 
  - 'path_unit' to show dependency paths between <target_unit> and <path_unit>.
 
