@@ -7,18 +7,18 @@ package Forker is
   subtype Nat is Int range 0 .. Int'Last;
 
   -- Command number
-  type Command_Number is new Natural;
-  for Command_Number'Size use C_Types.Int'Size;
-  type Boolean_For_C is new Boolean;
-  for Boolean_For_C'Size use System.Storage_Unit;
+  type Command_Number is new Natural
+    with Size => Int'Size;
+  type Boolean_For_C is new Boolean
+    with Size => System.Storage_Unit;
 
   -------------
   -- REQUEST --
   -------------
   -- Request kind
   type Request_List is (Start_Request, Kill_Request,
-                        Forker_Exit_Request, Ping_Request);
-  for Request_List'Size use Int'Size;
+                        Forker_Exit_Request, Ping_Request)
+    with Size => Int'Size;
 
   -- Sizing: Program-arguments and Environ are stored at format
   -- <field>Nul<field>Nul ... <field>NulNul
@@ -84,8 +84,8 @@ package Forker is
   ------------
   -- Report kind
   type Report_List is (Start_Report, Kill_Report, Exit_Report,
-                       Forker_Exit_Report, Pong_Report);
-  for Report_List'Size use Int'Size;
+                       Forker_Exit_Report, Pong_Report)
+    with Size => Int'Size;
   -- Started/killed pid or -1 if error
   subtype Pid_Result is Int range -1 .. Int'Last;
 
@@ -129,8 +129,8 @@ package Forker is
   Report_Size : constant Integer := Size_Report_Rec'Size;
 
   -- Exit report status decoding
-  type Exit_Cause_List is (Normal, Signal, Stop);
-  for Exit_Cause_List'Size use Int'Size;
+  type Exit_Cause_List is (Normal, Signal, Stop)
+    with Size => Int'Size;
   procedure Decode_Exit (Status : in Integer;
                          Cause  : out Exit_Cause_List;
                          Code   : out Natural);

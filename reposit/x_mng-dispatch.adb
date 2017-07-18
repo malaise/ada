@@ -65,7 +65,7 @@ package body Dispatch is
                           Event : out Event_Kind;
                           Next : out Boolean) is
     C_Event : Integer;
-    C_Next : Bool_For_C;
+    C_Next : C_Types.Bool;
     C_Res : Result;
   begin
     C_Res :=  X_Process_Event (C_Id'Address,
@@ -108,7 +108,7 @@ package body Dispatch is
     Now : Ada.Calendar.Time;
     -- For C x_select
     C_Fd    : C_Types.Int;
-    C_Read  : Bool_For_C;
+    C_Read  : C_Types.Bool;
     C_Res : Result;
     -- For Event_Mng.Handle
     Handle_Event : Boolean;
@@ -143,7 +143,7 @@ package body Dispatch is
         raise X_Failure;
       end if;
       Log ("Xx_Select.X_Select", No_Client_No,
-            "-> " & Integer'Image(C_Fd) & " " & Bool_For_C'Image(C_Read));
+            "-> " & Integer'Image(C_Fd) & " " & C_Types.Bool'Image(C_Read));
 
       -- For all but X:
       C_Id := No_Line_For_C;

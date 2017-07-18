@@ -312,8 +312,8 @@ package Socket is
   subtype Byte is C_Types.Byte;
   type Ip_Address is record
     A, B, C, D : Byte; -- Network (natural) order
-  end record;
-  for Ip_Address'Size use 4 * System.Storage_Unit;
+  end record
+    with Size => 4 * System.Storage_Unit;
 
   function Id2Addr (Id : Host_Id) return Ip_Address;
   function Addr2Id (Addr : Ip_Address) return Host_Id;
@@ -329,8 +329,8 @@ private
     Soc_Addr : System.Address := System.Null_Address;
   end record;
 
-  type Host_Id is new C_Types.Uint32;
-  for Host_Id'Size use 4 * System.Storage_Unit; -- As Ip_Addr
+  type Host_Id is new C_Types.Uint32
+    with Size => 4 * System.Storage_Unit; -- As Ip_Addr
   Any_Host : constant Host_Id := 0;
 
   No_Socket : constant Socket_Dscr := (Soc_Addr => System.Null_Address);

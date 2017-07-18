@@ -21,13 +21,6 @@ package body X_Mng is
   -- True if the connection to X has been initialised
   Initialised : Boolean := False;
 
-  -- Boolean on 32 bits for C
-  type Bool_For_C is new C_Types.Bool;
-  for Bool_For_C'Size use 32;
-
-  function For_C(Ada_Boolean : in Boolean) return Bool_For_C is
-    (Bool_For_C'Val(Boolean'Pos(Ada_Boolean)));
-
   function C_Strlen (S : System.Address) return C_Types.Size_T
     with Import => True, Convention => C, External_Name => "strlen";
 
@@ -117,9 +110,9 @@ package body X_Mng is
   ------------------------------------------------------------------
   function X_Set_Attributes(Line_Id     : Line_For_C;
                             Paper, Ink  : C_Types.Int;
-                            Superbright : Bool_For_C;
-                            Underline   : Bool_For_C;
-                            Inverse     : Bool_For_C) return Result
+                            Superbright : C_Types.Bool;
+                            Underline   : C_Types.Bool;
+                            Inverse     : C_Types.Bool) return Result
     with Import => True, Convention => C, External_Name => "x_set_attributes";
 
   ------------------------------------------------------------------
@@ -127,7 +120,7 @@ package body X_Mng is
   -- int x_set_xor_mode (void *line_id, boolean xor_mode);
   ------------------------------------------------------------------
   function X_Set_Xor_Mode(Line_Id : Line_For_C;
-                          Xor_Mode  : Bool_For_C) return Result
+                          Xor_Mode  : C_Types.Bool) return Result
     with Import => True, Convention => C, External_Name => "x_set_xor_mode";
 
   ------------------------------------------------------------------
@@ -172,9 +165,9 @@ package body X_Mng is
                                  Car         : C_Types.Int;
                                  Row, Column : C_Types.Int;
                                  Paper, Ink  : C_Types.Int;
-                                 Superbright : Bool_For_C;
-                                 Underline   : Bool_For_C;
-                                 Inverse     : Bool_For_C)
+                                 Superbright : C_Types.Bool;
+                                 Underline   : C_Types.Bool;
+                                 Inverse     : C_Types.Bool)
    return Result
     with Import => True, Convention => C,
          External_Name => "x_put_char_attributes";
@@ -291,8 +284,8 @@ package body X_Mng is
   -- int x_set_graphic_pointer (void *line_id, boolean graphic);
   ------------------------------------------------------------------
   function X_Set_Graphic_Pointer(Line_Id : Line_For_C;
-                                 Graphic : Bool_For_C;
-                                 Grab : Bool_For_C) return Result
+                                 Graphic : C_Types.Bool;
+                                 Grab : C_Types.Bool) return Result
     with Import => True, Convention => C,
          External_Name => "x_set_graphic_pointer";
 
@@ -301,7 +294,7 @@ package body X_Mng is
   -- int x_hide_graphic_pointer (void *line_id);
   ------------------------------------------------------------------
   function X_Hide_Graphic_Pointer(Line_Id : Line_For_C;
-                                  Grab : Bool_For_C) return Result
+                                  Grab : C_Types.Bool) return Result
     with Import => True, Convention => C,
          External_Name => "x_hide_graphic_pointer";
 
@@ -311,7 +304,7 @@ package body X_Mng is
   --                 int *p_button, int *p_row, int *p_column);
   ------------------------------------------------------------------
   function X_Read_Tid(Line_Id         : Line_For_C;
-                      Row_Col         : Bool_For_C;
+                      Row_Col         : C_Types.Bool;
                       P_Button        : System.Address;
                       P_Row, P_Column : System.Address) return Result
     with Import => True, Convention => C, External_Name => "x_read_tid";
@@ -359,7 +352,7 @@ package body X_Mng is
   -- extern int x_enable_motion_events (void *line_id, boolean enable_motion);
   ------------------------------------------------------------------
   function X_Enable_Motion_Events (Line_Id : Line_For_C;
-                                   Motion_Enable : Bool_For_C) return Result
+                                   Motion_Enable : C_Types.Bool) return Result
     with Import => True, Convention => C,
          External_Name => "x_enable_motion_events";
 
@@ -779,8 +772,9 @@ package body X_Mng is
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Set_Attributes(Line_For_C_Id,
                             C_Types.Int(Paper), C_Types.Int(Ink),
-                            For_C(Superbright), For_C(Underline),
-                            For_C(Inverse)) = Ok;
+                            C_Types.Bool(Superbright),
+                            C_Types.Bool(Underline),
+                            C_Types.Bool(Inverse)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
@@ -795,7 +789,7 @@ package body X_Mng is
   begin
     Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Set_Xor_Mode(Line_For_C_Id, For_C(Xor_Mode)) = Ok;
+    Res := X_Set_Xor_Mode(Line_For_C_Id, C_Types.Bool(Xor_Mode)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
@@ -889,9 +883,9 @@ package body X_Mng is
                               C_Types.Int(Column),
                               C_Types.Int(Paper),
                               C_Types.Int(Ink),
-                              For_C(Superbright),
-                              For_C(Underline),
-                              For_C(Inverse)) = Ok;
+                              C_Types.Bool(Superbright),
+                              C_Types.Bool(Underline),
+                              C_Types.Bool(Inverse)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
@@ -1110,7 +1104,7 @@ package body X_Mng is
     Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Set_Graphic_Pointer(Line_For_C_Id,
-                            For_C(Graphic), For_C(Grab)) = Ok;
+                            C_Types.Bool(Graphic), C_Types.Bool(Grab)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
@@ -1127,7 +1121,7 @@ package body X_Mng is
       raise X_Failure;
     end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Hide_Graphic_Pointer(Line_For_C_Id, For_C(Grab)) = Ok;
+    Res := X_Hide_Graphic_Pointer(Line_For_C_Id, C_Types.Bool(Grab)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
@@ -1229,7 +1223,7 @@ package body X_Mng is
   begin
     Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Read_Tid (Line_For_C_Id, For_C(Row_Col),
+    Res := X_Read_Tid (Line_For_C_Id, C_Types.Bool(Row_Col),
                        Loc_Button'Address,
                        Row_For_C'Address,
                        Col_For_C'Address) = Ok;
@@ -1265,7 +1259,7 @@ package body X_Mng is
                        Shift : out Boolean;
                        Code : out Boolean;
                        Key : out Kbd_Tab_Code) is
-    Control4C, Shift4C, Code4C : Bool_For_C;
+    Control4C, Shift4C, Code4C : C_Types.Bool;
     Loc_Nbre : C_Types.Int;
     Loc_Tab : array (Natural range 1..Kbd_Max_Code) of C_Types.Int;
     Line_For_C_Id : Line_For_C;
@@ -1290,13 +1284,15 @@ package body X_Mng is
   end X_Read_Key;
 
   ------------------------------------------------------------------
-  procedure X_Enable_Motion_Events (Line_Id : in Line; Motion_Enable : in Boolean) is
+  procedure X_Enable_Motion_Events (Line_Id : in Line;
+                                    Motion_Enable : in Boolean) is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
     Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Enable_Motion_Events (Line_For_C_Id, For_C(Motion_Enable)) = Ok;
+    Res := X_Enable_Motion_Events (Line_For_C_Id,
+                                   C_Types.Bool(Motion_Enable)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;

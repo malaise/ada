@@ -31,8 +31,8 @@ package body Socket is
   C_Soc_Read_0         : constant Result := -26;
   C_Soc_Reply_Iface    : constant Result := -27;
 
-  type Word is new C_Types.Uint16;
-  for Word'Size use 2 * Byte_Size;
+  type Word is new C_Types.Uint16
+    with Size => 16;
 
   function C_Str (Str : String) return String is (Str & Nul);
 
@@ -46,11 +46,11 @@ package body Socket is
     raise Soc_Len_Err;
   end Strip;
 
-  type C_Protocol is new Protocol_List;
-  for C_Protocol'Size use 32;
+  type C_Protocol is new Protocol_List
+    with Size => 32;
 
-  type C_Blocking_Mode is new Blocking_List;
-  for C_Blocking_Mode'Size use 32;
+  type C_Blocking_Mode is new Blocking_List
+    with Size => 32;
 
   function Soc_Open (S_Addr : System.Address;
                      Protocol : C_Protocol) return Result
