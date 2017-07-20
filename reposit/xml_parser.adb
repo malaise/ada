@@ -18,7 +18,8 @@ package body Xml_Parser is
     To := Val;
   end Set;
   function Image (Element : Id_Cell) return String is (Element.Name.Image);
-  function "=" (Current : Id_Cell; Criteria : Id_Cell) return Boolean is
+  overriding function "=" (Current : Id_Cell;
+                           Criteria : Id_Cell) return Boolean is
     use type As.U.Asu_Us;
   begin
     return Current.Name = Criteria.Name;
@@ -152,7 +153,8 @@ package body Xml_Parser is
     (if Entity.Parameter then "%" else "") & Entity.Name.Image;
   -- Entities differ if one is parameter and not the other
   --  or if names differ
-  function "=" (Current : Entity_Type; Criteria : Entity_Type) return Boolean is
+  overriding function "=" (Current : Entity_Type;
+                           Criteria : Entity_Type) return Boolean is
     use type As.U.Asu_Us;
   begin
     return Current.Parameter = Criteria.Parameter
@@ -166,8 +168,8 @@ package body Xml_Parser is
   end Set;
   function Image (Unparsed : Unparsed_Type) return String is
     (if Unparsed.Is_Entity then "E:" else "N:") & Unparsed.Name.Image;
-  function "=" (Current : Unparsed_Type; Criteria : Unparsed_Type)
-               return Boolean is
+  overriding function "=" (Current : Unparsed_Type;
+                           Criteria : Unparsed_Type) return Boolean is
     use type As.U.Asu_Us;
   begin
     return Current.Is_Entity = Criteria.Is_Entity
@@ -180,7 +182,8 @@ package body Xml_Parser is
     To := Val;
   end Set;
   function Image (Element : Info_Rec) return String is (Element.Name.Image);
-  function "=" (Current : Info_Rec; Criteria : Info_Rec) return Boolean is
+  overriding function "=" (Current : Info_Rec;
+                           Criteria : Info_Rec) return Boolean is
     use type As.U.Asu_Us;
   begin
     return Current.Name = Criteria.Name;
@@ -193,8 +196,8 @@ package body Xml_Parser is
   end Set;
   function Image (Namespace : Namespace_Type) return String is
     (Namespace.Prefix.Image);
-  function "=" (Current : Namespace_Type; Criteria : Namespace_Type)
-               return Boolean is
+  overriding function "=" (Current : Namespace_Type;
+                           Criteria : Namespace_Type) return Boolean is
     use type As.U.Asu_Us;
   begin
     return Current.Prefix = Criteria.Prefix;

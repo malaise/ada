@@ -21,7 +21,7 @@ package body Sort is
   begin
     To := Val;
   end Set;
-  function "=" (L, R : Prio_Rec) return Boolean is
+  overriding function "=" (L, R : Prio_Rec) return Boolean is
    use type As.U.Asu_Us;
   begin
     return L.Path = R.Path;

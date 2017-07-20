@@ -218,7 +218,7 @@ package body As.B is
     Source.Ref(Index) := By;
   end Replace_Element;
 
-  function "="  (Left, Right : Asb_Bs) return Boolean is
+  overriding function "="  (Left, Right : Asb_Bs) return Boolean is
     (Left.Ref(1 .. Left.Last) = Right.Ref(1 .. Right.Last));
   function "="  (Left : Asb_Bs; Right : String) return Boolean is
     (Left.Ref(1 .. Left.Last) = Right);

@@ -148,8 +148,8 @@ procedure Dtd_Generator is
   begin
     To := Val;
   end Set;
-  function "=" (Current : Element_Type; Criteria : Element_Type)
-                return Boolean is
+  overriding function "=" (Current : Element_Type;
+                           Criteria : Element_Type) return Boolean is
     use type As.U.Asu_Us;
   begin
     -- Sale Name

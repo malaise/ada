@@ -168,8 +168,8 @@ package body Registers is
     To := Val;
   end Set;
   function Key_Image (Element : Storage_Rec) return String is (Element.Key);
-  function "=" (Current : Storage_Rec; Criteria : Storage_Rec)
-               return Boolean is
+  overriding function "=" (Current : Storage_Rec;
+                           Criteria : Storage_Rec) return Boolean is
   begin
     return Current.Key = Criteria.Key;
   end "=";

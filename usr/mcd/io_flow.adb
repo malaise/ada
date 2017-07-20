@@ -42,9 +42,10 @@ package body Io_Flow is
   -- Observer recevier of messages
   Bus_Subscriber : Autobus.Subscriber_Type;
   type Bus_Observer_Type is new Autobus.Observer_Type with null record;
-  procedure Receive (Unused_Observer : in out Bus_Observer_Type;
-                     Unused_Subscriber : in Autobus.Subscriber_Access_Type;
-                     Message : in String);
+  overriding procedure Receive (
+      Unused_Observer : in out Bus_Observer_Type;
+      Unused_Subscriber : in Autobus.Subscriber_Access_Type;
+      Message : in String);
   Bus_Observer : aliased Bus_Observer_Type;
 
   -- Async Stdin for input flow
@@ -498,9 +499,10 @@ package body Io_Flow is
   ----------------------------------------------------
   -- Bus reception callback
   ----------------------------------------------------
-  procedure Receive (Unused_Observer : in out Bus_Observer_Type;
-                     Unused_Subscriber : in Autobus.Subscriber_Access_Type;
-                     Message : in String) is
+  overriding procedure Receive (
+      Unused_Observer : in out Bus_Observer_Type;
+      Unused_Subscriber : in Autobus.Subscriber_Access_Type;
+      Message : in String) is
   begin
     if Message'Length = 0 then
       return;

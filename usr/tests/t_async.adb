@@ -53,9 +53,10 @@ procedure T_Async is
   -- Autobus receiver
   type Observer_Type is new Autobus.Observer_Type with null record;
   Receiver : aliased Observer_Type;
-  procedure Receive (Unused_Observer   : in out Observer_Type;
-                     Unused_Subscriber : in Autobus.Subscriber_Access_Type;
-                     Message : in String) is
+  overriding procedure Receive (
+      Unused_Observer   : in out Observer_Type;
+      Unused_Subscriber : in Autobus.Subscriber_Access_Type;
+      Message : in String) is
   begin
     if Message'Length = 1
     and then Message(Message'First) = Aski.Eot then

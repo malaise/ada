@@ -20,7 +20,8 @@ procedure T_Ul is
     To.Val.Set (Val.Val);
   end Set;
   function Image (Element : Var_Rec) return String is (Element.Name.Image);
-  function "=" (Current : Var_Rec; Criteria : Var_Rec) return Boolean is
+  overriding function "=" (Current : Var_Rec;
+                           Criteria : Var_Rec) return Boolean is
     use type As.B.Asb_Bs;
   begin
     return Current.Name = Criteria.Name;

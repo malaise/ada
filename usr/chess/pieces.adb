@@ -164,22 +164,28 @@ package body Pieces is
   end Actions_Of;
 
   procedure Actions_Of_Pawn (Piece : Pawn_Piece) is separate;
-  procedure Actions_Of (Piece : Pawn_Piece) renames Actions_Of_Pawn;
+  overriding procedure Actions_Of (Piece : Pawn_Piece)
+                       renames Actions_Of_Pawn;
 
   procedure Actions_Of_Rook (Piece : Rook_Piece) is separate;
-  procedure Actions_Of (Piece : Rook_Piece)  renames Actions_Of_Rook;
+  overriding procedure Actions_Of (Piece : Rook_Piece)
+                       renames Actions_Of_Rook;
 
   procedure Actions_Of_Knight (Piece : Knight_Piece) is separate;
-  procedure Actions_Of (Piece : Knight_Piece) renames Actions_Of_Knight;
+  overriding procedure Actions_Of (Piece : Knight_Piece)
+                       renames Actions_Of_Knight;
 
   procedure Actions_Of_Bishop (Piece : Bishop_Piece) is separate;
-  procedure Actions_Of (Piece : Bishop_Piece) renames Actions_Of_Bishop;
+  overriding procedure Actions_Of (Piece : Bishop_Piece)
+                       renames Actions_Of_Bishop;
 
   procedure Actions_Of_Queen (Piece : Queen_Piece) is separate;
-  procedure Actions_Of (Piece : Queen_Piece) renames Actions_Of_Queen;
+  overriding procedure Actions_Of (Piece : Queen_Piece)
+                       renames Actions_Of_Queen;
 
   procedure Actions_Of_King (Piece : King_Piece) is separate;
-  procedure Actions_Of (Piece : King_Piece) renames Actions_Of_King;
+  overriding procedure Actions_Of (Piece : King_Piece)
+                       renames Actions_Of_King;
 
   -- Build the array of moves from the list
   function Build_Array_From_List return Action_Array is

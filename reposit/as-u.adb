@@ -272,7 +272,7 @@ package body As.U is
     Source.Ref.all(Index) := By;
   end Replace_Element;
 
-  function "="  (Left, Right : Asu_Us) return Boolean is
+  overriding function "="  (Left, Right : Asu_Us) return Boolean is
     (Left.Ref.all(1 .. Left.Last) = Right.Ref.all(1 .. Right.Last));
   function "="  (Left : Asu_Us; Right : String) return Boolean is
     (Left.Ref.all(1 .. Left.Last) = Right);

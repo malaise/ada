@@ -91,8 +91,8 @@ package Unbounded_Arrays is
                              By     : in Element_Type);
 
   -- Comparisons
-  function "=" (Left  : Unbounded_Array;
-                Right : Unbounded_Array) return Boolean;
+  overriding function "=" (Left  : Unbounded_Array;
+                           Right : Unbounded_Array) return Boolean;
   function "=" (Left  : Unbounded_Array;
                 Right : Element_Array) return Boolean;
   function "=" (Left  : Element_Array;

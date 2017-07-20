@@ -1,7 +1,7 @@
 package body Long_Long_Limited_Pool is
 
   -- Check if pool is not empty, get number of elements in pool
-  function Is_Empty (Pool : in Pool_Type) return Boolean is
+  overriding function Is_Empty (Pool : in Pool_Type) return Boolean is
     -- The one of the list
     (Pool_List_Mng.List_Type(Pool).Is_Empty);
 

@@ -160,7 +160,7 @@ package body Evp_Digest is
   end Reset;
 
   -- Finalize the context
-  procedure Finalize (Ctx : in out Context) is
+  overriding procedure Finalize (Ctx : in out Context) is
   begin
     -- Check that Ctx is initialized
     if Is_Init (Ctx) then

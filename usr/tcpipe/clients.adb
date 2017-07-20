@@ -19,7 +19,8 @@ package body Clients is
   begin
     To := Val;
   end Set;
-  function "=" (Current : Client_Rec; Criteria : Client_Rec) return Boolean is
+  overriding function "=" (Current : Client_Rec;
+                           Criteria : Client_Rec) return Boolean is
   begin
     return Current.Dscr.Image = Criteria.Dscr.Image;
   end "=";

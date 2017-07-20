@@ -6,7 +6,8 @@ package body File_Hash is
   begin
     To := Val;
   end Set;
-  function "=" (Current : Line_Rec; Criteria : Line_Rec) return Boolean is
+  overriding function "=" (Current : Line_Rec;
+                           Criteria : Line_Rec) return Boolean is
     use type As.U.Asu_Us;
   begin
     return Current.Txt = Criteria.Txt;

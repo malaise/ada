@@ -9,22 +9,22 @@ package Pieces is
   type Piece_Kind_List is (Pawn, Rook, Knight, Bishop, Queen, King);
 
   type Pawn_Piece   is new Basic_Piece with private;
-  procedure Actions_Of (Piece : Pawn_Piece);
+  overriding procedure Actions_Of (Piece : Pawn_Piece);
 
   type Rook_Piece   is new Basic_Piece with private;
-  procedure Actions_Of (Piece : Rook_Piece);
+  overriding procedure Actions_Of (Piece : Rook_Piece);
 
   type Knight_Piece is new Basic_Piece with private;
-  procedure Actions_Of (Piece : Knight_Piece);
+  overriding procedure Actions_Of (Piece : Knight_Piece);
 
   type Bishop_Piece is new Basic_Piece with private;
-  procedure Actions_Of (Piece : Bishop_Piece);
+  overriding procedure Actions_Of (Piece : Bishop_Piece);
 
   type Queen_Piece  is new Basic_Piece with private;
-  procedure Actions_Of (Piece : Queen_Piece);
+  overriding procedure Actions_Of (Piece : Queen_Piece);
 
   type King_Piece   is new Basic_Piece with private;
-  procedure Actions_Of (Piece : King_Piece);
+  overriding procedure Actions_Of (Piece : King_Piece);
 
   -- Create a new piece
   function Create (Kind      : Piece_Kind_List;

@@ -45,7 +45,8 @@ package Sourcer is
   -- Unique list of parsed source descriptors (Kind, Unit and Path)
   type Src_Dscr_Access is access all Src_Dscr;
   procedure Set (To : out Src_Dscr; Val : in Src_Dscr);
-  function "=" (Current : Src_Dscr; Criteria : Src_Dscr) return Boolean;
+  overriding function "=" (Current : Src_Dscr;
+                           Criteria : Src_Dscr) return Boolean;
   function Image (Element : Src_Dscr) return String;
   package H_Src_List_Mng is new Hashed_List (Src_Dscr, Src_Dscr_Access,
                                            Set, "=" , Image);
@@ -63,7 +64,8 @@ package Sourcer is
   -- Unique list of parsed unit names (Unit)
   type Name_Dscr_Access is access all Name_Dscr;
   procedure Set (To : out Name_Dscr; Val : in Name_Dscr);
-  function "=" (Current : Name_Dscr; Criteria : Name_Dscr) return Boolean;
+  overriding function "=" (Current : Name_Dscr;
+                           Criteria : Name_Dscr) return Boolean;
   function Image (Element : Name_Dscr) return String;
   package H_Name_List_Mng is new Hashed_List (Name_Dscr, Name_Dscr_Access,
                                            Set, "=" , Image);
@@ -80,7 +82,8 @@ package Sourcer is
   end record;
   type Withing_Dscr_Access is access all Withing_Dscr;
   procedure Set (To : out Withing_Dscr; Val : in Withing_Dscr);
-  function "=" (Current : Withing_Dscr; Criteria : Withing_Dscr) return Boolean;
+  overriding function "=" (Current : Withing_Dscr;
+                           Criteria : Withing_Dscr) return Boolean;
   function Image (Element : Withing_Dscr) return String;
   package H_Withing_List_Mng is new Hashed_List (Withing_Dscr,
                                            Withing_Dscr_Access,

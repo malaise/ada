@@ -34,7 +34,7 @@ package body Tree_Mng is
   begin
     To := Val;
   end Set;
-  function "=" (Current : Cell; Criteria : Cell) return Boolean is
+  overriding function "=" (Current : Cell; Criteria : Cell) return Boolean is
     use type As.U.Asu_Us;
   begin
     return Current.Name = Criteria.Name;

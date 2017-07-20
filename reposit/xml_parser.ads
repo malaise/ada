@@ -662,7 +662,8 @@ private
   end record;
   type Entity_Access is access all Entity_Type;
   procedure Set (To : out Entity_Type; Val : in Entity_Type);
-  function "=" (Current : Entity_Type; Criteria : Entity_Type) return Boolean;
+  overriding function "=" (Current : Entity_Type;
+                           Criteria : Entity_Type) return Boolean;
   function Image (Entity : Entity_Type) return String;
   package H_Entity_List_Mng is new Hashed_List (Entity_Type, Entity_Access,
              Set, "=", Image);
@@ -693,7 +694,8 @@ private
   type Info_Access is access all Info_Rec;
   procedure Set (To : out Info_Rec; Val : in Info_Rec);
   function Image (Element : Info_Rec) return String;
-  function "=" (Current : Info_Rec; Criteria : Info_Rec) return Boolean;
+  overriding function "=" (Current : Info_Rec;
+                           Criteria : Info_Rec) return Boolean;
   package H_Info_Mng is new Hashed_List (Info_Rec, Info_Access,
                                          Set, "=", Image);
   package Info_Mng is new H_Info_Mng.Unique;
@@ -747,7 +749,8 @@ private
   type Id_Cell_Access is access all Id_Cell;
   procedure Set (To : out Id_Cell;  Val : in Id_Cell);
   function Image (Element : Id_Cell) return String;
-  function "=" (Current : Id_Cell; Criteria : Id_Cell) return Boolean;
+  overriding function "=" (Current : Id_Cell;
+                           Criteria : Id_Cell) return Boolean;
 
   -- Unique list of IDs
   package H_Id_List_Mng is new Hashed_List (Id_Cell, Id_Cell_Access,
@@ -762,8 +765,8 @@ private
   -- Unparsed entities
   type Unparsed_Access is access all Unparsed_Type;
   procedure Set (To : out Unparsed_Type; Val : in Unparsed_Type);
-  function "=" (Current : Unparsed_Type; Criteria : Unparsed_Type)
-               return Boolean;
+  overriding function "=" (Current : Unparsed_Type;
+                           Criteria : Unparsed_Type) return Boolean;
   function Image (Unparsed : Unparsed_Type) return String;
   package H_Unparsed_List_Mng is new Hashed_List (Unparsed_Type,
              Unparsed_Access, Set, "=", Image);
@@ -776,8 +779,8 @@ private
   end record;
   type Namespace_Access is access all Namespace_Type;
   procedure Set (To : out Namespace_Type; Val : in Namespace_Type);
-  function "=" (Current : Namespace_Type; Criteria : Namespace_Type)
-               return Boolean;
+  overriding function "=" (Current : Namespace_Type;
+                           Criteria : Namespace_Type) return Boolean;
   function Image (Namespace : Namespace_Type) return String;
   package Namespace_List_Mng is new Hashed_List (Namespace_Type,
              Namespace_Access, Set, "=", Image);

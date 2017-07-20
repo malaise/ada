@@ -21,9 +21,10 @@ package body Communication is
 
   -- Connection Cb
   type Connect_Type is new Autobus.Observer_Type with null record;
-  procedure Receive (Unused_Observer   : in out Connect_Type;
-                     Unused_Subscriber : in Autobus.Subscriber_Access_Type;
-                     Message : in String) is
+  overriding procedure Receive (
+      Unused_Observer   : in out Connect_Type;
+      Unused_Subscriber : in Autobus.Subscriber_Access_Type;
+      Message : in String) is
   begin
     Utils.Dbg_Comm ("Received " & Message);
     if Message = "E" then
@@ -102,9 +103,10 @@ package body Communication is
   -- Set reception callback
   Reception : Reception_Cb := null;
   type Reception_Type is new Autobus.Observer_Type with null record;
-  procedure Receive (Unused_Observer : in out Reception_Type;
-                     Unused_Subscriber : in Autobus.Subscriber_Access_Type;
-                     Message : in String) is
+  overriding procedure Receive (
+      Unused_Observer : in out Reception_Type;
+      Unused_Subscriber : in Autobus.Subscriber_Access_Type;
+      Message : in String) is
   begin
     Utils.Dbg_Comm ("Received " & Message);
     if Reception /= null then

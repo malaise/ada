@@ -5,7 +5,8 @@ package body Parser.Keywords is
   begin
     To := Val;
   end Set;
-  function "=" (Current : Cell_Type; Criteria : Cell_Type) return Boolean is
+  overriding function "=" (Current : Cell_Type;
+                           Criteria : Cell_Type) return Boolean is
     use type As.U.Asu_Us;
   begin
     return Current.Keyword = Criteria.Keyword;

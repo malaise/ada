@@ -25,7 +25,7 @@ package Arbitrary.Fractions is
   function "-" (A : Fraction) return Fraction;
 
   -- Basic comparisons
-  function "=" (A, B : Fraction) return Boolean;
+  overriding function "=" (A, B : Fraction) return Boolean;
   function "<" (A, B : Fraction) return Boolean;
   function "<=" (A, B : Fraction) return Boolean;
   function ">" (A, B : Fraction) return Boolean;

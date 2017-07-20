@@ -33,7 +33,7 @@ package Arbitrary is
   function "-" (A : Number) return Number;
 
   -- Basic comparisons
-  function "=" (A, B : Number) return Boolean;
+  overriding function "=" (A, B : Number) return Boolean;
   function "<" (A, B : Number) return Boolean;
   function "<=" (A, B : Number) return Boolean;
   function ">" (A, B : Number) return Boolean;

@@ -23,7 +23,8 @@ package File_Hash is
   type Line_Access is access all Line_Rec;
   procedure Set (To : out Line_Rec; Val : in Line_Rec);
   -- Match if Txt matches
-  function "=" (Current : Line_Rec; Criteria : Line_Rec) return Boolean;
+  overriding function "=" (Current : Line_Rec;
+                           Criteria : Line_Rec) return Boolean;
   -- Image of Txt
   function Key_Image (Element : Line_Rec) return String;
 

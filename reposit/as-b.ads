@@ -57,7 +57,7 @@ package As.B is
                              By     : in Character);
 
   -- Comparisons
-  function "="  (Left, Right : Asb_Bs) return Boolean;
+  overriding function "="  (Left, Right : Asb_Bs) return Boolean;
   function "="  (Left : Asb_Bs; Right : String) return Boolean;
   function "="  (Left : String; Right : Asb_Bs) return Boolean;
   function "<"  (Left, Right : Asb_Bs) return Boolean;

@@ -16,7 +16,8 @@ package body Computer is
   function Image (Element : Var_Rec) return String is
     ( (if Element.Persistent then "P" else "V")
       & " " & Element.Name.Image);
-  function "=" (Current : Var_Rec ; Criteria : Var_Rec ) return Boolean is
+  overriding function "=" (Current : Var_Rec;
+                           Criteria : Var_Rec ) return Boolean is
     use type As.U.Asu_Us;
   begin
     return Current.Persistent = Criteria.Persistent

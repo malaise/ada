@@ -5,8 +5,8 @@ package body Exception_Messenger is
   type Exception_Info is record
     Name, Message : As.U.Asu_Us;
   end record;
-  function "=" (Current : Exception_Info; Criteria : Exception_Info)
-                return Boolean is
+  overriding function "=" (Current : Exception_Info; Criteria : Exception_Info)
+                      return Boolean is
     use type As.U.Asu_Us;
   begin
     return Current.Name = Criteria.Name;

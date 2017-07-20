@@ -22,7 +22,8 @@ package body Sourcer is
   begin
     To := Val;
   end Set;
-  function "=" (Current : Src_Dscr; Criteria : Src_Dscr) return Boolean is
+  overriding function "=" (Current : Src_Dscr;
+                           Criteria : Src_Dscr) return Boolean is
     (Current.Kind = Criteria.Kind
      and then Sort.Make_Path (Current.Path, Current.Unit)
             = Sort.Make_Path (Criteria.Path, Criteria.Unit));
@@ -35,7 +36,8 @@ package body Sourcer is
   begin
     To := Val;
   end Set;
-  function "=" (Current : Name_Dscr; Criteria : Name_Dscr) return Boolean is
+  overriding function "=" (Current : Name_Dscr;
+                           Criteria : Name_Dscr) return Boolean is
     use type As.U.Asu_Us;
   begin
     return Current.Unit = Criteria.Unit;
@@ -46,8 +48,8 @@ package body Sourcer is
   procedure Set (To : out Withing_Dscr; Val : in Withing_Dscr) is begin
     To := Val;
   end Set;
-  function "=" (Current : Withing_Dscr; Criteria : Withing_Dscr)
-               return Boolean is
+  overriding function "=" (Current : Withing_Dscr;
+                           Criteria : Withing_Dscr) return Boolean is
     use type As.U.Asu_Us;
   begin
     return Current.Unit = Criteria.Unit;

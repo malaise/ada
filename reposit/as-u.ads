@@ -52,7 +52,7 @@ package As.U is
                              By     : in Character);
 
   -- Comparisons
-  function "="  (Left, Right : Asu_Us) return Boolean;
+  overriding function "="  (Left, Right : Asu_Us) return Boolean;
   function "="  (Left : Asu_Us; Right : String) return Boolean;
   function "="  (Left : String; Right : Asu_Us) return Boolean;
   function "<"  (Left, Right : Asu_Us) return Boolean;

@@ -409,7 +409,7 @@ package body Arbitrary is
     Syntax.Check (N);
     return N;
   end Set;
-  procedure Set (N: out Number; V : in String) is
+  overriding procedure Set (N: out Number; V : in String) is
   begin
     N := Set (V);
   end Set;
@@ -450,9 +450,11 @@ package body Arbitrary is
   function Two  return Number is (Number_Two);
 
   -- Image
-  function Image (V : Number) return String is (As.U.Asu_Us(V).Image);
+  overriding function Image (V : Number) return String is
+    (As.U.Asu_Us(V).Image);
 
-  function Length (V : Number) return Natural is (As.U.Asu_Us(V).Length);
+  overriding function Length (V : Number) return Natural is
+    (As.U.Asu_Us(V).Length);
 
   -- Is a Number positive (True for 0)
   function Is_Positive (V : Number) return Boolean is (Basic.Check_Is_Pos (V));
@@ -478,7 +480,7 @@ package body Arbitrary is
   end "-";
 
   -- Comparisons
-  function "=" (A, B : Number) return Boolean is
+  overriding function "=" (A, B : Number) return Boolean is
     Ta, Tb : Number;
     use type As.U.Asu_Us;
   begin
@@ -489,7 +491,7 @@ package body Arbitrary is
     return As.U.Asu_Us(Ta) = As.U.Asu_Us(Tb);
   end "=";
 
-  function "<" (A, B : Number) return Boolean is
+  overriding function "<" (A, B : Number) return Boolean is
     Pa : constant Boolean := Basic.Check_Is_Pos (A);
     Pb : constant Boolean := Basic.Check_Is_Pos (B);
     use type As.U.Asu_Us;
@@ -510,7 +512,7 @@ package body Arbitrary is
     end if;
   end "<";
 
-  function "<=" (A, B : Number) return Boolean is
+  overriding function "<=" (A, B : Number) return Boolean is
     Pa : constant Boolean := Basic.Check_Is_Pos (A);
     Pb : constant Boolean := Basic.Check_Is_Pos (B);
     use type As.U.Asu_Us;
@@ -531,7 +533,7 @@ package body Arbitrary is
     end if;
   end "<=";
 
-  function ">" (A, B : Number) return Boolean is
+  overriding function ">" (A, B : Number) return Boolean is
     Pa : constant Boolean := Basic.Check_Is_Pos (A);
     Pb : constant Boolean := Basic.Check_Is_Pos (B);
     use type As.U.Asu_Us;
@@ -552,7 +554,7 @@ package body Arbitrary is
     end if;
   end ">";
 
-  function ">=" (A, B : Number) return Boolean is
+  overriding function ">=" (A, B : Number) return Boolean is
     Pa : constant Boolean := Basic.Check_Is_Pos (A);
     Pb : constant Boolean := Basic.Check_Is_Pos (B);
     use type As.U.Asu_Us;

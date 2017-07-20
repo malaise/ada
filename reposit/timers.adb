@@ -440,10 +440,10 @@ package body Timers is
   end First;
 
   -- Clock update notification
-  procedure Notify (An_Observer : in out Observer_Type;
-                    Rtime, Vtime : in Virtual_Time.Time;
-                    Speed : in Virtual_Time.Speed_Range;
-                    Clock : in Virtual_Time.Clock_Access) is
+  overriding procedure Notify (An_Observer : in out Observer_Type;
+                               Rtime, Vtime : in Virtual_Time.Time;
+                               Speed : in Virtual_Time.Speed_Range;
+                               Clock : in Virtual_Time.Clock_Access) is
     pragma Unreferenced (An_Observer, Vtime);
     New_Speed : constant Virtual_Time.Speed_Range := Clock.Get_Speed;
 

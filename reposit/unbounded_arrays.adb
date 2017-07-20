@@ -283,8 +283,8 @@ package body Unbounded_Arrays is
   end Replace_Element;
 
   -- Comparisons
-  function "=" (Left  : Unbounded_Array;
-                Right : Unbounded_Array) return Boolean is
+  overriding function "=" (Left  : Unbounded_Array;
+                           Right : Unbounded_Array) return Boolean is
     (Left.Ref.all(1 .. Left.Last) = Right.Ref.all(1 .. Right.Last));
   function "=" (Left  : Unbounded_Array;
                 Right : Element_Array) return Boolean is

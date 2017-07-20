@@ -110,7 +110,8 @@ procedure Pingpong is
   begin
     To := Val;
   end Set;
-  function "=" (Current : Info_Type; Criteria : Info_Type) return Boolean is
+  overriding function "=" (Current : Info_Type;
+                           Criteria : Info_Type) return Boolean is
     (Current.Host.Host_Name_Len = Criteria.Host.Host_Name_Len
      and then Current.Host.Host_Name(1 .. Current.Host.Host_Name_Len)
             = Criteria.Host.Host_Name(1 .. Criteria.Host.Host_Name_Len));

@@ -50,8 +50,8 @@ package body Replace_Pattern is
   -- Access by index in The_Pattern
   function Image (Element : Substit_Action_Rec) return String is
     (Element.Index'Img);
-  function "=" (Current : Substit_Action_Rec; Criteria : Substit_Action_Rec)
-               return Boolean is
+  overriding function "=" (Current : Substit_Action_Rec;
+                           Criteria : Substit_Action_Rec) return Boolean is
   begin
     return Current.Index = Criteria.Index;
   end "=";

@@ -6,10 +6,10 @@ procedure T_Virtual is
   Nb_Notif : Natural := 0;
   My_Clock : aliased Virtual_Time.Clock;
   type Observer_Rec is new Virtual_Time.Observer with null record;
-  procedure Notify (An_Observer : in out Observer_Rec;
-                    Rtime, Vtime : in Virtual_Time.Time;
-                    Speed : in Virtual_Time.Speed_Range;
-                    A_Clock : in Virtual_Time.Clock_Access) is
+  overriding procedure Notify (An_Observer : in out Observer_Rec;
+                               Rtime, Vtime : in Virtual_Time.Time;
+                               Speed : in Virtual_Time.Speed_Range;
+                               A_Clock : in Virtual_Time.Clock_Access) is
     pragma Unreferenced (An_Observer);
     Rt, Vt : Virtual_Time.Time;
   begin

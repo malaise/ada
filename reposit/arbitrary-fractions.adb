@@ -94,7 +94,7 @@ package body Arbitrary.Fractions is
     ( (- A.Numerator, A.Denominator) );
 
   -- Basic comparisons
-  function "=" (A, B : Fraction) return Boolean is
+  overriding function "=" (A, B : Fraction) return Boolean is
     (A.Numerator = B.Numerator
      and then A.Denominator = B.Denominator);
 

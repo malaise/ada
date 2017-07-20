@@ -58,7 +58,7 @@ private
     Evp_Md : System.Address := System.Null_Address;
   end record;
 
-  procedure Finalize (Ctx : in out Context);
+  overriding procedure Finalize (Ctx : in out Context);
 
 end Evp_Digest;
 

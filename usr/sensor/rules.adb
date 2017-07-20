@@ -14,7 +14,7 @@ package body Rules is
   begin
     To := Val;
   end Set;
-  function "=" (Current : Rule; Criteria : Rule) return Boolean is
+  overriding function "=" (Current : Rule; Criteria : Rule) return Boolean is
     use type As.U.Asu_Us;
   begin
    return Current.Name = Criteria.Name;
