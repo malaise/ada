@@ -1,6 +1,5 @@
 with Ada.Exceptions;
-with As.U, Directory, Afpx.Utils, Str_Util, Basic_Proc,
-     Language, Images;
+with As.U, Directory, Afpx.Utils, Str_Util, Basic_Proc, Images;
 with Git_If, Utils.X, Afpx_Xref, Confirm, Error;
 package body Stash is
 
@@ -88,54 +87,67 @@ package body Stash is
   type Stash_Oper_List is (Stash_Addapl, Stash_Addrst, Stash_Apl,
                            Stash_Pop, Stash_Del, Stash_Rename);
   function Do_Stash (Oper : in Stash_Oper_List) return Boolean is
-    Name, Str : As.U.Asu_Us;
-    Num : Git_If.Stash_Number;
+    Str, New_Name : As.U.Asu_Us;
+    Stash : Git_If.Stash_Entry_Rec;
+    Confirm_Width : Afpx.Width_Range;
+    Line : Afpx.Line_Rec;
     Loc_Oper : Stash_Oper_List := Oper;
-    Index : Positive;
     Message : As.U.Asu_Us;
     Result : Boolean;
+
+    function Image (Txt : in As.U.Asu_Us) return String is
+      (if Txt.Is_Null then Git_If.Stash_Default_Str else Txt.Image);
   begin
-    -- Recover argument
+
+    -- Recover num and name from current entry
+    if Oper /= Stash_Addapl and then Oper /= Stash_Addrst then
+      Stashes.Move_At (Afpx.Line_List.Get_Position);
+      Stashes.Read (Stash, Moved => Result);
+      Str := As.U.Tus (Images.Integer_Image (Stash.Num)
+                     & " " & Stash.Name.Image);
+    end if;
+
+     -- Recover new name from Get field
     if Oper = Stash_Addapl or else Oper = Stash_Addrst
     or else Oper = Stash_Rename then
-       -- Recover name from Get field
-       Afpx.Decode_Field (Afpx_Xref.Stash.Name, 0, Name);
-       Name := As.U.Tus (Str_Util.Strip (Name.Image));
+       Afpx.Decode_Field (Afpx_Xref.Stash.Name, 0, New_Name);
+       New_Name := As.U.Tus (Str_Util.Strip (New_Name.Image));
+       if Oper /= Stash_Rename then
+         Str := New_Name;
+       end if;
        Afpx.Clear_Field (Afpx_Xref.Stash.Name);
        Afpx.Reset (Get_Handle);
     end if;
 
-    if Oper = Stash_Addapl or else Oper = Stash_Addrst then
-      Str := Name;
-    else
-      -- Recover num
-      declare
-        Line : constant Afpx.Line_Rec := Afpx.Line_List.Access_Current.all;
-      begin
-        Str := As.U.Tus (Str_Util.Strip (Language.Unicode_To_String (
-            Line.Str(1 .. Line.Len))));
-        Index := Str_Util.Locate (Str.Image, " ");
-        Num := Git_If.Stash_Number'Value (Str.Slice (1, Index));
-        Str := As.U.Tus (Images.Integer_Image (Num));
-      end;
-    end if;
-
     -- Confirm except for addapl
     if Oper /= Stash_Addapl then
+      Afpx.Use_Descriptor (Afpx_Xref.Confirm.Dscr_Num);
+      Confirm_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
+      Afpx.Line_List.Delete_List;
+      Afpx.Utils.Encode_Line (
+        "", Image (Str), "", Confirm_Width, Line, Keep_Tail => False);
+      Afpx.Line_List.Insert (Line);
+      if Oper = Stash_Addrst then
+        Afpx.Utils.Center_Line ("", "and reset", "", Confirm_Width, Line);
+        Afpx.Line_List.Insert (Line);
+      elsif Oper = Stash_Rename then
+        Afpx.Utils.Encode_Line (
+          "as: ", Image (New_Name), "", Confirm_Width, Line,
+          Keep_Tail => False);
+        Afpx.Line_List.Insert (Line);
+      end if;
+
       Result := Confirm (
           "Stash",
-          "Ready to "
-        & (case Oper is
-            when Stash_Addapl => "",
-            when Stash_Addrst => "add",
-            when Stash_Apl    => "apply",
-            when Stash_Pop    => "apply and delete",
-            when Stash_Del    => "del",
-            when Stash_Rename => "rename")
-        & " stash: " & Str.Image
-        & (if Oper = Stash_Addrst then " and reset"
-           elsif Oper = Stash_Rename then " as " & Name.Image
-           else ""));
+          "Ready to " & (case Oper is
+              when Stash_Addapl => "",
+              when Stash_Addrst => "add",
+              when Stash_Apl    => "apply",
+              when Stash_Pop    => "apply and del",
+              when Stash_Del    => "del",
+              when Stash_Rename => "rename")
+          & " stash:",
+          Show_List => True);
       Init;
       Reread (True);
       if not Result then
@@ -148,17 +160,21 @@ package body Stash is
     case Oper is
       when Stash_Addapl =>
         Loc_Oper := Stash_Addrst;
-        Message := As.U.Tus (Git_If.Add_Stash (Name.Image));
+        Message := As.U.Tus (Git_If.Add_Stash (New_Name.Image));
         if Message.Is_Null then
           Loc_Oper := Stash_Apl;
           Message := As.U.Tus (Git_If.Apply_Stash (0));
         end if;
-      when Stash_Addrst => Message := As.U.Tus (Git_If.Add_Stash (Name.Image));
-      when Stash_Apl    => Message := As.U.Tus (Git_If.Apply_Stash (Num));
-      when Stash_Pop    => Message := As.U.Tus (Git_If.Pop_Stash (Num));
-      when Stash_Del    => Message := As.U.Tus (Git_If.Drop_Stash (Num));
-      when Stash_Rename => Message := As.U.Tus (Git_If.Rename_Stash (
-                                                  Num, Name.Image));
+      when Stash_Addrst =>
+        Message := As.U.Tus (Git_If.Add_Stash (New_Name.Image));
+      when Stash_Apl =>
+        Message := As.U.Tus (Git_If.Apply_Stash (Stash.Num));
+      when Stash_Pop =>
+        Message := As.U.Tus (Git_If.Pop_Stash (Stash.Num));
+      when Stash_Del =>
+        Message := As.U.Tus (Git_If.Drop_Stash (Stash.Num));
+      when Stash_Rename =>
+        Message := As.U.Tus (Git_If.Rename_Stash (Stash.Num, New_Name.Image));
     end case;
 
     -- Handle error
@@ -175,7 +191,7 @@ package body Stash is
               when Stash_Pop    => "popping",
               when Stash_Del    => "deleting",
               when Stash_Rename => "renaming"),
-        Name.Image, Message.Image);
+        Str.Image, Message.Image);
       Init;
       Reread (True);
       return False;

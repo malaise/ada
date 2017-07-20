@@ -207,6 +207,8 @@ package Git_If is
 
   -- Stash management
   subtype Stash_Number is Natural;
+  -- Default string for branch or name
+  Stash_Default_Str : constant String := "-";
   type Stash_Entry_Rec is record
     Num : Stash_Number;
     Branch : As.U.Asu_Us;

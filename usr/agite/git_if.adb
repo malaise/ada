@@ -1536,21 +1536,21 @@ package body Git_If is
        and then Line.Slice (I2 + 3, I2 + 5) = "On " then
          I1 := I2 + 5;
        else
-         Stash.Branch := As.U.Tus ("-");
+         Stash.Branch := As.U.Tus (Stash_Default_Str);
        end if;
        if Stash.Branch.Is_Null then
          -- A branch name
          I2 := Str_Util.Locate (Line.Image, ":", I1);
          Stash.Branch := Line.Uslice (I1 + 1, I2 - 1);
        else
-         -- No branch name ("-");
+         -- No branch name => Default
          I2 := I2 + 1;
        end if;
        -- ":" [ " <Name>" ]
        if I2 /= Line.Length then
          Stash.Name := Line.Uslice (I2 + 2, Line.Length);
        else
-         Stash.Name.Set_Null;
+         Stash.Name := As.U.Tus (Stash_Default_Str);
        end if;
        Stashes.Insert (Stash);
       exception
@@ -1694,7 +1694,7 @@ package body Git_If is
     Cmd.Cat ("stash");
     Cmd.Cat ("store");
     Cmd.Cat ("-m");
-    Cmd.Cat (if Name = "" then "-" else Pt (Name));
+    Cmd.Cat (Pt (if Name = "" then Stash_Default_Str else Name));
     Cmd.Cat ("-q");
     Cmd.Cat (Stash_Hash);
     Execute (Cmd, True, Command.Both,
