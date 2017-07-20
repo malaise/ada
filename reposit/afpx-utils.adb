@@ -1,4 +1,4 @@
-with Str_Util;
+with Aski.Unicode, Str_Util;
 package body Afpx.Utils is
 
   -- Scroll the list according to button
@@ -83,6 +83,12 @@ package body Afpx.Utils is
     end if;
   end Protect_Field;
 
+  -- Clean (fill with spaces) the Str field of the line
+  procedure Clean_Line (Line : in out Afpx.Line_Rec) is
+  begin
+    Line.Str := (others => Aski.Unicode.Spc_U);
+  end Clean_Line;
+
   -- Encode a line, procuste on Text, preserving tail or head of Text
   procedure Encode_Line (Head, Text, Tail : in String;
                          Width : in Afpx.Width_Range;
@@ -90,11 +96,35 @@ package body Afpx.Utils is
                          Keep_Tail : in Boolean := True;
                          Show_Cut : Boolean := True) is
   begin
+  Clean_Line (Line);
     Afpx.Encode_Line (Line,
         Head & Procuste (Text, Width - Head'Length - Tail'Length,
                          True, Keep_Tail, Show_Cut)
              & Tail);
   end Encode_Line;
+
+  -- Center Head+Text+Tail in Line, procuste on Text,
+  -- preserving tail or head of Text
+  procedure Center_Line (Head, Text, Tail : in String;
+                         Width : in Afpx.Width_Range;
+                         Line : in out Afpx.Line_Rec;
+                         Keep_Head : in Boolean := True;
+                         Show_Cut : Boolean := True) is
+  begin
+    if Head'Length + Text'Length + Tail'Length <= Width then
+      -- Full text fits => center full text
+      Afpx.Encode_Line (Line, Str_Util.Center (Head & Text & Tail, Width));
+    elsif Head'Length + 2 + Tail'Length <= Width then 
+      -- Procusting Text is enough => Procuste only Text
+      Afpx.Encode_Line (Line,
+        Head & Procuste (Text, Width - Head'Length - Tail'Length,
+                         True, not Keep_Head, Show_Cut) & Tail);
+    else
+      -- Procusting Text is not enough => Procuste full text
+      Afpx.Encode_Line (Line, 
+        Procuste (Head & Text & Tail, Width, True, not Keep_Head, Show_Cut));
+    end if;
+  end Center_Line;
 
   -- Encode Text in 1st column of Row of Field, procuste,
   --  preserve Tail or head

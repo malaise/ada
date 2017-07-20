@@ -37,15 +37,26 @@ package Afpx.Utils is
   procedure Protect_Field (Field_No : in Afpx.Absolute_Field_Range;
                            Protect  : in Boolean);
 
-  -- Encode a line, procuste on Text, preserving tail or head of Text
+  -- Clean (fill with spaces) the Str field of the line
+  procedure Clean_Line (Line : in out Afpx.Line_Rec);
+
+  -- Clean then encode a line, procuste on Text, preserving tail or head of Text
   procedure Encode_Line (Head, Text, Tail : in String;
                          Width : in Afpx.Width_Range;
                          Line : in out Afpx.Line_Rec;
                          Keep_Tail : in Boolean := True;
                          Show_Cut : Boolean := True);
 
+  -- Center Head+Text+Tail in Line, procuste on Text, preserving tail or head
+  --  of Text, or fill gaps with spaces,
+  procedure Center_Line (Head, Text, Tail : in String;
+                         Width : in Afpx.Width_Range;
+                         Line : in out Afpx.Line_Rec;
+                         Keep_Head : in Boolean := True;
+                         Show_Cut : Boolean := True);
+
   -- Encode Text in 1st column of Row of Field, procuste,
-  --  preserve Tail or head
+  --  preserve tail or head
   procedure Encode_Field (Text : in String;
                           Field : in Afpx.Field_Range;
                           Row : in Con_Io.Row_Range;
@@ -54,7 +65,7 @@ package Afpx.Utils is
                           Show_Cut : Boolean := True);
 
   -- Clear field and Center Text in 1st column of Field (row 0 or 1)
-  --  procuste, preserve head
+  --  procuste, preserve tail or head
   procedure Center_Field (Text : in String;
                           Field : in Afpx.Field_Range;
                           Row : in Con_Io.Row_Range;
