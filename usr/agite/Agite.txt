@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V33.05
+V33.06
 
 General purpose
 ---------------
@@ -1695,11 +1695,17 @@ Rename::
 
 Rename a saved stash: Select a stash, enter a message (or name) for the stash
 and click in the 'rename' button. The entry selected is renamed after
-confirmation (and moved at the top of the list).
+confirmation (and moved at the top of the list). The branch information of the
+stash is lost.
 
 .Back
 
 This button returns to the xref:XDir[directory] menu.
+
+NOTE: If the new name is empty: +
+*  'AddAppl' and 'AddReset' let GIT set the default name (short SHA and comment
+of the head the of the current branch), +
+* 'Rename' sets a default name ("-").
 
 Pull
 ~~~~
