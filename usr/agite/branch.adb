@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Directory, Afpx.Utils, Basic_Proc, Unicode, Str_Util, Con_Io;
+with Directory, Afpx.Utils, Basic_Proc, Unicode, Str_Util, Con_Io, Aski;
 with Git_If, Utils.X, Afpx_Xref, Confirm, Error, History, Cherry, Reset, Commit;
 package body Branch is
 
@@ -186,6 +186,9 @@ package body Branch is
   -- Handle Rebase memory (incuding restart)
   package Rebase_Mng is
     -- (Re) start a rebase, return the error message to display
+    -- Specific error when aborted (cancelled by user or error already
+    --  displayed)
+    Aborted : constant String := Aski.Esc_S;
     function Do_Rebase (Root : String;
                         Target_Branch, Reference_Branch: String;
                         Interactive : Boolean) return String;
@@ -279,7 +282,7 @@ package body Branch is
       end if;
     end if;
 
-    -- Git_If
+    -- Action, set Result on error
     Message2 := As.U.Asu_Null;
     case Action is
       when Create =>
@@ -395,7 +398,8 @@ package body Branch is
     end case;
 
     -- Handle error
-    if not Result.Is_Null then
+    if not (Result.Is_Null
+            or else Result = As.U.Tus (Rebase_Mng.Aborted)) then
       Error (Message1.Image, Message2.Image, Result.Image);
       Init;
       Reread (False);
@@ -413,7 +417,9 @@ package body Branch is
     Reread (False);
 
     -- Successful checkout, merge, rebase
-    return Action = Checkout or else Action = Merge or else Action = Rebase;
+    return Action = Checkout or else Action = Merge
+           or else (Action = Rebase
+                    and then Result /= As.U.Tus (Rebase_Mng.Aborted));
   end Do_Action;
 
   -- Update the list status
@@ -579,12 +585,14 @@ package body Branch is
   -- Interactively rebase current branch from rev
   function Reorg (Root, Rev : String) return Boolean is
     Msg : As.U.Asu_Us;
+    use type As.U.Asu_Us;
   begin
     Msg := As.U.Tus (Rebase_Mng.Do_Rebase (Root, Rev, "", True));
     if Msg.Is_Null then
       return True;
+    elsif Msg /= As.U.Tus (Rebase_Mng.Aborted) then
+      Error ("Rebase from " & Rev, "", Msg.Image);
     end if;
-    Error ("Rebase from " & Rev, "", Msg.Image);
     return False;
   end Reorg;
 

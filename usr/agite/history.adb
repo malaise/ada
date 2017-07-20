@@ -80,7 +80,6 @@ package body History is
     Logs : Git_If.Log_List;
     All_Read : Boolean;
 
-
     -- Init Afpx
     procedure Init is
     begin
@@ -104,6 +103,10 @@ package body History is
            else "/"),
           Afpx_Xref.History.File);
       On_Root := Path = "" and then Name = "";
+      -- Disable Root if already on root (including hist of branch)
+      if On_Root then
+        Afpx.Utils.Protect_Field (Afpx_Xref.History.Root, True);
+      end if;
     end Init;
 
     -- Show delta from current in list to comp
@@ -563,10 +566,6 @@ package body History is
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Checkout, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag, True);
-    end if;
-    -- Disable Root if already on root (including hist of branch)
-    if On_Root then
-      Afpx.Utils.Protect_Field (Afpx_Xref.History.Root, True);
     end if;
 
     -- Main loop

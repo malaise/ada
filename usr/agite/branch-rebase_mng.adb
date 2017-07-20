@@ -75,7 +75,7 @@ package body Rebase_Mng is
       -- Confirm new rebase
       if not Do_Confirm then
         -- User cancelled new rebase
-        return "";
+        return Aborted;
       end if;
     end if;
 
@@ -117,7 +117,7 @@ package body Rebase_Mng is
         Reset (True);
       when Cherry.Error =>
         -- Error already handled
-        return "";
+        return Aborted;
       when Cherry.Cancelled =>
         -- Switch back to original branch and remove Tmp branch
         Reset (True);
@@ -131,7 +131,7 @@ package body Rebase_Mng is
           return "Cannot delete tmp branch " & Tmp_Branch.Image & ": "
                  & Result.Image;
         end if;
-        return "";
+        return Aborted;
     end case;
 
     -- Hard reset the Rebased branch to Tmp branch
