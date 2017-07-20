@@ -53,7 +53,8 @@ package body Rebase_Mng is
         & " of branch " & Current_Branch.Image
         & (if Reference_Branch /= "" then " from " & Reference_Branch else ""),
         "on " & Target_Branch,
-        (if Restart then "" else "This operation will alter the history")) );
+        Warning => (if Restart then ""
+                    else "This operation will alter the history")) );
   begin
     Current_Branch := As.U.Tus (Git_If.Current_Branch);
     -- Check if same rebase as previous and temporary branch still here

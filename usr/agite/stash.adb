@@ -89,8 +89,6 @@ package body Stash is
   function Do_Stash (Oper : in Stash_Oper_List) return Boolean is
     Str, New_Name : As.U.Asu_Us;
     Stash : Git_If.Stash_Entry_Rec;
-    Confirm_Width : Afpx.Width_Range;
-    Line : Afpx.Line_Rec;
     Loc_Oper : Stash_Oper_List := Oper;
     Message : As.U.Asu_Us;
     Result : Boolean;
@@ -121,33 +119,21 @@ package body Stash is
 
     -- Confirm except for addapl
     if Oper /= Stash_Addapl then
-      Afpx.Use_Descriptor (Afpx_Xref.Confirm.Dscr_Num);
-      Confirm_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
-      Afpx.Line_List.Delete_List;
-      Afpx.Utils.Encode_Line (
-        "", Image (Str), "", Confirm_Width, Line, Keep_Tail => False);
-      Afpx.Line_List.Insert (Line);
-      if Oper = Stash_Addrst then
-        Afpx.Utils.Center_Line ("", "and reset", "", Confirm_Width, Line);
-        Afpx.Line_List.Insert (Line);
-      elsif Oper = Stash_Rename then
-        Afpx.Utils.Encode_Line (
-          "as: ", Image (New_Name), "", Confirm_Width, Line,
-          Keep_Tail => False);
-        Afpx.Line_List.Insert (Line);
-      end if;
-
       Result := Confirm (
-          "Stash",
-          "Ready to " & (case Oper is
-              when Stash_Addapl => "",
-              when Stash_Addrst => "add",
-              when Stash_Apl    => "apply",
-              when Stash_Pop    => "apply and del",
-              when Stash_Del    => "del",
-              when Stash_Rename => "rename")
-          & " stash:",
-          Show_List => True);
+        Title => "Stash",
+        Action =>  "Ready to "
+                   & (case Oper is
+                        when Stash_Addapl => "",
+                        when Stash_Addrst => "add",
+                        when Stash_Apl    => "apply",
+                        when Stash_Pop    => "apply and del",
+                        when Stash_Del    => "del",
+                        when Stash_Rename => "rename")
+                   & " stash:",
+        Msg1 => Image (Str),
+        Msg2 => (if Oper = Stash_Rename then "as: " & Image (New_Name)
+                 elsif Oper = Stash_Addrst then "and then reset"
+                 else "") );
       Init;
       Reread (True);
       if not Result then
