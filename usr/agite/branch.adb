@@ -384,7 +384,7 @@ package body Branch is
           -- Rabse to HEAD of current branch
           Done := Reset (Root.Image, "");
         else
-          -- Rabse to another branch
+          -- Rebase to another branch
           Done := Reset (Root.Image, Sel_Name.Image);
         end if;
         if not Done then

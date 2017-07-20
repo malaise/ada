@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V33.02
+V33.03
 
 General purpose
 ---------------
@@ -754,6 +754,8 @@ while a  a rebase on 'master' (left selection) with the reference 'server'
           \           \-- C8 -- C9 (client)
            \- C3 -- C4 -- C10 (server)
 +
+See also the section on xref:XRewritingHistory[rewriting history]. +
+
 The rebased branch is automatically checked out by this operation and Agite
 returns to the xref:XDir[directory] menu.
 
@@ -781,7 +783,8 @@ Reset::
 
 anchor:XBReset[]
 This button calls the xref:XReset[reset] menu to reset (soft, mixed or hard)
-the repository to the head of the (left) selected local branch.
+the repository to the head of the (left) selected local branch. +
+See also the section on xref:XRewritingHistory[rewriting history].
 
 Create::
 
@@ -1069,7 +1072,8 @@ There is first a check that there is no local change in the repository (they
 would be lost). +
 This function is only active when in the root directory of the current
 branch, so that the current list of commits is exactly the one that will
-be reorganized.
+be reorganized. +
+See also the section on xref:XRewritingHistory[rewriting history].
 
 NOTE: The 'Reorg' consists in a manual xref:XCherry[cherry-pick] of commits,
 then an automatic commit of these cherries into a temporary branch, then
@@ -1078,10 +1082,12 @@ See the how-to xref:XCherryReorg[interactively rebase a branch on itself]
 and the section xref:XCherryError[Error in cherry-pick] on how to handle
 errors during a reorg.
 
+
 .Reset
 anchor:XHReset[]
 This button calls the xref:XReset[reset] menu to reset (soft, mixed or hard)
-the repository to the (left) selected commit.
+the repository to the (left) selected commit. +
+See also the section on xref:XRewritingHistory[rewriting history].
 
 .Tag
 This button button launches the xref:XTag[tag] menu that allows tagging the 
@@ -1978,6 +1984,7 @@ xref:XCherryRebase[rebase] and the xref:XCherryReorg[reorg] use-cases.
 
 Rewriting history
 -----------------
+anchor:XRewritingHistory[]
 Rewriting the history can have serious consequences if you modify commits that
 have already been published, and have been pulled by some other repositories. +
 The four functions of Agite that alter the history are:
@@ -2000,18 +2007,16 @@ Similarly, when they are active the xref:XRebase[rebase] and xref:XBReset[reset]
 buttons of the xref:XBranches[branches] menu are in red (except reset to current
 branch).
 
-NOTE: The xref:XCherry[cherry-pick] function does not rewrite the history
-because it applies commits to the target branch, which evolves naturally. +
-The xref:XReset[reset] function triggered by the xref:XRevert[revert] buton
-on \'.\' of the xref:XDir[directory] menu does not rewrite the history
-because it resets the repository to the current branch head (which is the
-history). +
-The xref:XReset[reset] function triggered by the xref:XHist[history] on
-the first commit of the list is in fact a reset to the head of current branch
-and does not rewrite the history. +
-The xref:XReset[reset] function triggered by the xref:XBranches[branches]
-on the current branch is in fact a reset to the head of current branch
-and does not rewrite the history. +
+NOTE: The following operations do not rewrite the history: +
+* The xref:XCherry[cherry-pick] function, because it applies commits to the
+target branch, which evolves naturally. +
+* The xref:XReset[reset] function of the xref:XDir[directory] menu, because it
+resets the repository to the head of the current branch (which is the
+head of the history). +
+* The xref:XReset[reset] to the first commit of the list of the
+xref:XHist[history] menu, because it resets to the head of the current branch. +
+* The xref:XReset[reset] to the current branch of the xref:XBranches[branches]
+menu, because it resets to the head of the current branch.
 
 Scope of the operations
 -----------------------
