@@ -92,7 +92,7 @@ package body Afpx.Utils is
   -- Encode a line, procuste on Text, preserving tail or head of Text
   procedure Encode_Line (Head, Text, Tail : in String;
                          Width : in Afpx.Width_Range;
-                         Line : in out Afpx.Line_Rec;
+                         Line : out Afpx.Line_Rec;
                          Keep_Tail : in Boolean := True;
                          Show_Cut : Boolean := True) is
   begin
@@ -107,21 +107,21 @@ package body Afpx.Utils is
   -- preserving tail or head of Text
   procedure Center_Line (Head, Text, Tail : in String;
                          Width : in Afpx.Width_Range;
-                         Line : in out Afpx.Line_Rec;
+                         Line : out Afpx.Line_Rec;
                          Keep_Head : in Boolean := True;
                          Show_Cut : Boolean := True) is
   begin
     if Head'Length + Text'Length + Tail'Length <= Width then
       -- Full text fits => center full text
       Afpx.Encode_Line (Line, Str_Util.Center (Head & Text & Tail, Width));
-    elsif Head'Length + 2 + Tail'Length <= Width then 
+    elsif Head'Length + 2 + Tail'Length <= Width then
       -- Procusting Text is enough => Procuste only Text
       Afpx.Encode_Line (Line,
         Head & Procuste (Text, Width - Head'Length - Tail'Length,
                          True, not Keep_Head, Show_Cut) & Tail);
     else
       -- Procusting Text is not enough => Procuste full text
-      Afpx.Encode_Line (Line, 
+      Afpx.Encode_Line (Line,
         Procuste (Head & Text & Tail, Width, True, not Keep_Head, Show_Cut));
     end if;
   end Center_Line;

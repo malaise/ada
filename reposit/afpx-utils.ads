@@ -43,15 +43,15 @@ package Afpx.Utils is
   -- Clean then encode a line, procuste on Text, preserving tail or head of Text
   procedure Encode_Line (Head, Text, Tail : in String;
                          Width : in Afpx.Width_Range;
-                         Line : in out Afpx.Line_Rec;
+                         Line : out Afpx.Line_Rec;
                          Keep_Tail : in Boolean := True;
                          Show_Cut : Boolean := True);
 
   -- Center Head+Text+Tail in Line, procuste on Text, preserving tail or head
-  --  of Text, or fill gaps with spaces,
+  --  of Text, or fill gaps with spaces
   procedure Center_Line (Head, Text, Tail : in String;
                          Width : in Afpx.Width_Range;
-                         Line : in out Afpx.Line_Rec;
+                         Line : out Afpx.Line_Rec;
                          Keep_Head : in Boolean := True;
                          Show_Cut : Boolean := True);
 
