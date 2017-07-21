@@ -1,6 +1,6 @@
 lsadeps
 =======
-V13.10
+V13.11
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order.
@@ -110,7 +110,7 @@ between target_unit and path_unit, which might be very time-consuming. +
 optimization that keeps the shortest ways found so far and does not explore
 longer ways, which is far more efficient than building the full tree. This
 leads to display all the ways that have the same minumum depth. +
- - The 'fast' option leads to event better optimize the scan so that each unit
+ - The 'fast' option leads to even better optimize the scan so that each unit
 is analysed only once. This leads to display the first way found, so not
 necessarily the shortest.
 
