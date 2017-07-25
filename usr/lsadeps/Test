@@ -236,7 +236,6 @@ Unit Unit1.Child1#US withes Unit4 already withed by parent Unit1#US
 Unit Unit1.Subunit#SU withes Unit3 already withed by parent Unit1#UB
 Unit Unit1.Subunit#SU withes Unit3 already withed by parent Unit1#US
 Unit Unit2#US withes twice Unit3
-Unit Unit2#US withes twice Unit3
 Unit Unit2.Child#US withes Unit1 while its parent Unit2#US withes Unit1.Child2
 EOF
 
