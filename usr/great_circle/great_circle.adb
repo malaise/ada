@@ -11,7 +11,7 @@ package body Great_Circle is
   -- Nautical mile in kilometers
   Nautical_Mile : constant := 1.8520;
   -- Earth radius (in nautical miles)
-  Earth_Radius : constant Lat_Lon.Distance := 6_370.0 / Nautical_Mile;
+  Earth_Radius : constant Lat_Lon.Distance := 6_371.0 / Nautical_Mile;
 
   -- Lenght of the Chord of an angle, and reverse
   function Chord_Of_Angle (Angle : Conv.Rad_Range; Radius : Lat_Lon.Distance)
