@@ -1,18 +1,16 @@
 lsadeps
 =======
-V13.11
+V13.12
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
-order.
-
+order. +
+Alternatively it lists units of a directory +
 Alternatively it checks redundant "with" clauses between specs and bodies.
 
-It relies on GNAT file naming conventions:
-
-  <unit>{[("-"|"~")<child_or_subunit>]}".ad"("s"|"b")
-
-Command line arguments
-----------------------
+Modes and inputs
+----------------
+There are three main functions: Show dependencies, list units, and check
+redundant "with". +
 Usage: lsadeps <version> | <help> | <depend> | <list> | <check>
 
  <version>     ::= -v | --version
@@ -37,81 +35,83 @@ Usage: lsadeps <version> | <help> | <depend> | <list> | <check>
  <children>    ::= -C | --children
  <check>       ::= -c | --check  [ <target_dir> ]
 
-There are three main functions: Show dependencies, list units, and check
-redundant "with".
-
 Show dependencies
 ~~~~~~~~~~~~~~~~~
+.Modes
 This function by default lists the units on which <target_unit> depends,
-which are withed units, their body and subunits, units withed by these
+which are the withed units, their body and subunits, units withed by these
 units... recursively. +
-Alternative modes are:
+This behaviour can beanged by the following mode modifiers:
 
- - 'specs' to show only units withed by specs and standalone bodies.
+- 'specs' to show only units withed by specs and standalone bodies.
 
- - 'revert' to show units depending on <target_unit>, which are its child
-units and the units which spec withes <target_unit>... recursively.
+- 'revert' to show units depending on <target_unit>, which are its child
+units, the units that with <target_unit> in their spec or body, the units that
+with (in their spec or body) a unit dependant by its spec... recursively.
 
- - 'path_unit' to show dependency paths between <target_unit> and <path_unit>.
+- 'path_unit' to show dependency paths between <target_unit> and <path_unit>.
 
-Other options are:
+.Options
+Besides, the following options are available:
 
- - 'tree' to show the full tree of dependencies (instead of a sorted unique
-list),
+- 'tree' to show the full tree of dependencies (instead of a sorted unique
+list).
 
- - 'fast' to fast scan and show the first dependency tree between <target_unit>
-and <path_unit>,
+- 'fast' to fast scan and show the first dependency tree between <target_unit>
+and <path_unit>.
 
- - 'direct' to show only the units that are directly dependent,
+- 'direct' to show only the units that are directly dependent.
 
- - 'file' to show the file names (instead of unit names),
+- 'file' to show the file names (instead of unit names).
 
- - 'bodies' to show, in revert mode, the units that depend from each other by
-   "with" in the body,
+- 'bodies' to also show, in revert mode, the units that depend from each other
+ by "with" in the body. +
+By default, in 'revert' mode, if unit B is withed by the body of A (and
+not by its spec), then the units withing A are not dependant from B in term of
+compilation, so they are not listed. Option 'bodies' leads to list all the
+revert dependecies.
 
- - 'restrict' to skip restricted with ("private with", "limited with" and
+- 'restrict' to skip restricted with ("private with", "limited with" and
 "limited private with"),
 
- - 'inclusions' to add some directories or some directory trees to the search
+- 'inclusions' to add some directories or some directory trees to the search
 path. +
 By default, the files are searched only in the current directory and in the
 directory of the target unit (or in the target directory itself) if any.
-These options are:
+The following options allow extending the search path:
   * 'include': adds an individual directory to the search path,
   * 'recursive': adds a directory and each of its subdirectories to the search
 path,
   * 'exclude': adds a directory name in the list of exclusion: Any directory in
 a 'recursive' search (including the root path provided as argument) that has
 its name defined in the exclusion list is skipped, and its subdirectories as
-well. +
-Individual 'include' paths are not checked for exclusion. 
+well.
 
-NOTE: 'include' and 'recursive' must specify directory paths (absolute or
++
+Individual 'include' paths are not checked for exclusion. +
+'include' and 'recursive' must specify directory paths (absolute or
 relative), while 'exclude' must specify simple directory names (no \'/').
 
+.Compatibility of options and modes
 'Specs' and 'revert' modes are mutually exclusive. +
-'Tree' and 'direct' modes are mutually exclusive. +
-'Fast' and 'tree' mode are mutually exclusive. +
-'path_unit' and 'direct' modes are mutually exclusive. +
-'bodies' is allowed only in 'revert' mode
+'Tree' and 'direct' options are mutually exclusive. +
+'Fast' and 'tree' options are mutually exclusive. +
+'path_unit' mode and 'direct' option are mutually exclusive. +
+'bodies' option is allowed only in 'revert' mode
 
-NOTE: By default, in 'revert' mode, if unit B is withed by the body of A (and
-not by its spec), then the units withing A are not dependant from B in term of
-compilation, so they are not listed. Option 'bodies' leads to list all the
-revert dependecies.
-
-NOTE: When the 'tree' option is not set, the analysis of dependencies
+.Tree optimizations
+When the 'tree' option is not set, then the analysis of dependencies
 is optimized so that the same unit is not analyzed several times.
 
-NOTE: When the the option 'path_unit' is set: +
+When the the option 'path_unit' is set: +
  - The 'tree' option leads to build and display the whole tree of dependancies
 between target_unit and path_unit, which might be very time-consuming. +
  - The default behaviour triggers internally the 'tree' mode with an
 optimization that keeps the shortest ways found so far and does not explore
 longer ways, which is far more efficient than building the full tree. This
-leads to display all the ways that have the same minumum depth. +
+leads to display all the ways that have the same minimum depth. +
  - The 'fast' option leads to even better optimize the scan so that each unit
-is analysed only once. This leads to display the first way found, so not
+is analysed only once. This leads to display the first way found, which is not
 necessarily the shortest.
 
 List units
@@ -157,6 +157,13 @@ Ada language selection
 The files are parsed according to the default Ada language version 'Ada2012',
 but the environment variable 'LSADEPS_LANGUAGE' can be set to 'Ada83', 'Ada95'
 'Ada2005' or 'Ada2012' to tune the logic of the parsing.
+
+Source file names
+~~~~~~~~~~~~~~~~~
+Lsadeps relies on GNAT file naming conventions for the names of the Ada source
+files:
+
+  <unit>{[("-"|"~")<child_or_subunit>]}".ad"("s"|"b")
 
 Format of output
 ----------------
@@ -272,6 +279,12 @@ What are all the units that will be re-compiled due to a modification of
 --------------------
   lsadeps -r -R ~/ada/usr Unit
 --------------------
+
+What are all the units that depend directly or not, on 'Unit'
+--------------------
+  lsadeps -rb -R ~/ada/usr Unit
+--------------------
+
 
 Check redundant "with" in the current directory
 --------------------
