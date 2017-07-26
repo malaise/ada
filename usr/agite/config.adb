@@ -32,6 +32,7 @@ package body Config is
   Ctx : Xml_Parser.Generator.Ctx_Type;
   Root : Xml_Parser.Element_Type;
   Bookmarks : Xml_Parser.Element_Type;
+  Comment : Xml_Parser.Element_Type;
   procedure Check is
     use type Xml_Parser.Ctx_Status_List;
   begin
@@ -57,6 +58,7 @@ package body Config is
     -- Store references
     Root := Ctx.Get_Root_Element;
     Bookmarks := Ctx.Get_Child (Root, Bookmarks_Pos);
+    Comment := Ctx.Get_Child (Root, Bookmarks_Pos + 1);
     -- Verify that each definition has one (text) child
     -- Prev dir may be empty
     for I in 1 .. Curr_Dir_Pos - 1 loop
@@ -68,6 +70,12 @@ package body Config is
     if Ctx.Get_Name (Bookmarks) /= "bookmarks" then
       raise Invalid_Config;
     end if;
+    -- Verify that comment has proper name and at most one (text) child
+    if Ctx.Get_Name (Comment) /= "comment"
+    or else Ctx.Get_Nb_Children (Comment) > 1 then
+      raise Invalid_Config;
+    end if;
+
     -- Restore text as valid Xml for later saving
     Ctx.Tree2Xml;
   end Check;
@@ -307,6 +315,28 @@ package body Config is
     end if;
     Save;
   end Move_Bookmark;
+
+  -- Comment
+  procedure Save_Comment (Text : in String) is
+    New_Node : Xml_Parser.Node_Type;
+  begin
+    -- Comment dir may not be empty
+    if Ctx.Get_Nb_Children (Comment) = 1 then
+      Ctx.Delete_Children (Comment);
+    end if;
+    Ctx.Add_Child (Comment, Path2Xml (Text), Xml_Parser.Text, New_Node);
+    Save (False);
+  end Save_Comment;
+
+  function Get_Comment return String is
+  begin
+    -- Prev dir may be empty
+    if Ctx.Get_Nb_Children (Comment) = 1 then
+      return Xml2Path (Ctx.Get_Text (Ctx.Get_Child (Comment, 1)));
+    else
+      return "";
+    end if;
+  end Get_Comment;
 
 end Config;
 

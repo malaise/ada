@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V33.07
+V34.00
 
 General purpose
 ---------------
@@ -171,11 +171,15 @@ section:
 * separators have a 'Name' and no content,
 * bookmarks have a content and possibly a 'Name'.
 
+comment::
+Agite saves the text of the current comment of the xref:XCommit[commit], so
+that it is retrieved from one session to another.
+
 NOTE: The DTD file 'agite.dtd' must be located according to the ''DOCTYPE''
 directive of the Agite XML configuration file. +
 You may modify these persistent values, providing that: +
 * Agite is not running (it would overwrite your changes), +
-* You don't add comments (Agite would remove them), +
+* You don't add XML comments (Agite would remove them), +
 * The file 'agite.xlm' complies with the DTD 'agite.dtd'.
 
 NOTE: In case of problem (crash), a backup of the configuration file may be
@@ -1497,7 +1501,9 @@ You can clear a line by hitting Ctrl + Suppr, clear the end of line by hitting
 Shift + Suppr, move to the last character of a line by hitting Ctrl
 + RightArrow...
 
-NOTE: The comment must not be empty when committing.
+NOTE: The comment must not be empty when committing. +
+The text of the comment is saved in the xref:XConfig[configuration file] so that
+it is persistent from one session to another.
 
 .List of changes
 

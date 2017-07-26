@@ -968,6 +968,9 @@ begin -- Agite
   Editor := As.U.Tus (Config.Editor);
   Differator := As.U.Tus (Config.Differator);
 
+  -- Set saved commit comment
+  Commit.Set_Comment (Config.Get_Comment);
+
   -- Init Afpx (dir, files..) and Timer
   Init (0);
   Timer.Start (Periodic => True);

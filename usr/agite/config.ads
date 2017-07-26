@@ -48,6 +48,10 @@ package Config is
   procedure Add_Bookmark (After_Index : in Natural; Bookmark : in Bookmark_Rec);
   procedure Move_Bookmark (Index : in Positive; Up : in Boolean);
 
+  -- Comment
+  procedure Save_Comment (Text : in String);
+  function Get_Comment return String;
+
   Io_Error : exception;
   Invalid_Config : exception;
 

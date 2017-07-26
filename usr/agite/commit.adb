@@ -178,6 +178,8 @@ package body Commit is
     and then Comment.Element (Comment.Length) /= Aski.Lf then
       Comment.Append (Aski.Lf);
     end if;
+    -- Save persistent comment
+    Config.Save_Comment (Comment.Image);
   end Decode_Comment;
 
   -- Encode Comment fields
