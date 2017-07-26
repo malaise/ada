@@ -49,10 +49,10 @@ procedure Add_Paths is
     for I in 1 .. Arg_Dscr.Get_Nb_Occurences (Exclude_Index) loop
       Path := As.U.Tus (Arg_Dscr.Get_Option (Exclude_Index, I));
       if Path.Is_Null then
-        Error ("Missing exclude dir");
+        Error ("Missing exclude pattern");
       end if;
       if Directory.Basename (Path.Image) /= Path then
-        Error ("Incorrect exclude dir name " & Path.Image);
+        Error ("Incorrect exclude pattern " & Path.Image);
       end if;
       -- Add this include to paths
       Excludes.Append (Path);
@@ -66,13 +66,18 @@ procedure Add_Paths is
     Dir : constant String := Directory.Get_Current;
   begin
     Result := True;
-    -- If basename of Path is excluded then set not Go_On
-    if Excludes.Locate (As.U.Tus (Directory.Basename (Path))) /= 0 then
-      -- Current dir name matches an exclusion, skip it and its subdirs
-      Debug.Logger.Log_Debug ("  Skipping subdir " & Path);
-      Go_On := False;
-      return;
-    end if;
+    -- If basename of Path matches an exclusion, then set not Go_On
+    for I in 1 .. Excludes.Length loop
+      if Directory.File_Match (Directory.Basename (Path),
+                               Excludes.Element(I).Image) then
+        -- Current dir name matches an exclusion, skip it and its subdirs
+        Debug.Logger.Log_Debug ("  Skipping subdir " & Path
+                              & " because it matches exclusion "
+                              & Excludes.Element(I).Image);
+        Go_On := False;
+        return;
+      end if;
+    end loop;
     Debug.Logger.Log_Debug ("  Adding subdir " & Path);
     Sort.Add_Path (As.U.Tus (Dir));
     Go_On := True;

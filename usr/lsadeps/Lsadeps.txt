@@ -27,9 +27,9 @@ Usage: lsadeps <version> | <help> | <depend> | <list> | <check>
  <bodies>      ::= -b | --bodies
  <restrict>    ::= --restrict
  <inclusions   ::= { <include> | <recursive> | <exclude> }
- <dir>         ::= -I <dir> | --include=<dir_path>
- <recursive>   ::= -R <dir> | --recursive=<dir_path>
- <exclude>     ::= -E <dir> | --exclude=<dir_name>
+ <dir>         ::= -I <dir_path> | --include=<dir_path>
+ <recursive>   ::= -R <dir_path> | --recursive=<dir_path>
+ <exclude>     ::= -E <pattern> | --exclude=<pattern>
  <list>        ::= -l | --list  [ <file> ] [ <all> ] [ <children> [ <path_unit> ]
  <all>         ::= -a | --all
  <children>    ::= -C | --children
@@ -41,7 +41,8 @@ Show dependencies
 This function by default lists the units on which <target_unit> depends,
 which are the withed units, their body and subunits, units withed by these
 units... recursively. +
-This behaviour can beanged by the following mode modifiers:
+This behaviour can be changed by the following mode modifiers (some of them
+can be combined):
 
 - 'specs' to show only units withed by specs and standalone bodies.
 
@@ -60,37 +61,38 @@ list).
 - 'fast' to fast scan and show the first dependency tree between <target_unit>
 and <path_unit>.
 
-- 'direct' to show only the units that are directly dependent.
+- 'direct' to show only the units that are directly dependent (no recursion).
 
 - 'file' to show the file names (instead of unit names).
 
-- 'bodies' to also show, in revert mode, the units that depend from each other
- by "with" in the body. +
-By default, in 'revert' mode, if unit B is withed by the body of A (and
-not by its spec), then the units withing A are not dependant from B in term of
+- 'bodies', in revert mode to also show the units that depend from each other
+by "with" in the body. +
+By default, in 'revert' mode, if unit A is withed by the body of B (and
+not by its spec), then the units withing B are not dependant from A in term of
 compilation, so they are not listed. Option 'bodies' leads to list all the
-revert dependecies.
+revert dependencies.
 
 - 'restrict' to skip restricted with ("private with", "limited with" and
-"limited private with"),
+"limited private with"), which provides a logical view of the dependencies.
 
 - 'inclusions' to add some directories or some directory trees to the search
 path. +
-By default, the files are searched only in the current directory and in the
-directory of the target unit (or in the target directory itself) if any.
+By default, the files are searched only in the current directory, in the
+directory of <target_unit>, and in the directory of <path_unit> (if it is set).
 The following options allow extending the search path:
   * 'include': adds an individual directory to the search path,
   * 'recursive': adds a directory and each of its subdirectories to the search
 path,
-  * 'exclude': adds a directory name in the list of exclusion: Any directory in
-a 'recursive' search (including the root path provided as argument) that has
-its name defined in the exclusion list is skipped, and its subdirectories as
-well.
+  * 'exclude': adds a pattern of directory name (name with possible \'?' and
+\'*' wildcards) to the list of exclusions: Any directory in a 'recursive' search
+(including the root path provided as argument) that has its name matching an
+entry of the exclusion list is skipped, and its subdirectories as well.
 
 +
 Individual 'include' paths are not checked for exclusion. +
 'include' and 'recursive' must specify directory paths (absolute or
-relative), while 'exclude' must specify simple directory names (no \'/').
+relative), while 'exclude' must specify templates of simple directory names
+(no \'/').
 
 .Compatibility of options and modes
 'Specs' and 'revert' modes are mutually exclusive. +
@@ -119,15 +121,18 @@ List units
 This function lists:
 
  * the units (including child units but not subunits) of the
-current directory if no argument is provided,
+current directory if no <path_dir> is provided,
  * or the units (same as above) of <path_unit> if it denotes a directory,
  * or only the unit <path_unit> if it denotes a unit.
 
 The possible options are:
 
- - 'children' to list the children of the specified unit.
+ - 'children' to list also the children of the specified unit,
  - 'file' to show the file names (instead of unit names),
  - 'all' to also list the subunits (of all or of the specified unit).
+
+Files are searched only in the directory of <path_dir> (in current directory if
+no <path_dir> is provided).
 
 Check redundant "with"
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -172,34 +177,10 @@ Results are put on stdout.
 
 Show dependencies
 ~~~~~~~~~~~~~~~~~
-There are 4 different modes of analyze of dependencies (that can be combined)
-and 2 options of output:
-
-- default mode: show parent units of target, then withed units, then body
-and subunits... recursively
-
-- specs mode: same as default but only show units withed by specs
-
-- revert mode: show units withing target and child units of target, then units
-withing them... recursively
-
-- path mode: shows the units withed by (or withing) each other between two units
-
-- tree option: show tree of dependencies instead of list
-
-- shortest option: build the tree and show the shortest path
-
-- direct option: show direct dependencies (show first level of tree)
-
-- files option: show file names instead of units
-
-In list mode local units are listed first, then "remote" ones in the order of
-the include directives and they are sorted by alphabetical order. In tree
-and direct modes the units appear in the same order as in the "with" directives.
-
-By default the search is restricted to local directory and target directory
-(and path_unit directory if any), but additional directories can be added to
-the search path, either individually or recursively.
+In the dependency function, local units are listed first, then "remote" ones in
+the order of the include directives and they are sorted by alphabetical order.
+With the tree and direct options, the units appear in the same order as in the
+"with" directives.
 
 A local unit, if any exists, hides all the remote ones.
 
@@ -212,8 +193,8 @@ unit W co-located with U.
 another unit U co-located with W.
 
 - if there is no co-located unit then all the remote units with the same name
-are processed identically (they are all considered to depend on or to be
-dependent from current unit).
+are processed identically (they are all considered to depend on, or to be
+dependent from the current unit).
 
 Lsadeps exits with 1 on error, and with 0 otherwise.
 
@@ -251,8 +232,8 @@ Example:
 Lsadeps exits with 1 if at least one redundant "with" is detected or on
 error, and with 0 otherwise.
 
-Examples
---------
+Examples of use
+---------------
 
 What are the local units needed to build (compile and link) 'Unit'
 --------------------
@@ -280,11 +261,11 @@ What are all the units that will be re-compiled due to a modification of
   lsadeps -r -R ~/ada/usr Unit
 --------------------
 
-What are all the units that depend directly or not, on 'Unit'
+What are all the units that depend, directly or not, on 'Unit', skip
+directories containing compilation result
 --------------------
-  lsadeps -rb -R ~/ada/usr Unit
+  lsadeps -rb -R ~/ada/usr -E 'lib*' Unit
 --------------------
-
 
 Check redundant "with" in the current directory
 --------------------

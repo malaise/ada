@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory, Trace;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V13.13";
+  Version : constant String := "V13.14";
 
   -- The keys and descriptor of parsed keys
   Nok : Character renames Argument_Parser.No_Key_Char;
@@ -18,7 +18,7 @@ procedure Lsadeps is
    08 => (False, 'f', As.U.Tus ("files"),    False),
    09 => (True,  'I', As.U.Tus ("include"),   True, True, As.U.Tus ("dir_path")),
    10 => (True,  'R', As.U.Tus ("recursive"), True, True, As.U.Tus ("dir_path")),
-   11 => (True,  'E', As.U.Tus ("exclude"),   True, True, As.U.Tus ("dir_name")),
+   11 => (True,  'E', As.U.Tus ("exclude"),   True, True, As.U.Tus ("dir_name_pattern")),
    12 => (False, 'l', As.U.Tus ("list"),     False),
    13 => (False, 'a', As.U.Tus ("all"),      False),
    14 => (False, 'C', As.U.Tus ("children"), False),
@@ -114,7 +114,7 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      "    path (default is current and target directories), or to exclude some");
     Basic_Proc.Put_Line_Error (
-     "    directory names from directory trees,");
+     "    directory names (matching pattern) from directory trees,");
     Basic_Proc.Put_Line_Error (
      "List function lists units of a dir (default: current dir), or of a unit,");
     Basic_Proc.Put_Line_Error (
