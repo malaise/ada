@@ -29,14 +29,17 @@ package Git_If is
   -- LIST OF FILES AND STATUS
   -- A file entry
   -- Two letters of Git status (? A M D R C U)
-  -- The file name (and previous name in case of R)
-  -- One letter of file kind
+  -- The file/dir name
+  -- One letter of file kind (' ', '@', '/', '?')
+  -- Previous name (in case of R)
+  -- Target path (in case of @), only set by List_Files
   type File_Entry_Rec is record
     S2 : Character;      -- ' ', '?', 'A', 'M', 'D', 'R', 'C' or 'U'
     S3 : Character;
     Name : As.U.Asu_Us;
     Kind : Character;    -- ' ', '@', '/' or '?'
     Prev : As.U.Asu_Us;
+    Target : As.U.Asu_Us; -- Only set by List_Files
   end record;
   package File_Mng is new Dynamic_List (File_Entry_Rec);
   subtype File_List is File_Mng.Dyn_List.List_Type;
@@ -53,6 +56,9 @@ package Git_If is
 
   -- The character Kinds associated to a kind
   function Char_Of (Kind : Sys_Calls.File_Kind_List) return Character;
+
+  -- Resolve recursively a symlink (if Kind is '@' then fill Target)
+  procedure Resolve_Link (File_Entry : in out File_Entry_Rec);
 
   -- Is a file (full path) locally modified
   function Is_Modified (File : String) return Boolean;

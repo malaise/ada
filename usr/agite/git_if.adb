@@ -186,18 +186,25 @@ package body Git_If is
     return Out_Flow_3.Str.Image = "true";
   end Is_Bare;
 
-  -- LIST OF FILES AND STATUS
-  -- A file entry
-  -- type File_Entry_Rec is record
-  --   S2 : Character;
-  --   S3 : Character;
-  --   Name : As.U.Asu_Us;
-  -- end record;
-
-  -- package File_Mng is newDynamic_List (File_Entry_Rec);
-
-  -- subtype File_List is File_Mng.Dyn_List.List_Type;
-
+  -- Resolve recursively a symlink (if Kind is '@' then fill Target)
+  procedure Resolve_Link (File_Entry : in out File_Entry_Rec) is
+  begin
+    File_Entry.Target.Set_Null;
+    if File_Entry.Kind = '@' then
+      Directory.Read_Link (File_Entry.Name.Image, File_Entry.Target);
+      if Directory.Dirname (File_Entry.Target.Image, True) =
+          Directory.Get_Current then
+        -- Strip full path when link to current
+        File_Entry.Target := As.U.Tus (
+            Directory.Basename (File_Entry.Target.Image));
+      end if;
+    end if;
+  exception
+    when Error:others =>
+      Logger.Log_Debug ("Exception "
+       & Ada.Exceptions.Exception_Name (Error)
+       & " while reading link of " & File_Entry.Name.Image);
+  end Resolve_Link;
 
   -- For searching a file in File_List and sorting File_List
   function Match (Current, Criteria : File_Entry_Rec) return Boolean is
@@ -260,6 +267,7 @@ package body Git_If is
     File_Entry.S3 := Str.Element(2);
     -- Remove "XY "
     Str.Delete (1, 3);
+    -- Fill previous name
     Redirect := Str_Util.Locate (Str.Image, " -> ");
     if Redirect /= 0 then
       -- File is a move (or copy?) ("<old_name> -> <new_name>")
@@ -268,6 +276,7 @@ package body Git_If is
       Parse_Filename (File_Entry.Prev);
       Str.Delete (1, Redirect + 3);
     end if;
+    -- Basic fields
     File_Entry.Name := Str;
     Parse_Filename (File_Entry.Name);
     File_Entry.Kind := Char_Of (File_Entry.Name.Image);
@@ -290,7 +299,8 @@ package body Git_If is
       File_Entry := (S2 => ' ', S3 => ' ',
                      Name => As.U.Tus ("."),
                      Kind => Char_Of (Sys_Calls.Dir),
-                     Prev => As.U.Asu_Null);
+                     Prev => As.U.Asu_Null,
+                     Target => As.U.Asu_Null);
       Files.Insert (File_Entry);
       File_Entry.Name := As.U.Tus ("..");
       Files.Insert (File_Entry);
@@ -341,6 +351,7 @@ package body Git_If is
             File_Entry.S2 := ' ';
             File_Entry.S3 := ' ';
             File_Entry.Kind := Char_Of (Str.Image);
+            Resolve_Link (File_Entry);
             Files.Insert (File_Entry);
           else
             -- Skip and be ready to append next entry
@@ -364,6 +375,7 @@ package body Git_If is
           File_Entry.Name := As.U.Tus (Directory.Basename (
               File_Entry.Name.Image));
           File_Entry.Kind := Char_Of (File_Entry.Name.Image);
+          Resolve_Link (File_Entry);
           if File_Search (Files, File_Entry,
             From => File_Mng.Dyn_List.Absolute) then
             -- This file is found: overwrite

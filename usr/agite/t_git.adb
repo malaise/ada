@@ -36,9 +36,13 @@ begin
   else
     loop
       Files.Read (File_Entry, Moved => Moved);
-      Basic_Proc.Put_Line_Output (File_Entry.S2 & File_Entry.S3 & " "
-                          & File_Entry.Name.Image
-                          & File_Entry.Kind);
+      Basic_Proc.Put_Line_Output (
+          File_Entry.S2 & File_Entry.S3 & " "
+        & File_Entry.Name.Image
+        & File_Entry.Kind
+        & " " & File_Entry.Prev.Image
+        & (if File_Entry.Kind = '@' then " ->  " & File_Entry.Target.Image
+           else ""));
       exit when not Moved;
     end loop;
   end if;

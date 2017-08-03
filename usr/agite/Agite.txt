@@ -529,6 +529,9 @@ After the name, a character represents the kind of entry:
 * '?' for other or unknown kind (of a deleted entry).
 
 +
+If the entry is a symbolic link, then the kind is followed by " -> " and the
+local name or full path of the final target (after recusrsive resolution).
++
 Only one entry is selected at a time (in green).
 +
 A single click selects an entry for xref:XEdit[edition], 

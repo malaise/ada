@@ -71,9 +71,15 @@ procedure Agite is
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in Git_If.File_Entry_Rec) is
   begin
-    Afpx.Utils.Encode_Line (From.S2 & From.S3 & ' ',
-                            From.Name.Image & From.Kind, "",
-                            List_Width, Line);
+    Afpx.Utils.Encode_Line (
+      Head => From.S2 & From.S3 & ' ',
+      Text => From.Name.Image & From.Kind &
+        (if From.Kind = '@' then " -> " & From.Target.Image else ""),
+      Tail => "",
+      Width => List_Width,
+      Line => Line,
+      Keep_Tail => False,
+      Show_Cut => True);
   end Set;
   procedure Init_List is new Afpx.Utils.Init_List (
     Git_If.File_Entry_Rec, Git_If.File_Mng, Set, False);
@@ -104,6 +110,8 @@ procedure Agite is
       File.Name := Dir_File.Name;
       File.Kind := Git_If.Char_Of (
              Sys_Calls.File_Desc_Kind_List(Dir_File.Kind));
+      -- No Prev, but symlink
+      Git_If.Resolve_Link (File);
       Files.Insert (File);
       exit when not Moved;
     end loop;
