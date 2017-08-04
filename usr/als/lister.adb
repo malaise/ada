@@ -224,45 +224,43 @@ package body Lister is
   procedure Read_Link (Name : in String; Ent : in out Entities.Entity) is
     Link_Target : As.U.Asu_Us;
     Stat : Sys_Calls.File_Stat_Rec;
+    Result : Directory.Link_Result;
+    use type Directory.Link_Result;
   begin
+    -- Default result (on error)
+    Ent.Link.Set_Null;
+    Ent.Link_Ok := False;
+    Ent.Link_Kind := Directory.Unknown;
+    Ent.Link_Rights := 0;
     -- Read link direct target
     begin
       Ent.Link := As.U.Tus (Directory.Read_Link (
           File_Name => Name, Recursive => False));
     exception
       when Directory.Name_Error | Directory.Access_Error =>
-        Ent.Link.Set_Null;
-        Ent.Link_Ok := False;
-        Ent.Link_Kind := Directory.Unknown;
-        Ent.Link_Rights := 0;
         return;
     end;
-    -- Check if final target exists (and is reachable), and store its kind
-    begin
-      Link_Target := As.U.Tus (Directory.Read_Link (
-          File_Name => Name, Recursive => True));
-      Stat := Sys_Calls.File_Stat (Link_Target.Image);
-      Ent.Link_Ok := True;
-      Ent.Link_Kind := Directory.File_Kind_List (Stat.Kind);
-      Ent.Link_Rights := Stat.Rights;
-    exception
-      when Directory.Name_Error | Directory.Access_Error |
-           Directory.Recursive_Link |
-           Sys_Calls.Name_Error | Sys_Calls.Access_Error =>
-        Ent.Link_Ok := False;
-        Ent.Link_Kind := Directory.Unknown;
-        Ent.Link_Rights := 0;
-        return;
-    end;
-    -- Store final target and size instead of direct target if Follow_Link
+    -- Check if final target exists (and is reachable)
+    Result := Directory.Scan_Link (Name, Link_Target);
+    Ent.Link_Ok := Result = Directory.Link_Ok;
+
+    -- Store target and its kind, rights and size
     if Follow_Links then
-      if Ent.Link_Ok then
-        Ent.Link := Link_Target;
-        Ent.Size := Stat.Size;
-      else
-        Ent.Link.Set_Null;
-        Ent.Size := 0;
-      end if;
+      -- Target is final target
+      Ent.Link := Link_Target;
+    end if;
+    if Result = Directory.Link_Ok or else Result = Directory.Link_Recursive then
+      -- Target is valid
+      Stat := Sys_Calls.File_Stat (Ent.Link.Image);
+    else
+      -- Defaults
+      Stat := (Kind => Sys_Calls.Unknown, Rights => 0, Size => 0,
+               others => <>);
+    end if;
+    Ent.Link_Kind := Directory.File_Kind_List (Stat.Kind);
+    Ent.Link_Rights := Stat.Rights;
+    if Follow_Links then
+      Ent.Size := Stat.Size;
     end if;
   end Read_Link;
 

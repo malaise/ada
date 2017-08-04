@@ -55,11 +55,14 @@ package Directory is
   function Is_Dir  (File_Name : String) return Boolean;
   function Is_Link (File_Name : String) return Boolean;
 
-  -- Read the target(s) of a symbolic link
+  -- Read the target of a symbolic link
+  --  if Recursive then follow the successive links
+  -- Target becomes an absolute path as soon as File_Name or one followed link
+  --  contains a path
   function Read_Link (File_Name : String; Recursive : Boolean := True)
                       return String;
   procedure Read_Link (File_Name : in String;
-                       Target : in out As.U.Asu_Us;
+                       Target : out As.U.Asu_Us;
                        Recursive : in Boolean := True);
   -- May raise Name_Error if File_Name does not exist
   --           Access_Error if File_Name cannot be read
@@ -67,6 +70,12 @@ package Directory is
   --           Recursive_Link if Recursive and if links points on itself
   --            (indirectly or not)
 
+  -- Recursively follow links until sucess or error
+  -- Set Target on the final or faulty element
+  type Link_Result is (Link_Ok, Link_Name, Link_Access, Link_Open,
+                       Link_Recursive);
+  function Scan_Link (File_Name : in String;
+                      Target : out As.U.Asu_Us) return Link_Result;
 
   -- Does file name match a pattern
   -- May raise Syntax_Error
@@ -77,6 +86,10 @@ package Directory is
 
   -- Get full path of a path
   function Make_Full_Path (Path : String) return String;
+
+  -- If Path Dirname is Ref (or current dir if Path is empty)
+  --  then strip the path
+  function Reduce_Path (Path : String; Ref : String := "") return String;
 
   -- Get dir name (path) from a complete file name (up to the last / included)
   -- If Strip then remove the trailing '/' except on "/"

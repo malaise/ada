@@ -1,6 +1,6 @@
 Als
 ===
-V19.0
+V19.2
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, for the output format of each entry, and general
@@ -232,6 +232,28 @@ corresponding access right
 So the default mode (no criteria) corresponds to: '--access=\***', the list of
 read-only items is specified with '--access=r--' and the list of readable and
 executable items is specified with '--access=r*x'.
+
+Symbolic links
+~~~~~~~~~~~~~~
+.Links and broken links
+Option -L leads als to select all the symbolic links. +
+Option -B leads leads to only the broken links, i.e. the one for which the
+final target (possibly following recursive links) cannot be read.
+
+.Following links
+When --follow_links option is set and in recursive mode, if the targets of a
+symbolic link is a directory then this directory is added to the scan. +
+Also, when this option is, als shows (when -l ) the final target and size 
+instead of the initial target of the symbolic links.
+
+NOTE: The option --follow_links is not used for assessing if a link is valid
+or broken (in any case, the link is valid only if the final target exists and
+is readable).
+
+.Detailed list
+With option -l, the target of valid links is preceeded by '->', while the
+target of broken link is preceeded by '=>'. With option --follow_links the
+target that is shown is the one on which the reading error occured.
 
 Als exit codes
 --------------

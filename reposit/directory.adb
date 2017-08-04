@@ -252,31 +252,62 @@ package body Directory is
     end if;
   end Read_One_Link;
 
-  function Read_Link (File_Name : String;
-                      Recursive : Boolean := True) return String is
-    Orig, Src, Dest : As.U.Asu_Us;
+  --Internal multi-purpose scan of links
+  procedure Scan_Link (File_Name : in String;
+                       Recursive : in Boolean;
+                       Target : out As.U.Asu_Us;
+                       Result : out Link_Result) is
+    Orig, Src, Dest, Curr_Dir : As.U.Asu_Us;
     Iter : Positive;
     Threshold : constant := 1024;
     use type As.U.Asu_Us, Sys_Calls.File_Kind_List;
+
+    -- Expand as soon as a path
+    procedure Expand (File : in out As.U.Asu_Us) is
+    begin
+      if Str_Util.Locate (File.Image, Sep_Str) /= 0 then
+        if File.Element (1) /= Sep_Char then
+          -- Target contains a relative path
+          --  => Append current dirname
+          File.Prepend (Curr_Dir & Sep_Char);
+        end if;
+        -- Target contains a path, so cleanup and store new path
+        File := As.U.Tus (Normalize_Path (File.Image));
+        Curr_Dir := As.U.Tus (Dirname (File.Image));
+      end if;
+    end Expand;
+
   begin
-    -- Check file_name  is a link
+    -- Check file_name is a link
     if Sys_Calls.File_Stat (File_Name).Kind /= Sys_Calls.Link then
-      raise Open_Error;
-    end if;
-    if not Recursive then
-      return Read_One_Link(File_Name);
+      Target.Set_Null;
+      Result := Link_Open;
+      return;
     end if;
 
-    Src := As.U.Tus (Make_Full_Path (File_Name));
+    -- Init current dir
+    Src := As.U.Tus (File_Name);
+    if Src.Element (1) = Sep_Char then
+      Curr_Dir := As.U.Tus (Dirname (Src.Image));
+    else
+      Curr_Dir := As.U.Tus (Get_Current & Sep_Char);
+    end if;
+
+    -- Init first dir
+    Expand (Src);
+
+    Result := Link_Ok;
+    if not Recursive then
+      Target := As.U.Tus (Read_One_Link(Src.Image));
+      Expand (Target);
+      return;
+    end if;
+
     Iter := 1;
     loop
       -- Current is a link, read it,
       Dest := As.U.Tus (Read_One_Link(Src.Image));
-      if Dest.Length >= 1 and then Dest.Element (1) /= Sep_Char then
-        -- Link is relative, append path of source
-        Dest := As.U.Tus (Dirname (Src.Image)) & Dest;
-      end if;
-      Dest := As.U.Tus (Make_Full_Path (Dest.Image));
+      Expand (Dest);
       -- Done when not a link
       exit when Sys_Calls.File_Stat (Dest.Image).Kind /= Sys_Calls.Link;
 
@@ -295,16 +326,54 @@ package body Directory is
       Iter := Iter + 1;
       Src := Dest;
     end loop;
-    return Dest.Image;
+    -- Ok
+    Target := Dest;
+    return;
+  exception
+    -- Open_Error shall not occur because we exit the loop (with success)
+    --  if target is not a symlink
+    when Name_Error =>
+      Target := Dest;
+      Result := Link_Name;
+    when Access_Error =>
+      Target := Dest;
+      Result := Link_Access;
+    when Recursive_Link =>
+      Target := Dest;
+      Result := Link_Recursive;
+  end Scan_Link;
+
+  -- Symlink API
+  function Read_Link (File_Name : String;
+                      Recursive : Boolean := True) return String is
+    Target : As.U.Asu_Us;
+  begin
+    Read_Link (File_Name, Target, Recursive);
+    return Target.Image;
   end Read_Link;
 
   procedure Read_Link (File_Name : in String;
-                       Target : in out As.U.Asu_Us;
+                       Target : out As.U.Asu_Us;
                        Recursive : in Boolean := True) is
+    Result : Link_Result;
   begin
-    Target := As.U.Tus (Read_Link(File_Name, Recursive));
+    Scan_Link (File_Name, Recursive, Target, Result);
+    case Result is
+      when Link_Ok        => null;
+      when Link_Name      => raise Name_Error;
+      when Link_Access    => raise Access_Error;
+      when Link_Open      => raise Open_Error;
+      when Link_Recursive => raise Recursive_Link;
+    end case;
   end Read_Link;
 
+  function Scan_Link (File_Name : in String;
+                       Target : out As.U.Asu_Us) return Link_Result is
+  begin
+    return Result : Link_Result do
+      Scan_Link (File_Name, True, Target, Result);
+    end return;
+  end Scan_Link;
 
   -- Does file name match a pattern
   function C_Fnmatch (Pattern : System.Address;
@@ -428,6 +497,18 @@ package body Directory is
     -- No / in file name => dir name is empty
     return (if I = 0 then "" else File_Name(File_Name'First .. I));
   end Dirname;
+
+   -- If Path Dirname is Ref (or current dir if Path is empty)
+  --  then strip the path
+  function Reduce_Path (Path : String; Ref : String := "") return String is
+    Dir : constant String := Dirname (Path, True);
+  begin
+    if Dir = (if Ref = "" then Get_Current else Ref) then
+      return Path(Path'First + Dir'Length .. Path'Last);
+    else
+      return Path;
+    end if;
+  end Reduce_Path;
 
   -- Get file name from a complete file name (from the last / excluded),
   --  then remove the end of it if it matches Suffix (. is not necessary)
