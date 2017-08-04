@@ -188,22 +188,22 @@ package body Git_If is
 
   -- Resolve recursively a symlink (if Kind is '@' then fill Target)
   procedure Resolve_Link (File_Entry : in out File_Entry_Rec) is
+    use type Directory.Link_Result;
   begin
-    File_Entry.Target.Set_Null;
-    if File_Entry.Kind = '@' then
-      Directory.Read_Link (File_Entry.Name.Image, File_Entry.Target);
-      if Directory.Dirname (File_Entry.Target.Image, True) =
-          Directory.Get_Current then
-        -- Strip full path when link to current
-        File_Entry.Target := As.U.Tus (
-            Directory.Basename (File_Entry.Target.Image));
-      end if;
+    if File_Entry.Kind /= '@' then
+      File_Entry.Link_Ok := False;
+      File_Entry.Target.Set_Null;
+      return;
     end if;
-  exception
-    when Error:others =>
-      Logger.Log_Debug ("Exception "
-       & Ada.Exceptions.Exception_Name (Error)
-       & " while reading link of " & File_Entry.Name.Image);
+    File_Entry.Link_Ok :=
+        Directory.Scan_Link (File_Entry.Name.Image, File_Entry.Target) =
+        Directory.Link_Ok;
+    -- Strip full path when link to current
+    if Directory.Dirname (File_Entry.Target.Image, True) =
+        Directory.Get_Current then
+      File_Entry.Target := As.U.Tus (
+          Directory.Basename (File_Entry.Target.Image));
+    end if;
   end Resolve_Link;
 
   -- For searching a file in File_List and sorting File_List
@@ -300,6 +300,7 @@ package body Git_If is
                      Name => As.U.Tus ("."),
                      Kind => Char_Of (Sys_Calls.Dir),
                      Prev => As.U.Asu_Null,
+                     Link_Ok => False,
                      Target => As.U.Asu_Null);
       Files.Insert (File_Entry);
       File_Entry.Name := As.U.Tus ("..");

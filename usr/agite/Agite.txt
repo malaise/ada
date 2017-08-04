@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V34.02
+V34.03
 
 General purpose
 ---------------
@@ -535,8 +535,8 @@ After the name, a character represents the kind of entry:
 +
 If the entry is a symbolic link and if the resolution of the
 xref:XSymlinks[symlink targets] is enabled, then the kind is followed by
-" -> " and the local name or full path of the final target (after recusrsive
-resolution).
+" -> " (" => " if the link is broken) then the local name or full path of
+the final target (after recusrsive resolution).
 +
 Only one entry is selected at a time (in green).
 +

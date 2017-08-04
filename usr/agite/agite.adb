@@ -78,7 +78,7 @@ procedure Agite is
       Head => From.S2 & From.S3 & ' ',
       Text => From.Name.Image & From.Kind &
         (if From.Kind = '@' and then Show_Symlinks then
-           " -> " & From.Target.Image
+           (if From.Link_Ok then " -> " else " => ") & From.Target.Image
          else ""),
       Tail => "",
       Width => List_Width,
@@ -194,7 +194,8 @@ procedure Agite is
   end Init_Afpx;
 
   -- Encode Afpx list with files, if list has changed or if Force
-  procedure Encode_Files (Force : in Boolean) is
+  -- Restore position if possible
+  procedure Encode_Files (Force, Restore : in Boolean) is
     Pos : Natural := 0;
     Current_File : Git_If.File_Entry_Rec;
     Prev_Files : Git_If.File_List;
@@ -203,7 +204,7 @@ procedure Agite is
   begin
     Changed := Force;
     -- Save current position and entry
-    if not Force and then not Files.Is_Empty
+    if Restore and then not Files.Is_Empty
     and then not Afpx.Line_List.Is_Empty then
       Pos := Afpx.Line_List.Get_Position;
       Files.Move_At (Pos);
@@ -361,7 +362,7 @@ procedure Agite is
       -- Dir has changed
       Afpx.Line_List.Rewind (Check_Empty => False);
     end if;
-    Encode_Files (Force => True);
+    Encode_Files (Force => True, Restore => False);
 
     -- Set bookmark variables AGITE_CUR_DIR and GIT_ROOT_DIR
     Bookmarks.Set_Var ("AGITE_CUR_DIR", Directory.Get_Current);
@@ -456,7 +457,7 @@ procedure Agite is
     if not Check_Dir or else Set_Dir then
       Change_Dir (".");
     else
-      Encode_Files (Force => False);
+      Encode_Files (Force => False, Restore => True);
     end if;
   end Reread;
 
@@ -542,7 +543,7 @@ procedure Agite is
         -- Untracked or not in index or unmerged
         Git_If.Do_Add (File.Name.Image);
       end if;
-      Encode_Files (Force => False);
+      Encode_Files (Force => False, Restore => True);
     end if;
   end Do_Add_File;
 
@@ -740,7 +741,7 @@ procedure Agite is
         when Add =>
           if File_Name /= ".." then
             Git_If.Do_Add (File_Name);
-            Encode_Files (Force => False);
+            Encode_Files (Force => False, Restore => True);
           end if;
       end case;
     elsif File.Kind = '?' then
@@ -1081,7 +1082,7 @@ begin -- Agite
               -- Flip flop show symbolic links
               Show_Symlinks := not Show_Symlinks;
               Encode_Show_Symlinks;
-              Reread (True);
+              Encode_Files (Force => True, Restore => True);
             when Afpx_Xref.Main.Search_Dir =>
               -- Flip flop quick search dir option
               Search_Dir := not Search_Dir;

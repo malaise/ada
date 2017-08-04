@@ -39,6 +39,7 @@ package Git_If is
     Name : As.U.Asu_Us;
     Kind : Character;    -- ' ', '@', '/' or '?'
     Prev : As.U.Asu_Us;
+    Link_Ok : Boolean;    -- Only set by List_Files
     Target : As.U.Asu_Us; -- Only set by List_Files
   end record;
   package File_Mng is new Dynamic_List (File_Entry_Rec);
