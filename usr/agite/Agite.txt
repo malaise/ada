@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V34.00
+V34.02
 
 General purpose
 ---------------
@@ -487,15 +487,19 @@ path of directory A (not B). A second 'PopD', will copy the path of B.
 
 .List
 
-anchor:XQuickSearch[]
+Symbolic links::
+anchor:XSymlinks[]
+On top of the list is a 'Sym' checkbox that toggles showing in the list the
+target of symbolic links.
 
 Quick search::
+anchor:XQuickSearch[]
 On top of the list is a quick search area on two rows.
 Clicking in any character of this area triggers a search of the first file
 starting with this character. If found, the file becomes selected in the list
 and at the top of the list area. Otherwise the selection is unchanged. +
-A tick box button allows searching for the directory (starting with the
-character that will be clicked) instead of a file. You need to tick the box
+A tick box button allows searching for the directory 'D' (starting with the
+character that will be clicked) instead of a file 'F'. You need to tick the box
 first, then click on a character.
 
 The list itself::
@@ -529,8 +533,10 @@ After the name, a character represents the kind of entry:
 * '?' for other or unknown kind (of a deleted entry).
 
 +
-If the entry is a symbolic link, then the kind is followed by " -> " and the
-local name or full path of the final target (after recusrsive resolution).
+If the entry is a symbolic link and if the resolution of the
+xref:XSymlinks[symlink targets] is enabled, then the kind is followed by
+" -> " and the local name or full path of the final target (after recusrsive
+resolution).
 +
 Only one entry is selected at a time (in green).
 +

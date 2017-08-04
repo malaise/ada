@@ -60,6 +60,9 @@ procedure Agite is
   -- Files list and current branch
   Files : Git_If.File_List;
 
+  -- Show symbolic links or not
+  Show_Symlinks : Boolean := False;
+
   -- Quick search dir or file
   Search_Dir : Boolean;
 
@@ -74,7 +77,9 @@ procedure Agite is
     Afpx.Utils.Encode_Line (
       Head => From.S2 & From.S3 & ' ',
       Text => From.Name.Image & From.Kind &
-        (if From.Kind = '@' then " -> " & From.Target.Image else ""),
+        (if From.Kind = '@' and then Show_Symlinks then
+           " -> " & From.Target.Image
+         else ""),
       Tail => "",
       Width => List_Width,
       Line => Line,
@@ -303,6 +308,20 @@ procedure Agite is
     end if;
   end Update_Cursor_Col;
 
+  -- Encode "search dir" flag
+  procedure Encode_Show_Symlinks is
+  begin
+    Afpx.Encode_Field (Afpx_Xref.Main.Symlink, (0, 0),
+        (if Show_Symlinks then "X" else " "));
+  end Encode_Show_Symlinks;
+
+  -- Encode "search dir" flag
+  procedure Encode_Search_Dir is
+  begin
+    Afpx.Encode_Field (Afpx_Xref.Main.Search_Dir, (0, 0),
+        (if Search_Dir then "D" else "F"));
+  end Encode_Search_Dir;
+
   -- Change dir (or at least try) according to argument or Dir_Field
   Last_Valid_Dir : As.U.Asu_Us;
   procedure Change_Dir (New_Dir : in String := "") is
@@ -348,9 +367,10 @@ procedure Agite is
     Bookmarks.Set_Var ("AGITE_CUR_DIR", Directory.Get_Current);
     Bookmarks.Set_Var ("GIT_ROOT_DIR", Root.Image);
 
-    -- Reset Quick search dir option
+    -- Update showing symlinks and reset quick search dir options
+    Encode_Show_Symlinks;
     Search_Dir := False;
-    Afpx.Clear_Field (Afpx_Xref.Main.Search_Dir);
+    Encode_Search_Dir;
 
     -- Encode current dir (get field)
     Utils.X.Encode_Field (Directory.Get_Current, Dir_Field);
@@ -1057,14 +1077,15 @@ begin -- Agite
               Locate_Entry (
                 Afpx.Decode_Field (Ptg_Result.Field_No, Ptg_Result.Click_Pos.Row)
                                     (Ptg_Result.Click_Pos.Col + 1));
+            when Afpx_Xref.Main.Symlink =>
+              -- Flip flop show symbolic links
+              Show_Symlinks := not Show_Symlinks;
+              Encode_Show_Symlinks;
+              Reread (True);
             when Afpx_Xref.Main.Search_Dir =>
               -- Flip flop quick search dir option
               Search_Dir := not Search_Dir;
-              if Search_Dir then
-                Afpx.Encode_Field (Afpx_Xref.Main.Search_Dir, (0, 0), "X");
-              else
-                Afpx.Clear_Field (Afpx_Xref.Main.Search_Dir);
-              end if;
+              Encode_Search_Dir;
             when Afpx_Xref.Main.Xterm =>
               -- XTerm
               Utils.Launch (Config.Xterm);
