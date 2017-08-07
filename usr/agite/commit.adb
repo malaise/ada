@@ -320,6 +320,9 @@ package body Commit is
     -- Reset result
     Dummy_Result : Boolean;
 
+    -- True if a commit has already been performed (disables empty commit)
+    Commit_Done : Boolean;
+
     -- Reset Ptg stuff
     procedure Reset_Ptg is
     begin
@@ -520,14 +523,17 @@ package body Commit is
       -- Allow Diff if some file
       Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Diff,
                                 Afpx.Line_List.Is_Empty);
-      -- Allow commit if some stages and not forbidden
+      -- Allow commit only if not forbidden
+      -- Allow commit if some stages or first commit, not in loop
       Afpx.Reset_Field (Afpx_Xref.Commit.Commit);
       Afpx.Utils.Protect_Field (Afpx_Xref.Commit.Commit,
-                                not Some_Staged or else Allow_Commit = Forbid);
+          Allow_Commit = Forbid or else
+          (not Some_Staged and then (In_Loop or else Commit_Done)) );
       -- If not in a cherry pick and some changes are unstaged => Warn
+      -- If not in a cherry pick and no change is staged => Warn
       if not Afpx.Get_Field_Protection (Afpx_Xref.Commit.Commit)
       and then not In_Loop
-      and then Some_Unstaged then
+      and then (Some_Unstaged or else not Some_Staged) then
         Afpx.Set_Field_Colors (Afpx_Xref.Commit.Commit,
                                Con_Io.Color_Of ("Red"));
       end if;
@@ -700,6 +706,7 @@ package body Commit is
       -- Git_If.Commit
       Result := As.U.Tus (Git_If.Do_Commit (Comment.Image));
       if Result.Is_Null then
+        Commit_Done := True;
         return;
       end if;
       -- Show error
@@ -711,6 +718,9 @@ package body Commit is
     -- Init editor and differator
     Editor := As.U.Tus (Config.Editor);
     Differator := As.U.Tus (Config.Differator);
+
+    -- No commit done in this session
+    Commit_Done := False;
 
     -- Move to root
     Directory.Change_Current (Root);
