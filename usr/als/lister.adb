@@ -26,6 +26,7 @@ package body Lister is
   Rights : Access_Rights;
   Only_Links : Link_Criteria_List := No_Link;
   Follow_Links : Boolean := False;
+  Show_Targets : Boolean := False;
   Date1, Date2 : Entities.Date_Spec_Rec;
   Utc : Boolean := False;
   -- Set selection criteria
@@ -34,6 +35,7 @@ package body Lister is
                           Only_Links : in Link_Criteria_List;
                           Only_Others : in Boolean;
                           Follow_Links : in Boolean;
+                          Show_Targets : in Boolean;
                           Date1, Date2 : in Entities.Date_Spec_Rec;
                           Utc : in Boolean) is
     use Trilean;
@@ -46,6 +48,7 @@ package body Lister is
     Lister.Only_Links := Only_Links;
     Lister.Only_Others := Only_Others;
     Lister.Follow_Links := Follow_Links;
+    Lister.Show_Targets := Show_Targets;
     Lister.Date1 := Date1;
     Lister.Date2 := Date2;
     Lister.Utc := Utc;
@@ -245,7 +248,7 @@ package body Lister is
     Ent.Link_Ok := Result = Directory.Link_Ok;
 
     -- Store target and its kind, rights and size
-    if Follow_Links then
+    if Show_Targets then
       -- Target is final target
       Ent.Link := Link_Target;
     end if;
@@ -259,7 +262,7 @@ package body Lister is
     end if;
     Ent.Link_Kind := Directory.File_Kind_List (Stat.Kind);
     Ent.Link_Rights := Stat.Rights;
-    if Follow_Links then
+    if Show_Targets then
       Ent.Size := Stat.Size;
     end if;
   end Read_Link;

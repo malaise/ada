@@ -1,7 +1,7 @@
 with As.U, Basic_Proc, Argument, Argument_Parser, Str_Util, Trilean;
 with Entities, Output, Targets, Lister, Exit_Code;
 procedure Als is
-  Version : constant String  := "V19.2";
+  Version : constant String  := "V20.0";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -45,7 +45,8 @@ procedure Als is
    37 => (True,  Nkc, As.U.Tus ("discard_dir"),  True,  True, As.U.Tus ("criteria")),
    38 => (False, 'b', As.U.Tus ("basename"),     False),
    39 => (False, Nkc, As.U.Tus ("nodir"),        False),
-   40 => (True,  Nkc, As.U.Tus ("access"),       False, True, As.U.Tus ("rights")) );
+   40 => (True,  Nkc, As.U.Tus ("access"),       False, True, As.U.Tus ("rights")),
+   41 => (False, Nkc, As.U.Tus ("show_targets"), False) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Usage
@@ -75,6 +76,7 @@ procedure Als is
     Put_Line_Error ("  " & Key_Img(40) & "// Show only file with the given access for current user");
     Put_Line_Error ("                     //   ex: ""rw*"" read and write, exec or not");
     Put_Line_Error ("                     //       ""r-x"" read, not write, exec");
+    Put_Line_Error ("  " & Key_Img(29) & "// Follow symbolic links that finally denote a directory");
 
     Put_Line_Error ("  <match_name>   ::= " & Argument_Parser.Image(Keys(16)));
     Put_Line_Error ("    <criteria>   ::= <templates> | @<regex>");
@@ -98,6 +100,7 @@ procedure Als is
     Put_Line_Error ("                     // Keep files that match the date specification");
     Put_Line_Error ("                     //  (before, after or equal to a given date or delay)");
     Put_Line_Error ("    " & Argument_Parser.Image(Keys(22)) & " is a shortcut to ""-d ge<date>""");
+
     Put_Line_Error ("How to show each entry (file or dir):");
     Put_Line_Error ("  " & Key_Img(03) & "// Show rights, owner, size, modif date, symlink target");
     Put_Line_Error ("  " & Key_Img(04) & "// One name per line");
@@ -106,9 +109,10 @@ procedure Als is
     Put_Line_Error ("  " & Key_Img(27) & "// Show full path of entries");
     Put_Line_Error ("  <separator> ::= " & Argument_Parser.Image(Keys(20)));
     Put_Line_Error ("                     // Insert <string> between each entry");
-    Put_Line_Error ("  " & Key_Img(29) & "// Show final target of symlinks");
     Put_Line_Error ("  " & Key_Img(30) & "// Show date in strict ISO format (<date>T<time>)");
     Put_Line_Error ("  " & Key_Img(38) & "// In Merge mode, show only basename of each entry");
+    Put_Line_Error ("  " & Key_Img(41) & "// Show final target and size of symbolic links");
+
     Put_Line_Error ("How to organize entry list:");
     Put_Line_Error ("  " & Key_Img(08) & "// Sort by decreasing size (see also ""-r"")");
     Put_Line_Error ("  " & Key_Img(09) & "// Sort by decreasing time (see also ""-r"")");
@@ -168,6 +172,7 @@ procedure Als is
   Quiet : Boolean;
   Basename : Boolean;
   Access_Rights : Lister.Access_Rights;
+  Show_Targets : Boolean;
 
   -- Parse a date argument
   function Parse_Date (Str : String) return Entities.Date_Spec_Rec is separate;
@@ -249,6 +254,7 @@ begin
   Sort_By_Len := Arg_Dscr.Is_Set (35);
   Depth := 0;
   Quiet := Arg_Dscr.Is_Set (36);
+  Show_Targets := Arg_Dscr.Is_Set (41);
 
   -- Access rights
   Access_Rights := (others => Trilean.Other);
@@ -487,7 +493,7 @@ begin
   Lister.Set_Criteria (List_Only_Dirs, List_Only_Files,
                        Access_Rights,
                        List_Only_Links, List_Only_Others,
-                       Follow_Links, Date1, Date2, Utc);
+                       Follow_Links, Show_Targets, Date1, Date2, Utc);
   if Put_Total then
     Lister.Activate_Total;
   end if;

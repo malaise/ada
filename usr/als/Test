@@ -3,8 +3,9 @@ export N0=0
 export N1=0
 export NE=0
 
+export T_ALS=t_als
 function clean {
-  rm -f BrokenLink exp res NewFile
+  rm -f BrokenLink exp res NewFile tmp /tmp/$T_ALS A B C 
 }
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
@@ -174,5 +175,37 @@ if [ "$result" != "NewFile" ] ; then
   error "als -tr1 last line is $result i.o. NewFile"
 fi
 rm NewFile
+echo "OK"
+
+# Follow links
+title "Follow links"
+ln -s /tmp tmp
+touch tmp/$T_ALS
+result=`launch -RM --show_targets 2>/dev/null| grep $T_ALS`
+if [ "$result" != "" ] ; then
+  error "als --show_targets has followed links"
+fi
+result=`launch -RM --follow_links 2>/dev/null| grep $T_ALS`
+if [ "$result" != "/tmp/$T_ALS" ] ; then
+  error "als --follow_links  has not followed link"
+fi
+rm tmp/$T_ALS
+rm tmp
+echo "OK"
+
+# Show Targets
+title "Swho targets"
+ln -s als A
+ln -s A B
+ln -s B C 
+result=`launch -l C | awk '{print $9}'`
+if [ "$result" != "B" ] ; then
+  error "als has not shwon direct link"
+fi
+result=`launch -l --show_targets C | awk '{print $9}'`
+if [ "$result" != "als" ] ; then
+  error "als --show_targets has not shwon target link"
+fi
+rm A B C
 echo "OK"
 

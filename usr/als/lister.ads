@@ -14,6 +14,7 @@ package Lister is
                           Only_Links : in Link_Criteria_List;
                           Only_Others : in Boolean;
                           Follow_Links : in Boolean;
+                          Show_Targets : in Boolean;
                           Date1, Date2 : in Entities.Date_Spec_Rec;
                           Utc : in Boolean);
 
