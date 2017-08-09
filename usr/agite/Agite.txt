@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V34.04
+V34.05
 
 General purpose
 ---------------
@@ -251,6 +251,7 @@ and the list is scrolled to move the item on top of the list window.
 
 Get fields
 ~~~~~~~~~~~
+anchor:XGet[]
 Get fields are identified by their background in white. +
 Each get field is on one row only.
 
@@ -269,8 +270,15 @@ Note that some get fields (target xref:XDir[directory], xref:XCommit[commit]
 comment and xref:XBook[bookmark] edition) can scroll horizontally to allow a
 string wider than the get area.
 
- - Clicking somewhere in the field moves the cursor at this position or after
-the last significant character
+ - Clicking somewhere in the field with the mouse left button moves the cursor
+at this position or after the last significant character
+anchor:XX11Selection[]
+ - Clicking with the mouse middle button pastes the current X11 selection
+buffer at the beginning of the field. +
+Note: This X11 selection buffer is different from the clipboard of the window
+manager (accessed in some applications by Ctrl-C, Ctrl-V and with the right
+mouse button opening a pop-up menu), which is not available in Agite, neither
+for copy nor for paste.
  - Home and End: move to the boundaries of the get area
  - Left/right arrows: navigate in the string
  - A character input, Backspace and Suppr edit the string 
@@ -948,6 +956,10 @@ The newest release (head) is on top.
 It displays on top of screen the current branch, and below, if different,
 the branch currenly listed.
 
+anchor:XHash[]
+Below is a "H:" tagged get field in which you can enter (or paste) a up to
+40 digits SHA-1 hash value to xref:XSearch[Search] for. 
+
 In case of a directory, the menu shows the relative path of the directory
 and lists the history of the commits that have affected the files of the
 directory and its sub-directories.
@@ -1107,13 +1119,16 @@ This button button launches the xref:XTag[tag] menu that allows tagging the
 selected commit.
 
 .Mark
-Stores the hash of the commit currently left-selected, for later
-xref:XSearch[Search].
+anchor:XMark[]
+Stores internally (until Agite exits) the hash value of the commit currently
+left-selected, for later xref:XSearch[Search].
 
 .Search
 anchor:XSearch[]
-Searches the commit that corresponds to the previously marked hash. If found,
-it becomes left-selected.
+Searches the commit with the hash value matching the SHA-1 contained in the
+xref:XHash[Hash] field. If this field is empty (you can clear it with
+Ctrl-Suppr) then Agite searches the xref:XMark[marked] hash instead.
+If found, this commit becomes left-selected.
 
 .Back
 This button returns to the xref:XDir[directory] menu.
@@ -1189,15 +1204,6 @@ copy with 'CpComm',
 ** T Type modified,
 ** A Added,
 ** D Deleted.
-
-anchor:XX11Selection[]
-
-NOTE: You can paste (into agite or into another application) the X11 selection
-buffer by using the middle mouse button. +
-This X11 selection buffer is different from the clipboard of the window manager
-(accessed in some applications by Ctrl-C, Ctrl-V and with the right mouse
-button opening a pop-up menu), which is not available in Agite, neither for copy
-nor for paste.
 
 A specific entry, "/", is added on top of the list, which represents the root of
 the current repository.
@@ -1504,11 +1510,8 @@ Copy the text of the comment in the xref:XX11Selection[X11 selection buffer].
 .Comment
 
 You can enter up to 7 lines of up to 75 characters each for the comment. +
-You can paste the content of the xref:XX11Selection[X11 selection buffer] into
-a line of the comment, by middle-clicking on this line. +
-You can clear a line by hitting Ctrl + Suppr, clear the end of line by hitting
-Shift + Suppr, move to the last character of a line by hitting Ctrl
-+ RightArrow...
+See section on xref:XGet[get fields] for details on how to navigate and paste
+into get fields.
 
 NOTE: The comment must not be empty when committing. +
 The text of the comment is saved in the xref:XConfig[configuration file] so that

@@ -36,7 +36,16 @@ package body History is
 
   -- To search matching hash in Log
   function List_Hash_Match (Current, Criteria : Git_If.Log_Entry_Rec)
-           return Boolean is (Current.Hash = Criteria.Hash);
+           return Boolean is
+    Last : Positive;
+  begin
+    if Criteria.Hash(Criteria.Hash'Last) = ' ' then
+      Last := Str_Util.Locate (Criteria.Hash, " ") - 1;
+    else
+      Last := Criteria.Hash'Last;
+    end if;
+      return Current.Hash(1 .. Last) = Criteria.Hash(1 .. Last);
+  end List_Hash_Match;
   function List_Hash_Search is
            new Git_If.Log_Mng.Dyn_List.Search (List_Hash_Match);
 
@@ -60,6 +69,12 @@ package body History is
     Remotes.Rewind;
     return Remotes.Access_Current.Hash;
   end Remote_Head;
+
+  -- Local: encode currently stored hash
+  procedure Encode_Hash (Hash : in Git_If.Git_Hash) is
+  begin
+    Utils.X.Encode_Field (Hash, Afpx_Xref.History.Hash);
+  end Encode_Hash;
 
   -- Handle the history of a file or dir
   --  possibly on a  given branch
@@ -87,8 +102,9 @@ package body History is
       Get_Handle := (others => <>);
       -- List characteristics
       List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
-      -- Encode current branch
+      -- Encode current branch and hash
       Utils.X.Encode_Branch (Afpx_Xref.History.Branch);
+      Encode_Hash (Afpx.Decode_Field (Afpx_Xref.History.Hash, 0, True));
 
       -- Encode target branch
       if Branch /= "" then
@@ -313,7 +329,16 @@ package body History is
     procedure Do_Search is
       Log : Git_If.Log_Entry_Rec;
     begin
-      Log.Hash := Utils.Store.Hash;
+      -- Use got hash or else stored hash
+      Log.Hash := Afpx.Decode_Field (Afpx_Xref.History.Hash, 0, True);
+      if Log.Hash = Git_If.No_Hash then
+        Log.Hash := Utils.Store.Hash;
+        Encode_Hash (Log.Hash);
+      end if;
+      if Log.Hash = Git_If.No_Hash then
+        return;
+      end if;
+      -- Search
       if List_Hash_Search (Logs, Log,
                    From => Git_If.Log_Mng.Dyn_List.Absolute) then
         -- Move to found
@@ -389,9 +414,6 @@ package body History is
                                 or else not On_Root);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag,
                                 Right_Set or else Empty or else not Allow_Tag);
-      Afpx.Utils.Protect_Field (Afpx_Xref.History.Mark, Empty);
-      Afpx.Utils.Protect_Field (Afpx_Xref.History.Search,
-          Empty or else Utils.Store.Hash = Git_If.No_Hash);
       -- Set in Red the Reorg et Reset if current ref is below remote head
       if not Afpx.Get_Field_Protection (Afpx_Xref.History.Reorg)
       and then Remote_Head_Index /= 0 and then Left > Remote_Head_Index then
@@ -566,6 +588,8 @@ package body History is
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Checkout, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag, True);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Mark, True);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Search, True);
     end if;
 
     -- Main loop
@@ -577,7 +601,8 @@ package body History is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
             when Afpx.Return_Key =>
-              null;
+              -- Search got or stored hash
+              Do_Search;
             when Afpx.Escape_Key =>
               -- Back
               return;
@@ -639,7 +664,7 @@ package body History is
               -- Store current hash
               Do_Mark;
             when Afpx_Xref.History.Search =>
-              -- Search stored hash
+              -- Search got or stored hash
               Do_Search;
             when Afpx_Xref.History.Back =>
               -- Back
