@@ -125,6 +125,14 @@ package body History is
       end if;
     end Init;
 
+    -- Reset (to ' ') init indicator
+    Default_Init_Indicator : constant Character := ' ';
+    procedure Reset_Init_Indicator is
+    begin
+      Afpx.Encode_Field (Afpx_Xref.History.Init, (0, 0),
+                         Default_Init_Indicator & "");
+    end Reset_Init_Indicator;
+
     -- Show delta from current in list to comp
     procedure Show_Delta (Ref : in Natural) is
       Comp : Positive;
@@ -374,7 +382,7 @@ package body History is
     Remote_Head_Index : Natural;
 
     -- Update the list status
-    procedure List_Change (Unused_Action : in Afpx.List_Change_List;
+    procedure List_Change (Action : in Afpx.List_Change_List;
                            Status : in Afpx.List_Status_Rec) is
       -- Left and Right selection in list
       Left  : constant Natural := Status.Ids_Selected (Afpx.List_Left);
@@ -383,7 +391,12 @@ package body History is
       Empty : constant Boolean := Logs.Is_Empty;
       Percent : Afpx.Percent_Range;
       Row : Con_Io.Row_Range;
+      use type Afpx.List_Change_List;
     begin
+      -- Reset init indicator at first time there is a left selection
+      if Action = Afpx.Left_Selection then
+        Reset_Init_Indicator;
+      end if;
       -- No View, Detail, Restore, Checkout, Reorg, Reset nor Tag if RightSelect
       -- Protect buttons View and restore on dirs
       -- Protect Restore, Checkout, Reorg and Reset if no modif allowed
@@ -547,6 +560,9 @@ package body History is
     -- Do we set remote head
     Set_Remote_Head : Boolean;
 
+    -- Init indicator character (C, R or space)
+    Init_Indicator : Character;
+
   begin -- List
 
     -- Init Afpx
@@ -560,17 +576,23 @@ package body History is
     Set_Remote_Head := False;
     Remote_Head_Index := 0;
     Found := False;
+    Init_Indicator := Default_Init_Indicator;
     if Hash /= Git_If.No_Hash then
       -- Set current to Hash provided
       Log.Hash := Hash;
+      Init_Indicator := 'C';
     elsif On_Root then
       -- Set current to HEAD of remote (if possible)
       Log.Hash := Remote_Head (Branch);
       Set_Remote_Head := True;
+      Init_Indicator := 'R';
     end if;
     if Log.Hash /= Git_If.No_Hash then
       Found := List_Hash_Search (Logs, Log,
                    From => Git_If.Log_Mng.Dyn_List.Absolute);
+      if not Found then
+        Init_Indicator := '?';
+      end if;
     end if;
     if Set_Remote_Head and then Found then
       Remote_Head_Index := Logs.Get_Position;
@@ -579,6 +601,7 @@ package body History is
     -- Encode history
     Init_List (Logs);
     Afpx.Update_List (Afpx.Center_Selected);
+    Afpx.Encode_Field (Afpx_Xref.History.Init, (0, 0), Init_Indicator & "");
 
     -- Disable buttons if empty list
     if Logs.Is_Empty then

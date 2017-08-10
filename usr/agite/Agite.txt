@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V34.05
+V34.06
 
 General purpose
 ---------------
@@ -973,11 +973,24 @@ If the entry is a merge, then the separator between the date and the comment
 becomes a \'>'.
 
 Initial selection::
-If called from the xref:XDetail[detail] menu, the current entry is set
-to the the one that was detailed. Otherwise, if current directory is the root
-of the repository (including when listing the history of a given branch, or for
-setting a tag), agite will try to set the current entry to the head of the
-remote of the displayed branch. Otherwise it is set to the current head.
+When the history menu is called, the left selection is initially
+set according to the following criteria, and a character on the top right above
+the list indicates this criteria: +
+
+* If called from the xref:XDetail[detail] menu, then the current entry is set
+to the the one that was detailed, and the indicator shows ''C'' (for current)
+* Otherwise, if the current directory is the root of the repository
+(which is always the case when listing the history of a given branch or when
+setting a tag), then agite tries to set the current entry to the head of
+the remote of the displayed branch, and the indicator shows ''R'' (for remote).
+If this remote head is not found, then the current entry is set to the current
+head and the indicator shows ''?''.
+* Otherwise the current entry is set to the current head and the indicator is
+empty.
+
++
+The indicator is reset when clicking for a left selection or when calling a
+sub-menu of history.
 
 Navigation::
 Navigation in the list is the same as the xref:XNavig[navigation] in the
