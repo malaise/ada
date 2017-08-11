@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V34.07
+V35.00
 
 General purpose
 ---------------
@@ -15,7 +15,7 @@ anchor:XCommandLine[]
 
 Command line
 ------------
-  Usage: agite [ -n | --no_history ] [ <path> | -p | --previous ]
+  Usage: agite [ -n | --no-history ] [ <path> | -p | --previous ]
 
 By default Agite continuously stores the current directory in its
 xref:XConfig[configuration file].
@@ -25,7 +25,7 @@ providing the argument '-p' or '--previous' at start-up.
 On the other hand this feature is not compatible with several instances of
 Agite running in parallel. Only one instance of the program shall save the
 current directory, which is achieved by providing the argument '-n' or
-'--no_history' to all the other instances.
+'--no-history' to all the other instances.
 
 Instead of the previous directory, the start-up directory can be explicitly
 specified in the command line with '<path>'. If no path nor '--previous' is
@@ -161,7 +161,7 @@ to another.
 last_dir::
 Agite stores the current directory (each time it changes) in this entry. See the
 xref:XCommandLine[argument] '-p' ('--previous') for how to use this feature
-and the argument '-n' ('--no_history') for how to disable this feature.
+and the argument '-n' ('--no-history') for how to disable this feature.
 
 bookmarks::
 Agite stores the xref:XBook[bookmarks] (each time you change them) in this

@@ -45,7 +45,7 @@ function do_dir {
 
   export LSN=`ls -1 $1 | wc -l`
 
-  export ALSOPTS="-1 --dir_name=never"
+  export ALSOPTS="-1 --dir-name=never"
   export ALSF=`launch $ALSOPTS -F $1 | wc -l`
   export ALSD=`launch $ALSOPTS -D $1 | wc -l`
   export ALSL=`launch $ALSOPTS -L $1 | wc -l`
@@ -67,11 +67,11 @@ for dir in `als -DM --exclude="proc" /` ; do
 done
 
 # Compare als -R --no-name and als -RM
-title "In ., dir_name=never v.s. merge"
-export ALSRN=`launch -R  -1 --dir_name=never | wc -l`
+title "In ., dir-name=never v.s. merge"
+export ALSRN=`launch -R  -1 --dir-name=never | wc -l`
 export ALSMN=`launch -RM -1 | wc -l`
 if [ $ALSRN -ne $ALSMN ] ; then
-  error "als -R --dir_name=never finds $ALSRN entries while als -RM finds $ALSMN"
+  error "als -R --dir-name=never finds $ALSRN entries while als -RM finds $ALSMN"
 fi
 echo "OK"
 
@@ -90,10 +90,10 @@ echo "OK"
 # Match dir pattern and file regexp
 title "In lib*, match regexp *.o and"
 ls -1 lib/*.o > exp
-launch -M --match_dir="lib*" -m "@.*\.o" * > res
+launch -M --match-dir="lib*" -m "@.*\.o" * > res
 cmp res exp > /dev/null 2>&1
 if [ $? -ne 0 ] ; then
-  error "als -M --match_dir='lib*' -m '@.*\.o' * result res differs from exp"
+  error "als -M --match-dir='lib*' -m '@.*\.o' * result res differs from exp"
 fi
 rm exp res
 echo "OK"
@@ -143,19 +143,19 @@ echo "OK"
 
 # Long output
 title "In ., long format and date-iso"
-result=`launch -l --date_iso als | sed -r 's/ +/ /g'`
+result=`launch -l --date-iso als | sed -r 's/ +/ /g'`
 exp=`ls -l --time-style="+%Y-%m-%dT%H:%M:%S" als | cut -d ' ' -f 1,3-`
 if [ "$result" != "$exp" ] ; then
-  error "als -l --date_iso is $result i.o. $exp"
+  error "als -l --date-iso is $result i.o. $exp"
 fi
 echo "OK"
 
 # Long output in UTC
 title "In ., long format and date-iso in UTC"
-result=`launch -lU --date_iso als | sed -r 's/ +/ /g'`
+result=`launch -lU --date-iso als | sed -r 's/ +/ /g'`
 exp=`TZ=UTC ls -l --time-style="+%Y-%m-%dT%H:%M:%S" als | cut -d ' ' -f 1,3-`
 if [ "$result" != "$exp" ] ; then
-  error "als -lU --date_iso is $result i.o. $exp"
+  error "als -lU --date-iso is $result i.o. $exp"
 fi
 echo "OK"
 
@@ -181,13 +181,13 @@ echo "OK"
 title "Follow links"
 ln -s /tmp tmp
 touch tmp/$T_ALS
-result=`launch -RM --show_targets 2>/dev/null| grep $T_ALS`
+result=`launch -RM --show-targets 2>/dev/null| grep $T_ALS`
 if [ "$result" != "" ] ; then
-  error "als --show_targets has followed links"
+  error "als --show-targets has followed links"
 fi
-result=`launch -RM --follow_links 2>/dev/null| grep $T_ALS`
+result=`launch -RM --follow-links 2>/dev/null| grep $T_ALS`
 if [ "$result" != "/tmp/$T_ALS" ] ; then
-  error "als --follow_links  has not followed link"
+  error "als --follow-links  has not followed link"
 fi
 rm tmp/$T_ALS
 rm tmp
@@ -200,11 +200,11 @@ ln -s A B
 ln -s B C 
 result=`launch -l C | awk '{print $9}'`
 if [ "$result" != "B" ] ; then
-  error "als has not shwon direct link"
+  error "als has not shown direct link"
 fi
-result=`launch -l --show_targets C | awk '{print $9}'`
+result=`launch -l --show-targets C | awk '{print $9}'`
 if [ "$result" != "als" ] ; then
-  error "als --show_targets has not shwon target link"
+  error "als --show-targets has not shwon target link"
 fi
 rm A B C
 echo "OK"

@@ -1,7 +1,7 @@
 with As.U, Basic_Proc, Argument, Argument_Parser, Str_Util, Trilean;
 with Entities, Output, Targets, Lister, Exit_Code;
 procedure Als is
-  Version : constant String  := "V20.0";
+  Version : constant String  := "V21.0";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -23,30 +23,30 @@ procedure Als is
    15 => (False, 'F', As.U.Tus ("files"),        False),
    16 => (True,  'm', As.U.Tus ("match"),        True,  True, As.U.Tus ("criteria")),
    17 => (True,  'e', As.U.Tus ("exclude"),      True,  True, As.U.Tus ("criteria")),
-   18 => (True,  Nkc, As.U.Tus ("match_dir"),    True,  True, As.U.Tus ("criteria")),
-   19 => (True,  Nkc, As.U.Tus ("exclude_dir"),  True,  True, As.U.Tus ("criteria")),
+   18 => (True,  Nkc, As.U.Tus ("match-dir"),    True,  True, As.U.Tus ("criteria")),
+   19 => (True,  Nkc, As.U.Tus ("exclude-dir"),  True,  True, As.U.Tus ("criteria")),
    20 => (True,  'S', As.U.Tus ("separator"),    False, True, As.U.Asu_Null),
    21 => (False, 'T', As.U.Tus ("total"),        False),
    22 => (True,  'n', As.U.Tus ("newer"),        False, True, As.U.Tus ("date")),
    23 => (False, 'c', As.U.Tus ("classify"), False),
    24 => (True,  Nkc, As.U.Tus ("depth"),        False, True, As.U.Tus ("positive")),
    25 => (False, 'H', As.U.Tus ("human"),        False),
-   26 => (False, 'N', As.U.Tus ("no_sort"),      False),
+   26 => (False, 'N', As.U.Tus ("no-sort"),      False),
    27 => (False, 'p', As.U.Tus ("path"),         False),
-   28 => (False, 'B', As.U.Tus ("broken_links"), False),
-   29 => (False, Nkc, As.U.Tus ("follow_links"), False),
-   30 => (False, Nkc, As.U.Tus ("date_iso"),     False),
-   31 => (False, Nkc, As.U.Tus ("skip_dirs"),    False),
+   28 => (False, 'B', As.U.Tus ("broken-links"), False),
+   29 => (False, Nkc, As.U.Tus ("follow-links"), False),
+   30 => (False, Nkc, As.U.Tus ("date-iso"),     False),
+   31 => (False, Nkc, As.U.Tus ("skip-dirs"),    False),
    32 => (False, 'O', As.U.Tus ("others"),       False),
-   33 => (True,  Nkc, As.U.Tus ("dir_name"),     False, True, As.U.Tus ("always|never")),
+   33 => (True,  Nkc, As.U.Tus ("dir-name"),     False, True, As.U.Tus ("always|never")),
    34 => (False, 'U', As.U.Tus ("utc"),          False),
-   35 => (False, Nkc, As.U.Tus ("len_alpha"),    False),
+   35 => (False, Nkc, As.U.Tus ("len-alpha"),    False),
    36 => (False, 'q', As.U.Tus ("quiet"),        False),
-   37 => (True,  Nkc, As.U.Tus ("discard_dir"),  True,  True, As.U.Tus ("criteria")),
+   37 => (True,  Nkc, As.U.Tus ("discard-dir"),  True,  True, As.U.Tus ("criteria")),
    38 => (False, 'b', As.U.Tus ("basename"),     False),
    39 => (False, Nkc, As.U.Tus ("nodir"),        False),
    40 => (True,  Nkc, As.U.Tus ("access"),       False, True, As.U.Tus ("rights")),
-   41 => (False, Nkc, As.U.Tus ("show_targets"), False) );
+   41 => (False, Nkc, As.U.Tus ("show-targets"), False) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Usage

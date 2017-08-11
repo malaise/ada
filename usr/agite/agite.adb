@@ -8,7 +8,7 @@ procedure Agite is
   -- Options
   Keys : constant Argument_Parser.The_Keys_Type := (
     1 => (False, 'h', As.U.Tus ("help"),       False),
-    2 => (False, 'n', As.U.Tus ("no_history"), False),
+    2 => (False, 'n', As.U.Tus ("no-history"), False),
     3 => (False, 'p', As.U.Tus ("previous"),   False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
@@ -16,9 +16,9 @@ procedure Agite is
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-       & " <no_history> [ <path> | <previous> ]");
+       & " <no-history> [ <path> | <previous> ]");
     Basic_Proc.Put_Line_Error (
-       " <no_history> ::= " & Argument_Parser.Image (Keys(2)));
+       " <no-history> ::= " & Argument_Parser.Image (Keys(2)));
     Basic_Proc.Put_Line_Error (
        " <previous>   ::= " & Argument_Parser.Image (Keys(3)));
   end Usage;

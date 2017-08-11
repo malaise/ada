@@ -1,6 +1,6 @@
 Als
 ===
-V20.0
+V21.0
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, for the output format of each entry, and general
@@ -39,17 +39,17 @@ Specify which entry to select
   -F (--files)               Show only regular files
   -O (--others)              Show only other entries (character or block device,
                                pipe, socket)
-  -B (--broken_links)        Show only broken symbolic links
+  -B (--broken-links)        Show only broken symbolic links
 
   -R (--recursive)           Scan directories recursively
   --depth=<positive>         Scan only to given depth (needs "-R")
 
-  --skip_dirs                Skip directories from arguments
+  --skip-dirs                Skip directories from arguments
                                (useful when calling "als *")
   --access=<rights>          Show only file with the given access for current user
                                ex: "rw*" read and write, exec or not
                                    "r-x" read, not write, exec
-  --follow_links             Follow symbolic links that finally denote a directory
+  --follow-links             Follow symbolic links that finally denote a directory
 
   <match_name> ::= -m <criteria> | --match=<criteria>
     <criteria> ::= <templates> | @<regex>
@@ -58,11 +58,11 @@ Specify which entry to select
                               (name matches one template or the regular expression)
   <exclude_name> ::= -e <criteria> | --exclude=<criteria>
                              Exclude files that match the criteria
-  <match_dir> ::= --match_dir=<criteria>
+  <match_dir> ::= --match-dir=<criteria>
                              Scan only directories that match the criteria
-  <exclude_dir> ::= --exclude_dir=<criteria>
+  <exclude_dir> ::= --exclude-dir=<criteria>
                              Don't show directories that match the criteria
-  <discard_dir> ::= --discard_dir=<criteria>
+  <discard_dir> ::= --discard-dir=<criteria>
                              Discard directories that match the criteria
 
   <date_spec> [ <date_spec> ]
@@ -85,20 +85,20 @@ Specify how to show each entry selected
   -p (--path)                Show full path of entries
   <separator> ::= -S <string> | --separator=<string>
                              Insert <string> between each entry
-  --date_iso                 Show date in strict ISO format (<date>T<time>)
+  --date-iso                 Show date in strict ISO format (<date>T<time>)
   -b (--basename)            In Merge mode, show only the basename of each entry
-  --show_targets             Show final target of symbolic links and consider its size
+  --show-targets             Show final target of symbolic links and consider its size
 
 Specify general formatting options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   -s (--size)                Sort by decreasing size (see also "-r")
   -t (--time)                Sort by decreasing time (see also "-r")
-  --len_alpha                Sort by increasing name length (see also "-r")
+  --len-alpha                Sort by increasing name length (see also "-r")
   -r (--reverse)             Sort (by name, size, time, or len) in reverse order
-  -N (--no_sort)             Keep order same as in the directory structure
+  -N (--no-sort)             Keep order same as in the directory structure
   -M (--merge)               Show a global list of entries (not dir names)
-  --dir_name=always|never    Show names of directories (default=when not empty)
+  --dir-name=always|never    Show names of directories (default=when not empty)
   --nodir                    Do not show names of directories (--dir_name=never)
   -T (--total)               Also show number and total size of listed entries
   -U (--utc)                 Use UTC i.o. local time for date spec and output
@@ -147,7 +147,7 @@ Examples:
 
 .Some options are combined according to a specific logic
 
-* Matching applies to the target of the link (if '--follow_links').
+* Matching applies to the target of the link (if '--follow-links').
 * Several matching criteria are usually combined with operator 'and', except
 that:
  - several kinds are combined with 'or',
@@ -201,15 +201,15 @@ the name must not match any of them. No criteria means "all names
 match" as well.
 
 The matching of directory name in recursive mode is handled a specific way. 
-If the current directory name matches a 'discard_dir' criteria, then
+If the current directory name matches a 'discard-dir' criteria, then
 its content *and* subdirectories are skipped, otherwise:
 
-* If the current directory name matches a 'exclude_dir' criteria (if there are
-some), or if it does not match any 'match_dir' criteria (if there are some),
+* If the current directory name matches a 'exclude-dir' criteria (if there are
+some), or if it does not match any 'match-dir' criteria (if there are some),
 then the content of the directory is skipped but its subdirectories are scanned.
 
-* If the name matches a 'match_dir' criteria (or if there is none)
-and does not match any 'exclude_dir' criteria (or if there is none), then the
+* If the name matches a 'match-dir' criteria (or if there is none)
+and does not match any 'exclude-dir' criteria (or if there is none), then the
 content of the directory is listed and the subdirectories are scanned.
 
 Access rights
@@ -241,20 +241,20 @@ Option -B leads leads to only the broken links, i.e. the one for which the
 final target (possibly following recursive links) cannot be read.
 
 .Following links
-When --follow_links option is set and in recursive mode, if the target of a
+When --follow-links option is set and in recursive mode, if the target of a
 symbolic link is a directory, then this directory is added to the scan. +
 
 .Showing target of links
-When --show_targets is set, then als shows (when -l) the final target and its
+When --show-targets is set, then als shows (when -l) the final target and its
 size instead of the initial target of the symbolic links.
 
-NOTE: The options --follow_links and --show_targets are not used for assessing
+NOTE: The options --follow-links and --show-targets are not used for assessing
 if a link is valid or broken (in any case, the link is valid only if the final
 target exists and is readable).
 
 .Detailed list
 With option -l, the target of valid links is preceeded by '->', while the
-target of broken link is preceeded by '=>'. With option --show_targets the
+target of broken link is preceeded by '=>'. With option --show-targets the
 target that is shown is the one on which the reading error occured.
 
 Als exit codes
