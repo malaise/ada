@@ -14,8 +14,9 @@ package body Tree_Mng is
   end Error;
 
   -- Do we build full tree or do we optimize (each entry only once)
-  --  or do we do only first level
-  type Tree_Kind_List is (Full_Tree, Shortest_Way, Optimized, First_Level);
+  --  or do we do only first level or do develop each unit only once
+  type Tree_Kind_List is (Full_Tree, Shortest_Way, Optimized, First_Level,
+                          Once);
   Tree_Kind : Tree_Kind_List;
 
   -- Do we display files or units
@@ -318,7 +319,7 @@ package body Tree_Mng is
       end if;
     end Done;
 
-    Found : Boolean;
+    Got_Found, Rope_Found : Boolean;
     Child : Sourcer.Src_Dscr;
     Kind : As.U.Asu_Us;
     Crit : Cell;
@@ -334,17 +335,19 @@ package body Tree_Mng is
       Rope.Insert (Origin);
     else
       if Tree_Kind = Optimized
-      or else Tree_Kind = Shortest_Way then
+      or else Tree_Kind = Shortest_Way
+      or else Tree_Kind = Once then
         -- Optim: locate and store (<path><file>, Level)
         Crit.Name := Origin.Path & Origin.File;
         Crit.Level := 1;
-        Got_List.Search (Crit, Found);
-        if Found then
+        Got_List.Search (Crit, Got_Found);
+        if Got_Found then
           if Tree_Kind = Optimized then
             -- This unit already exists
             Debug.Logger.Log_Debug ("Optim skip " & Crit.Name.Image);
             return;
-          elsif Got_List.Get_Access_Current.Level < Level then
+          elsif Tree_Kind = Shortest_Way
+          and then Got_List.Get_Access_Current.Level < Level then
             -- This unit already exists at lower level
             if Debug.Logger.Debug_On then
               Debug.Logger.Log_Debug (
@@ -354,14 +357,21 @@ package body Tree_Mng is
                 & Images.Integer_Image (Got_List.Get_Access_Current.Level));
             end if;
             return;
+          elsif Tree_Kind = Once then
+            if Debug.Logger.Debug_On then
+              Debug.Logger.Log_Debug (
+                  "Optim not develop " & Crit.Name.Image
+                & " " & Images.Integer_Image (Level)
+                & " cause already developped");
+            end if;
           end if;
         end if;
         Debug.Logger.Log_Debug ("Optim insert " & Crit.Name.Image
                               & " " & Images.Integer_Image (Level));
         Got_List.Insert ( (Crit.Name, Level) );
       end if;
-      Rope.Search (Origin, Found);
-      if Found then
+      Rope.Search (Origin, Rope_Found);
+      if Rope_Found then
         -- Current Origin already exists => Looping
         Tree.Insert_Child ((Origin, Looping => True));
         Tree.Move_Father;
@@ -372,7 +382,9 @@ package body Tree_Mng is
         Rope.Insert (Origin);
       end if;
       -- Done if not root and only first level requested
-      if Tree_Kind = First_Level then
+      -- Done if Once and Unit already exists
+      if Tree_Kind = First_Level
+      or else (Tree_Kind = Once and then Got_Found) then
         Done;
         return;
       end if;
@@ -459,9 +471,8 @@ package body Tree_Mng is
   -- Build the tree of source dependencies of Origin
   procedure Build (Origin : in Sourcer.Src_Dscr;
                    Specs_Mode, Revert_Mode,
-                   Tree_Mode, Shortest_Mode,
-                   File_Mode, Direct_Mode,
-                   Bodies_Mode, Restrict_Mode : in Boolean) is
+                   Tree_Mode, Shortest_Mode, Direct_Mode, Once_Mode,
+                   File_Mode, Bodies_Mode, Restrict_Mode : in Boolean) is
   begin
     -- Global (constants) file and restrict modes
     Standard.Tree_Mng.File_Mode := File_Mode;
@@ -477,7 +488,12 @@ package body Tree_Mng is
               when True =>
                 Tree_Kind := Shortest_Way;
               when False =>
-                Tree_Kind := Full_Tree;
+                case Once_Mode is
+                  when True =>
+                    Tree_Kind := Once;
+                  when False =>
+                    Tree_Kind := Full_Tree;
+                end case;
             end case;
         end case;
       when False =>

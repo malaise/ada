@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory, Trace;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V14.00";
+  Version : constant String := "V15.00";
 
   -- The keys and descriptor of parsed keys
   Nok : Character renames Argument_Parser.No_Key_Char;
@@ -25,7 +25,8 @@ procedure Lsadeps is
    15 => (False, 'b', As.U.Tus ("bodies"),   False),
    16 => (False, 'F', As.U.Tus ("fast"),     False),
    17 => (False, Nok, As.U.Tus ("restrict"), False),
-   18 => (True,  'T', As.U.Tus ("tab"), False, True, As.U.Tus ("size"))
+   18 => (True,  'T', As.U.Tus ("tab"), False, True, As.U.Tus ("size")),
+   19 => (False, 'o', As.U.Tus ("once"), False)
 );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   Include_Index : constant Argument_Parser.The_Keys_Range := 9;
@@ -47,7 +48,9 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <target_unit> ::=  [<path>/]<unit>");
     Basic_Proc.Put_Line_Error (
-     " <options>     ::=  [ <specs> | <revert> ] [ <tree> | <fast> | <direct> ]");
+     " <options>     ::=  [ <specs> | <revert> ]");
+    Basic_Proc.Put_Line_Error (
+     "                    [ <tree> [ <tab> ] | <fast> | <direct> | <once> ]");
     Basic_Proc.Put_Line_Error (
      "                    [ <bodies> ] [ <files> ] [ <inclusions> ]");
     Basic_Proc.Put_Line_Error (
@@ -62,6 +65,8 @@ procedure Lsadeps is
      " <fast>        ::= " & Argument_Parser.Image (Keys(16)));
     Basic_Proc.Put_Line_Error (
      " <direct>      ::= " & Argument_Parser.Image (Keys(7)));
+    Basic_Proc.Put_Line_Error (
+     " <once>        ::= " & Argument_Parser.Image (Keys(19)));
     Basic_Proc.Put_Line_Error (
      " <files>       ::= " & Argument_Parser.Image (Keys(8)));
     Basic_Proc.Put_Line_Error (
@@ -110,6 +115,8 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <direct> to show the direct dependencies between units,");
     Basic_Proc.Put_Line_Error (
+     " <once> to show only once in the tree the dependencies of each units,");
+    Basic_Proc.Put_Line_Error (
      " <bodies> to include the dependencies of bodies in revert mode,");
     Basic_Proc.Put_Line_Error (
      " <restrict> to discard restricted (limited / private) with,");
@@ -149,6 +156,7 @@ procedure Lsadeps is
   Tree_Tab : Natural := 3;
   Fast_Mode : Boolean := False;
   Direct_Mode : Boolean := False;
+  Once_Mode : Boolean := False;
   Bodies_Mode : Boolean := False;
   Restrict_Mode : Boolean := False;
   Files_Mode : Boolean := False;
@@ -286,12 +294,16 @@ begin
   if Arg_Dscr.Is_Set (16) then
     Fast_Mode := True;
   end if;
+  if Arg_Dscr.Is_Set (19) then
+    Once_Mode := True;
+  end if;
 
   -- Check mode
   if Arg_Dscr.Is_Set (3) then
     -- No option
     if Specs_Mode or else Revert_Mode or else Tree_Mode or else Direct_Mode
-    or else Files_Mode or else Bodies_Mode or else Restrict_Mode then
+    or else Files_Mode or else Bodies_Mode or else Restrict_Mode
+    or else Once_Mode then
       Error ("Check mode does not support options");
     end if;
     -- No include
@@ -306,7 +318,8 @@ begin
   if Arg_Dscr.Is_Set (12) then
     -- No option except File and all
     if Specs_Mode or else Revert_Mode or else Tree_Mode
-    or else Direct_Mode or else Bodies_Mode or else Restrict_Mode then
+    or else Direct_Mode or else Bodies_Mode or else Restrict_Mode
+    or else Once_Mode then
       Error ("List mode only supports file, all or children options");
     end if;
     -- No include
@@ -322,9 +335,11 @@ begin
     Error ("Check and list modes are mutually exclusive");
   end if;
 
-  -- Check not tree and direct
-  if Tree_Mode and then Direct_Mode then
-    Error ("Tree and Direct mode are mutually exclusive");
+  -- Check not tree, direct or once together
+  if (Tree_Mode and then Direct_Mode)
+  or else (Direct_Mode and then Once_Mode)
+  or else (Once_Mode and then Tree_Mode) then
+    Error ("Tree, Direct and Once modes are mutually exclusive");
   end if;
 
   -- Check not fast and tree
@@ -344,7 +359,7 @@ begin
   -- Tree tab
   if Arg_Dscr.Is_Set (18) then
     if not Tree_Mode then
-      Error ("Tree tab requires Tree mode");
+      Error ("Tree tab requires tree mode");
     end if;
     begin
       Tree_Tab := Natural'Value (Arg_Dscr.Get_Option (18));
@@ -421,7 +436,7 @@ begin
     -- Target and path: at most 2 and at the end
     if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) > 2
     or else Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) = 0 then
-      Error ("At least one target and most one path required");
+      Error ("At least one target and at most one path required");
     elsif Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
       Error ("Invalid argument");
     end if;
@@ -461,7 +476,23 @@ begin
     Error ("Fast mode requires a Path_Unit");
   end if;
 
-  -- Path_Dir triggers tree except if Fast
+  -- Path_Dir prevents Direct
+  if not Path_Dir.Is_Null and then Direct_Mode then
+    Error ("Path_Unit and Direct mode are mutually exclusive");
+  end if;
+  -- Path_Dir prevents Once
+  if not Path_Dir.Is_Null and then Once_Mode then
+    Error ("Path_Unit and Once mode are mutually exclusive");
+  end if;
+
+  -- Children requires a target unit
+  if Children_Mode and then Target.Is_Null then
+    Error ("Children option requires a target unit");
+  end if;
+
+  Debug.Logger.Log (Perfo, "Arguments parsed");
+
+  -- Path_Dir triggers shortest tree by default, otherwise full tree or fast
   if not Path_Dir.Is_Null then
     Shortest := not Fast_Mode and then not Tree_Mode;
     if Shortest then
@@ -469,10 +500,33 @@ begin
     end if;
   end if;
 
-  -- Path_Dir prevents Direct
-  if not Path_Dir.Is_Null and then Direct_Mode then
-    Error ("Path_Unit and Direct mode are mutually exclusive");
+  -- Once triggers tree
+  if Once_Mode then
+    Tree_Mode := True;
   end if;
+
+  ----------------------------
+  -- BUILD LISTS OF SOURCES --
+  ----------------------------
+  Sourcer.Build_Lists;
+  Debug.Logger.Log (Perfo, "Lists built");
+
+  if Check_Mode then
+    -----------------
+    -- CHECK UNITS --
+    -----------------
+    if not Checker.Check then
+      -- Check failed
+      Basic_Proc.Set_Error_Exit_Code;
+    end if;
+    Debug.Logger.Log (Perfo, "Check done.");
+    return;
+  end if;
+
+  ------------------------
+  -- MOVE TO TARGET DIR --
+  ------------------------
+  Change_Dir (Target_Dir.Image);
 
   -- Children requires a target unit
   if Children_Mode and then Target.Is_Null then
@@ -529,8 +583,8 @@ begin
   -- BUILD TREE OF SOURCES --
   ----------------------------
   Tree_Mng.Build (Target_Dscr, Specs_Mode, Revert_Mode,
-                  Tree_Mode, Shortest, Files_Mode,
-                  Direct_Mode, Bodies_Mode, Restrict_Mode);
+                  Tree_Mode, Shortest, Direct_Mode, Once_Mode,
+                  Files_Mode, Bodies_Mode, Restrict_Mode);
   Debug.Logger.Log (Perfo, "Tree built");
 
   -------------------

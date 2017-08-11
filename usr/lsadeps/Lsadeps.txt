@@ -1,6 +1,6 @@
 lsadeps
 =======
-V14.00
+V15.00
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order. +
@@ -17,13 +17,14 @@ Usage: lsadeps <version> | <help> | <depend> | <list> | <check>
  <help>        ::= -h | --help
  <depend>      ::= <options> <target_unit> [ <path_unit> ]
  <target_unit> ::=  [<path>/]<unit>
- <options>     ::=  [ <specs> | <revert> ] [ <tree> [ <tab> ] | <fast> | <direct> ] [ <files> ] [ <bodies> ] [ <restrict> ] [ <inclusions> ]
+ <options>     ::=  [ <specs> | <revert> ] [ <tree> [ <tab> ] | <fast> | <direct> | <once> ] [ <files> ] [ <bodies> ] [ <restrict> ] [ <inclusions> ]
  <specs>       ::= -s | --specs
  <revert>      ::= -r | --revert
  <tree>        ::= -t | --tree
  <tab>         ::= -T <size> | --tab=<size>
  <fast>        ::= -F | --fast
  <direct>      ::= -d | --direct
+ <once>        ::= -o | --once
  <files>       ::= -f | --files
  <bodies>      ::= -b | --bodies
  <restrict>    ::= --restrict
@@ -67,6 +68,9 @@ and <path_unit>.
 
 - 'direct' to show only the units that are directly dependent (no recursion).
 
+- 'once' to show a tree where the dependencies of each unit are expanded only
+once.
+
 - 'file' to show the file names (instead of unit names).
 
 - 'bodies', in revert mode to also show the units that depend from each other
@@ -106,10 +110,15 @@ relative), while 'exclude' must specify templates of simple directory names
 'bodies' option is allowed only in 'revert' mode
 
 .Tree optimizations
-When the 'tree' option is not set, then the analysis of dependencies
-is optimized so that the same unit is not analyzed several times.
+When the the option 'tree' is set, then the hole the whole tree of
+dependancies is built and displayed, which might be very time-consuming.
 
-When the the option 'path_unit' is set: +
+When the option 'tree' is not set, then the analysis of dependencies
+is optimized so that the same unit is not analyzed several times. +
+For example, the option 'once' uses this optimization, and the dependencies of
+each unit are displayed only once.
+
+When the option 'path_unit' is set: +
  - The 'tree' option leads to build and display the whole tree of dependancies
 between target_unit and path_unit, which might be very time-consuming. +
  - The default behaviour triggers internally the 'tree' mode with an
