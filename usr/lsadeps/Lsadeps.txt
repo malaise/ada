@@ -1,6 +1,6 @@
 lsadeps
 =======
-V13.13
+V14.00
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order. +
@@ -17,10 +17,11 @@ Usage: lsadeps <version> | <help> | <depend> | <list> | <check>
  <help>        ::= -h | --help
  <depend>      ::= <options> <target_unit> [ <path_unit> ]
  <target_unit> ::=  [<path>/]<unit>
- <options>     ::=  [ <specs> | <revert> ] [ <tree> | <fast> | <direct> ] [ <files> ] [ <bodies> ] [ <restrict> ] [ <inclusions> ]
+ <options>     ::=  [ <specs> | <revert> ] [ <tree> [ <tab> ] | <fast> | <direct> ] [ <files> ] [ <bodies> ] [ <restrict> ] [ <inclusions> ]
  <specs>       ::= -s | --specs
  <revert>      ::= -r | --revert
  <tree>        ::= -t | --tree
+ <tab>         ::= -T <size> | --tab=<size>
  <fast>        ::= -F | --fast
  <direct>      ::= -d | --direct
  <files>       ::= -f | --files
@@ -57,6 +58,9 @@ Besides, the following options are available:
 
 - 'tree' to show the full tree of dependencies (instead of a sorted unique
 list).
+
+- 'tab' in tree mode to put a vertical tab '|' every <size> level. Default is
+3 and 0 disables tabs).
 
 - 'fast' to fast scan and show the first dependency tree between <target_unit>
 and <path_unit>.

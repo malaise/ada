@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory, Trace;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V13.14";
+  Version : constant String := "V14.00";
 
   -- The keys and descriptor of parsed keys
   Nok : Character renames Argument_Parser.No_Key_Char;
@@ -24,7 +24,9 @@ procedure Lsadeps is
    14 => (False, 'C', As.U.Tus ("children"), False),
    15 => (False, 'b', As.U.Tus ("bodies"),   False),
    16 => (False, 'F', As.U.Tus ("fast"),     False),
-   17 => (False, Nok, As.U.Tus ("restrict"), False));
+   17 => (False, Nok, As.U.Tus ("restrict"), False),
+   18 => (True,  'T', As.U.Tus ("tab"), False, True, As.U.Tus ("size"))
+);
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   Include_Index : constant Argument_Parser.The_Keys_Range := 9;
   Recursive_Index : constant Argument_Parser.The_Keys_Range := 10;
@@ -54,6 +56,8 @@ procedure Lsadeps is
      " <revert>      ::= " & Argument_Parser.Image (Keys(5)));
     Basic_Proc.Put_Line_Error (
      " <tree>        ::= " & Argument_Parser.Image (Keys(6)));
+    Basic_Proc.Put_Line_Error (
+     " <tab>         ::= " & Argument_Parser.Image (Keys(18)));
     Basic_Proc.Put_Line_Error (
      " <fast>        ::= " & Argument_Parser.Image (Keys(16)));
     Basic_Proc.Put_Line_Error (
@@ -100,6 +104,8 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <tree> to show the tree of dependencies (instead of a sorted unique list),");
     Basic_Proc.Put_Line_Error (
+     " <tab> to print a '|' every <size> level of the tree (default 3, 0 disables),");
+    Basic_Proc.Put_Line_Error (
      " <fast> to show the first dependency way from target_unit to path_unit,");
     Basic_Proc.Put_Line_Error (
      " <direct> to show the direct dependencies between units,");
@@ -140,6 +146,7 @@ procedure Lsadeps is
   Specs_Mode : Boolean := False;
   Revert_Mode : Boolean := False;
   Tree_Mode : Boolean := False;
+  Tree_Tab : Natural := 3;
   Fast_Mode : Boolean := False;
   Direct_Mode : Boolean := False;
   Bodies_Mode : Boolean := False;
@@ -334,12 +341,27 @@ begin
     Error ("Children option is valid only in list mode");
   end if;
 
+  -- Tree tab
+  if Arg_Dscr.Is_Set (18) then
+    if not Tree_Mode then
+      Error ("Tree tab requires Tree mode");
+    end if;
+    begin
+      Tree_Tab := Natural'Value (Arg_Dscr.Get_Option (18));
+    exception
+      when others =>
+        Error ("Invalid tree tab value (expected a natural got "
+             & Arg_Dscr.Get_Option (18) & ")");
+    end;
+  end if;
+
   -- Save current dir and add it to paths (top prio)
   Directory.Get_Current (Current_Dir);
   if not List_Mode and then not Check_Mode then
     Sort.Add_Path (Current_Dir);
   end if;
 
+  -- Target and inclusions
   if Check_Mode then
     if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) = 1 then
       -- An optional target directory
@@ -516,7 +538,8 @@ begin
   -------------------
   -- Back to original dir
   Check_Dir ("");
-  Output.Put (Revert_Mode, Tree_Mode, Shortest, Files_Mode, Path_Dscr);
+  Output.Put (Revert_Mode, Tree_Mode, Shortest, Files_Mode, Tree_Tab,
+              Path_Dscr);
   Debug.Logger.Log (Perfo, "Dependency done.");
 
 exception

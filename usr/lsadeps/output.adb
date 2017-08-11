@@ -4,6 +4,8 @@ package body Output is
 
   -- For tree/path indent
   Tab : constant String := "  ";
+  Vab : constant String := "| ";
+  Vtab : Natural := 0;
 
   -- Are we in revert or shortest mode. Tree iterators need it
   Revert : Boolean := False;
@@ -126,7 +128,7 @@ package body Output is
     else
       -- Dump tree: Indent
       for I in 1 .. Level loop
-        Str.Append (Tab);
+        Str.Append (if Vtab /= 0 and then I mod Vtab = 2 then Vab else Tab);
       end loop;
       -- Put name
       Str.Append (Strip (Sort.Make_Path (Dscr.Dscr.Path, Name)));
@@ -214,7 +216,7 @@ package body Output is
   begin
     -- Indent
     for I in 1 .. Level loop
-      Str.Append (Tab);
+      Str.Append (if Vtab /= 0 and then I mod Vtab = 2 then Vab else Tab);
     end loop;
     -- Put name
     Str.Append (Strip (Sort.Make_Path (Dscr.Dscr.Path, Dscr.Dscr.File)));
@@ -532,6 +534,7 @@ package body Output is
 
   -- Put list/tree, normal/revert of units/files
   procedure Put (Revert_Mode, Tree_Mode, Shortest_Mode, File_Mode : in Boolean;
+                 Tree_Vtab : in Natural;
                  Path_Unit : in Sourcer.Src_Dscr) is
   begin
     Directory.Get_Current (Curr_Dir);
@@ -540,6 +543,7 @@ package body Output is
     end if;
     Revert := Revert_Mode;
     Shortest := Shortest_Mode;
+    Output.Vtab := Tree_Vtab;
     Path_Unit_Full := Sort.Make_Path (Path_Unit.Path, Path_Unit.Unit);
     if not Path_Unit.Unit.Is_Null and then not Shortest_Mode then
       -- Show a path from Root to Path_Unit or revert

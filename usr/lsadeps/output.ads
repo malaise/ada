@@ -3,6 +3,7 @@ package Output is
 
   -- Put list/tree, normal/revert of units/files
   procedure Put (Revert_Mode, Tree_Mode, Shortest_Mode, File_Mode : in Boolean;
+                 Tree_Vtab : in Natural;
                  Path_Unit : in Sourcer.Src_Dscr);
 
   -- List a unit or all
