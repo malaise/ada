@@ -269,7 +269,7 @@ package Git_If is
 
   -- List cherry commits: the commits in Ref, and indicates if they are
   --  or not merged in target
-  -- Inserts the Log_Entry_Rec with Hash and Merged set
+  -- Inserts the Log_Entry_Rec with only the fields Hash and Merged set
   procedure Cherry_List (Ref, Target : in String;
                          Commits : in out Log_List);
 

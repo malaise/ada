@@ -230,13 +230,16 @@ package body History is
       end if;
     end Do_Checkout;
 
-    -- Do a reorg if no local modif
+    -- Do a reorg if no local modif,
+    --  return True if success or failure => back to Directory
     function Do_Reorg return Boolean is
       Pos : Positive;
       Changes : Git_If.File_List;
       Change : Git_If.File_Entry_Rec;
       Moved : Boolean;
+      Result : Branches.Result_List;
       Log : Git_If.Log_Entry_Rec;
+      use type Branches.Result_List;
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
@@ -265,16 +268,22 @@ package body History is
         -- Error if some modifs remain
         Error ("Reorg", Root, "There are some local changes," & Aski.Lf
                             & "Please stash or revert them first.");
-      elsif Branches.Reorg (Root, Log.Hash) then
-        -- Reorg (success will lead to return to Directory)
+        Result := Branches.Cancelled;
+      else
+        -- Reorg success or failure
+        Result := Branches.Reorg (Root, Log.Hash);
+      end if;
+      if Result = Branches.Cancelled then
+        -- Cancel => stay in Branch
+        Init;
+        Init_List (Logs);
+        Afpx.Line_List.Move_At (Pos);
+        Afpx.Update_List (Afpx.Center_Selected);
+        return False;
+      else
+        -- Success or failure => back to Directory
         return True;
       end if;
-      -- Check Ko or Reorg failed: Restore screen
-      Init;
-      Init_List (Logs);
-      Afpx.Line_List.Move_At (Pos);
-      Afpx.Update_List (Afpx.Center_Selected);
-      return False;
     end Do_Reorg;
 
     -- Do a hard reset
@@ -671,7 +680,8 @@ package body History is
                 return;
               end if;
             when Afpx_Xref.History.Reorg =>
-              -- Reorg
+              -- Reorg: go back to directory on success or failure
+              -- Stay only on cancel
               if Do_Reorg then
                 return;
               end if;

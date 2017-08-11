@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V34.06"/>
+  <Var Name="Version" Value="V34.07"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -1639,7 +1639,7 @@
       <Init Row="1" Col="1">Commit</Init>
     </Field>
     <Field Num="40" Kind="Button" Name="Push">
-      <Geometry Up="${Field_39.Up}" Left="24" Height="3" Width="6"/>
+      <Geometry Up="${Field_39.Up}" Left="24" Height="3" Width="7"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Push</Init>
     </Field>

@@ -6,7 +6,7 @@ package Commit is
                     Allow_Modif : in Boolean := True);
 
   -- Handle a commit of modifications within a loop (of cherry-pick)
-  -- Show button Quit instead of Push
+  -- Show button Abort instead of Push and Done i.o. Back
   -- Allow modifications of content or only of comment
   -- Forbid, allow commit or require it (no more staged)
   type Commit_Allow_List is (Forbid, Allow, Require);

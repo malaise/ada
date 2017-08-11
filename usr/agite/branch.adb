@@ -186,9 +186,10 @@ package body Branch is
   -- Handle Rebase memory (incuding restart)
   package Rebase_Mng is
     -- (Re) start a rebase, return the error message to display
-    -- Specific error when aborted (cancelled by user or error already
-    --  displayed)
-    Aborted : constant String := Aski.Esc_S;
+    -- Specific errors when aborted or cancelled by user (=> error already
+    --  displayed or not needed)
+    Aborted : constant String := Aski.Eot_S;
+    Cancelled : constant String := Aski.Esc_S;
     function Do_Rebase (Root : String;
                         Target_Branch, Reference_Branch: String;
                         Interactive : Boolean) return String;
@@ -399,7 +400,8 @@ package body Branch is
 
     -- Handle error
     if not (Result.Is_Null
-            or else Result = As.U.Tus (Rebase_Mng.Aborted)) then
+            or else Result = As.U.Tus (Rebase_Mng.Aborted)
+            or else Result = As.U.Tus (Rebase_Mng.Cancelled) ) then
       Error (Message1.Image, Message2.Image, Result.Image);
       Init;
       Reread (False);
@@ -419,7 +421,7 @@ package body Branch is
     -- Successful checkout, merge, rebase
     return Action = Checkout or else Action = Merge
            or else (Action = Rebase
-                    and then Result /= As.U.Tus (Rebase_Mng.Aborted));
+                    and then Result /= As.U.Tus (Rebase_Mng.Cancelled));
   end Do_Action;
 
   -- Update the list status
@@ -541,6 +543,7 @@ package body Branch is
               exit;
             when Afpx_Xref.Branches.Rebase =>
               if Do_Action (Rebase, Ptg_Result.Id_Selected_Right) then
+                -- Rebase always returns true
                 exit;
               end if;
             when Afpx_Xref.Branches.Cherry_Pick =>
@@ -583,17 +586,21 @@ package body Branch is
   end Handle;
 
   -- Interactively rebase current branch from rev
-  function Reorg (Root, Rev : String) return Boolean is
+  function Reorg (Root, Rev : String) return Result_List is
     Msg : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
     Msg := As.U.Tus (Rebase_Mng.Do_Rebase (Root, Rev, "", True));
     if Msg.Is_Null then
-      return True;
-    elsif Msg /= As.U.Tus (Rebase_Mng.Aborted) then
+      return Ok;
+    elsif Msg = As.U.Tus (Rebase_Mng.Aborted) then
+      return Error;
+    elsif Msg = As.U.Tus (Rebase_Mng.Cancelled) then
+      return Cancelled;
+    else
       Error ("Rebase from " & Rev, "", Msg.Image);
+      return Error;
     end if;
-    return False;
   end Reorg;
 
 end Branch;

@@ -76,7 +76,7 @@ package body Rebase_Mng is
       -- Confirm new rebase
       if not Do_Confirm then
         -- User cancelled new rebase
-        return Aborted;
+        return Cancelled;
       end if;
     end if;
 
@@ -132,7 +132,7 @@ package body Rebase_Mng is
           return "Cannot delete tmp branch " & Tmp_Branch.Image & ": "
                  & Result.Image;
         end if;
-        return Aborted;
+        return Cancelled;
     end case;
 
     -- Hard reset the Rebased branch to Tmp branch

@@ -7,8 +7,8 @@ package Cherry is
   -- branch name or Tmp
   -- Apply the cherries on current branch
   -- Return OK => Completed
-  --        Error => Error not recovered by user (e.g. user quit)
-  --     or Cancelled (cancelled by user before starting, or nothing to do)
+  --        Error => Error not recovered by user (e.g. user abort)
+  --     or Cancelled => Cancelled by user before starting, or nothing to do
   type Result_List is (Ok, Error, Cancelled);
   function Pick (Root, Branch, Reference : String;
                  Mode : Cherry_Mode) return Result_List;

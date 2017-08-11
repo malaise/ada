@@ -399,7 +399,7 @@ package body Commit is
       -- Change buttons when in loop
       if In_Loop then
         Afpx.Encode_Field (Afpx_Xref.Commit.Back, (1, 2), "Done");
-        Afpx.Encode_Field (Afpx_Xref.Commit.Push, (1, 1), "Quit");
+        Afpx.Encode_Field (Afpx_Xref.Commit.Push, (1, 1), "Abort");
       else
         Afpx.Set_Field_Activation (Afpx_Xref.Commit.Reset, False);
       end if;
@@ -880,8 +880,10 @@ package body Commit is
                             Allow_Modif, Allow);
   end Handle;
 
-  -- Handle the commit of modifications
-  -- Show button Quit instead of Push
+  -- Handle the commit of modifications within a loop (of cherry-pick)
+  -- Show button Abort instead of Push nd Done i.o. Back
+  -- Allow modifications of content or only of comment
+  -- Forbid, allow commit or require it (no more staged)
   -- Init comment from the one of the provided Hash
   function Handle (Root : String;
                    Title : String;

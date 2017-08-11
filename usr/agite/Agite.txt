@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V34.06
+V34.07
 
 General purpose
 ---------------
@@ -775,8 +775,8 @@ while a  a rebase on 'master' (left selection) with the reference 'server'
           \           \-- C8 -- C9 (client)
            \- C3 -- C4 -- C10 (server)
 +
-See also the section on xref:XRewritingHistory[rewriting history]. +
-
+See also the section on xref:XRewritingHistory[rewriting history]. 
++
 The rebased branch is automatically checked out by this operation and Agite
 returns to the xref:XDir[directory] menu.
 
@@ -798,7 +798,7 @@ commits from the branch left-selected in the list (source) into the current
 branch (target). +
 If a branch is right-selected (reference) then the cherries to pick are
 the ones in the 'source' but not in the 'reference', otherwise the default
-reference is the 'target'.
+reference is the 'target' (see the examples of xref:XRebase[rebase] above).
 
 Reset::
 
@@ -1111,7 +1111,9 @@ would be lost). +
 This function is only active when in the root directory of the current
 branch, so that the current list of commits is exactly the one that will
 be reorganized. +
-See also the section on xref:XRewritingHistory[rewriting history].
+See also the section on xref:XRewritingHistory[rewriting history]. +
+Upon success or failure, this operation leads to go back to the
+xref:XDir[directory] menu (not if the reorg is cancelled).
 
 NOTE: The 'Reorg' consists in a manual xref:XCherry[cherry-pick] of commits,
 then an automatic commit of these cherries into a temporary branch, then
@@ -1373,30 +1375,32 @@ The third line recalls the root of the current repository.
 
 .List
 The list shows the result of \'git cherry', which is the list of commits in the
-'source' branch that are not merged into the 'reference' branch. The oldest
-commits are displayed first, so the list is in the "order of replay". +
+'source' branch that are not merged into the 'reference' branch. *The
+oldest commits are displayed first*, so the list is in the "order of replay". +
 The first letter of each line describes the status of the cherry:
 
 * \'=' denotes a commit already 'merged', which cannot be picked nor skipped.
 
+* ' ' denotes a cherry 'dropped', which will not be picked.
+
 * \'P' denotes a cherry 'picked', which will be applied. If the next
-(non-merged non-dropped) cherry is not a 'squash' or a 'fixup', then
-the result will be commited with the cherries's comment.
+not-merged not-dropped cherry is not a 'squash' or a 'fixup', then the result
+will be commited with the cherries's comment.
 
 * \'W' denotes a cherry picked for 'wipe-up', which will be applied with an
-empty comment of the commit, which is valid only if the next (non-merged
-non-dropped) cherry is (possibly after some 'fixup') a 'squash'.
+empty comment. This is valid only if the next (not-merged not-dropped) cherry
+is (possibly after some 'fixup') a 'squash'.
 
 * \'R' denotes a cherry picked for 'rewording', which will be applied then
-proposed for edition of the comment of the commit in the xref:XCommit[commit]
-menu. It will be possible to edit the comment, commit the change (if the next
+proposed for edition of the comment in the xref:XCommit[commit] menu.
+It will be possible to edit the comment, commit the change (if the next
 cherry is not a 'squash' or a 'fixup') and click on the 'Done' button.
 
 * \'E' denotes a cherry picked for 'edition', which will be applied then
-proposed for edition of the commit (allowing to modify the comment,
-to split the commit...) in the xref:XCommit[commit] menu. It will be possible
-to leave some changes not committed, which has a sense if the next cherry
-is a 'squash' or a 'fixup'.
+proposed for full edition of the commit (allowing to modify the comment,
+to split the commit, to add stashed changes...) in the xref:XCommit[commit]
+menu. It will be possible to leave some changes not committed, which has a
+sense if the next cherry is a 'squash' or a 'fixup'.
 
 * \'S' denotes a cherry picked for 'squash', which will be applied and folded
 with the previous cherry. The comment of the cherry will be concatenated to
@@ -1406,11 +1410,9 @@ overall result will be committed.
 
 * \'F' denotes a cherry picked for 'fixup', which will be applied and folded
 with the previous cherry. If the next cherry is not a 'squash' nor a 'fixup',
-then the result will be committed with the currently retained comment (note
-that if the currently retained comment is empty then the current comment is
-retained).
-
-* ' ' denotes a cherry 'dropped', which will not be picked. +
+then the result will be committed with the currently retained comment. So the
+'fixup' cherry comment is discarded, except if the currently retained comment
+is empty, in which case the current comment is retained). +
 
 By default, all the non-merged commits are selected as 'picked'.
 
@@ -1418,7 +1420,7 @@ Double-clicking on an entry of the list toggles its selection from 'dropped'
 to 'picked' and vice versa.
 
 NOTE: The logic is the same as in Git interactive rebase (except that Git does
-note implement the 'Wipe' status.
+not implement the 'Wipe' status).
 
 NOTE: The commits that have already been merged through the \'fast forward'
 mechanism are not listed at all.
@@ -1460,7 +1462,7 @@ on how to use the 'commit' menu in this context.
 
  * Clicking on the 'Done' button goes back to the loop
 of picking the cherries (possibly with some files not yet committed).
- * Clicking on the 'Quit' button cancels the loop at the current point (see
+ * Clicking on the 'Abort' button cancels the loop at the current point (see
 the section xref:XCherryError[Error in cherry-pick] for how to restart). +
 
 Any error in picking a cherry is reported in a specific screen
@@ -1873,16 +1875,16 @@ anchor:XCherryHowto[]
 Use-cases
 ~~~~~~~~~
 
-* Fold several cherries into one, keep or update the last comment
+* Fold several cherries into one, update the last comment
   - 'Pick' the first cherry to fold,
   - 'Fixup' all the other cherries to fold except the last one,
   - 'Squash' the last cherry to fold,
   - Check/modify the comment of the last commit, 'Commit' then click on 'Done'.
 
-* Fold a cherry with several following fixes
+* Change the comment of a cherry and fold it with with several following fixes
   - 'Reword' the first cherry to fold,
   - 'Fixup' all the other cherries to fold,
-  - Check/modify the comment of the first commit then click on 'Done'.
+  - Modify the comment of the first commit then click on 'Done'.
 
 * Fold some local changes with the last cherry
 +
@@ -1896,7 +1898,7 @@ Use-cases
   - In the xref:XCommit[commit] menu, xref:XApplyStash[apply the stash],
     xref:XStage[stage] the changes to fold, click on 'Commit',
   - Click on xref:XReset[reset] then on 'Hard',
-  - Back in then xref:XCommit[commit] menu, click on 'Done'.
+  - Back in the xref:XCommit[commit] menu, click on 'Done'.
   - Finally, xref:XPopStash[pop the stash]. +
     The remaining changes are locally to be committed.
 
@@ -1906,7 +1908,7 @@ Use-cases
   - xref:XStashApply[Stash and apply] the local changes (e.g. as "Global"),
   - xref:XRevert[Revert] one by one the changes not to be folded,
   - xref:XStashReset[Stash and reset] the remaining changes (e.g. as "Fold"),
-  - Launch the xref:XReorg[reorg] reorg as above,
+  - Launch the xref:XReorg[reorg] as above,
   - In the commit menu, xref:XPopStash[pop the stash] "Fold",
     xref:XStageAll[stage all] the changes, click on 'Commit' then on 'Done',
   - Finally, xref:XPopStash[pop the stash] "Global". +
@@ -1978,7 +1980,7 @@ If a cherry fails to be applied, it is very likely due to a confict in the
 merge, so the xref:XCommit[commit] screen is called for manual resolution. Also,
 if a cherry is selected for 'Edit' (or 'Reword'), then the xref:XCommit[commit]
 screen is called within the loop of cherry-picks. +
-At this point there are two possibilities: continue or cancel.
+At this point there are two possibilities: continue or abort.
 
 Fix, commit and continue
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1986,11 +1988,11 @@ Hopefully you can use the file edition and staging in order to resolve the
 conflict. You should then commit the changes and then click on the 'Done'
 button. The loop will continue processing the remaining cherries.
 
-Cancel
+Abort
 ^^^^^^
 If you need more tools or more time to solve the conflict, then you can click
-on the 'Quit' button to cancel the commit and exit the the loop of cherry
-picking.  You are then back in the xref:XDir[directory] menu, from which you
+on the 'Abort' button to cancel the commit and exit the the loop of cherry
+picking. You are then back in the xref:XDir[directory] menu, from which you
 should fix the conflict and commit the result. Beware that you might be on a
 temporary branch. +
 Restarting the loop depends on wether the failure occured during a

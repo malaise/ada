@@ -19,7 +19,11 @@ package Branch is
   procedure Handle (Root : in String);
 
   -- Interactively rebase current branch from rev
-  function Reorg (Root, Rev : String) return Boolean;
+  -- Return OK => Completed
+  --        Error => Error not recovered by user (e.g. user abort)
+  --     or Cancelled => Cancelled by user before starting, or nothing to do
+  type Result_List is (Ok, Error, Cancelled);
+  function Reorg (Root, Rev : String) return Result_List;
 
 end Branch;
 
