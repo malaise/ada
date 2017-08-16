@@ -346,7 +346,8 @@ procedure Afpx_Rnb is
           -- Reference to a deleted field
           Basic_Proc.Put_Line_Output ("Warning: Text """ & Input.Image
             & """ at line " & Images.Integer_Image (Line)
-            & " has a reference to field " & Text.Slice (I, J)
+            & " " & (if Force then "had" else "has")
+            & " a reference to field " & Text.Slice (I, J)
             & ".");
           Ok := False;
         end if;
@@ -361,10 +362,10 @@ procedure Afpx_Rnb is
 
   end Update;
 
-   procedure Insert_Nodes (Start_Node : in Xml_Parser.Node_Type;
-                           Field_Num  : Afpx_Typ.Absolute_Field_Range;
-                           From_Node  : in Xml_Parser.Node_Type;
-                           Number     : in Afpx_Typ.Field_Range) is
+  procedure Insert_Nodes (Start_Node : in Xml_Parser.Node_Type;
+                          Field_Num  : Afpx_Typ.Absolute_Field_Range;
+                          From_Node  : in Xml_Parser.Node_Type;
+                          Number     : in Afpx_Typ.Field_Range) is
     Next_Node_To, Next_Node_From : Xml_Parser.Node_Type;
     Start_Num : Afpx_Typ.Field_Range;
     use type Afpx_Typ.Field_Range;
@@ -859,7 +860,7 @@ begin
   end;
   if not Ok and then Action = Delete and then not Force then
     Error ("Some deleted fields are referenced, aborting"
-         & " (use ""force"" flag to overwrite).");
+         & " (use ""force"" flag to overwrite)");
   end if;
 
 
