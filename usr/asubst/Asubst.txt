@@ -1,6 +1,6 @@
 Asubst
 ======
-V18.7
+V19.0
 
 Asubs is a command line tool that substitutes text within text. It finds
 occurences of text that match a pattern (regular expression), and replaces
@@ -31,7 +31,7 @@ Options
 -D <string> or --delimiter=<string> for a delimiter other than '\n', +
 -d or --dotall for allow "." to match "\n", when -D is set, +
 -e <pattern> or --exclude=<pattern> for skip text matching <pattern>, +
--F <file> or --file_list=<file> to provide a file list of file names, +
+-F <file> or --file-list=<file> to provide a file list of file names, +
 -f or --file for display the matching file names in grep mode, +
 -g or --grep : print matching text as grep would do (no substitution), +
 -i or --ignorecase : do case insensitive match checking of <find_pattern>, +
@@ -415,7 +415,7 @@ asubst -D '\x0D' -x '\x0D' '\x0A' file
 
 File list
 ---------
-Option -F <file_list> or --file_list=<file_list> allows specifying a file that
+Option -F <file_list> or --file-list=<file_list> allows specifying a file that
 contains the list of files to process, instead of specifying these files as
 arguments. In this case no <file> argument is accepted.
 

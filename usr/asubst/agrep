@@ -23,19 +23,21 @@ fi
 # Options
 export opt=""
 while [ "$1" != "" ] ; do
- if [ "$1" == "--" ] ; then
+  if [ "$1" == "--" ] ; then
+    opt="$opt $1"
+    shift
     break
- fi
- if [[ "$1" =~ ^-.*$ ]] ; then
-   if [[ "$1" =~ ^-(D|e|F|m|p)$ ]] ; then
-     opt="$opt $1"
-     shift
-   fi
-   opt="$opt $1"
-   shift
- else
-   break
- fi
+  fi
+  if [[ "$1" =~ ^-.*$ ]] ; then
+    if [[ "$1" =~ ^-(D|e|F|m|p)$ ]] ; then
+      opt="$opt $1"
+      shift
+    fi
+    opt="$opt $1"
+    shift
+  else
+    break
+  fi
 done
 
 # Find pattern
@@ -43,5 +45,6 @@ export find=$1
 shift
 
 # Invoke asubst
+echo exec asubst -g $opt "$find" \"\" $*
 exec asubst -g $opt "$find" "" $*
 

@@ -4,7 +4,7 @@ with As.U.Utils, Environ, Argument, Argument_Parser, Basic_Proc, Language,
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Log;
 procedure Asubst is
 
-  Version : constant String  := "V18.7";
+  Version : constant String  := "V19.0";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -18,7 +18,7 @@ procedure Asubst is
    02 => (True,  'D', As.U.Tus ("delimiter"),   False, False, As.U.Tus ("string")),
    03 => (False, 'd', As.U.Tus ("dotall"),      False),
    04 => (True,  'e', As.U.Tus ("exclude"),     False, True, As.U.Tus ("pattern")),
-   05 => (True,  'F', As.U.Tus ("file_list"),   False, True, As.U.Tus ("file")),
+   05 => (True,  'F', As.U.Tus ("file-list"),   False, True, As.U.Tus ("file")),
    06 => (False, 'f', As.U.Tus ("file"),        False),
    07 => (False, 'g', As.U.Tus ("grep"),        False),
    08 => (False, 'i', As.U.Tus ("ignorecase"),  False),
