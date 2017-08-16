@@ -904,7 +904,7 @@ procedure Afpx_Bld is
                     & " already defined");
         end if;
         Basic_Proc.Put_Line_Output ("   descriptor " &
-                          Normal(Integer(Dscr_No), 2, Gap => '0'));
+                          Normal(Integer(Dscr_No), 3, Gap => '0'));
         -- Store default Dscr name if Name not set yet
         if Name.Is_Null then
           Name :=
@@ -1131,51 +1131,54 @@ begin
       null;
   end;
 
-  -- Source file and dest path arguments
+  -- Arguments: source file, dest path and xref file
   Expected_Args := 0;
-  begin
-    Argument.Get_Parameter (List_File_Name, Param_Key => "l");
-    if List_File_Name.Is_Null then
-      raise Argument_Error;
-    end if;
-    -- Argument found
-    Expected_Args := Expected_Args + 1;
-  exception
-    when Argument.Argument_Not_Found =>
-      List_File_Name := As.U.Tus (Default_List_File_Name);
-    when others =>
-      raise Argument_Error;
-  end;
-
-  begin
-    Argument.Get_Parameter (Afpx_Typ.Dest_Path, Param_Key => "d");
-    if Afpx_Typ.Dest_Path.Is_Null then
-      raise Argument_Error;
-    end if;
-    -- Argument found
-    Expected_Args := Expected_Args + 1;
-  exception
-    when Argument.Argument_Not_Found =>
-      Afpx_Typ.Dest_Path := As.U.Tus (".");
-    when others =>
-      raise Argument_Error;
-  end;
-
-  declare
-    Xref_Name : Asu_Us;
-  begin
-    Argument.Get_Parameter (Xref_Name, Param_Key => "x");
-   if Xref_Name.Is_Null then
-      raise Argument_Error;
-    end if;
-    Xref.Set_Package_Name (Xref_Name);
-    Expected_Args := Expected_Args + 1;
-  exception
-    when Argument.Argument_Not_Found =>
-      null;
-    when others =>
-      raise Argument_Error;
-  end;
+  
+  if Argument.Is_Set (Param_Key => "l") then
+    begin
+      Argument.Get_Parameter (List_File_Name, Param_Key => "l");
+      if List_File_Name.Is_Null then
+        raise Argument_Error;
+      end if;
+      -- Argument found
+      Expected_Args := Expected_Args + 1;
+    exception
+      when others =>
+        raise Argument_Error;
+    end;
+  else
+    List_File_Name := As.U.Tus (Default_List_File_Name);
+  end if;
+  if Argument.Is_Set (Param_Key => "d") then
+    begin
+      Argument.Get_Parameter (Afpx_Typ.Dest_Path, Param_Key => "d");
+      if Afpx_Typ.Dest_Path.Is_Null then
+        raise Argument_Error;
+      end if;
+      -- Argument found
+      Expected_Args := Expected_Args + 1;
+    exception
+      when others =>
+        raise Argument_Error;
+    end;
+  else
+    Afpx_Typ.Dest_Path := As.U.Tus (".");
+  end if;
+  if Argument.Is_Set (Param_Key => "x") then
+    declare
+      Xref_Name : Asu_Us;
+    begin
+      Argument.Get_Parameter (Xref_Name, Param_Key => "x");
+     if Xref_Name.Is_Null then
+        raise Argument_Error;
+      end if;
+      Xref.Set_Package_Name (Xref_Name);
+      Expected_Args := Expected_Args + 1;
+    exception
+      when others =>
+        raise Argument_Error;
+    end;
+  end if;
 
   if Argument.Get_Nbre_Arg /= Expected_Args then
     raise Argument_Error;

@@ -142,7 +142,7 @@ package body Xref is
           File.Put_Line ("  package " & Dscrs(Cell.Dscr).Name & " is");
           File.Put_Line ("    " & Dscr_Num
                          & " : constant Afpx.Descriptor_Range := "
-                         &  Normal (Positive (Cell.Dscr), 2, Gap => '0')
+                         &  Normal (Positive (Cell.Dscr), 3, Gap => '0')
                          & ";");
         else
             File.Put_Line ("    " & Cell.Name.Image
