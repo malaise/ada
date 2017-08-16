@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V35.00
+V35.01
 
 General purpose
 ---------------
@@ -1611,8 +1611,8 @@ NOTE: Ensure to enter a comment before committing, otherwise the operaton will
 be rejected.
 
 NOTE: When committing local changes, the text of the Commit button is in red if
-there are not staged changes (will do an empty commit) or if there are some
-unstaged changes (will do a partial commit). +
+there are not staged changes (will do an empty commit, after confirmation) or
+if there are some unstaged changes (will do a partial commit). +
 To prevent successive empty commits, the button becomes inactive if there is
 no staged changes (left) after a commit.
 

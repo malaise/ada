@@ -411,12 +411,12 @@ package body Commit is
 
     -- Re assess the status of changes
     -- Duration and end time of last read
+    Some_Staged : Boolean;
+    Some_Unstaged : Boolean;
+    All_Unknown : Boolean;
     procedure Reread (Force : in Boolean) is
       Current_Change : Git_If.File_Entry_Rec;
       Moved : Boolean;
-      Some_Staged : Boolean;
-      Some_Unstaged : Boolean;
-      All_Unknown : Boolean;
       Pos : Natural := 0;
       Prev_Changes : Git_If.File_List;
       Changed : Boolean;
@@ -701,6 +701,16 @@ package body Commit is
       Decode_Comment;
       if Comment.Is_Null then
         Error ("Commit", "Empty comment", "");
+        return;
+      end if;
+      if not Some_Staged
+      and then not Confirm (
+          Title   => "Committing an empty commit",
+          Action  => "Commit with no staged change?",
+          Warning => "",
+          Ok_Cancel => True,
+          Show_List => False) then
+        -- Cancelled by user
         return;
       end if;
       -- Git_If.Commit
