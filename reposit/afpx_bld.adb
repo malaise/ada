@@ -1133,7 +1133,7 @@ begin
 
   -- Arguments: source file, dest path and xref file
   Expected_Args := 0;
-  
+
   if Argument.Is_Set (Param_Key => "l") then
     begin
       Argument.Get_Parameter (List_File_Name, Param_Key => "l");
