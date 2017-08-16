@@ -27,7 +27,7 @@ ADACTL := true
 HTML := true
 GNATHTMLOPT := -d
 
-TXT := REPOSIT_LIST App
+TXT := REPOSIT_LIST App Afpx
 DOCOPTS_REPOSIT_LIST := -a toc
 
 include $(TEMPLATES)/ada.mk
