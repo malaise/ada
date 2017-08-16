@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory, Trace;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V15.00";
+  Version : constant String := "V15.01";
 
   -- The keys and descriptor of parsed keys
   Nok : Character renames Argument_Parser.No_Key_Char;
@@ -504,36 +504,6 @@ begin
   if Once_Mode then
     Tree_Mode := True;
   end if;
-
-  ----------------------------
-  -- BUILD LISTS OF SOURCES --
-  ----------------------------
-  Sourcer.Build_Lists;
-  Debug.Logger.Log (Perfo, "Lists built");
-
-  if Check_Mode then
-    -----------------
-    -- CHECK UNITS --
-    -----------------
-    if not Checker.Check then
-      -- Check failed
-      Basic_Proc.Set_Error_Exit_Code;
-    end if;
-    Debug.Logger.Log (Perfo, "Check done.");
-    return;
-  end if;
-
-  ------------------------
-  -- MOVE TO TARGET DIR --
-  ------------------------
-  Change_Dir (Target_Dir.Image);
-
-  -- Children requires a target unit
-  if Children_Mode and then Target.Is_Null then
-    Error ("Children option requires a target unit");
-  end if;
-
-  Debug.Logger.Log (Perfo, "Arguments parsed");
 
   ----------------------------
   -- BUILD LISTS OF SOURCES --

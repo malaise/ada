@@ -1,5 +1,5 @@
 with As.U, Dynamic_List, Hashed_List.Unique, Str_Util, Basic_Proc, Parser,
-     Images;
+     Images, Mixed_Str;
 with Debug;
 package body Tree_Mng is
 
@@ -468,6 +468,9 @@ package body Tree_Mng is
     return Trees.Go_On;
   end Dump_One;
 
+  -- Image of Boolean
+  function Image (B : Boolean) return String renames Images.Bool_Image;
+
   -- Build the tree of source dependencies of Origin
   procedure Build (Origin : in Sourcer.Src_Dscr;
                    Specs_Mode, Revert_Mode,
@@ -513,6 +516,11 @@ package body Tree_Mng is
       Tree.Delete_Tree;
    end if;
     -- Build tree
+    Debug.Logger.Log_Debug ("Building tree with options: "
+        & "Kind=" &  Mixed_Str (Tree_Kind'Img)
+        & ", Specs="   & Image (Specs_Mode)
+        & ", Revert=" & Image (Revert_Mode)
+        & ", Bodies=" & Image (Bodies_Mode) );
     Build_Node (1, Origin, Specs_Mode, Revert_Mode, Bodies_Mode);
     Debug.Logger.Log_Debug ("Dumping tree:");
     -- Dump debug
