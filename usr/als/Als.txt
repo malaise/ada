@@ -1,6 +1,6 @@
 Als
 ===
-V21.0
+V21.1
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, for the output format of each entry, and general
@@ -99,7 +99,7 @@ Specify general formatting options
   -N (--no-sort)             Keep order same as in the directory structure
   -M (--merge)               Show a global list of entries (not dir names)
   --dir-name=always|never    Show names of directories (default=when not empty)
-  --nodir                    Do not show names of directories (--dir_name=never)
+  --nodir                    Do not show names of directories (--dir-name=never)
   -T (--total)               Also show number and total size of listed entries
   -U (--utc)                 Use UTC i.o. local time for date spec and output
   -q (--quiet)               Do not show entries
