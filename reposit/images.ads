@@ -2,6 +2,9 @@ with Ada.Calendar;
 with Long_Longs;
 -- Various convertions from numbers to string
 package Images is
+  -- Image of a Boolean (Mixed_String)
+  function Bool_Image (B : Boolean) return String;
+
   -- Image of an integer (without leading space)
   generic
     type Int is range <>;

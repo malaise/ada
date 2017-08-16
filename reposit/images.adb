@@ -1,5 +1,11 @@
-with As.U, My_Math, Str_Util, Hexa_Utils, Normal, Day_Mng, Upper_Str;
+with As.U, My_Math, Str_Util, Hexa_Utils, Normal, Day_Mng, Upper_Str, Mixed_Str;
 package body Images is
+
+  -- Image of a Boolean (Mixed_String)
+  function Bool_Image (B : Boolean) return String is
+  begin
+    return Mixed_Str (B'Img);
+  end Bool_Image;
 
   -- Image of an integer (without leading space)
   function Int_Image (I : Int) return String is
