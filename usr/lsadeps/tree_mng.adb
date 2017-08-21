@@ -469,7 +469,7 @@ package body Tree_Mng is
   end Dump_One;
 
   -- Image of Boolean
-  function Image (B : Boolean) return String renames Images.Bool_Image;
+  function Image (B : Boolean) return String renames Images.Boolean_Image;
 
   -- Build the tree of source dependencies of Origin
   procedure Build (Origin : in Sourcer.Src_Dscr;

@@ -2,8 +2,14 @@ with Ada.Calendar;
 with Long_Longs;
 -- Various convertions from numbers to string
 package Images is
+
+  -- Image of a discrete type (Mixed_String)
+  generic
+    type Discr is (<>);
+  function Discr_Image (D : Discr) return String;
+
   -- Image of a Boolean (Mixed_String)
-  function Bool_Image (B : Boolean) return String;
+  function Boolean_Image (B : Boolean) return String;
 
   -- Image of an integer (without leading space)
   generic

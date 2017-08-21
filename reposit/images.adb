@@ -1,11 +1,15 @@
 with As.U, My_Math, Str_Util, Hexa_Utils, Normal, Day_Mng, Upper_Str, Mixed_Str;
 package body Images is
 
-  -- Image of a Boolean (Mixed_String)
-  function Bool_Image (B : Boolean) return String is
+  -- Image of a discrete type (Mixed_String)
+  function Discr_Image (D : Discr) return String is
   begin
-    return Mixed_Str (B'Img);
-  end Bool_Image;
+    return Mixed_Str (D'Img);
+  end Discr_Image;
+
+  -- Image of a Boolean (Mixed_String)
+  function Loc_Boolean_Image is new Discr_Image (Boolean);
+  function Boolean_Image (B : Boolean) return String renames Loc_Boolean_Image;
 
   -- Image of an integer (without leading space)
   function Int_Image (I : Int) return String is
