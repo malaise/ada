@@ -17,7 +17,8 @@ package Evp_Digest is
   type Digest_List is (Md2, Md4, Md5, Mdc2, Dss, Dss1, Ripemd160, Whirlpool,
                        Sha, Sha1, Sha224, Sha256, Sha384, Sha512);
   -- May raise:
-  -- If Name does not correspond to a known digest kind (see man EVP_DigestInit)
+  -- If Name or Digest does not correspond to a known digest kind
+  --  (see man EVP_DigestInit)
   Name_Error : exception;
   -- If Ctx is already init (and not reset)
   Status_Error : exception;

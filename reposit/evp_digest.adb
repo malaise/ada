@@ -156,7 +156,8 @@ package body Evp_Digest is
       -- Context not init or already reset
       raise Status_Error;
     end if;
-    Finalize (Ctx);
+    Evp_Md_Ctx_Destroy (Ctx.Evp_Md_Ctx);
+    Ctx.Evp_Md_Ctx := System.Null_Address;
   end Reset;
 
   -- Finalize the context
@@ -164,8 +165,7 @@ package body Evp_Digest is
   begin
     -- Check that Ctx is initialized
     if Is_Init (Ctx) then
-      Evp_Md_Ctx_Destroy (Ctx.Evp_Md_Ctx);
-      Ctx.Evp_Md_Ctx := System.Null_Address;
+      Reset (Ctx);
     end if;
   end Finalize;
 
