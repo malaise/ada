@@ -186,7 +186,7 @@ begin
     return;
   end if;
 
-  -- No arg => automatic test
+  -- -a [ <nb_loop> ] => automatic test
   Nb_Loops := 0;
   if Argument.Get_Nbre_Arg = 2 then
     begin
