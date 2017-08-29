@@ -4,7 +4,7 @@ with Trace.Loggers, Exception_Messenger, Directory, Str_Util,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "0";
+  Minor_Version : constant String := "1";
   function Version return String is
     ("V" & Major_Version & "." & Minor_Version);
 
@@ -668,10 +668,13 @@ package body Xml_Parser is
     when Error_Occ:Parse_Error =>
       -- Retrieve and store parsing error message
       Ctx.Status := Error;
-      Ctx.Flow.Err_Msg := As.U.Tus (
-        Exception_Messenger.Exception_Message(
-          Ada.Exceptions.Save_Occurrence (Error_Occ)));
       Ok := False;
+      declare
+        Loc_Occ : Ada.Exceptions.Exception_Occurrence;
+      begin
+        Ada.Exceptions.Save_Occurrence (Loc_Occ, Error_Occ);
+        Exception_Messenger.Exception_Message (Loc_Occ, Ctx.Flow.Err_Msg);
+      end;
     when Storage_Error =>
       raise;
     when Error_Occ:others =>
@@ -733,10 +736,13 @@ package body Xml_Parser is
     when Error_Occ:Parse_Error =>
       -- Retrieve and store parsing error message
       Ctx.Status := Error;
-      Ctx.Flow.Err_Msg := As.U.Tus (
-        Exception_Messenger.Exception_Message(
-          Ada.Exceptions.Save_Occurrence (Error_Occ)));
       Ok := False;
+      declare
+        Loc_Occ : Ada.Exceptions.Exception_Occurrence;
+      begin
+        Ada.Exceptions.Save_Occurrence (Loc_Occ, Error_Occ);
+        Exception_Messenger.Exception_Message (Loc_Occ, Ctx.Flow.Err_Msg);
+      end;
     when Storage_Error =>
       raise;
     when Error_Occ:others =>
