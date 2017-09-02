@@ -160,6 +160,13 @@ stop
 sleep 0.5
 echo "OK"
 
+title cm2inch
+launch cm2inch 21.21
+echo "8\"3/8" > exp
+comp out exp
+comp err nul
+echo "OK"
+
 title conso
 launch conso 30 8 1.15
 cat << EOF > exp

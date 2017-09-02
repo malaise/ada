@@ -1,0 +1,31 @@
+# Convert centimeters (real) into inches (inte and fractions of 1/8)
+
+# Argument error
+[ "Error: One (int or float) argument expected." putl 1 setexit retall ] E popr
+
+# Check one arg int or float
+ssize 1 /= E pushr ifcall
+dup
+isinte [ toreal ] ifcall
+dup
+isreal ~ E pushr ifcall
+dup
+0.0 < E pushr ifcall
+
+# Convert into inches and round to 1/8th
+8 f popr
+0.393701 * f pushr toreal * round
+
+# Extract integer and reminder parts
+dup f pushr / i popr f pushr % r copyr
+
+# Format tail (reduce fraction)
+# Replace 0:1 by "" otherwise replace x:y by "x/y"
+toarbi f pushr toarbi mkfrac dup
+0 toarbi 1 toarbi mkfrac = 
+[ pop "" ] [ strof 3 5 strsub 2 "/" strovw ] ifte call
+
+# Put result
+1 format
+i pushr put """" put putl
+
