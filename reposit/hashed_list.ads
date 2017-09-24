@@ -148,6 +148,9 @@ package Hashed_List is
   -- May raise Not_In_List if list is empty
   procedure Rewind (List : in out List_Type;
                     From : in Reference := From_First);
+  -- Move internal list to current access
+  -- May raise Not_In_List if list is empty
+  function Search_Access (List     : in out List_Type) return Boolean;
   -- Read successive items
   -- May raise Not_In_List if list is empty
   procedure Read_Next (List      : in out List_Type;

@@ -283,6 +283,15 @@ package body Hashed_List is
                         else List_Mng.Prev));
   end Rewind;
 
+  -- Move internal list to current access
+  function Search_Access (List : in out List_Type) return Boolean is
+  begin
+    if List.List.Is_Empty then
+      raise Not_In_List;
+    end if;
+    return List.List.Search_Access (List.Current.Elt);
+  end Search_Access;
+
   procedure Read_Next (List : in out List_Type;
                        Item : out Element_Type;
                        Moved : out Boolean;
