@@ -6,7 +6,7 @@ ADACTL := true
 AFPX := true
 AFPX_XREF := afpx_xref
 
-SUBUNITS := account-quit mng-deletion mng-edition mng-search
+SUBUNITS := account.quit mng.deletion mng.edition mng.search
 EXES := account import export account.stat
 
 CLIBS := $(UTILS_SLIBS)

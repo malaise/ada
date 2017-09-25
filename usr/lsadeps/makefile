@@ -3,7 +3,7 @@ include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 ADAVIEW := $(REPOSIT)
 ADACTL := true
 
-SUBUNITS := lsadeps-add_paths
+SUBUNITS := lsadeps.add_paths
 EXES := lsadeps lsadeps.stat
 
 CLIBS := $(UTILS_SLIBS)

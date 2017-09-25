@@ -3,7 +3,7 @@ include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 ADAVIEW := $(REPOSIT)
 ADACTL := true
 
-SUBUNITS := replace_pattern-file_content replace_pattern-shell_command
+SUBUNITS := replace_pattern.file_content replace_pattern.shell_command
 EXES := asubst asubst.stat
 
 CLIBS := $(UTILS_SLIBS)

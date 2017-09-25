@@ -6,7 +6,7 @@ ADACTL := true
 AFPX := true
 AFPX_XREF := afpx_xref
 
-SUBUNITS := renardeau-x
+SUBUNITS := renardeau.x
 EXES := renardeau
 
 CLIBS := $(X11_SLIBS)

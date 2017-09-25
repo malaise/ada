@@ -4,8 +4,8 @@ ADAVIEW := $(REPOSIT)
 ADACTL := true
 
 
-SUBUNITS := dtd_generator-merge dtd_generator-merge-sequences \
- xml_checker-canon_callback
+SUBUNITS := dtd_generator.merge dtd_generator.merge.sequences \
+ xml_checker.canon_callback
 EXES := dtd_checker dtd_generator xml_checker \
  dtd_checker.stat dtd_generator.stat xml_checker.stat
 

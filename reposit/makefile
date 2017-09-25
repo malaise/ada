@@ -1,13 +1,13 @@
 include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 
-SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg afpx_bld-xref \
-  autobus-config channels-file pattern-storage \
-  xml_parser-parse_mng \
-  xml_parser-parse_mng-dtd xml_parser-parse_mng-entity_mng \
-  xml_parser-parse_mng-namespaces \
-  xml_parser-parse_mng-resolve_uri xml_parser-parse_mng-util \
-  xml_parser-tree_mng \
-  x_mng-dispatch 
+SUBUNITS := afpx.af_dscr afpx.af_list afpx.af_ptg afpx_bld.xref \
+  autobus.config channels.file pattern.storage \
+  xml_parser.parse_mng \
+  xml_parser.parse_mng.dtd xml_parser.parse_mng.entity_mng \
+  xml_parser.parse_mng.namespaces \
+  xml_parser.parse_mng.resolve_uri xml_parser.parse_mng.util \
+  xml_parser.tree_mng \
+  x_mng.dispatch 
 EXES := afpx_bld afpx_rnb clear_screen
 
 OPTIMIZED := snappy lzf lz4
