@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory, Trace;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V15.01";
+  Version : constant String := "V16.00";
 
   -- The keys and descriptor of parsed keys
   Nok : Character renames Argument_Parser.No_Key_Char;
@@ -26,7 +26,8 @@ procedure Lsadeps is
    16 => (False, 'F', As.U.Tus ("fast"),     False),
    17 => (False, Nok, As.U.Tus ("restrict"), False),
    18 => (True,  'T', As.U.Tus ("tab"), False, True, As.U.Tus ("size")),
-   19 => (False, 'o', As.U.Tus ("once"), False)
+   19 => (False, 'o', As.U.Tus ("once"), False),
+   20 => (False, 'L', As.U.Tus ("loop"), False)
 );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   Include_Index : constant Argument_Parser.The_Keys_Range := 9;
@@ -38,7 +39,7 @@ procedure Lsadeps is
   begin
     Basic_Proc.Put_Line_Error (
      "Usage: " & Argument.Get_Program_Name
-     & " <version> | <help> | <depend> | <list> | <check>");
+     & " <version> | <help> | <depend> | <list> | <check> | <loop>");
     Basic_Proc.Put_Line_Error (
      " <version>     ::= " & Argument_Parser.Image (Keys(2)));
     Basic_Proc.Put_Line_Error (
@@ -93,6 +94,8 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <check>       ::= " & Argument_Parser.Image (Keys(3)) & " [ <target_dir> ]");
     Basic_Proc.Put_Line_Error (
+     " <loop>        ::= " & Argument_Parser.Image (Keys(20)) & " [ <specs> ] <target_unit> ]");
+    Basic_Proc.Put_Line_Error (
      "Dependency function by default lists units on which <target_unit> depends,");
     Basic_Proc.Put_Line_Error (
      "    which are withed units, their body and subunits, units withed by these");
@@ -134,6 +137,8 @@ procedure Lsadeps is
      "    optionally the subunits, alternatively corresponding files.");
     Basic_Proc.Put_Line_Error (
      "Check function shows redundant ""with"" clauses in a dir (default: current dir).");
+    Basic_Proc.Put_Line_Error (
+     "Loop function detects loops among dependencies of a unit.");
   end Usage;
 
   Error_Raised : exception renames Sourcer.Error_Raised;
@@ -150,6 +155,7 @@ procedure Lsadeps is
   All_Mode : Boolean := False;
   Children_Mode : Boolean := False;
   Check_Mode : Boolean := False;
+  Loop_Mode : Boolean := False;
   Specs_Mode : Boolean := False;
   Revert_Mode : Boolean := False;
   Tree_Mode : Boolean := False;
@@ -314,6 +320,22 @@ begin
     Check_Mode := True;
   end if;
 
+  -- Loop mode
+  if Arg_Dscr.Is_Set (20) then
+    -- No option excep Specs
+    if Revert_Mode or else Tree_Mode or else Direct_Mode
+    or else Files_Mode or else Bodies_Mode or else Restrict_Mode
+    or else Once_Mode then
+      Error ("Loop mode supports only option specs");
+    end if;
+    -- No include
+    if Arg_Dscr.Get_Nb_Occurences (9) /= 0
+    or else Arg_Dscr.Get_Nb_Occurences (10) /= 0 then
+      Error ("Loop mode is exclusive with simple or recursive includes");
+    end if;
+    Loop_Mode := True;
+  end if;
+
   -- List mode
   if Arg_Dscr.Is_Set (12) then
     -- No option except File and all
@@ -330,28 +352,34 @@ begin
     List_Mode := True;
   end if;
 
-  -- Check not check and list
+  -- Check, List and Loop are axclusive
   if Check_Mode and then List_Mode then
     Error ("Check and list modes are mutually exclusive");
   end if;
+  if Check_Mode and then Loop_Mode then
+    Error ("Check and loop modes are mutually exclusive");
+  end if;
+  if Loop_Mode and then List_Mode then
+    Error ("Loop and list modes are mutually exclusive");
+  end if;
 
-  -- Check not tree, direct or once together
+  --Not tree, direct or once together
   if (Tree_Mode and then Direct_Mode)
   or else (Direct_Mode and then Once_Mode)
   or else (Once_Mode and then Tree_Mode) then
     Error ("Tree, Direct and Once modes are mutually exclusive");
   end if;
 
-  -- Check not fast and tree
+  -- Not fast and tree
   if Fast_Mode and then Tree_Mode then
     Error ("Tree and Fast mode are mutually exclusive");
   end if;
 
-  -- Check all in list
+  -- All in list
   if All_Mode and then not List_Mode then
     Error ("All option is valid only in list mode");
   end if;
-  -- Check children in list
+  -- Children in list
   if Children_Mode and then not List_Mode then
     Error ("Children option is valid only in list mode");
   end if;
@@ -380,8 +408,9 @@ begin
   if Check_Mode then
     if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) = 1 then
       -- An optional target directory
-      Target := As.U.Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index));
-      Target_Dir := As.U.Tus (Directory.Make_Full_Path (Target.Image));
+      Target_Dir := As.U.Tus (Arg_Dscr.Get_Option (
+                      Argument_Parser.No_Key_Index));
+      Target_Dir := As.U.Tus (Directory.Make_Full_Path (Target_Dir.Image));
       Sort.Add_Path (Target_Dir);
     elsif Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) = 0 then
       -- Current directory
@@ -390,6 +419,20 @@ begin
       Error ("At most one target accepted");
     end if;
     Check_Dir (Target_Dir.Image);
+  elsif Loop_Mode then
+    if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 1 then
+      Error ("Unit expected");
+    end if;
+    Target := As.U.Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index, 1));
+    Target_Dir := As.U.Tus (Directory.Make_Full_Path (Target.Image));
+    List_Path := As.U.Tus (Directory.Dirname (Target.Image));
+    Debug.Logger.Log_Debug ("Loops of unit " & Target_Dir.Image);
+    -- Store path in Target_Dir, and target in Target
+    Target := As.U.Tus (Mixed_Str (Directory.Basename (Target_Dir.Image)));
+    Target_Dir := As.U.Tus (Directory.Make_Full_Path (Directory.Dirname
+            (Target_Dir.Image)));
+    -- Add target or current dir
+    Sort.Add_Path (Target_Dir);
   elsif List_Mode then
     if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) > 1 then
       Error ("At most one path or unit accepted");
@@ -554,17 +597,19 @@ begin
   ----------------------------
   Tree_Mng.Build (Target_Dscr, Specs_Mode, Revert_Mode,
                   Tree_Mode, Shortest, Direct_Mode, Once_Mode,
-                  Files_Mode, Bodies_Mode, Restrict_Mode);
+                  Files_Mode, Bodies_Mode, Restrict_Mode, Loop_Mode);
   Debug.Logger.Log (Perfo, "Tree built");
 
   -------------------
   -- PUT LIST/TREE --
   -------------------
-  -- Back to original dir
-  Check_Dir ("");
-  Output.Put (Revert_Mode, Tree_Mode, Shortest, Files_Mode, Tree_Tab,
-              Path_Dscr);
-  Debug.Logger.Log (Perfo, "Dependency done.");
+  if not Loop_Mode then
+    -- Back to original dir
+    Check_Dir ("");
+    Output.Put (Revert_Mode, Tree_Mode, Shortest, Files_Mode, Tree_Tab,
+                Path_Dscr);
+    Debug.Logger.Log (Perfo, "Dependency done.");
+  end if;
 
 exception
   when Error_Raised | Sourcer.Error_Raised | Output.Error_Raised =>

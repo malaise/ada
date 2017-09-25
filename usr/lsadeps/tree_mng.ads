@@ -22,7 +22,8 @@ package Tree_Mng is
   procedure Build (Origin : in Sourcer.Src_Dscr;
                    Specs_Mode, Revert_Mode,
                    Tree_Mode, Shortest_Mode, Direct_Mode, Once_Mode,
-                   File_Mode, Bodies_Mode, Restrict_Mode : in Boolean);
+                   File_Mode, Bodies_Mode, Restrict_Mode,
+                   Loop_Mode : in Boolean);
 
 end Tree_Mng;
 

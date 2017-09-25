@@ -1,6 +1,6 @@
 lsadeps
 =======
-V15.01
+V16.00
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order. +
@@ -11,7 +11,7 @@ Modes and inputs
 ----------------
 There are three main functions: Show dependencies, list units, and check
 redundant "with". +
-Usage: lsadeps <version> | <help> | <depend> | <list> | <check>
+Usage: lsadeps <version> | <help> | <depend> | <list> | <check> | <loop>
 
  <version>     ::= -v | --version
  <help>        ::= -h | --help
@@ -36,6 +36,8 @@ Usage: lsadeps <version> | <help> | <depend> | <list> | <check>
  <all>         ::= -a | --all
  <children>    ::= -C | --children
  <check>       ::= -c | --check  [ <target_dir> ]
+ <loop>        ::= -L | --loop [ <specs> ] <target_unit> ]
+
 
 Show dependencies
 ~~~~~~~~~~~~~~~~~
@@ -170,6 +172,12 @@ Other example: if a unit contains 'private with U', then it can also contain
 This function does not support any option (even includes), only one optional
 'target' directory.
 
+Report loops
+~~~~~~~~~~~~
+This function analyses the dependencies of <target_unit> and reports circular
+dependencies. +
+On option, it reports only loops of specifications.
+
 Ada language selection
 ~~~~~~~~~~~~~~~~~~~~~~
 The files are parsed according to the default Ada language version 'Ada2012',
@@ -245,6 +253,20 @@ Example:
 Lsadeps exits with 1 if at least one redundant "with" is detected or on
 error, and with 0 otherwise.
 
+Report loops
+~~~~~~~~~~~~
+When a circular dependency is detected, the complete loop is displayed,
+with one entry per line.
+
+Example:
+
+  Loop detected:
+    A#US
+    B#US
+    B#UB
+    C#US
+    A#US
+
 Examples of use
 ---------------
 
@@ -310,6 +332,8 @@ optional path_unit triggers the path analysis between the target and this unit
 - include dirs (recursive or not) must exist
 
 - in check mode it is an optional path that denotes the directory to check
+
+- in loop mode it is a mandatory unit path and name
 
 Parse ada sources
 ~~~~~~~~~~~~~~~~~
@@ -377,6 +401,8 @@ processing of a unit if it is already known. In shortest mode, keep a list
 of units and best level found so far.
 
 Stop recursive search when reaching a non-standalone body or a subunit.
+
+Report on the flow when a circular dependency is detected.
 
 Display output
 ~~~~~~~~~~~~~~

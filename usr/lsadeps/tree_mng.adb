@@ -19,6 +19,9 @@ package body Tree_Mng is
                           Once);
   Tree_Kind : Tree_Kind_List;
 
+  -- Do we show loops
+  Loop_Mode : Boolean;
+
   -- Do we display files or units
   File_Mode : Boolean;
 
@@ -63,6 +66,47 @@ package body Tree_Mng is
     -- True if #Name@ appears in Restr_Witheds
     (Str_Util.Locate (Restr_Witheds,
           Sourcer.Restr_Separator & Name & Sourcer.Separator) /= 0);
+
+  -- A list of descriptors
+  package Src_List_Mng is new Dynamic_List (Sourcer.Src_Dscr);
+  package Src_Dyn_List_Mng renames Src_List_Mng.Dyn_List;
+
+  -- Dump a loop (from current in rope up to top) then current
+  procedure Dump_Loop (Specs_Mode : in Boolean;
+                       Current : in Sourcer.Src_Dscr) is
+    Dscr : Sourcer.Src_Dscr;
+    List : Src_Dyn_List_Mng.List_Type;
+    All_Specs : Boolean;
+    Moved : Boolean;
+  begin
+    if not Loop_Mode then
+      return;
+    end if;
+    -- Make a local list and check if all are specs
+    All_Specs := True;
+    Moved := Rope.Search_Access;
+    loop
+      Rope.Read_Next (Dscr, Moved);
+      if Dscr.Kind /= Sourcer.Unit_Spec then
+        All_Specs := False;
+      end if;
+      List.Insert (Dscr);
+      exit when not Moved;
+    end loop;
+    -- Discard if Specs_Mode and not all specs
+    if Specs_Mode and then not All_Specs then
+      return;
+    end if;
+    -- Show loop
+    Basic_Proc.Put_Line_Output ("Loop detected:");
+    List.Rewind;
+    loop
+      List.Read (Dscr, Src_Dyn_List_Mng.Next, Moved);
+      Basic_Proc.Put_Line_Output ("  " & Sourcer.Short_Image (Dscr));
+      exit when not Moved;
+    end loop;
+    Basic_Proc.Put_Line_Output ("  " & Sourcer.Short_Image (Current));
+  end Dump_Loop;
 
   -- Build the nodes with any unit withed in List,
   -- For each unit: select unit in Path if it exists,
@@ -196,9 +240,6 @@ package body Tree_Mng is
   -- Build wihing units (in revert mode)
   -- The temporary local dynamic list is necessary because
   --  here we call Build_Node, which itself calls us recursively
-  package Src_List_Mng is new Dynamic_List (Sourcer.Src_Dscr);
-  package Src_Dyn_List_Mng renames Src_List_Mng.Dyn_List;
-
   procedure Build_Withings (Level : in Positive;
                             Path, Name : in String;
                             Bodies_Mode : in Boolean) is
@@ -373,6 +414,7 @@ package body Tree_Mng is
       Rope.Search (Origin, Rope_Found);
       if Rope_Found then
         -- Current Origin already exists => Looping
+        Dump_Loop (Specs_Mode, Origin);
         Tree.Insert_Child ((Origin, Looping => True));
         Tree.Move_Father;
         return;
@@ -475,11 +517,13 @@ package body Tree_Mng is
   procedure Build (Origin : in Sourcer.Src_Dscr;
                    Specs_Mode, Revert_Mode,
                    Tree_Mode, Shortest_Mode, Direct_Mode, Once_Mode,
-                   File_Mode, Bodies_Mode, Restrict_Mode : in Boolean) is
+                   File_Mode, Bodies_Mode, Restrict_Mode,
+                   Loop_Mode : in Boolean) is
   begin
     -- Global (constants) file and restrict modes
     Standard.Tree_Mng.File_Mode := File_Mode;
     Standard.Tree_Mng.Restrict_Mode := Restrict_Mode;
+    Standard.Tree_Mng.Loop_Mode := Loop_Mode;
     -- Full tree, optimized, or first level
     case Tree_Mode is
       when True =>
@@ -517,6 +561,7 @@ package body Tree_Mng is
    end if;
     -- Build tree
     Debug.Logger.Log_Debug ("Building tree with options: "
+        & "Loop=" &  Mixed_Str (Loop_Mode'Img)
         & "Kind=" &  Mixed_Str (Tree_Kind'Img)
         & ", Specs="   & Image (Specs_Mode)
         & ", Revert=" & Image (Revert_Mode)
