@@ -1346,7 +1346,7 @@ package body Dtd is
     Flow_Kind : Flow_Kind_List;
     Line : Natural;
   end record;
-  package Us_Pool_Manager is new Unlimited_Pool (Elt_Ref_Type);
+  package Us_Pool_Manager is new Unlimited_Pool (Elt_Ref_Type, Lifo => False);
   package Us_Pool_Mng renames Us_Pool_Manager.Upool;
   procedure Check_Warnings (Ctx  : in out Ctx_Type;
                             Adtd : in out Dtd_Type) is
