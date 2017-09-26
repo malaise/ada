@@ -6,7 +6,7 @@ ADACTL := true
 
 AFPX := true
 
-EXES := $(filter-out t_smart_int, $(UNITS))
+EXES := $(filter-out t_smart_int, $(ALLUNITS))
 
 CLIBS := $(X11_SLIBS)
 CLIBS_t_ndbm := cndbm gdbm \

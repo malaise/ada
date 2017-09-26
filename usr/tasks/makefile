@@ -4,7 +4,7 @@ include $(HOME)/Makefiles/units.mk
 ADAVIEW := $(REPOSIT)
 ADACTL := true
 
-EXES := $(UNITS)
+EXES := $(ALLUNITS)
 
 CLIBS := $(UTILS_SLIBS)
 
