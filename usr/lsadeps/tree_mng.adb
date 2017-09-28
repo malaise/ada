@@ -562,7 +562,7 @@ package body Tree_Mng is
     -- Build tree
     Debug.Logger.Log_Debug ("Building tree with options: "
         & "Loop=" &  Mixed_Str (Loop_Mode'Img)
-        & "Kind=" &  Mixed_Str (Tree_Kind'Img)
+        & ", Kind=" &  Mixed_Str (Tree_Kind'Img)
         & ", Specs="   & Image (Specs_Mode)
         & ", Revert=" & Image (Revert_Mode)
         & ", Bodies=" & Image (Bodies_Mode) );

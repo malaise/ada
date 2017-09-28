@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory, Trace;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V16.00";
+  Version : constant String := "V16.01";
 
   -- The keys and descriptor of parsed keys
   Nok : Character renames Argument_Parser.No_Key_Char;
@@ -363,7 +363,7 @@ begin
     Error ("Loop and list modes are mutually exclusive");
   end if;
 
-  --Not tree, direct or once together
+  -- Not tree, direct or once together
   if (Tree_Mode and then Direct_Mode)
   or else (Direct_Mode and then Once_Mode)
   or else (Once_Mode and then Tree_Mode) then
@@ -543,6 +543,10 @@ begin
     end if;
   end if;
 
+  -- Loop triggers Once
+  if Loop_Mode then
+    Once_Mode := True;
+  end if;
   -- Once triggers tree
   if Once_Mode then
     Tree_Mode := True;
@@ -596,7 +600,8 @@ begin
   -- BUILD TREE OF SOURCES --
   ----------------------------
   Tree_Mng.Build (Target_Dscr, Specs_Mode, Revert_Mode,
-                  Tree_Mode, Shortest, Direct_Mode, Once_Mode,
+                  Tree_Mode, Shortest, Direct_Mode,
+                  Once_Mode,
                   Files_Mode, Bodies_Mode, Restrict_Mode, Loop_Mode);
   Debug.Logger.Log (Perfo, "Tree built");
 

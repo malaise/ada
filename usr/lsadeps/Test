@@ -126,7 +126,7 @@ Tree_Mng
 EOF
 check "-d tree_mng"
 
-# Check
+# Check and loop
 export CHKDIR=Check.dir
 if [ -d $CHKDIR ] ; then
   rm -rf $CHKDIR
@@ -159,6 +159,7 @@ end Unit1;
 ## unit1-subunit.adb
 with Unit3;
 with Unit4;
+with Unit5;
 separate (Unit1)
 package body Subunit is
 end Subunit;
@@ -202,12 +203,27 @@ package Unit2.Child is
 end Unit2.Child;
 
 ## unit3.ads
+with Unit6;
 package Unit3 is
 end Unit3;
 
 ## unit4.ads
 package Unit4 is
 end Unit4;
+
+## unit5.ads
+with Unit1;
+package Unit5 is
+end Unit5;
+
+## unit6.ads
+package Unit6 is
+end Unit6;
+
+## unit6L.ads
+with Unit1;
+package Unit6 is
+end Unit6;
 
 ## main.adb
 with Unit1, Unit2.Child, Unit3, Unit4;
@@ -238,12 +254,47 @@ Unit Unit1.Subunit#SU withes Unit3 already withed by parent Unit1#US
 Unit Unit2#US withes twice Unit3
 Unit Unit2.Child#US withes Unit1 while its parent Unit2#US withes Unit1.Child2
 EOF
-
 cmp -s $CHKDIR/res $CHKDIR/exp
 if [ $? -ne 0 ] ; then
-  error "Result res of $1 differs from exp"
+  error "lsadeps -c: Result res of $1 differs from exp"
 else
   echo "lsadeps -c OK."
-  rm -rf $CHKDIR
 fi
+
+# Check loops
+lsadeps -L $CHKDIR/Unit1 > $CHKDIR/res
+cat << EOF > $CHKDIR/exp
+Loop detected:
+  Unit1#US
+  Unit1#UB
+  Unit1.Subunit#SU
+  Unit5#US
+  Unit1#US
+EOF
+cmp -s $CHKDIR/res $CHKDIR/exp
+if [ $? -ne 0 ] ; then
+  error "lsadeps -L: Result res of $1 differs from exp"
+else
+  echo "lsadeps -L OK."
+fi
+
+# Check loops of specs
+# This does not compile
+mv $CHKDIR/unit6L.ads $CHKDIR/unit6.ads
+lsadeps -Ls $CHKDIR/Main > $CHKDIR/res
+cat << EOF > $CHKDIR/exp
+Loop detected:
+  Unit1#US
+  Unit3#US
+  Unit6#US
+  Unit1#US
+EOF
+cmp -s $CHKDIR/res $CHKDIR/exp
+if [ $? -ne 0 ] ; then
+  error "lsadeps -Ls: Result res of $1 differs from exp"
+else
+  echo "lsadeps -Ls OK."
+fi
+
+rm -rf $CHKDIR
 

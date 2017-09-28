@@ -1,6 +1,6 @@
 lsadeps
 =======
-V16.00
+V16.01
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order. +
@@ -105,14 +105,14 @@ relative), while 'exclude' must specify templates of simple directory names
 (no \'/').
 
 .Compatibility of options and modes
-'Specs' and 'revert' modes are mutually exclusive. +
-'Tree' and 'direct' options are mutually exclusive. +
-'Fast' and 'tree' options are mutually exclusive. +
+'specs' and 'revert' modes are mutually exclusive. +
+'tree' and 'direct' options are mutually exclusive. +
+'fast' and 'tree' options are mutually exclusive. +
 'path_unit' mode and 'direct' option are mutually exclusive. +
 'bodies' option is allowed only in 'revert' mode
 
 .Tree optimizations
-When the the option 'tree' is set, then the hole the whole tree of
+When the the option 'tree' is set, then the hole tree of
 dependancies is built and displayed, which might be very time-consuming.
 
 When the option 'tree' is not set, then the analysis of dependencies
