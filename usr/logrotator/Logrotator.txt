@@ -1,12 +1,12 @@
 Logrotator
 =========
-V1.1
+V1.2
 
 Logrotator reads an input flow of text lines (e.g. logs) and splits it into
 several files according to various rules.
 
 Usage
-----
+-----
 
 Logrotator takes as argument a root file name and, as option
 
@@ -20,6 +20,9 @@ Usage: logrotator [ <period> ] [ <cycle> ] [ <size> ] <file_name>
 <cycle>    ::= -c | --cycle <number>            // number of periods
 <size>     ::= -s | --size  <number> [ k | M ]  // Size in bytes, kilos or Megas
 .........................................
+
+Behaviour
+---------
 
 Logrotator reads its standard input and creates successively, in its current
 directory, several output files named <file_name>_xxx.yyy. +
