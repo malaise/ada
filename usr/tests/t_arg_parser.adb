@@ -16,7 +16,7 @@ procedure T_Arg_Parser is
    (False, 't', As.U.Tus ("third"),  False),
    (False, 'm', As.U.Tus ("multi"),  True),
    (True,  'o', As.U.Tus ("opt"),    False, True,  As.U.Asu_Null),
-   (True,  'c', As.U.Tus ("combi"),  True,  False, As.U.Tus ("Opt")));
+   (True,  'c', As.U.Tus ("combi"),  True,  False, As.U.Tus ("opt")));
 
   -- The help message for each key
   Helps : constant As.U.Utils.Asu_Array (Keys'Range) := (
@@ -133,6 +133,7 @@ begin
     if not Environ.Is_Set (Auto_Env_Name)
     or else not Environ.Is_Yes (Auto_Env_Name) then
       -- Verbose output
+      Basic_Proc.Put_Line_Output ("auto for automatic test");
       for I in 1 .. Nb_Keys loop
         Basic_Proc.Put_Line_Output (
            Str_Util.Procuste (Argument_Parser.Image (Keys(I)), 28)
