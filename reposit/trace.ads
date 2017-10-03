@@ -3,7 +3,8 @@ private with As.U, Text_Line, Mutexes;
 package Trace is
 
   -- General concepts for Basic_Logger (defined hereafter)
-  --  and for Logger (defined in the child package Trace.Loggers)
+  --  and for Logger (defined in the child packages Trace.Loggers and
+  --  Trace.Queue)
   -- Each logger is anonymous or has a name, and each trace has a severity
   --  (possibly several)
   -- Activate the traces by setting the environment variables

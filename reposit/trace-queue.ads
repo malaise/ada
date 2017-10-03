@@ -1,13 +1,18 @@
 -- Store messages is a queue in memory
-private with Ada.Finalization;
-private with Long_Long_Limited_Pool;
 package Trace.Queue is
 
   -- See the parent package Trace for general informations about the
   --  tracing mechanisms
 
-  -- All the queuers of a process log in the same common queue, which is
-  --  dump on stderr on request or at process termination
+  -- All the queue loggers of a process log in the same common queue, which is
+  --  dump into the given flow, on request or at process termination
+  -- The flow  can be set in the environment variable <Process>_TRACEFILE="file"
+  --  where <Process> is the process name (no path, non alphanum characters
+  --         replaced by '_')
+  --        file is "stdout", "stderr", "async_stdout", "async_stderr",
+  --         or any file name (see Output_Flows), possibly with
+  --         ${PID}, ${CMD}, ${HOST} or ${DATE}, which are expanded.
+  --         Default is stderr.
 
   -- A queuer of traces
   type Queue_Logger is tagged private;
@@ -73,31 +78,19 @@ package Trace.Queue is
   -- Flush the whole queue
   procedure Flush;
 
-  -- By default, Errors (Fatal & Error) are directly logged on stderr
+  -- By default, Errors (Fatal & Error) are directly logged and flushed
+  -- on stderr
   Errors_On_Stderr : Boolean := True;
+  Flush_Stderr : Boolean := True;
 
 private
 
   -- Logger
-  type Queue_Logger is new Ada.Finalization.Controlled with record
+  type Queue_Logger is tagged record
     Inited : Boolean := False;
     Name : As.U.Asu_Us;
     Mask : Severities := 0;
   end record;
 
-  -- Queue
-  package Cell_Pools is new Long_Long_Limited_Pool (As.U.Asu_Us,
-    Lifo => False, Set => As.U.Set);
-
-  type Pool_Type is new Ada.Finalization.Limited_Controlled with record
-    The_Pool : Cell_Pools.Pool_Type;
-  end record;
-  overriding procedure Finalize (A_Pool : in out Pool_Type);
-
 end Trace.Queue;
-
-
-
-
-
 

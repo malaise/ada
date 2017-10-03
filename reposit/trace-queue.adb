@@ -1,12 +1,90 @@
-with Bit_Ops, Basic_Proc;
+with Ada.Calendar, Ada.Finalization;
+with Long_Long_Limited_Pool,
+     Environ, Sys_Calls, Images, Bit_Ops, Socket, Computer, Output_Flows;
 -- Store messages is a queue in memory
 package body Trace.Queue is
 
   -- The pool
+  package Cell_Pools is new Long_Long_Limited_Pool (As.U.Asu_Us,
+    Lifo => False, Set => As.U.Set);
+
+  type Pool_Type is new Ada.Finalization.Limited_Controlled with record
+    The_Pool : Cell_Pools.Pool_Type;
+    The_Flow : Output_Flows.Output_Flow;
+  end record;
+  overriding procedure Finalize (A_Pool : in out Pool_Type);
   Pool : Pool_Type;
+
+  -- Global initialisation
+  ------------------------
+  -- Init once :
+  All_Init : Boolean := False;
+  -- - Variables PID CMD HOST DATE
+  Memory : Computer.Memory_Type;
+  -- - Common flow
+  Flow_Is_Stderr : Boolean;
+
+  -- Image of our pid
+  function Pid_Image is new Images.Int_Image (Sys_Calls.Pid);
 
   -- A local basic logger
   package Me is new Basic_Logger ("Trace");
+
+  procedure Full_Init is
+    File_Name : As.U.Asu_Us;
+  begin
+    if All_Init then
+      return;
+    end if;
+
+    -- Do basic init if not yet done
+    Basic_Init;
+
+    -- No log until local logger is init
+    ------------------------------------
+    -- Get process name and set variables
+
+    Memory.Set ("PID", Pid_Image (Sys_Calls.Get_Pid), False, True);
+    Memory.Set ("CMD", Process.Image, False, True);
+    Memory.Set ("HOST", Socket.Local_Host_Name, False, True);
+    Memory.Set ("DATE", Images.Date_Image (Ada.Calendar.Clock,
+                                           Format => Images.Iso_Dot),
+                False, True);
+
+    -- Get flow name and init flow
+    File_Name := As.U.Tus (Environ.Getenv (Env_Proc.Image & "_TRACEFILE"));
+
+    if not File_Name.Is_Null
+    and then File_Name.Image /= Output_Flows.Stderr_Name then
+      -- Try to open regular file
+      begin
+        Pool.The_Flow.Set (File_Name.Image);
+        Flow_Is_Stderr := False;
+      exception
+        when others =>
+          -- File cannot be created, use stderr
+          File_Name.Set_Null;
+      end;
+    end if;
+
+    if File_Name.Is_Null
+    or else File_Name.Image = Output_Flows.Stderr_Name then
+      -- Open Stderr
+      begin
+        Flow_Is_Stderr := True;
+        File_Name := As.U.Tus (Output_Flows.Stderr_Name);
+        Pool.The_Flow.Set (File_Name.Image, Stderr'Access);
+      exception
+        when Output_Flows.Already_Error =>
+          -- Stderr is already registered, cannot use the File access provided
+          Pool.The_Flow.Set (File_Name.Image);
+      end;
+    end if;
+
+    Me.Log (Debug, "Global init done with mask " & Image (Global_Mask)
+                 & " on flow " & File_Name.Image);
+    All_Init := True;
+  end Full_Init;
 
   -- Initialize the logger, either with a name or anonymous
   --  and set its mask from ENV
@@ -16,8 +94,8 @@ package body Trace.Queue is
     if A_Logger.Inited then
       return;
     end if;
-    -- Global init if necessary
-    Basic_Init;
+    -- Full init if necessary
+    Full_Init;
     -- Init the logger
     A_Logger.Name := As.U.Tus (Name);
     A_Logger.Mask := Get_Mask (Name);
@@ -148,16 +226,32 @@ package body Trace.Queue is
     if (Severity and A_Logger.Mask) = 0 then
       return;
     end if;
-    Lock.Get;
-    -- Build the text and put or queue it
     Txt := As.U.Tus (Format (A_Logger.Name.Image, Severity, Message));
-    if Errors_On_Stderr and then  (Severity and Errors) /= 0 then
-      Basic_Proc.Put_Line_Error (Txt.Image);
+
+   -- Put on flow
+    Lock.Get;
+    if Errors_On_Stderr and then (Severity and Errors) /= 0 then
+      Pool.The_Flow.Put_Line (Txt.Image);
     else
       Pool.The_Pool.Push (Txt);
     end if;
-    Lock.Release;
 
+    -- Put also on stderr if needed
+    if not Flow_Is_Stderr
+    and then Errors_On_Stderr
+    and then (Severity and Errors) /= 0 then
+      Stderr.Put_Line (Txt.Image);
+      if Flush_Stderr then
+        Stderr.Flush;
+      end if;
+    end if;
+    Lock.Release;
+  exception
+    when others =>
+      if Lock.Is_Owner then
+        Lock.Release;
+      end if;
+      raise;
   end Log;
 
   procedure Log_Fatal   (A_Logger : in out Queue_Logger;
@@ -198,9 +292,13 @@ package body Trace.Queue is
   -- Flush the whole queue
   procedure Flush is
   begin
+    if not All_Init then
+      return;
+    end if;
     while not Pool.The_Pool.Is_Empty loop
-      Basic_Proc.Put_Line_Error (Pool.The_Pool.Pop.Image);
+      Pool.The_Flow.Put_Line (Pool.The_Pool.Pop.Image);
     end loop;
+    Pool.The_Flow.Flush;
   end Flush;
 
   overriding procedure Finalize (A_Pool : in out Pool_Type) is
@@ -208,6 +306,7 @@ package body Trace.Queue is
   begin
     -- Flush and let The_Pool finalize itself
     Flush;
+    All_Init := False;
   end Finalize;
 
 end Trace.Queue;
