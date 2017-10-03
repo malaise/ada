@@ -1,4 +1,4 @@
-with Sys_Calls, Proc_Family, Event_Mng, Text_Line, Mutexes, Trace.Loggers,
+with Sys_Calls, Proc_Family, Event_Mng, Text_Line, Mutexes, Trace.Queue,
      Input_Buffer;
 package body Command is
 
@@ -6,7 +6,7 @@ package body Command is
   Mut : Mutexes.Mutex (Mutexes.Simple, True);
 
   -- Debug option
-  Logger : Trace.Loggers.Logger;
+  Logger : Trace.Queue.Queue_Logger;
 
   -- Output fd (to distinguish Error flow) and policy
   Mix_Policy : Flow_Mixing_Policies;
