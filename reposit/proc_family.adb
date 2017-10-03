@@ -1,4 +1,4 @@
-with Dynamic_List, Event_Mng, Environ, Trace.Loggers;
+with Dynamic_List, Event_Mng, Environ, Trace.Queue;
 package body Proc_Family is
 
   Sig_Child : constant Sys_Calls.Signal_Range := 17;
@@ -6,7 +6,7 @@ package body Proc_Family is
           := (others => <>);
 
   -- Debug option
-  Logger : Trace.Loggers.Logger;
+  Logger : Trace.Queue.Queue_Logger;
 
   -- List of running children
   type Child_Rec is record
@@ -64,14 +64,14 @@ package body Proc_Family is
     Child  : Child_Rec;
     Report : Death_Rec;
     Moved  : Boolean;
-    use type Sys_Calls.Death_Info_List;
+    use type Sys_Calls.Death_Rec, Sys_Calls.Death_Info_List;
   begin
     -- Get death description
-    if In_Death.Cause /= Sys_Calls.No_Dead then
-      Logger.Log_Debug ("Handle death from main");
+    if In_Death /= No_Dead then
+      Logger.Log_Debug ("Handle pending death");
       Death_Dscr := In_Death;
     else
-      Logger.Log_Debug ("Handle death from signal");
+      Logger.Log_Debug ("Handle check new death");
       Death_Dscr := Sys_Calls.Next_Dead;
     end if;
 
@@ -79,6 +79,7 @@ package body Proc_Family is
     case Death_Dscr.Cause is
       when Sys_Calls.No_Dead =>
         -- Done
+        Logger.Log_Debug ("No more death");
         return False;
       when Sys_Calls.Exited =>
         -- Pid to search
@@ -88,13 +89,14 @@ package body Proc_Family is
         Child.Child_Pid := Death_Dscr.Signaled_Pid;
       when Sys_Calls.Stopped =>
         -- Skip
+        Logger.Log_Debug ("Stopped");
         return True;
     end case;
 
     -- Find child in list
     if not Search_Pid (Child_List, Child,
                        From => Child_List_Mng.Current_Absolute) then
-      -- We are called before the child insertion
+      -- We are called (by signal) before the child insertion
       -- Insert Dead in pending list and skip
       Logger.Log_Debug ("Child not found");
       Death_List.Insert (Death_Dscr);
@@ -132,7 +134,7 @@ package body Proc_Family is
       -- Handle successive Sys_Calls.Next_dead
       exit when not Handle_Death (No_Dead);
     end loop;
-    Logger.Log_Debug ("No more child");
+    Logger.Log_Debug ("Sig no more child");
   end Sig_Child_Cb;
 
   -- Image of a fd, of a pid
@@ -269,11 +271,12 @@ package body Proc_Family is
       if Search_Pid (Death_List, Death,
                      From => Death_List_Mng.Current_Absolute) then
         -- Handle this pending dead
+        Logger.Log_Debug ("Found pending dead");
         Death_List.Get (Death, Moved => Dummy);
         Dummy := Handle_Death (Death);
-        Logger.Log_Debug ("Pending dead");
       else
         -- In case sigchild has been lost
+        Logger.Log_Debug ("Check lost child");
         Dummy := Handle_Death (No_Dead);
       end if;
 
