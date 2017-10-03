@@ -4,7 +4,7 @@
 
 # Cleanup
 function clean {
-  rm -f out out? err err? exp exp? tmp tmp? nul pipe Afpx.ref Afpx.res Afpx.tmp
+  rm -f out out? err err? exp exp? tmp tmp? debug nul pipe Afpx.ref Afpx.res Afpx.tmp
 }
 
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
@@ -288,16 +288,21 @@ fi
 # t_arg_parser
 if `match $arg t_arg_parser` ; then
   title t_arg_parser
+
+  export t_arg_parser_TRACE_Command=Debug
+  export t_arg_parser_TRACE_Proc_Family=Debug
+  export t_arg_parser_TRACEFILE=debug
   try t_arg_parser auto
 
   try t_arg_parser -f -m  -m no -o opt -c -t -c 2
   cat >exp << EOF
+auto for automatic test
 -f | --first                 A first single key
 -s | --second                A second single key
 -t | --third                 A third single key
 -m | --multi                 Key that can appear several times
 -o <opt> | --opt=<opt>       Key that must have options
--c [<Opt>] | --combi[=<Opt>] Key that can appear several times and can have options
+-c [<opt>] | --combi[=<opt>] Key that can appear several times and can have options
 Parsing OK is TRUE and parsing error string is >OK.<
 Number of keys found: 7, Last key at pos: 9, First after at pos: 0 and Nb embedded arguments: 1
 Arguments not key are found on 1 occurences.
@@ -547,6 +552,9 @@ fi
 # t_command
 if `match $arg t_command` ; then
   title t_command
+  export t_command_TRACE_Command=Debug
+  export t_command_TRACE_Proc_Family=Debug
+  export t_command_TRACEFILE=debug
   try t_command -s /bin/ls t_c*
   cat << EOF >exp
 Output flow:
@@ -1294,6 +1302,9 @@ fi
 # t_normalization
 if `match $arg t_normalization` ; then
   title t_normalization
+  export t_normalization_TRACE_Command=Debug
+  export t_normalization_TRACE_Proc_Family=Debug
+  export t_normalization_TRACEFILE=debug
   try t_normalization -a
   cat << EOF >exp
  3.14159E+00 10 3 > 3.14E+000< >  3.14159@< >  3.14159@< -> OK
@@ -1361,6 +1372,9 @@ fi
 # t_output_flows
 if `match $arg t_output_flows` ; then
   title t_output_flows
+  export t_output_flows_TRACE_Command=Debug
+  export t_output_flows_TRACE_Proc_Family=Debug
+  export t_output_flows_TRACEFILE=debug
   try t_output_flows
   cat << EOF >exp
 Got stdout
@@ -1678,6 +1692,9 @@ fi
 # t_str_error
 if `match $arg t_str_error` ; then
   title t_str_error
+  export t_str_error_TRACE_Command=Debug
+  export t_str_error_TRACE_Proc_Family=Debug
+  export t_str_error_TRACEFILE=debug
   try t_str_error 21
   cat << EOF >exp
  21 EISDIR          -> Is a directory
