@@ -44,14 +44,17 @@ package Event_Mng is
   --  (see Reset_Default_Signals_Policy).
   procedure Set_Sig_Term_Callback (Callback : in Sig_Callback);
   procedure Set_Sig_Child_Callback (Callback : in Sig_Callback);
+  procedure Set_Sig_Usr_Callback (Callback : in Sig_Callback);
 
   -- Is a callback set on signals
   function Sig_Term_Callback_Set return Boolean;
   function Sig_Child_Callback_Set return Boolean;
+  function Sig_Usr_Callback_Set return Boolean;
 
   -- Return current callback on signal
   function Get_Sig_Term_Callback return Sig_Callback;
   function Get_Sig_Child_Callback return Sig_Callback;
+  function Get_Sig_Usr_Callback return Sig_Callback;
 
   -- Send a dummy signal
   -- It always generates a Sig_Event but no Callback is called
@@ -139,12 +142,13 @@ private
 
   -- Get kind of last signal
   type Signal_Kind_List is (Unknown_Sig, No_Sig, Dummy_Sig,
-                            Terminate_Sig, Child_Sig);
+                            Terminate_Sig, Child_Sig, Usr_Sig);
   function Get_Signal_Kind return Signal_Kind_List;
 
   -- Registered callbacks
   function Get_Term_Cb return Sig_Callback;
   function Get_Child_Cb return Sig_Callback;
+  function Get_Usr_Cb return Sig_Callback;
 
   -- Find the Cb of a read or write Fd
   type Cb_Rec is record

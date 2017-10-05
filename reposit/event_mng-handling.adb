@@ -4,7 +4,7 @@ package body Event_Mng.Handling is
   function Handle (Event : Event_Rec) return Out_Event_List is
     Cb_Searched : Cb_Rec;
     Signal_Kind : Signal_Kind_List;
-    Cb_Term_Sig, Cb_Child_Sig : Sig_Callback;
+    Cb_Term_Sig, Cb_Child_Sig, Cb_Usr_Sig : Sig_Callback;
   begin
     Logger.Log_Debug ("Event_Mng.Handle event " & Event.Kind'Img);
     case Event.Kind is
@@ -31,9 +31,11 @@ package body Event_Mng.Handling is
         Signal_Kind := Get_Signal_Kind;
         Cb_Term_Sig := Get_Term_Cb;
         Cb_Child_Sig := Get_Child_Cb;
+        Cb_Usr_Sig := Get_Usr_Cb;
         Logger.Log_Debug ("Event_Mng.Handle " & Signal_Kind'Img
                  & " with term cb: " & Boolean'Image(Cb_Term_Sig /= null)
-                 & " and child cb: " & Boolean'Image(Cb_Child_Sig /= null));
+                 & " and child cb: " & Boolean'Image(Cb_Child_Sig /= null)
+                 & " and usr cb: " & Boolean'Image(Cb_Usr_Sig /= null));
         case Signal_Kind is
           when Unknown_Sig | No_Sig =>
             -- No_Event
@@ -53,6 +55,12 @@ package body Event_Mng.Handling is
               return Signal_Event;
             end if;
             -- else No_Event
+          when Usr_Sig =>
+            if Cb_Usr_Sig /= null then
+              Cb_Usr_Sig.all;
+              return Signal_Event;
+            end if;
+            -- else No_Event
         end case;
       when Timeout =>
         -- Nothing. Expire timers or return timeout
@@ -64,7 +72,6 @@ package body Event_Mng.Handling is
     return Timeout;
 
   end Handle;
-
 
 end Event_Mng.Handling;
 

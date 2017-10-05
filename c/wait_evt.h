@@ -31,12 +31,14 @@ extern void send_dummy_signal (void);
 #define SIG_NONE     -2
 /* Unknown signal was received */
 #define SIG_UNKNOWN  -1
-/* Dummy signal has been received */
+/* Dummy signal (SIGUSR2) has been received */
 #define SIG_DUMMY     0
 /* Child signal has been received */
 #define SIG_CHILD     1
 /* Terminate signal has been received */
 #define SIG_TERMINATE 2
+/* User signal (SIGUSR1) has been received */
+#define SIG_USR       3
 extern int get_signal (void);
 
 /* Send WakeUp event */

@@ -143,6 +143,7 @@ package body Event_Mng is
   C_Sig_Dummy     : constant Integer :=  0;
   C_Sig_Child     : constant Integer :=  1;
   C_Sig_Terminate : constant Integer :=  2;
+  C_Sig_Usr       : constant Integer :=  3;
 
   procedure C_Send_Dummy_Signal
     with Import=> True, Convention => C, External_Name => "send_dummy_signal";
@@ -159,9 +160,11 @@ package body Event_Mng is
 
   Cb_Term_Sig : Sig_Callback := Null_Procedure'Access;
   Cb_Child_Sig : Sig_Callback := Null_Procedure'Access;
+  Cb_Usr_Sig : Sig_Callback := Null_Procedure'Access;
 
   function Get_Term_Cb  return Sig_Callback is (Cb_Term_Sig);
   function Get_Child_Cb return Sig_Callback is (Cb_Child_Sig);
+  function Get_Usr_Cb return Sig_Callback is (Cb_Usr_Sig);
 
   procedure Set_Sig_Term_Callback (Callback : in Sig_Callback) is
   begin
@@ -173,15 +176,24 @@ package body Event_Mng is
     Cb_Child_Sig := Callback;
   end Set_Sig_Child_Callback;
 
+  procedure Set_Sig_Usr_Callback (Callback : in Sig_Callback) is
+  begin
+    Cb_Usr_Sig := Callback;
+  end Set_Sig_Usr_Callback;
+
   -- Return current Cb
   function Get_Sig_Term_Callback  return Sig_Callback is (Cb_Term_Sig);
 
   function Get_Sig_Child_Callback return Sig_Callback is (Cb_Child_Sig);
 
+  function Get_Sig_Usr_Callback return Sig_Callback is (Cb_Usr_Sig);
+
   -- Is a callback set on signals
   function Sig_Term_Callback_Set  return Boolean is (Cb_Term_Sig /= null);
 
   function Sig_Child_Callback_Set return Boolean is (Cb_Child_Sig /= null);
+
+  function Sig_Usr_Callback_Set return Boolean is (Cb_Usr_Sig /= null);
 
   procedure Send_Dummy_Signal is
   begin
@@ -218,6 +230,7 @@ package body Event_Mng is
               when C_Sig_Dummy =>     Dummy_Sig,
               when C_Sig_Terminate => Terminate_Sig,
               when C_Sig_Child =>     Child_Sig,
+              when C_Sig_Usr =>       Usr_Sig,
               when others =>          Unknown_Sig);
   end Get_Signal_Kind;
 

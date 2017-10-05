@@ -100,7 +100,9 @@ extern boolean evt_fd_set (int fd, boolean read) {
 
 
 /***** Sig Management *****/
-#define SIGDUMMY SIGUSR1
+#define SIGDUMMY SIGUSR2
+#define SIGUSR   SIGUSR1
+#define SIG_LAST SIG_USR
 static int map_signal (int sig_num) {
   if (sig_num == SIGINT) {
     return (SIG_TERMINATE);
@@ -110,6 +112,8 @@ static int map_signal (int sig_num) {
     return (SIG_CHILD);
   } else if (sig_num == SIGDUMMY) {
     return (SIG_DUMMY);
+  } else if (sig_num == SIGUSR) {
+    return (SIG_USR);
   } else if (sig_num == SIG_NONE) {
     return (SIG_NONE);
   } else {
@@ -117,7 +121,7 @@ static int map_signal (int sig_num) {
   }
 }
 
-static int signal_received[3];
+static int signal_received[SIG_LAST+1];
 static boolean sig_received = FALSE;
 static void signal_handler (int sig) {
   int new_sig = map_signal (sig);
@@ -141,7 +145,7 @@ extern int get_signal (void) {
 
   /* Sig_receive is re-evaluated set to TRUE if another signal is pending */
   sig_received = FALSE;
-  for (i = SIG_TERMINATE; i >= SIG_DUMMY; i--) {
+  for (i = SIG_LAST; i >= SIG_DUMMY; i--) {
     if (signal_received[i]) {
       if (res == SIG_NONE) {
         res = i;
@@ -163,7 +167,7 @@ static boolean check_signal (void) {
 /* Reset */
 static void reset_signal (void) {
   int i;
-  for (i = SIG_TERMINATE; i >= SIG_DUMMY; i--) {
+  for (i = SIG_LAST; i >= SIG_DUMMY; i--) {
     signal_received[i] = FALSE;
   }
   sig_received = FALSE;
@@ -216,6 +220,7 @@ extern void activate_signal_handling (void) {
     (void) signal(SIGTERM, signal_handler);
     (void) signal(SIGCHLD, signal_handler);
     (void) signal(SIGDUMMY, signal_handler);
+    (void) signal(SIGUSR, signal_handler);
     reset_signal();
     sig_handled = TRUE;
   }
@@ -231,6 +236,7 @@ extern int reset_default_signals (void) {
     (void) signal(SIGTERM, SIG_DFL);
     (void) signal(SIGCHLD, SIG_DFL);
     (void) signal(SIGDUMMY, SIG_DFL);
+    (void) signal(SIGUSR, SIG_DFL);
     sig_handled = FALSE;
   }
   return res;
