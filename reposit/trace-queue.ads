@@ -5,7 +5,8 @@ package Trace.Queue is
   --  tracing mechanisms
 
   -- All the queue loggers of a process log in the same common queue, which is
-  --  dump into the given flow, on request or at process termination
+  --  dump into the given flow, on request, on reception of Usr signal (see
+  --  package Event_Mng), or at process termination
   -- The flow  can be set in the environment variable <Process>_TRACEFILE="file"
   --  where <Process> is the process name (no path, non alphanum characters
   --         replaced by '_')

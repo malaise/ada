@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Finalization;
-with Long_Long_Limited_Pool,
+with Long_Long_Limited_Pool, Event_Mng,
      Environ, Sys_Calls, Images, Bit_Ops, Socket, Computer, Output_Flows;
 -- Store messages is a queue in memory
 package body Trace.Queue is
@@ -80,6 +80,9 @@ package body Trace.Queue is
           Pool.The_Flow.Set (File_Name.Image);
       end;
     end if;
+
+    -- Register Flush as callback for signal SIGUSR1
+    Event_Mng.Set_Sig_Usr_Callback (Flush'Access);
 
     Me.Log (Debug, "Global init done with mask " & Image (Global_Mask)
                  & " on flow " & File_Name.Image);
