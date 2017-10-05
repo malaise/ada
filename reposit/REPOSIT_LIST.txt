@@ -601,7 +601,7 @@ timers timers.expiration (2)::
 timeval (1)::
      Conversion from and to timeval structure.
 
-trace trace.loggers (2)::
+trace trace.loggers trace.queue (2)::
      Tracing utility library and logger object.
 
 trees (2)::
