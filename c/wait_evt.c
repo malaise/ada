@@ -100,9 +100,8 @@ extern boolean evt_fd_set (int fd, boolean read) {
 
 
 /***** Sig Management *****/
-#define SIGDUMMY SIGUSR2
-#define SIGUSR   SIGUSR1
-#define SIG_LAST SIG_USR
+#define SIGDUMMY SIGURG
+#define SIG_LAST SIG_USR2
 static int map_signal (int sig_num) {
   if (sig_num == SIGINT) {
     return (SIG_TERMINATE);
@@ -112,8 +111,10 @@ static int map_signal (int sig_num) {
     return (SIG_CHILD);
   } else if (sig_num == SIGDUMMY) {
     return (SIG_DUMMY);
-  } else if (sig_num == SIGUSR) {
-    return (SIG_USR);
+  } else if (sig_num == SIGUSR1) {
+    return (SIG_USR1);
+  } else if (sig_num == SIGUSR2) {
+    return (SIG_USR2);
   } else if (sig_num == SIG_NONE) {
     return (SIG_NONE);
   } else {
@@ -220,7 +221,8 @@ extern void activate_signal_handling (void) {
     (void) signal(SIGTERM, signal_handler);
     (void) signal(SIGCHLD, signal_handler);
     (void) signal(SIGDUMMY, signal_handler);
-    (void) signal(SIGUSR, signal_handler);
+    (void) signal(SIGUSR1, signal_handler);
+    (void) signal(SIGUSR2, signal_handler);
     reset_signal();
     sig_handled = TRUE;
   }
@@ -236,7 +238,8 @@ extern int reset_default_signals (void) {
     (void) signal(SIGTERM, SIG_DFL);
     (void) signal(SIGCHLD, SIG_DFL);
     (void) signal(SIGDUMMY, SIG_DFL);
-    (void) signal(SIGUSR, SIG_DFL);
+    (void) signal(SIGUSR1, SIG_DFL);
+    (void) signal(SIGUSR2, SIG_DFL);
     sig_handled = FALSE;
   }
   return res;

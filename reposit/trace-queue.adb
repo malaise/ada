@@ -82,7 +82,7 @@ package body Trace.Queue is
     end if;
 
     -- Register Flush as callback for signal SIGUSR1
-    Event_Mng.Set_Sig_Usr_Callback (Flush'Access);
+    Event_Mng.Set_Sig_Usr1_Callback (Flush'Access);
 
     Me.Log (Debug, "Global init done with mask " & Image (Global_Mask)
                  & " on flow " & File_Name.Image);

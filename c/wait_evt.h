@@ -38,7 +38,9 @@ extern void send_dummy_signal (void);
 /* Terminate signal has been received */
 #define SIG_TERMINATE 2
 /* User signal (SIGUSR1) has been received */
-#define SIG_USR       3
+#define SIG_USR1      3
+/* User signal (SIGUSR2) has been received */
+#define SIG_USR2      4
 extern int get_signal (void);
 
 /* Send WakeUp event */
