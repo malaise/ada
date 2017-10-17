@@ -115,8 +115,11 @@ package body Trace is
 
   -- Private operations
   ---------------------
-  -- Private: Minimal init: global process name, global maks and stderr
+  -- Private: Minimal init: global process name, global maks, stderr and flow
+  Flow : access Text_Line.File_Type;
+  Async_Flow : Boolean := False;
   procedure Basic_Init is
+    Flow_Name : As.U.Asu_Us;
     C : Character;
   begin
     if Process.Is_Null then
@@ -135,7 +138,37 @@ package body Trace is
       -- Open Stderr
       Stderr.Open (Text_Line.Out_File, Sys_Calls.Stderr);
       -- Get global mask
-      Global_Mask := Parse (Environ.Getenv (Process.Image & "_TRACE_ALL"));
+      Global_Mask := Parse (Environ.Getenv (Env_Proc.Image & "_TRACE_ALL"));
+      -- Open flow
+      Flow_Name := As.U.Tus (Environ.Getenv (Env_Proc.Image & "_TRACEFILE"));
+      if Flow_Name.Is_Null or else Flow_Name.Image = "Stderr"
+      or else Flow_Name.Image = "Async_Stderr" then
+        -- Stderr
+        Flow := Stderr'Access;
+      elsif Flow_Name.Image = "Stdout"
+      or else Flow_Name.Image = "Async_Stdout" then
+        -- Stdout
+        Flow := new Text_Line.File_Type;
+        Flow.Open (Text_Line.Out_File, Sys_Calls.Stdout);
+      else
+        -- File (open or create)
+        Flow := new Text_Line.File_Type;
+        begin
+          begin
+            Flow.Open_All (Text_Line.Out_File, Flow_Name.Image);
+          exception
+            when Text_Line.Name_Error =>
+              Flow.Create_All (Flow_Name.Image);
+          end;
+        exception
+          when others =>
+            Flow := Stderr'Access;
+        end;
+      end if;
+      if Flow_Name.Image = "Async_Stderr"
+      or else Flow_Name.Image = "Async_Stdout" then
+        Async_Flow := True;
+      end if;
     end if;
   end Basic_Init;
 
@@ -181,6 +214,7 @@ package body Trace is
         -- Init once
         Basic_Init;
         Mask := Get_Mask (Name);
+        Flus := Async_Flow;
         Init := True;
       end if;
     end Do_Init;
@@ -252,9 +286,9 @@ package body Trace is
       end if;
       -- Put message and flush
       Lock.Get;
-      Stderr.Put_Line (Format (Name, Severity, Message));
+      Flow.Put_Line (Format (Name, Severity, Message));
       if Flus then
-        Stderr.Flush;
+        Flow.Flush;
       end if;
       Lock.Release;
     exception
@@ -293,12 +327,14 @@ package body Trace is
     -- Flush logs of a logger
     procedure Flush is
     begin
-      Stderr.Flush;
+      Do_Init;
+      Flow.Flush;
     end Flush;
 
     -- Configure logger to flush each message
     procedure Set_Flush (Each : in Boolean) is
     begin
+      Do_Init;
       Flus := Each;
     end Set_Flush;
 

@@ -57,8 +57,14 @@ package Trace is
 
   -- BASIC LOGGER
   ---------------
-  -- All basic loggers write the traces in stderr
-
+  -- All the basic loggers of a process trace in a given flow, which can be set in
+  --  the environment variable <Process>_TRACEFILE="file"
+  --  where <Process> is the process name (no path, non alphanum characters
+  --         replaced by '_')
+  --        file is "stdout", "stderr", "async_stdout", "async_stderr",
+  --         or any file name (see Output_Flows), possibly with
+  --         ${PID}, ${CMD}, ${HOST} or ${DATE}, which are expanded.
+  --         Default is stderr.
   -- Initialize the logger, either with a name or anonymous,
   --  and set its mask from ENV
   -- If name is not valid (i.e. not and Ada identifier) then the logger

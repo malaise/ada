@@ -291,6 +291,7 @@ if `match $arg t_arg_parser` ; then
 
   export t_arg_parser_TRACE_Command=Debug
   export t_arg_parser_TRACE_Proc_Family=Debug
+  export t_arg_parser_TRACE_Event_Mng=Debug
   export t_arg_parser_TRACEFILE=debug
   try t_arg_parser auto
 
@@ -554,6 +555,7 @@ if `match $arg t_command` ; then
   title t_command
   export t_command_TRACE_Command=Debug
   export t_command_TRACE_Proc_Family=Debug
+  export t_command_TRACE_Event_Mng=Debug
   export t_command_TRACEFILE=debug
   try t_command -s /bin/ls t_c*
   cat << EOF >exp
@@ -1304,6 +1306,7 @@ if `match $arg t_normalization` ; then
   title t_normalization
   export t_normalization_TRACE_Command=Debug
   export t_normalization_TRACE_Proc_Family=Debug
+  export t_normalization_TRACE_Event_Mng=Debug
   export t_normalization_TRACEFILE=debug
   try t_normalization -a
   cat << EOF >exp
@@ -1374,6 +1377,7 @@ if `match $arg t_output_flows` ; then
   title t_output_flows
   export t_output_flows_TRACE_Command=Debug
   export t_output_flows_TRACE_Proc_Family=Debug
+  export t_output_flows_TRACE_Event_Mng=Debug
   export t_output_flows_TRACEFILE=debug
   try t_output_flows
   cat << EOF >exp
@@ -1694,6 +1698,7 @@ if `match $arg t_str_error` ; then
   title t_str_error
   export t_str_error_TRACE_Command=Debug
   export t_str_error_TRACE_Proc_Family=Debug
+  export t_str_error_TRACE_Event_Mng=Debug
   export t_str_error_TRACEFILE=debug
   try t_str_error 21
   cat << EOF >exp
