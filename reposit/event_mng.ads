@@ -67,8 +67,8 @@ package Event_Mng is
 
   -- Signal handling is the capability to catch SigTerm (and Sigint),
   --  SigChild and dummy signal, and report them
-  -- This is automatically activated when calling Wait (or Pause)
-  --  or when sending a dummy signal
+  -- This is automatically activated when setting a signal callback,
+  --  when calling Wait (or Pause) or when sending a dummy signal
   -- Non-interactive programs and stand-alone libraries shall:
   --  - Check Are_Signals_Handled and store the result
   --  - Wait and catch signals...

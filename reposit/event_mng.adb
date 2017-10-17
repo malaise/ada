@@ -146,6 +146,10 @@ package body Event_Mng is
   C_Sig_Usr1      : constant Integer :=  3;
   C_Sig_Usr2      : constant Integer :=  4;
 
+  procedure C_Activate_Signal_Handling
+    with Import=> True, Convention => C,
+         External_Name => "activate_signal_handling";
+
   procedure C_Send_Dummy_Signal
     with Import=> True, Convention => C, External_Name => "send_dummy_signal";
 
@@ -171,20 +175,24 @@ package body Event_Mng is
 
   procedure Set_Sig_Term_Callback (Callback : in Sig_Callback) is
   begin
+    C_Activate_Signal_Handling;
     Cb_Term_Sig := Callback;
   end Set_Sig_Term_Callback;
 
   procedure Set_Sig_Child_Callback (Callback : in Sig_Callback) is
   begin
+    C_Activate_Signal_Handling;
     Cb_Child_Sig := Callback;
   end Set_Sig_Child_Callback;
 
   procedure Set_Sig_Usr1_Callback (Callback : in Sig_Callback) is
   begin
+    C_Activate_Signal_Handling;
     Cb_Usr1_Sig := Callback;
   end Set_Sig_Usr1_Callback;
   procedure Set_Sig_Usr2_Callback (Callback : in Sig_Callback) is
   begin
+    C_Activate_Signal_Handling;
     Cb_Usr2_Sig := Callback;
   end Set_Sig_Usr2_Callback;
 
