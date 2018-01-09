@@ -104,7 +104,7 @@ package body Menu21 is
       or else Scale = Curve.Free_Normed then
         The_Y_Bounds_Set := The_Bounds_Set
                     and then (The_Bounds.Scale = Curve.Free_Screen
-                      or else The_Bounds.Scale = Curve.Free_Screen);
+                      or else The_Bounds.Scale = Curve.Free_Normed);
 
         if The_Y_Bounds_Set then
           Loc_Bounds.Y_Min := The_Bounds.Y_Min;
