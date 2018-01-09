@@ -1,11 +1,11 @@
 # Select a random departement number
 # 1..19 2A 2B 21..95 971..974 976
-# Put it for some seconds then put its name during some seconds
+# Put it for some seconds then put its name, then wait for Enter, loop
 
 # Input key will not echo
 false inecho
-# Delay before putting the answer and pause between questions
-4.0 a popr 1.0 p popr
+# Delay before putting the answer
+4.0 a popr
 
 # Load the numbers and names
 
@@ -71,7 +71,7 @@ pushle 1 +
 " 42" "Loire"                   S pushr call
 " 43" "Haute-Loire"             S pushr call
 " 44" "Loire-Atlantique"        S pushr call
-" 45" "loiret"                  S pushr call
+" 45" "Loiret"                  S pushr call
 " 46" "Lot"                     S pushr call
 " 47" "Lot-et-Garonne"          S pushr call
 " 48" "Lozère"                  S pushr call
@@ -145,7 +145,7 @@ D pushr retacal ] D popr
 [
 # Take a random number from 1 to N
 rnd N pushr toreal * trunc 1 +
-# Put its Num during a seconds
+# Put its Num during some seconds
 dup n swap pusha put ": " put a pushr sleep
 # Put its Name and wait for input (drop it)
 N swap pusha putl inkey pop
