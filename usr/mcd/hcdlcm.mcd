@@ -5,10 +5,9 @@
 [ "Error. Two positive arguments (int or arbi) expected."  putl
 ssize popn 1 setexit retall ] E popr
 
-# Check one arg
+# Check one arg (make it arbi)
 [
 dup isinte [ toarbi ] ifcall
-dup isarbi ~ [ E pushr call ] ifcall
 dup isarbi ~ [ E pushr call ] ifcall
 dup ispos ~ [ E pushr call ] ifcall
 ] C popr
@@ -16,7 +15,7 @@ dup ispos ~ [ E pushr call ] ifcall
 # Put result
 [ put " (" put n pushr put ", " put d pushr put ") = " put putl ] P popr
 
-# Two args, check them (make them arbi),
+# Two args, check them
 # Store numerator and denominator in n and d
 ssize 2 /= [ E pushr call ] ifcall
 swap C pushr call n copyr swap C pushr call d copyr
