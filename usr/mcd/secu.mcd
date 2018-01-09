@@ -9,6 +9,6 @@ dup ispos ~ E pushr ifcall
 0 format dup strof strlen 13 /= E pushr ifcall
 
 # Key = 97 - N % 97
-97 d copyr % +- d pushr +
+97 dup swap2 % +- +
 2 format "key: " put putl
 
