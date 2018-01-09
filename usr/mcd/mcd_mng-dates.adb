@@ -71,7 +71,6 @@ package body Dates is
     Seconds := Ada.Calendar.Day_Duration(Tmp_Inte / 1000)
              + Ada.Calendar.Day_Duration(Tmp_Inte rem 1000) / 1000.0;
 
-
     -- Add time to ref_time
     if not Neg then
       Cal_Time := Perpet."+" (Ref_Cal_Time, Days);
@@ -79,7 +78,7 @@ package body Dates is
       Cal_Time := Perpet."-" (Ref_Cal_Time, Days);
     else
       Cal_Time := Perpet."-" (Ref_Cal_Time, Days + 1);
-      Seconds := 24.0 * 3600.0 - Seconds;
+      Seconds := Duration (Seconds_Per_Day) - Seconds;
     end if;
 
     -- Split date and seconds
@@ -87,7 +86,7 @@ package body Dates is
     if Dur /= 0.0 then
       raise Compute_Error;
     end if;
-    Day_Mng.Split (Dur, Date.Hours, Date.Minutes, Date.Seconds, Date.Millisecs);
+    Day_Mng.Split (Seconds, Date.Hours, Date.Minutes, Date.Seconds, Date.Millisecs);
 
     -- Format result in string
     Result.Val_Text := As.U.Tus (Date_Text.Put (Date, "%Y/%m/%d-%H:%M:%S.%s"));
