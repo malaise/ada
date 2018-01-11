@@ -118,8 +118,8 @@ package body Mcd_Parser is
    Swap2    => (Nosy, "push B, push C, push A                            ", As.U.Asu_Null, False),
    Dup      => (Nosy, "push A, push A                                    ", As.U.Asu_Null, False),
    Prevtop  => (Nosy, "push previous top of stack                        ", As.U.Asu_Null, False),
-   Pop      => (Nosy, "pop A                                             ", As.U.Asu_Null, False),
-   Popn     => (Nosy, "pop B A times                                     ", As.U.Asu_Null, False),
+   Pop      => (Nosy, "pop (A)                                           ", As.U.Asu_Null, False),
+   Popn     => (Nosy, "pop (B...) A times                                ", As.U.Asu_Null, False),
    Readn    => (Nosy, "push the Ath element of stack                     ", As.U.Asu_Null, False),
    Moven    => (Nosy, "move on top the Ath element of stack              ", As.U.Asu_Null, True),
    -- Registers and arrays
@@ -140,12 +140,12 @@ package body Mcd_Parser is
    Cleara   => (Nosy, "clear regB[A]                                     ", As.U.Asu_Null, False),
    Emptya   => (Nosy, "push True if regB[A] is empty                     ", As.U.Asu_Null, True),
    -- Extra stack
-   Pope     => (Nosy, "pop A push_extra A                                ", As.U.Asu_Null, False),
-   Copye    => (Nosy, "pop A push_extra A push A                         ", As.U.Asu_Null, False),
+   Pope     => (Nosy, "push_extra A                                      ", As.U.Asu_Null, False),
+   Copye    => (Nosy, "push_extra A push A                               ", As.U.Asu_Null, False),
    Pushle   => (Nosy, "pop_extra last  X push X                          ", As.U.Asu_Null, False),
    Pushfe   => (Nosy, "pop_extra first X push X                          ", As.U.Asu_Null, False),
-   Rotle    => (Nosy, "pushle Pope A times (>=0)                         ", As.U.Asu_Null, False),
-   Rotfe    => (Nosy, "pushfe Pope A times (>=0)                         ", As.U.Asu_Null, False),
+   Rotle    => (Nosy, "pushle pope A times (>=0)                         ", As.U.Asu_Null, False),
+   Rotfe    => (Nosy, "pushfe pope A times (>=0)                         ", As.U.Asu_Null, False),
    Esize    => (Nosy, "push extra_stack size                             ", As.U.Asu_Null, False),
    Cleare   => (Nosy, "clear extra_stack                                 ", As.U.Asu_Null, True),
    -- Conditions
