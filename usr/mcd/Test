@@ -294,8 +294,8 @@ comp err nul
 echo "OK"
 
 title entry
-launch entry 9 11.30 12.30
-echo "Leave at 18h00." > exp
+launch entry 9 11.30 12.30 :~1:
+echo "Leave at 19h00." > exp
 comp out exp
 comp err nul
 echo "OK"
@@ -507,11 +507,12 @@ comp err nul
 echo "OK"
 
 title regex
-launch regex :t.t.: :toto: :lolo:
+launch regex :t.t.: :toto: :lolo: :litoti:
 cat << EOF > exp
 Checking with pattern: t.t.
 toto =>     1
 lolo =>     0
+litoti =>     3
 Done.
 EOF
 comp out exp

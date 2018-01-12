@@ -1,7 +1,8 @@
 # Test register ordering and double indirection
 # (no arg)
+# Note: Registers a to z are reserved
 
-# Generic loop do iterate function in F on registers a .. z
+# Generic loop to iterate function in F on registers a .. z
 [
 F pushr pushr call
 dup z = [ pop 2 retn ] ifcall
@@ -9,21 +10,24 @@ nextr L pushr retacal
 ] L popr
 
 
-# To iterate: store rnd in reg at top
+# To iterate: store rnd in reg at top of stack and sum in T
 [ dup rnd dup T pushr + T popr swap popr ] S popr
 
-# To iterate: put content of reg at top
+# To iterate: put content of reg at top of stack, sum in T, show it
 [ dup pushr dup T pushr + T popr putl ] P popr
 
 # Iterate on S
 0.0 T popr
 S F popr
 a L pushr call
-"Sigma: " put T pushr putl
+"Sigma: " put T pushr dup putl U popr
 
 # Iterate on P
 0.0 T popr
 P F popr
 a L pushr call
 "Sigma: " put T pushr putl
+
+# Check both sigma
+T pushr U pushr /= [ "Error, both sums differ" putl 1 setexit ] ifcall
 

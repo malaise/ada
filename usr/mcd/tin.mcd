@@ -3,6 +3,7 @@
 true e popr
 
 [
+"Echo " put e pushr putl
 "Enter a key: " putl inkey newl "Got " put  putl
 "Enter a string: " putl instr "Got " put  putl
 e pushr ~ e copyr inecho

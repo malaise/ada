@@ -20,7 +20,7 @@
 h pushr toreal 60.0 * 11.0 / -2 roundat
 # Save minutes and compute seconds
 dup frac 60.0 * int trunc swap int trunc
-# report cary (m >= 60)
+# Report cary (m >= 60)
 dup 60 / h pushr + h popr 60 %
 # Put HhMMm.SS
 h pushr put "h" put
