@@ -44,7 +44,8 @@ package Mcd_Mng is
    Asin,
    Acos,
    Atan,
-   -- Logarithm
+   -- Other math
+   Rnd,
    Epsilon,
    Exp,
    Ln,
@@ -138,6 +139,13 @@ package Mcd_Mng is
    Put,
    Newl,
    Putl,
+   -- Input
+   Getenv,
+   Inecho,
+   Inkey,
+   Instr,
+   Readfile,
+   Readlins,
    -- String management and conversions
    Strnull,
    Strlen,
@@ -165,15 +173,8 @@ package Mcd_Mng is
    Dateof,
    Daysof,
    Timeof,
-   -- Miscelaneous
+   -- Execution control
    Nop,
-   Getenv,
-   Inecho,
-   Inkey,
-   Instr,
-   Readfile,
-   Readlins,
-   Rnd,
    Sleep,
    Version,
    Setexit,

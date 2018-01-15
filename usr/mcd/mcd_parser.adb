@@ -34,6 +34,27 @@ package body Mcd_Parser is
     New_Line : Boolean;
   end record;
 
+  -- Titles of sections (before the first operator and at each new line)
+  Titles : constant As.U.Asu_Array := (
+    As.U.Tus ("Basic operations on numbers"),
+    As.U.Tus ("Bit operations"),
+    As.U.Tus ("Comparison operations"),
+    As.U.Tus ("Logical operations"),
+    As.U.Tus ("Trigonometry"),
+    As.U.Tus ("Other math operations"),
+    As.U.Tus ("Conversions"),
+    As.U.Tus ("Tests ""is a"""),
+    As.U.Tus ("Stack management"),
+    As.U.Tus ("Registers (and arrays)"),
+    As.U.Tus ("Extra stack management"),
+    As.U.Tus ("If then else"),
+    As.U.Tus ("Call and return"),
+    As.U.Tus ("Output and format"),
+    As.U.Tus ("Intput"),
+    As.U.Tus ("String operations"),
+    As.U.Tus ("Date operations"),
+    As.U.Tus ("Execution control"));
+
   -- The operators
   Words : constant array (Mcd_Mng.Operator_List) of One_Rec :=
   -- Basic operations on numbers
@@ -75,7 +96,8 @@ package body Mcd_Parser is
    Asin     => (Nosy, "push ASin(A) in radiants                          ", As.U.Asu_Null, False),
    Acos     => (Nosy, "push ACos(A) in radiants                          ", As.U.Asu_Null, False),
    Atan     => (Nosy, "push ATan(A) in radiants                          ", As.U.Asu_Null, True),
-   -- Logarithm
+   -- Other math
+   Rnd      => (Nosy, "push 0.0 <= Rnd < 1.0                             ", As.U.Asu_Null, False),
    Epsilon  => (Nosy, "push epsilon (1.0E-10)                            ", As.U.Asu_Null, False),
    Exp      => (Nosy, "push e (exponential)                              ", As.U.Asu_Null, False),
    Ln       => (Nosy, "push ln(A) (neper logarithm)                      ", As.U.Asu_Null, False),
@@ -133,8 +155,8 @@ package body Mcd_Parser is
    Emptyr   => (Nosy, "push True if regA is empty                        ", As.U.Asu_Null, False),
    Nextr    => (Nosy, "push next reg (RegA -> RegB)                      ", As.U.Asu_Null, False),
    Prevr    => (Nosy, "push prev reg (RegB -> RegA)                      ", As.U.Asu_Null, False),
-   Regind   => (Nosy, "push integer index of RegA                        ", As.U.Asu_Null, False),
-   Indreg   => (Nosy, "push Reg of integer index A                       ", As.U.Asu_Null, False),
+   Regind   => (Nosy, "push integer index of RegA (A->1... a->27...)     ", As.U.Asu_Null, False),
+   Indreg   => (Nosy, "push Reg of integer index A (1->A... 27->a...)    ", As.U.Asu_Null, False),
    Popa     => (Nosy, "C -> regB[A]                                      ", As.U.Asu_Null, False),
    Pusha    => (Nosy, "push regB[A]                                      ", As.U.Asu_Null, False),
    Cleara   => (Nosy, "clear regB[A]                                     ", As.U.Asu_Null, False),
@@ -170,6 +192,14 @@ package body Mcd_Parser is
    Put      => (Nosy, "put A                                             ", As.U.Asu_Null, False),
    Newl     => (Nosy, "new line                                          ", As.U.Asu_Null, False),
    Putl     => (Nosy, "put_line A                                        ", As.U.Asu_Null, True),
+   -- Input
+   Getenv   => (Nosy, "push getenv(A) or False                           ", As.U.Asu_Null, False),
+   Inecho   => (Nosy, "echo inkey/instr according to A (boolean)         ", As.U.Asu_Null, False),
+   Inkey    => (Nosy, "push the key pressed on stdin                     ", As.U.Asu_Null, False),
+   Instr    => (Nosy, "push the string entered on stdin                  ", As.U.Asu_Null, False),
+   Readfile => (Nosy, "push content of file as a string or False         ", As.U.Asu_Null, False),
+   Readlins => (Nosy, "push all lines of file (first on top) then the    ",
+     As.U.Tus ("number of lines read, or False"), True),
    -- String management and conversions
    Strnull  => (Nosy, "push True if A is empty                           ", As.U.Asu_Null, False),
    Strlen   => (Nosy, "push length of A                                  ", As.U.Asu_Null, False),
@@ -198,16 +228,8 @@ package body Mcd_Parser is
    Dateof   => (Nosy, "int -> YYyy/mm/dd-hh:mm:ss.mmm                    ", As.U.Asu_Null, False),
    Daysof   => (Nosy, "int -> days-hh:mm:ss.mmm                          ", As.U.Asu_Null, False),
    Timeof   => (Nosy, "YYyy/mm/dd-hh:mm:ss.mmm -> int                    ", As.U.Asu_Null, True),
-   -- Miscelaneous
+   -- Execution
    Nop      => (Nosy, "no operation                                      ", As.U.Asu_Null, False),
-   Getenv   => (Nosy, "push getenv(A) or False                           ", As.U.Asu_Null, False),
-   Inecho   => (Nosy, "echo inkey/instr according to A (boolean)         ", As.U.Asu_Null, False),
-   Inkey    => (Nosy, "push the key pressed on stdin                     ", As.U.Asu_Null, False),
-   Instr    => (Nosy, "push the string entered on stdin                  ", As.U.Asu_Null, False),
-   Readfile => (Nosy, "push content of file as a string or False         ", As.U.Asu_Null, False),
-   Readlins => (Nosy, "push all lines of file (first on top) then the    ",
-     As.U.Tus ("number of lines read, or False"), False),
-   Rnd      => (Nosy, "push 0.0 <= Rnd < 1.0                             ", As.U.Asu_Null, False),
    Sleep    => (Nosy, "sleep A seconds                                   ", As.U.Asu_Null, False),
    Version  => (Nosy, "push current version (string)                     ", As.U.Asu_Null, False),
    Setexit  => (Nosy, "set exit code to A (natural)                      ", As.U.Asu_Null, False),
@@ -422,6 +444,13 @@ package body Mcd_Parser is
     Ope_Name : String (1 .. Ope_Len);
     Pad : constant String (1 .. Ope_Len) := (others => ' ');
     Separator : constant String (1 .. Ope_Len) := (others => '-');
+    Section : Positive;
+    procedure Put_Title is
+    begin
+      Io_Flow.Put_Line (Tab1 & Separator & " " & Titles(Section).Image
+                                         & " " & Separator);
+      Section := Section + 1;
+    end Put_Title;
     procedure Put_Line (Msg : in String) is
     begin
       if Command then
@@ -457,7 +486,11 @@ package body Mcd_Parser is
     Io_Flow.Put_Line ("Operators are: ");
     Io_Flow.Put_Line (Tab1
                     & "Name       Action (A is top of stack, then B...)");
+    Section := 1;
     for O in Mcd_Mng.Operator_List loop
+      if O = Mcd_Mng.Operator_List'First then
+         Put_Title;
+      end if;
       Ope_Name:= (others => ' ');
       if Words(O).Word /= Nosy then
         Ope_Name(1 .. 2) := Words(O).Word;
@@ -471,7 +504,7 @@ package body Mcd_Parser is
                         & "  " & Words(O).Extra_Comment.Image);
       end if;
       if Words(O).New_Line then
-        Io_Flow.Put_Line (Tab1 & Separator);
+        Put_Title;
       end if;
     end loop;
   end Print_Help;
