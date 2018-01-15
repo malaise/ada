@@ -16,18 +16,18 @@ nextr L pushr retacal
 # To iterate: put content of reg at top of stack, sum in T, show it
 [ dup pushr dup T pushr + T popr putl ] P popr
 
-# Iterate on S
+# Iterate on S, keep total on stack
 0.0 T popr
 S F popr
 a L pushr call
-"Sigma: " put T pushr dup putl U popr
+"Sigma: " put T pushr dup putl
 
-# Iterate on P
+# Iterate on P, keep total on stack
 0.0 T popr
 P F popr
 a L pushr call
-"Sigma: " put T pushr putl
+"Sigma: " put T pushr dup putl
 
 # Check both sigma
-T pushr U pushr /= [ "Error, both sums differ" putl 1 setexit ] ifcall
+/= [ "Error, both sums differ" putl 1 setexit ] ifcall
 
