@@ -103,7 +103,7 @@ package body Misc is
       raise Mcd_Mng.Invalid_Argument;
     end if;
     if Stack.Stack_Size (Default_Stack => False) = 0  then
-      return;
+      raise Empty_Stack;
     end if;
     for I in 1 .. Times.Val_Inte loop
       if First then
