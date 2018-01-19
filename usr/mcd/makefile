@@ -13,6 +13,8 @@ CLIBS_mcd := $(PCRE_SLIBS)
 
 LARGS_mcd.stat := $(PCRE_ALIBS) $(UTILS_ALIBS)
 
+TXT := Mcd
+DOCOPTS_Mcd := -a toc
 
 include $(TEMPLATES)/ada.mk
 

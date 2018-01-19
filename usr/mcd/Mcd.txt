@@ -6,21 +6,588 @@ Mcd (My Calculator for Desk) is a text oriented reverse polish calculator.
 
 General concept
 ----------------
+Stack
+~~~~~
 A reverse polish calculator is mainly based on a stack, on which we can push
 operands and operators. +
 Pushing an operand has no effect except storing it on the top of the stack. +
 Pushing an operator triggers the execution of the operation, which means:
 
-* 
+* Pop the operator,
+* Possibly pop the operands (the number depends on the operator),
+* Apply the operation on the operands, 
+* Possibly push the result (one or several operands) on the stack.
+
+For example, the  operation "3 - 1" is decomposed into:
+
+* Push '3'
+* Push '1'
+* Push '-', which pops '-', '1' and '3', computes 3-1=2, and pushes '2'
+
+Input and output
+~~~~~~~~~~~~~~~~
+In order to perform operations, mcd reads words from an input flow, and puts
+them automatically on its stack. Words are separated by spaces, horizontal
+tabulations or new lines. For example, the operation above is performed by
+simply sending to mcd the string "3 1 -". +
+To each input flow, mcd associates an output flow on which it will send the
+outputs. For example, the operation "putl" pops the top of stack and sends it
+on the output flow together with a new line. So sending "3 1 - putl" to mcd will
+make it send back the string "2" and a new line. +
+
+When the input is stdin on a tty, the keyboard arrows allow recalling the
+previous lines of instructions and editing the current line.
+
+The following section on xref:XArguments[arguments] describes the different
+flows supported.
 
 Arguments
 ---------
-Input and output flows
+anchor:XArguments[]
+Besides the help mode (argument "-h" or "--help"), mcd arguments are used to
+specify the input/output flow:
+
+* -a <bus_address> : mcd will subscribe (as active) on a data bus. See the
+package 'autobus' for more details on this communication channel. Mcd will get
+its inputs from this bus and will send its outputs on it.
+* -t <tcp_port> : mcd will accept a TCP connection on the specified port, and
+then will read and write on this connection. Only one connection is active at
+a time: any new connection on the port leads to close any previous connection.
+* -u <udp_spec> : specifies a pair <lan_name_or_num>:<port_name_or_num>. Mcd
+will read ints inputs from UDP messages on the specified port, and will send
+its outputs in UDP messages on the specified LAN to <port_num>-1.
+* -U <udp_spec> : same as -u, but mcd will send its outputs to <port_num>+1.
+* -f <file> : Mcd will read its inputs from the file and will send its outputs
+on stdout.
+* default (no argument) : Mcd will read its input from stdin and will send
+its outputs on stdout.
+
+Operands
+---------
+anchor:XOperands[]
+Mcd supports several kinds of operands:
+
+* arbitrary precision number (arbi): '@<number>' is a natural number on which
+mcd performs calculations with absolute precision.
+* fraction (frac): '@<number>:<number>' is a fraction (numerator / denominator)
+of two arbi numbers.
+* integer (inte): '<number>' or '<base>#<number>#' is simple (long long) integer.
+* real (real): is a real number (15 digits, from -1.79E308 .. 1.79E308).
+* boolean (bool): is 'True' or 'False'.
+* string (str): '"text"' or ':text:' is an Ada string.
+* subprogram (prog): '[ <subprogram> ]' is a set of operands or operators to be
+excuted as a sub-program.
+* register (reg): 'A' .. 'Z' and 'a' .. 'z' is a memory cell where an operand can be
+stored and retrieved.
+
+A number is an operand of kind arbi, frac, inte or real.
+
+NOTE: Any word starting by '#' denotes the start of a comment. All the
+characters following it are skipped until the next line feed.
 
 Operations
 ----------
-List per section
+anchor:XOperations[]
+This section lists all the supported operations, grouped by categories. +
+Each operation is denoted by a unique name or symbol (casing is not
+significant). In this description, A, B, C... denote the successive operands
+popped from the stack (A being initially on top of stack) and R denotes the
+result.
 
-Tools
------
-mcdt, mmcdt
+NOTE: Any operation only support specific kinds of operands and will raise the
+error "Invalid argument" if an argument does not have the proper kind (see the
+xref:XErrors[errors] section.
+
+NOTE: By default, operations only allow homogeneous operands and will raise
+"Argument mismatch" in case of discrepancy. For example "3.0 2 +" will raise
+the error "Argument mismatch" (because of mismatch between an inte and a
+real). +
+Often, the result (pushed on stack) is of the same kind as the "in" operand(s).
+
+Basic operations on numbers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.On any pair of numbers (arbi, frac, inte or real)
+
+  + : push B + A
+  - : push B - A                        // Note that "3 1 -" pushes 2 (not -2)
+  * : push B * A
+  / : push B / A
+  Roundiv : push B / A rounded to the closest inte value
+  ** : push B ** A                      // Exponentiation
+  +- : push -A                          // Negation
+  Absv : push |A|                       // Absolute value
+
+.On arbi, inte or real
+
+  Sqrt : push Sqrt(A)                   // Square root
+
+.On arbi or inte
+
+  % : push B % A                        // Rest of the division of B by A
+  ! : push A!                           // Factorial, R is real if A is inte
+
+Operations on bits
+~~~~~~~~~~~~~~~~~~
+These operations only support inte numbers.
+
+  && : push B and A                     // Bit and
+  || : push B or A                      // Bit or
+  ^^ : push B xor A                     // Bit xor
+  ~~ : push neg A                       // Bit neg
+  << : push B << A                      // Bit shift left
+  >> : push B >> A                      // Bit shift right
+
+Comparisons
+~~~~~~~~~~~
+.On any kind of operand except prog.
+
+  = : push whether B = A
+  /= : push whether B /= A              // Not equal
+
+.On any pair of numbers, bool or reg
+
+  > : push whether B > A
+  < : push whether B < A
+  >= : push whether B >= A
+  <= : push whether B <= A
+
+Boolean operations
+~~~~~~~~~~~~~~~~~~
+These operations only support bool operands.
+
+  & : push B and A
+  | : push B or A
+  ^ : push B xor A
+  ~ : push not A
+
+Trigonometry
+~~~~~~~~~~~~
+These operations only support real numbers.
+
+  Pi : push constant PI                 // 3.141592654...
+  Sin : push sin(A)                     // A in radians
+  Cos : push cos(A)
+  Tan : push tan(A)
+  Asin : push asin(A)                   // R in radians
+  Acos : push acosA)
+  Atan : push atan(A)
+
+Other math operations
+~~~~~~~~~~~~~~~~~~~~~
+These operations only support real numbers.
+
+  Rnd : push a random value             // 0.0 <= R < 1.0
+  Epsilon : push real'Epsilon           // 1.0E-10
+  Exp : push e                          // Exponential
+  Ln : push ln(A)                       // Neper logarithm
+  Log : push log(A)                     // Base 10 logarithm
+
+Numerical conversions
+~~~~~~~~~~~~~~~~~~~~~
+
+  Toreal : converts A into real         // A real, inte, arbi or frac
+  Tointe : converts A into inte         // A inte or arbi. For real, see round and trunc
+  Toarbi : converts A into arbi         // A inte or arbi
+  Round : round A to closest inte       // A inte or real, R inte
+  Trunc : trunc frac part of A          // A inte or real, R inte
+  Int : push integer part of A          // A inte or real, R as A
+  Frac : push fraction part of A        // A inte or real, R as A
+  Maxint : push largest inte
+  Minint : push smallest inte           // Negative
+  Roundif : push Round(A) if A is within inte else push A
+  Dms : convert A.frac into A.MinSecMillis
+  Msd : convert A.MinSecMillis into A.frac
+  Mkfrac : push frac B:A                // A and B arbi
+  Numerof : push numerator of A         // A frac, R arbi
+  Denomof : push denominator of A       // A frac, R arbi
+  Proport : push push A * B / C         // frac, arbi, inte ot real
+  Roundat : push B rounded at A digits  // B real, A inte, R real
+
+Tests on types and values
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.On any kind of operand
+
+  Isarbi : push whether A is an arbi
+  Isfrac : push whether A is a frac
+  Isinte : push whether A is an inte
+  Isreal : push whether A is a real
+  Isbool : push whether A is a bool
+  Isstr : push whether A is a str
+  Isreg : push whether A is a reg
+  Isprog : push whether A is a prog
+
+.On any kind of number
+
+  Ispos : push whether A is positive
+  Isnul : push whether A is null
+  Isnotnul : push whether A is not null
+  Isneg : push whether A is negative
+
+Main stack management
+~~~~~~~~~~~~~~~~~~~~~
+
+  Ssize : push stack size               // R is inte
+  Swap : push A, push B                 // Swap A and B
+  Swap3 : push A, push B, push C        // Swap A and C
+  Swap2 : push B, push C, push A        // Swap B and C 
+  Dup : push A, push A                  // Duplicate A
+  Prevtop : push previous top of stack 
+  Pop : pop A                           // Drop top of stack
+  Popn : pop (B...) A times             // Drop A top items
+  Readn : push Ath element of stack
+  Moven : move on top the Ath element
+
+Registers and arrays
+~~~~~~~~~~~~~~~~~~~~
+
+.Single registers
+
+  Popr : pop B and store it in A        // A reg
+  Copyr : store B in A                  // A reg
+  Pushr : push content of A             // A reg
+  Swapr : exchange B with content of A  // A reg
+  Swap2R : exchange content of B and A  // A and B reg
+  Clearr : clear (empty) A              // A reg
+  Clearall : clear all registers        // A..Z and a..z
+  Emptyr : push whether A is empty      // A reg, R bool
+  Nextr : push next register of A       // A reg, a -> b
+  Prevr : push prev register of A       // A reg, Z -> Y
+  Regind : push indeg of register A     // A -> 1... a -> 27...
+  Indreg : push register of index A     // A inte, 1 -> A... 27 -> a
+
+.Array registers
+The same registers (A..Z, a..z) can be used to denote indexed arrays of memory
+cells, through the following specific operations:
+
+  Popa : store C in reg B at index A
+  Pusha : push content of reg B at index A
+  Cleara : clear reg B at index A
+  Emptya : push whether reg B at index A is empty
+
+Extra stack
+~~~~~~~~~~~
+
+The extra stack is a specific stack on which the top of main stack can be
+pushed, and then that can be popped (from both sides, first pushed and last
+pushed).
+
+  Pope : push A in extra stack
+  Copye : copy A in extra stack
+  Pushle : pop last item pushed in extra stack and push it
+  Pushfe : pop  first item pushed in extra stack and push it
+  Rotle : pushle pope A times
+  Rotfe : pushfe pope A times
+  Esize : push size of extra stack
+  Cleare : clear extra stack
+
+Conditions
+~~~~~~~~~~
+Note that the result is simply pushed on stack (not called).
+
+  Ifthen : if B then push A             // B bool
+  Ifte : if C then push B else push A   // C bool
+  Etfi : if A then push C else push B   // A bool
+
+Subprograms
+~~~~~~~~~~~
+
+  Call : call A
+  Ifcall : if B then Call A             // Else pop A
+  Ret : return                          // Return from current subprogram
+  Retn : return A times                 // Return A levels (0=none)
+  Retall : return all levels            // And exit
+  Ifret : if A then return
+  Ifretn : if B then return A levels (0=none) 
+  Ifretall : if A then return all levels
+  Retacal : return and call A           // For loops, see examples
+  Callbrk : set to A the program to be called after break before exit
+
+Output
+~~~~~~
+
+  Format : set output format to A       // For put and strof, xx (for intes) or xx.yyy (for reals)
+  Obase : set output bas                // For put and strof of inte
+  Put : put A                           // A number or bool or str
+  Newl : put a new line
+  Putl : put A and a new line
+
+Input
+~~~~~
+
+  Getenv : push getenv(A) or False      // R is str or False
+  Inecho : Echo stdin inputs or not     // A bool, flow must not be stdio
+  Inkey : push key pressed on stdin     // flow must not be stdio
+  Instr : push string entered on stdin  // flow must not be stdio
+  Readfile : push content of file A as a str, or False
+  Readlins : push all lines of file A (first line on top) then the number of lines read, or False
+
+String management and conversions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.String management
+
+  Strnull : push whether A is empty     // A str, R bool
+  Strlen : push A length                // A str, R inte
+  Strcat : push B & A                   // Concatenation
+  Strsub : push C(B..A)                 // A and B inte, C and R str
+  Strloc : push index of B occurence of str A in C
+  Strins : push C after inserting in it at pos B str A
+  Strovw : push C after overwritting in it from pos B by str A 
+  Strdel : push C after deleting from it from pos B to A
+  Strupp : push A in UPPERCASE
+  Strlow : push A in lowercase
+  Strmix : Push A in Mixed_Case
+
+.String to other kind
+
+  Strarbi : push A converted to arbi    // A str
+  Strfrac : push A converted to frac
+  Strinte : push A converted to inte
+  Strreal : push A converted to real
+  Strbool : push A converted to bool
+  Strregi : push A converted to reg
+  Strprog : push A converted to prog
+
+.Conversion to string and misc
+
+  Strof : push str image of A           // A of any kind
+  Normal : push normalised str of D     // D=N(inte), C=Nb(positive), B=Right(bool), A=Pad(str)
+  Regmatch : push index where B matches regex A 
+
+Time
+~~~~
+
+  Clock : push current time             // R is inte, milliseconds since 01/01/1970
+  Dateof : push image of time           // R is str "YYyy/mm/dd-hh:mm:ss.mmm"
+  Daysof : push image of delta time     // R is str "days-hh:mm:ss.mmm"
+  Timeof : push time of a str image     // A is str "YYyy/mm/dd-hh:mm:ss.mmm"
+
+Execution
+~~~~~~~~~
+
+  Nop : no operation
+  Sleep : sleep 1 seconds               // A inte or real
+  Version : current mcd version         // R is str, ex: "V11.3"
+  Setexit : set exit code               // Default 0
+  Debugall : set debug on/off for all mcd modules
+  Help : display help
+
+Examples
+--------
+
+The following examples illustrate the more tricky or complex operators.
+
+.Rounding and trunking
+Numbers below x.5 are rounded to lower inte part. Trunc always truncs to
+lower intger part.
+
+  5.4 round put " " put 5.5 round put " " put 5.7 trunc putl
+  ->     5     6     5
+
+For negative numbers the logic is the same, which leads to higher inte
+values.
+
+  -3.5 round put " " put -3.7 round put " " put -3.8 trunc putl
+  ->    -4    -4    -3
+
+For roundat, a positive index leads to round before the decimal (integer part),
+and a negative indexes leads to round after the decimal (fraction part).
+
+  34.72 dup 1 roundat put " " put -1 roundat putl
+  ->3.000000000E+001 3.470000000E+001
+
+  -3.75 -1 roundat putl
+  -> -3.800000000E+000
+
+Int and frac extract the real parts of a real.
+
+  5.7 dup int put " " put frac putl
+  ->5.000000000E+000 7.000000000E-001
+
+
+.Registers and extra stack
+Most operations save the top of stack in a specific register that can be
+retrieved with prevtop.
+
+  5 put prevtop  1 + putl
+  ->    5    6
+
+Navigate among registers with nextr and prevr, and map registers to intes
+and back with regind and indreg.
+
+  "In a" a popr Z nextr pushr put " " put a regind putl
+  -> In a    27
+
+Each register can store data at a given index.
+
+  "Test" T 5 popa T 5 pusha putl
+  ->Test
+
+Store in extra stack and rotate. Here the stack initially contains "C", "B" and
+"A", then extra stack is filled with (from last) "A", "B" and "C". Note that 
+rotle takes a number of iterations.
+
+  "A" "B" "C" pope pope pope pushle put pushle put pushle putl
+  ->ABC
+  "A" "B" "C" pope pope pope 1 rotle pushle put pushle put pushle putl
+  ->BCA
+
+.Conditions and calls
+
+The "if" basic instructions select one operand (or none), without calling.
+
+  true "A" "B" ifte putl
+  ->A
+
+Some other instructions allow calling and returning.
+
+  0 isnul [ "Error" putl retall ] ifcall
+  ->Error
+
+  "A" put [ "B" put ret "C" put ] call "D" putl
+  ->ABD
+
+Retacal returns and calls the prog at top of stack. It is the only way
+to make loops (each loop is a subprogram, which needs to be stored somewhere,
+then is retrieved and called by itself with retacal).
+
+  [ "A" put L pushr retacal ] L copyr call
+  ->AAAAAAAAAAA...
+
+.Input and output
+Format with an inte sets the length of inte outputs. With a real, it sets the
+length of mantisse and fraction of real outputs. 
+
+NOTE: The frac part of the real format is on 3 digits, so 4.03 means 30 digits
+(4.030) and 4.003 means 3 digits
+
+  3 format 5 put 3.002 format "-" put 32.47 putl
+  ->  5- 3.25E+001
+
+Inputs of inte support the based notation, and obase operation sets
+the base of inte outputs.
+
+  16#A# 2 obase putl
+  ->2#1010#
+
+Getenv gets a environment variable.
+
+  "HOME" getenv put " " put "unset" getenv putl
+  ->/home/user False
+
+When the input flow is not stdin (bus, tcp, udp or file) inkey and instr allow
+getting characters from stdin, and inecho controls the echo of these
+characters. Here we launch mcd -f <file> and enter
+"toto<NewLine>titi<NewLine>".
+
+  instr False inecho instr "Got" putl swap putl putl
+  ->toto
+  ->Got
+  ->toto
+  ->titi
+
+With the file "t.mcd" containing the program above:
+
+  "t.mcd" readfile putl
+  ->instr False inecho instr "Got" putl swap putl putl
+
+With a file "t.dat" containing the lines "Line1" and "Line2" (the leading "2"
+in the result is the number of lines read):
+
+  "t.dat" readlins put put putl
+  ->2Line1Line2
+
+.Time
+
+  clock 2.1 sleep clock swap - daysof putl
+  ->  0-00:00:02.102
+
+How to use - Tools
+------------------
+.Interactive mode
+anchor:XInteractive[]
+The most simple way is to launch "mcd" from the shell and enter your
+instructions. This way you can dynamically modify the instructions and submit
+them to mcd, and mcd does not exit on error.
+
+.Programs with argument
+However as programs are often stored in files, the script "mmcdt" allows
+launching mcd with instructions provided as arguments and/or in files.
+
+  mmcdt { [ { <arg> } ] -e <command_file> }
+
+Example, with the file t.mcd containing the instructions "ssize putl putl"
+(note that the arguments needed by a program are provided *before* the file
+with the program).
+
+  mmcdt :A: -e t.mcd
+  ->    1
+  ->A
+
+Moreover, the script "mcd" is a shortcut, more friendly, when only one program
+file is needed (note that the arguments are provided *after* the file name).
+
+  mcdt <command_file> [ { <arg> } ]
+
+  mcdt t.mcd :B:
+  ->    1
+  ->B
+
+.Interactive programs
+Interactive programs must be launched on a input/output channel (bus, TCP or
+UDP) or on an input file. The instructions inkey and instr allow such program
+to get characters and string from a tty.
+
+Errors
+------
+anchor:XErrors[]
+If launched with incorrect command line arguments, mcd emits an error trace
+and a short help on command line syntax.
+
+While running (including initialization) mcd may detect and report the
+following errors, then exit:
+
+Invalid argument:: When the operand kind or value is not compatible with the
+operation.
+Argument mismatch:: When some operands do not have compatible (e.g. same) kinds.
+Compute error:: When an internal overflow or numeric exception occurs.
+Invalid register:: On register operation when the operand is not a register.
+Empty register:: When retrieving content from an empty register.
+Empty stack:: When popping from an empty stack or extra stack.
+String length error:: When an input or output is longer than Integer'Last.
+File IO error:: When an error occurs while reading an input file.
+Initialization error:: When an error occurs during initialisation, including
+opening input/output flow.
+Communication error:: Not used at present.
+Cannot read stdin while flow is stdin:: When using inkey, instr or inecho
+while the input flow is stdin.
+Parsing error:: When the input contains an invalid operand or operator.
+
+Fixing a program
+----------------
+
+When setting up a program, the following wyas are possible
+
+.Manual test
+You can manual test instructions in the xref:XInteractive[interactive] mode.
+
+.Intermediate outputs
+Of course, you can insert 'put' and 'putl' operations within your program in
+order to display intermediate results. Don't forget that they consume the
+operand, so use for example "dup putl".
+
+.Traces
+You can activate some debug traces by setting the environment variable
+'mcd_TRACE_<module>' to 'Debug', where <module> can be 'Parser', 'Input',
+'Call', 'Stack', 'Register', 'Oper', 'Flow', 'History'. Ther latter,
+'History', is the most usefull to see which operation and operators generated
+an error. +
+You can also activate all mcd traces with the instructions "True debugall" in
+your programm.
+
+.Debugger
+You can compile mcd with debugging options and launch an Ada debugger. In this
+case, a file may contain the arguments then the program instructions, and mcd,
+in the debugger, shall be launched with "-f <file>".
+
