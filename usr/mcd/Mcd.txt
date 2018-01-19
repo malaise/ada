@@ -1,0 +1,26 @@
+Mcd
+===
+V14.0
+
+Mcd (My Calculator for Desk) is a text oriented reverse polish calculator.
+
+General concept
+----------------
+A reverse polish calculator is mainly based on a stack, on which we can push
+operands and operators. +
+Pushing an operand has no effect except storing it on the top of the stack. +
+Pushing an operator triggers the execution of the operation, which means:
+
+* 
+
+Arguments
+---------
+Input and output flows
+
+Operations
+----------
+List per section
+
+Tools
+-----
+mcdt, mmcdt
