@@ -63,11 +63,11 @@ package body Mcd_Parser is
    Mult     => ("* ", "push B * A                                        ", As.U.Asu_Null, False),
    Div      => ("/ ", "push B / A                                        ", As.U.Asu_Null, False),
    Roundiv  => (Nosy, "push Round (B / A)                                ", As.U.Asu_Null, False),
-   Remind   => ("% ", "push B % A (rest of division)                     ", As.U.Asu_Null, False),
    Pow      => ("**", "push B ** A (pow)                                 ", As.U.Asu_Null, False),
-   Sqrt     => (Nosy, "push Sqrt(A)                                      ", As.U.Asu_Null, False),
    Minus    => ("+-", "push -A                                           ", As.U.Asu_Null, False),
    Absv     => (Nosy, "push |A| (absolute value)                         ", As.U.Asu_Null, False),
+   Sqrt     => (Nosy, "push Sqrt(A)                                      ", As.U.Asu_Null, False),
+   Remind   => ("% ", "push B % A (rest of division)                     ", As.U.Asu_Null, False),
    Fact     => ("! ", "push A! (factorial)                               ", As.U.Asu_Null, True),
    -- Bits operations
    Bitand   => ("&&", "push B and A (bit and)                            ", As.U.Asu_Null, False),
@@ -103,7 +103,7 @@ package body Mcd_Parser is
    Ln       => (Nosy, "push ln(A) (neper logarithm)                      ", As.U.Asu_Null, False),
    Lg       => (Nosy, "push lg(A) (base 10 logarithm)                    ", As.U.Asu_Null, True),
    -- Numerical conversion
-   Toreal   => (Nosy, "push Real(A) (A integer)                          ", As.U.Asu_Null, False),
+   Toreal   => (Nosy, "push Real(A) (A integer, arbitrary or fraction)   ", As.U.Asu_Null, False),
    Tointe   => (Nosy, "push Inte(A) (A arbitrary)                        ", As.U.Asu_Null, False),
    Toarbi   => (Nosy, "push Arbi(A) (A interger)                         ", As.U.Asu_Null, False),
    Round    => (Nosy, "push Inte(A) (round A real)                       ", As.U.Asu_Null, False),

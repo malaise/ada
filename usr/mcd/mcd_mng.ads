@@ -11,11 +11,11 @@ package Mcd_Mng is
    Mult,
    Div,
    Roundiv,
-   Remind,
    Pow,
-   Sqrt,
    Minus,
    Absv,
+   Sqrt,
+   Remind,
    Fact,
    -- Bits operations
    Bitand,
