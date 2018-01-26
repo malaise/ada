@@ -1,6 +1,6 @@
 Mcd
 ===
-V14.1
+V14.2
 
 Mcd (My Calculator for Desk) is a text oriented reverse polish calculator.
 
@@ -324,8 +324,8 @@ Input
   Readfile : push content of file A as a str, or False
   Readlins : push all lines of file A (first line on top) then the number of lines read, or False
 
-String management and conversions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+String operations
+~~~~~~~~~~~~~~~~~
 
 .String management
 
@@ -341,7 +341,7 @@ String management and conversions
   Strlow : push A in lowercase
   Strmix : Push A in Mixed_Case
 
-.String to other kind
+.COnversion from string to other kind
 
   Strarbi : push A converted to arbi    // A str
   Strfrac : push A converted to frac
@@ -351,7 +351,7 @@ String management and conversions
   Strregi : push A converted to reg
   Strprog : push A converted to prog
 
-.Conversion to string and misc
+.Conversion to string and miscellaneous
 
   Strof : push str image of A           // A of any kind
   Normal : push normalised str of D     // D=N(inte), C=Nb(positive), B=Right(bool), A=Pad(str)
@@ -562,7 +562,7 @@ String length error:: When an input or output is longer than Integer'Last.
 File IO error:: When an error occurs while reading an input file.
 Initialization error:: When an error occurs during initialisation, including
 opening input/output flow.
-Communication error:: Not used at present.
+Communication error:: When an error occurs while sending an output message.
 Cannot read stdin while flow is stdin:: When using inkey, instr or inecho
 while the input flow is stdin.
 Parsing error:: When the input contains an invalid operand or operator.

@@ -311,6 +311,8 @@ package body Io_Flow is
       Activate_Socket (False);
       Soc.Close;
       Open_Tcp_Socket (Active);
+    when others =>
+      raise Communication_Error;
   end Send_Message;
 
   -- Put or send string
