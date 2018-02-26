@@ -32,8 +32,6 @@ The configuration file then defines filters. Each filter consists in:
 and the format of time in the file
 - an history of alerts to store (default 100)
 - the name of the rule to execute
-- an optional number of past seconds to scan (and the format of time in the
-scanned file)
 - the criteria (regular expression) to match
 
 Example:
