@@ -3,14 +3,21 @@ with Timers;
 -- Child package of Queues
 package body Queues.Timed is
 
+  procedure Set (To : out Loc_Item; Val : in Loc_Item) is
+  begin
+    To := Val;
+  end Set;
+
   procedure Free_Timer is new Ada.Unchecked_Deallocation (
     Object => Chronos.Passive_Timers.Passive_Timer,
     Name => Timer_Access);
 
   -- Check length before pushing (raise Timed_Full if list lenght is size)
   procedure Check_Length (Queue : in Timed_Type) is
+    use type Len_Range;
   begin
-    if Queue.Size /= 0 and then Queue.List.List_Length = Queue.Size then
+    if Queue.Size /= 0
+    and then Len_Range (Queue.List.List_Length) = Queue.Size then
       raise Timed_Full;
     end if;
   end Check_Length;

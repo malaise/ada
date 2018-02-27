@@ -1,6 +1,6 @@
 -- Queue of items that are kept only for a limited time
 private with Ada.Finalization;
-private with Dynamic_List, Chronos.Passive_Timers;
+private with Long_Long_Limited_List, Chronos.Passive_Timers;
 with Perpet, Virtual_Time;
 generic
   -- Size of the queue, 0 for infinite
@@ -69,8 +69,8 @@ private
 
   -- Use Dynamic_List instead of array because need of removing "random" items
   -- List will always have current pos set to first
-  package Item_Dyn_List_Mng is new Dynamic_List (Loc_Item);
-  package Item_List_Mng renames Item_Dyn_List_Mng.Dyn_List;
+  procedure Set (To : out Loc_Item; Val : in Loc_Item);
+  package Item_List_Mng is new Long_Long_Limited_List (Loc_Item, Set);
   type Timed_Type (Size : Len_Range) is
       new Ada.Finalization.Limited_Controlled with record
     Clock : Virtual_Time.Clock_Access := null;

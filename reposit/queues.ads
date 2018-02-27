@@ -1,5 +1,6 @@
+with Long_Longs;
 package Queues is
-  subtype Len_Range is Natural range 0 .. Positive'Last;
+  subtype Len_Range is Long_Longs.Ll_Natural;
   subtype Size_Range is Len_Range range 1 .. Len_Range'Last;
   subtype No_Range is Size_Range;
 

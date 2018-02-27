@@ -552,7 +552,7 @@ package body Util is
   begin
     for I in 1 .. Str'Length loop
       -- I=1 => last pushed => Str'Last
-      My_Circ.Look_Last (Flow.Circ, Str(L - I + 1), I);
+      My_Circ.Look_Last (Flow.Circ, Str(L - I + 1), Queues.Len_Range (I));
     end loop;
   end Read;
 

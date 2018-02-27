@@ -1,5 +1,7 @@
 package body Queues is
 
+  use type Len_Range;
+
   package body Lifo is
 
     -- Number of Items in Lifo

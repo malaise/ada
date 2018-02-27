@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Argument, Basic_Proc, Sys_Calls, As.U, Timers, Event_Mng, Xml_Parser,
-     Reg_Exp, Date_Text;
+     Reg_Exp, Date_Text, Queues;
 with Debug, Rules, Filters, Executor;
 procedure Sensor is
 
@@ -18,7 +18,7 @@ procedure Sensor is
   Root, Class, Node, Child : Xml_Parser.Element_Type;
   Name, Text, Tmp : As.U.Asu_Us;
   Filter : Filters.Filter_Rec;
-  Hist_Size : Natural;
+  Hist_Size : Queues.Len_Range;
 
 begin
 
@@ -106,8 +106,10 @@ begin
         return;
     end;
     -- No history if 0
+    declare
+      use type Queues.Len_Range;
     begin
-      Hist_Size := Natural'Value (Ctx.Get_Attribute (Node, "History"));
+      Hist_Size := Queues.Len_Range'Value (Ctx.Get_Attribute (Node, "History"));
       if Hist_Size /= 0 then
         Filter.History := new Filters.Hist_Mng.Circ_Type (Hist_Size);
       end if;

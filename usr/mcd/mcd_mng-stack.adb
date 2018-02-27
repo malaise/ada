@@ -151,8 +151,9 @@ package body Stack is
   -- Dump last items popped or read
   procedure Dump_History is
     Litem, Sitem : Item_Rec;
-    Len : constant Natural := History.Length;
+    Len : constant Queues.Len_Range := History.Length;
     Text : As.U.Asu_Us;
+    use type Queues.Len_Range;
   begin
     if not Debug.Loggers(Debug.History).Debug_On or else Len = 0 then
       return;

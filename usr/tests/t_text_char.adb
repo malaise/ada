@@ -7,9 +7,10 @@ procedure T_Text_Char is
   File : Text_Char.File_Type;
   C, U : Character;
   Str : As.U.Asu_Us;
-  Nundo : Natural;
+  Nundo : Queues.Len_Range;
   Failed : exception;
 
+  use type Queues.Len_Range;
 begin
   -- One arg
   if Argument.Get_Nbre_Arg /= 1 then
@@ -52,7 +53,7 @@ begin
     -- Check unget average each 4 chars
     if Rnd.Gen.Int_Random (0, 4) = 0 then
       -- Undo 1 to Q size characters
-      Nundo := Rnd.Gen.Int_Random (1, Qsize);
+      Nundo := Queues.Len_Range (Rnd.Gen.Int_Random (1, Qsize));
       if Nundo > Q.Length (Circ) then
         -- Don't undo more characters than read
         Nundo := Q.Length (Circ);

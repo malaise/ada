@@ -2,7 +2,7 @@ with Queues;
 with Basic_Proc;
 procedure T_Lifo is
 
-  Size : constant := 5;
+  Size : constant Queues.Len_Range := 5;
   N : Positive;
 
   package My_Lifo is new Queues.Lifo (Positive);
@@ -13,7 +13,7 @@ procedure T_Lifo is
   begin
     for I in 1 .. Size loop
       My_Lifo.Look_Last (Lifo, V, I);
-      Basic_Proc.Put_Line_Output ("Look "  & Integer'Image (I) &
+      Basic_Proc.Put_Line_Output ("Look "  & Queues.Len_Range'Image (I) &
                        " --> " & Positive'Image (V) );
     end loop;
   exception
@@ -36,7 +36,7 @@ procedure T_Lifo is
 
 
 begin
-  Basic_Proc.Put_Line_Output ("Lifo size is " & Positive'Image (Size));
+  Basic_Proc.Put_Line_Output ("Lifo size is " & Queues.Len_Range'Image (Size));
 
   for I in 1 .. 10 loop
     Basic_Proc.Put_Line_Output ("Push " & Positive'Image (I));

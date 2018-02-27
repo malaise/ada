@@ -6,7 +6,7 @@ package body Sok_Save is
   package Movement_Lifo is new Queues.Lifo (Sok_Movement.Saved_Data_Rec);
   Movements : Movement_Lifo.Lifo_Type(Nbre_Save);
 
-  Index_Save : Positive range 1 .. Nbre_Save;
+  Index_Save : Queues.Len_Range range 1 .. Nbre_Save;
 
   -- when new frame, reset stack and photo
   procedure Reset is
@@ -49,6 +49,7 @@ package body Sok_Save is
   -- type Look_Ref_List is (First, Next);
   function Look (Ref : Look_Ref_List) return Sok_Movement.Saved_Data_Rec is
     Movement : Sok_Movement.Saved_Data_Rec;
+    use type Queues.Len_Range;
   begin
     if Ref = First then
       Index_Save := 1;
