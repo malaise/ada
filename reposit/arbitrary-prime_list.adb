@@ -1,8 +1,14 @@
-with Dynamic_List;
+with Long_Long_Limited_List;
 package body Arbitrary.Prime_List is
 
-  package Prime_Dyn_List_Mng is new Dynamic_List(Positive_Number);
-  package Prime_List_Mng renames Prime_Dyn_List_Mng.Dyn_List;
+  use type Long_Longs.Llu_Natural;
+
+  procedure Set (To : out Positive_Number; Val : in Positive_Number) is
+  begin
+    To := Val;
+  end Set;
+
+  package Prime_List_Mng is new Long_Long_Limited_List (Positive_Number, Set);
   The_List : Prime_List_Mng.List_Type;
 
   -- Rewind the list of prime numbers found so far
@@ -113,7 +119,7 @@ package body Arbitrary.Prime_List is
   -- Rewind the list of prime numbers found so far
   procedure Rewind (It : in out Iterator) is
   begin
-    It.Position := Positive'First;
+    It:= (others => <>);
   end Rewind;
 
   -- Get next prime number

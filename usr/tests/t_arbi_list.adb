@@ -1,10 +1,14 @@
-with Basic_Proc, Dynamic_List, Normal, Rnd, Argument;
-procedure T_Dl is
-  package My_Dyn_List is new Dynamic_List(Element_Type => Integer);
-  package My_List renames My_Dyn_List.Dyn_List;
-  function My_Search is new My_List.Search("=");   -- ("=" of Integer)
-  procedure My_Search_Raise is new My_List.Search_Raise("=");
-  procedure My_Sort is new My_List.Sort("<");  -- ("<" of Integer)
+with Basic_Proc, Arbitrary.Limited_List, Normal, Rnd, Argument;
+procedure T_Arbi_List is
+  procedure Set (To : out Integer; Val : in Integer) is
+  begin
+    To := Val;
+  end Set;
+  package My_List is new Arbitrary.Limited_List (Element_Type => Integer,
+                                                 Set => Set);
+  function My_Search is new My_List.Search ("=");   -- ("=" of Integer)
+  procedure My_Search_Raise is new My_List.Search_Raise ("=");
+  procedure My_Sort is new My_List.Sort ("<");  -- ("<" of Integer)
 
   List : My_List.List_Type;
   List1 : My_List.List_Type;
@@ -16,6 +20,14 @@ procedure T_Dl is
   procedure Put (I : in Integer; New_Line : in Boolean := False) is
   begin
     Basic_Proc.Put_Output (Normal (I, 2, Gap => '0') & ' ');
+    if New_Line then Basic_Proc.New_Line_Output; end if;
+  end Put;
+
+  procedure Put (I : in Arbitrary.Number; New_Line : in Boolean := False) is
+    Str : constant String := I.Image;
+  begin
+    Basic_Proc.Put_Output ( (if Str'Length = 2 then "0" else "")
+                          & Str(2 .. Str'Last) & ' ');
     if New_Line then Basic_Proc.New_Line_Output; end if;
   end Put;
 
@@ -43,7 +55,7 @@ procedure T_Dl is
   end Iteration;
 
   procedure Dump is
-    Pos : Natural;
+    Pos : My_List.Arb_Natural;
     Moved : Boolean;
   begin
     if List.Is_Empty then
@@ -65,101 +77,103 @@ procedure T_Dl is
 begin
 
   -- Add 10 elements to the list
-  Basic_Proc.Put_Line_Output("Adds 10 elements");
+  Basic_Proc.Put_Line_Output ("Adds 10 elements");
   for I in 1 .. 10 loop
-    List.Insert(I, My_List.Next);
+    List.Insert (I, My_List.Next);
   end loop;
 
   -- Read 5 elements from list in reverse
-  Basic_Proc.Put_Output("Reads 5 elements from the last one: ");
-  List.Rewind(My_List.Prev);
+  Basic_Proc.Put_Output ("Reads 5 elements from the last one: ");
+  List.Rewind (My_List.Prev);
   for I in 1 .. 5 loop
-    List.Read(Item, My_List.Prev);
-    Put(Item);
+    List.Read (Item, My_List.Prev);
+    Put (Item);
   end loop;
   Basic_Proc.New_Line_Output;
 
   -- Dump
-  Basic_Proc.Put_Output("List length: ");
-  Put(List.List_Length, True);
+  Basic_Proc.Put_Output ("List length: ");
+  Put (List.List_Length, True);
 
   -- Delete 5th
-  Basic_Proc.Put_Line_Output("Deletes the current");
-  List.Delete(Moved => Moved);
+  Basic_Proc.Put_Line_Output ("Deletes the current");
+  List.Delete (Moved => Moved);
 
   -- Pos and list length
-  Basic_Proc.Put_Output("Pos from first: ");
-  Put(List.Get_Position, False);
-  Basic_Proc.Put_Output("List length: ");
-  Put(List.List_Length, True);
+  Basic_Proc.Put_Output ("Pos from first: ");
+  Put (List.Get_Position, False);
+  Basic_Proc.Put_Output ("List length: ");
+  Put (List.List_Length, True);
 
   -- Read 7 elements from first
-  Basic_Proc.Put_Output("Reads 7 elements from the first one: ");
+  Basic_Proc.Put_Output ("Reads 7 elements from the first one: ");
   List.Rewind;
   for I in 1 .. 7 loop
-    List.Read(Item);
-    Put(Item);
+    List.Read (Item);
+    Put (Item);
   end loop;
   Basic_Proc.New_Line_Output;
 
   -- Add 50 before current
-  Basic_Proc.Put_Line_Output("Adds the element 50 before current position");
-  List.Insert(50, My_List.Prev);
+  Basic_Proc.Put_Line_Output ("Adds the element 50 before current position");
+  List.Insert (50, My_List.Prev);
 
-  Basic_Proc.Put_Output("Store current access and read: ");
+  Basic_Proc.Put_Output ("Store current access and read: ");
   Acc := List.Access_Current;
-  Put(Acc.all, True);
+  Put (Acc.all, True);
 
   -- List length
-  Basic_Proc.Put_Output("List length: ");
-  Put(List.List_Length, True);
+  Basic_Proc.Put_Output ("List length: ");
+  Put (List.List_Length, True);
 
   -- Read 9 elements from the last
-  Basic_Proc.Put_Output("Reads 9 elements from the last one: ");
-  List.Move_To(My_List.Prev, 0, False);
+  Basic_Proc.Put_Output ("Reads 9 elements from the last one: ");
+  List.Move_To (My_List.Prev, Arbitrary.Zero, False);
   for I in 1 .. 9 loop
-    List.Read(Item, My_List.Prev);
-    Put(Item);
+    List.Read (Item, My_List.Prev);
+    Put (Item);
   end loop;
   Basic_Proc.New_Line_Output;
 
   -- Move back to saved access and read
-  Basic_Proc.Put_Output("Search stored access and read: ");
+  Basic_Proc.Put_Output ("Search stored access and read: ");
   if not List.Search_Access (Acc) then
     Basic_Proc.Put_Line_Output ("NOT FOUND");
     -- This is not normal. Abort.
     raise My_List.Not_In_List;
   end if;
-  List.Read(Item, My_List.Current);
-  Put(Item, True);
+  List.Read (Item, My_List.Current);
+  Put (Item, True);
 
   -- Permute 1st and 4th elements, then search 3 from last
-  Basic_Proc.Put_Line_Output("Permute 1st and 4th elements, then search 3 from last");
-  List.Permute (0, 3, My_List.Next, False);
-  My_Search_Raise (List, 3, My_List.Prev, 1, My_List.Absolute);
+  Basic_Proc.Put_Line_Output (
+    "Permute 1st and 4th elements, then search 3 from last");
+  List.Permute (Arbitrary.Zero, Arbitrary.Set (Integer'(3)),
+                My_List.Next, False);
+  My_Search_Raise (List, 3, My_List.Prev, Arbitrary.One, My_List.Absolute);
 
   -- Get pos from first and current item
-  Basic_Proc.Put_Output("Get current pos from first: ");
-  Put(List.Get_Position);
-  Basic_Proc.Put_Output(" Get current item: ");
+  Basic_Proc.Put_Output ("Get current pos from first: ");
+  Put (List.Get_Position);
+  Basic_Proc.Put_Output (" Get current item: ");
   List.Get (Item);
-  Put(Item, True);
+  Put (Item, True);
 
   -- Dump
-  Basic_Proc.Put_Output("List (length: ");
+  Basic_Proc.Put_Output ("List (length: ");
   Put (List.List_Length, False);
   Basic_Proc.Put_Output (") : ");
   Dump;
 
   -- Search 50 from first
-  Basic_Proc.Put_Line_Output("Seach 50 from first");
+  Basic_Proc.Put_Line_Output ("Seach 50 from first");
   if not My_Search (List, 50, From => My_List.Absolute) then
     Basic_Proc.Put_Line_Output ("NOT FOUND");
     -- This is not normal. Abort.
     raise My_List.Not_In_List;
   end if;
   -- Search 50 from current, skipping it
-  Basic_Proc.Put_Line_Output("Seach 50, skipping current");
+  Basic_Proc.Put_Line_Output ("Seach 50, skipping current");
   if not My_Search (List, 50, From => My_List.Skip_Current) then
     Basic_Proc.Put_Line_Output ("Returns not Found, OK");
   end if;
@@ -168,68 +182,68 @@ begin
   begin
     Count := 0;
     loop
-      Basic_Proc.Put_Output("Pos from first: ");
+      Basic_Proc.Put_Output ("Pos from first: ");
       Put (List.Get_Position, False);
-      Basic_Proc.Put_Output("Pos from last: ");
+      Basic_Proc.Put_Output ("Pos from last: ");
       Put (List.Get_Position (My_List.From_Last), False);
       Basic_Proc.Put_Output ("Can go to next: ");
       Basic_Proc.Put_Output (Boolean'Image (List.Check_Move (My_List.Next))
                  & " ");
-      Basic_Proc.Put_Output("Current item, go to next: ");
-      List.Read(Item);
-      Put(Item, True);
+      Basic_Proc.Put_Output ("Current item, go to next: ");
+      List.Read (Item);
+      Put (Item, True);
       Count := Count + 1;
     end loop;
   exception
     when My_List.Not_In_List =>
       if Count = 2 then
-        Basic_Proc.Put_Line_Output("raises Not_In_List, OK");
+        Basic_Proc.Put_Line_Output ("raises Not_In_List, OK");
       else
-        Basic_Proc.Put_Line_Output("==> NOT IN LIST");
+        Basic_Proc.Put_Line_Output ("==> NOT IN LIST");
       end if;
   end;
 
-  Basic_Proc.Put_Output("Pos from first: ");
-  Put(List.Get_Position, False);
-  Basic_Proc.Put_Output("Pos from last: ");
-  Put(List.Get_Position (My_List.From_Last), False);
-  Basic_Proc.Put_Output("Current item, stay: ");
-  List.Read(Item, My_List.Current);
-  Put(Item, True);
+  Basic_Proc.Put_Output ("Pos from first: ");
+  Put (List.Get_Position, False);
+  Basic_Proc.Put_Output ("Pos from last: ");
+  Put (List.Get_Position (My_List.From_Last), False);
+  Basic_Proc.Put_Output ("Current item, stay: ");
+  List.Read (Item, My_List.Current);
+  Put (Item, True);
 
   -- Read no move
-  Basic_Proc.Put_Output("Current item, stay: ");
-  List.Read(Item, My_List.Current);
-  Put(Item, True);
+  Basic_Proc.Put_Output ("Current item, stay: ");
+  List.Read (Item, My_List.Current);
+  Put (Item, True);
 
   -- Iterator
   Basic_Proc.Put_Line_Output ("Iteration");
   List.Iterate (null, 1, My_List.Next, My_List.Absolute,
-                   Iteration'Access);
+                Iteration'Access);
 
   -- Complete delete
-  Basic_Proc.Put_Line_Output("Delete fully the list");
+  Basic_Proc.Put_Line_Output ("Delete fully the list");
   List.Delete_List;
 
-  Basic_Proc.Put_Output("Get current pos from first: ");
+  Basic_Proc.Put_Output ("Get current pos from first: ");
   begin
-    Put(List.Get_Position, True);
+    Put (List.Get_Position, True);
   exception
     when My_List.Empty_List =>
-      Basic_Proc.Put_Line_Output("raises Empty_List, OK");
+      Basic_Proc.Put_Line_Output ("raises Empty_List, OK");
   end;
 
   -- List length
-  Basic_Proc.Put_Output("List length: ");
-  Put(List.List_Length, True);
+  Basic_Proc.Put_Output ("List length: ");
+  Put (List.List_Length, True);
 
   -- Sort fixed list
-  Basic_Proc.Put_Output("Sort the list: 30 50 42 35: ");
+  Basic_Proc.Put_Output ("Sort the list: 30 50 42 35: ");
   List.Insert (30);
   List.Insert (50);
   List.Insert (42);
   List.Insert (35);
-  My_Sort(List);
+  My_Sort (List);
   Dump;
   List.Delete_List;
 
@@ -249,11 +263,11 @@ begin
     Basic_Proc.Put_Output ("Make the following random list: ");
     Rnd.Gen.Randomize;
     for I in 1 .. Rnd.Gen.Int_Random (0, 10) loop
-      List.Insert (Rnd.Gen.Int_Random(0, 50));
+      List.Insert (Rnd.Gen.Int_Random (0, 50));
     end loop;
   end if;
   Dump;
-  My_Sort(List);
+  My_Sort (List);
   Basic_Proc.Put_Output ("After sorting it: ");
   Dump;
 
@@ -267,5 +281,5 @@ begin
   Basic_Proc.Put_Output ("Copied/Inserted in a new list between 21 and 12: ");
   Dump;
 
-end T_Dl;
+end T_Arbi_List;
 
