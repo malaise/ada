@@ -54,9 +54,9 @@ package Argument_Parser is
   -- If both are set => "-C | --Str"
   -- If it can have option, -C <opt> and --Str=<opt>
   --                    or  -C [<opt>] and --Str[=<opt>]
-  --   depending on Opt_Required
-  -- "opt" is the Option_Name of the key itf not null,
-  -- else the Key_String  of the key itf not null,
+  --   depending on Required
+  -- "opt" is the Option_Name of the key if not null,
+  -- else the Key_String  of the key if not null,
   -- else "option"
   function Image (Key : A_Key_Type) return String;
 
