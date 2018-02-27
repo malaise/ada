@@ -1,4 +1,4 @@
-with Basic_Proc, Argument, Computer, Str_Util;
+with Basic_Proc, Argument, Computer, Str_Util, Arbitrary;
 procedure T_Computer is
   procedure Usage is
   begin
@@ -7,7 +7,7 @@ procedure T_Computer is
   end Usage;
 
   Loc : Natural;
-  N : Integer;
+  N : Arbitrary.Number;
   Mem : Computer.Memory_Type;
 begin
   if Argument.Get_Nbre_Arg = 0 then
@@ -37,7 +37,7 @@ begin
   -- Try to compute expression
   Basic_Proc.Put_Line_Output ("Computation: ");
   N := Mem.Compute (Argument.Get_Parameter(Argument.Get_Nbre_Arg));
-  Basic_Proc.Put_Line_Output (N'Img);
+  Basic_Proc.Put_Line_Output (N.Image);
 exception
   when Computer.Invalid_Expression =>
     Basic_Proc.Put_Line_Output ("Invalid expression");

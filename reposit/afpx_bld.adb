@@ -2,7 +2,7 @@ with Ada.Exceptions, Ada.Direct_Io;
 with As.U, Aski,
      Con_Io, Normal, Argument,
      Mixed_Str, Basic_Proc, Xml_Parser,
-     Ada_Words, Parser, Str_Util, Computer, Images,
+     Ada_Words, Parser, Str_Util, Arbitrary, Computer, Images,
      Language;
 with Afpx_Typ;
 -- Read Afpx.xml, check it
@@ -231,6 +231,7 @@ procedure Afpx_Bld is
     declare
       Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Root);
       Err_Val : Asu_Us;
+      N : Arbitrary.Number;
       P : Positive;
     begin
       for Attr of Attrs loop
@@ -238,13 +239,15 @@ procedure Afpx_Bld is
         -- Load upper left then lower right
         if Match (Attr.Name, "Height") then
           Height := True;
-          P := Memory.Compute (Attr.Value.Image);
+          N := Memory.Compute (Attr.Value.Image);
+          P := Positive'Value (N.Image);
           Size.Row := Con_Io.Row_Range(P - 1);
           -- Add constant persistent
           Add_Variable (Root, "Screen.Height", Geo_Image (Size.Row + 1), False, True);
         elsif Match (Attr.Name, "Width") then
           Width := True;
-          P := Memory.Compute (Attr.Value.Image);
+          N := Memory.Compute (Attr.Value.Image);
+          P := Positive'Value (N.Image);
           Size.Col := Con_Io.Col_Range(P - 1);
           -- Add constant persistent
           Add_Variable (Root, "Screen.Width", Geo_Image (Size.Col + 1), False, True);
@@ -405,6 +408,7 @@ procedure Afpx_Bld is
     end if;
     declare
       Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
+      N : Arbitrary.Number;
       Err_Val : Asu_Us;
     begin
       for Attr of  Attrs loop
@@ -413,30 +417,36 @@ procedure Afpx_Bld is
         if Match (Attr.Name, "Up") then
           Up := True;
           Nb_Verti := Nb_Verti + 1;
-          Fields(Fn).Upper_Left.Row := Memory.Compute (Attr.Value.Image);
+          N := Memory.Compute (Attr.Value.Image);
+          Fields(Fn).Upper_Left.Row := Natural'Value (N.Image);
           Add_Geo ("Up", Fields(Fn).Upper_Left.Row);
         elsif Match (Attr.Name, "Left") then
           Left := True;
           Nb_Horiz := Nb_Horiz + 1;
-          Fields(Fn).Upper_Left.Col := Memory.Compute (Attr.Value.Image);
+          N := Memory.Compute (Attr.Value.Image);
+          Fields(Fn).Upper_Left.Col := Natural'Value (N.Image);
           Add_Geo ("Left", Fields(Fn).Upper_Left.Col);
         elsif Match (Attr.Name, "Low") then
           Low := True;
           Nb_Verti := Nb_Verti + 1;
-          Fields(Fn).Lower_Right.Row := Memory.Compute (Attr.Value.Image);
+          N := Memory.Compute (Attr.Value.Image);
+          Fields(Fn).Lower_Right.Row := Natural'Value (N.Image);
           Add_Geo ("Low", Fields(Fn).Lower_Right.Row);
         elsif Match (Attr.Name, "Right") then
           Right := True;
           Nb_Horiz := Nb_Horiz + 1;
-          Fields(Fn).Lower_Right.Col := Memory.Compute (Attr.Value.Image);
+          N := Memory.Compute (Attr.Value.Image);
+          Fields(Fn).Lower_Right.Col := Natural'Value (N.Image);
           Add_Geo ("Right", Fields(Fn).Lower_Right.Col);
         elsif Match (Attr.Name, "Height") then
           Nb_Verti := Nb_Verti + 1;
-          Fields(Fn).Height := Memory.Compute (Attr.Value.Image);
+          N := Memory.Compute (Attr.Value.Image);
+          Fields(Fn).Height := Natural'Value (N.Image);
           Add_Geo ("Height", Fields(Fn).Height);
         elsif Match (Attr.Name, "Width") then
           Nb_Horiz := Nb_Horiz + 1;
-          Fields(Fn).Width := Memory.Compute (Attr.Value.Image);
+          N := Memory.Compute (Attr.Value.Image);
+          Fields(Fn).Width := Natural'Value (N.Image);
           Add_Geo ("Width", Fields(Fn).Width);
         else
           File_Error (Node, "Invalid geometry " & Attr.Name);
@@ -767,15 +777,16 @@ procedure Afpx_Bld is
         Child_Attrs : constant Xp.Attributes_Array
                     := Ctx.Get_Attributes (Child);
         Err_Val : Asu_Us;
+        N : Arbitrary.Number;
       begin
         for Child_Attr of Child_Attrs loop
           Err_Val := Child_Attr.Value;
           if Match (Child_Attr.Name, "Row") then
-            Finit_Square.Row :=
-             Memory.Compute(Child_Attr.Value.Image);
+            N := Memory.Compute(Child_Attr.Value.Image);
+            Finit_Square.Row := Natural'Value (N.Image);
           elsif Match (Child_Attr.Name, "Col") then
-            Finit_Square.Col :=
-             Memory.Compute(Child_Attr.Value.Image);
+            N := Memory.Compute(Child_Attr.Value.Image);
+            Finit_Square.Col := Natural'Value (N.Image);
           elsif Match (Child_Attr.Name, "xml:space") then
             -- Discard
             null;

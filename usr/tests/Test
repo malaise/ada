@@ -648,7 +648,7 @@ if `match $arg t_computer` ; then
 Evaluation: 
 3*(5+2)
 Computation: 
- 21
++21
 EOF
   comp err nul
   comp out exp

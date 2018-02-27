@@ -147,5 +147,6 @@ EOF
 comp err experr
 
 # Done
+echo "OK"
 clean
 

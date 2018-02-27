@@ -39,6 +39,14 @@ package body Images is
   function Llint_Image (L : Long_Longs.Ll_Integer) return String
            renames Loc_Llint_Image;
 
+  -- Image of an arbitrary integer
+  function Arbitrary_Image (A : Arbitrary.Number) return String is
+    Str : constant String := A.Image;
+  begin
+   return (if Str(1) = '+' then Str(2 .. Str'Last) else Str);
+  end Arbitrary_Image;
+
+
   -- Image of Integer in base 16 (without leading space)
   -- 16#xxx#
   function Int_Image16 (I : Int) return String is

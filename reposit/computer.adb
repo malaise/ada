@@ -324,7 +324,7 @@ package body Computer is
   type Member_Rec (Kind : Member_Kind_List := Val) is record
     case Kind is
       when Val =>
-        Value : Integer;
+        Value : Arbitrary.Number;
       when others =>
         null;
     end case;
@@ -372,7 +372,7 @@ package body Computer is
               Must_Be_Binary := True;
             when '0' .. '9' =>
               Must_Be_Binary := True;
-              Member := (Kind => Val, Value => Integer'Value (Word));
+              Member := (Kind => Val, Value => Arbitrary.Set (Word));
             when others =>
               raise Invalid_Expression;
           end case;
@@ -382,11 +382,11 @@ package body Computer is
           Members_List.Insert ( if First_Char = '+' then (Kind => Add)
                                 else (Kind => Sub));
           Member := (Kind => Val,
-                     Value => Integer'Value (
+                     Value => Arbitrary.Set (
                         Word (Positive'Succ(Word'First) .. Word'Last)));
           Must_Be_Binary := True;
         else
-          Member := (Kind => Val, Value => Integer'Value (Word));
+          Member := (Kind => Val, Value => Arbitrary.Set (Word));
           Must_Be_Binary := True;
         end if;
       end;
@@ -438,9 +438,10 @@ package body Computer is
   end Unget_Member;
 
   -- One operation
-  function Compute_One (I1 : Integer;
+  use type Arbitrary.Number;
+  function Compute_One (I1 : Arbitrary.Number;
                         Op : Oper_Kind_List;
-                        I2 : Integer) return Integer is
+                        I2 : Arbitrary.Number) return Arbitrary.Number is
     (case Op is
        when Add  => I1 + I2,
        when Sub  => I1 - I2,
@@ -454,11 +455,11 @@ package body Computer is
   --  The way to return then differs
   procedure Compute (Members_List : in out Members_Mng.List_Type;
                      End_Reached : in out Boolean;
-                     Result : out Integer;
+                     Result : out Arbitrary.Number;
                      Level : in Natural;
                      Higher_Prio : in Boolean) is
     M1, M2, M3, M4 : Member_Rec;
-    Tmp : Integer;
+    Tmp : Arbitrary.Number;
   begin
     if Level = 0 then
       End_Reached := False;
@@ -470,7 +471,7 @@ package body Computer is
       Compute (Members_List, End_Reached, Result, Level + 1, False);
     elsif M1.Kind = Val then
       Result := M1.Value;
-      Trace ("Value " & Result'Img);
+      Trace ("Value " & Result.Image);
     else
       Trace ("Invalid M1 " & M1.Kind'Img);
       raise Invalid_Expression;
@@ -516,7 +517,7 @@ package body Computer is
         raise Invalid_Expression;
       else
         Tmp := M3.Value;
-        Trace ("Value " & Tmp'Img);
+        Trace ("Value " & Tmp.Image);
       end if;
 
       -- Now we have a value, we need to see if it is followed
@@ -586,8 +587,8 @@ package body Computer is
 
   -- Computation of expression
   function Compute (Memory : in out Memory_Type;
-                    Expression : in String) return Integer is
-    Result : Integer;
+                    Expression : in String) return Arbitrary.Number is
+    Result : Arbitrary.Number;
     Members_List : Members_Mng.List_Type;
     End_Reached : Boolean := False;
   begin

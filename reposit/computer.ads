@@ -1,11 +1,12 @@
 -- Store variables and perform evaluation of an expression referencing them
 -- Also perform basic computation of an expression like: a o b...
 --  where operation "o" is an operator +, -, * or /,
---  and operands "a" or "b" are either integers (num, +num and -num)
+--  and operands "a" or "b" are either arbitrary integers (num, +num and -num)
 --  or references to variables ${Variable}
 --  Supports parentheses
 -- Both support an optional external variable resolver
 private with As.U, Hashed_List.Unique, Environ;
+with Arbitrary;
 package Computer is
 
   -- A memory set
@@ -75,7 +76,7 @@ package Computer is
   -- Then the operations are computed in the proper order
   -- May raise Invalid_Expression (space, parentheses, operations, values...)
   function Compute (Memory : in out Memory_Type;
-                    Expression : in String) return Integer;
+                    Expression : in String) return Arbitrary.Number;
 
   -- On Set, Get or Is_Set if empty name
   Invalid_Variable : exception;

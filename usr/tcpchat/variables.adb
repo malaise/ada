@@ -1,4 +1,4 @@
-with Computer, Environ, Reg_Exp, Images;
+with Computer, Environ, Reg_Exp, Images, Arbitrary;
 with Error, Debug;
 package body Variables is
 
@@ -139,11 +139,11 @@ package body Variables is
 
   -- Compute a numeric expression
   function Compute (Text : As.U.Asu_Us) return As.U.Asu_Us is
-    I : Integer;
+    I : Arbitrary.Number;
   begin
     Memory.Set_External_Resolver (Getenv'Access);
     I := Memory.Compute (Text.Image);
-    return As.U.Tus (Images.Integer_Image (I));
+    return As.U.Tus (Images.Arbitrary_Image (I));
   exception
     when others =>
       Error ("Cannot compute " & Text.Image);

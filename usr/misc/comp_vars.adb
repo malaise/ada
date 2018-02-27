@@ -189,7 +189,7 @@ procedure Comp_Vars is
         Expr : constant String := Text.Image;
       begin
         if Var_Is_Int then
-          Result := As.U.Tus (Images.Integer_Image (Memory.Compute (Expr)));
+          Result := As.U.Tus (Images.Arbitrary_Image (Memory.Compute (Expr)));
         else
           Result := As.U.Tus (Memory.Eval (Expr));
         end if;
