@@ -1,4 +1,4 @@
-with Basic_Proc, Xml_Parser, Str_Util, Text_Line, Mixed_Str, Any_Def;
+with Basic_Proc, Xml_Parser, Str_Util, Text_Line, Mixed_Str, Any_Def, Images;
 with Debug, Matcher, Variables;
 package body Tree is
 
@@ -15,7 +15,7 @@ package body Tree is
                    Msg : in String) is
   begin
     Basic_Proc.Put_Line_Error ("XML ERROR at line "
-      & Natural'Image (Ctx.Get_Line_No (Xnode)) & ": " & Msg & ".");
+      & Images.Llunat_Image (Ctx.Get_Line_No (Xnode)) & ": " & Msg & ".");
     raise Parse_Error;
   end Error;
 

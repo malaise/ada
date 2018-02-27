@@ -1,6 +1,7 @@
 with Ada.Finalization;
-private with Magic_Numbers, Queues, Text_Char, Byte_To_Unicode, Unlimited_Pool,
-             Hashed_List.Unique;
+with Long_Longs;
+private with Magic_Numbers, Queues, Text_Char, Byte_To_Unicode,
+             Long_Long_Limited_Pool, Hashed_List.Unique;
 with As.U, Trees, Trilean;
 -- Parse a Xml file or string.
 -- Call callback while parsing, or provide access to the tree after parsing.
@@ -18,7 +19,7 @@ with As.U, Trees, Trilean;
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "43";
+  Major_Version : constant String := "44";
   function Version return String;
 
   -----------
@@ -154,12 +155,15 @@ package Xml_Parser is
     Def_Empty,   -- Not Tag_Empty but defined as EMPTY in the Dtd
     Not_Empty);  -- None of the cases above
 
+  -- Line number in file
+  subtype Line_Range is Long_Longs.Llu_Natural;
+
   -- A node update transmitted to the callback
   type Node_Update is new Ada.Finalization.Controlled with record
     -- Stage where the node is parsed
     Stage : Stage_List := Prologue;
     -- Line in file
-    Line_No : Natural := 0;
+    Line_No : Line_Range := 0;
     -- Level of the node
     Level : Natural := 0;
     -- Kind of the node
@@ -335,7 +339,7 @@ package Xml_Parser is
   -- Get the line number of the beginning of the declaration of a node
   -- 0 if not the result of parsing of a file
   function Get_Line_No (Ctx  : Ctx_Type;
-                        Node : Node_Type) return Natural;
+                        Node : Node_Type) return Line_Range;
 
   -- Get Prologue of a parsed context (after Parse or Parse_Prologue)
   --  may raise Parse_Error if Parse was not ok
@@ -537,7 +541,7 @@ private
   type Internal_Kind_List is (Element, Text, Pi, Comment, Attribute);
   type My_Tree_Cell is record
     -- Line in source file
-    Line_No : Natural := 0;
+    Line_No : Line_Range := 0;
     -- Kind:  Element, Text or Attribute
     Kind : Internal_Kind_List;
     -- Number of attributes when Kind is Element
@@ -579,7 +583,7 @@ private
   -- Longest keywork + <![CDATA[
   Max_Buf_Len : constant := 21;
   -- Don't skip current data from recording
-  No_Skip_Rec : constant Integer := -1;
+  No_Skip_Rec : constant Long_Longs.Ll_Integer := -1;
   package My_Circ is new Queues.Circ (Character);
 
   -- Current flow is...
@@ -601,7 +605,7 @@ private
     -- File name (empty if stdin or string)
     Name : As.U.Asu_Us;
     -- Current line No
-    Line : Natural := 0;
+    Line : Line_Range := 0;
     -- Is it a string expanded in original flow
     --  so keep Line unchanged
     Same_Line : Boolean := False;
@@ -620,12 +624,14 @@ private
   end record;
 
   -- Pool of flows (when switching to new flow then back)
-  package Flow_Pool_Manager is new Unlimited_Pool (Flow_Info_Type);
-  package Flow_Pool_Mng renames Flow_Pool_Manager.Upool;
+  procedure Set (To : out Flow_Info_Type; Val : in Flow_Info_Type);
+  package Flow_Pool_Mng is new Long_Long_Limited_Pool (
+    Data_Type => Flow_Info_Type, Set => Set);
 
   -- Pool of files to deallocate
-  package File_Pool_Manager is new Unlimited_Pool (File_Access);
-  package File_Pool_Mng renames File_Pool_Manager.Upool;
+  procedure Set (To : out File_Access; Val : in File_Access);
+  package File_Pool_Mng is new Long_Long_Limited_Pool (
+    Data_Type => File_Access, Set => Set);
 
   type Flow_Type is record
     -- To know how many where got before End_Error
@@ -638,7 +644,7 @@ private
     Curr_Str : As.U.Asu_Us;
     -- Recorded input characters
     Recording : Boolean := False;
-    Skip_Recording : Integer := No_Skip_Rec;
+    Skip_Recording : Long_Longs.Ll_Integer := No_Skip_Rec;
     Recorded : As.U.Asu_Us;
     -- Current flow
     Curr_Flow : Flow_Info_Type;
@@ -689,7 +695,7 @@ private
     List : As.U.Asu_Us;
     -- Is it defined in external or internal Dtd, and at which line
     Flow_Kind : Flow_Kind_List;
-    Line : Natural;
+    Line : Line_Range;
   end record;
   type Info_Access is access all Info_Rec;
   procedure Set (To : out Info_Rec; Val : in Info_Rec);
@@ -708,7 +714,7 @@ private
     Name : As.U.Asu_Us;
     -- Line where defined
     Flow_Kind : Flow_Kind_List;
-    Line_No : Natural := 0;
+    Line_No : Line_Range := 0;
     -- Ids
     System_Id : As.U.Asu_Us;
     Public_Id : As.U.Asu_Us;
@@ -742,7 +748,7 @@ private
   ------------------------------------------------------------
   type Id_Cell is record
     -- Line where the ID or IDREF is defined
-    Line_No : Natural := 0;
+    Line_No : Line_Range := 0;
     -- ID name
     Name : As.U.Asu_Us;
   end record;
@@ -788,7 +794,7 @@ private
   -- Doctype info
   type Doctype_Type is record
     -- Line of the DOCTYPE directive
-    Line_No : Natural := 0;
+    Line_No : Line_Range := 0;
     -- Name, file (ID+URI) and internal definition if any
     -- Empty name for no DOCTYPE
     Name    : As.U.Asu_Us;

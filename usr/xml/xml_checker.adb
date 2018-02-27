@@ -1,11 +1,11 @@
 -- Check/Format/Canonify a XML file or flow
 with Ada.Exceptions;
-with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
+with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator,
      Basic_Proc, Text_Line, Sys_Calls, Parser, Bloc_Io, Str_Util, Trilean,
-     Trace.Loggers, Mixed_Str;
+     Trace.Loggers, Mixed_Str, Long_Longs, Normalization;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V25.2";
+  Version : constant String := "V25.3";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -56,7 +56,7 @@ procedure Xml_Checker is
   Namespace : Boolean;
 
   -- Total Nb of lines of current file (when progress)
-  Lines : Natural;
+  Lines : Long_Longs.Llu_Natural;
   -- Progress factor (Nb of signs)
   Progress_Factor : constant := 50;
 
@@ -205,6 +205,8 @@ procedure Xml_Checker is
     Ple ("  size (ulimit -s) to avoid stack overflow and Storage_Error.");
   end Usage;
 
+  -- Normalize line No
+  function Normal is new Normalization.Normal_Mod (Long_Longs.Llu_Natural);
 
   -------------------
   -- Dump xml tree --
@@ -360,7 +362,7 @@ procedure Xml_Checker is
      else Arg_Dscr.Get_Option (No_Key_Index, Occurence));
 
   -- To Store Previous progress
-  Prev_Progress : Natural;
+  Prev_Progress : Long_Longs.Llu_Natural;
 
   -- To store if Cb is in prologue/elements/tail for dump mode
   -- And for Canon_Callback filtering algorithms
@@ -374,10 +376,10 @@ procedure Xml_Checker is
   procedure Callback (Ctx  : in Xml_Parser.Ctx_Type;
                       Node : in Xml_Parser.Node_Update) is
     Str : As.U.Asu_Us;
-    Curr_Progress : Natural;
+    Curr_Progress : Long_Longs.Llu_Natural;
     Indent : constant String (1 .. Node.Level + 1) := (others => ' ');
     use type Xml_Parser.Node_Kind_List, Xml_Parser.Attributes_Access,
-             Xml_Parser.Stage_List;
+             Xml_Parser.Stage_List, Long_Longs.Llu_Natural;
   begin
     if Output_Kind = None then
       return;
@@ -505,7 +507,7 @@ procedure Xml_Checker is
   -- Count number of lines of file
   procedure Count_Lines (File_Name : in String) is
     package Size_Io is new Bloc_Io(Character);
-    use type Size_Io.Count;
+    use type Size_Io.Count, Long_Longs.Llu_Natural;
     Size_Flow : Size_Io.File_Type;
     Bloc_Size : constant Size_Io.Count := 1024 * 1024;
     Bloc : Size_Io.Element_Array (1 .. Bloc_Size);
@@ -726,7 +728,7 @@ procedure Xml_Checker is
     Dummy : Boolean;
     Nodec : Xml_Parser.Element_Type;
     use type Xml_Parser.Generator.Format_Kind_List,
-             Xml_Parser.Parse_Callback_Access;
+             Xml_Parser.Parse_Callback_Access, Long_Longs.Llu_Natural;
   begin
 
     -- Title except if stdin or if only one file

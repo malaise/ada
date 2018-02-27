@@ -56,8 +56,8 @@ procedure Comp_Vars is
         Sys_Calls.Put_Error ("input flow");
       end if;
       if Xml_Parser.Is_Valid (Node) then
-        Sys_Calls.Put_Error (" at line"
-           & Positive'Image (Ctx.Get_Line_No (Node)));
+        Sys_Calls.Put_Error (" at line "
+           & Images.Llunat_Image (Ctx.Get_Line_No (Node)));
         if Node.Kind = Xml_Parser.Element then
           Sys_Calls.Put_Error (" on node " & Ctx.Get_Name (Node));
         end if;

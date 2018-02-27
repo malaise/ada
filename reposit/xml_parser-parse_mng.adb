@@ -83,12 +83,12 @@ package body Parse_Mng  is
     -- Report an error, raises Parsing_Error.
     procedure Error (Flow : in out Flow_Type;
                      Msg : in String;
-                     Line_No : in Natural := 0;
+                     Line_No : in Line_Range := 0;
                      Flow_Kind : in Put_Flow_Kind_List := Guess);
     -- Report a warning
     procedure Warning (Ctx : in out Ctx_Type;
                        Msg  : in String;
-                       Line_No : in Natural := 0;
+                       Line_No : in Line_Range := 0;
                        Flow_Kind : in Put_Flow_Kind_List := Guess);
 
     ----------------------
@@ -105,7 +105,7 @@ package body Parse_Mng  is
                         Name : in String);
 
     -- Get current line number
-    function Get_Line_No (Flow : Flow_Type) return Natural;
+    function Get_Line_No (Flow : Flow_Type) return Line_Range;
 
     -- Start recording
     procedure Start_Recording (Flow : in out Flow_Type);
@@ -438,7 +438,7 @@ package body Parse_Mng  is
     Attribute_Name, Attribute_Value, Unnormalized : As.U.Asu_Us;
     Attribute_Index : Natural;
     Char : Character;
-    Line_No : Natural;
+    Line_No : Line_Range;
     use type As.U.Asu_Us;
   begin
     -- Loop on several attributes
@@ -1664,7 +1664,7 @@ package body Parse_Mng  is
                            Root : in Boolean) is
     Element_Name, End_Name : As.U.Asu_Us;
     Char : Character;
-    Line_No : Natural;
+    Line_No : Line_Range;
     My_Children : aliased Children_Desc;
     use type As.U.Asu_Us;
   begin

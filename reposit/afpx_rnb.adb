@@ -2,7 +2,7 @@
 -- Update other field number and references to them
 with Ada.Exceptions;
 with Basic_Proc, Argument, Argument_Parser, Trace.Loggers, Lower_Str,
-     As.U, Images, Unbounded_Arrays, Str_Util, Text_Line,
+     As.U, Images, Unbounded_Arrays, Str_Util, Text_Line, Long_Longs,
      Afpx_Typ, Xml_Parser.Generator;
 procedure Afpx_Rnb is
     -- Options
@@ -313,7 +313,7 @@ procedure Afpx_Rnb is
   -- Find ${Field_xx.yy} and replace xx by XX
   -- If XX = 0 => Raise a warning and set Ok to false
   procedure Update (Text : in out As.U.Asu_Us;
-                    Line : in Natural;
+                    Line : in Long_Longs.Llu_Natural;
                     Updated : out Boolean) is
     Input : constant As.U.Asu_Us := Text;
     I, J : Natural;
@@ -345,7 +345,7 @@ procedure Afpx_Rnb is
         if New_Num = 0 and then Action = Delete then
           -- Reference to a deleted field
           Basic_Proc.Put_Line_Output ("Warning: Text """ & Input.Image
-            & """ at line " & Images.Integer_Image (Line)
+            & """ at line " & Images.Llunat_Image (Line)
             & " " & (if Force then "had" else "has")
             & " a reference to field " & Text.Slice (I, J)
             & ".");

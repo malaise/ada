@@ -120,7 +120,7 @@ package body Util is
   end Load_Map;
 
   -- Current line of input
-  function Get_Line_No (Flow : Flow_Type) return Natural is
+  function Get_Line_No (Flow : Flow_Type) return Line_Range is
     (Flow.Curr_Flow.Line);
 
   ------------------
@@ -278,11 +278,11 @@ package body Util is
   function Build_Error (Flow : in Flow_Type;
                         Is_Error : in Boolean;
                         Msg : in String;
-                        Line_No : in Natural;
+                        Line_No : in Line_Range;
                         Flow_Kind : in Put_Flow_Kind_List) return String is
     Err_Msg : As.U.Asu_Us;
-    Put_Line_No : Natural := 0;
-    use type As.U.Asu_Us;
+    Put_Line_No : Line_Range := 0;
+    use type As.U.Asu_Us, Line_Range;
   begin
     Put_Line_No := (if Line_No = 0 then Get_Line_No(Flow) else Line_No);
     Err_Msg := As.U.Tus ("Xml_Parser");
@@ -305,7 +305,7 @@ package body Util is
 
   procedure Error (Flow : in out Flow_Type;
                    Msg : in String;
-                   Line_No : in Natural := 0;
+                   Line_No : in Line_Range := 0;
                    Flow_Kind : in Put_Flow_Kind_List := Guess) is
     Err_Msg : constant String := Build_Error (Flow, True, Msg,
                                               Line_No, Flow_Kind);
@@ -317,7 +317,7 @@ package body Util is
   end Error;
   procedure Warning (Ctx     : in out Ctx_Type;
                      Msg     : in String;
-                     Line_No : in Natural := 0;
+                     Line_No : in Line_Range := 0;
                      Flow_Kind : in Put_Flow_Kind_List := Guess) is
     Err_Msg : constant String := Build_Error (Ctx.Flow, False, Msg,
                                               Line_No, Flow_Kind);
@@ -452,6 +452,7 @@ package body Util is
   -- Get character and store in queue
   function Get (Flow : in out Flow_Type) return Character is
     Char : Character;
+    use type Line_Range;
   begin
     Char := Get_Char (Flow);
     -- Skip CRs: Replace CrLf by Lf, or else Cr by Lf
@@ -495,6 +496,7 @@ package body Util is
 
   -- Get a string
   procedure Get (Flow : in out Flow_Type; Str : out String) is
+    use type Line_Range;
   begin
     Flow.Nb_Got := 0;
     for C of Str loop
@@ -507,6 +509,7 @@ package body Util is
   procedure Unget (Flow : in out Flow_Type; N : Natural := 1) is
     Char : Character;
     Len : Natural;
+    use type Line_Range;
   begin
     for I in 1 .. N loop
       My_Circ.Look_Last (Flow.Circ, Char);

@@ -5,8 +5,8 @@ package body Xref is
   -- These are reserved Dscr attributes. These names are forbidden for fields
   Dscr_Num : constant String := "Dscr_Num";
   -- When an identifier is redefined, get line of previous definition
-  Prev_Line_No : Natural := 0;
-  function Prev_Name_Line return Natural is (Prev_Line_No);
+  Prev_Line_No : Long_Longs.Llu_Natural := 0;
+  function Prev_Name_Line return Long_Longs.Llu_Natural is (Prev_Line_No);
 
 
   procedure Check_Identifier (Name : in String) is
@@ -32,7 +32,7 @@ package body Xref is
   -- The descriptor names
   type Dscr_Rec is record
     Name : Asu_Us;
-    Line_No : Natural := 0;
+    Line_No : Long_Longs.Llu_Natural := 0;
   end record;
   type Dscr_Array is array (Afpx_Typ.Descriptor_Range) of Dscr_Rec;
   Dscrs : Dscr_Array;
@@ -41,7 +41,7 @@ package body Xref is
     Dscr : Afpx_Typ.Descriptor_Range;
     Num  : Afpx_Typ.Absolute_Field_Range;
     Name : Asu_Us;
-    Line_No : Natural;
+    Line_No : Long_Longs.Llu_Natural;
   end record;
   package Field_List_Mng is new Dynamic_List (Field_Cell);
   package Field_Dyn_List_Mng renames Field_List_Mng.Dyn_List;
@@ -49,7 +49,7 @@ package body Xref is
 
   procedure Set_Dscr_Name (Dscr : in Afpx_Typ.Descriptor_Range;
                            Name : in Asu_Us;
-                           Line : in Natural) is
+                           Line : in Long_Longs.Llu_Natural) is
     use type Afpx_Typ.Descriptor_Range, Asu_Us;
   begin
     Check_Identifier (Name.Image);
@@ -75,7 +75,7 @@ package body Xref is
   procedure Set_Field_Name (Dscr  : in Afpx_Typ.Descriptor_Range;
                             Field : in Afpx_Typ.Field_Range;
                             Name  : in Asu_Us;
-                            Line  : in Natural) is
+                            Line  : in Long_Longs.Llu_Natural) is
     Cell : Field_Cell;
     Dummy : Boolean;
   begin

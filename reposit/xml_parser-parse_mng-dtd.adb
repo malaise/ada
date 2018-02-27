@@ -7,7 +7,13 @@ package body Dtd is
   function Is_Sep (C : Character) return Boolean is (C = Info_Sep);
 
   -- Image of line_no without leading space
-  function Line_Image (I : Integer) return String renames Images.Integer_Image;
+  function Line_Image (I : Line_Range) return String
+           renames Images.Llunat_Image;
+
+  -- Image of an int
+  function Int_Image (I : Integer) return String renames Images.Integer_Image;
+
+
 
   -- Init (clear) Dtd data
   procedure Init (Adtd : in out Dtd_Type) is
@@ -162,7 +168,7 @@ package body Dtd is
         C := Str(Index - 1);
         if C /= '(' and then C /= '|' and then C /= ',' then
           Debug ("Dtd missing seperator in >" & Res.Image
-               & "< at index " & Line_Image (Index));
+               & "< at index " & Int_Image (Index));
           Util.Error (Ctx.Flow, "Invalid children definition");
         end if;
       end loop;
@@ -1344,10 +1350,14 @@ package body Dtd is
   type Elt_Ref_Type is record
     Father, Child : As.U.Asu_Us;
     Flow_Kind : Flow_Kind_List;
-    Line : Natural;
+    Line : Line_Range;
   end record;
-  package Us_Pool_Manager is new Unlimited_Pool (Elt_Ref_Type, Lifo => False);
-  package Us_Pool_Mng renames Us_Pool_Manager.Upool;
+  procedure Set (To : out Elt_Ref_Type; Val : in Elt_Ref_Type) is
+  begin
+    To := Val;
+  end Set;
+  package Us_Pool_Mng is new Long_Long_Limited_Pool (
+    Data_Type => Elt_Ref_Type, Lifo => False, Set => Set);
   procedure Check_Warnings (Ctx  : in out Ctx_Type;
                             Adtd : in out Dtd_Type) is
     Info : Info_Rec;
@@ -1459,7 +1469,7 @@ package body Dtd is
   procedure Check_Children (Ctx  : in out Ctx_Type;
                             Adtd : in out Dtd_Type;
                             Name : in As.U.Asu_Us;
-                            Line_No : in Natural;
+                            Line_No : in Line_Range;
                             Empty_Info : in Empty_Info_List;
                             Children : in Children_Desc) is
     -- Element info
@@ -1608,7 +1618,7 @@ package body Dtd is
   procedure Check_Attributes (Ctx        : in out Ctx_Type;
                               Adtd       : in out Dtd_Type;
                               Name       : in As.U.Asu_Us;
-                              Line_No    : in Natural;
+                              Line_No    : in Line_Range;
                               Attributes : in As.U.Asu_Us) is
     -- Atl, Att and Id info blocs
     Info, Attinfo : Info_Rec;

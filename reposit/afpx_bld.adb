@@ -2,7 +2,7 @@ with Ada.Exceptions, Ada.Direct_Io;
 with As.U, Aski,
      Con_Io, Normal, Argument,
      Mixed_Str, Basic_Proc, Xml_Parser,
-     Ada_Words, Parser, Str_Util, Arbitrary, Computer, Images,
+     Ada_Words, Parser, Str_Util, Arbitrary, Computer, Images, Long_Longs,
      Language;
 with Afpx_Typ;
 -- Read Afpx.xml, check it
@@ -44,13 +44,13 @@ procedure Afpx_Bld is
     procedure Set_Package_Name (Name : in Asu_Us);
     procedure Set_Dscr_Name (Dscr : in Afpx_Typ.Descriptor_Range;
                              Name : in Asu_Us;
-                             Line : in Natural);
+                             Line : in Long_Longs.Llu_Natural);
     procedure Set_Field_Name (Dscr  : in Afpx_Typ.Descriptor_Range;
                               Field : in Afpx_Typ.Field_Range;
                               Name  : in Asu_Us;
-                              Line  : in Natural);
+                              Line  : in Long_Longs.Llu_Natural);
     -- When an identifier is redefined, get line of previous definition
-    function Prev_Name_Line return Natural;
+    function Prev_Name_Line return Long_Longs.Llu_Natural;
 
     -- Generate the file if the package name has been set
     procedure Generate;
@@ -140,7 +140,7 @@ procedure Afpx_Bld is
   procedure File_Error (Node : in Xp.Node_Type; Msg : in String) is
   begin
     Basic_Proc.Put_Line_Error ("Error in file " & List_File_Name.Image
-       & " at line " & Images.Integer_Image (Ctx.Get_Line_No (Node))
+       & " at line " & Images.Llunat_Image (Ctx.Get_Line_No (Node))
        & ": " & Msg & ".");
     raise File_Syntax_Error;
   end File_Error;
@@ -728,7 +728,7 @@ procedure Afpx_Bld is
         when Xref.Identifier_Redefined =>
           File_Error (Node,
             "A field with this name already exists in the descriptor at line "
-          & Images.Integer_Image (Xref.Prev_Name_Line));
+          & Images.Llunat_Image (Xref.Prev_Name_Line));
       end;
     end if;
 
@@ -963,7 +963,7 @@ procedure Afpx_Bld is
       when Xref.Identifier_Redefined =>
         File_Error (Node,
             "A descriptor with this name already exists at line "
-          & Images.Integer_Image (Xref.Prev_Name_Line));
+          & Images.Llunat_Image (Xref.Prev_Name_Line));
     end;
 
     -- Init dscr and fields array. No list at init

@@ -4,7 +4,7 @@ with Trace.Loggers, Exception_Messenger, Directory, Str_Util,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "0";
   function Version return String is
     ("V" & Major_Version & "." & Minor_Version);
 
@@ -24,6 +24,16 @@ package body Xml_Parser is
   begin
     return Current.Name = Criteria.Name;
   end "=";
+
+  -- Set flows
+  procedure Set (To : out Flow_Info_Type; Val : in Flow_Info_Type) is
+  begin
+    To := Val;
+  end Set;
+  procedure Set (To : out File_Access; Val : in File_Access) is
+  begin
+    To := Val;
+  end Set;
 
   -- Trace a debug message
   Logger : Trace.Loggers.Logger;
@@ -71,7 +81,8 @@ package body Xml_Parser is
 
     -- Add an element, move to it
     procedure Add_Element (Elements : in out My_Tree.Tree_Type;
-                           Name : in As.U.Asu_Us; Line : in Natural);
+                           Name : in As.U.Asu_Us;
+                           Line : in Line_Range);
     -- Set namespace of current element
     procedure Set_Namespace (Elements : in out My_Tree.Tree_Type;
                              Namespace : in As.U.Asu_Us);
@@ -93,7 +104,7 @@ package body Xml_Parser is
     -- Add an attribute to current element, remain on current element
     procedure Add_Attribute (Elements : in out My_Tree.Tree_Type;
                              Name, Value : in As.U.Asu_Us;
-                             Line : in Natural);
+                             Line : in Line_Range);
     -- Check if an attribute exists for current element
     function Attribute_Exists (Elements : in out My_Tree.Tree_Type;
                                Name : in As.U.Asu_Us) return Boolean;
@@ -104,10 +115,10 @@ package body Xml_Parser is
     procedure Init_Prologue (Prologue : in out My_Tree.Tree_Type);
     -- Set xml directive, add a xml attribute
     procedure Set_Xml (Prologue : in out My_Tree.Tree_Type;
-                       Line : in Natural);
+                       Line : in Line_Range);
     procedure Add_Xml_Attribute (Prologue : in out My_Tree.Tree_Type;
                                  Name, Value : in As.U.Asu_Us;
-                                 Line : in Natural);
+                                 Line : in Line_Range);
     -- Sets or overwrites a xml attribute at a given index
     procedure Set_Xml_Attribute (Prologue : in out My_Tree.Tree_Type;
                   Name : in As.U.Asu_Us; Index : in Positive;
@@ -124,17 +135,20 @@ package body Xml_Parser is
                                    return Natural;
     -- Add a processing instruction
     procedure Add_Pi (Tree : in out My_Tree.Tree_Type;
-                      Name, Text : in As.U.Asu_Us; Line : in Natural);
+                      Name, Text : in As.U.Asu_Us;
+                      Line : in Line_Range);
 
     -- Add a text to current cell (of elements or prologue)
     -- remain on current cell
     procedure Add_Text (Tree : in out My_Tree.Tree_Type;
-                        Text : in As.U.Asu_Us; Line : in Natural);
+                        Text : in As.U.Asu_Us;
+                        Line : in Line_Range);
 
     -- Add a comment to current cell (of elements or prologue)
     -- remain on current cell
     procedure Add_Comment (Tree : in out My_Tree.Tree_Type;
-                           Comment : in As.U.Asu_Us; Line : in Natural);
+                           Comment : in As.U.Asu_Us;
+                           Line : in Line_Range);
 
     -- Build the Node_Update associated to current Node
     -- The Stage of the Update is not modified
@@ -815,7 +829,7 @@ package body Xml_Parser is
 
   -- Line number of start of declaration of node
   function Get_Line_No (Ctx  : Ctx_Type;
-                        Node : Node_Type) return Natural is
+                        Node : Node_Type) return Line_Range is
     Cell : constant My_Tree_Cell := Get_Cell (Get_Tree (Ctx, Node), Node);
   begin
     return Cell.Line_No;
