@@ -46,7 +46,7 @@ package body Arbitrary.Prime_List is
 
   -- S is last Sqrt found, also store S+1 and N=(S+1)*(S+1)
   S_Memory : Positive_Number := One;
-  Sp1_Memory : Positive_Number := S_Memory + One;
+  Sp1_Memory : Positive_Number := S_Memory.Incr;
   N_Memory : Positive_Number := Sp1_Memory * Sp1_Memory;
   function Sqrt (N : Positive_Number) return Positive_Number is
   begin
@@ -54,7 +54,7 @@ package body Arbitrary.Prime_List is
     -- Otherwise it is S_Mem + 1 and update S, S+1 and N
     if N >= N_Memory then
       S_Memory := Sp1_Memory;
-      Sp1_Memory := Sp1_Memory + One;
+      Sp1_Memory.Incr;
       N_Memory := Sp1_Memory * Sp1_Memory;
     end if;
     return S_Memory;
@@ -80,7 +80,7 @@ package body Arbitrary.Prime_List is
       -- Optim: if Res=2, then Next=Res+1 (3) and is prime
       -- otherwise Res is odd and next is odd, so at least Res+2
       if The_List.Get_Position = 1 then
-        Res := Res + One;
+        Res.Incr;
         Append (Res);
         return Res;
       end if;

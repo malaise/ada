@@ -52,8 +52,11 @@ package body Arbitrary is
     -- Normalize a number: no leading 0 except +0
     procedure Normalize (A : in out Number);
 
-    -- Is a number positive?
+    -- Is a number positive? False for 0
     function Check_Is_Pos (A : Number) return Boolean;
+
+    -- Is a number positive or 0
+    function Check_Is_Nat (A : Number) return Boolean;
 
     -- Char -> Digit
     function To_Digit (C : C_Digit) return I_Digit;
@@ -69,6 +72,10 @@ package body Arbitrary is
     function Add_No_Sign (A, B : As.U.Asu_Us) return As.U.Asu_Us;
     -- Both must have no sign and B <= A
     function Sub_No_Sign (A, B : As.U.Asu_Us) return As.U.Asu_Us;
+    -- N must have no sign
+    function Incr_No_Sign (N : As.U.Asu_Us) return As.U.Asu_Us;
+    -- N must have no sign
+    function Decr_No_Sign (N : As.U.Asu_Us) return As.U.Asu_Us;
     -- Both must have no sign
     function Mul_No_Sign (A, B : As.U.Asu_Us) return As.U.Asu_Us;
     -- Both must have no sign
@@ -99,6 +106,16 @@ package body Arbitrary is
                 else "-") & D.Image;
     end Normalize;
 
+    -- Is N positive or null
+    function Check_Is_Nat (A : Number) return Boolean is
+      B : Number;
+    begin
+      Syntax.Check(A);
+      B := A;
+      Normalize (B);
+      return As.U.Asu_Us(B).Element (1) = '+';
+    end Check_Is_Nat;
+
     -- Is N positive
     function Check_Is_Pos (A : Number) return Boolean is
       B : Number;
@@ -106,7 +123,8 @@ package body Arbitrary is
       Syntax.Check(A);
       B := A;
       Normalize (B);
-      return As.U.Asu_Us(B).Element (1) = '+';
+      return As.U.Asu_Us(B).Element (1) = '+'
+             and then As.U.Asu_Us(B).Element (2) /= '0';
     end Check_Is_Pos;
 
     -- Number <-> As.U.Asu_Us : add / remove leading sign
@@ -256,6 +274,58 @@ package body Arbitrary is
       Trim (R);
       return R;
     end Sub_No_Sign;
+
+    function Incr_No_Sign (N : As.U.Asu_Us) return As.U.Asu_Us is
+      L : constant Natural := N.Length;
+      R : As.U.Asu_Us;
+      Ca, Cb, Cr : Character;
+      C : Boolean := False;
+      use type As.U.Asu_Us;
+    begin
+      -- Allocate string of length
+      R := L * ' ';
+      -- Add digits one by one
+      Cb := '1';
+      for I in 1 .. L loop
+        Ca := N.Element (L - I + 1);
+        Add_Char (Ca, Cb, C, Cr);
+        R.Replace_Element (L - I + 1, Cr);
+        Cb := '0';
+      end loop;
+      -- Add last carry and return
+      if C then
+        return '1' & R;
+      else
+        return R;
+      end if;
+    end Incr_No_Sign;
+
+    -- N not 0
+    function Decr_No_Sign (N : As.U.Asu_Us) return As.U.Asu_Us is
+      L : constant Natural := N.Length;
+      R : As.U.Asu_Us;
+      Ca, Cb, Cr : Character;
+      C : Boolean := False;
+      use type As.U.Asu_Us;
+    begin
+      -- Allocate string of largest length
+      R := L * ' ';
+      -- Sub digits one by one
+      Cb := '1';
+      for I in 1 .. L loop
+        Ca := N.Element (L - I + 1);
+        Sub_Char (Ca, Cb, C, Cr);
+        R.Replace_Element (L - I + 1, Cr);
+        Cb := '0';
+      end loop;
+      -- There should be no carry at the end (cause N > 0)
+      if C then
+        raise Constraint_Error;
+      end if;
+      -- Remove heading '0's
+      Trim (R);
+      return R;
+    end Decr_No_Sign;
 
     function Mul_No_Sign (A, B : As.U.Asu_Us) return As.U.Asu_Us is
       La : constant Natural := A.Length;
@@ -456,7 +526,8 @@ package body Arbitrary is
   overriding function Length (V : Number) return Natural is
     (As.U.Asu_Us(V).Length);
 
-  -- Is a Number positive (True for 0)
+  -- Is a Number natural, positive
+  function Is_Natural  (V : Number) return Boolean is (Basic.Check_Is_Nat (V));
   function Is_Positive (V : Number) return Boolean is (Basic.Check_Is_Pos (V));
 
   -- Absolute and Neg
@@ -492,8 +563,8 @@ package body Arbitrary is
   end "=";
 
   overriding function "<" (A, B : Number) return Boolean is
-    Pa : constant Boolean := Basic.Check_Is_Pos (A);
-    Pb : constant Boolean := Basic.Check_Is_Pos (B);
+    Pa : constant Boolean := Basic.Check_Is_Nat (A);
+    Pb : constant Boolean := Basic.Check_Is_Nat (B);
     use type As.U.Asu_Us;
   begin
     if Pa /= Pb then
@@ -513,8 +584,8 @@ package body Arbitrary is
   end "<";
 
   overriding function "<=" (A, B : Number) return Boolean is
-    Pa : constant Boolean := Basic.Check_Is_Pos (A);
-    Pb : constant Boolean := Basic.Check_Is_Pos (B);
+    Pa : constant Boolean := Basic.Check_Is_Nat (A);
+    Pb : constant Boolean := Basic.Check_Is_Nat (B);
     use type As.U.Asu_Us;
   begin
     if Pa /= Pb then
@@ -534,8 +605,8 @@ package body Arbitrary is
   end "<=";
 
   overriding function ">" (A, B : Number) return Boolean is
-    Pa : constant Boolean := Basic.Check_Is_Pos (A);
-    Pb : constant Boolean := Basic.Check_Is_Pos (B);
+    Pa : constant Boolean := Basic.Check_Is_Nat (A);
+    Pb : constant Boolean := Basic.Check_Is_Nat (B);
     use type As.U.Asu_Us;
   begin
     if Pa /= Pb then
@@ -555,8 +626,8 @@ package body Arbitrary is
   end ">";
 
   overriding function ">=" (A, B : Number) return Boolean is
-    Pa : constant Boolean := Basic.Check_Is_Pos (A);
-    Pb : constant Boolean := Basic.Check_Is_Pos (B);
+    Pa : constant Boolean := Basic.Check_Is_Nat (A);
+    Pb : constant Boolean := Basic.Check_Is_Nat (B);
     use type As.U.Asu_Us;
   begin
     if Pa /= Pb then
@@ -575,10 +646,58 @@ package body Arbitrary is
     end if;
   end ">=";
 
+  -- Incrementation and decrementation
+  function Incr (A : Number) return Number is
+    P : constant Boolean := Basic.Check_Is_Nat (A);
+    D : constant As.U.Asu_Us := Basic.Extract (A);
+    C : As.U.Asu_Us;
+    use type As.U.Asu_Us;
+  begin
+    if P then
+        -- +xx -> +yy
+      C := Basic.Incr_No_Sign (D);
+    else
+      -- -xx -> -yy or +0
+      C := Basic.Decr_No_Sign (D);
+    end if;
+    return Basic.Make ((if P then '+' else '-') & C);
+  end Incr;
+
+  function Decr (A : Number) return Number is
+    Nat : Boolean := Basic.Check_Is_Nat (A);
+    D : constant As.U.Asu_Us := Basic.Extract (A);
+    C : As.U.Asu_Us;
+    use type As.U.Asu_Us;
+  begin
+    if Nat then
+      if D.Image = "0" then
+        -- +0 -> -1
+        C := As.U.Tus ("1");
+        Nat := False;
+      else
+        -- +xx -> +yy
+        C := Basic.Decr_No_Sign (D);
+      end if;
+    else
+      -- -xx -> -yy
+      C := Basic.Incr_No_Sign (D);
+    end if;
+    return Basic.Make ((if Nat then '+' else '-') & C);
+  end Decr;
+
+  procedure Incr (N : in out Number) is
+  begin
+    N := Incr (N);
+  end Incr;
+  procedure Decr (N : in out Number) is
+  begin
+    N := Decr (N);
+  end Decr;
+
   -- Addition
   function "+" (A, B : Number) return Number is
-    Pa : constant Boolean := Basic.Check_Is_Pos (A);
-    Pb : constant Boolean := Basic.Check_Is_Pos (B);
+    Pa : constant Boolean := Basic.Check_Is_Nat (A);
+    Pb : constant Boolean := Basic.Check_Is_Nat (B);
     Da : constant As.U.Asu_Us := Basic.Extract (A);
     Db : constant As.U.Asu_Us := Basic.Extract (B);
     Pos : Boolean;
@@ -610,8 +729,8 @@ package body Arbitrary is
   function "-" (A, B : Number) return Number is (A + (-B));
 
   function "*" (A, B : Number) return Number is
-    Pa : constant Boolean := Basic.Check_Is_Pos (A);
-    Pb : constant Boolean := Basic.Check_Is_Pos (B);
+    Pa : constant Boolean := Basic.Check_Is_Nat (A);
+    Pb : constant Boolean := Basic.Check_Is_Nat (B);
     Da : constant As.U.Asu_Us := Basic.Extract (A);
     Db : constant As.U.Asu_Us := Basic.Extract (B);
     C : As.U.Asu_Us;
@@ -637,8 +756,8 @@ package body Arbitrary is
   end "rem";
 
   function "mod" (A, B : Number) return Number is
-    Pa : constant Boolean := Basic.Check_Is_Pos (A);
-    Pb : constant Boolean := Basic.Check_Is_Pos (B);
+    Pa : constant Boolean := Basic.Check_Is_Nat (A);
+    Pb : constant Boolean := Basic.Check_Is_Nat (B);
     R : Number;
   begin
     R := A rem B;
@@ -650,8 +769,8 @@ package body Arbitrary is
   end "mod";
 
   procedure Div (A, B : in Number; Q, R : out Number) is
-    Pa : constant Boolean := Basic.Check_Is_Pos (A);
-    Pb : constant Boolean := Basic.Check_Is_Pos (B);
+    Pa : constant Boolean := Basic.Check_Is_Nat (A);
+    Pb : constant Boolean := Basic.Check_Is_Nat (B);
     Da : constant As.U.Asu_Us := Basic.Extract (A);
     Db : constant As.U.Asu_Us := Basic.Extract (B);
     Tb : Number;
@@ -669,8 +788,8 @@ package body Arbitrary is
   end Div;
 
   function Roundiv (A, B : Number) return Number is
-    Pa : constant Boolean := Basic.Check_Is_Pos (A);
-    Pb : constant Boolean := Basic.Check_Is_Pos (B);
+    Pa : constant Boolean := Basic.Check_Is_Nat (A);
+    Pb : constant Boolean := Basic.Check_Is_Nat (B);
     Q, R : Number;
     Abs_R : Number;
   begin
@@ -680,14 +799,14 @@ package body Arbitrary is
       -- R >= B/2 => Q++ or Q--
       if Q = Zero then
         if Pa = Pb then
-          return Q + One;
+          return Incr (Q);
         else
-          return Q - One;
+          return Decr (Q);
         end if;
-      elsif Basic.Check_Is_Pos (Q) then
-        return Q + One;
+      elsif Basic.Check_Is_Nat (Q) then
+        return Incr (Q);
       else
-        return Q - One;
+        return Decr (Q);
       end if;
     else
       return Q;
@@ -695,7 +814,7 @@ package body Arbitrary is
   end Roundiv;
 
   function "**" (A, B : Number) return Number is
-    Pb : constant Boolean := Basic.Check_Is_Pos (B);
+    Pb : constant Boolean := Basic.Check_Is_Nat (B);
     R : Number := One;
     I : Number := B;
   begin
@@ -795,7 +914,7 @@ package body Arbitrary is
     use type As.U.Asu_Us;
   begin
     -- A must be positive
-    if not Basic.Check_Is_Pos (A) then
+    if not Basic.Check_Is_Nat (A) then
       raise Constraint_Error;
     end if;
     -- Init: first digit of solution

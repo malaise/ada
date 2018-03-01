@@ -202,11 +202,11 @@ package body Arbitrary.Limited_List is
         when Next =>
           New_Cell.Next := List.Current.Next;
           New_Cell.Prev := List.Current;
-          List.Pos_First := List.Pos_First + One;
+          List.Pos_First.Incr;
         when Prev =>
           New_Cell.Next := List.Current;
           New_Cell.Prev := List.Current.Prev;
-          List.Pos_Last := List.Pos_Last + One;
+          List.Pos_Last.Incr;
       end case;
     end if;
     -- Update neibours
@@ -265,10 +265,10 @@ package body Arbitrary.Limited_List is
     case Move is
       when Next =>
         List.Current := List.Current.Next;
-        List.Pos_Last := List.Pos_Last - One;
+        List.Pos_Last.Decr;
       when Prev =>
         List.Current := List.Current.Prev;
-        List.Pos_First := List.Pos_First - One;
+        List.Pos_First.Decr;
     end case;
     -- Insert in free list or deallocate
     if Deallocate then
@@ -375,7 +375,7 @@ package body Arbitrary.Limited_List is
     New_Pos                     : Link;
     New_Pos_First, New_Pos_Last : Arb_Natural;
   begin
-    if not Is_Positive (Number) then
+    if not Is_Natural (Number) then
       raise Constraint_Error;
     end if;
     Check_Cb (List);
@@ -394,11 +394,11 @@ package body Arbitrary.Limited_List is
             New_Pos_Last := List_Length(List);
           elsif Number < List.Pos_First then
             -- Optim: Better move backwards from current
-            Move_To (List, Prev, List.Pos_First - (Number + One), True);
+            Move_To (List, Prev, List.Pos_First - Number.Incr, True);
             return;
           else
             -- Optim: Better move forward from current
-            Move_To (List, Next, (Number + One) - List.Pos_First, True);
+            Move_To (List, Next, Number.Incr - List.Pos_First, True);
             return;
           end if;
         when Prev =>
@@ -408,11 +408,11 @@ package body Arbitrary.Limited_List is
             New_Pos_Last := One;
           elsif Number < List.Pos_Last then
             -- Optim: Better move forward from current
-            Move_To (List, Next, List.Pos_Last - (Number + One), True);
+            Move_To (List, Next, List.Pos_Last - Number.Incr, True);
             return;
           else
             -- Optim: Better move backwards from current
-            Move_To (List, Prev, (Number + One) - List.Pos_First, True);
+            Move_To (List, Prev, Number.Incr - List.Pos_First, True);
             return;
           end if;
       end case;
@@ -426,17 +426,17 @@ package body Arbitrary.Limited_List is
           while I <= Number loop
             Check_In (New_Pos.Next);
             New_Pos := New_Pos.Next;
-            New_Pos_First := New_Pos_First + One;
-            New_Pos_Last := New_Pos_Last - One;
-            I := I + One;
+            New_Pos_First.Incr;
+            New_Pos_Last.Decr;
+            I.Incr;
           end loop;
         when Prev =>
           while I <= Number loop
             Check_In (New_Pos.Prev);
             New_Pos := New_Pos.Prev;
-            New_Pos_First := New_Pos_First - One;
-            New_Pos_Last := New_Pos_Last + One;
-            I := I + One;
+            New_Pos_First.Decr;
+            New_Pos_Last.Incr;
+            I.Incr;
           end loop;
       end case;
     end;
@@ -452,22 +452,22 @@ package body Arbitrary.Limited_List is
                      Position : in Arb_Positive;
                      Where    : in Direction := Next) is
   begin
-    if not Is_Positive (Position) or else Position = Zero then
+    if not Is_Positive (Position) then
       raise Constraint_Error;
     end if;
     Check(List);
     -- Optim when next/prev of current: Move relative
-    if      (Where = Next and then Position = List.Pos_First + One)
-    or else (Where = Prev and then Position = List.Pos_Last  - One) then
+    if      (Where = Next and then Position = List.Pos_First.Incr)
+    or else (Where = Prev and then Position = List.Pos_Last.Decr) then
       -- Move 1 step forward
       Move_To (List, Next, One, True);
-    elsif   (Where = Next and then Position = List.Pos_First - One)
-    or else (Where = Prev and then Position = List.Pos_Last  + One) then
+    elsif   (Where = Next and then Position = List.Pos_First.Decr)
+    or else (Where = Prev and then Position = List.Pos_Last.Incr) then
       -- Move 1 step backwards
       Move_To (List, Prev, One, True);
     else
       -- Move absolute
-      Move_To (List, Where, Position - One, False);
+      Move_To (List, Where, Position.Decr, False);
     end if;
   end Move_At;
 
@@ -609,7 +609,7 @@ package body Arbitrary.Limited_List is
                      := Get_Position (List);
     Link1, Link2 : Link;
   begin
-    if not Is_Positive (Number1) or else not Is_Positive (Number2) then
+    if not Is_Natural (Number1) or else not Is_Natural (Number2) then
       raise Constraint_Error;
     end if;
     -- Move to elements and store links to them
@@ -634,7 +634,7 @@ package body Arbitrary.Limited_List is
 
   -- Returns the number of elements in the list (0 if empty)
   function List_Length (List : List_Type) return Arb_Natural is
-    (if Is_Empty (List) then Zero else List.Pos_First + List.Pos_Last - One);
+    (if Is_Empty (List) then Zero else List.Pos_First + List.Pos_Last.Decr);
 
 
   -- Get position from first or last item in list
@@ -746,7 +746,7 @@ package body Arbitrary.Limited_List is
         end if;
         -- Next cell
         New_Pos := New_Pos.Next;
-        New_Pos_First := New_Pos_First + One;
+        New_Pos_First.Incr;
       end loop;
     end if;
     if Found then
@@ -852,8 +852,8 @@ package body Arbitrary.Limited_List is
         return False;
       end if;
       New_Pos := New_Pos.Next;
-      New_Pos_First := New_Pos_First + One;
-      New_Pos_Last := New_Pos_Last - One;
+      New_Pos_First.Incr;
+      New_Pos_Last.Decr;
       return True;
     end Next_Pos;
 
@@ -863,13 +863,13 @@ package body Arbitrary.Limited_List is
         return False;
       end if;
       New_Pos := New_Pos.Prev;
-      New_Pos_First := New_Pos_First - One;
-      New_Pos_Last := New_Pos_Last + One;
+      New_Pos_First.Decr;
+      New_Pos_Last.Incr;
       return True;
     end Prev_Pos;
 
   begin
-    if not Is_Positive (Occurence) or else Occurence = Zero then
+    if not Is_Positive (Occurence) then
       raise Constraint_Error;
     end if;
     Check_Cb (List);
@@ -928,7 +928,7 @@ package body Arbitrary.Limited_List is
               exit when Found;
               exit when not Next_Pos;
             end loop;
-            I := I + One;
+            I.Incr;
           end loop;
         when Prev =>
           while I <= Occurence loop
@@ -941,7 +941,7 @@ package body Arbitrary.Limited_List is
               exit when Found;
               exit when not Prev_Pos;
             end loop;
-            I := I + One;
+            I.Incr;
           end loop;
       end case;
     end;
@@ -1108,15 +1108,15 @@ package body Arbitrary.Limited_List is
           -- Exchange and go to next elements if not both in frontier
           if I_Left < I_Right then
             Permute (List, L_Left, L_Right);
-            I_Left  := I_Left  + One;
-            I_Right := I_Right - One;
+            I_Left.Incr;
+            I_Right.Decr;
           elsif I_Left = I_Right then
             -- Go to next elements if not crossed
             if I_Left /= Right then
-              I_Left  := I_Left  + One;
+              I_Left.Incr;
             end if;
             if I_Right /= Left then
-              I_Right := I_Right - One;
+              I_Right.Decr;
             end if;
           end if;
 

@@ -95,6 +95,8 @@ begin
     Basic_Proc.Put_Line_Output ("A is        " & A.Image);
     Basic_Proc.Put_Line_Output ("abs A is    " & Arbitrary.Image(abs A));
     Basic_Proc.Put_Line_Output ("-A is       " & Arbitrary.Image(-A));
+    Basic_Proc.Put_Line_Output ("Incr (A) is " & Arbitrary.Image(A.Incr));
+    Basic_Proc.Put_Line_Output ("Decr (A) is " & Arbitrary.Image(A.Decr));
     Basic_Proc.Put_Line_Output ("A positive  "
                               & Image(Arbitrary.Is_Positive(A)));
     begin
@@ -122,7 +124,10 @@ begin
       Basic_Proc.Put_Line_Output ("B is        " & Arbitrary.Image(B));
       Basic_Proc.Put_Line_Output ("abs B is    " & Arbitrary.Image(abs B));
       Basic_Proc.Put_Line_Output ("-B is       " & Arbitrary.Image(-B));
-      Basic_Proc.Put_Line_Output ("B positive  " & Image(Arbitrary.Is_Positive(A)));
+      Basic_Proc.Put_Line_Output ("Incr (B) is " & Arbitrary.Image(B.Incr));
+      Basic_Proc.Put_Line_Output ("Decr (B) is " & Arbitrary.Image(B.Decr));
+      Basic_Proc.Put_Line_Output ("B positive  "
+                                & Image(Arbitrary.Is_Positive(A)));
       begin
         Arbitrary.Sqrt(B, C, D);
       exception
@@ -248,6 +253,8 @@ begin
     -- Unary operators
     Check (Nul, "abs", Na, abs Na, abs Ia);
     Check (Nul, "-", Na, -Na, -Ia);
+    Check (Nul, "Incr",  Na, Na.Incr,  Ia + 1);
+    Check (Nul, "Decr",  Na, Na.Decr,  Ia - 1);
 
     -- Comparisons
     Check (Na, "=",  Nb, Na = Nb,  Ia = Ib);

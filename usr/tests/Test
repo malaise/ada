@@ -187,6 +187,8 @@ if `match $arg t_arbitrary` ; then
 A is        +21
 abs A is    +21
 -A is       -21
+Incr (A) is +22
+Decr (A) is +20
 A positive  True
 Sqrt(A)     +4
 Digits: 2 and 1
@@ -199,6 +201,8 @@ EOF
 A is        +3
 abs A is    +3
 -A is       -3
+Incr (A) is +4
+Decr (A) is +2
 A positive  True
 Sqrt(A)     +1
 Digits: 3
@@ -206,6 +210,8 @@ Digits: 3
 B is        +7
 abs B is    +7
 -B is       -7
+Incr (B) is +8
+Decr (B) is +6
 B positive  True
 Sqrt(B)     +2 remaining +3
 Prime factors: +7

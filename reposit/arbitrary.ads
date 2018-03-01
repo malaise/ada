@@ -25,8 +25,11 @@ package Arbitrary is
   function Image (V : Number) return String;
   function Length (V : Number) return Natural;
 
-  -- Is a Number positive (True for 0)
+  -- Is a Number positive or 0
+  function Is_Natural  (V : Number) return Boolean;
+  -- Is a Number positive
   function Is_Positive (V : Number) return Boolean;
+
 
   -- Basic unitary operations
   function "abs" (A : Number) return Number;
@@ -40,6 +43,10 @@ package Arbitrary is
   function ">=" (A, B : Number) return Boolean;
 
   -- Basic operations
+  function Incr (A : Number) return Number;
+  function Decr (A : Number) return Number;
+  procedure Incr (N : in out Number);
+  procedure Decr (N : in out Number);
   function "+" (A, B : Number) return Number;
   function "-" (A, B : Number) return Number;
   function "*" (A, B : Number) return Number;
