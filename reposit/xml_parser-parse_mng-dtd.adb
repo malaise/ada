@@ -14,7 +14,6 @@ package body Dtd is
   function Int_Image (I : Integer) return String renames Images.Integer_Image;
 
 
-
   -- Init (clear) Dtd data
   procedure Init (Adtd : in out Dtd_Type) is
   begin
