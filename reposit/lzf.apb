@@ -24,7 +24,7 @@
 --    match)
 --  - If no match, then append the current byte as literal.
 --  - The first byte of a literal run is a control byte than denotes a literal
---    run (as opposed to a corss reference) and indicates the length of the run,
+--    run (as opposed to a cross reference) and indicates the length of the run,
 --    so:
 --  - When appending the first literal of a run (first byte of the input or
 --    just after a cross reference) skip a byte for this control byte
