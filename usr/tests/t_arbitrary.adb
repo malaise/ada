@@ -79,6 +79,7 @@ procedure T_Arbitrary is
 
   I, Nb_Loops : Natural;
   Ok : Boolean;
+
 begin
 
   if Argument.Get_Nbre_Arg < 1
@@ -143,7 +144,7 @@ begin
           L.Read (C, Moved => Moved);
           if Moved then
             Basic_Proc.Put_Output (" ");
-          elsif L.List_Length > 1 then
+          elsif L.List_Length > Arbitrary.One then
             Basic_Proc.Put_Output (" and " );
           end if;
           Basic_Proc.Put_Output (Arbitrary.Image (C));

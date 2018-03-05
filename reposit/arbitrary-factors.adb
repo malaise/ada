@@ -4,6 +4,11 @@ package body Arbitrary.Factors is
 
   Iterator : Arbitrary.Prime_List.Iterator;
 
+  procedure Set (To : out Positive_Number; Val : in Positive_Number) is
+  begin
+    To := Val;
+  end Set;
+
   -- Search a number
   function Search is new Nb_List_Mng.Search("=");
 

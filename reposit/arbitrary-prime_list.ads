@@ -13,7 +13,7 @@ package Arbitrary.Prime_List is
 private
 
   type Iterator is tagged record
-     Position : Long_Longs.Llu_Positive := Long_Longs.Llu_Positive'First;
+     Position : Positive_Number := One;
   end record;
 
 end Arbitrary.Prime_List;
