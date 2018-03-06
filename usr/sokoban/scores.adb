@@ -1,9 +1,9 @@
 with Ada.Calendar;
-with Argument, Basic_Proc, Sys_Calls, As.U, Num_Match, Normal, Images;
+with Argument, Basic_Proc, Sys_Calls, As.U, Match, Normal, Images;
 with Sok_Types, Sok_File;
 procedure Scores is
 
-  package Frame_Match is new Num_Match (Sok_Types.Frame_Range);
+  package Frame_Match is new Match.Num_Match (Sok_Types.Frame_Range);
 
   procedure Help is
   begin

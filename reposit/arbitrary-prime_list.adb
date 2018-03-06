@@ -32,7 +32,7 @@ package body Arbitrary.Prime_List is
     The_List.Insert (N);
   end Append;
 
-  Zero : constant Number := Arbitrary.Zero;
+  Zero  : constant Positive_Number := Arbitrary.Zero;
   One  : constant Positive_Number := Arbitrary.One;
 
   -- This optimisation is possible because we always get Sqrt of

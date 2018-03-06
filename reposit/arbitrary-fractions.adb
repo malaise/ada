@@ -9,7 +9,7 @@ package body Arbitrary.Fractions is
     -- Divide N1 by N2 as long as N3 /= N2 and shift
     loop
       N3 := N1 rem N2;
-      exit when N3 = Zero;
+      exit when N3.Is_Null;
       N1 := N2;
       N2 := N3;
     end loop;
@@ -21,10 +21,10 @@ package body Arbitrary.Fractions is
     H : Number;
   begin
     -- Sanity check and conventional Zero.
-    if F.Denominator = Zero then
+    if F.Denominator.Is_Null then
       raise Constraint_Error;
     end if;
-    if F.Numerator = Zero then
+    if F.Numerator.Is_Null then
       F := Zero;
       return;
     end if;
@@ -163,7 +163,7 @@ package body Arbitrary.Fractions is
 
   function Inverse (F : Fraction) return Fraction is
   begin
-    if F.Numerator >= Zero then
+    if F.Numerator.Is_Natural then
       return  (F.Denominator, F.Numerator);
     else
       -- Sign is always on numerator
@@ -177,7 +177,7 @@ package body Arbitrary.Fractions is
   function "**" (A : Fraction; B : Number) return Fraction is
     R : Fraction;
   begin
-    if B = Zero then
+    if B.Is_Null then
       return One;
     elsif B < Zero then
       return Inverse (A) ** (-B);

@@ -25,10 +25,15 @@ package Arbitrary is
   function Image (V : Number) return String;
   function Length (V : Number) return Natural;
 
+  -- Is a Number equal to 0
+  function Is_Null (V : Number) return Boolean;
   -- Is a Number positive or 0
   function Is_Natural  (V : Number) return Boolean;
   -- Is a Number positive
   function Is_Positive (V : Number) return Boolean;
+
+  -- Set N to 0
+  procedure Set_Null (N: out Number);
 
 
   -- Basic unitary operations

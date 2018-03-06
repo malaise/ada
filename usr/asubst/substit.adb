@@ -1,6 +1,6 @@
 with As.U.Utils;
 with Argument, Sys_Calls.File_Access, Text_Line, Temp_File, Reg_Exp,
-     Directory, Copy_File, Mixed_Str, Images, Basic_Proc, Long_Longs;
+     Directory, Copy_File, Mixed_Str, Images, Basic_Proc;
 with Search_Pattern, Replace_Pattern, Log;
 package body Substit is
 
@@ -36,8 +36,9 @@ package body Substit is
   Delimiter : As.U.Asu_Us;
 
   -- Current line number
-  Line_No : Long_Longs.Llu_Natural;
-  function Line_Image is new Images.Mod_Image (Long_Longs.Llu_Natural);
+  Line_No : Arbitrary.Number;
+  function Line_Image (A : Arbitrary.Number)
+           return String renames Images.Arbitrary_Image;
 
   -- Display error. If Give_Up then also cleanup and raise Substit_Error
   procedure Error (Msg : in String; Give_Up : in Boolean := True);
@@ -275,7 +276,7 @@ package body Substit is
     Nb_Pattern := Search_Pattern.Number;
     Is_Iterative := Search_Pattern.Iterative;
     -- Init number of line
-    Line_No := 0;
+    Line_No.Set_Null;
   end Open;
 
   -- Reports an error
@@ -330,7 +331,7 @@ package body Substit is
         -- Insert line (without Lf)
         Line_List.Insert (As.U.Tus (Line.Slice (1, Len - Feed_Len)));
         Nb_To_Read := Nb_To_Read - 1;
-        Line_No := Line_No + 1;
+        Line_No.Incr;
         if Nb_To_Read = 0 then
           -- Nl remains for next read
           Trail_Line_Feed := True;
@@ -345,7 +346,7 @@ package body Substit is
         Line_List.Insert (Line);
         Nb_To_Read := Nb_To_Read - 1;
         -- Last line is without Nl
-        Line_No := Line_No + 1;
+        Line_No.Incr;
       end if;
     end loop;
     Log.Sub ("Read up to line no " &  Line_Image (Line_No)
@@ -384,6 +385,7 @@ package body Substit is
     Nb_Match : Subst_Natural;
     Loc_Subst : Subst_Natural;
     Do_Verbose : Boolean;
+    use type Arbitrary.Number;
   begin
     -- Open files: test is set if no need to write
     Open (File_Name, Tmp_Dir, not Grep);
@@ -397,15 +399,15 @@ package body Substit is
     -- Init substitution by reading Nb_Pattern lines and Newlines
     -- Loop on substit
     Done_File := False;
-    Nb_Subst := 0;
-    Nb_Match := 0;
-    Loc_Subst := 0;
+    Nb_Subst.Set_Null;
+    Nb_Match.Set_Null;
+    Loc_Subst.Set_Null;
     -- Done when file is already put in List mode
     --   or when the amount of lines cannot be read
     while not Done_File and then Read loop
       -- If grep is iterative with a replace and got something,
       --  then append a line feed
-      if Grep and then Is_Iterative and then Loc_Subst /= 0
+      if Grep and then Is_Iterative and then not Loc_Subst.Is_Null
       and then not Replace_Pattern.Is_Empty then
         Basic_Proc.New_Line_Output;
       end if;
@@ -424,7 +426,7 @@ package body Substit is
     Close;
     -- After close, comit or clean
     if not Is_Stdin
-    and then Nb_Subst /= 0
+    and then not Nb_Subst.Is_Null
     and then not Test then
       Comit (Backup);
     else
@@ -437,7 +439,7 @@ package body Substit is
       -- Rollback on this file
       Close;
       Clean;
-      return 0;
+      return Arbitrary.Zero;
     when others =>
       -- Rollback and stop
       Close;
@@ -454,18 +456,19 @@ package body Substit is
                          Test         : in Boolean;
                          Nb_Match     : in out Subst_Natural;
                          Loc_Subst    : out Subst_Natural) is
+    use type Subst_Natural;
   begin
-    Loc_Subst := 0;
+    Loc_Subst.Set_Null;
     for I in 1 .. Line.all.Length loop
       if Line.all.Element (I) = Search_Char then
         Log.Sub ("Match in line >" & Line.all.Image & "< at" & I'Img);
-        Nb_Match := Nb_Match + 1;
+        Nb_Match.Incr;
         -- Check match range
         if not Subst_Match.Matches (Nb_Match, Match_Range) then
           Log.Sub ("Match discarded because out of matching range");
         else
           -- Ok, matches all citeria
-          Loc_Subst := Loc_Subst + 1;
+          Loc_Subst.Incr;
           if Verbose then
             Basic_Proc.Put_Line_Output (
                 Line_Image (Line_No) & " : "
@@ -479,7 +482,7 @@ package body Substit is
       end if;
     end loop;
 
-    if not Test and then Loc_Subst /= 0 then
+    if not Test and then not Loc_Subst.Is_Null then
       -- A substitution has occured
       Log.Sub ("Replacing by " & Line.all.Image);
     end if;
@@ -508,7 +511,7 @@ package body Substit is
     Current : Positive;
     Match_Res : Reg_Exp.Match_Cell;
     Matches : Boolean;
-    use type Reg_Exp.Match_Cell, Search_Pattern.Ll_Natural;
+    use type Reg_Exp.Match_Cell, Search_Pattern.Ll_Natural, Subst_Natural;
   begin
     Done_File := False;
     -- Optimization if simple substit of a char by a char, no regex
@@ -532,7 +535,7 @@ package body Substit is
 
     -- Multiple substitutions in one line
     Current := 1;
-    Loc_Subst := 0;
+    Loc_Subst.Set_Null;
     loop
       -- Search a Match from Current to Last
       -- Exit when no (more) match
@@ -567,7 +570,7 @@ package body Substit is
 
       -- Check if this matching pattern matches match range
       if Matches then
-        Nb_Match := Nb_Match + 1;
+        Nb_Match.Incr;
         if not Subst_Match.Matches (Nb_Match, Match_Range) then
           Log.Sub ("Match >" & Line.all.Slice (Match_Res.First_Offset,
                                                Match_Res.Last_Offset_Stop)
@@ -616,7 +619,7 @@ package body Substit is
         declare
           Replacing : constant String := Replace_Pattern.Replace;
         begin
-          Loc_Subst := Loc_Subst + 1;
+          Loc_Subst.Incr;
           -- Display verbose substitution
           if Verbose then
             Basic_Proc.Put_Line_Output (
@@ -625,7 +628,7 @@ package body Substit is
                                 Match_Res.Last_Offset_Stop)
               & " -> " & Replacing);
           elsif Grep then
-            if Loc_Subst = 1
+            if Loc_Subst = Arbitrary.One
             and then not Is_Stdin
             and then (Grep_List or else Grep_File_Name) then
               Basic_Proc.Put_Output (In_File_Name.Image);
@@ -777,7 +780,7 @@ package body Substit is
     end if;
 
     Done_File := False;
-    Loc_Subst := 0;
+    Loc_Subst.Set_Null;
     -- Check all patterns until one does not match
     for I in 1 .. Nb_Pattern loop
       -- Check this read line
@@ -847,7 +850,7 @@ package body Substit is
 
     if Matches then
       -- Check if it matches match range
-      Nb_Match := Nb_Match + 1;
+      Nb_Match.Incr;
       Matches := Subst_Match.Matches (Nb_Match, Match_Range);
 
       if not Matches then
@@ -869,7 +872,7 @@ package body Substit is
     end if;
 
     if Matches then
-      Loc_Subst := 1;
+      Loc_Subst := Arbitrary.One;
       -- Match, build string to replace:
       Match_Res := Search_Pattern.Str_Indexes;
       -- Get access to first and last lines of input

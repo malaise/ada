@@ -1,6 +1,5 @@
 with Ada.Unchecked_Deallocation;
 package body Arbitrary.Limited_List is
-  use type Arb_Natural;
 
   Free_List : Link := null;
 
@@ -813,7 +812,7 @@ package body Arbitrary.Limited_List is
     Free_List := Link (Cell_Acc);
     -- Rewind: Update Pos_xxx and Current
     Len := List.Pos_First + List.Pos_Last - Two;
-    if Len = Zero then
+    if Len.Is_Null then
       -- Check the special case when list becomes empty
       List.Pos_First := Zero;
       List.Pos_Last := Zero;

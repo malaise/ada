@@ -465,10 +465,9 @@ package body Num_Letters is
     Sep : Boolean;
     -- Result
     Txt : As.U.Asu_Us;
-    use type Number;
   begin
     -- Handle specific case of 0 => "zero"
-    if N = Arbitrary.Zero then
+    if N.Is_Null then
       return Names(0).all;
     end if;
 
@@ -632,7 +631,7 @@ package body Num_Letters is
     use type Number;
   begin
     -- Init result
-    Result := Arbitrary.Zero;
+    Result.Set_Null;
 
     -- Handle empty input and "zero"
     if Words = "" then
@@ -658,7 +657,7 @@ package body Num_Letters is
     Word := Next_Word (Iter.all);
     loop
       -- Init factor
-      Factor := Arbitrary.Zero;
+      Factor.Set_Null;
       Done := False;
 
       exit when Word.Kind = End_Reached;
@@ -704,7 +703,7 @@ package body Num_Letters is
       end if;
 
       -- Check that a factor is set
-      if Factor = Arbitrary.Zero then
+      if Factor.Is_Null then
         Logger.Log_Error ("Missing factor at " & Word.Word.Image);
         raise Constraint_Error;
       end if;

@@ -52,6 +52,9 @@ package body Arbitrary is
     -- Normalize a number: no leading 0 except +0
     procedure Normalize (A : in out Number);
 
+    -- Is a number 0
+    function Check_Is_Null (A : Number) return Boolean;
+
     -- Is a number positive? False for 0
     function Check_Is_Pos (A : Number) return Boolean;
 
@@ -105,6 +108,16 @@ package body Arbitrary is
       A := Tus (if As.U.Asu_Us(A).Element (1) = '+' or else D = "0" then "+"
                 else "-") & D.Image;
     end Normalize;
+
+    -- Is N  null
+    function Check_Is_Null (A : Number) return Boolean is
+      B : Number;
+    begin
+      Syntax.Check(A);
+      B := A;
+      Normalize (B);
+      return As.U.Asu_Us(B).Image = "+0";
+    end Check_Is_Null;
 
     -- Is N positive or null
     function Check_Is_Nat (A : Number) return Boolean is
@@ -510,6 +523,11 @@ package body Arbitrary is
     N := Set (V);
   end Set;
 
+  overriding procedure Set_Null (N: out Number) is
+  begin
+    N := Set_Uncheck ("0");
+  end Set_Null;
+
   function Is_Set (V : Number) return Boolean is (As.U.Asu_Us(V).Length >= 2);
 
   -- "Constants"
@@ -526,7 +544,9 @@ package body Arbitrary is
   overriding function Length (V : Number) return Natural is
     (As.U.Asu_Us(V).Length);
 
-  -- Is a Number natural, positive
+  -- Is a Number 0, natural, positive
+  overriding function Is_Null  (V : Number) return Boolean is
+    (Basic.Check_Is_Null (V));
   function Is_Natural  (V : Number) return Boolean is (Basic.Check_Is_Nat (V));
   function Is_Positive (V : Number) return Boolean is (Basic.Check_Is_Pos (V));
 

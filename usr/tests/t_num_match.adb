@@ -1,7 +1,7 @@
-with Basic_Proc, Argument, Num_Match, Images;
+with Basic_Proc, Argument, Arbitrary, Match, Images;
 procedure T_Num_Match is
 
-  package My_Num_Match is new Num_Match (Integer);
+  package My_Num_Match is new Match.Num_Match (Integer);
 
   procedure Usage is
   begin
@@ -12,7 +12,8 @@ procedure T_Num_Match is
   Str : String(1 .. 256);
   Len : Natural;
   Num : Natural;
-  Res : Boolean;
+  Arbi : Arbitrary.Number;
+  Resn, Resa : Boolean;
 begin
 
   if Argument.Get_Nbre_Arg = 1 then
@@ -25,12 +26,18 @@ begin
     Usage;
     return;
   end if;
+  Arbi.Set (Num);
 
   -- Check match
-  Res := My_Num_Match.Matches (Num, Str(1 .. Len));
+  Resn := My_Num_Match.Matches (Num, Str(1 .. Len));
+  Resa := Match.Arbi_Match.Matches (Arbi, Str(1 .. Len));
+
+  if Resn /= Resa then
+    Basic_Proc.Put_Line_Output ("Discrepancy");
+  end if;
 
   Basic_Proc.Put_Output (Num'Img);
-  if Res then
+  if Resn then
     Basic_Proc.Put_Output (" matches");
   else
     Basic_Proc.Put_Output (" does not match");
@@ -39,11 +46,11 @@ begin
 
   -- Put expanded
   declare
-    Ranges : constant My_Num_Match.Integer_Array
-           := My_Num_Match.Expand (Str(1 .. Len), Num);
+    Ranges : constant Match.Arbi_Match.Arbitrary_Array
+           := Match.Arbi_Match.Expand (Str(1 .. Len), Arbi);
   begin
     for I in Ranges'Range loop
-      Basic_Proc.Put_Output (Images.Integer_Image (Ranges(I)));
+      Basic_Proc.Put_Output (Images.Arbitrary_Image (Ranges(I)));
       if I /= Ranges'Last then
         Basic_Proc.Put_Output (", ");
       else

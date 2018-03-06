@@ -1,10 +1,10 @@
-with Num_Match;
+with Arbitrary, Match;
 package Substit is
 
   Std_In_Out : constant String := "-";
 
-  package Subst_Match is new Num_Match (Integer);
-  subtype Subst_Natural is Natural;
+  package Subst_Match renames Match.Arbi_Match;
+  subtype Subst_Natural is Arbitrary.Number;
 
   -- Init the service
   procedure Init;

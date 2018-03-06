@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with As.U.Utils, Environ, Argument, Argument_Parser, Basic_Proc, Language,
-     Mixed_Str, Text_Line, Reg_Exp;
+     Images, Mixed_Str, Text_Line, Reg_Exp, Arbitrary;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Log;
 procedure Asubst is
 
@@ -291,15 +291,16 @@ procedure Asubst is
                   Grep_Line_Nb   => Grep_Line_Nb,
                   Grep_Invert    => Grep_Invert,
                   Test           => Test);
-    if Nb_Subst /= 0 then
+    if not Nb_Subst.Is_Null then
       Found := True;
     end if;
-    if Verbosity = Put_File_Name and then Nb_Subst /= 0 then
+    if Verbosity = Put_File_Name and then not Nb_Subst.Is_Null then
       -- Put file name if substitution occured
       Basic_Proc.Put_Line_Output (File.Image);
     elsif Verbosity >= Put_Subst_Nb then
       -- Put file name and nb of substitutions
-      Basic_Proc.Put_Line_Output (File.Image & Nb_Subst'Img);
+      Basic_Proc.Put_Line_Output (File.Image
+                                & Images.Arbitrary_Image (Nb_Subst));
     end if;
   exception
     when Substit.Substit_Error =>
@@ -461,7 +462,7 @@ begin
       Dummy : Boolean;
     begin
       Match_Range := As.U.Tus (Arg_Dscr.Get_Option (12));
-      Dummy := Substit.Subst_Match.Matches (0, Match_Range.Image);
+      Dummy := Substit.Subst_Match.Matches (Arbitrary.Zero, Match_Range.Image);
     exception
       when others =>
         Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
@@ -701,7 +702,7 @@ begin
             Grep_Line_Nb   => Grep_Line_Nb,
             Grep_Invert    => Grep_Invert,
             Test           => Test);
-        if Nb_Subst /= 0 then
+        if not Nb_Subst.Is_Null then
           Found := True;
         end if;
       exception
