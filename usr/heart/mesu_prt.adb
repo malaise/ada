@@ -53,7 +53,7 @@ package body Mesu_Prt is
   end Close;
 
   procedure Print is
-    Saved_Pos : Natural;
+    Saved_Pos : Afpx.Line_List_Mng.Ll_Natural;
     Line      : Afpx.Line_Rec;
     File_Name : Mesu_Nam.File_Name_Str;
     Date_S    : Mesu_Nam.File_Date_Str;

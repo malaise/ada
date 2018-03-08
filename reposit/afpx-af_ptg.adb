@@ -28,7 +28,7 @@ package body Af_Ptg is
   Last_Pos : Con_Io.Square;
 
   -- Time and list Id of first click
-  Last_Selected_Id : Natural;
+  Last_Selected_Id : Line_List_Mng.Ll_Natural;
   Last_Selection_Time : Ada.Calendar.Time;
   Double_Click_Delay : Double_Click_Delay_Range
                      := Default_Double_Click_Delay;
@@ -262,10 +262,10 @@ package body Af_Ptg is
     Field : Afpx_Typ.Field_Rec;
     List_Status : List_Status_Rec;
     Click_Time : Ada.Calendar.Time;
-    Loc_Last_Selected_Id : Natural;
+    Loc_Last_Selected_Id : Line_List_Mng.Ll_Natural;
     Selection_Modified : Boolean;
 
-    List_Pos : Positive;
+    List_Pos : Line_List_Mng.Ll_Positive;
     List_Mod : Boolean;
     procedure Save_Pos is
     begin
@@ -285,7 +285,8 @@ package body Af_Ptg is
         Col => Pos.Col - Field.Upper_Left.Col));
 
     use type Ada.Calendar.Time;
-    use type Button_List, Absolute_Field_Range, Field_Kind_List;
+    use type Button_List, Absolute_Field_Range, Field_Kind_List,
+             Line_List_Mng.Ll_Natural;
   begin
     -- Save and reset last selected id
     Loc_Last_Selected_Id := Last_Selected_Id;
@@ -768,7 +769,8 @@ package body Af_Ptg is
     Char : Unicode_Number;
     Index : Natural;
 
-    use type Con_Io.Curs_Mvt, Afpx.Absolute_Field_Range;
+    use type Con_Io.Curs_Mvt, Afpx.Absolute_Field_Range,
+             Line_List_Mng.Ll_Natural;
 
   begin
     -- For callback of list init

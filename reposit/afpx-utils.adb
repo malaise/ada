@@ -18,8 +18,8 @@ package body Afpx.Utils is
   end Scroll;
 
   -- Initialize Afpx list from From list
-  procedure Init_List (From : in out Element_List.Dyn_List.List_Type) is
-    Pos : Positive;
+  procedure Init_List (From : in out Element_List.List_Type) is
+    Pos : Line_List_Mng.Ll_Positive;
     Elt : Element_Type;
     Moved : Boolean;
     Line : Line_Rec;

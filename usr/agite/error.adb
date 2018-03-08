@@ -53,7 +53,8 @@ begin
   end if;
 
   -- De-activate navigation if list is short enough
-  if Afpx.Line_List.List_Length <= Afpx.Get_Field_Height (Afpx.List_Field_No)
+  if Natural (Afpx.Line_List.List_Length)
+      <= Afpx.Get_Field_Height (Afpx.List_Field_No)
   then
     for I in  Utils.X.List_Scroll_Fld_Range loop
       Afpx.Set_Field_Activation (I, False);

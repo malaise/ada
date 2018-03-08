@@ -16,7 +16,7 @@ package body Push_Pull is
   end Set;
 
   procedure Init_List is new Afpx.Utils.Init_List (
-    As.U.Asu_Us, As.U.Utils.Asu_List_Mng, Set, False);
+    As.U.Asu_Us, As.U.Set, As.U.Utils.Asu_Long_Long_List_Mng, Set, False);
 
   -- The items of the list
   List : Git_If.Reference_Mng.List_Type;
@@ -177,8 +177,7 @@ package body Push_Pull is
   begin
     return Current.Name = Criteria.Name;
   end Branch_Match;
-  function Search_All_Branches is new Branch.Branches_Mng.Dyn_List.Search
-      (Branch_Match);
+  function Search_All_Branches is new Branch.Branches_Mng.Search (Branch_Match);
 
   -- Handle the Push, the Pull_Branch and the Pull
   function Do_Handle (Root : String;
@@ -195,7 +194,7 @@ package body Push_Pull is
       Current_Branch : As.U.Asu_Us;
       -- List of all the branches
       All_Branch : Branch.Branch_Rec_Type;
-      All_Branches : Branch.Branches_Mng.Dyn_List.List_Type;
+      All_Branches : Branch.Branches_Mng.List_Type;
       -- Origin of the current branch
       Origin : As.U.Asu_Us;
       -- Index of last '/'
@@ -289,7 +288,7 @@ package body Push_Pull is
             Branch.List_Branches (All_Branches);
             All_Branch.Name := Origin;
             if Search_All_Branches (All_Branches, All_Branch,
-                From => Branch.Branches_Mng.Dyn_List.Absolute) then
+                From => Branch.Branches_Mng.Absolute) then
               -- The remote of current branch is found
               -- Keep the head up to last '/'
               Index := Str_Util.Locate (Origin.Image, Git_If.Separator & "",

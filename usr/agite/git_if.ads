@@ -1,4 +1,4 @@
-with As.U.Utils, Dynamic_List, Sys_Calls;
+with As.U.Utils, Long_Long_Limited_List, Sys_Calls;
 package Git_If is
 
   -- All the calls to Git wait until completion of the sub-command
@@ -42,8 +42,9 @@ package Git_If is
     Link_Ok : Boolean;    -- Only set by List_Files
     Target : As.U.Asu_Us; -- Only set by List_Files
   end record;
-  package File_Mng is new Dynamic_List (File_Entry_Rec);
-  subtype File_List is File_Mng.Dyn_List.List_Type;
+  procedure Set (To : out File_Entry_Rec; Val : in File_Entry_Rec);
+  package  File_Mng is new Long_Long_Limited_List (File_Entry_Rec, Set);
+  subtype File_List is File_Mng.List_Type;
 
   -- List the files of Current_Path and status
   procedure List_Files (Current_Path : in String;
@@ -83,8 +84,9 @@ package Git_If is
     Date : Iso_Date := (others => ' ');
     Comment : Comment_2;
   end record;
-  package Log_Mng is new Dynamic_List (Log_Entry_Rec);
-  subtype Log_List is Log_Mng.Dyn_List.List_Type;
+  procedure Set (To : out Log_Entry_Rec; Val : in Log_Entry_Rec);
+  package Log_Mng is new Long_Long_Limited_List (Log_Entry_Rec, Set);
+  subtype Log_List is Log_Mng.List_Type;
 
   -- List the log on a branch of a dir or file
   -- Stop at Max if not 0
@@ -109,8 +111,9 @@ package Git_If is
     Status : Character;
     File : As.U.Asu_Us;
   end record;
-  package Commit_File_Mng is new Dynamic_List (Commit_Entry_Rec);
-  subtype Commit_List is Commit_File_Mng.Dyn_List.List_Type;
+  procedure Set (To : out Commit_Entry_Rec; Val : in Commit_Entry_Rec);
+  package Commit_File_Mng is new Long_Long_Limited_List (Commit_Entry_Rec, Set);
+  subtype Commit_List is Commit_File_Mng.List_Type;
 
   -- List detailed info on a commit
   -- May raise anonymous exception Log_Error
@@ -122,7 +125,7 @@ package Git_If is
                          Commit : in out Commit_List);
 
   -- List references
-  package Reference_Mng renames As.U.Utils.Asu_Dyn_List_Mng;
+  package Reference_Mng renames As.U.Utils.Asu_Long_Long_List_Mng;
   procedure List_References (References : in out Reference_Mng.List_Type);
 
   -- Cat a file at a Hash in a file, Ok if success
@@ -187,7 +190,7 @@ package Git_If is
   -- List local or remote tracking branches, or both
   -- Separator between <remote> and <branch>
   Separator : constant Character := '/';
-  package Branches_Mng renames As.U.Utils.Asu_Dyn_List_Mng;
+  package Branches_Mng renames As.U.Utils.Asu_Long_Long_List_Mng;
   procedure List_Branches (Local, Remote : in Boolean;
                            Branches : in out Branches_Mng.List_Type);
   -- List branches of a reference
@@ -221,8 +224,9 @@ package Git_If is
     Branch : As.U.Asu_Us;
     Name : As.U.Asu_Us;
   end record;
-  package Stash_Mng is new Dynamic_List (Stash_Entry_Rec);
-  subtype Stash_List is Stash_Mng.Dyn_List.List_Type;
+  procedure Set (To : out Stash_Entry_Rec; Val : in Stash_Entry_Rec);
+  package Stash_Mng is new Long_Long_Limited_List (Stash_Entry_Rec, Set);
+  subtype Stash_List is Stash_Mng.List_Type;
 
   -- List the stashes
   procedure List_Stashes (Stashes : in out Stash_List);
@@ -250,8 +254,9 @@ package Git_If is
     Date : Iso_Date;
     Comment : As.U.Asu_Us;
   end record;
-  package Tag_Mng is new Dynamic_List (Tag_Entry_Rec);
-  subtype Tag_List is Tag_Mng.Dyn_List.List_Type;
+  procedure Set (To : out Tag_Entry_Rec; Val : in Tag_Entry_Rec);
+  package Tag_Mng is new Long_Long_Limited_List (Tag_Entry_Rec, Set);
+  subtype Tag_List is Tag_Mng.List_Type;
 
   -- List tags matching Template
   -- May raise anonymous exception Log_Error

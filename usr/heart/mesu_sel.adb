@@ -71,8 +71,8 @@ package body Mesu_Sel is
 
   -- Add records to selection
   procedure Add_Selection (Criteria : in Criteria_Rec) is
-    Saved_Pos : Natural;
-    Pos       : Positive;
+    Saved_Pos : Afpx.Line_List_Mng.Ll_Natural;
+    Pos       : Afpx.Line_List_Mng.Ll_Positive;
     First_Pers, Last_Pers : Natural;
     The_Files : Dir_Mng.File_List_Mng.List_Type;
     File : Dir_Mng.File_Entry_Rec;
@@ -84,6 +84,7 @@ package body Mesu_Sel is
     Ok     : Boolean;
     Mesure : Mesu_Def.Mesure_Rec;
     Line   : Afpx.Line_Rec;
+    use type Afpx.Line_List_Mng.Ll_Natural;
   begin
     if Pers_Def.The_Persons.Is_Empty then
       return;
@@ -189,7 +190,7 @@ package body Mesu_Sel is
 
   -- Remove records from selection
   procedure Rem_Selection (Criteria : in Criteria_Rec) is
-    Saved_Pos, Curr_Pos : Positive;
+    Saved_Pos, Curr_Pos : Afpx.Line_List_Mng.Ll_Positive;
     Line   : Afpx.Line_Rec;
     Ok : Boolean;
     File_Name : Mesu_Nam.File_Name_Str;
@@ -198,6 +199,7 @@ package body Mesu_Sel is
     Pid_S  : Mesu_Nam.File_Pid_Str;
     Pos_Pers : Positive;
     Person : Pers_Def.Person_Rec;
+    use type Afpx.Line_List_Mng.Ll_Natural;
   begin
     -- Save current position
     if Line_List.Is_Empty then
@@ -303,7 +305,7 @@ package body Mesu_Sel is
 
   -- Remove a record from selection
   procedure Rem_Selection (Name : in Mesu_Nam.File_Name_Str) is
-    Saved_Pos, Curr_Pos : Positive;
+    Saved_Pos, Curr_Pos : Afpx.Line_List_Mng.Ll_Positive;
     Line   : Afpx.Line_Rec;
     Date_S : Mesu_Nam.File_Date_Str;
     No_S   : Mesu_Nam.File_No_Str;
@@ -311,6 +313,7 @@ package body Mesu_Sel is
     Pos_Pers : Positive;
     Person : Pers_Def.Person_Rec;
     Mesure : Mesu_Def.Mesure_Rec;
+    use type Afpx.Line_List_Mng.Ll_Natural;
   begin
     -- Save current position
     if Line_List.Is_Empty then
@@ -364,7 +367,8 @@ package body Mesu_Sel is
 
   -- Remove a record from selection
   procedure Rem_Selection (Line : in Afpx.Line_Rec) is
-    Saved_Pos, Curr_Pos : Positive;
+    Saved_Pos, Curr_Pos : Afpx.Line_List_Mng.Ll_Positive;
+    use type Afpx.Line_List_Mng.Ll_Natural;
   begin
     -- Save current position
     if Line_List.Is_Empty then
@@ -439,7 +443,7 @@ package body Mesu_Sel is
 
   -- Save the selection to file
   procedure Save is
-    Saved_Pos  : Positive;
+    Saved_Pos  : Afpx.Line_List_Mng.Ll_Positive;
     Line   : Afpx.Line_Rec;
     File_Name : Mesu_Nam.File_Name_Str;
     use List_Io;

@@ -13,6 +13,10 @@ package body Branch is
     return Current = Criteria;
   end Match;
   function Search is new Git_If.Branches_Mng.Search (Match);
+  procedure Set (To : out Branch_Rec_Type; Val : in Branch_Rec_Type) is
+  begin
+    To := Val;
+  end Set;
 
   -- Separator in branch names
   Sep : constant String := Git_If.Separator & "";
@@ -27,7 +31,7 @@ package body Branch is
 
   -- The local branches and the list of all branches
   Locals : Git_If.Branches_Mng.List_Type;
-  Branches : Branches_Mng.Dyn_List.List_Type;
+  Branches : Branches_Mng.List_Type;
 
   -- Init Afpx list from Branches
   procedure Set (Line : in out Afpx.Line_Rec;
@@ -49,7 +53,7 @@ package body Branch is
   function Search is new Afpx.Line_List_Mng.Search (Match);
 
   procedure Init_List is new Afpx.Utils.Init_List (
-    Branch_Rec_Type, Branches_Mng, Set, False);
+    Branch_Rec_Type, Set, Branches_Mng, Set, False);
   -- Afpx Ptg stuff
   Get_Handle : Afpx.Get_Handle_Rec;
 
@@ -67,7 +71,7 @@ package body Branch is
   --  and stripping "remotes/"
   -- Keep for each branch its name and wether it is remote
   -- If yes: local name and does this local branch exist
-  procedure List_Branches (List : in out Branches_Mng.Dyn_List.List_Type) is
+  procedure List_Branches (List : in out Branches_Mng.List_Type) is
     Alls : Git_If.Branches_Mng.List_Type;
     Branch : As.U.Asu_Us;
     Branch_Rec : Branch_Rec_Type;
@@ -202,16 +206,17 @@ package body Branch is
   type Action_List is (Create, Rename, Delete, Checkout, Hist,
                        Merge, True_Merge, Rebase, Cherry_Pick, Reset);
   function Do_Action (Action : in Action_List;
-                      Ref : in Natural := 0) return Boolean is
+                      Ref : in Afpx.Line_List_Mng.Ll_Natural := 0)
+           return Boolean is
     Sel_Name, New_Name, Ref_Name, Tmp_Name : As.U.Asu_Us;
     Sel_Rec : Branch_Rec_Type;
     Remote : Boolean;
     Comment : As.U.Asu_Us;
-    Pos, Tmp_Index : Positive;
-    Refi : Natural;
+    Pos, Tmp_Index : Afpx.Line_List_Mng.Ll_Positive;
+    Refi : Afpx.Line_List_Mng.Ll_Natural;
     Message1, Message2, Result : As.U.Asu_Us;
     Done : Boolean;
-    use type Cherry.Result_List, As.U.Asu_Us;
+    use type Cherry.Result_List, As.U.Asu_Us, Afpx.Line_List_Mng.Ll_Natural;
   begin
     -- Retrieve current name
     if Action /= Create then
@@ -429,6 +434,7 @@ package body Branch is
                          Status : in Afpx.List_Status_Rec) is
     On_Current, Remote, Has_Local : Boolean;
     -- Only Rebase, Cherrypick and Delete if right selection
+    use type Afpx.Line_List_Mng.Ll_Natural;
     Right : constant Boolean
           := Status.Ids_Selected (Afpx.List_Right) /= 0;
     use type As.U.Asu_Us;

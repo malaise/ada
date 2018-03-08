@@ -219,7 +219,8 @@ package body Select_File is
       Dir_Item : Dir_Mng.File_Entry_Rec;
       Char : Character;
       Afpx_Item : Afpx.Line_Rec;
-      Selected : Natural := 0;
+      Selected : Afpx.Line_List_Mng.Ll_Natural := 0;
+      use type Afpx.Line_List_Mng.Ll_Natural;
     begin
       -- Clear get field
       Get_Handle.Cursor_Col := 0;
@@ -291,14 +292,15 @@ package body Select_File is
       Dir_Item : Dir_Mng.File_Entry_Rec;
     begin
       -- Save current entry
-      Dir_List.Move_At (Afpx.Line_List.Get_Position);
+      Dir_List.Move_At (Positive (Afpx.Line_List.Get_Position));
       Dir_List.Read (Dir_Item, Dir_Mng.File_List_Mng.Current);
       -- Rebuild list
       Change_Dir(".", "");
       -- Search position back and move Afpx to it
       if File_Search (Dir_List, Dir_Item,
                       From => Dir_Mng.File_List_Mng.Current_Absolute) then
-        Afpx.Line_List.Move_At (Dir_List.Get_Position);
+        Afpx.Line_List.Move_At (
+            Afpx.Line_List_Mng.Ll_Positive (Dir_List.Get_Position));
         Afpx.Update_List (Afpx.Center_Selected);
       end if;
 
@@ -420,7 +422,8 @@ package body Select_File is
                   Valid := True;
                   exit;
                 end if;
-                Pos_In_List := Afpx.Line_List_Mng.Get_Position(Afpx.Line_List);
+                Pos_In_List :=
+                    Positive (Afpx.Line_List_Mng.Get_Position(Afpx.Line_List));
                 Dir_List.Move_At (Pos_In_List);
                 Dir_List.Read (File_Rec, Dir_Mng.File_List_Mng.Current);
                 begin
@@ -440,7 +443,8 @@ package body Select_File is
 
             when Afpx.List_Field_No =>
               -- Double click in list
-              Pos_In_List := Afpx.Line_List_Mng.Get_Position(Afpx.Line_List);
+              Pos_In_List :=
+                  Positive (Afpx.Line_List_Mng.Get_Position(Afpx.Line_List));
               Dir_List.Move_At (Pos_In_List);
               Dir_List.Read (File_Rec, Dir_Mng.File_List_Mng.Current);
               begin

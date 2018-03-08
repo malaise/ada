@@ -131,7 +131,7 @@ procedure Xwords is
         Afpx.Clear_Field (Topnum_Fld);
         if not Afpx.Line_List.Is_Empty then
           Afpx.Encode_Field (Topnum_Fld, (0, 0),
-                             Images.Integer_Image (Afpx_Status.Id_Top));
+                             Images.Llunat_Image (Afpx_Status.Id_Top));
         end if;
         -- Scroll bar index
         Afpx.Clear_Field (Scroll_Fld);
@@ -158,7 +158,7 @@ procedure Xwords is
 
   -- Move Afpx list ot first noun (if any)
   procedure Move_To_Nouns is
-    Position : Positive;
+    Position : Afpx.Line_List_Mng.Ll_Positive;
     Line : Afpx.Line_Rec;
     Moved : Boolean;
   begin
@@ -193,7 +193,8 @@ procedure Xwords is
   -- Scroll list according to row (of scroll button) clicked
   procedure Do_Scroll (Row : in Con_Io.Row_Range)is
     Percent : Afpx.Percent_Range;
-    Saved_Position, Position : Natural;
+    Saved_Position, Position : Afpx.Line_List_Mng.Ll_Natural;
+    use type Afpx.Line_List_Mng.Ll_Natural;
   begin
     if Afpx.Line_List.Is_Empty then
       return;
@@ -289,7 +290,7 @@ procedure Xwords is
     Com, Arg : Many_Strings.Many_String;
     Word : As.U.Asu_Us;
     Command_Ok : Boolean;
-    use type As.U.Asu_Us, Afpx.Field_Range;
+    use type As.U.Asu_Us, Afpx.Field_Range, Afpx.Line_List_Mng.Ll_Natural;
   begin
     -- Clear result
     Afpx.Line_List.Delete_List (Deallocate => False);
@@ -556,7 +557,7 @@ begin
     and then not Afpx.Line_List.Is_Empty then
       -- Get position of top and encode field
       Afpx.Encode_Field (Topof_Fld, (0, 0),
-                         Images.Integer_Image (Afpx.Line_List.List_Length));
+                         Images.Llunat_Image (Afpx.Line_List.List_Length));
       Allow_Nouns (List_Content = Words);
     else
       Afpx.Clear_Field (Scroll_Fld);

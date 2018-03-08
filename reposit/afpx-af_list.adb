@@ -1,4 +1,4 @@
-with Rounds;
+with My_Math;
 separate (Afpx)
 package body Af_List is
 
@@ -9,7 +9,7 @@ package body Af_List is
 
   -- Reset/Compute status
   procedure Reset;
-  procedure Compute (First_Item_Id : in Positive);
+  procedure Compute (First_Item_Id : in Line_List_Mng.Ll_Positive);
 
   -- Open / Re-open the list window
   procedure Open is
@@ -36,7 +36,7 @@ package body Af_List is
 
   end Open;
 
-  procedure Move_At (Id : in Positive) is
+  procedure Move_At (Id : in Line_List_Mng.Ll_Positive) is
   begin
     Line_List.Move_At (Id);
   end Move_At;
@@ -98,13 +98,14 @@ package body Af_List is
   procedure Put (Row : in Con_Io.Row_Range;
                  State : in Af_Ptg.State_List;
                  Move : in Boolean) is
-    Id : Positive;
+    Id : Line_List_Mng.Ll_Positive;
     Item : Line_Rec;
+    use type Line_List_Mng.Ll_Natural;
   begin
     if not Opened then
       raise Not_Opened;
     end if;
-    Id := Status.Id_Top + Row;
+    Id := Status.Id_Top + Line_List_Mng.Ll_Natural (Row);
     Move_At (Id);
     Get_Current_Item (Item, Move);
     Put (Row, State, Item);
@@ -129,7 +130,8 @@ package body Af_List is
   end Reset;
 
   -- Compute status
-  procedure Compute (First_Item_Id : in Positive) is
+  procedure Compute (First_Item_Id : in Line_List_Mng.Ll_Positive) is
+    use type Line_List_Mng.Ll_Natural;
   begin
     if not Opened then
       raise Not_Opened;
@@ -145,21 +147,28 @@ package body Af_List is
       raise Line_List_Mng.Not_In_List;
     end if;
     -- top + height - 1 <= length => can display Height items
-    if Line_List.List_Length - First_Item_Id >= Af_Dscr.Fields(Lfn).Height then
+    if Line_List.List_Length - First_Item_Id
+        >= Line_List_Mng.Ll_Natural (Af_Dscr.Fields(Lfn).Height) then
       -- Can display Height items
       Status.Nb_Rows := Af_Dscr.Fields(Lfn).Height;
       Status.Id_Top := First_Item_Id;
-    elsif Line_List.List_Length < Af_Dscr.Fields(Lfn).Height then
+    elsif Line_List.List_Length
+        < Line_List_Mng.Ll_Natural (Af_Dscr.Fields(Lfn).Height)
+    then
       -- Cannot display List_Length items whatever first
-      Status.Nb_Rows := Line_List.List_Length;
+      Status.Nb_Rows := Natural (Line_List.List_Length);
       Status.Id_Top := 1;
     else
       -- Can display Height items but not with this first.
       -- Set top to display last page
       Status.Nb_Rows := Af_Dscr.Fields(Lfn).Height;
-      Status.Id_Top := Line_List.List_Length - Af_Dscr.Fields(Lfn).Height + 1;
+      Status.Id_Top := Line_List.List_Length
+                     - Line_List_Mng.Ll_Natural (Af_Dscr.Fields(Lfn).Height)
+                     + 1;
     end if;
-    Status.Id_Bottom := Status.Id_Top + Status.Nb_Rows - 1;
+    Status.Id_Bottom := Status.Id_Top
+                      + Line_List_Mng.Ll_Natural (Status.Nb_Rows)
+                      - 1;
     -- Left select by default the first
     if Status.Ids_Selected(List_Left) = 0 then
       Status.Ids_Selected(List_Left) := Status.Id_Top;
@@ -170,10 +179,11 @@ package body Af_List is
   end Compute;
 
   -- Display the list, starting from First_Item
-  procedure Display (First_Item_Id : in Positive) is
+  procedure Display (First_Item_Id : in Line_List_Mng.Ll_Positive) is
     Item : Line_Rec;
-    List_Pos : Positive;
+    List_Pos : Line_List_Mng.Ll_Positive;
     List_Mod : Boolean;
+    use type Line_List_Mng.Ll_Natural;
   begin
     -- Set status
     Compute (First_Item_Id);
@@ -194,10 +204,12 @@ package body Af_List is
     for I in 1 .. Status.Nb_Rows loop
       Get_Current_Item (Item, True);
       if not Af_Dscr.Fields(Lfn).Isprotected
-      and then Status.Id_Top + I - 1 = Status.Ids_Selected(List_Left) then
+      and then Status.Id_Top + Line_List_Mng.Ll_Positive (I) - 1
+             = Status.Ids_Selected(List_Left) then
         Put (I - 1, Af_Ptg.Selected, Item);
       elsif not Af_Dscr.Fields(Lfn).Isprotected
-      and then Status.Id_Top + I - 1 = Status.Ids_Selected(List_Right) then
+      and then Status.Id_Top + Line_List_Mng.Ll_Positive (I) - 1
+             = Status.Ids_Selected(List_Right) then
         Put (I - 1, Af_Ptg.Clicked, Item);
       else
         Put (I - 1, Af_Ptg.Normal, Item);
@@ -227,9 +239,10 @@ package body Af_List is
   -- Update the list due to an action, display the list or not
   function Update (Action : in List_Action_List; Display : in Boolean)
                   return Boolean is
-    First_Item_Id : Natural;
+    First_Item_Id : Line_List_Mng.Ll_Natural;
     Shift_Factor : constant := 10;
     Height : constant Positive := Af_Dscr.Fields(Lfn).Height;
+    use type Line_List_Mng.Ll_Natural;
   begin
     if not Opened then
       raise Not_Opened;
@@ -271,8 +284,8 @@ package body Af_List is
       when Page_Up =>
         -- Display previous page
         -- top - height > 1 => top - height exists
-        if Status.Id_Top > Height + 1 then
-          First_Item_Id := Status.Id_Top - Height;
+        if Status.Id_Top > Line_List_Mng.Ll_Positive (Height) + 1 then
+          First_Item_Id := Status.Id_Top - Line_List_Mng.Ll_Positive (Height);
         elsif Status.Id_Top /= 1 then
           -- Start at first item
           First_Item_Id := 1;
@@ -283,11 +296,13 @@ package body Af_List is
       when Page_Down =>
         -- Display next page
         -- Bottom + height < length => Bottom + height exists
-        if Line_List.List_Length - Status.Id_Bottom > Height then
-          First_Item_Id := Status.Id_Top + Height;
+        if Line_List.List_Length - Status.Id_Bottom
+            > Line_List_Mng.Ll_Positive (Height) then
+          First_Item_Id := Status.Id_Top + Line_List_Mng.Ll_Positive (Height);
         elsif Status.Id_Bottom /= Line_List.List_Length then
           -- End at last item
-          First_Item_Id := Line_List.List_Length - Height + 1;
+          First_Item_Id := Line_List.List_Length
+                         - Line_List_Mng.Ll_Positive (Height) + 1;
         else
           -- Already at bottom of list
           return False;
@@ -295,8 +310,10 @@ package body Af_List is
       when Shift_Page_Up =>
         -- Display 10 pages up
         -- top - height > 1 => top - height exists
-        if Status.Id_Top > Shift_Factor * Height + 1 then
-          First_Item_Id := Status.Id_Top - Shift_Factor * Height;
+        if Status.Id_Top
+            > Line_List_Mng.Ll_Positive (Shift_Factor * Height) + 1 then
+          First_Item_Id := Status.Id_Top
+                         - Line_List_Mng.Ll_Positive (Shift_Factor * Height);
         elsif Status.Id_Top /= 1 then
           -- Start at first item
           First_Item_Id := 1;
@@ -307,11 +324,14 @@ package body Af_List is
       when Shift_Page_Down =>
         -- Display 10 pages down
         -- Bottom + height < length => Bottom + height exists
-        if Line_List.List_Length - Status.Id_Bottom > Shift_Factor * Height then
-          First_Item_Id := Status.Id_Top + Shift_Factor * Height;
+        if Line_List.List_Length - Status.Id_Bottom
+            > Line_List_Mng.Ll_Positive (Shift_Factor * Height) then
+          First_Item_Id := Status.Id_Top
+                         + Line_List_Mng.Ll_Positive (Shift_Factor * Height);
         elsif Status.Id_Bottom /= Line_List.List_Length then
           -- End at last item
-          First_Item_Id := Line_List.List_Length - Height + 1;
+          First_Item_Id := Line_List.List_Length
+                         - Line_List_Mng.Ll_Positive (Height) + 1;
         else
           -- Already at bottom of list
           return False;
@@ -329,36 +349,38 @@ package body Af_List is
           -- Already at bottom of list
           return False;
         end if;
-        First_Item_Id := Line_List.List_Length - Height + 1;
+        First_Item_Id := Line_List.List_Length
+                       - Line_List_Mng.Ll_Positive (Height) + 1;
       when Center_Selected =>
         -- Center current List item in window (do ower best)
         declare
           -- List length
-          Len : constant Positive := Line_List.List_Length;
+          Len : constant Line_List_Mng.Ll_Positive := Line_List.List_Length;
           -- Current position in list
-          Pos : constant Positive := Line_List.Get_Position;
+          Pos : constant Line_List_Mng.Ll_Positive := Line_List.Get_Position;
           -- Row in window to put it
           Midrow : constant Natural := Height / 2;
           Lastrow : constant Natural := Height - 1;
         begin
-          if Pos - 1 < Midrow then
+          if Pos - 1 < Line_List_Mng.Ll_Natural (Midrow) then
             -- Not enough items before current
             return Update(Top, Display);
-          elsif Len - Pos < Lastrow - Midrow then
+          elsif Len - Pos < Line_List_Mng.Ll_Natural (Lastrow - Midrow) then
             -- Not enough items after current
-            return Update(Bottom, Display);
+            return Update (Bottom, Display);
           else
             -- Set current in middle
-            First_Item_Id := Pos - Midrow;
+            First_Item_Id := Pos - Line_List_Mng.Ll_Natural (Midrow);
           end if;
         end;
       when Top_Selected =>
         -- Set current List item in top in window (do ower best)
         declare
           -- Current position in list
-          Pos : constant Positive := Line_List.Get_Position;
+          Pos : constant Line_List_Mng.Ll_Positive := Line_List.Get_Position;
         begin
-          if Line_List.List_Length - Pos <  Height - 1 then
+          if Line_List.List_Length - Pos
+              <  Line_List_Mng.Ll_Positive (Height) - 1 then
             -- Not enough items after current
             return Update(Bottom, Display);
           end if;
@@ -369,14 +391,14 @@ package body Af_List is
         -- Set current List item in bottom in window (do ower best)
         declare
           -- Current position in list
-          Pos : constant Positive := Line_List.Get_Position;
+          Pos : constant Line_List_Mng.Ll_Positive := Line_List.Get_Position;
         begin
-          if Pos < Height then
+          if Pos < Line_List_Mng.Ll_Positive (Height) then
             -- Not enough items after current
             return Update(Top, Display);
           end if;
           -- Set current at bottom
-          First_Item_Id := Pos - Height + 1;
+          First_Item_Id := Pos - Line_List_Mng.Ll_Positive (Height) + 1;
         end;
     end case;
 
@@ -397,7 +419,9 @@ package body Af_List is
   end Update;
 
   -- Set the current item (selected_color) of the list
-  procedure Set_Selected (Button : in List_Button_List; Item_Id : in Natural) is
+  procedure Set_Selected (Button : in List_Button_List;
+                          Item_Id : in Line_List_Mng.Ll_Natural) is
+    use type Line_List_Mng.Ll_Natural;
   begin
     if not Opened then
       raise Not_Opened;
@@ -422,6 +446,7 @@ package body Af_List is
 
   -- Status of the list
   function Get_Status return List_Status_Rec is
+    use type Line_List_Mng.Ll_Natural;
   begin
     -- Update may be called before 1st Ptg
     if Af_Dscr.Has_List and then Status.Id_Top = 0 then
@@ -430,48 +455,66 @@ package body Af_List is
     return Status;
   end Get_Status;
 
+  -- Round Line_List_Mng.Ll_Natural
+  function Roundiv (A, B : Line_List_Mng.Ll_Natural)
+                   return Line_List_Mng.Ll_Natural is
+    use type Line_List_Mng.Ll_Natural;
+    function Round (X : Line_List_Mng.Ll_Natural) return My_Math.Inte is
+      (if X <= Line_List_Mng.Ll_Natural (My_Math.Inte'Last) then
+         My_Math.Inte (X)
+       else
+         My_Math.Inte'Last);
+
+  begin
+    return Line_List_Mng.Ll_Natural (My_Math.Roundiv (Round (A), Round (B)));
+  end Roundiv;
+
   -- Percent of position of list in list field
   function Get_Percent return Percent_Range is
-    Last_Top : Integer;
+    Last_Top : Line_List_Mng.Ll_Natural;
     Height : constant Positive := Af_Dscr.Fields(Lfn).Height;
+    use type Line_List_Mng.Ll_Natural;
   begin
     if not Af_Dscr.Has_List then
       -- No list field
       return 0;
-    elsif Line_List.List_Length <= Height then
+    elsif Line_List.List_Length <= Line_List_Mng.Ll_Positive (Height) then
       -- List shorter than field
       return 0;
     end if;
 
     -- At which percent is the bottom shown?
     -- Top index when at bottom:
-    Last_Top := Line_List.List_Length - Height + 1;
+    Last_Top := Line_List.List_Length - Line_List_Mng.Ll_Positive (Height) + 1;
     -- Factor = (100 - 1) / (LastTop - 1)
     -- Percent - 1 = (Top - 1) * Factor
-    return Rounds.Roundiv ((Get_Status.Id_Top - 1) * (100 - 1), Last_Top - 1)
-           + 1;
+    return Percent_Range (Roundiv ((Get_Status.Id_Top - 1) * (100 - 1),
+                                   Last_Top - 1) + 1);
   end Get_Percent;
 
  -- Get position in list corresponding to Percent
-  function Get_Index (Percent : Percent_Range) return Natural is
-    Last_Top : Integer;
+  function Get_Index (Percent : Percent_Range)
+                     return Line_List_Mng.Ll_Natural is
+    Last_Top : Line_List_Mng.Ll_Natural;
     Height : constant Positive := Af_Dscr.Fields(Lfn).Height;
-    Index : Natural;
+    Index : Line_List_Mng.Ll_Natural;
+    use type Line_List_Mng.Ll_Natural;
   begin
     if not Af_Dscr.Has_List
     or else Line_List.Is_Empty then
       -- No list field, or empty list
       return 0;
-    elsif Line_List.List_Length <= Height
+    elsif Line_List.List_Length <= Line_List_Mng.Ll_Positive (Height)
     or else Percent = 0 then
       -- List shorter than field or 0%
       return 1;
     end if;
     -- Top index when at bottom:
-    Last_Top := Line_List.List_Length - Height + 1;
+    Last_Top := Line_List.List_Length - Line_List_Mng.Ll_Positive (Height) + 1;
     -- Factor = (100 - 1) / (LastTop - 1)
     -- Top - 1 = (Percent - 1) / Factor
-    Index := Rounds.Roundiv ((Percent - 1) * (Last_Top - 1), 100 - 1) + 1;
+    Index := Roundiv ((Line_List_Mng.Ll_Natural (Percent) - 1) * (Last_Top - 1),
+                      100 - 1) + 1;
     -- Ensure that result is not too high
     if Index > Line_List.List_Length then
       return Line_List.List_Length;
@@ -496,7 +539,8 @@ package body Af_List is
   end Set_Current;
 
   -- Is an Id, a row displayed
-  function Id_Displayed (Id : Positive) return Boolean is
+  function Id_Displayed (Id : Line_List_Mng.Ll_Positive) return Boolean is
+    use type Line_List_Mng.Ll_Natural;
   begin
     if not Opened then
       raise Not_Opened;
@@ -513,20 +557,22 @@ package body Af_List is
   end Row_Displayed;
 
   -- Row <-> Item Id
-  function To_Row (Id : Positive) return Con_Io.Row_Range is
+  function To_Row (Id : Line_List_Mng.Ll_Positive) return Con_Io.Row_Range is
+    use type Line_List_Mng.Ll_Natural;
   begin
     if not Id_Displayed (Id) then
       raise Afpx_Internal_Error;
     end if;
-    return Id - Status.Id_Top;
+    return Con_Io.Row_Range (Id - Status.Id_Top);
   end To_Row;
 
-  function To_Id  (Row : Con_Io.Row_Range) return Positive is
+  function To_Id  (Row : Con_Io.Row_Range) return Line_List_Mng.Ll_Positive is
+    use type Line_List_Mng.Ll_Natural;
   begin
     if not Row_Displayed (Row) then
       raise Afpx_Internal_Error;
     end if;
-    return Row + Status.Id_Top;
+    return Line_List_Mng.Ll_Natural (Row) + Status.Id_Top;
   end To_Id;
 
 end Af_List;

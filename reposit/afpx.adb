@@ -8,6 +8,11 @@ package body Afpx is
   Lfn : constant Absolute_Field_Range := List_Field_No;
   Afpx_Internal_Error : exception;
 
+  procedure Set (To : out Line_Rec; Val : in Line_Rec) is
+  begin
+    To := Val;
+  end Set;
+
   package Af_Dscr is
 
     -- Current descriptor
@@ -181,7 +186,7 @@ package body Afpx is
     -- Display the list, starting from First_Item
     -- Has to be called each time the list changes
     --  or colors are modified
-    procedure Display (First_Item_Id : in Positive);
+    procedure Display (First_Item_Id : in Line_List_Mng.Ll_Positive);
 
     -- Update the list due to an action, re-display the list or not
     -- True if update was possible (some change)
@@ -189,7 +194,8 @@ package body Afpx is
                     return Boolean;
 
     -- Set the current item (selected_color) of the list
-    procedure Set_Selected (Button : in List_Button_List; Item_Id : in Natural);
+    procedure Set_Selected (Button : in List_Button_List;
+                            Item_Id : in Line_List_Mng.Ll_Natural);
 
     -- Get current status of the list (what is shown, what is selected)
     function Get_Status return List_Status_Rec;
@@ -200,7 +206,8 @@ package body Afpx is
     function Get_Percent return Percent_Range;
 
     -- Get position in list corresponding to Percent
-    function Get_Index (Percent : Percent_Range) return Natural;
+    function Get_Index (Percent : Percent_Range)
+             return Line_List_Mng.Ll_Natural;
 
 
     -- Set current item of list according to Ids_Selected(Left)
@@ -212,12 +219,12 @@ package body Afpx is
                    Move : in Boolean);
 
     -- Is an Id, a row displayed
-    function Id_Displayed (Id : Positive) return Boolean;
+    function Id_Displayed (Id : Line_List_Mng.Ll_Positive) return Boolean;
     function Row_Displayed (Row : Con_Io.Row_Range) return Boolean;
 
     -- Row <-> Item Id
-    function To_Row (Id : Positive) return Con_Io.Row_Range;
-    function To_Id  (Row : Con_Io.Row_Range) return Positive;
+    function To_Row (Id : Line_List_Mng.Ll_Positive) return Con_Io.Row_Range;
+    function To_Id  (Row : Con_Io.Row_Range) return Line_List_Mng.Ll_Positive;
 
     Not_Opened : exception;
   end Af_List;
@@ -925,8 +932,8 @@ package body Afpx is
   function Get_List_Percent return Percent_Range renames Af_List.Get_Percent;
 
    -- Get position in list corresponding to Percent
-  function Get_List_Index (Percent : Percent_Range) return Natural
-           renames Af_List.Get_Index;
+  function Get_List_Index (Percent : Percent_Range)
+           return Line_List_Mng.Ll_Natural renames Af_List.Get_Index;
 
   procedure Set_Double_Click_Delay (
     Double_Click_Delay : in Double_Click_Delay_Range)

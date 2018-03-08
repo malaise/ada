@@ -219,9 +219,9 @@ package body Menu1 is
     Point_Set : Boolean;
     Point_Index : Positive;
     Data_Changed : Boolean;
-    Saved_Index : Natural;
+    Saved_Index : Afpx.Line_List_Mng.Ll_Natural;
 
-    use type Afpx.Absolute_Field_Range;
+    use type Afpx.Absolute_Field_Range, Afpx.Line_List_Mng.Ll_Natural;
 
   begin
     Afpx.Use_Descriptor(Afpx_Xref.Points.Dscr_Num);
@@ -354,7 +354,7 @@ package body Menu1 is
                 -- Delete / modify a point
                 Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
                 -- Get index then point
-                Point_Index := Afpx.Line_List.Get_Position;
+                Point_Index := Positive (Afpx.Line_List.Get_Position);
                 A_Point := Points.P_One_Point(Point_Index);
                 if Ptg_Result.Field_No = 26 then
                   -- Delete a point

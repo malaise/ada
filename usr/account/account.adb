@@ -76,7 +76,7 @@ begin
     if Afpx.Line_List.Is_Empty then
       Mng.Set_Current (0);
     else
-      Mng.Set_Current (Afpx.Line_List.Get_Position);
+      Mng.Set_Current (Positive (Afpx.Line_List.Get_Position));
     end if;
     case Ptg_Result.Event is
       when Afpx.Keyboard =>

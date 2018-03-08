@@ -16,7 +16,7 @@ begin
     Commits.Rewind;
     while Commits.Check_Move loop
       Commits.Move_To;
-      Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
+      Commits.Read (Commit, Git_If.Commit_File_Mng.Current);
       Modified := Modified
           or else Git_If.Is_Modified (Root & Commit.File.Image);
     end loop;
@@ -43,7 +43,7 @@ begin
       Commits.Rewind;
       while Commits.Check_Move loop
         Commits.Move_To;
-        Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
+        Commits.Read (Commit, Git_If.Commit_File_Mng.Current);
         Modified := Git_If.Cat (Commit.File.Image, Hash,
                                 Root & Commit.File.Image);
       end loop;

@@ -1,5 +1,5 @@
-with As.U, Con_Io, Afpx.Utils, Normal, Rounds, Language, Directory, Str_Util,
-     Aski;
+with As.U, Con_Io, Afpx.Utils, Normal, Normalization, Rounds, Language,
+     Directory, Str_Util, Aski;
 with Utils.X, Utils.Store, Config, Details, View, Afpx_Xref, Restore, Checkout,
      Tags, Branch, Confirm_Diff_Dir, Reset, Error;
 package body History is
@@ -32,7 +32,7 @@ package body History is
 
   -- List mode
   procedure Init_List is new Afpx.Utils.Init_List (
-    Git_If.Log_Entry_Rec, Git_If.Log_Mng, Set, False);
+    Git_If.Log_Entry_Rec, Git_If.Set, Git_If.Log_Mng, Set, False);
 
   -- To search matching hash in Log
   function List_Hash_Match (Current, Criteria : Git_If.Log_Entry_Rec)
@@ -47,7 +47,7 @@ package body History is
       return Current.Hash(1 .. Last) = Criteria.Hash(1 .. Last);
   end List_Hash_Match;
   function List_Hash_Search is
-           new Git_If.Log_Mng.Dyn_List.Search (List_Hash_Match);
+           new Git_If.Log_Mng.Search (List_Hash_Match);
 
   -- Get the Hash of remote HEAD
   function Remote_Head (Of_Branch : in String) return Git_If.Git_Hash is
@@ -134,11 +134,13 @@ package body History is
     end Reset_Init_Indicator;
 
     -- Show delta from current in list to comp
-    procedure Show_Delta (Ref : in Natural) is
-      Comp : Positive;
+    procedure Show_Delta (Ref : in Afpx.Line_List_Mng.Ll_Natural) is
+      Comp : Afpx.Line_List_Mng.Ll_Positive;
       Ref_Hash, Comp_Hash : Git_If.Git_Hash;
       File_Name : As.U.Asu_Us;
       Log : Git_If.Log_Entry_Rec;
+      use type Afpx.Line_List_Mng.Ll_Natural;
+
     begin
       -- Confim if diff on a dir
       if not Is_File then
@@ -160,13 +162,13 @@ package body History is
         Ref_Hash := Git_If.No_Hash;
       else
         Logs.Move_At (Ref);
-        Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
+        Logs.Read (Log, Git_If.Log_Mng.Current);
         Ref_Hash := Log.Hash;
       end if;
 
       -- Move to Comp and read comp hash in Logs
       Logs.Move_At (Comp);
-      Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
+      Logs.Read (Log, Git_If.Log_Mng.Current);
       Comp_Hash := Log.Hash;
 
       -- Restore position in List
@@ -187,13 +189,13 @@ package body History is
 
     -- Do a restore
     procedure Do_Restore is
-      Pos : Positive;
+      Pos : Afpx.Line_List_Mng.Ll_Positive;
       Log : Git_If.Log_Entry_Rec;
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
       Logs.Move_At (Pos);
-      Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
+      Logs.Read (Log, Git_If.Log_Mng.Current);
       -- Restore file
       Restore (Root, Path & Name, Log.Hash, null);
       -- Restore screen
@@ -205,14 +207,14 @@ package body History is
 
     -- Do a checkout
     function Do_Checkout return Boolean is
-      Pos : Positive;
+      Pos : Afpx.Line_List_Mng.Ll_Positive;
       Commit : As.U.Asu_Us;
       Log : Git_If.Log_Entry_Rec;
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
       Logs.Move_At (Pos);
-      Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
+      Logs.Read (Log, Git_If.Log_Mng.Current);
       Commit := As.U.Tus (Language.Unicode_To_String (
           Afpx.Line_List.Access_Current.Str(
               1 .. Afpx.Line_List.Access_Current.Len)));
@@ -233,7 +235,7 @@ package body History is
     -- Do a reorg if no local modif,
     --  return True if success or failure => back to Directory
     function Do_Reorg return Boolean is
-      Pos : Positive;
+      Pos : Afpx.Line_List_Mng.Ll_Positive;
       Changes : Git_If.File_List;
       Change : Git_If.File_Entry_Rec;
       Moved : Boolean;
@@ -244,7 +246,7 @@ package body History is
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
       Logs.Move_At (Pos);
-      Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
+      Logs.Read (Log, Git_If.Log_Mng.Current);
 
       -- Check that no local modif
       Git_If.List_Changes (Changes);
@@ -252,7 +254,7 @@ package body History is
       if not Changes.Is_Empty then
         Changes.Rewind;
         loop
-          Changes.Read (Change, Git_If.File_Mng.Dyn_List.Current);
+          Changes.Read (Change, Git_If.File_Mng.Current);
           if Change.S2 = '?' and then Change.S3 = '?' then
             Changes.Delete (Moved => Moved);
             exit when not Moved;
@@ -288,15 +290,16 @@ package body History is
 
     -- Do a hard reset
     function Do_Reset return Boolean is
-      Pos : Positive;
+      Pos : Afpx.Line_List_Mng.Ll_Positive;
       Str : As.U.Asu_Us;
       Res : Boolean;
       Log : Git_If.Log_Entry_Rec;
+      use type Afpx.Line_List_Mng.Ll_Positive;
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
       Logs.Move_At (Pos);
-      Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
+      Logs.Read (Log, Git_If.Log_Mng.Current);
       -- Reset
       if Pos = 1 then
         -- In fact this is a reset to head  (no warning on history change)
@@ -319,13 +322,13 @@ package body History is
 
     -- Do a tag
     procedure Do_Tag is
-      Pos : Positive;
+      Pos : Afpx.Line_List_Mng.Ll_Positive;
       Log : Git_If.Log_Entry_Rec;
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
       Logs.Move_At (Pos);
-      Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
+      Logs.Read (Log, Git_If.Log_Mng.Current);
       -- Restore file
       Tags.Add (Root, Log.Hash);
       -- Restore screen
@@ -356,8 +359,7 @@ package body History is
         return;
       end if;
       -- Search
-      if List_Hash_Search (Logs, Log,
-                   From => Git_If.Log_Mng.Dyn_List.Absolute) then
+      if List_Hash_Search (Logs, Log, From => Git_If.Log_Mng.Absolute) then
         -- Move to found
         Afpx.Line_List.Move_At (Logs.Get_Position);
         Afpx.Update_List (Afpx.Center_Selected);
@@ -367,14 +369,14 @@ package body History is
     -- View file or commit details
     type Show_List is (Show_View, Show_Details);
     procedure Show (What : in Show_List) is
-      Ref : Positive;
+      Ref : Afpx.Line_List_Mng.Ll_Positive;
       Log : Git_If.Log_Entry_Rec;
     begin
       -- Read reference hash in Logs
       Ref := Afpx.Line_List.Get_Position;
       -- This will also save/restore current position
       Logs.Move_At (Ref);
-      Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
+      Logs.Read (Log, Git_If.Log_Mng.Current);
       case What is
         when Show_View =>
           View (Path & Name, Log.Hash);
@@ -388,14 +390,20 @@ package body History is
     end Show;
 
     -- Index of remote head (0 if unknown)
-    Remote_Head_Index : Natural;
+    Remote_Head_Index : Afpx.Line_List_Mng.Ll_Natural;
 
+    -- Normalize Afpx list index
+    function Normal is new Normalization.Normal_Mod
+      (Afpx.Line_List_Mng.Ll_Natural);
     -- Update the list status
     procedure List_Change (Action : in Afpx.List_Change_List;
                            Status : in Afpx.List_Status_Rec) is
       -- Left and Right selection in list
-      Left  : constant Natural := Status.Ids_Selected (Afpx.List_Left);
-      Right : constant Natural := Status.Ids_Selected (Afpx.List_Right);
+      Left  : constant Afpx.Line_List_Mng.Ll_Natural
+            := Status.Ids_Selected (Afpx.List_Left);
+      Right : constant Afpx.Line_List_Mng.Ll_Natural
+            := Status.Ids_Selected (Afpx.List_Right);
+      use type Afpx.Line_List_Mng.Ll_Natural;
       Right_Set : constant Boolean := Right /= 0;
       Empty : constant Boolean := Logs.Is_Empty;
       Percent : Afpx.Percent_Range;
@@ -476,7 +484,8 @@ package body History is
     -- Move according to click row in scroll field
     procedure Move_At_Scroll (Row : in Con_Io.Row_Range) is
       Percent : Afpx.Percent_Range;
-      Saved_Position, Position : Natural;
+      Saved_Position, Position : Afpx.Line_List_Mng.Ll_Natural;
+      use type Afpx.Line_List_Mng.Ll_Natural;
     begin
       if Afpx.Line_List.Is_Empty then
         return;
@@ -531,7 +540,7 @@ package body History is
 
     -- Read all entries and update
     procedure Do_Read_All is
-      Pos : Positive;
+      Pos : Afpx.Line_List_Mng.Ll_Positive;
     begin
       Pos := Afpx.Line_List.Get_Position;
       Reread (True);
@@ -542,7 +551,8 @@ package body History is
 
     -- List root
     procedure List_Root is
-      Pos : Natural;
+      Pos : Afpx.Line_List_Mng.Ll_Natural;
+      use type Afpx.Line_List_Mng.Ll_Natural;
     begin
       -- Save position in List and read it
       if Afpx.Line_List.Is_Empty then
@@ -597,8 +607,7 @@ package body History is
       Init_Indicator := 'R';
     end if;
     if Log.Hash /= Git_If.No_Hash then
-      Found := List_Hash_Search (Logs, Log,
-                   From => Git_If.Log_Mng.Dyn_List.Absolute);
+      Found := List_Hash_Search (Logs, Log, From => Git_If.Log_Mng.Absolute);
       if not Found then
         Init_Indicator := '?';
       end if;

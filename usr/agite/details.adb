@@ -17,7 +17,7 @@ package body Details is
   end Set;
 
   procedure Init_List is new Afpx.Utils.Init_List (
-    Git_If.Commit_Entry_Rec, Git_If.Commit_File_Mng, Set, False);
+    Git_If.Commit_Entry_Rec, Git_If.Set, Git_If.Commit_File_Mng, Set, False);
 
 
   procedure Handle (Root : in String;
@@ -96,14 +96,14 @@ package body Details is
 
     -- Do a restore
     procedure Do_Restore is
-      Pos : Positive;
+      Pos : Afpx.Line_List_Mng.Ll_Positive;
       Commit : Git_If.Commit_Entry_Rec;
       Dummy : Boolean;
     begin
       -- Save position in List and read it
       Pos := Afpx.Line_List.Get_Position;
       Commits.Move_At (Pos);
-      Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
+      Commits.Read (Commit, Git_If.Commit_File_Mng.Current);
       -- Restore file
       Restore (Root, Commit.File.Image, Hash, Commits'Access);
       -- Restore screen
@@ -115,12 +115,13 @@ package body Details is
     -- Launch viewer on current file, or history on current dir or file
     type Show_List is (Show_View, Show_Hist, Show_Diff);
     procedure Show (What : in Show_List) is
-      Pos : constant Positive := Afpx.Line_List.Get_Position;
+      Pos : constant Afpx.Line_List_Mng.Ll_Positive
+          := Afpx.Line_List.Get_Position;
       Commit : Git_If.Commit_Entry_Rec;
       Result : Boolean;
     begin
       Commits.Move_At (Pos);
-      Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
+      Commits.Read (Commit, Git_If.Commit_File_Mng.Current);
       declare
         Path : constant String := Directory.Dirname (Commit.File.Image);
         File : constant String := Directory.Basename (Commit.File.Image);
@@ -187,7 +188,7 @@ package body Details is
     -- Update the list status
     procedure List_Change (Unused_Action : in Afpx.List_Change_List;
                            Unused_Status : in Afpx.List_Status_Rec) is
-
+      use type Afpx.Line_List_Mng.Ll_Positive;
     begin
       if Afpx.Line_List.Is_Empty then
         return;

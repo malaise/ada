@@ -234,7 +234,7 @@ package body Pers_Lis is
 
       -- Move in persons list according to Afpx selection
       if not List_Empty then
-        Pers_Def.The_Persons.Move_At(Afpx.Line_List.Get_Position);
+        Pers_Def.The_Persons.Move_At (Positive (Afpx.Line_List.Get_Position));
       end if;
 
       case Ptg_Result.Event is

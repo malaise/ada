@@ -67,7 +67,7 @@ procedure Agite is
   Search_Dir : Boolean;
 
   -- Position in list
-  Position : Positive;
+  Position : Afpx.Line_List_Mng.Ll_Positive;
 
   -- List width and encoding
   List_Width : Afpx.Width_Range := Afpx.Width_Range'First;
@@ -87,7 +87,7 @@ procedure Agite is
       Show_Cut => True);
   end Set;
   procedure Init_List is new Afpx.Utils.Init_List (
-    Git_If.File_Entry_Rec, Git_If.File_Mng, Set, False);
+    Git_If.File_Entry_Rec, Git_If.Set, Git_If.File_Mng, Set, False);
 
 
   -- List files of dir
@@ -151,7 +151,7 @@ procedure Agite is
   begin
     return Current.Kind = Criteria.Kind and then Current.Name = Criteria.Name;
   end Match;
-  function File_Search is new Git_If.File_Mng.Dyn_List.Search (Match);
+  function File_Search is new Git_If.File_Mng.Search (Match);
 
   -- Local host: "on (<host>)" if possible
   -- else "(<host>)" if possible
@@ -196,11 +196,11 @@ procedure Agite is
   -- Encode Afpx list with files, if list has changed or if Force
   -- Restore position if possible
   procedure Encode_Files (Force, Restore : in Boolean) is
-    Pos : Natural := 0;
+    Pos : Afpx.Line_List_Mng.Ll_Natural := 0;
     Current_File : Git_If.File_Entry_Rec;
     Prev_Files : Git_If.File_List;
     Changed : Boolean;
-    use type Git_If.File_Entry_Rec;
+    use type Git_If.File_Entry_Rec, Afpx.Line_List_Mng.Ll_Natural;
   begin
     Changed := Force;
     -- Save current position and entry
@@ -208,7 +208,7 @@ procedure Agite is
     and then not Afpx.Line_List.Is_Empty then
       Pos := Afpx.Line_List.Get_Position;
       Files.Move_At (Pos);
-      Files.Read (Current_File, Git_If.File_Mng.Dyn_List.Current);
+      Files.Read (Current_File, Git_If.File_Mng.Current);
       -- Make a copy of files list
       Prev_Files.Insert_Copy (Files);
     end if;
@@ -251,7 +251,7 @@ procedure Agite is
       Init_List (Files);
       -- Search position back and move Afpx to it
       if File_Search (Files, Current_File,
-                      From => Git_If.File_Mng.Dyn_List.Absolute) then
+                      From => Git_If.File_Mng.Absolute) then
         Afpx.Line_List.Move_At (Files.Get_Position);
         Afpx.Update_List (Afpx.Center_Selected);
       else
@@ -287,7 +287,7 @@ procedure Agite is
     File : Git_If.File_Entry_Rec;
   begin
     Files.Move_At (Afpx.Line_List.Get_Position);
-    Files.Read (File, Git_If.File_Mng.Dyn_List.Current);
+    Files.Read (File, Git_If.File_Mng.Current);
     return File;
   end Get_Current_File;
 
@@ -480,9 +480,10 @@ procedure Agite is
   package body Timer is separate;
 
   -- Init screen
-  procedure Init (Pos : in Natural;
+  procedure Init (Pos : in Afpx.Line_List_Mng.Ll_Natural;
                   Dir : in String := "";
                   Is_Current : in Boolean := True) is
+    use type Afpx.Line_List_Mng.Ll_Natural;
   begin
     -- Init Afpx
     Init_Afpx;
@@ -550,11 +551,13 @@ procedure Agite is
   procedure Do_Revert (Name, Prev : in String) is
     File : Git_If.File_Entry_Rec;
     Dummy : Boolean;
+    use type Afpx.Line_List_Mng.Ll_Natural;
+
   begin
     -- Call Confirm and restore current entry
     Position := Afpx.Line_List.Get_Position;
     Files.Move_At (Position);
-    Files.Read (File, Git_If.File_Mng.Dyn_List.Current);
+    Files.Read (File, Git_If.File_Mng.Current);
 
     if File.Kind = '/' then
       -- Handle Dir
@@ -840,7 +843,7 @@ procedure Agite is
         -- Got it
         if Moved then
           -- Move back to matching entry
-          Files.Move_To (Git_If.File_Mng.Dyn_List.Prev);
+          Files.Move_To (Git_If.File_Mng.Prev);
         end if;
         -- Move to it
         Afpx.Line_List.Move_At (Files.Get_Position);

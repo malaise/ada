@@ -206,13 +206,18 @@ package body Git_If is
     end if;
   end Resolve_Link;
 
+  procedure Set (To : out File_Entry_Rec; Val : in File_Entry_Rec) is
+  begin
+    To := Val;
+  end Set;
+
   -- For searching a file in File_List and sorting File_List
   function Match (Current, Criteria : File_Entry_Rec) return Boolean is
     use type As.U.Asu_Us;
   begin
     return Current.Name = Criteria.Name;
   end Match;
-  function File_Search is new File_Mng.Dyn_List.Search (Match);
+  function File_Search is new File_Mng.Search (Match);
   function Less_Than (El1, El2 : File_Entry_Rec) return Boolean is
     use type As.U.Asu_Us;
   begin
@@ -227,7 +232,7 @@ package body Git_If is
       return El1.Name < El2.Name;
     end if;
   end Less_Than;
-  procedure File_Sort is new File_Mng.Dyn_List.Sort (Less_Than);
+  procedure File_Sort is new File_Mng.Sort (Less_Than);
 
   -- Parse file output by '--porcelain' : Nothing if first char is not '"'
   -- Else: remove leading and trailing '"'
@@ -348,7 +353,7 @@ package body Git_If is
           -- Only one entry per name
           --  (ls-files lists unresolved conflicts 3 times)
           if not File_Search (Files, File_Entry,
-                              From => File_Mng.Dyn_List.Absolute) then
+                              From => File_Mng.Absolute) then
             File_Entry.S2 := ' ';
             File_Entry.S3 := ' ';
             File_Entry.Kind := Char_Of (Str.Image);
@@ -356,7 +361,7 @@ package body Git_If is
             Files.Insert (File_Entry);
           else
             -- Skip and be ready to append next entry
-            Files.Rewind (File_Mng.Dyn_List.Prev, False);
+            Files.Rewind (File_Mng.Prev, False);
           end if;
         end if;
         exit when not Moved;
@@ -378,9 +383,9 @@ package body Git_If is
           File_Entry.Kind := Char_Of (File_Entry.Name.Image);
           Resolve_Link (File_Entry);
           if File_Search (Files, File_Entry,
-            From => File_Mng.Dyn_List.Absolute) then
+            From => File_Mng.Absolute) then
             -- This file is found: overwrite
-            Files.Modify (File_Entry, File_Mng.Dyn_List.Current);
+            Files.Modify (File_Entry, File_Mng.Current);
           else
             -- This file is not found (deleted?), insert
             Files.Insert (File_Entry);
@@ -419,9 +424,9 @@ package body Git_If is
     File_Entry.S3 := ' ';
     File_Entry.Kind := '/';
     File_Entry.Name := As.U.Tus ("..");
-    Files.Insert (File_Entry, File_Mng.Dyn_List.Prev);
+    Files.Insert (File_Entry, File_Mng.Prev);
     File_Entry.Name := As.U.Tus (".");
-    Files.Insert (File_Entry, File_Mng.Dyn_List.Prev);
+    Files.Insert (File_Entry, File_Mng.Prev);
     Files.Rewind;
 
   end List_Files;
@@ -678,6 +683,11 @@ package body Git_If is
       raise Log_Error;
   end Read_Block;
 
+  procedure Set (To : out Log_Entry_Rec; Val : in Log_Entry_Rec) is
+  begin
+    To := Val;
+  end Set;
+
   -- List the log of a dir or file
   -- Stop at Max if not 0
   -- Set --sparse (when on root) to log full reposit history (including merges)
@@ -806,6 +816,11 @@ package body Git_If is
     end if;
   end Info_Commit;
 
+  procedure Set (To : out Commit_Entry_Rec; Val : in Commit_Entry_Rec) is
+  begin
+    To := Val;
+  end Set;
+
   -- List detailed info on a commit
   procedure List_Commit (Rev_Tag : in String;
                          Hash : out Git_Hash;
@@ -847,7 +862,7 @@ package body Git_If is
     end if;
     if not Commit.Is_Empty then
       Commit.Rewind;
-      Commit.Insert ((' ', As.U.Tus ("/")), Commit_File_Mng.Dyn_List.Prev);
+      Commit.Insert ((' ', As.U.Tus ("/")), Commit_File_Mng.Prev);
     end if;
   end List_Commit;
 
@@ -1504,6 +1519,11 @@ package body Git_If is
     return Result.Image;
   end Get_User;
 
+  procedure Set (To : out Stash_Entry_Rec; Val : in Stash_Entry_Rec) is
+  begin
+    To := Val;
+  end Set;
+
   -- List the stashes
   procedure List_Stashes (Stashes : in out Stash_List) is
     Cmd : Many_Strings.Many_String;
@@ -1718,6 +1738,11 @@ package body Git_If is
     end if;
     return "";
   end Rename_Stash;
+
+  procedure Set (To : out Tag_Entry_Rec; Val : in Tag_Entry_Rec) is
+  begin
+    To := Val;
+  end Set;
 
   -- Internal: read tag Tag.Name and fill Tag
   procedure Read_Tag (Tag : in out Tag_Entry_Rec) is

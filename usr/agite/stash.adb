@@ -21,7 +21,7 @@ package body Stash is
   end Set;
 
   procedure Init_List is new Afpx.Utils.Init_List (
-    Git_If.Stash_Entry_Rec, Git_If.Stash_Mng, Set, False);
+    Git_If.Stash_Entry_Rec, Git_If.Set, Git_If.Stash_Mng, Set, False);
 
   -- Root path
   Root : As.U.Asu_Us;
@@ -44,7 +44,8 @@ package body Stash is
 
   -- Re assess the list of stashes
   procedure Reread (Keep : in Boolean) is
-    Pos : Natural;
+    Pos : Afpx.Line_List_Mng.Ll_Natural;
+    use type Afpx.Line_List_Mng.Ll_Natural;
   begin
     -- Save current selection
     if Keep and then not Afpx.Line_List.Is_Empty then

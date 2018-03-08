@@ -167,7 +167,8 @@ package body Mng is
       Sel_List.Move_To;
     end loop;
     List_Util.Restore_Pos;
-    Afpx.Line_List.Move_At (Sel_List.Get_Position);
+    Afpx.Line_List.Move_At
+        (Afpx.Line_List_Mng.Ll_Positive (Sel_List.Get_Position));
   end Reset_List;
 
   -- Compute amounts from all account operations

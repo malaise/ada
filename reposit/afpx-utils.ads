@@ -11,14 +11,15 @@ package Afpx.Utils is
   generic
     -- Type of the element of the list
     type Element_Type is private;
+    with procedure Set (To : out Element_Type; Val : in Element_Type);
     -- List manager of elements
-    with package Element_List is new Dynamic_List(Element_Type);
+    with package Element_List is new Long_Long_Limited_List (Element_Type, Set);
     -- How to set the Afpx line from Element_Type
     with procedure Set (Line : in out Line_Rec; From : in Element_Type);
     Deallocate : in Boolean := True;
   -- Clear (and deallocate) the Afpx list and initialize it from From list,
   --  move to current position of From
-  procedure Init_List (From : in out Element_List.Dyn_List.List_Type);
+  procedure Init_List (From : in out Element_List.List_Type);
 
 
   -- If Str fits Width then return Str, padded with space if no Align_Left

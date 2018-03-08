@@ -1,4 +1,4 @@
-with As.U, Afpx.Utils, Dynamic_List, Mixed_Str;
+with As.U, Afpx.Utils, Long_Long_Limited_List, Mixed_Str;
 with Utils.X, Git_If, Details, Afpx_Xref, Confirm, Error, Commit;
 package body Cherry is
 
@@ -9,17 +9,21 @@ package body Cherry is
     Status : Cherry_Status_List := Merged;
     Commit : Git_If.Log_Entry_Rec;
   end record;
-  package Cherries_Mng is new Dynamic_List (Cherry_Rec);
+  procedure Set (To : out Cherry_Rec; Val : in Cherry_Rec) is
+  begin
+    To := Val;
+  end Set;
+  package Cherries_Mng is new Long_Long_Limited_List (Cherry_Rec, Set);
   -- Search by Hash
   function Match (Current, Criteria : Cherry_Rec) return Boolean is
     (Current.Commit.Hash = Criteria.Commit.Hash);
-  function Search_Hash is new Cherries_Mng.Dyn_List.Search (Match);
+  function Search_Hash is new Cherries_Mng.Search (Match);
 
   function Image (Status : Cherry_Status_List) return String is
     (Mixed_Str (Status'Img));
 
   -- The cherries
-  Cherries : Cherries_Mng.Dyn_List.List_Type;
+  Cherries : Cherries_Mng.List_Type;
   -- Memory of previous Cherry operation: the Cherries and branch names
   From_Branch, To_Branch, Ref_Branch : As.U.Asu_Us;
 
@@ -60,7 +64,7 @@ package body Cherry is
                             Confirm_Width, Line, False);
   end Set_Confirm;
   procedure Init_Confirm is new Afpx.Utils.Init_List (
-    Cherry_Rec, Cherries_Mng, Set_Confirm, False);
+    Cherry_Rec, Set, Cherries_Mng, Set_Confirm, False);
 
   -- Cherry list
   List_Width : Afpx.Width_Range;
@@ -71,7 +75,7 @@ package body Cherry is
                             List_Width, Line, False);
   end Set_Cherry;
   procedure Init_Cherry is new Afpx.Utils.Init_List (
-    Cherry_Rec, Cherries_Mng, Set_Cherry, False);
+    Cherry_Rec, Set, Cherries_Mng, Set_Cherry, False);
 
   -- Get list of cherries
   procedure Init_Cherries (Branch, Reference : in String;
@@ -79,7 +83,7 @@ package body Cherry is
     Logs : Git_If.Log_List;
     Cherry, Old_Cherry : Cherry_Rec;
     Curr_Branch : constant String := Git_If.Current_Branch;
-    Old_Cherries : Cherries_Mng.Dyn_List.List_Type;
+    Old_Cherries : Cherries_Mng.List_Type;
     Merge : Boolean;
   begin
     -- Check if same branches as previously uncompleted cherry-pick
@@ -111,7 +115,7 @@ package body Cherry is
     Cherries.Delete_List;
     Logs.Rewind;
     loop
-      Logs.Read (Cherry.Commit, Git_If.Log_Mng.Dyn_List.Current);
+      Logs.Read (Cherry.Commit, Git_If.Log_Mng.Current);
       if Cherry.Commit.Merged then
         Cherry.Status := Merged;
       else
@@ -135,12 +139,12 @@ package body Cherry is
         Cherry := Cherries.Access_Current.all;
         if Cherry.Status /= Merged
         and then Search_Hash (Old_Cherries, Cherry,
-                        From => Cherries_Mng.Dyn_List.Current_Absolute) then
+                        From => Cherries_Mng.Current_Absolute) then
           Old_Cherry := Old_Cherries.Access_Current.all;
           if Old_Cherry.Status /= Merged then
             -- Copy status from previous list
             Cherry.Status := Old_Cherry.Status;
-            Cherries.Modify (Cherry, Cherries_Mng.Dyn_List.Current);
+            Cherries.Modify (Cherry, Cherries_Mng.Current);
             -- Update Nb_Cherries ifi Pick -> Drop
             if Old_Cherry.Status = Drop then
               Nb_Cherries := Nb_Cherries - 1;
@@ -164,7 +168,7 @@ package body Cherry is
   procedure Update (Cherry : in Cherry_Rec) is
     Line : Afpx.Line_Rec;
   begin
-    Cherries.Modify (Cherry, Cherries_Mng.Dyn_List.Current);
+    Cherries.Modify (Cherry, Cherries_Mng.Current);
     Set_Cherry (Line, Cherry);
     Afpx.Line_List.Move_At (Cherries.Get_Position);
     Afpx.Line_List.Modify (Line, Afpx.Line_List_Mng.Current);
@@ -173,7 +177,7 @@ package body Cherry is
   function Read return Cherry_Rec is
     Cherry : Cherry_Rec;
   begin
-    Cherries.Read (Cherry, Cherries_Mng.Dyn_List.Current);
+    Cherries.Read (Cherry, Cherries_Mng.Current);
     return Cherry;
   end Read;
 
@@ -181,10 +185,11 @@ package body Cherry is
   type Cherry_Actions is (Toggle, Drop, Wipe, Pick, Reword, Edit, Fixup, Squash,
                           Copy, Move_Up, Move_Down, Reset);
   procedure Cherry_Action (Action : in Cherry_Actions;
-                           Left_Sel : in Natural) is
+                           Left_Sel : in Afpx.Line_List_Mng.Ll_Natural) is
     Cherry : Cherry_Rec;
     Line : Afpx.Line_Rec;
-    Pos0, Pos1, Pos2 : Positive;
+    Pos0, Pos1, Pos2 : Afpx.Line_List_Mng.Ll_Positive;
+    use type Afpx.Line_List_Mng.Ll_Natural;
 
     -- Pick some commits
     procedure Apply (Status : in Cherry_Status_List) is
@@ -295,7 +300,7 @@ package body Cherry is
       when Copy =>
         -- Copy current
         Cherries.Move_At (Pos0);
-        Cherries.Read (Cherry, Cherries_Mng.Dyn_List.Current);
+        Cherries.Read (Cherry, Cherries_Mng.Current);
         Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
         -- Paste
         Cherries.Insert (Cherry);
@@ -307,10 +312,10 @@ package body Cherry is
         end if;
         -- Get and move to previous
         Cherries.Move_At (Pos0);
-        Cherries.Get (Cherry, Cherries_Mng.Dyn_List.Prev);
+        Cherries.Get (Cherry, Cherries_Mng.Prev);
         Afpx.Line_List.Get (Line, Afpx.Line_List_Mng.Prev);
         -- Insert before previous
-        Cherries.Insert (Cherry, Cherries_Mng.Dyn_List.Prev);
+        Cherries.Insert (Cherry, Cherries_Mng.Prev);
         Afpx.Line_List.Insert (Line, Afpx.Line_List_Mng.Prev);
       when Move_Down =>
         Cherries.Move_At (Pos0);
@@ -318,10 +323,10 @@ package body Cherry is
           return;
         end if;
         -- Get and move to next
-        Cherries.Get (Cherry, Cherries_Mng.Dyn_List.Next);
+        Cherries.Get (Cherry, Cherries_Mng.Next);
         Afpx.Line_List.Get (Line, Afpx.Line_List_Mng.Next);
         -- Insert after next
-        Cherries.Insert (Cherry, Cherries_Mng.Dyn_List.Next);
+        Cherries.Insert (Cherry, Cherries_Mng.Next);
         Afpx.Line_List.Insert (Line, Afpx.Line_List_Mng.Next);
 
     end case;
@@ -333,7 +338,7 @@ package body Cherry is
   -- - a Wipe is folowed, possibly by Fixup, then a Squash, otherwise (EmptyCmt)
   type Valid_List is (Ok, Empty, Foldprev, Emptycmt);
   function Valid_Cherries return Valid_List is
-    Pos : Positive;
+    Pos : Afpx.Line_List_Mng.Ll_Positive;
     First_Set : Boolean;
     After_Wipe : Boolean;
     Status : Cherry_Status_List;
@@ -402,7 +407,7 @@ package body Cherry is
                     Mode : in Cherry_Mode) return Result_List is
     Cherry : Cherry_Rec;
     Next_Meld : Boolean;
-    Picked, Tmp_List : Cherries_Mng.Dyn_List.List_Type;
+    Picked, Tmp_List : Cherries_Mng.List_Type;
     Curr_Comment : constant Git_If.Git_Hash := Git_If.No_Hash;
     Result : As.U.Asu_Us;
   begin
@@ -666,6 +671,7 @@ package body Cherry is
     procedure List_Change (Unused_Action : in Afpx.List_Change_List;
                            Status : in Afpx.List_Status_Rec) is
       -- Right selection in list
+      use type Afpx.Line_List_Mng.Ll_Natural;
       Right : constant Boolean
             := Status.Ids_Selected (Afpx.List_Right) /= 0;
       Empty : constant Boolean := Cherries.Is_Empty;
@@ -690,14 +696,14 @@ package body Cherry is
 
     -- View commit details
     procedure Show_Details is
-      Ref : Positive;
+      Ref : Afpx.Line_List_Mng.Ll_Positive;
       Cherry : Cherry_Rec;
     begin
       -- Read reference hash in Cherries
       Ref := Afpx.Line_List.Get_Position;
       -- This will also save/restore current position
       Cherries.Move_At (Ref);
-      Cherries.Read (Cherry, Cherries_Mng.Dyn_List.Current);
+      Cherries.Read (Cherry, Cherries_Mng.Current);
       -- Prevent modif and tagging in Cherry_Pick
       Details.Handle (Root, Branch, Cherry.Commit.Hash, False, False);
       Init;

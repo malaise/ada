@@ -1,6 +1,15 @@
 with Ada.Calendar;
-with Argument, Afpx, Con_Io, Dir_Mng, Normal;
+with Argument, Afpx, Con_Io, Dir_Mng, Normalization;
 procedure T_Screen is
+
+  function Normal (I     : Integer;
+                   Len   : Positive;
+                   Right : Boolean := True;
+                   Gap   : Character := ' ') return String
+  renames Normalization.Normal_Int;
+
+  function Normal is
+      new Normalization.Normal_Mod (Afpx.Line_List_Mng.Ll_Natural);
 
   Afpx_Item : Afpx.Line_Rec;
 
@@ -29,7 +38,8 @@ procedure T_Screen is
 
   Act : Boolean;
 
-  use type Afpx.Absolute_Field_Range, Afpx.Descriptor_Range;
+  use type Afpx.Absolute_Field_Range, Afpx.Descriptor_Range,
+           Afpx.Line_List_Mng.Ll_Natural;
 begin
   if Argument.Get_Nbre_Arg < 1 then
     return;

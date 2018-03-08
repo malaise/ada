@@ -1,4 +1,4 @@
-with As.U, Unicode, Con_Io, Dynamic_List;
+with As.U, Unicode, Con_Io, Long_Long_Limited_List;
 with Afpx_Typ;
 package Afpx is
 
@@ -247,6 +247,7 @@ package Afpx is
     Str : Unicode_Sequence (1 .. Line_Len_Range'Last);
     Len : Line_Len_Range;
   end record;
+  procedure Set (To : out Line_Rec; Val : in Line_Rec);
 
   -- Encode a string in a line for the list
   -- Exceptions : String_Too_Long
@@ -258,8 +259,7 @@ package Afpx is
                          Str  : in Unicode_Sequence);
 
   -- The list (displayed in List_Field)
-  package Line_Dyn_List_Mng is new Dynamic_List (Line_Rec);
-  package Line_List_Mng renames Line_Dyn_List_Mng.Dyn_List;
+  package Line_List_Mng is new Long_Long_Limited_List (Line_Rec, Set);
   Line_List : Line_List_Mng.List_Type;
 
   -- User actions on the list:
@@ -314,7 +314,7 @@ package Afpx is
   type Keyboard_Key_List is (Return_Key, Escape_Key, Break_Key);
 
   type Result_Rec (Event : Event_List := Keyboard) is record
-    Id_Selected_Right : Natural;
+    Id_Selected_Right : Line_List_Mng.Ll_Natural;
     case Event is
       when Keyboard =>
         Keyboard_Key : Keyboard_Key_List;
@@ -372,14 +372,15 @@ package Afpx is
   --  then the end of Put_Then_Get
   type List_Change_List is (Init, Left_Selection, Right_Selection, Scroll);
   type List_Button_List is (List_Left, List_Right);
-  type List_Ids_Selected_Array is array (List_Button_List) of Natural;
+  type List_Ids_Selected_Array is array (List_Button_List)
+    of Line_List_Mng.Ll_Natural;
   type List_Status_Rec is record
     -- The number of items diplayed, 0 if no list field active
     -- Width if list_length >= width, list_length otherwise
     Nb_Rows : Natural;
     -- First and last items displayed in the window
-    Id_Top    : Natural;
-    Id_Bottom : Natural;
+    Id_Top    : Line_List_Mng.Ll_Natural;
+    Id_Bottom : Line_List_Mng.Ll_Natural;
     -- Item selected (0 if no selection, if list not active...)
     Ids_Selected : List_Ids_Selected_Array;
   end record;
@@ -393,7 +394,8 @@ package Afpx is
   subtype Percent_Range is Natural range 0 .. 100;
   function Get_List_Percent return Percent_Range;
   -- Get position in list corresponding to Percent
-  function Get_List_Index (Percent : Percent_Range) return Natural;
+  function Get_List_Index (Percent : Percent_Range)
+                          return Line_List_Mng.Ll_Natural;
 
   -- Redisplay can be called before Put_Then_Get to force the redraw
   --  of all fields. Normally this is not needed because it is automatically
@@ -452,7 +454,7 @@ package Afpx is
   -- In Button fields: mouse click then release terminates Put_Then_Get.
   -- This call affects the content of Get fields, the cursor field and col,
   --  and the current element of the list, it calls Modification_Ack on the
-  --  Line_List (see Dynamic_List).
+  --  Line_List (see Long_Long_Limited_List).
   -- If no field is Get (or all protected or desactivated,
   --  then the Get_Handle is not significant, otherwise it is used at
   --  initialisation and set before returning.

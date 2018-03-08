@@ -19,7 +19,7 @@ procedure List (Root : in String) is
     Afpx.Utils.Encode_Line ("", Image (From), "", List_Width, Line, False);
   end Set;
   procedure Init_List is new Afpx.Utils.Init_List (
-    Git_If.Tag_Entry_Rec, Git_If.Tag_Mng, Set, False);
+    Git_If.Tag_Entry_Rec, Git_If.Set, Git_If.Tag_Mng, Set, False);
 
   -- Afpx stuff
   Get_Handle  : Afpx.Get_Handle_Rec;
@@ -54,7 +54,7 @@ procedure List (Root : in String) is
      elsif A.Date /= Git_If.No_Date then True
      elsif B.Date /= Git_If.No_Date then False
      else A.Name.Image > B.Name.Image);
-  procedure Sort is new Git_If.Tag_Mng.Dyn_List.Sort (Less_Than);
+  procedure Sort is new Git_If.Tag_Mng.Sort (Less_Than);
 
   -- Read the template
   procedure Read_Template is
@@ -81,13 +81,13 @@ procedure List (Root : in String) is
 
   -- Checkout current tag
   function Do_Checkout return Boolean is
-    Pos : Positive;
+    Pos : Afpx.Line_List_Mng.Ll_Positive;
     Tag : Git_If.Tag_Entry_Rec;
   begin
     -- Save position in List and read it
     Pos := Afpx.Line_List.Get_Position;
     Tags_List.Move_At (Pos);
-    Tags_List.Read (Tag, Git_If.Tag_Mng.Dyn_List.Current);
+    Tags_List.Read (Tag, Git_If.Tag_Mng.Current);
 
     -- Checkout (success will lead to return to Directory)
     if Checkout.Handle (Root, "tag: " & Tag.Name.Image,
@@ -106,7 +106,7 @@ procedure List (Root : in String) is
   -- Current tag, template, position
   Current_Tag : Git_If.Tag_Entry_Rec;
   Current_Tmpl : As.U.Asu_Us;
-  Current_Pos : Natural;
+  Current_Pos : Afpx.Line_List_Mng.Ll_Natural;
 
   -- Save current context
   procedure Save is
@@ -122,6 +122,7 @@ procedure List (Root : in String) is
 
   -- Restore context
   procedure Restore (Position, Reread : in Boolean) is
+    use type Afpx.Line_List_Mng.Ll_Natural;
   begin
     -- Reset Afpx and reread tags
     Init;
@@ -196,7 +197,7 @@ begin
           when Afpx_Xref.List_Tags.Details =>
             -- Details of tag selected
             Tags_List.Move_At (Afpx.Line_List.Get_Position);
-            Tags_List.Read (Current_Tag, Git_If.Tag_Mng.Dyn_List.Current);
+            Tags_List.Read (Current_Tag, Git_If.Tag_Mng.Current);
             Save;
             -- No modif nor tagging
             Details.Handle (Root, "", Current_Tag.Name.Image, False, False,
@@ -216,7 +217,7 @@ begin
           when Afpx_Xref.List_Tags.Delete =>
             -- Delete tag selected
             Tags_List.Move_At (Afpx.Line_List.Get_Position);
-            Tags_List.Read (Current_Tag, Git_If.Tag_Mng.Dyn_List.Current);
+            Tags_List.Read (Current_Tag, Git_If.Tag_Mng.Current);
             Save;
             if Confirm  ("Delete Tag", Current_Tag.Name.Image) then
               Git_If.Delete_Tag (Str_Util.Strip (Current_Tag.Name.Image));
@@ -227,7 +228,7 @@ begin
           when Afpx_Xref.List_Tags.Push =>
             -- Push tag selected
             Tags_List.Move_At (Afpx.Line_List.Get_Position);
-            Tags_List.Read (Current_Tag, Git_If.Tag_Mng.Dyn_List.Current);
+            Tags_List.Read (Current_Tag, Git_If.Tag_Mng.Current);
             Save;
             Dummy_Res := Push_Pull.Handle (Root, Pull => False,
                                            Tag => Current_Tag.Name.Image);
@@ -235,7 +236,7 @@ begin
           when Afpx_Xref.List_Tags.Mark =>
             -- Store hash of current tag
             Tags_List.Move_At (Afpx.Line_List.Get_Position);
-            Tags_List.Read (Current_Tag, Git_If.Tag_Mng.Dyn_List.Current);
+            Tags_List.Read (Current_Tag, Git_If.Tag_Mng.Current);
             Utils.Store.Hash := Current_Tag.Hash;
           when Afpx_Xref.List_Tags.Back =>
             return;

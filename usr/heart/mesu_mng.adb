@@ -211,7 +211,8 @@ package body Mesu_Mng is
         List_Empty := Afpx.Line_List.Is_Empty;
         Allow_Draw := not Pers_Empty and then
                       not List_Empty and then
-                      Afpx.Line_List.List_Length <= Mesu_Gra.Max_Nb_Mesure;
+                      Natural (Afpx.Line_List.List_Length)
+                          <= Mesu_Gra.Max_Nb_Mesure;
         Allow_Undo := Allow_Undo and then not Pers_Empty;
         -- Tittle and slashes
         Afpx.Set_Field_Activation (Afpx_Xref.Main.Title, not Pers_Empty);
@@ -244,7 +245,7 @@ package body Mesu_Mng is
                                    not Pers_Empty and then not List_Empty);
 
         Afpx.Encode_Field (Afpx_Xref.Main.Nb_Selected, (0, 0),
-                           Normal(Afpx.Line_List.List_Length, 5) );
+                           Normal (Natural (Afpx.Line_List.List_Length), 5) );
 
         Afpx.Encode_Field (Afpx_Xref.Main.Date, (00, 00),
                            Str_Mng.Current_Date_Printed);

@@ -89,7 +89,7 @@ package body Commit is
 
   -- Init Afpx list
   procedure Init_List is new Afpx.Utils.Init_List (
-    Git_If.File_Entry_Rec, Git_If.File_Mng, Set, False);
+    Git_If.File_Entry_Rec, Git_If.Set, Git_If.File_Mng, Set, False);
 
 
   -- Search entry by kind and name
@@ -98,7 +98,7 @@ package body Commit is
   begin
     return Current.Kind = Criteria.Kind and then Current.Name = Criteria.Name;
   end Match;
-  function Change_Search is new Git_If.File_Mng.Dyn_List.Search (Match);
+  function Change_Search is new Git_If.File_Mng.Search (Match);
 
   -- Sort entry: Unstaged, Partly staged, Staged
   function Less_Than (E1, E2 : Git_If.File_Entry_Rec) return Boolean is
@@ -119,7 +119,7 @@ package body Commit is
         -- S1 is partially staged, S2 is fully or not
         when Trilean.Other => S2 = Trilean.True);
   end Less_Than;
-  procedure Sort is new Git_If.File_Mng.Dyn_List.Sort (Less_Than);
+  procedure Sort is new Git_If.File_Mng.Sort (Less_Than);
 
   -- Insert separators in List
   procedure Separate_List (List : in out Git_If.File_List) is
@@ -137,11 +137,11 @@ package body Commit is
       Curr := Staged (List.Access_Current.all);
       if Curr /= Prev then
         -- Insert separator file
-        List.Insert (Sep_File, Git_If.File_Mng.Dyn_List.Prev);
+        List.Insert (Sep_File, Git_If.File_Mng.Prev);
         List.Move_To;
         if Prev = Trilean.False and then Curr = Trilean.True then
           -- No partially staged => Insert a second separator file
-          List.Insert (Sep_File, Git_If.File_Mng.Dyn_List.Prev);
+          List.Insert (Sep_File, Git_If.File_Mng.Prev);
           List.Move_To;
         end if;
       end if;
@@ -417,11 +417,12 @@ package body Commit is
     procedure Reread (Force : in Boolean) is
       Current_Change : Git_If.File_Entry_Rec;
       Moved : Boolean;
-      Pos : Natural := 0;
+      Pos : Afpx.Line_List_Mng.Ll_Natural := 0;
       Prev_Changes : Git_If.File_List;
       Changed : Boolean;
       Protect : Boolean;
-      use type Git_If.File_Entry_Rec, Trilean.Trilean;
+      use type Git_If.File_Entry_Rec, Trilean.Trilean,
+               Afpx.Line_List_Mng.Ll_Natural;
     begin
       Changed := Force;
       -- Save current position and entry
@@ -429,7 +430,7 @@ package body Commit is
       and then not Afpx.Line_List.Is_Empty then
         Pos := Afpx.Line_List.Get_Position;
         Changes.Move_At (Pos);
-        Changes.Read (Current_Change, Git_If.File_Mng.Dyn_List.Current);
+        Changes.Read (Current_Change, Git_If.File_Mng.Current);
         -- Make a copy of files list
         Prev_Changes.Insert_Copy (Changes);
       end if;
@@ -476,7 +477,7 @@ package body Commit is
         Init_List (Changes);
         -- Search position back and move Afpx to it
         if Change_Search (Changes, Current_Change,
-                          From => Git_If.File_Mng.Dyn_List.Absolute) then
+                          From => Git_If.File_Mng.Absolute) then
           Afpx.Line_List.Move_At (Changes.Get_Position);
           Afpx.Update_List (Afpx.Center_Selected);
         else
@@ -579,6 +580,7 @@ package body Commit is
     -- Staged / Unstage current file
     procedure Do_Stage (Stage : in Boolean; Move : in Boolean) is
       Status : Character;
+      use type Afpx.Line_List_Mng.Ll_Positive;
     begin
       if Is_Sep then
         return;
@@ -629,7 +631,7 @@ package body Commit is
       Change : Git_If.File_Entry_Rec;
       Untracked : Git_If.File_List;
       Moved : Boolean;
-      use type Git_If.File_Entry_Rec;
+      use type Git_If.File_Entry_Rec, Afpx.Line_List_Mng.Ll_Positive;
     begin
       -- Reread and update changes
       Git_If.List_Changes (Changes);
@@ -658,7 +660,7 @@ package body Commit is
         Init_List (Untracked);
         Decode_Comment;
         if Confirm ("Staging all",
-                    "Stage " & Images.Integer_Image (Untracked.List_Length)
+                    "Stage " & Images.Llunat_Image (Untracked.List_Length)
                              & " untracked file"
                              & (if Untracked.List_Length = 1 then "" else "s")
                              & "?",

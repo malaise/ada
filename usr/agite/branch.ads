@@ -1,4 +1,4 @@
-with As.U, Dynamic_List;
+with As.U, Long_Long_Limited_List;
 package Branch is
 
   -- List of branches
@@ -10,9 +10,10 @@ package Branch is
     Local : As.U.Asu_Us;
     Has_Local : Boolean := False;
   end record;
-  package Branches_Mng is new Dynamic_List (Branch_Rec_Type);
+  procedure Set (To : out Branch_Rec_Type; Val : in Branch_Rec_Type);
+  package Branches_Mng is new Long_Long_Limited_List (Branch_Rec_Type, Set);
   -- List all the branches
-  procedure List_Branches (List : in out Branches_Mng.Dyn_List.List_Type);
+  procedure List_Branches (List : in out Branches_Mng.List_Type);
 
 
   -- Handle the branches

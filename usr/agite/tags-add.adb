@@ -17,7 +17,7 @@ procedure Add (Root : in String; Rev : in Git_If.Git_Hash) is
   end Set;
 
   procedure Init_List is new Afpx.Utils.Init_List (
-    Git_If.Commit_Entry_Rec, Git_If.Commit_File_Mng, Set, False);
+    Git_If.Commit_Entry_Rec, Git_If.Set, Git_If.Commit_File_Mng, Set, False);
 
 
   -- Afpx stuff
@@ -72,11 +72,12 @@ procedure Add (Root : in String; Rev : in Git_If.Git_Hash) is
   -- Launch viewer on current file, or history on current dir or file
   type Show_List is (Show_View, Show_Diff);
   procedure Show (What : in Show_List) is
-    Pos : constant Positive := Afpx.Line_List.Get_Position;
+    Pos : constant Afpx.Line_List_Mng.Ll_Positive
+        := Afpx.Line_List.Get_Position;
     Commit : Git_If.Commit_Entry_Rec;
   begin
     Commits.Move_At (Pos);
-    Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
+    Commits.Read (Commit, Git_If.Commit_File_Mng.Current);
     declare
       Path : constant String := Directory.Dirname (Commit.File.Image);
       File : constant String := Directory.Basename (Commit.File.Image);
