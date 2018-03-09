@@ -268,6 +268,9 @@ app (2)::
 arbitrary arbitrary.prime_list arbitrary.factors arbitrary.fractions (2)::
      Arbitrary precision operations, prime factor decomposition, fractions.
 
+arbitrary.limited_list (3)::
+     Dynamic list of (limited) private objects, search/sort, unlimited length.
+
 argument (1)::
      Program name and arguments extraction (based on keys).
 
@@ -459,6 +462,9 @@ magic_numbers (1)::
 many_strings (2)::
      Concatenate strings in string.
 
+match (1)::
+     Checks if a number matches a range based criteria.
+
 mod_utils (1)::
      Some utilities for modulus and natural types.
 
@@ -485,9 +491,6 @@ null_procedure (1)::
 
 num_letters (2)::
      Converts a number into english text and reverse.
-
-num_match (1)::
-     Checks if a number matches a range based criteria.
 
 output_flows (2)::
      Pool of shared ans standardized output flows
