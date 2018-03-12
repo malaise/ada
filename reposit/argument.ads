@@ -70,44 +70,38 @@ package Argument is
 
   -- Same but with string and length
   -- May raise Argument_Too_Long
-  procedure Get_Parameter (
-   Parameter : out String;
-   Param_Length : out Natural;
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg);
+  procedure Get_Parameter (Parameter    : out String;
+                           Param_Length : out Natural;
+                           Occurence : in Natural := 1;
+                           Param_Key : in String := Any_Arg);
 
   -- Same but with unbounded string
-  procedure Get_Parameter (
-   Parameter : out As.U.Asu_Us;
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg);
+  procedure Get_Parameter (Parameter : out As.U.Asu_Us;
+                           Occurence : in Natural := 1;
+                           Param_Key : in String := Any_Arg);
 
   -- Result is string and position
   -- May raise Argument_Too_Long
-  procedure Get_Param_And_Pos (
-   Parameter : out String;
-   Param_Length : out Natural;
-   Position : out Natural;
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg);
+  procedure Get_Param_And_Pos (Parameter    : out String;
+                               Param_Length : out Natural;
+                               Position     : out Natural;
+                               Occurence : in Natural := 1;
+                               Param_Key : in String := Any_Arg);
 
   -- Result is unbounded string and position
-  procedure Get_Param_And_Pos (
-   Parameter : out As.U.Asu_Us;
-   Position : out Natural;
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg);
+  procedure Get_Param_And_Pos (Parameter : out As.U.Asu_Us;
+                               Position  : out Natural;
+                               Occurence : in Natural := 1;
+                               Param_Key : in String := Any_Arg);
 
 
   -- Position only
-  function Get_Position (
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg) return Natural;
+  function Get_Position (Occurence : in Natural := 1;
+                         Param_Key : in String := Any_Arg) return Natural;
 
   -- Is (a key) set
-  function Is_Set (
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg) return Boolean;
+  function Is_Set (Occurence : in Natural := 1;
+                   Param_Key : in String := Any_Arg) return Boolean;
 
   -- Number of arguments (0 if no argument)
   function Get_Nbre_Arg return Natural;
@@ -117,12 +111,12 @@ package Argument is
 
   -- Path of program (with last /)
   function Get_Program_Path return String;
-  procedure Get_Program_Path (Path : out String;
+  procedure Get_Program_Path (Path        : out String;
                               Path_Length : out Natural);
 
   -- Name of program
   function Get_Program_Name return String;
-  procedure Get_Program_Name (Name : out String;
+  procedure Get_Program_Name (Name        : out String;
                               Name_Length : out Natural);
 
   Argument_Not_Found, Argument_Too_Long : exception;

@@ -23,12 +23,10 @@ package body Argument is
   use Loc_Arg;
 
   -- The common "heart" procedure
-  procedure Get_Param_And_Pos (
-   Parameter : out As.U.Asu_Us;
-   Position : out Natural;
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg) is
-
+  procedure Get_Param_And_Pos (Parameter : out As.U.Asu_Us;
+                               Position  : out Natural;
+                               Occurence : in Natural := 1;
+                               Param_Key : in String := Any_Arg) is
     Comform_Occurence : Natural := 0;
     First_Char : Positive;
   begin
@@ -93,9 +91,8 @@ package body Argument is
   end Get_Param_And_Pos;
 
 
-  function Get_Parameter (
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg) return String is
+  function Get_Parameter (Occurence : in Natural := 1;
+                          Param_Key : in String := Any_Arg) return String is
     Str : As.U.Asu_Us;
     Position : Natural;
   begin
@@ -103,32 +100,29 @@ package body Argument is
     return Str.Image;
   end Get_Parameter;
 
-  procedure Get_Parameter (
-   Parameter : out String;
-   Param_Length : out Natural;
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg) is
+  procedure Get_Parameter (Parameter    : out String;
+                           Param_Length : out Natural;
+                           Occurence : in Natural := 1;
+                           Param_Key : in String := Any_Arg) is
     Position : Natural;
   begin
     Get_Param_And_Pos (Parameter, Param_Length, Position, Occurence, Param_Key);
   end Get_Parameter;
 
-  procedure Get_Parameter (
-   Parameter : out As.U.Asu_Us;
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg) is
+  procedure Get_Parameter (Parameter : out As.U.Asu_Us;
+                           Occurence : in Natural := 1;
+                           Param_Key : in String := Any_Arg) is
     Position : Natural;
   begin
     Get_Param_And_Pos (Parameter, Position, Occurence, Param_Key);
   end Get_Parameter;
 
 
-  procedure Get_Param_And_Pos (
-   Parameter : out String;
-   Param_Length : out Natural;
-   Position : out Natural;
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg) is
+  procedure Get_Param_And_Pos (Parameter    : out String;
+                               Param_Length : out Natural;
+                               Position     : out Natural;
+                               Occurence : in Natural := 1;
+                               Param_Key : in String := Any_Arg) is
     Str : As.U.Asu_Us;
   begin
     Get_Param_And_Pos (Str, Position, Occurence, Param_Key);
@@ -140,9 +134,8 @@ package body Argument is
   end Get_Param_And_Pos;
 
 
-  function Is_Set (
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg) return Boolean is
+  function Is_Set (Occurence : in Natural := 1;
+                   Param_Key : in String := Any_Arg) return Boolean is
     Str : As.U.Asu_Us;
     Pos : Natural;
   begin
@@ -157,9 +150,8 @@ package body Argument is
       return False;
   end Is_Set;
 
- function Get_Position (
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg) return Natural is
+ function Get_Position (Occurence : in Natural := 1;
+                        Param_Key : in String := Any_Arg) return Natural is
     Str : As.U.Asu_Us;
     Pos : Natural;
   begin
@@ -220,7 +212,7 @@ package body Argument is
     return Str.Slice (Start, Len);
   end Get_Program_Name;
 
-  procedure Get_Program_Name (Name : out String;
+  procedure Get_Program_Name (Name        : out String;
                               Name_Length : out Natural) is
     Str : As.U.Asu_Us;
     Pos : Natural;

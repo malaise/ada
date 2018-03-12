@@ -12,7 +12,7 @@ package Scanner is
   -- The format is a string that relies on the following types (<type>):
   -- b : Boolean
   -- t : Trilean
-  -- l : Long integer (Long_Longs.ll_Integer)
+  -- l : Long long integer (Long_Longs.ll_Integer)
   -- d : Duration
   -- r : Real (My_Math.Real)
   -- s : String (As.U.Asu_Us)
@@ -40,7 +40,7 @@ package Scanner is
   --  otherwise the leading [ ]* is not allowed
   -- w can have a <len>, then [ ]*[^ \t\r\n\f\v]+ is expected,
   --  otherwise the leading [ ]* is not allowed
-  -- "%%" denotes the character '%'.
+  -- "%%" denotes the character '%'
   -- Any other character in the format denotes the same character expected in
   --  the data
   -- Examples:

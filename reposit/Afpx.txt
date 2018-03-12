@@ -117,7 +117,7 @@ Action is (one at a time):
 
 By default, afpx_rnb does not allow to delete a field if its number is
 referenced somewhere else in the descriptor. The <force> option overwrites this
-security (and leads reference to bu updated as '${Field_0...}'.
+security (and leads reference to be updated as '${Field_0...}'.
 
 .Examples
 
