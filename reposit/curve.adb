@@ -394,11 +394,14 @@ package body Curve is
       -- Draw help message
       procedure Draw_Help (Action : in Draw_Action) is
 
+        Col1 : constant Con_Io.Col_Range := 16;
+        Col2 : constant Con_Io.Col_Range := 10;
+
         -- Dedicated message according to zoom mode (hide/show)
         procedure Put_Mode (Mode : in Zoom_Mode_List) is
         begin
           Screen.Move (Screen.Row_Range_Last - 11,
-                       Screen.Col_Range_Last - 18);
+                       Screen.Col_Range_Last - Col1);
           Screen.Put ( (case Mode is
                           when Init => "Point & click L",
                           when Drag => "Drag L & release",
@@ -413,6 +416,7 @@ package body Curve is
         end if;
 
         -- Help on zoom only if mouse
+        -- If mouse not installed : color is set here
         Screen.Set_Foreground (Con_Io.Color_Of ("Magenta"));
 
         -- Previous mode to hide : Something drawn and new thing different
@@ -435,38 +439,35 @@ package body Curve is
         -- Global help
         if Action = Toggle or else Action = Init then
           Screen.Move (Screen.Row_Range_Last - 10,
-                       Screen.Col_Range_Last - 18);
-          Screen.Put ("Current ZOOM: " & Normal(Curr_Zoom_No, 1) );
+                       Screen.Col_Range_Last - Col1);
+          Screen.Put ("Current ZOOM = " & Normal(Curr_Zoom_No, 1) );
           Screen.Move (Screen.Row_Range_Last - 9,
-                       Screen.Col_Range_Last - 18);
-          Screen.Put ("0.." & Normal(Last_Zoom_No, 1) & ": other ZOOM");
-
-          -- if mouse not installed : color is set here
-          Screen.Set_Foreground (Con_Io.Color_Of ("Magenta"));
+                       Screen.Col_Range_Last - Col1);
+          Screen.Put ("+/-,0.." & Normal(Last_Zoom_No, 1) & ": ZOOM");
 
           Screen.Move (Screen.Row_Range_Last - 8,
-                       Screen.Col_Range_Last - 10);
+                       Screen.Col_Range_Last - Col2);
           Screen.Put ("SWITCHES:");
           Screen.Move (Screen.Row_Range_Last - 7,
-                       Screen.Col_Range_Last - 10);
+                       Screen.Col_Range_Last - Col2);
           Screen.Put ("H * Help");
           Screen.Move (Screen.Row_Range_Last - 6,
-                       Screen.Col_Range_Last - 10);
+                       Screen.Col_Range_Last - Col2);
           Screen.Put ("G   Grab");
           Screen.Move (Screen.Row_Range_Last - 5,
-                       Screen.Col_Range_Last - 10);
+                       Screen.Col_Range_Last - Col2);
           Screen.Put ("A   Axes");
           Screen.Move (Screen.Row_Range_Last - 4,
-                       Screen.Col_Range_Last - 10);
+                       Screen.Col_Range_Last - Col2);
           Screen.Put ("P   Points");
           Screen.Move (Screen.Row_Range_Last - 3,
-                       Screen.Col_Range_Last - 10);
+                       Screen.Col_Range_Last - Col2);
           Screen.Put ("C   Curve");
           Screen.Move (Screen.Row_Range_Last - 2,
-                       Screen.Col_Range_Last - 10);
+                       Screen.Col_Range_Last - Col2);
           Screen.Put ("S   Scales");
           Screen.Move (Screen.Row_Range_Last - 1,
-                       Screen.Col_Range_Last - 10);
+                       Screen.Col_Range_Last - Col2);
           Screen.Put ("Esc Exit");
         end if;
 
