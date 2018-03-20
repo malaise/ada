@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V35.01
+V35.02
 
 General purpose
 ---------------
@@ -1701,8 +1701,8 @@ current repository (which performs a 'git reset --hard'), then applies it
 xref:XDir[directory] menu. +
 The new stash has been inserted in the list. +
 
-NOTE: You can un-apply this stash ('git reset --hard') by selecting the entry
-"'/'" of the xref:XDir[directory] list and cliking on the xref:XRevert[revert]
+NOTE: You can un-apply this stash with the option 'Hard' of the
+xref:XReset[reset] menu.
 button.
 
 AddReset::
@@ -2035,7 +2035,7 @@ have already been published, and have been pulled by some other repositories. +
 The four functions of Agite that alter the history are:
 
 * The xref:XReset[reset] functions of the xref:XBranches[branches] and of the 
-xref:XHist[history] menus rewrites the history of the reset branch,
+xref:XHist[history] menus both rewrite the history of the reset branch,
 * The xref:XRebase[rebase] function of the xref:XBranches[branches] menu
 rewrites the history of the rebased branch (which is reset),
 * The xref:XReorg[reorg] function of the xref:XHist[history] menu rewrites
@@ -2048,9 +2048,9 @@ initial entry to the head of the corresponding tracking branch, which should
 be a safe reference for a xref:XReorg[reorg] or xref:XHReset[reset]. When the
 reference is set to below (before) the head of the remote, then these both
 buttons become red. +
-Similarly, when they are active the xref:XRebase[rebase] and xref:XBReset[reset]
-buttons of the xref:XBranches[branches] menu are in red (except reset to current
-branch).
+Similarly, when they are active, the xref:XRebase[rebase] and
+xref:XBReset[reset] buttons of the xref:XBranches[branches] menu are in red
+(except reset to current branch).
 
 NOTE: The following operations do not rewrite the history: +
 * The xref:XCherry[cherry-pick] function, because it applies commits to the
