@@ -205,6 +205,12 @@ package body Commit is
           exit when Field = Afpx_Xref.Commit.Comment7;
           Field := Field + 1;
           Prev := I + 1;
+        elsif I = Comment.Length then
+          -- Last line has no Lf
+          Utils.X.Encode_Field (Comment.Slice (Prev, I), Field,
+                                Keep_Tail => False,
+                                Show_Cut => False);
+          exit;
         end if;
       end loop;
     end if;
