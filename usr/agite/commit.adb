@@ -5,11 +5,11 @@ with Utils.X, Config, Push_Pull, Afpx_Xref, Confirm, Error, Stash, Reset;
 package body Commit is
 
   -- The text of the comment
-  Comment : As.U.Asu_Us;
+  Comment, Prev_Comment : As.U.Asu_Us;
   Nb_Row_Comment : constant := 7;
 
   -- Encode comment from a commit
-  function Encode_Commit (Ref : Git_If.Git_Hash) return As.U.Asu_Us is
+  function Get_Comment_Of (Ref : Git_If.Git_Hash) return As.U.Asu_Us is
     Hash : Git_If.Git_Hash;
     Merged : Boolean;
     Date : Git_If.Iso_Date;
@@ -34,7 +34,7 @@ package body Commit is
       end if;
     end loop;
     return Result;
-  end Encode_Commit;
+  end Get_Comment_Of;
 
   -- List width
   List_Width : Afpx.Width_Range;
@@ -178,8 +178,6 @@ package body Commit is
     and then Comment.Element (Comment.Length) /= Aski.Lf then
       Comment.Append (Aski.Lf);
     end if;
-    -- Save persistent comment
-    Config.Save_Comment (Comment.Image);
   end Decode_Comment;
 
   -- Encode Comment fields
@@ -311,7 +309,8 @@ package body Commit is
            Title : String;
            Hash_For_Comment : Git_If.Git_Hash;
            Allow_Modif : Boolean;
-           Allow_Commit : Commit_Allow_List) return Boolean is
+           Allow_Commit : Commit_Allow_List;
+           Restore_Comment : Boolean) return Boolean is
 
     -- Editor and Differator
     Editor, Differator : As.U.Asu_Us;
@@ -399,6 +398,11 @@ package body Commit is
       -- Encode Root
       Utils.X.Encode_Field (Root, Afpx_Xref.Commit.Root);
       -- Encode comment
+      if Restore_Comment then
+        Comment := Prev_Comment;
+      else
+        Comment.Set_Null;
+      end if;
       Encode_Comment;
       -- Reset Ptg stuff
       Reset_Ptg;
@@ -703,13 +707,13 @@ package body Commit is
     end Do_Sign;
 
     -- Decode comments and commit
-    procedure Do_Commit is
+    function Do_Commit return Boolean is
       Result : As.U.Asu_Us;
     begin
       Decode_Comment;
       if Comment.Is_Null then
         Error ("Commit", "Empty comment", "");
-        return;
+        return False;
       end if;
       if not Some_Staged
       and then not Confirm (
@@ -719,16 +723,18 @@ package body Commit is
           Ok_Cancel => True,
           Show_List => False) then
         -- Cancelled by user
-        return;
+        return False;
       end if;
       -- Git_If.Commit
       Result := As.U.Tus (Git_If.Do_Commit (Comment.Image));
       if Result.Is_Null then
         Commit_Done := True;
-        return;
+        return True;
+      else 
+        -- Show error
+        Error ("Commit", "", Result.Image);
+        return False;
       end if;
-      -- Show error
-      Error ("Commit", "", Result.Image);
     end Do_Commit;
 
     use type Afpx.Field_Range;
@@ -745,7 +751,7 @@ package body Commit is
 
     -- Encode the comment of Hash_For_Comment into Comment
     if Hash_For_Comment /= Git_If.No_Hash then
-      Comment := Encode_Commit (Hash_For_Comment);
+      Comment := Get_Comment_Of (Hash_For_Comment);
     end if;
 
     -- Init Afpx
@@ -799,39 +805,19 @@ package body Commit is
                   Ptg_Result.Field_No
                 - Utils.X.List_Scroll_Fld_Range'First
                 + 1);
-            when Afpx_Xref.Commit.Reread =>
-              -- Reread button
-              Reread (True);
-            when Afpx_Xref.Commit.Edit =>
-              Do_Edit;
-            when Afpx_Xref.Commit.Diff =>
-              Do_Diff;
-            when Afpx_Xref.Commit.Stash =>
-              Stash.Handle (Root);
-              Init (In_Loop, Title);
-              Reread (True);
-            when Afpx_Xref.Commit.Reset =>
-              -- Allow only hard reset to head
-              Dummy_Result := Reset (Root, "", Only_Hard => True);
-              Init (In_Loop, Title);
-              Reread (True);
 
-            when Afpx_Xref.Commit.Stage =>
-              -- Stage button
-              Do_Stage (True, True);
-            when Afpx_Xref.Commit.Unstage =>
-              -- Unstage button
-              Do_Stage (False, True);
-            when Afpx_Xref.Commit.Stage_All =>
-              -- StageAll button
-              Do_Stage_All (In_Loop);
             when Afpx_Xref.Commit.Copy =>
               -- Copy button
               Decode_Comment;
               Afpx.Set_Selection (Comment.Image);
+
             when Afpx_Xref.Commit.Sign =>
               -- Sign button
               Do_Sign;
+            when Afpx_Xref.Commit.Prev =>
+              -- Restore previous comment
+              Comment := Prev_Comment;
+              Encode_Comment;
             when Afpx_Xref.Commit.Clear =>
               -- Clear button
               Comment.Set_Null;
@@ -849,9 +835,41 @@ package body Commit is
             when Afpx_Xref.Commit.Split_Line =>
               -- SplitLine button
               Split_Line;
+
+            when Afpx_Xref.Commit.Reread =>
+              -- Reread button
+              Reread (True);
+            when Afpx_Xref.Commit.Stage =>
+              -- Stage button
+              Do_Stage (True, True);
+            when Afpx_Xref.Commit.Unstage =>
+              -- Unstage button
+              Do_Stage (False, True);
+            when Afpx_Xref.Commit.Stage_All =>
+              -- StageAll button
+              Do_Stage_All (In_Loop);
+
+            when Afpx_Xref.Commit.Edit =>
+              Do_Edit;
+            when Afpx_Xref.Commit.Diff =>
+              Do_Diff;
+            when Afpx_Xref.Commit.Stash =>
+              Stash.Handle (Root);
+              Init (In_Loop, Title);
+              Reread (True);
+            when Afpx_Xref.Commit.Reset =>
+              -- Allow only hard reset to head
+              Dummy_Result := Reset (Root, "", Only_Hard => True);
+              Init (In_Loop, Title);
+              Reread (True);
+
             when Afpx_Xref.Commit.Commit =>
               -- Commit button
-              Do_Commit;
+              if Do_Commit then
+                -- Save comment for next time
+                Prev_Comment := Comment;
+                Config.Save_Comment (Prev_Comment.Image);
+              end if;
               Init (In_Loop, Title);
               Reread (True);
             when Afpx_Xref.Commit.Push =>
@@ -895,7 +913,7 @@ package body Commit is
     Dummy : Boolean;
   begin
     Dummy := Common_Handle (Root, False, "", Git_If.No_Hash,
-                            Allow_Modif, Allow);
+                            Allow_Modif, Allow, False);
   end Handle;
 
   -- Handle the commit of modifications within a loop (of cherry-pick)
@@ -909,44 +927,46 @@ package body Commit is
                    Allow_Modif : Boolean := True;
                    Allow_Commit : Commit_Allow_List := Allow) return Boolean is
     (Common_Handle (Root, True, Title, Hash_For_Comment,
-                    Allow_Modif, Allow_Commit));
+                    Allow_Modif, Allow_Commit, True));
 
   -- Get comment of a commit or comment previously entered
   function Get_Comment (Hash : Git_If.Git_Hash) return String is
-    (if Hash /= Git_If.No_Hash then Encode_Commit (Hash).Image
-     else Comment.Image);
+    (if Hash /= Git_If.No_Hash then Get_Comment_Of (Hash).Image
+     else Prev_Comment.Image);
 
   -- Set default comment for next commit
   procedure Set_Comment (Str : in String) is
   begin
-    Comment := As.U.Tus (Str);
-    if not Comment.Is_Null
-    and then Comment.Element (Comment.Length) /= Aski.Lf then
-      Comment.Append (Aski.Lf);
+    Prev_Comment := As.U.Tus (Str);
+    if not Prev_Comment.Is_Null
+    and then Prev_Comment.Element (Prev_Comment.Length) /= Aski.Lf then
+      Prev_Comment.Append (Aski.Lf);
     end if;
+    -- Save persistent comment
+    Config.Save_Comment (Prev_Comment.Image);
   end Set_Comment;
 
   -- Concat a new comment to the default comment for next commit
   procedure Cat_Comment (Str : in String) is
     Line_Nb : Natural;
   begin
-    Comment.Append (Str);
+    Prev_Comment.Append (Str);
     -- Locate last Lf
     Line_Nb := 0;
-    for I in 1 .. Comment.Length loop
-      if Comment.Element (I) = Aski.Lf then
+    for I in 1 .. Prev_Comment.Length loop
+      if Prev_Comment.Element (I) = Aski.Lf then
         -- Got a line
         Line_Nb := Line_Nb + 1;
         if Line_Nb = Nb_Row_Comment then
           -- Delete tail of comment (if any)
-          Comment.Delete (I + 1, Comment.Length);
+          Prev_Comment.Delete (I + 1, Prev_Comment.Length);
           exit;
         end if;
       end if;
     end loop;
-    if not Comment.Is_Null
-    and then Comment.Element (Comment.Length) /= Aski.Lf then
-      Comment.Append (Aski.Lf);
+    if not Prev_Comment.Is_Null
+    and then Prev_Comment.Element (Prev_Comment.Length) /= Aski.Lf then
+      Prev_Comment.Append (Aski.Lf);
     end if;
   end Cat_Comment;
 

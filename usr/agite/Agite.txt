@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V35.03
+V35.04
 
 General purpose
 ---------------
@@ -1392,7 +1392,7 @@ empty comment. This is valid only if the next (not-merged not-dropped) cherry
 is (possibly after some 'fixup') a 'squash'.
 
 * \'R' denotes a cherry picked for 'rewording', which will be applied then
-proposed for edition of the comment in the xref:XCommit[commit] menu.
+proposed for modification of the comment in the xref:XCommit[commit] menu.
 It will be possible to edit the comment, commit the change (if the next
 cherry is not a 'squash' or a 'fixup') and click on the 'Done' button.
 
@@ -1405,7 +1405,7 @@ sense if the next cherry is a 'squash' or a 'fixup'.
 * \'S' denotes a cherry picked for 'squash', which will be applied and folded
 with the previous cherry. The comment of the cherry will be concatenated to
 the currently retained comment. If the next cherry is not a 'squash' nor a
-'fixup', then the overall comment will be proposed for 'edition' and the 
+'fixup', then the overall comment will be proposed for modification and the 
 overall result will be committed. 
 
 * \'F' denotes a cherry picked for 'fixup', which will be applied and folded
@@ -1420,7 +1420,7 @@ Double-clicking on an entry of the list toggles its selection from 'dropped'
 to 'picked' and vice versa.
 
 NOTE: The logic is the same as in Git interactive rebase (except that Git does
-not implement the 'Wipe' status).
+not implement the 'Wipe' action).
 
 NOTE: The commits that have already been merged through the \'fast forward'
 mechanism are not listed at all.
@@ -1454,7 +1454,7 @@ If some commits are selected, then the button is 'Go'. The picked cherries
 are then listed in a confirmation screen. +
 If confirmed, then the picked cherries are applied one by one onto the
 current branch. +
-An action to 'edit' or 'reword' launches the
+An action to 'edit' or 'reword' (and possibly 'squash' launches the
 xref:XCommit[commit] menu.  It is possible to modify some files and the
 comment, and/or the selection of files, and to make several commits. 
 See the section xref:XCherryHowto[Cherry-pick advanced how to] for more details
@@ -1492,9 +1492,16 @@ entering a comment for the commit:
 This shows the current branch and the path of the root of the current
 repository.
 
+.Copy
+Copy the text of the comment in the xref:XX11Selection[X11 selection buffer].
+
 .Sign
 
 Append the user name and email address to the comment.
+
+.Prev
+
+anchor:XPrev[]Initialise the comment to the one of the previous commit.
 
 .Clear
 
@@ -1519,9 +1526,6 @@ Split in two the current line before the current position (as a key 'Return'
 would do). Drops the last line of the comment if it exceeds the maximum number
 of lines (7).
 
-.Copy
-Copy the text of the comment in the xref:XX11Selection[X11 selection buffer].
-
 .Comment
 
 You can enter up to 7 lines of up to 75 characters each for the comment. +
@@ -1530,7 +1534,8 @@ into get fields.
 
 NOTE: The comment must not be empty when committing. +
 The text of the comment is saved in the xref:XConfig[configuration file] so that
-it is persistent from one session to another.
+it can be retrieved from one session to another (with the xref:XPrev[Prev]
+button).
 
 .List of changes
 
@@ -1616,8 +1621,8 @@ if there are some unstaged changes (will do a partial commit). +
 To prevent successive empty commits, the button becomes inactive if there is
 no staged changes (left) after a commit.
 
-NOTE: When editing commits during a xref:XCherry[cherry pick] session, the Commit
-button is active only if there are some staged changes (empty commit is
+NOTE: When editing commits during a xref:XCherry[cherry pick] session, the
+Commit button is active only if there are some staged changes (empty commit is
 forbidden).
 
 .Push
@@ -1871,6 +1876,9 @@ of the xref:XCherry[cherry pick].
 Cherry-pick advanced how-to
 ---------------------------
 anchor:XCherryHowto[]
+
+NOTE: During the loop of cherry-pick, the comment of the commit is
+autmatically propagated from a commit to the next one when this is relevant.
 
 Use-cases
 ~~~~~~~~~
