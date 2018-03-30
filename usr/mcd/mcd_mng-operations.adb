@@ -1134,11 +1134,15 @@ package body Operations is
       raise Argument_Mismatch;
     end if;
     if X.Kind = Arbi then
-      return (Kind => Arbi, Val_Arbi => Z.Val_Arbi * Y.Val_Arbi / X.Val_Arbi);
+      return (Kind => Arbi,
+              Val_Arbi => Arbitrary.Roundiv (Z.Val_Arbi * Y.Val_Arbi,
+                                             X.Val_Arbi));
     elsif X.Kind = Frac then
       return (Kind => Frac, Val_Frac => Z.Val_Frac * Y.Val_Frac / X.Val_Frac);
     elsif X.Kind = Inte then
-      return (Kind => Inte, Val_Inte => Z.Val_Inte * Y.Val_Inte / X.Val_Inte);
+      return (Kind => Inte,
+              Val_Inte => My_Math.Roundiv (Z.Val_Inte * Y.Val_Inte,
+                                           X.Val_Inte));
     else
       return (Kind => Real, Val_Real => Z.Val_Real * Y.Val_Real / X.Val_Real);
     end if;

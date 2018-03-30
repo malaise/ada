@@ -1,3 +1,14 @@
 #!/bin/bash
 cd $HOME/ada/usr/mcd
-echo "$1" "$2" "$3" proport putl | mcd
+export REF=$1
+export NEW=$2
+shift
+shift
+RES=""
+while [ -n "$1" ] ; do
+  ONE=`echo "$REF" "$NEW" "$1" proport putl | mcd`
+  RES="$RES$ONE "
+  shift
+done
+echo $RES
+
