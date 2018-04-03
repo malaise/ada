@@ -75,7 +75,13 @@ elif [ "$COMMAND" = "gnatls" ] ; then
   if [ -d $LIB ] ; then
     export GNATFLAGS="-I$LIB $GNATFLAGS" 
   fi
+elif [ "$COMMAND" = "gnatmetric" ] ; then
+  GNATFLAGS=""
+  ADAOPT="-q -sfn"
+  if [ -n $ADAVIEW ] ; then
+    export POSTARGS="-cargs -I $ADAVIEW"
+  fi
 fi
 
-exec $GNATPATH/$COMMAND $GNATFLAGS $ADAOPT $ADAFLAGS $*
+exec $GNATPATH/$COMMAND $GNATFLAGS $ADAOPT $ADAFLAGS $* $POSTARGS
 
