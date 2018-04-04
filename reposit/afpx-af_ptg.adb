@@ -733,6 +733,100 @@ package body Af_Ptg is
     Prev_Cursor_Field := List_Field_No;
   end Redisplay;
 
+  -- Init the list
+  procedure Init_List (List_Present : out Boolean) is
+    use type Line_List_Mng.Ll_Natural;
+  begin
+    -- List present : defined, activated and not empty
+    List_Present := Af_Dscr.Has_List
+           and then Af_Dscr.Fields(Lfn).Activated
+           and then not Line_List.Is_Empty;
+
+    -- Update list if Line_List has changed
+    if List_Present then
+
+      if Af_List.Get_Status.Ids_Selected(List_Left)
+            /= Line_List.Get_Position then
+        Af_List.Set_Selected (List_Left, Line_List.Get_Position);
+        if Af_List.Get_Status.Ids_Selected(List_Left)
+         = Af_List.Get_Status.Ids_Selected(List_Right) then
+          -- User has moved selection to Id_Selected_Right,
+          --  -> Reset Id_Selected_Right
+          Af_List.Set_Selected (List_Right, 0);
+        end if;
+      end if;
+    elsif Af_Dscr.Has_List then
+      -- List exists but is empty or inactive
+      Af_List.Set_Selected (List_Left, 0);
+      Af_List.Set_Selected (List_Right, 0);
+    end if;
+
+    -- Force List to be updated if Line_List has changed
+    if Line_List.Is_Modified then
+      Af_Dscr.Fields(Lfn).Modified := True;
+      Line_List.Modification_Ack;
+    end if;
+
+    -- Update list
+    if Af_Dscr.Has_List
+    and then (Need_Redisplay or else Af_Dscr.Fields(Lfn).Modified) then
+      if not Af_Dscr.Has_List then
+        -- No list in this Dscr
+        null;
+      elsif not Af_Dscr.Fields(Lfn).Activated then
+        -- List not active
+        Erase_Fld (Lfn);
+      elsif Line_List.Is_Empty then
+        -- Empty list
+        Af_List.Display(1);
+      else
+        -- List is present (exists, active and not empty)
+        if Af_List.Get_Status.Id_Top = 0 then
+          -- First time we display a non empty list
+          Af_List.Display(1);
+        else
+          -- Redisplay
+          Af_List.Display(Af_List.Get_Status.Id_Top);
+        end if;
+      end if;
+    end if;
+  end Init_List;
+
+  -- Handle bacskspace key
+  procedure Handle_Backspace (Field      : in out Afpx_Typ.Field_Rec;
+                              Pos        : in out Positive;
+                              Get_Handle : in out Get_Handle_Rec;
+                              Cursor_Field : in Absolute_Field_Range;
+                              Field_Start  : in Afpx_Typ.Char_Str_Range) is
+    Change : Boolean;
+  begin
+    if Pos = 1 then
+      -- Cursor is at Leftmost column of field
+      if Field.Offset = Afpx_Typ.Offset_Range'First then
+        -- Fully at beginning of string => nothing happens
+        Change := False;
+      else
+        -- Shift string right
+        Field.Offset := Field.Offset - 1;
+        Change := True;
+      end if;
+    else
+      Pos := Pos - 1;
+      Change := True;
+    end if;
+    if Change then
+      Af_Dscr.Fields(Cursor_Field).Offset := Field.Offset;
+      Get_Handle.Cursor_Col := Pos - 1;
+      -- Overwrite char at Pos, by scrolling left and append space
+      Af_Dscr.Chars(Field_Start + Pos - 1
+                 .. Field.Char_Index + Field.Data_Len - 2) :=
+        Af_Dscr.Chars(Field_Start + Pos
+                   .. Field.Char_Index + Field.Data_Len - 1);
+      Af_Dscr.Chars(Field.Char_Index + Field.Data_Len - 1) :=
+        Con_Io.Space;
+    end if;
+  end Handle_Backspace;
+
   -- Print the fields and the list, then gets
   procedure Ptg (Get_Handle    : in out Get_Handle_Rec;
                  Result        : out Result_Rec;
@@ -765,7 +859,6 @@ package body Af_Ptg is
     List_Init : Boolean;
     List_Scrolled : Boolean;
     Field_Start : Afpx_Typ.Char_Str_Range;
-    Change : Boolean;
     Char : Unicode_Number;
     Index : Natural;
 
@@ -795,59 +888,7 @@ package body Af_Ptg is
 
     -- The infinite loop
     loop
-
-      -- List present : defined, activated and not empty
-      List_Present := Af_Dscr.Has_List
-             and then Af_Dscr.Fields(Lfn).Activated
-             and then not Line_List.Is_Empty;
-
-      -- Update list if Line_List has changed
-      if List_Present then
-        if Af_List.Get_Status.Ids_Selected(List_Left)
-              /= Line_List.Get_Position then
-          Af_List.Set_Selected (List_Left, Line_List.Get_Position);
-          if Af_List.Get_Status.Ids_Selected(List_Left)
-           = Af_List.Get_Status.Ids_Selected(List_Right) then
-            -- User has moved selection to Id_Selected_Right,
-            --  -> Reset Id_Selected_Right
-            Af_List.Set_Selected (List_Right, 0);
-          end if;
-        end if;
-      elsif Af_Dscr.Has_List then
-        -- List exists but is empty or inactive
-        Af_List.Set_Selected (List_Left, 0);
-        Af_List.Set_Selected (List_Right, 0);
-      end if;
-
-      -- Force List to be updated if Line_List has changed
-      if Line_List.Is_Modified then
-        Af_Dscr.Fields(Lfn).Modified := True;
-        Line_List.Modification_Ack;
-      end if;
-
-      -- Update list
-      if Af_Dscr.Has_List
-      and then (Need_Redisplay or else Af_Dscr.Fields(Lfn).Modified) then
-        if not Af_Dscr.Has_List then
-          -- No list in this Dscr
-          null;
-        elsif not Af_Dscr.Fields(Lfn).Activated then
-          -- List not active
-          Erase_Fld (Lfn);
-        elsif Line_List.Is_Empty then
-          -- Empty list
-          Af_List.Display(1);
-        else
-          -- List is present (exists, active and not empty)
-          if Af_List.Get_Status.Id_Top = 0 then
-            -- First time we display a non empty list
-            Af_List.Display(1);
-          else
-            -- Redisplay
-            Af_List.Display(Af_List.Get_Status.Id_Top);
-          end if;
-        end if;
-      end if;
+      Init_List (List_Present);
 
       -- Call List_Scrolled_Cb only once, when called
       if Af_Dscr.Has_List and then List_Change_Cb /= null
@@ -928,31 +969,8 @@ package body Af_Ptg is
         -- Extra Con_Io codes returned to preserve a scrolling Get field
         when Con_Io.Backspace =>
           if Get_Active then
-            if Pos = 1 then
-              -- Cursor is at Leftmost column of field
-              if Field.Offset = Afpx_Typ.Offset_Range'First then
-                -- Fully at beginning of string => nothing happens
-                Change := False;
-              else
-                -- Shift string right
-                Field.Offset := Field.Offset - 1;
-                Change := True;
-              end if;
-            else
-              Pos := Pos - 1;
-              Change := True;
-            end if;
-            if Change then
-              Af_Dscr.Fields(Cursor_Field).Offset := Field.Offset;
-              Get_Handle.Cursor_Col := Pos - 1;
-              -- Overwrite char at Pos, by scrolling left and append space
-              Af_Dscr.Chars(Field_Start + Pos - 1
-                         .. Field.Char_Index + Field.Data_Len - 2) :=
-                Af_Dscr.Chars(Field_Start + Pos
-                           .. Field.Char_Index + Field.Data_Len - 1);
-              Af_Dscr.Chars(Field.Char_Index + Field.Data_Len - 1) :=
-                Con_Io.Space;
-            end if;
+            Handle_Backspace (Field, Pos, Get_Handle,
+                              Cursor_Field, Field_Start);
           end if;
         when Con_Io.Suppr =>
           if Get_Active then

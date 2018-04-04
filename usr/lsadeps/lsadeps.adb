@@ -28,7 +28,7 @@ procedure Lsadeps is
    18 => (True,  'T', As.U.Tus ("tab"), False, True, As.U.Tus ("size")),
    19 => (False, 'o', As.U.Tus ("once"), False),
    20 => (False, 'L', As.U.Tus ("loop"), False)
-);
+  );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   Include_Index : constant Argument_Parser.The_Keys_Range := 9;
   Recursive_Index : constant Argument_Parser.The_Keys_Range := 10;
@@ -234,168 +234,179 @@ procedure Lsadeps is
   Perfo : constant Trace.Severities := Trace.Debug * 2;
 
   use type As.U.Asu_Us;
+
+  function Parse_Options return Boolean is
+  begin
+    -- Parse keys and options
+    Arg_Dscr := Argument_Parser.Parse (Keys);
+    if not Arg_Dscr.Is_Ok then
+      Error (Arg_Dscr.Get_Error);
+    end if;
+
+    -- Help
+    if Arg_Dscr.Is_Set (1) then
+      Usage;
+      Basic_Proc.Set_Error_Exit_Code;
+      return False;
+    end if;
+
+    -- Version
+    if Arg_Dscr.Is_Set (2) then
+      Basic_Proc.Put_Line_Output (Argument.Get_Program_Name & " " & Version);
+      Basic_Proc.Set_Error_Exit_Code;
+      return False;
+    end if;
+
+    -- Modes
+    if Arg_Dscr.Is_Set (4) then
+      Specs_Mode := True;
+    end if;
+    if Arg_Dscr.Is_Set (5) then
+      Revert_Mode := True;
+    end if;
+    if Specs_Mode and then Revert_Mode then
+      Error ("Specs and revert modes are mutually exclusive");
+    end if;
+    if Arg_Dscr.Is_Set (6) then
+      Tree_Mode := True;
+    end if;
+    if Arg_Dscr.Is_Set (7) then
+      Direct_Mode := True;
+    end if;
+    if Arg_Dscr.Is_Set (8) then
+      Files_Mode := True;
+    end if;
+    if Arg_Dscr.Is_Set (13) then
+      All_Mode := True;
+    end if;
+    if Arg_Dscr.Is_Set (14) then
+      Children_Mode := True;
+    end if;
+    if Arg_Dscr.Is_Set (15) then
+      Bodies_Mode := True;
+    end if;
+    if Bodies_Mode and then not Revert_Mode then
+      Error ("Bodies mode is allowed only in revert mode");
+    end if;
+    if Arg_Dscr.Is_Set (17) then
+      Restrict_Mode := True;
+    end if;
+    if Bodies_Mode and then Restrict_Mode then
+      Error ("Restrict mode is not allowed in bodies mode");
+    end if;
+    if Arg_Dscr.Is_Set (16) then
+      Fast_Mode := True;
+    end if;
+    if Arg_Dscr.Is_Set (19) then
+      Once_Mode := True;
+    end if;
+
+    -- Check mode
+    if Arg_Dscr.Is_Set (3) then
+      -- No option
+      if Specs_Mode or else Revert_Mode or else Tree_Mode or else Direct_Mode
+      or else Files_Mode or else Bodies_Mode or else Restrict_Mode
+      or else Once_Mode then
+        Error ("Check mode does not support options");
+      end if;
+      -- No include
+      if Arg_Dscr.Get_Nb_Occurences (9) /= 0
+      or else Arg_Dscr.Get_Nb_Occurences (10) /= 0 then
+        Error ("Check mode is exclusive with simple or recursive includes");
+      end if;
+      Check_Mode := True;
+    end if;
+
+    -- Loop mode
+    if Arg_Dscr.Is_Set (20) then
+      -- No option excep Specs
+      if Revert_Mode or else Tree_Mode or else Direct_Mode
+      or else Files_Mode or else Bodies_Mode or else Restrict_Mode
+      or else Once_Mode then
+        Error ("Loop mode supports only option specs");
+      end if;
+      -- No include
+      if Arg_Dscr.Get_Nb_Occurences (9) /= 0
+      or else Arg_Dscr.Get_Nb_Occurences (10) /= 0 then
+        Error ("Loop mode is exclusive with simple or recursive includes");
+      end if;
+      Loop_Mode := True;
+    end if;
+
+    -- List mode
+    if Arg_Dscr.Is_Set (12) then
+      -- No option except File and all
+      if Specs_Mode or else Revert_Mode or else Tree_Mode
+      or else Direct_Mode or else Bodies_Mode or else Restrict_Mode
+      or else Once_Mode then
+        Error ("List mode only supports file, all or children options");
+      end if;
+      -- No include
+      if Arg_Dscr.Get_Nb_Occurences (9) /= 0
+      or else Arg_Dscr.Get_Nb_Occurences (10) /= 0 then
+        Error ("List mode is exclusive with simple or recursive includes");
+      end if;
+      List_Mode := True;
+    end if;
+
+    -- Check, List and Loop are axclusive
+    if Check_Mode and then List_Mode then
+      Error ("Check and list modes are mutually exclusive");
+    end if;
+    if Check_Mode and then Loop_Mode then
+      Error ("Check and loop modes are mutually exclusive");
+    end if;
+    if Loop_Mode and then List_Mode then
+      Error ("Loop and list modes are mutually exclusive");
+    end if;
+
+    -- Not tree, direct or once together
+    if (Tree_Mode and then Direct_Mode)
+    or else (Direct_Mode and then Once_Mode)
+    or else (Once_Mode and then Tree_Mode) then
+      Error ("Tree, Direct and Once modes are mutually exclusive");
+    end if;
+
+    -- Not fast and tree
+    if Fast_Mode and then Tree_Mode then
+      Error ("Tree and Fast mode are mutually exclusive");
+    end if;
+
+    -- All in list
+    if All_Mode and then not List_Mode then
+      Error ("All option is valid only in list mode");
+    end if;
+    -- Children in list
+    if Children_Mode and then not List_Mode then
+      Error ("Children option is valid only in list mode");
+    end if;
+
+    -- Tree tab
+    if Arg_Dscr.Is_Set (18) then
+      if not Tree_Mode then
+        Error ("Tree tab requires tree mode");
+      end if;
+      begin
+        Tree_Tab := Natural'Value (Arg_Dscr.Get_Option (18));
+      exception
+        when others =>
+          Error ("Invalid tree tab value (expected a natural got "
+               & Arg_Dscr.Get_Option (18) & ")");
+      end;
+    end if;
+    return True;
+  end Parse_Options;
+
 begin
   ---------------------
   -- PARSE ARGUMENTS --
   ---------------------
   Debug.Logger.Init;
   Debug.Logger.Log (Perfo, "Starting");
-  -- Parse keys and options
-  Arg_Dscr := Argument_Parser.Parse (Keys);
-  if not Arg_Dscr.Is_Ok then
-    Error (Arg_Dscr.Get_Error);
-  end if;
 
-  -- Help
-  if Arg_Dscr.Is_Set (1) then
-    Usage;
-    Basic_Proc.Set_Error_Exit_Code;
+  -- Parse options
+  if not Parse_Options then
     return;
-  end if;
-
-  -- Version
-  if Arg_Dscr.Is_Set (2) then
-    Basic_Proc.Put_Line_Output (Argument.Get_Program_Name & " " & Version);
-    Basic_Proc.Set_Error_Exit_Code;
-    return;
-  end if;
-
-  -- Modes
-  if Arg_Dscr.Is_Set (4) then
-    Specs_Mode := True;
-  end if;
-  if Arg_Dscr.Is_Set (5) then
-    Revert_Mode := True;
-  end if;
-  if Specs_Mode and then Revert_Mode then
-    Error ("Specs and revert modes are mutually exclusive");
-  end if;
-  if Arg_Dscr.Is_Set (6) then
-    Tree_Mode := True;
-  end if;
-  if Arg_Dscr.Is_Set (7) then
-    Direct_Mode := True;
-  end if;
-  if Arg_Dscr.Is_Set (8) then
-    Files_Mode := True;
-  end if;
-  if Arg_Dscr.Is_Set (13) then
-    All_Mode := True;
-  end if;
-  if Arg_Dscr.Is_Set (14) then
-    Children_Mode := True;
-  end if;
-  if Arg_Dscr.Is_Set (15) then
-    Bodies_Mode := True;
-  end if;
-  if Bodies_Mode and then not Revert_Mode then
-    Error ("Bodies mode is allowed only in revert mode");
-  end if;
-  if Arg_Dscr.Is_Set (17) then
-    Restrict_Mode := True;
-  end if;
-  if Bodies_Mode and then Restrict_Mode then
-    Error ("Restrict mode is not allowed in bodies mode");
-  end if;
-  if Arg_Dscr.Is_Set (16) then
-    Fast_Mode := True;
-  end if;
-  if Arg_Dscr.Is_Set (19) then
-    Once_Mode := True;
-  end if;
-
-  -- Check mode
-  if Arg_Dscr.Is_Set (3) then
-    -- No option
-    if Specs_Mode or else Revert_Mode or else Tree_Mode or else Direct_Mode
-    or else Files_Mode or else Bodies_Mode or else Restrict_Mode
-    or else Once_Mode then
-      Error ("Check mode does not support options");
-    end if;
-    -- No include
-    if Arg_Dscr.Get_Nb_Occurences (9) /= 0
-    or else Arg_Dscr.Get_Nb_Occurences (10) /= 0 then
-      Error ("Check mode is exclusive with simple or recursive includes");
-    end if;
-    Check_Mode := True;
-  end if;
-
-  -- Loop mode
-  if Arg_Dscr.Is_Set (20) then
-    -- No option excep Specs
-    if Revert_Mode or else Tree_Mode or else Direct_Mode
-    or else Files_Mode or else Bodies_Mode or else Restrict_Mode
-    or else Once_Mode then
-      Error ("Loop mode supports only option specs");
-    end if;
-    -- No include
-    if Arg_Dscr.Get_Nb_Occurences (9) /= 0
-    or else Arg_Dscr.Get_Nb_Occurences (10) /= 0 then
-      Error ("Loop mode is exclusive with simple or recursive includes");
-    end if;
-    Loop_Mode := True;
-  end if;
-
-  -- List mode
-  if Arg_Dscr.Is_Set (12) then
-    -- No option except File and all
-    if Specs_Mode or else Revert_Mode or else Tree_Mode
-    or else Direct_Mode or else Bodies_Mode or else Restrict_Mode
-    or else Once_Mode then
-      Error ("List mode only supports file, all or children options");
-    end if;
-    -- No include
-    if Arg_Dscr.Get_Nb_Occurences (9) /= 0
-    or else Arg_Dscr.Get_Nb_Occurences (10) /= 0 then
-      Error ("List mode is exclusive with simple or recursive includes");
-    end if;
-    List_Mode := True;
-  end if;
-
-  -- Check, List and Loop are axclusive
-  if Check_Mode and then List_Mode then
-    Error ("Check and list modes are mutually exclusive");
-  end if;
-  if Check_Mode and then Loop_Mode then
-    Error ("Check and loop modes are mutually exclusive");
-  end if;
-  if Loop_Mode and then List_Mode then
-    Error ("Loop and list modes are mutually exclusive");
-  end if;
-
-  -- Not tree, direct or once together
-  if (Tree_Mode and then Direct_Mode)
-  or else (Direct_Mode and then Once_Mode)
-  or else (Once_Mode and then Tree_Mode) then
-    Error ("Tree, Direct and Once modes are mutually exclusive");
-  end if;
-
-  -- Not fast and tree
-  if Fast_Mode and then Tree_Mode then
-    Error ("Tree and Fast mode are mutually exclusive");
-  end if;
-
-  -- All in list
-  if All_Mode and then not List_Mode then
-    Error ("All option is valid only in list mode");
-  end if;
-  -- Children in list
-  if Children_Mode and then not List_Mode then
-    Error ("Children option is valid only in list mode");
-  end if;
-
-  -- Tree tab
-  if Arg_Dscr.Is_Set (18) then
-    if not Tree_Mode then
-      Error ("Tree tab requires tree mode");
-    end if;
-    begin
-      Tree_Tab := Natural'Value (Arg_Dscr.Get_Option (18));
-    exception
-      when others =>
-        Error ("Invalid tree tab value (expected a natural got "
-             & Arg_Dscr.Get_Option (18) & ")");
-    end;
   end if;
 
   -- Save current dir and add it to paths (top prio)
