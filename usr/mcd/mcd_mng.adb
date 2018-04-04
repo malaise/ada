@@ -4,7 +4,7 @@ pragma Elaborate_All (Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V14.2";
+  Mcd_Version : constant String := "V14.3";
 
   package Stack is
     -- What can we store in stack
@@ -342,6 +342,24 @@ package body Mcd_Mng is
     null;
   end Init;
 
+  -- Slices of operations
+  subtype Basic_List  is Operator_List range Add     .. Fact;
+  subtype Bits_List   is Operator_List range Bitand  .. Shr;
+  subtype Compar_List is Operator_List range Equal   .. Smalleq;
+  subtype Bool_List   is Operator_List range Boland  .. Bolneg;
+  subtype Math_List   is Operator_List range Pi      .. Lg;
+  subtype Conv_List   is Operator_List range Toreal  .. Roundat;
+  subtype Test_List   is Operator_List range Isarbi  .. Isneg;
+  subtype Stack_List  is Operator_List range Ssize   .. Moven;
+  subtype Reg_List    is Operator_List range Popr    .. Emptya;
+  subtype Extra_List  is Operator_List range Pope    .. Cleare;
+  subtype Cond_List   is Operator_List range Ifthen  .. Etfi;
+  subtype Prog_List   is Operator_List range Call    .. Callbrk;
+  subtype Io_List     is Operator_List range Format  .. Readlins;
+  subtype String_List is Operator_List range Strnull .. Regmatch;
+  subtype Time_List   is Operator_List range Clock   .. Timeof;
+  subtype Exec_List   is Operator_List range Nop     .. Help;
+
   -- Process next item
   procedure New_Item (Item : in Item_Rec; The_End : out End_Status_List) is
 
@@ -437,31 +455,11 @@ package body Mcd_Mng is
     end Handle_Break;
 
     use Stack;
-  begin
-    -- Default, except Ret
-    The_End := Continue;
-    -- Check for Ctrl C
-    if Nb_Item = Item_Check_Period then
-      Nb_Item := 0;
-      if Misc.Check_Break then
-        -- Set Break_Program
-        Handle_Break;
-        -- Discard current instruction
-        return;
-      end if;
-    else
-      Nb_Item := Nb_Item + 1;
-    end if;
-    -- Dispatch
-    Clear_History;
-    if Item.Kind /= Oper then
-      -- Push operand
-      Push(Item);
-    else -- Operator
-      Debug.Log (Debug.Oper, Item);
-      -- The big case on all operations
-      case Item.Val_Oper is
 
+    -- Handle a basic numeric operation
+    procedure Do_Basic (Kind : Basic_List) is
+    begin
+      case Kind is
         -- Basic operations on numbers
         when Add =>
           -- push B + A
@@ -483,17 +481,9 @@ package body Mcd_Mng is
           -- push Roundiv (B, A)
           Pop(A); Pop(B); Push (Operations.Roundiv(B,A));
           S := A;
-        when Remind =>
-          -- push B rem A
-          Pop(A); Pop(B); Push (Operations.Remind(B,A));
-          S := A;
         when Pow =>
           -- push B ** A
           Pop(A); Pop(B); Push (Operations.Pow(B,A));
-          S := A;
-        when Sqrt =>
-          -- push sqrt(A)
-          Pop(A); Push (Operations.Sqrt(A));
           S := A;
         when Minus =>
           -- push -A
@@ -503,11 +493,25 @@ package body Mcd_Mng is
           -- push |A|
           Pop(A); Push (Operations.Absv(A));
           S := A;
+        when Sqrt =>
+          -- push sqrt(A)
+          Pop(A); Push (Operations.Sqrt(A));
+          S := A;
+        when Remind =>
+          -- push B rem A
+          Pop(A); Pop(B); Push (Operations.Remind(B,A));
+          S := A;
         when Fact =>
           -- push A!
           Pop(A); Push (Operations.Fact(A));
           S := A;
+      end case;
+    end Do_Basic;
 
+    -- Handle a bits operation
+    procedure Do_Bits (Kind : Bits_List) is
+    begin
+      case Kind is
         -- Bits operations
         when Bitand =>
           -- push B and A
@@ -533,8 +537,13 @@ package body Mcd_Mng is
           -- push shr(B,A)
           Pop(A); Pop(B); Push (Operations.Shr(B,A));
           S := A;
+      end case;
+    end Do_Bits;
 
-        -- Comparisons
+    -- Handle a comparison operation
+    procedure Do_Compare (Kind : Compar_List) is
+    begin
+      case Kind is
         when Equal =>
           -- push B = A
           Pop(A); Pop(B); Push (Operations.Equal(B,A));
@@ -559,8 +568,13 @@ package body Mcd_Mng is
           -- push B <= A
           Pop(A); Pop(B); Push (Operations.Smalleq(B,A));
           S := A;
+      end case;
+    end Do_Compare;
 
-        -- Boolean operations
+    -- Handle a boolean operation
+    procedure Do_Boolean (Kind : Bool_List) is
+    begin
+      case Kind is
         when Boland =>
           -- push B and then A
           Pop(A); Pop(B); Push (Operations.Boland(B,A));
@@ -577,8 +591,13 @@ package body Mcd_Mng is
           -- push not A
           Pop(A); Push (Operations.Bolneg(A));
           S := A;
+      end case;
+    end Do_Boolean;
 
-        -- Trigonometry
+    -- Handle a math (trigo, log) operation
+    procedure Do_Math (Kind : Math_List) is
+    begin
+      case Kind is
         when Pi =>
           -- push value of Pi
           Push( (Kind => Real,
@@ -607,8 +626,11 @@ package body Mcd_Mng is
           -- push atg(A)
           Pop(A); Push (Operations.Atan(A));
           S := A;
-
-       -- Logarithm
+        when Rnd =>
+          -- push random value
+          S := (Kind => Real,
+                 Val_Real => My_Math.Real(Random.Gen.Float_Random));
+          Push(S);
         when Epsilon =>
           -- push value of Epsilon
           Push( (Kind => Real,
@@ -625,7 +647,13 @@ package body Mcd_Mng is
           -- push lg(A)
           Pop(A); Push (Operations.Lg(A));
           S := A;
+      end case;
+    end Do_Math;
 
+    -- Handle numeric convertion
+    procedure Do_Convert (Kind : Conv_List) is
+    begin
+      case Kind is
         -- Numerical conversion
         when Toreal =>
           -- push A converted to real
@@ -697,8 +725,13 @@ package body Mcd_Mng is
           -- push B rounded at A digits
           Pop(A); Pop(B); Push (Operations.Roundat(B,A));
           S := B;
+      end case;
+    end Do_Convert;
 
-        -- Tests on type and value
+    -- Handle test on type or avlue
+    procedure Do_Test (Kind : Test_List) is
+    begin
+      case Kind is
         when Isarbi =>
           -- push whether A is arbitrari
           Pop(A); Push (Operations.Isarbi(A));
@@ -747,7 +780,13 @@ package body Mcd_Mng is
           -- push whether A is negative
           Pop(A); Push (Operations.Isneg(A));
           S := A;
+      end case;
+    end Do_Test;
 
+    -- Handle main stack management
+    procedure Do_Stack (Kind : Stack_List) is
+    begin
+      case Kind is
         -- Main stack management
         when Ssize =>
           -- push stack size
@@ -782,7 +821,13 @@ package body Mcd_Mng is
         when Moven =>
           -- move on top the Ath element of stack
           Misc.Do_Moven;
+      end case;
+    end Do_Stack;
 
+    -- Handle registers and arrays
+    procedure Do_Register (Kind : Reg_List) is
+    begin
+      case Kind is
         -- Registers and arrays
         when Popr =>
           -- Store B in reg A
@@ -851,7 +896,13 @@ package body Mcd_Mng is
           -- True if B[A] is empty
           Pop(A); Pop(B);
           Push (Registers.Is_Empty_Array(B, A));
+      end case;
+    end Do_Register;
 
+    -- Handle extra stack
+    procedure Do_Extra (Kind : Extra_List) is
+    begin
+      case Kind is
         -- Extra stack
         when Pope =>
           -- pushe A
@@ -884,7 +935,13 @@ package body Mcd_Mng is
         when Cleare =>
            -- clear estack
            Misc.Do_Clear_Extra;
+      end case;
+    end Do_Extra;
 
+    -- Handle conditions
+    procedure Do_Condition (Kind : Cond_List) is
+    begin
+      case Kind is
         -- Conditions
         when Ifthen =>
           -- if B then push A
@@ -901,8 +958,13 @@ package body Mcd_Mng is
           -- if A then push C else push B
           Pop(A); Pop(B); Pop(C); Push (Operations.Ifte(A,C,B));
           S := A;
+      end case;
+    end Do_Condition;
 
-        -- Subprograms
+    -- Handle subprogramm
+    procedure Do_Prog (Kind : Prog_List) is
+    begin
+      case Kind is
         when Call =>
           -- call A
           Misc.Do_Call;
@@ -963,7 +1025,13 @@ package body Mcd_Mng is
           end if;
           Break_Program := A;
           S := A;
+      end case;
+    end Do_Prog;
 
+    -- Handle outputs and inputs
+    procedure Do_Io (Kind : Io_List) is
+    begin
+      case Kind is
         -- Output
         when Format =>
           -- set foramt to A
@@ -984,7 +1052,46 @@ package body Mcd_Mng is
           -- put_line A
           Pop(A); Ios.Put_Line(A);
           S := A;
+        -- Input
+        when Getenv =>
+          -- push getenv(A)
+          Pop(A); Push (Misc.Getenv(A));
+          S := A;
+        when Inecho =>
+          -- set echo to A
+          Pop(A); Ios.Set_Echo (A);
+        when Inkey =>
+          -- push Get_Key
+          Push (Ios.Get_Key);
+        when Instr =>
+          -- push Get_Str
+          Push (Ios.Get_Str);
+        when Readfile =>
+          -- read content of A as string
+          Pop(A);
+          S := A;
+          File.Read(A, B);
+          Push(B);
+        when Readlins =>
+          -- push lines of the file, (first line on top)
+          Pop(A);
+          File.Read(A, B, Read_Lines);
+          if not B.Val_Bool then
+            Push (B);
+          else
+            for I in reverse 1 .. Read_Lines.Length loop
+              Push ((Kind => Chrs, Val_Text => Read_Lines.Element(I)));
+            end loop;
+            Push ((Kind => Inte, Val_Inte => My_Math.Inte(Read_Lines.Length)));
+          end if;
+          S := A;
+      end case;
+    end Do_Io;
 
+    -- Handle strings
+    procedure Do_String (Kind : String_List) is
+    begin
+      case Kind is
         -- String management and conversions
         when Strnull =>
           -- push True if A is empty
@@ -1071,8 +1178,13 @@ package body Mcd_Mng is
           -- push whether B matches regex A
           Pop(A); Pop(B); Push (Misc.Reg_Match(A, B));
           S := A;
+      end case;
+    end Do_String;
 
-        -- Time
+    -- Handle time
+    procedure Do_Time (Kind : Time_List) is
+    begin
+      case Kind is
         when Clock =>
           -- push current time
           Push (Dates.Clock);
@@ -1088,48 +1200,17 @@ package body Mcd_Mng is
           -- push time corresponding to time image A
           Pop(A); Push (Dates.Date_To_Time(A));
           S := A;
+      end case;
+    end Do_Time;
 
+    -- Handle program execution
+    procedure Do_Exec (Kind : Exec_List) is
+    begin
+      case Kind is
         -- Miscelaneous
         when Nop =>
           -- no operation
           null;
-        when Getenv =>
-          -- push getenv(A)
-          Pop(A); Push (Misc.Getenv(A));
-          S := A;
-        when Inecho =>
-          -- set echo to A
-          Pop(A); Ios.Set_Echo (A);
-        when Inkey =>
-          -- push Get_Key
-          Push (Ios.Get_Key);
-        when Instr =>
-          -- push Get_Str
-          Push (Ios.Get_Str);
-        when Readfile =>
-          -- read content of A as string
-          Pop(A);
-          S := A;
-          File.Read(A, B);
-          Push(B);
-        when Readlins =>
-          -- push lines of the file, (first line on top)
-          Pop(A);
-          File.Read(A, B, Read_Lines);
-          if not B.Val_Bool then
-            Push (B);
-          else
-            for I in reverse 1 .. Read_Lines.Length loop
-              Push ((Kind => Chrs, Val_Text => Read_Lines.Element(I)));
-            end loop;
-            Push ((Kind => Inte, Val_Inte => My_Math.Inte(Read_Lines.Length)));
-          end if;
-          S := A;
-        when Rnd =>
-          -- push random value
-          S := (Kind => Real,
-                 Val_Real => My_Math.Real(Random.Gen.Float_Random));
-          Push(S);
         when Sleep =>
           -- sleep A seconds
           Pop(A);
@@ -1153,7 +1234,82 @@ package body Mcd_Mng is
         when Help =>
           -- put help
           Mcd_Parser.Print_Help (Command => True);
+      end case;
+    end Do_Exec;
 
+  begin
+    -- Default, except Ret
+    The_End := Continue;
+    -- Check for Ctrl C
+    if Nb_Item = Item_Check_Period then
+      Nb_Item := 0;
+      if Misc.Check_Break then
+        -- Set Break_Program
+        Handle_Break;
+        -- Discard current instruction
+        return;
+      end if;
+    else
+      Nb_Item := Nb_Item + 1;
+    end if;
+    -- Dispatch
+    Clear_History;
+    if Item.Kind /= Oper then
+      -- Push operand
+      Push(Item);
+    else -- Operator
+      Debug.Log (Debug.Oper, Item);
+      -- The big case on all operations
+      case Item.Val_Oper is
+
+        when Basic_List =>
+          -- Basic nueric operations
+          Do_Basic (Item.Val_Oper);
+        when Bits_List =>
+          -- Bits operations
+          Do_Bits (Item.Val_Oper);
+        when Compar_List =>
+          -- Comparisons
+          Do_Compare (Item.Val_Oper);
+        when Bool_List =>
+          -- Boolean operations
+          Do_Boolean (Item.Val_Oper);
+        when Math_List =>
+          -- Math (trigo and logarithms) operations
+          Do_Math (Item.Val_Oper);
+        when Conv_List =>
+          -- Convertion operations
+          Do_Convert (Item.Val_Oper);
+        when Test_List =>
+          -- Testing operations
+          Do_Test (Item.Val_Oper);
+        when Stack_List =>
+          -- Main stack operations
+          Do_Stack (Item.Val_Oper);
+        when Reg_List =>
+          -- Registers and arrays operations
+          Do_Register (Item.Val_Oper);
+        when Extra_List =>
+          -- Extra stack operations
+          Do_Extra (Item.Val_Oper);
+        when Cond_List =>
+          -- Conditions operations
+          Do_Condition (Item.Val_Oper);
+        when Prog_List =>
+          -- Subprogram operations
+          Do_Prog (Item.Val_Oper);
+        when Io_List =>
+          -- Input and output operations
+          Do_Io (Item.Val_Oper);
+        when String_List =>
+          -- String operations
+          Do_String (Item.Val_Oper);
+        when Time_List =>
+          -- Time operations
+          Do_Time (Item.Val_Oper);
+        when Exec_List =>
+          -- Program execution operations
+          Do_Exec (Item.Val_Oper);
       end case;
     end if;
   exception
