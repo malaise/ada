@@ -81,7 +81,8 @@ package Autobus is
   --    likely until the partner is finally discarded because of alive timeout.
   -- - TTL for both IPM and TCP exchanges. Default 5.
   -- - Passive_Factor for the number of Heartbeats after which passive partners
-  --    send an alive message. Default 10.
+  --    send an alive message (in case the initial alive message would be lost.
+  --    Default 10.
   -- For each Bus, two ways to set a specific network interface for IPM and TCP:
   -- - Alias defines the IP address of the interface to be used by a given host.
   --    Ex: Name="telemaque" Address="192.168.0.5" means: if your local host

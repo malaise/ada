@@ -895,7 +895,7 @@ package body Autobus is
     -- Send Alive message if active
     Bus_Acc := Buses.Access_Current;
     if Bus_Acc.Kind = Active or else Bus_Acc.Passive_Timer.Has_Expired then
-      Logger.Log (All_Timers, "Expiration of Bus passive timer");
+      Logger.Log (All_Timers, "Expiration of Bus timer");
       Send_Adm (if Bus_Acc.Kind = Active then Trilean.True
                  else Trilean.False);
     end if;
