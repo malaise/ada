@@ -78,8 +78,9 @@ elif [ "$COMMAND" = "gnatls" ] ; then
 elif [ "$COMMAND" = "gnatmetric" ] ; then
   GNATFLAGS=""
   ADAOPT="-q -sfn"
-  if [ -n $ADAVIEW ] ; then
-    export POSTARGS="-cargs -I $ADAVIEW"
+  export POSTARGS=""
+  if [ -n "$ADAVIEW" ] ; then
+    POSTARGS="-cargs -I $ADAVIEW"
   fi
 fi
 
