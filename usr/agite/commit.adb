@@ -328,6 +328,9 @@ package body Commit is
     -- True if a commit has already been performed (disables empty commit)
     Commit_Done : Boolean;
 
+    -- True if COmmit was successful
+    Commit_Ok : Boolean;
+
     -- Reset Ptg stuff
     procedure Reset_Ptg is
     begin
@@ -392,16 +395,17 @@ package body Commit is
 
     -- Init screen
     procedure Init (In_Loop : in Boolean;
-                    Title : in String := "") is
+                    Title : in String := "";
+                    Reset : in Boolean := False) is
     begin
       Afpx.Use_Descriptor (Afpx_Xref.Commit.Dscr_Num);
       -- Encode Root
       Utils.X.Encode_Field (Root, Afpx_Xref.Commit.Root);
       -- Encode comment
-      if Restore_Comment then
-        Comment := Prev_Comment;
-      else
+      if Reset then
         Comment.Set_Null;
+      else
+        Comment := Prev_Comment;
       end if;
       Encode_Comment;
       -- Reset Ptg stuff
@@ -730,7 +734,7 @@ package body Commit is
       if Result.Is_Null then
         Commit_Done := True;
         return True;
-      else 
+      else
         -- Show error
         Error ("Commit", "", Result.Image);
         return False;
@@ -757,7 +761,7 @@ package body Commit is
     -- Init Afpx
     -- Modify Title if In_Loop: Edit then
     --   if Allow_Modif then Commit else Comment
-    Init (In_Loop, Title);
+    Init (In_Loop, Title, not Restore_Comment);
 
     -- Reset Afpx list
     Afpx.Line_List.Delete_List (False);
@@ -865,12 +869,14 @@ package body Commit is
 
             when Afpx_Xref.Commit.Commit =>
               -- Commit button
-              if Do_Commit then
+              Commit_Ok := Do_Commit;
+              if Commit_Ok then
                 -- Save comment for next time
                 Prev_Comment := Comment;
                 Config.Save_Comment (Prev_Comment.Image);
               end if;
-              Init (In_Loop, Title);
+              -- Reset comment if commit OK
+              Init (In_Loop, Title, Commit_Ok or else Comment.Is_Null);
               Reread (True);
             when Afpx_Xref.Commit.Push =>
               if In_Loop then
