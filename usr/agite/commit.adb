@@ -394,19 +394,23 @@ package body Commit is
     end Split_Line;
 
     -- Init screen
+    type Comment_Policy_List is (Restore, Leave, Reset);
     procedure Init (In_Loop : in Boolean;
-                    Title : in String := "";
-                    Reset : in Boolean := False) is
+                    Comment_Policy : in Comment_Policy_List;
+                    Title : in String := "") is
     begin
       Afpx.Use_Descriptor (Afpx_Xref.Commit.Dscr_Num);
       -- Encode Root
       Utils.X.Encode_Field (Root, Afpx_Xref.Commit.Root);
-      -- Encode comment
-      if Reset then
-        Comment.Set_Null;
-      else
-        Comment := Prev_Comment;
-      end if;
+      -- Restore or reset comment
+      case Comment_Policy is
+        when Restore =>
+          Comment := Prev_Comment;
+        when Leave =>
+          null;
+        when Reset =>
+          Comment.Set_Null;
+      end case;
       Encode_Comment;
       -- Reset Ptg stuff
       Reset_Ptg;
@@ -687,7 +691,7 @@ package body Commit is
             exit when not Moved;
           end loop;
         end if;
-        Init (In_Loop);
+        Init (In_Loop, Leave);
       end if;
 
       Reread (True);
@@ -761,7 +765,7 @@ package body Commit is
     -- Init Afpx
     -- Modify Title if In_Loop: Edit then
     --   if Allow_Modif then Commit else Comment
-    Init (In_Loop, Title, not Restore_Comment);
+    Init (In_Loop, (if Restore_Comment then Restore else Reset), Title);
 
     -- Reset Afpx list
     Afpx.Line_List.Delete_List (False);
@@ -858,13 +862,15 @@ package body Commit is
             when Afpx_Xref.Commit.Diff =>
               Do_Diff;
             when Afpx_Xref.Commit.Stash =>
+              Decode_Comment;
               Stash.Handle (Root);
-              Init (In_Loop, Title);
+              Init (In_Loop, Leave, Title);
               Reread (True);
             when Afpx_Xref.Commit.Reset =>
               -- Allow only hard reset to head
+              Decode_Comment;
               Dummy_Result := Reset (Root, "", Only_Hard => True);
-              Init (In_Loop, Title);
+              Init (In_Loop, Leave, Title);
               Reread (True);
 
             when Afpx_Xref.Commit.Commit =>
@@ -876,7 +882,7 @@ package body Commit is
                 Config.Save_Comment (Prev_Comment.Image);
               end if;
               -- Reset comment if commit OK
-              Init (In_Loop, Title, Commit_Ok or else Comment.Is_Null);
+              Init (In_Loop, (if Commit_Ok then Reset else Leave), Title);
               Reread (True);
             when Afpx_Xref.Commit.Push =>
               if In_Loop then
@@ -888,7 +894,7 @@ package body Commit is
               if Push_Pull.Handle (Root, Pull => False) then
                 return True;
               else
-                Init (In_Loop, Title);
+                Init (In_Loop, Leave, Title);
                 Reread (True);
               end if;
             when Afpx_Xref.Commit.Back =>
