@@ -1112,7 +1112,7 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
                      event.xselectionrequest.target,
                      8, PropModeReplace,
                      (unsigned char *)str,
-                     (int) strlen(str)+1);
+                     (int) strlen(str));
             free (str);
           }
         } else {
