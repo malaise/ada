@@ -134,6 +134,49 @@ package body Config is
     return False;
   end Check_Bus;
 
+
+  -- Check the LANs config of a Bus
+  procedure Check_Lans (Bus : in Xml_Parser.Node_Type;
+                        Ok : in out Boolean) is
+      Node : Xml_Parser.Element_Type;
+  begin
+    for I in 1 .. Ctx.Get_Nb_Children (Bus) loop
+      Node := Ctx.Get_Child (Bus, I);
+      if Ctx.Get_Name (Node) = "LANs" then
+        -- Check LAN definitions
+        declare
+          Lans : constant Xml_Parser.Nodes_Array
+               := Ctx.Get_Children(Node);
+        begin
+          for Lan of Lans loop
+            if not Check_Address (Ctx.Get_Attribute (Lan, "Address")) then
+              Ok := False;
+            end if;
+            if not Check_Address (Ctx.Get_Attribute (Lan, "Netmask")) then
+              Ok := False;
+            end if;
+          end loop;
+        end;
+      elsif Ctx.Get_Name (Node) = "Aliases" then
+        -- Check Alias definitions
+        declare
+          Aliases : constant Xml_Parser.Nodes_Array
+                  := Ctx.Get_Children(Node);
+        begin
+          for Alias of Aliases loop
+            if not Check_Address (Ctx.Get_Attribute (Alias, "Address")) then
+              Ok := False;
+            end if;
+          end loop;
+        end;
+      else
+        Log_Error ("Config.Init", "Unexpected XML structure",
+                   Ctx.Get_Name (Node));
+        raise Config_Error;
+      end if;
+    end loop;
+  end Check_Lans;
+
   -- Init (parse the file)
   procedure Init is
     Root : Xml_Parser.Element_Type;
@@ -177,7 +220,6 @@ package body Config is
     declare
       Buses : constant Xml_Parser.Nodes_Array := Ctx.Get_Children(Root);
       Name : As.U.Asu_Us;
-      Node : Xml_Parser.Element_Type;
     begin
       Ok := True;
       if Check_Attributes (Root) then
@@ -203,42 +245,8 @@ package body Config is
         else
           Ok := False;
         end if;
-
-        for I in 1 .. Ctx.Get_Nb_Children (Bus) loop
-          Node := Ctx.Get_Child (Bus, I);
-          if Ctx.Get_Name (Node) = "LANs" then
-            -- Check LAN definitions
-            declare
-              Lans : constant Xml_Parser.Nodes_Array
-                   := Ctx.Get_Children(Node);
-            begin
-              for Lan of Lans loop
-                if not Check_Address (Ctx.Get_Attribute (Lan, "Address")) then
-                  Ok := False;
-                end if;
-                if not Check_Address (Ctx.Get_Attribute (Lan, "Netmask")) then
-                  Ok := False;
-                end if;
-              end loop;
-            end;
-          elsif Ctx.Get_Name (Node) = "Aliases" then
-            -- Check Alias definitions
-            declare
-              Aliases : constant Xml_Parser.Nodes_Array
-                      := Ctx.Get_Children(Node);
-            begin
-              for Alias of Aliases loop
-                if not Check_Address (Ctx.Get_Attribute (Alias, "Address")) then
-                  Ok := False;
-                end if;
-              end loop;
-            end;
-          else
-            Log_Error ("Config.Init", "Unexpected XML structure",
-                       Ctx.Get_Name (Node));
-            raise Config_Error;
-          end if;
-        end loop;
+        -- CHeck the LANs config
+        Check_Lans (Bus, Ok);
       end loop;
       if not Ok then
         raise Config_Error;

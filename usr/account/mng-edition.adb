@@ -536,16 +536,12 @@ package body Edition is
                 Get_Handle.Insert := False;
                 if Get_Handle.Cursor_Field = 0 then
                   -- Check that Ok_And_Next button is active
-                  if not Afpx.Get_Field_Activation (42) then
-                    -- Ok and back
-                    exit All_Edit;
-                  else
-                    if Edit_Type /= Create then
-                      -- Next oper
-                      Sel_List.Move_To;
-                    end if;
-                    exit One_Edit;
+                  exit All_Edit when not Afpx.Get_Field_Activation (42);
+                  if Edit_Type /= Create then
+                    -- Next oper
+                    Sel_List.Move_To;
                   end if;
+                  exit One_Edit;
                 end if;
                 Screen.Ring (True);
                 Screen.Ring (True);

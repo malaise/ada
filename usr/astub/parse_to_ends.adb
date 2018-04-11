@@ -36,20 +36,14 @@ begin
           if Word.Lexic = Parser_Ada.Reserved_Word
           or else Word.Lexic = Parser_Ada.Delimiter then
             -- Text must match for reserved word or delimiter
-            if Word.Text = Crit.Text then
-              exit Parse_Word;
-            end if;
+            exit Parse_Word when Word.Text = Crit.Text;
           elsif Word.Lexic = Parser_Ada.Separator then
             if Word.Text = As.U.Asu_Us'(Common.Line_Feed) then
-              if Crit.Text = As.U.Asu_Us'(Common.Line_Feed) then
-                -- Line feed matches line_feed
-                exit Parse_Word;
-              end if;
+              -- Line feed matches line_feed
+              exit Parse_Word when Crit.Text = As.U.Asu_Us'(Common.Line_Feed);
             else
-              if Crit.Text /= As.U.Asu_Us'(Common.Line_Feed) then
-                -- Not line feed matches not line_feed
-                exit Parse_Word;
-              end if;
+              -- Not line feed matches not line_feed
+              exit Parse_Word when Crit.Text /= As.U.Asu_Us'(Common.Line_Feed);
             end if;
           else
             -- Identifier or Literal or Comment, lexic match is enough

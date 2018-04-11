@@ -215,13 +215,77 @@ package body Menu1 is
   procedure Main_Screen (Init_File_Name : in File.F_T_File_Name) is
     Ptg_Result : Afpx.Result_Rec;
     Restore : Restore_List;
-    A_Point : Points.P_T_One_Point;
+
+    function Handle_Key return Boolean is
+    begin
+      case Ptg_Result.Keyboard_Key is
+        when Afpx.Return_Key =>
+          return False;
+        when Afpx.Escape_Key =>
+          if Exit_Prog then
+            -- The end
+            return True;
+          else
+            Restore := Partial;
+            return False;
+          end if;
+        when Afpx.Break_Key =>
+          if Exit_Prog then
+            -- The end
+            return True;
+          else
+            Restore := Partial;
+            return False;
+          end if;
+      end case;
+    end Handle_Key;
+
+    Saved_Index : Afpx.Line_List_Mng.Ll_Natural;
     Point_Set : Boolean;
     Point_Index : Positive;
     Data_Changed : Boolean;
-    Saved_Index : Afpx.Line_List_Mng.Ll_Natural;
-
+    A_Point : Points.P_T_One_Point;
     use type Afpx.Absolute_Field_Range, Afpx.Line_List_Mng.Ll_Natural;
+
+    -- Delete / modify a point
+    procedure Edit_Point is
+    begin
+      Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+      -- Get index then point
+      Point_Index := Positive (Afpx.Line_List.Get_Position);
+      A_Point := Points.P_One_Point(Point_Index);
+      if Ptg_Result.Field_No = 26 then
+        -- Delete a point
+        Screen.Put_Title(Screen.Suppress_1);
+        Afpx.Encode_Field (Screen.Get_Fld, (0, 0),
+            Point_Str.Encode_Rec(A_Point).Str(1 .. Screen.Get_Get_Width));
+        Afpx.Set_Field_Activation(Screen.Get_Fld, True);
+        if Screen.Confirm(Screen.C_Delete_Point, True) then
+          Points.P_Upd_Point (Points.Remove, Point_Index, A_Point);
+          Saved_Index := Afpx.Line_List.Get_Position;
+          if Saved_Index = Afpx.Line_List.List_Length then
+            Saved_Index := Saved_Index - 1;
+          end if;
+          Set_Points_List;
+          Data_Changed := True;
+        end if;
+      else
+        -- Modify
+        Screen.Put_Title(Screen.Modify_1);
+        Point_Set := True;
+        Read_Point(Point_Set, A_Point);
+        if Point_Set then
+          Points.P_Upd_Point (Points.Modify, Point_Index, A_Point);
+          Saved_Index := Afpx.Line_List.Get_Position;
+          Set_Points_List;
+          Data_Changed := True;
+        end if;
+      end if;
+      Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
+      Restore := Partial;
+      Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
+      Restore := Partial;
+    end Edit_Point;
 
   begin
     Afpx.Use_Descriptor(Afpx_Xref.Points.Dscr_Num);
@@ -290,35 +354,15 @@ package body Menu1 is
         Saved_Index := 0;
         case Ptg_Result.Event is
           when Afpx.Keyboard =>
-            case Ptg_Result.Keyboard_Key is
-              when Afpx.Return_Key =>
-                null;
-              when Afpx.Escape_Key =>
-                if Exit_Prog then
-                  -- The end
-                  return;
-                else
-                  Restore := Partial;
-                end if;
-              when Afpx.Break_Key =>
-                if Exit_Prog then
-                  -- The end
-                  return;
-                else
-                  Restore := Partial;
-                end if;
-            end case;
+            exit when Handle_Key;
           when Afpx.Mouse_Button =>
             case Ptg_Result.Field_No is
               when Screen.List_Scroll_Fld_Range =>
                 Screen.Scroll(Ptg_Result.Field_No);
               when Screen.Exit_Button_Fld =>
-                if Exit_Prog then
-                  -- The end
-                  return;
-                else
-                  Restore := Partial;
-                end if;
+                -- The end
+                exit when Exit_Prog;
+                Restore := Partial;
               when Afpx_Xref.Points.Load | Afpx_Xref.Points.Save =>
                 Load_Save(Ptg_Result.Field_No = 21, Restore);
                 Data_Changed := True;
@@ -351,40 +395,7 @@ package body Menu1 is
               when Afpx_Xref.Points.Delete
                  | Afpx_Xref.Points.Modify
                  | Afpx.List_Field_No =>
-                -- Delete / modify a point
-                Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
-                -- Get index then point
-                Point_Index := Positive (Afpx.Line_List.Get_Position);
-                A_Point := Points.P_One_Point(Point_Index);
-                if Ptg_Result.Field_No = 26 then
-                  -- Delete a point
-                  Screen.Put_Title(Screen.Suppress_1);
-                  Afpx.Encode_Field (Screen.Get_Fld, (0, 0),
-                      Point_Str.Encode_Rec(A_Point).Str(1 .. Screen.Get_Get_Width));
-                  Afpx.Set_Field_Activation(Screen.Get_Fld, True);
-                  if Screen.Confirm(Screen.C_Delete_Point, True) then
-                    Points.P_Upd_Point (Points.Remove, Point_Index, A_Point);
-                    Saved_Index := Afpx.Line_List.Get_Position;
-                    if Saved_Index = Afpx.Line_List.List_Length then
-                      Saved_Index := Saved_Index - 1;
-                    end if;
-                    Set_Points_List;
-                    Data_Changed := True;
-                  end if;
-                else
-                  -- Modify
-                  Screen.Put_Title(Screen.Modify_1);
-                  Point_Set := True;
-                  Read_Point(Point_Set, A_Point);
-                  if Point_Set then
-                    Points.P_Upd_Point (Points.Modify, Point_Index, A_Point);
-                    Saved_Index := Afpx.Line_List.Get_Position;
-                    Set_Points_List;
-                    Data_Changed := True;
-                  end if;
-                end if;
-                Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
-                Restore := Partial;
+                Edit_Point;
               when Afpx_Xref.Points.Approx =>
                 -- approximation
                 Screen.Store_File;
@@ -406,12 +417,8 @@ package body Menu1 is
         end case;
       exception
         when Screen.Exit_Requested =>
-          if Exit_Prog then
-            -- The end
-            return;
-          else
-            Restore := Partial;
-          end if;
+          exit when Exit_Prog;
+          Restore := Partial;
       end;
     end loop;
 

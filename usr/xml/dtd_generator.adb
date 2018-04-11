@@ -267,6 +267,73 @@ procedure Dtd_Generator is
     Found : Boolean;
     Len : Natural;
     use type As.U.Asu_Us, Xml_Parser.Node_Kind_List;
+
+    -- Update element kind
+    procedure Update_Element_Kind is
+    begin
+      case Cur_Elt.Kind is
+        when Empty | Not_Empty | Sequence =>
+          -- Start or complete a sequence
+          Cur_Elt.Kind := Sequence;
+          -- Append curr child by default
+          Child.Name.Set_Null;
+          if Len /= 0 then
+            Child := Cur_Elt.Children.Element (Len);
+            if Child.Name =  Cur_Name then
+              -- Last child is repeated => Mult
+              if not Child.Mult then
+                Child.Mult := True;
+                Cur_Elt.Children.Replace_Element (Len, Child);
+              end if;
+              Dbg ("  Change last Seq " & Cur_Name.Image & " Mult");
+            else
+              -- Append
+              Child.Name.Set_Null;
+            end if;
+          end if;
+          if Child.Name.Is_Null then
+            -- Check Max element will not be exceeded
+            if Check_Elements (Cur_Elt.Children.Length) then
+              -- First or new child
+              Child := (Name => Cur_Name, Mult | Opt => False);
+              Cur_Elt.Children.Append (Child);
+              Dbg ("  Add to Seq " & Cur_Name.Image);
+            else
+              Dbg ("  Seq exceedes max elements => Any");
+              Cur_Elt.Kind := Any;
+              Cur_Elt.Children.Set_Null;
+            end if;
+          end if;
+        when Mixed =>
+          -- Element after Mixed: Insert element only if it is new
+          Found := (for some I in 1 .. Cur_Elt.Children.Length =>
+            Cur_Elt.Children.Element (I).Name = Cur_Name);
+          if Found then
+            Dbg ("  Element " & Cur_Name.Image & " already in mixed");
+          else
+            -- Check Max element will not be exceeded
+            if Check_Elements (Cur_Elt.Children.Length) then
+              Dbg ("  Add to Mixed " & Cur_Name.Image & " kind _");
+              Child := (Name => Cur_Name, Mult | Opt => False);
+              Cur_Elt.Children.Append (Child);
+            else
+              Dbg ("  Mixed exceedes max elements => Any");
+              Cur_Elt.Kind := Any;
+              Cur_Elt.Children.Set_Null;
+            end if;
+          end if;
+        when Pcdata =>
+          -- Child after text => Mixed
+          Dbg ("  Change to Mixed " & Cur_Name.Image);
+          Child := (Name => Cur_Name, Mult | Opt => False);
+          Cur_Elt.Kind := Mixed;
+          Cur_Elt.Children.Append (Child);
+        when Any | Choice =>
+          -- Kind not used for current element
+          null;
+      end case;
+    end Update_Element_Kind;
+
   begin
     -- Build the list of children of this element
     -- Kind is Empty, Not_Empty, Mixed, Data or
@@ -282,67 +349,7 @@ procedure Dtd_Generator is
            Cur_Name := Ctx.Get_Name (Child_Node);
            Dbg ("  Child " & Cur_Name.Image & " of Elt kind "
               & Mixed_Str (Cur_Elt.Kind'Img));
-           case Cur_Elt.Kind is
-             when Empty | Not_Empty | Sequence =>
-               -- Start or complete a sequence
-               Cur_Elt.Kind := Sequence;
-               -- Append curr child by default
-               Child.Name.Set_Null;
-               if Len /= 0 then
-                 Child := Cur_Elt.Children.Element (Len);
-                 if Child.Name =  Cur_Name then
-                   -- Last child is repeated => Mult
-                   if not Child.Mult then
-                     Child.Mult := True;
-                     Cur_Elt.Children.Replace_Element (Len, Child);
-                   end if;
-                   Dbg ("  Change last Seq " & Cur_Name.Image & " Mult");
-                 else
-                   -- Append
-                   Child.Name.Set_Null;
-                 end if;
-               end if;
-               if Child.Name.Is_Null then
-                 -- Check Max element will not be exceeded
-                 if Check_Elements (Cur_Elt.Children.Length) then
-                   -- First or new child
-                   Child := (Name => Cur_Name, Mult | Opt => False);
-                   Cur_Elt.Children.Append (Child);
-                   Dbg ("  Add to Seq " & Cur_Name.Image);
-                 else
-                   Dbg ("  Seq exceedes max elements => Any");
-                   Cur_Elt.Kind := Any;
-                   Cur_Elt.Children.Set_Null;
-                 end if;
-               end if;
-             when Mixed =>
-               -- Element after Mixed: Insert element only if it is new
-               Found := (for some I in 1 .. Cur_Elt.Children.Length =>
-                 Cur_Elt.Children.Element (I).Name = Cur_Name);
-               if Found then
-                 Dbg ("  Element " & Cur_Name.Image & " already in mixed");
-               else
-                 -- Check Max element will not be exceeded
-                 if Check_Elements (Cur_Elt.Children.Length) then
-                   Dbg ("  Add to Mixed " & Cur_Name.Image & " kind _");
-                   Child := (Name => Cur_Name, Mult | Opt => False);
-                   Cur_Elt.Children.Append (Child);
-                 else
-                   Dbg ("  Mixed exceedes max elements => Any");
-                   Cur_Elt.Kind := Any;
-                   Cur_Elt.Children.Set_Null;
-                 end if;
-               end if;
-             when Pcdata =>
-               -- Child after text => Mixed
-               Dbg ("  Change to Mixed " & Cur_Name.Image);
-               Child := (Name => Cur_Name, Mult | Opt => False);
-               Cur_Elt.Kind := Mixed;
-               Cur_Elt.Children.Append (Child);
-             when Any | Choice =>
-               -- Kind not used for current element
-               null;
-           end case;
+           Update_Element_Kind;
         when Xml_Parser.Text =>
           if Xml_Parser.Is_Separators (String'(Ctx.Get_Text (Child_Node))) then
              -- This text is only separators (due to lack of Dtd)
@@ -449,7 +456,101 @@ procedure Dtd_Generator is
   -- Pad for ATTLIST lines
   Padding : As.U.Asu_Us;
 
+  procedure Put_Sequence is
+  begin
+    Po ("(");
+    -- Separate each child by ','
+    for I in 1 .. Element.Children.Length loop
+      if I /= 1 then
+        Po (",");
+      end if;
+      Child := Element.Children.Element (I);
+      Po (Child.Name.Image);
+      if Child.Mult then
+        if Child.Opt then
+          Po ("*");
+        else
+          Po ("+");
+        end if;
+      elsif Child.Opt then
+        Po ("?");
+      end if;
+    end loop;
+    Plo (")>");
+  end Put_Sequence;
+
+  procedure Put_Choice is
+  begin
+    Po ("(");
+    First := True;
+    if Element.Kind = Mixed then
+      -- Start list by PCDATA
+      Po ("#PCDATA");
+      First := False;
+    end if;
+    -- Separate each child by '|'
+    for I in 1 .. Element.Children.Length loop
+      if not First then
+        Po ("|");
+      end if;
+      Child := Element.Children.Element (I);
+      Po (Child.Name.Image);
+      First := False;
+    end loop;
+    Plo (")*>");
+  end Put_Choice;
+
   use type As.U.Asu_Us;
+  procedure Put_Attribute is
+  begin
+    Padding := As.U.Tus ("<!ATTLIST " & Element.Name.Image & " ");
+    for I in 1 .. Element.Attributes.Length loop
+      Po (Padding.Image);
+      -- Name
+      Attr := Element.Attributes.Element(I);
+      Po (Attr.Name.Image & " ");
+      -- Type
+      case Attr.Kind is
+        when Enum =>
+          Po ("(");
+          Iter.Set (Attr.Values.Image, Is_Sep'Unrestricted_Access);
+          First := True;
+          -- Will be FIXED if only one Enum
+          Nb_Enum := 0;
+          loop
+            Val := As.U.Tus (Iter.Next_Word);
+            exit when Val.Is_Null;
+            Last_Val := Val;
+            Po ((if not First then "|" else "") & Val.Image);
+            First := False;
+            Nb_Enum := Nb_Enum + 1;
+          end loop;
+          Po (") ");
+        when Nmtoken =>
+          Po ("NMTOKEN ");
+        when Nmtokens =>
+          Po ("NMTOKENS ");
+        when Cdata =>
+          Po ("CDATA ");
+      end case;
+      -- Default
+      if Attr.Kind /= Enum or else Nb_Enum /= 1 then
+        Po (if Attr.Required then "#REQUIRED" else "#IMPLIED");
+      else
+        Po ("#FIXED """ & Last_Val.Image & """");
+      end if;
+
+      -- End of line
+      if I = Element.Attributes.Length then
+        Plo (">");
+      else
+        Nlo;
+      end if;
+     -- Pad with spaces the following lines
+      Padding := Padding.Length * ' ';
+    end loop;
+  end Put_Attribute;
+
 begin
 
   -- Init logger
@@ -565,43 +666,9 @@ begin
         when Empty =>
           Plo ("EMPTY>");
         when Sequence =>
-          Po ("(");
-          -- Separate each child by ','
-          for I in 1 .. Element.Children.Length loop
-            if I /= 1 then
-              Po (",");
-            end if;
-            Child := Element.Children.Element (I);
-            Po (Child.Name.Image);
-            if Child.Mult then
-              if Child.Opt then
-                Po ("*");
-              else
-                Po ("+");
-              end if;
-            elsif Child.Opt then
-              Po ("?");
-            end if;
-          end loop;
-          Plo (")>");
+          Put_Sequence;
         when Choice | Mixed =>
-          Po ("(");
-          First := True;
-          if Element.Kind = Mixed then
-            -- Start list by PCDATA
-            Po ("#PCDATA");
-            First := False;
-          end if;
-          -- Separate each child by '|'
-          for I in 1 .. Element.Children.Length loop
-            if not First then
-              Po ("|");
-            end if;
-            Child := Element.Children.Element (I);
-            Po (Child.Name.Image);
-            First := False;
-          end loop;
-          Plo (")*>");
+          Put_Choice;
         when Any =>
           Plo ("ANY>");
         when Pcdata | Not_Empty =>
@@ -610,52 +677,7 @@ begin
 
       -- Put definition of attributes
       if not Element.Attributes.Is_Null then
-        Padding := As.U.Tus ("<!ATTLIST " & Element.Name.Image & " ");
-        for I in 1 .. Element.Attributes.Length loop
-          Po (Padding.Image);
-          -- Name
-          Attr := Element.Attributes.Element(I);
-          Po (Attr.Name.Image & " ");
-          -- Type
-          case Attr.Kind is
-            when Enum =>
-              Po ("(");
-              Iter.Set (Attr.Values.Image, Is_Sep'Unrestricted_Access);
-              First := True;
-              -- Will be FIXED if only one Enum
-              Nb_Enum := 0;
-              loop
-                Val := As.U.Tus (Iter.Next_Word);
-                exit when Val.Is_Null;
-                Last_Val := Val;
-                Po ((if not First then "|" else "") & Val.Image);
-                First := False;
-                Nb_Enum := Nb_Enum + 1;
-              end loop;
-              Po (") ");
-            when Nmtoken =>
-              Po ("NMTOKEN ");
-            when Nmtokens =>
-              Po ("NMTOKENS ");
-            when Cdata =>
-              Po ("CDATA ");
-          end case;
-          -- Default
-          if Attr.Kind /= Enum or else Nb_Enum /= 1 then
-            Po (if Attr.Required then "#REQUIRED" else "#IMPLIED");
-          else
-            Po ("#FIXED """ & Last_Val.Image & """");
-          end if;
-
-          -- End of line
-          if I = Element.Attributes.Length then
-            Plo (">");
-          else
-            Nlo;
-          end if;
-          -- Pad with spaces the following lines
-          Padding := Padding.Length * ' ';
-        end loop;
+        Put_Attribute;
       end if;
 
       -- Skip a line before next element, or after last element

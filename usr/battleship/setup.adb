@@ -348,10 +348,52 @@ package body Setup is
 
   -- Handle user action during setup
   function Handle_Click (Fld : Afpx.Field_Range) return Boolean is
-    Start, Stop : Utils.Coord;
     Found : Boolean;
-    Del_Ship : Fleet.Ship_List;
+    Start, Stop : Utils.Coord;
     use type Afpx.Field_Range, Utils.Coord, Fleet.Ship_List;
+
+    -- Handle deletion of a ship
+    procedure Handle_Del is
+      Del_Ship : Fleet.Ship_List;
+    begin
+      -- Check there is a ship and delete it
+      Start := Utils.Fld2Coord (Afpx_Xref.Setup.Grid, Fld);
+      if Grid(Start.Row, Start.Col) then
+        -- There is a ship here, find it
+        Search:
+        for S in Fleet.Ship_List loop
+          if Ships(S) then
+            for I in 1 .. Fleet.Length (S) loop
+              if Fleet.My_Ships(S)(I) = Start then
+                -- Found it
+                Del_Ship := S;
+                exit Search;
+              end if;
+            end loop;
+          end if;
+        end loop Search;
+        -- Delete this ship
+        for I in 1 .. Fleet.Length (Del_Ship) loop
+          Grid(Fleet.My_Ships(Del_Ship)(I).Row,
+               Fleet.My_Ships(Del_Ship)(I).Col) := False;
+          Afpx.Reset_Field (
+              Utils.Coord2Fld (Afpx_Xref.Setup.Grid,
+                               Fleet.My_Ships(Del_Ship)(I)),
+              Reset_String => False);
+          Utils.Dbg_Setup ("Deleting ship in "
+                         & Utils.Image (Fleet.My_Ships(Del_Ship)(I)));
+        end loop;
+        Ships(Del_Ship) := False;
+        -- Move Sub1 as Sub2 if first submarine
+        if Del_Ship = Fleet.Sub2 and then Ships(Fleet.Sub1) then
+          Fleet.My_Ships(Fleet.Sub2) := Fleet.My_Ships(Fleet.Sub1);
+          Ships(Fleet.Sub2) := True;
+          Ships(Fleet.Sub1) := False;
+        end if;
+      end if;
+      Action := Idle;
+    end Handle_Del;
+
   begin
     case Fld is
       -- Set a ship
@@ -433,42 +475,7 @@ package body Setup is
               Action := Idle;
             end if;
           when Deleting =>
-            -- Check there is a ship and delete it
-            Start := Utils.Fld2Coord (Afpx_Xref.Setup.Grid, Fld);
-            if Grid(Start.Row, Start.Col) then
-              -- There is a ship here, find it
-              Search:
-              for S in Fleet.Ship_List loop
-                if Ships(S) then
-                  for I in 1 .. Fleet.Length (S) loop
-                    if Fleet.My_Ships(S)(I) = Start then
-                      -- Found it
-                      Del_Ship := S;
-                      exit Search;
-                    end if;
-                  end loop;
-                end if;
-              end loop Search;
-              -- Delete this ship
-              for I in 1 .. Fleet.Length (Del_Ship) loop
-                Grid(Fleet.My_Ships(Del_Ship)(I).Row,
-                     Fleet.My_Ships(Del_Ship)(I).Col) := False;
-                Afpx.Reset_Field (
-                    Utils.Coord2Fld (Afpx_Xref.Setup.Grid,
-                                     Fleet.My_Ships(Del_Ship)(I)),
-                    Reset_String => False);
-                Utils.Dbg_Setup ("Deleting ship in "
-                               & Utils.Image (Fleet.My_Ships(Del_Ship)(I)));
-              end loop;
-              Ships(Del_Ship) := False;
-              -- Move Sub1 as Sub2 if first submarine
-              if Del_Ship = Fleet.Sub2 and then Ships(Fleet.Sub1) then
-                Fleet.My_Ships(Fleet.Sub2) := Fleet.My_Ships(Fleet.Sub1);
-                Ships(Fleet.Sub2) := True;
-                Ships(Fleet.Sub1) := False;
-              end if;
-            end if;
-            Action := Idle;
+            Handle_Del;
         end case;
       when Afpx_Xref.Setup.Delete =>
         Action := Deleting;

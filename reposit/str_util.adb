@@ -631,6 +631,30 @@ package body Str_Util is
     -- Index of stat and stop of variable name
     Start_Var, Stop_Var : Positive;
 
+    -- Replace one occurence by the value
+    procedure Substitute is
+    begin
+      if Resolv /= null then
+        declare
+          -- Variable value
+          Val : constant String
+              := Resolv (Ustr.Slice (Start_Var, Stop_Var));
+          -- Correction to current and last index
+          Offset : constant Integer
+                 := Val'Length - (Stop_Index - Start_Index + 1);
+        begin
+          Ustr.Replace (Start_Index, Stop_Index, Val);
+          Curr_Index := Curr_Index + Offset;
+          Last_Index := Last_Index + Offset;
+        end;
+      else
+        -- No resolving => empty string
+        Ustr.Replace (Start_Index, Stop_Index, "");
+        Curr_Index := Curr_Index - (Stop_Index - Start_Index + 1);
+        Last_Index := Last_Index - (Stop_Index - Start_Index + 1);
+      end if;
+    end Substitute;
+
   begin
     -- Check Delimiters are non empty and different
     if Start_Delimiter = ""
@@ -677,25 +701,7 @@ package body Str_Util is
               Curr_Index := Curr_Index + Stop_Delimiter'Length - 1;
               Stop_Index := Curr_Index;
               -- Substitute
-              if Resolv /= null then
-                declare
-                  -- Variable value
-                  Val : constant String
-                      := Resolv (Ustr.Slice (Start_Var, Stop_Var));
-                  -- Correction to current and last index
-                  Offset : constant Integer
-                         := Val'Length - (Stop_Index - Start_Index + 1);
-                begin
-                  Ustr.Replace (Start_Index, Stop_Index, Val);
-                  Curr_Index := Curr_Index + Offset;
-                  Last_Index := Last_Index + Offset;
-                end;
-              else
-                -- No resolving => empty string
-                Ustr.Replace (Start_Index, Stop_Index, "");
-                Curr_Index := Curr_Index - (Stop_Index - Start_Index + 1);
-                Last_Index := Last_Index - (Stop_Index - Start_Index + 1);
-              end if;
+              Substitute;
               -- Go on trying to substitute
               Subst_Occured := True;
               -- Following stop delimiter will not be processed if no

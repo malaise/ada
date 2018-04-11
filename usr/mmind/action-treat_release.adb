@@ -10,6 +10,76 @@ procedure Treat_Release (Go_On, Exit_Game : out Boolean) is
     end loop;
   end Put_Secret;
 
+  procedure Answer is
+    Free_State : Common.Propal_State_Rec;
+    Color : Response.Color_Rec (Level);
+    Resp : Response.Response_Rec;
+    use type Common.Propal_Range, Common.Color_Range, Common.Try_List;
+  begin
+    if Cur_Selection.Try_No /= First_Free then
+      declare
+        Prop_State : Common.Propal_State_Rec;
+      begin
+        Free_State := Common.Get_Propal_State (Cur_Selection.Try_No);
+        Prop_State := Common.Get_Propal_State (First_Free);
+        -- Switch propals
+        Common.Set_Propal_State (
+         Propal => Cur_Selection.Try_No,
+         State  => Prop_State);
+        Common.Set_Propal_State (
+         Propal => First_Free,
+         State  => Free_State);
+        -- Update screen of propals and try
+        for I in Common.Level_Range
+         range Common.Level_Range'First .. Level loop
+          Screen.Put_Color (
+           Propal => Cur_Selection.Try_No,
+           Level => I,
+           Color => Prop_State.Propal_Color(I) );
+          Screen.Put_Color (
+           Propal => First_Free,
+           Level => I,
+           Color => Free_State.Propal_Color(I) );
+        end loop;
+        -- Answered impossible because of Next_Free
+        if Prop_State.Try = Common.Can_Try then
+          Screen.Put_Try (Cur_Selection.Try_No, Screen.Can_Try);
+        else
+          Screen.Put_Try (Cur_Selection.Try_No, Screen.Cannot_Try);
+        end if;
+      end;
+    else
+      Free_State := Common.Get_Propal_State (First_Free);
+    end if;
+
+    -- Build color rec and update screen
+    for I in Common.Level_Range
+     range Common.Level_Range'First .. Level loop
+      Color.Color(I) := Free_State.Propal_Color(I);
+    end loop;
+
+    -- Respond
+    Resp := Response.Respond (Color);
+    Screen.Put_Answer (
+     Propal => First_Free,
+     Placed_Ok => Resp.Placed_Ok,
+     Colors_Ok => Resp.Colors_Ok);
+
+    -- Answered
+    Common.Set_Try_State (First_Free, Common.Answered);
+    Common.Set_Answer (First_Free, Resp.Placed_Ok, Resp.Colors_Ok);
+
+    -- Check end of game
+    if First_Free = Common.Max_Number_Propal or else
+       Resp.Placed_Ok = Natural (Level) then
+      Playing := False;
+      Screen.Put_Start_Giveup (Start => True, Selected => False);
+      Put_Secret;
+    else
+      First_Free := Common.Propal_Range'Succ(First_Free);
+    end if;
+  end Answer;
+
   use type Common.Propal_Range, Common.Color_Range, Common.Try_List,
            Common.Level_Range,
            Screen.Selection_List;
@@ -79,75 +149,7 @@ begin
       when Screen.Try =>
         if Last_Click.Try_No = Cur_Selection.Try_No then
           -- Valid try (already tested on click)
-          declare
-            Free_State : Common.Propal_State_Rec;
-            Color : Response.Color_Rec (Level);
-            Resp : Response.Response_Rec;
-          begin
-            if Cur_Selection.Try_No /= First_Free then
-              declare
-                Prop_State : Common.Propal_State_Rec;
-              begin
-                Free_State := Common.Get_Propal_State (Cur_Selection.Try_No);
-                Prop_State := Common.Get_Propal_State (First_Free);
-                -- Switch propals
-                Common.Set_Propal_State (
-                 Propal => Cur_Selection.Try_No,
-                 State  => Prop_State);
-                Common.Set_Propal_State (
-                 Propal => First_Free,
-                 State  => Free_State);
-                -- Update screen of propals and try
-                for I in Common.Level_Range
-                 range Common.Level_Range'First .. Level loop
-                  Screen.Put_Color (
-                   Propal => Cur_Selection.Try_No,
-                   Level => I,
-                   Color => Prop_State.Propal_Color(I) );
-                  Screen.Put_Color (
-                   Propal => First_Free,
-                   Level => I,
-                   Color => Free_State.Propal_Color(I) );
-                end loop;
-                -- Answered impossible because of Next_Free
-                if Prop_State.Try = Common.Can_Try then
-                  Screen.Put_Try (Cur_Selection.Try_No, Screen.Can_Try);
-                else
-                  Screen.Put_Try (Cur_Selection.Try_No, Screen.Cannot_Try);
-                end if;
-              end;
-            else
-              Free_State := Common.Get_Propal_State (First_Free);
-            end if;
-
-            -- Build color rec and update screen
-            for I in Common.Level_Range
-             range Common.Level_Range'First .. Level loop
-              Color.Color(I) := Free_State.Propal_Color(I);
-            end loop;
-
-            -- Respond
-            Resp := Response.Respond (Color);
-            Screen.Put_Answer (
-             Propal => First_Free,
-             Placed_Ok => Resp.Placed_Ok,
-             Colors_Ok => Resp.Colors_Ok);
-
-            -- Answered
-            Common.Set_Try_State (First_Free, Common.Answered);
-            Common.Set_Answer (First_Free, Resp.Placed_Ok, Resp.Colors_Ok);
-
-            -- Check end of game
-            if First_Free = Common.Max_Number_Propal or else
-               Resp.Placed_Ok = Natural (Level) then
-              Playing := False;
-              Screen.Put_Start_Giveup (Start => True, Selected => False);
-              Put_Secret;
-            else
-              First_Free := Common.Propal_Range'Succ(First_Free);
-            end if;
-
-          end;
+          Answer;
         else
           Screen.Console.Bell;
         end if;

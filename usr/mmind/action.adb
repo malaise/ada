@@ -49,10 +49,54 @@ package body Action is
 
   -- True if start again, False if exit
   function Play return Boolean is
+
     Clicked : Boolean := False;
-    Go_On, Exit_Game : Boolean;
     Can_Try, Can_Propose : Boolean;
+
+    procedure Handle_Refresh is
+      Propal : Common.Propal_State_Rec(Level);
+      Placed_Ok, Colors_Ok : Natural;
+      Code : Response.Color_Rec(Level);
+      use type Common.Try_List;
+    begin
+      Screen.Init (Level);
+      -- Put colors
+      for I in Common.Propal_Range loop
+        Propal := Common.Get_Propal_State(I);
+        for J in 1 .. Level loop
+          Screen.Put_Color (I, J, Propal.Propal_Color(J));
+        end loop;
+        if Propal.Try = Common.Can_Try then
+          Screen.Put_Try (I, Screen.Can_Try);
+        elsif Propal.Try = Common.Answered then
+          Common.Get_Answer (I, Placed_Ok, Colors_Ok);
+          Screen.Put_Answer (I, Placed_Ok, Colors_Ok);
+        end if;
+      end loop;
+      if Playing then
+        Screen.Put_Start_Giveup (Start => False, Selected => False);
+        -- Redraw help
+        if Clicked then
+          Treat_Click;
+        else
+          Common.Possible_Selections (Can_Try, Can_Propose);
+          Screen.Put_Help (Screen.Released, Can_Try, Can_Propose);
+        end if;
+        Screen.Put_Current_Level (Level);
+      else
+        Code := Response.Get_Code;
+        for J in 1 .. Level loop
+          Screen.Put_Secret_Color(J, Code.Color(J));
+        end loop;
+        Screen.Put_Start_Giveup (Start => True, Selected => False);
+        Screen.Put_Help (Screen.Start);
+        Screen.Put_Current_Level (Common.Get_Stored_Level);
+      end if;
+    end Handle_Refresh;
+
+    Go_On, Exit_Game : Boolean;
     Scr : constant Con_Io.Window := Con_Io.Get_Screen (Screen.Console'Access);
+
   begin
 
     -- Start new game - playing
@@ -94,49 +138,7 @@ package body Action is
                  xor Mouse_Status.Status = Con_Io.Pressed;
             end if;
           elsif Stat = Con_Io.Refresh then
-            Screen.Init (Level);
-            -- Put colors
-            declare
-              Propal : Common.Propal_State_Rec(Level);
-              Placed_Ok, Colors_Ok : Natural;
-              use type Common.Try_List;
-            begin
-              for I in Common.Propal_Range loop
-                Propal := Common.Get_Propal_State(I);
-                for J in 1 .. Level loop
-                  Screen.Put_Color (I, J, Propal.Propal_Color(J));
-                end loop;
-                if Propal.Try = Common.Can_Try then
-                  Screen.Put_Try (I, Screen.Can_Try);
-                elsif Propal.Try = Common.Answered then
-                  Common.Get_Answer (I, Placed_Ok, Colors_Ok);
-                  Screen.Put_Answer (I, Placed_Ok, Colors_Ok);
-                end if;
-              end loop;
-            end;
-            if Playing then
-              Screen.Put_Start_Giveup (Start => False, Selected => False);
-              -- Redraw help
-              if Clicked then
-                Treat_Click;
-              else
-                Common.Possible_Selections (Can_Try, Can_Propose);
-                Screen.Put_Help (Screen.Released, Can_Try, Can_Propose);
-              end if;
-              Screen.Put_Current_Level (Level);
-            else
-              declare
-                Code : Response.Color_Rec(Level);
-              begin
-                Code := Response.Get_Code;
-                for J in 1 .. Level loop
-                  Screen.Put_Secret_Color(J, Code.Color(J));
-                end loop;
-              end;
-              Screen.Put_Start_Giveup (Start => True, Selected => False);
-              Screen.Put_Help (Screen.Start);
-              Screen.Put_Current_Level (Common.Get_Stored_Level);
-            end if;
+            Handle_Refresh;
           elsif Stat = Con_Io.Break then
             Screen.Clear;
             End_Action;

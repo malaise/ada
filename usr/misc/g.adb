@@ -60,6 +60,39 @@ procedure G is
     end if;
   end Get_Char;
 
+  function Handle_Arrow (Char : in Character) return Boolean is
+    Lchar : Character;
+  begin
+    Lchar := Char;
+    if Lchar = Aski.Esc then
+      Lchar := Get_Char;
+      if Lchar = '[' then
+        Lchar := Get_Char;
+        if Lchar = 'D' then
+          Lchar := '4';
+        elsif Lchar = 'C'then
+          Lchar := '6';
+        elsif Lchar = 'B'then
+          Lchar := '5';
+        else
+          Lchar := ' ';
+        end if;
+      end if;
+    end if;
+
+    if Lchar = '4' then
+      Got_Res := Minus_1;
+      return True;
+    elsif Lchar = '6' then
+      Got_Res := Plus_1;
+      return True;
+    elsif Lchar = '5' then
+      Got_Res := Zero;
+      return True;
+    end if;
+    return False;
+  end Handle_Arrow;
+
 begin
   Rnd.Gen.Randomize;
   Key_Pressed.Open (True);
@@ -91,34 +124,9 @@ begin
             Clear_Screen;
             exit Game;
           end if;
-          if Char = Aski.Esc then
-            Char := Get_Char;
-            if Char = '[' then
-              Char := Get_Char;
-              if Char = 'D' then
-                Char := '4';
-              elsif Char = 'C'then
-                Char := '6';
-              elsif Char = 'B'then
-                Char := '5';
-              else
-                Char := ' ';
-              end if;
-            end if;
-          end if;
-
-          if Char = '4' then
-            Got_Res := Minus_1;
-            exit Get;
-          elsif Char = '6' then
-            Got_Res := Plus_1;
-            exit Get;
-          elsif Char = '5' then
-            Got_Res := Zero;
-            exit Get;
-          end if;
+          -- Done when valid arrow
+          exit Get when Handle_Arrow (Char);
         end;
-
         Basic_Proc.Put_Output ("ERR");
       end loop Get;
 

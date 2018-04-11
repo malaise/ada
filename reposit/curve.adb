@@ -778,6 +778,125 @@ package body Curve is
         Cur_Con_Io.Enable_Motion_Events (Misc(M_Scale));
       end Cancel_Zoom;
 
+      -- Update zoom status, return True if new zoom
+      function Update_Zoom return Boolean is
+        use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List;
+      begin
+        case Curr_Zoom_Mode is
+          when Init =>
+            if Mouse_Event.Valid
+            and then Mouse_Event.Button = Con_Io.Left
+            and then Mouse_Event.Status = Con_Io.Pressed then
+
+              Curr_Zoom_Mode := Drag;
+              Draw_Help (Update);
+              -- Store what has to be done with zoom frame
+              Clicked_Status := Mouse_Event;
+              Zoom_Frame_Action := Toggle;
+              Cur_Con_Io.Enable_Motion_Events (True);
+            elsif Mouse_Event.Valid
+            and then Mouse_Event.Status = Con_Io.Released then
+              if Mouse_Event.Button = Con_Io.Up
+              and then Curr_Zoom_No /= Last_Zoom_No then
+                -- Next zoom
+                Curr_Zoom_No := Curr_Zoom_No + 1;
+                -- Compute new conversions
+                Maj (Zoom_Array(Curr_Zoom_No));
+                return True;
+              elsif Mouse_Event.Button = Con_Io.Down
+              and then Curr_Zoom_No /= Zoom_No_Range'First then
+                -- Prev zoom
+                Curr_Zoom_No := Curr_Zoom_No - 1;
+                -- Compute new conversions
+                Maj (Zoom_Array(Curr_Zoom_No));
+                return True;
+              else
+                -- No change
+                Zoom_Frame_Action := None;
+              end if;
+            else
+              -- No change
+              Zoom_Frame_Action := None;
+            end if;
+          when Drag =>
+            if       Mouse_Event.Button = Con_Io.Left
+            and then Mouse_Event.Status = Con_Io.Released then
+              -- Release
+              if      Mouse_Event.X = Clicked_Status.X
+              or else Mouse_Event.Y = Clicked_Status.Y then
+                -- No zoom possible : Cancel
+                Cancel_Zoom;
+              else
+                -- Drag done
+                Cur_Con_Io.Enable_Motion_Events (False);
+                Curr_Zoom_Mode := Done;
+                Draw_Help (Update);
+                -- Store what has to be done with zoom frame
+                Zoom_Frame_Action := Toggle;
+              end if;
+            end if;
+          when Done =>
+            if Mouse_Event.Valid
+            and then Mouse_Event.Button = Con_Io.Left
+            and then Mouse_Event.Status = Con_Io.Pressed then
+              -- Click left : Validate
+              -- Zoom status is Done. Validate new scales in Curr_Zoom_No+1
+              declare
+                Root_Bounds : T_Boundaries
+                              renames Zoom_Array(Zoom_No_Range'First);
+                New_Bounds :  T_Boundaries;
+                New_Zoom_No : Zoom_No_Range;
+              begin
+
+                if Curr_Zoom_No /= Zoom_No_Range'Last then
+                  New_Zoom_No := Curr_Zoom_No + 1;
+                else
+                  New_Zoom_No := Curr_Zoom_No;
+                end if;
+                -- New_Bounds.Scale mode is Free_Screen or Free_Normed
+                --  according to initial scale type
+                if Root_Bounds.Scale = Curve_Screen or else
+                   Root_Bounds.Scale = Free_Screen then
+                  New_Bounds := (Scale => Free_Screen,
+                     X_Min => X_Screen_Real(Mouse_Bounds.X_Min),
+                     X_Max => X_Screen_Real(Mouse_Bounds.X_Max),
+                     Y_Min => Y_Screen_Real(Mouse_Bounds.Y_Min),
+                     Y_Max => Y_Screen_Real(Mouse_Bounds.Y_Max) );
+                else  -- Normed
+                  New_Bounds := (Scale => Free_Normed,
+                     X_Min => X_Screen_Real(Mouse_Bounds.X_Min),
+                     X_Max => X_Screen_Real(Mouse_Bounds.X_Max),
+                     Y_Min => Y_Screen_Real(Mouse_Bounds.Y_Min),
+                     Y_Max => Y_Screen_Real(Mouse_Bounds.Y_Max) );
+                end if;
+                -- Compute new conversions
+                begin
+                  Maj (New_Bounds);
+                  -- No exception, store it
+                  Curr_Zoom_No := New_Zoom_No;
+                  Last_Zoom_No := Curr_Zoom_No;
+                  Zoom_Array(Curr_Zoom_No) := New_Bounds;
+                  Cur_Con_Io.Enable_Motion_Events (False);
+                  return True;
+                exception
+                  when others =>
+                    Cancel_Zoom;
+                    Cur_Con_Io.Bell(3);
+                end;
+              end;
+
+            elsif Mouse_Event.Valid
+            and then Mouse_Event.Button = Con_Io.Right
+            and then Mouse_Event.Status = Con_Io.Pressed then
+              Cancel_Zoom;
+            else
+              -- no change in init or done
+              Zoom_Frame_Action := None;
+            end if;
+        end case; -- Current zoom mode
+        return False;
+      end Update_Zoom;
+
     use type Con_Io.Curs_Mvt, Con_Io.Mouse_Button_List,
              Con_Io.Mouse_Button_Status_List;
     begin -- Draw_One
@@ -949,119 +1068,10 @@ package body Curve is
               Zoom_Frame_Action := Update;
             end if;
 
-            case Curr_Zoom_Mode is
-              when Init =>
-                if Mouse_Event.Valid
-                and then Mouse_Event.Button = Con_Io.Left
-                and then Mouse_Event.Status = Con_Io.Pressed then
-
-                  Curr_Zoom_Mode := Drag;
-                  Draw_Help (Update);
-                  -- Store what has to be done with zoom frame
-                  Clicked_Status := Mouse_Event;
-                  Zoom_Frame_Action := Toggle;
-                  Cur_Con_Io.Enable_Motion_Events (True);
-                elsif Mouse_Event.Valid
-                and then Mouse_Event.Status = Con_Io.Released then
-                  if Mouse_Event.Button = Con_Io.Up
-                  and then Curr_Zoom_No /= Last_Zoom_No then
-                    -- Next zoom
-                    Curr_Zoom_No := Curr_Zoom_No + 1;
-                    -- Compute new conversions
-                    Maj (Zoom_Array(Curr_Zoom_No));
-                    return True;
-                  elsif Mouse_Event.Button = Con_Io.Down
-                  and then Curr_Zoom_No /= Zoom_No_Range'First then
-                    -- Prev zoom
-                    Curr_Zoom_No := Curr_Zoom_No - 1;
-                    -- Compute new conversions
-                    Maj (Zoom_Array(Curr_Zoom_No));
-                    return True;
-                  else
-                    -- No change
-                    Zoom_Frame_Action := None;
-                  end if;
-                else
-                  -- No change
-                  Zoom_Frame_Action := None;
-                end if;
-              when Drag =>
-                if       Mouse_Event.Button = Con_Io.Left
-                and then Mouse_Event.Status = Con_Io.Released then
-                  -- release
-                  if      Mouse_Event.X = Clicked_Status.X
-                  or else Mouse_Event.Y = Clicked_Status.Y then
-                    -- No zoom possible : Cancel
-                    Cancel_Zoom;
-                  else
-                    -- Drag done
-                    Cur_Con_Io.Enable_Motion_Events (False);
-                    Curr_Zoom_Mode := Done;
-                    Draw_Help (Update);
-                    -- Store what has to be done with zoom frame
-                    Zoom_Frame_Action := Toggle;
-                  end if;
-                end if;
-              when Done =>
-                if Mouse_Event.Valid
-                and then Mouse_Event.Button = Con_Io.Left
-                and then Mouse_Event.Status = Con_Io.Pressed then
-                  -- Click left : Validate
-                  -- Zoom status is Done. Validate new scales in Curr_Zoom_No+1
-                  declare
-                    Root_Bounds : T_Boundaries
-                                  renames Zoom_Array(Zoom_No_Range'First);
-                    New_Bounds :  T_Boundaries;
-                    New_Zoom_No : Zoom_No_Range;
-                  begin
-
-                    if Curr_Zoom_No /= Zoom_No_Range'Last then
-                      New_Zoom_No := Curr_Zoom_No + 1;
-                    else
-                      New_Zoom_No := Curr_Zoom_No;
-                    end if;
-                    -- New_Bounds.Scale mode is Free_Screen or Free_Normed
-                    --  according to initial scale type
-                    if Root_Bounds.Scale = Curve_Screen or else
-                       Root_Bounds.Scale = Free_Screen then
-                      New_Bounds := (Scale => Free_Screen,
-                         X_Min => X_Screen_Real(Mouse_Bounds.X_Min),
-                         X_Max => X_Screen_Real(Mouse_Bounds.X_Max),
-                         Y_Min => Y_Screen_Real(Mouse_Bounds.Y_Min),
-                         Y_Max => Y_Screen_Real(Mouse_Bounds.Y_Max) );
-                    else  -- Normed
-                      New_Bounds := (Scale => Free_Normed,
-                         X_Min => X_Screen_Real(Mouse_Bounds.X_Min),
-                         X_Max => X_Screen_Real(Mouse_Bounds.X_Max),
-                         Y_Min => Y_Screen_Real(Mouse_Bounds.Y_Min),
-                         Y_Max => Y_Screen_Real(Mouse_Bounds.Y_Max) );
-                    end if;
-                    -- Compute new conversions
-                    begin
-                      Maj (New_Bounds);
-                      -- No exception, store it
-                      Curr_Zoom_No := New_Zoom_No;
-                      Last_Zoom_No := Curr_Zoom_No;
-                      Zoom_Array(Curr_Zoom_No) := New_Bounds;
-                      Cur_Con_Io.Enable_Motion_Events (False);
-                      return True;
-                    exception
-                      when others =>
-                        Cancel_Zoom;
-                        Cur_Con_Io.Bell(3);
-                    end;
-                  end;
-
-                elsif Mouse_Event.Valid
-                and then Mouse_Event.Button = Con_Io.Right
-                and then Mouse_Event.Status = Con_Io.Pressed then
-                  Cancel_Zoom;
-                else
-                  -- no change in init or done
-                  Zoom_Frame_Action := None;
-                end if;
-
-            end case; -- Current zoom mode
+            -- Update zoom status
+            if Update_Zoom then
+              return True;
+            end if;
 
             -- perform zoom frame drawing
             if Mouse_Event.Valid

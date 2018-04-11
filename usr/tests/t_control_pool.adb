@@ -66,35 +66,35 @@ procedure T_Control_Pool is
         delay 0.0;
       end select;
 
+      if Got and then not Client_Stop and then not Main_Done then
+        -- Wait a bit (1 to 5 s) to simulate proteted activity
+        Log (My_No'Img & ": working on" & Pool_No'Img);
+        Dur3 := Rnd.Gen.Dur_Random (1.0, 5.0);
+        Activity: loop
+          -- Split actifity into slices of 1s max
+          if Dur3 > 1.0 then
+            delay 1.0;
+            Dur3 := Dur3 - 1.0;
+          else
+            -- Last slice
+            delay Dur3;
+            Log (My_No'Img & ": done with" & Pool_No'Img);
+            exit Activity;
+          end if;
+          -- Activity checks for signal from time to time
+          select
+            accept Stop;
+            Client_Stop := True;
+          or
+            delay 0.0;
+          end select;
+          if Client_Stop or else Main_Done then
+            Log (My_No'Img & ": giving up with" & Pool_No'Img);
+            exit Activity;
+          end if;
+        end loop Activity;
+      end if;
       if Got then
-        if not Client_Stop and then not Main_Done then
-          -- Wait a bit (1 to 5 s) to simulate proteted activity
-          Log (My_No'Img & ": working on" & Pool_No'Img);
-          Dur3 := Rnd.Gen.Dur_Random (1.0, 5.0);
-          Activity: loop
-            -- Split actifity into slices of 1s max
-            if Dur3 > 1.0 then
-              delay 1.0;
-              Dur3 := Dur3 - 1.0;
-            else
-              -- Last slice
-              delay Dur3;
-              Log (My_No'Img & ": done with" & Pool_No'Img);
-              exit Activity;
-            end if;
-            -- Activity checks for signal from time to time
-            select
-              accept Stop;
-              Client_Stop := True;
-            or
-              delay 0.0;
-            end select;
-            if Client_Stop or else Main_Done then
-              Log (My_No'Img & ": giving up with" & Pool_No'Img);
-              exit Activity;
-            end if;
-          end loop Activity;
-        end if;
         -- Release resource
         Log (My_No'Img & ": releasing" & Pool_No'Img);
         Pool.Release (Pool_No);

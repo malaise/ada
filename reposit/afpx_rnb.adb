@@ -425,6 +425,37 @@ procedure Afpx_Rnb is
     end loop;
   end Delete_Nodes;
 
+  -- Update Init part of node
+  procedure Update_Init (Child : in out Xml_Parser.Element_Type) is
+    Txt : As.U.Asu_Us;
+    Updated : Boolean;
+    use type Xml_Parser.Node_Kind_List;
+  begin
+    Tmp_Node := Child;
+    Child := Xml_Parser.No_Node;
+    while Xml.Has_Brother (Tmp_Node) loop
+      Tmp_Node := Xml.Get_Brother (Tmp_Node);
+      if Tmp_Node.Kind = Xml_Parser.Element
+      and then Xml.Get_Name (Tmp_Node) = "Init" then
+        Child := Tmp_Node;
+        exit;
+      end if;
+    end loop;
+    if Xml_Parser.Is_Valid (Child) then
+      -- Get Text nodes
+      for I in 1 .. Xml.Get_Nb_Children (Child) loop
+        Tmp_Node := Xml.Get_Child (Child, I);
+        if Tmp_Node.Kind = Xml_Parser.Text then
+          Txt := Xml.Get_Text (Tmp_Node);
+          Update (Txt, Xml.Get_Line_No (Tmp_Node), Updated);
+          if Updated then
+            Xml.Set_Text (Tmp_Node, Txt.Image);
+            Logger.Log_Debug ("Update Init text to " & Txt.Image);
+          end if;
+        end if;
+      end loop;
+    end if;
+  end Update_Init;
   use type Afpx_Typ.Field_Range, Xml_Parser.Node_Kind_List;
 
 begin
@@ -761,7 +792,7 @@ begin
         Logger.Log_Debug (
                Images.Integer_Image (Positive (Num_Read)) & "->"
              & Images.Integer_Image (Positive (Num_Comp)));
-       if Num_Read /= Num_Comp then
+        if Num_Read /= Num_Comp then
           Xml.Set_Attribute (Field, Field_Num_Name,
             Images.Integer_Image(Positive(Num_Comp)));
         end if;
@@ -800,30 +831,7 @@ begin
         end if;
 
         -- Field Init if any, brother of Geometry
-        Tmp_Node := Child;
-        Child := Xml_Parser.No_Node;
-        while Xml.Has_Brother (Tmp_Node) loop
-          Tmp_Node := Xml.Get_Brother (Tmp_Node);
-          if Tmp_Node.Kind = Xml_Parser.Element
-          and then Xml.Get_Name (Tmp_Node) = "Init" then
-            Child := Tmp_Node;
-            exit;
-          end if;
-        end loop;
-        if Xml_Parser.Is_Valid (Child) then
-          -- Get Text nodes
-          for I in 1 .. Xml.Get_Nb_Children (Child) loop
-            Tmp_Node := Xml.Get_Child (Child, I);
-            if Tmp_Node.Kind = Xml_Parser.Text then
-              Txt := Xml.Get_Text (Tmp_Node);
-              Update (Txt, Xml.Get_Line_No (Tmp_Node), Updated);
-              if Updated then
-                Xml.Set_Text (Tmp_Node, Txt.Image);
-                Logger.Log_Debug ("Update Init text to " & Txt.Image);
-              end if;
-            end if;
-          end loop;
-        end if;
+        Update_Init (Child);
 
       elsif Xml.Get_Name (Field) = "Var" then
         -- Var value

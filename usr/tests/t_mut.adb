@@ -68,13 +68,38 @@ procedure T_Mut is
         Prompt_Lock.Release;
       end Prompt;
 
+      function Get_Str (K, A : out Character)  return Boolean is
+        S : String (1 .. 256);
+        L : Natural;
+        use type Mutexes.Mutex_Kind;
+      begin
+        Basic_Proc.Get_Line (S, L);
+        if Mut_Kind /= Mutexes.Simple then
+          if L = 1 then
+            K := Upper_Char (S(1));
+            if K = 'T' then
+              A := K;
+              K := 'W';
+              Return True;
+            end if;
+          elsif L = 2 then
+            K := Upper_Char (S(1));
+            A := Upper_Char (S(2));
+            Return True;
+          end if;
+        elsif L = 1 then
+          -- Simple mutex
+          K := 'W';
+          A := Upper_Char (S(1));
+          Return True;
+        end if;
+        return False;
+      end Get_Str;
+
       procedure Get (I : in Range_Task; K, A : out Character)  is
         B : Boolean;
         C : Character;
-        S : String (1 .. 256);
-        L : Natural;
         Dummy : Boolean;
-        use type Mutexes.Mutex_Kind;
       begin
         Get_Lock.Get;
         if Stdin_Is_A_Tty then
@@ -93,26 +118,7 @@ procedure T_Mut is
         In_Get := True;
         loop
           Prompt (I, True);
-          Basic_Proc.Get_Line (S, L);
-          if Mut_Kind /= Mutexes.Simple then
-            if L = 1 then
-              K := Upper_Char (S(1));
-              if K = 'T' then
-                A := K;
-                K := 'W';
-                exit;
-              end if;
-            elsif L = 2 then
-              K := Upper_Char (S(1));
-              A := Upper_Char (S(2));
-              exit;
-            end if;
-          elsif L = 1 then
-            -- Simple mutex
-            K := 'W';
-            A := Upper_Char (S(1));
-            exit;
-          end if;
+          exit when Get_Str (K, A);
         end loop;
         In_Get := False;
         Get_Lock.Release;
