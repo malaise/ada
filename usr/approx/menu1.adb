@@ -381,6 +381,9 @@ package body Menu1 is
                 -- Add point
                 Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
                 Screen.Put_Title(Screen.Add_1);
+                if not Afpx.Line_List.Is_Empty then
+                  Saved_Index := Afpx.Line_List.Get_Position;
+                end if;
                 loop
                   Point_Set := False;
                   Read_Point(Point_Set, A_Point);
@@ -388,9 +391,9 @@ package body Menu1 is
                   Points.P_Upd_Point (Points.Add, 1, A_Point);
                   Set_Points_List;
                   Data_Changed := True;
+                  Saved_Index := Afpx.Line_List.List_Length;
                 end loop;
                 Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
-                Saved_Index := Afpx.Line_List.List_Length;
                 Restore := Partial;
               when Afpx_Xref.Points.Delete
                  | Afpx_Xref.Points.Modify
