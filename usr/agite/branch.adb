@@ -469,7 +469,7 @@ package body Branch is
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Reset,
                               Remote or else Right);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Rename,
-                              On_Current or else Remote or else Right);
+                              Remote or else Right);
     Afpx.Utils.Protect_Field (Afpx_Xref.Branches.Delete,
                               On_Current);
     -- Set Rebase and Reset (not to current branch) in red
