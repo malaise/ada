@@ -1,8 +1,10 @@
-with Argument, Basic_Proc, As.U, My_Math, Gets, Mixed_Str,
-     Normalization;
-with Mapcode_Lib;
-use Mapcode_Lib;
+with Ada.Command_Line, Ada.Text_Io;
+--#@IfNotDef Export
+with My_Math, Normalization, Gets;
+--#@EndifDef
+with As_U, Mapcode_Lib;
 procedure Mapcode is
+  use Mapcode_Lib;
 
   function Integer_Image (I : Integer) return String is
     Str : constant String := I'Img;
@@ -14,14 +16,25 @@ procedure Mapcode is
     end if;
   end Integer_Image;
 
+  function Lower_Str (Str : String) return String is
+    Offset  : constant Integer   := Character'Pos('A') - Character'Pos('a');
+    Result : String := Str;
+  begin
+    for C of Result loop
+      C := (if C not in 'A' .. 'Z' then C
+          else Character'Val (Character'Pos(C) - Offset));
+    end loop;
+    return Result;
+  end Lower_Str;
+
   procedure Put_Territory (Territory : in String) is
     Index : Mapcode_Lib.Territory_Range;
-    Name : As.U.Asu_Us;
+    Name : As_U.Asu_Us;
   begin
-    Basic_Proc.Put_Output ("  " & Territory);
+    Ada.Text_Io.Put ("  " & Territory);
     Index := Get_Territory_Number (Territory);
-    Name := As.U.Tus (Get_Territory_Alpha_Code (Index));
-    Basic_Proc.Put_Line_Output (" -> " & Integer_Image (Index)
+    Name := As_U.Tus (Get_Territory_Alpha_Code (Index));
+    Ada.Text_Io.Put_Line (" -> " & Integer_Image (Index)
       & ": " & Name.Image
       & " = " & Get_Territory_Alpha_Code (Name.Image, Mapcode_Lib.Local)
       & "/" & Get_Territory_Alpha_Code (Name.Image, Mapcode_Lib.International)
@@ -29,72 +42,86 @@ procedure Mapcode is
       & "/" & Get_Territory_Fullname (Name.Image) );
     if Is_Subdivision (Name.Image) then
       Index := Get_Parent_Of (Name.Image);
-      Basic_Proc.Put_Line_Output ("Parent -> "
-        & Get_Territory_Alpha_Code (Index));
+      Ada.Text_Io.Put_Line ("Parent -> "
+          & Get_Territory_Alpha_Code (Index));
     end if;
     if Has_Subdivision (Name.Image) then
-      Basic_Proc.Put_Line_Output ( "Has subdivisions");
+      Ada.Text_Io.Put_Line ( "Has subdivisions");
     end if;
   exception
     when Mapcode_Lib.Unknown_Territory =>
-      Basic_Proc.Put_Line_Output (" not found");
+      Ada.Text_Io.Put_Line (" not found");
   end Put_Territory;
 
   function Is_Command (Arg : in String) return Boolean is
     (Arg = "-h" or else Arg = "-t" or else Arg = "-c" or else Arg = "-d");
 
-  function Image (F : My_Math.Real) return String is
-    R : My_Math.Real;
+  function Image (F : Mapcode_Lib.Real) return String is
+--#@IfNotDef Export
+    R : Real;
     Frac_Len : constant := 9;
   begin
-    R := My_Math.Round_At (F, -Frac_Len);
-    return Normalization.Normal_Fixed (R, Frac_Len + 5, 4, '0');
+    R := Mapcode_Lib.Real (My_Math.Round_At (My_Math.Real (F), -Frac_Len));
+    return Normalization.Normal_Fixed (My_Math.Real (R), Frac_Len + 5, 4, '0');
+--#@ElseDef
+  begin
+    return F'Img;
+--#@EndifDef
   end Image;
 
+  function Get (Str : String) return Mapcode_Lib.Real is
+  begin
+--#@IfNotDef Export
+    return Mapcode_Lib.Real (Gets.Get_Int_Real (Str));
+--#@ElseDef
+    return Mapcode_Lib.Real'Value (Str);
+--#@EndifDef
+  end Get;
+
   I : Positive;
-  Command, Arg1, Arg2 : As.U.Asu_Us;
+  Command, Arg1, Arg2 : As_U.Asu_Us;
 
   Coord : Mapcode_Lib.Coordinate;
-  Territory : As.U.Asu_Us;
+  Territory : As_U.Asu_Us;
   Shortest : Boolean;
   Precision : Precisions;
 begin
     I := 1;
     loop
-      Argument.Get_Parameter (Command, I);
+      Command := As_U.Tus (Ada.Command_Line.Argument (I));
       if Command.Image = "-h" then
-        Basic_Proc.Put_Line_Output (
-          "Usage: " & Argument.Get_Program_Name & " <Command>");
-        Basic_Proc.Put_Line_Output (
+        Ada.Text_Io.Put_Line (
+          "Usage: " & Ada.Command_Line.Command_Name & " <Command>");
+        Ada.Text_Io.Put_Line (
           "  -h                            // This help");
-        Basic_Proc.Put_Line_Output (
+        Ada.Text_Io.Put_Line (
           "  -t <territory> [ <context> ]  // Territory info");
-        Basic_Proc.Put_Line_Output (
+        Ada.Text_Io.Put_Line (
           "  -c <lat> <lon> [ <options> ]  // Encode");
-        Basic_Proc.Put_Line_Output (
+        Ada.Text_Io.Put_Line (
           "    [ <territory> ] [ <shortest> ] [ <precision> ]");
-        Basic_Proc.Put_Line_Output (
+        Ada.Text_Io.Put_Line (
           "  -d <mapcode> [ <territory> ]  // Decode");
       elsif Command.Image = "-t" then
         -- Display territory info of next argument
         I := I + 1;
-        Put_Territory (Argument.Get_Parameter (Occurence => I));
+        Put_Territory (Ada.Command_Line.Argument (I));
       elsif Command.Image = "-c" then
         I := I + 1;
-        Argument.Get_Parameter (Arg1, I);
-        Coord.Lat := Gets.Get_Int_Real (Arg1.Image);
+        Arg1 := As_U.Tus (Ada.Command_Line.Argument (I));
+        Coord.Lat := Get (Arg1.Image);
         I := I + 1;
-        Argument.Get_Parameter (Arg2, I);
-        Coord.Lon := Gets.Get_Int_Real (Arg2.Image);
-        Territory := As.U.Asu_Null;
+        Arg2 := As_U.Tus (Ada.Command_Line.Argument (I));
+        Coord.Lon := Get (Arg2.Image);
+        Territory := As_U.Asu_Null;
         Shortest := True;
         Precision := 0;
-        for J in I + 1 .. Argument.Get_Nbre_Arg loop
-          Argument.Get_Parameter (Arg1,  J);
+        for J in I + 1 .. Ada.Command_Line.Argument_Count loop
+          Arg1 := As_U.Tus (Ada.Command_Line.Argument (J));
           exit when Is_Command (Arg1.Image);
           I := J;
-          if Mixed_Str (Arg1.Image) = "True"
-          or else Mixed_Str (Arg1.Image) = "False" then
+          if Lower_Str (Arg1.Image) = "true"
+          or else Lower_Str (Arg1.Image) = "false" then
             Shortest := Boolean'Value (Arg1.Image);
           elsif Arg1.Length = 1
           and then Arg1.Element (1) >= '0'
@@ -104,28 +131,28 @@ begin
             Territory := Arg1;
           end if;
         end loop;
-        Basic_Proc.Put_Line_Output (Image (Coord.Lat)
+        Ada.Text_Io.Put_Line (Image (Coord.Lat)
                                   & " " & Image (Coord.Lon));
         declare
           Codes : constant Mapcode_Lib.Map_Code_Infos
                 := Encode (Coord, Territory.Image, Shortest, Precision);
         begin
           for J in Codes'Range loop
-            Basic_Proc.Put_Line_Output ("=> "
+            Ada.Text_Io.Put_Line ("=> "
               &  Codes(J).Map_Code.Image
               & " " & Codes(J).Territory_Alpha_Code.Image
               & " " & Codes(J).Full_Map_Code.Image
               & " " & Integer_Image (Codes(J).Territory_Number));
           end loop;
         end;
-        Basic_Proc.New_Line_Output;
+        Ada.Text_Io.New_Line;
       elsif Command.Image = "-d" then
         -- Decode next argument, optionally with context
         I := I + 1;
-        Argument.Get_Parameter (Arg1, I);
+        Arg1 := As_U.Tus (Ada.Command_Line.Argument (I));
         Arg2.Set_Null;
-        if I < Argument.Get_Nbre_Arg then
-          Argument.Get_Parameter (Arg2, I + 1);
+        if I < Ada.Command_Line.Argument_Count then
+          Arg2 := As_U.Tus (Ada.Command_Line.Argument (I + 1));
           if Is_Command (Arg2.Image) then
             Arg2.Set_Null;
           else
@@ -133,10 +160,10 @@ begin
           end if;
         end if;
         Coord := Decode (Arg1.Image, Arg2.Image);
-        Basic_Proc.Put_Line_Output ("=> " & Image (Coord.Lat)
+        Ada.Text_Io.Put_Line ("=> " & Image (Coord.Lat)
                                   & " " & Image (Coord.Lon));
       end if;
-      exit when I = Argument.Get_Nbre_Arg;
+      exit when I = Ada.Command_Line.Argument_Count;
       I := I + 1;
   end loop;
 

@@ -1,5 +1,4 @@
 -- Bit operations
-with Long_Longs;
 package Bits is
 
   -- Bit and, bit or, bit neg, shift left and shift right
@@ -15,7 +14,7 @@ package Bits is
     with Inline => True;
 
   -- Operations on long long integers
-  use Long_Longs;
+  subtype Ll_Integer is Long_Long_Integer;
   function "And" (Left, Right : Ll_Integer) return Ll_Integer
     with Inline => True;
   function "Or"  (Left, Right : Ll_Integer) return Ll_Integer

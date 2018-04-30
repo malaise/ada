@@ -29,8 +29,8 @@ awk -v MODE=$MODE -v NAME=$NAME '
     if (MODE == 0) {
       KIND="Integer"
     } else {
-      KIND="As.U.Asu_Us"
-      print "with As.U;"
+      KIND="As_U.Asu_Us"
+      print "with As_U;"
     }
     print "package " NAME " is"
   }
@@ -48,9 +48,9 @@ awk -v MODE=$MODE -v NAME=$NAME '
       print
     } else {
       if (substr($0, length($0)-1, 2) == "];") {
-        print "As.U.Tus (" substr($0, 1, length($0)-2) "));"
+        print "As_U.Tus (" substr($0, 1, length($0)-2) "));"
       } else {
-        print "As.U.Tus (" substr($0, 1, length($0)-1) "),"
+        print "As_U.Tus (" substr($0, 1, length($0)-1) "),"
       }
     }
     next

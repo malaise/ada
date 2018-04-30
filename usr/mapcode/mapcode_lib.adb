@@ -1,545 +1,544 @@
-with Str_Util, Upper_Str, Mixed_Str, Bits, Long_Longs,
-     Unbounded_Arrays;
+with Bits;
 with Ndata, Ctrynams;
 package body Mapcode_Lib is
 
-  subtype Lint is Long_Longs.Ll_Integer;
+  subtype Lint is Long_Long_Integer;
   use type Lint;
 
-  Iso3166Alpha : constant array (Positive range <>) of As.U.Asu_Us := (
-    As.U.Tus ("VAT"),
-    As.U.Tus ("MCO"),
-    As.U.Tus ("GIB"),
-    As.U.Tus ("TKL"),
-    As.U.Tus ("CCK"),
-    As.U.Tus ("BLM"),
-    As.U.Tus ("NRU"),
-    As.U.Tus ("TUV"),
-    As.U.Tus ("MAC"),
-    As.U.Tus ("SXM"),
-    As.U.Tus ("MAF"),
-    As.U.Tus ("NFK"),
-    As.U.Tus ("PCN"),
-    As.U.Tus ("BVT"),
-    As.U.Tus ("BMU"),
-    As.U.Tus ("IOT"),
-    As.U.Tus ("SMR"),
-    As.U.Tus ("GGY"),
-    As.U.Tus ("AIA"),
-    As.U.Tus ("MSR"),
-    As.U.Tus ("JEY"),
-    As.U.Tus ("CXR"),
-    As.U.Tus ("WLF"),
-    As.U.Tus ("VGB"),
-    As.U.Tus ("LIE"),
-    As.U.Tus ("ABW"),
-    As.U.Tus ("MHL"),
-    As.U.Tus ("ASM"),
-    As.U.Tus ("COK"),
-    As.U.Tus ("SPM"),
-    As.U.Tus ("NIU"),
-    As.U.Tus ("KNA"),
-    As.U.Tus ("CYM"),
-    As.U.Tus ("BES"),
-    As.U.Tus ("MDV"),
-    As.U.Tus ("SHN"),
-    As.U.Tus ("MLT"),
-    As.U.Tus ("GRD"),
-    As.U.Tus ("VIR"),
-    As.U.Tus ("MYT"),
-    As.U.Tus ("SJM"),
-    As.U.Tus ("VCT"),
-    As.U.Tus ("HMD"),
-    As.U.Tus ("BRB"),
-    As.U.Tus ("ATG"),
-    As.U.Tus ("CUW"),
-    As.U.Tus ("SYC"),
-    As.U.Tus ("PLW"),
-    As.U.Tus ("MNP"),
-    As.U.Tus ("AND"),
-    As.U.Tus ("GUM"),
-    As.U.Tus ("IMN"),
-    As.U.Tus ("LCA"),
-    As.U.Tus ("FSM"),
-    As.U.Tus ("SGP"),
-    As.U.Tus ("TON"),
-    As.U.Tus ("DMA"),
-    As.U.Tus ("BHR"),
-    As.U.Tus ("KIR"),
-    As.U.Tus ("TCA"),
-    As.U.Tus ("STP"),
-    As.U.Tus ("HKG"),
-    As.U.Tus ("MTQ"),
-    As.U.Tus ("FRO"),
-    As.U.Tus ("GLP"),
-    As.U.Tus ("COM"),
-    As.U.Tus ("MUS"),
-    As.U.Tus ("REU"),
-    As.U.Tus ("LUX"),
-    As.U.Tus ("WSM"),
-    As.U.Tus ("SGS"),
-    As.U.Tus ("PYF"),
-    As.U.Tus ("CPV"),
-    As.U.Tus ("TTO"),
-    As.U.Tus ("BRN"),
-    As.U.Tus ("ATF"),
-    As.U.Tus ("PRI"),
-    As.U.Tus ("CYP"),
-    As.U.Tus ("LBN"),
-    As.U.Tus ("JAM"),
-    As.U.Tus ("GMB"),
-    As.U.Tus ("QAT"),
-    As.U.Tus ("FLK"),
-    As.U.Tus ("VUT"),
-    As.U.Tus ("MNE"),
-    As.U.Tus ("BHS"),
-    As.U.Tus ("TLS"),
-    As.U.Tus ("SWZ"),
-    As.U.Tus ("KWT"),
-    As.U.Tus ("FJI"),
-    As.U.Tus ("NCL"),
-    As.U.Tus ("SVN"),
-    As.U.Tus ("ISR"),
-    As.U.Tus ("PSE"),
-    As.U.Tus ("SLV"),
-    As.U.Tus ("BLZ"),
-    As.U.Tus ("DJI"),
-    As.U.Tus ("MKD"),
-    As.U.Tus ("RWA"),
-    As.U.Tus ("HTI"),
-    As.U.Tus ("BDI"),
-    As.U.Tus ("GNQ"),
-    As.U.Tus ("ALB"),
-    As.U.Tus ("SLB"),
-    As.U.Tus ("ARM"),
-    As.U.Tus ("LSO"),
-    As.U.Tus ("BEL"),
-    As.U.Tus ("MDA"),
-    As.U.Tus ("GNB"),
-    As.U.Tus ("TWN"),
-    As.U.Tus ("BTN"),
-    As.U.Tus ("CHE"),
-    As.U.Tus ("NLD"),
-    As.U.Tus ("DNK"),
-    As.U.Tus ("EST"),
-    As.U.Tus ("DOM"),
-    As.U.Tus ("SVK"),
-    As.U.Tus ("CRI"),
-    As.U.Tus ("BIH"),
-    As.U.Tus ("HRV"),
-    As.U.Tus ("TGO"),
-    As.U.Tus ("LVA"),
-    As.U.Tus ("LTU"),
-    As.U.Tus ("LKA"),
-    As.U.Tus ("GEO"),
-    As.U.Tus ("IRL"),
-    As.U.Tus ("SLE"),
-    As.U.Tus ("PAN"),
-    As.U.Tus ("CZE"),
-    As.U.Tus ("GUF"),
-    As.U.Tus ("ARE"),
-    As.U.Tus ("AUT"),
-    As.U.Tus ("AZE"),
-    As.U.Tus ("SRB"),
-    As.U.Tus ("JOR"),
-    As.U.Tus ("PRT"),
-    As.U.Tus ("HUN"),
-    As.U.Tus ("KOR"),
-    As.U.Tus ("ISL"),
-    As.U.Tus ("GTM"),
-    As.U.Tus ("CUB"),
-    As.U.Tus ("BGR"),
-    As.U.Tus ("LBR"),
-    As.U.Tus ("HND"),
-    As.U.Tus ("BEN"),
-    As.U.Tus ("ERI"),
-    As.U.Tus ("MWI"),
-    As.U.Tus ("PRK"),
-    As.U.Tus ("NIC"),
-    As.U.Tus ("GRC"),
-    As.U.Tus ("TJK"),
-    As.U.Tus ("BGD"),
-    As.U.Tus ("NPL"),
-    As.U.Tus ("TUN"),
-    As.U.Tus ("SUR"),
-    As.U.Tus ("URY"),
-    As.U.Tus ("KHM"),
-    As.U.Tus ("SYR"),
-    As.U.Tus ("SEN"),
-    As.U.Tus ("KGZ"),
-    As.U.Tus ("BLR"),
-    As.U.Tus ("GUY"),
-    As.U.Tus ("LAO"),
-    As.U.Tus ("ROU"),
-    As.U.Tus ("GHA"),
-    As.U.Tus ("UGA"),
-    As.U.Tus ("GBR"),
-    As.U.Tus ("GIN"),
-    As.U.Tus ("ECU"),
-    As.U.Tus ("ESH"),
-    As.U.Tus ("GAB"),
-    As.U.Tus ("NZL"),
-    As.U.Tus ("BFA"),
-    As.U.Tus ("PHL"),
-    As.U.Tus ("ITA"),
-    As.U.Tus ("OMN"),
-    As.U.Tus ("POL"),
-    As.U.Tus ("CIV"),
-    As.U.Tus ("NOR"),
-    As.U.Tus ("MYS"),
-    As.U.Tus ("VNM"),
-    As.U.Tus ("FIN"),
-    As.U.Tus ("COG"),
-    As.U.Tus ("DEU"),
-    As.U.Tus ("JPN"),
-    As.U.Tus ("ZWE"),
-    As.U.Tus ("PRY"),
-    As.U.Tus ("IRQ"),
-    As.U.Tus ("MAR"),
-    As.U.Tus ("UZB"),
-    As.U.Tus ("SWE"),
-    As.U.Tus ("PNG"),
-    As.U.Tus ("CMR"),
-    As.U.Tus ("TKM"),
-    As.U.Tus ("ESP"),
-    As.U.Tus ("THA"),
-    As.U.Tus ("YEM"),
-    As.U.Tus ("FRA"),
-    As.U.Tus ("ALA"),
-    As.U.Tus ("KEN"),
-    As.U.Tus ("BWA"),
-    As.U.Tus ("MDG"),
-    As.U.Tus ("UKR"),
-    As.U.Tus ("SSD"),
-    As.U.Tus ("CAF"),
-    As.U.Tus ("SOM"),
-    As.U.Tus ("AFG"),
-    As.U.Tus ("MMR"),
-    As.U.Tus ("ZMB"),
-    As.U.Tus ("CHL"),
-    As.U.Tus ("TUR"),
-    As.U.Tus ("PAK"),
-    As.U.Tus ("MOZ"),
-    As.U.Tus ("NAM"),
-    As.U.Tus ("VEN"),
-    As.U.Tus ("NGA"),
-    As.U.Tus ("TZA"),
-    As.U.Tus ("EGY"),
-    As.U.Tus ("MRT"),
-    As.U.Tus ("BOL"),
-    As.U.Tus ("ETH"),
-    As.U.Tus ("COL"),
-    As.U.Tus ("ZAF"),
-    As.U.Tus ("MLI"),
-    As.U.Tus ("AGO"),
-    As.U.Tus ("NER"),
-    As.U.Tus ("TCD"),
-    As.U.Tus ("PER"),
-    As.U.Tus ("MNG"),
-    As.U.Tus ("IRN"),
-    As.U.Tus ("LBY"),
-    As.U.Tus ("SDN"),
-    As.U.Tus ("IDN"),
-    As.U.Tus ("MX-DIF"),
-    As.U.Tus ("MX-TLA"),
-    As.U.Tus ("MX-MOR"),
-    As.U.Tus ("MX-AGU"),
-    As.U.Tus ("MX-CL"),
-    As.U.Tus ("MX-QUE"),
-    As.U.Tus ("MX-HID"),
-    As.U.Tus ("MX-MX"),
-    As.U.Tus ("MX-TAB"),
-    As.U.Tus ("MX-NAY"),
-    As.U.Tus ("MX-GUA"),
-    As.U.Tus ("MX-PUE"),
-    As.U.Tus ("MX-YUC"),
-    As.U.Tus ("MX-ROO"),
-    As.U.Tus ("MX-SIN"),
-    As.U.Tus ("MX-CAM"),
-    As.U.Tus ("MX-MIC"),
-    As.U.Tus ("MX-SLP"),
-    As.U.Tus ("MX-GRO"),
-    As.U.Tus ("MX-NLE"),
-    As.U.Tus ("MX-BCN"),
-    As.U.Tus ("MX-VER"),
-    As.U.Tus ("MX-CHP"),
-    As.U.Tus ("MX-BCS"),
-    As.U.Tus ("MX-ZAC"),
-    As.U.Tus ("MX-JAL"),
-    As.U.Tus ("MX-TAM"),
-    As.U.Tus ("MX-OAX"),
-    As.U.Tus ("MX-DUR"),
-    As.U.Tus ("MX-COA"),
-    As.U.Tus ("MX-SON"),
-    As.U.Tus ("MX-CHH"),
-    As.U.Tus ("GRL"),
-    As.U.Tus ("SAU"),
-    As.U.Tus ("COD"),
-    As.U.Tus ("DZA"),
-    As.U.Tus ("KAZ"),
-    As.U.Tus ("ARG"),
-    As.U.Tus ("IN-DD"),
-    As.U.Tus ("IN-DN"),
-    As.U.Tus ("IN-CH"),
-    As.U.Tus ("IN-AN"),
-    As.U.Tus ("IN-LD"),
-    As.U.Tus ("IN-DL"),
-    As.U.Tus ("IN-ML"),
-    As.U.Tus ("IN-NL"),
-    As.U.Tus ("IN-MN"),
-    As.U.Tus ("IN-TR"),
-    As.U.Tus ("IN-MZ"),
-    As.U.Tus ("IN-SK"),
-    As.U.Tus ("IN-PB"),
-    As.U.Tus ("IN-HR"),
-    As.U.Tus ("IN-AR"),
-    As.U.Tus ("IN-AS"),
-    As.U.Tus ("IN-BR"),
-    As.U.Tus ("IN-UT"),
-    As.U.Tus ("IN-GA"),
-    As.U.Tus ("IN-KL"),
-    As.U.Tus ("IN-TN"),
-    As.U.Tus ("IN-HP"),
-    As.U.Tus ("IN-JK"),
-    As.U.Tus ("IN-CT"),
-    As.U.Tus ("IN-JH"),
-    As.U.Tus ("IN-KA"),
-    As.U.Tus ("IN-RJ"),
-    As.U.Tus ("IN-OR"),
-    As.U.Tus ("IN-GJ"),
-    As.U.Tus ("IN-WB"),
-    As.U.Tus ("IN-MP"),
-    As.U.Tus ("IN-TG"),
-    As.U.Tus ("IN-AP"),
-    As.U.Tus ("IN-MH"),
-    As.U.Tus ("IN-UP"),
-    As.U.Tus ("IN-PY"),
-    As.U.Tus ("AU-NSW"),
-    As.U.Tus ("AU-ACT"),
-    As.U.Tus ("AU-JBT"),
-    As.U.Tus ("AU-NT"),
-    As.U.Tus ("AU-SA"),
-    As.U.Tus ("AU-TAS"),
-    As.U.Tus ("AU-VIC"),
-    As.U.Tus ("AU-WA"),
-    As.U.Tus ("AU-QLD"),
-    As.U.Tus ("BR-DF"),
-    As.U.Tus ("BR-SE"),
-    As.U.Tus ("BR-AL"),
-    As.U.Tus ("BR-RJ"),
-    As.U.Tus ("BR-ES"),
-    As.U.Tus ("BR-RN"),
-    As.U.Tus ("BR-PB"),
-    As.U.Tus ("BR-SC"),
-    As.U.Tus ("BR-PE"),
-    As.U.Tus ("BR-AP"),
-    As.U.Tus ("BR-CE"),
-    As.U.Tus ("BR-AC"),
-    As.U.Tus ("BR-PR"),
-    As.U.Tus ("BR-RR"),
-    As.U.Tus ("BR-RO"),
-    As.U.Tus ("BR-SP"),
-    As.U.Tus ("BR-PI"),
-    As.U.Tus ("BR-TO"),
-    As.U.Tus ("BR-RS"),
-    As.U.Tus ("BR-MA"),
-    As.U.Tus ("BR-GO"),
-    As.U.Tus ("BR-MS"),
-    As.U.Tus ("BR-BA"),
-    As.U.Tus ("BR-MG"),
-    As.U.Tus ("BR-MT"),
-    As.U.Tus ("BR-PA"),
-    As.U.Tus ("BR-AM"),
-    As.U.Tus ("US-DC"),
-    As.U.Tus ("US-RI"),
-    As.U.Tus ("US-DE"),
-    As.U.Tus ("US-CT"),
-    As.U.Tus ("US-NJ"),
-    As.U.Tus ("US-NH"),
-    As.U.Tus ("US-VT"),
-    As.U.Tus ("US-MA"),
-    As.U.Tus ("US-HI"),
-    As.U.Tus ("US-MD"),
-    As.U.Tus ("US-WV"),
-    As.U.Tus ("US-SC"),
-    As.U.Tus ("US-ME"),
-    As.U.Tus ("US-IN"),
-    As.U.Tus ("US-KY"),
-    As.U.Tus ("US-TN"),
-    As.U.Tus ("US-VA"),
-    As.U.Tus ("US-OH"),
-    As.U.Tus ("US-PA"),
-    As.U.Tus ("US-MS"),
-    As.U.Tus ("US-LA"),
-    As.U.Tus ("US-AL"),
-    As.U.Tus ("US-AR"),
-    As.U.Tus ("US-NC"),
-    As.U.Tus ("US-NY"),
-    As.U.Tus ("US-IA"),
-    As.U.Tus ("US-IL"),
-    As.U.Tus ("US-GA"),
-    As.U.Tus ("US-WI"),
-    As.U.Tus ("US-FL"),
-    As.U.Tus ("US-MO"),
-    As.U.Tus ("US-OK"),
-    As.U.Tus ("US-ND"),
-    As.U.Tus ("US-WA"),
-    As.U.Tus ("US-SD"),
-    As.U.Tus ("US-NE"),
-    As.U.Tus ("US-KS"),
-    As.U.Tus ("US-ID"),
-    As.U.Tus ("US-UT"),
-    As.U.Tus ("US-MN"),
-    As.U.Tus ("US-MI"),
-    As.U.Tus ("US-WY"),
-    As.U.Tus ("US-OR"),
-    As.U.Tus ("US-CO"),
-    As.U.Tus ("US-NV"),
-    As.U.Tus ("US-AZ"),
-    As.U.Tus ("US-NM"),
-    As.U.Tus ("US-MT"),
-    As.U.Tus ("US-CA"),
-    As.U.Tus ("US-TX"),
-    As.U.Tus ("US-AK"),
-    As.U.Tus ("CA-BC"),
-    As.U.Tus ("CA-AB"),
-    As.U.Tus ("CA-ON"),
-    As.U.Tus ("CA-QC"),
-    As.U.Tus ("CA-SK"),
-    As.U.Tus ("CA-MB"),
-    As.U.Tus ("CA-NL"),
-    As.U.Tus ("CA-NB"),
-    As.U.Tus ("CA-NS"),
-    As.U.Tus ("CA-PE"),
-    As.U.Tus ("CA-YT"),
-    As.U.Tus ("CA-NT"),
-    As.U.Tus ("CA-NU"),
-    As.U.Tus ("IND"),
-    As.U.Tus ("AUS"),
-    As.U.Tus ("BRA"),
-    As.U.Tus ("USA"),
-    As.U.Tus ("MEX"),
-    As.U.Tus ("RU-MOW"),
-    As.U.Tus ("RU-SPE"),
-    As.U.Tus ("RU-KGD"),
-    As.U.Tus ("RU-IN"),
-    As.U.Tus ("RU-AD"),
-    As.U.Tus ("RU-SE"),
-    As.U.Tus ("RU-KB"),
-    As.U.Tus ("RU-KC"),
-    As.U.Tus ("RU-CE"),
-    As.U.Tus ("RU-CU"),
-    As.U.Tus ("RU-IVA"),
-    As.U.Tus ("RU-LIP"),
-    As.U.Tus ("RU-ORL"),
-    As.U.Tus ("RU-TUL"),
-    As.U.Tus ("RU-BE"),
-    As.U.Tus ("RU-VLA"),
-    As.U.Tus ("RU-KRS"),
-    As.U.Tus ("RU-KLU"),
-    As.U.Tus ("RU-TT"),
-    As.U.Tus ("RU-BRY"),
-    As.U.Tus ("RU-YAR"),
-    As.U.Tus ("RU-RYA"),
-    As.U.Tus ("RU-AST"),
-    As.U.Tus ("RU-MOS"),
-    As.U.Tus ("RU-SMO"),
-    As.U.Tus ("RU-DA"),
-    As.U.Tus ("RU-VOR"),
-    As.U.Tus ("RU-NGR"),
-    As.U.Tus ("RU-PSK"),
-    As.U.Tus ("RU-KOS"),
-    As.U.Tus ("RU-STA"),
-    As.U.Tus ("RU-KDA"),
-    As.U.Tus ("RU-KL"),
-    As.U.Tus ("RU-TVE"),
-    As.U.Tus ("RU-LEN"),
-    As.U.Tus ("RU-ROS"),
-    As.U.Tus ("RU-VGG"),
-    As.U.Tus ("RU-VLG"),
-    As.U.Tus ("RU-MUR"),
-    As.U.Tus ("RU-KR"),
-    As.U.Tus ("RU-NEN"),
-    As.U.Tus ("RU-KO"),
-    As.U.Tus ("RU-ARK"),
-    As.U.Tus ("RU-MO"),
-    As.U.Tus ("RU-NIZ"),
-    As.U.Tus ("RU-PNZ"),
-    As.U.Tus ("RU-KI"),
-    As.U.Tus ("RU-ME"),
-    As.U.Tus ("RU-ORE"),
-    As.U.Tus ("RU-ULY"),
-    As.U.Tus ("RU-PM"),
-    As.U.Tus ("RU-BA"),
-    As.U.Tus ("RU-UD"),
-    As.U.Tus ("RU-TA"),
-    As.U.Tus ("RU-SAM"),
-    As.U.Tus ("RU-SAR"),
-    As.U.Tus ("RU-YAN"),
-    As.U.Tus ("RU-KM"),
-    As.U.Tus ("RU-SVE"),
-    As.U.Tus ("RU-TYU"),
-    As.U.Tus ("RU-KGN"),
-    As.U.Tus ("RU-CH"),
-    As.U.Tus ("RU-BU"),
-    As.U.Tus ("RU-ZAB"),
-    As.U.Tus ("RU-IRK"),
-    As.U.Tus ("RU-NVS"),
-    As.U.Tus ("RU-TOM"),
-    As.U.Tus ("RU-OMS"),
-    As.U.Tus ("RU-KK"),
-    As.U.Tus ("RU-KEM"),
-    As.U.Tus ("RU-AL"),
-    As.U.Tus ("RU-ALT"),
-    As.U.Tus ("RU-TY"),
-    As.U.Tus ("RU-KYA"),
-    As.U.Tus ("RU-MAG"),
-    As.U.Tus ("RU-CHU"),
-    As.U.Tus ("RU-KAM"),
-    As.U.Tus ("RU-SAK"),
-    As.U.Tus ("RU-PO"),
-    As.U.Tus ("RU-YEV"),
-    As.U.Tus ("RU-KHA"),
-    As.U.Tus ("RU-AMU"),
-    As.U.Tus ("RU-SA"),
-    As.U.Tus ("CAN"),
-    As.U.Tus ("RUS"),
-    As.U.Tus ("CN-SH"),
-    As.U.Tus ("CN-TJ"),
-    As.U.Tus ("CN-BJ"),
-    As.U.Tus ("CN-HI"),
-    As.U.Tus ("CN-NX"),
-    As.U.Tus ("CN-CQ"),
-    As.U.Tus ("CN-ZJ"),
-    As.U.Tus ("CN-JS"),
-    As.U.Tus ("CN-FJ"),
-    As.U.Tus ("CN-AH"),
-    As.U.Tus ("CN-LN"),
-    As.U.Tus ("CN-SD"),
-    As.U.Tus ("CN-SX"),
-    As.U.Tus ("CN-JX"),
-    As.U.Tus ("CN-HA"),
-    As.U.Tus ("CN-GZ"),
-    As.U.Tus ("CN-GD"),
-    As.U.Tus ("CN-HB"),
-    As.U.Tus ("CN-JL"),
-    As.U.Tus ("CN-HE"),
-    As.U.Tus ("CN-SN"),
-    As.U.Tus ("CN-NM"),
-    As.U.Tus ("CN-HL"),
-    As.U.Tus ("CN-HN"),
-    As.U.Tus ("CN-GX"),
-    As.U.Tus ("CN-SC"),
-    As.U.Tus ("CN-YN"),
-    As.U.Tus ("CN-XZ"),
-    As.U.Tus ("CN-GS"),
-    As.U.Tus ("CN-QH"),
-    As.U.Tus ("CN-XJ"),
-    As.U.Tus ("CHN"),
-    As.U.Tus ("UMI"),
-    As.U.Tus ("CPT"),
-    As.U.Tus ("ATA"),
-    As.U.Tus ("AAA") );
+  Iso3166Alpha : constant array (Positive range <>) of As_U.Asu_Us := (
+    As_U.Tus ("VAT"),
+    As_U.Tus ("MCO"),
+    As_U.Tus ("GIB"),
+    As_U.Tus ("TKL"),
+    As_U.Tus ("CCK"),
+    As_U.Tus ("BLM"),
+    As_U.Tus ("NRU"),
+    As_U.Tus ("TUV"),
+    As_U.Tus ("MAC"),
+    As_U.Tus ("SXM"),
+    As_U.Tus ("MAF"),
+    As_U.Tus ("NFK"),
+    As_U.Tus ("PCN"),
+    As_U.Tus ("BVT"),
+    As_U.Tus ("BMU"),
+    As_U.Tus ("IOT"),
+    As_U.Tus ("SMR"),
+    As_U.Tus ("GGY"),
+    As_U.Tus ("AIA"),
+    As_U.Tus ("MSR"),
+    As_U.Tus ("JEY"),
+    As_U.Tus ("CXR"),
+    As_U.Tus ("WLF"),
+    As_U.Tus ("VGB"),
+    As_U.Tus ("LIE"),
+    As_U.Tus ("ABW"),
+    As_U.Tus ("MHL"),
+    As_U.Tus ("ASM"),
+    As_U.Tus ("COK"),
+    As_U.Tus ("SPM"),
+    As_U.Tus ("NIU"),
+    As_U.Tus ("KNA"),
+    As_U.Tus ("CYM"),
+    As_U.Tus ("BES"),
+    As_U.Tus ("MDV"),
+    As_U.Tus ("SHN"),
+    As_U.Tus ("MLT"),
+    As_U.Tus ("GRD"),
+    As_U.Tus ("VIR"),
+    As_U.Tus ("MYT"),
+    As_U.Tus ("SJM"),
+    As_U.Tus ("VCT"),
+    As_U.Tus ("HMD"),
+    As_U.Tus ("BRB"),
+    As_U.Tus ("ATG"),
+    As_U.Tus ("CUW"),
+    As_U.Tus ("SYC"),
+    As_U.Tus ("PLW"),
+    As_U.Tus ("MNP"),
+    As_U.Tus ("AND"),
+    As_U.Tus ("GUM"),
+    As_U.Tus ("IMN"),
+    As_U.Tus ("LCA"),
+    As_U.Tus ("FSM"),
+    As_U.Tus ("SGP"),
+    As_U.Tus ("TON"),
+    As_U.Tus ("DMA"),
+    As_U.Tus ("BHR"),
+    As_U.Tus ("KIR"),
+    As_U.Tus ("TCA"),
+    As_U.Tus ("STP"),
+    As_U.Tus ("HKG"),
+    As_U.Tus ("MTQ"),
+    As_U.Tus ("FRO"),
+    As_U.Tus ("GLP"),
+    As_U.Tus ("COM"),
+    As_U.Tus ("MUS"),
+    As_U.Tus ("REU"),
+    As_U.Tus ("LUX"),
+    As_U.Tus ("WSM"),
+    As_U.Tus ("SGS"),
+    As_U.Tus ("PYF"),
+    As_U.Tus ("CPV"),
+    As_U.Tus ("TTO"),
+    As_U.Tus ("BRN"),
+    As_U.Tus ("ATF"),
+    As_U.Tus ("PRI"),
+    As_U.Tus ("CYP"),
+    As_U.Tus ("LBN"),
+    As_U.Tus ("JAM"),
+    As_U.Tus ("GMB"),
+    As_U.Tus ("QAT"),
+    As_U.Tus ("FLK"),
+    As_U.Tus ("VUT"),
+    As_U.Tus ("MNE"),
+    As_U.Tus ("BHS"),
+    As_U.Tus ("TLS"),
+    As_U.Tus ("SWZ"),
+    As_U.Tus ("KWT"),
+    As_U.Tus ("FJI"),
+    As_U.Tus ("NCL"),
+    As_U.Tus ("SVN"),
+    As_U.Tus ("ISR"),
+    As_U.Tus ("PSE"),
+    As_U.Tus ("SLV"),
+    As_U.Tus ("BLZ"),
+    As_U.Tus ("DJI"),
+    As_U.Tus ("MKD"),
+    As_U.Tus ("RWA"),
+    As_U.Tus ("HTI"),
+    As_U.Tus ("BDI"),
+    As_U.Tus ("GNQ"),
+    As_U.Tus ("ALB"),
+    As_U.Tus ("SLB"),
+    As_U.Tus ("ARM"),
+    As_U.Tus ("LSO"),
+    As_U.Tus ("BEL"),
+    As_U.Tus ("MDA"),
+    As_U.Tus ("GNB"),
+    As_U.Tus ("TWN"),
+    As_U.Tus ("BTN"),
+    As_U.Tus ("CHE"),
+    As_U.Tus ("NLD"),
+    As_U.Tus ("DNK"),
+    As_U.Tus ("EST"),
+    As_U.Tus ("DOM"),
+    As_U.Tus ("SVK"),
+    As_U.Tus ("CRI"),
+    As_U.Tus ("BIH"),
+    As_U.Tus ("HRV"),
+    As_U.Tus ("TGO"),
+    As_U.Tus ("LVA"),
+    As_U.Tus ("LTU"),
+    As_U.Tus ("LKA"),
+    As_U.Tus ("GEO"),
+    As_U.Tus ("IRL"),
+    As_U.Tus ("SLE"),
+    As_U.Tus ("PAN"),
+    As_U.Tus ("CZE"),
+    As_U.Tus ("GUF"),
+    As_U.Tus ("ARE"),
+    As_U.Tus ("AUT"),
+    As_U.Tus ("AZE"),
+    As_U.Tus ("SRB"),
+    As_U.Tus ("JOR"),
+    As_U.Tus ("PRT"),
+    As_U.Tus ("HUN"),
+    As_U.Tus ("KOR"),
+    As_U.Tus ("ISL"),
+    As_U.Tus ("GTM"),
+    As_U.Tus ("CUB"),
+    As_U.Tus ("BGR"),
+    As_U.Tus ("LBR"),
+    As_U.Tus ("HND"),
+    As_U.Tus ("BEN"),
+    As_U.Tus ("ERI"),
+    As_U.Tus ("MWI"),
+    As_U.Tus ("PRK"),
+    As_U.Tus ("NIC"),
+    As_U.Tus ("GRC"),
+    As_U.Tus ("TJK"),
+    As_U.Tus ("BGD"),
+    As_U.Tus ("NPL"),
+    As_U.Tus ("TUN"),
+    As_U.Tus ("SUR"),
+    As_U.Tus ("URY"),
+    As_U.Tus ("KHM"),
+    As_U.Tus ("SYR"),
+    As_U.Tus ("SEN"),
+    As_U.Tus ("KGZ"),
+    As_U.Tus ("BLR"),
+    As_U.Tus ("GUY"),
+    As_U.Tus ("LAO"),
+    As_U.Tus ("ROU"),
+    As_U.Tus ("GHA"),
+    As_U.Tus ("UGA"),
+    As_U.Tus ("GBR"),
+    As_U.Tus ("GIN"),
+    As_U.Tus ("ECU"),
+    As_U.Tus ("ESH"),
+    As_U.Tus ("GAB"),
+    As_U.Tus ("NZL"),
+    As_U.Tus ("BFA"),
+    As_U.Tus ("PHL"),
+    As_U.Tus ("ITA"),
+    As_U.Tus ("OMN"),
+    As_U.Tus ("POL"),
+    As_U.Tus ("CIV"),
+    As_U.Tus ("NOR"),
+    As_U.Tus ("MYS"),
+    As_U.Tus ("VNM"),
+    As_U.Tus ("FIN"),
+    As_U.Tus ("COG"),
+    As_U.Tus ("DEU"),
+    As_U.Tus ("JPN"),
+    As_U.Tus ("ZWE"),
+    As_U.Tus ("PRY"),
+    As_U.Tus ("IRQ"),
+    As_U.Tus ("MAR"),
+    As_U.Tus ("UZB"),
+    As_U.Tus ("SWE"),
+    As_U.Tus ("PNG"),
+    As_U.Tus ("CMR"),
+    As_U.Tus ("TKM"),
+    As_U.Tus ("ESP"),
+    As_U.Tus ("THA"),
+    As_U.Tus ("YEM"),
+    As_U.Tus ("FRA"),
+    As_U.Tus ("ALA"),
+    As_U.Tus ("KEN"),
+    As_U.Tus ("BWA"),
+    As_U.Tus ("MDG"),
+    As_U.Tus ("UKR"),
+    As_U.Tus ("SSD"),
+    As_U.Tus ("CAF"),
+    As_U.Tus ("SOM"),
+    As_U.Tus ("AFG"),
+    As_U.Tus ("MMR"),
+    As_U.Tus ("ZMB"),
+    As_U.Tus ("CHL"),
+    As_U.Tus ("TUR"),
+    As_U.Tus ("PAK"),
+    As_U.Tus ("MOZ"),
+    As_U.Tus ("NAM"),
+    As_U.Tus ("VEN"),
+    As_U.Tus ("NGA"),
+    As_U.Tus ("TZA"),
+    As_U.Tus ("EGY"),
+    As_U.Tus ("MRT"),
+    As_U.Tus ("BOL"),
+    As_U.Tus ("ETH"),
+    As_U.Tus ("COL"),
+    As_U.Tus ("ZAF"),
+    As_U.Tus ("MLI"),
+    As_U.Tus ("AGO"),
+    As_U.Tus ("NER"),
+    As_U.Tus ("TCD"),
+    As_U.Tus ("PER"),
+    As_U.Tus ("MNG"),
+    As_U.Tus ("IRN"),
+    As_U.Tus ("LBY"),
+    As_U.Tus ("SDN"),
+    As_U.Tus ("IDN"),
+    As_U.Tus ("MX-DIF"),
+    As_U.Tus ("MX-TLA"),
+    As_U.Tus ("MX-MOR"),
+    As_U.Tus ("MX-AGU"),
+    As_U.Tus ("MX-CL"),
+    As_U.Tus ("MX-QUE"),
+    As_U.Tus ("MX-HID"),
+    As_U.Tus ("MX-MX"),
+    As_U.Tus ("MX-TAB"),
+    As_U.Tus ("MX-NAY"),
+    As_U.Tus ("MX-GUA"),
+    As_U.Tus ("MX-PUE"),
+    As_U.Tus ("MX-YUC"),
+    As_U.Tus ("MX-ROO"),
+    As_U.Tus ("MX-SIN"),
+    As_U.Tus ("MX-CAM"),
+    As_U.Tus ("MX-MIC"),
+    As_U.Tus ("MX-SLP"),
+    As_U.Tus ("MX-GRO"),
+    As_U.Tus ("MX-NLE"),
+    As_U.Tus ("MX-BCN"),
+    As_U.Tus ("MX-VER"),
+    As_U.Tus ("MX-CHP"),
+    As_U.Tus ("MX-BCS"),
+    As_U.Tus ("MX-ZAC"),
+    As_U.Tus ("MX-JAL"),
+    As_U.Tus ("MX-TAM"),
+    As_U.Tus ("MX-OAX"),
+    As_U.Tus ("MX-DUR"),
+    As_U.Tus ("MX-COA"),
+    As_U.Tus ("MX-SON"),
+    As_U.Tus ("MX-CHH"),
+    As_U.Tus ("GRL"),
+    As_U.Tus ("SAU"),
+    As_U.Tus ("COD"),
+    As_U.Tus ("DZA"),
+    As_U.Tus ("KAZ"),
+    As_U.Tus ("ARG"),
+    As_U.Tus ("IN-DD"),
+    As_U.Tus ("IN-DN"),
+    As_U.Tus ("IN-CH"),
+    As_U.Tus ("IN-AN"),
+    As_U.Tus ("IN-LD"),
+    As_U.Tus ("IN-DL"),
+    As_U.Tus ("IN-ML"),
+    As_U.Tus ("IN-NL"),
+    As_U.Tus ("IN-MN"),
+    As_U.Tus ("IN-TR"),
+    As_U.Tus ("IN-MZ"),
+    As_U.Tus ("IN-SK"),
+    As_U.Tus ("IN-PB"),
+    As_U.Tus ("IN-HR"),
+    As_U.Tus ("IN-AR"),
+    As_U.Tus ("IN-AS"),
+    As_U.Tus ("IN-BR"),
+    As_U.Tus ("IN-UT"),
+    As_U.Tus ("IN-GA"),
+    As_U.Tus ("IN-KL"),
+    As_U.Tus ("IN-TN"),
+    As_U.Tus ("IN-HP"),
+    As_U.Tus ("IN-JK"),
+    As_U.Tus ("IN-CT"),
+    As_U.Tus ("IN-JH"),
+    As_U.Tus ("IN-KA"),
+    As_U.Tus ("IN-RJ"),
+    As_U.Tus ("IN-OR"),
+    As_U.Tus ("IN-GJ"),
+    As_U.Tus ("IN-WB"),
+    As_U.Tus ("IN-MP"),
+    As_U.Tus ("IN-TG"),
+    As_U.Tus ("IN-AP"),
+    As_U.Tus ("IN-MH"),
+    As_U.Tus ("IN-UP"),
+    As_U.Tus ("IN-PY"),
+    As_U.Tus ("AU-NSW"),
+    As_U.Tus ("AU-ACT"),
+    As_U.Tus ("AU-JBT"),
+    As_U.Tus ("AU-NT"),
+    As_U.Tus ("AU-SA"),
+    As_U.Tus ("AU-TAS"),
+    As_U.Tus ("AU-VIC"),
+    As_U.Tus ("AU-WA"),
+    As_U.Tus ("AU-QLD"),
+    As_U.Tus ("BR-DF"),
+    As_U.Tus ("BR-SE"),
+    As_U.Tus ("BR-AL"),
+    As_U.Tus ("BR-RJ"),
+    As_U.Tus ("BR-ES"),
+    As_U.Tus ("BR-RN"),
+    As_U.Tus ("BR-PB"),
+    As_U.Tus ("BR-SC"),
+    As_U.Tus ("BR-PE"),
+    As_U.Tus ("BR-AP"),
+    As_U.Tus ("BR-CE"),
+    As_U.Tus ("BR-AC"),
+    As_U.Tus ("BR-PR"),
+    As_U.Tus ("BR-RR"),
+    As_U.Tus ("BR-RO"),
+    As_U.Tus ("BR-SP"),
+    As_U.Tus ("BR-PI"),
+    As_U.Tus ("BR-TO"),
+    As_U.Tus ("BR-RS"),
+    As_U.Tus ("BR-MA"),
+    As_U.Tus ("BR-GO"),
+    As_U.Tus ("BR-MS"),
+    As_U.Tus ("BR-BA"),
+    As_U.Tus ("BR-MG"),
+    As_U.Tus ("BR-MT"),
+    As_U.Tus ("BR-PA"),
+    As_U.Tus ("BR-AM"),
+    As_U.Tus ("US-DC"),
+    As_U.Tus ("US-RI"),
+    As_U.Tus ("US-DE"),
+    As_U.Tus ("US-CT"),
+    As_U.Tus ("US-NJ"),
+    As_U.Tus ("US-NH"),
+    As_U.Tus ("US-VT"),
+    As_U.Tus ("US-MA"),
+    As_U.Tus ("US-HI"),
+    As_U.Tus ("US-MD"),
+    As_U.Tus ("US-WV"),
+    As_U.Tus ("US-SC"),
+    As_U.Tus ("US-ME"),
+    As_U.Tus ("US-IN"),
+    As_U.Tus ("US-KY"),
+    As_U.Tus ("US-TN"),
+    As_U.Tus ("US-VA"),
+    As_U.Tus ("US-OH"),
+    As_U.Tus ("US-PA"),
+    As_U.Tus ("US-MS"),
+    As_U.Tus ("US-LA"),
+    As_U.Tus ("US-AL"),
+    As_U.Tus ("US-AR"),
+    As_U.Tus ("US-NC"),
+    As_U.Tus ("US-NY"),
+    As_U.Tus ("US-IA"),
+    As_U.Tus ("US-IL"),
+    As_U.Tus ("US-GA"),
+    As_U.Tus ("US-WI"),
+    As_U.Tus ("US-FL"),
+    As_U.Tus ("US-MO"),
+    As_U.Tus ("US-OK"),
+    As_U.Tus ("US-ND"),
+    As_U.Tus ("US-WA"),
+    As_U.Tus ("US-SD"),
+    As_U.Tus ("US-NE"),
+    As_U.Tus ("US-KS"),
+    As_U.Tus ("US-ID"),
+    As_U.Tus ("US-UT"),
+    As_U.Tus ("US-MN"),
+    As_U.Tus ("US-MI"),
+    As_U.Tus ("US-WY"),
+    As_U.Tus ("US-OR"),
+    As_U.Tus ("US-CO"),
+    As_U.Tus ("US-NV"),
+    As_U.Tus ("US-AZ"),
+    As_U.Tus ("US-NM"),
+    As_U.Tus ("US-MT"),
+    As_U.Tus ("US-CA"),
+    As_U.Tus ("US-TX"),
+    As_U.Tus ("US-AK"),
+    As_U.Tus ("CA-BC"),
+    As_U.Tus ("CA-AB"),
+    As_U.Tus ("CA-ON"),
+    As_U.Tus ("CA-QC"),
+    As_U.Tus ("CA-SK"),
+    As_U.Tus ("CA-MB"),
+    As_U.Tus ("CA-NL"),
+    As_U.Tus ("CA-NB"),
+    As_U.Tus ("CA-NS"),
+    As_U.Tus ("CA-PE"),
+    As_U.Tus ("CA-YT"),
+    As_U.Tus ("CA-NT"),
+    As_U.Tus ("CA-NU"),
+    As_U.Tus ("IND"),
+    As_U.Tus ("AUS"),
+    As_U.Tus ("BRA"),
+    As_U.Tus ("USA"),
+    As_U.Tus ("MEX"),
+    As_U.Tus ("RU-MOW"),
+    As_U.Tus ("RU-SPE"),
+    As_U.Tus ("RU-KGD"),
+    As_U.Tus ("RU-IN"),
+    As_U.Tus ("RU-AD"),
+    As_U.Tus ("RU-SE"),
+    As_U.Tus ("RU-KB"),
+    As_U.Tus ("RU-KC"),
+    As_U.Tus ("RU-CE"),
+    As_U.Tus ("RU-CU"),
+    As_U.Tus ("RU-IVA"),
+    As_U.Tus ("RU-LIP"),
+    As_U.Tus ("RU-ORL"),
+    As_U.Tus ("RU-TUL"),
+    As_U.Tus ("RU-BE"),
+    As_U.Tus ("RU-VLA"),
+    As_U.Tus ("RU-KRS"),
+    As_U.Tus ("RU-KLU"),
+    As_U.Tus ("RU-TT"),
+    As_U.Tus ("RU-BRY"),
+    As_U.Tus ("RU-YAR"),
+    As_U.Tus ("RU-RYA"),
+    As_U.Tus ("RU-AST"),
+    As_U.Tus ("RU-MOS"),
+    As_U.Tus ("RU-SMO"),
+    As_U.Tus ("RU-DA"),
+    As_U.Tus ("RU-VOR"),
+    As_U.Tus ("RU-NGR"),
+    As_U.Tus ("RU-PSK"),
+    As_U.Tus ("RU-KOS"),
+    As_U.Tus ("RU-STA"),
+    As_U.Tus ("RU-KDA"),
+    As_U.Tus ("RU-KL"),
+    As_U.Tus ("RU-TVE"),
+    As_U.Tus ("RU-LEN"),
+    As_U.Tus ("RU-ROS"),
+    As_U.Tus ("RU-VGG"),
+    As_U.Tus ("RU-VLG"),
+    As_U.Tus ("RU-MUR"),
+    As_U.Tus ("RU-KR"),
+    As_U.Tus ("RU-NEN"),
+    As_U.Tus ("RU-KO"),
+    As_U.Tus ("RU-ARK"),
+    As_U.Tus ("RU-MO"),
+    As_U.Tus ("RU-NIZ"),
+    As_U.Tus ("RU-PNZ"),
+    As_U.Tus ("RU-KI"),
+    As_U.Tus ("RU-ME"),
+    As_U.Tus ("RU-ORE"),
+    As_U.Tus ("RU-ULY"),
+    As_U.Tus ("RU-PM"),
+    As_U.Tus ("RU-BA"),
+    As_U.Tus ("RU-UD"),
+    As_U.Tus ("RU-TA"),
+    As_U.Tus ("RU-SAM"),
+    As_U.Tus ("RU-SAR"),
+    As_U.Tus ("RU-YAN"),
+    As_U.Tus ("RU-KM"),
+    As_U.Tus ("RU-SVE"),
+    As_U.Tus ("RU-TYU"),
+    As_U.Tus ("RU-KGN"),
+    As_U.Tus ("RU-CH"),
+    As_U.Tus ("RU-BU"),
+    As_U.Tus ("RU-ZAB"),
+    As_U.Tus ("RU-IRK"),
+    As_U.Tus ("RU-NVS"),
+    As_U.Tus ("RU-TOM"),
+    As_U.Tus ("RU-OMS"),
+    As_U.Tus ("RU-KK"),
+    As_U.Tus ("RU-KEM"),
+    As_U.Tus ("RU-AL"),
+    As_U.Tus ("RU-ALT"),
+    As_U.Tus ("RU-TY"),
+    As_U.Tus ("RU-KYA"),
+    As_U.Tus ("RU-MAG"),
+    As_U.Tus ("RU-CHU"),
+    As_U.Tus ("RU-KAM"),
+    As_U.Tus ("RU-SAK"),
+    As_U.Tus ("RU-PO"),
+    As_U.Tus ("RU-YEV"),
+    As_U.Tus ("RU-KHA"),
+    As_U.Tus ("RU-AMU"),
+    As_U.Tus ("RU-SA"),
+    As_U.Tus ("CAN"),
+    As_U.Tus ("RUS"),
+    As_U.Tus ("CN-SH"),
+    As_U.Tus ("CN-TJ"),
+    As_U.Tus ("CN-BJ"),
+    As_U.Tus ("CN-HI"),
+    As_U.Tus ("CN-NX"),
+    As_U.Tus ("CN-CQ"),
+    As_U.Tus ("CN-ZJ"),
+    As_U.Tus ("CN-JS"),
+    As_U.Tus ("CN-FJ"),
+    As_U.Tus ("CN-AH"),
+    As_U.Tus ("CN-LN"),
+    As_U.Tus ("CN-SD"),
+    As_U.Tus ("CN-SX"),
+    As_U.Tus ("CN-JX"),
+    As_U.Tus ("CN-HA"),
+    As_U.Tus ("CN-GZ"),
+    As_U.Tus ("CN-GD"),
+    As_U.Tus ("CN-HB"),
+    As_U.Tus ("CN-JL"),
+    As_U.Tus ("CN-HE"),
+    As_U.Tus ("CN-SN"),
+    As_U.Tus ("CN-NM"),
+    As_U.Tus ("CN-HL"),
+    As_U.Tus ("CN-HN"),
+    As_U.Tus ("CN-GX"),
+    As_U.Tus ("CN-SC"),
+    As_U.Tus ("CN-YN"),
+    As_U.Tus ("CN-XZ"),
+    As_U.Tus ("CN-GS"),
+    As_U.Tus ("CN-QH"),
+    As_U.Tus ("CN-XJ"),
+    As_U.Tus ("CHN"),
+    As_U.Tus ("UMI"),
+    As_U.Tus ("CPT"),
+    As_U.Tus ("ATA"),
+    As_U.Tus ("AAA") );
 
   function Iso3166Alpha_Of (Index : Natural) return String is
   begin
@@ -594,8 +593,177 @@ package body Mapcode_Lib is
   Parents2 : constant String := "US,IN,CA,AU,MX,BR,RU,CN,";
 
   -- Returns string without leading spaces and trailing spaces
-  function Trim (Str : String) return String is
-    (Str_Util.Strip (Str, Str_Util.Both));
+  -- Remove tailing spaces and tabs
+  type Strip_Kind is (Tail, Head, Both);
+  function Is_Separator (Char : Character) return Boolean is
+    (Char = As_U.Space);
+
+  -- Return a String (1 .. N)
+  function Normalize (Str : String) return String is
+  begin
+    if Str'First = 1 then
+      -- Optim: no copy if not needed
+      return Str;
+    end if;
+    declare
+      Lstr : constant String (1 .. Str'Length) := Str;
+    begin
+      return Lstr;
+    end;
+  end Normalize;
+
+
+  function Strip (Str : String; From : Strip_Kind := Tail) return String is
+    -- Parses spaces and tabs (Ht) from the head/tail of a string
+    -- Returns the position of the first/last character or 0 if
+    --  all the string is spaces or tabs (or empty)
+    function Parse_Spaces (Str : String;
+                           From_Head : Boolean := True)
+             return Natural is
+    begin
+      if From_Head then
+        -- Look forward for significant character
+        for I in Str'Range loop
+          if not Is_Separator (Str(I)) then
+            return I;
+          end if;
+        end loop;
+        -- Not found
+        return 0;
+      else
+        -- Look backwards for significant character
+        for I in reverse Str'Range loop
+          if not Is_Separator (Str(I)) then
+            return I;
+          end if;
+        end loop;
+        -- Not found
+        return 0;
+      end if;
+    end Parse_Spaces;
+
+    Start, Stop : Natural;
+  begin
+    case From is
+      when Tail =>
+        Start := Str'First;
+        Stop  := Parse_Spaces (Str, False);
+      when Head =>
+        Start := Parse_Spaces (Str, True);
+        Stop  := Str'Last;
+      when Both =>
+        Start := Parse_Spaces (Str, True);
+        Stop  := Parse_Spaces (Str, False);
+    end case;
+    if Start = 0 then
+      return "";
+    else
+      return Normalize (Str(Start .. Stop));
+    end if;
+  end Strip;
+  function Trim (Str : String) return String is (Strip (Str, Both));
+
+  -- Locate the Nth occurence of a fragment within a string,
+  --  between a given index (first/last if 0) and the end/beginning of the
+  --  string, searching forward or backward
+  -- Return the index in Within of the char matching the start of Fragment
+  -- Return 0 if Index not in Within, if Within or Fragment is empty,
+  --  or if not found
+-- Locate Nth occurence of a fragment within a string,
+  --  between a given index (first/last if 0) and the end/beginning of string,
+  --  searching forward or backward
+  -- Returns index in Within of char matching start of Fragment
+  --  or 0 if not found or if Within or Fragment is empty
+  function Locate (Within     : String;
+                   Fragment   : String;
+                   From_Index : Natural := 0;
+                   Forward    : Boolean := True;
+                   Occurence  : Positive := 1)
+           return Natural is
+    Index : Natural;
+    Found_Occurence : Natural := 0;
+  begin
+    -- Fix Index
+    Index := (if From_Index = 0 then
+               (if Forward then Within'First else Within'Last)
+              else From_Index);
+
+    -- Handle limit or incorrect values
+    if Within'Length = 0
+    or else Fragment'Length = 0
+    or else Index not in Within'First .. Within'Last then
+      return 0;
+    end if;
+    if Forward then
+      for I in Index .. Within'Last - Fragment'Length + 1 loop
+        if Within(I .. I + Fragment'Length - 1) = Fragment then
+          Found_Occurence := Found_Occurence + 1;
+          if Found_Occurence = Occurence then
+            return I;
+          end if;
+        end if;
+      end loop;
+    else
+      for I in reverse Within'First .. Index - Fragment'Length + 1 loop
+        if Within(I .. I + Fragment'Length - 1) = Fragment then
+          Found_Occurence := Found_Occurence + 1;
+          if Found_Occurence = Occurence then
+            return I;
+          end if;
+        end if;
+      end loop;
+    end if;
+    return 0;
+  exception
+    when Constraint_Error =>
+      return 0;
+  end Locate;
+
+  -- Convert a character into upper char
+  function Upper_Char (Char : Character) return Character is
+    Offset  : constant Integer   := Character'Pos('A') - Character'Pos('a');
+  begin
+    return (if Char not in 'a' .. 'z' then Char
+            else Character'Val (Character'Pos(Char) + Offset));
+  end Upper_Char;
+
+  -- Convert a character into lower char
+  function Lower_Char (Char : Character) return Character is
+    Offset  : constant Integer   := Character'Pos('A') - Character'Pos('a');
+  begin
+    return (if Char not in 'A' .. 'Z' then Char
+            else Character'Val (Character'Pos(Char) - Offset));
+  end Lower_Char;
+
+  -- Convert the characters of Str into upper char
+  function Upper_Str (Str : String) return String is
+    Result : String := Str;
+  begin
+
+    for C of Result loop
+      C := Upper_Char (C);
+    end loop;
+    return Result;
+  end Upper_Str;
+
+  -- Convert the characters of Str:
+  -- Any letter that follows a letter is lower char
+  -- Any other  letter (including the first letter) is UPPER char
+  function Mixed_Str (Str : String) return String is
+    Result : String := Str;
+    Prev_Separator : Boolean := True;
+  begin
+    for C of Result loop
+      if Prev_Separator and then C in 'a' .. 'z' then
+        C := Upper_Char (C);
+      elsif not Prev_Separator and then C in 'A' .. 'Z' then
+        C := Lower_Char (C);
+      end if;
+      Prev_Separator := C not in 'a' .. 'z'
+               and then C not in 'A' .. 'Z';
+    end loop;
+    return Result;
+  end Mixed_Str;
 
   -- Returns 2-letter parent country abbreviation (disam in range 1..8)
   function Parent_Name2 (Disam : Positive) return String is
@@ -609,7 +777,7 @@ package body Mapcode_Lib is
     Len  : constant Natural := Srch'Length;
     P : Natural;
   begin
-    P := Str_Util.Locate (
+    P := Locate (
       (if Len = 3 then Parents2 elsif Len = 4 then Parents3 else Undefined),
       Srch);
    return (if P /= 0 then P / Len + 1 else Error);
@@ -645,7 +813,7 @@ package body Mapcode_Lib is
       I : Natural;
     begin
       loop
-        I := Str_Util.Locate (Within, Crit, Occurence => Occ);
+        I := Locate (Within, Crit, Occurence => Occ);
         exit when I = 0;
         if I > 1 and then Within(I - 1) >= '0'
         and then Within(I - 1) <= '9' then
@@ -659,7 +827,7 @@ package body Mapcode_Lib is
   begin
     Index := (if Territory_Alpha_Code'Length = 2 then
                Match (Territory_Alpha_Code, Aliases)
-              else Str_Util.Locate (Aliases, Territory_Alpha_Code));
+              else Locate (Aliases, Territory_Alpha_Code));
     if Index /= 0 then
       return Aliases (Index + 4 .. Index + 6);
     else
@@ -691,10 +859,10 @@ package body Mapcode_Lib is
     end Is_Digits;
     N, Sep : Natural;
     Index : Integer;
-    Isoa : As.U.Asu_Us;
-    Alpha_Code : As.U.Asu_Us;
-    Hyphenated : As.U.Asu_Us;
-    use all type As.U.Asu_Us;
+    Isoa : As_U.Asu_Us;
+    Alpha_Code : As_U.Asu_Us;
+    Hyphenated : As_U.Asu_Us;
+    use all type As_U.Asu_Us;
   begin
     if Territory_Alpha_Code = Undefined then
       return Error;
@@ -709,12 +877,12 @@ package body Mapcode_Lib is
     end if;
 
     -- Name
-    Sep := Str_Util.Locate (Alpha_Code.Image, "-");
+    Sep := Locate (Alpha_Code.Image, "-");
     if Sep /= 0 then
       declare
         Prefix : constant String
                := Alpha_Code.Slice (1, Sep - 1);
-        Proper_Map_Code : As.U.Asu_Us
+        Proper_Map_Code : As_U.Asu_Us
                         := Alpha_Code.Uslice (Sep + 1,  Alpha_Code.Length);
       begin
         if Set_Disambiguate (Prefix) < 0 or else Proper_Map_Code.Length < 2 then
@@ -776,7 +944,7 @@ package body Mapcode_Lib is
       -- Find in ANY context
       Hyphenated := Tus ("-") & Alpha_Code;
       for I in Iso3166Alpha'Range loop
-        Index := Str_Util.Locate (Iso3166Alpha(I).Image, Hyphenated.Image);
+        Index := Locate (Iso3166Alpha(I).Image, Hyphenated.Image);
         if Index > 0
         and then Index = Iso3166Alpha(I).Length - Hyphenated.Length + 1 then
           -- iso3166alpha ends by Hyphenated
@@ -801,7 +969,7 @@ package body Mapcode_Lib is
     return Error;
   end Iso2Ccode;
 
-  -- Given an alphacode (such as US-AL), returns the territory number
+  -- Given an alphacode (such As_US-AL), returns the territory number
   --  or Error.
   -- A context_Territory number helps to interpret ambiguous (abbreviated)
   --  AlphaCodes, such as "AL"
@@ -834,11 +1002,11 @@ package body Mapcode_Lib is
   -- Return full name of territory or Undefined
   function Get_Territory_Fullname (Territory_Number: in Territory_Range)
            return String is
-    Name : As.U.Asu_Us;
+    Name : As_U.Asu_Us;
     Index : Natural;
   begin
     Name := Ctrynams.Isofullname(Territory_Number + 1);
-    Index := Str_Util.Locate (Name.Image, " (");
+    Index := Locate (Name.Image, " (");
     if Index > 0 then
       return Name.Slice (1, Index - 1);
     else
@@ -858,17 +1026,17 @@ package body Mapcode_Lib is
     Territory_Number : Territory_Range;
     Format : Territory_Formats := International) return String is
     Full : constant String := Iso3166Alpha_Of (Territory_Number);
-    Iso : As.U.Asu_Us;
+    Iso : As_U.Asu_Us;
     Hyphen, Index : Natural;
-    Short : As.U.Asu_Us;
+    Short : As_U.Asu_Us;
     Count, Parent : Natural;
   begin
-    Hyphen := Str_Util.Locate (Full, "-");
+    Hyphen := Locate (Full, "-");
     if Format = International or else Hyphen = 0 then
       -- Format full or no hyphen
       return Full;
     end if;
-    Short := As.U.Tus (Full(Hyphen + 1 .. Full'Last));
+    Short := As_U.Tus (Full(Hyphen + 1 .. Full'Last));
     if Format = Local then
       -- Format local
       return Short.Image;
@@ -877,12 +1045,12 @@ package body Mapcode_Lib is
     -- Keep parent if it has aliases or if territoy occurs multiple times
     Parent := Get_Parent_Of (Full);
     Count := 0;
-    if Str_Util.Locate (Aliases, Iso3166Alpha_Of (Parent) & "=") > 0 then
+    if Locate (Aliases, Iso3166Alpha_Of (Parent) & "=") > 0 then
       Count := 2;
     else
       for I in Iso3166Alpha'Range loop
-        Iso := As.U.Tus (Iso3166Alpha_Of (I));
-        Index := Str_Util.Locate (Iso.Image, "-" & Short.Image);
+        Iso := As_U.Tus (Iso3166Alpha_Of (I));
+        Index := Locate (Iso.Image, "-" & Short.Image);
         if Index > 0 and then Index + Short.Length = Iso.Length then
           Count := Count + 1;
           exit when Count = 2;
@@ -945,17 +1113,17 @@ package body Mapcode_Lib is
 
   -- Return True if Territory is a country that has states
   function Has_Subdivision (Territory : String)return Boolean is
-    (Str_Util.Locate (Parents3, Get_Territory_Alpha_Code (Territory)) /= 0);
+    (Locate (Parents3, Get_Territory_Alpha_Code (Territory)) /= 0);
 
   function Get_Info (
       Territory_Number : Territory_Range;
       Format : Territory_Formats := International) return Territory_Info is
     Info : Territory_Info;
   begin
-    Info.Name := As.U.Tus (Get_Territory_Alpha_Code (Territory_Number, Format));
-    Info.Fullname := As.U.Tus (Get_Territory_Fullname (Territory_Number));
+    Info.Name := As_U.Tus (Get_Territory_Alpha_Code (Territory_Number, Format));
+    Info.Fullname := As_U.Tus (Get_Territory_Fullname (Territory_Number));
     if Is_Subdivision (Territory_Number) then
-      Info.Parent := As.U.Tus (Get_Territory_Alpha_Code (
+      Info.Parent := As_U.Tus (Get_Territory_Alpha_Code (
                          Get_Parent_Of (Territory_Number)));
     end if;
     Info.Has_Subdivision := Has_Subdivision (
@@ -1142,7 +1310,6 @@ package body Mapcode_Lib is
   end Wrap;
 
   function Convert_Fractions_To_Degrees (P : Coord_Rec) return Coordinate is
-    use My_Math;
   begin
     return (Lat => Real (P.Y) /  810000.0 / 1000000.0,
             Lon => Real (P.X) / 3240000.0 / 1000000.0);
@@ -1268,12 +1435,11 @@ package body Mapcode_Lib is
     return E - I;
   end Count_Nameless_Records;
 
-  function Get_Encode_Rec(Lat, Lon : in My_Math.Real) return Frac_Rec is
-    Ilat : My_Math.Real := Lat;
-    Ilon : My_Math.Real := Lon;
-    D, Fraclat, Fraclon : My_Math.Real;
+  function Get_Encode_Rec(Lat, Lon : in Real) return Frac_Rec is
+    Ilat : Real := Lat;
+    Ilon : Real := Lon;
+    D, Fraclat, Fraclon : Real;
     Lat32, Lon32 : Lint;
-    use type My_Math.Real;
   begin
 
     if Ilat < -90.0 then
@@ -1286,16 +1452,16 @@ package body Mapcode_Lib is
     Fraclat := Ilat + 0.1;
     D := Fraclat / 810000.0;
     Lat32 := Lint (D);
-    Fraclat := Fraclat - My_Math.Real (Lat32) * 810000.0;
+    Fraclat := Fraclat - Real (Lat32) * 810000.0;
     Lat32 := Lat32 - 90000000;
 
-    Ilon := Ilon - 360.0 * My_Math.Int (Lon / 360.0);
+    Ilon := Ilon - 360.0 * Real (Lint (Lon / 360.0));
     -- Lon now in [0..360>
     Ilon := Ilon * 3240000000000.0;
     Fraclon := Ilon + 0.1;
     D := Fraclon / 3240000.0;
     Lon32 := Lint (D);
-    Fraclon := Fraclon - My_Math.Real (Lon32) * 3240000.0;
+    Fraclon := Fraclon - Real (Lon32) * 3240000.0;
     if Lon32 >= 180000000 then
       Lon32 := Lon32 - 360000000;
     end if;
@@ -1306,10 +1472,10 @@ package body Mapcode_Lib is
   end Get_Encode_Rec;
 
   function Encode_Base31 (Value : Lint; Nrchars : Natural) return String is
-    Result : As.U.Asu_Us;
+    Result : As_U.Asu_Us;
     Lv : Lint := Value;
     Ln : Natural := Nrchars;
-    use type As.U.Asu_Us;
+    use type As_U.Asu_Us;
   begin
     while Ln > 0 loop
       Ln := Ln - 1;
@@ -1409,7 +1575,7 @@ package body Mapcode_Lib is
     Factorx, Factory, Valx, Valy : Lint;
     Gx, Gy, Column1, Column2, Row1, Row2 : Integer;
     Digit : Integer := Extradigits;
-    Result : As.U.Asu_Us;
+    Result : As_U.Asu_Us;
   begin
     if Extradigits = 0 then
       return Input;
@@ -1417,7 +1583,7 @@ package body Mapcode_Lib is
     if Digit > Max_Mapcode_Precision then
       Digit := Max_Mapcode_Precision;
     end if;
-    Result := As.U.Tus (Input);
+    Result := As_U.Tus (Input);
 
     -- The following are all perfect integers
     --  810000 = 30^4
@@ -1551,13 +1717,13 @@ package body Mapcode_Lib is
   end Decode_Extension;
 
   -- Add vowels to prevent a mapcode r from being all-digit
-  function Aeu_Pack(R : As.U.Asu_Us; Short : Boolean) return String is
+  function Aeu_Pack(R : As_U.Asu_Us; Short : Boolean) return String is
     Dotpos : Natural := 0;
-    Result : As.U.Asu_Us := R;
+    Result : As_U.Asu_Us := R;
     Rlen : Natural := Result.Length;
-    Rest : As.U.Asu_Us;
+    Rest : As_U.Asu_Us;
     V : Integer;
-    use type As.U.Asu_Us;
+    use type As_U.Asu_Us;
   begin
     for D in 1 .. Rlen loop
       if Result.Element (D) < '0' or else Result.Element (D) > '9' then
@@ -1600,16 +1766,16 @@ package body Mapcode_Lib is
   end Aeu_Pack;
 
   -- Remove vowels from mapcode str into an all-digit mapcode
-  --  (assumes str is already uppercase!)
+  --  (As_Umes str is already uppercase!)
   function Aeu_Unpack (Str  : String) return String is
     Voweled, Has_Letters  : Boolean := False;
     Lastpos : constant Natural := Str'Length;
-    Result : As.U.Asu_Us := As.U.Tus (Str);
+    Result : As_U.Asu_Us := As_U.Tus (Str);
     Dotpos : Natural := Result.Locate (".");
     V, V1, V2 : Integer;
     S : String (1 .. 4);
     C : Character;
-    use type As.U.Asu_Us;
+    use type As_U.Asu_Us;
   begin
     if Dotpos < 3 or else Lastpos < Dotpos + 2 then
       -- No dot, or less than 2 letters before dot, or less than 2 letters
@@ -1748,8 +1914,8 @@ package body Mapcode_Lib is
       Dy : Lint := (Mm.Maxy - Enc.Coord32.Y) / Dividery;
       Extray : Lint := (Mm.Maxy - Enc.Coord32.Y) rem Dividery;
       V : Lint;
-      Result : As.U.Asu_Us;
-      use type As.U.Asu_Us;
+      Result : As_U.Asu_Us;
+      use type As_U.Asu_Us;
     begin
       if Extray = 0 and then Enc.Fraclat > 0 then
         Dy := Dy - 1;
@@ -1767,14 +1933,14 @@ package body Mapcode_Lib is
        V := V + (Dx * Lint (Side) + Dy);
      end if;
 
-     Result := As.U.Tus (Encode_Base31 (V, Codexlen + 1));
+     Result := As_U.Tus (Encode_Base31 (V, Codexlen + 1));
 
      if Codexlen = 3 then
        Result := Result.Uslice (1, 2) & '.' & Result.Uslice (3, Result.Length);
      elsif Codexlen = 4 then
        if Codex = 22 and then Org_Side = 961
        and then not Is_Special_Shape (M) then
-         Result := As.U.Tus (Result.Element (1) & Result.Element (2)
+         Result := As_U.Tus (Result.Element (1) & Result.Element (2)
                            & Result.Element (4) & '.' & Result.Element (3)
                            & Result.Element (5));
        elsif Codex = 13 then
@@ -1793,7 +1959,7 @@ package body Mapcode_Lib is
                             M : Natural; First_Index : Natural)
            return Mapcode_Zone_Rec is
     Codex : constant Natural := Co_Dex (M);
-    Result : As.U.Asu_Us;
+    Result : As_U.Asu_Us;
     A : constant Natural := Count_Nameless_Records (M, First_Index);
     F : constant Natural := First_Nameless_Record (M, First_Index);
     P : constant Natural := 31 / A;
@@ -1801,9 +1967,9 @@ package body Mapcode_Lib is
     X, V, Offset : Integer;
     Swap_Letters : Boolean := False;
     Base_Power, Base_Power_A : Integer;
-    use type As.U.Asu_Us;
+    use type As_U.Asu_Us;
   begin
-    Result := As.U.Tus (Input);
+    Result := As_U.Tus (Input);
     if Codex = 22 then
       Result := Result.Uslice (1, 3) & Result.Uslice (5, Result.Length);
     else
@@ -1844,7 +2010,7 @@ package body Mapcode_Lib is
 
     if Swap_Letters then
       if not Is_Special_Shape (M + X) then
-        Result := As.U.Tus (Result.Element (1) & Result.Element (2)
+        Result := As_U.Tus (Result.Element (1) & Result.Element (2)
                           & Result.Element (4) & Result.Element (5));
       end if;
     end if;
@@ -1920,7 +2086,7 @@ package body Mapcode_Lib is
     Good_Rounder : Lint;
     Storage_Start : Lint := 0;
     Dividerx, Dividery, Vx, Vy, Extrax, Extray, Spx, Spy, Value : Lint;
-    Mapc : As.U.Asu_Us;
+    Mapc : As_U.Asu_Us;
     use Bits;
   begin
     while Is_Auto_Header (First_Index - 1)
@@ -1959,7 +2125,7 @@ package body Mapcode_Lib is
         Vy := Vy / 176;
         Value := Value + Vy;
 
-        Mapc := As.U.Tus (
+        Mapc := As_U.Tus (
             Encode_Base31 (Storage_Start / (961 * 31) + Value, Codexlen - 2)
           & "."
           & Encode_Triple (Spx, Spy));
@@ -2048,11 +2214,11 @@ package body Mapcode_Lib is
     Divx, Divy : Integer;
     Xgridsize, Ygridsize, X, Relx, Rely : Lint;
     V : Integer;
-    Result, Postfix : As.U.Asu_Us;
+    Result, Postfix : As_U.Asu_Us;
     Dividery, Dividerx : Lint;
     Difx, Dify, Extrax, Extray : Lint;
     use Bits;
-    use type As.U.Asu_Us;
+    use type As_U.Asu_Us;
   begin
     if Codex = 21 then
       Codex := 22;
@@ -2097,10 +2263,10 @@ package body Mapcode_Lib is
     else
       V := Integer (Relx) * Divy + (Divy - 1 - Integer (Rely));
     end if;
-    Result := As.U.Tus (Encode_Base31 (Lint (V), Prefixlength));
+    Result := As_U.Tus (Encode_Base31 (Lint (V), Prefixlength));
 
     if Prefixlength = 4 and then Divx = 961 and then Divy = 961 then
-      Result := As.U.Tus (Result.Element(1) & Result.Element(3)
+      Result := As_U.Tus (Result.Element(1) & Result.Element(3)
                         & Result.Element(2) & Result.Element(4));
     end if;
 
@@ -2123,10 +2289,10 @@ package body Mapcode_Lib is
     if Postfixlength = 3 then
       Result.Append (Encode_Triple (Difx, Dify));
     else
-      Postfix := As.U.Tus (Encode_Base31 (
+      Postfix := As_U.Tus (Encode_Base31 (
           Difx * Lint (Y_Side(Postfixlength + 1)) + Dify, Postfixlength));
       if Postfixlength = 4 then
-        Postfix := As.U.Tus (Postfix.Element(1) & Postfix.Element(3)
+        Postfix := As_U.Tus (Postfix.Element(1) & Postfix.Element(3)
                            & Postfix.Element(2) & Postfix.Element(4));
       end if;
         Result.Append (Postfix);
@@ -2145,7 +2311,7 @@ package body Mapcode_Lib is
 
   function Decode_Grid (Input, Extension_Chars : String; M : Natural)
            return Mapcode_Zone_Rec is
-    Linput : As.U.Asu_Us := As.U.Tus (Input);
+    Linput : As_U.Asu_Us := As_U.Tus (Input);
     Prefixlength, Postfixlength : Natural;
     Divx, Divy : Integer;
     V : Integer;
@@ -2153,12 +2319,12 @@ package body Mapcode_Lib is
     Mm : Min_Max_Rec;
     Xgridsize, Ygridsize : Lint;
     Xp, Yp, Dividerx, Dividery : Lint;
-    Rest : As.U.Asu_Us;
+    Rest : As_U.Asu_Us;
     Dif : Coord_Rec;
     Corner : Coord_Rec;
     Decodemaxx, Decodemaxy : Lint;
     use Bits;
-    use type As.U.Asu_Us;
+    use type As_U.Asu_Us;
   begin
     Prefixlength := Linput.Locate (".") - 1;
     Postfixlength := Linput.Length - 1 - Prefixlength;
@@ -2206,7 +2372,7 @@ package body Mapcode_Lib is
       Dif := Decode_Triple (Rest.Image);
     else
       if Postfixlength = 4 then
-        Rest := As.U.Tus (Rest.Element (1) & Rest.Element(3) & Rest.Element(2)
+        Rest := As_U.Tus (Rest.Element (1) & Rest.Element(3) & Rest.Element(2)
               & Rest.Element(4));
       end if;
       V := Decode_Base31 (Rest.Image);
@@ -2229,23 +2395,22 @@ package body Mapcode_Lib is
                              Dividery, 0, Decodemaxy, Decodemaxx);
   end Decode_Grid;
 
-  package Map_Codes_Unbounded_Mng is new Unbounded_Arrays
-     (Map_Code_Info, Map_Code_Infos);
   function Mapcoder_Engine (Enc : Frac_Rec; Tn : in Integer;
                             Get_Shortest : Boolean; State_Override : Integer;
                             Extra_Digits : Integer) return Map_Code_Infos is
     -- Defaults for last 4 are false,false,false,-1
     Debug_Stop_Record : constant Integer := -1;
-    Results : Map_Codes_Unbounded_Mng.Unb_Array;
+    Results : Map_Code_Infos (1 .. 21);
+    Nb_Results : Natural := 0;
     From_Territory : Natural := 0;
     Upto_Territory  : Integer := Ccode_Earth;
     Original_Length : Natural;
     From, Upto : Integer;
     Mm : Min_Max_Rec;
-    R : As.U.Asu_Us;
+    R : As_U.Asu_Us;
     Store_Code : Integer;
     Mc_Info : Map_Code_Info;
-    use type As.U.Asu_Us;
+    use type As_U.Asu_Us;
   begin
     if Tn in From_Territory .. Upto_Territory then
       From_Territory := Tn;
@@ -2253,7 +2418,7 @@ package body Mapcode_Lib is
     end if;
 
     for Territory_Number in From_Territory .. Upto_Territory loop
-      Original_Length := Results.Length;
+      Original_Length := Nb_Results;
       From := Data_First_Record (Territory_Number);
       if Ndata.Data_Flags(From + 1) = 0 then
         goto Continue;
@@ -2270,9 +2435,9 @@ package body Mapcode_Lib is
           Mm := Min_Max_Setup (I);
           if Fits_Inside (Enc.Coord32, Mm) then
             if Is_Nameless (I) then
-              R := As.U.Tus (Encode_Nameless (Enc, I, From, Extra_Digits));
+              R := As_U.Tus (Encode_Nameless (Enc, I, From, Extra_Digits));
             elsif Rec_Type(I) > 1 then
-              R := As.U.Tus (Encode_Auto_Header (Enc, I, Extra_Digits));
+              R := As_U.Tus (Encode_Auto_Header (Enc, I, Extra_Digits));
             elsif I = Upto and then Get_Parent (Territory_Number) >= 0 then
               declare
                 More_Results : constant Map_Code_Infos
@@ -2281,43 +2446,47 @@ package body Mapcode_Lib is
                                   Get_Shortest,
                                   Territory_Number,
                                   Extra_Digits);
+                T : Natural;
               begin
                 if More_Results'Length > 0 then
-                  Results.Append (More_Results);
+                  T := Nb_Results;
+                  Nb_Results := Nb_Results + More_Results'Length;
+                  Results (T + 1 .. Nb_Results) := More_Results;
                 end if;
                 R.Set_Null;
               end;
             else
               if Is_Restricted (I)
-              and then Results.Length = Original_Length then
+              and then Nb_Results = Original_Length then
                 --  Restricted, and no shorter mapcodes exist:
                 --   do not generate mapcodes
                 R.Set_Null;
               else
-                R := As.U.Tus (Encode_Grid (Enc, I, Mm,
+                R := As_U.Tus (Encode_Grid (Enc, I, Mm,
                       Header_Letter(I), Extra_Digits));
               end if;
             end if;
 
             if R.Length > 4 then
-              R := As.U.Tus (Aeu_Pack (R, False));
+              R := As_U.Tus (Aeu_Pack (R, False));
               Store_Code := Territory_Number;
               if State_Override >= 0 then
                 Store_Code := State_Override;
               end if;
               if Debug_Stop_Record = I then
                 -- Clear all other results
-                Results.Set_Null;
+                Nb_Results := 0;
               end if;
 
               Mc_Info.Map_Code := R;
               Mc_Info.Territory_Alpha_Code :=
-                  As.U.Tus (Get_Territory_Alpha_Code (Store_Code));
+                  As_U.Tus (Get_Territory_Alpha_Code (Store_Code));
               Mc_Info.Full_Map_Code :=
-                  (if Store_Code = Ccode_Earth then As.U.Asu_Null
+                  (if Store_Code = Ccode_Earth then As_U.Asu_Null
                    else Mc_Info.Territory_Alpha_Code & " " & R);
               Mc_Info.Territory_Number := Store_Code;
-              Results.Append (Mc_Info);
+              Nb_Results := Nb_Results + 1;
+              Results (Nb_Results) := Mc_Info;
 
               exit when Get_Shortest or else Debug_Stop_Record = I;
             end if;
@@ -2328,13 +2497,13 @@ package body Mapcode_Lib is
     <<Continue>>
     end loop;
 
-    return Results.To_Array;
+    return Results (1 .. Nb_Results);
   end Mapcoder_Engine;
 
   function Master_Decode (Mapcode : String; Territory_Number : Natural)
            return Coordinate is
-    Map_Code : As.U.Asu_Us := As.U.Tus (Trim(Mapcode));
-    Extensionchars : As.U.Asu_Us;
+    Map_Code : As_U.Asu_Us := As_U.Tus (Trim(Mapcode));
+    Extensionchars : As_U.Asu_Us;
     Minpos : constant Natural := Map_Code.Locate ("-");
     Mclen : Positive;
     Number : Natural;
@@ -2351,7 +2520,7 @@ package body Mapcode_Lib is
       Extensionchars := Map_Code.Uslice (Minpos + 1, Map_Code.Length);
       Map_Code := Map_Code.Uslice (1, Minpos - 1);
     end if;
-    Map_Code := As.U.Tus (Aeu_Unpack (Map_Code.Image));
+    Map_Code := As_U.Tus (Aeu_Unpack (Map_Code.Image));
     if Map_Code.Is_Null then
       -- Failed to decode!
       raise Decode_Error;
@@ -2481,7 +2650,7 @@ package body Mapcode_Lib is
     Map_Code : constant String := Trim (Mapcode);
     Contextterritorynumber : Integer;
     Space1, Space2 : Natural;
-    Part1, Part2 : As.U.Asu_Us;
+    Part1, Part2 : As_U.Asu_Us;
     Territorynumber : Integer;
 
     function Spaces (I1, I2 : Natural) return String is
@@ -2496,14 +2665,14 @@ package body Mapcode_Lib is
       Contextterritorynumber := Get_Territory_Number(Context);
     end if;
 
-    Space1 := Str_Util.Locate (Map_Code, " ");
-    Space2 := Str_Util.Locate (Map_Code, " ", Forward => False);
+    Space1 := Locate (Map_Code, " ");
+    Space2 := Locate (Map_Code, " ", Forward => False);
     if Space1 = 0 then
       return Master_Decode(Map_Code, Contextterritorynumber);
     end if;
     if Map_Code (Space1 .. Space2) = Spaces (Space1, Space2) then
-      Part1 := As.U.Tus (Map_Code (1 .. Space1 - 1));
-      Part2 := As.U.Tus (Map_Code (Space2 + 1 .. Map_Code'Length));
+      Part1 := As_U.Tus (Map_Code (1 .. Space1 - 1));
+      Part2 := As_U.Tus (Map_Code (Space2 + 1 .. Map_Code'Length));
       if Is_Subdivision (Contextterritorynumber) then
         Contextterritorynumber := Get_Parent (Contextterritorynumber);
       end if;

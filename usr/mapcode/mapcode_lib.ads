@@ -1,4 +1,4 @@
-with As.U, My_Math;
+with As_U;
 package Mapcode_Lib is
 
   -- All functions returning a Integer return a natural or Error
@@ -6,6 +6,9 @@ package Mapcode_Lib is
 
   -- All functions returning a string may return Undefined, on error
   Undefined : constant String := "";
+
+  -- Real type
+  type Real is digits 15 range -1.79E308 .. 1.79E308;
 
   -----------------
   -- TERRITORIES --
@@ -54,9 +57,9 @@ package Mapcode_Lib is
 
   -- All in one
   type Territory_Info is record
-    Name : As.U.Asu_Us;
-    Fullname : As.U.Asu_Us;
-    Parent : As.U.Asu_Us;
+    Name : As_U.Asu_Us;
+    Fullname : As_U.Asu_Us;
+    Parent : As_U.Asu_Us;
     Has_Subdivision : Boolean;
   end record;
   function Get_Info (
@@ -65,14 +68,14 @@ package Mapcode_Lib is
 
   -- Coordinate in fraction of degrees
   type Coordinate is record
-     Lat, Lon : My_Math.Real;
+     Lat, Lon : Real;
   end record;
 
   -- Encoding to Mapcodes
   type Map_Code_Info is record
-    Map_Code : As.U.Asu_Us;
-    Territory_Alpha_Code : As.U.Asu_Us;
-    Full_Map_Code : As.U.Asu_Us;
+    Map_Code : As_U.Asu_Us;
+    Territory_Alpha_Code : As_U.Asu_Us;
+    Full_Map_Code : As_U.Asu_Us;
     Territory_Number : Territory_Range;
   end record;
   type Map_Code_Infos is array (Positive range <>) of Map_Code_Info;
