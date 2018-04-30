@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# Import mapcode javascript data, $1 (.js)
+#  into an ada spec (.ads)
+# One mandatory arg, -i or -s specifies if arrays are integers or strings
+function error {
+  echo "ERROR. Usage `basename $0` -i | -s <file>" 1>&2
+  exit 1
+}
+
+if [ "$1" = "-i" ]; then
+  MODE=0
+elif [ "$1" = "-s" ]; then
+  MODE=1
+else
+  error
+fi
+shift
+if [ $# -ne 1 ]; then
+  error
+fi
+
+export NAME=`basename $1`
+export NAME=`basename $NAME .js` 
+export DEST=$NAME.ads
+awk -v MODE=$MODE -v NAME=$NAME '
+  BEGIN {
+    SKIP=0;
+    if (MODE == 0) {
+      KIND="Integer"
+    } else {
+      KIND="As.U.Asu_Us"
+      print "with As.U;"
+    }
+    print "package " NAME " is"
+  }
+  ($NF == "*/") {SKIP=0; next}
+  (SKIP == 1) {next}
+  ($1 == "//") {next}
+  ($1 == "/*") {SKIP=1; next}
+  ($1 == "var") {
+    print $2 " : constant array (Positive range <>) of " KIND " := ("
+    next
+  }
+  ($0 != "") {
+    if (MODE == 0) {
+      gsub ("]", ")");
+      print
+    } else {
+      if (substr($0, length($0)-1, 2) == "];") {
+        print "As.U.Tus (" substr($0, 1, length($0)-2) "));"
+      } else {
+        print "As.U.Tus (" substr($0, 1, length($0)-1) "),"
+      }
+    }
+    next
+  }
+  {print}
+  END {print "end " NAME ";"}
+' $1 > $DEST
+alook $DEST
+asubst "\n\n" "\n" $DEST
+echo >> $DEST
+

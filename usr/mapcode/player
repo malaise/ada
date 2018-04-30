@@ -1,0 +1,79 @@
+#!/bin/bash
+#set -vx
+if [ "$1" = "" ] ; then
+  echo "Usage: `basename $0` <scenario>"
+  exit 1
+fi
+export SCENARIO=$1
+
+# Read field $2 of line $1
+function readarg {
+res="`awk -vLINE=$1 -vFIELD=$2 '
+  BEGIN {
+    NL=0
+  }
+  (NF == 0 || $1 ~ /^#/) {
+    # Skip empty lines and comment
+    next
+  }
+  {
+    # Count significant lines
+    NL=NL+1
+    if (NL == LINE) {
+      printf "%s",$FIELD
+      exit 0
+    }
+  } 
+' $SCENARIO`"
+echo "$res"
+}
+
+# For each line
+let L=1
+while true ; do
+  # Read line until end of file
+  let I=1
+  INPUT=""
+  OUTPUT=""
+  let ININ=1
+  while true ; do
+    arg=`readarg $L $I`
+    if [ "$arg" = "" ] ; then
+      # End of line
+      break
+    fi
+    if [ "$arg" = "=>" ] ; then
+      # Swith to output
+      let ININ=0
+    elif [ $ININ -eq 1 ] ; then
+      INPUT=$INPUT$arg" "
+    else
+      OUTPUT=$OUTPUT$arg" "
+    fi
+    let I=$I+1
+  done
+  if [ "$INPUT" = "" ] ; then
+    break
+  fi
+  # Do test and save exit status
+  export result=`mapcode $INPUT`
+  export code=$?
+  # Check exit status
+  if [ $code -ne 0 ] ; then
+    echo "Error: mapcode exited with code $code"
+    exit 1
+  fi
+  # Skip up to "=>" in cluded and append a space
+  result=`echo $result | cut -d ">" -f 2 | cut -d " " -f 2-`" "
+  # Check that result is expected
+  if [ "$result" = "$OUTPUT" ] ; then
+    echo "$INPUT => $OUTPUT"
+  else
+    echo "Error: $INPUT => $result instead of $OUTPUT"
+    exit 1
+  fi
+  let L=$L+1
+done
+echo OK.
+exit 0
+
