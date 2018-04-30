@@ -4,12 +4,14 @@ ADAVIEW := $(REPOSIT)
 ADACTL := true
 
 ADAOPT = -g
-EXES := mapcode
-PARGS_mapcode.apb =
+EXES := t_mapcode
+PARGS_t_mapcode.apb =
 
 include $(TEMPLATES)/ada.mk
 
-export :
-	-rm mapcode.adb
-	$(MAKE) 'PARGS_mapcode.apb=Export'
+Export :
+	rm t_mapcode.adb
+	$(MAKE) "PARGS_t_mapcode.apb=Export"
+
+
 

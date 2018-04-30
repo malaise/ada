@@ -56,7 +56,7 @@ while true ; do
     break
   fi
   # Do test and save exit status
-  export result=`mapcode $INPUT`
+  export result=`t_mapcode $INPUT`
   export code=$?
   # Check exit status
   if [ $code -ne 0 ] ; then

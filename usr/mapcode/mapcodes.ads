@@ -1,5 +1,5 @@
 with As_U;
-package Mapcode_Lib is
+package Mapcodes is
 
   -- All functions returning a Integer return a natural or Error
   Error : constant Integer := -1;
@@ -103,5 +103,5 @@ package Mapcode_Lib is
   -- Returns coordinate, or raises Decode_Error
   function Decode (Mapcode, Context : String) return Coordinate;
 
-end Mapcode_Lib;
+end Mapcodes;
 

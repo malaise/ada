@@ -1,6 +1,6 @@
 with Bits;
 with Ndata, Ctrynams;
-package body Mapcode_Lib is
+package body Mapcodes is
 
   subtype Lint is Long_Long_Integer;
   use type Lint;
@@ -2686,5 +2686,5 @@ package body Mapcode_Lib is
 
   end Decode;
 
-end Mapcode_Lib;
+end Mapcodes;
 

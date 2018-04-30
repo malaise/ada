@@ -2,9 +2,9 @@ with Ada.Command_Line, Ada.Text_Io;
 --#@IfNotDef Export
 with My_Math, Normalization, Gets;
 --#@EndifDef
-with As_U, Mapcode_Lib;
-procedure Mapcode is
-  use Mapcode_Lib;
+with As_U, Mapcodes;
+procedure T_Mapcode is
+  use Mapcodes;
 
   function Integer_Image (I : Integer) return String is
     Str : constant String := I'Img;
@@ -28,7 +28,7 @@ procedure Mapcode is
   end Lower_Str;
 
   procedure Put_Territory (Territory : in String) is
-    Index : Mapcode_Lib.Territory_Range;
+    Index : Mapcodes.Territory_Range;
     Name : As_U.Asu_Us;
   begin
     Ada.Text_Io.Put ("  " & Territory);
@@ -36,9 +36,9 @@ procedure Mapcode is
     Name := As_U.Tus (Get_Territory_Alpha_Code (Index));
     Ada.Text_Io.Put_Line (" -> " & Integer_Image (Index)
       & ": " & Name.Image
-      & " = " & Get_Territory_Alpha_Code (Name.Image, Mapcode_Lib.Local)
-      & "/" & Get_Territory_Alpha_Code (Name.Image, Mapcode_Lib.International)
-      & "/" & Get_Territory_Alpha_Code (Name.Image, Mapcode_Lib.Shortest)
+      & " = " & Get_Territory_Alpha_Code (Name.Image, Mapcodes.Local)
+      & "/" & Get_Territory_Alpha_Code (Name.Image, Mapcodes.International)
+      & "/" & Get_Territory_Alpha_Code (Name.Image, Mapcodes.Shortest)
       & "/" & Get_Territory_Fullname (Name.Image) );
     if Is_Subdivision (Name.Image) then
       Index := Get_Parent_Of (Name.Image);
@@ -49,19 +49,19 @@ procedure Mapcode is
       Ada.Text_Io.Put_Line ( "Has subdivisions");
     end if;
   exception
-    when Mapcode_Lib.Unknown_Territory =>
+    when Mapcodes.Unknown_Territory =>
       Ada.Text_Io.Put_Line (" not found");
   end Put_Territory;
 
   function Is_Command (Arg : in String) return Boolean is
     (Arg = "-h" or else Arg = "-t" or else Arg = "-c" or else Arg = "-d");
 
-  function Image (F : Mapcode_Lib.Real) return String is
+  function Image (F : Mapcodes.Real) return String is
 --#@IfNotDef Export
     R : Real;
     Frac_Len : constant := 9;
   begin
-    R := Mapcode_Lib.Real (My_Math.Round_At (My_Math.Real (F), -Frac_Len));
+    R := Mapcodes.Real (My_Math.Round_At (My_Math.Real (F), -Frac_Len));
     return Normalization.Normal_Fixed (My_Math.Real (R), Frac_Len + 5, 4, '0');
 --#@ElseDef
   begin
@@ -69,19 +69,19 @@ procedure Mapcode is
 --#@EndifDef
   end Image;
 
-  function Get (Str : String) return Mapcode_Lib.Real is
+  function Get (Str : String) return Mapcodes.Real is
   begin
 --#@IfNotDef Export
-    return Mapcode_Lib.Real (Gets.Get_Int_Real (Str));
+    return Mapcodes.Real (Gets.Get_Int_Real (Str));
 --#@ElseDef
-    return Mapcode_Lib.Real'Value (Str);
+    return Mapcodes.Real'Value (Str);
 --#@EndifDef
   end Get;
 
   I : Positive;
   Command, Arg1, Arg2 : As_U.Asu_Us;
 
-  Coord : Mapcode_Lib.Coordinate;
+  Coord : Mapcodes.Coordinate;
   Territory : As_U.Asu_Us;
   Shortest : Boolean;
   Precision : Precisions;
@@ -134,7 +134,7 @@ begin
         Ada.Text_Io.Put_Line (Image (Coord.Lat)
                                   & " " & Image (Coord.Lon));
         declare
-          Codes : constant Mapcode_Lib.Map_Code_Infos
+          Codes : constant Mapcodes.Map_Code_Infos
                 := Encode (Coord, Territory.Image, Shortest, Precision);
         begin
           for J in Codes'Range loop
@@ -167,5 +167,5 @@ begin
       I := I + 1;
   end loop;
 
-end Mapcode;
+end T_Mapcode;
 
