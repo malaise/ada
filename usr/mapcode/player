@@ -97,7 +97,8 @@ while true ; do
     echo "Error: mapcode exited with code $code"
     exit 1
   fi
-  # Skip up to "=>" included and append a space
+echo ">"$result"<"
+  # Skip up to "=> " included and append a space
   result=`echo $result | cut -d ">" -f 2 | cut -d " " -f 2-`" "
   # Check that result is expected
   res=`check $CMD "$result" "$OUTPUT"`

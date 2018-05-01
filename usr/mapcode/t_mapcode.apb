@@ -125,7 +125,7 @@ begin
             Shortest := Boolean'Value (Arg1.Image);
           elsif Arg1.Length = 1
           and then Arg1.Element (1) >= '0'
-          and then Arg1.Element (1) >= '2' then
+          and then Arg1.Element (1) <= '2' then
             Precision := Precisions'Value (Arg1.Image);
           else
             Territory := Arg1;
