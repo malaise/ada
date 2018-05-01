@@ -28,6 +28,36 @@ res="`awk -vLINE=$1 -vFIELD=$2 '
 echo "$res"
 }
 
+function check {
+
+  if [ "$1" = "-c" ] ; then
+    if [ "$2" = "$3" ] ; then
+      echo 0
+      return
+    fi
+  else
+    echo $2 | awk -v EXPECT="$3" '
+    BEGIN {EPS=1.0E-4}
+    {
+      NEXPECT=split(EXPECT, EXPECTS)
+      NOUTPUT=split($0, OUPUTS);
+      if (NEXPECT != NOUTPUT) {print "1"; exit}
+      for (I = 0; I < NEXPECT; I++) {
+        if ( (EXPECTS[i] > OUTPUTS[I] + EPS) \
+          || (EXPECTS[i] < OUTPUTS[I] - EPS) ) {
+          print "1";
+          exit
+        }
+      }
+      print "0"
+    }
+    '
+    return
+  fi
+  echo 1
+}
+  
+
 # For each line
 let L=1
 while true ; do
@@ -36,11 +66,15 @@ while true ; do
   INPUT=""
   OUTPUT=""
   let ININ=1
+  CMD=""
   while true ; do
     arg=`readarg $L $I`
     if [ "$arg" = "" ] ; then
       # End of line
       break
+    fi
+    if [ -z "$CMD" ] ; then
+      CMD=$arg;
     fi
     if [ "$arg" = "=>" ] ; then
       # Swith to output
@@ -63,10 +97,11 @@ while true ; do
     echo "Error: mapcode exited with code $code"
     exit 1
   fi
-  # Skip up to "=>" in cluded and append a space
+  # Skip up to "=>" included and append a space
   result=`echo $result | cut -d ">" -f 2 | cut -d " " -f 2-`" "
   # Check that result is expected
-  if [ "$result" = "$OUTPUT" ] ; then
+  res=`check $CMD "$result" "$OUTPUT"`
+  if [ "$res" = "0" ] ; then
     echo "$INPUT => $OUTPUT"
   else
     echo "Error: $INPUT => $result instead of $OUTPUT"
