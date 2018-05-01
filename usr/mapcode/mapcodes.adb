@@ -858,7 +858,7 @@ package body Mapcodes is
     Iso : As_U.Asu_Us;
     Hyphen, Index : Natural;
     Short : As_U.Asu_Us;
-    Count, Parent : Natural;
+    Count : Natural;
   begin
     Hyphen := Str_Tools.Locate (Full, "-");
     if Format = International or else Hyphen = 0 then
@@ -872,9 +872,8 @@ package body Mapcodes is
     end if;
     -- Shortest possible
     -- Keep parent if it has aliases or if territoy occurs multiple times
-    Parent := Get_Parent_Of (Full);
     Count := 0;
-    if Str_Tools.Locate (Aliases, Iso3166Alpha_Of (Parent) & "=") > 0 then
+    if Str_Tools.Locate (Aliases, Short.Image & "=") > 0 then
       Count := 2;
     else
       for I in Iso3166Alpha'Range loop
