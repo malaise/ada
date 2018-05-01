@@ -14,4 +14,7 @@ Export :
 	$(MAKE) "PARGS_t_mapcode.apb=Export"
 
 
+Local :
+	rm t_mapcode.adb
+	$(MAKE)
 

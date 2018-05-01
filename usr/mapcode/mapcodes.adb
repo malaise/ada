@@ -1,9 +1,12 @@
-with Bits;
+with Str_Tools, Bits;
 with Ndata, Ctrynams;
 package body Mapcodes is
 
   subtype Lint is Long_Long_Integer;
   use type Lint;
+
+  function Trim (Str : String) return String is
+      (Str_Tools.Strip (Str, Str_Tools.Both));
 
   Iso3166Alpha : constant array (Positive range <>) of As_U.Asu_Us := (
     As_U.Tus ("VAT"),
@@ -592,192 +595,18 @@ package body Mapcodes is
   Parents3 : constant String := "USA,IND,CAN,AUS,MEX,BRA,RUS,CHN,";
   Parents2 : constant String := "US,IN,CA,AU,MX,BR,RU,CN,";
 
-  -- Returns string without leading spaces and trailing spaces
-  -- Remove tailing spaces and tabs
-  type Strip_Kind is (Tail, Head, Both);
-  function Is_Separator (Char : Character) return Boolean is
-    (Char = As_U.Space);
-
-  -- Return a String (1 .. N)
-  function Normalize (Str : String) return String is
-  begin
-    if Str'First = 1 then
-      -- Optim: no copy if not needed
-      return Str;
-    end if;
-    declare
-      Lstr : constant String (1 .. Str'Length) := Str;
-    begin
-      return Lstr;
-    end;
-  end Normalize;
-
-
-  function Strip (Str : String; From : Strip_Kind := Tail) return String is
-    -- Parses spaces and tabs (Ht) from the head/tail of a string
-    -- Returns the position of the first/last character or 0 if
-    --  all the string is spaces or tabs (or empty)
-    function Parse_Spaces (Str : String;
-                           From_Head : Boolean := True)
-             return Natural is
-    begin
-      if From_Head then
-        -- Look forward for significant character
-        for I in Str'Range loop
-          if not Is_Separator (Str(I)) then
-            return I;
-          end if;
-        end loop;
-        -- Not found
-        return 0;
-      else
-        -- Look backwards for significant character
-        for I in reverse Str'Range loop
-          if not Is_Separator (Str(I)) then
-            return I;
-          end if;
-        end loop;
-        -- Not found
-        return 0;
-      end if;
-    end Parse_Spaces;
-
-    Start, Stop : Natural;
-  begin
-    case From is
-      when Tail =>
-        Start := Str'First;
-        Stop  := Parse_Spaces (Str, False);
-      when Head =>
-        Start := Parse_Spaces (Str, True);
-        Stop  := Str'Last;
-      when Both =>
-        Start := Parse_Spaces (Str, True);
-        Stop  := Parse_Spaces (Str, False);
-    end case;
-    if Start = 0 then
-      return "";
-    else
-      return Normalize (Str(Start .. Stop));
-    end if;
-  end Strip;
-  function Trim (Str : String) return String is (Strip (Str, Both));
-
-  -- Locate the Nth occurence of a fragment within a string,
-  --  between a given index (first/last if 0) and the end/beginning of the
-  --  string, searching forward or backward
-  -- Return the index in Within of the char matching the start of Fragment
-  -- Return 0 if Index not in Within, if Within or Fragment is empty,
-  --  or if not found
--- Locate Nth occurence of a fragment within a string,
-  --  between a given index (first/last if 0) and the end/beginning of string,
-  --  searching forward or backward
-  -- Returns index in Within of char matching start of Fragment
-  --  or 0 if not found or if Within or Fragment is empty
-  function Locate (Within     : String;
-                   Fragment   : String;
-                   From_Index : Natural := 0;
-                   Forward    : Boolean := True;
-                   Occurence  : Positive := 1)
-           return Natural is
-    Index : Natural;
-    Found_Occurence : Natural := 0;
-  begin
-    -- Fix Index
-    Index := (if From_Index = 0 then
-               (if Forward then Within'First else Within'Last)
-              else From_Index);
-
-    -- Handle limit or incorrect values
-    if Within'Length = 0
-    or else Fragment'Length = 0
-    or else Index not in Within'First .. Within'Last then
-      return 0;
-    end if;
-    if Forward then
-      for I in Index .. Within'Last - Fragment'Length + 1 loop
-        if Within(I .. I + Fragment'Length - 1) = Fragment then
-          Found_Occurence := Found_Occurence + 1;
-          if Found_Occurence = Occurence then
-            return I;
-          end if;
-        end if;
-      end loop;
-    else
-      for I in reverse Within'First .. Index - Fragment'Length + 1 loop
-        if Within(I .. I + Fragment'Length - 1) = Fragment then
-          Found_Occurence := Found_Occurence + 1;
-          if Found_Occurence = Occurence then
-            return I;
-          end if;
-        end if;
-      end loop;
-    end if;
-    return 0;
-  exception
-    when Constraint_Error =>
-      return 0;
-  end Locate;
-
-  -- Convert a character into upper char
-  function Upper_Char (Char : Character) return Character is
-    Offset  : constant Integer   := Character'Pos('A') - Character'Pos('a');
-  begin
-    return (if Char not in 'a' .. 'z' then Char
-            else Character'Val (Character'Pos(Char) + Offset));
-  end Upper_Char;
-
-  -- Convert a character into lower char
-  function Lower_Char (Char : Character) return Character is
-    Offset  : constant Integer   := Character'Pos('A') - Character'Pos('a');
-  begin
-    return (if Char not in 'A' .. 'Z' then Char
-            else Character'Val (Character'Pos(Char) - Offset));
-  end Lower_Char;
-
-  -- Convert the characters of Str into upper char
-  function Upper_Str (Str : String) return String is
-    Result : String := Str;
-  begin
-
-    for C of Result loop
-      C := Upper_Char (C);
-    end loop;
-    return Result;
-  end Upper_Str;
-
-  -- Convert the characters of Str:
-  -- Any letter that follows a letter is lower char
-  -- Any other  letter (including the first letter) is UPPER char
-  function Mixed_Str (Str : String) return String is
-    Result : String := Str;
-    Prev_Separator : Boolean := True;
-  begin
-    for C of Result loop
-      if Prev_Separator and then C in 'a' .. 'z' then
-        C := Upper_Char (C);
-      elsif not Prev_Separator and then C in 'A' .. 'Z' then
-        C := Lower_Char (C);
-      end if;
-      Prev_Separator := C not in 'a' .. 'z'
-               and then C not in 'A' .. 'Z';
-    end loop;
-    return Result;
-  end Mixed_Str;
-
   -- Returns 2-letter parent country abbreviation (disam in range 1..8)
   function Parent_Name2 (Disam : Positive) return String is
     (Parents2 (Disam * 3 - 2 .. Disam * 3 - 1));
 
-
   -- Given a parent country abbreviation, return disam (in range 1-8) or
   --  Error
   function Parent_Letter (Territory_Alpha_Code : String) return Integer is
-    Srch : constant String := Upper_Str (Territory_Alpha_Code & ",");
+    Srch : constant String := Str_Tools.Upper_Str (Territory_Alpha_Code & ",");
     Len  : constant Natural := Srch'Length;
     P : Natural;
   begin
-    P := Locate (
+    P := Str_Tools.Locate (
       (if Len = 3 then Parents2 elsif Len = 4 then Parents3 else Undefined),
       Srch);
    return (if P /= 0 then P / Len + 1 else Error);
@@ -813,7 +642,7 @@ package body Mapcodes is
       I : Natural;
     begin
       loop
-        I := Locate (Within, Crit, Occurence => Occ);
+        I := Str_Tools.Locate (Within, Crit, Occurence => Occ);
         exit when I = 0;
         if I > 1 and then Within(I - 1) >= '0'
         and then Within(I - 1) <= '9' then
@@ -827,7 +656,7 @@ package body Mapcodes is
   begin
     Index := (if Territory_Alpha_Code'Length = 2 then
                Match (Territory_Alpha_Code, Aliases)
-              else Locate (Aliases, Territory_Alpha_Code));
+              else Str_Tools.Locate (Aliases, Territory_Alpha_Code));
     if Index /= 0 then
       return Aliases (Index + 4 .. Index + 6);
     else
@@ -867,7 +696,7 @@ package body Mapcodes is
     if Territory_Alpha_Code = Undefined then
       return Error;
     end if;
-    Alpha_Code := Tus (Upper_Str (Trim (Territory_Alpha_Code)));
+    Alpha_Code := Tus (Str_Tools.Upper_Str (Trim (Territory_Alpha_Code)));
     -- Direct code
     if Is_Digits (Alpha_Code.Image) then
       N := Natural'Value (Alpha_Code.Image);
@@ -877,7 +706,7 @@ package body Mapcodes is
     end if;
 
     -- Name
-    Sep := Locate (Alpha_Code.Image, "-");
+    Sep := Str_Tools.Locate (Alpha_Code.Image, "-");
     if Sep /= 0 then
       declare
         Prefix : constant String
@@ -944,7 +773,7 @@ package body Mapcodes is
       -- Find in ANY context
       Hyphenated := Tus ("-") & Alpha_Code;
       for I in Iso3166Alpha'Range loop
-        Index := Locate (Iso3166Alpha(I).Image, Hyphenated.Image);
+        Index := Str_Tools.Locate (Iso3166Alpha(I).Image, Hyphenated.Image);
         if Index > 0
         and then Index = Iso3166Alpha(I).Length - Hyphenated.Length + 1 then
           -- iso3166alpha ends by Hyphenated
@@ -1006,7 +835,7 @@ package body Mapcodes is
     Index : Natural;
   begin
     Name := Ctrynams.Isofullname(Territory_Number + 1);
-    Index := Locate (Name.Image, " (");
+    Index := Str_Tools.Locate (Name.Image, " (");
     if Index > 0 then
       return Name.Slice (1, Index - 1);
     else
@@ -1031,7 +860,7 @@ package body Mapcodes is
     Short : As_U.Asu_Us;
     Count, Parent : Natural;
   begin
-    Hyphen := Locate (Full, "-");
+    Hyphen := Str_Tools.Locate (Full, "-");
     if Format = International or else Hyphen = 0 then
       -- Format full or no hyphen
       return Full;
@@ -1045,12 +874,12 @@ package body Mapcodes is
     -- Keep parent if it has aliases or if territoy occurs multiple times
     Parent := Get_Parent_Of (Full);
     Count := 0;
-    if Locate (Aliases, Iso3166Alpha_Of (Parent) & "=") > 0 then
+    if Str_Tools.Locate (Aliases, Iso3166Alpha_Of (Parent) & "=") > 0 then
       Count := 2;
     else
       for I in Iso3166Alpha'Range loop
         Iso := As_U.Tus (Iso3166Alpha_Of (I));
-        Index := Locate (Iso.Image, "-" & Short.Image);
+        Index := Str_Tools.Locate (Iso.Image, "-" & Short.Image);
         if Index > 0 and then Index + Short.Length = Iso.Length then
           Count := Count + 1;
           exit when Count = 2;
@@ -1113,7 +942,7 @@ package body Mapcodes is
 
   -- Return True if Territory is a country that has states
   function Has_Subdivision (Territory : String)return Boolean is
-    (Locate (Parents3, Get_Territory_Alpha_Code (Territory)) /= 0);
+    (Str_Tools.Locate (Parents3, Get_Territory_Alpha_Code (Territory)) /= 0);
 
   function Get_Info (
       Territory_Number : Territory_Range;
@@ -2638,7 +2467,7 @@ package body Mapcodes is
   begin
     return Mapcoder_Engine (
       Enc => Get_Encode_Rec (Coord.Lat, Coord.Lon),
-      Tn => (if Mixed_Str (Territory) = Earth then Ccode_Earth
+      Tn => (if Str_Tools.Mixed_Str (Territory) = Earth then Ccode_Earth
              elsif Territory = "" then Error
              else Get_Territory_Number (Territory)),
       Get_Shortest => Shortest,
@@ -2665,8 +2494,8 @@ package body Mapcodes is
       Contextterritorynumber := Get_Territory_Number(Context);
     end if;
 
-    Space1 := Locate (Map_Code, " ");
-    Space2 := Locate (Map_Code, " ", Forward => False);
+    Space1 := Str_Tools.Locate (Map_Code, " ");
+    Space2 := Str_Tools.Locate (Map_Code, " ", Forward => False);
     if Space1 = 0 then
       return Master_Decode(Map_Code, Contextterritorynumber);
     end if;
