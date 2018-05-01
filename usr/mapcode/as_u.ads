@@ -1,3 +1,5 @@
+-- Similar to Ada.Strings.Unbounded, but with a tagged type, more operations
+--  and more powerfull operations
 private with Ada.Finalization;
 package As_U is
 

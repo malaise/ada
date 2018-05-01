@@ -1,3 +1,4 @@
+-- Mapcode test main program
 with Ada.Command_Line, Ada.Text_Io;
 --#@IfNotDef Export
 with My_Math, Normalization, Gets;

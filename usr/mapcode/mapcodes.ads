@@ -1,5 +1,10 @@
+-- Mapcode management
 with As_U;
 package Mapcodes is
+
+  Mapcode_C_Version : constant String := "2.0.2";
+  Mapcode_Data_Version : constant String := "2.3.0";
+  Mapcode_Ada_Version  : constant String := "1.0.0/Data" & Mapcode_Data_Version;
 
   -- All functions returning a Integer return a natural or Error
   Error : constant Integer := -1;
