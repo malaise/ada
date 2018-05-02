@@ -8,6 +8,12 @@ package body Mapcodes is
   function Trim (Str : String) return String is
       (Str_Tools.Strip (Str, Str_Tools.Both));
 
+  -- All functions returning a Integer return a natural or Error
+  Error : constant Integer := -1;
+
+  -- All functions returning a string may return Undefined, on error
+  Undefined : constant String := "";
+
   Iso3166Alpha : constant array (Positive range <>) of As_U.Asu_Us := (
     As_U.Tus ("VAT"),
     As_U.Tus ("MCO"),
@@ -816,14 +822,14 @@ package body Mapcodes is
     return Num;
   end Get_Territory_Number;
   function Get_Territory_Number (Territory : String;
-                                 Context_Territory : in String := Undefined)
+                                 Context : in String := "")
            return Territory_Range is
     Num : Integer;
   begin
-    if Context_Territory = Undefined then
+    if Context = Undefined then
      Num := Error;
     else
-      Num := Get_Territory_Number (Context_Territory, Undefined);
+      Num := Get_Territory_Number (Context, Undefined);
     end if;
     return Get_Territory_Number (Territory, Num);
   end Get_Territory_Number;
@@ -841,11 +847,6 @@ package body Mapcodes is
     else
       return Name.Image;
     end if;
-  end Get_Territory_Fullname;
-  function Get_Territory_Fullname (Territory : in String) return String is
-    Num : constant Territory_Range := Get_Territory_Number (Territory);
-  begin
-    return Get_Territory_Fullname (Num);
   end Get_Territory_Fullname;
 
   -- Return the AlphaCode (usually an ISO 3166 code) of a territory
@@ -888,14 +889,6 @@ package body Mapcodes is
     return (if Count = 1 then Short.Image else Full);
   end Get_Territory_Alpha_Code;
 
-  function Get_Territory_Alpha_Code (Territory : String;
-           Format : Territory_Formats := International) return String is
-    Territory_Number : constant Territory_Range
-                     := Get_Territory_Number (Territory);
-  begin
-    return Get_Territory_Alpha_Code (Territory_Number, Format);
-  end Get_Territory_Alpha_Code;
-
   -- Return parent country of subdivision or error (if territory is not a
   --  subdivision)
   function Get_Parent (Territory_Number : Territory_Range)
@@ -923,41 +916,16 @@ package body Mapcodes is
       return Code;
     end if;
   end Get_Parent_Of;
-  function Get_Parent_Of (Territory : String) return Territory_Range is
-    Code : constant Territory_Range := Get_Territory_Number (Territory);
-  begin
-    return Get_Parent_Of (Code);
-  end Get_Parent_Of;
-
   -- Return True if Territory is a state
   function Is_Subdivision (Territory_Number : Territory_Range)
            return Boolean is
       (Get_Parent (Territory_Number) /= Error);
-  function Is_Subdivision (Territory : String) return Boolean is
-    Code : constant Territory_Range := Get_Territory_Number (Territory);
-  begin
-    return Is_Subdivision (Code);
-  end Is_Subdivision;
 
   -- Return True if Territory is a country that has states
-  function Has_Subdivision (Territory : String)return Boolean is
-    (Str_Tools.Locate (Parents3, Get_Territory_Alpha_Code (Territory)) /= 0);
-
-  function Get_Info (
-      Territory_Number : Territory_Range;
-      Format : Territory_Formats := International) return Territory_Info is
-    Info : Territory_Info;
-  begin
-    Info.Name := As_U.Tus (Get_Territory_Alpha_Code (Territory_Number, Format));
-    Info.Fullname := As_U.Tus (Get_Territory_Fullname (Territory_Number));
-    if Is_Subdivision (Territory_Number) then
-      Info.Parent := As_U.Tus (Get_Territory_Alpha_Code (
-                         Get_Parent_Of (Territory_Number)));
-    end if;
-    Info.Has_Subdivision := Has_Subdivision (
-                         Get_Territory_Alpha_Code (Territory_Number));
-    return Info;
-  end Get_Info;
+  function Has_Subdivision (Territory_Number : Territory_Range)
+           return Boolean is
+      (Str_Tools.Locate (Parents3, Get_Territory_Alpha_Code (Territory_Number))
+                        /= 0);
 
   -- Low-level routines for data access
   type Min_Max_Rec is record
@@ -2225,10 +2193,10 @@ package body Mapcodes is
 
   function Mapcoder_Engine (Enc : Frac_Rec; Tn : in Integer;
                             Get_Shortest : Boolean; State_Override : Integer;
-                            Extra_Digits : Integer) return Map_Code_Infos is
+                            Extra_Digits : Integer) return Mapcode_Infos is
     -- Defaults for last 4 are false,false,false,-1
     Debug_Stop_Record : constant Integer := -1;
-    Results : Map_Code_Infos (1 .. 21);
+    Results : Mapcode_Infos (1 .. 21);
     Nb_Results : Natural := 0;
     From_Territory : Natural := 0;
     Upto_Territory  : Integer := Ccode_Earth;
@@ -2237,7 +2205,7 @@ package body Mapcodes is
     Mm : Min_Max_Rec;
     R : As_U.Asu_Us;
     Store_Code : Integer;
-    Mc_Info : Map_Code_Info;
+    Mc_Info : Mapcode_Info;
     use type As_U.Asu_Us;
   begin
     if Tn in From_Territory .. Upto_Territory then
@@ -2268,7 +2236,7 @@ package body Mapcodes is
               R := As_U.Tus (Encode_Auto_Header (Enc, I, Extra_Digits));
             elsif I = Upto and then Get_Parent (Territory_Number) >= 0 then
               declare
-                More_Results : constant Map_Code_Infos
+                More_Results : constant Mapcode_Infos
                              := Mapcoder_Engine (Enc,
                                   Get_Parent (Territory_Number),
                                   Get_Shortest,
@@ -2306,12 +2274,12 @@ package body Mapcodes is
                 Nb_Results := 0;
               end if;
 
-              Mc_Info.Map_Code := R;
+              Mc_Info.Mapcode := R;
               Mc_Info.Territory_Alpha_Code :=
                   As_U.Tus (Get_Territory_Alpha_Code (Store_Code));
-              Mc_Info.Full_Map_Code :=
+              Mc_Info.Full_Mapcode :=
                   (if Store_Code = Ccode_Earth then As_U.Asu_Null
-                   else Mc_Info.Territory_Alpha_Code & " " & R);
+                   else Mc_Info.Territory_Alpha_Code & " ") & R;
               Mc_Info.Territory_Number := Store_Code;
               Nb_Results := Nb_Results + 1;
               Results (Nb_Results) := Mc_Info;
@@ -2460,9 +2428,9 @@ package body Mapcodes is
 
   -- Legacy interface
   function Encode (Coord : Coordinate;
-                   Territory : String := Undefined;
+                   Territory : String := "";
                    Shortest : Boolean := False;
-                   Precision : Precisions := 0) return Map_Code_Infos is
+                   Precision : Precisions := 0) return Mapcode_Infos is
   begin
     return Mapcoder_Engine (
       Enc => Get_Encode_Rec (Coord.Lat, Coord.Lon),

@@ -31,5 +31,5 @@ package Str_Tools is
                    Occurence  : Positive := 1)
            return Natural;
 
-end Str_tools;
+end Str_Tools;
 
