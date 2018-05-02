@@ -80,18 +80,18 @@ procedure T_Mut is
             if K = 'T' then
               A := K;
               K := 'W';
-              Return True;
+              return True;
             end if;
           elsif L = 2 then
             K := Upper_Char (S(1));
             A := Upper_Char (S(2));
-            Return True;
+            return True;
           end if;
         elsif L = 1 then
           -- Simple mutex
           K := 'W';
           A := Upper_Char (S(1));
-          Return True;
+          return True;
         end if;
         return False;
       end Get_Str;
