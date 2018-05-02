@@ -30,12 +30,7 @@ echo "$res"
 
 function check {
 
-  if [ "$1" = "-c" ] ; then
-    if [ "$2" = "$3" ] ; then
-      echo 0
-      return
-    fi
-  else
+  if [ "$1" = "-d" ] ; then
     echo $2 | awk -v EXPECT="$3" '
     BEGIN {EPS=1.0E-4}
     {
@@ -53,6 +48,11 @@ function check {
     }
     '
     return
+  else
+    if [ "$2" = "$3" ] ; then
+      echo 0
+      return
+    fi
   fi
   echo 1
 }
@@ -77,7 +77,7 @@ while true ; do
       CMD=$arg;
     fi
     if [ "$arg" = "=>" ] ; then
-      # Swith to output
+      # Switch to output
       let ININ=0
     elif [ $ININ -eq 1 ] ; then
       INPUT=$INPUT$arg" "
@@ -97,7 +97,6 @@ while true ; do
     echo "Error: mapcode exited with code $code"
     exit 1
   fi
-echo ">"$result"<"
   # Skip up to "=> " included and append a space
   result=`echo $result | cut -d ">" -f 2 | cut -d " " -f 2-`" "
   # Check that result is expected

@@ -16,11 +16,11 @@ procedure T_Mapcode is
     Ada.Text_Io.Put_Line (
       "  -t <territory>                // Territory info");
     Ada.Text_Io.Put_Line (
+      "  -d <mapcode> [ <territory> ]  // Decode");
+    Ada.Text_Io.Put_Line (
       "  -c <lat> <lon> [ <options> ]  // Encode");
     Ada.Text_Io.Put_Line (
-      "    [ <territory> ] [ <shortest> ] [ <precision> ]");
-    Ada.Text_Io.Put_Line (
-      "  -d <mapcode> [ <territory> ]  // Decode");
+      "  <options> ::= [ <territory> ] [ <shortest> ] [ <precision> ]");
   end Usage;
 
   function Integer_Image (I : Integer) return String is
@@ -47,17 +47,16 @@ procedure T_Mapcode is
   procedure Put_Territory (Territory : in String) is
     Index : Mapcodes.Territory_Range;
   begin
-    Ada.Text_Io.Put ("  " & Territory);
+    Ada.Text_Io.Put (Territory);
     Index := Get_Territory_Number (Territory);
-    Ada.Text_Io.Put_Line (" -> " & Integer_Image (Index)
+    Ada.Text_Io.Put_Line (" => " & Integer_Image (Index)
       & ": " & Get_Territory_Alpha_Code (Index, Mapcodes.Local)
       & "/" & Get_Territory_Alpha_Code (Index, Mapcodes.International)
       & "/" & Get_Territory_Alpha_Code (Index, Mapcodes.Shortest)
       & "/" & Get_Territory_Fullname (Index) );
     if Is_Subdivision (Index) then
-      Index := Get_Parent_Of (Index);
-      Ada.Text_Io.Put_Line ("Parent -> "
-          & Get_Territory_Alpha_Code (Index));
+      Ada.Text_Io.Put_Line ("Parent: "
+          & Get_Territory_Alpha_Code (Get_Parent_Of (Index)));
     end if;
     if Has_Subdivision (Index) then
       Ada.Text_Io.Put_Line ( "Has subdivisions");

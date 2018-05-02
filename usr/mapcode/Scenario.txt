@@ -1,3 +1,9 @@
+# Territories
+-t KIR =>  58: KIR/KIR/KIR/Kiribati
+-t CA  => 391: CA/US-CA/CA/California Parent: USA
+-t AL  => 364: AL/US-AL/US-AL/Alabama Parent: USA
+-t IND => 407: IND/IND/IND/India Has subdivisions
+
 # NLD, with high precision
 -d 49.4V NLD => 52.376514000 4.908543375
 -c 52.376514000 4.908543375 NLD => 49.4V NLD 'NLD 49.4V' 112
