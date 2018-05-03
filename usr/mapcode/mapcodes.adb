@@ -2191,12 +2191,13 @@ package body Mapcodes is
                              Dividery, 0, Decodemaxy, Decodemaxx);
   end Decode_Grid;
 
+  Max_Nr_Of_Mapcode_Results : constant := 22;
   function Mapcoder_Engine (Enc : Frac_Rec; Tn : in Integer;
                             Get_Shortest : Boolean; State_Override : Integer;
                             Extra_Digits : Integer) return Mapcode_Infos is
     -- Defaults for last 4 are false,false,false,-1
     Debug_Stop_Record : constant Integer := -1;
-    Results : Mapcode_Infos (1 .. 21);
+    Results : Mapcode_Infos (1 .. Max_Nr_Of_Mapcode_Results);
     Nb_Results : Natural := 0;
     From_Territory : Natural := 0;
     Upto_Territory  : Integer := Ccode_Earth;
@@ -2242,11 +2243,14 @@ package body Mapcodes is
                                   Get_Shortest,
                                   Territory_Number,
                                   Extra_Digits);
-                T : Natural;
+                T : constant Natural := Nb_Results;
+                N : constant Natural := More_Results'Length;
               begin
-                if More_Results'Length > 0 then
-                  T := Nb_Results;
-                  Nb_Results := Nb_Results + More_Results'Length;
+                if N > 0 then
+                  Nb_Results := Nb_Results + N;
+                  if Nb_Results > Max_Nr_Of_Mapcode_Results then
+                    Nb_Results := Max_Nr_Of_Mapcode_Results;
+                  end if;
                   Results (T + 1 .. Nb_Results) := More_Results;
                 end if;
                 R.Set_Null;
