@@ -4,7 +4,8 @@ package Mapcodes is
 
   Mapcode_C_Version : constant String := "2.0.2";
   Mapcode_Data_Version : constant String := "2.3.0";
-  Mapcode_Ada_Version  : constant String := "1.0.0/Data" & Mapcode_Data_Version;
+  Mapcode_Ada_Version  : constant String := "1.0.1/Data"
+                                          & Mapcode_Data_Version;
 
   -- Real type
   type Real is digits 15 range -1.79E308 .. 1.79E308;

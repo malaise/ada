@@ -625,22 +625,6 @@ package body Mapcodes is
             else Str (Integer'Succ(Str'First) .. Str'Last));
   end Image;
 
-  -- Given an ISO abbreviation, set disambiguation for future calls
-  --  to Iso2ccode; returns nonzero in case of error
-  Disambiguate : Positive := 1;
-  function Set_Disambiguate (Territory_Alpha_Code : String) return Integer is
-    P : constant Integer := Parent_Letter (Territory_Alpha_Code);
-  begin
-    if P = Error then
-      return -2;
-    else
-      Disambiguate := P;
-      return 0;
-    end if;
-  end Set_Disambiguate;
-
-  function Disambiguate_Image return String is (Image (Disambiguate));
-
   -- Returns alias of ISO abbreviation (if any), or empty
   function Alias2Iso (Territory_Alpha_Code : String) return String is
     function Match (Crit, Within : String) return Natural is
@@ -682,7 +666,8 @@ package body Mapcodes is
   end Find_Iso;
 
   -- Given ISO code, return territoryNumber or Error
-  function Iso2Ccode (Territory_Alpha_Code : String) return Integer is
+  function Iso2Ccode (Territory_Alpha_Code : String;
+                      Context : in String) return Integer is
     function Is_Digits (Str : String) return Boolean is
     begin
       for I in Str'Range loop
@@ -693,6 +678,7 @@ package body Mapcodes is
       return Str /= "";
     end Is_Digits;
     N, Sep : Natural;
+    P : Integer;
     Index : Integer;
     Isoa : As_U.Asu_Us;
     Alpha_Code : As_U.Asu_Us;
@@ -710,6 +696,10 @@ package body Mapcodes is
         return N;
       end if;
     end if;
+    P := Parent_Letter (Context);
+    if P = Error then
+      P := 1;
+    end if;
 
     -- Name
     Sep := Str_Tools.Locate (Alpha_Code.Image, "-");
@@ -720,11 +710,11 @@ package body Mapcodes is
         Proper_Map_Code : As_U.Asu_Us
                         := Alpha_Code.Uslice (Sep + 1,  Alpha_Code.Length);
       begin
-        if Set_Disambiguate (Prefix) < 0 or else Proper_Map_Code.Length < 2 then
+        P := Parent_Letter (Prefix);
+        if P = Error or else Proper_Map_Code.Length < 2 then
           return Error;
         end if;
-        Index := Find_Iso (Parent_Name2 (Disambiguate) & "-"
-                       & Proper_Map_Code.Image);
+        Index := Find_Iso (Parent_Name2 (P) & "-" & Proper_Map_Code.Image);
         if Index >= 0 then
           return Index;
         end if;
@@ -732,10 +722,10 @@ package body Mapcodes is
         if Proper_Map_Code.Length = 3 then
           Isoa := Tus (Alias2Iso(Proper_Map_Code.Image));
         else
-          Isoa := Tus (Disambiguate_Image & Proper_Map_Code.Image);
+          Isoa := Tus (Image (P) & Proper_Map_Code.Image);
         end if;
         if not Isoa.Is_Null then
-          if Isoa.Slice (1, 1) = Disambiguate_Image then
+          if Isoa.Slice (1, 1) = Image (P) then
             Proper_Map_Code := Isoa.Uslice (2, Isoa.Length);
           else
             Proper_Map_Code := Isoa;
@@ -745,16 +735,15 @@ package body Mapcodes is
             end if;
           end if;
         end if;
-        return Find_Iso (Parent_Name2 (Disambiguate)
-                        & "-" & Proper_Map_Code.Image);
+        return Find_Iso (Parent_Name2 (P) & "-" & Proper_Map_Code.Image);
       end;
     end if;
 
     -- First rewrite alias in context
     if Alpha_Code.Length = 2 then
-      Isoa := Tus (Alias2Iso (Disambiguate_Image & Alpha_Code.Image));
+      Isoa := Tus (Alias2Iso (Image (P) & Alpha_Code.Image));
       if not Isoa.Is_Null then
-        if Isoa.Slice (1, 1) = Disambiguate_Image then
+        if Isoa.Slice (1, 1) = Image (P) then
           Alpha_Code := Isoa.Uslice(2, Isoa.Length);
         else
           Alpha_Code := Isoa;
@@ -771,7 +760,7 @@ package body Mapcodes is
     end if;
 
     -- No prefix, check in context
-    Index := Find_Iso (Parent_Name2 (Disambiguate) & "-" & Alpha_Code.Image);
+    Index := Find_Iso (Parent_Name2 (P) & "-" & Alpha_Code.Image);
     if Index >= 0 then
       return Index;
     end if;
@@ -798,7 +787,7 @@ package body Mapcodes is
       else
         Alpha_Code := Isoa;
       end if;
-      return Iso2Ccode (Alpha_Code.Image);
+      return Iso2Ccode (Alpha_Code.Image, Context);
     end if;
 
     return Error;
@@ -812,10 +801,9 @@ package body Mapcodes is
                                  Context : in Integer) return Territory_Range is
     Num : Integer;
   begin
-    if Context /= Error then
-      Num := Set_Disambiguate (Iso3166Alpha(Context).Image);
-    end if;
-    Num := Iso2Ccode (Territory);
+    Num := Iso2Ccode (Territory,
+                      (if Context = Error then ""
+                       else Iso3166Alpha(Context).Image));
     if Num = Error then
       raise Unknown_Territory;
     end if;
@@ -2195,8 +2183,6 @@ package body Mapcodes is
   function Mapcoder_Engine (Enc : Frac_Rec; Tn : in Integer;
                             Get_Shortest : Boolean; State_Override : Integer;
                             Extra_Digits : Integer) return Mapcode_Infos is
-    -- Defaults for last 4 are false,false,false,-1
-    Debug_Stop_Record : constant Integer := -1;
     Results : Mapcode_Infos (1 .. Max_Nr_Of_Mapcode_Results);
     Nb_Results : Natural := 0;
     From_Territory : Natural := 0;
@@ -2273,10 +2259,6 @@ package body Mapcodes is
               if State_Override >= 0 then
                 Store_Code := State_Override;
               end if;
-              if Debug_Stop_Record = I then
-                -- Clear all other results
-                Nb_Results := 0;
-              end if;
 
               Mc_Info.Mapcode := R;
               Mc_Info.Territory_Alpha_Code :=
@@ -2288,7 +2270,7 @@ package body Mapcodes is
               Nb_Results := Nb_Results + 1;
               Results (Nb_Results) := Mc_Info;
 
-              exit when Get_Shortest or else Debug_Stop_Record = I;
+              exit when Get_Shortest;
             end if;
           end if;
         end if;
