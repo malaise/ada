@@ -82,7 +82,8 @@ package body History is
                   Is_File : in Boolean;
                   Allow_Modif : in Boolean;
                   Allow_Tag : in Boolean;
-                  Hash : in Git_If.Git_Hash := Git_If.No_Hash) is
+                  Hash : in Git_If.Git_Hash := Git_If.No_Hash;
+                  Prio_Hash : in Boolean := True) is
     -- Are we in root
     On_Root : Boolean;
 
@@ -557,7 +558,7 @@ package body History is
     begin
       -- Save position in List and read it
       Hash := Hash_Of;
-      List (Root, Branch, "", "", False, Allow_Modif, Allow_Tag, Hash);
+      List (Root, Branch, "", "", False, Allow_Modif, Allow_Tag, Hash, False);
       -- Restore screen
       Init;
       -- Get history list with default length
@@ -591,9 +592,16 @@ package body History is
     Found := False;
     Init_Indicator := Default_Init_Indicator;
     if Hash /= Git_If.No_Hash then
-      -- Set current to Hash provided
-      Log.Hash := Hash;
-      Init_Indicator := 'C';
+      if Prio_Hash then
+        -- Set current to Hash provided
+        Log.Hash := Hash;
+        Init_Indicator := 'C';
+      else
+        -- Set current to HEAD of remote (if possible)
+        Log.Hash := Remote_Head (Branch);
+        Set_Remote_Head := True;
+        Init_Indicator := 'R';
+      end if;
     elsif On_Root then
       -- Set current to HEAD of remote (if possible)
       Log.Hash := Remote_Head (Branch);
@@ -602,9 +610,16 @@ package body History is
     end if;
     if Log.Hash /= Git_If.No_Hash then
       Found := List_Hash_Search (Logs, Log, From => Git_If.Log_Mng.Absolute);
-      if not Found then
-        Init_Indicator := '?';
+      if not Found and then Hash /= Git_If.No_Hash
+      and then(not Prio_Hash or else On_Root) then
+        -- Current Head of remote not found => try provided Hash
+        Log.Hash := Hash;
+        Init_Indicator := 'C';
+        Found := List_Hash_Search (Logs, Log, From => Git_If.Log_Mng.Absolute);
       end if;
+    end if;
+    if not Found then
+      Init_Indicator := '?';
     end if;
     if Set_Remote_Head and then Found then
       Remote_Head_Index := Logs.Get_Position;
