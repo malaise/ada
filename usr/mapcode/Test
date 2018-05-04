@@ -26,6 +26,27 @@ res="`awk -vLINE=$2 -vFIELD=$3 '
 echo "$res"
 }
 
+# Check that $1 = $2
+# Compare floats modulo EPS (1.0E-4)
+function check {
+  echo $1 | awk -v EXPECT="$2" '
+  BEGIN {EPS=1.0E-4}
+  {
+    NEXPECT=split(EXPECT, EXPECTS)
+    NOUTPUT=split($0, OUPUTS);
+    if (NEXPECT != NOUTPUT) {print "1"; exit}
+    for (I = 0; I < NEXPECT; I++) {
+      if ( (EXPECTS[i] > OUTPUTS[I] + EPS) \
+        || (EXPECTS[i] < OUTPUTS[I] - EPS) ) {
+        print "1";
+        exit
+      }
+    }
+    print "0"
+  }
+  '
+}
+
 # Play Scenario.txt
 echo Scenario:
 #./player $DEBUG Scenario.txt
@@ -104,27 +125,6 @@ echo OK.
 
 # Encode then decode
 echo Encode then decode:
-# Check that $1 = $2
-# Compare floats modulo EPS (1.0E-4)
-function check {
-  echo $1 | awk -v EXPECT="$2" '
-  BEGIN {EPS=1.0E-4}
-  {
-    NEXPECT=split(EXPECT, EXPECTS)
-    NOUTPUT=split($0, OUPUTS);
-    if (NEXPECT != NOUTPUT) {print "1"; exit}
-    for (I = 0; I < NEXPECT; I++) {
-      if ( (EXPECTS[i] > OUTPUTS[I] + EPS) \
-        || (EXPECTS[i] < OUTPUTS[I] - EPS) ) {
-        print "1";
-        exit
-      }
-    }
-    print "0"
-  }
-  '
-}
-
 # For each line
 let L=1
 while true ; do
@@ -135,7 +135,6 @@ while true ; do
   fi
   lon=`readarg EncodeOk.txt $L 2`
   # Encode
-  echo t_mapcode -c $lat $lon
   result=`t_mapcode -c $lat $lon`
   if [ $? -ne 0 ] ; then
     echo "ERROR: t_mapcode -t $lat $lon has failed." 2>&1
@@ -164,7 +163,7 @@ while true ; do
     echo "ERROR: t_mapcode -d $cod $ctx has failed." 2>&1
     exit 1
   fi
-  res=`check "$lat $lon" "$decoded"`
+  res=`check "$decoded" "$lat $lon"`
   # Check decoded lat lon versus origin
   if [ "$res" != "0" ] ; then
     echo "ERROR: $lat $lon => $result => $decoded" 2>&1
@@ -179,3 +178,66 @@ while true ; do
 done
 echo OK.
 
+# Decode
+echo Decode:
+
+# Count line ("=>") of output
+function count {
+  echo "$*" | awk '
+    BEGIN {FS="=>"}
+    {print NF - 1}
+  '
+}
+
+# Decoding mapcode $1 in context $2 shall lead $3 and $4
+# Ecoding lat lon $3 and $4 in context $2 shall lead to $5 mapcodes
+# Ecoding lat lon $3 and $4 without context $2 shall lead to $6 mapcodes
+function decode {
+  if [ -n "$DEBUG" ] ; then
+    echo -d "$1" "$2"
+  fi
+  result=`t_mapcode -d "$1" $2`
+  res=`check "$3 $4" "$result"`
+  if [ $res -ne 1 ] ; then
+    echo "ERROR: t_mapcode -d $1 $2 => $result instead of $3 $4" 2>&1
+    exit 1
+  fi
+  # Count number of all local codes
+  res=`t_mapcode -c $3 $4 $2 False`
+  let nloc=0+`count $res`
+  if [ $nloc -ne $5 ] ; then
+    echo "ERROR: t_mapcode -c $3 $4 $2 False => $nloc results instead of $5" 2>&1
+    exit 1
+  fi
+  # Count number of all global codes
+  res=`t_mapcode -c $3 $4 False`
+  let nloc=0+`count $res`
+  if [ $nloc -ne $6 ] ; then
+    echo "ERROR: t_mapcode -c $3 $4 False => $nloc results instead of $6" 2>&1
+    exit 1
+  fi
+}
+# Theses one have no context
+decode "ZH0H0.H1HG" ""    "90" "0" 1 1
+decode "ZZ0X0.B16G-4K" "" "90" "179" 1 1
+decode "Z0000.010G"    "" "90" "-179.999999" 1 1
+decode "ZZ0Z0.Z1YG"    "" "90.000000000000" "179.999999999999" 1 1
+
+# Play scenario
+# For each line
+# Read ctx cod lat lon loc glo
+let L=0
+while read -r ctx cod lat lon loc glo || [[ -n "$ctx" ]]; do
+  if [ "$ctx" = "#" ] ; then
+    continue
+  fi
+  decode $cod $ctx $lat $lon $loc $glo
+
+  R=$((L % 100))
+  if [ $R -eq 0 ] ; then
+    echo -n "."
+  fi
+  let L=$L+1
+done < DecodeOk.txt
+echo
+echo OK.
