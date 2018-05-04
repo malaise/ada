@@ -29,18 +29,52 @@ if [ $? -ne 0 ] ; then
   exit 1
 fi
 
-# Check decoding failures
-echo Failures
-# Decoding $1 in context $2 shall lead to error (exit 1)
-function failure {
-  t_mapcode -d "$1" $2 > /dev/null 2>&1
+# Check Territory failures
+echo Failure on territory decode
+# Info on  $1 in context $2 shall lead to error (exit 1)
+function territory_failure {
+  t_mapcode -t "$1" "$2" > /dev/null 2>&1
   res=$?
   if [ $res -ne 1 ] ; then
-    echo "ERROR: t_mapcode \"$1\" $2 has exited with code $res i.o. 1" 1>&2
+    echo "ERROR: t_mapcode -t \"$1\" "$2" has exited with code $res i.o. 1" 1>&2
     exit 1
   fi
 }
-failure ""
+territory_failure ""
+territory_failure " "
+territory_failure USA " "
+territory_failure " " "US "
+territory_failure "Toto"
+territory_failure AL Toto
+# For each line
+let L=1
+while true ; do
+  ctx=`readarg TerritoryFailures.txt $L 1`
+  if [ -z "$ctx" ] ; then
+    break;
+  fi
+  ter=`readarg TerritoryFailures.txt $L 2`
+  if [ -z "$ter" ] ; then
+    ter=$ctx
+    ctx=""
+  fi
+  territory_failure $ter $ctx
+  let L=$L+1
+done
+echo OK.
+
+# Check decoding failures
+echo Failure to decode
+# Decoding $1 in context $2 shall lead to error (exit 1)
+function decode_failure {
+  t_mapcode -d "$1" $2 > /dev/null 2>&1
+  res=$?
+  if [ $res -ne 1 ] ; then
+    echo "ERROR: t_mapcode -d \"$1\" $2 has exited with code $res i.o. 1" 1>&2
+    exit 1
+  fi
+}
+decode_failure ""
 # For each line
 let L=1
 while true ; do
@@ -53,7 +87,7 @@ while true ; do
     cod=$ctx
     ctx=""
   fi
-  failure $cod $ctx
+  decode_failure $cod $ctx
   let L=$L+1
 done
 echo OK.
