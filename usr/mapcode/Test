@@ -1,3 +1,59 @@
 #!/bin/bash
-./player Scenario.txt
 
+# Read field $3 of line $2 of file $1
+function readarg {
+res="`awk -vLINE=$2 -vFIELD=$3 '
+  BEGIN {
+    NL=0
+  }
+  (NF == 0 || $1 ~ /^#/) {
+    # Skip empty lines and comment
+    next
+  }
+  {
+    # Count significant lines
+    NL=NL+1
+    if (NL == LINE) {
+      printf "%s",$FIELD
+      exit 0
+    }
+  } 
+' $1`"
+echo "$res"
+}
+
+# Play Scenario.txt
+echo Scenario
+./player Scenario.txt
+if [ $? -ne 0 ] ; then
+  exit 1
+fi
+
+# Check decoding failures
+echo Failures
+# Decoding $1 in context $2 shall lead to error (exit 1)
+function failure {
+  t_mapcode -d "$1" $2 > /dev/null 2>&1
+  res=$?
+  if [ $res -ne 1 ] ; then
+    echo "ERROR: t_mapcode \"$1\" $2 has exited with code $res i.o. 1" 1>&2
+    exit 1
+  fi
+}
+failure ""
+# For each line
+let L=1
+while true ; do
+  ctx=`readarg DecodeFailures.txt $L 1`
+  if [ -z "$ctx" ] ; then
+    break;
+  fi
+  cod=`readarg DecodeFailures.txt $L 2`
+  if [ -z "$cod" ] ; then
+    cod=$ctx
+    ctx=""
+  fi
+  failure $cod $ctx
+  let L=$L+1
+done
+echo OK.

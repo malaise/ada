@@ -6,6 +6,22 @@ function error {
   echo "Usage: `basename $0` <target_dir>" 1>&2
   exit 1
 }
+
+# Return the comment leading string, and the target subdir,
+# depending on the suffix of $1
+function comment_target {
+  filename=$(basename -- "$1")
+  extension=$([[ "$filename" = *.* ]] && echo "${filename##*.}" || echo '')
+  case $extension in
+    ads|adb)
+      echo "-- src"
+    ;;
+    *)
+      echo "# test"
+    ;;
+  esac
+}
+
   
 # Check arguments
 if [ -z "$1" ] ; then
@@ -22,7 +38,7 @@ make Export
 # Files to export
 export FILES="as_u.adb as_u.ads bits.adb bits.ads ctrynams.ads \
 ctrynams_short.ads mapcodes.adb mapcodes.ads ndata.ads \
-str_tools.adb str_tools.ads t_mapcode.adb"
+str_tools.adb str_tools.ads t_mapcode.adb Scenario.txt player Test"
 
 # Add Copyright headers and copy in TARGET
 H[1]='------------------------------------------------------------------------------'
@@ -45,19 +61,25 @@ for file in $FILES ; do
   echo $file
   i=1
   # Prepend comment
-  comment='--'
+  ct=`comment_target $file`
+  comment=${ct% *}
+  target=$TARGET/${ct#* }
   while [ ! -z "${H[i]}" ] ; do
     line=$comment${H[i]}
     if [ $i -eq 1 ] ; then
       # First line
-      echo $line > $TARGET/$file
+      echo $line > $target/$file
     else
-      echo $line >> $TARGET/$file
+      echo $line >> $target/$file
     fi
     i=$(( i + 1 ))
   done
   # Append file
-  echo >> $TARGET/$file
-  cat $file >> $TARGET/$file
+  echo >> $target/$file
+  cat $file >> $target/$file
 done
+ln -t $TARGET/test -s $TARGET/src/t_mapcode t_mapcode
+
+# Reset to local version
+make Local
 

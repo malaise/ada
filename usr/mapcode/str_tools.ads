@@ -9,10 +9,6 @@ package Str_Tools is
   -- Any other  letter (including the first letter) is UPPER char
   function Mixed_Str (Str : String) return String;
 
-  -- Remove heading / tailing spaces and Htabs
-  type Strip_Kind is (Tail, Head, Both);
-  function Strip (Str : String; From : Strip_Kind := Tail) return String;
-
   -- Locate the Nth occurence of a fragment within a string,
   --  between a given index (first/last if 0) and the end/beginning of the
   --  string, searching forward or backward

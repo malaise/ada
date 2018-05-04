@@ -1,8 +1,30 @@
 # Territories
 -t KIR =>  58: KIR/KIR/KIR/Kiribati
--t CA  => 391: CA/US-CA/CA/California Parent: USA
--t AL  => 364: AL/US-AL/US-AL/Alabama Parent: USA
 -t IND => 407: IND/IND/IND/India Has subdivisions
+-t AS USA => 27: ASM/ASM/ASM/American Samoa
+-t AG => 236: AGU/MX-AGU/AGU/Aguascalientes Parent: MEX
+-t MEX-TAM => 259: TAM/MX-TAM/MX-TAM/Tamaulipas Parent: MEX
+-t AUS-CX => 21: CXR/CXR/CXR/Christmas Island
+-t AL BRA => 318: AL/BR-AL/BR-AL/Alagoas Parent: BRA
+-t RUS => 496: RUS/RUS/RUS/Russia Has subdivisions
+-t US => 410: USA/USA/USA/USA Has subdivisions
+-t USA => 410: USA/USA/USA/USA Has subdivisions
+-t usa => 410: USA/USA/USA/USA Has subdivisions
+-t 410 => 410: USA/USA/USA/USA Has subdivisions
+-t CA  => 391: CA/US-CA/CA/California Parent: USA
+-t US-CA => 391: CA/US-CA/CA/California Parent: USA
+-t USA-CA => 391: CA/US-CA/CA/California Parent: USA
+-t RUS-TAM => 430: TT/RU-TT/TT/Tambov Oblast Parent: RUS
+-t AL  => 318: AL/BR-AL/BR-AL/Alagoas Parent: BRA
+-t AL US => 364: AL/US-AL/US-AL/Alabama Parent: USA
+-t RU-AL => 482: AL/RU-AL/RU-AL/Altai Republic Parent: RUS
+-t AL RU => 482: AL/RU-AL/RU-AL/Altai Republic Parent: RUS
+-t AL RUS => 482: AL/RU-AL/RU-AL/Altai Republic Parent: RUS
+-t MX-CAM => 248: CAM/MX-CAM/CAM/Campeche Parent: MEX
+-t US-MN => 382: MN/US-MN/US-MN/Minnesota Parent: USA
+-t IN-MN => 279: MN/IN-MN/IN-MN/Manipur Parent: IND
+-t US-IN => 356: IN/US-IN/US-IN/Indiana Parent: USA
+-t NLD => 112: NLD/NLD/NLD/Netherlands
 
 # NLD, with high precision
 -d 49.4V NLD => 52.376514000 4.908543375

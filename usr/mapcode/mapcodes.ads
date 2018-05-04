@@ -13,7 +13,7 @@ package Mapcodes is
   -----------------
   -- TERRITORIES --
   -----------------
-  -- Get_Territory_Number may raise
+  -- Get_Territory_Number may raise if Territory or Context is not known
   Unknown_Territory : exception;
 
   -- Valid territory number

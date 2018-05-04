@@ -44,12 +44,14 @@ procedure T_Mapcode is
     return Result;
   end Lower_Str;
 
-  procedure Put_Territory (Territory : in String) is
+  procedure Put_Territory (Territory, Context : in String) is
     Index : Mapcodes.Territory_Range;
   begin
-    Ada.Text_Io.Put (Territory);
-    Index := Get_Territory_Number (Territory);
-    Ada.Text_Io.Put_Line (" => " & Integer_Image (Index)
+    Ada.Text_Io.Put (Territory
+                   & (if Context /= "" then " " else "")
+                   & Context &  " ");
+    Index := Get_Territory_Number (Territory, Context);
+    Ada.Text_Io.Put_Line ("=> " & Integer_Image (Index)
       & ": " & Get_Territory_Alpha_Code (Index, Mapcodes.Local)
       & "/" & Get_Territory_Alpha_Code (Index, Mapcodes.International)
       & "/" & Get_Territory_Alpha_Code (Index, Mapcodes.Shortest)
@@ -61,9 +63,6 @@ procedure T_Mapcode is
     if Has_Subdivision (Index) then
       Ada.Text_Io.Put_Line ( "Has subdivisions");
     end if;
-  exception
-    when Mapcodes.Unknown_Territory =>
-      Ada.Text_Io.Put_Line (" not found");
   end Put_Territory;
 
   function Is_Command (Arg : in String) return Boolean is
@@ -113,7 +112,16 @@ begin
     elsif Command.Image = "-t" then
       -- Display territory info of next argument
       I := I + 1;
-      Put_Territory (Ada.Command_Line.Argument (I));
+      Arg1 := As_U.Tus (Ada.Command_Line.Argument (I));
+      if I < Ada.Command_Line.Argument_Count then
+        Arg2 := As_U.Tus (Ada.Command_Line.Argument (I + 1));
+        if Is_Command (Arg2.Image) then
+          Arg2.Set_Null;
+        else
+          I := I + 1;
+        end if;
+      end if;
+      Put_Territory (Arg1.Image, Arg2.Image);
     elsif Command.Image = "-c" then
       I := I + 1;
       Arg1 := As_U.Tus (Ada.Command_Line.Argument (I));
@@ -173,6 +181,16 @@ begin
     end if;
     I := I + 1;
   end loop;
-
+  Ada.Command_Line.Set_Exit_Status (0);
+exception
+  when Mapcodes.Unknown_Territory =>
+    Ada.Text_Io.Put_Line ("Raised Unknown_Territory");
+    Ada.Command_Line.Set_Exit_Status (1);
+  when Mapcodes.Decode_Error =>
+    Ada.Text_Io.Put_Line ("Raised Decode_Error");
+    Ada.Command_Line.Set_Exit_Status (1);
+  when others =>
+    Ada.Command_Line.Set_Exit_Status (2);
+    raise;
 end T_Mapcode;
 
