@@ -228,7 +228,7 @@ decode "ZZ0Z0.Z1YG"    "" "90.000000000000" "179.999999999999" 1 1
 # Read ctx cod lat lon loc glo
 let L=0
 while read -r ctx cod lat lon loc glo || [[ -n "$ctx" ]]; do
-  if [ "$ctx" = "#" ] ; then
+  if [ \( -z "$ctx" \) -o \( "$ctx" = "#" \) ] ; then
     continue
   fi
   decode $cod $ctx $lat $lon $loc $glo

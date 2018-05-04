@@ -38,10 +38,12 @@ make Export
 # Files to export
 export FILES="as_u.adb as_u.ads bits.adb bits.ads ctrynams.ads \
 ctrynams_short.ads mapcodes.adb mapcodes.ads ndata.ads \
-str_tools.adb str_tools.ads t_mapcode.adb Scenario.txt player Test"
+str_tools.adb str_tools.ads t_mapcode.adb \
+DecodeFailures.txt EncodeOk.txt TerritoryFailures.txt DecodeOk.txt Scenario.txt \
+player Test"
 
 # Add Copyright headers and copy in TARGET
-H[1]='------------------------------------------------------------------------------'
+H[1]=' -----------------------------------------------------------------------------'
 H[2]=' Copyright (C) 2014-2015 Stichting Mapcode Foundation (http://www.mapcode.com)'
 H[3]=' '
 H[4]=' Licensed under the Apache License, Version 2.0 (the "License");'
@@ -55,7 +57,7 @@ H[11]=' distributed under the License is distributed on an "AS IS" BASIS,'
 H[12]=' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.'
 H[13]=' See the License for the specific language governing permissions and'
 H[14]=' limitations under the License.'
-H[15]='------------------------------------------------------------------------------'
+H[15]=' -----------------------------------------------------------------------------'
 
 for file in $FILES ; do
   echo $file
@@ -65,12 +67,12 @@ for file in $FILES ; do
   comment=${ct% *}
   target=$TARGET/${ct#* }
   while [ ! -z "${H[i]}" ] ; do
-    line=$comment${H[i]}
+    line="$comment${H[i]}"
     if [ $i -eq 1 ] ; then
       # First line
-      echo $line > $target/$file
+      echo "$line" > $target/$file
     else
-      echo $line >> $target/$file
+      echo "$line" >> $target/$file
     fi
     i=$(( i + 1 ))
   done
@@ -78,8 +80,8 @@ for file in $FILES ; do
   echo >> $target/$file
   cat $file >> $target/$file
 done
-ln -t $TARGET/test -s $TARGET/src/t_mapcode t_mapcode
+ln -fs -t $TARGET/test $TARGET/src/t_mapcode
 
 # Reset to local version
-make Local
+make scratch
 

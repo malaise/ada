@@ -9,11 +9,11 @@ PARGS_t_mapcode.apb =
 include $(TEMPLATES)/ada.mk
 
 Export :
-	rm t_mapcode.adb
+	-rm t_mapcode.adb
 	$(MAKE) "PARGS_t_mapcode.apb=Export"
 
 
 Local :
-	rm t_mapcode.adb
+	-rm t_mapcode.adb
 	$(MAKE)
 
