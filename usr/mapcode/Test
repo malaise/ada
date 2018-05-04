@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ "$1" = "-d" ] ; then
+  export DEBUG="-d"
+fi
+
 # Read field $3 of line $2 of file $1
 function readarg {
 res="`awk -vLINE=$2 -vFIELD=$3 '
@@ -23,16 +27,19 @@ echo "$res"
 }
 
 # Play Scenario.txt
-echo Scenario
-./player Scenario.txt
+echo Scenario:
+#./player $DEBUG Scenario.txt
 if [ $? -ne 0 ] ; then
   exit 1
 fi
 
 # Check Territory failures
-echo Failure on territory decode
+echo Failure on territory decode:
 # Info on  $1 in context $2 shall lead to error (exit 1)
 function territory_failure {
+  if [ -n "$DEBUG" ] ; then
+    echo -t "$1" "$2"
+  fi
   t_mapcode -t "$1" "$2" > /dev/null 2>&1
   res=$?
   if [ $res -ne 1 ] ; then
@@ -64,9 +71,12 @@ done
 echo OK.
 
 # Check decoding failures
-echo Failure to decode
+echo Failure to decode:
 # Decoding $1 in context $2 shall lead to error (exit 1)
 function decode_failure {
+  if [ -n "$DEBUG" ] ; then
+    echo -d "$1" "$2"
+  fi
   t_mapcode -d "$1" $2 > /dev/null 2>&1
   res=$?
   if [ $res -ne 1 ] ; then
@@ -91,3 +101,81 @@ while true ; do
   let L=$L+1
 done
 echo OK.
+
+# Encode then decode
+echo Encode then decode:
+# Check that $1 = $2
+# Compare floats modulo EPS (1.0E-4)
+function check {
+  echo $1 | awk -v EXPECT="$2" '
+  BEGIN {EPS=1.0E-4}
+  {
+    NEXPECT=split(EXPECT, EXPECTS)
+    NOUTPUT=split($0, OUPUTS);
+    if (NEXPECT != NOUTPUT) {print "1"; exit}
+    for (I = 0; I < NEXPECT; I++) {
+      if ( (EXPECTS[i] > OUTPUTS[I] + EPS) \
+        || (EXPECTS[i] < OUTPUTS[I] - EPS) ) {
+        print "1";
+        exit
+      }
+    }
+    print "0"
+  }
+  '
+}
+
+# For each line
+let L=1
+while true ; do
+  # Read lat and lon
+  lat=`readarg EncodeOk.txt $L 1`
+  if [ -z "$lat" ] ; then
+    break;
+  fi
+  lon=`readarg EncodeOk.txt $L 2`
+  # Encode
+  echo t_mapcode -c $lat $lon
+  result=`t_mapcode -c $lat $lon`
+  if [ $? -ne 0 ] ; then
+    echo "ERROR: t_mapcode -t $lat $lon has failed." 2>&1
+    exit 1
+  fi
+  # Parse result:
+  # lat lon => Short Code, then either 'Code Short' or Long, then num
+  result=`echo $result | awk '
+    (substr($6, 1, 1) == "'\''") {
+      print substr($6,2) " " substr($7, 1, length($7)-1)
+      exit
+    }
+    {
+      print $6
+    }
+  '`
+  ctx=`echo $result | awk '{print $1}'`
+  cod=`echo $result | awk '{print $2}'`
+  if [ -z "$cod" ] ; then
+    cod=$ctx
+    ctx=""
+  fi
+  # Decode
+  decoded=`t_mapcode -d $cod $ctx | cut -d ' ' -f 2-`
+  if [ $? -ne 0 ] ; then
+    echo "ERROR: t_mapcode -d $cod $ctx has failed." 2>&1
+    exit 1
+  fi
+  res=`check "$lat $lon" "$decoded"`
+  # Check decoded lat lon versus origin
+  if [ "$res" != "0" ] ; then
+    echo "ERROR: $lat $lon => $result => $decoded" 2>&1
+    exit 1
+  else
+    if [ -n "$DEBUG" ] ; then
+      echo "$lat $lon => $result => $decoded"
+    fi
+  fi
+
+  let L=$L+1
+done
+echo OK.
+

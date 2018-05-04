@@ -1,5 +1,10 @@
 #!/bin/bash
-#set -vx
+
+if [ "$1" = "-d" ] ; then
+  DEBUG=-d
+  shift
+fi
+
 if [ "$1" = "" ] ; then
   echo "Usage: `basename $0` <scenario>"
   exit 1
@@ -28,6 +33,8 @@ res="`awk -vLINE=$1 -vFIELD=$2 '
 echo "$res"
 }
 
+# Check that $2 = $3
+# If $1 is -d then compare floats modulo EPS (1.0E-4)
 function check {
 
   if [ "$1" = "-d" ] ; then
@@ -94,7 +101,7 @@ while true ; do
   export code=$?
   # Check exit status
   if [ $code -ne 0 ] ; then
-    echo "Error: mapcode exited with code $code"
+    echo "ERROR: mapcode exited with code $code" 2>&1
     exit 1
   fi
   # Skip up to "=> " included and append a space
@@ -102,9 +109,11 @@ while true ; do
   # Check that result is expected
   res=`check $CMD "$result" "$OUTPUT"`
   if [ "$res" = "0" ] ; then
-    echo "$INPUT => $OUTPUT"
+    if [ -n "$DEBUG" ] ; then
+      echo "$INPUT => $OUTPUT"
+    fi
   else
-    echo "Error: $INPUT => $result instead of $OUTPUT"
+    echo "ERROR: $INPUT => $result instead of $OUTPUT" 2>&1
     exit 1
   fi
   let L=$L+1

@@ -1536,7 +1536,7 @@ package body Mapcodes is
         -- Old way: use A, E and U */
         V := (Character'Pos(Result.Element(Rlen - 2)) - 48) * 10
            +  Character'Pos(Result.Element(Rlen - 1)) - 48;
-        Result := Result.Uslice(1, Rlen - 3)
+        Result := Result.Uslice(1, Rlen - 2)
                 & Encode_Char(V / 34 + 32)
                 & Encode_Char(V rem 34 + 1);
 
@@ -1611,7 +1611,7 @@ package body Mapcodes is
           return Undefined;
         end if;
         Voweled := True;
-        Result := Result.Uslice (1, Lastpos - 1)
+        Result := Result.Uslice (1, Lastpos - 2)
                 & Encode_Char(V / 10 + 1) & Encode_Char(V rem 10 + 1);
       end if;
     end if;
@@ -1944,7 +1944,7 @@ package body Mapcodes is
   begin
     Value := Value * (961 * 31);
     -- Decode bottom
-    Triple := Decode_Triple (Input (Input'Last - 3 .. Input'Last));
+    Triple := Decode_Triple (Input (Input'Last - 2 .. Input'Last));
 
     Lm := M;
     while Co_Dex (Lm) = Codex and then Rec_Type (Lm) > 1 loop
@@ -1952,8 +1952,8 @@ package body Mapcodes is
       H := (Mm.Maxy - Mm.Miny + 89) / 90;
       Xdiv := Lint (Xdivider4 (Mm.Miny, Mm.Maxy));
       W := ((Mm.Maxx - Mm.Minx) * 4 + (Xdiv - 1)) / Xdiv;
-      H := 176 * (H + 176 - 1) / 176;
-      W := 168 * (W + 168 - 1) / 168;
+      H := 176 * ((H + 176 - 1) / 176);
+      W := 168 * ((W + 168 - 1) / 168);
       Product := (W / 168) * (H / 176) * 961 * 31;
 
       if Rec_Type (Lm) = 2 then
@@ -2403,6 +2403,7 @@ package body Mapcodes is
       elsif Rec_Type(M) > 1 and then Postfixlength = 3
       and then Codex_Len(M) = Prefixlength + 2 then
         Zone := Decode_Auto_Header (Map_Code.Image, Extensionchars.Image, M);
+        exit;
       end if;
     end loop;
 
