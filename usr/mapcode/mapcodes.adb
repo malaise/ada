@@ -1528,14 +1528,14 @@ package body Mapcodes is
       if Short then
         -- v1.50 new way: use only A
         V := (Character'Pos(Result.Element (1)) - 48) * 100
-           + (Character'Pos(Result.Element (Rlen - 2)) - 48) * 10
-           +  Character'Pos(Result.Element (Rlen - 1)) - 48;
-        Result := 'A' & Result.Uslice (2, Rlen - 3)
+           + (Character'Pos(Result.Element (Rlen - 1)) - 48) * 10
+           +  Character'Pos(Result.Element (Rlen))     - 48;
+        Result := 'A' & Result.Uslice (2, Rlen - 2)
                 & Encode_Char(V / 32 + 1) &  Encode_Char(V rem 32 + 1);
       else
         -- Old way: use A, E and U */
-        V := (Character'Pos(Result.Element(Rlen - 2)) - 48) * 10
-           +  Character'Pos(Result.Element(Rlen - 1)) - 48;
+        V := (Character'Pos(Result.Element(Rlen - 1)) - 48) * 10
+           +  Character'Pos(Result.Element(Rlen))     - 48;
         Result := Result.Uslice(1, Rlen - 2)
                 & Encode_Char(V / 34 + 32)
                 & Encode_Char(V rem 34 + 1);
@@ -1773,7 +1773,7 @@ package body Mapcodes is
       if X < 62 - A then
         Swap_Letters := Codex = 22;
       else
-        X := X + X - 62 - A;
+        X := X + X - (62 - A);
       end if;
     else
       -- codex = 21 or else A >= 62
@@ -1795,7 +1795,8 @@ package body Mapcodes is
     if Swap_Letters then
       if not Is_Special_Shape (M + X) then
         Result := As_U.Tus (Result.Element (1) & Result.Element (2)
-                          & Result.Element (4) & Result.Element (5));
+                          & Result.Element (4) & Result.Element (3)
+                          & Result.Element (5));
       end if;
     end if;
 
@@ -2443,7 +2444,7 @@ package body Mapcodes is
     begin
       return Res;
     end Spaces;
-    F : constant positive := Mapcode'First; 
+    F : constant Positive := Mapcode'First;
   begin
     if Context = Undefined then
       Contextterritorynumber := Ccode_Earth;

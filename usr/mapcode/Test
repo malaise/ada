@@ -49,7 +49,7 @@ function check {
 
 # Play Scenario.txt
 echo Scenario:
-#./player $DEBUG Scenario.txt
+./player $DEBUG Scenario.txt
 if [ $? -ne 0 ] ; then
   exit 1
 fi
