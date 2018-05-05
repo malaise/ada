@@ -4,7 +4,7 @@ package Mapcodes is
 
   Mapcode_C_Version : constant String := "2.0.2";
   Mapcode_Data_Version : constant String := "2.3.0";
-  Mapcode_Ada_Version  : constant String := "1.0.2/Data"
+  Mapcode_Ada_Version  : constant String := "1.0.3/Data"
                                           & Mapcode_Data_Version;
 
   -- Real type

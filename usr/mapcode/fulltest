@@ -1,8 +1,45 @@
 #!/bin/bash
 
-if [ "$1" = "-d" ] ; then
-  export DEBUG="-d"
-fi
+# Precision, in fraction of dregree, depending of encoding precision
+EPSILON[0]="2.5E-4"
+EPSILON[1]="7.5E-5"
+EPSILON[2]="5.0E-5"
+
+# Defaults
+export DEBUG=""
+export PRECISION=1
+
+function usage {
+  echo "Usage: `basename $0` [ -p | --precision <precision> ] [ -d | --debug ]"
+  echo "    or `basename $0` [ -h | --help ]"
+  echo " Default precision: $PRECISION"
+}
+
+function error {
+  echo "ERROR: $1" 1>&2
+  exit 1
+}
+
+# Parse arguments
+while [ -n "$1" ] ; do
+  case "$1" in
+    ("-h"| "--help")
+      usage
+      exit 0
+    ;;
+    ("-d"|"--debug")
+      export DEBUG="-d"
+    ;;
+    ("-p"|"--precision")
+      export PRECISION=$2
+      shift
+    ;;
+    (*)
+      usage
+    ;;
+  esac
+  shift
+done
 
 # Read field $3 of line $2 of file $1
 function readarg {
@@ -26,36 +63,99 @@ res="`awk -vLINE=$2 -vFIELD=$3 '
 echo "$res"
 }
 
-# Check that $1 = $2
-# Compare floats modulo EPS (1.0E-4)
+# Check that $2 = $3
+# if $1 is -d then compare floats modulo EPS ($4) (1.0E-4, 1.0E-5, 1.0E-6)
 function check {
-  echo $1 | awk -v EXPECT="$2" '
-  BEGIN {EPS=1.0E-4}
-  {
-    NEXPECT=split(EXPECT, EXPECTS)
-    NOUTPUT=split($0, OUPUTS);
-    if (NEXPECT != NOUTPUT) {print "1"; exit}
-    for (I = 0; I < NEXPECT; I++) {
-      if ( (EXPECTS[i] > OUTPUTS[I] + EPS) \
-        || (EXPECTS[i] < OUTPUTS[I] - EPS) ) {
-        print "1";
-        exit
+  if [ "$1" = "-d" ] ; then
+    echo $2 | awk -v EXPECT="$3" -v EPS=${EPSILON[$4]} '
+    function abs(v) {return v < 0 ? -v : v}
+    {
+      NEXPECT=split(EXPECT, EXPECTS)
+      NOUTPUT=split($0, OUTPUTS);
+      if (NEXPECT != NOUTPUT) {print "1"; exit}
+      for (i = 1; i < NEXPECT+1; i++) {
+        E = 0.0+EXPECTS[i]
+        O = 0.0+OUTPUTS[i]
+        D = abs(E - O)
+        if (D > EPS) {
+          if (E < 0.0) E += 360.0
+          if (O < 0.0) O += 360.0
+          D = abs(E - O)
+          if (D > EPS) {
+            print "1"
+          }
+        }
       }
+      print "0"
     }
-    print "0"
-  }
-  '
+    '
+    return
+  else
+    if [ "$2" = "$3" ] ; then
+      echo 0
+      return
+    fi
+  fi
 }
 
 # Play Scenario.txt
 echo Scenario:
-./player $DEBUG Scenario.txt
-if [ $? -ne 0 ] ; then
-  exit 1
-fi
+# For each line
+let L=1
+while true ; do
+  # Read line until end of file
+  let I=1
+  INPUT=""
+  OUTPUT=""
+  let ININ=1
+  CMD=""
+  while true ; do
+    arg=`readarg Scenario.txt $L $I`
+    if [ "$arg" = "" ] ; then
+      # End of line
+      break
+    fi
+    if [ -z "$CMD" ] ; then
+      CMD=$arg;
+    fi
+    if [ "$arg" = "=>" ] ; then
+      # Switch to output
+      let ININ=0
+    elif [ $ININ -eq 1 ] ; then
+      INPUT=$INPUT$arg" "
+    else
+      OUTPUT=$OUTPUT$arg" "
+    fi
+    let I=$I+1
+  done
+  if [ "$INPUT" = "" ] ; then
+    break
+  fi
+  # Do test and save exit status
+  export result=`t_mapcode $INPUT`
+  export code=$?
+  # Check exit status
+  if [ $code -ne 0 ] ; then
+    error "mapcode has exited with code $code"
+    exit 1
+  fi
+  # Skip up to "=> " included and append a space (cause OUTPUT has one)
+  result=`echo $result | cut -d ">" -f 2 | cut -d " " -f 2-`" "
+  # Check that result is expected
+  res=`check "$CMD" "$result" "$OUTPUT" 0`
+  if [ "$res" = "0" ] ; then
+    if [ -n "$DEBUG" ] ; then
+      echo "$INPUT => $OUTPUT"
+    fi
+  else
+    error "$INPUT => $result instead of $OUTPUT"
+  fi
+  let L=$L+1
+done
+echo OK.
 
 # Check Territory failures
-echo Failure on territory decode:
+echo Failure on territory:
 # Info on  $1 in context $2 shall lead to error (exit 1)
 function territory_failure {
   if [ -n "$DEBUG" ] ; then
@@ -64,8 +164,7 @@ function territory_failure {
   t_mapcode -t "$1" "$2" > /dev/null 2>&1
   res=$?
   if [ $res -ne 1 ] ; then
-    echo "ERROR: t_mapcode -t \"$1\" "$2" has exited with code $res i.o. 1" 1>&2
-    exit 1
+    error "t_mapcode -t \"$1\" "$2" has exited with code $res i.o. 1"
   fi
 }
 territory_failure ""
@@ -101,8 +200,7 @@ function decode_failure {
   t_mapcode -d "$1" $2 > /dev/null 2>&1
   res=$?
   if [ $res -ne 1 ] ; then
-    echo "ERROR: t_mapcode -d \"$1\" $2 has exited with code $res i.o. 1" 1>&2
-    exit 1
+    error "t_mapcode -d \"$1\" $2 has exited with code $res i.o. 1"
   fi
 }
 decode_failure ""
@@ -123,8 +221,8 @@ while true ; do
 done
 echo OK.
 
-# Encode then decode
-echo Encode then decode:
+# Encode
+echo Encode
 # For each line
 let L=1
 while true ; do
@@ -135,10 +233,9 @@ while true ; do
   fi
   lon=`readarg EncodeOk.txt $L 2`
   # Encode
-  result=`t_mapcode -c $lat $lon`
+  result=`t_mapcode -c $lat $lon $PRECISION`
   if [ $? -ne 0 ] ; then
-    echo "ERROR: t_mapcode -t $lat $lon has failed." 2>&1
-    exit 1
+    error "t_mapcode -t $lat $lon $PRECISION has failed"
   fi
   # Parse result:
   # lat lon => Short Code, then either 'Code Short' or Long, then num
@@ -160,14 +257,12 @@ while true ; do
   # Decode
   decoded=`t_mapcode -d $cod $ctx | cut -d ' ' -f 2-`
   if [ $? -ne 0 ] ; then
-    echo "ERROR: t_mapcode -d $cod $ctx has failed." 2>&1
-    exit 1
+    error "t_mapcode -d $cod $ctx has failed"
   fi
-  res=`check "$decoded" "$lat $lon"`
+  res=`check "-d" "$decoded" "$lat $lon" $PRECISION`
   # Check decoded lat lon versus origin
   if [ "$res" != "0" ] ; then
-    echo "ERROR: $lat $lon => $result => $decoded" 2>&1
-    exit 1
+    error "$lat $lon $PRECISION => $result => $decoded"
   else
     if [ -n "$DEBUG" ] ; then
       echo "$lat $lon => $result => $decoded"
@@ -180,7 +275,6 @@ echo OK.
 
 # Decode
 echo Decode:
-
 # Count line ("=>") of output
 function count {
   echo "$*" | awk '
@@ -189,33 +283,43 @@ function count {
   '
 }
 
-# Decoding mapcode $1 in context $2 shall lead $3 and $4
+# Decoding mapcode $1 in context $2 shall lead to lat lon $3 and $4
 # Ecoding lat lon $3 and $4 in context $2 shall lead to $5 mapcodes
 # Ecoding lat lon $3 and $4 without context $2 shall lead to $6 mapcodes
+# Encoding lat lon $3 and $4 in context $é with $PRECISION then decoding
+#  shall lead to $3 and $4
 function decode {
   if [ -n "$DEBUG" ] ; then
     echo -d "$1" "$2"
   fi
   result=`t_mapcode -d "$1" $2`
-  res=`check "$3 $4" "$result"`
+  res=`check "-d" "$3 $4" "$result" 0`
   if [ $res -ne 1 ] ; then
-    echo "ERROR: t_mapcode -d $1 $2 => $result instead of $3 $4" 2>&1
-    exit 1
+    error "t_mapcode -d $1 $2 => $result instead of $3 $4"
   fi
   # Count number of all local codes
   res=`t_mapcode -c $3 $4 $2 False`
   let nloc=0+`count $res`
   if [ $nloc -ne $5 ] ; then
-    echo "ERROR: t_mapcode -c $3 $4 $2 False => $nloc results instead of $5" 2>&1
-    exit 1
+    error "t_mapcode -c $3 $4 $2 False => $nloc results instead of $5"
   fi
   # Count number of all global codes
   res=`t_mapcode -c $3 $4 False`
   let nloc=0+`count $res`
   if [ $nloc -ne $6 ] ; then
-    echo "ERROR: t_mapcode -c $3 $4 False => $nloc results instead of $6" 2>&1
+    error "t_mapcode -c $3 $4 False => $nloc results instead of $6"
     exit 1
   fi
+  enc=`t_mapcode -c $3 $4 $2 $PRECISION`
+  enc=`echo $enc | cut -d ">" -f 2 | cut -d " " -f 2-3`
+  dec=`t_mapcode -d $enc $2`
+  # Check decoded lat lon versus provided
+  dec=`echo $dec | cut -d ">" -f 2`
+  res=`check "-d" "$dec" "$3 $4" $PRECISION`
+  if [ "$res" != "0" ] ; then
+    error "$3 $4 $2 $PRECISION => $enc => $dec"
+  fi
+
 }
 # Theses one have no context
 decode "ZH0H0.H1HG" ""    "90" "0" 1 1

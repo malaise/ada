@@ -1216,10 +1216,23 @@ package body Mapcodes is
     return E - I;
   end Count_Nameless_Records;
 
+  -- Return Lint immediately smaller than Real
+  function Floor (X : Real) return Lint is
+    Int : Lint;
+  begin
+    Int := Lint(X);
+
+    if Real(Int) > X then
+      Int := Int - 1;
+    end if;
+    return Int;
+  end Floor;
+
   function Get_Encode_Rec(Lat, Lon : in Real) return Frac_Rec is
     Ilat : Real := Lat;
     Ilon : Real := Lon;
-    D, Fraclat, Fraclon : Real;
+    D : Real;
+    Fraclat, Fraclon : Lint;
     Lat32, Lon32 : Lint;
   begin
 
@@ -1230,19 +1243,19 @@ package body Mapcodes is
     end if;
     Ilat := Ilat + 90.0; -- Ilat now [0..180]
     Ilat := Ilat * 810000000000.0;
-    Fraclat := Ilat + 0.1;
-    D := Fraclat / 810000.0;
-    Lat32 := Lint (D);
-    Fraclat := Fraclat - Real (Lat32) * 810000.0;
+    Fraclat := Floor (Ilat + 0.1);
+    D := Real (Fraclat) / 810000.0;
+    Lat32 := Floor (D);
+    Fraclat := Fraclat - Lat32 * 810000;
     Lat32 := Lat32 - 90000000;
 
-    Ilon := Ilon - 360.0 * Real (Lint (Lon / 360.0));
+    Ilon := Ilon - 360.0 * Real (Floor (Ilon / 360.0));
     -- Lon now in [0..360>
     Ilon := Ilon * 3240000000000.0;
-    Fraclon := Ilon + 0.1;
-    D := Fraclon / 3240000.0;
-    Lon32 := Lint (D);
-    Fraclon := Fraclon - Real (Lon32) * 3240000.0;
+    Fraclon := Floor (Ilon + 0.1);
+    D := Real (Fraclon) / 3240000.0;
+    Lon32 := Floor (D);
+    Fraclon := Fraclon - Lon32 * 3240000;
     if Lon32 >= 180000000 then
       Lon32 := Lon32 - 360000000;
     end if;
@@ -1515,7 +1528,7 @@ package body Mapcodes is
         elsif R.Element (D) = '-' then
           Rest := Result.Uslice (D, Result.Length);
           Result := Result.Uslice (1, D - 1);
-          Rlen := D;
+          Rlen := D - 1;
           exit;
         else
           return Result.Image;
@@ -1524,10 +1537,10 @@ package body Mapcodes is
     end loop;
 
     -- Does Result have a dot, AND at least 2 chars before and after the dot?
-    if Dotpos >= 3 and then Dotpos + 2 <= Rlen then
+    if Dotpos >= 3 and then Rlen - 2 >= Dotpos then
       if Short then
         -- v1.50 new way: use only A
-        V := (Character'Pos(Result.Element (1)) - 48) * 100
+        V := (Character'Pos(Result.Element (1)) - 48)  * 100
            + (Character'Pos(Result.Element (Rlen - 1)) - 48) * 10
            +  Character'Pos(Result.Element (Rlen))     - 48;
         Result := 'A' & Result.Uslice (2, Rlen - 2)
@@ -1547,7 +1560,7 @@ package body Mapcodes is
   end Aeu_Pack;
 
   -- Remove vowels from mapcode str into an all-digit mapcode
-  --  (As_Umes str is already uppercase!)
+  --  (Assumes str is already uppercase!)
   function Aeu_Unpack (Str  : String) return String is
     Voweled, Has_Letters  : Boolean := False;
     Lastpos : constant Natural := Str'Length;
@@ -1807,7 +1820,7 @@ package body Mapcodes is
       end if;
     elsif Codex /= 21 and then A < 62 then
       V := Decode_Base31 (Result.Slice (2, Result.Length));
-      if X >= 2 - A then
+      if X >= 62 - A then
         if V >= 16 * 961 * 31 then
           V := V - 16 * 961 * 31;
           X := X + 1;
@@ -1885,6 +1898,8 @@ package body Mapcodes is
       H := (Mm.Maxy - Mm.Miny + 89) / 90;
       Xdiv := Xdivider4 (Mm.Miny, Mm.Maxy);
       W := ((Mm.Maxx - Mm.Minx) * 4 + Lint (Xdiv) - 1) / Lint (Xdiv);
+      H := 176 * ((H + 176 - 1) / 176);
+      W := 168 * ((W + 168 - 1) / 168);
       Product := (W / 168) * (H / 176) * 961 * 31;
       if Rec_Type (I) = 2 then
         -- *+
