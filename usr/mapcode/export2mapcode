@@ -40,7 +40,7 @@ export FILES="as_u.adb as_u.ads bits.adb bits.ads ctrynams.ads \
 ctrynams_short.ads mapcodes.adb mapcodes.ads ndata.ads \
 str_tools.adb str_tools.ads t_mapcode.adb \
 DecodeFailures.txt EncodeOk.txt TerritoryFailures.txt DecodeOk.txt Scenario.txt \
-player Test"
+fullplayer"
 
 # Add Copyright headers and copy in TARGET
 H[1]=' -----------------------------------------------------------------------------'
