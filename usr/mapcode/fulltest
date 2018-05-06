@@ -2,8 +2,8 @@
 
 # Precision, in fraction of dregree, depending of encoding precision
 EPSILON[0]="2.5E-4"
-EPSILON[1]="7.5E-5"
-EPSILON[2]="5.0E-5"
+EPSILON[1]="5.0E-5"
+EPSILON[2]="7.5E-6"
 
 # Defaults
 export DEBUG=""
