@@ -7,7 +7,7 @@ EPSILON[2]="5.0E-5"
 
 # Defaults
 export DEBUG=""
-export PRECISION=1
+export PRECISION=2
 
 function usage {
   echo "Usage: `basename $0` [ -p | --precision <precision> ] [ -d | --debug ]"
@@ -35,7 +35,7 @@ while [ -n "$1" ] ; do
       shift
     ;;
     (*)
-      usage
+      error "Invalid arguments"
     ;;
   esac
   shift
