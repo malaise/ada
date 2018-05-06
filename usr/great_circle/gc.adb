@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1;
-with As.B, Argument, Basic_Proc, Con_Io, Afpx, Str_Util, Language;
-with Conv, Lat_Lon, String_Util, Great_Circle, Afpx_Xref;
+with As.B, Argument, Basic_Proc, Con_Io, Afpx, Str_Util, Language, Reg_Exp;
+with Conv, Lat_Lon, String_Util, Great_Circle, Afpx_Xref, Mapcode2Geo;
 
 procedure Gc is
 
@@ -10,6 +10,8 @@ procedure Gc is
       & " [ add.mm.ss/oddd.mm.ss add.mm.ss/oddd.mm.ss ]");
     Basic_Proc.Put_Line_Error ("   or: " & Argument.Get_Program_Name
       & " [ add.ijkl/oddd.ijkl add.ijkl/oddd.ijkl ]");
+    Basic_Proc.Put_Line_Error ("   or: " & Argument.Get_Program_Name
+      & " [ [<context>:]<mapcode> [<context>:]<mapcode> ]");
     Basic_Proc.Put_Line_Error (" where a is N or S and o is E or W.");
   end Usage;
 
@@ -22,18 +24,27 @@ procedure Gc is
   Get_Handle : Afpx.Get_Handle_Rec;
   Result : Afpx.Result_Rec;
 
+  Sexa_Pattern : constant String :=
+      "[NnSs][0-9]{2}\.[0-9]{2}\.[0-9]{2}/[EeWw][0-9]{3}\.[0-9]{2}\.[0-9]{2}";
+  Deci_Pattern : constant String :=
+      "[NnSs][0-9]{2}\.[0-9]{4}/[EeWw][0-9]{3}\.[0-9]{4}";
+
   subtype A_Flds is Afpx.Field_Range
                     range Afpx_Xref.Main.A_First .. Afpx_Xref.Main.A_Last;
   subtype B_Flds is Afpx.Field_Range
                     range Afpx_Xref.Main.B_First .. Afpx_Xref.Main.B_Last;
+  subtype Code_Flds is Afpx.Field_Range
+                    range Afpx_Xref.Main.A_Ctx .. Afpx_Xref.Main.B_Code;
   Heading_Ab_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Heading;
   Distance_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Distance;
   Heading_Ba_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Revert;
   Switch_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Switch;
+  Clear_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Clear;
   Compute_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Compute;
   Exit_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Quit;
 
-  Sexa_Mode : Boolean := True;
+  type Mode_List is (Sexa_Mode, Deci_Mode, Code_Mode);
+  Mode : Mode_List := Sexa_Mode;
   Decode_Ok : Boolean;
   Need_Clean : Boolean := False;
 
@@ -55,7 +66,7 @@ procedure Gc is
     Char : Wide_Character;
   begin
     Afpx.Reset_Field (Field);
-    if Sexa_Mode then
+    if Mode /= Deci_Mode then
       return;
     end if;
     if Afpx.Get_Field_Width (Field) <= 2 then
@@ -73,19 +84,43 @@ procedure Gc is
 
   procedure Reset is
   begin
-    for Field in A_Flds loop
-      Reset_Field (Field);
-    end loop;
-    for Field in B_Flds loop
-      Reset_Field (Field);
-    end loop;
-    Clear_Result;
-    if Sexa_Mode then
-      Afpx.Encode_Field (Switch_Field, (1, 8), "Deci");
+    -- Deactivate / clear fields
+    if Mode = Code_Mode then
+      for Field in A_Flds loop
+        Afpx.Set_Field_Activation (Field, False);
+      end loop;
+      for Field in B_Flds loop
+        Afpx.Set_Field_Activation (Field, False);
+      end loop;
+      for Field in Code_Flds loop
+        Reset_Field (Field);
+      end loop;
     else
-      Afpx.Encode_Field (Switch_Field, (1, 8), "Sexa");
+      for Field in A_Flds loop
+        Reset_Field (Field);
+      end loop;
+      for Field in B_Flds loop
+        Reset_Field (Field);
+      end loop;
+      for Field in Code_Flds loop
+        Afpx.Set_Field_Activation (Field, False);
+      end loop;
     end if;
-    Get_Handle.Cursor_Field := A_Flds'First;
+    Clear_Result;
+    -- Update Switch button
+    case Mode is
+      when Sexa_Mode =>
+        Afpx.Encode_Field (Switch_Field, (1, 8), "Deci");
+      when Deci_Mode =>
+        Afpx.Encode_Field (Switch_Field, (1, 8), "Code");
+      when Code_Mode =>
+        Afpx.Encode_Field (Switch_Field, (1, 8), "Sexa");
+    end case;
+    if Mode /= Code_Mode then
+      Get_Handle.Cursor_Field := A_Flds'First;
+    else
+      Get_Handle.Cursor_Field := Code_Flds'First;
+    end if;
     Get_Handle.Cursor_Col := 0;
     Get_Handle.Insert := False;
   end Reset;
@@ -130,7 +165,7 @@ procedure Gc is
       Point_Txt.Append (Afpx.Decode_Field(Field, 0, False));
     end loop;
     Great_Circle.Logger.Log_Debug ("Decoded point: " & Point_Txt.Image);
-    if Sexa_Mode then
+    if Mode = Sexa_Mode then
       -- Replace Nddomm'ss"/Edddomm'ss" by Ndd.mm.ss/Eddd.mm.ss
       -- "o" has already been replaced by " " in Afpx.Decode_Field
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, Deg, "."));
@@ -138,7 +173,7 @@ procedure Gc is
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, """", ""));
       Great_Circle.Logger.Log_Debug ("Parsed point: " & Point_Txt.Image);
       Point := String_Util.Str2Geo(Point_Txt.Image);
-    else
+    else -- Deci_Mode
       -- Replace Ndd.ij klo/Eddd.ij klo by Ndd.ijkl/Eddd.ijkl
       -- "o" has already been replaced by " " in Afpx.Decode_Field
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, Deg, ""));
@@ -155,10 +190,34 @@ procedure Gc is
       Cursor := First_Fld;
   end Decode_Point;
 
+  procedure Decode_Mapcode (First_Fld, Last_Fld : in Afpx.Field_Range;
+                            Point : out Lat_Lon.Lat_Lon_Geo_Rec;
+                            Ok : out Boolean;
+                            Cursor : in out Afpx.Field_Range) is
+    -- 6 for context, ":" and 12 for mapcode
+    Mapcode_Txt : As.B.Asb_Bs(19);
+  begin
+    Mapcode_Txt.Set_Null;
+    for Field in First_Fld .. Last_Fld loop
+      Mapcode_Txt.Append (Str_Util.Strip (
+          Afpx.Decode_Field(Field, 0, False), Str_Util.Both));
+    end loop;
+    Great_Circle.Logger.Log_Debug ("Parsed mapcode: " & Mapcode_Txt.Image);
+    Point := Mapcode2Geo (Mapcode_Txt.Image);
+    Great_Circle.Logger.Log_Debug ("Got point OK: " & Mapcode_Txt.Image);
+    Ok := True;
+  exception
+    when others =>
+      Great_Circle.Logger.Log_Debug ("Decode mapcode Exception");
+      Ok := False;
+      Cursor := First_Fld;
+  end Decode_Mapcode;
+
   procedure Encode_Heading (F : in Afpx.Field_Range;
                             H : in Conv.Geo_Coord_Rec) is
   begin
-    if Sexa_Mode then
+    if Mode /= Deci_Mode then
+      -- Sexa or code
       declare
         Str : constant String := String_Util.Geoangle2Str(H);
         -- Will append " and set o and ' instead of 2 first .
@@ -171,6 +230,7 @@ procedure Gc is
         Afpx.Encode_Wide_Field (F, (0, 0), Wstr);
       end;
     else
+      -- Deci
       declare
         Str : constant String := String_Util.Decangle2Str(Conv.Geo2Dec(H));
         -- Will append o
@@ -181,11 +241,13 @@ procedure Gc is
       end;
       Great_Circle.Logger.Log_Debug ("Heading encoded");
     end if;
- end Encode_Heading;
+  end Encode_Heading;
 
 begin
 
   if Argument.Get_Nbre_Arg = 0 then
+    Use_Afpx := True;
+  elsif Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "-x" then
     Use_Afpx := True;
   elsif Argument.Get_Nbre_Arg = 2 then
     Use_Afpx := False;
@@ -198,23 +260,37 @@ begin
   -- Convert args in lat_lon of A and B
   if not Use_Afpx then
     -- See if Ndd.mm.ss or Ndd.ijkl
-    Sexa_Mode := Argument.Get_Parameter(1)(7) = '.';
+    if Reg_Exp.Match (Sexa_Pattern, Argument.Get_Parameter(1), True)
+    and then Reg_Exp.Match (Sexa_Pattern, Argument.Get_Parameter(2), True) then
+      Mode := Sexa_Mode;
+    elsif Reg_Exp.Match (Deci_Pattern, Argument.Get_Parameter(1), True)
+    and then Reg_Exp.Match (Deci_Pattern, Argument.Get_Parameter(2), True) then
+      Mode := Deci_Mode;
+    else
+      Mode := Code_Mode;
+    end if;
     begin
       -- Parse arguments
-      if Sexa_Mode then
+      if Mode = Sexa_Mode then
         A := String_Util.Str2Geo(Argument.Get_Parameter(1));
         B := String_Util.Str2Geo(Argument.Get_Parameter(2));
-      else
+      elsif Mode = Deci_Mode then
         A := Lat_Lon.Dec2Geo (String_Util.Str2Dec(Argument.Get_Parameter(1)));
         B := Lat_Lon.Dec2Geo (String_Util.Str2Dec(Argument.Get_Parameter(2)));
+      else
+        -- Coordinates of mapcodes
+        A := Mapcode2Geo (Argument.Get_Parameter(1));
+        B := Mapcode2Geo (Argument.Get_Parameter(2));
       end if;
       -- Compute
       Great_Circle.Compute_Route(A, B, Heading, Distance);
       -- Put result
-      if Sexa_Mode then
+      if Mode /= Deci_Mode then
+        -- Sexa or Code
         Basic_Proc.Put_Output ("Route: "
             & String_Util.Geoangle2Str(Heading));
       else
+        -- Deci
         Basic_Proc.Put_Output ("Route: "
             & String_Util.Decangle2Str(Conv.Geo2Dec(Heading)));
       end if;
@@ -229,6 +305,7 @@ begin
   else
     Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
     Get_Handle := (others => <>);
+    Reset;
     loop
       Afpx.Put_Then_Get (Get_Handle, Result, False, Next_Field_Cb'Access);
 
@@ -238,25 +315,38 @@ begin
                and then Result.Field_No = Exit_Field) then
         -- Exit
         exit;
-      elsif Result.Event = Afpx.Keyboard
-      and then Result.Keyboard_Key = Afpx.Escape_Key then
+      elsif (Result.Event = Afpx.Keyboard
+             and then Result.Keyboard_Key = Afpx.Escape_Key)
+      or else (Result.Event = Afpx.Mouse_Button
+               and then Result.Field_No = Clear_Field) then
         -- Reset
         Reset;
       elsif (Result.Event = Afpx.Keyboard
           and then Result.Keyboard_Key = Afpx.Return_Key)
       or else (Result.Event = Afpx.Mouse_Button
                and then Result.Field_No = Compute_Field) then
-        -- Compute
-        Get_Handle.Cursor_Field := A_Flds'First;
+        -- Decode input
         Get_Handle.Cursor_Col := 0;
         Get_Handle.Insert := False;
         Clear_Result;
-        Decode_Point (A_Flds'First, A_Flds'Last, A, Decode_Ok,
-                      Get_Handle.Cursor_Field);
-        if Decode_Ok then
-          Decode_Point (B_Flds'First, B_Flds'Last, B, Decode_Ok,
+        if Mode /= Code_Mode then
+          Get_Handle.Cursor_Field := A_Flds'First;
+          Decode_Point (A_Flds'First, A_Flds'Last, A, Decode_Ok,
                         Get_Handle.Cursor_Field);
+          if Decode_Ok then
+            Decode_Point (B_Flds'First, B_Flds'Last, B, Decode_Ok,
+                          Get_Handle.Cursor_Field);
+          end if;
+        else
+          Get_Handle.Cursor_Field := Code_Flds'First;
+          Decode_Mapcode (Code_Flds'First, Code_Flds'First + 2, A, Decode_Ok,
+                        Get_Handle.Cursor_Field);
+          if Decode_Ok then
+            Decode_Mapcode (Code_Flds'First + 3, Code_Flds'Last, B, Decode_Ok,
+                          Get_Handle.Cursor_Field);
+          end if;
         end if;
+        -- Compute
         if Decode_Ok then
           Great_Circle.Compute_Route(A => A, B => B,
                                      Heading => Heading,
@@ -275,7 +365,8 @@ begin
       elsif Result.Event = Afpx.Mouse_Button
       and then Result.Field_No = Switch_Field then
         -- Switch
-        Sexa_Mode := not Sexa_Mode;
+        Mode := (if Mode /= Mode_List'Last then Mode_List'Succ (Mode)
+                 else Mode_List'First);
         Reset;
       end if;
 

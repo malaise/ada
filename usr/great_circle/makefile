@@ -1,6 +1,6 @@
 include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 
-ADAVIEW := $(REPOSIT)
+ADAVIEW := $(USR)/mapcode $(REPOSIT)
 ADACTL := true
 
 AFPX := true
@@ -8,7 +8,7 @@ AFPX_XREF := afpx_xref
 
 EXES := gc
 
-CLIBS := $(X11_SLIBS)
+CLIBS := $(PCRE_SLIBS) $(X11_SLIBS)
 
 include $(TEMPLATES)/ada.mk
 
