@@ -2448,7 +2448,8 @@ package body Mapcodes is
       Extra_Digits => Precision);
   end Encode;
 
-  function Decode (Mapcode, Context : String) return Coordinate is
+  function Decode (Mapcode : String;
+                   Context : String := "") return Coordinate is
     Contextterritorynumber : Integer;
     Space1, Space2 : Natural;
     Part1, Part2 : As_U.Asu_Us;
