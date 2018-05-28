@@ -29,6 +29,7 @@ procedure Gc is
   Deci_Pattern : constant String :=
       "[NnSs][0-9]{2}\.[0-9]{4}/[EeWw][0-9]{3}\.[0-9]{4}";
 
+  Mode_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Mode;
   subtype A_Flds is Afpx.Field_Range
                     range Afpx_Xref.Main.A_First .. Afpx_Xref.Main.A_Last;
   subtype B_Flds is Afpx.Field_Range
@@ -107,14 +108,17 @@ procedure Gc is
       end loop;
     end if;
     Clear_Result;
-    -- Update Switch button
+    -- Update Mode text and Switch button
     case Mode is
       when Sexa_Mode =>
+        Afpx.Encode_Field (Mode_Field, (0, 0), "Sexigesimal mode");
         Afpx.Encode_Field (Switch_Field, (1, 8), "Deci");
       when Deci_Mode =>
+        Afpx.Encode_Field (Mode_Field, (0, 0), "Decimal mode    ");
         Afpx.Encode_Field (Switch_Field, (1, 8), "Code");
       when Code_Mode =>
-        Afpx.Encode_Field (Switch_Field, (1, 8), "Sexa");
+        Afpx.Encode_Field (Mode_Field, (0, 0), "Mapcode mode    ");
+        Afpx.Encode_Field (Switch_Field, (1, 8), "Sexi");
     end case;
     if Mode /= Code_Mode then
       Get_Handle.Cursor_Field := A_Flds'First;
