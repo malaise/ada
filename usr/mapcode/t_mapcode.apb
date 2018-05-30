@@ -3,7 +3,7 @@ with Ada.Command_Line, Ada.Text_Io;
 --#@IfNotDef Export
 with My_Math, Normalization, Gets;
 --#@EndifDef
-with As_U, Str_Tools, Mapcodes;
+with As_U, Mapcodes;
 procedure T_Mapcode is
   use Mapcodes;
 
@@ -16,7 +16,7 @@ procedure T_Mapcode is
     Ada.Text_Io.Put_Line (
       "  -t <territory>                // Territory info");
     Ada.Text_Io.Put_Line (
-      "  -d <mapcode> [ <territory> ]  // Decode");
+      "  -d [ <territory> ] <mapcode>  // Decode");
     Ada.Text_Io.Put_Line (
       "  -c <lat> <lon> [ <options> ]  // Encode");
     Ada.Text_Io.Put_Line (
@@ -82,7 +82,7 @@ procedure T_Mapcode is
   end Image;
 
   function Quote (Str : String) return String is
-    ( (if Str_Tools.Locate (Str, " ") = 0 then Str else ''' & Str & ''') );
+    (''' & Str & ''');
 
   function Get (Str : String) return Mapcodes.Real is
   begin
@@ -94,7 +94,7 @@ procedure T_Mapcode is
   end Get;
 
   I : Positive;
-  Command, Arg1, Arg2 : As_U.Asu_Us;
+  Command, Arg1, Arg2, Tmp : As_U.Asu_Us;
 
   Coord : Mapcodes.Coordinate;
   Territory : As_U.Asu_Us;
@@ -155,29 +155,30 @@ begin
       begin
         for J in Codes'Range loop
           Ada.Text_Io.Put_Line ("=> "
-            &  Codes(J).Mapcode.Image
-            & " " & Codes(J).Territory_Alpha_Code.Image
+            & Codes(J).Territory_Alpha_Code.Image
+            & " " &  Codes(J).Mapcode.Image
             & " " & Quote (Codes(J).Full_Mapcode.Image)
             & " " & Integer_Image (Codes(J).Territory_Number));
         end loop;
       end;
       Ada.Text_Io.New_Line;
     elsif Command.Image = "-d" then
-      -- Decode next argument, optionally with context
+      -- Decode next argument, optionally preceeded by a context
       I := I + 1;
       Arg1 := As_U.Tus (Ada.Command_Line.Argument (I));
       Arg2.Set_Null;
       if I < Ada.Command_Line.Argument_Count then
-        Arg2 := As_U.Tus (Ada.Command_Line.Argument (I + 1));
-        if Is_Command (Arg2.Image) then
-          Arg2.Set_Null;
-        else
+        Tmp := As_U.Tus (Ada.Command_Line.Argument (I + 1));
+        if not Is_Command (Tmp.Image) then
+          Arg2 := Arg1;
+          Arg1 := Tmp;
           I := I + 1;
         end if;
       end if;
+      Ada.Text_Io.Put_Line (Arg1.Image & " " & Arg2.Image);
       Coord := Decode (Arg1.Image, Arg2.Image);
       Ada.Text_Io.Put_Line ("=> " & Image (Coord.Lat)
-                                & " " & Image (Coord.Lon));
+                          & " " & Image (Coord.Lon));
     end if;
     I := I + 1;
   end loop;
