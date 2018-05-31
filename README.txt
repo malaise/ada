@@ -228,6 +228,10 @@ Logrotator (1)::
 Lsadeps (3)::
      Shows the list/tree of Ada units/files dependencies.
 
+Mapcode (3)::
+     Encode/decode coordinates (latitude, longitude) to/from mapcode (see 
+     http://www.mapcode.com/).
+
 Mcd (3)::
      Reverse polish computer. At command line level but very powerful.
 

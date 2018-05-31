@@ -4,6 +4,12 @@ Main changes
 
 [horizontal]
 
+*2018/05*:: Add mapcodes library
+
+*2018/05*:: Many improvements in Agite
+
+*2016/08*:: Add sensor and logrotator
+
 *2016/06/07*:: Fix some errors detected by AdaControl
 
 *2015/11/02*:: Add dtd_generator and move it, with xml_checker and dtd_checker,
