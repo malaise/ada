@@ -19,7 +19,7 @@ d C pushr call
 # Dist = Sqrt (delta_lat * 2 + delta_lon * 2)
 d pushr b pushr - dup * a pushr c pushr - dup * + sqrt
 
-# Convert to km: 1 deg = 60 Nm
+# Convert to m: 1 deg = 60 Nm
 60.0 * k copyr 1852.0 *
 
 # Put m or km
