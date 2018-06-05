@@ -5,6 +5,9 @@ procedure T_Accuracy is
 
   use type Mapcodes.Real;
 
+  -- Trace logger
+  Logger : Trace.Loggers.Logger;
+
   -- Usage
   procedure Usage is
   begin
@@ -41,13 +44,28 @@ procedure T_Accuracy is
     return Normalization.Normal_Fixed (My_Math.Real (R), Frac_Len + 5, 4, '0');
   end Image;
 
-  -- Search the change of mapcode
-  function Search (Cod, Ctx : String;
+  -- Search a mapcode within an array
+  function Search (Code : String; Codes : Mapcodes.Mapcode_Infos;
+                   Log : Boolean) return Boolean is
+  begin
+    for C in Codes'Range loop
+      if Log then
+        Logger.Log_Debug ("    Search " & Code
+                        & " v.s. " & Codes(C).Mapcode.Image);
+      end if;
+      if Codes(C).Mapcode.Image = Code then
+        return True;
+      end if;
+    end loop;
+    return False;
+  end Search;
+
+  -- Search the boundary change of mapcode
+  function Bounds (Cod, Ctx : String;
                    Precision : Mapcodes.Precisions;
                    Ref : Mapcodes.Coordinate;
                    Incr_Lat, Incr_Lon : Mapcodes.Real) return Mapcodes.Real is
     Cur_Coord, Prev_Coord : Mapcodes.Coordinate;
-    Found : Boolean;
   begin
     Cur_Coord := Ref;
     loop
@@ -60,19 +78,27 @@ procedure T_Accuracy is
         Codes : constant Mapcodes.Mapcode_Infos
               := Mapcodes.Encode (Cur_Coord, Ctx, False, Precision);
       begin
-        Found := False;
-        for C in Codes'Range loop
-          if Codes(C).Mapcode.Image = Cod then
-            -- Until the mapcode changes
-            Found := True;
-            exit;
-          end if;
-        end loop;
+        -- Until the mapcode changes
+        exit when not Search (Cod, Codes, False);
       end;
-      exit when not Found;
     end loop;
     return ( (if Incr_Lat /= 0.0 then Prev_Coord.Lat else Prev_Coord.Lon) );
-  end Search;
+  end Bounds;
+
+  -- Check that a lat lon generates a mapcode
+  procedure Check_In (Lat, Lon : Mapcodes.Real;
+                      Cod, Ctx : String;
+                      Precision : Mapcodes.Precisions) is
+    Codes : constant Mapcodes.Mapcode_Infos
+          := Mapcodes.Encode ( (Lat, Lon), Ctx, False, Precision);
+  begin
+    if not Search (Cod, Codes, True) then
+      Basic_Proc.Put_Line_Error ("ERROR: " & Image (Lat) & " " & Image (Lon)
+          & " does no generate mapcode " & Ctx & ":" & Cod);
+      Basic_Proc.Set_Error_Exit_Code;
+      raise Give_Up;
+    end if;
+  end Check_In;
 
   -- Expected precisions in meters
   Expected : constant array (Mapcodes.Precisions) of Mapcodes.Real
@@ -89,8 +115,6 @@ procedure T_Accuracy is
   Ctx, Cod : As.U.Asu_Us;
   -- Separator index
   Index : Natural;
-  -- Trace logger
-  Logger : Trace.Loggers.Logger;
 
 begin
   Logger.Init ("Accuracy");
@@ -132,14 +156,15 @@ begin
   for Precision in Mapcodes.Precisions loop
     -- Get all the mapcodes with this precision
     declare
-       -- Mapcodes for these input coordinates
-       Codes : constant Mapcodes.Mapcode_Infos
-             := Mapcodes.Encode (In_Coord, Precision => Precision);
-        -- Max and min coordinates
-        Max, Min : Mapcodes.Coordinate;
-        -- Distance
-        Dist, T : Mapcodes.Real;
-        Expect : constant Mapcodes.Real := Expected(Precision);
+      -- Mapcodes for these input coordinates
+      Codes : constant Mapcodes.Mapcode_Infos
+            := Mapcodes.Encode (In_Coord, Precision => Precision);
+      -- Max and min coordinates
+      Max, Min : Mapcodes.Coordinate;
+      -- Distance
+      Dist, T : Mapcodes.Real;
+      Expect : constant Mapcodes.Real := Expected(Precision);
+      -- Tempo coord
     begin
       Logger.Log_Debug ("Precision" & Precision'Img
                       & ", expecting " & Image (Expect));
@@ -150,23 +175,32 @@ begin
                                       Codes(C).Territory_Alpha_Code.Image);
         Logger.Log_Debug ("  Code " & Codes(C).Territory_Alpha_Code.Image
                         & ":" & Codes(C).Mapcode.Image);
-        -- Sarch max and min lat, max and min lon
-        Max.Lat := Search (Codes(C).Mapcode.Image,
+        -- Search max and min in lat, and max and min in lon
+        Max.Lat := Bounds (Codes(C).Mapcode.Image,
                            Codes(C).Territory_Alpha_Code.Image, Precision,
                            Ref_Coord,
                            Step, 0.0);
-        Min.Lat := Search (Codes(C).Mapcode.Image,
+        Min.Lat := Bounds (Codes(C).Mapcode.Image,
                            Codes(C).Territory_Alpha_Code.Image, Precision,
                            Ref_Coord,
                            -Step, 0.0);
-        Max.Lon := Search (Codes(C).Mapcode.Image,
+        Max.Lon := Bounds (Codes(C).Mapcode.Image,
                            Codes(C).Territory_Alpha_Code.Image, Precision,
                            Ref_Coord,
                            0.0, Step);
-        Min.Lon := Search (Codes(C).Mapcode.Image,
+        Min.Lon := Bounds (Codes(C).Mapcode.Image,
                            Codes(C).Territory_Alpha_Code.Image, Precision,
                            Ref_Coord,
                            0.0, -Step);
+        -- Check that corners generate the same mapcode
+        Check_In (Max.Lat, Max.Lon, Codes(C).Mapcode.Image,
+                  Codes(C).Territory_Alpha_Code.Image, Precision);
+        Check_In (Max.Lat, Min.Lon, Codes(C).Mapcode.Image,
+                  Codes(C).Territory_Alpha_Code.Image, Precision);
+        Check_In (Min.Lat, Max.Lon, Codes(C).Mapcode.Image,
+                  Codes(C).Territory_Alpha_Code.Image, Precision);
+        Check_In (Min.Lat, Min.Lon, Codes(C).Mapcode.Image,
+                  Codes(C).Territory_Alpha_Code.Image, Precision);
         -- Compute distance maxlat, maxlon, minlat, minlon
         -- Sqrt (delta_lat**2 + delta_lon**2)
         T := Max.Lat - Min.Lat;
@@ -184,6 +218,9 @@ begin
             & ":" & Codes(C).Mapcode.Image
             & " leads to incorrect precision " & Image (Dist)
             & " instead of " & Image (Expect));
+          Basic_Proc.Put_Line_Error (
+              "  Boundaries are " & Image (Min.Lat) & " " & Image (Min.Lon)
+            & " and " & Image (Max.Lat) & " " & Image (Max.Lon));
         else
           Basic_Proc.Put_Line_Output (
               "Mapcode " & Codes(C).Territory_Alpha_Code.Image
