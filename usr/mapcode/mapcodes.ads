@@ -4,7 +4,7 @@ package Mapcodes is
 
   Mapcode_C_Version : constant String := "2.0.2";
   Mapcode_Data_Version : constant String := "2.3.0";
-  Mapcode_Ada_Version  : constant String := "1.0.4/Data"
+  Mapcode_Ada_Version  : constant String := "1.0.5/Data"
                                           & Mapcode_Data_Version;
 
   -- Real type (for latitude and longitude)
@@ -75,15 +75,15 @@ package Mapcodes is
 
   -- Encode a coordinate
   -- Return an array of mapcodes, each representing the specified coordinate.
-  -- If a Territory is specified, then only mapcodes (if any) within
-  --   that territory are returned. if Earth is provided as territory then
-  --  the 9-letter "international" mapcode is returned
+  -- If a Territory alphacode is specified, then only mapcodes (if any) within
+  --   that territory are returned. If Earth is provided as territory then
+  --  only the 9-letter "international" mapcode is returned
   -- If Shortest is set, then at most one mapcode (the "default" and
   --   "shortest possible" mapcode) in any territory are returned
   -- The Precision option leads to produce mapcodes extended with high-precision
   --  letters (the parameter specifies how many letters: 0, 1, or 2
   subtype Precisions is Natural range 0 .. 2;
-  Earth : constant String := "Earth";
+  Earth : constant String := "AAA";
   function Encode (Coord : Coordinate;
                    Territory : String := "";
                    Shortest : Boolean := False;
@@ -92,10 +92,10 @@ package Mapcodes is
   ------------------------
   -- Decoding a mapcode --
   ------------------------
-  -- Decode a string (which may contain a full mapcode, including a territory)
-  -- The optional Context territory shall be set if the mapcode is ambiguous
-  --  (not "international')
-  -- Return a coordinate, or, if the mapcode is incorrect or ambiguous, raise:
+  -- Decode a string containing a mapcode
+  -- The optional Context territory alphacode shall be set if the mapcode is
+  --  ambiguous (not "international")
+  -- Return a coordinate or, if the mapcode is incorrect or ambiguous, raise:
   Decode_Error : exception;
   function Decode (Mapcode, Context : String) return Coordinate;
 

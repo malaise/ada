@@ -2440,8 +2440,7 @@ package body Mapcodes is
   begin
     return Mapcoder_Engine (
       Enc => Get_Encode_Rec (Coord.Lat, Coord.Lon),
-      Tn => (if Str_Tools.Mixed_Str (Territory) = Earth then Ccode_Earth
-             elsif Territory = "" then Error
+      Tn => (if Territory = "" then Error
              else Get_Territory_Number (Territory)),
       Get_Shortest => Shortest,
       State_Override => -1,
