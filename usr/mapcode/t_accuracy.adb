@@ -100,7 +100,7 @@ procedure T_Accuracy is
     end if;
   end Check_In;
 
-  -- Expected precisions in meters
+  -- Expected precisions in meters from center of cell to any point in cell
   Expected : constant array (Mapcodes.Precisions) of Mapcodes.Real
            := (0 => 7.49, 1 => 1.39, 2 => 0.251);
 
@@ -163,7 +163,7 @@ begin
       Max, Min : Mapcodes.Coordinate;
       -- Distance
       Dist, T : Mapcodes.Real;
-      Expect : constant Mapcodes.Real := Expected(Precision);
+      Expect : constant Mapcodes.Real := 2.0 * Expected(Precision);
       -- Tempo coord
     begin
       Logger.Log_Debug ("Precision" & Precision'Img
