@@ -161,10 +161,11 @@ begin
             := Mapcodes.Encode (In_Coord, Precision => Precision);
       -- Max and min coordinates
       Max, Min : Mapcodes.Coordinate;
-      -- Distance
-      Dist, T : Mapcodes.Real;
+      -- Distances and Tempo coord
+      Dist, Tmp, Cor : Mapcodes.Real;
+      -- Expected max result
       Expect : constant Mapcodes.Real := 2.0 * Expected(Precision);
-      -- Tempo coord
+      use type My_Math.Real;
     begin
       Logger.Log_Debug ("Precision" & Precision'Img
                       & ", expecting " & Image (Expect));
@@ -202,11 +203,14 @@ begin
         Check_In (Min.Lat, Min.Lon, Codes(C).Mapcode.Image,
                   Codes(C).Territory_Alpha_Code.Image, Precision);
         -- Compute distance maxlat, maxlon, minlat, minlon
+        -- Correct delta_lon by Cos (sum of lat / 2)
+        Tmp := Max.Lat + Min.Lat;
+        Cor := Mapcodes.Real (My_Math.Cos (My_Math.Real (Tmp) * My_Math.Pi / 360.0));
         -- Sqrt (delta_lat**2 + delta_lon**2)
-        T := Max.Lat - Min.Lat;
-        Dist := T * T;
-        T := Max.Lon - Min.Lon;
-        Dist := Dist + T * T;
+        Tmp := Max.Lat - Min.Lat;
+        Dist := Tmp * Tmp;
+        Tmp := (Max.Lon - Min.Lon) * Cor;
+        Dist := Dist + Tmp * Tmp;
         Dist := Mapcodes.Real (My_Math.Sqrt (My_Math.Real (Dist)));
         -- In meters: 1 deg = 60 Nm
         Dist := Dist * 60.0 * 1852.0;

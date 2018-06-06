@@ -16,8 +16,11 @@ b C pushr call
 c C pushr call
 d C pushr call
 
+# Correct delta_lon by cos (sum lat / 2)
+b pushr d pushr + Pi * 360.0 / cos a pushr c pushr - * 
+
 # Dist = Sqrt (delta_lat * 2 + delta_lon * 2)
-d pushr b pushr - dup * a pushr c pushr - dup * + sqrt
+dup * d pushr b pushr - dup * + sqrt
 
 # Convert to m: 1 deg = 60 Nm
 60.0 * k copyr 1852.0 *
