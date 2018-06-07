@@ -24,7 +24,6 @@ procedure T_Accuracy is
   begin
     Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
     Usage;
-    Basic_Proc.Set_Error_Exit_Code;
     raise Give_Up;
   end Error;
 
@@ -68,7 +67,7 @@ procedure T_Accuracy is
     Cur_Coord, Prev_Coord : Mapcodes.Coordinate;
   begin
     Cur_Coord := Ref;
-    loop
+    while abs Cur_Coord.Lat <= 90.0 and then abs Cur_Coord.Lon < 180.0 loop
       -- Incr Lat or Lon
       Prev_Coord := Cur_Coord;
       Cur_Coord.Lat := Cur_Coord.Lat + Incr_Lat;
@@ -93,10 +92,9 @@ procedure T_Accuracy is
           := Mapcodes.Encode ( (Lat, Lon), Ctx, False, Precision);
   begin
     if not Search (Cod, Codes, True) then
-      Basic_Proc.Put_Line_Error ("ERROR: " & Image (Lat) & " " & Image (Lon)
+      Basic_Proc.Put_Line_Error ("WARNING: " & Image (Lat) & " " & Image (Lon)
           & " does no generate mapcode " & Ctx & ":" & Cod);
-      Basic_Proc.Set_Error_Exit_Code;
-      raise Give_Up;
+      Basic_Proc.Set_Exit_COde (2);
     end if;
   end Check_In;
 
@@ -175,7 +173,9 @@ begin
         Ref_Coord := Mapcodes.Decode (Codes(C).Mapcode.Image,
                                       Codes(C).Territory_Alpha_Code.Image);
         Logger.Log_Debug ("  Code " & Codes(C).Territory_Alpha_Code.Image
-                        & ":" & Codes(C).Mapcode.Image);
+                        & ":" & Codes(C).Mapcode.Image 
+                        & " -> " & Image (Ref_Coord.Lat)
+                        & " " & Image (Ref_Coord.Lon));
         -- Search max and min in lat, and max and min in lon
         Max.Lat := Bounds (Codes(C).Mapcode.Image,
                            Codes(C).Territory_Alpha_Code.Image, Precision,
@@ -236,6 +236,6 @@ begin
   end loop;
 exception
   when Give_Up =>
-    null;
+    Basic_Proc.Set_Error_Exit_Code;
 end T_Accuracy;
 
