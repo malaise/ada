@@ -8,11 +8,14 @@ procedure T_Accuracy is
   -- Trace logger
   Logger : Trace.Loggers.Logger;
 
+  -- Emit warnings
+  Warning : Boolean := False;
+
   -- Usage
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-        & " [ <mapcode> | <lat_lon> ]");
+        & " [ -w ] [ <mapcode> | <lat_lon> ]");
     Basic_Proc.Put_Line_Error ("  <mapcode> ::= [ <context>:]<code>");
     Basic_Proc.Put_Line_Error ("  <lat_lon> ::= <latitude> <longitude>");
     Basic_Proc.Put_Line_Error ("Default: random lat_lon");
@@ -92,9 +95,12 @@ procedure T_Accuracy is
           := Mapcodes.Encode ( (Lat, Lon), Ctx, False, Precision);
   begin
     if not Search (Cod, Codes, True) then
-      Basic_Proc.Put_Line_Error ("WARNING: " & Image (Lat) & " " & Image (Lon)
+      if Warning then
+        Basic_Proc.Put_Line_Error ("WARNING: " & Image (Lat)
+          & " " & Image (Lon)
           & " does no generate mapcode " & Ctx & ":" & Cod);
-      Basic_Proc.Set_Exit_COde (2);
+      end if;
+      Basic_Proc.Set_Exit_Code (2);
     end if;
   end Check_In;
 
@@ -114,10 +120,21 @@ procedure T_Accuracy is
   -- Separator index
   Index : Natural;
 
+  Narg, Sarg : Natural;
+
 begin
   Logger.Init ("Accuracy");
 
-  case Argument.Get_Nbre_Arg is
+  -- Optional Warning flag
+  Narg := Argument.Get_Nbre_Arg;
+  Sarg := 1;
+  if Narg > 0 and then Argument.Get_Parameter (Sarg) = "-w" then
+    Warning := True;
+    Narg := Narg - 1;
+    Sarg := Sarg + 1;
+  end if;
+
+  case Narg is
     when 0 =>
       -- If no arg then random lat, lon
       Gen.Randomize;
@@ -125,7 +142,7 @@ begin
       In_Coord.Lon := Mapcodes.Real (Gen.Float_Random (-180.0, 180.0));
     when 1 =>
       -- If one argument then a [<ctx>:]<mapcode>, get its lat, lon
-      Argument.Get_Parameter (Cod);
+      Argument.Get_Parameter (Cod, Occurence => Sarg);
       Index := Str_Util.Locate (Cod.Image, ":");
       if Index /= 0 then
         Ctx := Cod.Uslice (1, Index - 1);
@@ -135,8 +152,8 @@ begin
     when 2 =>
       -- If two args then get lat, lon
       begin
-        In_Coord.Lat := Get_Arg (1);
-        In_Coord.Lon := Get_Arg (2);
+        In_Coord.Lat := Get_Arg (Sarg);
+        In_Coord.Lon := Get_Arg (Sarg + 1);
       exception
         when others =>
           Error ("Invalid arguments");
@@ -173,7 +190,7 @@ begin
         Ref_Coord := Mapcodes.Decode (Codes(C).Mapcode.Image,
                                       Codes(C).Territory_Alpha_Code.Image);
         Logger.Log_Debug ("  Code " & Codes(C).Territory_Alpha_Code.Image
-                        & ":" & Codes(C).Mapcode.Image 
+                        & ":" & Codes(C).Mapcode.Image
                         & " -> " & Image (Ref_Coord.Lat)
                         & " " & Image (Ref_Coord.Lon));
         -- Search max and min in lat, and max and min in lon

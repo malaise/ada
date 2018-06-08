@@ -1,15 +1,22 @@
 #!/bin/bash
 
+WARN=""
+if [ "$1" = "-w" ] ; then
+  WARN=$1
+fi
+
 echo Encode
 while read -r lat lon || [[ -n "$lat" ]]; do
   if [ \( -z "$lat" \) -o \( "$lat" = "#" \) ] ; then
     continue
   fi
-  t_accuracy $lat $lon >/dev/null
+  t_accuracy $WARN $lat $lon >/dev/null
   res=$?
   if [ $res -ne 0 ] ; then
     if [ $res -eq 1 ] ; then
       exit 1
+    else
+      echo "Occured with " $lat " " $lon 1>&2
     fi
   fi
 done < EncodeOk.txt
@@ -20,11 +27,13 @@ while read -r ctx cod lat lon loc glob || [[ -n "$ctx" ]]; do
   if [ \( -z "$ctx" \) -o \( "$ctx" = "#" \) ] ; then
     continue
   fi
-  t_accuracy $ctx:$cod >/dev/null
+  t_accuracy $WARN $ctx:$cod >/dev/null
   res=$?
   if [ $res -ne 0 ] ; then
     if [ $res -eq 1 ] ; then
       exit 1
+    else
+      echo "Occurred with " $ctx:$cod 1>&2
     fi
   fi
 
