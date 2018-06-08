@@ -4,7 +4,7 @@ package Mapcodes is
 
   Mapcode_C_Version : constant String := "2.0.2";
   Mapcode_Data_Version : constant String := "2.3.0";
-  Mapcode_Ada_Version  : constant String := "1.0.5/Data"
+  Mapcode_Ada_Version  : constant String := "1.0.6/Data"
                                           & Mapcode_Data_Version;
 
   -- Real type (for latitude and longitude)
@@ -88,6 +88,11 @@ package Mapcodes is
                    Territory : String := "";
                    Shortest : Boolean := False;
                    Precision : Precisions := 0) return Mapcode_Infos;
+
+  -- Returns the index of the "local" mapcode within a Mapcode_Infos
+  -- The "local" mapcode is the shortest of the list
+  -- Returns 0 only if then Mapcode_Infos is empty
+  function Local_Id (Codes : Mapcode_Infos) return Natural;
 
   ------------------------
   -- Decoding a mapcode --

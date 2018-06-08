@@ -2447,6 +2447,20 @@ package body Mapcodes is
       Extra_Digits => Precision);
   end Encode;
 
+  function Local_Id (Codes : Mapcode_Infos) return Natural is
+    Len : Positive := Natural'Last;
+    Res : Natural := 0;
+  begin
+     -- Look for shortest mapcode and store its index
+    for I in Codes'Range loop
+      if Codes(I).Mapcode.Length < Len then
+        Len := Codes(I).Mapcode.Length;
+        Res := I;
+      end if;
+    end loop;
+    return Res;
+  end Local_Id;
+
   function Decode (Mapcode, Context : String) return Coordinate is
     Contextterritorynumber : Integer;
     Space1, Space2 : Natural;

@@ -307,16 +307,16 @@ function decode {
     error "t_mapcode -d $1 $2 => $result instead of $3 $4"
   fi
   # Count number of all local codes
-  res=`t_mapcode -c $3 $4 $1 False`
+  res=`t_mapcode -c $3 $4 $1 all`
   let nloc=0+`count $res`
   if [ $nloc -ne $5 ] ; then
-    error "t_mapcode -c $3 $4 $1 False => $nloc results instead of $5"
+    error "t_mapcode -c $3 $4 $1 all => $nloc results instead of $5"
   fi
   # Count number of all global codes
-  res=`t_mapcode -c $3 $4 False`
+  res=`t_mapcode -c $3 $4 all`
   let nloc=0+`count $res`
   if [ $nloc -ne $6 ] ; then
-    error "t_mapcode -c $3 $4 False => $nloc results instead of $6"
+    error "t_mapcode -c $3 $4 all => $nloc results instead of $6"
     exit 1
   fi
   # Check decoded lat lon versus provided
