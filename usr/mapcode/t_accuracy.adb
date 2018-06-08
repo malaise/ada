@@ -99,8 +99,8 @@ procedure T_Accuracy is
         Basic_Proc.Put_Line_Error ("WARNING: " & Image (Lat)
           & " " & Image (Lon)
           & " does no generate mapcode " & Ctx & ":" & Cod);
+        Basic_Proc.Set_Exit_Code (2);
       end if;
-      Basic_Proc.Set_Exit_Code (2);
     end if;
   end Check_In;
 
