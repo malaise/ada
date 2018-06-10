@@ -165,14 +165,14 @@ begin
             & " " & Quote (Code.Full_Mapcode.Image)
             & " " & Integer_Image (Code.Territory_Number));
         end Put_Code;
+        -- Sort if Local
         Codes : constant Mapcodes.Mapcode_Infos
-              := Encode (Coord, Territory.Image, Shortest, Precision);
-        J : Natural;
+              := Encode (Coord, Territory.Image, Shortest, Precision, Local);
       begin
         if Local then
-          J := Mapcodes.Local_Id (Codes);
-          if J /= 0 then
-            Put_Code (Codes(J));
+          -- First mapcodes are the shortest and others of same territory
+          if Codes'Length /= 0 then
+            Put_Code (Codes(Codes'First));
           end if;
         else
           for Code of Codes loop
