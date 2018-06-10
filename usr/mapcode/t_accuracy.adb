@@ -179,7 +179,7 @@ begin
       -- Distances and Tempo coord
       Dist, Tmp, Cor : Mapcodes.Real;
       -- Expected max result
-      Expect : constant Mapcodes.Real := 2.0 * Expected(Precision);
+      Expect : constant Mapcodes.Real := 2.2 * Expected(Precision);
       use type My_Math.Real;
     begin
       Logger.Log_Debug ("Precision" & Precision'Img
