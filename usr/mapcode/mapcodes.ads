@@ -82,10 +82,16 @@ package Mapcodes is
   --   "shortest possible" mapcode) in any territory are returned
   -- The Precision option leads to produce mapcodes extended with high-precision
   --  letters (the parameter specifies how many letters: 0, 1, or 2
-  -- If Sort is set, then The returned array will contain first the shortest
-  --  mapcode, then possibly the other mapcodes for the same territory,
-  --  then possibly mapcodes for other territories, then possibly the
-  --  international (Earth) mapcode
+  -- The resulting array is always organized by territories: all the mapcodes
+  --  of a territory follow each other and in order of increasing length.
+  --  If Sort is set, then the returned array contains first the shortest
+  --   mapcode, then possibly the other mapcodes for the same territory,
+  --   then possibly mapcodes for other territories, then possibly the
+  --   international (Earth) mapcode
+  --  Otherwise the territories appear in the crescent order of Territory_Range
+  --   (see package Ctrynams)
+  --  As a consequence, if it appears the international mapcode is always the
+  --   last
   subtype Precisions is Natural range 0 .. 2;
   Earth : constant String := "AAA";
   function Encode (Coord : Coordinate;
