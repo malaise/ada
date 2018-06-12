@@ -12,7 +12,7 @@ package String_Util is
   -- Convert Lat_Lon_Geo_Rec to Geo_Str
   function Geo2Str (Geo : Lat_Lon.Lat_Lon_Geo_Rec) return Geo_Str;
 
-  -- Geo_Angle is ddd.mm.dd
+  -- Geo_Angle is ddd.mm.ss
   subtype Geo_Angle_Str is  String(1..9);
   function Geoangle2Str (Geo_Angle : Conv.Geo_Coord_Rec) return Geo_Angle_Str;
 

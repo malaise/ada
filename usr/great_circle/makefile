@@ -6,9 +6,10 @@ ADACTL := true
 AFPX := true
 AFPX_XREF := afpx_xref
 
-EXES := gc
+EXES := gc hp_gc
 
-CLIBS := $(PCRE_SLIBS) $(X11_SLIBS)
+CLIBS := $(UTILS_SLIBS)
+CLIBS_gc := $(PCRE_SLIBS) $(X11_SLIBS)
 
 include $(TEMPLATES)/ada.mk
 

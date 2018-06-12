@@ -30,14 +30,14 @@ package body String_Util is
     Geo.Lat.Coord.Deg := Conv.Deg_Range'Value(Str(2 .. 3));
     Geo.Lat.Coord.Min := Conv.Min_Range'Value(Str(5 .. 6));
     Geo.Lat.Coord.Sec := Conv.Sec_Range'Value(Str(8 .. 9));
-    Geo.Lat.Coord.Hun := 0;
+    Geo.Lat.Coord.Ten := 0;
     -- Lon
     Geo.Lon.Coord.Deg := Conv.Deg_Range'Value(Str(12 .. 14));
     Geo.Lon.Coord.Min := Conv.Min_Range'Value(Str(16 .. 17));
     Geo.Lon.Coord.Sec := Conv.Sec_Range'Value(Str(19 .. 20));
-    Geo.Lon.Coord.Hun := 0;
+    Geo.Lon.Coord.Ten := 0;
 
-    -- Chek the whole thing
+    -- Check the whole thing
     if not Lat_Lon.Is_Lat_Lon_Ok(Geo) then
       raise Format_Error;
     end if;
@@ -56,7 +56,7 @@ package body String_Util is
     Sec := C.Sec;
     Min := C.Min;
     Deg := C.Deg;
-    if C.Hun >= (Conv.Hun_Range'Last + 1) / 2 then
+    if C.Ten >= (Conv.Ten_Range'Last + 1) / 2 then
       Sec := Sec + 1;
       if Sec > Conv.Sec_Range'Last then
         Sec := Conv.Sec_Range'First;
@@ -138,10 +138,10 @@ package body String_Util is
 
     -- Lat
     Dec.Lat.Coord.Deg := Conv.Deg_Range'Value(Str(2 .. 3));
-    Dec.Lat.Coord.Ten := Conv.Ten_Range'Value(Str(5 .. 8));
+    Dec.Lat.Coord.Nan := Conv.Ten_Range'Value(Str(5 .. 8)) * 100000;
     -- Lon
     Dec.Lon.Coord.Deg := Conv.Deg_Range'Value(Str(11 .. 13));
-    Dec.Lon.Coord.Ten := Conv.Ten_Range'Value(Str(15 .. 18));
+    Dec.Lon.Coord.Nan := Conv.Ten_Range'Value(Str(15 .. 18)) * 100000;
 
     -- Chek the whole thing
     if not Lat_Lon.Is_Lat_Lon_Ok(Dec) then
@@ -177,9 +177,9 @@ package body String_Util is
 
     -- Put the numbers
     Str( 2 ..  3) := Normal (Dec.Lat.Coord.Deg, 2, Gap => '0');
-    Str( 5 ..  8) := Normal (Dec.Lat.Coord.Ten, 4, Gap => '0');
+    Str( 5 ..  8) := Normal (Dec.Lat.Coord.Nan / 100000, 4, Gap => '0');
     Str(11 .. 13) := Normal (Dec.Lon.Coord.Deg, 3, Gap => '0');
-    Str(14 .. 17) := Normal (Dec.Lon.Coord.Ten, 4, Gap => '0');
+    Str(14 .. 17) := Normal (Dec.Lon.Coord.Nan / 100000, 4, Gap => '0');
 
     -- Done
     return Str;
@@ -209,11 +209,26 @@ package body String_Util is
 
   function Decangle2Str (Dec_Angle : Conv.Dec_Coord_Rec) return Dec_Angle_Str is
     Str : Dec_Angle_Str;
+    I, J : Natural;
+    R : My_Math.Real;
+    use type My_Math.Real;
   begin
+    I := Dec_Angle.Deg;
+    R := My_Math.Real (Dec_Angle.Nan) / 100000.0;
+    J := Natural (My_Math.Round (R));
+    -- Carry
+    if J = 10000 then
+      J := 0;
+      if I = Conv.Deg_Range'Last then
+        I := Conv.Deg_Range'First;
+      else
+        I := I + 1;
+      end if;
+    end if;
     -- Set .
     Str(4) := '.';
-    Str(1 ..  3) := Normal (Dec_Angle.Deg, 3, Gap => '0');
-    Str(5 ..  8) := Normal (Dec_Angle.Ten, 4, Gap => '0');
+    Str(1 ..  3) := Normal (I, 3, Gap => '0');
+    Str(5 ..  8) := Normal (J, 4, Gap => '0');
     return Str;
   end Decangle2Str;
 

@@ -15,7 +15,7 @@ package body Lat_Lon is
     if Lat_Lon_Geo.Lat.Coord.Deg = Max_Lat
     and then (Lat_Lon_Geo.Lat.Coord.Min /= 0
       or else Lat_Lon_Geo.Lat.Coord.Sec /= 0
-      or else Lat_Lon_Geo.Lat.Coord.Hun /= 0) then
+      or else Lat_Lon_Geo.Lat.Coord.Ten /= 0) then
       return False;
     end if;
 
@@ -26,7 +26,7 @@ package body Lat_Lon is
     if Lat_Lon_Geo.Lon.Coord.Deg = Max_Lon
     and then (Lat_Lon_Geo.Lon.Coord.Min /= 0
       or else Lat_Lon_Geo.Lon.Coord.Sec /= 0
-      or else Lat_Lon_Geo.Lon.Coord.Hun /= 0) then
+      or else Lat_Lon_Geo.Lon.Coord.Ten /= 0) then
       return False;
     end if;
     return True;
@@ -88,7 +88,7 @@ package body Lat_Lon is
       return False;
     end if;
     if Lat_Lon_Dec.Lat.Coord.Deg = Max_Lat
-    and then Lat_Lon_Dec.Lat.Coord.Ten /= 0 then
+    and then Lat_Lon_Dec.Lat.Coord.Nan /= 0 then
       return False;
     end if;
 
@@ -97,7 +97,7 @@ package body Lat_Lon is
       return False;
     end if;
     if Lat_Lon_Dec.Lon.Coord.Deg = Max_Lon
-    and then Lat_Lon_Dec.Lon.Coord.Ten /= 0 then
+    and then Lat_Lon_Dec.Lon.Coord.Nan /= 0 then
       return False;
     end if;
     return True;
