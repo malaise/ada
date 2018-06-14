@@ -94,6 +94,49 @@ package body Conv is
     return Dec;
   end Geo2Dec;
 
+  -- Conversion Dec <-> Rad
+  function Rad2Dec (Coord : Rad_Coord_Range) return Dec_Coord_Rec is
+    Deg : Complexes.Degree;
+    R : My_Math.Real;
+    I : My_Math.Inte;
+    Dec : Dec_Coord_Rec;
+  begin
+    Deg := Complexes.To_Degree (Coord);
+    R := My_Math.Round_At (My_Math.Real (Deg), -9);
+    Dec.Deg := Deg_Range (My_Math.Trunc (R));
+
+    I := My_Math.Round (My_Math.Frac(R) * My_Math.Real (Nan_Range'Last + 1));
+    if I > My_Math.Inte(Nan_Range'Last) then
+      if Dec.Deg = Deg_Range'Last then
+        Dec.Deg := Deg_Range'First;
+      else
+        Dec.Deg := Dec.Deg + 1;
+      end if;
+      Dec.Nan := 0;
+    else
+      Dec.Nan := Nan_Range(I);
+    end if;
+    return Dec;
+  end Rad2Dec;
+
+  function Dec2Rad (Coord : Dec_Coord_Rec) return Rad_Coord_Range is
+    R : My_Math.Real;
+  begin
+    R := My_Math.Real (Coord.Deg)
+       + My_Math.Real (Coord.Nan) / My_Math.Real (Nan_Range'Last + 1);
+    return Complexes.To_Radian (Complexes.Degree (R));
+  end Dec2Rad;
+
+  function Real2Rad (R : My_Math.Real) return Rad_Coord_Range is
+  begin
+    return Complexes.To_Radian (Complexes.Degree (R));
+  end Real2Rad;
+
+  function Rad2Real (Coord : Rad_Coord_Range) return My_Math.Real is
+  begin
+    return My_Math.Real (Complexes.To_Degree (Coord));
+  end Rad2Real;
+
   function Real2Geo (R : My_Math.Real) return Geo_Coord_Rec is
     Deg : Complexes.Degree;
     Rad : Complexes.Reducted_Radian;

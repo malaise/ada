@@ -17,7 +17,7 @@ procedure Gc is
 
   Use_Afpx : Boolean;
 
-  A, B : Lat_Lon.Lat_Lon_Geo_Rec;
+  A, B : Lat_Lon.Lat_Lon_Rad_Rec;
   Heading  : Conv.Geo_Coord_Rec;
   Distance : Lat_Lon.Distance;
 
@@ -158,7 +158,7 @@ procedure Gc is
   end Next_Field_Cb;
 
   procedure Decode_Point (First_Fld, Last_Fld : in Afpx.Field_Range;
-                          Point : out Lat_Lon.Lat_Lon_Geo_Rec;
+                          Point : out Lat_Lon.Lat_Lon_Rad_Rec;
                           Ok : out Boolean;
                           Cursor : in out Afpx.Field_Range) is
     -- Two '"' added and two 'o' instead of '.' in Afpx screen
@@ -176,16 +176,16 @@ procedure Gc is
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, "'", "."));
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, """", ""));
       Great_Circle.Logger.Log_Debug ("Parsed point: " & Point_Txt.Image);
-      Point := String_Util.Str2Geo(Point_Txt.Image);
+      Point := Lat_Lon.Geo2Rad (String_Util.Str2Geo(Point_Txt.Image));
     else -- Deci_Mode
       -- Replace Ndd.ij klo/Eddd.ij klo by Ndd.ijkl/Eddd.ijkl
       -- "o" has already been replaced by " " in Afpx.Decode_Field
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, Deg, ""));
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, " ", ""));
       Great_Circle.Logger.Log_Debug ("Parsed point: " & Point_Txt.Image);
-      Point := Lat_Lon.Dec2Geo (String_Util.Str2Dec(Point_Txt.Image));
+      Point := Lat_Lon.Dec2Rad (String_Util.Str2Dec(Point_Txt.Image));
     end if;
-    Great_Circle.Logger.Log_Debug ("Got point OK: " & Point_Txt.Image);
+    Great_Circle.Logger.Log_Debug ("Got point OK");
     Ok := True;
   exception
     when others =>
@@ -195,7 +195,7 @@ procedure Gc is
   end Decode_Point;
 
   procedure Decode_Mapcode (First_Fld, Last_Fld : in Afpx.Field_Range;
-                            Point : out Lat_Lon.Lat_Lon_Geo_Rec;
+                            Point : out Lat_Lon.Lat_Lon_Rad_Rec;
                             Ok : out Boolean;
                             Cursor : in out Afpx.Field_Range) is
     -- 6 for context, ":" and 12 for mapcode
@@ -208,7 +208,7 @@ procedure Gc is
     end loop;
     Great_Circle.Logger.Log_Debug ("Parsed mapcode: " & Mapcode_Txt.Image);
     Point := Mapcode2Geo (Mapcode_Txt.Image);
-    Great_Circle.Logger.Log_Debug ("Got point OK: " & Mapcode_Txt.Image);
+    Great_Circle.Logger.Log_Debug ("Got point OK");
     Ok := True;
   exception
     when others =>
@@ -276,16 +276,18 @@ begin
     begin
       -- Parse arguments
       if Mode = Sexa_Mode then
-        A := String_Util.Str2Geo(Argument.Get_Parameter(1));
-        B := String_Util.Str2Geo(Argument.Get_Parameter(2));
+        A := Lat_Lon.Geo2Rad (String_Util.Str2Geo(Argument.Get_Parameter(1)));
+        B := Lat_Lon.Geo2Rad (String_Util.Str2Geo(Argument.Get_Parameter(2)));
       elsif Mode = Deci_Mode then
-        A := Lat_Lon.Dec2Geo (String_Util.Str2Dec(Argument.Get_Parameter(1)));
-        B := Lat_Lon.Dec2Geo (String_Util.Str2Dec(Argument.Get_Parameter(2)));
+        A := Lat_Lon.Dec2Rad (String_Util.Str2Dec(Argument.Get_Parameter(1)));
+        B := Lat_Lon.Dec2Rad (String_Util.Str2Dec(Argument.Get_Parameter(2)));
       else
         -- Coordinates of mapcodes
         A := Mapcode2Geo (Argument.Get_Parameter(1));
         B := Mapcode2Geo (Argument.Get_Parameter(2));
       end if;
+      Great_Circle.Logger.Log_Debug ("Got point A:" & A.X'Img & A.Y'Img);
+      Great_Circle.Logger.Log_Debug ("Got point B:" & B.X'Img & B.Y'Img);
       -- Compute
       Great_Circle.Compute_Route(A, B, Heading, Distance);
       -- Put result
@@ -351,6 +353,8 @@ begin
           end if;
         end if;
         -- Compute
+        Great_Circle.Logger.Log_Debug ("Got point A:" & A.X'Img & A.Y'Img);
+        Great_Circle.Logger.Log_Debug ("Got point B:" & B.X'Img & B.Y'Img);
         if Decode_Ok then
           Great_Circle.Compute_Route(A => A, B => B,
                                      Heading => Heading,

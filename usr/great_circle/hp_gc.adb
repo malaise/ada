@@ -2,7 +2,7 @@ with Basic_Proc, Argument, Gets, My_Math, Normalization;
 with Conv, Lat_Lon, Great_Circle;
 procedure Hp_Gc is
   Lat1, Lon1, Lat2, Lon2 : My_Math.Real;
-  A, B : Lat_Lon.Lat_Lon_Geo_Rec;
+  A, B : Lat_Lon.Lat_Lon_Rad_Rec;
   H : Conv.Geo_Coord_Rec;
   D : Lat_Lon.Distance;
   R : My_Math.Real;
@@ -10,7 +10,7 @@ procedure Hp_Gc is
   Frac_Len : constant := 9;
   use type My_Math.Real;
 
-  function Set_Lalo (Lat, Lon : My_Math.Real) return Lat_Lon.Lat_Lon_Geo_Rec is
+  function Set_Lalo (Lat, Lon : My_Math.Real) return Lat_Lon.Lat_Lon_Rad_Rec is
     Llat, Llon : My_Math.Real;
   begin
     -- Normalize
@@ -21,11 +21,10 @@ procedure Hp_Gc is
     while Llon >  180.0 loop Llon := Llon - 180.0; end loop;
     while Llon < -180.0 loop Llon := Llon + 180.0; end loop;
     -- Set Lalo
-    return Lalo : Lat_Lon.Lat_Lon_Geo_Rec do
-      Lalo.Lat.North := Llat >= 0.0;
-      Lalo.Lat.Coord := Conv.Real2Geo (abs Llat);
-      Lalo.Lon.East := Lon >= 0.0;
-      Lalo.Lon.Coord := Conv.Real2Geo (abs Llon);
+    return Lalo : Lat_Lon.Lat_Lon_Rad_Rec do
+      Lalo.X := Conv.Real2Rad (Llon);
+      Lalo.Y := Conv.Real2Rad (Llat);
+      Great_Circle.Logger.Log_Debug ("Got point OK:" & Lalo.X'Img & Lalo.Y'Img);
     end return;
   end Set_Lalo;
 

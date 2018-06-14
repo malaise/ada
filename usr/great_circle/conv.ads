@@ -26,9 +26,9 @@ package Conv is
 
   -- Radians
   subtype Rad_Range is Complexes.Radian;
-  Pi : constant Rad_Range := Rad_Range(My_Math.Pi);
 
   subtype Rad_Coord_Range is Complexes.Reducted_Radian;
+  Pi : constant Rad_Coord_Range := Rad_Coord_Range(My_Math.Pi);
 
 
   -- Conversion DMS <-> Rad
@@ -41,6 +41,19 @@ package Conv is
   function Dec2Geo (Coord : Dec_Coord_Rec) return Geo_Coord_Rec;
 
   function Geo2Dec (Coord : Geo_Coord_Rec) return Dec_Coord_Rec;
+
+
+  -- Conversion Dec <-> Rad
+  function Dec2Rad (Coord : Dec_Coord_Rec) return Rad_Coord_Range;
+
+  function Rad2Dec (Coord : Rad_Coord_Range) return Dec_Coord_Rec;
+
+
+  -- Conversion real (-180 .. 180) <-> Rad
+  function Real2Rad (R : My_Math.Real) return Rad_Coord_Range;
+
+  function Rad2Real (Coord : Rad_Coord_Range) return My_Math.Real;
+
 
   -- Conversion real (-180 .. 180) <-> DMS
   function Real2Geo (R : My_Math.Real) return Geo_Coord_Rec;

@@ -1,2 +1,33 @@
 #!/bin/bash
+
+function error {
+  echo "ERROR: " $1 "." 1>&2
+  exit 1
+}
+
+# Play gc scenario
 ./player Scenario
+ret=$?
+if [ $ret -ne 0 ] ; then
+  exit 1
+fi
+
+# Some hp_gc tests
+echo "hp_gc"
+function t_hp_gc {
+  res="`hp_gc $1 $2 $3 $4`"
+  ret=$?
+  if [ $ret -ne 0 ] ; then
+    error "hp_gc has exited with code $ret"
+  fi
+  if [ "$res" != "$5" ] ; then
+    error "hp_gc has returned $res instead of $5"
+  fi
+}
+
+t_hp_gc 43.5318 001.2354 -32.6532 -070.0108 \
+  "H:  234.076574000, D: 6010Nm 11131km."
+t_hp_gc 40.786251000 -73.961418000 -37.827455000 145.045353500 \
+  "H:  262.731751000, D: 9001Nm 16671km."
+
+echo "OK;"

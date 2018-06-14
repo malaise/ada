@@ -115,5 +115,52 @@ package body Lat_Lon is
        Lon => (East  => Coord.Lon.East,
                Coord => Conv.Geo2Dec (Coord.Lon.Coord))) );
 
+  function Rad2Dec (Coord : Lat_Lon_Rad_Rec) return Lat_Lon_Dec_Rec is
+    Lat_Lon_Dec : Lat_Lon_Dec_Rec;
+    use type Complexes.Radian;
+  begin
+    if Coord.X < 0.0 then
+      -- West longitude
+      Lat_Lon_Dec.Lon.East := False;
+      Lat_Lon_Dec.Lon.Coord := Conv.Rad2Dec(-Coord.X);
+    else
+      -- East longitude
+      Lat_Lon_Dec.Lon.East := True;
+      Lat_Lon_Dec.Lon.Coord := Conv.Rad2Dec(Coord.X);
+    end if;
+
+    if Coord.Y < 0.0 then
+      -- South latitude
+      Lat_Lon_Dec.Lat.North := False;
+      Lat_Lon_Dec.Lat.Coord := Conv.Rad2Dec(-Coord.Y);
+    else
+      -- North latitude
+      Lat_Lon_Dec.Lat.North := True;
+      Lat_Lon_Dec.Lat.Coord := Conv.Rad2Dec(Coord.Y);
+    end if;
+    return Lat_Lon_Dec;
+  end Rad2Dec;
+
+  function Dec2Rad (Coord : Lat_Lon_Dec_Rec) return Lat_Lon_Rad_Rec is
+    Lat_Lon_Rad : Lat_Lon_Rad_Rec;
+    use type Complexes.Radian;
+  begin
+    if Coord.Lon.East then
+      -- East longitude
+      Lat_Lon_Rad.X := Complexes.Reduct(Conv.Dec2Rad(Coord.Lon.Coord));
+    else
+      -- West longitude
+      Lat_Lon_Rad.X := Complexes.Reduct(-Conv.Dec2Rad(Coord.Lon.Coord));
+    end if;
+    if Coord.Lat.North then
+      -- North latitude
+      Lat_Lon_Rad.Y := Complexes.Reduct(Conv.Dec2Rad(Coord.Lat.Coord));
+    else
+      -- South latitude
+      Lat_Lon_Rad.Y := Complexes.Reduct(-Conv.Dec2Rad(Coord.Lat.Coord));
+    end if;
+    return Lat_Lon_Rad;
+  end Dec2Rad;
+
 end Lat_Lon;
 
