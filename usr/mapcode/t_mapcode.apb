@@ -18,6 +18,8 @@ procedure T_Mapcode is
     Ada.Text_Io.Put_Line (
       "  -d [ <territory> ] <mapcode>    // Decode");
     Ada.Text_Io.Put_Line (
+      "  -d  <territory>:<mapcode>       // Decode");
+    Ada.Text_Io.Put_Line (
       "  -c <lat> <lon> [ <options> ]    // Encode");
     Ada.Text_Io.Put_Line (
       "  <options>   ::= [ <territory> ] [ <selection> ] [ <precision> ]");
@@ -195,6 +197,13 @@ begin
         end if;
       end if;
       Ada.Text_Io.Put_Line (Arg1.Image & " " & Arg2.Image);
+      -- Split <territory>:<mapcode>
+      if Arg2.Is_Null and then Arg1.Locate (":") /= 0 then
+        I := Arg1.Locate (":");
+        Arg2 :=  Arg1.Head (I - 1);
+        Arg1.Delete (1, I);
+      end if;
+      -- Decode
       Coord := Decode (Arg1.Image, Arg2.Image);
       Ada.Text_Io.Put_Line ("=> " & Image (Coord.Lat)
                           & " " & Image (Coord.Lon));
