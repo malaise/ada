@@ -1,5 +1,5 @@
 with Basic_Proc, Argument, Gets, My_Math, Normalization;
-with Conv, Lat_Lon, Great_Circle;
+with Conv, Lat_Lon, Great_Circle, Mapcode2Rad;
 procedure Hp_Gc is
   Lat1, Lon1, Lat2, Lon2 : My_Math.Real;
   A, B : Lat_Lon.Lat_Lon_Rad_Rec;
@@ -30,27 +30,39 @@ procedure Hp_Gc is
 
 begin
   -- Get arguments
-  if Argument.Get_Nbre_Arg /= 4 then
+  if Argument.Get_Nbre_Arg = 2 then
+    -- 2 mapcodes
+    begin
+      A := Mapcode2Rad (Argument.Get_Parameter (Occurence => 1));
+      B := Mapcode2Rad (Argument.Get_Parameter (Occurence => 2));
+    exception
+      when others =>
+        Basic_Proc.Put_Line_Error ("ERROR. Invalid argument");
+        Basic_Proc.Set_Error_Exit_Code;
+        return;
+    end;
+  elsif Argument.Get_Nbre_Arg = 4 then
+    -- 4 arguments: 2 lat lon
+    begin
+      Lat1 := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => 1));
+      Lon1 := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => 2));
+      Lat2 := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => 3));
+      Lon2 := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => 4));
+    exception
+      when others =>
+        Basic_Proc.Put_Line_Error ("ERROR. Invalid argument");
+        Basic_Proc.Set_Error_Exit_Code;
+        return;
+    end;
+    A := Set_Lalo (Lat1, Lon1);
+    B := Set_Lalo (Lat2, Lon2);
+  else
     Basic_Proc.Put_Line_Error ("ERROR. Usage: "
          & Argument.Get_Program_Name
          & " <lat1> <lon1> <lat2> <lon2>");
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
-  begin
-    Lat1 := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => 1));
-    Lon1 := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => 2));
-    Lat2 := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => 3));
-    Lon2 := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => 4));
-  exception
-    when others =>
-      Basic_Proc.Put_Line_Error ("ERROR. Invalid argument");
-      Basic_Proc.Set_Error_Exit_Code;
-      return;
-  end;
-
-  A := Set_Lalo (Lat1, Lon1);
-  B := Set_Lalo (Lat2, Lon2);
 
   -- Great circle
   Great_Circle.Compute_Route (A, B, H, D);

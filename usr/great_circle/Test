@@ -15,13 +15,21 @@ fi
 # Some hp_gc tests
 echo "hp_gc"
 function t_hp_gc {
-  res="`hp_gc $1 $2 $3 $4`"
+  if [ $# -eq 3 ] ; then
+    res="`hp_gc $1 $2`"
+    exp="$3"
+  elif [ $# -eq 5 ] ; then
+    res="`hp_gc $1 $2 $3 $4`"
+    exp="$5"
+  else
+    error "Invalid arguments"
+  fi
   ret=$?
   if [ $ret -ne 0 ] ; then
     error "hp_gc has exited with code $ret"
   fi
-  if [ "$res" != "$5" ] ; then
-    error "hp_gc has returned $res instead of $5"
+  if [ "$res" != "$exp" ] ; then
+    error "hp_gc has returned $res instead of $exp"
   fi
 }
 
@@ -29,5 +37,8 @@ t_hp_gc 43.5318 001.2354 -32.6532 -070.0108 \
   "H:  234.076574000, D: 6010Nm 11131km."
 t_hp_gc 40.786251000 -73.961418000 -37.827455000 145.045353500 \
   "H:  262.731751000, D: 9001Nm 16671km."
-
+t_hp_gc FRA:FTGC.R3T 79GMS.VQDX  "H:  234.076599000, D: 6010Nm 11131km."
+t_hp_gc S93HM.RVB8 AU-VIC:KJ.HX5 "H:  262.731751000, D: 9001Nm 16671km."
+t_hp_gc FRA:FTGC.R3T-K3 FRA:FTGC.R3T-K4 \
+  "H:   89.999999000, D: 0Nm 0km 0m 247mm."
 echo "OK;"
