@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1;
 with As.B, Argument, Basic_Proc, Con_Io, Afpx, Str_Util, Language, Reg_Exp;
-with Conv, Lat_Lon, String_Util, Great_Circle, Afpx_Xref, Mapcode2Geo;
+with Conv, Lat_Lon, String_Util, Great_Circle, Afpx_Xref, Mapcode2Rad;
 
 procedure Gc is
 
@@ -207,7 +207,7 @@ procedure Gc is
           Afpx.Decode_Field(Field, 0, False), Str_Util.Both));
     end loop;
     Great_Circle.Logger.Log_Debug ("Parsed mapcode: " & Mapcode_Txt.Image);
-    Point := Mapcode2Geo (Mapcode_Txt.Image);
+    Point := Mapcode2Rad (Mapcode_Txt.Image);
     Great_Circle.Logger.Log_Debug ("Got point OK");
     Ok := True;
   exception
@@ -283,8 +283,8 @@ begin
         B := Lat_Lon.Dec2Rad (String_Util.Str2Dec(Argument.Get_Parameter(2)));
       else
         -- Coordinates of mapcodes
-        A := Mapcode2Geo (Argument.Get_Parameter(1));
-        B := Mapcode2Geo (Argument.Get_Parameter(2));
+        A := Mapcode2Rad (Argument.Get_Parameter(1));
+        B := Mapcode2Rad (Argument.Get_Parameter(2));
       end if;
       Great_Circle.Logger.Log_Debug ("Got point A:" & A.X'Img & A.Y'Img);
       Great_Circle.Logger.Log_Debug ("Got point B:" & B.X'Img & B.Y'Img);

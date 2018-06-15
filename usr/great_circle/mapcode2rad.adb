@@ -2,7 +2,7 @@ with Str_Util, Complexes;
 with Mapcodes;
 with Lat_Lon, Conv;
 -- Str is [ <Context>: ] <mapcode>
-function Mapcode2Geo (Str : String) return Lat_Lon.Lat_Lon_Rad_Rec is
+function Mapcode2Rad (Str : String) return Lat_Lon.Lat_Lon_Rad_Rec is
 
   use type Conv.Rad_Range;
 
@@ -30,5 +30,5 @@ begin
   end if;
   return (X => To_Radian (Coord.Lon),
           Y => To_Radian (Coord.Lat));
-end Mapcode2Geo;
+end Mapcode2Rad;
 
