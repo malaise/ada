@@ -46,7 +46,6 @@ begin
     exit when not Ok and then Read;
 
     -- Check if no /
-Sys_Calls.Put_Line_Output (">" & File.Image & "<");
     if Ok and then File.Locate ("/") /= 0 then
       Sys_Calls.Put_Line_Error (Me & ": File name contains '/'. Skipping.");
       Msf.Report_Error ("File name contains '/'");

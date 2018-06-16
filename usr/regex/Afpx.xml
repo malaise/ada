@@ -1,0 +1,180 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
+<!-- For regex -->
+
+<Afpx_Descriptors Height="30" Width="120">
+
+  <Descriptor Num="1" Background="Light_Grey" Name="Main">
+
+    <!-- Title -->
+    <Field Num="1" Kind="Put">
+      <Geometry Up="0" Left="58" Height="1" Width="5"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">Regex</Init>
+    </Field>
+
+    <!-- Regex -->
+    <Field Num="2" Kind="Put">
+      <Geometry Up="${Field_1.Low}+2" Left="1" Height="1" Width="22"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">The regular expression</Init>
+    </Field>
+    <Field Num="3" Kind="Put">
+      <Geometry Up="${Field_2.Up}" Left="${Field_2.Right}+5" Height="1"
+                Width="14"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">Case sensitive</Init>
+    </Field>
+    <Field Num="4" Kind="Button" Name="Case_Sensitive">
+      <Geometry Up="${Field_3.Up}" Left="${Field_3.Right}+2" Height="1"
+                Width="1"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="0">X</Init>
+    </Field>
+    <Field Num="5" Kind="Put">
+      <Geometry Up="${Field_4.Up}" Left="${Field_4.Right}+5" Height="1"
+                Width="10"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">Multi line</Init>
+    </Field>
+    <Field Num="6" Kind="Button" Name="Multi_Line">
+      <Geometry Up="${Field_5.Up}" Left="${Field_5.Right}+2" Height="1"
+                Width="1"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="0"> </Init>
+    </Field>
+    <Field Num="7" Kind="Put">
+      <Geometry Up="${Field_6.Up}" Left="${Field_6.Right}+5" Height="1"
+                Width="13"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">Dot match all</Init>
+    </Field>
+    <Field Num="8" Kind="Button" Name="Dot_All">
+      <Geometry Up="${Field_7.Up}" Left="${Field_7.Right}+2" Height="1"
+                Width="1"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="0"> </Init>
+    </Field>
+
+    <Field Num="9" Kind="Get" Name="Regex">
+      <Geometry Up="${Field_2.Low}+1" Left="1" Height="1"
+                Width="${Screen.Width}-2"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
+    </Field>
+
+    <!-- Text to search in -->
+    <Var Name="Text_Len" Value="210"/>
+    <Field Num="10" Kind="Put">
+      <Geometry Up="${Field_9.Low}+2" Left="1" Height="1" Width="22"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">The text to check</Init>
+    </Field>
+    <Field Num="11" Kind="Get" Name="Text1">
+      <Geometry Up="${Field_10.Low}+1" Left="1" Height="1"
+                Right="${Screen.Right}-2"/>
+      <Get_Tuning Data_Len="${Text_Len}" Move_Next="True"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
+    </Field>
+    <Field Num="12" Kind="Get" Name="Text2">
+      <Geometry Up="${Field_11.Low}+1" Left="1" Height="1"
+                Right="${Field_11.Right}"/>
+      <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
+    </Field>
+    <Field Num="13" Kind="Get" Name="Text3">
+      <Geometry Up="${Field_12.Low}+1" Left="1" Height="1"
+                Right="${Field_11.Right}"/>
+      <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
+    </Field>
+    <Field Num="14" Kind="Get" Name="Text4">
+      <Geometry Up="${Field_13.Low}+1" Left="1" Height="1"
+                Right="${Field_11.Right}"/>
+      <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
+    </Field>
+    <Field Num="15" Kind="Get" Name="Text5">
+      <Geometry Up="${Field_14.Low}+1" Left="1" Height="1"
+                Right="${Field_11.Right}"/>
+      <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
+    </Field>
+    <Field Num="16" Kind="Get" Name="Text6">
+      <Geometry Up="${Field_15.Low}+1" Left="1" Height="1"
+                Right="${Field_11.Right}"/>
+      <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
+    </Field>
+    <Field Num="17" Kind="Get" Name="Text7">
+      <Geometry Up="${Field_16.Low}+1" Left="1" Height="1"
+                Right="${Field_11.Right}"/>
+      <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
+    </Field>
+    <Field Num="18" Kind="Get" Name="Text8">
+      <Geometry Up="${Field_17.Low}+1" Left="1" Height="1"
+                Right="${Field_11.Right}"/>
+      <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
+    </Field>
+    <Field Num="19" Kind="Get" Name="Text9">
+      <Geometry Up="${Field_18.Low}+1" Left="1" Height="1"
+                Right="${Field_11.Right}"/>
+      <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
+    </Field>
+
+    <!-- Matching result -->
+    <Field Num="20" Kind="Put">
+      <Geometry Up="${Field_19.Low}+2" Left="1" Height="1" Width="20"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">The Matches, at line</Init>
+    </Field>
+    <Field Num="21" Kind="Put" Name="Line">
+      <Geometry Up="${Field_20.Up}" Left="${Field_20.Right}+2" Height="1"
+                Width="1"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">0</Init>
+    </Field>
+    <Field Num="22" Kind="Put">
+      <Geometry Up="${Field_20.Low}+1" Left="1" Height="10" Width="3"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">All</Init>
+      <Init Row="1" Col="2">1</Init>
+      <Init Row="2" Col="2">2</Init>
+      <Init Row="3" Col="2">3</Init>
+      <Init Row="4" Col="2">4</Init>
+      <Init Row="5" Col="2">5</Init>
+      <Init Row="6" Col="2">6</Init>
+      <Init Row="7" Col="2">7</Init>
+      <Init Row="8" Col="2">8</Init>
+      <Init Row="9" Col="2">9</Init>
+    </Field>
+    <Field Num="23" Kind="Put" Name="Result">
+      <Geometry Up="${Field_22.Up}" Left="${Field_22.Right}+2"
+                Height="${Field_22.Height}" Right="${Screen.Right}-2"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
+
+    <!-- Buttons -->
+    <Field Num="24" Kind="Button" Name="Clear_regex">
+      <Geometry Up="${Field_22.Low}+2" Left="1" Height="1" Width="13"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Clear Regex</Init>
+    </Field>
+    <Field Num="25" Kind="Button" Name="Clear_Text">
+      <Geometry Up="${Field_24.Up}" Left="${Field_24.Right}+4" Height="1"
+                Width="12"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Clear Text</Init>
+    </Field>
+    <Field Num="26" Kind="Button" Name="Quit">
+      <Geometry Up="${Field_24.Up}" Right="${Screen.Width}-2" Height="1"
+                Width="6"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Exit</Init>
+    </Field>
+  </Descriptor>
+
+</Afpx_Descriptors>
+

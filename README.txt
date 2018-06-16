@@ -268,6 +268,9 @@ Pipe (1)::
      Uses Fifo to relay stdin to another host where another pipe can put it on
      stdout. Deprecated, use 'tcpipe' and 't_async'.
 
+Regex (2)::
+     Interactive test of regular expression.
+
 Renardeau (2)::
      Computes a target number by combining base numbers.
 
