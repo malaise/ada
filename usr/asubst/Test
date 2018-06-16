@@ -398,6 +398,28 @@ if [ $? -ne 0 ] ; then
 fi
 STEP="Tests of grep"
 echo "$STEP OK."
+# Check compilation error
+STEP="Test compilation error"
+res=`echo toto | asubst "t.(" "tt" 2>/dev/null`
+ret=$?
+if [ $ret -ne 2 ] ; then
+  echo "Error: asubst has exited with code $ret i.o. 2"
+  echo "$STEP FAILED."
+  exit 1
+fi
+if [ "$res" != "" ] ; then
+  echo "Result $res differs from expected empty."
+  echo "$STEP FAILED."
+  exit 1
+fi
+err=`echo toto | asubst "t.(" "tt" 2>&1 | head -1`
+exp="asubst ERROR parsing search pattern: Invalid pattern \"t.(\"."
+if [ "$err" != "$exp" ] ; then
+  echo "Error message $err differs from expected $exp."
+  echo "$STEP FAILED."
+  exit 1
+fi
+echo "$STEP OK."
 
 # Cleanup test files
 clean

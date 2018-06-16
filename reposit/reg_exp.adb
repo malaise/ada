@@ -359,7 +359,7 @@ package body Reg_Exp is
   begin
     -- Get message if it fits in Buffer
     Len := C_Regerror (Compiled.Error, Compiled.Comp_Addr,
-                       Buffer'Address, 0);
+                       Buffer'Address, Buffer'Length);
     if Len <= 0 then
       return "";
     elsif Len <= Buffer'Length then
