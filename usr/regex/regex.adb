@@ -22,8 +22,7 @@ procedure Regex is
     end if;
 
     -- Compile pattern
-    Pattern.Compile (Ok, Input.Regex.Image,
-        Input.Case_Sensitive, Input.Multi_Line, Input.Dot_All);
+    Pattern.Compile (Ok, Input.Regex.Image, Input.Case_Sensitive);
     -- Handle compilation error
     if not Ok then
       Screen.Put_Error (Pattern.Error);
@@ -62,7 +61,7 @@ procedure Regex is
 
   -- Timer info
   Unused_Tid : Timers.Timer_Id;
-  Period : constant Duration := 1.0;
+  Period : constant Duration := 0.3;
 
   -- Afpx Ptg data
   Get_Handle   : Afpx.Get_Handle_Rec;
@@ -86,9 +85,8 @@ begin
       when Afpx.Mouse_Button =>
         -- Handle buttons
         case Ptg_Result.Field_No is
-          -- Toggle an option
-          when Afpx_Xref.Main.Case_Sensitive | Afpx_Xref.Main.Multi_Line |
-               Afpx_Xref.Main.Dot_All =>
+          -- Toggle the option
+          when Afpx_Xref.Main.Case_Sensitive =>
             Screen.Toggle (Ptg_Result.Field_No);
           when Afpx_Xref.Main.Clear_Regex =>
             Screen.Clear_Regex;

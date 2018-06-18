@@ -10,8 +10,8 @@ package Screen is
   type Input_Rec is record
     -- The Regex;
     Regex : As.U.Asu_Us;
-    -- The options
-    Case_Sensitive, Multi_Line, Dot_All : Boolean := False;
+    -- The option
+    Case_Sensitive : Boolean := False;
     -- The text to match
     Text : Text_Array;
   end record;

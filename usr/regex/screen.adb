@@ -19,10 +19,8 @@ package body Screen is
   function Input_Changed return Boolean is
     use type Afpx.Field_Range;
   begin
-    -- Decode options
+    -- Decode option
     Cur_Input.Case_Sensitive := Is_Set (Afpx_Xref.Main.Case_Sensitive);
-    Cur_Input.Multi_Line := Is_Set (Afpx_Xref.Main.Multi_Line);
-    Cur_Input.Dot_All := Is_Set (Afpx_Xref.Main.Dot_All);
     -- Decode Regex
     Afpx.Decode_Field (Afpx_Xref.Main.Regex, 0, Cur_Input.Regex, False);
     Strip (Cur_Input.Regex);
@@ -48,12 +46,10 @@ package body Screen is
     return Prev_Input;
   end Get_Input;
 
-  -- Clear clear regex and reset flags
+  -- Clear clear regex and reset flag
   procedure Clear_Regex is
   begin
     Afpx.Reset_Field (Afpx_Xref.Main.Case_Sensitive, Reset_Colors => False);
-    Afpx.Reset_Field (Afpx_Xref.Main.Multi_Line, Reset_Colors => False);
-    Afpx.Reset_Field (Afpx_Xref.Main.Dot_All, Reset_Colors => False);
     Afpx.Clear_Field (Afpx_Xref.Main.Regex);
   end Clear_Regex;
 
