@@ -112,24 +112,40 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------
 */
 
+
+/* Have to include stdlib.h in order to ensure that size_t is defined. */
+
+#include <stdlib.h>
+
+/* Allow for C++ users */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Options, mostly defined by POSIX, but with some extras. */
+
 #define REG_ICASE     0x0001  /* Maps to PCRE2_CASELESS */
 #define REG_NEWLINE   0x0002  /* Maps to PCRE2_MULTILINE */
 #define REG_NOTBOL    0x0004  /* Maps to PCRE2_NOTBOL */
 #define REG_NOTEOL    0x0008  /* Maps to PCRE2_NOTEOL */
 #define REG_DOTALL    0x0010  /* NOT defined by POSIX; maps to PCRE2_DOTALL */
-#define REG_NOSUB     0x0020  /* Maps to PCRE2_NO_AUTO_CAPTURE */
+#define REG_NOSUB     0x0020  /* Do not report what was matched */
 #define REG_UTF       0x0040  /* NOT defined by POSIX; maps to PCRE2_UTF */
 #define REG_STARTEND  0x0080  /* BSD feature: pass subject string by so,eo */
 #define REG_NOTEMPTY  0x0100  /* NOT defined by POSIX; maps to PCRE2_NOTEMPTY */
 #define REG_UNGREEDY  0x0200  /* NOT defined by POSIX; maps to PCRE2_UNGREEDY */
 #define REG_UCP       0x0400  /* NOT defined by POSIX; maps to PCRE2_UCP */
+#define REG_PEND      0x0800  /* GNU feature: pass end pattern by re_endp */
+#define REG_NOSPEC    0x1000  /* Maps to PCRE2_LITERAL */
 
 /* This is not used by PCRE2, but by defining it we make it easier
 to slot PCRE2 into existing programs that make POSIX calls. */
+
 #define REG_EXTENDED  0
 
 /* Error values. Not all these are relevant or used by the wrapper. */
+
 enum {
   REG_ASSERT = 1,  /* internal error ? */
   REG_BADBR,       /* invalid repeat counts in {} */
@@ -151,16 +167,20 @@ enum {
 };
 
 
-/* The structure representing a compiled regular expression. */
+/* The structure representing a compiled regular expression. It is also used
+for passing the pattern end pointer when REG_PEND is set. */
+
 typedef struct {
   void *re_pcre2_code;
   void *re_match_data;
+  const char *re_endp;
   size_t re_nsub;
   size_t re_erroffset;
   int re_cflags;
 } regex_t;
 
 /* The structure in which a captured offset is returned. */
+
 typedef int regoff_t;
 
 typedef struct {
@@ -168,11 +188,41 @@ typedef struct {
   regoff_t rm_eo;
 } regmatch_t;
 
+/* When an application links to a PCRE2 DLL in Windows, the symbols that are
+imported have to be identified as such. When building PCRE2, the appropriate
+export settings are needed, and are set in pcre2posix.c before including this
+file. */
+
+#if defined(_WIN32) && !defined(PCRE2_STATIC) && !defined(PCRE2POSIX_EXP_DECL)
+#  define PCRE2POSIX_EXP_DECL  extern __declspec(dllimport)
+#  define PCRE2POSIX_EXP_DEFN  __declspec(dllimport)
+#endif
+
+/* By default, we use the standard "extern" declarations. */
+
+#ifndef PCRE2POSIX_EXP_DECL
+#  ifdef __cplusplus
+#    define PCRE2POSIX_EXP_DECL  extern "C"
+#    define PCRE2POSIX_EXP_DEFN  extern "C"
+#  else
+#    define PCRE2POSIX_EXP_DECL  extern
+#    define PCRE2POSIX_EXP_DEFN  extern
+#  endif
+#endif
+
 /* The functions */
-extern int regcomp(regex_t *, const char *, int);
-extern int regexec(regex_t *, const char *, size_t, regmatch_t *, int);
-extern size_t regerror(int, const regex_t *, char *, size_t);
-extern void regfree(regex_t *);
+
+PCRE2POSIX_EXP_DECL int regcomp(regex_t *, const char *, int);
+PCRE2POSIX_EXP_DECL int regexec(const regex_t *, const char *, size_t,
+                     regmatch_t *, int);
+PCRE2POSIX_EXP_DECL size_t regerror(int, const regex_t *, char *, size_t);
+PCRE2POSIX_EXP_DECL void regfree(regex_t *);
+
+#ifdef __cplusplus
+}   /* extern "C" */
+#endif
+
+/* End of pcre2posix.h */
 
 #endif /* PCRE2 */
 
