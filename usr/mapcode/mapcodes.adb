@@ -1,5 +1,5 @@
 with Str_Tools, Bits;
-with Ndata, Ctrynams;
+with Ndata;
 package body Mapcodes is
 
   subtype Lint is Long_Long_Integer;

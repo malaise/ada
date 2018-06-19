@@ -1,10 +1,11 @@
 -- Mapcode management
 with As_U;
+with Ctrynams;
 package Mapcodes is
 
   Mapcode_C_Version : constant String := "2.0.2";
   Mapcode_Data_Version : constant String := "2.3.0";
-  Mapcode_Ada_Version  : constant String := "1.0.6/Data"
+  Mapcode_Ada_Version  : constant String := "1.0.7/Data"
                                           & Mapcode_Data_Version;
 
   -- Real type (for latitude and longitude)
@@ -15,7 +16,7 @@ package Mapcodes is
   -----------------
 
   -- Valid territory number
-  subtype Territory_Range is Natural range 0 .. 532;
+  subtype Territory_Range is Natural range 0 .. Ctrynams.Isofullname'Last - 1;
 
   -- Given an alphacode (such as US-AL), return the territory number
   --  or raise Unknown_Territory
