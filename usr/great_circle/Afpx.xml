@@ -1,7 +1,7 @@
 <?xml version="1.1"?>
 <!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
 
-<Afpx_Descriptors>
+<Afpx_Descriptors Height="13" Width="80">
   <Color_Definitions>
     <Color_Definition Id="Color07" Color="Brown4"/>
   </Color_Definitions>
@@ -28,19 +28,19 @@
     </Field>
 
     <Field Num="4" Kind="Put">
-      <Geometry Up="5" Left="24" Low="5" Right="25"/>
+      <Geometry Up="5" Left="28" Low="5" Right="29"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">To</Init>
     </Field>
 
     <Field Num="5" Kind="Put">
-      <Geometry Up="5" Left="50" Low="5" Right="55"/>
+      <Geometry Up="5" Left="60" Low="5" Right="69"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Routes</Init>
     </Field>
 
     <Field Num="6" Kind="Put">
-      <Geometry Up="5" Left="62" Low="5" Right="69"/>
+      <Geometry Up="5" Left="71" Low="5" Right="78"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Distance</Init>
     </Field>
@@ -78,166 +78,166 @@
     </Field>
 
     <Field Num="12" Kind="Get">
-      <Geometry Up="6" Left="8" Low="6" Right="9"/>
+      <Geometry Up="6" Left="8" Low="6" Right="11"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="13" Kind="Put">
-      <Geometry Up="6" Left="10" Low="6" Right="11"/>
+      <Geometry Up="6" Left="12" Low="6" Right="13"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">"/</Init>
     </Field>
 
     <Field Num="14" Kind="Get">
-      <Geometry Up="6" Left="12" Low="6" Right="12"/>
+      <Geometry Up="6" Left="14" Low="6" Right="14"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
       <Init Row="0" Col="0">W</Init>
     </Field>
 
     <Field Num="15" Kind="Get">
-      <Geometry Up="6" Left="13" Low="6" Right="15"/>
+      <Geometry Up="6" Left="15" Low="6" Right="17"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="16" Kind="Put">
-      <Geometry Up="6" Left="16" Low="6" Right="16"/>
+      <Geometry Up="6" Left="18" Low="6" Right="18"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">°</Init>
     </Field>
 
     <Field Num="17" Kind="Get">
-      <Geometry Up="6" Left="17" Low="6" Right="18"/>
+      <Geometry Up="6" Left="19" Low="6" Right="20"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="18" Kind="Put">
-      <Geometry Up="6" Left="19" Low="6" Right="19"/>
+      <Geometry Up="6" Left="21" Low="6" Right="21"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">'</Init>
     </Field>
 
     <Field Num="19" Kind="Get">
-      <Geometry Up="6" Left="20" Low="6" Right="21"/>
+      <Geometry Up="6" Left="22" Low="6" Right="25"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="20" Kind="Put" Name="A_Last">
-      <Geometry Up="6" Left="22" Low="6" Right="22"/>
+      <Geometry Up="6" Left="26" Low="6" Right="26"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">"</Init>
     </Field>
 
     <!-- Point B Lat/Lon -->
     <Field Num="21" Kind="Get" Name="B_First">
-      <Geometry Up="6" Left="24" Low="6" Right="24"/>
+      <Geometry Up="6" Left="28" Low="6" Right="28"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
       <Init Row="0" Col="0">N</Init>
     </Field>
 
     <Field Num="22" Kind="Get">
-      <Geometry Up="6" Left="25" Low="6" Right="26"/>
+      <Geometry Up="6" Left="29" Low="6" Right="30"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="23" Kind="Put">
-      <Geometry Up="6" Left="27" Low="6" Right="27"/>
+      <Geometry Up="6" Left="31" Low="6" Right="31"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">°</Init>
     </Field>
 
     <Field Num="24" Kind="Get">
-      <Geometry Up="6" Left="28" Low="6" Right="29"/>
+      <Geometry Up="6" Left="32" Low="6" Right="33"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="25" Kind="Put">
-      <Geometry Up="6" Left="30" Low="6" Right="30"/>
+      <Geometry Up="6" Left="34" Low="6" Right="34"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">'</Init>
     </Field>
 
     <Field Num="26" Kind="Get">
-      <Geometry Up="6" Left="31" Low="6" Right="32"/>
+      <Geometry Up="6" Left="35" Low="6" Right="38"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="27" Kind="Put">
-      <Geometry Up="6" Left="33" Low="6" Right="34"/>
+      <Geometry Up="6" Left="39" Low="6" Right="40"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">"/</Init>
     </Field>
 
     <Field Num="28" Kind="Get">
-      <Geometry Up="6" Left="35" Low="6" Right="35"/>
+      <Geometry Up="6" Left="41" Low="6" Right="41"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
       <Init Row="0" Col="0">W</Init>
     </Field>
 
     <Field Num="29" Kind="Get">
-      <Geometry Up="6" Left="36" Low="6" Right="38"/>
+      <Geometry Up="6" Left="42" Low="6" Right="44"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="30" Kind="Put">
-      <Geometry Up="6" Left="39" Low="6" Right="39"/>
+      <Geometry Up="6" Left="45" Low="6" Right="45"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">°</Init>
     </Field>
 
     <Field Num="31" Kind="Get">
-      <Geometry Up="6" Left="40" Low="6" Right="41"/>
+      <Geometry Up="6" Left="46" Low="6" Right="47"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="32" Kind="Put">
-      <Geometry Up="6" Left="42" Low="6" Right="42"/>
+      <Geometry Up="6" Left="48" Low="6" Right="48"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">'</Init>
     </Field>
 
     <Field Num="33" Kind="Get">
-      <Geometry Up="6" Left="43" Low="6" Right="44"/>
+      <Geometry Up="6" Left="49" Low="6" Right="52"/>
       <Get_Tuning Move_Prev="True" Move_Next="False"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="34" Kind="Put" Name="B_Last">
-      <Geometry Up="6" Left="45" Low="6" Right="45"/>
+      <Geometry Up="6" Left="53" Low="6" Right="53"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">"</Init>
     </Field>
 
     <!-- Route and distance -->
     <Field Num="35" Kind="Put" Name="Heading">
-      <Geometry Up="6" Left="50" Low="6" Right="59"/>
+      <Geometry Up="6" Left="60" Low="6" Right="69"/>
       <Colors Foreground="Dark_Green" Background="Light_Grey"/>
     </Field>
 
     <Field Num="36" Kind="Put" Name="Distance">
-      <Geometry Up="6" Left="62" Low="6" Right="66"/>
+      <Geometry Up="6" Left="71" Low="6" Right="75"/>
       <Colors Foreground="Dark_Green" Background="Light_Grey"/>
     </Field>
 
     <Field Num="37" Kind="Put">
-      <Geometry Up="6" Left="68" Low="6" Right="69"/>
+      <Geometry Up="6" Left="77" Low="6" Right="78"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">NM</Init>
     </Field>
 
     <Field Num="38" Kind="Put" Name="Revert">
-      <Geometry Up="7" Left="50" Low="7" Right="59"/>
+      <Geometry Up="7" Left="60" Low="7" Right="69"/>
       <Colors Foreground="Dark_Green" Background="Light_Grey"/>
     </Field>
 
@@ -262,19 +262,19 @@
 
     <!-- Point B Ctx:Mapcode -->
     <Field Num="42" Kind="Get" Name="B_Ctx">
-      <Geometry Up="7" Left="24" Height="1" Width="6"/>
+      <Geometry Up="7" Left="28" Height="1" Width="6"/>
       <Get_Tuning Move_Prev="False" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="43" Kind="Put">
-      <Geometry Up="7" Left="30" Height="1" Width="1"/>
+      <Geometry Up="7" Left="34" Height="1" Width="1"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">:</Init>
     </Field>
 
     <Field Num="44" Kind="Get" Name="B_Code">
-      <Geometry Up="7" Left="31" Height="1" Width="12"/>
+      <Geometry Up="7" Left="35" Height="1" Width="12"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
@@ -293,7 +293,7 @@
     </Field>
 
     <Field Num="47" Kind="Button" Name="Compute">
-      <Geometry Up="9" Left="${Field_46.Right}+6" Low="11" Width="9"/>
+      <Geometry Up="9" Left="${Field_46.Right}+7" Low="11" Width="9"/>
       <Colors Foreground="Black" Background="Lime_Green"/>
       <Init Row="1" Col="1">COMPUTE</Init>
     </Field>

@@ -7,9 +7,9 @@ procedure Gc is
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-      & " [ add.mm.ss/oddd.mm.ss add.mm.ss/oddd.mm.ss ]");
+      & " [ add.mm.ssss/oddd.mm.ssss add.mm.ssss/oddd.mm.ssss ]");
     Basic_Proc.Put_Line_Error ("   or: " & Argument.Get_Program_Name
-      & " [ add.ijkl/oddd.ijkl add.ijkl/oddd.ijkl ]");
+      & " [ add.ijklmn/oddd.ijklmn add.ijklmn/oddd.ijklmn ]");
     Basic_Proc.Put_Line_Error ("   or: " & Argument.Get_Program_Name
       & " [ [<context>:]<mapcode> [<context>:]<mapcode> ]");
     Basic_Proc.Put_Line_Error (" where a is N or S and o is E or W.");
@@ -25,9 +25,9 @@ procedure Gc is
   Result : Afpx.Result_Rec;
 
   Sexa_Pattern : constant String :=
-      "[NnSs][0-9]{2}\.[0-9]{2}\.[0-9]{2}/[EeWw][0-9]{3}\.[0-9]{2}\.[0-9]{2}";
+      "[NnSs][0-9]{2}\.[0-9]{2}\.[0-9]{4}/[EeWw][0-9]{3}\.[0-9]{2}\.[0-9]{4}";
   Deci_Pattern : constant String :=
-      "[NnSs][0-9]{2}\.[0-9]{4}/[EeWw][0-9]{3}\.[0-9]{4}";
+      "[NnSs][0-9]{2}\.[0-9]{6}/[EeWw][0-9]{3}\.[0-9]{6}";
 
   Mode_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Mode;
   subtype A_Flds is Afpx.Field_Range
@@ -163,23 +163,39 @@ procedure Gc is
                           Cursor : in out Afpx.Field_Range) is
     -- Two '"' added and two 'o' instead of '.' in Afpx screen
     Point_Txt : As.B.Asb_Bs(String_Util.Geo_Str'Length+4);
+
+    -- Replace trailing spaces by '0' for decimal numeric fields (len = 4)
+    function Pad_Field (Field : Afpx.Field_Range) return String is
+      Init : constant String := Afpx.Decode_Field(Field, 0, False);
+      Str : String := Init;
+    begin
+      if Str'Length = 4 then
+        for I in reverse Str'Range loop
+          exit when Str(I) /= ' ';
+          Str(I) := '0';
+        end loop;
+      end if;
+      if Str /= Init then
+        Afpx.Encode_Field(Field, (0, 0), Str);
+      end if;
+      return Str;
+    end Pad_Field;
+
   begin
     Point_Txt.Set_Null;
     for Field in First_Fld .. Last_Fld loop
-      Point_Txt.Append (Afpx.Decode_Field(Field, 0, False));
+      Point_Txt.Append (Pad_Field(Field));
     end loop;
     Great_Circle.Logger.Log_Debug ("Decoded point: " & Point_Txt.Image);
     if Mode = Sexa_Mode then
-      -- Replace Nddomm'ss"/Edddomm'ss" by Ndd.mm.ss/Eddd.mm.ss
-      -- "o" has already been replaced by " " in Afpx.Decode_Field
+      -- Replace Nddomm'ssss"/Edddomm'ssss" by Ndd.mm.ssss/Eddd.mm.ssss
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, Deg, "."));
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, "'", "."));
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, """", ""));
       Great_Circle.Logger.Log_Debug ("Parsed point: " & Point_Txt.Image);
       Point := Lat_Lon.Geo2Rad (String_Util.Str2Geo(Point_Txt.Image));
     else -- Deci_Mode
-      -- Replace Ndd.ij klo/Eddd.ij klo by Ndd.ijkl/Eddd.ijkl
-      -- "o" has already been replaced by " " in Afpx.Decode_Field
+      -- Replace Ndd.ij klmno/Eddd.ij klmno by Ndd.ijklmn/Eddd.ijklmn
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, Deg, ""));
       Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, " ", ""));
       Great_Circle.Logger.Log_Debug ("Parsed point: " & Point_Txt.Image);
@@ -273,6 +289,7 @@ begin
     else
       Mode := Code_Mode;
     end if;
+    Great_Circle.Logger.Log_Debug ("Mode: " & Mode'Img);
     begin
       -- Parse arguments
       if Mode = Sexa_Mode then

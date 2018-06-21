@@ -48,4 +48,4 @@ t_hp_gc FRA:FTGC.R3T-K3 FRA:FTGC.R3T-DW \
 t_hp_gc FRA:FTGC.R3T-K3 FRA:FTGC.R3T-K9 \
   "H:    0.000000000, D: 0Nm 0km 0m 271mm."
 
-echo "OK;"
+echo "OK."

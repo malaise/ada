@@ -1,8 +1,8 @@
 with Conv, Lat_Lon;
 package String_Util is
 
-  -- Ndd.mm.ss/Wddd.mm.dd
-  subtype Geo_Str is String(1..20);
+  -- Ndd.mm.ssss/Wddd.mm.ssss
+  subtype Geo_Str is String(1..24);
 
   -- Convert Geo_Str to Lat_Lon_Geo_Rec
   -- may raise Format_Error
@@ -17,8 +17,8 @@ package String_Util is
   function Geoangle2Str (Geo_Angle : Conv.Geo_Coord_Rec) return Geo_Angle_Str;
 
 
-  -- Ndd.ijkl/Wddd.ijkl
-  subtype Dec_Str is String (1..18);
+  -- Ndd.ijklmn/Wddd.ijklmn
+  subtype Dec_Str is String (1..22);
 
  -- Convert Dec_Str to Lat_Lon_Geo_Rec
   -- may raise Format_Error

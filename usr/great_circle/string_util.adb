@@ -5,8 +5,8 @@ package body String_Util is
     Geo : Lat_Lon.Lat_Lon_Geo_Rec;
   begin
     -- Check / and .
-    if Str(4) /= '.' or else Str(7) /= '.' or else Str(10) /= '/'
-    or else Str(15) /= '.' or else Str(18) /= '.' then
+    if Str(4) /= '.' or else Str(7) /= '.' or else Str(12) /= '/'
+    or else Str(17) /= '.' or else Str(20) /= '.' then
       raise Format_Error;
     end if;
     -- Lat N or S
@@ -18,24 +18,24 @@ package body String_Util is
       raise Format_Error;
     end if;
     -- Lon W or E
-    if Upper_Char(Str(11)) = 'E' then
+    if Upper_Char(Str(13)) = 'E' then
       Geo.Lon.East := True;
-    elsif Upper_Char(Str(11)) = 'W' then
+    elsif Upper_Char(Str(13)) = 'W' then
       Geo.Lon.East := False;
     else
       raise Format_Error;
     end if;
 
     -- Lat
-    Geo.Lat.Coord.Deg := Conv.Deg_Range'Value(Str(2 .. 3));
-    Geo.Lat.Coord.Min := Conv.Min_Range'Value(Str(5 .. 6));
-    Geo.Lat.Coord.Sec := Conv.Sec_Range'Value(Str(8 .. 9));
-    Geo.Lat.Coord.Ten := 0;
+    Geo.Lat.Coord.Deg := Conv.Deg_Range'Value(Str( 2 .. 3));
+    Geo.Lat.Coord.Min := Conv.Min_Range'Value(Str( 5 .. 6));
+    Geo.Lat.Coord.Sec := Conv.Sec_Range'Value(Str( 8 .. 9));
+    Geo.Lat.Coord.Ten := Conv.Sec_Range'Value(Str(10 .. 11)) * 100;
     -- Lon
-    Geo.Lon.Coord.Deg := Conv.Deg_Range'Value(Str(12 .. 14));
-    Geo.Lon.Coord.Min := Conv.Min_Range'Value(Str(16 .. 17));
-    Geo.Lon.Coord.Sec := Conv.Sec_Range'Value(Str(19 .. 20));
-    Geo.Lon.Coord.Ten := 0;
+    Geo.Lon.Coord.Deg := Conv.Deg_Range'Value(Str(14 .. 16));
+    Geo.Lon.Coord.Min := Conv.Min_Range'Value(Str(18 .. 19));
+    Geo.Lon.Coord.Sec := Conv.Sec_Range'Value(Str(21 .. 22));
+    Geo.Lon.Coord.Ten := Conv.Sec_Range'Value(Str(23 .. 24)) * 100;
 
     -- Check the whole thing
     if not Lat_Lon.Is_Lat_Lon_Ok(Geo) then
@@ -95,18 +95,18 @@ package body String_Util is
       Str(1) := 'S';
     end if;
     if Rounded.Lon.East then
-      Str(11) := 'E';
+      Str(13) := 'E';
     else
-      Str(11) := 'W';
+      Str(13) := 'W';
     end if;
 
     -- Put the numbers
     Str( 2 ..  3) := Normal (Rounded.Lat.Coord.Deg, 2, Gap => '0');
     Str( 5 ..  6) := Normal (Rounded.Lat.Coord.Min, 2, Gap => '0');
-    Str( 8 ..  9) := Normal (Rounded.Lat.Coord.Sec, 2, Gap => '0');
-    Str(12 .. 14) := Normal (Rounded.Lon.Coord.Deg, 3, Gap => '0');
-    Str(16 .. 17) := Normal (Rounded.Lon.Coord.Min, 2, Gap => '0');
-    Str(19 .. 20) := Normal (Rounded.Lon.Coord.Sec, 2, Gap => '0');
+    Str( 8 .. 11) := Normal (Rounded.Lat.Coord.Sec, 4, Gap => '0');
+    Str(14 .. 16) := Normal (Rounded.Lon.Coord.Deg, 3, Gap => '0');
+    Str(18 .. 19) := Normal (Rounded.Lon.Coord.Min, 2, Gap => '0');
+    Str(21 .. 24) := Normal (Rounded.Lon.Coord.Sec, 4, Gap => '0');
 
     -- Done
     return Str;
@@ -116,7 +116,7 @@ package body String_Util is
     Dec : Lat_Lon.Lat_Lon_Dec_Rec;
   begin
     -- Check / and .
-    if Str(4) /= '.' or else Str(9) /= '/' or else Str(14) /= '.' then
+    if Str(4) /= '.' or else Str(11) /= '/' or else Str(16) /= '.' then
       raise Format_Error;
     end if;
     -- Lat N or S
@@ -128,20 +128,20 @@ package body String_Util is
       raise Format_Error;
     end if;
     -- Lon W or E
-    if Upper_Char(Str(10)) = 'E' then
+    if Upper_Char(Str(12)) = 'E' then
       Dec.Lon.East := True;
-    elsif Upper_Char(Str(10)) = 'W' then
+    elsif Upper_Char(Str(12)) = 'W' then
       Dec.Lon.East := False;
     else
       raise Format_Error;
     end if;
 
     -- Lat
-    Dec.Lat.Coord.Deg := Conv.Deg_Range'Value(Str(2 .. 3));
-    Dec.Lat.Coord.Nan := Conv.Ten_Range'Value(Str(5 .. 8)) * 100000;
+    Dec.Lat.Coord.Deg := Conv.Deg_Range'Value(Str( 2 ..  3));
+    Dec.Lat.Coord.Nan := Conv.Nan_Range'Value(Str( 5 .. 10)) * 1000;
     -- Lon
-    Dec.Lon.Coord.Deg := Conv.Deg_Range'Value(Str(11 .. 13));
-    Dec.Lon.Coord.Nan := Conv.Ten_Range'Value(Str(15 .. 18)) * 100000;
+    Dec.Lon.Coord.Deg := Conv.Deg_Range'Value(Str(13 .. 15));
+    Dec.Lon.Coord.Nan := Conv.Nan_Range'Value(Str(17 .. 22)) * 1000;
 
     -- Chek the whole thing
     if not Lat_Lon.Is_Lat_Lon_Ok(Dec) then
@@ -160,8 +160,8 @@ package body String_Util is
   begin
     -- Set / and .
     Str(4) := '.';
-    Str(9) := '/';
-    Str(14) := '.';
+    Str(11) := '/';
+    Str(16) := '.';
 
     -- North or south lat, East or west lon
     if Dec.Lat.North then
@@ -170,16 +170,16 @@ package body String_Util is
       Str(1) := 'S';
     end if;
     if Dec.Lon.East then
-      Str(10) := 'E';
+      Str(12) := 'E';
     else
-      Str(10) := 'W';
+      Str(12) := 'W';
     end if;
 
     -- Put the numbers
     Str( 2 ..  3) := Normal (Dec.Lat.Coord.Deg, 2, Gap => '0');
-    Str( 5 ..  8) := Normal (Dec.Lat.Coord.Nan / 100000, 4, Gap => '0');
-    Str(11 .. 13) := Normal (Dec.Lon.Coord.Deg, 3, Gap => '0');
-    Str(14 .. 17) := Normal (Dec.Lon.Coord.Nan / 100000, 4, Gap => '0');
+    Str( 5 .. 11) := Normal (Dec.Lat.Coord.Nan / 10000000, 6, Gap => '0');
+    Str(13 .. 13) := Normal (Dec.Lon.Coord.Deg, 3, Gap => '0');
+    Str(16 .. 21) := Normal (Dec.Lon.Coord.Nan / 10000000, 6, Gap => '0');
 
     -- Done
     return Str;
