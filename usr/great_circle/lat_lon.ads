@@ -58,5 +58,11 @@ package Lat_Lon is
   function Rad2Dec (Coord : Lat_Lon_Rad_Rec) return Lat_Lon_Dec_Rec;
   function Dec2Rad (Coord : Lat_Lon_Dec_Rec) return Lat_Lon_Rad_Rec;
 
+  -- Mapcode <-> Rad
+  -- Str is [ <Context>: ] <mapcode>
+  function Mapcode2Rad (Str : String) return Lat_Lon.Lat_Lon_Rad_Rec;
+  -- Return the international mapcode
+  function Rad2Mapcode (Coord : Lat_Lon.Lat_Lon_Rad_Rec) return String;
+
 end Lat_Lon;
 

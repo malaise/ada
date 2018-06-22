@@ -1,4 +1,5 @@
-with Complexes;
+with My_Math, Complexes, Str_Util;
+with Mapcodes;
 package body Lat_Lon is
 
   Max_Lat : constant Conv.Deg_Range := 90;
@@ -36,20 +37,20 @@ package body Lat_Lon is
     Lat_Lon_Geo : Lat_Lon_Geo_Rec;
     use type Complexes.Radian;
   begin
-    if Coord.X < 0.0 then
+    if Coord.X >= My_Math.Pi then
       -- West longitude
       Lat_Lon_Geo.Lon.East := False;
-      Lat_Lon_Geo.Lon.Coord := Conv.Rad2Geo(-Coord.X);
+      Lat_Lon_Geo.Lon.Coord := Conv.Rad2Geo(2.0 * My_Math.Pi - Coord.X);
     else
       -- East longitude
       Lat_Lon_Geo.Lon.East := True;
       Lat_Lon_Geo.Lon.Coord := Conv.Rad2Geo(Coord.X);
     end if;
 
-    if Coord.Y < 0.0 then
+    if Coord.Y >= My_Math.Pi then
       -- South latitude
       Lat_Lon_Geo.Lat.North := False;
-      Lat_Lon_Geo.Lat.Coord := Conv.Rad2Geo(-Coord.Y);
+      Lat_Lon_Geo.Lat.Coord := Conv.Rad2Geo(2.0 * My_Math.Pi - Coord.Y);
     else
       -- North latitude
       Lat_Lon_Geo.Lat.North := True;
@@ -119,20 +120,20 @@ package body Lat_Lon is
     Lat_Lon_Dec : Lat_Lon_Dec_Rec;
     use type Complexes.Radian;
   begin
-    if Coord.X < 0.0 then
+    if Coord.X >= My_Math.Pi then
       -- West longitude
       Lat_Lon_Dec.Lon.East := False;
-      Lat_Lon_Dec.Lon.Coord := Conv.Rad2Dec(-Coord.X);
+      Lat_Lon_Dec.Lon.Coord := Conv.Rad2Dec(2.0 * My_Math.Pi - Coord.X);
     else
       -- East longitude
       Lat_Lon_Dec.Lon.East := True;
       Lat_Lon_Dec.Lon.Coord := Conv.Rad2Dec(Coord.X);
     end if;
 
-    if Coord.Y < 0.0 then
+    if Coord.Y >= My_Math.Pi then
       -- South latitude
       Lat_Lon_Dec.Lat.North := False;
-      Lat_Lon_Dec.Lat.Coord := Conv.Rad2Dec(-Coord.Y);
+      Lat_Lon_Dec.Lat.Coord := Conv.Rad2Dec(2.0 * My_Math.Pi - Coord.Y);
     else
       -- North latitude
       Lat_Lon_Dec.Lat.North := True;
@@ -161,6 +162,58 @@ package body Lat_Lon is
     end if;
     return Lat_Lon_Rad;
   end Dec2Rad;
+
+  -- Str is [ <Context>: ] <mapcode>
+  function Mapcode2Rad (Str : String) return Lat_Lon.Lat_Lon_Rad_Rec is
+
+    use type Conv.Rad_Range;
+
+    -- Convert a Mapcode real cooordinate (Real fraction of degrees), into
+    --   Radian in -180 .. 180
+    function To_Radian (R : Mapcodes.Real) return Conv.Rad_Coord_Range is
+    begin
+      -- In 0 .. 2*PI
+      return Complexes.To_Radian (Complexes.Degree (R));
+    end To_Radian;
+
+    I : Natural;
+    Coord : Mapcodes.Coordinate;
+
+  begin
+    -- Extract Mapcode and leading optional Context, get Coordinates
+    I := Str_Util.Locate (Str, ":");
+    if I = 0 then
+      -- No context
+      Coord := Mapcodes.Decode (Str, "");
+    else
+      -- Context then mapcode
+      Coord :=  Mapcodes.Decode (Str(I + 1 .. Str'Last),
+                                 Str(Str'First .. I - 1));
+    end if;
+    return (X => To_Radian (Coord.Lon),
+            Y => To_Radian (Coord.Lat));
+  end Mapcode2Rad;
+
+  function To_Degree (R : Conv.Rad_Coord_Range) return Mapcodes.Real is
+    Res : Mapcodes.Real := Mapcodes.Real (Complexes.To_Degree (R));
+    use type Mapcodes.Real;
+  begin
+    if Res >= 180.0 then
+      Res := -(360.0 - Res);
+    end if;
+  return Res;
+  end To_Degree;
+
+  -- Return the international mapcode
+  function Rad2Mapcode (Coord : Lat_Lon.Lat_Lon_Rad_Rec) return String is
+    C : constant Mapcodes.Coordinate
+      := (Lat => To_Degree (Coord.Y),
+          Lon => To_Degree (Coord.X));
+    Codes : constant Mapcodes.Mapcode_Infos
+          := Mapcodes.Encode (C, Shortest => True, Precision => 2);
+  begin
+    return Codes(Codes'Last).Mapcode.Image;
+  end Rad2Mapcode;
 
 end Lat_Lon;
 

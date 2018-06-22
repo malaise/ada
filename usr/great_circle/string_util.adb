@@ -49,14 +49,28 @@ package body String_Util is
       raise Format_Error;
   end Str2Geo;
 
-  -- Round hundredth and propagate
-  procedure Round (C : in out Conv.Geo_Coord_Rec) is
+  -- Round Ten millis to seconds and propagate
+  -- or Round Ten millis to hundredth and propagate
+  procedure Round (C : in out Conv.Geo_Coord_Rec;
+                   To_Seconds : in Boolean) is
     Sec, Min, Deg : Natural;
+    Factor : My_Math.Real;
+    Max : Conv.Ten_Range;
+    use type My_Math.Real;
   begin
     Sec := C.Sec;
     Min := C.Min;
     Deg := C.Deg;
-    if C.Ten >= (Conv.Ten_Range'Last + 1) / 2 then
+    if To_Seconds then
+      Factor := 10000.0;
+      Max := 1;
+    else
+      Factor := 100.0;
+      Max := 100;
+    end if;
+    C.Ten := Conv.Ten_Range (My_Math.Round (My_Math.Real (C.Ten) / Factor));
+    if C.Ten = Max then
+      C.Ten := 0;
       Sec := Sec + 1;
       if Sec > Conv.Sec_Range'Last then
         Sec := Conv.Sec_Range'First;
@@ -70,7 +84,7 @@ package body String_Util is
         end if;
       end if;
     end if;
-    C := (Deg, Min, Sec, 0);
+    C := (Deg, Min, Sec, C.Ten * Natural (Factor));
   end Round;
 
   function Geo2Str (Geo : Lat_Lon.Lat_Lon_Geo_Rec) return Geo_Str is
@@ -80,13 +94,13 @@ package body String_Util is
   begin
     -- Round hundredths
     Rounded := Geo;
-    Round (Rounded.Lat.Coord);
-    Round (Rounded.Lon.Coord);
+    Round (Rounded.Lat.Coord, False);
+    Round (Rounded.Lon.Coord, False);
 
     -- Set / and .
     Str(4) := '.'; Str(7) := '.';
-    Str(10) := '/';
-    Str(15) := '.'; Str(18) := '.';
+    Str(12) := '/';
+    Str(17) := '.'; Str(20) := '.';
 
     -- North or south lat, East or west lon
     if Rounded.Lat.North then
@@ -103,10 +117,12 @@ package body String_Util is
     -- Put the numbers
     Str( 2 ..  3) := Normal (Rounded.Lat.Coord.Deg, 2, Gap => '0');
     Str( 5 ..  6) := Normal (Rounded.Lat.Coord.Min, 2, Gap => '0');
-    Str( 8 .. 11) := Normal (Rounded.Lat.Coord.Sec, 4, Gap => '0');
+    Str( 8 ..  9) := Normal (Rounded.Lat.Coord.Sec, 2, Gap => '0');
+    Str(10 .. 11) := Normal (Rounded.Lat.Coord.Ten / 100, 2, Gap => '0');
     Str(14 .. 16) := Normal (Rounded.Lon.Coord.Deg, 3, Gap => '0');
     Str(18 .. 19) := Normal (Rounded.Lon.Coord.Min, 2, Gap => '0');
-    Str(21 .. 24) := Normal (Rounded.Lon.Coord.Sec, 4, Gap => '0');
+    Str(21 .. 22) := Normal (Rounded.Lon.Coord.Sec, 2, Gap => '0');
+    Str(23 .. 24) := Normal (Rounded.Lon.Coord.Ten / 100, 2, Gap => '0');
 
     -- Done
     return Str;
@@ -155,31 +171,63 @@ package body String_Util is
       raise Format_Error;
   end Str2Dec;
 
-  function Dec2Str (Dec : Lat_Lon.Lat_Lon_Dec_Rec) return Dec_Str is
-    Str : Dec_Str;
+  -- Round Nan to 10 thousands of deg
+  -- or Round nan to micro of deg
+  procedure Round (C : in out Conv.Dec_Coord_Rec;
+                   To_Tenth : in Boolean) is
+    Factor : My_Math.Real;
+    Max : Conv.Nan_Range;
+    use type My_Math.Real;
   begin
+    if To_Tenth then
+      Factor := 100000.0;
+      Max := 10000;
+    else
+      Factor := 1000.0;
+      Max := 1000000;
+    end if;
+    C.Nan := Conv.Nan_Range (My_Math.Round (My_Math.Real (C.Nan) / Factor));
+    if C.Nan = Max then
+      C.Nan := 0;
+      if C.Deg = Conv.Deg_Range'Last then
+        C.Deg :=  Conv.Deg_Range'First;
+      else
+        C.Deg := C.Deg + 1;
+      end if;
+    end if;
+    C := (C.Deg, C.Nan * Natural (Factor));
+  end Round;
+
+  function Dec2Str (Dec : Lat_Lon.Lat_Lon_Dec_Rec) return Dec_Str is
+    Rounded : Lat_Lon.Lat_Lon_Dec_Rec;
+    Str : Dec_Str;
+
+  begin
+    Rounded := Dec;
+    Round (Rounded.Lat.Coord, False);
+    Round (Rounded.Lon.Coord, False);
     -- Set / and .
     Str(4) := '.';
     Str(11) := '/';
     Str(16) := '.';
 
     -- North or south lat, East or west lon
-    if Dec.Lat.North then
+    if Rounded.Lat.North then
       Str(1) := 'N';
     else
       Str(1) := 'S';
     end if;
-    if Dec.Lon.East then
+    if Rounded.Lon.East then
       Str(12) := 'E';
     else
       Str(12) := 'W';
     end if;
 
     -- Put the numbers
-    Str( 2 ..  3) := Normal (Dec.Lat.Coord.Deg, 2, Gap => '0');
-    Str( 5 .. 11) := Normal (Dec.Lat.Coord.Nan / 10000000, 6, Gap => '0');
-    Str(13 .. 13) := Normal (Dec.Lon.Coord.Deg, 3, Gap => '0');
-    Str(16 .. 21) := Normal (Dec.Lon.Coord.Nan / 10000000, 6, Gap => '0');
+    Str( 2 ..  3) := Normal (Rounded.Lat.Coord.Deg, 2, Gap => '0');
+    Str( 5 .. 10) := Normal (Rounded.Lat.Coord.Nan / 1000, 6, Gap => '0');
+    Str(13 .. 15) := Normal (Rounded.Lon.Coord.Deg, 3, Gap => '0');
+    Str(17 .. 22) := Normal (Rounded.Lon.Coord.Nan / 1000, 6, Gap => '0');
 
     -- Done
     return Str;
@@ -198,7 +246,7 @@ package body String_Util is
   begin
     -- Round hundredths
     Rounded := Geo_Angle;
-    Round (Rounded);
+    Round (Rounded, True);
     -- Set .
     Str(4) := '.'; Str(7) := '.';
     Str(1 ..  3) := Normal (Rounded.Deg, 3, Gap => '0');
@@ -208,30 +256,18 @@ package body String_Util is
   end Geoangle2Str;
 
   function Decangle2Str (Dec_Angle : Conv.Dec_Coord_Rec) return Dec_Angle_Str is
+    Rounded : Conv.Dec_Coord_Rec;
     Str : Dec_Angle_Str;
-    I, J : Natural;
-    R : My_Math.Real;
-    use type My_Math.Real;
   begin
-    I := Dec_Angle.Deg;
-    R := My_Math.Real (Dec_Angle.Nan) / 100000.0;
-    J := Natural (My_Math.Round (R));
-    -- Carry
-    if J = 10000 then
-      J := 0;
-      if I = Conv.Deg_Range'Last then
-        I := Conv.Deg_Range'First;
-      else
-        I := I + 1;
-      end if;
-    end if;
+    -- Round hundredths
+    Rounded := Dec_Angle;
+    Round (Rounded, True);
     -- Set .
     Str(4) := '.';
-    Str(1 ..  3) := Normal (I, 3, Gap => '0');
-    Str(5 ..  8) := Normal (J, 4, Gap => '0');
+    Str(1 ..  3) := Normal (Rounded.Deg, 3, Gap => '0');
+    Str(5 ..  8) := Normal (Rounded.Nan / 100000, 4, Gap => '0');
     return Str;
   end Decangle2Str;
-
 
 end String_Util;
 

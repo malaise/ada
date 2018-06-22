@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1;
 with As.B, Argument, Basic_Proc, Con_Io, Afpx, Str_Util, Language, Reg_Exp;
-with Conv, Lat_Lon, String_Util, Great_Circle, Afpx_Xref, Mapcode2Rad;
+with Conv, Lat_Lon, String_Util, Great_Circle, Afpx_Xref;
 
 procedure Gc is
 
@@ -17,6 +17,7 @@ procedure Gc is
 
   Use_Afpx : Boolean;
 
+  Decode_Ok : Boolean;
   A, B : Lat_Lon.Lat_Lon_Rad_Rec;
   Heading  : Conv.Geo_Coord_Rec;
   Distance : Lat_Lon.Distance;
@@ -46,7 +47,6 @@ procedure Gc is
 
   type Mode_List is (Sexa_Mode, Deci_Mode, Code_Mode);
   Mode : Mode_List := Sexa_Mode;
-  Decode_Ok : Boolean;
   Need_Clean : Boolean := False;
 
   Deg : constant String := "°"; --## rule line off Char
@@ -210,6 +210,7 @@ procedure Gc is
       Cursor := First_Fld;
   end Decode_Point;
 
+  -- Decode a mapcode
   procedure Decode_Mapcode (First_Fld, Last_Fld : in Afpx.Field_Range;
                             Point : out Lat_Lon.Lat_Lon_Rad_Rec;
                             Ok : out Boolean;
@@ -223,7 +224,7 @@ procedure Gc is
           Afpx.Decode_Field(Field, 0, False), Str_Util.Both));
     end loop;
     Great_Circle.Logger.Log_Debug ("Parsed mapcode: " & Mapcode_Txt.Image);
-    Point := Mapcode2Rad (Mapcode_Txt.Image);
+    Point := Lat_Lon.Mapcode2Rad (Mapcode_Txt.Image);
     Great_Circle.Logger.Log_Debug ("Got point OK");
     Ok := True;
   exception
@@ -233,6 +234,92 @@ procedure Gc is
       Cursor := First_Fld;
   end Decode_Mapcode;
 
+  -- Decode points or mapcodes, set A and B. Return OK
+  function Decode return Boolean is
+    Ok : Boolean;
+  begin
+    Get_Handle.Cursor_Col := 0;
+    Get_Handle.Insert := False;
+    Clear_Result;
+    if Mode /= Code_Mode then
+      Get_Handle.Cursor_Field := A_Flds'First;
+      Decode_Point (A_Flds'First, A_Flds'Last, A, Ok,
+                    Get_Handle.Cursor_Field);
+      if Ok then
+        Decode_Point (B_Flds'First, B_Flds'Last, B, Ok,
+                      Get_Handle.Cursor_Field);
+      end if;
+    else
+      Get_Handle.Cursor_Field := Code_Flds'First;
+      Decode_Mapcode (Code_Flds'First, Code_Flds'First + 2, A, Ok,
+                      Get_Handle.Cursor_Field);
+      if Ok then
+        Decode_Mapcode (Code_Flds'First + 3, Code_Flds'Last, B, Ok,
+                        Get_Handle.Cursor_Field);
+      end if;
+    end if;
+    if Ok then
+      Great_Circle.Logger.Log_Debug ("Got point A:" & A.X'Img & A.Y'Img);
+      Great_Circle.Logger.Log_Debug ("Got point B:" & B.X'Img & B.Y'Img);
+    end if;
+    return Ok;
+  end Decode;
+
+  -- Encode a point in degree of decimal
+  procedure Encode_Point (First_Fld, Last_Fld : in Afpx.Field_Range;
+                          Point : in Lat_Lon.Lat_Lon_Rad_Rec) is
+    Str : constant String := (
+        if Mode = Sexa_Mode then String_Util.Geo2Str (Lat_Lon.Rad2Geo (Point))
+        else                     String_Util.Dec2Str (Lat_Lon.Rad2Dec (Point)));
+    Index : Positive := Str'First;
+    Len : Positive;
+  begin
+    for Field in First_Fld .. Last_Fld loop
+      Len := Afpx.Get_Field_Width (Field);
+      if Afpx.Is_Get_Kind (Field) then
+        Afpx.Encode_Field (Field, (0, 0), Str(Index .. Index + Len - 1));
+      end if;
+      -- Index of next field,
+      if Afpx.Is_Get_Kind (Field) then
+        Index := Index + Len;
+      elsif Mode = Sexa_Mode then
+        -- Skip the last "" (in '"/')
+        Index := Index + 1;
+      elsif Mode = Deci_Mode then
+        -- Skip the space in the middle of deci part
+        --  and the Deg at the end ("o/")
+        for Char of String'(Afpx.Decode_Field (Field, 0, False)) loop
+          if Char = '.' or else Char = '/' then
+            Index := Index + 1;
+          end if;
+        end loop;
+      end if;
+    end loop;
+    null;
+  end Encode_Point;
+
+  -- Encode a mapcode
+  procedure Encode_Mapcode (Unused_First_Fld, Last_Fld : in Afpx.Field_Range;
+                            Point : in Lat_Lon.Lat_Lon_Rad_Rec) is
+    Code : constant String := Lat_Lon.Rad2Mapcode (Point);
+  begin
+    Afpx.Encode_Field (Last_Fld, (0, 0), Code);
+  end Encode_Mapcode;
+
+  -- Encode A and B as points or mapcodes
+  procedure Encode is
+  begin
+    if Mode /= Code_Mode then
+      Encode_Point (A_Flds'First, A_Flds'Last, A);
+      Encode_Point (B_Flds'First, B_Flds'Last, B);
+    else
+      Encode_Mapcode (Code_Flds'First,     Code_Flds'First + 2, A);
+      Encode_Mapcode (Code_Flds'First + 3, Code_Flds'Last,      B);
+    end if;
+  end Encode;
+
+  -- Encode Heading (in degrees, with special degree char, if mode is not
+  --  decimal)
   procedure Encode_Heading (F : in Afpx.Field_Range;
                             H : in Conv.Geo_Coord_Rec) is
   begin
@@ -300,8 +387,8 @@ begin
         B := Lat_Lon.Dec2Rad (String_Util.Str2Dec(Argument.Get_Parameter(2)));
       else
         -- Coordinates of mapcodes
-        A := Mapcode2Rad (Argument.Get_Parameter(1));
-        B := Mapcode2Rad (Argument.Get_Parameter(2));
+        A := Lat_Lon.Mapcode2Rad (Argument.Get_Parameter(1));
+        B := Lat_Lon.Mapcode2Rad (Argument.Get_Parameter(2));
       end if;
       Great_Circle.Logger.Log_Debug ("Got point A:" & A.X'Img & A.Y'Img);
       Great_Circle.Logger.Log_Debug ("Got point B:" & B.X'Img & B.Y'Img);
@@ -349,30 +436,8 @@ begin
       or else (Result.Event = Afpx.Mouse_Button
                and then Result.Field_No = Compute_Field) then
         -- Decode input
-        Get_Handle.Cursor_Col := 0;
-        Get_Handle.Insert := False;
-        Clear_Result;
-        if Mode /= Code_Mode then
-          Get_Handle.Cursor_Field := A_Flds'First;
-          Decode_Point (A_Flds'First, A_Flds'Last, A, Decode_Ok,
-                        Get_Handle.Cursor_Field);
-          if Decode_Ok then
-            Decode_Point (B_Flds'First, B_Flds'Last, B, Decode_Ok,
-                          Get_Handle.Cursor_Field);
-          end if;
-        else
-          Get_Handle.Cursor_Field := Code_Flds'First;
-          Decode_Mapcode (Code_Flds'First, Code_Flds'First + 2, A, Decode_Ok,
-                        Get_Handle.Cursor_Field);
-          if Decode_Ok then
-            Decode_Mapcode (Code_Flds'First + 3, Code_Flds'Last, B, Decode_Ok,
-                          Get_Handle.Cursor_Field);
-          end if;
-        end if;
-        -- Compute
-        Great_Circle.Logger.Log_Debug ("Got point A:" & A.X'Img & A.Y'Img);
-        Great_Circle.Logger.Log_Debug ("Got point B:" & B.X'Img & B.Y'Img);
-        if Decode_Ok then
+        if Decode then
+          -- Compute
           Great_Circle.Compute_Route(A => A, B => B,
                                      Heading => Heading,
                                      Distance => Distance);
@@ -380,6 +445,7 @@ begin
           Afpx.Encode_Field (Distance_Field, (0, 0),
                              String_Util.Dist2Str(Distance));
           Great_Circle.Logger.Log_Debug ("Distance encoded");
+          -- Compute reverse heading
           Great_Circle.Compute_Route(A => B, B => A,
                                      Heading => Heading,
                                      Distance => Distance);
@@ -389,10 +455,15 @@ begin
         end if;
       elsif Result.Event = Afpx.Mouse_Button
       and then Result.Field_No = Switch_Field then
+        Decode_Ok := Decode;
         -- Switch
         Mode := (if Mode /= Mode_List'Last then Mode_List'Succ (Mode)
                  else Mode_List'First);
         Reset;
+        if Decode_Ok then
+          -- Encode points / mapcodes
+          Encode;
+        end if;
       end if;
 
     end loop;

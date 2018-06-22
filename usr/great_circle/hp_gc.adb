@@ -1,5 +1,5 @@
 with Basic_Proc, Argument, Gets, My_Math, Normalization;
-with Conv, Lat_Lon, Great_Circle, Mapcode2Rad;
+with Conv, Lat_Lon, Great_Circle;
 procedure Hp_Gc is
   Lat1, Lon1, Lat2, Lon2 : My_Math.Real;
   A, B : Lat_Lon.Lat_Lon_Rad_Rec;
@@ -33,8 +33,8 @@ begin
   if Argument.Get_Nbre_Arg = 2 then
     -- 2 mapcodes
     begin
-      A := Mapcode2Rad (Argument.Get_Parameter (Occurence => 1));
-      B := Mapcode2Rad (Argument.Get_Parameter (Occurence => 2));
+      A := Lat_Lon.Mapcode2Rad (Argument.Get_Parameter (Occurence => 1));
+      B := Lat_Lon.Mapcode2Rad (Argument.Get_Parameter (Occurence => 2));
     exception
       when others =>
         Basic_Proc.Put_Line_Error ("ERROR. Invalid argument");

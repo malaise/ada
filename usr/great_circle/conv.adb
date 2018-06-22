@@ -16,11 +16,11 @@ package body Conv is
     Sr := My_Math.Frac(My_Math.Real(Deg));
     Sr := Sr * 60.0 * 60.0;
     Tr := My_Math.Frac(Sr);
-    Ti := Natural(My_Math.Round (Tr * 100000.0));
+    Ti := Natural(My_Math.Round (Tr * 10000.0));
     Si := Natural(My_Math.Trunc(Sr));
 
     -- Check if hundredths was rounded to 10000
-    if Ti = 100000 then
+    if Ti = 10000 then
       Ti := 0;
       Si := Si + 1;
     end if;
@@ -52,7 +52,7 @@ package body Conv is
     Deg := Complexes.Reducted_Degree(Coord.Deg);
     Deg := Deg + Complexes.Degree(Coord.Min) / 60.0;
     Deg := Deg + Complexes.Degree(Coord.Sec) / 60.0 / 60.0;
-    Deg := Deg + Complexes.Degree(Coord.Ten) / 60.0 / 60.0 / 100000.0;
+    Deg := Deg + Complexes.Degree(Coord.Ten) / 60.0 / 60.0 / 10000.0;
     return Complexes.To_Radian(Deg);
   end Geo2Rad;
 

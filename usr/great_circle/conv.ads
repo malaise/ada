@@ -13,7 +13,7 @@ package Conv is
     Deg : Deg_Range;
     Min : Min_Range;
     Sec : Sec_Range;
-    Ten : Nan_Range;
+    Ten : Ten_Range;
   end record;
 
   Zero : constant Geo_Coord_Rec := (0, 0, 0, 0);
