@@ -47,5 +47,7 @@ t_hp_gc FRA:FTGC.R3T-K3 FRA:FTGC.R3T-DW \
   "H:  179.994819000, D: 0Nm 0km 0m 271mm."
 t_hp_gc FRA:FTGC.R3T-K3 FRA:FTGC.R3T-K9 \
   "H:    0.000000000, D: 0Nm 0km 0m 271mm."
+t_hp_gc FRA:FTGC.R3T-1N 79GMS.VQFW-7R \
+  "H:  234.076573000, D: 6010Nm 11131km."
 
 echo "OK."

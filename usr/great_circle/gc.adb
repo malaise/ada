@@ -1,5 +1,6 @@
 with Ada.Characters.Latin_1;
-with As.B, Argument, Basic_Proc, Con_Io, Afpx, Str_Util, Language, Reg_Exp;
+with As.B, Argument, Basic_Proc, Con_Io, Afpx.Utils, Str_Util, Language,
+     Reg_Exp;
 with Conv, Lat_Lon, String_Util, Great_Circle, Afpx_Xref;
 
 procedure Gc is
@@ -40,12 +41,14 @@ procedure Gc is
   Heading_Ab_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Heading;
   Distance_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Distance;
   Heading_Ba_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Revert;
-  Switch_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Switch;
+  Sexa_Field : constant Afpx.Field_Range := Afpx_Xref.Main.To_Sexa;
+  Deci_Field : constant Afpx.Field_Range := Afpx_Xref.Main.To_Deci;
+  Map_Field : constant Afpx.Field_Range := Afpx_Xref.Main.To_Map;
   Clear_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Clear;
   Compute_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Compute;
   Exit_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Quit;
 
-  type Mode_List is (Sexa_Mode, Deci_Mode, Code_Mode);
+  type Mode_List is (Sexa_Mode, Deci_Mode, Map_Mode);
   Mode : Mode_List := Sexa_Mode;
   Need_Clean : Boolean := False;
 
@@ -86,7 +89,7 @@ procedure Gc is
   procedure Reset is
   begin
     -- Deactivate / clear fields
-    if Mode = Code_Mode then
+    if Mode = Map_Mode then
       for Field in A_Flds loop
         Afpx.Set_Field_Activation (Field, False);
       end loop;
@@ -108,19 +111,22 @@ procedure Gc is
       end loop;
     end if;
     Clear_Result;
-    -- Update Mode text and Switch button
+    -- Update Mode text and Switch buttons
+    for Field in Sexa_Field .. Map_Field loop
+      Afpx.Utils.Protect_Field (Field, False);
+    end loop;
     case Mode is
       when Sexa_Mode =>
         Afpx.Encode_Field (Mode_Field, (0, 0), "Sexigesimal mode");
-        Afpx.Encode_Field (Switch_Field, (1, 8), "Deci");
+        Afpx.Utils.Protect_Field (Sexa_Field, True);
       when Deci_Mode =>
         Afpx.Encode_Field (Mode_Field, (0, 0), "Decimal mode    ");
-        Afpx.Encode_Field (Switch_Field, (1, 8), "Code");
-      when Code_Mode =>
+        Afpx.Utils.Protect_Field (Deci_Field, True);
+      when Map_Mode =>
         Afpx.Encode_Field (Mode_Field, (0, 0), "Mapcode mode    ");
-        Afpx.Encode_Field (Switch_Field, (1, 8), "Sexi");
+        Afpx.Utils.Protect_Field (Map_Field, True);
     end case;
-    if Mode /= Code_Mode then
+    if Mode /= Map_Mode then
       Get_Handle.Cursor_Field := A_Flds'First;
     else
       Get_Handle.Cursor_Field := Code_Flds'First;
@@ -241,7 +247,7 @@ procedure Gc is
     Get_Handle.Cursor_Col := 0;
     Get_Handle.Insert := False;
     Clear_Result;
-    if Mode /= Code_Mode then
+    if Mode /= Map_Mode then
       Get_Handle.Cursor_Field := A_Flds'First;
       Decode_Point (A_Flds'First, A_Flds'Last, A, Ok,
                     Get_Handle.Cursor_Field);
@@ -309,7 +315,7 @@ procedure Gc is
   -- Encode A and B as points or mapcodes
   procedure Encode is
   begin
-    if Mode /= Code_Mode then
+    if Mode /= Map_Mode then
       Encode_Point (A_Flds'First, A_Flds'Last, A);
       Encode_Point (B_Flds'First, B_Flds'Last, B);
     else
@@ -374,7 +380,7 @@ begin
     and then Reg_Exp.Match (Deci_Pattern, Argument.Get_Parameter(2), True) then
       Mode := Deci_Mode;
     else
-      Mode := Code_Mode;
+      Mode := Map_Mode;
     end if;
     Great_Circle.Logger.Log_Debug ("Mode: " & Mode'Img);
     begin
@@ -453,12 +459,22 @@ begin
           -- Clean the result fields at next cursor change field
           Need_Clean := True;
         end if;
-      elsif Result.Event = Afpx.Mouse_Button
-      and then Result.Field_No = Switch_Field then
+      elsif Result.Event = Afpx.Mouse_Button then
+        -- Switches
+        -- Decode current point / mapcodes
         Decode_Ok := Decode;
         -- Switch
-        Mode := (if Mode /= Mode_List'Last then Mode_List'Succ (Mode)
-                 else Mode_List'First);
+        case Result.Field_No is
+          when Sexa_Field =>
+            Mode := Sexa_Mode;
+          when Deci_Field =>
+            Mode := Deci_Mode;
+          when Map_Field =>
+            Mode := Map_Mode;
+          when others =>
+            null;
+        end case;
+        -- Clear
         Reset;
         if Decode_Ok then
           -- Encode points / mapcodes
