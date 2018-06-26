@@ -763,6 +763,7 @@ procedure Afpx_Bld is
         File_Error (Node, "Too many init characters for this field");
     end;
 
+    -- Parse Init
     First_Init := True;
     Prev_Init_Square := (0, 0);
     for I in Start_Init .. Ctx.Get_Nb_Children (Node) loop

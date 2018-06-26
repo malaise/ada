@@ -5,7 +5,6 @@
 <Afpx_Descriptors Height="45" Width="80">
 
   <Color_Definitions>
-    <Color_Definition Id="Color07" Color="Brown4"/>
     <Color_Definition Id="Color13" Color="YellowGreen"/>
   </Color_Definitions>
 

@@ -24,9 +24,10 @@
 <!-- The Afpx_Descriptors is made of several descriptors. -->
 <!-- Before descriptors it is possible to re-define any of the 14 colors. -->
 <!--  The constants Color01 to Color14 are automatically created after this -->
-<!--  definition, or at least before the first descriptor. It is also -->
-<!--  possible to define the default background for descriptors (default is -->
-<!--  Color01). -->
+<!--  definition, or at least before the first descriptor (if no -->
+<!--  redefinition). It is also possible to define the default background -->
+<!--  for descriptors by setting the color name (e.g. "Red", default is -->
+<!--  the Color01). -->
 <!-- As soon as the Afpx descriptors declaration is parsed a constant -->
 <!--  Default_Background is defined. -->
 <!-- Before the descriptors, it is possible to (re)define some variables. -->
@@ -141,23 +142,26 @@
 <!-- Get   |       X           X           X    -->
 <!-- List  |       X           X           X    -->
 <!-- ========================================== -->
+<!-- A color can be specified either by a name (e.g. red) or by reference to -->
+<!--  a color Id (e.g. ${Color04}) -->
 <!ELEMENT Colors EMPTY>
 <!ATTLIST Colors Foreground CDATA #REQUIRED
                  Background CDATA #REQUIRED
                  Selected CDATA #IMPLIED>
 <!-- As soon as such color attribute is parsed, the corresponding constant, -->
-<!--  (valid for the rest of the descriptor) is defined (e.g. -->
+<!--  (valid for the remaining part of the descriptor) is defined (e.g. -->
 <!--  List.Foreground and Field_1.Background). -->
 
 <!-- Init row and col have to be compatible with the geometry of the field. -->
-<!-- Init string must contain Line Feed and must be compatible with the -->
+<!-- Rows must appear in crescent order of rows and then cols. -->
+<!-- Init string must not contain Line Feed and must be compatible with the -->
 <!-- geometry and the init col. -->
 <!ELEMENT Init (#PCDATA)>
 <!ATTLIST Init Row CDATA #REQUIRED Col CDATA #REQUIRED
                xml:space (default|preserve) "preserve">
 
 <!-- Note on Cross-reference package -->
-<!-- If afpx_bld is called with the option -x<cross_ref_package> thenn it -->
+<!-- If afpx_bld is called with the option -x<cross_ref_package> then it -->
 <!--  generates a file (named cross_ref_package.ads) containing all the -->
 <!--  descriptors ans the fields with a Name. Ex: if Afpx.xml contains: -->
 <!--  <Descriptor Num="1" Name="Main">                   -->

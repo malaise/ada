@@ -2,9 +2,6 @@
 <!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
 
 <Afpx_Descriptors Height="12" Width="80">
-  <Color_Definitions>
-    <Color_Definition Id="Color07" Color="Brown4"/>
-  </Color_Definitions>
 
   <Descriptor Num="1" Name="Main">
     <!-- Title -->
