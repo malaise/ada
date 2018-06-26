@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with As.B, Argument, Basic_Proc, Con_Io, Afpx.Utils, Str_Util, Language,
+with As.U, As.B, Argument, Basic_Proc, Con_Io, Afpx.Utils, Str_Util, Language,
      Reg_Exp;
 with Conv, Lat_Lon, String_Util, Great_Circle, Afpx_Xref;
 
@@ -217,20 +217,26 @@ procedure Gc is
   end Decode_Point;
 
   -- Decode a mapcode
+  -- 6 for context, ":" and 14 for mapcode
+  subtype Mapcode_Txt is As.B.Asb_Bs(21);
   procedure Decode_Mapcode (First_Fld, Last_Fld : in Afpx.Field_Range;
                             Point : out Lat_Lon.Lat_Lon_Rad_Rec;
+                            Mapcode : out Mapcode_Txt;
                             Ok : out Boolean;
                             Cursor : in out Afpx.Field_Range) is
-    -- 6 for context, ":" and 12 for mapcode
-    Mapcode_Txt : As.B.Asb_Bs(19);
+    Txt : As.U.Asu_Us;
   begin
-    Mapcode_Txt.Set_Null;
+    Mapcode.Set_Null;
     for Field in First_Fld .. Last_Fld loop
-      Mapcode_Txt.Append (Str_Util.Strip (
+      if Afpx.Is_Get_Kind (Field) or else not Txt.Is_Null then
+        -- Skip ":" put field if no prefix
+        Txt.Set (Str_Util.Strip (
           Afpx.Decode_Field(Field, 0, False), Str_Util.Both));
+      end if;
+      Mapcode.Append (Txt.Image);
     end loop;
-    Great_Circle.Logger.Log_Debug ("Parsed mapcode: " & Mapcode_Txt.Image);
-    Point := Lat_Lon.Mapcode2Rad (Mapcode_Txt.Image);
+    Great_Circle.Logger.Log_Debug ("Parsed mapcode: " & Mapcode.Image);
+    Point := Lat_Lon.Mapcode2Rad (Mapcode.Image);
     Great_Circle.Logger.Log_Debug ("Got point OK");
     Ok := True;
   exception
@@ -243,6 +249,7 @@ procedure Gc is
   -- Decode points or mapcodes, set A and B. Return OK
   function Decode return Boolean is
     Ok : Boolean;
+    Mapa, Mapb : Mapcode_Txt;
   begin
     Get_Handle.Cursor_Col := 0;
     Get_Handle.Insert := False;
@@ -257,11 +264,14 @@ procedure Gc is
       end if;
     else
       Get_Handle.Cursor_Field := Code_Flds'First;
-      Decode_Mapcode (Code_Flds'First, Code_Flds'First + 2, A, Ok,
+      Decode_Mapcode (Code_Flds'First, Code_Flds'First + 2, A, Mapa, Ok,
                       Get_Handle.Cursor_Field);
       if Ok then
-        Decode_Mapcode (Code_Flds'First + 3, Code_Flds'Last, B, Ok,
+        Decode_Mapcode (Code_Flds'First + 3, Code_Flds'Last, B, Mapb, Ok,
                         Get_Handle.Cursor_Field);
+      end if;
+      if Ok then
+        Afpx.Set_Selection (Mapa.Image & " " & Mapb.Image);
       end if;
     end if;
     if Ok then
