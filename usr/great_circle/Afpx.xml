@@ -90,7 +90,7 @@
       <Geometry Up="5" Left="14" Height="1" Right="14"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
-      <Init Row="0" Col="0">W</Init>
+      <Init Row="0" Col="0">E</Init>
     </Field>
 
     <Field Num="15" Kind="Get">
@@ -177,7 +177,7 @@
       <Geometry Up="5" Left="41" Height="1" Right="41"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
-      <Init Row="0" Col="0">W</Init>
+      <Init Row="0" Col="0">E</Init>
     </Field>
 
     <Field Num="29" Kind="Get">
