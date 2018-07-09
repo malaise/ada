@@ -165,6 +165,8 @@
 -d VIC KJ.HY8-XJ => -37.827417500 145.045494750
 # Paris Avenue d'Ivry
 -d FRA PX.6B-HF => 48.824187500 2.364010800
+# Paris Avenue de Choisy
+-d FRA PY.39-L0 => 48.821481500 2.363679867
 # Blagnac Rue André Gide
 -d FRA 3G0.95-8Y => 43.643670500 1.393579133
 # Fonsorbes Impasse des Lauriers
