@@ -8,9 +8,10 @@ EPSILON[2]="7.5E-6"
 # Defaults
 export DEBUG=""
 export PRECISION=2
+export SCENARIO=0
 
 function usage {
-  echo "Usage: `basename $0` [ -p <prec> | --precision=<prec> ] [ -d | --debug ]"
+  echo "Usage: `basename $0` [ -p <prec> | --precision=<prec> ] [ -d | --debug ] [ -s | --scenario]"
   echo "    or `basename $0` [ -h | --help ]"
   echo " Default precision: $PRECISION"
 }
@@ -36,6 +37,9 @@ while [ -n "$1" ] ; do
     ;;
     (--precision=*)
       export PRECISION=${1#*=}
+    ;;
+    ("-s"|"--scenario")
+      export SCENARIO=1
     ;;
     (*)
       error "Invalid arguments"
@@ -159,6 +163,9 @@ while true ; do
   let L=$L+1
 done
 echo OK.
+if [ "$SCENARIO" = "1" ] ; then
+  exit 0
+fi
 
 # Check Territory failures
 echo Failure on territory:
