@@ -24,13 +24,13 @@ procedure T_Mapcode is
     Ada.Text_Io.Put_Line (
       "  -a  <territory_mapcode> [ <options> ] // Alternative mapcodes");
     Ada.Text_Io.Put_Line (
-      "  <territory_mapcode> ::= <territoru>:<mapcode> | [ territory] <mapcode>");
+      "  <territory_mapcode> ::= <territoruy:<mapcode> | [ territory] <mapcode>");
     Ada.Text_Io.Put_Line (
       "  <options>           ::= [ <territory> ] [ <selection> ] [ <precision> ]");
     Ada.Text_Io.Put_Line (
       "  <precision>         ::= P0 | P1 | P2");
     Ada.Text_Io.Put_Line (
-      "  <selection> ::= [ all | local ]             // Default short");
+      "  <selection> ::= [ all | local ]       // Default short");
   end Usage;
 
   function Integer_Image (I : Integer) return String is
