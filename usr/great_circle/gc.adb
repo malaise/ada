@@ -7,13 +7,15 @@ procedure Gc is
 
   procedure Usage is
   begin
-    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-      & " [ add.mm.ssss/oddd.mm.ssss add.mm.ssss/oddd.mm.ssss ]");
-    Basic_Proc.Put_Line_Error ("   or: " & Argument.Get_Program_Name
-      & " [ add.ijklmn/oddd.ijklmn add.ijklmn/oddd.ijklmn ]");
-    Basic_Proc.Put_Line_Error ("   or: " & Argument.Get_Program_Name
-      & " [ [<context>:]<mapcode> [<context>:]<mapcode> ]");
-    Basic_Proc.Put_Line_Error (" where a is N or S and o is E or W.");
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
+      & " -x | --gui       // interactive mode");
+    Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
+      & " add.mm.ssss/oddd.mm.ssss add.mm.ssss/oddd.mm.ssss");
+    Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
+      & " add.ijklmn/oddd.ijklmn add.ijklmn/oddd.ijklmn");
+    Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
+      & " [<context>:]<mapcode> [<context>:]<mapcode>");
+    Basic_Proc.Put_Line_Output (" where a is N or S and o is E or W.");
   end Usage;
 
   Use_Afpx : Boolean;
@@ -368,13 +370,19 @@ procedure Gc is
 
 begin
 
-  if Argument.Get_Nbre_Arg = 0 then
-    Use_Afpx := True;
-  elsif Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "-x" then
+  if Argument.Get_Nbre_Arg = 1
+    and then (Argument.Get_Parameter = "-h"
+      or else Argument.Get_Parameter = "--help") then
+    Usage;
+    return;
+  elsif Argument.Get_Nbre_Arg = 1
+    and then (Argument.Get_Parameter = "-x"
+      or else Argument.Get_Parameter = "--gui") then
     Use_Afpx := True;
   elsif Argument.Get_Nbre_Arg = 2 then
     Use_Afpx := False;
   else
+    Basic_Proc.Put_Line_Error ("ERROR: Invalid argument.");
     Basic_Proc.Set_Error_Exit_Code;
     Usage;
     return;

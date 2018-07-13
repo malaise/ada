@@ -5,7 +5,7 @@
 retall ] E popr
 
 # Check B and store  is in A
-[ swap dup isinte [ toreal ] ifcall dup isreal ~ [ E pushr call ] ifcall 
+[ swap dup isinte [ toreal ] ifcall dup isreal ~ [ E pushr call ] ifcall
 swap popr ]
 C popr
 
@@ -17,7 +17,7 @@ c C pushr call
 d C pushr call
 
 # Correct delta_lon by cos (sum lat / 2)
-b pushr d pushr + Pi * 360.0 / cos a pushr c pushr - * 
+b pushr d pushr + Pi * 360.0 / cos a pushr c pushr - *
 
 # Dist = Sqrt (delta_lat * 2 + delta_lon * 2)
 dup * d pushr b pushr - dup * + sqrt

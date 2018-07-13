@@ -61,7 +61,7 @@ begin
          & Argument.Get_Program_Name
          & " <lat1> <lon1> <lat2> <lon2>");
     Basic_Proc.Put_Line_Error ("  or:         "
-         & Argument.Get_Program_Name & " <mapcode> <mapcode>");
+         & Argument.Get_Program_Name & " [<context>:]<mapcode> [<context>:]<mapcode>");
     Basic_Proc.Put_Line_Error ("<lat> and <long> in degrees (decimals).");
     Basic_Proc.Set_Error_Exit_Code;
     return;
