@@ -1,10 +1,8 @@
 with Ada.Exceptions;
 with Aski, As.U, Argument, Sys_Calls, Str_Util, Text_Line, Hashed_List.Unique,
-     Hexa_Utils, Upper_Str, Lower_Str, Mixed_Str, Command, Images;
+     Hexa_Utils, Upper_Str, Lower_Str, Mixed_Str;
 with Search_Pattern, Log;
 package body Replace_Pattern is
-
-  function Code_Image is new Images.Int_Image (Command.Exit_Code_Range);
 
   -- The pattern to replace
   The_Pattern : As.U.Asu_Us;
@@ -424,8 +422,10 @@ package body Replace_Pattern is
 
   -- Issue a Shell command and return its stdout, raises Command_Error
   --  if command did not exit with code 0
-  Out_Flow, Err_Flow : aliased Command.Flow_Rec (Command.Str);
-  function Shell_Command (Cmd : String) return String is separate;
+  package Shell_Command is
+    function Exec (Cmd : String) return String;
+  end Shell_Command;
+  package body Shell_Command is separate;
 
   -- Open a file and return its content, raises File_Error
   -- open, read or close fails
@@ -625,7 +625,8 @@ package body Replace_Pattern is
           when Stop_Command =>
             if Start_Skip = 0 then
               Result.Replace (Command_Index, Got,
-                  Shell_Command (Result.Slice (Command_Index + 1, Got - 1)));
+                  Shell_Command.Exec (Result.Slice (Command_Index + 1,
+                                                    Got - 1)));
             else
               -- Go on searching from next char
               Start := Got + 1;
