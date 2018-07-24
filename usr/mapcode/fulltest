@@ -9,15 +9,16 @@ EPSILON[2]="7.5E-6"
 export DEBUG=""
 export PRECISION=2
 export SCENARIO=0
+export TEST=0
 
 function usage {
-  echo "Usage: `basename $0` [ -p <prec> | --precision=<prec> ] [ -d | --debug ] [ -s | --scenario]"
+  echo "Usage: `basename $0` [ -p <prec> | --precision=<prec> ] [ -d | --debug ] [ -s | --scenario] [ -t | --test ]"
   echo "    or `basename $0` [ -h | --help ]"
   echo " Default precision: $PRECISION"
 }
 
 function error {
-  echo "ERROR: $1" 1>&2
+  echo "ERROR: $1." 1>&2
   exit 1
 }
 
@@ -41,12 +42,18 @@ while [ -n "$1" ] ; do
     ("-s"|"--scenario")
       export SCENARIO=1
     ;;
+    ("-t"|"--test")
+      export TEST=1
+    ;;
     (*)
       error "Invalid arguments"
     ;;
   esac
   shift
 done
+if [ \( $SCENARIO -eq 1 \) -a \( $TEST -eq 1 \) ] ; then
+  error "Options \"scenario\" and \"test\" are mutually exclusive"
+fi
 echo Precision $PRECISION
 PRECISION=P${PRECISION}
 
@@ -167,74 +174,78 @@ if [ "$SCENARIO" = "1" ] ; then
   exit 0
 fi
 
-# Check Territory failures
-echo Failure on territory:
-# Info on  $1 in context $2 shall lead to error (exit 1)
-function territory_failure {
-  if [ -n "$DEBUG" ] ; then
-    echo -t "$1" "$2"
-  fi
-  t_mapcode -t "$1" "$2" > /dev/null 2>&1
-  res=$?
-  if [ $res -ne 1 ] ; then
-    error "t_mapcode -t \"$1\" "$2" has exited with code $res i.o. 1"
-  fi
-}
-territory_failure ""
-territory_failure " "
-territory_failure USA " "
-territory_failure " " "US "
-territory_failure "Toto"
-territory_failure AL Toto
-# For each line
-let L=1
-while true ; do
-  ctx=`readarg TerritoryFailures.txt $L 1`
-  if [ -z "$ctx" ] ; then
-    break;
-  fi
-  ter=`readarg TerritoryFailures.txt $L 2`
-  if [ -z "$ter" ] ; then
-    ter=$ctx
-    ctx=""
-  fi
-  territory_failure $ter $ctx
-  let L=$L+1
-done
-echo OK.
+if [ $TEST -eq 0 ] ; then
+  # Check Territory failures
+  echo Failure on territory:
+  # Info on  $1 in context $2 shall lead to error (exit 1)
+  function territory_failure {
+    if [ -n "$DEBUG" ] ; then
+      echo -t "$1" "$2"
+    fi
+    t_mapcode -t "$1" "$2" > /dev/null 2>&1
+    res=$?
+    if [ $res -ne 1 ] ; then
+      error "t_mapcode -t \"$1\" "$2" has exited with code $res i.o. 1"
+    fi
+  }
+  territory_failure ""
+  territory_failure " "
+  territory_failure USA " "
+  territory_failure " " "US "
+  territory_failure "Toto"
+  territory_failure AL Toto
+  # For each line
+  let L=1
+  while true ; do
+    ctx=`readarg TerritoryFailures.txt $L 1`
+    if [ -z "$ctx" ] ; then
+      break;
+    fi
+    ter=`readarg TerritoryFailures.txt $L 2`
+    if [ -z "$ter" ] ; then
+      ter=$ctx
+      ctx=""
+    fi
+    territory_failure $ter $ctx
+    let L=$L+1
+  done
+  echo OK.
+fi
 
-# Check decoding failures
-echo Failure to decode:
-# Decoding $1 in context $2 shall lead to error (exit 1)
-function decode_failure {
-  if [ -n "$DEBUG" ] ; then
-    echo -d "$1" "$2"
-  fi
-  t_mapcode -d "$1" $2 > /dev/null 2>&1
-  res=$?
-  if [ $res -ne 1 ] ; then
-    error "t_mapcode -d \"$1\" $2 has exited with code $res i.o. 1"
-  fi
-}
-decode_failure ""
-decode_failure "QD3CL.PX8J-K3'"
-decode_failure "QD3CL.P'X8J-K3"
-# For each line
-let L=1
-while true ; do
-  ctx=`readarg DecodeFailures.txt $L 1`
-  if [ -z "$ctx" ] ; then
-    break;
-  fi
-  cod=`readarg DecodeFailures.txt $L 2`
-  if [ -z "$cod" ] ; then
-    cod=$ctx
-    ctx=""
-  fi
-  decode_failure $ctx $cod
-  let L=$L+1
-done
-echo OK.
+if [ $TEST -eq 0 ] ; then
+  # Check decoding failures
+  echo Failure to decode:
+  # Decoding $1 in context $2 shall lead to error (exit 1)
+  function decode_failure {
+    if [ -n "$DEBUG" ] ; then
+      echo -d "$1" "$2"
+    fi
+    t_mapcode -d "$1" $2 > /dev/null 2>&1
+    res=$?
+    if [ $res -ne 1 ] ; then
+      error "t_mapcode -d \"$1\" $2 has exited with code $res i.o. 1"
+    fi
+  }
+  decode_failure ""
+  decode_failure "QD3CL.PX8J-K3'"
+  decode_failure "QD3CL.P'X8J-K3"
+  # For each line
+  let L=1
+  while true ; do
+    ctx=`readarg DecodeFailures.txt $L 1`
+    if [ -z "$ctx" ] ; then
+      break;
+    fi
+    cod=`readarg DecodeFailures.txt $L 2`
+    if [ -z "$cod" ] ; then
+      cod=$ctx
+      ctx=""
+    fi
+    decode_failure $ctx $cod
+    let L=$L+1
+  done
+  echo OK.
+fi
 
 # Encode
 echo Encode
@@ -348,14 +359,17 @@ decode "" "ZZ0Z0.Z1YG"    "90.000000000000" "179.999999999999" 1 1
 # For each line
 # Read ctx cod lat lon loc glo
 let L=0
+let R=0
 while read -r ctx cod lat lon loc glo || [[ -n "$ctx" ]]; do
   if [ \( -z "$ctx" \) -o \( "$ctx" = "#" \) ] ; then
     continue
   fi
-  decode $ctx $cod $lat $lon $loc $glo
+  if [ \( $TEST -eq 0 \) -o \( $R -eq 0 \) ] ; then
+    decode $ctx $cod $lat $lon $loc $glo
+  fi
 
   R=$((L % 100))
-  if [ $R -eq 0 ] ; then
+  if [ \( $R -eq 0 \) -a \( -z "$DEBUG" \) ] ; then
     echo -n "."
   fi
   let L=$L+1
