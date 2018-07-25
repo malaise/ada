@@ -664,6 +664,13 @@ comp out exp
 comp err nul
 echo "OK"
 
+title exec
+echo '"ls ""mcd_mng.adb"""' exec putl putl | mcd > out 2> err
+echo -en "    0\nmcd_mng.adb\n\n" > exp
+comp out exp
+comp err nul
+echo "OK"
+
 clean
 echo "Done."
 

@@ -4,7 +4,7 @@ pragma Elaborate_All (Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V14.3";
+  Mcd_Version : constant String := "V14.4";
 
   package Stack is
     -- What can we store in stack
@@ -294,11 +294,16 @@ package body Mcd_Mng is
   package File is
     -- Read and concatenate lines (including Lf) into a string
     procedure Read (File_Name : in Item_Rec; Content : out Item_Rec);
-    -- Read ans store each string (excluding Lfs) in Content
+    -- Read and store each string (excluding Lfs) in Content
     -- Ok = False if open error
     procedure Read (File_Name : in Item_Rec;
                     Ok        : out Item_Rec;
                     Content   : out As.U.Utils.Asu_Ua.Unb_Array);
+    -- Popo arguments and execute command and arguments
+    -- Push resulting string and exit code
+    procedure Exec (Cmd    : in Item_Rec;
+                    Code   : out Item_Rec;
+                    Output : out Item_Rec);
   end File;
 
   package body Stack is separate;
@@ -355,7 +360,7 @@ package body Mcd_Mng is
   subtype Extra_List  is Operator_List range Pope    .. Cleare;
   subtype Cond_List   is Operator_List range Ifthen  .. Etfi;
   subtype Prog_List   is Operator_List range Call    .. Callbrk;
-  subtype Io_List     is Operator_List range Format  .. Readlins;
+  subtype Io_List     is Operator_List range Format  .. Exec;
   subtype String_List is Operator_List range Strnull .. Regmatch;
   subtype Time_List   is Operator_List range Clock   .. Timeof;
   subtype Exec_List   is Operator_List range Nop     .. Help;
@@ -1076,14 +1081,21 @@ package body Mcd_Mng is
           -- push lines of the file, (first line on top)
           Pop(A);
           File.Read(A, B, Read_Lines);
-          if not B.Val_Bool then
-            Push (B);
-          else
+          if B.Val_Bool then
             for I in reverse 1 .. Read_Lines.Length loop
               Push ((Kind => Chrs, Val_Text => Read_Lines.Element(I)));
             end loop;
             Push ((Kind => Inte, Val_Inte => My_Math.Inte(Read_Lines.Length)));
+          else
+            Push (B);
           end if;
+          S := A;
+        when Exec =>
+          -- pop command and arguments, push result of command and exit code
+          Pop(A);
+          File.Exec(A, B, C);
+          Push (C);
+          Push (B);
           S := A;
       end case;
     end Do_Io;

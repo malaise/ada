@@ -1,4 +1,4 @@
-with Sys_Calls, Text_Line;
+with Sys_Calls, Text_Line, Many_Strings, Command, Images;
 separate (Mcd_Mng)
 package body File is
 
@@ -59,6 +59,7 @@ package body File is
     In_File : Text_Line.File_Type;
     Line : As.U.Asu_Us;
   begin
+    Ok := (Kind => Bool, Val_Bool => False);
 
     -- Open File
     Content.Set_Null;
@@ -66,7 +67,6 @@ package body File is
       Open (File_Name, In_File);
     exception
       when File_Error =>
-        Ok := (Kind => Bool, Val_Bool => False);
         return;
      end;
 
@@ -88,5 +88,23 @@ package body File is
     when others =>
       raise File_Error;
   end Read;
+
+  -- Execute command and arguments
+  Out_Flow, Err_Flow : aliased Command.Flow_Rec (Command.Str);
+  procedure Exec (Cmd    : in Item_Rec;
+                  Code   : out Item_Rec;
+                  Output : out Item_Rec) is
+    Exit_Code : Command.Exit_Code_Range;
+  begin
+    if Cmd.Kind /= Chrs or else Cmd.Val_Text.Is_Null then
+      raise Invalid_Argument;
+    end if;
+    Command.Execute (Many_Strings.Set (Cmd.Val_Text.Image), True,
+       Command.Only_Out,
+       Out_Flow'Access, Err_Flow'Access, Exit_Code);
+    Code := (Kind => Inte, Val_Inte => My_Math.Inte (Exit_Code));
+    Output := (Kind => Chrs , Val_Text => Out_Flow.Str);
+  end Exec;
+
 end File;
 

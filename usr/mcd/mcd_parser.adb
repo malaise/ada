@@ -199,7 +199,9 @@ package body Mcd_Parser is
    Instr    => (Nosy, "push the string entered on stdin                  ", As.U.Asu_Null, False),
    Readfile => (Nosy, "push content of file as a string or False         ", As.U.Asu_Null, False),
    Readlins => (Nosy, "push all lines of file (first on top) then the    ",
-     As.U.Tus ("number of lines read, or False"), True),
+     As.U.Tus ("number of lines read, or False"), False),
+   Exec     => (Nosy, "pop command and arguments (one str), then execute,",
+     As.U.Tus ("push output string and exit code"), True),
    -- String management and conversions
    Strnull  => (Nosy, "push True if A is empty                           ", As.U.Asu_Null, False),
    Strlen   => (Nosy, "push length of A                                  ", As.U.Asu_Null, False),

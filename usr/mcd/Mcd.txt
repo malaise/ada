@@ -1,6 +1,6 @@
 Mcd
 ===
-V14.3
+V14.4
 
 Mcd (My Calculator for Desk) is a text oriented reverse polish calculator.
 
@@ -323,6 +323,7 @@ Input
   Instr : push string entered on stdin  // flow must not be stdio
   Readfile : push content of file A as a str, or False
   Readlins : push all lines of file A (first line on top) then the number of lines read, or False
+  Exec : read command and arguments (one string) and execute, push resulting string then exit code
 
 String operations
 ~~~~~~~~~~~~~~~~~

@@ -146,6 +146,7 @@ package Mcd_Mng is
    Instr,
    Readfile,
    Readlins,
+   Exec,
    -- String management and conversions
    Strnull,
    Strlen,
