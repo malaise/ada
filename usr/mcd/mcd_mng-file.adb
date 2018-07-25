@@ -99,8 +99,7 @@ package body File is
     if Cmd.Kind /= Chrs or else Cmd.Val_Text.Is_Null then
       raise Invalid_Argument;
     end if;
-    Command.Execute (Many_Strings.Set (Cmd.Val_Text.Image), True,
-       Command.Only_Out,
+    Command.Execute (Many_Strings.Set (Cmd.Val_Text.Image), True, Command.Both,
        Out_Flow'Access, Err_Flow'Access, Exit_Code);
     Code := (Kind => Inte, Val_Inte => My_Math.Inte (Exit_Code));
     Output := (Kind => Chrs , Val_Text => Out_Flow.Str);
