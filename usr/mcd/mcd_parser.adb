@@ -207,7 +207,7 @@ package body Mcd_Parser is
    Strlen   => (Nosy, "push length of A                                  ", As.U.Asu_Null, False),
    Strcat   => (Nosy, "push B & A                                        ", As.U.Asu_Null, False),
    Strsub   => (Nosy, "push C(B..A)                                      ", As.U.Asu_Null, False),
-   Strloc   => (Nosy, "push B position of str A in C                     ", As.U.Asu_Null, False),
+   Strloc   => (Nosy, "push index of Bth occurence of str A in C         ", As.U.Asu_Null, False),
    Strins   => (Nosy, "push C after inserting at pos B str A             ", As.U.Asu_Null, False),
    Strovw   => (Nosy, "push C after overwritting from pos B by str A     ", As.U.Asu_Null, False),
    Strdel   => (Nosy, "push C after deleting from pos B to A             ", As.U.Asu_Null, False),

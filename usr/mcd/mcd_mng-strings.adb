@@ -13,18 +13,25 @@ package body Strings is
 
   procedure Check_Inte (X : in Item_Rec) is
   begin
-    if X.Kind /= Inte or else X.Val_Inte < 0
-    or else X.Val_Inte > My_Math.Inte(Integer'Last) then
+    if X.Kind /= Inte or else abs X.Val_Inte > My_Math.Inte(Integer'Last) then
       raise Invalid_Argument;
     end if;
   end Check_Inte;
 
   procedure Check_Pos (X : in Item_Rec) is
   begin
-    if X.Val_Inte = 0 then
+    if X.Kind /= Inte or else X.Val_Inte < 0
+    or else X.Val_Inte > My_Math.Inte(Integer'Last) then
       raise Invalid_Argument;
     end if;
   end Check_Pos;
+
+  procedure Check_Notnull (X : in Item_Rec) is
+  begin
+    if X.Val_Inte = 0 then
+      raise Invalid_Argument;
+    end if;
+  end Check_Notnull;
 
   function Strnull (S : Item_Rec) return Item_Rec is
     Res : Item_Rec(Bool);
@@ -52,9 +59,9 @@ package body Strings is
     Res : Item_Rec(Chrs);
   begin
     Check_Chrs(S);
-    Check_Inte(I1);
     Check_Pos(I1);
-    Check_Inte(I2);
+    Check_Notnull(I1);
+    Check_Pos(I2);
 
     Res := S;
     Res.Val_Text := S.Val_Text.Uslice (Positive(I1.Val_Inte),
@@ -71,11 +78,15 @@ package body Strings is
     Check_Chrs(S);
     Check_Chrs(Pat);
     Check_Inte(Occ);
-    Check_Pos(Occ);
-
-    Res.Val_Inte := My_Math.Inte(
+    if Occ.Val_Inte = 0 then
+      -- Occ = 0 => Result = 0
+      Res.Val_Inte := 0;
+    else
+      Res.Val_Inte := My_Math.Inte(
             S.Val_Text.Locate (Pat.Val_Text.Image,
-                               Occurence => Positive(Occ.Val_Inte)));
+                               Forward => Occ.Val_Inte > 0,
+                               Occurence => Positive(abs Occ.Val_Inte)));
+    end if;
     return Res;
   end Strloc;
 
@@ -84,8 +95,8 @@ package body Strings is
   begin
     Check_Chrs(S);
     Check_Chrs(Sub);
-    Check_Inte(I);
     Check_Pos(I);
+    Check_Notnull(I);
 
     Res := S;
     Res.Val_Text.Insert (Positive (I.Val_Inte),
@@ -101,8 +112,8 @@ package body Strings is
   begin
     Check_Chrs(S);
     Check_Chrs(Sub);
-    Check_Inte(I);
     Check_Pos(I);
+    Check_Notnull(I);
 
     Res := S;
     Res.Val_Text.Overwrite (Positive (I.Val_Inte),
@@ -117,9 +128,9 @@ package body Strings is
     Res : Item_Rec(Chrs);
   begin
     Check_Chrs(S);
-    Check_Inte(I);
     Check_Pos(I);
-    Check_Inte(J);
+    Check_Notnull(I);
+    Check_Pos(J);
 
     Res := S;
     Res.Val_Text.Delete (Positive (I.Val_Inte),

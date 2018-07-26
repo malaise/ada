@@ -1,6 +1,6 @@
 Mcd
 ===
-V14.5
+V14.6
 
 Mcd (My Calculator for Desk) is a text oriented reverse polish calculator.
 
@@ -334,7 +334,7 @@ String operations
   Strlen : push A length                // A str, R inte
   Strcat : push B & A                   // Concatenation
   Strsub : push C(B..A)                 // A and B inte, C and R str
-  Strloc : push index of Bth occurence of str A in C
+  Strloc : push index of Bth occurence of str A in C, backwards if B < 0
   Strins : push C after inserting in it at pos B str A
   Strovw : push C after overwritting in it from pos B by str A 
   Strdel : push C after deleting from it from pos B to A
