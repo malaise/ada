@@ -84,7 +84,7 @@ procedure T_Accuracy is
         exit when not Search (Cod, Codes, False);
       end;
     end loop;
-    return ( (if Incr_Lat /= 0.0 then Prev_Coord.Lat else Prev_Coord.Lon) );
+    return (if Incr_Lat /= 0.0 then Prev_Coord.Lat else Prev_Coord.Lon);
   end Bounds;
 
   -- Check that a lat lon generates a mapcode

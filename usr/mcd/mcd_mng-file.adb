@@ -1,4 +1,4 @@
-with Sys_Calls, Text_Line, Many_Strings, Command, Images;
+with Sys_Calls, Text_Line, Many_Strings, Command;
 separate (Mcd_Mng)
 package body File is
 

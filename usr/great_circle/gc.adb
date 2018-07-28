@@ -313,7 +313,6 @@ procedure Gc is
         end loop;
       end if;
     end loop;
-    null;
   end Encode_Point;
 
   -- Encode a mapcode

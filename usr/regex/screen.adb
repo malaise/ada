@@ -68,7 +68,7 @@ package body Screen is
   begin
     -- Encode Line
     Afpx.Encode_Field (Afpx_Xref.Main.Line, (0, 0),
-        Images.Integer_Image ( (if Results(1).Is_Null then 0 else Line)));
+        Images.Integer_Image (if Results(1).Is_Null then 0 else Line));
     -- Reset and encode result
     Afpx.Reset_Field (Afpx_Xref.Main.Result);
     for I in Results'Range loop

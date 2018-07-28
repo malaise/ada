@@ -2194,6 +2194,7 @@ package body Mapcodes is
                              Dividery, 0, Decodemaxy, Decodemaxx);
   end Decode_Grid;
 
+  -- Mapcoder engine
   Max_Nr_Of_Mapcode_Results : constant := 22;
   function Mapcoder_Engine (Enc : Frac_Rec; Tn : in Integer;
                             Get_Shortest : Boolean; State_Override : Integer;
@@ -2204,11 +2205,81 @@ package body Mapcodes is
     Upto_Territory  : Integer := Ccode_Earth;
     Original_Length : Natural;
     From, Upto : Integer;
-    Mm : Min_Max_Rec;
-    R : As_U.Asu_Us;
     Store_Code : Integer;
     Mc_Info : Mapcode_Info;
-    use type As_U.Asu_Us;
+    Go_On : Boolean;
+
+    -- Scan a range of territories
+    procedure Scan (Territory_Number : Integer) is
+      Mm : Min_Max_Rec;
+      R : As_U.Asu_Us;
+      use type As_U.Asu_Us;
+    begin
+      for I in From .. Upto loop
+      -- Exlude 54 and 55
+      if Co_Dex(I) < 54 then
+        Mm := Min_Max_Setup (I);
+        if Fits_Inside (Enc.Coord32, Mm) then
+          if Is_Nameless (I) then
+            R := As_U.Tus (Encode_Nameless (Enc, I, From, Extra_Digits));
+          elsif Rec_Type(I) > 1 then
+            R := As_U.Tus (Encode_Auto_Header (Enc, I, Extra_Digits));
+          elsif I = Upto and then Get_Parent (Territory_Number) >= 0 then
+            declare
+              More_Results : constant Mapcode_Infos
+                           := Mapcoder_Engine (Enc,
+                                Get_Parent (Territory_Number),
+                                Get_Shortest,
+                                Territory_Number,
+                                Extra_Digits);
+              T : constant Natural := Nb_Results;
+              N : constant Natural := More_Results'Length;
+            begin
+              if N > 0 then
+                Nb_Results := Nb_Results + N;
+                if Nb_Results > Max_Nr_Of_Mapcode_Results then
+                  Nb_Results := Max_Nr_Of_Mapcode_Results;
+                end if;
+                Results (T + 1 .. Nb_Results) := More_Results;
+              end if;
+              R.Set_Null;
+            end;
+          else
+            if Is_Restricted (I)
+            and then Nb_Results = Original_Length then
+              --  Restricted, and no shorter mapcodes exist:
+              --   do not generate mapcodes
+              R.Set_Null;
+            else
+              R := As_U.Tus (Encode_Grid (Enc, I, Mm,
+                    Header_Letter(I), Extra_Digits));
+            end if;
+          end if;
+
+          if R.Length > 4 then
+            R := As_U.Tus (Aeu_Pack (R, False));
+            Store_Code := Territory_Number;
+            if State_Override >= 0 then
+              Store_Code := State_Override;
+            end if;
+
+            Mc_Info.Mapcode := R;
+            Mc_Info.Territory_Alpha_Code :=
+                As_U.Tus (Get_Territory_Alpha_Code (Store_Code));
+            Mc_Info.Full_Mapcode :=
+                (if Store_Code = Ccode_Earth then As_U.Asu_Null
+                 else Mc_Info.Territory_Alpha_Code & " ") & R;
+            Mc_Info.Territory_Number := Store_Code;
+            Nb_Results := Nb_Results + 1;
+            Results (Nb_Results) := Mc_Info;
+
+            exit when Get_Shortest;
+          end if;
+        end if;
+      end if;
+      end loop;
+    end Scan;
+
   begin
     if Tn in From_Territory .. Upto_Territory then
       From_Territory := Tn;
@@ -2216,82 +2287,22 @@ package body Mapcodes is
     end if;
 
     for Territory_Number in From_Territory .. Upto_Territory loop
+      Go_On := True;
       Original_Length := Nb_Results;
       From := Data_First_Record (Territory_Number);
       if Ndata.Data_Flags(From + 1) = 0 then
-        goto Continue;
+        Go_On := False;
       end if;
-      Upto := Data_Last_Record (Territory_Number);
-      if Territory_Number /= Ccode_Earth
-      and then not Fits_Inside (Enc.Coord32, Min_Max_Setup (Upto)) then
-        goto Continue;
-      end if;
-
-      for I in From .. Upto loop
-        -- Exlude 54 and 55
-        if Co_Dex(I) < 54 then
-          Mm := Min_Max_Setup (I);
-          if Fits_Inside (Enc.Coord32, Mm) then
-            if Is_Nameless (I) then
-              R := As_U.Tus (Encode_Nameless (Enc, I, From, Extra_Digits));
-            elsif Rec_Type(I) > 1 then
-              R := As_U.Tus (Encode_Auto_Header (Enc, I, Extra_Digits));
-            elsif I = Upto and then Get_Parent (Territory_Number) >= 0 then
-              declare
-                More_Results : constant Mapcode_Infos
-                             := Mapcoder_Engine (Enc,
-                                  Get_Parent (Territory_Number),
-                                  Get_Shortest,
-                                  Territory_Number,
-                                  Extra_Digits);
-                T : constant Natural := Nb_Results;
-                N : constant Natural := More_Results'Length;
-              begin
-                if N > 0 then
-                  Nb_Results := Nb_Results + N;
-                  if Nb_Results > Max_Nr_Of_Mapcode_Results then
-                    Nb_Results := Max_Nr_Of_Mapcode_Results;
-                  end if;
-                  Results (T + 1 .. Nb_Results) := More_Results;
-                end if;
-                R.Set_Null;
-              end;
-            else
-              if Is_Restricted (I)
-              and then Nb_Results = Original_Length then
-                --  Restricted, and no shorter mapcodes exist:
-                --   do not generate mapcodes
-                R.Set_Null;
-              else
-                R := As_U.Tus (Encode_Grid (Enc, I, Mm,
-                      Header_Letter(I), Extra_Digits));
-              end if;
-            end if;
-
-            if R.Length > 4 then
-              R := As_U.Tus (Aeu_Pack (R, False));
-              Store_Code := Territory_Number;
-              if State_Override >= 0 then
-                Store_Code := State_Override;
-              end if;
-
-              Mc_Info.Mapcode := R;
-              Mc_Info.Territory_Alpha_Code :=
-                  As_U.Tus (Get_Territory_Alpha_Code (Store_Code));
-              Mc_Info.Full_Mapcode :=
-                  (if Store_Code = Ccode_Earth then As_U.Asu_Null
-                   else Mc_Info.Territory_Alpha_Code & " ") & R;
-              Mc_Info.Territory_Number := Store_Code;
-              Nb_Results := Nb_Results + 1;
-              Results (Nb_Results) := Mc_Info;
-
-              exit when Get_Shortest;
-            end if;
-          end if;
+      if Go_On then
+        Upto := Data_Last_Record (Territory_Number);
+        if Territory_Number /= Ccode_Earth
+        and then not Fits_Inside (Enc.Coord32, Min_Max_Setup (Upto)) then
+          Go_On := False;
         end if;
-      end loop;
-
-    <<Continue>>
+      end if;
+      if Go_On then
+        Scan (Territory_Number);
+      end if;
     end loop;
 
     return Results (1 .. Nb_Results);
@@ -2312,6 +2323,27 @@ package body Mapcodes is
     Nr_Zone_Overlaps : Natural;
     Coord32 : Coord_Rec;
     Zfound, Z : Mapcode_Zone_Rec;
+
+    procedure Try_Smaller (M : in Integer) is
+    begin
+      for J in From .. M - 1 loop
+        -- Try all smaller rectangles j
+        if not Is_Restricted (J) then
+          Z := Mz_Restrict_Zone_To (Zone, Min_Max_Setup (J));
+          if not Mz_Is_Empty (Z) then
+            Nr_Zone_Overlaps := Nr_Zone_Overlaps + 1;
+            if Nr_Zone_Overlaps = 1 then
+               -- First fit! remember...
+               Zfound := Z;
+            else
+              -- More than one hit, give up
+              exit;
+            end if;
+          end if;
+        end if;
+      end loop;
+    end Try_Smaller;
+
   begin
     if Minpos > 1 then
       Extensionchars := Map_Code.Uslice (Minpos + 1, Map_Code.Length);
@@ -2375,22 +2407,7 @@ package body Mapcodes is
 
           if Nr_Zone_Overlaps = 0 then
             -- See if mapcode zone OVERLAPS any sub-area...
-            for J in From .. M - 1 loop
-              -- Try all smaller rectangles j
-              if not Is_Restricted (J) then
-                Z := Mz_Restrict_Zone_To (Zone, Min_Max_Setup (J));
-                if not Mz_Is_Empty (Z) then
-                  Nr_Zone_Overlaps := Nr_Zone_Overlaps + 1;
-                  if Nr_Zone_Overlaps = 1 then
-                     -- First fit! remember...
-                     Zfound := Z;
-                  else
-                    -- More than one hit, give up
-                    exit;
-                  end if;
-                end if;
-              end if;
-            end loop;
+            Try_Smaller (M);
 
             if Nr_Zone_Overlaps = 1 then
               -- Intersected exactly ONE sub-area?
