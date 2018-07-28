@@ -28,9 +28,6 @@ procedure Tcp_Spy is
   -- Stdout through Text_Line
   File : Text_Line.File_Type;
 
-  use type Socket.Host_Id;
-  use type Tcp_Util.Remote_Port_List, Tcp_Util.Remote_Host_List;
-
   function Port_Image is new Images.Mod_Image (Socket.Port_Num);
   function Inte_Image is new Images.Int_Image (Integer);
 

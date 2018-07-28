@@ -7,6 +7,7 @@ package Filters is
   -- Tail length
   subtype Tail_Length is Long_Longs.Ll_Natural;
 
+  type Pattern_Access is access all Reg_Exp.Compiled_Pattern;
   type Filter_Rec is record
     File : As.U.Asu_Us;
     Period : Timers.Period_Range;
@@ -15,7 +16,7 @@ package Filters is
     Rule : As.U.Asu_Us;
     Seconds : Tail_Length;
     Time_Format : As.U.Asu_Us;
-    Pattern : access Reg_Exp.Compiled_Pattern;
+    Pattern : Pattern_Access;
   end record;
 
   -- Check and store a filter

@@ -274,7 +274,7 @@ package body Event_Mng is
     C_Res : C_Types.Int;
     Handle_Res : Out_Event_List;
     use type Virtual_Time.Clock_Access,
-             Virtual_Time.Time, Virtual_Time.Speed_Range,
+             Virtual_Time.Time,
              Timers.Expiration.Expiration_Rec, Perpet.Delta_Rec;
   begin
     if Delay_Spec.Clock /= null then

@@ -206,7 +206,6 @@ package body Client_Mng is
 
 
   procedure Modified (Item : in Data_Base.Item_Rec) is
-    use type Data_Base.Item_Rec;
   begin
     Modif_Stamp := Ada.Calendar.Clock;
     -- Intra data

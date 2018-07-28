@@ -336,7 +336,6 @@ package body Output is
   function List_File_Iterator (
       Dscr : in out Tree_Mng.Src_Dscr;
       Unused_Level : Natural) return Trees.Iteration_Policy is
-    use type Sourcer.Src_Kind_List;
   begin
     -- Discard Looping info
     if not Dscr.Looping then

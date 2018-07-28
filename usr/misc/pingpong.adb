@@ -334,7 +334,7 @@ begin
     Port : constant Tcp_Util.Remote_Port
            := Ip_Addr.Parse (Addr(Index + 1 .. Addr'Last));
     Port_Num : Socket.Port_Num;
-    use type Tcp_Util.Remote_Port_List, Socket.Host_Id;
+    use type Tcp_Util.Remote_Port_List;
   begin
     -- Compute port num
     if Port.Kind /= Tcp_Util.Port_Num_Spec then

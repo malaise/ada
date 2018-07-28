@@ -53,7 +53,6 @@ package body Fight_Mng is
                    Sync : in Boolean;
                    Prio : in Args.Prio_Str;
                    Extra : in String := "") is
-    use type Status.Status_List;
   begin
     if not In_Fight then
       Dictio_Debug.Put (Dictio_Debug.Fight, "Not in fight");

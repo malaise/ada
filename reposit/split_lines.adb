@@ -6,7 +6,6 @@ function Split_Lines (Iter   : in out Parser.Iterator;
   Result : As.U.Utils.Asu_Ua.Unb_Array;
   Line : As.U.Asu_Us;
   Needed : Positive;
-  use type As.U.Asu_Us;
 begin
   -- Split input into lines of fixed max len
   -- Iterate on each word

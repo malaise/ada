@@ -125,7 +125,6 @@ procedure T_Autobus is
       Unused_Observer   : in out Obs_Spy_Type;
       Unused_Subscriber : in Autobus.Subscriber_Access_Type;
       Message           : in String) is
-    use type Autobus.Subscriber_Access_Type;
   begin
     Basic_Proc.Put_Line_Output ("Spyed >" & Message & "<");
   end Receive;
@@ -137,7 +136,6 @@ procedure T_Autobus is
       Unused_Observer   : in out Obs_Put_Type;
       Unused_Subscriber : in Autobus.Subscriber_Access_Type;
       Message           : in String) is
-    use type Autobus.Subscriber_Access_Type;
   begin
     Async_Stdin.Put_Out (Message);
     if Nolf

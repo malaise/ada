@@ -36,7 +36,7 @@ package body Screen is
 
   procedure Reset is
     Scores : constant Common.Score_Array := Common.Get_Scores;
-    use type Afpx.Absolute_Field_Range, Afpx.Descriptor_Range;
+    use type Afpx.Descriptor_Range;
     use type Common.Game_Kind_List;
   begin
     if not Afpx.Is_Descriptor_Set

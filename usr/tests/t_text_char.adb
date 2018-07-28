@@ -10,7 +10,6 @@ procedure T_Text_Char is
   Nundo : Queues.Len_Range;
   Failed : exception;
 
-  use type Queues.Len_Range;
 begin
   -- One arg
   if Argument.Get_Nbre_Arg /= 1 then

@@ -1,4 +1,4 @@
-with Basic_Proc, Sys_Calls, Text_Char, Argument, Input_Buffer;
+with Basic_Proc, Text_Char, Argument, Input_Buffer;
 procedure T_Input_Buffer is
 
   -- Last chat shall be line feed
@@ -27,7 +27,6 @@ procedure T_Input_Buffer is
   -- Input buffer
   Buffer : Input_Buffer.Buffer;
 
-  use type Sys_Calls.File_Desc;
 begin
 
   -- Parse argument

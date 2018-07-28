@@ -604,7 +604,6 @@ package body Mng is
 
   -- Update the displayed amounts
   procedure Change_Unit is
-    use type Unit_Format.Units_List;
   begin
     Unit_Format.Switch_Unit;
     -- Redisplay

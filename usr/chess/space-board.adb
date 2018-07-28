@@ -47,7 +47,6 @@ package body Space.Board is
   procedure Move_Piece (From   : in Square_Coordinate;
                         To     : in Square_Coordinate;
                         Commit : in Boolean) is
-    use type Pieces.Action_Kind_List;
   begin
     The_Board(To.Col, To.Row) := The_Board(From.Col, From.Row);
     The_Board(From.Col, From.Row) := null;

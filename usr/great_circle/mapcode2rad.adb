@@ -4,8 +4,6 @@ with Lat_Lon, Conv;
 -- Str is [ <Context>: ] <mapcode>
 function Mapcode2Rad (Str : String) return Lat_Lon.Lat_Lon_Rad_Rec is
 
-  use type Conv.Rad_Range;
-
   -- Convert a Mapcode real cooordinate (Real fraction of degrees), into
   --   Radian in -180 .. 180
   function To_Radian (R : Mapcodes.Real) return Conv.Rad_Coord_Range is

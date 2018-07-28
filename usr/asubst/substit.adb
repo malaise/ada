@@ -15,7 +15,6 @@ package body Substit is
   -- List of strings
   package Line_List_Mng renames As.U.Utils.Asu_Dyn_List_Mng;
   Line_List : Line_List_Mng.List_Type;
-  subtype Str_Access is As.U.Utils.Asu_Us_Access;
 
   -- File names
   In_File_Name : As.U.Asu_Us;
@@ -456,7 +455,6 @@ package body Substit is
                          Test         : in Boolean;
                          Nb_Match     : in out Subst_Natural;
                          Loc_Subst    : out Subst_Natural) is
-    use type Subst_Natural;
   begin
     Loc_Subst.Set_Null;
     for I in 1 .. Line.all.Length loop
@@ -731,7 +729,7 @@ package body Substit is
 
     -- Put matching text, complete line or just the matching text
     procedure Put_Match (Complete : in Boolean) is
-      use type Str_Access, Search_Pattern.Ll_Natural;
+      use type Search_Pattern.Ll_Natural;
     begin
       if Last_Line = First_Line then
         -- Handle specific case of only one line

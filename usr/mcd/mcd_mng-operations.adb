@@ -136,7 +136,7 @@ package body Operations is
   function Roundiv (L, R : Item_Rec) return Item_Rec is
     Plus : Boolean;
     Res : Item_Rec;
-    use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
+    use type Arbitrary.Fractions.Fraction;
   begin
     if not Is_Arbi_Or_Frac_Or_Inte_Or_Real(L)
     or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real(R) then

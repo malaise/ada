@@ -22,7 +22,6 @@ package body Dispatch is
         (Prev_Status, New_Status : in Status.Status_List);
 
   procedure Init is
-    use type Event_Mng.Out_Event_List;
   begin
     Args.Init;
     Event_Mng.Set_Sig_Term_Callback (Signal'Access);

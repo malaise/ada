@@ -4,7 +4,6 @@ with Types, Io_Manager, Definition, Coder;
 procedure Enigma is
   Byte : Io_Manager.Byte;
   Char, Uchar : Character;
-  use type Io_Manager.Byte;
 begin
   -- Check configuration and arguments and Init Coder
   Definition.Load_Configuration;

@@ -1077,7 +1077,6 @@ package body Git_If is
   -- Launch a commit synchronous
   function Do_Commit (Comment : String) return String is
     Cmd : Many_Strings.Many_String;
-    use type As.U.Asu_Us;
   begin
     Cmd.Set ("git");
     Cmd.Cat ("commit");
@@ -1403,7 +1402,6 @@ package body Git_If is
     Crit : Reg_Exp.Compiled_Pattern;
     Ok : Boolean;
     Index : Natural;
-    use type As.U.Asu_Us;
   begin
     -- Get first line of status -b
     Cmd.Set ("git");
@@ -1602,7 +1600,6 @@ package body Git_If is
   -- Stash current context, return "" if OK
   function Add_Stash (Name : String) return String is
     Cmd : Many_Strings.Many_String;
-    use type As.U.Asu_Us;
   begin
     Cmd.Set ("git");
     Cmd.Cat ("stash");
@@ -1848,7 +1845,6 @@ package body Git_If is
     Cmd : Many_Strings.Many_String;
     Tag : Tag_Entry_Rec;
     Moved : Boolean;
-    use type As.U.Asu_Us;
   begin
     Tags.Delete_List;
     Cmd.Set ("git");

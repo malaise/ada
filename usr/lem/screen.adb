@@ -51,7 +51,6 @@ package body Screen is
   end Y_To_Screen;
   function To_Screen (Position : Space.Position_Rec)
            return Coordinate_Rec is
-    use type My_Math.Real;
   begin
     return (X => X_To_Screen (Position.X_Pos),
             Y => Y_To_Screen (Position.Y_Pos) );
@@ -172,7 +171,6 @@ package body Screen is
     J : Positive;
     Screen_Point : Coordinate_Rec;
     Screen_Ground : Con_Io.Natural_Array (1 .. (Ground'Length + 2) * 2);
-    use type My_Math.Real;
   begin
     Screen.Clear;
     -- Workaround to bug with ATI 3D driver: Ground is not properly

@@ -712,7 +712,7 @@ package body Afpx is
   function Get_Field_Protection (Field_No : in Absolute_Field_Range)
                                  return Boolean is
     Fn : constant Absolute_Field_Range := Field_No;
-    use type Absolute_Field_Range, Field_Kind_List;
+    use type Field_Kind_List;
   begin
     Af_Dscr.Check(Fn);
     if Af_Dscr.Fields(Fn).Kind = Put_Field then

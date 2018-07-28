@@ -70,7 +70,6 @@ procedure T_Async is
 
   -- End of sending overflow
   procedure End_Ovf_Cb (Unused_Dscr : in  Socket.Socket_Dscr) is
-    use type Socket.Socket_Dscr;
   begin
     In_Overflow := False;
   end End_Ovf_Cb;
@@ -146,7 +145,6 @@ procedure T_Async is
                        Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
                        Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
                        New_Dscr               : in Socket.Socket_Dscr) is
-    use type Socket.Socket_Dscr;
   begin
     Soc := New_Dscr;
     Soc.Set_Blocking (Socket.Non_Blocking);

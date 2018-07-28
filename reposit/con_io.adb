@@ -983,7 +983,7 @@ package body Con_Io is
                           Time_Out    : in Delay_Rec := Infinite_Delay) is
 
     X_Event : X_Mng.Event_Kind;
-    use type C_Types.Byte, Timers.Delay_Rec, Timers.Delay_List;
+    use type C_Types.Byte;
   begin
 
     Event := Timeout;

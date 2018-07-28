@@ -897,8 +897,7 @@ package body Curve is
         return False;
       end Update_Zoom;
 
-    use type Con_Io.Curs_Mvt, Con_Io.Mouse_Button_List,
-             Con_Io.Mouse_Button_Status_List;
+    use type Con_Io.Curs_Mvt, Con_Io.Mouse_Button_Status_List;
     begin -- Draw_One
 
       -- Init context

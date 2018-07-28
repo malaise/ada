@@ -30,8 +30,7 @@ package body Game is
     Land_Status : Flight.Status_List;
     -- Worst landing satus
     Worst_Landing : Flight.Status_List;
-    use type Flight.Status_List, Screen.Evt_Kind_List, Screen.Mvt_Kind_List,
-             Chronos.Status_List;
+    use type Flight.Status_List, Screen.Evt_Kind_List, Screen.Mvt_Kind_List;
 
     function Is_Landed (Status : Flight.Status_List) return Boolean is
       (Status = Flight.Landed or else Status = Flight.Safe_Landed);

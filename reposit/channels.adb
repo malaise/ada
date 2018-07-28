@@ -733,7 +733,6 @@ package body Channels is
       Dscr : Socket.Socket_Dscr;
       D_Rec : Dest_Rec;
       S_Rec : Send_Rec;
-      use type Socket.Socket_Dscr;
     begin
       -- Get current socket
       if Channel_Dscr.Replies.Is_Empty then

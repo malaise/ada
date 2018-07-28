@@ -245,7 +245,7 @@ package body Setup is
   function Get_Valid (Ship : Curr_Ship_List;
                       Start : Utils.Coord;
                       Dir : Dir_List) return Utils.Coord is
-    use type Utils.Row_Range, Utils.Col_Range;
+    use type Utils.Col_Range;
     Erow : Utils.Row_Range;
     Ecol : Utils.Col_Range;
     Len : Positive;

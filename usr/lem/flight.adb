@@ -85,7 +85,7 @@ package body Flight is
   function Check_Above (Point, Left, Right : Space.Position_Rec) return Boolean is
     -- Height on segment at Point.X
     Y_Point : Space.Position_Range;
-    use type Space.Position_Range, Lem.Speed_Range;
+    use type Space.Position_Range;
   begin
     -- Proportion: (P.Y - L.Y) / (P.X - L.X) = (R.Y - L.Y) / (R.X - L.X)
     Y_Point := Left.Y_Pos + (Right.Y_Pos - Left.Y_Pos)

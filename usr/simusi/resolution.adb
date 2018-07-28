@@ -17,7 +17,7 @@ package body Resolution is
     Start, Stop : Data.Eff_Line_Range;
   end record;
 
-  use type Common.Cote_Kind, Data.Eff_Cote_Range, Data.Eff_Line_Range;
+  use type Common.Cote_Kind;
 
   package Cote_Search is
     -- Init Level

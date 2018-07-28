@@ -496,7 +496,6 @@ package body Util is
 
   -- Get a string
   procedure Get (Flow : in out Flow_Type; Str : out String) is
-    use type Line_Range;
   begin
     Flow.Nb_Got := 0;
     for C of Str loop

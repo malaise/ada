@@ -328,8 +328,7 @@ package body Timers is
     Timer : access Timer_Rec;
     Now : Virtual_Time.Time;
     Speed : Virtual_Time.Speed_Range;
-    use type Virtual_Time.Time, Virtual_Time.Clock_Access,
-             Virtual_Time.Speed_Range, Perpet.Delta_Rec;
+    use type Virtual_Time.Time, Perpet.Delta_Rec;
   begin
     Get_Mutex;
     -- Get access to timer
@@ -403,7 +402,7 @@ package body Timers is
     Timer : access Timer_Rec;
     Now : Virtual_Time.Time;
     Speed : Virtual_Time.Speed_Range;
-    use type Virtual_Time.Time, Virtual_Time.Speed_Range, Perpet.Delta_Rec;
+    use type Virtual_Time.Time, Perpet.Delta_Rec;
   begin
     Get_Mutex;
     -- Get access to timer

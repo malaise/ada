@@ -59,7 +59,7 @@ package body Conv is
   function Dec2Geo (Coord : Dec_Coord_Rec) return Geo_Coord_Rec is
     Deg : Complexes.Degree;
     Rad : Complexes.Reducted_Radian;
-    use type Complexes.Degree, Complexes.Reducted_Radian;
+    use type Complexes.Degree;
   begin
     Deg := Complexes.Degree(Coord.Deg)
          + Complexes.Degree(Coord.Nan)
@@ -140,7 +140,6 @@ package body Conv is
   function Real2Geo (R : My_Math.Real) return Geo_Coord_Rec is
     Deg : Complexes.Degree;
     Rad : Complexes.Reducted_Radian;
-    use type Complexes.Degree, Complexes.Reducted_Radian;
   begin
     Deg := Complexes.Degree(R);
     Rad := Complexes.To_Radian (Deg);

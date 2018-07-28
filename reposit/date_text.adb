@@ -422,7 +422,6 @@ package body Date_Text is
     Fi : Field_Range;
     -- The result
     Result : Natural;
-    use type Conv.Func;
   begin
     -- Init
     Init_Logger;

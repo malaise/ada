@@ -42,7 +42,7 @@ package body Command is
 
   -- The callback for death of child
   procedure Death_Cb (Death_Report : in Proc_Family.Death_Rec) is
-    use type Sys_Calls.Death_Info_List, Sys_Calls.Pid;
+    use type Sys_Calls.Death_Info_List;
   begin
     if Logger.Debug_On then
       Logger.Log_Debug ("Death Cb "

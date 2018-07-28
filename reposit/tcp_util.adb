@@ -77,7 +77,6 @@ package body Tcp_Util is
            Ttl       : in Socket.Ttl_Range;
            Dscr      : in out Socket.Socket_Dscr;
            Connected : out Boolean) is
-    use type  Socket.Socket_Dscr;
   begin
 
     Log_Connect.Log_Debug ("Tcp_Util.Try_Connect start");
@@ -136,7 +135,7 @@ package body Tcp_Util is
   procedure Handle_Current_Result (Rec : in out Connecting_Rec) is
     Port : Port_Num;
     Host : Host_Id;
-    use type Socket.Socket_Dscr, Timers.Timer_Status;
+    use type Timers.Timer_Status;
   begin
     Log_Connect.Log_Debug ("Tcp_Util.Handle_Current_Result start");
     -- Remove management data
@@ -236,7 +235,6 @@ package body Tcp_Util is
                              Read : in Boolean) return Boolean is
     Rec : Connecting_Rec;
     Go_On : Boolean;
-    use type Socket.Socket_Dscr;
   begin
     Log_Connect.Log_Debug ("Tcp_Util.Connection_Fd_Cb start with fd "
                     & Fd'Img & "  read " & Read'Img);
@@ -281,7 +279,7 @@ package body Tcp_Util is
     Rec : Connecting_Rec;
     Connected : Boolean;
     Go_On : Boolean;
-    use type Socket.Socket_Dscr, Timers.Timer_Id;
+    use type Timers.Timer_Id;
   begin
     Log_Connect.Log_Debug ("Tcp_Util.Connection_Timer_Cb start on timer");
     -- Read rec: Try current
@@ -968,7 +966,6 @@ package body Tcp_Util is
     -- The Cb hooked on Fd
     function Read_Cb (Fd : Event_Mng.File_Desc; For_Read : in Boolean)
                      return Boolean is
-      use type Event_Mng.File_Desc;
       The_Rec : Rece_Rec;
       Msg : Message_Access;
       Len : Natural;

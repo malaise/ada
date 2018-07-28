@@ -35,9 +35,10 @@ procedure Lenv is
     Rcrit : constant Character := '@';
 
     -- List of stored criteria
+    type Regex_Access is access all Reg_Exp.Compiled_Pattern;
     type Criteria_Rec is record
       Pattern : As.U.Asu_Us;
-      Regex : access Reg_Exp.Compiled_Pattern;
+      Regex : Regex_Access;
       Strict : Boolean := False;
     end record;
     package Crit_List_Mng is new Dynamic_List (Criteria_Rec);

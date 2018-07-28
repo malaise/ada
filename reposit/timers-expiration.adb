@@ -143,7 +143,6 @@ package body Timers.Expiration is
            return Expiration_Rec is
     Next_Exp : Expiration_Rec;
     Result   : Expiration_Rec;
-    use type Virtual_Time.Time;
   begin
     Get_Mutex;
     -- First timer to expire

@@ -647,8 +647,7 @@ package body Io_Flow is
   end Open_Tcp_Socket;
 
   procedure Open_Udp_Sockets (Send_Next : in Boolean) is
-    use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List,
-             Socket.Port_Num;
+    use type Tcp_Util.Remote_Host_List, Socket.Port_Num;
   begin
     -- Open reception socket
     Soc.Open (Socket.Udp);

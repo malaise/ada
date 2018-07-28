@@ -314,7 +314,6 @@ package body Tree_Mng is
     Dscr : Sourcer.Src_Dscr;
     Child_List : Src_Dyn_List_Mng.List_Type;
     Moved : Boolean;
-    use type As.U.Asu_Us;
 
   begin
     -- Scan all children units

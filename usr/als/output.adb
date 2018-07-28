@@ -91,7 +91,6 @@ package body Output is
   -- Sorting function for 2 entities according to output format
   function Less_Than (El1, El2 : Entities.Entity) return Boolean is
     use type Ada.Calendar.Time;
-    use type Sys_Calls.Off_T;
     C1, C2 : Entities.Entity;
     use type As.U.Asu_Us;
   begin

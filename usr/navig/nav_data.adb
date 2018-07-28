@@ -24,7 +24,7 @@ package body Nav_Data is
     Loc_R : Real := R;
     Deg : Nav_Types.T_Common_Deg;
     Min : Natural;
-    use type Nav_Types.T_Angle, Nav_Types.T_Common_Deg;
+    use type Nav_Types.T_Common_Deg;
   begin
 
     -- reduction of R

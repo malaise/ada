@@ -164,7 +164,6 @@ package body Intra_Dictio is
                   Get_Status : in Boolean := True) is
     Msg : String(1 .. Msg_Max_Len);
     Len : Natural := 0;
-    use type Data_Base.Item_Rec;
   begin
     if Get_Status then
       Message.Head.Stat := Character'Val(Status.Status_List'Pos(Status.Get));

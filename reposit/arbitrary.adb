@@ -475,7 +475,6 @@ package body Arbitrary is
 
   -- Constructors
   function Set_Uncheck (V : String) return Number is
-      use type As.U.Asu_Us;
   begin
     -- Prepend "+" if no sign
     return Basic.Make (As.U.Tus (

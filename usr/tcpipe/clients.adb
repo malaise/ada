@@ -49,7 +49,6 @@ package body Clients is
     Msg : Partner.Message;
     Client : Client_Rec;
     Loc_Dscr : Socket.Socket_Dscr;
-    use type Socket.Socket_Dscr;
   begin
     -- Accept only if partner is connected
     if not Partner.Is_Connected then

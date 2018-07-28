@@ -352,7 +352,6 @@ package body Normalization is
     Neg : constant Boolean := Digit_Str.Element (1) = '-';
     -- Len = Fore + 1 + Aft
     Aft : constant Integer := Len - Fore - 1;
-    use type My_Math.Real;
   begin
     -- Compute exp of 10 and store all digits (skip E-xx)
     -- Nb of bytes for int part is Exp + 1 (10 ** Exp)

@@ -20,7 +20,6 @@ procedure Trail_Spaces is
 
     -- Close a file with no exception
     procedure Close  (File : in out Text_Line.File_Type) is
-      use type Sys_Calls.File_Desc;
     begin
       if Text_Line.Is_Open (File) then
         -- Flush before closing!

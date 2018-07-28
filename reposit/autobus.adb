@@ -263,7 +263,7 @@ package body Autobus is
     Nv, Nc : Addr_Num;
     Mv, Mc : Natural;
     Sl : constant Addr_Num := Slices;
-    use type As.U.Asu_Us, Addr_Num;
+    use type Addr_Num;
   begin
     -- Convert to num
     Nv := Addr_Num_Of (Val);
@@ -702,7 +702,6 @@ package body Autobus is
   procedure Send_Adm (Active : in Trilean.Trilean) is
     Addr : As.U.Asu_Us;
     Message : Ipm_Message_Str;
-    use type As.U.Asu_Us;
   begin
     Addr := Buses.Access_Current.Ipaddr;
     -- Append paddr to prefix 'A', 'P' or 'D'
@@ -1094,7 +1093,6 @@ package body Autobus is
   procedure Reset (Bus : in out Bus_Type) is
     Unused_Bus_Found : Boolean;
     Dummy_Moved : Boolean;
-    use type Socket.Socket_Dscr;
   begin
     Check_In_Callback;
     -- Check that Bus is initialised

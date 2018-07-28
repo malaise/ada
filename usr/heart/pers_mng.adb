@@ -9,7 +9,7 @@ package body Pers_Mng is
     List_Length : constant Natural := List.List_Length;
     Person : Pers_Def.Person_Rec;
     Loc_Pos : Natural;
-    use type Pers_Def.Bpm_Range, Pers_Def.Pid_Range;
+    use type Pers_Def.Pid_Range;
 
   begin
     Pos := 0;

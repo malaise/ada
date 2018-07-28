@@ -307,7 +307,7 @@ package body Async_Stdin is
 
     -- Insert and put a wide character
     function Insert_Put (U : in Unicode_Number) return Boolean is
-      use type Unicode_Sequence, Uu.Unbounded_Array;
+      use type Uu.Unbounded_Array;
     begin
       if Insert_Mode then
         -- Insert U at current position and move 1 right
@@ -854,7 +854,6 @@ package body Async_Stdin is
   function Get_Line (Max_Chars : Max_Chars_Range := 0;
                      First_Col : Max_Chars_Range := 1;
                      Echo      : Boolean := True) return String is
-    use type Event_Mng.Out_Event_List;
   begin
     -- Set callback
     Get_Line_Buffer.Set_Null;

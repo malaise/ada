@@ -1,5 +1,5 @@
 with Aski, As.U, Sys_Calls, Argument, Hashed_List.Unique, Str_Util, Text_Line,
-     Hexa_Utils, Language, Images, Unbounded_Arrays;
+     Hexa_Utils, Images, Unbounded_Arrays;
 with Log;
 package body Search_Pattern is
 
@@ -587,7 +587,7 @@ package body Search_Pattern is
                    Case_Sensitive, Is_Regex, Dot_All : in Boolean) is
     Upat : Line_Pat_Rec;
     Search_Access, Exclude_Access : Line_Pat_Acc;
-    use type Language.Language_List, Ll_Natural;
+    use type Ll_Natural;
   begin
     -- Init global variables and 'constants'
     Search_Pattern.Is_Regex := Is_Regex;

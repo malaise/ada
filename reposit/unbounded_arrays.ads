@@ -207,7 +207,8 @@ private
 
   Null_Unbounded_Array : constant Unbounded_Array
                        := (Ada.Finalization.Controlled with others => <>);
-  Null_Unb_Array : constant Unbounded_Array := Null_Unbounded_Array;
+  Null_Unb_Array : constant Unbounded_Array
+                 := (Ada.Finalization.Controlled with others => <>);
 
 end Unbounded_Arrays;
 

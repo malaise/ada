@@ -1145,7 +1145,7 @@ package body X_Mng is
     Internal_Event : Event_Rec;
     Final_Exp : Timers.Expiration.Expiration_Rec;
     use type Ada.Calendar.Time, Timers.Delay_List, Perpet.Delta_Rec,
-             Event_Mng.Out_Event_List, Virtual_Time.Clock_Access;
+             Virtual_Time.Clock_Access;
   begin
     Check (Line_Id);
     if Timeout.Clock /= null then

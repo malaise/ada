@@ -188,7 +188,7 @@ package body Push_Pull is
     Ptg_Result   : Afpx.Result_Rec;
     -- Result of Push or Pull
     Result : Boolean;
-    use type Afpx.Absolute_Field_Range, As.U.Asu_Us;
+    use type Afpx.Absolute_Field_Range;
 
     procedure Init is
       Current_Branch : As.U.Asu_Us;

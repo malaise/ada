@@ -4,8 +4,7 @@ with Output, Words, Parser_Ada, Parse_To_End, Parse_To_Ends, Fix_Comment;
 procedure Parse_Type (Level : in Natural) is
   Word : Parser_Ada.Word_Rec;
   Paren_Level : Natural := 0;
-  use type Parser_Ada.Lexical_Kind_List,
-           Words.Word_Rec;
+  use type Parser_Ada.Lexical_Kind_List;
 
 begin
   -- Handle indent on our own, keep token

@@ -62,7 +62,6 @@ procedure Pipe is
   procedure Conn_Cb (Unused_Fifo_Name : in String;
                      Id               : in Pipe_Fifo.Fifo_Id;
                      Connected        : in Boolean) is
-    use type Pipe_Fifo.Fifo_Id;
   begin
     if Server then
       if Connected then

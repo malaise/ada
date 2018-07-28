@@ -165,7 +165,6 @@ package body Basic_Proc is
 
   function Get return Character is
    I : Integer;
-   use type System.Address;
   begin
     I := Interfaces.C_Streams.Fgetc (Interfaces.C_Streams.Stdin);
     if I = Interfaces.C_Streams.Eof then

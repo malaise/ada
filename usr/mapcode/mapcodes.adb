@@ -3,7 +3,6 @@ with Ndata;
 package body Mapcodes is
 
   subtype Lint is Long_Long_Integer;
-  use type Lint;
 
   -- All functions returning a Integer return a natural or Error
   Error : constant Integer := -1;

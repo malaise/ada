@@ -13,7 +13,6 @@ package body Alias is
     Iter : Parser.Iterator;
     Searching : Boolean;
     Tail : Tmp_Txt;
-    use type Data_Base.Item_Rec;
   begin
 
     -- Init parsing

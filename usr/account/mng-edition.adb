@@ -187,7 +187,7 @@ package body Edition is
   procedure Update_Buttons (Field  : in Afpx.Field_Range;
                             Kind   : in out Oper_Def.Kind_List;
                             Status : in out Oper_Def.Status_List) is
-    use type Afpx.Field_Range, Oper_Def.Kind_List, Oper_Def.Status_List;
+    use type Afpx.Field_Range, Oper_Def.Status_List;
   begin
     for K in Oper_Def.Kind_List loop
       if Field = Kind_Buttons(K) then
@@ -323,7 +323,7 @@ package body Edition is
     Date_Str : Unit_Format.Date_Str;
     Field : Afpx.Absolute_Field_Range := 0;
     Pos : Positive;
-    use type Oper_Def.Status_List, Oper_Def.Kind_List, Oper_Def.Amount_Range,
+    use type Oper_Def.Kind_List, Oper_Def.Amount_Range,
              Afpx.Absolute_Field_Range;
   begin
     if Edit_Type = Delete then
@@ -456,7 +456,7 @@ package body Edition is
                        Cause : Afpx.Enter_Field_Cause_List;
                        Str   : Afpx.Unicode_Sequence)
            return Con_Io.Col_Range is
-    use type Afpx.Enter_Field_Cause_List, Afpx.Field_Range;
+    use type Afpx.Enter_Field_Cause_List;
   begin
     if Cause = Afpx.Left then
       return Afpx.Last_Index (Str, True);

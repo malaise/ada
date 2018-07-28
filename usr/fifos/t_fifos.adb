@@ -87,8 +87,6 @@ procedure T_Fifos is
     Signal := True;
   end Sign_Cb;
 
-
-  use type Test_Fifo.Fifo_Id;
 begin
   if Argument.Get_Nbre_Arg /= 2 then
     Usage;

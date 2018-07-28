@@ -157,7 +157,6 @@ package body Connection is
     Message : Message_Type := (Kind => Move, Action => Default_Action);
     Len : Natural;
     use type Space.Color_List;
-    use type Socket.Host_Id, Socket.Port_Num;
   begin
     if Debug.Get (Debug.Connection) then
       Basic_Proc.Put_Line_Output ("In receive callback : ");

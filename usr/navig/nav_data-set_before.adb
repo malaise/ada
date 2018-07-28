@@ -3,7 +3,7 @@ separate (Nav_Data)
 -- if Drift is known, compute plan angle or traj angles before
 --  global computation
 procedure Set_Before (Data : in out T_Data) is
-  use type Nav_Types.T_Common_Deg, Nav_Types.T_Angle;
+  use type Nav_Types.T_Angle;
 begin
   if Data.Set (Traj_A) then
     -- Traj.Angle is set : Plan.Angle := Traj.Angle - Drift

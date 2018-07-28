@@ -110,7 +110,6 @@ package body Ios is
                        Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
                        Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
                        New_Dscr               : in Socket.Socket_Dscr) is
-    use type Socket.Socket_Dscr;
   begin
     Tcp_Soc := New_Dscr;
     Tcp_Soc.Set_Blocking (Socket.Blocking_Send);

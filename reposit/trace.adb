@@ -116,7 +116,8 @@ package body Trace is
   -- Private operations
   ---------------------
   -- Private: Minimal init: global process name, global maks, stderr and flow
-  Flow : access Text_Line.File_Type;
+  type File_Type_Access is access all Text_Line.File_Type;
+  Flow : File_Type_Access;
   Async_Flow : Boolean := False;
   procedure Basic_Init is
     Flow_Name : As.U.Asu_Us;

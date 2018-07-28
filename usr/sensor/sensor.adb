@@ -107,7 +107,6 @@ begin
     end;
     -- No history if 0
     declare
-      use type Queues.Len_Range;
     begin
       Hist_Size := Queues.Len_Range'Value (Ctx.Get_Attribute (Node, "History"));
       if Hist_Size /= 0 then

@@ -287,7 +287,7 @@ package body Screen is
 
     Action : Players.Action_Rec;
 
-    use type Con_Io.Curs_Mvt, Space.Color_List;
+    use type Con_Io.Curs_Mvt;
   begin
     Clicked_Pos := (Valid => False);
     Getting_Promotion := False;
@@ -392,7 +392,7 @@ package body Screen is
 
     Timer : Timers.Timer_Id;
 
-    use type Con_Io.Curs_Mvt, Space.Color_List;
+    use type Con_Io.Curs_Mvt;
   begin
     if Ack then
       Erase_Time;
@@ -439,7 +439,7 @@ package body Screen is
 
     Timeout : Con_Io.Delay_Rec;
 
-    use type Con_Io.Curs_Mvt, Space.Color_List;
+    use type Con_Io.Curs_Mvt;
   begin
     Timeout := (Timers.Delay_Sec, null, Con_Io.No_Period, 0.5);
     Ins := False;

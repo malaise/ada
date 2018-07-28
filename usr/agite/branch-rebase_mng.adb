@@ -12,7 +12,6 @@ package body Rebase_Mng is
     Branches : Git_If.Branches_Mng.List_Type;
     Suffix : constant String := ".Tmp";
     Name : As.U.Asu_Us;
-    use type As.U.Asu_Us;
   begin
     -- List branches
     Git_If.List_Branches (Local => True, Remote => False, Branches => Branches);

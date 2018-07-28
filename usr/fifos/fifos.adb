@@ -393,7 +393,6 @@ package body Fifos is
             Fifo.Conn_Cb (Fifo.Name(1 .. Fifo.Len), Id, False);
           end if;
         end Call_Cb;
-        use type Socket.Socket_Dscr;
       begin
         case Fifo.Kind is
           when Connect =>

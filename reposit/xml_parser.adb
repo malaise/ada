@@ -164,7 +164,7 @@ package body Xml_Parser is
     To := Val;
   end Set;
   function Image (Entity : Entity_Type) return String is
-    (if Entity.Parameter then "%" else "") & Entity.Name.Image;
+    ( (if Entity.Parameter then "%" else "") & Entity.Name.Image) ;
   -- Entities differ if one is parameter and not the other
   --  or if names differ
   overriding function "=" (Current : Entity_Type;
@@ -181,7 +181,7 @@ package body Xml_Parser is
     To := Val;
   end Set;
   function Image (Unparsed : Unparsed_Type) return String is
-    (if Unparsed.Is_Entity then "E:" else "N:") & Unparsed.Name.Image;
+    ( (if Unparsed.Is_Entity then "E:" else "N:") & Unparsed.Name.Image);
   overriding function "=" (Current : Unparsed_Type;
                            Criteria : Unparsed_Type) return Boolean is
     use type As.U.Asu_Us;
@@ -304,13 +304,11 @@ package body Xml_Parser is
   -----------
   -- Debug debug message
   procedure Debug (Msg : in String) is
-    use type Trilean.Trilean;
   begin
     Logger.Log_Debug (Msg, "Xml_Parser");
   end Debug;
 
   function Debug_On return Boolean is
-    use type Trilean.Trilean;
   begin
     if not Logger.Is_Init then
       -- First call, set debug
@@ -426,7 +424,6 @@ package body Xml_Parser is
   -- Clean a parsing context
   procedure Clean (Ctx : in out Ctx_Type;
                    Reset_Unparsed_Entities : in Boolean) is
-    use type My_Tree.Position_Access;
     File : File_Access;
   begin
     -- Clean input flow
@@ -796,7 +793,6 @@ package body Xml_Parser is
   function Get_Cell (Tree : Tree_Acc;
                      Node : Node_Type) return My_Tree_Cell is
     Cell : My_Tree_Cell;
-    use type My_Tree.Position_Access;
   begin
     -- Read cell in tree
     Tree.Set_Position (Node.Tree_Access);

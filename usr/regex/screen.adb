@@ -65,7 +65,6 @@ package body Screen is
   -- Put result
   procedure Put_Results (Line : in Text_Range := 1;
                          Results : in Results_Array) is
-    use type Afpx.Field_Range;
   begin
     -- Encode Line
     Afpx.Encode_Field (Afpx_Xref.Main.Line, (0, 0),

@@ -30,7 +30,7 @@ package body Matcher is
     Match_Info : Reg_Exp.Match_Array (1 .. 10);
     Assign : Boolean;
     V1, V2 : Integer;
-    use type Reg_Exp.Match_Cell, Any_Def.Any_Kind_List,
+    use type Any_Def.Any_Kind_List,
              Tree.Node_Kind, Tree.Oper_List, Tree.Eval_List, As.U.Asu_Us;
   begin
 
@@ -243,7 +243,7 @@ package body Matcher is
                    Assign : in As.U.Asu_Us) is
     Result : Boolean;
     Assign_Index : Positive;
-    use type Tree.Node_Kind, Tree.Oper_List, Tree.Eval_List;
+    use type Tree.Oper_List, Tree.Eval_List;
   begin
     -- Check Oper versus Eval
     Result := (case Node.Eval is

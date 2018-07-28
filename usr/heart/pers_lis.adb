@@ -179,8 +179,6 @@ package body Pers_Lis is
       when others => return False;
     end Compute;
 
-   use type Pers_Def.Bpm_Range;
-
    begin
     Exit_Program := False;
 

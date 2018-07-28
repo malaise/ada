@@ -115,7 +115,7 @@ package body Dispatch is
     Evt_In : Event_Mng.Handling.Event_Rec;
     Evt_Out : Event_Mng.Out_Event_List;
 
-    use type Ada.Calendar.Time, System.Address,
+    use type Ada.Calendar.Time,
              Timers.Expiration.Expiration_Rec,
              Event_Mng.Out_Event_List,
              Perpet.Delta_Rec;

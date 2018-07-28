@@ -554,7 +554,6 @@ package body History is
     -- List root
     procedure List_Root is
       Hash : Git_If.Git_Hash;
-      use type Afpx.Line_List_Mng.Ll_Natural;
     begin
       -- Save position in List and read it
       Hash := Hash_Of;

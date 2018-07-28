@@ -540,7 +540,6 @@ package body Definition is
 
   -- Initialize a scrambler
   procedure Set (Scrambler : out Scrambler_Type; To : in String) is
-    use type Types.Lid;
   begin
     if To'Length /= Scrambler.Mapping'Length then
       raise Constraint_Error;

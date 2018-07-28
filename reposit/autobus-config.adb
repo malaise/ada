@@ -275,7 +275,6 @@ package body Config is
     Crit : Bus_Conf_Rec;
     Found : Boolean;
     Dur : Duration;
-    use type As.U.Asu_Us;
   begin
     Init;
     Root := Ctx.Get_Root_Element;

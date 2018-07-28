@@ -111,7 +111,7 @@ procedure Xwords is
     Percent : Afpx.Percent_Range;
     Row : Con_Io.Row_Range;
 
-    use type Afpx.List_Change_List, Afpx.List_Status_Rec;
+    use type Afpx.List_Change_List;
   begin
     -- Nothing if not a valid list of words
     if Status /= Found or else List_Content = History

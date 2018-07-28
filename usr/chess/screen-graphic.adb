@@ -92,7 +92,7 @@ package body Graphic is
     Pos : constant Graph_Square := To_Con_Io_Square (Color, Square);
 
     Bits : Bitmaps.Piece_Map_Access;
-    use type Space.Color_List, Pieces.Piece_Access, Pieces.Piece_Kind_List;
+    use type Space.Color_List, Pieces.Piece_Access;
   begin
     -- get background
     if Space.Color_Of_Square(Square) = Space.White then

@@ -49,7 +49,6 @@ package body Sok_Save is
   -- type Look_Ref_List is (First, Next);
   function Look (Ref : Look_Ref_List) return Sok_Movement.Saved_Data_Rec is
     Movement : Sok_Movement.Saved_Data_Rec;
-    use type Queues.Len_Range;
   begin
     if Ref = First then
       Index_Save := 1;

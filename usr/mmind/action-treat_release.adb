@@ -14,7 +14,7 @@ procedure Treat_Release (Go_On, Exit_Game : out Boolean) is
     Free_State : Common.Propal_State_Rec;
     Color : Response.Color_Rec (Level);
     Resp : Response.Response_Rec;
-    use type Common.Propal_Range, Common.Color_Range, Common.Try_List;
+    use type Common.Propal_Range, Common.Try_List;
   begin
     if Cur_Selection.Try_No /= First_Free then
       declare
@@ -80,8 +80,7 @@ procedure Treat_Release (Go_On, Exit_Game : out Boolean) is
     end if;
   end Answer;
 
-  use type Common.Propal_Range, Common.Color_Range, Common.Try_List,
-           Common.Level_Range,
+  use type Common.Propal_Range, Common.Color_Range, Common.Level_Range,
            Screen.Selection_List;
 
 begin
