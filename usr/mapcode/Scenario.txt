@@ -145,6 +145,8 @@
 -c -90.000000000 0.000000000 AAA => AAA 0HZHZ.HZHZ '0HZHZ.HZHZ' 532
 
 # Places
+# la Rochelle clinique Aurore
+-d FRA WH.J4CN => 46.160145000 -1.175072000
 # Poitiers Les Grandes Dunes
 -d FRA Z9Q.SL-M1 => 46.590932500 0.349860500
 # Isle Les Courrières
