@@ -1,5 +1,5 @@
 -- This is a "complete" example
--- with Ada.Text_Io;
+-- with Ada.Text_Io, Ada.Characters.Latin_1;
 
 -- limited with Ada.Exceptions;
 
@@ -35,6 +35,10 @@ package body Test is
   --   Field1 at 0 range 0 .. 31;
   --   Field2 at 4 range 0 ..  7;
   -- end record;
+
+  -- A type with aspect
+  -- type Boolean_For_C is new Boolean
+  --   with Size => 8;
 
   -- A record type with discriminant
   -- type Typ3 (D : Character := ' ') is record
@@ -127,7 +131,7 @@ package body Test is
     -- subtype Char is Character
     --   with Static_Predicate => Char in 'a' .. 'f' | 'a' .. 'F' | '0'.. '9';
 
-    -- A function
+    -- A function with aspect
     function Func3 (A, B : Int; C : Char) return String is
     begin
       return Func3 (A, B, C);
@@ -141,12 +145,12 @@ package body Test is
 
   end Pack1;
 
-  -- Another package
+  -- Another package, with an aspect
   package body Pack2 is
 
   end Pack2;
 
-  -- A task
+  -- A task with an aspect
   task body Task1 is
   begin
     -- Comment in a task

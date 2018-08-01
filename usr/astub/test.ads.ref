@@ -1,5 +1,5 @@
 -- This is a "complete" example
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Characters.Latin_1;
 limited with Ada.Exceptions;
 private with Ada.Directories;
 limited private with Ada.Numerics;
@@ -10,7 +10,7 @@ generic
   type Typ is private;
   -- A function as generic formal argument
   with function ">" (A, B : Typ) return Boolean is <>;
-package Test with Pure is
+package Test is
 
   -- A type
   type Typ1 is new String
@@ -25,6 +25,9 @@ package Test with Pure is
     Field1 at 0 range 0 .. 31;
     Field2 at 4 range 0 ..  7;
   end record;
+  -- A type with aspect
+  type Boolean_For_C is new Boolean
+    with Size => 8;
 
   -- A record type with discriminant
   type Typ3 (D : Character := ' ') is record
@@ -42,7 +45,7 @@ package Test with Pure is
 
   -- A private type
   type Typ5 is private with Type_Invariant => Check(Typ5);
-  function Check (V: Typ5) return Boolean;
+  function Check (V: Typ5) return Boolean with Inline;
 
   -- A type with comments
   type Typ6 is (
@@ -90,17 +93,17 @@ package Test with Pure is
       with Dynamic_Predicate => Int mod 2 = 0;
     subtype Char is Character
       with Static_Predicate => Char in 'a' .. 'f' | 'a' .. 'F' | '0'.. '9';
-    -- A function
-    function Func3 (A, B : Int; C : Char) return String with Priority => 10;
+    -- A function with aspect
+    function Func3 (A, B : Int; C : Char) return String with Inline;
     -- A procedure
-    procedure Proc2 (A : in Integer) with Priority => 11;
+    procedure Proc2 (A : in Integer) with Inline;
   end Pack1;
-  -- Another package
-  package Pack2 is
+  -- Another package, with an aspect
+  package Pack2 with Spark_Mode is
   end Pack2;
 
-  -- A task
-  task Task1 is
+  -- A task with an aspect
+  task Task1 with Priority => 5 is
     -- Comment in a task
   end Task1;
   -- A task type
