@@ -17,7 +17,7 @@ procedure Regex is
 
     -- If Regex is empty then no output
     if Input.Regex.Is_Null then
-      Screen.Put_Results (Results => Screen.No_Result);
+      Screen.Put_Results (Results => Screen.No_Results);
       return;
     end if;
 
@@ -47,9 +47,12 @@ procedure Regex is
     if Ok then
       for I in 1 .. N_Matched loop
         if Reg_Exp.Valid_Match (Match_Info(I)) then
-          Results(I) := Input.Text(Line).Uslice (
-              Match_Info(I).First_Offset,
-              Match_Info(I).Last_Offset_Stop);
+          Results(I) := (
+              Start => Match_Info(I).First_Offset,
+              Stop => Match_Info(I).Last_Offset_Stop,
+              Str => Input.Text(Line).Uslice (
+                       Match_Info(I).First_Offset,
+                       Match_Info(I).Last_Offset_Stop) );
         end if;
       end loop;
     end if;

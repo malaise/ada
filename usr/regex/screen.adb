@@ -1,4 +1,4 @@
-with Con_Io, Afpx.Utils, Images, Str_Util;
+with Con_Io, Afpx.Utils, Images, Str_Util, Normal;
 with Afpx_Xref;
 
 package body Screen is
@@ -62,19 +62,28 @@ package body Screen is
     end loop;
   end Clear_Text;
 
+  function Image (I : Index_Range) return String is
+    (Normal (I, 2, Gap => '0'));
+
   -- Put result
   procedure Put_Results (Line : in Text_Range := 1;
                          Results : in Results_Array) is
   begin
     -- Encode Line
     Afpx.Encode_Field (Afpx_Xref.Main.Line, (0, 0),
-        Images.Integer_Image (if Results(1).Is_Null then 0 else Line));
-    -- Reset and encode result
+        Images.Integer_Image (if Results = No_Results then 0 else Line));
+    -- Reset result
+    Afpx.Reset_Field (Afpx_Xref.Main.Ranges);
     Afpx.Reset_Field (Afpx_Xref.Main.Result);
+    -- Encode line by line
     for I in Results'Range loop
-      if not Results(I).Is_Null then
-        Afpx.Utils.Encode_Field (Results(I).Image, Afpx_Xref.Main.Result,
-                                 I - 1, Clear => False, Keep_Tail => False);
+      if Results(I) /= No_Result then
+        Afpx.Utils.Encode_Field (
+          "(" & Image (Results(I).Start) & "-" & Image (Results(I).Stop) & ")",
+          Afpx_Xref.Main.Ranges, I - 1, Clear => False, Keep_Tail => False);
+        Afpx.Utils.Encode_Field (
+          Results(I).Str.Image,
+          Afpx_Xref.Main.Result, I - 1, Clear => False, Keep_Tail => False);
       end if;
     end loop;
   end Put_Results;
@@ -83,6 +92,7 @@ package body Screen is
   procedure Put_Error (Msg : in String) is
   begin
     -- Reset and encode error in red
+    Afpx.Reset_Field (Afpx_Xref.Main.Ranges);
     Afpx.Reset_Field (Afpx_Xref.Main.Result);
     Afpx.Set_Field_Colors (Afpx_Xref.Main.Result,
                            Foreground => Con_Io.Color_Of ("Red"));

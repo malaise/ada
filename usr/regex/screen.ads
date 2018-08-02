@@ -30,9 +30,17 @@ package Screen is
 
   -- Put result
   -- Result is the full matching substring and up to 9 substrings
+  -- For each, the range (start, stop) on 2 digits and the string
   Nb_Results : constant := 10;
-  subtype Results_Array is As.U.Asu_Array (1 .. Nb_Results);
-  No_Result : constant Results_Array := (others => <>);
+  subtype Index_Range is Natural range 0 .. 99;
+  type Result_Rec is record
+    Start, Stop : Index_Range := 0;
+    Str : As.U.Asu_Us;
+  end record;
+  No_Result : constant Result_Rec := (others => <>);
+
+  type Results_Array is array (1 .. Nb_Results) of Result_Rec;
+  No_Results : constant Results_Array := (others => <>);
 
   procedure Put_Results (
     -- Line will be 0 if first (and other) result is empty

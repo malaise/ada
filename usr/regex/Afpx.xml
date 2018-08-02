@@ -2,13 +2,13 @@
 <!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
 <!-- For regex -->
 
-<Afpx_Descriptors Height="30" Width="120">
+<Afpx_Descriptors Height="30" Width="94">
 
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
 
     <!-- Title -->
     <Field Num="1" Kind="Put">
-      <Geometry Up="0" Left="58" Height="1" Width="5"/>
+      <Geometry Up="0" Left="45" Height="1" Width="5"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Regex</Init>
     </Field>
@@ -39,62 +39,62 @@
     </Field>
 
     <!-- Text to search in -->
-    <Var Name="Text_Len" Value="210"/>
+    <Var Name="Text_Len" Value="99"/>
     <Field Num="6" Kind="Put">
-      <Geometry Up="${Field_5.Low}+2" Left="1" Height="1" Width="22"/>
+      <Geometry Up="${Field_5.Low}+2" Left="11" Height="1" Width="22"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">The text to check</Init>
     </Field>
     <Field Num="7" Kind="Get" Name="Text1">
-      <Geometry Up="${Field_6.Low}+1" Left="1" Height="1"
-                Right="${Screen.Right}-2"/>
+      <Geometry Up="${Field_6.Low}+1" Right="${Screen.Right}-1" Height="1"
+                Width="80"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="8" Kind="Get" Name="Text2">
-      <Geometry Up="${Field_7.Low}+1" Left="1" Height="1"
+      <Geometry Up="${Field_7.Low}+1" Left="${Field_7.Left}" Height="1"
                 Right="${Field_7.Right}"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="9" Kind="Get" Name="Text3">
-      <Geometry Up="${Field_8.Low}+1" Left="1" Height="1"
+      <Geometry Up="${Field_8.Low}+1" Left="${Field_7.Left}" Height="1"
                 Right="${Field_7.Right}"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="10" Kind="Get" Name="Text4">
-      <Geometry Up="${Field_9.Low}+1" Left="1" Height="1"
+      <Geometry Up="${Field_9.Low}+1" Left="${Field_7.Left}" Height="1"
                 Right="${Field_7.Right}"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="11" Kind="Get" Name="Text5">
-      <Geometry Up="${Field_10.Low}+1" Left="1" Height="1"
+      <Geometry Up="${Field_10.Low}+1" Left="${Field_7.Left}" Height="1"
                 Right="${Field_7.Right}"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="12" Kind="Get" Name="Text6">
-      <Geometry Up="${Field_11.Low}+1" Left="1" Height="1"
+      <Geometry Up="${Field_11.Low}+1" Left="${Field_7.Left}" Height="1"
                 Right="${Field_7.Right}"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="13" Kind="Get" Name="Text7">
-      <Geometry Up="${Field_12.Low}+1" Left="1" Height="1"
+      <Geometry Up="${Field_12.Low}+1" Left="${Field_7.Left}" Height="1"
                 Right="${Field_7.Right}"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="14" Kind="Get" Name="Text8">
-      <Geometry Up="${Field_13.Low}+1" Left="1" Height="1"
+      <Geometry Up="${Field_13.Low}+1" Left="${Field_7.Left}" Height="1"
                 Right="${Field_7.Right}"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="15" Kind="Get" Name="Text9">
-      <Geometry Up="${Field_14.Low}+1" Left="1" Height="1"
+      <Geometry Up="${Field_14.Low}+1" Left="${Field_7.Left}" Height="1"
                 Right="${Field_7.Right}"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
@@ -126,26 +126,32 @@
       <Init Row="8" Col="2">8</Init>
       <Init Row="9" Col="2">9</Init>
     </Field>
-    <Field Num="19" Kind="Put" Name="Result">
+    <!-- (xx-yy) -->
+    <Field Num="19" Kind="Put" Name="Ranges">
       <Geometry Up="${Field_18.Up}" Left="${Field_18.Right}+2"
+                Height="${Field_18.Height}" Width="7"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
+    <Field Num="20" Kind="Put" Name="Result">
+      <Geometry Up="${Field_18.Up}" Left="${Field_19.Right}+2"
                 Height="${Field_18.Height}" Right="${Screen.Right}-2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
     <!-- Buttons -->
-    <Field Num="20" Kind="Button" Name="Clear_regex">
+    <Field Num="21" Kind="Button" Name="Clear_regex">
       <Geometry Up="${Field_18.Low}+2" Left="1" Height="1" Width="13"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Clear Regex</Init>
     </Field>
-    <Field Num="21" Kind="Button" Name="Clear_Text">
-      <Geometry Up="${Field_20.Up}" Left="${Field_20.Right}+4" Height="1"
+    <Field Num="22" Kind="Button" Name="Clear_Text">
+      <Geometry Up="${Field_21.Up}" Left="${Field_21.Right}+4" Height="1"
                 Width="12"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Clear Text</Init>
     </Field>
-    <Field Num="22" Kind="Button" Name="Quit">
-      <Geometry Up="${Field_20.Up}" Right="${Screen.Width}-2" Height="1"
+    <Field Num="23" Kind="Button" Name="Quit">
+      <Geometry Up="${Field_21.Up}" Right="${Screen.Width}-2" Height="1"
                 Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Exit</Init>
