@@ -21,6 +21,9 @@ package Config is
   function Make_Name return String;
   function Make return String;
 
+  -- Patch command
+  function Patch return String;
+
   -- Refresh period
   function Period return Duration;
 

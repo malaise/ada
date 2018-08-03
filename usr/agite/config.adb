@@ -25,8 +25,8 @@ package body Config is
     return File_Path.Image;
   end Get_File_Name;
 
-  Curr_Dir_Pos : constant := 9;
-  Bookmarks_Pos : constant := 10;
+  Curr_Dir_Pos : constant := 10;
+  Bookmarks_Pos : constant := 11;
 
   -- Load the conf and check
   Ctx : Xml_Parser.Generator.Ctx_Type;
@@ -151,12 +151,16 @@ package body Config is
   function Make return String is
     (Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 5), 1)));
 
+  -- Patch command
+  function Patch return String is
+    (Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 6), 1)));
+
   -- Refresh Period
   function Period return Duration is
     Result : Timers.Period_Range;
   begin
     Result := Timers.Period_Range'Value (
-               Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 6), 1)));
+               Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 7), 1)));
     return Result;
   exception
     when others =>
@@ -168,7 +172,7 @@ package body Config is
     Result : Boolean;
   begin
     Result := Boolean'Value (
-               Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 7), 1)));
+               Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 8), 1)));
     return Result;
   exception
     when others =>
@@ -180,7 +184,7 @@ package body Config is
       Result : Natural;
   begin
     Result := Natural'Value (
-               Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 8), 1)));
+               Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 9), 1)));
     return Result;
   exception
     when others =>

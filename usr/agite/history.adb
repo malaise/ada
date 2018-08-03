@@ -189,7 +189,6 @@ package body History is
         Afpx.Update_List (Afpx.Center_Selected);
       end if;
 
-
       -- Read reference hash in Logs
       if Ref = 0 then
         -- Only Left selection
@@ -348,6 +347,49 @@ package body History is
       Init_List (Logs);
       Move_At (Hash);
     end Do_Tag;
+
+    -- Do a tag
+    procedure Do_Patch (Ref : in Afpx.Line_List_Mng.Ll_Natural) is
+      Command, Name : As.U.Asu_Us;
+      Hash : Git_If.Git_Hash;
+      use type Afpx.Line_List_Mng.Ll_Natural;
+    begin
+      -- Get Patch command
+      Command := As.U.Tus (Config.Patch);
+      if Command.Is_Null then
+        return;
+      end if;
+
+      -- Get patch name,
+      Name := As.U.Tus (Str_Util.Strip (
+        Afpx.Decode_Field (Afpx_Xref.History.Hash, 0, True)));
+      -- Get Hash
+      Hash:= Hash_Of;
+
+      -- Check no space
+      if Name.Is_Null or else Name.Locate (" ") /= 0 then
+         Error ("patch", Name.Image,
+            (if Name.Is_Null then "File name is empty"
+             else "File name contains illegal character"));
+         Init;
+         Init_List (Logs);
+         Move_At (Hash);
+         return;
+      end if;
+
+      -- Build command and launch
+      Command.Append (" " & Name.Image);
+      if Ref = 0 then
+        Command.Append (" " & Hash);
+      elsif Ref < Afpx.Line_List.Get_Position then
+        -- Afpx list is newest before oldest
+        -- Ensure first Hash is before second one
+        Command.Append (" " & Hash & " " & Hash_Of (Ref));
+      else
+        Command.Append (" " & Hash_Of (Ref) & " " & Hash);
+      end if;
+      Utils.Launch (Command.Image);
+    end Do_Patch;
 
     -- Store current hash
     procedure Do_Mark is
@@ -637,6 +679,7 @@ package body History is
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Checkout, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag, True);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Patch, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Mark, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Search, True);
     end if;
@@ -710,6 +753,9 @@ package body History is
             when Afpx_Xref.History.Tag =>
               -- Tag
               Do_Tag;
+            when Afpx_Xref.History.Patch =>
+              -- Tag
+              Do_Patch (Ptg_Result.Id_Selected_Right);
             when Afpx_Xref.History.Mark =>
               -- Store current hash
               Do_Mark;

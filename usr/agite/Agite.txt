@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V35.09
+V35.10
 
 General purpose
 ---------------
@@ -114,6 +114,17 @@ xref:XMake[Make] button. It shall launch a GUI. Example:
 The default name for this button is "Make" and, as for the 'xterm' button,
 you can set the 'Name' attribute  of the XML element in order to specify 
 another name for the button (8 characters max).
+
+anchor:XConfPatch[]
+
+patch::
+This defines the command to be launched for making a xref:XPatch[patch].
+The command will be called with the patch name (as first argument), then the
+current Hash, then, if set, with the reference Hash. It shall launch a GUI.
+Example:
+'#xterm -e 'sh -c "make_patch $1 $2 $3; echo -n Done.; read a"'#' +
+The 'make_patch' script can make a patch, named "$1" of commit "$2", or of
+commits "$2..$3" if "$3" is set.
 
 anchor:XConfPeriod[]
 
@@ -958,7 +969,8 @@ the branch currenly listed.
 
 anchor:XHash[]
 Below is a "H:" tagged get field in which you can enter (or paste) a up to
-40 digits SHA-1 hash value to xref:XSearch[Search] for. 
+40 digits SHA-1 hash value to xref:XSearch[Search] for. Alternatively, this
+get field is used to define the name of a xref:XPatch[patch] file.
 
 In case of a directory, the menu shows the relative path of the directory
 and lists the history of the commits that have affected the files of the
@@ -1132,6 +1144,13 @@ See also the section on xref:XRewritingHistory[rewriting history].
 .Tag
 This button button launches the xref:XTag[tag] menu that allows tagging the 
 selected commit.
+
+.Patch
+anchor:XPatch[]
+Launch the xref:XConfPatch[patch command] with the content of the
+xref:XHash[hash] field, the hash of the current selection, and, if set, the
+hash of the current right selection. note that if both Hash are set, then they
+are provided in crescent chronological order.
 
 .Mark
 anchor:XMark[]

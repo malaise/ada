@@ -10,6 +10,7 @@
   <viewer>xvi -M</viewer>
   <differator>tkdiff</differator>
   <make Name="Make">xmake</make>
+  <patch>agite_patch</patch>
   <period>30.0</period>
   <list_tags>True</list_tags>
   <history>0</history>

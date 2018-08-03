@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!ELEMENT agite (xterm,editor,viewer,differator,make,period,list_tags,
+<!ELEMENT agite (xterm,editor,viewer,differator,make,patch,period,list_tags,
                  history,last_dir,bookmarks,comment)>
 
 <!ELEMENT xterm (#PCDATA)>
@@ -10,6 +10,7 @@
 <!ELEMENT differator (#PCDATA)>
 <!ELEMENT make (#PCDATA)>
 <!ATTLIST make Name CDATA "Make">
+<!ELEMENT patch (#PCDATA)>
 <!ELEMENT period (#PCDATA)>
 <!ELEMENT list_tags (#PCDATA)>
 <!ELEMENT history (#PCDATA)>
