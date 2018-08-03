@@ -98,12 +98,16 @@ begin
   Basic_Proc.Put_Line_Output ("Replace from 12 to 11 with y, z");
   N1.Replace (12, 11, Str(325 .. 326)); --> 01ab2345678yz
   Basic_Proc.Put_Line_Output ("Image " & N1.Image);
+  N1.Append ("34");
   L1 := N1.Locate ("34", Forward => True);
-  L2 := N1.Locate ("34", Forward => False);
-  Basic_Proc.Put_Line_Output ("Locate 34:" & Natural'Image (L1)
-                            & " and" & Natural'Image (L2));
+  L2 := N1.Locate ("34", Occurence => 2, Forward => False);
+  Basic_Proc.Put_Line_Output ("Append 34 and locate 34, 1 forwd:"
+                            & Natural'Image (L1)
+                            & ", and 2 backwd:" & Natural'Image (L2));
+  N1.Trail (2);
 
-  Basic_Proc.Put_Line_Output ("Delete from 3 to 4, insert a, b, c, d before 4");
+  Basic_Proc.Put_Line_Output (
+      "Delete 34 and from 3 to 4, insert a, b, c, d before 4");
   N1.Delete (3, 4); --> 012345678yz
   N1.Insert (4, Str(301 .. 304)); --> 012abcd345678yz
   Basic_Proc.Put_Line_Output ("Replace from 4 to 5 with B, C, D");
