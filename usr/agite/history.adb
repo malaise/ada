@@ -76,6 +76,49 @@ package body History is
     Utils.X.Encode_Field (Hash, Afpx_Xref.History.Hash);
   end Encode_Hash;
 
+  -- Get the Hash of an entry
+  --  No_Hash if list is empty
+  --  Current Afpx position if Position is 0
+  function Hash_Of (Logs : in out Git_If.Log_List;
+                    Position : in Afpx.Line_List_Mng.Ll_Natural := 0)
+                   return Git_If.Git_Hash is
+    use type Afpx.Line_List_Mng.Ll_Natural;
+  begin
+    if Logs.Is_Empty or else Afpx.Line_List.Is_Empty then
+      return Git_If.No_Hash;
+     end if;
+     Logs.Move_At (if Position /= 0 then Position
+                   else Afpx.Line_List.Get_Position);
+    return Logs.Access_Current.Hash;
+  end Hash_Of;
+
+  -- Move Afpx list at Hash
+  -- First if No_Hash or not found
+  procedure Move_At (Logs : in out Git_If.Log_List;
+                     Hash : in Git_If.Git_Hash) is
+    Log : Git_If.Log_Entry_Rec;
+  begin
+    if Logs.Is_Empty or else Afpx.Line_List.Is_Empty then
+      return;
+    end if;
+    Log .Hash:= Hash;
+    if Hash /= Git_If.No_Hash
+    and then List_Hash_Search (Logs, Log, From => Git_If.Log_Mng.Absolute)
+    then
+      -- Move to found
+      Afpx.Line_List.Move_At (Logs.Get_Position);
+      Afpx.Update_List (Afpx.Center_Selected);
+    else
+       Afpx.Line_List.Rewind;
+       Logs.Rewind;
+       Afpx.Update_List (Afpx.Top);
+    end if;
+  end Move_At;
+
+  -- Do a patch
+  procedure Patch (Logs : in out Git_If.Log_List;
+                   From_Hash, To_Hash : in Git_If.Git_Hash) is separate;
+
   -- Handle the history of a file or dir
   --  possibly on a  given branch
   procedure List (Root, Branch, Path, Name : in String;
@@ -101,36 +144,13 @@ package body History is
     --  Current Afpx position if Position is 0
     function Hash_Of (Position : in Afpx.Line_List_Mng.Ll_Natural := 0)
                      return Git_If.Git_Hash is
-      use type Afpx.Line_List_Mng.Ll_Natural;
-    begin
-      if Logs.Is_Empty or else Afpx.Line_List.Is_Empty then
-        return Git_If.No_Hash;
-       end if;
-       Logs.Move_At (if Position /= 0 then Position
-                     else Afpx.Line_List.Get_Position);
-      return Logs.Access_Current.Hash;
-    end Hash_Of;
+      (Hash_Of (Logs, Position));
 
     -- Move Afpx list at Hash
     -- First if No_Hash or not found
     procedure Move_At (Hash : in Git_If.Git_Hash) is
-      Log : Git_If.Log_Entry_Rec;
     begin
-      if Logs.Is_Empty or else Afpx.Line_List.Is_Empty then
-        return;
-      end if;
-      Log .Hash:= Hash;
-      if Hash /= Git_If.No_Hash
-      and then List_Hash_Search (Logs, Log, From => Git_If.Log_Mng.Absolute)
-      then
-        -- Move to found
-        Afpx.Line_List.Move_At (Logs.Get_Position);
-        Afpx.Update_List (Afpx.Center_Selected);
-      else
-         Afpx.Line_List.Rewind;
-         Logs.Rewind;
-         Afpx.Update_List (Afpx.Top);
-      end if;
+      Move_At (Logs, Hash);
     end Move_At;
 
     -- Init Afpx
@@ -350,45 +370,42 @@ package body History is
 
     -- Do a tag
     procedure Do_Patch (Ref : in Afpx.Line_List_Mng.Ll_Natural) is
-      Command, Name : As.U.Asu_Us;
+      Lref, Lcur : Afpx.Line_List_Mng.Ll_Natural;
+      From, To : Afpx.Line_List_Mng.Ll_Natural;
+      Llogs : Git_If.Log_List;
       Hash : Git_If.Git_Hash;
       use type Afpx.Line_List_Mng.Ll_Natural;
     begin
-      -- Get Patch command
-      Command := As.U.Tus (Config.Patch);
-      if Command.Is_Null then
-        return;
-      end if;
-
-      -- Get patch name,
-      Name := As.U.Tus (Str_Util.Strip (
-        Afpx.Decode_Field (Afpx_Xref.History.Hash, 0, True)));
-      -- Get Hash
-      Hash:= Hash_Of;
-
-      -- Check no space
-      if Name.Is_Null or else Name.Locate (" ") /= 0 then
-         Error ("patch", Name.Image,
-            (if Name.Is_Null then "File name is empty"
-             else "File name contains illegal character"));
-         Init;
-         Init_List (Logs);
-         Move_At (Hash);
-         return;
-      end if;
-
-      -- Build command and launch
-      Command.Append (" " & Name.Image);
       if Ref = 0 then
-        Command.Append (" " & Hash);
-      elsif Ref < Afpx.Line_List.Get_Position then
-        -- Afpx list is newest before oldest
-        -- Ensure first Hash is before second one
-        Command.Append (" " & Hash & " " & Hash_Of (Ref));
+        Lref := 1;
       else
-        Command.Append (" " & Hash_Of (Ref) & " " & Hash);
+        Lref := Ref;
       end if;
-      Utils.Launch (Command.Image);
+      Lcur := Afpx.Line_List.Get_Position;
+      -- Ensure From is before To
+      if Lref < Lcur then
+        From := Lref;
+        To := Lcur;
+      else
+        From := Lcur;
+        To := Lref;
+      end if;
+      -- Extract logs in reverse order
+      Hash := Hash_Of;
+      Logs.Move_At (From);
+      loop
+        Llogs.Insert (Logs.Access_Current.all, Git_If.Log_Mng.Prev);
+        exit when Logs.Get_Position = To;
+        Logs.Move_To;
+      end loop;
+      -- Launch patch
+      -- Afpx list is newest before oldest,
+      --  but order of Hash is oldest then newest
+      Patch (Llogs, Hash_Of (To), Hash_Of (From));
+      -- Reset
+      Init;
+      Init_List (Logs);
+      Move_At (Hash);
     end Do_Patch;
 
     -- Store current hash
@@ -461,8 +478,9 @@ package body History is
       -- No View, Detail, Restore, Checkout, Reorg, Reset nor Tag if RightSelect
       -- Protect buttons View and restore on dirs
       -- Protect Restore, Checkout, Reorg and Reset if no modif allowed
-      -- Protect reorg if not in root or on first commit
+      -- Protect Reorg if not in root or on first commit
       -- Protect Tag if not allowed
+      -- Protect Patch if not in root
       Afpx.Utils.Protect_Field (Afpx_Xref.History.View,
                                 not Is_File or else Right_Set or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Diff,
@@ -488,6 +506,8 @@ package body History is
                                 or else not On_Root);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag,
                                 Right_Set or else Empty or else not Allow_Tag);
+      Afpx.Utils.Protect_Field (Afpx_Xref.History.Patch,
+                                Empty or else not On_Root);
       -- Set in Red the Reorg et Reset if current ref is below remote head
       if not Afpx.Get_Field_Protection (Afpx_Xref.History.Reorg)
       and then Remote_Head_Index /= 0 and then Left > Remote_Head_Index then
@@ -679,7 +699,6 @@ package body History is
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Checkout, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag, True);
-      Afpx.Utils.Protect_Field (Afpx_Xref.History.Patch, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Mark, True);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Search, True);
     end if;

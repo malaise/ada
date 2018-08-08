@@ -3,14 +3,15 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V35.10"/>
+  <Var Name="Version" Value="V36.00"/>
+
+  <!-- List management setup -->
+  <Var Name="LmWidth" Value="8"/>
+  <Var Name="LmHOffset" Value="2"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
 
-    <!-- List management setup -->
-    <Var Name="LmWidth" Value="8"/>
-    <Var Name="LmHOffset" Value="2"/>
 
     <!-- Title and list -->
     <Var Name="LWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
@@ -270,9 +271,6 @@
 
   <!-- Bookmarks -->
   <Descriptor Num="2" Background="Light_Grey" Name="Bookmarks">
-    <!-- List management setup -->
-    <Var Name="LmWidth" Value="8"/>
-    <Var Name="LmHOffset" Value="2"/>
 
     <!-- Title and list -->
     <Var Name="LWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
@@ -424,9 +422,6 @@
 
   <!-- History -->
   <Descriptor Num="3" Background="Light_Grey" Name="History">
-    <!-- List management setup -->
-    <Var Name="LmWidth" Value="8"/>
-    <Var Name="LmHOffset" Value="2"/>
 
     <!-- Title and list -->
     <Var Name="LWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
@@ -676,9 +671,6 @@
 
   <!-- Commit details -->
   <Descriptor Num="4" Background="Light_Grey" Name="Details">
-    <!-- List management setup -->
-    <Var Name="LmWidth" Value="8"/>
-    <Var Name="LmHOffset" Value="2"/>
 
     <!-- Title and list -->
     <Var Name="LWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
@@ -937,7 +929,6 @@
     </Field>
 
     <!-- List management -->
-    <Var Name="LmWidth" Value="8"/>
     <Var Name="LmLeft" Value="${Screen.Width}-${LmWidth}-2"/>
 
     <Field Num="2" Kind="Button">
@@ -1010,9 +1001,6 @@
 
   <!-- ListTags -->
   <Descriptor Num="7" Background="Light_Grey" Name="List_Tags">
-    <!-- List management setup -->
-    <Var Name="LmWidth" Value="8"/>
-    <Var Name="LmHOffset" Value="2"/>
 
     <!-- Title and list -->
     <Var Name="LWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
@@ -1235,9 +1223,6 @@
 
   <!-- AddTag -->
   <Descriptor Num="9" Background="Light_Grey" Name="Add_Tag">
-    <!-- List management setup -->
-    <Var Name="LmWidth" Value="8"/>
-    <Var Name="LmHOffset" Value="2"/>
 
     <!-- Title and list -->
     <Var Name="LWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
@@ -1398,9 +1383,6 @@
 
   <!-- Commit -->
   <Descriptor Num="10" Background="Light_Grey" Name="Commit">
-
-    <Var Name="LmWidth" Value="8"/>
-    <Var Name="LmHOffset" Value="2"/>
 
     <!-- Title and list -->
     <Var Name="LWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
@@ -1666,10 +1648,6 @@
   <!-- Push_Pull -->
   <Descriptor Num="11" Background="Light_Grey" Name="Push_Pull">
 
-    <!-- List management setup -->
-    <Var Name="LmWidth" Value="8"/>
-    <Var Name="LmHOffset" Value="2"/>
-
     <!-- Title and list -->
     <Var Name="LWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
     <List>
@@ -1817,9 +1795,6 @@
 
   <!-- Stash -->
   <Descriptor Num="12" Background="Light_Grey" Name="Stash">
-
-    <Var Name="LmWidth" Value="8"/>
-    <Var Name="LmHOffset" Value="2"/>
 
     <!-- Title and list -->
     <Var Name="LWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
@@ -1974,9 +1949,6 @@
 
   <!-- Branches -->
   <Descriptor Num="13" Background="Light_Grey" Name="Branches">
-
-    <Var Name="LmWidth" Value="8"/>
-    <Var Name="LmHOffset" Value="2"/>
 
     <!-- Title and list -->
     <Var Name="LWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
@@ -2148,9 +2120,6 @@
 
   <!-- Cherry-pick -->
   <Descriptor Num="14" Background="Light_Grey" Name="Cherry">
-    <!-- List management setup -->
-    <Var Name="LmWidth" Value="8"/>
-    <Var Name="LmHOffset" Value="2"/>
 
     <!-- Title and list -->
     <Var Name="LWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
@@ -2400,5 +2369,105 @@
     </Field>
   </Descriptor>
 
+  <!-- Patch -->
+  <Descriptor Num="16" Background="Light_Grey" Name="Patch">
+    <Var Name="LWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
+    <Var Name="LmUp" Value="10"/>
+    <Var Name="LmLeft" Value="${List.Right}+${LmHOffset}"/>
+
+    <List>
+      <Geometry Up="${LmUp}" Left="1" Height="21" Width="${LWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey" Selected="Lime_Green"/>
+    </List>
+    <Field Num="1" Kind="Put">
+      <Geometry Up="0" Left="23" Height="1" Width="9"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">A G I T E</Init>
+    </Field>
+
+    <!-- List management -->
+    <Field Num="2" Kind="Button" Name="Top">
+      <Geometry Up="${LmUp}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">Top</Init>
+    </Field>
+    <Field Num="3" Kind="Button">
+      <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="2">PgUp </Init>
+    </Field>
+    <Field Num="4" Kind="Button">
+      <Geometry Up="${Field_3.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="3">Up </Init>
+    </Field>
+    <Field Num="5" Kind="Button" Name="Center">
+      <Geometry Up="${Field_4.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Center</Init>
+    </Field>
+    <Field Num="6" Kind="Button">
+      <Geometry Up="${Field_5.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">Down</Init>
+    </Field>
+    <Field Num="7" Kind="Button">
+      <Geometry Up="${Field_6.Low}+2" Left="${LmLeft}" Height="3"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="1">PgDown</Init>
+    </Field>
+    <Field Num="8" Kind="Button" Name="Bottom">
+      <Geometry Up="${Field_7.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Bottom</Init>
+    </Field>
+    <!-- Branch and  root -->
+    <Field Num="9" Kind="Put">
+      <Geometry Up="0" Left="1" Height="1" Width="3"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">Br:</Init>
+    </Field>
+    <Field Num="10" Kind="Put" Name="Branch">
+      <Geometry Up="0" Left="${Field_9.Right}+2" Height="1"
+                Right="${Field_1.Left}-2"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
+
+    <!-- Title patch -->
+    <Field Num="11" Kind="Put" Name="Title">
+      <Geometry Up="${Field_9.Low}+3" Left="24" Height="1" Width="5"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">Patch</Init>
+    </Field>
+
+    <!-- Patch name -->
+    <Field Num="12" Kind="Put">
+      <Geometry Up="${Field_11.Low}+3" Left="1" Height="1" Width="5"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">Name:</Init>
+    </Field>
+    <Field Num="13" Kind="Get" Name="Name">
+      <Geometry Up="${Field_12.Up}" Left="${Field_12.Right}+2" Height="1"
+                Right="${List.Right}"/>
+      <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
+    </Field>
+
+    <Field Num="14" Kind="Button" Name="Ok">
+      <Geometry Up="${List.Low}+4" Left="1" Height="3" Width="6"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="2">OK</Init>
+    </Field>
+    <Field Num="15" Kind="Button" Name="Cancel">
+      <Geometry Up="${Field_14.Up}" Right="${List.Right}" Height="3" Width="8"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="1">Cancel</Init>
+    </Field>
+  </Descriptor>
 </Afpx_Descriptors>
 

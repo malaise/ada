@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V35.10
+V36.00
 
 General purpose
 ---------------
@@ -120,11 +120,10 @@ anchor:XConfPatch[]
 patch::
 This defines the command to be launched for making a xref:XPatch[patch].
 The command will be called with the patch name (as first argument), then the
-current Hash, then, if set, with the reference Hash. It shall launch a GUI.
+first Hash, then the last Hash. It shall launch a GUI.
 Example:
 '#xterm -e 'sh -c "make_patch $1 $2 $3; echo -n Done.; read a"'#' +
-The 'make_patch' script can make a patch, named "$1" of commit "$2", or of
-commits "$2..$3" if "$3" is set.
+The 'make_patch' script can make a patch, named "$1" of commits "$2..$3".
 
 anchor:XConfPeriod[]
 
@@ -359,6 +358,8 @@ the list of stashes.
 from a remote repository.
 * xref:XReset[Reset]: This allows cleaning or doing a hard/mixed/soft reset
 of the current repository.
+* xref:XPatch[Patch]: This allows creating a patch file to export several
+commits.
 
 anchor:XNavigation[]
 The navigation between the screens is as follows:
@@ -390,25 +391,26 @@ The navigation between the screens is as follows:
                      \            +------+
                       \---------->| Pull |
                                   +------+
-                     +-------+
-                     | Reset |
-                     +-------+
+                     +-------+    +-------+
+                     | Reset |    | Patch |
+                     +-------+    +-------+
 
 There are also a confirmation screen and an error screen that are called when
 necessary.
 
-NOTE: The 'history' and 'tags' menus call the 'detail' and 'checkout' menus. +
-The 'tags' and 'commit' menus call the 'push' menu. +
-The 'tags' menu calls the 'history' menu without allowing modifications, and
-the 'detail' menu without allowing modifications nor tagging. +
-The 'branches'  menu calls the 'history' menu without allowing modifications
+NOTE: The 'History' and 'Tags' menus call the 'Detail' and 'Checkout' menus. +
+The 'Tags' and 'Commit' menus call the 'Push' menu. +
+The 'Tags' menu calls the 'History' menu without allowing modifications, and
+the 'Detail' menu without allowing modifications nor tagging. +
+The 'Branches'  menu calls the 'History' menu without allowing modifications
 nor tagging. +
-The 'cherry-pick' menu calls the 'detail' menu, but without allowing
+The 'CherryPick' menu calls the 'Detail' menu, but without allowing
 modifications. +
-The 'cherry-pick' menu calls the 'commit' menu in a specific mode where is does
-not allow to call the 'push' menu. +
-The 'reset' menu is called by the 'directory', the 'history', the 'branch' and
-the 'commit' menus.
+The 'CherryPick' menu calls the 'Commit' menu in a specific mode where is does
+not allow to call the 'Push' menu. +
+The 'Reset' menu is called by the 'Directory', the 'History', the 'Branch' and
+the 'Commit' menus. +
+The 'Patch' menu is called by the 'History' menu.
 
 NOTE: All the screen transitions are based on the 'call-return' scheme. +
 So please note the double arrow between 'history' and 'detail': from the
@@ -969,8 +971,7 @@ the branch currenly listed.
 
 anchor:XHash[]
 Below is a "H:" tagged get field in which you can enter (or paste) a up to
-40 digits SHA-1 hash value to xref:XSearch[Search] for. Alternatively, this
-get field is used to define the name of a xref:XPatch[patch] file.
+40 digits SHA-1 hash value to xref:XSearch[Search] for.
 
 In case of a directory, the menu shows the relative path of the directory
 and lists the history of the commits that have affected the files of the
@@ -1147,10 +1148,15 @@ selected commit.
 
 .Patch
 anchor:XPatch[]
-Launch the xref:XConfPatch[patch command] with the content of the
-xref:XHash[hash] field, the hash of the current selection, and, if set, the
-hash of the current right selection. note that if both Hash are set, then they
-are provided in crescent chronological order.
+This button launches the 'patch' submenu that :
+
+* lists the commits between the selection and the right-selection (HEAD if none)
+in chronological order
+* allows entering a patch file name (without space)
+* and allows click in the 'OK' button.
+
+It will then launch the xref:XConfPatch[patch] command with the patch file name,
+and the Hash values of the first and of the last commit.
 
 .Mark
 anchor:XMark[]
