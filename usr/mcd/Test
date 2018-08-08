@@ -167,6 +167,19 @@ comp out exp
 comp err nul
 echo "OK"
 
+title colab
+launch colab 100 :mm:
+cat << EOF > exp
++------------------------------------------------------------+
+| man year | man month |  hours | k€ Mng/Archi | k€ Engineer |
+|----------+-----------+--------+--------------+-------------|
+|      8.4 |       100 |  13400 |      2090400 |     1420400 |
++------------------------------------------------------------+
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
 title conso
 launch conso 30 8 1.15
 cat << EOF > exp

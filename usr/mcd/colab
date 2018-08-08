@@ -1,0 +1,2 @@
+#!/bin/bash
+mcdt colab.mcd $1 :$2:

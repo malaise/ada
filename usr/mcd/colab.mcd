@@ -1,0 +1,58 @@
+# Conversion of labour into cost
+# Input is <amount> "<unit>"
+#  Amont is inte or real
+#  Unit is:
+#  my : man x year
+#  mm : man x month
+#   h : hour
+#  em : kilo Euros for management / architects
+#  ei : kilo Euros fo engineers
+# Output is a table with all the avlues above (including input)
+
+# Check args
+[ "ERROR: Invalid arguments." putl
+"Usage: <amount> ""<unit>""" putl
+"<unit> ::= my | mm | h | kem | kei" putl
+1 setexit
+retall
+] E popr
+# 2 args
+ssize 2 /= [ E pushr call ] ifcall
+# Unit, string
+dup isstr ~ [ E pushr call ] ifcall u popr
+# Amount, inte or real
+dup isinte [ toreal ] ifcall dup isreal ~ [ E pushr call ] ifcall
+
+# Store factors
+1600.0 y popr 134.0 m popr 0.156 a popr 0.106 i popr
+
+# String image with one digit
+[ -1 roundat dup trunc 7 True " " normal "." strcat swap
+frac 10.0 * trunc 1 format strof strcat ] O popr
+
+# Once hours are set, display table
+[
+"+------------------------------------------------------------+" putl
+"| man year | man month |  hours | k€ Mng/Archi | k€ Engineer |" putl
+"|----------+-----------+--------+--------------+-------------|" putl
+"|" put
+dup y pushr / O pushr call put " |" put
+dup m pushr / round 10 True " " normal put " |" put
+dup           round  7 True " " normal put " |" put
+dup a pushr * O pushr call "    " put put " |" put
+    i pushr * O pushr call  "   " put put " |" putl
+"+------------------------------------------------------------+" putl
+retall ] D popr
+
+
+# Convert into hours depending on unit, then display table
+False r popr
+u pushr "my"  = [ y pushr * D pushr call ] ifcall
+u pushr "mm"  = [ m pushr * D pushr call ] ifcall
+u pushr "h"   = [           D pushr call ] ifcall
+u pushr "kem" = [ a pushr / D pushr call ] ifcall
+u pushr "kei" = [ i pushr / D pushr call ] ifcall
+
+# No convertion occured
+E pushr call
+
