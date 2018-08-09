@@ -28,7 +28,7 @@ dup isinte [ toreal ] ifcall dup isreal ~ [ E pushr call ] ifcall
 
 # String image with one digit
 [ -1 roundat dup trunc 7 True " " normal "." strcat swap
-frac 10.0 * trunc 1 format strof strcat ] O popr
+frac 10.0 * round 1 format strof strcat ] O popr
 
 # Once hours are set, display table
 [
