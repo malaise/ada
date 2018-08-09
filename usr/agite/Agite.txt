@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V36.00
+V36.01
 
 General purpose
 ---------------
@@ -120,10 +120,8 @@ anchor:XConfPatch[]
 patch::
 This defines the command to be launched for making a xref:XPatch[patch].
 The command will be called with the patch name (as first argument), then the
-first Hash, then the last Hash. It shall launch a GUI.
-Example:
-'#xterm -e 'sh -c "make_patch $1 $2 $3; echo -n Done.; read a"'#' +
-The 'make_patch' script can make a patch, named "$1" of commits "$2..$3".
+first Hash, then the last Hash. it shall make a patch, named "$1" of
+commits "$2..$3".
 
 anchor:XConfPeriod[]
 
@@ -1156,7 +1154,8 @@ in chronological order
 * and allows click in the 'OK' button.
 
 It will then launch the xref:XConfPatch[patch] command with the patch file name,
-and the Hash values of the first and of the last commit.
+and the Hash values of the first and of the last commit. It will then display
+the output or the error message of the command.
 
 .Mark
 anchor:XMark[]

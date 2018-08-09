@@ -1,3 +1,4 @@
+with Command;
 package Utils is
 
   -- If Str fits Width then return Str, padded with space if no Align_Left
@@ -14,7 +15,13 @@ package Utils is
 
   -- Start a command in background
   type Client_Callback is access procedure;
-  procedure Launch (Command : in String; Set_Callback : in Boolean := False);
+  procedure Launch (Cmd : in String; Set_Callback : in Boolean := False);
+
+  -- Start a command in foreground, set both flows
+  procedure Execute (Cmd : in String;
+                     Out_Flow : in Command.Flow_Access;
+                     Err_Flow : in Command.Flow_Access;
+                     Exit_Code : out Command.Exit_Code_Range);
 
   -- Separator to split output text
   function Separator (C : Character) return Boolean;

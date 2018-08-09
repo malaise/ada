@@ -1,4 +1,4 @@
-with Str_Util, Many_Strings, Proc_Family, Chronos;
+with Afpx, Str_Util, Many_Strings, Proc_Family, Chronos;
 package body Utils is
 
   -- If Str fits Width then return Str, padded by spaces if not Align_Left
@@ -49,19 +49,44 @@ package body Utils is
   end My_Cb;
 
   -- Start a command in background
-  procedure Launch (Command : in String; Set_Callback : in Boolean := False) is
-    Cmd : Many_Strings.Many_String;
+  procedure Launch (Cmd : in String; Set_Callback : in Boolean := False) is
+    Cmd_Str : Many_Strings.Many_String;
     Dummy_Res : Proc_Family.Spawn_Result_Rec;
   begin
-    Cmd.Set ("/bin/sh");
-    Cmd.Cat ("-c");
-    Cmd.Cat (Command);
+    Cmd_Str.Set ("/bin/sh");
+    Cmd_Str.Cat ("-c");
+    Cmd_Str.Cat (Cmd);
     if Set_Callback then
-      Dummy_Res := Proc_Family.Spawn (Cmd, Death_Report => My_Cb'Access);
+      Dummy_Res := Proc_Family.Spawn (Cmd_Str, Death_Report => My_Cb'Access);
     else
-      Dummy_Res := Proc_Family.Spawn (Cmd);
+      Dummy_Res := Proc_Family.Spawn (Cmd_Str);
     end if;
   end Launch;
+
+  -- Start a command in foreground
+  procedure Execute (Cmd : in String;
+                     Out_Flow : in Command.Flow_Access;
+                     Err_Flow : in Command.Flow_Access;
+                     Exit_Code : out Command.Exit_Code_Range) is
+    Cmd_Str : Many_Strings.Many_String;
+  begin
+    Cmd_Str.Set (Cmd);
+    if not Afpx.Is_Suspended then
+      Afpx.Suspend;
+      Command.Execute (Cmd_Str, True, Command.Both,
+                       Out_Flow, Err_Flow, Exit_Code);
+      Afpx.Resume;
+    else
+      Command.Execute (Cmd_Str, True, Command.Both,
+                       Out_Flow, Err_Flow, Exit_Code);
+    end if;
+  exception
+    when others =>
+      if Afpx.Is_Suspended then
+        Afpx.Resume;
+      end if;
+      raise;
+  end Execute;
 
   -- Separator to split output text
   -- Space and any non-printable character (Htab, Lf...)

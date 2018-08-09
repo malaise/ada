@@ -1,3 +1,4 @@
+with Command;
 separate (History)
 procedure Patch (Logs : in out Git_If.Log_List;
                  From_Hash, To_Hash : in Git_If.Git_Hash) is
@@ -6,8 +7,13 @@ procedure Patch (Logs : in out Git_If.Log_List;
   Get_Handle  : Afpx.Get_Handle_Rec;
   Ptg_Result  : Afpx.Result_Rec;
 
+  -- Command info
   Hash : Git_If.Git_Hash;
-  Command, Name : As.U.Asu_Us;
+  Cmd, Name : As.U.Asu_Us;
+
+   Out_Flow : Command.Flow_Rec (Command.Str);
+   Err_Flow : Command.Flow_Rec (Command.Str);
+   Exit_Code : Command.Exit_Code_Range;
 
   -- Init screen
   procedure Init is
@@ -25,8 +31,8 @@ procedure Patch (Logs : in out Git_If.Log_List;
 
 begin
   -- Get and check Patch command
-  Command := As.U.Tus (Config.Patch);
-  if Command.Is_Null then
+  Cmd := As.U.Tus (Config.Patch);
+  if Cmd.Is_Null then
     return;
   end if;
 
@@ -91,9 +97,17 @@ begin
   end loop;
 
   -- Build command and launch
-  Command.Append (" " & Name.Image);
-  Command.Append (" " & From_Hash & " " & To_Hash);
-  Utils.Launch (Command.Image);
+  Cmd.Append (" " & Name.Image);
+  Cmd.Append (" " & From_Hash & " " & To_Hash);
+  Utils.Execute (Cmd.Image, Out_Flow'Unrestricted_Access,
+                            Err_Flow'Unrestricted_Access, Exit_Code);
+
+  -- Display result / error
+  if Exit_Code = 0 then
+    Error ("Patch", Name.Image, Out_Flow.Str.Image, Info => True);
+  else
+    Error ("Patch", Name.Image, Err_Flow.Str.Image, Info => False);
+  end if;
 
 end Patch;
 

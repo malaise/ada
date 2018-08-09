@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V36.00"/>
+  <Var Name="Version" Value="V36.01"/>
 
   <!-- List management setup -->
   <Var Name="LmWidth" Value="8"/>
@@ -975,7 +975,7 @@
     </Field>
 
     <!-- Title -->
-    <Field Num="9" Kind="Put">
+    <Field Num="9" Kind="Put" Name="Title">
       <Geometry Up="${Field_1.Low}+2" Left="25" Height="1" Width="5"/>
       <Colors Foreground="Red" Background="Light_Grey"/>
       <Init Row="0" Col="0">ERROR</Init>

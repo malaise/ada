@@ -1,6 +1,7 @@
-with Afpx.Utils, As.U.Utils, Parser, Aski, Split_Lines;
+with Con_Io, Afpx.Utils, As.U.Utils, Parser, Aski, Split_Lines;
 with Utils.X, Afpx_Xref;
-procedure Error (Action, Target, Text : in String) is
+procedure Error (Action, Target, Text : in String;
+                 Info : Boolean := False) is
   -- Afpx stuff
   Get_Handle : Afpx.Get_Handle_Rec;
   Ptg_Result   : Afpx.Result_Rec;
@@ -20,6 +21,11 @@ begin
   Afpx.Use_Descriptor (Afpx_Xref.Error.Dscr_Num);
   List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
   Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+  if Info then
+    Afpx.Set_Field_Colors (Afpx_Xref.Error.Title,
+        Foreground => Con_Io.Color_Of ("Black"));
+    Utils.X.Center_Field ("Info", Afpx_Xref.Error.Title);
+  end if;
   Utils.X.Center_Field (Action, Afpx_Xref.Error.Action);
   Utils.X.Center_Field (Target, Afpx_Xref.Error.Target);
 
