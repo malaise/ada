@@ -73,12 +73,10 @@ package body Utils is
     Cmd_Str.Set (Cmd);
     if not Afpx.Is_Suspended then
       Afpx.Suspend;
-      Command.Execute (Cmd_Str, True, Command.Both,
-                       Out_Flow, Err_Flow, Exit_Code);
+      Command.Execute (Cmd_Str, True, Out_Flow, Err_Flow, Exit_Code);
       Afpx.Resume;
     else
-      Command.Execute (Cmd_Str, True, Command.Both,
-                       Out_Flow, Err_Flow, Exit_Code);
+      Command.Execute (Cmd_Str, True, Out_Flow, Err_Flow, Exit_Code);
     end if;
   exception
     when others =>

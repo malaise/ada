@@ -45,7 +45,7 @@ procedure T_Normalization is
     Cmd.Cat (Test.Len'Img);
     Cmd.Cat (Test.Exp'Img);
     -- Execute test and test technical result
-    Command.Execute (Cmd, True, Command.Both,
+    Command.Execute (Cmd, True,
                      Flow'Unrestricted_Access, Flow'Unrestricted_Access,
                      Code);
     if Code = Command.Error then

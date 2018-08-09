@@ -8,8 +8,7 @@ package body Command is
   -- Debug option
   Logger : Trace.Queue.Queue_Logger;
 
-  -- Output fd (to distinguish Error flow) and policy
-  Mix_Policy : Flow_Mixing_Policies;
+  -- Output fd (to distinguish Error flow)
   Output_Fd : Sys_Calls.File_Desc;
 
   -- Result, Text files and Buffers of stdout/stderr to insert complete lines
@@ -78,12 +77,15 @@ package body Command is
   end Insert_Err;
 
   -- Reset a flow
-  procedure Reset_Flow (Flow : in out Flow_Rec) is
+  procedure Reset_Flow (Flow : in Flow_Access) is
   begin
-    if Flow.Kind = Str then
-      Flow.Str.Set_Null;
-    else
-      Flow.List.Delete_List;
+    if Flow /= null then
+      case Flow.Kind is
+        when Str =>
+          Flow.Str.Set_Null;
+        when List =>
+          Flow.List.Delete_List;
+      end case;
     end if;
   end Reset_Flow;
 
@@ -93,7 +95,7 @@ package body Command is
     Is_Output : Boolean;
     Line : As.U.Asu_Us;
     Got : Boolean;
-    List : Boolean;
+    Is_List : Boolean;
     use type Sys_Calls.File_Desc;
   begin
     Logger.Log_Debug ("Fd Cb "
@@ -112,28 +114,31 @@ package body Command is
       -- Got at least an event
       Logger.Log_Debug ("Fd Cb got >" & Line.Image & "<");
       Got := True;
-      List := False;
+      Is_List := False;
       -- Apply policy to flow
-      if Is_Output and then Mix_Policy = None then
-        -- Stdout -> Stdout
-        Sys_Calls.Put_Output (Line.Image);
-      elsif not Is_Output and then Mix_Policy /= Both then
-        -- Stderr -> Stderr
-        Sys_Calls.Put_Error (Line.Image);
-      elsif Dscrs(Is_Output).Flow.Kind = Str then
-        -- String
-        Dscrs(Is_Output).Flow.Str.Append (Line);
+      if Dscrs(Is_Output).Flow = null then
+        if Is_Output then
+          -- Stdout -> Stdout
+          Sys_Calls.Put_Output (Line.Image);
+        else
+          -- Stderr -> Stderr
+          Sys_Calls.Put_Error (Line.Image);
+        end if;
       else
-        -- List
-        Dscrs(Is_Output).Buff.Push (Line.Image);
-        List := True;
+        case Dscrs(Is_Output).Flow.Kind is
+          when Str =>
+            Dscrs(Is_Output).Flow.Str.Append (Line);
+          when List =>
+            Dscrs(Is_Output).Buff.Push (Line.Image);
+            Is_List := True;
+        end case;
       end if;
     end loop;
     -- End of this Cb. End of flow?
     if not Got then
       -- We were awaken but nothing to read -> End of flow
       Logger.Log_Debug ("Fd Cb end of flow");
-      if List then
+      if Is_List then
         -- Insert Tail
         Line := As.U.Tus (Dscrs(Is_Output).Buff.Tail);
         Dscrs(Is_Output).Buff.Clean;
@@ -153,7 +158,6 @@ package body Command is
   -- Execute Cmd
   procedure Execute (Cmd : in Many_Strings.Many_String;
                      Use_Shell : in Boolean;
-                     Mix_Policy : in Flow_Mixing_Policies;
                      Out_Flow : in Flow_Access;
                      Err_Flow : in Flow_Access;
                      Exit_Code : out Exit_Code_Range;
@@ -171,12 +175,8 @@ package body Command is
     Logger.Init ("Command");
 
     -- Init results and 'global' exchange variables
-    if Mix_Policy /= None then
-      Reset_Flow (Out_Flow.all);
-    end if;
-    if Mix_Policy = Both then
-      Reset_Flow (Err_Flow.all);
-    end if;
+    Reset_Flow (Out_Flow);
+    Reset_Flow (Err_Flow);
     Child_Done := False;
     Dscrs(True).Done := False;
     Dscrs(True).Flow := Out_Flow;
@@ -224,7 +224,6 @@ package body Command is
 
     -- Init Cb for out/err flow
     Output_Fd := Spawn_Result.Fd_Out;
-    Command.Mix_Policy := Mix_Policy;
     Dummy_Res := Sys_Calls.Set_Blocking (Spawn_Result.Fd_Out, False);
     Dummy_Res := Sys_Calls.Set_Blocking (Spawn_Result.Fd_Err, False);
     Event_Mng.Add_Fd_Callback (Spawn_Result.Fd_Out, True, Fd_Cb'Access);

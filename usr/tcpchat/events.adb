@@ -381,7 +381,6 @@ package body Events is
               Cmd => Many_Strings.Set (As.U.Asu_Us'(
                   Variables.Expand (Node.Critext, Variables.Local_Env))),
               Use_Shell => True,
-              Mix_Policy => Command.Only_Out,
               Out_Flow => Flow'Access,
               Err_Flow => null,
               Exit_Code => Exit_Code);
@@ -422,7 +421,6 @@ package body Events is
                 Cmd => Many_Strings.Set (As.U.Asu_Us'(
                     Variables.Expand (Node.Critext, Variables.Local_Env))),
                 Use_Shell => True,
-                Mix_Policy => Command.Only_Out,
                 Out_Flow => Flow'Access,
                 Err_Flow => null,
                 Exit_Code => Exit_Code);

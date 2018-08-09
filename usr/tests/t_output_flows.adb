@@ -24,8 +24,7 @@ begin
   end;
   Cmd.Set ("cat");
   Cmd.Cat (File_Name);
-  Command.Execute (Cmd, True, Command.Only_Out,
-                   Res_Out'Unrestricted_Access, null, Code);
+  Command.Execute (Cmd, True, Res_Out'Unrestricted_Access, null, Code);
   if Code /= 0 then
     Basic_Proc.Put_Line_Error ("cat " & File_Name & " has exited with code"
                              & Code'Img);

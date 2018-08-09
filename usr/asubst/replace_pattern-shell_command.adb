@@ -2,7 +2,7 @@ with Many_Strings, Command, Images;
 separate (Replace_Pattern)
 
 package body Shell_Command is
-  Out_Flow, Err_Flow : aliased Command.Flow_Rec (Command.Str);
+  Out_Flow : aliased Command.Flow_Rec (Command.Str);
 
   function Exec (Cmd : String) return String is
     Code : Command.Exit_Code_Range;
@@ -11,8 +11,7 @@ package body Shell_Command is
     Log.Rep ("Launching command: >" & Cmd & "<");
 
     -- Execute command and check exit code
-    Command.Execute (Many_Strings.Set (Cmd), True, Command.Only_Out,
-       Out_Flow'Access, Err_Flow'Access, Code);
+    Command.Execute (Many_Strings.Set (Cmd), True, Out_Flow'Access, null, Code);
     if Code /= 0 then
       Put_Error ("Command exited with code " & Code_Image (Code));
       raise Command_Error;

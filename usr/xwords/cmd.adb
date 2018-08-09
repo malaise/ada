@@ -59,7 +59,7 @@ package body Cmd is
     Cmd.Set (Words_Path & Com);
     Cmd.Cat (Arg);
     -- Words needs bash
-    Command.Execute (Cmd, True, Command.Both,
+    Command.Execute (Cmd, True,
         Output_Flow'Access, Error_Flow'Access, Exit_Code, "/bin/bash");
 
     if Exit_Code = Words_Error then

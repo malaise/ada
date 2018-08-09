@@ -5,6 +5,7 @@ package Command is
   -- Output and error flow,
   --  either a list: one item per line without LineFeed, not rewinded
   --  or a raw Asu_Us with the LineFeeds
+  --  or null: the flow is propagated as stdout/stderr
   type Flow_Format_Kind_List is (Str, List);
   subtype Line_Type is As.U.Asu_Us;
   package Res_Mng is new Dynamic_List (Line_Type);
@@ -18,12 +19,6 @@ package Command is
     end case;
   end record;
   type Flow_Access is access all Flow_Rec;
-
-  -- Strategy to set/merge/propagate the flows
-  -- * Set each flow on its Flow_Rec
-  -- * Set only Out_Flow to output flow (error flow is put on stderr)
-  -- * Propagate output flow on stdout and error flow on stderr
-  type Flow_Mixing_Policies is (Both, Only_Out, None);
 
   -- Kind of exit code
   subtype Exit_Code_Range is Integer range -1 .. Integer'Last;
@@ -47,7 +42,6 @@ package Command is
   Default_Shell : constant String := "/bin/sh";
   procedure Execute (Cmd : in Many_Strings.Many_String;
                      Use_Shell : in Boolean;
-                     Mix_Policy : in Flow_Mixing_Policies;
                      Out_Flow : in Flow_Access;
                      Err_Flow : in Flow_Access;
                      Exit_Code : out Exit_Code_Range;

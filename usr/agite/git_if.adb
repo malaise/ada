@@ -31,8 +31,6 @@ package body Git_If is
     In_Afpx := False;
   end Leaving_Afpx;
   procedure Execute (Cmd : in Many_Strings.Many_String;
-                     Use_Shell : in Boolean;
-                     Mix_Policy : in Command.Flow_Mixing_Policies;
                      Out_Flow : in Command.Flow_Access;
                      Err_Flow : in Command.Flow_Access;
                      Exit_Code : out Command.Exit_Code_Range) is
@@ -47,12 +45,10 @@ package body Git_If is
     -- Call GIT, with or without protecting Afpx
     if In_Afpx and then not Afpx.Is_Suspended then
       Afpx.Suspend;
-      Command.Execute (Cmd, Use_Shell, Mix_Policy,
-                       Out_Flow, Err_Flow, Exit_Code);
+      Command.Execute (Cmd, True, Out_Flow, Err_Flow, Exit_Code);
       Afpx.Resume;
     else
-      Command.Execute (Cmd, Use_Shell, Mix_Policy,
-                       Out_Flow, Err_Flow, Exit_Code);
+      Command.Execute (Cmd, True, Out_Flow, Err_Flow, Exit_Code);
     end if;
   exception
     when others =>
@@ -92,8 +88,7 @@ package body Git_If is
     -- Git --version
     Cmd.Set ("git");
     Cmd.Cat ("--version");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git --version: " & Err_Flow_1.Str.Image);
@@ -176,8 +171,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("rev-parse");
     Cmd.Cat ("--is-bare-repository");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       return False;
@@ -320,8 +314,7 @@ package body Git_If is
     -- Git ls-files
     Cmd.Set ("git");
     Cmd.Cat ("ls-files");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git ls-files: " & Err_Flow_1.Str.Image);
@@ -334,8 +327,7 @@ package body Git_If is
     Cmd.Cat ("status");
     Cmd.Cat ("--porcelain");
     Cmd.Cat (".");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_2'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_2'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Init_List;
@@ -447,8 +439,7 @@ package body Git_If is
     Cmd.Cat ("status");
     Cmd.Cat ("--porcelain");
     Cmd.Cat (".");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       return;
@@ -483,8 +474,7 @@ package body Git_If is
     Cmd.Cat ("status");
     Cmd.Cat ("--porcelain");
     Cmd.Cat (Pt (File));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       return Result;
@@ -726,8 +716,7 @@ package body Git_If is
       Cmd.Cat ("--");
       Cmd.Cat (Pt (Path));
     end if;
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git log: " & Err_Flow_1.Str.Image);
@@ -765,8 +754,7 @@ package body Git_If is
     Cmd.Cat ("-1");
     Cmd.Cat ("--");
     Cmd.Cat (Pt (Path));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git log1: " & Err_Flow_1.Str.Image);
@@ -796,8 +784,7 @@ package body Git_If is
     Cmd.Cat ("1");
     Cmd.Cat (Commit.Hash);
     Cmd.Cat ("--");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git log2: " & Err_Flow_1.Str.Image);
@@ -846,8 +833,7 @@ package body Git_If is
     Cmd.Cat ("1");
     Cmd.Cat (Rev_Tag);
     Cmd.Cat ("--");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git log3: " & Err_Flow_1.Str.Image);
@@ -875,8 +861,7 @@ package body Git_If is
     References.Delete_List;
     Cmd.Set ("git");
     Cmd.Cat ("remote");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git remote: " & Err_Flow_1.Str.Image);
@@ -903,8 +888,7 @@ package body Git_If is
     Cmd.Cat ("show");
     Cmd.Cat (Pt (Hash & ":" & Name));
     Cmd.Cat (">" & Pt (File));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       if Log_Error then
@@ -957,8 +941,7 @@ package body Git_If is
     Cmd.Cat ("HEAD");
     Cmd.Cat ("--");
     Cmd.Cat (Pt (File));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git checkout: " & Err_Flow_1.Str.Image);
@@ -973,8 +956,7 @@ package body Git_If is
     Cmd.Cat ("reset");
     Cmd.Cat ("--");
     Cmd.Cat (Pt (File));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Don't handle error because git exits with 1 if some unstaged changes
     --  remain
   end Do_Reset;
@@ -989,8 +971,7 @@ package body Git_If is
     if Rev /= "" then
       Cmd.Cat (Pt (Rev));
     end if;
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
   end Do_Reset_Hard;
 
   -- Launch a soft or mixed reset
@@ -1005,8 +986,7 @@ package body Git_If is
     if Rev /= "" then
       Cmd.Cat (Pt (Rev));
     end if;
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
   end Do_Reset;
 
   -- Launch a clean
@@ -1017,8 +997,7 @@ package body Git_If is
     Cmd.Cat ("clean");
     Cmd.Cat ("-d");
     Cmd.Cat ("-f");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
   end Do_Clean;
 
   -- Launch a global checkout, return "" if OK, else the error
@@ -1032,8 +1011,7 @@ package body Git_If is
       Cmd.Cat (Pt (Branch));
     end if;
     Cmd.Cat (Pt (Rev_Tag));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       return Err_Flow_1.Str.Image;
@@ -1050,8 +1028,7 @@ package body Git_If is
     Cmd.Cat ("add");
     Cmd.Cat ("--");
     Cmd.Cat (Pt (File));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git add: " & Err_Flow_1.Str.Image);
@@ -1066,8 +1043,7 @@ package body Git_If is
     Cmd.Cat ("rm");
     Cmd.Cat ("--");
     Cmd.Cat (Pt (File));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git rm: " & Err_Flow_1.Str.Image);
@@ -1083,8 +1059,7 @@ package body Git_If is
     Cmd.Cat ("--allow-empty");
     Cmd.Cat ("-m");
     Cmd.Cat (Pt (Comment));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       return Err_Flow_1.Str.Image;
@@ -1110,8 +1085,7 @@ package body Git_If is
     if Tag /= "" then
       Cmd.Cat (Pt (Tag));
     end if;
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       return Err_Flow_1.Str.Image;
@@ -1135,8 +1109,7 @@ package body Git_If is
     Cmd.Cat ("--tags");
     Cmd.Cat (Pt (Remote));
     Cmd.Cat (Pt (Branch));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       if not Err_Flow_1.Str.Is_Null then
@@ -1159,8 +1132,7 @@ package body Git_If is
     Cmd.Cat ("remote");
     Cmd.Cat ("prune");
     Cmd.Cat (Pt (Remote));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
   end Do_Prune;
 
   -- Get current branch name
@@ -1173,8 +1145,7 @@ package body Git_If is
   begin
     Cmd.Set ("git");
     Cmd.Cat ("branch");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       return Error;
@@ -1229,8 +1200,7 @@ package body Git_If is
       Cmd.Cat ("-a");
       Opt := As.U.Tus (" -a");
     end if;
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git branch " & Opt.Image
@@ -1271,8 +1241,7 @@ package body Git_If is
     Cmd.Cat ("ls-remote");
     Cmd.Cat ("--heads");
     Cmd.Cat (Pt (Reference));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git ls-remote --heads " & Reference
@@ -1303,8 +1272,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("branch");
     Cmd.Cat (Pt (Name));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       return Err_Flow_1.Str.Image;
@@ -1322,8 +1290,7 @@ package body Git_If is
     Cmd.Cat ("-m");
     Cmd.Cat (Pt (Name));
     Cmd.Cat (Pt (New_Name));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       return Err_Flow_1.Str.Image;
@@ -1344,8 +1311,7 @@ package body Git_If is
       Cmd.Cat ("-r");
     end if;
     Cmd.Cat (Pt (Name));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       return Err_Flow_1.Str.Image;
@@ -1374,8 +1340,7 @@ package body Git_If is
       Cmd.Cat ("--no-ff");
     end if;
     Cmd.Cat (Pt (Name));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       if not Out_Flow_3.Str.Is_Null then
@@ -1407,8 +1372,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("branch");
     Cmd.Cat ("-vv");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git branch -vv: "
                                & Err_Flow_1.Str.Image);
@@ -1480,8 +1444,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("config");
     Cmd.Cat ("user.name");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git config user.name: " & Err_Flow_1.Str.Image);
@@ -1498,8 +1461,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("config");
     Cmd.Cat ("user.email");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git config user.email: "
@@ -1535,8 +1497,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("stash");
     Cmd.Cat ("list");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git stash list: " & Err_Flow_1.Str.Image);
@@ -1606,8 +1567,7 @@ package body Git_If is
     Cmd.Cat ("save");
     Cmd.Cat ("--");
     Cmd.Cat (Pt (Name));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       if not Err_Flow_1.Str.Is_Null then
@@ -1637,8 +1597,7 @@ package body Git_If is
     Cmd.Cat ("apply");
     Cmd.Cat ("-q");
     Cmd.Cat ("stash@{" & Images.Integer_Image (Num) & "}");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       return Err_Flow_1.Str.Image;
@@ -1656,8 +1615,7 @@ package body Git_If is
     Cmd.Cat ("pop");
     Cmd.Cat ("-q");
     Cmd.Cat ("stash@{" & Images.Integer_Image (Num) & "}");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       return Err_Flow_1.Str.Image;
@@ -1675,8 +1633,7 @@ package body Git_If is
     Cmd.Cat ("drop");
     Cmd.Cat ("-q");
     Cmd.Cat ("stash@{" & Images.Integer_Image (Num) & "}");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       return Err_Flow_1.Str.Image;
@@ -1698,8 +1655,7 @@ package body Git_If is
     Cmd.Cat ("stash");
     Cmd.Cat ("drop");
     Cmd.Cat (Stash_Name.Image);
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       return Err_Flow_1.Str.Image;
@@ -1727,8 +1683,7 @@ package body Git_If is
     Cmd.Cat (Pt (if Name = "" then Stash_Default_Str else Name));
     Cmd.Cat ("-q");
     Cmd.Cat (Stash_Hash);
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       return Err_Flow_1.Str.Image;
@@ -1767,8 +1722,7 @@ package body Git_If is
     Cmd.Cat ("-s");
     Cmd.Cat (Tag.Name.Image);
     Cmd.Cat ("--");
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_2'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_2'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git show: " & Err_Flow_1.Str.Image);
@@ -1854,8 +1808,7 @@ package body Git_If is
       Cmd.Cat (Pt (Template));
     end if;
 
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git tag"
@@ -1884,8 +1837,7 @@ package body Git_If is
     Cmd.Cat ("tag");
     Cmd.Cat ("-d");
     Cmd.Cat (Pt (Tag));
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git tag -d " & Tag
@@ -1910,8 +1862,7 @@ package body Git_If is
     end if;
     Cmd.Cat (Pt (Tag));
     Cmd.Cat (Hash);
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       return Err_Flow_1.Str.Image;
@@ -1936,8 +1887,7 @@ package body Git_If is
     Cmd.Cat (Pt (Target));
     Cmd.Cat (Pt (Ref));
 
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git cherry: "
@@ -1984,8 +1934,7 @@ package body Git_If is
       Cmd.Cat ("--no-commit");
     end if;
     Cmd.Cat (Commit.Hash);
-    Execute (Cmd, True, Command.Both,
-        Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
       -- In case of Empty_Cherry_Error, consider Ok

@@ -39,7 +39,7 @@ begin
   end loop;
 
   -- Execute
-  Command.Execute (Cmd, Use_Sh, Command.Both,
+  Command.Execute (Cmd, Use_Sh,
                    Stdout'Unrestricted_Access,
                    Stderr'Unrestricted_Access,
                    Exit_Code);

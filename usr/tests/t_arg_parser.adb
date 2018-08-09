@@ -75,7 +75,7 @@ procedure T_Arg_Parser is
     Len : Natural;
   begin
     -- Execute command
-    Command.Execute (Cmd, True, Command.Both,
+    Command.Execute (Cmd, True,
                      Flow'Unrestricted_Access, Flow'Unrestricted_Access,
                      Code);
     if Code = Command.Error then

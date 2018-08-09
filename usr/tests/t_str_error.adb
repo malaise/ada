@@ -137,8 +137,7 @@ begin
   -- Launch command
   Cmd.Set ("cpp"); Cmd.Cat ("-dD"); Cmd.Cat ("/usr/include/errno.h");
   begin
-    Command.Execute (Cmd, True, Command.Only_Out,
-                     Flow'Unrestricted_Access, null, Exit_Code);
+    Command.Execute (Cmd, True, Flow'Unrestricted_Access, null, Exit_Code);
   exception
     when Command.Terminate_Request =>
       Basic_Proc.Put_Line_Error ("ERROR, command aborted");
