@@ -168,13 +168,17 @@ package Str_Util is
   -- if Str <= Size, then pad with Gap before then after Str,
   --  then after then before, then after then before...
   -- if Str > Size  raise Constraint_Error
+  -- Offset denotes the offset from the center of the result
+  --  and the center of Str; it is applied as much as possible
   -- Examples:
   --  Center ("TOTO", 5, '+') -> "+TOTO"
   --  Center ("TOTO", 7, '+') -> "+TOTO++"
   --  Center ("TOTO", 9, '+') -> "++TOTO+++"
+  --  Center ("TOTO", 10, '+', -2) -> "+TOTO+++++"
   function Center (Str : String;
                    Len : Positive;
-                   Gap : Character := ' ') return String;
+                   Gap : Character := ' ';
+                   Offset : Integer := 0) return String;
 
   -- Check if Within starts or ends with Fragment (More efficient than Locate)
   -- Returns False if Fragment is empty

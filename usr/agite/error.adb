@@ -8,6 +8,9 @@ procedure Error (Action, Target, Text : in String;
   List_Width : Afpx.Width_Range;
   Af_Line : Afpx.Line_Rec;
 
+  -- Action and Target are reduced by LmWidth at the right (in Afpx.xml)
+  Offset : constant := 5;
+
   -- To split text
   function Is_Lf (C : Character) return Boolean is (C = Aski.Lf_C);
   Line_Iter, Word_Iter : Parser.Iterator;
@@ -26,8 +29,8 @@ begin
         Foreground => Con_Io.Color_Of ("Black"));
     Utils.X.Center_Field ("Info", Afpx_Xref.Error.Title);
   end if;
-  Utils.X.Center_Field (Action, Afpx_Xref.Error.Action);
-  Utils.X.Center_Field (Target, Afpx_Xref.Error.Target);
+  Utils.X.Center_Field (Action, Afpx_Xref.Error.Action, Offset => Offset);
+  Utils.X.Center_Field (Target, Afpx_Xref.Error.Target, Offset => Offset);
 
   -- Split text in lines and encode in list
   Afpx.Line_List.Delete_List;

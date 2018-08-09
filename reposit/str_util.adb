@@ -469,16 +469,23 @@ package body Str_Util is
   -- if Str > Size  raise Constraint_Error
   function Center (Str : String;
                    Len : Positive;
-                   Gap : Character := ' ') return String is
-    Start : Positive;
+                   Gap : Character := ' ';
+                   Offset : Integer := 0) return String is
+    Start : Integer;
   begin
     if Str'Length > Len then
       raise Constraint_Error;
     end if;
     -- Start position
-    Start := (Len - Str'Length) / 2 + 1;
+    Start := (Len - Str'Length) / 2 + 1 + Offset;
+    if Start <= 0 then
+      Start := 1;
+    end if;
+    if Start + Str'Length > Len  + 1 then
+      Start := Len - Str'Length + 1;
+    end if;
     -- Pad before first rather than after last when only one gap
-    if Len - Str'Length = 1 then
+    if Len - Str'Length = 1 and then Offset > 0 then
       Start := Start + 1;
     end if;
     -- Copy

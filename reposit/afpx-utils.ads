@@ -71,7 +71,8 @@ package Afpx.Utils is
                           Field : in Afpx.Field_Range;
                           Row : in Con_Io.Row_Range;
                           Keep_Head : in Boolean := True;
-                          Show_Cut : Boolean := True);
+                          Show_Cut : Boolean := True;
+                          Offset : Integer := 0);
 
 end Afpx.Utils;
 

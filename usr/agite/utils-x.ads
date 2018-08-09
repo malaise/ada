@@ -24,7 +24,8 @@ package Utils.X is
   procedure Center_Field (Text : in String;
                           Field : in Afpx.Field_Range;
                           Keep_Head : in Boolean := True;
-                          Show_Cut : Boolean := True);
+                          Show_Cut : Boolean := True;
+                          Offset : Integer := 0);
 
 end Utils.X;
 

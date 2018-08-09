@@ -19,6 +19,7 @@ procedure T_String is
   Bool1 : Boolean;
   Bool2 : Boolean;
   Bool3 : Boolean;
+  Int1 : Integer;
   Str1 : String(1 .. 500);
   Str2 : String(1 .. 500);
 
@@ -493,10 +494,14 @@ begin
           when 21 =>
             Basic_Proc.Put_Line_Output ("21 Center");
             Basic_Proc.Put_Output ("Len (Pos)? "); Nat_Get (Pos1, False);
-            Basic_Proc.Put_Output ("Gap (Char)? "); Basic_Proc.Get(Char1); Basic_Proc.Skip_Line;
+            Basic_Proc.Put_Output ("Gap (Char)? "); Basic_Proc.Get (Char1);
+            Basic_Proc.Skip_Line;
+            Basic_Proc.Put_Output ("Offset (Int)? ");
+            Int1 := Gets.Get_Int (Basic_Proc.Get_Line);
             Basic_Proc.Put_Line_Output (
                 "Center: |"
-              & Str_Util.Center(Str(1 .. Str_Len), Len => Pos1, Gap => Char1)
+              & Str_Util.Center(Str(1 .. Str_Len), Len => Pos1, Gap => Char1,
+                                Offset => Int1)
               & "|" );
 
           when 22 =>

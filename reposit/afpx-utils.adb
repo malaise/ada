@@ -151,12 +151,14 @@ package body Afpx.Utils is
                           Field : in Afpx.Field_Range;
                           Row : in Con_Io.Row_Range;
                           Keep_Head : in Boolean := True;
-                          Show_Cut : Boolean := True) is
+                          Show_Cut : Boolean := True;
+                          Offset : Integer := 0) is
   begin
     Afpx.Clear_Field (Field);
     if Text'Length <= Afpx.Get_Field_Width (Field) then
       Afpx.Encode_Field (Field, (Row, 0),
-          Str_Util.Center (Text, Afpx.Get_Field_Width (Field)));
+          Str_Util.Center (Text, Afpx.Get_Field_Width (Field),
+                           Offset => Offset) );
     else
       Afpx.Encode_Field (Field, (Row, 0),
           Procuste (Text, Afpx.Get_Field_Width (Field),

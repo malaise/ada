@@ -33,9 +33,11 @@ package body Utils.X is
   procedure Center_Field (Text : in String;
                           Field : in Afpx.Field_Range;
                           Keep_Head : in Boolean := True;
-                          Show_Cut : Boolean := True) is
+                          Show_Cut : Boolean := True;
+                          Offset : Integer := 0) is
   begin
-    Afpx.Utils.Center_Field (Text, Field, Row (Field), Keep_Head, Show_Cut);
+    Afpx.Utils.Center_Field (Text, Field, Row (Field), Keep_Head, Show_Cut,
+                             Offset);
   end Center_Field;
 
 end Utils.X;
