@@ -150,18 +150,19 @@ The more usefull are 'udp_spy' and 'alook' (in directory 'misc'),
 The games are 'g' (in directory 'misc'), 'battleship', 'lem', 'mmind', 'nimmari'
 and 'sokoban'.
 
-Here is the full list and description, rated from 1 (simple) to 3 (very
-complex) on subjective criteria:
+Hereafter is the full list and description, rated from 1 (simple) to 3 (very
+complex) on subjective criteria. A 'd' indicates that there is a specific
+documentation of the package.
 
 Account (3)::
      Based on 'Afpx', this tool handles the management of bank accounts, with
      cheque, credit card (defered) and transfer operations.
 
-Agite (3)::
+Agite (3d)::
      GUI for Git on 'Afpx', directory oriented. Implements all basic actions
      with GIT.
 
-Als (2)::
+Als (2d)::
      Lists, more or less the "ls" way, files and directories. Allow selection
      by date, type, regexp. Allows merging of all outputs and sorting.
 
@@ -172,10 +173,10 @@ Approx (3)::
 Astub (3)::
      Ada2012 stubber (makes compilable empty body from spec).
 
-Asubst (3)::
+Asubst (3d)::
      Substitutes in files by new strings the strings that match a regexp.
 
-Battleship (2)::
+Battleship (2d)::
      Battleship game for two players through the network (with 'Autobus').
 
 Chess (3)::
@@ -198,7 +199,7 @@ Dictio (3)::
      and periodic consistency checks. Recovery of data loss may be optimized
      (presently it resends all).
 
-Enigma (2)::
+Enigma (2d)::
      Encodes/decodes text like the german enigma machines did in ww2.
 
 Fifos (2)::
@@ -219,21 +220,21 @@ Hungar (2)::
      Euristic search (hungarian method) of best affection (e.g. of people to
      jobs). Tough algo.
 
-Lem (2)::
+Lem (2d)::
      Game: land the LEM on the moon.
 
-Logrotator (1)::
+Logrotator (1d)::
      Splits stdin into several files according to a given time period and
      possibly to a maximum size for the files.
 
-Lsadeps (3)::
+Lsadeps (3d)::
      Shows the list/tree of Ada units/files dependencies.
 
-Mapcode (3)::
+Mapcode (3d)::
      Encode/decode coordinates (latitude, longitude) to/from mapcode (see 
      http://www.mapcode.com/).
 
-Mcd (3)::
+Mcd (3d)::
      Reverse polish computer. At command line level but very powerful.
 
 Misc::
@@ -275,7 +276,7 @@ Regex (2)::
 Renardeau (2)::
      Computes a target number by combining base numbers.
 
-Sensor (1)::
+Sensor (1d)::
      Scans several log files and raises alerts on some events (matching
 filters).
 
@@ -288,17 +289,19 @@ Sokoban (2)::
 Tasks::
      Several simple programs using tasks.
 
-Tcpchat (3)::
+Tcpchat (3d)::
      Accepts connection of a TCP port, expects sentences and executes
      specified actions depending on what it receives.
 
-Tcpipe (2)::
+Tcpipe (2d)::
      As a bridge, multiplexes and relays TCP connections.
 
-Tests::
+Tests(1)::
      Several small test programs of the Repository packages.
 
-Xml::
+Xml(3d)::
+     Three tools for XML file processing, based on Xml_Parser and its
+Generator:
 - Dtd_Checker (1) checks a DTD file (of a xml).
 - Dtd_Generator (2) generates a DTD from one or several XML files
 - Xml_Checker (3) checks and formats a XML file.

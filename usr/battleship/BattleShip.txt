@@ -129,7 +129,7 @@ the result of the shoot.
 When a ship is sunk both players are notified of the ship sunk.
 
 When a player sinks all the fleet of his opponnent then he is the winner of
-the gamei, which ends.
+the game, which ends.
 
 Graphical interface
 ~~~~~~~~~~~~~~~~~~~
@@ -164,7 +164,8 @@ until your opponent plays.
 .End of the game
 When the game ends the title becomes 'End' and the leader has two buttons:
 Restart and Exit. If he restarts, then both players enter the setup again...
-then the leader's opponent will start shooting first, and so on.
+then the leader's opponent will start shooting first, so that each player
+shoots first alternatively.
 
 Design
 ------

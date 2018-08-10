@@ -236,7 +236,8 @@ List of packages
 ----------------
 
 Packages are rated from 1 (simple) to 3 (very complex), on subjective
-criteria.
+criteria. A 'd' indicates that there is a specific documentation of the
+package.
 
 ada_parser (2)::
      Parses a text input flow, identifies ada lexical elements.
@@ -247,21 +248,21 @@ ada_words ada_words.keywords (2)::
 address_ops (1)::
      Add, sub and returns image of a System.Address.
 
-afpx_typ afpx afpx.utils (3)::
+afpx_typ afpx afpx.utils (3d)::
      Graphic (text oriented) manager of input screens that are off-line
      defined.
 
-afpx_bld (2)::
+afpx_bld (2d)::
      Process that compiles XML text description of screens for AFPX.
 
-afpx_rnb (3)::
+afpx_rnb (3d)::
      Process that re-organises a AFPX XML file (insertion, deletion,
      move, copy of fields in a descriptor) and updates associated references.
 
 any_def (1)::
      Definition of variant type that contains any value.
 
-app (2)::
+app (2d)::
      Preprocessor that selects pieces of text and expands names according to
      definitions.
 
@@ -634,11 +635,14 @@ virtual_time (2)::
 x_mng (3)::
      Low level interface to X11 (text, basic graphics, Mouse and keyboard).
 
-xml_parser (3)::
-     Parse Xml files or strings, including check of dtd.
+xml_parser (3d)::
+     Parse Xml files or strings, including check of dtd. +
+     It is documented with the 'xml_parser' tool.
+     It is partially is documented with the 'xml_parser' tool.
 
 xml_parser.generator (2)::
-     Generate Xml output in flow/file/string.
+     Generate Xml output in flow/file/string. +
+     It is partially is documented with the 'xml_parser' tool.
 
 
 Examples
