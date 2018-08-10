@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Normal, Mixed_Str, Str_Util;
+with Normalization, Mixed_Str, Str_Util;
 with Inte_Io, Real_Io, Bool_Io;
 separate (Mcd_Mng)
 
@@ -320,13 +320,11 @@ package body Ios is
       raise String_Len;
   end Strof;
 
-  function Normalof (Item      : Item_Rec;
-                     Len       : Item_Rec;
-                     Right_Len : Item_Rec;
-                     Gap       : Item_Rec) return Item_Rec is
-    Int, Frac : Integer;
-    Long_Int, Tenth  : My_Math.Inte;
-    Lint, Lfrac : Positive;
+  function Normalof (Item       : Item_Rec;
+                     Len        : Item_Rec;
+                     Right_Fore : Item_Rec;
+                     Gap        : Item_Rec) return Item_Rec is
+    Plen, Pfore : Positive;
     Res : Item_Rec(Chrs);
   begin
     -- Check Kind is Inte or Real
@@ -342,53 +340,44 @@ package body Ios is
     end if;
     -- Check right is boolean for int, positive for real
     if Item.Kind = Inte then
-      if Right_Len.Kind /= Bool then
-        raise Invalid_Argument;
+      if Right_Fore.Kind /= Bool then
+        raise Argument_Mismatch;
       end if;
     else
-      if Right_Len.Kind /= Inte
-      or else Right_Len.Val_Inte <= 0 then
-        raise Invalid_Argument;
+      if Right_Fore.Kind /= Inte
+      or else Right_Fore.Val_Inte <= 0 then
+        raise Argument_Mismatch;
       end if;
     end if;
-    if Item.Kind = Inte then
-      -- Check range of ints
-      begin
-        Int := Integer(Item.Val_Inte);
-        Lint := Positive(Len.Val_Inte);
-      exception
-        when Constraint_Error =>
-          raise Invalid_Argument;
-      end;
-      -- Call Normal
-      declare
-        Str : constant String := Normal (Int, Lint, Right_Len.Val_Bool,
-                                         Gap.Val_Text.Element(1));
+    -- Check range of ints
+    begin
+      Plen := Positive(Len.Val_Inte);
+      if Item.Kind = Real then
+        Pfore := Positive(Right_Fore.Val_Inte);
+      end if;
+    exception
+      when Constraint_Error =>
+        raise Invalid_Argument;
+    end;
+    declare
+      Str : constant String
+          := (if Item.Kind = Inte then
+                -- Call Normal
+                Normalization.Normal_Inte (Item.Val_Inte, Plen,
+                                           Right_Fore.Val_Bool,
+                                           Gap.Val_Text.Element(1))
+              else
+                Normalization.Normal_Fixed (Item.Val_Real, Plen,
+                                            Pfore,
+                                            Gap.Val_Text.Element(1))
+             );
       begin
         Res.Val_Text := As.U.Tus (Str);
       end;
-    else
-      -- Check range of ints
-      begin
-        Tenth := 10 ** Integer(Right_Len.Val_Inte);
-        Long_Int := My_Math.Round(Item.Val_Real * My_Math.Real(Tenth));
-        Int := Integer(Long_Int / Tenth);
-        Lint := Positive(Len.Val_Inte);
-        Frac := Integer(abs Long_Int mod Tenth);
-        Lfrac := Positive(Right_Len.Val_Inte);
-      exception
-        when Constraint_Error =>
-          raise Invalid_Argument;
-      end;
-      declare
-        Str : constant String
-            := Normal(Int, Lint, True, Gap.Val_Text.Element(1))
-             & "." & Normal(Frac, Lfrac, True, '0') ;
-      begin
-        Res.Val_Text := As.U.Tus (Str);
-      end;
-    end if;
     return Res;
+  exception
+    when Invalid_Argument | Argument_Mismatch => raise;
+    when others => raise Invalid_Argument;
   end Normalof;
 
 end Ios;

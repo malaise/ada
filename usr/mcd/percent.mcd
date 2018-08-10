@@ -25,7 +25,7 @@ a popr a C pushr call
 b popr b C pushr call
 
 # Format a result (2 digits)
-[ toreal 7 2 " " normal put ] P popr
+[ toreal 11 8 "0" normal 1 1 strdel put ] P popr
 
 # A is B + x % of B, so x = (A / B) - 1
 a pushr toreal b pushr toreal / 1.0 - 100.0 *

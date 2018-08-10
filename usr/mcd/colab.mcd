@@ -26,9 +26,8 @@ dup isinte [ toreal ] ifcall dup isreal ~ [ E pushr call ] ifcall
 # Store factors
 1600.0 y popr 134.0 m popr 0.156 a popr 0.106 i popr
 
-# String image with one digit
-[ -1 roundat dup trunc 7 True " " normal "." strcat swap
-frac 10.0 * round 1 format strof strcat ] O popr
+# String image with 7 digits of int part and 1 digit of fraction
+[ 10 8 "0" normal 1 1 strdel ] O popr
 
 # Once hours are set, display table
 [

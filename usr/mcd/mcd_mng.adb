@@ -4,7 +4,7 @@ pragma Elaborate_All (Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V14.6";
+  Mcd_Version : constant String := "V15.0";
 
   package Stack is
     -- What can we store in stack
@@ -227,10 +227,10 @@ package body Mcd_Mng is
     function Strregi (S : Item_Rec) return Item_Rec;
     function Strprog (S : Item_Rec) return Item_Rec;
     function Strof (Item : Item_Rec) return Item_Rec;
-    function Normalof (Item      : Item_Rec;
-                       Len       : Item_Rec;
-                       Right_Len : Item_Rec;
-                       Gap       : Item_Rec) return Item_Rec;
+    function Normalof (Item       : Item_Rec;
+                       Len        : Item_Rec;
+                       Right_Fore : Item_Rec;
+                       Gap        : Item_Rec) return Item_Rec;
     -- Invalid_Argument, Argument_Mismatch : exception;
   end Ios;
 
@@ -1182,7 +1182,7 @@ package body Mcd_Mng is
           S := A;
         when Normal =>
           -- push normalised string of D
-          --   C is Nb, B is Right, A is Pad
+          --   C is Len, B is Right or Fore, A is Pad
           Pop(A); Pop(B); Pop(C); Pop(D);
           Push (Ios.Normalof(D, C, B, A));
           S := A;

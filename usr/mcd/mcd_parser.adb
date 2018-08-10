@@ -222,8 +222,8 @@ package body Mcd_Parser is
    Strregi  => (Nosy, "push A converted to register                      ", As.U.Asu_Null, False),
    Strprog  => (Nosy, "push A converted to program                       ", As.U.Asu_Null, False),
    Strof    => (Nosy, "push formated string of A                         ", As.U.Asu_Null, False),
-   Normal   => (Nosy, "push normalised string of D (integer)             ",
-    As.U.Tus ("C is Nb(positive), B is Right(boolean), A is Pad(string)"), False),
+   Normal   => (Nosy, "push normalised string of D (integer or real)     ",
+    As.U.Tus ("C=Len(pos), B=Right(bool) or Fore(pos), A=Pad(string)"), False),
    Regmatch => (Nosy, "push where B matches regex A                      ", As.U.Asu_Null, True),
    -- Time
    Clock    => (Nosy, "push current time                                 ", As.U.Asu_Null, False),

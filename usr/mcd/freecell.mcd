@@ -23,6 +23,6 @@ w C pushr call
 # X = W / (W + D)
 w pushr dup d pushr + / 100.0 *
 
-# Format a result (2 digits)
-toreal 4 2 " " normal put "%" putl
+# Format a result (space 3 digits.2digits)
+toreal 7 4 "0" normal put "%" putl
 
