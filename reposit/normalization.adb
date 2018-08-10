@@ -420,13 +420,14 @@ package body Normalization is
 
   end Normal_Str;
 
-  -- Puts a float F or a real R in a string of fixed length.
-  -- At least one digit then a '.' then some fraction part.
-  -- S i . f
-  -- Example: Int=2 and Len=6 => " -x.yy"
+  -- Puts a float F, a real R or a delta D in a string of fixed length.
+  -- At least a space/sign, then digits, then a '.', then some fraction
+  --  part, then some Gap character if needed to fit Len
+  -- Fore is the length before the dot, padded with spaces if needed
+  -- Example: Len=7, Fore=3, Gap='@' => " -x.yy@"
   -- A warning char at the beginning of the output signals an integer part
-  -- larger than Int
-  -- Raises Constraint_Error if Len < Int+3
+  -- larger than Fore
+  -- Raises Constraint_Error if Fore < 2 or Len < Fore+2
   function Normal_Fixed (F     : Float;
                          Len   : Positive;
                          Fore  : Positive;

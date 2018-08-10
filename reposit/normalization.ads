@@ -59,7 +59,7 @@ package Normalization is
                           Exp   : Positive) return String;
 
   -- Puts a float F, a real R or a delta D in a string of fixed length.
-  -- At least a pace/sign, then Fore digits, then a '.', then some fraction
+  -- At least a space/sign, then digits, then a '.', then some fraction
   --  part, then some Gap character if needed to fit Len
   -- Fore is the length before the dot, padded with spaces if needed
   -- Example: Len=7, Fore=3, Gap='@' => " -x.yy@"
