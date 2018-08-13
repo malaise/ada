@@ -1,6 +1,6 @@
 lsadeps
 =======
-V16.01
+V17.00
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order. +
@@ -11,32 +11,33 @@ Modes and inputs
 ----------------
 There are three main functions: Show dependencies, list units, and check
 redundant "with". +
-Usage: lsadeps <version> | <help> | <depend> | <list> | <check> | <loop>
 
- <version>     ::= -v | --version
- <help>        ::= -h | --help
- <depend>      ::= <options> <target_unit> [ <path_unit> ]
- <target_unit> ::=  [<path>/]<unit>
- <options>     ::=  [ <specs> | <revert> ] [ <tree> [ <tab> ] | <fast> | <direct> | <once> ] [ <files> ] [ <bodies> ] [ <restrict> ] [ <inclusions> ]
- <specs>       ::= -s | --specs
- <revert>      ::= -r | --revert
- <tree>        ::= -t | --tree
- <tab>         ::= -T <size> | --tab=<size>
- <fast>        ::= -F | --fast
- <direct>      ::= -d | --direct
- <once>        ::= -o | --once
- <files>       ::= -f | --files
- <bodies>      ::= -b | --bodies
- <restrict>    ::= --restrict
- <inclusions   ::= { <include> | <recursive> | <exclude> }
- <dir>         ::= -I <dir_path> | --include=<dir_path>
- <recursive>   ::= -R <dir_path> | --recursive=<dir_path>
- <exclude>     ::= -E <pattern> | --exclude=<pattern>
- <list>        ::= -l | --list  [ <file> ] [ <all> ] [ <children> [ <path_unit> ]
- <all>         ::= -a | --all
- <children>    ::= -C | --children
- <check>       ::= -c | --check  [ <target_dir> ]
- <loop>        ::= -L | --loop [ <specs> ] <target_unit> ]
+ Usage: lsadeps <version> | <help> | <depend> | <list> | <check> | <loop>
+
+ <version> ::= -v | --version
+ <help>    ::= -h | --help
+ <depend>  ::= <options> <target_unit> [ <path_unit> ]
+   <target_unit> ::=  [<path>/]<unit>
+   <options>     ::=  [ <specs> | <revert> ] [ <tree> [ <tab> ] | <fast> | <direct> | <once> ] [ <files> ] [ <bodies> ] [ <restrict> ] [ <inclusions> ]
+     <specs>     ::= -s | --specs
+     <revert>    ::= -r | --revert
+     <tree>      ::= -t | --tree
+     <tab>       ::= -T <size> | --tab=<size>
+     <fast>      ::= -F | --fast
+     <direct>    ::= -d | --direct
+     <once>      ::= -o | --once
+     <files>     ::= -f | --files
+     <bodies>    ::= -b | --bodies
+     <restrict>  ::= --restrict
+     <inclusions ::= { <include> | <recursive> | <exclude> }
+       <dir>       ::= -I <dir_path> | --include=<dir_path>
+       <recursive> ::= -R <dir_path> | --recursive=<dir_path>
+       <exclude>   ::= -E <pattern> | --exclude=<pattern>
+ <list>    ::= -l | --list  [ <file> ] [ <subunits> ] [ <children> [ <path_unit> ]
+   <subunits  ::= -S | --subunits
+   <children> ::= -C | --children
+ <check>   ::= -c | --check  [ <target_dir> ]
+ <loop>    ::= -L | --loop [ <specs> ] <target_unit> ]
 
 
 Show dependencies
@@ -143,8 +144,8 @@ current directory if no <path_dir> is provided,
 The possible options are:
 
  - 'children' to list also the children of the specified unit,
- - 'file' to show the file names (instead of unit names),
- - 'all' to also list the subunits (of all or of the specified unit).
+ - 'subunits' to also list the subunits (of all or of the specified unit),
+ - 'file' to show the file names (instead of unit names).
 
 Files are searched only in the directory of <path_dir> (in current directory if
 no <path_dir> is provided).
@@ -314,7 +315,7 @@ Check if the unit 'Unit' exists in current dir
 
 List all files of '../ada/Unit' and its subunits
 --------------------
-  lsadeps -lfa ../ada/Unit
+  lsadeps -lfS ../ada/Unit
 --------------------
 
 List Unit and all its child units

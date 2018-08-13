@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory, Trace;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V16.01";
+  Version : constant String := "V17.00";
 
   -- The keys and descriptor of parsed keys
   Nok : Character renames Argument_Parser.No_Key_Char;
@@ -20,7 +20,7 @@ procedure Lsadeps is
    10 => (True,  'R', As.U.Tus ("recursive"), True, True, As.U.Tus ("dir_path")),
    11 => (True,  'E', As.U.Tus ("exclude"),   True, True, As.U.Tus ("dir_name_pattern")),
    12 => (False, 'l', As.U.Tus ("list"),     False),
-   13 => (False, 'a', As.U.Tus ("all"),      False),
+   13 => (False, 'S', As.U.Tus ("subunits"), False),
    14 => (False, 'C', As.U.Tus ("children"), False),
    15 => (False, 'b', As.U.Tus ("bodies"),   False),
    16 => (False, 'F', As.U.Tus ("fast"),     False),
@@ -47,54 +47,54 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <depend>      ::= <options> <target_unit> [ <path_unit> ]");
     Basic_Proc.Put_Line_Error (
-     " <target_unit> ::=  [<path>/]<unit>");
+     "   <target_unit> ::=  [<path>/]<unit>");
     Basic_Proc.Put_Line_Error (
-     " <options>     ::=  [ <specs> | <revert> ]");
+     "   <options>     ::=  [ <specs> | <revert> ]");
     Basic_Proc.Put_Line_Error (
-     "                    [ <tree> [ <tab> ] | <fast> | <direct> | <once> ]");
+     "                      [ <tree> [ <tab> ] | <fast> | <direct> | <once> ]");
     Basic_Proc.Put_Line_Error (
-     "                    [ <bodies> ] [ <files> ] [ <inclusions> ]");
+     "                      [ <bodies> ] [ <files> ] [ <inclusions> ]");
     Basic_Proc.Put_Line_Error (
-     " <specs>       ::= " & Argument_Parser.Image (Keys(4)));
+     "     <specs>       ::= " & Argument_Parser.Image (Keys(4)));
     Basic_Proc.Put_Line_Error (
-     " <revert>      ::= " & Argument_Parser.Image (Keys(5)));
+     "     <revert>      ::= " & Argument_Parser.Image (Keys(5)));
     Basic_Proc.Put_Line_Error (
-     " <tree>        ::= " & Argument_Parser.Image (Keys(6)));
+     "     <tree>        ::= " & Argument_Parser.Image (Keys(6)));
     Basic_Proc.Put_Line_Error (
-     " <tab>         ::= " & Argument_Parser.Image (Keys(18)));
+     "     <tab>         ::= " & Argument_Parser.Image (Keys(18)));
     Basic_Proc.Put_Line_Error (
-     " <fast>        ::= " & Argument_Parser.Image (Keys(16)));
+     "     <fast>        ::= " & Argument_Parser.Image (Keys(16)));
     Basic_Proc.Put_Line_Error (
-     " <direct>      ::= " & Argument_Parser.Image (Keys(7)));
+     "     <direct>      ::= " & Argument_Parser.Image (Keys(7)));
     Basic_Proc.Put_Line_Error (
-     " <once>        ::= " & Argument_Parser.Image (Keys(19)));
+     "     <once>        ::= " & Argument_Parser.Image (Keys(19)));
     Basic_Proc.Put_Line_Error (
-     " <files>       ::= " & Argument_Parser.Image (Keys(8)));
+     "     <files>       ::= " & Argument_Parser.Image (Keys(8)));
     Basic_Proc.Put_Line_Error (
-     " <bodies>      ::= " & Argument_Parser.Image (Keys(15)));
+     "     <bodies>      ::= " & Argument_Parser.Image (Keys(15)));
     Basic_Proc.Put_Line_Error (
-     " <restrict>    ::= " & Argument_Parser.Image (Keys(17)));
+     "     <restrict>    ::= " & Argument_Parser.Image (Keys(17)));
     Basic_Proc.Put_Line_Error (
-     " <inclusions>  ::= { <include> | <recursive> | <exclude> }");
+     "     <inclusions>  ::= { <include> | <recursive> | <exclude> }");
     Basic_Proc.Put_Line_Error (
-     " <include>     ::= " & Argument_Parser.Image (Keys(9)));
+     "       <include>     ::= " & Argument_Parser.Image (Keys(9)));
     Basic_Proc.Put_Line_Error (
-     " <recursive>   ::= " & Argument_Parser.Image (Keys(10)));
+     "       <recursive>   ::= " & Argument_Parser.Image (Keys(10)));
     Basic_Proc.Put_Line_Error (
-     " <exclude>     ::= " & Argument_Parser.Image (Keys(11)));
+     "       <exclude>     ::= " & Argument_Parser.Image (Keys(11)));
     Basic_Proc.Put_Line_Error (
-     " <list>        ::= [ <files> ] [ <all> ] [ <children> ] "
+     " <list>        ::= [ <files> ] [ <subunits> ] [ <children> ] "
                            & Argument_Parser.Image (Keys(12)));
     Basic_Proc.Put_Line_Error (
      "                   [ <path_unit> ]");
     Basic_Proc.Put_Line_Error (
-     " <all>         ::= " & Argument_Parser.Image (Keys(13)));
+     "   <subunits>    ::= " & Argument_Parser.Image (Keys(13)));
     Basic_Proc.Put_Line_Error (
-     " <children>    ::= " & Argument_Parser.Image (Keys(14)));
+     "   <children>    ::= " & Argument_Parser.Image (Keys(14)));
     Basic_Proc.Put_Line_Error (
      " <check>       ::= " & Argument_Parser.Image (Keys(3)) & " [ <target_dir> ]");
     Basic_Proc.Put_Line_Error (
-     " <loop>        ::= " & Argument_Parser.Image (Keys(20)) & " [ <specs> ] <target_unit> ]");
+     " <loop>        ::= " & Argument_Parser.Image (Keys(20)) & " [ <specs> ] <target_unit>");
     Basic_Proc.Put_Line_Error (
      "Dependency function by default lists units on which <target_unit> depends,");
     Basic_Proc.Put_Line_Error (
@@ -132,9 +132,9 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      "    directory names (matching pattern) from directory trees,");
     Basic_Proc.Put_Line_Error (
-     "List function lists units of a dir (default: current dir), or of a unit,");
+     "List function lists the units of a dir (default: current dir), or of a unit,");
     Basic_Proc.Put_Line_Error (
-     "    optionally the subunits, alternatively corresponding files.");
+     "    optionally the subunits, alternatively the corresponding files.");
     Basic_Proc.Put_Line_Error (
      "Check function shows redundant ""with"" clauses in a dir (default: current dir).");
     Basic_Proc.Put_Line_Error (
@@ -152,7 +152,7 @@ procedure Lsadeps is
 
   -- Option management
   List_Mode : Boolean := False;
-  All_Mode : Boolean := False;
+  Subunits_Mode : Boolean := False;
   Children_Mode : Boolean := False;
   Check_Mode : Boolean := False;
   Loop_Mode : Boolean := False;
@@ -277,7 +277,7 @@ procedure Lsadeps is
       Files_Mode := True;
     end if;
     if Arg_Dscr.Is_Set (13) then
-      All_Mode := True;
+      Subunits_Mode := True;
     end if;
     if Arg_Dscr.Is_Set (14) then
       Children_Mode := True;
@@ -335,11 +335,11 @@ procedure Lsadeps is
 
     -- List mode
     if Arg_Dscr.Is_Set (12) then
-      -- No option except File and all
+      -- No option except File and subunits
       if Specs_Mode or else Revert_Mode or else Tree_Mode
       or else Direct_Mode or else Bodies_Mode or else Restrict_Mode
       or else Once_Mode then
-        Error ("List mode only supports file, all or children options");
+        Error ("List mode only supports file, subunits or children options");
       end if;
       -- No include
       if Arg_Dscr.Get_Nb_Occurences (9) /= 0
@@ -372,9 +372,9 @@ procedure Lsadeps is
       Error ("Tree and Fast mode are mutually exclusive");
     end if;
 
-    -- All in list
-    if All_Mode and then not List_Mode then
-      Error ("All option is valid only in list mode");
+    -- Subunits in list
+    if Subunits_Mode and then not List_Mode then
+      Error ("Subunits option is valid only in list mode");
     end if;
     -- Children in list
     if Children_Mode and then not List_Mode then
@@ -602,7 +602,7 @@ begin
   -----------------
   if List_Mode then
     Output.List (Target.Image, Target_Dir.Image, List_Path.Image, Files_Mode,
-                 All_Mode, Children_Mode);
+                 Subunits_Mode, Children_Mode);
     Debug.Logger.Log (Perfo, "List done.");
     return;
   end if;
