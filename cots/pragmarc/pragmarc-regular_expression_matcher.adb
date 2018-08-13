@@ -1,15 +1,16 @@
 -- PragmAda Reusable Component (PragmARC)
--- Copyright (C) 2013 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2018 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- History:
+-- 2018 Aug 01     J. Carter          V1.4--Cleanup compiler warnings
+-- 2016 Jun 01     J. Carter          V1.3--Changed comment for empty declarative part
 -- 2013 Oct 01     J. Carter          V1.2--Added exception handler to Destroy
 -- 2001 Feb 01     J. Carter          V1.1--Improve robustness and return length of pattern matched
 -- 2000 May 01     J. Carter          V1.0--Initial release
 --
 with Ada.Unchecked_Deallocation;
 
-use Ada;
 package body PragmARC.Regular_Expression_Matcher is
    procedure Destroy (Pattern : in out Processed_Pattern) is
       procedure Free is new Unchecked_Deallocation (Object => Class_Info,           Name => Class_Ptr);
@@ -125,7 +126,7 @@ package body PragmARC.Regular_Expression_Matcher is
       Local : Result;
 
       function Match (P_Index : Positive; S_Index : Index) return Boolean is -- Matches one Pattern element with one Item
-         -- null;
+         -- Empty
       begin -- Match
          case Pattern.Ptr (P_Index).Kind is
          when Literal =>

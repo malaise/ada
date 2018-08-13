@@ -2,40 +2,35 @@
 -- Copyright (C) 2016 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
--- Provides holders for values of indefinite types
---
 -- History:
--- 2016 Sep 15     J. Carter          V1.0--Initial release
+-- 2016 Oct 01     J. Carter     V1.0--Initial Version
 --
-private with Ada.Finalization;
+function PragmARC.Random_Ranges (G : Generator; Min : Interfaces.Unsigned_32; Max : Interfaces.Unsigned_32) return Interfaces.Unsigned_32
+is
+   subtype Unsigned_32 is Interfaces.Unsigned_32;
 
-generic -- PragmARC.Holders
-   type Element (<>) is private;
-package PragmARC.Holders is
-   pragma Preelaborate;
+   type U33 is mod 2 ** 33; -- 1 bit more than Unsigned_32, for calculating Max_Random
 
-   type Handle is tagged private;
-   -- Initial value: empty
+   Min_Work : constant Unsigned_32 := Unsigned_32'Min (Min, Max);
+   Max_Work : constant Unsigned_32 := Unsigned_32'Max (Min, Max);
 
-   procedure Put (Onto : in out Handle; Item : in Element);
-   -- Makes the value stored in Onto be Item
-   -- Onto is not empty after a call to Put
+   use type Unsigned_32;
 
-   function Get (From : Handle) return Element;
-   -- Returns the value stored in From
-   -- From must not be empty; raises Empty if it is
-   --
-   -- Precondition: From is not empty     raise Empty if violated
-private -- PragmARC.Holders
-   type Element_Ptr is access Element;
+   Spread : constant Unsigned_32 := Max_Work - Min_Work + 1;
+   S33    : constant U33         := U33 (Spread);
 
-   type Handle is new Ada.Finalization.Controlled with record
-      Ptr : Element_Ptr;
-   end record;
+   Max_Random : constant Unsigned_32 := Interfaces.Unsigned_32 (S33 * (Unsigned_32'Modulus / S33) - 1);
 
-   procedure Adjust (Object : in out Handle);
-   procedure Finalize (Object : in out Handle);
-end PragmARC.Holders;
+   Value : Unsigned_32;
+begin -- PragmARC.Random_Ranges
+   Get_Value : loop
+      Value := Random (G);
+
+      exit Get_Value when Value <= Max_Random;
+   end loop Get_Value;
+
+   return Min_Work + Value rem Spread;
+end PragmARC.Random_Ranges;
 --
 -- This is free software; you can redistribute it and/or modify it under
 -- terms of the GNU General Public License as published by the Free Software

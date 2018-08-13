@@ -1,41 +1,26 @@
 -- PragmAda Reusable Component (PragmARC)
--- Copyright (C) 2016 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2018 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
--- Provides holders for values of indefinite types
+-- Provides missing operations for converting vectors to and from their fixed equivalents
+-- (equivalent to To_String and To_Unbounded_String for unbounded strings)
 --
--- History:
--- 2016 Sep 15     J. Carter          V1.0--Initial release
+-- History
+-- 2018 Jun 01     J. Carter          V1.0--Initial release
 --
-private with Ada.Finalization;
+with Ada.Containers.Vectors;
 
-generic -- PragmARC.Holders
-   type Element (<>) is private;
-package PragmARC.Holders is
-   pragma Preelaborate;
+generic -- PragmaRC.Vector_Conversions
+   type Index is range <>;
+   type Element is private;
+   type Fixed is array (Index range <>) of Element;
 
-   type Handle is tagged private;
-   -- Initial value: empty
+   with package Vectors is new Ada.Containers.Vectors (Index_Type => Index, Element_Type => Element);
+package PragmARC.Vector_Conversions is
+   function To_Fixed (Vector : Vectors.Vector) return Fixed;
 
-   procedure Put (Onto : in out Handle; Item : in Element);
-   -- Makes the value stored in Onto be Item
-   -- Onto is not empty after a call to Put
-
-   function Get (From : Handle) return Element;
-   -- Returns the value stored in From
-   -- From must not be empty; raises Empty if it is
-   --
-   -- Precondition: From is not empty     raise Empty if violated
-private -- PragmARC.Holders
-   type Element_Ptr is access Element;
-
-   type Handle is new Ada.Finalization.Controlled with record
-      Ptr : Element_Ptr;
-   end record;
-
-   procedure Adjust (Object : in out Handle);
-   procedure Finalize (Object : in out Handle);
-end PragmARC.Holders;
+   function To_Vector (List : Fixed) return Vectors.Vector;
+end PragmaRC.Vector_Conversions;
 --
 -- This is free software; you can redistribute it and/or modify it under
 -- terms of the GNU General Public License as published by the Free Software

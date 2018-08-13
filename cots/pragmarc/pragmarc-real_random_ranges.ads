@@ -2,40 +2,28 @@
 -- Copyright (C) 2016 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
--- Provides holders for values of indefinite types
+-- Creates a random values in a range from a random value R such that 0 <= R < 1
 --
 -- History:
--- 2016 Sep 15     J. Carter          V1.0--Initial release
+-- 2016 Oct 01     J. Carter          V1.0--Initial version
 --
-private with Ada.Finalization;
+generic -- PragmARC.Real_Random_Ranges
+   type Supplied_Real is digits <>;
+package PragmARC.Real_Random_Ranges is
+   subtype Real is Supplied_Real'Base;
+   subtype Uniform is Real range 0.0 .. Real'Adjacent (1.0, 0.0);
 
-generic -- PragmARC.Holders
-   type Element (<>) is private;
-package PragmARC.Holders is
-   pragma Preelaborate;
+   function Random_Range (R : Uniform; Min : Real; Max : Real) return Real;
+   -- Converts R into a value in Min .. Max
 
-   type Handle is tagged private;
-   -- Initial value: empty
+   function Random_Int (R : Uniform; Min : Integer; Max : Integer) return Integer;
+   -- Converts R into a value in Min .. Max
 
-   procedure Put (Onto : in out Handle; Item : in Element);
-   -- Makes the value stored in Onto be Item
-   -- Onto is not empty after a call to Put
+   type Normal_List is array (1 .. 12) of Uniform;
 
-   function Get (From : Handle) return Element;
-   -- Returns the value stored in From
-   -- From must not be empty; raises Empty if it is
-   --
-   -- Precondition: From is not empty     raise Empty if violated
-private -- PragmARC.Holders
-   type Element_Ptr is access Element;
-
-   type Handle is new Ada.Finalization.Controlled with record
-      Ptr : Element_Ptr;
-   end record;
-
-   procedure Adjust (Object : in out Handle);
-   procedure Finalize (Object : in out Handle);
-end PragmARC.Holders;
+   function Normal (List : Normal_List; Mean : Real; Sigma : Real) return Real;
+   -- Uses the random values in List to approximate a normally distributed random number with the given mean & standard deviation
+end PragmARC.Real_Random_Ranges;
 --
 -- This is free software; you can redistribute it and/or modify it under
 -- terms of the GNU General Public License as published by the Free Software

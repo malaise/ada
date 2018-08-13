@@ -1,22 +1,17 @@
 -- PragmAda Reusable Component (PragmARC)
--- Copyright (C) 2014 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2017 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- Rational numbers bounded only by Integer'Last and available memory
 --
 -- History:
+-- 2017 Apr 15     J. Carter          V1.1--Removed GCD and LCM (now in Unbounded_Integers) and added Sqrt
 -- 2014 Apr 01     J. Carter          V1.0--Initial release
 --
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 
 package body PragmARC.Rational_Numbers is
-   function GCD (Left : Unbounded_Integer; Right : Unbounded_Integer) return Unbounded_Integer;
-   -- Greatest common divisor; signs are ignored
-
-   function LCM (Left : Unbounded_Integer; Right : Unbounded_Integer) return Unbounded_Integer;
-   -- Least common multiple; signs are ignored
-
    procedure Simplify (Value : in out Rational);
    -- Changes Value to have the smallest (absolute) values that represent the same rational number
    -- 2/4 becomes 1/2
@@ -82,9 +77,27 @@ package body PragmARC.Rational_Numbers is
          return Compose (Left.Numerator + Right.Numerator, Left.Denominator);
       end if;
 
-      M := LCM (Left.Denominator, Right.Denominator);
-      LN := Left.Numerator  * M / Left.Denominator;
-      RN := Right.Numerator * M / Right.Denominator;
+      if Left.Denominator = UI1 then
+         return Compose (Left.Numerator * Right.Denominator + Right.Numerator, Right.Denominator);
+      end if;
+
+      if Right.Denominator = UI1 then
+         return Compose (Left.Numerator + Right.Numerator * Left.Denominator, Left.Denominator);
+      end if;
+
+      M := LCM (abs Left.Denominator, abs Right.Denominator);
+
+      if M = Left.Denominator then
+         LN := Left.Numerator;
+      else
+         LN := Left.Numerator  * M / Left.Denominator;
+      end if;
+
+      if M = Right.Denominator then
+         RN := Right.Numerator;
+      else
+         RN := Right.Numerator * M / Right.Denominator;
+      end if;
 
       return Compose (LN + RN, M);
    end "+";
@@ -115,7 +128,7 @@ package body PragmARC.Rational_Numbers is
       return Compose (Left.Numerator * Right.Denominator, Left.Denominator * Right.Numerator);
    end "/";
 
-   function "**" (Left : Rational; Right : Natural) return Rational is
+   function "**" (Left : Rational; Right : Integer) return Rational is
       Result : Rational := Left;
       Work   : Rational := Left;
    begin -- "**"`
@@ -129,6 +142,10 @@ package body PragmARC.Rational_Numbers is
 
       if Left = Zero then
          return Zero;
+      end if;
+
+      if Right < 0 then
+         return One / Left ** (abs Right);
       end if;
 
       Calculate : declare -- This is O(log Right)
@@ -169,7 +186,7 @@ package body PragmARC.Rational_Numbers is
 
        -- Signs are the same
 
-      M := LCM (Left.Denominator, Right.Denominator);
+      M := LCM (abs Left.Denominator, abs Right.Denominator);
 
       return Unbounded_Integer'(Left.Numerator * M / Left.Denominator) > Right.Numerator * M / Right.Denominator;
    end ">";
@@ -246,8 +263,6 @@ package body PragmARC.Rational_Numbers is
       Slash : constant Natural := Ada.Strings.Fixed.Index (Image, "/");
       Dot   : constant Natural := Ada.Strings.Fixed.Index (Image, ".");
       Hash  : constant Natural := Ada.Strings.Fixed.Index (Image, "#");
-
-      Result : Rational;
    begin -- Value
       if Slash > 0 then
          return Compose (Value (Image (Image'First .. Slash - 1) ), Value (Image (Slash + 1 .. Image'Last) ) );
@@ -270,34 +285,6 @@ package body PragmARC.Rational_Numbers is
                       Value (Image (Image'First .. Hash) & '1' & (1 .. Image'Last - Dot - 1 => '0') & '#') );
    end Value;
 
-   function GCD (Left : Unbounded_Integer; Right : Unbounded_Integer) return Unbounded_Integer is
-      Min       : Unbounded_Integer := abs Left;
-      Max       : Unbounded_Integer := abs Right;
-      Remainder : Unbounded_Integer;
-   begin -- GCD
-      if Max < Min then
-         Remainder := Min;
-         Min := Max;
-         Max := Remainder;
-      end if; -- Now Min <= Max
-
-      Reduce : loop
-         if Min <= UI0 then
-            return Max;
-         end if;
-
-         Remainder := Max rem Min;
-         Max := Min;
-         Min := Remainder;
-      end loop Reduce;
-   end GCD;
-
-   function LCM (Left : Unbounded_Integer; Right : Unbounded_Integer) return Unbounded_Integer is
-      -- Empty declarative part
-   begin -- LCM
-      return (abs Left * (abs Right) ) / GCD (Left, Right);
-   end LCM;
-
    procedure Simplify (Value : in out Rational) is
       D : Unbounded_Integer;
    begin -- Simplify
@@ -315,6 +302,81 @@ package body PragmARC.Rational_Numbers is
 
       Value := (Numerator => Value.Numerator / D, Denominator => Value.Denominator / D);
    end Simplify;
+
+   Two : constant Rational := One + One;
+
+   type Square_Pair is record
+      Number : Rational;
+      Square : Rational;
+   end record;
+
+   type Square_List is array (Positive range <>) of Square_Pair;
+
+   Square : constant Square_List := ( (Number => Value (     "2.0"), Square => Value (           "4.0") ),
+                                      (Number => Value (     "4.0"), Square => Value (          "16.0") ),
+                                      (Number => Value (     "8.0"), Square => Value (          "64.0") ),
+                                      (Number => Value (    "16.0"), Square => Value (         "256.0") ),
+                                      (Number => Value (    "32.0"), Square => Value (        "1024.0") ),
+                                      (Number => Value (    "64.0"), Square => Value (        "4096.0") ),
+                                      (Number => Value (   "128.0"), Square => Value (       "16384.0") ),
+                                      (Number => Value (   "256.0"), Square => Value (       "65536.0") ),
+                                      (Number => Value (   "512.0"), Square => Value (      "262144.0") ),
+                                      (Number => Value (  "1024.0"), Square => Value (     "1048576.0") ),
+                                      (Number => Value (  "2048.0"), Square => Value (     "4194304.0") ),
+                                      (Number => Value (  "4096.0"), Square => Value (    "16777216.0") ),
+                                      (Number => Value (  "8192.0"), Square => Value (    "67108864.0") ),
+                                      (Number => Value ( "16384.0"), Square => Value (   "268435456.0") ),
+                                      (Number => Value ( "32768.0"), Square => Value (  "1073741824.0") ),
+                                      (Number => Value ( "65536.0"), Square => Value (  "4294967296.0") ),
+                                      (Number => Value ("131072.0"), Square => Value ( "17179869184.0") ),
+                                      (Number => Value ("262144.0"), Square => Value ( "68719476736.0") ),
+                                      (Number => Value ("524288.0"), Square => Value ("274877906944.0") ) );
+
+   function Sqrt (Right : Rational; Accuracy : Rational) return Rational is
+      A : constant Rational := abs Accuracy;
+
+      R : Rational := Right; -- Right after reduction
+      F : Rational := One;   -- Factor after reduction
+      X : Rational;
+      Y : Rational;
+   begin -- Sqrt
+      if Right < Zero then
+         raise Constraint_Error with "Sqrt: Right < 0";
+      end if;
+
+      if Right = Zero then
+         return Zero;
+      end if;
+
+      if Right = One then
+         return One;
+      end if;
+
+      Reduce_All : for I in reverse Square'Range loop
+         Reduce_One : loop
+            exit Reduce_One when R < Square (I).Square;
+
+            F := F * Square (I).Number;
+            R := R / Square (I).Square;
+         end loop Reduce_One;
+      end loop Reduce_All;
+
+      if R = One then
+         return F;
+      end if;
+
+      X := R / Two;
+
+      All_Iterations : for I in 1 .. 15 loop
+         Y := X ** 2 - R;
+
+         exit All_Iterations when abs Y < A;
+
+         X := (X + R / X) / Two;
+      end loop All_Iterations;
+
+      return F * X;
+   end Sqrt;
 end PragmARC.Rational_Numbers;
 --
 -- This is free software; you can redistribute it and/or modify it under

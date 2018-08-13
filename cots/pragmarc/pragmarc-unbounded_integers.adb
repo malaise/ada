@@ -1,8 +1,10 @@
 -- PragmAda Reusable Component (PragmARC)
--- Copyright (C) 2014 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2018 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- History:
+-- 2018 Aug 01     J. Carter          V1.2--Cleanup compiler warnings
+-- 2017 Apr 15     J. Carter          V1.1--Added GCD and LCM
 -- 2014 Apr 01     J. Carter          V1.0--Initial release
 --
 with Ada.Characters.Handling;
@@ -33,7 +35,7 @@ package body PragmARC.Unbounded_Integers is
    function El_Or_0 (List : Digit_List; Index : Positive) return Digit_Value is
       -- Empty declarative part
    begin -- El_Or_0
-      if Index in 1 .. List.Last_Index then
+      if Index <= List.Last_Index then
          return List.Element (Index);
       end if;
 
@@ -43,7 +45,7 @@ package body PragmARC.Unbounded_Integers is
    procedure Insert (List : in out Digit_List; Index : in Positive; Value : in Digit_Value) is
       -- Empty declarative part
    begin -- Insert
-      if Index in 1 .. List.Last_Index then
+      if Index <= List.Last_Index then
          List.Replace_Element (Index => Index, New_Item => Value);
       else
          if Index > List.Last_Index + 1 then
@@ -744,6 +746,42 @@ package body PragmARC.Unbounded_Integers is
 
       return Result;
    end Value;
+
+   function GCD (Left : Unbounded_Integer; Right : Unbounded_Integer) return Unbounded_Integer is
+      Min       : Unbounded_Integer := abs Left;
+      Max       : Unbounded_Integer := abs Right;
+      Remainder : Unbounded_Integer;
+   begin -- GCD
+      if Max < Min then
+         Remainder := Min;
+         Min := Max;
+         Max := Remainder;
+      end if; -- Now Min <= Max
+
+      if Min = Zip and Max = Zip then
+         raise Constraint_Error with "GCD (0, 0)";
+      end if;
+
+      if Min = Max then
+         return Min;
+      end if;
+
+      Reduce : loop
+         if Min <= Zip then
+            return Max;
+         end if;
+
+         Remainder := Max rem Min;
+         Max := Min;
+         Min := Remainder;
+      end loop Reduce;
+   end GCD;
+
+   function LCM (Left : Unbounded_Integer; Right : Unbounded_Integer) return Unbounded_Integer is
+      -- Empty declarative part
+   begin -- LCM
+      return (Left * Right) / GCD (Left, Right);
+   end LCM;
 end PragmARC.Unbounded_Integers;
 --
 -- This is free software; you can redistribute it and/or modify it under
