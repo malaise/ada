@@ -885,12 +885,15 @@ package body Commit is
               Init (In_Loop, (if Commit_Ok then Reset else Leave), Title);
               Reread (True);
             when Afpx_Xref.Commit.Push =>
+              Decode_Comment;
+              -- Save comment for next time
+              Prev_Comment := Comment;
+              Config.Save_Comment (Prev_Comment.Image);
               if In_Loop then
-                -- Quit in a loop
+                -- Abort in a loop
                 return False;
               end if;
               -- Push button
-              Decode_Comment;
               if Push_Pull.Handle (Root, Pull => False) then
                 return True;
               else
@@ -900,6 +903,9 @@ package body Commit is
             when Afpx_Xref.Commit.Back =>
               -- Back / Done button
               Decode_Comment;
+              -- Save comment for next time
+              Prev_Comment := Comment;
+              Config.Save_Comment (Prev_Comment.Image);
               return True;
             when others =>
               null;
