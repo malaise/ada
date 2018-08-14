@@ -1,20 +1,24 @@
--- Compute (and optionally put) the number of Ada statements of file
---  the number of comments and the numbers of lines
+-- Compute (and optionally put) the number of Ada/Java statements of file
+--  the percent number of comments and the numbers of lines
 
 package One_File_Statements is
 
-  -- Java comments ("//" or /*.. */) instead of Ada ("--")
-  Java_Syntax : Boolean := False;
+  -- Put header (for Statements_Of_File with Summary)
+  procedure Put_Header;
 
-  -- If File_Name is empty,
-  --  if Summary put formated total so far and reset it
-  --  else put total of statements so far and reset it
-  -- Else
-  --   add numbers of this file to total
-  --   if Summary put formated numbers for this file
-  procedure Print_Statements_Of_File (
+  -- Compute statements for this file
+  --  if Java comments, then use ("//" or /*.. */) instead of Ada ("--")
+  --  add numbers of this file to total
+  --  if Summary, then put formated 3 numbers for this file
+  procedure Statements_Of_File (
              File_Name : String;
+             Java_Syntax : Boolean := False;
              Summary : in Boolean := True);
+
+  -- Put and reset the total so far
+  --  if Summary, then put the formated total (3 values)
+  --  else put the unformated total of statements so far
+  procedure Put_Total (Summary : in Boolean);
 
 end One_File_Statements;
 

@@ -7,6 +7,7 @@ with One_File_Statements;
 procedure Statfile is
 
   First_File : Positive;
+  Java_Syntax : Boolean := False;
 
   procedure Stat_One_File (List_File_Name : in String) is
     List_File : Text_Line.File_Type;
@@ -26,7 +27,8 @@ procedure Statfile is
       begin
         exit when Name = "";
         if Name'Length /= 1 then
-          One_File_Statements.Print_Statements_Of_File (Text_Line.Trim (Name));
+          One_File_Statements.Statements_Of_File (Text_Line.Trim (Name),
+                                                  Java_Syntax);
         end if;
       exception
         when others =>
@@ -55,9 +57,11 @@ begin
   if Argument.Get_Nbre_Arg >= 1
   and then (Argument.Get_Parameter (1) = "--java"
             or else Argument.Get_Parameter (1) = "-j") then
-    One_File_Statements.Java_Syntax := True;
+    Java_Syntax := True;
     First_File := First_File + 1;
   end if;
+
+  One_File_Statements.Put_Header;
 
   -- Process files of files
   for Arg in First_File .. Argument.Get_Nbre_Arg loop
@@ -66,7 +70,7 @@ begin
     Stat_One_File (Argument.Get_Parameter (Arg));
   end loop;
 
-  One_File_Statements.Print_Statements_Of_File ("");
+  One_File_Statements.Put_Total (True);
 
 end Statfile;
 
