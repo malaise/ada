@@ -1,6 +1,6 @@
 Als
 ===
-V21.1
+V21.2
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, for the output format of each entry, and general
@@ -31,21 +31,18 @@ Detailed options
 Specify which entry to select
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  -a (--all)                 Show all entries including hidden ones
-                               (starting with '.')
+  -a (--all)                 Show all entries including hidden ones (i.e. starting with '.')
   -A (--All)                 Show all entries except "." and ".."
   -D (--directories)         Show only directories
   -L (--links)               Show only symbolic links
   -F (--files)               Show only regular files
-  -O (--others)              Show only other entries (character or block device,
-                               pipe, socket)
+  -O (--others)              Show only other entries (character or block device, pipe, socket)
   -B (--broken-links)        Show only broken symbolic links
 
   -R (--recursive)           Scan directories recursively
   --depth=<positive>         Scan only to given depth (needs "-R")
 
-  --skip-dirs                Skip directories from arguments
-                               (useful when calling "als *")
+  --skip-dirs                Skip directories from arguments (useful when calling "als *")
   --access=<rights>          Show only file with the given access for current user
                                ex: "rw*" read and write, exec or not
                                    "r-x" read, not write, exec
@@ -127,7 +124,7 @@ Example:
 
 Option -H is useful only when -l is provided. So "als -H" is the same as "als".
 
-.Some options are ignored when combined with som other options
+.Some options are ignored when combined with some other options
 Some options are meaningless when some other option is provided.
 They are accepted and silently ignored in thses cases.
 
@@ -141,7 +138,7 @@ Providing these options together is reported as an error.
 
 Examples:
 
-* Sorting criterai are mutually exclusive.
+* Sorting criteria are mutually exclusive.
 * -d and -n are mutually exclusive.
 * -S is not compatible with some other formatting options (-l, -1 and -c).
 
@@ -237,7 +234,7 @@ Symbolic links
 ~~~~~~~~~~~~~~
 .Links and broken links
 Option -L leads als to select all the symbolic links. +
-Option -B leads leads to only the broken links, i.e. the one for which the
+Option -B leads als to list only the broken links, i.e. the one for which the
 final target (possibly following recursive links) cannot be read.
 
 .Following links
@@ -246,7 +243,7 @@ symbolic link is a directory, then this directory is added to the scan. +
 
 .Showing target of links
 When --show-targets is set, then als shows (when -l) the final target and its
-size instead of the initial target of the symbolic links.
+size, instead of the initial target of the symbolic links.
 
 NOTE: The options --follow-links and --show-targets are not used for assessing
 if a link is valid or broken (in any case, the link is valid only if the final
