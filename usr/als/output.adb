@@ -484,7 +484,7 @@ package body Output is
     -- Modif time
     -- Date_Image is "YYyy-Mm-DdTHh:Mm:Ss.mmm"
     -- Replace 'T' by a space except if option Date_Iso
-    Date := Images.Date_Image (Entity.Modif_Time, Format => Images.Iso_Dot);
+    Date := Images.Date_Image (Entity.Modif_Time);
     if not Date_Iso then
       Date(11) := ' ';
     end if;

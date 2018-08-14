@@ -69,7 +69,7 @@ package body Rules is
   end Exists;
 
   -- Check rule
-  -- Return the error  or empty
+  -- Return the error or empty
   function Check_Action (Action : String) return String is
     Dummy : As.U.Asu_Us;
   begin

@@ -33,10 +33,9 @@ procedure Tcp_Spy is
 
   -- Current date image
   function Curr_Date_Image return String is
-    Date : String := Images.Date_Image (Ada.Calendar.Clock);
+    Date : constant String := Images.Date_Image (Ada.Calendar.Clock);
   begin
-    -- Date is "YYyy/Mm/Dd Hh:Mm:Ss.mmm"
-    Date (11) := '/';
+    -- Date is "YYyy-Mm-DdTHh:Mm:Ss.mmm"
     return "At " & Date (9 .. Date'Last);
   end Curr_Date_Image;
 

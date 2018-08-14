@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with Aski, As.B, Dynamic_List, Directory, Afpx, Select_File, Normal, Text_Line,
-     Environ, Sys_Calls, Images, Language, Perpet;
+     Environ, Sys_Calls, Date_Text, Language, Perpet;
 with Oper_Def, File_Mng, Oper_Dyn_List_Mng, Screen, Unit_Format, Afpx_Xref;
 
 -- Manage the whole acount status
@@ -505,15 +505,14 @@ package body Mng is
         return;
     end;
     declare
-      -- YYyy/Mm/Dd Hh:Mm:Ss.mmm
-      Date : constant String := Images.Date_Image (Ada.Calendar.Clock);
+      -- Dd/Mm/YYyy Hh:Mm
+      Date : constant String
+           := Date_Text.Put (Date_Text.Split (Ada.Calendar.Clock),
+                             "%d/%m/%Y %H:%M");
     begin
       Pf.Put_Line (
                "Account: " & Account_Name.Image
-             & "     at: "
-             -- Dd/Mm/YYyy Hh:Mm
-             & Date(9 .. 10) & Date(8) & Date(6 .. 7) & Date(5) & Date (1 .. 4)
-             & Date (11 .. 16));
+             & "     at: " & Date);
       Pf.Put_Line (Page_Title);
       Line := 3;
     end;

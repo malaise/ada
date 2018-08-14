@@ -197,7 +197,7 @@ package body Trace is
   function Format (Name     : in String;
                    Severity : in Severities;
                    Message  : in String) return String is
-    (Images.Date_Image (Ada.Calendar.Clock, Format => Images.Iso_Dot)
+    (Images.Date_Image (Ada.Calendar.Clock)
          & " " & Process.Image
          & " " & (if Name = "" then "-" else Name)
          & " " & Image (Severity)

@@ -703,7 +703,7 @@ if `match $arg t_date_text` ; then
 Lengths:
  15
  23
-Input: Jul 21 10:45:54  Dump: 1901/07/21 10:45:54.000  Put: 1901-07-21T10:45:54:000
+Input: Jul 21 10:45:54  Dump: 1901-07-21T10:45:54.000  Put: 1901-07-21T10:45:54:000
 EOF
   comp err nul
   comp out exp

@@ -133,7 +133,7 @@ package body Images is
 
   -- Return String image "Hh:Mm:Ss.mmm" (12 Characters) of a day duration
   -- On option, separate milliseconds by a comma instead of dot
-  --  (ISO 8601 recommendation)
+  --  (ISO 8601 recommends to use comma and tolerates dot)
   function Dur_Image (Dur   : Ada.Calendar.Day_Duration;
                       Comma : Boolean := False) return String is
     Hours  : Day_Mng.T_Hours;
@@ -148,34 +148,25 @@ package body Images is
          & Normal (Millis, 3, Gap => '0');
   end Dur_Image;
 
-  -- Return String image "YYyy/Mm/Dd Hh:Mm:Ss.mmm" of a time
-  -- Alternatively uses  "YYyy-Mm-DdTHh:Mm:Ss.mmm", ISO 8601 format with dot
-  -- Alternatively uses  "YYyy-Mm-DdTHh:Mm:Ss,mmm", ISO 8601 format with comma
-  --  (ISO recommends to use comma and tolerates dot)
+  -- Return String image "YYyy-Mm-DdTHh:Mm:Ss.mmm", ISO 8601 format with dot
+  -- On option, uses     "YYyy-Mm-DdTHh:Mm:Ss,mmm", ISO 8601 format with comma
+  --  (ISO 8601 recommends to use comma and tolerates dot)
   -- 23 characters in all cases
   function Date_Image (Date : Ada.Calendar.Time;
-                       Format  : Date_Format_List := Default) return String is
+                       Comma : Boolean := False) return String is
     Year   : Ada.Calendar.Year_Number;
     Month  : Ada.Calendar.Month_Number;
     Day    : Ada.Calendar.Day_Number;
     Dur    : Ada.Calendar.Day_Duration;
 
-    Sepd : Character := '/';
-    Sepdt : Character := ' ';
-
   begin
     Ada.Calendar.Split (Date, Year, Month, Day, Dur);
 
-    if Format /= Default then
-      -- Iso separators within date and between date and time
-      Sepd := '-';
-      Sepdt := 'T';
-    end if;
-
-    return Normal (Year,   4, Gap => '0') & Sepd
-         & Normal (Month,  2, Gap => '0') & Sepd
-         & Normal (Day,    2, Gap => '0') & Sepdt
-         & Dur_Image (Dur, Comma => Format = Iso_Comma);
+    -- Iso separators within date and between date and time
+    return Normal (Year,   4, Gap => '0') & '-'
+         & Normal (Month,  2, Gap => '0') & '-'
+         & Normal (Day,    2, Gap => '0') & 'T'
+         & Dur_Image (Dur, Comma);
   end Date_Image;
 
 end Images;

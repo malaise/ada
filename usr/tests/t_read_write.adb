@@ -23,8 +23,7 @@ procedure T_Read_Write is
   begin
     Last_Time.Set (Ada.Calendar.Clock);
     declare
-      Date : constant String
-           := Images.Date_Image (Last_Time.Get, Images.Iso_Dot);
+      Date : constant String := Images.Date_Image (Last_Time.Get);
       Str : constant String
           := (if Index in Range_Task then Normal (Index, 2) else "Main")
            & " " & Msg;

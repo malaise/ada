@@ -10,9 +10,9 @@ SUBUNITS := account.quit mng.deletion mng.edition mng.search
 EXES := account import export account.stat
 
 CLIBS := $(UTILS_SLIBS)
-CLIBS_account := $(X11_SLIBS)
+CLIBS_account :=$(PCRE_SLIBS) $(X11_SLIBS)
 
-LARGS_account.stat := $(X11_ALIBS)
+LARGS_account.stat := $(PCRE_ALIBS) $(X11_ALIBS)
 
 include $(TEMPLATES)/ada.mk
 
