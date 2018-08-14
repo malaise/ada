@@ -34,7 +34,7 @@ function check {
 check "lsadeps" "-l"
 
 # Files
-check "-f lsadeps" "-laf"
+check "-f lsadeps" "-lSf"
 
 # Dependancy between 2 units
 cat << EOF > res2
@@ -102,7 +102,7 @@ cat << EOF > res2
 lsadeps.adb
 lsadeps-add_paths.adb
 EOF
-check "-lfa lsadeps"
+check "-lfS lsadeps"
 
 # List Unit and child units
 cat << EOF > res2
