@@ -27,7 +27,9 @@ package Date_Text is
   -- %s : milliseconds on 3 digits
   -- %u : microseconds on 3 digits (so usually after the millisecond)
   -- %% : the '%' character
-  -- Other characters are output/scanned as such
+  -- %. : any single character to skip during scanning,
+  --       and put as a single dot for length compatibility
+  -- Other characters are output, or expected during scan, as such
 
   -- A format is not valid if
   -- -  it contains an unknown "%x" sequence

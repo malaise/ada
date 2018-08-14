@@ -29,7 +29,8 @@ The configuration file then defines filters. Each filter consists in:
 - an optional scanning period in seconds (default 60.0, min 1.0)
 - an optional tail size to scan (default 100 lines, 0 for infinite)
 - an optional number of past seconds to scan (default 1 hour, 0 for infinite)
-and the format of time in the file
+and the format of time (expected at a fixed offset in each line of the file).
+See Date_Text for the definition of format used to scan dates and times.
 - an history of alerts to store (default 100)
 - the name of the rule to execute
 - the criteria (regular expression) to match

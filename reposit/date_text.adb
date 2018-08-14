@@ -7,8 +7,10 @@ package body Date_Text is
 
   -- Maps fields of Date_Rec from/to indexes
   package Indexes is
-    -- Indexes of fields: 1 is year .. 7 is microseconds
-    subtype Index_Range is Positive range 1 .. 8;
+    -- Indexes of fields: 1 is year .. 7 is microseconds,
+    --  0 raises Constraint_Error
+    subtype Any_Index_Range is Natural range 0 .. 8;
+    subtype Index_Range is Positive range 1 .. Any_Index_Range'Last;
     -- Update To so that its Index field is set to Val
     procedure Set (To : in out Date_Rec;
                    Index : in Index_Range;
@@ -101,16 +103,16 @@ package body Date_Text is
   end Conv;
 
   -- The structures describing the formats
-  -- A field is either of kind num or enum
-  type Field_Kind is (Num, Enum);
+  -- A field is either of kind num, enum or char
+  type Field_Kind is (Num, Enum, Char);
   -- How many fields are defined for format
-  subtype Field_Range is Positive range 1 .. 10;
+  subtype Field_Range is Positive range 1 .. 11;
   -- A field
   type Field_Rec (Kind : Field_Kind := Num) is record
     -- The character that represents the field in Format (after '%')
-    Char : Character;
+    Fmt : Character;
     -- The index in Date_Rec
-    Index : Indexes.Index_Range;
+    Index : Indexes.Any_Index_Range;
     -- The Scanner format
     Scanner_Format : As.U.Asu_Us;
     case Kind is
@@ -122,6 +124,9 @@ package body Date_Text is
          Target : Field_Range;
          -- The scanning and putting conversion function
          Conv_Scan, Conv_Put : Conv.Func;
+       when Char =>
+         -- One char will be processed
+         null;
     end case;
   end record;
 
@@ -146,7 +151,8 @@ package body Date_Text is
     9 => (Num,  's', 7, As.U.Tus ("3l"), Day_Mng.T_Millisecs'First,
                                          Day_Mng.T_Millisecs'Last),
    10 => (Num,  'u', 8, As.U.Tus ("3l"), Day_Mng.T_Millisecs'First,
-                                         Day_Mng.T_Millisecs'Last)
+                                         Day_Mng.T_Millisecs'Last),
+   11 => (Char, '.', 0, As.U.Tus ("1s"))
   );
   type Fields_Array is array (Positive range <>) of Field_Range;
   package Unbounded_Fields_Array_Mng is new Unbounded_Arrays (
@@ -165,7 +171,7 @@ package body Date_Text is
   function Field_Of (Char : Character) return Field_Range is
   begin
     for I in Field_Range loop
-      if Char = Fields(I).Char then
+      if Char = Fields(I).Fmt then
         return I;
       end if;
     end loop;
@@ -188,6 +194,7 @@ package body Date_Text is
 
   -- Check a Format, raises Invalid_Format
   Esc : constant Character := '%';
+  Any : constant Character := '.';
   procedure Check_Format (Format : in String;
                           Scan_Fmt : out As.U.Asu_Us;
                           Flds : out Field_Sequence) is
@@ -210,9 +217,9 @@ package body Date_Text is
         end if;
         -- Check this is a known Esc sequence
         Ind := Ind + 1;
-        Char := Format(Ind);
+        Char := Format (Ind);
         if Char = Esc then
-          Scan_Fmt.Append (Scanner.Esc & Scanner.Esc);
+          Scan_Fmt.Append (String'(Esc & Esc));
         else
           Fi := Field_Of (Char);
           -- Check that, if Field has unknown length, then it is not immediately
@@ -300,7 +307,7 @@ package body Date_Text is
       Target := Flds.Element(I);
       if Fields(Flds.Element(I)).Kind = Enum then
         begin
-          -- Convert into num string then to val
+          -- Convert into string then to val
           Text := As.U.Tus (Fields(Target).Conv_Scan (
               Any_Def.Image (Anys.Element(I))));
           Logger.Log_Debug ("  Converted text >" & Text.Image & "<");
@@ -311,7 +318,7 @@ package body Date_Text is
             raise Invalid_String;
         end;
         Target := Fields(Flds.Element(I)).Target;
-      else
+      elsif Fields(Flds.Element(I)).Kind = Num then
         begin
           -- Convert to val
           Val := Natural (Anys.Element(I).Lint);
@@ -322,23 +329,27 @@ package body Date_Text is
         end;
       end if;
 
-      -- Check value
-      if Val < Fields(Target).Min or else Val > Fields(Target).Max then
-        Logger.Log_Debug ("Invalid value " & Images.Integer_Image (Val));
-        raise Invalid_String;
-      end if;
-
-      -- Check, if already set, that same value
-      if Set (Fields(Target).Index)
-      and then Val /= Indexes.Get (Result, Fields(Target).Index) then
-          Logger.Log_Debug ("New value " & Images.Integer_Image (Val)
-              & " differs from previous "
-              & Images.Integer_Image (Indexes.Get (Result, Fields(Target).Index)));
+      -- Discard char
+      if Fields(Flds.Element(I)).Kind /= Char then
+        -- Check value
+        if Val < Fields(Target).Min or else Val > Fields(Target).Max then
+          Logger.Log_Debug ("Invalid value " & Images.Integer_Image (Val));
           raise Invalid_String;
         end if;
-        -- Store value and set
-        Indexes.Set (Result, Fields(Target).Index, Val);
-        Set (Fields(Target).Index) := True;
+
+        -- Check, if already set, that same value
+        if Set (Fields(Target).Index)
+        and then Val /= Indexes.Get (Result, Fields(Target).Index) then
+            Logger.Log_Debug ("New value " & Images.Integer_Image (Val)
+                & " differs from previous "
+                & Images.Integer_Image (Indexes.Get (Result, Fields(Target).Index)));
+            raise Invalid_String;
+          end if;
+
+          -- Store value and set
+          Indexes.Set (Result, Fields(Target).Index, Val);
+          Set (Fields(Target).Index) := True;
+        end if;
     end loop;
     -- Done
     return Result;
@@ -350,6 +361,8 @@ package body Date_Text is
     -- Dummy format for Scanner and the list of field descriptors
     Dummy_Scan_Fmt : As.U.Asu_Us;
     Dummy_Flds : Field_Sequence;
+    -- Char to put
+    Char : Character;
     -- Index in Format
     Ifor : Positive;
     -- Is current char a field
@@ -371,17 +384,21 @@ package body Date_Text is
     while  Ifor <= Format'Last loop
       -- Check if this is supposed to be a field
       if Format(Ifor) = Esc then
-        if Format(Ifor + 1) = Esc then
+        if      Format(Ifor + 1) = Esc
+        or else Format(Ifor + 1) = Any then
           -- %% in Format -> % in Str
+          -- %. in Format -> . in Str
           Ifor := Ifor + 1;
           Is_Field := False;
+          Char := Format(Ifor);
         else
-          -- A field to scan
+          -- A field to put
           Ifor := Ifor + 1;
           Is_Field := True;
         end if;
       else
         Is_Field := False;
+        Char := Format(Ifor);
       end if;
       if Is_Field then
         Fi := Field_Of (Format(Ifor));
@@ -399,7 +416,7 @@ package body Date_Text is
         Result.Append (Text);
       else
         -- Put char
-        Result.Append (Format(Ifor));
+        Result.Append (Char);
       end if;
 
       Ifor := Ifor + 1;
@@ -432,8 +449,10 @@ package body Date_Text is
     while Ifor <= Format'Last loop
       -- Check if this is supposed to be a field
       if Format(Ifor) = Esc then
-        if Format(Ifor + 1) = Esc then
+        if      Format(Ifor + 1) = Esc
+        or else Format(Ifor + 1) = Any then
           -- %% in Format -> % in Str
+          -- %. in Format -> . in Str
           Ifor := Ifor + 1;
           Is_Field := False;
         else
