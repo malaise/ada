@@ -887,8 +887,10 @@ package body Commit is
             when Afpx_Xref.Commit.Push =>
               Decode_Comment;
               -- Save comment for next time
-              Prev_Comment := Comment;
-              Config.Save_Comment (Prev_Comment.Image);
+              if not Comment.Is_Null then
+                Prev_Comment := Comment;
+                Config.Save_Comment (Prev_Comment.Image);
+              end if;
               if In_Loop then
                 -- Abort in a loop
                 return False;
@@ -904,8 +906,10 @@ package body Commit is
               -- Back / Done button
               Decode_Comment;
               -- Save comment for next time
-              Prev_Comment := Comment;
-              Config.Save_Comment (Prev_Comment.Image);
+              if not Comment.Is_Null then
+                Prev_Comment := Comment;
+                Config.Save_Comment (Prev_Comment.Image);
+              end if;
               return True;
             when others =>
               null;
