@@ -1,4 +1,5 @@
-with Afpx, Str_Util, Many_Strings, Proc_Family, Chronos;
+with Ada.Calendar;
+with Afpx, Str_Util, Many_Strings, Proc_Family, Chronos, Date_Text;
 package body Utils is
 
   -- If Str fits Width then return Str, padded by spaces if not Align_Left
@@ -95,6 +96,13 @@ package body Utils is
   function Protect_Text (Str : in String) return String is
     (if Str = "" then Str
      else "'" & Str_Util.Substit (Str, "'", "'\''", True) & "'");
+
+  -- Get current date
+  function Get_Current_Date return Git_If.Iso_Date is
+  begin
+    return Date_Text.Put (Date_Text.Split (Ada.Calendar.Clock),
+                          "%Y-%m-%d %H-%M-%S");
+  end Get_Current_Date;
 
   package body Chrono is
     -- The Chrono

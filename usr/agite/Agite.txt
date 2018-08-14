@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V36.03
+V36.04
 
 General purpose
 ---------------
@@ -1146,12 +1146,14 @@ selected commit.
 
 .Patch
 anchor:XPatch[]
-This button launches the 'patch' submenu that :
+This button launches the 'patch' submenu that:
 
 * lists the commits between the selection and the right-selection (HEAD if none)
-in chronological order
-* allows entering a patch file name (without space)
-* and allows click in the 'OK' button.
+in chronological order,
+* provides a button 'Today' to list the commits of the current day,
+* provides a button 'Reset' to reset the list to the initial selection,
+* allows entering a patch file name (without space),
+* and allows clicking in the 'OK' button.
 
 It will then launch the xref:XConfPatch[patch] command with the patch file name,
 and the Hash values of the first and of the last commit. It will then display

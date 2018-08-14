@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V36.03"/>
+  <Var Name="Version" Value="V36.04"/>
 
   <!-- List management setup -->
   <Var Name="LmWidth" Value="8"/>
@@ -2376,7 +2376,7 @@
     <Var Name="LmLeft" Value="${List.Right}+${LmHOffset}"/>
 
     <List>
-      <Geometry Up="${LmUp}" Left="1" Height="21" Width="${LWidth}"/>
+      <Geometry Up="${LmUp}" Left="1" Height="27" Width="${LWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey" Selected="Lime_Green"/>
     </List>
     <Field Num="1" Kind="Put">
@@ -2387,7 +2387,7 @@
 
     <!-- List management -->
     <Field Num="2" Kind="Button" Name="Top">
-      <Geometry Up="${LmUp}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
+      <Geometry Up="${LmUp}+10" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Top</Init>
     </Field>
@@ -2458,13 +2458,32 @@
       <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
     </Field>
 
-    <Field Num="14" Kind="Button" Name="Ok">
+    <Field Num="14" Kind="Button" Name="Today">
+      <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="1">Today</Init>
+    </Field>
+    <Field Num="15" Kind="Button" Name="Reset">
+      <Geometry Up="${Field_14.Low}+2" Left="${LmLeft}" Height="3"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="1">Reset</Init>
+    </Field>
+
+    <Field Num="16" Kind="Put">
+      <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">--------</Init>
+    </Field>
+
+    <Field Num="17" Kind="Button" Name="Ok">
       <Geometry Up="${List.Low}+4" Left="1" Height="3" Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">OK</Init>
     </Field>
-    <Field Num="15" Kind="Button" Name="Cancel">
-      <Geometry Up="${Field_14.Up}" Right="${List.Right}" Height="3" Width="8"/>
+    <Field Num="18" Kind="Button" Name="Cancel">
+      <Geometry Up="${Field_17.Up}" Right="${List.Right}" Height="3" Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Cancel</Init>
     </Field>

@@ -1,5 +1,4 @@
 with Con_Io, Afpx.Utils;
-with Git_If;
 package body Utils.X is
 
   -- Image of a Git branch

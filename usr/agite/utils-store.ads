@@ -1,4 +1,3 @@
-with Git_If;
 package Utils.Store is
 
   -- A Hash stored and retrieved between menus

@@ -1,19 +1,38 @@
 with Command;
 separate (History)
-procedure Patch (Logs : in out Git_If.Log_List;
-                 From_Hash, To_Hash : in Git_If.Git_Hash) is
+procedure Patch (All_Logs, Selected : in out Git_If.Log_List) is
+
+  -- Local list
+  Logs, Tmp : Git_If.Log_List;
 
   -- Afpx stuff
   Get_Handle  : Afpx.Get_Handle_Rec;
   Ptg_Result  : Afpx.Result_Rec;
 
   -- Command info
-  Hash : Git_If.Git_Hash;
+  Hash, From_Hash, To_Hash : Git_If.Git_Hash;
   Cmd, Name : As.U.Asu_Us;
+  Out_Flow : Command.Flow_Rec (Command.Str);
+  Err_Flow : Command.Flow_Rec (Command.Str);
+  Exit_Code : Command.Exit_Code_Range;
 
-   Out_Flow : Command.Flow_Rec (Command.Str);
-   Err_Flow : Command.Flow_Rec (Command.Str);
-   Exit_Code : Command.Exit_Code_Range;
+  -- Current date (at iso YYYY-MM-DD HH:MM:SS)
+  Current_Date : Git_If.Iso_Date;
+
+  function Match (Curr, Crit : Git_If.Iso_Date) return Boolean is
+  begin
+    return Curr(1 .. 10) = Crit(1 .. 10);
+  end Match;
+
+  -- Reset list from a new selection
+  procedure Reset_List is
+  begin
+    Init_List (Logs);
+    -- Get Hashes
+    From_Hash := Hash_Of (Logs, 1);
+    To_Hash := Hash_Of (Logs, Logs.List_Length);
+    Get_Handle := (others => <>);
+  end Reset_List;
 
   -- Init screen
   procedure Init is
@@ -23,8 +42,7 @@ procedure Patch (Logs : in out Git_If.Log_List;
     Afpx.Set_Field_Activation (Afpx_Xref.Patch.Center, False);
     -- Encode branch and list
     Utils.X.Encode_Branch (Afpx_Xref.Patch.Branch);
-    Init_List (Logs);
-    Get_Handle := (others => <>);
+    Reset_List;
   end Init;
 
   use type Afpx.Absolute_Field_Range;
@@ -35,6 +53,9 @@ begin
   if Cmd.Is_Null then
     return;
   end if;
+
+  -- List is init to the selection
+  Logs.Unchecked_Assign (Selected);
 
   -- Move at top
   Move_At (Logs, Git_If.No_Hash);
@@ -66,6 +87,28 @@ begin
               -- Scroll list
               Afpx.Utils.Scroll(
                  Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
+            when Afpx_Xref.Patch.Today =>
+              Current_Date := Utils.Get_Current_Date;
+              -- Init logs from the commits of today in All_Logs
+              Tmp.Unchecked_Assign (All_Logs);
+              Tmp.Rewind;
+              Logs.Delete_List;
+              -- Insert in reverse order
+              while Match (Tmp.Access_Current.Date, Current_Date) loop
+                Logs.Insert (Tmp.Access_Current.all, Git_If.Log_Mng.Prev);
+                exit when not Tmp.Check_Move;
+                Tmp.Move_To;
+              end loop;
+              -- Rewind;
+              if not Logs.Is_Empty then
+                Logs.Rewind;
+              end if;
+              Reset_List;
+            when Afpx_Xref.Patch.Reset =>
+              -- Reset logs to initial selection
+              Logs.Delete_List;
+              Logs.Insert_Copy (Selected);
+              Reset_List;
             when Afpx_Xref.Patch.Ok =>
               -- Do patch
               exit;

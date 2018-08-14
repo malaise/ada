@@ -116,8 +116,7 @@ package body History is
   end Move_At;
 
   -- Do a patch
-  procedure Patch (Logs : in out Git_If.Log_List;
-                   From_Hash, To_Hash : in Git_If.Git_Hash) is separate;
+  procedure Patch (All_Logs, Selected : in out Git_If.Log_List) is separate;
 
   -- Handle the history of a file or dir
   --  possibly on a  given branch
@@ -401,7 +400,7 @@ package body History is
       -- Launch patch
       -- Afpx list is newest before oldest,
       --  but order of Hash is oldest then newest
-      Patch (Llogs, Hash_Of (To), Hash_Of (From));
+      Patch (Logs, Llogs);
       -- Reset
       Init;
       Init_List (Logs);

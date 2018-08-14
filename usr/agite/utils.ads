@@ -1,4 +1,5 @@
 with Command;
+with Git_If;
 package Utils is
 
   -- If Str fits Width then return Str, padded with space if no Align_Left
@@ -31,6 +32,9 @@ package Utils is
 
   -- Exception on Ctrl C
   Exit_Requested : exception;
+
+  -- Get current date
+  function Get_Current_Date return Git_If.Iso_Date;
 
   package Chrono is
     -- Reset and start a chrono (before calling a potentially long operation)
