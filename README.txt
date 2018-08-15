@@ -21,8 +21,6 @@ The graphical library is based on X11 and needs:
 * the font packages 75dpi and 100dpi and the corresponding transcoded (from
   ISO 10646-1) versions.
 
-Finally, a C libray needs the lib gdbm developpement package.
-
 NOTE: Some C includes and libraries are installed in '/usr/local'. The first
 time, you may need to install them as root then change their owner.
 You may also need to add '/usr/local/lib' in '/etc/ld.so.conf' (and do a

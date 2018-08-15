@@ -9,6 +9,10 @@ extern double round(double x);
 
 #include "timeval.h"
 
+#ifndef HUGE
+#define HUGE HUGE_VAL
+#endif
+
 #define MILLION  1000000
 #define THOUSAND    1000
 

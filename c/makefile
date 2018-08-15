@@ -1,16 +1,12 @@
 include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 
-LIBS := libcutil libx_mng libposix2pcre
-DBM := $(wildcard /usr/include/gdbm/ndbm.h /usr/include/gdbm-ndbm.h)
-ifneq ($(DBM),)
-LIBS += libcndbm
-OBJS_libcndbm := cndbm
-endif
+LIBS := libcutil libx_mng libposix2pcre libevp
 EXES := test_x
 
 OBJS_libcutil := timeval sys_calls wait_evt socket socket_afux
 OBJS_libposix2pcre := posix2pcre
 OBJS_libx_mng := x_color x_font x_line x_export x_file x_key x_screen
+OBJS_libevp := evp_digest
 
 CARGS_posix2pcre := $(PCRE_INCL)
 

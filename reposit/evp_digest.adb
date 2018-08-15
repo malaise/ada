@@ -5,36 +5,36 @@ package body Evp_Digest is
   -- Interfaces
   procedure Openssl_Add_All_Digests
     with Import => True, Convention => C,
-         External_Name => "OpenSSL_add_all_digests";
+         External_Name => "openssl_add_all_digests";
 
   function Evp_Get_Digestbyname (Name : System.Address) return System.Address
     with Import => True, Convention => C,
-         External_Name => "EVP_get_digestbyname";
+         External_Name => "evp_get_digestbyname";
 
   function Evp_Md_Ctx_Create return System.Address
-    with Import => True, Convention => C, External_Name => "EVP_MD_CTX_create";
+    with Import => True, Convention => C, External_Name => "evp_md_ctx_create";
 
-  procedure Evp_Digestinit_Ex (Ctx : in System.Address;
-                               Md : in System.Address;
-                               Engine : in System.Address)
-    with Import => True, Convention => C, External_Name => "EVP_DigestInit_ex";
+  function Evp_Digestinit_Ex (Ctx : in System.Address;
+                              Md : in System.Address;
+                              Engine : in System.Address) return Integer
+    with Import => True, Convention => C, External_Name => "evp_digestinit_ex";
 
-  procedure Evp_Digestupdate (Ctx : in System.Address;
-                              Msg : in System.Address;
-                              Len : in C_Types.Size_T)
-    with Import => True, Convention => C, External_Name => "EVP_DigestUpdate";
+  function Evp_Digestupdate (Ctx : in System.Address;
+                             Msg : in System.Address;
+                             Len : in C_Types.Size_T) return Integer
+    with Import => True, Convention => C, External_Name => "evp_digestupdate";
 
-  procedure Evp_Digestfinal_Ex (Ctx : in System.Address;
-                                Md  : in System.Address;
-                                Len : in System.Address)
+  function Evp_Digestfinal_Ex (Ctx : in System.Address;
+                               Md  : in System.Address;
+                               Len : in System.Address) return Integer
     with Import => True, Convention => C,
-         External_Name =>  "EVP_DigestFinal_ex";
+         External_Name =>  "evp_digestfinal_ex";
 
-  procedure Evp_Md_Ctx_Cleanup (Ctx : in System.Address)
-    with Import => True, Convention => C, External_Name => "EVP_MD_CTX_cleanup";
+  function Evp_Md_Ctx_Cleanup (Ctx : in System.Address) return Integer
+    with Import => True, Convention => C, External_Name => "evp_md_ctx_cleanup";
 
   procedure Evp_Md_Ctx_Destroy (Ctx : in System.Address)
-    with Import => True, Convention => C, External_Name => "EVP_MD_CTX_destroy";
+    with Import => True, Convention => C, External_Name => "evp_md_ctx_destroy";
 
   -- Global init
   Initialized : Boolean := False;
@@ -49,6 +49,7 @@ package body Evp_Digest is
 
   procedure Init (Ctx : in out Context; Digest_Name : in String) is
     Str4C : constant String := Digest_Name & Aski.Nul;
+    Dummy_Res : Integer;
     use type System.Address;
   begin
     -- Check that Ctx is not in use
@@ -65,7 +66,8 @@ package body Evp_Digest is
     end if;
     -- Init context
     Ctx.Evp_Md_Ctx := Evp_Md_Ctx_Create;
-    Evp_Digestinit_Ex (Ctx.Evp_Md_Ctx, Ctx.Evp_Md, System.Null_Address);
+    Dummy_Res := Evp_Digestinit_Ex (Ctx.Evp_Md_Ctx, Ctx.Evp_Md,
+                                    System.Null_Address);
     Ctx.Is_Clean := False;
   end Init;
 
@@ -84,32 +86,38 @@ package body Evp_Digest is
   -- May raise Status_Error if Ctx is not init or finalized
   procedure Update (Ctx : in out Context; Text : in String) is
     Len : constant C_Types.Size_T := Text'Length;
+    Dummy_Res : Integer;
   begin
     -- Check that Ctx is initialized
     if not Is_Init (Ctx) then
       raise Status_Error;
     end if;
     if Ctx.Is_Clean then
-      Evp_Digestinit_Ex (Ctx.Evp_Md_Ctx, Ctx.Evp_Md, System.Null_Address);
+      Dummy_Res := Evp_Digestinit_Ex (Ctx.Evp_Md_Ctx, Ctx.Evp_Md,
+                                      System.Null_Address);
       Ctx.Is_Clean := False;
     end if;
 
-    Evp_Digestupdate (Ctx.Evp_Md_Ctx, Text(Text'First)'Address, Len);
+    Dummy_Res := Evp_Digestupdate (Ctx.Evp_Md_Ctx, Text(Text'First)'Address,
+                                   Len);
   end Update;
 
   procedure Update (Ctx : in out Context; Bytes : in Byte_Array) is
     Len : constant C_Types.Size_T := Bytes'Length;
+    Dummy_Res : Integer;
   begin
     -- Check that Ctx is initialized
     if not Is_Init (Ctx) then
       raise Status_Error;
     end if;
     if Ctx.Is_Clean then
-      Evp_Digestinit_Ex (Ctx.Evp_Md_Ctx, Ctx.Evp_Md, System.Null_Address);
+      Dummy_Res := Evp_Digestinit_Ex (Ctx.Evp_Md_Ctx, Ctx.Evp_Md,
+                                      System.Null_Address);
       Ctx.Is_Clean := False;
     end if;
 
-    Evp_Digestupdate (Ctx.Evp_Md_Ctx, Bytes(Bytes'First)'Address, Len);
+    Dummy_Res := Evp_Digestupdate (Ctx.Evp_Md_Ctx, Bytes(Bytes'First)'Address,
+                                   Len);
   end Update;
 
   -- Read the digest and let it ready for adding new updates
@@ -117,6 +125,7 @@ package body Evp_Digest is
   function Read (Ctx : in out Context) return Byte_Array is
     Md : Byte_Array (1 .. Evp_Max_Md_Size);
     Len : C_Types.Uint32;
+    Dummy_Res : Integer;
   begin
     -- Check that Ctx is initialized
     if not Is_Init (Ctx) then
@@ -124,7 +133,8 @@ package body Evp_Digest is
     end if;
 
     -- Get Md
-    Evp_Digestfinal_Ex (Ctx.Evp_Md_Ctx, Md(Md'First)'Address, Len'Address);
+    Dummy_Res := Evp_Digestfinal_Ex (Ctx.Evp_Md_Ctx, Md(Md'First)'Address,
+                                     Len'Address);
 
     -- Return valid part
     return Md (Md'First .. Md'First + Integer (Len) - 1);
@@ -133,9 +143,10 @@ package body Evp_Digest is
   -- Empty the Ctx for new calls to Update
   -- May raise Status_Error if Ctx is not init or reset
   procedure Clean (Ctx : in out Context) is
+    Dummy_Res : Integer;
   begin
     -- Clean context
-    Evp_Md_Ctx_Cleanup (Ctx.Evp_Md_Ctx);
+    Dummy_Res := Evp_Md_Ctx_Cleanup (Ctx.Evp_Md_Ctx);
     Ctx.Is_Clean := True;
   end Clean;
 
