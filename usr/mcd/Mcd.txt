@@ -1,6 +1,6 @@
 Mcd
 ===
-V15.0
+V15.1
 
 Mcd (My Calculator for Desk) is a text oriented reverse polish calculator.
 
@@ -68,12 +68,12 @@ Operands
 anchor:XOperands[]
 Mcd supports several kinds of operands:
 
+* integer (inte): '<number>' or '<base>#<number>#' is a simple (long long)
+integer.
 * arbitrary precision number (arbi): '@<number>' is a natural number on which
 mcd performs calculations with absolute precision.
 * fraction (frac): '@<number>:<number>' is a fraction (numerator / denominator)
 of two arbi numbers.
-* integer (inte): '<number>' or '<base>#<number>#' is a simple (long long)
-integer.
 * real (real): is a real number (15 digits, from -1.79E308 .. 1.79E308).
 * boolean (bool): is 'True' or 'False'.
 * string (str): '"text"' or ':text:' is an Ada string.
@@ -82,7 +82,7 @@ excuted as a sub-program.
 * register (reg): 'A' .. 'Z' and 'a' .. 'z' is a memory cell where an operand
 can be stored and retrieved.
 
-A number is an operand of kind arbi, frac, inte or real.
+A number is an operand of kind inte, real, arbi or frac.
 
 NOTE: Any word starting by '#' denotes the start of a comment. All the
 characters following it are skipped until the next line feed.
@@ -108,7 +108,7 @@ Often, the result (pushed on stack) is of the same kind as the "in" operand(s).
 
 Basic operations on numbers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.On any pair of numbers (arbi, frac, inte or real)
+.On any pair of numbers (inte, real, arbi or frac)
 
   + : push B + A
   - : push B - A                        // Note that "3 1 -" pushes 2 (not -2)
@@ -119,11 +119,11 @@ Basic operations on numbers
   +- : push -A                          // Negation
   Absv : push |A|                       // Absolute value
 
-.On arbi, inte or real
+.On inte, real or arbi
 
   Sqrt : push Sqrt(A)                   // Square root
 
-.On arbi or inte
+.On inte or arbi
 
   % : push B % A                        // Rest of the division of B by A
   ! : push A!                           // Factorial, R is real if A is inte
@@ -187,7 +187,7 @@ These operations only support real numbers.
 Numerical conversions
 ~~~~~~~~~~~~~~~~~~~~~
 
-  Toreal : converts A into real         // A real, inte, arbi or frac
+  Toreal : converts A into real         // A inte, real, arbi or frac
   Tointe : converts A into inte         // A inte or arbi. For real, see round and trunc
   Toarbi : converts A into arbi         // A inte or arbi
   Round : round A to closest inte       // A inte or real, R inte
