@@ -1,24 +1,29 @@
 Logrotator
 =========
-V1.2
+V2.0
 
 Logrotator reads an input flow of text lines (e.g. logs) and splits it into
-several files according to various rules.
+several files according to various rules. +
+The main driver for splitting files is a period. Within a period, one or
+several files of a fixed size are created.
 
 Usage
 -----
 
-Logrotator takes as argument a root file name and, as option
+Logrotator takes as argument a root file name and, as option:
 
 * a period (min 1s, no max, default 1 day)
-* a maximum number of periods (min 1, no max, default 9) 
-* a maximum file size (min 1, no max, default none).
+* a maximum number of periods (min 1, max 10000, default 7) 
+* a maximum file size (min 1, no max, default none)
+* a maximum number of files per period (min 1, max 10000, default 999)
 .........................................
-Usage: logrotator [ <period> ] [ <cycle> ] [ <size> ] <file_name>
-<period>   ::= -p | --period <duration>
-<duration> ::= <number> s | h | d               // seconds, hours or days
-<cycle>    ::= -c | --cycle <number>            // number of periods
-<size>     ::= -s | --size  <number> [ k | M ]  // Size in bytes, kilos or Megas
+Usage: logrotator [ <period> ] [ <cycle> ] [ <file_size> ] [ <files> ] <file_name>
+<period>    ::= -p <duration> | --period=<duration>  // Period of cycle
+<duration>  ::= <number> s | h | d                   // Time in seconds, hours or days
+<cycle>     ::= -c <number> | --cycle=<number>       // Max number of periods
+<file_size> ::= -s <size> | --size=<size>            // Max file size
+<size>      ::= <number> [ k | M | G ]               // Size in bytes, kilos, Megas or Gigas
+<files>     ::= -f <number> | --files=<number>       // Max files per period
 .........................................
 
 Behaviour
@@ -26,10 +31,17 @@ Behaviour
 
 Logrotator reads its standard input and creates successively, in its current
 directory, several output files named <file_name>_xxx.yyy. +
-xxx is from 000 up to the max number of periods (excluded) and is incremented
-each time the period is reached. +
+xxx is from 000 up to the cycle (the max number of periods) excluded and is
+incremented each time the period is reached. When the cycle is reached
+then the count restarts from 000.
+
 yyy is from 000 to 999 and restarts from 000 each time xxx is incremented.
-Within a period, if the maximum size is reached (if set), then logrotator
-increments yyy and switches to a new file. If 999 is reached then a warning is
-emitted and the xxx.000 file is overwritten.
+Within a period, if the maximum file size is reached (if set), then logrotator
+increments yyy and switches to a new file. If the max number of files is
+reached, then a warning is emitted and the xxx.000 file is overwritten. +
+Each time a new period xxx is started, the files of the previous
+occurence of this period (xxx.\***) are cleared.
+
+NOTE: Logrotator does not split the lines of input text, so each line longer
+than <file_size> will lead to a file containing this line.
 

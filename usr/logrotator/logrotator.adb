@@ -1,9 +1,9 @@
 with Ada.Calendar;
 with Long_Longs, Aski, Basic_Proc, Argument, Argument_Parser, As.U, Normal,
-     Trace.Loggers, Text_Line, Timers, Chronos.Passive_Timers;
+     Trace.Loggers, Text_Line, Timers, Chronos.Passive_Timers, Sys_Calls;
 procedure Logrotator is
   -- Current version
-  Version : constant String := "1.2";
+  Version : constant String := "2.0";
 
   -- Trace logger
   Logger : Trace.Loggers.Logger;
@@ -17,17 +17,22 @@ procedure Logrotator is
    Keys : constant Argument_Parser.The_Keys_Type := (
    01 => (False, 'h', As.U.Tus ("help"),    False),
    02 => (False, 'v', As.U.Tus ("version"), False),
-   03 => (True,  'c', As.U.Tus ("cycle"),  False, True, As.U.Tus ("number")),
-   04 => (True,  'p', As.U.Tus ("period"), False, True, As.U.Tus ("number s|h|d")),
-   05 => (True,  's', As.U.Tus ("size"),   False, True, As.U.Tus ("number [k|M]")));
+   03 => (True,  'p', As.U.Tus ("period"), False, True, As.U.Tus ("number s|h|d")),
+   04 => (True,  'c', As.U.Tus ("cycle"),  False, True, As.U.Tus ("number")),
+   05 => (True,  's', As.U.Tus ("size"),   False, True, As.U.Tus ("number [k|M|G]")),
+   06 => (True,  'f', As.U.Tus ("files"),  False, True, As.U.Tus ("number")));
   -- Target files root name
   File_Name : As.U.Asu_Us;
   -- Period in seconds, 1d
   Period : Timers.Period_Range := 24.0 * 3600.0;
   -- Cycle : Max number of periods
-  Cycle : Positive := 9;
+  Max_Cycles_Max : constant := 999;
+  Max_Cycles : Positive := 7;
   -- Max size of files
   Max_Size : Long_Longs.Ll_Natural := 0;
+  -- Max number of files
+  Max_Files_Max : constant := 999;
+  Max_Files : Positive := 1;
 
   -- Help
   procedure Usage is
@@ -40,8 +45,8 @@ procedure Logrotator is
         "  " & Argument_Parser.Image (Key));
     end loop;
     Basic_Proc.Put_Line_Error (
-     "Default is a cycle of 9 times 1 day"
-     & " and no file size limitation.");
+     "Default is a cycle of 7 times 1 day"
+     & " and no limitation on file size or number.");
   end Usage;
 
   Parse_Error : exception;
@@ -93,20 +98,10 @@ procedure Logrotator is
     end if;
     File_Name := As.U.Tus (Arg_Dscr.Get_Option (No_Key_Index));
 
-    -- Cycle
+    -- Period then s, h or d
     if Arg_Dscr.Is_Set (03) then
       begin
-        Cycle := Positive'Value (Arg_Dscr.Get_Option (03));
-      exception
-        when others =>
-          Error ("Invalid cycle");
-      end;
-    end if;
-
-    -- Period then s, h or d
-    if Arg_Dscr.Is_Set (04) then
-      begin
-        Arg := As.U.Tus (Arg_Dscr.Get_Option (04));
+        Arg := As.U.Tus (Arg_Dscr.Get_Option (03));
         if Arg.Length < 2 then
           raise Constraint_Error;
         end if;
@@ -125,6 +120,19 @@ procedure Logrotator is
       end;
     end if;
 
+    -- Cycles
+    if Arg_Dscr.Is_Set (04) then
+      begin
+        Max_Cycles := Positive'Value (Arg_Dscr.Get_Option (04));
+        if Max_Cycles > Max_Cycles_Max + 1 then
+          raise Constraint_Error;
+        end if;
+      exception
+        when others =>
+          Error ("Invalid cycles");
+      end;
+    end if;
+
     -- Size then optional k or M
     if Arg_Dscr.Is_Set (05) then
       begin
@@ -133,13 +141,18 @@ procedure Logrotator is
           Mult := Aski.Nul;
         else
           Mult := Arg.Element (Arg.Length);
-          Arg.Trail (1);
+          if Mult >= '0' and then Mult <= '9' then
+            Mult := Aski.Nul;
+          else
+            Arg.Trail (1);
+          end if;
         end if;
         Max_Size := Long_Longs.Ll_Positive'Value (Arg.Image);
         case Mult is
           when Aski.Nul => null;
           when 'k' => Max_Size := 1024 * Max_Size;
           when 'M' => Max_Size := 1024 * 2014 * Max_Size;
+          when 'G' => Max_Size := 1024 * 1024 * 2014 * Max_Size;
           when others => raise Constraint_Error;
         end case;
       exception
@@ -148,9 +161,23 @@ procedure Logrotator is
       end;
     end if;
 
+    -- Cycle
+    if Arg_Dscr.Is_Set (06) then
+      begin
+        Max_Files := Positive'Value (Arg_Dscr.Get_Option (06));
+        if Max_Files > Max_Files_Max + 1 then
+          raise Constraint_Error;
+        end if;
+      exception
+        when others =>
+          Error ("Invalid files");
+      end;
+    end if;
+
     -- End of argument parsing
     Debug ("File >" & File_Name.Image & "<, period:" & Period'Img
-         & "s, cycle:" & Cycle'Img & " , size:" & Max_Size'Img);
+         & "s, cycles:" & Max_Cycles'Img & " , files size:" & Max_Size'Img
+         & "b, file number:" & Max_Files'Img);
   end Parse_Arguments;
 
   -- Buffer and input output file
@@ -161,18 +188,43 @@ procedure Logrotator is
   -- Number of current period cycle
   Cycle_Period : Natural := 0;
   -- Number of current size cycle
-  Max_Cycles_Size : constant := 999;
-  subtype Cycle_Size_Range is Natural range 000 .. Max_Cycles_Size;
+  subtype Cycle_Size_Range is Natural range 000 .. Max_Files_Max;
   Cycle_Size : Cycle_Size_Range;
   Size : Long_Longs.Ll_Natural;
 
+  -- Clean all the files for current period
+  procedure Clean_All is
+    Root : constant String := File_Name.Image & "_"
+          & Normal (Cycle_Period, 3, Gap => '0');
+    Res : Boolean;
+  begin
+    Debug ("Cleaning files for " & Root);
+    for Y in Cycle_Size_Range range Cycle_Size_Range'First .. Max_Files - 1 loop
+      declare
+        Name : constant String := Root & "." & Normal (Y, 3, Gap => '0');
+      begin
+        -- No (more) file
+        exit when not Sys_Calls.File_Found (Name);
+        Debug ("Cleaning file " & Name);
+        Res := Sys_Calls.Unlink (Name);
+        if not Res then
+          Error ("Cannot clean file " & Name);
+        end if;
+      end;
+    end loop;
+  end Clean_All;
+
   -- Open current input file
-  procedure Open_File is
+  procedure Open_File (New_Period : in Boolean) is
     Name : constant String
          := File_Name.Image & "_"
           & Normal (Cycle_Period, 3, Gap => '0') & "."
           & Normal (Cycle_Size, 3, Gap => '0');
   begin
+    if New_Period then
+      -- Clean all the files for new current period
+      Clean_All;
+    end if;
     Debug ("Creating file " & Name);
     File.Create_All (Name);
     Size := 0;
@@ -187,25 +239,25 @@ procedure Logrotator is
   begin
     File.Close_All;
     Cycle_Period := Cycle_Period + 1;
-    if Cycle_Period = Cycle then
+    if Cycle_Period = Max_Cycles then
+      Logger.Log_Warning ("Maximum number of cycles reached");
       Cycle_Period := 0;
     end if;
     Cycle_Size := 0;
-    Open_File;
+    Open_File (True);
   end Next_Period;
 
   -- Close and open next file, because file size reached
   procedure Next_Size is
   begin
     File.Close_All;
-    if Cycle_Size = Cycle_Size_Range'Last then
+    Cycle_Size := Cycle_Size + 1;
+    if Cycle_Size = Max_Files then
       Logger.Log_Warning ("Maximum number of sized files reached for period "
         & Normal (Cycle_Period, 3, Gap => '0') & ".");
       Cycle_Size := Cycle_Size_Range'First;
-    else
-      Cycle_Size := Cycle_Size + 1;
     end if;
-    Open_File;
+    Open_File (False);
   end Next_Size;
 
 begin
@@ -225,7 +277,7 @@ begin
                  Delay_Seconds => Period));
   Cycle_Period := 0;
   Cycle_Size := 0;
-  Open_File;
+  Open_File (True);
 
   -- Main loop
   Periods : loop
