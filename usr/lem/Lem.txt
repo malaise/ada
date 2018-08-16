@@ -1,6 +1,6 @@
 Land the LEM
 ============
-V4.1
+V4.2
 
 The goal of the game is to land the LEM on the Moon.
 
@@ -14,7 +14,7 @@ image:Lem.png["Lem",title="Lem"]
 
 The space
 ~~~~~~~~~
-The main area represents the space, the LEM and the Moon ground.
+The main area represents the space, the LEM and the Moon surface.
 
 The LEM must not reach the borders (up, left or right) of the space, otherwise
 it is lost. The ground has at least one flat landing area.
@@ -30,7 +30,7 @@ The speeds are red when above acceptable values for landing. Note that the LEM
 speed can be far above the speed gauges maxima without problem.
 
 Finally, in the lower right corner, a "LAND" indicator shows 'APPR' when above a
-landing area and and not too high (less than 5 times the LEM height). +
+landing area and not too high (less than 5 times the LEM height). +
 This indicator shows 'CLOSE' when getting close to land, then 'LAND' when
 landed.
 
@@ -47,15 +47,17 @@ key ''g''.
 
 When started with argument "-p" or "--pause" the game is initially paused.
 
-Option "-h" or "--help" displays a summary of possible arguments. All other
-arguments are ignored.
+Option "-h" or "--help" displays a summary of possible arguments.
+
+All other arguments are ignored.
 
 Commands of the game
 --------------------
 Hit ''g'' at any time to grab or un-grab the mouse pointer in the window (while
 within the window the pointer is hidden).
 
-Hit space while flying to pause the game, and resume with a click or any key.
+Hit space while flying in order to pause the game, and resume with a click or
+any key.
 
 When flying and landed, the commands are the four arrows. Each arrow activates
 the corresponding engine.
@@ -95,7 +97,7 @@ engine (by setting vertical thrust to 0), which ends the game.
 When the game ends, a message indicates if you lost or crashed the LEM, if you
 landed normally or safely.
 
-You can then hit any key (except an arrow) or click middle button to play
+You can then hit any key (except an arrow) or click the middle button to play
 again.
 
 If you landed, then you start a new game, otherwise you restart the same game.
@@ -106,9 +108,9 @@ At any time, hitting escape aborts the game and quits.
 
 Weight dynamics
 ~~~~~~~~~~~~~~~
-The quantity of fuel affects the global mass so the effectiveness of thrust
-increases when fuel decreases. On the long term, the LEM tends to climb (or
-fall slower) and each horizontal thrust burst affects horizontal speed more
+The quantity of fuel affects the global mass so the effectiveness of the thrust
+increases when the fuel decreases. On the long term, the LEM tends to climb (or
+to fall slower) and each horizontal thrust burst affects horizontal speed more
 and more.
 
 The fuel decreases proportionaly with the vertical thrust and at each burst
@@ -116,25 +118,25 @@ of horizontal thrust.
 
 Hints
 ~~~~~
-Try to always descend: quickly fix vertical rate then spot a landing area and
-move horizontally, fast if needed (more than the gauge limit). Visualize the
-trajectory, anticipate the approach (what you see is speed, what you change is
-acceleration).
+Try to always descend: quickly fix the vertical rate, then spot a landing area
+and move horizontally, fast if needed (more than the gauge limit). Visualize the
+trajectory, anticipate the approach (remember that what you see is speed, what
+you change is acceleration).
 
 Beware that the horizontal speed is nearly never null, if needed, swap sides
 when getting close to a side of the landing area. Also anticipate the changes
 of vertical speeds, always remain on the "safe" side.
 
-You will bump ('APPR' then 'LAND' then 'APPR') if you are slowing down at excessive
-rate (positive acceleration). The best landing is with a null or slightly
-negative acceleration. So, at the last time, reduce a little bit the power (if
-it is safe).
+You will bump ('APPR' then 'LAND' then 'APPR') if you are slowing down
+vertically at an excessive rate (positive acceleration). The best landing is
+with a null or slightly negative acceleration. So, at the last time, reduce a
+little bit the power (if it is safe).
 
 Troubleshooting
 ~~~~~~~~~~~~~~~
 If you think that you landed properly but crashed, please check the speeds and
 the "LAND" indicator before suspecting a bug. If the speeds are not both blue
-or the "LAND" indicator is empty at the time the LEM contacts the ground,
+or if the "LAND" indicator is empty when the LEM contacts the ground,
 then it is a crash, not a bug :-).
 
 Elements of design
@@ -149,7 +151,7 @@ The axes are x (horizontal, left to right) and y (vertical bottom to top).
 
 The LEM
 ~~~~~~~
-The LEM is a square 10x10 m made of a rectangle and 2 feet and has an empty
+The LEM is a square 10x10 m, made of a rectangle and 2 feet, and has an empty
 mass of M kg.
 
 It has a fuel tank of F kg of fuel.
@@ -213,7 +215,7 @@ Checks the status of the LEM (flying, landed, crashed) each second.
 ground. Check the feet, both lower corners of the square.
 
 - if ground between feet is flat, and Max_Land_Yspeed < Yspeed \<= 0 and |
-Xspeed | \<= Max_Land_Xspeed \=> landed
+Xspeed | \<= Max_Land_Xspeed, then landed
 
 - else crashed
 

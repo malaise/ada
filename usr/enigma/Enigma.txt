@@ -1,14 +1,13 @@
 Enigma
 ======
 
-Enigma is a simulator of the cypher machine used by the Germans during 2nd
-world war. This typing machine was based on switches and rotors that
+Enigma is a simulator of the cypher machine that was used by the Germans during
+the 2nd world war. This typing machine was based on switches and rotors that
 translated letters.
 
 The rotors are statically defined off line in a XML file. The choice of
 rotors, their initial position and the switches are provided as arguments to
 the simulator.
-
 
 Definitions in configuration
 ----------------------------
@@ -49,11 +48,10 @@ Syntax: enigma <reflector_def> [ <rotor_defs>  ] [ <rotor_inits> ]
 
 Semantic:
 
-- The reflector is defined by its name and the optional letter of offset
+- The reflector must be defined, by its name and the optional letter of offset
 (constant).
 
-- Up to 4 rotors can be defined (and one reflector must be defined). They
-must all have different names.
+- Up to 4 rotors can be defined. They must all have different names.
 +
 The rotors (optional) definition consists in
 <rotor_defs> (rotor name @ ring setting, separated by #) and
@@ -69,7 +67,7 @@ reflector, then back through I, IV and V.
 +
 Only the last rotor can have no carry.
 
-- Rotor initial offsets is optional. If it is set it must define an offset
+- Rotor initial offsets is optional. If it is set then it must define an offset
 for each rotor defined.
 
 - The switches definition follows the same logic but defines only the
@@ -97,7 +95,7 @@ For initial position of the rotors above:
 --------------------------------
 -iDIV
 --------------------------------
-For switches a<-->L, B<-->E and C<-->W:
+For switches A<-->L, B<-->E and C<-->W:
 --------------------------------
 -sALBECW
 --------------------------------
@@ -111,7 +109,7 @@ Cthin
 Enigma behaviour
 ----------------
 Data flows:;;
-     The program reads from stdin a flow of bytes to code and outputs the
+     The program reads from stdin the flow of bytes to code and outputs the
      corresponding coded flow on stdout. Uppercase letters are coded the
      standard enigma way (see xref:XCodingRule[coding rule] below). Lower
      letters are converted to uppercase, codded, then converted to lowercase.
@@ -338,8 +336,10 @@ displayed as normal enigma settings.
 Handling punctuation with letterator
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Letterator is a tools that ecodes each ASCII chararacter from stdin into a
+Letterator is a tools that ecodes each byte chararacter from stdin into a
 unique pair of uppercase letters on stdout, and vice versa (ex: \'a' <--> "GL").
+As a frontend or backend to enigma, it allows encoding and decoding
+special characters, including numbers, punctuation and UTF-8 sequences.
 
   Usage: letterator -c | -d    [ -f<first_index> ] [ -l<last_index> ]
   Use -c for coding and -d for decoding
