@@ -227,9 +227,9 @@ package body Mcd_Parser is
    Regmatch => (Nosy, "push where B matches regex A                      ", As.U.Asu_Null, True),
    -- Time
    Clock    => (Nosy, "push current time                                 ", As.U.Asu_Null, False),
-   Dateof   => (Nosy, "int -> YYyy/mm/dd-hh:mm:ss.mmm                    ", As.U.Asu_Null, False),
-   Daysof   => (Nosy, "int -> days-hh:mm:ss.mmm                          ", As.U.Asu_Null, False),
-   Timeof   => (Nosy, "YYyy/mm/dd-hh:mm:ss.mmm -> int                    ", As.U.Asu_Null, True),
+   Dateof   => (Nosy, "int -> YYyy-mm-ddThh:mm:ss.mmm                    ", As.U.Asu_Null, False),
+   Daysof   => (Nosy, "int -> daysThh:mm:ss.mmm                          ", As.U.Asu_Null, False),
+   Timeof   => (Nosy, "YYyy-mm-ddThh:mm:ss.mmm -> int                    ", As.U.Asu_Null, True),
    -- Execution
    Nop      => (Nosy, "no operation                                      ", As.U.Asu_Null, False),
    Sleep    => (Nosy, "sleep A seconds                                   ", As.U.Asu_Null, False),

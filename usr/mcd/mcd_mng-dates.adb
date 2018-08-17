@@ -89,7 +89,7 @@ package body Dates is
     Day_Mng.Split (Seconds, Date.Hours, Date.Minutes, Date.Seconds, Date.Millisecs);
 
     -- Format result in string
-    Result.Val_Text := As.U.Tus (Date_Text.Put (Date, "%Y/%m/%d-%H:%M:%S.%s"));
+    Result.Val_Text := As.U.Tus (Date_Text.Put (Date, "%Y-%m-%dT%H:%M:%S.%s"));
     return Result;
   exception
     when Constraint_Error =>
@@ -123,7 +123,7 @@ package body Dates is
 
     -- Format result in string
     Result.Val_Text := Days_Image.Val_Text
-                     & Date_Text.Put (Date, "-%H:%M:%S.%s");
+                     & Date_Text.Put (Date, "T%H:%M:%S.%s");
     return Result;
   exception
     when Constraint_Error =>
@@ -146,7 +146,7 @@ package body Dates is
     -- Scan
     begin
       Date_Rec := Date_Text.Scan (Date.Val_Text.Slice (01, 23),
-                                 "%Y/%m/%d-%H:%M:%S.%s");
+                                 "%Y-%m-%dT%H:%M:%S.%s");
     exception
       when Date_Text.Invalid_String =>
         raise Invalid_Argument;

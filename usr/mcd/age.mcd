@@ -10,10 +10,10 @@
 dup isstr ~ E pushr ifcall
 dup "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" regmatch isnul E pushr ifcall
 
-# Change it to "YYyy/mm/dd-00:00:00.000"
+# Change it to "YYyy-mm-ddT00:00:00.000"
 # Store YYyy in a, mm in b and dd in c, leave time on TOS
-t copyr 7 10 strsub a copyr "/" strcat t pushr 4 5 strsub b copyr "/" strcat
-strcat t pushr 1 2 strsub c copyr strcat "-00:00:00.000" strcat timeof
+t copyr 7 10 strsub a copyr "-" strcat t pushr 4 5 strsub b copyr "-" strcat
+strcat t pushr 1 2 strsub c copyr strcat "T00:00:00.000" strcat timeof
 ] A popr
 
 # Function to do the same as A (store YYyy, mm and dd) but from current date
