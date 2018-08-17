@@ -197,9 +197,11 @@ package Arbitrary.Limited_List is
 
 
   -- Copy the Val list to To list
-  -- CARE: Risk of side effect because List_Type only is duplicated
-  --  while both versions are valid, they should only be used to navigate
-  --  (search, move, read).
+  -- CARE: Risk of side effect because List_Type only is duplicated.
+  --  While both versions are valid, they should only be used to navigate
+  --  (search, move, read). The exception List_Assigned will be raised on
+  --  attempt to modify the assigned list, but there is no check on the
+  --  original list.
   -- CARE CARE: Only use Unchecked_Assign to make a temporary local copy of
   --  Val, never assign a local list Val to a global list To (because the
   --  finalization of Val will delete the content of To).
@@ -372,6 +374,9 @@ package Arbitrary.Limited_List is
 
   -- When modifying List in an application callback
   In_Callback : exception;
+
+  -- When modifying the data of an Unchecked_Assign-ed list
+  List_Assigned : exception;
 
   -- When sorting, most often because Less_Than is not strict
   Sort_Error : exception;

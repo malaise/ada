@@ -22,6 +22,14 @@ package body Arbitrary.Limited_List is
 
   function Check_In (Pos : in Link) return Boolean is ( Pos /= null);
 
+  procedure Check_Assigned (List : in List_Type) is
+  begin
+    if List.Assigned then
+      raise List_Assigned;
+    end if;
+  end Check_Assigned;
+
+
   procedure Check_Cb (List : in List_Type) is
   begin
     if List.In_Cb then
@@ -146,6 +154,7 @@ package body Arbitrary.Limited_List is
                     Move : in Movement := Next) is
   begin
     Check_Cb (List);
+    Check_Assigned (List);
     Check (List);
     Set (List.Current.Value, Item);
     if Move /= Current then
@@ -160,6 +169,7 @@ package body Arbitrary.Limited_List is
                     Moved : out Boolean) is
   begin
     Check_Cb (List);
+    Check_Assigned (List);
     Check (List);
     Set (List.Current.Value, Item);
     List.Modified := True;
@@ -181,6 +191,7 @@ package body Arbitrary.Limited_List is
     New_Cell : Link;
   begin
     Check_Cb (List);
+    Check_Assigned (List);
     List.Modified := True;
     if Free_List = null then
       -- Create the first element of the list
@@ -233,6 +244,7 @@ package body Arbitrary.Limited_List is
     Del_Cell : Link;
   begin
     Check_Cb (List);
+    Check_Assigned (List);
     Check (List);
 
     if List.Pos_First = One and then List.Pos_Last = One then
@@ -611,6 +623,7 @@ package body Arbitrary.Limited_List is
     if not Is_Natural (Number1) or else not Is_Natural (Number2) then
       raise Constraint_Error;
     end if;
+    Check_Assigned (List);
     -- Move to elements and store links to them
     Move_To (List, Where, Number1, From_Current);
     Link1 := List.Current;
@@ -682,6 +695,7 @@ package body Arbitrary.Limited_List is
                          Where : in Direction := Next) is
     Lval : List_Type;
   begin
+    Check_Assigned (To);
     if Is_Empty (Val) then
       -- Nothing if Val is empty
       return;
@@ -788,6 +802,7 @@ package body Arbitrary.Limited_List is
     Len : Arb_Natural;
   begin
     Check_Cb (List);
+    Check_Assigned (List);
     Check (List);
     List.Modified := True;
     -- Disconnect Cell_Acc
@@ -1060,6 +1075,7 @@ package body Arbitrary.Limited_List is
     Last : constant Arb_Natural := List_Length (List);
   begin
     Check_Cb (List);
+    Check_Assigned (List);
     if Last <= One then
       -- No or 1 element. No sort.
       return;
