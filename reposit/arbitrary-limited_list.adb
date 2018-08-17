@@ -681,8 +681,6 @@ package body Arbitrary.Limited_List is
                          Val   : in List_Type;
                          Where : in Direction := Next) is
     Lval : List_Type;
-    Elt : Element_Type;
-    Moved : Boolean;
   begin
     if Is_Empty (Val) then
       -- Nothing if Val is empty
@@ -692,10 +690,10 @@ package body Arbitrary.Limited_List is
     Rewind (Lval, Where);
     loop
       -- Copy Elt
-      Read (Lval, Elt, Where, Moved);
-      Insert (To, Elt, Where);
+      Insert (To, Lval.Access_Current.all, Where);
       -- End of Lval?
-      exit when not Moved;
+      exit when not Check_Move (Lval, Where);
+      Move_To (Lval, Where);
     end loop;
   end Insert_Copy;
 

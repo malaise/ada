@@ -222,14 +222,6 @@ package body Limited_List is
   end Modification_Ack;
 
   -- Copy the Val list to To list
-  -- CARE: Risk of side effect because List_Type only is duplicated
-  --  while both versions are valid, they should only be used to navigate
-  --  (search, move)
-  -- CARE CARE: Only use Unchecked_Assign to make a temporary local copy of Val,
-  --  never assign a local list Val to a global list To (because the
-  --  finalization of Val will delete the content of To).
-  -- Use Insert_Copy instead.
-  -- You have been warned.
   procedure Unchecked_Assign (To : in out List_Type; Val : in List_Type) is
   begin
     To.List.Unchecked_Assign (Val.List);
