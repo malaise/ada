@@ -50,20 +50,16 @@ package body Dates is
       raise Compute_Error;
   end Clock;
 
-  function Time_To_Date (Time : Item_Rec) return Item_Rec is
+  -- Internal: split a Inte into a date_rec
+  function Split (Time : Item_Rec) return Date_Text.Date_Rec is
     Neg : Boolean;
     Days : Perpet.Day_Range;
     Tmp_Inte : My_Math.Inte;
     Seconds : Ada.Calendar.Day_Duration;
     Cal_Time : Ada.Calendar.Time;
-    Result  : Item_Rec (Chrs);
-    Date : Date_Text.Date_Rec;
     Dur   : Ada.Calendar.Day_Duration;
+    Date : Date_Text.Date_Rec;
   begin
-    if Time.Kind /= Inte then
-      raise Invalid_Argument;
-    end if;
-
     -- Split Time in days and seconds
     Neg := Time.Val_Inte < 0;
     Days := Perpet.Day_Range (abs Time.Val_Inte / Millisecs_Per_Day);
@@ -87,9 +83,20 @@ package body Dates is
       raise Compute_Error;
     end if;
     Day_Mng.Split (Seconds, Date.Hours, Date.Minutes, Date.Seconds, Date.Millisecs);
+    return Date;
+  end Split;
+
+
+  function Time_To_Date (Time : Item_Rec) return Item_Rec is
+    Result  : Item_Rec (Chrs);
+  begin
+    if Time.Kind /= Inte then
+      raise Invalid_Argument;
+    end if;
 
     -- Format result in string
-    Result.Val_Text := As.U.Tus (Date_Text.Put (Date, "%Y-%m-%dT%H:%M:%S.%s"));
+    Result.Val_Text := As.U.Tus (Date_Text.Put (Split (Time),
+                                                "%Y-%m-%dT%H:%M:%S.%s"));
     return Result;
   exception
     when Constraint_Error =>
@@ -186,6 +193,22 @@ package body Dates is
       Res_Error.Val_Bool := False;
       return Res_Error;
   end Date_To_Time;
+
+  function Date_Image (Date, Format : Item_Rec) return Item_Rec is
+    Result  : Item_Rec (Chrs);
+  begin
+    -- Check kind and length
+    if Date.Kind /= Inte or else Format.Kind /= Chrs then
+      raise Invalid_Argument;
+    end if;
+    -- Format result in string
+    Result.Val_Text := As.U.Tus (Date_Text.Put (Split (Date),
+                                                Format.Val_Text.Image));
+    return Result;
+  exception
+    when Constraint_Error =>
+      raise Compute_Error;
+  end Date_Image;
 
 end Dates;
 

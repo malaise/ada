@@ -1,6 +1,6 @@
 Mcd
 ===
-V16.0
+V17.0
 
 Mcd (My Calculator for Desk) is a text oriented reverse polish calculator.
 
@@ -365,7 +365,8 @@ Time
   Clock : push current time             // R is inte, milliseconds since 01/01/1970
   Dateof : push image of A time         // A inte, R str "YYyy-mm-ddThh:mm:ss.mmm"
   Daysof : push image of A delta time   // A inte, R str "daysThh:mm:ss.mmm"
-  Timeof : push time of A str image     // A str "YYyy-mm-ddThh:mm:ss.mmm"
+  Clockof : push time of A str image    // A str "YYyy-mm-ddThh:mm:ss.mmm"
+  Dateimg : push image of B at format A // B="%Y-%m" leads to R "YYyy-mm"
 
 Execution
 ~~~~~~~~~

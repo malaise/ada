@@ -4,7 +4,7 @@ pragma Elaborate_All (Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V16.0";
+  Mcd_Version : constant String := "V17.0";
 
   package Stack is
     -- What can we store in stack
@@ -262,6 +262,7 @@ package body Mcd_Mng is
     function Time_To_Date (Time : Item_Rec) return Item_Rec;
     function Time_To_Days (Time : Item_Rec) return Item_Rec;
     function Date_To_Time (Date : Item_Rec) return Item_Rec;
+    function Date_Image (Date, Format : Item_Rec) return Item_Rec;
   end Dates;
 
   function Is_Register (C : in Character) return Boolean
@@ -362,7 +363,7 @@ package body Mcd_Mng is
   subtype Prog_List   is Operator_List range Call    .. Callbrk;
   subtype Io_List     is Operator_List range Format  .. Exec;
   subtype String_List is Operator_List range Strnull .. Regmatch;
-  subtype Time_List   is Operator_List range Clock   .. Timeof;
+  subtype Time_List   is Operator_List range Clock   .. Dateimg;
   subtype Exec_List   is Operator_List range Nop     .. Help;
 
   -- Process next item
@@ -1208,10 +1209,14 @@ package body Mcd_Mng is
           -- push delay in days of A
           Pop(A); Push (Dates.Time_To_Days(A));
           S := A;
-        when Timeof =>
+        when Clockof =>
           -- push time corresponding to time image A
           Pop(A); Push (Dates.Date_To_Time(A));
           S := A;
+        when Dateimg =>
+          -- push time image of B at format A
+          Pop(A); Pop(B); Push (Dates.Date_Image(B, A));
+          S := B;
       end case;
     end Do_Time;
 

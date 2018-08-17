@@ -173,7 +173,8 @@ package Mcd_Mng is
    Clock,
    Dateof,
    Daysof,
-   Timeof,
+   Clockof,
+   Dateimg,
    -- Execution control
    Nop,
    Sleep,
