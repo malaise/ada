@@ -353,6 +353,9 @@ package body Date_Text is
     end loop;
     -- Done
     return Result;
+  exception
+    when Scanner.Invalid_Data =>
+      raise Invalid_String;
   end Scan;
 
   -- Put a date at a given format
