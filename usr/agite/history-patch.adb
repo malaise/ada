@@ -38,14 +38,30 @@ procedure Patch (All_Logs, Selected : in out Git_If.Log_List) is
   procedure Init is
   begin
     Afpx.Use_Descriptor (Afpx_Xref.Patch.Dscr_Num);
-    Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
     Afpx.Set_Field_Activation (Afpx_Xref.Patch.Center, False);
     -- Encode branch and list
     Utils.X.Encode_Branch (Afpx_Xref.Patch.Branch);
     Reset_List;
   end Init;
 
-  use type Afpx.Absolute_Field_Range;
+  -- List change Cb
+  procedure List_Change (Action : in Afpx.List_Change_List;
+                         Status : in Afpx.List_Status_Rec) is
+    Left  : constant Afpx.Line_List_Mng.Ll_Natural
+            := Status.Ids_Selected (Afpx.List_Left);
+    use type Afpx.List_Change_List, Afpx.Line_List_Mng.Ll_Natural;
+  begin
+    if Action = Afpx.Init or else Action = Afpx.Left_Selection then
+      -- Delete not on empty list, and usable on only first and last commit
+      Afpx.Utils.Protect_Field (Afpx_Xref.Patch.Delete,
+          Logs.Is_Empty
+          or else (Left /= 1 and then Left /= Logs.List_Length));
+      -- OK not on empty list
+      Afpx.Utils.Protect_Field (Afpx_Xref.Patch.Ok, Logs.Is_Empty);
+    end if;
+  end List_Change;
+
+  use type Afpx.Absolute_Field_Range, Afpx.Line_List_Mng.Ll_Natural;
 
 begin
   -- Get and check Patch command
@@ -55,7 +71,7 @@ begin
   end if;
 
   -- List is init to the selection
-  Logs.Unchecked_Assign (Selected);
+  Logs.Insert_Copy (Selected);
 
   -- Move at top
   Move_At (Logs, Git_If.No_Hash);
@@ -68,7 +84,8 @@ begin
     Move_At (Logs, Hash);
     -- Put_then get
     loop
-      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
+                         List_Change_Cb => List_Change'Access);
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -87,6 +104,15 @@ begin
               -- Scroll list
               Afpx.Utils.Scroll(
                  Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
+            when Afpx_Xref.Patch.Delete =>
+              -- Delete current
+              Logs.Move_At (Afpx.Line_List.Get_Position);
+               if Logs.Get_Position = 1 then
+                 Logs.Delete (Git_If.Log_Mng.Next);
+               else
+                 Logs.Delete (Git_If.Log_Mng.Prev);
+               end if;
+              Reset_List;
             when Afpx_Xref.Patch.Today =>
               Current_Date := Utils.Get_Current_Date;
               -- Init logs from the commits of today in All_Logs
@@ -108,6 +134,7 @@ begin
               -- Reset logs to initial selection
               Logs.Delete_List;
               Logs.Insert_Copy (Selected);
+              Logs.Rewind;
               Reset_List;
             when Afpx_Xref.Patch.Ok =>
               -- Do patch

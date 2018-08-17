@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V36.05
+V36.06
 
 General purpose
 ---------------
@@ -1150,6 +1150,8 @@ This button launches the 'patch' submenu that:
 
 * lists the commits between the selection and the right-selection (HEAD if none)
 in chronological order,
+* provides a button 'Delete' to delete the current item from the list (when it
+is the first or the last),
 * provides a button 'Today' to list the commits of the current day,
 * provides a button 'Reset' to reset the list to the initial selection,
 * allows entering a patch file name (without space),
