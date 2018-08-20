@@ -16,7 +16,7 @@ ssize 1 = [
 # 0 arg remaining
 ssize isnotnul E pushr ifcall
 
-# Time string
+# Time string (remove year)
 [ dateof 6 23 strsub ] S popr
 
 # Initial display
