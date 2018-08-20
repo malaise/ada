@@ -1,19 +1,34 @@
+with As.U, Long_Longs, Timers, Queues, Reg_Exp;
 package Rules is
 
-  -- Store a rule by name
-  procedure Store (Name : in String; Action : in String);
+  -- Circular list to store history
+  package Hist_Mng is new Queues.Circ (As.U.Asu_Us);
 
-  -- Check that a rule exists
-  function Exists (Name : in String) return Boolean;
+  -- Tail length
+  subtype Tail_Length is Long_Longs.Ll_Natural;
 
-  -- Check an action (variables)
-  -- Return the error message or empty
-  Unknown_Variable : exception;
-  function Check_Action (Action : String) return String;
+  type Pattern_Access is access all Reg_Exp.Compiled_Pattern;
+  type Rule_Rec is record
+    File : As.U.Asu_Us;
+    Period : Timers.Period_Range;
+    Tail : Tail_Length;
+    History : access Hist_Mng.Circ_Type;
+    Action : As.U.Asu_Us;
+    Seconds : Tail_Length;
+    Time_Format : As.U.Asu_Us;
+    Pattern : Pattern_Access;
+  end record;
 
-  -- Read a rule and expand the action
-  Unknown_Rule: exception;
-  function Expand (Name : String; Lines : String) return String;
+  -- Check and store a rule
+  File_Not_Found : exception;
+  procedure Store (Rule : Rule_Rec);
+
+  -- Get the number of stored rules
+  function Get_Number return Long_Longs.Ll_Natural;
+
+  -- Retrieve a rule
+  No_Rule : exception;
+  function Get_Rule (Number : in Long_Longs.Ll_Positive) return Rule_Rec;
 
 end Rules;
 

@@ -2,18 +2,18 @@
 <!DOCTYPE Sensor SYSTEM "Sensor.dtd">
 
 <Sensor>
+  <Actions>
+    <Action Name="Antibot">echo "${Match}" | /usr/bin/mail -s "Alert antibot" malaise</Action>
+    <Action Name="RootLogin">echo -n "${Match}" >> /root/log/login</Action>
+  </Actions>
   <Rules>
-    <Rule Name="Antibot">echo "${Match}" | /usr/bin/mail -s "Alert antibot" malaise</Rule>
-    <Rule Name="RootLogin">echo -n "${Match}" >> /root/log/login</Rule>
-  </Rules>
-  <Filters>
-    <Filter File="/var/log/syslog" Rule="Antibot">
+    <Rule File="/var/log/syslog" Action="Antibot">
       <Criteria>IP in blacklist</Criteria>
-    </Filter>
-    <Filter File="/var/log/auth.log" Rule="RootLogin">
+    </Rule>
+    <Rule File="/var/log/auth.log" Action="RootLogin">
       <Past Seconds="3600">%b %d %H:%M:%S</Past>
       <Criteria>pam_unix\((su|sshd):session\): session opened for user root by</Criteria>
-    </Filter>
-  </Filters>
+    </Rule>
+  </Rules>
 </Sensor>
 

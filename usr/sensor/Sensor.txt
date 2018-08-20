@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: V3.2
+Version: V4.0
 
 Sensor scans several log files and raises alerts on some events (matching
 filters).
@@ -11,8 +11,8 @@ Syntax and configuration
 sensor <configuration file> | -h | --help | -v | --version
 ...............................................................
 
-The XML configuration file defines several rules. +
-Each rule has a unique name and executes a predefined shell command. The
+The XML configuration file defines several actions. +
+Each action has a unique name and executes a predefined shell command. The
 definition of a command can refer to some variables of the form
 '${variable}'. The following variable names are automatically defined:
 
@@ -23,7 +23,7 @@ definition of a command can refer to some variables of the form
 All the other variables must be defined in the environment, otherwise this is
 an error. +
  +
-The configuration file then defines filters. Each filter consists in:
+The configuration file then defines rules. Each rule consists in:
 
 - the name of the file to scan
 - an optional scanning period in seconds (default 60.0, min 1.0)
@@ -32,7 +32,7 @@ The configuration file then defines filters. Each filter consists in:
 and the format of time (expected at a fixed offset in each line of the file).
 See Date_Text for the definition of format used to scan dates and times.
 - an history of alerts to store (default 100)
-- the name of the rule to execute
+- the name of the action to execute
 - the criteria (regular expression) to match
 
 Example:
@@ -41,15 +41,15 @@ Example:
 <?xml version="1.0" encoding="Utf-8"?>
 <!DOCTYPE Sensor SYSTEM "Sensor.dtd">
 <Sensor>
+  <Actions>
+    <Action Name="RootLogin">echo -n "${Match}" >> /root/log/login</Rule>
+  </Actions>
   <Rules>
-    <Rule Name="RootLogin">echo -n "${Match}" >> /root/log/login</Rule>
-  </Rules>
-  <Filters>
-    <Filter File="/var/log/auth.log" Rule="RootLogin">
+    <Rule File="/var/log/auth.log" Action="RootLogin">
       <Past Seconds="3600">%b %d %H:%M:%S</Past>
       <Criteria>pam_unix\((su|sshd):session\): session opened for user root by</Criteria>
-    </Filter>
-  </Filters>
+    </Rule>
+  </Rules>
 </Sensor>
 
 .......................................
@@ -58,17 +58,17 @@ Processing
 ----------
 .Init
  * Parse the argument and the configuration file
- * Check the expansion of each rule (variables) and store the rules in a
+ * Check the expansion of each rule (variables) and store the actions in a
 unique list (by name)
- * Store the filters in a dynamic list (history is a circular queue), check
-time format, regular expression, and that the referenced rule exists
- * Arm a periodical time for each filter (user data being the position in list)
+ * Store the rules in a dynamic list (history is a circular queue), check
+time format, regular expression, and that the referenced action exists
+ * Arm a periodical time for each rule (user data being the position in list)
 
 .When a timer expires:
- * Retrieve the filter
+ * Retrieve the rule
  * Extract the tail then filter the past seconds of the file, and then search
 the regex
  * If found, check each line of the result versus the history
  * If not found, store in the history
- * Execute the rule if some matches
+ * Execute the action if some matches
 
