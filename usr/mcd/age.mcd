@@ -19,7 +19,7 @@ strcat t pushr 1 2 strsub c copyr strcat "T00:00:00.000" strcat clockof
 # Function to do the same as A (store YYyy, mm and dd) but from current date
 # Leave clock on ToS
 [
-clock dup dateof 12 "00:00:00.000" strovw
+clock dup "%Y-%m-%d" dateimg "T00:00:00.000" strcat
 t copyr 1 4 strsub a popr t pushr 6 7 strsub b popr t pushr 9 10 strsub c popr
 ] B popr
 
