@@ -1,5 +1,9 @@
 package Actions is
 
+  -- Define a variable
+  Invalid_Variable : exception;
+  procedure Define (Name : in String; Value : in String);
+
   -- Store an action by name
   procedure Store (Name : in String; Action : in String);
 

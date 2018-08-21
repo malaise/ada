@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="Utf-8"?>
-<!ELEMENT Sensor (Actions, Rules)>
+<!ELEMENT Sensor (Vars?,Actions, Rules)>
+
+<!-- Optional variables -->
+<!ELEMENT Vars (Var*)>
+<!ELEMENT Var (#PCDATA)>
+<!ATTLIST Var Name ID #REQUIRED>
 
 <!-- List of action, each uniquely identified by a name, -->
 <!ELEMENT Actions (Action*)>

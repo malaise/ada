@@ -4,7 +4,7 @@ with Argument, Basic_Proc, Sys_Calls, As.U, Timers, Event_Mng, Xml_Parser,
 with Debug, Actions, Rules, Executor;
 procedure Sensor is
 
-  Version : constant String := "V4.0";
+  Version : constant String := "V4.1";
 
   procedure Help is
   begin
@@ -15,7 +15,7 @@ procedure Sensor is
   -- Xml parsing
   Ctx : Xml_Parser.Ctx_Type;
   Ok : Boolean;
-  Root, Class, Node, Child : Xml_Parser.Element_Type;
+  Root, Vars, Class, Node, Child : Xml_Parser.Element_Type;
   Name, Text, Tmp : As.U.Asu_Us;
   Rule : Rules.Rule_Rec;
   Hist_Size : Queues.Len_Range;
@@ -48,8 +48,30 @@ begin
   end if;
   Root := Ctx.Get_Root_Element;
 
+  -- Define variables
+  if Ctx.Get_Nb_Children (Root) = 2 then
+    -- No variables
+    Class := Ctx.Get_Child (Root, 1);
+  else
+    Vars := Ctx.Get_Child (Root, 1);
+    Class := Ctx.Get_Brother (Vars);
+    for I in 1 .. Ctx.Get_Nb_Children (Vars) loop
+      Node := Ctx.Get_Child (Vars, I);
+      -- Get name and value
+      Name := Ctx.Get_Attribute (Node, 1).Value;
+      Text := Ctx.Get_Text (Ctx.Get_Child (Node, 1));
+      -- Define variable
+      begin
+        Actions.Define (Name.Image, Text.Image);
+      exception
+        when Actions.Invalid_Variable =>
+          Basic_Proc.Put_Line_Error ("Invalid variable " & Name.Image);
+          return;
+      end;
+    end loop;
+  end if;
+
   -- Check and store actions
-  Class := Ctx.Get_Child (Root, 1);
   for I in 1 .. Ctx.Get_Nb_Children (Class) loop
     Node := Ctx.Get_Child (Class, I);
     -- Get name
@@ -68,7 +90,7 @@ begin
   end loop;
 
   -- Check and Store rules
-  Class := Ctx.Get_Child (Root, 2);
+  Class := Ctx.Get_Brother (Class);
   for I in 1 .. Ctx.Get_Nb_Children (Class) loop
     Node := Ctx.Get_Child (Class, I);
 

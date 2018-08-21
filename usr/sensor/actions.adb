@@ -29,6 +29,18 @@ package body Actions is
   -- Memory of variables
   Memory : Computer.Memory_Type;
 
+  -- Define a variable
+  procedure Define (Name : in String; Value : in String) is
+  begin
+    if Name = "Host" or else Name = "Time" or else Name = "Match" then
+      raise Invalid_Variable;
+    end if;
+    Memory.Set (Name, Value, False, True);
+  exception
+    when Computer.Constant_Exists =>
+      raise Invalid_Variable;
+  end Define;
+
   -- Resolver that gets from ENV and saves the name of an unknown variable
   Variable : As.U.Asu_Us;
   function Resolver (Name : String) return String is

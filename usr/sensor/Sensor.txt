@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: V4.0
+Version: V4.1
 
 Sensor scans several log files and raises alerts on some events (matching
 filters).
@@ -11,7 +11,10 @@ Syntax and configuration
 sensor <configuration file> | -h | --help | -v | --version
 ...............................................................
 
-The XML configuration file defines several actions. +
+The XML configuration file may start by defining variables. Each variable has
+a unique name and a text value.
+
+Then the configuration file defines several actions. +
 Each action has a unique name and executes a predefined shell command. The
 definition of a command can refer to some variables of the form
 '${variable}'. The following variable names are automatically defined:
@@ -20,9 +23,9 @@ definition of a command can refer to some variables of the form
 - $\{Time} : Date and time at ISO format (YYyy-Mm-DdTHh:Mm:Ss.mmm)
 - $\{Host}: Local host name
 
-All the other variables must be defined in the environment, otherwise this is
-an error. +
- +
+All the other variables must be defined previously in the configuraiton or in
+the environment, otherwise this is an error.
+
 The configuration file then defines rules. Each rule consists in:
 
 - the name of the file to scan
@@ -41,8 +44,11 @@ Example:
 <?xml version="1.0" encoding="Utf-8"?>
 <!DOCTYPE Sensor SYSTEM "Sensor.dtd">
 <Sensor>
+  <Vars>
+    <Var Name="Logfile">/root/log/login</Var>
+  </Vars>
   <Actions>
-    <Action Name="RootLogin">echo -n "${Match}" >> /root/log/login</Rule>
+    <Action Name="RootLogin">echo -n "${Match}" >> ${Logfile}</Rule>
   </Actions>
   <Rules>
     <Rule File="/var/log/auth.log" Action="RootLogin">
@@ -70,5 +76,5 @@ time format, regular expression, and that the referenced action exists
 the regex
  * If found, check each line of the result versus the history
  * If not found, store in the history
- * Execute the action if some matches
+ * If some matches, then expand and execute the action
 
