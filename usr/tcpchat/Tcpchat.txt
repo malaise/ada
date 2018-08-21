@@ -1,9 +1,9 @@
 tcpchat
 =======
-V5.4
+V5.5
 
-Tcpchat accepts connections on a TCP port, expects specific sentences and
-executes specified actions depending on what it receives.
+Tcpchat accepts connections on a TCP port, expects specific sentences, and
+executes specified actions depending on what it receives and on a 'program'.
 
 Presentation
 ------------
@@ -48,7 +48,7 @@ In case of a regexp matching, some xref:Variables[Variables] can be defined and
 initialized from the content (or a part) of the input string.
 
 Statements
-~~~~~~~~~~~
+~~~~~~~~~~
 Once the 'chat' is selected, tcpchat executes the statements of the script, one
 after the other. A statement can be:
 
