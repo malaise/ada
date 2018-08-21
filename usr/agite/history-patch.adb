@@ -1,6 +1,6 @@
 with Command;
 separate (History)
-procedure Patch (All_Logs, Selected : in out Git_If.Log_List) is
+function Patch (All_Logs, Selected : in out Git_If.Log_List) return Boolean is
 
   -- Local list
   Logs, Tmp : Git_If.Log_List;
@@ -67,7 +67,7 @@ begin
   -- Get and check Patch command
   Cmd := As.U.Tus (Config.Patch);
   if Cmd.Is_Null then
-    return;
+    return False;
   end if;
 
   -- List is init to the selection
@@ -94,7 +94,7 @@ begin
               exit;
             when Afpx.Escape_Key =>
               -- Back
-              return;
+              return False;
             when Afpx.Break_Key =>
               raise Utils.Exit_Requested;
           end case;
@@ -141,7 +141,7 @@ begin
               exit;
             when Afpx_Xref.Patch.Cancel =>
               -- Back
-              return;
+              return False;
             when others =>
               -- Other button?
               null;
@@ -175,8 +175,10 @@ begin
   -- Display result / error
   if Exit_Code = 0 then
     Error ("Patch", Name.Image, Out_Flow.Str.Image, Info => True);
+    return True;
   else
     Error ("Patch", Name.Image, Err_Flow.Str.Image, Info => False);
+    return False;
   end if;
 
 end Patch;

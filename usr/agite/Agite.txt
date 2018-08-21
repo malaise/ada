@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V36.07
+V36.08
 
 General purpose
 ---------------
@@ -1023,9 +1023,9 @@ of the current page, as a scroll bar would do,
 at the page corresponding to where you *release* the mouse button (and the
 hyphen will be set to this position).
 
-anchor:XListAll[]
 
 .All
+anchor:XListAll[]
 If the xref:XHistoryLen[history length] is reduced by configuration and leads
 to display only some entries, then this button allows showing all the entries
 of the history (which can take some time).
@@ -1034,12 +1034,12 @@ of the history (which can take some time).
 If the current history does not apply on the root directory, then this button
 is active and allows listing the full history of the repository, for the
 current or selected branch. The history of root is the only way to
-xref:XReorg[reorg] the current branch or to xref:XReset[reset] it to a previous
-commit.
+xref:XReorg[reorg] the current branch, to xref:XReset[reset] it to a previous
+commit, or to make an xref:XPatch[patch].
 
-anchor:XView[]
 
 .View
+anchor:XView[]
 Double click on an entry (a commit) or select an entry and click on the 'View'
 button to view the version of the file that was committed.
 
@@ -1047,9 +1047,9 @@ When the current history is on a directory this feature is de-activated.
 Still it is possible to list and view one by one the files of a commit with the
 xref:XDetail[detail] menu.
 
-anchor:XDiff1[]
 
 .Diff
+anchor:XDiff1[]
 The 'Diff' button shows the differences between commits. When the history is on
 a directory it applies to all the files of the directory and sub-directories
 that were affected by the commit(s). In this case the action can lead to
@@ -1080,15 +1080,13 @@ with the version before the selection as reference and the selection
 as the target of the difference. If the history is about a directory, then
 several differators may be started.
 
-anchor:XDetailBut[]
-
 .Detail
+anchor:XHDetail[]
 This button activates the xref:XDetail[detail] menu on the
 commit currently (left-)selected in the history.
 
-anchor:XRestore[]
-
 .Restore
+anchor:XRestore[]
 This button causes Agite to check that the current file is not locally
 modified. If not, Agite asks for confirmation then checkouts the file in the
 version currently (left-)selected in the history. The file will be tagged as
@@ -1097,9 +1095,9 @@ branch. +
 This function is not active on the history of a directory (but restoring a
 whole commit is possible from the xref:XDetail[detail] menu).
 
-anchor:XHistCheckout[]
 
 .Checkout
+anchor:XHCheckout[]
 This button button launches the xref:XCheckout[checkout] menu that allows
 checking out the selected commit (either in a new branch or as detached from
 the head).
@@ -1111,9 +1109,9 @@ commit (it is likely to be tagged as modified in the current repository). +
 - 'Checkout' checks out the whole repository in the state that it had when the
 commit was performed.
 
-anchor:XReorg[]
 
 .Reorg
+anchor:XReorg[]
 This button launches an interactive rebase of the commits that follow the
 selected one. This allows splitting, merging, dropping, copying, modifing
 the comment of these commits. +
@@ -1123,8 +1121,6 @@ This function is only active when in the root directory of the current
 branch, so that the current list of commits is exactly the one that will
 be reorganized. +
 See also the section on xref:XRewritingHistory[rewriting history]. +
-Upon success or failure, this operation leads to go back to the
-xref:XDir[directory] menu (not if the reorg is cancelled).
 
 NOTE: The 'Reorg' consists in a manual xref:XCherry[cherry-pick] of commits,
 then an automatic commit of these cherries into a temporary branch, then
@@ -1132,7 +1128,6 @@ a hard reset of the current branch to the temporary branch. +
 See the how-to xref:XCherryReorg[interactively rebase a branch on itself]
 and the section xref:XCherryError[Error in cherry-pick] on how to handle
 errors during a reorg.
-
 
 .Reset
 anchor:XHReset[]
@@ -1184,12 +1179,20 @@ if the entry in the history is before a renaming. Still, it is possible to view
 a file that has been committed then later on renamed, with the following
 operations: +
 * Select the commit in the history +
-* Show the xref:XDetailBut[detail] of this commit +
+* Show the xref:XHDetail[detail] of this commit +
 * Select the file in the xref:XDetail[detail] of the commit (previous name) +
-* Click in the xref:XView[View] button to view the file.
-
+* Click in the xref:XView[View] button to view the file. +
 It is not possible to do a xref:XDiff1[diff] between two versions of a file if
 the file has been renamed or moved between the versions.
+
+NOTE: Upon success or failure (not on cancel), the following operations lead to go
+back to the menu from which the xref:XHist[history] has been called
+(often the xref:XDir[directory] menu): +
+* xref:XRestore[Restore] +
+* xref:XHCheckout[Checkout] +
+* xref:XReorg[Reorg] +
+* xref:XHReset[Reset] +
+* xref:XPatch[Patch] (only on success) +
 
 Tag
 ~~~
@@ -1993,7 +1996,7 @@ NOTE: This is exactly how the xref:XRebase[rebase] is performed.
 anchor:XCherryReorg[]
   - In the xref:XHist[history] menu on the rebased branch, select the commit
     that is just before the first commit to rebase, and
-    xref:XHistCheckout[check out] it as a Tmp branch,
+    xref:XHCheckout[check out] it as a Tmp branch,
   - Cherry pick from the original branch into the Tmp branch, modify the
     selection as necessary,
   - xref:XBReset[Hard reset] the rebased branch to the Tmp branch,

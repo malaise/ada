@@ -116,16 +116,18 @@ package body History is
   end Move_At;
 
   -- Do a patch
-  procedure Patch (All_Logs, Selected : in out Git_If.Log_List) is separate;
+  function Patch (All_Logs, Selected : in out Git_If.Log_List)
+           return Boolean is separate;
 
   -- Handle the history of a file or dir
-  --  possibly on a  given branch
-  procedure List (Root, Branch, Path, Name : in String;
-                  Is_File : in Boolean;
-                  Allow_Modif : in Boolean;
-                  Allow_Tag : in Boolean;
-                  Hash : in Git_If.Git_Hash := Git_If.No_Hash;
-                  Prio_Hash : in Boolean := True) is
+  --  possibly on a given branch
+  -- Return True if Go Back
+  function List (Root, Branch, Path, Name : String;
+                 Is_File : Boolean;
+                 Allow_Modif : Boolean;
+                 Allow_Tag : Boolean;
+                 Hash : Git_If.Git_Hash := Git_If.No_Hash;
+                 Prio_Hash : Boolean := True) return Boolean is
     -- Are we in root
     On_Root : Boolean;
 
@@ -233,17 +235,20 @@ package body History is
     end Show_Delta;
 
     -- Do a restore
-    procedure Do_Restore is
+    function Do_Restore return Boolean is
       Hash : Git_If.Git_Hash;
     begin
       -- Save position in List and read it
       Hash := Hash_Of;
       -- Restore file
-      Restore (Root, Path & Name, Hash, null);
+      if Restore (Root, Path & Name, Hash, null) then
+        return True;
+      end if;
       -- Restore screen
       Init;
       Init_List (Logs);
-      Move_At (Hash);
+      Move_At  (Hash);
+      return False;
     end Do_Restore;
 
     -- Do a checkout
@@ -368,7 +373,8 @@ package body History is
     end Do_Tag;
 
     -- Do a tag
-    procedure Do_Patch (Ref : in Afpx.Line_List_Mng.Ll_Natural) is
+    function Do_Patch (Ref : in Afpx.Line_List_Mng.Ll_Natural)
+                      return Boolean is
       Lref, Lcur : Afpx.Line_List_Mng.Ll_Natural;
       From, To : Afpx.Line_List_Mng.Ll_Natural;
       Llogs : Git_If.Log_List;
@@ -400,11 +406,14 @@ package body History is
       -- Launch patch
       -- Afpx list is newest before oldest,
       --  but order of Hash is oldest then newest
-      Patch (Logs, Llogs);
+      if Patch (Logs, Llogs) then
+        return True;
+      end if;
       -- Reset
       Init;
       Init_List (Logs);
       Move_At (Hash);
+      return False;
     end Do_Patch;
 
     -- Store current hash
@@ -613,18 +622,22 @@ package body History is
     end Do_Read_All;
 
     -- List root
-    procedure List_Root is
+    function  List_Root return Boolean is
       Hash : Git_If.Git_Hash;
     begin
       -- Save position in List and read it
       Hash := Hash_Of;
-      List (Root, Branch, "", "", False, Allow_Modif, Allow_Tag, Hash, False);
+      if List (Root, Branch, "", "", False, Allow_Modif, Allow_Tag,
+               Hash, False) then
+        return True;
+      end if;
       -- Restore screen
       Init;
       -- Get history list with default length
       Reread (False);
       Init_List (Logs);
       Move_At (Hash);
+      return False;
     end List_Root;
 
     -- A log
@@ -715,7 +728,7 @@ package body History is
               Do_Search;
             when Afpx.Escape_Key =>
               -- Back
-              return;
+              return False;
             when Afpx.Break_Key =>
               raise Utils.Exit_Requested;
           end case;
@@ -732,7 +745,9 @@ package body History is
               Do_Read_All;
             when Afpx_Xref.History.Root =>
               -- List root
-              List_Root;
+              if List_Root then
+                return True;
+              end if;
             when Afpx_Xref.History.View =>
               -- View
               Show (Show_View);
@@ -751,29 +766,33 @@ package body History is
               Show (Show_Details);
             when Afpx_Xref.History.Restore =>
               -- Restore
-              Do_Restore;
+              if Do_Restore then
+                return True;
+              end if;
             when Afpx_Xref.History.Checkout =>
               -- Checkout
               if Do_Checkout then
-                return;
+                return True;
               end if;
             when Afpx_Xref.History.Reorg =>
               -- Reorg: go back to directory on success or failure
               -- Stay only on cancel
               if Do_Reorg then
-                return;
+                return True;
               end if;
             when Afpx_Xref.History.Reset =>
               -- Reset
               if Do_Reset then
-                return;
+                return True;
               end if;
             when Afpx_Xref.History.Tag =>
               -- Tag
               Do_Tag;
             when Afpx_Xref.History.Patch =>
               -- Tag
-              Do_Patch (Ptg_Result.Id_Selected_Right);
+              if Do_Patch (Ptg_Result.Id_Selected_Right) then
+                return True;
+              end if;
             when Afpx_Xref.History.Mark =>
               -- Store current hash
               Do_Mark;
@@ -782,7 +801,7 @@ package body History is
               Do_Search;
             when Afpx_Xref.History.Back =>
               -- Back
-              return;
+              return False;
             when others =>
               -- Other button?
               null;
@@ -798,5 +817,18 @@ package body History is
 
   end List;
 
+  -- Handle the history of a file or dir
+  --  possibly on a given branch
+  procedure List (Root, Branch, Path, Name : in String;
+                  Is_File : in Boolean;
+                  Allow_Modif : in Boolean;
+                  Allow_Tag : in Boolean;
+                  Hash : in Git_If.Git_Hash := Git_If.No_Hash;
+                  Prio_Hash : in Boolean := True) is
+    Dummy_Result : Boolean;
+  begin
+    Dummy_Result := List (Root, Branch, Path, Name, Is_File,
+                          Allow_Modif, Allow_Tag, Hash, Prio_Hash);
+  end List;
 end History;
 

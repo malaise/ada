@@ -95,7 +95,7 @@ package body Details is
     end Init;
 
     -- Do a restore
-    procedure Do_Restore is
+    function Do_Restore return Boolean is
       Pos : Afpx.Line_List_Mng.Ll_Positive;
       Commit : Git_If.Commit_Entry_Rec;
       Dummy : Boolean;
@@ -105,11 +105,14 @@ package body Details is
       Commits.Move_At (Pos);
       Commits.Read (Commit, Git_If.Commit_File_Mng.Current);
       -- Restore file
-      Restore (Root, Commit.File.Image, Hash, Commits'Access);
+      if Restore (Root, Commit.File.Image, Hash, Commits'Access) then
+        return True;
+      end if;
       -- Restore screen
       Init (False);
       Afpx.Line_List.Move_At (Pos);
       Afpx.Update_List (Afpx.Center_Selected);
+      return False;
     end Do_Restore;
 
     -- Launch viewer on current file, or history on current dir or file
@@ -238,7 +241,9 @@ package body Details is
               Show (Show_Diff);
             when Afpx_Xref.Details.Restore =>
               -- Restore
-              Do_Restore;
+              if Do_Restore then
+                return;
+              end if;
             when Afpx_Xref.Details.Mark =>
               -- Store current hash
               Utils.Store.Hash := Hash;

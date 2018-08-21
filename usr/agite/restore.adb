@@ -2,9 +2,10 @@
 --   otherwise restore the file
 -- Reject restoring if a/the file is locally modified
 -- Otherwise confirm and restore
+-- Return True if Ok
 with Git_If, Error, Confirm;
-procedure Restore (Root, File, Hash : in String;
-                   Commits : access Git_If.Commit_List) is
+function Restore (Root, File, Hash : in String;
+                  Commits : access Git_If.Commit_List) return Boolean is
   Commit : Git_If.Commit_Entry_Rec;
   Modified : Boolean;
 begin
@@ -33,7 +34,7 @@ begin
     else
       Error ("Restoring", File, "File is locally modified, revert it first");
      end if;
-    return;
+    return False;
   end if;
 
   -- Confirm file restoration
@@ -50,6 +51,9 @@ begin
     else
       Modified := Git_If.Cat (File, Hash, Root & File);
     end if;
+    return True;
+  else
+    return False;
   end if;
 end Restore;
 
