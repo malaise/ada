@@ -24,7 +24,8 @@ Usage: tcpipe <mode> [ <ports> ] [ <target> ]
 ...................................
 
 The <client> and <server> options define the connection between two tcpipe
-instances.
+instances. Each client conects to one and only one server, and each server
+accepts only one connection at a time.
 
 The ports are the ones on which tcpipe accepts connections from clients
 applications.
@@ -60,9 +61,11 @@ Errors
 As soon as a tcpipe instance is started with some ports it accepts connections
 to these ports.
 
-When a client  application connects to a port of a tcpipe instance T1, then T1
+When a client application connects to a port of a tcpipe instance T1, then T1
 accepts the connection, then:
 
+* T1 stops accepting connections on this port (so there is at most one
+connection at a time on each port)
 * T1 transmits a connection request to its partner T2 (if any)
 * the partner T2 tries to connect to the target on the same port
 
