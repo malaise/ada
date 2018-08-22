@@ -1,2 +1,12 @@
 #!/bin/bash
-mcdt colab.mcd $1 :$2:
+
+# Concat arguments as strings and in reverse order
+ARGS=""
+while [ -n "$1" ] ; do
+  ARGS=":$1: $ARGS"
+  shift
+done
+
+# Launch
+mcdt colab.mcd $ARGS
+

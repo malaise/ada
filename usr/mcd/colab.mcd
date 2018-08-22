@@ -1,57 +1,82 @@
 # Conversion of labour into cost
-# Input is <amount> "<unit>"
+# Input is "<amount><unit>"
 #  Amont is inte or real
 #  Unit is:
 #  my : man x year
 #  mm : man x month
+#  md : man x day
 #   h : hour
 #  em : kilo Euros for management / architects
 #  ei : kilo Euros fo engineers
 # Output is a table with all the avlues above (including input)
 
+# True debugall
+
 # Check args
-[ "ERROR: Invalid arguments." putl
-"Usage: <amount> ""<unit>""" putl
-"<unit> ::= my | mm | h | kem | kei" putl
+[ "ERROR: Invalid argument." putl
+"Usage: colab { ""<amount><unit>"" }" putl
+"<unit> ::= my | mm | md | h | kem | kei" putl
 1 setexit
 retall
 ] E popr
-# 2 args
-ssize 2 /= [ E pushr call ] ifcall
-# Unit, string
-dup isstr ~ [ E pushr call ] ifcall u popr
-# Amount, inte or real
-dup isinte [ toreal ] ifcall dup isreal ~ [ E pushr call ] ifcall
 
-# Store factors
-1600.0 y popr 134.0 m popr 0.156 a popr 0.106 i popr
+# Store factors versus 1 hour
+1600.0 y popr 134.0 m popr 7.77 d popr 0.156 a popr 0.106 i popr
 
 # String image with 7 digits of int part and 1 digit of fraction
 [ 10 8 "0" normal 1 1 strdel ] O popr
 
+# For title once
+False t popr
+
 # Once hours are set, display table
 [
-"+------------------------------------------------------------+" putl
-"| man year | man month |  hours | k€ Mng/Archi | k€ Engineer |" putl
-"|----------+-----------+--------+--------------+-------------|" putl
+# Conversion occured
+True r popr
+# Title, once
+t pushr ~ [
+"+------------------------------------------------------------------------+" b copyr putl
+"| man year | man month |   man day |  hours | k€ Mng/Archi | k€ Engineer |" putl
+"|----------+-----------+-----------+--------+--------------+-------------|" putl
+] ifcall True t popr
 "|" put
 dup y pushr / O pushr call put " |" put
 dup m pushr / round 10 True " " normal put " |" put
+dup d pushr / round 10 True " " normal put " |" put
 dup           round  7 True " " normal put " |" put
 dup a pushr * O pushr call "    " put put " |" put
     i pushr * O pushr call  "   " put put " |" putl
-"+------------------------------------------------------------+" putl
-retall ] D popr
+] D popr
 
+# Main loop on arguments
+[
+# 1 arg string
+ssize 0 = ifret
+dup isstr ~ [ E pushr call ] ifcall 
+# Locate first not digit nor dot
+s copyr "[^0-9.]" regmatch j copyr
+dup 0 = [ E pushr call ] ifcall
+# Split
+s pushr swap 1 - 1 swap strsub v popr
+s pushr dup strlen j pushr swap strsub u popr
+# Amount to real
+v pushr "^[0-9]+(\.[0-9]+)?$$" regmatch 0 = [ E pushr call ] ifcall
+v pushr strreal 
 
 # Convert into hours depending on unit, then display table
 False r popr
 u pushr "my"  = [ y pushr * D pushr call ] ifcall
 u pushr "mm"  = [ m pushr * D pushr call ] ifcall
+u pushr "md"  = [ d pushr * D pushr call ] ifcall
 u pushr "h"   = [           D pushr call ] ifcall
 u pushr "kem" = [ a pushr / D pushr call ] ifcall
 u pushr "kei" = [ i pushr / D pushr call ] ifcall
 
-# No convertion occured
-E pushr call
+# No convertion occured?
+r pushr ~ E pushr ifcall
+# Loop
+M pushr retacal ] M copyr call
+
+# Tail
+t pushr [ b pushr putl ] ifcall
 
