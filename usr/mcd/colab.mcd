@@ -23,11 +23,11 @@ retall
 # Store factors versus 1 hour
 1600.0 y popr 134.0 m popr 7.77 d popr 0.156 a popr 0.106 i popr
 
-# String image with 7 digits of int part and 1 digit of fraction
-[ 10 8 "0" normal 1 1 strdel ] O popr
-
 # For title once
 False t popr
+
+# String image with 7 digits of int part and 1 digit of fraction
+[ 10 8 "0" normal 1 1 strdel ] O popr
 
 # Once hours are set, display table
 [
@@ -52,10 +52,10 @@ dup a pushr * O pushr call "    " put put " |" put
 [
 # 1 arg string
 ssize 0 = ifret
-dup isstr ~ [ E pushr call ] ifcall
+dup isstr ~ E pushr ifcall
 # Split val and unit
 "([0-9]+)(\.[0-9]+)?(.*)" 4 a regsplit
-3 /= [ E pushr call ] ifcall
+3 /= E pushr ifcall
 # Save unit and val
 a 3 pusha u popr
 a 1 pusha a 2 pusha strcat strreal

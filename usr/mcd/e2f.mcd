@@ -41,12 +41,7 @@ d pushr ~ [ l pushr 1 - l popr ] ifcall
 d pushr [ "e" u popr ] ifcall
 
 # Extract amount value
-a pushr 1 l pushr strsub v copyr
-# locate '.'
-dup 1 "." strloc isnul
-# Convert to real
-[ strinte toreal ] [ strreal ] ifte call
-v copyr
+a pushr 1 l pushr strsub strreal v copyr
 
 # Check not more than two digits of cents
 100.0 * frac absv epsilon > E pushr ifcall

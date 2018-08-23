@@ -38,10 +38,8 @@ dup 1 1 strsub "~" /= ifret
 true d popr
 # Check it appears after an entry
 e pushr ~ E pushr ifcall
-# Remove leading '~'
-dup strlen 2 swap strsub
-# And locate '.' to convert into int or real
-dup 1 "." strloc 0 = [ strinte ] [ strreal ] ifte call
+# Remove leading '~' and convert to real
+dup strlen 2 swap strsub strreal 
 ] ifcall
 
 # Check time
