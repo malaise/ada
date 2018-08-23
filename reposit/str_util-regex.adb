@@ -342,6 +342,7 @@ package body Str_Util.Regex is
     -- One extra cell (the first) to store global indexes
     Cells : Reg_Exp.Match_Array (1 .. Max_Slices + 1);
     N_Matched : Natural;
+    use type Reg_Exp.Match_Cell;
   begin
     -- Compile regex
     Compile (Compiled, Ok, Criteria, Options);
@@ -363,8 +364,10 @@ package body Str_Util.Regex is
       Result : As.U.Utils.Asu_Array(1 .. N_Matched - 1);
     begin
       for I in Result'Range loop
-        Result(I) := As.U.Tus (
-         Str(Cells(I + 1).First_Offset .. Cells(I + 1).Last_Offset_Stop));
+        if Cells(I + 1) /= Reg_Exp.No_Match then
+          Result(I) := As.U.Tus (
+           Str(Cells(I + 1).First_Offset .. Cells(I + 1).Last_Offset_Stop));
+        end if;
       end loop;
       return Result;
     end;
