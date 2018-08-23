@@ -52,16 +52,13 @@ dup a pushr * O pushr call "    " put put " |" put
 [
 # 1 arg string
 ssize 0 = ifret
-dup isstr ~ [ E pushr call ] ifcall 
-# Locate first not digit nor dot
-s copyr "[^0-9.]" regmatch j copyr
-dup 0 = [ E pushr call ] ifcall
-# Split
-s pushr swap 1 - 1 swap strsub v popr
-s pushr dup strlen j pushr swap strsub u popr
-# Amount to real
-v pushr "^[0-9]+(\.[0-9]+)?$$" regmatch 0 = [ E pushr call ] ifcall
-v pushr strreal 
+dup isstr ~ [ E pushr call ] ifcall
+# Split val and unit
+"([0-9]+)(\.[0-9]+)?(.*)" 4 a regsplit
+3 /= [ E pushr call ] ifcall
+# Save unit and val
+a 3 pusha u popr
+a 1 pusha a 2 pusha strcat strreal
 
 # Convert into hours depending on unit, then display table
 False r popr

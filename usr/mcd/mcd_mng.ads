@@ -169,6 +169,7 @@ package Mcd_Mng is
    Strof,
    Normal,
    Regmatch,
+   Regsplit,
    -- Time
    Clock,
    Dateof,

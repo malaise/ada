@@ -224,7 +224,9 @@ package body Mcd_Parser is
    Strof    => (Nosy, "push formated string of A                         ", As.U.Asu_Null, False),
    Normal   => (Nosy, "push normalised string of D (integer or real)     ",
     As.U.Tus ("C=Len(pos), B=Right(bool) or Fore(pos), A=Pad(string)"), False),
-   Regmatch => (Nosy, "push where B matches regex A                      ", As.U.Asu_Null, True),
+   Regmatch => (Nosy, "push where B matches regex A                      ", As.U.Asu_Null, False),
+   Regsplit => (Nosy, "push number of substrings of D matching C         ",
+    As.U.Tus ("B max substrings are stored in array A"), True),
    -- Time
    Clock    => (Nosy, "push current time                                 ", As.U.Asu_Null, False),
    Dateof   => (Nosy, "int -> YYyy-mm-ddThh:mm:ss.mmm                    ", As.U.Asu_Null, False),

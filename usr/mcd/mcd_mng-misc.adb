@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with Event_Mng;
-with Reg_Exp, Basic_Proc, Sys_Calls, Trace;
+with Reg_Exp, Basic_Proc, Sys_Calls, Trace, Str_Util.Regex;
 
 separate (Mcd_Mng)
 package body Misc is
@@ -86,7 +86,6 @@ package body Misc is
     Stack.Getn (Rec, N);
     Stack.Push (Rec);
   end Do_Moven;
-
 
   procedure Do_Clear_Extra is
     Rec : Item_Rec;
@@ -188,6 +187,40 @@ package body Misc is
     when Reg_Exp.No_Criteria =>
       raise Invalid_Argument;
   end Reg_Match;
+
+  function Reg_Split (Str, Pattern, Max_Substr, Reg : Item_Rec)
+             return Item_Rec is
+    Val : Item_Rec (Chrs);
+    Index : Item_Rec (Inte);
+  begin
+    -- Check
+    if Str.Kind /= Chrs or else Pattern.Kind /= Chrs
+    or else Max_Substr.Kind /= Inte
+    or else Max_Substr.Val_Inte <= 0
+    or else Max_Substr.Val_Inte > My_Math.Inte(Integer'Last)
+    or else Reg.Kind /= Regi then
+      raise Invalid_Argument;
+    end if;
+    declare
+      -- Split Str according to Pattern
+      R : constant As.U.Utils.Asu_Array
+        := Str_Util.Regex.Split (Str.Val_Text.Image,
+                                 Pattern.Val_Text.Image,
+                                 Positive (Max_Substr.Val_Inte));
+    begin
+      -- Store in Reg
+      Index.Val_Inte := 0;
+      for I in R'Range loop
+        Val.Val_Text := R(I);
+        Index.Val_Inte := My_Math.Inte(I);
+        Registers.Store_Array (Val, Reg, Index);
+      end loop;
+    end;
+    return Index;
+  exception
+    when Str_Util.Regex.Invalid_Regular_Expression =>
+      raise Invalid_Argument;
+  end Reg_Split;
 
   Env_Str : String (1 .. Max_Env_Len);
   function Getenv (Item : Item_Rec) return Item_Rec is

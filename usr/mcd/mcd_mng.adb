@@ -4,7 +4,7 @@ pragma Elaborate_All (Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V17.0";
+  Mcd_Version : constant String := "V17.1";
 
   package Stack is
     -- What can we store in stack
@@ -287,6 +287,9 @@ package body Mcd_Mng is
 
     function Reg_Match (Pattern, Str : Item_Rec) return Item_Rec;
 
+    function Reg_Split (Str, Pattern, Max_Substr, Reg : Item_Rec)
+             return Item_Rec;
+
     function Getenv (Item : Item_Rec) return Item_Rec;
 
     procedure Set_Exit_Code (Code : Item_Rec);
@@ -362,7 +365,7 @@ package body Mcd_Mng is
   subtype Cond_List   is Operator_List range Ifthen  .. Etfi;
   subtype Prog_List   is Operator_List range Call    .. Callbrk;
   subtype Io_List     is Operator_List range Format  .. Exec;
-  subtype String_List is Operator_List range Strnull .. Regmatch;
+  subtype String_List is Operator_List range Strnull .. Regsplit;
   subtype Time_List   is Operator_List range Clock   .. Dateimg;
   subtype Exec_List   is Operator_List range Nop     .. Help;
 
@@ -1191,6 +1194,10 @@ package body Mcd_Mng is
           -- push whether B matches regex A
           Pop(A); Pop(B); Push (Misc.Reg_Match(A, B));
           S := A;
+        when Regsplit =>
+          -- split D into substrings or regex C, max is B. Store in array A
+          Pop(A); Pop(B); Pop(C); Pop(D); Push (Misc.Reg_Split (D, C, B, A));
+          S := D;
       end case;
     end Do_String;
 

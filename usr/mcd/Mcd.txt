@@ -1,6 +1,6 @@
 Mcd
 ===
-V17.0
+V17.1
 
 Mcd (My Calculator for Desk) is a text oriented reverse polish calculator.
 
@@ -358,6 +358,8 @@ String operations
   Normal : push normalised str of D     // D=N(inte), C=Len(positive), B=Right(bool),    A=Pad(str)
                                         // D=R(real), C=Len(positive), B=Fore(Positive), A=Pad(str)
   Regmatch : push index where B matches regex A 
+  Regsplit:  push number of substrings of D matching C 
+                                        // B max substrings are stored in array A
 
 Time
 ~~~~
