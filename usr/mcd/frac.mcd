@@ -13,7 +13,7 @@ put put " " put toreal v copyr x pushr y pushr
 
 # Compares 2 real and retn 2 if they differ
 [
-- absv 1e-15 > 2 1 retn
+- absv 1e-12 > 2 1 ifte retn
 ] C popr
 
 # Main (infinite) loop

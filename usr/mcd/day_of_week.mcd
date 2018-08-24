@@ -14,7 +14,7 @@
 1000 * 3600 * 24 *
 ] B popr
 
-# Replace TOS (date) by day of week, 0 for monday
+# Replace TOS (days) by day of week, 0 for monday
 [
 # Reference date was a Thursday: 0 -> 3, 1 -> 2...
 3 + 7 %
