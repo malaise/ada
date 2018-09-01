@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Precision, in fraction of dregree, depending of encoding precision
+# Precision, in fraction of degree, depending of encoding precision
 EPSILON[0]="2.5E-4"
 EPSILON[1]="5.0E-5"
 EPSILON[2]="7.5E-6"
@@ -8,13 +8,21 @@ EPSILON[2]="7.5E-6"
 # Defaults
 export DEBUG=""
 export PRECISION=2
-export SCENARIO=0
+export SCENARIO_ONLY=0
 export TEST=0
 
+# DEBUG mode logs each operation
+# PRECISION is 0, 1 or 2
+# SCENARIO_ONLY play only the scenario
+# TEST mode plays the scenario, tests the encoding_ok and 1% of the decoding_ok
+
 function usage {
-  echo "Usage: `basename $0` [ -p <prec> | --precision=<prec> ] [ -d | --debug ] [ -s | --scenario] [ -t | --test ]"
+  echo "Usage: `basename $0` [ -p <prec> | --precision=<prec> ] [ -d | --debug ] [ -s | --scenario_only ] [ -t | --test ]"
   echo "    or `basename $0` [ -h | --help ]"
-  echo " Default precision: $PRECISION"
+  echo " Precision is from 0 to 2, default: $PRECISION"
+  echo " Debug logs each incdividual test"
+  echo " Scenario_only play only the scenario"
+  echo " Test mode plays the scenario, tests the encoding_ok and 1% of the decoding_ok"
 }
 
 function error {
@@ -39,8 +47,8 @@ while [ -n "$1" ] ; do
     (--precision=*)
       export PRECISION=${1#*=}
     ;;
-    ("-s"|"--scenario")
-      export SCENARIO=1
+    ("-s"|"--scenario_only")
+      export SCENARIO_ONLY=1
     ;;
     ("-t"|"--test")
       export TEST=1
@@ -51,8 +59,11 @@ while [ -n "$1" ] ; do
   esac
   shift
 done
-if [ \( $SCENARIO -eq 1 \) -a \( $TEST -eq 1 \) ] ; then
-  error "Options \"scenario\" and \"test\" are mutually exclusive"
+if [ \( $SCENARIO_ONLY -eq 1 \) -a \( $TEST -eq 1 \) ] ; then
+  error "Options \"scenario_only\" and \"test\" are mutually exclusive"
+fi
+if [ \( $PRECISION != "1" \) -a \( $PRECISION != "2" \) -a \( $PRECISION != "3" \) ] ; then
+  error "Invalid precision $PRECISION."
 fi
 echo Precision $PRECISION
 PRECISION=P${PRECISION}
@@ -170,7 +181,7 @@ while true ; do
   let L=$L+1
 done
 echo OK.
-if [ "$SCENARIO" = "1" ] ; then
+if [ "$SCENARIO_ONLY" = "1" ] ; then
   exit 0
 fi
 
