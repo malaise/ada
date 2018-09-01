@@ -116,8 +116,8 @@ package body History is
   end Move_At;
 
   -- Do a patch
-  function Patch (All_Logs, Selected : in out Git_If.Log_List)
-           return Boolean is separate;
+  function Patch (All_Logs, Selected : in out Git_If.Log_List;
+                  On_Root : in Boolean) return Boolean is separate;
 
   -- Handle the history of a file or dir
   --  possibly on a given branch
@@ -381,12 +381,13 @@ package body History is
       Hash : Git_If.Git_Hash;
       use type Afpx.Line_List_Mng.Ll_Natural;
     begin
-      if Ref = 0 then
-        Lref := 1;
-      else
+      -- Current (left) selection
+      Lcur := Afpx.Line_List.Get_Position;
+      Lref := Lcur;
+      -- Other (right) selection if set and in root (the list is accurate)
+      if On_Root and then Ref /= 0 then
         Lref := Ref;
       end if;
-      Lcur := Afpx.Line_List.Get_Position;
       -- Ensure From is before To
       if Lref < Lcur then
         From := Lref;
@@ -406,7 +407,7 @@ package body History is
       -- Launch patch
       -- Afpx list is newest before oldest,
       --  but order of Hash is oldest then newest
-      if Patch (Logs, Llogs) then
+      if Patch (Logs, Llogs, On_Root) then
         return True;
       end if;
       -- Reset
@@ -483,12 +484,12 @@ package body History is
       if Action = Afpx.Left_Selection then
         Reset_Init_Indicator;
       end if;
+      -- Protect most buttons if empty list
       -- No View, Detail, Restore, Checkout, Reorg, Reset nor Tag if RightSelect
       -- Protect buttons View and restore on dirs
       -- Protect Restore, Checkout, Reorg and Reset if no modif allowed
       -- Protect Reorg if not in root or on first commit
       -- Protect Tag if not allowed
-      -- Protect Patch if not in root
       Afpx.Utils.Protect_Field (Afpx_Xref.History.View,
                                 not Is_File or else Right_Set or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Diff,
@@ -515,7 +516,8 @@ package body History is
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Tag,
                                 Right_Set or else Empty or else not Allow_Tag);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Patch,
-                                Empty or else not On_Root);
+                                (not On_Root and then Right_Set)
+                                 or else Empty);
       -- Set in Red the Reorg et Reset if current ref is below remote head
       if not Afpx.Get_Field_Protection (Afpx_Xref.History.Reorg)
       and then Remote_Head_Index /= 0 and then Left > Remote_Head_Index then

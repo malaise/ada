@@ -1,6 +1,7 @@
 with Command;
 separate (History)
-function Patch (All_Logs, Selected : in out Git_If.Log_List) return Boolean is
+function Patch (All_Logs, Selected : in out Git_If.Log_List;
+         On_Root : in Boolean) return Boolean is
 
   -- Local list
   Logs, Tmp : Git_If.Log_List;
@@ -39,6 +40,7 @@ function Patch (All_Logs, Selected : in out Git_If.Log_List) return Boolean is
   begin
     Afpx.Use_Descriptor (Afpx_Xref.Patch.Dscr_Num);
     Afpx.Set_Field_Activation (Afpx_Xref.Patch.Center, False);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Patch.Today, not On_Root);
     -- Encode branch and list
     Utils.X.Encode_Branch (Afpx_Xref.Patch.Branch);
     Reset_List;

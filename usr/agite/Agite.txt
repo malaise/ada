@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V36.08
+V36.09
 
 General purpose
 ---------------
@@ -1035,7 +1035,7 @@ If the current history does not apply on the root directory, then this button
 is active and allows listing the full history of the repository, for the
 current or selected branch. The history of root is the only way to
 xref:XReorg[reorg] the current branch, to xref:XReset[reset] it to a previous
-commit, or to make an xref:XPatch[patch].
+commit, or to make a xref:XPatch[patch] with several commits.
 
 
 .View
@@ -1143,11 +1143,12 @@ selected commit.
 anchor:XPatch[]
 This button launches the 'patch' submenu that:
 
-* lists the commits between the selection and the right-selection (HEAD if none)
-in chronological order,
+* lists the commits between the selection and the right-selection (sorted in
+chronological order) if on root, otherwise lists the current selection,
 * provides a button 'Delete' to delete the current item from the list (when it
 is the first or the last),
-* provides a button 'Today' to list the commits of the current day,
+* provides a button 'Today' to list the commits of the current day, when on
+root,
 * provides a button 'Reset' to reset the list to the initial selection,
 * allows entering a patch file name (without space),
 * and allows clicking in the 'OK' button.
