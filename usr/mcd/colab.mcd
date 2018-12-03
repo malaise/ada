@@ -27,7 +27,7 @@ retall
 False t popr
 
 # String image with 7 digits of int part and 1 digit of fraction
-[ 10 8 "0" normal 1 1 strdel ] O popr
+[ 10 8 "0" normal 1 1 strdel ] I popr
 
 # Once hours are set, display table
 [
@@ -36,23 +36,30 @@ True r popr
 # Title, once
 t pushr ~ [
 "+------------------------------------------------------------------------+" b copyr putl
-"| man year | man month |   man day |  hours | k€ Mng/Archi | k€ Engineer |" putl
+"| man year | man month |   man day |  hours | kE Mng/Archi | kE Engineer |" putl
 "|----------+-----------+-----------+--------+--------------+-------------|" putl
 ] ifcall True t popr
 "|" put
-dup y pushr / O pushr call put " |" put
+dup y pushr / I pushr call put " |" put
 dup m pushr / round 10 True " " normal put " |" put
 dup d pushr / round 10 True " " normal put " |" put
 dup           round  7 True " " normal put " |" put
-dup a pushr * O pushr call "    " put put " |" put
-    i pushr * O pushr call  "   " put put " |" putl
+dup a pushr * I pushr call "    " put put " |" put
+    i pushr * I pushr call  "   " put put " |" putl
 ] D popr
 
-# Main loop on arguments
+# Check and dtore arguments in reverse order in estack
+[
+ssize isnul ifret
+dup isstr ~ E pushr ifcall
+pope
+O pushr retacal ] O copyr call
+
+# Main loop on estack
 [
 # 1 arg string
-ssize 0 = ifret
-dup isstr ~ E pushr ifcall
+esize isnul ifret
+pushle 
 # Split val and unit
 "([0-9]+)(\.[0-9]+)?(.*)" 4 a regsplit
 3 /= E pushr ifcall
