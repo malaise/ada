@@ -62,7 +62,7 @@ done
 if [ \( $SCENARIO_ONLY -eq 1 \) -a \( $TEST -eq 1 \) ] ; then
   error "Options \"scenario_only\" and \"test\" are mutually exclusive"
 fi
-if [ \( $PRECISION != "1" \) -a \( $PRECISION != "2" \) -a \( $PRECISION != "3" \) ] ; then
+if [ \( $PRECISION != "0" \) -a \( $PRECISION != "1" \) -a \( $PRECISION != "2" \) ] ; then
   error "Invalid precision $PRECISION."
 fi
 echo Precision $PRECISION
