@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Concat arguments as strings and in reverse order
+# Concat arguments as strings
 ARGS=""
 while [ -n "$1" ] ; do
-  ARGS=":$1: $ARGS"
+  ARGS="$ARGS"":$1: "
   shift
 done
 

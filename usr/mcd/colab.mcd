@@ -36,7 +36,7 @@ True r popr
 # Title, once
 t pushr ~ [
 "+------------------------------------------------------------------------+" b copyr putl
-"| man year | man month |   man day |  hours | kE Mng/Archi | kE Engineer |" putl
+"| man year | man month |   man day |  hours | k€ Mng/Archi | k€ Engineer |" putl
 "|----------+-----------+-----------+--------+--------------+-------------|" putl
 ] ifcall True t popr
 "|" put
@@ -48,18 +48,19 @@ dup a pushr * I pushr call "    " put put " |" put
     i pushr * I pushr call  "   " put put " |" putl
 ] D popr
 
-# Check and dtore arguments in reverse order in estack
-[
-ssize isnul ifret
-dup isstr ~ E pushr ifcall
+# Reverse order of arguments
+[ 
+ssize 0 = ifret
 pope
 O pushr retacal ] O copyr call
 
-# Main loop on estack
+
+# Main loop on arguments
 [
 # 1 arg string
-esize isnul ifret
-pushle 
+esize 0 = ifret
+pushle
+dup isstr ~ E pushr ifcall
 # Split val and unit
 "([0-9]+)(\.[0-9]+)?(.*)" 4 a regsplit
 3 /= E pushr ifcall
