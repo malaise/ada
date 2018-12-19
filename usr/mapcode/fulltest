@@ -167,8 +167,9 @@ while true ; do
     error "mapcode has exited with code $code"
     exit 1
   fi
+  # Get last (line of) result
   # Skip up to "=> " included and append a space (cause OUTPUT has one)
-  result=`echo $result | cut -d ">" -f 2 | cut -d " " -f 2-`" "
+  result=`echo $result | awk -F "=> " '{print $NF}'`" "
   # Check that result is expected
   res=`check "$CMD" "$result" "$OUTPUT" 0`
   if [ "$res" = "0" ] ; then
