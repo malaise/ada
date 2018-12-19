@@ -24,7 +24,7 @@ procedure T_Mapcode is
     Ada.Text_Io.Put_Line (
       "  -a  <territory_mapcode> [ <options> ] // Alternative mapcodes");
     Ada.Text_Io.Put_Line (
-      "  <territory_mapcode> ::= <territoruy:<mapcode> | [ territory] <mapcode>");
+      "  <territory_mapcode> ::= <territory:<mapcode> | [ territory] <mapcode>");
     Ada.Text_Io.Put_Line (
       "  <options>           ::= [ <territory> ] [ <selection> ] [ <precision> ]");
     Ada.Text_Io.Put_Line (
