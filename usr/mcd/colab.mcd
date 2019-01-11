@@ -49,7 +49,7 @@ dup a pushr * I pushr call "    " put put " |" put
 ] D popr
 
 # Reverse order of arguments
-[ 
+[
 ssize 0 = ifret
 pope
 O pushr retacal ] O copyr call
