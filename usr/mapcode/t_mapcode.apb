@@ -14,23 +14,23 @@ procedure T_Mapcode is
     Ada.Text_Io.Put_Line (
       "Usage: " & Ada.Command_Line.Command_Name & " <command>");
     Ada.Text_Io.Put_Line (
-      "  -h                                    // This help");
+      "  -h                                         // This help");
     Ada.Text_Io.Put_Line (
-      "  -t <territory>                        // Territory info");
+      "  -t <territory>                             // Territory info");
     Ada.Text_Io.Put_Line (
-      "  -d  <territory_mapcode>               // Decode");
+      "  -d  <territory_mapcode>                    // Decode");
     Ada.Text_Io.Put_Line (
-      "  -c <lat> <lon> [ <options> ]          // Encode");
+      "  -c <lat> <lon> [ <options> ]               // Encode");
     Ada.Text_Io.Put_Line (
-      "  -a  <territory_mapcode> [ <options> ] // Alternative mapcodes");
+      "  -a  <territory_mapcode> [ <options> ]      // Alternative mapcodes");
     Ada.Text_Io.Put_Line (
-      "  <territory_mapcode> ::= <territory:<mapcode> | [ territory] <mapcode>");
+      "  <territory_mapcode> ::= <territory>:<mapcode> | [ <territory> ] <mapcode>");
     Ada.Text_Io.Put_Line (
       "  <options>           ::= [ <territory> ] [ <selection> ] [ <precision> ]");
     Ada.Text_Io.Put_Line (
-      "  <precision>         ::= P0 | P1 | P2");
+      "  <selection>         ::= [ all | local ]    // Default short");
     Ada.Text_Io.Put_Line (
-      "  <selection> ::= [ all | local ]       // Default short");
+      "  <precision>         ::= P0 | P1 | P2");
   end Usage;
 
   function Integer_Image (I : Integer) return String is
