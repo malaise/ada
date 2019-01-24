@@ -1,8 +1,24 @@
 #!/bin/bash
 
+function usage {
+  echo "Usage: `basename $0` [ -w | --warnings ]"
+  echo "    or `basename $0` [ -h | --help ]"
+}
+
+if [ \( "$1" = "-h"  \) -o \( "$1" = "--help" \) ] ; then
+  usage
+  exit 0
+fi
+
 WARN=""
-if [ "$1" = "-w" ] ; then
-  WARN=$1
+if [ \( "$1" = "-w" \) -o \( "$1" = "--warnings" \) ] ; then
+  WARN="-w"
+  shift
+fi
+
+if [ -n "$1" ]  ; then
+  usage
+  exit 1
 fi
 
 echo Encode

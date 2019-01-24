@@ -15,7 +15,7 @@ procedure T_Accuracy is
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-        & " [ -w ] [ <mapcode> | <lat_lon> ]");
+        & " [ -w | --warnings ] [ <mapcode> | <lat_lon> ]");
     Basic_Proc.Put_Line_Error ("  <mapcode> ::= [ <context>:]<code>");
     Basic_Proc.Put_Line_Error ("  <lat_lon> ::= <latitude> <longitude>");
     Basic_Proc.Put_Line_Error ("Default: random lat_lon");
@@ -125,10 +125,17 @@ procedure T_Accuracy is
 begin
   Logger.Init ("Accuracy");
 
-  -- Optional Warning flag
   Narg := Argument.Get_Nbre_Arg;
   Sarg := 1;
-  if Narg > 0 and then Argument.Get_Parameter (Sarg) = "-w" then
+  -- Help
+  if Narg > 0 and then (Argument.Get_Parameter (Sarg) = "--help"
+                        or else Argument.Get_Parameter (Sarg) = "-h")  then
+    Usage;
+    return;
+  end if;
+  -- Optional Warning flag
+  if Narg > 0 and then (Argument.Get_Parameter (Sarg) = "--warnings"
+                        or else Argument.Get_Parameter (Sarg) = "-w")  then
     Warning := True;
     Narg := Narg - 1;
     Sarg := Sarg + 1;
