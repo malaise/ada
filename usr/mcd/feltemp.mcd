@@ -1,0 +1,35 @@
+# Compute felt temperature (in C)
+# from ambiant temperature Ta (in C) and vind V (in km/h)
+# if V < 4.8 then
+#   Res := Ta + 0.2 * (0.1345 * Ta - 1.59) * V;
+# else
+#   Res := 13.12 + 0.6215 * Ta + (0.3965 * Ta - 11.37) * V ** 0.16;
+# end if;
+ 
+# Check arguments
+# Error function
+[ "ERROR: Invalid argument." putl
+"Usage: <Ambiant_Temp> <Wind_Speed>   // C and km/h" putl
+1 setexit ssize popn retall ] E popr
+
+# Check function: int or real => real
+[ dup isreal ifret dup isinte ~ [ E pushr call ] ifcall toreal ] C popr
+
+# 2 args: ToS is V, then Ta
+ssize 2 /= E pushr ifcall
+swap
+C pushr call a popr C pushr call v popr
+
+# V must be positive
+v pushr 0.0 < E pushr ifcall
+
+# If low wind
+[ 0.1345 a pushr * 1.59 - v pushr * 0.2 * a pushr + ]
+# Otherwise
+[ 0.3965 a pushr * 11.37 - v pushr 0.16 ** * 0.6215 a pushr * + 13.12 + ]
+# Is Ta < 10.0 and then V < 4.8 then
+v pushr 4.8 < etfi call
+
+# Put result -xx.y
+"Felt temp: " put round put " C" putl
+
