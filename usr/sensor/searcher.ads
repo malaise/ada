@@ -2,7 +2,7 @@ with As.U.Utils, Reg_Exp;
 with Rules;
 package Searcher is
 
-  -- Search the Pattern in the Tail last lines and las seconds of File
+  -- Search the Pattern in the Tail last lines and last seconds of File
   -- Clear and set the list to the matching lines
   procedure Search (File_Name : in String;
                     Tail      : in Rules.Tail_Length;

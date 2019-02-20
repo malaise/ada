@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: V4.1
+Version: V4.2
 
 Sensor scans several log files and raises alerts on some events (matching
 filters).
@@ -17,9 +17,9 @@ a unique name and a text value.
 Then the configuration file defines several actions. +
 Each action has a unique name and executes a predefined shell command. The
 definition of a command can refer to some variables of the form
-'${variable}'. The following variable names are automatically defined:
+'$\{variable}'. The following variable names are automatically defined:
 
-- $\{Match} : Lines of the log that match the filter
+- $\{Match} : Lines (content) of the log that match the filter
 - $\{Time} : Date and time at ISO format (YYyy-Mm-DdTHh:Mm:Ss.mmm)
 - $\{Host}: Local host name
 
@@ -34,7 +34,7 @@ The configuration file then defines rules. Each rule consists in:
 - an optional number of past seconds to scan (default 1 hour, 0 for infinite)
 and the format of time (expected at a fixed offset in each line of the file).
 See Date_Text for the definition of format used to scan dates and times.
-- an history of alerts to store (default 100)
+- a history of alerts to store (default 100)
 - the name of the action to execute
 - the criteria (regular expression) to match
 
