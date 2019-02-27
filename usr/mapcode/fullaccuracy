@@ -1,25 +1,37 @@
 #!/bin/bash
 
 function usage {
-  echo "Usage: `basename $0` [ -w | --warnings ]"
+  echo "Usage: `basename $0` [ -w | --warnings ] [ -n <nb> | --nb=<nb> ] "
   echo "    or `basename $0` [ -h | --help ]"
 }
 
-if [ \( "$1" = "-h"  \) -o \( "$1" = "--help" \) ] ; then
-  usage
-  exit 0
-fi
 
-WARN=""
-if [ \( "$1" = "-w" \) -o \( "$1" = "--warnings" \) ] ; then
-  WARN="-w"
+export WARN=""
+export NB=1
+
+while [ -n "$1" ] ; do
+  case "$1" in
+    ("-h"| "--help")
+      usage
+      exit 0
+    ;;
+    ("-w"| "--warnings")
+      WARN="-w"
+    ;;
+   ("-n")
+      export NB=$2
+      shift
+    ;;
+    (--nb=*)
+      export NB=${1#*=}
+    ;;
+    (*)
+      usage
+       exit 1
+    ;;
+  esac
   shift
-fi
-
-if [ -n "$1" ]  ; then
-  usage
-  exit 1
-fi
+done
 
 echo Encode
 while read -r lat lon || [[ -n "$lat" ]]; do
@@ -39,20 +51,37 @@ done < EncodeOk.txt
 
 echo Decode
 let L=0
+let C=1
 while read -r ctx cod lat lon loc glob || [[ -n "$ctx" ]]; do
   if [ \( -z "$ctx" \) -o \( "$ctx" = "#" \) ] ; then
     continue
   fi
-  t_accuracy $WARN $ctx:$cod >/dev/null
-  res=$?
-  if [ $res -ne 0 ] ; then
-    if [ $res -eq 1 ] ; then
-      exit 1
-    else
-      echo "Occurred with " $ctx:$cod 1>&2
-    fi
-  fi
 
+  # Async launch
+  t_accuracy $WARN $ctx:$cod >/dev/null &
+  pids[${C}]=$!
+  comm[${C}]="$ctx:$cod"
+
+  # Each NB, wait for all to end, check result
+  R=$((C % NB))
+  if [ $R -eq 0 ] ; then
+    let i=1
+    for pid in ${pids[*]}; do
+      wait $pid
+      res=$?
+      if [ $res -ne 0 ] ; then
+        if [ $res -eq 1 ] ; then
+          exit 1
+        else
+          echo "Occurred with " ${comm[${i}]} 1>&2
+        fi
+      fi
+      let i=$i+1
+    done
+  fi
+  let C=$C+1
+
+  # Show a dot each 100
   R=$((L % 100))
   if [ $R -eq 0 ] ; then
     echo -n "."
