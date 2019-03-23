@@ -46,7 +46,7 @@ package body Ip_Addr is
 
     -- Try to parse Host_Id
     Txt := As.U.Tus (Addr);
-    -- 3 and only three dots, not contiguous
+    -- Three and only three dots, not contiguous
     if Str_Util.Locate (Txt.Image, ".", Occurence => 4) /= 0 then
       raise Parse_Error;
     end if;

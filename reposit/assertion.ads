@@ -14,7 +14,7 @@ package Assertion is
   --    If set to TRACE, Put_Trace
   --    If set to RAISE, Raise_Exception
   --  casing is not significant for the value
-  --  and can be set or modified by call to Set (Action),
+  -- Action can be set or modified by call to Set (Action)
 
   -- Set/Change action (preempts env variable)
   procedure Set (Action : in Action_List);

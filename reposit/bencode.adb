@@ -90,7 +90,7 @@ package body Bencode is
           Xml_Parser.Generator.Xml2Attr (Attr.Value.Image)));
       for I in 1 .. Attr.Value.Length loop
         Text.Append (Upper_Str (Hexa_Utils.Image (
-            Integer'(Character'Pos (Attr.Value.Element (I))), 2, '0')));
+            Natural'(Character'Pos (Attr.Value.Element (I))), 2, '0')));
       end loop;
       -- Replace or add text
       if Ctx.Get_Nb_Children (Node) = 1 then
