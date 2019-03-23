@@ -13,9 +13,10 @@ begin
     exception
       when others =>
         Basic_Proc.Put_Line_Error ("Invalid_Argument");
+raise;
     end;
     if Valid then
-      Basic_Proc.Put_Line_Output (Image (V));
+      Basic_Proc.Put_Line_Output (">" & Image (V) & "<");
     end if;
   end loop;
 end T_Hexa_Utils;

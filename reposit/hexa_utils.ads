@@ -14,11 +14,13 @@ package Hexa_Utils is
   -- Lower case
   function Hexa_To_Char (H : Hexa_Digit) return Character;
 
-  -- Image in hexadecimal of a Natural
+  -- Image in hexadecimal of an integer (which can be negative)
   -- Lower case, no leading space (and no 16#...#)
   generic
     type Int is range <>;
   function Int_Image (I : Int) return String;
+
+  -- Image in hexadecimal of a Natural
   generic
     type Modulus is mod <>;
   function Mod_Image (I : Modulus) return String;

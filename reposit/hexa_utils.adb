@@ -26,14 +26,28 @@ package body Hexa_Utils is
   -- Image in hexadecimal of an integer
   -- Lower case, no leading space
   function Int_Image (I : Int) return String is
-    V : Long_Longs.Ll_Integer := Long_Longs.Ll_Integer (I);
+    -- Image (Int'Last) if I < 0, otherwise (Int'Last)'Img
+    function Max_Str return String is
+      L: constant Int := Int'Last;
+    begin
+      if I < 0 then
+        -- Will fill with 'F' up to the real max len in hexa of
+        return Int_Image (L);
+      else
+        -- The max len in decimal is a majorant of the len
+        return L'Img;
+      end if;
+   end Max_Str;
+
+    Val : Long_Longs.Ll_Integer := Long_Longs.Ll_Integer (I);
+    Max : constant Natural := Max_Str'Length;
     Res : As.U.Asu_Us;
     use Bit_Ops;
   begin
-    loop
-      Res.Prepend (Hexa_To_Char (Natural (V and 16#F#)));
-      V := Shr (V, 4);
-      exit when V = 0;
+    for J in 1 .. Max loop
+      Res.Prepend (Hexa_To_Char (Natural (Val and 16#F#)));
+      Val := Shr (Val, 4);
+      exit when Val = 0;
     end loop;
     return Res.Image;
   end Int_Image;

@@ -470,6 +470,7 @@ Received Ah que coucou -> Replying Coucou!
 Spyed >Ah que coucou<
 Closing.
 Done.
+
 EOF
   comp err1 nul
   comp err nul
@@ -1104,6 +1105,21 @@ if `match $arg t_get_line` ; then
 048 ->   1:>end;<
 050 ->   2:>end<>T_Get_Line;<
 Done.
+EOF
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
+
+# t_hexa_utils
+if `match $arg t_hexa_utils` ; then
+  title t_hexa_utils
+  try t_hexa_utils 6 12 68 -20
+  cat << EOF >exp
+>6<
+>c<
+>44<
+>ffffffec<
 EOF
   comp err nul
   comp out exp
