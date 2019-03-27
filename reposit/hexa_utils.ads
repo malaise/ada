@@ -16,6 +16,7 @@ package Hexa_Utils is
 
   -- Image in hexadecimal of an integer (which can be negative)
   -- Lower case, no leading space (and no 16#...#)
+  -- if I is < 0, then the length is deduced from Int'First (ex: ffe1)
   generic
     type Int is range <>;
   function Int_Image (I : Int) return String;

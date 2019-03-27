@@ -1,4 +1,4 @@
-with As.U, Bit_Ops;
+with As.U, Bit_Ops, My_Math;
 package body Hexa_Utils is
   -- Convert an hexadecimal character (0..9 | 'a' .. 'f' | 'A' .. 'F')
   --  into its value (0 .. 15).
@@ -23,28 +23,28 @@ package body Hexa_Utils is
     (if H < 10 then Character'Val (Character'Pos('0') + H)
      else Character'Val (Character'Pos('a') + H - 10));
 
+  function Positive_Of (L : Long_Longs.Ll_Integer)
+                       return Long_Longs.Ll_Natural is (abs L);
+
   -- Image in hexadecimal of an integer
   -- Lower case, no leading space
   function Int_Image (I : Int) return String is
-    -- Image (Int'Last) if I < 0, otherwise (Int'Last)'Img
-    function Max_Str return String is
-      L: constant Int := Int'Last;
+    -- Max Len to show I: If I < 0 then abs (Int'Firt) else I
+    function Max_Len return Long_Longs.Ll_Natural is
+      Val : constant Long_Longs.Ll_Natural
+          := (if I < 0 and then Int'First < 0 then
+                Positive_Of (Long_Longs.Ll_Integer (Int'First))
+              else Long_Longs.Ll_Natural (I));
+      use My_Math;
     begin
-      if I < 0 then
-        -- Will fill with 'F' up to the real max len in hexa of
-        return Int_Image (L);
-      else
-        -- The max len in decimal is a majorant of the len
-        return L'Img;
-      end if;
-   end Max_Str;
+      return Trunc (Ln (Real (Val)) / Ln (16.0) ) + 1;
+    end Max_Len;
 
     Val : Long_Longs.Ll_Integer := Long_Longs.Ll_Integer (I);
-    Max : constant Natural := Max_Str'Length;
     Res : As.U.Asu_Us;
     use Bit_Ops;
   begin
-    for J in 1 .. Max loop
+    for J in 1 .. Max_Len loop
       Res.Prepend (Hexa_To_Char (Natural (Val and 16#F#)));
       Val := Shr (Val, 4);
       exit when Val = 0;
