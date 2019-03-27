@@ -1114,14 +1114,15 @@ fi
 # t_hexa_utils
 if `match $arg t_hexa_utils` ; then
   title t_hexa_utils
-  try t_hexa_utils 6 12 68 -20 -65534 -65536
+  try t_hexa_utils -21 2147483647 6 12 68 -20 -1
   cat << EOF >exp
+>eb<
+>7fffffff<
 >6<
 >c<
 >44<
 >ec<
->ffff0002<
->ffff0000<
+>ff<
 EOF
   comp err nul
   comp out exp
