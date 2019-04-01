@@ -23,30 +23,40 @@ package body Hexa_Utils is
     (if H < 10 then Character'Val (Character'Pos('0') + H)
      else Character'Val (Character'Pos('a') + H - 10));
 
-  function Positive_Of (L : Long_Longs.Ll_Integer)
-                       return Long_Longs.Ll_Natural is (abs L);
 
   -- Image in hexadecimal of an integer
   -- Lower case, no leading space
   function Int_Image (I : Int) return String is
-    -- Max Len to show I: If I < 0 then abs (Int'Firt) else I
-    function Max_Len return Long_Longs.Ll_Natural is
-      Val : constant Long_Longs.Ll_Natural
-          := (if I < 0 and then Int'First < 0 then
-                Positive_Of (Long_Longs.Ll_Integer (Int'First))
-              else Long_Longs.Ll_Natural (I));
-      use My_Math;
-    begin
-      return Trunc (Ln (Real (Val)) / Ln (16.0) ) + 1;
-    end Max_Len;
+    -- Max of a Int L
+    -- If it is positive then L
+    -- Else (negative) abs (L) - 1
+    function Max_Of (L : Int) return Long_Longs.Ll_Natural is
+       -- Ex: 32767 => 32767
+      (if L > 0 then Long_Longs.Ll_Integer (L)
+       -- Ex: -32768 => 32767
+       else abs (Long_Longs.Ll_Integer (L) + 1) );
 
+    -- Max value among Int'First and Int'Last
+    Max_First : constant Long_Longs.Ll_Natural := Max_Of (Int'First);
+    Max_Last  : constant Long_Longs.Ll_Natural := Max_Of (Int'Last );
+    Max       : constant Long_Longs.Ll_Natural
+              := (if Max_First >= Max_Last then Max_First else Max_Last);
+    -- Len to show Int'First and Int'Last in hexa
+    use My_Math;
+    Max_Len : constant Long_Longs.Ll_Natural
+            := (if Max /= 0 then Trunc (Ln (Real (Max)) / Ln (16.0) ) + 1
+                else 1);
+    -- Current value and result
     Val : Long_Longs.Ll_Integer := Long_Longs.Ll_Integer (I);
     Res : As.U.Asu_Us;
     use Bit_Ops;
   begin
+    -- Extract each hexa digit, from smallest to largest
+    -- Will stop at Max_Len for I < 0
     for J in 1 .. Max_Len loop
       Res.Prepend (Hexa_To_Char (Natural (Val and 16#F#)));
       Val := Shr (Val, 4);
+      -- Will stop ASAP for I >= 0
       exit when Val = 0;
     end loop;
     return Res.Image;
