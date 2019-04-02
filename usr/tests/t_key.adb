@@ -6,7 +6,7 @@ procedure T_Key is
 
   Got : Con_Io.Get_Result;
   Seq : Con_Io.Unicode_Sequence (1 .. 1);
-  function Unicode_Image16 is new Images.Int_Image16 (Con_Io.Unicode_Number);
+  package Image16 is new Images.Int_Image16 (Con_Io.Unicode_Number);
 
   Curr_Row : Con_Io.Row_Range := Con_Io.Row_Range_First;
   Next_Row : Con_Io.Row_Range;
@@ -49,11 +49,11 @@ begin
     if Got.Mvt = Con_Io.Full then
       Seq(1) := Got.Char;
 
-      Screen.Put (" " & Unicode_Image16(Got.Char));
+      Screen.Put (" " & Image16.Image (Got.Char));
       Screen.Putw (" " & Language.Unicode_To_Wide (Got.Char));
       Screen.Put (" >" & Language.Unicode_To_String (Seq) & "<");
 
-      Basic_Proc.Put_Output (" " & Unicode_Image16(Got.Char));
+      Basic_Proc.Put_Output (" " & Image16.Image (Got.Char));
       Ada.Wide_Text_Io.Put (" " & Language.Unicode_To_Wide (Got.Char));
       Basic_Proc.Put_Output (" >" & Language.Unicode_To_String (Seq) & "<");
     elsif Got.Mvt = Con_Io.Break then

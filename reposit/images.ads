@@ -30,8 +30,9 @@ package Images is
   -- "16#XYZ#"
   generic
     type Int is range <>;
-  function Int_Image16 (I : Int) return String;
-
+  package Int_Image16 is
+    function Image (I : Int) return String;
+  end Int_Image16;
 
   -- Image of a float (without leading space)
   generic

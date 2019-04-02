@@ -23,10 +23,8 @@ package body Hexa_Utils is
     (if H < 10 then Character'Val (Character'Pos('0') + H)
      else Character'Val (Character'Pos('a') + H - 10));
 
-
   -- Image in hexadecimal of an integer
-  -- Lower case, no leading space
-  function Int_Image (I : Int) return String is
+  package body Int_Image is
     -- Max of a Int L
     -- If it is positive then L
     -- Else (negative) abs (L) - 1
@@ -37,29 +35,44 @@ package body Hexa_Utils is
        else abs (Long_Longs.Ll_Integer (L) + 1) );
 
     -- Max value among Int'First and Int'Last
-    Max_First : constant Long_Longs.Ll_Natural := Max_Of (Int'First);
-    Max_Last  : constant Long_Longs.Ll_Natural := Max_Of (Int'Last );
-    Max       : constant Long_Longs.Ll_Natural
-              := (if Max_First >= Max_Last then Max_First else Max_Last);
-    -- Len to show Int'First and Int'Last in hexa
-    use My_Math;
-    Max_Len : constant Long_Longs.Ll_Natural
-            := (if Max /= 0 then Trunc (Ln (Real (Max)) / Ln (16.0) ) + 1
-                else 1);
-    -- Current value and result
-    Val : Long_Longs.Ll_Integer := Long_Longs.Ll_Integer (I);
-    Res : As.U.Asu_Us;
-    use Bit_Ops;
-  begin
-    -- Extract each hexa digit, from smallest to largest
-    -- Will stop at Max_Len for I < 0
-    for J in 1 .. Max_Len loop
-      Res.Prepend (Hexa_To_Char (Natural (Val and 16#F#)));
-      Val := Shr (Val, 4);
-      -- Will stop ASAP for I >= 0
-      exit when Val = 0;
-    end loop;
-    return Res.Image;
+    Max_Set : Boolean := False;
+    -- Set Max_Len once, at first call
+    Max_Len : Long_Longs.Ll_Natural;
+    procedure Set_Max is
+      Max_First, Max_Last, Max_Val : Long_Longs.Ll_Natural;
+      use My_Math;
+    begin
+      if Max_Set then
+        return;
+      end if;
+      Max_First := Max_Of (Int'First);
+      Max_Last  := Max_Of (Int'Last );
+      Max_Val := (if Max_First >= Max_Last then Max_First else Max_Last);
+      -- Len to show Int'First and Int'Last in hexa
+      Max_Len := (if Max_Val /= 0 then
+                    Trunc (Ln (Real (Max_Val)) / Ln (16.0) ) + 1
+                  else 1);
+      Max_Set := True;
+    end Set_Max;
+
+    -- Lower case, no leading space
+    function Image (I : Int) return String is
+      -- Current value and result
+      Val : Long_Longs.Ll_Integer := Long_Longs.Ll_Integer (I);
+      Res : As.U.Asu_Us;
+      use Bit_Ops;
+    begin
+      Set_Max;
+      -- Extract each hexa digit, from smallest to largest
+      -- Will stop at Max_Len for I < 0
+      for J in 1 .. Max_Len loop
+        Res.Prepend (Hexa_To_Char (Natural (Val and 16#F#)));
+        Val := Shr (Val, 4);
+        -- Will stop ASAP for I >= 0
+        exit when Val = 0;
+      end loop;
+      return Res.Image;
+    end Image;
   end Int_Image;
 
   -- Image of a modulus
@@ -76,10 +89,11 @@ package body Hexa_Utils is
   end Mod_Image;
 
   -- Image of naturals
-  function Nat_Image is new Int_Image (Natural);
-  function Image (N : Natural) return String renames Nat_Image;
-  function Llnat_Image is new Int_Image (Long_Longs.Ll_Natural);
-  function Image (N : Long_Longs.Ll_Natural) return String renames Llnat_Image;
+  package Nat_Image is new Int_Image (Natural);
+  function Image (N : Natural) return String renames Nat_Image.Image;
+  package Llnat_Image is new Int_Image (Long_Longs.Ll_Natural);
+  function Image (N : Long_Longs.Ll_Natural) return String
+           renames Llnat_Image.Image;
   function Llmod_Image is new Mod_Image (Long_Longs.Llu_Natural);
   function Image (N : Long_Longs.Llu_Natural) return String
                  renames Llmod_Image;

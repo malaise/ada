@@ -23,10 +23,10 @@ begin
   end if;
   declare
     subtype Subinteger is Integer range Min .. Max;
-    function Image is new Hexa_Utils.Int_Image (Subinteger);
+    package  Image16 is new Hexa_Utils.Int_Image (Subinteger);
   begin
     for I in 1 .. Argument.Get_Nbre_Arg loop
-      Basic_Proc.Put_Line_Output (">" & Image (Valid (I)) & "<");
+      Basic_Proc.Put_Line_Output (">" & Image16.Image (Valid (I)) & "<");
     end loop;
   end;
 end T_Hexa_Utils;

@@ -20,7 +20,9 @@ package Hexa_Utils is
   --  Int'First and Int'Last (ex: ffe1)
   generic
     type Int is range <>;
-  function Int_Image (I : Int) return String;
+  package Int_Image is
+    function Image (I : Int) return String;
+  end Int_Image;
 
   -- Image in hexadecimal of a Natural
   generic

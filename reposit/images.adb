@@ -49,10 +49,12 @@ package body Images is
 
   -- Image of Integer in base 16 (without leading space)
   -- 16#xxx#
-  function Int_Image16 (I : Int) return String is
-    function Hexa_Image is new Hexa_Utils.Int_Image (Int);
-  begin
-    return "16#" & Upper_Str (Hexa_Image (I)) & "#";
+  package body Int_Image16 is
+    package Hexa_Image is new Hexa_Utils.Int_Image (Int);
+    function Image (I : Int) return String is
+    begin
+      return "16#" & Upper_Str (Hexa_Image.Image (I)) & "#";
+    end Image;
   end Int_Image16;
 
   -- Image of a float (without leading space)
