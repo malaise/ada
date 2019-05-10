@@ -21,6 +21,7 @@
 <!-- relative comparisons for computed expressions -->
 <!ENTITY % Operations "(equal|not_equal|match|not_match|less|greater
                        |less_equal|greater_equal)">
+<!-- Default Operation is equal -->
 <!ENTITY % Operation "%Operations; 'equal'">
 <!-- A condition, for selection of a chat, select, read, -->
 <!--  or for comparision with an expression -->
