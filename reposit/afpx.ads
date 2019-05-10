@@ -356,8 +356,8 @@ package Afpx is
                         return Con_Io.Col_Range;
 
   -- Returns the index (from 0 to Str'Length-1) of the last character of Str
-  --  or, if Significant, the index following last significant character
-  --  (skipping trailing spaces and htabs).
+  -- If Significant is set, then returns the index following last significant
+  --  character (skipping trailing spaces and htabs, possibly down to 0).
   -- This can be usefully called by Cursor_Set_Col_Cb.
   function Last_Index (Str : Unicode_Sequence; Significant : Boolean)
                        return Con_Io.Col_Range;
