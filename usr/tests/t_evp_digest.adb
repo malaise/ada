@@ -1,12 +1,14 @@
-with Basic_Proc, Argument, Evp_Digest, Hexa_Utils, Images, Lower_Str;
+with Basic_Proc, Argument, Evp_Digest, Hexa_Utils, Images, Lower_Str, Text_Line;
 procedure T_Evp_Digest is
 
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Output ("Usage : " & Argument.Get_Program_Name
-        & " <algo>" & " { <text> | -- }");
+        & " <algo>" & " { <text> | -- | -}");
     Basic_Proc.Put_Line_Output (
         """<text>"" adds text, ""--"" shows digest and resets");
+    Basic_Proc.Put_Line_Output (
+        """-"" processes stdin");
     Basic_Proc.Put_Line_Output ("or :    " & Argument.Get_Program_Name
         & " list");
   end Usage;
@@ -32,6 +34,9 @@ procedure T_Evp_Digest is
     end;
     Shown := True;
  end Show;
+
+  -- The stdin input flow
+  Flow : Text_Line.File_Type;
 
   -- The context
   Ctx : Evp_Digest.Context;
@@ -61,15 +66,30 @@ begin
   -- Init context
   Ctx.Init (Argument.Get_Parameter (Occurence => 1));
 
-  -- Add arguments, when "--" then show
-  for I in 2 .. Argument.Get_Nbre_Arg loop
-    if Argument.Get_Parameter (Occurence => I) /= "--" then
-      Ctx.Update (Argument.Get_Parameter (Occurence => I));
-      Shown := False;
-    else
-      Show (Ctx);
-    end if;
-  end loop;
+  if Argument.Get_Nbre_Arg = 2
+  and then Argument.Get_Parameter (Occurence => 2) = "-" then
+    Flow.Open_All (Text_Line.In_File);
+    loop
+      declare
+        Str : constant String := Flow.Get;
+      begin
+        exit when Str = "";
+        Ctx.Update (Str);
+        exit when Str(Str'Last) /= Text_Line.Line_Feed_Char;
+      end;
+    end loop;
+    Flow.Close_All;
+  else
+    -- Add arguments, when "--" then show
+    for I in 2 .. Argument.Get_Nbre_Arg loop
+      if Argument.Get_Parameter (Occurence => I) /= "--" then
+        Ctx.Update (Argument.Get_Parameter (Occurence => I));
+        Shown := False;
+      else
+        Show (Ctx);
+      end if;
+    end loop;
+  end if;
 
   -- Show if not shown yet
   Show (Ctx);
