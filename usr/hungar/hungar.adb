@@ -91,12 +91,12 @@ begin
         Basic_Proc.Put_Output ("Total cost: ");
         Basic_Proc.Put_Output(Normalization.Normal_Fixed(Sigma, 8, 5));
         Basic_Proc.Put_Output ("  Ideal cost: ");
-        Basic_Proc.Put_Output(Normalization.Normal_Fixed(Ideal_Note, 7, 4));
+        Basic_Proc.Put_Output(Normalization.Normal_Fixed(Ideal_Note, 8, 5));
       else
         Basic_Proc.Put_Output ("Total note: ");
         Basic_Proc.Put_Output(Normalization.Normal_Fixed(Sigma, 8, 5));
         Basic_Proc.Put_Output ("  Ideal note: ");
-        Basic_Proc.Put_Output(Normalization.Normal_Fixed(Ideal_Note, 7, 4));
+        Basic_Proc.Put_Output(Normalization.Normal_Fixed(Ideal_Note, 8, 5));
       end if;
       Basic_Proc.Put_Output ("  Total loss: ");
       Basic_Proc.Put_Output (Normalization.Normal_Fixed(

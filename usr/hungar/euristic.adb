@@ -151,7 +151,6 @@ package body Euristic is
     Euristic_Loop:
     loop
 
-
       Try_To_Solve:
       declare
         -- Mattrix of zeros : each zero has either an index in zero desc

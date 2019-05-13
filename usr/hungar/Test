@@ -1,0 +1,19 @@
+#!/bin/bash
+
+export FILES="$*"
+if [ "$FILES" = "" ] ; then
+  FILES="test*.dat"
+fi
+
+echo "Testing hungar"
+for file in $FILES; do
+  echo $file
+  hungar $file >/dev/null
+  res=$?
+  if [ $res -ne 0 ] ; then
+    echo "ERROR." 2>&1
+    exit $res
+  fi
+done
+echo "Test OK."
+echo
