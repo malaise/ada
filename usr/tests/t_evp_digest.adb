@@ -30,7 +30,7 @@ procedure T_Evp_Digest is
             Hexa_Utils.Image (Natural (Res(I + 1)), 2);
       end loop;
       Basic_Proc.Put_Line_Output (Str
-          & " (" & Images.Integer_Image (Res'Length) & ")");
+          & " (" & Images.Integer_Image (Res'Length) & " bytes)");
     end;
     Shown := True;
  end Show;
