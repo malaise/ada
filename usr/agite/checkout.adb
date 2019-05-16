@@ -35,10 +35,10 @@ package body Checkout is
     Branch := As.U.Tus (
       Str_Util.Strip (Afpx.Decode_Field (Afpx_Xref.Checkout.Into_Branch,
                                          0, False)));
-    Result := As.U.Tus (Git_If.Do_Checkout (Hash, Branch.Image));
+    Result := As.U.Tus (Git_If.Do_Checkout (Hash.Image, Branch.Image));
     -- Handle error
     if not Result.Is_Null then
-      Error ("Checkout", Hash, Result.Image);
+      Error ("Checkout", Hash.Image, Result.Image);
       -- Restore screen
       Init;
     end if;

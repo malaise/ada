@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V36.09"/>
+  <Var Name="Version" Value="V37.00"/>
 
   <!-- List management setup -->
   <Var Name="LmWidth" Value="8"/>
@@ -521,6 +521,7 @@
     <Field Num="16" Kind="Get" Name="Hash">
       <Geometry Up="${Field_15.Up}" Left="${Field_15.Right}+2" Height="1"
                 Width="40"/>
+      <Get_Tuning Data_Len="128"/>
       <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
     </Field>
 
@@ -770,8 +771,9 @@
     </Field>
 
     <!-- Commit: Hash, Merged, Date and Comment -->
+    <!-- 3 * 43 = 129 for 128 digits (for a 64 bytes hash) -->
     <Field Num="16" Kind="Put" Name="Hash">
-      <Geometry Up="${Field_15.Low}+2" Left="1" Height="1" Width="40"/>
+      <Geometry Up="${Field_15.Low}+2" Left="1" Height="3" Width="43"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="17" Kind="Button" Name="Copyhash">

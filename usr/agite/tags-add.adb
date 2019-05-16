@@ -48,7 +48,7 @@ procedure Add (Root : in String; Rev : in Git_If.Git_Hash) is
 
     -- Get commit details
     if Get_Details then
-      Git_If.List_Commit (Rev, Hash, Merged, Date, Comment, Commits);
+      Git_If.List_Commit (Rev.Image, Hash, Merged, Date, Comment, Commits);
     end if;
     -- Remove first " /" line
     if not Commits.Is_Empty then
@@ -57,7 +57,7 @@ procedure Add (Root : in String; Rev : in Git_If.Git_Hash) is
     end if;
 
     -- Encode info
-    Utils.X.Encode_Field (Hash, Afpx_Xref.Add_Tag.Hash);
+    Utils.X.Encode_Field (Hash.Image, Afpx_Xref.Add_Tag.Hash);
     Utils.X.Encode_Field (Date, Afpx_Xref.Add_Tag.Date);
     Afpx.Clear_Field (Afpx_Xref.Add_Tag.Comment);
     for I in 1 .. Comment_Height loop
@@ -91,7 +91,7 @@ procedure Add (Root : in String; Rev : in Git_If.Git_Hash) is
         when Show_Diff =>
           -- Call delta between previous of this file and this commit
           Git_If.Launch_Delta (Config.Differator, Root & Path & File,
-                           Hash & "^", Hash);
+                           Hash.Image & "^", Hash.Image);
       end case;
     end;
   end Show;

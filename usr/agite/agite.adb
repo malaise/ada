@@ -756,11 +756,12 @@ procedure Agite is
           -- File is unknown or deleted: diff from last commit to null
           declare
             Hash : constant Git_If.Git_Hash := Git_If.Last_Hash (File_Name);
+            use type As.U.Asu_Us;
           begin
             if Hash /= Git_If.No_Hash then
               -- File is known, so deleted
               Git_If.Launch_Delta (Differator.Image, File_Name,
-                                   Hash, "");
+                                   Hash.Image, "");
             end if;
           end;
         when Add =>
@@ -796,10 +797,11 @@ procedure Agite is
             -- File is unmodified: diff on last commit of it
             declare
               Hash : constant Git_If.Git_Hash := Git_If.Last_Hash (File_Name);
+              use type As.U.Asu_Us;
             begin
               if Hash /= Git_If.No_Hash then
                 Git_If.Launch_Delta (Differator.Image, File_Name,
-                                     Hash & "^", Hash);
+                                     Hash.Image & "^", Hash.Image);
               end if;
             end;
           elsif File.S2 = 'A' and then File.S3 = ' ' then

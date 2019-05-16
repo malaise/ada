@@ -72,8 +72,8 @@ package Git_If is
 
   -- LOG HISTORY
   -- Git hashing number
-  subtype Git_Hash is String (1 .. 40);
-  No_Hash : constant Git_Hash := (others => ' ');
+  subtype Git_Hash is As.U.Asu_Us;
+  No_Hash : constant Git_Hash := As.U.Asu_Null;
   -- A date at iso YYYY-MM-DD HH:MM:SS
   subtype Iso_Date is String (1 .. 19);
   No_Date : constant Iso_Date := (others => ' ');

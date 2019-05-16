@@ -16,6 +16,10 @@ package body Git_If is
   Err_Flow_1 : aliased Command.Flow_Rec(Command.Str);
   -- Exit code
   Exit_Code : Command.Exit_Code_Range;
+  -- Syntax of a Hash and "commit <Hash>"
+  Hash_Txt : constant String := "[0-9a-h]+";
+  Commit_Str : constant String := "commit ";
+  Commit_Cmp : Reg_Exp.Compiled_Pattern;
 
   -- Protection of text for shell
   function Pt (Str : String) return String renames Utils.Protect_Text;
@@ -162,6 +166,11 @@ package body Git_If is
       Root.Delete (Root.Length - Dir.Length, Root.Length);
     end loop;
     Root.Append ("/");
+    -- Compile regex "commit <Hash>"
+    if not Commit_Cmp.Compile ("^" & Commit_Str & Hash_Txt & "$") then
+      Basic_Proc.Put_Line_Error ("Regexp compile ""commit <Hash>"" error");
+      raise No_Git;
+    end if;
   end Get_Root_And_Path;
 
   -- Is current repository a bare one
@@ -540,7 +549,8 @@ package body Git_If is
     Flow.Read (Line);
     Assert (Line.Length = 47);
     Assert (Line.Slice (1, 7) = "commit ");
-    Hash := Line.Slice (8, 47);
+    Line.Delete_Nb (1, 7);
+    Hash := Line;
 
     -- Possible "Merge:... ..." then Author: ...
     Flow.Read (Line);
@@ -767,7 +777,7 @@ package body Git_If is
     else
       Out_Flow_1.List.Rewind;
       Out_Flow_1.List.Read (Line, Command.Res_Mng.Dyn_List.Current);
-      return Line.Image;
+      return Line;
     end if;
   end Last_Hash;
 
@@ -1395,8 +1405,7 @@ package body Git_If is
     loop
       Out_Flow_1.List.Read (Line, Command.Res_Mng.Dyn_List.Current);
       declare
-        Res : constant Reg_Exp.Match_Array
-            := Crit.Match (Line.Image, 3);
+        Res : constant Reg_Exp.Match_Array := Crit.Match (Line.Image, 3);
       begin
         -- The line must match and lead to at least a substring
         if Res'Length >= 2
@@ -1663,16 +1672,14 @@ package body Git_If is
     -- Check the result: "Dropped stash@{<i>} (<SHA>)"
     Stash_Name := As.U.Tus (Str_Util.Substit (Stash_Name.Image, "{", "\{"));
     Stash_Name := As.U.Tus (Str_Util.Substit (Stash_Name.Image, "}", "\}"));
-    Stash_Name := "Dropped " & Stash_Name
-        & " \([0-9a-h]{" & Images.Integer_Image (Git_Hash'Length) & "}\)"
-        & Aski.Lf;
+    Stash_Name := "Dropped " & Stash_Name & " \(" & Hash_Txt & "\)" & Aski.Lf;
     if not Reg_Exp.Match (Stash_Name.Image,
-                                      Out_Flow_3.Str.Image,
-                                      Strict => True) then
+                          Out_Flow_3.Str.Image,
+                          Strict => True) then
       return "Unexpected result of drop: " & Out_Flow_3.Str.Image;
     end if;
     -- Extract stash SHA
-    Stash_Hash := Out_Flow_3.Str.Slice (
+    Stash_Hash := Out_Flow_3.Str.Uslice (
         Str_Util.Locate (Out_Flow_3.Str.Image, "(") + 1,
         Str_Util.Locate (Out_Flow_3.Str.Image, ")") - 1);
     -- Store the commit in stash list
@@ -1700,12 +1707,11 @@ package body Git_If is
   procedure Read_Tag (Tag : in out Tag_Entry_Rec) is
     Cmd : Many_Strings.Many_String;
     Line : As.U.Asu_Us;
-    Commit_Str :constant String := "commit ";
     procedure Get_Hash is
     begin
-      Assert (Line.Length = Commit_Str'Length + Git_Hash'Length);
-      Assert (Line.Slice (1, Commit_Str'Length) = Commit_Str);
-      Tag.Hash := Line.Slice (Commit_Str'Length + 1, Line.Length);
+      -- " commit <Hash>"
+      Assert (Reg_Exp.Match (Commit_Str & Hash_Txt, Line.Image, True));
+      Tag.Hash := Line.Uslice (Commit_Str'Length + 1, Line.Length);
     end Get_Hash;
   begin
     -- Default result
@@ -1767,12 +1773,7 @@ package body Git_If is
     -- Skip other lines of comment, until "commit <hash>
     loop
       Out_Flow_2.List.Read (Line);
-      exit when Line.Length = Commit_Str'Length + Git_Hash'Length
-      and then Line.Slice (1, Commit_Str'Length) = Commit_Str
-      and then Reg_Exp.Match (
-                   "[0-9a-z]{40}",
-                   Line.Slice (Commit_Str'Length + 1, Line.Length),
-                   Strict => True);
+      exit when Reg_Exp.Match (Commit_Cmp, Line.Image, True);
     end loop;
     Get_Hash;
   exception
@@ -1895,6 +1896,7 @@ package body Git_If is
       return;
     end if;
     -- Encode info (oldest first)
+    -- "+ <Hash>" or "- <Hash"
     if not Out_Flow_1.List.Is_Empty then
       Out_Flow_1.List.Rewind;
       loop
@@ -1909,7 +1911,8 @@ package body Git_If is
           Commits.Delete_List;
           return;
         end if;
-        Commit.Hash := Line.Slice (3, 2 + Git_Hash'Length);
+        Line.Delete_Nb (1, 2);
+        Commit.Hash := Line;
         Commits.Insert (Commit);
         exit when not Moved;
       end loop;

@@ -37,14 +37,13 @@ package body History is
   -- To search matching hash in Log
   function List_Hash_Match (Current, Criteria : Git_If.Log_Entry_Rec)
            return Boolean is
-    Last : Positive;
+    use type As.U.Asu_Us;
   begin
-    if Criteria.Hash(Criteria.Hash'Last) = ' ' then
-      Last := Str_Util.Locate (Criteria.Hash, " ") - 1;
+    if Current.Hash.Length >= Criteria.Hash.Length then
+      return Current.Hash.Uslice (1, Criteria.Hash.Length) = Criteria.Hash;
     else
-      Last := Criteria.Hash'Last;
+      return False;
     end if;
-      return Current.Hash(1 .. Last) = Criteria.Hash(1 .. Last);
   end List_Hash_Match;
   function List_Hash_Search is
            new Git_If.Log_Mng.Search (List_Hash_Match);
@@ -73,7 +72,7 @@ package body History is
   -- Local: encode currently stored hash
   procedure Encode_Hash (Hash : in Git_If.Git_Hash) is
   begin
-    Utils.X.Encode_Field (Hash, Afpx_Xref.History.Hash);
+    Utils.X.Encode_Field (Hash.Image, Afpx_Xref.History.Hash);
   end Encode_Hash;
 
   -- Get the Hash of an entry
@@ -97,11 +96,12 @@ package body History is
   procedure Move_At (Logs : in out Git_If.Log_List;
                      Hash : in Git_If.Git_Hash) is
     Log : Git_If.Log_Entry_Rec;
+    use type As.U.Asu_Us;
   begin
     if Logs.Is_Empty or else Afpx.Line_List.Is_Empty then
       return;
     end if;
-    Log .Hash:= Hash;
+    Log.Hash := Hash;
     if Hash /= Git_If.No_Hash
     and then List_Hash_Search (Logs, Log, From => Git_If.Log_Mng.Absolute)
     then
@@ -163,7 +163,8 @@ package body History is
       List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
       -- Encode current branch and hash
       Utils.X.Encode_Branch (Afpx_Xref.History.Branch);
-      Encode_Hash (Afpx.Decode_Field (Afpx_Xref.History.Hash, 0, True));
+      Encode_Hash (As.U.Tus (Afpx.Decode_Field (Afpx_Xref.History.Hash,
+                                                0, True)));
 
       -- Encode target branch
       if Branch /= "" then
@@ -196,7 +197,7 @@ package body History is
     procedure Show_Delta (Ref : in Afpx.Line_List_Mng.Ll_Natural) is
       Ref_Hash, Comp_Hash : Git_If.Git_Hash;
       File_Name : As.U.Asu_Us;
-      use type Afpx.Line_List_Mng.Ll_Natural;
+      use type Afpx.Line_List_Mng.Ll_Natural, As.U.Asu_Us;
 
     begin
       -- Confim if diff on a dir
@@ -227,10 +228,10 @@ package body History is
       if Ref_Hash = Git_If.No_Hash then
         -- Only Left selection: Hash^ and Hash
         Git_If.Launch_Delta (Config.Differator, File_Name.Image,
-                             Comp_Hash & "^", Comp_Hash);
+                             Comp_Hash.Image & "^", Comp_Hash.Image);
       else
         Git_If.Launch_Delta (Config.Differator, File_Name.Image,
-                             Ref_Hash, Comp_Hash);
+                             Ref_Hash.Image, Comp_Hash.Image);
       end if;
     end Show_Delta;
 
@@ -241,7 +242,7 @@ package body History is
       -- Save position in List and read it
       Hash := Hash_Of;
       -- Restore file
-      if Restore (Root, Path & Name, Hash, null) then
+      if Restore (Root, Path & Name, Hash.Image, null) then
         return True;
       end if;
       -- Restore screen
@@ -312,7 +313,7 @@ package body History is
         Result := Branches.Cancelled;
       else
         -- Reorg success or failure
-        Result := Branches.Reorg (Root, Hash);
+        Result := Branches.Reorg (Root, Hash.Image);
       end if;
       if Result = Branches.Cancelled then
         -- Cancel => stay in Branch
@@ -345,7 +346,7 @@ package body History is
         Res := Reset (Root, "");
       else
         Str := As.U.Tus (Str_Util.Strip (Image1 (Log) & " " & Image2 (Log)));
-        Res := Reset (Root, Hash, Comment => Str.Image);
+        Res := Reset (Root, Hash.Image, Comment => Str.Image);
       end if;
       if Res then
         return True;
@@ -426,9 +427,11 @@ package body History is
     -- Search stored hash
     procedure Do_Search is
       Hash : Git_If.Git_Hash;
+      use type As.U.Asu_Us;
     begin
       -- Use got hash or else stored hash
-      Hash := Afpx.Decode_Field (Afpx_Xref.History.Hash, 0, True);
+      Hash := As.U.Tus (Str_Util.Strip (Afpx.Decode_Field (
+                        Afpx_Xref.History.Hash, 0, True)));
       if Hash = Git_If.No_Hash then
         Hash := Utils.Store.Hash;
         Encode_Hash (Hash);
@@ -452,7 +455,7 @@ package body History is
           View (Path & Name, Hash);
         when Show_Details =>
           -- Allow modif
-          Details.Handle (Root, Branch, Hash, Allow_Modif, Allow_Tag);
+          Details.Handle (Root, Branch, Hash.Image, Allow_Modif, Allow_Tag);
           Init;
           Init_List (Logs);
           Move_At (Hash);
@@ -652,6 +655,7 @@ package body History is
     -- Init indicator character (C, R or space)
     Init_Indicator : Character;
 
+    use type As.U.Asu_Us;
   begin -- List
 
     -- Init Afpx

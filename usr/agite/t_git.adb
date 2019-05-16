@@ -58,7 +58,7 @@ begin
   else
     loop
       Logs.Read (Log_Entry, Moved => Moved);
-      Basic_Proc.Put_Line_Output (Log_Entry.Hash & " " & Log_Entry.Date);
+      Basic_Proc.Put_Line_Output (Log_Entry.Hash.Image & " " & Log_Entry.Date);
       Basic_Proc.Put_Line_Output (Log_Entry.Comment(1).Image);
       Basic_Proc.New_Line_Output;
       exit when not Moved;
@@ -71,7 +71,7 @@ begin
 
   Git_If.List_Commit (Argument.Get_Parameter (Occurence => 2),
                       Hash, Merged, Date, Comment, Commits);
-  Basic_Proc.Put_Line_Output (Hash);
+  Basic_Proc.Put_Line_Output (Hash.Image);
   Basic_Proc.Put_Line_Output ("Merged: " & Merged'Img);
   Basic_Proc.Put_Line_Output (Date);
   for Row of Comment loop

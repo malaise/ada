@@ -41,6 +41,7 @@ package body Details is
     Comment : Git_If.Comment_Array(1 .. 10);
 
     procedure Init (Get_Details : in Boolean) is
+      Hash_Width : Afpx.Width_Range;
     begin
       -- Init Afpx
       Afpx.Use_Descriptor (Afpx_Xref.Details.Dscr_Num);
@@ -68,7 +69,7 @@ package body Details is
       end if;
 
       -- Encode info
-      if Rev_Tag /= Hash then
+      if Rev_Tag /= Hash.Image then
         -- Rev_Tag is a tag. Center "Tag: <name>", preserving tail,
         --  put tag date and comment
         Utils.X.Center_Field ("Tag: " & Rev_Tag, Afpx_Xref.Details.Title,
@@ -77,7 +78,32 @@ package body Details is
         Utils.X.Encode_Field (Tag_Comment, Afpx_Xref.Details.Tag_Comment,
                               False);
       end if;
-      Utils.X.Encode_Field (Hash, Afpx_Xref.Details.Hash);
+      -- Encode Hash
+      Hash_Width := Afpx.Get_Field_Width (Afpx_Xref.Details.Hash);
+      Afpx.Clear_Field (Afpx_Xref.Details.Hash);
+      if Hash.Length <= Hash_Width then
+        -- Fits in 1 row => First row
+        Utils.X.Encode_Row (Hash.Image, Afpx_Xref.Details.Hash, Row => 0,
+                            Keep_Tail => False, Show_Cut => False);
+      elsif Hash.Length <= Hash_Width then
+        -- More than 1 row but fits in 2 => split in 2
+        Utils.X.Encode_Row (Hash.Slice (1, Hash_Width),
+                            Afpx_Xref.Details.Hash, Row => 0);
+        Utils.X.Encode_Row (Hash.Slice (Hash_Width + 1, Hash.Length),
+                            Afpx_Xref.Details.Hash, Row => 1,
+                            Keep_Tail => False,
+                            Show_Cut => False);
+      else
+        -- More than 2 rows => split in 3
+        Utils.X.Encode_Row (Hash.Slice (1, Hash_Width),
+                            Afpx_Xref.Details.Hash, Row => 0);
+        Utils.X.Encode_Row (Hash.Slice (Hash_Width + 1, Hash_Width * 2),
+                            Afpx_Xref.Details.Hash, Row => 1);
+        Utils.X.Encode_Row (Hash.Slice (Hash_Width *2 + 1, Hash.Length),
+                            Afpx_Xref.Details.Hash, Row => 2,
+                            Keep_Tail => False,
+                            Show_Cut => False);
+      end if;
       if Merged then
         Utils.X.Encode_Field ("Merge", Afpx_Xref.Details.Merged);
       else
@@ -105,7 +131,7 @@ package body Details is
       Commits.Move_At (Pos);
       Commits.Read (Commit, Git_If.Commit_File_Mng.Current);
       -- Restore file
-      if Restore (Root, Commit.File.Image, Hash, Commits'Access) then
+      if Restore (Root, Commit.File.Image, Hash.Image, Commits'Access) then
         return True;
       end if;
       -- Restore screen
@@ -157,7 +183,7 @@ package body Details is
             end if;
             -- Call delta of this commit: all files or one
             Git_If.Launch_Delta (Config.Differator, Root & Path & File,
-                             Hash & "^", Hash);
+                             Hash.Image & "^", Hash.Image);
         end case;
       end;
     end Show;
@@ -170,7 +196,7 @@ package body Details is
     begin
       case Copy_Source is
         when Copy_Hash =>
-          Afpx.Set_Selection (Hash);
+          Afpx.Set_Selection (Hash.Image);
         when Copy_Date =>
           Afpx.Set_Selection (Date);
         when Copy_Comment =>

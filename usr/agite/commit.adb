@@ -17,12 +17,13 @@ package body Commit is
     Commit : Git_If.Commit_List;
     Result : As.U.Asu_Us;
     Do_Copy : Boolean;
+    use type As.U.Asu_Us;
   begin
     if Ref = Git_If.No_Hash then
       return Result;
     end if;
     -- Get Commit info (comment)
-    Git_If.List_Commit (Ref, Hash, Merged, Date, Comment_Array, Commit);
+    Git_If.List_Commit (Ref.Image, Hash, Merged, Date, Comment_Array, Commit);
     -- Append rows, starting from last non-empty
     Do_Copy := False;
     for Row of reverse Comment_Array loop
@@ -745,7 +746,7 @@ package body Commit is
       end if;
     end Do_Commit;
 
-    use type Afpx.Field_Range;
+    use type Afpx.Field_Range, As.U.Asu_Us;
   begin
     -- Init editor and differator
     Editor := As.U.Tus (Config.Editor);
@@ -953,7 +954,7 @@ package body Commit is
 
   -- Get comment of a commit or comment previously entered
   function Get_Comment (Hash : Git_If.Git_Hash) return String is
-    (if Hash /= Git_If.No_Hash then Get_Comment_Of (Hash).Image
+    (if As.U."=" (Hash, Git_If.No_Hash) then Get_Comment_Of (Hash).Image
      else Prev_Comment.Image);
 
   -- Set default comment for next commit

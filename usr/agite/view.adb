@@ -27,10 +27,10 @@ begin
     Prot_Name : constant String := Utils.Protect_Text (Tmp_Name);
   begin
     -- Cat file in it
-    Ok := Git_If.Cat (Path, Hash, Tmp_Name, Log_Error => False);
+    Ok := Git_If.Cat (Path, Hash.Image, Tmp_Name, Log_Error => False);
     if not Ok then
       -- Try Hash^ (file might be deleted by the commit of hash)
-      Ok := Git_If.Cat (Path, Hash & "^", Tmp_Name);
+      Ok := Git_If.Cat (Path, Hash.Image & "^", Tmp_Name);
     end if;
     -- Launch viewer
     if Ok then

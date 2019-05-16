@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V36.09
+V37.00
 
 General purpose
 ---------------
@@ -969,7 +969,7 @@ the branch currenly listed.
 
 anchor:XHash[]
 Below is a "H:" tagged get field in which you can enter (or paste) a up to
-40 digits SHA-1 hash value to xref:XSearch[Search] for.
+128 hexadecimal digits of a hash value to xref:XSearch[Search] for.
 
 In case of a directory, the menu shows the relative path of the directory
 and lists the history of the commits that have affected the files of the
@@ -1164,7 +1164,7 @@ left-selected, for later xref:XSearch[Search].
 
 .Search
 anchor:XSearch[]
-Searches the commit with the hash value matching the SHA-1 contained in the
+Searches the commit with the hash value matching the hash contained in the
 xref:XHash[Hash] field. If this field is empty (you can clear it with
 Ctrl-Suppr) then Agite searches the xref:XMark[marked] hash instead.
 If found, this commit becomes left-selected.
@@ -1201,7 +1201,7 @@ anchor:XTag[]
 The 'tag' menu allows tagging a commit. It shows the details of the commit, as
 in the xref:XDetail[detail] menu:
 
-* The SHA-1 hash of the commit,
+* The hash of the commit,
 * The date and comment (up to seven lines) of the commit,
 * The list of all the files in the commit, each preceded by a letter M, A
 or D. +
@@ -1240,7 +1240,7 @@ information:
 .Tag and commit information
 Then, in both cases, there is the information on the commmit:
 
-* The SHA-1 hash of the commit, that you can copy into the X11 selection buffer
+* The hash of the commit, that you can copy into the X11 selection buffer
 by clicking on 'PpHash',
 * If the entry is a merge, this is indicated by the word "Merge",
 * The date of the commit, that you can alternatively copy with 'CpDate',
@@ -1779,7 +1779,7 @@ stash is lost.
 This button returns to the xref:XDir[directory] menu.
 
 NOTE: If the new name is empty: +
-*  'AddAppl' and 'AddReset' let GIT set the default name (short SHA and comment
+*  'AddAppl' and 'AddReset' let GIT set the default name (short hash and comment
 of the head the of the current branch), +
 * 'Rename' sets a default name ("-").
 

@@ -170,7 +170,7 @@ begin
 
   -- Build command and launch
   Cmd.Append (" " & Name.Image);
-  Cmd.Append (" " & From_Hash & " " & To_Hash);
+  Cmd.Append (" " & From_Hash.Image & " " & To_Hash.Image);
   Utils.Execute (Cmd.Image, Out_Flow'Unrestricted_Access,
                             Err_Flow'Unrestricted_Access, Exit_Code);
 

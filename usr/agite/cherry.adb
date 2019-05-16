@@ -16,7 +16,7 @@ package body Cherry is
   package Cherries_Mng is new Long_Long_Limited_List (Cherry_Rec, Set);
   -- Search by Hash
   function Match (Current, Criteria : Cherry_Rec) return Boolean is
-    (Current.Commit.Hash = Criteria.Commit.Hash);
+    (As.U."=" (Current.Commit.Hash,  Criteria.Commit.Hash));
   function Search_Hash is new Cherries_Mng.Search (Match);
 
   function Image (Status : Cherry_Status_List) return String is
@@ -705,7 +705,7 @@ package body Cherry is
       Cherries.Move_At (Ref);
       Cherries.Read (Cherry, Cherries_Mng.Current);
       -- Prevent modif and tagging in Cherry_Pick
-      Details.Handle (Root, Branch, Cherry.Commit.Hash, False, False);
+      Details.Handle (Root, Branch, Cherry.Commit.Hash.Image, False, False);
       Init;
       Init_Cherry (Cherries);
       Afpx.Update_List (Afpx.Center_Selected);
