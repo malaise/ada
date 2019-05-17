@@ -857,7 +857,7 @@ if `match $arg t_evp_digest` ; then
   title t_evp_digest
   try t_evp_digest sha1 tototititata
   cat << EOF >exp
-f56dfd658d9bf8e36df4223218f5e9cec128e287 (20)
+f56dfd658d9bf8e36df4223218f5e9cec128e287 (20 bytes)
 EOF
   comp err nul
   comp out exp
