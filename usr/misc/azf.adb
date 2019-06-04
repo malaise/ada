@@ -14,7 +14,7 @@ procedure Azf is
   procedure Help is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-        &  " [ -s <buffer_size> | -H ] -c | -d | -h");
+        &  " [ <algo> ] [ -s <buffer_size> | -H ] -c | -d | -h");
     Basic_Proc.Put_Line_Error (" -c | --compress              : Compress stdin to stdout");
     Basic_Proc.Put_Line_Error (" -d | --decompress            : Uncompress stdin to stdout");
     Basic_Proc.Put_Line_Error (" -H | --headers               : Use lzf header (and buffer of 64 kB)");
