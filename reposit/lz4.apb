@@ -26,26 +26,29 @@
 -- The compressed flow is a suite of sequences. A sequence contains a run of
 --  literal then a cross reference. It is made of:
 --  * A token: The first 4 bits indicate the length of the literal run
---    and the last 4 bits indicate the length of the cross reference
---  * Then, if the run is longer than 14, the token contains Fx (x is used
---    to code the length of the cross reference) and the following bytes
---    (up to 8MB for a 2GB length) contain the remaining of the length,
---    each byte adding up to FF to the length, until the (last) byte that i
---    not FF.
---    Exemple, a length of 300 is coded as Fx FF 1E (15+255+30).
+--    and the last 4 bits indicate the length - 4 of the cross reference
+--  * Then, if the run is longer than 14 (the token then contains Fx, x for the
+--    length of the cross reference), the following bytes contain the remaining of
+--    the length, each byte adding up to FF to the length, until the (last) byte
+--    that is not FF. The worst overhead is then 1/255, so 0.4% (to 8MB for a 2GB
+--    input length)
+--    Exemple, a length of 300 is coded as Fx FF 1E (15+255+30)
 --  * Then the literal run (if any)
---  * Then on two bytes litle endian the offset of the cross reference
---    (1 for current - 1)
---  * Then, if the reference is longer than 14, the bytes (up to 4MB for a 1GB
---    reference) to complete the length.
---  The last sequence contains only a token, possible extension of literal
---   run length, and literals.
+--  * Then on two bytes litle endian the offset, from current, of the cross
+--    reference, current being the first of the two bytes. (1 for current - 1)
+--  * Then, if the reference is longer than 18 (x = F), the bytes until not FF in
+--    order to to complete the length (up to 4MB for 1GB reference in a 2GB input
+--    length)
+-- Extra compatibility constraints:
+--  * The last sequence must contain only a token with no reference, and, when
+--    possible (input length >= 4), it must contain at least 4 literals.
+--  * The last match must start at least 12 bytes before the end of block.
 
 -- The uncompression algorithm is
 --  - Read a token, read the complement of literal run length if needed,
---  - Copy the literals from input
+--  - Copy the literals from input into output
 --  - Read the offset, read the complement of reference length if needed
---  - Copy the reference from output
+--  - Copy the reference, from offset in input, into output
 
 with Bit_Ops; use Bit_Ops;
 --#@IfDef Debug
