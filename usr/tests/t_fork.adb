@@ -15,7 +15,6 @@ procedure T_Fork is
 
   procedure Sig_Child_Cb is
     Death_Dscr : Sys_Calls.Death_Rec;
-    use type Sys_Calls.Death_Cause_List;
   begin
     loop
       Death_Dscr := Sys_Calls.Next_Dead;

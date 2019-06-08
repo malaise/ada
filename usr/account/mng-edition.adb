@@ -187,7 +187,7 @@ package body Edition is
   procedure Update_Buttons (Field  : in Afpx.Field_Range;
                             Kind   : in out Oper_Def.Kind_List;
                             Status : in out Oper_Def.Status_List) is
-    use type Afpx.Field_Range, Oper_Def.Status_List;
+    use type Afpx.Field_Range;
   begin
     for K in Oper_Def.Kind_List loop
       if Field = Kind_Buttons(K) then
@@ -480,7 +480,7 @@ package body Edition is
     -- Deleted flag read from selection list
     Sel : Sel_Rec;
     Deleted : Boolean;
-    use type Afpx.Absolute_Field_Range, Oper_Def.Kind_List;
+    use type Afpx.Absolute_Field_Range;
   begin
 
     -- Set title, fields protections & buttons

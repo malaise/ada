@@ -102,7 +102,7 @@ package body Lister is
   -- Does an entiy match a date criteria
   function Match (Date : Ada.Calendar.Time;
                   Crit : Entities.Date_Spec_Rec) return Boolean is
-    use type Entities.Date_Oper_List, Ada.Calendar.Time;
+    use type Ada.Calendar.Time;
   begin
     case Crit.Oper is
       when Entities.None =>

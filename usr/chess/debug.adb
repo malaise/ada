@@ -33,7 +33,6 @@ package body Debug is
   end Put;
 
   procedure Put (Action : in Pieces.Action_Rec) is
-    use type Pieces.Action_Kind_List;
   begin
     case Action.Kind is
       when Pieces.Move =>

@@ -140,8 +140,7 @@ package body Af_Ptg is
     Click_Pos : Con_Io.Square;
     Valid : Boolean;
     Scroll : Boolean;
-    use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List,
-             Afpx_Typ.Field_Kind_List;
+    use type Con_Io.Mouse_Button_Status_List, Afpx_Typ.Field_Kind_List;
   begin
     -- Check if mouse button is clicked
     Console.Get_Mouse_Event (Mouse_Status);

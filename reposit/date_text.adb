@@ -267,7 +267,6 @@ package body Date_Text is
     Val : Natural;
     -- The result
     Result : Date_Rec;
-    use type Conv.Func;
   begin
     -- Init and check
     Init_Logger;
@@ -377,7 +376,6 @@ package body Date_Text is
     Val : Natural;
     -- The result
     Result : As.U.Asu_Us;
-    use type Conv.Func;
   begin
     -- Init
     Init_Logger;

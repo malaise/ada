@@ -37,7 +37,6 @@ package body Image is
 
 
     use type Space.Col_Range;
-    use type Pieces.Action_Kind_List;
   begin
     Res.Set (Piece_Image (Action.Piece));
     case Action.To.Kind is

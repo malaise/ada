@@ -247,7 +247,7 @@ procedure Asubst is
   Lang : Language.Language_Selection_List := Language.Get_Env;
   -- Stdin and Stdout
   Std_In_Out : constant String := "-";
-  use type Language.Language_Selection_List, Search_Pattern.Ll_Positive;
+  use type Search_Pattern.Ll_Positive;
 
   -- Check that there are not several (conflictual) verbosity levels
   function Check_Verbose return Boolean is

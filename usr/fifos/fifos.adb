@@ -423,7 +423,6 @@ package body Fifos is
       procedure Accepte (Fifo : access Fifo_Rec) is
         Port_Num : Tcp_Util.Port_Num;
         Port : Tcp_Util.Local_Port;
-        use type Tcp_Util.Local_Port_List;
       begin
         -- Check if Fifo_Name is a port name, link dynamic otherwise
         begin

@@ -36,7 +36,7 @@ package body Proc_Family is
   -- Find a death by pid
   -- Crit must have cause Exited
   function Same_Pid (Curr, Crit : Sys_Calls.Death_Rec) return Boolean is
-    use type Sys_Calls.Death_Info_List, Sys_Calls.Pid;
+    use type Sys_Calls.Pid;
   begin
     return (case Curr.Cause is
       when Sys_Calls.No_Dead => False,

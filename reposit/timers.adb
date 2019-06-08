@@ -366,7 +366,7 @@ package body Timers is
   procedure Resume (Id : in Timer_Id) is
     Timer : access Timer_Rec;
     Speed : Virtual_Time.Speed_Range;
-    use type Virtual_Time.Time, Perpet.Delta_Rec;
+    use type Perpet.Delta_Rec;
   begin
     Get_Mutex;
     -- Get access to timer

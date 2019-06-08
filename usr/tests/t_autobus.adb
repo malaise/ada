@@ -76,7 +76,6 @@ procedure T_Autobus is
 
   -- Supervision callback
   procedure Sup_Cb (Report : in Autobus.Sup_Report) is
-    use type Trilean.Trilean;
   begin
     Ple ((case Report.State is
             when Trilean.True  => "Insertion of: ",

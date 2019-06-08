@@ -17,7 +17,7 @@ package body Set_Up is
     Orig_Id :  Space.Board.Orig_Piece_Id;
 
     use type Pieces.Piece_Kind_List;
-    use type Space.Color_List, Space.Board.Orig_Piece_Id;
+    use type Space.Board.Orig_Piece_Id;
   begin
     Open:
     begin

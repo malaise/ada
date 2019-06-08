@@ -65,7 +65,7 @@ package body Chronos is
   -- Reads the chrono
   -- Chrono can be running or stopped
   function Read (A_Chrono : Chrono_Type) return Time_Rec is
-    use type Perpet.Delta_Rec, Ada.Calendar.Time;
+    use type Ada.Calendar.Time;
   begin
     return Perpet.To_Delta_Rec (
         if A_Chrono.Status = Running then

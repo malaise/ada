@@ -173,8 +173,7 @@ package body Mng is
 
   -- Compute amounts from all account operations
   procedure Compute_Amounts is
-    use type Oper_Def.Amount_Range, Oper_Def.Status_List, Oper_Def.Kind_List,
-             Screen.Amount_List;
+    use type Oper_Def.Amount_Range, Oper_Def.Status_List, Oper_Def.Kind_List;
 
     -- Add a value to an amount, if not already in overflow.
     procedure Add_Amount (Kind : in Screen.Amount_List;

@@ -427,7 +427,6 @@ package body Screen is
   function Y_Offset return Con_Io.Y_Range is (3 * Console.Font_Height / 2);
 
   procedure Put_End (Reason : in End_Reason_List) is
-    use type Flight.Status_List;
     Factor : Natural;
   begin
     case Reason is

@@ -243,7 +243,7 @@ package body Matcher is
                    Assign : in As.U.Asu_Us) is
     Result : Boolean;
     Assign_Index : Positive;
-    use type Tree.Oper_List, Tree.Eval_List;
+    use type Tree.Oper_List;
   begin
     -- Check Oper versus Eval
     Result := (case Node.Eval is

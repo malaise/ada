@@ -52,7 +52,7 @@ procedure T_Afpx is
                           Str : Afpx.Unicode_Sequence)
            return Con_Io.Col_Range is
     Last_Index : Con_Io.Col_Range;
-    use type Afpx.Enter_Field_Cause_List, Afpx.Absolute_Field_Range;
+    use type Afpx.Absolute_Field_Range;
   begin
     Basic_Proc.Put_Line_Output ("Cursor_Set_Col_Cb --> "
      & "Cursor_Field:" & Cursor_Field'Img

@@ -488,7 +488,6 @@ package body Bencode is
     procedure Encode_Bytes is
       Text : As.U.Asu_Us;
       Bytes : Ubytes.Unb_Array;
-      use type Xml_Parser.Node_Kind_List;
     begin
       Logger.Log_Debug ("Encoding Bytes");
 

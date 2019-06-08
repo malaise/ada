@@ -76,7 +76,7 @@ package body Events is
     Select_Chats : As.U.Asu_Us;
     Variable : As.U.Asu_Us;
     Dummy : Boolean;
-    use type Tree.Node_Kind, Ios.Event_Kind_List;
+    use type Tree.Node_Kind;
 
     function Handle_One return Boolean is
     begin
