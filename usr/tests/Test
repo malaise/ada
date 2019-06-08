@@ -470,7 +470,6 @@ Received Ah que coucou -> Replying Coucou!
 Spyed >Ah que coucou<
 Closing.
 Done.
-
 EOF
   comp err1 nul
   comp err nul

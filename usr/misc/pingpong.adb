@@ -105,6 +105,8 @@ procedure Pingpong is
     Nb_Samples : Natural;
     Average_Delta : Duration;
   end record;
+  overriding function "=" (Current : Info_Type;
+                           Criteria : Info_Type) return Boolean;
   type Info_Access is access all Info_Type;
   procedure Set (To : out Info_Type; Val : in Info_Type) is
   begin

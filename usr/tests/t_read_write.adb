@@ -35,7 +35,8 @@ procedure T_Read_Write is
       end if;
     end;
   end Put_Line;
-  Lock : access Mutexes.Mutex;
+  type Mustex_Access is access Mutexes.Mutex;
+  Lock : Mustex_Access;
 
   -- The client tasks
   task type T is

@@ -3,8 +3,8 @@ Ada notes
 
 This README file describes briefly the main directories of the Ada contrib.
 
-The software compiles with Ada 2012 (Gnat GPL 2016 - Community 2018) for Linux
-64 bits.
+The software compiles with Ada 2012 (Gnat "GPL 2016" and "Community 2019") for
+Linux 64 bits.
 
 Some programs depend on anchor:XPCRE[] PCRE (Perl Compatible Regular Expressions) and work
 with version 7.8 or above (8.35 is OK), or PCRE2, version 10.00 or above

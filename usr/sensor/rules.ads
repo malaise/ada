@@ -8,11 +8,12 @@ package Rules is
   subtype Tail_Length is Long_Longs.Ll_Natural;
 
   type Pattern_Access is access all Reg_Exp.Compiled_Pattern;
+  type History_Access is access Hist_Mng.Circ_Type;
   type Rule_Rec is record
     File : As.U.Asu_Us;
     Period : Timers.Period_Range;
     Tail : Tail_Length;
-    History : access Hist_Mng.Circ_Type;
+    History : History_Access;
     Action : As.U.Asu_Us;
     Seconds : Tail_Length;
     Time_Format : As.U.Asu_Us;

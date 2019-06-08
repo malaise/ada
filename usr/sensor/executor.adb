@@ -17,7 +17,7 @@ package body Executor is
     Hist : As.U.Asu_Us;
     Result : As.U.Asu_Us;
     Dummy : Integer;
-    use type As.U.Asu_Us;
+    use type As.U.Asu_Us, Rules.History_Access;
   begin
      -- Retrieve the filter index from data and read it
      Rule := Rules.Get_Rule (Data.Lint);

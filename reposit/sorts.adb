@@ -47,7 +47,8 @@ package body Sorts is
       -- Heap an its indexes
       subtype Typ_Index_Heap is Integer range 1 .. Array_Length;
       type Heap_Type is array (Typ_Index_Heap) of Typ_Object;
-      Heap : constant access Heap_Type := new Heap_Type;
+      type Heap_Access is access Heap_Type;
+      Heap : constant Heap_Access := new Heap_Type;
       Heap_Index, Son_Index, Father_Index : Typ_Index_Heap;
       First_Leaf, Last_Leaf : Typ_Index_Heap;
 

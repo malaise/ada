@@ -59,8 +59,8 @@ package body Afpx.Utils is
     return Str_Util.Procuste (Str, Len, Align_Left, ' ',
                               Trunc_Head => Keep_Tail,
                               Show_Trunc => True,
-                              Head_Mark  => (if Show_Cut then ">>" else ""),
-                              Tail_Mark  => (if Show_Cut then "<<" else ""));
+                              Head_Mark  => (if Show_Cut then ">>" else "  "),
+                              Tail_Mark  => (if Show_Cut then "<<" else "  "));
   end Procuste;
 
   -- Protect a field and "revert" its colors, or reset it to its default
