@@ -471,9 +471,15 @@ Spyed >Ah que coucou<
 Closing.
 Done.
 EOF
+last=`tail -1 out1`
+if [ "$last" = "" ] ; then
+  head -8 out1 > out2
+else
+  cat out1 > out2
+fi
   comp err1 nul
   comp err nul
-  comp out1 exp
+  comp out2 exp
   echo "OK"
 fi
 
