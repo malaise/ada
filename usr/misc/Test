@@ -36,7 +36,7 @@ function comp {
 
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
-# On test of compression / uncompression
+# One test of compression / uncompression
 function azf_one {
   export OPT=""
   if [ "$1" = "--lz4" ] ; then
@@ -105,7 +105,7 @@ elif [ "$1"  = "--snappy" ] ; then
 fi
 
 # Default
-if [ "$1"  != "--none" ] ; then
+if [ "$1" != "--none" ] ; then
   # Azf on lzf, lz4 and snappy
   for file in `ls *.ads *.adb lib/*` ; do
     azf_one $file

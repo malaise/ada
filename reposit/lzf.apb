@@ -28,7 +28,7 @@
 --    so:
 --  - When appending the first literal of a run (first byte of the input or
 --    just after a cross reference) skip a byte for this control byte
---  - When appening a cross reference after a literal run, update the control
+--  - When appending a cross reference after a literal run, update the control
 --    char of this run (set it to the length of the run)
 -- The uncompression algorithm is
 --  - Read a byte
@@ -43,10 +43,12 @@
 --    then the lower bits are the literal run length - 1, and the next bytes
 --    are the literals
 -- - For back-references, the highest three bits of the control byte are the
---    back-reference length - 2.
---    If all three bits are set, then the back-reference length - 7 is stored in
---    the next byte. The 5 lower bits of the control byte combined with the last
---    byte form the offset for the back-reference (0 for prev byte).
+--    back-reference length - 2. If all three bits are set, then the
+--    back-reference length - 7 is stored in the next byte.
+--    The 5 lower bits of the control byte, are combined with the last byte
+--    (the one after the control byte and the possible length extension),
+--    in order to form the offset, in the uncompressed flow, for the
+--    back-reference (0 for prev byte).
 
 -- Main differences from the original implementation (in C):
 -- - The hash table is initialized with -1, which allows a match with index 0
