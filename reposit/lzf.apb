@@ -49,6 +49,11 @@
 --    (the one after the control byte and the possible length extension),
 --    in order to form the offset, in the uncompressed flow, for the
 --    back-reference (0 for prev byte).
+-- So a sequence can be:
+-- 000L:llll|<literal> : with Lllll being the literal length - 1, from 0 to 1F
+-- LLLO:oooo : with LLL /= 7 being the reference length - 2 and Ooooo the the
+--             reference offset
+-- LLLO:oooo|llll:llll|oooo:oooo : length  - 2 on 11 bits and offset on 13 bits
 
 -- Main differences from the original implementation (in C):
 -- - The hash table is initialized with -1, which allows a match with index 0

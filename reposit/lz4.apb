@@ -28,17 +28,23 @@
 --  * A token: The first 4 bits indicate the length of the literal run
 --    and the last 4 bits indicate the length - 4 of the cross reference
 --  * Then, if the run is longer than 14 (the token then contains Fx, x for the
---    length of the cross reference), the following bytes contain the remaining of
---    the length, each byte adding up to FF to the length, until the (last) byte
---    that is not FF. The worst overhead is then 1/255, so 0.4% (to 8MB for a 2GB
---    input length)
+--    length of the cross reference), the following bytes contain the remaining
+--    of the length, each byte adding up to FF to the length, until the (last)
+--    byte that is not FF. The worst overhead is then 1/255, so 0.4% (to 8MB for
+--    a 2GB input length)
 --    Exemple, a length of 300 is coded as Fx FF 1E (15+255+30)
 --  * Then the literal run (if any)
 --  * Then on two bytes litle endian the offset, from current, of the cross
 --    reference, current being the first of the two bytes. (1 for current - 1)
---  * Then, if the reference is longer than 18 (x = F), the bytes until not FF in
---    order to to complete the length (up to 4MB for 1GB reference in a 2GB input
---    length)
+--  * Then, if the reference is longer than 18 (x = F), the bytes until not FF
+--    in order to to complete the length (up to 4MB for 1GB reference in a 2GB
+--    input length)
+-- So, a sequence can be:
+--  LLLL:RRRR|{llll:llll}|<literal>|OOOO:OOOO|oooo:oooo|{rrrr:rrrr}, where
+--  - {llll:llll} is a suite (possibly empty) of bytes of literal length to be
+--    added to LLLL
+--  - {rrrr:rrrr} is a suite (possibly empty) of bytes of reference length to be
+--    added to RRRR
 -- Extra compatibility constraints:
 --  * The last sequence must contain only a token with no reference, and, when
 --    possible (input length >= 4), it must contain at least 4 literals.
