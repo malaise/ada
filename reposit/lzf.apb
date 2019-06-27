@@ -84,12 +84,14 @@ package body Lzf is
   end Logger;
   package body Logger is
     -- Static activation of traces
+    function Info_On return Boolean is (False) with Inline => True;
     function Debug_On return Boolean is (False) with Inline => True;
   end Logger;
   procedure Log (Msg : in String) with Inline => True is
   begin
     Ada.Text_Io.Put_Line (Ada.Text_Io.Standard_Error, Msg);
   end Log;
+  procedure Log_Info (Msg : in String) renames Log;
   -- Image of natural
   package Int_Io is new Ada.Text_Io.Integer_Io (Integer);
   package Hexa_Utils is
@@ -118,6 +120,10 @@ package body Lzf is
   begin
     Logger.Log_Debug (Msg);
   end Log;
+  procedure Log_Info (Msg : in String) with Inline => True is
+  begin
+    Logger.Log_Info (Msg);
+  end Log_Info;
   -- Image of a byte
   function Image is new Hexa_Utils.Mod_Image (Byte);
     --#@EndifDef
@@ -221,6 +227,10 @@ package body Lzf is
     Match : Boolean;
     -- Length and Max_Len of a match with cross reference
     Len, Max_Len : Positive;
+    --#@IfDef Debug
+    -- Statistics
+    Nb_Lit_Seq, Total_Lit_Len, Nb_Ref_Seq, Total_Ref_Len : Natural := 0;
+    --#@EndifDef
     use type C_Types.Byte;
   begin
 
@@ -327,6 +337,8 @@ package body Lzf is
           --  to store the number of literals
           -- 3 first bits at 0 then Nb on the next 5 bits (so <= 31)
           --#@IfDef Debug
+          Nb_Lit_Seq := Nb_Lit_Seq + 1;
+          Total_Lit_Len := Total_Lit_Len + Literals;
           if Logger.Debug_On then
             Log ("  Update Nb literals " & Hexa_Utils.Image (Literals - 1)
                & " at pos " & Hexa_Utils.Image (Out_Pos - Literals - 1));
@@ -352,8 +364,10 @@ package body Lzf is
         Max_Len := Len;
         Len := Len - 2;
         --#@IfDef Debug
+        Nb_Ref_Seq := Nb_Ref_Seq + 1;
+        Total_Ref_Len := Total_Ref_Len + Max_Len;
         if Logger.Debug_On then
-          Log ("  match len " & Hexa_Utils.Image (Max_Len));
+          Log ("  Match len " & Hexa_Utils.Image (Max_Len));
         end if;
         --#@EndifDef
 
@@ -513,6 +527,7 @@ package body Lzf is
     -- Write the remaining few bytes as literals
     while In_Pos < Input'Length loop
       --#@IfDef Debug
+      Total_Lit_Len := Total_Lit_Len + 1;
       if Logger.Debug_On then
         Log ("Append literal " & Image (Input(Input'First + In_Pos))
            & " at pos " & Hexa_Utils.Image (Out_Pos));
@@ -552,6 +567,19 @@ package body Lzf is
 
     Outlen := Out_Pos - Output'First;
   --#@IfDef Debug
+    if Logger.Info_On then
+      Log_Info ("Nb literal seqs " & Nb_Lit_Seq'Img
+         & ", Total literal length " & Total_Lit_Len'Img
+         & ", Avg literal length "
+         & Natural'Image (Total_Lit_Len / Nb_Lit_Seq));
+      Log_Info ("Nb references " & Nb_Ref_Seq'Img
+         & ", Total literal length " & Total_Ref_Len'Img
+         & ", Avg Ref length "
+         & Natural'Image (Total_Ref_Len / Nb_Ref_Seq));
+      Log_Info ("Lengths " & Natural'Image(Input'Length)
+         & " and " & Outlen'Img & ", rate "
+         & Integer'Image ((Input'Length - Outlen) * 100 / Input'Length));
+    end if;
   --#@ElseDef
   exception
     when Constraint_Error =>
@@ -627,7 +655,7 @@ package body Lzf is
         Ctrl := Ctrl + Integer(Input(In_Pos)) + 1;
         In_Pos := In_Pos + 1;
         --#@IfDef Debug
-        if Logger.Debug_On then
+        if Logger.Info_On then
           Log ("Got at index " & Hexa_Utils.Image (In_Pos - 1)
              & " a backref of len " & Hexa_Utils.Image (Len)
              & " and offset " & Hexa_Utils.Image (Ctrl));
