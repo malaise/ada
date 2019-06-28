@@ -7,7 +7,7 @@ procedure Azf is
   Max_Buffer_Size : constant := 1024;
 
   -- Default buffer size in Mega Bytes
-  Buffer_Size : Positive := 1;
+  Buffer_Size : Positive := 512;
 
   Logger : Trace.Loggers.Logger;
 
@@ -18,18 +18,18 @@ procedure Azf is
     Basic_Proc.Put_Line_Error (" -c | --compress              : Compress stdin to stdout");
     Basic_Proc.Put_Line_Error (" -d | --decompress            : Uncompress stdin to stdout");
     Basic_Proc.Put_Line_Error (" -H | --headers               : Use lzf header (and buffer of 64 kB)");
-    Basic_Proc.Put_Line_Error (" -s <MB> | --buffer_size=<MB> : Set buffer size in Mega Bytes " &
-      "(max=" & Images.Integer_Image (Max_Buffer_Size) &
-      ", def=" & Images.Integer_Image (Buffer_Size) & ")");
+    Basic_Proc.Put_Line_Error (" -s <MB> | --buffer_size=<MB> : Buffer size in MB " &
+      "(max=" & Images.Integer_Image (Max_Buffer_Size) & ", default=" &
+      Images.Integer_Image (Buffer_Size) & ")");
     Basic_Proc.Put_Line_Error (" --lz4                        : Use lz4 instead of lzf");
     Basic_Proc.Put_Line_Error (" --snappy                     : Use snappy instead of lzf");
     Basic_Proc.Put_Line_Error (" -h | --help                  : Display this help");
-end Help;
-procedure Error (Msg : in String) is
-begin
-  Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
-  Help;
-  Basic_Proc.Set_Error_Exit_Code;
+  end Help;
+  procedure Error (Msg : in String) is
+  begin
+    Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
+    Help;
+    Basic_Proc.Set_Error_Exit_Code;
   end Error;
 
   -- Argument parsing
@@ -49,7 +49,6 @@ begin
   -- Header mode
   Header_Mode : Boolean := False;
 
-
   -- Use lzf, lz4 or snappy
   type Algo_List is (Lzf_Algo, Lz4_Algo, Snappy_Algo);
   Algo : Algo_List;
@@ -59,9 +58,8 @@ begin
   Header : Lzf.Byte_Array (1 .. 7);
   -- So max len of a data block is <len on 2 bytes> - 7
   Max_Len_Header : constant := 16#FFFF# - Header'Length;
-  -- The minimum block length: header length (5, not-compressed header)
-  --                         + 1 data
-  Min_Len_Header : constant := 6;
+  -- The minimum header length: 5, not-compressed header
+  Min_Len_Header : constant := 5;
 
   -- Buffers and lengths
   Buffer_Unit : constant := 1024 * 1024;
@@ -265,29 +263,31 @@ begin
       if Inl < Min_Len_Header
       or else Header(1) /= Character'Pos ('Z')
       or else Header(2) /= Character'Pos ('V') then
-        Error ("Invalid header read");
+        Error ("Invalid header start read");
         return;
       end if;
       if Header(3) = 0 then
         -- Not compressed
         -- Data len
         Outl := Bit_Ops.Shl (Integer (Header(4)), 8) + Integer (Header(5));
-        -- Copy the first byte of data
-        Outb(1) := Header(Min_Len_Header);
-        if Outl /= 1 then
-          -- Read remainig data
-          Outl := Read (Outb(2 .. Outb'Last), Outl - 1) + 1;
-        end if;
+        -- Read data
+        Outl := Read (Outb(1 .. Outb'Last), Outl);
         Logger.Log_Debug ("To copy");
       elsif Header(3) = 1 then
         -- Compressed
         Inl := Bit_Ops.Shl (Integer (Header(4)), 8) + Integer (Header(5));
-        -- Read last byte of header and data
-        Inl := Read (Inb.all, Inl + 1);
+        -- Read last 2 bytes of header and data
+        Outl := Read (Header, 2);
+        if Outl /= 2 then
+          Error ("Invalid header end read");
+          return;
+        end if;
         -- Compute size of output
-        Expected := Bit_Ops.Shl (Integer (Header(6)), 8) + Integer (Inb(1));
+        Expected := Bit_Ops.Shl (Integer (Header(1)), 8) + Integer (Header(2));
+        -- Read data
+        Inl := Read (Inb.all, Inl);
         -- Inl is the last byte to uncompress
-        Lzf.Uncompress (Inb(2 .. Inl), Outb.all, Outl);
+        Lzf.Uncompress (Inb(1 .. Inl), Outb.all, Outl);
         if Outl /= Expected then
           Error ("Unexpected uncompressed length ("
                  & Images.Integer_Image (Outl) & "i.o. "
