@@ -4,7 +4,8 @@ with Basic_Proc, Sys_Calls, Argument, Argument_Parser, C_Types, Bit_Ops,
 procedure Azf is
 
   -- Max buffer size in Mega Bytes
-  Max_Buffer_Size : constant := 1024;
+  Buffer_Unit : constant := 1024 * 1024;
+  Max_Buffer_Size : constant := Integer'Last / Buffer_Unit;
 
   -- Default buffer size in Mega Bytes
   Buffer_Size : Positive := 512;
@@ -62,7 +63,6 @@ procedure Azf is
   Min_Len_Header : constant := 5;
 
   -- Buffers and lengths
-  Buffer_Unit : constant := 1024 * 1024;
   type Buffer_Access is access Lzf.Byte_Array;
   Inb, Outb : Buffer_Access;
   Inl, Outl, Expected: Natural;
