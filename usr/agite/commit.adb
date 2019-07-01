@@ -954,7 +954,7 @@ package body Commit is
 
   -- Get comment of a commit or comment previously entered
   function Get_Comment (Hash : Git_If.Git_Hash) return String is
-    (if As.U."=" (Hash, Git_If.No_Hash) then Get_Comment_Of (Hash).Image
+    (if As.U."/=" (Hash, Git_If.No_Hash) then Get_Comment_Of (Hash).Image
      else Prev_Comment.Image);
 
   -- Set default comment for next commit
