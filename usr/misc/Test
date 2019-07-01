@@ -37,22 +37,28 @@ function comp {
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
 # One test of compression / uncompression
-function azf_one {
+function cmpr_one {
   export OPT=""
-  if [ "$1" = "--lz4" ] ; then
-    OPT="--lz4"
+  if [ "$1" = "--lzf" ] ; then
+    CMPR="azf -s 900"
+    shift
+  elif [ "$1" = "--lz4" ] ; then
+    CMPR="azf --lz4 -s 900"
     shift
   elif [ "$1" = "--snappy" ] ; then
-    OPT="--snappy"
+    CMPR="azf --snappy -s 900"
+    shift
+  elif [ "$1" = "--lz4l" ] ; then
+    CMPR="alz4l -s 3072"
     shift
   fi
   local file=$1
 
-  echo -n azf $OPT $file 
-  cat $file | azf $OPT -s 900 -c > cmp
+  echo -n $CMPR $file 
+  cat $file | $CMPR -c > cmp
   if [ $? -ne 0 ] ; then
     echo
-    echo "Azf $OPT -c $file has failed." 2>&1
+    echo "$CMPR -c $file has failed." 2>&1
     exit 1
   fi
   let ISIZE=0+`ls -l $file | cut -d ' ' -f 5` 
@@ -64,10 +70,10 @@ function azf_one {
     echo " "$PER"%"
   fi
 
-  cat cmp | azf $OPT -s 900 -d > res
+  cat cmp | $CMPR -d > res
   if [ $? -ne 0 ] ; then
     echo
-    echo "Azf $OPT -d on $file has failed." 2>&1
+    echo "$CMPR -d on $file has failed." 2>&1
     exit 1
   fi
 
@@ -84,21 +90,28 @@ function azf_one {
 if [ "$1"  = "--lzf" ] ; then
   shift
   for file in $* ; do
-    azf_one $file
+    cmpr_one --lzf $file
   done
   clean
   exit
 elif [ "$1"  = "--lz4" ] ; then
   shift
   for file in $* ; do
-    azf_one --lz4 $file
+    cmpr_one --lz4 $file
   done
   clean
   exit
 elif [ "$1"  = "--snappy" ] ; then
   shift
   for file in $* ; do
-    azf_one --snappy $file
+    cmpr_one --snappy $file
+  done
+  clean
+  exit
+elif [ "$1"  = "--lz4l" ] ; then
+  shift
+  for file in $* ; do
+    cmpr_one --lz4l $file
   done
   clean
   exit
@@ -108,9 +121,10 @@ fi
 if [ "$1" != "--none" ] ; then
   # Azf on lzf, lz4 and snappy
   for file in `ls *.ads *.adb lib/*` ; do
-    azf_one $file
-    azf_one --lz4 $file
-    azf_one --snappy $file
+    cmpr_one --lzf $file
+    cmpr_one --lz4 $file
+    cmpr_one --snappy $file
+    cmpr_one --lz4l $file
   done
   echo ""
 fi
