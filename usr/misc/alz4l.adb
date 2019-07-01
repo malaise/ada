@@ -1,5 +1,5 @@
 -- Compress or uncompress stdin to stdout
-with Basic_Proc, Sys_Calls, Argument, Argument_Parser, C_Types,
+with Basic_Proc, Sys_Calls, Argument, Argument_Parser,
      As.U, Images, Trace.Loggers, Lz4L, Long_Longs;
 procedure Alz4L is
 
@@ -110,7 +110,6 @@ procedure Alz4L is
     end loop;
   end Write;
 
-  use type C_Types.Byte;
 begin
   Logger.Init ("Alz4l");
 
