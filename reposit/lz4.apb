@@ -73,7 +73,8 @@ package body Lz4 is
   -- Image of a byte
   function Image is new Hexa_Utils.Mod_Image (Byte);
   -- Image of a signed integer
-  function Image is new Hexa_Utils.Int_Image (Integer);
+  package Int_Image is new Hexa_Utils.Int_Image (Integer);
+  function Image (N : Integer) return String renames Int_Image.Image;
   --#@EndifDef
 
   -- The number of entries in the hash table. The size is a trade-off between
