@@ -454,6 +454,9 @@ lower_char lower_str mixed_str upper_char upper_str (1)::
 lz4 (2)::
      Very fast lossless compression / uncompression algorithm.
 
+lz4l (2)::
+     Lz4 modified to support large buffer and larger reference offset
+
 lzf (2)::
      Very fast lossless compression / uncompression algorithm.
 
