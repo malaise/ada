@@ -45,13 +45,15 @@
 --    a 2GB input length)
 -- So, a sequence can be:
 --  LLLL:RRRR|{llll:llll}|<literal>|<offset>|{rrrr:rrrr}, where
+--  - LLLL is the litteral length, or F
+--  - RRRR is the reference length, or F
 --  - {llll:llll} is a suite (possibly empty) of bytes of literal length to be
---    added to LLLL
+--    added to LLLL (if F), until not FF
 --  - <offset> is either 0OOOO:OOOO|oooo:oooo (0OOO:OOOO|oooo:oooo being the
 --    offset on 15 bits big endian), or 1000:0iii|{OOOO:OOOO} with iii + 1
 --    instances of OOOO:OOOO, little endian
 --  - {rrrr:rrrr} is a suite (possibly empty) of bytes of reference length to be
---    added to RRRR
+--    added to RRRR (if F), until not FF
 -- Extra compatibility constraints:
 --  * The last sequence must contain only a token with no reference, and, when
 --    possible (input length >= 4), it must contain at least 4 literals.
