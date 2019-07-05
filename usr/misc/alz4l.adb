@@ -124,13 +124,13 @@ begin
     Help;
     return;
   end if;
-  -- Arg
+  -- No Arg axcept options
   if Arg_Dscr.Is_Set (Argument_Parser.No_Key_Index) then
     Error ("Unexpected argument "
          & Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index));
     return;
   end if;
-  -- (un)compress
+  -- Compress or uncompress
   if (Arg_Dscr.Is_Set (2) and then Arg_Dscr.Is_Set (3))
   or else (not Arg_Dscr.Is_Set (2) and then not Arg_Dscr.Is_Set (3)) then
     Error ("Expecting either compress or decompress mode");
@@ -141,7 +141,6 @@ begin
   if Arg_Dscr.Is_Set (4) then
     Parse_Size (Arg_Dscr.Get_Option (4));
   end if;
-
 
   -- Create buffers
   Inb := new Lz4L.Byte_Array(1 .. Buffer_Size * Buffer_Unit);

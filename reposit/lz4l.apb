@@ -1,15 +1,15 @@
 -- This package implements a kind of LZ4 lossless data compression algorithm.
 -- LZ4 is a Lempel-Ziv variant with byte-aligned output, and optimized for
 --  speed.
--- LZ4L is adapted for large data (lengths and offsets on 64 bits), so it is
---  not compatible with LZ4.
+-- LZ4L is adapted for large data (input and ou lengths, and offsets of cross
+--  references on 64 bits). As a consequence, it is not compatible with LZ4.
 
 -- Safety/Use Notes:
 --  - For performance reasons, safety checks on expansion are omitted.
 --  - Invalid compressed data can cause exceptions (Constraint_Error)
 
 -- General principles:
--- The LZ4 compressed format knows literal runs and back-references:
+-- The LZ4l compressed format knows literal runs and back-references:
 --  - Literal run: directly copy bytes from input to output.
 --  - Back-reference: copy previous data of the uncompressed stream to the
 --    output stream, with specified offset from location in the uncompressed
@@ -36,20 +36,20 @@
 --    a 2GB input length)
 --    Exemple, a length of 300 is coded as Fx FF 1E (15+255+30)
 --  * Then the literal run (if any)
---  * Then the reference offset: if the highest bit is not set, then the
---    offset is coded in the next 15 bits, big endian, otherwise the
---    3 bits next represent the number - 1 of bytes to concatenate, big endian,
+--  * Then the reference offset byte: if the highest bit is not set, then the
+--    offset is coded in the next 15 bits, big endian. Otherwise the
+--    3 lower bits represent the number - 1 of bytes to concatenate, big endian,
 --    to represent the offset
 --  * Then, if the reference is longer than 18 (x = F), the bytes until not FF
---    in order to to complete the length (up to 4MB for 1GB reference in a 2GB
---    input length)
+--    to add in order to to complete the length (up to 4MB for 1GB reference in
+--    a 2GB input length)
 -- So, a sequence can be:
 --  LLLL:RRRR|{llll:llll}|<literal>|<offset>|{rrrr:rrrr}, where
 --  - {llll:llll} is a suite (possibly empty) of bytes of literal length to be
 --    added to LLLL
---  - <offset> is either 0OOOO:OOOO|oooo:oooo (0OOO:OOOO|oooo:oooo offset on
---    15 bits big endian), or 1000:0iii|{OOOO:OOOO} with iii + 1 instances of
---    OOOO:OOOO, little endian
+--  - <offset> is either 0OOOO:OOOO|oooo:oooo (0OOO:OOOO|oooo:oooo being the
+--    offset on 15 bits big endian), or 1000:0iii|{OOOO:OOOO} with iii + 1
+--    instances of OOOO:OOOO, little endian
 --  - {rrrr:rrrr} is a suite (possibly empty) of bytes of reference length to be
 --    added to RRRR
 -- Extra compatibility constraints:
@@ -122,17 +122,19 @@ package body Lz4L is
     (Byte (I and 16#FF#)) with Inline => True;
 
   -- Encode a length on several successive Out_Pos of Output
-  --  by succesive slices of 255
+  --  by successive slices of 255
   procedure Encode_Length (Val : in Ll_Natural; Out_Pos : in out Ll_Positive;
                                                 Output : in out Byte_Array) is
     Res : Ll_Natural := Val;
   begin
     loop
       if Res >= 16#FF# then
+        -- Append and substract FF
         Output(Out_Pos) := 16#FF#;
         Res := Res - 16#FF#;
         Out_Pos := Out_Pos + 1;
       else
+        -- Append this last value
         Output(Out_Pos) := To_Byte (Res);
         Out_Pos := Out_Pos + 1;
         exit;
@@ -255,7 +257,7 @@ package body Lz4L is
         -- Reset the stepping values
         Unmatch_Limit := Incompressible;
 
-        -- Encode then length of literal run seen so far
+        -- Encode the length of literal run seen so far
         Nb_Literals := In_Pos - Anchor;
         --#@IfDef Debug
         if Logger.Debug_On then
@@ -283,14 +285,14 @@ package body Lz4L is
 
         -- Encode Offset
         if Off <= 16#7FFF# then
-          -- 0 + offset on 31 bytes big endian
+          -- 0 + offset on 15 bits big endian
           Output(Out_Pos) := Byte (Shr (Off, 8));
           Out_Pos := Out_Pos + 1;
           Output(Out_Pos) := Byte (Off and 16#FF#);
           Out_Pos := Out_Pos + 1;
         else
-          -- 1000:0iii then offset little endian
-          -- Skip byte for the the length
+          -- 1000:0iii then offset little endian on iii+1 bytes
+          -- Skip byte for the length
           Len_Pos := Out_Pos;
           Out_Pos := Out_Pos + 1;
           -- Then bytes little endian
@@ -421,9 +423,9 @@ package body Lz4L is
 
       -- Extract length of the literals run
       Nb_Literals := Shr (Token, 4);
-      if Nb_Literals >= 15 then
-        while Input(In_Pos) = 255 loop
-           Nb_Literals := Nb_Literals + 255;
+      if Nb_Literals >= 16#0F# then
+        while Input(In_Pos) = 16#FF# loop
+           Nb_Literals := Nb_Literals + 16#FF#;
            In_Pos := In_Pos + 1;
         end loop;
         Nb_Literals := Nb_Literals + Ll_Natural (Input(In_Pos));
@@ -470,8 +472,8 @@ package body Lz4L is
       -- Get match length
       Nb_Match := Token and 16#0F#;
       if Nb_Match >= 15 then
-        while Input(In_Pos) = 255 loop
-           Nb_Match := Nb_Match + 255;
+        while Input(In_Pos) = 16#FF# loop
+           Nb_Match := Nb_Match + 16#FF#;
            In_Pos := In_Pos + 1;
         end loop;
         Nb_Match := Nb_Match + Ll_Natural (Input(In_Pos));
@@ -484,8 +486,8 @@ package body Lz4L is
       end if;
       --#@EndifDef
 
-      -- Copy matching sequence from Output to Output
-      -- Areas may overlap! so we must copy byte per byte
+      -- Copy matching sequence from *Output* to Output
+      -- Arrays may overlap! so we must copy byte per byte
       Ref := Out_Pos - Off;
       for I in 1 .. Nb_Match loop
         Output(Out_Pos) := Output(Ref);

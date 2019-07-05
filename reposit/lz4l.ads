@@ -1,10 +1,11 @@
 with C_Types, Long_Longs;
--- Lz4-like compression of large buffer
--- The algorithm is similar but enhanced to support large reference offset, so
---  the compressed format is not compatible with lz4
+-- Lz4-like compression of large buffer.
+-- The algorithm is quite similar to lz4, but enhanced to support large
+--  reference offset (see implementation details in the body).
+-- As a consequence, the compressed format is not compatible with lz4.
 package Lz4L is
 
-  -- An array of bytes to (un)compress
+  -- A (large) array of bytes to (un)compress
   subtype Ll_Natural is Long_Longs.Ll_Natural;
   subtype Ll_Positive is Long_Longs.Ll_Positive;
   subtype Byte is C_Types.Byte;
