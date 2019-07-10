@@ -67,18 +67,19 @@ procedure Azf is
   Inb, Outb : Buffer_Access;
   Inl, Outl, Expected: Natural;
 
-  procedure Parse_Size (Str : in String) is
+  function Parse_Size (Str : in String) return Boolean is
   begin
     Buffer_Size := Positive'Value (Str);
     if Buffer_Size > Max_Buffer_Size then
       Error ("Buffer size too large (Max "
            & Images.Integer_Image (Max_Buffer_Size) & ")");
-      return;
+      return False;
     end if;
+   return True;
   exception
     when others =>
       Error ("Invalid buffer size");
-      return;
+      return False;
   end Parse_Size;
 
   -- Read at most N bytes, return the number of bytes read
@@ -149,7 +150,9 @@ begin
     return;
   end if;
   if Arg_Dscr.Is_Set (4) then
-    Parse_Size (Arg_Dscr.Get_Option (4));
+    if not Parse_Size (Arg_Dscr.Get_Option (4)) then
+      return;
+    end if;
   elsif Arg_Dscr.Is_Set (5) then
     Header_Mode := True;
   end if;
