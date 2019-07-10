@@ -12,7 +12,7 @@ package Lz4L is
   type Byte_Array is array (Ll_Positive range <>) of Byte;
 
   -- Compress Input into Output
-  -- Outlen is at most an extra 8 MBbs for 2 GB (0.4%)
+  -- Outlen is at most an extra 80 MBbs for 2 GB (4%)
   -- May raise Too_Big if Output is too small
   procedure Compress (Input  : in Byte_Array;
                       Output : out Byte_Array;
