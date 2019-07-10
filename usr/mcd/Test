@@ -148,7 +148,7 @@ echo "OK"
 
 title chat
 launch chat &
-sleep 2
+sleep 5
 stop
 sleep 0.5
 echo "OK"

@@ -9,28 +9,30 @@ ssize 0 /=
 
 # Init sentence start: the cat
 # ###################
-# Stored in registers C and F, themselves stored in b[1..2]
-2 M popr F b 1 popa C b 2 popa
+# Stored in registers C, F, Q and V, themselves stored in b[1..4]
+4 M popr F b 1 popa C b 2 popa Q b 3 popa V b 4 popa
 "Le petit chat Fada" b 1 pusha popr
 "La petite chatte Circé" b 2 pusha popr
+"Le petit chat Quantum" b 3 pusha popr
+"La petite chatte Valla" b 4 pusha popr
 
 # Init sentence end: the activity, stored in a[1..N]
 # #################
 # Function for error in data format
-[ "Error in data file" putl ssize popn 1 setexit retall ] E popr
+[ "Error in data file, line """ put t pushr put """." putl
+ssize popn 1 setexit retall ] E popr
 
 # Function to process an activity: skip, check and store
 [ t copyr
 # skip comment or empty line
 strlen 0 = ifret
 t pushr 1 1 strsub "#" = ifret
-# Check format at least 2 chars
-t pushr strlen 2 < E pushr ifcall
-# First char is C, F or R
-t pushr 1 1 strsub dup "C" /= pope dup "F" /= pope "R" /= pope
-pushle pushle pushle & & E pushr ifcall
-# Second char is space
-t pushr 2 2 strsub " " /= E pushr ifcall
+# First char is not space
+t pushr 1 1 strsub " " = E pushr ifcall
+# First chars are  C, F, Q or V, then spaces then ": "
+t pushr "^C?F?Q?V? +: [^ ]+" regmatch 1 /= E pushr ifcall
+# 6th char is ":"
+t pushr 6 6 strsub ":" /= E pushr ifcall
 # Update counter and store activity in array a[1..N]
 t pushr a N pushr 1 + N copyr popa
 ] T popr
@@ -63,22 +65,23 @@ clock t popr
 # Begin
 # #####
 # Display number of activities read
-"Il y a " put 2 format N pushr put " attitudes:" putl
+"Il y a " put 1 format M pushr put " chats et " put
+2 format N pushr put " attitudes:" putl
 
 # Main loop
 0 i popr
 [
 # Set random end of sentence and put num
 rnd N pushr toreal * trunc 1 +
-2 format dup put " " put
-# Get first letter of sentence,
-dup a swap pusha 1 1 strsub strregi
-# If corresponding register is R then set random
-dup R = [ pop b rnd M pushr toreal * trunc 1 + pusha ] ifcall
-# Display start of sentence, in Y + offset
-pushr put " " put
+2 format dup put ": " put
+# Get first letters of sentence (locate first space)
+a swap pusha dup dup 1 " "  strloc 
+# Select one randomly and retrieve start of sentence
+1 - toreal rnd * trunc 1 + dup strsub strregi
+# Display start of sentence
+pushr put
 # Display end of sentence
-a swap pusha 1 2 strdel put "." putl
+1 6 strdel put "." putl
 # Increment counter
 i pushr 1 + i popr
 # Wait a bit
