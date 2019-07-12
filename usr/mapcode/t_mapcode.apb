@@ -14,25 +14,31 @@ procedure T_Mapcode is
     Ada.Text_Io.Put_Line (
       "Usage: " & Ada.Command_Line.Command_Name & " <command>");
     Ada.Text_Io.Put_Line (
-      "  -h                                         // This help");
+      "  -h                                             // This help");
     Ada.Text_Io.Put_Line (
-      "  -t <territory>                             // Territory info");
+      "  -t <territory>                                 // Territory info");
     Ada.Text_Io.Put_Line (
-      "  -s <name>                                  // Search territory");
+      "  -s <name>                                      // Search territory");
     Ada.Text_Io.Put_Line (
-      "  -d  <territory_mapcode>                    // Decode");
+      "  -d  <territory_mapcode>                        // Decode");
     Ada.Text_Io.Put_Line (
-      "  -c <lat> <lon> [ <options> ]               // Encode");
+      "  -c <lat> <lon> [ <options> ]                   // Encode");
     Ada.Text_Io.Put_Line (
-      "  -a  <territory_mapcode> [ <options> ]      // Alternative mapcodes");
+      "  -a  <territory_mapcode> [ <options> ]          // Alternative mapcodes");
     Ada.Text_Io.Put_Line (
       "  <territory_mapcode> ::= <territory>:<mapcode> | [ <territory> ] <mapcode>");
     Ada.Text_Io.Put_Line (
       "  <options>           ::= [ <territory> ] [ <selection> ] [ <precision> ]");
     Ada.Text_Io.Put_Line (
-      "  <selection>         ::= [ all | local ]    // Default short");
+      "  <selection>         ::= [ all | local | short] // Default short");
     Ada.Text_Io.Put_Line (
-      "  <precision>         ::= P0 | P1 | P2");
+      "                      // Default: one mapcode (the shortest) of each territory");
+    Ada.Text_Io.Put_Line (
+      "                      // all: all the mapcodes of all territories");
+    Ada.Text_Io.Put_Line (
+      "                      // local: the shortest among all the mapcodes");
+    Ada.Text_Io.Put_Line (
+      "  <precision>         ::= P0 | P1 | P2       // Default P0");
   end Usage;
 
   function Integer_Image (I : Integer) return String is
@@ -219,6 +225,8 @@ begin
           -- One (shortest) mapcode for each territory,
           --  sorted i.o. to put the first one
           Sorted := True;
+        elsif Lower_Str (Arg1.Image) = "short" then
+          null;
         elsif Arg1.Length = 2
         and then Arg1.Element (1) = 'P'
         and then Arg1.Element (2) >= '0'
