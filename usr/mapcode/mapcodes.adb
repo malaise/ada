@@ -2470,8 +2470,8 @@ package body Mapcodes is
     if not Sort then
       return Result;
     end if;
-    -- Search shosrtest mapcode (First) and the Last mapcode for the
-    -- same territoy
+    -- Search shortest mapcode (First) and the last mapcode for the
+    -- same territory as First
     for I in Result'Range loop
       if Result(I).Mapcode.Length < Len then
         First := I;
