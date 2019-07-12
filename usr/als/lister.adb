@@ -38,7 +38,7 @@ package body Lister is
                           Show_Targets : in Boolean;
                           Date1, Date2 : in Entities.Date_Spec_Rec;
                           Utc : in Boolean) is
-    use Trilean;
+    use all type Trilean.Trilean;
   begin
     Lister.Only_Dirs := Only_Dirs;
     Lister.Only_Files := Only_Files;
@@ -148,7 +148,7 @@ package body Lister is
                   File_Rights : Natural) return Boolean is
     Can_Read, Can_Write, Can_Exec : Boolean;
     function Match (Crit : Trilean.Trilean; Can : Boolean) return Boolean is
-      use Trilean;
+      use all type Trilean.Trilean;
     begin
       -- Always True if Crit is Other, otherwise True if Can = Crit;
       return (if Crit = Other then True else Can = Tri2Boo (Crit));

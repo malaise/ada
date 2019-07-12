@@ -861,7 +861,7 @@ package body Af_Ptg is
     Char : Unicode_Number;
     Index : Natural;
 
-    use type Con_Io.Curs_Mvt, Afpx.Absolute_Field_Range;
+    use type Afpx.Absolute_Field_Range;
 
   begin
     -- For callback of list init

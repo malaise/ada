@@ -12,7 +12,7 @@ package body Grid_2 is
 
   procedure Initialize (Key_Length, Text_Length : in My_Math.Inte) is
     R : My_Math.Real;
-    use My_Math;
+    use all type My_Math.Real;
   begin
     R := My_Math.Real(Key_Length) + My_Math.Real(Text_Length);
     Dimension := Trunc(My_Math.Sqrt(R)) + 1;

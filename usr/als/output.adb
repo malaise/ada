@@ -226,7 +226,8 @@ package body Output is
   Default_Char : constant Character := ' ';
   function Char_Of (Kind : Directory.File_Kind_List;
                     Rights : Natural) return Character is
-    use Directory, Bit_Ops;
+    use Bit_Ops;
+    use all type Directory.File_Kind_List;
   begin
     case Kind is
       when File =>

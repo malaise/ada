@@ -75,7 +75,7 @@ clock t popr
 rnd N pushr toreal * trunc 1 +
 2 format dup put ": " put
 # Get first letters of sentence (locate first space)
-a swap pusha dup dup 1 " "  strloc 
+a swap pusha dup dup 1 " "  strloc
 # Select one randomly and retrieve start of sentence
 1 - toreal rnd * trunc 1 + dup strsub strregi
 # Display start of sentence

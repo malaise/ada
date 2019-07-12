@@ -43,8 +43,8 @@ function Sok_Menu (Done : Boolean) return Menu_Result_List is
     Sok_Time.Disp_Time;
   end Redisplay;
 
-  use Sok_Display;
-  use type Sok_Input.Key_List;
+  use all type Sok_Display.Error_List;
+  use type Sok_Input.Key_List, Sok_Display.Action_List;
 begin
   Sok_Display.Clear_Menu;
   Sok_Display.Put_Menu (Cur_Action, True);

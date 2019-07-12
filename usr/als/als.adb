@@ -266,7 +266,7 @@ begin
       procedure Set (I : in Lister.Rights_List; Key : in Character) is
          Char : constant Character
               := Str.Element(Lister.Rights_List'Pos(I) + 1);
-        use Trilean;
+        use all type Trilean.Trilean;
       begin
         -- key ('r', 'w', or 'x') => needs access, '-' => needs no access
         -- '*' => no criteria

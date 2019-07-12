@@ -313,7 +313,7 @@ package body Lz4L is
             Out_Pos := Out_Pos + 1;
           end loop;
           -- Encode highest bit set, then length-1
-          Output(Len_Pos) := Byte (16#80# or (Out_Pos - Len_Pos - 1));
+          Output(Len_Pos) := Byte (16#80# or Out_Pos - Len_Pos - 1);
           Out_Pos := Out_Pos + 1;
         end if;
 

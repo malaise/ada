@@ -1,5 +1,6 @@
 with Nav_Data, Nav_Screen;
-use  Nav_Data, Nav_Screen;
+use  Nav_Screen;
+use all type Nav_Data.T_List_Data;
 procedure T_Scr is
   Act : Action;
   B : Boolean;

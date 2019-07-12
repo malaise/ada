@@ -607,12 +607,11 @@ begin
   -----------------
   declare
     Parse_Ok : Boolean;
-    use Xml_Parser;
   begin
     -- Parse. Not normalize to preserve empty lines
     Xml.Parse (Input_File_Name.Image, Parse_Ok,
                Comments => True,
-               Cdata => Keep_Cdata_Section,
+               Cdata => Xml_Parser.Keep_Cdata_Section,
                Expand => False,
                Normalize => False,
                Use_Dtd => True, Dtd_File  => "",

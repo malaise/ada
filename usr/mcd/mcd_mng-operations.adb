@@ -2,7 +2,7 @@ with Bit_Ops;
 separate (Mcd_Mng)
 
 package body Operations is
-  use My_Math;
+  use all type My_Math.Real;
 
   function Is_True (X : Item_Rec) return Boolean is
   begin

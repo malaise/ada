@@ -21,7 +21,9 @@ package body Sok_Input is
     Pos  : Positive;
     Ins  : Boolean;
 
-    use Con_Io;
+    use type Con_Io.Mouse_Button_List;
+    use all type Con_Io.Curs_Mvt, Con_Io.Mouse_Button_Status_List;
+
   begin
     if not Console.Is_Open then
       Console := Sok_Display.Get_Console;
@@ -109,7 +111,7 @@ package body Sok_Input is
     Pos  : Positive;
     Ins  : Boolean;
 
-    use Con_Io;
+    use all type Con_Io.Extra_Mvt;
   begin
     if not Console.Is_Open then
       Console := Sok_Display.Get_Console;

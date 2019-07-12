@@ -7,7 +7,7 @@ procedure Ddir is
     Dir_Dsc : Directory.Dir_Desc;
     Entry_Name : As.U.Asu_Us;
     Kind : Directory.File_Kind_List;
-    use Directory;
+    use type Directory.File_Kind_List;
   begin
     begin
       Dir_Dsc.Open (Dir_Name);
