@@ -44,7 +44,7 @@ fulltest"
 
 # Add Copyright headers and copy in TARGET
 H[1]=' -----------------------------------------------------------------------------'
-H[2]=' Copyright (C) 2003-2018 Stichting Mapcode Foundation (http://www.mapcode.com)'
+H[2]=' Copyright (C) 2003-2019 Stichting Mapcode Foundation (http://www.mapcode.com)'
 H[3]=' '
 H[4]=' Licensed under the Apache License, Version 2.0 (the "License");'
 H[5]=' you may not use this file except in compliance with the License.'
