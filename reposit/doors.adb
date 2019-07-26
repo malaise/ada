@@ -43,7 +43,7 @@ package body Doors is
   procedure Check_Access (A_Door : in Door) is
   begin
     if not A_Door.Door_Pointer.Cond.Is_Owner then
-      raise Not_Owner;
+      raise No_Access;
     end if;
   end Check_Access;
 

@@ -3,8 +3,8 @@ package Doors is
 
   -- A door is a waiting point on which one or several tasks may
   --  wait until the required number of waiters is reached.
-  -- A door is open at creation (Nb_Waiters = 1)
-  -- A door can be completely closed (Nb_Waiters = 0)
+  -- A door can be fully open (Nb_Waiters = 1)
+  -- A door is completely closed at creation (Nb_Waiters = 0)
   type Door is tagged private;
 
 
@@ -21,14 +21,13 @@ package Doors is
   procedure Get (A_Door : in Door);
 
   -- Release access to the door
-  -- Raises Not_Owner if current task does not own the access
-  Not_Owner : exception renames Conditions.Not_Owner;
+  -- Raises No_Access if current task does not own the access
+  No_Access : exception renames Conditions.No_Access;
   procedure Release (A_Door : in Door);
 
 
   -- All the following operations require the caller to own the access
   -- to the door, otherwise they raise No_Access
-  No_Access : exception;
 
   -- Get/Set the number of waiters (door access should have been granted)
   -- Set the expected number of waiters
@@ -72,7 +71,7 @@ private
 
   type Door_Rec is record
     -- The expected number of waiters
-    Expected : Natural := 1;
+    Expected : Natural := 0;
     -- The current number of waiters
     Current : Natural := 0;
     -- The condition on which waiters are waiting

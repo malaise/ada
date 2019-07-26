@@ -7,7 +7,6 @@ package Conditions is
   --  (broadcast).
   type Condition is tagged private;
 
-
   -- Before waiting on a condition the user must get access to it
   -- By starting to wait the application automatically releases the exclusive
   --  access to the condition
@@ -24,8 +23,8 @@ package Conditions is
   procedure Get (A_Condition : in Condition);
 
   -- Release access to the condition
-  -- Raises Not_Owner if current task does not own the access
-  Not_Owner : exception;
+  -- Raises No_Access if current task does not own the access
+  No_Access : exception;
   procedure Release (A_Condition : in Condition);
 
   -- Does current task have the access to the condition
@@ -44,7 +43,6 @@ package Conditions is
   --   task does not have access to the condition
   -- The calling task must have already got access the the condition, otherwise
   --   No_Access is raised
-  No_Access : exception;
   function Wait (A_Condition  : Condition;
                  Waiting_Time : Duration;
                  Key : Key_Type := Fake) return Boolean;

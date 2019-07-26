@@ -22,7 +22,7 @@ package body Conditions is
       -- The mutex must be acquired
       if Free
       or else Ada.Task_Identification.Current_Task /= Owner then
-        raise Not_Owner;
+        raise No_Access;
       end if;
       Free := True;
     end Release;
