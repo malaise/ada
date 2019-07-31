@@ -430,6 +430,9 @@ input_buffer (1)::
 ip_addr (1)::
      Parse IP address or port.
 
+k_rand (2)::
+     Kiss random number generator.
+
 key_pressed (1)::
      Uses Sys_Calls handling of stdin to get a character asynchronously.
 

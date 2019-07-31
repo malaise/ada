@@ -2,6 +2,8 @@
 private with Mutexes;
 --#@IfDef Urand
 private with U_Rand;
+--#@ElsifDef Krand
+private with K_Rand;
 --#@EndifDef
 package Rnd is
 
@@ -54,6 +56,8 @@ private
     Lock : Mutexes.Simple_Mutex;
 --#@IfDef Urand
     Ugen : U_Rand.Generator;
+--#@ElsifDef Krand
+    Kgen : K_Rand.Generator;
 --#@ElseDef
     Rnd_Nbre : Float := 0.0;
 --#@EndifDef
