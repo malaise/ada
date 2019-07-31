@@ -7,7 +7,6 @@ with System.Bit_Ops;
 pragma Warnings (On,  "* is an internal GNAT unit");
 
 with Interfaces;
-with C_Types;
 
 package body Bit_Ops is
 
@@ -150,6 +149,21 @@ package body Bit_Ops is
 
   function Shr (Val : Ll_Integer; Bits : Integer) return Ll_Integer is
     (To_Ll_Integer(Interfaces.Shift_Right (To_Unsigned_64(Val), Bits)));
+
+  -- Uint32
+  function Shl (Val : Uint32; Bits : Integer) return Uint32 is
+    (Uint32(Interfaces.Shift_Left (Interfaces.Unsigned_32(Val), Bits)));
+
+  function Shr (Val : Uint32; Bits : Integer) return Uint32 is
+    (Uint32(Interfaces.Shift_Right (Interfaces.Unsigned_32(Val), Bits)));
+
+
+  -- Uint64
+  function Shl (Val : Uint64; Bits : Integer) return Uint64 is
+    (Uint64(Interfaces.Shift_Left (Interfaces.Unsigned_64(Val), Bits)));
+
+  function Shr (Val : Uint64; Bits : Integer) return Uint64 is
+    (Uint64(Interfaces.Shift_Right (Interfaces.Unsigned_64(Val), Bits)));
 
 end Bit_Ops;
 

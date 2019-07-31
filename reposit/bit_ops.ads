@@ -1,5 +1,5 @@
 -- Bit operations
-with Long_Longs;
+with Long_Longs, C_Types;
 package Bit_Ops is
 
   -- Bit and, bit or, bit neg, shift left and shift right
@@ -41,6 +41,19 @@ package Bit_Ops is
   function Shl (Val : Ll_Integer; Bits : Integer) return Ll_Integer
     with Inline => True;
   function Shr (Val : Ll_Integer; Bits : Integer) return Ll_Integer
+    with Inline => True;
+
+  -- Operations on Uint32
+  use C_Types;
+  function Shl (Val : Uint32; Bits : Integer) return Uint32
+    with Inline => True;
+  function Shr (Val : Uint32; Bits : Integer) return Uint32
+    with Inline => True;
+
+  -- Operations on Uint64
+  function Shl (Val : Uint64; Bits : Integer) return Uint64
+    with Inline => True;
+  function Shr (Val : Uint64; Bits : Integer) return Uint64
     with Inline => True;
 
 end Bit_Ops;
