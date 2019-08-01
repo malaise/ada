@@ -1671,6 +1671,30 @@ EOF
   echo "OK"
 fi
 
+# t_rnd
+if `match $arg t_rnd` ; then
+  title t_rnd
+  cat << EOF >exp
+Total: 1000
+EOF
+  try t_rnd Basic
+  comp err nul
+  tail -1 out > out1
+  comp out1 exp
+
+  try t_rnd Universal
+  comp err nul
+  tail -1 out > out1
+  comp out1 exp
+
+  try t_rnd Kiss
+  comp err nul
+  tail -1 out > out1
+  comp out1 exp
+  echo "OK"
+fi
+
+
 # t_scanner
 if `match $arg t_scanner` ; then
   title t_scanner

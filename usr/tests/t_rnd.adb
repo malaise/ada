@@ -3,7 +3,7 @@ procedure T_Rnd is
 
   -- t_rnd [ <kind> ] [ <max> ]
 
-  type Color is (Bleu, Rouge, Jaune, Violet, Vert, Orange, Blanc, Noir);
+  type Color is (Blue, Red, Yellow, Purple, Green, Orange, White, Black);
 
   function My_Random is new Rnd.Discr_Random (Color);
 
@@ -16,12 +16,9 @@ procedure T_Rnd is
   Tot : Natural := 0;
   G : access Rnd.Generator;
 
-  use type Rnd.Kind_List;
-begin
-  -- Help
-  if Argument.Get_Nbre_Arg = 1 and then
-    (Argument.Get_Parameter = "-h" or else Argument.Get_Parameter = "--help")
-  then
+  procedure Help is
+    use type Rnd.Kind_List;
+  begin
     Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
       & " [ <kind> ] [ <max_val> ]");
     Basic_Proc.Put_Output ("  <kind> ::= ");
@@ -31,6 +28,15 @@ begin
     end loop;
     Basic_Proc.New_Line_Output;
     Basic_Proc.Put_Line_Output ("Random 0 <= I < max_val, or random colors");
+    Basic_Proc.Set_Error_Exit_Code;
+  end Help;
+
+begin
+  -- Help
+  if Argument.Get_Nbre_Arg = 1 and then
+    (Argument.Get_Parameter = "-h" or else Argument.Get_Parameter = "--help")
+  then
+    Help;
     return;
   end if;
 
@@ -49,29 +55,34 @@ begin
   G := new  Rnd.Generator (Kind);
   G.Randomize;
 
-  -- If a max_val
   if Argument.Get_Nbre_Arg = Start then
+    -- One arg => max_val
     Basic_Proc.Put_Line_Output (Images.Integer_Image (
         G.Int_Random (0, Integer'Value (Argument.Get_Parameter
                                           (Occurence => Start)))));
     return;
+  elsif Argument.Get_Nbre_Arg = Start - 1 then
+    -- No arg => play with colors: random except first and last of enum
+    for I in 1 .. 1_000 loop
+      Try := My_Random (G.all, Color'Succ(Color'First), Color'Pred(Color'Last));
+      Arr(Try) := Arr(Try) + 1;
+    end loop;
+    for I in Color loop
+      Basic_Proc.Put_Output (Color'Image (I));
+      Basic_Proc.Put_Output (" -> ");
+      Basic_Proc.Put_Output (Arr(I)'Img);
+      Tot := Tot + Arr (I);
+      Basic_Proc.New_Line_Output;
+    end loop;
+    Basic_Proc.Put_Output ("Total:" );
+    Basic_Proc.Put_Output (Tot'Img);
+    Basic_Proc.New_Line_Output;
+  else
+    raise Constraint_Error;
   end if;
 
-  -- Play with colors: random except first and last of enum
-  for I in 1 .. 1_000 loop
-    Try := My_Random (G.all, Rouge, Blanc);
-    Arr(Try) := Arr(Try) + 1;
-  end loop;
-  for I in Color loop
-    Basic_Proc.Put_Output (Color'Image (I));
-    Basic_Proc.Put_Output (" -> ");
-    Basic_Proc.Put_Output (Arr(I)'Img);
-    Tot := Tot + Arr (I);
-    Basic_Proc.New_Line_Output;
-  end loop;
-  Basic_Proc.Put_Output ("Total:" );
-  Basic_Proc.Put_Output (Tot'Img);
-  Basic_Proc.New_Line_Output;
-
+exception
+  when others =>
+    Help;
 end T_Rnd;
 
