@@ -13,7 +13,7 @@ procedure Random is
 
   Error : exception;
 
-  Mgen : Rnd.Generator;
+  Mgen : Rnd.Generator (Rnd.Kiss);
 
 begin
 

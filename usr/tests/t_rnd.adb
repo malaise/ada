@@ -1,35 +1,75 @@
-with Argument, Rnd, Basic_Proc, Images;
+with Argument, Rnd, Basic_Proc, Images, Mixed_Str;
 procedure T_Rnd is
 
-  type Couleur is (Bleu, Rouge, Jaune, Violet, Vert, Orange, Blanc, Noir);
+  -- t_rnd [ <kind> ] [ <max> ]
 
-  function My_Random is new Rnd.Discr_Random (Couleur);
+  type Color is (Bleu, Rouge, Jaune, Violet, Vert, Orange, Blanc, Noir);
 
-  Tableau : array (Couleur) of Natural := (others => 0);
+  function My_Random is new Rnd.Discr_Random (Color);
 
-  Essai : Couleur;
+  Arr : array (Color) of Natural := (others => 0);
+
+  Kind : Rnd.Kind_List;
+  Try : Color;
+  Start : Positive := 1;
 
   Tot : Natural := 0;
-  G : Rnd.Generator;
+  G : access Rnd.Generator;
+
+  use type Rnd.Kind_List;
 begin
-  G.Randomize;
-  if Argument.Get_Nbre_Arg = 1 then
-    Basic_Proc.Put_Line_Output (Images.Integer_Image (
-        G.Int_Random (0, Integer'Value (Argument.Get_Parameter))));
+  -- Help
+  if Argument.Get_Nbre_Arg = 1 and then
+    (Argument.Get_Parameter = "-h" or else Argument.Get_Parameter = "--help")
+  then
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
+      & " [ <kind> ] [ <max_val> ]");
+    Basic_Proc.Put_Output ("  <kind> ::= ");
+    for K in Rnd.Kind_List loop
+      Basic_Proc.Put_Output (Mixed_Str (K'Img)
+        & (if K /= Rnd.Kind_List'Last then " | " else ""));
+    end loop;
+    Basic_Proc.New_Line_Output;
+    Basic_Proc.Put_Line_Output ("Random 0 <= I < max_val, or random colors");
     return;
   end if;
+
+  if Argument.Get_Nbre_Arg >= 1 then
+    -- Try to get optional kind
+    begin
+      Kind := Rnd.Kind_List'Value (Argument.Get_Parameter(Occurence => 1));
+      Start := 2;
+    exception
+      when others => null;
+     end;
+  end if;
+  if Start = 1 then
+    Kind := Rnd.Universal;
+  end if;
+  G := new  Rnd.Generator (Kind);
+  G.Randomize;
+
+  -- If a max_val
+  if Argument.Get_Nbre_Arg = Start then
+    Basic_Proc.Put_Line_Output (Images.Integer_Image (
+        G.Int_Random (0, Integer'Value (Argument.Get_Parameter
+                                          (Occurence => Start)))));
+    return;
+  end if;
+
+  -- Play with colors: random except first and last of enum
   for I in 1 .. 1_000 loop
-    Essai := My_Random (G, Rouge, Blanc);
-    Tableau(Essai) := Tableau(Essai) + 1;
+    Try := My_Random (G.all, Rouge, Blanc);
+    Arr(Try) := Arr(Try) + 1;
   end loop;
-  for I in Couleur loop
-    Basic_Proc.Put_Output (Couleur'Image (I));
+  for I in Color loop
+    Basic_Proc.Put_Output (Color'Image (I));
     Basic_Proc.Put_Output (" -> ");
-    Basic_Proc.Put_Output (Tableau (I)'Img);
-    Tot := Tot + Tableau (I);
+    Basic_Proc.Put_Output (Arr(I)'Img);
+    Tot := Tot + Arr (I);
     Basic_Proc.New_Line_Output;
   end loop;
-  Basic_Proc.Put_Output ("total:" );
+  Basic_Proc.Put_Output ("Total:" );
   Basic_Proc.Put_Output (Tot'Img);
   Basic_Proc.New_Line_Output;
 

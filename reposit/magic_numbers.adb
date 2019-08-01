@@ -3,7 +3,7 @@ with Rnd;
 package body Magic_Numbers is
 
   -- The generator of Lmn
-  Generator : Rnd.Generator;
+  Generator : Rnd.Universal_Generator;
   function Magic_Long_Random is new Rnd.Mod_Random (Magic_Long);
 
   -- At first call, initialize the random number generator
