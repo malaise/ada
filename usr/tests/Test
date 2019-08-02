@@ -1677,17 +1677,17 @@ if `match $arg t_rnd` ; then
   cat << EOF >exp
 Total: 1000
 EOF
-  try t_rnd Basic
+  try t_rnd -g Simple -c
   comp err nul
   tail -1 out > out1
   comp out1 exp
 
-  try t_rnd Universal
+  try t_rnd -g Universal -c
   comp err nul
   tail -1 out > out1
   comp out1 exp
 
-  try t_rnd Kiss
+  try t_rnd -g Kiss -c
   comp err nul
   tail -1 out > out1
   comp out1 exp
