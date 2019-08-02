@@ -12,7 +12,7 @@ package Scanner is
   -- The format is a string that relies on the following types (<type>):
   -- b : Boolean
   -- t : Trilean
-  -- l : Long long integer (Long_Longs.ll_Integer)
+  -- l : Long long integer (Long_Longs.Ll_Integer)
   -- d : Duration
   -- r : Real (My_Math.Real)
   -- s : String (As.U.Asu_Us)
@@ -51,7 +51,7 @@ package Scanner is
 
   -- A format is invalid if:
   -- - it contains an unsupported "%[<len>]<type>" sequence
-  -- - it ends with the character '%'
+  -- - it ends with the character '%' (except "%%", "%%%%"...))
   -- - the "%s" sequence appears somewhere else than at the end of the format
 
   -- Compute the length of data induced by Format
