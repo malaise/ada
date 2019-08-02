@@ -1,12 +1,9 @@
--- Marsaglia's KISS (Keep It Simple Stupid) random number generator
+-- Marsaglia's simple MWC (Multiply With Carry) random number generator
 with C_Types;
-package K_Rand is
+package S_Rand is
   subtype Natural_Val is C_Types.Uint32;
-  subtype Positive_Val is Natural_Val range 1 .. Natural_Val'Last;
 
   Default_W : constant := 916_191_069;
-  Default_X : constant := 123_456_789;
-  Default_Y : constant := 362_436_069;
   Default_Z : constant := 521_288_629;
 
   -- A random generator
@@ -15,9 +12,7 @@ package K_Rand is
   -- Initialize the generator with given values
   procedure Start (Gen : in out Generator;
                    New_W : in Natural_Val  := Default_W;
-                   New_X : in Positive_Val := Default_X;
-                   New_Y : in Positive_Val := Default_Y;
-                   New_Z : in Positive_Val := Default_Z);
+                   New_Z : in Natural_Val := Default_Z);
 
  -- Get a random value
  -- First call to Next on a not-started generator starts it with
@@ -29,10 +24,8 @@ private
   type Generator is tagged record
     Started : Boolean := False;
     W : Natural_Val;
-    X : Positive_Val;
-    Y : Positive_Val;
-    Z : Positive_Val;
+    Z : Natural_Val;
   end record;
 
-end K_Rand;
+end S_Rand;
 

@@ -1,5 +1,5 @@
 with System;
-with Long_Longs, C_Types, My_Math;
+with Long_Longs, C_Types;
 package body Rnd is
 
   function C_Gettimeofday (Tv : System.Address; Tz : System.Address)
@@ -50,8 +50,9 @@ package body Rnd is
 
     Dummy_Ok := Agen.Lock.Get (-1.0);
     case Agen.Kind is
-      when Basic =>
-        Agen.Rnd_Nbre := F;
+      when Simple =>
+        Agen.Sgen.Start (New_W =>
+          K_Rand.Natural_Val (F * Float(K_Rand.Natural_Val'Last - 1) + 1.0));
       when Universal =>
         Agen.Ugen.Start (New_I =>
           U_Rand.Seed_Range_1 (F * Float(U_Rand.Seed_Range_1'Last - 1) + 1.0));
@@ -79,26 +80,13 @@ package body Rnd is
                    Mini : in Float := 0.0; Maxi : in Float := 1.0)
                   return Float is
 
-    -- Native next random value
-    procedure Next (Nbre : in out Float) is
-      Nbre_2 : Float;
-    begin
-      -- (N + Pi)**5
-      Nbre := Nbre + My_Math.Pi;
-      Nbre_2 := Nbre * Nbre;
-      Nbre := Nbre_2 * Nbre_2 * Nbre;
-      -- Decimal part
-      Nbre := Nbre - Float(My_Math.Trunc(My_Math.Real(Nbre)));
-    end Next;
-
     Val : Float;
     Dummy_Ok : Boolean;
   begin
     Dummy_Ok := Agen.Lock.Get (-1.0);
     case Agen.Kind is
-      when Basic =>
-        Next (Agen.Rnd_Nbre);
-        Val := Agen.Rnd_Nbre;
+      when Simple =>
+        Agen.Sgen.Next (Val);
       when Universal =>
         Agen.Ugen.Next (Val);
       when Kiss =>

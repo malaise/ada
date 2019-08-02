@@ -1,17 +1,21 @@
 -- Pseudo random number generator
 private with Mutexes;
-private with U_Rand, K_Rand;
+private with K_Rand, S_Rand, U_Rand;
 package Rnd is
 
   -- Kind of generator
-  type Kind_List is (Basic, Universal, Kiss);
+  type Kind_List is (Simple, Kiss, Universal);
 
   -- A random generator, protected by a mutex
   type Generator (Kind : Kind_List) is tagged limited private;
 
-  -- A common global universal generator
+  -- Kinds of generators
+  subtype Simple_Generator    is Generator (Simple);
+  subtype Kiss_Generator      is Generator (Kiss);
   subtype Universal_Generator is Generator (Universal);
-  Gen : constant access Universal_Generator;
+
+  -- A common global Simple generator
+  Gen : constant access Simple_Generator;
 
   -- Initialisation of the sequence,
   --   on  Init if 0.0 <= Init < 1.0
@@ -55,8 +59,8 @@ private
     Randomized : Boolean := False;
     Lock : Mutexes.Simple_Mutex;
     case Kind is
-       when Basic =>
-         Rnd_Nbre : Float := 0.0;
+       when Simple =>
+         Sgen : S_Rand.Generator;
        when Universal =>
          Ugen : U_Rand.Generator;
        when Kiss =>
@@ -65,8 +69,8 @@ private
   end record;
 
   -- A global generator
-  Init : aliased Universal_Generator := (Kind => Universal, others => <>);
-  Gen : constant access Universal_Generator := Init'Access;
+  Init : aliased Simple_Generator := (Kind => Simple, others => <>);
+  Gen : constant access Simple_Generator := Init'Access;
 
 end Rnd;
 

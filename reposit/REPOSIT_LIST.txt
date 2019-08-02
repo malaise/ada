@@ -547,6 +547,9 @@ romanic (1)::
 rounds (1)::
      Round / trunc a float.
 
+s_rand (1)::
+     Simple random number generator.
+
 scanner (2)::
      Scan a string and extract fields according to a given format.
 
