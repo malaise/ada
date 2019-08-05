@@ -166,7 +166,7 @@ begin
       end loop;
       Deviation := My_Math.Sqrt (Deviation / My_Math.Real (Max_Range));
       Basic_Proc.Put_Line_Output ("Standard deviation:"
-          & Normalization.Normal_Fixed (Deviation, 6, 3) & " in "
+          & Normalization.Normal_Fixed (Deviation, 6, 3, '0') & " in "
           &  Images.Dur_Image (Dur));
   end case;
 
