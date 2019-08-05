@@ -42,7 +42,7 @@ package Scanner is
   --  otherwise the leading [ ]* is not allowed
   -- "%%" denotes the character '%'
   -- Any other character in the format denotes the same character expected in
-  --  the data
+  --  the data, which will be checked and skipped by the parsing
   -- Examples:
   -- - "%l%s" will read a long integer as long as possible and will complete
   --    with a string (possibly empty)
