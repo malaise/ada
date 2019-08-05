@@ -241,10 +241,11 @@ Misc::
 - Astat (1) counts the number of instruction of (valid) Ada source files.
 - Azf (1) (un)compress a flow of bytes with Lzf.
 - Day_of_week (1) tells everything on today (or on another day).
-- G (1) is a game where to find the remaining of division by 3.
+- G (1) a game where to find the remaining of division by 3.
 - Lenv (1) lists environment variables whose name match a criteria.
 - Prime (1) searches prime numbers.
 - Renamer (1) is a 'Afpx' based HMI to rename files.
+- Stats (2) scans columns of values and computes average and deviation.
 - Status (1) evaluates if a target file needs to be rebuilt.
 - Tcping (1) pings in tcp a host:port.
 - Tcp_spy (1) accepts a TCP connection and dumps data received on it.

@@ -11,7 +11,7 @@ EXES := adand add_nums alook arbipas astat azf beep bernouilli \
  comp_vars day_of_week ddir e2f fact full_path g hanoi \
  impot_04 lenv alz4l mlbx_overflow one_of_arg pascal pingpong prime \
  random relay renamer \
- second statfile status strcase tcping trail_spaces udp_spy \
+ second statfile stats status strcase tcping trail_spaces udp_spy \
  wait wake \
  astat.stat pingpong.stat \
  tcping.stat tcp_spy udp_spy.stat
@@ -21,6 +21,7 @@ CLIBS_comp_vars := $(PCRE_SLIBS)
 CLIBS_lenv := $(PCRE_SLIBS)
 CLIBS_relay := $(PCRE_SLIBS)
 CLIBS_renamer := $(X11_SLIBS)
+CLIBS_stats := $(PCRE_SLIBS)
 CLIBS_wake := $(PCRE_SLIBS)
 
 LARGS_astat.stat := $(UTILS_ALIBS)
