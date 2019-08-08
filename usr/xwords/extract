@@ -5,7 +5,7 @@
 
 function usage {
   echo "usage: `basename $0` <mode> <file>"
-  echo "<mode> ::= Morphalou | ProLMF | Prolex"
+  echo "<mode> ::= Morphalou | ProLMF2 | ProLMF3 | Prolex"
 }
 
 if [ "$1" = "Morphalou" ] ; then
@@ -14,8 +14,11 @@ if [ "$1" = "Morphalou" ] ; then
 elif [ "$1" = "Prolex" ] ; then
   export CRITERIA='[\B]*(<WordForm|<Lemma)[\B]+writtenForm="([^"]*)".*'
   export REPLACE='\r12'
-elif [ "$1" = "ProLMF" ] ; then
+elif [ "$1" = "ProLMF2" ] ; then
   export CRITERIA='[\B]*<Lemma>([^<]*)</Lemma>[\B]*'
+  export REPLACE='\r11'
+elif [ "$1" = "ProLMF3" ] ; then
+  export CRITERIA='[\B]*<FormRepresentation>([^<]*)</FormRepresentation>[\B]*'
   export REPLACE='\r11'
 elif [ \( "$1" = "-h" \) -o \( "$1" == "--help" \) ] ; then
   usage
