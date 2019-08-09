@@ -1,7 +1,7 @@
 Afpx
 ====
 
-xref:XAfpx[Afpx] is a manager of text-oriented input sceens. +
+xref:XAfpx[Afpx] is a manager of text-oriented input screens. +
 All the screens (descriptors) for an application are described in a XML
 configuration file. A descriptor consists in an optional 'List' and in several
 fields that can be of kind 'Put', 'Get' or 'Button'. +
@@ -20,7 +20,7 @@ Afpx package provides the application with an API that allows:
 
 * Defining which descriptor to use,
 
-* Modifing the colors or content of the list or of fields,
+* Modifing the colors or the content of the list or of fields,
 
 * Launching a Put_Then_Get session that allows the user to navigate in the list,
 to input some text, and to click in buttons,
@@ -58,8 +58,8 @@ AFPX.INI (that contains the initialization strings of the fields).
 If option \'-x' is set, then afpx_bld also generates a file that contains a
 package of cross references. This package contains sub-packages, one for each
 descriptor, each named with the \'Name' attribute provided in the XML
-definition of the descriptor (default \'DSCR_xxx' where xxx is the descriptor
-number on three digits. +
+definition of the descriptor (or by default \'DSCR_xxx' where xxx is the
+descriptor number on three digits). +
 For each package, afpx_bld generates a constant named \'Dscr_Num', with the
 value set to the number of the descriptor mapped by the package.  +
 For each field that has a \'Name' attribute in the XML definition,
@@ -76,6 +76,12 @@ Example:
       Top : constant Afpx.Field_Range := 002;
       Bottom : constant Afpx.Field_Range := 008;
   ...
+
+This allows the application to refer to descriptors and fields by logical
+names instead of numbers. Example:
+
+  Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
+  Afpx.Encode_Field (Afpx_Xref.Main.Symlink, (0, 0), " ");
 
 
 afpx_rnb
@@ -103,7 +109,7 @@ the references (in geometry, init strings or variables) to field numbers.
 The default input file name is \'Afpx.xml' and the default output is to
 overwrite the input.
 
-The descriptor where to perform the operations must be specified.
+The descriptor where to perform the operations *must* be specified.
 
 Action is (one at a time):
 
@@ -115,6 +121,8 @@ Action is (one at a time):
 
 *  or to copy <number> fields from <from_field> included to after <to_field>.
 
+The List cannot be deleted, moved or copied.
+
 By default, afpx_rnb does not allow to delete a field if its number is
 referenced somewhere else in the descriptor. The <force> option overwrites this
 security (and leads reference to be updated as '${Field_0...}'.
@@ -123,5 +131,5 @@ security (and leads reference to be updated as '${Field_0...}'.
 
 * Insert a field as first of descriptor 4: afpx_rnb -D 4 -i 0
 
-* Delete fields 4 to 6 of descriptor 1: afpx_rnb -D 1 -d 3
+* Delete fields 4 to 6 of descriptor 1: afpx_rnb -D 1 -d 4 -n 3
 
