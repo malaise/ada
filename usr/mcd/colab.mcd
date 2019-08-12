@@ -12,7 +12,7 @@
 
 # True debugall
 
-# Check args
+# Function to check an argument
 [ "ERROR: Invalid argument." putl
 "Usage: colab { ""<amount><unit>"" }" putl
 "<unit> ::= my | mm | md | h | kem | kei" putl
@@ -20,10 +20,43 @@
 retall
 ] E popr
 
-# Store factors versus 1 hour: my mm md em ei
-1620.0 y popr 135.0 m popr 7.77 d popr 0.157 a popr 0.107 i popr
+# Function to check a rate: skip empty line and comment
+# Pope  as a real
+[
+dup strlen isnul [ pop 2 retn ] ifcall
+dup 1 1 strsub "#" = [ pop 2 retn ] ifcall
+strreal pope ] R popr
 
-# For title once
+# Read rates from file in Env var COLAB_RATES
+#  Check env var
+"COLAB_RATES" e copyr getenv dup isbool
+[ "ERROR: Env variable " put e pushr put " is not set." putl
+ssize popn 1 setexit retall ] ifcall
+#  Read file
+e copyr readlins i copyr isbool
+[ "ERROR: Cannot read rates from file " put e pushr put "." putl
+ssize popn 1 setexit retall ] ifcall
+#  Parse rates, (pope them)
+[
+i pushr isnul ifret i pushr 1 - i popr
+R pushr call
+P pushr retacal ] P copyr call
+esize 5 /= [ "ERROR: Cannot invalid file content."
+ssize popn 1 setexit retall ] ifcall
+
+# Store factors versus 1 hour: my mm md em ei
+# Hours in 1 (man) year
+pushfe y popr
+# Hours in 1 (man) month
+pushfe m popr
+# Hours in 1 (man) day
+pushfe d popr
+# Cost of one hour Mng
+pushfe a popr
+# Cost of one hour Eng
+pushfe i popr
+
+# For putting the title once
 False t popr
 
 # String image with 7 digits of int part and 1 digit of fraction
