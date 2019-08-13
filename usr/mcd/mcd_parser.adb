@@ -130,8 +130,8 @@ package body Mcd_Parser is
    Isreg    => (Nosy, "push True if A is a register                      ", As.U.Asu_Null, False),
    Isprog   => (Nosy, "push True if A is a subprog                       ", As.U.Asu_Null, False),
    Ispos    => (Nosy, "push True if A >  0 or 0.0                        ", As.U.Asu_Null, False),
-   Isnul    => (Nosy, "push True if A =  0 or 0.0                        ", As.U.Asu_Null, False),
-   Isnotnul => (Nosy, "push True if A /= 0 or 0.0                        ", As.U.Asu_Null, False),
+   Isnull   => (Nosy, "push True if A =  0 or 0.0                        ", As.U.Asu_Null, False),
+   Isntnull => (Nosy, "push True if A /= 0 or 0.0                        ", As.U.Asu_Null, False),
    Isneg    => (Nosy, "push True if A <  0 or 0.0                        ", As.U.Asu_Null, True),
    -- Main stack management
    Ssize    => (Nosy, "push stack size                                   ", As.U.Asu_Null, False),
@@ -226,15 +226,14 @@ package body Mcd_Parser is
     As.U.Tus ("C=Len(pos), B=Right(bool) or Fore(pos), A=Pad(string)"), False),
    Regmatch => (Nosy, "push where B matches regex A                      ", As.U.Asu_Null, False),
    Regsplit => (Nosy, "push number of substrings of D matching C         ",
-    As.U.Tus ("B max substrings are stored in array A"), True),
-   -- Can be
+    As.U.Tus ("B max substrings are stored in array A"), False),
    Canarbi  => (Nosy, "push whether A (str) can be an arbitrary          ", As.U.Asu_Null, False),
    Canfrac  => (Nosy, "push whether A (str) can be a fraction            ", As.U.Asu_Null, False),
    Caninte  => (Nosy, "push whether A (str) can be an integer            ", As.U.Asu_Null, False),
    Canreal  => (Nosy, "push whether A (str) can be a real                ", As.U.Asu_Null, False),
    Canbool  => (Nosy, "push whether A (str) can be a boolean             ", As.U.Asu_Null, False),
    Canreg   => (Nosy, "push whether A (str) can be a register            ", As.U.Asu_Null, False),
-   Canprog  => (Nosy, "push whether A (str) can be a program             ", As.U.Asu_Null, False),
+   Canprog  => (Nosy, "push whether A (str) can be a program             ", As.U.Asu_Null, True),
    -- Time
    Clock    => (Nosy, "push current time                                 ", As.U.Asu_Null, False),
    Dateof   => (Nosy, "int -> YYyy-mm-ddThh:mm:ss.mmm                    ", As.U.Asu_Null, False),

@@ -50,7 +50,7 @@ clock dateof d popr "is" v popr
 # One arg => dd/mm/YYyy
 ssize 1 = [
 # check dd/mm/YYyy
-dup "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" regmatch isnul
+dup "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" regmatch isnull
 [ "Error. Invalid argument (dd/mm/YYyy expected)." putl
 ssize popn 1 setexit retall ] ifcall
 # dd/mm/YYyy -> YYyy-mm-dd

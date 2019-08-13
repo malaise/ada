@@ -3,7 +3,7 @@
 # Check 1 arg > 0 or no arg (-> 64)
 [ "Error: N > 0 or no argument expected." putl ssize popn 1 setexit retall ]
 pope
-ssize isnul [ "Defaulting to " put 64 dup putl ] ifcall
+ssize isnull [ "Defaulting to " put 64 dup putl ] ifcall
 dup isarbi [ tointe ] ifcall
 dup isinte ~ pushle copye ifcall
 dup ispos ~ pushle ifcall

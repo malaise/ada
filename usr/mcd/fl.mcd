@@ -21,7 +21,7 @@ msd
 # Loop
 [
 # Return if no more data in stack
-ssize isnul  ifret
+ssize isnull  ifret
 # Store value for error tracing
 v copyr
 # Check

@@ -891,7 +891,7 @@ package body Operations is
     end if;
   end Ispos;
 
-  function Isnul  (X : Item_Rec) return Item_Rec is
+  function Isnull  (X : Item_Rec) return Item_Rec is
     use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
     if X.Kind = Arbi then
@@ -905,9 +905,9 @@ package body Operations is
     else
       raise Invalid_Argument;
     end if;
-  end Isnul;
+  end Isnull;
 
-  function Isnotnul  (X : Item_Rec) return Item_Rec is
+  function Isntnull  (X : Item_Rec) return Item_Rec is
     use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
     if X.Kind = Arbi then
@@ -921,7 +921,7 @@ package body Operations is
     else
       raise Invalid_Argument;
     end if;
-  end Isnotnul;
+  end Isntnull;
 
   function Isneg  (X : Item_Rec) return Item_Rec is
     use type Arbitrary.Number, Arbitrary.Fractions.Fraction;

@@ -9,7 +9,7 @@ dup isneg E pushr ifcall
 
 # F(0) -> 1
 # F(i) -> F(i-1) * i
-[ dup isnul [ pop @1 2 retn ] [ dup @1 - ] ifte call F pushr call
+[ dup isnull [ pop @1 2 retn ] [ dup @1 - ] ifte call F pushr call
 swap * ] F popr
 
 # Put n

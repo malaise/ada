@@ -78,8 +78,8 @@ package Mcd_Mng is
    Isreg,
    Isprog,
    Ispos,
-   Isnul,
-   Isnotnul,
+   Isnull,
+   Isntnull,
    Isneg,
    -- Main stack management
    Ssize,
@@ -170,7 +170,6 @@ package Mcd_Mng is
    Normal,
    Regmatch,
    Regsplit,
-   -- Tests if string can be
    Canarbi,
    Canfrac,
    Caninte,

@@ -1,6 +1,6 @@
 # Test A+B A-B A*B A/B A%B for random arbitraries A and B in -999 .. 999
 # Verify the arbi results match the corresponding integer ones
-ssize isnotnul [ "No argument expected." putl 1 setexit ssize popn retall ]
+ssize isntnull [ "No argument expected." putl 1 setexit ssize popn retall ]
 ifcall
 
 # Get a random integer from -999 to +999
@@ -20,7 +20,7 @@ x pushr pushr y pushr pushr = ifret
 # Get 2 random numbers a and b, set corresponding arbitraries i and j
 R pushr call a copyr toarbi i popr
 # b cannot be null (because it is divising)
-1 R pushr call dup isnul etfi b copyr toarbi j popr
+1 R pushr call dup isnull etfi b copyr toarbi j popr
 
 # Compute a+b a-b a*b a/b and a%b,
 #  set corresponding arbitraries in c d e f and g

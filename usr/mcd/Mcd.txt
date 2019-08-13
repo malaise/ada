@@ -1,6 +1,6 @@
 Mcd
 ===
-V17.1
+V19.0
 
 Mcd (My Calculator for Desk) is a text oriented reverse polish calculator.
 
@@ -223,8 +223,8 @@ Tests on types and values
 .On any kind of number
 
   Ispos : push whether A is positive
-  Isnul : push whether A is null
-  Isnotnul : push whether A is not null
+  Isnull : push whether A is null
+  Isntnull : push whether A is not null
   Isneg : push whether A is negative
 
 Main stack management
@@ -358,8 +358,19 @@ String operations
   Normal : push normalised str of D     // D=N(inte), C=Len(positive), B=Right(bool),    A=Pad(str)
                                         // D=R(real), C=Len(positive), B=Fore(Positive), A=Pad(str)
   Regmatch : push index where B matches regex A 
-  Regsplit:  push number of substrings of D matching C 
+  Regsplit : push number of substrings of D matching C 
                                         // B max substrings are stored in array A
+
+.Can a string be converted to arbitrary, fraction, integer, real, boolean, register, program
+
+  Canarbi :  push whether A (str) can be an arbitrary          
+  Canfrac :  push whether A (str) can be a fraction            
+  Caninte :  push whether A (str) can be an integer            
+  Canreal :  push whether A (str) can be a real                
+  Canbool :  push whether A (str) can be a boolean             
+  Canreg :  push whether A (str) can be a register            
+  Canprog :  push whether A (str) can be a program             
+
 
 Time
 ~~~~

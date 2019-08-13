@@ -9,7 +9,7 @@
 # Work
 "Things to do " put dup putl
 # Test exit
-dup isnul ifret
+dup isnull ifret
 # Update counter
 1 -
 # Do again

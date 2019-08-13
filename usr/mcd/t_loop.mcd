@@ -4,13 +4,13 @@
 [ "Error: N >= 0 or no argument expected." putl ssize popn 1 setexit retall ]
 pope
 ssize isneg pushle copye ifcall
-ssize isnul [ "Defaulting to " put 10 dup putl ] ifcall
+ssize isnull [ "Defaulting to " put 10 dup putl ] ifcall
 dup isinte ~ pushle copye ifcall
 dup isneg pushle ifcall
 
 [
 # I = 0 ? If yes return
-dup isnul ifret
+dup isnull ifret
 # Print I
 dup putl
 # I - 1

@@ -41,7 +41,7 @@ e copyr readlins i copyr isbool
 A pushr call ] ifcall
 #  Parse rates, (pope them)
 [
-i pushr isnul ifret i pushr 1 - i popr
+i pushr isnull ifret i pushr 1 - i popr
 R pushr call
 P pushr retacal ] P copyr call
 esize 5 /= [ "ERROR: Invalid file content." A pushr call ] ifcall

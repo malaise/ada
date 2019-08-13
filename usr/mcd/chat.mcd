@@ -43,7 +43,7 @@ isbool [ "Error: cannot read data file" putl ssize popn 1 setexit retall ]
 ifcall
 # Check all the activities in the stack
 0 N popr
-[ ssize isnul ifret
+[ ssize isnull ifret
 T pushr call
 S pushr retacal ] S copyr call
 

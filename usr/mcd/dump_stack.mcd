@@ -4,7 +4,7 @@
 "Stack:" putl
 
 [
-ssize isnul ifretall
+ssize isnull ifretall
 strof putl
 pushle copye retacal
 ] pope

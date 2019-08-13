@@ -4,7 +4,7 @@ pragma Elaborate_All (Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V18.0";
+  Mcd_Version : constant String := "V19.0";
 
   package Stack is
     -- What can we store in stack
@@ -121,8 +121,8 @@ package body Mcd_Mng is
 
     -- Arbi->Bool or Inte->Bool or Real->Bool
     function Ispos    (X : Item_Rec) return Item_Rec;
-    function Isnul    (X : Item_Rec) return Item_Rec;
-    function Isnotnul (X : Item_Rec) return Item_Rec;
+    function Isnull   (X : Item_Rec) return Item_Rec;
+    function Isntnull (X : Item_Rec) return Item_Rec;
     function Isneg    (X : Item_Rec) return Item_Rec;
 
     -- Bool,Bool->Bool
@@ -778,13 +778,13 @@ package body Mcd_Mng is
           -- push whether A is positive
           Pop(A); Push (Operations.Ispos(A));
           S := A;
-        when Isnul =>
+        when Isnull =>
           -- push whether A is null
-          Pop(A); Push (Operations.Isnul(A));
+          Pop(A); Push (Operations.Isnull(A));
           S := A;
-        when Isnotnul =>
+        when Isntnull =>
           -- push whether A is not null
-          Pop(A); Push (Operations.Isnotnul(A));
+          Pop(A); Push (Operations.Isntnull(A));
           S := A;
         when Isneg =>
           -- push whether A is negative

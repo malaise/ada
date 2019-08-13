@@ -2,7 +2,7 @@
 
 # Loop on arguments
 [
-ssize isnul ifret
+ssize isnull ifret
 strof a copyr put " -> " put
 a pushr canarbi "A:" put put
 a pushr canfrac ", F:" put put

@@ -9,7 +9,7 @@ dup isneg [ "-" put absv ] ifcall
 
 # Check for days
 5 format daysof dup 1 5 strsub strinte dup
-isnul [ pop ] [ 1 format put "d" put ] ifte call
+isnull [ pop ] [ 1 format put "d" put ] ifte call
 # Convert to " days-hh:mm:ss.mmm" and remove days
 7 18 strsub
 # Replace : by h, : by m, : by s, and put

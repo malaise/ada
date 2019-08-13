@@ -26,14 +26,14 @@ a swap C pushr call
 "deg" u popr
 
 # Set a and b in msd, update offset and factor if d->g
-m pushr isnul
+m pushr isnull
 [ "grad" u popr a pushr msd a popr b pushr msd b popr
 o pushr +- o popr f pushr 1.0 swap / f popr ] ifcall
 
 # Compute lat and long
 a pushr f pushr * a popr
 b pushr
-m pushr isnul [ o pushr + f pushr * ] [ f pushr * o pushr + ] ifte call
+m pushr isnull [ o pushr + f pushr * ] [ f pushr * o pushr + ] ifte call
 b popr
 
 # Set a and b in dms if g->d

@@ -11,7 +11,7 @@
 frac 100.0 * 0 roundat trunc absv 2 true "0" normal strcat ] F popr
 
 # Check that number of arguments is even
-ssize isnul ssize 2 % isnul |
+ssize isnull ssize 2 % isnull |
 [ "Error: Some pairs of arguments <id> <cost>... are expected" putl
    ssize popn 1 setexit retall ] ifcall
 
@@ -41,7 +41,7 @@ dup 100.0 * frac Z pushr call ~ D pushr ifcall
 # Add to toal and to register
 dup t pushr + t popr
 I i pushr pusha + I i pushr popa
-ssize isnul ifret C pushr retacal ] C popr
+ssize isnull ifret C pushr retacal ] C popr
 C pushr call
 1 format
 "MaxId is " put n pushr putl
