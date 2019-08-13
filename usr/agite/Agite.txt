@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V37.01
+V37.02
 
 General purpose
 ---------------
@@ -1112,22 +1112,24 @@ commit was performed.
 
 .Reorg
 anchor:XReorg[]
-This button launches an interactive rebase of the commits that follow the
-selected one. This allows splitting, merging, dropping, copying, modifing
-the comment of these commits. +
+This button launches an interactive rebase of the commits that follow (are
+above) the selected one. This allows splitting, merging, dropping, copying,
+swapping and modifing the comment of these commits. +
 There is first a check that there is no local change in the repository (they
 would be lost). +
 This function is only active when in the root directory of the current
 branch, so that the current list of commits is exactly the one that will
 be reorganized. +
-See also the section on xref:XRewritingHistory[rewriting history]. +
+A detailed description of the steps and possible actions will be found in the
+section about xref:XCherry[cherry-pick] of commits.
 
-NOTE: The 'Reorg' consists in a manual xref:XCherry[cherry-pick] of commits,
+NOTE: The 'Reorg' consists in a manual cherry-pick of commits,
 then an automatic commit of these cherries into a temporary branch, then
 a hard reset of the current branch to the temporary branch. +
-See the how-to xref:XCherryReorg[interactively rebase a branch on itself]
-and the section xref:XCherryError[Error in cherry-pick] on how to handle
-errors during a reorg.
+See also the section on xref:XRewritingHistory[rewriting history]. +
+In case of problem, see the how-to xref:XCherryReorg[interactively rebase a
+branch on itself] and the section xref:XCherryError[Error in cherry-pick] on
+how to handle errors during a reorg.
 
 .Reset
 anchor:XHReset[]
@@ -1589,8 +1591,8 @@ committed),
 * The third column ('L') shows the kind of change local to the repository (that
 will *NOT* be committed).
 
-You can select a file edit it or show its local differences, stage or unstage
-its changes.
+You can select a file, then edit it, show its local differences, stage or
+unstage its changes.
 
 .Actions
 

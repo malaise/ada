@@ -510,7 +510,7 @@ package body History is
                                 not Allow_Modif or else Right_Set
                                 or else Empty
                                 or else not On_Root
-                                or else Left <= 2);
+                                or else Left <= 1);
       Afpx.Reset_Field (Afpx_Xref.History.Reset);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Reset,
                                 not Allow_Modif or else Right_Set
