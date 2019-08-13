@@ -12,37 +12,39 @@
 
 # True debugall
 
+# Function to abort
+[ ssize popn 1 setexit retall ] A popr
+
 # Function to check an argument
 [ "ERROR: Invalid argument." putl
 "Usage: colab { ""<amount><unit>"" }" putl
 "<unit> ::= my | mm | md | h | kem | kei" putl
-1 setexit
-retall
+A pushr call
 ] E popr
 
 # Function to check a rate: skip empty line and comment
-# Pope  as a real
+# Check it is the string of a real, pope the real
 [
 dup strnull [ pop 2 retn ] ifcall
 dup 1 1 strsub "#" = [ pop 2 retn ] ifcall
+dup canreal ~ [ "ERROR: Invalid rate " put put "." putl A pushr call ] ifcall
 strreal pope ] R popr
 
 # Read rates from file in Env var COLAB_RATES
 #  Check env var
 "COLAB_RATES" e copyr getenv dup isbool
 [ "ERROR: Env variable " put e pushr put " is not set." putl
-ssize popn 1 setexit retall ] ifcall
+A pushr call ] ifcall
 #  Read file
 e copyr readlins i copyr isbool
 [ "ERROR: Cannot read rates from file " put e pushr put "." putl
-ssize popn 1 setexit retall ] ifcall
+A pushr call ] ifcall
 #  Parse rates, (pope them)
 [
 i pushr isnul ifret i pushr 1 - i popr
 R pushr call
 P pushr retacal ] P copyr call
-esize 5 /= [ "ERROR: Cannot invalid file content."
-ssize popn 1 setexit retall ] ifcall
+esize 5 /= [ "ERROR: Invalid file content." A pushr call ] ifcall
 
 # Store factors versus 1 hour: my mm md em ei
 # Hours in 1 (man) year

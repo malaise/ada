@@ -215,7 +215,7 @@ package body Mcd_Parser is
    Strlow   => (Nosy, "push A in lowercase                               ", As.U.Asu_Null, False),
    Strmix   => (Nosy, "push A in Mixed_Case                              ", As.U.Asu_Null, False),
    Strarbi  => (Nosy, "push A converted to arbitrary                     ", As.U.Asu_Null, False),
-   Strfrac  => (Nosy, "push A converted to Fraction                      ", As.U.Asu_Null, False),
+   Strfrac  => (Nosy, "push A converted to fraction                      ", As.U.Asu_Null, False),
    Strinte  => (Nosy, "push A converted to integer                       ", As.U.Asu_Null, False),
    Strreal  => (Nosy, "push A converted to real                          ", As.U.Asu_Null, False),
    Strbool  => (Nosy, "push A converted to boolean                       ", As.U.Asu_Null, False),
@@ -227,6 +227,14 @@ package body Mcd_Parser is
    Regmatch => (Nosy, "push where B matches regex A                      ", As.U.Asu_Null, False),
    Regsplit => (Nosy, "push number of substrings of D matching C         ",
     As.U.Tus ("B max substrings are stored in array A"), True),
+   -- Can be
+   Canarbi  => (Nosy, "push whether A (str) can be an arbitrary          ", As.U.Asu_Null, False),
+   Canfrac  => (Nosy, "push whether A (str) can be a fraction            ", As.U.Asu_Null, False),
+   Caninte  => (Nosy, "push whether A (str) can be an integer            ", As.U.Asu_Null, False),
+   Canreal  => (Nosy, "push whether A (str) can be a real                ", As.U.Asu_Null, False),
+   Canbool  => (Nosy, "push whether A (str) can be a boolean             ", As.U.Asu_Null, False),
+   Canreg   => (Nosy, "push whether A (str) can be a register            ", As.U.Asu_Null, False),
+   Canprog  => (Nosy, "push whether A (str) can be a program             ", As.U.Asu_Null, False),
    -- Time
    Clock    => (Nosy, "push current time                                 ", As.U.Asu_Null, False),
    Dateof   => (Nosy, "int -> YYyy-mm-ddThh:mm:ss.mmm                    ", As.U.Asu_Null, False),
@@ -298,7 +306,7 @@ package body Mcd_Parser is
     end if;
 
     -- No [ nor ] in word
-    if Txt.Image /= "["
+    if       Txt.Image /= "["
     and then Txt.Image /= "]"
     and then (Txt.Locate ("[") /= 0
       or else Txt.Locate ("]") /= 0) then
@@ -532,6 +540,108 @@ package body Mcd_Parser is
     end loop;
     Debug.Log (Debug.History, "History: " & Text.Image);
   end Dump_Stack;
+
+  -- Check if a string can be arbi, frac, inte, real, bool, reg or prog
+  -- Raise Mcd_Mng.Invalid_Argument is not Chrs
+  True_Item  : constant Bool_Rec := (Mcd_Mng.Bool, Val_Bool => True);
+  False_Item : constant Bool_Rec := (Mcd_Mng.Bool, Val_Bool => False);
+  function Can_Arbi (Item : in Mcd_Mng.Item_Rec) return Bool_Rec is
+    Dummy : Arbitrary.Number;
+  begin
+    if Item.Val_Text.Element (1) = '@' then
+      Dummy.Set (Item.Val_Text.Slice(2, Item.Val_Text.Length));
+      return True_Item;
+    else
+      return False_Item;
+    end if;
+  exception
+    when others =>
+      -- Len < 2 or Set failed
+      return False_Item;
+  end Can_Arbi;
+
+  function Can_Frac (Item : in Mcd_Mng.Item_Rec) return Bool_Rec is
+    I : constant Natural := Str_Util.Locate (Item.Val_Text.Image, ":");
+    Dummy : Arbitrary.Fractions.Fraction;
+  begin
+    if Item.Val_Text.Element (1) = '@' then
+      Dummy := Arbitrary.Fractions.Set (
+          Arbitrary.Set (Item.Val_Text.Slice (2, I - 1)),
+          Arbitrary.Set (Item.Val_Text.Slice (I + 1, Item.Val_Text.Length)) );
+      return True_Item;
+    else
+      return False_Item;
+    end if;
+  exception
+    when others =>
+      -- Len < 2 or Set failed
+      return False_Item;
+  end Can_Frac;
+
+  function Can_Inte (Item : in Mcd_Mng.Item_Rec) return Bool_Rec is
+    Dummy : My_Math.Inte;
+    L : Natural;
+  begin
+    Inte_Io.Get (Item.Val_Text.Image, Dummy, L);
+    if L = Item.Val_Text.Length then
+      return True_Item;
+    else
+      return False_Item;
+    end if;
+  exception
+    when others =>
+      return False_Item;
+  end Can_Inte;
+
+  function Can_Real (Item : in Mcd_Mng.Item_Rec) return Bool_Rec is
+    Dummy : My_Math.Real;
+    L : Natural;
+  begin
+    Real_Io.Get (Item.Val_Text.Image, Dummy, L);
+    if L = Item.Val_Text.Length then
+      return True_Item;
+    else
+      return False_Item;
+    end if;
+  exception
+    when others =>
+      return False_Item;
+  end Can_Real;
+
+  function Can_Bool (Item : in Mcd_Mng.Item_Rec) return Bool_Rec is
+    Dummy : Boolean;
+    L : Natural;
+  begin
+    Bool_Io.Get (Item.Val_Text.Image, Dummy, L);
+    if L = Item.Val_Text.Length then
+      return True_Item;
+    else
+      return False_Item;
+    end if;
+  exception
+    when others =>
+      return False_Item;
+  end Can_Bool;
+
+  function Can_Reg  (Item : in Mcd_Mng.Item_Rec) return Bool_Rec is
+  begin
+    if Item.Val_Text.Length = 1
+    and then Mcd_Mng.Is_Register (Item.Val_Text.Element (1)) then
+      return True_Item;
+    else
+      return False_Item;
+    end if;
+  end Can_Reg;
+
+  function Can_Prog (Item : in Mcd_Mng.Item_Rec) return Bool_Rec is
+  begin
+    if       Item.Val_Text.Locate ("[") = 0
+    and then Item.Val_Text.Locate ("]") = 0 then
+      return True_Item;
+    else
+      return False_Item;
+    end if;
+  end Can_Prog;
 
 end Mcd_Parser;
 

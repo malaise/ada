@@ -4,7 +4,7 @@ pragma Elaborate_All (Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V17.1";
+  Mcd_Version : constant String := "V18.0";
 
   package Stack is
     -- What can we store in stack
@@ -366,6 +366,7 @@ package body Mcd_Mng is
   subtype Prog_List   is Operator_List range Call    .. Callbrk;
   subtype Io_List     is Operator_List range Format  .. Exec;
   subtype String_List is Operator_List range Strnull .. Regsplit;
+  subtype Can_List    is Operator_List range Canarbi .. Canprog;
   subtype Time_List   is Operator_List range Clock   .. Dateimg;
   subtype Exec_List   is Operator_List range Nop     .. Help;
 
@@ -1201,6 +1202,46 @@ package body Mcd_Mng is
       end case;
     end Do_String;
 
+    -- Handle Can be
+    procedure Do_Can (Kind : Can_List) is
+    begin
+      -- Check if string can be...
+      Pop (A);
+      if A.Kind /= Chrs then
+        raise Invalid_Argument;
+      end if;
+      case Kind is
+        when Canarbi =>
+          -- push True if A is empty
+          Push (Mcd_Parser.Can_Arbi (A));
+          S := A;
+        when Canfrac =>
+          -- push True if A is empty
+          Push (Mcd_Parser.Can_Frac (A));
+          S := A;
+        when Caninte =>
+          -- push True if A is empty
+          Push (Mcd_Parser.Can_Inte (A));
+          S := A;
+        when Canreal =>
+          -- push True if A is empty
+          Push (Mcd_Parser.Can_Real (A));
+          S := A;
+        when Canbool =>
+          -- push True if A is empty
+          Push (Mcd_Parser.Can_Bool (A));
+          S := A;
+        when Canreg =>
+          -- push True if A is empty
+          Push (Mcd_Parser.Can_Reg (A));
+          S := A;
+        when Canprog =>
+          -- push True if A is empty
+          Push (Mcd_Parser.Can_Prog (A));
+          S := A;
+      end case;
+    end Do_Can;
+
     -- Handle time
     procedure Do_Time (Kind : Time_List) is
     begin
@@ -1328,6 +1369,9 @@ package body Mcd_Mng is
         when String_List =>
           -- String operations
           Do_String (Item.Val_Oper);
+        when Can_List =>
+          -- String can be
+          Do_Can (Item.Val_Oper);
         when Time_List =>
           -- Time operations
           Do_Time (Item.Val_Oper);

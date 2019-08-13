@@ -139,6 +139,21 @@ comp out exp
 comp err nul
 echo "OK"
 
+title cans
+launch cans @1 @1:3 1 1.5 i :toto: :to[t]o:
+cat << EOF > exp
+to[t]o -> A:False, F:False, I:False, R:False, G:False, P:False
+toto -> A:False, F:False, I:False, R:False, G:False, P:True
+i -> A:False, F:False, I:False, R:False, G:True, P:True
+1.500000000E+000 -> A:False, F:False, I:False, R:True, G:False, P:True
+    1 -> A:False, F:False, I:True, R:True, G:False, P:True
+@+1:3 -> A:False, F:True, I:False, R:False, G:False, P:True
+@+1 -> A:True, F:False, I:False, R:False, G:False, P:True
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
 title carre_magic
 launch carre_magic 21
 echo "   21 ->  4641" > exp

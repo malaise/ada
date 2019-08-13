@@ -170,6 +170,14 @@ package Mcd_Mng is
    Normal,
    Regmatch,
    Regsplit,
+   -- Tests if string can be
+   Canarbi,
+   Canfrac,
+   Caninte,
+   Canreal,
+   Canbool,
+   Canreg,
+   Canprog,
    -- Time
    Clock,
    Dateof,
