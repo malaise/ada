@@ -25,7 +25,7 @@ ssize popn 1 setexit retall ] E popr
 # Function to process an activity: skip, check and store
 [ t copyr
 # skip comment or empty line
-strlen 0 = ifret
+strnull ifret
 t pushr 1 1 strsub "#" = ifret
 # First char is not space
 t pushr 1 1 strsub " " = E pushr ifcall

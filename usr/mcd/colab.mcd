@@ -23,7 +23,7 @@ retall
 # Function to check a rate: skip empty line and comment
 # Pope  as a real
 [
-dup strlen isnul [ pop 2 retn ] ifcall
+dup strnull [ pop 2 retn ] ifcall
 dup 1 1 strsub "#" = [ pop 2 retn ] ifcall
 strreal pope ] R popr
 
