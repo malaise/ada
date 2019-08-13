@@ -1422,7 +1422,7 @@ EOF
   comp err nul
   comp out exp
   for i in 1 2 3 4 5 6 7 8 9 10 ; do
-    v=`t_rnd 2147483647`
+    v=`t_rnd -m 2147483647`
     t_num_letters $v >exp
     t_num_letters `cat exp` >out1
     t_num_letters `cat out1` >out
