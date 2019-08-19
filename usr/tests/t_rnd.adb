@@ -45,7 +45,8 @@ procedure T_Rnd is
 
   -- Kind of Rnadom generator
   Kind : Rnd.Kind_List;
-  G : access Rnd.Generator;
+  type Generator_Access is access Rnd.Generator;
+  G : Generator_Access;
 
   procedure Help is
     use type Rnd.Kind_List;
@@ -93,7 +94,7 @@ begin
          return;
      end;
   end if;
-  G := new  Rnd.Generator (Kind);
+  G := new Rnd.Generator (Kind);
   G.Randomize;
 
   -- Get Mode
