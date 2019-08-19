@@ -3,7 +3,7 @@ package body State_Machine is
   -- To add a report callback on new state
   procedure Add_State_Report (Machine : in out Machine_Type;
                               To_State : in State_List;
-                              Report : in State_Report_Access) is
+                              Report : in not null State_Report_Access) is
   begin
     if Machine.State_Cbs(To_State) /= null then
       raise Report_Already;
@@ -14,7 +14,7 @@ package body State_Machine is
   -- To add a report callback on event occurence
   procedure Add_Event_Report (Machine : in out Machine_Type;
                               To_Event : in Event_List;
-                              Report : in Transition_Report_Access) is
+                              Report : in not null Transition_Report_Access) is
   begin
     if Machine.Event_Cbs(To_Event) /= null then
       raise Report_Already;
@@ -25,7 +25,7 @@ package body State_Machine is
   -- INTERNAL
   procedure Do_Transition (Machine : in out Machine_Type;
                            From_State : in State_List;
-                           Transition : in Transition_Access;
+                           Transition : in not null Transition_Access;
                            Report     : in Boolean) is
   begin
     -- Call user report callbacks

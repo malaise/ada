@@ -123,7 +123,7 @@ package Network is
   -----------------------
   -- Set the processing of a incomming message
   type Process_Message_Type is access procedure (
-      From_Node : in Node_Access;
+      From_Node : in not null Node_Access;
       Message   : in Message_Type);
   procedure Set_Process_Message (
       On_Node : in out Node_Type;
@@ -131,14 +131,14 @@ package Network is
 
   -- Set processing of change of node data
   type Process_Node_Data_Change_Type is access procedure (
-      On_Node : in Node_Access);
+      On_Node : in not null Node_Access);
   procedure Set_Process_Node_Data_Change (
       On_Node : in out Node_Type;
       Process_Node_Data_Change : in Process_Node_Data_Change_Type);
 
   -- Set processing of change of connection data
   type Process_Connection_Data_Change_Type is access procedure (
-      On_Node : in Node_Access;
+      On_Node : in not null Node_Access;
       On_Connection : in Connection_Index);
   procedure Set_Process_Connection_Data_Change (
       On_Node : in out Node_Type;

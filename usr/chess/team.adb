@@ -15,7 +15,7 @@ package body Team is
         := (others => Nb_Range'First);
 
   -- Add a new piece to a team
-  procedure Add (Piece : in Pieces.Piece_Access) is
+  procedure Add (Piece : in not null Pieces.Piece_Access) is
     Id : constant Pieces.Piece_Id := Pieces.Id_Of(Piece.all);
     use type Pieces.Piece_Access;
   begin
@@ -29,7 +29,7 @@ package body Team is
   end Add;
 
   -- Delete a piece from a team
-  procedure Del (Piece : in Pieces.Piece_Access) is
+  procedure Del (Piece : in not null Pieces.Piece_Access) is
     Id : constant Pieces.Piece_Id := Pieces.Id_Of(Piece.all);
     use type Pieces.Piece_Access;
   begin

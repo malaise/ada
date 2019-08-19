@@ -34,7 +34,7 @@ package body Pieces is
                    Color     : Space.Color_List;
                    Square    : Space.Square_Coordinate;
                    Has_Moved : Boolean := False)
-           return Piece_Access is
+           return not null Piece_Access is
     Pa : Piece_Access;
   begin
     case Kind is
@@ -92,7 +92,7 @@ package body Pieces is
     (abs Integer(Space.Row_Range'Pos(From) - Space.Row_Range'Pos(To)));
     --## rule on Conversion
 
-  procedure Move (Piece  : in Piece_Access;
+  procedure Move (Piece  : in not null Piece_Access;
                   To     : in Space.Square_Coordinate;
                   Commit : in Boolean) is
   begin
@@ -116,7 +116,7 @@ package body Pieces is
   end Move;
 
   -- Undo a temporary move
-  procedure Undo_Move (Piece  : in Piece_Access;
+  procedure Undo_Move (Piece  : in not null Piece_Access;
                        To     : in Space.Square_Coordinate) is
   begin
     Check_Is_Not_Basic(Piece.all);

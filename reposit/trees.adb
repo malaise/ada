@@ -940,7 +940,7 @@ package body Trees is
     function Recurs (The_Tree   : in out Tree_Type;
                      Me         : in out Cell_Access;
                      Level      : in Natural;
-                     Do_One_Acc : in Do_One_Access;
+                     Do_One_Acc : in not null Do_One_Access;
                      Elder      : in Boolean)  return Boolean is
       Next : Cell_Access;
       Result : Iteration_Policy;
@@ -975,7 +975,7 @@ package body Trees is
     end Recurs;
 
     procedure Iterate (The_Tree   : in out Tree_Type;
-                       Do_One_Acc : access
+                       Do_One_Acc : not null access
         function (Element : in out Element_Type;
                   Level : Natural) return Iteration_Policy;
                        Elder      : in Boolean := True) is

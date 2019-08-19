@@ -2,10 +2,10 @@ with Space, Pieces;
 package Team is
 
   -- Add a new piece to a team
-  procedure Add (Piece : in Pieces.Piece_Access);
+  procedure Add (Piece : in not null Pieces.Piece_Access);
 
   -- Delete a piece from a team
-  procedure Del (Piece : in Pieces.Piece_Access);
+  procedure Del (Piece : in not null Pieces.Piece_Access);
 
   -- Move to first piece of a team
   procedure Rewind (Color : in Space.Color_List);

@@ -15,7 +15,7 @@ package Rnd is
   subtype Universal_Generator is Generator (Universal);
 
   -- A common global Simple generator
-  Gen : constant access Simple_Generator;
+  Gen : constant not null access Simple_Generator;
 
   -- Initialisation of the sequence,
   --   on  Init if 0.0 <= Init < 1.0
@@ -70,7 +70,7 @@ private
 
   -- A global generator
   Init : aliased Simple_Generator := (Kind => Simple, others => <>);
-  Gen : constant access Simple_Generator := Init'Access;
+  Gen : constant not null access Simple_Generator := Init'Access;
 
 end Rnd;
 

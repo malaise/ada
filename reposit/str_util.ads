@@ -16,11 +16,11 @@ package Str_Util is
   function Unique (From : String; From_Head : Boolean := True) return String;
 
   -- Overwrite a part of a string by a new one
-  -- Do nothing if New_Str is empty
-  -- Append New_Item if Position = Source'Last + 1
-  -- Extend Source if Position + New_Str'Length - 1 > Source'Last
+  -- Append New_Str if Position = Source'Last + 1
+  -- Extend Source if Position + New_Str'Length > Source'Last + 1
   -- Raises Constraint_Error if Position < Source'First
   --                         or Position > Source'Last + 1
+  -- Does nothing if New_Str is empty
   function Overwrite (Source   : String;
                       Position : Positive;
                       New_Str  : String) return String;
@@ -160,7 +160,7 @@ package Str_Util is
   function Truncate (Str : String;
                      Length : Positive;
                      Mini, Maxi : Positive;
-                     Separating : access
+                     Separating : not null access
     function (Char : Character) return Boolean := Is_Separator'Access)
   return String;
 
@@ -214,7 +214,7 @@ package Str_Util is
   --  only one pass)
   -- On option No_Check_Stop, extra stops are accepted ("{}}" is OK)
   -- On option Skip_Backslashed, backslashed delimiters are skipped (and
-  --  the backslashesbefore the delimiters and backslash are removed)
+  --  the backslashes before the delimiters and backslash are removed)
   -- If no callback is set (Resolv = null) then variables are replaced by
   --  empty strings.
   function Eval_Variables (Str : String;

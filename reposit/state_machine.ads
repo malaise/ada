@@ -46,7 +46,7 @@ package State_Machine is
   -- May raise Declaration_Ended if called after End_Declaration;
   procedure Add_State_Report (Machine : in out Machine_Type;
                               To_State : in State_List;
-                              Report : in State_Report_Access);
+                              Report : in not null State_Report_Access);
 
 
   -- Procedure to report a transition, always on event
@@ -58,7 +58,7 @@ package State_Machine is
   -- May raise Report_Already if this event already has a report callback
   procedure Add_Event_Report (Machine : in out Machine_Type;
                               To_Event : in Event_List;
-                              Report : in Transition_Report_Access);
+                              Report : in not null Transition_Report_Access);
 
   -- To add a transition in the state machine and add a report callback
   --  when this transition occurs

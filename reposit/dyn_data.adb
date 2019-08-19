@@ -6,7 +6,7 @@ package body Dyn_Data is
   package Pool_Mng renames Pool_Manager.Upool;
   Data_Pool : Pool_Mng.Pool_Type;
 
-  function Allocate return Data_Access_Type is
+  function Allocate return not null Data_Access_Type is
     Returned_Data_Access : Data_Access_Type;
   begin
     -- Try to use a free data in the pool
@@ -20,7 +20,7 @@ package body Dyn_Data is
     return Returned_Data_Access;
   end Allocate;
 
-  function Allocate (Data : Data_Type) return Data_Access_Type is
+  function Allocate (Data : Data_Type) return not null Data_Access_Type is
     Returned_Data_Access : Data_Access_Type;
   begin
     Returned_Data_Access := Allocate;

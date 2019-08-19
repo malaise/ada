@@ -176,7 +176,7 @@ package body Virtual_Time is
 
   -- Add a new observer
   procedure Add_Observer (A_Clock : in out Clock;
-                          An_Observer :  access Observer'Class) is
+                          An_Observer :  not null access Observer'Class) is
   begin
     A_Clock.Observers.Rewind (List_Mng.Prev, False);
     A_Clock.Observers.Insert (Observer_Access(An_Observer));
@@ -184,7 +184,7 @@ package body Virtual_Time is
 
   -- Del an observer
   procedure Del_Observer (A_Clock : in out Clock;
-                          An_Observer :  access Observer'Class) is
+                          An_Observer :  not null access Observer'Class) is
     Obs : Observer_Access;
   begin
     if A_Clock.Observers.Is_Empty then

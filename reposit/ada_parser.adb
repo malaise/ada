@@ -307,7 +307,7 @@ package body Ada_Parser is
 
   -- Parse --
   procedure Parse (File : in out Text_Char.File_Type;
-                   Cb : access
+                   Cb : not null access
     procedure (Text : in String;
                Lexic : in Lexical_Kind_List);
                    Version : Ada_Words.Keywords.Language_Versions

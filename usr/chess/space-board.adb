@@ -37,7 +37,7 @@ package body Space.Board is
     The_Board(Square.Col, Square.Row) := null;
   end Delete_Piece;
 
-  procedure Restore_Piece (Piece : in Pieces.Piece_Access) is
+  procedure Restore_Piece (Piece : in not null Pieces.Piece_Access) is
     Pos : constant Square_Coordinate := Pieces.Pos_Of (Piece.all);
   begin
     The_Board(Pos.Col, Pos.Row) :=  Piece;

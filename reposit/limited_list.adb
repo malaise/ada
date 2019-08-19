@@ -246,9 +246,9 @@ package body Limited_List is
   -- Search the element that is at the provided access (move to it)
   -- Return True if the matching item is found, then the current position is
   --  set to this item, otherwise it is unchanged.
-  -- Does not raise Empty_List.
   function Search_Access (List      : in out List_Type;
-                          Criteria  : access Element_Type) return Boolean is
+                          Criteria  : not null access Element_Type)
+           return Boolean is
     (List.List.Search_Access (Criteria));
 
   -- Access to the cell (that stores data) for deleting it without searching
@@ -264,7 +264,7 @@ package body Limited_List is
   -- Rewinding is necessary because the impact of this deletion on current
   --  position is unknown
   procedure Delete_Current_Rewind (List     : in out List_Type;
-                                   Cell_Acc : access Cell;
+                                   Cell_Acc : not null access Cell;
                                    Where    : in Direction := Next) is
   begin
     List.List.Delete_Current_Rewind (Cell_Acc, My_List.Movement (Where));
@@ -330,7 +330,7 @@ package body Limited_List is
   -- If Match is null then any element matches.
   -- Does not raise Empty_List.
   function Search_Match (List      : in out List_Type;
-                         Match     : access
+                         Match     : not null access
                     function (Current, Criteria : Element_Type) return Boolean;
                          Criteria  : in Element_Type;
                          Where     : in Direction := Next;

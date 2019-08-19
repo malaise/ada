@@ -8,12 +8,12 @@ package Dyn_Data is
 
   -- Allocates a new cell.
   -- The result is the access to a pre allocated area for Data_Type.
-  function Allocate return Data_Access_Type;
+  function Allocate return not null Data_Access_Type;
 
   -- Allocates a new cell and fills it with Data
   -- The result is the access to a pre allocated area for Data_Type,
   --  storing Data
-  function Allocate (Data : Data_Type) return Data_Access_Type;
+  function Allocate (Data : Data_Type) return not null Data_Access_Type;
 
   -- Frees a cell. Data_Access is set to null.
   procedure Free (Data_Access : in out Data_Access_Type);

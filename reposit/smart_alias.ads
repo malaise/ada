@@ -16,8 +16,8 @@ package Smart_Alias is
   Null_Handle : constant Handle;
 
   -- Initialise a Handle to an object
-  procedure Init (Reference : in out Handle; Val : access Object);
-  function Init (Val : access Object) return Handle;
+  procedure Init (Reference : in out Handle; Val : not null access Object);
+  function Init (Val : not null access Object) return Handle;
 
   -- Release handle (which becomes null)
   procedure Release (Reference : in out Handle);
@@ -26,7 +26,7 @@ package Smart_Alias is
   -- Raise Constraint_Error if Reference is not set or released
   -- CARE: Don't use an access outside the scope of the Handle
   --  that was used to get the access
-  function Get_Access (Reference : Handle) return access Object;
+  function Get_Access (Reference : Handle) return not null access Object;
 
   -- Is a Handle set
   function Is_Set (Reference : Handle) return Boolean;

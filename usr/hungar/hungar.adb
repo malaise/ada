@@ -21,7 +21,7 @@ begin
 
   Solve:
   declare
-    Mattrix : constant Types.Mattrix_Rec_Access :=
+    Mattrix : constant not null Types.Mattrix_Rec_Access :=
       new Types.Mattrix_Rec'(File.Read (Argument.Get_Parameter));
     Done : Boolean;
   begin

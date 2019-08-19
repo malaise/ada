@@ -17,11 +17,8 @@ package body Parser is
   -- May raise Constraint_Error if the String is too
   procedure Set (Iter : in out Iterator;
                  Str  : in String;
-                 Is_Sep : in Separing_Function := Space_Htab) is
+                 Is_Sep : in not null Separing_Function := Space_Htab) is
   begin
-    if Is_Sep = null then
-      raise Constraint_Error;
-    end if;
     declare
       Dummy : Boolean;
     begin

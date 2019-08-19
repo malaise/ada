@@ -29,7 +29,7 @@ package Ada_Parser is
                    Lexic : in Lexical_Kind_List);
 
   procedure Parse (File : in out Text_Char.File_Type;
-                   Cb : access procedure (
+                   Cb : not null access procedure (
                      Text : in String;
                      Lexic : in Lexical_Kind_List);
                    Version : Ada_Words.Keywords.Language_Versions

@@ -420,7 +420,7 @@ package body Str_Util is
   function Truncate (Str : String;
                      Length : Positive;
                      Mini, Maxi : Positive;
-                     Separating : access
+                     Separating : not null access
     function (Char : Character) return Boolean := Is_Separator'Access)
   return String is
     Strlen : constant Natural := Str'Length;

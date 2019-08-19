@@ -31,7 +31,7 @@ package Pieces is
                    Color     : Space.Color_List;
                    Square    : Space.Square_Coordinate;
                    Has_Moved : Boolean := False)
-           return Piece_Access;
+           return not null Piece_Access;
 
   procedure Delete (Piece : in out Piece_Access);
 
@@ -45,11 +45,11 @@ package Pieces is
                   return Space.Square_Coordinate;
 
   -- Move a piece (temporary for thinking, or definitively)
-  procedure Move (Piece  : in Piece_Access;
+  procedure Move (Piece  : in not null Piece_Access;
                   To     : in Space.Square_Coordinate;
                   Commit : in Boolean);
   -- Undo a temporary move
-  procedure Undo_Move (Piece  : in Piece_Access;
+  procedure Undo_Move (Piece  : in not null Piece_Access;
                        To     : in Space.Square_Coordinate);
 
   -- Influence of a piece:

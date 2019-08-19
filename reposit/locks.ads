@@ -9,6 +9,7 @@ package Locks is
   procedure Close (A_Lock : in Lock);
 
   -- If Key is Pass, then simply pass through the lock (return True)
+  -- By default a Key is Fake
   type Key_Type is private;
   Fake, Pass : constant Key_Type;
   -- Otherwise wait until the lock is open or timeout
@@ -36,7 +37,7 @@ private
   end Lock_Protect;
 
   -- Access to the protected lock, so that copies share the same state
-  type Lock_Access is access Lock_Protect;
+  type Lock_Access is not null access Lock_Protect;
   type Lock is tagged record
     Lock_Pointer : Lock_Access := new Lock_Protect;
   end record;

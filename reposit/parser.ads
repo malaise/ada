@@ -19,7 +19,7 @@ package Parser is
   -- May raise Constraint_Error if Is_Sep is null
   procedure Set (Iter : in out Iterator;
                  Str : in String;
-                 Is_Sep : in Separing_Function := Space_Htab);
+                 Is_Sep : in not null Separing_Function := Space_Htab);
 
   -- Is the iterator Iter set?
   function Is_Set (Iter : Iterator) return Boolean;

@@ -15,7 +15,6 @@ package Utils is
   function Last_Index (Str : String) return Natural;
 
   -- Start a command in background
-  type Client_Callback is access procedure;
   procedure Launch (Cmd : in String; Set_Callback : in Boolean := False);
 
   -- Start a command in foreground, set both flows

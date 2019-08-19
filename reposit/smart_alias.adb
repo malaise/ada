@@ -77,7 +77,7 @@ package body Smart_Alias is
   end Finalize;
 
   -- Initialize handle
-  procedure Init (Reference : in out Handle; Val : access Object) is
+  procedure Init (Reference : in out Handle; Val : not null access Object) is
   begin
     Decrement_Ref (Reference);
     Reference.Box_Access := new Object_Box;
@@ -85,7 +85,8 @@ package body Smart_Alias is
     Reference.Box_Access.Obj := Object_Access(Val);
     Increment_Ref (Reference);
   end Init;
-  function Init (Val : access Object) return Handle is
+
+  function Init (Val : not null access Object) return Handle is
   begin
     return Reference : Handle do
       Reference.Box_Access := new Object_Box;
@@ -106,7 +107,7 @@ package body Smart_Alias is
   -- Raise Constraint_Error if Reference is not set or released
   -- CARE: Don't use an access outside the scope of the Handle
   --  that was used to get the access
-  function Get_Access (Reference : Handle) return access Object is
+  function Get_Access (Reference : Handle) return not null access Object is
     (Reference.Box_Access.Obj);
 
   -- Is a Handle set

@@ -217,6 +217,9 @@ package Limited_List is
 
 
   -- Get direct access to current element in list
+  -- CARE: As soon as the element is deleted, the access becomes invalid
+  --  and using it will lead to unpredictable results
+  -- Does not raise Empty_List by default
   function Access_Current (List : List_Type;
                            Check_Empty : in Boolean := True)
            return access Element_Type;
@@ -224,10 +227,9 @@ package Limited_List is
   -- Search the element that is at the provided access (move to it)
   -- Found is set to True if the matching item is found, then the current
   --  position is set to this item, otherwise it is unchanged.
-  -- Does not raise Empty_List.
   function Search_Access (List      : in out List_Type;
-                          Criteria  : access Element_Type) return Boolean;
-
+                          Criteria  : not null access Element_Type)
+           return Boolean;
 
   -- Access to the cell (that stores data) for deleting it without searching
   -- Get direct access to the current Cell (that stores the current Element)
@@ -242,7 +244,7 @@ package Limited_List is
   -- Rewinding is necessary because the impact of this deletion on current
   --  position is unknown
   procedure Delete_Current_Rewind (List     : in out List_Type;
-                                   Cell_Acc : access Cell;
+                                   Cell_Acc : not null access Cell;
                                    Where    : in Direction := Next);
 
 
@@ -305,7 +307,7 @@ package Limited_List is
   -- If Match is null then any element matches.
   -- Does not raise Empty_List.
   function Search_Match (List      : in out List_Type;
-                         Match     : access
+                         Match     : not null access
                    function (Current, Criteria : Element_Type) return Boolean;
                          Criteria  : in Element_Type;
                          Where     : in Direction := Next;

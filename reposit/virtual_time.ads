@@ -91,11 +91,11 @@ package Virtual_Time is
 
   -- Add an observer
   procedure Add_Observer (A_Clock : in out Clock;
-                          An_Observer : access Observer'Class);
+                          An_Observer : not null access Observer'Class);
 
   -- Del an observer
   procedure Del_Observer (A_Clock : in out Clock;
-                          An_Observer : access Observer'Class);
+                          An_Observer : not null access Observer'Class);
 
 private
   Init : constant Time := Ada.Calendar.Clock;

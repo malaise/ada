@@ -32,7 +32,8 @@ package Queues.Timed is
   --  criteria
   procedure Read (Queue  : in out Timed_Type;
                   Crit   : in Item;
-                  Equal  : access function (X, Criteria : Item) return Boolean;
+                  Equal  : not null access function (X, Criteria : Item)
+                                           return Boolean;
                   X      : out Item;
                   Found  : out Boolean);
 

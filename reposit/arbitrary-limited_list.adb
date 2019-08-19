@@ -730,12 +730,13 @@ package body Arbitrary.Limited_List is
 
   -- Search the element that is at the provided access (move to it)
   function Search_Access (List      : in out List_Type;
-                          Criteria  : access Element_Type) return Boolean is
+                          Criteria  : not null access Element_Type) return Boolean is
     New_Pos : Link;
     New_Pos_First : Arb_Natural;
     Found : Boolean;
   begin
     Check_Cb (List);
+    Check (List);
     -- Forbid calls from application
     List.In_Cb := True;
     -- Optim: check if current is the one
@@ -797,7 +798,7 @@ package body Arbitrary.Limited_List is
   -- Rewinding is necessary because the impact of this deletion on current
   --  position is unknown
   procedure Delete_Current_Rewind (List     : in out List_Type;
-                                   Cell_Acc : access Cell;
+                                   Cell_Acc : not null access Cell;
                                    Where    : in Direction := Next) is
     Len : Arb_Natural;
   begin
@@ -988,7 +989,7 @@ package body Arbitrary.Limited_List is
 
   -- Search with Match passed by access
   function Search_Match (List      : in out List_Type;
-                         Match     : access
+                         Match     : not null access
                    function (Current, Criteria : Element_Type) return Boolean;
                          Criteria  : in Element_Type;
                          Where     : in Direction := Next;
