@@ -713,18 +713,10 @@ package body Arbitrary.Limited_List is
 
 
   -- Access to current element
-  function Access_Current (List : List_Type;
-                           Check_Empty : in Boolean := True)
-           return access Element_Type is
+  function Access_Current (List : List_Type)
+           return not null access Element_Type is
   begin
-    if Is_Empty (List) then
-      if Check_Empty then
-        raise Empty_List;
-      else
-        return null;
-      end if;
-    end if;
-    return List.Current.Value'Unrestricted_Access;
+    return Cell_Access_Current (List).Value'Unrestricted_Access;
   end Access_Current;
 
 
@@ -781,16 +773,10 @@ package body Arbitrary.Limited_List is
   -- Get direct access to the current Cell (that stores the current Element)
   -- CARE: As soon as the element is deleted, the access becomes invalid
   --  and using it will lead to unpredictable results
-  function Cell_Access_Current (List : List_Type;
-                                Check_Empty : in Boolean := True)
-           return access Cell is
+  function Cell_Access_Current (List : List_Type)
+           return not null access Cell is
   begin
-    if Is_Empty (List) then
-      if not Check_Empty then
-        return null;
-      end if;
-      Check (List);
-    end if;
+    Check (List);
     return List.Current;
   end Cell_Access_Current;
 

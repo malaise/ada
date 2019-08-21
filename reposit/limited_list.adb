@@ -238,10 +238,9 @@ package body Limited_List is
   end Insert_Copy;
 
   -- Get direct access to current element in list
-  function Access_Current (List : List_Type;
-                           Check_Empty : in Boolean := True)
-           return access Element_Type is
-    (List.List.Access_Current (Check_Empty));
+  function Access_Current (List : List_Type)
+           return not null access Element_Type is
+    (List.List.Access_Current );
 
   -- Search the element that is at the provided access (move to it)
   -- Return True if the matching item is found, then the current position is
@@ -255,10 +254,9 @@ package body Limited_List is
   -- Get direct access to the current Cell (that stores the current Element)
   -- CARE: As soon as the element is deleted, the access becomes invalid
   --  and using it will lead to unpredictable results
-  function Cell_Access_Current (List : List_Type;
-                                Check_Empty : in Boolean := True)
-           return access Cell is
-    (List.List.Cell_Access_Current (Check_Empty));
+  function Cell_Access_Current (List : List_Type)
+           return not null access Cell is
+    (List.List.Cell_Access_Current );
 
   -- Delete current element and rewind the list
   -- Rewinding is necessary because the impact of this deletion on current

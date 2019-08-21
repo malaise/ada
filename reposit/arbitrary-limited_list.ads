@@ -219,10 +219,8 @@ package Arbitrary.Limited_List is
   -- Get direct access to current element in list
   -- CARE: As soon as the element is deleted, the access becomes invalid
   --  and using it will lead to unpredictable results
-  -- Does not raise Empty_List by default
-  function Access_Current (List : List_Type;
-                           Check_Empty : in Boolean := True)
-           return access Element_Type;
+  function Access_Current (List : List_Type)
+           return not null access Element_Type;
 
   -- Search the element that is at the provided access (move to it)
   -- Return True if the matching item is found, then the current position is
@@ -236,9 +234,8 @@ package Arbitrary.Limited_List is
   -- CARE: As soon as the element is deleted, the access becomes invalid
   --  and using it will lead to unpredictable results
   type Cell is limited private;
-  function Cell_Access_Current (List : List_Type;
-                                Check_Empty : in Boolean := True)
-           return access Cell;
+  function Cell_Access_Current (List : List_Type)
+           return not null access Cell;
 
   -- Delete current element and rewind the list
   -- Rewinding is necessary because the impact of this deletion on current
