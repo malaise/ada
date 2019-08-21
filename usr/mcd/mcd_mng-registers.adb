@@ -162,7 +162,6 @@ package body Registers is
     Key : Key_Type;
     Data : Item_Rec;
   end record;
-  type Storage_Access is access all Storage_Rec;
   procedure Set (To : out Storage_Rec; Val : in Storage_Rec) is
   begin
     To := Val;
@@ -173,8 +172,7 @@ package body Registers is
   begin
     return Current.Key = Criteria.Key;
   end "=";
-  package H_List_Mng is new Hashed_List (Storage_Rec, Storage_Access, Set,
-                                       "=", Key_Image);
+  package H_List_Mng is new Hashed_List (Storage_Rec, Set, "=", Key_Image);
   package List_Mng is new H_List_Mng.Unique;
   Array_List : List_Mng.Unique_List_Type;
 

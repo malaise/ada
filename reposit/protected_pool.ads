@@ -33,12 +33,10 @@ private
 
   -- A protected pool is a global mutex and a hashed (on key) unique list
   --  of elements
-  type Element_Access is access all Element_Type;
   procedure Set (To : out Element_Type; Val : in Element_Type);
 
 
-  package Elt_List_Mng is new Hashed_List (Element_Type, Element_Access,
-                                           Set, "=", Key_Image);
+  package Elt_List_Mng is new Hashed_List (Element_Type, Set, "=", Key_Image);
   package Elt_Uniq_Mng is new Elt_List_Mng.Unique;
   type Pool_Type is tagged limited record
     Mutex : Mutexes.Simple_Mutex;

@@ -16,7 +16,6 @@ package body Sort is
     Path : As.U.Asu_Us;
     Prio : Positive;
   end record;
-  type Prio_Access is access all Prio_Rec;
   procedure Set (To : out Prio_Rec; Val : in Prio_Rec) is
   begin
     To := Val;
@@ -27,8 +26,7 @@ package body Sort is
     return L.Path = R.Path;
   end "=";
   function Image (Elt : Prio_Rec) return String is (Elt.Path.Image);
-  package H_Prio_List_Mng is new Hashed_List (
-       Prio_Rec, Prio_Access, Set, "=" , Image);
+  package H_Prio_List_Mng is new Hashed_List (Prio_Rec, Set, "=" , Image);
   package Prio_Ulist_Mng is new H_Prio_List_Mng.Unique;
   Prio_Ulist : Prio_Ulist_Mng.Unique_List_Type;
 

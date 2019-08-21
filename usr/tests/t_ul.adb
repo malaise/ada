@@ -12,7 +12,6 @@ procedure T_Ul is
     Name : Name_Txt;
     Val : Val_Txt;
   end record;
-  type Var_Acc is access all Var_Rec;
 
   procedure Set (To : out Var_Rec; Val : in Var_Rec) is
   begin
@@ -27,7 +26,7 @@ procedure T_Ul is
     return Current.Name = Criteria.Name;
   end "=";
 
-  package H_Ul is new Hashed_List (Var_Rec, Var_Acc, Set, "=", Image);
+  package H_Ul is new Hashed_List (Var_Rec, Set, "=", Image);
   package My_Ul is new H_Ul.Unique;
   Ul : My_Ul.Unique_List_Type;
 

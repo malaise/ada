@@ -143,7 +143,6 @@ procedure Dtd_Generator is
   end record;
 
   -- Hashed list of elements
-  type Element_Access is access all Element_Type;
   procedure Set (To : out Element_Type; Val : in Element_Type) is
   begin
     To := Val;
@@ -156,8 +155,7 @@ procedure Dtd_Generator is
     return Current.Name = Criteria.Name;
   end "=";
   function Image (Element : Element_Type) return String is (Element.Name.Image);
-  package Elem_Hash is new Hashed_List (Element_Type, Element_Access, Set,
-                                        "=", Image);
+  package Elem_Hash is new Hashed_List (Element_Type, Set, "=", Image);
   package Elem_Unique is new Elem_Hash.Unique;
   Elements : Elem_Unique.Unique_List_Type;
 

@@ -105,9 +105,9 @@ procedure Pingpong is
     Nb_Samples : Natural;
     Average_Delta : Duration;
   end record;
+  type Info_Access is access all Info_Type;
   overriding function "=" (Current : Info_Type;
                            Criteria : Info_Type) return Boolean;
-  type Info_Access is access all Info_Type;
   procedure Set (To : out Info_Type; Val : in Info_Type) is
   begin
     To := Val;
@@ -119,8 +119,7 @@ procedure Pingpong is
             = Criteria.Host.Host_Name(1 .. Criteria.Host.Host_Name_Len));
   function Key_Image (Element : Info_Type) return String is
     (Element.Host.Host_Name(1 .. Element.Host.Host_Name_Len));
-  package H_Info_List_Mng is new Hashed_List (Info_Type, Info_Access, Set,
-                                            "=", Key_Image);
+  package H_Info_List_Mng is new Hashed_List (Info_Type, Set, "=", Key_Image);
   package Info_List_Mng is new H_Info_List_Mng.Unique;
   Info_List : Info_List_Mng.Unique_List_Type;
 
@@ -181,7 +180,7 @@ procedure Pingpong is
         Info.Average_Delta := Delta_Time;
         Info_List.Insert (Info);
       else
-        Info_List.Get_Access_Current (Info_Acc);
+        Info_Acc := Info_Access (Info_List.Get_Access_Current);
         -- Average with previous value
         Info_Acc.Average_Delta :=
           (Info_Acc.Average_Delta * Info.Nb_Samples + Delta_Time)

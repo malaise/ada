@@ -40,7 +40,6 @@ package body Replace_Pattern is
     Action : Subtit_Action_List;
     Info : Byte;
   end record;
-  type Substit_Action_Access is access all Substit_Action_Rec;
   procedure Set (To : out Substit_Action_Rec; Val : in Substit_Action_Rec) is
   begin
     To := Val;
@@ -54,7 +53,7 @@ package body Replace_Pattern is
     return Current.Index = Criteria.Index;
   end "=";
   package H_Substites_List is new Hashed_List (Substit_Action_Rec,
-                    Substit_Action_Access, Set, "=", Image);
+                    Set, "=", Image);
   package Substites_List is new H_Substites_List.Unique;
   Substites : Substites_List.Unique_List_Type;
 

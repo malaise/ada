@@ -12,7 +12,7 @@ package body Hashed_List is
   procedure Locate (List      : in out List_Type;
                     Crit      : in Element_Type;
                     Reset     : in Boolean;
-                    Element   : out Element_Access;
+                    Element   : out Element_Acc;
                     Direction : in Direction_List := Forward) is
     Index : constant Hash_Mng.Hash_Range := Hash_Func (Key_Image (Crit));
     Data_Found : Hash_Mng.Found_Rec;
@@ -56,7 +56,7 @@ package body Hashed_List is
                          Crit      : in Element_Type;
                          Direction : in Direction_List:= Forward)
            return Boolean is
-    Acc : Element_Access;
+    Acc : Element_Acc;
   begin
     Locate (List, Crit, True, Acc, Direction);
     return Acc /= null;
@@ -74,7 +74,7 @@ package body Hashed_List is
                         Crit      : in Element_Type;
                         Direction : in Direction_List := Forward)
            return Boolean is
-    Acc : Element_Access;
+    Acc : Element_Acc;
   begin
     Locate (List, Crit, False, Acc, Direction);
     return  Acc /= null;
@@ -83,7 +83,7 @@ package body Hashed_List is
   procedure Find_First (List : in out List_Type;
                         Crit : in Element_Type;
                         Direction : in Direction_List := Forward) is
-    Acc : Element_Access;
+    Acc : Element_Acc;
   begin
     Locate (List, Crit, True, Acc, Direction);
     if Acc = null then
@@ -94,7 +94,7 @@ package body Hashed_List is
   procedure Find_Next (List : in out List_Type;
                        Crit : in Element_Type;
                        Direction : in Direction_List := Forward) is
-    Acc : Element_Access;
+    Acc : Element_Acc;
   begin
     Locate (List, Crit, False, Acc, Direction);
     if Acc = null then
@@ -124,8 +124,8 @@ package body Hashed_List is
     end case;
     Hash_Mng.Store (List.Table,
                     Key_Image(Item),
-                    (Element_Access (List.List.Access_Current),
-                     List.List.Cell_Access_Current),
+                    (Elt  => List.List.Access_Current,
+                     Cell => List.List.Cell_Access_Current),
                     Hashing.Where_Insert_List(Where));
   exception
     when List_Mng.Full_List =>
@@ -151,20 +151,17 @@ package body Hashed_List is
   -- Get direct access to element matching in the list
   -- May raise Not_In_List
   procedure Get_Access_Current (List : in List_Type;
-                                Item_Access : out not null Element_Access) is
+                                Item_Access : out Element_Access) is
   begin
-    if List.Current = Null_Cell then
-      raise Not_In_List;
-    end if;
-    Item_Access := List.Current.Elt;
+    Item_Access := Get_Access_Current (List);
   end Get_Access_Current;
-  function Get_Access_Current (List : List_Type)
-           return not null Element_Access is
+
+  function Get_Access_Current (List : List_Type) return Element_Access is
   begin
     if List.Current = Null_Cell then
       raise Not_In_List;
     end if;
-    return List.Current.Elt;
+    return Element_Access (List.Current.Elt);
   end Get_Access_Current;
 
   -- Suppress the last element found (which is reset)
@@ -189,10 +186,10 @@ package body Hashed_List is
   -- May raise Not_In_List
   procedure Replace_Current (List : in out List_Type;
                              Item : in Element_Type) is
-    Acc : Element_Access;
+    Acc : Element_Acc;
   begin
     Check_Callback (List);
-    Get_Access_Current (List, Acc);
+    Acc := Element_Acc (Get_Access_Current (List));
 
     -- Check that Item is "=" to current element
     if Item /= Acc.all then

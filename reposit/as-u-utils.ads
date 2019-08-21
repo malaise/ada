@@ -7,9 +7,8 @@ package As.U.Utils is
   package Asu_Long_Long_List_Mng is new Long_Long_Limited_List (Asu_Us, Set);
 
   -- Hahsed_List and Unique_List of Asu_Us
-  subtype Asu_Us_Access is As.U.Asu_Us_Access;
   package Asu_Hashed_List_Mng is new Hashed_List (
-       Asu_Us, Asu_Us_Access, Set, As.U."=" , Image);
+       Asu_Us, Set, As.U."=" , Image);
   package Asu_Unique_List_Mng is new Asu_Hashed_List_Mng.Unique;
 
   -- Unbounded array of Asu_Us

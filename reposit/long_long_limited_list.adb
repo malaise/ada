@@ -694,7 +694,7 @@ package body Long_Long_Limited_List is
 
 
   -- Access to current element
-  function Access_Current (List : List_Type;
+  function Access_Current (List : List_Type)
            return not null access Element_Type is
   begin
     return Cell_Access_Current (List).Value'Unrestricted_Access;
@@ -754,7 +754,7 @@ package body Long_Long_Limited_List is
   -- Get direct access to the current Cell (that stores the current Element)
   -- CARE: As soon as the element is deleted, the access becomes invalid
   --  and using it will lead to unpredictable results
-  function Cell_Access_Current (List : List_Type;
+  function Cell_Access_Current (List : List_Type)
            return not null access Cell is
   begin
     Check (List);

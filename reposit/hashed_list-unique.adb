@@ -32,7 +32,7 @@ package body Hashed_List.Unique is
   -- Optim: See if last found is the one
   procedure Locate_Optim (List : in out Unique_List_Type;
                           Crit : in Element_Type;
-                          Element : out Element_Access) is
+                          Element : out Element_Acc) is
     Index : constant Hash_Mng.Hash_Range := Hash_Func (Key_Image (Crit));
     use type Hash_Mng.Hash_Range;
   begin
@@ -50,14 +50,21 @@ package body Hashed_List.Unique is
   -- May raise Not_In_List
   procedure Get_Access (List : in out Unique_List_Type;
                         Item : in Element_Type;
-                        Item_Access : out not null Element_Access) is
-    Acc : Element_Access;
+                        Item_Access : out Element_Access) is
+  begin
+    Item_Access := Get_Access (List, Item);
+  end Get_Access;
+
+  function Get_Access (List : in out Unique_List_Type;
+                       Item : in Element_Type)
+           return Element_Access is
+    Acc : Element_Acc;
   begin
     Locate_Optim (List, Item, Acc);
     if Acc = null then
       raise Not_In_List;
     end if;
-    Item_Access := List.Current.Elt;
+    return Element_Access (Acc);
   end Get_Access;
 
   -- Insert an item if does not already exists
@@ -67,7 +74,7 @@ package body Hashed_List.Unique is
                            Where : in Where_Insert_List := Last)
             return Boolean is
 
-    Acc : Element_Access;
+    Acc : Element_Acc;
   begin
     Check_Callback (List_Type(List));
     Locate (List_Type(List), Item, True, Acc);
@@ -93,7 +100,7 @@ package body Hashed_List.Unique is
   overriding procedure Insert (List : in out Unique_List_Type;
                                Item : in Element_Type;
                                Where : in Where_Insert_List := Last) is
-    Acc : Element_Access;
+    Acc : Element_Acc;
   begin
     Check_Callback (List_Type(List));
     Locate_Optim (List, Item, Acc);
@@ -108,7 +115,7 @@ package body Hashed_List.Unique is
   -- May raise Not_In_List
   procedure Read (List : in out Unique_List_Type;
                   Item : in out Element_Type) is
-    Acc : Element_Access;
+    Acc : Element_Acc;
   begin
     -- Find (List, Item);
     Locate_Optim (List, Item, Acc);
@@ -132,7 +139,7 @@ package body Hashed_List.Unique is
   -- May raise Not_In_List
   procedure Delete (List : in out Unique_List_Type;
                     Crit : in Element_Type) is
-    Acc : Element_Access;
+    Acc : Element_Acc;
   begin
     Check_Callback (List_Type(List));
     -- Find (List, Item);
@@ -148,7 +155,7 @@ package body Hashed_List.Unique is
   procedure Delete (List : in out Unique_List_Type;
                     Crit : in Element_Type;
                     Done : out Boolean) is
-    Acc : Element_Access;
+    Acc : Element_Acc;
   begin
     Check_Callback (List_Type(List));
     -- Find (List, Item);

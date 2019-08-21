@@ -27,7 +27,6 @@ procedure T_Str_Error is
     Alias_Of : As.U.Asu_Us;
   end record;
   Def, Alias : Def_Rec;
-  type Def_Access is access all Def_Rec;
   procedure Set (To : out Def_Rec; Val : in Def_Rec) is
   begin
     To := Val;
@@ -39,8 +38,7 @@ procedure T_Str_Error is
     return Current.Name = Criteria.Name;
   end "=";
   function Key_Image (Element : Def_Rec) return String is (Element.Name.Image);
-  package Hash_Def_Mng is new Hashed_List (Def_Rec, Def_Access,
-    Set, "=", Key_Image);
+  package Hash_Def_Mng is new Hashed_List (Def_Rec, Set, "=", Key_Image);
   package Unique_Def_Mng is new Hash_Def_Mng.Unique;
   Defs : Unique_Def_Mng.Unique_List_Type;
 

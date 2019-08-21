@@ -235,7 +235,7 @@ package Long_Long_Limited_List is
   -- CARE: As soon as the element is deleted, the access becomes invalid
   --  and using it will lead to unpredictable results
   type Cell is limited private;
-  function Cell_Access_Current (List : List_Type;
+  function Cell_Access_Current (List : List_Type)
            return not null access Cell;
 
   -- Delete current element and rewind the list

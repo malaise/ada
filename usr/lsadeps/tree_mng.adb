@@ -33,7 +33,6 @@ package body Tree_Mng is
     Name : As.U.Asu_Us;
     Level : Positive;
   end record;
-  type Cell_Access is access all Cell;
   procedure Set (To : out Cell; Val : in Cell) is
   begin
     To := Val;
@@ -44,8 +43,7 @@ package body Tree_Mng is
     return Current.Name = Criteria.Name;
   end "=";
   function Key_Image (A_Cell : Cell) return String is (A_Cell.Name.Image);
-  package Cell_Hashed_List_Mng is
-      new Hashed_List (Cell, Cell_Access, Set, "=", Key_Image);
+  package Cell_Hashed_List_Mng is new Hashed_List (Cell, Set, "=", Key_Image);
   package Cell_Unique_List_Mng is new Cell_Hashed_List_Mng.Unique;
   Got_List : Cell_Unique_List_Mng.Unique_List_Type;
 

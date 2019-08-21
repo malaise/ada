@@ -3,7 +3,6 @@ with Long_Longs, Hashing;
 generic
   -- Type of the element of the list
   type Element_Type is limited private;
-  type Element_Access is access all Element_Type;
   -- Affectation of elements
   with procedure Set (To : out Element_Type; Val : in Element_Type);
   -- Criteria of unicity (and search) of elements
@@ -29,8 +28,11 @@ package Hashed_List is
   -- A hashed list is a storage of elements that are accessed through hashing
   -- Several elements with the same value (in the sense of "=") can be stored
   --  a retrieved successively.
-
   type List_Type is tagged limited private;
+
+
+  -- For direct access
+  type Element_Access is not null access all Element_Type;
 
   -- For Iterator
   type Reference is (From_First, From_Last);
@@ -92,9 +94,9 @@ package Hashed_List is
   -- Of course, changing the key of the accessed element will break the
   --  hash table integrity
   -- May raise Not_In_List
-  procedure Get_Access_Current (List : in List_Type;
-                                Item_Access : out not null Element_Access);
-  function Get_Access_Current (List : List_Type) return not null Element_Access;
+   procedure Get_Access_Current (List : in List_Type;
+                                 Item_Access : out Element_Access);
+  function Get_Access_Current (List : List_Type) return Element_Access;
 
   -- Suppress the last element searched/found (which is reset)
   -- Note that this operation leads to a sequential scan of the list
@@ -190,8 +192,9 @@ private
 
   -- The hashed cell contains the access to the Element in the Limited_List
   --  and the access to the Cell of the Element in the Limited_List
+  type Element_Acc is access all Element_Type;
   type Hashed_Cell is record
-    Elt : Element_Access := null;
+    Elt : Element_Acc := null;
     Cell : access List_Mng.Cell := null;
   end record;
   Null_Cell : constant Hashed_Cell := (others => <>);
@@ -214,7 +217,7 @@ private
   procedure Locate (List      : in out List_Type;
                     Crit      : in Element_Type;
                     Reset     : in Boolean;
-                    Element   : out Element_Access;
+                    Element   : out Element_Acc;
                     Direction : in Direction_List := Forward);
   -- Check if we are in callback
   procedure Check_Callback (List : in out List_Type);

@@ -20,7 +20,6 @@ package File_Hash is
     No : Long_Longs.Ll_Positive;
     Txt : As.U.Asu_Us;
   end record;
-  type Line_Access is access all Line_Rec;
   procedure Set (To : out Line_Rec; Val : in Line_Rec);
   -- Match if Txt matches
   overriding function "=" (Current : Line_Rec;
@@ -30,7 +29,7 @@ package File_Hash is
 
   -- Hashed list of lines
   package List_Mng is new Hashed_List (
-       Line_Rec, Line_Access, Set, "=", Key_Image, Hash_Max, Hash_Func);
+       Line_Rec, Set, "=", Key_Image, Hash_Max, Hash_Func);
 
 
   -- Load the content of the file in the list (insert after current position)

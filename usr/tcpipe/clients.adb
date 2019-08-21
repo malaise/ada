@@ -12,7 +12,6 @@ package body Clients is
     --  the connection Dscr
     Dscr : Socket.Socket_Dscr;
   end record;
-  type Client_Access is access all Client_Rec;
 
   -- List of clients (accepting/accepted/connected), hashed on Dscr
   procedure Set (To : out Client_Rec; Val : in Client_Rec) is
@@ -26,8 +25,7 @@ package body Clients is
   end "=";
   function Image (Element : Client_Rec) return String is (Element.Dscr.Image);
 
-  package Client_List_Mng is new Hashed_List (Client_Rec, Client_Access,
-                                               Set, "=", Image);
+  package Client_List_Mng is new Hashed_List (Client_Rec, Set, "=", Image);
   package Client_Mng is new Client_List_Mng.Unique;
   Client_List : Client_Mng.Unique_List_Type;
 

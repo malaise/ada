@@ -92,8 +92,7 @@ package body Search_Pattern is
     -- Unicity of Num
     return Current.Num = Criteria.Num;
   end "=";
-  package H_List_Pattern  is new Hashed_List (Line_Pat_Rec, Line_Pat_Acc,
-                                            Set, "=", Image);
+  package H_List_Pattern  is new Hashed_List (Line_Pat_Rec, Set, "=", Image);
   package Unique_Pattern  is new H_List_Pattern.Unique;
 
   -- The search and exclude patterns
@@ -149,7 +148,7 @@ package body Search_Pattern is
     Upat_Access : Line_Pat_Acc;
   begin
     Upat.Num := N;
-    Search_List.Get_Access (Upat, Upat_Access);
+    Upat_Access := Line_Pat_Acc (Search_List.Get_Access (Upat));
     return Upat_Access;
   end Get_Search_Access;
 
@@ -203,7 +202,7 @@ package body Search_Pattern is
     -- Insert a pattern without compiled pattern and substrs
     List.Insert (Upat);
     -- Get access to it and compile in this access
-    List.Get_Access (Upat, Upat_Access);
+    Upat_Access := Line_Pat_Acc (List.Get_Access (Upat));
     Upat_Access.Pat.Compile (Ok, Crit,
                              Case_Sensitive => Case_Sensitive,
                              Dot_All => Dot_All);
@@ -569,7 +568,7 @@ package body Search_Pattern is
     Parse_One (Delim, False, False, False, False, False,Delim_List);
     -- One string in list: the delimiter
     Upat.Num := 1;
-    Delim_List.Get_Access (Upat, Acc);
+    Acc := Line_Pat_Acc (Delim_List.Get_Access (Upat));
     Delimiter := Acc.Find_Str;
     if Delimiter.Length > Text_Line.Max_Line_Feed_Len then
       Error ("Delimiter is too long");
@@ -630,8 +629,8 @@ package body Search_Pattern is
     end if;
     for I in 1 .. Search_List.List_Length loop
       Upat.Num := I;
-      Search_List.Get_Access (Upat, Search_Access);
-      Exclude_List.Get_Access (Upat, Exclude_Access);
+      Search_Access := Line_Pat_Acc (Search_List.Get_Access (Upat));
+      Exclude_Access := Line_Pat_Acc (Exclude_List.Get_Access (Upat));
       if Search_Access.Is_Delim /= Exclude_Access.Is_Delim then
         Error ("Exclude must have the same delimiters as the find pattern");
       end if;
@@ -777,7 +776,7 @@ package body Search_Pattern is
     end if;
     -- Get access to the pattern
     Upat.Num := Regex_Index;
-    List.all.Get_Access (Upat, Upat_Access);
+    Upat_Access := Line_Pat_Acc (List.all.Get_Access (Upat));
     -- Reset substring array if not a delim
     if not Upat_Access.Is_Delim then
       Upat_Access.Substrs := (others => (0, 0, 0));

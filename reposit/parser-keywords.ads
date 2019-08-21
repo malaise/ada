@@ -51,13 +51,11 @@ private
     Keyword : As.U.Asu_Us;
     Data : Data_Type;
   end record;
-  type Cell_Access is access all Cell_Type;
   procedure Set (To : out Cell_Type; Val : in Cell_Type);
   overriding function "=" (Current : Cell_Type;
                            Criteria : Cell_Type) return Boolean;
   function Image (Cell : Cell_Type) return String;
-  package H_Cell_List_Mng is new Hashed_List (Cell_Type, Cell_Access,
-             Set, "=", Image);
+  package H_Cell_List_Mng is new Hashed_List (Cell_Type, Set, "=", Image);
   package Cell_List_Mng is new H_Cell_List_Mng.Unique;
 
   type Iterator is tagged limited record

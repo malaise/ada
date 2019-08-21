@@ -108,13 +108,11 @@ private
   end record;
 
   -- Unique Hash list of variables
-  type Var_Access is access all Var_Rec;
   procedure Set (To : out Var_Rec; Val : in Var_Rec);
   function Image (Element : Var_Rec) return String;
   overriding function "=" (Current : Var_Rec;
                            Criteria : Var_Rec ) return Boolean;
-  package Var_List_Mng is new Hashed_List (Var_Rec, Var_Access,
-                                           Set, "=", Image);
+  package Var_List_Mng is new Hashed_List (Var_Rec, Set, "=", Image);
   package Var_Mng is new Var_List_Mng.Unique;
 
   -- Memory set

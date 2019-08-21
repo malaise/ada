@@ -9,7 +9,6 @@ package body Actions is
   type Action is record
     Name, Command : As.U.Asu_Us;
   end record;
-  type Action_Access is access all Action;
   procedure Set (To : out Action; Val : in Action) is
   begin
     To := Val;
@@ -21,8 +20,7 @@ package body Actions is
    return Current.Name = Criteria.Name;
   end "=";
   function Key_Image (Element : Action) return String is (Element.Name.Image);
-  package Actions_List_Mng is new Hashed_List (Action, Action_Access,
-                                               Set, "=", Key_Image);
+  package Actions_List_Mng is new Hashed_List (Action, Set, "=", Key_Image);
   package Unique_Actions_Mng is new Actions_List_Mng.Unique;
   Actions : Unique_Actions_Mng.Unique_List_Type;
 

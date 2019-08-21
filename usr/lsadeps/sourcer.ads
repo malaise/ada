@@ -43,13 +43,11 @@ package Sourcer is
   end record;
 
   -- Unique list of parsed source descriptors (Kind, Unit and Path)
-  type Src_Dscr_Access is access all Src_Dscr;
   procedure Set (To : out Src_Dscr; Val : in Src_Dscr);
   overriding function "=" (Current : Src_Dscr;
                            Criteria : Src_Dscr) return Boolean;
   function Image (Element : Src_Dscr) return String;
-  package H_Src_List_Mng is new Hashed_List (Src_Dscr, Src_Dscr_Access,
-                                           Set, "=" , Image);
+  package H_Src_List_Mng is new Hashed_List (Src_Dscr, Set, "=" , Image);
   package Src_List_Mng is new H_Src_List_Mng.Unique;
   List : Src_List_Mng.Unique_List_Type;
 
@@ -62,13 +60,11 @@ package Sourcer is
     Paths : As.U.Asu_Us;
   end record;
   -- Unique list of parsed unit names (Unit)
-  type Name_Dscr_Access is access all Name_Dscr;
   procedure Set (To : out Name_Dscr; Val : in Name_Dscr);
   overriding function "=" (Current : Name_Dscr;
                            Criteria : Name_Dscr) return Boolean;
   function Image (Element : Name_Dscr) return String;
-  package H_Name_List_Mng is new Hashed_List (Name_Dscr, Name_Dscr_Access,
-                                           Set, "=" , Image);
+  package H_Name_List_Mng is new Hashed_List (Name_Dscr, Set, "=" , Image);
   package Name_List_Mng is new H_Name_List_Mng.Unique;
   Name_List : Name_List_Mng.Unique_List_Type;
 
@@ -80,13 +76,11 @@ package Sourcer is
     -- Withings - @path/unit@path/unit...@path/unit@
     Withings : As.U.Asu_Us;
   end record;
-  type Withing_Dscr_Access is access all Withing_Dscr;
   procedure Set (To : out Withing_Dscr; Val : in Withing_Dscr);
   overriding function "=" (Current : Withing_Dscr;
                            Criteria : Withing_Dscr) return Boolean;
   function Image (Element : Withing_Dscr) return String;
   package H_Withing_List_Mng is new Hashed_List (Withing_Dscr,
-                                           Withing_Dscr_Access,
                                            Set, "=" , Image);
   package Withing_List_Mng is new H_Withing_List_Mng.Unique;
   Withing_List : Withing_List_Mng.Unique_List_Type;
