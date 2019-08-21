@@ -139,11 +139,13 @@ package Hashing is
       -- Dump hash value of key and list all data found for key
       procedure Dump (Table     : in Hash_Table;
                       Index     : in Hash_Range;
-                      Put       : access procedure (Data : in Data_Access);
+                      Put       : not null access
+                                      procedure (Data : in Data_Access);
                       Direction : in Direction_List := Forward);
       procedure Dump (Table     : in Hash_Table;
                       Key       : in String;
-                      Put       : access procedure (Data : in Data_Access);
+                      Put       : not null access
+                                      procedure (Data : in Data_Access);
                       Direction : in Direction_List := Forward);
 
       -- Remove all the data stored in the hash table

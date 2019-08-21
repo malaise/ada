@@ -7,7 +7,7 @@ procedure Code is
   Buff : As.U.Asu_Us;
   Rec : Grid_1.Coordinate_Rec;
   -- Better not allocate that in stack, but rather in heap.
-  type Access_Long_String is access Grid_2.Long_String;
+  type Access_Long_String is not null access Grid_2.Long_String;
   Str  : constant Access_Long_String
        := new Grid_2.Long_String(1 .. 1_048_576);
   File_Too_Long : exception;

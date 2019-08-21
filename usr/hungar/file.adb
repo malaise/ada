@@ -9,7 +9,7 @@ package body File is
   -- Input mattrix splitted in rows to reduce size of object
   type Float_Cell_Range is digits 5 range 0.00 .. 100.00;
   type Input_Row_Tab is array (1 .. Max_Dim) of Float_Cell_Range;
-  type Input_Row_Tab_Access is access Input_Row_Tab;
+  type Input_Row_Tab_Access is not null access Input_Row_Tab;
   type Input_Mattrix_Tab is array (1 .. Max_Dim) of Input_Row_Tab_Access;
   Input_Mattrix : constant Input_Mattrix_Tab
                 := (others => new Input_Row_Tab);

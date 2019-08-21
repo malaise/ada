@@ -52,7 +52,7 @@ package body Date_Text is
 
   -- Convertion functions for month
   package Conv is
-    type Func is access function (Str : String) return String;
+    type Func is not null access function (Str : String) return String;
     -- "January" -> "01" and reverse
     function Long2Num (Str : String) return String;
     function Num2Long (Str : String) return String;

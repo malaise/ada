@@ -93,8 +93,8 @@ package Hashed_List is
   --  hash table integrity
   -- May raise Not_In_List
   procedure Get_Access_Current (List : in List_Type;
-                                Item_Access : out Element_Access);
-  function Get_Access_Current (List : List_Type) return Element_Access;
+                                Item_Access : out not null Element_Access);
+  function Get_Access_Current (List : List_Type) return not null Element_Access;
 
   -- Suppress the last element searched/found (which is reset)
   -- Note that this operation leads to a sequential scan of the list

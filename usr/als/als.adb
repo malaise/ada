@@ -178,8 +178,8 @@ procedure Als is
   function Parse_Date (Str : String) return Entities.Date_Spec_Rec is separate;
 
   -- Set a file or dir, match or exclusion criteria, or dir discard criteria
-  type Call_Access is access procedure (Template : in String;
-                                        Regex    : in Boolean);
+  type Call_Access is not null access procedure (Template : in String;
+                                                 Regex    : in Boolean);
   procedure Set_Criteria (Name     : in String;
                           Criteria : in String;
                           Call     : in Call_Access) is separate;

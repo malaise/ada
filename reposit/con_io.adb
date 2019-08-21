@@ -150,7 +150,7 @@ package body Con_Io is
                             Background : in Effective_Colors;
                             Xor_Mode   : in Effective_Xor_Modes;
                             Forced     : in Boolean := False) is
-    Con_Acc : constant access Console_Data := Con.Get_Access;
+    Con_Acc : constant not null access Console_Data := Con.Get_Access;
   begin
     -- Reset can be forced explicitely by the Forced argument
     if Forced or else Foreground /= Con_Acc.Line_Foreground
@@ -632,7 +632,7 @@ package body Con_Io is
 
   -- Internal set attributes for the window
   procedure Set_Attributes_From_Window (
-                     Win        : access Window_Data;
+                     Win        : not null access Window_Data;
                      Foreground : in Colors;
                      Background : in Colors) is
     Fg : Effective_Colors;
@@ -647,7 +647,7 @@ package body Con_Io is
   end Set_Attributes_From_Window;
 
   -- Internal increment col by one or row by one...
-  procedure Move_1 (Win : access Window_Data) is
+  procedure Move_1 (Win : not null access Window_Data) is
   begin
     if Win.Current_Pos.Col /= Win.Lower_Right.Col
                             - Win.Upper_Left.Col then
@@ -670,7 +670,7 @@ package body Con_Io is
   -- Internal write of the string of ONE character at the current cursor
   --  position and with attributes.
   -- Lf only is interpreted
-  procedure Put_1_Char (Win        : access Window_Data;
+  procedure Put_1_Char (Win        : not null access Window_Data;
                         C          : in String;
                         Foreground : in Colors := Current;
                         Background : in Colors := Current;
@@ -913,7 +913,7 @@ package body Con_Io is
 
 
   -- Internal X event management
-  procedure Next_X_Event (Con : access Console_Data;
+  procedure Next_X_Event (Con : not null access Console_Data;
                           Timeout : in Timers.Delay_Rec;
                           X_Event : out X_Mng.Event_Kind) is
   -- In out for X_Mng
@@ -974,7 +974,7 @@ package body Con_Io is
   -- Returns if key pressed (Esc event), then Ctrl..Kbd_Tab are significant
   -- otherwise mouse action, refresh, timeout...
   subtype Event_List is Curs_Mvt range Esc .. Refresh;
-  procedure Get_Key_Time (Con         : access Console_Data;
+  procedure Get_Key_Time (Con         : not null access Console_Data;
                           Event       : out Event_List;
                           Ctrl        : out Boolean;
                           Shift       : out Boolean;
@@ -1641,7 +1641,7 @@ package body Con_Io is
 
   -- Internal
   procedure Set_Screen_Attributes (Con : in Console) is
-    Screen : constant access Window_Data
+    Screen : constant not null access Window_Data
            := Con.Get_Access.Screen_Window.all.Get_Access;
   begin
     Set_Attributes (Con, Screen.Current_Foreground,

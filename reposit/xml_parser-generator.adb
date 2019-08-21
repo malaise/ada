@@ -17,7 +17,7 @@ package body Xml_Parser.Generator is
   -- Process pure text (outside CDATA)
   procedure Process_Text (
       Text : in out As.U.Asu_Us;
-      Process : access procedure (Text : in out As.U.Asu_Us)) is
+      Process : not null access procedure (Text : in out As.U.Asu_Us)) is
     Start, Stop : Natural;
     Slice : As.U.Asu_Us;
     Len : Natural;

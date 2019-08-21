@@ -151,14 +151,15 @@ package body Hashed_List is
   -- Get direct access to element matching in the list
   -- May raise Not_In_List
   procedure Get_Access_Current (List : in List_Type;
-                                Item_Access : out Element_Access) is
+                                Item_Access : out not null Element_Access) is
   begin
     if List.Current = Null_Cell then
       raise Not_In_List;
     end if;
     Item_Access := List.Current.Elt;
   end Get_Access_Current;
-  function Get_Access_Current (List : List_Type) return Element_Access is
+  function Get_Access_Current (List : List_Type)
+           return not null Element_Access is
   begin
     if List.Current = Null_Cell then
       raise Not_In_List;

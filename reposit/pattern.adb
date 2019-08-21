@@ -250,7 +250,7 @@ package body Pattern is
     Index := 1;
     declare
       subtype Image_Str is String (1 .. Len);
-      type Image_Access is access Image_Str;
+      type Image_Access is not null access Image_Str;
       Str_Acc : constant Image_Access := new Image_Str;
     begin
       loop

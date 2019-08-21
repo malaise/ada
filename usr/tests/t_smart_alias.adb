@@ -2,7 +2,7 @@ with Basic_Proc, Smart_Alias;
 with T_Smart_Int;
 procedure T_Smart_Alias is
 
-  procedure Rel (Acc : access T_Smart_Int.Lim;
+  procedure Rel (Acc : not null access T_Smart_Int.Lim;
                  Nb  : in Natural) is
   begin
     if Nb = 0 then
@@ -16,8 +16,8 @@ procedure T_Smart_Alias is
 
   R1, R2, R3 : Int_Alias.Handle;
   I, J :  aliased T_Smart_Int.Lim;
-  Ia : constant Int_Alias.Object_Access := I'Access;
-  Ja : constant Int_Alias.Object_Access := J'Access;
+  Ia : constant not null Int_Alias.Object_Access := I'Access;
+  Ja : constant not null Int_Alias.Object_Access := J'Access;
 
 begin
   T_Smart_Int.Init (I, 21);

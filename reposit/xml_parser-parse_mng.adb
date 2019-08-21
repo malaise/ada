@@ -314,6 +314,7 @@ package body Parse_Mng  is
   -- Dtd uses Parse_Directive for comment and CDATA
   -- If not In_Dtd, comments might be stored (if Ctx.Parse_Comments)
   -- Can be called by Dtd
+  -- Children must be sent when Ctx Stage is Elements
   procedure Parse_Directive (Ctx : in out Ctx_Type;
                              Adtd : in out Dtd_Type;
                              Allow_Dtd : in Boolean;
@@ -737,10 +738,10 @@ package body Parse_Mng  is
   -- Add current element to list of children
   procedure Add_Child (Ctx  : in out Ctx_Type;
                        Adtd : in out Dtd_Type;
-                       Children : access Children_Desc) is
+                       Children : not null access Children_Desc) is
     Cell : My_Tree_Cell;
   begin
-    if not Adtd.Set or else Children = null then
+    if not Adtd.Set then
       -- In Prologue (Pi or directive) => no check
       -- No dtd => no check
       return;
@@ -872,6 +873,7 @@ package body Parse_Mng  is
   end Check_Xml;
 
   -- Parse an instruction (<?xxx?>)
+  -- Children must be sent when Ctx Stage is Elements
   procedure Parse_Instruction (Ctx : in out Ctx_Type;
                                Adtd : in out Dtd_Type;
                                Children : access Children_Desc) is
@@ -1262,19 +1264,19 @@ package body Parse_Mng  is
   -- Parse an element (<Name...>)
   procedure Parse_Element (Ctx : in out Ctx_Type;
                            Adtd : in out Dtd_Type;
-                           Parent_Children : access Children_Desc;
+                           Parent_Children : not null access Children_Desc;
                            Root : in Boolean);
 
   -- Parse the children of current element
   procedure Parse_Children (Ctx : in out Ctx_Type;
                             Adtd : in out Dtd_Type;
-                            Children : access Children_Desc;
+                            Children : not null access Children_Desc;
                             Allow_End : Boolean := False);
 
   -- Parse text
   procedure Parse_Text (Ctx : in out Ctx_Type;
                         Adtd : in out Dtd_Type;
-                        Children : access Children_Desc) is
+                        Children : not null access Children_Desc) is
     -- This list is either empty (<node></node>) or contains
     --  Text, Cdata, Text...
     Texts : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
@@ -1569,7 +1571,7 @@ package body Parse_Mng  is
   -- Children and Is_mixed are set with list of children
   procedure Parse_Children (Ctx : in out Ctx_Type;
                             Adtd : in out Dtd_Type;
-                            Children : access Children_Desc;
+                            Children : not null access Children_Desc;
                             Allow_End : Boolean := False) is
     -- Create parent node with children if needed
     procedure Create (Has_Children : in Boolean) is
@@ -1660,7 +1662,7 @@ package body Parse_Mng  is
   -- Parse an element (<Name...>)
   procedure Parse_Element (Ctx : in out Ctx_Type;
                            Adtd : in out Dtd_Type;
-                           Parent_Children : access Children_Desc;
+                           Parent_Children : not null access Children_Desc;
                            Root : in Boolean) is
     Element_Name, End_Name : As.U.Asu_Us;
     Char : Character;

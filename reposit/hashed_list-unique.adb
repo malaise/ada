@@ -50,7 +50,7 @@ package body Hashed_List.Unique is
   -- May raise Not_In_List
   procedure Get_Access (List : in out Unique_List_Type;
                         Item : in Element_Type;
-                        Item_Access : out Element_Access) is
+                        Item_Access : out not null Element_Access) is
     Acc : Element_Access;
   begin
     Locate_Optim (List, Item, Acc);

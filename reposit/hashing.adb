@@ -222,7 +222,8 @@ package body Hashing is
       -- Dump hash value of key and lists all data found for key
       procedure Dump (Table     : in Hash_Table;
                       Index     : in Hash_Range;
-                      Put       : access procedure (Data : in Data_Access);
+                      Put       : not null access
+                                      procedure (Data : in Data_Access);
                       Direction : in Direction_List := Forward) is
         Ca : Cell_Access := Table.Arr(Index).First;
       begin
@@ -244,7 +245,8 @@ package body Hashing is
 
       procedure Dump (Table     : in Hash_Table;
                       Key       : in String;
-                      Put       : access procedure (Data : in Data_Access);
+                      Put       : not null access
+                                      procedure (Data : in Data_Access);
                       Direction : in Direction_List := Forward) is
         I : constant Hash_Range := Hash_Func(Key);
       begin

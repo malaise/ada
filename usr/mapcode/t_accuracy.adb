@@ -112,7 +112,7 @@ procedure T_Accuracy is
   Step : constant Mapcodes.Real := 1.0E-7;
 
   -- Random generator
-  Gen : constant access Rnd.Generator := Rnd.Gen;
+  Gen : Rnd.Generator renames Rnd.Gen.all;
   -- Input and reference coordinates
   In_Coord, Ref_Coord : Mapcodes.Coordinate;
   -- Mapcode

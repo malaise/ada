@@ -35,7 +35,7 @@ package body Fifos is
 
     package List is
       -- Insert a fifo
-      function Insert (Rec : Fifo_Rec) return access Fifo_Rec;
+      function Insert (Rec : Fifo_Rec) return not null access Fifo_Rec;
 
 
       -- Search fifo
@@ -50,7 +50,7 @@ package body Fifos is
                                Port : Tcp_Util.Port_Num) return Boolean;
 
       -- Get access to current fifo
-      function Access_Current return access Fifo_Rec;
+      function Access_Current return not null access Fifo_Rec;
 
       -- Del current fifo and move to next
       procedure Del_Current;
@@ -69,14 +69,14 @@ package body Fifos is
       Fifo_List : Fifo_List_Mng.List_Type;
 
       -- Insert a record
-      function Insert (Rec : Fifo_Rec) return access Fifo_Rec is
+      function Insert (Rec : Fifo_Rec) return not null access Fifo_Rec is
       begin
         Fifo_List.Insert (Rec);
         return Access_Current;
       end Insert;
 
       -- Get access to current record
-      function Access_Current return access Fifo_Rec is
+      function Access_Current return not null access Fifo_Rec is
         (Fifo_List.Access_Current);
 
       -- Delete current record and move to next
@@ -173,10 +173,10 @@ package body Fifos is
     -- CONNECTION
     -------------------------------------------------------------------------
     package Connection is
-      procedure Accepte (Fifo : access Fifo_Rec);
-      procedure Connect (Fifo : access Fifo_Rec);
-      procedure Close (Fifo : access Fifo_Rec);
-      procedure Activate (Fifo : access Fifo_Rec);
+      procedure Accepte (Fifo : not null access Fifo_Rec);
+      procedure Connect (Fifo : not null access Fifo_Rec);
+      procedure Close (Fifo : not null access Fifo_Rec);
+      procedure Activate (Fifo : not null access Fifo_Rec);
     end Connection;
 
     package body Connection is
@@ -357,7 +357,7 @@ package body Fifos is
       -- FUNCTIONS
       -------------------------------------------------------------------------
 
-      procedure Connect (Fifo : access Fifo_Rec) is
+      procedure Connect (Fifo : not null access Fifo_Rec) is
         Dummy_Res : Boolean;
         Protocol : Socket.Protocol_List;
         use type Socket.Host_Id, Tcp_Util.Remote_Host_List;
@@ -384,7 +384,7 @@ package body Fifos is
           null;
       end Connect;
 
-      procedure Close (Fifo : access Fifo_Rec) is
+      procedure Close (Fifo : not null access Fifo_Rec) is
         procedure Call_Cb is
           Id : constant Fifo_Id := (Acc => Fifo);
         begin
@@ -420,7 +420,7 @@ package body Fifos is
         end case;
       end Close;
 
-      procedure Accepte (Fifo : access Fifo_Rec) is
+      procedure Accepte (Fifo : not null access Fifo_Rec) is
         Port_Num : Tcp_Util.Port_Num;
         Port : Tcp_Util.Local_Port;
       begin
@@ -456,7 +456,7 @@ package body Fifos is
           raise Name_Error;
       end Accepte;
 
-      procedure Activate (Fifo : access Fifo_Rec) is
+      procedure Activate (Fifo : not null access Fifo_Rec) is
       begin
         Fifo_Reception.Activate_Callbacks (Fifo.Dscr, Fifo.Active);
       end Activate;
@@ -761,7 +761,7 @@ package body Fifos is
     end Open;
 
     -- Close a fifo by access
-    procedure Close (Acc : access Fifo_Rec) is
+    procedure Close (Acc : not null access Fifo_Rec) is
       procedure Finish is
       begin
         Connection.Close (Acc);

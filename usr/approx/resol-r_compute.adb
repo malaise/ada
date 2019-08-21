@@ -22,7 +22,7 @@ package body R_Compute is
 
     subtype Index_Degree is Positive range 1..The_Degree;
     -- Allocate on heap
-    type Mattrix_Access is access  R_Compute.Matrix;
+    type Mattrix_Access is not null access  R_Compute.Matrix;
     A_Loc : constant Mattrix_Access := new Matrix (Index_Degree, Index_Point);
     use type My_Math.Real;
   begin

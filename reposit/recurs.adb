@@ -1,7 +1,7 @@
 with As.U, Basic_Proc, Directory, Dir_Mng;
-procedure Recurs (Do_In_Dir : not  null access procedure (Path   : in String;
-                                                          Result : out Boolean;
-                                                          Go_On  : out Boolean);
+procedure Recurs (Do_In_Dir : not null access procedure (Path   : in String;
+                                                         Result : out Boolean;
+                                                         Go_On  : out Boolean);
                   Name_Of_Dir : in Boolean := True;
                   In_Current : in Boolean := True;
                   First_Level_Only : in Boolean := False;

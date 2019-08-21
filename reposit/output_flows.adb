@@ -24,7 +24,7 @@ package body Output_Flows is
 
   -- A cell is released, when there is one reference it is the list itself,
   --  so delete the flow
-  procedure Released (Cell : access Cell_Type;
+  procedure Released (Cell : not null access Cell_Type;
                       Nb_Access : in Natural) is
     Cell_Acc : Cell_Access := Cell_Access (Cell);
     Dummy : Boolean;
@@ -114,7 +114,7 @@ package body Output_Flows is
   -- May raise Already_Error if a flow with the same name
   --  is already set
   procedure Set (Flow : out Output_Flow; Name : in String;
-                 File_Acc : access Text_Line.File_Type) is
+                 File_Acc : not null access Text_Line.File_Type) is
     New_Cell : Cell_Access;
     New_Handle : Flow_Aliases.Handle;
   begin

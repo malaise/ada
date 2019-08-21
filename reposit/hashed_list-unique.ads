@@ -33,7 +33,7 @@ package Hashed_List.Unique is
   -- May raise Not_In_List
   procedure Get_Access (List : in out Unique_List_Type;
                         Item : in Element_Type;
-                        Item_Access : out Element_Access);
+                        Item_Access : out not null Element_Access);
 
   -- Insert an item only if it does not already exists (and return True)
   -- May raise Full_List (no more memory)

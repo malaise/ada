@@ -23,7 +23,7 @@ package Output_Flows is
   -- May raise Already_Error if a flow with the same name
   --  is already set
   procedure Set (Flow : out Output_Flow; Name : in String;
-                 File_Acc : access Text_Line.File_Type);
+                 File_Acc : not null access Text_Line.File_Type);
 
   -- Release access to a flow, which becomes unset
   -- No effect if it is already unset
@@ -72,7 +72,7 @@ private
   type Cell_Access is access all Cell_Type;
 
   -- A Flow is a smart alias to data
-  procedure Released (Cell : access Cell_Type; Nb_Access : in Natural);
+  procedure Released (Cell : not null access Cell_Type; Nb_Access : in Natural);
   package Flow_Aliases is new Smart_Alias (Cell_Type, Released);
 
   type Output_Flow is tagged record

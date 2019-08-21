@@ -531,6 +531,7 @@ package body Git_If is
   --     ....
   -- ....
   -- except for last block
+  -- Fills Files if Details is set
   procedure Read_Block (Flow : in out Command.Res_List;
                         Details : in Boolean;
                         Hash : out Git_Hash;

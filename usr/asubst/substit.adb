@@ -447,7 +447,7 @@ package body Substit is
   end Do_One_File;
 
   -- Handle multiple substitutions of a char by a char within one line
-  procedure Subst_Chars (Line         : access As.U.Asu_Us;
+  procedure Subst_Chars (Line         : not null access As.U.Asu_Us;
                          Match_Range  : in String;
                          Search_Char  : in Character;
                          Replace_Char : in Character;
@@ -493,7 +493,7 @@ package body Substit is
   end Subst_Chars;
 
   -- Handle multiple substitutions within one line
-  procedure Subst_One_Line (Line           : access As.U.Asu_Us;
+  procedure Subst_One_Line (Line           : not null access As.U.Asu_Us;
                             Match_Range    : in String;
                             Verbose        : in Boolean;
                             Grep           : in Boolean;

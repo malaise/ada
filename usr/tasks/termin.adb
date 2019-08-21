@@ -16,7 +16,7 @@ procedure Termin is
     pragma Priority (1);
   end T_Task;
 
-  type T_Ptr_Task is access T_Task;
+  type T_Ptr_Task is not null access T_Task;
 
   Separator : constant String := "-------------";
 

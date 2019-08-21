@@ -21,8 +21,8 @@ package body Resol is
   -- Try to re-use previous result, otherwise solve
   function R_Resolution (The_Points : Points.P_T_The_Points) return Vector is
     -- Allocate on heap
-    type Mattrix_Access is access  R_Compute.Matrix;
-    type Vector_Access is access Vector;
+    type Mattrix_Access is not null access  R_Compute.Matrix;
+    type Vector_Access is not null access Vector;
   begin
     if not Resolved then
       if The_Degree > The_Points'Length then raise R_Degree_Out; end if;
