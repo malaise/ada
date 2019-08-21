@@ -8,6 +8,7 @@ generic
   -- Some generic formal arguments
   V : Integer := 5;
   type Typ is private;
+  type Typ_Acc is not null access Typ;
   -- A function as generic formal argument
   with function ">" (A, B : Typ) return Boolean is <>;
 package Test is
@@ -26,8 +27,8 @@ package Test is
     Field2 at 4 range 0 ..  7;
   end record;
   -- A type with aspect
-  type Boolean_For_C is new Boolean
-    with Size => 8;
+  type Integer_For_C is new Integer
+    with Size => 32;
 
   -- A record type with discriminant
   type Typ3 (D : Character := ' ') is record
@@ -148,15 +149,15 @@ package Test is
 
   type Otyp9 is synchronized interface and Otyp6;
   protected type Otyp10 is new Otyp9 with
-    overriding procedure Write(X: in Otyp7);
-    overriding procedure Read(X: out Otyp7);
+    procedure Write(X: in Otyp7);
+    procedure Read(X: out Otyp7);
   private
     V: Otyp7;
   end;
 
   protected type Otyp11 is new Otyp9 with
-    overriding procedure Write(X: in Otyp7);
-    not overriding function Read return Otyp7;
+    procedure Write(X: in Otyp7);
+    function Read return Otyp7;
   private
      V: Otyp7;
   end Otyp11;
@@ -164,12 +165,20 @@ package Test is
 
   type Otyp12 is tagged;
   type Otyp12 is tagged null record;
+  not overriding procedure Read(Obj: in Otyp12; X: out Otyp7);
+
+  type Typ8 is access procedure (A : in Integer);
+  type Typ9 is not null acces Integer;
+  type Typ10 is access Integer;
+  procedure Proc5 (A : in not null Typ10);
+  function Func1 return not null Typ10;
 
 private
 
   type Typ5 is new Integer;
   function Func6 return Typ5;
   Const2 : constant Typ5 := 21;
+  type Typ11 is not null access procedure (A : in Integer);
 
 end Test;
 

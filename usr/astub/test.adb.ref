@@ -15,6 +15,8 @@
 
   -- type Typ is private;
 
+  -- type Typ_Acc is not null access Typ;
+
   -- A function as generic formal argument
   -- with function ">" (A, B : Typ) return Boolean is <>;
 
@@ -37,8 +39,8 @@ package body Test is
   -- end record;
 
   -- A type with aspect
-  -- type Boolean_For_C is new Boolean
-  --   with Size => 8;
+  -- type Integer_For_C is new Integer
+  --   with Size => 32;
 
   -- A record type with discriminant
   -- type Typ3 (D : Character := ' ') is record
@@ -230,12 +232,12 @@ package body Test is
 
   protected body Otyp10 is
   -- new Otyp9 with
-    overriding procedure Write(X: in Otyp7) is
+    procedure Write(X: in Otyp7) is
     begin
       null;
     end Write;
 
-    overriding procedure Read(X: out Otyp7) is
+    procedure Read(X: out Otyp7) is
     begin
       null;
     end Read;
@@ -248,12 +250,12 @@ package body Test is
 
   protected body Otyp11 is
   -- new Otyp9 with
-    overriding procedure Write(X: in Otyp7) is
+    procedure Write(X: in Otyp7) is
     begin
       null;
     end Write;
 
-    not overriding function Read return Otyp7 is
+    function Read return Otyp7 is
     begin
       return Read;
     end Read;
@@ -273,6 +275,27 @@ package body Test is
 
   -- type Otyp12 is tagged null record;
 
+  not overriding procedure Read(Obj: in Otyp12; X: out Otyp7) is
+  begin
+    null;
+  end Read;
+
+  -- type Typ8 is access procedure (A : in Integer);
+
+  -- type Typ9 is not null Acces Integer;
+
+  -- type Typ10 is access Integer;
+
+  procedure Proc5 (A : in not null Typ10) is
+  begin
+    null;
+  end Proc5;
+
+  function Func1 return not null Typ10 is
+  begin
+    return Func1;
+  end Func1;
+
 -- private
 
   -- type Typ5 is new Integer;
@@ -283,6 +306,8 @@ package body Test is
   end Func6;
 
   -- Const2 : constant Typ5 := 21;
+
+  -- type Typ11 is not null access procedure (A : in Integer);
 
 end Test;
 
