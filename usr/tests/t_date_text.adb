@@ -1,7 +1,7 @@
 with Ada.Calendar;
 with Basic_Proc, Argument, As.U, Date_Text, Images;
 procedure T_Date_Text is
-  Scan_Format, Put_Format : As.U.Asu_Us;
+  Scan_Format, Put_Format, Arg : As.U.Asu_Us;
   Date : Date_Text.Date_Rec;
   Time : Ada.Calendar.Time;
 begin
@@ -17,20 +17,40 @@ begin
   Basic_Proc.Put_Line_Output ("Lengths:");
   begin
     Basic_Proc.Put_Line_Output (
-        Natural'Image (Date_Text.Length (Scan_Format.Image)));
+        "Scan: " & Natural'Image (Date_Text.Length (Scan_Format.Image)));
   exception
-    when Date_Text.Unknown_Length => null;
+    when Date_Text.Unknown_Length =>
+      null;
+    when Date_Text.Invalid_Format =>
+      Basic_Proc.Put_Line_Error ("ERROR: Invalid scan format: "
+                               & Scan_Format.Image & ".");
+      Basic_Proc.Set_Error_Exit_Code;
+      return;
   end;
   begin
     Basic_Proc.Put_Line_Output (
-        Natural'Image (Date_Text.Length (Put_Format.Image)));
+        "Put:  " & Natural'Image (Date_Text.Length (Put_Format.Image)));
   exception
-    when Date_Text.Unknown_Length => null;
+    when Date_Text.Unknown_Length =>
+      null;
+    when Date_Text.Invalid_Format =>
+      Basic_Proc.Put_Line_Error ("ERROR: Invalid put format: "
+                               & Put_Format.Image & ".");
+      Basic_Proc.Set_Error_Exit_Code;
+      return;
   end;
 
   for I in 3 .. Argument.Get_Nbre_Arg loop
-    Date := Date_Text.Scan (Argument.Get_Parameter (Occurence => I),
-                            Scan_Format.Image);
+    Argument.Get_Parameter (Arg, I);
+    begin
+      Date := Date_Text.Scan (Arg.Image, Scan_Format.Image);
+    exception
+      when Date_Text.Invalid_String =>
+        Basic_Proc.Put_Line_Error ("ERROR: Invalid input string " & Arg.Image
+                                 & ".");
+        Basic_Proc.Set_Error_Exit_Code;
+        return;
+    end;
     Time := Date_Text.Pack (Date);
     Basic_Proc.Put_Line_Output ("Input: "
         & Argument.Get_Parameter (Occurence => I)

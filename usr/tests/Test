@@ -708,8 +708,8 @@ if `match $arg t_date_text` ; then
   t_date_text '%b %d %H:%M:%S' '%Y-%m-%dT%H:%M:%S:%s' 'Jul 21 10:45:54' >out 2>err
   cat << EOF >exp
 Lengths:
- 15
- 23
+Scan:  15
+Put:   23
 Input: Jul 21 10:45:54  Dump: 1901-07-21T10:45:54.000  Put: 1901-07-21T10:45:54:000
 EOF
   comp err nul
