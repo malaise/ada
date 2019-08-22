@@ -1,5 +1,5 @@
 with As.U, Afpx.Utils, Basic_Proc, Images, Directory,
-     Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Environ;
+     Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Environ, Command;
 with Utils.X, Git_If, Config, Bookmarks, History, Tags, Commit, Push_Pull,
      Confirm, Confirm_Diff_Dir, Error, Stash, Branch, Afpx_Xref, Reset, Aski,
      Icon;
@@ -1163,7 +1163,8 @@ exception
   when Config.Invalid_Config =>
     Basic_Proc.Put_Line_Error ("Invalid configuration.");
     Basic_Proc.Set_Error_Exit_Code;
-  when Utils.Exit_Requested =>
+  when Utils.Exit_Requested | Command.Terminate_Request =>
+    -- Ctrl-C in Afpx, or fata init error, or Ctrl-C in Git_If comand
     begin
       Afpx.Release_Descriptor;
       Git_If.Leaving_Afpx;

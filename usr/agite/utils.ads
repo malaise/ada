@@ -29,7 +29,7 @@ package Utils is
   -- Protect text for shell: replace ''' by "'\''" and enclose within '''
   function Protect_Text (Str : in String) return String;
 
-  -- Exception on Ctrl C
+  -- For all modules receiving Break_Key from Afpx (Ctrl-C)
   Exit_Requested : exception;
 
   -- Get current date
