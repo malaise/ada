@@ -161,6 +161,7 @@ Bool_Kind: True
 Trilean_Kind: Other
 Integer_Kind: 21
 Lint_Kind: 2121
+Arbitrary_Kind: 212121
 Duration_Kind: 21.210000000
 Float_Kind: 2.12100E+01
 Real_Kind: 2.12121210000000E+03
