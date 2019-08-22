@@ -101,7 +101,7 @@ package body Utils is
   function Get_Current_Date return Git_If.Iso_Date is
   begin
     return Date_Text.Put (Date_Text.Split (Ada.Calendar.Clock),
-                          "%Y-%m-%d %H-%M-%S");
+                          "%Y-%m-%d %H:%M:%S");
   end Get_Current_Date;
 
   package body Chrono is
