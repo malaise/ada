@@ -42,12 +42,24 @@ if [ $DO_CALL = 1 ] ; then
     incls="$incls""-I$view -T$view/$WDIR "
   done
 
+  # List targets, remove $ADACTRL_EXCL
+  TARGETS=`ls -1 *.ad[sb] | awk -v EXCL=$ADACTL_EXCL '
+    BEGIN {N=split (EXCL, EX, " ")}
+    {
+      for (I = 1; I <= N; I++) {
+        if (match ($0, "^" EX[I] "$") == 1) {
+          next
+        }
+      }
+      print "../" $1
+    }
+  '`
   # Go in subdir
   mkdir -p $WDIR
   cd $WDIR
 
   # AdaControl
-  $ADACONTROL_PATH -f $RULES ../*.ad? -- $incls
+  $ADACONTROL_PATH -f $RULES $TARGETS -- $incls
 
   # Done
   cd ..
