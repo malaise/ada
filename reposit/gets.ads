@@ -1,6 +1,7 @@
-with Long_Longs, My_Math;
+with Long_Longs, My_Math, Arbitrary;
 package Gets is
   -- Get an Integer, a Ll_Integer, a Llu_Natural, a Float, a Real, a Duration
+  --  an Arbitrary
   -- Str must be a valid image with no trailing spaces,
   --  leading spaces are skipped
   -- May raise Constraint_Error
@@ -10,6 +11,7 @@ package Gets is
   function Get_Float (Str : String) return Float;
   function Get_Real (Str : String) return My_Math.Real;
   function Get_Dur (Str : String) return Duration;
+  function Get_Arbitrary (Str : String) return Arbitrary.Number;
 
   -- Get a float or an integer
   type Int_Or_Float_Rec (Is_Float : Boolean := True) is record

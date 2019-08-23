@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Str_Util;
 package body Gets is
   package Llint_Io is new Ada.Text_Io.Integer_Io (Long_Longs.Ll_Integer);
   package Llunat_Io is new Ada.Text_Io.Modular_Io (Long_Longs.Llu_Natural);
@@ -123,6 +123,12 @@ package body Gets is
     when others =>
       raise Constraint_Error;
   end Get_Dur;
+
+  function Get_Arbitrary (Str : String) return Arbitrary.Number is
+  begin
+    return Arbitrary.Set (Str_Util.Strip (Str, From => Str_Util.Head));
+  end Get_Arbitrary;
+
 
   function Get_Int_Or_Float (Str : String) return Int_Or_Float_Rec is
     Llint_Or_Float : Llint_Or_Float_Rec;
