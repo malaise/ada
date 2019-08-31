@@ -443,9 +443,10 @@ package body User_IF is
                                                "Released as Free Software under the terms" & Latin_1.LF &
                                                "of the GNU Public License" & Latin_1.LF &
                                                '"' & "Ada Inside" & '"',
-                                Dialog_Type => Custom,
+                                Dialog_Type => Information,
                                 Buttons     => Button_OK,
-                                Title       => "About Mine Detector");
+                                Title       => "About Mine Detector",
+                                Parent      => Window);
    end About_Pressed;
 
    function Image (Row : Field.Valid_Row; Column : Field.Valid_Column) return String is
