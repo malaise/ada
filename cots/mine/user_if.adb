@@ -399,6 +399,7 @@ package body User_IF is
       Action    : Gtk_Box;
    begin -- Rules_Pressed
       Gtk_New (Rules_Dialog);
+      Set_Transient_For (Rules_Dialog, Window);
       Set_Title (Rules_Dialog, "Rules for Mine Detector");
       Set_Default_Size (Rules_Dialog, 500, 400);
       Rules_Dialog.Set_Resizable (True);
