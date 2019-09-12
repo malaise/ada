@@ -1,4 +1,0 @@
-export DICTIO_PORT=fido
-# export DICTIO_DEBUG_LIB=Y
-t_dictio $*
-

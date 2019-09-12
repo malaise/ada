@@ -1,9 +1,10 @@
 -- Mine Detector Game
--- Copyright (C) 2015 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2016 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
--- V6.2 2017 Mar 01 Add icon
--- V6.1 2015 Dec 01 Corrected initial levels selection
+-- V6.4 2016 Jun 01 Fix double-click problem
+-- V6.3 2016 May 15 Preserve appearance when game over
+-- V6.2 2015 Dec 01 Corrected initial levels selection
 -- V6.1 2012 Aug 01 GTKAda changed
 -- V6.0 2009 Aug 01
 --
@@ -11,9 +12,7 @@ with Glib;
 with Gdk.Event;
 with Gtk.Arguments;
 with Gtk.Box;
-with Gtk.Window;
 with Gtk.Button;
-with Gtk.Toggle_Button;
 with Gtk.Check_Button;
 with Gtk.Dialog;
 with Gtk.Enums;
@@ -22,13 +21,10 @@ with Gtk.Label;
 with Gtk.Main;
 with Gtk.Scrolled_Window;
 with Gtk.Table;
-with Gtk.Combo_Box_Text;
-with Gtk.Text_View;
-with Gtk.Text_Buffer;
-with Gtk.Text_Iter;
-with Gtk.Check_Menu_Item;
+with Gtk.Text;
+with Gtk.Toggle_Button;
+with Gtk.Window;
 with Gtkada.Dialogs;
-
 
 with Ada.Characters.Latin_1;
 with Ada.Strings.Unbounded;
@@ -36,7 +32,6 @@ with Ada.Strings.Unbounded;
 with System;
 
 with Field.Operations;
-with Icon;
 
 use Ada;
 use Ada.Characters;
@@ -55,21 +50,21 @@ use Gtk.Enums;
 use Gtkada.Dialogs;
 use Gtk.Dialog;
 use Gtk.Scrolled_Window;
-use Gtk.Check_Menu_Item;
-use Gtk.Combo_Box_Text;
-use Gtk.Text_View;
-use Gtk.Text_Buffer;
-use Gtk.Text_Iter;
+use Gtk.Text;
 
 with Gtk.Menu;
 with Gtk.Menu_Item;
+with Gtk.Option_Menu;
 with Gtk.Radio_Menu_Item;
 with Gtk.Widget;
 
 use Gtk.Menu;
 use Gtk.Menu_Item;
+use Gtk.Option_Menu;
 use Gtk.Radio_Menu_Item;
 use Gtk.Widget;
+
+with Icon;
 
 package body User_IF is
    package Window_Cb is new Gtk.Handlers.Return_Callback (Gtk_Window_Record, Boolean);
@@ -92,7 +87,7 @@ package body User_IF is
    Step_Check     : Gtk_Check_Button;
    Rules          : Gtk_Button;
    About          : Gtk_Button;
-   Level          : Gtk_Combo_Box_Text;
+   Level          : Gtk_Option_Menu;
    Rules_Dialog   : Gtk_Dialog;
    Game_Over      : Gtk_Label;
 
@@ -280,8 +275,10 @@ package body User_IF is
          else
             Field.Operations.Mark (Cell => (Row => Row, Column => Column) );
          end if;
+      when 4 .. 5 =>
+         null;
       when others =>
-         null; -- Many other mouse buttons are possible
+         raise Program_Error; -- Only 1-5 are valid mouse buttons
       end case;
 
       return True;
@@ -292,7 +289,7 @@ package body User_IF is
    is
       -- null;
    begin -- When_Restart_Button
-      Field.Operations.Set_Mine_Count (Levels (Get_Active (Level) ).Mines);
+      Field.Operations.Set_Mine_Count (Levels (Get_History (Level) ).Mines);
       Field.Operations.Reset;
    end When_Restart_Button;
 
@@ -391,9 +388,7 @@ package body User_IF is
                                "algorithm.") );
 
       Scroller  : Gtk_Scrolled_Window;
-      Text_View : Gtk_Text_View;
-      Text_Buf  : Gtk_Text_Buffer;
-      Text_Iter : Gtk_Text_Iter;
+      Text_Box  : Gtk_Text;
       OK_Button : Gtk_Button;
       V_Box     : Gtk_Vbox;
       Action    : Gtk_Box;
@@ -401,29 +396,23 @@ package body User_IF is
       Gtk_New (Rules_Dialog);
       Set_Transient_For (Rules_Dialog, Window);
       Set_Title (Rules_Dialog, "Rules for Mine Detector");
-      Set_Default_Size (Rules_Dialog, 500, 400);
-      Rules_Dialog.Set_Resizable (True);
+      Set_USize (Rules_Dialog, 500, 400);
       Window_Cb.Connect (Rules_Dialog, "delete_event",
                          Window_Cb.To_Marshaller (Close_Rules'Access) );
-      V_Box := Get_Content_Area (Rules_Dialog);
+      V_Box := Get_Vbox (Rules_Dialog);
       Action := Get_Action_Area (Rules_Dialog);
 
       Gtk_New (Scroller);
       Pack_Start (V_Box, Scroller);
-      Set_Policy (Scroller, Policy_Automatic, Policy_Automatic);
+      Gtk_New (Text_Box);
+      Set_Word_Wrap (Text_Box);
+      Add (Scroller, Text_Box);
 
-      Gtk_New (Text_Buf);
-      Get_Start_Iter (Text_Buf, Text_Iter);
       Insert_Text : for I in Rules'range loop
-         Insert (Buffer => Text_Buf,
-                 Iter => Text_Iter,
-                 Text => To_String (Rules (I) ) );
+         Insert (Text => Text_Box, Chars => To_String (Rules (I) ) );
       end loop Insert_Text;
 
-      Gtk_New (Text_View, Text_Buf);
-      Set_Wrap_Mode (Text_View, Wrap_Word);
-      Add (Scroller, Text_View);
-      Set_Editable (View => Text_View, Setting => False);
+      Set_Editable (Text => Text_Box, Editable => False);
 
       Gtk_New (OK_Button, "OK");
       Button_Cb.Connect (OK_Button, "clicked", OK_Close_Rules'access);
@@ -472,11 +461,32 @@ package body User_IF is
       return Row_Image (Row_First .. Row_Image'Last) & Column_Image (Column_First .. Column_Image'Last);
    end Image;
 
-   procedure Create_Level_Option_Menu is
-   begin
+   function Create_Level_Option_Menu return Gtk_Menu is
+      Menu      : Gtk_Menu;
+      Group     : Widget_SList.GSlist;
+      Menu_Item : Gtk_Radio_Menu_Item;
+
+      procedure Add_Line (Index : in Glib.Gint; Text : in String) is
+         use type Glib.Gint;
+      begin -- Add_Line
+         Gtk_New (Menu_Item, Group, Text);
+         Group := Gtk.Radio_Menu_Item.Get_Group (Menu_Item);
+         Append (Menu, Menu_Item);
+
+         if Index = Default_Level then
+            Set_Active (Menu_Item, True);
+         end if;
+
+         Show (Menu_Item);
+      end Add_Line;
+   begin -- Create_Level_Option_Menu
+      Gtk_New (Menu);
+
       for I in Levels'range loop
-         Append_Text (Level, Levels(I).Name);
+         Add_Line (I, Levels (I).Name);
       end loop;
+
+      return Menu;
    end Create_Level_Option_Menu;
 
    procedure First_Game (Data : System.Address);
@@ -489,8 +499,7 @@ package body User_IF is
    begin -- First_Game
       Field.Operations.Set_Mine_Count (Levels (Default_Level).Mines);
       Gtk_New (Window, Window_Toplevel);
-      Set_Resizable (Window, True);
-      Set_Size_Request (Window, 0, 0);
+      Set_Policy (Window, True, True, False);
       Set_Position (Window, Win_Pos_Center);
       Set_Title (Window, "Mine Detector");
       Set_Icon (Window, Icon.Mine_Icon);
@@ -498,7 +507,7 @@ package body User_IF is
                          Window_Cb.To_Marshaller (When_Close'Access) );
       Gtk_New_Hbox (Box => Box, Spacing => 2);
       Add (Window, Box);
-      Gtk_New (Table       => Table,
+      Gtk_New (Widget      => Table,
                Rows        => Glib.Guint (Field.Valid_Row'Last),
                Columns     => Glib.Guint (Field.Valid_Column'Last),
                Homogeneous => True);
@@ -513,7 +522,7 @@ package body User_IF is
          Button_Column : for Column in Field.Valid_Column loop
             Gtk_New (Button (Row, Column), " ");
             Set_Name (Button (Row, Column), Image (Row, Column) );
-            Set_Size_Request (Button (Row, Column), Button_Size, Button_Size);
+            Set_USize (Button (Row, Column), Button_Size, Button_Size);
             Toggle_Cb.Connect (Button (Row, Column), "toggled", Toggle'access);
             Marker_Cb.Connect (Button (Row, Column), "button_release_event", Marker_Cb.To_Marshaller (Button_Press'access) );
             Attach (Table,
@@ -530,9 +539,8 @@ package body User_IF is
       Pack_Start (Right_Side, Restart_Button, False);
 
       Gtk_New (Level);
-      Create_Level_Option_Menu;
-      Popdown (Level);
-      Set_Active (Level, Default_Level);
+      Set_Menu (Level, Create_Level_Option_Menu);
+      Set_History (Level, Default_Level);
       Show (Level);
       Pack_Start (Right_Side, Level, False);
 
@@ -562,13 +570,11 @@ package body User_IF is
 
       Field.Operations.Reset;
    end First_Game;
+begin -- User_IF
+   Init;
+   Set_Locale;
 
-   procedure Init is
-   begin -- Init
-     Gtk.Main.Init;
-     First_Game (System.Null_Address);
-  end Init;
-
+   Init_Add (Func => First_Game'access, Data => System.Null_Address);
 end User_IF;
 --
 -- This is free software; you can redistribute it and/or modify it under

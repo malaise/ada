@@ -54,7 +54,9 @@ package body Field.Operations is
 
          User_IF.Display_Count (Count   => Mine_Field (Cell.Row, Cell.Column).Count,
                                 Stepped => Mine_Field (Cell.Row, Cell.Column).State = Stepped_On,
-                                Cell    => Cell);
+                                Cell    => Cell
+                               )
+         ;
       end if;
    end Detect;
 

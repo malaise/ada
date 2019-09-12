@@ -1,12 +1,12 @@
-with Gtkada.Types;
+with Interfaces.C.Strings;
 package body Icon is
-  function "+" (Str : String) return Gtkada.Types.Chars_Ptr is
+  function "+" (Str : String) return Interfaces.C.Strings.Chars_Ptr is
   begin
-    return Gtkada.Types.New_String (Str);
+    return Interfaces.C.Strings.New_String (Str);
   end "+";
 
   -- Xpm definition of icon
-  Xpm : constant Gtkada.Types.Chars_Ptr_Array := (
+  Xpm : constant Interfaces.C.Strings.Chars_Ptr_Array := (
 
     +("64 64 4 1"),
     +("  c None"),

@@ -1,3 +1,0 @@
-export DICTIO_PORT=fido
-t_fifos $*
-

@@ -23,6 +23,8 @@ About GtkAda
 GtkAda is a Ada rich binding to GTK+, provided by Adacore for Linux, together
 with Gnat at https://www.adacore.com.
 
-Mine Detector is compatible with GtkAda Community 2019.
-
+This version
+------------
+This version of Mine Detector is compatible with Gtk-2.0 and GtkAda 2.18.0,
+while the default branch is up to date.
 

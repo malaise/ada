@@ -1,3 +1,0 @@
-#!/bin/bash
-export AFPX_DATA_DIR=..
-../approxp $*

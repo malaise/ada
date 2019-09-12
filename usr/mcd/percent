@@ -1,4 +1,0 @@
-#!/bin/bash
-cd $HOME/ada/usr/mcd
-mcdt percent.mcd $1 $2
-

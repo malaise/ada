@@ -1,8 +1,0 @@
-#!/bin/bash
-if [ "$1" = "" ] ; then
-  echo "Usage: `basename $0` <def_enigma_args>" 1>&2
-  exit 1
-fi
-export ENIGMA_CONF_FILE=${HOME}/ada/usr/enigma/enigma.xml
-exec enigma `def_enigma $*`
-
