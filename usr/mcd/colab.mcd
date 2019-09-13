@@ -76,7 +76,7 @@ t pushr ~ [
 ] ifcall True t popr
 "|" put
 dup y pushr / I pushr call put " |" put
-dup m pushr / round 10 True " " normal put " |" put
+dup m pushr / I pushr call " " put put " |" put
 dup d pushr / round 10 True " " normal put " |" put
 dup           round  7 True " " normal put " |" put
 dup a pushr * I pushr call "    " put put " |" put
