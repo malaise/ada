@@ -480,12 +480,12 @@ extern int dir_create (const char *path) {
 }
 
 /* Imported by Directory: Read a directory entry */
-extern int read_dir (DIR *dir, char *name) {
+extern int read_dir (DIR *dir, char *name, int len) {
 
   struct dirent * dir_ent;
 
   dir_ent = readdir (dir);
-  if (dir_ent == NULL) {
+  if ( (dir_ent == NULL) || ((int)strlen (dir_ent->d_name) >= len) ) {
     return ERROR;
   }
 

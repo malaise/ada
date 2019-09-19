@@ -59,7 +59,8 @@ boolean fil_init (void) {
 
     /* Set to default values */
     for (i = 0; i < NBRE_FONT; i++) {
-        strcpy (font_name[i], default_font_name[i]);
+      strncpy (font_name[i], default_font_name[i], FONT_NAME_MAX_SIZE);
+      font_name[i][FONT_NAME_MAX_SIZE-1] = '\0';
     }
 
     /* Check if env sets font name */
@@ -75,7 +76,8 @@ void set_from_env (int font_index, char *env_name) {
 
     str = getenv(env_name);
     if ( (str != NULL) && (str[0] != '\0') ) {
-      strcpy (font_name[font_index], str);
+      strncpy (font_name[font_index], str, FONT_NAME_MAX_SIZE);
+      font_name[font_index][FONT_NAME_MAX_SIZE-1] = '\0';
     }
 }
 

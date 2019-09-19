@@ -140,8 +140,8 @@ package body Directory is
   end Open;
 
   -- Gets next entry of the opened directory
-  function C_Readdir (Dir : System.Address; Name : System.Address)
-           return C_Types.Int
+  function C_Readdir (Dir : System.Address;
+                      Name : System.Address; Len : Integer) return C_Types.Int
     with Import => True, Convention => C, External_Name => "read_dir";
 
   function Get_Rec (Desc : Dir_Desc) return Dir_Rec is
@@ -164,7 +164,7 @@ package body Directory is
   begin
     -- Read entry and check validity
     Len := C_Readdir (Get_Rec (Desc).Dir_Addr,
-                      Dir_Name(Dir_Name'First)'Address);
+                      Dir_Name(Dir_Name'First)'Address, Dir_Name'Length);
     if Len = -1 then
       raise End_Error;
     end if;

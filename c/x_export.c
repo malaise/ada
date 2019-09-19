@@ -1096,7 +1096,7 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
           }
         }
         if (found && (win_id->selection != NULL) ) {
-          char *str = malloc (strlen(win_id->selection)+1);
+          char *str = malloc (strlen(win_id->selection) + 1);
           if (str != NULL) {
             if (i == 0) {
               /* UTF8_STRING requested */

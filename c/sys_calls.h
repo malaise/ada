@@ -110,7 +110,7 @@ extern void next_dead (int *cause, int *pid, int *code);
 /* Imported by Directory: Create a directory */
 extern int dir_create (const char *path);
 /* Imported by Directory: Read a directory entry */
-extern int read_dir (DIR *dir, char *name);
+extern int read_dir (DIR *dir, char *name, int len);
 
 /* Imported by Bit_Ops: Long shift */
 extern unsigned long shl_long (unsigned long l, int bits);

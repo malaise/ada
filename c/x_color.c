@@ -31,7 +31,8 @@ extern void col_set_names (const char* names[]) {
   int i;
 
   for (i = 0; i < NBRE_COLOR; i++) {
-    strcpy (color_name[i], names[i]);
+    strncpy (color_name[i], names[i], COLOR_NAME_MAX_SIZE);
+    color_name[i][COLOR_NAME_MAX_SIZE-1] = '\0';
   }
   color_set = True;
 }
