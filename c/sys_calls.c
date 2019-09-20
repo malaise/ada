@@ -482,27 +482,31 @@ extern int dir_create (const char *path) {
 /* Imported by Directory: Read a directory entry */
 extern int read_dir (DIR *dir, char *name, int len) {
 
-  struct dirent dir_ent, *dir_ent_addr;
+  struct dirent *dir_ent;
   int res;
 
-  res = readdir_r (dir, &dir_ent, &dir_ent_addr);
-  if (res == 0 ) {
-    if (dir_ent_addr == NULL) {
+  errno = 0;
+  dir_ent = readdir (dir);
+  if (dir_ent == NULL) {
+    if (errno == 0) {
       /* End of directory stream */
       return END_DIR;
+    } else {
+      /* Readdir error (EBADF) */
+      return ERROR;
     }
-    res = (int)strlen (dir_ent.d_name);
+  } else {
+    res = (int)strlen (dir_ent->d_name);
     if (res < len ) {
-      /* OK */   
-      strcpy (name, dir_ent.d_name);
+      /* OK */
+      strcpy (name, dir_ent->d_name);
       return (res);
+    } else {
+      /* Name too long (should not occur, cause 256 max) */
+      return ERROR;
     }
   }
-  /* Readdir_r error (EBADF) */
-  /* or name too long (should not occur, cause 256 max) */
-  return ERROR;
 }
-
 
 /* Imported by Bit_Ops: Long shift */
 extern unsigned long shl_long (unsigned long l, int bits) {
