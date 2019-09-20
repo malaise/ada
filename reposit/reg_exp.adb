@@ -1,5 +1,5 @@
 -- Posix regular expression
-with Aski, C_Types, Bit_Ops, Utf_8, Str_Util, Gets;
+with Aski, C_Types, Bit_Ops, Utf_8, Str_Util, Gets, Sys_Calls;
 package body Reg_Exp is
 
   -- C interface --
@@ -57,15 +57,9 @@ package body Reg_Exp is
 
   -- Get PCRE version
   function Get_Pcre_Version return String is
-    Addr, Dummy : System.Address;
-    Str : String (1 .. 255);
-    function C_Strncpy (Dest, Src : System.Address; Size : Integer)
-             return System.Address
-      with Import => True, Convention => C, External_Name => "strncpy";
-  begin
     -- Returns a char*, make it a string
-    Addr := C_Regvers;
-    Dummy := C_Strncpy (Str(Str'First)'Address, Addr, Str'Length);
+    Str : constant String := Sys_Calls.Strcpy (C_Regvers);
+  begin
     -- Stop at first space if any
     for I in Str'Range loop
       if Str(I) = Aski.Nul

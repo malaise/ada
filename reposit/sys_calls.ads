@@ -42,6 +42,11 @@ package Sys_Calls is
   procedure Flush_Error;
 
 
+  -- C strings
+  ------------
+  function Strcpy (Addr : System.Address) return String;
+
+
   -- Environment
   --------------
   -- Basic getenv, raises Env_Not_Set

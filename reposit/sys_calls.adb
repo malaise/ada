@@ -8,9 +8,6 @@ package body Sys_Calls is
   function C_Strlen (S : System.Address) return C_Types.Size_T
     with Import => True, Convention => C, External_Name => "strlen";
 
-  function C_Strcpy (Dest, Src : System.Address) return System.Address
-    with Import => True, Convention => C, External_Name => "strcpy";
-
   function C_Memcpy (Dest, Src : System.Address; Size : C_Types.Size_T)
                     return System.Address
     with Import => True, Convention => C, External_Name => "memcpy";
@@ -152,6 +149,19 @@ package body Sys_Calls is
   procedure Put_Line_Error (Str : in String) renames Basic_Proc.Put_Line_Error;
   procedure Flush_Error renames Basic_Proc.Flush_Error;
 
+  -- Copy C string from an address to a string
+  function Strcpy (Addr : System.Address) return String is
+    Dummy_Addr : System.Address;
+    use type System.Address;
+  begin
+    if Addr = System.Null_Address then
+      raise Constraint_Error;
+    end if;
+    return Result : String(1 .. Integer(C_Strlen (Addr))) do
+      Dummy_Addr := C_Memcpy (Result'Address, Addr, Result'Length);
+    end return;
+  end Strcpy;
+
   -- Basic getenv, raises Env_Unset
   function Getenv (Env_Name : String) return String is
     function C_Getenv (Name : in System.Address) return System.Address
@@ -164,13 +174,7 @@ package body Sys_Calls is
     if Addr = System.Null_Address then
       raise Env_Not_Set;
     end if;
-    declare
-      Result : String (1 .. Integer(C_Strlen(Addr)));
-      Dummy_Addr : System.Address;
-    begin
-      Dummy_Addr := C_Memcpy (Result'Address, Addr, Result'Length);
-      return Result;
-    end;
+    return Strcpy (Addr);
   end Getenv;
 
   -- Getenv and truncates if necessary
@@ -232,13 +236,7 @@ package body Sys_Calls is
     if Str_Addr = System.Null_Address then
       return "";
     end if;
-    declare
-      Str : String (1 .. Integer(C_Strlen (Str_Addr)));
-      Dummy_Addr :  System.Address;
-    begin
-      Dummy_Addr := C_Strcpy (Str(1)'Address, Str_Addr);
-      return Str;
-    end;
+    return Strcpy (Str_Addr);
   end Environ_Val;
 
   -- Setenv / Unsetenv
