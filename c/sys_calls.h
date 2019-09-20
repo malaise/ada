@@ -4,8 +4,8 @@
 #include "boolean.h"
 
 /* Common to several */
-#define OK  (0)
-#define ERROR  (-1)
+#define OK    (0)
+#define ERROR (-1)
 
 /* When not specified these operations are imported by Sys_Calls */
 
@@ -110,6 +110,7 @@ extern void next_dead (int *cause, int *pid, int *code);
 /* Imported by Directory: Create a directory */
 extern int dir_create (const char *path);
 /* Imported by Directory: Read a directory entry */
+#define END_DIR (-2)
 extern int read_dir (DIR *dir, char *name, int len);
 
 /* Imported by Bit_Ops: Long shift */

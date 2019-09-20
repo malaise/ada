@@ -140,6 +140,7 @@ package body Directory is
   end Open;
 
   -- Gets next entry of the opened directory
+  -- -2 when end of stream, -1 on error
   function C_Readdir (Dir : System.Address;
                       Name : System.Address; Len : Integer) return C_Types.Int
     with Import => True, Convention => C, External_Name => "read_dir";
@@ -165,11 +166,13 @@ package body Directory is
     -- Read entry and check validity
     Len := C_Readdir (Get_Rec (Desc).Dir_Addr,
                       Dir_Name(Dir_Name'First)'Address, Dir_Name'Length);
-    if Len = -1 then
+    if Len = -2 then
       raise End_Error;
+    elsif Len = -1 then
+      raise Access_Error;
+    else
+      return Dir_Name(1 .. Len);
     end if;
-
-    return Dir_Name(1 .. Len);
   end Next_Entry;
 
   procedure Next_Entry (Desc : in Dir_Desc; Dir_Entry : in out As.U.Asu_Us) is

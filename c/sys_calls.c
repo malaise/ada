@@ -482,15 +482,25 @@ extern int dir_create (const char *path) {
 /* Imported by Directory: Read a directory entry */
 extern int read_dir (DIR *dir, char *name, int len) {
 
-  struct dirent * dir_ent;
+  struct dirent dir_ent, *dir_ent_addr;
+  int res;
 
-  dir_ent = readdir (dir);
-  if ( (dir_ent == NULL) || ((int)strlen (dir_ent->d_name) >= len) ) {
-    return ERROR;
+  res = readdir_r (dir, &dir_ent, &dir_ent_addr);
+  if (res == 0 ) {
+    if (dir_ent_addr == NULL) {
+      /* End of directory stream */
+      return END_DIR;
+    }
+    res = (int)strlen (dir_ent.d_name);
+    if (res < len ) {
+      /* OK */   
+      strcpy (name, dir_ent.d_name);
+      return (res);
+    }
   }
-
-  strcpy (name, dir_ent->d_name);
-  return (strlen(name));
+  /* Readdir_r error (EBADF) */
+  /* or name too long (should not occur, cause 256 max) */
+  return ERROR;
 }
 
 

@@ -37,6 +37,7 @@ package Directory is
   procedure Next_Entry (Desc : in Dir_Desc; Dir_Entry : in out As.U.Asu_Us);
   -- May raise Open_Error if dir desc is not open
   -- Will raise End_Error if no more entry
+  -- May raise Access_Error
 
   -- Reset entries for the first
   procedure Rewind (Desc : in Dir_Desc);
