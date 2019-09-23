@@ -497,9 +497,9 @@ extern int read_dir (DIR *dir, char *name, int len) {
     }
   } else {
     res = (int)strlen (dir_ent->d_name);
-    if (res < len ) {
+    if (res <= len ) {
       /* OK */
-      strcpy (name, dir_ent->d_name);
+      strncpy (name, dir_ent->d_name, (size_t)res);
       return (res);
     } else {
       /* Name too long (should not occur, cause 256 max) */

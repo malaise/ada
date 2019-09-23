@@ -27,7 +27,7 @@ package body Directory is
 
   function Get_Current return String is
     Addr : System.Address;
-    Result : String (1 .. Max_Dir_Name_Len);
+    Result : String (1 .. Max_Dir_Name_Len + 1);
     Len : Natural;
   begin
     Addr := C_Getcwd (Result(Result'First)'Address, Result'Length);
