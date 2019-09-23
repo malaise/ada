@@ -1,13 +1,12 @@
 with Ada.Calendar;
-with Basic_Proc, Images;
+with Basic_Proc, Images, Argument;
 use Basic_Proc;
 -- Simulation of the game of Hanoi towers
 
 procedure Hanoi is
 
-  type Typ_Support is (A, B, C);
-  Origin, Destination : Typ_Support;
-  Same_Supports : exception;
+  type Typ_Axis is (A, B, C);
+  Origin, Destination : Typ_Axis;
 
   subtype Typ_No_Disk is Positive;
   Nb_Disks : Typ_No_Disk;
@@ -15,18 +14,34 @@ procedure Hanoi is
   Nb_Moves : Long_Long_Integer;
   Overflow_Count : exception;
 
-  Response : Character;
   Trace : Boolean;
 
   Time : Ada.Calendar.Time;
   Seconds : Ada.Calendar.Day_Duration;
 
-  function Find_Third (First_Suport, Second_Support : Typ_Support)
-           return Typ_Support is
+  procedure Usage is
   begin
-    case First_Suport is
+    Put_Line_Output ("Usage: " & Argument.Get_Program_Name
+                   & " <axis> <axis> <number> [ <trace> ]");
+    Put_Line_Output ("  <axis>   ::= a | b | c");
+    Put_Line_Output ("  <number> ::= <positive>");
+    Put_Line_Output ("  <trace>  ::= -trace");
+  end Usage;
+
+  Arg_Error : exception;
+  procedure Error (Msg : in String) is
+  begin
+    Put_Line_Error ("ERROR: " & Msg & ".");
+    Usage;
+    Basic_Proc.Set_Error_Exit_Code;
+    raise Arg_Error;
+  end Error;
+
+  function Find_Third (First_Axis, Second_Axis : Typ_Axis) return Typ_Axis is
+  begin
+    case First_Axis is
       when A =>
-        case Second_Support is
+        case Second_Axis is
           when B =>
             return C;
           when C =>
@@ -35,7 +50,7 @@ procedure Hanoi is
             null;
         end case;
       when B =>
-        case Second_Support is
+        case Second_Axis is
           when C =>
             return A;
           when A =>
@@ -44,7 +59,7 @@ procedure Hanoi is
             null;
         end case;
       when C =>
-        case Second_Support is
+        case Second_Axis is
           when A =>
             return B;
           when B =>
@@ -53,12 +68,12 @@ procedure Hanoi is
             null;
         end case;
     end case;
-    Put_Line_Output ("PROBLEM: Two axes are identical.");
-    raise Same_Supports;
+    Put_Line_Error ("ERROR: Two axes are identical.");
+    raise Constraint_Error;
   end Find_Third;
 
   procedure Move (
-   Origin, Third, Destination : in Typ_Support;
+   Origin, Third, Destination : in Typ_Axis;
    No_Disk : in Typ_No_Disk) is
   begin
     begin
@@ -96,108 +111,63 @@ procedure Hanoi is
 
 begin -- Hanoi
   Put_Line_Output ("Problem of the Hanoi towers:");
-  loop
-    New_Line_Output;
+  if Argument.Get_Nbre_Arg > 4 then
+    Error ("Invalid arguments");
+  end if;
 
-    loop
-      begin
-        Put_Output ("Enter the origin axis (a, b, c) ? ");
-        Origin := Typ_Support'Value (Get_Line);
-        New_Line_Output;
-        exit;
-      exception
-        when others =>
-          Put_Line_Output ("ERROR of input, try again.");
-      end;
-    end loop;
+  begin
+    Origin      := Typ_Axis'Value (Argument.Get_Parameter (Occurence => 1));
+    Destination := Typ_Axis'Value (Argument.Get_Parameter (Occurence => 2));
+    Nb_Disks    := Typ_No_Disk'Value (Argument.Get_Parameter (Occurence => 3));
+    if Destination = Origin then
+      Error ("ERROR: Both axes are identical.");
+    end if;
+    if Argument.Get_Nbre_Arg = 3 then
+      Trace := False;
+    else
+      if Argument.Get_Parameter (Occurence => 4) = "-trace" then
+        Trace := True;
+      else
+        Error ("Invalid arguments");
+      end if;
+    end if;
+  exception
+    when Arg_Error =>
+      raise;
+    when others =>
+      Error ("Invalid arguements");
+  end;
 
-    loop
-      begin
-        Put_Output ("Enter the destination axis (a, b, c) ? ");
-        Destination := Typ_Support'Value (Get_Line);
-        if Destination = Origin then
-          raise Same_Supports;
-        end if;
-        New_Line_Output;
-        exit;
-      exception
-        when Same_Supports =>
-          Put_Line_Output ("ERROR, both axes are equal, try again.");
-        when others =>
-          Put_Line_Output ("ERREUR of input, try again.");
-      end;
-    end loop;
+  -- Recursive moves
+  Nb_Moves := 0;
+  Time := Ada.Calendar.Clock;
+  Move (Origin, Find_Third(Origin, Destination), Destination, Nb_Disks);
+  Seconds := Ada.Calendar."-"(Ada.Calendar.Clock, Time);
 
-    loop
-      begin
-        Put_Output("Enter the number of disks (at least 1) ? ");
-        Nb_Disks := Typ_No_Disk'Value (Get_Line);
-        New_Line_Output;
-        exit;
-      exception
-        when others =>
-          Put_Line_Output ("ERROR, try again.");
-      end;
-    end loop;
+  New_Line_Output;
+  Put_Output ("Transfer from ");
+  Put_Output (Images.Integer_Image(Nb_Disks));
+  Put_Output (" disks from ");
+  Put_Output (Origin'Img);
+  Put_Output (" to ");
+  Put_Output (Destination'Img);
+  Put_Line_Output (".");
 
-    loop
-      begin
-        Put_Output ("Do you want a detailed trace (Y/N) ? ");
-        declare
-          Str : constant String := Get_Line;
-        begin
-          if Str'Length = 1 then
-            Response := Str(1);
-          else
-            Response := ' ';
-          end if;
-        end;
-        if Response /= 'y' and then Response /= 'Y' and then
-           Response /= 'n' and then Response /= 'N' then
-          raise Constraint_Error;
-        end if;
-        New_Line_Output;
-        Trace := Response = 'y' or else Response = 'Y';
-        exit;
-      exception
-        when others =>
-          Skip_Line;
-          Put_Line_Output ("ERROR, try again.");
-      end;
-    end loop;
+  Put_Output ("Operation done in ");
+  Put_Output (Images.Llint_Image (Nb_Moves));
+  Put_Line_Output (" moves ");
+  Put_Output (" and in ");
+  Put_Output (Images.Dur_Image (Seconds, 3, False));
+  Put_Line_Output (" seconds.");
 
-    New_Line_Output;
-
-    begin
-      Nb_Moves := 0;
-      Time := Ada.Calendar.Clock;
-      Move (Origin, Find_Third(Origin, Destination), Destination, Nb_Disks);
-      Seconds := Ada.Calendar."-"(Ada.Calendar.Clock, Time);
-
-      New_Line_Output;
-      Put_Output ("Transfer from ");
-      Put_Output (Images.Integer_Image(Nb_Disks));
-      Put_Output (" disks from ");
-      Put_Output (Origin'Img);
-      Put_Output (" to ");
-      Put_Output (Destination'Img);
-      Put_Line_Output (".");
-
-      Put_Output ("Operation done in ");
-      Put_Output (Images.Llint_Image (Nb_Moves));
-      Put_Line_Output (" moves ");
-      Put_Output (" and in ");
-      Put_Output (Images.Dur_Image (Seconds, 3, False));
-      Put_Line_Output (" seconds.");
-
-    exception
-      when Overflow_Count =>
-        Put_Output (
-            "Overflow of the counter of movements. try with less disks.")
-          ;
-    end;
-
-  end loop;
-
+exception
+  when Overflow_Count =>
+    Put_Line_Error (
+      "ERROR: Overflow of the counter of movements. try with less disks.");
+    Basic_Proc.Set_Error_Exit_Code;
+  when Arg_Error =>
+    null;
+  when others =>
+    Basic_Proc.Set_Error_Exit_Code;
 end Hanoi;
 
