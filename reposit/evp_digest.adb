@@ -7,6 +7,9 @@ package body Evp_Digest is
     with Import => True, Convention => C,
          External_Name => "openssl_add_all_digests";
 
+  function Evp_Max_Md_Size return Integer
+    with Import => True, Convention => C, External_Name => "evp_max_md_size";
+
   function Evp_Get_Digestbyname (Name : System.Address) return System.Address
     with Import => True, Convention => C,
          External_Name => "evp_get_digestbyname";
@@ -36,6 +39,9 @@ package body Evp_Digest is
   procedure Evp_Md_Ctx_Destroy (Ctx : in System.Address)
     with Import => True, Convention => C, External_Name => "evp_md_ctx_destroy";
 
+  -- Defined in C as as 64 (for SHA512), so this is a safe default value
+  Max_Md_Size : Integer := 256;
+
   -- Global init
   Initialized : Boolean := False;
   procedure Init is
@@ -43,6 +49,7 @@ package body Evp_Digest is
     if not Initialized then
       -- Load all digests only once
       Openssl_Add_All_Digests;
+      Max_Md_Size := Evp_Max_Md_Size;
       Initialized := True;
     end if;
   end Init;
@@ -123,7 +130,7 @@ package body Evp_Digest is
   -- Read the digest and let it ready for adding new updates
   -- May raise Status_Error if Ctx is not init or reset
   function Read (Ctx : in out Context) return Byte_Array is
-    Md : Byte_Array (1 .. Evp_Max_Md_Size);
+    Md : Byte_Array (1 .. Max_Md_Size);
     Len : C_Types.Uint32;
     Dummy_Res : Integer;
   begin

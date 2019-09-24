@@ -49,10 +49,6 @@ package Evp_Digest is
 
 private
 
-  -- EVP_MAX_MD_SIZE is 64
-  -- So 256 leaves some margin
-  Evp_Max_Md_Size : constant := 256;
-
   type Context is new Ada.Finalization.Limited_Controlled with record
     Is_Clean : Boolean := True;
     Evp_Md_Ctx : System.Address := System.Null_Address;

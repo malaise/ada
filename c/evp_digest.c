@@ -9,6 +9,10 @@ extern void openssl_add_all_digests (void) {
 # endif
 }
 
+extern int evp_max_md_size (void) {
+  return EVP_MAX_MD_SIZE;
+}
+
 extern const EVP_MD * evp_get_digestbyname (char * name) {
   return EVP_get_digestbyname(name);
 }

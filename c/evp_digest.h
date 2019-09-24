@@ -2,6 +2,7 @@
 #include <openssl/evp.h>
 
 extern void openssl_add_all_digests (void);
+extern int evp_max_md_size (void);
 extern const EVP_MD * evp_get_digestbyname (char * name);
 extern EVP_MD_CTX * evp_md_ctx_create (void);
 extern int evp_digestinit_ex (EVP_MD_CTX *ctx, const EVP_MD *type,
