@@ -53,7 +53,7 @@ package Socket is
   Soc_Conn_Err,  -- Socket should be connected or is already connected
                  --  or is already connecting
   Soc_Bcast_Err, -- Broadcast not allowed for this protocol
-  Soc_Len_Err,   -- Lenght (message or name) too short
+  Soc_Len_Err,   -- Length too short (for message or name)
   Soc_Reply_Err, -- Set_For_Reply must not be set
   Soc_Tail_Err,  -- Sent msg len is not 0 while prev send raised Soc_Woul_Block
   Soc_Proto_Err, -- Call not allowed for this protocol

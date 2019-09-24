@@ -1382,8 +1382,12 @@ extern int soc_get_local_host_name (char *host_name,
                                     unsigned int host_name_len) {
   /* Get current host name */
   if (gethostname(host_name, host_name_len) != 0) {
-    perror("gethostname");
-    return (SOC_NAME_NOT_FOUND);
+    if ( (errno == ENAMETOOLONG) || (errno == EINVAL) ) {
+      return (SOC_LEN_ERR);
+    } else {
+      perror("gethostname");
+      return (SOC_NAME_NOT_FOUND);
+    }
   }
   /* Ok */
   return (SOC_OK);
