@@ -1,4 +1,5 @@
 -- Posix regular expression
+with Interfaces.C.Strings;
 with Aski, C_Types, Bit_Ops, Utf_8, Str_Util, Gets, Sys_Calls;
 package body Reg_Exp is
 
@@ -24,7 +25,7 @@ package body Reg_Exp is
 --C_Ungreedy : constant Integer := 16#0200#;
 --C_Ucp      : constant Integer := 16#0400#;
 
-  function C_Regvers return System.Address
+  function C_Regvers return Interfaces.C.Strings.Chars_Ptr
     with Import => True, Convention => C, External_Name => "pcre_version";
 
   function C_Malloc_Regex return System.Address
@@ -58,7 +59,7 @@ package body Reg_Exp is
   -- Get PCRE version
   function Get_Pcre_Version return String is
     -- Returns a char*, make it a string
-    Str : constant String := Sys_Calls.Strcpy (C_Regvers);
+    Str : constant String := Sys_Calls.Str_From_C (C_Regvers);
   begin
     -- Stop at first space if any
     for I in Str'Range loop

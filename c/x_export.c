@@ -1118,6 +1118,9 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
                      (unsigned char *)str,
                      (int) strlen(str));
             free (str);
+          } else {
+            /* Malloc failure! */
+            found = FALSE;
           }
         } else {
           /* No selection available */
@@ -1365,7 +1368,9 @@ extern int x_set_selection (void *line_id, const char *selection) {
      }
      /* Store new selection */
      win_id->selection = malloc (strlen(selection) + 1);
-     strcpy (win_id->selection, selection);
+     if (win_id->selection != NULL) {
+         strcpy (win_id->selection, selection);
+     }
      return (WAIT_OK);
 }
 

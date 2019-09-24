@@ -1,5 +1,6 @@
 with System;
 with Ada.Calendar;
+with Interfaces.C.Strings;
 with C_Types, Many_Strings, Basic_Proc;
 package Sys_Calls is
 
@@ -44,7 +45,7 @@ package Sys_Calls is
 
   -- C strings
   ------------
-  function Strcpy (Addr : System.Address) return String;
+  function Str_From_C (Str_Addr : Interfaces.C.Strings.Chars_Ptr) return String;
 
 
   -- Environment

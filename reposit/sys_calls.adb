@@ -1,16 +1,8 @@
-with Interfaces.C.Strings;
 with Aski, Day_Mng, Bit_Ops;
 package body Sys_Calls is
 
   -- Common utilities
   C_Error  : constant C_Types.Int := -1;
-
-  function C_Strlen (S : System.Address) return C_Types.Size_T
-    with Import => True, Convention => C, External_Name => "strlen";
-
-  function C_Memcpy (Dest, Src : System.Address; Size : C_Types.Size_T)
-                    return System.Address
-    with Import => True, Convention => C, External_Name => "memcpy";
 
   function Str_For_C (Str : String) return String is
   begin
@@ -149,32 +141,20 @@ package body Sys_Calls is
   procedure Put_Line_Error (Str : in String) renames Basic_Proc.Put_Line_Error;
   procedure Flush_Error renames Basic_Proc.Flush_Error;
 
-  -- Copy C string from an address to a string
-  function Strcpy (Addr : System.Address) return String is
-    Dummy_Addr : System.Address;
-    use type System.Address;
-  begin
-    if Addr = System.Null_Address then
-      raise Constraint_Error;
-    end if;
-    return Result : String(1 .. Integer(C_Strlen (Addr))) do
-      Dummy_Addr := C_Memcpy (Result'Address, Addr, Result'Length);
-    end return;
-  end Strcpy;
-
   -- Basic getenv, raises Env_Unset
   function Getenv (Env_Name : String) return String is
-    function C_Getenv (Name : in System.Address) return System.Address
+    function C_Getenv (Name : in System.Address)
+             return Interfaces.C.Strings.Chars_Ptr
       with Import => True, Convention => C, External_Name => "getenv";
-    use type System.Address;
     Name4C : constant String := Str_For_C (Env_Name);
-    Addr : System.Address;
+    Ptr : Interfaces.C.Strings.Chars_Ptr;
+    use type Interfaces.C.Strings.Chars_Ptr;
   begin
-    Addr := C_Getenv (Name4C'Address);
-    if Addr = System.Null_Address then
+    Ptr := C_Getenv (Name4C'Address);
+    if Ptr = Interfaces.C.Strings.Null_Ptr then
       raise Env_Not_Set;
     end if;
-    return Strcpy (Addr);
+    return Str_From_C (Ptr);
   end Getenv;
 
   -- Getenv and truncates if necessary
@@ -224,19 +204,20 @@ package body Sys_Calls is
 
   -- Nth env variable ("name=value" or "")
   function Environ_Val (Index : Positive) return String is
-    function C_Env_Val (Index : C_Types.Int) return System.Address
+    function C_Env_Val (Index : C_Types.Int)
+             return Interfaces.C.Strings.Chars_Ptr
       with Import => True, Convention => C, External_Name => "env_val";
-    Str_Addr : System.Address;
-    use type System.Address;
+    Ptr : Interfaces.C.Strings.Chars_Ptr;
+    use type Interfaces.C.Strings.Chars_Ptr;
   begin
     if Index > Environ_Len
       then return "";
     end if;
-    Str_Addr := C_Env_Val (Index);
-    if Str_Addr = System.Null_Address then
+    Ptr := C_Env_Val (Index);
+    if Ptr = Interfaces.C.Strings.Null_Ptr then
       return "";
     end if;
-    return Strcpy (Str_Addr);
+    return Str_From_C (Ptr);
   end Environ_Val;
 
   -- Setenv / Unsetenv
