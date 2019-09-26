@@ -8,6 +8,7 @@ function usage {
 
 export WARN=""
 export NB=1
+export TDIR=test
 
 while [ -n "$1" ] ; do
   case "$1" in
@@ -47,7 +48,7 @@ while read -r lat lon || [[ -n "$lat" ]]; do
       echo "Occured with " $lat " " $lon 1>&2
     fi
   fi
-done < EncodeOk.txt
+done < $TDIR/EncodeOk
 
 echo Decode
 
@@ -95,7 +96,7 @@ while read -r ctx cod lat lon loc glob || [[ -n "$ctx" ]]; do
   fi
   let L=$L+1
 
-done < DecodeOk.txt
+done < $TDIR/DecodeOk
 # Wait for remaining
 wait_children $C
 

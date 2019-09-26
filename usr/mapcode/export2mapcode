@@ -39,8 +39,8 @@ make Export
 export FILES="as_u.adb as_u.ads bits.adb bits.ads ctrynams.ads \
 mapcodes.adb mapcodes.ads ndata.ads \
 str_tools.adb str_tools.ads t_mapcode.adb \
-DecodeFailures.txt EncodeOk.txt TerritoryFailures.txt DecodeOk.txt Scenario.txt \
-fulltest"
+test/DecodeFailures test/EncodeOk test/TerritoryFailures test/DecodeOk \
+test/Scenario fulltest"
 
 # Add Copyright headers and copy in TARGET
 H[1]=' -----------------------------------------------------------------------------'
@@ -61,25 +61,27 @@ H[15]=' ------------------------------------------------------------------------
 
 for file in $FILES ; do
   echo $file
+  name=`basename -- $file`
   i=1
   # Prepend comment
-  ct=`comment_target $file`
+  ct=`comment_target $name`
   comment=${ct% *}
   target=$TARGET/${ct#* }
   while [ ! -z "${H[i]}" ] ; do
     line="$comment${H[i]}"
     if [ $i -eq 1 ] ; then
       # First line
-      echo "$line" > $target/$file
+      echo "$line" > $target/$name
     else
-      echo "$line" >> $target/$file
+      echo "$line" >> $target/$name
     fi
     i=$(( i + 1 ))
   done
   # Append file
-  echo >> $target/$file
-  cat $file >> $target/$file
+  echo >> $target/$name
+  cat $file >> $target/$name
 done
+chmod +x $TARGET/test/fulltest
 ln -fs -t $TARGET/test $TARGET/src/t_mapcode
 
 # Reset to local version

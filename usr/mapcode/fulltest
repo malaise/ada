@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Test dir
+export TDIR=test
+if [ ! -d $TDIR ] ; then
+  TDIR=.
+fi
+
 # Precision, in fraction of degree, depending of encoding precision
 EPSILON[0]="2.5E-4"
 EPSILON[1]="5.0E-5"
@@ -126,7 +132,7 @@ function check {
   fi
 }
 
-# Play Scenario.txt
+# Play Scenario
 echo Scenario:
 # For each line
 let L=1
@@ -138,7 +144,7 @@ while true ; do
   let ININ=1
   CMD=""
   while true ; do
-    arg=`readarg Scenario.txt $L $I`
+    arg=`readarg $TDIR/Scenario $L $I`
     if [ "$arg" = "" ] ; then
       # End of line
       break
@@ -209,11 +215,11 @@ if [ $TEST -eq 0 ] ; then
   # For each line
   let L=1
   while true ; do
-    ctx=`readarg TerritoryFailures.txt $L 1`
+    ctx=`readarg $TDIR/TerritoryFailures $L 1`
     if [ -z "$ctx" ] ; then
       break;
     fi
-    ter=`readarg TerritoryFailures.txt $L 2`
+    ter=`readarg $TDIR/TerritoryFailures $L 2`
     if [ -z "$ter" ] ; then
       ter=$ctx
       ctx=""
@@ -244,11 +250,11 @@ if [ $TEST -eq 0 ] ; then
   # For each line
   let L=1
   while true ; do
-    ctx=`readarg DecodeFailures.txt $L 1`
+    ctx=`readarg $TDIR/DecodeFailures $L 1`
     if [ -z "$ctx" ] ; then
       break;
     fi
-    cod=`readarg DecodeFailures.txt $L 2`
+    cod=`readarg $TDIR/DecodeFailures $L 2`
     if [ -z "$cod" ] ; then
       cod=$ctx
       ctx=""
@@ -265,11 +271,11 @@ echo Encode
 let L=1
 while true ; do
   # Read lat and lon
-  lat=`readarg EncodeOk.txt $L 1`
+  lat=`readarg $TDIR/EncodeOk $L 1`
   if [ -z "$lat" ] ; then
     break;
   fi
-  lon=`readarg EncodeOk.txt $L 2`
+  lon=`readarg $TDIR/EncodeOk $L 2`
   # Encode
   result=`t_mapcode -c $lat $lon $PRECISION`
   if [ $? -ne 0 ] ; then
@@ -385,6 +391,6 @@ while read -r ctx cod lat lon loc glo || [[ -n "$ctx" ]]; do
     echo -n "."
   fi
   let L=$L+1
-done < DecodeOk.txt
+done < $TDIR/DecodeOk
 echo
 echo OK.
