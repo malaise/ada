@@ -36,11 +36,9 @@ fi
 make Export
 
 # Files to export
-export FILES="as_u.adb as_u.ads bits.adb bits.ads ctrynams.ads \
-mapcodes.adb mapcodes.ads ndata.ads \
-str_tools.adb str_tools.ads t_mapcode.adb \
-test/DecodeFailures test/EncodeOk test/TerritoryFailures test/DecodeOk \
-test/Scenario fulltest"
+export FILES="mapcode_utils-*.ad* \
+ctrynams.ads ndata.ads mapcodes.ads mapcodes.adb ndata.ads \
+t_mapcode.adb test/*"
 
 # Add Copyright headers and copy in TARGET
 H[1]=' -----------------------------------------------------------------------------'

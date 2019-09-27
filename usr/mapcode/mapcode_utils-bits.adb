@@ -8,7 +8,7 @@ pragma Warnings (On,  "* is an internal GNAT unit");
 
 with Interfaces;
 
-package body Bits is
+package body Mapcode_Utils.Bits is
 
 
   function To_Unsigned_32 is new Ada.Unchecked_Conversion
@@ -104,5 +104,5 @@ package body Bits is
   function Shr (Val : Ll_Integer; Bits : Integer) return Ll_Integer is
     (To_Ll_Integer(Interfaces.Shift_Right (To_Unsigned_64(Val), Bits)));
 
-end Bits;
+end Mapcode_Utils.Bits;
 

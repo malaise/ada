@@ -1,7 +1,7 @@
 -- Similar to Ada.Strings.Unbounded, but with a tagged type, more operations
 --  and more powerfull operations
 private with Ada.Finalization;
-package As_U is
+package Mapcode_Utils.As_U is
 
   -- Common definitions for bounded and unbounded strings
   Space : Character := ' ';
@@ -175,5 +175,5 @@ private
 
   Asu_Null : constant Asu_Us :=
      (Ada.Finalization.Controlled with others => <>);
-end As_U;
+end Mapcode_Utils.As_U;
 

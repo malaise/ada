@@ -1,5 +1,5 @@
 -- Mapcode management
-with As_U;
+with Mapcode_Utils.As_U;
 with Ctrynams;
 package Mapcodes is
 
@@ -63,12 +63,12 @@ package Mapcodes is
   -- One mapcode-related information bloc
   type Mapcode_Info is record
     -- Territory code (AAA for Earth)
-    Territory_Alpha_Code : As_U.Asu_Us;
+    Territory_Alpha_Code : Mapcode_Utils.As_U.Asu_Us;
     -- Simple mapcode
-    Mapcode : As_U.Asu_Us;
+    Mapcode : Mapcode_Utils.As_U.Asu_Us;
     -- Territory, then a space and the mapcode,
     --  or simple mapcode if it is valid on Earth
-    Full_Mapcode : As_U.Asu_Us;
+    Full_Mapcode : Mapcode_Utils.As_U.Asu_Us;
     -- Territory number
     Territory_Number : Territory_Range;
   end record;
