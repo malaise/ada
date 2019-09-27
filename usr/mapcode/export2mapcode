@@ -36,7 +36,7 @@ fi
 make Export
 
 # Files to export
-export FILES="mapcode_utils-*.ad* \
+export FILES="mapcode_utils.ads mapcode_utils-*.ad* \
 ctrynams.ads ndata.ads mapcodes.ads mapcodes.adb ndata.ads \
 t_mapcode.adb test/*"
 
