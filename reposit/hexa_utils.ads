@@ -25,6 +25,7 @@ package Hexa_Utils is
   end Int_Image;
 
   -- Image in hexadecimal of a Natural
+  -- Lower case
   generic
     type Modulus is mod <>;
   function Mod_Image (I : Modulus) return String;
@@ -43,9 +44,13 @@ package Hexa_Utils is
                   Len : Positive; Gap : Character := '0') return String;
 
   -- Value of an hexadecimal string (without 16#...#)
-  -- Str must be a valid image with no trailing spaces,
-  --  leading spaces are skipped
+  -- Str must be a valid image with no trailing spaces, lowercase or uppercase
+  --  characters, leading spaces are skipped
+  -- Result is always a natural
   -- Raises Constraint_Error if Str is not valid or result is too large
+  generic
+    type Modulus is mod <>;
+  function Mod_Value (Str : String) return Modulus;
   function Value (Str : String) return Natural;
   function Value (Str : String) return Long_Longs.Ll_Natural;
   function Value (Str : String) return Long_Longs.Llu_Natural;

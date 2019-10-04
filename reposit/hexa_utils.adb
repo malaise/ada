@@ -130,10 +130,11 @@ package body Hexa_Utils is
   -- Str must be a valid image with no trailing spaces,
   --  leading spaces are skipped
   -- May raises Constraint_Error if Str is not valid or result is too large
-  function Value (Str : String) return Natural is
+  function Mod_Value (Str : String) return Modulus is
     Start : Positive;
-    Res : Natural := 0;
-    Mul : Positive := 1;
+    Res : Modulus := 0;
+    subtype Pos is Modulus range 1 .. Modulus'Last;
+    Mul : Pos := 1;
   begin
     if Str = "" then
       raise Constraint_Error;
@@ -145,63 +146,28 @@ package body Hexa_Utils is
         exit;
       end if;
     end loop;
+    -- Convert: extract digits from smallest to highest weight
     for I in reverse Str'Range loop
-      Res := Res + Char_To_Hexa (Str(I)) * Mul;
+      Res := Res + Modulus (Char_To_Hexa (Str(I))) * Mul;
       if I /= Start then
         Mul := 16 * Mul;
         exit when Str(I - 1) = ' ';
       end if;
     end loop;
     return Res;
-  end Value;
+  end Mod_Value;
+  function Val_Llu_Natual is new Mod_Value (Long_Longs.Llu_Natural);
+  function Value (Str : String) return Long_Longs.Llu_Natural
+           renames Val_Llu_Natual;
+
   function Value (Str : String) return Long_Longs.Ll_Natural is
-    Start : Positive;
-    Res : Long_Longs.Ll_Natural := 0;
-    Mul : Long_Longs.Ll_Positive := 1;
   begin
-    if Str = "" then
-      raise Constraint_Error;
-    end if;
-    -- Locate first significant char (skip leading spaces)
-    for I in Str'Range loop
-      if Str(I) /= ' ' then
-        Start := I;
-        exit;
-      end if;
-    end loop;
-    for I in reverse Str'Range loop
-      Res := Res + Long_Longs.Ll_Natural(Char_To_Hexa (Str(I))) * Mul;
-      if I /= Start then
-        Mul := 16 * Mul;
-        exit when Str(I - 1) = ' ';
-      end if;
-    end loop;
-    return Res;
+    return Long_Longs.Ll_Natural (Val_Llu_Natual (Str));
   end Value;
-  function Value (Str : String) return Long_Longs.Llu_Natural is
-    Start : Positive;
-    Res : Long_Longs.Llu_Natural := 0;
-    Mul : Long_Longs.Llu_Positive := 1;
-    use type Long_Longs.Llu_Natural;
+
+  function Value (Str : String) return Natural is
   begin
-    if Str = "" then
-      raise Constraint_Error;
-    end if;
-    -- Locate first significant char (skip leading spaces)
-    for I in Str'Range loop
-      if Str(I) /= ' ' then
-        Start := I;
-        exit;
-      end if;
-    end loop;
-    for I in reverse Str'Range loop
-      Res := Res + Long_Longs.Llu_Natural(Char_To_Hexa (Str(I))) * Mul;
-      if I /= Start then
-        Mul := 16 * Mul;
-        exit when Str(I - 1) = ' ';
-      end if;
-    end loop;
-    return Res;
+    return Natural (Val_Llu_Natual (Str));
   end Value;
 
 end Hexa_Utils;
