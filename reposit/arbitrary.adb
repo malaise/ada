@@ -814,21 +814,21 @@ package body Arbitrary is
   begin
     Div (A, B, Q, R);
     Abs_R := abs R;
-    if abs B - Abs_R <= Abs_R then
-      -- R >= B/2 => Q++ or Q--
-      if Q = Zero then
-        if Pa = Pb then
-          return Incr (Q);
-        else
-          return Decr (Q);
-        end if;
-      elsif Basic.Check_Is_Nat (Q) then
+    if abs B - Abs_R > Abs_R then
+      -- R < B/2 => trunc, Q is correct
+      return Q;
+    end if;
+    -- R >= B/2 => round, adjust Q++ or Q--
+    if Q = Zero then
+      if Pa = Pb then
         return Incr (Q);
       else
         return Decr (Q);
       end if;
+    elsif Basic.Check_Is_Nat (Q) then
+      return Incr (Q);
     else
-      return Q;
+      return Decr (Q);
     end if;
   end Roundiv;
 

@@ -35,7 +35,6 @@ package Arbitrary is
   -- Set N to 0
   procedure Set_Null (N: out Number);
 
-
   -- Basic unitary operations
   function "abs" (A : Number) return Number;
   function "-" (A : Number) return Number;
