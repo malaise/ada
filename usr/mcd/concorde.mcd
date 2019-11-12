@@ -1,7 +1,7 @@
 # Fuel consumption of Concorde
 # Error message
 [ "ERROR. Invalid argument" putl
-"Usage: concorde <total_distance><unit> [ <subsonic_distance> ]" putl
+"Usage: concorde ""<total_distance><unit>"" [ ""<subsonic_distance>"" ]" putl
 "  <unit> ::= km | Nm | Mi" putl
 1 setexit ssize popn retall ] E popr
 
@@ -26,15 +26,20 @@ f pushr 0.0 = E pushr ifcall
 s C pushr call
 t C pushr call
 
-# Compute total - (subsonic + transitions)  (transition=climb+descent, 450 NM)
+# Compute total - (subsonic + transitions)  (transition=climb+descent, 450 Nn)
 3 format t pushr
 450 v copyr toreal 1.852 * s pushr + - dup isneg
-[ "ERROR. Subsonic plus transitions (" put v pushr put " Nm) is longer than total"
+[ "ERROR. Subsonic plus transitions (" put v pushr put
+" Nm) is longer than total"
 putl 1 setexit ssize popn retall ] ifcall
 # Per 1000km; 11 T cruise and 26 T subsonic
 11.0 * s pushr 26.0 * + 1000.0 /
 # Add conso for Transistion + Ground + Security
 38.0 +
-# Put result
--1 roundat 5 3 " " normal 1 1 strdel put "T" putl
+# Normal result on xx.y (tons)
+-1 roundat v copyr 5 3 " " normal
+dup 1 1 strsub "!" = [ "ERROR. More than 100T (" put
+v pushr 6 4 " " normal 1 1 strdel put "T)" putl
+1 setexit ssize popn retall ] ifcall
+1 1 strdel put "T" putl
 
