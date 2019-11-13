@@ -1,17 +1,22 @@
 # Fuel consumption of Concorde
 # Error message
 [ "ERROR. Invalid argument" putl
-"Usage: concorde ""<total_distance><unit>"" [ ""<subsonic_distance>"" ]" putl
+"Usage: concorde ""<total_distance>[-<subsonic_distance>]<unit>""" putl
 "  <unit> ::= km | Nm | Mi" putl
 1 setexit ssize popn retall ] E popr
 
-# Check arguments
-ssize dup dup ispos ~ E pushr ifcall 2 > E pushr ifcall
-1 = "" ifthen s popr a popr s pushr strnull [ "0" s popr ] ifcall
-a pushr dup dup strlen l copyr 3 < E pushr ifcall
-# Split first arg
-1 l pushr 2 - strsub t popr
-l pushr 1 - l pushr strsub u popr
+# Check and extract subsonic length according to "-"
+ssize 1 /= E pushr ifcall
+a copyr dup strlen l popr 1 "-" strloc i copyr isnull 
+[ "0" s popr ]
+[ i pushr 1 <= E pushr ifcall i pushr l pushr 3 - > E pushr ifcall
+a pushr i pushr 1 + l pushr 2 - strsub s popr
+a pushr 1 i pushr 1 - strsub a pushr l pushr dup 1 - swap strsub strcat
+dup strlen l popr a popr
+] ifte call
+# Split total length and unit
+a pushr 1 l pushr 2 - strsub t popr
+a pushr l pushr 1 - l pushr strsub u popr
 
 # Check unit
 0.0 f popr u pushr dup dup
@@ -26,20 +31,15 @@ f pushr 0.0 = E pushr ifcall
 s C pushr call
 t C pushr call
 
-# Compute total - (subsonic + transitions)  (transition=climb+descent, 450 Nn)
+# Compute total - (subsonic + transitions)  (transition=climb+descent, 450 NM)
 3 format t pushr
 450 v copyr toreal 1.852 * s pushr + - dup isneg
-[ "ERROR. Subsonic plus transitions (" put v pushr put
-" Nm) is longer than total"
+[ "ERROR. Subsonic plus transitions (" put v pushr put " Nm) is longer than total"
 putl 1 setexit ssize popn retall ] ifcall
 # Per 1000km; 11 T cruise and 26 T subsonic
 11.0 * s pushr 26.0 * + 1000.0 /
-# Add conso for climb, descent, taxi and security
-13.0 + 10.0 + 11.0 + 15.0 +
-# Normal result on xx.y (tons)
--1 roundat v copyr 5 3 " " normal
-dup 1 1 strsub "!" = [ "ERROR. More than 100T (" put
-v pushr 6 4 " " normal 1 1 strdel put "T)" putl
-1 setexit ssize popn retall ] ifcall
-1 1 strdel put "T" putl
+# Add conso for Transistion + Ground + Security
+38.0 +
+# Put result
+-1 roundat 5 3 " " normal 1 1 strdel put "T" putl
 
