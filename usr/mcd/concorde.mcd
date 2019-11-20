@@ -7,7 +7,7 @@
 
 # Check and extract subsonic length according to "-"
 ssize 1 /= E pushr ifcall
-a copyr dup strlen l popr 1 "-" strloc i copyr isnull 
+a copyr dup strlen l popr 1 "-" strloc i copyr isnull
 [ "0" s popr ]
 [ i pushr 1 <= E pushr ifcall i pushr l pushr 3 - > E pushr ifcall
 a pushr i pushr 1 + l pushr 2 - strsub s popr
@@ -26,14 +26,14 @@ a pushr l pushr 1 - l pushr strsub u popr
 f pushr 0.0 = E pushr ifcall
 
 # Check distances and convert into km
-[ dup pushr dup caninte  ~ E pushr ifcall strinte toreal f pushr * swap popr 
+[ dup pushr dup caninte  ~ E pushr ifcall strinte toreal f pushr * swap popr
 ] C popr
 s C pushr call
 t C pushr call
 
 # Compute total - (subsonic + transitions)  (transition=climb+descent, 450 NM)
 t pushr 450 v copyr toreal 1.852 * s pushr + - dup isneg
-[ "ERROR. Subsonic plus transitions (" put 3 format v pushr put 
+[ "ERROR. Subsonic plus transitions (" put 3 format v pushr put
 " Nm) is longer than total" putl 1 setexit ssize popn retall ] ifcall
 
 # Per 1000km; 10 T cruise and 26 T subsonic
