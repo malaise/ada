@@ -1,9 +1,9 @@
 # Fuel consumption of Concorde
+
 # Error message
 [ "ERROR. Invalid argument" putl
 "Usage: concorde ""<total_distance>[-<subsonic_distance>]<unit>""" putl
-"  <unit> ::= km | Nm | Mi" putl
-1 setexit ssize popn retall ] E popr
+"  <unit> ::= km | Nm | Mi" putl 1 setexit ssize popn retall ] E popr
 
 # Check and extract subsonic length according to "-"
 ssize 1 /= E pushr ifcall
