@@ -158,6 +158,30 @@ extern int x_resume (void) {
     return (result);
 }
 
+/* Notify of modification */
+extern int x_modified (void) {
+
+    /* Check that display is init */
+    if (local_server.x_server == NULL) {
+        return (WAIT_ERR);
+    }
+    local_server.modified = TRUE;
+    return (WAIT_OK);
+}
+
+/* Characteristics of a font in the server */
+extern int x_get_font_geometry (int font_no, int *p_f_width, int *p_f_height,
+                                int *p_f_offset) {
+    /* Check that display is init */
+    if (local_server.x_server == NULL) {
+        return (WAIT_ERR);
+    }
+    *p_f_width  = fon_get_width  (local_server.x_font[font_no]);
+    *p_f_height = fon_get_height (local_server.x_font[font_no]);
+    *p_f_offset = fon_get_offset (local_server.x_font[font_no]);
+    return (WAIT_OK);
+}
+
 /* Opens a line */
 extern int x_open_line (int screen_id, int row, int column,
   int height, int width,
@@ -516,7 +540,7 @@ extern int x_get_font_name (void *line_id, char *font_name, int font_len) {
         return (WAIT_ERR);
     }
 
-    strncpy (font_name, name, len);
+    strncpy (font_name, name, len + 1);
     return (WAIT_OK);
 }
 
@@ -539,7 +563,7 @@ extern int x_get_bold_name (void *line_id, char *font_name, int font_len) {
         return (WAIT_ERR);
     }
 
-    strncpy (font_name, name, len);
+    strncpy (font_name, name, len + 1);
     return (WAIT_OK);
 }
 
@@ -753,76 +777,70 @@ extern int x_fill_area (void *line_id, int xys[], int nb_points) {
     return (WAIT_OK);
 }
 
-static void grab_pointer (Window window, Cursor cursor) {
-    XGrabPointer(local_server.x_server, window, TRUE, 0, GrabModeAsync,
-                 GrabModeAsync, window, cursor, CurrentTime);
-    local_server.modified = TRUE;
-
-}
-
-extern int x_set_graphic_pointer (void *line_id, boolean graphic, boolean grab) {
-    t_window *win_id = (t_window*) line_id;
-    Cursor cursor;
-
-    /* Check that window is open */
-    if (! lin_check(win_id)) {
-        return (WAIT_ERR);
-    }
-    if (graphic) {
-      cursor = XCreateFontCursor(local_server.x_server, XC_tcross);
-      XDefineCursor(local_server.x_server, win_id->x_window, cursor);
-    } else {
-      cursor = XCreateFontCursor(local_server.x_server, XC_arrow);
-      XUndefineCursor(local_server.x_server, win_id->x_window);
-    }
-
-    if (grab) {
-      grab_pointer(win_id->x_window, cursor);
-    } else {
-      XUngrabPointer (local_server.x_server, CurrentTime);
-    }
-    local_server.modified = TRUE;
-    return (WAIT_OK);
-}
-
-
-extern int x_hide_graphic_pointer (void *line_id, boolean grab) {
+extern int x_set_pointer (void *line_id, int shape) {
     t_window *win_id = (t_window*) line_id;
     Pixmap blank;
     XColor dummy;
     char data[1] = {0};
-    Cursor cursor;
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
         return (WAIT_ERR);
     }
-
-    /* Make a blank cursor from blank pixmap*/
-    blank = XCreateBitmapFromData (local_server.x_server, win_id->x_window,
-                                   data, 1, 1);
-    if (blank == None) {
+    switch (shape) {
+        case POINTER_NONE:
+            /* Make a blank cursor from blank pixmap*/
+            blank = XCreateBitmapFromData (local_server.x_server,
+                        win_id->x_window, data, 1, 1);
+            if (blank == None) {
 #ifdef DEBUG
-        printf ("X_EXPORT : Can't create blank cursor.\n");
+                printf ("X_EXPORT : Can't create blank cursor.\n");
 #endif
-      return (WAIT_ERR);
-    }
-    cursor = XCreatePixmapCursor(local_server.x_server, blank, blank,
-                                 &dummy, &dummy, 0, 0);
-    /* Assign */
-    XDefineCursor(local_server.x_server, win_id->x_window, cursor);
-    XFreePixmap (local_server.x_server, blank);
-
-    /* Grab */
-    if (grab) {
-      grab_pointer(win_id->x_window, cursor);
-    } else {
-      XUngrabPointer (local_server.x_server, CurrentTime);
+                return (WAIT_ERR);
+            }
+            win_id->cursor = XCreatePixmapCursor(local_server.x_server,
+                                 blank, blank, &dummy, &dummy, 0, 0);
+            XFreePixmap (local_server.x_server, blank);
+            XDefineCursor(local_server.x_server, win_id->x_window,
+                win_id->cursor);
+        break;
+        case POINTER_ARROW:
+            win_id->cursor = XCreateFontCursor(local_server.x_server, XC_arrow);
+            XUndefineCursor(local_server.x_server, win_id->x_window);
+        break;
+        case POINTER_CROSS:
+            win_id->cursor = XCreateFontCursor(local_server.x_server,
+                                 XC_tcross);
+            XDefineCursor(local_server.x_server, win_id->x_window,
+                win_id->cursor);
+        break;
+        case POINTER_HAND:
+            win_id->cursor = XCreateFontCursor(local_server.x_server, XC_hand1);
+            XDefineCursor(local_server.x_server, win_id->x_window,
+                win_id->cursor);
+        break;
     }
     local_server.modified = TRUE;
     return (WAIT_OK);
 }
 
+extern int x_grab_pointer (void *line_id, boolean grab) {
+    t_window *win_id = (t_window*) line_id;
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (WAIT_ERR);
+    }
+    if (grab) {
+        XGrabPointer(local_server.x_server, win_id->x_window, TRUE, 0,
+            GrabModeAsync, GrabModeAsync, win_id->x_window, win_id->cursor,
+            CurrentTime);
+    } else {
+        XUngrabPointer (local_server.x_server, CurrentTime);
+    }
+    local_server.modified = TRUE;
+    return (WAIT_OK);
+}
 
 /***** Event management *****/
 /* Previous event stored if arrived just after an expose */
@@ -842,10 +860,13 @@ static void delay_ms (unsigned int msecs) {
 
 /* Process the next X event */
 /* p_line_id is the line on which the event has occured */
+/* p_ref is the reference associated to the window on which the event has */
+/*       occured */
 /* p_kind is 1 if the event is a key hit, 0 if it's a TID */
 /* p_kind is -1 if the event is discarted or if error */
 /* p_next is True if another event is available */
-extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
+extern int x_process_event (void **p_line_id, void **p_ref,
+                            int *p_kind, boolean *p_next) {
 
     t_window *win_id;
     XEvent event;
@@ -910,6 +931,9 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         if (win_id->nbre_key != 0) {
           /* Key is valid */
           *p_line_id = (void*)win_id;
+          if (p_ref != NULL) {
+            *p_ref = win_id->last_subwindow.ref;
+          }
           *p_kind = KEYBOARD;
           result = WAIT_OK;
         }
@@ -920,6 +944,9 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         win_id = lin_get_win (event.xany.window);
         if (win_id == NULL) {
           break; /* Next Event */
+        }
+        if (p_ref != NULL) {
+          *p_ref = win_id->last_subwindow.ref;
         }
         /* Store button */
         if (event.xbutton.button == Button1) {
@@ -1002,13 +1029,15 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
              break;
           }
         }
-
       break;
       case MotionNotify :
         /* Find the window of event */
         win_id = lin_get_win (event.xany.window);
         if (win_id == NULL) {
           break; /* Next Event */
+        }
+        if (p_ref != NULL) {
+          *p_ref = win_id->last_subwindow.ref;
         }
         if (!(win_id->motion_enabled)) {
           break; /* Next Event */
@@ -1022,11 +1051,39 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         *p_kind = TID_MOTION;
         result = WAIT_OK;
       break;
+      case EnterNotify :
+      case LeaveNotify :
+        /* Find the window of event */
+        win_id = lin_get_win (event.xany.window);
+        if (win_id == NULL) {
+          break; /* Next Event */
+        }
+        if (p_ref != NULL) {
+          *p_ref = win_id->last_subwindow.ref;
+        }
+        /* Store position */
+        win_id->tid_x = event.xcrossing.x;
+        win_id->tid_y = event.xcrossing.y;
+
+        *p_line_id = (void*) win_id;
+        result = WAIT_OK;
+        if (win_id->last_subwindow.ref == NULL) {
+          /* Enter/Leave main window */
+          *p_kind = REFRESH;
+        } else {
+          /* Enter/Leave subwindow */
+          *p_kind = ((event.type == EnterNotify) ? TID_ENTER : TID_LEAVE);
+        }
+        win_id->button = 0;
+      break;
       case Expose:
         /* Find the window of event */
         win_id = lin_get_win (event.xany.window);
         if (win_id == NULL) {
           break; /* Next Event */
+        }
+        if (p_ref != NULL) {
+          *p_ref = win_id->last_subwindow.ref;
         }
         /* Wait a bit for any other expose to arrive */
         delay_ms (DELAY_EXPOSE_MS);
@@ -1048,21 +1105,14 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         *p_kind = REFRESH;
         result = WAIT_OK;
       break;
-      case EnterNotify:
-        /* Find the window of event */
-        win_id = lin_get_win (event.xany.window);
-        if (win_id == NULL) {
-          break; /* Next Event */
-        }
-        *p_line_id = (void*) win_id;
-        *p_kind = REFRESH;
-        result = WAIT_OK;
-      break;
       case ClientMessage:
         /* Find the window of event */
         win_id = lin_get_win (event.xany.window);
         if (win_id == NULL) {
           break; /* Next Event */
+        }
+        if (p_ref != NULL) {
+          *p_ref = win_id->last_subwindow.ref;
         }
         /* Check Message type */
         str = XGetAtomName (local_server.x_server, event.xclient.message_type);
@@ -1081,6 +1131,9 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         win_id = lin_get_win (event.xany.window);
         if (win_id == NULL) {
           break; /* Next Event */
+        }
+        if (p_ref != NULL) {
+          *p_ref = win_id->last_subwindow.ref;
         }
         /* Check that the requested type (target) is one of the supported */
 #ifdef DEBUG
@@ -1148,6 +1201,9 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         if (win_id == NULL) {
           break; /* Next Event */
         }
+        if (p_ref != NULL) {
+          *p_ref = win_id->last_subwindow.ref;
+        }
         if (win_id->nbre_drop_clear == 0) {
           /* This is not the consequence of ourself clearing the selection */
           if (win_id->selection != NULL) {
@@ -1166,6 +1222,9 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         win_id = lin_get_win (event.xany.window);
         if (win_id == NULL) {
           break; /* Next Event */
+        }
+        if (p_ref != NULL) {
+          *p_ref = win_id->last_subwindow.ref;
         }
         if (event.xselection.property == None) {
           /* Selection transfer failed  for this target type */

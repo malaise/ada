@@ -253,6 +253,12 @@ Status res;
     p_window->selection = NULL;
     p_window->nbre_drop_clear = 0;
     p_window->select_index = SELEC_NONE;
+    p_window->cursor = XCreateFontCursor(p_window->server->x_server, XC_arrow);
+
+    /* Init subwindows */
+    p_window->last_subwindow.window = None;
+    p_window->last_subwindow.ref = NULL;
+    p_window->nbre_subwindows = 0;
 
     /* Graphic context of the window */
     {
@@ -450,13 +456,46 @@ boolean lin_check (t_window *p_window) {
 /* Gives the t_window reference of a x_window (sequencial search) */
 t_window *lin_get_win (Window x_window) {
 
-int i;
+int i, j, l, h;
 
+    /* Search in windows for the event windows */
     for (i=0; i<nbre_window; i++) {
         if (list_window[i]->x_window == x_window) {
+            /* Parent window */
+            list_window[i]->last_subwindow.window = None;
+            list_window[i]->last_subwindow.ref = NULL;
+            return (list_window[i]);
+        } else if (list_window[i]->last_subwindow.window == x_window) {
+            /* Same subwindow as before */
             return (list_window[i]);
         }
     }
+    /* Search in subwindows */
+    for (i=0; i<nbre_window; i++) {
+        /* Dichotomy */
+        l = 0; h = list_window[i]->nbre_subwindows;
+        while (l < h) {
+            j = (l + h ) / 2;
+            if (list_window[i]->subwindows[j].window == x_window) {
+                list_window[i]->last_subwindow = list_window[i]->subwindows[j];
+                return (list_window[i]);
+            }
+            if (list_window[i]->subwindows[j].window < x_window) {
+                l = j + 1;
+            } else {
+                h = j;
+            }
+        }
+        if (l >= h) {
+            return (NULL);
+        }
+        if (list_window[i]->subwindows[l].window == x_window) {
+            list_window[i]->last_subwindow = list_window[i]->subwindows[l];
+            return (list_window[i]);
+        }
+    }
+
+    /* Not found */
     return (NULL);
 }
 
@@ -525,6 +564,46 @@ int lin_get_font (t_window *p_window) {
         return fon_get_bold (p_window->no_font);
     } else {
         return p_window->no_font;
+    }
+}
+
+/* (Un) Register a subwindow of the line */
+int lin_register (t_window *p_window, Window window, void *ref, boolean add) {
+
+int i, j;
+
+    if (add) {
+        /* Insert if not full */
+        if (p_window->nbre_subwindows == MAX_SUBWINDOWS) {
+            return (False);
+        }
+        /* Keep list sorted by crescent window */
+        for (i=0; i<p_window->nbre_subwindows; i++) {
+            if (p_window->subwindows[i].window > window) {
+                break;
+            }
+        }
+        /* Shift right */
+        for (j=p_window->nbre_subwindows; j>i; j--) {
+            p_window->subwindows[j] = p_window->subwindows[j-1];
+        }
+        p_window->subwindows[p_window->nbre_subwindows].window = window;
+        p_window->subwindows[p_window->nbre_subwindows].ref = ref;
+        (p_window->nbre_subwindows)++;
+        return (True);
+    } else {
+        /* Locate and shift (overwriting it) */
+        for (i=0; i<p_window->nbre_subwindows; i++) {
+            if (p_window->subwindows[i].window == window) {
+                for (j=i + 1; j<p_window->nbre_subwindows; j++) {
+                    p_window->subwindows[j-1] = p_window->subwindows[j];
+                    (p_window->nbre_subwindows)--;
+                }
+                return (True);
+            }
+        }
+        /* Not found */
+        return (False);
     }
 }
 

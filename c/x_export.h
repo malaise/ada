@@ -12,7 +12,7 @@
 /*  of wait_evt (NO_EVENT, SIG_EVENT, WAKE_EVENT) */
 #define X_EVENT (-10)
 
-/* The 6 kinds of X events */
+/* The kinds of X events */
 #define DISCARD     0
 #define TID_RELEASE 1
 #define TID_PRESS   2
@@ -21,6 +21,14 @@
 #define TID_MOTION  5
 #define EXIT_REQ    6
 #define SELECTION   7
+#define TID_ENTER   8
+#define TID_LEAVE   9
+
+/* The shapes of pointers */
+#define POINTER_NONE  0
+#define POINTER_ARROW 1
+#define POINTER_CROSS 2
+#define POINTER_HAND  3
 
 /* Basics */
 
@@ -29,6 +37,10 @@ extern int x_initialise (const char *server_name,
 
 extern int x_suspend (void);
 extern int x_resume (void);
+extern int x_modified (void);
+
+extern int x_get_font_geometry (int font_no, int *p_f_width, int *p_f_height,
+                                int *p_f_offset);
 
 extern int x_open_line (int screen_id,
                         int row, int column,
@@ -101,14 +113,15 @@ extern int x_fill_area (void *line_id, int xys[], int nb_points);
 
 extern int x_get_pointer_pos (void *line_id, int *p_x, int *p_y);
 
-extern int x_set_graphic_pointer (void *line_id, boolean graphic, boolean grab);
+extern int x_set_pointer (void *line_id, int shape);
 
-extern int x_hide_graphic_pointer (void *line_id, boolean grab);
+extern int x_grab_pointer (void *line_id, boolean grab);
 
 /* Events */
 extern int x_select (int *p_fd, boolean *p_read, timeout_t *timeout);
 
-extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next);
+extern int x_process_event (void **p_line_id, void **p_ref,
+                            int *p_kind, boolean *p_next);
 
 extern int x_read_tid (void *line_id, boolean row_col,
                        int *p_button, int *p_row, int *p_column);

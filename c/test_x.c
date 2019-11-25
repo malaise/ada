@@ -222,7 +222,7 @@ boolean read;
     }
 
     if (m == X_EVENT) {
-      x_process_event (&line_event, &k, &l);
+      x_process_event (&line_event, NULL, &k, &l);
       if (k == EXIT_REQ) {
         /* Request to exit by Window manager */
         printf ("Exit request\n");

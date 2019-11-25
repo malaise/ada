@@ -105,6 +105,7 @@ package body Con_Io is
         Font_Name : constant String
                   := Lower_Str (Environ.Getenv (Font_Env_Name));
       begin
+        Logger.Log_Debug ("Font " & Font_Name);
         if Font_Name = Font_Env_Small then
           Font_No_Offset := -1;
         elsif Font_Name = Font_Env_Large then
@@ -143,6 +144,15 @@ package body Con_Io is
 
   function Color_Name_Of (Color : Effective_Colors) return String is
     (The_Color_Names(Color).Image);
+
+  -- Get the geometry of a font
+  procedure Get_Font_Geometry (Font_No     : in Font_No_Range;
+                               Font_Width  : out Natural;
+                               Font_Height : out Natural;
+                               Font_Offset : out Natural) is
+  begin
+    X_Mng.X_Get_Font_Geometry (Font_No, Font_Width, Font_Height, Font_Offset);
+  end Get_Font_Geometry;
 
   -- Internal
   procedure Set_Attributes (Con : in Console;
@@ -282,6 +292,13 @@ package body Con_Io is
     -- Resume
     X_Mng.X_Resume (Con.Get_Access.Id);
   end Resume;
+
+  function Get_Line (Con : Console) return X_Mng.Line is
+  begin
+    Check_Con (Con);
+    return Con.Get_Access.Id;
+  end Get_Line;
+
 
   function Is_Suspended (Con : Console) return Boolean is
   begin
@@ -915,12 +932,13 @@ package body Con_Io is
   -- Internal X event management
   procedure Next_X_Event (Con : not null access Console_Data;
                           Timeout : in Timers.Delay_Rec;
-                          X_Event : out X_Mng.Event_Kind) is
+                          X_Event : out X_Mng.Event_Kind;
+                          X_Xref  : out X_Mng.External_Reference) is
   -- In out for X_Mng
   X_Timeout : Timers.Delay_Rec := Timeout;
   begin
     -- Wait
-    X_Mng.X_Wait_Event (Con.Id, X_Timeout, X_Event);
+    X_Mng.X_Wait_Event (Con.Id, X_Timeout, X_Event, X_Xref);
   end Next_X_Event;
 
   -- Internal: Maps some function keys (16#FF# 16#xx#) back into a normal key
@@ -983,6 +1001,7 @@ package body Con_Io is
                           Time_Out    : in Delay_Rec := Infinite_Delay) is
 
     X_Event : X_Mng.Event_Kind;
+    X_Ref : X_Mng.External_Reference := X_Mng.Null_Reference;
     use type C_Types.Byte;
   begin
 
@@ -990,7 +1009,7 @@ package body Con_Io is
     Ctrl := False;
     Shift := False;
     Code := False;
-    Next_X_Event (Con, Time_Out, X_Event);
+    Next_X_Event (Con, Time_Out, X_Event, X_Ref);
     case X_Event is
       when X_Mng.Fd_Event =>
         -- Fd event
@@ -1012,9 +1031,11 @@ package body Con_Io is
         -- Timeout
         Event := Timeout;
         return;
-      when X_Mng.Tid_Press | X_Mng.Tid_Release | X_Mng.Tid_Motion =>
+      when X_Mng.Tid_Press | X_Mng.Tid_Release | X_Mng.Tid_Enter
+         | X_Mng.Tid_Leave | X_Mng.Tid_Motion =>
         Event := Mouse_Button;
         Con.Mouse_Status := X_Event;
+        Con.Mouse_Xref := X_Ref;
         return;
       when X_Mng.Selection =>
         -- Selection to get
@@ -1800,13 +1821,17 @@ package body Con_Io is
   procedure Set_Pointer_Shape (Con           : in Console;
                                Pointer_Shape : in Pointer_Shape_List;
                                Grab          : in Boolean) is
+    X_Shape : X_Mng.Pointer_Shapes;
   begin
     Check_Con (Con);
-    if Pointer_Shape = None then
-      X_Mng.X_Hide_Graphic_Pointer(Con.Get_Access.Id, Grab);
-    else
-      X_Mng.X_Set_Graphic_Pointer(Con.Get_Access.Id, Pointer_Shape=Cross, Grab);
-    end if;
+    case Pointer_Shape is
+      when None  => X_Shape := X_Mng.None;
+      when Arrow => X_Shape := X_Mng.Arrow;
+      when Cross => X_Shape := X_Mng.Cross;
+      when Hand  => X_Shape := X_Mng.Hand;
+    end case;
+    X_Mng.X_Set_Pointer(Con.Get_Access.Id, X_Shape);
+    X_Mng.X_Grab_Pointer(Con.Get_Access.Id, Grab);
   end Set_Pointer_Shape;
 
   -- Get a mouse event. If valid is False, it means that a release
@@ -1836,6 +1861,7 @@ package body Con_Io is
       Loc_Event.X := X_Range'First;
       Loc_Event.Y := Y_Range'First;
     end if;
+    Loc_Event.Xref := X_Mng.Null_Reference;
     Mouse_Event := Loc_Event;
 
     -- Mouse event pending?
@@ -1846,7 +1872,8 @@ package body Con_Io is
     -- Get button and pos
     X_Mng.X_Read_Tid (Acc.Id, Coordinate_Mode = Row_Col, Button, Row, Col);
 
-    -- Event was a press release or motion?
+    -- Event was a press, release, enter, leave or motion?
+    Loc_Event.Xref := Acc.Mouse_Xref;
     case Acc.Mouse_Status is
       when X_Mng.Tid_Press | X_Mng.Tid_Release =>
 
@@ -1895,6 +1922,14 @@ package body Con_Io is
         end if;
         Loc_Event.Status := Motion;
         Loc_Event.Button := Motion;
+      when X_Mng.Tid_Enter | X_Mng.Tid_Leave =>
+        if Button /= X_Mng.None then
+          return;
+        end if;
+        Loc_Event.Status := (if Acc.Mouse_Status = X_Mng.Tid_Enter then Motion
+                             else Leave);
+        Loc_Event.Button := Motion;
+
       when others =>
         return;
     end case;
@@ -1950,6 +1985,7 @@ package body Con_Io is
     end if;
     Mouse_Event := Loc_Event;
     Acc.Mouse_Status := Mouse_Discard;
+    Acc.Mouse_Xref := X_Mng.Null_Reference;
   exception
     when X_Mng.X_Failure =>
       null;

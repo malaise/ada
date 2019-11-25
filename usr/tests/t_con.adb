@@ -116,7 +116,7 @@ procedure T_Con is
             Ins := False;
           when Con_Io.Refresh =>
             Redraw;
-              W2.Put (" Refresh");
+            W2.Put (" Refresh");
           when Con_Io.Break =>
             exit;
           when Con_Io.Ret =>

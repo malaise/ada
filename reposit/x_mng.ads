@@ -1,5 +1,5 @@
 -- Low level access to X11 operations (put text / draw / get events)
-private with System;
+with System;
 with C_Types, As.U, Timers;
 package X_Mng is
 
@@ -53,9 +53,13 @@ package X_Mng is
   -- Calling X_Mng in a Timer, Fd or Signal callback will result in a
   --  deadlock
   type Event_Kind is (
-     Keyboard, Tid_Release, Tid_Press, Tid_Motion, Refresh, Selection,
-     Exit_Request,
+     Keyboard, Tid_Release, Tid_Press, Tid_Motion, Tid_Enter, Tid_Leave,
+     Refresh, Selection, Exit_Request,
      Timer_Event, Fd_Event, Signal_Event, Timeout);
+
+  -- The external reference (window) of an event
+  subtype External_Reference is System.Address;
+  Null_Reference : constant External_Reference := System.Null_Address;
 
   -- Icon for a line
   type Icon_Pixmap is array (Positive range <>) of As.U.Asu_Us;
@@ -71,6 +75,12 @@ package X_Mng is
   procedure X_Initialise (Server_Name    : in String);
   procedure X_Initialise (Server_Name    : in String;
                           Colors         : in Color_Definition);
+
+  -- Get the geometry of a given font in the server
+  procedure X_Get_Font_Geometry (No_Font     : in Font;
+                                 Font_Width  : out Natural;
+                                 Font_Height : out Natural;
+                                 Font_Offset : out Natural);
 
   -- Open a line on the host
   -- screen_id is integer, (a negative value for the default screen)
@@ -243,15 +253,13 @@ package X_Mng is
   -- The area MUST be convex otherwise the graphic result is undefined
   procedure X_Fill_Area (Line_Id : in Line; Xys : in Natural_Array);
 
-  -- Set mouse pointer shape to '+' cross (graphic) or arrow
-  -- Grab it in the window or not
-  procedure X_Set_Graphic_Pointer(Line_Id : in Line;
-                                  Graphic : in Boolean;
-                                  Grab : in Boolean);
+  -- Set mouse pointer shape to arrow, '+' cross or hand, or hide it
+  type Pointer_Shapes is (None, Arrow, Cross, Hand);
+  procedure X_Set_Pointer(Line_Id : in Line;
+                          Shape : in Pointer_Shapes);
 
-  -- Hide mouse pointer
-  procedure X_Hide_Graphic_Pointer(Line_Id : in Line;
-                                   Grab : in Boolean);
+  -- Grab/Ungrab mouse pointer
+  procedure X_Grab_Pointer(Line_Id : in Line; Grab : in Boolean);
 
   ----- EVENT MANAGEMENT -----
   -- Wait until an event is availble
@@ -266,6 +274,12 @@ package X_Mng is
   procedure X_Wait_Event(Line_Id : in Line;
                          Timeout : in out Timers.Delay_Rec;
                          Kind : out Event_Kind);
+  -- This variant allows the retrieval of the external reference associated to
+  --  the window of the event
+  procedure X_Wait_Event(Line_Id : in Line;
+                         Timeout : in out Timers.Delay_Rec;
+                         Kind : out Event_Kind;
+                         Ref : out External_Reference);
 
   -- Read the position on Tid (mouse) in Row/Col or X/Y
   -- The line_id must be the one given to X_Wait_Event
@@ -332,6 +346,13 @@ private
   No_Client : constant Line := (
         No => No_Client_No,
         Suspended_Line_For_C => No_Line_For_C);
+
+  -- For children
+  procedure Call_On  (Line_Id : in Line;
+                      Line_For_C_Id : out Line_For_C);
+  procedure Call_Off (Line_Id : in Line;
+                      New_Line_For_C_Id : in Line_For_C);
+  procedure Modified;
 
 end X_Mng;
 

@@ -14,6 +14,7 @@ procedure T_X is
     No_Font => 1);
 
   Id : X_Mng.Line;
+  Font_Width, Font_Height, Font_Offset : Natural;
 
   Timeout : Duration;
   Exp : Timers.Delay_Rec;
@@ -26,7 +27,7 @@ procedure T_X is
   Char_Offset : X_Mng.Byte;
   Wchar : Wide_Character;
 
-  Txt : As.B.Asb_Bs(80);
+  Font, Txt : As.B.Asb_Bs(80);
   subtype Row_Range is Natural range 10 .. 30;
   Row : Row_Range := Row_Range'First;
 
@@ -54,6 +55,10 @@ begin
     X_Mng.X_Initialise (Argument.Get_Parameter(1));
     Char_Offset := X_Mng.Byte'Value(Argument.Get_Parameter(2));
   end if;
+  X_Mng.X_Get_Font_Geometry (Line_Def.No_Font,
+      Font_Width, Font_Height, Font_Offset);
+  Font.Set ("Font:" & Font_Width'Img  & " x" & Font_Height'Img
+           & " offset" & Font_Offset'Img);
 
   Timeout := 1.0;
   X_Mng.X_Open_Line (Line_Def, Id);
@@ -80,7 +85,7 @@ begin
         end loop;
       end loop;
       X_Mng.X_Set_Attributes (Id, 0, 3, False, False, False);
-      X_Mng.X_Put_String (Id, "Ah que coucou", 5, 10);
+      X_Mng.X_Put_String (Id, Font.Image, 5, 10);
       X_Mng.X_Set_Attributes (Id, 1, 4);
       X_Mng.X_Draw_Area (Id, 50, 2, 7, 10);
       X_Mng.X_Set_Attributes (Id, 0, 3, False, False, False);
@@ -99,7 +104,8 @@ begin
         Put (X_Mng.Event_Kind'Image(Kind) & " " & X_Mng.Button_List'Image(Tid_Button)
                           & " " & Integer'Image(Tid_Row)  & " " & Integer'Image(Tid_Col));
         exit Main_Loop when Tid_Row = 1 and then Tid_Col = 1;
-      when X_Mng.Tid_Motion | X_Mng.Selection =>
+      when X_Mng.Tid_Motion | X_Mng.Tid_Enter | X_Mng.Tid_Leave
+         | X_Mng.Selection =>
         null;
       when X_Mng.Keyboard =>
         X_Mng.X_Read_Key(Id, Control, Shift, Code, Kbd_Codes);

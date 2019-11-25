@@ -36,6 +36,22 @@ package body X_Mng is
     with Import => True, Convention => C, External_Name => "x_initialise";
 
   ------------------------------------------------------------------
+  -- Notify modification of the server
+  -- int x_modified (void);
+  ------------------------------------------------------------------
+  function X_Modified return Result
+    with Import => True, Convention => C, External_Name => "x_modified";
+  ------------------------------------------------------------------
+  -- Get the geometry of a font in the server
+  -- int x_get_font_geometry (int font_no, int *p_f_width, int *p_f_height,
+  --                          int *p_f_offset);
+  ------------------------------------------------------------------
+  function X_Get_Font_Geometry (Font_No : C_Types.Int;
+    Width, Height, Offset : System.Address) return Result
+    with Import => True, Convention => C,
+         External_Name => "x_get_font_geometry";
+
+  ------------------------------------------------------------------
   -- Suspend processing of X events (as long as no Line)
   -- int x_suspend (void)
   ------------------------------------------------------------------
@@ -280,23 +296,22 @@ package body X_Mng is
     with Import => True, Convention => C, External_Name => "x_get_pointer_pos";
 
   ------------------------------------------------------------------
-  -- Set mouse pointer in graphic (cross) or standard (arrow)
-  -- int x_set_graphic_pointer (void *line_id, boolean graphic);
+  -- Set mouse pointer in graphic (cross), hand or standard (arrow)i, or hide it
+  -- int x_set_pointer (void *line_id, int shape);
   ------------------------------------------------------------------
-  function X_Set_Graphic_Pointer(Line_Id : Line_For_C;
-                                 Graphic : C_Types.Bool;
-                                 Grab : C_Types.Bool) return Result
+  function X_Set_Pointer(Line_Id : Line_For_C;
+                         Shape : C_Types.Int) return Result
     with Import => True, Convention => C,
-         External_Name => "x_set_graphic_pointer";
+         External_Name => "x_set_pointer";
 
   ------------------------------------------------------------------
-  -- Hide mouse pointer
-  -- int x_hide_graphic_pointer (void *line_id);
+  -- Grab/Ungrab mouse pointer
+  -- int x_grab_pointer (void *line_id, boolean grab);
   ------------------------------------------------------------------
-  function X_Hide_Graphic_Pointer(Line_Id : Line_For_C;
-                                  Grab : C_Types.Bool) return Result
+  function X_Grab_Pointer(Line_Id : Line_For_C; Grab : C_Types.Bool)
+          return Result
     with Import => True, Convention => C,
-         External_Name => "x_hide_graphic_pointer";
+         External_Name => "x_grab_pointer";
 
   ------------------------------------------------------------------
   -- Reads the position on Tid
@@ -391,6 +406,7 @@ package body X_Mng is
           Internal_Kind : Internal_Event_Kind := Dispatch_Event;
         when False =>
           Kind : Event_Kind := Timeout;
+          Ref : External_Reference;
       end case;
     end record;
 
@@ -429,7 +445,7 @@ package body X_Mng is
       entry Call_On  (Client : in Line_Range;
                       Line_For_C_Id : out Line_For_C);
       procedure Call_Off (Client : in Client_Range;
-                      New_Line_For_C_Id : in Line_For_C);
+                          New_Line_For_C_Id : in Line_For_C);
 
       -- Ready to wait for Exp
       entry Prepare (Client : in Client_Range;
@@ -450,7 +466,7 @@ package body X_Mng is
       -- Client selected by Wait that is (to be) released from Wait_Event,
       --  and the event for it
       Selected : Line_Range := No_Client_No;
-      Event : Event_Rec := (False, Timeout);
+      Event : Event_Rec := (False, Timeout, System.Null_Address);
       Next_Event : Boolean := False;
       -- Number of successive X events
       Nb_X_Events : Natural := 0;
@@ -547,6 +563,42 @@ package body X_Mng is
   begin
     X_Initialise (Server_Name, Colors, False);
   end X_Initialise;
+
+  ------------------------------------------------------------------
+  -- Nodify modification of the server
+  procedure Modified is
+    Res : Boolean;
+  begin
+    Res := X_Modified = Ok;
+    if not Res then
+      raise X_Failure;
+    end if;
+  end Modified;
+
+  ------------------------------------------------------------------
+  -- Get the geometry of a given font in the server
+  procedure X_Get_Font_Geometry (No_Font     : in Font;
+                                 Font_Width  : out Natural;
+                                 Font_Height : out Natural;
+                                 Font_Offset : out Natural) is
+    Font_Width_For_C    : C_Types.Int;
+    Font_Height_For_C   : C_Types.Int;
+    Font_Offset_For_C   : C_Types.Int;
+    Res : Boolean;
+  begin
+    if not Initialised then
+      raise X_Failure;
+    end if;
+    Res := X_Get_Font_Geometry (C_Types.Int (No_Font),
+      Font_Width_For_C'Address, Font_Height_For_C'Address,
+      Font_Offset_For_C'Address) = Ok;
+    if not Res then
+      raise X_Failure;
+    end if;
+    Font_Width    := Natural(Font_Width_For_C);
+    Font_Height   := Natural(Font_Height_For_C);
+    Font_Offset   := Natural(Font_Offset_For_C);
+  end X_Get_Font_Geometry;
 
   ------------------------------------------------------------------
   procedure X_Open_Line(Line_Definition : in Line_Definition_Rec;
@@ -1095,25 +1147,30 @@ package body X_Mng is
   end X_Get_Current_Pointer_Position;
 
   ------------------------------------------------------------------
-  procedure X_Set_Graphic_Pointer(Line_Id : in Line;
-                                  Graphic : in Boolean;
-                                  Grab : in Boolean) is
+  procedure X_Set_Pointer(Line_Id : in Line;
+                          Shape : in Pointer_Shapes) is
     Line_For_C_Id : Line_For_C;
+    Shape_For_C : C_Types.Int;
     Res : Boolean;
   begin
+    case Shape is
+      when None  => Shape_For_C := 0;
+      when Arrow => Shape_For_C := 1;
+      when Cross => Shape_For_C := 2;
+      when Hand  => Shape_For_C := 3;
+    end case;
     Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Set_Graphic_Pointer(Line_For_C_Id,
-                            C_Types.Bool(Graphic), C_Types.Bool(Grab)) = Ok;
+    Res := X_Set_Pointer(Line_For_C_Id, Shape_For_C) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
     end if;
-  end X_Set_Graphic_Pointer;
+  end X_Set_Pointer;
 
   ------------------------------------------------------------------
-  procedure X_Hide_Graphic_Pointer(Line_Id : in Line;
-                                   Grab : in Boolean) is
+  procedure X_Grab_Pointer(Line_Id : in Line;
+                           Grab : in Boolean) is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
@@ -1121,12 +1178,12 @@ package body X_Mng is
       raise X_Failure;
     end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Hide_Graphic_Pointer(Line_For_C_Id, C_Types.Bool(Grab)) = Ok;
+    Res := X_Grab_Pointer(Line_For_C_Id, C_Types.Bool(Grab)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
     end if;
-  end X_Hide_Graphic_Pointer;
+  end X_Grab_Pointer;
 
   ------------------------------------------------------------------
   function Translate_Events (Mng_Event : Event_Mng.Out_Event_List)
@@ -1139,9 +1196,19 @@ package body X_Mng is
       when Event_Mng.Timeout      => return Timeout;
     end case;
   end Translate_Events;
+
   procedure X_Wait_Event(Line_Id : in Line;
                          Timeout : in out Timers.Delay_Rec;
                          Kind : out Event_Kind) is
+    Dummy_Ref : External_Reference;
+  begin
+    X_Wait_Event(Line_Id, Timeout, Kind, Dummy_Ref);
+  end X_Wait_Event;
+
+  procedure X_Wait_Event(Line_Id : in Line;
+                         Timeout : in out Timers.Delay_Rec;
+                         Kind : out Event_Kind;
+                         Ref : out External_Reference) is
     Internal_Event : Event_Rec;
     Final_Exp : Timers.Expiration.Expiration_Rec;
     use type Ada.Calendar.Time, Perpet.Delta_Rec, Virtual_Time.Clock_Access;
@@ -1179,11 +1246,13 @@ package body X_Mng is
       -- An event to report?
       if not Internal_Event.Internal then
         Kind := Internal_Event.Kind;
+        Ref := Internal_Event.Ref;
         exit;
       end if;
 
       -- Dispatch non X events if any, and report if needed
       Kind := Translate_Events (Event_Mng.Wait (0));
+      Ref := Null_Reference;
       exit when Kind /= X_Mng.Timeout;
     end loop;
 
@@ -1380,6 +1449,20 @@ package body X_Mng is
       raise X_Failure;
     end if;
   end X_Bell;
+
+  ------------------------------------------------------------------
+  procedure Call_On  (Line_Id : in Line;
+                      Line_For_C_Id : out Line_For_C) is
+  begin
+    Check (Line_Id);
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+  end Call_On;
+
+  procedure Call_Off (Line_Id : in Line;
+                      New_Line_For_C_Id : in Line_For_C) is
+  begin
+    Dispatcher.Call_Off(Line_Id.No, New_Line_For_C_Id);
+  end Call_Off;
 
   ------------------------------------------------------------------
   package body Dispatch is separate;

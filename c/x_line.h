@@ -15,6 +15,9 @@
 /* Number of supported types of XA_PRIMARY clipborad exchanges */
 #define NB_SELECTION_TYPES 3
 
+/* Max number of sub-windows of a line */
+#define MAX_SUBWINDOWS 99
+
 typedef struct {
     Display *x_server;
     boolean modified;
@@ -45,6 +48,10 @@ typedef struct {
   are indexes in selection_types */
 #define SELEC_NONE -1
 #define SELEC_STORED 1000  /* Stored index + SELEC_STORED */
+typedef struct {
+    Window window;
+    void *ref;
+} t_window_ref;
 
 typedef struct {
     /* Links */
@@ -64,6 +71,10 @@ typedef struct {
     boolean xor_mode;
     GC x_graphic_context;
     XIC xic;
+    Cursor cursor;
+    /* X subwindows */
+    int nbre_subwindows;
+    t_window_ref subwindows[MAX_SUBWINDOWS];
     /* Event characteristics */
     boolean motion_enabled;
     boolean control;
@@ -77,6 +88,7 @@ typedef struct {
     char *selection;
     int nbre_drop_clear;
     int select_index;
+    t_window_ref last_subwindow;
 }t_window;
 
 /* extern for all includer except x_line.c */
@@ -109,6 +121,9 @@ t_window *lin_get_win (Window x_window);
 
 /* Get font no for line (bold or not) */
 int lin_get_font (t_window *p_window);
+
+/* (Un) Register a subwindow of the line */
+int lin_register (t_window *p_window, Window window, void *ref, boolean add);
 
 #endif
 /* _X_LINE_H */

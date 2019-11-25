@@ -91,6 +91,12 @@ package Con_Io is
   -- It is called automatically when opening the first console
   procedure Initialise;
 
+  -- Get the geometry of a font
+  procedure Get_Font_Geometry (Font_No     : in Font_No_Range;
+                               Font_Width  : out Natural;
+                               Font_Height : out Natural;
+                               Font_Offset : out Natural);
+
   -------------
   -- Console --
   -------------
@@ -134,6 +140,9 @@ package Con_Io is
   procedure Suspend (Con : in Console);
   procedure Resume (Con : in Console);
   function Is_Suspended (Con : Console) return Boolean;
+
+  -- Get the X_Mng Line associated to a console
+  function Get_Line (Con : Console) return X_Mng.Line;
 
   -- Get colors of Console
   function Foreground (Con : Console) return Effective_Colors;
@@ -549,7 +558,7 @@ package Con_Io is
 
   -- Set mouse pointer shape or hide mouse
   --  Arrow by default
-  type Pointer_Shape_List is (Arrow, Cross, None);
+  type Pointer_Shape_List is (None, Arrow, Cross, Hand);
   procedure Set_Pointer_Shape (Con           : in Console;
                                Pointer_Shape : in Pointer_Shape_List;
                                Grab          : in Boolean);
@@ -559,7 +568,7 @@ package Con_Io is
   type Coordinate_Mode_List is (Row_Col, X_Y);
 
   -- Button status: when Motion, Button is Motion
-  type Mouse_Button_Status_List is (Pressed, Released, Motion);
+  type Mouse_Button_Status_List is (Pressed, Released, Enter, Leave, Motion);
   -- List of buttons
   type Mouse_Button_List is (Left, Middle, Right, Motion, Up, Down,
                              Shift_Up, Shift_Down, Ctrl_Up, Ctrl_Down,
@@ -575,6 +584,7 @@ package Con_Io is
     Valid : Boolean;
     Button : Mouse_Button_List;
     Status : Mouse_Button_Status_List;
+    Xref : X_Mng.External_Reference;
     case Coordinate_Mode is
       when Row_Col =>
         Row : Row_Range;
@@ -629,6 +639,7 @@ private
     Initialised : Boolean := False;
     Id : X_Mng.Line;
     Mouse_Status : X_Mng.Event_Kind := X_Mng.Timeout;
+    Mouse_Xref : X_Mng.External_Reference := X_Mng.Null_Reference;
     Motion_Enabling : Boolean := False;
     Def_Foreground : Effective_Colors := Default_Foreground;
     Def_Background : Effective_Colors := Default_Background;

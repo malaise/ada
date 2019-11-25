@@ -17,6 +17,7 @@ The 'asciidoc' suite is used for the generation of the documentation.
 The graphical library is based on X11 and needs:
 
 * the X11 development package,
+* the X11 extensions development package,
 * the XPM development package,
 * the font packages 75dpi and 100dpi and the corresponding transcoded (from
   ISO 10646-1) versions.
@@ -108,9 +109,12 @@ for several calls to the operating system,
 - 'wait_evt', interfaced by the Ada 'Even_Mng' package, waits (with "select") on
 several fds, catches signals...
 
-.X11 management ('xmng')
+.X11 management ('x_mng')
 This lib encapsulates all the needed calls to X11, interfaced by the Ada 'X_Mng'
 package.
+
+.X11 cards management ('cards')
+This lib manges cards for games.
 
 .Ndbm ('cnbdbm')
 This lib interfaces with ndbm C library. The corresponding Ada 'Ndbm' package is

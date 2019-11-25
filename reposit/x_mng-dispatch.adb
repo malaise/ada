@@ -36,6 +36,7 @@ package body Dispatch is
   -- int x_process_event (void **p_line_id, int *p_kind, boolean *p_next);
   ------------------------------------------------------------------
   function X_Process_Event(P_Line_Id : System.Address;
+                           P_Ref     : System.Address;
                            P_Kind    : System.Address;
                            P_Next    : System.Address) return Result
     with  Import => True, Convention => C, External_Name => "x_process_event";
@@ -58,17 +59,21 @@ package body Dispatch is
   C_Xevent_Mouse_Motion   : constant Integer := 5;
   C_Xevent_Exit_Request   : constant Integer := 6;
   C_Xevent_Selection      : constant Integer := 7;
+  C_Xevent_Mouse_Enter    : constant Integer := 8;
+  C_Xevent_Mouse_Leave    : constant Integer := 9;
 
   -- Fetch a pending event and map it to our events
   -- C_Id is the owner of the event
   procedure Xx_Get_Event (C_Id : out Line_For_C;
                           Event : out Event_Kind;
+                          Ref : out System.Address;
                           Next : out Boolean) is
+    C_Ref : System.Address;
     C_Event : Integer;
     C_Next : C_Types.Bool;
     C_Res : Result;
   begin
-    C_Res :=  X_Process_Event (C_Id'Address,
+    C_Res :=  X_Process_Event (C_Id'Address, C_Ref'Address,
                                C_Event'Address, C_Next'Address);
     if C_Res /= Ok then
       Log ("Xx_Get_Event", No_Client_No, "-> X_Process_Event ERROR");
@@ -77,8 +82,10 @@ package body Dispatch is
 
     -- Translate X event
     Next := Boolean (C_Next);
-    Event := (if C_Event = C_Xevent_Mouse_Release then Tid_Release
-              elsif C_Event = C_Xevent_Mouse_Press then Tid_Press
+    Event := (if C_Event = C_Xevent_Mouse_Press then Tid_Press
+              elsif C_Event = C_Xevent_Mouse_Release then Tid_Release
+              elsif C_Event = C_Xevent_Mouse_Enter then Tid_Enter
+              elsif C_Event = C_Xevent_Mouse_Leave then Tid_Leave
               elsif C_Event = C_Xevent_Keyboard then Keyboard
               elsif C_Event = C_Xevent_Refresh then Refresh
               elsif C_Event = C_Xevent_Mouse_Motion then Tid_Motion
@@ -87,6 +94,7 @@ package body Dispatch is
               -- Discard, or Invalid X event
               else Timeout);
     Log ("Xx_Get_Event", No_Client_No, "-> " & Event'Img);
+    Ref := C_Ref;
   end Xx_Get_Event;
 
   -- From x_Select
@@ -164,8 +172,8 @@ package body Dispatch is
       elsif C_Fd = C_Select_X_Event then
         -- Get X event and its owner
         Handle_Event := False;
-        Event := (Internal => False, Kind => Timeout);
-        Xx_Get_Event (C_Id, Event.Kind, Next);
+        Event := (Internal => False, Kind => Timeout, Ref => System.Null_Address);
+        Xx_Get_Event (C_Id, Event.Kind, Event.Ref, Next);
       else
         -- A fd
         Evt_In := (Kind => Event_Mng.Fd_Event,
@@ -177,14 +185,14 @@ package body Dispatch is
         -- Handle non X nor wakeup event and convert
         Evt_Out := Event_Mng.Handling.Handle (Evt_In);
         Event := (case Evt_Out is
-                    when Event_Mng.Timer_Event =>
-                      (Internal => False, Kind => Timer_Event),
-                    when Event_Mng.Fd_Event =>
-                      (Internal => False, Kind => Fd_Event),
-                    when Event_Mng.Signal_Event =>
-                      (Internal => False, Kind => Signal_Event),
-                    when Event_Mng.Timeout =>
-                      (Internal => False, Kind => Timeout));
+            when Event_Mng.Timer_Event =>
+              (Internal => False, Kind => Timer_Event, Ref => System.Null_Address),
+            when Event_Mng.Fd_Event =>
+              (Internal => False, Kind => Fd_Event, Ref => System.Null_Address),
+            when Event_Mng.Signal_Event =>
+              (Internal => False, Kind => Signal_Event, Ref => System.Null_Address),
+            when Event_Mng.Timeout =>
+              (Internal => False, Kind => Timeout, Ref => System.Null_Address));
 
         -- Done on select timeout (No_Event) or an event to report
         exit when Evt_In.Kind = Event_Mng.Timeout
@@ -404,7 +412,7 @@ package body Dispatch is
         -- At least one client remaining, refresh all
         Refresh_All := True;
         -- Deliver a Refresh event to this client,
-        Event := (Internal => False, Kind => Refresh);
+        Event := (Internal => False, Kind => Refresh, Ref => System.Null_Address);
         Next_Event := False;
         Nb_X_Events := 0;
         -- This client is the first of the cohort so it must handle the event
@@ -490,7 +498,7 @@ package body Dispatch is
         if New_Client /= No_Client_No then
           -- One client to pass the event to (possibly me)
           Selected := New_Client;
-          Event := (Internal => False, Kind => Refresh);
+          Event := (Internal => False, Kind => Refresh, Ref => System.Null_Address);
           Next_Event := False;
           Log ("Prepare", Selected, "will be refreshing");
           Log ("Prepare", Client, "goes waiting");
@@ -537,12 +545,12 @@ package body Dispatch is
       end if;
 
       -- Fifth, try to fetch a pending X event
-      Event := (Internal => False, Kind => Timeout);
+      Event := (Internal => False, Kind => Timeout, Ref => System.Null_Address);
       if Selected /= No_Client_No
       and then Next_Event then
         New_Client := Selected;
         Got_Id := Clients(New_Client).Line_For_C_Id;
-        Xx_Get_Event (Got_Id, Event.Kind, Next_Event);
+        Xx_Get_Event (Got_Id, Event.Kind, Event.Ref, Next_Event);
       end if;
 
       -- Sixth, C select if no pending
@@ -569,8 +577,8 @@ package body Dispatch is
         end case;
       else
         case Event.Kind is
-          when Keyboard | Tid_Release | Tid_Press | Tid_Motion
-             | Refresh | Exit_Request | Selection =>
+          when Keyboard | Tid_Release | Tid_Press | Tid_Enter | Tid_Leave
+             | Tid_Motion | Refresh | Exit_Request | Selection =>
             -- A X event to deliver to proper client (optim: try Selected)
             if Selected = No_Client_No
             or else Clients(Selected).Line_For_C_Id /= Got_Id then
@@ -605,7 +613,7 @@ package body Dispatch is
         -- Send a "dummy" refresh event to oldest
         if Selected = No_Client_No then
           Selected := Oldest;
-          Event := (Internal => False, Kind => Refresh);
+          Event := (Internal => False, Kind => Refresh, Ref => System.Null_Address);
           Next_Event := False;
           Log ("Prepare", Selected, " gets a dummy refresh");
         end if;

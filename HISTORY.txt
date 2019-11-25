@@ -4,6 +4,8 @@ Main changes
 
 [horizontal]
 
+*2019/11*:: Add X_Mng.Cards
+
 *2018/05*:: Add mapcodes library
 
 *2018/05*:: Many improvements in Agite

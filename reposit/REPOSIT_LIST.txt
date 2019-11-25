@@ -644,7 +644,10 @@ virtual_time (2)::
 x_mng (3)::
      Low level interface to X11 (text, basic graphics, Mouse and keyboard).
 
-xml_parser (3d)::
+x_mng.cards (1)::
+     Low level interface to X11 for card games.
+
+xml_parser (3)::
      Parse Xml files or strings, including check of dtd. +
      It is documented with the 'xml_parser' tool.
      It is partially is documented with the 'xml_parser' tool.
