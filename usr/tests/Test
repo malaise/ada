@@ -622,6 +622,8 @@ if `match $arg t_command` ; then
   try t_command -s /bin/ls t_c*
   cat << EOF >exp
 Output flow:
+>t_cards<
+>t_cards.adb<
 >t_channels<
 >t_channels.adb<
 >t_color<

@@ -124,7 +124,8 @@ extern int x_process_event (void **p_line_id, void **p_ref,
                             int *p_kind, boolean *p_next);
 
 extern int x_read_tid (void *line_id, boolean row_col,
-                       int *p_button, int *p_row, int *p_column);
+                       int *p_button, int *p_row, int *p_column,
+                       int *p_sub_row, int *p_sub_column);
 
 extern int x_read_key (void *line_id, boolean *p_control, boolean *p_shift,
                        boolean *p_code, int *p_keys, int *p_nbre);

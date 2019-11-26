@@ -82,7 +82,7 @@ char name[50];
 char stra[81], stre[81], strs[81];
 char selection[81];
 char digits[5];
-int i, j, k, l, m;
+int i, j, k, l, m, n, o;
 int kk[4];
 boolean control, shift, code;
 int bord, font;
@@ -295,7 +295,7 @@ boolean read;
 
       /* TID press */
       strcpy (stre, "TID press buttton: ");
-      x_read_tid (line_event, TRUE, &l, &i, &j);
+      x_read_tid (line_event, TRUE, &l, &i, &j, &n, &o);
       sprintf (digits, "%03d", l);
       strcat (stre, digits);
       strcat (stre, "    row: ");
@@ -312,7 +312,7 @@ boolean read;
 
       /* TID release */
       strcpy (stre, "TID release buttton: ");
-      x_read_tid (line_event, TRUE, &l, &i, &j);
+      x_read_tid (line_event, TRUE, &l, &i, &j, &n, &o);
       sprintf (digits, "%03d", l);
       strcat (stre, digits);
       strcat (stre, "    row: ");
@@ -324,7 +324,7 @@ boolean read;
       (void) x_bell(1);
     } else if (k == TID_MOTION) {
       strcpy (stre, "TID motion buttton: ");
-      x_read_tid (line_event, TRUE, &l, &i, &j);
+      x_read_tid (line_event, TRUE, &l, &i, &j, &n, &o);
       sprintf (digits, "%03d", l);
       strcat (stre, digits);
       strcat (stre, "    x: ");
@@ -341,7 +341,7 @@ boolean read;
         printf ("Selection -> %s\n", selection);
       }
     }  else if (k == REFRESH) {
-      x_read_tid (line_event, FALSE, &l, &i, &j);
+      x_read_tid (line_event, FALSE, &l, &i, &j, &n, &o);
       /* Redraw to be done */
       strcpy (stre, "Refresh");
     }

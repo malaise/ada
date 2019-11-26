@@ -89,6 +89,8 @@ typedef struct {
     int nbre_drop_clear;
     int select_index;
     t_window_ref last_subwindow;
+    int sub_tid_x;
+    int sub_tid_y;
 }t_window;
 
 /* extern for all includer except x_line.c */

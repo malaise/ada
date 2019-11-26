@@ -65,6 +65,7 @@ begin
         & " size: " & Font_Width'Img & " x" & Font_Height'Img);
   end;
   Console.Enable_Motion_Events (True);
+  Console.Set_Y_Mode (Con_Io.X_Mng_Mode);
   Deck.Set_Line (Console.Get_Line);
 
   -- Create a dummy window for blind get

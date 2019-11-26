@@ -321,7 +321,8 @@ package body X_Mng is
   function X_Read_Tid(Line_Id         : Line_For_C;
                       Row_Col         : C_Types.Bool;
                       P_Button        : System.Address;
-                      P_Row, P_Column : System.Address) return Result
+                      P_Row, P_Column : System.Address;
+                      P_Sub_Row, P_Sub_Column : System.Address) return Result
     with Import => True, Convention => C, External_Name => "x_read_tid";
 
   ------------------------------------------------------------------
@@ -1283,9 +1284,10 @@ package body X_Mng is
   procedure X_Read_Tid(Line_Id : in Line;
                        Row_Col : in Boolean;
                        Button : out Button_List;
-                       Row, Column : out Integer) is
+                       Row, Column : out Integer;
+                       Sub_Row, Sub_Column : out Integer) is
     Loc_Button : C_Types.Int;
-    Row_For_C, Col_For_C : C_Types.Int;
+    Row_For_C, Col_For_C, Sub_Row_For_C, Sub_Col_For_C : C_Types.Int;
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
@@ -1293,8 +1295,8 @@ package body X_Mng is
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Read_Tid (Line_For_C_Id, C_Types.Bool(Row_Col),
                        Loc_Button'Address,
-                       Row_For_C'Address,
-                       Col_For_C'Address) = Ok;
+                       Row_For_C'Address, Col_For_C'Address,
+                       Sub_Row_For_C'Address, Sub_Col_For_C'Address) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
@@ -1319,6 +1321,8 @@ package body X_Mng is
                  when others => None);
     Row := Row_For_C;
     Column := Col_For_C;
+    Sub_Row := Sub_Row_For_C;
+    Sub_Column := Sub_Col_For_C;
   end X_Read_Tid;
 
   ------------------------------------------------------------------

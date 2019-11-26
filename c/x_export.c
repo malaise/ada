@@ -857,6 +857,24 @@ static void delay_ms (unsigned int msecs) {
   (void) select (0, NULL, NULL, NULL, &timeout);
 }
 
+/* Update tid inforamtion of window and subwindow */
+static void  update_tid (t_window *win_id, int x, int y) {
+  Window child;
+
+  if (win_id->last_subwindow.ref != NULL) {
+    /* Event is relative to subwindow */
+    if (XTranslateCoordinates (local_server.x_server,
+        win_id->last_subwindow.window, win_id->x_window, x, y,
+        &win_id->tid_x, &win_id->tid_y, &child)) {
+      win_id->sub_tid_x = x;
+      win_id->sub_tid_y = y;
+      return;
+    }
+  }
+  /* Event is relative to main window or translation failed */
+  win_id->tid_x = x;
+  win_id->tid_y = y;
+}
 
 /* Process the next X event */
 /* p_line_id is the line on which the event has occured */
@@ -1006,8 +1024,7 @@ extern int x_process_event (void **p_line_id, void **p_ref,
            break; /* Next Event */
         }
         /* Store position */
-        win_id->tid_x = event.xbutton.x;
-        win_id->tid_y = event.xbutton.y;
+        update_tid (win_id, event.xbutton.x, event.xbutton.y);
 
         *p_line_id = (void*) win_id;
         if (event.type == ButtonPress) {
@@ -1044,8 +1061,7 @@ extern int x_process_event (void **p_line_id, void **p_ref,
         }
         win_id->button = 0;
         /* Store position */
-        win_id->tid_x = event.xmotion.x;
-        win_id->tid_y = event.xmotion.y;
+        update_tid (win_id, event.xmotion.x, event.xmotion.y);
 
         *p_line_id = (void*) win_id;
         *p_kind = TID_MOTION;
@@ -1062,8 +1078,7 @@ extern int x_process_event (void **p_line_id, void **p_ref,
           *p_ref = win_id->last_subwindow.ref;
         }
         /* Store position */
-        win_id->tid_x = event.xcrossing.x;
-        win_id->tid_y = event.xcrossing.y;
+        update_tid (win_id, event.xcrossing.x, event.xcrossing.y);
 
         *p_line_id = (void*) win_id;
         result = WAIT_OK;
@@ -1271,7 +1286,8 @@ extern int x_process_event (void **p_line_id, void **p_ref,
 /* p_row and p_column are the position of the "finger" on the TID */
 /* If row_col is FALSE, p_row is y and p_col is x */
 extern int x_read_tid (void *line_id, boolean row_col,
-                int *p_button, int *p_row, int *p_column) {
+                int *p_button, int *p_row, int *p_column,
+                int *p_sub_row, int *p_sub_column) {
 
     t_window *win_id = (t_window*) line_id;
 
@@ -1287,9 +1303,15 @@ extern int x_read_tid (void *line_id, boolean row_col,
              fon_get_height (win_id->server->x_font[win_id->no_font])) + 1;
         *p_column = (win_id->tid_x /
              fon_get_width  (win_id->server->x_font[win_id->no_font])) + 1;
+        *p_sub_row = (win_id->sub_tid_y /
+             fon_get_height (win_id->server->x_font[win_id->no_font])) + 1;
+        *p_sub_column = (win_id->sub_tid_x /
+             fon_get_width  (win_id->server->x_font[win_id->no_font])) + 1;
     } else {
         *p_row = win_id->tid_x;
         *p_column = win_id->tid_y;
+        *p_sub_row = win_id->sub_tid_x;
+        *p_sub_column = win_id->sub_tid_y;
     }
     *p_button = win_id->button;
 

@@ -275,7 +275,7 @@ package X_Mng is
                          Timeout : in out Timers.Delay_Rec;
                          Kind : out Event_Kind);
   -- This variant allows the retrieval of the external reference associated to
-  --  the window of the event
+  --  the sub-window of the event
   procedure X_Wait_Event(Line_Id : in Line;
                          Timeout : in out Timers.Delay_Rec;
                          Kind : out Event_Kind;
@@ -286,10 +286,12 @@ package X_Mng is
   -- Button can be left, middle or right
   -- Row and Column are the position of the "finger" on the Tid
   --  in row/col or X/Y(pixels)
+  -- Sub_Row and Sub_Column are the positions relative to the sub-window, if any
   procedure X_Read_Tid(Line_Id : in Line;
                        Row_Col : in Boolean;
                        Button  : out Button_List;
-                       Row, Column : out Integer);
+                       Row, Column : out Integer;
+                       Sub_Row, Sub_Column : out Integer);
 
   -- Read a keyboard key
   -- The line_id must be the one given to X_Wait_Event

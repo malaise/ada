@@ -462,6 +462,13 @@ package Con_Io is
   --------------
   -- Graphic operations on Screen window (with Screen attributes)
 
+  -- By default, the origin in Con_Io is at bottom left, which is easier
+  --  for graphics. But this is different from X_Mng and X11 orgin, which is
+  --  top left.
+  -- This operation toggles the origin of Y scale for display and events
+  type Y_Modes is (Con_Io_Mode, X_Mng_Mode);
+  procedure Set_Y_Mode (Con : in Console; Y_Mode : in Y_Modes);
+
   -- Size of the line in pixels
   -- These is the static size when line was created
   subtype X_Range is Natural;
@@ -589,9 +596,13 @@ package Con_Io is
       when Row_Col =>
         Row : Row_Range;
         Col : Col_Range;
+        Sub_Row : Row_Range;
+        Sub_Col : Col_Range;
       when X_Y =>
         X : X_Range;
         Y : Y_Range;
+        Sub_X : X_Range;
+        Sub_Y : Y_Range;
     end case;
   end record;
 
@@ -638,6 +649,7 @@ private
     -- Console characteristics
     Initialised : Boolean := False;
     Id : X_Mng.Line;
+    Y_Mode : Y_Modes := Con_Io_Mode;
     Mouse_Status : X_Mng.Event_Kind := X_Mng.Timeout;
     Mouse_Xref : X_Mng.External_Reference := X_Mng.Null_Reference;
     Motion_Enabling : Boolean := False;

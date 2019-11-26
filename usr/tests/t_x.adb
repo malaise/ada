@@ -23,7 +23,7 @@ procedure T_X is
   Control, Shift, Code : Boolean;
   Kbd_Codes : X_Mng.Kbd_Tab_Code;
   Tid_Button : X_Mng.Button_List;
-  Tid_Row, Tid_Col : Integer;
+  Tid_Row, Tid_Col, Sub_Row, Sub_Col : Integer;
   Char_Offset : X_Mng.Byte;
   Wchar : Wide_Character;
 
@@ -100,9 +100,12 @@ begin
       when X_Mng.Signal_Event =>
         exit Main_Loop;
       when X_Mng.Tid_Press | X_Mng.Tid_Release =>
-        X_Mng.X_Read_Tid (Id, True, Tid_Button, Tid_Row, Tid_Col);
-        Put (X_Mng.Event_Kind'Image(Kind) & " " & X_Mng.Button_List'Image(Tid_Button)
-                          & " " & Integer'Image(Tid_Row)  & " " & Integer'Image(Tid_Col));
+        X_Mng.X_Read_Tid (Id, True, Tid_Button, Tid_Row, Tid_Col,
+                          Sub_Row, Sub_Col);
+        Put (X_Mng.Event_Kind'Image(Kind) & " "
+           & X_Mng.Button_List'Image(Tid_Button)
+           & " " & Integer'Image(Tid_Row)  & " " & Integer'Image(Tid_Col)
+           & " " & Integer'Image(Sub_Row)  & " " & Integer'Image(Sub_Col));
         exit Main_Loop when Tid_Row = 1 and then Tid_Col = 1;
       when X_Mng.Tid_Motion | X_Mng.Tid_Enter | X_Mng.Tid_Leave
          | X_Mng.Selection =>

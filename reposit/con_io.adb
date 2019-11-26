@@ -1624,6 +1624,12 @@ package body Con_Io is
   ------------------------
   -- Graphic operations --
   ------------------------
+  procedure Set_Y_Mode (Con : in Console; Y_Mode : in Y_Modes) is
+  begin
+    Check_Con (Con);
+    Con.Get_Access.Y_Mode := Y_Mode;
+  end Set_Y_Mode;
+
   function X_Max (Con : Console) return X_Range is
   begin
     Check_Con (Con);
@@ -1675,11 +1681,16 @@ package body Con_Io is
                  X   : in X_Range;
                  Y   : in Y_Range) is
     Acc : access Console_Data;
+    Ly : Y_Range;
   begin
     Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
-    X_Mng.X_Put_Char_Pixels (Acc.Id, Character'Pos(C), X, Acc.Y_Max - Y);
+    Ly := Y;
+    if Acc.Y_Mode = Con_Io_Mode then
+      Ly := Acc.Y_Max - Ly;
+    end if;
+    X_Mng.X_Put_Char_Pixels (Acc.Id, Character'Pos(C), X, Ly);
   end Put;
 
   procedure Put (Con : in Console;
@@ -1694,7 +1705,10 @@ package body Con_Io is
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
     Lx := X;
-    Ly := Acc.Y_Max - Y;
+    Ly := Y;
+    if Acc.Y_Mode = Con_Io_Mode then
+      Ly := Acc.Y_Max - Ly;
+    end if;
     for C of S loop
       X_Mng.X_Put_Char_Pixels (Acc.Id, Character'Pos(C), Lx, Ly);
       Lx := Lx + Acc.Font_Width;
@@ -1705,11 +1719,16 @@ package body Con_Io is
                         X   : in X_Range;
                         Y   : in Y_Range) is
     Acc : access Console_Data;
+    Ly : Y_Range;
   begin
     Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
-    X_Mng.X_Draw_Point (Acc.Id, X, Acc.Y_Max - Y);
+    Ly := Y;
+    if Acc.Y_Mode = Con_Io_Mode then
+      Ly := Acc.Y_Max - Ly;
+    end if;
+    X_Mng.X_Draw_Point (Acc.Id, X, Ly);
   end Draw_Point;
 
   procedure Draw_Line (Con : in Console;
@@ -1718,11 +1737,18 @@ package body Con_Io is
                        X2  : in X_Range;
                        Y2  : in Y_Range) is
     Acc : access Console_Data;
+    Ly1, Ly2 : Y_Range;
   begin
     Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
-    X_Mng.X_Draw_Line (Acc.Id, X1, Acc.Y_Max - Y1, X2, Acc.Y_Max - Y2);
+    Ly1 := Y1;
+    Ly2 := Y2;
+    if Acc.Y_Mode = Con_Io_Mode then
+      Ly1 := Acc.Y_Max - Ly1;
+      Ly2 := Acc.Y_Max - Ly2;
+    end if;
+    X_Mng.X_Draw_Line (Acc.Id, X1, Ly1, X2, Ly2);
   end Draw_Line;
 
   procedure Draw_Rectangle (Con : in Console;
@@ -1731,11 +1757,18 @@ package body Con_Io is
                             X2  : in X_Range;
                             Y2  : in Y_Range) is
     Acc : access Console_Data;
+    Ly1, Ly2 : Y_Range;
   begin
     Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
-    X_Mng.X_Draw_Rectangle (Acc.Id, X1, Acc.Y_Max - Y1, X2, Acc.Y_Max - Y2);
+    Ly1 := Y1;
+    Ly2 := Y2;
+    if Acc.Y_Mode = Con_Io_Mode then
+      Ly1 := Acc.Y_Max - Ly1;
+      Ly2 := Acc.Y_Max - Ly2;
+    end if;
+    X_Mng.X_Draw_Rectangle (Acc.Id, X1, Ly1, X2, Ly2);
   end Draw_Rectangle;
 
   procedure Fill_Rectangle (Con : in Console;
@@ -1744,11 +1777,18 @@ package body Con_Io is
                             X2  : in X_Range;
                             Y2  : in Y_Range) is
     Acc : access Console_Data;
+    Ly1, Ly2 : Y_Range;
   begin
     Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
-    X_Mng.X_Fill_Rectangle (Acc.Id, X1, Acc.Y_Max - Y1, X2, Acc.Y_Max - Y2);
+    Ly1 := Y1;
+    Ly2 := Y2;
+    if Acc.Y_Mode = Con_Io_Mode then
+      Ly1 := Acc.Y_Max - Ly1;
+      Ly2 := Acc.Y_Max - Ly2;
+    end if;
+    X_Mng.X_Fill_Rectangle (Acc.Id, X1, Ly1, X2, Ly2);
   end Fill_Rectangle;
 
   procedure Draw_Points(Con           : in Console;
@@ -1756,11 +1796,16 @@ package body Con_Io is
                         Width, Height : in Natural;
                         Points        : in Byte_Array) is
     Acc : access Console_Data;
+    Ly : Y_Range;
   begin
     Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
-    X_Mng.X_Draw_Points (Acc.Id, X, Acc.Y_Max - Y, Width, Height, Points);
+    Ly := Y;
+    if Acc.Y_Mode = Con_Io_Mode then
+      Ly := Acc.Y_Max - Ly;
+    end if;
+    X_Mng.X_Draw_Points (Acc.Id, X, Ly, Width, Height, Points);
   end Draw_Points;
 
   procedure Fill_Area(Con : in Console; Xys : in Natural_Array) is
@@ -1771,14 +1816,16 @@ package body Con_Io is
     Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
-    -- Fix the Ys, each second index of Xys
-    Y := False;
-    for Xy of Loc_Xys loop
-      if Y then
-        Xy := Acc.Y_Max - Xy;
-      end if;
-      Y := not Y;
-    end loop;
+    if Acc.Y_Mode = Con_Io_Mode then
+      -- Fix the Ys, each second index of Xys
+      Y := False;
+      for Xy of Loc_Xys loop
+        if Y then
+          Xy := Acc.Y_Max - Xy;
+        end if;
+        Y := not Y;
+      end loop;
+    end if;
     X_Mng.X_Fill_Area(Acc.Id, Loc_Xys);
   end Fill_Area;
 
@@ -1798,7 +1845,11 @@ package body Con_Io is
     if       Lx in X_Range and then Lx <= Acc.X_Max
     and then Ly in Y_Range and then Ly <= Acc.Y_Max then
       X := Lx;
-      Y := Acc.Y_Max - Ly;
+      if Acc.Y_Mode = Con_Io_Mode then
+        Y := Acc.Y_Max - Ly;
+      else
+        Y := Ly;
+      end if;
       Valid := True;
     end if;
   end Get_Current_Pointer_Pos;
@@ -1843,9 +1894,10 @@ package body Con_Io is
       Coordinate_Mode : in Coordinate_Mode_List := Row_Col) is
     Loc_Event : Mouse_Event_Rec(Coordinate_Mode);
     Button : X_Mng.Button_List;
-    Row, Col : Integer;
+    Row, Col, Sub_Row, Sub_Col : Integer;
     use type X_Mng.Event_Kind, X_Mng.Button_List;
     Acc : access Console_Data;
+    use type X_Mng.External_Reference;
   begin
     Check_Con (Con);
     Acc := Con.Get_Access;
@@ -1870,8 +1922,8 @@ package body Con_Io is
     end if;
 
     -- Get button and pos
-    X_Mng.X_Read_Tid (Acc.Id, Coordinate_Mode = Row_Col, Button, Row, Col);
-
+    X_Mng.X_Read_Tid (Acc.Id, Coordinate_Mode = Row_Col, Button,
+                      Row, Col, Sub_Row, Sub_Col);
     -- Event was a press, release, enter, leave or motion?
     Loc_Event.Xref := Acc.Mouse_Xref;
     case Acc.Mouse_Status is
@@ -1959,12 +2011,21 @@ package body Con_Io is
           Loc_Event.Col := Acc.Col_Range_Last;
         end if;
       end if;
+      if Loc_Event.Xref /= X_Mng.Null_Reference
+      and then Sub_Row - 1 in Row_Range and then Sub_Col - 1 in Col_Range then
+        Loc_Event.Sub_Row := Sub_Row - 1;
+        Loc_Event.Sub_Col := Sub_Col - 1;
+      else
+        Loc_Event.Sub_Row := Row_Range'First;
+        Loc_Event.Sub_Col := Col_Range'First;
+      end if;
     else
+      -- X Y mode
       if       Row in X_Range and then Row <= Acc.X_Max
       and then Col in Y_Range and then Col <= Acc.Y_Max then
         Loc_Event.Valid := True;
         Loc_Event.X := Row;
-        Loc_Event.Y := Acc.Y_Max - Col;
+        Loc_Event.Y := Col;
       else
         Loc_Event.Valid := False;
         if Row in X_Range and then Row <= Acc.X_Max then
@@ -1975,12 +2036,27 @@ package body Con_Io is
           Loc_Event.X := Acc.X_Max;
         end if;
         if Col in Y_Range and then Col <= Acc.Y_Max then
-          Loc_Event.Y := Acc.Y_Max - Col;
+          Loc_Event.Y := Col;
         elsif Col < Y_Range'First then
-          Loc_Event.Y := Acc.Y_Max;
-        elsif Col > Acc.Y_Max then
           Loc_Event.Y := Y_Range'First;
+        elsif Col > Acc.Y_Max then
+          Loc_Event.Y := Acc.Y_Max;
         end if;
+      end if;
+      if Acc.Y_Mode = Con_Io_Mode then
+        Loc_Event.Y := Acc.Y_Max - Loc_Event.Y;
+      end if;
+      if Loc_Event.Xref /= X_Mng.Null_Reference
+      and then Sub_Row in X_Range and then Sub_Row <= Acc.X_Max
+      and then Sub_Col in Y_Range and then Sub_Col <= Acc.Y_Max then
+        Loc_Event.Sub_X := Sub_Row;
+        Loc_Event.Sub_Y := Sub_Col;
+      else
+        Loc_Event.Sub_X := X_Range'First;
+        Loc_Event.Sub_Y := Y_Range'First;
+      end if;
+      if Acc.Y_Mode = Con_Io_Mode then
+        Loc_Event.Sub_Y := Acc.Y_Max - Loc_Event.Sub_Y;
       end if;
     end if;
     Mouse_Event := Loc_Event;
