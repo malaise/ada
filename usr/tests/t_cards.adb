@@ -1,4 +1,4 @@
-with As.U, Basic_Proc, Con_Io, X_Mng.Cards, Dynamic_List, Rnd;
+with As.U, Basic_Proc, Argument, Con_Io, X_Mng.Cards, Dynamic_List, Rnd;
 procedure T_Cards is
 
   -- Cards
@@ -12,7 +12,7 @@ procedure T_Cards is
 
   -- Console
   Last_Col : Con_Io.Col_Range;
-  Last_Row : constant Con_Io.Row_Range := 53;
+  Last_Row : constant Con_Io.Row_Range := 48;
   Console : aliased Con_Io.Console;
   Font_Height : Natural;
   Background : constant Con_Io.Colors :=  Con_Io.Color03;
@@ -124,24 +124,28 @@ begin
     R : Positive;
     Acc : Deck.Card_Access;
     Moved : Boolean;
-    Pos : Deck.Position_Rec;
   begin
     Basic_Proc.Put_Line_Output ("Putting the cards"
         & Integer'Image (Cards_List.List_Length));
-    Depths : for Depth in 1 .. 4 loop
+    Depths :
+    for Depth in 1 .. 4 loop
       for Stack in Stack_Range loop
         R := Rnd.Gen.Int_Random (1, Cards_List.List_Length);
-        Basic_Proc.Put_Line_Output (R'Img & " among "
-           & Integer'Image (Cards_List.List_Length));
         Cards_List.Move_At (R);
         Cards_List.Get (Acc, Moved => Moved);
-        Pos := Pos_Of (Stack, Depth);
-        Basic_Proc.Put_Line_Output (Pos.X'Img & "  " & Pos.Y'Img);
         Acc.Move (Pos_Of (Stack, Depth));
         Acc.Show (True);
       end loop;
     end loop Depths;
   end;
+
+  -- Test depth: the initial 4 including an ace at top, then Ring to 2
+  if Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "--depth" then
+    for Name in reverse Deck.Name_Range range 2 .. 13 loop
+      The_Cards (Deck.Heart, Name).Move (Pos_Of (1, 18 - Name));
+      The_Cards (Deck.Heart, Name).Show (True);
+    end loop;
+  end if;
 
   -- Main loop
   Basic_Proc.Put_Line_Output ("Entering main loop");
