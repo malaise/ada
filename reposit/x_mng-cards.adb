@@ -66,8 +66,9 @@ package body X_Mng.Cards is
   -- Create an empty untyped slot
   procedure Create_Empty (Acard : in out Card; Squared : in Boolean) is
   begin
-    Acard :=  (Suit => Empty, Name => Symbol_Name, Squared => Squared,
-               others => <>);
+    Acard.Suit := Empty;
+    Acard.Name := Symbol_Name;
+    Acard.Squared := Squared;
     Call_On;
     Acard.Ccard := Create_Empty (C_Types.Bool (Squared), Acard'Address);
     Call_Off;
@@ -89,7 +90,8 @@ package body X_Mng.Cards is
   -- Create a Symbol
   procedure Create_Symbol (Acard : in out Card; Suit : Suit_List) is
   begin
-    Acard :=  (Suit => Suit, Name => Symbol_Name, others => <>);
+    Acard.Suit := Suit;
+    Acard.Name := Symbol_Name;
     Call_On;
     Acard.Ccard := Create_Symbol (Suit_List'Pos (Suit), Acard'Address);
     Call_Off;
@@ -107,7 +109,8 @@ package body X_Mng.Cards is
   procedure Create_Card (Acard : in out Card; Suit : Suit_List;
                          Name : Name_Range) is
   begin
-    Acard :=  (Suit => Suit, Name => Name, others => <>);
+    Acard.Suit := Suit;
+    Acard.Name := Name;
     Call_On;
     Acard.Ccard := Create_Card (Suit_List'Pos (Suit), Name - 1,
                                 Acard'Address);

@@ -240,6 +240,7 @@ extern card* createCard (const suitList suit, const int value, void *ref) {
 /* Card display and move */
 extern void map (card* aCard) {
   XMapWindow (display, aCard->xWindow);
+  XRaiseWindow (display, aCard->xWindow);
 }
 
 extern void unmap (card* aCard) {

@@ -1,10 +1,31 @@
-with As.U, Basic_Proc, Con_Io, X_Mng.Cards;
+with As.U, Basic_Proc, Con_Io, X_Mng.Cards, Dynamic_List, Rnd;
 procedure T_Cards is
+
+  -- Cards
+  package Deck is new X_Mng.Cards;
+  The_Cards : array (Deck.Suit_List, Deck.Name_Range) of aliased Deck.Card;
+  The_Names : array (Deck.Suit_List, Deck.Name_Range) of As.U.Asu_Us;
+  Got_Card : Deck.Card_Access;
+  package Cards_Dyn_List_Mng is new Dynamic_List (Deck.Card_Access);
+  package Cards_List_Mng renames Cards_Dyn_List_Mng.Dyn_List;
+  Cards_List : Cards_List_Mng.List_Type;
+
   -- Console
   Last_Col : Con_Io.Col_Range;
   Last_Row : constant Con_Io.Row_Range := 53;
   Console : aliased Con_Io.Console;
+  Font_Height : Natural;
   Background : constant Con_Io.Colors :=  Con_Io.Color03;
+
+  -- Stacks and cards positions
+  Menu_Row : constant Con_Io.Row_Range := 1;
+  X_Gap : constant Con_Io.X_Range := 4;
+  Y_Gap : constant Con_Io.Y_Range := 28;
+  Stack_X : Con_Io.X_Range;
+  Stack_Y : Con_Io.Y_Range;
+  subtype Stack_Range is Deck.Name_Range;
+  -- 4 Cards, the last one being the Ace of a complete color
+  subtype Depth_Range is Natural range 1 .. 3 + Deck.Name_Range'Last;
 
   -- Dummy window for blind Get
   Get_Window : Con_Io.Window;
@@ -22,12 +43,6 @@ procedure T_Cards is
   -- Mouse event
   Mouse_Event : Con_Io.Mouse_Event_Rec;
 
-  -- Cards
-  package Deck is new X_Mng.Cards;
-  The_Cards : array (Deck.Suit_List, Deck.Name_Range) of Deck.Card;
-  The_Names : array (Deck.Suit_List, Deck.Name_Range) of As.U.Asu_Us;
-  Got_Card : Deck.Card_Access;
-
   -- Put the menu
   procedure Put_Menu is
   begin
@@ -43,7 +58,16 @@ procedure T_Cards is
     Menu_Window.Put (" Redo ", Menu_Fore, Menu_Back, False);
   end Put_Menu;
 
-  use type X_Mng.External_Reference, Con_Io.Curs_Mvt;
+  -- Position (X, Y) of card within a stack
+  function Pos_Of (Stack : Stack_Range; Depth : Depth_Range)
+           return Deck.Position_Rec is
+  begin
+    return (X => Stack_X + (Stack - 1) * (Deck.Width + X_Gap),
+            Y => Stack_Y + (Depth - 1) * Y_Gap);
+  end Pos_Of;
+
+  use type X_Mng.External_Reference, Con_Io.Curs_Mvt,
+           Con_Io.Mouse_Button_Status_List;
 begin
 
   -- Initialize with proper background color
@@ -55,18 +79,25 @@ begin
   -- Create Console at proper size
   declare
     Font_No : constant := 0;
-    Font_Width, Font_Height, Font_Offset : Natural;
+    Font_Width, Font_Offset : Natural;
   begin
     Con_Io.Get_Font_Geometry (Font_No, Font_Width, Font_Height, Font_Offset);
-    Last_Col := ((Deck.Width + 4) * 13 + 4) / Font_Width;
+    Last_Col := ((Deck.Width + X_Gap) * Stack_Range'Last + X_Gap) / Font_Width;
     Console.Open (Font_No, Last_Row, Last_Col, Def_Back => Background);
     Basic_Proc.Put_Line_Output ("Last col" & Last_Col'Img
         & "  font: " & Console.Font_Name
         & " size: " & Font_Width'Img & " x" & Font_Height'Img);
+    Basic_Proc.Put_Line_Output ("Last X:" & Integer'Image (Console.X_Max)
+        & ", Last Y:" & Integer'Image (Console.Y_Max));
   end;
   Console.Enable_Motion_Events (True);
   Console.Set_Y_Mode (Con_Io.X_Mng_Mode);
   Deck.Set_Line (Console.Get_Line);
+
+  -- Compute offset of stacks
+  Stack_X := (Console.X_Max - Stack_Range'Last * (Deck.Width + X_Gap) + X_Gap)
+             / 2;
+  Stack_Y := (Menu_Row + 1) * Font_Height + Y_Gap;
 
   -- Create a dummy window for blind get
   Get_Window.Open (Console'Unchecked_Access, (0, 0), (0, 0));
@@ -74,7 +105,8 @@ begin
   Get_Window.Set_Background (Background);
 
   -- Put menu
-  Menu_Window.Open (Console'Unchecked_Access, (0, 0), (0, Last_Col));
+  Menu_Window.Open (Console'Unchecked_Access,
+                    (Menu_Row, 0), (Menu_Row, Last_Col));
   Put_Menu;
 
   -- Create the cards
@@ -83,15 +115,33 @@ begin
     for Name in Deck.Name_Range loop
       The_Names(Suit, Name).Set (Suit'Img & Name'Img);
       The_Cards(Suit, Name).Create_Card (Suit, Name);
+      Cards_List.Insert (The_Cards(Suit, Name)'Access);
     end loop;
   end loop;
 
-  -- Display some cards
-  Basic_Proc.Put_Line_Output ("Mapping the cards");
-  The_Cards(Deck.Heart, 1).Move ((5, 15));
-  The_Cards(Deck.Heart, 1).Show (True);
-  The_Cards(Deck.Spade, 13).Move ((100, 15));
-  The_Cards(Deck.Spade, 13).Show (True);
+  -- Display the cards randomly
+  declare
+    R : Positive;
+    Acc : Deck.Card_Access;
+    Moved : Boolean;
+    Pos : Deck.Position_Rec;
+  begin
+    Basic_Proc.Put_Line_Output ("Putting the cards"
+        & Integer'Image (Cards_List.List_Length));
+    Depths : for Depth in 1 .. 4 loop
+      for Stack in Stack_Range loop
+        R := Rnd.Gen.Int_Random (1, Cards_List.List_Length);
+        Basic_Proc.Put_Line_Output (R'Img & " among "
+           & Integer'Image (Cards_List.List_Length));
+        Cards_List.Move_At (R);
+        Cards_List.Get (Acc, Moved => Moved);
+        Pos := Pos_Of (Stack, Depth);
+        Basic_Proc.Put_Line_Output (Pos.X'Img & "  " & Pos.Y'Img);
+        Acc.Move (Pos_Of (Stack, Depth));
+        Acc.Show (True);
+      end loop;
+    end loop Depths;
+  end;
 
   -- Main loop
   Basic_Proc.Put_Line_Output ("Entering main loop");
@@ -108,6 +158,11 @@ begin
           Got_Card := Deck.Ref_To_Access (Mouse_Event.Xref);
           Basic_Proc.Put_Line_Output ("Xref: "
               & The_Names(Got_Card.Get_Suit, Got_Card.Get_Name).Image);
+          if Mouse_Event.Status = Con_Io.Enter then
+            Console.Set_Pointer_Shape (Con_Io.Hand);
+          elsif Mouse_Event.Status = Con_Io.Leave then
+            Console.Set_Pointer_Shape (Con_Io.Arrow);
+          end if;
         end if;
       end if;
     elsif Stat = Con_Io.Refresh then

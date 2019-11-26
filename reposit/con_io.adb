@@ -1884,7 +1884,7 @@ package body Con_Io is
   end Set_Pointer_Shape;
 
   -- Grab pointer
-  procedure Grab_Pointer (Con  : in Console; 
+  procedure Grab_Pointer (Con  : in Console;
                           Grab : in Boolean) is
   begin
     X_Mng.X_Grab_Pointer(Con.Get_Access.Id, Grab);
@@ -1983,7 +1983,7 @@ package body Con_Io is
         if Button /= X_Mng.None then
           return;
         end if;
-        Loc_Event.Status := (if Acc.Mouse_Status = X_Mng.Tid_Enter then Motion
+        Loc_Event.Status := (if Acc.Mouse_Status = X_Mng.Tid_Enter then Enter
                              else Leave);
         Loc_Event.Button := Motion;
 

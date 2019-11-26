@@ -24,13 +24,13 @@ package X_Mng.Cards is
   subtype Suit_List is Full_Suit_List range Heart .. Spade;
 
   -- Symbol (0) for empty target stack
-  -- then from 1 to 10, then Jack, Queen, Kind and Ace
-  subtype Full_Name_Range is Natural range 0 .. 14;
+  -- then from 1 to 10, then Jack, Queen and Kind
+  subtype Full_Name_Range is Natural range 0 .. 13;
   subtype Name_Range is Full_Name_Range range 1 .. Full_Name_Range'Last;
   Symbol_Name : constant Full_Name_Range := 0;
 
   -- Any card, slot or symbol
-  type Card is tagged private;
+  type Card is tagged limited private;
   type Card_Access is access all Card;
 
   --------------------
@@ -113,7 +113,7 @@ package X_Mng.Cards is
 
 private
 
-  type Card is tagged record
+  type Card is tagged limited record
     Suit : Full_Suit_List;
     Squared : Boolean := False;
     Name : Full_Name_Range;
