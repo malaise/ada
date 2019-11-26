@@ -79,7 +79,7 @@ begin
         if Str(1) = Language.Char_To_Unicode ('g') then
           -- Grab / ungrab pointer
           Pointer_Grabbed := not Pointer_Grabbed;
-          Console.Set_Pointer_Shape (Con_Io.None, Pointer_Grabbed);
+          Console.Grab_Pointer (Pointer_Grabbed);
         elsif Str(1) = Language.Char_To_Unicode (' ') then
           -- Pause / resume game
           return (Evt => Pause);

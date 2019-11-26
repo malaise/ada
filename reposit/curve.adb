@@ -1012,7 +1012,7 @@ package body Curve is
             elsif Upper_Char(Char) = 'G' then
               -- Grab / ungrab pointer
               Misc(M_Grab) := not Misc(M_Grab);
-              Cur_Con_Io.Set_Pointer_Shape(Con_Io.Cross, Misc(M_Grab));
+              Cur_Con_Io.Grab_Pointer (Misc(M_Grab));
               if Misc(M_Help) then
                 Toggle_Help_Misc (M_Grab);
               end if;
@@ -1095,7 +1095,7 @@ package body Curve is
     -- Initialise graphics
     Init;
 
-    Cur_Con_Io.Set_Pointer_Shape(Con_Io.Cross, Misc(M_Grab));
+    Cur_Con_Io.Set_Pointer_Shape(Con_Io.Cross);
 
     -- Initialise zooms storing
     Zoom_Array(Zoom_No_Range'First) := Boundaries;

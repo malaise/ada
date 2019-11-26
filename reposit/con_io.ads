@@ -563,13 +563,15 @@ package Con_Io is
   procedure Enable_Motion_Events (Con : in Console;
                                   Motion_Enabled : in Boolean);
 
-  -- Set mouse pointer shape or hide mouse
+  -- Set mouse pointer shape or hide mouse pointer
   --  Arrow by default
   type Pointer_Shape_List is (None, Arrow, Cross, Hand);
   procedure Set_Pointer_Shape (Con           : in Console;
-                               Pointer_Shape : in Pointer_Shape_List;
-                               Grab          : in Boolean);
+                               Pointer_Shape : in Pointer_Shape_List);
 
+  -- (Un)grab the mouse pointer
+  procedure Grab_Pointer (Con  : in Console;
+                          Grab : in Boolean);
 
   -- We want mouse position in row_col or x_y
   type Coordinate_Mode_List is (Row_Col, X_Y);

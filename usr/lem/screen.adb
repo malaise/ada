@@ -118,7 +118,8 @@ package body Screen is
       -- "--grab"
       Pointer_Grabbed := True;
     end if;
-    Console.Set_Pointer_Shape (Con_Io.None, Pointer_Grabbed);
+    Console.Set_Pointer_Shape (Con_Io.None);
+    Console.Grab_Pointer (Pointer_Grabbed);
     -- Clear previous LEM position
     Prev_Pos := No_Pos;
     -- Compute space

@@ -1870,8 +1870,7 @@ package body Con_Io is
 
   -- Set pointer shape
   procedure Set_Pointer_Shape (Con           : in Console;
-                               Pointer_Shape : in Pointer_Shape_List;
-                               Grab          : in Boolean) is
+                               Pointer_Shape : in Pointer_Shape_List) is
     X_Shape : X_Mng.Pointer_Shapes;
   begin
     Check_Con (Con);
@@ -1882,8 +1881,14 @@ package body Con_Io is
       when Hand  => X_Shape := X_Mng.Hand;
     end case;
     X_Mng.X_Set_Pointer(Con.Get_Access.Id, X_Shape);
-    X_Mng.X_Grab_Pointer(Con.Get_Access.Id, Grab);
   end Set_Pointer_Shape;
+
+  -- Grab pointer
+  procedure Grab_Pointer (Con  : in Console; 
+                          Grab : in Boolean) is
+  begin
+    X_Mng.X_Grab_Pointer(Con.Get_Access.Id, Grab);
+  end Grab_Pointer;
 
   -- Get a mouse event. If valid is False, it means that a release
   -- has occured outside the screen, then only Button and status
