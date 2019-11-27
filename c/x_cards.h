@@ -24,6 +24,7 @@ extern boolean initDesk (void *line_id, const boolean enable_motion);
 extern card* createEmpty (const boolean squared, void *ref);
 extern card* createSymbol (const suitList suit, void *ref);
 extern card* createCard (const suitList suit, const int value, void *ref);
+extern void deleteCard (card* aCard);
 
 /* Card display and move */
 extern void map (card* aCard);

@@ -162,6 +162,8 @@ static card* createCommon (void *ref) {
   }
 
   aCard->faceUp = True;
+  aCard->usualPixmap = None;
+  aCard->hilightedPixmap = None;
 
   /* Select input */
   XGetWindowAttributes (display, aCard->xWindow, &attributes);
@@ -237,6 +239,17 @@ extern card* createCard (const suitList suit, const int value, void *ref) {
   setBorder (aCard, blackColor, 1);
   unSelect (aCard);
   return aCard;
+}
+
+extern void deleteCard (card* aCard) {
+  if (aCard == NULL) return;
+  if (aCard->usualPixmap != None) {
+    XFreePixmap(display, aCard->usualPixmap);
+  }
+  if (aCard->hilightedPixmap != None) {
+    XFreePixmap(display, aCard->hilightedPixmap);
+  }
+  free (aCard);
 }
 
 /* Card display and move */

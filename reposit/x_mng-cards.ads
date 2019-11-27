@@ -34,9 +34,9 @@ package X_Mng.Cards is
   type Card is tagged limited private;
   type Card_Access is access all Card;
 
-  --------------------
-  -- Creation, Is_A --
-  --------------------
+  ------------------------------
+  -- Creation, Is_A, Deletion --
+  ------------------------------
   -- Create an empty untyped slot, squared or not
   procedure Create_Empty (Acard : in out Card; Squared : in Boolean);
   -- True for Empty slot, Squared or not
@@ -59,6 +59,9 @@ package X_Mng.Cards is
   -- Get the name of a card
   -- Raises Empty_Error if the Card Suit is Empty
   function Get_Name (Acard : Card) return Full_Name_Range;
+
+  -- Delete any Empty, Symbol or Card
+  procedure Delete (Acard : in out Card);
 
   ------------
   -- Status --
@@ -92,13 +95,6 @@ package X_Mng.Cards is
   -- Redispay or update the display of the card
   procedure Redisplay (Acard : in Card);
 
-  ----------------
-  -- Navigation --
-  ----------------
-  -- Navigation in a stack (bottom can be empty or symbol card)
-  function Prev (Acard : Card) return Card_Access;
-  function Next (Acard : Card) return Card_Access;
-
   -- From external reference to Card access
   function Ref_To_Access (Ref : External_Reference) return Card_Access;
 
@@ -115,14 +111,13 @@ package X_Mng.Cards is
 private
 
   type Card is tagged limited record
-    Suit : Full_Suit_List;
+    Suit : Full_Suit_List := Empty;
     Squared : Boolean := False;
-    Name : Full_Name_Range;
+    Name : Full_Name_Range := Symbol_Name;
     Shown    : Boolean := False;  -- We don't see the card if it is not Shown
     Face_Up  : Boolean := True;   -- We see the back if the card is not Up
     Selected : Boolean := False;  -- Show special color (for a real card)
     Position : Position_Rec := (0, 0);
-    Prev, Next : Card_Access := null;
     Ccard : System.Address := System.Null_Address;
   end record;
 

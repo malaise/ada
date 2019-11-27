@@ -18,6 +18,8 @@ package body X_Mng.Cards is
   function Create_Card (Suit : C_Types.Int; Value : Natural;
            Ref : System.Address) return System.Address
     with Import => True, Convention => C, External_Name => "createCard";
+  procedure Delete_Card (Acard : in System.Address)
+    with Import => True, Convention => C, External_Name => "deleteCard";
   procedure Map (Acard : in System.Address)
     with Import => True, Convention => C, External_Name => "map";
   procedure Unmap (Acard : in System.Address)
@@ -61,9 +63,9 @@ package body X_Mng.Cards is
     X_Mng.Call_Off (Line_Id, Line_For_C_Id);
   end Call_Off;
 
-  --------------------
-  -- Creation, Is_A --
-  --------------------
+  ------------------------------
+  -- Creation, Is_A, Deletion --
+  ------------------------------
   -- Create an empty untyped slot
   procedure Create_Empty (Acard : in out Card; Squared : in Boolean) is
   begin
@@ -142,6 +144,20 @@ package body X_Mng.Cards is
     return Acard.Name;
   end Get_Name;
 
+  -- Delete any Empty, Symbol or Card
+  procedure Delete (Acard : in out Card) is
+  begin
+    Delete_Card (Acard.Ccard);
+    Acard.Suit     := Empty;
+    Acard.Squared  := False;
+    Acard.Name     := Symbol_Name;
+    Acard.Shown    := False;
+    Acard.Face_Up  := True;
+    Acard.Selected := False;
+    Acard.Position := (0, 0);
+    Acard.Ccard    := System.Null_Address;
+  end Delete;
+
   ------------
   -- Status --
   ------------
@@ -217,19 +233,6 @@ package body X_Mng.Cards is
   begin
     Map (Acard.Ccard);
   end Redisplay;
-
-  ----------------
-  -- Navigation --
-  ----------------
-  function Prev (Acard : Card) return Card_Access is
-  begin
-    return Acard.Prev;
-  end Prev;
-
-  function Next (Acard : Card) return Card_Access is
-  begin
-    return Acard.Next;
-  end Next;
 
   -- From external reference to Card access
   function Ref_2_Acc is new Ada.Unchecked_Conversion (
