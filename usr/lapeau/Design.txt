@@ -1,0 +1,26 @@
+1) Table
+Create the console, menu, cards...
+Move the stacks
+Export the console and some procedures to get position of stacks
+
+2) Cards
+A package Cards adds a new concept of card that contains:
+- Ref to X_mng card (xcard)
+- Suit and Name + equivalent in 2 chars (1 .. 9, a, J, Q, K) (C, S, H, D)
+- Links to prev, next, top of stack and bottom of stack cards
+- Number of children cards (up to bottom)
+It creates the collection of 52 cards and 13 stacks
+Counts the number of empty stacks
+
+3) Movement
+Defines the rules for stacking cards (alternate color and nb v.s. empty stacks)
+Moves the selected cards of a card up to a destination (card or stack)
+Move a part of the stack during drag and drop
+Adapts the pointer shape
+Selects a card on click (and unselects)
+
+5) Memory
+Re-shuffles the cards, stores the setup
+Restores the stored setup
+Updates stack of Done and Undone movements
+
