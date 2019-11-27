@@ -18,7 +18,7 @@ typedef struct {
 } card;
 
 /* Global initialization */
-extern boolean initDesk (void *line_id);
+extern boolean initDesk (void *line_id, const boolean enable_motion);
 
 /* Card creation */
 extern card* createEmpty (const boolean squared, void *ref);

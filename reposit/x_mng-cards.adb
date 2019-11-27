@@ -6,7 +6,8 @@ package body X_Mng.Cards is
   -----------------
   -- C functions --
   -----------------
-  function Init_Desk (Line_Id : Line_For_C) return C_Types.Bool
+  function Init_Desk (Line_Id : Line_For_C; Enable_Motion : in C_Types.Bool)
+                     return C_Types.Bool
     with Import => True, Convention => C, External_Name => "initDesk";
   function Create_Empty (Squared : C_Types.Bool; Ref : System.Address)
            return System.Address
@@ -34,7 +35,7 @@ package body X_Mng.Cards is
   -- Line association --
   ----------------------
   Line_Id : Line := No_Client;
-  procedure Set_Line (Line_Id : in Line) is
+  procedure Set_Line (Line_Id : in Line; Enable_Motion : in Boolean) is
     Line_For_C_Id : Line_For_C;
     use type C_Types.Bool;
   begin
@@ -43,7 +44,7 @@ package body X_Mng.Cards is
     end if;
     X_Mng.Cards.Line_Id := Line_Id;
     Call_On (X_Mng.Cards.Line_Id, Line_For_C_Id);
-    if not Init_Desk (Line_For_C_Id) then
+    if not Init_Desk (Line_For_C_Id, C_Types.Bool (Enable_Motion)) then
       Call_Off (X_Mng.Cards.Line_Id, Line_For_C_Id);
       raise X_Failure;
     end if;

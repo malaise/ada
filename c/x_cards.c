@@ -22,6 +22,7 @@
 
 /* Common static data */
 static t_window *win_id = NULL;
+static int motionMask = 0;
 static Display* display = NULL;
 static int      screen;
 static Drawable rootWindow = None;
@@ -94,7 +95,7 @@ static unsigned long colorOf (const suitList suit) {
 
 
 /* Global initialization: Get local copy of line info, other global init */
-extern boolean initDesk (void *line_id) {
+extern boolean initDesk (void *line_id, const boolean enable_motion) {
   XColor cursFore, cursBack, xColor;
   Pixmap bitMap, mask;
 
@@ -107,7 +108,8 @@ extern boolean initDesk (void *line_id) {
   colorMap = win_id->screen->colormap;
   backgroundColor = win_id->screen->color_id[win_id->background_color];
 
-  /* Colors */
+  /* Colors and motion */
+  motionMask = (enable_motion ? PointerMotionMask : 0);
   whiteColor = getColor (WHITE);
   blackColor = getColor (BLACK);
   redColor = getColor (RED);
@@ -166,7 +168,7 @@ static card* createCommon (void *ref) {
   XSelectInput(display, aCard->xWindow,
       attributes.your_event_mask | ButtonPressMask | ButtonReleaseMask
                                  | EnterWindowMask | LeaveWindowMask
-                                 | PointerMotionMask);
+                                 | motionMask);
 
   /*  Register */
   if (!lin_register ((t_window *) win_id, aCard->xWindow, ref, True) ) {

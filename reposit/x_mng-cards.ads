@@ -8,9 +8,10 @@ package X_Mng.Cards is
   --  instanciation of the gneeric (this is why it is not a formal generic
   --  parameter)
   -- This association is not reversible
+  -- Enable pointer motion reporting for the cards, or not
   -- Raises X_Failure if Line_Id is not open, or if an association has already
   --  been set
-  procedure Set_Line (Line_Id : in Line);
+  procedure Set_Line (Line_Id : in Line; Enable_Motion : in Boolean);
 
   -----------------------
   -- Cards definition --

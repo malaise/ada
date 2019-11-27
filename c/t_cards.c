@@ -60,7 +60,7 @@ void *ref;
     printf ("ERROR open line\n");
     exit (1);
   }
-  if (! initDesk (line) ) {
+  if (! initDesk (line, True) ) {
     printf ("ERROR init desk\n");
     exit (1);
   }

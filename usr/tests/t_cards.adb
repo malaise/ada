@@ -11,6 +11,7 @@ procedure T_Cards is
   Cards_List : Cards_List_Mng.List_Type;
 
   -- Console
+  Motion : Boolean := False;
   Last_Col : Con_Io.Col_Range;
   Last_Row : constant Con_Io.Row_Range := 48;
   Console : aliased Con_Io.Console;
@@ -90,9 +91,13 @@ begin
     Basic_Proc.Put_Line_Output ("Last X:" & Integer'Image (Console.X_Max)
         & ", Last Y:" & Integer'Image (Console.Y_Max));
   end;
-  Console.Enable_Motion_Events (True);
   Console.Set_Y_Mode (Con_Io.X_Mng_Mode);
-  Deck.Set_Line (Console.Get_Line);
+  Motion := Argument.Get_Nbre_Arg = 1
+            and then Argument.Get_Parameter = "--motion";
+  Deck.Set_Line (Console.Get_Line, Motion);
+  if Motion then
+    Console.Enable_Motion_Events (True);
+  end if;
 
   -- Compute offset of stacks
   Stack_X := (Console.X_Max - Stack_Range'Last * (Deck.Width + X_Gap) + X_Gap)
