@@ -24,7 +24,7 @@ package X_Mng.Cards is
                            Empty => 4);
   subtype Suit_List is Full_Suit_List range Heart .. Spade;
 
-  -- Symbol (0) for empty target stack
+  -- Symbol (0) for empty or symbol target stack
   -- then from 1 to 10, then Jack, Queen and Kind
   subtype Full_Name_Range is Natural range 0 .. 13;
   subtype Name_Range is Full_Name_Range range 1 .. Full_Name_Range'Last;

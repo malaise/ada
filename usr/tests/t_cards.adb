@@ -71,13 +71,8 @@ procedure T_Cards is
            Con_Io.Mouse_Button_Status_List;
 begin
 
-  -- Initialize with proper background color
-  declare
-  begin
-    Con_Io.Initialise;
-  end;
-
   -- Create Console at proper size
+  Con_Io.Initialise;
   declare
     Font_No : constant := 0;
     Font_Width, Font_Offset : Natural;
