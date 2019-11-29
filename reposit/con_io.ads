@@ -484,6 +484,10 @@ package Con_Io is
   function Font_Height (Con : Console) return Natural;
   function Font_Offset (Con : Console) return Natural;
 
+  -- Convert X, Y to a square
+  function To_Square (Con : Console;
+                      X : in X_Range; Y : in Y_Range) return Square;
+
   -- Put a char with screen foreground and current Xor mode
   -- on screen background
   -- No window is affected
