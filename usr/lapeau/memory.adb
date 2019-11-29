@@ -20,7 +20,7 @@ package body Memory is
 
   -- Upadte the links and counters, after start or restore
   procedure Update is
-    Acc, Child : Cards.Card_Access;
+    Acc, Child, Top : Cards.Card_Access;
     Movable : Boolean;
     Nb_Children : Natural;
     use type Cards.Card_Access;
@@ -36,15 +36,20 @@ package body Memory is
         Acc.Next := Child;
         if Depth = Depth_Range'Last then
           Acc.Next := null;
+          Top := Acc;
         else
           Child.Prev := Acc;
           Movable := Movable and then Movements.Is_Valid (Acc, Child);
         end if;
+        Acc.Top := Top;
+        Acc.Bottom := Cards.The_Stacks (Stack)'Access;
         -- Update tags
         Acc.Movable := Movable;
         Acc.Nb_Children := Nb_Children;
         if Movable then
           Nb_Children := Nb_Children + 1;
+        else
+          Nb_Children := 0;
         end if;
         -- Update for next
         Child := Acc;
@@ -75,6 +80,7 @@ package body Memory is
     end loop;
 
     -- Put and link the cards
+    Rnd.Gen.Randomize;
     for Stack in Table.Stack_Range loop
       for Depth in Depth_Range loop
         R := Rnd.Gen.Int_Random (1, Cards_List.List_Length);
@@ -92,8 +98,6 @@ package body Memory is
     -- Clear history
     Clear;
   end Start_Game;
-
-
 
   -- Restore current game
   procedure Restore_Game is

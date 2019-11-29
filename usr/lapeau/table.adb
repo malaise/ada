@@ -1,3 +1,4 @@
+with X_Mng;
 package body Table is
 
   -- Static information about the console
@@ -85,21 +86,99 @@ package body Table is
             Y => Stack_Y + (Depth - 1) * Y_Gap);
   end Pos_Of;
 
-  -- Wait for next event, return False when exiting the game
-  function Wait_Event return Action_List is
+  -- Local: Decode a card event
+  function Decode_Card_Event (Mouse_Event : Con_Io.Mouse_Event_Rec;
+                              Event : out Event_Rec) return Boolean is
+    Acc : Cards.Card_Access;
+    use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List,
+             Cards.Card_Access;
+  begin
+    if not Mouse_Event.Valid then
+      return False;
+    end if;
+    Acc := Cards.X_To_Card (Mouse_Event.Xref);
+    if Acc = null then
+      return False;
+    end if;
+    case Mouse_Event.Status is
+      when Con_Io.Pressed =>
+        if Mouse_Event.Button /= Con_Io.Left then
+          return False;
+        end if;
+        Event := (Pressed, Acc);
+        return True;
+      when Con_Io.Released =>
+        if Mouse_Event.Button /= Con_Io.Left then
+          return False;
+        end if;
+        Event := (Released, Acc);
+        return True;
+      when Con_Io.Enter =>
+        Event := (Enter, Acc);
+        return True;
+      when Con_Io.Leave =>
+        Event := (Leave, Acc);
+        return True;
+      when others =>
+        -- Release, motion?
+        return False;
+    end case;
+  end Decode_Card_Event;
+
+  -- Local: Decode a menu event
+  function Decode_Menu_Event (Event : out Event_Rec) return Boolean is
+    Mouse_Event : Con_Io.Mouse_Event_Rec;
+    use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List;
+  begin
+    Console.Get_Mouse_Event (Mouse_Event, Con_Io.Row_Col);
+    if not Mouse_Event.Valid
+    or else Mouse_Event.Button /= Con_Io.Left
+    or else (Mouse_Event.Status /= Con_Io.Pressed
+             and then Mouse_Event.Status /= Con_Io.Released) then
+      return False;
+    end if;
+    -- Flip / flop menu entry on press
+    -- Validate on release in same entry, drop if release anywhere else
+    Event := (Kind => Quit);
+    return False;
+  end Decode_Menu_Event;
+
+  -- Decode an event, on card, on menu or Break
+  procedure Next_Event (Event : out Event_Rec) is
+    -- For the blind get
     Str : Con_Io.Unicode_Sequence (1 .. 0);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
     Pos : Positive;
     Insert : Boolean;
-    use type Con_Io.Curs_Mvt;
+    -- The mouse event
+    Mouse_Event : Con_Io.Mouse_Event_Rec;
+    use type Con_Io.Curs_Mvt, X_Mng.External_Reference;
   begin
-    Get_Window.Get (Str, Last, Stat, Pos, Insert);
-    if Stat = Con_Io.Break then
-      return Quit;
-    end if;
-    return Play;
-  end Wait_Event;
+    loop
+      Get_Window.Get (Str, Last, Stat, Pos, Insert);
+      case Stat is
+        when Con_Io.Break =>
+          Event := (Kind => Quit);
+          return;
+        when Con_Io.Mouse_Button =>
+          Console.Get_Mouse_Event (Mouse_Event, Con_Io.X_Y);
+          if Mouse_Event.Xref /= X_Mng.Null_Reference then
+            if Decode_Card_Event (Mouse_Event, Event) then
+              -- valid card event
+              return;
+            end if;
+          elsif Decode_Menu_Event (Event) then
+            -- valid menu event
+            return;
+          end if;
+        when Con_Io.Refresh =>
+          Put_Menu;
+        when others =>
+          null;
+      end case;
+    end loop;
+  end Next_Event;
 
 end Table;
 

@@ -40,7 +40,7 @@ package body Cards is
     end loop;
     -- Create the stacks
     for Name in Deck.Name_Range loop
-      The_Xstacks(Name).Create_Empty (False);
+      The_Xstacks(Name).Create_Empty (Squared => False);
       The_Stacks(Name).Xcard := The_Xstacks(Name)'Access;
       The_Stacks(Name).Suit := Deck.Empty;
       The_Stacks(Name).Name := Name;

@@ -23,10 +23,18 @@ package Table is
   function Pos_Of (Stack : Stack_Range; Depth : Depth_Range)
            return Deck.Position_Rec;
 
-
-  -- Wait for next event, return Play or the reason for exiting the game
-  type Action_List is (Play, Quit, New_Game, Restart);
-  function Wait_Event return Action_List;
+  -- Decode an event, on card, on menu or Break
+  type Event_List is (Pressed, Released, Enter, Leave,
+                      Quit, New_Game, Restart, Undo, Redo);
+  type Event_Rec (Kind : Event_List:= Quit) is record
+    case Kind is
+      when Pressed .. Leave =>
+        Card : Cards.Card_Access;
+      when Quit .. Redo =>
+        null;
+    end case;
+  end record;
+  procedure Next_Event (Event : out Event_Rec);
 
 end Table;
 
