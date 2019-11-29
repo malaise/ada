@@ -201,7 +201,7 @@ package body Con_Io is
     if Con_Data.Font_No + Font_No_Offset in Font_No_Range then
       Line.No_Font := Con_Data.Font_No + Font_No_Offset;
     end if;
-    Line.Background := Colors'Pos(Con_Data.Line_Background) - 1;
+    Line.Background := Colors'Pos(Con_Data.Def_Background) - 1;
     Line.Height := Row_Last - Row_Range_First + 1;
     Line.Width  := Col_Last - Col_Range_First + 1;
     X_Mng.X_Open_Line (Line, Con_Data.Id);
