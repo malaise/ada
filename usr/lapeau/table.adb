@@ -188,7 +188,7 @@ package body Table is
     else
       Put_Menu;
       -- Validate on release in same entry, drop if release anywhere else
-      return Event.Kind = Last_Pressed;
+      return Event.Kind /= Leave and then Event.Kind = Last_Pressed;
     end if;
   end Decode_Menu_Event;
 
