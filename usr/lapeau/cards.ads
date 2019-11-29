@@ -14,7 +14,9 @@ package Cards is
     Name : Deck.Name_Range := 1;
     Image : String (1 .. 2) := "  ";
     -- Only these fields are modified
-    Prev, Next, Top, Bottom : Card_Access := null;
+    -- For a stack, Stack is itself, Next is the first, Prev is the top
+    --  and Nb_Children is the Nb of cards
+    Prev, Next, Stack : Card_Access := null;
     Nb_Children : Natural := 0;
     Movable : Boolean := False;
   end record;

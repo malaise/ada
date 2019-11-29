@@ -1,5 +1,5 @@
 with Dynamic_List, Rnd;
-with Movements;
+with Cards, Table;
 package body Memory is
 
   -- Clear the list of undos and redos
@@ -21,32 +21,41 @@ package body Memory is
   -- Upadte the links and counters, after start or restore
   procedure Update is
     Acc, Child, Top : Cards.Card_Access;
-    Movable : Boolean;
+    Movable, Valid : Boolean;
     Nb_Children : Natural;
     use type Cards.Card_Access;
   begin
     for Stack in Table.Stack_Range loop
+      -- Move and show card
+      for Depth in Depth_Range loop
+        Acc := Current_Game (Stack, Depth);
+        -- Move X card
+        Acc.Xcard.Move (Table.Pos_Of (Stack, Depth));
+        Acc.Xcard.Show (True);
+      end loop;
       -- Last child of stack
       Child := null;
-      Movable := True;
       Nb_Children := 0;
       for Depth in reverse Depth_Range loop
         Acc := Current_Game (Stack, Depth);
         -- Link card with child
-        Acc.Next := Child;
         if Depth = Depth_Range'Last then
+          -- Top
           Acc.Next := null;
           Top := Acc;
+          Valid := False;
+          Movable := True;
         else
+          Acc.Next := Child;
           Child.Prev := Acc;
-          Movable := Movable and then Movements.Is_Valid (Acc, Child);
+          Valid := Movements.Is_Valid (Child, Acc);
+          Movable := Movable and then Valid;
         end if;
-        Acc.Top := Top;
-        Acc.Bottom := Cards.The_Stacks (Stack)'Access;
         -- Update tags
-        Acc.Movable := Movable;
+        Acc.Stack := Cards.The_Stacks(Stack)'Access;
         Acc.Nb_Children := Nb_Children;
-        if Movable then
+        Acc.Movable := Movable;
+        if Valid then
           Nb_Children := Nb_Children + 1;
         else
           Nb_Children := 0;
@@ -55,10 +64,12 @@ package body Memory is
         Child := Acc;
       end loop;
       -- Link first card with stack
-      Cards.The_Stacks (Stack).Next := Acc;
-      Acc.Prev := Cards.The_Stacks (Stack)'Access;
+      Acc.Prev := Cards.The_Stacks(Stack)'Access;
+      Cards.The_Stacks(Stack).Prev := Top;
+      Cards.The_Stacks(Stack).Next := Acc;
+      Cards.The_Stacks(Stack).Stack := Cards.The_Stacks(Stack)'Access;
+      Cards.The_Stacks(Stack).Nb_Children := 4;
     end loop;
-
   end Update;
 
   -- Dynamic list of cards for random init
@@ -86,14 +97,11 @@ package body Memory is
         R := Rnd.Gen.Int_Random (1, Cards_List.List_Length);
         Cards_List.Move_At (R);
         Cards_List.Get (Acc, Moved => Moved);
-        -- Move X card
-        Acc.Xcard.Move (Table.Pos_Of (Stack, Depth));
-        Acc.Xcard.Show (True);
         -- Store in setup
         Current_Game(Stack, Depth) := Acc;
       end loop;
     end loop;
-    -- Update counters and links
+    -- Move cards and update counters and links
     Update;
     -- Clear history
     Clear;
@@ -101,18 +109,8 @@ package body Memory is
 
   -- Restore current game
   procedure Restore_Game is
-    Acc : Cards.Card_Access;
   begin
-    -- Restore current game
-    for Stack in Table.Stack_Range loop
-      for Depth in Depth_Range loop
-        Acc := Current_Game(Stack, Depth);
-        -- Move X card
-        Acc.Xcard.Move (Table.Pos_Of (Stack, Depth));
-        Acc.Xcard.Show (True);
-      end loop;
-    end loop;
-    -- Update counters and links
+    -- Move cards and update counters and links
     Update;
     -- Clear history
     Clear;
@@ -125,21 +123,21 @@ package body Memory is
   -- The lists are clear when a game starts
   -- Add a movement to list of undoes
   -- Clears the list of redoes
-  procedure Add (Mov : in Movement) is
+  procedure Add (Mov : in Movements.Movement) is
   begin
     -- @@@
     null;
   end Add;
 
   -- Pop a movement and add it to the list of redoes
-  function Undo return Movement is
+  function Undo return Movements.Movement is
   begin
     -- @@@
     return (null, 1, 1);
   end Undo;
 
   -- Pop a undone movment and add it to the list of undoes
-  function Redo return Movement is
+  function Redo return Movements.Movement is
   begin
     -- @@@
     return (null, 1, 1);

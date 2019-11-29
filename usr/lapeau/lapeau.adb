@@ -1,5 +1,5 @@
 with Con_Io;
-with Cards, Table, Memory, Movements;
+with Cards, Table, Memory, Movements, Basic_Proc;
 procedure Lapeau is
   Event : Table.Event_Rec;
   type Status_List is (None, Selectable, Selected, Targetable);
@@ -16,11 +16,18 @@ begin
   -- Play game
   loop
     Table.Next_Event (Event);
+    if Event.Kind in Table.Pressed .. Table.Leave then
+      Basic_Proc.Put_Line_Output (Event.Kind'Img & " " & Event.Card.Image);
+    end if;
     case Event.Kind is
       when Table.Quit =>
         -- End of game
         exit;
-      when Table.New_Game .. Table.Redo =>
+      when Table.New_Game =>
+        Memory.Start_Game;
+      when Table.Restart =>
+        Memory.Restore_Game;
+      when Table.Undo .. Table.Redo =>
          -- @@@ handle menu
          null;
       when Table.Enter =>
@@ -95,7 +102,7 @@ begin
           when Selected =>
             -- Releasing in the selected source
             if Event.Card = Selected_Card then
-              Status := None;
+              Status := Selectable;
               Event.Card.Xcard.Un_Select;
               Selected_Card := null;
             end if;
@@ -105,10 +112,16 @@ begin
             Status := None;
             Selected_Card.Xcard.Un_Select;
             Event.Card.Xcard.Un_Select;
-            -- @@@
-            -- MOVE
+            -- Move
+            Basic_Proc.Put_Line_Output ("Move...");
+            Movements.Move ( (
+                Card => Selected_Card,
+                From => Selected_Card.Stack.Name,
+                To   => Event.Card.Stack.Name) );
+            Selected_Card := null;
         end case;
     end case;
+   Basic_Proc.Put_Line_Output (Status'Img);
   end loop;
 end Lapeau;
 

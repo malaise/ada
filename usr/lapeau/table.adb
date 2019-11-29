@@ -23,17 +23,22 @@ package body Table is
   Menu_Fore : constant Con_Io.Colors :=  Con_Io.Color_Of ("Black");
 
   -- Put the menu
+  Start_Exit    : constant :=  1; Stop_Exit    : constant :=  6;
+  Start_New     : constant :=  8; Stop_New     : constant := 12;
+  Start_Restart : constant := 14; Stop_Restart : constant := 22;
+  Start_Undo    : constant := 24; Stop_Undo    : constant := 29;
+  Start_Redo    : constant := 31; Stop_Redo    : constant := 36;
   procedure Put_Menu is
   begin
-    Menu_Window.Move (0, 1);
+    Menu_Window.Move (0, Start_Exit);
     Menu_Window.Put (" Exit ", Menu_Fore, Menu_Back, False);
-    Menu_Window.Move (0, 8);
+    Menu_Window.Move (0, Start_New);
     Menu_Window.Put (" New ", Menu_Fore, Menu_Back, False);
-    Menu_Window.Move (0, 14);
+    Menu_Window.Move (0, Start_Restart);
     Menu_Window.Put (" Restart ", Menu_Fore, Menu_Back, False);
-    Menu_Window.Move (0, 24);
+    Menu_Window.Move (0, Start_Undo);
     Menu_Window.Put (" Undo ", Menu_Fore, Menu_Back, False);
-    Menu_Window.Move (0, 31);
+    Menu_Window.Move (0, Start_Redo);
     Menu_Window.Put (" Redo ", Menu_Fore, Menu_Back, False);
   end Put_Menu;
 
@@ -74,7 +79,7 @@ package body Table is
 
     -- Put menu
     Menu_Window.Open (Console'Unchecked_Access,
-                    (Menu_Row, 0), (Menu_Row, Last_Col));
+                      (Menu_Row, 0), (Menu_Row, Last_Col));
     Put_Menu;
   end Init;
 
@@ -126,21 +131,65 @@ package body Table is
   end Decode_Card_Event;
 
   -- Local: Decode a menu event
-  function Decode_Menu_Event (Event : out Event_Rec) return Boolean is
-    Mouse_Event : Con_Io.Mouse_Event_Rec;
+  -- Last pressed. Leave for none
+  subtype Menu_List is Event_List range Leave .. Redo;
+  Last_Pressed : Menu_List := Leave;
+  function Decode_Menu_Event (Mouse_Event : in Con_Io.Mouse_Event_Rec;
+                              Event : out Event_Rec) return Boolean is
+    Square : Con_Io.Square;
     use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List;
   begin
-    Console.Get_Mouse_Event (Mouse_Event, Con_Io.Row_Col);
+    Event := (Kind => Quit);
     if not Mouse_Event.Valid
     or else Mouse_Event.Button /= Con_Io.Left
     or else (Mouse_Event.Status /= Con_Io.Pressed
              and then Mouse_Event.Status /= Con_Io.Released) then
       return False;
     end if;
+    -- Decode click
+    Square := Console.To_Square (Mouse_Event.X, Mouse_Event.Y);
+    Event := (Leave, null);
+    if Square.Row = Menu_Row then
+      case Square.Col is
+        when Start_Exit    .. Stop_Exit    => Event := (Kind => Quit);
+        when Start_New     .. Stop_New     => Event := (Kind => New_Game);
+        when Start_Restart .. Stop_Restart => Event := (Kind => Restart);
+        when Start_Undo    .. Stop_Undo    => Event := (Kind => Undo);
+        when Start_Redo    .. Stop_Redo    => Event := (Kind => Redo);
+        when others                        => null;
+      end case;
+    end if;
     -- Flip / flop menu entry on press
-    -- Validate on release in same entry, drop if release anywhere else
-    Event := (Kind => Quit);
-    return False;
+    if Mouse_Event.Status = Con_Io.Pressed then
+      case Event.Kind is
+        when Leave =>
+          -- Drop invalid press
+          null;
+        when Quit =>
+          Menu_Window.Move (0, Start_Exit);
+          Menu_Window.Put (" Exit ", Menu_Back, Menu_Fore, False);
+        when New_Game =>
+          Menu_Window.Move (0, Start_New);
+          Menu_Window.Put (" New ", Menu_Back, Menu_Fore, False);
+        when Restart =>
+          Menu_Window.Move (0, Start_Restart);
+          Menu_Window.Put (" Restart ", Menu_Back, Menu_Fore, False);
+        when Undo =>
+          Menu_Window.Move (0, Start_Undo);
+          Menu_Window.Put (" Undo ", Menu_Back, Menu_Fore, False);
+        when Redo =>
+          Menu_Window.Move (0, Start_Redo);
+          Menu_Window.Put (" Redo ", Menu_Back, Menu_Fore, False);
+        when others =>
+          null;
+      end case;
+      Last_Pressed := Event.Kind;
+      return False;
+    else
+      Put_Menu;
+      -- Validate on release in same entry, drop if release anywhere else
+      return Event.Kind = Last_Pressed;
+    end if;
   end Decode_Menu_Event;
 
   -- Decode an event, on card, on menu or Break
@@ -168,7 +217,7 @@ package body Table is
               -- valid card event
               return;
             end if;
-          elsif Decode_Menu_Event (Event) then
+          elsif Decode_Menu_Event (Mouse_Event, Event) then
             -- valid menu event
             return;
           end if;
