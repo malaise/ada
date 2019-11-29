@@ -57,10 +57,14 @@ package body Table is
     Console.Set_Y_Mode (Con_Io.X_Mng_Mode);
     Cards.Init (Console.Get_Line);
 
-    -- Compute offset of stacks
-    Stack_X := (Console.X_Max - Cards.Stack_Range'Last * (Deck.Width + X_Gap)
-                + X_Gap) / 2;
+    -- Compute offset of stacks and put stacks
+    Stack_X := (Console.X_Max - Stack_Range'Last * (Deck.Width + X_Gap) + X_Gap)
+               / 2;
     Stack_Y := (Menu_Row + 1) * Font_Height + Y_Gap;
+    for I in Stack_Range loop
+      Cards.The_Xstacks(I).Move (Pos_Of (I, 1));
+      Cards.The_Xstacks(I).Show (True);
+    end loop;
 
     -- Create a dummy window for blind get
     Get_Window.Open (Console'Unchecked_Access, (0, 0), (0, 0));
@@ -82,7 +86,7 @@ package body Table is
   end Pos_Of;
 
   -- Wait for next event, return False when exiting the game
-  function Wait_Event return Boolean is
+  function Wait_Event return Action_List is
     Str : Con_Io.Unicode_Sequence (1 .. 0);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
@@ -92,9 +96,9 @@ package body Table is
   begin
     Get_Window.Get (Str, Last, Stat, Pos, Insert);
     if Stat = Con_Io.Break then
-      return False;
+      return Quit;
     end if;
-    return True;
+    return Play;
   end Wait_Event;
 
 end Table;

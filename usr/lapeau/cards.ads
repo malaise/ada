@@ -9,13 +9,14 @@ package Cards is
   type Card_Access is access all Card;
   type Card is tagged limited record
     -- These fields are set once for all at init
-    Xcard : aliased Deck.Card;
+    Xcard : Deck.Card_Access;
     Suit : Deck.Full_Suit_List := Deck.Empty;
     Name : Deck.Name_Range := 1;
     Image : String (1 .. 2) := "  ";
     -- Only these fields are modified
     Prev, Next, Top, Bottom : Card_Access := null;
     Nb_Children : Natural := 0;
+    Movable : Boolean := False;
   end record;
 
   -- X cards and our corresponding cards
@@ -35,3 +36,4 @@ package Cards is
   function X_To_Card (Ref : X_Mng.External_Reference) return Card_Access;
 
 end Cards;
+

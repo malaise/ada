@@ -12,8 +12,8 @@ A package Cards adds a new concept of card that contains:
 It creates the collection of 52 cards and 13 stacks
 Counts the number of empty stacks
 
-3) Movement
-Defines the rules for stacking cards (alternate color and nb v.s. empty stacks)
+3) Movements
+Defines the rules for stacking cards (same suit color and nb v.s. empty stacks)
 Moves the selected cards of a card up to a destination (card or stack)
 Move a part of the stack during drag and drop
 Adapts the pointer shape

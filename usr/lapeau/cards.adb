@@ -31,7 +31,8 @@ package body Cards is
     -- Create the cards
     for Suit in Deck.Suit_List loop
       for Name in Deck.Name_Range loop
-        The_Cards(Suit, Name).Xcard.Create_Card (Suit, Name);
+        The_Xcards(Suit, Name).Create_Card (Suit, Name);
+        The_Cards(Suit, Name).Xcard := The_Xcards(Suit, Name)'Access;
         The_Cards(Suit, Name).Suit := Suit;
         The_Cards(Suit, Name).Name := Name;
         The_Cards(Suit, Name).Image := Image (Name) & Image (Suit);
@@ -39,7 +40,8 @@ package body Cards is
     end loop;
     -- Create the stacks
     for Name in Deck.Name_Range loop
-      The_Stacks(Name).Xcard.Create_Empty (False);
+      The_Xstacks(Name).Create_Empty (False);
+      The_Stacks(Name).Xcard := The_Xstacks(Name)'Access;
       The_Stacks(Name).Suit := Deck.Empty;
       The_Stacks(Name).Name := Name;
       The_Stacks(Name).Image := Normal (Name, 2, Gap => '0');
@@ -61,7 +63,7 @@ package body Cards is
     else
       -- An empty card (stack)
       for Stack of The_Stacks loop
-        if Acc = Stack.Xcard'Access  then
+        if Acc = Stack.Xcard  then
           return Stack'Access;
         end if;
       end loop;

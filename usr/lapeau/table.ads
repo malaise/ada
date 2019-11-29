@@ -24,8 +24,9 @@ package Table is
            return Deck.Position_Rec;
 
 
-  -- Wait for next event, return False when exiting the game
-  function Wait_Event return Boolean;
+  -- Wait for next event, return Play or the reason for exiting the game
+  type Action_List is (Play, Quit, New_Game, Restart);
+  function Wait_Event return Action_List;
 
 end Table;
 
