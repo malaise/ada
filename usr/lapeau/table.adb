@@ -3,13 +3,13 @@ package body Table is
   -- Static information about the console
   Font_Height : Natural;
   Last_Col : Con_Io.Col_Range;
-  Last_Row : constant Con_Io.Row_Range := 48;
+  Last_Row : constant Con_Io.Row_Range := 49;
   Background : constant Con_Io.Colors :=  Con_Io.Color03;
 
   -- Stacks and cards positions
   Menu_Row : constant Con_Io.Row_Range := 1;
   X_Gap : constant Con_Io.X_Range := 4;
-  Y_Gap : constant Con_Io.Y_Range := 28;
+  Y_Gap : constant Con_Io.Y_Range := 31;
   Stack_X : Con_Io.X_Range;
   Stack_Y : Con_Io.Y_Range;
 
@@ -53,6 +53,7 @@ package body Table is
                   / Font_Width;
       Console.Open (Font_No, Last_Row, Last_Col, Def_Back => Background);
     end;
+    Console.Set_Name ("La peau");
     Console.Set_Y_Mode (Con_Io.X_Mng_Mode);
     Cards.Init (Console.Get_Line);
 
