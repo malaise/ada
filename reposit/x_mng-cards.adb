@@ -67,10 +67,11 @@ package body X_Mng.Cards is
   -- Creation, Is_A, Deletion --
   ------------------------------
   -- Create an empty untyped slot
-  procedure Create_Empty (Acard : in out Card; Squared : in Boolean) is
+  procedure Create_Empty (Acard : in out Card; Name : Name_Range;
+                          Squared : in Boolean) is
   begin
     Acard.Suit := Empty;
-    Acard.Name := Symbol_Name;
+    Acard.Name := Name;
     Acard.Squared := Squared;
     Call_On;
     Acard.Ccard := Create_Empty (C_Types.Bool (Squared), Acard'Address);
@@ -135,11 +136,11 @@ package body X_Mng.Cards is
   end Get_Suit;
 
   -- Get the name of a card
-  -- Raises Empty_Error if the Card Suit is Empty
+  -- Raises Symbol_Error if the Card is a Symbol
   function Get_Name (Acard : Card) return Full_Name_Range is
   begin
-    if Is_Empty (Acard) then
-      raise Empty_Error;
+    if Is_Symbol (Acard) then
+      raise Symbol_Error;
     end if;
     return Acard.Name;
   end Get_Name;

@@ -38,7 +38,9 @@ package X_Mng.Cards is
   -- Creation, Is_A, Deletion --
   ------------------------------
   -- Create an empty untyped slot, squared or not
-  procedure Create_Empty (Acard : in out Card; Squared : in Boolean);
+  -- The Name is only for easier retrieval of the card when event
+  procedure Create_Empty (Acard : in out Card; Name : Name_Range;
+                          Squared : in Boolean);
   -- True for Empty slot, Squared or not
   function Is_Empty (Acard : Card) return Boolean;
   -- True for Empty Quared slot
@@ -56,8 +58,8 @@ package X_Mng.Cards is
   -- Get the Suit of a card
   function Get_Suit (Acard : Card) return Full_Suit_List;
 
-  -- Get the name of a card
-  -- Raises Empty_Error if the Card Suit is Empty
+  -- Get the name of a card or empty
+  -- Raises Symbol_Error if the Card Suit is a Symbol
   function Get_Name (Acard : Card) return Full_Name_Range;
 
   -- Delete any Empty, Symbol or Card
