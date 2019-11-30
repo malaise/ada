@@ -9,11 +9,12 @@ procedure T_Cards is
   package Cards_Dyn_List_Mng is new Dynamic_List (Deck.Card_Access);
   package Cards_List_Mng renames Cards_Dyn_List_Mng.Dyn_List;
   Cards_List : Cards_List_Mng.List_Type;
+  The_Dones : array (Deck.Suit_List) of aliased Deck.Card;
 
   -- Console
   Motion : Boolean := False;
   Last_Col : Con_Io.Col_Range;
-  Last_Row : constant Con_Io.Row_Range := 49;
+  Last_Row : constant Con_Io.Row_Range := 51;
   Console : aliased Con_Io.Console;
   Font_Height : Natural;
   Background : constant Con_Io.Colors :=  Con_Io.Color03;
@@ -21,12 +22,21 @@ procedure T_Cards is
   -- Stacks and cards positions
   Menu_Row : constant Con_Io.Row_Range := 1;
   X_Gap : constant Con_Io.X_Range := 4;
-  Y_Gap : constant Con_Io.Y_Range := 31;
+  Y_Gap_Done : constant Con_Io.Y_Range := 4;
+  Y_Gap_Top : constant Con_Io.Y_Range := 31;
+  Y_Gap_Bot : constant Con_Io.Y_Range := 25;
+  Nb_Y_Top : constant := 6;
   Stack_X : Con_Io.X_Range;
-  Stack_Y : Con_Io.Y_Range;
+  Stack_Y : constant Con_Io.Y_Range := Deck.Height + Y_Gap_Done * 2;
+
+  Done_X_Offset : constant := 5;
+  Done_X_Gap : constant Con_Io.X_Range := 31;
+  Done_X : Con_Io.X_Range ;
+  Done_Y : constant Con_Io.Y_Range := Y_Gap_Done;
+
   subtype Stack_Range is Deck.Name_Range;
-  -- 4 Cards, the last one being the Ace of a complete color
-  subtype Depth_Range is Natural range 1 .. 3 + Deck.Name_Range'Last;
+  -- 4 Cards, the last one being the King of a complete color - 1
+  subtype Depth_Range is Natural range 1 .. 2 + Deck.Name_Range'Last;
 
   -- Dummy window for blind Get
   Get_Window : Con_Io.Window;
@@ -60,12 +70,25 @@ procedure T_Cards is
   end Put_Menu;
 
   -- Position (X, Y) of card within a stack
-  function Pos_Of (Stack : Stack_Range; Depth : Depth_Range)
+  function Stack_Of (Stack : Stack_Range; Depth : Depth_Range)
            return Deck.Position_Rec is
+    Y : Con_Io.Y_Range;
   begin
+    if Depth <= Nb_Y_Top then
+      Y := Depth * Y_Gap_Top;
+    else
+      Y := Nb_Y_Top * Y_Gap_Top + (Depth - Nb_Y_Top) * Y_Gap_Bot;
+    end if;
     return (X => Stack_X + (Stack - 1) * (Deck.Width + X_Gap),
-            Y => Stack_Y + (Depth - 1) * Y_Gap);
-  end Pos_Of;
+            Y => Stack_Y + Y);
+  end Stack_Of;
+
+  function Done_Of (Suit : Deck.Suit_List) return Deck.Position_Rec is
+  begin
+    return (X => Done_X + Deck.Suit_List'Pos (Suit) * (Deck.Width + Done_X_Gap),
+            Y => Done_Y);
+  end Done_Of;
+
 
   use type X_Mng.External_Reference, Con_Io.Curs_Mvt,
            Con_Io.Mouse_Button_Status_List;
@@ -97,8 +120,7 @@ begin
   -- Compute offset of stacks
   Stack_X := (Console.X_Max - Stack_Range'Last * (Deck.Width + X_Gap) + X_Gap)
              / 2;
-  Stack_Y := (Menu_Row + 1) * Font_Height + Y_Gap;
-
+  Done_X := Stack_Of (Done_X_Offset, 1).X;
   -- Create a dummy window for blind get
   Get_Window.Open (Console'Unchecked_Access, (0, 0), (0, 0));
   Get_Window.Set_Foreground (Background);
@@ -117,6 +139,9 @@ begin
       The_Cards(Suit, Name).Create_Card (Suit, Name);
       Cards_List.Insert (The_Cards(Suit, Name)'Access);
     end loop;
+    The_Dones(Suit).Create_Symbol (Suit);
+    The_Dones(Suit).Move (Done_Of (Suit));
+    The_Dones(Suit).Show (True);
   end loop;
 
   -- Display the cards randomly
@@ -133,16 +158,16 @@ begin
         R := Rnd.Gen.Int_Random (1, Cards_List.List_Length);
         Cards_List.Move_At (R);
         Cards_List.Get (Acc, Moved => Moved);
-        Acc.Move (Pos_Of (Stack, Depth));
+        Acc.Move (Stack_Of (Stack, Depth));
         Acc.Show (True);
       end loop;
     end loop Depths;
   end;
 
-  -- Test depth: the initial 4 including an ace at top, then Ring to 2
+  -- Test depth: the initial 4 including King at top, then Queen to 2
   if Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "--depth" then
-    for Name in reverse Deck.Name_Range range 2 .. 13 loop
-      The_Cards (Deck.Heart, Name).Move (Pos_Of (1, 18 - Name));
+    for Name in reverse Deck.Name_Range range 2 .. 12 loop
+      The_Cards (Deck.Heart, Name).Move (Stack_Of (1, 17 - Name));
       The_Cards (Deck.Heart, Name).Show (True);
     end loop;
   end if;
@@ -160,8 +185,10 @@ begin
             & " X" & Mouse_Event.X'Img & ", Y" & Mouse_Event.Y'Img);
         if Mouse_Event.Xref /= X_Mng.Null_Reference then
           Got_Card := Deck.Ref_To_Access (Mouse_Event.Xref);
-          Basic_Proc.Put_Line_Output ("Xref: "
-              & The_Names(Got_Card.Get_Suit, Got_Card.Get_Name).Image);
+          if Got_Card.Is_Card then
+            Basic_Proc.Put_Line_Output ("Xref: "
+                & The_Names(Got_Card.Get_Suit, Got_Card.Get_Name).Image);
+          end if;
           if Mouse_Event.Status = Con_Io.Enter then
             Console.Set_Pointer_Shape (Con_Io.Hand);
           elsif Mouse_Event.Status = Con_Io.Leave then
