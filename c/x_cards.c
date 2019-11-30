@@ -203,13 +203,19 @@ extern card* createSymbol (const suitList suit, void *ref) {
   if ((aCard = createCommon(ref)) == NULL) return NULL;
 
   fore = colorOf (suit);
-  back = whiteColor;
+  back = backgroundColor;
   makeOneSymbolBitmap(suit, bitmap);
   bgpixmap = XCreatePixmapFromBitmapData (
       display, parentWindow, bitmap, CARDWIDTH - 2, CARDHEIGHT - 2, fore, back,
       DefaultDepth (display, screen));
+
+  XShapeCombineMask(display, aCard->xWindow, ShapeBounding, 0, 0,
+      boundingMask, ShapeSet);
+  XShapeCombineMask(display, aCard->xWindow, ShapeClip, 0, 0,
+      clipMask, ShapeSet);
+
   setBackgroundPixmap (aCard, bgpixmap);
-  setBorder (aCard, blackColor, 1);
+  setBorder (aCard, emptyBorderColor, 1);
 
   return aCard;
 }
