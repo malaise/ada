@@ -29,6 +29,7 @@ extern void deleteCard (card* aCard);
 /* Card display and move */
 extern void map (card* aCard);
 extern void unmap (card* aCard);
+extern void raise (card* aCard);
 extern void move (card* aCard, const int x, const int y);
 extern void doSelect (card* aCard);
 extern void unSelect (card* aCard);

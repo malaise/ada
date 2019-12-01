@@ -72,6 +72,9 @@ package X_Mng.Cards is
   procedure Show (Acard : in out Card; Do_Show : in Boolean);
   function Is_Shown (Acard : Card) return Boolean;
 
+  -- Raise a card on top
+  procedure Do_Raise (Acard : in out Card);
+
   -- Turn over the card face up or down (if down we see its back)
   -- Raises Empty_Error if the Card Suit is Empty
   -- Raises Symbol_Error if the Card Suit is a Symbol
@@ -93,9 +96,6 @@ package X_Mng.Cards is
   end record;
   procedure Move (Acard : in out Card; Position : in Position_Rec);
   function Get_Position (Acard : Card) return Position_Rec;
-
-  -- Redispay or update the display of the card
-  procedure Redisplay (Acard : in Card);
 
   -- From external reference to Card access
   function Ref_To_Access (Ref : External_Reference) return Card_Access;

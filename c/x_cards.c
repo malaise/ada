@@ -192,6 +192,7 @@ extern card* createEmpty (const boolean squared, void *ref) {
     setBorder (aCard, backgroundColor, 1);
     setBackground (aCard, backgroundColor);
   }
+  XClearWindow (display, aCard->xWindow);
   return aCard;
 }
 
@@ -216,6 +217,7 @@ extern card* createSymbol (const suitList suit, void *ref) {
 
   setBackgroundPixmap (aCard, bgpixmap);
   setBorder (aCard, emptyBorderColor, 1);
+  XClearWindow (display, aCard->xWindow);
 
   return aCard;
 }
@@ -261,11 +263,14 @@ extern void deleteCard (card* aCard) {
 /* Card display and move */
 extern void map (card* aCard) {
   XMapWindow (display, aCard->xWindow);
-  XRaiseWindow (display, aCard->xWindow);
 }
 
 extern void unmap (card* aCard) {
   XUnmapWindow (display, aCard->xWindow);
+}
+
+extern void raise (card* aCard) {
+  XRaiseWindow (display, aCard->xWindow);
 }
 
 extern void move (card* aCard, const int x, const int y) {

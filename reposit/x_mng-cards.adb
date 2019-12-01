@@ -24,6 +24,8 @@ package body X_Mng.Cards is
     with Import => True, Convention => C, External_Name => "map";
   procedure Unmap (Acard : in System.Address)
     with Import => True, Convention => C, External_Name => "unmap";
+  procedure Do_Raise (Acard : in System.Address)
+    with Import => True, Convention => C, External_Name => "raise";
   procedure Move (Acard : in System.Address; X, Y : in Integer)
     with Import => True, Convention => C, External_Name => "move";
   procedure Do_Select (Acard : in System.Address)
@@ -148,7 +150,9 @@ package body X_Mng.Cards is
   -- Delete any Empty, Symbol or Card
   procedure Delete (Acard : in out Card) is
   begin
+    Call_On;
     Delete_Card (Acard.Ccard);
+    Call_Off;
     Acard.Suit     := Empty;
     Acard.Squared  := False;
     Acard.Name     := Symbol_Name;
@@ -165,11 +169,13 @@ package body X_Mng.Cards is
   -- Show or hide a card (show if not fully covered, not removed...)
   procedure Show (Acard : in out Card; Do_Show : in Boolean) is
   begin
+    Call_On;
     if Do_Show then
       Map (Acard.Ccard);
     else
       Unmap (Acard.Ccard);
     end if;
+    Call_Off;
     Acard.Shown := Do_Show;
   end Show;
 
@@ -177,6 +183,13 @@ package body X_Mng.Cards is
   begin
     return Acard.Shown;
   end Is_Shown;
+
+  procedure Do_Raise (Acard : in out Card) is
+  begin
+    Call_On;
+    Do_Raise (Acard.Ccard);
+    Call_Off;
+  end Do_Raise;
 
   -- Turn over the card Up (otherwise we see its back)
   procedure Turn_Over (Acard : in out Card; Face_Up : in Boolean) is
@@ -187,7 +200,9 @@ package body X_Mng.Cards is
     if Is_Symbol (Acard) then
       raise Symbol_Error;
     end if;
+    Call_On;
     Turn_Over (Acard.Ccard, C_Types.Bool (Face_Up));
+    Call_Off;
     Acard.Face_Up := Face_Up;
   end Turn_Over;
 
@@ -202,12 +217,16 @@ package body X_Mng.Cards is
   -- Raises Symbol_Error if the Card Suit is a Symbol
   procedure Do_Select (Acard : in out Card) is
   begin
+    Call_On;
     Do_Select (Acard.Ccard);
+    Call_Off;
     Acard.Selected := True;
   end Do_Select;
   procedure Un_Select (Acard : in out Card) is
   begin
+    Call_On;
     Un_Select (Acard.Ccard);
+    Call_Off;
     Acard.Selected := True;
   end Un_Select;
   -- Is the card selected
@@ -220,7 +239,9 @@ package body X_Mng.Cards is
   -- end record;
   procedure Move (Acard : in out Card; Position : in Position_Rec) is
   begin
+    Call_On;
     Move (Acard.Ccard, C_Types.Int (Position.X), C_Types.Int (Position.Y));
+    Call_Off;
     Acard.Position := Position;
   end Move;
 
@@ -228,12 +249,6 @@ package body X_Mng.Cards is
   begin
     return Acard.Position;
   end Get_Position;
-
-  -- Redispay or update the display of the card
-  procedure Redisplay (Acard : in Card) is
-  begin
-    Map (Acard.Ccard);
-  end Redisplay;
 
   -- From external reference to Card access
   function Ref_2_Acc is new Ada.Unchecked_Conversion (

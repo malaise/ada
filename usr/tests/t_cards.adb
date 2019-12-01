@@ -54,6 +54,9 @@ procedure T_Cards is
   -- Mouse event
   Mouse_Event : Con_Io.Mouse_Event_Rec;
 
+  -- Moved card
+  Moved : Deck.Card_Access;
+
   -- Put the menu
   procedure Put_Menu is
   begin
@@ -90,7 +93,7 @@ procedure T_Cards is
   end Done_Of;
 
 
-  use type X_Mng.External_Reference, Con_Io.Curs_Mvt,
+  use type Deck.Card_Access, X_Mng.External_Reference, Con_Io.Curs_Mvt,
            Con_Io.Mouse_Button_Status_List;
 begin
 
@@ -150,8 +153,7 @@ begin
     Acc : Deck.Card_Access;
     Moved : Boolean;
   begin
-    Basic_Proc.Put_Line_Output ("Putting the cards"
-        & Integer'Image (Cards_List.List_Length));
+    Basic_Proc.Put_Line_Output ("Putting the cards");
     Depths :
     for Depth in 1 .. 4 loop
       for Stack in Stack_Range loop
@@ -160,6 +162,7 @@ begin
         Cards_List.Get (Acc, Moved => Moved);
         Acc.Move (Stack_Of (Stack, Depth));
         Acc.Show (True);
+        Acc.Do_Raise;
       end loop;
     end loop Depths;
   end;
@@ -168,7 +171,7 @@ begin
   if Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "--depth" then
     for Name in reverse Deck.Name_Range range 2 .. 12 loop
       The_Cards (Deck.Heart, Name).Move (Stack_Of (1, 17 - Name));
-      The_Cards (Deck.Heart, Name).Show (True);
+      The_Cards (Deck.Heart, Name).Do_Raise;
     end loop;
   end if;
 
@@ -193,6 +196,16 @@ begin
             Console.Set_Pointer_Shape (Con_Io.Hand);
           elsif Mouse_Event.Status = Con_Io.Leave then
             Console.Set_Pointer_Shape (Con_Io.Arrow);
+          elsif Mouse_Event.Status = Con_Io.Pressed then
+            if Moved = null then
+              -- Got_Card.Move (Done_Of (Got_Card.Get_Suit));
+              Got_Card.Move (Stack_Of (1, 5));
+              Moved := Got_Card;
+            else
+              Got_Card.Move (Stack_Of (1, 4));
+              Moved := null;
+            end if;
+            Got_Card.Do_Raise;
           end if;
         end if;
       end if;

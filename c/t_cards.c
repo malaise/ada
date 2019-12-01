@@ -21,6 +21,7 @@ char name[150];
 int fwidth, fheight, foffset;
 int rows, cols;
 int i, k, l, m;
+int alt;
 timeout_t delta;
 boolean read;
 void *ref;
@@ -79,13 +80,13 @@ void *ref;
   }
   move (cards[0].theCard, 4, 10);
   map (cards[0].theCard);
-  strcpy (cards[1].ident, "Empty");
 
+  strcpy (cards[1].ident, "Empty");
   cards[1].theCard = createEmpty (False, &cards[1].ident);
   move (cards[1].theCard, 104, 10);
   map (cards[1].theCard);
-  strcpy (cards[2].ident, "Empty Squared");
 
+  strcpy (cards[2].ident, "Empty Squared");
   cards[2].theCard = createEmpty (True, &cards[2].ident);
   move (cards[2].theCard, 204, 10);
   map (cards[2].theCard);
@@ -116,6 +117,7 @@ void *ref;
 
   k = REFRESH;
   l = 0;
+  alt = 0;
   for (;;) {
 
     if (k != DISCARD) {
@@ -164,6 +166,10 @@ void *ref;
       printf ("Mouse press\n");
     } if (k == TID_RELEASE) {
       printf ("Mouse release\n");
+      alt++;
+      if (alt == 4) alt = 0;
+      move (cards[0].theCard, alt * 100 + 04, 10);
+      raise (cards[0].theCard);
     } else if (k == TID_ENTER) {
       printf ("Mouse enter\n");
     } else if (k == TID_LEAVE) {
