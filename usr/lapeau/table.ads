@@ -20,8 +20,10 @@ package Table is
   Empty_Stacks : Empty_Stacks_Range;
 
   -- Position (X, Y) of card within a stack
-  function Pos_Of (Stack : Stack_Range; Depth : Depth_Range)
+  function Stack_Of (Stack : Stack_Range; Depth : Depth_Range)
            return Deck.Position_Rec;
+  -- Position (X, Y) of card within a done
+  function Done_Of (Suit : Deck.Suit_List) return Deck.Position_Rec;
 
   -- Decode an event, on card, on menu or Break
   type Event_List is (Pressed, Released, Enter, Leave,

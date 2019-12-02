@@ -42,7 +42,7 @@ begin
             -- Impossible
             null;
           when Selected =>
-            if Movements.Can_Move (Selected_Card, Event.Card) then
+            if Movements.Can_Move (Selected_Card, Event.Card, False) then
               -- Entering a eligible target
               Status := Targetable;
               Event.Card.Xcard.Do_Select;
@@ -116,8 +116,8 @@ begin
             Basic_Proc.Put_Line_Output ("Move...");
             Movements.Move ( (
                 Card => Selected_Card,
-                From => Selected_Card.Stack.Name,
-                To   => Event.Card.Stack.Name) );
+                From => Selected_Card.Stack,
+                To   => Event.Card.Stack) );
             Selected_Card := null;
         end case;
     end case;

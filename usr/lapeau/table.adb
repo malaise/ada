@@ -4,15 +4,24 @@ package body Table is
   -- Static information about the console
   Font_Height : Natural;
   Last_Col : Con_Io.Col_Range;
-  Last_Row : constant Con_Io.Row_Range := 49;
+  Last_Row : constant Con_Io.Row_Range := 51;
   Background : constant Con_Io.Colors :=  Con_Io.Color03;
+
+  -- Done stacks
+  Done_X_Offset : constant := 5;
+  Done_X_Gap : constant Con_Io.X_Range := 31;
+  Y_Gap_Done : constant Con_Io.Y_Range := 4;
+  Done_X : Con_Io.X_Range ;
+  Done_Y : constant Con_Io.Y_Range := Y_Gap_Done;
 
   -- Stacks and cards positions
   Menu_Row : constant Con_Io.Row_Range := 1;
   X_Gap : constant Con_Io.X_Range := 4;
-  Y_Gap : constant Con_Io.Y_Range := 31;
+  Nb_Y_Top : constant := 6;
+  Y_Gap_Top : constant Con_Io.Y_Range := 31;
+  Y_Gap_Bot : constant Con_Io.Y_Range := 25;
   Stack_X : Con_Io.X_Range;
-  Stack_Y : Con_Io.Y_Range;
+  Stack_Y : constant Con_Io.Y_Range := Deck.Height + Y_Gap_Done * 2;
 
   -- Dummy window for blind Get
   Get_Window : Con_Io.Window;
@@ -63,13 +72,15 @@ package body Table is
     Console.Set_Y_Mode (Con_Io.X_Mng_Mode);
     Cards.Init (Console.Get_Line);
 
-    -- Compute offset of stacks and put stacks
+    -- Compute offset of stacks and done stacks and put them
     Stack_X := (Console.X_Max - Stack_Range'Last * (Deck.Width + X_Gap) + X_Gap)
                / 2;
-    Stack_Y := (Menu_Row + 1) * Font_Height + Y_Gap;
+    Done_X := Stack_Of (Done_X_Offset, 1).X;
     for I in Stack_Range loop
-      Cards.The_Xstacks(I).Move (Pos_Of (I, 1));
-      Cards.The_Xstacks(I).Show (True);
+      Cards.The_Xstacks(I).Move (Stack_Of (I, 1));
+    end loop;
+    for I in Cards.Deck.Suit_List loop
+      Cards.The_Xdones(I).Move (Done_Of (I));
     end loop;
 
     -- Create a dummy window for blind get
@@ -84,12 +95,26 @@ package body Table is
   end Init;
 
   -- Position (X, Y) of card within a stack
-  function Pos_Of (Stack : Stack_Range; Depth : Depth_Range)
+  function Stack_Of (Stack : Stack_Range; Depth : Depth_Range)
            return Deck.Position_Rec is
+    Y : Con_Io.Y_Range;
   begin
+    if Depth <= Nb_Y_Top then
+      Y := Depth * Y_Gap_Top;
+    else
+      Y := Nb_Y_Top * Y_Gap_Top + (Depth - Nb_Y_Top) * Y_Gap_Bot;
+    end if;
     return (X => Stack_X + (Stack - 1) * (Deck.Width + X_Gap),
-            Y => Stack_Y + (Depth - 1) * Y_Gap);
-  end Pos_Of;
+            Y => Stack_Y + Y);
+  end Stack_Of;
+
+  -- Position (X, Y) of card within a done stack
+  function Done_Of (Suit : Deck.Suit_List) return Deck.Position_Rec is
+  begin
+    return (X => Done_X + Deck.Suit_List'Pos (Suit) * (Deck.Width + Done_X_Gap),
+            Y => Done_Y);
+  end Done_Of;
+
 
   -- Local: Decode a card event
   function Decode_Card_Event (Mouse_Event : Con_Io.Mouse_Event_Rec;

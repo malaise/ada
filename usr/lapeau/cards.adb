@@ -28,19 +28,28 @@ package body Cards is
       return;
     end if;
     Deck.Set_Line (Line_Id, Enable_Motion => False);
-    -- Create the cards
+    -- Create the cards and the done stacks
     for Suit in Deck.Suit_List loop
       for Name in Deck.Name_Range loop
         The_Xcards(Suit, Name).Create_Card (Suit, Name);
+        The_Xcards(Suit, Name).Show (True);
         The_Cards(Suit, Name).Xcard := The_Xcards(Suit, Name)'Access;
         The_Cards(Suit, Name).Suit := Suit;
         The_Cards(Suit, Name).Name := Name;
         The_Cards(Suit, Name).Image := Image (Name) & Image (Suit);
       end loop;
+      The_Xdones(Suit).Create_Symbol (Suit);
+      The_Xdones(Suit).Show (True);
+      The_Dones(Suit).Xcard := The_Xdones(Suit)'Access;
+      The_Dones(Suit).Suit := Suit;
+      The_Dones(Suit).Name := Deck.Symbol_Name;
+      The_Dones(Suit).Image := "d" & Image (Suit);
     end loop;
+
     -- Create the stacks
     for Name in Deck.Name_Range loop
-      The_Xstacks(Name).Create_Empty (Squared => False);
+      The_Xstacks(Name).Create_Empty (Name, Squared => False);
+      The_Xstacks(Name).SHow (True);
       The_Stacks(Name).Xcard := The_Xstacks(Name)'Access;
       The_Stacks(Name).Suit := Deck.Empty;
       The_Stacks(Name).Name := Name;
@@ -52,7 +61,7 @@ package body Cards is
   -- Get the card corresponding to a Xcard (by using its Suit and Name
   function X_To_Card (Ref : X_Mng.External_Reference) return Card_Access is
     Acc : Deck.Card_Access;
-    use type X_Mng.External_Reference, Deck.Card_Access;
+    use type X_Mng.External_Reference;
   begin
     if Ref = X_Mng.Null_Reference then
       return null;
@@ -60,14 +69,10 @@ package body Cards is
     Acc := Deck.Ref_To_Access (Ref);
     if Acc.Is_Card then
       return The_Cards(Acc.Get_Suit, Acc.Get_Name)'Access;
+    elsif Acc.Is_Symbol then
+      return The_Dones(Acc.Get_Suit)'Access;
     else
-      -- An empty card (stack)
-      for Stack of The_Stacks loop
-        if Acc = Stack.Xcard  then
-          return Stack'Access;
-        end if;
-      end loop;
-      return null;
+      return The_Stacks(Acc.Get_Name)'Access;
     end if;
   end X_To_Card;
 

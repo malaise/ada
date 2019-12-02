@@ -11,11 +11,13 @@ package Cards is
     -- These fields are set once for all at init
     Xcard : Deck.Card_Access;
     Suit : Deck.Full_Suit_List := Deck.Empty;
-    Name : Deck.Name_Range := 1;
+    Name : Deck.Full_Name_Range := 1;
     Image : String (1 .. 2) := "  ";
     -- Only these fields are modified
-    -- For a stack, Stack is itself, Next is the first, Prev is the top
+    -- For a stack (play or done), Stack is itself,
+    --  Next is the first, Prev is the top
     --  and Nb_Children is the Nb of cards
+    -- For a Done stack,
     Prev, Next, Stack : Card_Access := null;
     Nb_Children : Natural := 0;
     Movable : Boolean := False;
@@ -29,6 +31,10 @@ package Cards is
   subtype Stack_Range is Deck.Name_Range;
   The_Xstacks : array (Stack_Range) of aliased Deck.Card;
   The_Stacks  : array (Stack_Range) of aliased Card;
+
+  -- X dones and our corresponding cards
+  The_Xdones : array (Deck.Suit_List) of aliased Deck.Card;
+  The_Dones  : array (Deck.Suit_List) of aliased Card;
 
   -- Init the deck and both lists of cards (needs to be called once)
   procedure Init (Line_Id : in X_Mng.Line);

@@ -26,18 +26,19 @@ package body Memory is
     use type Cards.Card_Access;
   begin
     for Stack in Table.Stack_Range loop
-      -- Move and show card
+      -- Move card
       for Depth in Depth_Range loop
         Acc := Current_Game (Stack, Depth);
         -- Move X card
-        Acc.Xcard.Move (Table.Pos_Of (Stack, Depth));
-        Acc.Xcard.Show (True);
+        Acc.Xcard.Move (Table.Stack_Of (Stack, Depth));
+        Acc.Xcard.Do_Raise;
       end loop;
       -- Last child of stack
       Child := null;
       Nb_Children := 0;
       for Depth in reverse Depth_Range loop
         Acc := Current_Game (Stack, Depth);
+        Acc.Stack := Cards.The_Stacks(Stack)'Access;
         -- Link card with child
         if Depth = Depth_Range'Last then
           -- Top
@@ -52,7 +53,6 @@ package body Memory is
           Movable := Movable and then Valid;
         end if;
         -- Update tags
-        Acc.Stack := Cards.The_Stacks(Stack)'Access;
         Acc.Nb_Children := Nb_Children;
         Acc.Movable := Movable;
         if Valid then
@@ -69,6 +69,13 @@ package body Memory is
       Cards.The_Stacks(Stack).Next := Acc;
       Cards.The_Stacks(Stack).Stack := Cards.The_Stacks(Stack)'Access;
       Cards.The_Stacks(Stack).Nb_Children := 4;
+    end loop;
+    -- Reset Done stacks
+    for Suit in Cards.Deck.Suit_List loop
+      Cards.The_Dones(Suit).Prev := null;
+      Cards.The_Dones(Suit).Next := null;
+      Cards.The_Dones(Suit).Stack := Cards.The_Dones(Suit)'Access;
+      Cards.The_Dones(Suit).Nb_Children := 0;
     end loop;
   end Update;
 
@@ -133,14 +140,14 @@ package body Memory is
   function Undo return Movements.Movement is
   begin
     -- @@@
-    return (null, 1, 1);
+    return (null, null, null);
   end Undo;
 
   -- Pop a undone movment and add it to the list of undoes
   function Redo return Movements.Movement is
   begin
     -- @@@
-    return (null, 1, 1);
+    return (null, null, null);
   end Redo;
 
 end Memory;
