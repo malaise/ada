@@ -55,7 +55,9 @@ procedure T_Cards is
   Mouse_Event : Con_Io.Mouse_Event_Rec;
 
   -- Moved card
-  Moved : Deck.Card_Access;
+  Done_Status : array (Deck.Suit_List) of Boolean := (others => False);
+  Moved : Boolean;
+  Depth : POsitive := 5;
 
   -- Put the menu
   procedure Put_Menu is
@@ -197,13 +199,19 @@ begin
           elsif Mouse_Event.Status = Con_Io.Leave then
             Console.Set_Pointer_Shape (Con_Io.Arrow);
           elsif Mouse_Event.Status = Con_Io.Pressed then
-            if Moved = null then
-              -- Got_Card.Move (Done_Of (Got_Card.Get_Suit));
-              Got_Card.Move (Stack_Of (1, 5));
-              Moved := Got_Card;
-            else
-              Got_Card.Move (Stack_Of (1, 4));
-              Moved := null;
+            Moved := False;
+            if Got_Card.Get_Name = 1 then
+              -- Ace
+              if not Done_Status (Got_Card.Get_Suit) then
+                Got_Card.Move (Done_Of (Got_Card.Get_Suit));
+                Moved := True;
+              end if;
+              Done_Status (Got_Card.Get_Suit) :=
+                  not Done_Status (Got_Card.Get_Suit);
+            end if;
+            if not Moved then
+              Got_Card.Move (Stack_Of (1, Depth));
+              Depth := Depth + 1;
             end if;
             Got_Card.Do_Raise;
           end if;
