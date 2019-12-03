@@ -93,7 +93,7 @@ package body Movements is
         Curr.Nb_Children := Curr.Nb_Children + 1;
       end loop;
     else
-      -- Irreversible
+      -- Done stack => Irreversible
       Curr.Movable := False;
     end if;
 

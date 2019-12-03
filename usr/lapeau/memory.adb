@@ -26,6 +26,8 @@ package body Memory is
     use type Cards.Card_Access;
   begin
     for Stack in Table.Stack_Range loop
+      Cards.The_Stacks(Stack).Stack := Cards.The_Stacks(Stack)'Access;
+      Cards.The_Stacks(Stack).Nb_Children := 4;
       -- Move card
       for Depth in Depth_Range loop
         Acc := Current_Game (Stack, Depth);
@@ -68,8 +70,6 @@ package body Memory is
       Acc.Prev := Cards.The_Stacks(Stack)'Access;
       Cards.The_Stacks(Stack).Prev := Top;
       Cards.The_Stacks(Stack).Next := Acc;
-      Cards.The_Stacks(Stack).Stack := Cards.The_Stacks(Stack)'Access;
-      Cards.The_Stacks(Stack).Nb_Children := 4;
     end loop;
     -- Reset Done stacks
     for Suit in Cards.Deck.Suit_List loop

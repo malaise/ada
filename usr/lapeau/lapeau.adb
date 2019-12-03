@@ -17,7 +17,8 @@ begin
   loop
     Table.Next_Event (Event);
     if Event.Kind in Table.Pressed .. Table.Leave then
-      Basic_Proc.Put_Line_Output (Event.Kind'Img & " " & Event.Card.Image);
+      Basic_Proc.Put_Line_Output (Event.Kind'Img & " " & Event.Card.Image
+          & (if Event.Card.Movable then " MOVABLE" else ""));
     end if;
     case Event.Kind is
       when Table.Quit =>
@@ -35,8 +36,8 @@ begin
           when None =>
             if Event.Card.Movable then
               -- Entering a movable source
-              Status := Selectable;
               Table.Console.Set_Pointer_Shape (Con_Io.Hand);
+              Status := Selectable;
             end if;
           when Selectable =>
             -- Impossible
@@ -44,8 +45,8 @@ begin
           when Selected =>
             if Movements.Can_Move (Selected_Card, Event.Card, False) then
               -- Entering a eligible target
-              Status := Targetable;
               Event.Card.Xcard.Do_Select;
+              Status := Targetable;
             end if;
           when Targetable =>
             -- Impossible
@@ -58,19 +59,19 @@ begin
             null;
           when Selectable =>
             -- Leaving a movable source
-            Status := None;
             Table.Console.Set_Pointer_Shape (Con_Io.Arrow);
             if Event.Card.Xcard.Is_Selected  then
               -- It was pressed
               Event.Card.Xcard.Un_Select;
             end if;
+            Status := None;
           when Selected =>
             -- Leaving a non eligible target
             null;
           when Targetable =>
             -- Leaving an eligible target
-            Status := Selected;
             Event.Card.Xcard.Un_Select;
+            Status := Selected;
         end case;
       when Table.Pressed =>
         case Status is
@@ -78,12 +79,19 @@ begin
             -- Pressing in a non movable card
             null;
           when Selectable =>
-            -- Pressing a movable card
-            -- Waiting for release
-            Event.Card.Xcard.Do_Select;
+            -- Pressing a movable card => toggle select
+            if Event.Card /= Selected_Card then
+              Event.Card.Xcard.Do_Select;
+              Selected_Card := Event.Card;
+              Status := Selected;
+            end if;
           when Selected =>
-            -- Pressing in a non eligible target
-            null;
+            -- Pressing again the selected card
+            if Event.Card = Selected_Card then
+              Event.Card.Xcard.Un_Select;
+              Selected_Card := null;
+              Status := Selectable;
+            end if;
           when Targetable =>
             -- Pressing in an eligible target
             null;
@@ -95,18 +103,10 @@ begin
             null;
           when Selectable =>
             -- Releasing in a selectable card
-            if Event.Card.Xcard.Is_Selected  then
-              Status := Selected;
-              Selected_Card := Event.Card;
-            end if;
+            null;
           when Selected =>
             -- Releasing in the selected source
-            if Event.Card = Selected_Card then
-              Status := Selectable;
-              Event.Card.Xcard.Un_Select;
-              Selected_Card := null;
-            end if;
-            -- Releasing in a non eligible target
+            null;
           when Targetable =>
             -- Releasing in eligible target
             Status := None;
