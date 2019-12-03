@@ -93,7 +93,6 @@ static unsigned long colorOf (const suitList suit) {
   }
 }
 
-
 /* Global initialization: Get local copy of line info, other global init */
 extern boolean initDesk (void *line_id, const boolean enable_motion) {
   XColor cursFore, cursBack, xColor;
@@ -278,6 +277,7 @@ extern void move (card* aCard, const int x, const int y) {
 }
 
 extern void doSelect (card* aCard) {
+  if (aCard->usualPixmap == None) return;
   if (aCard->faceUp) {
     setBackgroundPixmap (aCard, aCard->hilightedPixmap);
   } else {
@@ -287,6 +287,7 @@ extern void doSelect (card* aCard) {
 }
 
 extern void unSelect (card* aCard) {
+  if (aCard->usualPixmap == None) return;
   if (aCard->faceUp) {
     setBackgroundPixmap (aCard, aCard->usualPixmap);
   } else {
