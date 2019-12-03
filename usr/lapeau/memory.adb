@@ -31,6 +31,7 @@ package body Memory is
         Acc := Current_Game (Stack, Depth);
         -- Move X card
         Acc.Xcard.Move (Table.Stack_Of (Stack, Depth));
+        Acc.Xcard.Show (True);
         Acc.Xcard.Do_Raise;
       end loop;
       -- Last child of stack

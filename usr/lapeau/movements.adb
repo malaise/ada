@@ -106,6 +106,7 @@ package body Movements is
       Mov.Card.Xcard.Move (Table.Done_Of (Suit => Stack.Suit) );
     end if;
     Prev.Xcard.Show (True);
+    Prev.Xcard.Do_Raise;
     Mov.Card.Xcard.Do_Raise;
 
   end Move;

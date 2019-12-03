@@ -32,14 +32,12 @@ package body Cards is
     for Suit in Deck.Suit_List loop
       for Name in Deck.Name_Range loop
         The_Xcards(Suit, Name).Create_Card (Suit, Name);
-        The_Xcards(Suit, Name).Show (True);
         The_Cards(Suit, Name).Xcard := The_Xcards(Suit, Name)'Access;
         The_Cards(Suit, Name).Suit := Suit;
         The_Cards(Suit, Name).Name := Name;
         The_Cards(Suit, Name).Image := Image (Name) & Image (Suit);
       end loop;
       The_Xdones(Suit).Create_Symbol (Suit);
-      The_Xdones(Suit).Show (True);
       The_Dones(Suit).Xcard := The_Xdones(Suit)'Access;
       The_Dones(Suit).Suit := Suit;
       The_Dones(Suit).Name := Deck.Symbol_Name;
@@ -49,7 +47,6 @@ package body Cards is
     -- Create the stacks
     for Name in Deck.Name_Range loop
       The_Xstacks(Name).Create_Empty (Name, Squared => False);
-      The_Xstacks(Name).SHow (True);
       The_Stacks(Name).Xcard := The_Xstacks(Name)'Access;
       The_Stacks(Name).Suit := Deck.Empty;
       The_Stacks(Name).Name := Name;

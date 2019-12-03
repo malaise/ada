@@ -78,9 +78,13 @@ package body Table is
     Done_X := Stack_Of (Done_X_Offset, 1).X;
     for I in Stack_Range loop
       Cards.The_Xstacks(I).Move (Stack_Of (I, 1));
+      Cards.The_Xstacks(I).Show (True);
+      Cards.The_Xstacks(I).Do_Raise;
     end loop;
     for I in Cards.Deck.Suit_List loop
       Cards.The_Xdones(I).Move (Done_Of (I));
+      Cards.The_Xdones(I).Show (True);
+      Cards.The_Xdones(I).Do_Raise;
     end loop;
 
     -- Create a dummy window for blind get
