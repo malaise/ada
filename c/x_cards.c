@@ -12,13 +12,13 @@
 #include "bitmaps/cursor.bm"
 #include "bitmaps/cursor_back.bm"
 
-#define WHITE       "white"
-#define BLACK       "black"
-#define RED         "red"
-#define SELECTED    "lightskyblue4"
-#define BACK        "darkblue"
-#define EMPTY       "forestgreen"
-#define EMPTYBORDER "green"
+#define WHITE         "white"
+#define BLACK         "black"
+#define RED           "red"
+#define SELECTED      "lightskyblue4"
+#define BACK          "darkblue"
+#define EMPTYSELECTED "forestgreen"
+#define EMPTYBORDER   "green"
 
 /* Common static data */
 static t_window *win_id = NULL;
@@ -34,7 +34,7 @@ static unsigned long blackColor;
 static unsigned long redColor;
 static unsigned long selectedColor;
 static unsigned long backColor;
-static unsigned long emptyColor;
+static unsigned long emptySelectedColor;
 static unsigned long emptyBorderColor;
 static Pixmap boundingMask;
 static Pixmap clipMask;
@@ -114,7 +114,7 @@ extern boolean initDesk (void *line_id, const boolean enable_motion) {
   redColor = getColor (RED);
   selectedColor = getColor (SELECTED);
   backColor = getColor (BACK);
-  emptyColor = getColor (EMPTY);
+  emptySelectedColor = getColor (EMPTYSELECTED);
   emptyBorderColor = getColor (EMPTYBORDER);
 
   /* Card shape pixmaps */
@@ -185,58 +185,57 @@ extern card* createEmpty (const boolean squared, void *ref) {
   if ((aCard = createCommon(ref)) == NULL) return NULL;
 
   if (squared) {
-    setBackground (aCard, emptyColor);
     setBorder (aCard, emptyBorderColor, 1);
   } else {
     setBorder (aCard, backgroundColor, 1);
-    setBackground (aCard, backgroundColor);
   }
-  XClearWindow (display, aCard->xWindow);
+  unSelect (aCard);
+
   return aCard;
 }
 
 extern card* createSymbol (const suitList suit, void *ref) {
   card* aCard;
-  unsigned long fore, back;
-  Pixmap bgpixmap;
+  unsigned long fore;
 
   if ((aCard = createCommon(ref)) == NULL) return NULL;
 
   fore = colorOf (suit);
-  back = backgroundColor;
   makeOneSymbolBitmap(suit, bitmap);
-  bgpixmap = XCreatePixmapFromBitmapData (
-      display, parentWindow, bitmap, CARDWIDTH - 2, CARDHEIGHT - 2, fore, back,
-      DefaultDepth (display, screen));
+
+  aCard->usualPixmap = XCreatePixmapFromBitmapData (
+      display, parentWindow, bitmap, CARDWIDTH - 2, CARDHEIGHT - 2, fore,
+      backgroundColor, DefaultDepth (display, screen));
+  aCard->hilightedPixmap = XCreatePixmapFromBitmapData (
+      display, parentWindow, bitmap, CARDWIDTH - 2, CARDHEIGHT - 2, fore,
+      selectedColor, DefaultDepth (display, screen));
 
   XShapeCombineMask(display, aCard->xWindow, ShapeBounding, 0, 0,
       boundingMask, ShapeSet);
   XShapeCombineMask(display, aCard->xWindow, ShapeClip, 0, 0,
       clipMask, ShapeSet);
 
-  setBackgroundPixmap (aCard, bgpixmap);
   setBorder (aCard, emptyBorderColor, 1);
-  XClearWindow (display, aCard->xWindow);
+  unSelect (aCard);
 
   return aCard;
 }
 
 extern card* createCard (const suitList suit, const int value, void *ref) {
   card* aCard;
-  unsigned long fore, back, hilight;
+  unsigned long fore;
 
   if ((aCard = createCommon(ref)) == NULL) return NULL;
+
   fore = colorOf (suit);
-  back = whiteColor;
-  hilight = selectedColor;
   makeBitmap(suit, value, bitmap);
 
   aCard->usualPixmap = XCreatePixmapFromBitmapData (
       display, parentWindow, bitmap, CARDWIDTH - 2, CARDHEIGHT - 2, fore,
-      back, DefaultDepth (display, screen));
+      whiteColor, DefaultDepth (display, screen));
   aCard->hilightedPixmap = XCreatePixmapFromBitmapData (
       display, parentWindow, bitmap, CARDWIDTH - 2, CARDHEIGHT - 2, fore,
-      hilight, DefaultDepth (display, screen));
+      selectedColor, DefaultDepth (display, screen));
 
   XShapeCombineMask(display, aCard->xWindow, ShapeBounding, 0, 0,
       boundingMask, ShapeSet);
@@ -277,8 +276,9 @@ extern void move (card* aCard, const int x, const int y) {
 }
 
 extern void doSelect (card* aCard) {
-  if (aCard->usualPixmap == None) return;
-  if (aCard->faceUp) {
+  if (aCard->usualPixmap == None) {
+    setBackground (aCard, emptySelectedColor);
+  } else if (aCard->faceUp) {
     setBackgroundPixmap (aCard, aCard->hilightedPixmap);
   } else {
     setBackground (aCard, selectedColor);
@@ -287,8 +287,9 @@ extern void doSelect (card* aCard) {
 }
 
 extern void unSelect (card* aCard) {
-  if (aCard->usualPixmap == None) return;
-  if (aCard->faceUp) {
+  if (aCard->usualPixmap == None) {
+    setBackground (aCard, backgroundColor);
+  } else if (aCard->faceUp) {
     setBackgroundPixmap (aCard, aCard->usualPixmap);
   } else {
     setBackground (aCard, backColor);

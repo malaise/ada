@@ -115,6 +115,18 @@ void *ref;
   doSelect (cards[6].theCard);
   map (cards[6].theCard);
 
+  strcpy (cards[7].ident, "Empty selected");
+  cards[7].theCard = createEmpty (False, &cards[7].ident);
+  move (cards[7].theCard, 704, 10);
+  doSelect (cards[7].theCard);
+  map (cards[7].theCard);
+
+  strcpy (cards[8].ident, "Symbol Spade selected");
+  cards[8].theCard = createSymbol (Spade, &cards[8].ident);
+  move (cards[8].theCard, 804, 10);
+  doSelect (cards[8].theCard);
+  map (cards[8].theCard);
+
   k = REFRESH;
   l = 0;
   alt = 0;
