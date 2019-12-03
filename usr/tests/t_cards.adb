@@ -5,10 +5,13 @@ procedure T_Cards is
   package Deck is new X_Mng.Cards;
   The_Cards : array (Deck.Suit_List, Deck.Name_Range) of aliased Deck.Card;
   The_Names : array (Deck.Suit_List, Deck.Name_Range) of As.U.Asu_Us;
-  Got_Card : Deck.Card_Access;
+  -- For scrambling
   package Cards_Dyn_List_Mng is new Dynamic_List (Deck.Card_Access);
   package Cards_List_Mng renames Cards_Dyn_List_Mng.Dyn_List;
   Cards_List : Cards_List_Mng.List_Type;
+
+  -- PLay and done stacks
+  The_Stacks : array (Deck.Name_Range) of aliased Deck.Card;
   The_Dones : array (Deck.Suit_List) of aliased Deck.Card;
 
   -- Console
@@ -53,11 +56,12 @@ procedure T_Cards is
 
   -- Mouse event
   Mouse_Event : Con_Io.Mouse_Event_Rec;
+  Got_Card : Deck.Card_Access;
 
   -- Moved card
   Done_Status : array (Deck.Suit_List) of Boolean := (others => False);
   Moved : Boolean;
-  Depth : POsitive := 5;
+  Depth : Positive := 5;
 
   -- Put the menu
   procedure Put_Menu is
@@ -95,8 +99,9 @@ procedure T_Cards is
   end Done_Of;
 
 
-  use type Deck.Card_Access, X_Mng.External_Reference, Con_Io.Curs_Mvt,
-           Con_Io.Mouse_Button_Status_List;
+  use type Deck.Card_Access, Deck.Full_Suit_List,
+           X_Mng.External_Reference,
+           Con_Io.Curs_Mvt, Con_Io.Mouse_Button_Status_List;
 begin
 
   -- Create Console at proper size
@@ -147,6 +152,13 @@ begin
     The_Dones(Suit).Create_Symbol (Suit);
     The_Dones(Suit).Move (Done_Of (Suit));
     The_Dones(Suit).Show (True);
+    The_Dones(Suit).Do_Raise;
+  end loop;
+  for Name in Deck.Name_Range loop
+    The_Stacks(Name).Create_Empty (Name => Name, Squared => False);
+    The_Stacks(Name).Move (Stack_Of (Name, 1));
+    The_Stacks(Name).Show (True);
+    The_Stacks(Name).Do_Raise;
   end loop;
 
   -- Display the cards randomly
@@ -193,12 +205,21 @@ begin
           if Got_Card.Is_Card then
             Basic_Proc.Put_Line_Output ("Xref: "
                 & The_Names(Got_Card.Get_Suit, Got_Card.Get_Name).Image);
+          elsif Got_Card.Is_Symbol then
+            Basic_Proc.Put_Line_Output ("Xref: Done "
+                & Deck.Suit_List'Image (Got_Card.Get_Suit));
+          elsif Got_Card.Is_Empty then
+            Basic_Proc.Put_Line_Output ("Xref: Stack "
+                & Deck.Name_Range'Image (Got_Card.Get_Name));
+          else
+            Basic_Proc.Put_Line_Output ("Xref: ???");
           end if;
           if Mouse_Event.Status = Con_Io.Enter then
             Console.Set_Pointer_Shape (Con_Io.Hand);
           elsif Mouse_Event.Status = Con_Io.Leave then
             Console.Set_Pointer_Shape (Con_Io.Arrow);
-          elsif Mouse_Event.Status = Con_Io.Pressed then
+          elsif Mouse_Event.Status = Con_Io.Pressed
+          and then Got_Card.Is_Card then
             Moved := False;
             if Got_Card.Get_Name = 1 then
               -- Ace
@@ -224,4 +245,3 @@ begin
   end loop;
 
 end T_Cards;
-
