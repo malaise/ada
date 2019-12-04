@@ -2,20 +2,20 @@ with Con_Io;
 with Cards, Table, Memory, Movements, Basic_Proc;
 procedure Lapeau is
   Event : Table.Event_Rec;
-  type Status_List is (None, Selectable, Selected, Targetable);
+  type Status_List is (None, Selectable, Selected, Targetable, Targeted);
   Status : Status_List := None;
-  Selected_Card : Cards.Card_Access := null;
+  Selected_Source, Selected_Target : Cards.Card_Access := null;
 
   use type Cards.Card_Access;
-  -- Un-select the selected card and reset status to None
+  -- Un-select the selected source card and reset status to None
   --  (before scrambling/UNdo/Redo)
   procedure Reset is
 
   begin
     Status := None;
-    if Selected_Card /= null then
-      Selected_Card.Xcard.Un_Select;
-      Selected_Card := null;
+    if Selected_Source /= null then
+      Selected_Source.Xcard.Un_Select;
+      Selected_Source := null;
     end if;
   end Reset;
 
@@ -57,16 +57,16 @@ begin
               Status := Selectable;
             end if;
           when Selectable =>
-            -- Impossible
+            -- Impossible, we must leave it first, and become None
             null;
           when Selected =>
-            if Movements.Can_Move (Selected_Card, Event.Card, False) then
+            if Movements.Can_Move (Selected_Source, Event.Card, False) then
               -- Entering a eligible target
               Event.Card.Xcard.Do_Select;
               Status := Targetable;
             end if;
-          when Targetable =>
-            -- Impossible
+          when Targetable | Targeted =>
+            -- Impossible, we must leave it first, and become Selected
             null;
         end case;
       when Table.Leave =>
@@ -75,19 +75,20 @@ begin
             -- Leaving a non movable card
             null;
           when Selectable =>
-            -- Leaving a movable source
+            -- Leaving a selectable source
             Table.Console.Set_Pointer_Shape (Con_Io.Arrow);
-            if Event.Card.Xcard.Is_Selected  then
-              -- It was pressed
-              Event.Card.Xcard.Un_Select;
-            end if;
             Status := None;
           when Selected =>
-            -- Leaving a non eligible target
+            -- Leaving a selected source
             null;
           when Targetable =>
             -- Leaving an eligible target
             Event.Card.Xcard.Un_Select;
+            Status := Selected;
+          when Targeted =>
+            -- Leaving a selected target
+            Event.Card.Xcard.Un_Select;
+            Selected_Target := null;
             Status := Selected;
         end case;
       when Table.Pressed =>
@@ -97,20 +98,24 @@ begin
             null;
           when Selectable =>
             -- Pressing a movable card => toggle select
-            if Event.Card /= Selected_Card then
+            if Event.Card /= Selected_Source then
               Event.Card.Xcard.Do_Select;
-              Selected_Card := Event.Card;
+              Selected_Source := Event.Card;
               Status := Selected;
             end if;
           when Selected =>
             -- Pressing again the selected card
-            if Event.Card = Selected_Card then
+            if Event.Card = Selected_Source then
               Event.Card.Xcard.Un_Select;
-              Selected_Card := null;
+              Selected_Source := null;
               Status := Selectable;
             end if;
           when Targetable =>
             -- Pressing in an eligible target
+            Selected_Target := Event.Card;
+            Status := Targeted;
+          when Targeted =>
+            -- Impossible, we must leave or release first
             null;
         end case;
       when Table.Released =>
@@ -125,17 +130,21 @@ begin
             -- Releasing in the selected source
             null;
           when Targetable =>
-            -- Releasing in eligible target
+            -- Impossible
+            null;
+          when Targeted =>
+            -- Releasing in Selected target
+            Selected_Source.Xcard.Un_Select;
+            Selected_Target.Xcard.Un_Select;
             Status := None;
-            Selected_Card.Xcard.Un_Select;
-            Event.Card.Xcard.Un_Select;
             -- Move
             Basic_Proc.Put_Line_Output ("Move...");
             Movements.Move ( (
-                Card => Selected_Card,
-                From => Selected_Card.Stack,
-                To   => Event.Card.Stack) );
-            Selected_Card := null;
+                Card => Selected_Source,
+                From => Selected_Source.Stack,
+                To   => Selected_Target.Stack) );
+            Selected_Source := null;
+            Selected_Target := null;
         end case;
     end case;
    Basic_Proc.Put_Line_Output (Status'Img);
