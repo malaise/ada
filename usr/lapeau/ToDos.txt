@@ -1,10 +1,17 @@
-- Unselect before New/Restart
-- Improve target selection: (release on same card as clicked)
-
-- Command line option for alternate colors in play stacks
-
+To Do
+-----
 - Button in menu to purge in Done stacks
+Iterate on each stack (top to bottom) until no move at all
+  * if Same_Color => As much as possible for each suit
+  * if Alternate => yes if ace,
+    no as long as both alternate aces are not Done,
+    no if smalest top of both alternate Done is >= Name - 1
 - Undo/Redo
 - Move several cards
 - Animation
 
+Done
+----
+- Unselect before New/Restart
+- Improve target selection: (release on same card as clicked)
+- Command line option for alternate colors in play stacks

@@ -43,5 +43,11 @@ package Cards is
   --  null if not found in cards or stacks
   function X_To_Card (Ref : X_Mng.External_Reference) return Card_Access;
 
+  -- Color of a suit
+  type Colors is (Red, Black);
+  Color_Of : constant array (Deck.Suit_List) of Colors
+           := (Deck.Heart | Deck.Diamond => Red,
+               Deck.Club  | Deck.Spade   => Black);
+
 end Cards;
 

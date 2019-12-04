@@ -1,5 +1,5 @@
-with Con_Io;
-with Cards, Table, Memory, Movements, Basic_Proc;
+with Con_Io, Argument;
+with Cards, Table, Memory, Movements;
 procedure Lapeau is
   Event : Table.Event_Rec;
   type Status_List is (None, Selectable, Selected, Targetable, Targeted);
@@ -10,7 +10,6 @@ procedure Lapeau is
   -- Un-select the selected source card and reset status to None
   --  (before scrambling/UNdo/Redo)
   procedure Reset is
-
   begin
     Status := None;
     if Selected_Source /= null then
@@ -21,6 +20,12 @@ procedure Lapeau is
 
   use type Table.Event_List;
 begin
+  -- Adjust play stacking policy
+  if Argument.Get_Nbre_Arg = 1
+  and then Argument.Get_Parameter = "--alternate" then
+    Movements.Stack_Policy := Movements.Alternate_Color;
+  end if;
+
   -- Global init
   Table.Init;
 
@@ -30,10 +35,6 @@ begin
   -- Play game
   loop
     Table.Next_Event (Event);
-    if Event.Kind in Table.Pressed .. Table.Leave then
-      Basic_Proc.Put_Line_Output (Event.Kind'Img & " " & Event.Card.Image
-          & (if Event.Card.Movable then " MOVABLE" else ""));
-    end if;
     case Event.Kind is
       when Table.Quit =>
         -- End of game
@@ -138,7 +139,6 @@ begin
             Selected_Target.Xcard.Un_Select;
             Status := None;
             -- Move
-            Basic_Proc.Put_Line_Output ("Move...");
             Movements.Move ( (
                 Card => Selected_Source,
                 From => Selected_Source.Stack,
@@ -147,7 +147,6 @@ begin
             Selected_Target := null;
         end case;
     end case;
-   Basic_Proc.Put_Line_Output (Status'Img);
   end loop;
 end Lapeau;
 

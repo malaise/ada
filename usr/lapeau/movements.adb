@@ -3,7 +3,7 @@ package body Movements is
 
   -- Can source card be put on target, basic card/card validity
   function Is_Valid (Source, Target : in Cards.Card_Access) return Boolean is
-    use type Cards.Deck.Suit_List;
+    use type Cards.Deck.Suit_List, Cards.Colors;
   begin
     if Target.Stack.Suit = Cards.Deck.Empty then
       -- Play stack
@@ -13,11 +13,15 @@ package body Movements is
       elsif Target.Nb_Children /= 0 then
         -- Target is not top of stack
         return False;
-      elsif Source.Suit /= Target.Suit then
+      elsif Source.Name /= Target.Name - 1 then
         return False;
-      else
-        return Source.Name = Target.Name - 1;
       end if;
+      case Stack_Policy is
+        when Same_Suit =>
+          return Source.Suit = Target.Suit;
+        when Alternate_Color =>
+          return Cards.Color_Of (Source.Suit) /= Cards.Color_Of (Target.Suit);
+      end case;
     else
       -- Done stack
       if Source.Suit /= Target.Suit then
