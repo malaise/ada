@@ -6,8 +6,8 @@ ADACTL := true
 
 EXES := lapeau lapeau.stat
 
-CLIBS := cards $(X11_SLIBS) Xext
-LARGS_lapeau.stat :=-lcards $(X11_ALIBS) -lXext
+CLIBS := $(CARDS_SLIBS) $(X11_SLIBS)
+LARGS_lapeau.stat := $(CARDS_ALIBS) $(X11_ALIBS)
 
 
 include $(TEMPLATES)/ada.mk

@@ -149,8 +149,8 @@ They all depend on C and Reposit and are independant one from the others (except
 The more usefull are 'udp_spy' and 'alook' (in directory 'misc'),
 'xml_checker' (in directory xml) 'agite', 'als', 'asubst', 'lsadeps' and 'mcd'.
 
-The games are 'g' (in directory 'misc'), 'battleship', 'lem', 'mmind', 'nimmari'
-and 'sokoban'.
+The games are 'g' (in directory 'misc'), 'battleship', 'lapeau', 'lem',
+'mmind', 'nimmari' and 'sokoban'.
 
 Hereafter is the full list and description, rated from 1 (simple) to 3 (very
 complex) on subjective criteria. A 'd' indicates that there is a specific
@@ -221,6 +221,9 @@ Heart (3)::
 Hungar (2)::
      Euristic search (hungarian method) of best affection (e.g. of people to
      jobs). Tough algo.
+
+Lapeau (2d)::
+     A patience games with 13 rows of 4 cards each.
 
 Lem (2d)::
      Game: land the LEM on the moon.
