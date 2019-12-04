@@ -5,7 +5,21 @@ procedure Lapeau is
   type Status_List is (None, Selectable, Selected, Targetable);
   Status : Status_List := None;
   Selected_Card : Cards.Card_Access := null;
-  use type Table.Event_List, Cards.Card_Access;
+
+  use type Cards.Card_Access;
+  -- Un-select the selected card and reset status to None
+  --  (before scrambling/UNdo/Redo)
+  procedure Reset is
+
+  begin
+    Status := None;
+    if Selected_Card /= null then
+      Selected_Card.Xcard.Un_Select;
+      Selected_Card := null;
+    end if;
+  end Reset;
+
+  use type Table.Event_List;
 begin
   -- Global init
   Table.Init;
@@ -25,10 +39,13 @@ begin
         -- End of game
         exit;
       when Table.New_Game =>
+        Reset;
         Memory.Start_Game;
       when Table.Restart =>
+        Reset;
         Memory.Restore_Game;
       when Table.Undo .. Table.Redo =>
+        Reset;
          -- @@@ handle menu
          null;
       when Table.Enter =>

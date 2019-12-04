@@ -1,0 +1,10 @@
+- Unselect before New/Restart
+- Improve target selection: (release on same card as clicked)
+
+- Command line option for alternate colors in play stacks
+
+- Button in menu to purge in Done stacks
+- Undo/Redo
+- Move several cards
+- Animation
+
