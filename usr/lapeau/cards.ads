@@ -1,7 +1,9 @@
 with X_Mng.Cards;
 package Cards is
 
-  -- Deck of cards
+  ------------------ -
+  -- Deck of cards --
+  ------------------ -
   package Deck is new X_Mng.Cards;
 
   -- Local definition of card
@@ -43,11 +45,25 @@ package Cards is
   --  null if not found in cards or stacks
   function X_To_Card (Ref : X_Mng.External_Reference) return Card_Access;
 
+  ----------------------
+  -- Suits and Colors --
+  ----------------------
   -- Color of a suit
   type Colors is (Red, Black);
   Color_Of : constant array (Deck.Suit_List) of Colors
            := (Deck.Heart | Deck.Diamond => Red,
                Deck.Club  | Deck.Spade   => Black);
+
+  -- Suits of a color
+  type Suits_Pair is array (1 .. 2) of Deck.Suit_List;
+  Suits_Of : constant array (Colors) of Suits_Pair
+           := (Red => (Deck.Heart,  Deck.Diamond),
+               Black => (Deck.Club, Deck.Spade) );
+
+  -- Alternate color of a color
+  Alternate_Color : array (Colors) of Colors
+                  := (Red   => Black,
+                      Black => Red);
 
 end Cards;
 

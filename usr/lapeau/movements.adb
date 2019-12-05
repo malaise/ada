@@ -115,5 +115,73 @@ package body Movements is
 
   end Move;
 
+  -- Can a card be purged
+  -- When policy is Same_Suit => basic validity
+  -- When Policy is Alternate_Color => Basic validity and not mode than
+  --  one delta among colors in Done stacks
+  function Can_Be_Purged (Acard : Cards.Card_Access) return Boolean is
+    -- Tops of Done stack of alternate color
+    Top_Done : Cards.Card_Access;
+    Alternate_Suits : Cards.Suits_Pair;
+    Alternate_Dones : array (1 .. 2) of Cards.Card_Access;
+    Min : Integer;
+  begin
+    -- Top of target Done stack
+    Top_Done := Cards.The_Dones(Acard.Suit)'Access;
+    if Top_Done.Nb_Children /= 0 then
+      Top_Done := Top_Done.Prev;
+    end if;
+    -- Basic validity versus top of corresponding Done stack
+    if not Is_Valid (Acard, Top_Done) then
+      return False;
+    elsif Stack_Policy = Same_Suit then
+      return True;
+    end if;
+    -- In Alternate_Colors, not more than one delta
+    Alternate_Suits := Cards.Suits_Of (Cards.Alternate_Color (
+        Cards.Color_Of (Acard.Suit)));
+    Alternate_Dones(1) := Cards.The_Dones(Alternate_Suits(1))'Access;
+    Alternate_Dones(2) := Cards.The_Dones(Alternate_Suits(2))'Access;
+    -- Not more than a delta of 2
+    Min := Integer (Acard.Name) - 2;
+    return        Min < Alternate_Dones(1).Nb_Children
+        and then  Min < Alternate_Dones(2).Nb_Children;
+  end Can_Be_Purged;
+
+  -- Move all possible cards into Done stacks
+  procedure Purge is
+    One_Moved : Boolean;
+    Acc, Target : Cards.Card_Access;
+    use type Cards.Card_Access;
+  begin
+    -- Loop until no move
+    Iter:
+    loop
+      One_Moved := False;
+      -- Loop for all stacks
+      Stacks:
+      for Stack in Cards.Stack_Range loop
+         Acc := Cards.The_Stacks(Stack).Prev;
+         -- Loop in the stack until no move
+         Depth:
+         loop
+           exit when Acc = null or else Acc = Cards.The_Stacks(Stack)'Access;
+           if Can_Be_Purged (Acc) then
+             Target := Cards.The_Dones(Acc.Suit)'Access;
+             if Target.Nb_Children /= 0 then
+               Target := Target.Prev;
+             end if;
+             Move ( (Acc, Acc.Stack, Target) );
+             One_Moved := True;
+           else
+             exit Depth;
+           end if;
+           Acc := Acc.Prev;
+         end loop Depth;
+      end loop Stacks;
+      exit Iter when not One_Moved;
+    end loop Iter;
+  end Purge;
+
 end Movements;
 

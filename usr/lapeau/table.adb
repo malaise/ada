@@ -15,7 +15,6 @@ package body Table is
   Done_Y : constant Con_Io.Y_Range := Y_Gap_Done;
 
   -- Stacks and cards positions
-  Menu_Row : constant Con_Io.Row_Range := 1;
   X_Gap : constant Con_Io.X_Range := 4;
   Nb_Y_Top : constant := 6;
   Y_Gap_Top : constant Con_Io.Y_Range := 31;
@@ -30,13 +29,17 @@ package body Table is
   Menu_Window : Con_Io.Window;
   Menu_Back : constant Con_Io.Colors :=  Con_Io.Color_Of ("Light_Blue");
   Menu_Fore : constant Con_Io.Colors :=  Con_Io.Color_Of ("Black");
+  Menu_Row : constant Con_Io.Row_Range := 2;
+
+  -- Buttons of the menu
+  Start_Exit    : constant :=   2; Stop_Exit    : constant :=   7;
+  Start_New     : constant :=  10; Stop_New     : constant :=  15;
+  Start_Restart : constant :=  17; Stop_Restart : constant :=  25;
+  Start_Purge   : constant := 130; Stop_Purge   : constant := 136;
+  Start_Undo    : constant := 139; Stop_Undo    : constant := 144;
+  Start_Redo    : constant := 147; Stop_Redo    : constant := 152;
 
   -- Put the menu
-  Start_Exit    : constant :=  1; Stop_Exit    : constant :=  6;
-  Start_New     : constant :=  8; Stop_New     : constant := 12;
-  Start_Restart : constant := 14; Stop_Restart : constant := 22;
-  Start_Undo    : constant := 24; Stop_Undo    : constant := 29;
-  Start_Redo    : constant := 31; Stop_Redo    : constant := 36;
   procedure Put_Menu is
   begin
     Menu_Window.Move (0, Start_Exit);
@@ -45,6 +48,8 @@ package body Table is
     Menu_Window.Put (" New ", Menu_Fore, Menu_Back, False);
     Menu_Window.Move (0, Start_Restart);
     Menu_Window.Put (" Restart ", Menu_Fore, Menu_Back, False);
+    Menu_Window.Move (0, Start_Purge);
+    Menu_Window.Put (" Purge ", Menu_Fore, Menu_Back, False);
     Menu_Window.Move (0, Start_Undo);
     Menu_Window.Put (" Undo ", Menu_Fore, Menu_Back, False);
     Menu_Window.Move (0, Start_Redo);
@@ -183,6 +188,7 @@ package body Table is
         when Start_Exit    .. Stop_Exit    => Event := (Kind => Quit);
         when Start_New     .. Stop_New     => Event := (Kind => New_Game);
         when Start_Restart .. Stop_Restart => Event := (Kind => Restart);
+        when Start_Purge   .. Stop_Purge   => Event := (Kind => Purge);
         when Start_Undo    .. Stop_Undo    => Event := (Kind => Undo);
         when Start_Redo    .. Stop_Redo    => Event := (Kind => Redo);
         when others                        => null;
@@ -203,6 +209,9 @@ package body Table is
         when Restart =>
           Menu_Window.Move (0, Start_Restart);
           Menu_Window.Put (" Restart ", Menu_Back, Menu_Fore, False);
+        when Purge =>
+          Menu_Window.Move (0, Start_Purge);
+          Menu_Window.Put (" Purge ", Menu_Back, Menu_Fore, False);
         when Undo =>
           Menu_Window.Move (0, Start_Undo);
           Menu_Window.Put (" Undo ", Menu_Back, Menu_Fore, False);

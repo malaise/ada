@@ -27,7 +27,7 @@ package Table is
 
   -- Decode an event, on card, on menu or Break
   type Event_List is (Pressed, Released, Enter, Leave,
-                      Quit, New_Game, Restart, Undo, Redo);
+                      Quit, New_Game, Restart, Purge, Undo, Redo);
   type Event_Rec (Kind : Event_List:= Quit) is record
     case Kind is
       when Pressed .. Leave =>

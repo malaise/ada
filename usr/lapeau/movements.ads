@@ -22,5 +22,9 @@ package Movements is
   -- Do a movement
   procedure Move (Mov : Movement);
 
+
+  -- Move all possible cards into Done stacks
+  procedure Purge;
+
 end Movements;
 

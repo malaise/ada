@@ -4,7 +4,7 @@ procedure Lapeau is
   Event : Table.Event_Rec;
   type Status_List is (None, Selectable, Selected, Targetable, Targeted);
   Status : Status_List := None;
-  Selected_Source, Selected_Target : Cards.Card_Access := null;
+  Selected_Source, Selected_Target, Tmp_Card : Cards.Card_Access := null;
 
   use type Cards.Card_Access;
   -- Un-select the selected source card and reset status to None
@@ -18,7 +18,7 @@ procedure Lapeau is
     end if;
   end Reset;
 
-  use type Table.Event_List;
+  use type Cards.Deck.Full_Suit_List, Table.Event_List;
 begin
   -- Adjust play stacking policy
   if Argument.Get_Nbre_Arg = 1
@@ -45,10 +45,21 @@ begin
       when Table.Restart =>
         Reset;
         Memory.Restore_Game;
-      when Table.Undo .. Table.Redo =>
+      when Table.Purge =>
+        -- Save selection
+        Tmp_Card := Selected_Source;
+        Reset;
+        Movements.Purge;
+        -- Restore selection if it has not been purged in Done stack
+        if Tmp_Card /= null
+        and then Tmp_Card.Stack.Suit = Cards.Deck.Empty then
+          Selected_Source := Tmp_Card;
+          Tmp_Card.Xcard.Do_Select;
+          Status := Selected;
+        end if;
+      when Table.Undo | Table.Redo =>
         Reset;
          -- @@@ handle menu
-         null;
       when Table.Enter =>
         case Status is
           when None =>
