@@ -171,7 +171,7 @@ package body Movements is
              if Target.Nb_Children /= 0 then
                Target := Target.Prev;
              end if;
-             Move ( (Acc, Acc.Stack, Target) );
+             Move ( (Acc, Acc.Stack, Target.Stack) );
              One_Moved := True;
            else
              exit Depth;
