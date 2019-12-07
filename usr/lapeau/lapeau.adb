@@ -2,6 +2,8 @@ with Con_Io, Argument;
 with Cards, Table, Memory, Movements;
 procedure Lapeau is
   Event : Table.Event_Rec;
+  Mov : Movements.Movement;
+
   type Status_List is (None, Selectable, Selected, Targetable, Targeted);
   Status : Status_List := None;
   Selected_Source, Selected_Target, Tmp_Card : Cards.Card_Access := null;
@@ -57,9 +59,20 @@ begin
           Tmp_Card.Xcard.Do_Select;
           Status := Selected;
         end if;
-      when Table.Undo | Table.Redo =>
+      when Table.Undo =>
+        if Memory.Can_Undo then
+          Reset;
+          Mov := Memory.Undo;
+          Movements.Move ( (Card => Mov.Card,
+                            From => Mov.To,
+                            To   => Mov.From) );
+        end if;
+      when Table.Redo =>
         Reset;
-         -- @@@ handle menu
+        if Memory.Can_Redo then
+          Reset;
+          Movements.Move (Memory.Redo);
+        end if;
       when Table.Enter =>
         case Status is
           when None =>
@@ -72,7 +85,7 @@ begin
             -- Impossible, we must leave it first, and become None
             null;
           when Selected =>
-            if Movements.Can_Move (Selected_Source, Event.Card, False) then
+            if Movements.Can_Move (Selected_Source, Event.Card) then
               -- Entering a eligible target
               Event.Card.Xcard.Do_Select;
               Status := Targetable;
@@ -150,10 +163,11 @@ begin
             Selected_Target.Xcard.Un_Select;
             Status := None;
             -- Move
-            Movements.Move ( (
-                Card => Selected_Source,
-                From => Selected_Source.Stack,
-                To   => Selected_Target.Stack) );
+            Mov := (Card => Selected_Source,
+                    From => Selected_Source.Stack,
+                    To   => Selected_Target.Stack);
+            Movements.Move (Mov);
+            Memory.Add (Mov);
             Selected_Source := null;
             Selected_Target := null;
         end case;

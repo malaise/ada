@@ -1,4 +1,4 @@
-with Table;
+with Table, Memory;
 package body Movements is
 
   -- Can source card be put on target, basic card/card validity
@@ -36,10 +36,9 @@ package body Movements is
   end Is_Valid;
 
   -- Can source and children be moved on target
-  function Can_Move (Source, Target : in Cards.Card_Access;
-                     As_Undo : Boolean) return Boolean is
+  function Can_Move (Source, Target : in Cards.Card_Access) return Boolean is
   begin
-    if not As_Undo and then Source.Stack.Name = Cards.Deck.Symbol_Name then
+    if Source.Stack.Name = Cards.Deck.Symbol_Name then
       -- Cannot move from Done
       return False;
     end if;
@@ -89,7 +88,10 @@ package body Movements is
     Stack.Prev := Curr;
     Stack.Nb_Children := Stack.Nb_Children + 1;
 
+
     if Stack.Suit = Cards.Deck.Empty then
+      -- When undo from Done stack
+      Curr.Movable := True;
       -- Increment the number of children of each ancestor of a play stack
       loop
         Curr := Curr.Prev;
@@ -152,6 +154,7 @@ package body Movements is
   procedure Purge is
     One_Moved : Boolean;
     Acc, Target : Cards.Card_Access;
+    Mov : Movement;
     use type Cards.Card_Access;
   begin
     -- Loop until no move
@@ -171,7 +174,9 @@ package body Movements is
              if Target.Nb_Children /= 0 then
                Target := Target.Prev;
              end if;
-             Move ( (Acc, Acc.Stack, Target.Stack) );
+             Mov := (Card => Acc, From => Acc.Stack, To => Target.Stack);
+             Move (Mov);
+             Memory.Add (Mov);
              One_Moved := True;
            else
              exit Depth;

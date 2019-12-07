@@ -9,8 +9,7 @@ package Movements is
   function Is_Valid (Source, Target : Cards.Card_Access) return Boolean;
 
   -- Can source and children be moved on target
-  function Can_Move (Source, Target : Cards.Card_Access;
-                     As_Undo : Boolean) return Boolean;
+  function Can_Move (Source, Target : Cards.Card_Access) return Boolean;
 
   -- Movement
   type Movement is record
@@ -21,7 +20,6 @@ package Movements is
 
   -- Do a movement
   procedure Move (Mov : Movement);
-
 
   -- Move all possible cards into Done stacks
   procedure Purge;

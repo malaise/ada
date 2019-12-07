@@ -1,12 +1,21 @@
-with Dynamic_List, Rnd;
+with Dynamic_List, Rnd, Limited_Pool;
 with Cards, Table;
 package body Memory is
+
+  procedure Set (To : out Movements.Movement; Val : in Movements.Movement) is
+  begin
+    To := Val;
+  end Set;
+  package Movement_Pool is new Limited_Pool (Movements.Movement,
+                                             Lifo => True, Set => Set);
+  Dones, Undones : Movement_Pool.Pool_Type;
+
 
   -- Clear the list of undos and redos
   procedure Clear is
   begin
-    -- @@@
-    null;
+    Dones.Clear;
+    Undones.Clear;
   end Clear;
 
   ----------
@@ -127,28 +136,34 @@ package body Memory is
   -------------------------
   -- Movements undo/redo --
   -------------------------
-
-  -- The lists are clear when a game starts
   -- Add a movement to list of undoes
   -- Clears the list of redoes
   procedure Add (Mov : in Movements.Movement) is
   begin
-    -- @@@
-    null;
+    Dones.Push (Mov);
+    Undones.Clear;
   end Add;
 
   -- Pop a movement and add it to the list of redoes
+  function Can_Undo return Boolean is (not Dones.Is_Empty);
+
+
   function Undo return Movements.Movement is
   begin
-    -- @@@
-    return (null, null, null);
+    return Mov : Movements.Movement do
+      Dones.Pop (Mov);
+      Undones.Push (Mov);
+    end return;
   end Undo;
 
   -- Pop a undone movment and add it to the list of undoes
+  function Can_Redo return Boolean is (not Undones.Is_Empty);
   function Redo return Movements.Movement is
   begin
-    -- @@@
-    return (null, null, null);
+    return Mov : Movements.Movement do
+      Undones.Pop (Mov);
+      Dones.Push (Mov);
+    end return;
   end Redo;
 
 end Memory;

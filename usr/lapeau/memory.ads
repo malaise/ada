@@ -13,15 +13,16 @@ package Memory is
   -------------------------
   -- Movements undo/redo --
   -------------------------
-  -- The lists are clear when a game starts
   -- Add a movement to list of undos
   -- Clears the list of redos
   procedure Add (Mov : in Movements.Movement);
 
   -- Pop a movement and add it to the list of redos
+  function Can_Undo return Boolean;
   function Undo return Movements.Movement;
 
   -- Pop a undone movment and add it to the list of undos
+  function Can_Redo return Boolean;
   function Redo return Movements.Movement;
 
 end Memory;
