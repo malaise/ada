@@ -3,7 +3,7 @@ with Table, Memory;
 package body Movements is
 
   -- Number of free stacks
-  Nb_Free_Stacks : Natural range 0 .. Cards.Stack_Range'Last := 0;
+  Nb_Free_Stacks : Natural range 0 .. Cards.Stack_Range'Last;
 
   procedure Reset is
   begin
@@ -137,57 +137,62 @@ Basic_Proc.Put_Line_Error ("Moving " & Mov.Card.Image
   end Move_One;
 
   -- Internal data for multiple move
-  Stack_Free : array (Cards.Stack_Range) of Boolean;
-  -- Internal: Find next free stack
-  function Next_Free return Cards.Stack_Range is
+  Available_Stacks : array (Cards.Stack_Range) of Boolean;
+  Nb_Available : Natural range 0 .. Cards.Stack_Range'Last;
+  -- Internal: Find next available stack
+  function Next_Available return Cards.Stack_Range is
   begin
     for Stack in Cards.Stack_Range loop
-      if Stack_Free(Stack) then
-Basic_Proc.Put_Line_Error ("Next free => " & Cards.The_Stacks(Stack).Image);
+      if Available_Stacks(Stack) then
+Basic_Proc.Put_Line_Error ("Next available => " & Cards.The_Stacks(Stack).Image);
         return Stack;
       end if;
     end loop;
     raise Program_Error;
-  end Next_Free;
+  end Next_Available;
   -- Internal: Adjust Stack_Free after a move
-  procedure Adjust_Free (Source, Target : Cards.Card_Access) is
+  procedure Adjust_Available (Source, Target : Cards.Card_Access) is
   begin
     if Source.Nb_Children = 0 then
       -- Maybe opening a free stack
 Basic_Proc.Put_Line_Error ("Adjust => " & Source.Image);
-      Stack_Free(Source.Name) := True;
+      Available_Stacks(Source.Name) := True;
+      Nb_Available := Nb_Available + 1;
     end if;
-    Stack_Free(Target.Name) := False;
-  end Adjust_Free;
+    if Target.Nb_Children = 1 then
+      Available_Stacks(Target.Name) := False;
+      Nb_Available := Nb_Available - 1;
+    end if;
+  end Adjust_Available;
 
   -- Internal: Move several cards recursively
   procedure Move_Multiple (Mov : Movement) is
-    Free_Stack : Cards.Stack_Range;
+    Available : Cards.Stack_Range;
     Child :  Cards.Card_Access;
     use type Cards.Card_Access;
   begin
     if Mov.Card.Next = null then
       -- One card to move
       Move_One (Mov);
-      Adjust_Free (Mov.From, Mov.To);
+      Adjust_Available (Mov.From, Mov.To);
       return;
     end if;
 
     -- Move child to a free stack
 Basic_Proc.Put_Line_Error ("Multi Moving " & Mov.Card.Image
   & " to " & (if Mov.To.Prev = null then Mov.To.Image else Mov.To.Prev.Image));
-    Free_Stack := Next_Free;
-    Stack_Free(Free_Stack) := False;
+    Available := Next_Available;
+    Available_Stacks(Available) := False;
     Child := Mov.Card.Next;
     Move_Multiple ( (Card => Mov.Card.Next,
                      From => Mov.From,
-                     To   => Cards.The_Stacks(Free_Stack)'Access) );
+                     To   => Cards.The_Stacks(Available)'Access) );
     -- Move card (now top) to target
     Move_One (Mov);
-    Adjust_Free (Mov.From, Mov.To);
+    Adjust_Available (Mov.From, Mov.To);
     -- Move child to target
     Move_Multiple ( (Card => Child,
-                     From => Cards.The_Stacks(Free_Stack)'Access,
+                     From => Cards.The_Stacks(Available)'Access,
                      To =>   Mov.To) );
     -- Move top to target
 
@@ -203,10 +208,14 @@ Basic_Proc.Put_Line_Error ("Multi Moving " & Mov.Card.Image
       return;
     end if;
     -- Prepare for multiple move
-    -- Identify the free stacks (excluding dest)
+    -- Identify the available stacks (excluding dest)
+    Nb_Available := 0;
     for Stack in Cards.Stack_Range loop
-      Stack_Free(Stack) := Cards.The_Stacks(Stack).Nb_Children = 0
-       and then Mov.To /= Cards.The_Stacks(Stack)'Access;
+      Available_Stacks(Stack) := Cards.The_Stacks(Stack).Nb_Children = 0
+          and then Mov.To /= Cards.The_Stacks(Stack)'Access;
+      if Available_Stacks(Stack) then
+        Nb_Available := Nb_Available + 1;
+      end if;
     end loop;
 Basic_Proc.Put_Line_Error ("Start Multi Move");
     Move_Multiple (Mov);
