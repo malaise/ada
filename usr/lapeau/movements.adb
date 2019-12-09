@@ -146,8 +146,8 @@ package body Movements is
     Alternate_Dones(2) := Cards.The_Dones(Alternate_Suits(2))'Access;
     -- Not more than a delta of 2
     Min := Integer (Acard.Name) - 2;
-    return        Min < Alternate_Dones(1).Nb_Children
-        and then  Min < Alternate_Dones(2).Nb_Children;
+    return        Min <= Alternate_Dones(1).Nb_Children
+        and then  Min <= Alternate_Dones(2).Nb_Children;
   end Can_Be_Purged;
 
   -- Move all possible cards into Done stacks
