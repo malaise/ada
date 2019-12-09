@@ -1397,7 +1397,7 @@ package body Git_If is
     -- * branch may be "(xxx)" containing spaces or a name
     -- * hash is on 7 digits
     -- * remote is '['<name>[: ahead x]']'
-    Crit.Compile (Ok, "^[* ] (\([^)]*\)|[^ ]+) +[0-9a-f]{7} (\[[^]]+\])?.*");
+    Crit.Compile (Ok, "^[* ] (\([^)]*\)|[^ ]+) +[0-9a-f]{7,8} (\[[^]]+\])?.*");
     if not Ok  then
       Basic_Proc.Put_Line_Error ("Remote_Branch regex error");
       return "";
@@ -1436,7 +1436,8 @@ package body Git_If is
     -- Now Line contains <name>[: ahead x]
     --  keep head before ':'
     Index := Str_Util.Locate (Line.Image, ":");
-    if Index= 0 then
+
+    if Index = 0 then
       return Line.Image;
     else
       return Line.Slice (1, Index - 1);
