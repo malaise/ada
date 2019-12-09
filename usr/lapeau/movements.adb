@@ -1,5 +1,14 @@
+with Basic_Proc;
 with Table, Memory;
 package body Movements is
+
+  -- Number of free stacks
+  Nb_Free_Stacks : Natural range 0 .. Cards.Stack_Range'Last := 0;
+
+  procedure Reset is
+  begin
+     Nb_Free_Stacks := 0;
+  end Reset;
 
   -- Can source card be put on target, basic card/card validity
   function Is_Valid (Source, Target : in Cards.Card_Access) return Boolean is
@@ -37,6 +46,7 @@ package body Movements is
 
   -- Can source and children be moved on target
   function Can_Move (Source, Target : in Cards.Card_Access) return Boolean is
+    Nb_To_Move, Nb_Movable : Positive;
   begin
     if Source.Stack.Name = Cards.Deck.Symbol_Name then
       -- Cannot move from Done
@@ -46,15 +56,17 @@ package body Movements is
     if not Is_Valid (Source, Target) then
       return False;
     end if;
-    -- and Nb children compatible with numùber of empty stacks
-    -- @@@
-    return Source.Nb_Children = 0;
+    -- Nb children compatible with number of empty stacks
+    Nb_To_Move := Source.Nb_Children + 1;
+    Nb_Movable := Nb_Free_Stacks * (Nb_Free_Stacks + 1) / 2 + 1;
+    return Nb_To_Move <= Nb_Movable;
   end Can_Move;
 
   --------------
   -- Movement --
   --------------
-  procedure Move (Mov : Movement) is
+  -- Internal: Move one card
+  procedure Move_One (Mov : Movement) is
     Curr, Prev, Stack : Cards.Card_Access;
     use type Cards.Deck.Full_Suit_List;
   begin
@@ -66,6 +78,9 @@ package body Movements is
       -- The stack becomes empty
       Stack.Next := null;
       Stack.Prev := null;
+      if Stack.Suit = Cards.Deck.Empty then
+        Nb_Free_Stacks := Nb_Free_Stacks + 1;
+      end if;
     else
       Prev.Next := null;
       Prev.Nb_Children := 0;
@@ -78,16 +93,18 @@ package body Movements is
     Stack := Mov.To;
     Curr.Stack := Stack;
     if Stack.Nb_Children = 0 then
-      -- The stack empty
+      -- The stack is empty
       Stack.Next := Curr;
       Curr.Prev := Stack;
+      if Stack.Suit = Cards.Deck.Empty then
+        Nb_Free_Stacks := Nb_Free_Stacks - 1;
+      end if;
     else
       Stack.Prev.Next := Curr;
       Curr.Prev := Stack.Prev;
     end if;
     Stack.Prev := Curr;
     Stack.Nb_Children := Stack.Nb_Children + 1;
-
 
     if Stack.Suit = Cards.Deck.Empty then
       -- When undo from Done stack
@@ -104,6 +121,8 @@ package body Movements is
     end if;
 
     -- Move the X card
+Basic_Proc.Put_Line_Error ("Moving " & Mov.Card.Image
+  & " to " & Stack.Image);
     if Stack.Suit = Cards.Deck.Empty then
       Mov.Card.Xcard.Move (Table.Stack_Of (
           Stack => Stack.Name,
@@ -114,8 +133,89 @@ package body Movements is
     Prev.Xcard.Show (True);
     Prev.Xcard.Do_Raise;
     Mov.Card.Xcard.Do_Raise;
+    Table.Console.Flush;
+  end Move_One;
 
+  -- Internal data for multiple move
+  Stack_Free : array (Cards.Stack_Range) of Boolean;
+  -- Internal: Find next free stack
+  function Next_Free return Cards.Stack_Range is
+  begin
+    for Stack in Cards.Stack_Range loop
+      if Stack_Free(Stack) then
+Basic_Proc.Put_Line_Error ("Next free => " & Cards.The_Stacks(Stack).Image);
+        return Stack;
+      end if;
+    end loop;
+    raise Program_Error;
+  end Next_Free;
+  -- Internal: Adjust Stack_Free after a move
+  procedure Adjust_Free (Source, Target : Cards.Card_Access) is
+  begin
+    if Source.Nb_Children = 0 then
+      -- Maybe opening a free stack
+Basic_Proc.Put_Line_Error ("Adjust => " & Source.Image);
+      Stack_Free(Source.Name) := True;
+    end if;
+    Stack_Free(Target.Name) := False;
+  end Adjust_Free;
+
+  -- Internal: Move several cards recursively
+  procedure Move_Multiple (Mov : Movement) is
+    Free_Stack : Cards.Stack_Range;
+    Child :  Cards.Card_Access;
+    use type Cards.Card_Access;
+  begin
+    if Mov.Card.Next = null then
+      -- One card to move
+      Move_One (Mov);
+      Adjust_Free (Mov.From, Mov.To);
+      return;
+    end if;
+
+    -- Move child to a free stack
+Basic_Proc.Put_Line_Error ("Multi Moving " & Mov.Card.Image
+  & " to " & (if Mov.To.Prev = null then Mov.To.Image else Mov.To.Prev.Image));
+    Free_Stack := Next_Free;
+    Stack_Free(Free_Stack) := False;
+    Child := Mov.Card.Next;
+    Move_Multiple ( (Card => Mov.Card.Next,
+                     From => Mov.From,
+                     To   => Cards.The_Stacks(Free_Stack)'Access) );
+    -- Move card (now top) to target
+    Move_One (Mov);
+    Adjust_Free (Mov.From, Mov.To);
+    -- Move child to target
+    Move_Multiple ( (Card => Child,
+                     From => Cards.The_Stacks(Free_Stack)'Access,
+                     To =>   Mov.To) );
+    -- Move top to target
+
+  end Move_Multiple;
+
+  -- Move some cards
+  procedure Move (Mov : Movement) is
+    use type Cards.Card_Access;
+  begin
+    if Mov.Card.Next = null then
+      -- One card to move
+      Move_One (Mov);
+      return;
+    end if;
+    -- Prepare for multiple move
+    -- Identify the free stacks (excluding dest)
+    for Stack in Cards.Stack_Range loop
+      Stack_Free(Stack) := Cards.The_Stacks(Stack).Nb_Children = 0
+       and then Mov.To /= Cards.The_Stacks(Stack)'Access;
+    end loop;
+Basic_Proc.Put_Line_Error ("Start Multi Move");
+    Move_Multiple (Mov);
+Basic_Proc.Put_Line_Error ("End Multi Move");
   end Move;
+
+  -----------
+  -- Purge --
+  -----------
 
   -- Can a card be purged
   -- When policy is Same_Suit => basic validity

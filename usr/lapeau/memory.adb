@@ -147,7 +147,6 @@ package body Memory is
   -- Pop a movement and add it to the list of redoes
   function Can_Undo return Boolean is (not Dones.Is_Empty);
 
-
   function Undo return Movements.Movement is
   begin
     return Mov : Movements.Movement do

@@ -1,6 +1,9 @@
 with Cards;
 package Movements is
 
+ -- Reset internal counters at game startup
+  procedure Reset;
+
   -- Play stack validity: Either same suit or alternate color
   type Stack_Policy_List is (Same_Suit, Alternate_Color);
   Stack_Policy : Stack_Policy_List := Same_Suit;

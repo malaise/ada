@@ -32,6 +32,7 @@ begin
   Table.Init;
 
   -- Init game
+  Movements.Reset;
   Memory.Start_Game;
 
   -- Play game
@@ -43,9 +44,11 @@ begin
         exit;
       when Table.New_Game =>
         Reset;
+        Movements.Reset;
         Memory.Start_Game;
       when Table.Restart =>
         Reset;
+        Movements.Reset;
         Memory.Restore_Game;
       when Table.Purge =>
         -- Save selection
