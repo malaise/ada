@@ -149,16 +149,22 @@ package body Table is
     end if;
     case Mouse_Event.Status is
       when Con_Io.Pressed =>
-        if Mouse_Event.Button /= Con_Io.Left then
+        if Mouse_Event.Button = Con_Io.Left then
+          Event := (Left_Pressed, Acc);
+        elsif Mouse_Event.Button = Con_Io.Right then
+          Event := (Right_Pressed, Acc);
+        else
           return False;
         end if;
-        Event := (Pressed, Acc);
         return True;
       when Con_Io.Released =>
-        if Mouse_Event.Button /= Con_Io.Left then
+        if Mouse_Event.Button = Con_Io.Left then
+          Event := (Left_Released, Acc);
+        elsif Mouse_Event.Button = Con_Io.Right then
+          Event := (Right_Released, Acc);
+        else
           return False;
         end if;
-        Event := (Released, Acc);
         return True;
       when Con_Io.Enter =>
         Event := (Enter, Acc);

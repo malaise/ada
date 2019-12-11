@@ -26,11 +26,13 @@ package Table is
   function Done_Of (Suit : Deck.Suit_List) return Deck.Position_Rec;
 
   -- Wait infinitely for next event, on card, on menu or Break
-  type Event_List is (Pressed, Released, Enter, Leave,
+  type Event_List is (Left_Pressed, Left_Released,
+                      Right_Pressed, Right_Released,
+                      Enter, Leave,
                       Quit, New_Game, Restart, Purge, Undo, Redo);
   type Event_Rec (Kind : Event_List:= Quit) is record
     case Kind is
-      when Pressed .. Leave =>
+      when Left_Pressed .. Leave =>
         Card : Cards.Card_Access;
       when Quit .. Redo =>
         null;

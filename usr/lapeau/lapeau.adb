@@ -3,6 +3,7 @@ with Cards, Table, Memory, Movements;
 procedure Lapeau is
   Event : Table.Event_Rec;
   Mov : Movements.Movement;
+  Stack, Card : Cards.Card_Access;
 
   type Status_List is (None, Selectable, Selected, Targetable, Targeted);
   Status : Status_List := None;
@@ -120,7 +121,7 @@ begin
             Selected_Target := null;
             Status := Selected;
         end case;
-      when Table.Pressed =>
+      when Table.Left_Pressed =>
         case Status is
           when None =>
             -- Pressing in a non movable card
@@ -147,7 +148,7 @@ begin
             -- Impossible, we must leave or release first
             null;
         end case;
-      when Table.Released =>
+      when Table.Left_Released =>
         case Status is
           when None =>
             -- Releasing in a non movable card
@@ -174,6 +175,26 @@ begin
             Selected_Source := null;
             Selected_Target := null;
         end case;
+      when Table.Right_Pressed =>
+        if Status = Selectable then
+          Stack := Cards.The_Dones (Event.Card.Suit)'Access;
+          if Stack.Prev /= null then
+             Card := Stack.Prev;
+          else
+             Card := Stack;
+          end if;
+          if Movements.Can_Move (Event.Card, Card) then
+             Mov := (Card => Event.Card,
+                     From => Event.Card.Stack,
+                     To   => Stack);
+            Table.Console.Set_Pointer_Shape (Con_Io.Arrow);
+            Movements.Move (Mov, True);
+            Reset;
+            Movements.Purge;
+          end if;
+        end if;
+      when Table.Right_Released =>
+        null;
     end case;
   end loop;
 end Lapeau;
