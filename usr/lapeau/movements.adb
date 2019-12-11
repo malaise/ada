@@ -88,7 +88,7 @@ package body Movements is
   -- Movement --
   --------------
   -- Internal: Move one card
-  procedure Move_One (Mov : Movement; Add : in Boolean) is
+  procedure Move_One (Mov : Movement; Add : in Boolean; Wait : in Boolean) is
     Curr, Prev, Stack : Cards.Card_Access;
     Valid, Movable : Boolean;
     Nb_Children : Natural;
@@ -187,7 +187,10 @@ package body Movements is
     Prev.Xcard.Show (True);
     Prev.Xcard.Do_Raise;
     Mov.Card.Xcard.Do_Raise;
-    Table.Console.Flush;
+    if Wait then
+      Table.Console.Flush;
+      Table.Wait (0.1);
+    end if;
   end Move_One;
 
   -- Internal data for multiple move
@@ -284,7 +287,7 @@ package body Movements is
         Target := Cards.The_Stacks(Available)'Access;
         Logger.Log_Debug ("  Descending " & Child.Image
                         & " in stack " & Target.Image);
-        Move_One ( (Card => Child, From => Source, To => Target), Add );
+        Move_One ( (Card => Child, From => Source, To => Target), Add, True);
         Adjust_Available (Source, Target);
         Lifo.Push (Child);
         Nb_Spread := Nb_Spread + 1;
@@ -298,7 +301,7 @@ package body Movements is
         Source := Child.Stack;
         Logger.Log_Debug ("  Restacking " & Child.Image
                         & " into stack " &  Target.Image);
-        Move_One ( (Card => Child, From => Source, To => Target), Add );
+        Move_One ( (Card => Child, From => Source, To => Target), Add, True);
         Adjust_Available (Source, Target);
       end loop;
       -- Push this completed sub-stack
@@ -308,7 +311,7 @@ package body Movements is
                     & Images.Llint_Image (Lifo.Length) & " stacks");
 
     -- Move the card to target
-    Move_One (Mov, Add);
+    Move_One (Mov, Add, True);
     -- Don't decrement target if it is a free stack
     Adjust_Available (Source => Mov.From,
       Target => (if Mov.To.Next = Mov.Card then null else Mov.To) );
@@ -327,7 +330,7 @@ package body Movements is
         Target := Cards.The_Stacks(Available)'Access;
         Logger.Log_Debug ("  Descending " & Child.Image
                         & " in stack " & Target.Image);
-        Move_One ( (Card => Child, From => Source, To => Target), Add );
+        Move_One ( (Card => Child, From => Source, To => Target), Add, True);
         Adjust_Available (Source, Target);
         Lifo.Push (Child);
         Nb_Spread := Nb_Spread + 1;
@@ -342,7 +345,7 @@ package body Movements is
         Source := Child.Stack;
         Logger.Log_Debug ("  Stacking " & Child.Image
                         & "  on target " & Target.Image);
-        Move_One ( (Card => Child, From => Source, To => Target), Add );
+        Move_One ( (Card => Child, From => Source, To => Target), Add, True);
         Adjust_Available (Source, Target);
       end loop;
     end loop;
@@ -356,7 +359,7 @@ package body Movements is
   begin
     if Mov.Card.Next = null then
       -- One card to move
-      Move_One (Mov, Add);
+      Move_One (Mov, Add, False);
     else
       -- Several cards
       Move_Multiple (Mov, Add);
@@ -425,7 +428,7 @@ package body Movements is
                Target := Target.Prev;
              end if;
              Mov := (Card => Acc, From => Acc.Stack, To => Target.Stack);
-             Move_One (Mov, True);
+             Move_One (Mov, True, True);
              One_Moved := True;
            else
              exit Depth;

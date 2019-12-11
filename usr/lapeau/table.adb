@@ -1,5 +1,13 @@
-with X_Mng;
+with Ada.Calendar;
+with X_Mng, Timers, Long_Long_Limited_Pool;
 package body Table is
+  -- Pool of pending events
+  procedure Set (To : out Event_Rec; Val : in Event_Rec) is
+  begin
+    To := Val;
+  end Set;
+  package Event_Pool_Mng is new Long_Long_Limited_Pool (Event_Rec, True, Set);
+  Event_Pool : Event_Pool_Mng.Pool_Type;
 
   -- Static information about the console
   Font_Height : Natural;
@@ -230,42 +238,76 @@ package body Table is
     end if;
   end Decode_Menu_Event;
 
-  -- Decode an event, on card, on menu or Break
-  procedure Next_Event (Event : out Event_Rec) is
-    -- For the blind get
+  -- Wait for an event (Dur < 0) or a delay
+  function Wait (Dur : Duration) return Event_Rec is
+    -- For blind get
     Str : Con_Io.Unicode_Sequence (1 .. 0);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
     Pos : Positive;
     Insert : Boolean;
-    -- The mouse event
+    -- Mouse event
     Mouse_Event : Con_Io.Mouse_Event_Rec;
-    use type Con_Io.Curs_Mvt, X_Mng.External_Reference;
+    -- Expiration
+    Expiration : Con_Io.Delay_Rec;
+    -- Result
+    Event : Event_Rec := (Kind => Quit);
+    use type Ada.Calendar.Time, X_Mng.External_Reference;
   begin
+    if Dur = Timers.Infinite_Seconds then
+      -- Wait for an event
+      Expiration := Con_Io.Infinite_Delay;
+    else
+      -- Wiat until the delay expiration, store intermediate events
+      Expiration := (Delay_Kind => Timers.Delay_Exp,
+                     Expiration_Time => Ada.Calendar.Clock + Dur,
+                     others => <>);
+    end if;
+
     loop
-      Get_Window.Get (Str, Last, Stat, Pos, Insert);
+      if Dur = Timers.Infinite_Seconds and then not Event_Pool.Is_Empty then
+        -- Event expected and present
+        return Event_Pool.Pop;
+      end if;
+      Get_Window.Get (Str, Last, Stat, Pos, Insert, Time_Out => Expiration);
       case Stat is
         when Con_Io.Break =>
           Event := (Kind => Quit);
-          return;
+          Event_Pool.Push (Event);
         when Con_Io.Mouse_Button =>
           Console.Get_Mouse_Event (Mouse_Event, Con_Io.X_Y);
           if Mouse_Event.Xref /= X_Mng.Null_Reference then
             if Decode_Card_Event (Mouse_Event, Event) then
-              -- valid card event
-              return;
+              -- Valid card event
+              Event_Pool.Push (Event);
             end if;
           elsif Decode_Menu_Event (Mouse_Event, Event) then
-            -- valid menu event
-            return;
+            -- Valid menu event
+            Event_Pool.Push (Event);
           end if;
+          Console.Get_Mouse_Event (Mouse_Event, Con_Io.X_Y);
         when Con_Io.Refresh =>
           Put_Menu;
+        when Con_Io.Timeout =>
+          return Event;
         when others =>
           null;
       end case;
     end loop;
+  end Wait;
+
+  -- Decode an event, on card, on menu or Break
+  procedure Next_Event (Event : out Event_Rec) is
+  begin
+    Event := Wait (Timers.Infinite_Seconds);
   end Next_Event;
+
+  -- Wait some milliseconds
+  procedure Wait (Dur : in Duration) is
+    Dummy_Event : Event_Rec;
+  begin
+    Dummy_Event := Wait (Dur);
+  end Wait;
 
 end Table;
 

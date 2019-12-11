@@ -25,7 +25,7 @@ package Table is
   -- Position (X, Y) of card within a done
   function Done_Of (Suit : Deck.Suit_List) return Deck.Position_Rec;
 
-  -- Decode an event, on card, on menu or Break
+  -- Wait infinitely for next event, on card, on menu or Break
   type Event_List is (Pressed, Released, Enter, Leave,
                       Quit, New_Game, Restart, Purge, Undo, Redo);
   type Event_Rec (Kind : Event_List:= Quit) is record
@@ -37,6 +37,9 @@ package Table is
     end case;
   end record;
   procedure Next_Event (Event : out Event_Rec);
+
+  -- Wait some milliseconds
+  procedure Wait (Dur : in Duration);
 
 end Table;
 
