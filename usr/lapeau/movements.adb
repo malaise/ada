@@ -1,30 +1,34 @@
-with Basic_Proc;
+with Queues, Trace.Loggers, Images, As.U;
 with Table, Memory;
 package body Movements is
 
+  -- Debug
+  Logger : Trace.Loggers.Logger;
   -- Number of free stacks
   Nb_Free_Stacks : Natural range 0 .. Cards.Stack_Range'Last;
 
   procedure Reset is
   begin
-     Nb_Free_Stacks := 0;
+    Logger.Init ("Movt");
+    Nb_Free_Stacks := 0;
   end Reset;
 
   -- Can source card be put on target, basic card/card validity
   function Is_Valid (Source, Target : in Cards.Card_Access) return Boolean is
-    use type Cards.Deck.Suit_List, Cards.Colors;
+    use type Cards.Card_Access, Cards.Deck.Suit_List, Cards.Colors;
   begin
     if Target.Stack.Suit = Cards.Deck.Empty then
-      -- Play stack
-      if Target.Stack.Nb_Children = 0 then
-        -- Target is an empty stack
-        return True;
-      elsif Target.Nb_Children /= 0 then
-        -- Target is not top of stack
-        return False;
-      elsif Source.Name /= Target.Name - 1 then
+      -- Target is in a play stack
+      if Target = Target.Stack then
+        -- Target is a play stack
+        -- Must be empty
+        return Target.Nb_Children = 0;
+      end if;
+      if Source.Name /= Target.Name - 1 then
+        -- Crescent
         return False;
       end if;
+      -- Same suit or alternate color
       case Stack_Policy is
         when Same_Suit =>
           return Source.Suit = Target.Suit;
@@ -47,6 +51,8 @@ package body Movements is
   -- Can source and children be moved on target
   function Can_Move (Source, Target : in Cards.Card_Access) return Boolean is
     Nb_To_Move, Nb_Movable : Positive;
+    Nb_Available : Integer;
+    use type Cards.Card_Access, Cards.Deck.Full_Suit_List;
   begin
     if Source.Stack.Name = Cards.Deck.Symbol_Name then
       -- Cannot move from Done
@@ -56,9 +62,25 @@ package body Movements is
     if not Is_Valid (Source, Target) then
       return False;
     end if;
+
+    if Source.Stack.Name = Cards.Deck.Symbol_Name then
+      -- Cards go to Done one by one
+      return Source.Nb_Children = 0;
+    end if;
+
+    if Target.Next /= null then
+        -- Target is not top of stack (or stack but not empty???)
+        return False;
+    end if;
     -- Nb children compatible with number of empty stacks
     Nb_To_Move := Source.Nb_Children + 1;
-    Nb_Movable := Nb_Free_Stacks * (Nb_Free_Stacks + 1) / 2 + 1;
+    Nb_Available := Nb_Free_Stacks;
+    if Target.Stack.Suit = Cards.Deck.Empty
+    and then Target.Stack.Nb_Children = 0 then
+      -- Target is a free stack
+      Nb_Available := Nb_Available - 1;
+    end if;
+    Nb_Movable := Nb_Available * (Nb_Available + 1) / 2 + 1;
     return Nb_To_Move <= Nb_Movable;
   end Can_Move;
 
@@ -66,9 +88,11 @@ package body Movements is
   -- Movement --
   --------------
   -- Internal: Move one card
-  procedure Move_One (Mov : Movement) is
+  procedure Move_One (Mov : Movement; Add : in Boolean) is
     Curr, Prev, Stack : Cards.Card_Access;
-    use type Cards.Deck.Full_Suit_List;
+    Valid, Movable : Boolean;
+    Nb_Children : Natural;
+    use type Cards.Card_Access, Cards.Deck.Full_Suit_List;
   begin
     -- Adjust the stack and top card of From
     Curr := Mov.Card;
@@ -82,14 +106,42 @@ package body Movements is
         Nb_Free_Stacks := Nb_Free_Stacks + 1;
       end if;
     else
+      -- Prev becomes top of stack
       Prev.Next := null;
       Prev.Nb_Children := 0;
       Prev.Movable := True;
       Stack.Prev := Prev;
+      -- Update parents in source stack
+      if Stack.Suit = Cards.Deck.Empty then
+        Curr := Curr.Prev;
+        Prev := null;
+        while Curr /= Stack loop
+          if Prev = null then
+            -- Top of stack is movable
+            Valid := True;
+            Movable := True;
+            Nb_Children := 0;
+          else
+            Valid := Is_Valid (Prev, Curr);
+            Movable := Movable and then Valid;
+          end if;
+          Curr.Nb_Children := Nb_Children;
+          Curr.Movable := Movable;
+          if Movable then
+            Nb_Children := Nb_Children + 1;
+          else
+            Nb_Children := 0;
+          end if;
+          Prev := Curr;
+          Curr := Curr.Prev;
+        end loop;
+      end if;
     end if;
     Stack.Nb_Children := Stack.Nb_Children - 1;
 
     -- Link to top of stack of To and to new parent
+    Curr := Mov.Card;
+    Prev := Curr.Prev;
     Stack := Mov.To;
     Curr.Stack := Stack;
     if Stack.Nb_Children = 0 then
@@ -121,14 +173,16 @@ package body Movements is
     end if;
 
     -- Move the X card
-Basic_Proc.Put_Line_Error ("Moving " & Mov.Card.Image
-  & " to " & Stack.Image);
+    Logger.Log_Debug ("Moving " & Mov.Card.Image & " to " & Stack.Image);
     if Stack.Suit = Cards.Deck.Empty then
       Mov.Card.Xcard.Move (Table.Stack_Of (
           Stack => Stack.Name,
           Depth => Stack.Nb_Children) );
     else
       Mov.Card.Xcard.Move (Table.Done_Of (Suit => Stack.Suit) );
+    end if;
+    if Add then
+      Memory.Add (Mov);
     end if;
     Prev.Xcard.Show (True);
     Prev.Xcard.Do_Raise;
@@ -138,76 +192,52 @@ Basic_Proc.Put_Line_Error ("Moving " & Mov.Card.Image
 
   -- Internal data for multiple move
   Available_Stacks : array (Cards.Stack_Range) of Boolean;
-  Nb_Available : Natural range 0 .. Cards.Stack_Range'Last;
+  subtype Available_Range is Natural range 0 .. Cards.Stack_Range'Last;
+  Nb_Available : Available_Range;
+  -- History of stacked cards
+  package Cards_Lifo is new Queues.Lifo (Cards.Card_Access);
+  Lifo : Cards_Lifo.Lifo_Type (Queues.Size_Range (Cards.Stack_Range'Last));
+
   -- Internal: Find next available stack
   function Next_Available return Cards.Stack_Range is
   begin
     for Stack in Cards.Stack_Range loop
       if Available_Stacks(Stack) then
-Basic_Proc.Put_Line_Error ("Next available => " & Cards.The_Stacks(Stack).Image);
+        Logger.Log_Debug ("    Next available => "
+                        & Cards.The_Stacks(Stack).Image);
         return Stack;
       end if;
     end loop;
     raise Program_Error;
   end Next_Available;
+
   -- Internal: Adjust Stack_Free after a move
   procedure Adjust_Available (Source, Target : Cards.Card_Access) is
+    use type Cards.Card_Access;
   begin
-    if Source.Nb_Children = 0 then
+    if Source /= null and then Source.Nb_Children = 0 then
       -- Maybe opening a free stack
-Basic_Proc.Put_Line_Error ("Adjust => " & Source.Image);
+      Logger.Log_Debug ("    Adjust source => " & Source.Image);
       Available_Stacks(Source.Name) := True;
       Nb_Available := Nb_Available + 1;
     end if;
-    if Target.Nb_Children = 1 then
+    if Target /= null and then Target.Nb_Children = 1 then
+      Logger.Log_Debug ("    Adjust target => " & Target.Image);
       Available_Stacks(Target.Name) := False;
       Nb_Available := Nb_Available - 1;
     end if;
   end Adjust_Available;
 
-  -- Internal: Move several cards recursively
-  procedure Move_Multiple (Mov : Movement) is
+  -- Internal: Move a stack of several cards
+  procedure Move_Multiple (Mov : Movement; Add : in Boolean) is
     Available : Cards.Stack_Range;
-    Child :  Cards.Card_Access;
+    Source, Target, Child :  Cards.Card_Access;
+    Nb_Spread : Available_Range;
+    Stack_Str : As.U.Asu_Us;
     use type Cards.Card_Access;
   begin
-    if Mov.Card.Next = null then
-      -- One card to move
-      Move_One (Mov);
-      Adjust_Available (Mov.From, Mov.To);
-      return;
-    end if;
-
-    -- Move child to a free stack
-Basic_Proc.Put_Line_Error ("Multi Moving " & Mov.Card.Image
-  & " to " & (if Mov.To.Prev = null then Mov.To.Image else Mov.To.Prev.Image));
-    Available := Next_Available;
-    Available_Stacks(Available) := False;
-    Child := Mov.Card.Next;
-    Move_Multiple ( (Card => Mov.Card.Next,
-                     From => Mov.From,
-                     To   => Cards.The_Stacks(Available)'Access) );
-    -- Move card (now top) to target
-    Move_One (Mov);
-    Adjust_Available (Mov.From, Mov.To);
-    -- Move child to target
-    Move_Multiple ( (Card => Child,
-                     From => Cards.The_Stacks(Available)'Access,
-                     To =>   Mov.To) );
-    -- Move top to target
-
-  end Move_Multiple;
-
-  -- Move some cards
-  procedure Move (Mov : Movement) is
-    use type Cards.Card_Access;
-  begin
-    if Mov.Card.Next = null then
-      -- One card to move
-      Move_One (Mov);
-      return;
-    end if;
-    -- Prepare for multiple move
+    Logger.Log_Debug ("Start Multi Move of " & Mov.Card.Image
+                      & " to " & Mov.To.Image);
     -- Identify the available stacks (excluding dest)
     Nb_Available := 0;
     for Stack in Cards.Stack_Range loop
@@ -217,9 +247,120 @@ Basic_Proc.Put_Line_Error ("Multi Moving " & Mov.Card.Image
         Nb_Available := Nb_Available + 1;
       end if;
     end loop;
-Basic_Proc.Put_Line_Error ("Start Multi Move");
-    Move_Multiple (Mov);
-Basic_Proc.Put_Line_Error ("End Multi Move");
+    if Logger.Debug_On then
+      Child := Mov.Card;
+      loop
+        Stack_Str.Append (" " & Child.Image);
+        exit when Child.Next = null;
+        Child := Child.Next;
+      end loop;
+      Logger.Log_Debug (Images.Integer_Image (Mov.Card.Nb_Children)
+                      & " cards:" & Stack_Str.Image
+                      & ", with " & Images.Integer_Image (Nb_Available)
+                      & " available stacks");
+    end if;
+
+    -- Move children into free stacks
+    Lifo.Clear;
+    Logger.Log_Debug (" Starting spreading");
+    Spread :
+    loop
+      -- Move children, from top, one per free stack
+      Source := Mov.Card.Stack;
+      Nb_Spread := 0;
+      loop
+        -- Mov top if not the card to move and while some Available
+        Child := Source.Prev;
+        if Child = Mov.Card then
+          Logger.Log_Debug (" Reached the card to move");
+          exit Spread;
+        end if;
+        if Nb_Available = 0 then
+          Logger.Log_Debug ("  No more available stack");
+          exit;
+        end if;
+        -- Move top card to target
+        Available := Next_Available;
+        Target := Cards.The_Stacks(Available)'Access;
+        Logger.Log_Debug ("  Descending " & Child.Image
+                        & " in stack " & Target.Image);
+        Move_One ( (Card => Child, From => Source, To => Target), Add );
+        Adjust_Available (Source, Target);
+        Lifo.Push (Child);
+        Nb_Spread := Nb_Spread + 1;
+      end loop;
+      Logger.Log_Debug (" Spread " &  Images.Integer_Image (Nb_Spread)
+                      & " cards");
+      -- Stack all these children on the first one
+      Target := Lifo.Pop.Stack;
+      for I in 1 .. Nb_Spread - 1 loop
+        Child := Lifo.Pop;
+        Source := Child.Stack;
+        Logger.Log_Debug ("  Restacking " & Child.Image
+                        & " into stack " &  Target.Image);
+        Move_One ( (Card => Child, From => Source, To => Target), Add );
+        Adjust_Available (Source, Target);
+      end loop;
+      -- Push this completed sub-stack
+      Lifo.Push (Target);
+    end loop Spread;
+    Logger.Log_Debug (" Finished spreading into "
+                    & Images.Llint_Image (Lifo.Length) & " stacks");
+
+    -- Move the card to target
+    Move_One (Mov, Add);
+    -- Don't decrement target if it is a free stack
+    Adjust_Available (Source => Mov.From,
+      Target => (if Mov.To.Next = Mov.Card then null else Mov.To) );
+
+    -- Pop the stacks to target
+    Logger.Log_Debug (" Starting unspreading");
+    Target := Mov.To;
+    for S in 1 .. Lifo.Length loop
+      -- Move all but last children, from top, one per free stack
+      Source := Lifo.Pop.Stack;
+      Logger.Log_Debug (" Unstacking stack " & Source.Image);
+      Child := Source.Prev;
+      Nb_Spread := 0;
+      while Child /= Source.Next loop
+        Available := Next_Available;
+        Target := Cards.The_Stacks(Available)'Access;
+        Logger.Log_Debug ("  Descending " & Child.Image
+                        & " in stack " & Target.Image);
+        Move_One ( (Card => Child, From => Source, To => Target), Add );
+        Adjust_Available (Source, Target);
+        Lifo.Push (Child);
+        Nb_Spread := Nb_Spread + 1;
+        Child := Source.Prev;
+      end loop;
+      Lifo.Push (Child);
+      Nb_Spread := Nb_Spread + 1;
+      -- Move these children to target
+      Target := Mov.To;
+      for I in 1 .. Nb_Spread loop
+        Child := Lifo.Pop;
+        Source := Child.Stack;
+        Logger.Log_Debug ("  Stacking " & Child.Image
+                        & "  on target " & Target.Image);
+        Move_One ( (Card => Child, From => Source, To => Target), Add );
+        Adjust_Available (Source, Target);
+      end loop;
+    end loop;
+
+    Logger.Log_Debug ("End Multi Move");
+  end Move_Multiple;
+
+  -- Move some cards
+  procedure Move (Mov : Movement; Add : in Boolean) is
+    use type Cards.Card_Access;
+  begin
+    if Mov.Card.Next = null then
+      -- One card to move
+      Move_One (Mov, Add);
+    else
+      -- Several cards
+      Move_Multiple (Mov, Add);
+    end if;
   end Move;
 
   -----------
@@ -284,8 +425,7 @@ Basic_Proc.Put_Line_Error ("End Multi Move");
                Target := Target.Prev;
              end if;
              Mov := (Card => Acc, From => Acc.Stack, To => Target.Stack);
-             Move (Mov);
-             Memory.Add (Mov);
+             Move_One (Mov, True);
              One_Moved := True;
            else
              exit Depth;

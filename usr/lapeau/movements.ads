@@ -22,7 +22,7 @@ package Movements is
   end record;
 
   -- Do a movement
-  procedure Move (Mov : Movement);
+  procedure Move (Mov : Movement; Add : in Boolean);
 
   -- Move all possible cards into Done stacks
   procedure Purge;

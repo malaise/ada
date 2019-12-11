@@ -66,15 +66,16 @@ begin
         if Memory.Can_Undo then
           Reset;
           Mov := Memory.Undo;
-          Movements.Move ( (Card => Mov.Card,
-                            From => Mov.To,
-                            To   => Mov.From) );
+          Movements.Move ( Mov => (Card => Mov.Card,
+                                   From => Mov.To,
+                                   To   => Mov.From),
+                           Add => False );
         end if;
       when Table.Redo =>
         Reset;
         if Memory.Can_Redo then
           Reset;
-          Movements.Move (Memory.Redo);
+          Movements.Move (Memory.Redo, Add => False);
         end if;
       when Table.Enter =>
         case Status is
@@ -169,8 +170,7 @@ begin
             Mov := (Card => Selected_Source,
                     From => Selected_Source.Stack,
                     To   => Selected_Target.Stack);
-            Movements.Move (Mov);
-            Memory.Add (Mov);
+            Movements.Move (Mov, True);
             Selected_Source := null;
             Selected_Target := null;
         end case;
