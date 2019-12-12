@@ -184,13 +184,12 @@ begin
              Card := Stack;
           end if;
           if Movements.Can_Move (Event.Card, Card) then
-             Mov := (Card => Event.Card,
-                     From => Event.Card.Stack,
-                     To   => Stack);
+            Status := None;
+            Mov := (Card => Event.Card,
+                    From => Event.Card.Stack,
+                    To   => Stack);
             Table.Console.Set_Pointer_Shape (Con_Io.Arrow);
             Movements.Move (Mov, True);
-            Reset;
-            Movements.Purge;
           end if;
         end if;
       when Table.Right_Released =>
