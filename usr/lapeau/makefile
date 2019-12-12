@@ -9,6 +9,8 @@ EXES := lapeau lapeau.stat
 CLIBS := $(CARDS_SLIBS) $(X11_SLIBS)
 LARGS_lapeau.stat := $(CARDS_ALIBS) $(X11_ALIBS)
 
+TXT := Lapeau
+DOCOPTS_Lapeau := -a toc
 
 include $(TEMPLATES)/ada.mk
 
