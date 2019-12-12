@@ -45,7 +45,7 @@ This button stops the current game and starts a new one.
 Restart::
 This button stops and restarts from scratch the current game.
 
-.On the right side are the functions that interact with the current game
+.On the right side are the functions that interact with the current game:
 
 Purge::
 This button moves in the Done stacks as many cards as possible, according to
@@ -80,7 +80,7 @@ The destination can be:
 * the Done stack with the same suit of the selected card,
 
 * a card on top of a Play stack, if this makes a decrescent sequence
-compatible with the stacking xref:Xpolicy[policy],
+compatible with the stacking xref:XPolicy[policy],
 
 * an empty Play stack.
 
@@ -174,12 +174,16 @@ NOTE: This algorithm is efficient and covers most use cases, but it is not
 optimal. For example, with 3 stacks, it will store 3, then 2, then 1 cards in
 temporary stacks, allowing 7 cards to be moved. But by moving 2 cards in
 temporary stacks, then stacking them, then moving and stacking again 2 cards,
-then moving the first temporary stack on the second, then stacking 2 then it
-is possible to store 7 cards in the 3 stacks, so to move 8 cards. And the
+then moving the first temporary stack on the second, then stacking 2 then 1,
+it is possible to store 7 cards in the 3 stacks, so to move 8 cards. And the
 difference between both logics increases with the number of free stacks.
 
 Why the name 'La Peau'
 ----------------------
 This game was introduced in my familly by a great-uncle, whose surname was
-"La peau". This came from "La peau de nénuphar", but nobody can explain why.
+"La peau".
+
+This came from "La peau de nénuphar".
+
+But nobody anymore can explain what it means...
 
