@@ -1,0 +1,92 @@
+La Peau
+============
+V1.0
+
+"La Peau" is solitaire card game.
+
+
+Goal of the game
+----------------
+
+Initially, 52 cards are randomly put on the table in 13 row of 4 cards each.
+
+image:LapeauInit.png["Init",title="Init"]
+
+The goal is to move the cards, one by one, in order to re-organise the cards in
+crescent order into 4 stacks.
+
+Playing areas
+-------------
+
+Playing stacks
+~~~~~~~~~~~~~~
+The main playing area is made of the 13 playing stacks, initially containing 4
+cards each.
+
+In this area the cards the cards are stacked in crescent order (King, Queen,
+Jack, 10 .. 2, Ace). The rules of compatibility of colors/suits are detailed
+xref:XPolicy[hereafter].
+
+Done stacks
+~~~~~~~~~~~
+This area contains 4 stacks, one for each suit, where the cards can be stacked
+in crescent order (Ace, 2 .. 10, Jack, Queen, King).
+
+Menu
+~~~~
+The menu proposes several functions
+
+.On the left side, functions that abort the current game
+
+::Exit
+
+This button stops and quits the game (the same way as the \'X' cross on the top-right
+corner of the window (depending on the window manager).
+
+::New
+
+This button stops the current game and starts a new one.
+
+::Restart
+
+This button stops and restarts from scratch the current game.
+
+.On the right side, function that interact with the current game
+
+::Purge
+
+This button moves in the Done stacks as many cards as possible, according to
+the current stacking xref:XPolicy[policy].
+
+::Undo
+
+This button un-does one by one the previous card movements (potentially up
+to the beginning of the current game).
+
+::Redo
+
+This button re-does one by one the un-done movements (potentially up to the
+first un-done one).
+
+NOTE:The movements, Undo and Redo are completely reversible, except that any
+explicit movement in the middle of a Unde/Redo sequence completely resets the
+history of movements that can be un-done.
+
+Detailed rules
+--------------
+
+.Stacking policy
+mono-suite or alternate-color, in stacks and purge
+
+.Moving in empty 
+done stacks, in option, no way back
+
+Multiple moves
+------------
+le, multi, right click to Done
+
+Why the name 'La Peau'
+----------------------
+This game was introduced in my familly by a great-uncle, whose surname was
+"La peau". This came from "La peau de nénuphar", but nobody knows why.
+
