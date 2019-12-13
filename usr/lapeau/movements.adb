@@ -9,7 +9,7 @@ package body Movements is
 
   procedure Reset is
   begin
-    Logger.Init ("Movt");
+    Logger.Init ("Movements");
     Nb_Free_Stacks := 0;
   end Reset;
 

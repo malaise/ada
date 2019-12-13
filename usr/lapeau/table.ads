@@ -35,11 +35,13 @@ package Table is
                       Right_Pressed, Right_Released,
                       Enter, Leave,
                       Quit, New_Game, Restart, Purge, Undo, Redo);
+  subtype Card_Event_List is Event_List range Left_Pressed .. Leave;
+  subtype Menu_Event_List is Event_List range Quit .. Redo;
   type Event_Rec (Kind : Event_List:= Quit) is record
     case Kind is
-      when Left_Pressed .. Leave =>
+      when Card_Event_List =>
         Card : Cards.Card_Access;
-      when Quit .. Redo =>
+      when Menu_Event_List =>
         null;
     end case;
   end record;

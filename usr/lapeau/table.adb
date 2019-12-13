@@ -1,12 +1,16 @@
 with Ada.Calendar;
-with X_Mng, Timers, Long_Long_Limited_Pool;
+with X_Mng, Timers, Long_Long_Limited_Pool, Trace.Loggers;
 package body Table is
-  -- Pool of pending events
+  -- Debug logger
+  Logger : Trace.Loggers.Logger;
+
+  -- FIFO Pool of pending events
   procedure Set (To : out Event_Rec; Val : in Event_Rec) is
   begin
     To := Val;
   end Set;
-  package Event_Pool_Mng is new Long_Long_Limited_Pool (Event_Rec, True, Set);
+  package Event_Pool_Mng is new Long_Long_Limited_Pool (
+      Data_Type => Event_Rec, Lifo => False, Set => Set);
   Event_Pool : Event_Pool_Mng.Pool_Type;
 
   -- Static information about the console
@@ -70,6 +74,7 @@ package body Table is
     if Console.Is_Open then
       return;
     end if;
+    Logger.Init ("Events");
     -- Create Console at proper size
     Con_Io.Initialise;
     declare
@@ -191,8 +196,8 @@ package body Table is
 
   -- Local: Decode a menu event
   -- Last pressed. Leave for none
-  subtype Menu_List is Event_List range Leave .. Redo;
-  Last_Pressed : Menu_List := Leave;
+  subtype Extended_Menu_List is Event_List range Leave .. Menu_Event_List'Last;
+  Last_Pressed : Extended_Menu_List := Leave;
   function Decode_Menu_Event (Mouse_Event : in Con_Io.Mouse_Event_Rec;
                               Event : out Event_Rec) return Boolean is
     Square : Con_Io.Square;
@@ -284,7 +289,11 @@ package body Table is
     loop
       if Dur = Timers.Infinite_Seconds and then not Event_Pool.Is_Empty then
         -- Event expected and present
-        return Event_Pool.Pop;
+        Event := Event_Pool.Pop;
+        Logger.Log_Debug ("  Popping " & Event.Kind'Img &
+            (if Event.Kind in Card_Event_List then
+             " " & Event.Card.Image else "") );
+        return Event;
       end if;
       Get_Window.Get (Str, Last, Stat, Pos, Insert, Time_Out => Expiration);
       case Stat is
@@ -296,10 +305,13 @@ package body Table is
           if Mouse_Event.Xref /= X_Mng.Null_Reference then
             if Decode_Card_Event (Mouse_Event, Event) then
               -- Valid card event
+              Logger.Log_Debug ("  Pushing " & Event.Kind'Img
+                              & " " & Event.Card.Image);
               Event_Pool.Push (Event);
             end if;
           elsif Decode_Menu_Event (Mouse_Event, Event) then
             -- Valid menu event
+            Logger.Log_Debug ("  Pushing " & Event.Kind'Img);
             Event_Pool.Push (Event);
           end if;
           Console.Get_Mouse_Event (Mouse_Event, Con_Io.X_Y);
@@ -316,14 +328,18 @@ package body Table is
   -- Decode an event, on card, on menu or Break
   procedure Next_Event (Event : out Event_Rec) is
   begin
+    Logger.Log_Debug ("Start next event");
     Event := Wait (Timers.Infinite_Seconds);
+    Logger.Log_Debug ("Stop next event " & Event.Kind'Img);
   end Next_Event;
 
   -- Wait some milliseconds
   procedure Wait (Dur : in Duration) is
     Dummy_Event : Event_Rec;
   begin
+    Logger.Log_Debug ("Start waiting");
     Dummy_Event := Wait (Dur);
+    Logger.Log_Debug ("Stop waiting");
   end Wait;
 
 end Table;
