@@ -188,8 +188,15 @@ begin
             Mov := (Card => Event.Card,
                     From => Event.Card.Stack,
                     To   => Stack);
-            Table.Console.Set_Pointer_Shape (Con_Io.Arrow);
+            -- Save Prev
+            Card := Card.Prev;
             Movements.Move (Mov, True);
+            -- Is cursor now on a card
+            if Card = null
+            or else Card.Suit = Cards.Deck.Empty
+            or else  not Table.Is_Pointer_Above (Card) then
+              Table.Console.Set_Pointer_Shape (Con_Io.Arrow);
+            end if;
           end if;
         end if;
       when Table.Right_Released =>

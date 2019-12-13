@@ -132,6 +132,17 @@ package body Table is
             Y => Done_Y);
   end Done_Of;
 
+  -- Is the pointer currently above a card
+  --  Based only on positions (the card might be covered or hidden)
+  function Is_Pointer_Above (Acard : Cards.Card_Access) return Boolean is
+    Pos : constant Cards.Deck.Position_Rec := Acard.Xcard.Get_Position;
+    X, Y : Integer;
+  begin
+    X_Mng.X_Get_Current_Pointer_Position (Console.Get_Line, X, Y);
+    return   Pos.X <= X and then X <= Pos.X + Cards.Deck.Width - 1
+    and then Pos.Y <= Y and then Y <= Pos.Y + Cards.Deck.Height;
+  end Is_Pointer_Above;
+
 
   -- Local: Decode a card event
   function Decode_Card_Event (Mouse_Event : Con_Io.Mouse_Event_Rec;

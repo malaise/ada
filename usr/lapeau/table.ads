@@ -10,7 +10,7 @@ package Table is
   -- Needs to be called only once, create the table, move the stacks, cards, menu...
   procedure Init;
 
-  -- Stacks
+  -- Stacks --
   subtype Stack_Range is Deck.Name_Range;
   -- 4 Cards, the last one being the Ace of a complete color
   subtype Depth_Range is Natural range 1 .. 3 + Deck.Name_Range'Last;
@@ -25,6 +25,11 @@ package Table is
   -- Position (X, Y) of card within a done
   function Done_Of (Suit : Deck.Suit_List) return Deck.Position_Rec;
 
+  -- Is the pointer currently above a card
+  --  Based only on positions (the card might be covered or hidden)
+  function Is_Pointer_Above (Acard : Cards.Card_Access) return Boolean;
+
+  -- Events --
   -- Wait infinitely for next event, on card, on menu or Break
   type Event_List is (Left_Pressed, Left_Released,
                       Right_Pressed, Right_Released,
