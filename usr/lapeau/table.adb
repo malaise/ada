@@ -1,5 +1,6 @@
 with Ada.Calendar;
 with X_Mng, Timers, Long_Long_Limited_Pool, Trace.Loggers;
+with Movements, Memory;
 package body Table is
   -- Debug logger
   Logger : Trace.Loggers.Logger;
@@ -51,7 +52,35 @@ package body Table is
   Start_Undo    : constant := 139; Stop_Undo    : constant := 144;
   Start_Redo    : constant := 147; Stop_Redo    : constant := 152;
 
-  -- Put the menu
+  -- Window for the policy menu
+  Policy_Window : Con_Io.Window;
+  Policy_Row : constant Con_Io.Row_Range := 6;
+  -- Altern color or Same Suit
+  Start_Mode   : constant :=   2;
+  Start_Switch : constant :=  18; Stop_Switch : constant :=  26;
+
+
+  -- Put the menus
+  procedure Update_Policy is
+    use type Movements.Stack_Policy_List;
+  begin
+    Policy_Window.Move (0, Start_Mode);
+    Policy_Window.Put (
+        (if Movements.Stack_Policy = Movements.Same_Suit then
+           "Same suit    "
+         else
+           "Altern colors"),
+         Menu_Fore, Background, False);
+    Policy_Window.Move (0, Start_Switch);
+    if not Memory.Can_Undo then
+      -- Beginning of game or all undone
+      Policy_Window.Put (" Switch ", Menu_Fore, Menu_Back, False);
+    else
+      -- Disabled during the game
+      Policy_Window.Put ("        ", Menu_Fore, Background, False);
+    end if;
+  end Update_Policy;
+
   procedure Put_Menu is
   begin
     Menu_Window.Move (0, Start_Exit);
@@ -66,6 +95,7 @@ package body Table is
     Menu_Window.Put (" Undo ", Menu_Fore, Menu_Back, False);
     Menu_Window.Move (0, Start_Redo);
     Menu_Window.Put (" Redo ", Menu_Fore, Menu_Back, False);
+    Update_Policy;
   end Put_Menu;
 
   -- Needs to be called only once, create the table, move the stacks, cards, menu...
@@ -110,9 +140,11 @@ package body Table is
     Get_Window.Set_Foreground (Background);
     Get_Window.Set_Background (Background);
 
-    -- Put menu
+    -- Put menus
     Menu_Window.Open (Console'Unchecked_Access,
                       (Menu_Row, 0), (Menu_Row, Last_Col));
+    Policy_Window.Open (Console'Unchecked_Access,
+                      (Policy_Row, 0), (Policy_Row, Last_Col));
     Put_Menu;
   end Init;
 
@@ -223,6 +255,10 @@ package body Table is
         when Start_Redo    .. Stop_Redo    => Event := (Kind => Redo);
         when others                        => null;
       end case;
+    elsif Square.Row = Policy_Row
+    and then not Memory.Can_Undo
+    and then Square.Col in Start_Switch .. Stop_Switch then
+      Event := (Kind => Switch);
     end if;
     -- Flip / flop menu entry on press
     if Mouse_Event.Status = Con_Io.Pressed then
@@ -239,6 +275,9 @@ package body Table is
         when Restart =>
           Menu_Window.Move (0, Start_Restart);
           Menu_Window.Put (" Restart ", Menu_Back, Menu_Fore, False);
+        when Switch =>
+          Policy_Window.Move (0, Start_Switch);
+          Policy_Window.Put (" Switch ", Menu_Back, Menu_Fore, False);
         when Purge =>
           Menu_Window.Move (0, Start_Purge);
           Menu_Window.Put (" Purge ", Menu_Back, Menu_Fore, False);

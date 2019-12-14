@@ -23,8 +23,14 @@ The main playing area is made of the 13 Playing stacks, initially containing 4
 cards each.
 
 In this area the cards the cards are stacked in crescent order (King, Queen,
-Jack, 10 .. 2, Ace). The rules of compatibility of colors/suits are detailed
-xref:XPolicy[hereafter].
+Jack, 10 .. 2, Ace).
+
+The game can be played withont of the following stacking policies:
+
+ * Same suite: The cards of a stack must be all of the same suit (Spade, Club,
+Heart, Diamond),
+ * Alternate colors: The colors (red / black) must alternate.
+The rules of compatibility of colors/suits are detailed
 
 Done stacks
 ~~~~~~~~~~~
@@ -45,11 +51,16 @@ This button stops the current game and starts a new one.
 Restart::
 This button stops and restarts from scratch the current game.
 
+Switch::
+This button allows changing the stacking policy ('same suit' or
+'alternate colors') when then game is not in progress. On its right, the
+current policy is listed.
+
 .On the right side are the functions that interact with the current game:
 
 Purge::
 This button moves in the Done stacks as many cards as possible, according to
-the current stacking xref:XPolicy[policy].
+the current stacking policy.
 
 Undo::
 This button un-does one by one the previous card movements (potentially up
@@ -80,7 +91,7 @@ The destination can be:
 * the Done stack with the same suit of the selected card,
 
 * a card on top of a Play stack, if this makes a decrescent sequence
-compatible with the stacking xref:XPolicy[policy],
+compatible with the stacking policy,
 
 * an empty Play stack.
 
@@ -128,6 +139,8 @@ and the 2 of Diamond are already Done.
 .Not using the Done stacks
 Using the Done stacks is not mandatory. This way, the game becomes by far more
 difficult, and also more likely unfeasible.
+
+NOTE: Once a card is stacked in its Done stack, it cannot be moved any more.
 
 Multiple moves
 ~~~~~~~~~~~~~~

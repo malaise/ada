@@ -21,7 +21,8 @@ procedure Lapeau is
     end if;
   end Reset;
 
-  use type Cards.Deck.Full_Suit_List, Table.Event_List;
+  use type Cards.Deck.Full_Suit_List, Table.Event_List,
+           Movements.Stack_Policy_List;
 begin
   -- Adjust play stacking policy
   if Argument.Get_Nbre_Arg = 1
@@ -47,10 +48,23 @@ begin
         Reset;
         Movements.Reset;
         Memory.Start_Game;
+        Table.Update_Policy;
       when Table.Restart =>
         Reset;
         Movements.Reset;
         Memory.Restore_Game;
+        Table.Update_Policy;
+      when Table.Switch =>
+        -- Maybe not valid any more
+        if not Memory.Can_Undo then
+          case Movements.Stack_Policy is
+            when Movements.Same_Suit =>
+              Movements.Stack_Policy := Movements.Alternate_Color;
+            when Movements.Alternate_Color =>
+              Movements.Stack_Policy := Movements.Same_Suit;
+          end case;
+          Table.Update_Policy;
+        end if;
       when Table.Purge =>
         -- Save selection
         Tmp_Card := Selected_Source;

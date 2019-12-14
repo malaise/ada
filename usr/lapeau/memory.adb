@@ -142,6 +142,10 @@ package body Memory is
   begin
     Dones.Push (Mov);
     Undones.Clear;
+    if Dones.Length = 1 then
+      -- First movement
+      Table.Update_Policy;
+    end if;
   end Add;
 
   -- Pop a movement and add it to the list of redoes
@@ -152,6 +156,10 @@ package body Memory is
     return Mov : Movements.Movement do
       Dones.Pop (Mov);
       Undones.Push (Mov);
+      if Dones.Length = 0 then
+        -- No more movement
+        Table.Update_Policy;
+      end if;
     end return;
   end Undo;
 
@@ -162,8 +170,18 @@ package body Memory is
     return Mov : Movements.Movement do
       Undones.Pop (Mov);
       Dones.Push (Mov);
+      if Dones.Length = 1 then
+        -- First movement
+        Table.Update_Policy;
+      end if;
     end return;
   end Redo;
+
+  -- Clear the redoes
+  procedure Clear_Redoes is
+  begin
+    Undones.Clear;
+  end Clear_Redoes;
 
 end Memory;
 

@@ -25,5 +25,8 @@ package Memory is
   function Can_Redo return Boolean;
   function Redo return Movements.Movement;
 
+  -- Clear the redoes
+  procedure Clear_Redoes;
+
 end Memory;
 

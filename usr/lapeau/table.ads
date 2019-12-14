@@ -10,6 +10,9 @@ package Table is
   -- Needs to be called only once, create the table, move the stacks, cards, menu...
   procedure Init;
 
+  -- Update and redisplay policy menu
+  procedure Update_Policy;
+
   -- Stacks --
   subtype Stack_Range is Deck.Name_Range;
   -- 4 Cards, the last one being the Ace of a complete color
@@ -34,7 +37,7 @@ package Table is
   type Event_List is (Left_Pressed, Left_Released,
                       Right_Pressed, Right_Released,
                       Enter, Leave,
-                      Quit, New_Game, Restart, Purge, Undo, Redo);
+                      Quit, New_Game, Restart, Switch, Purge, Undo, Redo);
   subtype Card_Event_List is Event_List range Left_Pressed .. Leave;
   subtype Menu_Event_List is Event_List range Quit .. Redo;
   type Event_Rec (Kind : Event_List:= Quit) is record
