@@ -9,7 +9,7 @@ Goal of the game
 
 Initially, 52 cards are randomly put on the table in 13 rows of 4 cards each.
 
-image:LapeauInit.png["Init",title="Init"]
+image:LapeauInit.png["Init",title="Init",align="left",width="75%"]
 
 The goal is to move the cards, one by one, in order to re-organise the cards in
 crescent order into 4 sorted stacks.
@@ -29,8 +29,10 @@ The game can be played withont of the following stacking policies:
 
  * Same suite: The cards of a stack must be all of the same suit (Spade, Club,
 Heart, Diamond),
+image:LapeauFullMono.png["MonoSuit",title="Same suit",align="left",width="75%"]
+
  * Alternate colors: The colors (red / black) must alternate.
-The rules of compatibility of colors/suits are detailed
+image:LapeauFullAlt.png["AltColor",title="Alternate colors",align="left",width="75%"]
 
 Done stacks
 ~~~~~~~~~~~
@@ -54,7 +56,7 @@ This button stops and restarts from scratch the current game.
 Switch::
 This button allows changing the stacking policy ('same suit' or
 'alternate colors') when then game is not in progress. On its right, the
-current policy is listed.
+current policy is indicated.
 
 .On the right side are the functions that interact with the current game:
 
@@ -88,7 +90,7 @@ by clicking again on the same card).
 
 The destination can be:
 
-* the Done stack with the same suit of the selected card,
+* the Done stack with the same suit as the selected card,
 
 * a card on top of a Play stack, if this makes a decrescent sequence
 compatible with the stacking policy,
@@ -98,16 +100,20 @@ compatible with the stacking policy,
 Valid destinations are identified by becomming reversed when the cursor is
 above them.
 
+NOTE: Initially, the cards are set randomly, which rarely leads to compatible
+stacks, so as soon as a card is moved it is rarely possible to move it back
+(it migh be possible in 'alternate color' mode though).
+
 Stacking policy
 ~~~~~~~~~~~~~~~
 anchor:XPolicy[]
-There are two alternate policies for stacking the cards in the playing area
+There are two different policies for stacking the cards in the playing area
 
-.Mono-suit
+.Same suit
 This is the default policy, where the cards can be stacked only when they
 are of the same suit (and in decrescent order).
 
-.Alternate-color
+.Alternate color
 When this polocy is selected, the cards can be stacked only when their colors
 (red/black) are alternated (and in crescent order). 
 This variant has more chance to be achievable.
@@ -124,29 +130,35 @@ is valid.
 .Impact of the policy on the purge
 The stacking policy impacts the behavior of the 'Purge' function.
 
-When in 'mono-suit' mode, if a card can be purged to its Done stack (if its
+When in 'same suit' mode, if a card can be purged to its Done stack (if its
 ancestor is already stacked there), then it is useless in the playing area. So
-the Purge will automatically move this card in its Done stack.
+the purge will automatically move this card in its Done stack.
 
-But in 'alternate-color', a card of a suit can be used as relay for a card of
+But in 'alternate color', a card of a suit can be used as relay for a card of
 another color. In this case the card is not purged.
 
 For example, a 4 of Club can be used as relay for a 3 of Heart or Diamond. But
 this 3 will not need a relay if it can be Done (if its corresponding 2 is
-already Done). As a consequence, the 4 of Club is purged if both th 2 of Heart
+already Done). As a consequence, the 4 of Club is purged if both the 2 of Heart
 and the 2 of Diamond are already Done.
 
 .Not using the Done stacks
-Using the Done stacks is not mandatory. This way, the game becomes by far more
-difficult, and also more likely unfeasible.
+Using the Done stacks is not mandatory, which allows different variants:
 
-NOTE: Once a card is stacked in its Done stack, it cannot be moved any more.
+-  Do not use the Done stacks at all (the game becomes by far more
+difficult, and also more likely unfeasible),
+- Only allow the aces to go in the Done stacks,
+- Use the Done stacks as less as possible...
+image:LapeauPartial.png["PartialDone",title="Partial Done",align="left",width="75%"]
+
+NOTE: Once a card is stacked in its Done stack, it cannot be moved back on
+a Play stack.
 
 Multiple moves
 ~~~~~~~~~~~~~~
 Within the play area it is possible to move automatically several cards.
-But the rule of moving cards one by one is always enforced, so this is
-possible only if:
+But the rule of moving cards one by one is always enforced. So multiple move
+is possible only if:
 
 * the cards to move form a valid sequence,
 * the destination is either a free Play stack, or the destination card is a
@@ -157,23 +169,24 @@ Moving several cards is achieved by selecting a card (not top) of the
 sequence, then selecting its destination.
 
 The algorithm to dispatch a stack on a target is efficient and covers most
-use-cases. 
+use-cases. Here is the logic:
 
-1. It first unstacks as many cards as possible from the original stack 
+1. it first unstacks as many cards as possible from the original stack 
 into the free stacks,
 
 2. then it restacks these cards on the last unstacked (temporary stack)
 
 3. then it iterates these operations until the ancestor of the original
-stack is reached, 
+stack is reached
 
 4. then it moves this ancestor to its destination
 
-5. then it unstacks the temporary stacks on the detination, using the
+5. then it unstacks the temporary stacks on the destination, using the
 free stacks that are progressively released.
 
-This algorithm allows moving a stack of 'S * (S + 1) / 2 + 1' cards with S
-free stacks.
+This algorithm allows moving, with 'S' free stacks, a stack of
+'S * (S + 1) / 2 + 1' cards free stacks.
+
 [width="50%", options="header"]
 |==============================
 |Nb free stacks |Nb cards moved
@@ -185,11 +198,12 @@ free stacks.
 
 NOTE: This algorithm is efficient and covers most use cases, but it is not
 optimal. For example, with 3 stacks, it will store 3, then 2, then 1 cards in
-temporary stacks, allowing 7 cards to be moved. But by moving 2 cards in
-temporary stacks, then stacking them, then moving and stacking again 2 cards,
-then moving the first temporary stack on the second, then stacking 2 then 1,
-it is possible to store 7 cards in the 3 stacks, so to move 8 cards. And the
-difference between both logics increases with the number of free stacks.
+temporary stacks, allowing 7 cards to be moved. But a better strategy is
+to move 2 cards in temporary stacks, then stack them, then move and stack
+again 2 other cards, then move the first temporary stack on the second, then
+stack 2 other cards, then 1. This way it becomes possible to store 7 cards in
+the 3 stacks, so to move 8 cards. And the difference between both logics
+increases with the number of free stacks.
 
 Why the name 'La Peau'
 ----------------------
