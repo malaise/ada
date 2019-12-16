@@ -1,7 +1,10 @@
-with Dynamic_List, Rnd, Limited_Pool;
+with Dynamic_List, Rnd, Limited_Pool, Trace.Loggers;
 with Cards, Table;
 package body Memory is
 
+  Logger : Trace.Loggers.Logger;
+
+  -- Done and undone
   procedure Set (To : out Movements.Movement; Val : in Movements.Movement) is
   begin
     To := Val;
@@ -35,9 +38,10 @@ package body Memory is
     use type Cards.Card_Access;
   begin
     for Stack in Table.Stack_Range loop
+      Logger.Log_Debug ("Stack:" & Stack'Img);
       Cards.The_Stacks(Stack).Stack := Cards.The_Stacks(Stack)'Access;
       Cards.The_Stacks(Stack).Nb_Children := 4;
-      -- Move card
+      -- Move and show X card
       for Depth in Depth_Range loop
         Acc := Current_Game (Stack, Depth);
         -- Move X card
@@ -45,34 +49,35 @@ package body Memory is
         Acc.Xcard.Show (True);
         Acc.Xcard.Do_Raise;
       end loop;
-      -- Last child of stack
-      Child := null;
-      Nb_Children := 0;
+      -- Last card of stack
       for Depth in reverse Depth_Range loop
         Acc := Current_Game (Stack, Depth);
         Acc.Stack := Cards.The_Stacks(Stack)'Access;
         -- Link card with child
         if Depth = Depth_Range'Last then
           -- Top
-          Acc.Next := null;
+          Child := null;
+          Nb_Children := 0;
           Top := Acc;
           Valid := False;
           Movable := True;
         else
-          Acc.Next := Child;
           Child.Prev := Acc;
           Valid := Movements.Is_Valid (Child, Acc);
           Movable := Movable and then Valid;
         end if;
         -- Update tags
-        Acc.Nb_Children := Nb_Children;
+        Acc.Next := Child;
         Acc.Movable := Movable;
         if Valid then
           Nb_Children := Nb_Children + 1;
         else
           Nb_Children := 0;
         end if;
+        Acc.Nb_Children := Nb_Children;
         -- Update for next
+        Logger.Log_Debug ("  " & Acc.Image & ": "
+            & Acc.Movable'Img & Acc.Nb_Children'Img);
         Child := Acc;
       end loop;
       -- Link first card with stack
@@ -100,6 +105,7 @@ package body Memory is
     Acc : Cards.Card_Access;
     Moved : Boolean;
   begin
+     Logger.Init ("Memory");
      -- Build a list of cards
     for Suit in Cards.Deck.Suit_List loop
       for Name in Cards.Deck.Name_Range loop

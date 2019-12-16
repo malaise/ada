@@ -63,6 +63,9 @@ begin
             when Movements.Alternate_Color =>
               Movements.Stack_Policy := Movements.Same_Suit;
           end case;
+          Reset;
+          Movements.Reset;
+          Memory.Restore_Game;
           Table.Update_Policy;
         end if;
       when Table.Purge =>
