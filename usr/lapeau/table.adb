@@ -185,8 +185,7 @@ package body Table is
   function Decode_Card_Event (Mouse_Event : Con_Io.Mouse_Event_Rec;
                               Event : out Event_Rec) return Boolean is
     Acc : Cards.Card_Access;
-    use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List,
-             Cards.Card_Access;
+    use type Con_Io.Mouse_Button_List, Cards.Card_Access;
   begin
     if not Mouse_Event.Valid then
       return False;

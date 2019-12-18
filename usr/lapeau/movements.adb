@@ -398,7 +398,7 @@ package body Movements is
     Alternate_Dones(1) := Cards.The_Dones(Alternate_Suits(1))'Access;
     Alternate_Dones(2) := Cards.The_Dones(Alternate_Suits(2))'Access;
     -- Not more than a delta of 2
-    Min := Integer (Acard.Name) - 2;
+    Min := Acard.Name - 2;
     return        Min <= Alternate_Dones(1).Nb_Children
         and then  Min <= Alternate_Dones(2).Nb_Children;
   end Can_Be_Purged;
@@ -420,8 +420,7 @@ package body Movements is
          Acc := Cards.The_Stacks(Stack).Prev;
          -- Loop in the stack until no move
          Depth:
-         loop
-           exit when Acc = null or else Acc = Cards.The_Stacks(Stack)'Access;
+         while Acc /= null and then Acc /= Cards.The_Stacks(Stack)'Access loop
            if Can_Be_Purged (Acc) then
              Target := Cards.The_Dones(Acc.Suit)'Access;
              if Target.Nb_Children /= 0 then

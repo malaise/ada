@@ -35,7 +35,6 @@ package body Memory is
     Acc, Child, Top : Cards.Card_Access;
     Movable, Valid : Boolean;
     Nb_Children : Natural;
-    use type Cards.Card_Access;
   begin
     for Stack in Table.Stack_Range loop
       Logger.Log_Debug ("Stack:" & Stack'Img);

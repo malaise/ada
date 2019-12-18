@@ -99,11 +99,48 @@ procedure T_Cards is
   end Done_Of;
 
 
-  use type Deck.Card_Access, Deck.Full_Suit_List,
-           X_Mng.External_Reference,
-           Con_Io.Curs_Mvt, Con_Io.Mouse_Button_Status_List;
-begin
+  procedure Process_Card_Event is
+    use type Con_Io.Mouse_Button_Status_List;
+  begin
+    Got_Card := Deck.Ref_To_Access (Mouse_Event.Xref);
+    if Got_Card.Is_Card then
+      Basic_Proc.Put_Line_Output ("Xref: "
+          & The_Names(Got_Card.Get_Suit, Got_Card.Get_Name).Image);
+    elsif Got_Card.Is_Symbol then
+      Basic_Proc.Put_Line_Output ("Xref: Done "
+          & Deck.Suit_List'Image (Got_Card.Get_Suit));
+    elsif Got_Card.Is_Empty then
+      Basic_Proc.Put_Line_Output ("Xref: Stack "
+          & Deck.Name_Range'Image (Got_Card.Get_Name));
+    else
+      Basic_Proc.Put_Line_Output ("Xref: ???");
+    end if;
+    if Mouse_Event.Status = Con_Io.Enter then
+      Console.Set_Pointer_Shape (Con_Io.Hand);
+    elsif Mouse_Event.Status = Con_Io.Leave then
+      Console.Set_Pointer_Shape (Con_Io.Arrow);
+    elsif Mouse_Event.Status = Con_Io.Pressed
+    and then Got_Card.Is_Card then
+      Moved := False;
+      if Got_Card.Get_Name = 1 then
+        -- Ace
+        if not Done_Status (Got_Card.Get_Suit) then
+          Got_Card.Move (Done_Of (Got_Card.Get_Suit));
+          Moved := True;
+        end if;
+        Done_Status (Got_Card.Get_Suit) :=
+            not Done_Status (Got_Card.Get_Suit);
+      end if;
+      if not Moved then
+        Got_Card.Move (Stack_Of (1, Depth));
+        Depth := Depth + 1;
+      end if;
+      Got_Card.Do_Raise;
+    end if;
+  end Process_Card_Event;
 
+  use type X_Mng.External_Reference, Con_Io.Curs_Mvt;
+  begin
   -- Create Console at proper size
   Con_Io.Initialise;
   declare
@@ -201,41 +238,7 @@ begin
             & " " & Mouse_Event.Status'Img
             & " X" & Mouse_Event.X'Img & ", Y" & Mouse_Event.Y'Img);
         if Mouse_Event.Xref /= X_Mng.Null_Reference then
-          Got_Card := Deck.Ref_To_Access (Mouse_Event.Xref);
-          if Got_Card.Is_Card then
-            Basic_Proc.Put_Line_Output ("Xref: "
-                & The_Names(Got_Card.Get_Suit, Got_Card.Get_Name).Image);
-          elsif Got_Card.Is_Symbol then
-            Basic_Proc.Put_Line_Output ("Xref: Done "
-                & Deck.Suit_List'Image (Got_Card.Get_Suit));
-          elsif Got_Card.Is_Empty then
-            Basic_Proc.Put_Line_Output ("Xref: Stack "
-                & Deck.Name_Range'Image (Got_Card.Get_Name));
-          else
-            Basic_Proc.Put_Line_Output ("Xref: ???");
-          end if;
-          if Mouse_Event.Status = Con_Io.Enter then
-            Console.Set_Pointer_Shape (Con_Io.Hand);
-          elsif Mouse_Event.Status = Con_Io.Leave then
-            Console.Set_Pointer_Shape (Con_Io.Arrow);
-          elsif Mouse_Event.Status = Con_Io.Pressed
-          and then Got_Card.Is_Card then
-            Moved := False;
-            if Got_Card.Get_Name = 1 then
-              -- Ace
-              if not Done_Status (Got_Card.Get_Suit) then
-                Got_Card.Move (Done_Of (Got_Card.Get_Suit));
-                Moved := True;
-              end if;
-              Done_Status (Got_Card.Get_Suit) :=
-                  not Done_Status (Got_Card.Get_Suit);
-            end if;
-            if not Moved then
-              Got_Card.Move (Stack_Of (1, Depth));
-              Depth := Depth + 1;
-            end if;
-            Got_Card.Do_Raise;
-          end if;
+          Process_Card_Event;
         end if;
       end if;
     elsif Stat = Con_Io.Refresh then

@@ -21,8 +21,7 @@ procedure Lapeau is
     end if;
   end Reset;
 
-  use type Cards.Deck.Full_Suit_List, Table.Event_List,
-           Movements.Stack_Policy_List;
+  use type Cards.Deck.Full_Suit_List;
 begin
   -- Adjust play stacking policy
   if Argument.Get_Nbre_Arg = 1
