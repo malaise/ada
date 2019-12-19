@@ -78,14 +78,20 @@ package body Cards is
     elsif Acc.Is_Symbol then
       -- Done stack
       return The_Done(Acc.Get_Suit)'Access;
-    elsif Acc.Get_Name > Play_Stack_Range'Last then
-      -- Tmp stack
-      return The_Tmp(Acc.Get_Name - Play_Stack_Range'Last)'Access;
-    else
+    elsif Acc.Get_Name in Play_Stack_Range then
       -- Play stack
       return The_Play(Acc.Get_Name)'Access;
+    else
+      -- Tmp stack
+      return The_Tmp(Acc.Get_Name - Play_Stack_Range'Last)'Access;
     end if;
   end X_To_Card;
+
+  -- Is a stack a Play or a Tmp stack
+  function Is_Play_Stack (Card : Card_Access) return Boolean is
+  begin
+    return Card.Xcard.Get_Name in Play_Stack_Range;
+  end Is_Play_Stack;
 
 end Cards;
 
