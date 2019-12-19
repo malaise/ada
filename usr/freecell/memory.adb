@@ -13,7 +13,6 @@ package body Memory is
                                              Lifo => True, Set => Set);
   Dones, Undones : Movement_Pool.Pool_Type;
 
-
   -- Clear the list of undos and redos
   procedure Clear is
   begin
@@ -25,11 +24,13 @@ package body Memory is
   -- Game --
   ----------
   -- Initial setup
-  Max_Depth : constant := 4;
+  Max_Depth : constant := 7;
   subtype Depth_Range is Positive range 1 .. Max_Depth;
   type Setup is array (Cards.Play_Stack_Range, Depth_Range)
              of Cards.Card_Access;
   Current_Game : Setup;
+  Depth_Of : constant array (Cards.Play_Stack_Range) of Depth_Range
+           :=  (1 .. 4 => 7, 5 .. 8 => 6);
 
   -- Upadte the links and counters, after start or restore
   procedure Update is
@@ -40,9 +41,9 @@ package body Memory is
     for Stack in Cards.Play_Stack_Range loop
       Logger.Log_Debug ("Stack:" & Stack'Img);
       Cards.The_Play(Stack).Stack := Cards.The_Play(Stack)'Access;
-      Cards.The_Play(Stack).Nb_Children := 4;
+      Cards.The_Play(Stack).Nb_Children := Depth_Of (Stack);
       -- Move and show X card
-      for Depth in Depth_Range loop
+      for Depth in Depth_Range range 1 .. Depth_Of (Stack) loop
         Acc := Current_Game (Stack, Depth);
         -- Move X card
         Acc.Xcard.Move (Table.Play_Of (Stack, Depth));
@@ -50,11 +51,11 @@ package body Memory is
         Acc.Xcard.Do_Raise;
       end loop;
       -- Last card of stack
-      for Depth in reverse Depth_Range loop
+      for Depth in reverse Depth_Range range 1 .. Depth_Of (Stack) loop
         Acc := Current_Game (Stack, Depth);
         Acc.Stack := Cards.The_Play(Stack)'Access;
         -- Link card with child
-        if Depth = Depth_Range'Last then
+        if Depth = Depth_Of (Stack) then
           -- Top
           Child := null;
           Nb_Children := 0;
@@ -85,6 +86,13 @@ package body Memory is
       Cards.The_Play(Stack).Prev := Top;
       Cards.The_Play(Stack).Next := Acc;
     end loop;
+    -- Reset Tmp stacks
+    for I in Cards.Tmp_Stack_Range loop
+      Cards.The_Tmp(I).Prev := null;
+      Cards.The_Tmp(I).Next := null;
+      Cards.The_Tmp(I).Stack := Cards.The_Tmp(I)'Access;
+      Cards.The_Tmp(I).Nb_Children := 0;
+    end loop;
     -- Reset Done stacks
     for Suit in Cards.Deck.Suit_List loop
       Cards.The_Done(Suit).Prev := null;
@@ -92,6 +100,7 @@ package body Memory is
       Cards.The_Done(Suit).Stack := Cards.The_Done(Suit)'Access;
       Cards.The_Done(Suit).Nb_Children := 0;
     end loop;
+
   end Update;
 
   -- Dynamic list of cards for random init
@@ -116,7 +125,7 @@ package body Memory is
     -- Put and link the cards
     Rnd.Gen.Randomize;
     for Stack in Cards.Play_Stack_Range loop
-      for Depth in Depth_Range loop
+      for Depth in Depth_Range range 1 .. Depth_Of (Stack) loop
         R := Rnd.Gen.Int_Random (1, Cards_List.List_Length);
         Cards_List.Move_At (R);
         Cards_List.Get (Acc, Moved => Moved);

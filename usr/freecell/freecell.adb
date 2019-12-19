@@ -1,4 +1,4 @@
-with Con_Io, Argument;
+with Con_Io;
 with Cards, Table, Memory, Movements;
 procedure Freecell is
   Event : Table.Event_Rec;
@@ -23,12 +23,6 @@ procedure Freecell is
 
   use type Cards.Deck.Full_Suit_List;
 begin
-  -- Adjust play stacking policy
-  if Argument.Get_Nbre_Arg = 1
-  and then Argument.Get_Parameter = "--alternate" then
-    Movements.Stack_Policy := Movements.Alternate_Color;
-  end if;
-
   -- Global init
   Table.Init;
 

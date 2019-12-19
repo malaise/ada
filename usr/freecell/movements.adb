@@ -29,12 +29,7 @@ package body Movements is
         return False;
       end if;
       -- Same suit or alternate color
-      case Stack_Policy is
-        when Same_Suit =>
-          return Source.Suit = Target.Suit;
-        when Alternate_Color =>
-          return Cards.Color_Of (Source.Suit) /= Cards.Color_Of (Target.Suit);
-      end case;
+      return Cards.Color_Of (Source.Suit) /= Cards.Color_Of (Target.Suit);
     else
       -- Done stack
       if Source.Suit /= Target.Suit then
@@ -371,8 +366,6 @@ package body Movements is
   -----------
 
   -- Can a card be purged
-  -- When policy is Same_Suit => basic validity
-  -- When Policy is Alternate_Color => Basic validity and not mode than
   --  one delta among colors in Done stacks
   function Can_Be_Purged (Acard : Cards.Card_Access) return Boolean is
     -- Tops of Done stack of alternate color
@@ -389,8 +382,6 @@ package body Movements is
     -- Basic validity versus top of corresponding Done stack
     if not Is_Valid (Acard, Top_Done) then
       return False;
-    elsif Stack_Policy = Same_Suit then
-      return True;
     end if;
     -- In Alternate_Colors, not more than one delta
     Alternate_Suits := Cards.Suits_Of (Cards.Alternate_Color (
