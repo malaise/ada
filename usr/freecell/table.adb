@@ -44,9 +44,9 @@ package body Table is
   Start_Exit    : constant :=  2; Stop_Exit    : constant :=  7;
   Start_New     : constant := 10; Stop_New     : constant := 15;
   Start_Restart : constant := 17; Stop_Restart : constant := 25;
-  Start_Purge   : constant := 27; Stop_Purge   : constant := 34;
-  Start_Undo    : constant := 36; Stop_Undo    : constant := 42;
-  Start_Redo    : constant := 44; Stop_Redo    : constant := 49;
+  Start_Purge   : constant := 71; Stop_Purge   : constant := 77;
+  Start_Undo    : constant := 80; Stop_Undo    : constant := 85;
+  Start_Redo    : constant := 88; Stop_Redo    : constant := 93;
 
   -- Put the menu
   procedure Put_Menu is
@@ -81,6 +81,7 @@ package body Table is
       Con_Io.Get_Font_Geometry (Font_No, Font_Width, Font_Height, Font_Offset);
       Last_Col := ((Deck.Width + X_Gap) * Cards.Play_Stack_Range'Last + X_Gap)
                   / Font_Width;
+      Logger.Log_Debug ("Last col:" & Last_Col'Img);
       Console.Open (Font_No, Last_Row, Last_Col, Def_Back => Background);
     end;
     Console.Set_Name ("Freecell");
