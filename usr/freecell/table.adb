@@ -16,7 +16,7 @@ package body Table is
   -- Static information about the console
   Font_Height : Natural;
   Last_Col : Con_Io.Col_Range;
-  Last_Row : constant Con_Io.Row_Range := 59;
+  Last_Row : constant Con_Io.Row_Range := 53;
   Background : constant Con_Io.Colors :=  Con_Io.Color03;
 
   -- Done and Tmp stacks
