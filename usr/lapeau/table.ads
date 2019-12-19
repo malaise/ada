@@ -18,10 +18,6 @@ package Table is
   -- 4 Cards, the last one being the Ace of a complete color
   subtype Depth_Range is Natural range 1 .. 3 + Deck.Name_Range'Last;
 
-  -- Number of empty stacks, from 0 to 13
-  subtype Empty_Stacks_Range is Natural range 0 .. Stack_Range'Last;
-  Empty_Stacks : Empty_Stacks_Range;
-
   -- Position (X, Y) of card within a stack
   function Stack_Of (Stack : Stack_Range; Depth : Depth_Range)
            return Deck.Position_Rec;
