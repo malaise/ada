@@ -1106,7 +1106,13 @@ begin -- Agite
               List_Action (Diff);
             when Afpx_Xref.Main.History =>
               -- History
-              List_Action (History);
+              declare
+                Curr_Dir : constant String := Directory.Get_Current;
+              begin
+                Position := Afpx.Line_List.Get_Position;
+                List_Action (History);
+                Init (Position, Curr_Dir);
+              end;
             when Afpx_Xref.Main.Tags =>
               -- Tags
               List_Tags;
