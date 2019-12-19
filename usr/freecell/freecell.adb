@@ -170,20 +170,32 @@ begin
             Selected_Target := null;
         end case;
       when Table.Right_Pressed =>
+        -- Right click-release
         if Status = Selectable then
+          -- Try to move to Done
           Stack := Cards.The_Done(Event.Card.Suit)'Access;
           if Stack.Prev /= null then
-             Card := Stack.Prev;
+            Card := Stack.Prev;
           else
-             Card := Stack;
+            Card := Stack;
           end if;
-          if Movements.Can_Move (Event.Card, Card) then
-            Status := None;
+          if not Movements.Can_Move (Event.Card, Card) then
+            -- Try to fins a free Tmp stack
+            Stack := null;
+            for I in Cards.Tmp_Stack_Range loop
+              if Cards.The_Tmp(I).Nb_Children = 0 then
+                Stack := Cards.The_Tmp(I)'Access;
+                exit;
+              end if;
+            end loop;
+          end if;
+          if Stack /= null then
             Mov := (Card => Event.Card,
                     From => Event.Card.Stack,
                     To   => Stack);
             -- Save Prev
-            Card := Card.Prev;
+            Status := None;
+            Card := Event.Card.Prev;
             Movements.Move (Mov, True);
             -- Is cursor now on a card
             if Card = null
