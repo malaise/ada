@@ -171,7 +171,8 @@ begin
         end case;
       when Table.Right_Pressed =>
         -- Right click-release
-        if Status = Selectable then
+        if Status = Selectable
+        or else Status = Selected then
           -- Try to move to Done
           Stack := Cards.The_Done(Event.Card.Suit)'Access;
           if Stack.Prev /= null then
@@ -194,7 +195,7 @@ begin
                     From => Event.Card.Stack,
                     To   => Stack);
             -- Save Prev
-            Status := None;
+            Reset;
             Card := Event.Card.Prev;
             Movements.Move (Mov, True);
             -- Is cursor now on a card
