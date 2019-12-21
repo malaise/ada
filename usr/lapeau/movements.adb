@@ -63,7 +63,7 @@ package body Movements is
       return False;
     end if;
 
-    if Source.Stack.Name = Cards.Deck.Symbol_Name then
+    if Target.Stack.Name = Cards.Deck.Symbol_Name then
       -- Cards go to Done one by one
       return Source.Nb_Children = 0;
     end if;

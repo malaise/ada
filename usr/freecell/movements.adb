@@ -63,8 +63,8 @@ package body Movements is
       return False;
     end if;
 
-    if Source.Stack.Name = Cards.Deck.Symbol_Name
-    or else not Cards.Is_Play_Stack (Source.Stack) then
+    if Target.Stack.Name = Cards.Deck.Symbol_Name
+    or else not Cards.Is_Play_Stack (Target.Stack) then
       -- Cards go to Done or Tmp one by one
       return Source.Nb_Children = 0;
     end if;

@@ -184,7 +184,9 @@ begin
             -- Try to fins a free Tmp stack
             Stack := null;
             for I in Cards.Tmp_Stack_Range loop
-              if Cards.The_Tmp(I).Nb_Children = 0 then
+              if Cards.The_Tmp(I).Nb_Children = 0
+              and then  Movements.Can_Move (Event.Card,
+                                            Cards.The_Tmp(I)'Access) then
                 Stack := Cards.The_Tmp(I)'Access;
                 exit;
               end if;
