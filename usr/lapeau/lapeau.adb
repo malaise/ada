@@ -192,7 +192,8 @@ begin
             Selected_Target := null;
         end case;
       when Table.Right_Pressed =>
-        if Status = Selectable then
+        if Status = Selectable
+        or else Status = Selected then
           Stack := Cards.The_Dones (Event.Card.Suit)'Access;
           if Stack.Prev /= null then
              Card := Stack.Prev;
@@ -200,7 +201,7 @@ begin
              Card := Stack;
           end if;
           if Movements.Can_Move (Event.Card, Card) then
-            Status := None;
+            Reset;
             Mov := (Card => Event.Card,
                     From => Event.Card.Stack,
                     To   => Stack);
