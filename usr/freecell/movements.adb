@@ -454,26 +454,39 @@ package body Movements is
     loop
       One_Moved := False;
       -- Loop for all stacks
-      Stacks:
+      Play_Stacks:
       for Stack in Cards.Play_Stack_Range loop
-         Acc := Cards.The_Play(Stack).Prev;
-         -- Loop in the stack until no move
-         Depth:
-         while Acc /= null and then Acc /= Cards.The_Play(Stack)'Access loop
-           if Can_Be_Purged (Acc) then
-             Target := Cards.The_Done(Acc.Suit)'Access;
-             if Target.Nb_Children /= 0 then
-               Target := Target.Prev;
-             end if;
-             Mov := (Card => Acc, From => Acc.Stack, To => Target.Stack);
-             Move_One (Mov, True, True);
-             One_Moved := True;
-           else
-             exit Depth;
-           end if;
-           Acc := Acc.Prev;
-         end loop Depth;
-      end loop Stacks;
+        Acc := Cards.The_Play(Stack).Prev;
+        -- Loop in the stack until no move
+        Depth:
+        while Acc /= null and then Acc /= Cards.The_Play(Stack)'Access loop
+          if Can_Be_Purged (Acc) then
+            Target := Cards.The_Done(Acc.Suit)'Access;
+            if Target.Nb_Children /= 0 then
+              Target := Target.Prev;
+            end if;
+            Mov := (Card => Acc, From => Acc.Stack, To => Target.Stack);
+            Move_One (Mov, True, True);
+            One_Moved := True;
+          else
+            exit Depth;
+          end if;
+          Acc := Acc.Prev;
+        end loop Depth;
+      end loop Play_Stacks;
+      Tmp_Stacks:
+      for I in Cards.Tmp_Stack_Range loop
+        Acc := Cards.The_Tmp(I).Next;
+        if Acc /= null and then Can_Be_Purged (Acc) then
+          Target := Cards.The_Done(Acc.Suit)'Access;
+          if Target.Nb_Children /= 0 then
+            Target := Target.Prev;
+          end if;
+          Mov := (Card => Acc, From => Acc.Stack, To => Target.Stack);
+          Move_One (Mov, True, True);
+          One_Moved := True;
+        end if;
+      end loop Tmp_Stacks;
       exit Iter when not One_Moved;
     end loop Iter;
   end Purge;
