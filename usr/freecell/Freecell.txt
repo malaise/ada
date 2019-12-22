@@ -2,14 +2,15 @@ Freecell
 ========
 V1.0
 
-"La Peau" is a solitaire card game.
+Freecell is a famous solitaire card game.
 
 Goal of the game
 ----------------
 
-Initially, 52 cards are randomly put on the table in 13 rows of 4 cards each.
+Initially, 52 cards are randomly put on the table in 8 rows, 4 rows of 7 cards
+and 4 rows of 6 cards.
 
-image:LapeauInit.png["Init",title="Init",align="left",width="75%"]
+image:FreecellInit.png["Init",title="Init",align="left",width="75%"]
 
 The goal is to move the cards, one by one, in order to re-organise the cards in
 crescent order into 4 sorted stacks.
@@ -19,25 +20,22 @@ Playing areas
 
 Playing stacks
 ~~~~~~~~~~~~~~
-The main playing area is made of the 13 Playing stacks, initially containing 4
-cards each.
+The main playing area is made of the 8 Playing stacks, initially containing
+the 52 cards each.
 
-In this area the cards the cards are stacked in crescent order (King, Queen,
-Jack, 10 .. 2, Ace).
+In this area the cards are stacked in decrescent order (King, Queen, Jack,
+10 .. 2, Ace) and in alternate colors (red / black).
 
-The game can be played withont of the following stacking policies:
-
- * Same suite: The cards of a stack must be all of the same suit (Spade, Club,
-Heart, Diamond),
-image:LapeauFullMono.png["MonoSuit",title="Same suit",align="left",width="75%"]
-
- * Alternate colors: The colors (red / black) must alternate.
-image:LapeauFullAlt.png["AltColor",title="Alternate colors",align="left",width="75%"]
+Tempo stacks
+~~~~~~~~~~~~
+This area, in the top center, contains 4 stacks in which any card can be
+stored, only one card per stack.
 
 Done stacks
 ~~~~~~~~~~~
-This area contains 4 stacks, one for each suit, where the cards can be stacked
-in crescent order (Ace, 2 .. 10, Jack, Queen, King).
+This area contains 4 stacks (red cards on the left and black cards on the
+right), one for each suit, where the cards can be stacked in crescent order
+(Ace, 2 .. 10, Jack, Queen, King).
 
 Menu
 ~~~~
@@ -52,11 +50,6 @@ This button stops the current game and starts a new one.
 
 Restart::
 This button stops and restarts from scratch the current game.
-
-Switch::
-This button allows changing the stacking policy ('same suit' or
-'alternate colors') when then game is not in progress. On its right, the
-current policy is indicated.
 
 .On the right side are the functions that interact with the current game:
 
@@ -73,7 +66,7 @@ This button re-does one by one the un-done movements (potentially up to the
 first un-done one).
 
 NOTE: The movements, the Undo and Redo are completely reversible, except that
-any explicit movement, while in a Unde/Redo sequence, completely resets the
+any explicit movement, while in a Undo/Redo sequence, completely resets the
 history of the movements that can be un-done.
 
 Detailed rules
@@ -92,67 +85,37 @@ The destination can be:
 
 * the Done stack with the same suit as the selected card,
 
-* a card on top of a Play stack, if this makes a decrescent sequence
-compatible with the stacking policy,
+* a Tempo stack if any is available,
+
+* a card on top of a Play stack, if this makes a decrescent sequence with
+alternate color,
 
 * an empty Play stack.
 
 Valid destinations are identified by becomming reversed when the cursor is
-above them.
+above them. The destination is validated by clicking then releasing on it.
 
 NOTE: Initially, the cards are set randomly, which rarely leads to compatible
-stacks, so as soon as a card is moved it is rarely possible to move it back
-(it migh be possible in 'alternate color' mode though).
-
-Stacking policy
-~~~~~~~~~~~~~~~
-anchor:XPolicy[]
-There are two different policies for stacking the cards in the playing area
-
-.Same suit
-This is the default policy, where the cards can be stacked only when they
-are of the same suit (and in decrescent order).
-
-.Alternate color
-When this polocy is selected, the cards can be stacked only when their colors
-(red/black) are alternated (and in crescent order). 
-This variant has more chance to be achievable.
-
-This behaviour is triggered by launching the program with the argument
-'--alternate'.
+stacks, so as soon as a card is moved it is rarely possible to move it back.
+But it is always possible to undo.
 
 Moving to Done stacks
 ~~~~~~~~~~~~~~~~~~~~~
 .Right click
 A right click on a selectable card directly moves it to its Done stack if this
-is valid.
+is valid, otherwise moves it in a Tempo stack if available.
 
-.Impact of the policy on the purge
-The stacking policy impacts the behavior of the 'Purge' function.
-
-When in 'same suit' mode, if a card can be purged to its Done stack (if its
-ancestor is already stacked there), then it is useless in the playing area. So
-the purge will automatically move this card in its Done stack.
-
-But in 'alternate color', a card of a suit can be used as relay for a card of
-another color. In this case the card is not purged.
+.Automatic purge
+A card of a suit can be used as relay for a card of another color.
+In this case the card is not purged.
 
 For example, a 4 of Club can be used as relay for a 3 of Heart or Diamond. But
 this 3 will not need a relay if it can be Done (if its corresponding 2 is
 already Done). As a consequence, the 4 of Club is purged if both the 2 of Heart
 and the 2 of Diamond are already Done.
 
-.Not using the Done stacks
-Using the Done stacks is not mandatory, which allows different variants:
-
--  Do not use the Done stacks at all (the game becomes by far more
-difficult, and also more likely unfeasible),
-- Only allow the aces to go in the Done stacks,
-- Use the Done stacks as less as possible...
-image:LapeauPartial.png["PartialDone",title="Partial Done",align="left",width="75%"]
-
 NOTE: Once a card is stacked in its Done stack, it cannot be moved back on
-a Play stack.
+a Play stack. But it is always possible to undo.
 
 Multiple moves
 ~~~~~~~~~~~~~~
@@ -163,38 +126,45 @@ is possible only if:
 * the cards to move form a valid sequence,
 * the destination is either a free Play stack, or the destination card is a
 valid ancestor for the sequence,
-* the number of free stacks allows the movement of the cards one by one.
+* the number of available Tempo stack and of free Play stacks allows the
+movement of the cards one by one.
 
-Moving several cards is achieved by selecting a card (not top) of the
-sequence, then selecting its destination.
+Moving several cards is achieved by selecting a card somewhere within a valid 
+sequence (often the biggest card of the sequence), then selecting its
+destination.
 
 The algorithm to dispatch a stack on a target is efficient and covers most
 use-cases. Here is the logic:
 
 1. it first unstacks as many cards as possible from the original stack 
+into the available Tempo  stacks,
+
+2. then it unstacks as many cards as possible from the original stack 
 into the free stacks,
 
-2. then it restacks these cards on the last unstacked (temporary stack)
+3. then it restacks these cards on the last unstacked (temporary stack)
 
-3. then it iterates these operations until the ancestor of the original
+4. then it iterates these operations until the ancestor of the original
 stack is reached
 
-4. then it moves this ancestor to its destination
+5. then it moves this ancestor to its destination
 
-5. then it unstacks the temporary stacks on the destination, using the
+6. then it unstacks the temporary stacks on the destination, using the
 free stacks that are progressively released.
 
-This algorithm allows moving, with 'S' free stacks, a stack of
-'S * (S + 1) / 2 + 1' cards free stacks.
+7. then it the cards stored in the Tempo stacks.
+
+This algorithm allows moving, with 'T' available Tempo stacks and 'S' free
+Playing stacks, a stack of 'T + S * (S + 1) / 2 + 1' cards free stacks.
 
 [width="50%", options="header"]
-|==============================
-|Nb free stacks |Nb cards moved
-|1              |2
-|2              |4
-|3              |7
-|4              |11
-|==============================
+|===================================
+|Nb free Play stacks |Nb cards moved
+|1                      |2
+|2                      |4
+|3                      |7
+|4                      |11
+|===================================
 
 NOTE: This algorithm is efficient and covers most use cases, but it is not
 optimal. For example, with 3 stacks, it will store 3, then 2, then 1 cards in
@@ -204,13 +174,4 @@ again 2 other cards, then move the first temporary stack on the second, then
 stack 2 other cards, then 1. This way it becomes possible to store 7 cards in
 the 3 stacks, so to move 8 cards. And the difference between both logics
 increases with the number of free stacks.
-
-Why the name 'La Peau'
-----------------------
-This game was introduced in my familly by a great-uncle, whose surname was
-"La peau".
-
-This came from "La peau de nénuphar".
-
-But nobody anymore can explain what it means...
 
