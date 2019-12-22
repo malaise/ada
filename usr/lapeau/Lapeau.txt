@@ -22,10 +22,10 @@ Playing stacks
 The main playing area is made of the 13 Playing stacks, initially containing 4
 cards each.
 
-In this area the cards the cards are stacked in crescent order (King, Queen,
-Jack, 10 .. 2, Ace).
+In this area the cards are stacked in decrescent order (King, Queen, Jack,
+10 .. 2, Ace).
 
-The game can be played withont of the following stacking policies:
+The game can be played with one of the following stacking policies:
 
  * Same suite: The cards of a stack must be all of the same suit (Spade, Club,
 Heart, Diamond),
@@ -73,7 +73,7 @@ This button re-does one by one the un-done movements (potentially up to the
 first un-done one).
 
 NOTE: The movements, the Undo and Redo are completely reversible, except that
-any explicit movement, while in a Unde/Redo sequence, completely resets the
+any explicit movement, while in a Undo/Redo sequence, completely resets the
 history of the movements that can be un-done.
 
 Detailed rules
@@ -81,8 +81,8 @@ Detailed rules
 
 How to play
 ~~~~~~~~~~~
-A card is selected by a left-click and a release on it. Selectable cards are
-identified by the mouse cursor becomming a hand when above them.
+A card is selected by left-clicking on it. Selectable cards are identified by
+the mouse cursor becomming a hand when above them.
 
 Once a card is selected, its color becomes reversed, the cursor remains a hand,
 denoting that it is time to select the destination (or to cancel the selection
@@ -98,11 +98,12 @@ compatible with the stacking policy,
 * an empty Play stack.
 
 Valid destinations are identified by becomming reversed when the cursor is
-above them.
+above them. The destination is validated by clicking then releasing on it.
 
 NOTE: Initially, the cards are set randomly, which rarely leads to compatible
 stacks, so as soon as a card is moved it is rarely possible to move it back
-(it migh be possible in 'alternate color' mode though).
+(it migh be possible in 'alternate color' mode though). But it is always
+possible to undo.
 
 Stacking policy
 ~~~~~~~~~~~~~~~
@@ -114,8 +115,8 @@ This is the default policy, where the cards can be stacked only when they
 are of the same suit (and in decrescent order).
 
 .Alternate color
-When this polocy is selected, the cards can be stacked only when their colors
-(red/black) are alternated (and in crescent order). 
+When this policy is selected, the cards can be stacked only when their colors
+(red/black) are alternated (and in decrescent order). 
 This variant has more chance to be achievable.
 
 This behaviour is triggered by launching the program with the argument
@@ -152,7 +153,7 @@ difficult, and also more likely unfeasible),
 image:LapeauPartial.png["PartialDone",title="Partial Done",align="left",width="75%"]
 
 NOTE: Once a card is stacked in its Done stack, it cannot be moved back on
-a Play stack.
+a Play stack. But it is always possible to undo.
 
 Multiple moves
 ~~~~~~~~~~~~~~
@@ -165,8 +166,9 @@ is possible only if:
 valid ancestor for the sequence,
 * the number of free stacks allows the movement of the cards one by one.
 
-Moving several cards is achieved by selecting a card (not top) of the
-sequence, then selecting its destination.
+Moving several cards is achieved by selecting a card somewhere within a valid 
+sequence (often the biggest card of the sequence), then selecting its
+destination.
 
 The algorithm to dispatch a stack on a target is efficient and covers most
 use-cases. Here is the logic:
@@ -188,13 +190,13 @@ This algorithm allows moving, with 'S' free stacks, a stack of
 'S * (S + 1) / 2 + 1' cards free stacks.
 
 [width="50%", options="header"]
-|==============================
-|Nb free stacks |Nb cards moved
+|===================================
+|Nb free Play stacks |Nb cards moved
 |1              |2
 |2              |4
 |3              |7
 |4              |11
-|==============================
+|===================================
 
 NOTE: This algorithm is efficient and covers most use cases, but it is not
 optimal. For example, with 3 stacks, it will store 3, then 2, then 1 cards in
