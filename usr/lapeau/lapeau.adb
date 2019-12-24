@@ -193,7 +193,8 @@ begin
         end case;
       when Table.Right_Pressed =>
         if Status = Selectable
-        or else Status = Selected then
+        or else (Status = Selected
+                 and then Selected_Source = Event.Card) then
           Stack := Cards.The_Dones (Event.Card.Suit)'Access;
           if Stack.Prev /= null then
              Card := Stack.Prev;

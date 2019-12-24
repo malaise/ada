@@ -172,7 +172,8 @@ begin
       when Table.Right_Pressed =>
         -- Right click-release
         if Status = Selectable
-        or else Status = Selected then
+        or else (Status = Selected
+                 and then Selected_Source = Event.Card) then
           -- Try to move to Done
           Stack := Cards.The_Done(Event.Card.Suit)'Access;
           if Stack.Prev /= null then
