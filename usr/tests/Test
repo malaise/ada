@@ -48,6 +48,7 @@ if [ "$1" = "-clean" ] ; then
 elif [ "$1" = "-ix" ] ; then
   # X11 based => interactive
   launch -n t_x "Click in upper-left corner to stop"
+  launch -n t_cards "Click in the \"X\" of the window manager to stop"
   launch -n t_color "Hit Ctrl-C to stop"
   launch -n t_key "Hit Ctrl-C to stop"
   launch -n t_con "Enter 'exit' in each window to stop"
