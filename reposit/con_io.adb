@@ -1890,10 +1890,11 @@ package body Con_Io is
   begin
     Check_Con (Con);
     case Pointer_Shape is
-      when None  => X_Shape := X_Mng.None;
-      when Arrow => X_Shape := X_Mng.Arrow;
-      when Cross => X_Shape := X_Mng.Cross;
-      when Hand  => X_Shape := X_Mng.Hand;
+      when None   => X_Shape := X_Mng.None;
+      when Arrow  => X_Shape := X_Mng.Arrow;
+      when Cross  => X_Shape := X_Mng.Cross;
+      when Hand   => X_Shape := X_Mng.Hand;
+      when Target => X_Shape := X_Mng.Target;
     end case;
     X_Mng.X_Set_Pointer(Con.Get_Access.Id, X_Shape);
   end Set_Pointer_Shape;

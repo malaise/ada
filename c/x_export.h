@@ -25,10 +25,11 @@
 #define TID_LEAVE   9
 
 /* The shapes of pointers */
-#define POINTER_NONE  0
-#define POINTER_ARROW 1
-#define POINTER_CROSS 2
-#define POINTER_HAND  3
+#define POINTER_NONE   0
+#define POINTER_ARROW  1
+#define POINTER_CROSS  2
+#define POINTER_HAND   3
+#define POINTER_TARGET 4
 
 /* Basics */
 

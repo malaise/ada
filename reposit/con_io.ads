@@ -569,7 +569,7 @@ package Con_Io is
 
   -- Set mouse pointer shape or hide mouse pointer
   --  Arrow by default
-  type Pointer_Shape_List is (None, Arrow, Cross, Hand);
+  type Pointer_Shape_List is (None, Arrow, Cross, Hand, Target);
   procedure Set_Pointer_Shape (Con           : in Console;
                                Pointer_Shape : in Pointer_Shape_List);
 

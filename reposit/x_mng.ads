@@ -254,7 +254,7 @@ package X_Mng is
   procedure X_Fill_Area (Line_Id : in Line; Xys : in Natural_Array);
 
   -- Set mouse pointer shape to arrow, '+' cross or hand, or hide it
-  type Pointer_Shapes is (None, Arrow, Cross, Hand);
+  type Pointer_Shapes is (None, Arrow, Cross, Hand, Target);
   procedure X_Set_Pointer(Line_Id : in Line;
                           Shape : in Pointer_Shapes);
 

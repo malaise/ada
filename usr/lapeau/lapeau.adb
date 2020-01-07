@@ -11,11 +11,12 @@ procedure Lapeau is
 
   use type Cards.Card_Access;
   -- Un-select the selected source card and reset status to None
-  --  (before scrambling/UNdo/Redo)
+  --  (before scrambling/Undo/Redo)
   procedure Reset is
   begin
     Status := None;
     if Selected_Source /= null then
+      Table.Console.Set_Pointer_Shape (Con_Io.Arrow);
       Selected_Source.Xcard.Un_Select;
       Selected_Source := null;
     end if;
@@ -98,7 +99,7 @@ begin
         case Status is
           when None =>
             if Event.Card.Movable then
-              -- Entering a movable source
+              -- Entering a selectable source
               Table.Console.Set_Pointer_Shape (Con_Io.Hand);
               Status := Selectable;
             end if;
@@ -108,6 +109,7 @@ begin
           when Selected =>
             if Movements.Can_Move (Selected_Source, Event.Card) then
               -- Entering a eligible target
+              Table.Console.Set_Pointer_Shape (Con_Io.Target);
               Event.Card.Xcard.Do_Select;
               Status := Targetable;
             end if;
@@ -126,13 +128,15 @@ begin
             Status := None;
           when Selected =>
             -- Leaving a selected source
-            null;
+            Table.Console.Set_Pointer_Shape (Con_Io.Hand);
           when Targetable =>
             -- Leaving an eligible target
+            Table.Console.Set_Pointer_Shape (Con_Io.Hand);
             Event.Card.Xcard.Un_Select;
             Status := Selected;
           when Targeted =>
             -- Leaving a selected target
+            Table.Console.Set_Pointer_Shape (Con_Io.Hand);
             Event.Card.Xcard.Un_Select;
             Selected_Target := null;
             Status := Selected;
@@ -143,7 +147,7 @@ begin
             -- Pressing in a non movable card
             null;
           when Selectable =>
-            -- Pressing a movable card => toggle select
+            -- Left pressing a slectable source => toggle select
             if Event.Card /= Selected_Source then
               Event.Card.Xcard.Do_Select;
               Selected_Source := Event.Card;
@@ -152,6 +156,7 @@ begin
           when Selected =>
             -- Pressing again the selected card
             if Event.Card = Selected_Source then
+              Table.Console.Set_Pointer_Shape (Con_Io.Hand);
               Event.Card.Xcard.Un_Select;
               Selected_Source := null;
               Status := Selectable;
@@ -188,7 +193,7 @@ begin
                     From => Selected_Source.Stack,
                     To   => Selected_Target.Stack);
             Movements.Move (Mov, True);
-            Selected_Source := null;
+            Reset;
             Selected_Target := null;
         end case;
       when Table.Right_Pressed =>

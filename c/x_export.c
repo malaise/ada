@@ -819,6 +819,12 @@ extern int x_set_pointer (void *line_id, int shape) {
             XDefineCursor(local_server.x_server, win_id->x_window,
                 win_id->cursor);
         break;
+        case POINTER_TARGET:
+            win_id->cursor = XCreateFontCursor(local_server.x_server,
+                XC_based_arrow_down);
+            XDefineCursor(local_server.x_server, win_id->x_window,
+                win_id->cursor);
+        break;
     }
     local_server.modified = TRUE;
     return (WAIT_OK);

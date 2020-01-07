@@ -1148,21 +1148,20 @@ package body X_Mng is
   end X_Get_Current_Pointer_Position;
 
   ------------------------------------------------------------------
+  Shapes_For_C : constant array (Pointer_Shapes) of C_Types.Int
+               := (None   => 0,
+                   Arrow  => 1,
+                   Cross  => 2,
+                   Hand   => 3,
+                   Target => 4);
   procedure X_Set_Pointer(Line_Id : in Line;
                           Shape : in Pointer_Shapes) is
     Line_For_C_Id : Line_For_C;
-    Shape_For_C : C_Types.Int;
     Res : Boolean;
   begin
-    case Shape is
-      when None  => Shape_For_C := 0;
-      when Arrow => Shape_For_C := 1;
-      when Cross => Shape_For_C := 2;
-      when Hand  => Shape_For_C := 3;
-    end case;
     Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Set_Pointer(Line_For_C_Id, Shape_For_C) = Ok;
+    Res := X_Set_Pointer(Line_For_C_Id, Shapes_For_C(Shape)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
