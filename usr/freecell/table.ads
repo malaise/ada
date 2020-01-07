@@ -1,5 +1,5 @@
 with Con_Io;
-with Cards;
+with Cards, Memory;
 package Table is
 
   package Deck renames Cards.Deck;
@@ -9,6 +9,9 @@ package Table is
 
   -- Needs to be called only once, create the table, move the stacks, cards, menu...
   procedure Init;
+
+  -- Set game num
+  procedure Set_Game_Num (Num : in Memory.Game_Range);
 
   -- Stacks --
   -- 7 Cards, the last one being the Ace of a complete color

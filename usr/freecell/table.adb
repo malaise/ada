@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with X_Mng, Timers, Long_Long_Limited_Pool, Trace.Loggers;
+with X_Mng, Timers, Long_Long_Limited_Pool, Trace.Loggers, Images;
 package body Table is
   -- Debug logger
   Logger : Trace.Loggers.Logger;
@@ -84,7 +84,6 @@ package body Table is
       Logger.Log_Debug ("Last col:" & Last_Col'Img);
       Console.Open (Font_No, Last_Row, Last_Col, Def_Back => Background);
     end;
-    Console.Set_Name ("Freecell");
     Console.Set_Y_Mode (Con_Io.X_Mng_Mode);
     Cards.Init (Console.Get_Line);
 
@@ -120,6 +119,12 @@ package body Table is
                       (Menu_Row, 0), (Menu_Row, Last_Col));
     Put_Menu;
   end Init;
+
+  -- Set game num
+  procedure Set_Game_Num (Num : in Memory.Game_Range) is
+  begin
+    Console.Set_Name ("Freecell " & "(" & Images.Integer_Image (Num) & ")");
+  end Set_Game_Num;
 
   -- Position (X, Y) of card within a play stack
   function Play_Of (Play : Cards.Play_Stack_Range; Depth : Depth_Range)
