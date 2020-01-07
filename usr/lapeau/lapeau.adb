@@ -1,9 +1,11 @@
-with Con_Io, Argument;
+with Con_Io, Argument, Basic_Proc;
 with Cards, Table, Memory, Movements;
 procedure Lapeau is
   Event : Table.Event_Rec;
   Mov : Movements.Movement;
   Stack, Card : Cards.Card_Access;
+  Game_Num : Memory.Req_Game_Range := Memory.Random_Num;
+  Invalid_Argument : exception;
 
   type Status_List is (None, Selectable, Selected, Targetable, Targeted);
   Status : Status_List := None;
@@ -24,18 +26,40 @@ procedure Lapeau is
 
   use type Cards.Deck.Full_Suit_List;
 begin
-  -- Adjust play stacking policy
-  if Argument.Get_Nbre_Arg = 1
-  and then Argument.Get_Parameter = "--alternate" then
-    Movements.Stack_Policy := Movements.Alternate_Color;
-  end if;
+  -- Optional game num and play stacking policy
+  begin
+    if Argument.Get_Nbre_Arg = 0 then
+      null;
+    elsif Argument.Get_Nbre_Arg = 1 then
+      if Argument.Get_Parameter = "--alternate" then
+        Movements.Stack_Policy := Movements.Alternate_Color;
+      else
+        Game_Num := Memory.Game_Range'Value (Argument.Get_Parameter);
+      end if;
+    elsif Argument.Get_Nbre_Arg = 2 then
+      if Argument.Get_Parameter (Occurence => 1) = "--alternate" then
+        Movements.Stack_Policy := Movements.Alternate_Color;
+        Game_Num := Memory.Game_Range'Value (
+            Argument.Get_Parameter (Occurence => 2));
+      elsif Argument.Get_Parameter (Occurence => 2) = "--alternate" then
+        Movements.Stack_Policy := Movements.Alternate_Color;
+        Game_Num := Memory.Game_Range'Value (
+            Argument.Get_Parameter (Occurence => 1));
+      end if;
+    else
+      raise Invalid_Argument;
+    end if;
+  exception
+    when others =>
+      raise Invalid_Argument;
+  end;
 
   -- Global init
   Table.Init;
 
   -- Init game
   Movements.Reset;
-  Memory.Start_Game;
+  Memory.Start_Game (Game_Num);
 
   -- Play game
   loop
@@ -47,7 +71,7 @@ begin
       when Table.New_Game =>
         Reset;
         Movements.Reset;
-        Memory.Start_Game;
+        Memory.Start_Game (Memory.Random_Num);
         Table.Update_Policy;
       when Table.Restart =>
         Reset;
@@ -226,5 +250,9 @@ begin
         null;
     end case;
   end loop;
+
+exception
+  when Invalid_Argument =>
+    Basic_Proc.Put_Line_Error ("Invalid argument");
 end Lapeau;
 

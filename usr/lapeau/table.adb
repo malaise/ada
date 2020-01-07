@@ -1,6 +1,6 @@
 with Ada.Calendar;
-with X_Mng, Timers, Long_Long_Limited_Pool, Trace.Loggers;
-with Movements, Memory;
+with X_Mng, Timers, Long_Long_Limited_Pool, Trace.Loggers, Images;
+with Movements;
 package body Table is
   -- Debug logger
   Logger : Trace.Loggers.Logger;
@@ -116,7 +116,6 @@ package body Table is
                   / Font_Width;
       Console.Open (Font_No, Last_Row, Last_Col, Def_Back => Background);
     end;
-    Console.Set_Name ("La peau");
     Console.Set_Y_Mode (Con_Io.X_Mng_Mode);
     Cards.Init (Console.Get_Line);
 
@@ -147,6 +146,12 @@ package body Table is
                       (Policy_Row, 0), (Policy_Row, Last_Col));
     Put_Menu;
   end Init;
+
+  -- Set game num
+  procedure Set_Game_Num (Num : in Memory.Game_Range) is
+  begin
+    Console.Set_Name ("La peau " & "(" & Images.Integer_Image (Num) & ")");
+  end Set_Game_Num;
 
   -- Position (X, Y) of card within a stack
   function Stack_Of (Stack : Stack_Range; Depth : Depth_Range)

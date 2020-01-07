@@ -5,7 +5,10 @@ package Memory is
   -- Game --
   ----------
   -- Initialise and save a new game
-  procedure Start_Game;
+  subtype Req_Game_Range is Integer range -1 .. 999999;
+  subtype Game_Range is Req_Game_Range range 0 .. Req_Game_Range'Last;
+  Random_Num : constant Req_Game_Range := Req_Game_Range'First;
+  procedure Start_Game (Num : in Req_Game_Range);
 
   -- Restore current game
   procedure Restore_Game;

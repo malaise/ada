@@ -1,4 +1,4 @@
-with Dynamic_List, Rnd, Limited_Pool, Trace.Loggers;
+with Dynamic_List, Rnd, Limited_Pool, Trace.Loggers, My_Math;
 with Cards, Table;
 package body Memory is
 
@@ -98,11 +98,16 @@ package body Memory is
   package Cards_List_Mng renames Cards_Dyn_List_Mng.Dyn_List;
   Cards_List : Cards_List_Mng.List_Type;
 
+  -- Game_num management
+  Max_Real : constant My_Math.Real :=  My_Math.Real (Req_Game_Range'Last + 1);
+
   -- Initialise and save a new game
-  procedure Start_Game is
+  procedure Start_Game (Num : in Req_Game_Range) is
     R : Positive;
     Acc : Cards.Card_Access;
     Moved : Boolean;
+    Game_Num : Game_Range;
+    use type My_Math.Real;
   begin
      Logger.Init ("Memory");
      -- Build a list of cards
@@ -112,8 +117,19 @@ package body Memory is
       end loop;
     end loop;
 
+    -- Set Game num
+    if Num = Random_Num then
+      -- Random game num
+      Rnd.Gen.Randomize;
+      Game_Num := Game_Range (My_Math.Trunc (
+         My_Math.Real (Rnd.Gen.Float_Random) * Max_Real));
+    else
+      Game_Num := Num;
+    end if;
+    Rnd.Gen.Randomize (Float (Game_Num) / Float (Max_Real));
+    Table.Set_Game_Num (Game_Num);
+
     -- Put and link the cards
-    Rnd.Gen.Randomize;
     for Stack in Table.Stack_Range loop
       for Depth in Depth_Range loop
         R := Rnd.Gen.Int_Random (1, Cards_List.List_Length);
