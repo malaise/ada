@@ -237,6 +237,8 @@ begin
   end loop;
 exception
   when Invalid_Argument =>
-    Basic_Proc.Put_Line_Error ("Invalid argument");
+    Basic_Proc.Put_Line_Error ("ERROR: Invalid argument.");
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+        & " [ <game_number> ]     // 0 .. 999999");
 end Freecell;
 

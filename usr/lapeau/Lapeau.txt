@@ -1,6 +1,6 @@
 La Peau
 =======
-V1.0
+V1.1
 
 "La Peau" is a solitaire card game.
 
@@ -98,7 +98,8 @@ compatible with the stacking policy,
 * an empty Play stack.
 
 Valid destinations are identified by becomming reversed when the cursor is
-above them. The destination is validated by clicking then releasing on it.
+above them, and the mouse cursor becomes a down arrow. The destination is
+validated by clicking then releasing on it.
 
 NOTE: Initially, the cards are set randomly, which rarely leads to compatible
 stacks, so as soon as a card is moved it is rarely possible to move it back
@@ -206,6 +207,16 @@ again 2 other cards, then move the first temporary stack on the second, then
 stack 2 other cards, then 1. This way it becomes possible to store 7 cards in
 the 3 stacks, so to move 8 cards. And the difference between both logics
 increases with the number of free stacks.
+
+Game number
+-----------
+
+Each game is identified by a number between 0 and 999999. The current game
+number is displayed in the title of the main window.
+
+Each 'New' game is a random one, and by default the first game is also random.
+Still, it is possible to specify, as program argument, the number of the first
+game to start with.
 
 Why the name 'La Peau'
 ----------------------
