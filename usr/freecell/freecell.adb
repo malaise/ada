@@ -185,9 +185,9 @@ begin
             Mov := (Card => Selected_Source,
                     From => Selected_Source.Stack,
                     To   => Selected_Target.Stack);
-            Movements.Move (Mov, True);
             Reset;
             Selected_Target := null;
+            Movements.Move (Mov, True);
         end case;
       when Table.Right_Pressed =>
         -- Right click-release
