@@ -14,12 +14,12 @@ procedure Intercept is
   -- Max direct interception angle
   Max_Intercep_Angle : constant Angle := 40;
   -- Distance for interception
-  Intercep_Distance : constant Distance := 35;
+  Intercep_Distance : constant Distance := 25;
   -- Final lengths
-  Direct_Final_Distance : constant Distance := 18;
-  Indirect_Final_Distance : constant Distance := 22;
+  Direct_Final_Distance : constant Distance := 15;
+  Indirect_Final_Distance : constant Distance := 18;
   -- Joining leg length
-  Join_Distance : constant Distance := 5;
+  Join_Distance : constant Distance := 3;
 
   -- Inputs
   Qfu, Init_Head : Angle;
