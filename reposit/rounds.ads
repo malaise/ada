@@ -1,4 +1,4 @@
--- Various rounding and tuncating operations on basic types
+-- Various rounding and truncating operations on basic types
 -- Also see My_Math that provides these operations on Long_Long and Real
 package Rounds is
   -- Round F at nearest integer
