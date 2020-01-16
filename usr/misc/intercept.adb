@@ -14,10 +14,10 @@ procedure Intercept is
   -- Max direct interception angle
   Max_Intercep_Angle : constant Angle := 40;
   -- Distance for interception
-  Intercep_Distance : constant Distance := 25;
+  Intercep_Distance : constant Distance := 30;
   -- Final lengths
   Direct_Final_Distance : constant Distance := 15;
-  Indirect_Final_Distance : constant Distance := 18;
+  Indirect_Final_Distance : constant Distance := 20;
   -- Joining leg length
   Join_Distance : constant Distance := 3;
 
@@ -28,17 +28,17 @@ procedure Intercept is
   App_Angle : Angle;
   App_Delta : Signed_Angle;
   -- Interception leg angle and length
-  Leg_Angle : Angle;
+  Leg_Angle, Alt_Leg_Angle : Angle;
   Leg_Distance : Distance;
   -- Turn right
-  Turn_Right : Boolean;
+  Turn_Right, Alt_Turn1_Right, Alt_Turn2_Right : Boolean;
   -- Headings
-  Heading_1, Heading_2 : Angle;
+  Heading_1, Alt_Heading_1, Heading_2, Alt_Heading_2 : Angle;
 
   -- Indirect intermediate point Beta
-  Beta_Distance, Beta_Angle : My_Math.Real;
+  Beta_Distance, Beta_Angle, Alt_Beta_Qdr : My_Math.Real;
   Beta_Dme : Distance;
-  Beta_Qdm  : Angle;
+  Beta_Qdm, Alt_Beta_Qdm : Angle;
 
   -- Temporary intermediate variable
   Tmp : My_Math.Real;
@@ -116,10 +116,32 @@ begin
     -- Already in final
     Basic_Proc.Put_Line_Output ("You are in final heading "
        & Angle_Image (Qfu) & ".");
+    return;
+  end if;
 
-  elsif Leg_Angle <= Max_Intercep_Angle then
+  -- For indirect interceptions
+  -- Angle and DME of Beta, the start of the last (direct) leg
+  -- Independant from initial heading
+  Beta_Distance := My_Math.Sqrt (
+        My_Math.Real (Indirect_Final_Distance) ** 2
+      + My_Math.Real (Join_Distance) ** 2
+      - 2.0 * My_Math.Real (Indirect_Final_Distance)
+            * My_Math.Real (Join_Distance)
+            * My_Math.Cos (My_Math.Real (180 - Max_Intercep_Angle),
+                           My_Math.Degree));
+  Beta_Dme := Distance (My_Math.Round (Beta_Distance));
+  Logger.Log_Debug ("Beta DME: " & Dist_Image (Beta_Dme));
+  Beta_Angle := abs My_Math.Arc_Sin (
+      My_Math.Sin (My_Math.Real (180 - Max_Intercep_Angle))
+        * My_Math.Real (Join_Distance) / Beta_Distance,
+      My_Math.Degree);
+  Logger.Log_Debug ("Beta Angle: "
+      & Angle_Image (Angle (My_Math.Round (Beta_Angle))));
+
+  -- Direct or indirect primary interception
+  if Leg_Angle <= Max_Intercep_Angle then
     -- Direct interception
-    Logger.Log_Debug ("Direct interception");
+     Basic_Proc.Put_Line_Output ("Direct interception");
     Turn_Right := App_Delta > 0;
     if Turn_Right then
       Heading_1 := Qfu + Leg_Angle;
@@ -132,24 +154,9 @@ begin
         & Angle_Image (Heading_1) & " to intercept final heading "
         & Angle_Image (Qfu) & ".");
   else
-    Logger.Log_Debug ("Indirect interception");
-    -- Indirect interception
-    -- Angle and DME of Beta, the start of the last (direct) leg
-    Beta_Distance := My_Math.Sqrt (
-       My_Math.Real (Indirect_Final_Distance) ** 2
-     + My_Math.Real (Join_Distance) ** 2
-     - 2.0 * My_Math.Real (Indirect_Final_Distance)
-           * My_Math.Real (Join_Distance)
-           * My_Math.Cos (My_Math.Real (180 - Max_Intercep_Angle),
-                          My_Math.Degree));
-    Beta_Dme := Distance (My_Math.Round (Beta_Distance));
-    Logger.Log_Debug ("Beta DME: " & Dist_Image (Beta_Dme));
-    Beta_Angle := abs My_Math.Arc_Sin (
-        My_Math.Sin (My_Math.Real (180 - Max_Intercep_Angle))
-        * My_Math.Real (Join_Distance) / Beta_Distance,
-       My_Math.Degree);
+    Basic_Proc.Put_Line_Output ("Indirect interception");
+    -- Set Beta QDM v.s. QFU, way of first turn and heading
     Beta_Qdm := Angle (My_Math.Round (Beta_Angle));
-    -- Set way of first turn
     if App_Delta >= 0 then
       -- First turn is right and second is left
       Turn_Right := True;
@@ -161,7 +168,7 @@ begin
       Beta_Qdm := Qfu - Beta_Qdm;
       Heading_2 := Qfu - Max_Intercep_Angle;
     end if;
-    Logger.Log_Debug ("Direct leg QDM: " & Angle_Image (Beta_Qdm));
+    Logger.Log_Debug ("Beta QDM: " & Angle_Image (Beta_Qdm));
 
     -- First (indirect leg), distance and turn to Beta
     Tmp := My_Math.Sqrt (
@@ -170,7 +177,7 @@ begin
       - 2.0 * My_Math.Real (Intercep_Distance) * Beta_Distance
             * My_Math.Cos (My_Math.Real (abs App_Delta) - Beta_Angle,
                            My_Math.Degree));
-    Logger.Log_Debug ("Indirect leg length "
+    Logger.Log_Debug ("Indirect leg length: "
         & Dist_Image (Distance (My_Math.Round (Tmp))));
     Tmp := abs My_Math.Arc_Sin (
         My_Math.Sin (My_Math.Real (abs App_Delta) - Beta_Angle, My_Math.Degree)
@@ -194,6 +201,70 @@ begin
         & Angle_Image (Heading_2) & " to intercept final heading "
         & Angle_Image (Qfu) & ".");
   end if;
+
+  -- Alternate interception
+  Basic_Proc.Put_Line_Output ("Alternate indirect interception");
+  -- Set Qdm of alternate Beta
+  Alt_Beta_Qdm := Angle (My_Math.Round (Beta_Angle));
+  if App_Delta >= 0 then
+    Alt_Beta_Qdm := Qfu - Alt_Beta_Qdm;
+    Alt_Beta_Qdr := My_Math.Real (Qfu + 180) - Beta_Angle;
+    Alt_Heading_2 := Qfu - Max_Intercep_Angle;
+  else
+    Alt_Beta_Qdm := Qfu + Alt_Beta_Qdm;
+    Alt_Beta_Qdr := My_Math.Real (Qfu + 180) + Beta_Angle;
+    Alt_Heading_2 := Qfu + Max_Intercep_Angle;
+  end if;
+  if Alt_Beta_Qdr > 360.0 then
+    Alt_Beta_Qdr := Alt_Beta_Qdr - 360.0;
+  end if;
+  if Alt_Beta_Qdr < 0.0 then
+    Alt_Beta_Qdr := Alt_Beta_Qdr + 360.0;
+  end if;
+  Logger.Log_Debug ("Alternate Beta Qdm: " & Angle_Image (Alt_Beta_Qdm));
+
+  -- First (indirect leg), distance and turn to Beta
+  Tmp := My_Math.Sqrt (
+        My_Math.Real (Intercep_Distance) ** 2
+      + Beta_Distance ** 2
+      - 2.0 * My_Math.Real (Intercep_Distance) * Beta_Distance
+            * My_Math.Cos (My_Math.Real (abs App_Delta) + Beta_Angle,
+                           My_Math.Degree));
+  Logger.Log_Debug ("Indirect alternate leg length: "
+        & Dist_Image (Distance (My_Math.Round (Tmp))));
+  Tmp := abs My_Math.Arc_Sin (
+        My_Math.Sin (My_Math.Real (abs App_Delta) + Beta_Angle, My_Math.Degree)
+      / Tmp * Beta_Distance,
+      My_Math.Degree);
+  Alt_Leg_Angle := Angle (My_Math.Round (Tmp));
+  Logger.Log_Debug ("Indirect alternate leg angle: "
+      & Angle_Image (Alt_Leg_Angle));
+  -- Set way of first turn and heading
+  Tmp := Alt_Beta_Qdr + 180.0;
+  if Tmp > 360.0 then
+    Tmp := Tmp - 360.0;
+  end if;
+  -- First turn
+  if      My_Math.Real (Init_Head) < Alt_Beta_Qdr
+  or else My_Math.Real (Init_Head) >= Tmp then
+    Alt_Turn1_Right := True;
+    Alt_Heading_1 := Init_Head + Alt_Leg_Angle;
+  else
+    Alt_Turn1_Right := False;
+    Alt_Heading_1 := Init_Head - Alt_Leg_Angle;
+  end if;
+  -- Second turn
+  Alt_Turn2_Right := Alt_Heading_1 - Alt_Heading_2 >= 180;
+
+  Basic_Proc.Put_Line_Output (
+        "At DME " & Dist_Image (Intercep_Distance) & " turn "
+      & Right_Left_Image (Alt_Turn1_Right) & " heading "
+      & Angle_Image (Alt_Heading_1) & ",");
+  Basic_Proc.Put_Line_Output (
+        "at DME " & Dist_Image (Beta_Dme) & " QDM " & Angle_Image (Alt_Beta_Qdm)
+      & " turn " & Right_Left_Image (Alt_Turn2_Right) & " heading "
+      & Angle_Image (Alt_Heading_2) & " to intercept final heading "
+      & Angle_Image (Qfu) & ".");
 
 end Intercept;
 
