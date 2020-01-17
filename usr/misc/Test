@@ -160,6 +160,21 @@ Unknown variable while evaluating variable.
 EOF
 comp err experr
 
+# Intercept
+echo "intercept 92 175"
+intercept 92 175 >out 2>err
+cat > expout << EOF
+Indirect interception
+At DME 30 turn right heading 217,
+at DME 22 QDM 100 turn left heading 132 to intercept final heading 92.
+Alternate indirect interception
+At DME 30 turn right heading 212,
+at DME 22 QDM 84 turn left heading 52 to intercept final heading 92.
+EOF
+echo -n > experr
+comp out expout
+comp err experr
+
 # Done
 echo "OK"
 clean
