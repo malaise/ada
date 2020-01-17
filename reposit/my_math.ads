@@ -43,6 +43,10 @@ package My_Math is
   --    R=5.118 N=-2 -> 5.12
   function Round_At (X : Real; N : Inte) return Real;
 
+  -- Integer division
+  procedure Div (A, B : in Inte; Q, R : out Inte);
+  procedure Div (A : in Real; B : in Inte; Q : out Inte; R : out Real);
+
   -- Power and sqrt
   function "**" (Number, Exponent : Real) return Real;
   function Sqrt (X : Real) return Real;

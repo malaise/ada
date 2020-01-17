@@ -205,6 +205,22 @@ package body My_Math is
     return M + T;
   end Round_At;
 
+  -- Integer division
+  procedure Div (A, B : in Inte; Q, R : out Inte) is
+  begin
+    Q := A / B;
+    R := A rem B;
+  end Div;
+
+  procedure Div (A : in Real; B : in Inte; Q : out Inte; R : out Real) is
+    Rb : constant Real := Real (B);
+    D : Real;
+  begin
+    D := Int (A / Rb);
+    Q := Trunc (D);
+    R := A - D * Rb;
+  end Div;
+
   -- Power
   function "**" (Number, Exponent : Real) return Real is
   begin

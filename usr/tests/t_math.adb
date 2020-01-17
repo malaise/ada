@@ -16,6 +16,7 @@ procedure T_Math is
 
   subtype Real is My_Math.Real;
   R, Rp : Real;
+  I : My_Math.Inte;
 
 begin
   loop
@@ -84,11 +85,30 @@ begin
       exception
         when others=> Put_Line_Output ("Exception");
       end;
+      loop
+        begin
+          Put_Output ("Enter another real R2 : ? "); Rp := Get (Get_Line);
+          exit;
+        exception
+          when Basic_Proc.End_Error => raise;
+          when others => Skip_Line;
+        end;
+      end loop;
       begin
-        Put_Output ("Enter another real R2 : ? "); Rp := Get (Get_Line);
         Put_Output (" roundiv (round(R1), round(R2)) ");
         Put (Roundiv(Round(R), Round(Rp))); New_Line_Output;
+      exception
+        when others=> Put_Line_Output ("Exception");
+      end;
+      begin
         Put_Output (" R1 ** R2 "); Put (R**Rp); New_Line_Output;
+      exception
+        when others=> Put_Line_Output ("Exception");
+      end;
+      begin
+        Put_Output (" R1 div Inte(R2) ");
+        My_Math.Div (R, My_Math.Trunc (Rp),  I, R);
+        Put (I); Put_Output (" & "); Put (R); New_Line_Output;
       exception
         when others=> Put_Line_Output ("Exception");
       end;
