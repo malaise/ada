@@ -221,7 +221,7 @@ begin
   if Alt_Beta_Qdr < 0.0 then
     Alt_Beta_Qdr := Alt_Beta_Qdr + 360.0;
   end if;
-  Logger.Log_Debug ("Alternate Beta Qdm: " & Angle_Image (Alt_Beta_Qdm));
+  Logger.Log_Debug ("Alternate Beta QDM: " & Angle_Image (Alt_Beta_Qdm));
 
   -- First (indirect leg), distance and turn to Beta
   Tmp := My_Math.Sqrt (
@@ -239,14 +239,22 @@ begin
   Alt_Leg_Angle := Angle (My_Math.Round (Tmp));
   Logger.Log_Debug ("Indirect alternate leg angle: "
       & Angle_Image (Alt_Leg_Angle));
-  -- Set way of first turn and heading
-  Tmp := Alt_Beta_Qdr + 180.0;
-  if Tmp > 360.0 then
+  -- Set way of first turn and heading: Init_Head v.s. Alt_Beta_Qdm
+  Tmp :=  My_Math.Real (Init_Head) - Alt_Beta_Qdr - 180.0;
+  while Tmp > 360.0 loop
+    Tmp := Tmp - 360.0;
+  end loop;
+  while Tmp < -0.0 loop
+    Tmp := Tmp + 360.0;
+  end loop;
+  if Tmp > 180.0 then
     Tmp := Tmp - 360.0;
   end if;
+  Logger.Log_Debug ("Heading - Alt_Beta_Qdm: "
+      & Angle_Image (Signed_Angle (My_Math.Round (Tmp))));
+
   -- First turn
-  if      My_Math.Real (Init_Head) < Alt_Beta_Qdr
-  or else My_Math.Real (Init_Head) >= Tmp then
+  if Tmp >= 0.0 then
     Alt_Turn1_Right := True;
     Alt_Heading_1 := Init_Head + Alt_Leg_Angle;
   else

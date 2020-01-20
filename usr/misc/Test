@@ -161,8 +161,14 @@ EOF
 comp err experr
 
 # Intercept
-echo "intercept 92 175"
-intercept 92 175 >out 2>err
+function t_intercept {
+echo "intercept $1 $2"
+intercept $1 $2 >out 2>err
+echo -n > experr
+comp out expout
+comp err experr
+}
+
 cat > expout << EOF
 Indirect interception
 At DME 30 turn right heading 217,
@@ -171,9 +177,27 @@ Alternate indirect interception
 At DME 30 turn right heading 212,
 at DME 22 QDM 84 turn left heading 52 to intercept final heading 92.
 EOF
-echo -n > experr
-comp out expout
-comp err experr
+t_intercept " 92" "175"
+
+cat > expout << EOF
+Indirect interception
+At DME 30 turn left heading 47,
+at DME 22 QDM 134 turn right heading 102 to intercept final heading 142.
+Alternate indirect interception
+At DME 30 turn left heading 48,
+at DME 22 QDM 150 turn right heading 182 to intercept final heading 142.
+EOF
+t_intercept "142" " 95"
+
+cat > expout << EOF
+Indirect interception
+At DME 30 turn left heading 315,
+at DME 22 QDM 84 turn right heading 52 to intercept final heading 92.
+Alternate indirect interception
+At DME 30 turn left heading 321,
+at DME 22 QDM 100 turn right heading 132 to intercept final heading 92.
+EOF
+t_intercept " 92" "350"
 
 # Done
 echo "OK"
