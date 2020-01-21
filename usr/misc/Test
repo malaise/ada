@@ -36,6 +36,29 @@ function comp {
 
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
+# Read field $3 of line $2 of file $1
+function readarg {
+res="`awk -vLINE=$2 -vFIELD=$3 '
+  BEGIN {
+    NL=0
+  }
+  (NF == 0 || $1 ~ /^#/) {
+    # Skip empty lines and comment
+    next
+  }
+  {
+    # Count significant lines
+    NL=NL+1
+    if (NL == LINE) {
+      printf "%s",$FIELD
+      exit 0
+    }
+  } 
+' $1`"
+echo "$res"
+}
+
+
 # One test of compression / uncompression
 function cmpr_one {
   export OPT=""
@@ -159,45 +182,74 @@ Error processing input flow at line 15 on node Var:
 Unknown variable while evaluating variable.
 EOF
 comp err experr
+echo ""
 
 # Intercept
-function t_intercept {
-echo "intercept $1 $2"
-intercept $1 $2 >out 2>err
-echo -n > experr
-comp out expout
-comp err experr
-}
-
+echo -n "" > experr
+let L=1
+while true ; do
+  QFU=`readarg interceptions.txt $L 1`
+  if [ "QFU" = "#" ] ; then
+    continue;
+  fi
+  if [ -z "$QFU" ] ; then
+    break;
+  fi
+  HEADING=`readarg interceptions.txt $L 2`
+  KIND=`readarg interceptions.txt $L 3`
+  case "$KIND" in
+    ("You")
+      KIND="Final"
+      echo  "You are in final heading $QFU." > expout
+    ;;
+    ("Direct")
+      TD1=`readarg interceptions.txt $L  4`
+      HD1=`readarg interceptions.txt $L  5`
+      TA1=`readarg interceptions.txt $L  6`
+      HA1=`readarg interceptions.txt $L  7`
+      MA2=`readarg interceptions.txt $L  8`
+      TA2=`readarg interceptions.txt $L  9`
+      HA2=`readarg interceptions.txt $L 10`
 cat > expout << EOF
-Indirect interception
-At DME 30 turn right heading 217,
-at DME 22 QDM 100 turn left heading 132 to intercept final heading 92.
+Direct interception
+At DME 30 turn $TD1 heading $HD1 to intercept final heading $QFU.
 Alternate indirect interception
-At DME 30 turn right heading 212,
-at DME 22 QDM 84 turn left heading 52 to intercept final heading 92.
+At DME 30 turn $TA1 heading $HA1,
+at DME 22 QDM $MA2 turn $TA2 heading $HA2 to intercept final heading $QFU.
 EOF
-t_intercept " 92" "175"
+    ;;  
+    ("Indirect")
+      TI1=`readarg interceptions.txt $L  4`
+      HI1=`readarg interceptions.txt $L  5`
+      MI2=`readarg interceptions.txt $L  6`
+      TI2=`readarg interceptions.txt $L  7`
+      HI2=`readarg interceptions.txt $L  8`
+      TA1=`readarg interceptions.txt $L  9`
+      HA1=`readarg interceptions.txt $L 10`
+      MA2=`readarg interceptions.txt $L 11`
+      TA2=`readarg interceptions.txt $L 12`
+      HA2=`readarg interceptions.txt $L 13`
+      cat > expout << EOF
+Indirect interception
+At DME 30 turn $TI1 heading $HI1,
+at DME 22 QDM $MI2 turn $TI2 heading $HI2 to intercept final heading $QFU.
+Alternate indirect interception
+At DME 30 turn $TA1 heading $HA1,
+at DME 22 QDM $MA2 turn $TA2 heading $HA2 to intercept final heading $QFU.
+EOF
+    ;;
+    (*)
+      echo "Invalid kind $LIND" 1>&2
+      exit 1
+    ;;
+  esac
+  echo "intercept $QFU $HEADING $KIND"
+  intercept $QFU $HEADING >out 2>err
+  comp out expout
+  comp err experr
+  let L=$L+1
+done
 
-cat > expout << EOF
-Indirect interception
-At DME 30 turn left heading 47,
-at DME 22 QDM 134 turn right heading 102 to intercept final heading 142.
-Alternate indirect interception
-At DME 30 turn left heading 48,
-at DME 22 QDM 150 turn right heading 182 to intercept final heading 142.
-EOF
-t_intercept "142" " 95"
-
-cat > expout << EOF
-Indirect interception
-At DME 30 turn left heading 315,
-at DME 22 QDM 84 turn right heading 52 to intercept final heading 92.
-Alternate indirect interception
-At DME 30 turn left heading 321,
-at DME 22 QDM 100 turn right heading 132 to intercept final heading 92.
-EOF
-t_intercept " 92" "350"
 
 # Done
 echo "OK"

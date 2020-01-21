@@ -1,0 +1,18 @@
+# Alreay in final
+ 21  21 You
+# Direct and alternate indirect interceptions
+ 21  10 Direct left  359  left 331 29 right  61
+ 21  30 Direct right  39 right  67 13 left  341
+# Indirect and alternate indirect interceptions
+ 21  50 Indirect right  92  29  left  61 right  98  13  left 341
+ 21  70 Indirect right 118  29  left  61 right 117  13  left 341
+ 21 110 Indirect right 150  29  left  61 right 144  13  left 341
+ 21 120 Indirect right 156  29  left  61 right 151  13  left 341
+ 21 150 Indirect right 175  29  left  61 right 168  13 right 341
+ 21 200 Indirect right 204  29  left  61  left 197  13 right 341
+ 21 210 Indirect  left 203  13 right 341  left 209  29  left  61
+ 21 290 Indirect  left 251  13 right 341  left 256  29 right  61
+ 21 350 Indirect  left 307  13 right 341  left 302  29 right  61
+ 92 175 Indirect right 217 100  left 132 right 212  84  left  52
+142  95 Indirect  left  47 134 right 102  left  48 150 right 182
+
