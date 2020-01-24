@@ -1,4 +1,4 @@
-with Ada.Unchecked_Conversion;
+with System.Address_To_Access_Conversions;
 package body X_Mng.Cards is
   use type System.Address;
   Null_Address : constant System.Address := System.Null_Address;
@@ -251,11 +251,9 @@ package body X_Mng.Cards is
   end Get_Position;
 
   -- From external reference to Card access
-  function Ref_2_Acc is new Ada.Unchecked_Conversion (
-      Source => External_Reference, Target => Card_Access);
-
+  package Card_Conversions is new System.Address_To_Access_Conversions (Card);
   function Ref_To_Access (Ref : External_Reference) return Card_Access is
-      (Ref_2_Acc (Ref));
+      (Card_Access (Card_Conversions.To_Pointer (Ref)));
 
 end X_Mng.Cards;
 
