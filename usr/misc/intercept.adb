@@ -1,6 +1,6 @@
 -- Given the QFU of the runway and the current heading, compute an interception
 -- procedure
-with Argument, Basic_Proc, My_Math, Images, Trace.Loggers;
+with Argument, Basic_Proc, My_Math, Images, Normalization, Trace.Loggers;
 procedure Intercept is
 
   -- Trace logger
@@ -22,6 +22,8 @@ procedure Intercept is
   Join_Distance : constant Distance := 3;
 
   -- Inputs
+  Short_Mode : Boolean;
+  Next_Arg : Positive;
   Qfu, Init_Head : Angle;
 
   -- Approach angle
@@ -50,6 +52,12 @@ procedure Intercept is
   function Right_Left_Image (Right : in Boolean) return String is
     (if Right then "right" else "left");
 
+  -- Angle and turn normalised images
+  function Angle_Norm is new Normalization.Normal_Mod (Modulus => Angle);
+  function Angle_Norm (A : Angle) return String is
+    (Angle_Norm (A, 3, True, ' '));
+  function Right_Left_Norm (Right : in Boolean) return String is
+    (if Right then "right" else " left");
 
   -- Syntax error
   procedure Error is
@@ -74,11 +82,19 @@ begin
   Logger.Init ("Intercept");
   -- Parse arguments
   begin
-    if Argument.Get_Nbre_Arg /= 2 then
+    Next_Arg := 1;
+    Short_Mode := False;
+    if Argument.Get_Parameter = "-s"
+    or else Argument.Get_Parameter = "--short" then
+      Short_Mode := True;
+      Next_Arg := Next_Arg + 1;
+    end if;
+    if Argument.Get_Nbre_Arg /= Next_Arg + 1 then
       raise Constraint_Error;
     end if;
-    Qfu       := Angle'Value (Argument.Get_Parameter (Occurence => 1));
-    Init_Head := Angle'Value (Argument.Get_Parameter (Occurence => 2));
+    Qfu       := Angle'Value (Argument.Get_Parameter (Occurence => Next_Arg));
+    Next_Arg := Next_Arg + 1;
+    Init_Head := Angle'Value (Argument.Get_Parameter (Occurence => Next_Arg));
   exception
     when Constraint_Error =>
       Error;
@@ -92,6 +108,10 @@ begin
   App_Delta := To_Signed (App_Angle);
   Logger.Log_Debug ("Approach angle: " & Angle_Image (App_Angle));
   Logger.Log_Debug ("Approach delta: " & Angle_Image (App_Delta));
+  if Short_Mode then
+    Basic_Proc.Put_Output (Angle_Norm (Qfu) & " "
+        & Angle_Norm (Init_Head) & " ");
+  end if;
 
   -- Interception angle
   Tmp :=  My_Math.Sqrt (
@@ -114,8 +134,12 @@ begin
   -- Select proper interception strategy
   if App_Angle = 0 then
     -- Already in final
-    Basic_Proc.Put_Line_Output ("You are in final heading "
-       & Angle_Image (Qfu) & ".");
+    if Short_Mode then
+      Basic_Proc.Put_Line_Output ("Final");
+    else
+      Basic_Proc.Put_Line_Output ("You are in final heading "
+         & Angle_Image (Qfu) & ".");
+    end if;
     return;
   end if;
 
@@ -141,20 +165,33 @@ begin
   -- Direct or indirect primary interception
   if Leg_Angle <= Max_Intercep_Angle then
     -- Direct interception
-     Basic_Proc.Put_Line_Output ("Direct interception");
+    if Short_Mode then
+      Basic_Proc.Put_Output ("Direct ");
+    else
+      Basic_Proc.Put_Line_Output ("Direct interception");
+    end if;
     Turn_Right := App_Delta > 0;
     if Turn_Right then
       Heading_1 := Qfu + Leg_Angle;
     else
       Heading_1 := Qfu - Leg_Angle;
     end if;
-    Basic_Proc.Put_Line_Output (
-          "At DME " & Dist_Image (Intercep_Distance) & " turn "
-        & Right_Left_Image (Turn_Right) & " heading "
-        & Angle_Image (Heading_1) & " to intercept final heading "
-        & Angle_Image (Qfu) & ".");
+    if Short_Mode then
+      Basic_Proc.Put_Output (Right_Left_Norm (Turn_Right) & " "
+          & Angle_Norm (Heading_1) & " ");
+    else
+      Basic_Proc.Put_Line_Output (
+            "At DME " & Dist_Image (Intercep_Distance) & " turn "
+          & Right_Left_Image (Turn_Right) & " heading "
+          & Angle_Image (Heading_1) & " to intercept final heading "
+          & Angle_Image (Qfu) & ".");
+    end if;
   else
-    Basic_Proc.Put_Line_Output ("Indirect interception");
+    if Short_Mode then
+      Basic_Proc.Put_Output ("Indirect ");
+    else
+      Basic_Proc.Put_Line_Output ("Indirect interception");
+    end if;
     -- Set Beta QDM v.s. QFU, way of first turn and heading
     Beta_Qdm := Angle (My_Math.Round (Beta_Angle));
     if App_Delta >= 0 then
@@ -191,19 +228,29 @@ begin
       -- First turn is left
       Heading_1 := Init_Head - Leg_Angle;
     end if;
-    Basic_Proc.Put_Line_Output (
-          "At DME " & Dist_Image (Intercep_Distance) & " turn "
-        & Right_Left_Image (Turn_Right) & " heading "
-        & Angle_Image (Heading_1) & ",");
-    Basic_Proc.Put_Line_Output (
-          "at DME " & Dist_Image (Beta_Dme) & " QDM " & Angle_Image (Beta_Qdm)
-        & " turn " & Right_Left_Image (not Turn_Right) & " heading "
-        & Angle_Image (Heading_2) & " to intercept final heading "
-        & Angle_Image (Qfu) & ".");
+    if Short_Mode then
+      Basic_Proc.Put_Output (Right_Left_Norm (Turn_Right) & " "
+          & Angle_Norm (Heading_1) & " "
+          & Angle_Norm (Beta_Qdm) & " "
+          & Right_Left_Norm (not Turn_Right) & " "
+          & Angle_Norm (Heading_2) & " ");
+    else
+      Basic_Proc.Put_Line_Output (
+            "At DME " & Dist_Image (Intercep_Distance) & " turn "
+          & Right_Left_Image (Turn_Right) & " heading "
+          & Angle_Image (Heading_1) & ",");
+      Basic_Proc.Put_Line_Output (
+            "at DME " & Dist_Image (Beta_Dme) & " QDM " & Angle_Image (Beta_Qdm)
+          & " turn " & Right_Left_Image (not Turn_Right) & " heading "
+          & Angle_Image (Heading_2) & " to intercept final heading "
+          & Angle_Image (Qfu) & ".");
+    end if;
   end if;
 
   -- Alternate interception
-  Basic_Proc.Put_Line_Output ("Alternate indirect interception");
+  if not Short_Mode then
+    Basic_Proc.Put_Line_Output ("Alternate indirect interception");
+  end if;
   -- Set Qdm of alternate Beta
   Alt_Beta_Qdm := Angle (My_Math.Round (Beta_Angle));
   if App_Delta >= 0 then
@@ -263,16 +310,23 @@ begin
   end if;
   -- Second turn
   Alt_Turn2_Right := Alt_Heading_1 - Alt_Heading_2 >= 180;
-
-  Basic_Proc.Put_Line_Output (
-        "At DME " & Dist_Image (Intercep_Distance) & " turn "
-      & Right_Left_Image (Alt_Turn1_Right) & " heading "
-      & Angle_Image (Alt_Heading_1) & ",");
-  Basic_Proc.Put_Line_Output (
-        "at DME " & Dist_Image (Beta_Dme) & " QDM " & Angle_Image (Alt_Beta_Qdm)
-      & " turn " & Right_Left_Image (Alt_Turn2_Right) & " heading "
-      & Angle_Image (Alt_Heading_2) & " to intercept final heading "
-      & Angle_Image (Qfu) & ".");
+  if Short_Mode then
+    Basic_Proc.Put_Line_Output (Right_Left_Norm (Alt_Turn1_Right) & " "
+        & Angle_Norm (Alt_Heading_1) & " "
+        & Angle_Norm (Alt_Beta_Qdm) & " "
+        & Right_Left_Norm (Alt_Turn2_Right) & " "
+        & Angle_Norm (Alt_Heading_2));
+  else
+    Basic_Proc.Put_Line_Output (
+          "At DME " & Dist_Image (Intercep_Distance) & " turn "
+        & Right_Left_Image (Alt_Turn1_Right) & " heading "
+        & Angle_Image (Alt_Heading_1) & ",");
+    Basic_Proc.Put_Line_Output (
+          "at DME " & Dist_Image (Beta_Dme) & " QDM " & Angle_Image (Alt_Beta_Qdm)
+        & " turn " & Right_Left_Image (Alt_Turn2_Right) & " heading "
+        & Angle_Image (Alt_Heading_2) & " to intercept final heading "
+        & Angle_Image (Qfu) & ".");
+  end if;
 
 end Intercept;
 
