@@ -17,9 +17,9 @@ procedure Intercept is
   Intercep_Distance : constant Distance := 30;
   -- Final lengths
   Direct_Final_Distance : constant Distance := 15;
-  Indirect_Final_Distance : constant Distance := 20;
+  Indirect_Final_Distance : constant Distance := 18;
   -- Joining leg length
-  Join_Distance : constant Distance := 3;
+  Join_Distance : constant Distance := 5;
 
   -- Inputs
   Short_Mode : Boolean;
