@@ -1,5 +1,29 @@
 -- Given the QFU of the runway and the current heading, compute an interception
--- procedure
+-- procedure, among:
+-- If Heading is the QFU, then direct final, straight on.
+-- Otherwise, from a fixed interception distance:
+-- * If within +/- a fixed max interception angle (40Deg), then reach the final
+--   at a fixed direct final distance (so with an angle less that the max),
+-- * Otherwise reach the entrance of a joining leg of fixed length 
+--   (join distance, 5Nm) that reaches the final with the max interception
+--   angle at a fixed distance, indirect final distance (18Nm),
+-- + In both cases, also propose an alternative indirect interception, the same
+--   as above but on the other side of the runway.
+
+-- Direct interception:
+--          \
+--           \
+--            \
+--             \
+--              -------->=========
+-- Indirect interception:
+--        |
+--        |
+--        +
+--         \
+--          \
+--           ----------->=========
+
 with Argument, Basic_Proc, My_Math, Images, Normalization, Trace.Loggers;
 procedure Intercept is
 
