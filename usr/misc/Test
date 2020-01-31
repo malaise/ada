@@ -245,7 +245,10 @@ EOF
         exit 1
       ;;
     esac
-    echo "intercept $QFU $HEADING $KIND"
+    echo -n $QFU $HEADING $KIND | awk '
+      {
+         printf "intercept %3d %3d %s\n", $1, $2, $3
+      } '
     intercept $QFU $HEADING >out 2>err
     comp out expout
     comp err experr
