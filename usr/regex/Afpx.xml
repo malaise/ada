@@ -41,7 +41,7 @@
     <!-- Text to search in -->
     <Var Name="Text_Len" Value="99"/>
     <Field Num="6" Kind="Put">
-      <Geometry Up="${Field_5.Low}+2" Left="11" Height="1" Width="22"/>
+      <Geometry Up="${Field_5.Low}+2" Left="13" Height="1" Width="17"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">The text to check</Init>
     </Field>
@@ -99,21 +99,35 @@
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
+    <Field Num="16" Kind="Put">
+      <Geometry Up="${Field_7.Up}" Left="${Field_7.Left}-2" Height="9"
+                Width="1"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">1</Init>
+      <Init Row="1" Col="0">2</Init>
+      <Init Row="2" Col="0">3</Init>
+      <Init Row="3" Col="0">4</Init>
+      <Init Row="4" Col="0">5</Init>
+      <Init Row="5" Col="0">6</Init>
+      <Init Row="6" Col="0">7</Init>
+      <Init Row="7" Col="0">8</Init>
+      <Init Row="8" Col="0">9</Init>
+    </Field>
 
     <!-- Matching result -->
-    <Field Num="16" Kind="Put">
-      <Geometry Up="${Field_15.Low}+2" Left="1" Height="1" Width="20"/>
+    <Field Num="17" Kind="Put" Name="Title">
+      <Geometry Up="${Field_15.Low}+2" Left="1" Height="1" Width="38"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">The Matches, at line</Init>
+      <Init Row="0" Col="0">Matches from current line ( ), at line</Init>
     </Field>
-    <Field Num="17" Kind="Put" Name="Line">
-      <Geometry Up="${Field_16.Up}" Left="${Field_16.Right}+2" Height="1"
+    <Field Num="18" Kind="Put" Name="Line">
+      <Geometry Up="${Field_17.Up}" Left="${Field_17.Right}+2" Height="1"
                 Width="1"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">0</Init>
     </Field>
-    <Field Num="18" Kind="Put">
-      <Geometry Up="${Field_16.Low}+1" Left="1" Height="10" Width="3"/>
+    <Field Num="19" Kind="Put">
+      <Geometry Up="${Field_17.Low}+1" Left="1" Height="10" Width="3"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">All</Init>
       <Init Row="1" Col="2">1</Init>
@@ -127,31 +141,31 @@
       <Init Row="9" Col="2">9</Init>
     </Field>
     <!-- (xx-yy) -->
-    <Field Num="19" Kind="Put" Name="Ranges">
-      <Geometry Up="${Field_18.Up}" Left="${Field_18.Right}+2"
-                Height="${Field_18.Height}" Width="7"/>
+    <Field Num="20" Kind="Put" Name="Ranges">
+      <Geometry Up="${Field_19.Up}" Left="${Field_19.Right}+2"
+                Height="${Field_19.Height}" Width="7"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="20" Kind="Put" Name="Result">
-      <Geometry Up="${Field_18.Up}" Left="${Field_19.Right}+2"
-                Height="${Field_18.Height}" Right="${Screen.Right}-2"/>
+    <Field Num="21" Kind="Put" Name="Result">
+      <Geometry Up="${Field_19.Up}" Left="${Field_20.Right}+2"
+                Height="${Field_19.Height}" Right="${Screen.Right}-2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
     <!-- Buttons -->
-    <Field Num="21" Kind="Button" Name="Clear_regex">
-      <Geometry Up="${Field_18.Low}+2" Left="1" Height="1" Width="13"/>
+    <Field Num="22" Kind="Button" Name="Clear_regex">
+      <Geometry Up="${Field_19.Low}+2" Left="1" Height="1" Width="13"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Clear Regex</Init>
     </Field>
-    <Field Num="22" Kind="Button" Name="Clear_Text">
-      <Geometry Up="${Field_21.Up}" Left="${Field_21.Right}+4" Height="1"
+    <Field Num="23" Kind="Button" Name="Clear_Text">
+      <Geometry Up="${Field_22.Up}" Left="${Field_22.Right}+4" Height="1"
                 Width="12"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Clear Text</Init>
     </Field>
-    <Field Num="23" Kind="Button" Name="Quit">
-      <Geometry Up="${Field_21.Up}" Right="${Screen.Width}-2" Height="1"
+    <Field Num="24" Kind="Button" Name="Quit">
+      <Geometry Up="${Field_22.Up}" Right="${Screen.Width}-2" Height="1"
                 Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Exit</Init>
