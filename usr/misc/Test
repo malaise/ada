@@ -187,6 +187,8 @@ fi
 
 if [ \( -z "$1" \) -o \( "$1" = "intercept" \) ] ; then
   # Intercept
+  INTER_DME=`intercept --dme`
+  export BETA_DME=18
   echo -n "" > experr
   let L=1
   while true ; do
@@ -214,10 +216,10 @@ if [ \( -z "$1" \) -o \( "$1" = "intercept" \) ] ; then
         HA2=`readarg interceptions.txt $L 10`
   cat > expout << EOF
 Direct interception
-At DME 30 turn $TD1 heading $HD1 to intercept final heading $QFU.
+At DME $INTER_DME turn $TD1 heading $HD1 to intercept final heading $QFU.
 Alternate indirect interception
-At DME 30 turn $TA1 heading $HA1,
-at DME 22 QDM $MA2 turn $TA2 heading $HA2 to intercept final heading $QFU.
+At DME $INTER_DME turn $TA1 heading $HA1,
+at DME $BETA_DME QDM $MA2 turn $TA2 heading $HA2 to intercept final heading $QFU.
 EOF
       ;;  
       ("Indirect")
@@ -233,11 +235,11 @@ EOF
         HA2=`readarg interceptions.txt $L 13`
       cat > expout << EOF
 Indirect interception
-At DME 30 turn $TI1 heading $HI1,
-at DME 22 QDM $MI2 turn $TI2 heading $HI2 to intercept final heading $QFU.
+At DME $INTER_DME turn $TI1 heading $HI1,
+at DME $BETA_DME QDM $MI2 turn $TI2 heading $HI2 to intercept final heading $QFU.
 Alternate indirect interception
-At DME 30 turn $TA1 heading $HA1,
-at DME 22 QDM $MA2 turn $TA2 heading $HA2 to intercept final heading $QFU.
+At DME $INTER_DME turn $TA1 heading $HA1,
+at DME $BETA_DME QDM $MA2 turn $TA2 heading $HA2 to intercept final heading $QFU.
 EOF
       ;;
       (*)

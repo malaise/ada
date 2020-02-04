@@ -3,10 +3,11 @@
 -- If Heading is the QFU, then direct final, straight on.
 -- Otherwise, from a fixed interception distance:
 -- * If within +/- a fixed max interception angle (40Deg), then reach the final
---   at a fixed direct final distance (so with an angle less that the max),
--- * Otherwise reach the entrance of a joining leg of fixed length 
+--   at a fixed direct final distance (13Nm), so with an angle less that the
+--   max,
+-- * Otherwise reach the entrance of a joining leg of fixed length
 --   (join distance, 5Nm) that reaches the final with the max interception
---   angle at a fixed distance, indirect final distance (18Nm),
+--   angle at a fixed distance, indirect final distance (14Nm),
 -- + In both cases, also propose an alternative indirect interception, the same
 --   as above but on the other side of the runway.
 
@@ -40,8 +41,8 @@ procedure Intercept is
   -- Distance for interception
   Intercep_Distance : constant Distance := 30;
   -- Final lengths
-  Direct_Final_Distance : constant Distance := 15;
-  Indirect_Final_Distance : constant Distance := 18;
+  Direct_Final_Distance : constant Distance := 13;
+  Indirect_Final_Distance : constant Distance := 14;
   -- Joining leg length
   Join_Distance : constant Distance := 5;
 
@@ -104,7 +105,15 @@ procedure Intercept is
   use type My_Math.Real;
 begin
   Logger.Init ("Intercept");
+
   -- Parse arguments
+  if Argument.Get_Nbre_Arg = 1
+  and then (Argument.Get_Parameter = "-d"
+            or else Argument.Get_Parameter = "--dme") then
+    Basic_Proc.Put_Line_Output (Dist_Image (Intercep_Distance));
+    return;
+  end if;
+
   begin
     Next_Arg := 1;
     Short_Mode := False;
