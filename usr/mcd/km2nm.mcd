@@ -1,0 +1,11 @@
+# Km to Nm or reverse
+[ "ERROR: Expect <val><unit> with <unit> ::= km | Nm" putl 
+1 setexit ssize popn retall ] E popr
+# One arg <val><unit>
+ssize 1 /= E pushr ifcall
+dup strlen 2 <= E pushr ifcall
+a copyr dup strlen l copyr dup 1 - swap strsub u copyr
+"km" /= u pushr "Nm" /= & E pushr ifcall
+a pushr 1 l pushr 2 - strsub
+dup canreal ~ E pushr ifcall
+strreal 0.539957 u pushr "km" = [ * ] [ - ] ifte call round putl
