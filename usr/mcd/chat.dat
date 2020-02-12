@@ -1,12 +1,12 @@
 # F for Fada, C for Circé, Q for Quantum, V for Valla, then spaces, then ": "
 CQ   : a peur
 C    : joue du piano
-FV   : fait le koala 
-F    : explore le toit
+FQ   : fait le koala 
+FQ   : explore le toit
 QV   : joue à la baston
 CQV  : se fait tripoter
 CFQV : fait sa toilette
-CF   : boit dans la mare
+CFV  : boit dans la mare
 F    : fuit les éboueurs
 C    : dort dans le hamac
 F    : fait des galipettes
@@ -28,14 +28,16 @@ F    : joue à chat avec les maîtres
 V    : laisse ses pattes pendouiller
 FQV  : met de l'ordre dans le doudou
 F    : dort en crevette auprès du feu
+FQV  : fais la sieste dans la véranda
 F    : court après l'eau du jet d'eau
-F    : fait la sieste dans le potager
+FV   : fait la sieste dans le potager
 Q    : arpente les ponts de la véranda
 QV   : dort dans les jambes des maîtres
 F    : n'aime pas le vent qui rend fou
 FQV  : est tartifletté sur le carrelage
 FV   : joue dehors avec les autres chats
 Q    : escalade le grillage de la véranda
+V    : pendouille sur l'escabeau du bureau
 F    : remue les papiers dans la corbeille
 CV   : veut être de l'autre côté de la porte
 F    : fait des ronrons sur la table à calins
@@ -47,7 +49,9 @@ CQV  : surveille la maison du haut du secrétaire
 C    : rapporte un oiseau dans la maison pour jouer
 FV   : range le secrétaire en mettant tout par terre
 CV   : attend la brosse du matin dans la salle de bain
-CFV  : attend devant la chatière l'arrivée d'un portier
+Q    : fait un gros câlin sur l'épaule de la maîtresse
+CFQV : attend devant la chatière l'arrivée d'un portier
 F    : toise le monde du haut de la cheminée du barbecue
 F    : fait un gros Waeuh en rentrant au milieu de la nuit
+V    : Fait des miout dans la salle de bain pour se faire brosser
 
