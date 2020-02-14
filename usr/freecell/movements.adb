@@ -81,8 +81,9 @@ package body Movements is
       -- Target is a free stack
       Nb_Available := Nb_Available - 1;
     end if;
+    -- (T + A) + (T + A-1) + ... + (T + 1) + T + 1
     Nb_Movable := Nb_Available * (Nb_Available + 1) / 2
-                + Nb_Free_Tmp_Stacks + 1;
+                + Nb_Free_Tmp_Stacks * Nb_Available + Nb_Free_Tmp_Stacks + 1;
     return Nb_To_Move <= Nb_Movable;
   end Can_Move;
 
@@ -219,6 +220,8 @@ package body Movements is
       (Cards.Play_Stack_Range'Last));
   Tmp_Lifo : Cards_Lifo.Lifo_Type (Queues.Size_Range
        (Cards.Tmp_Stack_Range'Last));
+  -- The card that is ancestor of Tmp cards
+  Tmp_Root : Cards.Card_Access;
 
   -- Internal: Find next available stack
   function Next_Available return Cards.Play_Stack_Range is
@@ -249,6 +252,43 @@ package body Movements is
       Nb_Available := Nb_Available - 1;
     end if;
   end Adjust_Available;
+
+  -- Internal: Move cards of Source stack into the free tmp stacks,
+  -- Stop before card=Term or when Source stack has one element
+  procedure Move_To_Tmp (Source, Term : in Cards.Card_Access;
+                        Add : in Boolean) is
+    Target, Child :  Cards.Card_Access;
+    use type Cards.Card_Access;
+  begin
+    Logger.Log_Debug (" Moving to Tmp stacks");
+    for I in Cards.Tmp_Stack_Range loop
+      Target := Cards.The_Tmp(I)'Access;
+      if Target.Nb_Children = 0 then
+        Child := Source.Prev;
+        exit when Child = Term;
+        exit when Child = Source.Next;
+        Tmp_Root := Child.Prev;
+        Move_One ( (Card => Child, From => Source, To => Target), Add, True);
+        Tmp_Lifo.Push (Child);
+      end if;
+    end loop;
+    Logger.Log_Debug (" End move to Tmp stacks, root="
+       & (if Tmp_Root = null then "null" else Tmp_Root.Image));
+  end Move_To_Tmp;
+
+  -- Internal: Move from Tmp stacks to Target stack
+  procedure Move_From_Tmp (Target : in Cards.Card_Access; Add : in Boolean) is
+    Source, Child :  Cards.Card_Access;
+  begin
+    Logger.Log_Debug (" Moving from Tmp stacks");
+    for S in 1 .. Tmp_Lifo.Length loop
+      Child := Tmp_Lifo.Pop;
+      Source := Child.Stack;
+      Move_One ( (Card => Child, From => Source, To => Target), Add, True);
+    end loop;
+    Tmp_Root := null;
+    Logger.Log_Debug (" End move from Tmp stacks");
+  end Move_From_Tmp;
 
   -- Internal: Move a stack of several cards
   procedure Move_Multiple (Mov : Movement; Add : in Boolean) is
@@ -286,28 +326,19 @@ package body Movements is
 
     Play_Lifo.Clear;
     Tmp_Lifo.Clear;
+    Tmp_Root := null;
 
-    -- Move children into free tmp stacks
-    Logger.Log_Debug (" Moving to Tmp stacks");
-    Source := Mov.Card.Stack;
-    for I in Cards.Tmp_Stack_Range loop
-      Target := Cards.The_Tmp(I)'Access;
-      if Target.Nb_Children = 0 then
-        Child := Source.Prev;
-        exit when Child = Mov.Card;
-        Move_One ( (Card => Child, From => Source, To => Target), Add, True);
-      Tmp_Lifo.Push (Child);
-      end if;
-    end loop;
     -- Move children into free play stacks
     Logger.Log_Debug (" Starting spreading");
     Spread :
     loop
-      -- Move children, from top, one per free stack
       Source := Mov.Card.Stack;
+      -- Move children from top to Tmp
+      Move_To_Tmp (Source, Mov.Card, Add);
+      -- Move children from top, one per free stack
       Nb_Spread := 0;
       loop
-        -- Mov top if not the card to move and while some Available
+        -- Move top if not the card to move and while some Available
         Child := Source.Prev;
         if Child = Mov.Card then
           Logger.Log_Debug (" Reached the card to move");
@@ -317,7 +348,7 @@ package body Movements is
           Logger.Log_Debug ("  No more available stack");
           exit;
         end if;
-        -- Move top card to target
+        -- Move top card to available play stack
         Available := Next_Available;
         Target := Cards.The_Play(Available)'Access;
         Logger.Log_Debug ("  Descending " & Child.Image
@@ -339,6 +370,9 @@ package body Movements is
         Move_One ( (Card => Child, From => Source, To => Target), Add, True);
         Adjust_Available (Source, Target);
       end loop;
+
+      -- Unstack from Tmp to this substack
+      Move_From_Tmp (Target, Add);
       -- Push this completed sub-stack
       Play_Lifo.Push (Target);
     end loop Spread;
@@ -346,6 +380,7 @@ package body Movements is
                     & Images.Llint_Image (Play_Lifo.Length) & " stacks");
 
     -- Move the card to target
+    Logger.Log_Debug ("  Moving " & Mov.Card.Image & "  to target");
     Move_One (Mov, Add, True);
     -- Don't decrement target if it is a free stack
     Adjust_Available (Source => Mov.From,
@@ -354,10 +389,15 @@ package body Movements is
     -- Pop the stacks to target
     Logger.Log_Debug (" Starting unspreading");
     Target := Mov.To;
+    -- Unstack from Tmp to target if they are children of it
+    if Tmp_Root = Mov.Card then
+      Move_From_Tmp (Target, Add);
+    end if;
     for S in 1 .. Play_Lifo.Length loop
       -- Move all but last children, from top, one per free stack
       Source := Play_Lifo.Pop.Stack;
       Logger.Log_Debug (" Unstacking stack " & Source.Image);
+      Move_To_Tmp (Source, null, Add);
       Child := Source.Prev;
       Nb_Spread := 0;
       while Child /= Source.Next loop
@@ -378,19 +418,13 @@ package body Movements is
       for I in 1 .. Nb_Spread loop
         Child := Play_Lifo.Pop;
         Source := Child.Stack;
-        Logger.Log_Debug ("  Stacking " & Child.Image
-                        & "  on target " & Target.Image);
+        Logger.Log_Debug ("  Moving " & Child.Image & "  to target");
         Move_One ( (Card => Child, From => Source, To => Target), Add, True);
         Adjust_Available (Source, Target);
       end loop;
-    end loop;
-
-    Logger.Log_Debug (" Moving from Tmp stacks");
-    Target := Mov.To;
-    for S in 1 .. Tmp_Lifo.Length loop
-      Child := Tmp_Lifo.Pop;
-      Source := Child.Stack;
-      Move_One ( (Card => Child, From => Source, To => Target), Add, True);
+      if Tmp_Root = Child then
+        Move_From_Tmp (Target, Add);
+      end if;
     end loop;
 
     Logger.Log_Debug ("End Multi Move");

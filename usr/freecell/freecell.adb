@@ -1,4 +1,4 @@
-with Con_Io, Argument, Basic_Proc;
+with Con_Io, Argument, Basic_Proc, Environ;
 with Cards, Table, Memory, Movements;
 procedure Freecell is
   Event : Table.Event_Rec;
@@ -240,5 +240,14 @@ exception
     Basic_Proc.Put_Line_Error ("ERROR: Invalid argument.");
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
         & " [ <game_number> ]     // 0 .. 999999");
+  when others =>
+    declare
+      Val : constant String := Environ.Getenv ("FREECELL_WAIT_EXCEPTION");
+    begin
+      if Val /= "" then
+        delay Duration'Value (Val);
+      end if;
+    end;
+    raise;
 end Freecell;
 

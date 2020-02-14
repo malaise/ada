@@ -1,6 +1,6 @@
 Freecell
 ========
-V1.1
+V2.0
 
 Freecell is a famous solitaire card game.
 
@@ -134,16 +134,16 @@ Moving several cards is achieved by selecting a card somewhere within a valid
 sequence (often the biggest card of the sequence), then selecting its
 destination.
 
-The algorithm to dispatch a stack on a target is efficient and covers most
-use-cases. Here is the logic:
+The algorithm to move a stack to a target has the following logic:
 
 1. it first unstacks as many cards as possible from the original stack 
-into the available Tempo  stacks,
+into the available Tempo stacks,
 
 2. then it unstacks as many cards as possible from the original stack 
 into the free stacks,
 
-3. then it restacks these cards on the last unstacked (temporary stack)
+3. then it restacks all these cards but the last (from free stacks then from
+Tempo stacks) on the last unstacked (temporary stack)
 
 4. then it iterates these operations until the ancestor of the original
 stack is reached
@@ -151,29 +151,18 @@ stack is reached
 5. then it moves this ancestor to its destination
 
 6. then it unstacks the temporary stacks on the destination, using the
-free stacks that are progressively released.
+free stacks that are progressively released and Tempo stacks.
 
-7. then it the cards stored in the Tempo stacks.
-
-This algorithm allows moving, with 'T' available Tempo stacks and 'S' free
-Playing stacks, a stack of 'T + S * (S + 1) / 2 + 1' cards free stacks.
-
-[width="50%", options="header"]
-|===================================
-|Nb free Play stacks |Nb cards moved
-|1                      |2
-|2                      |4
-|3                      |7
-|4                      |11
-|===================================
+This algorithm allows, with 'T' available Tempo stacks and 'S' free playing
+stacks, moving a stack of 'S * (S + 1) / 2 + S * T + T + 1' cards.
 
 NOTE: This algorithm is efficient and covers most use cases, but it is not
-optimal. For example, with 3 stacks, it will store 3, then 2, then 1 cards in
-temporary stacks, allowing 7 cards to be moved. But a better strategy is
-to move 2 cards in temporary stacks, then stack them, then move and stack
-again 2 other cards, then move the first temporary stack on the second, then
-stack 2 other cards, then 1. This way it becomes possible to store 7 cards in
-the 3 stacks, so to move 8 cards. And the difference between both logics
+optimal. For example, with 3 stacks (end 0 Tempo), it will store 3, then 2,
+then 1 cards in these stacks, allowing 7 cards to be moved. But a better
+strategy is to move 2 cards in temporary stacks, then stack them, then move and
+stack again 2 other cards, then move the first temporary stack on the second,
+then stack 2 other cards, then 1. This way it becomes possible to store 7 cards
+in the 3 stacks, so to move 8 cards. And the difference between both logics
 increases with the number of free stacks.
 
 Game number
@@ -183,6 +172,6 @@ Each game is identified by a number between 0 and 999999. The current game
 number is displayed in the title of the main window.
 
 Each 'New' game is a random one, and by default the first game is also random.
-still, it is possible to specify, as program argument the number of the first
+still, it is possible to specify as program argument the number of the first
 game to start with.
 
