@@ -1,6 +1,6 @@
 Freecell
 ========
-V2.0
+V2.1
 
 Freecell is a famous solitaire card game.
 
@@ -43,7 +43,7 @@ Menu
 
 Exit::
 This button stops and quits the game (the same way as the \'X' cross on the top-right
-corner of the window (depending on the window manager).
+corner of the window depending on the window manager).
 
 New::
 This button stops the current game and starts a new one.
@@ -54,8 +54,7 @@ This button stops and restarts from scratch the current game.
 .On the right side are the functions that interact with the current game:
 
 Purge::
-This button moves in the Done stacks as many cards as possible, according to
-the current stacking policy.
+This button moves in the Done stacks as many cards as possible.
 
 Undo::
 This button un-does one by one the previous card movements (potentially up
@@ -74,7 +73,7 @@ Detailed rules
 
 How to play
 ~~~~~~~~~~~
-A card is selected by a left-click and a release on it. Selectable cards are
+A card is selected by a left-click then release on it. Selectable cards are
 identified by the mouse cursor becomming a hand when above them.
 
 Once a card is selected, its color becomes reversed, the cursor remains a hand,
@@ -154,10 +153,10 @@ stack is reached
 free stacks that are progressively released and Tempo stacks.
 
 This algorithm allows, with 'T' available Tempo stacks and 'S' free playing
-stacks, moving a stack of 'S * (S + 1) / 2 + S * T + T + 1' cards.
+stacks, moving a sequence of 'S * (S + 1) / 2 + S * T + T + 1' cards.
 
 NOTE: This algorithm is efficient and covers most use cases, but it is not
-optimal. For example, with 3 stacks (end 0 Tempo), it will store 3, then 2,
+optimal. For example, with 3 stacks (and 0 Tempo), it will store 3, then 2,
 then 1 cards in these stacks, allowing 7 cards to be moved. But a better
 strategy is to move 2 cards in temporary stacks, then stack them, then move and
 stack again 2 other cards, then move the first temporary stack on the second,
