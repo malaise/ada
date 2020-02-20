@@ -1,0 +1,91 @@
+#!/bin/bash
+# Test simuli with test9 and tests
+touch experr
+
+function error {
+  echo $* 1>&2
+  exit 1
+}
+
+function do_one {
+  simusi $1 $2 >out 3>err
+  cmp out expout
+  res=$?
+  if [ $res -ne 0 ] ; then
+    error "File $1 differs from expected $2."
+  fi
+  cmp err experr
+  res=$?
+  if [ $res -ne 0 ] ; then
+    error "File $1 differs from expected $2."
+  fi
+}
+
+
+cat >expout <<EOF
+Check of feasibility
+--------------------
+S008:  --> IT specified:   0.2     IT done:   0.05 
+S009:  --> IT specified:   0.5     IT done:   0.1  
+S001:  --> IT specified:   0.5     IT done:   0.15 
+S002:  --> IT specified:   0.5     IT done:   0.15 
+S003:  --> IT specified:   0.1     IT done:   0.1  
+S004:  --> IT specified:   0.1     IT done:   0.1  
+S005:  --> IT specified:   0.5     IT done:   0.15 
+S006:  --> IT specified:   0.5     IT done:   0.15 
+S007:  --> IT specified:   0.1     IT done:   0.1  
+Resolution
+----------
+M001:  --> Value :   1.0    +/-   0.1  
+M002:  --> Value :  20.0    +/-   0.05 
+M003:  --> Value :  21.0    +/-   0.1  
+M005:  --> Value :  30.0    +/-   0.05 
+M004:  --> Value :  29.0    +/-   0.1  
+M006:  --> Value :  50.0    +/-   0.05 
+M007:  --> Value :  51.0    +/-   0.1  
+M009:  --> Value :  60.0    +/-   0.05 
+M008:  --> Value :  59.0    +/-   0.1  
+Simulation successful.
+EOF
+do_one test9.*
+
+cat >expout <<EOF
+Check of feasibility
+--------------------
+S001:  --> IT specified:   0.5     IT done:   0.5  
+S002:  --> IT specified:   0.5     IT done:   1.0   NOT OK
+S003:  --> IT specified:   0.5     IT done:   1.0   NOT OK
+S004:  --> IT specified:   0.5     IT done:   1.0   NOT OK
+S005:  --> IT specified:   0.5     IT done:   1.0   NOT OK
+S006:  --> IT specified:   0.5     IT done:   1.0   NOT OK
+S007:  --> IT specified:   0.5     IT done:   1.0   NOT OK
+S008:  --> IT specified:   0.5     IT done:   1.0   NOT OK
+S009:  --> IT specified:   0.5     IT done:   1.0   NOT OK
+S010:  --> IT specified:   0.5     IT done:   1.0   NOT OK
+S011:  --> IT specified:   0.5     IT done:   1.0   NOT OK
+S012:  --> IT specified:   0.5     IT done:   1.0   NOT OK
+S013:  --> IT specified:   0.5     IT done:   1.0   NOT OK
+S014:  --> IT specified:   0.5     IT done:   1.0   NOT OK
+Resolution
+----------
+M001:  --> Value :   5.0    +/-   0.5  
+M002:  --> Value :  10.0    +/-   0.5  
+M003:  --> Value :  15.0    +/-   0.5  
+M004:  --> Value :  20.0    +/-   0.5  
+M005:  --> Value :  25.0    +/-   0.5  
+M006:  --> Value :  30.0    +/-   0.5  
+M007:  --> Value :  35.0    +/-   0.5  
+M008:  --> Value :  40.0    +/-   0.5  
+M009:  --> Value :  45.0    +/-   0.5  
+M010:  --> Value :  50.0    +/-   0.5  
+M011:  --> Value :  55.0    +/-   0.5  
+M012:  --> Value :  60.0    +/-   0.5  
+M013:  --> Value :  65.0    +/-   0.5  
+M014:  --> Value :  70.0    +/-   0.5  
+Simulation FAILED.
+EOF
+do_one tests.*
+
+rm out expout err experr
+echo "OK"
+
