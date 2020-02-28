@@ -21,7 +21,50 @@ function do_one {
   fi
 }
 
+# Test1
+cat >expout <<EOF
+Check of feasibility
+--------------------
+S001:  --> IT specified:   0.8     IT done:   0.5  
+Resolution
+----------
+M001:  --> Value :  21.0    +/-   0.5  
+Simulation successful.
+EOF
+do_one test1.*
 
+# Test2
+cat >expout <<EOF
+Check of feasibility
+--------------------
+S001:  --> IT specified:   0.8     IT done:   0.5  
+S002:  --> IT specified:   0.7     IT done:   1.1   NOT OK
+Resolution
+----------
+M001:  --> Value :  21.0    +/-   0.5  
+M002:  --> Value :  41.0    +/-   0.6  
+Simulation FAILED.
+EOF
+do_one test2.*
+
+# Test3
+cat >expout <<EOF
+Check of feasibility
+--------------------
+S001:  --> IT specified:   0.7     IT done:   0.2  
+S002:  --> IT specified:   0.7     IT done:   0.5  
+S003:  --> IT specified:   0.8     IT done:   0.6  
+Resolution
+----------
+M003:  --> Value :   5.0    +/-   0.2  
+M002:  --> Value :   6.0    +/-   0.3  
+M001:  --> Value :  13.0    +/-   0.3  
+Simulation successful.
+EOF
+do_one test3.*
+
+
+# Test9
 cat >expout <<EOF
 Check of feasibility
 --------------------
@@ -49,6 +92,7 @@ Simulation successful.
 EOF
 do_one test9.*
 
+# Tests
 cat >expout <<EOF
 Check of feasibility
 --------------------
