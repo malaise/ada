@@ -39,8 +39,9 @@ t pushr 450 v copyr toreal 1.852 * s pushr + - dup isneg
 # Per 1000km; 10 T cruise and 26 T subsonic
 10.0 * s pushr 26.0 * + 1000.0 /
 
-# Add fixed consumption for Climb + Descent + Ground (twice) + Security
-12.0 + 10.0 + 2.0 + 2.0 + 11.0 +
+# Add fixed consumption for:
+# Ground + Climb + Descent + Approach + Ground + Security
+2.5 + 15.0 + 3.0 + 4.0 + 1.0 + 7.0 +
 
 # Put result
 -1 roundat 6 4 " " normal
