@@ -58,19 +58,18 @@ package body Table is
   -- Altern color or Same Suit
   Start_Mode   : constant :=   2;
   Start_Switch : constant :=  18; Stop_Switch : constant :=  26;
-
+  Red : constant Con_Io.Colors := Con_Io.Color_Of ("Red");
 
   -- Put the menus
   procedure Update_Policy is
     use type Movements.Stack_Policy_List;
   begin
     Policy_Window.Move (0, Start_Mode);
-    Policy_Window.Put (
-        (if Movements.Stack_Policy = Movements.Same_Suit then
-           "Same suit    "
-         else
-           "Altern colors"),
-         Menu_Fore, Background, False);
+    if Movements.Stack_Policy = Movements.Same_Suit then
+      Policy_Window.Put ("Same suit    ", Menu_Fore, Background, False);
+    else
+      Policy_Window.Put ("Altern colors", Red,       Background, False);
+    end if;
     Policy_Window.Move (0, Start_Switch);
     if not Memory.Can_Undo then
       -- Beginning of game or all undone
