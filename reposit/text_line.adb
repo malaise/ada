@@ -238,6 +238,15 @@ package body Text_Line is
     return Str;
   end Get;
 
+  -- Has the end of file been reached
+  function End_Reached (Text : String;
+                        Line_Feed : in String := Line_Feed_Str)
+           return Boolean is
+  begin
+    return Text'Length < Line_Feed'Length
+    or else Text (Text'Last - Line_Feed'Length + 1 .. Text'Last) /= Line_Feed;
+  end End_Reached;
+
   -- Put some text in file
   -- This text will either be flushed explicitely
   --  or on close (or each N characters)

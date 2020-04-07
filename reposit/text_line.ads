@@ -73,6 +73,10 @@ package Text_Line is
   function Get (File : in out File_Type) return String;
   function Get (File : in out File_Type) return As.U.Asu_Us;
 
+  -- Has the end of file been reached
+  function End_Reached (Text : String;
+                        Line_Feed : in String := Line_Feed_Str) return Boolean;
+
   -- Put some text in file
   -- This text will either be flushed explicitely
   --  or on close (or each N characters)
