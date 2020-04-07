@@ -354,7 +354,8 @@ package body Str_Util.Regex is
     -- Empty slice if no strict match
     if not Reg_Exp.Strict_Match (Str, Cells) then
       declare
-        Result : constant As.U.Utils.Asu_Array(1 .. 0) := (others => As.U.Asu_Null);
+        Result : constant As.U.Utils.Asu_Array(1 .. 0)
+               := (others => As.U.Asu_Null);
       begin
         return Result;
       end;
