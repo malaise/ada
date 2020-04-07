@@ -24,8 +24,8 @@
 --         \
 --          \
 --           ----------->=========
-
-with Argument, Basic_Proc, My_Math, Images, Normalization, Trace.Loggers;
+with Argument, Basic_Proc, Trace.Loggers,
+     Images, Normalization, My_Math;
 procedure Intercept is
 
   -- Trace logger
@@ -84,13 +84,23 @@ procedure Intercept is
   function Right_Left_Norm (Right : in Boolean) return String is
     (if Right then "right" else " left");
 
-  -- Syntax error
-  procedure Error is
+  -- Syntax  or processing error
+  Abort_Error : exception;
+  procedure Error (Message : in String) is
   begin
-    Basic_Proc.Put_Line_Error ("Syntax error. Usage:"
-        & Argument.Get_Program_Name & " <QfU> <Heading>");
+    Basic_Proc.Put_Line_Error (Message & ".");
+    Basic_Proc.Put_Line_Error ("Usage:"
+        & Argument.Get_Program_Name & " <dme> | <app>");
+    Basic_Proc.Put_Line_Error ("  <dme>   ::= -d | --dme");
+    Basic_Proc.Put_Line_Error (
+        "  <app>   ::= [ <short> ] <QfU> <Heading> [ <fpl> ]");
+    Basic_Proc.Put_Line_Error ("  <short> ::= -s | --short");
+    Basic_Proc.Put_Line_Error ("  <fpl>   ::= <mode> <file_name>");
+    Basic_Proc.Put_Line_Error (
+        "  <mode> ::= -a | --append | -A | --append_alternate");
     Basic_Proc.Put_Line_Error ("Angles from 0 to 359");
     Basic_Proc.Set_Error_Exit_Code;
+    raise Abort_Error;
   end Error;
 
   function To_Signed (A : Angle) return Signed_Angle is
@@ -102,7 +112,22 @@ procedure Intercept is
     end if;
   end To_Signed;
 
-  use type My_Math.Real;
+  package Fpl is
+    type Patch_Policies is (None, First, Alternate);
+    Policy : Patch_Policies := None;
+
+    -- Parse arguments and load the flight plan
+    procedure Parse_Args;
+
+    -- Append a point to approach procedure
+    procedure Append_App (Alt : in Positive; Ang : in Angle; Dst : in Distance);
+
+    -- Save the flight plan
+    procedure Save;
+  end Fpl;
+  package body Fpl is separate;
+
+  use type My_Math.Real, Fpl.Patch_Policies;
 begin
   Logger.Init ("Intercept");
 
@@ -117,22 +142,31 @@ begin
   begin
     Next_Arg := 1;
     Short_Mode := False;
-    if Argument.Get_Parameter = "-s"
-    or else Argument.Get_Parameter = "--short" then
+    if Argument.Get_Nbre_Arg = 1
+    and then (Argument.Get_Parameter = "-s"
+              or else Argument.Get_Parameter = "--short") then
       Short_Mode := True;
       Next_Arg := Next_Arg + 1;
+      if Argument.Get_Nbre_Arg /= Next_Arg + 1 then
+        -- QFU and Angle only supported
+        raise Constraint_Error;
+      end if;
+    elsif Argument.Get_Nbre_Arg /= Next_Arg + 1 then
+      -- Not only QFU and Angle
+      Fpl.Parse_Args;
     end if;
-    if Argument.Get_Nbre_Arg /= Next_Arg + 1 then
-      raise Constraint_Error;
-    end if;
-    Qfu       := Angle'Value (Argument.Get_Parameter (Occurence => Next_Arg));
-    Next_Arg := Next_Arg + 1;
-    Init_Head := Angle'Value (Argument.Get_Parameter (Occurence => Next_Arg));
   exception
     when Constraint_Error =>
-      Error;
+      Error ("Syntax error");
       return;
   end;
+  Logger.Log_Debug ("Arguments parsed");
+
+  -- Basic arguments
+  Qfu       := Angle'Value (Argument.Get_Parameter (Occurence => Next_Arg));
+  Next_Arg  := Next_Arg + 1;
+  Init_Head := Angle'Value (Argument.Get_Parameter (Occurence => Next_Arg));
+  Next_Arg  := Next_Arg + 1;
   Logger.Log_Debug ("QFU: " & Angle_Image (Qfu)
                   & "  Init heading: " & Angle_Image (Init_Head));
 
@@ -170,6 +204,10 @@ begin
     if Short_Mode then
       Basic_Proc.Put_Line_Output ("Final");
     else
+      if Fpl.Policy = Fpl.First then
+        -- Insert start of final
+        Fpl.Append_App (3000, Qfu + 180, Direct_Final_Distance);
+      end if;
       Basic_Proc.Put_Line_Output ("You are in final heading "
          & Angle_Image (Qfu) & ".");
     end if;
@@ -218,6 +256,12 @@ begin
           & Right_Left_Image (Turn_Right) & " heading "
           & Angle_Image (Heading_1) & " to intercept final heading "
           & Angle_Image (Qfu) & ".");
+      if Fpl.Policy = Fpl.First then
+        -- Insert start of interception
+        Fpl.Append_App (5000, Init_Head + 180, Intercep_Distance);
+        -- Insert start of Finale
+        Fpl.Append_App (3000, Qfu + 180, Direct_Final_Distance);
+      end if;
     end if;
   else
     if Short_Mode then
@@ -277,6 +321,14 @@ begin
           & " turn " & Right_Left_Image (not Turn_Right) & " heading "
           & Angle_Image (Heading_2) & " to intercept final heading "
           & Angle_Image (Qfu) & ".");
+      if Fpl.Policy = Fpl.First then
+        -- Insert start of indirect leg
+        Fpl.Append_App (7000, Init_Head + 180, Intercep_Distance);
+        -- Insert start of interception
+        Fpl.Append_App (5000, Beta_Qdm + 180, Beta_Dme);
+        -- Insert start of Finale
+        Fpl.Append_App (3000, Qfu + 180, Direct_Final_Distance);
+      end if;
     end if;
   end if;
 
@@ -359,7 +411,21 @@ begin
         & " turn " & Right_Left_Image (Alt_Turn2_Right) & " heading "
         & Angle_Image (Alt_Heading_2) & " to intercept final heading "
         & Angle_Image (Qfu) & ".");
+    if Fpl.Policy = Fpl.Alternate then
+      -- Insert start of indirect leg
+      Fpl.Append_App (7000, Init_Head + 180, Intercep_Distance);
+      -- Insert start of interception
+      Fpl.Append_App (5000, Alt_Beta_Qdm + 180, Beta_Dme);
+      -- Insert start of Finale
+      Fpl.Append_App (3000, Qfu + 180, Direct_Final_Distance);
+    end if;
   end if;
 
+  -- Save modified FPL
+  Fpl.Save;
+
+exception
+  when Abort_Error =>
+    null;
 end Intercept;
 
