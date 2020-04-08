@@ -125,7 +125,8 @@ package body Fpl is
     Ades : constant Complex := Create_Complex (Ades_Lon, Ades_Lat);
     -- 1 Nm is 1 minute of angle
     Vect : constant Complex
-         := To_Complex (Create_Polar (Typ_Module (Dst) / 60.0, Degree (Ang)));
+         := To_Complex (Create_Polar (Typ_Module (Dst) / 60.0,
+                                      Degree (90 - Ang)));
     Point : constant Complex := Ades + Vect;
     I, R : My_Math.Real;
     Line : As.U.Asu_Us;
