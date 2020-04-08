@@ -227,7 +227,7 @@ begin
   Beta_Dme := Distance (My_Math.Round (Beta_Distance));
   Logger.Log_Debug ("Beta DME: " & Dist_Image (Beta_Dme));
   Beta_Angle := abs My_Math.Arc_Sin (
-      My_Math.Sin (My_Math.Real (180 - Max_Intercep_Angle))
+      My_Math.Sin (My_Math.Real (180 - Max_Intercep_Angle), My_Math.Degree)
         * My_Math.Real (Join_Distance) / Beta_Distance,
       My_Math.Degree);
   Logger.Log_Debug ("Beta Angle: "
@@ -327,7 +327,7 @@ begin
         -- Insert start of interception
         Fpl.Append_App (5000, Beta_Qdm + 180, Beta_Dme);
         -- Insert start of Finale
-        Fpl.Append_App (3000, Qfu + 180, Direct_Final_Distance);
+        Fpl.Append_App (3000, Qfu + 180, Indirect_Final_Distance);
       end if;
     end if;
   end if;
@@ -417,7 +417,7 @@ begin
       -- Insert start of interception
       Fpl.Append_App (5000, Alt_Beta_Qdm + 180, Beta_Dme);
       -- Insert start of Finale
-      Fpl.Append_App (3000, Qfu + 180, Direct_Final_Distance);
+      Fpl.Append_App (3000, Qfu + 180, Indirect_Final_Distance);
     end if;
   end if;
 
