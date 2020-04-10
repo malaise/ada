@@ -120,16 +120,56 @@ package body Fpl is
   -- "28 APPx DRCT <alt> <angle> <distance>"
   App_Num : Natural := 0;
   procedure Append_App (Alt : in Positive; Ang : in Angle; Dst : in Distance) is
-    use type My_Math.Real;
-    use Complexes;
-    Ades : constant Complex := Create_Complex (Ades_Lon, Ades_Lat);
-    -- 1 Nm is 1 minute of angle
-    Vect : constant Complex
-         := To_Complex (Create_Polar (Typ_Module (Dst) / 60.0,
-                                      Degree (90 - Ang)));
-    Point : constant Complex := Ades + Vect;
-    I, R : My_Math.Real;
+    use My_Math;
+    use type Complexes.Complex;
+    Ades : constant Complexes.Complex
+         := Complexes.Create_Complex (Ades_Lon, Ades_Lat);
+    -- 1 Nm is 1 minute of angle => convert to fraction of degrees
+    Len : constant Real := Real (Dst) / 60.0;
+    -- Flat trigo, for debugging traces only
+    Vect : constant Complexes.Complex
+         := Complexes.To_Complex (
+             Complexes.Create_Polar (Complexes.Typ_Module (Len),
+                                     Complexes.Degree (90 - Ang)));
+    Point_Flat : constant Complexes.Complex := Ades + Vect;
+    -- Spherical trigo
+    A_Colat : constant Real := 90.0 - Ades_Lat;
+    Cos_B_Colat : constant Real
+                := Cos (A_Colat, Degree) * Cos (Len , Degree)
+                 + Sin (A_Colat, Degree) * Sin (Len, Degree)
+                   * Cos (Real (Ang), Degree);
+    B_Colat : constant Real := Arc_Cos (Cos_B_Colat, Degree);
+    Delta_Lon : constant Real
+              := Arc_Sin (Sin (Len, Degree)
+                           * Sin (Real (Ang), Degree) / Sin (B_Colat, Degree),
+                          Degree);
+    -- Result
+    Lat, Lon : My_Math.Real;
     Line : As.U.Asu_Us;
+
+    procedure Normalize is
+    begin
+      -- Normalize Point Lat (-90 .. 90)
+      if Lat > 90.0 then
+        Lat := 180.0 - Lat;
+        Lon := Lon + 180.0;
+      elsif Lat < -90.0 then
+        Lat := -(180.0 + Lat);
+        Lon := Lon + 180.0;
+      end if;
+      -- Normalize Lon (-180 .. 180)
+      if Lon >= 360.0 then
+        Lon := Lon - 360.0;
+      elsif Lon <= -360.0 then
+        Lon := Lon + 360.0;
+      end if;
+      if Lon > 180.0 then
+        Lon := -360.0 + Lon;
+      elsif Lon <= -180.0 then
+        Lon := 360.0 + Lon;
+      end if;
+    end Normalize;
+
   begin
     -- Add point
     Numenr := Numenr + 1;
@@ -138,28 +178,21 @@ package body Fpl is
               & " DRCT ");
     -- Ades_Lat + Alt
     Line.Append (Image (My_Math.Real'(Ades_Alt + My_Math.Real (Alt))));
-    -- Normalize Point Lat (-90 .. 90)
-    R := Point.Part_Real;
-    I := Point.Part_Imag;
-    if I > 90.0 then
-      I := 180.0 - I;
-      R := R + 180.0;
-    elsif I < -90.0 then
-      I := -(180.0 + I);
-      R := R + 180.0;
-    end if;
-    -- Normalize Lon (-180 .. 180)
-    if R >= 360.0 then
-      R := R - 360.0;
-    elsif R <= -360.0 then
-      R := R + 360.0;
-    end if;
-    if R > 180.0 then
-      R := -360.0 + R;
-    elsif R <= -180.0 then
-      R := 360.0 + R;
-    end if;
-    Line.Append (" " & Image (I) & " " & Image (R));
+
+    -- Flat trigo for debug
+    Lat := Point_Flat.Part_Imag;
+    Lon := Point_Flat.Part_Real;
+    Normalize;
+    Logger.Log_Debug ("  Flat trigo => " & Image (Lat) & " " & Image (Lon));
+
+    -- Spherical trigo
+    Lat := 90.0 - B_Colat;
+    Lon := Ades_Lon + Delta_Lon;
+    Normalize;
+    Logger.Log_Debug ("  Spherical trigo => " & Image (Lat)
+                    & " " & Image (Lon));
+    -- Write
+    Line.Append (" " & Image (Lat) & " " & Image (Lon));
     Logger.Log_Debug ("Appending line: " & Line.Image);
     Fpl_Data.Insert (Fpl_Data.Length, Line);
   end Append_App;
