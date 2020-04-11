@@ -5,12 +5,16 @@ with As.U.Utils, Str_Util.Regex,
 separate (Intercept)
 package body Fpl is
   -- Patchig a FPL file: Patch policy, None is file is empty
-  Arg, File_Name : As.U.Asu_Us;
+  File_Name : As.U.Asu_Us;
   File : Text_Line.File_Type;
   Fpl_Data : As.U.Utils.Asu_Ua.Unb_Array;
+  -- Number of points and the line in file where it is defined
   Numenr : Positive;
   Numenr_Line : Natural;
+  -- Ades characteristics
   Ades_Alt, Ades_Lat, Ades_Lon : My_Math.Real;
+  -- Declination at Ades
+  Declination : My_Math.Real;
 
   -- Ilage or a real
   package Real_Io is new Ada.Text_Io.Float_Io (My_Math.Real);
@@ -22,27 +26,57 @@ package body Fpl is
   end Image;
 
   procedure Parse_Args is
+    -- Argument
+    Arg : As.U.Asu_Us;
+    Char : Character;
+    -- File descriptor and rights
     Stat : Sys_Calls.File_Stat_Rec;
     Can_Read, Can_Write, Can_Exec : Boolean;
+    -- Line read and end indicator
     Line, Last_Line : As.U.Asu_Us;
     Done : Boolean;
-    Access_Error, Format_Error : exception;
-    use type Sys_Calls.File_Kind_List;
+    Argument_Error, Access_Error, Format_Error : exception;
+    use type My_Math.Real, Sys_Calls.File_Kind_List;
   begin
-    if Argument.Get_Nbre_Arg = Next_Arg + 3 then
+    if Argument.Get_Nbre_Arg = Next_Arg + 4 then
       Argument.Get_Parameter (Arg, Occurence => Next_Arg + 2);
       if    Arg.Image = "-a" or else Arg.Image = "--append" then
         Policy := First;
-        Argument.Get_Parameter (File_Name, Next_Arg + 3);
       elsif Arg.Image = "-A" or else Arg.Image = "--append_alternate" then
         Policy := Alternate;
-        Argument.Get_Parameter (File_Name, Next_Arg + 3);
       else
-        raise Constraint_Error;
+        raise Argument_Error;
       end if;
     else
-        raise Constraint_Error;
+        raise Argument_Error;
     end if;
+    -- Get declination, sign or E or W, then value
+    Argument.Get_Parameter (Arg, Occurence => Next_Arg + 3);
+    if Arg.Length < 2 then
+      raise Argument_Error;
+    end if;
+    Char := Arg.Element (1);
+    if Char = 'E' then
+      Char := '+';
+    elsif Char = 'W' then
+      Char := '-';
+    end if;
+    Arg.Delete (1, 1);
+    begin
+      Declination := Gets.Get_Real (Arg.Image);
+    exception
+      when others =>
+        raise Argument_Error;
+    end;
+    if Char = '-' then
+      Declination := -Declination;
+    elsif Char /= '+' then
+      raise Argument_Error;
+    end if;
+    Logger.Log_Debug ("Got declination " & Image (Declination));
+
+    -- Get file name
+    Argument.Get_Parameter (File_Name, Occurence => Next_Arg + 4);
     Logger.Log_Debug ("Got file " & File_Name.Image);
     -- Check file access
     Stat := Sys_Calls.File_Stat (File_Name.Image);
@@ -108,6 +142,8 @@ package body Fpl is
       Logger.Log_Debug ("ADES Lon " & Image (Ades_Lon));
     end;
   exception
+    when Argument_Error =>
+      Error ("Syntax error");
     when Access_Error =>
       Error ("Error accessing file " & File_Name.Image);
     when Format_Error =>
@@ -121,7 +157,7 @@ package body Fpl is
   App_Num : Natural := 0;
   procedure Append_App (Alt : in Positive; Ang : in Angle; Dst : in Distance) is
     use My_Math;
-    use type Complexes.Complex;
+    use type Complexes.Complex, Complexes.Degree;
     Ades : constant Complexes.Complex
          := Complexes.Create_Complex (Ades_Lon, Ades_Lat);
     -- 1 Nm is 1 minute of angle => convert to fraction of degrees
@@ -130,18 +166,20 @@ package body Fpl is
     Vect : constant Complexes.Complex
          := Complexes.To_Complex (
              Complexes.Create_Polar (Complexes.Typ_Module (Len),
-                                     Complexes.Degree (90 - Ang)));
+                                     Complexes.Degree (90 - Ang)
+                                   + Complexes.Degree (Declination)));
     Point_Flat : constant Complexes.Complex := Ades + Vect;
     -- Spherical trigo
     A_Colat : constant Real := 90.0 - Ades_Lat;
     Cos_B_Colat : constant Real
                 := Cos (A_Colat, Degree) * Cos (Len , Degree)
                  + Sin (A_Colat, Degree) * Sin (Len, Degree)
-                   * Cos (Real (Ang), Degree);
+                   * Cos (Real (Ang) + Declination, Degree);
     B_Colat : constant Real := Arc_Cos (Cos_B_Colat, Degree);
     Delta_Lon : constant Real
               := Arc_Sin (Sin (Len, Degree)
-                           * Sin (Real (Ang), Degree) / Sin (B_Colat, Degree),
+                           * Sin (Real (Ang) + Declination, Degree)
+                           / Sin (B_Colat, Degree),
                           Degree);
     -- Result
     Lat, Lon : My_Math.Real;

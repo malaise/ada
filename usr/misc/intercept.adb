@@ -95,9 +95,11 @@ procedure Intercept is
     Basic_Proc.Put_Line_Error (
         "  <app>   ::= [ <short> ] <QfU> <Heading> [ <fpl> ]");
     Basic_Proc.Put_Line_Error ("  <short> ::= -s | --short");
-    Basic_Proc.Put_Line_Error ("  <fpl>   ::= <mode> <file_name>");
+    Basic_Proc.Put_Line_Error ("  <fpl>   ::= <mode> <decl> <file_name>");
     Basic_Proc.Put_Line_Error (
         "  <mode> ::= -a | --append | -A | --append_alternate");
+    Basic_Proc.Put_Line_Error (
+        "  <decl> ::= + | - | E | W <val>");
     Basic_Proc.Put_Line_Error ("Angles from 0 to 359");
     Basic_Proc.Set_Error_Exit_Code;
     raise Abort_Error;
@@ -422,7 +424,9 @@ begin
   end if;
 
   -- Save modified FPL
-  Fpl.Save;
+  if Fpl.Policy /= Fpl.None then
+    Fpl.Save;
+  end if;
 
 exception
   when Abort_Error =>
