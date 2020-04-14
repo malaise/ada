@@ -4,7 +4,7 @@ Main changes
 
 [horizontal]
 
-*2019/12*:: Add X_Mng.Cards and lapeau game
+*2019/12*:: Add X_Mng.Cards, and lapeau and freecell games
 
 *2018/05*:: Add mapcodes library
 

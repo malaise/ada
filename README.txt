@@ -110,11 +110,11 @@ for several calls to the operating system,
 several fds, catches signals...
 
 .X11 management ('x_mng')
-This lib encapsulates all the needed calls to X11, interfaced by the Ada 'X_Mng'
-package.
+- 'x_export', interfaced by the Ada 'X_Mng' package, defines all the calls
+needed for X11 (except cards),
 
-.X11 cards management ('cards')
-This lib manges cards for games.
+- 'x_cards', interfaced by the Ada 'X_Mng.Cards' package, is an extension
+for the management in X11 of playing cards.
 
 .Ndbm ('cnbdbm')
 This lib interfaces with ndbm C library. The corresponding Ada 'Ndbm' package is
@@ -212,6 +212,9 @@ Fifos (2)::
 Fl (1)::
      Simple computation of fligh log (adding hours and minutes).
 
+Freecell (2d)::
+     The famous patience game.
+
 Great_Circle (1)::
      Computation of heading and distance between two points on earth (GPS).
 
@@ -223,7 +226,7 @@ Hungar (2)::
      jobs). Tough algo.
 
 Lapeau (2d)::
-     A patience games with 13 rows of 4 cards each.
+     A patience game with 13 rows of 4 cards each.
 
 Lem (2d)::
      Game: land the LEM on the moon.
@@ -251,7 +254,7 @@ Misc::
 - G (1) a game where to find the remaining of division by 3.
 - Lenv (1) lists environment variables whose name match a criteria.
 - Prime (1) searches prime numbers.
-- Renamer (1) is a 'Afpx' based HMI to rename files.
+- Renamer (1) is a HMI based on 'Afpx' for renaming files.
 - Stats (2) scans columns of values and computes average and deviation.
 - Status (1) evaluates if a target file needs to be rebuilt.
 - Tcping (1) pings in tcp a host:port.
