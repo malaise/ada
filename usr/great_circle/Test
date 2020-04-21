@@ -52,6 +52,9 @@ t_hp_gc FRA:FTGC.R3T-K3 FRA:FTGC.R3T-K9 \
 # Fonsorbes -> Acuncagua
 t_hp_gc FRA:FTGC.R3T-1N 79GMS.VQFW-7R \
   "H:  234.076573000, D: 6010Nm 11131km."
+# A short distance (some km) around New York
+t_hp_gc 40.786251000 -73.961418000 40.686251000 -73.961418000 \
+  "H:  179.999975000, D: 6Nm 11km 11120m."
 # Comparisons
 # Fonsorbes -> Acuncagua
 t_hp_gc FRA:FTGC.R3T 79GMS.VQDX  "H:  234.076599000, D: 6010Nm 11131km."

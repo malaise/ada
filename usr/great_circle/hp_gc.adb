@@ -1,3 +1,6 @@
+-- High precision great circle
+-- Takes as input either two mapcodes or two lat-long (in degres with decimals)
+-- Outputs Heading (in degrees with 9 decimals) and distance (down to the mm)
 with Basic_Proc, Argument, Gets, My_Math, Normalization;
 with Conv, Lat_Lon, Great_Circle;
 procedure Hp_Gc is
