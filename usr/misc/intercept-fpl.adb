@@ -176,11 +176,13 @@ package body Fpl is
                  + Sin (A_Colat, Degree) * Sin (Len, Degree)
                    * Cos (Real (Ang) + Declination, Degree);
     B_Colat : constant Real := Arc_Cos (Cos_B_Colat, Degree);
-    Delta_Lon : constant Real
+    Raw_Delta_Lon : constant Real
         := Arc_Cos ( (Cos (Len, Degree) * Sin (A_Colat, Degree)
                       - Sin (Len, Degree) * Cos (A_Colat, Degree)
                         * Cos (Real (Ang) + Declination, Degree) )
                      / Sin (B_Colat, Degree), Degree);
+    Delta_Lon : constant Real
+              := (if Ang < 180 then Raw_Delta_Lon else -Raw_Delta_Lon);
     -- Result
     Lat, Lon : My_Math.Real;
     Line : As.U.Asu_Us;
