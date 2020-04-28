@@ -368,7 +368,7 @@ procedure Gc is
   end Encode_Heading;
 
 begin
-
+  Great_Circle.Init_Logger;
   if Argument.Get_Nbre_Arg = 1
     and then (Argument.Get_Parameter = "-h"
       or else Argument.Get_Parameter = "--help") then

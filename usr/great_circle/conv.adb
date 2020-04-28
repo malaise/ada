@@ -134,7 +134,12 @@ package body Conv is
 
   function Rad2Real (Coord : Rad_Coord_Range) return My_Math.Real is
   begin
-    return My_Math.Real (Complexes.To_Degree (Coord));
+    return R : My_Math.Real do
+      R := My_Math.Real (Complexes.To_Degree (Coord));
+      if R > 180.0 then
+        R := -360.0 + R;
+      end if;
+    end return;
   end Rad2Real;
 
   function Real2Geo (R : My_Math.Real) return Geo_Coord_Rec is
