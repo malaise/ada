@@ -178,7 +178,15 @@ package body Great_Circle is
     Cos_Delta_X := (My_Math.Cos(Real(Arc)) * My_Math.Sin(Real(A_Coy))
                     -   My_Math.Sin(Real(Arc)) * My_Math.Cos(Real(A_Coy))
                         * My_Math.Cos(Real(Head)) ) / My_Math.Sin(Real(B_Coy));
-    Delta_X := My_Math.Arc_Cos(Cos_Delta_X);
+    if abs Cos_Delta_X > 1.0 and then abs Cos_Delta_X - 1.0 < Epsilon then
+      if Cos_Delta_X > 1.0 then
+        Delta_X := 0.0;
+      else
+        Delta_X := Real (Conv.Pi);
+      end if;
+    else
+      Delta_X := My_Math.Arc_Cos(Cos_Delta_X);
+    end if;
     Logger.Log_Debug ("Raw Delta Lon: " & Delta_X'Img);
     if Head > Conv.Pi then
       Delta_X := -Delta_X;
