@@ -83,5 +83,16 @@ t_hp_gc -a 40.786251000 -73.961418000 262.731751000 16671km \
 
 t_hp_gc -a -37.827455000 145.045353500 71.968389000 16671km \
   "  40.786692000  -73.956848000"
+
+# Small step in each direction around 43.531828717 1.235420533
+t_hp_gc -a FRA:FTGC.R3T-K3   0.0 1m \
+  "THM1V.2TLY-SC"
+t_hp_gc -a FRA:FTGC.R3T-K3  90.0 1m \
+  "THM1V.2TMY-J0"
+t_hp_gc -a FRA:FTGC.R3T-K3 180.0 1m \
+  "THM1V.2TLY-9R"
+t_hp_gc -a FRA:FTGC.R3T-K3 270.0 1m \
+  "THM1V.2TLY-L4"
+
 echo "OK."
 

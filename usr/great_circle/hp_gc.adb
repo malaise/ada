@@ -5,7 +5,8 @@ with Basic_Proc, Argument, Gets, My_Math, Normalization, As.U.Utils,
      Str_Util.Regex;
 with Conv, Lat_Lon, Great_Circle;
 procedure Hp_Gc is
-  Compute : Boolean;
+  type Mode_List is (Compute, Apply_Lalo, Apply_Mapcode);
+  Mode : Mode_List;
   Lat1, Lon1, Lat2, Lon2 : My_Math.Real;
   A, B : Lat_Lon.Lat_Lon_Rad_Rec;
   H : Conv.Geo_Coord_Rec;
@@ -43,7 +44,7 @@ begin
     if (Argument.Get_Nbre_Arg = 3
         or else Argument.Get_Nbre_Arg = 5)
     and then Argument.Get_Parameter (Occurence => 1) = "-c" then
-      Compute := True;
+      Mode := Compute;
       if Argument.Get_Nbre_Arg = 3 then
         -- 2 mapcodes
         A := Lat_Lon.Mapcode2Rad (Argument.Get_Parameter (Occurence => 2));
@@ -60,16 +61,17 @@ begin
     elsif (Argument.Get_Nbre_Arg = 4
            or else Argument.Get_Nbre_Arg = 5)
     and then Argument.Get_Parameter (Occurence => 1) = "-a" then
-      Compute := False;
       if Argument.Get_Nbre_Arg = 4 then
         -- 1 mapcode, 1 heading and 1 distance
         A := Lat_Lon.Mapcode2Rad (Argument.Get_Parameter (Occurence => 2));
         I := 3;
+        Mode := Apply_Mapcode;
       else
         Lat1 := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => 2));
         Lon1 := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => 3));
         A := Set_Lalo (Lat1, Lon1);
         I := 4;
+        Mode := Apply_Lalo;
       end if;
       R := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => I));
       H := Conv.Real2Geo (R);
@@ -127,7 +129,7 @@ begin
       return;
   end;
 
-  if Compute then
+  if Mode = Compute then
     -- Compute and display great circle
     Great_Circle.Compute_Route (A, B, H, D);
 
@@ -154,11 +156,17 @@ begin
     B := Great_Circle.Apply_Route (A, H, D);
     -- Lat and lon of B
     R := Conv.Rad2Real (B.Y);
-    Basic_Proc.Put_Output (
-      Normalization.Normal_Fixed (R, Frac_Len + 5, 4, '0') & " ");
-    R := Conv.Rad2Real (B.X);
-    Basic_Proc.Put_Line_Output (
-      Normalization.Normal_Fixed (R, Frac_Len + 5, 4, '0'));
+    if Mode = Apply_Lalo then
+      -- Display Lat Long of destination
+      Basic_Proc.Put_Output (
+        Normalization.Normal_Fixed (R, Frac_Len + 5, 4, '0') & " ");
+      R := Conv.Rad2Real (B.X);
+      Basic_Proc.Put_Line_Output (
+        Normalization.Normal_Fixed (R, Frac_Len + 5, 4, '0'));
+   else
+     -- Display Mapcode of destination
+     Basic_Proc.Put_Line_Output (Lat_Lon.Rad2Mapcode (B));
+   end if;
   end if;
 
 end Hp_Gc;
