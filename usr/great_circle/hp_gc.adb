@@ -112,9 +112,9 @@ begin
       Basic_Proc.Put_Line_Error (
           "<apply_route>   ::= -a <point> <route> | -r <map_code> <route>");
       Basic_Proc.Put_Line_Error (
-          "<point>         ::= <lat1> <lon1> <lat2> <lon2>");
+          "<point>         ::= <lat> <lon>>");
       Basic_Proc.Put_Line_Error (
-          "<map_code>      ::= <lat1> <lon1> <lat2> <lon2>");
+          "<map_code>      ::= [ <context>: ] <mapcode>");
       Basic_Proc.Put_Line_Error (
           "<route>         ::= <heading> <length><unit>");
       Basic_Proc.Put_Line_Error (
