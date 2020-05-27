@@ -133,18 +133,38 @@ procedure Intercept is
 begin
   Logger.Init ("Intercept");
 
+  -- For indirect interceptions
+  -- Angle and DME of Beta, the start of the last (direct) leg
+  -- Independant from initial heading
+  Beta_Distance := My_Math.Sqrt (
+        My_Math.Real (Indirect_Final_Distance) ** 2
+      + My_Math.Real (Join_Distance) ** 2
+      - 2.0 * My_Math.Real (Indirect_Final_Distance)
+            * My_Math.Real (Join_Distance)
+            * My_Math.Cos (My_Math.Real (180 - Max_Intercep_Angle),
+                           My_Math.Degree));
+  Beta_Dme := Distance (My_Math.Round (Beta_Distance));
+  Logger.Log_Debug ("Beta DME: " & Dist_Image (Beta_Dme));
+  Beta_Angle := abs My_Math.Arc_Sin (
+      My_Math.Sin (My_Math.Real (180 - Max_Intercep_Angle), My_Math.Degree)
+        * My_Math.Real (Join_Distance) / Beta_Distance,
+      My_Math.Degree);
+  Logger.Log_Debug ("Beta Angle: "
+      & Angle_Image (Angle (My_Math.Round (Beta_Angle))));
+
   -- Parse arguments
   if Argument.Get_Nbre_Arg = 1
   and then (Argument.Get_Parameter = "-d"
             or else Argument.Get_Parameter = "--dme") then
-    Basic_Proc.Put_Line_Output (Dist_Image (Intercep_Distance));
+    Basic_Proc.Put_Line_Output (Dist_Image (Intercep_Distance) & " "
+                             &  Dist_Image (Beta_Dme));
     return;
   end if;
 
   begin
     Next_Arg := 1;
     Short_Mode := False;
-    if Argument.Get_Nbre_Arg = 1
+    if Argument.Get_Nbre_Arg = 3
     and then (Argument.Get_Parameter = "-s"
               or else Argument.Get_Parameter = "--short") then
       Short_Mode := True;
@@ -215,25 +235,6 @@ begin
     end if;
     return;
   end if;
-
-  -- For indirect interceptions
-  -- Angle and DME of Beta, the start of the last (direct) leg
-  -- Independant from initial heading
-  Beta_Distance := My_Math.Sqrt (
-        My_Math.Real (Indirect_Final_Distance) ** 2
-      + My_Math.Real (Join_Distance) ** 2
-      - 2.0 * My_Math.Real (Indirect_Final_Distance)
-            * My_Math.Real (Join_Distance)
-            * My_Math.Cos (My_Math.Real (180 - Max_Intercep_Angle),
-                           My_Math.Degree));
-  Beta_Dme := Distance (My_Math.Round (Beta_Distance));
-  Logger.Log_Debug ("Beta DME: " & Dist_Image (Beta_Dme));
-  Beta_Angle := abs My_Math.Arc_Sin (
-      My_Math.Sin (My_Math.Real (180 - Max_Intercep_Angle), My_Math.Degree)
-        * My_Math.Real (Join_Distance) / Beta_Distance,
-      My_Math.Degree);
-  Logger.Log_Debug ("Beta Angle: "
-      & Angle_Image (Angle (My_Math.Round (Beta_Angle))));
 
   -- Direct or indirect primary interception
   if Leg_Angle <= Max_Intercep_Angle then

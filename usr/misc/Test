@@ -187,8 +187,10 @@ fi
 
 if [ \( -z "$1" \) -o \( "$1" = "intercept" \) ] ; then
   # Intercept
-  INTER_DME=`intercept --dme`
-  export BETA_DME=18
+  # Get constant Intercept DME
+  INTER_DME=`intercept --dme | cut -d ' ' -f1`
+  # Manually use the second output field to set Beta DME
+  export BETA_DME=20
   echo -n "" > experr
   let L=1
   while true ; do
@@ -259,6 +261,22 @@ EOF
 
   # Done
   echo ""
+fi
+
+# Regenerate interception scenario
+if [ "$1" = "generate_intercept" ] ; then
+  awk '
+    ( ($0 == "") || ($1 == "#") ) {
+      print
+      next
+    }
+    {
+      cmd="intercept -s "$1" "$2
+      cmd | getline RES
+      close(cmd)
+      print RES
+    }
+  ' interceptions.txt > interceptions.gen
 fi
 
 clean

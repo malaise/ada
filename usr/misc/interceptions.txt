@@ -1,51 +1,51 @@
 # Alreay in final
  21  21 Final
 # Direct and alternate indirect interceptions
- 21  10 Direct  left   2  left 343  31 right  61
- 21  30 Direct right  37 right  55  11  left 341
+ 21  10 Direct  left   2  left 336  34 right  61
+ 21  30 Direct right  37 right  63   8  left 341
 # Indirect and alternate indirect interceptions
- 21  50 Indirect right  74  31  left  61 right  86  11  left 341
- 21  70 Indirect right 106  31  left  61 right 107  11  left 341
- 21 110 Indirect right 144  31  left  61 right 139  11  left 341
- 21 120 Indirect right 151  31  left  61 right 145  11  left 341
- 21 150 Indirect right 172  31  left  61 right 165  11 right 341
- 21 200 Indirect right 204  31  left  61  left 197  11 right 341
- 21 210 Indirect  left 203  11 right 341 right 210  31  left  61
- 21 290 Indirect  left 257  11 right 341  left 262  31 right  61
- 21 350 Indirect  left 324  11 right 341  left 314  31 right  61
- 92 175 Indirect right 210 102  left 132 right 205  82  left  52
-142  95 Indirect  left  60 132 right 102  left  58 152 right 182
+ 21  50 Indirect right  77  34  left  61 right  91   8  left 341
+ 21  70 Indirect right 110  34  left  61 right 110   8  left 341
+ 21 110 Indirect right 147  34  left  61 right 140   8  left 341
+ 21 120 Indirect right 155  34  left  61 right 146   8  left 341
+ 21 150 Indirect right 175  34  left  61 right 165   8 right 341
+ 21 200 Indirect right 206  34  left  61  left 195   8 right 341
+ 21 210 Indirect  left 201   8 right 341 right 212  34  left  61
+ 21 290 Indirect  left 253   8 right 341  left 261  34 right  61
+ 21 350 Indirect  left 321   8 right 341  left 309  34 right  61
+ 92 175 Indirect right 214 105  left 132 right 207  79  left  52
+142  95 Indirect  left  56 129 right 102  left  54 155 right 182
 # Quadrants
   0   0 Final
-  0  45 Indirect right  79  10  left  40 right  82 350  left 320
-  0  90 Indirect right 124  10  left  40 right 118 350  left 320
-  0 135 Indirect right 155  10  left  40 right 148 350 right 320
-  0 180 Indirect right 184  10  left  40  left 176 350 right 320
-  0 225 Indirect  left 205 350 right 320  left 212  10  left  40
-  0 270 Indirect  left 236 350 right 320  left 242  10 right  40
-  0 315 Indirect  left 281 350 right 320  left 278  10 right  40
- 90   0 Indirect  left 326  80 right  50  left 332 100 right 130
- 90  45 Indirect  left  11  80 right  50  left   8 100 right 130
+  0  45 Indirect right  84  13  left  40 right  86 347  left 320
+  0  90 Indirect right 127  13  left  40 right 119 347  left 320
+  0 135 Indirect right 158  13  left  40 right 148 347 right 320
+  0 180 Indirect right 185  13  left  40  left 175 347 right 320
+  0 225 Indirect  left 202 347 right 320  left 212  13  left  40
+  0 270 Indirect  left 233 347 right 320  left 241  13 right  40
+  0 315 Indirect  left 276 347 right 320  left 274  13 right  40
+ 90   0 Indirect  left 323  77 right  50  left 331 103 right 130
+ 90  45 Indirect  left   6  77 right  50  left   4 103 right 130
  90  90 Final
- 90 135 Indirect right 169 100  left 130 right 172  80  left  50
- 90 180 Indirect right 214 100  left 130 right 208  80  left  50
- 90 225 Indirect right 245 100  left 130 right 238  80 right  50
- 90 270 Indirect right 274 100  left 130  left 266  80 right  50
- 90 315 Indirect  left 295  80 right  50  left 302 100  left 130
-180   0 Indirect right   4 190  left 220  left 356 170 right 140
-180  45 Indirect  left  25 170 right 140  left  32 190  left 220
-180  90 Indirect  left  56 170 right 140  left  62 190 right 220
-180 135 Indirect  left 101 170 right 140  left  98 190 right 220
+ 90 135 Indirect right 174 103  left 130 right 176  77  left  50
+ 90 180 Indirect right 217 103  left 130 right 209  77  left  50
+ 90 225 Indirect right 248 103  left 130 right 238  77 right  50
+ 90 270 Indirect right 275 103  left 130  left 265  77 right  50
+ 90 315 Indirect  left 292  77 right  50  left 302 103  left 130
+180   0 Indirect right   5 193  left 220  left 355 167 right 140
+180  45 Indirect  left  22 167 right 140  left  32 193  left 220
+180  90 Indirect  left  53 167 right 140  left  61 193 right 220
+180 135 Indirect  left  96 167 right 140  left  94 193 right 220
 180 180 Final
-180 225 Indirect right 259 190  left 220 right 262 170  left 140
-180 270 Indirect right 304 190  left 220 right 298 170  left 140
-180 315 Indirect right 335 190  left 220 right 328 170 right 140
-270   0 Indirect right  34 280  left 310 right  28 260  left 230
-270  45 Indirect right  65 280  left 310 right  58 260 right 230
-270  90 Indirect right  94 280  left 310  left  86 260 right 230
-270 135 Indirect  left 115 260 right 230  left 122 280  left 310
-270 180 Indirect  left 146 260 right 230  left 152 280 right 310
-270 225 Indirect  left 191 260 right 230  left 188 280 right 310
+180 225 Indirect right 264 193  left 220 right 266 167  left 140
+180 270 Indirect right 307 193  left 220 right 299 167  left 140
+180 315 Indirect right 338 193  left 220 right 328 167 right 140
+270   0 Indirect right  37 283  left 310 right  29 257  left 230
+270  45 Indirect right  68 283  left 310 right  58 257 right 230
+270  90 Indirect right  95 283  left 310  left  85 257 right 230
+270 135 Indirect  left 112 257 right 230  left 122 283  left 310
+270 180 Indirect  left 143 257 right 230  left 151 283 right 310
+270 225 Indirect  left 186 257 right 230  left 184 283 right 310
 270 270 Final
-270 315 Indirect right 349 280  left 310 right 352 260 left 230
+270 315 Indirect right 354 283  left 310 right 356 257  left 230
 
