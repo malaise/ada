@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function error {
-  echo "ERROR: "$1"." 1>&2
+  echo "ERROR: $1." 1>&2
   exit 1
 }
 
@@ -47,41 +47,45 @@ function t_hp_gc {
 # High precision computation of great circle route
 # New York -> Melbourne
 t_hp_gc -c 40.786251000 -73.961418000 -37.827455000 145.045353500 \
-  "H:  262.731751000, D: 9001Nm 16671km."
-t_hp_gc -c S93HM.RVB8 AU-VIC:KJ.HX5 "H:  262.731751000, D: 9001Nm 16671km."
+  "H:  262.731751000, D: 9001.410427Nm 16670.612111km."
+t_hp_gc -c S93HM.RVB8 AU-VIC:KJ.HX5 \
+  "H:  262.731751000, D: 9001.410427Nm 16670.612111km."
 # Durban <-> Perth (airports)
-t_hp_gc -c ZAF:WHWW.J3X-64 AU-WA:MF.RRB-1TM \
-  "H:  116.555346000, D: 4256Nm 7882km."
-t_hp_gc -c AU-WA:MF.RRB-1TM ZAF:WHWW.J3X-64 \
-  "H:  246.400504000, D: 4256Nm 7882km."
+t_hp_gc -c ZAF:WHWW.J3X-64 AU-WA:MF.RRB-1T \
+  "H:  116.555346000, D: 4255.880430Nm  7881.890557km."
+t_hp_gc -c AU-WA:MF.RRB-1T ZAF:WHWW.J3X-64 \
+  "H:  246.400505000, D: 4255.880430Nm  7881.890557km."
 
 # One mapcode precision digit in each direction
 t_hp_gc -c FRA:FTGC.R3T-K3 FRA:FTGC.R3T-K4 \
-  "H:   89.999999000, D: 0Nm 0km 0m 247mm."
+  "H:   89.999999000, D:    0.000134Nm     0.000247km   0.247m 247mm."
 t_hp_gc -c FRA:FTGC.R3T-K3 FRA:FTGC.R3T-K2 \
-  "H:  270.000001000, D: 0Nm 0km 0m 247mm."
+  "H:  270.000001000, D:    0.000134Nm     0.000247km   0.247m 247mm."
 t_hp_gc -c FRA:FTGC.R3T-K3 FRA:FTGC.R3T-DW \
-  "H:  179.994819000, D: 0Nm 0km 0m 271mm."
+  "H:  179.994819000, D:    0.000146Nm     0.000271km   0.271m 271mm."
 t_hp_gc -c FRA:FTGC.R3T-K3 FRA:FTGC.R3T-K9 \
-  "H:    0.000000000, D: 0Nm 0km 0m 271mm."
+  "H:    0.000000000, D:    0.000146Nm     0.000271km   0.271m 271mm."
 # Fonsorbes -> Acuncagua
 t_hp_gc -c FRA:FTGC.R3T-1N 79GMS.VQFW-7R \
-  "H:  234.076573000, D: 6010Nm 11131km."
+  "H:  234.076573000, D: 6010.080418Nm 11130.668935km."
 # A short distance (some km) around New York
 t_hp_gc -c 40.786251000 -73.961418000 40.686251000 -73.961418000 \
-  "H:  179.999975000, D: 6Nm 11km 11120m."
+  "H:  179.999975000, D:    6.004054Nm    11.119508km."
 # Comparisons
 # Fonsorbes -> Acuncagua
-t_hp_gc -c FRA:FTGC.R3T 79GMS.VQDX  "H:  234.076599000, D: 6010Nm 11131km."
+t_hp_gc -c FRA:FTGC.R3T 79GMS.VQDX \
+  "H:  234.076599000, D: 6010.085394Nm 11130.678149km."
 t_hp_gc -c 43.5318 001.2354 -32.6532 -070.0108 \
-  "H:  234.076574000, D: 6010Nm 11131km."
+  "H:  234.076574000, D: 6010.080449Nm 11130.668992km."
 # New York <-> Melbourne
 t_hp_gc -c 40.784758117 -73.963754417 -37.820099500 144.983584217 \
-  "H:  262.772168000, D: 9004Nm 16675km."
-t_hp_gc -c US-NJ:Y0.XJ1-KL AU-VIC:PM.N3-8N "H:  262.772168000, D: 9004Nm 16675km."
+  "H:  262.772168000, D: 9003.942671Nm 16675.301827km."
+t_hp_gc -c US-NJ:Y0.XJ1-KL AU-VIC:PM.N3-8N \
+  "H:  262.772168000, D: 9003.942671Nm 16675.301827km."
 t_hp_gc -c -37.820099500 144.983584217 40.784758117 -73.963754417 \
-  "H:   71.970595000, D: 9004Nm 16675km."
-t_hp_gc -c AU-VIC:PM.N3-8N US-NJ:Y0.XJ1-KL "H:   71.970595000, D: 9004Nm 16675km."
+  "H:   71.970595000, D: 9003.942671Nm 16675.301827km."
+t_hp_gc -c AU-VIC:PM.N3-8N US-NJ:Y0.XJ1-KL \
+  "H:   71.970595000, D: 9003.942671Nm 16675.301827km."
 
 # High precision computation of destination
 # New York <-> Melbourne
@@ -90,10 +94,10 @@ t_hp_gc -a 40.786251000 -73.961418000 262.731751000 16671km \
 t_hp_gc -a -37.827455000 145.045353500 71.968389000 16671km \
   "  40.786692000  -73.956848000"
 # Durban <-> Perth (airports)
-t_hp_gc -a ZAF:WHWW.J3X-64 116.555346000 7882km \
-  "7TGTW.VV3X-J1"
-t_hp_gc -a AU-WA:MF.RRB-1TM 246.400504000 7882km \
-  "8L5DK.FHJK-0H"
+t_hp_gc -a ZAF:WHWW.J3X-64 116.555346000 7881.890557km \
+  "7TGTW.TWD6-2Q"
+t_hp_gc -a AU-WA:MF.RRB-1T 246.400505000 7881.890557km \
+  "8L5DK.GH6X-LT"
 
 # Small step in each direction around 43.531828717 1.235420533
 t_hp_gc -a FRA:FTGC.R3T-K3   0.0 1m \

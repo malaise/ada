@@ -13,10 +13,10 @@ procedure Hp_Gc is
   D : Lat_Lon.Distance;
   Str, Unit : As.U.Asu_Us;
   R : My_Math.Real;
-  I, J : Integer;
+  I : Integer;
   Frac_Len : constant := 9;
   Km_In_Nm : constant := 1.852;
-  use type My_Math.Real;
+  use type My_Math.Real, Lat_Lon.Distance;
 
   function Set_Lalo (Lat, Lon : My_Math.Real) return Lat_Lon.Lat_Lon_Rad_Rec is
     Llat, Llon : My_Math.Real;
@@ -133,21 +133,23 @@ begin
     -- Compute and display great circle
     Great_Circle.Compute_Route (A, B, H, D);
 
-    -- Display result, Heading, then dist in Nm, Km, m [, mm ]
+    -- Display result, Heading, then dist in Nm, km [, m]  [, mm ]
+    -- Nm with 4.6 digits, km with 5.6 digits,
+    --  m with 3.3 digits and mm with 3 digits
     R := My_Math.Round_At (Conv.Geo2Real (H), -Frac_Len);
     Basic_Proc.Put_Output ("H: "
         & Normalization.Normal_Fixed (R, Frac_Len + 5, 4, '0'));
-    I := Integer (My_Math.Round (My_Math.Real (D) * Km_In_Nm));
     Basic_Proc.Put_Output (", D:"
-        & My_Math.Inte'Image (My_Math.Round (My_Math.Real (D))) & "Nm"
-        & I'Img & "km");
-    if I < 1000 then
-      J := Integer (My_Math.Round (My_Math.Real (D) * Km_In_Nm * 1_000.0));
-      Basic_Proc.Put_Output (J'Img & "m");
-      if J < 1000 then
-        J := Integer (My_Math.Round (My_Math.Real (D) * Km_In_Nm * 1_000.0
-                                     * 1_000.0));
-        Basic_Proc.Put_Output (J'Img & "mm");
+        & Normalization.Normal_Fixed (My_Math.Real (D), 12, 5, '0') & "Nm");
+    R := My_Math.Real (D * Km_In_Nm);
+    Basic_Proc.Put_Output (Normalization.Normal_Fixed (R, 13, 6, '0') & "km");
+    R := R * 1000.0;
+    if R < 1000.0 then
+      Basic_Proc.Put_Output (Normalization.Normal_Fixed (R, 8, 4, '0') & "m");
+      R := R * 1000.0;
+      if R < 1000.0 then
+        I := Integer (My_Math.Round (R));
+        Basic_Proc.Put_Output (I'Img & "mm");
       end if;
     end if;
     Basic_Proc.Put_Line_Output (".");
