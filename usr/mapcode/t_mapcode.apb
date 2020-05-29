@@ -40,7 +40,7 @@ procedure T_Mapcode is
     Ada.Text_Io.Put_Line (
       "                      // local: the shortest among all the mapcodes");
     Ada.Text_Io.Put_Line (
-      "  <precision>         ::= P0 | P1 | P2       // Default P0");
+      "  <precision>         ::= P0 | P1 | P2           // Default P0 or from input");
   end Usage;
 
   function Integer_Image (I : Integer) return String is
@@ -121,6 +121,7 @@ procedure T_Mapcode is
   end Get;
 
   I : Positive;
+  Index : Natural;
   Command, Arg1, Arg2, Tmp : As_U.Asu_Us;
 
   Coord : Mapcodes.Coordinate;
@@ -194,6 +195,10 @@ begin
       end loop;
     elsif Command.Image = "-c"
     or else Command.Image = "-a" then
+      -- Default precision for coding
+      --  default precision for alternate mode will be deduced from input
+      -- In any way it can be superseeded by argument
+      Precision := 0;
       if Command.Image = "-c" then
         -- Encode a lat lon
         -- Get coord lat and lon
@@ -208,6 +213,14 @@ begin
       else
         -- Alternative mapcodes
         Parse_Mapcode;
+       -- Get precision from input
+        Index := Str_Tools.Locate (Arg1.Image, "-");
+        if Index > 0 then
+          if Index = Arg1.Length or else Index < Arg1.length - 2 then
+            raise Argument_Error;
+          end if;
+          Precision := Arg1.Length - Index;
+        end if;
         Coord := Decode (Arg1.Image, Arg2.Image);
       end if;
       -- Parse options: Territory, selection and precsion
@@ -218,7 +231,6 @@ begin
       --  not sorted
       Shortest := True;
       Sorted := False;
-      Precision := 0;
       for J in I + 1 .. Ada.Command_Line.Argument_Count loop
         Arg1 := As_U.Tus (Ada.Command_Line.Argument (J));
         exit when Is_Command (Arg1.Image);
