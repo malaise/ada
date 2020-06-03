@@ -134,13 +134,13 @@ begin
     Great_Circle.Compute_Route (A, B, H, D);
 
     -- Display result, Heading, then dist in Nm, km [, m]  [, mm ]
-    -- Nm with 4.6 digits, km with 5.6 digits,
+    -- Nm with 5.6 digits, km with 5.6 digits,
     --  m with 3.3 digits and mm with 3 digits
     R := My_Math.Round_At (Conv.Geo2Real (H), -Frac_Len);
     Basic_Proc.Put_Output ("H: "
         & Normalization.Normal_Fixed (R, Frac_Len + 5, 4, '0'));
     Basic_Proc.Put_Output (", D:"
-        & Normalization.Normal_Fixed (My_Math.Real (D), 12, 5, '0') & "Nm");
+        & Normalization.Normal_Fixed (My_Math.Real (D), 13, 6, '0') & "Nm");
     R := My_Math.Real (D * Km_In_Nm);
     Basic_Proc.Put_Output (Normalization.Normal_Fixed (R, 13, 6, '0') & "km");
     R := R * 1000.0;
