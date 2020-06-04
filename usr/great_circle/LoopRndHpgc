@@ -1,0 +1,105 @@
+# Test high precision great circle
+# Set a random position P1 (lat, long),
+# Get its international mapcode with precision 2
+# Add a random route (heading and distance), which leads to a position P2
+# Compute route from P2 to P1
+# Add this route to P2
+# Check that the result is P1
+
+# Path to mapcode and high precision great circle
+export RAND="$HOME/ada/usr/misc/random"
+export MAPCODE="$HOME/ada/usr/mapcode/t_mapcode"
+export HPGC="$HOME/ada/usr/great_circle/hp_gc"
+
+# Return a random from in [$1 .. $2[
+function rnd {
+
+  echo "" | awk -v RAND="$RAND" -v V1=$1 -v V2=$2 '
+    {
+      cmd=RAND" "V1" "V2
+      cmd | getline V
+      close(cmd)
+      printf "%.9f", V
+      exit
+    }'
+}
+
+export DEBUG=0
+# Printf if DEBUG=1
+function debug {
+  if [ $DEBUG -eq 1 ] ; then
+    print $*
+  fi
+}
+
+# On sigterm or sigint
+function term {
+  echo "Terminated"
+  exit 0
+}
+
+# Infinite main loop
+trap "term" SIGINT SIGTERM
+while true ; do
+
+# Set a random position P1
+export P1a=`rnd -90.0 90.0`
+export P1o=`rnd -1800.0 1800.0`
+# Get its international mapcode precision 2
+P1c=`$MAPCODE -c $P1a $P1o AAA P2 | tail -2 | head -1 | cut -d' ' -f3`
+debug "P1: " $P1c
+
+# Set a random route
+export H12=`rnd 0.0 360.0`
+export D12=`rnd 0.0001 40030.0`
+debug "Route12 $H12 $D12"
+
+# Add the route to P1, get the destination position P2
+P2c=`$HPGC -a $P1c $H12 ${D12}km`
+debug "P2: " $P2c
+
+# Compute the route from P2 to P1
+export Tmp=`$HPGC -c $P2c $P1c`
+# Result is, for ex,  H:  258.031292000, D: 4994.596121Nm  9249.992016km.
+#  but maybe the last "." does not exist because of smaller range (m, mm).
+export H23=`echo $Tmp | awk '{
+  printf "%s", substr($2, 1, length($2)-1)
+  }'`
+export D23=`echo $Tmp | awk ' {
+  T=$5
+  if (substr(T,length(T),1) == ".") T=substr(T, 1, length(T)-1)
+  printf "%s", T
+  }'`
+debug "Route23 $H23 $D23"
+
+# Add this route to P2, get the destination position P3
+P3c=`$HPGC -a $P2c $H23 $D23`
+debug "P3: " $P3c
+
+# Check that P3 ~= P1 (less than Epsilon mm))
+export DIST=`$HPGC -c $P1c $P3c | awk '{
+  D=$NF
+  L=length(D)
+  if (substr(D, L-2, 3) != "mm.") {
+    printf "%s", D
+    exit(0)
+  }
+  D=0+substr(D, 1, L-3)
+  if (D > 210) {
+    printf "%smm.", D
+  } else {
+    printf "0"
+  }
+  exit(0)
+}'`
+
+if [ "$DIST" = "0" ] ; then
+  echo "Ok for $P1c + $H12 ${D12}km"
+else
+  echo "ERROR: $P1c + $H12 ${D12}km -> $P2c + $H23 $D23 -> $P3c" 1>&2
+  echo "Distance: $DIST" 1>&2
+  exit 1
+fi
+
+done
+
