@@ -43,8 +43,8 @@ trap "term" SIGINT SIGTERM
 while true ; do
 
 # Set a random position P1
-export P1a=`rnd -90.0 90.0`
-export P1o=`rnd -1800.0 1800.0`
+export P1a=`rnd  -90.0  90.0`
+export P1o=`rnd -180.0 180.0`
 # Get its international mapcode precision 2
 P1c=`$MAPCODE -c $P1a $P1o AAA P2 | tail -2 | head -1 | cut -d' ' -f3`
 debug "P1: " $P1c
@@ -85,7 +85,7 @@ export DIST=`$HPGC -c $P1c $P3c | awk '{
     exit(0)
   }
   D=0+substr(D, 1, L-3)
-  if (D > 210) {
+  if (D > 250) {
     printf "%smm.", D
   } else {
     printf "0"
@@ -96,7 +96,7 @@ export DIST=`$HPGC -c $P1c $P3c | awk '{
 if [ "$DIST" = "0" ] ; then
   echo "Ok for $P1c + $H12 ${D12}km"
 else
-  echo "ERROR: $P1c + $H12 ${D12}km -> $P2c + $H23 $D23 -> $P3c" 1>&2
+  echo "ERROR: $P1a $P1o -> $P1c + $H12 ${D12}km -> $P2c + $H23 $D23 -> $P3c" 1>&2
   echo "Distance: $DIST" 1>&2
   exit 1
 fi
