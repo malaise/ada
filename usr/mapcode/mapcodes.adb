@@ -1090,10 +1090,25 @@ package body Mapcodes is
     return Res;
   end Wrap;
 
+  function Round (Val, Max : Real) return Real is
+    Epsilon : constant Real := 0.0000005;
+  begin
+    if Val < 0.0 then
+      if Val < -Max and then Val >= -Max - Epsilon then
+        return -Max;
+      end if;
+    else
+      if Val > Max and then Val <= Max + Epsilon then
+        return Max;
+      end if;
+    end if;
+    return Val;
+  end Round;
+
   function Convert_Fractions_To_Degrees (P : Coord_Rec) return Coordinate is
   begin
-    return (Lat => Real (P.Y) /  810000.0 / 1000000.0,
-            Lon => Real (P.X) / 3240000.0 / 1000000.0);
+    return (Lat => Round (Real (P.Y) /  810000.0 / 1000000.0, 90.0),
+            Lon => Round (Real (P.X) / 3240000.0 / 1000000.0, 180.0) );
   end Convert_Fractions_To_Degrees;
 
   function Mz_Restrict_Zone_To (Zone : Mapcode_Zone_Rec; Mm : Min_Max_Rec)

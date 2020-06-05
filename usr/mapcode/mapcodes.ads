@@ -56,8 +56,11 @@ package Mapcodes is
   -- Encoding to mapcodes --
   --------------------------
   -- Coordinate in fraction of degrees
+  subtype Lat_Range is Real range  -90.0 ..  90.0;
+  subtype Lon_Range is Real range -180.0 .. 180.0;
   type Coordinate is record
-     Lat, Lon : Real;
+    Lat : Lat_Range;
+    Lon : Lon_Range;
   end record;
 
   -- One mapcode-related information bloc

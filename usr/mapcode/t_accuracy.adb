@@ -73,8 +73,14 @@ procedure T_Accuracy is
     while abs Cur_Coord.Lat <= 90.0 and then abs Cur_Coord.Lon < 180.0 loop
       -- Incr Lat or Lon
       Prev_Coord := Cur_Coord;
-      Cur_Coord.Lat := Cur_Coord.Lat + Incr_Lat;
-      Cur_Coord.Lon := Cur_Coord.Lon + Incr_Lon;
+      begin
+        Cur_Coord.Lat := Cur_Coord.Lat + Incr_Lat;
+        Cur_Coord.Lon := Cur_Coord.Lon + Incr_Lon;
+      exception
+        when Constraint_Error =>
+          -- Increment leads to out of bounds
+          exit;
+      end;
       -- Get the mapcodes
       declare
         Codes : constant Mapcodes.Mapcode_Infos
