@@ -46,7 +46,7 @@ while true ; do
 export P1a=`rnd  -90.0  90.0`
 export P1o=`rnd -180.0 180.0`
 # Get its international mapcode precision 2
-P1c=`$MAPCODE -c $P1a $P1o AAA P2 | tail -2 | head -1 | cut -d' ' -f3`
+P1c=`$MAPCODE -c $P1a $P1o AAA P2 | tail -2 | head -1 | awk '{print $3}'`
 debug "P1: " $P1c
 
 # Set a random route
@@ -76,7 +76,8 @@ debug "Route23 $H23 $D23"
 P3c=`$HPGC -a $P2c $H23 $D23`
 debug "P3: " $P3c
 
-# Check that P3 ~= P1 (less than Epsilon mm))
+# Check that P3 ~= P1 (less than Epsilon mm)
+# 0 if OK, otherwise the distance
 export DIST=`$HPGC -c $P1c $P3c | awk '{
   D=$NF
   L=length(D)
@@ -93,9 +94,34 @@ export DIST=`$HPGC -c $P1c $P3c | awk '{
   exit(0)
 }'`
 
+# Check that $1 is in -85 .. 85
+function check_lat {
+echo $1 | awk '{
+  if ( (0+$1 > 85.0) || (0+$1 < -85.0) ) {
+    print "0"
+  } else {
+    print "1"
+  }
+'}
+}
+
+# Check the result
 if [ "$DIST" = "0" ] ; then
   echo "Ok for $P1c + $H12 ${D12}km"
 else
+  # Check failed. Drop if P1 or P2 lat is out of -85 .. 85
+  res=`check_lat $P1a`
+  if [ "$res" = "0" ] ; then
+    echo "Dropped cause P1 $P1c"
+    continue
+  fi
+  P2a=`$MAPCODE -d $P2c | tail -1 | awk '{print $2}'`
+  res=`check_lat $P2a`
+  if [ "$res" = "0" ] ; then
+    echo "Dropped cause P2 $P2c"
+    continue
+  fi
+  # Not dropped
   echo "ERROR: $P1a $P1o -> $P1c + $H12 ${D12}km -> $P2c + $H23 $D23 -> $P3c" 1>&2
   echo "Distance: $DIST" 1>&2
   exit 1
