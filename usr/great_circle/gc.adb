@@ -22,7 +22,7 @@ procedure Gc is
 
   Decode_Ok : Boolean;
   A, B : Lat_Lon.Lat_Lon_Rad_Rec;
-  Heading  : Conv.Geo_Coord_Rec;
+  Heading  : Conv.Rad_Coord_Range;
   Distance : Lat_Lon.Distance;
 
   Get_Handle : Afpx.Get_Handle_Rec;
@@ -338,12 +338,12 @@ procedure Gc is
   -- Encode Heading (in degrees, with special degree char, if mode is not
   --  decimal)
   procedure Encode_Heading (F : in Afpx.Field_Range;
-                            H : in Conv.Geo_Coord_Rec) is
+                            H : in Conv.Rad_Coord_Range) is
   begin
     if Mode /= Deci_Mode then
       -- Sexa or code
       declare
-        Str : constant String := String_Util.Geoangle2Str(H);
+        Str : constant String := String_Util.Geoangle2Str(Conv.Rad2Geo(H));
         -- Will append " and set o and ' instead of 2 first .
         Wstr : Wide_String (1 .. Str'Length + 1);
       begin
@@ -356,7 +356,7 @@ procedure Gc is
     else
       -- Deci
       declare
-        Str : constant String := String_Util.Decangle2Str(Conv.Geo2Dec(H));
+        Str : constant String := String_Util.Decangle2Str(Conv.Rad2Dec(H));
         -- Will append o
         Wstr : Wide_String (1 .. Str'Length + 1);
       begin
@@ -421,11 +421,11 @@ begin
       if Mode /= Deci_Mode then
         -- Sexa or Code
         Basic_Proc.Put_Output ("Route: "
-            & String_Util.Geoangle2Str(Heading));
+            & String_Util.Geoangle2Str(Conv.Rad2Geo(Heading)));
       else
         -- Deci
         Basic_Proc.Put_Output ("Route: "
-            & String_Util.Decangle2Str(Conv.Geo2Dec(Heading)));
+            & String_Util.Decangle2Str(Conv.Rad2Dec(Heading)));
       end if;
       Basic_Proc.Put_Line_Output ("   Distance(Nm): "
                         & String_Util.Dist2Str(Distance));

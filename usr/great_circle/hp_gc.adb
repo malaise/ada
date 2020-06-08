@@ -9,7 +9,7 @@ procedure Hp_Gc is
   Mode : Mode_List;
   Lat1, Lon1, Lat2, Lon2 : My_Math.Real;
   A, B : Lat_Lon.Lat_Lon_Rad_Rec;
-  H : Conv.Geo_Coord_Rec;
+  H : Conv.Rad_Coord_Range;
   D : Lat_Lon.Distance;
   Str, Unit : As.U.Asu_Us;
   R : My_Math.Real;
@@ -74,7 +74,7 @@ begin
         Mode := Apply_Lalo;
       end if;
       R := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => I));
-      H := Conv.Real2Geo (R);
+      H := Conv.Real2Rad (R);
       -- Distance is positive or real, with unit "Nm", "km", "m" or "mm"
       Argument.Get_Parameter (Str, Occurence => I + 1);
       -- Split to extraft unit
@@ -136,7 +136,7 @@ begin
     -- Display result, Heading, then dist in Nm, km [, m]  [, mm ]
     -- Nm with 5.6 digits, km with 5.6 digits,
     --  m with 3.3 digits and mm with 3 digits
-    R := My_Math.Round_At (Conv.Geo2Real (H), -Frac_Len);
+    R := My_Math.Round_At (Conv.Rad2Real (H), -Frac_Len);
     Basic_Proc.Put_Output ("H: "
         & Normalization.Normal_Fixed (R, Frac_Len + 5, 4, '0'));
     Basic_Proc.Put_Output (", D:"
@@ -157,12 +157,20 @@ begin
     -- Apply great circle and display target
     B := Great_Circle.Apply_Route (A, H, D);
     -- Lat and lon of B
-    R := Conv.Rad2Real (B.Y);
     if Mode = Apply_Lalo then
       -- Display Lat Long of destination
+      R := Conv.Rad2Real (B.Y);
+      -- Latitude from -90 to 90
+      if R > 180.0 then
+        R := -360.0 + R;
+      end if;
       Basic_Proc.Put_Output (
         Normalization.Normal_Fixed (R, Frac_Len + 5, 4, '0') & " ");
       R := Conv.Rad2Real (B.X);
+      -- Longitude from -180 to 180
+      if R > 180.0 then
+        R := -360.0 + R;
+      end if;
       Basic_Proc.Put_Line_Output (
         Normalization.Normal_Fixed (R, Frac_Len + 5, 4, '0'));
    else

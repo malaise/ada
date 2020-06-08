@@ -40,7 +40,7 @@ package body Great_Circle is
   -- Compute the great circle arc (heading and distance)
   --  from point A to point B
   procedure Compute_Route (A, B : in Lat_Lon.Lat_Lon_Rad_Rec;
-                           Heading  : out Conv.Geo_Coord_Rec;
+                           Heading  : out Conv.Rad_Coord_Range;
                            Distance : out Lat_Lon.Distance) is
 
     -- The radius for computation (Earth + Altitude);
@@ -59,7 +59,6 @@ package body Great_Circle is
 
     -- Heading in radian
     Cos_H : My_Math.Real;
-    Heading_Rad_Angle : Conv.Rad_Coord_Range;
 
   begin
     -- Compute delta of lat and log
@@ -84,12 +83,12 @@ package body Great_Circle is
 
     -- Handle specific cases
     if Distance < Epsilon then
-      Heading := Conv.Zero;
+      Heading := 0.0;
       Logger.Log_Debug ("Distance is 0");
       return;
     elsif abs (Angle_Result - Conv.Pi) < Epsilon then
       -- From and To are opposite (antipodes)
-      Heading := Conv.Zero;
+      Heading := 0.0;
       Logger.Log_Debug ("Antipodes");
       return;
     end if;
@@ -111,31 +110,28 @@ package body Great_Circle is
     -- Round to 0 or 180 if cos between 1+Epsilon and -1-Epsilon
     if abs Cos_H > 1.0 and then abs Cos_H - 1.0 < Epsilon then
       if Cos_H > 1.0 then
-        Heading_Rad_Angle := 0.0;
+        Heading := 0.0;
       else
-        Heading_Rad_Angle := Conv.Pi;
+        Heading := Conv.Pi;
       end if;
     else
-      Heading_Rad_Angle := Complexes.Reduct(Complexes.Radian(
-                              My_Math.Arc_Cos(Cos_H)));
-      Logger.Log_Debug ("Raw H : " & Heading_Rad_Angle'Img);
+      Heading := Complexes.Reduct(Complexes.Radian(
+                     My_Math.Arc_Cos(Cos_H)));
+      Logger.Log_Debug ("Raw H : " & Heading'Img);
       -- Set heading < 0 if B is at west of A
       if Lat_Lon_Rad_Delta.X > Conv.Pi then
-        Heading_Rad_Angle := Complexes.Reduct(-Heading_Rad_Angle);
+        Heading := Complexes.Reduct(-Heading);
         Logger.Log_Debug ("West correction");
       end if;
     end if;
-    Logger.Log_Debug ("H : " & Heading_Rad_Angle'Img);
-
-    -- In degrees
-    Heading := Conv.Rad2Geo(Heading_Rad_Angle);
+    Logger.Log_Debug ("H : " & Heading'Img);
 
   end Compute_Route;
 
   -- Apply a great circle arc (heading and distance) to point A
   --  and return destination point B
   function Apply_Route (A : Lat_Lon.Lat_Lon_Rad_Rec;
-                        Heading  : Conv.Geo_Coord_Rec;
+                        Heading  : Conv.Rad_Coord_Range;
                         Distance : Lat_Lon.Distance)
            return Lat_Lon.Lat_Lon_Rad_Rec is
 
@@ -151,15 +147,13 @@ package body Great_Circle is
     A_Coy : constant Conv.Rad_Coord_Range := Reduct (Conv.Pi / 2.0 - A.Y);
     -- Arc of the route
     Arc : constant Conv.Rad_Coord_Range:= Distance / Route_Radius;
-    -- Heading in radian
-    Head : constant Conv.Rad_Coord_Range := Conv.Geo2Rad(Heading);
     -- Cos of B colatitude:
     -- cos colatB = cos colatA * cos Arc
     --            + sin colatA * sin Arc * cos H
     Cos_B_Coy : constant Real
               := My_Math.Cos(Real(A_Coy)) * My_Math.Cos(Real(Arc))
              +   My_Math.Sin(Real(A_Coy)) * My_Math.Sin(Real(Arc))
-               * My_Math.Cos(Real(Head));
+               * My_Math.Cos(Real(Heading));
     -- B colatitude in radian
     B_Coy : constant Conv.Rad_Coord_Range
           := Conv.Rad_Coord_Range (My_Math.Arc_Cos(Cos_B_Coy));
@@ -170,14 +164,15 @@ package body Great_Circle is
   begin
     Logger.Log_Debug ("A Lon: " & A.X'Img);
     Logger.Log_Debug ("A coLat: " & A_Coy'Img);
-    Logger.Log_Debug ("Heading: " & Head'Img);
+    Logger.Log_Debug ("Heading: " & Heading'Img);
     Logger.Log_Debug ("Gamma: " & Arc'Img);
     Logger.Log_Debug ("B coLat: " & B_Coy'Img);
     -- cos Delta_X sin B_Coy
     --   = cos Arc * sin A_Coy - sin Arc * cos A_Coy * cos H
     Cos_Delta_X := (My_Math.Cos(Real(Arc)) * My_Math.Sin(Real(A_Coy))
                     -   My_Math.Sin(Real(Arc)) * My_Math.Cos(Real(A_Coy))
-                        * My_Math.Cos(Real(Head)) ) / My_Math.Sin(Real(B_Coy));
+                        * My_Math.Cos(Real(Heading)) )
+                   / My_Math.Sin(Real(B_Coy));
     if abs Cos_Delta_X > 1.0 and then abs Cos_Delta_X - 1.0 < Epsilon then
       if Cos_Delta_X > 1.0 then
         Delta_X := 0.0;
@@ -188,7 +183,7 @@ package body Great_Circle is
       Delta_X := My_Math.Arc_Cos(Cos_Delta_X);
     end if;
     Logger.Log_Debug ("Raw Delta Lon: " & Delta_X'Img);
-    if Head > Conv.Pi then
+    if Heading > Conv.Pi then
       Delta_X := -Delta_X;
       Logger.Log_Debug ("West correction");
     end if;
