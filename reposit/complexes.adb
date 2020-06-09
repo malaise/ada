@@ -50,12 +50,10 @@ package body Complexes is
     return R;
   end Reduct;
 
-  Rounding : constant := -6;
   function To_Degree (A : Radian) return Reducted_Degree is
     R : Real;
   begin
     R := Real(Reduct(A)/Reducted_Radian'Last) * Real(Reducted_Degree'Last);
-    R := Round_At (R, Rounding);
     return Reducted_Degree (R);
   end To_Degree;
 
