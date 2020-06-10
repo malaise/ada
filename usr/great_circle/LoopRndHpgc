@@ -3,8 +3,14 @@
 # Get its international mapcode with precision 2
 # Add a random route (heading and distance), which leads to a position P2
 # Compute route from P2 to P1
-# Add this route to P2
-# Check that the result is P1
+# Add this route to P2, which leads to a position P3
+# Check that the distance between P1 and P3 is less than Epsilon
+
+# Epsilon in mm
+# Each of the 3 transformations "position->mapcode->position" leads to an error
+#  of 50cm max. For each of the 3 route computations, let's allow 20cm.
+# So Epsilon should be around 210mm. But 21 is OK.
+export EPSILON=21
 
 # Path to mapcode and high precision great circle
 export RAND="$HOME/ada/usr/misc/random"
@@ -33,8 +39,9 @@ function debug {
 }
 
 # On sigterm or sigint
+let N=0
 function term {
-  echo "Terminated"
+  echo "Terminated after $N iterations."
   exit 0
 }
 
@@ -54,7 +61,7 @@ export H12=`rnd 0.0 360.0`
 export D12=`rnd 0.0001 40030.0`
 debug "Route12 $H12 $D12"
 
-# Add the route to P1, get the destination position P2
+# Add the route to P1, get the mapcode of the destination P2
 P2c=`$HPGC -a $P1c $H12 ${D12}km`
 debug "P2: " $P2c
 
@@ -72,13 +79,13 @@ export D23=`echo $Tmp | awk ' {
   }'`
 debug "Route23 $H23 $D23"
 
-# Add this route to P2, get the destination position P3
+# Add this route to P2, get the mapcode of the destination P3
 P3c=`$HPGC -a $P2c $H23 $D23`
 debug "P3: " $P3c
 
 # Check that P3 ~= P1 (less than Epsilon mm)
 # 0 if OK, otherwise the distance
-export DIST=`$HPGC -c $P1c $P3c | awk '{
+export DIST=`$HPGC -c $P1c $P3c | awk -v EPSILON=$EPSILON '{
   D=$NF
   L=length(D)
   if (substr(D, L-2, 3) != "mm.") {
@@ -86,7 +93,7 @@ export DIST=`$HPGC -c $P1c $P3c | awk '{
     exit(0)
   }
   D=0+substr(D, 1, L-3)
-  if (D > 250) {
+  if (D > EPSILON) {
     printf "%smm.", D
   } else {
     printf "0"
@@ -94,38 +101,16 @@ export DIST=`$HPGC -c $P1c $P3c | awk '{
   exit(0)
 }'`
 
-# Check that $1 is in -85 .. 85
-function check_lat {
-echo $1 | awk '{
-  if ( (0+$1 > 85.0) || (0+$1 < -85.0) ) {
-    print "0"
-  } else {
-    print "1"
-  }
-'}
-}
-
 # Check the result
 if [ "$DIST" = "0" ] ; then
   echo "Ok for $P1c + $H12 ${D12}km"
 else
-  # Check failed. Drop if P1 or P2 lat is out of -85 .. 85
-  res=`check_lat $P1a`
-  if [ "$res" = "0" ] ; then
-    echo "Dropped cause P1 $P1c"
-    continue
-  fi
-  P2a=`$MAPCODE -d $P2c | tail -1 | awk '{print $2}'`
-  res=`check_lat $P2a`
-  if [ "$res" = "0" ] ; then
-    echo "Dropped cause P2 $P2c"
-    continue
-  fi
-  # Not dropped
+  # Check failed
   echo "ERROR: $P1a $P1o -> $P1c + $H12 ${D12}km -> $P2c + $H23 $D23 -> $P3c" 1>&2
   echo "Distance: $DIST" 1>&2
   exit 1
 fi
 
+let N=$N+1
 done
 
