@@ -6,11 +6,11 @@
 # Add this route to P2, which leads to a position P3
 # Check that the distance between P1 and P3 is less than Epsilon
 
-# Epsilon in mm
-# Each of the 3 transformations "position->mapcode->position" leads to an error
-#  of 50cm max. For each of the 3 route computations, let's allow 20cm.
-# So Epsilon should be around 210mm. But 21 is OK.
-export EPSILON=21
+# Max acceptable error: Epsilon in mm
+# Each of the 3 transformations "position->mapcode" leads to an error
+#  of 25cm max. For each of the 3 route computations, let's allow some mm.
+# So Epsilon should be around 80cm
+export EPSILON=800
 
 # Path to mapcode and high precision great circle
 export RAND="$HOME/ada/usr/misc/random"
@@ -82,28 +82,40 @@ debug "Route23 $H23 $D23"
 # Add this route to P2, get the mapcode of the destination P3
 P3c=`$HPGC -a $P2c $H23 $D23`
 debug "P3: " $P3c
+let N=$N+1
+
+# Check is same mapcode
+if [ "$P1c" = "$P3c" ] ; then
+  echo "Ok for $P1c + $H12 ${D12}km"
+  continue
+fi
 
 # Check that P3 ~= P1 (less than Epsilon mm)
 # 0 if OK, otherwise the distance
-export DIST=`$HPGC -c $P1c $P3c | awk -v EPSILON=$EPSILON '{
-  D=$NF
-  L=length(D)
-  if (substr(D, L-2, 3) != "mm.") {
-    printf "%s", D
+export CHEK=`$HPGC -c $P1c $P3c | awk -v EPSILON=$EPSILON '
+  BEGIN {EPSILON=0+EPSILON}
+  {
+    D=$NF
+    L=length(D)
+    if (substr(D, L-2, 3) != "mm.") {
+      printf "0 %s", D
+      exit(0)
+    }
+    D=0+substr(D, 1, L-3)
+    if (D > EPSILON) {
+      printf "0 %smm.", D
+    } else {
+      printf "1 %smm.", D
+    }
     exit(0)
-  }
-  D=0+substr(D, 1, L-3)
-  if (D > EPSILON) {
-    printf "%smm.", D
-  } else {
-    printf "0"
-  }
-  exit(0)
-}'`
+   }
+'`
+RES=`echo $CHEK | cut -d' ' -f1`
+DIST=`echo $CHEK | cut -d' ' -f2`
 
 # Check the result
-if [ "$DIST" = "0" ] ; then
-  echo "Ok for $P1c + $H12 ${D12}km"
+if [ "$RES" = "1" ] ; then
+  echo "Acc $DIST for $P1c + $H12 ${D12}km -> $P3c" | tee >(cat >&2)
 else
   # Check failed
   echo "ERROR: $P1a $P1o -> $P1c + $H12 ${D12}km -> $P2c + $H23 $D23 -> $P3c" 1>&2
@@ -111,6 +123,5 @@ else
   exit 1
 fi
 
-let N=$N+1
 done
 
