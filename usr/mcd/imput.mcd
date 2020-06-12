@@ -1,0 +1,43 @@
+# Entry is m=TotalMonth [ e=TotalExtra ]
+[ "Error. Expecting <total_month> [ <total_extra> ]" putl
+1 setexit ssize popn retall ] E popr
+ssize 0 = [ E pushr call ] ifcall
+ssize 2 > [ E pushr call ] ifcall
+
+# No extras by default
+0 e popr
+m popr
+m pushr isinte ~ [ E pushr call ] ifcall
+
+# Adjust if some extras
+ssize 1 = [ m pushr e popr m popr ] ifcall
+m pushr isinte ~ [ E pushr call ] ifcall
+
+# Store the sum
+m pushr s popr
+
+# Round 6% of m for r=CSE, substract to the sum
+s pushr dup toreal 6.0 * 100.0 / round r popr
+r pushr - s copyr
+
+# Substract extras to the sum
+e pushr - s copyr
+
+# Trunc 56% for c=Coflight
+toreal 56.0 * 100.0 / trunc c copyr
+# Do not exceed 50% of month
+m pushr toreal 2.0 / round a copyr > [ a pushr c popr ] ifcall
+
+# Remaining for f=4Flight
+s pushr c pushr - f popr
+
+# Sanity check
+r pushr e pushr + c pushr + f pushr + t copyr
+m pushr - isntnull [ "Error: Sum is " put t pushr putl ] ifcall
+
+# Put results
+"CSE: " put r pushr putl
+e pushr 0 /= [ "Extras: " put e pushr putl ] ifcall
+"Coflight: " put c pushr putl
+"4Flight: " put f pushr putl
+
