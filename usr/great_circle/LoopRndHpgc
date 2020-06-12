@@ -7,15 +7,49 @@
 # Check that the distance between P1 and P3 is less than Epsilon
 
 # Max acceptable error: Epsilon in mm
-# Each of the 3 transformations "position->mapcode" leads to an error
-#  of 25cm max. For each of the 3 route computations, let's allow some mm.
-# So Epsilon should be around 80cm
-export EPSILON=800
+# Both transformations "position->mapcode" (end of route) lead to an error
+#  of 25cm max each. For each of the 3 route computations, let's allow some mm.
+# So Epsilon should be around 60cm. In practice we observe 0 or 1mm.
+export EPSILON=600
 
 # Path to mapcode and high precision great circle
 export RAND="$HOME/ada/usr/misc/random"
 export MAPCODE="$HOME/ada/usr/mapcode/t_mapcode"
 export HPGC="$HOME/ada/usr/great_circle/hp_gc"
+
+# Syntax error / help message
+function error {
+  echo "ERROR. Usage `basename $0` <verbosity>" 1>&2
+  echo "  <verbosity> ::= Error | Accept | All | Debug" 1>&2
+  echo "  default : All" 1>&2
+  exit 1
+}
+
+# Parse arguments
+export DEBUG=0
+export OKS=0
+export ACCS=0
+case "$1" in
+  "Debug")
+    DEBUG=1
+    OKS=1
+    ACCS=1
+  ;;
+  "All" | "")
+    OKS=1
+    ACCS=1
+  ;;
+  "Accept")
+    ACCS=1
+  ;;
+  *)
+    error
+  ;;
+esac
+if [ -n "$2" ] ; then
+  error
+fi
+
 
 # Return a random from in [$1 .. $2[
 function rnd {
@@ -30,11 +64,10 @@ function rnd {
     }'
 }
 
-export DEBUG=0
 # Printf if DEBUG=1
 function debug {
   if [ $DEBUG -eq 1 ] ; then
-    print $*
+    echo $*
   fi
 }
 
@@ -45,9 +78,12 @@ function term {
   exit 0
 }
 
-# Infinite main loop
+######################
+# Infinite main loop #
+######################
 trap "term" SIGINT SIGTERM
 while true ; do
+R=$(($N%100))
 
 # Set a random position P1
 export P1a=`rnd  -90.0  90.0`
@@ -86,7 +122,11 @@ let N=$N+1
 
 # Check is same mapcode
 if [ "$P1c" = "$P3c" ] ; then
-  echo "Ok for $P1c + $H12 ${D12}km"
+  if [ $OKS -eq 1 ] ; then
+    echo "Ok for $P1c + $H12 ${D12}km"
+  elif [ $R -eq 0 ] ; then
+    echo -n "."
+  fi
   continue
 fi
 
@@ -115,7 +155,12 @@ DIST=`echo $CHEK | cut -d' ' -f2`
 
 # Check the result
 if [ "$RES" = "1" ] ; then
-  echo "Acc $DIST for $P1c + $H12 ${D12}km -> $P3c" | tee >(cat >&2)
+  if [ $ACCS -eq 1 ] ; then
+    echo
+    echo "Acc $DIST for $P1c + $H12 ${D12}km -> $P3c"
+  elif [ $R -eq 0 ] ; then
+    echo -n "."
+  fi
 else
   # Check failed
   echo "ERROR: $P1a $P1o -> $P1c + $H12 ${D12}km -> $P2c + $H23 $D23 -> $P3c" 1>&2
