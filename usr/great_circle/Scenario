@@ -80,8 +80,8 @@ S93HM.RVB8 AU-VIC:KJ.HX5                      262.43.54  9001
 # Fonsorbes -> Basso
 THM1V.2TLZ-RS FRA:3B2.M9-84                   073.39.10     7
 # Durban <-> Perth
-ZAF:WHWW.J3X-64  AU-WA:MF.RRB-1TM             116.33.19     4256
-AU-WA:MF.RRB-1TM ZAF:WHWW.J3X-64              246.24.02     4256
+ZAF:WHWW.J3X-64  AU-WA:MF.RRB-1T              116.33.19     4256
+AU-WA:MF.RRB-1T  ZAF:WHWW.J3X-64              246.24.02     4256
 
 # Comparisons
 # Fonsorbes -> Acuncagua
