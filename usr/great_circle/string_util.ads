@@ -1,3 +1,4 @@
+with My_Math;
 with Conv, Lat_Lon;
 package String_Util is
 
@@ -33,8 +34,9 @@ package String_Util is
 
 
   -- Distance is 5 digits
+  subtype Distance is My_Math.Real;
   subtype Dist_Str is String (1..5);
-  function Dist2Str (Dist : Lat_Lon.Distance) return Dist_Str;
+  function Dist2Str (Dist : Distance) return Dist_Str;
 
 end String_Util;
 

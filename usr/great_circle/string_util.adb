@@ -1,4 +1,4 @@
-with Normal, My_Math, Upper_Char;
+with Normal, Upper_Char;
 package body String_Util is
 
   function Str2Geo (Str : Geo_Str) return Lat_Lon.Lat_Lon_Geo_Rec is
@@ -233,7 +233,7 @@ package body String_Util is
     return Str;
   end Dec2Str;
 
-  function Dist2Str (Dist : Lat_Lon.Distance) return Dist_Str is
+  function Dist2Str (Dist : Distance) return Dist_Str is
     Int : My_Math.Inte;
   begin
     Int := My_Math.Round(My_Math.Real(Dist));

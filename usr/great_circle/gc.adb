@@ -23,7 +23,7 @@ procedure Gc is
   Decode_Ok : Boolean;
   A, B : Lat_Lon.Lat_Lon_Rad_Rec;
   Heading  : Conv.Rad_Coord_Range;
-  Distance : Lat_Lon.Distance;
+  Distance : String_Util.Distance;
 
   Get_Handle : Afpx.Get_Handle_Rec;
   Result : Afpx.Result_Rec;
@@ -462,16 +462,14 @@ begin
         if Decode then
           -- Compute
           Great_Circle.Compute_Route(A => A, B => B,
-                                     Heading => Heading,
-                                     Distance => Distance);
+                                     Head => Heading, Dist => Distance);
           Encode_Heading (Heading_Ab_Field, Heading);
           Afpx.Encode_Field (Distance_Field, (0, 0),
                              String_Util.Dist2Str(Distance));
           Great_Circle.Logger.Log_Debug ("Distance encoded");
           -- Compute reverse heading
           Great_Circle.Compute_Route(A => B, B => A,
-                                     Heading => Heading,
-                                     Distance => Distance);
+                                     Head => Heading, Dist => Distance);
           Encode_Heading (Heading_Ba_Field, Heading);
           -- Clean the result fields at next cursor change field
           Need_Clean := True;

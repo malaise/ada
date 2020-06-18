@@ -1,8 +1,6 @@
--- Convert lat/long to radians and vice versa
+-- Convert lat/long, radians, mapcodes
 with Conv;
 package Lat_Lon is
-
-  subtype Distance is Conv.Rad_Range;
 
   type Lat_Geo_Rec is record
     North : Boolean;
@@ -20,9 +18,9 @@ package Lat_Lon is
   end record;
 
   type Lat_Lon_Rad_Rec is record
-    -- X is longitude
+    -- X is the longitude
     X : Conv.Rad_Coord_Range;
-    -- Y is latitude
+    -- Y is the latitude
     Y : Conv.Rad_Coord_Range;
   end record;
 
