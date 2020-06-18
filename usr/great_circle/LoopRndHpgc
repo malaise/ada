@@ -4,15 +4,17 @@
 # Add a random route (heading and distance), which leads to a position P2
 # Compute route from P2 to P1
 # Add this route to P2, which leads to a position P3
-# Check that the distance between P1 and P3 is less than Epsilon
-
-# Max acceptable error: Epsilon in mm
+# Check P3 versus P1:
+# - If same Mapcode => OK
+# - If within Epsilon (mm) => OK
+export EPSILON=2
+# If within Acceptable => log as acceptable
 # Both transformations "position->mapcode" (end of route) lead to an error
 #  of 25cm max each. For each of the 3 route computations, let's allow some mm.
-# So Epsilon should be around 60cm. In practice we observe 0 or 1mm.
-export EPSILON=600
+# So max acceptable distance s around 60cm
+export ACCEPTABLE=600
 
-# Path to mapcode and high precision great circle
+# Path to random, to mapcode and to high precision great circle
 export RAND="$HOME/ada/usr/misc/random"
 export MAPCODE="$HOME/ada/usr/mapcode/t_mapcode"
 export HPGC="$HOME/ada/usr/great_circle/hp_gc"
@@ -130,22 +132,27 @@ if [ "$P1c" = "$P3c" ] ; then
   continue
 fi
 
-# Check that P3 ~= P1 (less than Epsilon mm)
-# 0 if OK, otherwise the distance
-export CHEK=`$HPGC -c $P1c $P3c | awk -v EPSILON=$EPSILON '
-  BEGIN {EPSILON=0+EPSILON}
+# Check that P3 ~= P1 (less than Epsilon, less than acceptable)
+# 0 if within Epsilon, 1 if acceptable, otherwise 2 on error
+export CHEK=`$HPGC -c $P1c $P3c | awk \
+-v EPSILON=$EPSILON -v ACCEPTABLE=$ACCEPTABLE '
+  BEGIN {EPSILON=0+EPSILON; ACCEPTABLE=0+ACCEPTABLE}
   {
     D=$NF
     L=length(D)
-    if (substr(D, L-2, 3) != "mm.") {
-      printf "0 %s", D
+    D=substr(D, 1, L-1)
+    L--
+    if (substr(D, L-1, 2) != "mm") {
+      printf "2 %s", D
       exit(0)
     }
-    D=0+substr(D, 1, L-3)
-    if (D > EPSILON) {
-      printf "0 %smm.", D
+    D=0+substr(D, 1, L-2)
+    if (D > ACCEPTABLE) {
+      printf "2 %smm", D
+    } else if (D > EPSILON) {
+      printf "1 %smm", D
     } else {
-      printf "1 %smm.", D
+      printf "0 %smm", D
     }
     exit(0)
    }
@@ -154,10 +161,16 @@ RES=`echo $CHEK | cut -d' ' -f1`
 DIST=`echo $CHEK | cut -d' ' -f2`
 
 # Check the result
-if [ "$RES" = "1" ] ; then
+if [ "$RES" = "0" ] ; then
+  if [ $OKS -eq 1 ] ; then
+    echo "Ok $DIST for $P1c + $H12 ${D12}km -> $P3c"
+  elif [ $R -eq 0 ] ; then
+    echo -n "."
+  fi
+elif [ "$RES" = "1" ] ; then
   if [ $ACCS -eq 1 ] ; then
     echo
-    echo "Acc $DIST for $P1c + $H12 ${D12}km -> $P3c"
+    echo "Acceptable $DIST for $P1c + $H12 ${D12}km -> $P3c"
   elif [ $R -eq 0 ] ; then
     echo -n "."
   fi
