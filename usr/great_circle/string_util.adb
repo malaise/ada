@@ -180,11 +180,11 @@ package body String_Util is
     use type My_Math.Real;
   begin
     if To_Tenth then
-      Factor := 100000.0;
-      Max := 10000;
+      Factor := 100_000.0;
+      Max := 1_0000;
     else
-      Factor := 1000.0;
-      Max := 1000000;
+      Factor := 1_000.0;
+      Max := 1_000_000;
     end if;
     C.Nan := Conv.Nan_Range (My_Math.Round (My_Math.Real (C.Nan) / Factor));
     if C.Nan = Max then
