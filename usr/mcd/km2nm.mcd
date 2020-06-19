@@ -1,5 +1,5 @@
 # Km to Nm or reverse
-[ "ERROR: Expect <val><unit> with <unit> ::= km | Nm" putl 
+[ "ERROR: Expect <val><unit> with <unit> ::= km | Nm" putl
 1 setexit ssize popn retall ] E popr
 # One arg <val><unit>
 ssize 1 /= E pushr ifcall

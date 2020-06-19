@@ -63,7 +63,7 @@ procedure T_Afpx is
      & ", Content: " & Language.Unicode_To_String (Str));
     Last_Index := Afpx.Last_Index (Afpx.Decode_Field (Cursor_Field, 0), True);
     case Enter_Field_Cause is
-      when Afpx.Mouse =>
+      when Afpx.Mouse | Afpx.Selection =>
         if Cursor_Col > Last_Index then
           return Last_Index;
         else

@@ -328,7 +328,8 @@ package Afpx is
   end record;
 
   -- Call back called by Put_Then_Get when entering a new get field:
-  -- Given the field no, the reason for entering field (see Con_Io)
+  -- Given the field no, the reason for entering field (see Con_Io,
+  --  Selection stands for request selection - click middle button -)
   --  given the mouse pointer col when this is a Mouse click
   --  given the field offset
   --  and given the content of the get field as by Decode_Field (Row => 0)
@@ -339,7 +340,8 @@ package Afpx is
   --  start of field otherwise.
   -- Beware that modifying the list (including changing the current position)
   --  affects the ongoing Put_Then_Get
-  type Enter_Field_Cause_List is (Mouse, Right_Full, Left, Tab, Stab);
+  type Enter_Field_Cause_List is (Mouse, Selection,
+                                  Right_Full, Left, Tab, Stab);
   type Cursor_Set_Col_Cb is access
        function (Cursor_Field : Field_Range;
                  New_Field : Boolean;

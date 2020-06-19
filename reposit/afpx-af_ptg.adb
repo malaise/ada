@@ -19,6 +19,8 @@ package body Af_Ptg is
         -- Click and release in a Get field
         Get_Field_No : Field_Range;
         Click_Col : Con_Io.Col_Range;
+        -- Is it a Get_Selection (Middle button)
+        Get_Selection : Boolean;
     end case;
   end record;
 
@@ -414,7 +416,7 @@ package body Af_Ptg is
           end if;
           Restore_Pos;
         elsif Click_But = Con_Io.Left
-        and then Af_List.To_Id(Click_Row_List) = Loc_Last_Selected_Id
+        and then Af_List.To_Id (Click_Row_List) = Loc_Last_Selected_Id
         and then Last_Selection_Time >= Click_Time - Double_Click_Delay then
           -- Double Left click
           Af_List.Put (Click_Row_List, Selected, False);
@@ -533,7 +535,8 @@ package body Af_Ptg is
         Result := (Kind => Get_Field,
                    Get_Field_No => Click_Field,
                    Click_Col => Click_Pos.Col
-                    - Af_Dscr.Fields(Click_Field).Upper_Left.Col);
+                        - Af_Dscr.Fields(Click_Field).Upper_Left.Col,
+                   Get_Selection => Request_Selection);
       end if;
     else
       -- If field is button: restore color
@@ -674,7 +677,7 @@ package body Af_Ptg is
           -- Last significant col if Left
           Signif_Col := Last_Col (Field_No);
           return Signif_Col;
-        when Mouse =>
+        when Mouse | Selection =>
           -- When click in a Get, set cursor where clicked if there is a
           --  significant char there or on its right, otherwise set it just
           --  after last significant char
@@ -858,6 +861,7 @@ package body Af_Ptg is
     List_Init : Boolean;
     List_Scrolled : Boolean;
     Field_Start : Afpx_Typ.Char_Str_Range;
+    Enter_Cause : Enter_Field_Cause_List;
     Char : Unicode_Number;
     Index : Natural;
 
@@ -1249,6 +1253,8 @@ package body Af_Ptg is
               when Put_Field =>
                 null;
               when Get_Field =>
+                Enter_Cause := (if Click_Result.Get_Selection then Selection
+                                else Mouse);
                 if Click_Result.Get_Field_No = Cursor_Field then
                   -- Same field, update cursor col
                   Get_Handle.Cursor_Col := Get_Cursor_Col (
@@ -1256,7 +1262,7 @@ package body Af_Ptg is
                       False,
                       Click_Result.Click_Col,
                       Af_Dscr.Fields(Cursor_Field).Offset,
-                      Mouse, Cursor_Col_Cb);
+                      Enter_Cause, Cursor_Col_Cb);
                 else
                   -- Restore normal color of previous field
                   Put_Fld (Cursor_Field, Normal);
@@ -1268,7 +1274,7 @@ package body Af_Ptg is
                       True,
                       Click_Result.Click_Col,
                       Af_Dscr.Fields(Cursor_Field).Offset,
-                      Mouse, Cursor_Col_Cb);
+                      Enter_Cause, Cursor_Col_Cb);
                   Get_Handle.Insert := False;
                 end if;
               when Button_Field =>

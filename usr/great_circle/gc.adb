@@ -153,8 +153,11 @@ procedure Gc is
     end if;
     if Enter_Field_Cause = Afpx.Left then
       return Afpx.Last_Index (Str, False);
-    elsif Enter_Field_Cause = Afpx.Mouse then
-      Afpx.Set_Selection (Language.Unicode_To_String (Str));
+    elsif Enter_Field_Cause = Afpx.Mouse
+    or else Enter_Field_Cause = Afpx.Selection then
+      if Enter_Field_Cause /= Afpx.Selection then
+        Afpx.Set_Selection (Language.Unicode_To_String (Str));
+      end if;
       Last := Afpx.Last_Index (Str, True);
       if Cursor_Col <= Last then
         return Cursor_Col;
