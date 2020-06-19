@@ -38,8 +38,8 @@ procedure T_Cards is
   Done_Y : constant Con_Io.Y_Range := Y_Gap_Done;
 
   subtype Stack_Range is Deck.Name_Range;
-  -- 4 Cards, the last one being the King of a complete color - 1
-  subtype Depth_Range is Natural range 1 .. 2 + Deck.Name_Range'Last;
+  -- 4 Cards, the top one being the root of a sequence
+  subtype Depth_Range is Natural range 1 .. 3 + Deck.Name_Range'Last;
 
   -- Dummy window for blind Get
   Get_Window : Con_Io.Window;
@@ -131,7 +131,7 @@ procedure T_Cards is
         Done_Status (Got_Card.Get_Suit) :=
             not Done_Status (Got_Card.Get_Suit);
       end if;
-      if not Moved then
+      if not Moved and then Depth in Depth_Range then
         Got_Card.Move (Stack_Of (1, Depth));
         Depth := Depth + 1;
       end if;
