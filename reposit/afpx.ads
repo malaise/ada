@@ -328,8 +328,8 @@ package Afpx is
   end record;
 
   -- Call back called by Put_Then_Get when entering a new get field:
-  -- Given the field no, the reason for entering field (see Con_Io,
-  --  Selection stands for request selection - click middle button -)
+  -- Given the field no, the reason for entering field (see Con_Io.Extra_Mvt,
+  --  but here, Selection stands for request selection - click middle button -)
   --  given the mouse pointer col when this is a Mouse click
   --  given the field offset
   --  and given the content of the get field as by Decode_Field (Row => 0)
