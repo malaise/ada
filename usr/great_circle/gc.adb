@@ -154,6 +154,7 @@ procedure Gc is
     if Enter_Field_Cause = Afpx.Left then
       return Afpx.Last_Index (Str, False);
     elsif Enter_Field_Cause = Afpx.Mouse then
+      Afpx.Set_Selection (Language.Unicode_To_String (Str));
       Last := Afpx.Last_Index (Str, True);
       if Cursor_Col <= Last then
         return Cursor_Col;
