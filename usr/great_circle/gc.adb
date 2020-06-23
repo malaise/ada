@@ -169,26 +169,34 @@ procedure Gc is
     end if;
   end Next_Field_Cb;
 
+  -- During all decoding, are all the get fields empty
+  Default_Content : Boolean;
+  -- Decode a point, sexa or deci
   procedure Decode_Point (First_Fld, Last_Fld : in Afpx.Field_Range;
                           Point : out Lat_Lon.Lat_Lon_Rad_Rec;
                           Ok : out Boolean;
                           Cursor : in out Afpx.Field_Range) is
     -- Two '"' added and two 'o' instead of '.' in Afpx screen
-    Point_Txt : As.B.Asb_Bs(String_Util.Geo_Str'Length+4);
+    Point_Txt : As.B.Asb_Bs (String_Util.Geo_Str'Length+4);
 
     -- Replace trailing spaces by '0' for decimal numeric fields (len = 4)
     function Pad_Field (Field : Afpx.Field_Range) return String is
-      Init : constant String := Afpx.Decode_Field(Field, 0, False);
-      Str : String := Init;
+      Default : constant Language.Unicode_Sequence
+              := Afpx.Get_Init_Field (Field, 0);
+      Content : constant Language.Unicode_Sequence
+              := Afpx.Decode_Field (Field, 0);
+      Txt : constant String := Language.Unicode_To_String (Content);
+      Str : String := Txt;
+      use type Language.Unicode_Sequence;
     begin
+      if Afpx.Is_Get_Kind (Field) and then Content /= Default then
+        Default_Content := False;
+      end if;
       if Str'Length = 4 then
         for I in reverse Str'Range loop
           exit when Str(I) /= ' ';
           Str(I) := '0';
         end loop;
-      end if;
-      if Str /= Init then
-        Afpx.Encode_Field(Field, (0, 0), Str);
       end if;
       return Str;
     end Pad_Field;
@@ -234,6 +242,11 @@ procedure Gc is
   begin
     Mapcode.Set_Null;
     for Field in First_Fld .. Last_Fld loop
+      if Afpx.Is_Get_Kind (Field) and then
+             Afpx.Decode_Field  (Field, 0, False)
+          /= Afpx.Get_Init_Field (Field, 0, False) then
+        Default_Content := False;
+      end if;
       if Afpx.Is_Get_Kind (Field) or else not Txt.Is_Null then
         -- Skip ":" put field if no prefix
         Txt.Set (Str_Util.Strip (
@@ -254,37 +267,43 @@ procedure Gc is
 
   -- Decode points or mapcodes, set A and B. Return OK
   function Decode return Boolean is
-    Ok : Boolean;
+    Ok1, Ok2 : Boolean;
     Mapa, Mapb : Mapcode_Txt;
   begin
     Get_Handle.Cursor_Col := 0;
     Get_Handle.Insert := False;
     Clear_Result;
+    Default_Content := True;
+    -- Decode both points/maps in order to set Default_Content
     if Mode /= Map_Mode then
       Get_Handle.Cursor_Field := A_Flds'First;
-      Decode_Point (A_Flds'First, A_Flds'Last, A, Ok,
+      Decode_Point (A_Flds'First, A_Flds'Last, A, Ok1,
                     Get_Handle.Cursor_Field);
-      if Ok then
-        Decode_Point (B_Flds'First, B_Flds'Last, B, Ok,
-                      Get_Handle.Cursor_Field);
+      if Ok1 then
+        Get_Handle.Cursor_Field := B_Flds'First;
       end if;
+      Decode_Point (B_Flds'First, B_Flds'Last, B, Ok2,
+                    Get_Handle.Cursor_Field);
     else
       Get_Handle.Cursor_Field := Code_Flds'First;
-      Decode_Mapcode (Code_Flds'First, Code_Flds'First + 2, A, Mapa, Ok,
+      Decode_Mapcode (Code_Flds'First, Code_Flds'First + 2, A, Mapa, Ok1,
                       Get_Handle.Cursor_Field);
-      if Ok then
-        Decode_Mapcode (Code_Flds'First + 3, Code_Flds'Last, B, Mapb, Ok,
-                        Get_Handle.Cursor_Field);
+      if Ok1 then
+        Get_Handle.Cursor_Field := Code_Flds'First + 3;
       end if;
-      if Ok then
+      Decode_Mapcode (Code_Flds'First + 3, Code_Flds'Last, B, Mapb, Ok2,
+                      Get_Handle.Cursor_Field);
+      if Ok1 and then Ok2 then
         Afpx.Set_Selection (Mapa.Image & " " & Mapb.Image);
       end if;
     end if;
-    if Ok then
+    if Ok1 and then Ok2 then
       Great_Circle.Logger.Log_Debug ("Got point A:" & A.X'Img & A.Y'Img);
       Great_Circle.Logger.Log_Debug ("Got point B:" & B.X'Img & B.Y'Img);
     end if;
-    return Ok;
+    Great_Circle.Logger.Log_Debug (
+          "End of decoding, default content " & Default_Content'Img);
+    return Ok1 and then Ok2;
   end Decode;
 
   -- Encode a point in degree of decimal
@@ -482,19 +501,21 @@ begin
         -- Switches
         -- Decode current point / mapcodes
         Decode_Ok := Decode;
-        -- Switch
-        case Result.Field_No is
-          when Sexa_Field =>
-            Mode := Sexa_Mode;
-          when Deci_Field =>
-            Mode := Deci_Mode;
-          when Map_Field =>
-            Mode := Map_Mode;
-          when others =>
-            null;
-        end case;
-        -- Clear
-        Reset;
+        if Decode_Ok or else Default_Content then
+          -- Switch
+          case Result.Field_No is
+            when Sexa_Field =>
+              Mode := Sexa_Mode;
+            when Deci_Field =>
+              Mode := Deci_Mode;
+            when Map_Field =>
+              Mode := Map_Mode;
+            when others =>
+              null;
+          end case;
+          -- Clear
+          Reset;
+        end if;
         if Decode_Ok then
           -- Encode points / mapcodes
           Encode;
