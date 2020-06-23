@@ -17,9 +17,6 @@ package body Af_Dscr is
   -- Colors from file
   Init_Colors : array (Absolute_Field_Range) of Afpx_Typ.Colors_Rec;
 
-  -- Chars from file
-  Init_Str : Afpx_Typ.Char_Str;
-
   -- Descriptor read
   Dscrs : Afpx_Typ.Descriptors_Array;
 

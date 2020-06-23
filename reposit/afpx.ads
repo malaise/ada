@@ -136,6 +136,27 @@ package Afpx is
   function Is_Button_Kind (Field_No : in Field_Range) return Boolean;
   function Is_Get_Kind    (Field_No : in Field_Range) return Boolean;
 
+  -- Get the initial content of a row of a field (read from off-line file
+  --  when using the descriptor or when resetting the field)
+  -- If Adjust is set, then only Data_Len characters are
+  --  returned, which may lead to skip last characters
+  --  and possibly pad with a space
+  -- Exceptions : No_Descriptor, Invalid_Field, Invalid_Row
+  function Get_Init_Field (Field_No : Field_Range;
+                           Row      : Con_Io.Row_Range;
+                           Adjust   : Boolean := True)
+                           return String;
+  function Get_Init_Wide_Field (Field_No : Field_Range;
+                                Row      : Con_Io.Row_Range)
+                                return Wide_String;
+  function Get_Init_Field (Field_No : Field_Range;
+                           Row      : Con_Io.Row_Range)
+                           return Unicode_Sequence;
+  procedure Get_Init_Field (Field_No : in Field_Range;
+                            Row      : in Con_Io.Row_Range;
+                            Str      : in out As.U.Asu_Us;
+                            Adjust   : in Boolean := True);
+
   -- Encode a string in a field.
   -- The Row is filled with spaces, then with Str starting at Col
   -- Exceptions : No_Descriptor, Invalid_Field

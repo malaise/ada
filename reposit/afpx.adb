@@ -21,8 +21,12 @@ package body Afpx is
     -- The fields of current descriptor
     Fields : Afpx_Typ.Fields_Array;
 
+    -- Init characters of the fields, from file
+    Init_Str : Afpx_Typ.Char_Str;
+
     -- Characters of the fields
     Chars : Afpx_Typ.Char_Str;
+
     -- Load the screen size
     function Load_Size return Con_Io.Square;
 
@@ -495,6 +499,69 @@ package body Afpx is
   begin
     return Get_Field_Kind (Field_No) = Get_Field;
   end Is_Get_Kind;
+
+  -- Get the initial content of a row of a field
+  function Get_Init_Field (Field_No : Field_Range;
+                           Row      : Con_Io.Row_Range;
+                           Adjust   : Boolean := True) return String is
+    Str : constant String
+        := Language.Unicode_To_String (Get_Init_Field (Field_No, Row));
+    Fn : constant Absolute_Field_Range := Field_No;
+    Width : constant Width_Range := Af_Dscr.Fields(Fn).Data_Len;
+  begin
+    if not Adjust or else Str'Length = Width then
+      return Str;
+    else
+      declare
+        -- Trunc length if <= Width
+        Trunc : constant String := Language.Adjust (Str, Width);
+        Pad : constant String (1 .. Width - Trunc'Length)
+            := (others => ' ');
+      begin
+        return Trunc & Pad;
+      end;
+    end if;
+  end Get_Init_Field;
+
+  function Get_Init_Wide_Field (Field_No : Field_Range;
+                                Row      : Con_Io.Row_Range)
+                                return Wide_String is
+    Ustr : constant Unicode_Sequence := Get_Init_Field (Field_No, Row);
+  begin
+    return Language.Copy (Ustr);
+  end Get_Init_Wide_Field;
+
+  function Get_Init_Field (Field_No : Field_Range;
+                           Row      : Con_Io.Row_Range)
+                           return Unicode_Sequence is
+    Fn : constant Field_Range := Field_No;
+    Field : Afpx_Typ.Field_Rec;
+    Init_Index : Afpx_Typ.Char_Str_Range;
+  begin
+    Af_Dscr.Check(Fn);
+    Field := Af_Dscr.Fields(Fn);
+    -- Check that row is in field
+    if not Afpx_Typ.In_Field (Field, (Row, 0)) then
+      raise Invalid_Row;
+    end if;
+    -- Copy in init string
+    Init_Index := Field.Char_Index + Row * Field.Data_Len;
+    -- Return characters in a String (1 .. N)
+    declare
+      Str : constant Unicode_Sequence (1 .. Field.Data_Len)
+           := Af_Dscr.Init_Str(Init_Index .. Init_Index + Field.Data_Len - 1);
+    begin
+      return Str;
+    end;
+  end Get_Init_Field;
+
+  procedure Get_Init_Field (Field_No : in Field_Range;
+                            Row      : in Con_Io.Row_Range;
+                            Str      : in out As.U.Asu_Us;
+                            Adjust   : in Boolean := True) is
+  begin
+    Str := As.U.Tus (Get_Init_Field (Field_No, Row, Adjust));
+  end Get_Init_Field;
 
   -- Encode a string in a row of a field
   procedure Encode_Field (Field_No : in Field_Range;
