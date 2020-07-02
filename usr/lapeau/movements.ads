@@ -16,9 +16,10 @@ package Movements is
 
   -- Movement
   type Movement is record
-     Card : Cards.Card_Access;
-     -- The stack pseudo card
-     From, To : Cards.Card_Access;
+    -- The card to move
+    Card : Cards.Card_Access;
+    -- The stack pseudo card of source and target
+    From, To : Cards.Card_Access;
   end record;
 
   -- Do a movement
