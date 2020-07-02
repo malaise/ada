@@ -6,13 +6,15 @@ procedure Lenv is
   procedure Usage is
   begin
     Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name &
-        " [ <value> ] { [ <modifier> | <criteria> ]}");
+        " [ <values> ] { [ <filter> ] }");
     Sys_Calls.Put_Line_Error (
         "List environment variables whose name match criteria.");
     Sys_Calls.Put_Line_Error (
-        "  <value>    ::= -v | --value    // Default is to put only variable names");
+        "  <values>   ::= -v | --values                      // Default: put only names");
     Sys_Calls.Put_Line_Error (
-        "  <modifier> ::= -s | --strict | -n | --not-strict    // Default is strict");
+        "  <filter>   ::= [ <modifier> ] { <criteria> }");
+    Sys_Calls.Put_Line_Error (
+        "  <modifier> ::= -s | --strict | -n | --not-strict  // Default: strict");
     Sys_Calls.Put_Line_Error ("  <criteria> ::= <pattern> | @<regex>");
   end Usage;
 
@@ -140,7 +142,7 @@ begin
   Value_Option := False;
   if Argument.Get_Nbre_Arg >= 1
   and then (Argument.Get_Parameter = "-v"
-    or else Argument.Get_Parameter = "--value") then
+    or else Argument.Get_Parameter = "--values") then
     Value_Option := True;
   end if;
 
