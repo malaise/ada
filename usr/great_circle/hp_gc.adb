@@ -148,8 +148,8 @@ begin
     Basic_Proc.Put_Output ("H: "
         & Normalization.Normal_Fixed (R, Frac_Len + 5, 4, '0'));
     Basic_Proc.Put_Output (", D:"
-        & Normalization.Normal_Fixed (My_Math.Real (D), 13, 6, '0') & "Nm");
-    R := My_Math.Real (D * Km_In_Nm);
+        & Normalization.Normal_Fixed (D, 13, 6, '0') & "Nm");
+    R := D * Km_In_Nm;
     Basic_Proc.Put_Output (Normalization.Normal_Fixed (R, 13, 6, '0') & "km");
     R := R * 1000.0;
     if R < 1000.0 then

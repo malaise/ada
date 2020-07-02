@@ -236,8 +236,8 @@ package body String_Util is
   function Dist2Str (Dist : Distance) return Dist_Str is
     Int : My_Math.Inte;
   begin
-    Int := My_Math.Round(My_Math.Real(Dist));
-    return Normal(Integer(Int), Dist_Str'Length);
+    Int := My_Math.Round (Dist);
+    return Normal (Integer (Int), Dist_Str'Length);
   end Dist2Str;
 
   function Geoangle2Str (Geo_Angle : Conv.Geo_Coord_Rec) return Geo_Angle_Str is
