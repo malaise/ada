@@ -23,26 +23,43 @@ package body Movements is
       -- Target is in a play stack
       if Target = Target.Stack then
         -- Target is a play or tmp stack, it must be empty
+        Logger.Log_Debug ("Is_Valid -> "
+           & Boolean'Image (Target.Nb_Children = 0)
+           & " on empty play stack");
         return Target.Nb_Children = 0;
       end if;
       if not Cards.Is_Play_Stack (Target.Stack) then
         -- Target is a card in a Tmp stack
+        Logger.Log_Debug ("Is_Valid -> FALSE cause used tmp stack");
         return False;
       end if;
       if Source.Name /= Target.Name - 1 then
         -- Target is a card of a Play stack
+        Logger.Log_Debug ("Is_Valid -> FALSE cause not crescent");
         return False;
       end if;
       -- Alternate color
+      Logger.Log_Debug ("Is_Valid -> "
+          & Boolean'Image (Cards.Color_Of (Source.Suit)
+                        /= Cards.Color_Of (Target.Suit))
+          & " on compatible colors");
       return Cards.Color_Of (Source.Suit) /= Cards.Color_Of (Target.Suit);
     else
       -- Done stack
       if Source.Suit /= Target.Suit then
+        Logger.Log_Debug (
+            "Is_Valid -> FALSE cause Done stack with different suit");
         return False;
       elsif Target.Stack.Nb_Children = 0 then
         -- Target is an empty done stack
+        Logger.Log_Debug ("Is_Valid -> "
+            & Boolean'Image (Source.Name = 1)
+            & " on empty Done stack");
         return Source.Name = 1;
       else
+        Logger.Log_Debug ("Is_Valid -> "
+            & Boolean'Image (Source.Name = Target.Name + 1)
+            & " on Done stack");
         return Source.Name = Target.Name + 1;
       end if;
     end if;
@@ -52,38 +69,57 @@ package body Movements is
   function Can_Move (Source, Target : in Cards.Card_Access) return Boolean is
     Nb_To_Move, Nb_Movable : Positive;
     Nb_Available : Integer;
+    Target_Empty_Free, Source_Top_Free : Boolean;
     use type Cards.Card_Access, Cards.Deck.Full_Suit_List;
   begin
     if Source.Stack.Name = Cards.Deck.Symbol_Name then
       -- Cannot move from Done
+      Logger.Log_Debug ("Can_Move -> FALSE cause from Done stack");
       return False;
     end if;
     -- Must be valid,
     if not Is_Valid (Source, Target) then
+      Logger.Log_Debug ("Can_Move -> FALSE cause not valid");
       return False;
     end if;
 
     if Target.Stack.Name = Cards.Deck.Symbol_Name
     or else not Cards.Is_Play_Stack (Target.Stack) then
       -- Cards go to Done or Tmp one by one
+      Logger.Log_Debug ("Can_Move -> "
+          & Boolean'Image (Source.Nb_Children = 0)
+          & " on several cards to Done stack");
       return Source.Nb_Children = 0;
     end if;
 
     if Target.Next /= null then
-        -- Target is not top of stack (or stack but not empty???)
-        return False;
+      -- Target is not top of stack (or stack but not empty???)
+      Logger.Log_Debug ("Can_Move -> FALSE cause target not on top of stack");
+      return False;
     end if;
     -- Nb children compatible with number of empty stacks
     Nb_To_Move := Source.Nb_Children + 1;
+    Logger.Log_Debug ("  Can_Move.To_Move = " & Nb_To_Move'Img);
     Nb_Available := Nb_Free_Play_Stacks;
-    if Target.Stack.Suit = Cards.Deck.Empty
-    and then Target.Stack.Nb_Children = 0 then
-      -- Target is a free stack
+    Logger.Log_Debug ("  Can_Move.Nb_Available = " & Nb_Available'Img);
+    Target_Empty_Free := Target.Stack.Suit = Cards.Deck.Empty
+                and then Target.Stack.Nb_Children = 0;
+    Source_Top_Free := Source.Stack.Suit = Cards.Deck.Empty
+              and then Source.Stack.Next = Source;
+    if Target_Empty_Free then
+      -- Target is an empty free stack, which cannot be used
+      Logger.Log_Debug ("  Can_Move.Nb_Available decreased");
       Nb_Available := Nb_Available - 1;
     end if;
     -- (T + A) + (T + A-1) + ... + (T + 1) + T + 1
     Nb_Movable := Nb_Available * (Nb_Available + 1) / 2
                 + Nb_Free_Tmp_Stacks * Nb_Available + Nb_Free_Tmp_Stacks + 1;
+    if Target_Empty_Free and then Source_Top_Free and then Nb_Movable /= 1 then
+      -- Source is top of a free stack and target is an empty free stack
+      Nb_Movable := Nb_Movable + 1;
+      Logger.Log_Debug ("  Can_Move.Nb_Movable increased");
+    end if;
+    Logger.Log_Debug ("  Can_Move.Nb_Movable = " & Nb_Movable'Img);
     return Nb_To_Move <= Nb_Movable;
   end Can_Move;
 
@@ -296,10 +332,11 @@ package body Movements is
     Source, Target, Child :  Cards.Card_Access;
     Nb_Spread : Available_Range;
     Stack_Str : As.U.Asu_Us;
-    use type Cards.Card_Access;
+    use type Cards.Card_Access, Cards.Deck.Full_Suit_List;
   begin
     Logger.Log_Debug ("Start Multi Move of " & Mov.Card.Image
                       & " to " & Mov.To.Image);
+
     -- Identify the available play stacks (excluding dest)
     Nb_Available := 0;
     for Stack in Cards.Play_Stack_Range loop
@@ -310,13 +347,52 @@ package body Movements is
       end if;
     end loop;
     if Logger.Debug_On then
+      Stack_Str.Set_Null;
+      for Stack in Cards.Play_Stack_Range loop
+        if Available_Stacks(Stack) then
+          Stack_Str.Append (Stack'Img);
+        end if;
+      end loop;
+      Logger.Log_Debug ("Available stacks:" & Stack_Str.Image);
+    end if;
+
+    -- Specific handling of a full "Empty" stack to an empty "Empty" stack
+    -- We move N-1 cards, then the root, then we restack
+    if Mov.To.Suit = Cards.Deck.Empty
+    and then Mov.To.Nb_Children = 0
+    and then Mov.From.Suit = Cards.Deck.Empty
+    and then Mov.From.Next = Mov.Card
+    and then Mov.Card.Next /= null then
+      Logger.Log_Debug ("Full stack to free empty => 3 moves");
+      -- Find a tempo available stack for N-1 (not To)
+      Available := Next_Available;
+      -- Move N-1 to tempo stack
+      Child := Mov.Card.Next;
+      Target := Cards.The_Play(Available)'Access;
+      Move_Multiple (Mov => (Card => Child,
+                             From => Mov.From,
+                             To   => Target),
+                     Add => Add);
+      -- Move root to target
+      Move_One (Mov, Add, True);
+      -- Move N-1 to top of root
+      Move_Multiple (Mov => (Card => Child,
+                             From => Target,
+                             To   => Mov.To),
+                     Add => Add);
+      return;
+    end if;
+
+    -- Debug summary of multi move
+    if Logger.Debug_On then
       Child := Mov.Card;
+      Stack_Str.Set_Null;
       loop
         Stack_Str.Append (" " & Child.Image);
         exit when Child.Next = null;
         Child := Child.Next;
       end loop;
-      Logger.Log_Debug (Images.Integer_Image (Mov.Card.Nb_Children)
+      Logger.Log_Debug (Images.Integer_Image (Mov.Card.Nb_Children + 1)
                       & " cards:" & Stack_Str.Image
                       & ", with " & Images.Integer_Image (Nb_Free_Tmp_Stacks)
                       & " free tmp stacks, and "
@@ -324,11 +400,10 @@ package body Movements is
                       & " available play stacks");
     end if;
 
+    -- Move children into free play stacks
     Play_Lifo.Clear;
     Tmp_Lifo.Clear;
     Tmp_Root := null;
-
-    -- Move children into free play stacks
     Logger.Log_Debug (" Starting spreading");
     Spread :
     loop
