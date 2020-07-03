@@ -162,34 +162,21 @@ package body Fpl is
          := Complexes.Create_Complex (Ades_Lon, Ades_Lat);
     -- 1 Nm is 1 minute of angle => convert to fraction of degrees
     Len : constant Real := Real (Dst) / 60.0;
-    -- Flat trigo, for debugging traces only
+    -- The vector from ADES to the approach point
     Vect : constant Complexes.Complex
          := Complexes.To_Complex (
              Complexes.Create_Polar (Complexes.Typ_Module (Len),
                                      Complexes.Degree (90 - Ang)
                                    + Complexes.Degree (Declination)));
-    Point_Flat : constant Complexes.Complex := Ades + Vect;
-    -- Spherical trigo
-    A_Colat : constant Real := 90.0 - Ades_Lat;
-    Cos_B_Colat : constant Real
-                := Cos (A_Colat, Degree) * Cos (Len , Degree)
-                 + Sin (A_Colat, Degree) * Sin (Len, Degree)
-                   * Cos (Real (Ang) + Declination, Degree);
-    B_Colat : constant Real := Arc_Cos (Cos_B_Colat, Degree);
-    Raw_Delta_Lon : constant Real
-        := Arc_Cos ( (Cos (Len, Degree) * Sin (A_Colat, Degree)
-                      - Sin (Len, Degree) * Cos (A_Colat, Degree)
-                        * Cos (Real (Ang) + Declination, Degree) )
-                     / Sin (B_Colat, Degree), Degree);
-    Delta_Lon : constant Real
-              := (if Ang < 180 then Raw_Delta_Lon else -Raw_Delta_Lon);
     -- Result
+    Point : constant Complexes.Complex := Ades + Vect;
     Lat, Lon : My_Math.Real;
     Line : As.U.Asu_Us;
 
+    -- NOrmalize Lat and Lon
     procedure Normalize is
     begin
-      -- Normalize Point Lat (-90 .. 90)
+      -- Normalize Lat (-90 .. 90)
       if Lat > 90.0 then
         Lat := 180.0 - Lat;
         Lon := Lon + 180.0;
@@ -220,17 +207,11 @@ package body Fpl is
     Line.Append (Image (My_Math.Real'(Ades_Alt + My_Math.Real (Alt))));
 
     -- Flat trigo for debug
-    Lat := Point_Flat.Part_Imag;
-    Lon := Point_Flat.Part_Real;
+    Lat := Point.Part_Imag;
+    Lon := Point.Part_Real;
     Normalize;
-    Logger.Log_Debug ("  Flat trigo => " & Image (Lat) & " " & Image (Lon));
+    Logger.Log_Debug ("  Point is: " & Image (Lat) & " " & Image (Lon));
 
-    -- Spherical trigo
-    Lat := 90.0 - B_Colat;
-    Lon := Ades_Lon + Delta_Lon;
-    Normalize;
-    Logger.Log_Debug ("  Spherical trigo => " & Image (Lat)
-                    & " " & Image (Lon));
     -- Write
     Line.Append (" " & Image (Lat) & " " & Image (Lon));
     Logger.Log_Debug ("Appending line: " & Line.Image);
