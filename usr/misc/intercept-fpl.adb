@@ -1,7 +1,6 @@
 with Ada.Text_Io;
 with As.U.Utils, Str_Util.Regex,
-     Gets, Complexes,
-     Directory, Sys_Calls.File_Access, Text_Line;
+     Gets, Directory, Environ, Sys_Calls.File_Access, Text_Line;
 separate (Intercept)
 package body Fpl is
   -- Patchig a FPL file: Patch policy, None is file is empty
@@ -157,26 +156,31 @@ package body Fpl is
   App_Num : Natural := 0;
   procedure Append_App (Alt : in Positive; Ang : in Angle; Dst : in Distance) is
     use My_Math;
-    use type Complexes.Complex, Complexes.Degree;
-    Ades : constant Complexes.Complex
-         := Complexes.Create_Complex (Ades_Lon, Ades_Lat);
     -- 1 Nm is 1 minute of angle => convert to fraction of degrees
-    Len : constant Real := Real (Dst) / 60.0;
-    -- The vector from ADES to the approach point
-    Vect : constant Complexes.Complex
-         := Complexes.To_Complex (
-             Complexes.Create_Polar (Complexes.Typ_Module (Len),
-                                     Complexes.Degree (90 - Ang)
-                                   + Complexes.Degree (Declination)));
+    Arc : constant Real := Real (Dst) / 60.0;
+
+    -- Spherical trigo
+    A_Colat : constant Real := 90.0 - Ades_Lat;
+    Cos_B_Colat : constant Real
+                := Cos (A_Colat, Degree) * Cos (Arc , Degree)
+                 + Sin (A_Colat, Degree) * Sin (Arc, Degree)
+                   * Cos (Real (Ang) + Declination, Degree);
+    B_Colat : constant Real := Arc_Cos (Cos_B_Colat, Degree);
+    Raw_Delta_Lon : constant Real
+        := Arc_Cos ( (Cos (Arc, Degree) * Sin (A_Colat, Degree)
+                      - Sin (Arc, Degree) * Cos (A_Colat, Degree)
+                        * Cos (Real (Ang) + Declination, Degree) )
+                     / Sin (B_Colat, Degree), Degree);
+    Delta_Lon : constant Real
+              := (if Real (Ang) + Declination < 180.0 then Raw_Delta_Lon
+                  else -Raw_Delta_Lon);
     -- Result
-    Point : constant Complexes.Complex := Ades + Vect;
     Lat, Lon : My_Math.Real;
     Line : As.U.Asu_Us;
 
-    -- NOrmalize Lat and Lon
     procedure Normalize is
     begin
-      -- Normalize Lat (-90 .. 90)
+      -- Normalize Point Lat (-90 .. 90)
       if Lat > 90.0 then
         Lat := 180.0 - Lat;
         Lon := Lon + 180.0;
@@ -205,12 +209,26 @@ package body Fpl is
               & " DRCT ");
     -- Ades_Lat + Alt
     Line.Append (Image (My_Math.Real'(Ades_Alt + My_Math.Real (Alt))));
+    Logger.Log_Debug ("Adding Dst:" & Dst'Img & ", Angle:"  & Ang'Img);
 
-    -- Flat trigo for debug
-    Lat := Point.Part_Imag;
-    Lon := Point.Part_Real;
+    -- Flat trigo (for debug)
+    Lat := Arc * Sin (90.0 - (Real (Ang) + Declination), Degree);
+    Lon := Arc * Cos (90.0 - (Real (Ang) + Declination), Degree)
+                          / Cos (Ades_Lat, Degree);
+    Logger.Log_Debug ("  Lat:" & Lat'Img & ", Lon:"  & Lon'Img);
+    Lat := Ades_Lat + Lat;
+    Lon := Ades_Lon + Lon;
     Normalize;
-    Logger.Log_Debug ("  Point is: " & Image (Lat) & " " & Image (Lon));
+    Logger.Log_Debug ("  Flat trigo => " & Image (Lat) & " " & Image (Lon));
+
+    -- Spherical trigo
+    if Environ.Is_Yes ("INTERCEPT_SPHERICAL_TRIGO") then
+      Lat := 90.0 - B_Colat;
+      Lon := Ades_Lon + Delta_Lon;
+      Normalize;
+      Logger.Log_Debug ("  Spherical trigo => " & Image (Lat)
+                      & " " & Image (Lon));
+    end if;
 
     -- Write
     Line.Append (" " & Image (Lat) & " " & Image (Lon));
