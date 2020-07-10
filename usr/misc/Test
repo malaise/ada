@@ -36,28 +36,6 @@ function comp {
 
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
-# Read field $3 of line $2 of file $1
-function readarg {
-res="`awk -vLINE=$2 -vFIELD=$3 '
-  BEGIN {
-    NL=0
-  }
-  (NF == 0 || $1 ~ /^#/) {
-    # Skip empty lines and comment
-    next
-  }
-  {
-    # Count significant lines
-    NL=NL+1
-    if (NL == LINE) {
-      printf "%s",$FIELD
-      exit 0
-    }
-  } 
-' $1`"
-echo "$res"
-}
-
 
 # One test of compression / uncompression
 function cmpr_one {
@@ -183,100 +161,6 @@ Unknown variable while evaluating variable.
 EOF
   comp err experr
   echo ""
-fi
-
-if [ \( -z "$1" \) -o \( "$1" = "intercept" \) ] ; then
-  # Intercept
-  # Get constant Intercept DME
-  INTER_DME=`intercept --dme | cut -d ' ' -f1`
-  # Manually use the second output field to set Beta DME
-  export BETA_DME=20
-  echo -n "" > experr
-  let L=1
-  while true ; do
-    QFU=`readarg interceptions.txt $L 1`
-    if [ "QFU" = "#" ] ; then
-      continue;
-    fi
-    if [ -z "$QFU" ] ; then
-      break;
-    fi
-    HEADING=`readarg interceptions.txt $L 2`
-    KIND=`readarg interceptions.txt $L 3`
-    case "$KIND" in
-      ("Final")
-        KIND="Final"
-        echo  "You are in final heading $QFU." > expout
-      ;;
-      ("Direct")
-        TD1=`readarg interceptions.txt $L  4`
-        HD1=`readarg interceptions.txt $L  5`
-        TA1=`readarg interceptions.txt $L  6`
-        HA1=`readarg interceptions.txt $L  7`
-        MA2=`readarg interceptions.txt $L  8`
-        TA2=`readarg interceptions.txt $L  9`
-        HA2=`readarg interceptions.txt $L 10`
-  cat > expout << EOF
-Direct interception
-At DME $INTER_DME turn $TD1 heading $HD1 to intercept final heading $QFU.
-Alternate indirect interception
-At DME $INTER_DME turn $TA1 heading $HA1,
-at DME $BETA_DME QDM $MA2 turn $TA2 heading $HA2 to intercept final heading $QFU.
-EOF
-      ;;  
-      ("Indirect")
-        TI1=`readarg interceptions.txt $L  4`
-        HI1=`readarg interceptions.txt $L  5`
-        MI2=`readarg interceptions.txt $L  6`
-        TI2=`readarg interceptions.txt $L  7`
-        HI2=`readarg interceptions.txt $L  8`
-        TA1=`readarg interceptions.txt $L  9`
-        HA1=`readarg interceptions.txt $L 10`
-        MA2=`readarg interceptions.txt $L 11`
-        TA2=`readarg interceptions.txt $L 12`
-        HA2=`readarg interceptions.txt $L 13`
-      cat > expout << EOF
-Indirect interception
-At DME $INTER_DME turn $TI1 heading $HI1,
-at DME $BETA_DME QDM $MI2 turn $TI2 heading $HI2 to intercept final heading $QFU.
-Alternate indirect interception
-At DME $INTER_DME turn $TA1 heading $HA1,
-at DME $BETA_DME QDM $MA2 turn $TA2 heading $HA2 to intercept final heading $QFU.
-EOF
-      ;;
-      (*)
-        echo "Invalid kind $LIND" 1>&2
-        exit 1
-      ;;
-    esac
-    echo -n $QFU $HEADING $KIND | awk '
-      {
-         printf "intercept %3d %3d %s\n", $1, $2, $3
-      } '
-    intercept $QFU $HEADING >out 2>err
-    comp out expout
-    comp err experr
-    let L=$L+1
-  done
-
-  # Done
-  echo ""
-fi
-
-# Regenerate interception scenario
-if [ "$1" = "generate_intercept" ] ; then
-  awk '
-    ( ($0 == "") || ($1 == "#") ) {
-      print
-      next
-    }
-    {
-      cmd="intercept -s "$1" "$2
-      cmd | getline RES
-      close(cmd)
-      print RES
-    }
-  ' interceptions.txt > interceptions.gen
 fi
 
 clean

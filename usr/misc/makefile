@@ -6,10 +6,9 @@ ADACTL := true
 AFPX := true
 AFPX_XREF := afpx_xref
 
-SUBUNITS := intercept.fpl
 EXES := adand add_nums alook arbipas astat azf beep bernouilli \
  comp_vars day_of_week ddir e2f fact full_path g hanoi \
- impot_04 intercept lenv alz4l mlbx_overflow one_of_arg pascal pingpong prime \
+ impot_04 lenv alz4l mlbx_overflow one_of_arg pascal pingpong prime \
  random relay renamer \
  second statfile stats status strcase tcping trail_spaces udp_spy \
  wait wake \
@@ -18,7 +17,6 @@ EXES := adand add_nums alook arbipas astat azf beep bernouilli \
 
 CLIBS := $(UTILS_SLIBS)
 CLIBS_comp_vars := $(PCRE_SLIBS)
-CLIBS_intercept := $(PCRE_SLIBS)
 CLIBS_lenv := $(PCRE_SLIBS)
 CLIBS_relay := $(PCRE_SLIBS)
 CLIBS_renamer := $(X11_SLIBS)
