@@ -1,6 +1,7 @@
 with Ada.Text_Io;
 with As.U.Utils, Str_Util.Regex,
      Gets, Directory, Environ, Sys_Calls.File_Access, Text_Line;
+with Conv, Lat_Lon, String_Util, Great_Circle;
 separate (Intercept)
 package body Fpl is
   -- Patchig a FPL file: Patch policy, None is file is empty
@@ -156,24 +157,20 @@ package body Fpl is
   App_Num : Natural := 0;
   procedure Append_App (Alt : in Positive; Ang : in Angle; Dst : in Distance) is
     use My_Math;
+    use type Conv.Deg_Coord_Range;
     -- 1 Nm is 1 minute of angle => convert to fraction of degrees
     Arc : constant Real := Real (Dst) / 60.0;
 
     -- Spherical trigo (default)
-    A_Colat : constant Real := 90.0 - Ades_Lat;
-    Cos_B_Colat : constant Real
-                := Cos (A_Colat, Degree) * Cos (Arc , Degree)
-                 + Sin (A_Colat, Degree) * Sin (Arc, Degree)
-                   * Cos (Real (Ang) + Declination, Degree);
-    B_Colat : constant Real := Arc_Cos (Cos_B_Colat, Degree);
-    Raw_Delta_Lon : constant Real
-        := Arc_Cos ( (Cos (Arc, Degree) * Sin (A_Colat, Degree)
-                      - Sin (Arc, Degree) * Cos (A_Colat, Degree)
-                        * Cos (Real (Ang) + Declination, Degree) )
-                     / Sin (B_Colat, Degree), Degree);
-    Delta_Lon : constant Real
-              := (if Real (Ang) + Declination < 180.0 then Raw_Delta_Lon
-                  else -Raw_Delta_Lon);
+    A : constant Lat_Lon.Lat_Lon_Rad_Rec
+      := (X => Conv.Deg2Rad (Conv.Deg_Coord_Range (Ades_Lon)),
+          Y => Conv.Deg2Rad (Conv.Deg_Coord_Range (Ades_Lat)));
+    H : constant Conv.Rad_Coord_Range
+      := Conv.Deg2Rad (Conv.Deg_Coord_Range (Ang)
+                     + Conv.Deg_Coord_Range (Declination));
+    D : constant String_Util.Distance := String_Util.Distance (Dst);
+    B : Lat_Lon.Lat_Lon_Rad_Rec;
+
     -- Result
     Lat, Lon : My_Math.Real;
     Line : As.U.Asu_Us;
@@ -213,8 +210,9 @@ package body Fpl is
 
 
     -- Spherical trigo,
-    Lat := 90.0 - B_Colat;
-    Lon := Ades_Lon + Delta_Lon;
+    B := Great_Circle.Apply_Route (A, H, D);
+    Lat := My_Math.Real (Conv.Rad2Deg (B.Y));
+    Lon := My_Math.Real (Conv.Rad2Deg (B.X));
     Normalize;
     Logger.Log_Debug ("  Spherical trigo => " & Image (Lat)
                     & " " & Image (Lon));
