@@ -159,7 +159,7 @@ package body Fpl is
     -- 1 Nm is 1 minute of angle => convert to fraction of degrees
     Arc : constant Real := Real (Dst) / 60.0;
 
-    -- Spherical trigo
+    -- Spherical trigo (default)
     A_Colat : constant Real := 90.0 - Ades_Lat;
     Cos_B_Colat : constant Real
                 := Cos (A_Colat, Degree) * Cos (Arc , Degree)
@@ -211,23 +211,23 @@ package body Fpl is
     Line.Append (Image (My_Math.Real'(Ades_Alt + My_Math.Real (Alt))));
     Logger.Log_Debug ("Adding Dst:" & Dst'Img & ", Angle:"  & Ang'Img);
 
-    -- Flat trigo (for debug)
-    Lat := Arc * Sin (90.0 - (Real (Ang) + Declination), Degree);
-    Lon := Arc * Cos (90.0 - (Real (Ang) + Declination), Degree)
-                          / Cos (Ades_Lat, Degree);
-    Logger.Log_Debug ("  Lat:" & Lat'Img & ", Lon:"  & Lon'Img);
-    Lat := Ades_Lat + Lat;
-    Lon := Ades_Lon + Lon;
-    Normalize;
-    Logger.Log_Debug ("  Flat trigo => " & Image (Lat) & " " & Image (Lon));
 
-    -- Spherical trigo
-    if Environ.Is_Yes ("INTERCEPT_SPHERICAL_TRIGO") then
-      Lat := 90.0 - B_Colat;
-      Lon := Ades_Lon + Delta_Lon;
+    -- Spherical trigo,
+    Lat := 90.0 - B_Colat;
+    Lon := Ades_Lon + Delta_Lon;
+    Normalize;
+    Logger.Log_Debug ("  Spherical trigo => " & Image (Lat)
+                    & " " & Image (Lon));
+
+    -- Flat trigo, on option, overwritting spherical trigo
+    if Environ.Is_Yes ("INTERCEPT_FLAT_TRIGO") then
+      Lat := Arc * Sin (90.0 - (Real (Ang) + Declination), Degree);
+      Lon := Arc * Cos (90.0 - (Real (Ang) + Declination), Degree)
+                            / Cos (Ades_Lat, Degree);
+      Lat := Ades_Lat + Lat;
+      Lon := Ades_Lon + Lon;
       Normalize;
-      Logger.Log_Debug ("  Spherical trigo => " & Image (Lat)
-                      & " " & Image (Lon));
+      Logger.Log_Debug ("  Flat trigo => " & Image (Lat) & " " & Image (Lon));
     end if;
 
     -- Write
