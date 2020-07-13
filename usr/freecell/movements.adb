@@ -111,10 +111,13 @@ package body Movements is
       Logger.Log_Debug ("  Can_Move.Nb_Available decreased");
       Nb_Available := Nb_Available - 1;
     end if;
+    Logger.Log_Debug ("  Can_Move.Nb_Free_Tmp = " & Nb_Free_Tmp_Stacks'Img);
     -- (T + A) + (T + A-1) + ... + (T + 1) + T + 1
     Nb_Movable := Nb_Available * (Nb_Available + 1) / 2
                 + Nb_Free_Tmp_Stacks * Nb_Available + Nb_Free_Tmp_Stacks + 1;
-    if Target_Empty_Free and then Source_Top_Free and then Nb_Movable /= 1 then
+    if Target_Empty_Free and then Source_Top_Free
+    and then Nb_Movable /= 1
+    and then Nb_Available /= 0 then
       -- Source is top of a free stack and target is an empty free stack
       Nb_Movable := Nb_Movable + 1;
       Logger.Log_Debug ("  Can_Move.Nb_Movable increased");
@@ -346,6 +349,7 @@ package body Movements is
         Nb_Available := Nb_Available + 1;
       end if;
     end loop;
+    Logger.Log_Debug ("Nb_Available:" & Nb_Available'Img);
     if Logger.Debug_On then
       Stack_Str.Set_Null;
       for Stack in Cards.Play_Stack_Range loop
@@ -362,7 +366,8 @@ package body Movements is
     and then Mov.To.Nb_Children = 0
     and then Mov.From.Suit = Cards.Deck.Empty
     and then Mov.From.Next = Mov.Card
-    and then Mov.Card.Next /= null then
+    and then Mov.Card.Next /= null
+    and then Nb_Available /= 0 then
       Logger.Log_Debug ("Full stack to free empty => 3 moves");
       -- Find a tempo available stack for N-1 (not To)
       Available := Next_Available;
