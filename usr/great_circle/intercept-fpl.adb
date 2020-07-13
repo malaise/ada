@@ -166,7 +166,7 @@ package body Fpl is
       := (X => Conv.Deg2Rad (Conv.Deg_Coord_Range (Ades_Lon)),
           Y => Conv.Deg2Rad (Conv.Deg_Coord_Range (Ades_Lat)));
     H : constant Conv.Rad_Coord_Range
-      := Conv.Deg2Rad (Conv.reduct (Conv.Degree (Ang)
+      := Conv.Deg2Rad (Conv.Reduct (Conv.Degree (Ang)
                                   + Conv.Degree (Declination)));
     D : constant String_Util.Distance := String_Util.Distance (Dst);
     B : Lat_Lon.Lat_Lon_Rad_Rec;
