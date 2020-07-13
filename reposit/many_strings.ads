@@ -26,9 +26,9 @@ package Many_Strings is
   function Set (From : String) return Many_String;
   function Set (From : As.U.Asu_Us) return Many_String;
   function Set (From : As.U.Asu_Array) return Many_String;
-  procedure Set (Str : in out Many_String; From : in String);
-  procedure Set (Str : in out Many_String; From : in As.U.Asu_Us);
-  procedure Set (Str : in out Many_String; From : in As.U.Asu_Array);
+  procedure Set (Str : out Many_String; From : in String);
+  procedure Set (Str : out Many_String; From : in As.U.Asu_Us);
+  procedure Set (Str : out Many_String; From : in As.U.Asu_Array);
 
   -- Concatenation
   -- If Str is empty then set it to What

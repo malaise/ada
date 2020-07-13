@@ -62,18 +62,18 @@ package body Many_Strings is
   end Set;
 
   -- Init procedures
-  procedure Set (Str : in out Many_String; From : in String) is
+  procedure Set (Str : out Many_String; From : in String) is
   begin
     Set (Str, As.U.Tus (From));
   end Set;
   -- The two Set operations that do something
-  overriding procedure Set (Str : in out Many_String;
+  overriding procedure Set (Str : out Many_String;
                             From : in As.U.Asu_Us) is
   begin
     Unb_Array(Str).Set (From);
     Normalize (Str);
   end Set;
-  overriding procedure Set (Str : in out Many_String;
+  overriding procedure Set (Str : out Many_String;
                             From : in As.U.Asu_Array) is
   begin
     Reset (Str);

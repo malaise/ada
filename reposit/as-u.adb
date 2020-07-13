@@ -98,7 +98,7 @@ package body As.U is
   -----------------------
   -- PUBLIC operations --
   -----------------------
-  procedure Set_Null (Target : in out Asu_Us) is
+  procedure Set_Null (Target : out Asu_Us) is
   begin
     -- Optim: avoid copying Asu_Null
     Free (Target.Ref);

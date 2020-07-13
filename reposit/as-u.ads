@@ -10,7 +10,7 @@ package As.U is
 
   -- Null unbounded string and unbounded string length
   Asu_Null : constant Asu_Us;
-  procedure Set_Null (Target : in out Asu_Us);
+  procedure Set_Null (Target : out Asu_Us);
   function Is_Null (Source : Asu_Us) return Boolean;
   function Length (Source : Asu_Us) return Natural;
 

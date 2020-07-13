@@ -57,7 +57,7 @@ package body As.B is
     return Res;
   end Asb_Null;
 
-  procedure Set_Null (Target : in out Asb_Bs) is
+  procedure Set_Null (Target : out Asb_Bs) is
   begin
     Target.Last := 0;
   end Set_Null;

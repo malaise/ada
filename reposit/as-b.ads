@@ -11,7 +11,7 @@ package As.B is
 
   -- Null bounded string and bounded string length
   function Asb_Null (Max : in Natural := 0) return Asb_Bs;
-  procedure Set_Null (Target : in out Asb_Bs);
+  procedure Set_Null (Target : out Asb_Bs);
   function Is_Null (Source : Asb_Bs) return Boolean;
   function Length (Source : Asb_Bs) return Natural;
 
