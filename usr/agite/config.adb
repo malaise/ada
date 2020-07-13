@@ -258,17 +258,17 @@ package body Config is
   end Get_Bookmark;
 
   procedure Del_Bookmark (Index : in Positive) is
-    Bookmark : Xml_Parser.Element_Type;
+    Bookmark, Tmp_Node : Xml_Parser.Element_Type;
   begin
     Bookmark := Ctx.Get_Child (Bookmarks, Index);
     -- Del Bookmark marker and its text
-    Ctx.Delete_Node (Bookmark, Bookmark);
+    Ctx.Delete_Node (Bookmark, Tmp_Node);
     Save;
   end Del_Bookmark;
 
   procedure Add_Bookmark (After_Index : in Natural;
                           Bookmark : in Bookmark_Rec) is
-    New_Node : Xml_Parser.Node_Type;
+    New_Node, Tmp_Node : Xml_Parser.Node_Type;
   begin
     -- Add Bookmark marker
     if After_Index = 0 then
@@ -279,7 +279,8 @@ package body Config is
       -- After Index
       New_Node := Ctx.Get_Child (Bookmarks, After_Index);
       Ctx.Add_Brother (New_Node, "bookmark", Xml_Parser.Element,
-                       New_Node, True);
+                       Tmp_Node, True);
+      New_Node := Tmp_Node;
     end if;
     -- Bookmarks can be empty (when separators)
     Ctx.Set_Tag_Empty (New_Node, True);
@@ -290,13 +291,13 @@ package body Config is
     -- Add its text
     if not Bookmark.Path.Is_Null then
       Ctx.Add_Child (New_Node, Path2Xml (Bookmark.Path.Image), Xml_Parser.Text,
-                     New_Node);
+                     Tmp_Node);
     end if;
     Save;
   end Add_Bookmark;
 
   procedure Move_Bookmark (Index : in Positive; Up : in Boolean) is
-    Bookmark : Xml_Parser.Element_Type;
+    Bookmark, Tmp_Node : Xml_Parser.Element_Type;
     Name, Path : As.U.Asu_Us;
   begin
     -- Move to bookmark at index
@@ -310,7 +311,7 @@ package body Config is
     end if;
 
     -- Delete this bookmark
-    Ctx.Delete_Node (Bookmark, Bookmark);
+    Ctx.Delete_Node (Bookmark, Tmp_Node);
     -- Insert after new index
     if Up then
       Add_Bookmark (Index - 2, (Name, Path));

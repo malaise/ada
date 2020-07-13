@@ -366,7 +366,7 @@ procedure Afpx_Rnb is
                           Field_Num  : Afpx_Typ.Absolute_Field_Range;
                           From_Node  : in Xml_Parser.Node_Type;
                           Number     : in Afpx_Typ.Field_Range) is
-    Next_Node_To, Next_Node_From : Xml_Parser.Node_Type;
+    Next_Node_To, Next_Node_From, New_Node : Xml_Parser.Node_Type;
     Start_Num : Afpx_Typ.Field_Range;
     use type Afpx_Typ.Field_Range;
   begin
@@ -388,15 +388,15 @@ procedure Afpx_Rnb is
     end if;
     -- Append remaining brothers
     for I in Start_Num .. Number loop
-      Add_Field (Next_Node_To, False, Field_Num + I, Next_Node_From,
-                 Next_Node_To);
+      Add_Field (Next_Node_To, False, Field_Num + I, Next_Node_From, New_Node);
+      Next_Node_To := New_Node;
       Next_Node_From := Next_Field (Next_Node_From);
     end loop;
   end Insert_Nodes;
 
   procedure Delete_Nodes (Start_Node : in Xml_Parser.Node_Type;
                           Number     : in Afpx_Typ.Field_Range) is
-    Curr_Node, Prev_Node, Next_Node : Xml_Parser.Node_Type;
+    Curr_Node, Prev_Node, Next_Node, Tmp_Node : Xml_Parser.Node_Type;
     use type Afpx_Typ.Field_Range, Xml_Parser.Node_Kind_List;
   begin
     -- For Action Delete or Move
@@ -408,12 +408,12 @@ procedure Afpx_Rnb is
         Prev_Node := Xml.Get_Brother (Curr_Node, False);
         if Prev_Node.Kind = Xml_Parser.Text
         and then Xml.Get_Text (Prev_Node) = Indent then
-          Xml.Delete_Node (Prev_Node, Prev_Node);
+          Xml.Delete_Node (Prev_Node, Tmp_Node);
         end if;
       end if;
       -- Get next field and delete current field
       Next_Node := Next_Field (Curr_Node);
-      Xml.Delete_Node (Curr_Node, Curr_Node);
+      Xml.Delete_Node (Curr_Node, Tmp_Node);
       Logger.Log_Debug ("Delete Field");
 
       -- Move to next field if any

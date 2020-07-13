@@ -3,7 +3,7 @@ procedure T_Xml_Gen is
   Dscr : Xml_Parser.Generator.Ctx_Type;
   Dtd_Name : constant String := "variables.dtd";
   Node : Xml_Parser.Node_Type;
-  New_Node : Xml_Parser.Node_Type;
+  New_Node, Tmp_Node : Xml_Parser.Node_Type;
   Node_1, Path_Node, Fail_Node : Xml_Parser.Node_Type;
   Ok : Boolean;
 
@@ -90,7 +90,7 @@ begin
   -- Insert a invalid then a valid Public doctype
   Dscr.Add_Doctype (Node, "Variables", True, "DocId", "variables.dtd", "",
                     New_Node);
-  Dscr.Delete_Node (New_Node, New_Node);
+  Dscr.Delete_Node (New_Node, Tmp_Node);
   begin
     Dscr.Add_Doctype (Node, "Variables", True, "Doc{Id", "variables.dtd", "",
                       New_Node);
@@ -119,8 +119,8 @@ begin
   Check_Invalid_Node (Node, "Text &ref", Xml_Parser.Text);
   -- Check valid text with CDATA and reference
   Dscr.Add_Child (Node, "Text<![CDATA[Cdata<]]> and &ref;", Xml_Parser.Text,
-                  New_Node);
-  Dscr.Delete_Node (New_Node, New_Node);
+                  Tmp_Node);
+  Dscr.Delete_Node (Tmp_Node, New_Node);
   -- Check invalid attribute name and content
   Check_Invalid_Attribute (Node, "Att[Name", "AttValue");
   Check_Invalid_Attribute (Node, "AttName", "Att<Value");
@@ -149,14 +149,14 @@ begin
   Dscr.Add_Brother (Node, "Var", Xml_Parser.Element, New_Node);
   Dscr.Add_Attribute (New_Node, "Name", "V2");
   Dscr.Add_Attribute (New_Node, "Type", "Int");
-  Dscr.Add_Child (New_Node, "5*${V1}*${V1}", Xml_Parser.Text, New_Node);
-  Node := Dscr.Get_Parent (New_Node);
+  Dscr.Add_Child (New_Node, "5*${V1}*${V1}", Xml_Parser.Text, Tmp_Node);
+  Node := Dscr.Get_Parent (Tmp_Node);
 
   Dscr.Add_Brother (Node, "Var", Xml_Parser.Element, New_Node);
   Dscr.Add_Attribute (New_Node, "Name", "V3");
   Dscr.Add_Attribute (New_Node, "Type", "Str");
-  Dscr.Add_Child (New_Node, "${V1}*${V2}", Xml_Parser.Text, New_Node);
-  Node := Dscr.Get_Parent (New_Node);
+  Dscr.Add_Child (New_Node, "${V1}*${V2}", Xml_Parser.Text, Tmp_Node);
+  Node := Dscr.Get_Parent (Tmp_Node);
 
   Dscr.Add_Brother (Node, "Var", Xml_Parser.Element, New_Node);
   Dscr.Add_Attribute (New_Node, "Name", "V4");
@@ -197,7 +197,7 @@ begin
     return;
   end if;
   -- Del invalid entry
-  Dscr.Delete_Node (New_Node, New_Node);
+  Dscr.Delete_Node (New_Node, Tmp_Node);
 
   -- Add a (valid) entry with empty attribute value and a text child
   Dscr.Add_Brother (Fail_Node, "Var", Xml_Parser.Element, New_Node);
@@ -208,7 +208,7 @@ begin
     & "<![CDATA[a Cdata < section]]> ; quite complex.",
                   Xml_Parser.Text, Node_1);
   -- Delete it
-  Dscr.Delete_Node (New_Node, New_Node);
+  Dscr.Delete_Node (New_Node, Tmp_Node);
 
   -- Add a comment in the tail
   -- Tail indicator is an empty element

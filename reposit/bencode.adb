@@ -185,7 +185,7 @@ package body Bencode is
       N : Positive;
       B : Natural;
       Tmp : As.U.Asu_Us;
-      New_Node : Xml_Parser.Node_Type;
+      New_Node, Tmp_Node : Xml_Parser.Node_Type;
     begin
       Logger.Log_Debug ("Decoding an Int");
       -- Get [ '-' ] then digits until 'e'
@@ -227,7 +227,7 @@ package body Bencode is
       end;
       -- Insert element "Int" with text
       Ctx.Add_Child (Node, Int_Name, Xml_Parser.Element, New_Node);
-      Ctx.Add_Child (New_Node, Tmp.Image, Xml_Parser.Text, New_Node);
+      Ctx.Add_Child (New_Node, Tmp.Image, Xml_Parser.Text, Tmp_Node);
       Logger.Log_Debug ("Got Int " & Tmp.Image);
     end Decode_Int;
 
@@ -237,7 +237,7 @@ package body Bencode is
       Tmp, Str : As.U.Asu_Us;
       Valid : Boolean;
       Len : Natural;
-      New_Node : Xml_Parser.Node_Type;
+      New_Node, Tmp_Node : Xml_Parser.Node_Type;
     begin
       Logger.Log_Debug ("Decoding a Byte array");
       -- Get <digits>:
@@ -285,7 +285,7 @@ package body Bencode is
         Ctx.Set_Tag_Empty (New_Node, True);
       else
         -- Add text child
-        Ctx.Add_Child (New_Node, Tmp.Image, Xml_Parser.Text, New_Node);
+        Ctx.Add_Child (New_Node, Tmp.Image, Xml_Parser.Text, Tmp_Node);
       end if;
       Logger.Log_Debug ("Got Bytes " & Tmp.Image);
       if Valid then
@@ -301,10 +301,12 @@ package body Bencode is
     -- Decode a list
     procedure Decode_List is
       Res : Boolean;
+      New_Node : Xml_Parser.Node_Type;
     begin
       Logger.Log_Debug ("Decoding a List");
       -- Insert element "List" with children
-      Ctx.Add_Child (Node, List_Name, Xml_Parser.Element, Node);
+      Ctx.Add_Child (Node, List_Name, Xml_Parser.Element, New_Node);
+      Node := New_Node;
       -- Insert items
       loop
         Logger.Log_Debug ("  Iterating in List");
@@ -322,10 +324,12 @@ package body Bencode is
     procedure Decode_Dictio is
       Prev_Bytes : Ubytes.Unb_Array;
       Res : Boolean;
+      New_Node : Xml_Parser.Node_Type;
     begin
       Logger.Log_Debug ("Decoding a Dictio");
       -- Insert element "Dictio" with children
-      Ctx.Add_Child (Node, Dictio_Name, Xml_Parser.Element, Node);
+      Ctx.Add_Child (Node, Dictio_Name, Xml_Parser.Element, New_Node);
+      Node := New_Node;
       -- Insert items by pairs
       Prev_Bytes.Set_Null;
       loop
