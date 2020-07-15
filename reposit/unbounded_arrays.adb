@@ -81,7 +81,7 @@ package body Unbounded_Arrays is
   -- PUBLIC operations --
   -----------------------
 
-  procedure Set_Null (Target : in out Unbounded_Array) is
+  procedure Set_Null (Target : out Unbounded_Array) is
   begin
    -- Optim: avoid copying Null_Unb_Array
     Free (Target.Ref);

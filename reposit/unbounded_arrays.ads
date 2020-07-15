@@ -28,7 +28,7 @@ package Unbounded_Arrays is
   -- Null unbounded array and unbounded array length
   Null_Unbounded_Array : constant Unbounded_Array;
   Null_Unb_Array : constant Unbounded_Array;
-  procedure Set_Null (Target : in out Unbounded_Array);
+  procedure Set_Null (Target : out Unbounded_Array);
   function Is_Null (Source : Unbounded_Array) return Boolean;
   function Length (Source : Unbounded_Array) return Natural;
 
