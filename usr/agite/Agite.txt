@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V37.05
+V37.06
 
 General purpose
 ---------------
@@ -93,7 +93,7 @@ editor exits and can properly refresh the status of files.
 
 viewer::
 This defines the command to be launched for viewing a file (for example
-with the xref:XView[View] button). As the xref:XConfEditor[editor] it must be a
+with the xref:XView[View] button). As the xref:XConfEditor[editor], it must be a
 GUI, for example 'xterm -e cat' or 'xterm -e vi -M'.
 
 anchor:XConfDiff[]
@@ -110,7 +110,7 @@ anchor:XConfMake[]
 make::
 This defines the command to be launched for the local compilation with the
 xref:XMake[Make] button. It shall launch a GUI. Example:
-'#xterm -e 'sh -c "make; echo -n Done.; read a"'#' +
+'#xterm -e 'sh -c "make; echo -n Done.; read a"'#'. +
 The default name for this button is "Make" and, as for the 'xterm' button,
 you can set the 'Name' attribute  of the XML element in order to specify 
 another name for the button (8 characters max).
@@ -120,8 +120,8 @@ anchor:XConfPatch[]
 patch::
 This defines the command to be launched for making a xref:XPatch[patch].
 The command will be called with the patch name (as first argument), then the
-first Hash, then the last Hash. it shall make a patch, named "$1" of
-commits "$2..$3".
+first Hash, then the last Hash. The command shall create a patch file, named
+"$1" of commits "$2..$3".
 
 anchor:XConfPeriod[]
 
@@ -191,8 +191,8 @@ You may modify these persistent values, providing that: +
 * The file 'agite.xlm' complies with the DTD 'agite.dtd'.
 
 NOTE: In case of problem (crash), a backup of the configuration file may be
-found at the same location and name as the configuration file, with the suffix
-".tmp".
+found at the same location and is named as the configuration file with the
+suffix ".tmp".
 
 Ergonomy
 --------
@@ -309,7 +309,7 @@ action that can:
 * apply to the list selection,
 * scroll the list,
 * use or change the content of get fields
-* launch a Got command...
+* launch another screen oir command...
 
 Whole screen
 ~~~~~~~~~~~~
