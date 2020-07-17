@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V37.06
+V37.07
 
 General purpose
 ---------------
@@ -1671,8 +1671,8 @@ This button returns to the xref:XDir[directory] menu.
 Push
 ~~~~
 anchor:XPush[]
-The 'push' menu allows pushing the local commits of the current
-branch or to push a tag into a selected remote repository. +
+The 'push' menu allows pushing either the local commits of the current
+branch or a tag, into a selected remote repository. +
 It shows:
 
 .Title
@@ -1712,7 +1712,7 @@ in the remote repository.) +
 
 .Back
 
-Moves back to the xref:XCommit[commit] menu without pushing.
+Moves back to the xref:XCommit[commit] or xref:XTags[tags] menu without pushing.
 
 Stash
 ~~~~~
@@ -1789,7 +1789,7 @@ Pull
 ~~~~
 anchor:XPull[]
 The 'pull' menu allows pulling the current branch (fetching and merging) or
-fetching only or checking out another branch from a remote repository. +
+only fetching it, or checking out another branch from a remote repository. +
 This is achieved through two successive screens.
 
 Remote selection
@@ -1852,17 +1852,17 @@ If you select another branch it will be fetched or checked out.
 This button shows and launches an action, depending on the remote branch
 currently selected in the list:
 
-* Pull: when the remote branch selected matches the current branch, pulls the
+* Pull: when the selected remote branch matches the current branch, pulls the
 remote branch,
-* Fetch: when the remote branch matches another local branch, fetches the
+* Fetch: when the selected remote branch matches another local branch, fetches the
 remote branch,
-* Checkout: when the remote branch does not match any local branch,
+* Checkout: when the selected remote branch does not match any local branch,
 fetches the remote branch then checks it out.
 
 .Alternate buton: Fetch
 When the main action is 'Pull' (the selected remote branch matches the local
 current branch) or 'Checkout' (the selected remote branch does not exist
-locally), this button is active and allow only fetching the remote
+locally), then this button is active and allows only fetching the remote
 branch into the local tracking branch, for a later manual merge.
 
 If there is no error then Agite returns back to the xref:XDir[directory] menu,
@@ -1888,7 +1888,7 @@ worktree),
 * 'Hard': reset the head, the index and the worktree,
 * and it is also possible to 'Cancel'.
 
-If cancelled, it goes back to the calling menu, otherwise to the
+If cancelled then it goes back to the calling menu, otherwise it returns to the
 xref:XDir[directory] menu.
 
 .Called by the xref:XDir[directory] menu,
@@ -1912,7 +1912,7 @@ Cherry-pick advanced how-to
 anchor:XCherryHowto[]
 
 NOTE: During the loop of cherry-pick, the comment of the commit is
-autmatically propagated from a commit to the next one when this is relevant.
+automatically propagated from a commit to the next one when this is relevant.
 
 Use-cases
 ~~~~~~~~~
