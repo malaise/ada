@@ -163,8 +163,8 @@ package body Fpl is
 
     -- Spherical trigo (default)
     A : constant Lat_Lon.Lat_Lon_Rad_Rec
-      := (X => Conv.Deg2Rad (Conv.Deg_Coord_Range (Ades_Lon)),
-          Y => Conv.Deg2Rad (Conv.Deg_Coord_Range (Ades_Lat)));
+      := (X => Conv.Deg2Rad (Conv.Reduct (Conv.Degree (Ades_Lon))),
+          Y => Conv.Deg2Rad (Conv.Reduct (Conv.Degree (Ades_Lat))));
     H : constant Conv.Rad_Coord_Range
       := Conv.Deg2Rad (Conv.Reduct (Conv.Degree (Ang)
                                   + Conv.Degree (Declination)));
