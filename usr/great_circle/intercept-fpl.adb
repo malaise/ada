@@ -178,12 +178,13 @@ package body Fpl is
     procedure Normalize is
     begin
       -- Normalize Point Lat (-90 .. 90)
+      if Lat >= 360.0 then
+        Lat := Lat - 360.0;
+      elsif Lat <= -360.0 then
+        Lat := Lat + 360.0;
+      end if;
       if Lat > 90.0 then
-        Lat := 180.0 - Lat;
-        Lon := Lon + 180.0;
-      elsif Lat < -90.0 then
-        Lat := -(180.0 + Lat);
-        Lon := Lon + 180.0;
+        Lat := - (360.0 - Lat);
       end if;
       -- Normalize Lon (-180 .. 180)
       if Lon >= 360.0 then
@@ -211,8 +212,12 @@ package body Fpl is
 
     -- Spherical trigo,
     B := Great_Circle.Apply_Route (A, H, D);
+    Logger.Log_Debug ("  A:" & A.X'Img & " " & A.Y'Img
+                     & " B:" & B.X'Img & " " & B.Y'Img);
     Lat := My_Math.Real (Conv.Rad2Deg (B.Y));
     Lon := My_Math.Real (Conv.Rad2Deg (B.X));
+    Logger.Log_Debug ("  Degs: " & Image (Lat)
+                    & " " & Image (Lon));
     Normalize;
     Logger.Log_Debug ("  Spherical trigo => " & Image (Lat)
                     & " " & Image (Lon));
