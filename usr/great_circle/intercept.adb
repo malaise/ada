@@ -93,13 +93,16 @@ procedure Intercept is
         & Argument.Get_Program_Name & " <dme> | <app>");
     Basic_Proc.Put_Line_Error ("  <dme>   ::= -d | --dme");
     Basic_Proc.Put_Line_Error (
-        "  <app>   ::= [ <short> ] <QfU> <Heading> [ <fpl> ]");
+        "  <app>   ::= [ <short> ] <QfU> <Heading> [ <fpl> | <dbfpl>]");
     Basic_Proc.Put_Line_Error ("  <short> ::= -s | --short");
     Basic_Proc.Put_Line_Error ("  <fpl>   ::= <mode> <decl> <file_name>");
     Basic_Proc.Put_Line_Error (
         "  <mode> ::= -a | --append | -A | --append_alternate");
     Basic_Proc.Put_Line_Error (
         "  <decl> ::= + | - | E | W <val>");
+    Basic_Proc.Put_Line_Error (
+        "  <dbfpl> ::= <dbcmd> <alt> <lat> <lon> <decl>");
+    Basic_Proc.Put_Line_Error ("  <dbcmd> ::= --debug | --debug_alternate");
     Basic_Proc.Put_Line_Error ("Angles from 0 to 359");
     Basic_Proc.Set_Error_Exit_Code;
     raise Abort_Error;

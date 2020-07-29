@@ -4,7 +4,7 @@ with As.U.Utils, Str_Util.Regex,
 with Conv, Lat_Lon, String_Util, Great_Circle;
 separate (Intercept)
 package body Fpl is
-  -- Patchig a FPL file: Patch policy, None is file is empty
+  -- Patchig a FPL file: file name and content
   File_Name : As.U.Asu_Us;
   File : Text_Line.File_Type;
   Fpl_Data : As.U.Utils.Asu_Ua.Unb_Array;
@@ -15,8 +15,10 @@ package body Fpl is
   Ades_Alt, Ades_Lat, Ades_Lon : My_Math.Real;
   -- Declination at Ades
   Declination : My_Math.Real;
+  -- Debug mode (no file)
+  Debug : Boolean;
 
-  -- Ilage or a real
+  -- Image of a real
   package Real_Io is new Ada.Text_Io.Float_Io (My_Math.Real);
   function Image (R : My_Math.Real) return String is
     Str : String (1 .. 12);
@@ -39,19 +41,38 @@ package body Fpl is
     use type My_Math.Real, Sys_Calls.File_Kind_List;
   begin
     if Argument.Get_Nbre_Arg = Next_Arg + 4 then
+      -- Append Declination File
       Argument.Get_Parameter (Arg, Occurence => Next_Arg + 2);
       if    Arg.Image = "-a" or else Arg.Image = "--append" then
+        Debug := False;
         Policy := First;
       elsif Arg.Image = "-A" or else Arg.Image = "--append_alternate" then
+        Debug := False;
+        Policy := Alternate;
+      else
+        raise Argument_Error;
+      end if;
+    elsif Argument.Get_Nbre_Arg = Next_Arg + 6 then
+      -- Debug ALtitude Latitude Longitude Declination
+      Argument.Get_Parameter (Arg, Occurence => Next_Arg + 2);
+      if    Arg.Image = "--debug" then
+        Debug := True;
+        Policy := First;
+      elsif Arg.Image = "--debug_alternate" then
+        Debug := True;
         Policy := Alternate;
       else
         raise Argument_Error;
       end if;
     else
-        raise Argument_Error;
+      raise Argument_Error;
     end if;
     -- Get declination, sign or E or W, then value
-    Argument.Get_Parameter (Arg, Occurence => Next_Arg + 3);
+    if Debug then
+      Argument.Get_Parameter (Arg, Occurence => Next_Arg + 6);
+    else
+      Argument.Get_Parameter (Arg, Occurence => Next_Arg + 3);
+    end if;
     if Arg.Length < 2 then
       raise Argument_Error;
     end if;
@@ -74,6 +95,25 @@ package body Fpl is
       raise Argument_Error;
     end if;
     Logger.Log_Debug ("Got declination " & Image (Declination));
+
+    -- Debug mode, read Alt, Lat and Lon from arguments, no parsing of file
+    if Debug then
+      Ades_Alt := Gets.Get_Real (
+          Argument.Get_Parameter (Occurence => Next_Arg + 3));
+      Logger.Log_Debug ("ADES Alt " & Image (Ades_Alt));
+      Ades_Lat := Gets.Get_Real (
+          Argument.Get_Parameter (Occurence => Next_Arg + 4));
+      Logger.Log_Debug ("ADES Lat " & Image (Ades_Lat));
+      Ades_Lon := Gets.Get_Real (
+          Argument.Get_Parameter (Occurence => Next_Arg + 5));
+      Logger.Log_Debug ("ADES Lon " & Image (Ades_Lon));
+      Numenr := 1;
+      -- Last line
+      Fpl_Data.Append (As.U.Tus ("1 ADES ADES " & Image (Ades_Alt)
+                     & " " & Image (Ades_Lat) & " " & Image (Ades_Lon)));
+
+      return;
+    end if;
 
     -- Get file name
     Argument.Get_Parameter (File_Name, Occurence => Next_Arg + 4);
@@ -236,7 +276,11 @@ package body Fpl is
     -- Write
     Line.Append (" " & Image (Lat) & " " & Image (Lon));
     Logger.Log_Debug ("Appending line: " & Line.Image);
-    Fpl_Data.Insert (Fpl_Data.Length, Line);
+    if Fpl_Data.Is_Null then
+      Fpl_Data.Append (Line);
+    else
+      Fpl_Data.Insert (Fpl_Data.Length, Line);
+    end if;
   end Append_App;
 
   -- Save Fpl file
@@ -245,6 +289,13 @@ package body Fpl is
     Path, Prefix, Suffix : As.U.Asu_Us;
     Line : As.U.Asu_Us;
   begin
+    if Debug then
+      -- Debug => no file
+      for I in 1 .. Fpl_Data.Length loop
+        Basic_Proc.Put_Line_Output (Fpl_Data.Element (I).Image);
+      end loop;
+      return;
+    end if;
     -- Update Numenr
     Line := Fpl_Data.Element (Numenr_Line);
     Line.Append (Images.Integer_Image (Numenr));
