@@ -1,0 +1,9 @@
+#!/bin/bash
+# Invert order and make strings, before xxx.mcd
+
+ARGS=""
+while [ -n "$1" ] ; do
+  ARGS=":$1: $ARGS"
+  shift
+done
+mcdt `basename $0`.mcd $ARGS

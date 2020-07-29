@@ -1,0 +1,49 @@
+# Convert arguments dms <-> msd
+# Each argument is a string, either "Deg.Frac" or "Deg.Mn.Ss[.Frac]"
+# So Either 1 dot (Deg to Dms), or 2 or 3 dots (Dms to Deg)
+
+# Invalid argument in reg a
+[ "ERROR: Invalid argument """ put a pushr put
+ """. Expect either Deg.Frac or Deg.Mm.Ss[.Frac]" putl
+ssize popn 1 setexit retall
+] E popr
+
+# Remove dot at pos A from B, if A is not null
+[
+dup isntnull [ dup strdel ] [ pop ] ifte call
+] R popr
+
+# True debugall
+3.009 format
+# Main loop on arguments
+[
+  ssize isnull ifret
+  # l is length
+  a copyr strlen l popr
+  # i is indexe of first dot
+  a pushr 1 "." strloc i copyr isnull E pushr ifcall
+  i pushr l pushr = E pushr ifcall
+  # j and k are possible indexes of second and third dots
+  a pushr 2 "." strloc j copyr l pushr = E pushr ifcall
+  j pushr isntnull [ a pushr 3 "." strloc k copyr l pushr = E pushr ifcall ]
+  ifcall
+  # Dms or Msd
+  j pushr isnull
+  # Dms if j is 0 => -Deg°Mm'Ss.xxx"
+  [
+    a pushr canreal ~ E pushr ifcall a pushr strreal
+    dms -7 roundat 12 4 "0" normal
+    5 5 strdel 5 "°" strins 9 "'" strins 12 "." strins 16 """" strins
+    putl
+  ]
+  # Msd otherwise => -Deg.xxxxxxx°
+  [
+    # Remove dots at k then j
+    a pushr k pushr R pushr call j pushr R pushr call
+    dup canreal ~ E pushr ifcall strreal
+    msd -7 roundat 12 4 "0" normal put "°" putl
+  ]
+  ifte call
+  # End of loop
+L pushr retacal ] L copyr call
+
