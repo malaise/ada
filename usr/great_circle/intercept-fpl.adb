@@ -216,26 +216,35 @@ package body Fpl is
     Line : As.U.Asu_Us;
 
     procedure Normalize is
+      procedure Reduce (X : in out Real) is
+      -- Reduce lat or lon within 0 .. 360
+      begin
+        if X >= 360.0 then
+          X := X - 360.0;
+        elsif X < 0.0 then
+          X := X + 360.0;
+        end if;
+      end Reduce;
     begin
-      -- Normalize Point Lat (-90 .. 90)
-      if Lat >= 360.0 then
-        Lat := Lat - 360.0;
-      elsif Lat <= -360.0 then
-        Lat := Lat + 360.0;
-      end if;
-      if Lat > 90.0 then
-        Lat := - (360.0 - Lat);
+      -- Normalize Lat (-90 .. 90)
+      Reduce (Lat);
+      if Lat > 90.0 and then Lat <= 180.0 then
+        -- Crossed the north pole => invert lon
+        Lat := 180.0 - Lat;
+        Lon := Lon + 180.0;
+      elsif Lat > 180.0 and then Lat <= 270.0 then
+        -- Crossed the south pole => invert lon
+        Lat := 180.0 - Lat;
+        Lon := Lon + 180.0;
+      elsif Lat > 270.0 then
+        -- Radian leads to south lat in 270 .. 360 => make it negative
+        Lat := -(360.0 - Lat);
       end if;
       -- Normalize Lon (-180 .. 180)
-      if Lon >= 360.0 then
-        Lon := Lon - 360.0;
-      elsif Lon <= -360.0 then
-        Lon := Lon + 360.0;
-      end if;
+      Reduce (Lon);
+      -- Radian leads to west lat in 180 .. 360 => make it negative
       if Lon > 180.0 then
-        Lon := -360.0 + Lon;
-      elsif Lon <= -180.0 then
-        Lon := 360.0 + Lon;
+        Lon := Lon - 360.0;
       end if;
     end Normalize;
 
