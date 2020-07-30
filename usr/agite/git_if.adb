@@ -542,6 +542,8 @@ package body Git_If is
                         Done : out Boolean) is
     Line : As.U.Asu_Us;
     Ind : Natural;
+    Tab1 : Positive;
+    Tab2 : Natural;
     Moved : Boolean;
     File : Commit_Entry_Rec;
   begin
@@ -665,10 +667,15 @@ package body Git_If is
         Flow.Move_To (Command.Res_Mng.Dyn_List.Prev);
         exit;
       end if;
+      Logger.Log_Debug ("  Block got line <" & Line.Image & "<");
       Assert (Line.Length > 2);
-      Assert (Line.Element (2) = Aski.Ht);
+      Tab1 := Str_Util.Locate (Line.Image, Aski.Ht & "", Occurence => 1);
+      Tab2 := Str_Util.Locate (Line.Image, Aski.Ht & "", Occurence => 2);
+      if Tab2 = 0 then
+        Tab2 := Line.Length + 1;
+      end if;
       File.Status := Line.Element (1);
-      File.File := Line.Uslice (3, Line.Length);
+      File.File := Line.Uslice (Tab1 + 1, Tab2 - 1);
       Files.Insert (File);
       Logger.Log_Debug ("  Block got: " & File.Status
                       & " " & File.File.Image);
