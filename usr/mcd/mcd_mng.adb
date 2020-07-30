@@ -93,8 +93,8 @@ package body Mcd_Mng is
     -- Real->Real
     function Int     (X : Item_Rec) return Item_Rec;
     function Frac    (X : Item_Rec) return Item_Rec;
-    function Dms     (X : Item_Rec) return Item_Rec;
-    function Msd     (X : Item_Rec) return Item_Rec;
+    function Degms   (X : Item_Rec) return Item_Rec;
+    function Degfr   (X : Item_Rec) return Item_Rec;
     function Sqrt    (X : Item_Rec) return Item_Rec;
 
     -- -> Inte
@@ -707,13 +707,13 @@ package body Mcd_Mng is
           -- if A within inte then push round(A) elas push(A)
           Pop(A); Push (Operations.Roundif(A));
           S := A;
-        when Dms =>
+        when Degms =>
           -- push A converted to deg.MiSe
-          Pop(A); Push (Operations.Dms(A));
+          Pop(A); Push (Operations.Degms(A));
           S := A;
-        when Msd =>
+        when Degfr =>
           -- push A (deg.MiSe) converted to A.frac
-          Pop(A); Push (Operations.Msd(A));
+          Pop(A); Push (Operations.Degfr(A));
           S := A;
         when Mkfrac =>
           -- push fraction B:A

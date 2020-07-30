@@ -198,8 +198,8 @@ Numerical conversions
   Minint : push smallest inte           // -9223372036854775808
   Roundif : push Round(A) if A is within inte else push A
                                         // A inte or real
-  Dms : convert A.frac into A.MinSecMillis
-  Msd : convert A.MinSecMillis into A.frac
+  Degms : convert A.frac into A.MinSecMillis
+  Degfr : convert A.MinSecMillis into A.frac
   Mkfrac : push B:A                     // A and B arbi, R frac
   Numerof : push numerator of A         // A frac, R arbi
   Denomof : push denominator of A       // A frac, R arbi

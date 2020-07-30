@@ -21,13 +21,13 @@ b swap C pushr call
 a swap C pushr call
 
 # Store long offset and factor (g->d)
-2.2014025 msd o popr
+2.2014025 degfr o popr
 180.0 200.0 / f popr
 "deg" u popr
 
-# Set a and b in msd, update offset and factor if d->g
+# Set a and b in Deg.Frac, update offset and factor if d->g
 m pushr isnull
-[ "grad" u popr a pushr msd a popr b pushr msd b popr
+[ "grad" u popr a pushr degfr a popr b pushr degfr b popr
 o pushr +- o popr f pushr 1.0 swap / f popr ] ifcall
 
 # Compute lat and long
@@ -36,9 +36,9 @@ b pushr
 m pushr isnull [ o pushr + f pushr * ] [ f pushr * o pushr + ] ifte call
 b popr
 
-# Set a and b in dms if g->d
+# Set a and b in DegMinSec if g->d
 m pushr ispos
-[ a pushr dms a popr b pushr dms b popr ] ifcall
+[ a pushr degms a popr b pushr degms b popr ] ifcall
 
 # Put result
 "Lat: " put a pushr put " Lon: " put b pushr put " " put u pushr putl

@@ -15,7 +15,7 @@ dup [ toreal ] swap isinte swap ifcall
 dup 100.0 * frac Z pushr call ~ E pushr ifcall
 # Frac < 60
 dup frac 100.0 * 60.0 >= E pushr ifcall
-msd
+degfr
 ] C popr
 
 # Loop
@@ -39,7 +39,7 @@ L pushr retacal ] L popr
 L pushr call
 
 # Display result
-s pushr dms dup Trunc 5 format put "h" put
+s pushr degms dup Trunc 5 format put "h" put
 frac 100.0 * round
 dup 10 < [ "0" put 1 format putl ] [ 2 format putl ] ifte call
 

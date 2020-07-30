@@ -23,7 +23,7 @@ while [ "$1" != "" ] ; do
   fi
   case "$1" in
     "+" | "-" )
-      num2="$2 toreal msd"
+      num2="$2 toreal degfr"
     ;;
     "*" | "/" )
       num2="$2 toreal"
@@ -35,5 +35,5 @@ while [ "$1" != "" ] ; do
   shift
   shift
 done
-echo "$num1" toreal msd "$num" :format_time.mcd: readfile strprog call putl | mcd
+echo "$num1" toreal degfr "$num" :format_time.mcd: readfile strprog call putl | mcd
 

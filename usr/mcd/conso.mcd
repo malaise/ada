@@ -30,7 +30,7 @@ p C pushr call
 
 # Check flight time
 0.0 t pushr > [ E pushr call ] ifcall
-t pushr msd t popr
+t pushr degfr t popr
 
 # Check 0 <= percent <= 200 then compute weight
 0 p pushr > [ E pushr call ] ifcall

@@ -48,8 +48,8 @@ d pushr swap C pushr call
 # Current time must be < previous if not a delta
 d pushr ~ [ dup p pushr >= E pushr ifcall dup p popr ] ifcall
 
-# Convert dms to real
-msd
+# Convert DegMinSec to real
+degfr
 # Either substract to s if entry, add to s if leave, switch oper
 # Or add delta value
 d pushr ~ [ s pushr swap [ - ] [ + ] e pushr dup ~ e popr etfi call s popr ]

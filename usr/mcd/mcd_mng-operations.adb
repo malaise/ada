@@ -762,7 +762,7 @@ package body Operations is
   end Roundif;
 
 
-  function Dms (X : Item_Rec) return Item_Rec is
+  function Degms (X : Item_Rec) return Item_Rec is
     I, M, S, F, R : My_Math.Real;
   begin
     if X.Kind /= Real then
@@ -795,9 +795,9 @@ package body Operations is
     R := I + M / 100.0 + S / 10000.0 + F / 1_0000.0;
 
     return (Kind => Real, Val_Real => R);
-  end Dms;
+  end Degms;
 
-  function Msd (X : Item_Rec) return Item_Rec is
+  function Degfr (X : Item_Rec) return Item_Rec is
     I, M, S, F, R : My_Math.Real;
   begin
     if X.Kind /= Real then
@@ -826,7 +826,7 @@ package body Operations is
     R := I + M / 60.0 + S / 3600.0;
 
     return (Kind => Real, Val_Real => R);
-  end Msd;
+  end Degfr;
 
   -- Real,Arbi,Inte->Real,Arbi,Inte
   function Sqrt (X : Item_Rec) return Item_Rec is

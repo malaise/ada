@@ -207,6 +207,17 @@ fi
 comp err nul
 echo "OK"
 
+title degmsfr
+res=`degmsfr -123.27.24.441`
+if [ "$res" != "-123.4567892°" ] ; then
+  error "degmsfr 123.27.24.441"
+fi
+res=`degmsfr -123.4567892`
+if [ "$res" != "-123°27'24.441\"" ] ; then
+  error "degmsfr -123.4567892"
+fi
+echo "OK"
+
 title degra
 launch degra 2.5 30 d
 echo "Lat: 3.148148148E+000 Lon: 3.073641204E+001 grad" > exp
