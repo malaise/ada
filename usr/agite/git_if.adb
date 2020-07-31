@@ -669,16 +669,26 @@ package body Git_If is
       end if;
       Logger.Log_Debug ("  Block got line <" & Line.Image & "<");
       Assert (Line.Length > 2);
+      File.Status := Line.Element (1);
+      -- Recent versions of Git track rename as "Rxxx Ht OldFile Ht NewFile"
       Tab1 := Str_Util.Locate (Line.Image, Aski.Ht & "", Occurence => 1);
       Tab2 := Str_Util.Locate (Line.Image, Aski.Ht & "", Occurence => 2);
       if Tab2 = 0 then
-        Tab2 := Line.Length + 1;
+        File.File := Line.Uslice (Tab1 + 1, Line.Length);
+      else
+        File.File := Line.Uslice (Tab1 + 1, Tab2 - 1);
       end if;
-      File.Status := Line.Element (1);
-      File.File := Line.Uslice (Tab1 + 1, Tab2 - 1);
       Files.Insert (File);
       Logger.Log_Debug ("  Block got: " & File.Status
                       & " " & File.File.Image);
+      -- After a rename, append a record "+ NewFile"
+      if tab2 /= 0 then
+        File.Status := '+';
+        File.File := Line.Uslice (Tab2 + 1, Line.Length);
+        Files.Insert (File);
+        Logger.Log_Debug ("  Block appended: " & File.Status
+                        & " " & File.File.Image);
+      end if;
       exit when not Moved;
     end loop;
 

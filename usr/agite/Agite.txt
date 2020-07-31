@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V37.08
+V38.00
 
 General purpose
 ---------------
@@ -1248,14 +1248,28 @@ by clicking on 'PpHash',
 * The date of the commit, that you can alternatively copy with 'CpDate',
 * The comment of the commit (up to seven lines), that you can also alternatively
 copy with 'CpComm', 
-* The list of all the files in the commit, each preceded by a letter:
-** M Modified,
-** T Type modified,
+* The list of all the files in the commit, each preceded by a letter
+indicating the file status:
 ** A Added,
-** D Deleted.
+** C Copied,
+** D Deleted,
+** M Modified,
+** R Renamed,
+** T Type modified,
+** U Unmerged,
+** X Unknown,
+** B paring broken.
 
 A specific entry, "/", is added on top of the list, which represents the root of
 the current repository.
+
+After each Renamed entry (containing the initial name) a specific entry "+" is
+inserted with the new name.
+
+NOTE: Some file statuses above are not all implemented by old versions of GIT.
+For example, old versions of GIT show a rename as a "D" and a "A" (and all
+the files of the commit are sorted by alphabetical order), which prevents
+Agite from showing the rename.
 
 .Actions
 
