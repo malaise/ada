@@ -59,7 +59,6 @@ package body Details is
         Utils.X.Encode_Field (Branch, Afpx_Xref.Details.Target_Branch_Name);
       end if;
 
-
       -- Allow modifications (Hist that can recall Detail, restore) or not
       Afpx.Set_Field_Activation (Afpx_Xref.Details.Restore, Allow_Modif);
 

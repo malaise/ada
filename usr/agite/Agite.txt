@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V38.00
+V38.01
 
 General purpose
 ---------------
@@ -1266,10 +1266,8 @@ the current repository.
 After each Renamed entry (containing the initial name) a specific entry "+" is
 inserted with the new name.
 
-NOTE: Some file statuses above are not all implemented by old versions of GIT.
-For example, old versions of GIT show a rename as a "D" and a "A" (and all
-the files of the commit are sorted by alphabetical order), which prevents
-Agite from showing the rename.
+NOTE: Some file statuses above may not all be implemented by old versions of
+GIT.
 
 .Actions
 
@@ -2224,7 +2222,7 @@ version 1.7.0 or above:
 --date=iso -n 1 <HSA1_hash> \--',
 
 * A function gets the details of a commit by calling
-'git log --name-status --date=iso -n 1 <HSA1_hash> \--',
+'git log --name-status -M --date=iso -n 1 <HSA1_hash> \--',
 
 * A function lists the remote repositories by calling 'git remote',
 

@@ -856,6 +856,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("log");
     Cmd.Cat ("--name-status");
+    Cmd.Cat ("-M");
     Cmd.Cat ("--date=iso");
     Cmd.Cat ("-n");
     Cmd.Cat ("1");
