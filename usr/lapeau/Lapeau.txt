@@ -1,6 +1,6 @@
 La Peau
 =======
-V1.1
+V2.0
 
 "La Peau" is a solitaire card game.
 
@@ -31,7 +31,8 @@ The game can be played with one of the following stacking policies:
 Heart, Diamond),
 image:LapeauFullMono.png["MonoSuit",title="Same suit",align="left",width="75%"]
 
- * Alternate colors: The colors (red / black) must alternate.
+ * Alternate colors: The colors (red / black) must alternate, which is the
+default.
 image:LapeauFullAlt.png["AltColor",title="Alternate colors",align="left",width="75%"]
 
 Done stacks
@@ -109,19 +110,22 @@ possible to undo.
 Stacking policy
 ~~~~~~~~~~~~~~~
 anchor:XPolicy[]
-There are two different policies for stacking the cards in the playing area
-
-.Same suit
-This is the default policy, where the cards can be stacked only when they
-are of the same suit (and in decrescent order).
+There are two different policies for stacking the cards in the playing area:
 
 .Alternate color
-When this policy is selected, the cards can be stacked only when their colors
-(red/black) are alternated (and in decrescent order). 
+This is the default policy, where the cards can be stacked only when their
+colors (red/black) are alternated (and in decrescent order). +
 This variant has more chance to be achievable.
 
+.Same suit
+When this policy is selected, the cards can be stacked only when they
+are of the same suit (and in decrescent order).
+
 This behaviour is triggered by launching the program with the argument
-'--alternate'.
+'--same'.
+
+NOTE: For backward compatibility, the program argument '--alternate' is supported
+but has no effect because this policy is the default one.
 
 Moving to Done stacks
 ~~~~~~~~~~~~~~~~~~~~~
@@ -220,10 +224,8 @@ game to start with.
 
 Why the name 'La Peau'
 ----------------------
-This game was introduced in my familly by a great-uncle, whose surname was
-"La peau".
-
-This came from "La peau de nénuphar".
-
-But nobody anymore can explain what it means...
+This game was introduced in my family by a great-uncle, whose surname was
+"La Peau". +
+This nickname came from "la peau de nénuphar", but nobody anymore can explain
+why...
 

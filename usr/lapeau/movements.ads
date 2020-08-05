@@ -6,7 +6,7 @@ package Movements is
 
   -- Play stack validity: Either same suit or alternate color
   type Stack_Policy_List is (Same_Suit, Alternate_Color);
-  Stack_Policy : Stack_Policy_List := Same_Suit;
+  Stack_Policy : Stack_Policy_List := Alternate_Color;
 
   -- Can source card be put on target, basic card/card validity
   function Is_Valid (Source, Target : Cards.Card_Access) return Boolean;

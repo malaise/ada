@@ -33,6 +33,8 @@ begin
     elsif Argument.Get_Nbre_Arg = 1 then
       if Argument.Get_Parameter = "--alternate" then
         Movements.Stack_Policy := Movements.Alternate_Color;
+      elsif Argument.Get_Parameter = "--same" then
+        Movements.Stack_Policy := Movements.Same_Suit;
       else
         Game_Num := Memory.Game_Range'Value (Argument.Get_Parameter);
       end if;
@@ -41,8 +43,16 @@ begin
         Movements.Stack_Policy := Movements.Alternate_Color;
         Game_Num := Memory.Game_Range'Value (
             Argument.Get_Parameter (Occurence => 2));
+      elsif Argument.Get_Parameter (Occurence => 1) = "--same" then
+        Movements.Stack_Policy := Movements.Same_Suit;
+        Game_Num := Memory.Game_Range'Value (
+            Argument.Get_Parameter (Occurence => 2));
       elsif Argument.Get_Parameter (Occurence => 2) = "--alternate" then
         Movements.Stack_Policy := Movements.Alternate_Color;
+        Game_Num := Memory.Game_Range'Value (
+            Argument.Get_Parameter (Occurence => 1));
+      elsif Argument.Get_Parameter (Occurence => 2) = "--same" then
+        Movements.Stack_Policy := Movements.Same_Suit;
         Game_Num := Memory.Game_Range'Value (
             Argument.Get_Parameter (Occurence => 1));
       end if;
