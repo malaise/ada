@@ -7,7 +7,7 @@ AFPX := true
 AFPX_XREF := afpx_xref
 
 SUBUNITS := agite.timer branch.rebase_mng tags.list tags.add history.patch \
-            history.list_renames
+            history.rename
 EXES := agite agite.stat t_git
 
 CLIBS := $(X11_SLIBS)

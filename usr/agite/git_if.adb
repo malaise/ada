@@ -576,7 +576,7 @@ package body Git_If is
     if not Moved then
       -- No comment and last block
       Logger.Log_Debug ("  Block done cause no comment nor change");
-      Done := not Moved;
+      Done := True;
       return;
     end if;
 
@@ -642,7 +642,7 @@ package body Git_If is
     if not Details then
       -- No changes if no detail
       -- The Moved is set to False when reaching the end
-      -- Our Done shall be False as long as MOved
+      -- Our Done shall be False as long as Moved
       Logger.Log_Debug ("  Block done cause no details requested");
       Done := not Moved;
       return;
@@ -656,6 +656,7 @@ package body Git_If is
 
     -- Several changes until empty_line or end
     Ind := 0;
+    Done := False;
     loop
       Flow.Read (Line, Moved => Moved);
       exit when Line.Length = 0;
@@ -670,7 +671,7 @@ package body Git_If is
       Logger.Log_Debug ("  Block got line <" & Line.Image & "<");
       Assert (Line.Length > 2);
       File.Status := Line.Element (1);
-      -- Recent versions of Git track rename as "Rxxx Ht OldFile Ht NewFile"
+      -- Git tracks rename as "Rxxx Ht OldFile Ht NewFile"
       Tab1 := Str_Util.Locate (Line.Image, Aski.Ht & "", Occurence => 1);
       Tab2 := Str_Util.Locate (Line.Image, Aski.Ht & "", Occurence => 2);
       if Tab2 = 0 then
@@ -689,11 +690,13 @@ package body Git_If is
         Logger.Log_Debug ("  Block appended: " & File.Status
                         & " " & File.File.Image);
       end if;
-      exit when not Moved;
+      if not Moved then
+        Done := True;
+        exit;
+      end if;
     end loop;
 
     Logger.Log_Debug ("  Block done.");
-    Done := True;
   exception
     when others =>
       Basic_Proc.Put_Line_Error ("At line "
@@ -712,14 +715,17 @@ package body Git_If is
   -- Returns wether the end of list is reached at or before Max
   -- May raise anonymous exception Log_Error
   procedure List_Log (Branch, Path : in String;
+                      From_Rev : in String;
                       Max : in Natural;
                       Sparse : in Boolean;
+                      Status : in Boolean;
                       Log : in out Log_List;
                       End_Reached : out Boolean) is
     Cmd : Many_Strings.Many_String;
     Done : Boolean;
     Log_Entry : Log_Entry_Rec;
     N_Read : Natural;
+    Files : aliased Commit_List;
   begin
     -- Init result
     Log.Delete_List;
@@ -737,9 +743,13 @@ package body Git_If is
     if Sparse then
       Cmd.Cat ("--sparse");
     end if;
+    if Status then
+      Cmd.Cat ("--name-status");
+    end if;
     if Branch /= "" then
       Cmd.Cat (Branch);
     end if;
+    Cmd.Cat (From_Rev);
     if Path /= "" then
       Cmd.Cat ("--");
       Cmd.Cat (Pt (Path));
@@ -760,8 +770,11 @@ package body Git_If is
     Out_Flow_1.List.Rewind;
     N_Read := 0;
     loop
-      Read_Block (Out_Flow_1.List, False, Log_Entry.Hash, Log_Entry.Merged,
-                  Log_Entry.Date, Log_Entry.Comment, null, Done);
+      Read_Block (Out_Flow_1.List, Status, Log_Entry.Hash, Log_Entry.Merged,
+                  Log_Entry.Date, Log_Entry.Comment, Files'Access, Done);
+      if Status then
+        Log_Entry.Extra.Set (Files.Access_Current.Status);
+      end if;
       Log.Insert (Log_Entry);
       N_Read := N_Read + 1;
       exit when N_Read = Max or else Done;

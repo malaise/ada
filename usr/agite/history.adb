@@ -63,7 +63,7 @@ package body History is
       return Git_If.No_Hash;
     end if;
     -- Log its HEAD
-    Git_If.List_Log (Remote.Image, "", 1, True, Remotes, Dummy_End);
+    Git_If.List_Log (Remote.Image, "", "", 1, True, False, Remotes, Dummy_End);
     if Remotes.Is_Empty then
       return Git_If.No_Hash;
     end if;
@@ -122,13 +122,15 @@ package body History is
   function Patch (All_Logs, Selected : in out Git_If.Log_List;
                   On_Root : in Boolean) return Boolean is separate;
 
+
   -- List history of a file, following renames
+  -- Log is initially cleared
   -- The Merged flag of the commit indicates that the commit maked a rename
   -- The Extra field of the commit  contains the name of the file
-  procedure List_Renames (Branch, Root, Path : in String;
-                          Max : in Natural;
-                          Log : in out Git_If.Log_List;
-                          End_Reached : out Boolean) is separate;
+  procedure Rename (Branch, Root, Path : in String;
+                    Max : in Natural;
+                    Log : in out Git_If.Log_List;
+                    End_Reached : out Boolean) is separate;
 
   -- Handle the history of a file or dir
   --  possibly on a given branch
@@ -625,21 +627,21 @@ package body History is
           --  fails if we provide the full (Root) path
           --  but is OK with ""
           -- So use "" if we are in root and if target dir is root
-          Git_If.List_Log (Branch, "", Max, True, Logs, All_Read);
+          Git_If.List_Log (Branch, "", "", Max, True, False, Logs, All_Read);
         else
           -- Use root as the target dir name and set sparse for the full
           --  history
-          Git_If.List_Log (Branch, Root, Max, True, Logs, All_Read);
+          Git_If.List_Log (Branch, Root, "", Max, True, False, Logs, All_Read);
         end if;
       elsif Is_File then
         -- Log the file, following renames
-        List_Renames (Branch, Root, Path & Name, Max, Logs, All_Read);
+        Rename (Branch, Root, Path & Name, Max, Logs, All_Read);
       else
-        -- Log the non-root target
+        -- Log the non-root target dir
         -- Not sparse (so no merge) otherwise we get the history of the full
         --  repository
-        Git_If.List_Log (Branch, Root & Path & Name, Max, False, Logs,
-                         All_Read);
+        Git_If.List_Log (Branch, Root & Path & Name, "", Max, False, False,
+                         Logs, All_Read);
       end if;
     end Reread;
 

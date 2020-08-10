@@ -1,13 +1,12 @@
 separate (History)
 -- Read history of a file, following renames
-procedure List_Renames (Branch, Root, Path : in String;
-                        Max : in Natural;
-                        Log : in out Git_If.Log_List;
-                        End_Reached : out Boolean) is
+
+procedure Rename (Branch, Root, Path : in String;
+                  Max : in Natural;
+                  Log : in out Git_If.Log_List;
+                  End_Reached : out Boolean) is
   -- Intermediate list
   Llog : Git_If.Log_List;
-  -- First life
-  First : Boolean;
   -- Current file name
   File : As.U.Asu_Us;
   -- Number of allowed remaining entries
@@ -20,12 +19,16 @@ procedure List_Renames (Branch, Root, Path : in String;
   Commits : aliased Git_If.Commit_List;
   Commit : Git_If.Commit_Entry_Rec;
   Found, Moved : Boolean;
+  -- File status in the commit
+  Status : Character;
+  -- First life
+  First : Boolean;
 
   use type As.U.Asu_Us, Git_If.Log_Mng.Ll_Natural;
 begin
   Log.Delete_List;
-  File.Set (Path);
   First := True;
+  File.Set (Path);
   -- Loop for each commit
   loop
     -- Compute allowed remains entres
@@ -38,11 +41,11 @@ begin
       end if;
     end if;
     -- Log (No Sparse otherwise we get the whole repository)
-    Git_If.List_Log (Branch, Root & File.Image, Remain, False, Llog,
-                     End_Reached);
+    Git_If.List_Log (Branch, Root & File.Image, Hash.Image, Remain,
+                     False, True, Llog, End_Reached);
     exit when Llog.Is_Empty;
 
-    -- If this not the first life of the file, then the first entry
+    -- If this is not the first life of the file, then the first entry
     --  is a dup of the last entry of previous life
     if not First then
       Llog.Rewind;
@@ -57,16 +60,22 @@ begin
       if Llog.Access_Current.Merged then
         Llog.Access_Current.Merged := False;
       end if;
+      Status := Llog.Access_Current.Extra.Element (1);
       Llog.Access_Current.Extra := File;
+      if Status = 'A' then
+        -- Clean the tail
+        while Llog.Get_Position /= Llog.List_Length loop
+          Llog.Move_To;
+          Llog.Delete (Git_If.Log_Mng.Prev);
+        end loop;
+        exit;
+      end if;
       exit when Llog.Get_Position = Llog.List_Length;
       Llog.Move_To;
     end loop;
 
     -- Append this (new) history
     Log.Insert_Copy (Llog);
-
-    -- No chance to find a rename if we didn't reach the origin of the file
-    exit when not End_Reached;
 
     -- Look for renaming to current file in this commit
     Git_If.List_Commit (Log.Access_Current.Hash.Image, Hash, Merged, Date,
@@ -95,5 +104,6 @@ begin
 
   end loop;
   Log.Rewind;
-end List_Renames;
+
+end Rename;
 
