@@ -83,6 +83,7 @@ package Git_If is
     Merged : Boolean := False;
     Date : Iso_Date := (others => ' ');
     Comment : Comment_2;
+    Extra : As.U.Asu_Us;
   end record;
   procedure Set (To : out Log_Entry_Rec; Val : in Log_Entry_Rec);
   package Log_Mng is new Long_Long_Limited_List (Log_Entry_Rec, Set);
@@ -136,8 +137,10 @@ package Git_If is
   procedure Launch_Diff (Differator, File_Name : in String);
 
   -- Launch a diff (asynchronous) from Comp to Ref
-  procedure Launch_Delta (Differator, File_Name : in String;
-                          Ref_Rev, Comp_Rev : in String);
+  -- If Comp_Name is empty the File_Name is used for both revs
+  procedure Launch_Delta (Differator : in String;
+                          File_Name, Ref_Rev, Comp_Rev : in String;
+                          Comp_Name : in String := "");
 
   -- Launch a revert (checkout HEAD) synchronous
   procedure Do_Revert (File : in String);

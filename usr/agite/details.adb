@@ -181,8 +181,9 @@ package body Details is
               end if;
             end if;
             -- Call delta of this commit: all files or one
-            Git_If.Launch_Delta (Config.Differator, Root & Path & File,
-                             Hash.Image & "^", Hash.Image);
+            Git_If.Launch_Delta (Config.Differator,
+                (if Commit.File.Image = "/" then "" else Path & File),
+                Hash.Image & "^", Hash.Image);
         end case;
       end;
     end Show;

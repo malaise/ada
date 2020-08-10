@@ -682,7 +682,7 @@ package body Git_If is
       Logger.Log_Debug ("  Block got: " & File.Status
                       & " " & File.File.Image);
       -- After a rename, append a record "+ NewFile"
-      if tab2 /= 0 then
+      if Tab2 /= 0 then
         File.Status := '+';
         File.File := Line.Uslice (Tab2 + 1, Line.Length);
         Files.Insert (File);
@@ -945,20 +945,31 @@ package body Git_If is
   end Launch_Diff;
 
   -- Launch a diff (asynchronous) from Comp to Ref
-  procedure Launch_Delta (Differator, File_Name : in String;
-                          Ref_Rev, Comp_Rev : in String) is
-    Cmd : constant String
-        := "git difftool -y " & " -x " & Differator & " " & Ref_Rev
-         & " " & Comp_Rev & " -- " & Pt (File_Name);
+  -- If Comp_Name is empty the File_Name is used for both revs
+  procedure Launch_Delta (Differator : in String;
+                          File_Name, Ref_Rev, Comp_Rev : in String;
+                          Comp_Name : in String := "") is
+    Cmd : As.U.Asu_Us;
   begin
+    Cmd.Set ("git difftool -y " & " -x " & Differator & " ");
+    if Comp_Rev /= "" then
+      -- Two revs provided
+      Cmd.Append (Ref_Rev & ":"  & Pt (File_Name) & " "
+                & Comp_Rev & ":"
+                & (if Comp_Name = "" then Pt (File_Name)
+                   else Pt (Comp_Name)));
+    else
+      -- Comp_Name is dropped
+      Cmd.Append (Ref_Rev & " " & Comp_Rev & " -- " & Pt (File_Name));
+    end if;
     -- Log call
     if not Logger.Is_Init then
       Logger.Init ("Git");
     end if;
     if Logger.Info_On  then
-      Logger.Log_Info (Cmd);
+      Logger.Log_Info (Cmd.Image);
     end if;
-    Utils.Launch (Cmd);
+    Utils.Launch (Cmd.Image);
   end Launch_Delta;
 
    -- Launch a revert (checkout) synchronous

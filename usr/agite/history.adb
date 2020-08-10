@@ -25,12 +25,15 @@ package body History is
                  From : in Git_If.Log_Entry_Rec) is
   begin
     Afpx.Utils.Encode_Line (
-        Image1 (From) & (if From.Merged then '>' else ' '),
+        Image1 (From) & (if From.Merged then
+                           (if From.Extra.Is_Null then '>'
+                            else '+')
+                         else ' '),
         Image2 (From),
         "", List_Width, Line, False);
   end Set;
 
-  -- List mode
+  -- List mode, in normal history or renames
   procedure Init_List is new Afpx.Utils.Init_List (
     Git_If.Log_Entry_Rec, Git_If.Set, Git_If.Log_Mng, Set, False);
 
@@ -119,6 +122,14 @@ package body History is
   function Patch (All_Logs, Selected : in out Git_If.Log_List;
                   On_Root : in Boolean) return Boolean is separate;
 
+  -- List history of a file, following renames
+  -- The Merged flag of the commit indicates that the commit maked a rename
+  -- The Extra field of the commit  contains the name of the file
+  procedure List_Renames (Branch, Root, Path : in String;
+                          Max : in Natural;
+                          Log : in out Git_If.Log_List;
+                          End_Reached : out Boolean) is separate;
+
   -- Handle the history of a file or dir
   --  possibly on a given branch
   -- Return True if Go Back
@@ -171,6 +182,7 @@ package body History is
         Utils.X.Encode_Field ("Br:", Afpx_Xref.History.Target_Branch);
         Utils.X.Encode_Field (Branch, Afpx_Xref.History.Target_Branch_Name);
       end if;
+
       -- Encode file/dir
       Utils.X.Encode_Field (
           (if Is_File then Path & Name
@@ -180,6 +192,7 @@ package body History is
           Afpx_Xref.History.File);
       On_Root := Path = "" and then Name = "";
       -- Disable Root if already on root (including hist of branch)
+      --  or when following history
       if On_Root then
         Afpx.Utils.Protect_Field (Afpx_Xref.History.Root, True);
       end if;
@@ -196,8 +209,8 @@ package body History is
     -- Show delta from current in list to comp
     procedure Show_Delta (Ref : in Afpx.Line_List_Mng.Ll_Natural) is
       Ref_Hash, Comp_Hash : Git_If.Git_Hash;
-      File_Name : As.U.Asu_Us;
-      use type Afpx.Line_List_Mng.Ll_Natural, As.U.Asu_Us;
+      Ref_Name, Comp_Name : As.U.Asu_Us;
+      use type Afpx.Line_List_Mng.Ll_Natural;
 
     begin
       -- Confim if diff on a dir
@@ -211,28 +224,32 @@ package body History is
         Afpx.Update_List (Afpx.Center_Selected);
       end if;
 
-      -- Read reference hash in Logs
+      -- Set comparison hash to current (left) selected and file
+      Comp_Hash := Hash_Of;
+      if Is_File then
+        Comp_Name := Logs.Access_Current.Extra;
+      else
+        Comp_Name := As.U.Tus (Path & Name);
+      end if;
+
+      -- Set reference hash and file
       if Ref = 0 then
-        -- Only Left selection
-        Ref_Hash := Git_If.No_Hash;
+        -- Get hash of previous commit
+        Afpx.Line_List.Move_To;
+        Ref_Hash := Hash_Of;
+        Afpx.Line_List.Move_To (Afpx.Line_List_Mng.Prev);
       else
         Ref_Hash := Hash_Of (Ref);
       end if;
-
-      -- Save current Hash
-      Comp_Hash := Hash_Of;
-
-      -- Set file name
-      File_Name := As.U.Tus (Root & Path & Name);
-      -- Call delta
-      if Ref_Hash = Git_If.No_Hash then
-        -- Only Left selection: Hash^ and Hash
-        Git_If.Launch_Delta (Config.Differator, File_Name.Image,
-                             Comp_Hash.Image & "^", Comp_Hash.Image);
+      if Is_File then
+        Ref_Name := Logs.Access_Current.Extra;
       else
-        Git_If.Launch_Delta (Config.Differator, File_Name.Image,
-                             Ref_Hash.Image, Comp_Hash.Image);
+        Ref_Name := As.U.Tus (Path & Name);
       end if;
+
+      Git_If.Launch_Delta (Config.Differator,
+          Ref_Name.Image, Ref_Hash.Image,
+          Comp_Hash.Image, Comp_Name.Image);
     end Show_Delta;
 
     -- Do a restore
@@ -242,7 +259,10 @@ package body History is
       -- Save position in List and read it
       Hash := Hash_Of;
       -- Restore file
-      if Restore (Root, Path & Name, Hash.Image, null) then
+      if Restore (Root,
+                  (if Is_File then Logs.Access_Current.Extra.Image
+                   else Path & Name),
+                  Hash.Image, null) then
         return True;
       end if;
       -- Restore screen
@@ -366,7 +386,7 @@ package body History is
       -- Save position in List and read it
       Hash := Hash_Of;
       -- Restore file
-      Tags.Add (Root, Hash);
+      Tags.Add (Hash);
       -- Restore screen
       Init;
       Init_List (Logs);
@@ -452,7 +472,9 @@ package body History is
       Hash := Hash_Of;
       case What is
         when Show_View =>
-          View (Path & Name, Hash);
+          View ( (if Is_File then Logs.Access_Current.Extra.Image
+                  else Path & Name),
+                 Hash);
         when Show_Details =>
           -- Allow modif
           Details.Handle (Root, Branch, Hash.Image, Allow_Modif, Allow_Tag);
@@ -492,11 +514,13 @@ package body History is
       -- Protect buttons View and restore on dirs
       -- Protect Restore, Checkout, Reorg and Reset if no modif allowed
       -- Protect Reorg if not in root or on first commit
+      -- Protect Reset if not in root
       -- Protect Tag if not allowed
       Afpx.Utils.Protect_Field (Afpx_Xref.History.View,
                                 not Is_File or else Right_Set or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Diff,
-                                Logs.List_Length <= 1);
+          Empty or else Afpx.Line_List.Get_Position
+                      = Afpx.Line_List.List_Length);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Details,
                                 Right_Set or else Empty);
       Afpx.Utils.Protect_Field (Afpx_Xref.History.Restore,
@@ -532,6 +556,7 @@ package body History is
         Afpx.Set_Field_Colors (Afpx_Xref.History.Reset,
                                Con_Io.Color_Of ("Red"));
       end if;
+
       -- Put percent value and "scroll bar"
       Percent := Afpx.Get_List_Percent;
       Afpx.Clear_Field (Afpx_Xref.History.Scroll);
@@ -606,6 +631,9 @@ package body History is
           --  history
           Git_If.List_Log (Branch, Root, Max, True, Logs, All_Read);
         end if;
+      elsif Is_File then
+        -- Log the file, following renames
+        List_Renames (Branch, Root, Path & Name, Max, Logs, All_Read);
       else
         -- Log the non-root target
         -- Not sparse (so no merge) otherwise we get the history of the full

@@ -1,7 +1,7 @@
 with Afpx.Utils, Str_Util, Directory;
 with Utils.X, Utils.Store, Afpx_Xref, Error, Config, View;
 separate (Tags)
-procedure Add (Root : in String; Rev : in Git_If.Git_Hash) is
+procedure Add (Rev : in Git_If.Git_Hash) is
 
   -- The current list of Commit entries
   Commits : aliased Git_If.Commit_List;
@@ -90,7 +90,7 @@ procedure Add (Root : in String; Rev : in Git_If.Git_Hash) is
           end if;
         when Show_Diff =>
           -- Call delta between previous of this file and this commit
-          Git_If.Launch_Delta (Config.Differator, Root & Path & File,
+          Git_If.Launch_Delta (Config.Differator, Path & File,
                            Hash.Image & "^", Hash.Image);
       end case;
     end;

@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V38.01
+V39.00
 
 General purpose
 ---------------
@@ -694,7 +694,7 @@ NOTE: It is also possible to 'reset hard, mixed or soft' the whole repository
 to the head of a given branch (including current branch) through the
 xref:XBReset[Reset] button of the xref:XBranches[branches] menu.
 It is also possible to 'reset hard, mixed or soft' the whole repository to a
-given commit (including current head) through the xref:XHReset[Reset] button of
+given commit (including current head) through the xref:XReset[Reset] button of
 the xref:XHist[history] menu
 
 Stash::
@@ -958,22 +958,26 @@ You can prevent Agite from expanding a variable by backslashing the delimiters
 History
 ~~~~~~~
 anchor:XHist[]
-On a file, this menu shows the relative path of the selected file,
+This menu shows the relative path of the selected file or directory,
 and lists the history of the commits (on the selected branch) that have
-affected this file. +
+affected this file or deirectory. +
 Git notes are discarded. +
 The newest release (head) is on top.
 
-It displays on top of screen the current branch, and below, if different,
+The menu displays on top of screen the current branch, and below, if different,
 the branch currenly listed.
+
+In case of a directory, the menu shows the relative path of the directory
+and lists the history of the commits that have affected the files of the
+directory and its sub-directories. +
+In case of a file, it shows the relative path of the file and lists the history
+of the commits that have affected the file, following the changes of file name
+that can result from renaming.
 
 anchor:XHash[]
 Below is a "H:" tagged get field in which you can enter (or paste) a up to
 128 hexadecimal digits of a hash value to xref:XSearch[Search] for.
 
-In case of a directory, the menu shows the relative path of the directory
-and lists the history of the commits that have affected the files of the
-directory and its sub-directories.
 
 .List
 
@@ -981,7 +985,10 @@ Content::
 The list shows, for each entry, the date of the commit (format YYMMDD:HHMM),
 a space, then the comment (up to two lines, separated by \'$\') of the commit. +
 If the entry is a merge, then the separator between the date and the comment
-becomes a \'>'.
+becomes a \'>'. +
+If the entry is a commit where the current file has been renamed, then the
+separator becomes a '+'.
+
 
 Initial selection::
 When the history menu is called, the left selection is initially
@@ -1091,7 +1098,8 @@ This button causes Agite to check that the current file is not locally
 modified. If not, Agite asks for confirmation then checkouts the file in the
 version currently (left-)selected in the history. The file will be tagged as
 \'M' (modified) if this version differs from the one at the head of current
-branch. +
+branch. Due to renaming, the restored file can also be tagged as \'?'
+(unknown). +
 This function is not active on the history of a directory (but restoring a
 whole commit is possible from the xref:XDetail[detail] menu).
 
@@ -1132,7 +1140,7 @@ branch on itself] and the section xref:XCherryError[Error in cherry-pick] on
 how to handle errors during a reorg.
 
 .Reset
-anchor:XHReset[]
+anchor:XReset[]
 This button calls the xref:XReset[reset] menu to reset (soft, mixed or hard)
 the repository to the (left) selected commit. +
 See also the section on xref:XRewritingHistory[rewriting history].
@@ -1194,7 +1202,7 @@ back to the menu from which the xref:XHist[history] has been called
 * xref:XRestore[Restore] +
 * xref:XHCheckout[Checkout] +
 * xref:XReorg[Reorg] +
-* xref:XHReset[Reset] +
+* xref:XReset[Reset] +
 * xref:XPatch[Patch] (only on success) +
 
 Tag
@@ -2020,7 +2028,7 @@ anchor:XCherryReorg[]
 NOTE: This is exactly how the xref:XReorg[reorg] is performed. +
 As a consequence, if no commit is selected during the cherry pick, then the
 xref:XReorg[reorg] is cancelled: A reorg that only drops several last
-consecutive commits is achieved through a xref:XHReset[hard reset] to the first
+consecutive commits is achieved through a xref:XReset[hard reset] to the first
 commit that has to be kept.
 
 NOTE: xref:XRebase[Rebase] and xref:XReorg[reorg] create a temporary branch
@@ -2099,7 +2107,7 @@ The confirmation menu for these actions warns you (in red) that the history
 will be rewritten. +
 Besides, the xref:XHist[history] menu on root sets the
 initial entry to the head of the corresponding tracking branch, which should
-be a safe reference for a xref:XReorg[reorg] or xref:XHReset[reset]. When the
+be a safe reference for a xref:XReorg[reorg] or xref:XReset[reset]. When the
 reference is set to below (before) the head of the remote, then these both
 buttons become red. +
 Similarly, when they are active, the xref:XRebase[rebase] and
@@ -2166,8 +2174,8 @@ repository
 * 'Checkout' button (of the history menu or of the tags menu) checks out the
 commit in the current repository
 
-* 'HReset' button (of the history menu or of the branches menu) resets the
-current repository to the state of the commit or branch
+* 'Reset' button (of the directory menu, the history menu or the branches menu)
+resets the current repository to the state of the commit or branch
 
 * 'Reorg' button (of the history menu) makes a rebase of the current branch,
 applying to the whole repository

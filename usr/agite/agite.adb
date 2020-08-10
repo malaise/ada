@@ -760,7 +760,7 @@ procedure Agite is
           begin
             if Hash /= Git_If.No_Hash then
               -- File is known, so deleted
-              Git_If.Launch_Delta (Differator.Image, File_Name,
+              Git_If.Launch_Delta (Differator.Image, "./" & File_Name,
                                    Hash.Image, "");
             end if;
           end;
@@ -800,7 +800,7 @@ procedure Agite is
               use type As.U.Asu_Us;
             begin
               if Hash /= Git_If.No_Hash then
-                Git_If.Launch_Delta (Differator.Image, File_Name,
+                Git_If.Launch_Delta (Differator.Image, "./" & File_Name,
                                      Hash.Image & "^", Hash.Image);
               end if;
             end;
