@@ -1,6 +1,5 @@
-separate (History)
 -- Read history of a file, following renames
-
+separate (History)
 procedure Rename (Branch, Root, Path : in String;
                   Max : in Natural;
                   Log : in out Git_If.Log_List;
@@ -33,8 +32,12 @@ begin
   loop
     -- Compute allowed remains entres
     if Max /= 0 then
-      if Git_If.Log_Mng.Ll_Natural (Max) > Log.List_Length then
+      if Log.List_Length < Git_If.Log_Mng.Ll_Natural (Max) then
         Remain := Natural (Git_If.Log_Mng.Ll_Natural (Max) - Log.List_Length);
+        if not First then
+          -- We will remove the first (dup) entry
+          Remain := Remain + 1;
+        end if;
       else
         -- Already reached Max entries
         exit;

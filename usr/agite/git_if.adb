@@ -54,6 +54,9 @@ package body Git_If is
     else
       Command.Execute (Cmd, True, Out_Flow, Err_Flow, Exit_Code);
     end if;
+    if Logger.Info_On  then
+      Logger.Log_Info (" => command completed");
+    end if;
   exception
     when others =>
       if Afpx.Is_Suspended then
