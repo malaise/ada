@@ -60,11 +60,14 @@ begin
     -- Set File in Extra field of the commit
     Llog.Rewind;
     loop
-      if Llog.Access_Current.Merged then
-        Llog.Access_Current.Merged := False;
+      Llog.Access_Current.Merged := False;
+      if Llog.Access_Current.Extra.Is_Null then
+        Status := '?';
+        Llog.Access_Current.Extra.Set_Null;
+      else
+        Status := Llog.Access_Current.Extra.Element (1);
+        Llog.Access_Current.Extra := File;
       end if;
-      Status := Llog.Access_Current.Extra.Element (1);
-      Llog.Access_Current.Extra := File;
       if Status = 'A' then
         -- Clean the tail
         while Llog.Get_Position /= Llog.List_Length loop

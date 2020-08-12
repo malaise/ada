@@ -535,6 +535,7 @@ package body Git_If is
   -- ....
   -- except for last block
   -- Fills Files if Details is set
+  Debug1 : constant Trace.Severities := 16#20#;
   procedure Read_Block (Flow : in out Command.Res_List;
                         Details : in Boolean;
                         Hash : out Git_Hash;
@@ -550,35 +551,36 @@ package body Git_If is
     Moved : Boolean;
     File : Commit_Entry_Rec;
   begin
-    Logger.Log_Debug ("  Block length: " & Integer'Image (Flow.List_Length));
+    Logger.Log (Debug1, "  Block length: " & Integer'Image (Flow.List_Length));
     -- commit <hash>
     Flow.Read (Line);
     Assert (Line.Length = 47);
     Assert (Line.Slice (1, 7) = "commit ");
+    Logger.Log_Debug ("Block parsing " & Line.Image);
     Line.Delete_Nb (1, 7);
     Hash := Line;
 
     -- Possible "Merge:... ..." then Author: ...
     Flow.Read (Line);
     if Line.Slice (1, 7) = "Merge: " then
-      Logger.Log_Debug ("  Block skip " & Line.Image);
+      Logger.Log (Debug1, "  Block skip " & Line.Image);
       Merge := True;
       Flow.Read (Line);
     else
       Merge := False;
     end if;
     Assert (Line.Slice (1, 8) = "Author: ");
-    Logger.Log_Debug ("  Block skip " & Line.Image);
+    Logger.Log (Debug1, "  Block skip " & Line.Image);
 
     -- Date:   YYYY-MM-DD HH:MM:SS ...
     Flow.Read (Line, Moved => Moved);
     Assert (Line.Length >= 27);
     Assert (Line.Slice (1, 8) = "Date:   ");
     Date := Line.Slice (9, 27);
-    Logger.Log_Debug ("  Block got Date: " & Date);
+    Logger.Log (Debug1, "  Block got Date: " & Date);
     if not Moved then
       -- No comment and last block
-      Logger.Log_Debug ("  Block done cause no comment nor change");
+      Logger.Log (Debug1, "  Block done cause no comment nor change");
       Done := True;
       return;
     end if;
@@ -598,7 +600,7 @@ package body Git_If is
       and then Line.Slice (1, 2) /= "  " then
         -- No Comment at all in short mode (=> notes or next commit)
         -- No Comment at all in detailed mode (=> notes or modified files)
-        Logger.Log_Debug ("  Block no comment");
+        Logger.Log (Debug1, "  Block no comment");
         if Moved then
           -- When reading details (one bloc) with no comment and one change
           -- Moved is False and we shall remain on this line
@@ -611,9 +613,9 @@ package body Git_If is
       -- Copy first comments
       if Ind <= Comments'Last then
         Comments(Ind) := Line.Uslice (5,  Line.Length);
-        Logger.Log_Debug ("  Block got Comment: " & Comments(Ind).Image);
+        Logger.Log (Debug1, "  Block got Comment: " & Comments(Ind).Image);
       else
-        Logger.Log_Debug ("  Block skip " & Line.Image);
+        Logger.Log (Debug1, "  Block skip " & Line.Image);
       end if;
       exit when not Moved;
     end loop;
@@ -623,16 +625,16 @@ package body Git_If is
       -- Line is empty and current is the following
       Flow.Read (Line, Moved => Moved);
       if Line.Length = 6 and then Line.Slice (1, 6) = "Notes:" then
-        Logger.Log_Debug ("  Block skip " & Line.Image);
+        Logger.Log (Debug1, "  Block skip " & Line.Image);
         -- Discard notes until empty line
         while Moved loop
           Flow.Read (Line, Moved => Moved);
           exit when Line.Length = 0;
-          Logger.Log_Debug ("  Block skip " & Line.Image);
+          Logger.Log (Debug1, "  Block skip " & Line.Image);
         end loop;
       else
         -- No Notes: rollback to Line empty and current is the following
-        Logger.Log_Debug ("  Block no notes");
+        Logger.Log (Debug1, "  Block no notes");
         if Moved then
           Flow.Move_To (Command.Res_Mng.Dyn_List.Prev);
         else
@@ -646,7 +648,7 @@ package body Git_If is
       -- No changes if no detail
       -- The Moved is set to False when reaching the end
       -- Our Done shall be False as long as Moved
-      Logger.Log_Debug ("  Block done cause no details requested");
+      Logger.Log (Debug1, "  Block done cause no details requested");
       Done := not Moved;
       return;
     end if;
@@ -662,11 +664,11 @@ package body Git_If is
       if Ind = 1 and then Line.Length = 47
       and then Line.Slice (1, 7) = "commit " then
         -- No change at all
-        Logger.Log_Debug ("  Block done cause found new commit (no changes)");
+        Logger.Log (Debug1, "  Block done cause found new commit (no changes)");
         Flow.Move_To (Command.Res_Mng.Dyn_List.Prev);
         exit;
       end if;
-      Logger.Log_Debug ("  Block got line <" & Line.Image & "<");
+      Logger.Log (Debug1, "  Block got line <" & Line.Image & "<");
       Assert (Line.Length > 2);
       File.Status := Line.Element (1);
       -- Git tracks rename as "Rxxx Ht OldFile Ht NewFile"
@@ -678,14 +680,14 @@ package body Git_If is
         File.File := Line.Uslice (Tab1 + 1, Tab2 - 1);
       end if;
       Files.Insert (File);
-      Logger.Log_Debug ("  Block got: " & File.Status
+      Logger.Log (Debug1, "  Block got: " & File.Status
                       & " " & File.File.Image);
       -- After a rename, append a record "+ NewFile"
       if Tab2 /= 0 then
         File.Status := '+';
         File.File := Line.Uslice (Tab2 + 1, Line.Length);
         Files.Insert (File);
-        Logger.Log_Debug ("  Block appended: " & File.Status
+        Logger.Log (Debug1, "  Block appended: " & File.Status
                         & " " & File.File.Image);
       end if;
       if not Moved then
@@ -694,7 +696,7 @@ package body Git_If is
       end if;
     end loop;
 
-    Logger.Log_Debug ("  Block done.");
+    Logger.Log (Debug1, "  Block done.");
   exception
     when others =>
       Basic_Proc.Put_Line_Error ("At line "
@@ -771,7 +773,7 @@ package body Git_If is
     loop
       Read_Block (Out_Flow_1.List, Status, Log_Entry.Hash, Log_Entry.Merged,
                   Log_Entry.Date, Log_Entry.Comment, Files'Access, Done);
-      if Status then
+      if Status and then not Files.Is_Empty then
         Log_Entry.Extra.Set (Files.Access_Current.Status);
       end if;
       Log.Insert (Log_Entry);
