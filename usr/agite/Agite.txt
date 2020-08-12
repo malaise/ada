@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V39.04
+V39.05
 
 General purpose
 ---------------

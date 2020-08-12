@@ -587,7 +587,7 @@ package body Git_If is
     Flow.Read (Line);
     Assert (Line.Length = 0);
 
-    -- Several comments until empty line
+    -- Several comments until empty line or end of flow
     Ind := 0;
     Comments := (others => As.U.Asu_Null);
     loop
@@ -598,10 +598,10 @@ package body Git_If is
       and then Line.Slice (1, 2) /= "  " then
         -- No Comment at all in short mode (=> notes or next commit)
         -- No Comment at all in detailed mode (=> notes or modified files)
+        Logger.Log_Debug ("  Block no comment");
         if Moved then
-          -- When reding details (one bloc) with no comment and one change
+          -- When reading details (one bloc) with no comment and one change
           -- Moved is False and we shall remain on this line
-          Logger.Log_Debug ("  Block no comment");
           Flow.Move_To (Command.Res_Mng.Dyn_List.Prev);
         end if;
         exit;
@@ -649,15 +649,10 @@ package body Git_If is
       Logger.Log_Debug ("  Block done cause no details requested");
       Done := not Moved;
       return;
-    elsif not Moved then
-      -- No changes in detail (merge....)
-      Files.Delete_List;
-      Logger.Log_Debug ("  Block done cause no changes");
-      Done := True;
-      return;
     end if;
 
-    -- Several changes until empty_line or end
+    -- Several changes until empty_line or new commit (no change) or end
+    Files.Delete_List;
     Ind := 0;
     Done := False;
     loop
