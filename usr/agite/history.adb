@@ -558,6 +558,16 @@ package body History is
         Afpx.Set_Field_Colors (Afpx_Xref.History.Reset,
                                Con_Io.Color_Of ("Red"));
       end if;
+      -- Show renamed file name if different
+      if Is_File then
+        Logs.Move_At (Afpx.Line_List.Get_Position);
+        if Logs.Access_Current.Extra.Image /= Path & Name then
+          Utils.X.Encode_Field (" - " & Logs.Access_Current.Extra.Image,
+                                Afpx_Xref.History.Renamed);
+        else
+          Afpx.Clear_Field (Afpx_Xref.History.Renamed);
+        end if;
+      end if;
 
       -- Put percent value and "scroll bar"
       Percent := Afpx.Get_List_Percent;

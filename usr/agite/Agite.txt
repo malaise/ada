@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V39.02
+V39.03
 
 General purpose
 ---------------
@@ -118,7 +118,7 @@ another name for the button (8 characters max).
 anchor:XConfPatch[]
 
 patch::
-This defines the command to be launched for making a xref:XPatch[patch].
+This defines the command to be launched for making a xref:XPatch[patch] file.
 The command will be called with the patch name (as first argument), then the
 first Hash, then the last Hash. The command shall create a patch file, named
 "$1" of commits "$2..$3".
@@ -293,7 +293,7 @@ for copy nor for paste.
  - Shift+Suppr clears the string from the current position to the end
  - Ctrl+Suppr clears the whole string (and moves to the beginning of it)
  - Insert: toggles the insert/replace mode (in Insert mode the cursor becomes
-a \'^')
+a ''^'' instead of a ''_'')
  - Ctrl+Right/Left arrow: move to the first/last significant character of
 the string
  - Shift+Right/Left arrow: move to the first/last character of the string.
@@ -448,7 +448,7 @@ anchor:XGo[]
 Go::
 This line shows the current directory. This field can be modified by:
 
-* changing / entering a new path with the keyboard (you can use Ctrl + Suppr to
+* entering a new path with the keyboard (you can use "Ctrl + Suppr" to
 clear the field),
 * clicking on xref:XReread[Reread] to restore it to the current directory,
 * clicking on xref:XPushD[PopD] to restore it to a path previously pushed.
@@ -530,18 +530,19 @@ being ignored but not their subdirectories.
 +
 Each directory starts with three spaces then the name then a \'/'.
 +
-Each file is preceded by two characters of its Git index and local status (see
-'man git-status') then a space, then the name. Git status can be:
+Each file is preceded by two characters of its status in Git index and its local
+status (see 'man git-status') then a space, then the name. +
+Git status can be:
 
 * ' ' = unmodified
-* ? = unknown
-* M = modified
-* T = type modified
-* A = added
-* D = deleted
-* R = renamed
-* C = copied
-* U = updated but unmerged
+* '?' = unknown
+* 'M' = modified
+* 'T' = type modified
+* 'A' = added
+* 'D' = deleted
+* 'R' = renamed
+* 'C' = copied
+* 'U' = updated but unmerged
 
 +
 After the name, a character represents the kind of entry:
@@ -719,7 +720,7 @@ This shows the current branch and path of the root of current repository.
 
 .List
 
-The list contains the local branches and then the remote tracking bracnhes (in
+The list contains the local branches and then the remote tracking branches (in
 alphanumeric order).
 
 .Actions
@@ -960,35 +961,33 @@ History
 anchor:XHist[]
 This menu shows the relative path of the selected file or directory,
 and lists the history of the commits (on the selected branch) that have
-affected this file or deirectory. +
+affected this file or directory. +
 Git notes are discarded. +
 The newest release (head) is on top.
 
+.Branches
 The menu displays on top of screen the current branch, and below, if different,
 the branch currenly listed.
 
-In case of a directory, the menu shows the relative path of the directory
-and lists the history of the commits that have affected the files of the
-directory and its sub-directories. +
-In case of a file, it shows the relative path of the file and lists the history
-of the commits that have affected the file, following the changes of file name
-that can result from renaming.
+.Names
+In case of a directory, the menu shows the relative path of the directory. +
+In case of a file, it shows the relative path of the file. If the currently
+(left) selected commit contains a different path and name for the file (due
+to renaming), then the original name is shown preceeded by "- ".
 
 anchor:XHash[]
-Below is a "H:" tagged get field in which you can enter (or paste) a up to
-128 hexadecimal digits of a hash value to xref:XSearch[Search] for.
-
+Below is a "H:" tagged get field in which you can enter (or paste), up to
+128 hexadecimal digits, a hash value to xref:XSearch[Search] for.
 
 .List
 
 Content::
-The list shows, for each entry, the date of the commit (format YYMMDD:HHMM),
-a space, then the comment (up to two lines, separated by \'$\') of the commit. +
-If the entry is a merge, then the separator between the date and the comment
-becomes a \'>'. +
-If the entry is a commit where the current file has been renamed, then the
-separator becomes a '+'.
-
+The list shows, for each commit, the date (format YYMMDD:HHMM), a space, then
+the comment (up to two lines, separated by \'$\'). +
+If the commit is a merge, then the separator between the date and the comment
+becomes a ''>''. +
+If the commit contains a renaming of current file, then the separator becomes
+a ''+''.
 
 Initial selection::
 When the history menu is called, the left selection is initially
@@ -1018,7 +1017,7 @@ The list can be very long, so there are several extra features on the history
 list:
 
 * The position of the current page, in term of percentage of the history, is
-displayed above the list,
+displayed above the list (''-'' if the list fits in one page),
 
 * The indexes of the left and right selection (see the xref:XDiff1[Diff]
 feature) are also displayed above the list,
@@ -1044,7 +1043,6 @@ current or selected branch. The history of root is the only way to
 xref:XReorg[reorg] the current branch, to xref:XReset[reset] it to a previous
 commit, or to make a xref:XPatch[patch] with several commits.
 
-
 .View
 anchor:XView[]
 Double click on an entry (a commit) or select an entry and click on the 'View'
@@ -1053,7 +1051,6 @@ button to view the version of the file that was committed.
 When the current history is on a directory this feature is de-activated.
 Still it is possible to list and view one by one the files of a commit with the
 xref:XDetail[detail] menu.
-
 
 .Diff
 anchor:XDiff1[]
@@ -1103,7 +1100,6 @@ branch. Due to renaming, the restored file can also be tagged as \'?'
 This function is not active on the history of a directory (but restoring a
 whole commit is possible from the xref:XDetail[detail] menu).
 
-
 .Checkout
 anchor:XHCheckout[]
 This button button launches the xref:XCheckout[checkout] menu that allows
@@ -1116,7 +1112,6 @@ operations. +
 commit (it is likely to be tagged as modified in the current repository). +
 - 'Checkout' checks out the whole repository in the state that it had when the
 commit was performed.
-
 
 .Reorg
 anchor:XReorg[]
@@ -1258,21 +1253,21 @@ by clicking on 'PpHash',
 copy with 'CpComm', 
 * The list of all the files in the commit, each preceded by a letter
 indicating the file status:
-** A Added,
-** C Copied,
-** D Deleted,
-** M Modified,
-** R Renamed,
-** T Type modified,
-** U Unmerged,
-** X Unknown,
-** B paring broken.
+** 'A' = Added,
+** 'C' = Copied,
+** 'D' = Deleted,
+** 'M' = Modified,
+** 'R' = Renamed,
+** 'T' = Type modified,
+** 'U' = Unmerged,
+** 'X' = Unknown,
+** 'B' = paring broken.
 
 A specific entry, "/", is added on top of the list, which represents the root of
 the current repository.
 
-After each Renamed entry (containing the initial name) a specific entry "+" is
-inserted with the new name.
+After each renamed entry (containing the initial name) a specific entry is 
+inserted, with the status '+' and the new name.
 
 NOTE: Some file statuses above may not all be implemented by old versions of
 GIT.
@@ -1305,7 +1300,10 @@ In both cases:
 xref:XSearch[search] in the xref:XHist[history] menu.
 
 NOTE: Clicking on 'Hist' leads to call a new function that shows the history, as
-explained in the section on xref:XNavigation[navigation].
+explained in the section on xref:XNavigation[navigation]. +
+If the current selection is a file that has been renamed after the current
+commit, then the history will stop at the commit where the file has been
+renamed.
 
 Checkout
 ~~~~~~~~
@@ -1433,36 +1431,36 @@ The list shows the result of \'git cherry', which is the list of commits in the
 oldest commits are displayed first*, so the list is in the "order of replay". +
 The first letter of each line describes the status of the cherry:
 
-* \'=' denotes a commit already 'merged', which cannot be picked nor skipped.
+* '=' denotes a commit already 'merged', which cannot be picked nor skipped.
 
-* ' ' denotes a cherry 'dropped', which will not be picked.
+* '' '' denotes a cherry 'dropped', which will not be picked.
 
-* \'P' denotes a cherry 'picked', which will be applied. If the next
+* 'P' denotes a cherry 'picked', which will be applied. If the next
 not-merged not-dropped cherry is not a 'squash' or a 'fixup', then the result
 will be commited with the cherries's comment.
 
-* \'W' denotes a cherry picked for 'wipe-up', which will be applied with an
+* 'W' denotes a cherry picked for 'wipe-up', which will be applied with an
 empty comment. This is valid only if the next (not-merged not-dropped) cherry
 is (possibly after some 'fixup') a 'squash'.
 
-* \'R' denotes a cherry picked for 'rewording', which will be applied then
+* 'R' denotes a cherry picked for 'rewording', which will be applied then
 proposed for modification of the comment in the xref:XCommit[commit] menu.
 It will be possible to edit the comment, commit the change (if the next
 cherry is not a 'squash' or a 'fixup') and click on the 'Done' button.
 
-* \'E' denotes a cherry picked for 'edition', which will be applied then
+* 'E' denotes a cherry picked for 'edition', which will be applied then
 proposed for full edition of the commit (allowing to modify the comment,
 to split the commit, to add stashed changes...) in the xref:XCommit[commit]
 menu. It will be possible to leave some changes not committed, which has a
 sense if the next cherry is a 'squash' or a 'fixup'.
 
-* \'S' denotes a cherry picked for 'squash', which will be applied and folded
+* 'S' denotes a cherry picked for 'squash', which will be applied and folded
 with the previous cherry. The comment of the cherry will be concatenated to
 the currently retained comment. If the next cherry is not a 'squash' nor a
 'fixup', then the overall comment will be proposed for modification and the 
 overall result will be committed. 
 
-* \'F' denotes a cherry picked for 'fixup', which will be applied and folded
+* 'F' denotes a cherry picked for 'fixup', which will be applied and folded
 with the previous cherry. If the next cherry is not a 'squash' nor a 'fixup',
 then the result will be committed with the currently retained comment. So the
 'fixup' cherry comment is discarded, except if the currently retained comment
@@ -1596,20 +1594,20 @@ button).
 This list shows all the current changes in the repository, with 3 letters of
 status for each file:
 
-* The first column ('S') shows the summary of the status:
+* The first column (\'S') shows the summary of the status:
  - empty if no changes are staged (e.g. locally modified or deleted),
- - a '''*''' if some changes are staged and some others are not (also in case
+ - a ''*'' if some changes are staged and some others are not (also in case
 of unresolved conflicts),
- - a '''+''' if all the changes of the file are staged.
+ - a ''+'' if all the changes of the file are staged.
 
 +
 The list is sorted according to these three categories, separated by dummy
 entries "-----------------".
 
-* The second column ('I') shows the kind of change in the index (that will be
+* The second column (\'I') shows the kind of change in the index (that will be
 committed),
-* The third column ('L') shows the kind of change local to the repository (that
-will *NOT* be committed).
+* The third column (\'L') shows the kind of change local to the repository
+(that will *NOT* be committed).
 
 You can select a file, then edit it, show its local differences, stage or
 unstage its changes.
@@ -1899,7 +1897,7 @@ This menu has three modes:
 
 .Called by the xref:XBranches[branches] or the xref:XHist[history] menu,
 
-it allows to reset the current repository to a branch or to a commit. +
+it allows resetting the current repository to a branch or to a commit. +
 The reset can be:
 
 * 'Soft': reset only the head of current branch (not the index nor the
@@ -1914,14 +1912,14 @@ xref:XDir[directory] menu.
 .Called by the xref:XDir[directory] menu,
 
 it allows the same kinds of reset as above, but to the head of current branch.
-It also allows to 'Cleanup' from the current repository the untracked files
+It also proposes to 'Cleanup' from the current repository the untracked files
 and directories,
 
 It goes back to the xref:XDir[directory] menu.
 
 .Called by the xref:XCommit[commit] menu during a xref:XCherry[cherry pick],
 
-it allows to hard reset the current repository to head (which resets the
+it allows hard resetting the current repository to head (which resets the
 remaining changes of the current commit).
 
 It is also possible to cancel and return to the xref:XCommit[commit] menu
@@ -2211,6 +2209,9 @@ version 1.7.0 or above:
 
 * A function gets Git version by calling 'git --version',
 
+* A function checks if current repository is bare by calling 'git rev-parse
+--is-bare-repository'.
+
 * A function lists local files by calling 'git ls-files' and
 'git status \-- porcelain .',
 
@@ -2220,29 +2221,31 @@ version 1.7.0 or above:
 <file>',
 
 * A function lists the commits on a dir or file by calling
-'git log --date=iso --full-history [ --sparse ] [ -n <max> ] [ <branch> ] 
-[ \-- <dir_or_file> ]',
+'git log --date=iso --full-history [ -n <max> ] [ --sparse ] [ --name-status ] 
+[ <branch> ] [ \-- <dir_or_file> ]',
 
 * A functions gets the hash of the last commit by calling 'git log
 --pretty=format:"%H" -n -1 -- <pwd>',
 
 * A function gets general information on a commit by calling 'git log
---date=iso -n 1 <HSA1_hash> \--',
+--date=iso -n 1 <HSA1> \--',
 
 * A function gets the details of a commit by calling
-'git log --name-status -M --date=iso -n 1 <HSA1_hash> \--',
+'git log --name-status -M --date=iso -n 1 <HSA1> \--',
 
 * A function lists the remote repositories by calling 'git remote',
 
 * A function extracts a given version of a file (in a commit by calling
-'git show <HSA1_hash>:<file> > <file>',
+'git show <HSA1>:<file> > <file>',
 
 * A function launches the differator on a modified file (versus Head) by
 calling 'git difftool -y -x <differator> HEAD \-- <file>',
 
 * A function lauches the differator between two versions of a file (or dir) by
-calling 'git difftool -y -x <differator> <ref_HSA1_hash> <comp_HSA1_hash>
-\-- <file>',
+calling 'git difftool -y -x <differator> <ref_HSA1>:<ref_file>
+<comp_HSA1>:<comp_file>' +
+or 'git difftool -y -x <differator> <ref_HSA1> <comp_HSA1> --
+<ref_file>',
 
 * A function reverts the local changes of a file by calling
 'git checkout HEAD \-- <file>',
@@ -2285,9 +2288,6 @@ calling 'git difftool -y -x <differator> <ref_HSA1_hash> <comp_HSA1_hash>
 remote tracking branches by calling 'git branch -r' or lists both by calling
 'git branch -a',
 
-* A function gets the name of a remote tracking branch by calling 'git branch
--vv',
-
 * A function lists the branches of a remote reference by calling 'git
 ls-remote --heads <reference>',
 
@@ -2296,6 +2296,9 @@ ls-remote --heads <reference>',
 
 * A function merges a branch into current by calling 'git merge [ --no-commit
 | [ -m <comment> ]] [ --no-ff ] <branch>',
+
+* A function gets the name of a remote tracking branch by calling 'git branch
+-vv',
 
 * A function gets the user name and email by calling 'git config user.name'
 and 'git config user.email',
@@ -2322,9 +2325,7 @@ and 'git config user.email',
 * A function lists the cherry commits of reference branch versus a target
 branch by calling 'git cherry <target> <reference>',
 
-* A function cherry picks some commits by calling 'git cherry-pick --ff {
-<HSA1_hash> }',
+* A function cherry picks some commits by calling 'git cherry-pick
+--allow-empty [ --ff | --no-commit ] <HSA1>',
 
-* A function checks if current repository is bare by calling 'git rev-parse
---is-bare-repository'.
 
