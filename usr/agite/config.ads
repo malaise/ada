@@ -1,4 +1,4 @@
-with As.U;
+with As.U, Long_Longs;
 package Config is
 
   -- Check configuration (raise Invalid_Config)
@@ -31,7 +31,7 @@ package Config is
   function List_Tags return Boolean;
 
   -- Default history length
-  function History_Len return Natural;
+  function History_Len return Long_Longs.Llu_Natural;
 
   -- Last/Current dir
   procedure Save_Curr_Dir (Dir : in String);

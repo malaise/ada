@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V39.03
+V39.04
 
 General purpose
 ---------------
@@ -972,8 +972,9 @@ the branch currenly listed.
 .Names
 In case of a directory, the menu shows the relative path of the directory. +
 In case of a file, it shows the relative path of the file. If the currently
-(left) selected commit contains a different path and name for the file (due
-to renaming), then the original name is shown preceeded by "- ".
+(left) selected commit is after (below) a commit in which the file was
+renamed, then the original name in the selected commit is shown, preceeded by
+"- ".
 
 anchor:XHash[]
 Below is a "H:" tagged get field in which you can enter (or paste), up to
@@ -1181,15 +1182,7 @@ NOTE: The history follows the renaming of the file or directory but the
 reference name (that is displayed above the history list) is used for the
 xref:XView[view] and xref:XDiff1[diff] operations.
 As a consequence, Agite will fail to show a file, or a difference from a file,
-if the entry in the history is before a renaming. Still, it is possible to view
-a file that has been committed then later on renamed, with the following
-operations: +
-* Select the commit in the history +
-* Show the xref:XHDetail[detail] of this commit +
-* Select the file in the xref:XDetail[detail] of the commit (previous name) +
-* Click in the xref:XView[View] button to view the file. +
-It is not possible to do a xref:XDiff1[diff] between two versions of a file if
-the file has been renamed or moved between the versions.
+if the entry in the history is before a renaming. 
 
 NOTE: Upon success or failure (not on cancel), the following operations lead to go
 back to the menu from which the xref:XHist[history] has been called

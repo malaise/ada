@@ -180,10 +180,10 @@ package body Config is
   end List_Tags;
 
   -- Default history length
-  function History_Len return Natural is
-      Result : Natural;
+  function History_Len return Long_Longs.Llu_Natural is
+      Result : Long_Longs.Llu_Natural;
   begin
-    Result := Natural'Value (
+    Result := Long_Longs.Llu_Natural'Value (
                Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 9), 1)));
     return Result;
   exception

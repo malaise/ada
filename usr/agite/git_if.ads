@@ -97,7 +97,7 @@ package Git_If is
   -- May raise anonymous exception Log_Error
   procedure List_Log (Branch, Path : in String;
                       From_Rev : in String;
-                      Max : in Natural;
+                      Max : in Log_Mng.Ll_Natural;
                       Sparse : in Boolean;
                       Status : in Boolean;
                       Log : in out Log_List;

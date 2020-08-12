@@ -5,6 +5,7 @@ with Utils.X, Utils.Store, Config, Details, View, Afpx_Xref, Restore, Checkout,
 package body History is
 
   package Branches renames Branch;
+  subtype Ll_Natural is Git_If.Log_Mng.Ll_Natural;
 
   -- List Width
   List_Width : Afpx.Width_Range;
@@ -125,12 +126,13 @@ package body History is
 
   -- List history of a file, following renames
   -- Log is initially cleared
-  -- The Merged flag of the commit indicates that the commit maked a rename
+  -- The Merged flag of the commit indicates that the commit made a rename
   -- The Extra field of the commit  contains the name of the file
-  procedure Rename (Branch, Root, Path : in String;
-                    Max : in Natural;
-                    Log : in out Git_If.Log_List;
-                    End_Reached : out Boolean) is separate;
+  -- Returns the position in Log of the first rename
+  function Rename (Branch, Root, Path : in String;
+                   Max : in Ll_Natural;
+                   Log : in out Git_If.Log_List;
+                   End_Reached : out Boolean) return Ll_Natural is separate;
 
   -- Handle the history of a file or dir
   --  possibly on a given branch
@@ -152,6 +154,7 @@ package body History is
     -- The log
     Logs : Git_If.Log_List;
     All_Read : Boolean;
+    First_Rename : Ll_Natural;
 
     -- Get the Hash of an entry
     --  No_Hash if list is empty
@@ -560,8 +563,9 @@ package body History is
       end if;
       -- Show renamed file name if different
       if Is_File then
-        Logs.Move_At (Afpx.Line_List.Get_Position);
-        if Logs.Access_Current.Extra.Image /= Path & Name then
+        if First_Rename /= 0
+        and then Afpx.Line_List.Get_Position > First_Rename then
+          Logs.Move_At (Afpx.Line_List.Get_Position);
           Utils.X.Encode_Field (" - " & Logs.Access_Current.Extra.Image,
                                 Afpx_Xref.History.Renamed);
         else
@@ -622,7 +626,7 @@ package body History is
 
     -- Reread history
     procedure Reread (Force_All : in Boolean) is
-      Max : Natural;
+      Max : Git_If.Log_Mng.Ll_Natural;
     begin
       -- Read all or the default (Config) number of entires
       if Force_All then
@@ -645,7 +649,7 @@ package body History is
         end if;
       elsif Is_File then
         -- Log the file, following renames
-        Rename (Branch, Root, Path & Name, Max, Logs, All_Read);
+        First_Rename := Rename (Branch, Root, Path & Name, Max, Logs, All_Read);
       else
         -- Log the non-root target dir
         -- Not sparse (so no merge) otherwise we get the history of the full

@@ -719,7 +719,7 @@ package body Git_If is
   -- May raise anonymous exception Log_Error
   procedure List_Log (Branch, Path : in String;
                       From_Rev : in String;
-                      Max : in Natural;
+                      Max : in Log_Mng.Ll_Natural;
                       Sparse : in Boolean;
                       Status : in Boolean;
                       Log : in out Log_List;
@@ -727,8 +727,9 @@ package body Git_If is
     Cmd : Many_Strings.Many_String;
     Done : Boolean;
     Log_Entry : Log_Entry_Rec;
-    N_Read : Natural;
+    N_Read : Log_Mng.Ll_Natural;
     Files : aliased Commit_List;
+    use type Log_Mng.Ll_Natural;
   begin
     -- Init result
     Log.Delete_List;
@@ -741,7 +742,7 @@ package body Git_If is
     Cmd.Cat ("--full-history");
     if Max /= 0 then
       Cmd.Cat ("-n");
-      Cmd.Cat (Images.Integer_Image (Max + 1));
+      Cmd.Cat (Images.Llunat_Image (Max + 1));
     end if;
     if Sparse then
       Cmd.Cat ("--sparse");

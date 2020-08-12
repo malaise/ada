@@ -1,15 +1,15 @@
 -- Read history of a file, following renames
 separate (History)
-procedure Rename (Branch, Root, Path : in String;
-                  Max : in Natural;
-                  Log : in out Git_If.Log_List;
-                  End_Reached : out Boolean) is
+function Rename (Branch, Root, Path : in String;
+                 Max : in Ll_Natural;
+                 Log : in out Git_If.Log_List;
+                 End_Reached : out Boolean) return Ll_Natural is
   -- Intermediate list
   Llog : Git_If.Log_List;
   -- Current file name
   File : As.U.Asu_Us;
   -- Number of allowed remaining entries
-  Remain : Natural := 0;
+  Remain : Ll_Natural := 0;
   -- Commit details
   Hash : Git_If.Git_Hash;
   Merged : Boolean;
@@ -21,20 +21,20 @@ procedure Rename (Branch, Root, Path : in String;
   -- File status in the commit
   Status : Character;
   -- First life
-  First : Boolean;
+  First_Index : Ll_Natural;
 
-  use type As.U.Asu_Us, Git_If.Log_Mng.Ll_Natural;
+  use type As.U.Asu_Us, Ll_Natural;
 begin
   Log.Delete_List;
-  First := True;
+  First_Index := 0;
   File.Set (Path);
   -- Loop for each commit
   loop
     -- Compute allowed remains entres
     if Max /= 0 then
-      if Log.List_Length < Git_If.Log_Mng.Ll_Natural (Max) then
-        Remain := Natural (Git_If.Log_Mng.Ll_Natural (Max) - Log.List_Length);
-        if not First then
+      if Log.List_Length < Max then
+        Remain := Max - Log.List_Length;
+        if First_Index /= 0 then
           -- We will remove the first (dup) entry
           Remain := Remain + 1;
         end if;
@@ -50,7 +50,7 @@ begin
 
     -- If this is not the first life of the file, then the first entry
     --  is a dup of the last entry of previous life
-    if not First then
+    if First_Index /= 0 then
       Llog.Rewind;
       Llog.Delete (Moved => Moved);
       exit when Llog.Is_Empty;
@@ -103,10 +103,12 @@ begin
     exit when not Found;
     -- Flag this commit as renaming the file
     Log.Access_Current.Merged := True;
-    First := False;
+    if First_Index = 0 then
+      First_Index := Log.Get_Position;
+    end if;
 
   end loop;
   Log.Rewind;
-
+  return First_Index;
 end Rename;
 
