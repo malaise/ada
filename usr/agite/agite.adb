@@ -580,7 +580,6 @@ procedure Agite is
             -- Very unlikely but maybe the dir has disappeared meanwhile
             null;
         end;
-        Position := 1;
       end if;
     elsif File.Kind = '?' then
       if File.S2 = ' ' and then File.S3 = 'D' then
@@ -588,7 +587,6 @@ procedure Agite is
         if Confirm ("Ready to revert:",
                     Directory.Build_File_Name (Path.Image, Name, "")) then
           Git_If.Do_Revert (Name);
-          Position := 1;
         end if;
       elsif File.S2 = 'D' and then File.S3 = ' ' then
         -- File is deleted in Git, reset and checkout from repository
@@ -596,7 +594,6 @@ procedure Agite is
                     Directory.Build_File_Name (Path.Image, Name, "")) then
           Git_If.Do_Reset (Name);
           Git_If.Do_Revert (Name);
-          Position := 1;
         end if;
       elsif File.S3 = 'D' then
         -- File is staged and has unstaged deletion, reset
@@ -625,7 +622,6 @@ procedure Agite is
           -- Prev has the relative path to root
           Git_If.Do_Reset (Root.Image & Prev);
           Git_If.Do_Revert (Root.Image & Prev);
-          Position := Position - 1;
         end if;
       elsif File.S2 = 'M' then
         -- File is updated in index, reset the index and restore
@@ -652,7 +648,6 @@ procedure Agite is
       if Confirm ("Ready to remove for Git:",
                   Directory.Build_File_Name (Path.Image, Name, "")) then
         Git_If.Do_Rm (Name);
-        Position := 1;
       end if;
     else
       -- File is staged and has unstaged changes, reset
@@ -839,7 +834,9 @@ procedure Agite is
         Kind_Ok := File.Kind = '/';
       else
         -- Regular file or other kind
-        Kind_Ok := File.Kind = ' ' or else File.Kind = '?';
+        Kind_Ok := File.Kind = ' '
+           or else File.Kind = '@'
+           or else File.Kind = '?';
       end if;
       if Kind_Ok and then File.Name.Element(1) = Key then
         -- Got it
