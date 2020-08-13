@@ -128,17 +128,6 @@ comp out exp
 comp err nul
 echo "OK"
 
-title c2f
-launch c2f :21c:
-echo "21.00c = 69.80f" > exp
-comp out exp
-comp err nul
-launch c2f :21f:
-echo "21.00f = -6.11c"> exp
-comp out exp
-comp err nul
-echo "OK"
-
 title cans
 launch cans @1 @1:3 1 1.5 i :toto: :to[t]o:
 cat << EOF > exp
@@ -175,13 +164,6 @@ stop
 sleep 0.5
 echo "OK"
 
-title cm2inch
-launch cm2inch 21.21
-echo "8\"3/8" > exp
-comp out exp
-comp err nul
-echo "OK"
-
 title conso
 launch conso 30 8 1.15
 cat << EOF > exp
@@ -189,6 +171,25 @@ Current   fuel: 21.9 tons
 Flight    time: 01h30
 Remaining fuel:  3.7 tons
 EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title conv
+launch conv ":21.21cm:"
+echo "8\"3/8" > exp
+comp out exp
+comp err nul
+launch conv ":21C:" ":21F:"
+echo -en "-6C\n70F\n" > exp
+comp out exp
+comp err nul
+launch conv ":21€:" ":21f:"
+echo -en "3.20€\n137.75f\n" > exp
+comp out exp
+comp err nul
+launch conv ":1013hP:"
+echo "29.91Hg" > exp
 comp out exp
 comp err nul
 echo "OK"
@@ -285,17 +286,6 @@ Stack:
    21
     1
 EOF
-comp out exp
-comp err nul
-echo "OK"
-
-title e2f
-launch e2f :21e:
-echo "21.00e = 137.75f" > exp
-comp out exp
-comp err nul
-launch e2f :21f:
-echo "21.00f = 3.20e"> exp
 comp out exp
 comp err nul
 echo "OK"

@@ -1,0 +1,84 @@
+# Convert several kinds:
+# km <-> Nm    0 decimal
+# cm  -> in    Inches + fraction
+# C  <-> F     0 decimals
+# hP <-> Hg    0 / 2 decimals
+# ms  -> kmh
+# €  <-> f     2 decimals
+# Process inputs one by one
+# Each input is a string made of an inte or a real, and a unit
+
+# Error handling
+[
+  "Error. Invalid argument " put putl
+  "Expecting strings of <num><unit>, where <num> is an inte or a real" putl
+  " and <unit> is km Nm cm C F hP Hg ms € f" putl
+  1 setexit ssize popn retall 
+] Z popr
+  
+# Format a real number, rounding at 2 digits
+0 format
+[
+dup isneg [ "-" put absv ] ifcall
+100.0 *
+round dup
+1 format 100 / strof "." strcat swap
+# Display frac (2 digits) and unit
+100 % 2 True "0" normal
+strcat
+] R popr
+
+# Check that ToS (real) is >= 0.0
+[ dup isneg Z pushr ifcall ] N popr
+
+# Conversions depending on unit.
+# Stored in registers a to i and A to H
+"km" a popr [ N pushr call 1.852 / round put "Nm" putl ] A popr
+"Nm" b popr [ N pushr call 1.852 * round put "km" putl ] B popr
+"cm" c popr 
+[ N pushr call
+  # Convert into inches and round to 1/8th
+  0.393701 * 8.0 * round 
+  # Extract integer and reminder parts
+  dup 8 / pope 8 % 
+  # Format tail (reduce fraction)
+  # Replace 0:1 by "" otherwise replace x:y by "x/y"
+  toarbi @8 mkfrac dup @0:1 =
+  [ pop "" ] [ strof 3 5 strsub 2 "/" strovw ] ifte call
+  1 format pushle put """" put putl
+] C popr
+"C" d popr [ 1.8 * 32.0 + round put "F" putl ] D popr
+"F" e popr [ 32.0 - 1.8 / round put "C" putl ] E popr
+"hP" f popr [ N pushr call 0.029529983071445 * R pushr call 
+put "Hg" putl ] F popr
+"Hg" g popr [ N pushr call 0.029529983071445 / round put "hP" putl ] G popr
+"ms" h popr [ N pushr call 1000.0 / 3600.0 * round put "km/h" putl ] H popr
+"€" i popr [ N pushr call 6.55957 * R pushr call put "f" putl ] I popr
+"f" j popr [ N pushr call 6.55957 / R pushr call put "€" putl ] J popr
+"" k popr
+
+# Loop on each argument
+[
+  ssize 0 = ifret
+  x copyr
+  # Check syntax in or real a,d 1 or 2 letters of unit
+  dup "^-?[0-9]+(\.[0-9]+)?[a-zA-Z€]{1,2}$" regmatch isnull Z pushr ifcall
+  # Extract val and unit
+  dup "[a-zA-Z€]" regmatch u popr
+  dup 1 u pushr 1 - strsub dup 
+  caninte [ strinte toreal ] [ strreal ] ifte call v popr
+  dup strlen u pushr swap strsub u popr
+  # Loop  search for matching unit, error if not found
+  a 
+  [
+    # End of list of units => no match
+    dup pushr "" = [ pop x pushr Z pushr call ] ifcall
+    # Check if match
+    dup pushr u pushr = 
+    # If unit matches match => call conversion
+    [ v pushr swap regind 26 - indreg pushr call 2 retn ] ifcall
+    # Else try next unit
+    nextr
+  M pushr retacal ] M copyr call
+L pushr retacal ] L copyr call
+

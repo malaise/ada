@@ -1,0 +1,11 @@
+#!/bin/bash
+# Concat arguments as strings
+ARGS=""
+while [ -n "$1" ] ; do
+  ARGS=":$1: $ARGS"
+  shift
+done
+
+# Launch
+mcdt conv.mcd $ARGS
+
