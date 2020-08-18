@@ -1,5 +1,6 @@
 with Ada.Calendar;
-with X_Mng, Timers, Long_Long_Limited_Pool, Trace.Loggers, Images;
+with X_Mng, Timers, Long_Long_Limited_Pool, Trace.Loggers, Images,
+     Aski.Unicode, Language;
 with Movements;
 package body Table is
   -- Debug logger
@@ -35,22 +36,28 @@ package body Table is
   Stack_X : Con_Io.X_Range;
   Stack_Y : constant Con_Io.Y_Range := Deck.Height + Y_Gap_Done * 2;
 
-  -- Dummy window for blind Get
-  Get_Window : Con_Io.Window;
-
   -- Window for the menu
   Menu_Window : Con_Io.Window;
   Menu_Back : constant Con_Io.Colors :=  Con_Io.Color_Of ("Light_Blue");
   Menu_Fore : constant Con_Io.Colors :=  Con_Io.Color_Of ("Black");
+  Num_Back  :  constant Con_Io.Colors :=  Con_Io.Color_Of ("Light_Grey");
   Menu_Row : constant Con_Io.Row_Range := 2;
 
   -- Buttons of the menu
-  Start_Exit    : constant :=   2; Stop_Exit    : constant :=   7;
-  Start_New     : constant :=  10; Stop_New     : constant :=  15;
-  Start_Restart : constant :=  17; Stop_Restart : constant :=  25;
-  Start_Purge   : constant := 130; Stop_Purge   : constant := 136;
-  Start_Undo    : constant := 139; Stop_Undo    : constant := 144;
-  Start_Redo    : constant := 147; Stop_Redo    : constant := 152;
+  Start_Exit  : constant :=   2; Stop_Exit  : constant :=   7;
+  Start_New   : constant :=  11; Stop_New   : constant :=  16;
+  Start_Start : constant :=  26; Stop_Start : constant :=  32;
+  Start_Purge : constant := 128; Stop_Purge : constant := 134;
+  Start_Undo  : constant := 138; Stop_Undo  : constant := 143;
+  Start_Redo  : constant := 147; Stop_Redo  : constant := 152;
+
+  -- Get Num
+  Start_Num     : constant := 19;
+  Num_Txt : Con_Io.Unicode_Sequence (1 .. 6);
+  Num_Last : Natural;
+  Num_Pos : Positive;
+  Num_Insert : Boolean;
+
 
   -- Window for the policy menu
   Policy_Window : Con_Io.Window;
@@ -86,8 +93,8 @@ package body Table is
     Menu_Window.Put (" Exit ", Menu_Fore, Menu_Back, False);
     Menu_Window.Move (0, Start_New);
     Menu_Window.Put (" New ", Menu_Fore, Menu_Back, False);
-    Menu_Window.Move (0, Start_Restart);
-    Menu_Window.Put (" Restart ", Menu_Fore, Menu_Back, False);
+    Menu_Window.Move (0, Start_Start);
+    Menu_Window.Put (" Start ", Menu_Fore, Menu_Back, False);
     Menu_Window.Move (0, Start_Purge);
     Menu_Window.Put (" Purge ", Menu_Fore, Menu_Back, False);
     Menu_Window.Move (0, Start_Undo);
@@ -96,6 +103,14 @@ package body Table is
     Menu_Window.Put (" Redo ", Menu_Fore, Menu_Back, False);
     Update_Policy;
   end Put_Menu;
+
+  -- Reset Get field for Num
+  procedure Reset_Get is
+  begin
+    Num_Txt := (others => Aski.Unicode.Spc_U);
+    Num_Pos := 1;
+    Num_Insert := False;
+  end Reset_Get;
 
   -- Needs to be called only once, create the table, move the stacks, cards, menu...
   procedure Init is
@@ -133,17 +148,14 @@ package body Table is
       Cards.The_Xdones(I).Do_Raise;
     end loop;
 
-    -- Create a dummy window for blind get
-    Get_Window.Open (Console'Unchecked_Access, (0, 0), (0, 0));
-    Get_Window.Set_Foreground (Background);
-    Get_Window.Set_Background (Background);
-
     -- Put menus
     Menu_Window.Open (Console'Unchecked_Access,
                       (Menu_Row, 0), (Menu_Row, Last_Col));
     Policy_Window.Open (Console'Unchecked_Access,
                       (Policy_Row, 0), (Policy_Row, Last_Col));
     Put_Menu;
+    -- Init get field
+    Reset_Get;
   end Init;
 
   -- Set game num
@@ -250,13 +262,13 @@ package body Table is
     Event := (Leave, null);
     if Square.Row = Menu_Row then
       case Square.Col is
-        when Start_Exit    .. Stop_Exit    => Event := (Kind => Quit);
-        when Start_New     .. Stop_New     => Event := (Kind => New_Game);
-        when Start_Restart .. Stop_Restart => Event := (Kind => Restart);
-        when Start_Purge   .. Stop_Purge   => Event := (Kind => Purge);
-        when Start_Undo    .. Stop_Undo    => Event := (Kind => Undo);
-        when Start_Redo    .. Stop_Redo    => Event := (Kind => Redo);
-        when others                        => null;
+        when Start_Exit  .. Stop_Exit  => Event := (Kind => Quit);
+        when Start_New   .. Stop_New   => Event := (Kind => New_Game);
+        when Start_Start .. Stop_Start => Event := (Kind => Start);
+        when Start_Purge .. Stop_Purge => Event := (Kind => Purge);
+        when Start_Undo  .. Stop_Undo  => Event := (Kind => Undo);
+        when Start_Redo  .. Stop_Redo  => Event := (Kind => Redo);
+        when others                    => null;
       end case;
     elsif Square.Row = Policy_Row
     and then not Memory.Can_Undo
@@ -275,9 +287,9 @@ package body Table is
         when New_Game =>
           Menu_Window.Move (0, Start_New);
           Menu_Window.Put (" New ", Menu_Back, Menu_Fore, False);
-        when Restart =>
-          Menu_Window.Move (0, Start_Restart);
-          Menu_Window.Put (" Restart ", Menu_Back, Menu_Fore, False);
+        when Start =>
+          Menu_Window.Move (0, Start_Start);
+          Menu_Window.Put (" Start ", Menu_Back, Menu_Fore, False);
         when Switch =>
           Policy_Window.Move (0, Start_Switch);
           Policy_Window.Put (" Switch ", Menu_Back, Menu_Fore, False);
@@ -304,12 +316,8 @@ package body Table is
 
   -- Wait for an event (Dur < 0) or a delay
   function Wait (Dur : Duration) return Event_Rec is
-    -- For blind get
-    Str : Con_Io.Unicode_Sequence (1 .. 0);
-    Last : Natural;
+    -- Put then get result
     Stat : Con_Io.Curs_Mvt;
-    Pos : Positive;
-    Insert : Boolean;
     -- Mouse event
     Mouse_Event : Con_Io.Mouse_Event_Rec;
     -- Expiration
@@ -337,7 +345,10 @@ package body Table is
              " " & Event.Card.Image else "") );
         return Event;
       end if;
-      Get_Window.Get (Str, Last, Stat, Pos, Insert, Time_Out => Expiration);
+      Menu_Window.Move (0, Start_Num);
+      Menu_Window.Put_Then_Get (Num_Txt, Num_Last, Stat, Num_Pos,
+                                Num_Insert, Menu_Fore, Num_Back,
+                                Time_Out => Expiration);
       case Stat is
         when Con_Io.Break =>
           Event := (Kind => Quit);
@@ -383,6 +394,22 @@ package body Table is
     Dummy_Event := Wait (Dur);
     Logger.Log_Debug ("Stop waiting");
   end Wait;
+
+  -- Get game num
+  function Get_Num return Memory.Req_Game_Range is
+  begin
+    return Memory.Game_Range'Value (
+        Language.Unicode_To_String (Num_Txt (1 .. Num_Last)));
+  exception
+    when others =>
+      return Memory.Random_Num;
+  end Get_Num;
+
+  -- Reset game num field
+  procedure Reset_Num is
+  begin
+   Reset_Get;
+  end Reset_Num;
 
 end Table;
 

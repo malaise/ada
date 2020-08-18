@@ -83,10 +83,17 @@ begin
         Movements.Reset;
         Memory.Start_Game (Memory.Random_Num);
         Table.Update_Policy;
-      when Table.Restart =>
+      when Table.Start =>
+        Game_Num := Table.Get_Num;
         Reset;
         Movements.Reset;
-        Memory.Restore_Game;
+        if Game_Num = Memory.Random_Num then
+          -- Invalid_Num
+          Memory.Restore_Game;
+        else
+          Memory.Start_Game (Game_Num);
+        end if;
+        Table.Reset_Num;
         Table.Update_Policy;
       when Table.Switch =>
         -- Maybe not valid any more
