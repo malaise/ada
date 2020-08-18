@@ -4,6 +4,10 @@ package body Movements is
 
   -- Debug
   Logger : Trace.Loggers.Logger;
+
+  -- Allow move back from Done stack
+  Allow_From_Done : constant Boolean := False;
+
   -- Number of free play and tmp stacks
   Nb_Free_Play_Stacks : Natural range 0 .. Cards.Play_Stack_Range'Last;
   Nb_Free_Tmp_Stacks : Natural range 0 .. Cards.Tmp_Stack_Range'Last;
@@ -72,7 +76,8 @@ package body Movements is
     Target_Empty_Free, Source_Top_Free : Boolean;
     use type Cards.Card_Access, Cards.Deck.Full_Suit_List;
   begin
-    if Source.Stack.Name = Cards.Deck.Symbol_Name then
+    if Source.Stack.Name = Cards.Deck.Symbol_Name
+    and then not Allow_From_Done then
       -- Cannot move from Done
       Logger.Log_Debug ("Can_Move -> FALSE cause from Done stack");
       return False;
@@ -219,7 +224,7 @@ package body Movements is
           Curr.Nb_Children := Curr.Nb_Children + 1;
         end loop;
       end if;
-    else
+    elsif not Allow_From_Done then
       -- Done stack => Irreversible
       Curr.Movable := False;
     end if;
