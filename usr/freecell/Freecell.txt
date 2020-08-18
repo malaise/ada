@@ -1,6 +1,6 @@
 Freecell
 ========
-V2.1
+V3.0
 
 Freecell is a famous solitaire card game.
 
@@ -48,8 +48,10 @@ corner of the window depending on the window manager).
 New::
 This button stops the current game and starts a new one.
 
-Restart::
-This button stops and restarts from scratch the current game.
+Start::
+This button stops the current game and starts from scratch the game which number
+has been entered in the field beside the button, or restarts the current game if
+this number is invalid.
 
 .On the right side are the functions that interact with the current game:
 
@@ -172,5 +174,7 @@ number is displayed in the title of the main window.
 
 Each 'New' game is a random one, and by default the first game is also random.
 still, it is possible to specify as program argument the number of the first
-game to start with.
+game to start with. +
+Also, it is possible to start a given game by entering the game number and then
+clicking on the 'Start' button.
 

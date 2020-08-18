@@ -7,7 +7,8 @@ package Table is
   -- The main window
   Console : aliased Con_Io.Console;
 
-  -- Needs to be called only once, create the table, move the stacks, cards, menu...
+  -- Needs to be called only once, create the table, move the stacks, cards,
+  --  menu...
   procedure Init;
 
   -- Set game num
@@ -34,7 +35,7 @@ package Table is
   type Event_List is (Left_Pressed, Left_Released,
                       Right_Pressed, Right_Released,
                       Enter, Leave,
-                      Quit, New_Game, Restart, Purge, Undo, Redo);
+                      Quit, New_Game, Start, Purge, Undo, Redo);
   subtype Card_Event_List is Event_List range Left_Pressed .. Leave;
   subtype Menu_Event_List is Event_List range Quit .. Redo;
   type Event_Rec (Kind : Event_List:= Quit) is record
@@ -49,6 +50,10 @@ package Table is
 
   -- Wait some milliseconds
   procedure Wait (Dur : in Duration);
+
+  -- Get / reset game num field
+  function Get_Num return Memory.Req_Game_Range;
+  procedure Reset_Num;
 
 end Table;
 
