@@ -64,7 +64,7 @@ False t popr
 # String image with 7 digits of int part and 1 digit of fraction
 [ 10 8 "0" normal 1 1 strdel ] I popr
 
-# Once hours are set, display table
+# Once hours are set, display table and add to total
 [
 # Conversion occured
 True r popr
@@ -72,7 +72,7 @@ True r popr
 t pushr ~ [
 "+------------------------------------------------------------------------+" b copyr putl
 "| man year | man month |   man day |  hours | k€ Mng/Archi | k€ Engineer |" putl
-"|----------+-----------+-----------+--------+--------------+-------------|" putl
+"|----------+-----------+-----------+--------+--------------+-------------|" l copyr putl
 ] ifcall True t popr
 "|" put
 dup y pushr / I pushr call put " |" put
@@ -80,7 +80,9 @@ dup m pushr / I pushr call " " put put " |" put
 dup d pushr / round 10 True " " normal put " |" put
 dup           round  7 True " " normal put " |" put
 dup a pushr * I pushr call "    " put put " |" put
-    i pushr * I pushr call  "   " put put " |" putl
+dup i pushr * I pushr call  "   " put put " |" putl
+s pushr + s popr
+n pushr 1 + n popr
 ] D popr
 
 # Reverse order of arguments
@@ -89,8 +91,10 @@ ssize 0 = ifret
 pope
 O pushr retacal ] O copyr call
 
-
-# Main loop on arguments
+# Main loop on all arguments
+# Sum of hours
+0.0 s popr
+0 n popr
 [
 # 1 arg string
 esize 0 = ifret
@@ -114,8 +118,11 @@ u pushr "kei" = [ i pushr / D pushr call ] ifcall
 
 # No convertion occured?
 r pushr ~ E pushr ifcall
-# Loop
+# End loop on all arguments
 M pushr retacal ] M copyr call
+
+# Separator and total
+n pushr 1 > [ l pushr putl s pushr D pushr call ] ifcall
 
 # Tail
 t pushr [ b pushr putl ] ifcall
