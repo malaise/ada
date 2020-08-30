@@ -1,5 +1,6 @@
 #!/bin/bash
 # Concat arguments as strings
+export MCD=${HOME}/ada/usr/mcd
 ARGS=""
 while [ -n "$1" ] ; do
   ARGS=":$1: $ARGS"
@@ -7,5 +8,7 @@ while [ -n "$1" ] ; do
 done
 
 # Launch
+cd ${MCD}
 mcdt conv.mcd $ARGS
+
 
