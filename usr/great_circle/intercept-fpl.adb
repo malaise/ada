@@ -296,7 +296,9 @@ package body Fpl is
   Append_Suffix : constant String := "-App";
   procedure Save is
     Path, Prefix, Suffix : As.U.Asu_Us;
+    Num : My_Math.Inte;
     Line : As.U.Asu_Us;
+    use type My_Math.Real;
   begin
     if Debug then
       -- Debug => no file
@@ -309,14 +311,18 @@ package body Fpl is
     Line := Fpl_Data.Element (Numenr_Line);
     Line.Append (Images.Integer_Image (Numenr));
     Fpl_Data.Replace_Element (Numenr_Line, Line);
-    -- Build new name
+    -- Build new name <path>/<file>-App<qfu>.<suffix>
     Path.Set (Directory.Dirname (File_Name.Image));
     Prefix.Set (Directory.File_Prefix (File_Name.Image));
     Suffix.Set (Directory.File_Suffix (File_Name.Image));
-    -- Delete "."
+    -- Delete "." from suffix
     Suffix.Delete (1, 1);
+    Num := My_Math.Round (My_Math.Real (Qfu) / 10.0);
     Path.Set (Directory.Build_File_Name (
-        Path.Image, Prefix.Image & Append_Suffix, Suffix.Image));
+        Path.Image,
+        Prefix.Image & Append_Suffix
+                     & Normalization.Normal_Inte (Num, 2, True, '0'),
+        Suffix.Image));
     Logger.Log_Debug ("Saving file: " & Path.Image);
     -- Save
     File.Create_All (Path.Image);
