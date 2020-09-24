@@ -3,7 +3,7 @@ with Basic_Proc, Trace.Loggers, As.U, Argument, Argument_Parser, Long_Longs,
      Many_Strings, Reg_Exp, Unlimited_Pool;
 procedure App is
 
-  Version : constant String := "V03.01";
+  Version : constant String := "V03.02";
 
   -- Log an error and raise
   Raised_Error : exception;

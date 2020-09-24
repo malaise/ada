@@ -1,7 +1,7 @@
 App
 ===
 
-Version 03.01
+Version 03.02
 
 App is a pre-processor. it selects pieces of text and expands names
 according to definitions.
@@ -25,11 +25,10 @@ A preprocessing directive is a line that:
 
  * possibly starts with some spaces and horizontal tabulations
  * followed by a 'prefix'
- * followed by at least a space or a tab
  * followed by a 'keyword'. +
    Some keywords must be followed by:
   - at least a space or a tab
-  - a 'name'
+  - a 'name' or several 'names'
 
 +
 Some keywords also require the 'name' to be followed by:
@@ -103,6 +102,9 @@ or
 or 
 
    ^[[:blank:]]*<prefix>Define[[:blank:]]+<name>([[:blank:]]+<Value>)?$
+
+NOTE: As consequence, any line containing a valid directive followed by a
+significant text is not processed (kept unchanged).
 
 .Example of directives
 
