@@ -189,7 +189,7 @@ package body Con_Io is
     Screen : Window;
   begin
     Logger.Init ("Con_Io");
-    Logger.Log_Debug ("Console opening");
+    Logger.Log_Debug ("Console opening with font" & Font_No'Img);
     Initialise;
     Con_Data.Font_No := Font_No;
     Con_Data.Row_Range_Last := Row_Last;
