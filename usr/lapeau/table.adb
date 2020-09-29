@@ -43,7 +43,7 @@ package body Table is
   Num_Back  :  constant Con_Io.Colors :=  Con_Io.Color_Of ("Light_Grey");
   Menu_Row : constant Con_Io.Row_Range := 2;
 
-  -- Buttons of the menu
+  -- Buttons of the menu, for a font width 7
   Start_Exit  : constant :=   2; Stop_Exit  : constant :=   7;
   Start_New   : constant :=  11; Stop_New   : constant :=  16;
   Start_Start : constant :=  26; Stop_Start : constant :=  32;
@@ -118,7 +118,7 @@ package body Table is
     if Console.Is_Open then
       return;
     end if;
-    Logger.Init ("Events");
+    Logger.Init ("Table");
     -- Create Console at proper size
     Con_Io.Initialise;
     declare
@@ -129,8 +129,12 @@ package body Table is
       Last_Col := ((Deck.Width + X_Gap) * Cards.Stack_Range'Last + X_Gap)
                   / Font_Width;
       Console.Open (Font_No, Last_Row, Last_Col, Def_Back => Background);
+      Logger.Log_Debug ("Last col:" & Last_Col'Img);
     end;
     Console.Set_Y_Mode (Con_Io.X_Mng_Mode);
+    Logger.Log_Debug ("Geometry: "
+                    & Console.X_Max'Img & " x" & Console.Y_Max'Img);
+
     Cards.Init (Console.Get_Line);
 
     -- Compute offset of stacks and done stacks and put them
