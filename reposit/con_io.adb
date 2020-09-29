@@ -105,11 +105,14 @@ package body Con_Io is
         Font_Name : constant String
                   := Lower_Str (Environ.Getenv (Font_Env_Name));
       begin
-        Logger.Log_Debug ("Font " & Font_Name);
         if Font_Name = Font_Env_Small then
+          Logger.Log_Debug ("Init Font " & Font_Name);
           Font_No_Offset := -1;
         elsif Font_Name = Font_Env_Large then
+          Logger.Log_Debug ("Init Font " & Font_Name);
           Font_No_Offset := +1;
+        else
+          Logger.Log_Debug ("Init Font normal");
         end if;
       end;
       X_Init_Done := True;
@@ -151,7 +154,14 @@ package body Con_Io is
                                Font_Height : out Natural;
                                Font_Offset : out Natural) is
   begin
-    X_Mng.X_Get_Font_Geometry (Font_No, Font_Width, Font_Height, Font_Offset);
+    X_Mng.X_Get_Font_Geometry (
+      (if Font_No + Font_No_Offset in Font_No_Range then
+         Font_No + Font_No_Offset
+       else Font_No),
+      Font_Width, Font_Height, Font_Offset);
+    Logger.Log_Debug ("Font geometry of" & Font_No'Img
+                    & ": " & Font_Width'Img & " x" & Font_Height'Img
+                    & " +" & Font_Offset'Img);
   end Get_Font_Geometry;
 
   -- Internal
@@ -187,6 +197,10 @@ package body Con_Io is
     Line : X_Mng.Line_Definition_Rec := Line_Def;
     Con_Data : Console_Data;
     Screen : Window;
+    -- For logging font No and geometry
+    Font_Width  : Natural;
+    Font_Height : Natural;
+    Font_Offset : Natural;
   begin
     Logger.Init ("Con_Io");
     Logger.Log_Debug ("Console opening with font" & Font_No'Img);
@@ -206,6 +220,7 @@ package body Con_Io is
     Line.Width  := Col_Last - Col_Range_First + 1;
     X_Mng.X_Open_Line (Line, Con_Data.Id);
     Logger.Log_Debug ("Console opened");
+    Get_Font_Geometry (Line.No_Font, Font_Width, Font_Height, Font_Offset);
     X_Mng.X_Set_Name (Con_Data.Id, Argument.Get_Program_Name);
     Logger.Log_Debug ("Console name set");
     Con_Data.Mouse_Status := Mouse_Discard;

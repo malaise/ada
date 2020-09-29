@@ -176,9 +176,9 @@ extern int x_get_font_geometry (int font_no, int *p_f_width, int *p_f_height,
     if (local_server.x_server == NULL) {
         return (WAIT_ERR);
     }
-    *p_f_width  = fon_get_width  (local_server.x_font[font_no]);
-    *p_f_height = fon_get_height (local_server.x_font[font_no]);
-    *p_f_offset = fon_get_offset (local_server.x_font[font_no]);
+    *p_f_width  = fon_get_width  (local_server.x_font[font_no * 2]);
+    *p_f_height = fon_get_height (local_server.x_font[font_no * 2]);
+    *p_f_offset = fon_get_offset (local_server.x_font[font_no * 2]);
     return (WAIT_OK);
 }
 
