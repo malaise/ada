@@ -177,7 +177,7 @@ package body Con_Io is
               or else Background /= Con_Acc.Line_Background then
       X_Mng.X_Set_Attributes (Con_Acc.Id, Colors'Pos(Background) - 1,
                                           Colors'Pos(Foreground) - 1,
-                                          Superbright => True);
+                                          Bold => True);
       Con_Acc.Line_Foreground := Foreground;
       Con_Acc.Line_Background := Background;
     end if;

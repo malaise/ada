@@ -80,7 +80,8 @@ package X_Mng is
   procedure X_Get_Font_Geometry (No_Font     : in Font;
                                  Font_Width  : out Natural;
                                  Font_Height : out Natural;
-                                 Font_Offset : out Natural);
+                                 Font_Offset : out Natural;
+                                 Bold        : in Boolean := False);
 
   -- Open a line on the host
   -- screen_id is integer, (a negative value for the default screen)
@@ -131,7 +132,7 @@ package X_Mng is
   -- The attributes are True or False
   procedure X_Set_Attributes(Line_Id     : in Line;
                              Paper, Ink  : in Color;
-                             Superbright : in Boolean := False;
+                             Bold        : in Boolean := False;
                              Underline   : in Boolean := False;
                              Inverse     : in Boolean := False);
 
@@ -176,7 +177,7 @@ package X_Mng is
                                   Car         : in Character;
                                   Row, Column : in Natural;
                                   Paper, Ink  : in Color;
-                                  Superbright : in Boolean := False;
+                                  Bold        : in Boolean := False;
                                   Underline   : in Boolean := False;
                                   Inverse     : in Boolean := False);
 

@@ -433,7 +433,7 @@ int lin_clear (t_window *p_window) {
     /* CLear line */
     XClearWindow (p_window->server->x_server, p_window->x_window);
 
-    /* Reset underline and superbright attributes */
+    /* Reset underline and bold attributes */
     p_window->underline = False;
     p_window->bold = False;
 

@@ -46,7 +46,7 @@ void *ref;
     exit(1);
   }
   /* Compute size in row/col */
-  if (x_get_font_geometry (0, &fwidth, &fheight, &foffset) != 0) {
+  if (x_get_font_geometry (0, false, &fwidth, &fheight, &foffset) != 0) {
     printf ("ERROR initialise\n");
     exit(1);
   }

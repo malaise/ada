@@ -35,7 +35,7 @@ static const char *fixed[NBRE_FONT] = {
 
 #define FONT_NAME "X_FONT_"
 
-void set_from_env (int font_index, char *env_name);
+static void set_from_env (int font_index, char *env_name);
 
 boolean fil_init (void) {
     int i;

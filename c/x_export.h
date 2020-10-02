@@ -40,8 +40,8 @@ extern int x_suspend (void);
 extern int x_resume (void);
 extern int x_modified (void);
 
-extern int x_get_font_geometry (int font_no, int *p_f_width, int *p_f_height,
-                                int *p_f_offset);
+extern int x_get_font_geometry (int font_no, boolean bold,
+                        int *p_f_width, int *p_f_height, int *p_f_offset);
 
 extern int x_open_line (int screen_id,
                         int row, int column,
@@ -64,7 +64,7 @@ extern int x_clear_line (void *line_id);
 
 extern int x_set_attributes (void *line_id,
                              int paper, int ink,
-                             boolean superbright, boolean underline,
+                             boolean bold, boolean underline,
                              boolean reverse);
 
 extern int x_set_xor_mode (void *line_id, boolean xor_mode);
@@ -82,7 +82,7 @@ extern int x_put_char_attributes (void *line_id,
                                   int car,
                                   int row, int column,
                                   int paper, int ink,
-                                  boolean superbright, boolean underline,
+                                  boolean bold, boolean underline,
                                   boolean reverse);
 
 extern int x_draw_area (void *line_id,

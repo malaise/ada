@@ -170,15 +170,21 @@ extern int x_modified (void) {
 }
 
 /* Characteristics of a font in the server */
-extern int x_get_font_geometry (int font_no, int *p_f_width, int *p_f_height,
-                                int *p_f_offset) {
+extern int x_get_font_geometry (int font_no, boolean bold,
+    int *p_f_width, int *p_f_height, int *p_f_offset) {
+
+    int off;
+
     /* Check that display is init */
     if (local_server.x_server == NULL) {
         return (WAIT_ERR);
     }
-    *p_f_width  = fon_get_width  (local_server.x_font[font_no * 2]);
-    *p_f_height = fon_get_height (local_server.x_font[font_no * 2]);
-    *p_f_offset = fon_get_offset (local_server.x_font[font_no * 2]);
+
+    off = (bold ? 1 : 0);
+
+    *p_f_width  = fon_get_width  (local_server.x_font[font_no * 2 + off]);
+    *p_f_height = fon_get_height (local_server.x_font[font_no * 2 + off]);
+    *p_f_offset = fon_get_offset (local_server.x_font[font_no * 2 + off]);
     return (WAIT_OK);
 }
 
@@ -289,7 +295,7 @@ extern int x_clear_line (void *line_id) {
 
 /* Sets the attributes for a further put in the same window */
 extern int x_set_attributes (void *line_id, int paper, int ink,
-  boolean superbright, boolean underline, boolean reverse) {
+  boolean bold, boolean underline, boolean reverse) {
 
     t_window *win_id = (t_window*) line_id;
 
@@ -303,9 +309,9 @@ extern int x_set_attributes (void *line_id, int paper, int ink,
         return (WAIT_ERR);
     }
 
-    /* Store underline and superbright attribute */
+    /* Store underline and bold attribute */
     win_id->underline = underline;
-    win_id->bold = superbright;
+    win_id->bold = bold;
 
     /* Update graphic context */
     scr_set_attrib (win_id->server->x_server,
@@ -457,10 +463,10 @@ extern int x_put_string (void *line_id, const char *p_char, int number,
 /* The output is not flushed */
 extern int x_put_char_attributes (void *line_id, int car, int row, int column,
   int paper, int ink,
-  boolean superbright, boolean underline, boolean reverse) {
+  boolean bold, boolean underline, boolean reverse) {
 
     if (x_set_attributes (line_id, paper, ink,
-                   superbright, underline, reverse) == WAIT_ERR) {
+                   bold, underline, reverse) == WAIT_ERR) {
         return (WAIT_ERR);
     }
 

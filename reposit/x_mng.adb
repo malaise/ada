@@ -43,10 +43,10 @@ package body X_Mng is
     with Import => True, Convention => C, External_Name => "x_modified";
   ------------------------------------------------------------------
   -- Get the geometry of a font in the server
-  -- int x_get_font_geometry (int font_no, int *p_f_width, int *p_f_height,
-  --                          int *p_f_offset);
+  -- int x_get_font_geometry (int font_no, boolean bold,
+  --              int *p_f_width, int *p_f_height, int *p_f_offset);
   ------------------------------------------------------------------
-  function X_Get_Font_Geometry (Font_No : C_Types.Int;
+  function X_Get_Font_Geometry (Font_No : C_Types.Int; Bold : C_Types.Bool;
     Width, Height, Offset : System.Address) return Result
     with Import => True, Convention => C,
          External_Name => "x_get_font_geometry";
@@ -121,12 +121,12 @@ package body X_Mng is
   -- Sets the attributes for a further put in the same window
   -- int x_set_attributes (void *line_id;
   --                       int paper, int ink,
-  --                       boolean superbright, boolean underline,
+  --                       boolean bold, boolean underline,
   --                       boolean reverse);
   ------------------------------------------------------------------
   function X_Set_Attributes(Line_Id     : Line_For_C;
                             Paper, Ink  : C_Types.Int;
-                            Superbright : C_Types.Bool;
+                            Bold        : C_Types.Bool;
                             Underline   : C_Types.Bool;
                             Inverse     : C_Types.Bool) return Result
     with Import => True, Convention => C, External_Name => "x_set_attributes";
@@ -174,14 +174,14 @@ package body X_Mng is
   -- Writes a char on a line with specified characteristics
   -- int x_put_char_attributes (void *line_id; int car,
   --                            int row, int column, int paper, int ink,
-  --                            boolean superbright, boolean underline,
+  --                            boolean bold, boolean underline,
   --                            boolean reverse);
   ------------------------------------------------------------------
   function X_Put_Char_Attributes(Line_Id     : Line_For_C;
                                  Car         : C_Types.Int;
                                  Row, Column : C_Types.Int;
                                  Paper, Ink  : C_Types.Int;
-                                 Superbright : C_Types.Bool;
+                                 Bold        : C_Types.Bool;
                                  Underline   : C_Types.Bool;
                                  Inverse     : C_Types.Bool)
    return Result
@@ -581,7 +581,8 @@ package body X_Mng is
   procedure X_Get_Font_Geometry (No_Font     : in Font;
                                  Font_Width  : out Natural;
                                  Font_Height : out Natural;
-                                 Font_Offset : out Natural) is
+                                 Font_Offset : out Natural;
+                                 Bold        : in Boolean := False) is
     Font_Width_For_C    : C_Types.Int;
     Font_Height_For_C   : C_Types.Int;
     Font_Offset_For_C   : C_Types.Int;
@@ -590,7 +591,7 @@ package body X_Mng is
     if not Initialised then
       raise X_Failure;
     end if;
-    Res := X_Get_Font_Geometry (C_Types.Int (No_Font),
+    Res := X_Get_Font_Geometry (C_Types.Int (No_Font), C_Types.Bool (Bold),
       Font_Width_For_C'Address, Font_Height_For_C'Address,
       Font_Offset_For_C'Address) = Ok;
     if not Res then
@@ -815,7 +816,7 @@ package body X_Mng is
   ------------------------------------------------------------------
   procedure X_Set_Attributes(Line_Id     : in Line;
                              Paper, Ink  : in Color;
-                             Superbright : in Boolean := False;
+                             Bold        : in Boolean := False;
                              Underline   : in Boolean := False;
                              Inverse     : in Boolean:= False) is
     Line_For_C_Id : Line_For_C;
@@ -825,7 +826,7 @@ package body X_Mng is
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Set_Attributes(Line_For_C_Id,
                             C_Types.Int(Paper), C_Types.Int(Ink),
-                            C_Types.Bool(Superbright),
+                            C_Types.Bool(Bold),
                             C_Types.Bool(Underline),
                             C_Types.Bool(Inverse)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -921,7 +922,7 @@ package body X_Mng is
                                   Car         : in Character;
                                   Row, Column : in Natural;
                                   Paper, Ink  : in Color;
-                                  Superbright : in Boolean := False;
+                                  Bold        : in Boolean := False;
                                   Underline   : in Boolean := False;
                                   Inverse     : in Boolean := False) is
     Line_For_C_Id : Line_For_C;
@@ -936,7 +937,7 @@ package body X_Mng is
                               C_Types.Int(Column),
                               C_Types.Int(Paper),
                               C_Types.Int(Ink),
-                              C_Types.Bool(Superbright),
+                              C_Types.Bool(Bold),
                               C_Types.Bool(Underline),
                               C_Types.Bool(Inverse)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
