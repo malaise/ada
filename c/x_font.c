@@ -91,13 +91,31 @@ XFontStruct **fonts;
     str = getenv (FONT_DEBUG);
     if (debug
         || ( (str != NULL) && ( (str[0] == 'y') || (str[0] == 'Y') ) ) ) {
+        int width, nwidth, height, nheight, offset, noffset;
+
         printf ("Font summary:\n");
         for (i = 0; i < NBRE_FONT; i++) {
-            printf ("%s : %dx%d+%d\n",
-                    font_name[i],
-                    fon_get_width(font[i]),
-                    fon_get_height(font[i]),
-                    fon_get_offset(font[i]) );
+            width  = fon_get_width(font[i]);
+            height = fon_get_height(font[i]);
+            offset = fon_get_offset(font[i]);
+            printf ("%s : %dx%d+%d\n", font_name[i], width, height, offset);
+            if (i % 2 == 0) {
+              /* Normal font */
+              nwidth  = width;
+              nheight = height;
+              noffset = offset;
+            } else {
+                /* Bold font */
+                if ( (width != nwidth)
+                || (height != nheight)
+                || (offset != noffset) ) {
+                    /* Cheracteristics differ */
+                    printf ("X_FONT warning : Different font size between: ");
+                    printf ("%s: %dx%d-%d\n and %s: %dx%d-%d\n",
+                      font_name[i-1], nwidth, nheight, noffset,
+                      font_name[i], width, height, offset);
+                }
+            }
         }
     }
     return (True);
