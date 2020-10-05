@@ -188,7 +188,7 @@ begin
             -- Pressing in a non movable card
             null;
           when Selectable =>
-            -- Left pressing a slectable source => toggle select
+            -- Left pressing a selectable source => toggle select
             if Event.Card /= Selected_Source then
               Event.Card.Xcard.Do_Select;
               Selected_Source := Event.Card;
@@ -226,15 +226,15 @@ begin
             null;
           when Targeted =>
             -- Releasing in Selected target
-            Selected_Source.Xcard.Un_Select;
-            Selected_Target.Xcard.Un_Select;
-            Status := None;
-            -- Move
+            -- Set movement
             Mov := (Card => Selected_Source,
                     From => Selected_Source.Stack,
                     To   => Selected_Target.Stack);
+            -- Unselect
             Reset;
+            Selected_Target.Xcard.Un_Select;
             Selected_Target := null;
+            -- Move
             Movements.Move (Mov, True);
         end case;
       when Table.Right_Pressed =>
