@@ -3,7 +3,7 @@
 # cm  -> in    Inches + fraction
 # C  <-> F     0 decimals
 # hP <-> Hg    0 / 2 decimals
-# ms  -> kmh
+# ms  -> kt
 # €  <-> f     2 decimals
 # m  <-> ft
 # Process inputs one by one
@@ -53,7 +53,8 @@ strcat
 "hP" f popr [ N pushr call 0.029529983071445 * R pushr call
 put "Hg" putl ] F popr
 "Hg" g popr [ N pushr call 0.029529983071445 / round put "hP" putl ] G popr
-"ms" h popr [ N pushr call 1000.0 / 3600.0 * round put "km/h" putl ] H popr
+"ms" h popr [ N pushr call 1000.0 / 3600.0 * 1.852 / round
+put "kt" putl ] H popr
 "€" i popr [ N pushr call 6.55957 * R pushr call put "f" putl ] I popr
 "f" j popr [ N pushr call 6.55957 / R pushr call put "€" putl ] J popr
 "m" k popr [ N pushr call 3.28084 * round put "ft" putl ] K popr
