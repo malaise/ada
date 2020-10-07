@@ -1097,9 +1097,15 @@ extern int x_process_event (void **p_line_id, void **p_ref,
         if (win_id->last_subwindow.ref == NULL) {
           /* Enter/Leave main window */
           *p_kind = REFRESH;
-        } else {
+        } else if ( (event.xcrossing.state &
+                    ( Button1MotionMask | Button2MotionMask
+                    | Button3MotionMask | Button4MotionMask
+                    | Button5MotionMask) ) == 0) {
           /* Enter/Leave subwindow */
           *p_kind = ((event.type == EnterNotify) ? TID_ENTER : TID_LEAVE);
+        } else {
+          /* Discard Enter and Leave of card with button pressed */
+          break;
         }
         win_id->button = 0;
       break;
