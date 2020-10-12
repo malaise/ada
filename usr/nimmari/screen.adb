@@ -197,7 +197,7 @@ package body Screen is
     Get_Handle : Afpx.Get_Handle_Rec;
     Ptg_Result : Afpx.Result_Rec;
     use type Common.Played_Result_List;
-    use type Afpx.Event_List, Afpx.Absolute_Field_Range;
+    use type Afpx.Event_List, Afpx.Keyboard_Key_List, Afpx.Absolute_Field_Range;
   begin
     for I in Common.Index_Range loop
       Afpx.Set_Field_Protection(I, True);
@@ -213,6 +213,11 @@ package body Screen is
     Afpx.Set_Field_Activation (Afpx_Xref.Game.Play, True);
     loop
       Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
+      if Ptg_Result.Event = Afpx.Signal_Event
+      or else (Ptg_Result.Event = Afpx.Keyboard
+               and then Ptg_Result.Keyboard_Key = Afpx.Break_Key) then
+        raise Common.Exit_Requested;
+      end if;
       if Ptg_Result.Event = Afpx.Mouse_Button then
         if Ptg_Result.Field_No = Afpx_Xref.Game.Play then
           Change_Game := True;
