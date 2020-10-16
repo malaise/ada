@@ -235,7 +235,8 @@ begin
         -- Compute distance maxlat, maxlon, minlat, minlon
         -- Correct delta_lon by Cos (sum of lat / 2)
         Tmp := Max.Lat + Min.Lat;
-        Cor := Mapcodes.Real (My_Math.Cos (My_Math.Real (Tmp) * My_Math.Pi / 360.0));
+        Cor := Mapcodes.Real (My_Math.Cos (
+            My_Math.Real (Tmp) * My_Math.Pi / 360.0));
         -- Sqrt (delta_lat**2 + delta_lon**2)
         Tmp := Max.Lat - Min.Lat;
         Dist := Tmp * Tmp;
