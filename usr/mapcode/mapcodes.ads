@@ -5,7 +5,7 @@ package Mapcodes is
 
   Mapcode_C_Version : constant String := "2.0.2";
   Mapcode_Data_Version : constant String := "2.3.0";
-  Mapcode_Ada_Version  : constant String := "1.0.7/Data"
+  Mapcode_Ada_Version  : constant String := "1.0.8/Data"
                                           & Mapcode_Data_Version;
 
   -- Real type (for latitude and longitude)
@@ -14,7 +14,6 @@ package Mapcodes is
   -----------------
   -- TERRITORIES --
   -----------------
-
   -- Valid territory number
   subtype Territory_Range is Natural range 0 .. Ctrynams.Isofullname'Last - 1;
 
@@ -110,6 +109,8 @@ package Mapcodes is
   -- Decode a string containing a mapcode
   -- The optional Context territory alphacode shall be set if the mapcode is
   --  ambiguous (not "international")
+  -- The Mapcode can consist of a context (full context or subdivision of
+  --  Context) then spaces then the mapcode
   -- Return a coordinate or, if the mapcode is incorrect or ambiguous, raise:
   Decode_Error : exception;
   function Decode (Mapcode, Context : String) return Coordinate;

@@ -686,7 +686,7 @@ package body Mapcodes is
       return Error;
     end if;
     P := Parent_Letter (Context);
-    if Context /= "" and then P = Error then
+    if Context /= "" and then Context /= "AAA" and then P = Error then
       return Error;
     end if;
 
@@ -817,7 +817,7 @@ package body Mapcodes is
                                  Context : in Integer) return Territory_Range is
       (Get_Territory_Number (
          Territory,
-         (if Context = Error then "" else Iso3166Alpha(Context).Image)));
+         (if Context = Error then "" else Iso3166Alpha_Of(Context))));
 
   -- Return full name of territory or Undefined
   function Get_Territory_Fullname (Territory_Number: in Territory_Range)
@@ -2538,6 +2538,8 @@ package body Mapcodes is
       Part1 := As_U.Tus (Mapcode (F .. Space1 - 1));
       Part2 := As_U.Tus (Mapcode (Space2 + F .. Mapcode'Last));
       if Is_Subdivision (Contextterritorynumber) then
+        -- Context contains a subdivision and Mapcode includes a context
+        --  (a subdivision) => use only the territory of the Context
         Contextterritorynumber := Get_Parent (Contextterritorynumber);
       end if;
       Territorynumber := Get_Territory_Number(Part1.Image,
