@@ -109,8 +109,6 @@ package Mapcodes is
   -- Decode a string containing a mapcode
   -- The optional Context territory alphacode shall be set if the mapcode is
   --  ambiguous (not "international")
-  -- The Mapcode can consist of a context (full context or subdivision of
-  --  Context) then spaces then the mapcode
   -- Return a coordinate or, if the mapcode is incorrect or ambiguous, raise:
   Decode_Error : exception;
   function Decode (Mapcode, Context : String) return Coordinate;

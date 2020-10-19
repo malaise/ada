@@ -813,11 +813,6 @@ package body Mapcodes is
     end if;
     return Num;
   end Get_Territory_Number;
-  function Get_Territory_Number (Territory : String;
-                                 Context : in Integer) return Territory_Range is
-      (Get_Territory_Number (
-         Territory,
-         (if Context = Error then "" else Iso3166Alpha_Of(Context))));
 
   -- Return full name of territory or Undefined
   function Get_Territory_Fullname (Territory_Number: in Territory_Range)
@@ -2512,44 +2507,13 @@ package body Mapcodes is
 
   function Decode (Mapcode, Context : String) return Coordinate is
     Contextterritorynumber : Integer;
-    Space1, Space2 : Natural;
-    Part1, Part2 : As_U.Asu_Us;
-    Territorynumber : Integer;
-
-    function Spaces (I1, I2 : Natural) return String is
-      Res : constant String (I1 .. I2) := (others => ' ');
-    begin
-      return Res;
-    end Spaces;
-    F : constant Positive := Mapcode'First;
   begin
     if Context = Undefined then
       Contextterritorynumber := Ccode_Earth;
     else
       Contextterritorynumber := Get_Territory_Number(Context);
     end if;
-
-    Space1 := Str_Tools.Locate (Mapcode, " ");
-    Space2 := Str_Tools.Locate (Mapcode, " ", Forward => False);
-    if Space1 = 0 then
-      return Master_Decode(Mapcode, Contextterritorynumber);
-    end if;
-    if Mapcode (Space1 .. Space2) = Spaces (Space1, Space2) then
-      Part1 := As_U.Tus (Mapcode (F .. Space1 - 1));
-      Part2 := As_U.Tus (Mapcode (Space2 + F .. Mapcode'Last));
-      if Is_Subdivision (Contextterritorynumber) then
-        -- Context contains a subdivision and Mapcode includes a context
-        --  (a subdivision) => use only the territory of the Context
-        Contextterritorynumber := Get_Parent (Contextterritorynumber);
-      end if;
-      Territorynumber := Get_Territory_Number(Part1.Image,
-                                              Contextterritorynumber);
-      if Territorynumber >= 0 then
-        return Master_Decode (Part2.Image, Territorynumber);
-      end if;
-    end if;
-    raise Decode_Error;
-
+    return Master_Decode (Mapcode, Contextterritorynumber);
   end Decode;
 
 end Mapcodes;
