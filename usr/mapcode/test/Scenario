@@ -25,6 +25,8 @@
 -t IN-MN => 279: MN/IN-MN/IN-MN/Manipur Parent: IND
 -t US-IN => 356: IN/US-IN/US-IN/Indiana Parent: USA
 -t NLD => 112: NLD/NLD/NLD/Netherlands
+-s altai => 483: ALT/RU-ALT/ALT/Altai Krai Parent: RUS
+-S AL => 482: AL/RU-AL/RU-AL/Altai Republic Parent: RUS
 
 # NLD, with high precision
 -d NLD 49.4V => 52.376514000 4.908543375

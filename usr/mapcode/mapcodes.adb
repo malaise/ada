@@ -595,24 +595,38 @@ package body Mapcodes is
   Ccode_Rus : constant := 496;
   Ccode_Earth : constant := 532;
 
-  Parents3 : constant String := "USA,IND,CAN,AUS,MEX,BRA,RUS,CHN,";
-  Parents2 : constant String := "US,IN,CA,AU,MX,BR,RU,CN,";
+  -- Parent territories
+  Parent_Length : constant := 8;
+  subtype String3 is String (1 .. 3);
+  Parents3 : constant array (1 .. Parent_Length) of String3
+           := ("USA", "IND", "CAN", "AUS", "MEX", "BRA", "RUS", "CHN");
+  subtype String2 is String (1 .. 2);
+  Parents2 : constant array (1 .. Parent_Length) of String2
+           := ("US", "IN", "CA", "AU", "MX", "BR", "RU", "CN");
 
   -- Returns 2-letter parent country abbreviation (disam in range 1..8)
   function Parent_Name2 (Disam : Positive) return String is
-    (Parents2 (Disam * 3 - 2 .. Disam * 3 - 1));
+    (Parents2 (Disam));
 
   -- Given a parent country abbreviation, return disam (in range 1-8) or
   --  Error
   function Parent_Letter (Territory_Alpha_Code : String) return Integer is
-    Srch : constant String := Str_Tools.Upper_Str (Territory_Alpha_Code & ",");
-    Len  : constant Natural := Srch'Length;
-    P : Natural;
+    Srch : constant String := Str_Tools.Upper_Str (Territory_Alpha_Code);
   begin
-    P := Str_Tools.Locate (
-      (if Len = 3 then Parents2 elsif Len = 4 then Parents3 else Undefined),
-      Srch);
-   return (if P /= 0 then P / Len + 1 else Error);
+    if Srch'Length = 2 then
+      for I in Parents2'Range loop
+        if Srch = Parents2(I) then
+          return I;
+        end if;
+      end loop;
+    elsif Srch'Length = 3 then
+      for I in Parents3'Range loop
+        if Srch = Parents3(I) then
+          return I;
+        end if;
+      end loop;
+    end if;
+   return Error;
   end Parent_Letter;
 
   function Image (I : Integer) return String is
@@ -664,7 +678,8 @@ package body Mapcodes is
 
   -- Given ISO code, return territoryNumber or Error
   function Iso2Ccode (Territory_Alpha_Code : String;
-                      Context : in String) return Integer is
+                      Context : in String;
+                      Any_Context : in Boolean) return Integer is
     function Is_Digits (Str : String) return Boolean is
     begin
       for I in Str'Range loop
@@ -702,6 +717,7 @@ package body Mapcodes is
     -- Name
     Sep := Str_Tools.Locate (Alpha_Code.Image, "-");
     if Sep /= 0 then
+      -- Territory and subdivision
       declare
         Prefix : constant String
                := Alpha_Code.Slice (1, Sep - 1);
@@ -738,7 +754,6 @@ package body Mapcodes is
     end if;
 
     -- No prefix.
-
     if P /= Error then
       -- First rewrite alias in context
       if Alpha_Code.Length = 2 then
@@ -769,8 +784,12 @@ package body Mapcodes is
       end if;
     end if;
 
+    if not Any_Context then
+      return Error;
+    end if;
+
     if Alpha_Code.Length >= 2 then
-      -- Find in ANY context
+      -- Find first occurence in ANY context
       Hyphenated := Tus ("-") & Alpha_Code;
       for I in Iso3166Alpha'Range loop
         Index := Str_Tools.Locate (Iso3166Alpha(I).Image, Hyphenated.Image);
@@ -792,7 +811,7 @@ package body Mapcodes is
       else
         Alpha_Code := Isoa;
       end if;
-      return Iso2Ccode (Alpha_Code.Image, Context);
+      return Iso2Ccode (Alpha_Code.Image, Context, True);
     end if;
 
     return Error;
@@ -807,7 +826,7 @@ package body Mapcodes is
            return Territory_Range is
     Num : Integer;
   begin
-    Num := Iso2Ccode (Territory, Context);
+    Num := Iso2Ccode (Territory, Context, True);
     if Num = Error then
       raise Unknown_Territory;
     end if;
@@ -831,7 +850,7 @@ package body Mapcodes is
 
   -- Return the AlphaCode (usually an ISO 3166 code) of a territory
   -- Format: Local (often ambiguous), International (full and unambiguous,
-  --  DEFAULT), or Shortest (
+  --  DEFAULT), or Shortest
   function Get_Territory_Alpha_Code (
     Territory_Number : Territory_Range;
     Format : Territory_Formats := International) return String is
@@ -896,6 +915,7 @@ package body Mapcodes is
       return Code;
     end if;
   end Get_Parent_Of;
+
   -- Return True if Territory is a state
   function Is_Subdivision (Territory_Number : Territory_Range)
            return Boolean is
@@ -904,8 +924,49 @@ package body Mapcodes is
   -- Return True if Territory is a country that has states
   function Has_Subdivision (Territory_Number : Territory_Range)
            return Boolean is
-      (Str_Tools.Locate (Parents3, Get_Territory_Alpha_Code (Territory_Number))
-                        /= 0);
+    Territory : constant String := Get_Territory_Alpha_Code (Territory_Number);
+  begin
+    for Parent of Parents3 loop
+      if Territory = Parent then
+        return True;
+      end if;
+    end loop;
+    return False;
+  end Has_Subdivision;
+
+  -- Given a subdivision, return the array of subdivisions with same name
+  --  with various parents, or raise Not_A_Subdivision
+  function Get_Subdivisions_With (Territory_Number : Territory_Range)
+           return Territory_Array is
+    Territory : constant String := Get_Territory_Alpha_Code (Territory_Number);
+    Index : Natural;
+    Ccodes : array (1 .. Parent_Length) of Integer;
+    Nb_Ok : Natural := 0;
+  begin
+    -- Get subdivision part (after '-')
+    Index := Str_Tools.Locate (Territory, "-");
+    if Index = 0 then
+      raise Not_A_Subdivision;
+    end if;
+    -- Count and store valid combinations of a Parent and this subdivision
+    for I in Parents2'Range loop
+      Ccodes(I) := Iso2Ccode (Territory (Index + 1 .. Territory'Last),
+                              Parents2(I), False);
+      if Ccodes(I) /= Error then
+        Nb_Ok := Nb_Ok + 1;
+      end if;
+    end loop;
+    -- Return array of valid combinations
+    return Result : Territory_Array (1 .. Nb_Ok) do
+      Nb_Ok := 0;
+      for Ccode of Ccodes loop
+        if Ccode /= Error then
+          Nb_Ok := Nb_Ok + 1;
+          Result(Nb_Ok) := Ccode;
+        end if;
+      end loop;
+    end return;
+  end Get_Subdivisions_With;
 
   -- Low-level routines for data access
   type Min_Max_Rec is record

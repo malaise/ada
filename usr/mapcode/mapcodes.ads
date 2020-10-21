@@ -17,17 +17,19 @@ package Mapcodes is
   -- Valid territory number
   subtype Territory_Range is Natural range 0 .. Ctrynams.Isofullname'Last - 1;
 
-  -- Given an alphacode (such as US-AL), return the territory number
-  --  or raise Unknown_Territory
+  -- Given an ISO 3166 alphacode (such as "US-AL" or "FRA"), return the
+  --  corresponding territory number or raise Unknown_Territory
   -- A Context territory helps to interpret ambiguous (abbreviated)
-  --  alphacodes, such as "AL"
+  --  alphacodes, such as "BR" or "US" for the subdivision "AL"
+  -- If Territory is ambiguous and no Context is provided, then the first
+  --  (in the alphanumeric order of territories) valid territory is used
   -- Raise, if Territory or Context is not known:
   Unknown_Territory : exception;
   function Get_Territory_Number (Territory : String;
                                  Context : String := "")
            return Territory_Range;
 
-  -- Return the alphacode (usually an ISO 3166 code) of a territory
+  -- Return the alphacode (usually an ISO 3166 code) of a territory number
   -- Format: Local (often ambiguous), International (full and unambiguous,
   --  DEFAULT), or Shortest
   type Territory_Formats is (Local, International, Shortest);
@@ -35,11 +37,11 @@ package Mapcodes is
       Territory_Number : Territory_Range;
       Format : Territory_Formats := International) return String;
 
-  -- Return the full name of a territory
+  -- Return the full readable name of a territory (e.g. "France")
   function Get_Territory_Fullname (Territory_Number : Territory_Range)
            return String;
 
-  -- Return the parent country of a subdivision
+  -- Return the parent country of a subdivision (e.g. "US" for "US-AL"
   -- Raise, if Territory is not a subdivision:
   Not_A_Subdivision : exception;
   function Get_Parent_Of (Territory_Number : Territory_Range)
@@ -50,6 +52,14 @@ package Mapcodes is
 
   -- Return True if Territory is a country that has states
   function Has_Subdivision (Territory_Number : Territory_Range) return Boolean;
+
+  -- Given a subdivision, return the array of subdivisions with same name
+  --  with various parents, or raise Not_A_Subdivision
+  -- Ex: given 318 (BR-AL) or 482 (RU-AL) returns the array
+  --  (318 (BR-AL), 482 (RU-AL), 364 (US-AL))
+  type Territory_Array is array (Positive range <>) of Territory_Range;
+  function Get_Subdivisions_With (Territory_Number : Territory_Range)
+           return Territory_Array;
 
   --------------------------
   -- Encoding to mapcodes --
