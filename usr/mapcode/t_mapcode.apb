@@ -22,7 +22,7 @@ procedure T_Mapcode is
     Ada.Text_Io.Put_Line (
       "  -s <name>                                      // Search territory");
     Ada.Text_Io.Put_Line (
-      "  -S <name>                                      // Subdirectories");
+      "  -S <name>                                      // Same subdivisions");
     Ada.Text_Io.Put_Line (
       "  -d  <territory_mapcode>                        // Decode");
     Ada.Text_Io.Put_Line (
