@@ -54,7 +54,7 @@ package Mapcodes is
   function Has_Subdivision (Territory_Number : Territory_Range) return Boolean;
 
   -- Given a subdivision name, return the array (possibly empty) of territory
-  --  subdivisions with same name, or raise Not_A_Subdivision
+  --  subdivisions with same name
   -- Ex: given "AL" return the array (318 (BR-AL), 482 (RU-AL), 364 (US-AL))
   type Territory_Array is array (Positive range <>) of Territory_Range;
   function Get_Subdivisions_With (Subdivision : String) return Territory_Array;
