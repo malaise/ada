@@ -638,6 +638,7 @@ package body Mapcodes is
 
   -- Returns alias of ISO abbreviation (if any), or empty
   function Alias2Iso (Territory_Alpha_Code : String) return String is
+    -- Look for "DigitCrit="
     function Match (Crit, Within : String) return Natural is
       Occ : Positive := 1;
       I : Natural;
@@ -677,136 +678,134 @@ package body Mapcodes is
   end Find_Iso;
 
   -- Given ISO code, return territoryNumber or Error
-  function Iso2Ccode (Territory_Alpha_Code : String;
+  function Iso2Ccode (Alpha_Code : String;
                       Context : in String) return Integer is
+
+    function Is_Digit (Char : Character) return Boolean is
+      (Char >= '0' and then Char <= '9');
     function Is_Digits (Str : String) return Boolean is
     begin
       for I in Str'Range loop
-        if Str(I) < '0' or else Str(I) > '9' then
+        if not Is_Digit (Str(I)) then
           return False;
         end if;
       end loop;
       return Str /= "";
     end Is_Digits;
+
     N, Sep : Natural;
-    P : Integer;
+    P, Tmpp : Integer;
     Result, Index : Integer;
     Isoa : As_U.Asu_Us;
-    Alpha_Code : As_U.Asu_Us;
+    Code2Search, Context2Search : As_U.Asu_Us;
     Hyphenated : As_U.Asu_Us;
     use all type As_U.Asu_Us;
   begin
-    if Territory_Alpha_Code = Undefined then
+    if Alpha_Code = Undefined then
       return Error;
     end if;
     P := Parent_Letter (Context);
-    if Context /= "" and then Context /= "AAA" and then P = Error then
+    if P = Error and then Context /= "" and then Context /= "AAA" then
       return Error;
     end if;
-    if COntext = "AAA" then
-      P := Error;
+
+    Sep := Str_Tools.Locate (Alpha_Code, "-");
+    Code2Search := Tus (Str_Tools.Upper_Str (Alpha_Code));
+
+    if P /= Error and then Sep /= 0 then
+      -- Cannot provide a context together with territory-subdivision
+      return Error;
     end if;
 
-    Alpha_Code := Tus (Str_Tools.Upper_Str (Territory_Alpha_Code));
-    Sep := Str_Tools.Locate (Alpha_Code.Image, "-");
-
-    if P = Error then
-      -- No context provided
-
-      -- Direct code
-      if Is_Digits (Alpha_Code.Image) then
-        N := Natural'Value (Alpha_Code.Image);
+    -- Optims: direct number or code
+    if P = Error and then Sep = 0 then
+      if Is_Digits (Code2Search.Image) then
+        -- Direct territory number
+        N := Natural'Value (Code2Search.Image);
         if N <= Ccode_Earth then
           return N;
         end if;
       end if;
-
-      -- Name
-      if Sep = 0 then
-        -- Check if a normal territory
-        if Alpha_Code.Length = 3 then
-          Index := Find_Iso (Alpha_Code.Image);
-          if Index >= 0 then
-            return Index;
-          end if;
+      if Code2Search.Length = 3 then
+        -- Check if a simple territory
+        Index := Find_Iso (Code2Search.Image);
+        if Index /= Error then
+          return Index;
         end if;
-      else
-        -- Territory and subdivision
-        declare
-          Prefix : constant String
-                 := Alpha_Code.Slice (1, Sep - 1);
-          Proper_Map_Code : As_U.Asu_Us
-                          := Alpha_Code.Uslice (Sep + 1,  Alpha_Code.Length);
-        begin
-          P := Parent_Letter (Prefix);
-          if P = Error or else Proper_Map_Code.Length < 2 then
-            return Error;
-          end if;
-          Index := Find_Iso (Parent_Name2 (P) & "-" & Proper_Map_Code.Image);
-          if Index >= 0 then
-            return Index;
-          end if;
-          -- Recognise alias
-          if Proper_Map_Code.Length = 3 then
-            Isoa := Tus (Alias2Iso(Proper_Map_Code.Image));
-          else
-            Isoa := Tus (Alias2Iso (Image (P) & Proper_Map_Code.Image));
-          end if;
-          if not Isoa.Is_Null then
-            if Isoa.Slice (1, 1) = Image (P) then
-              Proper_Map_Code := Isoa.Uslice (2, Isoa.Length);
-            else
-              Proper_Map_Code := Isoa;
-              Index := Find_Iso (Proper_Map_Code.Image);
-              if Index >= 0 then
-                return Index;
-              end if;
-            end if;
-          end if;
-          return Find_Iso (Parent_Name2 (P) & "-" & Proper_Map_Code.Image);
-        end;
-      end if;
-
-    else
-
-      -- A context has been provided
-      if Sep /= 0 then
-        -- Cannot provide a context together with territory-subdivision
-        return Error;
-      end if;
-
-      -- First rewrite alias in context
-      if Alpha_Code.Length = 2 then
-        Isoa := Tus (Alias2Iso (Image (P) & Alpha_Code.Image));
-        if not Isoa.Is_Null then
-          if Isoa.Slice (1, 1) = Image (P) then
-            -- Aliased as another subdivision (same territory)
-            Alpha_Code := Isoa.Uslice(2, Isoa.Length);
-            Index := Find_Iso (Parent_Name2 (P) & "-" & Alpha_Code.Image);
-          else
-            -- Aliased as a territory
-            Alpha_Code := Isoa;
-            Index := Find_Iso (Alpha_Code.Image);
-          end if;
-        else
-          -- No alias
-          Index := Find_Iso (Parent_Name2 (P) & "-" & Alpha_Code.Image);
-        end if;
-      else
-       Index := Find_Iso (Parent_Name2 (P) & "-" & Alpha_Code.Image);
-      end if;
-
-      -- Check subdivision in provided context
-      if Index >= 0 then
-        return Index;
-      else
-        return Error;
       end if;
     end if;
 
-    if Alpha_Code.Length >= 2 then
+    -- Set Context and Code for search
+    if Context /= "" then
+      -- Context provided
+      Context2Search.Set (Context);
+    elsif Sep /= 0 then
+      -- Code contains a prefix
+      Context2Search := Code2Search.Uslice (1, Sep - 1);
+      Code2Search.Delete (1, Sep);
+      P := Parent_Letter (Context2Search.Image);
+      if P = Error and then Context2Search.Image /= "AAA" then
+        return Error;
+      end if;
+    end if;
+    -- Sanity check
+    if Code2Search.Length /= 2 and then Code2Search.Length /= 3 then
+      return Error;
+    end if;
+
+    -- Optim: prefix and code
+    if P /= Error then
+      Index := Find_Iso (Parent_Name2 (P) & "-" & Code2Search.Image);
+      if Index /= Error then
+        return Index;
+      end if;
+    end if;
+
+    -- Resolve alias
+    if P /= Error then
+      -- Alias for a subdivision with context
+      Isoa := Tus (Alias2Iso (Image (P) & Code2Search.Image));
+    end if;
+    if Isoa.Is_Null and then Code2Search.Length = 3 then
+      -- Alias for a territory or subdivision without context
+      Isoa := Tus (Alias2Iso (Code2Search.Image));
+    end if;
+    if Isoa.Is_Null then
+      Index := Error;
+    else
+      if Is_Digit (Isoa.Element (1)) then
+        -- Alias is a subdivision
+        Code2Search := Isoa.Uslice (2, Isoa.Length);
+        Tmpp := Integer'Value (Isoa.Slice (1, 1));
+        if P /= Error and then Tmpp /= P then
+          -- Cannot change territpry through aliasing
+          return Error;
+        end if;
+        P := Tmpp;
+        Index := Find_Iso (Parent_Name2 (P) & "-" & Code2Search.Image);
+      else
+        -- Alias is a subdivision or territory
+        Code2Search := Isoa;
+        -- Search for a territory
+        Index := Find_Iso (Code2Search.Image);
+        if Index = Error and then P /= Error then
+          -- Search for a subdivision
+          Index := Find_Iso (Parent_Name2 (P) & "-" & Code2Search.Image);
+        end if;
+      end if;
+    end if;
+
+    -- Return valid result
+    if Index /= Error then
+      return Index;
+    end if;
+    if P /= Error then
+      return Error;
+    end if;
+
+    if Code2Search.Length >= 2 then
       -- Find unique occurence in ANY context
-      Hyphenated := Tus ("-") & Alpha_Code;
+      Hyphenated := Tus ("-") & Code2Search;
       Result := Error;
       for I in Iso3166Alpha'Range loop
         Index := Str_Tools.Locate (Iso3166Alpha(I).Image, Hyphenated.Image);
@@ -827,16 +826,16 @@ package body Mapcodes is
     end if;
 
     -- All else failed, try non-disambiguated alphacode
-    Isoa := Tus (Alias2Iso (Alpha_Code.Image));
+    Isoa := Tus (Alias2Iso (Code2Search.Image));
     if not Isoa.Is_Null then
-      if Isoa.Element (1) <= '9' then
+      if Is_Digit (Isoa.Element (1)) then
         -- Starts with digit
-        Alpha_Code := Tus (Parent_Name2 (Natural'Value (Isoa.Slice (1, 1)))
+        Code2Search := Tus (Parent_Name2 (Natural'Value (Isoa.Slice (1, 1)))
                      & "-" & Isoa.Slice (2, Isoa.Length));
       else
-        Alpha_Code := Isoa;
+        Code2Search := Isoa;
       end if;
-      return Iso2Ccode (Alpha_Code.Image, Context);
+      return Iso2Ccode (Code2Search.Image, Context);
     end if;
 
     return Error;
