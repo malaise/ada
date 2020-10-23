@@ -15,7 +15,7 @@
 -t US-CA => 391: CA/US-CA/CA/California Parent: USA
 -t USA-CA => 391: CA/US-CA/CA/California Parent: USA
 -t RUS-TAM => 430: TT/RU-TT/TT/Tambov Oblast Parent: RUS
--t AL  => 318: AL/BR-AL/BR-AL/Alagoas Parent: BRA
+-t AL BR => 318: AL/BR-AL/BR-AL/Alagoas Parent: BRA
 -t AL US => 364: AL/US-AL/US-AL/Alabama Parent: USA
 -t RU-AL => 482: AL/RU-AL/RU-AL/Altai Republic Parent: RUS
 -t AL RU => 482: AL/RU-AL/RU-AL/Altai Republic Parent: RUS

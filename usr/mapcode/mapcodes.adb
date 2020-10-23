@@ -678,8 +678,7 @@ package body Mapcodes is
 
   -- Given ISO code, return territoryNumber or Error
   function Iso2Ccode (Territory_Alpha_Code : String;
-                      Context : in String;
-                      Any_Context : in Boolean) return Integer is
+                      Context : in String) return Integer is
     function Is_Digits (Str : String) return Boolean is
     begin
       for I in Str'Range loop
@@ -691,7 +690,7 @@ package body Mapcodes is
     end Is_Digits;
     N, Sep : Natural;
     P : Integer;
-    Index : Integer;
+    Result, Index : Integer;
     Isoa : As_U.Asu_Us;
     Alpha_Code : As_U.Asu_Us;
     Hyphenated : As_U.Asu_Us;
@@ -704,101 +703,127 @@ package body Mapcodes is
     if Context /= "" and then Context /= "AAA" and then P = Error then
       return Error;
     end if;
+    if COntext = "AAA" then
+      P := Error;
+    end if;
 
     Alpha_Code := Tus (Str_Tools.Upper_Str (Territory_Alpha_Code));
-    -- Direct code
-    if Is_Digits (Alpha_Code.Image) then
-      N := Natural'Value (Alpha_Code.Image);
-      if N <= Ccode_Earth then
-        return N;
-      end if;
-    end if;
-
-    -- Name
     Sep := Str_Tools.Locate (Alpha_Code.Image, "-");
-    if Sep /= 0 then
-      -- Territory and subdivision
-      declare
-        Prefix : constant String
-               := Alpha_Code.Slice (1, Sep - 1);
-        Proper_Map_Code : As_U.Asu_Us
-                        := Alpha_Code.Uslice (Sep + 1,  Alpha_Code.Length);
-      begin
-        P := Parent_Letter (Prefix);
-        if P = Error or else Proper_Map_Code.Length < 2 then
-          return Error;
+
+    if P = Error then
+      -- No context provided
+
+      -- Direct code
+      if Is_Digits (Alpha_Code.Image) then
+        N := Natural'Value (Alpha_Code.Image);
+        if N <= Ccode_Earth then
+          return N;
         end if;
-        Index := Find_Iso (Parent_Name2 (P) & "-" & Proper_Map_Code.Image);
-        if Index >= 0 then
-          return Index;
-        end if;
-        -- Recognise alias
-        if Proper_Map_Code.Length = 3 then
-          Isoa := Tus (Alias2Iso(Proper_Map_Code.Image));
-        else
-          Isoa := Tus (Alias2Iso (Image (P) & Proper_Map_Code.Image));
-        end if;
-        if not Isoa.Is_Null then
-          if Isoa.Slice (1, 1) = Image (P) then
-            Proper_Map_Code := Isoa.Uslice (2, Isoa.Length);
-          else
-            Proper_Map_Code := Isoa;
-            Index := Find_Iso (Proper_Map_Code.Image);
-            if Index >= 0 then
-              return Index;
-            end if;
+      end if;
+
+      -- Name
+      if Sep = 0 then
+        -- Check if a normal territory
+        if Alpha_Code.Length = 3 then
+          Index := Find_Iso (Alpha_Code.Image);
+          if Index >= 0 then
+            return Index;
           end if;
         end if;
-        return Find_Iso (Parent_Name2 (P) & "-" & Proper_Map_Code.Image);
-      end;
-    end if;
+      else
+        -- Territory and subdivision
+        declare
+          Prefix : constant String
+                 := Alpha_Code.Slice (1, Sep - 1);
+          Proper_Map_Code : As_U.Asu_Us
+                          := Alpha_Code.Uslice (Sep + 1,  Alpha_Code.Length);
+        begin
+          P := Parent_Letter (Prefix);
+          if P = Error or else Proper_Map_Code.Length < 2 then
+            return Error;
+          end if;
+          Index := Find_Iso (Parent_Name2 (P) & "-" & Proper_Map_Code.Image);
+          if Index >= 0 then
+            return Index;
+          end if;
+          -- Recognise alias
+          if Proper_Map_Code.Length = 3 then
+            Isoa := Tus (Alias2Iso(Proper_Map_Code.Image));
+          else
+            Isoa := Tus (Alias2Iso (Image (P) & Proper_Map_Code.Image));
+          end if;
+          if not Isoa.Is_Null then
+            if Isoa.Slice (1, 1) = Image (P) then
+              Proper_Map_Code := Isoa.Uslice (2, Isoa.Length);
+            else
+              Proper_Map_Code := Isoa;
+              Index := Find_Iso (Proper_Map_Code.Image);
+              if Index >= 0 then
+                return Index;
+              end if;
+            end if;
+          end if;
+          return Find_Iso (Parent_Name2 (P) & "-" & Proper_Map_Code.Image);
+        end;
+      end if;
 
-    -- No prefix.
-    if P /= Error then
+    else
+
+      -- A context has been provided
+      if Sep /= 0 then
+        -- Cannot provide a context together with territory-subdivision
+        return Error;
+      end if;
+
       -- First rewrite alias in context
       if Alpha_Code.Length = 2 then
         Isoa := Tus (Alias2Iso (Image (P) & Alpha_Code.Image));
         if not Isoa.Is_Null then
           if Isoa.Slice (1, 1) = Image (P) then
+            -- Aliased as another subdivision (same territory)
             Alpha_Code := Isoa.Uslice(2, Isoa.Length);
+            Index := Find_Iso (Parent_Name2 (P) & "-" & Alpha_Code.Image);
           else
+            -- Aliased as a territory
             Alpha_Code := Isoa;
+            Index := Find_Iso (Alpha_Code.Image);
           end if;
+        else
+          -- No alias
+          Index := Find_Iso (Parent_Name2 (P) & "-" & Alpha_Code.Image);
         end if;
+      else
+       Index := Find_Iso (Parent_Name2 (P) & "-" & Alpha_Code.Image);
       end if;
-    end if;
 
-    -- Check if a normal territory
-    if Alpha_Code.Length = 3 then
-      Index := Find_Iso (Alpha_Code.Image);
+      -- Check subdivision in provided context
       if Index >= 0 then
         return Index;
+      else
+        return Error;
       end if;
-    end if;
-
-    -- Check in context
-    if P /= Error then
-      Index := Find_Iso (Parent_Name2 (P) & "-" & Alpha_Code.Image);
-      if Index >= 0 then
-        return Index;
-      end if;
-    end if;
-
-    if not Any_Context then
-      return Error;
     end if;
 
     if Alpha_Code.Length >= 2 then
-      -- Find first occurence in ANY context
+      -- Find unique occurence in ANY context
       Hyphenated := Tus ("-") & Alpha_Code;
+      Result := Error;
       for I in Iso3166Alpha'Range loop
         Index := Str_Tools.Locate (Iso3166Alpha(I).Image, Hyphenated.Image);
         if Index > 0
         and then Index = Iso3166Alpha(I).Length - Hyphenated.Length + 1 then
           -- iso3166alpha ends by Hyphenated
-          return I - 1;
+          if Result /= Error then
+            -- Not unique
+            return Error;
+          else
+            Result := I - 1;
+          end if;
         end if;
       end loop;
+      if Result /= Error then
+        return Result;
+      end if;
     end if;
 
     -- All else failed, try non-disambiguated alphacode
@@ -811,7 +836,7 @@ package body Mapcodes is
       else
         Alpha_Code := Isoa;
       end if;
-      return Iso2Ccode (Alpha_Code.Image, Context, True);
+      return Iso2Ccode (Alpha_Code.Image, Context);
     end if;
 
     return Error;
@@ -826,7 +851,7 @@ package body Mapcodes is
            return Territory_Range is
     Num : Integer;
   begin
-    Num := Iso2Ccode (Territory, Context, True);
+    Num := Iso2Ccode (Territory, Context);
     if Num = Error then
       raise Unknown_Territory;
     end if;
@@ -935,23 +960,16 @@ package body Mapcodes is
   end Has_Subdivision;
 
   -- Given a subdivision, return the array of subdivisions with same name
-  --  with various parents, or raise Not_A_Subdivision
-  function Get_Subdivisions_With (Territory_Number : Territory_Range)
+  --  with various parents
+  function Get_Subdivisions_With (Subdivision : String)
            return Territory_Array is
-    Territory : constant String := Get_Territory_Alpha_Code (Territory_Number);
-    Index : Natural;
+    Upper_Subd : constant String := Str_Tools.Upper_Str (Subdivision);
     Ccodes : array (1 .. Parent_Length) of Integer;
     Nb_Ok : Natural := 0;
   begin
-    -- Get subdivision part (after '-')
-    Index := Str_Tools.Locate (Territory, "-");
-    if Index = 0 then
-      raise Not_A_Subdivision;
-    end if;
     -- Count and store valid combinations of a Parent and this subdivision
     for I in Parents2'Range loop
-      Ccodes(I) := Iso2Ccode (Territory (Index + 1 .. Territory'Last),
-                              Parents2(I), False);
+      Ccodes(I) := Iso2Ccode (Upper_Subd, Parents2(I));
       if Ccodes(I) /= Error then
         Nb_Ok := Nb_Ok + 1;
       end if;

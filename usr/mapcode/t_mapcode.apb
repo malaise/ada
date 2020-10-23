@@ -18,11 +18,11 @@ procedure T_Mapcode is
     Ada.Text_Io.Put_Line (
       "  -h                                             // This help");
     Ada.Text_Io.Put_Line (
-      "  -t <territory>                                 // Territory info");
+      "  -t <territory> [ <context> ]                   // Territory info");
+    Ada.Text_Io.Put_Line (
+      "  -S <subdivision>                               // Same subdivisions");
     Ada.Text_Io.Put_Line (
       "  -s <name>                                      // Search territory");
-    Ada.Text_Io.Put_Line (
-      "  -S <name>                                      // Same subdivisions");
     Ada.Text_Io.Put_Line (
       "  -d  <territory_mapcode>                        // Decode");
     Ada.Text_Io.Put_Line (
@@ -196,6 +196,19 @@ begin
         end if;
       end if;
       Put_Territory (Arg1.Image, Arg2.Image, True);
+    elsif Command.Image = "-S" then
+      -- Subdirectories with same suffix
+      I := I + 1;
+      declare
+        Brothers : constant Mapcodes.Territory_Array
+                 := Mapcodes.Get_Subdivisions_With (
+                        Ada.Command_Line.Argument (I));
+      begin
+        for Brother of Brothers loop
+          Put_Territory (Mapcodes.Get_Territory_Alpha_Code (Brother), "",
+                         False);
+        end loop;
+      end;
     elsif Command.Image = "-s" then
       -- Search country names
       I := I + 1;
@@ -207,19 +220,6 @@ begin
           Put_Territory (Image (J-1), "", True);
         end if;
       end loop;
-    elsif Command.Image = "-S" then
-      I := I + 1;
-      -- Subdirectories with same suffix
-      declare
-        Brothers : constant Mapcodes.Territory_Array
-                 := Mapcodes.Get_Subdivisions_With (
-                     Get_Territory_Number (Ada.Command_Line.Argument (I)));
-      begin
-        for Brother of Brothers loop
-          Put_Territory (Mapcodes.Get_Territory_Alpha_Code (Brother), "",
-                         False);
-        end loop;
-      end;
     elsif Command.Image = "-c"
     or else Command.Image = "-a" then
       -- Default precision for coding

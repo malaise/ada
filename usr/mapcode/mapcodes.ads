@@ -5,7 +5,7 @@ package Mapcodes is
 
   Mapcode_C_Version : constant String := "2.0.2";
   Mapcode_Data_Version : constant String := "2.3.0";
-  Mapcode_Ada_Version  : constant String := "1.0.9/Data"
+  Mapcode_Ada_Version  : constant String := "1.0.10/Data"
                                           & Mapcode_Data_Version;
 
   -- Real type (for latitude and longitude)
@@ -53,13 +53,11 @@ package Mapcodes is
   -- Return True if Territory is a country that has states
   function Has_Subdivision (Territory_Number : Territory_Range) return Boolean;
 
-  -- Given a subdivision, return the array of subdivisions with same name
-  --  with various parents, or raise Not_A_Subdivision
-  -- Ex: given 318 (BR-AL) or 482 (RU-AL) return the array
-  --  (318 (BR-AL), 482 (RU-AL), 364 (US-AL))
+  -- Given a subdivision name, return the array (possibly empty) of territory
+  --  subdivisions with same name, or raise Not_A_Subdivision
+  -- Ex: given "AL" return the array (318 (BR-AL), 482 (RU-AL), 364 (US-AL))
   type Territory_Array is array (Positive range <>) of Territory_Range;
-  function Get_Subdivisions_With (Territory_Number : Territory_Range)
-           return Territory_Array;
+  function Get_Subdivisions_With (Subdivision : String) return Territory_Array;
 
   --------------------------
   -- Encoding to mapcodes --
