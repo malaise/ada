@@ -4,7 +4,7 @@ package Git_If is
   -- All the calls to Git wait until completion of the sub-command
   --  which require them to be encapsulated between Afpx.Suspend.Resume if
   --  Afpx is active
-  -- Except Launch_Diff and Launch_Delta that do ot wait
+  -- Except Launch_Diff and Launch_Delta that do not wait
   procedure Entering_Afpx;
   procedure Leaving_Afpx;
 
