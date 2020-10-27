@@ -11,6 +11,8 @@ procedure T_Mapcode is
 
   Argument_Error : exception;
 
+  Max_Precision : constant Mapcodes.Precisions := Mapcodes.Precisions'Last;
+
   procedure Usage is
   begin
     Ada.Text_Io.Put_Line (
@@ -42,7 +44,7 @@ procedure T_Mapcode is
     Ada.Text_Io.Put_Line (
       "                      // local: the shortest among all the mapcodes");
     Ada.Text_Io.Put_Line (
-      "  <precision>         ::= P0 | P1 | P2           // Default P0 or from input");
+      "  <precision>         ::= P0 .. P8               // Default P0 or from input");
   end Usage;
 
   function Integer_Image (I : Integer) return String is
@@ -166,7 +168,7 @@ procedure T_Mapcode is
     -- Get precision from input
     Index := Str_Tools.Locate (Arg1.Image, "-");
     if Index > 0 then
-      if Index = Arg1.Length or else Index < Arg1.Length - 2 then
+      if Index = Arg1.Length or else Index < Arg1.Length - Max_Precision then
         raise Decode_Error;
       end if;
       Precision := Arg1.Length - Index;
@@ -277,7 +279,8 @@ begin
         elsif Arg1.Length = 2
         and then Arg1.Element (1) = 'P'
         and then Arg1.Element (2) >= '0'
-        and then Arg1.Element (2) <= '2' then
+        and then Arg1.Element (2) <= Character'Val (Character'Pos ('0')
+                                   + Max_Precision) then
           if Pre_Set then
             raise Argument_Error;
           end if;

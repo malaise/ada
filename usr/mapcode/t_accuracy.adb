@@ -5,19 +5,24 @@ procedure T_Accuracy is
 
   use type Mapcodes.Real;
 
+
   -- Trace logger
   Logger : Trace.Loggers.Logger;
 
   -- Emit warnings
   Warning : Boolean := False;
 
+  -- Precision
+  Max_Precision : Mapcodes.Precisions;
+
   -- Usage
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-        & " [ -w | --warnings ] [ <mapcode> | <lat_lon> ]");
-    Basic_Proc.Put_Line_Error ("  <mapcode> ::= [ <context>:]<code>");
-    Basic_Proc.Put_Line_Error ("  <lat_lon> ::= <latitude> <longitude>");
+        & " <precision> [ -w | --warnings ] [ <mapcode> | <lat_lon> ]");
+    Basic_Proc.Put_Line_Error ("  <precision> ::= 0 .. 8");
+    Basic_Proc.Put_Line_Error ("  <mapcode>   ::= [ <context>:]<code>");
+    Basic_Proc.Put_Line_Error ("  <lat_lon>   ::= <latitude> <longitude>");
     Basic_Proc.Put_Line_Error ("Default: random lat_lon");
   end Usage;
 
@@ -112,7 +117,8 @@ procedure T_Accuracy is
 
   -- Expected precisions in meters from center of cell to any point in cell
   Expected : constant array (Mapcodes.Precisions) of Mapcodes.Real
-           := (0 => 7.49, 1 => 1.39, 2 => 0.251);
+           := (0 => 7.49, 1 => 1.39, 2 => 0.251, 3 => 0.05, 4 => 0.01,
+               5 => 0.002, 6 => 0.0003, 7 => 0.00006, 8 => 0.000001);
 
   -- Step for detecting change of mapcode
   Step : constant Mapcodes.Real := 1.0E-7;
@@ -139,6 +145,12 @@ begin
     Usage;
     return;
   end if;
+
+  -- Precision
+  Max_Precision := Mapcodes.Precisions'Value (Argument.Get_Parameter (Sarg));
+  Sarg := Sarg + 1;
+  Narg := Narg - 1;
+
   -- Optional Warning flag
   if Narg > 0 and then (Argument.Get_Parameter (Sarg) = "--warnings"
                         or else Argument.Get_Parameter (Sarg) = "-w")  then
@@ -181,7 +193,8 @@ begin
                                    & Image (In_Coord.Lon));
 
   -- For each precision
-  for Precision in Mapcodes.Precisions loop
+  for Precision in Mapcodes.Precisions
+                   range Mapcodes.Precisions'First .. Max_Precision loop
     -- Get all the mapcodes with this precision
     declare
       -- Mapcodes for these input coordinates

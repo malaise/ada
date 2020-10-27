@@ -5,7 +5,7 @@ package Mapcodes is
 
   Mapcode_C_Version : constant String := "2.0.2";
   Mapcode_Data_Version : constant String := "2.3.0";
-  Mapcode_Ada_Version  : constant String := "1.0.11/Data"
+  Mapcode_Ada_Version  : constant String := "1.0.12/Data"
                                           & Mapcode_Data_Version;
 
   -- Real type (for latitude and longitude)
@@ -103,7 +103,7 @@ package Mapcodes is
   --   (see package Ctrynams)
   --  As a consequence, if it appears the international mapcode is always the
   --   last
-  subtype Precisions is Natural range 0 .. 2;
+  subtype Precisions is Natural range 0 .. 8;
   Earth : constant String := "AAA";
   function Encode (Coord : Coordinate;
                    Territory : String := "";

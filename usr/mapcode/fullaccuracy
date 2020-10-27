@@ -1,14 +1,18 @@
 #!/bin/bash
 
 function usage {
-  echo "Usage: `basename $0` [ -w | --warnings ] [ -n <threads> | --nb=<threads> ] "
+  echo "Usage: `basename $0` [ <warnings> ] [ <precision> ] [ <threads> ]"
+  echo "Usage:    <warnings>  ::= -w | --warnings ]"
+  echo "Usage:    <precision> ::= -p <prec> | --precision=<prec>"
+  echo "Usage:    <threads>   ::= -t <nb> | --threads=<nb> ] "
   echo "    or `basename $0` [ -h | --help ]"
 }
 
 
 export WARN=""
-export NB=1
+export THREADS=1
 export TDIR=test
+export PRECISION=2
 
 while [ -n "$1" ] ; do
   case "$1" in
@@ -19,12 +23,19 @@ while [ -n "$1" ] ; do
     ("-w"| "--warnings")
       WARN="-w"
     ;;
-   ("-n")
-      export NB=$2
+   ("-p")
+      export PRECISION=$2
       shift
     ;;
-    (--nb=*)
-      export NB=${1#*=}
+    (--procision=*)
+      export PRECISION=${1#*=}
+    ;;
+   ("-t")
+      export THREADS=$2
+      shift
+    ;;
+    (--threads=*)
+      export THREADS=${1#*=}
     ;;
     (*)
       usage
@@ -39,7 +50,7 @@ while read -r lat lon || [[ -n "$lat" ]]; do
   if [ \( -z "$lat" \) -o \( "$lat" = "#" \) ] ; then
     continue
   fi
-  t_accuracy $WARN $lat $lon >/dev/null
+  t_accuracy $PRECISION $WARN $lat $lon >/dev/null
   res=$?
   if [ $res -ne 0 ] ; then
     if [ $res -eq 1 ] ; then
@@ -77,13 +88,13 @@ while read -r ctx cod lat lon loc glob || [[ -n "$ctx" ]]; do
   fi
 
   # Async launch
-  t_accuracy $WARN $ctx:$cod >/dev/null &
+  t_accuracy $PRECISION $WARN $ctx:$cod >/dev/null &
   let C=$C+1
   pids[${C}]=$!
   comm[${C}]="$ctx:$cod"
 
-  # Each NB, wait for all to end, check result
-  R=$((C % NB))
+  # Each THREADS, wait for all to end, check result
+  R=$((C % THREADS))
   if [ $R -eq 0 ] ; then
     wait_children $C
     let C=0
@@ -103,3 +114,4 @@ wait_children $C
 echo
 
 echo "Done."
+

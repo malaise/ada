@@ -68,7 +68,8 @@ done
 if [ \( $SCENARIO_ONLY -eq 1 \) -a \( $TEST -eq 1 \) ] ; then
   error "Options \"scenario_only\" and \"test\" are mutually exclusive"
 fi
-if [ \( $PRECISION != "0" \) -a \( $PRECISION != "1" \) -a \( $PRECISION != "2" \) ] ; then
+let P=0+$PRECISION
+if [ \( $P -lt 0 \) -a \( $P -gt 8 \) ] ; then
   error "Invalid precision $PRECISION"
 fi
 echo Precision $PRECISION
@@ -279,7 +280,7 @@ while true ; do
   # Encode
   result=`t_mapcode -c $lat $lon $PRECISION`
   if [ $? -ne 0 ] ; then
-    error "t_mapcode -t $lat $lon $PRECISION has failed"
+    error "t_mapcode -c $lat $lon $PRECISION has failed"
   fi
   # Parse result:
   # lat lon => Short Code, then either 'Code Short' or 'Long', then num
