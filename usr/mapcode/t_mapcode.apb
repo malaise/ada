@@ -22,9 +22,9 @@ procedure T_Mapcode is
     Ada.Text_Io.Put_Line (
       "  -t <territory> [ <context> ]                   // Territory info");
     Ada.Text_Io.Put_Line (
-      "  -S <subdivision>                               // Same subdivisions");
+      "  -s <subdivision>                               // Same subdivisions");
     Ada.Text_Io.Put_Line (
-      "  -s <name>                                      // Search territory");
+      "  -S <name>                                      // Search territory");
     Ada.Text_Io.Put_Line (
       "  -d  <territory_mapcode>                        // Decode");
     Ada.Text_Io.Put_Line (
@@ -86,7 +86,7 @@ procedure T_Mapcode is
   function Image (F : Mapcodes.Real) return String is
 --#@IfNotDef Export
     R : Real;
-    Frac_Len : constant := 9;
+    Frac_Len : constant := 12;
   begin
     R := Mapcodes.Real (My_Math.Round_At (My_Math.Real (F), -Frac_Len));
     return Normalization.Normal_Fixed (My_Math.Real (R), Frac_Len + 5, 4, '0');
@@ -187,7 +187,7 @@ begin
         end if;
       end if;
       Put_Territory (Arg1.Image, Arg2.Image, True);
-    elsif Command.Image = "-S" then
+    elsif Command.Image = "-s" then
       -- Subdirectories with same suffix
       I := I + 1;
       declare
@@ -200,7 +200,7 @@ begin
                          False);
         end loop;
       end;
-    elsif Command.Image = "-s" then
+    elsif Command.Image = "-S" then
       -- Search country names
       I := I + 1;
       Territory.Set (Str_Tools.Upper_Str (Ada.Command_Line.Argument (I)));
