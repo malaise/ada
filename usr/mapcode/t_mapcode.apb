@@ -65,7 +65,7 @@ procedure T_Mapcode is
     Ada.Text_Io.Put (Territory
                    & (if Context /= "" then " " else "")
                    & Context &  " ");
-    Index := Get_Territory_Number (Territory, Context);
+    Index := Get_Territory (Territory, Context);
     Ada.Text_Io.Put_Line ("=> " & Image (Index)
       & ": " & Get_Territory_Alpha_Code (Index, Mapcodes.Local)
       & "/" & Get_Territory_Alpha_Code (Index, Mapcodes.International)

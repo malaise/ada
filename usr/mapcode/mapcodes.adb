@@ -849,9 +849,8 @@ package body Mapcodes is
   --  or Error.
   -- A context_Territory number helps to interpret ambiguous (abbreviated)
   --  AlphaCodes, such as "AL"
-  function Get_Territory_Number (Territory_Code : String;
-                                 Context : in String := "")
-           return Territories is
+  function Get_Territory (Territory_Code : String;
+                          Context : in String := "") return Territories is
     Num : Integer;
   begin
     Num := Iso2Ccode (Territory_Code, Context);
@@ -859,7 +858,7 @@ package body Mapcodes is
       raise Unknown_Territory;
     end if;
     return Territories (Num);
-  end Get_Territory_Number;
+  end Get_Territory;
 
   -- Return full name of territory
   function Get_Territory_Fullname (Territory: in Territories)
@@ -2550,7 +2549,7 @@ package body Mapcodes is
     Result : Mapcode_Infos := Mapcoder_Engine (
       Enc => Get_Encode_Rec (Coord.Lat, Coord.Lon),
       Tn => (if Territory_Code = "" then Error
-             else Integer (Get_Territory_Number (Territory_Code))),
+             else Integer (Get_Territory (Territory_Code))),
       Get_Shortest => Shortest,
       State_Override => -1,
       Extra_Digits => Precision);
@@ -2593,7 +2592,7 @@ package body Mapcodes is
     if Context = Undefined then
       Contextterritorynumber := Ccode_Earth;
     else
-      Contextterritorynumber := Integer (Get_Territory_Number(Context));
+      Contextterritorynumber := Integer (Get_Territory (Context));
     end if;
     return Master_Decode (Mapcode, Contextterritorynumber);
   end Decode;

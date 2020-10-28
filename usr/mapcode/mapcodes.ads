@@ -5,7 +5,7 @@ package Mapcodes is
 
   Mapcode_C_Version : constant String := "2.0.2";
   Mapcode_Data_Version : constant String := "2.3.0";
-  Mapcode_Ada_Version  : constant String := "1.1.2/Data"
+  Mapcode_Ada_Version  : constant String := "1.1.3/Data"
                                           & Mapcode_Data_Version;
 
   -- Real type (for latitude and longitude)
@@ -28,9 +28,8 @@ package Mapcodes is
   -- Raise, if Territory or Context is not known, or if Territory is ambiguous
   --  and no contextex is provided:
   Unknown_Territory : exception;
-  function Get_Territory_Number (Territory_Code : String;
-                                 Context : String := "")
-           return Territories;
+  function Get_Territory (Territory_Code : String;
+                          Context : String := "") return Territories;
 
   -- Return the alphacode (usually an ISO 3166 code) of a territory number
   -- Format: Local (often ambiguous), International (full and unambiguous,
