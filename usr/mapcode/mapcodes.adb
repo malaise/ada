@@ -857,13 +857,13 @@ package body Mapcodes is
     return Territories (Num);
   end Get_Territory_Number;
 
-  -- Return full name of territory or Undefined
+  -- Return full name of territory
   function Get_Territory_Fullname (Territory: in Territories)
            return String is
     Name : As_U.Asu_Us;
     Index : Natural;
   begin
-    Name := Ctrynams.Isofullname(Natural (Territory + 1));
+    Name := Ctrynams.Isofullname(Positive (Territory + 1));
     Index := Str_Tools.Locate (Name.Image, " (");
     if Index > 0 then
       return Name.Slice (1, Index - 1);

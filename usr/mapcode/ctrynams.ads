@@ -537,7 +537,6 @@ As_U.Tus ("China (People's Republic of _)"),
 As_U.Tus ("United States Minor Outlying Islands"),
 As_U.Tus ("Clipperton Island"),
 As_U.Tus ("Antarctica"),
-As_U.Tus ("International (Worldwide) (Earth)"),
-As_U.Tus ("?"));
+As_U.Tus ("International (Worldwide) (Earth)"));
 end Ctrynams;
 
