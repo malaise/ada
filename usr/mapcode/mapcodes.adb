@@ -841,6 +841,10 @@ package body Mapcodes is
     return Error;
   end Iso2Ccode;
 
+  -- Image of a territory (index starting at 0 for VAT)
+  function Image (Territory : Territories) return String is
+    (Image (Integer (Territory)));
+
   -- Given an alphacode (such As_US-AL), returns the territory number
   --  or Error.
   -- A context_Territory number helps to interpret ambiguous (abbreviated)

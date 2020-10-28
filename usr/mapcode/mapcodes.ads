@@ -5,7 +5,7 @@ package Mapcodes is
 
   Mapcode_C_Version : constant String := "2.0.2";
   Mapcode_Data_Version : constant String := "2.3.0";
-  Mapcode_Ada_Version  : constant String := "1.1.1/Data"
+  Mapcode_Ada_Version  : constant String := "1.1.2/Data"
                                           & Mapcode_Data_Version;
 
   -- Real type (for latitude and longitude)
@@ -17,10 +17,14 @@ package Mapcodes is
   -- Valid territory identifier
   type Territories is private;
 
+  -- Image of a territory ("0" for Vatican to "532" for International)
+  function Image (Territory : Territories) return String;
+
   -- Given an ISO 3166 alphacode (such as "US-AL" or "FRA"), return the
   --  corresponding territory identifier or raise Unknown_Territory
   -- A Context territory helps to interpret ambiguous (abbreviated)
   --  alphacodes, such as "BR" or "US" for the subdivision "AL"
+  -- Territory_Code can also be the image of the territory (ex "364" for US-AL)
   -- Raise, if Territory or Context is not known, or if Territory is ambiguous
   --  and no contextex is provided:
   Unknown_Territory : exception;
