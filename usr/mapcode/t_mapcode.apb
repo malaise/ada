@@ -47,16 +47,6 @@ procedure T_Mapcode is
       "  <precision>         ::= P0 .. P8               // Default P0 or from input");
   end Usage;
 
-  function Integer_Image (I : Integer) return String is
-    Str : constant String := I'Img;
-  begin
-    if Str(Str'First) /= ' ' then
-      return Str;
-    else
-      return Str (Integer'Succ (Str'First) .. Str'Last);
-    end if;
-  end Integer_Image;
-
   function Lower_Str (Str : String) return String is
     Offset  : constant Integer   := Character'Pos('A') - Character'Pos('a');
     Result : String := Str;
@@ -70,14 +60,13 @@ procedure T_Mapcode is
 
   procedure Put_Territory (Territory, Context : in String;
                            Show_Subdivision : in Boolean) is
-    Index : Mapcodes.Territory_Range;
+    Index : Territories;
   begin
     Ada.Text_Io.Put (Territory
                    & (if Context /= "" then " " else "")
                    & Context &  " ");
     Index := Get_Territory_Number (Territory, Context);
-    Ada.Text_Io.Put_Line ("=> " & Integer_Image (Index)
-      & ": " & Get_Territory_Alpha_Code (Index, Mapcodes.Local)
+    Ada.Text_Io.Put_Line ("=> " & Get_Territory_Alpha_Code (Index, Mapcodes.Local)
       & "/" & Get_Territory_Alpha_Code (Index, Mapcodes.International)
       & "/" & Get_Territory_Alpha_Code (Index, Mapcodes.Shortest)
       & "/" & Get_Territory_Fullname (Index) );
@@ -202,7 +191,7 @@ begin
       -- Subdirectories with same suffix
       I := I + 1;
       declare
-        Brothers : constant Mapcodes.Territory_Array
+        Brothers : constant Mapcodes.Territories_Array
                  := Mapcodes.Get_Subdivisions_With (
                         Ada.Command_Line.Argument (I));
       begin
@@ -300,8 +289,7 @@ begin
           Ada.Text_Io.Put_Line ("=> "
             & Code.Territory_Alpha_Code.Image
             & " " &  Code.Mapcode.Image
-            & " " & Quote (Code.Full_Mapcode.Image)
-            & " " & Integer_Image (Code.Territory_Number));
+            & " " & Quote (Code.Full_Mapcode.Image));
         end Put_Code;
         -- Sort if Local
         Codes : constant Mapcodes.Mapcode_Infos
