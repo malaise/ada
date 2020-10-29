@@ -1,11 +1,11 @@
 -- Mapcode management
 with Mapcode_Utils.As_U;
-private with Ctrynams;
+private with Countries;
 package Mapcodes is
 
   Mapcode_C_Version : constant String := "2.0.2";
   Mapcode_Data_Version : constant String := "2.3.0";
-  Mapcode_Ada_Version  : constant String := "1.1.3/Data"
+  Mapcode_Ada_Version  : constant String := "1.1.4/Data"
                                           & Mapcode_Data_Version;
 
   -- Real type (for latitude and longitude)
@@ -17,21 +17,24 @@ package Mapcodes is
   -- Valid territory identifier
   type Territories is private;
 
-  -- Image of a territory ("0" for Vatican to "532" for International)
-  function Image (Territory : Territories) return String;
 
   -- Given an ISO 3166 alphacode (such as "US-AL" or "FRA"), return the
   --  corresponding territory identifier or raise Unknown_Territory
   -- A Context territory helps to interpret ambiguous (abbreviated)
   --  alphacodes, such as "BR" or "US" for the subdivision "AL"
-  -- Territory_Code can also be the image of the territory (ex "364" for US-AL)
+  -- Territory_Code can also be the number of the territory (ex "364" for US-AL)
   -- Raise, if Territory or Context is not known, or if Territory is ambiguous
   --  and no contextex is provided:
   Unknown_Territory : exception;
   function Get_Territory (Territory_Code : String;
                           Context : String := "") return Territories;
 
-  -- Return the alphacode (usually an ISO 3166 code) of a territory number
+  -- Return the number of a territory ("0" for Vatican to "532" for
+  --   International)
+  -- See package Countries, field Num of the territory definition
+  function Get_Territory_Number (Territory : Territories) return String;
+
+  -- Return the alphacode (usually an ISO 3166 code) of a territory
   -- Format: Local (often ambiguous), International (full and unambiguous,
   --  DEFAULT), or Shortest
   type Territory_Formats is (Local, International, Shortest);
@@ -40,6 +43,8 @@ package Mapcodes is
       Format : Territory_Formats := International) return String;
 
   -- Return the full readable name of a territory (e.g. "France")
+  --   This is the first part of the Name (see package Countries), before the
+  --   first " (" if any
   function Get_Territory_Fullname (Territory : Territories) return String;
 
   -- Return the parent country of a subdivision (e.g. "US" for "US-AL")
@@ -47,14 +52,14 @@ package Mapcodes is
   Not_A_Subdivision : exception;
   function Get_Parent_Of (Territory : Territories) return Territories;
 
-  -- Return True if Territory is a state
+  -- Return True if Territory is a subdivision (state)
   function Is_Subdivision (Territory : Territories) return Boolean;
 
   -- Return True if Territory is a country that has states
   function Has_Subdivision (Territory : Territories) return Boolean;
 
   -- Given a subdivision name, return the array (possibly empty) of territory
-  --  subdivisions with same name
+  --  subdivisions with the same name
   -- Ex: given "AL" return the array (318 (BR-AL), 482 (RU-AL), 364 (US-AL))
   type Territories_Array is array (Positive range <>) of Territories;
   function Get_Subdivisions_With (Subdivision : String)
@@ -87,13 +92,13 @@ package Mapcodes is
 
   -- Encode a coordinate
   -- Return an array of mapcodes, each representing the specified coordinate.
-  -- If a Territory alphacode is specified, then only mapcodes (if any) within
-  --   that territory are returned. If Earth is provided as territory then
-  --  only the 9-letter "international" mapcode is returned
+  -- If a Territory alphacode or num is specified, then only mapcodes (if any)
+  --   within that territory are returned. If Earth is provided as territory,
+  --   then only the 9-letter "international" mapcode is returned
   -- If Shortest is set, then at most one mapcode (the "default" and
   --   "shortest possible" mapcode) in any territory are returned
   -- The Precision option leads to produce mapcodes extended with high-precision
-  --  letters (the parameter specifies how many letters: 0, 1, or 2
+  --  letters (the parameter specifies how many letters: 0 to 8
   -- The resulting array is always organized by territories: all the mapcodes
   --  of a territory follow each other and in order of increasing length.
   --  If Sort is set, then the returned array contains first the shortest
@@ -101,7 +106,7 @@ package Mapcodes is
   --   then possibly mapcodes for other territories, then possibly the
   --   international (Earth) mapcode
   --  Otherwise the territories appear in the crescent order of Territory_Range
-  --   (see package Ctrynams)
+  --   (see package Countries)
   --  As a consequence, if it appears the international mapcode is always the
   --   last
   subtype Precisions is Natural range 0 .. 8;
@@ -123,6 +128,6 @@ package Mapcodes is
   function Decode (Mapcode, Context : String) return Coordinate;
 
 private
-  type Territories is new Natural range 0 .. Ctrynams.Isofullname'Last - 1;
+  type Territories is new Natural range 0 .. Countries.Territories_Def'Last - 1;
 end Mapcodes;
 
