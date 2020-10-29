@@ -37,7 +37,7 @@ make Export
 
 # Files to export
 export FILES="mapcode_utils.ads mapcode_utils-*.ad* \
-ctrynams.ads ndata.ads mapcodes.ads mapcodes.adb ndata.ads \
+countries.ads ndata.ads mapcodes.ads mapcodes.adb ndata.ads \
 t_mapcode.adb fulltest test/*"
 
 # Add Copyright headers and copy in TARGET
