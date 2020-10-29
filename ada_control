@@ -43,7 +43,7 @@ if [ $DO_CALL = 1 ] ; then
   done
 
   # List targets, remove $ADACTRL_EXCL
-  TARGETS=`ls -1 *.ad[sb] | awk -v EXCL=$ADACTL_EXCL '
+  TARGETS=`ls -1 *.ad[sb] | awk -v EXCL="$ADACTL_EXCL" '
     BEGIN {N=split (EXCL, EX, " ")}
     {
       for (I = 1; I <= N; I++) {
