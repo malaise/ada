@@ -185,18 +185,43 @@ package body Mapcodes is
 
     -- Optims: direct number or code
     if P = Error and then Sep = 0 then
+      -- Direct territory number
       if Is_Digits (Code2Search.Image) then
-        -- Direct territory number
         N := Natural'Value (Code2Search.Image);
         if N <= Ccode_Earth then
           return N;
         end if;
       end if;
+
+      -- Check if a simple territory
       if Code2Search.Length = 3 then
-        -- Check if a simple territory
         Index := Find_Iso (Code2Search.Image);
         if Index /= Error then
           return Index;
+        end if;
+      end if;
+
+      -- Find unique occurence of subdivision in ANY context
+      if Code2Search.Length >= 2 then
+        Hyphenated := Tus ("-") & Code2Search;
+        Result := Error;
+        for I in Country_Range loop
+          Index := Str_Tools.Locate (Countries.Territories_Def(I).Code.Image,
+                                     Hyphenated.Image);
+          if Index > 0
+          and then Index = Countries.Territories_Def(I).Code.Length
+                         - Hyphenated.Length + 1 then
+            -- iso3166alpha ends by Hyphenated
+            if Result /= Error then
+              -- Not unique
+              return Error;
+            else
+              Result := I - 1;
+            end if;
+          end if;
+        end loop;
+        if Result /= Error then
+          return Result;
         end if;
       end if;
     end if;
@@ -219,7 +244,7 @@ package body Mapcodes is
       return Error;
     end if;
 
-    -- Optim: prefix and code
+    -- Optim: search this prefix and code
     if P /= Error then
       Index := Find_Iso (Parent_Name2 (P) & "-" & Code2Search.Image);
       if Index /= Error then
@@ -244,7 +269,7 @@ package body Mapcodes is
         Code2Search := Isoa.Uslice (2, Isoa.Length);
         Tmpp := Integer'Value (Isoa.Slice (1, 1));
         if P /= Error and then Tmpp /= P then
-          -- Cannot change territpry through aliasing
+          -- Cannot change territory through aliasing
           return Error;
         end if;
         P := Tmpp;
@@ -266,31 +291,8 @@ package body Mapcodes is
       return Index;
     end if;
     if P /= Error then
+      -- With a context, the search shall have succeded
       return Error;
-    end if;
-
-    if Code2Search.Length >= 2 then
-      -- Find unique occurence in ANY context
-      Hyphenated := Tus ("-") & Code2Search;
-      Result := Error;
-      for I in Country_Range loop
-        Index := Str_Tools.Locate (Countries.Territories_Def(I).Code.Image,
-                                   Hyphenated.Image);
-        if Index > 0
-        and then Index = Countries.Territories_Def(I).Code.Length
-                       - Hyphenated.Length + 1 then
-          -- iso3166alpha ends by Hyphenated
-          if Result /= Error then
-            -- Not unique
-            return Error;
-          else
-            Result := I - 1;
-          end if;
-        end if;
-      end loop;
-      if Result /= Error then
-        return Result;
-      end if;
     end if;
 
     -- All else failed, try non-disambiguated alphacode

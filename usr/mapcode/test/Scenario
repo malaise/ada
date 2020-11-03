@@ -11,7 +11,7 @@
 -t USA => 410: USA/USA/USA/USA Has subdivisions
 -t usa => 410: USA/USA/USA/USA Has subdivisions
 -t 410 => 410: USA/USA/USA/USA Has subdivisions
--t CA  => 391: CA/US-CA/CA/California Parent: USA
+-t CA => 391: CA/US-CA/CA/California Parent: USA
 -t US-CA => 391: CA/US-CA/CA/California Parent: USA
 -t USA-CA => 391: CA/US-CA/CA/California Parent: USA
 -t RUS-TAM => 430: TT/RU-TT/TT/Tambov Oblast Parent: RUS
@@ -25,6 +25,10 @@
 -t IN-MN => 279: MN/IN-MN/IN-MN/Manipur Parent: IND
 -t US-IN => 356: IN/US-IN/US-IN/Indiana Parent: USA
 -t NLD => 112: NLD/NLD/NLD/Netherlands
+-t TT => 430: TT/RU-TT/TT/Tambov Oblast Parent: RUS
+-t TAM => 259: TAM/MX-TAM/MX-TAM/Tamaulipas Parent: MEX
+-t RU-TAM => 430: TT/RU-TT/TT/Tambov Oblast Parent: RUS
+-s TAM => 430: TT/RU-TT/TT/Tambov Oblast Parent: RUS
 -s AL => 482: AL/RU-AL/RU-AL/Altai Republic Parent: RUS
 -S altai => 483: ALT/RU-ALT/ALT/Altai Krai Parent: RUS
 

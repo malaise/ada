@@ -5,7 +5,7 @@ package Mapcodes is
 
   Mapcode_C_Version : constant String := "2.0.2";
   Mapcode_Data_Version : constant String := "2.3.0";
-  Mapcode_Ada_Version  : constant String := "1.1.4/Data"
+  Mapcode_Ada_Version  : constant String := "1.1.5/Data"
                                           & Mapcode_Data_Version;
 
   -- Real type (for latitude and longitude)
@@ -28,6 +28,11 @@ package Mapcodes is
   Unknown_Territory : exception;
   function Get_Territory (Territory_Code : String;
                           Context : String := "") return Territories;
+  -- Note about aliases and ambiguity: The check for ambiguity is strict among
+  --      subdivisions but does not apply to aliases. As a consequence, "TAM"
+  --      corresponds to "MX-TAM" without error despite "RU-TAM is also an alias
+  --      for "RU-TT". (Aliases are not ambiguous among them, but would it be
+  --      the case then Get_Territory would return one of them without error).
 
   -- Return the number of a territory ("0" for Vatican to "532" for
   --   International)
