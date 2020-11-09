@@ -12,7 +12,7 @@ function usage {
 export WARN=""
 export THREADS=1
 export TDIR=test
-export PRECISION=2
+export PRECISION="P2"
 
 while [ -n "$1" ] ; do
   case "$1" in
@@ -24,11 +24,11 @@ while [ -n "$1" ] ; do
       WARN="-w"
     ;;
    ("-p")
-      export PRECISION=$2
+      export PRECISION="P$2"
       shift
     ;;
     (--procision=*)
-      export PRECISION=${1#*=}
+      export PRECISION="P${1#*=}"
     ;;
    ("-t")
       export THREADS=$2

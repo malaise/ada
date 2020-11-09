@@ -20,7 +20,7 @@ procedure T_Accuracy is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
         & " <precision> [ -w | --warnings ] [ <mapcode> | <lat_lon> ]");
-    Basic_Proc.Put_Line_Error ("  <precision> ::= 0 .. 8");
+    Basic_Proc.Put_Line_Error ("  <precision> ::= P0 .. P8");
     Basic_Proc.Put_Line_Error ("  <mapcode>   ::= [ <context>:]<code>");
     Basic_Proc.Put_Line_Error ("  <lat_lon>   ::= <latitude> <longitude>");
     Basic_Proc.Put_Line_Error ("Default: random lat_lon");
@@ -31,6 +31,7 @@ procedure T_Accuracy is
   procedure Error (Msg : in String) is
   begin
     Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
+    Basic_Proc.Set_Error_Exit_Code;
     Usage;
     raise Give_Up;
   end Error;
@@ -140,6 +141,9 @@ begin
   Narg := Argument.Get_Nbre_Arg;
   Sarg := 1;
   -- Help
+  if Narg = 0 then
+    Error ("Invalid arguments");
+  end if;
   if Narg > 0 and then (Argument.Get_Parameter (Sarg) = "--help"
                         or else Argument.Get_Parameter (Sarg) = "-h")  then
     Usage;
@@ -147,7 +151,17 @@ begin
   end if;
 
   -- Precision
-  Max_Precision := Mapcodes.Precisions'Value (Argument.Get_Parameter (Sarg));
+  declare
+    Arg : constant String := Argument.Get_Parameter (Occurence => Sarg);
+  begin
+    if Arg'Length /= 2 or else Arg(1) /= 'P' then
+      raise Constraint_Error;
+    end if;
+    Max_Precision := Mapcodes.Precisions'Value (Arg(2 .. 2));
+  exception
+    when others =>
+      Error ("Invalid precision");
+  end;
   Sarg := Sarg + 1;
   Narg := Narg - 1;
 
@@ -280,6 +294,6 @@ begin
   end loop;
 exception
   when Give_Up =>
-    Basic_Proc.Set_Error_Exit_Code;
+    null;
 end T_Accuracy;
 
