@@ -38,7 +38,7 @@ procedure T_Mapcode is
     Ada.Text_Io.Put_Line (
       "  <selection>         ::= [ all | local | short] // Default short");
     Ada.Text_Io.Put_Line (
-      "                      // Default: one mapcode (the shortest) of each territory");
+      "                      // short: one mapcode (the shortest) of each territory");
     Ada.Text_Io.Put_Line (
       "                      // all: all the mapcodes of all territories");
     Ada.Text_Io.Put_Line (
