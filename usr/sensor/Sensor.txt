@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: V4.2
+Version: 5.0
 
 Sensor scans several log files and raises alerts on some events (matching
 filters).
@@ -36,6 +36,7 @@ and the format of time (expected at a fixed offset in each line of the file).
 See Date_Text for the definition of format used to scan dates and times.
 - a history of alerts to store (default 100)
 - the name of the action to execute
+- the latency between two successive executions of the action
 - the criteria (regular expression) to match
 
 Example:
@@ -51,7 +52,7 @@ Example:
     <Action Name="RootLogin">echo -n "${Match}" >> ${Logfile}</Rule>
   </Actions>
   <Rules>
-    <Rule File="/var/log/auth.log" Action="RootLogin">
+    <Rule File="/var/log/auth.log" Action="RootLogin" Latency="300">
       <Past Seconds="3600">%b %d %H:%M:%S</Past>
       <Criteria>pam_unix\((su|sshd):session\): session opened for user root by</Criteria>
     </Rule>
@@ -75,6 +76,7 @@ time format, regular expression, and that the referenced action exists
  * Extract the tail then filter the past seconds of the file, and then search
 the regex
  * If found, check each line of the result versus the history
- * If not found, store in the history
- * If some matches, then expand and execute the action
+ * If found in the history then drop, otherwise store in the history
+ * Store the matching lines until latency is reached, then expand and execute
+the action
 

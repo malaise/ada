@@ -1,3 +1,4 @@
+with Ada.Calendar;
 with As.U, Long_Longs, Timers, Queues, Reg_Exp;
 package Rules is
 
@@ -9,6 +10,8 @@ package Rules is
 
   type Pattern_Access is access all Reg_Exp.Compiled_Pattern;
   type History_Access is access Hist_Mng.Circ_Type;
+  type Time_Access is access Ada.Calendar.Time;
+  type Asu_Access is access As.U.Asu_Us;
   type Rule_Rec is record
     File : As.U.Asu_Us;
     Period : Timers.Period_Range;
@@ -18,6 +21,9 @@ package Rules is
     Seconds : Tail_Length;
     Time_Format : As.U.Asu_Us;
     Pattern : Pattern_Access;
+    Latency : Tail_Length;
+    Previous : Time_Access;
+    Result : Asu_Access;
   end record;
 
   -- Check and store a rule

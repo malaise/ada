@@ -2,18 +2,12 @@
 <!DOCTYPE Sensor SYSTEM "Sensor.dtd">
 
 <Sensor>
-  <Vars>
-    <Var Name="Logfile">/root/log/login</Var>
-    <Var Name="User">malaise</Var>
-  </Vars>
-
   <Actions>
-    <Action Name="Antibot">echo "${Match}" | /usr/bin/mail -s "Alert antibot" ${User}</Action>
-    <Action Name="RootLogin">echo -n "${Match}" >> ${Logfile}</Action>
+    <Action Name="Antibot">echo "${Match}" | /root/sensor/antibot ${Match}</Action>
+    <Action Name="RootLogin">echo -n "${Match}" >> /root/log/login</Action>
   </Actions>
-
   <Rules>
-    <Rule File="/var/log/syslog" Action="Antibot">
+    <Rule File="/var/log/syslog" Action="Antibot" Latency="600">
       <Criteria>IP in blacklist</Criteria>
     </Rule>
     <Rule File="/var/log/auth.log" Action="RootLogin">

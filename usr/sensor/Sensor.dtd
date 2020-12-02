@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="Utf-8"?>
-<!ELEMENT Sensor (Vars?,Actions, Rules)>
-
-<!-- Optional variables -->
-<!ELEMENT Vars (Var*)>
-<!ELEMENT Var (#PCDATA)>
-<!ATTLIST Var Name ID #REQUIRED>
+<!ELEMENT Sensor (Actions, Rules)>
 
 <!-- List of action, each uniquely identified by a name, -->
 <!ELEMENT Actions (Action*)>
@@ -22,13 +17,15 @@
 <!-- - the scanning period in seconds (float, min 1.0) -->
 <!-- - the number of tailing lines of the file to scan (0 for infinite) -->
 <!-- - the maximum number of known alerts to store in the history -->
-<!-- - the  action to execute when a line of file matches and is not known -->
+<!-- - the action to execute when a line of file matches and is not known -->
 <!--   in the history -->
+<!-- - the latency between two successive executions of the action -->
 <!ATTLIST Rule File CDATA #REQUIRED
                Period CDATA "60.0"
                Tail CDATA "100"
                History CDATA "100"
-               Action IDREF #REQUIRED>
+               Action IDREF #REQUIRED
+               Latency CDATA "0">
 <!ELEMENT Rule (Past?,Criteria)>
 
 <!-- - the number of past seconds to scan (0 for infinite) -->

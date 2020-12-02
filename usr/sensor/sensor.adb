@@ -1,10 +1,10 @@
-with Ada.Exceptions;
-with Argument, Basic_Proc, Sys_Calls, As.U, Timers, Event_Mng, Xml_Parser,
-     Reg_Exp, Date_Text, Queues;
+with Ada.Exceptions, Ada.Calendar;
+with Argument, Basic_Proc, Sys_Calls, As.U, Timers, Event_Mng,
+     Xml_Parser, Reg_Exp, Date_Text, Queues;
 with Debug, Actions, Rules, Executor;
 procedure Sensor is
 
-  Version : constant String := "V4.2";
+  Version : constant String := "V5.0";
 
   procedure Help is
   begin
@@ -128,7 +128,6 @@ begin
         return;
     end;
     -- No history if 0
-    declare
     begin
       Hist_Size := Queues.Len_Range'Value (Ctx.Get_Attribute (Node, "History"));
       if Hist_Size /= 0 then
@@ -150,6 +149,25 @@ begin
           & " refers to an unknown action " & Rule.Action.Image & ".");
       return;
     end if;
+    -- Optional latency
+    begin
+      Text := Ctx.Get_Attribute (Node, "Latency");
+      Rule.Latency := Rules.Tail_Length'Value (Text.Image);
+    exception
+      when Xml_Parser.Attribute_Not_Found =>
+        -- Default
+        Rule.Latency := 0;
+      when others =>
+        Basic_Proc.Put_Line_Error ("Rule at line "
+          & Ctx.Get_Line_No (Node)'Img
+          & " defines invalid latency " & Text.Image & ".");
+      return;
+    end;
+    -- Previous execution (for latency)
+    Rule.Previous := new Ada.Calendar.Time'(
+        Ada.Calendar.Time_Of (Ada.Calendar.Year_Number'First,
+                              Ada.Calendar.Month_Number'First,
+                              Ada.Calendar.Day_Number'First));
     -- Optional past
     if Ctx.Get_Nb_Children (Node) = 1 then
       Rule.Seconds := 0;
@@ -192,6 +210,7 @@ begin
             & " uses invalid pattern => " & Rule.Pattern.Error);
       return;
     end if;
+    Rule.Result := new As.U.Asu_Us;
     -- Ok, store
     Debug.Log ("Storing rule " & Text.Image & " on " & Rule.File.Image);
     begin

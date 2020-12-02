@@ -1,3 +1,4 @@
+with Ada.Calendar;
 with Event_Mng, Timers, Any_Def, As.U.Utils, Sys_Calls, Aski;
 with Debug, Actions, Rules, Searcher;
 package body Executor is
@@ -9,19 +10,12 @@ package body Executor is
     Do_Exit := True;
   end Exit_Handler;
 
-  -- The timer callbackl
-  function Expire (Dummy_Id : in Timers.Timer_Id;
-                   Data : in Timers.Timer_Data) return Boolean is
-    Rule : Rules.Rule_Rec;
+  -- Check the lines matching rule
+  procedure Check (Rule : Rules.Rule_Rec) is
     Matches : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
     Hist : As.U.Asu_Us;
-    Result : As.U.Asu_Us;
-    Dummy : Integer;
     use type As.U.Asu_Us, Rules.History_Access;
   begin
-     -- Retrieve the filter index from data and read it
-     Rule := Rules.Get_Rule (Data.Lint);
-     Debug.Log ("Expiration of rule on " & Rule.File.Image);
      -- Search the pattern in the tail of the file
      Searcher.Search (Rule.File.Image, Rule.Tail,
                       Rule.Seconds, Rule.Time_Format,
@@ -29,7 +23,7 @@ package body Executor is
                       Matches);
      -- Done if no match
      if Matches.Is_Empty then
-       return False;
+       return;
      end if;
      -- If found, check each line of the result in the history
      if Rule.History /= null then
@@ -43,7 +37,7 @@ package body Executor is
                         & " is in history");
              Matches.Delete;
              if Matches.Is_Empty then
-               return False;
+               return;
              end if;
            else
              -- Check next matching line
@@ -63,16 +57,43 @@ package body Executor is
          Debug.Log ("  Saving " & Matches.Access_Current.Image);
          Rule.History.Push (Matches.Access_Current.all);
        end if;
-       Result := Result & Matches.Access_Current.all & Aski.Lf;
+       Rule.Result.all := Rule.Result.all
+                        & Matches.Access_Current.all & Aski.Lf;
        exit when not Matches.Check_Move;
        Matches.Move_To;
      end loop;
 
+  end Check;
+
+  -- The timer callback
+  function Expire (Dummy_Id : in Timers.Timer_Id;
+                   Data : in Timers.Timer_Data) return Boolean is
+    Rule : Rules.Rule_Rec;
+    Dummy : Integer;
+    Now : Ada.Calendar.Time;
+    use type Ada.Calendar.Time;
+  begin
+     -- Retrieve the filter index from data and read it
+     Rule := Rules.Get_Rule (Data.Lint);
+     Debug.Log ("Expiration of rule on " & Rule.File.Image);
+     -- Search the pattern in the tail of the file
+     Check (Rule);
+     -- Check latency
+     Now := Ada.Calendar.Clock;
+     if Rule.Latency /= 0
+     and then Rule.Previous.all + Duration (Rule.Latency) > Now then
+       -- Within latency
+       Debug.Log ("  Within latency");
+       return False;
+     end if;
      -- Expand the command and execute it
      Debug.Log ("  Action "
-              & Actions.Expand (Rule.Action.Image, Result.Image));
+              & Actions.Expand (Rule.Action.Image, Rule.Result.Image));
      Dummy := Sys_Calls.Call_System (
-         Actions.Expand (Rule.Action.Image, Result.Image));
+         Actions.Expand (Rule.Action.Image, Rule.Result.Image));
+     -- Reset result and latency reference
+     Rule.Result.Set_Null;
+     Rule.Previous.all := Now;
     return False;
   end Expire;
 
