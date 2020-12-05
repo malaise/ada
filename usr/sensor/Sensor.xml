@@ -3,12 +3,12 @@
 
 <Sensor>
   <Actions>
-    <Action Name="Antibot">echo "${Match}" | /root/sensor/antibot ${Match}</Action>
+    <Action Name="Antibot">echo "${Match}" | /root/sensor/antibot</Action>
     <Action Name="RootLogin">echo -n "${Match}" >> /root/log/login</Action>
   </Actions>
   <Rules>
-    <Rule File="/var/log/syslog" Action="Antibot" Latency="600">
-      <Criteria>IP in blacklist</Criteria>
+    <Rule File="/var/log/syslog" Action="Antibot">
+      <Criteria>BANNING </Criteria>
     </Rule>
     <Rule File="/var/log/auth.log" Action="RootLogin">
       <Past Seconds="3600">%b %d %H:%M:%S</Past>
