@@ -78,6 +78,10 @@ package body Executor is
      Debug.Log ("Expiration of rule on " & Rule.File.Image);
      -- Search the pattern in the tail of the file
      Check (Rule);
+     -- Nothing to do if no match
+     if Rule.Result.Is_Null then
+       return False;
+     end if;
      -- Check latency
      Now := Ada.Calendar.Clock;
      if Rule.Latency /= 0
