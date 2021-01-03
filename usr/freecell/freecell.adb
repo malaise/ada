@@ -191,6 +191,7 @@ begin
                     To   => Selected_Target.Stack);
             -- Unselect
             Reset;
+            Status := Selectable;
             Selected_Target.Xcard.Un_Select;
             Selected_Target := null;
             -- Move
