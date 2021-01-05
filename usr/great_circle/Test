@@ -11,6 +11,22 @@ function clean {
   rm -f cmp res out err expout experr
 }
 
+# Regenerate interception scenario
+if [ "$1" = "generate_intercept" ] ; then
+  awk '
+    ( ($0 == "") || ($1 == "#") ) {
+      print
+      next
+    }
+    {
+      cmd="intercept -s "$1" "$2
+      cmd | getline RES
+      close(cmd)
+      print RES
+    }
+  ' interceptions.txt > interceptions.gen
+  exit
+fi
 
 # Play gc scenario
 ./player Scenario
@@ -176,7 +192,7 @@ echo "$res"
 # Get constant Intercept DME
 INTER_DME=`intercept --dme | cut -d ' ' -f1`
 # Manually use the second output field to set Beta DME
-export BETA_DME=20
+export BETA_DME=21
 echo -n "" > experr
 let L=1
 while true ; do
@@ -258,7 +274,7 @@ function debug {
 # Innsbruck
 cat <<EOF >expout
 28 APP1 DRCT 8905.000000 47.723221 11.065650
-28 APP2 DRCT 6905.000000 47.400191 11.789910
+28 APP2 DRCT 6905.000000 47.412667 11.808439
 28 APP3 DRCT 4905.000000 47.308265 11.680265
 1 ADES ADES 1905.000000 47.260277 11.343889
 EOF
@@ -267,7 +283,7 @@ debug 255 155 --debug 1905.000000  47.260277  11.343889 E3
 # Antananarivo
 cat <<EOF >expout
 28 APP1 DRCT 11198.000000 -18.299177 47.433022
-28 APP2 DRCT 9198.000000 -18.671877 47.152878
+28 APP2 DRCT 9198.000000 -18.659974 47.139067
 28 APP3 DRCT 7198.000000 -18.760310 47.235662
 1 ADES ADES 4198.000000 -18.796944 47.478889
 EOF
@@ -276,7 +292,7 @@ debug 114 190 --debug 4198.000000 -18.796944  47.478889 W15
 # Boston
 cat <<EOF >expout
 28 APP1 DRCT 7019.000000 42.572471 -70.391455
-28 APP2 DRCT 5019.000000 42.032306 -71.061043
+28 APP2 DRCT 5019.000000 42.015086 -71.055597
 28 APP3 DRCT 3019.000000 42.143780 -71.113947
 1 ADES ADES 19.000000 42.362944 -71.006389
 EOF
@@ -285,7 +301,7 @@ debug 035 260 --debug   19.000000  42.362944 -71.006389 W15
 # Rio de Janeiro
 cat <<EOF >expout
 28 APP1 DRCT 7028.000000 -22.305731 -43.275547
-28 APP2 DRCT 5028.000000 -22.643286 -42.941024
+28 APP2 DRCT 5028.000000 -22.629873 -42.928529
 28 APP3 DRCT 3028.000000 -22.740634 -43.013663
 1 ADES ADES 28.000000 -22.805090 -43.256699
 EOF
@@ -294,21 +310,6 @@ debug 276 200 --debug   28.000000 -22.805090 -43.256699 W22
 # Done
 echo ""
 
-# Regenerate interception scenario
-if [ "$1" = "generate_intercept" ] ; then
-  awk '
-    ( ($0 == "") || ($1 == "#") ) {
-      print
-      next
-    }
-    {
-      cmd="intercept -s "$1" "$2
-      cmd | getline RES
-      close(cmd)
-      print RES
-    }
-  ' interceptions.txt > interceptions.gen
-fi
 
 clean
 echo "OK."
