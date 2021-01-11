@@ -1,4 +1,4 @@
-package body Conv is
+package body Units is
   use type My_Math.Real;
 
   function Rad2Geo (Coord : Rad_Coord_Range) return Geo_Coord_Rec is
@@ -144,5 +144,5 @@ package body Conv is
     return Deg;
   end Geo2Deg;
 
-end Conv;
+end Units;
 

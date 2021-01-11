@@ -1,7 +1,6 @@
--- Definition of DegMinSec, DegFrac, Radians, Degrees
---  and conversion
+-- Definition of DegMinSec, DegFrac, Radians, Degrees and conversions
 with My_Math, Complexes;
-package Conv is
+package Units is
 
   subtype Deg_Range is Natural range 0 .. 359;
   subtype Min_Range is Natural range 0 .. 59;
@@ -57,5 +56,5 @@ package Conv is
   function Deg2Geo (Coord : Deg_Coord_Range) return Geo_Coord_Rec;
   function Geo2Deg (Coord : Geo_Coord_Rec) return Deg_Coord_Range;
 
-end Conv;
+end Units;
 

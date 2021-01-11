@@ -1,5 +1,5 @@
 with My_Math;
-with Conv, Lat_Lon;
+with Units, Lat_Lon;
 package String_Util is
 
   -- Ndd.mm.ssss/Wddd.mm.ssss
@@ -15,7 +15,7 @@ package String_Util is
 
   -- Geo_Angle is ddd.mm.ss
   subtype Geo_Angle_Str is  String(1..9);
-  function Geoangle2Str (Geo_Angle : Conv.Geo_Coord_Rec) return Geo_Angle_Str;
+  function Geoangle2Str (Geo_Angle : Units.Geo_Coord_Rec) return Geo_Angle_Str;
 
 
   -- Ndd.ijklmn/Wddd.ijklmn
@@ -30,7 +30,7 @@ package String_Util is
 
   -- Dec_Angle is ddd.ijkl
   subtype Dec_Angle_Str is  String(1..8);
-  function Decangle2Str (Dec_Angle : Conv.Dec_Coord_Rec) return Dec_Angle_Str;
+  function Decangle2Str (Dec_Angle : Units.Dec_Coord_Rec) return Dec_Angle_Str;
 
 
   -- Distance is 5 digits

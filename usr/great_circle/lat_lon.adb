@@ -2,8 +2,8 @@ with My_Math, Complexes, Str_Util;
 with Mapcodes;
 package body Lat_Lon is
 
-  Max_Lat : constant Conv.Deg_Range := 90;
-  Max_Lon : constant Conv.Deg_Range := 180;
+  Max_Lat : constant Units.Deg_Range := 90;
+  Max_Lon : constant Units.Deg_Range := 180;
 
   --  00.00.00 <= Lat.Coord <=  90.00.00
   -- 000.00.00 <= Lon.Coord <= 180.00.00
@@ -40,21 +40,21 @@ package body Lat_Lon is
     if Coord.X >= My_Math.Pi then
       -- West longitude
       Lat_Lon_Geo.Lon.East := False;
-      Lat_Lon_Geo.Lon.Coord := Conv.Rad2Geo(2.0 * My_Math.Pi - Coord.X);
+      Lat_Lon_Geo.Lon.Coord := Units.Rad2Geo(2.0 * My_Math.Pi - Coord.X);
     else
       -- East longitude
       Lat_Lon_Geo.Lon.East := True;
-      Lat_Lon_Geo.Lon.Coord := Conv.Rad2Geo(Coord.X);
+      Lat_Lon_Geo.Lon.Coord := Units.Rad2Geo(Coord.X);
     end if;
 
     if Coord.Y >= My_Math.Pi then
       -- South latitude
       Lat_Lon_Geo.Lat.North := False;
-      Lat_Lon_Geo.Lat.Coord := Conv.Rad2Geo(2.0 * My_Math.Pi - Coord.Y);
+      Lat_Lon_Geo.Lat.Coord := Units.Rad2Geo(2.0 * My_Math.Pi - Coord.Y);
     else
       -- North latitude
       Lat_Lon_Geo.Lat.North := True;
-      Lat_Lon_Geo.Lat.Coord := Conv.Rad2Geo(Coord.Y);
+      Lat_Lon_Geo.Lat.Coord := Units.Rad2Geo(Coord.Y);
     end if;
     return Lat_Lon_Geo;
   end Rad2Geo;
@@ -65,17 +65,17 @@ package body Lat_Lon is
   begin
     if Coord.Lon.East then
       -- East longitude
-      Lat_Lon_Rad.X := Complexes.Reduct(Conv.Geo2Rad(Coord.Lon.Coord));
+      Lat_Lon_Rad.X := Complexes.Reduct(Units.Geo2Rad(Coord.Lon.Coord));
     else
       -- West longitude
-      Lat_Lon_Rad.X := Complexes.Reduct(-Conv.Geo2Rad(Coord.Lon.Coord));
+      Lat_Lon_Rad.X := Complexes.Reduct(-Units.Geo2Rad(Coord.Lon.Coord));
     end if;
     if Coord.Lat.North then
       -- North latitude
-      Lat_Lon_Rad.Y := Complexes.Reduct(Conv.Geo2Rad(Coord.Lat.Coord));
+      Lat_Lon_Rad.Y := Complexes.Reduct(Units.Geo2Rad(Coord.Lat.Coord));
     else
       -- South latitude
-      Lat_Lon_Rad.Y := Complexes.Reduct(-Conv.Geo2Rad(Coord.Lat.Coord));
+      Lat_Lon_Rad.Y := Complexes.Reduct(-Units.Geo2Rad(Coord.Lat.Coord));
     end if;
     return Lat_Lon_Rad;
   end Geo2Rad;
@@ -106,15 +106,15 @@ package body Lat_Lon is
 
   function Dec2Geo (Coord : Lat_Lon_Dec_Rec) return Lat_Lon_Geo_Rec is
     ( (Lat => (North => Coord.Lat.North,
-               Coord => Conv.Dec2Geo (Coord.Lat.Coord)),
+               Coord => Units.Dec2Geo (Coord.Lat.Coord)),
        Lon => (East  => Coord.Lon.East,
-               Coord => Conv.Dec2Geo (Coord.Lon.Coord))));
+               Coord => Units.Dec2Geo (Coord.Lon.Coord))));
 
   function Geo2Dec (Coord : Lat_Lon_Geo_Rec) return Lat_Lon_Dec_Rec is
     ( (Lat => (North => Coord.Lat.North,
-               Coord => Conv.Geo2Dec (Coord.Lat.Coord)),
+               Coord => Units.Geo2Dec (Coord.Lat.Coord)),
        Lon => (East  => Coord.Lon.East,
-               Coord => Conv.Geo2Dec (Coord.Lon.Coord))) );
+               Coord => Units.Geo2Dec (Coord.Lon.Coord))) );
 
   function Rad2Dec (Coord : Lat_Lon_Rad_Rec) return Lat_Lon_Dec_Rec is
     Lat_Lon_Dec : Lat_Lon_Dec_Rec;
@@ -123,21 +123,21 @@ package body Lat_Lon is
     if Coord.X >= My_Math.Pi then
       -- West longitude
       Lat_Lon_Dec.Lon.East := False;
-      Lat_Lon_Dec.Lon.Coord := Conv.Rad2Dec(2.0 * My_Math.Pi - Coord.X);
+      Lat_Lon_Dec.Lon.Coord := Units.Rad2Dec(2.0 * My_Math.Pi - Coord.X);
     else
       -- East longitude
       Lat_Lon_Dec.Lon.East := True;
-      Lat_Lon_Dec.Lon.Coord := Conv.Rad2Dec(Coord.X);
+      Lat_Lon_Dec.Lon.Coord := Units.Rad2Dec(Coord.X);
     end if;
 
     if Coord.Y >= My_Math.Pi then
       -- South latitude
       Lat_Lon_Dec.Lat.North := False;
-      Lat_Lon_Dec.Lat.Coord := Conv.Rad2Dec(2.0 * My_Math.Pi - Coord.Y);
+      Lat_Lon_Dec.Lat.Coord := Units.Rad2Dec(2.0 * My_Math.Pi - Coord.Y);
     else
       -- North latitude
       Lat_Lon_Dec.Lat.North := True;
-      Lat_Lon_Dec.Lat.Coord := Conv.Rad2Dec(Coord.Y);
+      Lat_Lon_Dec.Lat.Coord := Units.Rad2Dec(Coord.Y);
     end if;
     return Lat_Lon_Dec;
   end Rad2Dec;
@@ -148,17 +148,17 @@ package body Lat_Lon is
   begin
     if Coord.Lon.East then
       -- East longitude
-      Lat_Lon_Rad.X := Complexes.Reduct(Conv.Dec2Rad(Coord.Lon.Coord));
+      Lat_Lon_Rad.X := Complexes.Reduct(Units.Dec2Rad(Coord.Lon.Coord));
     else
       -- West longitude
-      Lat_Lon_Rad.X := Complexes.Reduct(-Conv.Dec2Rad(Coord.Lon.Coord));
+      Lat_Lon_Rad.X := Complexes.Reduct(-Units.Dec2Rad(Coord.Lon.Coord));
     end if;
     if Coord.Lat.North then
       -- North latitude
-      Lat_Lon_Rad.Y := Complexes.Reduct(Conv.Dec2Rad(Coord.Lat.Coord));
+      Lat_Lon_Rad.Y := Complexes.Reduct(Units.Dec2Rad(Coord.Lat.Coord));
     else
       -- South latitude
-      Lat_Lon_Rad.Y := Complexes.Reduct(-Conv.Dec2Rad(Coord.Lat.Coord));
+      Lat_Lon_Rad.Y := Complexes.Reduct(-Units.Dec2Rad(Coord.Lat.Coord));
     end if;
     return Lat_Lon_Rad;
   end Dec2Rad;
@@ -168,7 +168,7 @@ package body Lat_Lon is
 
     -- Convert a Mapcode real cooordinate (Real fraction of degrees), into
     --   Radian in -180 .. 180
-    function To_Radian (R : Mapcodes.Real) return Conv.Rad_Coord_Range is
+    function To_Radian (R : Mapcodes.Real) return Units.Rad_Coord_Range is
     begin
       -- In 0 .. 2*PI
       return Complexes.To_Radian (Complexes.Degree (R));
@@ -192,7 +192,7 @@ package body Lat_Lon is
             Y => To_Radian (Coord.Lat));
   end Mapcode2Rad;
 
-  function To_Degree (R : Conv.Rad_Coord_Range) return Mapcodes.Real is
+  function To_Degree (R : Units.Rad_Coord_Range) return Mapcodes.Real is
     Res : Mapcodes.Real := Mapcodes.Real (Complexes.To_Degree (R));
     use type Mapcodes.Real;
   begin

@@ -1,15 +1,15 @@
 -- Convert lat/long, radians, mapcodes
-with Conv;
+with Units;
 package Lat_Lon is
 
   type Lat_Geo_Rec is record
     North : Boolean;
-    Coord : Conv.Geo_Coord_Rec;
+    Coord : Units.Geo_Coord_Rec;
   end record;
 
   type Lon_Geo_Rec is record
     East : Boolean;
-    Coord : Conv.Geo_Coord_Rec;
+    Coord : Units.Geo_Coord_Rec;
   end record;
 
   type Lat_Lon_Geo_Rec is record
@@ -19,9 +19,9 @@ package Lat_Lon is
 
   type Lat_Lon_Rad_Rec is record
     -- X is the longitude
-    X : Conv.Rad_Coord_Range;
+    X : Units.Rad_Coord_Range;
     -- Y is the latitude
-    Y : Conv.Rad_Coord_Range;
+    Y : Units.Rad_Coord_Range;
   end record;
 
   --  00.00.00 <= Lat.Coord <=  90.00.00
@@ -33,12 +33,12 @@ package Lat_Lon is
 
   type Lat_Dec_Rec is record
     North : Boolean;
-    Coord : Conv.Dec_Coord_Rec;
+    Coord : Units.Dec_Coord_Rec;
   end record;
 
   type Lon_Dec_Rec is record
     East : Boolean;
-    Coord : Conv.Dec_Coord_Rec;
+    Coord : Units.Dec_Coord_Rec;
   end record;
 
   type Lat_Lon_Dec_Rec is record

@@ -1,7 +1,7 @@
 with Ada.Text_Io;
 with As.U.Utils, Str_Util.Regex,
      Gets, Directory, Environ, Sys_Calls.File_Access, Text_Line;
-with Conv, Lat_Lon, String_Util, Great_Circle;
+with Units, Lat_Lon, String_Util, Great_Circle;
 separate (Intercept)
 package body Fpl is
   -- Patchig a FPL file: file name and content
@@ -197,17 +197,17 @@ package body Fpl is
   App_Num : Natural := 0;
   procedure Append_App (Alt : in Positive; Ang : in Angle; Dst : in Distance) is
     use My_Math;
-    use type Conv.Deg_Coord_Range;
+    use type Units.Deg_Coord_Range;
     -- 1 Nm is 1 minute of angle => convert to fraction of degrees
     Arc : constant Real := Real (Dst) / 60.0;
 
     -- Spherical trigo (default)
     A : constant Lat_Lon.Lat_Lon_Rad_Rec
-      := (X => Conv.Deg2Rad (Conv.Reduct (Conv.Degree (Ades_Lon))),
-          Y => Conv.Deg2Rad (Conv.Reduct (Conv.Degree (Ades_Lat))));
-    H : constant Conv.Rad_Coord_Range
-      := Conv.Deg2Rad (Conv.Reduct (Conv.Degree (Ang)
-                                  + Conv.Degree (Declination)));
+      := (X => Units.Deg2Rad (Units.Reduct (Units.Degree (Ades_Lon))),
+          Y => Units.Deg2Rad (Units.Reduct (Units.Degree (Ades_Lat))));
+    H : constant Units.Rad_Coord_Range
+      := Units.Deg2Rad (Units.Reduct (Units.Degree (Ang)
+                                    + Units.Degree (Declination)));
     D : constant String_Util.Distance := String_Util.Distance (Dst);
     B : Lat_Lon.Lat_Lon_Rad_Rec;
 
@@ -263,8 +263,8 @@ package body Fpl is
     B := Great_Circle.Apply_Route (A, H, D);
     Logger.Log_Debug ("  A:" & A.X'Img & " " & A.Y'Img
                      & " B:" & B.X'Img & " " & B.Y'Img);
-    Lat := My_Math.Real (Conv.Rad2Deg (B.Y));
-    Lon := My_Math.Real (Conv.Rad2Deg (B.X));
+    Lat := My_Math.Real (Units.Rad2Deg (B.Y));
+    Lon := My_Math.Real (Units.Rad2Deg (B.X));
     Logger.Log_Debug ("  Degs: " & Image (Lat)
                     & " " & Image (Lon));
     Normalize;
