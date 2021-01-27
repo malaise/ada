@@ -3,8 +3,8 @@
 function usage {
   echo "Usage: `basename $0` [ <warnings> ] [ <precision> ] [ <threads> ]"
   echo "Usage:    <warnings>  ::= -w | --warnings ]"
-  echo "Usage:    <precision> ::= -p <prec> | --precision=<prec>"
-  echo "Usage:    <threads>   ::= -t <nb> | --threads=<nb> ] "
+  echo "Usage:    <precision> ::= -p <prec> | --precision=<prec>    // Default 2" 
+  echo "Usage:    <threads>   ::= -t <nb> | --threads=<nb> ]        // Default 1"
   echo "    or `basename $0` [ -h | --help ]"
 }
 
