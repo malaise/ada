@@ -1,5 +1,6 @@
 with Ada.Calendar;
 with As.U, Socket, Environ, Images, Hashed_List.Unique, Computer, Aski;
+with Debug;
 package body Actions is
 
   -- Image of current time
@@ -28,7 +29,7 @@ package body Actions is
   Memory : Computer.Memory_Type;
 
   -- Define a variable
-  procedure Define (Name : in String; Value : in String) is
+  procedure Define_Variable (Name : in String; Value : in String) is
   begin
     if Name = "Host" or else Name = "Time" or else Name = "Match" then
       raise Invalid_Variable;
@@ -37,7 +38,7 @@ package body Actions is
   exception
     when Computer.Constant_Exists =>
       raise Invalid_Variable;
-  end Define;
+  end Define_Variable;
 
   -- Resolver that gets from ENV and saves the name of an unknown variable
   Variable : As.U.Asu_Us;
@@ -47,6 +48,7 @@ package body Actions is
   exception
     when Environ.Name_Error =>
       Variable := As.U.Tus (Name);
+      Debug.Log ("Unknown variable " & Name);
       raise Unknown_Variable;
   end Resolver;
 
@@ -61,6 +63,13 @@ package body Actions is
     Memory.Set_External_Resolver (Resolver'Access);
     Init_Done := True;
   end Init;
+
+  -- Resolve variables in a string
+  function Expand_Variables (Text : String) return String is
+  begin
+    Init;
+    return Memory.Eval (Text);
+  end Expand_Variables;
 
   -- Store a rule by name
   -- Init host

@@ -32,7 +32,7 @@ package body Searcher is
   -- Clear and set the list to the matching lines
   procedure Search (File_Name : in String;
                     Tail      : in Rules.Tail_Length;
-                    Seconds   : in Rules.Tail_Length;
+                    Aging     : in Duration;
                     Time_Fmt  : in As.U.Asu_Us;
                     Pattern   : not null access Reg_Exp.Compiled_Pattern;
                     Matches   : in out As.U.Utils.Asu_Dyn_List_Mng.List_Type) is
@@ -128,7 +128,7 @@ package body Searcher is
     end if;
 
     -- Time filter
-    if Seconds /= 0 then
+    if Aging /= 0.0 then
       if Matches.Is_Empty then
         return;
       end if;
@@ -136,7 +136,7 @@ package body Searcher is
       Time_Len := Date_Text.Length (Time_Fmt.Image);
       -- Current and reference time (above which we drop)
       Current_Time := Ada.Calendar.Clock;
-      Ref_Time := Current_Time - Duration (Seconds);
+      Ref_Time := Current_Time - Aging;
       Debug.Logger.Log_Debug ("Time format >" & Time_Fmt.Image
                             & "< len: " & Time_Len'Img);
 

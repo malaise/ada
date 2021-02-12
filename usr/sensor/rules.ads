@@ -8,6 +8,7 @@ package Rules is
   -- Tail length
   subtype Tail_Length is Long_Longs.Ll_Natural;
 
+  -- A rule
   type Pattern_Access is access all Reg_Exp.Compiled_Pattern;
   type History_Access is access Hist_Mng.Circ_Type;
   type Time_Access is access Ada.Calendar.Time;
@@ -18,10 +19,10 @@ package Rules is
     Tail : Tail_Length;
     History : History_Access;
     Action : As.U.Asu_Us;
-    Seconds : Tail_Length;
+    Aging : Duration;
     Time_Format : As.U.Asu_Us;
     Pattern : Pattern_Access;
-    Latency : Tail_Length;
+    Latency : Duration;
     Previous : Time_Access;
     Result : Asu_Access;
   end record;

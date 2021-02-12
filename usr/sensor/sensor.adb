@@ -4,7 +4,7 @@ with Argument, Basic_Proc, Sys_Calls, As.U, Timers, Event_Mng,
 with Debug, Actions, Rules, Executor;
 procedure Sensor is
 
-  Version : constant String := "V5.0";
+  Version : constant String := "V6.1";
 
   procedure Help is
   begin
@@ -19,6 +19,12 @@ procedure Sensor is
   Name, Text, Tmp : As.U.Asu_Us;
   Rule : Rules.Rule_Rec;
   Hist_Size : Queues.Len_Range;
+
+  -- Shortcut
+  function Expand (Text : String) return String
+    renames Actions.Expand_Variables;
+  function Expand (Text : String) return As.U.Asu_Us is
+    (As.U.Tus (Actions.Expand_Variables (Text)));
 
 begin
 
@@ -62,7 +68,7 @@ begin
       Text := Ctx.Get_Text (Ctx.Get_Child (Node, 1));
       -- Define variable
       begin
-        Actions.Define (Name.Image, Text.Image);
+        Actions.Define_Variable (Expand (Name.Image), Expand (Text.Image));
       exception
         when Actions.Invalid_Variable =>
           Basic_Proc.Put_Line_Error ("Invalid variable " & Name.Image);
@@ -75,7 +81,7 @@ begin
   for I in 1 .. Ctx.Get_Nb_Children (Class) loop
     Node := Ctx.Get_Child (Class, I);
     -- Get name
-    Name := Ctx.Get_Attribute (Node, 1).Value;
+    Name := Expand (Ctx.Get_Attribute (Node, 1).Value.Image);
     -- Get action and check variables
     Text := Ctx.Get_Text (Ctx.Get_Child (Node, 1));
     Tmp := As.U.Tus (Actions.Check_Command (Text.Image));
@@ -95,7 +101,7 @@ begin
     Node := Ctx.Get_Child (Class, I);
 
     -- Fill fields, checks types
-    Rule.File := Ctx.Get_Attribute (Node, "File");
+    Rule.File := Expand (Ctx.Get_Attribute (Node, "File"));
     if not Sys_Calls.File_Found (Rule.File.Image) then
       Basic_Proc.Put_Line_Error ("Rule at line"
           & Ctx.Get_Line_No (Node)'Img
@@ -105,7 +111,7 @@ begin
     -- Period
     begin
       Rule.Period := Timers.Period_Range'Value (
-          Ctx.Get_Attribute (Node, "Period"));
+          Expand (Ctx.Get_Attribute (Node, "Period")));
       if Rule.Period < 1.0 then
         raise Constraint_Error;
       end if;
@@ -119,7 +125,7 @@ begin
     -- Tail
     begin
       Rule.Tail := Rules.Tail_Length'Value (
-          Ctx.Get_Attribute (Node, "Tail"));
+          Expand (Ctx.Get_Attribute (Node, "Tail")));
     exception
       when others =>
         Basic_Proc.Put_Line_Error ("Rule at line "
@@ -129,7 +135,8 @@ begin
     end;
     -- No history if 0
     begin
-      Hist_Size := Queues.Len_Range'Value (Ctx.Get_Attribute (Node, "History"));
+      Hist_Size := Queues.Len_Range'Value (
+          Expand (Ctx.Get_Attribute (Node, "History")));
       if Hist_Size /= 0 then
         Rule.History := new Rules.Hist_Mng.Circ_Type (Hist_Size);
       end if;
@@ -142,7 +149,7 @@ begin
         return;
     end;
     -- Action must be known
-    Rule.Action := Ctx.Get_Attribute (Node, "Action");
+    Rule.Action := Expand (Ctx.Get_Attribute (Node, "Action"));
     if not Actions.Exists (Rule.Action.Image) then
       Basic_Proc.Put_Line_Error ("Rule at line "
           & Ctx.Get_Line_No (Node)'Img
@@ -151,12 +158,15 @@ begin
     end if;
     -- Optional latency
     begin
-      Text := Ctx.Get_Attribute (Node, "Latency");
-      Rule.Latency := Rules.Tail_Length'Value (Text.Image);
+      Text := Expand (Ctx.Get_Attribute (Node, "Latency"));
+      Rule.Latency := Duration'Value (Text.Image);
+      if Rule.Latency <= 0.0 then
+        raise Constraint_Error;
+      end if;
     exception
       when Xml_Parser.Attribute_Not_Found =>
         -- Default
-        Rule.Latency := 0;
+        Rule.Latency := 0.0;
       when others =>
         Basic_Proc.Put_Line_Error ("Rule at line "
           & Ctx.Get_Line_No (Node)'Img
@@ -168,25 +178,28 @@ begin
         Ada.Calendar.Time_Of (Ada.Calendar.Year_Number'First,
                               Ada.Calendar.Month_Number'First,
                               Ada.Calendar.Day_Number'First));
-    -- Optional past
+    -- Optional maximum age
     if Ctx.Get_Nb_Children (Node) = 1 then
-      Rule.Seconds := 0;
+      Rule.Aging := 0.0;
       -- Set Child to pattern
       Child := Ctx.Get_Child (Node, 1);
     else
-      -- Get seconds and time format
+      -- Get age in seconds and time format
       Child := Ctx.Get_Child (Node, 1);
       begin
-        Rule.Seconds := Rules.Tail_Length'Value (
-          Ctx.Get_Attribute (Child, "Seconds"));
+        Rule.Aging := Duration'Value (
+          Expand (Ctx.Get_Attribute (Child, "Seconds")));
+        if Rule.Aging <= 0.0 then
+        raise Constraint_Error;
+      end if;
       exception
         when others =>
           Basic_Proc.Put_Line_Error ("Rule at line "
               & Ctx.Get_Line_No (Node)'Img
-              & " has invalid seconds " & Ctx.Get_Attribute (Node, "Seconds"));
+              & " has invalid age " & Ctx.Get_Attribute (Node, "Seconds"));
           return;
       end;
-      Rule.Time_Format := Ctx.Get_Text (Ctx.Get_Child (Child, 1));
+      Rule.Time_Format := Expand (Ctx.Get_Text (Ctx.Get_Child (Child, 1)));
       declare
         Dummy_Len : Natural;
       begin
@@ -201,7 +214,7 @@ begin
       Child := Ctx.Get_Child (Node, 2);
     end if;
     -- Compile pattern
-    Text := Ctx.Get_Text (Ctx.Get_Child (Child, 1));
+    Text := Expand (Ctx.Get_Text (Ctx.Get_Child (Child, 1)));
     Rule.Pattern := new Reg_Exp.Compiled_Pattern;
     Rule.Pattern.Compile (Ok, Text.Image);
     if not Ok then
@@ -236,7 +249,9 @@ begin
 
   -- Done on SigTerm
   Debug.Log ("Stopping");
+  Executor.Close;
   Basic_Proc.Set_Ok_Exit_Code;
+  Debug.Log ("Done");
 
 exception
   when Xml_Parser.File_Error =>
