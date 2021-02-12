@@ -4,7 +4,7 @@ with Argument, Basic_Proc, Sys_Calls, As.U, Timers, Event_Mng,
 with Debug, Actions, Rules, Executor;
 procedure Sensor is
 
-  Version : constant String := "V6.2";
+  Version : constant String := "V6.3";
 
   procedure Help is
   begin
@@ -160,7 +160,7 @@ begin
     begin
       Text := Expand (Ctx.Get_Attribute (Node, "Latency"));
       Rule.Latency := Duration'Value (Text.Image);
-      if Rule.Latency <= 0.0 then
+      if Rule.Latency < 0.0 then
         raise Constraint_Error;
       end if;
     exception
