@@ -1,15 +1,23 @@
 #!/bin/bash
 
+# Env
+export INPUT=input.txt
+export OUTPUT=output.txt
+export EXPECTED=expected.txt
+export PERIOD=1
+let TIMEOUT=$PERIOD+$PERIOD
+export TIMEOUT
+export PERIOD="${PERIOD}.0"
+export TRIGGER="Trigger"
+# Defining the action in a variable requires a specific DTD
+#  (where Action ID and ADREF are replaced by CDATA)
+export ACTION="LogTrigger"
+
 # Clean files
 function cleanup {
   rm -f $INPUT $OUTPUT $EXPECTED
 }
 trap 'echo "Aborted"; cleanup; exit 1' SIGINT SIGTERM
-
-# Env
-export INPUT=input.txt
-export OUTPUT=output.txt
-export EXPECTED=expected.txt
 
 # Option verbose
 export VERBOSE=1
@@ -26,7 +34,7 @@ function output {
 }
 
 # Initialise input and output
-echo -e "Toto\nTiti\nTata\nTrigger 1\nToto\n" > $INPUT
+echo -e "Toto\nTiti\nTata\n${TRIGGER} 1\nToto\n" > $INPUT
 rm -f $OUTPUT
 touch $OUTPUT
 
@@ -36,14 +44,19 @@ output "Starting"
 export SENSOR_PID=$!
 
 # Scenario
-sleep 2
+sleep $TIMEOUT
 output "Adding a trigger"
-echo -e "Tata\nTate\nTrigger 2\nTati\n" >> $INPUT
-sleep 2
+echo -e "Tata\nTate\n${TRIGGER} 2\nTati\n" >> $INPUT
+sleep $TIMEOUT
 output "Adding two triggers"
-echo -e "Teta\nTete\nTrigger 3\nTeti\n" >> $INPUT
-echo -e "Tita\nTite\nTrigger 4\nTiti\n" >> $INPUT
-sleep 2
+echo -e "Teta\nTete\n${TRIGGER} 3\nTeti\n" >> $INPUT
+echo -e "Tita\nTite\n${TRIGGER} 4\nTiti\n" >> $INPUT
+sleep $TIMEOUT
+output "Adding a trigger"
+# This one will be filtered out by the latency
+echo -e "${TRIGGER} 4\n" >> $INPUT
+echo -e "Tota\nTote\n${TRIGGER} 5\nToti\n" >> $INPUT
+sleep $TIMEOUT
 
 # Terminate
 output "Terminating"
@@ -51,10 +64,11 @@ kill $SENSOR_PID
 
 # Check
 cat >$EXPECTED <<EOF
-Got Trigger 1
-Got Trigger 2
-Got Trigger 3
-Trigger 4
+Got ${TRIGGER} 1
+Got ${TRIGGER} 2
+Got ${TRIGGER} 3
+${TRIGGER} 4
+Got ${TRIGGER} 5
 EOF
 cmp $OUTPUT $EXPECTED 2>/dev/null
 res=$? 

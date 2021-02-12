@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: 6.0
+Version: 6.1
 
 Sensor scans several log files and raises alerts on some events (matching
 filters).
@@ -43,6 +43,10 @@ All the definitions of the configuration (variable definition, action name,
 rule name and options), can refer to existing variables (defined previously in
 the configuration or in the environment, otherwise this is an error).
 
+NOTE: If a variable is used for the definition and reference of an action,
+then the definitions of attributes Action:Name and Rule:Action must be modified
+in the DTD file, from ID and IDREF to CDATA.
+
 .......................................
 
 <?xml version="1.0" encoding="Utf-8"?>
@@ -55,7 +59,7 @@ the configuration or in the environment, otherwise this is an error).
     <Action Name="RootLogin">echo -n "${Match}" >> ${Logfile}</Rule>
   </Actions>
   <Rules>
-    <Rule File="/var/log/auth.log" Action="RootLogin" Latency="300">
+    <Rule File="/var/log/auth.log" Action="RootLogin" Latency="300.5">
       <Past Seconds="3600">%b %d %H:%M:%S</Past>
       <Criteria>pam_unix\((su|sshd):session\): session opened for user root by</Criteria>
     </Rule>

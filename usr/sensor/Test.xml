@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="Utf-8"?>
-<!DOCTYPE Sensor SYSTEM "Sensor.dtd">
+<!DOCTYPE Sensor SYSTEM "Test.dtd">
 
 <Sensor>
   <Actions>
-    <Action Name="LogTrigger">echo -en "Got ${Match}" >>${OUTPUT}</Action>
+    <Action Name="${ACTION}">echo -en "Got ${Match}" >>${OUTPUT}</Action>
   </Actions>
   <Rules>
-    <Rule File="${INPUT}" Period="1" Action="LogTrigger">
-      <Criteria>Trigger</Criteria>
+    <Rule File="${INPUT}" Period="${PERIOD}" Tail="10" History="5"
+          Action="${ACTION}" Latency="1.5">
+      <Criteria>${TRIGGER}</Criteria>
     </Rule>
   </Rules>
 </Sensor>
