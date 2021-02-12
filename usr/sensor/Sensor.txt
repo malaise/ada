@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: 6.1
+Version: 6.2
 
 Sensor scans several log files and raises alerts on some events (matching
 filters).
@@ -85,5 +85,5 @@ the regex
  * If found, check each line of the result versus the history
  * If found in the history then drop, otherwise store in the history
  * Store the matching lines until latency is reached, then expand and execute
-the action
+the action on all these lines together
 
