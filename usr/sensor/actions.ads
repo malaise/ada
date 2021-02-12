@@ -2,7 +2,11 @@ package Actions is
 
   -- Define a variable
   Invalid_Variable : exception;
-  procedure Define (Name : in String; Value : in String);
+  procedure Define_Variable (Name : in String; Value : in String);
+
+  -- Resolve variables in a string
+  Unknown_Variable : exception;
+  function Expand_Variables (Text : String) return String;
 
   -- Store an action by name
   procedure Store (Name : in String; Action : in String);
@@ -12,7 +16,6 @@ package Actions is
 
   -- Check a command (variables)
   -- Return the error message or empty
-  Unknown_Variable : exception;
   function Check_Command (Command : String) return String;
 
   -- Read an action and expand the command

@@ -4,7 +4,7 @@ with Argument, Basic_Proc, Sys_Calls, As.U, Timers, Event_Mng,
 with Debug, Actions, Rules, Executor;
 procedure Sensor is
 
-  Version : constant String := "V6.2";
+  Version : constant String := "V6.0";
 
   procedure Help is
   begin
@@ -159,14 +159,11 @@ begin
     -- Optional latency
     begin
       Text := Expand (Ctx.Get_Attribute (Node, "Latency"));
-      Rule.Latency := Duration'Value (Text.Image);
-      if Rule.Latency <= 0.0 then
-        raise Constraint_Error;
-      end if;
+      Rule.Latency := Rules.Tail_Length'Value (Text.Image);
     exception
       when Xml_Parser.Attribute_Not_Found =>
         -- Default
-        Rule.Latency := 0.0;
+        Rule.Latency := 0;
       when others =>
         Basic_Proc.Put_Line_Error ("Rule at line "
           & Ctx.Get_Line_No (Node)'Img
@@ -178,25 +175,22 @@ begin
         Ada.Calendar.Time_Of (Ada.Calendar.Year_Number'First,
                               Ada.Calendar.Month_Number'First,
                               Ada.Calendar.Day_Number'First));
-    -- Optional maximum age
+    -- Optional past
     if Ctx.Get_Nb_Children (Node) = 1 then
-      Rule.Aging := 0.0;
+      Rule.Seconds := 0;
       -- Set Child to pattern
       Child := Ctx.Get_Child (Node, 1);
     else
-      -- Get age in seconds and time format
+      -- Get seconds and time format
       Child := Ctx.Get_Child (Node, 1);
       begin
-        Rule.Aging := Duration'Value (
+        Rule.Seconds := Rules.Tail_Length'Value (
           Expand (Ctx.Get_Attribute (Child, "Seconds")));
-        if Rule.Aging <= 0.0 then
-        raise Constraint_Error;
-      end if;
       exception
         when others =>
           Basic_Proc.Put_Line_Error ("Rule at line "
               & Ctx.Get_Line_No (Node)'Img
-              & " has invalid age " & Ctx.Get_Attribute (Node, "Seconds"));
+              & " has invalid seconds " & Ctx.Get_Attribute (Node, "Seconds"));
           return;
       end;
       Rule.Time_Format := Expand (Ctx.Get_Text (Ctx.Get_Child (Child, 1)));
@@ -249,9 +243,7 @@ begin
 
   -- Done on SigTerm
   Debug.Log ("Stopping");
-  Executor.Close;
   Basic_Proc.Set_Ok_Exit_Code;
-  Debug.Log ("Done");
 
 exception
   when Xml_Parser.File_Error =>

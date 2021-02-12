@@ -6,7 +6,7 @@
     <Action Name="LogTrigger">echo -en "Got ${Match}" >>${OUTPUT}</Action>
   </Actions>
   <Rules>
-    <Rule File="input.txt" Period="1" Action="LogTrigger">
+    <Rule File="${INPUT}" Period="1" Action="LogTrigger">
       <Criteria>Trigger</Criteria>
     </Rule>
   </Rules>
