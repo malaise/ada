@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# Clean files
+function cleanup {
+  rm -f $INPUT $OUTPUT $EXPECTED
+}
+trap 'echo "Aborted"; cleanup; exit 1' SIGINT SIGTERM
+
+# Env
+export INPUT=input.txt
+export OUTPUT=output.txt
+export EXPECTED=expected.txt
+
+# Option verbose
+export VERBOSE=1
+if [ \( "$1" = "-s" \) -o \( "$1" = "--silent" \) ] ; then
+  VERBOSE=0
+  shift
+fi
+
+# Output if verbose
+function output {
+  if [ $VERBOSE -eq 1 ] ; then
+    echo $*
+  fi
+}
+
+# Initialise input and output
+echo -e "Toto\nTiti\nTata\nTrigger 1\nToto\n" > $INPUT
+rm -f $OUTPUT
+touch $OUTPUT
+
+# Start sensor
+output "Starting"
+./sensor Test.xml &
+export SENSOR_PID=$!
+
+# Scenario
+sleep 2
+output "Adding a trigger"
+echo -e "Tata\nTate\nTrigger 2\nTati\n" >> $INPUT
+sleep 2
+output "Adding two triggers"
+echo -e "Teta\nTete\nTrigger 3\nTeti\n" >> $INPUT
+echo -e "Tita\nTite\nTrigger 4\nTiti\n" >> $INPUT
+sleep 2
+
+# Terminate
+output "Terminating"
+kill $SENSOR_PID
+
+# Check
+cat >$EXPECTED <<EOF
+Got Trigger 1
+Got Trigger 2
+Got Trigger 3
+Trigger 4
+EOF
+cmp $OUTPUT $EXPECTED 2>/dev/null
+res=$? 
+if [ $res -ne 0 ] ; then
+  echo "File $OUTPUT differs from expected $EXPECTED."1>&2
+  exit 1
+else
+  # Cleanup
+  echo Test OK.
+  cleanup
+fi
+
