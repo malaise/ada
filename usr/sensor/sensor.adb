@@ -4,7 +4,7 @@ with Argument, Basic_Proc, Sys_Calls, As.U, Timers, Event_Mng,
 with Debug, Actions, Rules, Executor;
 procedure Sensor is
 
-  Version : constant String := "V6.3";
+  Version : constant String := "V6.4";
 
   procedure Help is
   begin
@@ -110,16 +110,17 @@ begin
     end if;
     -- Period
     begin
-      Rule.Period := Timers.Period_Range'Value (
-          Expand (Ctx.Get_Attribute (Node, "Period")));
-      if Rule.Period < 1.0 then
+      Text := Ctx.Get_Attribute (Node, "Period");
+      Text := Expand (Text.Image);
+      Rule.Period := Timers.Period_Range'Value (Text.Image);
+      if Rule.Period < 0.1 then
         raise Constraint_Error;
       end if;
     exception
       when others =>
         Basic_Proc.Put_Line_Error ("Rule at line"
             & Ctx.Get_Line_No (Node)'Img
-            & " has invalid period " & Ctx.Get_Attribute (Node, "Period"));
+            & " has invalid period " & Text.Image);
         return;
     end;
     -- Tail
@@ -158,7 +159,8 @@ begin
     end if;
     -- Optional latency
     begin
-      Text := Expand (Ctx.Get_Attribute (Node, "Latency"));
+      Text := Ctx.Get_Attribute (Node, "Latency");
+      Text := Expand (Text.Image);
       Rule.Latency := Duration'Value (Text.Image);
       if Rule.Latency < 0.0 then
         raise Constraint_Error;

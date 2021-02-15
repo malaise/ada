@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: 6.3
+Version: 6.4
 
 Sensor scans several log files and raises alerts on some events (matching
 filters).
@@ -29,7 +29,7 @@ the environment, otherwise this is an error.
 The configuration file then defines rules. Each rule consists in:
 
 - the name of the file to scan
-- an optional scanning period in seconds (default 60.0, min 1.0)
+- an optional scanning period in seconds (default 60.0, min 0.1)
 - an optional tail size to scan (default 100 lines, 0 for infinite)
 - an optional number of past seconds to scan (default 1 hour, 0 for infinite)
 and the format of time (expected at a fixed offset in each line of the file).

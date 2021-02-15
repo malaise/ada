@@ -3,7 +3,7 @@
 
 <Sensor>
   <Actions>
-    <Action Name="${ACTION}">echo -en "Got ${Match}" >>${OUTPUT}</Action>
+    <Action Name="${ACTION}">/bin/echo -en "Got ${Match}" >>${OUTPUT}</Action>
   </Actions>
   <Rules>
     <Rule File="${INPUT}" Period="${PERIOD}" Tail="10" History="5"

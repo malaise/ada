@@ -4,10 +4,8 @@
 export INPUT=input.txt
 export OUTPUT=output.txt
 export EXPECTED=expected.txt
-export PERIOD=1
-let TIMEOUT=$PERIOD+$PERIOD
-export TIMEOUT
-export PERIOD="${PERIOD}.0"
+export TIMEOUT=1
+export PERIOD="0.2"
 export TRIGGER="Trigger"
 # Defining the action in a variable requires a specific DTD
 #  (where Action ID and ADREF are replaced by CDATA)
@@ -68,7 +66,7 @@ Got ${TRIGGER} 1
 Got ${TRIGGER} 2
 Got ${TRIGGER} 3
 ${TRIGGER} 4
-Got ${TRIGGER} 5
+${TRIGGER} 5
 EOF
 cmp $OUTPUT $EXPECTED 2>/dev/null
 res=$? 
