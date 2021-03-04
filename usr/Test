@@ -1,5 +1,6 @@
 #!/bin/bash
 export ORIG=$PWD
+T0=`date "+%s"`
 for file in */Test ; do
   export dir=`dirname $file`
   echo "`basename $dir`:"
@@ -12,5 +13,10 @@ for file in */Test ; do
   echo ""
   cd $ORIG
 done
-echo "OK."
+T1=`date "+%s"`
+echo $T0 $T1 | awk '
+  {D=$2-$1
+   printf "Done in %dmn%ds\n", D/60, D%60
+  }
+'
 
