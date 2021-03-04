@@ -14,6 +14,8 @@ export THREADS=1
 export TDIR=test
 export PRECISION="P2"
 
+T0=`date "+%s"`
+
 while [ -n "$1" ] ; do
   case "$1" in
     ("-h"| "--help")
@@ -110,8 +112,12 @@ while read -r ctx cod lat lon loc glob || [[ -n "$ctx" ]]; do
 done < $TDIR/DecodeOk
 # Wait for remaining
 wait_children $C
-
 echo
 
-echo "Done."
+T1=`date "+%s"`
+echo $T0 $T1 | awk '
+  {D=$2-$1
+   printf "Done in %dmn%ds\n", D/60, D%60
+  }
+'
 
