@@ -43,6 +43,10 @@ t pushr 450 v copyr toreal 1.852 * s pushr + - dup isneg
 # Ground + Climb + Descent + Approach + Ground + Security
 2.5 + 15.0 + 3.0 + 4.0 + 1.0 + 7.0 +
 
+# Adjust v.s. quantity (the more we take the more we need)
+# 30T => -4 70T => 0 90T => +2
+dup 10.0 / round 7 - toreal +
+
 # Put result
 -1 roundat 6 4 " " normal
 [ dup 1 1 strsub " " = [ 1 1 strdel ] ifcall ] H copyr call H pushr call
