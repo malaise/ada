@@ -651,6 +651,10 @@ package body Git_If is
       Logger.Log (Debug1, "  Block done cause no details requested");
       Done := not Moved;
       return;
+    elsif not Moved then
+      -- Details requested but there are none
+      Done := True;
+      return;
     end if;
 
     -- Several changes until empty_line or new commit (no change) or end
