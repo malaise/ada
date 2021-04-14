@@ -22,13 +22,19 @@ package body Common is
 
   -- Scores
   -- subtype Score_Range is Natural;
-  Curr_Score : Score_Array := (others => 0);
+  Zero_Score : constant Score_Array := (others => 0);
+  Curr_Score : Score_Array := Zero_Score;
   procedure Add_Win (Player : in Player_List) is
   begin
     Curr_Score(Player) := Curr_Score(Player) + 1;
   end Add_Win;
 
   function Get_Scores return Score_Array is (Curr_Score);
+
+  procedure Reset_Scores is
+  begin
+    Curr_Score := Zero_Score;
+  end Reset_Scores;
 
   -- Bars
   type Bar_Mattrix is array (Row_Range) of Bar_Status_Array;

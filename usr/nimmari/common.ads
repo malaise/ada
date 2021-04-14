@@ -16,6 +16,7 @@ package Common is
   type Score_Array is array (Player_List) of Score_Range;
   procedure Add_Win (Player : in Player_List);
   function Get_Scores return Score_Array;
+  procedure Reset_Scores;
 
   -- The bars
   subtype Row_Range is Positive range 1 .. 4;

@@ -34,8 +34,16 @@ package body Screen is
     return Common.Nim;
   end Intro;
 
-  procedure Reset is
+  procedure Update_Scores is
     Scores : constant Common.Score_Array := Common.Get_Scores;
+  begin
+    Afpx.Encode_Field (Afpx_Xref.Game.Names, (0,  1),
+                  "You: " & Normal (Scores(Common.Human), 3));
+    Afpx.Encode_Field (Afpx_Xref.Game.Names, (0, 13),
+                  "Me: " & Normal (Scores(Common.Machine), 3));
+  end Update_Scores;
+
+  procedure Reset is
     use type Afpx.Descriptor_Range;
     use type Common.Game_Kind_List;
   begin
@@ -43,10 +51,7 @@ package body Screen is
     or else Afpx.Get_Descriptor /= Afpx_Xref.Game.Dscr_Num then
       Afpx.Use_Descriptor (Afpx_Xref.Game.Dscr_Num);
     end if;
-    Afpx.Encode_Field (Afpx_Xref.Game.Names, (0,  1),
-                  "You: " & Normal (Scores(Common.Human), 3));
-    Afpx.Encode_Field (Afpx_Xref.Game.Names, (0, 13),
-                  "Me: " & Normal (Scores(Common.Machine), 3));
+    Update_Scores;
     Afpx.Clear_Field (Afpx_Xref.Game.Game);
     Afpx.Clear_Field (Afpx_Xref.Game.Play);
     if Common.Get_Game_Kind = Common.Nim then
@@ -57,6 +62,7 @@ package body Screen is
       Afpx.Encode_Field (Afpx_Xref.Game.Play, (1,1), "   Play Nim");
     end if;
     Afpx.Set_Field_Activation (Afpx_Xref.Game.Play, False);
+    Afpx.Set_Field_Activation (Afpx_Xref.Game.Reset, False);
   end Reset;
 
   -- Init Bars activation
@@ -90,7 +96,6 @@ package body Screen is
     Row_Col : Common.Row_Col_Rec;
     type Selected_Array is array (Common.Index_Range) of Boolean;
     Selected : Selected_Array := (others => False);
-
 
     use type Afpx.Event_List, Afpx.Keyboard_Key_List;
   begin
@@ -209,6 +214,7 @@ package body Screen is
       Afpx.Encode_Field(Afpx_Xref.Game.Wins, (0, 33), "You win :-(");
     end if;
     Afpx.Set_Field_Activation (Afpx_Xref.Game.Remove, True);
+    Afpx.Set_Field_Activation (Afpx_Xref.Game.Reset, True);
     Afpx.Encode_Field (Afpx_Xref.Game.Remove, (1, 1), "P l a y");
     Afpx.Set_Field_Activation (Afpx_Xref.Game.Play, True);
     loop
@@ -225,8 +231,12 @@ package body Screen is
         elsif Ptg_Result.Field_No = Afpx_Xref.Game.Remove then
           Change_Game := False;
           exit;
-        elsif Ptg_Result.Field_No = 18 then
+        elsif Ptg_Result.Field_No = Afpx_Xref.Game.Quit then
           raise Common.Exit_Requested;
+        elsif Ptg_Result.Field_No = Afpx_Xref.Game.Reset then
+          Common.Reset_Scores;
+          Update_Scores;
+          Afpx.Clear_Field(Afpx_Xref.Game.Wins);
         end if;
       end if;
     end loop;

@@ -156,32 +156,38 @@
       <Init Row="1" Col="2">Remove</Init>
     </Field>
 
-    <Field Num="18" Kind="Button" Name="Quit">
-      <Geometry Up="21" Left="60" Low="23" Right="68"/>
+    <Field Num="18" Kind="Button" Name="Reset">
+      <Geometry Up="21" Left="52" Low="23" Right="58"/>
+      <Colors Foreground="Blue" Background="Light_Grey"/>
+      <Init Row="1" Col="1">Reset</Init>
+    </Field>
+
+    <Field Num="19" Kind="Button" Name="Quit">
+      <Geometry Up="21" Left="67" Low="23" Right="75"/>
       <Colors Foreground="Blue" Background="Light_Grey"/>
       <Init Row="1" Col="1">E X I T</Init>
     </Field>
 
     <!-- Score -->
-    <Field Num="19" Kind="Put" Name="Names">
+    <Field Num="20" Kind="Put" Name="Names">
       <Geometry Up="0" Left="54" Low="0" Right="78"/>
       <Colors Foreground="Light_Grey" Background="Black"/>
     </Field>
 
     <!-- Title NIM or Marienbad -->
-    <Field Num="20" Kind="Put" Name="Game">
+    <Field Num="21" Kind="Put" Name="Game">
       <Geometry Up="0" Left="34" Low="0" Right="42"/>
       <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <!-- Who wins -->
-    <Field Num="21" Kind="Put" Name="Wins">
+    <Field Num="22" Kind="Put" Name="Wins">
       <Geometry Up="19" Left="0" Low="19" Right="79"/>
       <Colors Foreground="Lime_Green" Background="Black"/>
     </Field>
 
     <!-- Play -->
-    <Field Num="22" Kind="Button" Name="Play">
+    <Field Num="23" Kind="Button" Name="Play">
       <Geometry Up="21" Left="03" Low="23" Right="18"/>
       <Colors Foreground="Blue" Background="Light_Grey"/>
     </Field>
