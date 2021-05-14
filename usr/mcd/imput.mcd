@@ -42,8 +42,8 @@ m pushr - isntnull [ "Error: Sum is " put t pushr putl ] ifcall
 "4Flight: " put f pushr putl
 
 # Put sum and detail of extras
-e pushr 0 /= 
-[ "Extras: " put e pushr put 
+e pushr 0 /=
+[ "Extras: " put e pushr put
   " = " put 0 format
   [
     esize isnull ifret
@@ -51,6 +51,6 @@ e pushr 0 /=
     esize isntnull [ " + " put ] ifcall
     P pushr retacal
   ] P copyr call
-  newl 
+  newl
 ] ifcall
 
