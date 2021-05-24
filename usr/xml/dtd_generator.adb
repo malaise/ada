@@ -1,12 +1,12 @@
 -- Generate a valid DTD from a XML file or flow
 -- Ignores internal and external DTD
 with Argument, Argument_Parser, Basic_Proc, As.U, Str_Util, Mixed_Str,
-     Unbounded_Arrays, Trace.Loggers,
+     Unbounded_Arrays, Trace.Loggers, Images,
      Xml_Parser, Parser, Hashed_List.Unique, Limited_List;
 procedure Dtd_Generator is
 
   -- Current version
-  Version : constant String := "V2.5";
+  Version : constant String := "V3.0";
 
   -- Algorithm criteria
 
@@ -27,6 +27,11 @@ procedure Dtd_Generator is
   --  before giving up and changing the attribute into nmtoken. 0 disables.
   Max_Enums : Natural := 21;
 
+  -- Output width
+  Output_Width : Natural := 0;
+  Min_Width : constant Positive := 40;
+
+
   -- Put usage
   procedure Usage is
   begin
@@ -35,16 +40,20 @@ procedure Dtd_Generator is
     Basic_Proc.Put_Line_Error ("or " & Argument.Get_Program_Name
         & " -h | --help | -v | --version");
     Basic_Proc.Put_Line_Error (
-        "  <options> ::= [ [ <deviation> ] [ <elements> ] [ <enums> ]");
+        "  <options> ::= [ [ <deviation> ] [ <elements> ] [ <enums> ]"
+        & " [ <width> ]");
     Basic_Proc.Put_Line_Error (
-        "  <deviation> ::= --deviation=<val>    // default"
-        & Max_Deviation'Img);
+        "  <deviation> ::= --deviation=<val>    // default "
+        & Images.Integer_Image (Max_Deviation));
     Basic_Proc.Put_Line_Error (
-        "  <elements>  ::= --elements=<val>     // default"
-        & Max_Elements'Img);
+        "  <elements>  ::= --elements=<val>     // default "
+        & Images.Integer_Image (Max_Elements));
     Basic_Proc.Put_Line_Error (
-        "  <enums>     ::= --enums=<val>        // default"
-        & Max_Enums'Img);
+        "  <enums>     ::= --enums=<val>        // default "
+        & Images.Integer_Image (Max_Enums));
+    Basic_Proc.Put_Line_Error (
+        "  <width>     ::= --width=<val>        // min "
+        & Images.Integer_Image (Min_Width));
     Basic_Proc.Put_Line_Error (
         "Outputs on stdout the DTD of the XML file or stdin.");
   end Usage;
@@ -63,10 +72,32 @@ procedure Dtd_Generator is
     Logger.Log_Debug (Msg);
   end Dbg;
 
-  -- For output
-  procedure Po (Str : in String) renames Basic_Proc.Put_Output;
-  procedure Plo (Str : in String) renames Basic_Proc.Put_Line_Output;
-  procedure Nlo renames Basic_Proc.New_Line_Output;
+  -- For output, tracking current column in output
+  Col : Positive;
+  Tab : constant String := "  ";
+  procedure Po (Str : in String) is
+  begin
+    Basic_Proc.Put_Output (Str);
+    Col := Col + Str'Length;
+  end Po;
+  procedure Plo (Str : in String) is
+  begin
+    Basic_Proc.Put_Line_Output (Str);
+    Col := 1;
+  end Plo;
+  procedure Nlo is
+  begin
+    Basic_Proc.New_Line_Output;
+    Col := 1;
+  end Nlo;
+  -- Trunc and indent if output would exceed Output_Width
+  procedure Trunc (Length : in Natural) is
+  begin
+    if Output_Width /= 0 and then Col + Length > Output_Width then
+      Nlo;
+      Po (Tab);
+    end if;
+  end Trunc;
 
   -- Argument keys
    -- The argument keys and descriptor of parsed keys
@@ -78,7 +109,9 @@ procedure Dtd_Generator is
    04 => (True, Argument_Parser.No_Key_Char,
                 As.U.Tus ("elements"), False, True, As.U.Asu_Null),
    05 => (True, Argument_Parser.No_Key_Char,
-                As.U.Tus ("enums"), False, True, As.U.Asu_Null));
+                As.U.Tus ("enums"), False, True, As.U.Asu_Null),
+   06 => (True, Argument_Parser.No_Key_Char,
+                As.U.Tus ("width"), False, True, As.U.Asu_Null));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -455,6 +488,7 @@ procedure Dtd_Generator is
   Padding : As.U.Asu_Us;
 
   procedure Put_Sequence is
+    Len : Natural;
   begin
     Po ("(");
     -- Separate each child by ','
@@ -463,6 +497,20 @@ procedure Dtd_Generator is
         Po (",");
       end if;
       Child := Element.Children.Element (I);
+
+      -- Compute len and trunc if necessary
+      -- Either "Elt" or "Elt+" then either "," or ")">
+      Len := Child.Name.Length;
+      if Child.Mult or else Child.Opt then
+        Len := Len + 1;
+      end if;
+      if I /= Element.Children.Length then
+        Len := Len + 1;
+      else
+        Len := Len + 2;
+      end if;
+      Trunc (Len);
+
       Po (Child.Name.Image);
       if Child.Mult then
         if Child.Opt then
@@ -492,6 +540,9 @@ procedure Dtd_Generator is
         Po ("|");
       end if;
       Child := Element.Children.Element (I);
+      -- Either "Elt|" or "Elt)*>"
+      Trunc ( (if I /= Element.Children.Length then Child.Name.Length + 1
+               else Child.Name.Length + 3) );
       Po (Child.Name.Image);
       First := False;
     end loop;
@@ -519,7 +570,12 @@ procedure Dtd_Generator is
             Val := As.U.Tus (Iter.Next_Word);
             exit when Val.Is_Null;
             Last_Val := Val;
-            Po ((if not First then "|" else "") & Val.Image);
+            if not First then
+              Po ("|");
+            end if;
+            -- EIther "Enum|" or "Enum)"
+            Trunc (Val.Length + 1);
+            Po (Val.Image);
             First := False;
             Nb_Enum := Nb_Enum + 1;
           end loop;
@@ -533,7 +589,7 @@ procedure Dtd_Generator is
       end case;
       -- Default
       if Attr.Kind /= Enum or else Nb_Enum /= 1 then
-        Po (if Attr.Required then "#REQUIRED" else "#IMPLIED");
+        Po ( (if Attr.Required then "#REQUIRED" else "#IMPLIED") );
       else
         Po ("#FIXED """ & Last_Val.Image & """");
       end if;
@@ -589,6 +645,14 @@ begin
     end if;
     if Arg_Dscr.Is_Set (5) then
       Max_Enums := Natural'Value (Arg_Dscr.Get_Option (5));
+    end if;
+    if Arg_Dscr.Is_Set (6) then
+      Output_Width := Natural'Value (Arg_Dscr.Get_Option (6));
+      if Output_Width /= 0 and then Output_Width < Min_Width then
+        Error ("Minimum width is " & Images.Integer_Image (Min_Width));
+        Usage;
+        return;
+      end if;
     end if;
   exception
     when others =>
