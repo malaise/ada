@@ -6,7 +6,7 @@ with Argument, Argument_Parser, Basic_Proc, As.U, Str_Util, Mixed_Str,
 procedure Dtd_Generator is
 
   -- Current version
-  Version : constant String := "V3.0";
+  Version : constant String := "V3.1";
 
   -- Algorithm criteria
 
@@ -91,11 +91,14 @@ procedure Dtd_Generator is
     Col := 1;
   end Nlo;
   -- Trunc and indent if output would exceed Output_Width
-  procedure Trunc (Length : in Natural) is
+  --  if not trunc and Sep then append a space
+  procedure Trunc (Length : in Natural; Sep : in Boolean := False) is
   begin
     if Output_Width /= 0 and then Col + Length > Output_Width then
       Nlo;
       Po (Tab);
+    elsif Sep then
+      Po (" ");
     end if;
   end Trunc;
 
@@ -184,7 +187,7 @@ procedure Dtd_Generator is
                            Criteria : Element_Type) return Boolean is
     use type As.U.Asu_Us;
   begin
-    -- Sale Name
+    -- Same Name
     return Current.Name = Criteria.Name;
   end "=";
   function Image (Element : Element_Type) return String is (Element.Name.Image);
@@ -488,69 +491,57 @@ procedure Dtd_Generator is
   Padding : As.U.Asu_Us;
 
   procedure Put_Sequence is
-    Len : Natural;
   begin
     Po ("(");
-    -- Separate each child by ','
     for I in 1 .. Element.Children.Length loop
-      if I /= 1 then
-        Po (",");
-      end if;
       Child := Element.Children.Element (I);
 
-      -- Compute len and trunc if necessary
       -- Either "Elt" or "Elt+" then either "," or ")">
-      Len := Child.Name.Length;
-      if Child.Mult or else Child.Opt then
-        Len := Len + 1;
-      end if;
-      if I /= Element.Children.Length then
-        Len := Len + 1;
-      else
-        Len := Len + 2;
-      end if;
-      Trunc (Len);
-
-      Po (Child.Name.Image);
       if Child.Mult then
         if Child.Opt then
-          Po ("*");
+          Child.Name.Append ("*");
         else
-          Po ("+");
+          Child.Name.Append ("+");
         end if;
       elsif Child.Opt then
-        Po ("?");
+        Child.Name.Append ("?");
       end if;
+      if I /= Element.Children.Length then
+        Child.Name.Append (",");
+      else
+        Child.Name.Append (")>");
+      end if;
+
+      Trunc (Child.Name.Length);
+      Po (Child.Name.Image);
     end loop;
-    Plo (")>");
+    Nlo;
   end Put_Sequence;
 
   procedure Put_Choice is
   begin
     Po ("(");
-    First := True;
     if Element.Kind = Mixed then
       -- Start list by PCDATA
-      Po ("#PCDATA");
-      First := False;
+      Po ("#PCDATA" & (if Element.Children.Length /= 0 then "|" else ""));
     end if;
-    -- Separate each child by '|'
     for I in 1 .. Element.Children.Length loop
-      if not First then
-        Po ("|");
-      end if;
       Child := Element.Children.Element (I);
       -- Either "Elt|" or "Elt)*>"
-      Trunc ( (if I /= Element.Children.Length then Child.Name.Length + 1
-               else Child.Name.Length + 3) );
+      if I /= Element.Children.Length then
+        Child.Name.Append ("|");
+      else
+        Child.Name.Append (")*>");
+      end if;
+      Trunc (Child.Name.Length);
       Po (Child.Name.Image);
-      First := False;
     end loop;
-    Plo (")*>");
+    Nlo;
   end Put_Choice;
 
   use type As.U.Asu_Us;
   procedure Put_Attribute is
+    Tail : As.U.Asu_Us;
   begin
     Padding := As.U.Tus ("<!ATTLIST " & Element.Name.Image & " ");
     for I in 1 .. Element.Attributes.Length loop
@@ -579,27 +570,32 @@ procedure Dtd_Generator is
             First := False;
             Nb_Enum := Nb_Enum + 1;
           end loop;
-          Po (") ");
+          Po (")");
         when Nmtoken =>
-          Po ("NMTOKEN ");
+          Po ("NMTOKEN");
         when Nmtokens =>
-          Po ("NMTOKENS ");
+          Po ("NMTOKENS");
         when Cdata =>
-          Po ("CDATA ");
+          Po ("CDATA");
       end case;
       -- Default
       if Attr.Kind /= Enum or else Nb_Enum /= 1 then
-        Po ( (if Attr.Required then "#REQUIRED" else "#IMPLIED") );
+        if Attr.Required then
+          Tail := As.U.Tus ("#REQUIRED");
+        else
+          Tail := As.U.Tus ("#IMPLIED");
+        end if;
       else
-        Po ("#FIXED """ & Last_Val.Image & """");
+        Tail := As.U.Tus ("#FIXED """ & Last_Val.Image & """");
       end if;
 
       -- End of line
       if I = Element.Attributes.Length then
-        Plo (">");
-      else
-        Nlo;
+        Tail.Append (">");
       end if;
+      -- Trunc or append " "
+      Trunc (Tail.Length, True);
+      Plo (Tail.Image);
      -- Pad with spaces the following lines
       Padding := Padding.Length * ' ';
     end loop;

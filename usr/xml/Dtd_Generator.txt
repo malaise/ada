@@ -1,6 +1,6 @@
 Dtd_Generator, elements of design
 =================================
-Version: V3.0
+Version: V3.1
 
 General principle
 -----------------

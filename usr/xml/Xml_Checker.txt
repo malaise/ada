@@ -5,7 +5,7 @@ Version: V25.2
 'Parser version: V43.2 +
 Generator version: V19.2 +
 Dtd_checker version: V4.0 +
-Dtd_generator version: V3.0'
+Dtd_generator version: V3.1'
 
 Xml_checker is a XML parser that checks the syntax (versus DTD) and formats the
 output.
@@ -365,8 +365,8 @@ children, before which the element is declared as a choice
 element is declared as ANY.
 * Enums: The maximum number of values of an enumerated attribute, before which
 the attribute is declared as NMTOKEN.
-* Width: The maximum width in output flow for the lists of sub-elements and of
-attribute values.
+* Width: The maximum width in output flow for the lists of sub-elements and 
+for the lists of attribute values.
 
 If no file is provided then dtd_generator parses stdin. +
 It puts the generated DTD on stdout. +
