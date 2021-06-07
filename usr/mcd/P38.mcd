@@ -1,0 +1,42 @@
+# Fuel for the P38
+[ "Error. Expecting x:yy or xxxxNm" putl ssize popn 1 setexit retall ] E popr
+
+# Store name, flight time and weight for each tank
+"droppable" n 1 popa 2.75 t 1 popa 874.4 w 1 popa
+"wing"      n 2 popa 0.92 t 2 popa 291.5 w 2 popa
+"main"      n 3 popa 1.55 t 3 popa 492.9 w 3 popa
+"reserve"   n 4 popa 1.00 t 4 popa 318.0 w 4 popa
+
+# Cruising speed in Kt
+239.0 s popr
+
+# Security (time of flight)
+0.25 u popr
+
+# One arg
+ssize isnull E pushr ifcall
+
+# Input is either xxxxNm or h:mm -> (convert to hours)
+dup "^[0-9]{1,4}Nm" regmatch isntnull
+[ dup strlen dup 1 - swap strdel strreal s pushr / ]
+[ dup "^[0-9]:[0-9][0-9]" regmatch isnull E pushr ifcall
+  2 "." strovw strreal degfr ] ifte call
+
+# Now we have the flight time, add security (taxi, takeoff, climb)
+u pushr + f popr
+
+# Successive tries with each tank
+4 i popr
+0 format
+
+[
+t i pushr pusha copye f pushr >=
+[ pushle f pushr swap / w i pushr pusha * round 1 +
+  "Put " put put "kg in tanks " put n i pushr pusha put "." putl retall ] ifcall
+f pushr t i pushr pusha - f popr
+i pushr 1 - i copyr isnull ifret
+L pushr retacal ] L copyr call
+
+# Full
+"Fill all tanks" putl
+
