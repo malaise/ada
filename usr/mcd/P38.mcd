@@ -32,7 +32,7 @@ u pushr + f popr
 [
 t i pushr pusha copye f pushr >=
 [ pushle f pushr swap / w i pushr pusha * round 1 +
-  "Put " put put "kg in tanks " put n i pushr pusha put "." putl retall ] ifcall
+  "Put " put put "kg in " put n i pushr pusha put " tanks." putl retall ] ifcall
 f pushr t i pushr pusha - f popr
 i pushr 1 - i copyr isnull ifret
 L pushr retacal ] L copyr call
