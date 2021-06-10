@@ -36,7 +36,6 @@ package Screen is
    Propal : in Common.Propal_Range;
    Placed_Ok, Colors_Ok : in Natural);
 
-
   ------------
   -- SECRET --
   ------------
@@ -59,7 +58,6 @@ package Screen is
 
   procedure Put_Current_Level (Level_No : in Common.Last_Level_Range);
 
-
   -----------
   -- COLOR --
   -----------
@@ -70,21 +68,10 @@ package Screen is
   ----------
   -- HELP --
   ----------
-  type Help_State is (Released, Click_Color, Click_Propal, Click_Other,
-                      Start, Discarded);
-  -- Can_xxx are meaningfull when Released
-  procedure Put_Help (Help : in Help_State;
-                      Can_Try, Can_Propose : in Boolean := False);
-
-
-  -----------
-  -- MOUSE --
-  -----------
-  -- default behaviour of mouse : keep foreground
-  procedure Set_Mouse_Default_Color;
-  -- When color selected : set foreground
-  procedure Set_Mouse_Color (Color : in Common.Eff_Color_Range);
-
+  type Help_State is (Play, Released_Color, Released_Propal, Stopped,
+                      Clicked, Invalid);
+  -- Can_Clear is meaningfull when released on a proposal
+  procedure Put_Help (Help : in Help_State; Can_Clear : in Boolean := False);
 
   ---------------
   -- SELECTION --

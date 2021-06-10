@@ -3,6 +3,8 @@ package Action is
 
   procedure Init;
 
+  procedure End_Action;
+
   -- True if start again, False if exit
   function Play return Boolean;
 

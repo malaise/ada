@@ -99,6 +99,9 @@ package body Common is
     State_Data(Propal).Colors_Ok := Colors_Ok;
   end Set_Answer;
 
+  function Is_Answered (Propal : Propal_Range) return Boolean is
+    (State_Data(Propal).Try = Answered);
+
   procedure Get_Answer (
    Propal : in Propal_Range;
    Placed_Ok, Colors_Ok : out Natural) is
@@ -111,26 +114,27 @@ package body Common is
     Colors_Ok := State_Data(Propal).Colors_Ok;
   end Get_Answer;
 
-  procedure Possible_Selections (Can_Try, Can_Propose : out Boolean) is
+  procedure Possible_Selections (Can_Try, Can_Copy : out Boolean) is
   begin
     Can_Try:= False;
-    Can_Propose := False;
+    Can_Copy := False;
     for I in Propal_Range loop
-      if State_Data(I).Try /= Answered then
-        if not Can_Try then
-          for J in 1 .. State_Level loop
-            if State_Data(I).Propal_Color(J) /= 0 then
-              -- This proposed color can me changed
-              Can_Propose := True;
-              exit;
-            end if;
-          end loop;
-        end if;
-        if State_Data(I).Try = Common.Can_Try then
-          Can_Try := True;
-        end if;
-        exit when Can_Propose and then Can_Try;
+      if State_Data(I).Try = Answered then
+        Can_Copy := True;
+      elsif State_Data(I).Try = Common.Can_Try then
+        Can_Copy := True;
+        Can_Try := True;
       end if;
+      if not Can_Copy then
+        for J in 1 .. State_Level loop
+          if State_Data(I).Propal_Color(J) /= No_Color then
+            -- This proposed color can be copied
+            Can_Copy := True;
+            exit;
+          end if;
+        end loop;
+      end if;
+      exit when Can_Try and then Can_Copy;
     end loop;
   end Possible_Selections;
 

@@ -3,109 +3,82 @@ procedure Treat_Click is
 begin
 
   if not Playing then
-
-    case Cur_Selection.Selection_Kind is
+    -- Only Start/Level/Exit
+    case History(Curr_Status).Selection_Kind is
 
       when Screen.Menu =>
-        Screen.Put_Help (Screen.Click_Other);
         Screen.Put_Start_Giveup (Start => True, Selected => True);
-        Last_Click := Cur_Selection;
 
       when Screen.Level =>
-        Screen.Put_Help (Screen.Click_Other);
-        Screen.Put_Level (Cur_Selection.Level_No,
+        Screen.Put_Level (History(Curr_Status).Level_No,
                           Selected => True);
-        Last_Click := Cur_Selection;
 
       when Screen.Exit_Game =>
-        Screen.Put_Help (Screen.Click_Other);
         Screen.Put_Exit (Selected => True);
-        Last_Click := Cur_Selection;
 
       when others =>
-        Last_Click := (Selection_Kind => Screen.Nothing,
-                       Selection => Screen.Nothing);
-        Screen.Put_Help (Screen.Discarded);
-        Screen.Console.Bell;
+        History(Curr_Status) := Discard;
     end case;
-
-  else
-
-    case Cur_Selection.Selection_Kind is
-
-      when Screen.Menu =>
-        Screen.Put_Help (Screen.Click_Other);
-        Screen.Put_Start_Giveup (Start => False, Selected => True);
-        Last_Click := Cur_Selection;
-
-      when Screen.Exit_Game =>
-        Screen.Put_Help (Screen.Click_Other);
-        Screen.Put_Exit (Selected => True);
-        Last_Click := Cur_Selection;
-
-      when Screen.Try =>
-        declare
-          Try_State : constant Common.Try_List
-                    := Common.Get_Propal_State (Cur_Selection.Try_No).Try;
-          use type Common.Try_List;
-        begin
-          -- Check that this propal is completed and not already answered
-          if Try_State = Common.Can_Try then
-            Screen.Put_Help (Screen.Click_Other);
-            Screen.Put_Try (Propal => Cur_Selection.Try_No,
-                            Try_State => Screen.Selected);
-            Last_Click := Cur_Selection;
-          else
-            Screen.Put_Help (Screen.Discarded);
-            Last_Click := (Selection_Kind => Screen.Nothing,
-                           Selection => Screen.Try);
-            Screen.Console.Bell;
-          end if;
-        end;
-
-      when Screen.Color =>
-        Screen.Put_Help (Screen.Click_Color);
-        Screen.Put_Selected_Color (Color => Cur_Selection.Color_No,
-                                   Selected => True);
-        Screen.Set_Mouse_Color (Color => Cur_Selection.Color_No);
-        Last_Click := Cur_Selection;
-
-      when Screen.Propal =>
-        declare
-          Propal_State : constant Common.Propal_State_Rec
-                       := Common.Get_Propal_State (Cur_Selection.Propal_No);
-          use type Common.Try_List, Common.Color_Range;
-        begin
-          -- Check that this propal is completed and not already answered
-          if Propal_State.Try /= Common.Answered and then
-             Propal_State.Propal_Color(Cur_Selection.Column_No)
-              /= Common.Color_Range'First then
-            Screen.Put_Help (Screen.Click_Propal);
-            -- Attempt to move a color in propal. Clear square
-            Screen.Put_Default_Pos (Cur_Selection.Propal_No,
-                                    Cur_Selection.Column_No,
-                                    Show => True);
-            Screen.Set_Mouse_Color (
-             Color => Propal_State.Propal_Color(Cur_Selection.Column_No));
-            Last_Click := Cur_Selection;
-          else
-            Screen.Put_Help (Screen.Discarded);
-            Last_Click := (Selection_Kind => Screen.Nothing,
-                           Selection => Screen.Propal);
-            Screen.Console.Bell;
-          end if;
-        end;
-
-      when others =>
-        Screen.Put_Help (Screen.Discarded);
-        Last_Click := (Selection_Kind => Screen.Nothing,
-                       Selection => Screen.Nothing);
-        Screen.Console.Bell;
-
-    end case;
-
+    Update_Help;
+    return;
   end if;
 
+  -- Playing
+  case History(Curr_Status).Selection_Kind is
+
+    when Screen.Menu =>
+      -- Give up
+      Screen.Put_Start_Giveup (Start => False, Selected => True);
+
+    when Screen.Exit_Game =>
+      -- Exit
+      Screen.Put_Exit (Selected => True);
+
+    when Screen.Try =>
+      declare
+        Try_State : constant Common.Try_List
+            := Common.Get_Propal_State (History(Curr_Status).Try_No).Try;
+        use type Common.Try_List;
+      begin
+        -- Check that this propal is completed and not already answered
+        if Try_State = Common.Can_Try then
+          -- Highlight try
+          Screen.Put_Try (Propal => History(Curr_Status).Try_No,
+                          Try_State => Screen.Selected);
+        else
+          History(Curr_Status) := Discard;
+        end if;
+      end;
+
+    when Screen.Color =>
+      -- Highlight color
+      Screen.Put_Selected_Color (Color => History(Curr_Status).Color_No,
+                                 Selected => True);
+    when Screen.Propal =>
+      declare
+        Propal_State : constant Common.Propal_State_Rec
+            := Common.Get_Propal_State (History(Curr_Status).Propal_No);
+        Color : constant Common.Color_Range
+              := Propal_State.Propal_Color(History(Curr_Status).Column_No);
+        use type Common.Color_Range;
+      begin
+        -- Check that this propal is filled if as a source
+        if (Curr_Status = Click_Orig
+            and then Color /= Common.Color_Range'First)
+        or else Curr_Status = Click_Dest then
+          -- Attempt to move a color in or to propal. Highlight dest square
+          Screen.Put_Default_Pos (History(Curr_Status).Propal_No,
+                                  History(Curr_Status).Column_No,
+                                  Show => True);
+        else
+          History(Curr_Status) := Discard;
+        end if;
+      end;
+
+    when others =>
+      -- Level or other
+      History(Curr_Status) := Discard;
+  end case;
 
 end Treat_Click;
 

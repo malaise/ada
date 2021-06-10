@@ -62,17 +62,6 @@ package body Screen is
 
   Pin : constant Character := '!';
 
-  -- Dummy for upward compatibility
-  procedure Set_Mouse_Default_Color is
-  begin
-    null;
-  end Set_Mouse_Default_Color;
-
-  procedure Set_Mouse_Color (Color : in Common.Eff_Color_Range) is
-  begin
-    null;
-  end Set_Mouse_Color;
-
   -- Square, in Propal_Win for a propal & level
   function Propal_Square (Propal : Common.Propal_Range;
                           Level  : Common.Level_Range) return Con_Io.Square is
@@ -316,7 +305,6 @@ package body Screen is
     Screen_Win.Move;
   end Clear;
 
-
   ------------
   -- PROPAL --
   ------------
@@ -552,20 +540,22 @@ package body Screen is
   -- HELP --
   ----------
   procedure Put_Help (Help : in Help_State;
-                      Can_Try, Can_Propose : in Boolean := False) is
+                      Can_Clear : in Boolean := False) is
+    Can_Try, Can_Copy : Boolean;
   begin
     Help_Win.Clear;
     case Help is
-      when Released =>
+      when Play =>
         Help_Win.Move;
-        Help_Win.Put_Line ("Select :");
+        Help_Win.Put_Line ("Select:");
         Help_Win.New_Line;
         Help_Win.Put_Line (" -> A color to set");
         Help_Win.Put_Line ("     it in a proposition.");
         Help_Win.New_Line;
-        if Can_Propose then
-          Help_Win.Put_Line (" -> A proposition to clear");
-          Help_Win.Put_Line ("     or move it.");
+        Common.Possible_Selections (Can_Try, Can_Copy);
+        if Can_Copy then
+          Help_Win.Put_Line (" -> A proposition to copy");
+          Help_Win.Put_Line ("     or clear it.");
           Help_Win.New_Line;
         end if;
         if Can_Try then
@@ -576,27 +566,27 @@ package body Screen is
         Help_Win.Put_Line (" -> A menu option :");
         Help_Win.Put_Line ("     Give-up.");
         Help_Win.Put_Line ("     Exit.");
-      when Click_Color =>
+      when Released_Color =>
         Help_Win.Move;
-        Help_Win.Put_Line ("Release on :");
+        Help_Win.Put_Line ("Select:");
         Help_Win.New_Line;
-        Help_Win.Put_Line (" -> A position to affect it");
-        Help_Win.Put_Line ("     at this position.");
-      when Click_Propal =>
-        Help_Win.Move;
-        Help_Win.Put_Line ("Release on :");
-        Help_Win.New_Line;
-        Help_Win.Put_Line (" -> an empty square to move");
+        Help_Win.Put_Line (" -> A position where to copy");
         Help_Win.Put_Line ("     this color.");
         Help_Win.New_Line;
-        Help_Win.Put_Line (" -> outside propositions");
-        Help_Win.Put_Line ("     to clear this color.");
-      when Click_Other =>
+        Help_Win.Put_Line (" -> The same color to");
+        Help_Win.Put_Line ("     cancel.");
+      when Released_Propal =>
         Help_Win.Move;
-        Help_Win.New_Line (Number => 2);
-        Help_Win.Put_Line ("Release on the same item");
-        Help_Win.Put_Line (" to validate.");
-      when Start =>
+        Help_Win.Put_Line ("Select:");
+        Help_Win.New_Line;
+        Help_Win.Put_Line (" -> A position where to copy");
+        Help_Win.Put_Line ("     this color.");
+        Help_Win.New_Line;
+        if Can_Clear then
+          Help_Win.Put_Line (" -> The same position to");
+          Help_Win.Put_Line ("     clear it.");
+        end if;
+      when Stopped =>
         Help_Win.Move;
         Help_Win.Put_Line ("Select :");
         Help_Win.New_Line;
@@ -604,10 +594,15 @@ package body Screen is
         Help_Win.Put_Line ("     Start.");
         Help_Win.Put_Line ("     Level (3, 4 or 5).");
         Help_Win.Put_Line ("     Exit.");
-      when Discarded =>
+      when Clicked =>
         Help_Win.Move;
         Help_Win.New_Line (Number => 2);
-        Help_Win.Put_Line ("WRONG CLICK POSITION");
+        Help_Win.Put_Line ("Release on the same item");
+        Help_Win.Put_Line (" to validate.");
+      when Invalid =>
+        Help_Win.Move;
+        Help_Win.New_Line (Number => 2);
+        Help_Win.Put_Line ("INVALID CLICK");
         Help_Win.New_Line;
         Help_Win.Put_Line ("Release anywhere");
         Help_Win.Put_Line (" and click again.");

@@ -58,6 +58,8 @@ begin
     end loop;
   end if;
 
+  Action.End_Action;
+
 exception
   when Action.No_Mouse =>
     Basic_Proc.Put_Line_Error ("Sorry, MOUSE not found.");
