@@ -370,12 +370,12 @@ package body Cherry is
           First_Set := True;
         end if;
 
-        -- Wipe must be followed by [ Fixup ]  then a Squash
+        -- Wipe must be followed by [ Fixup | Wipe ] then a Squash
         if After_Wipe then
           if Status = Squash then
             -- Ok (so far)
             After_Wipe := False;
-          elsif Status /= Fixup then
+          elsif Status /= Fixup and then Status /= Wipe then
             Cherries.Move_At (Pos);
             return Emptycmt;
           end if;

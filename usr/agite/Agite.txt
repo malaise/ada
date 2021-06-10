@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V39.08
+V39.09
 
 General purpose
 ---------------
@@ -1434,7 +1434,7 @@ will be commited with the cherries's comment.
 
 * 'W' denotes a cherry picked for 'wipe-up', which will be applied with an
 empty comment. This is valid only if the next (not-merged not-dropped) cherry
-is (possibly after some 'fixup') a 'squash'.
+is (possibly after some 'fixup' or 'wipe') a 'squash'.
 
 * 'R' denotes a cherry picked for 'rewording', which will be applied then
 proposed for modification of the comment in the xref:XCommit[commit] menu.
