@@ -1,39 +1,81 @@
-# Fuel for the P38
-[ "Error. Expecting x:yy or xxxxNm" putl ssize popn 1 setexit retall ] E popr
+# Fuel for the P38, cruising at FL 250-270
+[ "Error. Expecting xx:yy or xxxxNm or xxxxl" putl ssize popn 1 setexit retall
+] E popr
 
-# Store name, flight time and weight for each tank
-"droppable" n 1 popa 2.75 t 1 popa 874.4 w 1 popa
-"wing"      n 2 popa 0.92 t 2 popa 291.5 w 2 popa
-"main"      n 3 popa 1.55 t 3 popa 492.9 w 3 popa
-"reserve"   n 4 popa 1.00 t 4 popa 318.0 w 4 popa
+# Store name and weight in kg for each tank
+"droppable" n 1 popa 921.0 w 1 popa
+"wing"      n 2 popa 333.0 w 2 popa
+"main"      n 3 popa 521.0 w 3 popa
+"reserve"   n 4 popa 308.0 w 4 popa
 
 # Cruising speed in Kt
-239.0 s popr
+280.0 s popr
+
+# Fuel flow in kg/h
+230.0 f popr
 
 # Security (time of flight)
-0.25 u popr
+0.50 u popr
 
 # One arg
 ssize isnull E pushr ifcall
+a popr
 
-# Input is either xxxxNm or h:mm -> (convert to hours)
-dup "^[0-9]{1,4}Nm" regmatch isntnull
-[ dup strlen dup 1 - swap strdel strreal s pushr / ]
-[ dup "^[0-9]:[0-9][0-9]" regmatch isnull E pushr ifcall
-  2 "." strovw strreal degfr ] ifte call
+# Input is either xxxxNm or xxxxl or h:mm -> convert to hours
+"^[0-9]{1,4}Nm" c 1 popa
+  [ dup strlen dup 1 - swap strdel strreal s pushr / ] e 1 popa
+"^[0-9]{1,4}l" c 2 popa
+  [ dup strlen dup strdel strreal s pushr / ] e 2 popa
+"^[0-9]?[0-9]:[0-9][0-9]" c 3 popa
+  [ dup 1 ":" strloc dup isntnull [ "." strovw ] [ pop ] ifte call
+    strreal degfr ] e 3 popa
 
-# Now we have the flight time, add security (taxi, takeoff, climb)
-u pushr + f popr
+# Loop checking a versus each criteria
+3 i popr
+[
+  # Does arg match the criteria i?
+  a pushr c i pushr pusha regmatch
+  # If yes, apply extraction i and store time in t
+  isntnull [ a pushr e i pushr pusha call t popr 2 retn ] ifcall
+  # Next index, or not found
+  i pushr 1 - i copyr isnull E pushr ifcall
+T pushr retacal ] T copyr call
+
+# Now we have the flight time
+# Convert to weight and security (taxi, takeoff, climb)
+u pushr t pushr + f pushr * w popr
+
+# Compute max weight
+4 i popr
+0.0 s popr
+[
+  w i pushr pusha s pushr + s popr
+  i pushr 1 - i copyr isnull ifret
+S pushr retacal ] S copyr call
+
+# Function to replace '.' by ":" and remove leading spaces, from top of stack
+[ dup 1 "." strloc dup isntnull [ ":" strovw ] [ pop ] ifte call
+dup "[^ ]" regmatch 1 strdel
+] F popr
+
+# Put weight and flight time in h.mn
+0 format
+"Flying" put t pushr degms 6 3 " " normal F pushr call put " requires " put
+w pushr round put " kg of fuel." putl
+
+# Check needed weight versus capacity
+s pushr w pushr <
+[ "This is above the max " put s pushr round put "." putl
+ssize popn 1 setexit retall ] ifcall
 
 # Successive tries with each tank
 4 i popr
-0 format
-
 [
-t i pushr pusha copye f pushr >=
-[ pushle f pushr swap / w i pushr pusha * round 1 +
-  "Put " put put "kg in " put n i pushr pusha put " tanks." putl retall ] ifcall
-f pushr t i pushr pusha - f popr
+w i pushr pusha copye w pushr >=
+[ "Put " put w pushr round put "kg in " put n i pushr pusha put " tanks." putl
+retall ] ifcall
+"Fill " put n i pushr pusha put " tanks." putl
+w pushr w i pushr pusha - w popr
 i pushr 1 - i copyr isnull ifret
 L pushr retacal ] L copyr call
 
