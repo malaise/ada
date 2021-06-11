@@ -6,6 +6,9 @@ package Screen is
   subtype Text_Range is Positive range 1 .. Nb_Line_Text;
   subtype Text_Array is As.U.Asu_Array (1 .. Nb_Line_Text);
 
+  -- The field no of the first line of text
+  function First_Text return Afpx.Absolute_Field_Range;
+
   -- The full content of input fields
   type Input_Rec is record
     -- The Regex;
@@ -15,6 +18,9 @@ package Screen is
     -- The text to match
     Text : Text_Array;
   end record;
+
+  -- Current cursor has changed
+  procedure Cursor_Has_Changed;
 
   -- Has an input changed since previous call
   function Input_Changed return Boolean;
@@ -43,6 +49,7 @@ package Screen is
   No_Results : constant Results_Array := (others => <>);
 
   procedure Put_Results (
+    Cursor_Field : in Afpx.Absolute_Field_Range := 1;
     -- Line will be 0 if first (and other) result is empty
     Line : in Text_Range := 1;
     Results : in Results_Array);

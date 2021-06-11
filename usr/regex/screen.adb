@@ -4,6 +4,8 @@ with Afpx_Xref;
 package body Screen is
   -- Previous and new input
   Prev_Input, Cur_Input : Input_Rec;
+  -- Has cursor changed
+  Cursor_Changed : Boolean := True;
 
   -- LOCAL: Is an option set
   function Is_Set (Fld : Afpx.Field_Range) return Boolean is
@@ -14,6 +16,18 @@ package body Screen is
   begin
     Str := As.U.Tus (Str_Util.Strip (Str.Image));
   end Strip;
+
+  -- The field no of the first line of text
+  function First_Text return Afpx.Absolute_Field_Range is
+  begin
+    return Afpx_Xref.Main.Text1;
+  end First_Text;
+
+  -- Current cursor has changed
+  procedure Cursor_Has_Changed is
+  begin
+    Cursor_Changed := True;
+  end Cursor_Has_Changed;
 
   -- Has an input changed since previous call
   function Input_Changed return Boolean is
@@ -36,6 +50,8 @@ package body Screen is
       if Res then
         Prev_Input := Cur_Input;
       end if;
+      Res := Res or else Cursor_Changed;
+      Cursor_Changed := False;
     end return;
   end Input_Changed;
 
@@ -66,9 +82,17 @@ package body Screen is
     (Normal (I, 2, Gap => '0'));
 
   -- Put result
-  procedure Put_Results (Line : in Text_Range := 1;
+  procedure Put_Results (Cursor_Field : in Afpx.Absolute_Field_Range := 1;
+                         Line : in Text_Range := 1;
                          Results : in Results_Array) is
+    Curs_Col : constant Con_Io.Col_Range := 27;
+    use type Afpx.Absolute_Field_Range;
   begin
+    -- Encode cursor line
+    Afpx.Encode_Field (Afpx_Xref.Main.Title, (0, Curs_Col),
+      Images.Integer_Image (
+          if Cursor_Field < Afpx_Xref.Main.Text1 then 1
+          else Integer (Cursor_Field - Afpx_Xref.Main.Text1 + 1)));
     -- Encode Line
     Afpx.Encode_Field (Afpx_Xref.Main.Line, (0, 0),
         Images.Integer_Image (if Results = No_Results then 0 else Line));

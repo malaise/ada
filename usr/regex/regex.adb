@@ -1,8 +1,30 @@
-with Con_Io, Afpx, Timers;
+with Con_Io, Afpx, Timers, Basic_Proc;
 with Afpx_Xref, Screen, Timer_Cb, Reg_Exp;
 procedure Regex is
 
-  -- Compile Regex
+  -- Curent Ptg status
+  Get_Handle   : Afpx.Get_Handle_Rec;
+
+  -- Notified of new cursor field
+  function Cursor_Set_Col (
+      Cursor_Field : Afpx.Field_Range;
+      New_Field : Boolean;
+      Pointer_Col : Con_Io.Col_Range;
+      Dummy_Offset : Con_Io.Col_Range;
+      Dummy_Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
+      Str : Afpx.Unicode_Sequence) return Con_Io.Col_Range is
+  begin
+    -- Update the current cursor col, move to last char and notify screen
+    Get_Handle.Cursor_Field := Cursor_Field;
+    Screen.Cursor_Has_Changed;
+    if New_Field then
+      return Afpx.Last_Index (Str, True);
+    else
+      return Pointer_Col;
+    end if;
+  end Cursor_Set_Col;
+
+  -- Compile Regex, exec and set result
   procedure Update is
     Input : Screen.Input_Rec;
     Ok : Boolean;
@@ -11,6 +33,7 @@ procedure Regex is
     Pattern : Reg_Exp.Compiled_Pattern;
     N_Matched : Natural;
     Match_Info : Reg_Exp.Match_Array (1 .. Screen.Nb_Results);
+    use type Afpx.Absolute_Field_Range;
   begin
     -- Get input
     Input := Screen.Get_Input;
@@ -32,7 +55,9 @@ procedure Regex is
     -- Check
     Ok := False;
     for I in Input.Text'Range loop
-      if not Input.Text(I).Is_Null then
+      if not Input.Text(I).Is_Null
+      and then I >= Integer (Get_Handle.Cursor_Field - Screen.First_Text + 1)
+      then
         Pattern.Exec (Input.Text(I).Image, N_Matched, Match_Info);
         if N_Matched /= 0 then
           -- Match found
@@ -58,7 +83,7 @@ procedure Regex is
     end if;
 
     -- Put result
-    Screen.Put_Results (Line, Results);
+    Screen.Put_Results (Get_Handle.Cursor_Field, Line, Results);
 
   end Update;
 
@@ -67,7 +92,6 @@ procedure Regex is
   Period : constant Duration := 0.3;
 
   -- Afpx Ptg data
-  Get_Handle   : Afpx.Get_Handle_Rec;
   Ptg_Result   : Afpx.Result_Rec;
 
 begin
@@ -83,7 +107,8 @@ begin
 
   -- Main loop
   loop
-    Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
+    Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
+                       Cursor_Col_Cb => Cursor_Set_Col'Unrestricted_Access);
     case Ptg_Result.Event is
       when Afpx.Mouse_Button =>
         -- Handle buttons
@@ -129,5 +154,10 @@ begin
     end case;
 
   end loop;
+
+exception
+  when others =>
+    Basic_Proc.Set_Error_Exit_Code;
+    raise;
 end Regex;
 
