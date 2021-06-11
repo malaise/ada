@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V39.11
+V39.12
 
 General purpose
 ---------------
@@ -347,7 +347,7 @@ including the list of files modified by the commit.
 * xref:XCherry[CherryPick]: This menu allows performing a cherry-pick of
 commits from a local branch.
 * xref:XCommit[Commit]: This shows all the local modifications of the
-repository and allows staging and commiting them.
+repository and allows stageing and commiting them.
 * xref:XPush[Push]: This allows pushing a branch or tag into a remote
 repository.
 * xref:XStash[Stash]: This allows stashing the local repository and managing
@@ -1476,7 +1476,7 @@ Click on the 'Detail' button to see the xref:XDetail[details] of a commit,
 including viewing a file or seeing the differences introduced by this commit,
 but excluding launching the 'history' menu and excluding restoring files.
 
-.Pick, Reword, Edit, Squash, Fixup, Drop
+.Pick, Wipe, Reword, Edit, Squash, Fixup, Drop
 When there is only a left selection in the list, clicking on one of these
 buttons changes its status, and moves to the next cherry. +
 When there is a right and a left selection in the list, clicking on one of
@@ -1523,14 +1523,14 @@ NOTE: To cancel the cherry-pick menu, simply ensure that no commit is selected
 NOTE: If the selection is not valid then this button is de-activated and
 displays the cause of error: +
  * 'FoldPrev' if first not merged nor dropped cherry is a squash or a fixup, +
- * 'EmptyCmt' if a wipe-up not followed by a squash would lead to an empty
-comment.
+ * 'EmptyCmt' if a wipe-up not followed by a squash or a fixup would lead to
+an empty comment.
 
 Commit
 ~~~~~~
 anchor:XCommit[]
 This menu works on the global repository, not on the local directory. +
-It shows the list of all the local changes, allows (un)staging them and allows
+It shows the list of all the local changes, allows (un)stageing them and allows
 entering a comment for the commit:
 
 .Current branch and root
@@ -2049,16 +2049,16 @@ At this point there are two possibilities: continue or abort.
 
 Fix, commit and continue
 ^^^^^^^^^^^^^^^^^^^^^^^^
-Hopefully you can use the file edition and staging in order to resolve the
-conflict. You should then commit the changes and then click on the 'Done'
-button. The loop will continue processing the remaining cherries.
+Hopefully you can use the file edition, strashing and stageing in order to
+resolve the conflict. You should then commit the changes and then click on the
+'Done' button. The loop will continue processing the remaining cherries.
 
 Abort
 ^^^^^^
 If you need more tools or more time to solve the conflict, then you can click
 on the 'Abort' button to cancel the commit and exit the the loop of cherry
 picking. You are then back in the xref:XDir[directory] menu, from which you
-should fix the conflict and commit the result. Beware that you might be on a
+should fix the conflict and commit the result. Beware that you likely are  on a
 temporary branch. +
 Restarting the loop depends on wether the failure occured during a
 xref:XRebase[rebase] or xref:XReorg[reorg], or during a
