@@ -370,12 +370,12 @@ package body Cherry is
           First_Set := True;
         end if;
 
-        -- Wipe must be followed by [ Fixup | Wipe ] then a Squash
+        -- Wipe must be followed by [ Wipe ] then a Squash | Fixup
         if After_Wipe then
-          if Status = Squash then
+          if Status = Fixup or else Status = Squash then
             -- Ok (so far)
             After_Wipe := False;
-          elsif Status /= Fixup and then Status /= Wipe then
+          elsif Status /= Wipe then
             Cherries.Move_At (Pos);
             return Emptycmt;
           end if;
@@ -385,7 +385,6 @@ package body Cherry is
 
       end if;
 
-      -- Normally this should be possible because Nb_Cherries /= 0, but well...
       exit when not Cherries.Check_Move;
       Cherries.Move_To;
     end loop;
@@ -541,7 +540,7 @@ package body Cherry is
           when Pick | Wipe =>
             Result := As.U.Tus (Git_If.Cherry_Pick (
                          Commit    => Cherry.Commit,
-                         Do_Commit => (Cherry.Status = Pick) ));
+                         Do_Commit => Cherry.Status = Pick));
             if not Result.Is_Null then
               -- Cherry pick failed, the error message starts with the
               --  conflicts

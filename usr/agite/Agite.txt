@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V39.10
+V39.11
 
 General purpose
 ---------------
@@ -1434,7 +1434,8 @@ will be commited with the cherries's comment.
 
 * 'W' denotes a cherry picked for 'wipe-up', which will be applied with an
 empty comment and not committed. This is valid only if the next (not-merged
-not-dropped) cherry is (possibly after some other 'wipe' or 'fixup') a 'squash'.
+not-dropped) cherry is (possibly after some other 'wipe') a 'fixup' or a
+'squash'.
 
 * 'R' denotes a cherry picked for 'rewording', which will be applied then
 proposed for modification of the comment in the xref:XCommit[commit] menu.
@@ -1928,11 +1929,22 @@ automatically propagated from a commit to the next one when this is relevant.
 Use-cases
 ~~~~~~~~~
 
-* Fold several cherries into one, update the last comment
+* Fold several cherries into one, keep the first commit (case of a
+modification with accurate comment, then fixes)
+  - 'Pick' the first cherry to fold,
+  - 'Fixup' all the other cherries to fold.
+
+* Fold several cherries into one, keep the last commit (case of some steps of a
+modification, then a final commit with accurate comment)
+  - 'Wipe' all but the last commit to fold,
+  - 'Fixup' the last commit to fold.
+
+* Fold several cherries into one, keep and update the first and last comments
   - 'Pick' the first cherry to fold,
   - 'Fixup' all the other cherries to fold except the last one,
   - 'Squash' the last cherry to fold,
-  - Check/modify the comment of the last commit, 'Commit' then click on 'Done'.
+  - Check/modify the comment of the global commit, 'Commit' then click on
+    'Done'.
 
 * Change the comment of a cherry and fold it with with several following fixes
   - 'Reword' the first cherry to fold,
