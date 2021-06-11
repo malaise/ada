@@ -239,7 +239,7 @@ Lsadeps (3d)::
      Shows the list/tree of Ada units/files dependencies.
 
 Mapcode (3d)::
-     Encode/decode coordinates (latitude, longitude) to/from mapcode (see 
+     Encode/decode coordinates (latitude, longitude) to/from mapcode (see
      http://www.mapcode.com/).
 
 Mcd (3d)::

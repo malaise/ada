@@ -173,14 +173,14 @@ is possible only if:
 valid ancestor for the sequence,
 * the number of free stacks allows the movement of the cards one by one.
 
-Moving several cards is achieved by selecting a card somewhere within a valid 
+Moving several cards is achieved by selecting a card somewhere within a valid
 sequence (often the biggest card of the sequence), then selecting its
 destination.
 
 The algorithm to dispatch a stack on a target is efficient and covers most
 use-cases. Here is the logic:
 
-1. it first unstacks as many cards as possible from the original stack 
+1. it first unstacks as many cards as possible from the original stack
 into the free stacks,
 
 2. then it restacks these cards on the last unstacked (temporary stack)

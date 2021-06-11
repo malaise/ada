@@ -115,7 +115,7 @@ or keep CDATA sections unchanged, or keep none (remove comments and CDATA
 markers) or keep all unchanged, which is the default.
 
 -n | --namespace: :: for namespace checks and expansion. Add checks that the
-input flowflow is namespace-well-formed and namespace-valid (see 
+input flowflow is namespace-well-formed and namespace-valid (see
 http://www.w3.org/TR/REC-xml-names) and expand namespaces as
 '<namespace>^<suffix>.' +
 This option should be used together with option xref:Expand[Expand] in order to
@@ -255,7 +255,7 @@ anchor:Generator[]
 .XML generator
 Xml_checker also uses a XML generator that is a child package of Xml_Parser
 (Xml_Parser.Generator) to build the formatted XML output of the tree or of
-each node. The generator is not used in 'Dump' and in 'Canonical' modes. 
+each node. The generator is not used in 'Dump' and in 'Canonical' modes.
 
 With xref:CopyTree[copytree] option, xml_checker also uses the XML generator to
 build the copy of the tree.
@@ -343,8 +343,8 @@ Dtd_checker exits with 0 if no error is detected and with 1 otherwise
 
 DTD generator
 -------------
-Dtd_generator is a standalone tool that parses one or several XML files and 
-generates a DTD file representing the structure (elements and attributes) of 
+Dtd_generator is a standalone tool that parses one or several XML files and
+generates a DTD file representing the structure (elements and attributes) of
 these files.
 ...................................................
 dtd_generator [ <options> ] [ { <xml_file> } ]
@@ -365,7 +365,7 @@ children, before which the element is declared as a choice
 element is declared as ANY.
 * Enums: The maximum number of values of an enumerated attribute, before which
 the attribute is declared as NMTOKEN.
-* Width: The maximum width in output flow for the lists of sub-elements and 
+* Width: The maximum width in output flow for the lists of sub-elements and
 for the lists of attribute values.
 
 If no file is provided then dtd_generator parses stdin. +

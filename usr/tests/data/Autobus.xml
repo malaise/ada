@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Autobus SYSTEM "Autobus.dtd">
 
-<Autobus Heartbeat_Period="6.0" 
+<Autobus Heartbeat_Period="6.0"
          Heartbeat_Max_Missed="5"
          Timeout="4.0">
   <!-- Broadcast -->

@@ -8,7 +8,7 @@ Agite (Ada GIT Editor) is a graphical front end of the 'Git' configuration
 management tool.
 It proposes a view directory-oriented of the files and history.
 
-The major functions are the navigation in directories, history, file status, 
+The major functions are the navigation in directories, history, file status,
 graphical diff, commit, push, pull, merge and rebase branch, tags and stash.
 
 anchor:XCommandLine[]
@@ -43,8 +43,8 @@ NOTE: Agite unsets AFPX_DATA_DIR at start-up, so its children don't inherit
 from this setting.
 
 AGITE_CONF_FILE::
-Agite allows several settings to be defined in a 
-xref:XConfig[configuration file]. By default this file is 
+Agite allows several settings to be defined in a
+xref:XConfig[configuration file]. By default this file is
 '$\{HOME}/.agite/agite.xml' but this can be overridden by setting the
 environment variable 'AGITE_CONF_FILE' to the full path and name of the
 configuration file.
@@ -62,7 +62,7 @@ environment variable 'GIT_DIR' to the name (without path) of the Git directory.
 GIT_EDITOR::
 Agite sets this variable to the value configured as xref:XConfEditor[editor].
 
-anchor:XConfig[] 
+anchor:XConfig[]
 
 Configuration file
 ------------------
@@ -112,7 +112,7 @@ This defines the command to be launched for the local compilation with the
 xref:XMake[Make] button. It shall launch a GUI. Example:
 '#xterm -e 'sh -c "make; echo -n Done.; read a"'#'. +
 The default name for this button is "Make" and, as for the 'xterm' button,
-you can set the 'Name' attribute  of the XML element in order to specify 
+you can set the 'Name' attribute  of the XML element in order to specify
 another name for the button (8 characters max).
 
 anchor:XConfPatch[]
@@ -155,7 +155,7 @@ anchor:XHistoryLen[]
 history::
 When reading the xref:XHist[history] of a directory or file, Agite only scans
 and displays the amount of entries specified in this parameter (a button,
-xref:XListAll[All], allows listing all the entries). 
+xref:XListAll[All], allows listing all the entries).
 +
 Setting the value to 0 disables the feature and Agite will always list all the
 entries of the history.
@@ -289,7 +289,7 @@ mouse button opening a pop-up menu), which is not available in Agite, neither
 for copy nor for paste.
  - Home and End: move to the boundaries of the get area
  - Left/right arrows: navigate in the string
- - A character input, Backspace and Suppr edit the string 
+ - A character input, Backspace and Suppr edit the string
  - Shift+Suppr clears the string from the current position to the end
  - Ctrl+Suppr clears the whole string (and moves to the beginning of it)
  - Insert: toggles the insert/replace mode (in Insert mode the cursor becomes
@@ -383,7 +383,7 @@ The navigation between the screens is as follows:
   +---------- +\                  +---+---+<-\          +------+        |
                 \                     |       \                         |
                  \                    V        \                        |
-                  \               +-------+     \-----------------------+ 
+                  \               +-------+     \-----------------------+
                    \------------->| Stash |
                     \             +-------+
                      \            +------+
@@ -547,8 +547,8 @@ Git status can be:
 +
 After the name, a character represents the kind of entry:
 
-* ' ' fo a file, 
-* '@' for a symbolic link, 
+* ' ' fo a file,
+* '@' for a symbolic link,
 * '/' for a directory,
 * '?' for other or unknown kind (of a deleted entry).
 
@@ -560,7 +560,7 @@ the final target (after recusrsive resolution).
 +
 Only one entry is selected at a time (in green).
 +
-A single click selects an entry for xref:XEdit[edition], 
+A single click selects an entry for xref:XEdit[edition],
 xref:XDiff[difference] from the Git reference, xref:XHistory[history],
 xref:XAdd[add] or xref:XRevert[revert] operation.
 +
@@ -639,7 +639,7 @@ anchor:XRevert[]
 
 Revert::
 This button reverts the local change on the current entry. +
-First, a simple screen asks to confirm or cancel the operation, which depends 
+First, a simple screen asks to confirm or cancel the operation, which depends
 on the type of the current entry, then:
 +
 --
@@ -758,7 +758,7 @@ automatically generated with the comment "Merge branch \'<branch>'".
 TruMerge::
 Click in the 'TruMerge' button to merge, after confirmation, the
 branch selected in the list into the current branch, with no 'fast forward'
-and no 'commit' policy. Then the xref:XCommit[commit] screen is called to 
+and no 'commit' policy. Then the xref:XCommit[commit] screen is called to
 allow amending the comment and commiting the result.
 
 Rebase::
@@ -787,7 +787,7 @@ while a  a rebase on 'master' (left selection) with the reference 'server'
           \           \-- C8 -- C9 (client)
            \- C3 -- C4 -- C10 (server)
 +
-See also the section on xref:XRewritingHistory[rewriting history]. 
+See also the section on xref:XRewritingHistory[rewriting history].
 +
 The rebased branch is automatically checked out by this operation and Agite
 returns to the xref:XDir[directory] menu.
@@ -796,7 +796,7 @@ NOTE: The 'Rebase' is done by performing automatically successive
 xref:XCherry[cherry-picks] from the rebased branch to a temporary branch.
 See the how-to xref:XCherryRebase[rebase with cherry-pick] and the section
 xref:XCherryError[Error in cherry-pick] on how to handle errors during
-a rebase. 
+a rebase.
 
 NOTE: The selection of the commits to pick is automatic (based in current and
 right/left selected branches). For a manual edition of the selected commits
@@ -854,7 +854,7 @@ xref:XDir[directory] menu. Later on you can open the bookmark menu and double
 click on the entry, or select it and click on xref:XGoto[Goto], in order to go
 back to this directory.
 
-Bookmarks are saved in the xref:XConfig[configuration file] so that they 
+Bookmarks are saved in the xref:XConfig[configuration file] so that they
 are persistent from one session to another.
 
 .List
@@ -866,7 +866,7 @@ directory. Example:
 
  /home/user/ada
 
-* Named bookmarks are created like anonymous ones, but with a *name previously 
+* Named bookmarks are created like anonymous ones, but with a *name previously
 set* in the 'Name' field when clicking in xref:XAddCurr[AddCur].
 The name must comply with the syntax of an Ada identifier
 ('letter [ { [ _ ] letter_or_digit } ]'). +
@@ -881,7 +881,7 @@ This creates a line with dashes and the name. Example:
 
  ----- Ada -----
 
-* Blank lines can also be used to separate bookmarks. They are anonymous 
+* Blank lines can also be used to separate bookmarks. They are anonymous
 separators, created by clicking in xref:XAddSep[AddSep] with no name set.
 
 .Buttons
@@ -927,7 +927,7 @@ changing the current directory.
 
 .Variables
 A bookmark path can reference some Environment variables or some predefined
-variables that Agite maintains automatically. 
+variables that Agite maintains automatically.
 
 The predefiend variables are:
 
@@ -1063,12 +1063,12 @@ launch many differators, so it is started only after confirmation.
 'Diff' can compare two arbitrary commits or show the changes introduced by
 one commit:
 
-* Diff between two commits. 
+* Diff between two commits.
 ** Left click on an entry of the list. It becomes green and the 'LeftSel'
 above  the list shows the index of this entry from the Head.
 ** Right click on an entry of the list. It becomes black and the 'RightSel'
 above the list shows the index of this entry from the Head.
-** Click on the 'Diff' button. This starts the xref:XConfDiff[differator] 
+** Click on the 'Diff' button. This starts the xref:XConfDiff[differator]
 with the right (black) selection as reference and the left (green) selection
 as the target of the difference. If the history is about a directory several
 differators may be started.
@@ -1076,7 +1076,7 @@ differators may be started.
 * Diff of a commit.
 ** Ensure that there is no right selection (no entry on black and
 'RightSel'= 0).
-If there is one then find it and de-select it (by a right click). Alternatively 
+If there is one then find it and de-select it (by a right click). Alternatively
 you can right-select any entry and de-select it with a second right click on it.
 ** Left click on an entry of the list. It becomes green and the 'LeftSel'
 above the list shows the index of this entry from the Head.
@@ -1142,7 +1142,7 @@ the repository to the (left) selected commit. +
 See also the section on xref:XRewritingHistory[rewriting history].
 
 .Tag
-This button button launches the xref:XTag[tag] menu that allows tagging the 
+This button button launches the xref:XTag[tag] menu that allows tagging the
 selected commit.
 
 .Patch
@@ -1182,7 +1182,7 @@ NOTE: The history follows the renaming of the file or directory but the
 reference name (that is displayed above the history list) is used for the
 xref:XView[view] and xref:XDiff1[diff] operations.
 As a consequence, Agite will fail to show a file, or a difference from a file,
-if the entry in the history is before a renaming. 
+if the entry in the history is before a renaming.
 
 NOTE: Upon success or failure (not on cancel), the following operations lead to go
 back to the menu from which the xref:XHist[history] has been called
@@ -1243,7 +1243,7 @@ by clicking on 'PpHash',
 * If the entry is a merge, this is indicated by the word "Merge",
 * The date of the commit, that you can alternatively copy with 'CpDate',
 * The comment of the commit (up to seven lines), that you can also alternatively
-copy with 'CpComm', 
+copy with 'CpComm',
 * The list of all the files in the commit, each preceded by a letter
 indicating the file status:
 ** 'A' = Added,
@@ -1259,7 +1259,7 @@ indicating the file status:
 A specific entry, "/", is added on top of the list, which represents the root of
 the current repository.
 
-After each renamed entry (containing the initial name) a specific entry is 
+After each renamed entry (containing the initial name) a specific entry is
 inserted, with the status '+' and the new name.
 
 NOTE: Some file statuses above may not all be implemented by old versions of
@@ -1269,7 +1269,7 @@ GIT.
 
 For all the file entries of the list (not "/"):
 
-* double clicking on the entry or select the entry and click on 'View' allows 
+* double clicking on the entry or select the entry and click on 'View' allows
 viewing the file as it was committed,
 * clicking on the button 'Diff' shows the differences between the version
 before and in the commit,
@@ -1451,8 +1451,8 @@ sense if the next cherry is a 'squash' or a 'fixup'.
 * 'S' denotes a cherry picked for 'squash', which will be applied and folded
 with the previous cherry. The comment of the cherry will be concatenated to
 the currently retained comment. If the next cherry is not a 'squash' nor a
-'fixup', then the overall comment will be proposed for modification and the 
-overall result will be committed. 
+'fixup', then the overall comment will be proposed for modification and the
+overall result will be committed.
 
 * 'F' denotes a cherry picked for 'fixup', which will be applied and folded
 with the previous cherry. If the next cherry is not a 'squash' nor a 'fixup',
@@ -1502,7 +1502,7 @@ If confirmed, then the picked cherries are applied one by one onto the
 current branch. +
 An action to 'edit' or 'reword' (and possibly 'squash' launches the
 xref:XCommit[commit] menu.  It is possible to modify some files and the
-comment, and/or the selection of files, and to make several commits. 
+comment, and/or the selection of files, and to make several commits.
 See the section xref:XCherryHowto[Cherry-pick advanced how to] for more details
 on how to use the 'commit' menu in this context.
 
@@ -1829,7 +1829,7 @@ This button prunes from the local repository all the tracking branches that
 refer to the selected remote and that do not exist (any more) in this remote.
 
 .OK
-Validates the selection of remote and activates the 
+Validates the selection of remote and activates the
 xref:XSelBranch[branch selection] for selecting the branch to pull, fetch or
 checkout.
 
@@ -1958,7 +1958,7 @@ modification, then a final commit with accurate comment)
    are to be folded
 
   - xref:XStashReset[Stash and reset] the local changes,
-  - Move to xref:XRoot[root], xref:XReorg[reorg] from the one but last commit, 
+  - Move to xref:XRoot[root], xref:XReorg[reorg] from the one but last commit,
     and select the commit for 'Edition',
   - In the xref:XCommit[commit] menu, xref:XApplyStash[apply the stash],
     xref:XStage[stage] the changes to fold, click on 'Commit',
@@ -2089,7 +2089,7 @@ automatically. +
 In case of a reorg or rebase, the temporary branch, named
 "\{Agite}@"<source>".Tmp', remains (with some commits already applied).
 You can complete the xref:XCherry[cherry-pick] manually on it, then hard-reset
-the rebased branch on it, then delete it, as described in the 
+the rebased branch on it, then delete it, as described in the
 xref:XCherryRebase[rebase] and the xref:XCherryReorg[reorg] use-cases.
 
 Rewriting history
@@ -2099,7 +2099,7 @@ Rewriting the history can have serious consequences if you modify commits that
 have already been published, and have been pulled by some other repositories. +
 The four functions of Agite that alter the history are:
 
-* The xref:XReset[reset] functions of the xref:XBranches[branches] and of the 
+* The xref:XReset[reset] functions of the xref:XBranches[branches] and of the
 xref:XHist[history] menus both rewrite the history of the reset branch,
 * The xref:XRebase[rebase] function of the xref:XBranches[branches] menu
 rewrites the history of the rebased branch (which is reset),
@@ -2226,7 +2226,7 @@ version 1.7.0 or above:
 <file>',
 
 * A function lists the commits on a dir or file by calling
-'git log --date=iso --full-history [ -n <max> ] [ --sparse ] [ --name-status ] 
+'git log --date=iso --full-history [ -n <max> ] [ --sparse ] [ --name-status ]
 [ <branch> ] [ \-- <dir_or_file> ]',
 
 * A functions gets the hash of the last commit by calling 'git log

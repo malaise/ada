@@ -40,7 +40,7 @@ input is expected: 'select', 'read' and 'skip' (default is infinite).
 
 A 'chat' defines a criteria that will lead it to be selected (and the script
 to be executed) if the input string matches the pattern. Matching can rely on
-string comparison, regular expression matching or integer comparison. 
+string comparison, regular expression matching or integer comparison.
 This is called an [underline]#input condition#. +
 The input is tested versus each criteria successively (one for each 'chat')
 until it matches. Then the corresponding 'chat' is selected. +
@@ -73,7 +73,7 @@ or until a 'exit' statement is reached.
 - 'loop': loop executing a sub-script until a 'exit' statement is reached.
 - 'read': Read next input and check that it matches the [underline]#input
 condition# provided. Optionally fail on timeout if no input is received before a timeout
-expiration. 
+expiration.
 - 'skip': Read next sentence, whatever it is, with an optional timeout.
 - 'get': Read next sentence, whatever it is, and assign it to a variable.
 Optionally fail on timeout if no input is received before expiration.
@@ -92,7 +92,7 @@ variables.
 - 'chdir': Change current directory until another chdir or until a script ends
 on xref:Close[close] or xref:Failure[failure]. Optionally catch and handle
 error. With an empty argument, move back to the original directory when
-tcpchat has been launched. 
+tcpchat has been launched.
 - 'log': Report some text on stderr.
 - 'close': Close current 'chat', go back to 'chat' selection.
 
@@ -147,7 +147,7 @@ reference variables. Variables obey to the following rules:
 then converted back into a string.
   * 'set', 'assign' and 'eval' with the "OnlyIfNotSet" attribute, assign the
 variable only if is not defined so far,
-  * The expression and criteria of 'chats', 'select', 'cond', 'while', 'read', 
+  * The expression and criteria of 'chats', 'select', 'cond', 'while', 'read',
 'eval', 'set', 'assign' and 'parse' can be evaluated or not:
     ** "none": do no evaluate. Allows string comparison ("equal" or
 "not_equal"),

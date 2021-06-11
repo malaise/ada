@@ -325,7 +325,7 @@
       </else>
     </cond>
     <send>${Result}</send>
-   <close/> 
+   <close/>
   </chat>
 
 </chats>

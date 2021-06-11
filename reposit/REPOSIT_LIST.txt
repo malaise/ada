@@ -17,7 +17,7 @@ Ios. It can use 'Key_Pressed' to check asynchronously for keyboard input while
 processing.
 
 Multiplexed inputs::
-    The program multiplexes several inputs and stimuli: file descriptors (UDP or 
+    The program multiplexes several inputs and stimuli: file descriptors (UDP or
 TCP socket), stdin, signals (SIGCHILD and SIGTERM), timers.
 +
 => The program *must* use 'Event_Mng'.Wait as the single blocking point. This
@@ -44,12 +44,12 @@ based on X11 like 'Curve' (compatible with 'Con_Io') and 'Select_File'
 +
 Several tasks can be defined, for example one for each window.
 
-Notes: 
+Notes:
 
 * Using 'Event_Mng' in X11 programs requires caution (see 'Event_Mng'.Wait and
 'Command').
 
-* Using 'X_Mng' is exclusive with 'Con_Io' and 'Afpx'. 
+* Using 'X_Mng' is exclusive with 'Con_Io' and 'Afpx'.
 
 * Using 'Con_Io' and 'Afpx' simultaneously requires caution (see
 'Con_Io'.Suspend/Resume and 'Afpx'.Suspend/Resume).
@@ -95,7 +95,7 @@ Ada.Strings.Bounded with extra features.
 
 * 'Str_Util' provides several operations on strings.
 
-* 'Normalization', 'Images' and 'Gets' provide ways tro transform numeric 
+* 'Normalization', 'Images' and 'Gets' provide ways tro transform numeric
 values to strings and reverse.
 
 * 'Scanner' scans booleans, integers, reals, strings... from a string, according
@@ -120,7 +120,7 @@ associated string operations.
 
 * 'Utf_8' and 'Utf_16' provide basic encoding functions.
 
-* 'Byte_To_Unicode' allows converting bytes to unicode numbers according to a 
+* 'Byte_To_Unicode' allows converting bytes to unicode numbers according to a
 XML file definition of encoding.
 
 Numbers
@@ -334,7 +334,7 @@ computer (2)::
      Evaluate expressions based on numbers, variables, operations.
 
 con_io (3)::
-     Console IOs (keyboard, mouse, screen) in text and graphic.     
+     Console IOs (keyboard, mouse, screen) in text and graphic.
 
 conditions (1)::
      Allow several tasks to wait until unblocked all together or one by one.

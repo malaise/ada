@@ -131,7 +131,7 @@ Fix detection of multiple NOTATION attributes, in Xml_Parser V27.3
 
 *2012/01/03*:: Support empty DTD file (stdin) in Xml_Parser V27.1
 
-*2012/01/02*:: Add allow retrieving unparsed entities after parsing with callback in Xml_Parser V27.0, 
+*2012/01/02*:: Add allow retrieving unparsed entities after parsing with callback in Xml_Parser V27.0,
 Xml_parser.Generator V9.2 and xml_checker V15.2
 
 *2011/12/30*:: Chg major documentations into txt format for asciidoc
@@ -392,7 +392,7 @@ Add canonical mode in xml_checker V12.0, Xml_Parser V23.1, Xml_Generator V8.0
 
 *2010/05/01*:: Add option to retain separators (no normalization) in Xml_Parser V23.0
 
-*2010/04/30*:: Add explicit indication when in tail and support for unlimited width 
+*2010/04/30*:: Add explicit indication when in tail and support for unlimited width
 in Xml_Parser V22.0, Xml_Generator V7.7 and xml_checker V11.1
 
 *2010/04/28*:: Fix policy on Mixed elements in Xml_Parser V21.2, Xml_Generator V7.5 and xml_checker V10.3
@@ -527,7 +527,7 @@ Add option -w (--warnings) to xml_checker (width becomes -W) in Xml_Checker V7.0
 
 *2009/08/22*:: Fix line No and avoid memory leak in case of error in Xml_Parser, V12.1
 
-*2009/08/21*:: Add complete expansion of external entities and many many fixes, in Xml_Parser V12.0, Xml_Generator V6.1 
+*2009/08/21*:: Add complete expansion of external entities and many many fixes, in Xml_Parser V12.0, Xml_Generator V6.1
 and Xml_Checker V6.1
 
 *2009/08/16*:: Fix EMPTY elements must be really empty (no Pi nor directive) in Xml_Parser, V11.1
@@ -673,7 +673,7 @@ Fix Xml_Parser, empty elements where not checked vs dtd
 
 *2008/08/18*:: Fix several bugs and limitations in Xml_Parser V4.1, Xml_Checker V4.0
 
-- Fix expand_Entities becomes Expand and is used also to set ro not attributes with default values 
+- Fix expand_Entities becomes Expand and is used also to set ro not attributes with default values
 but don't miss xml:space="preserve" directives
 - Fix forbid text child for EMPTY elements
 - Fix if there is no child but not significant text between start and stop tags, then add text child

@@ -88,7 +88,7 @@ afpx_rnb
 --------
 anchor:XAfpx_rnb[]
 In the Afpx XML definition file, the fields within a descriptor must be
-strictly crescent. afpx_rnb allows inserting, deleting, moving or copying 
+strictly crescent. afpx_rnb allows inserting, deleting, moving or copying
 fields within a descriptor. afpx_rnb renumbers the fields and keeps up to date
 the references (in geometry, init strings or variables) to field numbers.
 

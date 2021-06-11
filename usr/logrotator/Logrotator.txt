@@ -13,7 +13,7 @@ Usage
 Logrotator takes as argument a root file name and, as option:
 
 * a period (min 1s, no max, default 1 day)
-* a maximum number of periods (min 1, max 10000, default 7) 
+* a maximum number of periods (min 1, max 10000, default 7)
 * a maximum file size (min 1, no max, default none)
 * a maximum number of files per period (min 1, max 10000, default 999)
 .........................................

@@ -103,7 +103,7 @@ end Pa;
 
 States when parsing
 -------------------
-Parsing the spec consists in: 
+Parsing the spec consists in:
 
 - do the processing of current object declaration
 

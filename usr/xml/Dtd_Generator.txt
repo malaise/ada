@@ -72,7 +72,7 @@ definitions and takes into account both constraints. Examples:
 * a Sequence and a Choice becomes a Choice (with lists merged)
 * a Sequence and a Mixed or Pcdata becomes a Mixed (with lists merged)
 * a Sequence and an Empty becomes a Sequence with all children optional
-* a Choice and a Pcdata becomes a Mixed 
+* a Choice and a Pcdata becomes a Mixed
 * any kind and an Any becomes an Any
 * "empty" Pcdata (only separators) only makes an Empty to become Not_Empty,
 otherwise it is discarded +
@@ -279,7 +279,7 @@ This list is scanned in order to generate the proper \'!<ELEMENT' and
 
 Traces
 ------
-Dtd_generator logs through a logger named "Dtd_Generator", 
+Dtd_generator logs through a logger named "Dtd_Generator",
 
 * with severity Info, the name of each file being processed (or "stdin"),
 * with severity Debug, several logs on the processing, including merging.

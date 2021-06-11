@@ -15,7 +15,7 @@ Pushing an operator triggers the execution of the operation, which means:
 
 * Pop the operator,
 * Possibly pop the operands (the number of operands depends on the operator),
-* Apply the operation on the operands, 
+* Apply the operation on the operands,
 * Possibly push the result (one or several operands) on the stack.
 
 For example, the  operation "3 - 1" is decomposed into:
@@ -233,9 +233,9 @@ Main stack management
   Ssize : push stack size               // R is inte
   Swap : push A, push B                 // Swap A and B
   Swap3 : push A, push B, push C        // Swap A and C
-  Swap2 : push B, push C, push A        // Swap B and C 
+  Swap2 : push B, push C, push A        // Swap B and C
   Dup : push A, push A                  // Duplicate A
-  Prevtop : push previous top of stack 
+  Prevtop : push previous top of stack
   Pop : pop A                           // Drop top of stack
   Popn : pop (B...) A times             // Drop A top items
   Readn : push Ath element of stack
@@ -300,7 +300,7 @@ Subprograms
   Retn : return A times                 // Return A levels (0=none)
   Retall : return all levels            // And exit
   Ifret : if A then return
-  Ifretn : if B then return A levels (0=none) 
+  Ifretn : if B then return A levels (0=none)
   Ifretall : if A then return all levels
   Retacal : return and call A           // For loops, see examples
   Callbrk : set to A the program to be called after break, before exit
@@ -336,7 +336,7 @@ String operations
   Strsub : push C(B..A)                 // A and B inte, C and R str
   Strloc : push index of Bth occurence of str A in C, backwards if B < 0
   Strins : push C after inserting in it at pos B str A
-  Strovw : push C after overwritting in it from pos B by str A 
+  Strovw : push C after overwritting in it from pos B by str A
   Strdel : push C after deleting from it from pos B to A
   Strupp : push A in UPPERCASE
   Strlow : push A in lowercase
@@ -357,19 +357,19 @@ String operations
   Strof : push str image of A           // A of any kind
   Normal : push normalised str of D     // D=N(inte), C=Len(positive), B=Right(bool),    A=Pad(str)
                                         // D=R(real), C=Len(positive), B=Fore(Positive), A=Pad(str)
-  Regmatch : push index where B matches regex A 
-  Regsplit : push number of substrings of D matching C 
+  Regmatch : push index where B matches regex A
+  Regsplit : push number of substrings of D matching C
                                         // B max substrings are stored in array A
 
 .Can a string be converted to arbitrary, fraction, integer, real, boolean, register, program
 
-  Canarbi :  push whether A (str) can be an arbitrary          
-  Canfrac :  push whether A (str) can be a fraction            
-  Caninte :  push whether A (str) can be an integer            
-  Canreal :  push whether A (str) can be a real                
-  Canbool :  push whether A (str) can be a boolean             
-  Canreg :  push whether A (str) can be a register            
-  Canprog :  push whether A (str) can be a program             
+  Canarbi :  push whether A (str) can be an arbitrary
+  Canfrac :  push whether A (str) can be a fraction
+  Caninte :  push whether A (str) can be an integer
+  Canreal :  push whether A (str) can be a real
+  Canbool :  push whether A (str) can be a boolean
+  Canreg :  push whether A (str) can be a register
+  Canprog :  push whether A (str) can be a program
 
 
 Time
@@ -443,7 +443,7 @@ Each register can store data at a given index.
   ->Test
 
 Store in extra stack and rotate. Here the stack initially contains "C", "B" and
-"A", then extra stack is filled with (from last) "A", "B" and "C". Note that 
+"A", then extra stack is filled with (from last) "A", "B" and "C". Note that
 rotle takes a number of iterations.
 
   "A" "B" "C" pope pope pope pushle put pushle put pushle putl
@@ -475,7 +475,7 @@ then is retrieved and called by itself with retacal).
 
 .Input and output
 Format with an inte sets the length of inte outputs. With a real, it sets the
-length of mantisse and fraction of real outputs. 
+length of mantisse and fraction of real outputs.
 
 NOTE: The frac part of the real format is on 3 digits, so 4.03 means 30 digits
 (4.030) and 4.003 means 3 digits

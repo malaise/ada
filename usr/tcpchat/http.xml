@@ -5,7 +5,7 @@
 <chats Version="&Version;">
   <!-- HTTP 0.9: Send file and close -->
   <!-- HTTP 1.0 or 1.1: Skip noise, send header + file -->
-  <chat Name="http" 
+  <chat Name="http"
         Oper="match"
         Crit="GET ((http:/)?/(localhost|${$HOSTNAME}|${$HOSTIP})(:[0-9]+)?)?([^ ]+)( +HTTP/(1\.(0|1)))?"
         Assign="File=${5} Httpvers=${7}"

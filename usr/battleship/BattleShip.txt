@@ -23,7 +23,7 @@ The arguments of the games are:
 The game is blocked as long as a client and a server are not connected. The
 title is 'Connecting as server' or 'Connecting as client' during this time.
 
- 
+
 Setting up the fleet
 --------------------
 This step consists in positioning your fleet on the grid.
@@ -49,17 +49,17 @@ anchor:XGrid[] Example:
 [width="75%", halign="center", valign="middle", cols="s,,,,,,,,,,"]
 
 |==========================================
-|   s| 1 s| 2 s| 3 s| 4 s| 5 s| 6 s| 7 s| 8 s| 9 s|10 
+|   s| 1 s| 2 s| 3 s| 4 s| 5 s| 6 s| 7 s| 8 s| 9 s|10
 | A |   | X | X |   |   |   |   |   |   | X
 | B |   |   |   |   |   |   |   |   |   | X
 | C |   |   | X |   |   |   |   |   |   | X
 | D |   |   | X |   |   | X | X | X |   | X
 | E |   |   | X |   |   |   |   |   |   | X
-| F |   |   | X |   |   |   |   |   |   |  
-| G |   |   |   | X |   |   |   |   |   |  
-| H |   |   |   | X |   |   |   |   |   |  
-| I |   |   |   |   |   |   |   |   |   |  
-| J |   |   |   |   |   |   |   |   |   |  
+| F |   |   | X |   |   |   |   |   |   |
+| G |   |   |   | X |   |   |   |   |   |
+| H |   |   |   | X |   |   |   |   |   |
+| I |   |   |   |   |   |   |   |   |   |
+| J |   |   |   |   |   |   |   |   |   |
 |==========================================
 
 Graphical interface
@@ -160,7 +160,7 @@ becomes black, otherwise it becomes dark blue. When a ship is sunk it becomes
 red. +
 The square coordinates and result are summarized by a text below the grid
 until your opponent plays.
- 
+
 .End of the game
 When the game ends the title becomes 'End' and the leader has two buttons:
 Restart and Exit. If he restarts, then both players enter the setup again...
@@ -202,7 +202,7 @@ Protocol
   * the client waits for the shoot (displays the shoot received), and replies
 - When the game is ended the server displays the buttons Restart and Exit and
   sends a "Z" or "E" according to the players selection.
-- Both games enter the set-up then play, or exit. 
+- Both games enter the set-up then play, or exit.
 - The first player to start shooting alternates at each game.
 
 States
@@ -215,7 +215,7 @@ Each game knows its current state:
 - Setup (with or without remote completed)
 - Wait (until remote set-up completion)
 - Shoot (get target cell from player, send it and wait for reply)
-- Target (wait for shoot and send reply) 
+- Target (wait for shoot and send reply)
 - Ended (for server: get action Restart or Exit and send it, for client: wait
   for this action from server)
 

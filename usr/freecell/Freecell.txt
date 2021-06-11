@@ -131,16 +131,16 @@ valid ancestor for the sequence,
 * the number of available Tempo stack and of free Play stacks allows the
 movement of the cards one by one.
 
-Moving several cards is achieved by selecting a card somewhere within a valid 
+Moving several cards is achieved by selecting a card somewhere within a valid
 sequence (often the biggest card of the sequence), then selecting its
 destination.
 
 The algorithm to move a stack to a target has the following logic:
 
-1. it first unstacks as many cards as possible from the original stack 
+1. it first unstacks as many cards as possible from the original stack
 into the available Tempo stacks,
 
-2. then it unstacks as many cards as possible from the original stack 
+2. then it unstacks as many cards as possible from the original stack
 into the free stacks,
 
 3. then it restacks all these cards but the last (from free stacks then from

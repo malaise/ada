@@ -54,7 +54,7 @@ host1 on port 40000 +
 -> tcpipe on host1 accepts the connection from client1 +
 -> tcpipe on host2 connects to the application on client2 +
 -> data sent by any of the applications is relayed to the other
-  
+
 Errors
 ------
 .Connection

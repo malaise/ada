@@ -45,7 +45,7 @@ and indicates the value of each combination.
 |Nenette         |221         |  4
 |Others          |655, 653... |  1
 |==========================================================
-  
+
 Course of the set
 ~~~~~~~~~~~~~~~~~
 The load
@@ -106,7 +106,7 @@ of throws. ex:
 
 * Player 1 throws 521 then 113 then 112, he announces "Five twenty one for
 none", "Ace three for three" and "Ace two in three for five"
-* Player 2 throws 123, announces "three two one for seven", hits and throws 
+* Player 2 throws 123, announces "three two one for seven", hits and throws
 114, and announces "Ace four in two for nine".
 
 .Throwing and saving dices
@@ -173,13 +173,13 @@ Operations:
 
 - Compare 2 combinations (<, >, =, /=, <=, >=)
 
-- Evaluate a combination. 
- * Return Fourtwentyone, Triple, Aces, Suite, Nenette or Other. 
+- Evaluate a combination.
+ * Return Fourtwentyone, Triple, Aces, Suite, Nenette or Other.
  * Also return an effective dice value, (not significant for Fourtwentyone,
  Nenette and other). Ex 555 -> Triple 5, 114 -> Aces 4, 432 -> Suite 4
  * Return the sorted combination highest value first, then medium then lowest.
 
-- Scan a combination: functions Has_A (effective_dice_value) and 
+- Scan a combination: functions Has_A (effective_dice_value) and
 +
 Has (effective_dice_value, effective_dice_value)
 
@@ -279,7 +279,7 @@ the current situation.
 The computer
 ~~~~~~~~~~~~
 This object implements the stateless strategy of the game.
-There is a basic service that analyses a combination of 3 
+There is a basic service that analyses a combination of 3
 
 First player
 ^^^^^^^^^^^^
@@ -290,7 +290,7 @@ It decides which dices to save/throw and it if this is the last.
 
 .After the first and the second throw
 - if there is a significant combination (not Other) not Aces stop now.
-- if there are two aces 
+- if there are two aces
  * if the last dice is more that 3 stop now
  * else re-throw the last dice
 - if there is 42, 41 or 21 keep it and throw last dice

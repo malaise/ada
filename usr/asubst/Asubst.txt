@@ -163,7 +163,7 @@ to right. +
 regex is re-compiled at each try. +
 * For back reference within the current regex, use the "\i" notation of the
 standard regex syntax. +
-* Beware that "\i" is processed by PCRE and refers to the current regex, 
+* Beware that "\i" is processed by PCRE and refers to the current regex,
 while "\rij" and "\Rij" are processed by asubst and refer to a previous regex.
 
 NOTE: Beware that some regex expressions are supposed to match a "new line"
@@ -213,7 +213,7 @@ Delimiter
 ---------
 anchor:XDelim[]
 Normally, asubst reads the input flow or file line by line (separated by
-''\n''), and searches for matches between 
+''\n''), and searches for matches between
 
   * the input sequences of text and ''\n''
   * the sequence of regex (or strings in xref:XNoRegex[noregex] mode) and ''\n''
@@ -249,7 +249,7 @@ Tag duplicated words in paragraphs (paragraphs are separated by two '\n'):
 asubst -D '\n\n' -- '\b([\M]+)\b[\S]+\1' '->\R01<-' file
 --------------------------------------
 
-Fix line delimiters of a hudge file (see also section 
+Fix line delimiters of a hudge file (see also section
 xref:XNoRegex[Noregex modes]):
 --------------------------------------
 asubst -D '\x0D' -x '\x0D' '\x0A' file
@@ -440,7 +440,7 @@ the standard code: 128 + signal_number.
 
 Elements of design
 ------------------
-This section briefly describes how asubst is decomposed and provides clues on 
+This section briefly describes how asubst is decomposed and provides clues on
 how it behaves.
 
 Main units
@@ -475,7 +475,7 @@ This package has has two main services:
   * inserting the text of references to matching (sub)strings, the result of
 shell commands or the content of file,
   * converting the result to upper, lower or mixed char.
-  
+
 .Substit
 This package is in charge of opening, processing and closing one file.
 

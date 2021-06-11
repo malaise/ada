@@ -249,7 +249,7 @@ If <enigma_setting>, check and displays these enigma arguments.
 
 If -text, also generates text key (see xref:XT-TextKey[Text Key]).
 
-Rotors ("I", "II" .. "X") and reflectors ("A", "B" and "C") must be defined 
+Rotors ("I", "II" .. "X") and reflectors ("A", "B" and "C") must be defined
 defined in a XML file, as for enigma.
 
 Normal generation

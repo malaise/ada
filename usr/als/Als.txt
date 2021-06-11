@@ -154,7 +154,7 @@ that:
 This mode shows all (and only) the matching entries, one per row. For example,
 when combined with the recursive mode, it does not show the directory names
 as specific entries. +
-By default it shows the full relative path of each entry, except if the 
+By default it shows the full relative path of each entry, except if the
 "-b" option is provided (meaningfull only when merging).
 
 Criteria
@@ -165,7 +165,7 @@ The criteria (provided for <match_name>, <exclude_name>, <match_dir>,
  * \'@<text>' considers '<text>' as a regular expression (possibly empty),
  * \'\@<text>' considers '@<text>' as a series of file templates, the first
 template starting by "@",
- * \'\\@<text>' considers '\@<text>' as a series of file templates, the first 
+ * \'\\@<text>' considers '\@<text>' as a series of file templates, the first
 template starting by "\@", +
 ...
 
@@ -197,7 +197,7 @@ Conversely, if at least one exclusion criteria is provided, then
 the name must not match any of them. No criteria means "all names
 match" as well.
 
-The matching of directory name in recursive mode is handled a specific way. 
+The matching of directory name in recursive mode is handled a specific way.
 If the current directory name matches a 'discard-dir' criteria, then
 its content *and* subdirectories are skipped, otherwise:
 
