@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V39.09
+V39.10
 
 General purpose
 ---------------
@@ -1433,8 +1433,8 @@ not-merged not-dropped cherry is not a 'squash' or a 'fixup', then the result
 will be commited with the cherries's comment.
 
 * 'W' denotes a cherry picked for 'wipe-up', which will be applied with an
-empty comment. This is valid only if the next (not-merged not-dropped) cherry
-is (possibly after some 'fixup' or 'wipe') a 'squash'.
+empty comment and not committed. This is valid only if the next (not-merged
+not-dropped) cherry is (possibly after some other 'wipe' or 'fixup') a 'squash'.
 
 * 'R' denotes a cherry picked for 'rewording', which will be applied then
 proposed for modification of the comment in the xref:XCommit[commit] menu.
@@ -1455,9 +1455,9 @@ overall result will be committed.
 
 * 'F' denotes a cherry picked for 'fixup', which will be applied and folded
 with the previous cherry. If the next cherry is not a 'squash' nor a 'fixup',
-then the result will be committed with the currently retained comment. So the
-'fixup' cherry comment is discarded, except if the currently retained comment
-is empty, in which case the current comment is retained). +
+then the result will be committed with the currently retained comment. The
+comment of the 'fixup' cherry is discarded except if the currently retained
+comment is empty, in which case the current comment is retained). +
 
 By default, all the non-merged commits are selected as 'picked'.
 

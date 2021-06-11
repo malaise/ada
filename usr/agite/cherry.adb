@@ -533,22 +533,15 @@ package body Cherry is
           end case;
         end if;
       else
-        -- Next is neither Squash nor Fixup: commit
+        -- Next is neither Squash nor Fixup:
+        --  Pick the cherry, and then commit except if Wipe
         case Cherry.Status is
-          when Wipe =>
-            -- Normally, this should not occur because
-            --  of previous validity check
-            Error ("Cherry pick from", Branch, "Wipe leads to empty commit");
-            -- Propose manual resolution
-            if not Commit.Handle (Root, Image (Cherry.Status),
-                                  Curr_Comment) then
-              -- User gave up
-              return Error;
-            end if;
           when Merged | Drop =>
             null;
-          when Pick =>
-            Result := As.U.Tus (Git_If.Cherry_Pick (Cherry.Commit, True));
+          when Pick | Wipe =>
+            Result := As.U.Tus (Git_If.Cherry_Pick (
+                         Commit    => Cherry.Commit,
+                         Do_Commit => (Cherry.Status = Pick) ));
             if not Result.Is_Null then
               -- Cherry pick failed, the error message starts with the
               --  conflicts
