@@ -1,37 +1,51 @@
-# Fuel for the P38, cruising at FL 250-270
-[ "Error. Expecting xx:yy or xxxxNm or xxxxl" putl ssize popn 1 setexit retall
+# Fuel for the P38, cruising at FL 250
+[ "Error. Expecting xx:yy or xxxxNm or xxxxl or xxxxkg" putl
+ssize popn 1 setexit retall
 ] E popr
 
 # Store name and weight in kg for each tank
-"droppable" n 1 popa 921.0 w 1 popa
-"wing"      n 2 popa 333.0 w 2 popa
-"main"      n 3 popa 521.0 w 3 popa
-"reserve"   n 4 popa 308.0 w 4 popa
+"droppable" n 1 popa 919.6 w 1 popa
+"wing"      n 2 popa 332.8 w 2 popa
+"main"      n 3 popa 520.0 w 3 popa
+"reserve"   n 4 popa 307.8 w 4 popa
 
 # Cruising speed in Kt
 280.0 s popr
 
 # Fuel flow in kg/h
-230.0 f popr
+190.0 f popr
 
-# Security (time of flight)
-0.50 u popr
+# climb overhead (min of flight)
+0.06 degfr c popr
+# taxi + security (min of flight)
+0.05 0.25 degfr + u popr
 
 # One arg
 ssize isnull E pushr ifcall
 a popr
 
-# Input is either xxxxNm or xxxxl or h:mm -> convert to hours
+# Input is either xxxxNm or xxxxl or xxxxkg or h:mm -> convert to hours
+# Distance
 "^[0-9]{1,4}Nm" c 1 popa
-  [ dup strlen dup 1 - swap strdel strreal s pushr / ] e 1 popa
+  [ dup strlen dup 1 - swap strdel strreal s pushr / 
+    # Add climb overhead and will add extra
+    c pushr + u pushr + a popr
+  ] e 1 popa
+# Liters
 "^[0-9]{1,4}l" c 2 popa
-  [ dup strlen dup strdel strreal s pushr / ] e 2 popa
-"^[0-9]?[0-9]:[0-9][0-9]" c 3 popa
+  [ dup strlen dup strdel strreal 0.72 * f pushr / 0.0 a popr ] e 2 popa
+# Kilograms
+"^[0-9]{1,4}kg" c 3 popa
+  [ dup strlen dup 1 - swap strdel strreal f pushr / 0.0 a popr ]
+  e 3 popa
+# Time
+"^[0-9]?[0-9]:[0-9][0-9]" c 4 popa
   [ dup 1 ":" strloc dup isntnull [ "." strovw ] [ pop ] ifte call
-    strreal degfr ] e 3 popa
+    # Will add extra
+    strreal degfr u pushr a popr ] e 4 popa
 
 # Loop checking a versus each criteria
-3 i popr
+4 i popr
 [
   # Does arg match the criteria i?
   a pushr c i pushr pusha regmatch
@@ -41,9 +55,9 @@ a popr
   i pushr 1 - i copyr isnull E pushr ifcall
 T pushr retacal ] T copyr call
 
-# Now we have the flight time
-# Convert to weight and security (taxi, takeoff, climb)
-u pushr t pushr + f pushr * w popr
+# Now we have the total flight time
+# add taxi + security if input is not fuel
+a pushr t pushr + f pushr * w popr
 
 # Compute max weight
 4 i popr
@@ -60,7 +74,7 @@ dup "[^ ]" regmatch 1 strdel
 
 # Put weight and flight time in h.mn
 0 format
-"Flying" put t pushr degms 6 3 " " normal F pushr call put " requires " put
+"Flying" put t pushr degms 6 3 "0" normal F pushr call put " requires " put
 w pushr round put " kg of fuel." putl
 
 # Check needed weight versus capacity
@@ -68,17 +82,19 @@ s pushr w pushr <
 [ "This is above the max " put s pushr round put "." putl
 ssize popn 1 setexit retall ] ifcall
 
+# Function that puts flight time for ToS kg of fuel
+[ f pushr / degms 5 2 "0" normal F pushr call " for" put
+ put " flight time" putl
+] T popr
+# true debugall
 # Successive tries with each tank
 4 i popr
 [
 w i pushr pusha copye w pushr >=
-[ "Put " put w pushr round put "kg in " put n i pushr pusha put " tanks." putl
-retall ] ifcall
-"Fill " put n i pushr pusha put " tanks." putl
-w pushr w i pushr pusha - w popr
+[ "Put " put w pushr copye 2.0 / round put "kg in each " put
+n i pushr pusha put " tank" put pushle T pushr call 2 retn ] ifcall
+"Fill " put n i pushr pusha put " tanks" put w i pushr pusha dup T pushr call
+w pushr swap - w popr
 i pushr 1 - i copyr isnull ifret
 L pushr retacal ] L copyr call
-
-# Full
-"Fill all tanks" putl
 
