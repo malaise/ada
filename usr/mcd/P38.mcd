@@ -1,5 +1,6 @@
+
 # Fuel for the P38, cruising at FL 250
-[ "Error. Expecting xx:yy or xxxxNm or xxxxl or xxxxkg" putl
+[ "Error. Expecting xx:yy or xxxxNm or xxxxl or xxxxkg or full" putl
 ssize popn 1 setexit retall
 ] E popr
 
@@ -24,28 +25,32 @@ ssize popn 1 setexit retall
 ssize isnull E pushr ifcall
 a popr
 
-# Input is either xxxxNm or xxxxl or xxxxkg or h:mm -> convert to hours
+# Input is either xxxxNm or xxxxl or xxxxkg or h:mm or full
+# -> convert to hours (-1.0 if full)
 # Distance
-"^[0-9]{1,4}Nm" c 1 popa
-  [ dup strlen dup 1 - swap strdel strreal s pushr / 
+"^[0-9]{1,4}Nm$" c 1 popa
+  [ dup strlen dup 1 - swap strdel strreal s pushr /
     # Add climb overhead and will add extra
-    c pushr + u pushr + a popr
+    c pushr u pushr + a popr
   ] e 1 popa
 # Liters
-"^[0-9]{1,4}l" c 2 popa
+"^[0-9]{1,4}l$" c 2 popa
   [ dup strlen dup strdel strreal 0.72 * f pushr / 0.0 a popr ] e 2 popa
 # Kilograms
-"^[0-9]{1,4}kg" c 3 popa
+"^[0-9]{1,4}kg$" c 3 popa
   [ dup strlen dup 1 - swap strdel strreal f pushr / 0.0 a popr ]
   e 3 popa
 # Time
-"^[0-9]?[0-9]:[0-9][0-9]" c 4 popa
+"^[0-9]?[0-9]:[0-9][0-9]$" c 4 popa
   [ dup 1 ":" strloc dup isntnull [ "." strovw ] [ pop ] ifte call
     # Will add extra
     strreal degfr u pushr a popr ] e 4 popa
+# Full
+"^full$" c 5 popa
+  [ pop -1.0 0.0 a popr ] e 5 popa
 
 # Loop checking a versus each criteria
-4 i popr
+5 i popr
 [
   # Does arg match the criteria i?
   a pushr c i pushr pusha regmatch
@@ -66,6 +71,9 @@ a pushr t pushr + f pushr * w popr
   w i pushr pusha s pushr + s popr
   i pushr 1 - i copyr isnull ifret
 S pushr retacal ] S copyr call
+
+# If Full (w < -1.0) then set w to max and set t to the corresponding time
+w pushr isneg [ s pushr w copyr f pushr / t popr ] ifcall
 
 # Function to replace '.' by ":" and remove leading spaces, from top of stack
 [ dup 1 "." strloc dup isntnull [ ":" strovw ] [ pop ] ifte call
