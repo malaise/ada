@@ -33,7 +33,7 @@ package Date_Text is
 
   -- A format is not valid if
   -- -  it contains an unknown "%x" sequence
-  -- - it ends with the character '%'
+  -- - it ends with the character '%' (except "%%", "%%%%"...)
   -- - the "%B" sequence is immediately followed by another "%x" sequence
   --   (except "%%") or by a lower case letter, because the scanning of a full
   --   month name would not be possible

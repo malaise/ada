@@ -3,12 +3,12 @@ package Romanic is
 
   -- The romanic typo
   -------------------
-  -- Longest supported is MMMMDCCCLXXXVIII (4888)
-  -- Largest supported is MMMMCMXCIX (4999)
+  -- Widest romanic number supported is MMMMDCCCLXXXVIII, so 16 digits (4888)
   type Digit is ('I', 'V', 'X', 'L', 'C', 'D', 'M');
   subtype Index_Range is Positive range 1 .. 16;
   type Number is array (Index_Range range <>) of Digit;
 
+  -- Largest arabic value supported is MMMMCMXCIX, so 4999
   subtype Arabic is Positive range 1 .. 4999;
 
   -- Convert a romanic number into arabic

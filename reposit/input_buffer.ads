@@ -1,5 +1,5 @@
--- Bufferize input flow (strings) until separator is found
--- Report the received string (text between separators)
+-- Bufferize input flow (strings) until a delimiter string is found
+-- Report the received string (text between delimiters)
 -- This is the same as Text_Line input except that the input flow is
 --  explicitly pushed by the application
 private with As.U;
@@ -9,11 +9,11 @@ package Input_Buffer is
   -------------------------
   -- GENERAL DEFINITIONS --
   -------------------------
-  -- Default separator
+  -- Default delimiter
   Line_Feed : String renames Text_Line.Line_Feed_Str;
 
   -- Callback invoqued when a sentence has been identified in input flow
-  --  (text ending by separator)
+  --  (text ending by delimiter)
   type Sentence_Notifier is access procedure (Sentence : in String);
 
   -- A buffer

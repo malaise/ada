@@ -1,4 +1,4 @@
--- Handles the initialisation of state while
+-- Handles the initialisation of a state, while
 --  events arrive (events that aim to modify this state)
 generic
 
