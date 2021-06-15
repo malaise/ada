@@ -296,7 +296,6 @@ begin
             Color_Move := False;
           end if;
         end;
-        Color_Move := False;
       end if;
 
     when Screen.Nothing =>
