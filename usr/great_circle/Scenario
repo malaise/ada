@@ -82,6 +82,9 @@ THM1V.2TLZ-RS FRA:3B2.M9-84                   073.39.10     7
 # Durban <-> Perth
 ZAF:WHWW.J3X-64  AU-WA:MF.RRB-1T              116.33.19     4256
 AU-WA:MF.RRB-1T  ZAF:WHWW.J3X-64              246.24.02     4256
+# Mururoa <-> Futuna
+WLF:37.8R PYF:S4Q3.4HH                        108.52.19     2196
+PYF:S4Q3.4HH WLF:37.8R                        277.12.07     2196
 
 # Comparisons
 # Fonsorbes -> Acuncagua
