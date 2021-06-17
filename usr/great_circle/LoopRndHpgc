@@ -10,8 +10,9 @@
 export EPSILON=2
 # If within Acceptable => log as acceptable
 # Both transformations "position->mapcode" (end of route) lead to an error
-#  of 25cm max each. For each of the 3 route computations, let's allow some mm.
-# So max acceptable distance s around 60cm
+#  of 25cm max each.
+# Also, for each of the 3 route computations, let's allow some mm.
+# So max acceptable distance is around 60cm
 export ACCEPTABLE=600
 
 # Path to random, to mapcode and to high precision great circle
@@ -85,101 +86,102 @@ function term {
 ######################
 trap "term" SIGINT SIGTERM
 while true ; do
-R=$(($N%100))
+  R=$(($N%100))
 
-# Set a random position P1
-export P1a=`rnd  -90.0  90.0`
-export P1o=`rnd -180.0 180.0`
-# Get its international mapcode precision 2
-P1c=`$MAPCODE -c $P1a $P1o AAA P2 | tail -2 | head -1 | awk '{print $3}'`
-debug "P1: " $P1c
+  # Set a random position P1
+  export P1a=`rnd  -90.0  90.0`
+  export P1o=`rnd -180.0 180.0`
+  # Get its international mapcode precision 2
+  P1c=`$MAPCODE -c $P1a $P1o AAA P2 | tail -2 | head -1 | awk ' {print $3}
+  '`
+  debug "P1: " $P1c
 
-# Set a random route
-export H12=`rnd 0.0 360.0`
-export D12=`rnd 0.0001 40030.0`
-debug "Route12 $H12 $D12"
+  # Set a random route
+  export H12=`rnd 0.0 360.0 | awk '{printf "%13.9f", $1}'`
+  export D12=`rnd 0.0001 40030.0 | awk '{printf "%15.9f", $1}'`
+  debug "Route12 $H12 $D12"
 
-# Add the route to P1, get the mapcode of the destination P2
-P2c=`$HPGC -a $P1c $H12 ${D12}km`
-debug "P2: " $P2c
+  # Add the route to P1, get the mapcode of the destination P2
+  P2c=`$HPGC -a $P1c $H12 ${D12}km`
+  debug "P2: " $P2c
 
-# Compute the route from P2 to P1
-export Tmp=`$HPGC -c $P2c $P1c`
-# Result is, for ex,  H:  258.031292000, D: 4994.596121Nm  9249.992016km.
-#  but maybe the last "." does not exist because of smaller range (m, mm).
-export H23=`echo $Tmp | awk '{
-  printf "%s", substr($2, 1, length($2)-1)
-  }'`
-export D23=`echo $Tmp | awk ' {
-  T=$5
-  if (substr(T,length(T),1) == ".") T=substr(T, 1, length(T)-1)
-  printf "%s", T
-  }'`
-debug "Route23 $H23 $D23"
+  # Compute the route from P2 to P1
+  export Tmp=`$HPGC -c $P2c $P1c`
+  # Result is, for ex,  H:  258.031292000, D: 4994.596121Nm  9249.992016km.
+  #  but maybe the last "." does not exist because of smaller range (m, mm).
+  export H23=`echo $Tmp | awk '{
+    printf "%s", substr($2, 1, length($2)-1)
+    }'`
+  export D23=`echo $Tmp | awk ' {
+    T=$5
+    if (substr(T,length(T),1) == ".") T=substr(T, 1, length(T)-1)
+    printf "%s", T
+    }'`
+  debug "Route23 $H23 $D23"
 
-# Add this route to P2, get the mapcode of the destination P3
-P3c=`$HPGC -a $P2c $H23 $D23`
-debug "P3: " $P3c
-let N=$N+1
+  # Add this route to P2, get the mapcode of the destination P3
+  P3c=`$HPGC -a $P2c $H23 $D23`
+  debug "P3: " $P3c
+  let N=$N+1
 
-# Check is same mapcode
-if [ "$P1c" = "$P3c" ] ; then
-  if [ $OKS -eq 1 ] ; then
-    echo "Ok for $P1c + $H12 ${D12}km"
-  elif [ $R -eq 0 ] ; then
-    echo -n "."
+  # Check is same mapcode
+  if [ "$P1c" = "$P3c" ] ; then
+    if [ $OKS -eq 1 ] ; then
+      echo "Ok for $P1c + $H12 ${D12}km"
+    elif [ $R -eq 0 ] ; then
+      echo -n "."
+    fi
+    continue
   fi
-  continue
-fi
 
-# Check that P3 ~= P1 (less than Epsilon, less than acceptable)
-# 0 if within Epsilon, 1 if acceptable, otherwise 2 on error
-export CHEK=`$HPGC -c $P1c $P3c | awk \
--v EPSILON=$EPSILON -v ACCEPTABLE=$ACCEPTABLE '
-  BEGIN {EPSILON=0+EPSILON; ACCEPTABLE=0+ACCEPTABLE}
-  {
-    D=$NF
-    L=length(D)
-    D=substr(D, 1, L-1)
-    L--
-    if (substr(D, L-1, 2) != "mm") {
-      printf "2 %s", D
+  # Check that P3 ~= P1 (less than Epsilon, less than acceptable)
+  # 0 if within Epsilon, 1 if acceptable, otherwise 2 on error
+  export CHEK=`$HPGC -c $P1c $P3c | awk \
+  -v EPSILON=$EPSILON -v ACCEPTABLE=$ACCEPTABLE '
+    BEGIN {EPSILON=0+EPSILON; ACCEPTABLE=0+ACCEPTABLE}
+    {
+      D=$NF
+      L=length(D)
+      D=substr(D, 1, L-1)
+      L--
+      if (substr(D, L-1, 2) != "mm") {
+        printf "2 %s", D
+        exit(0)
+      }
+      D=0+substr(D, 1, L-2)
+      if (D > ACCEPTABLE) {
+        printf "2 %smm", D
+      } else if (D > EPSILON) {
+        printf "1 %smm", D
+      } else {
+        printf "0 %smm", D
+      }
       exit(0)
-    }
-    D=0+substr(D, 1, L-2)
-    if (D > ACCEPTABLE) {
-      printf "2 %smm", D
-    } else if (D > EPSILON) {
-      printf "1 %smm", D
-    } else {
-      printf "0 %smm", D
-    }
-    exit(0)
-   }
-'`
-RES=`echo $CHEK | cut -d' ' -f1`
-DIST=`echo $CHEK | cut -d' ' -f2`
+     }
+  '`
+  RES=`echo $CHEK | cut -d' ' -f1`
+  DIST=`echo $CHEK | cut -d' ' -f2`
 
-# Check the result
-if [ "$RES" = "0" ] ; then
-  if [ $OKS -eq 1 ] ; then
-    echo "Ok $DIST for $P1c + $H12 ${D12}km -> $P3c"
-  elif [ $R -eq 0 ] ; then
-    echo -n "."
+  # Check the result
+  if [ "$RES" = "0" ] ; then
+    if [ $OKS -eq 1 ] ; then
+      echo "Ok $DIST for $P1c + $H12 ${D12}km -> $P3c"
+    elif [ $R -eq 0 ] ; then
+      echo -n "."
+    fi
+  elif [ "$RES" = "1" ] ; then
+    if [ $ACCS -eq 1 ] ; then
+      echo
+      echo "Acceptable $DIST for $P1c + $H12 ${D12}km -> $P3c"
+    elif [ $R -eq 0 ] ; then
+      echo -n "."
+    fi
+  else
+    # Check failed
+    echo "ERROR: $P1a $P1o -> $P1c + $H12 ${D12}km -> $P2c + $H23 $D23 -> $P3c" 1>&2
+    echo "Distance: $DIST" 1>&2
+    exit 1
   fi
-elif [ "$RES" = "1" ] ; then
-  if [ $ACCS -eq 1 ] ; then
-    echo
-    echo "Acceptable $DIST for $P1c + $H12 ${D12}km -> $P3c"
-  elif [ $R -eq 0 ] ; then
-    echo -n "."
-  fi
-else
-  # Check failed
-  echo "ERROR: $P1a $P1o -> $P1c + $H12 ${D12}km -> $P2c + $H23 $D23 -> $P3c" 1>&2
-  echo "Distance: $DIST" 1>&2
-  exit 1
-fi
 
 done
 
