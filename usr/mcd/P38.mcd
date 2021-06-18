@@ -101,7 +101,7 @@ ssize popn 1 setexit retall ] ifcall
 w i pushr pusha copye w pushr >=
 [ "Put " put w pushr copye 2.0 / round put "kg in each " put
 n i pushr pusha put " tank" put pushle T pushr call 2 retn ] ifcall
-"Fill each " put n i pushr pusha put " tank" put w i pushr pusha 
+"Fill each " put n i pushr pusha put " tank" put w i pushr pusha
 dup " with " put 2.0 / round put "kg" put
 dup T pushr call w pushr swap - w popr
 i pushr 1 - i copyr isnull ifret
