@@ -103,7 +103,7 @@ package Mapcodes is
   -- If Shortest is set, then at most one mapcode (the "default" and
   --   "shortest possible" mapcode) in any territory are returned
   -- The Precision option leads to produce mapcodes extended with high-precision
-  --  letters (the parameter specifies how many letters: 0 to 8
+  --  letters (the parameter specifies how many letters, 0 to 8, after a '-')
   -- The resulting array is always organized by territories: all the mapcodes
   --  of a territory follow each other and in order of increasing length.
   --  If Sort is set, then the returned array contains first the shortest
@@ -112,8 +112,8 @@ package Mapcodes is
   --   international (Earth) mapcode
   --  Otherwise the territories appear in the crescent order of Territory_Range
   --   (see package Countries)
-  --  As a consequence, if it appears the international mapcode is always the
-  --   last
+  --  As a consequence, if it appears then the international mapcode is always
+  --   the last
   subtype Precisions is Natural range 0 .. 8;
   Earth : constant String := "AAA";
   function Encode (Coord : Coordinate;
