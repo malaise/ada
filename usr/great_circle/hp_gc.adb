@@ -1,6 +1,8 @@
 -- High precision great circle
 -- Takes as input either two mapcodes or two lat-long (in degres with decimals)
--- Outputs Heading (in degrees with 9 decimals) and distance (down to the mm)
+--   Outputs heading (in degrees with 9 decimals) and distance (down to the mm)
+-- Takes as input either a mapcode or a lat-long, and  a heading and distance
+--   Outputs the mapcode or lat-long of the destination
 with Basic_Proc, Argument, Gets, My_Math, Normalization, As.U.Utils,
      Str_Util.Regex;
 with Units, Lat_Lon, Great_Circle, String_Util;
@@ -14,6 +16,7 @@ procedure Hp_Gc is
   Str, Unit : As.U.Asu_Us;
   R : My_Math.Real;
   I : Integer;
+  Precision : Lat_Lon.Precisions;
   Frac_Len : constant := 9;
   Km_In_Nm : constant := 1.852;
   use type My_Math.Real;
@@ -42,6 +45,7 @@ begin
   Great_Circle.Init_Logger;
   -- Get arguments: -c mapcode mapcode or -c lat lon lat lon
   --                -a mapcode heading distance or -a lat lon heading distance
+  --                with -a mapcode, then possibly -p precision
   begin
     if (Argument.Get_Nbre_Arg = 3
         or else Argument.Get_Nbre_Arg = 5)
@@ -64,15 +68,29 @@ begin
         A := Set_Lalo (Lat1, Lon1);
         B := Set_Lalo (Lat2, Lon2);
       end if;
-    elsif (Argument.Get_Nbre_Arg = 4
-           or else Argument.Get_Nbre_Arg = 5)
-    and then Argument.Get_Parameter (Occurence => 1) = "-a" then
+    elsif    Argument.Get_Nbre_Arg = 4
+    or else Argument.Get_Nbre_Arg = 5 then
+
       if Argument.Get_Nbre_Arg = 4 then
         -- 1 mapcode, 1 heading and 1 distance
-        A := Lat_Lon.Mapcode2Rad (Argument.Get_Parameter (Occurence => 2));
+        declare
+          Mapcode : constant String
+                  := Argument.Get_Parameter (Occurence => 2);
+          -- Locate first "-" after territory
+          Col : constant Natural := Str_Util.Locate (Mapcode, ":");
+          Index : constant Natural := Str_Util.Locate (Mapcode, "-", Col);
+        begin
+          A := Lat_Lon.Mapcode2Rad (Argument.Get_Parameter (Occurence => 2));
+          if Index = 0 then
+            Precision := 0;
+          else
+            Precision := Mapcode'Length - Index;
+          end if;
+        end;
         I := 3;
         Mode := Apply_Mapcode;
-      else
+      elsif Argument.Get_Nbre_Arg = 5 then
+        -- 1 lat long, 1 heading and 1 distance
         Lat1 := Units.Degree (Gets.Get_Int_Real (
             Argument.Get_Parameter (Occurence => 2)));
         Lon1 := Units.Degree (Gets.Get_Int_Real (
@@ -81,6 +99,8 @@ begin
         I := 4;
         Mode := Apply_Lalo;
       end if;
+
+      -- The route
       R := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => I));
       H := Units.Deg2Rad (Units.Degree (R));
       -- Distance is positive or real, with unit "Nm", "km", "m" or "mm"
@@ -112,13 +132,20 @@ begin
         raise Constraint_Error;
       end if;
       D := String_Util.Distance (R);
+
     else
-      Basic_Proc.Put_Line_Error ("ERROR. Usage: "
-          & Argument.Get_Program_Name & " <compute_route> | <apply_route>");
+      raise Constraint_Error;
+    end if;
+  exception
+    when others =>
+      Basic_Proc.Put_Line_Error (
+          "ERROR: Invalid argument. Usage: ");
+      Basic_Proc.Put_Line_Error (
+          Argument.Get_Program_Name & " <compute_route> | <apply_route>");
       Basic_Proc.Put_Line_Error (
           "<compute_route> ::= -c <point> <point> | -c <map_code> <map_code>");
       Basic_Proc.Put_Line_Error (
-          "<apply_route>   ::= -a <point> <route> | -r <map_code> <route>");
+          "<apply_route>   ::= -a <point> <route> | -a <map_code> <route>");
       Basic_Proc.Put_Line_Error (
           "<point>         ::= <lat> <lon>>");
       Basic_Proc.Put_Line_Error (
@@ -128,11 +155,6 @@ begin
       Basic_Proc.Put_Line_Error (
           "<unit>          ::= Nm | km | m | mm");
       Basic_Proc.Set_Error_Exit_Code;
-      return;
-    end if;
-  exception
-    when others =>
-      Basic_Proc.Put_Line_Error ("ERROR. Invalid argument");
       Basic_Proc.Set_Error_Exit_Code;
       return;
   end;
@@ -181,10 +203,10 @@ begin
       end if;
       Basic_Proc.Put_Line_Output (
         Normalization.Normal_Fixed (R, Frac_Len + 5, 4, '0'));
-   else
-     -- Display Mapcode of destination
-     Basic_Proc.Put_Line_Output (Lat_Lon.Rad2Mapcode (B));
-   end if;
+    else
+      -- Display Mapcode of destination
+      Basic_Proc.Put_Line_Output (Lat_Lon.Rad2Mapcode (B, Precision));
+    end if;
   end if;
 
 end Hp_Gc;

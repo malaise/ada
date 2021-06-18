@@ -1,5 +1,4 @@
 with My_Math, Complexes, Str_Util;
-with Mapcodes;
 package body Lat_Lon is
 
   Max_Lat : constant Units.Deg_Range := 90;
@@ -203,12 +202,14 @@ package body Lat_Lon is
   end To_Degree;
 
   -- Return the international mapcode
-  function Rad2Mapcode (Coord : Lat_Lon.Lat_Lon_Rad_Rec) return String is
+  function Rad2Mapcode (Coord : Lat_Lon.Lat_Lon_Rad_Rec;
+                        Precision : Precisions := Default_Precision)
+           return String is
     C : constant Mapcodes.Coordinate
       := (Lat => To_Degree (Coord.Y),
           Lon => To_Degree (Coord.X));
     Codes : constant Mapcodes.Mapcode_Infos
-          := Mapcodes.Encode (C, Shortest => True, Precision => 2);
+          := Mapcodes.Encode (C, Shortest => True, Precision => Precision);
   begin
     return Codes(Codes'Last).Mapcode.Image;
   end Rad2Mapcode;

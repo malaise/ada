@@ -1,4 +1,5 @@
 -- Convert lat/long, radians, mapcodes
+with Mapcodes;
 with Units;
 package Lat_Lon is
 
@@ -60,7 +61,11 @@ package Lat_Lon is
   -- Str is [ <Context>: ] <mapcode>
   function Mapcode2Rad (Str : String) return Lat_Lon.Lat_Lon_Rad_Rec;
   -- Return the international mapcode
-  function Rad2Mapcode (Coord : Lat_Lon.Lat_Lon_Rad_Rec) return String;
+  subtype Precisions is Mapcodes.Precisions;
+  Default_Precision : constant Precisions := 2;
+  function Rad2Mapcode (Coord : Lat_Lon.Lat_Lon_Rad_Rec;
+                        Precision : Precisions := Default_Precision)
+           return String;
 
 end Lat_Lon;
 
