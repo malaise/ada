@@ -5,10 +5,10 @@ ssize popn 1 setexit retall
 ] E popr
 
 # Store name and weight in kg for each tank
-"droppable" n 1 popa 909.2 w 1 popa
-"wing"      n 2 popa 329.2 w 2 popa
-"main"      n 3 popa 514.4 w 3 popa
-"reserve"   n 4 popa 304.4 w 4 popa
+"droppable (7&8)" n 1 popa 909.2 w 1 popa
+"wing      (5&6)" n 2 popa 304.4 w 2 popa
+"main      (1&2)" n 3 popa 514.4 w 3 popa
+"reserve   (3&4)" n 4 popa 329.2 w 4 popa
 
 # Cruising speed in Kt
 280.0 s popr
