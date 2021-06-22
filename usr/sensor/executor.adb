@@ -94,9 +94,9 @@ package body Executor is
      end if;
      -- Check latency
      Now := Ada.Calendar.Clock;
-     if (Rule.Latency /= 0.0
-         and then Rule.Previous.all + Rule.Latency > Now)
-     and then not Flush then
+     if Rule.Latency /= 0.0
+         and then Rule.Previous.all + Rule.Latency > Now
+         and then not Flush then
        -- Within latency
        Debug.Log ("  Within latency");
        return False;
@@ -156,7 +156,7 @@ package body Executor is
       Timers.Delete (Timer.Tid);
       Dummy_Res := Execute (Timer.Rule, Flush => True);
     end loop;
-  end;
+  end Close;
 
 end Executor;
 
