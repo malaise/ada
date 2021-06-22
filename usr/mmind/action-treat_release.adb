@@ -138,7 +138,6 @@ begin
 
   -- Discard invalid release and invalid click
   if not Valid or else History(Prev_Status).Selection_Kind = Screen.Nothing then
-    Update_Help;
     Go_On := True;
     Color_Move := Curr_Status = Release_Dest;
     return;
@@ -303,6 +302,5 @@ begin
       Color_Move := False;
   end case;
 
-  Update_Help;
 end Treat_Release;
 

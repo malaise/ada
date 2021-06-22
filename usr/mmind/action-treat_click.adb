@@ -19,7 +19,7 @@ begin
       when others =>
         History(Curr_Status) := Discard;
     end case;
-    Update_Help;
+
     return;
   end if;
 

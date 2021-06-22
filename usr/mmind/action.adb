@@ -59,16 +59,18 @@ package body Action is
   procedure Update_Help is
     use type Screen.Selection_List;
   begin
-    if (Curr_Status = Release_Orig or else Curr_Status = Release_Dest)
-    and then History(Prev_Status).Selection_Kind = Screen.Nothing then
-      -- Invalid click
-      Screen.Put_Help (Screen.Invalid);
+    if Curr_Status = Release_Orig or else Curr_Status = Release_Dest then
+      -- Help after Click: Invalid or "Release in same"
+      if History(Prev_Status).Selection_Kind = Screen.Nothing then
+        Screen.Put_Help (Screen.Invalid);
+      else
+        Screen.Put_Help (Screen.Clicked);
+      end if;
       return;
     end if;
+
     if Playing then
-      if Curr_Status = Release_Orig or else Curr_Status = Release_Dest then
-        Screen.Put_Help (Screen.Clicked);
-      elsif Curr_Status = Click_Orig  then
+      if Curr_Status = Click_Orig  then
         Screen.Put_Help (Screen.Play);
       elsif History(Prev_Status).Selection_Kind = Screen.Color then
         Screen.Put_Help (Screen.Released_Color);
@@ -217,8 +219,8 @@ package body Action is
         Prev_Status := Curr_Status;
         Curr_Status := (if Color_Move then Click_Dest else Default_Status);
       end if;
-      exit Main when not Go_On;
       Update_Help;
+      exit Main when not Go_On;
 
     end loop Main;
 
@@ -228,10 +230,10 @@ package body Action is
     end if;
 
     return not Exit_Game;
---  exception
---    when others =>
---      Scr.Move;
---      return Exit_Game;
+  exception
+    when others =>
+      Scr.Move;
+      return Exit_Game;
   end Play;
 
 end Action;
